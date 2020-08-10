@@ -31,7 +31,6 @@
 
 #include "display/curve.h"
 
-// derived from Path_for_item
 Path *
 Path_for_pathvector(Geom::PathVector const &epathv)
 {
@@ -77,9 +76,6 @@ Path_for_item(SPItem *item, bool doTransformation, bool transformFull)
     return dest;
 }
 
-/**
- * Obtains an item's Path before the LPE stack has been applied.
- */
 Path *
 Path_for_item_before_LPE(SPItem *item, bool doTransformation, bool transformFull)
 {
@@ -99,10 +95,6 @@ Path_for_item_before_LPE(SPItem *item, bool doTransformation, bool transformFull
     return dest;
 }
 
-/* 
- * NOTE: Returns empty pathvector if curve == NULL
- * TODO: see if calling this method can be optimized. All the pathvector copying might be slow.
- */
 Geom::PathVector*
 pathvector_for_curve(SPItem *item, SPCurve *curve, bool doTransformation, bool transformFull, Geom::Affine extraPreAffine, Geom::Affine extraPostAffine)
 {
@@ -125,10 +117,6 @@ pathvector_for_curve(SPItem *item, SPCurve *curve, bool doTransformation, bool t
     return dest;
 }
 
-/**
- * Obtains an item's curve. For SPPath, it is the path *before* LPE. For SPShapes other than path, it is the path *after* LPE.
- * So the result is somewhat ill-defined, and probably this method should not be used... See curve_for_item_before_LPE.
- */
 std::optional<SPCurve> curve_for_item(SPItem *item)
 {
     if (!item) {
@@ -148,9 +136,6 @@ std::optional<SPCurve> curve_for_item(SPItem *item)
     return {};
 }
 
-/**
- * Obtains an item's curve *before* LPE.
- */
 std::optional<SPCurve> curve_for_item_before_LPE(SPItem *item)
 {
     if (!item) {

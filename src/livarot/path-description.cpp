@@ -66,6 +66,7 @@ void PathDescrIntermBezierTo::dump(std::ostream &s) const
 
 void PathDescrCubicTo::dumpSVG(Inkscape::SVGOStringStream& s, Geom::Point const &last) const
 {
+    // To see why these weird factors of 3 exist here, refer to the documentation in the header file.
     s << "C "
       << last[Geom::X] + start[0] / 3 << " "
       << last[Geom::Y] + start[1] / 3 << " "
