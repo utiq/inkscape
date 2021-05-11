@@ -60,8 +60,8 @@
     * widget->get_style_context()->add_class("mycoolclass");
     * we define a bunch of helper CSS styles
     * Each Inkscape desktop has some classes in top level window
-    * called "dark|bright" (syncked with dark or brighrt themes) and "symbolic|regular" (defined by the user in themes preferences) 
-    * so you can style using this clases 
+    * called "dark|bright" (syncked with dark or brighrt themes) and "symbolic|regular" (defined by the user in themes preferences)
+    * so you can style using this clases
     * by this way you can always know if the UI is in dark mode or using symbolic icons
     * Also added some helper clases:
     * ".inverted" invert colors fon widhet and childs
@@ -157,10 +157,10 @@ notebook.blink > header > tabs > tab:checked {
 
 /* atribute dialog popup size */
 .attrpop textview {
-    font-size: 13px;
+    font-size: 1em;
 }
 
-/* 
+/*
 *to get system default colors
 * with Gdk::RGBA success =_symbolic_error_color.get_stseparatole_context()->get_color();
 * _symbolic_error_color has one of this calsses applied
@@ -201,7 +201,7 @@ iconview *:hover {
 }
 
 .inksmall {
-    font-size: 11px;
+    font-size: 0.8em;
 }
 
 #CommandPaletteBase {
@@ -247,12 +247,12 @@ iconview *:hover {
 }
 
 #LPESelectorFlowBox .lpename {
-    font-size: 16px;
+    font-size: 1.2em;
     margin-bottom: 5px;
 }
 
 #LPESelectorFlowBox .lpeinfo {
-    font-size: 16px;
+    font-size: 1.2em;
     padding: 20px;
 }
 
@@ -302,11 +302,11 @@ padding:3px 3px 10px 3px;
 }
 
 #LPEDialogSelector.LPEPackMore flowboxchild label {
-font-size:14px;
+  font-size: 1.1em;
 }
 
 #LPEDialogSelector.LPEPackMore #LPESelectorEffectInfoPop label{
-font-size:13px;
+  font-size: 1em;
 }
 
 #LPEDialogSelector.LPEList .lpename {
@@ -475,7 +475,7 @@ SPCanvas {
 }
 
 #UnicodeIconView {
-    font-size: 16px;
+    font-size: 1.2em;
 }
 
 /* GtkTreeView: clarify drop locations (especially important for XML editor) */
