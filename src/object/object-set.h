@@ -520,6 +520,10 @@ public:
     void insertSiblingState(SPObject *object, SiblingState state);
     void clearSiblingStates();
 
+    void activate();
+    void deactivate();
+    bool is_active() const;
+
 protected:
     virtual void _connectSignals(SPObject* object) {};
     virtual void _releaseSignals(SPObject* object) {};
@@ -535,6 +539,7 @@ protected:
     virtual void _add3DBoxesRecursively(SPObject *obj);
     virtual void _remove3DBoxesRecursively(SPObject *obj);
 
+    bool _is_active = true;
     MultiIndexContainer _container;
     GC::soft_ptr<SPDesktop> _desktop;
     GC::soft_ptr<SPDocument> _document;
