@@ -34,11 +34,11 @@ void sp_dialog_defocus_cpp(Gtk::Window *win)
 
 void sp_dialog_defocus(GtkWindow *win)
 {
-    // find out the document window we're transient for
-    if (auto w = gtk_window_get_transient_for(GTK_WINDOW(win))) {
-        // switch to it
-        gtk_window_present(w);
-    }
+//    // find out the document window we're transient for
+//    if (auto w = gtk_window_get_transient_for(GTK_WINDOW(win))) {
+//        // switch to it
+//        gtk_window_present(w);
+//    }
 }
 
 void sp_dialog_defocus_on_enter_cpp(Gtk::Entry *e)
