@@ -35,6 +35,9 @@ if(ENABLE_NLS)
   )
   add_custom_target(default_templates ALL DEPENDS default_templates.timestamp)
 
+  # .gmo file creation must occur before creating the templates
+  add_dependencies(default_templates pofiles)
+
   get_inkscape_languages()
   foreach(language_code ${INKSCAPE_LANGUAGE_CODES})
     string(MAKE_C_IDENTIFIER "${language_code}" language_code_escaped)
