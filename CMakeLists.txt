@@ -298,7 +298,6 @@ message("")
 message("HAVE_MINGW64:            ${HAVE_MINGW64}")
 message("MINGW_PATH:              ${MINGW_PATH}")
 message("MINGW_ARCH:              ${MINGW_ARCH}")
-message("MINGW_ARCH_PATH:         ${MINGW_ARCH_PATH}")
 endif()
 
 message("------------------------------------------------------------------------")

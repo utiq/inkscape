@@ -31,9 +31,6 @@ else()
   message(FATAL_ERROR "Unable to determine MinGW processor architecture. Are you using an unsupported MinGW version?")
 endif()
 
-# Path to processor architecture specific binaries and libs.
-set(MINGW_ARCH_PATH "${MINGW_PATH}/${MINGW_ARCH}")
-
 set(MINGW_BIN "${MINGW_PATH}/bin")
 
 if(NOT EXISTS ${MINGW_BIN})
@@ -60,15 +57,6 @@ endif()
 
 # Add MinGW headers to compiler include path.
 include_directories(SYSTEM ${MINGW_INCLUDE})
-
-set(MINGW_ARCH_LIB "${MINGW_ARCH_PATH}/lib")
-
-if(NOT EXISTS ${MINGW_ARCH_LIB})
-  message(FATAL_ERROR "MinGW-w64 toolchain libraries directory does not exist: ${MINGW_ARCH_LIB}")
-endif()
-
-# Add MinGW toolchain libraries to linker path.
-link_directories(${MINGW_ARCH_LIB})
 
 # -----------------------------------------------------------------------------
 # MSYS CHECKS
