@@ -10,12 +10,12 @@ cd "$mydir"
 export LC_ALL=C
 
 (
- echo "../share/filters/filters.svg.h"
- echo "../share/markers/markers.svg.h"
- echo "../share/palettes/palettes.h"
- echo "../share/paint/patterns.svg.h"
- echo "../share/symbols/symbols.h"
- echo "../share/templates/templates.h"
+ echo "\${CMAKE_BINARY_DIR}/share/filters/filters.svg.h"
+ echo "\${CMAKE_BINARY_DIR}/share/markers/markers.svg.h"
+ echo "\${CMAKE_BINARY_DIR}/share/palettes/palettes.h"
+ echo "\${CMAKE_BINARY_DIR}/share/paint/patterns.svg.h"
+ echo "\${CMAKE_BINARY_DIR}/share/symbols/symbols.h"
+ echo "\${CMAKE_BINARY_DIR}/share/templates/templates.h"
 
  find ../src \( -name '*.cpp' -o -name '*.[ch]' \) -type f -print0 | xargs -0 egrep -l '(\<[QNC]?_|gettext) *\(' | sort
 
