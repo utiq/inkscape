@@ -26,6 +26,7 @@ set(util_SRC
 	signal-blocker.h
 	units.h
 	ziptool.h
+	numeric/converters.h
 )
 
 add_inkscape_lib(util_LIB "${util_SRC}")

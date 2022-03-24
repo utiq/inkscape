@@ -128,7 +128,6 @@ set(inkscape_SRC
   gradient-chemistry.h
   gradient-drag.h
   guide-snapper.h
-  helper-fns.h
   id-clash.h
   inkscape-version.h
   inkscape-version-info.h
