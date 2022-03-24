@@ -16,7 +16,6 @@
 #include "composite.h"
 
 #include "attributes.h"
-#include "helper-fns.h"
 
 #include "display/nr-filter.h"
 #include "display/nr-filter-composite.h"
@@ -24,6 +23,8 @@
 #include "object/sp-filter.h"
 
 #include "svg/svg.h"
+
+#include "util/numeric/converters.h"
 
 #include "xml/repr.h"
 
@@ -117,7 +118,7 @@ void SPFeComposite::set(SPAttr key, gchar const *value) {
             break;
 
         case SPAttr::K1:
-            k_n = value ? helperfns_read_number(value) : 0;
+            k_n = value ? Inkscape::Util::read_number(value) : 0;
             if (k_n != this->k1) {
                 this->k1 = k_n;
                 if (this->composite_operator == COMPOSITE_ARITHMETIC)
@@ -126,7 +127,7 @@ void SPFeComposite::set(SPAttr key, gchar const *value) {
             break;
 
         case SPAttr::K2:
-            k_n = value ? helperfns_read_number(value) : 0;
+            k_n = value ? Inkscape::Util::read_number(value) : 0;
             if (k_n != this->k2) {
                 this->k2 = k_n;
                 if (this->composite_operator == COMPOSITE_ARITHMETIC)
@@ -135,7 +136,7 @@ void SPFeComposite::set(SPAttr key, gchar const *value) {
             break;
 
         case SPAttr::K3:
-            k_n = value ? helperfns_read_number(value) : 0;
+            k_n = value ? Inkscape::Util::read_number(value) : 0;
             if (k_n != this->k3) {
                 this->k3 = k_n;
                 if (this->composite_operator == COMPOSITE_ARITHMETIC)
@@ -144,7 +145,7 @@ void SPFeComposite::set(SPAttr key, gchar const *value) {
             break;
 
         case SPAttr::K4:
-            k_n = value ? helperfns_read_number(value) : 0;
+            k_n = value ? Inkscape::Util::read_number(value) : 0;
             if (k_n != this->k4) {
                 this->k4 = k_n;
                 if (this->composite_operator == COMPOSITE_ARITHMETIC)

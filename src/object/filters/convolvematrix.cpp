@@ -21,9 +21,10 @@
 #include "convolvematrix.h"
 
 #include "attributes.h"
-#include "helper-fns.h"
 
 #include "display/nr-filter.h"
+
+#include "util/numeric/converters.h"
 
 #include "xml/repr.h"
 
@@ -132,7 +133,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value) {
         case SPAttr::KERNELMATRIX:
             if (value){
                 this->kernelMatrixIsSet = true;
-                this->kernelMatrix = helperfns_read_vector(value);
+                this->kernelMatrix = Inkscape::Util::read_vector(value);
                 
                 if (! this->divisorIsSet) {
                     this->divisor = 0;
@@ -153,7 +154,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value) {
             break;
         case SPAttr::DIVISOR:
             if (value) { 
-                read_num = helperfns_read_number(value);
+                read_num = Inkscape::Util::read_number(value);
                 
                 if (read_num == 0) {
                     // This should actually be an error, but given our UI it is more useful to simply set divisor to the default.
@@ -182,7 +183,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value) {
         case SPAttr::BIAS:
             read_num = 0;
             if (value) {
-            	read_num = helperfns_read_number(value);
+            	read_num = Inkscape::Util::read_number(value);
             }
             
             if (read_num != this->bias){
@@ -192,7 +193,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value) {
             break;
         case SPAttr::TARGETX:
             if (value) {
-                read_int = (int) helperfns_read_number(value);
+                read_int = (int) Inkscape::Util::read_number(value);
                 
                 if (read_int < 0 || read_int > this->order.getNumber()){
                     g_warning("targetX must be a value between 0 and orderX! Assuming floor(orderX/2) as default value.");
@@ -209,7 +210,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value) {
             break;
         case SPAttr::TARGETY:
             if (value) {
-                read_int = (int) helperfns_read_number(value);
+                read_int = (int) Inkscape::Util::read_number(value);
                 
                 if (read_int < 0 || read_int > this->order.getOptNumber()){
                     g_warning("targetY must be a value between 0 and orderY! Assuming floor(orderY/2) as default value.");
@@ -243,7 +244,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value) {
             this->parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::PRESERVEALPHA:
-            read_bool = helperfns_read_bool(value, false);
+            read_bool = Inkscape::Util::read_bool(value, false);
             
             if (read_bool != this->preserveAlpha){
                 this->preserveAlpha = read_bool;

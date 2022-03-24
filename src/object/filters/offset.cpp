@@ -19,10 +19,11 @@
 #include "offset.h"
 
 #include "attributes.h"
-#include "helper-fns.h"
 
 #include "display/nr-filter.h"
 #include "display/nr-filter-offset.h"
+
+#include "util/numeric/converters.h"
 
 #include "svg/svg.h"
 
@@ -62,7 +63,7 @@ void SPFeOffset::set(SPAttr key, gchar const *value) {
 
     switch(key) {
         case SPAttr::DX:
-            read_num = value ? helperfns_read_number(value) : 0;
+            read_num = value ? Inkscape::Util::read_number(value) : 0;
 
             if (read_num != this->dx) {
                 this->dx = read_num;
@@ -70,7 +71,7 @@ void SPFeOffset::set(SPAttr key, gchar const *value) {
             }
             break;
         case SPAttr::DY:
-            read_num = value ? helperfns_read_number(value) : 0;
+            read_num = value ? Inkscape::Util::read_number(value) : 0;
 
             if (read_num != this->dy) {
                 this->dy = read_num;

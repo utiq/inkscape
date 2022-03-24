@@ -9,7 +9,6 @@
 #include <2geom/coord.h>
 #include <2geom/point.h>
 
-#include "helper-fns.h"
 #include "live_effects/effect.h"
 #include "live_effects/lpeobject.h"
 

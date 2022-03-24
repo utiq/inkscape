@@ -20,8 +20,8 @@
 #include "document.h"
 #include "componenttransfer.h"
 #include "componenttransfer-funcnode.h"
+#include "util/numeric/converters.h"
 #include "xml/repr.h"
-#include "helper-fns.h"
 
 /* FeFuncNode class */
 SPFeFuncNode::SPFeFuncNode(SPFeFuncNode::Channel channel)
@@ -119,12 +119,12 @@ void SPFeFuncNode::set(SPAttr key, gchar const *value) {
             break;
         case SPAttr::TABLEVALUES:
             if (value){
-                this->tableValues = helperfns_read_vector(value);
+                this->tableValues = Inkscape::Util::read_vector(value);
                 this->parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         case SPAttr::SLOPE:
-            read_num = value ? helperfns_read_number(value) : 1;
+            read_num = value ? Inkscape::Util::read_number(value) : 1;
 
             if (read_num != this->slope) {
                 this->slope = read_num;
@@ -132,7 +132,7 @@ void SPFeFuncNode::set(SPAttr key, gchar const *value) {
             }
             break;
         case SPAttr::INTERCEPT:
-            read_num = value ? helperfns_read_number(value) : 0;
+            read_num = value ? Inkscape::Util::read_number(value) : 0;
 
             if (read_num != this->intercept) {
                 this->intercept = read_num;
@@ -140,7 +140,7 @@ void SPFeFuncNode::set(SPAttr key, gchar const *value) {
             }
             break;
         case SPAttr::AMPLITUDE:
-            read_num = value ? helperfns_read_number(value) : 1;
+            read_num = value ? Inkscape::Util::read_number(value) : 1;
 
             if (read_num != this->amplitude) {
                 this->amplitude = read_num;
@@ -148,7 +148,7 @@ void SPFeFuncNode::set(SPAttr key, gchar const *value) {
             }
             break;
         case SPAttr::EXPONENT:
-            read_num = value ? helperfns_read_number(value) : 1;
+            read_num = value ? Inkscape::Util::read_number(value) : 1;
 
             if (read_num != this->exponent) {
                 this->exponent = read_num;
@@ -156,7 +156,7 @@ void SPFeFuncNode::set(SPAttr key, gchar const *value) {
             }
             break;
         case SPAttr::OFFSET:
-            read_num = value ? helperfns_read_number(value) : 0;
+            read_num = value ? Inkscape::Util::read_number(value) : 0;
 
             if (read_num != this->offset) {
                 this->offset = read_num;

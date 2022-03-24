@@ -12,7 +12,6 @@
 
 #include <glibmm/i18n.h>
 
-#include "helper-fns.h"
 #include "inkscape.h"
 #include "selection.h"
 
@@ -25,6 +24,7 @@
 #include "ui/icon-loader.h"
 #include "ui/widget/registered-widget.h"
 
+#include "util/numeric/converters.h"
 
 namespace Inkscape {
 
@@ -61,7 +61,7 @@ ToggleButtonParam::param_set_default()
 bool
 ToggleButtonParam::param_readSVGValue(const gchar * strvalue)
 {
-    param_setValue(helperfns_read_bool(strvalue, defvalue));
+    param_setValue(Inkscape::Util::read_bool(strvalue, defvalue));
     return true; // not correct: if value is unacceptable, should return false!
 }
 
@@ -86,7 +86,7 @@ ToggleButtonParam::param_update_default(bool default_value)
 void 
 ToggleButtonParam::param_update_default(const gchar * default_value)
 {
-    param_update_default(helperfns_read_bool(default_value, defvalue));
+    param_update_default(Inkscape::Util::read_bool(default_value, defvalue));
 }
 
 Gtk::Widget *

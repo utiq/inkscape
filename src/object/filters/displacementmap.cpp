@@ -16,7 +16,6 @@
 #include "displacementmap.h"
 
 #include "attributes.h"
-#include "helper-fns.h"
 
 #include "display/nr-filter-displacement-map.h"
 #include "display/nr-filter.h"
@@ -24,6 +23,8 @@
 #include "object/sp-filter.h"
 
 #include "svg/svg.h"
+
+#include "util/numeric/converters.h"
 
 #include "xml/repr.h"
 
@@ -121,7 +122,7 @@ void SPFeDisplacementMap::set(SPAttr key, gchar const *value) {
             }
             break;
         case SPAttr::SCALE:
-            read_num = value ? helperfns_read_number(value) : 0;
+            read_num = value ? Inkscape::Util::read_number(value) : 0;
             
             if (read_num != this->scale) {
                 this->scale = read_num;

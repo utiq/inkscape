@@ -24,7 +24,6 @@
 #include "desktop.h"
 #include "desktop-events.h"
 #include "document-undo.h"
-#include "helper-fns.h"
 #include "inkscape.h"
 
 #include "sp-guide.h"
@@ -38,6 +37,8 @@
 #include "svg/svg.h"
 
 #include "ui/widget/canvas.h" // Should really be here
+
+#include "util/numeric/converters.h"
 
 #include "xml/repr.h"
 
@@ -111,7 +112,7 @@ void SPGuide::set(SPAttr key, const gchar *value) {
         break;
     case SPAttr::INKSCAPE_LOCKED:
         if (value) {
-            this->set_locked(helperfns_read_bool(value, false), false);
+            this->set_locked(Inkscape::Util::read_bool(value, false), false);
         }
         break;
     case SPAttr::ORIENTATION:

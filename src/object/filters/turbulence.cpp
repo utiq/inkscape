@@ -18,7 +18,7 @@
 #include "attributes.h"
 #include "svg/svg.h"
 #include "turbulence.h"
-#include "helper-fns.h"
+#include "util/numeric/converters.h"
 #include "xml/repr.h"
 
 #include "display/nr-filter.h"
@@ -125,7 +125,7 @@ void SPFeTurbulence::set(SPAttr key, gchar const *value) {
             this->parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::NUMOCTAVES:
-            read_int = value ? (int)floor(helperfns_read_number(value)) : 1;
+            read_int = value ? (int)floor(Inkscape::Util::read_number(value)) : 1;
 
             if (read_int != this->numOctaves){
                 this->numOctaves = read_int;
@@ -134,7 +134,7 @@ void SPFeTurbulence::set(SPAttr key, gchar const *value) {
             }
             break;
         case SPAttr::SEED:
-            read_num = value ? helperfns_read_number(value) : 0;
+            read_num = value ? Inkscape::Util::read_number(value) : 0;
 
             if (read_num != this->seed){
                 this->seed = read_num;

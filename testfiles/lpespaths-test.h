@@ -11,10 +11,10 @@
 
 #include <gtest/gtest.h>
 #include <src/file.h>
-#include <src/helper-fns.h>
 #include <src/inkscape.h>
 #include <src/object/sp-root.h>
 #include <src/svg/svg.h>
+#include "src/util/numeric/converters.h"
 #include "src/extension/init.h"
 
 #include <2geom/pathvector.h>
@@ -158,14 +158,14 @@ protected:
             sp_lpe_item_update_patheffect(lpeitem, true, true);
         }
         if (lpeitem->getAttribute("inkscape:test-threshold")) {
-            precission = helperfns_read_number(lpeitem->getAttribute("inkscape:test-threshold"));
+            precission = Util::read_number(lpeitem->getAttribute("inkscape:test-threshold"));
         }
         size_t index = 0;
         for (auto id : ids) {
             SPObject *obj = doc->getObjectById(id);
             if (obj) {
                if (obj->getAttribute("inkscape:test-threshold")) {
-                  precission = helperfns_read_number(obj->getAttribute("inkscape:test-threshold"));
+                  precission = Util::read_number(obj->getAttribute("inkscape:test-threshold"));
                }
                if (!obj->getAttribute("inkscape:test-ignore")) {
                   pathCompare(ds[index], obj->getAttribute("d"), obj->getAttribute("id"), precission);

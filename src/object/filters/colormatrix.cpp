@@ -18,12 +18,12 @@
 #include <cstring>
 
 #include "attributes.h"
+#include "display/nr-filter.h"
 #include "svg/svg.h"
 #include "colormatrix.h"
+#include "util/numeric/converters.h"
 #include "xml/repr.h"
-#include "helper-fns.h"
 
-#include "display/nr-filter.h"
 
 SPFeColorMatrix::SPFeColorMatrix() 
     : SPFilterPrimitive()
@@ -102,8 +102,8 @@ void SPFeColorMatrix::set(SPAttr key, gchar const *str) {
 
         case SPAttr::VALUES:
             if (str) {
-                this->values = helperfns_read_vector(str);
-                this->value = helperfns_read_number(str, HELPERFNS_NO_WARNING);
+                this->values = Inkscape::Util::read_vector(str);
+                this->value = Inkscape::Util::read_number(str, Inkscape::Util::NO_WARNING);
                 value_set = true;
             } else {
                 // Set defaults
