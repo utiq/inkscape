@@ -1142,7 +1142,7 @@ sp_style_filter_ref_modified(SPObject *obj, guint flags, SPStyle *style)
 {
     (void)flags; // TODO
     SPFilter *filter=static_cast<SPFilter *>(obj);
-    if (style->getFilter() == filter)
+    if (style->getFilter() == filter && flags & SP_OBJECT_MODIFIED_FLAG)
     {
         if (style->object) {
             style->object->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
