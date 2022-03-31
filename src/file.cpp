@@ -1031,6 +1031,8 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
 {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
     bool cancelled = false;
+    auto prefs = Inkscape::Preferences::get();
+    bool onimport = prefs->getBool("/options/onimport", true);
 
     // store mouse pointer location before opening any dialogs, so we can drop the item where initially intended
     auto pointer_location = desktop->point();
@@ -1048,7 +1050,11 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
         cancelled = true;
     }
 
-    if (doc != nullptr) {
+    if (onimport && !prefs->getBool("/options/onimport", true)) {
+        // Opened instead of imported (onimport set to false in Svg::open)
+        prefs->setBool("/options/onimport", true);
+        return nullptr;
+    } else if (doc != nullptr) {
         // Always preserve any imported text kerning / formatting
         auto root_repr = in_doc->getReprRoot();
         root_repr->setAttribute("xml:space", "preserve");

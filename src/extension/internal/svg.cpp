@@ -833,9 +833,9 @@ Svg::open (Inkscape::Extension::Input *mod, const gchar *uri)
 
     bool import = prefs->getBool("/options/onimport", false);
     bool import_pages = (import_mode_svg == "pages");
-    // Do we "import" as <image>?
+    // Do we open a new svg instead of import?
     if (uri && import && import_mode_svg == "new") {
-        prefs->setBool("/options/onimport", false);
+        prefs->setBool("/options/onimport", false); // set back to true in file_import
         static auto gapp = InkscapeApplication::instance()->gtk_app();
         auto action = gapp->lookup_action("file-open-window");
         auto file_dnd = Glib::Variant<Glib::ustring>::create(uri);
