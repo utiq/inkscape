@@ -15,6 +15,7 @@
 #include <string>
 #include <glibmm/i18n.h>
 #include <2geom/transforms.h>
+#include <2geom/pathvector.h>
 
 #include "display/drawing-group.h"
 #include "xml/repr.h"
@@ -166,6 +167,25 @@ void SPSymbol::unSymbol()
 
     // Clean up
     Inkscape::GC::release(group);
+}
+
+std::optional<Geom::PathVector> SPSymbol::documentExactBounds() const
+{
+    Geom::PathVector shape;
+    bool is_empty = true;
+    for (auto &child : children) {
+        if (auto const item = dynamic_cast<SPItem const *>(&child)) {
+            if (auto bounds = item->documentExactBounds()) {
+                shape.insert(shape.end(), bounds->begin(), bounds->end());
+                is_empty = false;
+            }
+        }
+    }
+    std::optional<Geom::PathVector> result;
+    if (!is_empty) {
+        result = shape * i2doc_affine();
+    }
+    return result;
 }
 
 void SPSymbol::update(SPCtx *ctx, guint flags) {

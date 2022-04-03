@@ -15,6 +15,7 @@
 #include "helper/geom-curves.h"
 #include <2geom/curves.h>
 #include <2geom/sbasis-to-bezier.h>
+#include <2geom/path-intersection.h>
 
 using Geom::X;
 using Geom::Y;
@@ -507,6 +508,29 @@ bool is_intersecting(Geom::PathVector const&a, Geom::PathVector const&b) {
         if (b.winding(node)) {
             return true;
         }
+    }
+    return false;
+}
+
+/**
+ * An exact check for whether the two pathvectors intersect or overlap, including the case of
+ * a line crossing through a solid shape.
+ */
+bool pathvs_have_nonempty_overlap(Geom::PathVector const &a, Geom::PathVector const &b)
+{
+    if (is_intersecting(a, b)) {
+        return true;
+    }
+    // The winding method may not detect nodeless Bézier arcs in one pathvector glancing
+    // the edge of the other pathvector. We must deal with this possibility by also checking for
+    // intersections of boundaries.
+    auto crossings = Geom::SimpleCrosser().crossings(a, b);
+    if (crossings.empty()) {
+        return false;
+    }
+    auto is_empty = [](Geom::Crossings const &xings) -> bool { return xings.empty(); };
+    if (!std::all_of(crossings.begin(), crossings.end(), is_empty)) { // An intersection has been found
+        return true;
     }
     return false;
 }

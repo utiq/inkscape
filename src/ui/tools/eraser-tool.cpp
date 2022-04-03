@@ -465,10 +465,17 @@ bool EraserTool::root_handler(GdkEvent* event)
                 _apply(motion_dt);
                 _removeTemporarySegments();
 
-                /* Create object */
+                // Create eraser stroke shape
                 _fitAndSplit(true);
                 _accumulate();
-                _setToAccumulated(); // performs document_done
+
+                // Perform the actual erase operation
+                SPDocument *document = _desktop->getDocument();
+                if (_doWork()) {
+                    DocumentUndo::done(document, _("Draw eraser stroke"), INKSCAPE_ICON("draw-eraser"));
+                } else {
+                    DocumentUndo::cancel(document);
+                }
 
                 /* reset accumulated curve */
                 accumulated->reset();
@@ -598,6 +605,21 @@ bool EraserTool::_handleKeypress(const GdkEventKey *key)
     return ret;
 }
 
+/** Inserts the temporary red shape of the eraser stroke (the "acid") into the document.
+ *  @return a pointer to the inserted item
+ */
+SPItem *EraserTool::_insertAcidIntoDocument(SPDocument *document)
+{
+    auto *top_layer = _desktop->layerManager().currentRoot();
+    auto *eraser_item = dynamic_cast<SPItem *>(top_layer->appendChildRepr(repr));
+    Inkscape::GC::release(repr);
+    eraser_item->updateRepr();
+    Geom::PathVector pathv = accumulated->get_pathvector() * _desktop->dt2doc();
+    pathv *= eraser_item->i2doc_affine().inverse();
+    repr->setAttribute("d", sp_svg_write_path(pathv));
+    return dynamic_cast<SPItem *>(document->getObjectByRepr(repr));
+}
+
 void EraserTool::_clearCurrent()
 {
     // reset bpath
@@ -612,178 +634,169 @@ void EraserTool::_clearCurrent()
     npoints = 0;
 }
 
-void EraserTool::_setToAccumulated()
+/**
+ * @brief Performs the actual erase operation against the current document
+ * @return whether actual erasing took place (and undo history should be updated).
+ */
+bool EraserTool::_doWork()
 {
-    bool work_done = false;
-    SPDocument *document = _desktop->doc();
-
-    if (!accumulated->is_empty()) {
-        if (!repr) {
-            /* Create object */
-            Inkscape::XML::Document *xml_doc = document->getReprDoc();
-            Inkscape::XML::Node *eraser_repr = xml_doc->createElement("svg:path");
-
-            /* Set style */
-            sp_desktop_apply_style_tool(_desktop, eraser_repr, "/tools/eraser", false);
-
-            repr = eraser_repr;
-        }
-        SPObject *top_layer = _desktop->layerManager().currentRoot();
-        SPItem *item_repr = SP_ITEM(top_layer->appendChildRepr(repr));
-        Inkscape::GC::release(repr);
-        item_repr->updateRepr();
-        Geom::PathVector pathv = accumulated->get_pathvector() * _desktop->dt2doc();
-        pathv *= item_repr->i2doc_affine().inverse();
-        repr->setAttribute("d", sp_svg_write_path(pathv));
-        Geom::OptRect eraser_bbox;
+    if (accumulated->is_empty()) {
         if (repr) {
-            bool was_selection = false;
-            Inkscape::Selection *selection = _desktop->getSelection();
-            _updateMode();
-            SPItem *acid = SP_ITEM(document->getObjectByRepr(repr));
-            eraser_bbox = acid->documentVisualBounds();
-            std::vector<SPItem *> remaining_items;
-            std::vector<SPItem *> to_work_on;
-            if (selection->isEmpty()) {
-                if (mode == EraserToolMode::CUT || mode == EraserToolMode::CLIP) {
-                    to_work_on = document->getItemsPartiallyInBox(_desktop->dkey, *eraser_bbox,
-                                                                  false, false, false, true);
-                } else {
-                    Inkscape::Rubberband *r = Inkscape::Rubberband::get(_desktop);
-                    to_work_on = document->getItemsAtPoints(_desktop->dkey, r->getPoints());
-                }
-                to_work_on.erase(std::remove(to_work_on.begin(), to_work_on.end(), acid), to_work_on.end());
-            } else {
-                if (mode == EraserToolMode::DELETE) {
-                    Inkscape::Rubberband *r = Inkscape::Rubberband::get(_desktop);
-                    auto selected_items = selection->items();
-                    std::vector<SPItem *> touched = document->getItemsAtPoints(_desktop->dkey, r->getPoints());
-                    for (auto i : selected_items) {
-                        if (std::find(touched.begin(), touched.end(), i) == touched.end()) {
-                            remaining_items.push_back(i);
-                        } else {
-                            to_work_on.push_back(i);
-                        }
-                    }
-                } else {
-                    to_work_on.insert(to_work_on.end(), selection->items().begin(), selection->items().end());
-                }
-                was_selection = true;
-            }
-
-            if (to_work_on.empty()) {
-                _clearStatusBar();
-            } else {
-                selection->clear();
-                if (mode == EraserToolMode::CUT) {
-                    Error status = ALL_GOOD;
-                    for (auto item : to_work_on) {
-                        Error retval = _cutErase(item, eraser_bbox, remaining_items);
-                        if (retval == ALL_GOOD) {
-                            work_done = true;
-                        } else {
-                            status |= retval;
-                        }
-                    }
-
-                    status &= ~(NOT_IN_BOUNDS | NON_EXISTENT); // Clear flags not handled at the moment
-                    if (status == ALL_GOOD) {
-                        _clearStatusBar();
-                    } else { // Something went wrong during the cut operation
-                        if (status & RASTER_IMAGE) {
-                            _setStatusBarMessage(_("Cannot cut out from a bitmap, use <b>Clip</b> mode "
-                                                   "instead."));
-                        } else if (status & ERROR_GROUP) {
-                            _setStatusBarMessage(_("Cannot cut out from a group, ungroup the objects "
-                                                   "first."));
-                        } else if (status & NO_AREA_PATH) {
-                            _setStatusBarMessage(_("Cannot cut out from a path with zero area, use "
-                                                   "<b>Clip</b> mode instead."));
-                        }
-                    }
-                } else if (mode == EraserToolMode::CLIP) {
-                    if (!nowidth) {
-                        for (auto item : to_work_on) {
-                            _clipErase(item, item_repr->parent, eraser_bbox);
-                        }
-                        if (was_selection) {
-                            remaining_items = to_work_on;
-                        }
-                        work_done = true;
-                    }
-                    _clearStatusBar();
-                } else if (mode == EraserToolMode::DELETE) {
-                    for (auto item : to_work_on) {
-                        item->deleteObject(true);
-                    }
-                    work_done = true;
-                    _clearStatusBar();
-                }
-
-                if (was_selection && !remaining_items.empty()) {
-                    selection->add(remaining_items.begin(), remaining_items.end());
-                }
-            }
-            // Remove the eraser stroke itself:
             sp_repr_unparent(repr);
             repr = nullptr;
         }
-    } else if (repr) {
-        sp_repr_unparent(repr);
-        repr = nullptr;
+        return false;
     }
 
-    if (work_done) {
-        DocumentUndo::done(document, _("Draw eraser stroke"), INKSCAPE_ICON("draw-eraser"));
-    } else {
-        DocumentUndo::cancel(document);
+    SPDocument *document = _desktop->getDocument();
+    if (!repr) {
+        // Create eraser repr
+        Inkscape::XML::Document *xml_doc = document->getReprDoc();
+        Inkscape::XML::Node *eraser_repr = xml_doc->createElement("svg:path");
+
+        sp_desktop_apply_style_tool(_desktop, eraser_repr, "/tools/eraser", false);
+        repr = eraser_repr;
     }
+    if (!repr) {
+        return false;
+    }
+
+    Selection *selection = _desktop->getSelection();
+    if (!selection) {
+        return false;
+    }
+    bool was_selection = !selection->isEmpty();
+    _updateMode();
+
+    // Find items to work on as well as items that will be needed to restore the selection afterwards.
+    _survivers.clear();
+    _clearStatusBar();
+
+    std::vector<EraseTarget> to_erase = _findItemsToErase();
+
+    bool work_done = false;
+    if (!to_erase.empty()) {
+        selection->clear();
+        work_done = _performEraseOperation(to_erase, true);
+        if (was_selection && !_survivers.empty()) {
+            selection->add(_survivers.begin(), _survivers.end());
+        }
+    }
+    // Clean up the eraser stroke repr:
+    sp_repr_unparent(repr);
+    repr = nullptr;
+    _acid = nullptr;
+    return work_done;
 }
 
 /**
- * @brief Erases from a shape by cutting
- * @param item - the item to be erased
- * @param eraser_bbox - bounding box of the eraser stroke
- * @param survivers - items that survived the erase operation will be added to this vector
- * @return type of error encountered
+ * @brief Erases from a shape by cutting (boolean difference or cut operation).
+ * @param target - the item to be erased
+ * @param store_survivers - whether the surviving selected items and their remains should be stored.
+ * @return whether the target was successfully processed.
  */
-EraserTool::Error EraserTool::_cutErase(SPItem* item, Geom::OptRect const &eraser_bbox,
-                                        std::vector<SPItem *> &survivers)
+bool EraserTool::_cutErase(EraseTarget target, bool store_survivers)
 {
-    // If the item cannot be cut, preserve it
-    if (Error error = EraserTool::_uncuttableItemType(item)) {
-        survivers.push_back(item);
-        return error;
-    }
-
-    Geom::OptRect bbox = item->documentVisualBounds();
-    if (!bbox || !bbox->intersects(eraser_bbox)) {
-        survivers.push_back(item);
-        return NOT_IN_BOUNDS;
-    }
-
     // If the item is a clone, we check if the original is cuttable before unlinking it
-    if (SPUse *use = dynamic_cast<SPUse *>(item)) {
-        int depth = use->cloneDepth();
-        if (depth < 0) {
-            survivers.push_back(item);
-            return NON_EXISTENT;
+    if (SPUse *use = dynamic_cast<SPUse *>(target.item)) {
+        auto original = use->trueOriginal();
+        if (_uncuttableItemType(original)) {
+            if (store_survivers && target.was_selected) {
+                _survivers.push_back(target.item);
+            }
+            return false;
+        } else if (auto *group = dynamic_cast<SPGroup *>(original)) {
+            return _probeUnlinkCutClonedGroup(target, use, group, store_survivers);
         }
-        // We recurse into the chain of uses until we reach the original item
-        SPItem *original_item = item;
-        for (int i = 0; i < depth; ++i) {
-            SPUse *intermediate_clone = dynamic_cast<SPUse *>(original_item);
-            original_item = intermediate_clone->get_original();
+        // A simple clone of a cuttable item: unlink and erase it.
+        target.item = use->unlink();
+        if (target.was_selected && store_survivers) { // Reselect the freshly unlinked item
+            _survivers.push_back(target.item);
         }
-        if (Error error = EraserTool::_uncuttableItemType(original_item)) {
-            survivers.push_back(item);
-            return error;
-        }
-        item = use->unlink();
     }
+    return _booleanErase(target, store_survivers);
+}
 
-    _booleanErase(item, survivers);
-    return ALL_GOOD;
+/**
+ * @brief Analyses a cloned group and decides if the CUT mode should unlink the clone.
+ *        The decision to unlink the clone is based on collision detection between the eraser stroke
+ *        and any of the eraseable contents of the cloned group, in the clone's coordinates.
+ *        Unlinking only happens if there's an overlap between the eraser stroke and something that
+ *        can be erased in CUT mode (via boolean operations).
+ *        If the decision is made to unlink the clone, a copy of the clone is inserted into the document,
+ *        and the function then erases all elements of the newly inserted group.
+ * @param original_target - the original erase target which turned out to be a clone.
+ * @param clone - the pointer to the SPUse object representing the clone (assument non-null).
+ * @param cloned_group - the original group that is cloned (at the origin of the USE chain).
+ * @param store_survivers - whether the surviving selected items and their remains should be stored.
+ * @return whether the clone was unlinked and something was erased from the resulting new group.
+ */
+bool EraserTool::_probeUnlinkCutClonedGroup(EraseTarget &original_target, SPUse *clone, SPGroup *cloned_group,
+                                            bool store_survivers)
+{
+    std::vector<EraseTarget> children;
+    children.reserve(cloned_group->getItemCount());
+
+    for (auto *child : cloned_group->childList(false)) {
+        children.emplace_back(dynamic_cast<SPItem *>(child), false);
+    }
+    auto const filtered_children = _filterCutEraseables(children, true);
+
+    // We must now check if any of the eraseable items in the original group, after transforming
+    // to the coordinates of the clone, actually intersect the eraser stroke.
+    Geom::Affine parent_inverse_transform;
+    if (auto *parent_item = dynamic_cast<SPItem *>(cloned_group->parent)) {
+        parent_inverse_transform = parent_item->i2doc_affine().inverse();
+    }
+    auto const relative_transform = parent_inverse_transform * clone->i2doc_affine();
+    auto const eraser_bounds = _acid->documentExactBounds();
+    if (!eraser_bounds) {
+        return false;
+    }
+    auto const eraser_in_group_coordinates = *eraser_bounds * relative_transform.inverse();
+    bool found_collision = false;
+    for (auto const &orig_child : filtered_children) {
+        if (orig_child.item->collidesWith(eraser_in_group_coordinates)) {
+            found_collision = true;
+            break;
+        }
+    }
+    if (found_collision) {
+        auto *unlinked = dynamic_cast<SPGroup *>(clone->unlink());
+        if (!unlinked) {
+            return false;
+        }
+        std::vector<EraseTarget> unlinked_children;
+        unlinked_children.reserve(filtered_children.size());
+
+        for (auto *child : unlinked->childList(false)) {
+            unlinked_children.emplace_back(dynamic_cast<SPItem *>(child), false);
+        }
+        auto overlapping = _filterCutEraseables(_filterByCollision(unlinked_children, _acid));
+
+        // If the clone was selected, the newly unlinked group should stay selected
+        if (original_target.was_selected && store_survivers) {
+            _survivers.push_back(unlinked);
+        }
+
+        return _performEraseOperation(overlapping, false);
+    } else {
+        if (original_target.was_selected && store_survivers) {
+            _survivers.push_back(original_target.item); // If the clone was selected, it should stay so
+        }
+        if (filtered_children.size() < children.size()) {
+            auto non_eraseable_touched = [&](EraseTarget const &t) -> bool {
+                if (!t.item || !_uncuttableItemType(t.item)) {
+                    return false;
+                }
+                return t.item->collidesWith(eraser_in_group_coordinates);
+            };
+            if (std::any_of(children.begin(), children.end(), non_eraseable_touched)) {
+                _setStatusBarMessage(_("Some objects could not be cut."));
+            }
+        }
+        return false;
+    }
 }
 
 /** Returns error flags for items that cannot be meaningfully erased in CUT mode */
@@ -791,8 +804,6 @@ EraserTool::Error EraserTool::_uncuttableItemType(SPItem *item)
 {
     if (!item) {
         return NON_EXISTENT;
-    } else if (dynamic_cast<SPGroup *>(item)) {
-        return ERROR_GROUP; // TODO: handle groups in the future
     } else if (dynamic_cast<SPImage *>(item)) {
         return RASTER_IMAGE;
     } else if (_isStraightSegment(item)) {
@@ -803,46 +814,93 @@ EraserTool::Error EraserTool::_uncuttableItemType(SPItem *item)
 }
 
 /**
- * @brief Performs a boolean difference or cut operation which implements the CUT mode operation
- * @param erasee - the item to be erased
- * @param survivers - items that survived the erase operation will be added to this vector
+ * @brief Performs a boolean difference or cut operation which implements the CUT mode erasure.
+ * @param target - the item to be erased.
+ * @param store_survivers - whether the surviving selected items and their remains should be stored.
+ * @return true on success, false on failure
  */
-void EraserTool::_booleanErase(SPItem *erasee, std::vector<SPItem *> &survivers) const
+bool EraserTool::_booleanErase(EraseTarget target, bool store_survivers)
 {
+    if (!target.item) {
+        return false;
+    }
     XML::Document *xml_doc = _desktop->doc()->getReprDoc();
     XML::Node *duplicate_stroke = repr->duplicate(xml_doc);
     repr->parent()->appendChild(duplicate_stroke);
+    Glib::ustring duplicate_id = duplicate_stroke->attribute("id");
     GC::release(duplicate_stroke); // parent takes over
     ObjectSet operands(_desktop);
     operands.set(duplicate_stroke);
     if (!nowidth) {
         operands.pathUnion(true, true);
     }
-    operands.add(erasee);
+    operands.add(target.item);
     operands.removeLPESRecursive(true);
 
-    _handleStrokeStyle(erasee);
+    _handleStrokeStyle(target.item);
 
     if (nowidth) {
         operands.pathCut(true, true);
     } else {
         operands.pathDiff(true, true);
     }
-
-    auto *prefs = Preferences::get();
+    if (auto *spill = _desktop->doc()->getObjectById(duplicate_id)) {
+        operands.remove(spill);
+        spill->deleteObject(false);
+        return false;
+    }
+    auto *prefs = Preferences::get(); // TODO: Refactor this using the PBS preference observer
     bool break_apart = prefs->getBool("/tools/eraser/break_apart", false);
     if (!break_apart) {
         operands.combine(true, true);
     } else if (!nowidth) {
         operands.breakApart(true, false, true);
     }
-    survivers.insert(survivers.end(), operands.items().begin(), operands.items().end());
+    if (store_survivers && target.was_selected) {
+        _survivers.insert(_survivers.end(), operands.items().begin(), operands.items().end());
+    }
+    return true;
+}
+
+/**
+ * @brief Performs the actual erasing on a collection of erase targets.
+ *        In CUT mode, the optional survivers vector will be populated with leftover pieces of
+ *        partially erased shapes that used to be selected.
+ * @param items_to_erase - a non-empty vector of erase targets.
+ * @param store_survivers - whether the surviving selected items and their remains should be stored.
+ * @return whether something was actually erased.
+ */
+bool EraserTool::_performEraseOperation(std::vector<EraseTarget> const &items_to_erase, bool store_survivers)
+{
+    if (mode == EraserToolMode::CUT) {
+        bool erased_something = false;
+        for (auto const &target : items_to_erase) {
+            erased_something = _cutErase(target, store_survivers) || erased_something;
+        }
+        return erased_something;
+    } else if (mode == EraserToolMode::CLIP) {
+        if (nowidth) {
+            return false;
+        }
+        for (auto const &target : items_to_erase) {
+            _clipErase(target.item);
+        }
+        return true;
+    } else { // mode == EraserToolMode::DELETE
+        for (auto const &target : items_to_erase) {
+            if (target.item) {
+                target.item->deleteObject(true);
+            }
+        }
+        return true;
+    }
 }
 
 /** Handles the "evenodd" stroke style */
 void EraserTool::_handleStrokeStyle(SPItem *item) const
 {
-    if (item->style->fill_rule.value == SP_WIND_RULE_EVENODD) {
+    auto *style = item->style;
+    if (style && style->fill_rule.value == SP_WIND_RULE_EVENODD) {
         SPCSSAttr *css = sp_repr_css_attr_new();
         sp_repr_css_set_property(css, "fill-rule", "evenodd");
         sp_desktop_set_style(_desktop, css);
@@ -871,7 +929,7 @@ void EraserTool::_clearStatusBar()
 }
 
 /** Clips through an item */
-void EraserTool::_clipErase(SPItem *item, SPObject *parent, Geom::OptRect &eraser_box)
+void EraserTool::_clipErase(SPItem *item) const
 {
     Inkscape::ObjectSet w_selection(_desktop);
     Geom::OptRect bbox = item->documentVisualBounds();
@@ -882,58 +940,51 @@ void EraserTool::_clipErase(SPItem *item, SPObject *parent, Geom::OptRect &erase
     w_selection.set(dup);
     w_selection.pathUnion(true);
     bool delete_old_clip_path = false;
-    if (bbox && bbox->intersects(*eraser_box)) {
-        SPClipPath *clip_path = item->getClipObject();
-        if (clip_path) {
-            std::vector<SPItem *> selected;
-            selected.push_back(SP_ITEM(clip_path->firstChild()));
-            std::vector<Inkscape::XML::Node *> to_select;
-            std::vector<SPItem *> items(selected);
-            sp_item_list_to_curves(items, selected, to_select);
-            Inkscape::XML::Node *clip_data = SP_ITEM(clip_path->firstChild())->getRepr();
-            if (!clip_data && !to_select.empty()) {
-                clip_data = *(to_select.begin());
-            }
-            if (clip_data) {
-                Inkscape::XML::Node *dup_clip = clip_data->duplicate(xml_doc);
-                if (dup_clip) {
-                    SPItem *dup_clip_obj = SP_ITEM(parent->appendChildRepr(dup_clip));
-                    Inkscape::GC::release(dup_clip);
-                    if (dup_clip_obj) {
-                        dup_clip_obj->transform *= item->getRelativeTransform(SP_ITEM(parent));
-                        dup_clip_obj->updateRepr();
-                        delete_old_clip_path = true;
-                        w_selection.raiseToTop(true);
-                        w_selection.add(dup_clip);
-                        w_selection.pathDiff(true, true);
-                    }
+    SPClipPath *clip_path = item->getClipObject();
+    if (clip_path) {
+        std::vector<SPItem *> selected;
+        selected.push_back(SP_ITEM(clip_path->firstChild()));
+        std::vector<Inkscape::XML::Node *> to_select;
+        std::vector<SPItem *> items(selected);
+        sp_item_list_to_curves(items, selected, to_select);
+        Inkscape::XML::Node *clip_data = SP_ITEM(clip_path->firstChild())->getRepr();
+        if (!clip_data && !to_select.empty()) {
+            clip_data = *(to_select.begin());
+        }
+        if (clip_data) {
+            Inkscape::XML::Node *dup_clip = clip_data->duplicate(xml_doc);
+            if (dup_clip) {
+                SPItem *dup_clip_obj = SP_ITEM(item->parent->appendChildRepr(dup_clip));
+                Inkscape::GC::release(dup_clip);
+                if (dup_clip_obj) {
+                    dup_clip_obj->transform *= item->getRelativeTransform(SP_ITEM(item->parent));
+                    dup_clip_obj->updateRepr();
+                    delete_old_clip_path = true;
+                    w_selection.raiseToTop(true);
+                    w_selection.add(dup_clip);
+                    w_selection.pathDiff(true, true);
                 }
             }
-        } else {
-            Inkscape::XML::Node *rect_repr = xml_doc->createElement("svg:rect");
-            sp_desktop_apply_style_tool(_desktop, rect_repr, "/tools/eraser", false);
-            SPRect *rect = SP_RECT(parent->appendChildRepr(rect_repr));
-            Inkscape::GC::release(rect_repr);
-            rect->setPosition(bbox->left(), bbox->top(), bbox->width(), bbox->height());
-            rect->transform = SP_ITEM(rect->parent)->i2doc_affine().inverse();
-
-            rect->updateRepr();
-            rect->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-            w_selection.raiseToTop(true);
-            w_selection.add(rect);
-            w_selection.pathDiff(true, true);
-        }
-        w_selection.raiseToTop(true);
-        w_selection.add(item);
-        w_selection.setMask(true, false, true);
-        if (delete_old_clip_path) {
-            clip_path->deleteObject(true);
         }
     } else {
-        SPItem *erase_clip = w_selection.singleItem();
-        if (erase_clip) {
-            erase_clip->deleteObject(true);
-        }
+        Inkscape::XML::Node *rect_repr = xml_doc->createElement("svg:rect");
+        sp_desktop_apply_style_tool(_desktop, rect_repr, "/tools/eraser", false);
+        SPRect *rect = SP_RECT(item->parent->appendChildRepr(rect_repr));
+        Inkscape::GC::release(rect_repr);
+        rect->setPosition(bbox->left(), bbox->top(), bbox->width(), bbox->height());
+        rect->transform = SP_ITEM(rect->parent)->i2doc_affine().inverse();
+
+        rect->updateRepr();
+        rect->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        w_selection.raiseToTop(true);
+        w_selection.add(rect);
+        w_selection.pathDiff(true, true);
+    }
+    w_selection.raiseToTop(true);
+    w_selection.add(item);
+    w_selection.setMask(true, false, true);
+    if (delete_old_clip_path) {
+        clip_path->deleteObject(true);
     }
 }
 
@@ -1043,6 +1094,170 @@ void EraserTool::_accumulate()
     }
     cal1->reset();
     cal2->reset();
+}
+
+/**
+ *  @brief Filters out elements that can be erased in CUT mode (by boolean operations) from the given
+ *         vector of potential erase targets. For items that cannot be erased in the CUT mode, a
+ *         warning message can be flashed in the status bar.
+ *  @param items - a vector containing EraseTarget structs
+ *  @param silent - if set to true, the status bar messages will not be shown.
+ *  @return a filtered vector whose elements can be erased in CUT mode
+*/
+std::vector<EraseTarget> EraserTool::_filterCutEraseables(std::vector<EraseTarget> const &items, bool silent)
+{
+    std::vector<EraseTarget> result;
+    result.reserve(items.size());
+
+    for (auto &target : items) {
+        if (Error e = _uncuttableItemType(target.item)) {
+            if (!silent) {
+                if (e & RASTER_IMAGE) {
+                    _setStatusBarMessage(_("Cannot cut out from a bitmap, use <b>Clip</b> mode "
+                                           "instead."));
+                } else if (e & NO_AREA_PATH) {
+                    _setStatusBarMessage(_("Cannot cut out from a path with zero area, use "
+                                           "<b>Clip</b> mode instead."));
+                }
+            }
+        } else {
+            result.push_back(target);
+        }
+    }
+    return result;
+}
+
+/**
+ * @brief Filters a list of potential erase targets by collision with a given item
+ * @param items - a vector of EraseTarget elements to be filtered
+ * @param with - a pointer to an SPItem to check collisions with
+ * @return a new vector containing those elements of `items` that have a collision with `with`.
+ */
+std::vector<EraseTarget> EraserTool::_filterByCollision(std::vector<EraseTarget> const &items, SPItem *with) const
+{
+    std::vector<EraseTarget> result;
+    if (!with) {
+        return result;
+    }
+    result.reserve(items.size());
+
+    if (auto const collision_shape = with->documentExactBounds()) {
+        for (auto const &target : items) {
+            if (target.item && target.item->collidesWith(*collision_shape)) {
+                result.push_back(target);
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * @brief Prepares a list of items in the current document containing the items which qualify
+ *        for the erase operation (based on selection & collision detection).
+ *        Additionally, the selected items which are going to survive the erase operation (and
+ *        should be used to restore the selection afterwards) will be added to the _survivers member.
+ *        If the user attempts to erase an illegal item, a warning message is shown in the status bar.
+ * @return items that should undergo the erase operation
+ */
+std::vector<EraseTarget> EraserTool::_findItemsToErase()
+{
+    std::vector<EraseTarget> result;
+
+    auto *document = _desktop->getDocument();
+    auto *selection = _desktop->getSelection();
+    if (!document || !selection) {
+        return result;
+    }
+
+    if (mode == EraserToolMode::DELETE) {
+        // In DELETE mode, the classification is based on having been touched by the mouse cursor:
+        // * result     should contain touched items;
+        // * _survivers should contain selected but untouched items.
+        auto *r = Rubberband::get(_desktop);
+        std::vector<SPItem *> touched = document->getItemsAtPoints(_desktop->dkey, r->getPoints());
+        if (selection->isEmpty()) {
+            for (auto *item : touched) {
+                result.emplace_back(item, false);
+            }
+        } else {
+            for (auto *item : selection->items()) {
+                if (std::find(touched.begin(), touched.end(), item) == touched.end()) {
+                    _survivers.push_back(item);
+                } else {
+                    result.emplace_back(item, true);
+                }
+            }
+        }
+    } else {
+        // In the other modes, we start with a crude filtering step based on bounding boxes
+        _acid = _insertAcidIntoDocument(document);
+        if (!_acid) {
+            return result;
+        }
+        Geom::OptRect eraser_bbox = _acid->documentVisualBounds();
+        if (!eraser_bbox) {
+            return result;
+        }
+        std::vector<SPItem *> candidates = document->getItemsPartiallyInBox(_desktop->dkey, *eraser_bbox,
+                                                                            false, false, false, true);
+        std::vector<EraseTarget> allowed; ///< Items we're allowed to erase based on selection
+        allowed.reserve(candidates.size());
+
+        // If selection is empty, we're allowed to erase all items except the eraser stroke itself.
+        if (selection->isEmpty()) {
+            for (auto *candidate : candidates) {
+                if (candidate != _acid) {
+                    allowed.emplace_back(candidate, false);
+                }
+            }
+        } // How we handle non-empty selection further depends on the mode.
+
+        if (mode == EraserToolMode::CUT) {
+            // In CUT mode, we must unpack groups, since the boolean difference/cut operation
+            // doesn't make sense for a group.
+            for (auto *selected : selection->items()) {
+                bool included_for_erase = false;
+                for (auto *candidate : candidates) {
+                    if (selected == candidate || selected->isAncestorOf(candidate)) {
+                        allowed.emplace_back(candidate, selection->includes(candidate));
+                        included_for_erase = (candidate == selected) || included_for_erase;
+                    }
+                }
+                if (!included_for_erase) {
+                    _survivers.push_back(selected);
+                }
+            }
+            // The filtering is based on a precise collision detection procedure:
+            // * result     will contain all eraseable items that overlap with the eraser stroke;
+            // * _survivers will contain all selected items that were rejected during this filtering.
+            auto overlapping = _filterByCollision(allowed, _acid);
+            auto valid = _filterCutEraseables(overlapping); // Sets status bar messages
+
+            for (auto const &element : allowed) {
+                if (element.item && element.was_selected &&
+                    std::find(valid.begin(), valid.end(), element) == valid.end())
+                {
+                    _survivers.push_back(element.item);
+                }
+            }
+            result.insert(result.end(), valid.begin(), valid.end());
+
+        } else if (mode == EraserToolMode::CLIP) {
+            // In CLIP mode, we don't check descendants, because clip can be set to an entire group.
+            auto const all_selected = selection->items();
+            for (auto *item : all_selected) {
+                allowed.emplace_back(item, true);
+            }
+
+            // The classification is also based on the precise collision detection:
+            // * result     will contain all items that overlap with the eraser stroke;
+            // * _survivers will contain all selected items, since CLIP mode is always non-destructive.
+            auto overlapping = _filterByCollision(allowed, _acid);
+            result.insert(result.end(), overlapping.begin(), overlapping.end());
+            _survivers.insert(_survivers.end(), all_selected.begin(), all_selected.end());
+        }
+    }
+    return result;
 }
 
 void EraserTool::_fitAndSplit(bool releasing)

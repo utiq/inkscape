@@ -89,6 +89,7 @@ public:
     Geom::OptRect either_bbox(Geom::Affine const &transform, SPItem::BBoxType bboxtype, bool cache_is_valid,
                               Geom::OptRect bbox_cache, Geom::Affine const &transform_cache) const;
     void print(SPPrintContext* ctx) override;
+    std::optional<Geom::PathVector> documentExactBounds() const override;
 
 	Inkscape::DrawingItem* show(Inkscape::Drawing &drawing, unsigned int key, unsigned int flags) override;
 	void hide(unsigned int key) override;

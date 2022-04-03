@@ -209,6 +209,28 @@ Geom::OptRect SPUse::bbox(Geom::Affine const &transform, SPItem::BBoxType bboxty
     return bbox;
 }
 
+std::optional<Geom::PathVector> SPUse::documentExactBounds() const
+{
+    std::optional<Geom::PathVector> result;
+    auto *original = trueOriginal();
+    if (!original) {
+        return result;
+    }
+    result = original->documentExactBounds();
+
+    Geom::Affine private_transform;
+    if (dynamic_cast<SPSymbol *>(original)) {
+        private_transform = i2doc_affine();
+    } else if (auto const *parent = dynamic_cast<SPItem *>(original->parent)) {
+        private_transform = get_root_transform() * parent->transform.inverse() * parent->i2doc_affine();
+    }
+    result = result ? (*result // TODO: is there a simpler way to get the transform below?
+                       * original->i2doc_affine().inverse()
+                       * private_transform)
+                    : result;
+    return result;
+}
+
 void SPUse::print(SPPrintContext* ctx) {
     bool translated = false;
 
@@ -315,7 +337,7 @@ void SPUse::hide(unsigned int key) {
  * of the caller to make sure that this is handled correctly).
  *
  * Note that the returned is the clone object, i.e. the child of an SPUse (of the argument one for
- * the trivial case) and not the "true original".
+ * the trivial case) and not the "true original". If you want the true original, use trueOriginal().
  */
 SPItem *SPUse::root() {
     SPItem *orig = this->child;
@@ -331,6 +353,29 @@ SPItem *SPUse::root() {
 
 SPItem const *SPUse::root() const {
 	return const_cast<SPUse*>(this)->root();
+}
+
+/**
+ * Returns the ultimate original of a SPUse, i.e., the first object in the chain of uses
+ * which is not itself an SPUse. If the chain of references is broken or no original is found,
+ * the return value will be nullptr.
+ */
+SPItem *SPUse::trueOriginal() const
+{
+    int const depth = cloneDepth();
+    if (depth < 0) {
+        return nullptr;
+    }
+
+    SPItem *original_item = (SPItem *)this;
+    for (int i = 0; i < depth; ++i) {
+        if (auto const *intermediate_clone = dynamic_cast<SPUse *>(original_item)) {
+            original_item = intermediate_clone->get_original();
+        } else {
+            return nullptr;
+        }
+    }
+    return original_item;
 }
 
 /**
@@ -357,11 +402,12 @@ int SPUse::cloneDepth() const {
  * Returns the effective transform that goes from the ultimate original to given SPUse, both ends
  * included.
  */
-Geom::Affine SPUse::get_root_transform() {
+Geom::Affine SPUse::get_root_transform() const
+{
     //track the ultimate source of a chain of uses
     SPObject *orig = this->child;
 
-    std::vector<SPItem*> chain;
+    std::vector<SPItem const *> chain;
     chain.push_back(this);
 
     while (dynamic_cast<SPUse *>(orig)) {
@@ -375,12 +421,12 @@ Geom::Affine SPUse::get_root_transform() {
     Geom::Affine t(Geom::identity());
 
     for (auto i=chain.rbegin(); i!=chain.rend(); ++i) {
-        SPItem *i_tem = *i;
+        auto *i_tem = *i;
 
         // "An additional transformation translate(x,y) is appended to the end (i.e.,
         // right-side) of the transform attribute on the generated 'g', where x and y
         // represent the values of the x and y attributes on the 'use' element." - http://www.w3.org/TR/SVG11/struct.html#UseElement
-        SPUse *i_use = dynamic_cast<SPUse *>(i_tem);
+        auto *i_use = dynamic_cast<SPUse const *>(i_tem);
         if (i_use) {
             if ((i_use->x._set && i_use->x.computed != 0) || (i_use->y._set && i_use->y.computed != 0)) {
                 t = t * Geom::Translate(i_use->x._set ? i_use->x.computed : 0, i_use->y._set ? i_use->y.computed : 0);
@@ -396,7 +442,8 @@ Geom::Affine SPUse::get_root_transform() {
  * Returns the transform that leads to the use from its immediate original.
  * Does not include the original's transform if any.
  */
-Geom::Affine SPUse::get_parent_transform() {
+Geom::Affine SPUse::get_parent_transform() const
+{
     Geom::Affine t(Geom::identity());
 
     if ((this->x._set && this->x.computed != 0) || (this->y._set && this->y.computed != 0)) {
@@ -734,7 +781,8 @@ SPItem *SPUse::unlink() {
     return item;
 }
 
-SPItem *SPUse::get_original() {
+SPItem *SPUse::get_original() const
+{
     SPItem *ref = nullptr;
 
         if (this->ref){

@@ -278,6 +278,15 @@ public:
     Geom::OptRect documentPreferredBounds() const;
 
     /**
+     * Get an exact geometric shape representing the visual bounds of the item in the document
+     * coordinates. This is different than a simple bounding rectangle aligned to the coordinate axes:
+     * the returned pathvector may effectively describe any shape and coincides with an appropriately
+     * transformed path-vector for paths. Even for rectangular items such as SPImage, the bounds may be
+     * a parallelogram resulting from transforming the bounding rectangle by an affine transformation.
+     */
+    virtual std::optional<Geom::PathVector> documentExactBounds() const;
+
+    /**
      * Get item's geometric bbox in desktop coordinate system.
      * Desktop coordinates should be user defined. Currently they are hardcoded:
      * origin is at bottom left, X grows to the right and Y grows upwards.
@@ -347,6 +356,12 @@ public:
      */
     void adjust_paint_recursive(Geom::Affine advertized_transform, Geom::Affine t_ancestors,
                                 PaintServerType type = GRADIENT);
+
+    /**
+     * Checks for visual collision with another item
+     */
+    bool collidesWith(Geom::PathVector const &shape) const;
+    bool collidesWith(SPItem const &other) const;
 
     /**
      * Set a new transform on an object.

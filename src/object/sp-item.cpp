@@ -18,6 +18,7 @@
 #include <glibmm/i18n.h>
 
 #include "bad-uri-exception.h"
+#include "helper/geom.h"
 #include "svg/svg.h"
 #include "svg/svg-color.h"
 #include "print.h"
@@ -943,6 +944,15 @@ Geom::OptRect SPItem::documentBounds(BBoxType type) const
     }
 }
 
+std::optional<Geom::PathVector> SPItem::documentExactBounds() const
+{
+    std::optional<Geom::PathVector> result;
+    if (auto bounding_rect = visualBounds()) {
+        result = Geom::Path(*bounding_rect) * i2doc_affine();
+    }
+    return result;
+}
+
 Geom::OptRect SPItem::desktopGeometricBounds() const
 {
     return geometricBounds(i2dt_affine());
@@ -1493,6 +1503,18 @@ void SPItem::adjust_paint_recursive(Geom::Affine advertized_transform, Geom::Aff
             adjust_gradient(paint_delta);
         }
     }
+}
+
+bool SPItem::collidesWith(Geom::PathVector const &shape) const
+{
+    auto our_shape = documentExactBounds();
+    return our_shape ? pathvs_have_nonempty_overlap(*our_shape, shape) : false;
+}
+
+bool SPItem::collidesWith(SPItem const &other) const
+{
+    auto other_shape = other.documentExactBounds();
+    return other_shape ? collidesWith(*other_shape) : false;
 }
 
 // CPPIFY:: make pure virtual?

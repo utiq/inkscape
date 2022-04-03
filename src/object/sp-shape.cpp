@@ -859,6 +859,15 @@ void SPShape::print(SPPrintContext* ctx) {
     }
 }
 
+std::optional<Geom::PathVector> SPShape::documentExactBounds() const
+{
+    std::optional<Geom::PathVector> result;
+    if (auto const *c = curve()) {
+        result = c->get_pathvector() * i2doc_affine();
+    }
+    return result;
+}
+
 void SPShape::update_patheffect(bool write)
 {
     auto c_lpe = SPCurve::copy(curveForEdit());
