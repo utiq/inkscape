@@ -67,7 +67,9 @@ PathArrayParam::PathArrayParam(const Glib::ustring &label, const Glib::ustring &
     _tree = nullptr;
     _scroller = nullptr;
     _model = nullptr;
-    initui();
+    // refresh widgets on load to allow to remove the 
+    // memory leak calling initui here
+    param_effect->refresh_widgets = true;
     oncanvas_editable = true;
     _from_original_d = false;
     _allow_only_bspline_spiro = false;
