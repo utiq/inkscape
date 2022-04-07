@@ -49,6 +49,7 @@
 #include "message-context.h"
 #include "message-stack.h"
 #include "path-chemistry.h"
+#include "preferences.h"
 #include "rubberband.h"
 #include "selection-chemistry.h"
 #include "selection.h"
@@ -83,6 +84,8 @@ extern EraserToolMode const DEFAULT_ERASER_MODE = EraserToolMode::CUT;
 
 EraserTool::EraserTool(SPDesktop *desktop)
     : DynamicBase(desktop, "/tools/eraser", "eraser.svg")
+    , _break_apart{"/tools/eraser/break_apart", false}
+    , _mode_int{"/tools/eraser/mode", 1} // Cut mode is default
 {
     accumulated.reset(new SPCurve());
     currentcurve.reset(new SPCurve());
@@ -113,13 +116,11 @@ EraserTool::EraserTool(SPDesktop *desktop)
     is_drawing = false;
     //TODO not sure why get 0.01 if slider width == 0, maybe a double/int problem
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    if (prefs->getBool("/tools/eraser/selcue", false) != 0) {
-        enableSelectionCue();
-    }
+    _mode_int.min = 0;
+    _mode_int.max = 2;
     _updateMode();
+    _mode_int.action = [this]() { _updateMode(); };
 
-    // TODO temp force:
     enableSelectionCue();
 }
 
@@ -132,13 +133,7 @@ EraserTool::~EraserTool()
 /**  Reads the current Eraser mode from Preferences and sets `mode` accordingly. */
 void EraserTool::_updateMode()
 {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    if (!prefs) {
-        return;
-    }
-
-    int mode_idx = prefs->getInt("/tools/eraser/mode", 1); // Cut mode is default
-
+    int const mode_idx = _mode_int;
     // Note: the integer indices must agree with those in EraserToolbar::_modeAsInt()
     if (mode_idx == 0) {
         mode = EraserToolMode::DELETE;
@@ -384,7 +379,6 @@ void EraserTool::_removeTemporarySegments()
 bool EraserTool::root_handler(GdkEvent* event)
 {
     bool ret = false;
-    _updateMode();
     switch (event->type) {
         case GDK_BUTTON_PRESS:
             if (event->button.button == 1) {
@@ -666,7 +660,6 @@ bool EraserTool::_doWork()
         return false;
     }
     bool was_selection = !selection->isEmpty();
-    _updateMode();
 
     // Find items to work on as well as items that will be needed to restore the selection afterwards.
     _survivers.clear();
@@ -849,9 +842,7 @@ bool EraserTool::_booleanErase(EraseTarget target, bool store_survivers)
         spill->deleteObject(false);
         return false;
     }
-    auto *prefs = Preferences::get(); // TODO: Refactor this using the PBS preference observer
-    bool break_apart = prefs->getBool("/tools/eraser/break_apart", false);
-    if (!break_apart) {
+    if (!_break_apart) {
         operands.combine(true, true);
     } else if (!nowidth) {
         operands.breakApart(true, false, true);
@@ -1263,8 +1254,7 @@ std::vector<EraseTarget> EraserTool::_findItemsToErase()
 void EraserTool::_fitAndSplit(bool releasing)
 {
     double const tolerance_sq = square(_desktop->w2d().descrim() * tolerance);
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    nowidth = (prefs->getDouble("/tools/eraser/width", 1) == 0);
+    nowidth = (width == 0); // setting width is managed by the base class
 
 #ifdef ERASER_VERBOSE
     g_print("[F&S:R=%c]", releasing ? 'T' : 'F');

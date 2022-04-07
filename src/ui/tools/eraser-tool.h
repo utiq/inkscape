@@ -61,6 +61,8 @@ private:
     std::vector<MessageId> _our_messages;
     SPItem *_acid = nullptr;
     std::vector<SPItem *> _survivers;
+    Pref<bool> _break_apart;
+    Pref<int> _mode_int;
 
     // static data:
     inline static guint32 const trace_color_rgba   = 0xff0000ff; // RGBA red
