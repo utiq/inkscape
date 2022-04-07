@@ -45,7 +45,7 @@ build_menu()
     {
         std::cerr << "build_menu: failed to load Main menu from: "
                     << filename <<": "
-                    << err.what() << std::endl;
+                    << err.what().raw() << std::endl;
     }
 
     const auto object = refBuilder->get_object("menus");

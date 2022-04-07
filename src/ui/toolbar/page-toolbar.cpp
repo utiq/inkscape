@@ -329,7 +329,7 @@ GtkWidget *PageToolbar::create(SPDesktop *desktop)
         // is destroyed, but the create method expects a blind widget so this widget
         // contains a special keep-alive pattern which can be removed when refactoring.
     } catch (const Glib::Error &ex) {
-        std::cerr << "PageToolbar: " << page_toolbar_builder_file << " file not read! " << ex.what() << std::endl;
+        std::cerr << "PageToolbar: " << page_toolbar_builder_file << " file not read! " << ex.what().raw() << std::endl;
     }
     return GTK_WIDGET(toolbar->gobj());
 }

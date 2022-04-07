@@ -182,7 +182,7 @@ GtkWidget *ToolboxFactory::createToolToolbox()
     }
     catch (const Glib::Error& ex)
     {
-        std::cerr << "ToolboxFactor::createToolToolbox: " << tool_toolbar_builder_file << " file not read! " << ex.what() << std::endl;
+        std::cerr << "ToolboxFactor::createToolToolbox: " << tool_toolbar_builder_file << " file not read! " << ex.what().raw() << std::endl;
     }
 
     Gtk::Widget* toolbar = nullptr;
@@ -222,7 +222,7 @@ GtkWidget *ToolboxFactory::createCommandsToolbox()
     }
     catch (const Glib::Error& ex)
     {
-        std::cerr << "ToolboxFactor::createCommandsToolbox: " << commands_toolbar_builder_file << " file not read! " << ex.what() << std::endl;
+        std::cerr << "ToolboxFactor::createCommandsToolbox: " << commands_toolbar_builder_file << " file not read! " << ex.what().raw() << std::endl;
     }
 
     Gtk::Toolbar* toolbar = nullptr;
@@ -270,7 +270,7 @@ GtkWidget *ToolboxFactory::createSnapToolbox()
     }
     catch (const Glib::Error& ex)
     {
-        std::cerr << "ToolboxFactor::createSnapToolbox: " << snap_toolbar_builder_file << " file not read! " << ex.what() << std::endl;
+        std::cerr << "ToolboxFactor::createSnapToolbox: " << snap_toolbar_builder_file << " file not read! " << ex.what().raw() << std::endl;
     }
 
     bool simple_snap = true;

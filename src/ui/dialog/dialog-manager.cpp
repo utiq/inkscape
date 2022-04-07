@@ -210,7 +210,7 @@ void DialogManager::save_dialogs_state(DialogContainer *docking_container)
     try {
         keyfile->save_to_file(filename);
     } catch (Glib::FileError &error) {
-        std::cerr << G_STRFUNC << ": " << error.what() << std::endl;
+        std::cerr << G_STRFUNC << ": " << error.what().raw() << std::endl;
     }
 }
 
@@ -261,7 +261,7 @@ void DialogManager::restore_dialogs_state(DialogContainer *docking_container, bo
                 try {
                     load_transient_state(keyfile.get());
                 } catch (Glib::Error &error) {
-                    std::cerr << G_STRFUNC << ": transient state not loaded - " << error.what() << std::endl;
+                    std::cerr << G_STRFUNC << ": transient state not loaded - " << error.what().raw() << std::endl;
                 }
             }
         }
@@ -270,7 +270,7 @@ void DialogManager::restore_dialogs_state(DialogContainer *docking_container, bo
             dialog_defaults();
         }
     } catch (Glib::Error &error) {
-        std::cerr << G_STRFUNC << ": dialogs state not loaded - " << error.what() << std::endl;
+        std::cerr << G_STRFUNC << ": dialogs state not loaded - " << error.what().raw() << std::endl;
     }
 }
 

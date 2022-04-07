@@ -359,7 +359,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
     try {
         windows_count = keyfile->get_integer("Windows", "Count");
     } catch (Glib::Error &error) {
-        std::cerr << G_STRFUNC << ": " << error.what() << std::endl;
+        std::cerr << G_STRFUNC << ": " << error.what().raw() << std::endl;
     }
 
     // Step 3: for each window, load its state.
@@ -379,7 +379,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
         try {
             column_count = keyfile->get_integer(group_name, "ColumnCount");
         } catch (Glib::Error &error) {
-            std::cerr << G_STRFUNC << ": " << error.what() << std::endl;
+            std::cerr << G_STRFUNC << ": " << error.what().raw() << std::endl;
         }
 
         // Step 3.1: get the window's container columns where we want to create the dialogs
@@ -404,7 +404,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
                     before_canvas = keyfile->get_boolean(column_group_name, "BeforeCanvas");
                 }
             } catch (Glib::Error &error) {
-                std::cerr << G_STRFUNC << ": " << error.what() << std::endl;
+                std::cerr << G_STRFUNC << ": " << error.what().raw() << std::endl;
             }
 
             // Step 3.2.1: create the column
@@ -421,7 +421,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
                 try {
                     dialogs = keyfile->get_string_list(column_group_name, key);
                 } catch (Glib::Error &error) {
-                    std::cerr << G_STRFUNC << ": " << error.what() << std::endl;
+                    std::cerr << G_STRFUNC << ": " << error.what().raw() << std::endl;
                 }
 
                 if (!dialogs.size()) {
@@ -680,7 +680,7 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                 has_position = true;
             }
         } catch (Glib::Error &error) {
-            std::cerr << "DialogContainer::load_container_state: " << error.what() << std::endl;
+            std::cerr << "DialogContainer::load_container_state: " << error.what().raw() << std::endl;
         }
 
         // Step 3.1: get the window's container columns where we want to create the dialogs
@@ -716,7 +716,7 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                 notebook_count = keyfile->get_integer(column_group_name, "NotebookCount");
                 before_canvas = keyfile->get_boolean(column_group_name, "BeforeCanvas");
             } catch (Glib::Error &error) {
-                std::cerr << "DialogContainer::load_container_state: " << error.what() << std::endl;
+                std::cerr << "DialogContainer::load_container_state: " << error.what().raw() << std::endl;
             }
 
             // Step 3.2.1: create the column
@@ -739,7 +739,7 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                 try {
                     dialogs = keyfile->get_string_list(column_group_name, key);
                 } catch (Glib::Error &error) {
-                    std::cerr << "DialogContainer::load_container_state: " << error.what() << std::endl;
+                    std::cerr << "DialogContainer::load_container_state: " << error.what().raw() << std::endl;
                 }
 
                 if (!dialogs.size()) {
