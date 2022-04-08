@@ -107,7 +107,7 @@ bool LPEMirrorSymmetry::doOnOpen(SPLPEItem const *lpeitem)
     if (version < "1.2") {
         lpesatellites.clear();
         Glib::ustring id = Glib::ustring("mirror-");
-        id += lpeobj->getId();
+        id += getLPEObj()->getId();
         SPObject *elemref = getSPDoc()->getObjectById(id.c_str());
         if (elemref) {
             lpesatellites.link(elemref, 0);

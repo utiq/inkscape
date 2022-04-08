@@ -127,7 +127,7 @@ bool LPECopyRotate::doOnOpen(SPLPEItem const *lpeitem)
             Glib::ustring id = Glib::ustring("rotated-");
             id += std::to_string(i);
             id += "-";
-            id += lpeobj->getId();
+            id += getLPEObj()->getId();
             SPObject *elemref = getSPDoc()->getObjectById(id.c_str());
             if (elemref) {
                 lpesatellites.link(elemref, i);

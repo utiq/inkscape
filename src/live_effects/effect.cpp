@@ -1164,7 +1164,7 @@ void Effect::transform_multiply(Geom::Affine const &postmul, bool /*set*/) {}
  * FIXME Probably only makes sense if this effect is referenced by exactly one
  * item (`this->lpeobj->hrefList` contains exactly one element)?
  */
-void Effect::transform_multiply(Geom::Affine const &postmul, SPLPEItem *lpeitem)
+void Effect::transform_multiply_impl(Geom::Affine const &postmul, SPLPEItem *lpeitem)
 {
     assert("pre: effect is referenced by lpeitem" &&
            std::any_of(lpeobj->hrefList.begin(), lpeobj->hrefList.end(),

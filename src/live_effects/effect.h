@@ -76,25 +76,16 @@ public:
     void doBeforeEffect_impl(SPLPEItem const* lpeitem);
     void doOnOpen_impl();
     void doOnRemove_impl(SPLPEItem const* lpeitem);
+    void transform_multiply_impl(Geom::Affine const &postmul, SPLPEItem *);
     void doOnBeforeCommit();
     void doOnUndo();
     void setCurrentZoom(double cZ);
     void setSelectedNodePoints(std::vector<Geom::Point> sNP);
     bool isNodePointSelected(Geom::Point const &nodePoint) const;
     bool isOnClipboard();
-    virtual void doOnApply (SPLPEItem const* lpeitem);
-    virtual void doBeforeEffect (SPLPEItem const* lpeitem);
     std::vector<SPLPEItem *> getCurrrentLPEItems() const;
     void update_satellites(bool updatelpe = false);
-private:
-    virtual void transform_multiply(Geom::Affine const &postmul, bool set);
-
-public:
-    void transform_multiply(Geom::Affine const &postmul, SPLPEItem *);
-    virtual bool doOnOpen(SPLPEItem const *lpeitem);
-    virtual void doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve);
     virtual void doOnException(SPLPEItem const *lpeitem);
-    virtual void doOnRemove (SPLPEItem const* lpeitem);
     virtual void doOnVisibilityToggled(SPLPEItem const* lpeitem);
     void writeParamsToSVG();
     std::vector<SPObject *> effect_get_satellites(bool force = true);
@@ -195,18 +186,21 @@ protected:
     int oncanvasedit_it;
     bool show_orig_path; // set this to true in derived effects to automatically have the original
                          // path displayed as helperpath
-
-    Inkscape::UI::Widget::Registry wr;
-
-    LivePathEffectObject *lpeobj;
-
     // this boolean defaults to false, it concatenates the input path to one pwd2,
     // instead of normally 'splitting' the path into continuous pwd2 paths and calling doEffect_pwd2 for each.
     bool concatenate_before_pwd2;
     double current_zoom;
     std::vector<Geom::Point> selectedNodesPoints;
-
+    Inkscape::UI::Widget::Registry wr;
+    
 private:
+    LivePathEffectObject *lpeobj;
+    virtual void transform_multiply(Geom::Affine const &postmul, bool set);
+    virtual bool doOnOpen(SPLPEItem const *lpeitem);
+    virtual void doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve);
+    virtual void doOnRemove (SPLPEItem const* lpeitem);
+    virtual void doOnApply (SPLPEItem const* lpeitem);
+    virtual void doBeforeEffect (SPLPEItem const* lpeitem);
     void onDefaultsExpanderChanged(Gtk::Expander * expander);
     void setDefaultParam(Glib::ustring pref_path, Glib::ustring tooltip, Parameter *param, Gtk::Image *info,
                          Gtk::Button *set, Gtk::Button *unset);
