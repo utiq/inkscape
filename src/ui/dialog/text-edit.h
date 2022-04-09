@@ -92,6 +92,11 @@ protected:
     void onReadSelection (gboolean style, gboolean content);
 
     /**
+     * This function would disable undo and redo if the text_view widget is in focus
+     * It is to fix the issue: https://gitlab.com/inkscape/inkscape/-/issues/744
+     */
+    bool pauseUndo(GdkEventKey *event);
+    /**
      * Callback invoked when the user modifies the text of the selected text object.
      *
      * onTextChange is responsible for initiating the commands after the user
@@ -170,7 +175,6 @@ private:
     double selected_fontsize;
     bool blocked;
     const Glib::ustring samplephrase;
-
 
     TextEdit(TextEdit const &d) = delete;
     TextEdit operator=(TextEdit const &d) = delete;

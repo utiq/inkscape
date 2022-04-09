@@ -58,6 +58,7 @@
 #include "io/resource.h"
 #include "svg/css-ostringstream.h"
 #include "ui/icon-names.h"
+#include "ui/shortcuts.h"
 #include "ui/toolbar/text-toolbar.h"
 #include "ui/widget/font-selector.h"
 
@@ -127,6 +128,7 @@ TextEdit::TextEdit()
     add(*contents);
 
     /* Signal handlers */
+    text_view->signal_key_press_event().connect(sigc::mem_fun(*this, &TextEdit::pauseUndo));
     text_buffer->signal_changed().connect(sigc::mem_fun(*this, &TextEdit::onChange));
     setasdefault_button->signal_clicked().connect(sigc::mem_fun(*this, &TextEdit::onSetDefault));
     apply_button->signal_clicked().connect(sigc::mem_fun(*this, &TextEdit::onApply));
@@ -146,6 +148,31 @@ TextEdit::~TextEdit()
     selectChangedConn.disconnect();
     fontChangedConn.disconnect();
     fontFeaturesChangedConn.disconnect();
+}
+
+bool TextEdit::pauseUndo(GdkEventKey *key)
+{
+    auto app = InkscapeApplication::instance()->gtk_app();
+    std::vector<Glib::ustring> undo_shortcut_names = app->get_accels_for_action("doc.undo");
+    std::vector<Glib::ustring> redo_shortcut_names = app->get_accels_for_action("doc.redo");
+
+    auto &shortcuts = Inkscape::Shortcuts::getInstance();
+    auto accelerator = shortcuts.get_from_event(key, false);
+
+    auto pred = [&accelerator](const Gtk::AccelKey &shortcut) {return accelerator.get_key() == shortcut.get_key() && accelerator.get_mod() == shortcut.get_mod();};
+
+    bool undo_redo_event = ((std::find_if(undo_shortcut_names.begin(), undo_shortcut_names.end(), pred) != undo_shortcut_names.end()) ||
+                            (std::find_if(redo_shortcut_names.begin(), redo_shortcut_names.end(), pred) != redo_shortcut_names.end()));
+
+    if(undo_redo_event) {
+        /*
+         * TODO: Handle these events separately after switching to GTKMM4
+	 * Fixes: https://gitlab.com/inkscape/inkscape/-/issues/744
+         */
+        return true;
+    }
+
+    return false;
 }
 
 void TextEdit::onReadSelection ( gboolean dostyle, gboolean /*docontent*/ )
