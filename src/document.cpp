@@ -415,7 +415,7 @@ SPDocument *SPDocument::createDoc(Inkscape::XML::Document *rdoc,
     nv->setDefaultAttribute("pagecolor",                 "/template/base/pagecolor", "");
     nv->setDefaultAttribute("bordercolor",               "/template/base/bordercolor", "");
     nv->setDefaultAttribute("borderopacity",             "/template/base/borderopacity", "");
-    nv->setDefaultAttribute("inkscape:pageshadow",       "/template/base/pageshadow", "2");
+    nv->setDefaultAttribute("inkscape:showpageshadow",   "/template/base/pageshadow", "2");
     nv->setDefaultAttribute("inkscape:pageopacity",      "/template/base/pageopacity", "0.0");
     nv->setDefaultAttribute("inkscape:pagecheckerboard", "/template/base/pagecheckerboard", "0");
     if (!nv->getAttribute("inkscape:deskcolor")) {
