@@ -52,4 +52,4 @@ src/helper/sp-marshal.*
 
 # Ctags
 tags
-*/.DS_Store
+.DS_Store
