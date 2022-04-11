@@ -1,22 +1,22 @@
 # Þýðing inkscape.po á íslensku
-# Copyright (C) 2020 Icelandic Inksape Translators
+# Copyright (C) 2022 Icelandic Inksape Translators
 # This file is distributed under the same license as the Inkscape package.
 #
-# Sveinn í Felli (sv1@fellsnet.is), 2015, 2016, 2017, 2018, 2019, 2020, 2021.
+# Sveinn í Felli (sv1@fellsnet.is), 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
 "POT-Creation-Date: 2021-03-27 02:51+0200\n"
-"PO-Revision-Date: 2021-05-11 14:03+0000\n"
+"PO-Revision-Date: 2022-04-10 17:26+0000\n"
 "Last-Translator: Sveinn í Felli <sv1@fellsnet.is>\n"
-"Language-Team: Icelandic <translation-team-is@lists.sourceforge.net>\n"
+"Language-Team: Icelandic\n"
 "Language: is\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 2.0\n"
+"X-Generator: Lokalize 19.12.3\n"
 
 #: ../share/filters/filters.svg.h:2
 msgid "Fast Crop"
@@ -1546,7 +1546,7 @@ msgstr "Blöndun andstæðna"
 
 #: ../share/filters/filters.svg.h:632
 msgid "Blend an image with its hue opposite"
-msgstr ""
+msgstr "Blanda mynd með andhverfum litblæs"
 
 #: ../share/filters/filters.svg.h:634
 msgid "Hue to White"
@@ -4062,11 +4062,11 @@ msgstr "Telja upp aðgerðir"
 
 #: ../src/actions/actions-base.cpp:234
 msgid "Print a list of actions and exit"
-msgstr ""
+msgstr "Birta lista yfir aðgerðir og hætta"
 
 #: ../src/actions/actions-base.cpp:235
 msgid "List Verbs"
-msgstr ""
+msgstr "Listi yfir aðgerðir"
 
 #: ../src/actions/actions-base.cpp:235
 msgid "Print a list of verbs and exit"
@@ -4074,11 +4074,11 @@ msgstr "Birta lista yfir aðgerðir og hætta"
 
 #: ../src/actions/actions-base.cpp:236
 msgid "Execute Verb"
-msgstr ""
+msgstr "Keyra aðgerð"
 
 #: ../src/actions/actions-base.cpp:236
 msgid "Execute verb(s)"
-msgstr ""
+msgstr "Keyra aðgerð(ir)"
 
 #: ../src/actions/actions-base.cpp:237
 msgid "Clean up Document"
@@ -4106,7 +4106,7 @@ msgstr "Veldu blaðsíðunúmer PDF til að flytja inn"
 
 #: ../src/actions/actions-base.cpp:241
 msgid "Import DPI Method"
-msgstr ""
+msgstr "Aðferð fyrir upplausn í innflutningi"
 
 #: ../src/actions/actions-base.cpp:241
 msgid "Set DPI conversion method for legacy Inkscape files"
@@ -4839,7 +4839,7 @@ msgstr "Flytja út bakgrunn"
 
 #: ../src/actions/actions-output.cpp:248
 msgid "Include background color in exported file"
-msgstr ""
+msgstr "Hafa með lit bakgrunns í útfluttum skrám"
 
 #: ../src/actions/actions-output.cpp:249
 msgid "Export Background Opacity"
@@ -7649,6 +7649,8 @@ msgid ""
 "Create a custom tritone palette with additional glow, blend modes and hue "
 "moving"
 msgstr ""
+"Búa til sérsniðið þrítóna litaspjald með viðbótar bjarma, blöndunarham og"
+" hreyfandi litblæ"
 
 #: ../src/extension/internal/filter/distort.h:69
 msgid "Felt Feather"
@@ -7734,7 +7736,7 @@ msgstr "Styrkur"
 
 #: ../src/extension/internal/filter/distort.h:101
 msgid "Blur and displace edges of shapes and pictures"
-msgstr ""
+msgstr "Móska og færa til brúnir forma og mynda"
 
 #: ../src/extension/internal/filter/distort.h:196
 #: ../src/live_effects/effect.cpp:401
@@ -9517,6 +9519,10 @@ msgid ""
 "The tutorials can also be found online at https://inkscape.org/en/learn/"
 "tutorials/"
 msgstr ""
+"Kennsluskrárnar eru ekki uppsettar.\n"
+"Á Linux gætirðu þurft að setja upp 'inkscape-tutorials'; á Windows þarftu að"
+" keyra uppsetningarforritið aftur og velja 'Kennsluefni/Tutorials'.\n"
+"Kennsluefnið er líka á netinu á https://inkscape.org/en/learn/tutorials/"
 
 #: ../src/inkscape-application.cpp:329
 msgid "Broken links have been changed to point to existing files."
@@ -9588,6 +9594,9 @@ msgid ""
 "Method used to convert pre-0.92 document dpi, if needed: [none|scale-viewbox|"
 "scale-document]"
 msgstr ""
+"Aðferð við að umbreyta PÁT-upplausn skjala eldri en útg. 0.92, ef nauðsynlegt"
+" þykir: [none|scale-viewbox|"
+"scale-document]"
 
 #: ../src/inkscape-application.cpp:627
 msgid "METHOD"
@@ -9606,6 +9615,8 @@ msgid ""
 "Output file name (defaults to input filename; file type is guessed from "
 "extension if present; use '-' to write to stdout)"
 msgstr ""
+"Heiti frálagsskrár (sjálfgefið sama og ílagsskrár, giskað er á skráategund út"
+" frá skráarendingu ef hún finnst; nota '-' tila að skrifa í stdout)"
 
 #: ../src/inkscape-application.cpp:632
 msgid "FILENAME"
@@ -9615,6 +9626,8 @@ msgstr "SKRÁARHEITI"
 msgid ""
 "Overwrite input file (otherwise add '_out' suffix if type doesn't change)"
 msgstr ""
+"Skrifa yfir ílagsskrá (annars bæta við '_out' endingu ef skráartegund"
+" breytist ekki)"
 
 #: ../src/inkscape-application.cpp:634
 msgid "File type(s) to export: [svg,png,ps,eps,pdf,emf,wmf,xaml]"
@@ -9626,11 +9639,11 @@ msgstr "TYPE[,TYPE]*"
 
 #: ../src/inkscape-application.cpp:635
 msgid "Extension ID to use for exporting"
-msgstr ""
+msgstr "Auðkenni forritsviðauka til að nota við útflutning"
 
 #: ../src/inkscape-application.cpp:635
 msgid "EXTENSION-ID"
-msgstr ""
+msgstr "VIÐAUKI-ID"
 
 #: ../src/inkscape-application.cpp:638
 msgid "Export geometry"
@@ -9654,7 +9667,7 @@ msgstr "x0:y0:x1:y1"
 
 #: ../src/inkscape-application.cpp:642
 msgid "Snap the bitmap export area outwards to the nearest integer values"
-msgstr ""
+msgstr "Láta svæði til útflutnings bitamynda grípa út í næstu heiltölugildi"
 
 #: ../src/inkscape-application.cpp:643
 msgid "Resolution for bitmaps and rasterized filters; default is 96"
@@ -9686,6 +9699,7 @@ msgstr "HÆÐ"
 #: ../src/inkscape-application.cpp:646
 msgid "Margin around export area: units of page size for SVG, mm for PS/PDF"
 msgstr ""
+"Spássía í kringum útflutt svæði: í einingum síðu fyrir SVG, mm fyrir PS/PDF"
 
 #: ../src/inkscape-application.cpp:646
 msgid "MARGIN"
@@ -9717,7 +9731,7 @@ msgstr "Postscript-stig (2 eða 3); sjálfgefið er 3"
 
 #: ../src/inkscape-application.cpp:653
 msgid "LEVEL"
-msgstr ""
+msgstr "STIG"
 
 #: ../src/inkscape-application.cpp:654
 msgid "PDF version (1.4 or 1.5); default is 1.5"
@@ -9725,7 +9739,7 @@ msgstr "PDF-útgáfa (1.4 or 1.5); sjálfgefið er 1.5"
 
 #: ../src/inkscape-application.cpp:654
 msgid "VERSION"
-msgstr ""
+msgstr "ÚTGÁFA"
 
 #: ../src/inkscape-application.cpp:655
 msgid "Convert text to paths (PS/EPS/PDF/SVG)"
@@ -9780,7 +9794,7 @@ msgstr ""
 
 #: ../src/inkscape-application.cpp:666
 msgid "ID(s) of object(s) to be queried"
-msgstr ""
+msgstr "ID-auðkenni hluta sem á að fletta upp"
 
 #: ../src/inkscape-application.cpp:666 ../src/inkscape-application.cpp:676
 msgid "OBJECT-ID[,OBJECT-ID]*"
@@ -9902,7 +9916,7 @@ msgstr "Inkview - Skoðari fyrir SVG-skrár"
 
 #: ../src/inkview-application.cpp:69
 msgid "path1 [path2 [pathN]]"
-msgstr ""
+msgstr "path1 [path2 [pathN]]"
 
 #: ../src/inkview-application.cpp:70
 msgid ""
@@ -9977,7 +9991,7 @@ msgstr "Tannhjól"
 
 #: ../src/live_effects/effect.cpp:122
 msgid "Create interlocking, configurable gears based on the nodes of a path"
-msgstr ""
+msgstr "Teikna grípandi, stillanleg gírhjól út frá hnútum ferils"
 
 #: ../src/live_effects/effect.cpp:132
 msgid "Pattern Along Path"
@@ -9985,7 +9999,7 @@ msgstr "Mynstur eftir ferli"
 
 #: ../src/live_effects/effect.cpp:136
 msgid "Place one or more copies of another path along the path"
-msgstr ""
+msgstr "Settu eitt eða fleiri afrit af öðrum ferli langs eftir ferlinum"
 
 #: ../src/live_effects/effect.cpp:146
 msgid "Stitch Sub-Paths"
@@ -9995,6 +10009,7 @@ msgstr "Sauma saman undirferla"
 msgid ""
 "Draw perpendicular lines between subpaths of a path, like rungs of a ladder"
 msgstr ""
+"Teikna hornréttar línur á milli undirferla ferils, líkt og þrep í stiga"
 
 #: ../src/live_effects/effect.cpp:161
 msgid "VonKoch"
@@ -10018,7 +10033,7 @@ msgstr "Stoðnet"
 
 #: ../src/live_effects/effect.cpp:193
 msgid "Create a (perspective) grid from a 3-node path"
-msgstr ""
+msgstr "Búðu til fjarvíddarnet úr 3-hnúta ferli"
 
 #: ../src/live_effects/effect.cpp:203
 msgid "Spiro spline"
@@ -10061,6 +10076,8 @@ msgstr "Skissa"
 #: ../src/live_effects/effect.cpp:263
 msgid "Draw multiple short strokes along the path, as in a pencil sketch"
 msgstr ""
+"Teikna margendurteknar stuttar strokur eftir ferlinum, líkt og í"
+" blýantsteikningu"
 
 #: ../src/live_effects/effect.cpp:273
 msgid "Ruler"
@@ -10295,7 +10312,7 @@ msgstr "Krafthula"
 
 #: ../src/live_effects/effect.cpp:617
 msgid "Invert or hide a mask, or use its negative"
-msgstr ""
+msgstr "Umhverfa eða fela hulu, eða nota andhverfu hennar"
 
 #: ../src/live_effects/effect.cpp:627
 msgid "Ellipse from points"
@@ -10307,7 +10324,7 @@ msgstr "Teikna hring, sporbaug, boga eða sneið út frá hnútum ferils"
 
 #: ../src/live_effects/effect.cpp:645
 msgid "Offset the path, optionally keeping cusp corners cusp"
-msgstr ""
+msgstr "Hliðra ferlinum, möguleiki á að halda frjálsum hnútum frjálsum"
 
 #: ../src/live_effects/effect.cpp:655
 msgid "Dashed Stroke"
@@ -10362,7 +10379,7 @@ msgstr "Línubútur"
 
 #: ../src/live_effects/effect.cpp:729
 msgid "Draw a straight line that connects the first and last node of a path"
-msgstr ""
+msgstr "Teiknar beina línu sem tengir fyrsta og síðasta hnút ferils"
 
 #: ../src/live_effects/effect.cpp:739
 #: ../src/live_effects/lpe-measure-segments.cpp:62
@@ -10372,7 +10389,7 @@ msgstr "Samhliða"
 
 #: ../src/live_effects/effect.cpp:743
 msgid "Create a draggable line that will always be parallel to a two-node path"
-msgstr ""
+msgstr "Búa til draganlega línu sem er alltaf samsíða tveggja-hnúta ferli"
 
 #: ../src/live_effects/effect.cpp:753
 msgid "Perpendicular bisector"
@@ -11119,7 +11136,7 @@ msgstr ""
 
 #: ../src/live_effects/lpe-dashed-stroke.cpp:24
 msgid "Note"
-msgstr ""
+msgstr "Athugasemd"
 
 #: ../src/live_effects/lpe-dashed-stroke.cpp:24
 #: ../src/live_effects/lpe-powerclip.cpp:33
@@ -11129,6 +11146,8 @@ msgstr "Mikilvæg skilaboð"
 #: ../src/live_effects/lpe-dashed-stroke.cpp:25
 msgid "Add <b>\"Fill Between Many LPE\"</b> to add fill."
 msgstr ""
+"Bæta við <b>\"Fylling milli margra LPE-ferilbrellna\"</b> til að bæta við"
+" fyllingu."
 
 #: ../src/live_effects/lpe-ellipse_5pts.cpp:75
 msgid "Five points required for constructing an ellipse"
@@ -11229,7 +11248,7 @@ msgstr "Saumsporamynstur"
 
 #: ../src/live_effects/lpe-embrodery-stitch.cpp:62
 msgid "Select between different stitch patterns"
-msgstr ""
+msgstr "Veldu milli mismunandi saumsporamynstra"
 
 #: ../src/live_effects/lpe-embrodery-stitch.cpp:63
 msgid "Show stitches"
@@ -11315,7 +11334,7 @@ msgstr ""
 
 #: ../src/live_effects/lpe-fill-between-many.cpp:27
 msgid "Without LPEs"
-msgstr ""
+msgstr "Án LPE-ferilbrellna"
 
 #: ../src/live_effects/lpe-fill-between-many.cpp:28
 msgid "With Spiro or BSpline"
@@ -11323,7 +11342,7 @@ msgstr "Með Spiro- eða BSplínu"
 
 #: ../src/live_effects/lpe-fill-between-many.cpp:29
 msgid "With all LPEs"
-msgstr ""
+msgstr "Með öllum LPE-ferilbrellum"
 
 #: ../src/live_effects/lpe-fill-between-many.cpp:35
 msgid "Paths from which to take the original path data"
@@ -11331,11 +11350,11 @@ msgstr ""
 
 #: ../src/live_effects/lpe-fill-between-many.cpp:36
 msgid "LPEs:"
-msgstr ""
+msgstr "LPE-ferilbrellur:"
 
 #: ../src/live_effects/lpe-fill-between-many.cpp:36
 msgid "Which LPEs of the linked paths should be considered"
-msgstr ""
+msgstr "Hvaða LPE-ferilbrellur tengdu ferlanna ætti að taka til greina"
 
 #: ../src/live_effects/lpe-fill-between-many.cpp:37
 #: ../src/live_effects/lpe-fill-between-strokes.cpp:23
@@ -12160,6 +12179,8 @@ msgid ""
 "Comma-separated list of indices of segments that should not be measured. You "
 "can use another LPE with different parameters to measure these."
 msgstr ""
+"Listi aðgreindur með kommum yfir bútvísa sem ekki ætti að mæla. Þú getur"
+" notað aðra LPE--ferilbrellu með öðrum viðföngum til að mæla þessi."
 
 #: ../src/live_effects/lpe-measure-segments.cpp:84
 msgid "Invert blacklist"
@@ -12784,9 +12805,8 @@ msgid "Offset points"
 msgstr "Hliðrunarpunktar"
 
 #: ../src/live_effects/lpe-powerstroke.cpp:161
-#, fuzzy
 msgid "No jumping handles"
-msgstr "Sýna haldföng"
+msgstr "Engin hoppandi haldföng"
 
 #: ../src/live_effects/lpe-powerstroke.cpp:161
 msgid ""
@@ -13644,18 +13664,16 @@ msgid "Start smoothing:"
 msgstr "Upphaf mýkingar:"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:92
-#, fuzzy
 msgid "Amount of smoothing to apply to the start taper"
-msgstr "Magn mýkingar sem beita skal á mjókkanir"
+msgstr "Magn mýkingar sem beita skal á upphaf mjókkunar"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:93
 msgid "End smoothing:"
 msgstr "Endir mýkingar:"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:93
-#, fuzzy
 msgid "Amount of smoothing to apply to the end taper"
-msgstr "Magn mýkingar sem beita skal á mjókkanir"
+msgstr "Magn mýkingar sem beita skal á enda mjókkunar"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:94
 msgid "Join type:"
@@ -13670,18 +13688,16 @@ msgid "Start direction:"
 msgstr "Upphafsstefna:"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:95
-#, fuzzy
 msgid "Direction of the taper at the path start"
-msgstr "Ákvarðar lögun á upphafi ferilsins"
+msgstr "Stefna mjókkunar á upphafi ferils"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:96
 msgid "End direction:"
 msgstr "Endastefna:"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:96
-#, fuzzy
 msgid "Direction of the taper at the path end"
-msgstr "Ákvarðar lögun á enda ferilsins"
+msgstr "Stefna mjókkunar á enda ferils"
 
 #: ../src/live_effects/lpe-taperstroke.cpp:97
 msgid "Limit for miter joins"
@@ -15411,13 +15427,12 @@ msgid ""
 msgstr ""
 
 #: ../src/seltrans-handles.cpp:25
-#, fuzzy
 msgid ""
 "<b>Align</b> objects to the corner clicked; <b>Shift</b> click to invert "
 "side; <b>Ctrl</b> to group whole selection."
 msgstr ""
-"<b>Jafna</b> hluti að miðju; <b>Shift</b>-smella til að miðja lóðrétt í stað "
-"lárétt."
+"<b>Jafna</b> hluti að ásmelltu horni; <b>Shift</b>-smella til að snúa við"
+" hlið; <b>Ctrl</b> til að hópa allt valið."
 
 #: ../src/seltrans-handles.cpp:26
 msgid ""
@@ -16127,7 +16142,7 @@ msgstr "Gildi"
 
 #: ../src/ui/dialog/attrdialog.cpp:197
 msgid "Shift+Return for a new line"
-msgstr ""
+msgstr "Shift+Enter fyrir nýja línu"
 
 #: ../src/ui/dialog/attrdialog.cpp:437
 msgid "<b>Click</b> attribute to edit."
@@ -17665,7 +17680,7 @@ msgstr "Virkja forskoðun"
 
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:129
 msgid "Export as SVG 1.1 per settings in Preferences dialog"
-msgstr ""
+msgstr "Flytja út sem SVG 1.1 miðað við stillingar í kjörstillingaglugga"
 
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:252
 msgid "_Open"
@@ -17727,7 +17742,7 @@ msgstr "Engin skrá valin"
 
 #: ../src/ui/dialog/fill-and-stroke.cpp:59
 msgid "_Fill"
-msgstr "_Fylla"
+msgstr "_Fylling"
 
 #: ../src/ui/dialog/fill-and-stroke.cpp:60
 msgid "Stroke _paint"
@@ -17762,15 +17777,15 @@ msgstr "Valið SVG eigindi"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:701
 msgid "Select an image to be used as feImage input"
-msgstr ""
+msgstr "Veldu mynd til að nota sem inntak fyrir feImage"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:794
 msgid "This SVG filter effect does not require any parameters."
-msgstr ""
+msgstr "Þessi SVG-síubrella þarf ekki nein viðföng."
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:800
 msgid "This SVG filter effect is not yet implemented in Inkscape."
-msgstr ""
+msgstr "Þessi SVG-síubrella hefur ekki enn verið útfærð í Inkscape."
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1030
 msgid "Slope"
@@ -17798,11 +17813,11 @@ msgstr "Ljósgjafi:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1186
 msgid "Direction angle for the light source on the XY plane, in degrees"
-msgstr ""
+msgstr "Stefnuhorn ljósgjafans í XY-plani, í gráðum"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1187
 msgid "Direction angle for the light source on the YZ plane, in degrees"
-msgstr ""
+msgstr "Stefnuhorn ljósgjafans í YZ-plani, í gráðum"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1190
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1193
@@ -17829,7 +17844,7 @@ msgstr "Z hnit"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1196
 msgid "Points at:"
-msgstr ""
+msgstr "Beinist að:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1197
 msgid "Specular Exponent:"
@@ -18479,11 +18494,11 @@ msgstr "_Letur"
 
 #: ../src/ui/dialog/find.cpp:83
 msgid "_Desc"
-msgstr ""
+msgstr "_Lýsing"
 
 #: ../src/ui/dialog/find.cpp:84
 msgid "Title"
-msgstr ""
+msgstr "Titill"
 
 #: ../src/ui/dialog/find.cpp:85
 msgid "Properties"
@@ -18615,11 +18630,11 @@ msgstr "Leita að letri"
 
 #: ../src/ui/dialog/find.cpp:170
 msgid "Search description"
-msgstr ""
+msgstr "Leita eftir lýsingu"
 
 #: ../src/ui/dialog/find.cpp:173
 msgid "Search title"
-msgstr ""
+msgstr "Leita eftir titli"
 
 #: ../src/ui/dialog/find.cpp:176
 msgid "Search all object types"
@@ -20798,11 +20813,13 @@ msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1566
 msgid "Show zoom percentage corrected by factor"
-msgstr ""
+msgstr "Sýna aðdráttarprósentu leiðrétta með stuðli"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1567
 msgid "Zoom percentage can be either by the physical units or by pixels."
 msgstr ""
+"Aðdráttarprósenta getur annað hvort verið í raunverulegum mælieiningum eða"
+" mynddílum."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1569
 msgid "Enable dynamic relayout for incomplete sections"
@@ -21722,11 +21739,12 @@ msgstr "Bætir við varaleiðum fyrir myndgerðarvélar sem ekki eru SVG 2."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2104
 msgid "Adds a JavaScript polyfill for rendering meshes in web browsers."
-msgstr ""
+msgstr "Setur inn JavaScript fjölfyllingu til að myndgera möskva í netvöfrum."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2105
 msgid "Adds a JavaScript polyfill for rendering hatches in web browsers."
 msgstr ""
+"Setur inn JavaScript fjölfyllingu til að myndgera strikaskyggingu í netvöfrum."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2108
 msgid "SVG 2 to SVG 1.1"
@@ -21926,7 +21944,7 @@ msgstr "Sjálfvirk vistun"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2251
 msgid "No matches were found, try another search!"
-msgstr ""
+msgstr "Engar samsvaranir fundust, prófaðu aðra leit!"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2256
 msgid "Behavior"
@@ -22207,6 +22225,8 @@ msgid ""
 "with Inkscape for the first time. Snap status is subsequently saved per-"
 "document."
 msgstr ""
+"Upphafleg staða á gripi í nýjum skjölum og SVG-skrám sem opnaðar eru í fyrsta"
+" skipti í Inkscape. Eftir það er staða grips vistuð fyrir hvert skjal."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2362
 msgid "Snap indicator"
@@ -22364,6 +22384,8 @@ msgid ""
 "Zoom tool click, +/- keys, and middle click zoom in and out by this "
 "multiplier"
 msgstr ""
+"Smellur með aðdráttarverkfæri, +/- lyklar og miðjusmellur renna inn og út um"
+" þetta margfeldi"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2424
 msgid "Zoom with middle mouse click"
@@ -22374,6 +22396,8 @@ msgid ""
 "When activated, clicking the middle mouse button (usually the mouse wheel) "
 "zooms."
 msgstr ""
+"Þegar þetta er virkt, mun smellur á miðju-músarhnapp (venjulega músarhjólið)"
+" stýra aðdrætti."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2428
 msgid "_Rotate canvas by:"
@@ -22958,7 +22982,7 @@ msgstr "Aðgerðir"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3219 ../src/ui/shortcuts.cpp:767
 msgid "Numpad"
-msgstr ""
+msgstr "Talnaborð"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3300
 msgid "Ignore words with digits"
@@ -23186,7 +23210,7 @@ msgstr "Kerfi"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3511
 msgid "<span size='large'><b>No Results</b></span>"
-msgstr ""
+msgstr "<span size='large'><b>Engar niðurstöður</b></span>"
 
 #: ../src/ui/dialog/input.cpp:349 ../src/ui/dialog/input.cpp:370
 #: ../src/ui/dialog/input.cpp:1458
@@ -23441,6 +23465,8 @@ msgid ""
 "You don't have any favorites yet. Click on the favorites star again to see "
 "all LPEs."
 msgstr ""
+"Þú ert ekki með nein eftirlæti ennþá. Smelltu á stjörnuna aftur til að sjá"
+" öll LPE."
 
 #: ../src/ui/dialog/livepatheffect-add.cpp:621
 msgid "These are your favorite effects"
@@ -23560,7 +23586,7 @@ msgstr "%1:"
 
 #: ../src/ui/dialog/lpe-powerstroke-properties.cpp:110
 msgid "Modify Node Position"
-msgstr "Breyta staðsetningu liðs"
+msgstr "Breyta staðsetningu hnúts"
 
 #: ../src/ui/dialog/memory.cpp:95
 msgid "Heap"
@@ -24115,7 +24141,7 @@ msgstr "_Ræsa"
 
 #: ../src/ui/dialog/spellcheck.cpp:115
 msgid "No dictionaries installed"
-msgstr ""
+msgstr "Engin orðasöfn eru uppsett"
 
 #: ../src/ui/dialog/spellcheck.cpp:126
 msgid "Suggestions:"
@@ -25034,15 +25060,16 @@ msgstr "<b>Snúa</b> mynsturfyllingu; með <b>Ctrl</b> til að þrepa horn"
 #. TRANSLATORS: This refers to the pattern that's inside the object
 #: ../src/ui/knot/knot-holder.cpp:359
 msgid "<b>Move</b> the stroke's pattern inside the object"
-msgstr ""
+msgstr "<b>Flytja</b> mynstur stroku innan hlutarins"
 
 #: ../src/ui/knot/knot-holder.cpp:362
 msgid "<b>Scale</b> the stroke's pattern; uniformly if with <b>Ctrl</b>"
 msgstr ""
+"<b>Kvarða</b> mynstur stroku; með <b>Ctrl</b> til að halda stærðarhlutföllum"
 
 #: ../src/ui/knot/knot-holder.cpp:365
 msgid "<b>Rotate</b> the stroke's pattern; with <b>Ctrl</b> to snap angle"
-msgstr ""
+msgstr "<b>Snúa</b> mynstur stroku; með <b>Ctrl</b> til að þrepa horn"
 
 #. TRANSLATORS: This refers to the hatch that's inside the object
 #: ../src/ui/knot/knot-holder.cpp:381
@@ -27233,7 +27260,7 @@ msgstr "Búa til runu af hornréttum línubútum"
 #: ../src/ui/toolbar/pencil-toolbar.cpp:267
 #: ../src/ui/toolbar/pencil-toolbar.cpp:268
 msgid "Flatten Spiro or BSpline LPE"
-msgstr ""
+msgstr "Fletja með Spiro- eða BSplínu LPE"
 
 #: ../src/ui/toolbar/pencil-toolbar.cpp:414
 msgctxt "Freehand shape"
@@ -27265,9 +27292,8 @@ msgid "Shape of new paths drawn by this tool"
 msgstr "Lögun nýrra lína sem dregnar eru með þessu verkfæri"
 
 #: ../src/ui/toolbar/pencil-toolbar.cpp:446
-#, fuzzy
 msgid "Scale of the width of the power stroke shape."
-msgstr "Kvarða breidd mynstursins í lengdareiningum þess"
+msgstr "Kvarða breidd á lögun kraftlínu."
 
 #: ../src/ui/toolbar/pencil-toolbar.cpp:515
 msgctxt "Cap"
@@ -27328,9 +27354,8 @@ msgid "Select by touch"
 msgstr "Velja með snertingu"
 
 #: ../src/ui/toolbar/select-toolbar.cpp:75
-#, fuzzy
 msgid "Toggle selection box to select all touched objects."
-msgstr "Kvarða myndval þannig að það samsvari stærð afritaða hlutarins"
+msgstr "Víxla valsvæði af/á til að velja alla snerta hluti."
 
 #: ../src/ui/toolbar/select-toolbar.cpp:122
 msgctxt "Select toolbar"
@@ -29920,7 +29945,7 @@ msgstr "Samhengislegt"
 #: ../src/ui/widget/font-variants.cpp:158
 msgctxt "Font feature"
 msgid "Position"
-msgstr "Staðsetning"
+msgstr "Staða"
 
 #: ../src/ui/widget/font-variants.cpp:159
 #: ../src/ui/widget/font-variants.cpp:164
@@ -29941,7 +29966,7 @@ msgstr "Háletrað"
 #: ../src/ui/widget/font-variants.cpp:163
 msgctxt "Font feature"
 msgid "Capitals"
-msgstr "Stafstaða"
+msgstr "Hástafir"
 
 #: ../src/ui/widget/font-variants.cpp:165
 msgctxt "Font feature"
@@ -30115,7 +30140,7 @@ msgstr "Samhengisform. Sjálfgefið virkt. OpenType tafla: 'calt'"
 
 #: ../src/ui/widget/font-variants.cpp:273
 msgid "Normal position."
-msgstr "Venjuleg staðsetning."
+msgstr "Venjuleg staða."
 
 #: ../src/ui/widget/font-variants.cpp:274
 msgid "Subscript. OpenType table: 'subs'"
@@ -32940,7 +32965,7 @@ msgstr "Skoða þennan vinnuglugga á öllum skjánum"
 
 #: ../src/verbs.cpp:2807
 msgid "Fullscreen & Focus Mode"
-msgstr "Skjáfylli & Áhersluhamur"
+msgstr "Skjáfylli og áhersluhamur"
 
 #: ../src/verbs.cpp:2809
 msgid "Toggle _Focus Mode"
@@ -34642,7 +34667,7 @@ msgstr ""
 
 #: ../share/extensions/embedimage.py:66
 msgid "Attribute \"xlink:href\" not set on node {}."
-msgstr ""
+msgstr "Eigindi \"xlink:href\" ekki stillt á hnút {}."
 
 #: ../share/extensions/embedimage.py:80
 msgid "File not found \"{}\". Unable to embed image."
@@ -34735,11 +34760,11 @@ msgstr ""
 "get_center_position()` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:131
-#, fuzzy
 msgid ""
 "{} is now a dict in the SvgDocumentElement class. Use `self.svg.selected`."
 msgstr ""
-"{} er núna aðferð (method) í svg-skjalinu. Notaðu `self.svg.get_ids()` í "
+"{} er núna aðferð (method) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.selected` í "
 "staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:136
@@ -34767,38 +34792,34 @@ msgstr ""
 "getElementById(eid)` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:156
-#, fuzzy
 msgid ""
 "{} is now a new method in the SvgDocumentElement class. Use `self.svg."
 "getElement(path)` instead."
 msgstr ""
-"{} er núna ný aðferð (method) í svg-skjalinu. Notaðu `self.svg."
-"getElement(path)` í staðinn.`"
+"{} er núna ný aðferð (method) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.getElement(path)` í staðinn.`"
 
 #: ../share/extensions/inkex/deprecated.py:162
-#, fuzzy
 msgid "{} is no longer in use. Use the lxml `.getparent()` method instead."
 msgstr ""
-"{} er ekki lengur í notkun. Notaðu lxml .getparent() aðferðina (method) í "
+"{} er ekki lengur í notkun. Notaðu lxml `.getparent()` aðferðina (method) í "
 "staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:167
-#, fuzzy
 msgid ""
 "{} is now a property of the SvgDocumentElement class. Use `self.svg."
 "namedview` to access this element."
 msgstr ""
-"{} er núna eiginleiki (property) í svg-skjalinu. Notaðu `self.svg.namedview` "
-"til að nálgast þetta einindi"
+"{} er núna eiginleiki (property) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.namedview` til að nálgast þetta einindi"
 
 #: ../share/extensions/inkex/deprecated.py:174
-#, fuzzy
 msgid ""
 "{} is now a method of the namedview element object. Use `self.svg.namedview."
 "add(Guide().move_to(x, y, a))` instead."
 msgstr ""
-"{} er núna aðferð (method) í svg-skjalinu. Notaðu `self.svg.namedview."
-"center` í staðinn."
+"{} er núna aðferð (method) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.namedview.add(Guide().move_to(x, y, a))` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:180
 msgid "{} is now `Effect.run()`. The `output` argument has changed."
@@ -34813,49 +34834,44 @@ msgid "self.svg_file is now self.options.input_file."
 msgstr "self.svg_file is now self.options.input_file."
 
 #: ../share/extensions/inkex/deprecated.py:203
-#, fuzzy
 msgid ""
 "{} is now a method in the SvgDocumentElement class.  Use `self.svg."
 "get_unique_id(old_id)` instead."
 msgstr ""
-"{} er núna aðferð (method) í svg-skjalinu. Notaðu `self.svg."
-"get_unique_id(old_id)` í staðinn."
+"{} er núna aðferð (method) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.get_unique_id(old_id)` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:208
-#, fuzzy
 msgid ""
 "{} is now a property of the SvgDocumentElement class. Use `self.svg.width` "
 "instead."
 msgstr ""
-"{} er núna eiginleiki (property) í svg-skjalinu. Notaðu `self.svg.width` í "
-"staðinn."
+"{} er núna eiginleiki (property) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.width` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:213
-#, fuzzy
 msgid ""
 "{} is now a property of the SvgDocumentElement class. Use `self.svg.height` "
 "instead."
 msgstr ""
-"{} er núna eiginleiki (property) í svg-skjalinu. Notaðu `self.svg.height` í "
-"staðinn."
+"{} er núna eiginleiki (property) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.height` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:218
-#, fuzzy
 msgid ""
 "{} is now a property of the SvgDocumentElement class. Use `self.svg.unit` "
 "instead."
 msgstr ""
-"{} er núna eiginleiki (property) í svg-skjalinu. Notaðu `self.svg.unit` í "
-"staðinn."
+"{} er núna eiginleiki (property) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.unit` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:223
-#, fuzzy
 msgid ""
 "{} is now a method in the SvgDocumentElement class. Use `self.svg."
 "unittouu(str)` instead."
 msgstr ""
-"{} er núna aðferð (method) í svg-skjalinu. Notaðu `self.svg.unittouu(str)` í "
-"staðinn."
+"{} er núna aðferð (method) í SvgDocumentElement klasa. Notaðu"
+" `self.svg.unittouu(str)` í staðinn."
 
 #: ../share/extensions/inkex/deprecated.py:228
 msgid ""
@@ -34876,7 +34892,7 @@ msgstr ""
 
 #: ../share/extensions/interp_att_g.py:87
 msgid "Bad values for a number field: {}, {}."
-msgstr ""
+msgstr "Slæm gildi fyrir tölusvið: {}, {}."
 
 #: ../share/extensions/interp_att_g.py:113
 msgid "You selected 'Other'. Please enter an attribute to interpolate."
@@ -35031,17 +35047,19 @@ msgstr "Settu inn heiti á lagi."
 #: ../share/extensions/jessyink_transitions.py:44
 #, python-brace-format
 msgid "Layer '{self.options.layerName}' not found."
-msgstr ""
+msgstr "Lagið '{self.options.layerName}' fannst ekki."
 
 #: ../share/extensions/jessyink_video.py:37
 msgid "Could not obtain the selected layer for inclusion of the video element."
-msgstr ""
+msgstr "Gat ekki fengið valda lagið til að setja inn í það myndskeiðseinindið."
 
 #: ../share/extensions/jessyink_video.py:42
 msgid ""
 "Could not obtain the selected layer for inclusion of the video element.\n"
 "\n"
 msgstr ""
+"Gat ekki fengið valda lagið til að setja inn í það myndskeiðseinindið.\n"
+"\n"
 
 #: ../share/extensions/jessyink_view.py:38
 msgid ""
@@ -35066,6 +35084,8 @@ msgid ""
 "The second selected object is a group, not a path.\n"
 "Try using Object->Ungroup."
 msgstr ""
+"Seinni valdi hluturinn er hópur, ekki ferill.\n"
+"Prófaðu að nota 'Hlutur -> Skipta upp hóp'."
 
 #: ../share/extensions/path_envelope.py:45
 #: ../share/extensions/perspective.py:75
@@ -35073,6 +35093,8 @@ msgid ""
 "The second selected object is not a path.\n"
 "Try using the procedure Path->Object to Path."
 msgstr ""
+"Seinni valdi hluturinn er ekki ferill.\n"
+"Prófaðu að nota aðgerðirnar 'Ferill -> Hlutur í feril'."
 
 #: ../share/extensions/path_envelope.py:48
 #: ../share/extensions/perspective.py:78
@@ -36111,9 +36133,8 @@ msgid ""
 msgstr ""
 
 #: ../share/extensions/funcplot.inx:48
-#, fuzzy
 msgid "This extension creates a plot of a function (in variable x)."
-msgstr "Forritsviðaukinn krefst að minnsta kosti eins lags sem ekki sé tómt."
+msgstr "Þessi forritsviðauki útbýr línurit falls (í breytu x)."
 
 #: ../share/extensions/funcplot.inx:50 ../share/extensions/param_curves.inx:45
 msgid ""
@@ -36746,19 +36767,19 @@ msgstr "Rennibekkur"
 #: ../share/extensions/gcodetools_lathe.inx:9
 #: ../share/extensions/gcodetools_lathe.inx:24
 msgid "Lathe width:"
-msgstr "Breidd rennslu:"
+msgstr "Breidd rennslis:"
 
 #: ../share/extensions/gcodetools_lathe.inx:10
 msgid "Fine cut width:"
-msgstr ""
+msgstr "Breidd fínskurðar:"
 
 #: ../share/extensions/gcodetools_lathe.inx:11
 msgid "Fine cut count:"
-msgstr ""
+msgstr "Fjöldi fínskurða:"
 
 #: ../share/extensions/gcodetools_lathe.inx:12
 msgid "Create fine cut using:"
-msgstr ""
+msgstr "Búa til fínskurð með:"
 
 #: ../share/extensions/gcodetools_lathe.inx:13
 msgid "Move path"
@@ -36778,7 +36799,7 @@ msgstr ""
 
 #: ../share/extensions/gcodetools_lathe.inx:20
 msgid "Lathe modify path"
-msgstr ""
+msgstr "Breyta ferli rennslis"
 
 #: ../share/extensions/gcodetools_lathe.inx:21
 msgid ""
@@ -36854,11 +36875,11 @@ msgstr "Undirbúa feril fyrir plasma- eða leysiskurð"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:9
 msgid "Create in-out paths"
-msgstr ""
+msgstr "Búa til inn-út ferla"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:10
 msgid "In-out path length:"
-msgstr ""
+msgstr "Lengd inn-út ferils:"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:11
 msgid "In-out path max distance to reference point:"
@@ -36866,7 +36887,7 @@ msgstr ""
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:12
 msgid "In-out path type:"
-msgstr ""
+msgstr "Tegund inn-út ferils:"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:14
 msgid "Perpendicular"
@@ -36878,7 +36899,7 @@ msgstr "Snertill (tangens)"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:17
 msgid "In-out path radius for round path:"
-msgstr ""
+msgstr "Radíus inn-út ferils fyrir hringlaga feril:"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:18
 msgid "Replace original path"
@@ -36886,7 +36907,7 @@ msgstr "Skipta út upprunalegum ferli"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:19
 msgid "Do not add in-out reference points"
-msgstr ""
+msgstr "Ekki bæta við inn-út viðmiðunarpunktum"
 
 #: ../share/extensions/gcodetools_prepare_path_for_plasma.inx:21
 msgid "-------------------------------------------------"
@@ -37415,6 +37436,11 @@ msgid ""
 "\n"
 "\n"
 msgstr ""
+"Verkfæri til að skipta texta út fyrir strokuletur\n"
+"\n"
+"Útgáfa 3.0.4, 2020-06-01\n"
+"\n"
+"\n"
 
 #: ../share/extensions/hershey.inx:20
 msgid "Font face:"
@@ -37465,6 +37491,8 @@ msgid ""
 "\n"
 "Other SVG font name or path (if \"Other\" selected above):\n"
 msgstr ""
+"\n"
+"Nafn á öðru SVG-letri eða slóð (ef \"Annað\" er valið hér fyrir ofan):\n"
 
 #: ../share/extensions/hershey.inx:56
 msgid "Name/Path:"
@@ -40398,24 +40426,29 @@ msgid ""
 "distortions in logos and other flat vector images. Your artwork will lose "
 "visual quality and any transparency."
 msgstr ""
+"Skráasniðið JPEG er ágætt fyrir ljósmyndir, en veldur truflunum og bjögun í"
+" merkjum og öðrum heillituðum flötum vigurmynda. Myndefnið þitt mun missa"
+" sjónræn gæði og öllu gegnsæi."
 
 #: ../share/extensions/raster_output_jpg.inx:10
 msgid "This is a high compression example for demonstration."
-msgstr ""
+msgstr "Þetta er sýnishorn með mikilli þjöppun."
 
 #: ../share/extensions/raster_output_jpg.inx:12
 msgid "You put a lot of talent, time and energy into your work."
-msgstr ""
+msgstr "Þú hefur sett mikinn tíma, hægileika og orku í verkin þín."
 
 #: ../share/extensions/raster_output_jpg.inx:13
 msgid ""
 "Your work deserves better, so you should consider exporting to PNG or WebP "
 "file formats with lossless compression instead."
 msgstr ""
+"Vinnan þín á betra skilið, þannig að þú ættir að íhuga að flytja frekar út í"
+" PNG eða WebP skráasniðin með taplausri þjöppun."
 
 #: ../share/extensions/raster_output_jpg.inx:15
 msgid "Learn more details about JPEG:"
-msgstr "Læra meira um JPEG:"
+msgstr "Lærðu meira um JPEG:"
 
 #: ../share/extensions/raster_output_jpg.inx:16
 msgid "https://inkscape.org/learn/jpg/"
@@ -40447,7 +40480,7 @@ msgstr "JPEG (*.jpg)"
 
 #: ../share/extensions/raster_output_jpg.inx:34
 msgid "Render to JPEG file format"
-msgstr "Myndgerð í JPEG-skráarsnið"
+msgstr "Myndgera í JPEG-skráarsnið"
 
 #: ../share/extensions/raster_output_png.inx:3
 msgid "Optimized PNG"
@@ -41894,11 +41927,11 @@ msgstr "smella"
 
 #: ../share/extensions/web_interactive_mockup.inx:9
 msgid "focus (e.g. with tab key)"
-msgstr ""
+msgstr "virkni (t.d. með dálklykli/TAB)"
 
 #: ../share/extensions/web_interactive_mockup.inx:10
 msgid "remove focus (e.g. with tab key)"
-msgstr ""
+msgstr "fjarlægja virkni (t.d. með dálklykli/TAB)"
 
 #: ../share/extensions/web_interactive_mockup.inx:11
 msgid "activate"
@@ -41906,31 +41939,27 @@ msgstr "virkja"
 
 #: ../share/extensions/web_interactive_mockup.inx:12
 msgid "press left mouse button down"
-msgstr ""
+msgstr "ýttu niður vinstri músarhnappi"
 
 #: ../share/extensions/web_interactive_mockup.inx:13
 msgid "let left mouse button go"
-msgstr ""
+msgstr "slepptu vinstri músarhnappi"
 
 #: ../share/extensions/web_interactive_mockup.inx:14
-#, fuzzy
 msgid "move cursor into object"
-msgstr "Fjarlægja umbreytingar af hlut"
+msgstr "færa bendil inn í hlut"
 
 #: ../share/extensions/web_interactive_mockup.inx:15
-#, fuzzy
 msgid "move cursor within object"
-msgstr "Fjarlægja umbreytingar af hlut"
+msgstr "færa bendil innan hlutar"
 
 #: ../share/extensions/web_interactive_mockup.inx:16
-#, fuzzy
 msgid "move cursor out of object"
-msgstr "Fjarlægja umbreytingar af hlut"
+msgstr "færa bendil út úr hlut"
 
 #: ../share/extensions/web_interactive_mockup.inx:17
-#, fuzzy
 msgid "element is loaded by browser"
-msgstr "þegar atriði er hlaðið inn"
+msgstr "eigindi er hlaðið inn af vafra"
 
 #: ../share/extensions/web_interactive_mockup.inx:21
 msgid ""
