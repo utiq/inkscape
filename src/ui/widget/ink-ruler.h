@@ -34,7 +34,6 @@ public:
     void set_range(const double& lower, const double& upper);
 
     void add_track_widget(Gtk::Widget& widget);
-    bool draw_marker_callback(GdkEventMotion* motion_event);
 
     void size_request(Gtk::Requisition& requisition) const;
     void get_preferred_width_vfunc( int& minimum_width,  int& natural_width ) const override;
@@ -47,7 +46,12 @@ protected:
     bool on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) override;
     void on_style_updated() override;
 
+    bool on_motion_notify_event(GdkEventMotion *motion_event) override;
+    bool on_button_press_event(GdkEventButton *button_event) override;
+
 private:
+    Gtk::Menu *getContextMenu();
+
     Gtk::Orientation    _orientation;
 
     Inkscape::Util::Unit const* _unit;

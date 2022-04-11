@@ -283,6 +283,12 @@ void SPNamedView::modified(unsigned int flags)
         for (auto &page : page_manager.getPages()) {
             page->setDefaultAttributes();
         }
+        // Update unit action group
+        auto action = document->getActionGroup()->lookup_action("set-display-unit");
+        if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action)) {
+            Glib::VariantType String(Glib::VARIANT_TYPE_STRING);
+            saction->change_state(getDisplayUnit()->abbr);
+        }
     }
     // Add desk color, and chckerboard pattern to desk view
     for (auto desktop : views) {

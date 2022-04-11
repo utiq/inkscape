@@ -1695,77 +1695,8 @@ void DocumentProperties::display_unit_change(const Inkscape::Util::Unit* doc_uni
         return;
     }
 
-    Inkscape::XML::Node *repr = getDesktop()->getNamedView()->getRepr();
-    /*Inkscape::Util::Unit const *old_doc_unit = unit_table.getUnit("px");
-    if(repr->attribute("inkscape:document-units")) {
-        old_doc_unit = unit_table.getUnit(repr->attribute("inkscape:document-units"));
-    }*/
-    // Inkscape::Util::Unit const *doc_unit = _rum_deflt.getUnit();
-
-    // Set document unit
-    Inkscape::SVGOStringStream os;
-    os << doc_unit->abbr;
-    repr->setAttribute("inkscape:document-units", os.str());
-
-    // Disable changing of SVG Units. The intent here is to change the units in the UI, not the units in SVG.
-    // This code should be moved (and fixed) once we have an "SVG Units" setting that sets what units are used in SVG data.
-#if 0
-    // Set viewBox
-    if (doc->getRoot()->viewBox_set) {
-        gdouble scale = Inkscape::Util::Quantity::convert(1, old_doc_unit, doc_unit);
-        doc->setViewBox(doc->getRoot()->viewBox*Geom::Scale(scale));
-    } else {
-        Inkscape::Util::Quantity width = doc->getWidth();
-        Inkscape::Util::Quantity height = doc->getHeight();
-        doc->setViewBox(Geom::Rect::from_xywh(0, 0, width.value(doc_unit), height.value(doc_unit)));
-    }
-
-    // TODO: Fix bug in nodes tool instead of switching away from it
-    if (get_active_tool(get_desktop()) == "Node") {
-        set_active_tool(get_desktop(), "Select");
-    }
-
-    // Scale and translate objects
-    // set transform options to scale all things with the transform, so all things scale properly after the viewbox change.
-    /// \todo this "low-level" code of changing viewbox/unit should be moved somewhere else
-
-    // save prefs
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool transform_stroke      = prefs->getBool("/options/transform/stroke", true);
-    bool transform_rectcorners = prefs->getBool("/options/transform/rectcorners", true);
-    bool transform_pattern     = prefs->getBool("/options/transform/pattern", true);
-    bool transform_gradient    = prefs->getBool("/options/transform/gradient", true);
-
-    prefs->setBool("/options/transform/stroke", true);
-    prefs->setBool("/options/transform/rectcorners", true);
-    prefs->setBool("/options/transform/pattern", true);
-    prefs->setBool("/options/transform/gradient", true);
-    {
-        ShapeEditor::blockSetItem(true);
-        gdouble viewscale = 1.0;
-        Geom::Rect vb = doc->getRoot()->viewBox;
-        if ( !vb.hasZeroArea() ) {
-            gdouble viewscale_w = doc->getWidth().value("px") / vb.width();
-            gdouble viewscale_h = doc->getHeight().value("px")/ vb.height();
-            viewscale = std::min(viewscale_h, viewscale_w);
-        }
-        gdouble scale = Inkscape::Util::Quantity::convert(1, old_doc_unit, doc_unit);
-        doc->getRoot()->scaleChildItemsRec(Geom::Scale(scale), Geom::Point(-viewscale*doc->getRoot()->viewBox.min()[Geom::X] +
-                                                                            (doc->getWidth().value("px") - viewscale*doc->getRoot()->viewBox.width())/2,
-                                                                            viewscale*doc->getRoot()->viewBox.min()[Geom::Y] +
-                                                                            (doc->getHeight().value("px") + viewscale*doc->getRoot()->viewBox.height())/2),
-                                                                            false);
-        ShapeEditor::blockSetItem(false);
-    }
-    prefs->setBool("/options/transform/stroke",      transform_stroke);
-    prefs->setBool("/options/transform/rectcorners", transform_rectcorners);
-    prefs->setBool("/options/transform/pattern",     transform_pattern);
-    prefs->setBool("/options/transform/gradient",    transform_gradient);
-#endif
-
-    document->setModifiedSinceSave();
-
-    DocumentUndo::done(document, _("Changed default display unit"), "");
+    auto action = document->getActionGroup()->lookup_action("set-display-unit");
+    action->activate(doc_unit->abbr);
 }
 
 } // namespace Dialog

@@ -17,6 +17,8 @@
 
 #include "util/units.h"
 
+using Inkscape::Util::unit_table;
+
 struct SPRulerMetric
 {
   gdouble ruler_scale[16];
@@ -59,7 +61,6 @@ Ruler::Ruler(Gtk::Orientation orientation)
                Gdk::BUTTON_PRESS_MASK   |  // For guide creation
                Gdk::BUTTON_RELEASE_MASK );
 
-    signal_motion_notify_event().connect(sigc::mem_fun(*this, &Ruler::draw_marker_callback));
     set_no_show_all();
 }
 
@@ -98,7 +99,7 @@ Ruler::set_range(const double& lower, const double& upper)
 void
 Ruler::add_track_widget(Gtk::Widget& widget)
 {
-    widget.signal_motion_notify_event().connect(sigc::mem_fun(*this, &Ruler::draw_marker_callback), false); // false => connect first
+    widget.signal_motion_notify_event().connect(sigc::mem_fun(*this, &Ruler::on_motion_notify_event), false); // false => connect first
 }
 
 
@@ -106,7 +107,7 @@ Ruler::add_track_widget(Gtk::Widget& widget)
 // coordinates. The routine assumes that the ruler is the same width (height) as the canvas. If
 // not, one could use Gtk::Widget::translate_coordinates() to convert the coordinates.
 bool
-Ruler::draw_marker_callback(GdkEventMotion* motion_event)
+Ruler::on_motion_notify_event(GdkEventMotion *motion_event)
 {
     double position = 0;
     if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
@@ -133,6 +134,16 @@ Ruler::draw_marker_callback(GdkEventMotion* motion_event)
     return false;
 }
 
+bool Ruler::on_button_press_event(GdkEventButton *event)
+{
+    if (event->button == 3) {
+        auto menu = getContextMenu();
+        menu->popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
+        // Question to Reviewer: Does this leak?
+        return true;
+    }
+    return false;
+}
 
 // Find smallest dimension of ruler based on font size.
 void
@@ -458,6 +469,29 @@ Ruler::on_style_updated() {
 
     queue_resize();
     queue_draw();
+}
+
+/**
+ * Return a contextmenu for the ruler
+ */
+Gtk::Menu *Ruler::getContextMenu()
+{
+    auto gtk_menu = new Gtk::Menu();
+    auto gio_menu = Gio::Menu::create();
+    auto unit_menu = Gio::Menu::create();
+
+    for (auto &pair : unit_table.units(Inkscape::Util::UNIT_TYPE_LINEAR)) {
+        auto unit = pair.second.abbr;
+        Glib::ustring action_name = "doc.set-display-unit('" + unit + "')";
+        auto item = Gio::MenuItem::create(unit, action_name);
+        unit_menu->append_item(item);
+    }
+
+    gio_menu->append_section(unit_menu);
+    gtk_menu->bind_model(gio_menu, true);
+    gtk_menu->attach_to_widget(*this); // Might need canvas here
+    gtk_menu->show();
+    return gtk_menu;
 }
 
 } // Namespace Inkscape

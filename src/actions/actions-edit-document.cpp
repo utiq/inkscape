@@ -21,6 +21,7 @@
 #include "inkscape.h"
 #include "selection-chemistry.h"
 #include "object/sp-guide.h"
+#include "object/sp-namedview.h"
 
 void
 create_guides_around_page(SPDocument* document)
@@ -45,6 +46,16 @@ fit_canvas_drawing(SPDocument* document)
     }
 }
 
+void
+set_display_unit(Glib::ustring abbr, SPDocument* document)
+{
+    // This does not modify the scale of the document, just the units
+    Inkscape::XML::Node *repr = document->getNamedView()->getRepr();
+    repr->setAttribute("inkscape:document-units", abbr);
+    document->setModifiedSinceSave();
+    Inkscape::DocumentUndo::done(document, _("Changed default display unit"), "");
+}
+
 std::vector<std::vector<Glib::ustring>> raw_data_edit_document =
 {
 
@@ -58,13 +69,14 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit_document =
 void
 add_actions_edit_document(SPDocument* document)
 {
-
     Glib::RefPtr<Gio::SimpleActionGroup> map = document->getActionGroup();
 
     // clang-format off
     map->add_action( "create-guides-around-page",           sigc::bind<SPDocument*>(sigc::ptr_fun(&create_guides_around_page),  document));
     map->add_action( "delete-all-guides",                   sigc::bind<SPDocument*>(sigc::ptr_fun(&delete_all_guides),  document));
     map->add_action( "fit-canvas-to-drawing",               sigc::bind<SPDocument*>(sigc::ptr_fun(&fit_canvas_drawing),  document));
+
+    map->add_action_radio_string("set-display-unit",        sigc::bind<SPDocument*>(sigc::ptr_fun(&set_display_unit), document), "px");
     // clang-format on
 
     // Check if there is already an application instance (GUI or non-GUI).
