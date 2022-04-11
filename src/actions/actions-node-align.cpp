@@ -28,16 +28,11 @@
 
 #include "inkscape-application.h"
 #include "inkscape-window.h"
+#include "ui/tool/node-types.h"
 #include "ui/tool/multi-path-manipulator.h" // Node align/distribute
 #include "ui/tools/node-tool.h"             // Node align/distribute
 
-enum class NodeAlignTarget {
-    LAST,
-    FIRST,
-    MIDDLE,
-    MIN,
-    MAX
-};
+using Inkscape::UI::AlignTargetNode;
 
 void
 node_align(const Glib::VariantBase& value, InkscapeWindow* win, Geom::Dim2 direction)
@@ -52,27 +47,27 @@ node_align(const Glib::VariantBase& value, InkscapeWindow* win, Geom::Dim2 direc
 
     Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring> >(value);
     std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(" ", s.get());
-    std::cout << "node_align: " << s.get() << std::endl;
     if (tokens.size() > 1) {
         std::cerr << "node_align: too many arguments!" << std::endl;
         return;
     }
 
     // clang-format off
-    auto target = NodeAlignTarget::MIDDLE;
+    auto target = AlignTargetNode::MID_NODE;
     if (tokens.size() == 1) {
-        if      (tokens[0] == "last"   ) target = NodeAlignTarget::LAST;
-        else if (tokens[0] == "first"  ) target = NodeAlignTarget::FIRST;
-        else if (tokens[0] == "middle" ) target = NodeAlignTarget::MIDDLE;
-        else if (tokens[0] == "min"    ) target = NodeAlignTarget::MIN;
-        else if (tokens[0] == "max"    ) target = NodeAlignTarget::MAX;
+        std::string token = tokens[0];
+        if (token == "pref") {
+            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+            token = prefs->getString("/dialogs/align/nodes-align-to", "first");
+        }
+        if      (token == "last"   ) target = AlignTargetNode::LAST_NODE;
+        else if (token == "first"  ) target = AlignTargetNode::FIRST_NODE;
+        else if (token == "middle" ) target = AlignTargetNode::MID_NODE;
+        else if (token == "min"    ) target = AlignTargetNode::MIN_NODE;
+        else if (token == "max"    ) target = AlignTargetNode::MAX_NODE;
     }
     // clang-format on
-
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    prefs->setInt("/dialogs/align/align-nodes-to", (int)target); // NASTY!! But ControlPointSelection::align uses pref!
-
-    node_tool->_multipath->alignNodes(direction);
+    node_tool->_multipath->alignNodes(direction, target);
 } 
 
 void
@@ -92,8 +87,8 @@ node_distribute(InkscapeWindow* win, Geom::Dim2 direction)
 std::vector<std::vector<Glib::ustring>> raw_data_node_align =
 {
     // clang-format off
-    {"win.node-align-horizontal",       N_("Align nodes horizontally"),      "Node", N_("Align selected nodes horizontally; usage [last|first|middle|min|max]" )},
-    {"win.node-align-vertical",         N_("Align nodes vertically"),        "Node", N_("Align selected nodes vertically; usage [last|first|middle|min|max]"   )},
+    {"win.node-align-horizontal",       N_("Align nodes horizontally"),      "Node", N_("Align selected nodes horizontally; usage [last|first|middle|min|max|pref]" )},
+    {"win.node-align-vertical",         N_("Align nodes vertically"),        "Node", N_("Align selected nodes vertically; usage [last|first|middle|min|max|pref]"   )},
     {"win.node-distribute-horizontal",  N_("Distribute nodes horizontally"), "Node", N_("Distribute selected nodes horizontally."                              )},
     {"win.node-distribute-vertical",    N_("Distribute nodes vertically"),   "Node", N_("Distribute selected nodes vertically."                                )}
     // clang-format on

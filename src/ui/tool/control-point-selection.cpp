@@ -250,13 +250,10 @@ void ControlPointSelection::transform(Geom::Affine const &m)
 }
 
 /** Align control points on the specified axis. */
-void ControlPointSelection::align(Geom::Dim2 axis)
+void ControlPointSelection::align(Geom::Dim2 axis, AlignTargetNode target)
 {
-    enum AlignTargetNode { LAST_NODE=0, FIRST_NODE, MID_NODE, MIN_NODE, MAX_NODE };
     if (empty()) return;
     Geom::Dim2 d = static_cast<Geom::Dim2>((axis + 1) % 2);
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-
 
     Geom::OptInterval bound;
     for (auto _point : _points) {
@@ -266,20 +263,20 @@ void ControlPointSelection::align(Geom::Dim2 axis)
     if (!bound) { return; }
 
     double new_coord;
-    switch (AlignTargetNode(prefs->getInt("/dialogs/align/align-nodes-to", 2))){
-        case FIRST_NODE:
+    switch (target) {
+        case AlignTargetNode::FIRST_NODE:
             new_coord=(_points_list.front())->position()[d];
             break;
-        case LAST_NODE:
+        case AlignTargetNode::LAST_NODE:
             new_coord=(_points_list.back())->position()[d];
             break;
-        case MID_NODE:
+        case AlignTargetNode::MID_NODE:
             new_coord=bound->middle();
             break;
-        case MIN_NODE:
+        case AlignTargetNode::MIN_NODE:
             new_coord=bound->min();
             break;
-        case MAX_NODE:
+        case AlignTargetNode::MAX_NODE:
             new_coord=bound->max();
             break;
         default:

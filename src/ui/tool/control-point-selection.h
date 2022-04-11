@@ -25,6 +25,7 @@
 #include <2geom/rect.h>
 #include "ui/tool/commit-events.h"
 #include "ui/tool/manipulator.h"
+#include "ui/tool/node-types.h"
 #include "snap-candidate.h"
 
 class SPDesktop;
@@ -97,7 +98,7 @@ public:
     bool event(Inkscape::UI::Tools::ToolBase *, GdkEvent *) override;
 
     void transform(Geom::Affine const &m);
-    void align(Geom::Dim2 d);
+    void align(Geom::Dim2 d, AlignTargetNode target = AlignTargetNode::MID_NODE);
     void distribute(Geom::Dim2 d);
 
     Geom::OptRect pointwiseBounds();

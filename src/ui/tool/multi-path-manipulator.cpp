@@ -476,10 +476,10 @@ void MultiPathManipulator::deleteSegments()
     _doneWithCleanup("Delete segments", true);
 }
 
-void MultiPathManipulator::alignNodes(Geom::Dim2 d)
+void MultiPathManipulator::alignNodes(Geom::Dim2 d, AlignTargetNode target)
 {
     if (_selection.empty()) return;
-    _selection.align(d);
+    _selection.align(d, target);
     if (d == Geom::X) {
         _done("Align nodes to a horizontal line");
     } else {

@@ -64,7 +64,7 @@ public:
     void deleteNodes(bool keep_shape = true);
     void joinSegments();
     void deleteSegments();
-    void alignNodes(Geom::Dim2 d);
+    void alignNodes(Geom::Dim2 d, AlignTargetNode target = AlignTargetNode::MID_NODE);
     void distributeNodes(Geom::Dim2 d);
     void reverseSubpaths();
     void move(Geom::Point const &delta);

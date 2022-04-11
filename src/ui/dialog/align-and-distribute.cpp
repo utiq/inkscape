@@ -78,9 +78,8 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg)
     if (!align_relative_object) {
         std::cerr << "AlignAndDistribute::AlignAndDistribute: failed to load widget (combobox)!" << std::endl;
     } else {
-        int align_to = prefs->getInt("/dialogs/align/align-to", 6);
-        align_relative_object->set_active(align_to);
-
+        std::string align_to = prefs->getString("/dialogs/align/objects-align-to", "selection");
+        align_relative_object->set_active_id(align_to);
         align_relative_object->signal_changed().connect(sigc::mem_fun(*this, &AlignAndDistribute::on_align_relative_object_changed));
     }
 
@@ -150,9 +149,8 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg)
     if (!align_relative_node) {
         std::cerr << "AlignAndDistribute::AlignAndDistribute: failed to load widget (combobox)!" << std::endl;
     } else {
-        int align_nodes_to = prefs->getInt("/dialogs/align/align-nodes-to", 2);
-        align_relative_node->set_active(align_nodes_to);
-
+        std::string align_nodes_to = prefs->getString("/dialogs/align/nodes-align-to", "first");
+        align_relative_node->set_active_id(align_nodes_to);
         align_relative_node->signal_changed().connect(sigc::mem_fun(*this, &AlignAndDistribute::on_align_relative_node_changed));
     }
 
@@ -225,17 +223,15 @@ AlignAndDistribute::on_align_as_group_clicked()
 void
 AlignAndDistribute::on_align_relative_object_changed()
 {
-    int index = align_relative_object->get_active_row_number();
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    prefs->setInt("/dialogs/align/align-to", index);
+    prefs->setString("/dialogs/align/objects-align-to", align_relative_object->get_active_id());
 }
 
 void
 AlignAndDistribute::on_align_relative_node_changed()
 {
-    int index = align_relative_node->get_active_row_number();
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    prefs->setInt("/dialogs/align/align-nodes-to", index);
+    prefs->setString("/dialogs/align/nodes-align-to", align_relative_node->get_active_id());
 }
 
 bool

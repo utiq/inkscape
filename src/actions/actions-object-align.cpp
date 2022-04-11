@@ -86,6 +86,7 @@ object_align_on_canvas(InkscapeApplication *app)
 void
 object_align(const Glib::VariantBase& value, InkscapeApplication *app)
 {
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring> >(value);
     std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(" ", s.get());
 
@@ -94,6 +95,7 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
 
     // Default values:
     auto target = ObjectAlignTarget::SELECTION;
+
     bool group = false;
     double mx0 = 0;
     double mx1 = 0;
@@ -104,6 +106,12 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
     double sy0 = 0;
     double sy1 = 0;
 
+    // Preference request allows alignment action to remember for key-presses
+    if (std::find(tokens.begin(), tokens.end(), "pref") != tokens.end()) {
+        group = prefs->getBool("/dialogs/align/sel-as-groups", false);
+        tokens.push_back(prefs->getString("/dialogs/align/objects-align-to", "selection"));
+    }
+ 
     // clang-format off
     for (auto token : tokens) {
 
@@ -467,6 +475,12 @@ object_align_text(const Glib::VariantBase& value, InkscapeApplication *app)
     auto orientation = Geom::Dim2::X;
     auto direction = Inkscape::Selection::HORIZONTAL;
 
+    // Preference request allows alignment action to remember for key-presses
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    if (std::find(tokens.begin(), tokens.end(), "pref") != tokens.end()) {
+        tokens.push_back(prefs->getString("/dialogs/align/objects-align-to", "selection"));
+    }
+ 
     for (auto token : tokens) {
 
         // Target
@@ -754,15 +768,15 @@ std::vector<std::vector<Glib::ustring>> raw_data_object_align =
     // clang-format off
     {"app.object-align-on-canvas",         N_("Enable on-canvas alignment"),  "Object", N_("Enable on-canvas alignment handles."                                                                                           )},
 
-    {"app.object-align",                   N_("Align objects"),      "Object", N_("Align selected objects; usage: [[left|hcenter|right] || [top|vcenter|bottom]] [last|first|biggest|smallest|page|drawing|selection]? group? anchor?")},
+    {"app.object-align",                   N_("Align objects"),      "Object", N_("Align selected objects; usage: [[left|hcenter|right] || [top|vcenter|bottom]] [last|first|biggest|smallest|page|drawing|selection|pref]? group? anchor?")},
 
-    {"app.object-align('left')",           N_("Align to selection's left edge"),             "Object", N_("Align selection horizontally to selection's left edge."                                                         )},
-    {"app.object-align('hcenter')",        N_("Align to selection's horizontal center"),     "Object", N_("Align selection horizontally to the selection's center."                                                        )},
-    {"app.object-align('right')",          N_("Align to selection's right edge"),            "Object", N_("Align selection horizontally to selection's right edge."                                                        )},
-    {"app.object-align('top')",            N_("Align to selection's top edge"),              "Object", N_("Align selection vertically to selection's top edge."                                                            )},
-    {"app.object-align('bottom')",         N_("Align to selection's bottom edge"),           "Object", N_("Align selection vertically to selection's bottom edge."                                                         )},
-    {"app.object-align('vcenter')",        N_("Align to selection's vertical center"),       "Object", N_("Align selection vertically to the selection's center."                                                          )},
-    {"app.object-align('hcenter vcenter')", N_("Align to selection's center"),               "Object", N_("Align selection to the selection's center."                                                                     )},
+    {"app.object-align('left pref')",      N_("Align to left edge"),          "Object", N_("Align selection horizontally to left edge."                                                                                    )},
+    {"app.object-align('hcenter pref')",   N_("Align to horizontal center"),  "Object", N_("Align selection horizontally to the center."                                                                                   )},
+    {"app.object-align('right pref')",     N_("Align to right edge"),         "Object", N_("Align selection horizontally to right edge."                                                                                   )},
+    {"app.object-align('top pref')",       N_("Align to top edge"),           "Object", N_("Align selection vertically to top edge."                                                                                       )},
+    {"app.object-align('bottom pref')",    N_("Align to bottom edge"),        "Object", N_("Align selection vertically to bottom edge."                                                                                    )},
+    {"app.object-align('vcenter pref')",   N_("Align to vertical center"),    "Object", N_("Align selection vertically to the center."                                                                                     )},
+    {"app.object-align('hcenter vcenter pref')", N_("Align to center"),       "Object", N_("Align selection to the center."                                                                                                )},
     {"app.object-align-text",              N_("Align text objects"), "Object", N_("Align selected text alignment points; usage: [[vertical | horizontal] [last|first|biggest|smallest|page|drawing|selection]?"            )},
 
     {"app.object-distribute",              N_("Distribute objects"),          "Object", N_("Distribute selected objects; usage: [hgap | left | hcenter | right | vgap | top | vcenter | bottom]"                           )},
@@ -775,7 +789,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_object_align =
     {"app.object-distribute('vcenter')",   N_("Even vertical centers"),       "Object", N_("Distribute vertically with even spacing between centers."                                                                      )},
     {"app.object-distribute('bottom')",    N_("Even bottom edges"),           "Object", N_("Distribute vertically with even spacing between bottom edges."                                                                 )},
 
-    {"app.object-distribute-text",         N_("Distribute text objects"),     "Object", N_("Distribute text alignment points; usage [vertical | horizontal ]"                                                              )},
+    {"app.object-distribute-text",         N_("Distribute text objects"),     "Object", N_("Distribute text alignment points; usage [vertical | horizontal]"                                                               )},
     {"app.object-distribute-text('horizontal')", N_("Distribute text objects"),     "Object", N_("Distribute text alignment points horizontally"                                                                           )},
     {"app.object-distribute-text('vertical')",   N_("Distribute text objects"),     "Object", N_("Distribute text alignment points vertically"                                                                             )},
 
@@ -794,7 +808,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_object_align =
 std::vector<std::vector<Glib::ustring>> hint_data_object_align =
 {
     // clang-format off
-    {"app.object-align",           N_("Enter anchor<space>alignment<space>optional second alignment. Possible anchors: last, first, biggest, smallest, page, drawing, selection; possible alignments: left, hcenter, right, top, vcenter, bottom.")                                        },
+    {"app.object-align",           N_("Enter anchor<space>alignment<space>optional second alignment. Possible anchors: last, first, biggest, smallest, page, drawing, selection, pref; possible alignments: left, hcenter, right, top, vcenter, bottom.")},
     {"app.object-distribute",      N_("Enter distribution type. Possible values: left, hcenter, right, top, vcenter, bottom, hgap, vgap.")  },
     {"app.object-rearrange",       N_("Enter arrange method. Possible values: graph, exchange, exchangez, rotate, randomize, unclump.")       },
     {"app.object-remove-overlaps", N_("Enter two comma-separated numbers: horizontal,vertical")                                                              },
