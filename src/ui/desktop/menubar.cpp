@@ -234,9 +234,8 @@ void rebuild_menu (Glib::RefPtr<Gio::MenuModel>    menu, Glib::RefPtr<Gio::Menu>
 
             // Attributes we need to create MenuItem or set icon.
             if          (attribute_iter->get_name() == "label") {
-                label    = attribute_iter->get_value().print();
-                label.erase(0, 1);
-                label.erase(label.size()-1, 1);
+                // Convert label while preserving unicode translations
+                label = Glib::VariantBase::cast_dynamic<Glib::Variant<std::string> >(attribute_iter->get_value()).get();
             } else if   (attribute_iter->get_name() == "action") {
                 action  = attribute_iter->get_value().print();
                 action.erase(0, 1);
