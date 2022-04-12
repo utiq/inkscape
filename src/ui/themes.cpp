@@ -265,10 +265,7 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
         bool preferdarktheme = prefs->getBool("/theme/preferDarkTheme", false);
         g_object_set(settings, "gtk-application-prefer-dark-theme", preferdarktheme, nullptr);
         themeiconname = prefs->getString("/theme/iconTheme");
-        // legacy cleanup
-        if (themeiconname == prefs->getString("/theme/defaultIconTheme")) {
-            prefs->setString("/theme/iconTheme", "");
-        } else if (themeiconname != "") {
+        if (themeiconname != "") {
             g_object_set(settings, "gtk-icon-theme-name", themeiconname.c_str(), nullptr);
         }
     }

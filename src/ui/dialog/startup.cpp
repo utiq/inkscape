@@ -249,6 +249,7 @@ StartScreen::StartScreen()
     opt_shown += Inkscape::version_string_without_revision;
     _first_open = prefs->getBool(opt_shown, false);
     if(!_first_open) {
+        theme_changed();
         tabs->set_current_page(0);
         prefs->setBool(opt_shown, true);
     } else {
@@ -602,7 +603,7 @@ StartScreen::refresh_theme(Glib::ustring theme_name)
 
     settings->property_gtk_theme_name() = theme_name;
     settings->property_gtk_application_prefer_dark_theme() = prefs->getBool("/theme/preferDarkTheme", true);
-    settings->property_gtk_icon_theme_name() = prefs->getString("/theme/iconTheme");
+    settings->property_gtk_icon_theme_name() = prefs->getString("/theme/iconTheme", prefs->getString("/theme/defaultIconTheme", ""));
 
     if (prefs->getBool("/theme/symbolicIcons", false)) {
         get_style_context()->add_class("symbolic");
@@ -640,11 +641,13 @@ StartScreen::refresh_theme(Glib::ustring theme_name)
 void
 StartScreen::theme_changed()
 {
+    auto prefs = Inkscape::Preferences::get();
+
     ThemeCols cols;
     try {
         auto row = active_combo("themes");
-
-        auto prefs = Inkscape::Preferences::get();
+        Glib::ustring theme_id = row[cols.id];
+        if (theme_id == "custom") return;
         prefs->setString("/options/boot/theme", row[cols.id]);
 
         // Update theme from combo.

@@ -352,6 +352,12 @@ InkscapePreferences::InkscapePreferences()
     _page_list.expand_all();
     _page_list_model->foreach_iter(sigc::mem_fun(*this, &InkscapePreferences::GetSizeRequest));
     _page_list.collapse_all();
+
+    // Set Custom theme
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    _theme_oberver = prefs->createObserver("/theme/", [=]() {
+        prefs->setString("/options/boot/theme", "custom");
+    });
 }
 
 InkscapePreferences::~InkscapePreferences()

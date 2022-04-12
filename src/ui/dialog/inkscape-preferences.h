@@ -726,6 +726,7 @@ private:
   InkscapePreferences(InkscapePreferences const &d);
   InkscapePreferences operator=(InkscapePreferences const &d);
   bool _init;
+  Inkscape::PrefObserver _theme_oberver;
 };
 
 } // namespace Dialog

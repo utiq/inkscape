@@ -507,11 +507,11 @@ static char const preferences_skeleton[] =
   <group
      id="theme"
      defaultPreferDarkTheme="1"
+     defaultIconTheme="multicolor"
+     defaultGtkTheme="Adwaita"
      narrowSpinButton="1"
      preferDarkTheme="1"
      darkTheme="1"
-     gtkTheme="Adwaita"
-     iconTheme="multicolor"
      symbolicIcons="1"
      symbolicDefaultBaseColors="1"
      symbolicDefaultHighColors="0"/>
