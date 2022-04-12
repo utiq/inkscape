@@ -58,8 +58,6 @@ public:
     Gtk::ToggleButton *GetCmsAdjust()  { return _cms_adjust; }
     Gtk::ToggleButton *GetStickyZoom() { return _sticky_zoom; };
 
-    bool mouse_inside = false;
-
 private:
 
     // Signal callbacks

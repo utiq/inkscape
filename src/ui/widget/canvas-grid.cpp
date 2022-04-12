@@ -276,13 +276,6 @@ CanvasGrid::OnSizeAllocate(Gtk::Allocation& allocation)
 bool
 CanvasGrid::SignalEvent(GdkEvent *event)
 {
-    // Track if the mouse is inside the canvas box
-    if (event->type == GDK_ENTER_NOTIFY) {
-        mouse_inside = true;
-    } else if (event->type == GDK_LEAVE_NOTIFY) {
-        mouse_inside = false;
-    }
-
     if (event->type == GDK_BUTTON_PRESS) {
         _canvas->grab_focus();
         _command_palette.close();
@@ -294,6 +287,11 @@ CanvasGrid::SignalEvent(GdkEvent *event)
         } else {
             _dtw->desktop->getCanvasDrawing()->set_sticky(false);
         }
+    }
+
+    // Pass kwyboard events back to the desktop root handler so TextTool can work
+    if (event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE) {
+        return sp_desktop_root_handler(event, _dtw->desktop);
     }
     return false;
 }

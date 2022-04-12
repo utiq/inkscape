@@ -60,6 +60,7 @@
 #include "ui/dialog/dialog-multipaned.h"
 #include "ui/dialog/dialog-window.h"
 #include "ui/tools/box3d-tool.h"
+#include "ui/tools/text-tool.h"
 #include "ui/util.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/canvas-grid.h"
@@ -160,21 +161,6 @@ void CMSPrefWatcher::_setCmsSensitive(bool enabled)
 }
 
 static CMSPrefWatcher* watcher = nullptr;
-
-bool SPDesktopWidget::SignalEvent(GdkEvent* event)
-{
-    /**
-     * What we want to do here is pass the keyboard events *up* to the canvas
-     * if the mouse is hovering over the canvas. IF and only if, the canvas
-     * is not currently listening to the event stack because it's not in focus.
-     */
-    if (event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE) {
-        if (!_canvas->is_focus() && _canvas_grid->mouse_inside) {
-            return sp_desktop_root_handler(event, desktop);
-        }
-    }
-    return false;
-}
 
 SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     : window (inkscape_window)
