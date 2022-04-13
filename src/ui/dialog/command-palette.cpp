@@ -118,9 +118,6 @@ CommandPalette::CommandPalette()
 
     // Setup operations [actions, extensions]
     {
-        // setup actions - win doc actions loaded in open()
-        load_app_actions();
-
         // setup recent files
         {
             //TODO: refactor this ==============================
@@ -184,6 +181,8 @@ CommandPalette::CommandPalette()
 void CommandPalette::open()
 {
     if (not _win_doc_actions_loaded) {
+        // loading actions can be very slow
+        load_app_actions();
         // win doc don't exist at construction so loading at first time opening Command Palette
         load_win_doc_actions();
         _win_doc_actions_loaded = true;
