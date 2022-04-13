@@ -201,7 +201,7 @@ void SingleExport::setup()
     extensionConn = si_extension_cb->signal_changed().connect(sigc::mem_fun(*this, &SingleExport::onExtensionChanged));
     exportConn = si_export->signal_clicked().connect(sigc::mem_fun(*this, &SingleExport::onExport));
     filenameConn = si_filename_entry->signal_changed().connect(sigc::mem_fun(*this, &SingleExport::onFilenameModified));
-    browseConn = si_filename_entry->signal_icon_press().connect(sigc::mem_fun(*this, &SingleExport::onBrowse));
+    browseConn = si_filename_entry->signal_icon_release().connect(sigc::mem_fun(*this, &SingleExport::onBrowse));
     si_filename_entry->signal_activate().connect(sigc::mem_fun(*this, &SingleExport::onExport));
     si_show_preview->signal_toggled().connect(sigc::mem_fun(*this, &SingleExport::refreshPreview));
     si_hide_all->signal_toggled().connect(sigc::mem_fun(*this, &SingleExport::refreshPreview));

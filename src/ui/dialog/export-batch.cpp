@@ -278,7 +278,7 @@ void BatchExport::setup()
     show_preview->signal_toggled().connect(sigc::mem_fun(*this, &BatchExport::refreshPreview));
     filenameConn = filename_entry->signal_changed().connect(sigc::mem_fun(*this, &BatchExport::onFilenameModified));
     exportConn = export_btn->signal_clicked().connect(sigc::mem_fun(*this, &BatchExport::onExport));
-    browseConn = filename_entry->signal_icon_press().connect(sigc::mem_fun(*this, &BatchExport::onBrowse));
+    browseConn = filename_entry->signal_icon_release().connect(sigc::mem_fun(*this, &BatchExport::onBrowse));
     hide_all->signal_toggled().connect(sigc::mem_fun(*this, &BatchExport::refreshPreview));
 }
 
