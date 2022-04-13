@@ -63,6 +63,7 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
             entry_page_sizes->signal_activate().connect(sigc::mem_fun(*this, &PageToolbar::sizeChanged));
             entry_page_sizes->signal_icon_press().connect([=](Gtk::EntryIconPosition, const GdkEventButton*){
                 _document->getPageManager().changeOrientation();
+                DocumentUndo::maybeDone(_document, "page-resize", _("Resize Page"), INKSCAPE_ICON("tool-pages"));
                 setSizeText();
             });
             entry_page_sizes->signal_focus_in_event().connect([=](GdkEventFocus* focus){
@@ -78,6 +79,11 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
 
     // Watch for when the tool changes
     _ec_connection = _desktop->connectEventContextChanged(sigc::mem_fun(*this, &PageToolbar::toolChanged));
+    _doc_connection = _desktop->connectDocumentReplaced([=](SPDesktop *desktop, SPDocument *doc) {
+        if (doc) {
+            toolChanged(desktop, desktop->getEventContext());
+        }
+    });
 
     // Constructed by a builder, so we're going to protect the widget from destruction.
     this->reference();
@@ -96,6 +102,7 @@ void PageToolbar::on_parent_changed(Gtk::Widget *)
 PageToolbar::~PageToolbar()
 {
     _ec_connection.disconnect();
+    _doc_connection.disconnect();
     toolChanged(nullptr, nullptr);
 }
 
@@ -279,6 +286,10 @@ void PageToolbar::selectionChanged(SPPage *page)
         text_page_label->set_sensitive(false);
         text_page_label->set_placeholder_text(_("Single Page Document"));
         label_page_pos->set_label(_("1/-"));
+
+        _page_modified = _document->connectModified([=](guint) {
+            selectionChanged(nullptr);
+        });
     }
     if (!page_manager.hasPrevPage() && !page_manager.hasNextPage() && !page) {
         sep1->set_visible(false);

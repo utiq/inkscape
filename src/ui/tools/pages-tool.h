@@ -20,6 +20,7 @@
 #define SP_IS_PAGES_CONTEXT(obj) \
     (dynamic_cast<const Inkscape::UI::Tools::PagesTool *>((const Inkscape::UI::Tools::ToolBase *)obj) != NULL)
 
+class SPDocument;
 class SPObject;
 class SPPage;
 class SPKnot;
@@ -44,6 +45,7 @@ public:
     void menu_popup(GdkEvent *event, SPObject *obj = nullptr) override;
 private:
     void selectionChanged(SPPage *page);
+    void connectDocument(SPDocument *doc);
     SPPage *pageUnder(Geom::Point pt, bool retain_selected = true);
     bool viewboxUnder(Geom::Point pt);
     void addDragShapes(SPPage *page, Geom::Affine tr);
@@ -63,7 +65,6 @@ private:
     sigc::connection _selector_changed_connection;
     sigc::connection _page_modified_connection;
     sigc::connection _doc_replaced_connection;
-    sigc::connection _doc_modified_connection;
     sigc::connection _zoom_connection;
 
     bool dragging_viewbox = false;

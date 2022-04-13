@@ -77,17 +77,11 @@ PagesTool::PagesTool(SPDesktop *desktop)
         drag_group = new Inkscape::CanvasItemGroup(desktop->getCanvasTemp());
         drag_group->set_name("CanvasItemGroup:PagesDragShapes");
     }
-    auto &page_manager = desktop->getDocument()->getPageManager();
-    _selector_changed_connection =
-            page_manager.connectPageSelected(sigc::mem_fun(*this, &PagesTool::selectionChanged));
-    selectionChanged(page_manager.getSelected());
 
-    _doc_modified_connection = desktop->getDocument()->connectModified([=](guint){
-        // This readjusts the knot when in single page mode.
-        if (!desktop->getDocument()->getPageManager().hasPages()) {
-            selectionChanged(nullptr);
-        }
+    _doc_replaced_connection = desktop->connectDocumentReplaced([=](SPDesktop *desktop, SPDocument *doc) {
+        connectDocument(desktop->getDocument());
     });
+    connectDocument(desktop->getDocument());
 
     _zoom_connection = desktop->signal_zoom_changed.connect([=](double) {
         // This readjusts the knot on zoom because the viewbox position
@@ -98,10 +92,10 @@ PagesTool::PagesTool(SPDesktop *desktop)
     });
 }
 
+
 PagesTool::~PagesTool()
 {
-    _selector_changed_connection.disconnect();
-    selectionChanged(nullptr);
+    connectDocument(nullptr);
 
     ungrabCanvasEvents();
 
@@ -124,7 +118,6 @@ PagesTool::~PagesTool()
     }
 
     _doc_replaced_connection.disconnect();
-    _doc_modified_connection.disconnect();
     _zoom_connection.disconnect();
 }
 
@@ -528,6 +521,19 @@ bool PagesTool::viewboxUnder(Geom::Point pt)
     return true;
 }
 
+void PagesTool::connectDocument(SPDocument *doc)
+{
+    _selector_changed_connection.disconnect();
+    if (doc) {
+        auto &page_manager = doc->getPageManager();
+        _selector_changed_connection =
+                page_manager.connectPageSelected(sigc::mem_fun(*this, &PagesTool::selectionChanged));
+        selectionChanged(page_manager.getSelected());
+    } else {
+        selectionChanged(nullptr);
+    }
+}
+
 void PagesTool::selectionChanged(SPPage *page)
 {
     if (_page_modified_connection) {
@@ -551,6 +557,9 @@ void PagesTool::selectionChanged(SPPage *page)
     } else {
         // This is for viewBox editng directly. A special extra feature
         if (auto document = _desktop->getDocument()) {
+            _page_modified_connection = document->connectModified([=](guint){
+                resizeKnotSet(*(document->preferredBounds()));
+            });
             resizeKnotSet(*(document->preferredBounds()));
         }
     }

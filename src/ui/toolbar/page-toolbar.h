@@ -54,6 +54,7 @@ private:
     void on_parent_changed(Gtk::Widget *prev) override;
 
     sigc::connection _ec_connection;
+    sigc::connection _doc_connection;
     sigc::connection _pages_changed;
     sigc::connection _page_selected;
     sigc::connection _page_modified;
