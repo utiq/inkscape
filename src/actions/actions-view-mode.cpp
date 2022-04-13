@@ -332,6 +332,7 @@ add_actions_view_mode(InkscapeWindow* win)
     double const width  = monitor_geometry.get_width();
     double const height = monitor_geometry.get_height();
     bool widescreen = (height > 0 && width/height > 1.65);
+    widescreen = prefs->getInt(pref_root + "task/taskset", widescreen ? 2 : 0) == 2; // legacy
 
     // clang-format off
     bool guides_toggle      = win->get_desktop()->namedview->getRepr()->getAttributeBoolean("showguides", true);    // Should set it true or retrieve the state (every time it set to true on restart)
