@@ -1255,6 +1255,7 @@ void SelectorsDialog::documentReplaced()
         m_root = document->getReprRoot();
         m_root->addSubtreeObserver(*m_nodewatcher);
     }
+    selectionChanged(getSelection());
 }
 
 void SelectorsDialog::selectionChanged(Selection *selection)
