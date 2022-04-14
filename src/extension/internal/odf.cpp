@@ -929,7 +929,7 @@ static Geom::OptRect getODFBoundingBox(const SPItem *item)
 static Geom::Affine getODFItemTransform(const SPItem *item)
 {
     Geom::Affine itemTransform (item->i2doc_affine() *
-            SP_ACTIVE_DOCUMENT->getRoot()->c2p.inverse());
+            item->document->getRoot()->c2p.inverse());
     return itemTransform;
 }
 
@@ -983,7 +983,7 @@ static void gatherText(Inkscape::XML::Node *node, Glib::ustring &buf)
  * Method descends into the repr tree, converting image, style, and gradient info
  * into forms compatible in ODF.
  */
-void OdfOutput::preprocess(ZipFile &zf, Inkscape::XML::Node *node)
+void OdfOutput::preprocess(ZipFile &zf, SPDocument *doc, Inkscape::XML::Node *node)
 {
     Glib::ustring nodeName = node->name();
     Glib::ustring id       = getAttribute(node, "id");
@@ -1010,7 +1010,7 @@ void OdfOutput::preprocess(ZipFile &zf, Inkscape::XML::Node *node)
         }
 
     //Now consider items.
-    SPObject *reprobj = SP_ACTIVE_DOCUMENT->getObjectByRepr(node);
+    SPObject *reprobj = doc->getObjectByRepr(node);
     if (!reprobj)
     {
         return;
@@ -1047,7 +1047,7 @@ void OdfOutput::preprocess(ZipFile &zf, Inkscape::XML::Node *node)
 
     for (Inkscape::XML::Node *child = node->firstChild() ;
             child ; child = child->next())
-        preprocess(zf, child);
+        preprocess(zf, doc, child);
 }
 
 
@@ -1556,10 +1556,11 @@ bool OdfOutput::processGradient(SPItem *item,
  * This is the main SPObject tree output to ODF.
  */
 bool OdfOutput::writeTree(Writer &couts, Writer &souts,
+                          SPDocument *doc,
                           Inkscape::XML::Node *node)
 {
     //# Get the SPItem, if applicable
-    SPObject *reprobj = SP_ACTIVE_DOCUMENT->getObjectByRepr(node);
+    SPObject *reprobj = doc->getObjectByRepr(node);
     if (!reprobj)
     {
         return true;
@@ -1598,7 +1599,7 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
         for (Inkscape::XML::Node *child = node->firstChild() ;
                child ; child = child->next())
         {
-            if (!writeTree(couts, souts, child))
+            if (!writeTree(couts, souts, doc, child))
             {
                 return false;
             }
@@ -1619,7 +1620,7 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
         for (Inkscape::XML::Node *child = node->firstChild() ;
                child ; child = child->next())
         {
-            if (!writeTree(couts, souts, child))
+            if (!writeTree(couts, souts, doc, child))
             {
                 return false;
             }
@@ -1956,10 +1957,10 @@ bool OdfOutput::writeContentFooter(Writer &outs)
 
 
 /**
- * Write the content.xml file.  Writes the namesspace headers, then
+ * Write the content.xml file. Writes the namespace headers, then
  * calls writeTree().
  */
-bool OdfOutput::writeContent(ZipFile &zf, Inkscape::XML::Node *node)
+bool OdfOutput::writeContent(ZipFile &zf, SPDocument *doc)
 {
     //Content.xml stream
     BufferOutputStream cbouts;
@@ -1983,7 +1984,7 @@ bool OdfOutput::writeContent(ZipFile &zf, Inkscape::XML::Node *node)
     //# to both files at the same time
     char *oldlocale = g_strdup (setlocale (LC_NUMERIC, nullptr));
     setlocale (LC_NUMERIC, "C");
-    if (!writeTree(couts, souts, node))
+    if (!writeTree(couts, souts, doc, doc->getReprRoot()))
     {
         g_warning("Failed to convert SVG tree");
         setlocale (LC_NUMERIC, oldlocale);
@@ -2036,17 +2037,12 @@ void OdfOutput::reset()
  */
 void OdfOutput::save(Inkscape::Extension::Output */*mod*/, SPDocument *doc, gchar const *filename)
 {
-    if (doc != SP_ACTIVE_DOCUMENT) {
-        g_warning("OdfOutput can only save the active document");
-        return;
-    }
-
     reset();
 
     docBaseUri = Inkscape::URI::from_dirname(doc->getDocumentBase()).str();
 
     ZipFile zf;
-    preprocess(zf, doc->getReprRoot());
+    preprocess(zf, doc, doc->getReprRoot());
 
     if (!writeManifest(zf))
         {
@@ -2054,7 +2050,7 @@ void OdfOutput::save(Inkscape::Extension::Output */*mod*/, SPDocument *doc, gcha
         return;
         }
 
-    if (!writeContent(zf, doc->getReprRoot()))
+    if (!writeContent(zf, doc))
         {
         g_warning("Failed to write content");
         return;
