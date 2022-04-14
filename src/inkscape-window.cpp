@@ -302,6 +302,44 @@ InkscapeWindow::on_delete_event(GdkEventAny* event)
     return true;
 };
 
+/**
+ * Configure is called when the widget's size, position or stack changes.
+ */
+bool InkscapeWindow::on_configure_event(GdkEventConfigure *event)
+{
+    bool ret = Gtk::ApplicationWindow::on_configure_event(event);
+    // Store the desktop widget size on resize.
+    if (!_desktop || !get_realized())
+        return ret;
+
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    bool maxed = _desktop->is_maximized();
+    bool full = _desktop->is_fullscreen();
+    prefs->setBool("/desktop/geometry/fullscreen", full);
+    prefs->setBool("/desktop/geometry/maximized", maxed);
+
+    // Don't save geom for maximized, fullscreen or iconified windows.
+    // It just tells you the current maximized size, which is not
+    // as useful as whatever value it had previously.
+    if (!_desktop->is_iconified() && !maxed && !full) {
+
+        // Get size is more accurate than frame extends for window size.
+        int w,h = 0;
+        get_size(w, h);
+        prefs->setInt("/desktop/geometry/width", w);
+        prefs->setInt("/desktop/geometry/height", h);
+
+        // Frame extends returns real positions, unlike get_position()
+        if (Glib::RefPtr<Gdk::Window> gdkw = get_window()) {
+            Gdk::Rectangle rect;
+            gdkw->get_frame_extents(rect);
+            prefs->setInt("/desktop/geometry/x", rect.get_x());
+            prefs->setInt("/desktop/geometry/y", rect.get_y());
+        }
+    }
+    return ret;
+}
+
 void InkscapeWindow::update_dialogs()
 {
     std::vector<Gtk::Window *> windows = _app->gtk_app()->get_windows();

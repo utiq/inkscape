@@ -162,7 +162,6 @@ private:
     Inkscape::UI::Widget::LayerSelector* _layer_selector;
     Inkscape::UI::Widget::PageSelector* _page_selector;
 
-
 public:
     EgeColorProfTracker* _tracker;
 
@@ -181,7 +180,6 @@ public:
     void setToolboxAdjustmentValue (gchar const * id, double value);
     bool isToolboxButtonActive (gchar const *id);
     void setCoordinateStatus(Geom::Point p);
-    void storeDesktopPosition(bool store_maximize = true);
     void enableInteraction();
     void disableInteraction();
     void updateTitle(gchar const *uri);

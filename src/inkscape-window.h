@@ -64,6 +64,7 @@ public:
 private:
     bool on_focus_in_event(GdkEventFocus* event) override;
     bool on_delete_event(GdkEventAny* event) override;
+    bool on_configure_event(GdkEventConfigure *event) override;
 
     // Helpers
     void update_dialogs();

@@ -367,7 +367,6 @@ public:
     void setToolboxAdjustmentValue (gchar const* id, double val);
     bool isToolboxButtonActive (gchar const *id);
     void updateDialogs();
-    void storeDesktopPosition();
 
     void enableInteraction();
     void disableInteraction();
