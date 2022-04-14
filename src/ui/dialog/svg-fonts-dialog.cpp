@@ -42,6 +42,7 @@
 #include "svg/svg.h"
 #include "util/units.h"
 #include "xml/repr.h"
+#include "document.h"
 
 SvgFontDrawingArea::SvgFontDrawingArea():
     _x(0),
@@ -801,14 +802,26 @@ void set_up_typography_canvas(SPDocument* document, double em, double asc, doubl
 
     // baseline
     double base = des;
+    double ascPos = base + asc;
+    double capPos = base + cap;
+    double xPos = base + xheight;
+    double desPos = base - des;
+
+    if (!document->is_yaxisdown()) {
+        base = size.quantity - des;
+        ascPos = base - asc;
+        capPos = base - cap;
+        xPos = base - xheight;
+        desPos = base + des;
+    }
 
     // add/move guide lines
     struct { double pos; const char* name; const char* id; } guides[5] = {
-        {base + asc, _("ascender"), "ink-font-guide-ascender"},
-        {base + cap, _("caps"), "ink-font-guide-caps"},
-        {base + xheight, _("x-height"), "ink-font-guide-x-height"},
+        {ascPos, _("ascender"), "ink-font-guide-ascender"},
+        {capPos, _("caps"), "ink-font-guide-caps"},
+        {xPos, _("x-height"), "ink-font-guide-x-height"},
         {base, _("baseline"), "ink-font-guide-baseline"},
-        {base - des, _("descender"), "ink-font-guide-descender"},
+        {desPos, _("descender"), "ink-font-guide-descender"},
     };
 
     double left = 0;
@@ -1123,7 +1136,7 @@ void SvgFontsDialog::set_glyph_description_from_selected_path() {
     Geom::PathVector pathv = sp_svg_read_pathv(node->attribute("d"));
 
     auto units_per_em = get_font_units_per_em(font);
-	//XML Tree being directly used here while it shouldn't be.
+    //XML Tree being directly used here while it shouldn't be.
     glyph->setAttribute("d", sp_svg_write_path(flip_coordinate_system(pathv, font, units_per_em)));
     DocumentUndo::done(getDocument(), _("Set glyph curves"), "");
 
@@ -1261,7 +1274,7 @@ void SvgFontsDialog::remove_selected_glyph(){
     SPGlyph* glyph = get_selected_glyph();
     if (!glyph) return;
 
-	//XML Tree being directly used here while it shouldn't be.
+    //XML Tree being directly used here while it shouldn't be.
     sp_repr_unparent(glyph->getRepr());
     DocumentUndo::done(getDocument(), _("Remove glyph"), "");
 
@@ -1272,7 +1285,7 @@ void SvgFontsDialog::remove_selected_kerning_pair() {
     SPGlyphKerning* pair = get_selected_kerning_pair();
     if (!pair) return;
 
-	//XML Tree being directly used here while it shouldn't be.
+    //XML Tree being directly used here while it shouldn't be.
     sp_repr_unparent(pair->getRepr());
     DocumentUndo::done(getDocument(), _("Remove kerning pair"), "");
 
