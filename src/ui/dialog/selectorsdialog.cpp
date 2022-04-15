@@ -284,7 +284,7 @@ void SelectorsDialog::_vscroll()
         _scrollpos = _vadj->get_value();
     } else {
         _vadj->set_value(_scrollpos);
-         false;
+        _scrollock = false;
     }
 }
 
