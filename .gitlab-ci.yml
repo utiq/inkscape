@@ -357,6 +357,16 @@ clangtidyfull:linux:
   script:
     - bash buildtools/clangtidy-helper.sh
 
+# Look for icon problems
+media-check:
+  stage: test
+  needs: []
+  rules:
+    - *do_not_run_for_schedules
+    - *run_otherwise
+  script:
+    - python3 buildtools/media-check-icons.py
+
 
 ##################################################
 #                                                #
