@@ -167,7 +167,6 @@ public:
     EgeColorProfTracker* _tracker;
 
     void setMessage(Inkscape::MessageType type, gchar const *message);
-    Geom::Point window_get_pointer();
     void viewSetPosition (Geom::Point p);
     void letZoomGrabFocus();
     void getWindowGeometry (gint &x, gint &y, gint &w, gint &h);

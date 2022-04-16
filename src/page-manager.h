@@ -116,7 +116,7 @@ protected:
     SVGBool border_show;
     SVGBool border_on_top;
     SVGBool shadow_show;
-    SVGBool _checkerboard;
+    SVGBool checkerboard;
 
     guint32 border_color = 0x0000003f;
 

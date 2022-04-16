@@ -27,7 +27,6 @@
 #include "ui/tool/event-utils.h"
 #include "ui/tool/transform-handle-set.h"
 
-#include "ui/widget/canvas.h" // Forced redraws
 
 namespace Inkscape {
 namespace UI {

@@ -83,6 +83,14 @@ void CanvasItemGroup::update(Geom::Affine const &affine)
     }
 }
 
+void CanvasItemGroup::visit_page_rects(std::function<void(const Geom::Rect&)> f) const
+{
+    for (auto & item : items) {
+        if (!item.is_visible()) continue;
+        item.visit_page_rects(f);
+    }
+}
+
 void CanvasItemGroup::render(Inkscape::CanvasItemBuffer *buf)
 {
     if (_visible) {

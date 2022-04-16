@@ -60,13 +60,13 @@ public:
 
     // Structure
     void set_canvas(UI::Widget::Canvas *canvas) { _canvas = canvas; }
-    UI::Widget::Canvas* get_canvas() { return _canvas; }
+    UI::Widget::Canvas* get_canvas() const { return _canvas; }
 
     void set_parent(CanvasItemGroup *parent) { _parent = parent; }
-    CanvasItemGroup* get_parent() { return _parent; }
+    CanvasItemGroup* get_parent() const { return _parent; }
 
     void set_item(SPItem *item) { _item = item; }
-    SPItem* get_item() { return _item; }
+    SPItem* get_item() const { return _item; }
 
     // Z Position
     bool is_descendant_of(CanvasItem *ancestor);
@@ -80,8 +80,9 @@ public:
     // Geometry
     void request_update();
     virtual void update(Geom::Affine const &affine) = 0;
-    Geom::Affine get_affine() { return _affine; }
-    Geom::Rect get_bounds() { return _bounds; }
+    Geom::Affine get_affine() const { return _affine; }
+    Geom::Rect get_bounds() const { return _bounds; }
+    virtual void visit_page_rects(std::function<void(const Geom::Rect&)>) const {}
 
     // Selection
     virtual bool contains(Geom::Point const &p, double tolerance = 0) { return _bounds.interiorContains(p); }
@@ -91,7 +92,7 @@ public:
 
     // Display
     virtual void render(Inkscape::CanvasItemBuffer *buf) = 0;
-    bool is_visible() { return _visible; }
+    bool is_visible() const { return _visible; }
     virtual void hide();
     virtual void show();
     void request_redraw();  // queue redraw request
@@ -102,11 +103,11 @@ public:
     virtual void set_stroke(guint32 rgba);
     void set_stroke(CanvasItemColor color) { set_stroke(CANVAS_ITEM_COLORS[color]); }
     void set_name(std::string const &name) { _name = name; }
-    std::string get_name() { return _name; }
+    std::string get_name() const { return _name; }
 
     // Events
     void set_pickable(bool pickable) { _pickable = pickable; }
-    bool is_pickable() { return _pickable; }
+    bool is_pickable() const { return _pickable; }
     sigc::connection connect_event(sigc::slot<bool, GdkEvent*> slot) {
         return _event_signal.connect(slot);
     }
@@ -145,12 +146,11 @@ protected:
     sigc::signal<bool, GdkEvent*> _event_signal;
 };
 
-
 } // namespace Inkscape
 
-/** Type for linked list storing CanvasItem's.
+/** Type for linked list storing CanvasItems.
  *
- * Used to speed deletion when a group contains a large number of item's (as in nodes for a
+ * Used to speed deletion when a group contains a large number of items (as in nodes for a
  * complex path).
  */
 typedef boost::intrusive::list<

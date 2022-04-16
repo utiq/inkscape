@@ -42,7 +42,6 @@
 #include "ui/dialog/fill-and-stroke.h"
 #include "ui/icon-names.h"
 #include "ui/tools/tool-base.h"
-#include "ui/widget/canvas.h"   // Forced redraws.
 #include "ui/widget/color-preview.h"
 #include "ui/widget/gradient-image.h"
 

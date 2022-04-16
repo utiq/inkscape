@@ -20,7 +20,6 @@
 
 #include <2geom/rect.h>
 #include <cairomm/context.h>
-#include "display/rendermode.h"
 
 namespace Inkscape {
 
@@ -30,7 +29,6 @@ namespace Inkscape {
 struct CanvasItemBuffer {
     Geom::IntRect rect;
     int device_scale; // For high DPI monitors.
-    bool outline_overlay_pass; // Hack for not painting page colour in outline overlay mode
     Cairo::RefPtr<Cairo::Context> cr;
 };
 

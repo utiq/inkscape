@@ -217,8 +217,11 @@ private:
         PANNING_SPACE_BUTTON1 = 1, // TODO is this mode relevant?
         PANNING_BUTTON2 = 2,       //
         PANNING_BUTTON3 = 3,       //
-        PANNING_SPACE = 4,
+        PANNING_SPACE = 4
     } panning = PANNING_NONE;
+
+    bool rotating = false;
+    double start_angle, current_angle;
 
 public:
     gint start_root_handler(GdkEvent *event);
@@ -231,8 +234,6 @@ public:
 
     /// True if we're panning with the space bar
     bool is_space_panning() const { return panning == PANNING_SPACE || panning == PANNING_SPACE_BUTTON1; }
-
-    bool rotating_mode = false;;
 
     std::unique_ptr<Inkscape::MessageContext> message_context;
     Inkscape::SelCue *_selcue = nullptr;

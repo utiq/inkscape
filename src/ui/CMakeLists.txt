@@ -207,10 +207,12 @@ set(ui_SRC
 	widget/marker-combo-box.cpp
 	widget/notebook-page.cpp
 	widget/object-composite-settings.cpp
+	widget/optglarea.cpp
 	widget/page-properties.cpp
 	widget/page-size-preview.cpp
 	widget/page-selector.cpp
 	widget/paint-selector.cpp
+	widget/pixelstreamer.cpp
 	widget/point.cpp
 	widget/preferences-widget.cpp
 	widget/preview.cpp
@@ -232,9 +234,11 @@ set(ui_SRC
 	widget/style-swatch.cpp
 	widget/swatch-selector.cpp
 	widget/text.cpp
+	widget/texture.cpp
 	widget/tolerance-slider.cpp
 	widget/unit-menu.cpp
 	widget/unit-tracker.cpp
+	widget/updaters.cpp
 
 	view/svg-view-widget.cpp
 	view/view.cpp
@@ -462,8 +466,10 @@ set(ui_SRC
 	widget/marker-combo-box.h
 	widget/notebook-page.h
 	widget/object-composite-settings.h
+	widget/optglarea.h
 	widget/page-selector.h
 	widget/paint-selector.h
+	widget/pixelstreamer.h
 	widget/point.h
 	widget/preferences-widget.h
 	widget/preview.h
@@ -487,9 +493,11 @@ set(ui_SRC
 	widget/style-swatch.h
 	widget/swatch-selector.h
 	widget/text.h
+	widget/texture.h
 	widget/tolerance-slider.h
 	widget/unit-menu.h
 	widget/unit-tracker.h
+	widget/updaters.h
 
 	view/svg-view-widget.h
 	view/view.h

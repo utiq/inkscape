@@ -22,7 +22,6 @@
 #include "color.h"    // SP_RGBA_x_F
 #include "inkscape.h" //
 #include "ui/widget/canvas.h"
-#include "display/cairo-utils.h"     // Checkerboard background.
 
 namespace Inkscape {
 
@@ -55,6 +54,14 @@ void CanvasItemRect::set_rect(Geom::Rect const &rect)
 {
     _rect = rect;
     request_update();
+}
+
+/**
+ * Run a callback for each rectangle that should be filled and painted in the background.
+ */
+void CanvasItemRect::visit_page_rects(std::function<void(const Geom::Rect&)> f) const
+{
+    if (_is_page && _fill != 0) f(_rect);
 }
 
 /**
@@ -186,25 +193,8 @@ void CanvasItemRect::render(Inkscape::CanvasItemBuffer *buf)
         cairo_set_operator(buf->cr->cobj(), CAIRO_OPERATOR_DIFFERENCE);
     }
 
-    // fill background?
-    if (_background && !buf->outline_overlay_pass) {
-        buf->cr->save();
-        Cairo::Matrix m(_affine[0], _affine[1], _affine[2], _affine[3], _affine[4], _affine[5]);
-        buf->cr->transform(m);
-        buf->cr->rectangle(rect.corner(0)[X], rect.corner(0)[Y], rect.width(), rect.height());
-        // counter fill scaling (necessary for checkerboard pattern)
-        _background->set_matrix(m);
-        buf->cr->set_source(_background);
-        buf->cr->fill();
-        buf->cr->restore();
-    }
-
-    cairo_pattern_t *pattern = _canvas->get_background_pattern()->cobj();
-    guint32 backcolor = ink_cairo_pattern_get_argb32(pattern);
-    EXTRACT_ARGB32(backcolor, ab,rb,gb,bb)
-
     // Draw shadow first. Shadow extends under rectangle to reduce aliasing effects.
-    if (_shadow_width > 0 && !_dashed) {
+    if (_shadow_width > 0 && !_dashed && !(_is_page && _canvas->get_opengl_enabled())) {
         // there's only one UI knob to adjust border and shadow color, so instead of using border color
         // transparency as is, it is boosted by this function, since shadow attenuates it
         const auto a = (exp(-3 * SP_RGBA32_A_F(_shadow_color)) - 1) / (exp(-3) - 1);
@@ -223,7 +213,6 @@ void CanvasItemRect::render(Inkscape::CanvasItemBuffer *buf)
 
     // Setup rectangle path
     if (axis_aligned) {
-
         // Snap to pixel grid
         Geom::Rect outline( _rect.min() * _affine, _rect.max() * _affine);
         buf->cr->rectangle(floor(outline.min()[X])+0.5,
@@ -272,6 +261,20 @@ void CanvasItemRect::render(Inkscape::CanvasItemBuffer *buf)
     buf->cr->restore();
 }
 
+void CanvasItemRect::set_is_page(bool is_page)
+{
+    if (_is_page != is_page) {
+        _is_page = is_page;
+        request_redraw();
+    }
+}
+
+void CanvasItemRect::set_fill(guint32 color)
+{
+    if (color != _fill && _is_page) _canvas->set_page(color);
+    CanvasItem::set_fill(color);
+}
+
 void CanvasItemRect::set_dashed(bool dashed)
 {
     if (_dashed != dashed) {
@@ -294,22 +297,12 @@ void CanvasItemRect::set_shadow(guint32 color, int width)
         _shadow_color = color;
         _shadow_width = width;
         request_redraw();
-    }
-}
-
-void CanvasItemRect::set_background(guint32 background) {
-    _set_background(Cairo::SolidPattern::create_rgba(SP_RGBA32_R_F(background), SP_RGBA32_G_F(background), SP_RGBA32_B_F(background), SP_RGBA32_A_F(background)));
-}
-
-void CanvasItemRect::_set_background(Cairo::RefPtr<Cairo::Pattern> background) {
-    if (_background != background) {
-        _background = background;
-        request_redraw();
+        if (_is_page) _canvas->set_border(_shadow_width > 0 ? color : 0x0);
     }
 }
 
 double CanvasItemRect::get_scale() const {
-    return sqrt(_affine[0] * _affine[0] + _affine[1] * _affine[1]);
+    return std::sqrt(std::abs(_affine.det()));
 }
 
 double CanvasItemRect::get_shadow_size() const {
@@ -331,12 +324,6 @@ double CanvasItemRect::get_shadow_size() const {
     // here hybrid approach is used: "unscaling" with square root of scale allows shadows to diminish
     // more slowly at small zoom levels (so it's still perceptible) and grow more slowly at high mag (where it doesn't matter, b/c it's typically off-screen)
     return size / (scale > 0 ? sqrt(scale) : 1);
-}
-
-void CanvasItemRect::set_background_checkerboard(guint32 rgba, bool use_alpha) {
-    auto pattern = ink_cairo_pattern_create_checkerboard(rgba, use_alpha);
-    auto background = Cairo::RefPtr<Cairo::Pattern>(new Cairo::Pattern(pattern));
-    _set_background(background);
 }
 
 } // namespace Inkscape

@@ -35,7 +35,6 @@
 #include "actions/actions-tools.h"
 
 #include "display/control/canvas-item-catchall.h" // Grab/Ungrab
-#include "display/control/canvas-item-rotate.h"
 #include "display/control/snap-indicator.h"
 
 #include "include/gtkmm_version.h"
@@ -314,17 +313,24 @@ bool ToolBase::root_handler(GdkEvent* event) {
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
-    /// @todo REmove redundant /value in preference keys
+    /// @todo Remove redundant /value in preference keys
     tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
     bool allow_panning = prefs->getBool("/options/spacebarpans/value");
-    gint ret = FALSE;
+    bool ret = false;
+
+    auto compute_angle = [&] {
+        // Hack: Undo coordinate transformation applied by canvas to get events back to window coordinates.
+        // Real solution: Move all this functionality out of this file to somewhere higher up in the chain.
+        auto cursor = Geom::Point(event->motion.x, event->motion.y) * _desktop->canvas->get_geom_affine().inverse() * _desktop->canvas->get_affine() - _desktop->canvas->get_pos();
+        return Geom::deg_from_rad(Geom::atan2(cursor - Geom::Point(_desktop->canvas->get_dimensions()) / 2.0));
+    };
 
     switch (event->type) {
     case GDK_2BUTTON_PRESS:
         if (panning) {
             panning = PANNING_NONE;
             ungrabCanvasEvents();
-            ret = TRUE;
+            ret = true;
         } else {
             /* sp_desktop_dialog(); */
         }
@@ -353,26 +359,21 @@ bool ToolBase::root_handler(GdkEvent* event) {
                                  Gdk::BUTTON_RELEASE_MASK |
                                  Gdk::POINTER_MOTION_MASK );
 
-                ret = TRUE;
+                ret = true;
             }
             break;
 
         case 2:
             if ((event->button.state & GDK_CONTROL_MASK) && !_desktop->get_rotation_lock()) {
-                // On screen canvas rotation preview
+                // Canvas ctrl + middle-click to rotate
+                rotating = true;
 
-                // Grab background before doing anything else
-                _desktop->getCanvasRotate()->start(_desktop);
-                _desktop->getCanvasRotate()->show();
+                start_angle = current_angle = compute_angle();
 
-                // CanvasItemRotate code takes over!
-                ungrabCanvasEvents();
-
-                _desktop->getCanvasRotate()->grab(Gdk::KEY_PRESS_MASK      |
-                                                 Gdk::KEY_RELEASE_MASK    |
-                                                 Gdk::BUTTON_RELEASE_MASK |
-                                                 Gdk::POINTER_MOTION_MASK,
-                                                 nullptr);  // Cursor is null.
+                grabCanvasEvents(Gdk::KEY_PRESS_MASK      |
+                                 Gdk::KEY_RELEASE_MASK    |
+                                 Gdk::BUTTON_RELEASE_MASK |
+                                 Gdk::POINTER_MOTION_MASK);
 
             } else if (event->button.state & GDK_SHIFT_MASK) {
                 zoom_rb = 2;
@@ -387,7 +388,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
                                  Gdk::POINTER_MOTION_MASK );
             }
 
-            ret = TRUE;
+            ret = true;
             break;
 
         case 3:
@@ -400,10 +401,10 @@ bool ToolBase::root_handler(GdkEvent* event) {
 
                 grabCanvasEvents(Gdk::BUTTON_RELEASE_MASK |
                                  Gdk::POINTER_MOTION_MASK );
-                ret = TRUE;
+                ret = true;
             } else if (!are_buttons_1_and_3_on(event)) {
                 this->menu_popup(event);
-                ret = TRUE;
+                ret = true;
             }
             break;
 
@@ -431,7 +432,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
                 /* Gdk seems to lose button release for us sometimes :-( */
                 panning = PANNING_NONE;
                 ungrabCanvasEvents();
-                ret = TRUE;
+                ret = true;
             } else {
                 // To fix https://bugs.launchpad.net/inkscape/+bug/1458200
                 // we increase the tolerance because no sensible data for panning
@@ -463,8 +464,8 @@ bool ToolBase::root_handler(GdkEvent* event) {
 
                 Geom::Point const motion_w(event->motion.x, event->motion.y);
                 Geom::Point const moved_w(motion_w - button_w);
-                _desktop->scroll_relative(moved_w, true); // we're still scrolling, do not redraw
-                ret = TRUE;
+                _desktop->scroll_relative(moved_w);
+                ret = true;
             }
         } else if (zoom_rb) {
             if (within_tolerance && (abs((gint) event->motion.x - xp)
@@ -495,6 +496,29 @@ bool ToolBase::root_handler(GdkEvent* event) {
             if (zoom_rb == 2) {
                 gobble_motion_events(GDK_BUTTON2_MASK);
             }
+        } else if (rotating) {
+            auto angle = compute_angle();
+
+            constexpr double rotation_snap = 15.0;
+            double delta_angle = angle - start_angle;
+            if (event->motion.state & GDK_SHIFT_MASK &&
+                event->motion.state & GDK_CONTROL_MASK) {
+                delta_angle = 0.0;
+            } else if (event->motion.state & GDK_SHIFT_MASK) {
+                delta_angle = std::round(delta_angle / rotation_snap) * rotation_snap;
+            } else if (event->motion.state & GDK_CONTROL_MASK) {
+                // ?
+            } else if (event->motion.state & GDK_MOD1_MASK) {
+                // Decimal raw angle
+            } else {
+                delta_angle = std::floor(delta_angle);
+            }
+            angle = start_angle + delta_angle;
+
+            _desktop->rotate_relative_keep_point(_desktop->w2d(_desktop->canvas->get_area_world().midpoint()),
+                                                                Geom::rad_from_deg(angle - current_angle));
+            current_angle = angle;
+            ret = true;
         }
         break;
 
@@ -506,6 +530,11 @@ bool ToolBase::root_handler(GdkEvent* event) {
         if (panning_cursor == 1) {
             panning_cursor = 0;
             _desktop->getCanvas()->get_window()->set_cursor(_cursor);
+        }
+
+        if (event->button.button == 2 && rotating) {
+            rotating = false;
+            ungrabCanvasEvents();
         }
 
         if (middle_mouse_zoom && within_tolerance && (panning || zoom_rb)) {
@@ -523,7 +552,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
                     "/options/zoomincrement/value", M_SQRT2, 1.01, 10);
 
             _desktop->zoom_relative(event_dt, (event->button.state & GDK_SHIFT_MASK) ? 1 / zoom_inc : zoom_inc);
-            ret = TRUE;
+            ret = true;
         } else if (panning == event->button.button) {
             panning = PANNING_NONE;
             ungrabCanvasEvents();
@@ -536,7 +565,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
             Geom::Point const moved_w(motion_w - button_w);
 
             _desktop->scroll_relative(moved_w);
-            ret = TRUE;
+            ret = true;
         } else if (zoom_rb == event->button.button) {
             zoom_rb = 0;
 
@@ -547,7 +576,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
                 _desktop->set_display_area(*b, 10);
             }
 
-            ret = TRUE;
+            ret = true;
         }
         }
         break;
@@ -571,11 +600,11 @@ bool ToolBase::root_handler(GdkEvent* event) {
         case GDK_KEY_Q:
         case GDK_KEY_q:
             if (_desktop->quick_zoomed()) {
-                ret = TRUE;
+                ret = true;
             }
             if (!MOD__SHIFT(event) && !MOD__CTRL(event) && !MOD__ALT(event)) {
                 _desktop->zoom_quick(true);
-                ret = TRUE;
+                ret = true;
             }
             break;
 
@@ -585,7 +614,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
             /* Close view */
             if (MOD__CTRL_ONLY(event)) {
                 sp_ui_close_view(nullptr);
-                ret = TRUE;
+                ret = true;
             }
             break;
 
@@ -774,7 +803,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
             if (rotate_inc != 0.0) {
                 Geom::Point const scroll_dt = _desktop->point();
                 _desktop->rotate_relative_keep_point(scroll_dt, rotate_inc);
-                ret = TRUE;
+                ret = true;
             }
 
         } else if (action == Type::CANVAS_PAN_X) {
@@ -784,13 +813,13 @@ bool ToolBase::root_handler(GdkEvent* event) {
             case GDK_SCROLL_UP:
             case GDK_SCROLL_LEFT:
                 _desktop->scroll_relative(Geom::Point(wheel_scroll, 0));
-                ret = TRUE;
+                ret = true;
                 break;
 
             case GDK_SCROLL_DOWN:
             case GDK_SCROLL_RIGHT:
                 _desktop->scroll_relative(Geom::Point(-wheel_scroll, 0));
-                ret = TRUE;
+                ret = true;
                 break;
 
             case GDK_SCROLL_SMOOTH: {
@@ -800,7 +829,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
                 delta_y /= WHEEL_SCROLL_DEFAULT;
 #endif
                 _desktop->scroll_relative(Geom::Point(wheel_scroll * -delta_y, 0));
-                ret = TRUE;
+                ret = true;
                 break;
             }
 
@@ -847,7 +876,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
             if (rel_zoom != 0.0) {
                 Geom::Point const scroll_dt = _desktop->point();
                 _desktop->zoom_relative(scroll_dt, rel_zoom);
-                ret = TRUE;
+                ret = true;
             }
 
             /* no modifier, pan up--down (left--right on multiwheel mice?) */
@@ -879,7 +908,7 @@ bool ToolBase::root_handler(GdkEvent* event) {
                 _desktop->scroll_relative(Geom::Point(-wheel_scroll * delta_x, -wheel_scroll * delta_y));
                 break;
             }
-            ret = TRUE;
+            ret = true;
         } else {
             g_warning("unhandled scroll event with scroll.state=0x%x", event->scroll.state);
         }
@@ -970,7 +999,7 @@ bool ToolBase::item_handler(SPItem* item, GdkEvent* event) {
         if (!are_buttons_1_and_3_on(event) && event->button.button == 3 &&
             !((event->button.state & GDK_SHIFT_MASK) || (event->button.state & GDK_CONTROL_MASK))) {
             this->menu_popup(event);
-            ret = TRUE;
+            ret = true;
         }
         break;
 
@@ -1069,11 +1098,7 @@ void ToolBase::ungrabCanvasEvents()
   * Call this function when an operation that requires high accuracy is started (e.g. mouse button is pressed
   * to draw a line). Make sure to call it again and restore standard precision afterwards. **/
 void ToolBase::set_high_motion_precision(bool high_precision) {
-    Glib::RefPtr<Gdk::Window> window = _desktop->getToplevel()->get_window();
-
-    if (window) {
-        window->set_event_compression(!high_precision);
-    }
+    _desktop->canvas->set_event_compression(!high_precision);
 }
 
 Geom::Point ToolBase::setup_for_drag_start(GdkEvent *ev)

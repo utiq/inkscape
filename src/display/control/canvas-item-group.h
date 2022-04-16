@@ -34,15 +34,16 @@ public:
     void add(CanvasItem *item);
     void remove(CanvasItem *item, bool Delete = true);
 
+    // Geometry
     void update(Geom::Affine const &affine) override;
+    void visit_page_rects(std::function<void(const Geom::Rect&)>) const override;
 
     // Display
     void render(Inkscape::CanvasItemBuffer *buf) override;
 
     // Selection
     CanvasItem* pick_item(Geom::Point &p);
-
-    CanvasItemList & get_items() { return items; } 
+    CanvasItemList& get_items() { return items; }
 
     // Properties
     void update_canvas_item_ctrl_sizes(int size_index);

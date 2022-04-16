@@ -265,9 +265,9 @@ void SPNamedView::release() {
 void SPNamedView::set_desk_color(SPDesktop* desktop) {
     if (desktop) {
         if (desk_checkerboard) {
-            desktop->getCanvas()->set_background_checkerboard(desk_color);
+            desktop->getCanvas()->set_desk(desk_color);
         } else {
-            desktop->getCanvas()->set_background_color(desk_color);
+            desktop->getCanvas()->set_desk(desk_color | 0xff);
         }
     }
 }
@@ -1091,9 +1091,9 @@ void SPNamedView::translateGrids(Geom::Translate const &tr) {
     }
 }
 
-void SPNamedView::scrollAllDesktops(double dx, double dy, bool is_scrolling) {
+void SPNamedView::scrollAllDesktops(double dx, double dy) {
     for(auto & view : this->views) {
-        view->scroll_relative_in_svg_coords(dx, dy, is_scrolling);
+        view->scroll_relative_in_svg_coords(dx, dy);
     }
 }
 

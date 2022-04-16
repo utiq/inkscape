@@ -167,7 +167,7 @@ void CanvasItemGuideLine::render(Inkscape::CanvasItemBuffer *buf)
     Geom::Point const aligned_origin = origin.floor() + Geom::Point(0.5, 0.5);
 
     // Set up the Cairo rendering context
-    Cairo::RefPtr<Cairo::Context> ctx = buf->cr;
+    auto ctx = buf->cr;
     ctx->save();
     ctx->translate(-buf->rect.left(), -buf->rect.top()); // Canvas to screen
     ctx->set_source_rgba(SP_RGBA32_R_F(_stroke), SP_RGBA32_G_F(_stroke),

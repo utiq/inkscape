@@ -110,29 +110,25 @@ void CanvasPage::update(Geom::Rect size, const char *txt, bool outline)
     for (auto item : canvas_items) {
         if (auto rect = dynamic_cast<CanvasItemRect *>(item)) {
             rect->set_rect(size);
+            rect->set_is_page(true);
 
             bool is_foreground = (rect->get_name() == "foreground");
             // This will put the border on the background OR foreground layer as needed.
             if (is_foreground == border_on_top) {
                 rect->show();
-                rect->set_shadow(shadow_color, _shadow_size);
                 rect->set_stroke(is_selected ? select_color : border_color);
             } else {
                 rect->hide();
-                rect->set_shadow(0x0, 0);
                 rect->set_stroke(0x0);
             }
-            // This undoes the hide for the background rect, but that's ok
+            // This undoes the hide for the background rect, and additionally gives it a fill and shadow.
             if (!is_foreground) {
                 rect->show();
-                if (_checkerboard) {
-                    rect->set_background_checkerboard(_background_color, true);
-                }
-                else {
-                    // TODO: This ignores the requested transparency to paint the background.
-                    // there is disagreement between developers about this feature.
-                    rect->set_background(_background_color | 0xff);
-                }
+                rect->set_fill(_background_color);
+                rect->set_shadow(shadow_color, _shadow_size);
+            } else {
+                rect->set_fill(0x0);
+                rect->set_shadow(0x0, 0);
             }
         }
         if (auto label = dynamic_cast<CanvasItemText *>(item)) {
@@ -149,14 +145,13 @@ void CanvasPage::update(Geom::Rect size, const char *txt, bool outline)
     }
 }
 
-bool CanvasPage::setAttributes(bool on_top, guint32 border, guint32 bg, int shadow, bool checkerboard)
+bool CanvasPage::setAttributes(bool on_top, uint32_t border, uint32_t bg, int shadow)
 {
-    if (on_top != _border_on_top || border != _border_color || bg != _background_color || shadow != _shadow_size || checkerboard != _checkerboard) {
+    if (on_top != _border_on_top || border != _border_color || bg != _background_color || shadow != _shadow_size) {
         this->_border_on_top = on_top;
         this->_border_color = border;
         this->_background_color = bg;
         _shadow_size = shadow;
-        _checkerboard = checkerboard;
         return true;
     }
     return false;

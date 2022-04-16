@@ -162,10 +162,7 @@ int CanvasItem::grab(Gdk::EventMask event_mask, Glib::RefPtr<Gdk::Cursor> cursor
         return -1;
     }
 
-    auto const display = Gdk::Display::get_default();
-    auto const seat    = display->get_default_seat();
-    auto const window  = _canvas->get_window();
-    seat->grab(window, Gdk::SEAT_CAPABILITY_ALL_POINTING, false, cursor, nullptr);
+    gtk_grab_add(GTK_WIDGET(_canvas->gobj()));
 
     _canvas->set_grabbed_canvas_item(this, event_mask);
     _canvas->set_current_canvas_item(this); // So that all events go to grabbed item.
@@ -183,9 +180,7 @@ void CanvasItem::ungrab()
 
     _canvas->set_grabbed_canvas_item(nullptr, (Gdk::EventMask)0); // Zero mask
 
-    auto const display = Gdk::Display::get_default();
-    auto const seat    = display->get_default_seat();
-    seat->ungrab();
+    gtk_grab_remove(GTK_WIDGET(_canvas->gobj()));
 }
 
 void CanvasItem::hide()

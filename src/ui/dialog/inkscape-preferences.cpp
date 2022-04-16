@@ -2663,10 +2663,16 @@ void InkscapePreferences::initPageRendering()
     _page_rendering.add_line( false, _("Outline overlay opacity:"), _rendering_outline_overlay_opacity, _("%"), _("Opacity of the color in outline overlay view mode"), false);
 
     // update strategy
-    int values[] = {1, 2, 3};
-    Glib::ustring labels[] = {_("Responsive"), _("Full redraw"), _("Multiscale")};
-    _canvas_update_strategy.init("/options/rendering/update_strategy", labels, values, 3, 3);
-    _page_rendering.add_line(false, _("Update strategy:"), _canvas_update_strategy, "", _("How to update continually changing content when it can't be redrawn fast enough"), false);
+    {
+        int values[] = {1, 2, 3};
+        Glib::ustring labels[] = {_("Responsive"), _("Full redraw"), _("Multiscale")};
+        _canvas_update_strategy.init("/options/rendering/update_strategy", labels, values, 3, 3);
+        _page_rendering.add_line(false, _("Update strategy:"), _canvas_update_strategy, "", _("How to update continually changing content when it can't be redrawn fast enough"), false);
+    }
+
+    // opengl
+    _canvas_request_opengl.init("", "/options/rendering/request_opengl", false);
+    _page_rendering.add_line( false, _("Enable OpenGL:"), _canvas_request_opengl, "", _("Request that the canvas should be painted with OpenGL rather than Cairo. If OpenGL is unsupported, it will fall back to Cairo."), false);
 
     /* blur quality */
     _blur_quality_best.init ( _("Best quality (slowest)"), "/options/blurquality/value",
@@ -2778,16 +2784,24 @@ void InkscapePreferences::initPageRendering()
     add_devmode_line(_("Smallest tile size for new bisector"), _canvas_new_bisector_size, C_("pixel abbreviation", "px"), _("Halve rendering tile rectangles until their largest dimension is this small"));
     _rendering_tile_size.init("/options/rendering/tile-size", 1.0, 10000.0, 1.0, 0.0, 16.0, true, false);
     add_devmode_line(_("Tile size:"), _rendering_tile_size, "", _("The \"tile size\" parameter previously hard-coded into Inkscape's original tile bisector."));
-    _canvas_max_affine_diff.init("/options/rendering/max_affine_diff", 0.0, 100.0, 0.1, 0.0, 1.8, false, false);
-    add_devmode_line(_("Transformation threshold"), _canvas_max_affine_diff, "", _("How much the viewing transformation can change before throwing away the current redraw and starting again"));
-    _canvas_pad.init("/options/rendering/pad", 0.0, 1000.0, 1.0, 0.0, 200.0, true, false);
-    add_devmode_line(_("Buffer padding"), _canvas_pad, C_("pixel abbreviation", "px"), _("Do not throw away rendered content in this area around the window yet"));
+    _canvas_pad.init("/options/rendering/pad", 0.0, 1000.0, 1.0, 0.0, 350.0, true, false);
+    add_devmode_line(_("Buffer padding"), _canvas_pad, C_("pixel abbreviation", "px"), _("Use buffers bigger than the window by this amount"));
+    _canvas_margin.init("/options/rendering/margin", 0.0, 1000.0, 1.0, 0.0, 100.0, true, false);
+    add_devmode_line(_("Prerender margin"), _canvas_margin, "", _("Pre-render a margin around the visible region."));
+    _canvas_preempt.init("/options/rendering/preempt", 0.0, 1000.0, 1.0, 0.0, 250.0, true, false);
+    add_devmode_line(_("Preempt size"), _canvas_preempt, "", _("Prevent thin tiles at the rendering edge by making them at least this size."));
     _canvas_coarsener_min_size.init("/options/rendering/coarsener_min_size", 0.0, 1000.0, 1.0, 0.0, 200.0, true, false);
     add_devmode_line(_("Min size for coarsener algorithm"), _canvas_coarsener_min_size, C_("pixel abbreviation", "px"), _("Coarsener algorithm only processes rectangles smaller/thinner than this."));
     _canvas_coarsener_glue_size.init("/options/rendering/coarsener_glue_size", 0.0, 1000.0, 1.0, 0.0, 80.0, true, false);
     add_devmode_line(_("Glue size for coarsener algorithm"), _canvas_coarsener_glue_size, C_("pixel abbreviation", "px"), _("Coarsener algorithm absorbs nearby rectangles within this distance."));
     _canvas_coarsener_min_fullness.init("/options/rendering/coarsener_min_fullness", 0.0, 1.0, 0.0, 0.0, 0.3, false, false);
     add_devmode_line(_("Min fullness for coarsener algorithm"), _canvas_coarsener_min_fullness, "", _("Refuse coarsening algorithm's attempt if the result would be more empty than this."));
+    {
+        int values[] = {1, 2, 3, 4};
+        Glib::ustring labels[] = {_("Auto"), _("Persistent"), _("Asynchronous"), _("Synchronous")};
+        _canvas_pixelstreamer_method.init("/options/rendering/pixelstreamer_method", labels, values, 4, 1);
+        add_devmode_line(_("Pixel streaming method"), _canvas_pixelstreamer_method, "", _("Change the method used for streaming pixel data to the GPU. The default is Auto, which picks the best method available at runtime. As for the other options, higher up is better. Be warned! No attempt is made to stop you from selecting a method that isn't supported! (This is dev mode, afer all.) If you do so, it will be an instant crash."));
+    }
 
     add_devmode_group_header(_("Debugging, profiling and experiments"));
     _canvas_debug_framecheck.init("", "/options/rendering/debug_framecheck", false);
@@ -2801,15 +2815,19 @@ void InkscapePreferences::initPageRendering()
     _canvas_debug_show_redraw.init("", "/options/rendering/debug_show_redraw", false);
     add_devmode_line(_("Show redraw"), _canvas_debug_show_redraw, "", _("Paint a translucent random colour over each newly drawn tile"));
     _canvas_debug_show_unclean.init("", "/options/rendering/debug_show_unclean", false);
-    add_devmode_line(_("Show unclean region"), _canvas_debug_show_unclean, "", _("Show the region that needs to be redrawn in red"));
+    add_devmode_line(_("Show unclean region"), _canvas_debug_show_unclean, "", _("Show the region that needs to be redrawn in red (only in Cairo mode)"));
     _canvas_debug_show_snapshot.init("", "/options/rendering/debug_show_snapshot", false);
-    add_devmode_line(_("Show snapshot region"), _canvas_debug_show_snapshot, "", _("Show the region that still contains a saved copy of previously rendered content in blue"));
+    add_devmode_line(_("Show snapshot region"), _canvas_debug_show_snapshot, "", _("Show the region that still contains a saved copy of previously rendered content in blue (only in Cairo mode)"));
     _canvas_debug_show_clean.init("", "/options/rendering/debug_show_clean", false);
-    add_devmode_line(_("Show clean region's fragmentation"), _canvas_debug_show_clean, "", _("Show the outlines of the rectangles in the region where rendering is complete in green"));
+    add_devmode_line(_("Show clean region's fragmentation"), _canvas_debug_show_clean, "", _("Show the outlines of the rectangles in the region where rendering is complete in green (only in Cairo mode)"));
     _canvas_debug_disable_redraw.init("", "/options/rendering/debug_disable_redraw", false);
     add_devmode_line(_("Disable redraw"), _canvas_debug_disable_redraw, "", _("Temporarily disable the idle redraw process completely"));
     _canvas_debug_sticky_decoupled.init("", "/options/rendering/debug_sticky_decoupled", false);
     add_devmode_line(_("Sticky decoupled mode"), _canvas_debug_sticky_decoupled, "", _("Stay in decoupled mode even after rendering is complete"));
+    _canvas_debug_animate.init("", "/options/rendering/debug_animate", false);
+    add_devmode_line(_("Animate"), _canvas_debug_animate, "", _("Continuously adjust viewing parameters in an animation loop."));
+    _canvas_debug_idle_starvation.init("", "/options/rendering/debug_idle_starvation", false);
+    add_devmode_line(_("Print render time stats"), _canvas_debug_idle_starvation, "", _("On display of each frame, log to the console how much time was taken away from rendering, and whether rendering is still busy. A high value would explain lag/fragmentation problems, and a low value with 'still busy' would explain tearing."));
 
     this->AddPage(_page_rendering, _("Rendering"), PREFS_PAGE_RENDERING);
 }

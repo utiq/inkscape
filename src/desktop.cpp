@@ -51,7 +51,6 @@
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-group.h"
 #include "display/control/canvas-item-rect.h"
-#include "display/control/canvas-item-rotate.h"
 
 #include "io/fix-broken-links.h"
 
@@ -232,10 +231,6 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
     if (drawing_item) {
         canvas_drawing->get_drawing()->root()->prependChild(drawing_item);
     }
-
-    // Must be the top most item.
-    canvas_rotate = new Inkscape::CanvasItemRotate(canvas_item_root);
-    canvas_rotate->hide();
 
     temporary_item_list = new Inkscape::Display::TemporaryItemList( this );
     snapindicator = new Inkscape::Display::SnapIndicator ( this );
@@ -479,21 +474,12 @@ SPItem *SPDesktop::getGroupAtPoint(Geom::Point const &p) const
  * Returns the mouse point in document coordinates; if mouse is
  * outside the canvas, returns the center of canvas viewpoint.
  */
-Geom::Point SPDesktop::point(bool outside_canvas) const
+Geom::Point SPDesktop::point() const
 {
-    Geom::Point p = _widget->window_get_pointer();
-    Geom::Point pw = canvas->canvas_to_world(p);
-    Geom::Rect const r = canvas->get_area_world();
-
-    if (r.interiorContains(pw) || outside_canvas) {
-        p = w2d(pw);
-        return p;
-    }
-    Geom::Point r0 = w2d(r.min());
-    Geom::Point r1 = w2d(r.max());
-    return (r0 + r1) / 2.0;
+    auto ret = canvas->get_last_mouse();
+    auto pt = ret ? *ret : Geom::Point(canvas->get_dimensions()) / 2.0;
+    return w2d(canvas->canvas_to_world(pt));
 }
-
 
 /**
  * Revert back to previous transform if possible. Note: current transform is
@@ -575,7 +561,7 @@ SPDesktop::set_display_area (bool log)
     // Scroll
     Geom::Point offset = _current_affine.getOffset();
     canvas->set_pos(offset);
-    canvas->set_affine(_current_affine.d2w()); // For CanvasItem's.
+    canvas->set_affine(_current_affine.d2w()); // For CanvasItems.
 
     /* Update perspective lines if we are in the 3D box tool (so that infinite ones are shown
      * correctly) */
@@ -957,7 +943,7 @@ SPDesktop::is_flipped (CanvasFlip flip)
  * Scroll canvas by to a particular point (window coordinates).
  */
 void
-SPDesktop::scroll_absolute (Geom::Point const &point, bool is_scrolling)
+SPDesktop::scroll_absolute (Geom::Point const &point)
 {
     canvas->set_pos(point);
     _current_affine.setOffset( point );
@@ -976,10 +962,10 @@ SPDesktop::scroll_absolute (Geom::Point const &point, bool is_scrolling)
  * Scroll canvas by specific coordinate amount (window coordinates).
  */
 void
-SPDesktop::scroll_relative (Geom::Point const &delta, bool is_scrolling)
+SPDesktop::scroll_relative (Geom::Point const &delta)
 {
     Geom::Rect const viewbox = canvas->get_area_world();
-    scroll_absolute( viewbox.min() - delta, is_scrolling );
+    scroll_absolute( viewbox.min() - delta );
 }
 
 
@@ -987,10 +973,10 @@ SPDesktop::scroll_relative (Geom::Point const &delta, bool is_scrolling)
  * Scroll canvas by specific coordinate amount in svg coordinates.
  */
 void
-SPDesktop::scroll_relative_in_svg_coords (double dx, double dy, bool is_scrolling)
+SPDesktop::scroll_relative_in_svg_coords (double dx, double dy)
 {
     double scale = _current_affine.getZoom();
-    scroll_relative(Geom::Point(dx*scale, dy*scale), is_scrolling);
+    scroll_relative(Geom::Point(dx*scale, dy*scale));
 }
 
 

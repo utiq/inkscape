@@ -947,7 +947,7 @@ void SPDocument::fitToRect(Geom::Rect const &rect, bool with_margins)
         _page_manager->movePages(tr2);
 
         // update the viewport so the drawing appears to stay where it was
-        nv->scrollAllDesktops(-tr2[0], -tr2[1] * y_dir, false);
+        nv->scrollAllDesktops(-tr2[0], -tr2[1] * y_dir);
     }
 }
 

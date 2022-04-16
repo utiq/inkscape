@@ -165,7 +165,6 @@ public:
 
     Inkscape::CanvasItemCatchall *getCanvasCatchall() const { return canvas_catchall; }
     Inkscape::CanvasItemDrawing  *getCanvasDrawing()  const { return canvas_drawing; }
-    Inkscape::CanvasItemRotate   *getCanvasRotate()   const { return canvas_rotate; }
 
 private:
     // Groups
@@ -181,7 +180,6 @@ private:
     // Individual items
     Inkscape::CanvasItemCatchall *canvas_catchall        = nullptr; ///< The bottom item for unclaimed events.
     Inkscape::CanvasItemDrawing  *canvas_drawing         = nullptr; ///< The actual SVG drawing (a.k.a. arena).
-    Inkscape::CanvasItemRotate   *canvas_rotate          = nullptr; ///< Quick preview of canvas rotation.
 
 public:
     SPCSSAttr     *current;     ///< current style
@@ -294,7 +292,7 @@ public:
     SPItem *getItemFromListAtPointBottom(const std::vector<SPItem*> &list, Geom::Point const &p) const;
     SPItem *getItemAtPoint(Geom::Point const &p, bool into_groups, SPItem *upto = nullptr) const;
     SPItem *getGroupAtPoint(Geom::Point const &p) const;
-    Geom::Point point(bool outside_canvas = false) const;
+    Geom::Point point() const;
 
     void prev_transform();
     void next_transform();
@@ -344,9 +342,9 @@ public:
 
     double current_rotation() const { return _current_affine.getRotation(); }
 
-    void scroll_absolute (Geom::Point const &point, bool is_scrolling = false);
-    void scroll_relative (Geom::Point const &delta, bool is_scrolling = false);
-    void scroll_relative_in_svg_coords (double dx, double dy, bool is_scrolling = false);
+    void scroll_absolute (Geom::Point const &point);
+    void scroll_relative (Geom::Point const &delta);
+    void scroll_relative_in_svg_coords (double dx, double dy);
     bool scroll_to_point (Geom::Point const &s_dt, gdouble autoscrollspeed = 0);
 
     void setWindowTitle();

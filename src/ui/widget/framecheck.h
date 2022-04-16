@@ -1,12 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/*
- * Functions for logging timing events.
- * Copyright (C) 2022 PBS <pbs3141@gmail.com>
- * Released under GNU GPL v2+, read the file 'COPYING' for more information.
- */
-
-#ifndef FRAMECHECK_H
-#define FRAMECHECK_H
+#ifndef INKSCAPE_FRAMECHECK_H
+#define INKSCAPE_FRAMECHECK_H
 
 #include <ostream>
 #include <glib.h>
@@ -55,7 +49,7 @@ struct Event
     void finish()
     {
         if (start != -1) {
-            logfile() << name << ' ' << start << ' ' << g_get_monotonic_time() << ' ' << subtype << '\n';
+            logfile() << name << ' ' << start << ' ' << g_get_monotonic_time() << ' ' << subtype << std::endl;
         }
     }
 };
@@ -63,4 +57,4 @@ struct Event
 } // namespace FrameCheck
 } // namespace Inkscape
 
-#endif // FRAMECHECK_H
+#endif // INKSCAPE_FRAMECHECK_H

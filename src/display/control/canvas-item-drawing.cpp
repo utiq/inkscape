@@ -140,6 +140,7 @@ void CanvasItemDrawing::update(Geom::Affine const &affine)
         _bounds.expandBy(1); // Avoid aliasing artifacts.
     }
 
+    // Todo: This should be managed elsewhere.
     if (_cursor) {
         /* Mess with enter/leave notifiers */
         DrawingItem *new_drawing_item = _drawing->pick(_c, _delta, _sticky);

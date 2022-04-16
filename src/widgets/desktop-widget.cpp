@@ -494,20 +494,6 @@ SPDesktopWidget::setMessage (Inkscape::MessageType type, const gchar *message)
     _select_status->set_tooltip_text(_select_status->get_text());
 }
 
-Geom::Point
-SPDesktopWidget::window_get_pointer()
-{
-    int x, y;
-    auto window = _canvas->get_window();
-    auto display = window->get_display();
-    auto seat = display->get_default_seat();
-    auto device = seat->get_pointer();
-    Gdk::ModifierType m;
-    window->get_device_position(device, x, y, m);
-
-    return Geom::Point(x, y);
-}
-
 /**
  * Called before SPDesktopWidget destruction.
  * (Might be called more than once)
@@ -1360,8 +1346,8 @@ SPDesktopWidget::on_adjustment_value_changed()
     update = true;
 
     // Do not call canvas->scrollTo directly... messes up 'offset'.
-    desktop->scroll_absolute( Geom::Point(_canvas_grid->GetHAdj()->get_value(),
-                                          _canvas_grid->GetVAdj()->get_value()), false);
+    desktop->scroll_absolute(Geom::Point(_canvas_grid->GetHAdj()->get_value(),
+                                         _canvas_grid->GetVAdj()->get_value()));
 
     update = false;
 }
@@ -1653,7 +1639,7 @@ SPDesktopWidget::toggle_color_prof_adj()
 }
 
 static void
-set_adjustment (Glib::RefPtr<Gtk::Adjustment> &adj, double l, double u, double ps, double si, double pi)
+set_adjustment (Gtk::Adjustment *adj, double l, double u, double ps, double si, double pi)
 {
     if ((l != adj->get_lower()) ||
         (u != adj->get_upper()) ||

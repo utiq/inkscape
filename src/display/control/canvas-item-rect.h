@@ -34,6 +34,8 @@ public:
 
     // Geometry
     void set_rect(Geom::Rect const &rect);
+    Geom::Rect get_rect() const {return _rect;}
+    void visit_page_rects(std::function<void(const Geom::Rect&)>) const override;
 
     void update(Geom::Affine const &affine) override;
     double closest_distance_to(Geom::Point const &p); // Maybe not needed
@@ -45,25 +47,23 @@ public:
     void render(Inkscape::CanvasItemBuffer *buf) override;
 
     // Properties
+    void set_is_page(bool is_page);
+    void set_fill(guint32 color) override;
     void set_dashed(bool dash = true);
     void set_inverted(bool inverted = false);
-    void set_shadow(guint32 color, int width);
-    void set_background(guint32 background);
-    void set_background_checkerboard(guint32 rgba, bool use_alpha);
+    void set_shadow(uint32_t color, int width);
  
 protected:
-    void _set_background(Cairo::RefPtr<Cairo::Pattern> background);
     double get_shadow_size() const;
     double get_scale() const;
 
     Geom::Rect _rect;
+    bool _is_page = false;
     bool _dashed = false;
     bool _inverted = false;
     int _shadow_width = 0;
-    guint32 _shadow_color = 0x00000000;
-    Cairo::RefPtr<Cairo::Pattern> _background; // optional background
+    uint32_t _shadow_color = 0x0;
 };
-
 
 } // namespace Inkscape
 
