@@ -330,7 +330,7 @@ void SelectorsDialog::_showWidgets()
     _button_box.pack_end(*_vertical, false, false, 0);
     _del.signal_clicked().connect(sigc::mem_fun(*this, &SelectorsDialog::_delSelector));
     _del.hide();
-    _style_dialog = new StyleDialog;
+    _style_dialog = Gtk::manage(new StyleDialog);
     _style_dialog->set_name("StyleDialog");
     _paned.pack1(*_style_dialog, Gtk::SHRINK);
     _paned.pack2(_selectors_box, true, true);
