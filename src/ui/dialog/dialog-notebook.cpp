@@ -115,12 +115,12 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
         const auto& data = kv.second;
         if (data.category == DialogData::Other) continue;
         // for sorting dialogs alphabetically, remove '_'
-        auto order = data.label;
+        Glib::ustring order = _(data.label.c_str());
         auto underscore = order.find('_');
         if (underscore != Glib::ustring::npos) {
             order = order.erase(underscore, 1);
         }
-        all_dialogs.push_back(Dialog { .key = key, .label = data.label, .order = order, .icon_name = data.icon_name, .category = data.category, .provide_scroll = data.provide_scroll});
+        all_dialogs.push_back(Dialog { .key = key, .label = _(data.label.c_str()), .order = order, .icon_name = data.icon_name, .category = data.category, .provide_scroll = data.provide_scroll});
     }
     // sort by categories and then by names
     std::sort(all_dialogs.begin(), all_dialogs.end(), [](const Dialog& a, const Dialog& b){
