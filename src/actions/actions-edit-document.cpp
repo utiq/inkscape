@@ -31,6 +31,18 @@ create_guides_around_page(SPDocument* document)
 }
 
 void
+lock_all_guides(SPDocument *document)
+{
+    document->getNamedView()->toggleLockGuides();
+}
+
+void
+show_all_guides(SPDocument *document)
+{
+    document->getNamedView()->toggleShowGuides();
+}
+
+void
 delete_all_guides(SPDocument* document)
 {
     // Delete All Guides
@@ -58,9 +70,10 @@ set_display_unit(Glib::ustring abbr, SPDocument* document)
 
 std::vector<std::vector<Glib::ustring>> raw_data_edit_document =
 {
-
     // clang-format off
     {"doc.create-guides-around-page",            N_("Create Guides Around the Page"),    "Edit Document",     N_("Create four guides aligned with the page borders")},
+    {"doc.lock-all-guides",                      N_("Lock All Guides"),                  "Edit Document",     N_("Toggle lock of all guides in the document")},
+    {"doc.show-all-guides",                      N_("Show All Guides"),                  "Edit Document",     N_("Toggle visibility of all guides in the document")},
     {"doc.delete-all-guides",                    N_("Delete All Guides"),                "Edit Document",     N_("Delete all the guides in the document")},
     {"doc.fit-canvas-to-drawing",                N_("Fit Page to Drawing"),              "Edit Document",     N_("Fit the page to the drawing")}
     // clang-format on
@@ -75,6 +88,8 @@ add_actions_edit_document(SPDocument* document)
     map->add_action( "create-guides-around-page",           sigc::bind<SPDocument*>(sigc::ptr_fun(&create_guides_around_page),  document));
     map->add_action( "delete-all-guides",                   sigc::bind<SPDocument*>(sigc::ptr_fun(&delete_all_guides),  document));
     map->add_action( "fit-canvas-to-drawing",               sigc::bind<SPDocument*>(sigc::ptr_fun(&fit_canvas_drawing),  document));
+    map->add_action_bool( "lock-all-guides",                sigc::bind<SPDocument*>(sigc::ptr_fun(&lock_all_guides),   document));
+    map->add_action_bool( "show-all-guides",                sigc::bind<SPDocument*>(sigc::ptr_fun(&show_all_guides),   document));
 
     map->add_action_radio_string("set-display-unit",        sigc::bind<SPDocument*>(sigc::ptr_fun(&set_display_unit), document), "px");
     // clang-format on

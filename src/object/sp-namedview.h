@@ -95,11 +95,18 @@ public:
     void translateGrids(Geom::Translate const &translation);
     void scrollAllDesktops(double dx, double dy);
     void writeNewGrid(SPDocument *document,int gridtype);
-    void toggleGuides();
-    void setGuides(bool v);
-    bool getGuides();
-    void lockGuides();
+
+    void toggleShowGuides();
+    void toggleLockGuides();
+
+    bool getLockGuides();
+    void setLockGuides(bool v);
+
+    void setShowGuides(bool v);
+    bool getShowGuides();
+
     void updateViewPort();
+
     // page background, border, desk colors
     void change_color(unsigned int rgba, SPAttr color_key, SPAttr opacity_key = SPAttr::INVALID);
     // show border, border on top, anti-aliasing, ...
@@ -108,20 +115,23 @@ public:
     void set_desk_color(SPDesktop* desktop);
 
 private:
+    void updateGuides();
+    void setShowGuideSingle(SPGuide *guide);
+
     double getMarginLength(gchar const * const key,Inkscape::Util::Unit const * const margin_units,Inkscape::Util::Unit const * const return_units,double const width,double const height,bool const use_width);
     friend class SPDocument;
 
     Inkscape::CanvasPage *_viewport = nullptr;
 
 protected:
-	void build(SPDocument *document, Inkscape::XML::Node *repr) override;
-	void release() override;
+    void build(SPDocument *document, Inkscape::XML::Node *repr) override;
+    void release() override;
     void modified(unsigned int flags) override;
     void update(SPCtx *ctx, unsigned int flags) override;
     void set(SPAttr key, char const* value) override;
 
-	void child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) override;
-	void remove_child(Inkscape::XML::Node* child) override;
+    void child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) override;
+    void remove_child(Inkscape::XML::Node* child) override;
     void order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_repr,
                        Inkscape::XML::Node *new_repr) override;
 
@@ -134,8 +144,6 @@ void sp_namedview_zoom_and_view_from_document(SPDesktop *desktop);
 void sp_namedview_document_from_window(SPDesktop *desktop);
 void sp_namedview_update_layers_from_document (SPDesktop *desktop);
 
-void sp_namedview_toggle_guides(SPDocument *doc, SPNamedView *namedview);
-void sp_namedview_guides_toggle_lock(SPDocument *doc, SPNamedView *namedview);
 void sp_namedview_show_grids(SPNamedView *namedview, bool show, bool dirty_document);
 Inkscape::CanvasGrid * sp_namedview_get_first_enabled_grid(SPNamedView *namedview);
 

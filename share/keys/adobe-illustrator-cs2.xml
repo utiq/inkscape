@@ -78,7 +78,7 @@ See default.xml for more information.
   <bind gaction="win.canvas-show-grid"    keys="&lt;primary&gt;quotedbl" />
   
   <!-- Toggle Guides -->
-  <bind gaction="win.canvas-show-guides"  keys="&lt;primary&gt;semicolon" />
+  <bind gaction="doc.show-all-guides"     keys="&lt;primary&gt;semicolon" />
   
   <!-- Toggle Snap -->
   <bind gaction="win.snap-global-toggle" keys="&lt;primary&gt;&lt;shift&gt;quotedbl, &lt;primary&gt;&lt;alt&gt;apostrophe"/>

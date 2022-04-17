@@ -103,7 +103,7 @@ See default.xml for more information.
 
   <bind gaction="win.canvas-rulers"             keys="&lt;ctrl&gt;r, &lt;ctrl&gt;R" />
   <bind gaction="win.canvas-scroll-bars"        keys="&lt;ctrl&gt;b, &lt;ctrl&gt;B" />
-  <bind gaction="win.canvas-show-guides"        keys="&lt;shift&gt;bar, bar" />
+  <bind gaction="doc.show-all-guides"           keys="&lt;shift&gt;bar, bar" />
   <bind gaction="win.canvas-show-grid"          keys="&lt;shift&gt;numbersign, numbersign" /> -->
 
 <!-- Toggle View -->

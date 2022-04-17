@@ -783,13 +783,11 @@ void
 SPDesktopWidget::update_guides_lock()
 {
     bool down = _canvas_grid->GetGuideLock()->get_active();
-
-    auto doc  = desktop->getDocument();
     auto nv   = desktop->getNamedView();
+    bool lock = nv->getLockGuides();
 
-    if ( down != nv->lockguides ) {
-        nv->lockguides = down;
-        sp_namedview_guides_toggle_lock(doc, nv);
+    if (down != lock) {
+        nv->toggleLockGuides();
         if (down) {
             setMessage (Inkscape::NORMAL_MESSAGE, _("Locked all guides"));
         } else {
@@ -1759,7 +1757,7 @@ SPDesktopWidget::on_ruler_box_motion_notify_event(GdkEventMotion *event, Gtk::Wi
 
         // explicitly show guidelines; if I draw a guide, I want them on
         if ((horiz ? wy : wx) >= 0) {
-            desktop->namedview->setGuides(true);
+            desktop->namedview->setShowGuides(true);
         }
 
         if (!(event->state & GDK_SHIFT_MASK)) {
@@ -1833,7 +1831,7 @@ SPDesktopWidget::on_ruler_box_button_release_event(GdkEventButton *event, Gtk::W
 
         if (!_ruler_dragged) {
             // Ruler click (without drag) toggle the guide visibility on and off
-            sp_namedview_toggle_guides(desktop->getDocument(), desktop->namedview);
+            desktop->namedview->toggleShowGuides();
         }
 
         _ruler_clicked = false;

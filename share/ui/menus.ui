@@ -320,7 +320,7 @@
       </item>
       <item>
         <attribute name='label' translatable="yes">Lock All Guides</attribute>
-        <attribute name='action'>win.lock-all-guides</attribute>
+        <attribute name='action'>doc.lock-all-guides</attribute>
       </item>
       <item>
         <attribute name='label' translatable="yes">Delete All Guides</attribute>
@@ -535,7 +535,7 @@
     </item>
     <item>
       <attribute name='label' translatable="yes">G_uides</attribute>
-      <attribute name='action'>win.canvas-show-guides</attribute>
+      <attribute name='action'>doc.show-all-guides</attribute>
     </item>
     <section>
       <submenu id="display-show-hide">

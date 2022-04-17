@@ -125,7 +125,7 @@ File, Edit, View, Modify, Text, Xtras, Window, Help.
   <bind gaction="win.canvas-scroll-bars" />
 
   <!-- TODO: Freehand "View, Guides, Show  Ctrl+;" -->
-  <!-- <bind gaction="win.canvas-show-guides" keys="&lt;ctrl&gt;;" /> -->
+  <!-- <bind gaction="doc.show-all-guides" keys="&lt;ctrl&gt;;" /> -->
 
   <!-- View, Grid, Show  Ctrl+Alt+G.  -->
   <bind gaction="win.canvas-show-grid"  keys="&lt;ctrl&gt;&lt;alt&gt;g, &lt;ctrl&gt;&lt;alt&gt;G" />

@@ -59,11 +59,6 @@ using Inkscape::Util::unit_table;
 #define DEFAULTGUIDEHICOLOR 0xff00007f
 #define DEFAULTDESKCOLOR 0xd1d1d1ff
 
-static void sp_namedview_setup_guides(SPNamedView * nv);
-static void sp_namedview_lock_guides(SPNamedView * nv);
-static void sp_namedview_show_single_guide(SPGuide* guide, bool show);
-static void sp_namedview_lock_single_guide(SPGuide* guide, bool show);
-
 SPNamedView::SPNamedView()
     : SPObjectGroup()
     , snap_manager(this, get_snapping_preferences())
@@ -289,6 +284,8 @@ void SPNamedView::modified(unsigned int flags)
             Glib::VariantType String(Glib::VARIANT_TYPE_STRING);
             saction->change_state(getDisplayUnit()->abbr);
         }
+
+        updateGuides();
     }
     // Add desk color, and chckerboard pattern to desk view
     for (auto desktop : views) {
@@ -333,11 +330,9 @@ void SPNamedView::set(SPAttr key, const gchar* value) {
         break;
     case SPAttr::SHOWGUIDES:
         this->showguides.readOrUnset(value);
-        sp_namedview_setup_guides(this);
         break;
     case SPAttr::INKSCAPE_LOCKGUIDES:
         this->lockguides.readOrUnset(value);
-        this->lockGuides();
         break;
     case SPAttr::SHOWGRIDS:
         this->grids_visible.readOrUnset(value);
@@ -584,7 +579,7 @@ void SPNamedView::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *r
                         g->sensitize(view->getCanvas(), TRUE);
                     }
 
-                    sp_namedview_show_single_guide(g, this->showguides);
+                    this->setShowGuideSingle(g);
                 }
             }
         }
@@ -646,7 +641,7 @@ void SPNamedView::show(SPDesktop *desktop)
         if (desktop->guides_active) {
             guide->sensitize(desktop->getCanvas(), TRUE);
         }
-        sp_namedview_show_single_guide(guide, showguides);
+        this->setShowGuideSingle(guide);
     }
 
     auto box = document->preferredBounds();
@@ -899,59 +894,6 @@ void SPNamedView::activateGuides(void* desktop, bool active)
     }
 }
 
-static void sp_namedview_setup_guides(SPNamedView *nv)
-{
-    for(std::vector<SPGuide *>::iterator it=nv->guides.begin();it!=nv->guides.end();++it ) {
-        sp_namedview_show_single_guide(*it, nv->showguides);
-    }
-}
-
-static void sp_namedview_lock_guides(SPNamedView *nv)
-{
-    for(std::vector<SPGuide *>::iterator it=nv->guides.begin();it!=nv->guides.end();++it ) {
-        sp_namedview_lock_single_guide(*it, nv->lockguides);
-    }
-}
-
-static void sp_namedview_show_single_guide(SPGuide* guide, bool show)
-{
-    if (show) {
-        guide->showSPGuide();
-    } else {
-        guide->hideSPGuide();
-    }
-}
-
-static void sp_namedview_lock_single_guide(SPGuide* guide, bool locked)
-{
-    guide->set_locked(locked, true);
-}
-
-void sp_namedview_toggle_guides(SPDocument *doc, SPNamedView *namedview)
-{
-    bool saved = DocumentUndo::getUndoSensitive(doc);
-    DocumentUndo::setUndoSensitive(doc, false);
-
-    namedview->toggleGuides();
-
-    DocumentUndo::setUndoSensitive(doc, saved);
-    doc->setModifiedSinceSave();
-}
-
-void sp_namedview_guides_toggle_lock(SPDocument *doc, SPNamedView * namedview)
-{
-    Inkscape::XML::Node *repr = namedview->getRepr();
-    bool v = repr->getAttributeBoolean("inkscape:lockguides", false);
-    v = !v;
-
-    bool saved = DocumentUndo::getUndoSensitive(doc);
-    DocumentUndo::setUndoSensitive(doc, false);
-    repr->setAttributeBoolean("inkscape:lockguides", v);
-    sp_namedview_lock_guides(namedview);
-    DocumentUndo::setUndoSensitive(doc, saved);
-    doc->setModifiedSinceSave();
-}
-
 void sp_namedview_show_grids(SPNamedView * namedview, bool show, bool dirty_document)
 {
     namedview->grids_visible = show;
@@ -981,28 +923,87 @@ std::vector<SPDesktop *> const SPNamedView::getViewList() const
     return views;
 }
 
-void SPNamedView::toggleGuides()
+void SPNamedView::toggleShowGuides()
 {
-    bool v = this->getGuides();
-    this->setGuides(!v);
+    setShowGuides(!getShowGuides());
 }
 
-void SPNamedView::setGuides(bool v)
+void SPNamedView::toggleLockGuides()
 {
-    g_assert(this->getRepr() != nullptr);
-    this->getRepr()->setAttributeBoolean("showguides", v);
+    setLockGuides(!getLockGuides());
 }
 
-bool SPNamedView::getGuides()
+void SPNamedView::setShowGuides(bool v)
 {
-    g_assert(this->getRepr() != nullptr);
-    // show guides if not specified, for backwards compatibility
-    return this->getRepr()->getAttributeBoolean("showguides", true);
+    if (auto repr = getRepr()) {
+        bool saved = DocumentUndo::getUndoSensitive(document);
+        DocumentUndo::setUndoSensitive(document, false);
+
+        repr->setAttributeBoolean("showguides", v);
+
+        DocumentUndo::setUndoSensitive(document, saved);
+        requestModified(SP_OBJECT_MODIFIED_FLAG);
+    }
 }
 
-void SPNamedView::lockGuides()
+void SPNamedView::setLockGuides(bool v)
 {
-    sp_namedview_lock_guides(this);
+    if (auto repr = getRepr()) {
+        bool saved = DocumentUndo::getUndoSensitive(document);
+        DocumentUndo::setUndoSensitive(document, false);
+
+        repr->setAttributeBoolean("inkscape:lockguides", v);
+
+        DocumentUndo::setUndoSensitive(document, saved);
+        requestModified(SP_OBJECT_MODIFIED_FLAG);
+    }
+}
+
+void SPNamedView::setShowGuideSingle(SPGuide *guide)
+{
+    if (getShowGuides())
+        guide->showSPGuide();
+    else
+        guide->hideSPGuide();
+}
+
+bool SPNamedView::getShowGuides()
+{
+    if (auto repr = getRepr()) {
+        // show guides if not specified, for backwards compatibility
+        return repr->getAttributeBoolean("showguides", true);
+    }
+
+    return false;
+}
+
+bool SPNamedView::getLockGuides()
+{
+    if (auto repr = getRepr()) {
+        return repr->getAttributeBoolean("inkscape:lockguides");
+    }
+
+    return false;
+}
+
+void SPNamedView::updateGuides()
+{
+    if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
+                document->getActionGroup()->lookup_action("show-all-guides"))) {
+
+        saction->change_state(getShowGuides());
+    }
+
+    if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
+                document->getActionGroup()->lookup_action("lock-all-guides"))) {
+
+        saction->change_state(getLockGuides());
+    }
+
+    for (SPGuide *guide : guides) {
+        setShowGuideSingle(guide);
+        guide->set_locked(this->getLockGuides(), true);
+    }
 }
 
 /**

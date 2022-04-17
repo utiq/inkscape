@@ -1507,8 +1507,8 @@ void DocumentProperties::update_widgets()
 
     //-----------------------------------------------------------guide page
 
-    _rcb_sgui.setActive (nv->showguides);
-    _rcb_lgui.setActive (nv->lockguides);
+    _rcb_sgui.setActive (nv->getShowGuides());
+    _rcb_lgui.setActive (nv->getLockGuides());
     _rcp_gui.setRgba32 (nv->guidecolor);
     _rcp_hgui.setRgba32 (nv->guidehicolor);
 

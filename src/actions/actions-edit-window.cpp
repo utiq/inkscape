@@ -19,7 +19,6 @@
 #include "inkscape-window.h"
 #include "desktop.h"
 #include "selection-chemistry.h"
-#include "object/sp-guide.h"
 
 void
 paste(InkscapeWindow* win)
@@ -40,34 +39,6 @@ paste_in_place(InkscapeWindow* win)
 }
 
 void
-lock_all_guides(InkscapeWindow *win)
-{
-    // Get Action
-    auto action = win->lookup_action("lock-all-guides");
-    if (!action) {
-        std::cerr << "lock_all_guides: action missing!" << std::endl;
-        return;
-    }
-
-    auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
-    if (!saction) {
-        std::cerr << "lock_all_guides: action not SimpleAction!" << std::endl;
-        return;
-    }
-
-    // Toggle State
-    bool state = false;
-    saction->get_state(state);
-    state = !state;
-    saction->change_state(state);
-
-    SPDesktop* dt = win->get_desktop();
-
-    // Lock All Guides
-    dt->toggleGuidesLock();
-}
-
-void
 path_effect_parameter_next(InkscapeWindow* win)
 {
     SPDesktop* dt = win->get_desktop();
@@ -81,7 +52,6 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit_window =
     // clang-format off
     {"win.paste",                               N_("Paste"),                            "Edit",     N_("Paste objects from clipboard to mouse point, or paste text")},
     {"win.paste-in-place",                      N_("Paste In Place"),                   "Edit",     N_("Paste objects from clipboard to the original position of the copied objects")},
-    {"win.lock-all-guides",                     N_("Lock All Guides"),                  "Edit",     N_("Toggle lock of all guides in the document")},
     {"win.path-effect-parameter-next",          N_("Next path effect parameter"),       "Edit",     N_("Show next editable path effect parameter")}
     // clang-format on
 };
@@ -92,7 +62,6 @@ add_actions_edit_window(InkscapeWindow* win)
     // clang-format off
     win->add_action(        "paste",                           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&paste), win));
     win->add_action(        "paste-in-place",                  sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&paste_in_place), win));
-    win->add_action_bool(   "lock-all-guides",                 sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&lock_all_guides),   win));
     win->add_action(        "path-effect-parameter-next",      sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&path_effect_parameter_next), win));
     // clang-format on
 

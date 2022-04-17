@@ -106,7 +106,7 @@ Future improvements:
   <bind gaction="win.window-previous"                       keys="&lt;ctrl&gt;&lt;shift&gt;Tab, &lt;ctrl&gt;ISO_Left_Tab" />
   <bind gaction="win.canvas-rulers"                         keys="&lt;ctrl&gt;r, &lt;ctrl&gt;R" />
   <bind gaction="win.canvas-scroll-bars"                    keys="&lt;ctrl&gt;b, &lt;ctrl&gt;B" />
-  <bind gaction="win.canvas-show-guides"                    keys="&lt;shift&gt;bar, bar" /> <!-- | -->
+  <bind gaction="doc.show-all-guides"                       keys="&lt;shift&gt;bar, bar" /> <!-- | -->
   <bind gaction="win.canvas-show-grid"                      keys="&lt;shift&gt;numbersign, numbersign" /> <!-- # -->
   <bind gaction="win.canvas-display-mode-cycle"             keys="&lt;primary&gt;KP_5, &lt;primary&gt;KP_Begin"/>
   <bind gaction="win.window-new"/>

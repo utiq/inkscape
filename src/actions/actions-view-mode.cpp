@@ -86,18 +86,6 @@ canvas_show_grid_toggle(InkscapeWindow *win)
 }
 
 void
-canvas_show_guides_toggle(InkscapeWindow *win)
-{
-    // Toggle State
-    canvas_toggle_state(win, "canvas-show-guides");
-
-    // Do Action
-    SPDesktop* dt = win->get_desktop();
-    SPDocument* doc = dt->getDocument();
-    sp_namedview_toggle_guides(doc, dt->namedview);
-}
-
-void
 canvas_commands_bar_toggle(InkscapeWindow *win)
 {
     // Toggle State
@@ -269,7 +257,6 @@ view_set_gui(InkscapeWindow* win)
     bool statusbar_state   = prefs->getBool(pref_root + "statusbar/state", true);
     bool scrollbars_state  = prefs->getBool(pref_root + "scrollbars/state", true);
     bool rulers_state      = prefs->getBool(pref_root + "rulers/state", true);
-    bool guides_state      = win->get_desktop()->namedview->getRepr()->getAttributeBoolean("showguides", true);    // Should set it true or retrieve the state (every time it set to true on restart)
 
     canvas_set_state(win, "canvas-commands-bar",      commands_state);
     canvas_set_state(win, "canvas-snap-controls-bar", snaptoolbox_state);
@@ -279,7 +266,6 @@ view_set_gui(InkscapeWindow* win)
     canvas_set_state(win, "canvas-scroll-bars",       scrollbars_state);
     canvas_set_state(win, "canvas-palette",           palette_state);
     canvas_set_state(win, "canvas-statusbar",         statusbar_state);
-    canvas_set_state(win, "canvas-show-guides",       guides_state);
     // clang-format on
 }
 
@@ -287,7 +273,6 @@ std::vector<std::vector<Glib::ustring>> raw_data_view_mode =
 {
     // clang-format off
     {"win.canvas-show-grid",                N_("Page Grid"),                "Canvas Display",   N_("Show or hide the page grid")},
-    {"win.canvas-show-guides",              N_("Guides"),                   "Canvas Display",   N_("Show or hide guides (drag from a ruler to create a guide)")},
 
     {"win.canvas-commands-bar",             N_("Commands Bar"),             "Canvas Display",   N_("Show or hide the Commands bar (under the menu)")},
     {"win.canvas-snap-controls-bar",        N_("Snap Controls Bar"),        "Canvas Display",   N_("Show or hide the snapping controls")},
@@ -335,8 +320,6 @@ add_actions_view_mode(InkscapeWindow* win)
     widescreen = prefs->getInt(pref_root + "task/taskset", widescreen ? 2 : 0) == 2; // legacy
 
     // clang-format off
-    bool guides_toggle      = win->get_desktop()->namedview->getRepr()->getAttributeBoolean("showguides", true);    // Should set it true or retrieve the state (every time it set to true on restart)
-
     bool commands_toggle    = prefs->getBool(pref_root + "commands/state", true);
     bool snaptoolbox_toggle = prefs->getBool(pref_root + "snaptoolbox/state", true);
     bool toppanel_toggle    = prefs->getBool(pref_root + "toppanel/state", true);
@@ -349,7 +332,6 @@ add_actions_view_mode(InkscapeWindow* win)
     bool interface_mode     = prefs->getBool(pref_root + "interface_mode", widescreen);
 
     win->add_action_bool(          "canvas-show-grid",              sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_show_grid_toggle),            win));
-    win->add_action_bool(          "canvas-show-guides",            sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_show_guides_toggle),          win), guides_toggle);
 
     win->add_action_bool(          "canvas-commands-bar",           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_commands_bar_toggle),         win), commands_toggle);
     win->add_action_bool(          "canvas-snap-controls-bar",      sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_snap_controls_bar_toggle),    win), snaptoolbox_toggle);
@@ -363,8 +345,8 @@ add_actions_view_mode(InkscapeWindow* win)
     win->add_action_bool (         "canvas-interface-mode",         sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_interface_mode),              win), interface_mode);
     win->add_action(               "view-fullscreen",               sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&view_fullscreen),                    win));
     
-    win->add_action(               "view-full-screen-focus",               sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&view_full_screen_focus),                    win));
-    win->add_action(               "view-focus-toggle",               sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&view_focus_toggle),                    win));
+    win->add_action(               "view-full-screen-focus",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&view_full_screen_focus),             win));
+    win->add_action(               "view-focus-toggle",             sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&view_focus_toggle),                  win));
 
     win->add_action(               "canvas-command-palette",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_command_palette),             win));
     // clang-format on

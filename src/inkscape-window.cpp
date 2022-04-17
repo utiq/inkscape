@@ -216,7 +216,7 @@ InkscapeWindow::setup_view()
 
     SPNamedView *nv = _desktop->namedview;
     if (nv && nv->lockguides) {
-        nv->lockGuides();
+        nv->setLockGuides(true);
     }
 }
 

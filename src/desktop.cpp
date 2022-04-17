@@ -1303,9 +1303,9 @@ void SPDesktop::toggleColorProfAdjust()
     _widget->toggle_color_prof_adj();
 }
 
-void SPDesktop::toggleGuidesLock()
+void SPDesktop::toggleLockGuides()
 {
-    sp_namedview_guides_toggle_lock(this->getDocument(), namedview);
+    namedview->toggleLockGuides();
 }
 
 bool SPDesktop::colorProfAdjustEnabled()

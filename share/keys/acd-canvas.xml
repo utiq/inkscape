@@ -247,7 +247,7 @@ Display -> Size - Shift+F8
 
   <bind gaction="win.canvas-rulers"       keys="&lt;shift&gt;F11" />
 
-  <bind gaction="win.canvas-show-guides"  keys="&lt;shift&gt;F6" />
+  <bind gaction="doc.show-all-guides"     keys="&lt;shift&gt;F6" />
   
 <!-- EEK! Inkscape has no pages! 
 Display -> Page Breaks - F10
