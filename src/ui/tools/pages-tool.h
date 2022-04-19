@@ -44,7 +44,7 @@ public:
     bool root_handler(GdkEvent *event) override;
     void menu_popup(GdkEvent *event, SPObject *obj = nullptr) override;
 private:
-    void selectionChanged(SPPage *page);
+    void selectionChanged(SPDocument *doc, SPPage *page);
     void connectDocument(SPDocument *doc);
     SPPage *pageUnder(Geom::Point pt, bool retain_selected = true);
     bool viewboxUnder(Geom::Point pt);

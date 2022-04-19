@@ -87,7 +87,7 @@ PagesTool::PagesTool(SPDesktop *desktop)
         // This readjusts the knot on zoom because the viewbox position
         // becomes detached on zoom, likely a precision problem.
         if (!desktop->getDocument()->getPageManager().hasPages()) {
-            selectionChanged(nullptr);
+            selectionChanged(desktop->getDocument(), nullptr);
         }
     });
 }
@@ -123,7 +123,7 @@ PagesTool::~PagesTool()
 
 void PagesTool::resizeKnotSet(Geom::Rect rect)
 {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < resize_knots.size(); i++) {
         resize_knots[i]->moveto(rect.corner(i));
         resize_knots[i]->show();
     }
@@ -527,14 +527,16 @@ void PagesTool::connectDocument(SPDocument *doc)
     if (doc) {
         auto &page_manager = doc->getPageManager();
         _selector_changed_connection =
-                page_manager.connectPageSelected(sigc::mem_fun(*this, &PagesTool::selectionChanged));
-        selectionChanged(page_manager.getSelected());
+            page_manager.connectPageSelected([=](SPPage *page) {
+                selectionChanged(doc, page);
+            });
+        selectionChanged(doc, page_manager.getSelected());
     } else {
-        selectionChanged(nullptr);
+        selectionChanged(doc, nullptr);
     }
 }
 
-void PagesTool::selectionChanged(SPPage *page)
+void PagesTool::selectionChanged(SPDocument *doc, SPPage *page)
 {
     if (_page_modified_connection) {
         _page_modified_connection.disconnect();
@@ -544,23 +546,25 @@ void PagesTool::selectionChanged(SPPage *page)
     }
 
     // Loop existing pages because highlight_item is unsafe.
-    for (auto &possible : _desktop->getDocument()->getPageManager().getPages()) {
-        if (highlight_item == possible) {
-            highlight_item->setSelected(false);
+    if (doc) {
+        for (auto &possible : doc->getPageManager().getPages()) {
+            if (highlight_item == possible) {
+                highlight_item->setSelected(false);
+            }
         }
     }
     highlight_item = page;
-    if (page) {
-        _page_modified_connection = page->connectModified(sigc::mem_fun(*this, &PagesTool::pageModified));
-        page->setSelected(true);
-        pageModified(page, 0);
-    } else {
-        // This is for viewBox editng directly. A special extra feature
-        if (auto document = _desktop->getDocument()) {
-            _page_modified_connection = document->connectModified([=](guint){
-                resizeKnotSet(*(document->preferredBounds()));
+    if (doc) {
+        if (page) {
+            _page_modified_connection = page->connectModified(sigc::mem_fun(*this, &PagesTool::pageModified));
+            page->setSelected(true);
+            pageModified(page, 0);
+        } else {
+            // This is for viewBox editng directly. A special extra feature
+            _page_modified_connection = doc->connectModified([=](guint){
+            resizeKnotSet(*(doc->preferredBounds()));
             });
-            resizeKnotSet(*(document->preferredBounds()));
+            resizeKnotSet(*(doc->preferredBounds()));
         }
     }
 }
