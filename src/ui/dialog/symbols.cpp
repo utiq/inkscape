@@ -348,6 +348,10 @@ SymbolsDialog::~SymbolsDialog()
   }
   gtk_connections.clear();
   idleconn.disconnect();
+
+  Inkscape::GC::release(preview_document);
+  assert(preview_document->_anchored_refcount() == 0);
+  delete preview_document;
 }
 
 SymbolsDialog& SymbolsDialog::getInstance()
