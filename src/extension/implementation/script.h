@@ -43,9 +43,8 @@ public:
 
     ImplementationDocumentCache * newDocCache(Inkscape::Extension::Extension * ext, Inkscape::UI::View::View * view) override;
 
-    Gtk::Widget *prefs_input(Inkscape::Extension::Input *module, gchar const *filename) override;
+    SPDocument *new_from_template(Inkscape::Extension::Template *module) override;
     SPDocument *open(Inkscape::Extension::Input *module, gchar const *filename) override;
-    Gtk::Widget *prefs_output(Inkscape::Extension::Output *module) override;
     void save(Inkscape::Extension::Output *module, SPDocument *doc, gchar const *filename) override;
     void export_raster(Inkscape::Extension::Output *module,
             const SPDocument *doc, std::string const &png_file, gchar const *filename) override;

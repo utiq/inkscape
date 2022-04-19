@@ -92,7 +92,10 @@ std::string ParamString::value_to_string() const
     return _value.raw();
 }
 
-
+void ParamString::string_to_value(const std::string &in)
+{
+    _value = in;
+}
 
 /** A special type of Gtk::Entry to handle string parameters. */
 class ParamStringEntry : public Gtk::Entry {

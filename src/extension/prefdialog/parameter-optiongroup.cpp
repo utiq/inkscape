@@ -121,7 +121,7 @@ ParamOptionGroup::~ParamOptionGroup ()
  *
  * @param  in   The value to set.
  */
-const Glib::ustring& ParamOptionGroup::set(Glib::ustring in)
+const Glib::ustring &ParamOptionGroup::set(const Glib::ustring &in)
 {
     if (contains(in)) {
         _value = in;
@@ -149,6 +149,11 @@ bool ParamOptionGroup::contains(const Glib::ustring text) const
 std::string ParamOptionGroup::value_to_string() const
 {
     return _value.raw();
+}
+
+void ParamOptionGroup::string_to_value(const std::string &in)
+{
+    _value = in;
 }
 
 /**

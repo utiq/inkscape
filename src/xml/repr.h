@@ -136,6 +136,8 @@ Inkscape::XML::Node const *sp_repr_lookup_name(Inkscape::XML::Node const *repr,
                                                char const *name,
                                                int maxdepth = -1);
 
+Glib::ustring sp_repr_lookup_content(Inkscape::XML::Node const *repr, gchar const *name, Glib::ustring otherwise = {});
+
 std::vector<Inkscape::XML::Node const *> sp_repr_lookup_name_many(Inkscape::XML::Node const *repr,
                                                                   char const *name,
                                                                   int maxdepth = -1);

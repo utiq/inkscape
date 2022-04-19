@@ -37,9 +37,9 @@ ParamColor::ParamColor(Inkscape::XML::Node *xml, Inkscape::Extension::Extension 
     unsigned int _value = 0x000000ff; // default to black
     if (xml->firstChild()) {
         const char *value = xml->firstChild()->content();
-        if (value) {
-            _value = strtoul(value, nullptr, 0);
-        }
+        if (value)
+            string_to_value(value);
+        _value = _color.value();
     }
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -140,6 +140,11 @@ std::string ParamColor::value_to_string() const
     char value_string[16];
     snprintf(value_string, 16, "%u", _color.value());
     return value_string;
+}
+
+void ParamColor::string_to_value(const std::string &in)
+{
+    _color.setValue(strtoul(in.c_str(), nullptr, 0));
 }
 
 };  /* namespace Extension */

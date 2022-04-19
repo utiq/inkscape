@@ -38,10 +38,11 @@ Effect * Effect::_last_effect = nullptr;
 void
 action_effect (Effect* effect, bool show_prefs)
 {
+    auto doc = InkscapeApplication::instance()->get_active_view();
     if (effect->_workingDialog && show_prefs) {
-        effect->prefs(InkscapeApplication::instance()->get_active_view());
+        effect->prefs(doc);
     } else {
-        effect->effect(InkscapeApplication::instance()->get_active_view());
+        effect->effect(doc);
     }
 }
 
@@ -222,7 +223,7 @@ Effect::prefs (Inkscape::UI::View::View * doc)
         return true;
     }
 
-    if (widget_visible_count() == 0) {
+    if (!widget_visible_count()) {
         effect(doc);
         return true;
     }

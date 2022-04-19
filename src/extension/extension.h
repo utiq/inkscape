@@ -83,6 +83,7 @@ enum ModuleImpType
 };
 enum ModuleFuncType
 {
+    MODULE_TEMPLATE,
     MODULE_INPUT,
     MODULE_OUTPUT,
     MODULE_FILTER,
@@ -132,10 +133,11 @@ private:
     gchar     *_id = nullptr;                  /**< The unique identifier for the Extension */
     gchar     *_name = nullptr;                /**< A user friendly name for the Extension */
     state_t    _state = STATE_UNLOADED;        /**< Which state the Extension is currently in */
+    int _priority = 0;                         /**< when sorted, should this come before any others */
     std::vector<Dependency *>  _deps;          /**< Dependencies for this extension */
     static FILE *error_file;                   /**< This is the place where errors get reported */
-    bool _gui;
     std::string _error_reason;                 /**< Short, textual explanation for the latest error */
+    bool _gui;
 
 protected:
     Inkscape::XML::Node *repr;                 /**< The XML description of the Extension */
@@ -162,6 +164,7 @@ public:
     state_t       get_state    ();
     bool          loaded       ();
     virtual bool  check        ();
+    virtual bool prefs();
     Inkscape::XML::Node *      get_repr     ();
     gchar *       get_id       () const;
     const gchar * get_name     () const;
@@ -179,7 +182,10 @@ public:
     void          set_environment(const SPDocument *doc=nullptr);
     ModuleImpType get_implementation_type();
 
-/* Parameter Stuff */
+    int get_sort_priority() const { return _priority; }
+    void set_sort_priority(int priority) { _priority = priority; }
+
+    /* Parameter Stuff */
 private:
     std::vector<InxWidget *> _widgets; /**< A list of widgets for this extension. */
 
@@ -246,7 +252,8 @@ public:
     const char *set_param_string        (const gchar *name, const char   *value);
     const char *set_param_optiongroup   (const gchar *name, const char   *value);
     guint32     set_param_color         (const gchar *name, const guint32 color);
-
+    void set_param_any(const gchar *name, std::string value);
+    void set_param_hidden(const gchar *name, bool hidden);
 
     /* Error file handling */
 public:

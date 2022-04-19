@@ -105,6 +105,10 @@ std::string ParamPath::value_to_string() const
     }
 }
 
+void ParamPath::string_to_value(const std::string &in)
+{
+    _value = in;
+}
 
 /** A special type of Gtk::Entry to handle path parameters. */
 class ParamPathEntry : public Gtk::Entry {

@@ -48,12 +48,12 @@ public:
     Gtk::Widget *get_widget(sigc::signal<void> *changeSignal) override;
 
     std::string value_to_string() const override;
+    void string_to_value(const std::string &in) override;
 
     Glib::ustring value_from_label(const Glib::ustring label);
 
     const Glib::ustring& get() const { return _value; }
-
-    const Glib::ustring& set(const Glib::ustring in);
+    const Glib::ustring &set(const Glib::ustring &in);
 
     /**
      * @returns    true if text is a valid choice for this option group

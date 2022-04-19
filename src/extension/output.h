@@ -53,7 +53,6 @@ public:
                                 std::string png_filename,
                                 gchar const *filename,
                                 bool detachbase);
-    bool         prefs ();
     gchar *      get_mimetype();
     gchar *      get_extension();
     const char * get_filetypename(bool translated=false);

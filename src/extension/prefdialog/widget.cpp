@@ -111,6 +111,7 @@ InxWidget::InxWidget(Inkscape::XML::Node *in_repr, Inkscape::Extension::Extensio
     const char *gui_hidden = in_repr->attribute("gui-hidden");
     if (gui_hidden != nullptr) {
         if (strcmp(gui_hidden, "true") == 0) {
+            _gui_hidden = true;
             _hidden = true;
         }
     }

@@ -54,6 +54,7 @@ public:
      * @todo investigate. Returning a value that can then be appended would probably work better/safer.
      */
     std::string value_to_string() const override;
+    void string_to_value(const std::string &in) override;
 
 private:
     /** Internal value. */

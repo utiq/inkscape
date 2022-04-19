@@ -16,6 +16,10 @@ class SPDocument;
 
 namespace Inkscape {
 namespace UI {
+namespace Widget {
+class TemplateList;
+}
+
 namespace Dialog {
 
 class StartScreen : public Gtk::Dialog {
@@ -56,11 +60,11 @@ private:
     Glib::RefPtr<Gtk::Builder> builder;
     Gtk::Window   *window  = nullptr;
     Gtk::Notebook *tabs    = nullptr;
-    Gtk::Notebook *kinds   = nullptr;
     Gtk::Fixed    *banners = nullptr;
     Gtk::ComboBox *themes  = nullptr;
     Gtk::TreeView *recent_treeview = nullptr;
     Gtk::Button   *load_btn = nullptr;
+    Inkscape::UI::Widget::TemplateList *templates = nullptr;
 
     SPDocument* _document = nullptr;
 

@@ -291,6 +291,22 @@ std::string InxParameter::value_to_string() const
     return "";
 }
 
+void InxParameter::string_to_value(const std::string &in)
+{
+    g_critical("InxParameter::string_to_value called from parameter '%s' in extension '%s'", _name,
+               _extension->get_id());
+    g_assert_not_reached();
+}
+
+const std::string &InxParameter::set(const std::string &in)
+{
+    // Default and generic setter where in and out are consistant
+    string_to_value(in);
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    prefs->setString(pref_name(), value_to_string());
+    return in;
+}
+
 }  // namespace Extension
 }  // namespace Inkscape
 

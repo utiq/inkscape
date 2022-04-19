@@ -145,14 +145,8 @@
 ../share/extensions/synfig_output.inx
 ../share/extensions/tar_layers.inx
 ../share/extensions/template_business_card.inx
-../share/extensions/template_desktop.inx
 ../share/extensions/template_dvd_cover.inx
-../share/extensions/template_envelope.inx
-../share/extensions/template_generic.inx
-../share/extensions/template_icon.inx
-../share/extensions/template_page.inx
 ../share/extensions/template_seamless_pattern.inx
-../share/extensions/template_video.inx
 ../share/extensions/text_braille.inx
 ../share/extensions/text_extract.inx
 ../share/extensions/text_flipcase.inx

@@ -51,7 +51,6 @@ public:
     gchar *       get_extension        ();
     const char *  get_filetypename     (bool translated=false);
     const char *  get_filetypetooltip  (bool translated=false);
-    bool          prefs                (gchar const *uri);
 };
 
 } }  /* namespace Inkscape, Extension */

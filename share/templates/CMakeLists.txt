@@ -1,4 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
+
+FILE(GLOB ICON_FILES "${CMAKE_CURRENT_SOURCE_DIR}/icons/*.svg")
+install(FILES ${ICON_FILES} DESTINATION ${INKSCAPE_SHARE_INSTALL}/templates/icons)
+
 file(GLOB _FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.svg")
 
 add_custom_command(

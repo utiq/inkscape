@@ -14,9 +14,18 @@
 #define UI_UTIL_SEEN
 
 #include <cstddef> // size_t
+#include <exception>
 
 #include <gdkmm/rgba.h>
 #include <gtkmm/stylecontext.h>
+
+/*
+ * Use these errors when building from glade files for graceful
+ * fallbacks and prevent crashes from corrupt ui files.
+ */
+class UIBuilderError : public std::exception {};
+class UIFileUnavailable : public UIBuilderError {};
+class WidgetUnavailable : public UIBuilderError {};
 
 namespace Glib {
 class ustring;

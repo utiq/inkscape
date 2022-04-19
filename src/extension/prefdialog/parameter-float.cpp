@@ -33,9 +33,8 @@ ParamFloat::ParamFloat(Inkscape::XML::Node *xml, Inkscape::Extension::Extension 
     // get value
     if (xml->firstChild()) {
         const char *value = xml->firstChild()->content();
-        if (value) {
-            _value = g_ascii_strtod(value, nullptr);
-        }
+        if (value)
+            string_to_value(value);
     }
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -106,6 +105,11 @@ std::string ParamFloat::value_to_string() const
 {
     static constexpr auto digits10 = std::numeric_limits<double>::digits10; // number of decimal digits that are ensured to be precise
     return Glib::ustring::format(std::setprecision(digits10), _value);
+}
+
+void ParamFloat::string_to_value(const std::string &in)
+{
+    _value = g_ascii_strtod(in.c_str(), nullptr);
 }
 
 /** A class to make an adjustment that uses Extension params. */

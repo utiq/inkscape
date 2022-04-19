@@ -152,8 +152,6 @@ set(ui_SRC
 	dialog/swatches.cpp
 	dialog/symbols.cpp
 	dialog/paint-servers.cpp
-	dialog/template-load-tab.cpp
-	dialog/template-widget.cpp
 	dialog/text-edit.cpp
 	dialog/tile.cpp
 	dialog/tracedialog.cpp
@@ -234,6 +232,7 @@ set(ui_SRC
 	widget/style-subject.cpp
 	widget/style-swatch.cpp
 	widget/swatch-selector.cpp
+        widget/template-list.cpp
 	widget/text.cpp
 	widget/texture.cpp
 	widget/tolerance-slider.cpp
@@ -333,8 +332,6 @@ set(ui_SRC
 	dialog/swatches.h
 	dialog/symbols.h
 	dialog/paint-servers.h
-	dialog/template-load-tab.h
-	dialog/template-widget.h
 	dialog/text-edit.h
 	dialog/tile.h
 	dialog/tracedialog.h
@@ -491,6 +488,7 @@ set(ui_SRC
 	widget/style-subject.h
 	widget/style-swatch.h
 	widget/swatch-selector.h
+        widget/template-list.h
 	widget/text.h
 	widget/texture.h
 	widget/tolerance-slider.h

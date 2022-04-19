@@ -15,10 +15,11 @@
 
 #include "db.h"
 
+#include "effect.h"
 #include "implementation/script.h"
 #include "input.h"
 #include "output.h"
-#include "effect.h"
+#include "template.h"
 
 /* Globals */
 
@@ -34,6 +35,17 @@ DB db;
 
 DB::DB (void) = default;
 
+struct ModuleGenericCmp
+{
+    bool operator()(Extension *module1, Extension *module2) const
+    {
+        int n1 = module1->get_sort_priority();
+        int n2 = module2->get_sort_priority();
+        if (n1 != n2)
+            return (n1 < n2);
+        return (strcmp(module1->get_name(), module2->get_name()) <= 0);
+    }
+};
 
 struct ModuleInputCmp {
   bool operator()(Input* module1, Input* module2) const {
@@ -42,24 +54,14 @@ struct ModuleInputCmp {
     int n1 = 0;
     int n2 = 0;
     //                             12345678901234567890123456789012
+    // XXX TODO: Add priority to extension format, so these can be removed.
     if (strncmp(module1->get_id(),"org.inkscape.input.svg",  22) == 0) n1 = 1;
     if (strncmp(module2->get_id(),"org.inkscape.input.svg",  22) == 0) n2 = 1;
     if (strncmp(module1->get_id(),"org.inkscape.input.svgz", 23) == 0) n1 = 2;
     if (strncmp(module2->get_id(),"org.inkscape.input.svgz", 23) == 0) n2 = 2;
 
-    if (n1 != 0 && n2 != 0) return (n1 < n2);
-    if (n1 != 0) return true;
-    if (n2 != 0) return false;
-
-    // GDK filetypenames begin with lower case letters and thus are sorted at the end.
-    // Special case "sK1" which starts with a lower case letter to keep it out of GDK region.
-    if (strncmp(module1->get_id(),"org.inkscape.input.sk1",  22) == 0) {
-      return ( strcmp("SK1", module2->get_filetypename()) <= 0 );
-    }
-    if (strncmp(module2->get_id(),"org.inkscape.input.sk1",  22) == 0) {
-      return ( strcmp(module1->get_filetypename(), "SK1" ) <= 0 );
-    }
-
+    if (n1 != 0 || n2 != 0)
+        return (n1 < n2);
     return ( strcmp(module1->get_filetypename(), module2->get_filetypename()) <= 0 );
   }
 };
@@ -72,6 +74,7 @@ struct ModuleOutputCmp {
     int n1 = 0;
     int n2 = 0;
     //                             12345678901234567890123456789012
+    // XXX TODO: Add priority to extension format, so these can be removed.
     if (strncmp(module1->get_id(),"org.inkscape.output.png.inkscape",  32) == 0) n1 = 1;
     if (strncmp(module2->get_id(),"org.inkscape.output.png.inkscape",  32) == 0) n2 = 1;
     if (strncmp(module1->get_id(),"org.inkscape.output.svg.inkscape",  32) == 0) n1 = 1;
@@ -89,17 +92,9 @@ struct ModuleOutputCmp {
     if (strncmp(module1->get_id(),"org.inkscape.output.LAYERS",        26) == 0) n1 = 7;
     if (strncmp(module2->get_id(),"org.inkscape.output.LAYERS",        26) == 0) n2 = 7;
 
-    if (n1 != 0 && n2 != 0) return (n1 < n2);
-    if (n1 != 0) return true;
-    if (n2 != 0) return false;
+    if (n1 != 0 || n2 != 0)
+        return (n1 < n2);
 
-    // Special case "sK1" which starts with a lower case letter.
-    if (strncmp(module1->get_id(),"org.inkscape.output.sk1",  23) == 0) {
-      return ( strcmp("SK1", module2->get_filetypename()) <= 0 );
-    }
-    if (strncmp(module2->get_id(),"org.inkscape.output.sk1",  23) == 0) {
-      return ( strcmp(module1->get_filetypename(), "SK1" ) <= 0 );
-    }
     // special case: two extensions for the same file type. I only one of them is a script, prefer the other one
     if (Glib::ustring(module1->get_extension()).lowercase() == Glib::ustring(module2->get_extension()).lowercase()) {
         bool module1_is_script = dynamic_cast<Inkscape::Extension::Implementation::Script *>(module1->get_imp());
@@ -202,6 +197,21 @@ DB::foreach (void (*in_func)(Extension * in_plug, gpointer in_data), gpointer in
 }
 
 /**
+ * @return none
+ * @brief  The function to look at each module and see if it is
+       a template module, then add it to the list.
+ * @param in_plug - Module to be examined
+ * @param data    - The list to be attached to
+*/
+void DB::template_internal(Extension *in_plug, gpointer data)
+{
+    if (auto tmod = dynamic_cast<Template *>(in_plug)) {
+        auto tlist = reinterpret_cast<TemplateList *>(data);
+        tlist->push_back(tmod);
+    }
+}
+
+/**
 	\return    none
 	\brief     The function to look at each module and see if it is
 	           an input module, then add it to the list.
@@ -215,16 +225,10 @@ DB::foreach (void (*in_func)(Extension * in_plug, gpointer in_data), gpointer in
 void
 DB::input_internal (Extension * in_plug, gpointer data)
 {
-	if (dynamic_cast<Input *>(in_plug)) {
-		InputList * ilist;
-		Input * imod;
-
-		imod = dynamic_cast<Input *>(in_plug);
-		ilist = reinterpret_cast<InputList *>(data);
-
-		ilist->push_back(imod);
-		// printf("Added to input list: %s\n", imod->get_id());
-	}
+    if (auto imod = dynamic_cast<Input *>(in_plug)) {
+        auto ilist = reinterpret_cast<InputList *>(data);
+        ilist->push_back(imod);
+    }
 }
 
 /**
@@ -281,6 +285,19 @@ DB::effect_internal (Extension * in_plug, gpointer data)
 	}
 
 	return;
+}
+
+/**
+ * Create a list of all the Template extensions
+ * @param ou_list - The list that is used to put all the extensions in
+ *
+ * Calls the database \c foreach function with \c template_internal.
+ */
+DB::TemplateList &DB::get_template_list(DB::TemplateList &ou_list)
+{
+    foreach (template_internal, (gpointer)&ou_list);
+    ou_list.sort(ModuleGenericCmp());
+    return ou_list;
 }
 
 /**

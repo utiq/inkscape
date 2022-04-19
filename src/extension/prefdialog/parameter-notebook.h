@@ -60,9 +60,11 @@ public:
     Gtk::Widget *get_widget(sigc::signal<void> *changeSignal) override;
 
     std::string value_to_string() const override;
+    void string_to_value(const std::string &in) override;
 
     const Glib::ustring& get() { return _value; }
     const Glib::ustring& set(const int in);
+
 }; /* class ParamNotebook */
 
 

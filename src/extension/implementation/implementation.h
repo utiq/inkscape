@@ -14,6 +14,7 @@
 #define SEEN_INKSCAPE_EXTENSION_IMPLEMENTATION_H
 
 #include <vector>
+#include <memory>
 #include <sigc++/signal.h>
 #include <glibmm/value.h>
 #include <2geom/forward.h>
@@ -41,9 +42,13 @@ namespace Extension {
 
 class Effect;
 class Extension;
+class Template;
+class TemplatePreset;
 class Input;
 class Output;
 class Print;
+
+typedef std::vector<std::shared_ptr<TemplatePreset>> TemplatePresets;
 
 namespace Implementation {
 
@@ -97,17 +102,17 @@ public:
     virtual bool cancelProcessing () { return true; }
     virtual void commitDocument () {}
 
-    // ----- Input functions -----
-    /** Find out information about the file. */
-    virtual Gtk::Widget *prefs_input(Inkscape::Extension::Input *module,
-                             gchar const *filename);
+    // ---- Template and Page functions -----
+    virtual SPDocument *new_from_template(Inkscape::Extension::Template *) { return nullptr; }
+    virtual void resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc){};
+    virtual void get_template_presets(const Template *tmod, TemplatePresets &presets) const {};
 
+    // ----- Input functions -----
     virtual SPDocument *open(Inkscape::Extension::Input * /*module*/,
                              gchar const * /*filename*/) { return nullptr; }
 
     // ----- Output functions -----
     /** Find out information about the file. */
-    virtual Gtk::Widget *prefs_output(Inkscape::Extension::Output *module);
     virtual void save(Inkscape::Extension::Output * /*module*/, SPDocument * /*doc*/, gchar const * /*filename*/) {}
     virtual void export_raster(
             Inkscape::Extension::Output * /*module*/,

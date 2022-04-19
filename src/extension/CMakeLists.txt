@@ -12,6 +12,7 @@ set(extension_SRC
 	patheffect.cpp
 	print.cpp
 	system.cpp
+	template.cpp
 	timer.cpp
     loader.cpp
 
@@ -40,6 +41,13 @@ set(extension_SRC
 	internal/pov-out.cpp
 	internal/svg.cpp
 	internal/svgz.cpp
+	internal/template-base.cpp
+	internal/template-from-file.cpp
+	internal/template-other.cpp
+	internal/template-paper.cpp
+	internal/template-screen.cpp
+	internal/template-social.cpp
+	internal/template-video.cpp
 	internal/text_reassemble.c
 	internal/wmf-inout.cpp
 	internal/wmf-print.cpp
@@ -82,6 +90,7 @@ set(extension_SRC
 	patheffect.h
 	print.h
 	system.h
+	template.h
 	timer.h
     loader.h
 
@@ -128,6 +137,13 @@ set(extension_SRC
 	internal/pov-out.h
 	internal/svg.h
 	internal/svgz.h
+	internal/template-base.h
+	internal/template-from-file.h
+	internal/template-other.h
+	internal/template-paper.h
+	internal/template-screen.h
+	internal/template-social.h
+	internal/template-video.h
 	internal/text_reassemble.h
 	internal/wmf-inout.h
 	internal/wmf-print.h

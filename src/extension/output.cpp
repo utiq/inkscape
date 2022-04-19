@@ -16,8 +16,6 @@
 #include "io/sys.h"
 #include "implementation/implementation.h"
 
-#include "prefdialog/prefdialog.h"
-
 #include "xml/repr.h"
 
 
@@ -196,36 +194,6 @@ Output::get_filetypetooltip(bool translated)
     } else {
         return filetypetooltip;
     }
-}
-
-/**
-    \return  A dialog to get settings for this extension
-	\brief   Create a dialog for preference for this extension
-
-	Calls the implementation to get the preferences.
-*/
-bool
-Output::prefs ()
-{
-    if (!loaded())
-        set_state(Extension::STATE_LOADED);
-    if (!loaded()) return false;
-
-    Gtk::Widget * controls;
-    controls = imp->prefs_output(this);
-    if (controls == nullptr) {
-        // std::cout << "No preferences for Output" << std::endl;
-        return true;
-    }
-
-    Glib::ustring title = this->get_name();
-    PrefDialog *dialog = new PrefDialog(title, controls);
-    int response = dialog->run();
-    dialog->hide();
-
-    delete dialog;
-
-    return (response == Gtk::RESPONSE_OK);
 }
 
 /**

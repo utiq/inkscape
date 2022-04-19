@@ -25,20 +25,17 @@ ParamBool::ParamBool(Inkscape::XML::Node *xml, Inkscape::Extension::Extension *e
     // get value
     if (xml->firstChild()) {
         const char *value = xml->firstChild()->content();
-        if (value) {
-            if (!strcmp(value, "true")) {
-                _value = true;
-            } else if (!strcmp(value, "false")) {
-                _value = false;
-            } else {
-                g_warning("Invalid default value ('%s') for parameter '%s' in extension '%s'",
-                          value, _name, _extension->get_id());
-            }
-        }
+        if (value)
+            string_to_value(value);
     }
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     _value = prefs->getBool(pref_name(), _value);
+}
+
+bool ParamBool::get() const
+{
+    return _value;
 }
 
 bool ParamBool::set(bool in)
@@ -48,11 +45,6 @@ bool ParamBool::set(bool in)
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     prefs->setBool(pref_name(), _value);
 
-    return _value;
-}
-
-bool ParamBool::get() const
-{
     return _value;
 }
 
@@ -102,10 +94,19 @@ void ParamBoolCheckButton::on_toggle()
 
 std::string ParamBool::value_to_string() const
 {
-    if (_value) {
-        return "true";
+    return _value ? "true" : "false";
+}
+
+void ParamBool::string_to_value(const std::string &in)
+{
+    if (in == "true") {
+        _value = true;
+    } else if (in == "false") {
+        _value = false;
+    } else {
+        g_warning("Invalid default value ('%s') for parameter '%s' in extension '%s'", in.c_str(), _name,
+                  _extension->get_id());
     }
-    return "false";
 }
 
 Gtk::Widget *ParamBool::get_widget(sigc::signal<void> *changeSignal)

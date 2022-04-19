@@ -14,6 +14,7 @@
 
 #include <gtkmm.h>
 
+
 /*
  * Ellipse text if longer than maxlen, "50% start text + ... + ~50% end text"
  * Text should be > length 8 or just return the original text

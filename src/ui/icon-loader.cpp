@@ -51,6 +51,9 @@ GtkWidget *sp_get_icon_image(Glib::ustring icon_name, GtkIconSize icon_size)
 
 Glib::RefPtr<Gdk::Pixbuf> sp_get_icon_pixbuf(Glib::ustring icon_name, gint size)
 {
+    // SP_ACTIVE_DESKTOP is not always available when we want icons (see start screen)
+    auto window = SP_ACTIVE_DESKTOP ? SP_ACTIVE_DESKTOP->getToplevel() : nullptr;
+
     Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
     Glib::RefPtr<Gdk::Screen>  screen = display->get_default_screen();
     Glib::RefPtr<Gtk::IconTheme> icon_theme = Gtk::IconTheme::get_for_screen(screen);
@@ -61,7 +64,6 @@ Glib::RefPtr<Gdk::Pixbuf> sp_get_icon_pixbuf(Glib::ustring icon_name, gint size)
     Gtk::IconInfo iconinfo = icon_theme->lookup_icon(icon_name, size, Gtk::ICON_LOOKUP_FORCE_SIZE);
     Glib::RefPtr<Gdk::Pixbuf> _icon_pixbuf;
     if (prefs->getBool("/theme/symbolicIcons", false)) {
-        Gtk::Window *window = SP_ACTIVE_DESKTOP->getToplevel();
         if (window) {
             Glib::RefPtr<Gtk::StyleContext> stylecontext = window->get_style_context();
             bool was_symbolic = false;

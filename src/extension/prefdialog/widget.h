@@ -71,6 +71,8 @@ public:
 
     /** Indicates if the widget is hidden or not */
     bool get_hidden() const { return _hidden; }
+    /** Sets the widget to being hidden, or shown **/
+    void set_hidden(bool hidden) { _hidden = hidden || _gui_hidden; }
 
     /** Indentation level of the widget */
     int get_indent() const { return _indent; }
@@ -106,6 +108,7 @@ protected:
 
     /** Whether the widget is visible. */
     bool _hidden = false;
+    bool _gui_hidden = false;
 
     /** Indentation level of the widget. */
     int _indent = 0;

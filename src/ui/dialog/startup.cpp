@@ -27,6 +27,7 @@
 #include "ui/shortcuts.h"
 #include "ui/themes.h"
 #include "ui/util.h"
+#include "ui/widget/template-list.h"
 #include "util/units.h"
 
 using namespace Inkscape::IO;
@@ -68,24 +69,6 @@ class CanvasCols: public Gtk::TreeModel::ColumnRecord {
         Gtk::TreeModelColumn<Glib::ustring> bordercolor;
         Gtk::TreeModelColumn<bool> shadow;
 };
-
-class TemplateCols: public Gtk::TreeModel::ColumnRecord {
-    public:
-        // These types must match those for the model in the .glade file
-        TemplateCols() {
-            this->add(this->name);
-            this->add(this->icon);
-            this->add(this->filename);
-            this->add(this->width);
-            this->add(this->height);
-        }
-        Gtk::TreeModelColumn<Glib::ustring> name;
-        Gtk::TreeModelColumn<Glib::ustring> icon;
-        Gtk::TreeModelColumn<Glib::ustring> filename;
-        Gtk::TreeModelColumn<Glib::ustring> width;
-        Gtk::TreeModelColumn<Glib::ustring> height;
-};
-
 
 class ThemeCols: public Gtk::TreeModel::ColumnRecord {
     public:
@@ -159,10 +142,13 @@ StartScreen::StartScreen()
 
     // Get references to various widgets used globally.
     builder->get_widget("tabs", tabs);
-    builder->get_widget("kinds", kinds);
+    builder->get_widget_derived("kinds", templates);
     builder->get_widget("banner", banners);
     builder->get_widget("themes", themes);
     builder->get_widget("recent_treeview", recent_treeview);
+
+    // Populate with template extensions
+    templates->init();
 
     // Get references to various widget used locally. (In order of appearance.)
     Gtk::ComboBox* canvas = nullptr;
@@ -221,23 +207,13 @@ StartScreen::StartScreen()
     // "Time to Draw" tab
     recent_treeview->signal_row_activated().connect(sigc::hide(sigc::hide((sigc::mem_fun(*this, &StartScreen::load_document)))));
     recent_treeview->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &StartScreen::on_recent_changed));
-    kinds->signal_switch_page().connect(sigc::mem_fun(*this, &StartScreen::on_kind_changed));
+    templates->signal_switch_page().connect(sigc::mem_fun(*this, &StartScreen::on_kind_changed));
     load_btn->set_sensitive(true);
-
-    for (auto widget : kinds->get_children()) {
-        auto container = dynamic_cast<Gtk::Container *>(widget);
-        if (container) {
-            widget = container->get_children()[0];
-        }
-        auto template_list = dynamic_cast<Gtk::IconView *>(widget);
-        if (template_list) {
-            template_list->signal_selection_changed().connect([=]() { response(GTK_RESPONSE_APPLY); });
-        }
-    }
 
     show_toggle->signal_clicked().connect(sigc::mem_fun(*this, &StartScreen::show_toggle));
     load_btn->signal_clicked().connect(sigc::mem_fun(*this, &StartScreen::load_document));
-    new_btn->signal_clicked().connect([=] { response(GTK_RESPONSE_APPLY); });
+    templates->connectItemSelected(sigc::mem_fun(*this, &StartScreen::new_document));
+    new_btn->signal_clicked().connect(sigc::mem_fun(*this, &StartScreen::new_document));
     close_btn->signal_clicked().connect([=] { response(GTK_RESPONSE_CANCEL); });
 
     // Reparent to our dialog window
@@ -390,69 +366,12 @@ StartScreen::on_kind_changed(Gtk::Widget *tab, guint page_num)
 void
 StartScreen::new_document()
 {
-    Glib::ustring filename = sp_file_default_template_uri();
-    Glib::ustring width = "";
-    Glib::ustring height = "";
-
-    // Find requested file name.
-    Glib::RefPtr<Gio::File> file;
-    if (kinds) {
-        Gtk::Widget *selected_widget = kinds->get_children()[kinds->get_current_page()];
-        auto container = dynamic_cast<Gtk::Container *>(selected_widget);
-        if (container) {
-            selected_widget = container->get_children()[0];
-        }
-
-        auto template_list = dynamic_cast<Gtk::IconView *>(selected_widget);
-        if (template_list) {
-            auto items = template_list->get_selected_items();
-            if (!items.empty()) {
-                auto iter = template_list->get_model()->get_iter(items[0]);
-                Gtk::TreeModel::Row row = *iter;
-                if (row) {
-                    TemplateCols cols;
-                    Glib::ustring template_filename = row[cols.filename];
-                    if (!(template_filename == "-")) {
-                        filename = Resource::get_filename_string(
-                            Resource::TEMPLATES, template_filename.c_str(), true);
-                    }
-                    // This isn't used on opening, just for checking it's existence.
-                    file = Gio::File::create_for_path(filename);
-                    width = row[cols.width];
-                    height = row[cols.height];
-                }
-            }
-        }
+    // Generate a new document from the selected template.
+    _document = templates->new_document();
+    if (_document) {
+    // Quit welcome screen if options not 'canceled'
+        response(GTK_RESPONSE_APPLY);
     }
-
-    if (!file) {
-        // Failure to open, so open up a new document instead.
-        file = Gio::File::create_for_path(filename);
-    }
-
-    if (!file) {
-        // We're really messed up... so give up!
-        std::cerr << "StartScreen::load_document(): Failed to find: " << filename << std::endl;
-        return;
-    }
-
-    // Now we have filename, open document.
-    auto app = InkscapeApplication::instance();
-
-    // If it was a template file, modify the document according to user's input.
-    _document = app->document_new (filename);
-    auto nv = _document->getNamedView();
-
-    if (!width.empty()) {
-        // Set the width, height and default display units for the selected template
-        auto q_width = unit_table.parseQuantity(width);
-        _document->setWidthAndHeight(q_width, unit_table.parseQuantity(height), true);
-        nv->setAttribute("inkscape:document-units", q_width.unit->abbr);
-        _document->setDocumentScale(1.0);
-    }
-
-    DocumentUndo::clearUndo(_document);
-    _document->setModifiedSinceSave(false);
 }
 
 /**
@@ -558,16 +477,16 @@ StartScreen::on_response(int response_id)
         return;
     }
     if (response_id == GTK_RESPONSE_CANCEL) {
-        kinds = nullptr;
+        templates->reset_selection();
         if (_first_open) {
             // Disable the screen if the user cancels on their first run.
             auto prefs = Inkscape::Preferences::get();
             prefs->setBool("/options/boot/enabled", false);
         }
     }
-    if (response_id != GTK_RESPONSE_OK) {
-        // Most actions cause a new document to appear.
-        new_document();
+    if (response_id != GTK_RESPONSE_OK && !_document) {
+        // Last ditch attempt to generate a new document while exiting.
+        _document = templates->new_document();
     }
 }
 

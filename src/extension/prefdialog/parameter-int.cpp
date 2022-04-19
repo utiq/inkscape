@@ -32,9 +32,8 @@ ParamInt::ParamInt(Inkscape::XML::Node *xml, Inkscape::Extension::Extension *ext
     // get value
     if (xml->firstChild()) {
         const char *value = xml->firstChild()->content();
-        if (value) {
-            _value = strtol(value, nullptr, 0);
-        }
+        if (value)
+            string_to_value(value);
     }
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -172,6 +171,11 @@ std::string ParamInt::value_to_string() const
     char value_string[32];
     snprintf(value_string, 32, "%d", _value);
     return value_string;
+}
+
+void ParamInt::string_to_value(const std::string &in)
+{
+    _value = strtol(in.c_str(), nullptr, 0);
 }
 
 }  // namespace Extension

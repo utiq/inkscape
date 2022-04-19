@@ -17,26 +17,27 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "ui/interface.h"
-
 #include "system.h"
-#include "preferences.h"
-#include "extension.h"
-#include "db.h"
-#include "input.h"
-#include "output.h"
-#include "effect.h"
-#include "patheffect.h"
-#include "print.h"
-#include "implementation/script.h"
-#include "implementation/xslt.h"
-#include "xml/rebase-hrefs.h"
-#include "io/sys.h"
-#include "inkscape.h"
-#include "document-undo.h"
-#include "loader.h"
 
 #include <glibmm/miscutils.h>
+
+#include "db.h"
+#include "document-undo.h"
+#include "effect.h"
+#include "extension.h"
+#include "implementation/script.h"
+#include "implementation/xslt.h"
+#include "inkscape.h"
+#include "input.h"
+#include "io/sys.h"
+#include "loader.h"
+#include "output.h"
+#include "patheffect.h"
+#include "preferences.h"
+#include "print.h"
+#include "template.h"
+#include "ui/interface.h"
+#include "xml/rebase-hrefs.h"
 
 namespace Inkscape {
 namespace Extension {
@@ -118,7 +119,7 @@ SPDocument *open(Extension *key, gchar const *filename)
         throw Input::open_failed();
     }
 
-    if (!imod->prefs(filename)) {
+    if (!imod->prefs()) {
         throw Input::open_cancelled();
     }
 
@@ -433,6 +434,8 @@ build_from_reprdoc(Inkscape::XML::Document *doc, Implementation::Implementation 
         /* printf("Child: %s\n", child_repr->name()); */
         if (!strcmp(element_name, INKSCAPE_EXTENSION_NS "input")) {
             module_functional_type = MODULE_INPUT;
+        } else if (!strcmp(element_name, INKSCAPE_EXTENSION_NS "template")) {
+            module_functional_type = MODULE_TEMPLATE;
         } else if (!strcmp(element_name, INKSCAPE_EXTENSION_NS "output")) {
             module_functional_type = MODULE_OUTPUT;
         } else if (!strcmp(element_name, INKSCAPE_EXTENSION_NS "effect")) {
@@ -445,7 +448,7 @@ build_from_reprdoc(Inkscape::XML::Document *doc, Implementation::Implementation 
             module_implementation_type = MODULE_EXTENSION;
         } else if (!strcmp(element_name, INKSCAPE_EXTENSION_NS "xslt")) {
             module_implementation_type = MODULE_XSLT;
-        } else if (!strcmp(element_name,  INKSCAPE_EXTENSION_NS "plugin")) {
+        } else if (!strcmp(element_name, INKSCAPE_EXTENSION_NS "plugin")) {
             module_implementation_type = MODULE_PLUGIN;
         }
 
@@ -489,6 +492,10 @@ build_from_reprdoc(Inkscape::XML::Document *doc, Implementation::Implementation 
         switch (module_functional_type) {
             case MODULE_INPUT: {
                 module = new Input(repr, imp, baseDir);
+                break;
+            }
+            case MODULE_TEMPLATE: {
+                module = new Template(repr, imp, baseDir);
                 break;
             }
             case MODULE_OUTPUT: {

@@ -17,17 +17,12 @@
  */
 
 #include "extension.h"
-#include "implementation/implementation.h"
-#include "implementation/script.h"
-#include "implementation/xslt.h"
 
-#include <glibmm/fileutils.h>
-#include <glibmm/miscutils.h>
-
-#include <glib/gstdio.h>
 #include <glib/gprintf.h>
-
+#include <glib/gstdio.h>
+#include <glibmm/fileutils.h>
 #include <glibmm/i18n.h>
+#include <glibmm/miscutils.h>
 #include <gtkmm/box.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/grid.h>
@@ -35,17 +30,17 @@
 
 #include "db.h"
 #include "dependency.h"
+#include "implementation/implementation.h"
+#include "implementation/script.h"
+#include "implementation/xslt.h"
 #include "inkscape.h"
-#include "timer.h"
-
 #include "io/resource.h"
 #include "io/sys.h"
-
 #include "prefdialog/parameter.h"
+#include "prefdialog/prefdialog.h"
 #include "prefdialog/widget.h"
-
+#include "timer.h"
 #include "xml/repr.h"
-
 
 namespace Inkscape {
 namespace Extension {
@@ -931,6 +926,20 @@ Extension::set_param_color(const gchar *name, const guint32 color)
     return param->set_color(color);
 }
 
+/**
+    \brief    Parses the given string value and sets a parameter identified by name.
+    \param    name   The name of the parameter to set
+    \param    value  The value to set the parameter to
+ */
+void Extension::set_param_any(const gchar *name, std::string value)
+{
+    get_param(name)->set(value);
+}
+
+void Extension::set_param_hidden(const gchar *name, bool hidden)
+{
+    get_param(name)->set_hidden(hidden);
+}
 
 /** \brief A function to open the error log file. */
 void
@@ -1093,6 +1102,32 @@ unsigned int Extension::widget_visible_count ( )
         }
     }
     return _visible_count;
+}
+
+/**
+ * Create a dialog for preference for this extension
+ *
+ * @param keep - Should the dialog be kept around for multiple uses?
+ *
+ * @return True if preferences have been shown, False is canceled or kept.
+ */
+bool Extension::prefs()
+{
+    if (!loaded())
+        set_state(Extension::STATE_LOADED);
+    if (!loaded())
+        return false;
+
+    if (auto controls = autogui(nullptr, nullptr)) {
+        auto dialog = new PrefDialog(get_name(), controls);
+        int response = dialog->run();
+        dialog->hide();
+        delete dialog;
+        return (response == Gtk::RESPONSE_OK);
+    }
+
+    // No controls, no prefs
+    return true;
 }
 
 }  /* namespace Extension */
