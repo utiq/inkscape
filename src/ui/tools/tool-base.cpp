@@ -30,6 +30,7 @@
 #include "message-context.h"
 #include "rubberband.h"
 #include "selcue.h"
+#include "selection-chemistry.h"
 #include "selection.h"
 
 #include "actions/actions-tools.h"
@@ -590,11 +591,18 @@ bool ToolBase::root_handler(GdkEvent* event) {
         switch (get_latin_keyval(&event->key)) {
         // GDK insists on stealing these keys (F1 for no idea what, tab for cycling widgets
         // in the editing window). So we resteal them back and run our regular shortcut
-        // invoker on them.
-        case GDK_KEY_Tab:
-        case GDK_KEY_ISO_Left_Tab:
+        // invoker on them. Tab is hardcoded. When actions are triggered by tab,
+        // we end up stealing events from GTK widgets.
         case GDK_KEY_F1:
             ret = Inkscape::Shortcuts::getInstance().invoke_action(&event->key);
+            break;
+        case GDK_KEY_Tab:
+            sp_selection_item_next(_desktop);
+            ret = true;
+            break;
+        case GDK_KEY_ISO_Left_Tab:
+            sp_selection_item_prev(_desktop);
+            ret = true;
             break;
 
         case GDK_KEY_Q:
