@@ -89,6 +89,7 @@ void IconPreviewPanel::on_button_clicked(int which)
 IconPreviewPanel::IconPreviewPanel()
     : DialogBase("/dialogs/iconpreview", "IconPreview")
     , drawing(nullptr)
+    , drawing_doc(nullptr)
     , visionkey(0)
     , timer(nullptr)
     , renderTimer(nullptr)
@@ -244,13 +245,7 @@ IconPreviewPanel::IconPreviewPanel()
 
 IconPreviewPanel::~IconPreviewPanel()
 {
-    if (drawing) {
-        if (auto document = getDocument()) {
-            document->getRoot()->invoke_hide(visionkey);
-        }
-        delete drawing;
-        drawing = nullptr;
-    }
+    removeDrawing();
     if (timer) {
         timer->stop();
         delete timer;
@@ -294,19 +289,28 @@ void IconPreviewPanel::selectionModified(Selection *selection, guint flags)
 
 void IconPreviewPanel::documentReplaced()
 {
-    if (drawing) {
-        if (auto document = getDocument()) {
-            document->getRoot()->invoke_hide(visionkey);
-        }
-        delete drawing;
-        drawing = nullptr;
-    }
-    if (auto document = getDocument()) {
+    removeDrawing();
+    drawing_doc = getDocument();
+    if (drawing_doc) {
         drawing = new Inkscape::Drawing();
         visionkey = SPItem::display_key_new(1);
-        drawing->setRoot(document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY));
+        drawing->setRoot(drawing_doc->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY));
+        docDesConn = drawing_doc->connectDestroy([=]() { removeDrawing(); });
         queueRefresh();
     }
+}
+
+/// Safely delete the Inkscape::Drawing and references to it.
+void IconPreviewPanel::removeDrawing()
+{
+    docDesConn.disconnect();
+    if (!drawing) {
+        return;
+    }
+    drawing_doc->getRoot()->invoke_hide(visionkey);
+    delete drawing;
+    drawing = nullptr;
+    drawing_doc = nullptr;
 }
 
 void IconPreviewPanel::refreshPreview()

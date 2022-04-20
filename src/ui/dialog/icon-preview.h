@@ -59,6 +59,7 @@ private:
     IconPreviewPanel &operator=(IconPreviewPanel const &) = delete; // no assign
 
     Drawing *drawing;
+    SPDocument *drawing_doc;
     unsigned int visionkey;
     Glib::Timer *timer;
     Glib::Timer *renderTimer;
@@ -82,8 +83,10 @@ private:
     Glib::ustring** labels;
     Gtk::ToggleToolButton** buttons;
     sigc::connection docModConn;
+    sigc::connection docDesConn;
 
     void setDocument( SPDocument *document );
+    void removeDrawing();
     void on_button_clicked(int which);
     void renderPreview( SPObject* obj );
     void updateMagnify();
