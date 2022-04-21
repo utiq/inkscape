@@ -1389,6 +1389,9 @@ bool Canvas::on_button_event(GdkEventButton *button_event)
                 }
 
                 break;
+
+            default:
+                break;
         }
     }
 
@@ -2460,7 +2463,7 @@ Glib::RefPtr<Gdk::GLContext> Canvas::create_context()
 
 std::pair<Geom::IntRect, Geom::IntRect> CanvasPrivate::calc_splitview_cliprects() const
 {
-    auto window = Geom::IntRect({}, q->get_dimensions());
+    auto window = Geom::IntRect({0, 0}, q->get_dimensions());
 
     auto content = window;
     auto outline = window;
@@ -2788,7 +2791,7 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
             glDisable(GL_STENCIL_TEST);
 
             // Calculate the bounding rectangle of the split view controller.
-            auto rect = Geom::IntRect({}, get_dimensions());
+            auto rect = Geom::IntRect({0, 0}, get_dimensions());
             auto dim = _split_direction == Inkscape::SplitDirection::EAST || _split_direction == Inkscape::SplitDirection::WEST ? Geom::X : Geom::Y;
             rect[dim] = Geom::IntInterval(-21, 21) + std::round(_split_frac[dim] * get_dimensions()[dim]);
 
@@ -3919,7 +3922,7 @@ bool CanvasPrivate::on_idle()
             }
 
             // Check if repaint is necessary - some rectangles could be entirely off-screen.
-            auto screen_rect = Geom::IntRect({}, q->get_dimensions());
+            auto screen_rect = Geom::IntRect({0, 0}, q->get_dimensions());
             if (regularised(repaint_rect & screen_rect)) {
                 // Schedule repaint.
                 queue_draw_area(repaint_rect);
