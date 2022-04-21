@@ -47,18 +47,17 @@ static void build_string_from_root(Inkscape::XML::Node *root, Glib::ustring *ret
 static void sp_tref_href_changed(SPObject *old_ref, SPObject *ref, SPTRef *tref);
 static void sp_tref_delete_self(SPObject *deleted, SPTRef *self);
 
-SPTRef::SPTRef() : SPItem() {
-	this->stringChild = nullptr;
-
-    this->href = nullptr;
-    this->uriOriginalRef = new SPTRefReference(this);
-
-    this->_changed_connection =
-        this->uriOriginalRef->changedSignal().connect(sigc::bind(sigc::ptr_fun(sp_tref_href_changed), this));
+SPTRef::SPTRef()
+    : SPItem()
+    , href(nullptr)
+    , uriOriginalRef(this)
+    , stringChild(nullptr)
+{
+    _changed_connection = uriOriginalRef.changedSignal().connect(sigc::bind(sigc::ptr_fun(sp_tref_href_changed), this));
 }
 
-SPTRef::~SPTRef() {
-	delete this->uriOriginalRef;
+SPTRef::~SPTRef()
+{
 }
 
 void SPTRef::build(SPDocument *document, Inkscape::XML::Node *repr) {
@@ -78,10 +77,10 @@ void SPTRef::release() {
     this->_delete_connection.disconnect();
     this->_changed_connection.disconnect();
 
-    g_free(this->href);
-    this->href = nullptr;
+    g_free(href);
+    href = nullptr;
 
-    this->uriOriginalRef->detach();
+    uriOriginalRef.detach();
 
     SPItem::release();
 }
@@ -95,9 +94,9 @@ void SPTRef::set(SPAttr key, const gchar* value) {
     } else if (key == SPAttr::XLINK_HREF) { // xlink:href
         if ( !value ) {
             // No value
-            g_free(this->href);
-            this->href = nullptr;
-            this->uriOriginalRef->detach();
+            g_free(href);
+            href = nullptr;
+            uriOriginalRef.detach();
         } else if ((this->href && strcmp(value, this->href) != 0) || (!this->href)) {
             // Value has changed
 
@@ -106,18 +105,18 @@ void SPTRef::set(SPAttr key, const gchar* value) {
                 this->href = nullptr;
             }
 
-            this->href = g_strdup(value);
+            href = g_strdup(value);
 
             try {
-                this->uriOriginalRef->attach(Inkscape::URI(value));
-                this->uriOriginalRef->updateObserver();
-            } catch ( Inkscape::BadURIException &e ) {
+                uriOriginalRef.attach(Inkscape::URI(value));
+                uriOriginalRef.updateObserver();
+            } catch (Inkscape::BadURIException const &e) {
                 g_warning("%s", e.what());
-                this->uriOriginalRef->detach();
+                uriOriginalRef.detach();
             }
 
             // No matter what happened, an update should be in order
-            this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+            requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     } else { // default
         SPItem::set(key, value);
@@ -173,8 +172,8 @@ Inkscape::XML::Node* SPTRef::write(Inkscape::XML::Document *xml_doc, Inkscape::X
 
     this->attributes.writeTo(repr);
 
-    if (this->uriOriginalRef->getURI()) {
-        auto uri = this->uriOriginalRef->getURI()->str();
+    if (uriOriginalRef.getURI()) {
+        auto uri = uriOriginalRef.getURI()->str();
         auto uri_string = uri.c_str();
         debug("uri_string=%s", uri_string);
         repr->setAttribute("xlink:href", uri_string);
@@ -280,28 +279,16 @@ sp_tref_delete_self(SPObject */*deleted*/, SPTRef *self)
  */
 SPObject * SPTRef::getObjectReferredTo()
 {
-    SPObject *referredObject = nullptr;
-
-    if (uriOriginalRef) {
-        referredObject = uriOriginalRef->getObject();
-    }
-
-    return referredObject;
+    return uriOriginalRef.getObject();
 }
 
 /**
  * Return the object referred to via the URI reference
  */
-SPObject const *SPTRef::getObjectReferredTo() const {
-    SPObject *referredObject = nullptr;
-
-    if (uriOriginalRef) {
-        referredObject = uriOriginalRef->getObject();
-    }
-
-    return referredObject;
+SPObject const *SPTRef::getObjectReferredTo() const
+{
+    return uriOriginalRef.getObject();
 }
-
 
 /**
  * Returns true when the given tref is allowed to refer to a particular object

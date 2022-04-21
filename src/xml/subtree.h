@@ -26,7 +26,7 @@ namespace XML {
  * Currently the only such operations are adding and removing subtree observers
  * and synthesizing events for the entire subtree.
  */
-class Subtree : public GC::Managed<GC::SCANNED, GC::AUTO> {
+class Subtree : public GC::Managed<GC::SCANNED, GC::MANUAL> {
 public:
     Subtree(Node &root);
     ~Subtree();

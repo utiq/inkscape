@@ -20,7 +20,6 @@
 #include "sp-tref-reference.h"
 #include "text-tag-attributes.h"
 
-
 /* tref base class */
 
 class SPTRef : public SPItem {
@@ -35,7 +34,7 @@ public:
     char *href;
     
     // URI reference to original object
-    SPTRefReference *uriOriginalRef;
+    SPTRefReference uriOriginalRef;
     
     // Shortcut pointer to the child of the tref (which is a copy
     // of the character data stored at and/or below the node
