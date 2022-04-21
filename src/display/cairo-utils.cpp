@@ -244,11 +244,7 @@ Pixbuf *Pixbuf::create_from_data_uri(gchar const *uri_data, double svgdpi)
         std::unique_ptr<SPDocument> svgDoc(
             SPDocument::createNewDocFromMem(reinterpret_cast<gchar const *>(decoded), decoded_len, false));
         // Check the document loaded properly
-        if (svgDoc == nullptr) {
-            return nullptr;
-        }
-        if (svgDoc->getRoot() == nullptr)
-        {
+        if (!svgDoc || !svgDoc->getRoot()) {
             return nullptr;
         }
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -361,11 +357,7 @@ Pixbuf *Pixbuf::create_from_buffer(gchar *&&data, gsize len, double svgdpi, std:
                 std::unique_ptr<SPDocument> svgDoc(SPDocument::createNewDocFromMem(data, len, true));
 
                 // Check the document loaded properly
-                if (svgDoc == nullptr) {
-                    return nullptr;
-                }
-                if (svgDoc->getRoot() == nullptr)
-                {
+                if (!svgDoc || !svgDoc->getRoot()) {
                     return nullptr;
                 }
 

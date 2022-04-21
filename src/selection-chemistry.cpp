@@ -4228,10 +4228,9 @@ void ObjectSet::fillBetweenMany()
     for (auto&& item : items()) {
         // Force-assign id if there is none present
         if (!item->getId()) {
-            gchar *id = sp_object_get_unique_id(item, nullptr);
-            item->set(SPAttr::ID, id);
+            auto id = item->generate_unique_id();
+            item->set(SPAttr::ID, id.c_str());
             item->updateRepr();
-            g_free(id);
         }
 
         acc += "#";

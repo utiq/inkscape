@@ -33,7 +33,7 @@ class Event;
 class NodeObserver;
 struct NodeEventVector;
 
-typedef std::vector<AttributeRecord, Inkscape::GC::Alloc<AttributeRecord, Inkscape::GC::MANUAL>> AttributeVector;
+typedef std::vector<AttributeRecord, Inkscape::GC::Alloc<AttributeRecord, Inkscape::GC::AUTO>> AttributeVector;
 
 /**
  * @brief Enumeration containing all supported node types.

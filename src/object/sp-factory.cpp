@@ -4,8 +4,9 @@
  *
  * Authors:
  *   Markus Engel
+ *   PBS <pbs3141@gmail.com>
  *
- * Copyright (C) 2013 Authors
+ * Copyright (C) 2022 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
@@ -93,242 +94,182 @@
 #include "filters/tile.h"
 #include "filters/turbulence.h"
 
-SPObject *SPFactory::createObject(std::string const& id)
+#include <functional>
+#include <unordered_map>
+
+namespace {
+
+class Factory
 {
-    SPObject *ret = nullptr;
+    std::unordered_map<std::string, std::function<SPObject*()>> map;
 
-    if (id == "inkscape:box3d")
-        ret = new SPBox3D;
-    else if (id == "inkscape:box3dside")
-        ret = new Box3DSide;
-    else if (id == "svg:color-profile")
-        ret = new Inkscape::ColorProfile;
-    else if (id == "inkscape:persp3d")
-        ret = new Persp3D;
-    else if (id == "svg:a")
-        ret = new SPAnchor;
-    else if (id == "svg:clipPath")
-        ret = new SPClipPath;
-    else if (id == "svg:defs")
-        ret = new SPDefs;
-    else if (id == "svg:desc")
-        ret = new SPDesc;
-    else if (id == "svg:ellipse") {
-        SPGenericEllipse *e = new SPGenericEllipse;
-        e->type = SP_GENERIC_ELLIPSE_ELLIPSE;
-        ret = e;
-    } else if (id == "svg:circle") {
-        SPGenericEllipse *c = new SPGenericEllipse;
-        c->type = SP_GENERIC_ELLIPSE_CIRCLE;
-        ret = c;
-    } else if (id == "arc") {
-        SPGenericEllipse *a = new SPGenericEllipse;
-        a->type = SP_GENERIC_ELLIPSE_ARC;
-        ret = a;
-    }
-    else if (id == "svg:filter")
-        ret = new SPFilter;
-    else if (id == "svg:flowDiv")
-        ret = new SPFlowdiv;
-    else if (id == "svg:flowSpan")
-        ret = new SPFlowtspan;
-    else if (id == "svg:flowPara")
-        ret = new SPFlowpara;
-    else if (id == "svg:flowLine")
-        ret = new SPFlowline;
-    else if (id == "svg:flowRegionBreak")
-        ret = new SPFlowregionbreak;
-    else if (id == "svg:flowRegion")
-        ret = new SPFlowregion;
-    else if (id == "svg:flowRegionExclude")
-        ret = new SPFlowregionExclude;
-    else if (id == "svg:flowRoot")
-        ret = new SPFlowtext;
-    else if (id == "svg:font")
-        ret = new SPFont;
-    else if (id == "svg:font-face")
-        ret = new SPFontFace;
-    else if (id == "svg:glyph")
-        ret = new SPGlyph;
-    else if (id == "svg:hkern")
-        ret = new SPHkern;
-    else if (id == "svg:vkern")
-        ret = new SPVkern;
-    else if (id == "sodipodi:guide")
-        ret = new SPGuide;
-    else if (id == "inkscape:page")
-        ret = new SPPage;
-    else if (id == "svg:hatch")
-        ret = new SPHatch;
-    else if (id == "svg:hatchpath")
-        ret = new SPHatchPath;
-    else if (id == "svg:hatchPath") {
-        std::cerr << "Warning: <hatchPath> has been renamed <hatchpath>" << std::endl;
-        ret = new SPHatchPath;
-    }
-    else if (id == "svg:image")
-        ret = new SPImage;
-    else if (id == "svg:g")
-        ret = new SPGroup;
-    else if (id == "svg:line")
-        ret = new SPLine;
-    else if (id == "svg:linearGradient")
-        ret = new SPLinearGradient;
-    else if (id == "svg:marker")
-        ret = new SPMarker;
-    else if (id == "svg:mask")
-        ret = new SPMask;
-    else if (id == "svg:mesh") {         // SVG 2 old
-        ret = new SPMeshGradient;
-        std::cerr << "Warning: <mesh> has been renamed <meshgradient>." << std::endl;
-        std::cerr << "Warning: <mesh> has been repurposed as a shape that tightly wraps a <meshgradient>." << std::endl;
-    }
-    else if (id == "svg:meshGradient") { // SVG 2 old
-        ret = new SPMeshGradient;
-        std::cerr << "Warning: <meshGradient> has been renamed <meshgradient>" << std::endl;
-    }
-    else if (id == "svg:meshgradient") // SVG 2
-        ret = new SPMeshGradient;
-    else if (id == "svg:meshPatch") {
-        ret = new SPMeshpatch;
-        std::cerr << "Warning: <meshPatch> and <meshRow> have been renamed <meshpatch> and <meshrow>" << std::endl;
-    }
-    else if (id == "svg:meshpatch")
-        ret = new SPMeshpatch;
-    else if (id == "svg:meshRow")
-        ret = new SPMeshrow;
-    else if (id == "svg:meshrow")
-        ret = new SPMeshrow;
-    else if (id == "svg:metadata")
-        ret = new SPMetadata;
-    else if (id == "svg:missing-glyph")
-        ret = new SPMissingGlyph;
-    else if (id == "sodipodi:namedview")
-        ret = new SPNamedView;
-    else if (id == "inkscape:offset")
-        ret = new SPOffset;
-    else if (id == "svg:path")
-        ret = new SPPath;
-    else if (id == "svg:pattern")
-        ret = new SPPattern;
-    else if (id == "svg:polygon")
-        ret = new SPPolygon;
-    else if (id == "svg:polyline")
-        ret = new SPPolyLine;
-    else if (id == "svg:radialGradient")
-        ret = new SPRadialGradient;
-    else if (id == "svg:rect")
-        ret = new SPRect;
-    else if (id == "rect") // LPE rect
-        ret = new SPRect;
-    else if (id == "svg:svg")
-        ret = new SPRoot;
-    else if (id == "svg:script")
-        ret = new SPScript;
-    else if (id == "svg:solidColor") {
-        ret = new SPSolidColor;
-        std::cerr << "Warning: <solidColor> has been renamed <solidcolor>" << std::endl;
-    }
-    else if (id == "svg:solidcolor")
-        ret = new SPSolidColor;
-    else if (id == "spiral")
-        ret = new SPSpiral;
-    else if (id == "star")
-        ret = new SPStar;
-    else if (id == "svg:stop")
-        ret = new SPStop;
-    else if (id == "string")
-        ret = new SPString;
-    else if (id == "svg:style")
-        ret = new SPStyleElem;
-    else if (id == "svg:switch")
-        ret = new SPSwitch;
-    else if (id == "svg:symbol")
-        ret = new SPSymbol;
-    else if (id == "inkscape:tag")
-        ret = new SPTag;
-    else if (id == "inkscape:tagref")
-        ret = new SPTagUse;
-    else if (id == "svg:text")
-        ret = new SPText;
-    else if (id == "svg:title")
-        ret = new SPTitle;
-    else if (id == "svg:tref")
-        ret = new SPTRef;
-    else if (id == "svg:tspan")
-        ret = new SPTSpan;
-    else if (id == "svg:textPath")
-        ret = new SPTextPath;
-    else if (id == "svg:use")
-        ret = new SPUse;
-    else if (id == "inkscape:path-effect")
-        ret = new LivePathEffectObject;
+public:
+    Factory()
+    {
+        // primary
+        map.emplace("inkscape:box3d", [] { return new SPBox3D; });
+        map.emplace("inkscape:box3dside", [] { return new Box3DSide; });
+        map.emplace("svg:color-profile", [] { return new Inkscape::ColorProfile; });
+        map.emplace("inkscape:persp3d", [] { return new Persp3D; });
+        map.emplace("svg:a", [] { return new SPAnchor; });
+        map.emplace("svg:clipPath", [] { return new SPClipPath; });
+        map.emplace("svg:defs", [] { return new SPDefs; });
+        map.emplace("svg:desc", [] { return new SPDesc; });
+        map.emplace("svg:ellipse", [] {
+            auto e = new SPGenericEllipse;
+            e->type = SP_GENERIC_ELLIPSE_ELLIPSE;
+            return e;
+        });
+        map.emplace("svg:circle", [] {
+            auto c = new SPGenericEllipse;
+            c->type = SP_GENERIC_ELLIPSE_CIRCLE;
+            return c;
+        });
+        map.emplace("arc", [] {
+            auto a = new SPGenericEllipse;
+            a->type = SP_GENERIC_ELLIPSE_ARC;
+            return a;
+        });
+        map.emplace("svg:filter", [] { return new SPFilter; });
+        map.emplace("svg:flowDiv", [] { return new SPFlowdiv; });
+        map.emplace("svg:flowSpan", [] { return new SPFlowtspan; });
+        map.emplace("svg:flowPara", [] { return new SPFlowpara; });
+        map.emplace("svg:flowLine", [] { return new SPFlowline; });
+        map.emplace("svg:flowRegionBreak", [] { return new SPFlowregionbreak; });
+        map.emplace("svg:flowRegion", [] { return new SPFlowregion; });
+        map.emplace("svg:flowRegionExclude", [] { return new SPFlowregionExclude; });
+        map.emplace("svg:flowRoot", [] { return new SPFlowtext; });
+        map.emplace("svg:font", [] { return new SPFont; });
+        map.emplace("svg:font-face", [] { return new SPFontFace; });
+        map.emplace("svg:glyph", [] { return new SPGlyph; });
+        map.emplace("svg:hkern", [] { return new SPHkern; });
+        map.emplace("svg:vkern", [] { return new SPVkern; });
+        map.emplace("sodipodi:guide", [] { return new SPGuide; });
+        map.emplace("inkscape:page", [] { return new SPPage; });
+        map.emplace("svg:hatch", [] { return new SPHatch; });
+        map.emplace("svg:hatchpath", [] { return new SPHatchPath; });
+        map.emplace("svg:hatchPath", [] {
+            std::cerr << "Warning: <hatchPath> has been renamed <hatchpath>" << std::endl;
+            return new SPHatchPath;
+        });
+        map.emplace("svg:image", [] { return new SPImage; });
+        map.emplace("svg:g", [] { return new SPGroup; });
+        map.emplace("svg:line", [] { return new SPLine; });
+        map.emplace("svg:linearGradient", [] { return new SPLinearGradient; });
+        map.emplace("svg:marker", [] { return new SPMarker; });
+        map.emplace("svg:mask", [] { return new SPMask; });
+        map.emplace("svg:mesh", [] { // SVG 2 old
+             std::cerr << "Warning: <mesh> has been renamed <meshgradient>." << std::endl;
+             std::cerr << "Warning: <mesh> has been repurposed as a shape that tightly wraps a <meshgradient>." << std::endl;
+             return new SPMeshGradient;
+        });
+        map.emplace("svg:meshGradient", [] { // SVG 2 old
+             std::cerr << "Warning: <meshGradient> has been renamed <meshgradient>" << std::endl;
+             return new SPMeshGradient;
+        });
+        map.emplace("svg:meshgradient", [] { // SVG 2
+             return new SPMeshGradient;
+        });
+        map.emplace("svg:meshPatch", [] {
+             std::cerr << "Warning: <meshPatch> and <meshRow> have been renamed <meshpatch> and <meshrow>" << std::endl;
+             return new SPMeshpatch;
+        });
+        map.emplace("svg:meshpatch", [] { return new SPMeshpatch; });
+        map.emplace("svg:meshRow", [] { return new SPMeshrow; });
+        map.emplace("svg:meshrow", [] { return new SPMeshrow; });
+        map.emplace("svg:metadata", [] { return new SPMetadata; });
+        map.emplace("svg:missing-glyph", [] { return new SPMissingGlyph; });
+        map.emplace("sodipodi:namedview", [] { return new SPNamedView; });
+        map.emplace("inkscape:offset", [] { return new SPOffset; });
+        map.emplace("svg:path", [] { return new SPPath; });
+        map.emplace("svg:pattern", [] { return new SPPattern; });
+        map.emplace("svg:polygon", [] { return new SPPolygon; });
+        map.emplace("svg:polyline", [] { return new SPPolyLine; });
+        map.emplace("svg:radialGradient", [] { return new SPRadialGradient; });
+        map.emplace("svg:rect", [] { return new SPRect; });
+        map.emplace("rect", [] { return new SPRect; } ); // LPE rect;
+        map.emplace("svg:svg", [] { return new SPRoot; });
+        map.emplace("svg:script", [] { return new SPScript; });
+        map.emplace("svg:solidColor", [] {
+            std::cerr << "Warning: <solidColor> has been renamed <solidcolor>" << std::endl;
+            return new SPSolidColor;
+        });
+        map.emplace("svg:solidColor", [] {
+            std::cerr << "Warning: <solidColor> has been renamed <solidcolor>" << std::endl;
+            return new SPSolidColor;
+        });
+        map.emplace("svg:solidcolor", [] { return new SPSolidColor; });
+        map.emplace("spiral", [] { return new SPSpiral; });
+        map.emplace("star", [] { return new SPStar; });
+        map.emplace("svg:stop", [] { return new SPStop; });
+        map.emplace("string", [] { return new SPString; });
+        map.emplace("svg:style", [] { return new SPStyleElem; });
+        map.emplace("svg:switch", [] { return new SPSwitch; });
+        map.emplace("svg:symbol", [] { return new SPSymbol; });
+        map.emplace("inkscape:tag", [] { return new SPTag; });
+        map.emplace("inkscape:tagref", [] { return new SPTagUse; });
+        map.emplace("svg:text", [] { return new SPText; });
+        map.emplace("svg:title", [] { return new SPTitle; });
+        map.emplace("svg:tref", [] { return new SPTRef; });
+        map.emplace("svg:tspan", [] { return new SPTSpan; });
+        map.emplace("svg:textPath", [] { return new SPTextPath; });
+        map.emplace("svg:use", [] { return new SPUse; });
+        map.emplace("inkscape:path-effect", [] { return new LivePathEffectObject; });
 
+        // filters
+        map.emplace("svg:feBlend", [] { return new SPFeBlend; });
+        map.emplace("svg:feColorMatrix", [] { return new SPFeColorMatrix; });
+        map.emplace("svg:feComponentTransfer", [] { return new SPFeComponentTransfer; });
+        map.emplace("svg:feFuncR", [] { return new SPFeFuncNode(SPFeFuncNode::R); });
+        map.emplace("svg:feFuncG", [] { return new SPFeFuncNode(SPFeFuncNode::G); });
+        map.emplace("svg:feFuncB", [] { return new SPFeFuncNode(SPFeFuncNode::B); });
+        map.emplace("svg:feFuncA", [] { return new SPFeFuncNode(SPFeFuncNode::A); });
+        map.emplace("svg:feComposite", [] { return new SPFeComposite; });
+        map.emplace("svg:feConvolveMatrix", [] { return new SPFeConvolveMatrix; });
+        map.emplace("svg:feDiffuseLighting", [] { return new SPFeDiffuseLighting; });
+        map.emplace("svg:feDisplacementMap", [] { return new SPFeDisplacementMap; });
+        map.emplace("svg:feDistantLight", [] { return new SPFeDistantLight; });
+        map.emplace("svg:feFlood", [] { return new SPFeFlood; });
+        map.emplace("svg:feGaussianBlur", [] { return new SPGaussianBlur; });
+        map.emplace("svg:feImage", [] { return new SPFeImage; });
+        map.emplace("svg:feMerge", [] { return new SPFeMerge; });
+        map.emplace("svg:feMergeNode", [] { return new SPFeMergeNode; });
+        map.emplace("svg:feMorphology", [] { return new SPFeMorphology; });
+        map.emplace("svg:feOffset", [] { return new SPFeOffset; });
+        map.emplace("svg:fePointLight", [] { return new SPFePointLight; });
+        map.emplace("svg:feSpecularLighting", [] { return new SPFeSpecularLighting; });
+        map.emplace("svg:feSpotLight", [] { return new SPFeSpotLight; });
+        map.emplace("svg:feTile", [] { return new SPFeTile; });
+        map.emplace("svg:feTurbulence", [] { return new SPFeTurbulence; });
+        map.emplace("inkscape:grid", [] { return new SPObject; }); // TODO wtf
 
-    // filters
-    else if (id == "svg:feBlend")
-        ret = new SPFeBlend;
-    else if (id == "svg:feColorMatrix")
-        ret = new SPFeColorMatrix;
-    else if (id == "svg:feComponentTransfer")
-        ret = new SPFeComponentTransfer;
-    else if (id == "svg:feFuncR")
-        ret = new SPFeFuncNode(SPFeFuncNode::R);
-    else if (id == "svg:feFuncG")
-        ret = new SPFeFuncNode(SPFeFuncNode::G);
-    else if (id == "svg:feFuncB")
-        ret = new SPFeFuncNode(SPFeFuncNode::B);
-    else if (id == "svg:feFuncA")
-        ret = new SPFeFuncNode(SPFeFuncNode::A);
-    else if (id == "svg:feComposite")
-        ret = new SPFeComposite;
-    else if (id == "svg:feConvolveMatrix")
-        ret = new SPFeConvolveMatrix;
-    else if (id == "svg:feDiffuseLighting")
-        ret = new SPFeDiffuseLighting;
-    else if (id == "svg:feDisplacementMap")
-        ret = new SPFeDisplacementMap;
-    else if (id == "svg:feDistantLight")
-        ret = new SPFeDistantLight;
-    else if (id == "svg:feFlood")
-        ret = new SPFeFlood;
-    else if (id == "svg:feGaussianBlur")
-        ret = new SPGaussianBlur;
-    else if (id == "svg:feImage")
-        ret = new SPFeImage;
-    else if (id == "svg:feMerge")
-        ret = new SPFeMerge;
-    else if (id == "svg:feMergeNode")
-        ret = new SPFeMergeNode;
-    else if (id == "svg:feMorphology")
-        ret = new SPFeMorphology;
-    else if (id == "svg:feOffset")
-        ret = new SPFeOffset;
-    else if (id == "svg:fePointLight")
-        ret = new SPFePointLight;
-    else if (id == "svg:feSpecularLighting")
-        ret = new SPFeSpecularLighting;
-    else if (id == "svg:feSpotLight")
-        ret = new SPFeSpotLight;
-    else if (id == "svg:feTile")
-        ret = new SPFeTile;
-    else if (id == "svg:feTurbulence")
-        ret = new SPFeTurbulence;
-    else if (id == "inkscape:grid")
-        ret = new SPObject; // TODO wtf
-    else if (id == "rdf:RDF") // no SP node yet
-        {}
-    else if (id == "inkscape:clipboard") // SP node not necessary
-        {}
-    else if (id == "inkscape:templateinfo" || id == "inkscape:_templateinfo") // metadata for templates
-        {}
-    else if (id.empty()) // comments
-        {}
-    else {
-        fprintf(stderr, "WARNING: unknown type: %s\n", id.c_str());
+        // ignore
+        map.emplace("rdf:RDF", [] { return nullptr; } ); // no SP node yet
+        map.emplace("inkscape:clipboard", [] { return nullptr; } ); // SP node not necessary
+        map.emplace("inkscape:templateinfo", [] { return nullptr; } ); // metadata for templates
+        map.emplace("inkscape:_templateinfo", [] { return nullptr; } ); // metadata for templates
+        map.emplace("", [] { return nullptr; } ); // comments
     }
 
-    return ret;
+    SPObject *create(std::string const &id)
+    {
+        auto it = map.find(id);
+
+        if (it == map.end()) {
+            std::cerr << "WARNING: unknown type: " << id << std::endl;
+            return nullptr;
+        }
+
+        return it->second();
+    }
+};
+
+} // namespace
+
+SPObject *SPFactory::createObject(std::string const &id)
+{
+    static Factory factory;
+    return factory.create(id);
 }
 
 std::string NodeTraits::get_type_string(Inkscape::XML::Node const &node)
@@ -341,13 +282,8 @@ std::string NodeTraits::get_type_string(Inkscape::XML::Node const &node)
         break;
 
     case Inkscape::XML::NodeType::ELEMENT_NODE: {
-        char const *const sptype = node.attribute("sodipodi:type");
-
-        if (sptype) {
-            name = sptype;
-        } else {
-            name = node.name();
-        }
+        auto sptype = node.attribute("sodipodi:type");
+        name = sptype ? sptype : node.name();
         break;
     }
     default:

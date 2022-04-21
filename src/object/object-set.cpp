@@ -349,9 +349,8 @@ void ObjectSet::enforceIds()
     for (auto *item : items) {
         if (!item->getId()) {
             // Selected object does not have an ID, so assign it a unique ID
-            gchar *id = sp_object_get_unique_id(item, nullptr);
+            auto id = item->generate_unique_id();
             item->setAttribute("id", id);
-            g_free(id);
             idAssigned = true;
         }
     }

@@ -114,6 +114,7 @@ SPDocument::SPDocument() :
     document_base(nullptr),
     document_name(nullptr),
     actionkey(),
+    object_id_counter(1),
     _event_log(new Inkscape::EventLog(this)),
     profileManager(nullptr), // deferred until after other initialization
     router(new Avoid::Router(Avoid::PolyLineRouting|Avoid::OrthogonalRouting)),
@@ -166,9 +167,13 @@ SPDocument::~SPDocument() {
 
     // kill/unhook this first
     if ( profileManager ) {
+        Inkscape::GC::release(profileManager);
+        assert(profileManager->_anchored_refcount() == 0);
         delete profileManager;
         profileManager = nullptr;
     }
+
+    Inkscape::GC::release(_selection);
 
     if (router) {
         delete router;
@@ -255,6 +260,7 @@ SPNamedView *SPDocument::getNamedView()
     if (!xml) {
         xml = rdoc->createElement("sodipodi:namedview");
         rroot->addChildAtPos(xml, 0);
+        Inkscape::GC::release(xml);
     }
     return dynamic_cast<SPNamedView *> (getObjectByRepr(xml));
 }
@@ -538,7 +544,7 @@ std::unique_ptr<SPDocument> SPDocument::copy() const
     auto doc = createDoc(new_rdoc, document_filename, document_base, document_name, keepalive, nullptr);
     doc->_original_document = this;
 
-    return doc->doRef();
+    return std::unique_ptr<SPDocument>(doc);
 }
 
 /**
@@ -1033,201 +1039,212 @@ void SPDocument::changeFilenameAndHrefs(gchar const *filename)
     do_change_filename(filename, true);
 }
 
-void SPDocument::bindObjectToId(gchar const *id, SPObject *object) {
+void SPDocument::bindObjectToId(char const *id, SPObject *object)
+{
     GQuark idq = g_quark_from_string(id);
 
     if (object) {
-        if(object->getId())
+        if(object->getId()) {
             iddef.erase(object->getId());
-        g_assert(iddef.find(id)==iddef.end());
-        iddef[id] = object;
+        }
+        auto ret = iddef.emplace(id, object);
+        g_assert(ret.second);
     } else {
-        g_assert(iddef.find(id)!=iddef.end());
-        iddef.erase(id);
+        auto it = iddef.find(id);
+        g_assert(it != iddef.end());
+        iddef.erase(it);
     }
 
-    SPDocument::IDChangedSignalMap::iterator pos;
-
-    pos = id_changed_signals.find(idq);
-    if ( pos != id_changed_signals.end() ) {
-        if (!(*pos).second.empty()) {
-            (*pos).second.emit(object);
+    auto pos = id_changed_signals.find(idq);
+    if (pos != id_changed_signals.end()) {
+        if (!pos->second.empty()) {
+            pos->second.emit(object);
         } else { // discard unused signal
             id_changed_signals.erase(pos);
         }
     }
 }
 
-SPObject *SPDocument::getObjectById(Glib::ustring const &id) const
+SPObject *SPDocument::getObjectById(std::string const &id) const
 {
-    if (iddef.empty()) {
-        return nullptr;
-    }
+    if (iddef.empty()) return nullptr;
 
-    std::map<std::string, SPObject *>::const_iterator rv = iddef.find(id);
-    if (rv != iddef.end()) {
-        return (rv->second);
+    if (auto rv = iddef.find(id); rv != iddef.end()) {
+        return rv->second;
     } else if (_parent_document) {
         return _parent_document->getObjectById(id);
-    }
-    else if (_ref_document) {
+    } else if (_ref_document) {
         return _ref_document->getObjectById(id);
-    } else {
-        return nullptr;
     }
+
+    return nullptr;
 }
 
-SPObject *SPDocument::getObjectById(gchar const *id) const
+SPObject *SPDocument::getObjectById(char const *id) const
 {
-    if (id == nullptr) {
-        return nullptr;
+    if (!id || iddef.empty()) return nullptr;
+
+    if (auto rv = iddef.find(id); rv != iddef.end()) {
+        return rv->second;
+    } else if (_parent_document) {
+        return _parent_document->getObjectById(id);
+    } else if (_ref_document) {
+        return _ref_document->getObjectById(id);
     }
 
-    return getObjectById(Glib::ustring(id));
+    return nullptr;
 }
 
-SPObject *SPDocument::getObjectByHref(Glib::ustring const &href) const
+SPObject *SPDocument::getObjectByHref(std::string const &href) const
 {
-    if (iddef.empty()) {
-        return nullptr;
-    }
-    Glib::ustring id = href;
-    id = id.erase(0, 1);
+    if (iddef.empty()) return nullptr;
+    auto id = href.substr(1);
     return getObjectById(id);
 }
 
-SPObject *SPDocument::getObjectByHref(gchar const *href) const
+SPObject *SPDocument::getObjectByHref(char const *href) const
 {
-    if (href == nullptr) {
-        return nullptr;
-    }
-
-    return getObjectByHref(Glib::ustring(href));
+    if (!href || href[0] == '\0') return nullptr;
+    auto id = href + 1;
+    return getObjectById(id);
 }
 
-void _getObjectsByClassRecursive(Glib::ustring const &klass, SPObject *parent, std::vector<SPObject *> &objects)
+static void _getObjectsByClassRecursive(Glib::ustring const &klass, SPObject *parent, std::vector<SPObject*> &objects)
 {
-    if (parent) {
-        char const *temp = parent->getAttribute("class");
-        if (temp) {
-            std::istringstream classes(temp);
-            Glib::ustring token;
-            while (classes >> token) {
-                // we can have multiple class
-                if (classes.str() == " ") {
-                    token = "";
-                    continue;
-                }
-                if (token == klass) {
-                    objects.push_back(parent);
-                    break;
-                }
+    if (!parent) return;
+
+    if (auto const temp = parent->getAttribute("class")) {
+        std::istringstream classes(temp);
+        Glib::ustring token;
+        while (classes >> token) {
+            // we can have multiple class
+            if (classes.str() == " ") {
+                token = "";
+                continue;
+            }
+            if (token == klass) {
+                objects.emplace_back(parent);
+                break;
             }
         }
+    }
 
-        // Check children
-        for (auto& child : parent->children) {
-            _getObjectsByClassRecursive( klass, &child, objects );
-        }
+    // Check children
+    for (auto &child : parent->children) {
+        _getObjectsByClassRecursive(klass, &child, objects);
     }
 }
 
-std::vector<SPObject *> SPDocument::getObjectsByClass(Glib::ustring const &klass) const
+std::vector<SPObject*> SPDocument::getObjectsByClass(Glib::ustring const &klass) const
 {
-    std::vector<SPObject *> objects;
-    g_return_val_if_fail(!klass.empty(), objects);
-
+    if (klass.empty()) return {};
+    std::vector<SPObject*> objects;
     _getObjectsByClassRecursive(klass, root, objects);
     return objects;
 }
 
-void _getObjectsByElementRecursive(Glib::ustring const &element, SPObject *parent, std::vector<SPObject *> &objects,
-                                   bool custom)
+static void _getObjectsByElementRecursive(Glib::ustring const &element,
+                                          SPObject *parent,
+                                          std::vector<SPObject*> &objects,
+                                          bool custom)
 {
-    if (parent) {
-        Glib::ustring prefixed = custom ? "inkscape:" : "svg:";
-        prefixed += element;
-        if (parent->getRepr()->name() == prefixed) {
-            objects.push_back(parent);
-        }
+    if (!parent) return;
 
-        // Check children
-        for (auto& child : parent->children) {
-            _getObjectsByElementRecursive(element, &child, objects, custom);
-        }
+    Glib::ustring prefixed = custom ? "inkscape:" : "svg:";
+    prefixed += element;
+    if (parent->getRepr()->name() == prefixed) {
+        objects.emplace_back(parent);
+    }
+
+    // Check children
+    for (auto &child : parent->children) {
+        _getObjectsByElementRecursive(element, &child, objects, custom);
     }
 }
 
-std::vector<SPObject *> SPDocument::getObjectsByElement(Glib::ustring const &element, bool custom) const
+std::vector<SPObject*> SPDocument::getObjectsByElement(Glib::ustring const &element, bool custom) const
 {
-    std::vector<SPObject *> objects;
-    g_return_val_if_fail(!element.empty(), objects);
-
+    if (element.empty()) return {};
+    std::vector<SPObject*> objects;
     _getObjectsByElementRecursive(element, root, objects, custom);
     return objects;
 }
 
-void _getObjectsBySelectorRecursive(SPObject *parent,
-                                    CRSelEng *sel_eng, CRSimpleSel *simple_sel,
-                                    std::vector<SPObject *> &objects)
+static void _getObjectsBySelectorRecursive(SPObject *parent,
+                                           CRSelEng *sel_eng, CRSimpleSel *simple_sel,
+                                           std::vector<SPObject*> &objects)
 {
     if (parent) {
         gboolean result = false;
-        cr_sel_eng_matches_node( sel_eng, simple_sel, parent->getRepr(), &result );
+        cr_sel_eng_matches_node(sel_eng, simple_sel, parent->getRepr(), &result);
         if (result) {
             objects.push_back(parent);
         }
 
         // Check children
-        for (auto& child : parent->children) {
+        for (auto &child : parent->children) {
             _getObjectsBySelectorRecursive(&child, sel_eng, simple_sel, objects);
         }
     }
 }
 
-std::vector<SPObject *> SPDocument::getObjectsBySelector(Glib::ustring const &selector) const
+std::vector<SPObject*> SPDocument::getObjectsBySelector(Glib::ustring const &selector) const
 {
-    // std::cout << "\nSPDocument::getObjectsBySelector: " << selector << std::endl;
-
-    std::vector<SPObject *> objects;
-    g_return_val_if_fail(!selector.empty(), objects);
+    if (selector.empty()) return {};
 
     static CRSelEng *sel_eng = nullptr;
     if (!sel_eng) {
         sel_eng = cr_sel_eng_new(&Inkscape::XML::croco_node_iface);
     }
 
-    CRSelector *cr_selector = cr_selector_parse_from_buf((guchar const *)selector.c_str(), CR_UTF_8);
-    // char * cr_string = (char*)cr_selector_to_string( cr_selector );
-    // std::cout << "  selector: |" << (cr_string?cr_string:"Empty") << "|" << std::endl;
-    CRSelector const *cur = nullptr;
-    for (cur = cr_selector; cur; cur = cur->next) {
-        if (cur->simple_sel ) {
+    auto cr_selector = cr_selector_parse_from_buf(reinterpret_cast<guchar const*>(selector.c_str()), CR_UTF_8);
+
+    std::vector<SPObject*> objects;
+    for (auto cur = cr_selector; cur; cur = cur->next) {
+        if (cur->simple_sel) {
             _getObjectsBySelectorRecursive(root, sel_eng, cur->simple_sel, objects);
         }
     }
+
     return objects;
+}
+
+// Note: Despite appearances, this implementation is allocation-free thanks to SSO.
+std::string SPDocument::generate_unique_id(char const *prefix)
+{
+    auto result = std::string(prefix);
+    auto const prefix_len = result.size();
+
+    while (true) {
+        result.replace(prefix_len, std::string::npos, std::to_string(object_id_counter));
+
+        if (!getObjectById(result)) {
+            break;
+        }
+
+        ++object_id_counter;
+    }
+
+    return result;
 }
 
 void SPDocument::bindObjectToRepr(Inkscape::XML::Node *repr, SPObject *object)
 {
     if (object) {
-        g_assert(reprdef.find(repr)==reprdef.end());
-        reprdef[repr] = object;
+        auto ret = reprdef.emplace(repr, object);
+        g_assert(ret.second);
     } else {
-        g_assert(reprdef.find(repr)!=reprdef.end());
-        reprdef.erase(repr);
+        auto it = reprdef.find(repr);
+        g_assert(it != reprdef.end());
+        reprdef.erase(it);
     }
 }
 
 SPObject *SPDocument::getObjectByRepr(Inkscape::XML::Node *repr) const
 {
-    g_return_val_if_fail(repr != nullptr, NULL);
-    std::map<Inkscape::XML::Node *, SPObject *>::const_iterator rv = reprdef.find(repr);
-    if(rv != reprdef.end())
-        return (rv->second);
-    else
-        return nullptr;
+    if (!repr) return nullptr;
+    auto it = reprdef.find(repr);
+    return it == reprdef.end() ? nullptr : it->second;
 }
 
 /** Returns preferred document languages (from most to least preferred)

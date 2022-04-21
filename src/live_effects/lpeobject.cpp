@@ -202,9 +202,8 @@ LivePathEffectObject *LivePathEffectObject::fork_private_if_necessary(unsigned i
         Inkscape::GC::release(dup_repr);
         // To regenerate ID
         sp_object_ref(lpeobj_new, nullptr);
-        gchar *id = sp_object_get_unique_id(this, nullptr);
+        auto id = generate_unique_id();
         lpeobj_new->setAttribute("id", id);
-        g_free(id);
         // Load all volatile vars of forked item
         sp_object_unref(lpeobj_new, nullptr);
         return lpeobj_new;

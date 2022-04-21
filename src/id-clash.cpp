@@ -485,8 +485,7 @@ const char valid_id_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvw
 /**
  * Modify 'base_name' to create a new ID that is not used in the 'document'
 */
-Glib::ustring generate_unique_id(SPDocument* document, const Glib::ustring& base_name) {
-    const auto NPOS = Glib::ustring::npos;
+Glib::ustring generate_similar_unique_id(SPDocument* document, const Glib::ustring& base_name) {
     // replace illegal chars in base_name
     auto id = base_name;
     if (id.empty()) {
@@ -494,7 +493,7 @@ Glib::ustring generate_unique_id(SPDocument* document, const Glib::ustring& base
     }
     else {
         for (auto pos = id.find_first_not_of(valid_id_chars);
-                  pos != NPOS;
+                  pos != Glib::ustring::npos;
                   pos = id.find_first_not_of(valid_id_chars, pos)) {
             id.replace(pos, 1, "_");
         }

@@ -138,8 +138,8 @@ SVGViewWidget::setDocument(SPDocument* document)
     _document = document;
 
     // Add new document
-    if (document) {
-        Inkscape::DrawingItem *drawing_item = document->getRoot()->invoke_show(
+    if (_document) {
+        Inkscape::DrawingItem *drawing_item = _document->getRoot()->invoke_show(
             *_drawing->get_drawing(),
             _dkey,
             SP_ITEM_SHOW_DISPLAY);

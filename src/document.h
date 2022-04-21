@@ -267,9 +267,9 @@ public:
 
     // Find items -----------------------------
     void bindObjectToId(char const *id, SPObject *object);
-    SPObject *getObjectById(Glib::ustring const &id) const;
+    SPObject *getObjectById(std::string const &id) const;
     SPObject *getObjectById(char const *id) const;
-    SPObject *getObjectByHref(Glib::ustring const &href) const;
+    SPObject *getObjectByHref(std::string const &href) const;
     SPObject *getObjectByHref(char const *href) const;
 
     void bindObjectToRepr(Inkscape::XML::Node *repr, SPObject *object);
@@ -278,6 +278,14 @@ public:
     std::vector<SPObject *> getObjectsByClass(Glib::ustring const &klass) const;
     std::vector<SPObject *> getObjectsByElement(Glib::ustring const &element, bool custom = false) const;
     std::vector<SPObject *> getObjectsBySelector(Glib::ustring const &selector) const;
+
+    /**
+     * @brief Generate a document-wide unique id.
+     *
+     * Generates an id string not in use by any object in the document.
+     * The generated string is based on the given prefix by appending a number.
+     */
+    std::string generate_unique_id(char const *prefix);
 
     /**
      * @brief Set the reference document object.
@@ -377,7 +385,7 @@ private:
     boost::ptr_list<SPDocument> _child_documents;
     // Conversely this is a parent document because this is a child.
     SPDocument *_parent_document;
-    // When copying documents, this can refer to it's original
+    // When copying documents, this can refer to its original
     SPDocument const *_original_document;
     // Reference document to fall back to when getObjectById cannot find element in '*this' document
     SPDocument* _ref_document = nullptr;
@@ -425,6 +433,7 @@ private:
     bool seeking; // Related to undo/redo/unique id
     unsigned long _serial; // Unique document number (used by undo/redo).
     Glib::ustring actionkey; // Last action key, used to combine actions in undo.
+    unsigned long object_id_counter; // Steadily-incrementing counter used to assign unique ids to objects.
 
     // Garbage collecting ----------------------
 
@@ -493,8 +502,16 @@ public:
 namespace std {
 template <>
 struct default_delete<SPDocument> {
-    void operator()(SPDocument *ptr) const { Inkscape::GC::release(ptr); }
+    void operator()(SPDocument *ptr) const {
+        Inkscape::GC::release(ptr);
+        if (ptr->_anchored_refcount() == 0) {
+            // Explicit delete required to free SPDocument
+            // see https://gitlab.com/inkscape/inkscape/-/issues/2723
+            delete ptr;
+        }
+    }
 };
+
 }; // namespace std
 
 /*

@@ -554,7 +554,7 @@ void GradientSelector::add_vector_clicked()
         gr->getRepr()->removeAttribute("inkscape:collect");
         repr = gr->getRepr()->duplicate(xml_doc);
         // Rename the new gradients id to be similar to the cloned gradients
-        auto new_id = generate_unique_id(doc, gr->getId());
+        auto new_id = generate_similar_unique_id(doc, gr->getId());
         gr->setAttribute("id", new_id.c_str());
         doc->getDefs()->getRepr()->addChild(repr, nullptr);
     } else {

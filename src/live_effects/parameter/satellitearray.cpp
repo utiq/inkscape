@@ -277,7 +277,7 @@ void SatelliteArrayParam::on_remove_button_click()
     Gtk::TreeModel::iterator iter = _tree->get_selection()->get_selected();
     if (iter) {
         Gtk::TreeModel::Row row = *iter;
-        unlink(param_effect->getSPDoc()->getObjectById(row[_model->_colObject]));
+        unlink(param_effect->getSPDoc()->getObjectById((const Glib::ustring&)(row[_model->_colObject])));
 
         auto full = param_getSVGValue();
         param_write_to_repr(full.c_str());

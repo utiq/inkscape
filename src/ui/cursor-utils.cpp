@@ -118,8 +118,8 @@ load_svg_cursor(Glib::RefPtr<Gdk::Display> display,
     // Loop over theme names and paths, looking for file.
     Glib::RefPtr<Gio::File> file;
     std::string full_file_path;
-    for (auto theme_name : theme_names) {
-        for (auto theme_path : theme_paths) {
+    for (auto const &theme_name : theme_names) {
+        for (auto const &theme_path : theme_paths) {
             full_file_path = Glib::build_filename(theme_path, theme_name, "cursors", file_name);
             // std::cout << "Checking: " << full_file_path << std::endl;
             file = Gio::File::create_for_path(full_file_path);
@@ -224,9 +224,7 @@ load_svg_cursor(Glib::RefPtr<Gdk::Display> display,
         std::cerr << "load_svg_cursor: failed to create pixbuf for: " << full_file_path << std::endl;
     }
 
-    // Explicit delete required for SPDocument to be freed
-    // see https://gitlab.com/inkscape/inkscape/-/issues/2723
-    delete document.release();
+    document.reset();
 
     if (cache_enabled) {
         cursor_cache[cursor_key] = cursor;

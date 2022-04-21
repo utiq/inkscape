@@ -40,7 +40,7 @@ public:
         NodeObserver &observer;
         bool marked; //< if marked for removal
     };
-    typedef std::list<ObserverRecord, Inkscape::GC::Alloc<ObserverRecord, Inkscape::GC::MANUAL>> ObserverRecordList;
+    typedef std::list<ObserverRecord, Inkscape::GC::Alloc<ObserverRecord, Inkscape::GC::AUTO>> ObserverRecordList;
 
     CompositeNodeObserver()
     : _iterating(0), _active_marked(0), _pending_marked(0) {}

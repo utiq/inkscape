@@ -66,7 +66,7 @@
 
 // Define to enable indented tracing of SPObject.
 //#define OBJECT_TRACE
-unsigned SPObject::indent_level = 0;
+static unsigned indent_level = 0;
 
 Inkscape::XML::NodeEventVector object_event_vector = {
     SPObject::repr_child_added,
@@ -394,7 +394,6 @@ int sp_object_compare_position(SPObject const *first, SPObject const *second)
 bool sp_object_compare_position_bool(SPObject const *first, SPObject const *second){
     return sp_object_compare_position(first,second)<0;
 }
-
 
 SPObject *SPObject::appendChildRepr(Inkscape::XML::Node *repr) {
     if ( !cloned ) {
@@ -832,18 +831,13 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
             /* If we are not cloned, and not seeking, force unique id */
             gchar const *id = this->repr->attribute("id");
             if (!document->isSeeking()) {
-                {
-                    gchar *realid = sp_object_get_unique_id(this, id);
-                    g_assert(realid != nullptr);
-
-                    this->document->bindObjectToId(realid, this);
-                    SPObjectImpl::setId(this, realid);
-                    g_free(realid);
-                }
+                auto realid = generate_unique_id(id);
+                this->document->bindObjectToId(realid.c_str(), this);
+                SPObjectImpl::setId(this, realid.c_str());
 
                 /* Redefine ID, if required */
-                if ((id == nullptr) || (std::strcmp(id, this->getId()) != 0)) {
-                    this->repr->setAttribute("id", this->getId());
+                if (!id || std::strcmp(id, getId()) != 0) {
+                    this->repr->setAttribute("id", getId());
                 }
             } else if (id) {
                 // bind if id, but no conflict -- otherwise, we can expect
@@ -1016,9 +1010,8 @@ void SPObject::set(SPAttr key, gchar const* value) {
                     if (!document->isSeeking()) {
                         sp_object_ref(conflict, nullptr);
                         // give the conflicting object a new ID
-                        gchar *new_conflict_id = sp_object_get_unique_id(conflict, nullptr);
+                        auto new_conflict_id = conflict->generate_unique_id();
                         conflict->setAttribute("id", new_conflict_id);
-                        g_free(new_conflict_id);
                         sp_object_unref(conflict, nullptr);
                     } else {
                         new_id = nullptr;
@@ -1534,43 +1527,21 @@ bool SPObject::storeAsDouble( gchar const *key, double *val ) const
     return true;
 }
 
-/** Helper */
-gchar *
-sp_object_get_unique_id(SPObject    *object,
-                        gchar const *id)
+std::string SPObject::generate_unique_id(char const *default_id) const
 {
-    static unsigned long count = 0;
-
-    g_assert(SP_IS_OBJECT(object));
-
-    count++;
+    if (default_id && !document->getObjectById(default_id)) {
+        return default_id;
+    }
 
     //XML Tree being used here.
-    gchar const *name = object->getRepr()->name();
-    g_assert(name != nullptr);
+    auto name = repr->name();
+    g_assert(name);
 
-    gchar const *local = std::strchr(name, ':');
-    if (local) {
+    if (auto local = std::strchr(name, ':')) {
         name = local + 1;
     }
 
-    if (id != nullptr) {
-        if (object->document->getObjectById(id) == nullptr) {
-            return g_strdup(id);
-        }
-    }
-
-    size_t const name_len = std::strlen(name);
-    size_t const buflen = name_len + (sizeof(count) * 10 / 4) + 1;
-    gchar *const buf = (gchar *) g_malloc(buflen);
-    std::memcpy(buf, name, name_len);
-    gchar *const count_buf = buf + name_len;
-    size_t const count_buflen = buflen - name_len;
-    do {
-        ++count;
-        g_snprintf(count_buf, count_buflen, "%lu", count);
-    } while ( object->document->getObjectById(buf) != nullptr );
-    return buf;
+    return document->generate_unique_id(name);
 }
 
 void SPObject::_requireSVGVersion(Inkscape::Version version) {

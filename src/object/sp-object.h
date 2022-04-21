@@ -823,7 +823,6 @@ public:
      */
     static void repr_order_changed(Inkscape::XML::Node *repr, Inkscape::XML::Node *child, Inkscape::XML::Node *old, Inkscape::XML::Node *newer, void* data);
 
-
     friend class SPObjectImpl;
 
 protected:
@@ -844,6 +843,7 @@ protected:
 
     typedef boost::intrusive::list_member_hook<> ListHook;
     ListHook _child_hook;
+
 public:
     typedef boost::intrusive::list<
             SPObject,
@@ -856,8 +856,16 @@ public:
 	virtual void read_content();
 
     void recursivePrintTree(unsigned level = 0);  // For debugging
-    static unsigned indent_level;
-    void objectTrace( std::string const &, bool in=true, unsigned flags=0 );
+    void objectTrace(std::string const&, bool in = true, unsigned flags = 0);
+
+    /**
+     * @brief Generate a document-wide unique id for this object.
+     *
+     * Returns an id string not in use by any object within the object's document.
+     * If default_id is specified, it will be returned if possible.
+     * Otherwise, an id will be generated based on the object's name.
+     */
+    std::string generate_unique_id(char const *default_id = nullptr) const;
 };
 
 std::ostream &operator<<(std::ostream &out, const SPObject &o);
@@ -873,10 +881,8 @@ std::ostream &operator<<(std::ostream &out, const SPObject &o);
  */
 int sp_object_compare_position(SPObject const *first, SPObject const *second);
 bool sp_object_compare_position_bool(SPObject const *first, SPObject const *second);
-gchar * sp_object_get_unique_id(SPObject    *object, gchar const *defid);
 
 #endif // SP_OBJECT_H_SEEN
-
 
 /*
   Local Variables:
