@@ -42,7 +42,6 @@ namespace Dialog {
 static std::vector<std::string> mimeStrings;
 static std::map<std::string, guint> mimeToInt;
 
-
 void
 ColorItem::handleClick() {
     buttonClicked(false);
@@ -75,50 +74,6 @@ ColorItem::handleLeaveNotify(GdkEventCrossing* /*event*/) {
     }
 
     return false;
-}
-
-static bool getBlock( std::string& dst, guchar ch, std::string const & str )
-{
-    bool good = false;
-    std::string::size_type pos = str.find(ch);
-    if ( pos != std::string::npos )
-    {
-        std::string::size_type pos2 = str.find( '(', pos );
-        if ( pos2 != std::string::npos ) {
-            std::string::size_type endPos = str.find( ')', pos2 );
-            if ( endPos != std::string::npos ) {
-                dst = str.substr( pos2 + 1, (endPos - pos2 - 1) );
-                good = true;
-            }
-        }
-    }
-    return good;
-}
-
-static bool popVal( guint64& numVal, std::string& str )
-{
-    bool good = false;
-    std::string::size_type endPos = str.find(',');
-    if ( endPos == std::string::npos ) {
-        endPos = str.length();
-    }
-
-    if ( endPos != std::string::npos && endPos > 0 ) {
-        std::string xxx = str.substr( 0, endPos );
-        const gchar* ptr = xxx.c_str();
-        gchar* endPtr = nullptr;
-        numVal = g_ascii_strtoull( ptr, &endPtr, 10 );
-        if ( (numVal == G_MAXUINT64) && (ERANGE == errno) ) {
-            // overflow
-        } else if ( (numVal == 0) && (endPtr == ptr) ) {
-            // failed conversion
-        } else {
-            good = true;
-            str.erase( 0, endPos + 1 );
-        }
-    }
-
-    return good;
 }
 
 // TODO resolve this more cleanly:
@@ -166,55 +121,23 @@ ColorItem::drag_begin(const Glib::RefPtr<Gdk::DragContext> &dc)
     }
 }
 
-//"drag-drop"
-// gboolean dragDropColorData( GtkWidget *widget,
-//                             GdkDragContext *drag_context,
-//                             gint x,
-//                             gint y,
-//                             guint time,
-//                             gpointer user_data)
-// {
-// // TODO finish
-
-//     return TRUE;
-// }
-
-
 SwatchPage::SwatchPage()
     : _prefWidth(0)
 {
 }
 
-SwatchPage::~SwatchPage()
-= default;
+SwatchPage::~SwatchPage() = default;
 
-
-ColorItem::ColorItem(ege::PaintDef::ColorType type) :
-    def(type),
-    _isFill(false),
-    _isStroke(false),
-    _isLive(false),
-    _linkIsTone(false),
-    _linkPercent(0),
-    _linkGray(0),
-    _linkSrc(nullptr),
-    _grad(nullptr),
-    _pattern(nullptr)
+ColorItem::ColorItem(ege::PaintDef::ColorType type)
+    : def(type)
 {
+    def.signal_changed.connect([this] { _updatePreviews(); });
 }
 
-ColorItem::ColorItem( unsigned int r, unsigned int g, unsigned int b, Glib::ustring& name ) :
-    def( r, g, b, name.raw() ),
-    _isFill(false),
-    _isStroke(false),
-    _isLive(false),
-    _linkIsTone(false),
-    _linkPercent(0),
-    _linkGray(0),
-    _linkSrc(nullptr),
-    _grad(nullptr),
-    _pattern(nullptr)
+ColorItem::ColorItem(unsigned r, unsigned g, unsigned b, Glib::ustring &name)
+    : def(r, g, b, name.raw())
 {
+    def.signal_changed.connect([this] { _updatePreviews(); });
 }
 
 ColorItem::~ColorItem()
@@ -224,46 +147,24 @@ ColorItem::~ColorItem()
     }
 }
 
-ColorItem::ColorItem(ColorItem const &other) :
-    Inkscape::UI::Previewable()
-{
-    if ( this != &other ) {
-        *this = other;
-    }
-}
-
 ColorItem &ColorItem::operator=(ColorItem const &other)
 {
     if ( this != &other ) {
         def = other.def;
-
-        // TODO - correct linkage
-        _linkSrc = other._linkSrc;
-        g_message("Erk!");
     }
     return *this;
 }
 
 void ColorItem::setState( bool fill, bool stroke )
 {
-    if ( (_isFill != fill) || (_isStroke != stroke) ) {
+    if (_isFill != fill || _isStroke != stroke) {
         _isFill = fill;
         _isStroke = stroke;
 
-        for ( auto widget : _previews ) {
-            auto preview = dynamic_cast<UI::Widget::Preview *>(widget);
-
-            if (preview) {
-                int val = preview->get_linked();
-                val &= ~(UI::Widget::PREVIEW_FILL | UI::Widget::PREVIEW_STROKE);
-                if ( _isFill ) {
-                    val |= UI::Widget::PREVIEW_FILL;
-                }
-                if ( _isStroke ) {
-                    val |= UI::Widget::PREVIEW_STROKE;
-                }
-                preview->set_linked(static_cast<UI::Widget::LinkType>(val));
-            }
+        for (auto preview : _previews) {
+            int val = (_isFill   ? UI::Widget::PREVIEW_FILL   : 0)
+                    | (_isStroke ? UI::Widget::PREVIEW_STROKE : 0);
+            preview->set_linked((UI::Widget::LinkType)val);
         }
     }
 }
@@ -274,35 +175,17 @@ void ColorItem::setGradient(SPGradient *grad)
         _grad = grad;
         // TODO regen and push to listeners
     }
-
-    setName( gr_prepare_label(_grad) );
-}
-
-void ColorItem::setName(const Glib::ustring name)
-{
-    //def.descr = name;
-
-    for (auto widget : _previews) {
-        auto preview = dynamic_cast<UI::Widget::Preview *>(widget);
-        auto label = dynamic_cast<Gtk::Label *>(widget);
-        if (preview) {
-            preview->set_tooltip_text(name);
-        }
-        else if (label) {
-            label->set_text(name);
-        }
-    }
 }
 
 void ColorItem::setPattern(cairo_pattern_t *pattern)
 {
-    if (pattern) {
-        cairo_pattern_reference(pattern);
-    }
     if (_pattern) {
         cairo_pattern_destroy(_pattern);
     }
     _pattern = pattern;
+    if (_pattern) {
+        cairo_pattern_reference(_pattern);
+    }
 
     _updatePreviews();
 }
@@ -332,54 +215,15 @@ ColorItem::_dragGetColorData(const Glib::RefPtr<Gdk::DragContext>& /*drag_contex
     }
 }
 
-void ColorItem::_dropDataIn( GtkWidget */*widget*/,
-                             GdkDragContext */*drag_context*/,
-                             gint /*x*/, gint /*y*/,
-                             GtkSelectionData */*data*/,
-                             guint /*info*/,
-                             guint /*event_time*/,
-                             gpointer /*user_data*/)
-{
-}
-
-void ColorItem::_colorDefChanged(void* data)
-{
-    ColorItem* item = reinterpret_cast<ColorItem*>(data);
-    if ( item ) {
-        item->_updatePreviews();
-    }
-}
-
 void ColorItem::_updatePreviews()
 {
-    for (auto widget : _previews) {
-        auto preview = dynamic_cast<UI::Widget::Preview *>(widget);
-        if (preview) {
-            _regenPreview(preview);
-            preview->queue_draw();
-        }
-    }
-
-    for (auto & _listener : _listeners) {
-        guint r = def.getR();
-        guint g = def.getG();
-        guint b = def.getB();
-
-        if ( _listener->_linkIsTone ) {
-            r = ( (_listener->_linkPercent * _listener->_linkGray) + ((100 - _listener->_linkPercent) * r) ) / 100;
-            g = ( (_listener->_linkPercent * _listener->_linkGray) + ((100 - _listener->_linkPercent) * g) ) / 100;
-            b = ( (_listener->_linkPercent * _listener->_linkGray) + ((100 - _listener->_linkPercent) * b) ) / 100;
-        } else {
-            r = ( (_listener->_linkPercent * 255) + ((100 - _listener->_linkPercent) * r) ) / 100;
-            g = ( (_listener->_linkPercent * 255) + ((100 - _listener->_linkPercent) * g) ) / 100;
-            b = ( (_listener->_linkPercent * 255) + ((100 - _listener->_linkPercent) * b) ) / 100;
-        }
-
-        _listener->def.setRGB( r, g, b );
+    for (auto preview : _previews) {
+        _regenPreview(preview);
+        preview->queue_draw();
     }
 }
 
-void ColorItem::_regenPreview(UI::Widget::Preview * preview)
+void ColorItem::_regenPreview(UI::Widget::Preview *preview)
 {
     if ( def.getType() != ege::PaintDef::RGB ) {
         using Inkscape::IO::Resource::get_path;
@@ -388,8 +232,7 @@ void ColorItem::_regenPreview(UI::Widget::Preview * preview)
         GError *error = nullptr;
         gsize bytesRead = 0;
         gsize bytesWritten = 0;
-        gchar *localFilename =
-            g_filename_from_utf8(get_path(SYSTEM, PIXMAPS, "remove-color.png"), -1, &bytesRead, &bytesWritten, &error);
+        gchar *localFilename = g_filename_from_utf8(get_path(SYSTEM, PIXMAPS, "remove-color.png"), -1, &bytesRead, &bytesWritten, &error);
         auto pixbuf = Gdk::Pixbuf::create_from_file(localFilename);
         if (!pixbuf) {
             g_warning("Null pixbuf for %p [%s]", localFilename, localFilename );
@@ -420,92 +263,66 @@ void ColorItem::_regenPreview(UI::Widget::Preview * preview)
         preview->set_pixbuf(pixbuf);
     }
 
-    preview->set_linked(static_cast<UI::Widget::LinkType>( (_linkSrc           ? UI::Widget::PREVIEW_LINK_IN : 0)
-                                                         | (_listeners.empty() ? 0 : UI::Widget::PREVIEW_LINK_OUT)
-                                                         | (_isLive            ? UI::Widget::PREVIEW_LINK_OTHER:0)) );
+    preview->set_linked((UI::Widget::LinkType)0);
 }
 
-Gtk::Widget* ColorItem::createWidget() {
-   auto widget = dynamic_cast<UI::Widget::Preview*>(_getPreview(Inkscape::UI::Widget::PREVIEW_STYLE_ICON,
-		Inkscape::UI::Widget::VIEW_TYPE_GRID, Inkscape::UI::Widget::PREVIEW_SIZE_TINY, 100, 0));
-
-   if (widget) widget->set_freesize(true);
-
-   return widget;
-}
-
-Gtk::Widget*
-ColorItem::getPreview(UI::Widget::PreviewStyle style,
-                      UI::Widget::ViewType     view,
-                      UI::Widget::PreviewSize  size,
-                      guint                    ratio,
-                      guint                    border)
+Gtk::Widget* ColorItem::createWidget()
 {
-   auto widget = _getPreview(style, view, size, ratio, border);
-    _previews.push_back( widget );
-    return widget;
-}
+    auto preview = Gtk::make_managed<UI::Widget::Preview>();
+    preview->set_name("ColorItemPreview");
 
+    _regenPreview(preview);
 
-Gtk::Widget* ColorItem::_getPreview(UI::Widget::PreviewStyle style,
-		  UI::Widget::ViewType view, UI::Widget::PreviewSize size,
-		  guint ratio, guint border) {
+    preview->set_details(Inkscape::UI::Widget::VIEW_TYPE_GRID,
+                         Inkscape::UI::Widget::PREVIEW_SIZE_TINY,
+                         100,
+                         0);
 
-    Gtk::Widget* widget = nullptr;
-    if ( style == UI::Widget::PREVIEW_STYLE_BLURB) {
-        Gtk::Label *lbl = new Gtk::Label(def.descr);
-        lbl->set_halign(Gtk::ALIGN_START);
-        lbl->set_valign(Gtk::ALIGN_CENTER);
-        widget = lbl;
-    } else {
-        auto preview = Gtk::manage(new UI::Widget::Preview());
-        preview->set_name("ColorItemPreview");
+    preview->set_focus_on_click(false);
+    preview->set_tooltip_text(def.descr);
 
-        _regenPreview(preview);
+    preview->signal_clicked.connect(sigc::mem_fun(*this, &ColorItem::handleClick));
+    preview->signal_alt_clicked.connect(sigc::mem_fun(*this, &ColorItem::handleSecondaryClick));
+    preview->signal_destroyed.connect(sigc::mem_fun(*this, &ColorItem::onPreviewDestroyed));
+    preview->signal_button_press_event().connect(sigc::bind(sigc::ptr_fun(&colorItemHandleButtonPress), preview, this));
 
-        preview->set_details((UI::Widget::ViewType)view,
-                             (UI::Widget::PreviewSize)size,
-                             ratio,
-                             border );
+    _previews.emplace_back(preview);
 
-        def.addCallback( _colorDefChanged, this );
-        preview->set_focus_on_click(false);
-        preview->set_tooltip_text(def.descr);
+    {
+        auto listing = def.getMIMETypes();
+        std::vector<Gtk::TargetEntry> entries;
 
-        preview->signal_clicked().connect(sigc::mem_fun(*this, &ColorItem::handleClick));
-        preview->signal_alt_clicked().connect(sigc::mem_fun(*this, &ColorItem::handleSecondaryClick));
-        preview->signal_button_press_event().connect(sigc::bind(sigc::ptr_fun(&colorItemHandleButtonPress), preview, this));
-
-        {
-            auto listing = def.getMIMETypes();
-            std::vector<Gtk::TargetEntry> entries;
-
-            for ( auto str : listing ) {
-                auto target = str.c_str();
-                guint flags = 0;
-                if ( mimeToInt.find(str) == mimeToInt.end() ){
-                    // these next lines are order-dependent:
-                    mimeToInt[str] = mimeStrings.size();
-                    mimeStrings.push_back(str);
-                }
-                auto info = mimeToInt[target];
-                Gtk::TargetEntry entry(target, (Gtk::TargetFlags)flags, info);
-                entries.push_back(entry);
+        for (auto &str : listing) {
+            auto target = str.c_str();
+            guint flags = 0;
+            if (mimeToInt.find(str) == mimeToInt.end()){
+                // these next lines are order-dependent:
+                mimeToInt[str] = mimeStrings.size();
+                mimeStrings.push_back(str);
             }
-
-            preview->drag_source_set(entries, Gdk::BUTTON1_MASK,
-                                     Gdk::DragAction(Gdk::ACTION_MOVE | Gdk::ACTION_COPY) );
+            auto info = mimeToInt[target];
+            Gtk::TargetEntry entry(target, (Gtk::TargetFlags)flags, info);
+            entries.push_back(entry);
         }
 
-        preview->signal_drag_data_get().connect(sigc::mem_fun(*this, &ColorItem::_dragGetColorData));
-        preview->signal_drag_begin().connect(sigc::mem_fun(*this, &ColorItem::drag_begin));
-        preview->signal_enter_notify_event().connect(sigc::mem_fun(*this, &ColorItem::handleEnterNotify));
-        preview->signal_leave_notify_event().connect(sigc::mem_fun(*this, &ColorItem::handleLeaveNotify));
-
-        widget = preview;
+        preview->drag_source_set(entries, Gdk::BUTTON1_MASK,
+                                 Gdk::DragAction(Gdk::ACTION_MOVE | Gdk::ACTION_COPY) );
     }
 
-    return widget;
+    preview->signal_drag_data_get().connect(sigc::mem_fun(*this, &ColorItem::_dragGetColorData));
+    preview->signal_drag_begin().connect(sigc::mem_fun(*this, &ColorItem::drag_begin));
+    preview->signal_enter_notify_event().connect(sigc::mem_fun(*this, &ColorItem::handleEnterNotify));
+    preview->signal_leave_notify_event().connect(sigc::mem_fun(*this, &ColorItem::handleLeaveNotify));
+    preview->set_freesize(true);
+
+    return preview;
+}
+
+void ColorItem::onPreviewDestroyed(Widget::Preview *preview)
+{
+    auto it = std::find(_previews.begin(), _previews.end(), preview);
+    assert(it != _previews.end());
+    _previews.erase(it);
 }
 
 void ColorItem::buttonClicked(bool secondary)
@@ -551,103 +368,6 @@ void ColorItem::buttonClicked(bool secondary)
         sp_repr_css_attr_unref(css);
 
         DocumentUndo::done( desktop->getDocument(), descr.c_str(), INKSCAPE_ICON("swatches"));
-    }
-}
-
-void ColorItem::_wireMagicColors( SwatchPage *colorSet )
-{
-    if ( colorSet )
-    {
-        for ( boost::ptr_vector<ColorItem>::iterator it = colorSet->_colors.begin(); it != colorSet->_colors.end(); ++it )
-        {
-            std::string::size_type pos = it->def.descr.find("*{");
-            if ( pos != std::string::npos )
-            {
-                std::string subby = it->def.descr.substr( pos + 2 );
-                std::string::size_type endPos = subby.find("}*");
-                if ( endPos != std::string::npos )
-                {
-                    subby.erase( endPos );
-                    //g_message("FOUND MAGIC at '%s'", (*it)->def.descr.c_str());
-                    //g_message("               '%s'", subby.c_str());
-
-                    if ( subby.find('E') != std::string::npos )
-                    {
-                        it->def.setEditable( true );
-                    }
-
-                    if ( subby.find('L') != std::string::npos )
-                    {
-                        it->_isLive = true;
-                    }
-
-                    std::string part;
-                    // Tint. index + 1 more val.
-                    if ( getBlock( part, 'T', subby ) ) {
-                        guint64 colorIndex = 0;
-                        if ( popVal( colorIndex, part ) ) {
-                            guint64 percent = 0;
-                            if ( popVal( percent, part ) ) {
-                                it->_linkTint( colorSet->_colors[colorIndex], percent );
-                            }
-                        }
-                    }
-
-                    // Shade/tone. index + 1 or 2 more val.
-                    if ( getBlock( part, 'S', subby ) ) {
-                        guint64 colorIndex = 0;
-                        if ( popVal( colorIndex, part ) ) {
-                            guint64 percent = 0;
-                            if ( popVal( percent, part ) ) {
-                                guint64 grayLevel = 0;
-                                if ( !popVal( grayLevel, part ) ) {
-                                    grayLevel = 0;
-                                }
-                                it->_linkTone( colorSet->_colors[colorIndex], percent, grayLevel );
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-    }
-}
-
-
-void ColorItem::_linkTint( ColorItem& other, int percent )
-{
-    if ( !_linkSrc )
-    {
-        other._listeners.push_back(this);
-        _linkIsTone = false;
-        _linkPercent = percent;
-        if ( _linkPercent > 100 )
-            _linkPercent = 100;
-        if ( _linkPercent < 0 )
-            _linkPercent = 0;
-        _linkGray = 0;
-        _linkSrc = &other;
-
-        ColorItem::_colorDefChanged(&other);
-    }
-}
-
-void ColorItem::_linkTone( ColorItem& other, int percent, int grayLevel )
-{
-    if ( !_linkSrc )
-    {
-        other._listeners.push_back(this);
-        _linkIsTone = true;
-        _linkPercent = percent;
-        if ( _linkPercent > 100 )
-            _linkPercent = 100;
-        if ( _linkPercent < 0 )
-            _linkPercent = 0;
-        _linkGray = grayLevel;
-        _linkSrc = &other;
-
-        ColorItem::_colorDefChanged(&other);
     }
 }
 

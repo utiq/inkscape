@@ -352,9 +352,7 @@ Preview::on_draw(const Cairo::RefPtr<Cairo::Context> &cr)
     return false;
 }
 
-
-bool
-Preview::on_enter_notify_event(GdkEventCrossing* event )
+bool Preview::on_enter_notify_event(GdkEventCrossing *event)
 {
     _within = true;
     set_state_flags(_hot ? Gtk::STATE_FLAG_ACTIVE : Gtk::STATE_FLAG_PRELIGHT, false);
@@ -408,11 +406,11 @@ Preview::on_button_release_event(GdkEventButton* event)
 
         if ( isAlt )
         {
-            _signal_alt_clicked(2);
+            signal_alt_clicked(2);
         }
         else
         {
-            _signal_clicked.emit();
+            signal_clicked.emit();
         }
     }
 
@@ -492,7 +490,12 @@ Preview::Preview()
               |Gdk::KEY_RELEASE_MASK
               |Gdk::FOCUS_CHANGE_MASK
               |Gdk::ENTER_NOTIFY_MASK
-              |Gdk::LEAVE_NOTIFY_MASK );
+              |Gdk::LEAVE_NOTIFY_MASK);
+}
+
+Preview::~Preview()
+{
+    signal_destroyed.emit(this);
 }
 
 } // namespace Widget

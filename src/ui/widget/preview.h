@@ -113,10 +113,6 @@ private:
     Glib::RefPtr<Gdk::Pixbuf> _previewPixbuf;
     Glib::RefPtr<Gdk::Pixbuf> _scaled;
 
-    // signals
-    sigc::signal<void> _signal_clicked;
-    sigc::signal<void, int> _signal_alt_clicked;
-
     void size_request(GtkRequisition *req) const;
 
 protected:
@@ -130,6 +126,7 @@ protected:
 
 public:
     Preview();
+    ~Preview() override;
     bool get_focus_on_click() const {return _takesFocus;}
     void set_focus_on_click(bool focus_on_click) {_takesFocus = focus_on_click;}
     LinkType get_linked() const;
@@ -143,8 +140,10 @@ public:
     void set_freesize(bool enable);
     static void set_size_mappings(guint count, GtkIconSize const* sizes);
 
-    decltype(_signal_clicked) signal_clicked() {return _signal_clicked;}
-    decltype(_signal_alt_clicked) signal_alt_clicked() {return _signal_alt_clicked;}
+    // signals
+    sigc::signal<void(Preview*)> signal_destroyed;
+    sigc::signal<void> signal_clicked;
+    sigc::signal<void, int> signal_alt_clicked;
 };
 
 } // namespace Widget

@@ -40,12 +40,9 @@
 
 #include <string>
 #include <vector>
+#include <sigc++/signal.h>
 
-namespace ege
-{
-
-typedef void (*ColorCallback)( void* data );
-
+namespace ege {
 
 /**
  * Pure data representation of a color definition.
@@ -57,8 +54,7 @@ public:
 
     PaintDef();
     PaintDef(ColorType type);
-    PaintDef( unsigned int r, unsigned int g, unsigned int b, std::string  description );
-    virtual ~PaintDef();
+    PaintDef(unsigned r, unsigned g, unsigned b, std::string description);
 
     PaintDef( PaintDef const &other );
     virtual PaintDef& operator=( PaintDef const &other );
@@ -69,32 +65,20 @@ public:
     void getMIMEData(std::string const & type, char*& dest, int& len, int& format);
     bool fromMIMEData(std::string const & type, char const * data, int len, int format);
 
-    void setRGB( unsigned int r, unsigned int g, unsigned int b );
-    unsigned int getR() const { return r; }
-    unsigned int getG() const { return g; }
-    unsigned int getB() const { return b; }
-
-    void addCallback( ColorCallback cb, void* data );
-    void removeCallback( ColorCallback cb, void* data );
-
-    bool isEditable() const { return editable; }
-    void setEditable( bool edit ) { editable = edit; }
+    void setRGB(unsigned r, unsigned g, unsigned b);
+    unsigned getR() const { return r; }
+    unsigned getG() const { return g; }
+    unsigned getB() const { return b; }
 
     std::string descr;
+    bool editable;
+
+    sigc::signal<void()> signal_changed;
 
 protected:
     ColorType type;
-    unsigned int r;
-    unsigned int g;
-    unsigned int b;
-    bool editable;
-
-private:
-    class HookData;
-
-    std::vector<HookData*> _listeners;
+    unsigned r, g, b;
 };
-
 
 } // namespace ege
 

@@ -49,7 +49,6 @@
 #include "object/sp-gradient-reference.h"
 #include "ui/dialog/dialog-container.h"
 #include "ui/icon-names.h"
-#include "ui/previewholder.h"
 #include "ui/widget/color-palette.h"
 #include "ui/widget/gradient-vector-selector.h"
 #include "widgets/desktop-widget.h"
@@ -712,12 +711,9 @@ void SwatchesPanel::_trackDocument( SwatchesPanel *panel, SPDocument *document )
 SwatchesPanel::SwatchesPanel(gchar const *prefsPath)
     : DialogBase(prefsPath, "Swatches")
     , _menu(nullptr)
-    , _holder(nullptr)
-    , _clear(nullptr)
-    , _remove(nullptr)
     , _currentIndex(0)
 {
-    _palette = Gtk::manage(new Inkscape::UI::Widget::ColorPalette());
+    _palette = Gtk::make_managed<Inkscape::UI::Widget::ColorPalette>();
     pack_start(*_palette);
 
     if (_prefs_path == "/dialogs/swatches") {
@@ -728,8 +724,8 @@ SwatchesPanel::SwatchesPanel(gchar const *prefsPath)
 
     load_palettes();
 
-    _clear = new ColorItem( ege::PaintDef::CLEAR );
-    _remove = new ColorItem( ege::PaintDef::NONE );
+    _clear = std::make_unique<ColorItem>(ege::PaintDef::CLEAR);
+    _remove = std::make_unique<ColorItem>(ege::PaintDef::NONE);
 
     if (docPalettes.empty()) {
         SwatchPage *docPalette = new SwatchPage();
@@ -810,9 +806,6 @@ SwatchesPanel::~SwatchesPanel()
     docTrackings.clear();
 
     docPerPanel.erase(this);
-
-    delete _clear;
-    delete _remove;
 }
 
 /**

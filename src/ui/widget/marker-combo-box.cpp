@@ -716,10 +716,10 @@ auto old_time =  std::chrono::high_resolution_clock::now();
         item->height = ITEM_HEIGHT;
 
         if (history) {
-            _history_items.push_back(item);
+            _history_items.emplace_back(std::move(item));
         }
         else {
-            _stock_items.push_back(item);
+            _stock_items.emplace_back(std::move(item));
         }
     }
 
@@ -884,7 +884,7 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
     const double device_scale = get_scale_factor();
     auto surface = render_surface(drawing, scale, *dbox, pixel_size, device_scale, checkerboard ? &_background_color : nullptr, no_clip);
     cairo_surface_set_device_scale(surface, device_scale, device_scale);
-    return Cairo::RefPtr<Cairo::Surface>(new Cairo::Surface(surface, false));
+    return Cairo::RefPtr<Cairo::Surface>(new Cairo::Surface(surface, true));
 }
 
 // capture background color when styles change

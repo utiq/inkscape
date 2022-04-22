@@ -22,8 +22,6 @@ namespace Gtk {
 namespace Inkscape {
 namespace UI {
 
-class PreviewHolder;
-
 namespace Widget {
     class ColorPalette;
 }
@@ -71,9 +69,8 @@ private:
     static void _trackDocument( SwatchesPanel *panel, SPDocument *document );
     static void handleDefsModified(SPDocument *document);
 
-    PreviewHolder* _holder;
-    ColorItem* _clear;
-    ColorItem* _remove;
+    std::unique_ptr<ColorItem> _clear;
+    std::unique_ptr<ColorItem> _remove;
     int _currentIndex;
     Inkscape::UI::Widget::ColorPalette* _palette;
 

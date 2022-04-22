@@ -1205,7 +1205,7 @@ std::vector<SPObject*> SPDocument::getObjectsBySelector(Glib::ustring const &sel
             _getObjectsBySelectorRecursive(root, sel_eng, cur->simple_sel, objects);
         }
     }
-
+    cr_selector_destroy(cr_selector);
     return objects;
 }
 

@@ -56,9 +56,9 @@
 namespace ege
 {
 
-static std::string mimeTEXT("text/plain");
-static std::string mimeX_COLOR("application/x-color");
-static std::string mimeOSWB_COLOR("application/x-oswb-color");
+static char const *mimeTEXT = "text/plain";
+static char const *mimeX_COLOR = "application/x-color";
+static char const *mimeOSWB_COLOR = "application/x-oswb-color";
 
 PaintDef::PaintDef() :
     descr(_("none")),
@@ -66,19 +66,17 @@ PaintDef::PaintDef() :
     r(0),
     g(0),
     b(0),
-    editable(false),
-    _listeners()
+    editable(false)
 {
 }
 
-PaintDef::PaintDef( ColorType type ) :
+PaintDef::PaintDef(ColorType type) :
     descr(),
     type(type),
     r(0),
     g(0),
     b(0),
-    editable(false),
-    _listeners()
+    editable(false)
 {
     switch (type) {
         case CLEAR:
@@ -93,19 +91,15 @@ PaintDef::PaintDef( ColorType type ) :
     }
 }
 
-PaintDef::PaintDef( unsigned int r, unsigned int g, unsigned int b, std::string  description ) :
+PaintDef::PaintDef(unsigned r, unsigned g, unsigned b, std::string description) :
     descr(std::move(description)),
     type(RGB),
     r(r),
     g(g),
     b(b),
-    editable(false),
-    _listeners()
+    editable(false)
 {
 }
-
-PaintDef::~PaintDef()
-= default;
 
 PaintDef::PaintDef( PaintDef const &other )
 {
@@ -129,20 +123,12 @@ PaintDef& PaintDef::operator=( PaintDef const &other )
     return *this;
 }
 
-class PaintDef::HookData {
-public:
-    HookData( ColorCallback cb, void* data ) {_cb = cb; _data = data;}
-    ColorCallback _cb;
-    void* _data;
-};
-
-
 std::vector<std::string> PaintDef::getMIMETypes()
 {
     std::vector<std::string> listing;
-    listing.push_back(mimeOSWB_COLOR);
-    listing.push_back(mimeX_COLOR);
-    listing.push_back(mimeTEXT);
+    listing.emplace_back(mimeOSWB_COLOR);
+    listing.emplace_back(mimeX_COLOR);
+    listing.emplace_back(mimeTEXT);
     return listing;
 }
 
@@ -262,45 +248,20 @@ bool PaintDef::fromMIMEData(std::string const & type, char const * data, int len
         }
     }
     if ( changed ) {
-        // beware of callbacks changing things
-        for (auto & _listener : _listeners)
-        {
-            if ( _listener->_cb )
-            {
-                _listener->_cb( _listener->_data );
-            }
-        }
+        signal_changed.emit();
     }
     return worked;
 }
 
-void PaintDef::setRGB( unsigned int r, unsigned int g, unsigned int b )
+void PaintDef::setRGB(unsigned r2, unsigned g2, unsigned b2)
 {
-    if ( r != this->r || g != this->g || b != this->b ) {
-        this->r = r;
-        this->g = g;
-        this->b = b;
-
-        // beware of callbacks changing things
-        for (auto & _listener : _listeners)
-        {
-            if ( _listener->_cb )
-            {
-                _listener->_cb( _listener->_data );
-            }
-        }
+    if (r != r2 || g != g2 || b != b2 ) {
+        r = r2;
+        g = g2;
+        b = b2;
+        signal_changed.emit();
     }
 }
-
-void PaintDef::addCallback( ColorCallback cb, void* data )
-{
-    _listeners.push_back( new HookData(cb, data) );
-}
-
-void PaintDef::removeCallback( ColorCallback /*cb*/, void* /*data*/ )
-{
-}
-
 
 } // namespace ege
 
