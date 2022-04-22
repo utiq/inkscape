@@ -60,7 +60,7 @@ void LPEAttachPath::doEffect (SPCurve * curve)
         bool set_start_end = start_path_curve_end.getOrigin() != curve_start_previous_origin;
         bool set_end_end = end_path_curve_end.getOrigin() != curve_end_previous_origin;
         
-        if (start_path.linksToPath()) {
+        if (start_path.linksToPath() && start_path.getObject()) {
 
             Geom::PathVector linked_pathv = start_path.get_pathvector();
             Geom::Affine linkedtransform = start_path.getObject()->getRelativeTransform(sp_lpe_item);
@@ -113,7 +113,7 @@ void LPEAttachPath::doEffect (SPCurve * curve)
         
         p.append(this_pathv.front());
         
-        if (end_path.linksToPath()) {
+        if (end_path.linksToPath() && end_path.getObject()) {
 
             Geom::PathVector linked_pathv = end_path.get_pathvector();
             Geom::Affine linkedtransform = end_path.getObject()->getRelativeTransform(sp_lpe_item);

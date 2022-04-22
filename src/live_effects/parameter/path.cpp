@@ -163,19 +163,18 @@ PathParam::param_readSVGValue(const gchar * strvalue)
         if (strvalue[0] == '#') {
             bool write = false;
             SPObject * old_ref = param_effect->getSPDoc()->getObjectByHref(strvalue);
+            Glib::ustring id_tmp;
             if (old_ref) {
                 SPObject * successor = old_ref->_successor;
-                Glib::ustring id = strvalue;
                 if (successor) {
-                    id = successor->getId();
-                    id.insert(id.begin(), '#');
+                    id_tmp = successor->getId();
+                    id_tmp.insert(id_tmp.begin(), '#');
                     write = true;
                 }
-                strvalue = id.c_str();
             }
             if (href)
                 g_free(href);
-            href = g_strdup(strvalue);
+            href = g_strdup(id_tmp.empty() ? strvalue : id_tmp.c_str());
 
             // Now do the attaching, which emits the changed signal.
             try {
