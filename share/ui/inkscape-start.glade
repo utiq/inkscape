@@ -2174,7 +2174,7 @@ Fund Inkscape</property>
                 <property name="layout_style">start</property>
                 <child>
                   <object class="GtkButton" id="load">
-                    <property name="label" translatable="yes">Load</property>
+                    <property name="label" translatable="yes">Open</property>
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
