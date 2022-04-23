@@ -194,10 +194,10 @@ int gr_vector_list(Glib::RefPtr<Gtk::ListStore> store, SPDesktop *desktop,
 }
 
 /*
- * Get the gradient of the selected desktop item
- * This is gradient containing the repeat settings, not the underlying "getVector" href linked gradient.
+ * Get the list of gradients of the selected desktop item
+ * Thise are the gradients containing the repeat settings, not the underlying "getVector" href linked gradient.
  */
-void gr_get_dt_selected_gradient(Inkscape::Selection *selection, SPGradient *&gr_selected)
+void gr_get_dt_selected_gradient(Inkscape::Selection *selection, std::vector<SPGradient *> &gr_selected)
 {
     SPGradient *gradient = nullptr;
 
@@ -217,14 +217,13 @@ void gr_get_dt_selected_gradient(Inkscape::Selection *selection, SPGradient *&gr
          if ( SP_IS_GRADIENT(server) ) {
              gradient = SP_GRADIENT(server);
          }
-    }
+        if (gradient && gradient->isSolid()) {
+            gradient = nullptr;
+        }
 
-    if (gradient && gradient->isSolid()) {
-        gradient = nullptr;
-    }
-
-    if (gradient) {
-        gr_selected = gradient;
+        if (gradient) {
+            gr_selected.push_back(gradient);
+        }
     }
 }
 
@@ -508,6 +507,7 @@ GradientToolbar::GradientToolbar(SPDesktop *desktop)
     }
 
     /* Offset */
+    _offset_Adj_Changed = false;
     {
         auto offset_val = prefs->getDouble("/tools/gradient/stopoffset", 0);
         _offset_adj = Gtk::Adjustment::create(offset_val, 0.0, 1.0, 0.01, 0.1);
@@ -634,14 +634,15 @@ GradientToolbar::spread_changed(int active)
     blocked = true;
 
     Inkscape::Selection *selection = _desktop->getSelection();
-    SPGradient *gradient = nullptr;
-    gr_get_dt_selected_gradient(selection, gradient);
+    std::vector<SPGradient *> gradientList;
+    gr_get_dt_selected_gradient(selection, gradientList);
 
-    if (gradient) {
-        SPGradientSpread spread = (SPGradientSpread) active;
-        gradient->setSpread(spread);
-        gradient->updateRepr();
-
+    if (!gradientList.empty()) {
+        for (auto item: gradientList) {
+            SPGradientSpread spread = (SPGradientSpread) active;
+            item->setSpread(spread);
+            item->updateRepr();
+        }
         DocumentUndo::done(_desktop->getDocument(), _("Set gradient repeat"), INKSCAPE_ICON("color-gradient"));
     }
 
@@ -730,14 +731,14 @@ GradientToolbar::stop_set_offset()
     if (!_offset_item) {
         return;
     }
-    bool isEndStop = false;
+    //bool isEndStop = false;
 
     SPStop *prev = nullptr;
     prev = stop->getPrevStop();
     if (prev != nullptr )  {
         _offset_adj->set_lower(prev->offset);
     } else {
-        isEndStop = true;
+        //isEndStop = true;
         _offset_adj->set_lower(0);
     }
 
@@ -746,12 +747,12 @@ GradientToolbar::stop_set_offset()
     if (next != nullptr ) {
         _offset_adj->set_upper(next->offset);
     } else {
-        isEndStop = true;
+        //isEndStop = true;
         _offset_adj->set_upper(1.0);
     }
 
     _offset_adj->set_value(stop->offset);
-    _offset_item->set_sensitive( !isEndStop );
+    _offset_item->set_sensitive(true); //changed !isEndStop
 }
 
 /**
@@ -769,6 +770,7 @@ GradientToolbar::stop_offset_adjustment_changed()
     SPStop *stop = get_selected_stop();
     if (stop) {
         stop->offset = _offset_adj->get_value();
+        _offset_Adj_Changed = true; // this is checked to stop changing the selected stop after the update of the offset
         stop->getRepr()->setAttributeCssDouble("offset", stop->offset);
 
         DocumentUndo::maybeDone(stop->document, "gradient:stop:offset", _("Change gradient stop offset"), INKSCAPE_ICON("color-gradient"));
@@ -898,11 +900,16 @@ GradientToolbar::selection_changed(Inkscape::Selection * /*selection*/)
     if (blocked)
         return;
 
-    blocked = true;
-
     if (!_desktop) {
         return;
     }
+
+    if (_offset_Adj_Changed) {        // added to stop change of selection when offset update event is triggered
+        _offset_Adj_Changed = false;
+        return;
+    }
+
+    blocked = true;
 
     Inkscape::Selection *selection = _desktop->getSelection(); // take from desktop, not from args
     if (selection) {
@@ -935,7 +942,7 @@ GradientToolbar::selection_changed(Inkscape::Selection * /*selection*/)
         }
 
         // Spread menu
-        _spread_cb->set_sensitive( gr_selected && !gr_multi );
+        _spread_cb->set_sensitive( gr_selected );
         _spread_cb->set_active( gr_selected ? (int)spr_selected : 0 );
 
         _stops_add_item->set_sensitive((gr_selected && !gr_multi && drag && !drag->selected.empty()));
@@ -943,6 +950,7 @@ GradientToolbar::selection_changed(Inkscape::Selection * /*selection*/)
         _stops_reverse_item->set_sensitive((gr_selected!= nullptr));
 
         _stop_cb->set_sensitive( gr_selected && !gr_multi);
+        _offset_item->set_sensitive(!gr_multi);
 
         update_stop_list (gr_selected, nullptr, gr_multi);
         select_stop_by_draggers(gr_selected, ev);
@@ -973,6 +981,17 @@ GradientToolbar::update_stop_list( SPGradient *gradient, SPStop *new_stop, bool 
 
     UI::Widget::ComboToolItemColumns columns;
     Gtk::TreeModel::Row row;
+
+    if (gr_multi) {
+        row = *(store->append());
+        row[columns.col_label    ] = _("Multiple gradient");
+        row[columns.col_tooltip  ] = "";
+        row[columns.col_icon     ] = "NotUsed";
+        row[columns.col_data     ] = nullptr;
+        row[columns.col_sensitive] = true;
+        selected = 0;
+        return selected;
+    }
 
     if (!SP_IS_GRADIENT(gradient)) {
         // No valid gradient

@@ -59,6 +59,7 @@ private:
     UI::Widget::SpinButtonToolItem *_offset_item;
 
     Glib::RefPtr<Gtk::Adjustment> _offset_adj;
+    bool _offset_Adj_Changed;
 
     void new_type_changed(int mode);
     void new_fillstroke_changed(int mode);
