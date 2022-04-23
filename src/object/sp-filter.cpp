@@ -45,7 +45,6 @@ SPFilter::SPFilter()
     , filterRes(NumberOptNumber())
     , _refcount(0)
     , _image_number_next(0)
-    , _renderer(nullptr)
 {
     this->href = new SPFilterReference(this);
     this->href->changedSignal().connect(sigc::bind(sigc::ptr_fun(filter_ref_changed), this));
@@ -483,11 +482,9 @@ void SPFilter::remove_child(Inkscape::XML::Node *child)
     this->requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
-void SPFilter::build_renderer(Inkscape::Filters::Filter *nr_filter)
+void SPFilter::build_renderer(Inkscape::Filters::Filter *nr_filter) const
 {
     g_assert(nr_filter != nullptr);
-
-    _renderer = nr_filter;
 
     nr_filter->set_filter_units(this->filterUnits);
     nr_filter->set_primitive_units(this->primitiveUnits);
