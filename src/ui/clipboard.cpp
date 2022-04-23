@@ -299,7 +299,13 @@ void ClipboardManagerImpl::copyPathParameter(Inkscape::LivePathEffect::PathParam
     if ( pp == nullptr ) {
         return;
     }
-    auto svgd = sp_svg_write_path(pp->get_pathvector());
+    SPItem * item = SP_ACTIVE_DESKTOP->getSelection()->singleItem();
+    Geom::PathVector pv = pp->get_pathvector();
+    if (item != nullptr) {
+        pv *= item->i2doc_affine();
+    }
+    auto svgd = sp_svg_write_path(pv);
+
     if (svgd.empty()) {
         return;
     }
