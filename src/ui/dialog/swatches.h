@@ -65,6 +65,7 @@ private:
     void _build_menu();
 
     void selectionChanged(Selection *selection) override;
+    void selectionModified(Selection *selection, guint flags) override;
     static void _rebuildDocumentSwatch(SwatchPage *docPalette, SPDocument *document);
     static void _trackDocument( SwatchesPanel *panel, SPDocument *document );
     static void handleDefsModified(SPDocument *document);

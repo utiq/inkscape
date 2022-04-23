@@ -75,13 +75,10 @@ enum PreviewSize {
 };
 
 enum LinkType {
-  PREVIEW_LINK_NONE = 0,
-  PREVIEW_LINK_IN = 1,
-  PREVIEW_LINK_OUT = 2,
-  PREVIEW_LINK_OTHER = 4,
-  PREVIEW_FILL = 8,
-  PREVIEW_STROKE = 16,
-  PREVIEW_LINK_ALL = 31
+    PREVIEW_LINK_NONE = 0,
+    PREVIEW_FILL = 1,
+    PREVIEW_STROKE = 2,
+    PREVIEW_LINK_ALL = 3
 };
 
 enum BorderStyle {
@@ -131,6 +128,7 @@ public:
     void set_focus_on_click(bool focus_on_click) {_takesFocus = focus_on_click;}
     LinkType get_linked() const;
     void set_linked(LinkType link);
+    void set_fillstroke(bool fill, bool stroke);
     void set_details(ViewType      view,
                      PreviewSize   size,
                      guint         ratio,

@@ -695,7 +695,7 @@ void SwatchesPanel::_trackDocument( SwatchesPanel *panel, SPDocument *document )
                 if (docPalettes.find(document) == docPalettes.end()) {
                     SwatchPage *docPalette = new SwatchPage();
                     docPalette->_name = "Auto";
-                    docPalettes[document] = docPalette;
+                    docPalettes.emplace(document, docPalette);
                 }
             }
             // Always update the palettes if there's a document.
@@ -938,49 +938,56 @@ void SwatchesPanel::_rebuildDocumentSwatch(SwatchPage *docPalette, SPDocument *d
 
 void SwatchesPanel::handleDefsModified(SPDocument *document)
 {
-    SwatchPage *docPalette = (docPalettes.find(document) != docPalettes.end()) ? docPalettes[document] : nullptr;
-    if (docPalette && !DocTrack::queueUpdateIfNeeded(document) ) {
-        boost::ptr_vector<ColorItem> tmpColors;
-        std::map<ColorItem*, cairo_pattern_t*> tmpPrevs;
-        std::map<ColorItem*, SPGradient*> tmpGrads;
-        recalcSwatchContents(document, tmpColors, tmpPrevs, tmpGrads);
+    auto it = docPalettes.find(document);
+    if (it == docPalettes.end()) {
+        return;
+    }
+    auto docPalette = it->second;
 
-        if ( tmpColors.size() != docPalette->_colors.size() ) {
-            handleGradientsChange(document);
-        } else {
-            int cap = std::min(docPalette->_colors.size(), tmpColors.size());
-            for (int i = 0; i < cap; i++) {
-                ColorItem *newColor = &tmpColors[i];
-                ColorItem *oldColor = &docPalette->_colors[i];
-                if ( (newColor->def.getType() != oldColor->def.getType()) ||
-                     (newColor->def.getR() != oldColor->def.getR()) ||
-                     (newColor->def.getG() != oldColor->def.getG()) ||
-                     (newColor->def.getB() != oldColor->def.getB()) ) {
-                    oldColor->def.setRGB(newColor->def.getR(), newColor->def.getG(), newColor->def.getB());
-                }
-                if (tmpGrads.find(newColor) != tmpGrads.end()) {
-                    oldColor->setGradient(tmpGrads[newColor]);
-                }
-                if ( tmpPrevs.find(newColor) != tmpPrevs.end() ) {
-                    oldColor->setPattern(tmpPrevs[newColor]);
-                }
+    if (DocTrack::queueUpdateIfNeeded(document)) {
+        return;
+    }
+
+    boost::ptr_vector<ColorItem> tmpColors;
+    std::map<ColorItem*, cairo_pattern_t*> tmpPrevs;
+    std::map<ColorItem*, SPGradient*> tmpGrads;
+    recalcSwatchContents(document, tmpColors, tmpPrevs, tmpGrads);
+
+    if (tmpColors.size() != docPalette->_colors.size()) {
+        handleGradientsChange(document);
+    } else {
+        int cap = std::min(docPalette->_colors.size(), tmpColors.size());
+        for (int i = 0; i < cap; i++) {
+            ColorItem *newColor = &tmpColors[i];
+            ColorItem *oldColor = &docPalette->_colors[i];
+            if ((newColor->def.getType() != oldColor->def.getType()) ||
+                (newColor->def.getR() != oldColor->def.getR()) ||
+                (newColor->def.getG() != oldColor->def.getG()) ||
+                (newColor->def.getB() != oldColor->def.getB())) {
+                oldColor->def.setRGB(newColor->def.getR(), newColor->def.getG(), newColor->def.getB());
+            }
+            if (auto it = tmpGrads.find(newColor); it != tmpGrads.end()) {
+                oldColor->setGradient(it->second);
+            }
+            if (auto it = tmpPrevs.find(newColor); it != tmpPrevs.end()) {
+                oldColor->setPattern(it->second);
             }
         }
-
-        for (auto & tmpPrev : tmpPrevs) {
-            cairo_pattern_destroy(tmpPrev.second);
-        }
-        _rebuildDocumentSwatch(docPalette, document);
     }
-}
 
+    for (auto &tmpPrev : tmpPrevs) {
+        cairo_pattern_destroy(tmpPrev.second);
+    }
+
+    _rebuildDocumentSwatch(docPalette, document);
+}
 
 std::vector<SwatchPage*> SwatchesPanel::_getSwatchSets() const
 {
     std::vector<SwatchPage*> tmp;
     if (auto document = getDocument()) {
-        if (docPalettes.find(document) != docPalettes.end()) {
-            tmp.push_back(docPalettes[document]);
+        if (auto it = docPalettes.find(document); it != docPalettes.end()) {
+            tmp.emplace_back(it->second);
         }
     }
     tmp.insert(tmp.end(), userSwatchPages.begin(), userSwatchPages.end());
@@ -991,86 +998,89 @@ std::vector<SwatchPage*> SwatchesPanel::_getSwatchSets() const
 void SwatchesPanel::selectionChanged(Selection *selection)
 {
     auto document = getDocument();
-    if (!document)
+    if (!document) {
         return;
+    }
 
-    SwatchPage *docPalette = (docPalettes.find(document) != docPalettes.end()) ? docPalettes[document] : nullptr;
-    if ( docPalette ) {
-        std::string fillId;
-        std::string strokeId;
+    auto it = docPalettes.find(document);
+    if (it == docPalettes.end()) {
+        return;
+    }
+    auto docPalette = it->second;
 
-        SPStyle tmpStyle(document);
-        int result = sp_desktop_query_style(getDesktop(), &tmpStyle, QUERY_STYLE_PROPERTY_FILL );
-        switch (result) {
-            case QUERY_STYLE_SINGLE:
-            case QUERY_STYLE_MULTIPLE_AVERAGED:
-            case QUERY_STYLE_MULTIPLE_SAME:
-            {
-                if (tmpStyle.fill.set && tmpStyle.fill.isPaintserver()) {
-                    SPPaintServer* server = tmpStyle.getFillPaintServer();
-                    if ( SP_IS_GRADIENT(server) ) {
-                        SPGradient* target = nullptr;
-                        SPGradient* grad = SP_GRADIENT(server);
+    SPStyle tmpStyle(document);
 
-                        if ( grad->isSwatch() ) {
-                            target = grad;
-                        } else if ( grad->ref ) {
-                            SPGradient *tmp = grad->ref->getObject();
-                            if ( tmp && tmp->isSwatch() ) {
-                                target = tmp;
-                            }
+    std::string fillId;
+    switch (sp_desktop_query_style(getDesktop(), &tmpStyle, QUERY_STYLE_PROPERTY_FILL)) {
+        case QUERY_STYLE_SINGLE:
+        case QUERY_STYLE_MULTIPLE_AVERAGED:
+        case QUERY_STYLE_MULTIPLE_SAME:
+        {
+            if (tmpStyle.fill.set && tmpStyle.fill.isPaintserver()) {
+                if (auto grad = dynamic_cast<SPGradient*>(tmpStyle.getFillPaintServer())) {
+                    SPGradient *target = nullptr;
+
+                    if (grad->isSwatch()) {
+                        target = grad;
+                    } else if (grad->ref) {
+                        if (auto tmp = grad->ref->getObject(); tmp && tmp->isSwatch()) {
+                            target = tmp;
                         }
-                        if ( target ) {
-                            //XML Tree being used directly here while it shouldn't be
-                            gchar const* id = target->getRepr()->attribute("id");
-                            if ( id ) {
-                                fillId = id;
-                            }
+                    }
+
+                    if (target) {
+                        //XML Tree being used directly here while it shouldn't be
+                        if (auto id = target->getRepr()->attribute("id")) {
+                            fillId = id;
                         }
                     }
                 }
-                break;
             }
+            break;
         }
+    }
 
-        result = sp_desktop_query_style(getDesktop(), &tmpStyle, QUERY_STYLE_PROPERTY_STROKE);
-        switch (result) {
-            case QUERY_STYLE_SINGLE:
-            case QUERY_STYLE_MULTIPLE_AVERAGED:
-            case QUERY_STYLE_MULTIPLE_SAME:
-            {
-                if (tmpStyle.stroke.set && tmpStyle.stroke.isPaintserver()) {
-                    SPPaintServer* server = tmpStyle.getStrokePaintServer();
-                    if ( SP_IS_GRADIENT(server) ) {
-                        SPGradient* target = nullptr;
-                        SPGradient* grad = SP_GRADIENT(server);
-                        if ( grad->isSwatch() ) {
-                            target = grad;
-                        } else if ( grad->ref ) {
-                            SPGradient *tmp = grad->ref->getObject();
-                            if ( tmp && tmp->isSwatch() ) {
-                                target = tmp;
-                            }
+    std::string strokeId;
+    switch (sp_desktop_query_style(getDesktop(), &tmpStyle, QUERY_STYLE_PROPERTY_STROKE)) {
+        case QUERY_STYLE_SINGLE:
+        case QUERY_STYLE_MULTIPLE_AVERAGED:
+        case QUERY_STYLE_MULTIPLE_SAME:
+        {
+            if (tmpStyle.stroke.set && tmpStyle.stroke.isPaintserver()) {
+                if (auto grad = dynamic_cast<SPGradient*>(tmpStyle.getStrokePaintServer())) {
+                    SPGradient *target = nullptr;
+
+                    if (grad->isSwatch()) {
+                        target = grad;
+                    } else if (grad->ref) {
+                        if (auto tmp = grad->ref->getObject(); tmp && tmp->isSwatch()) {
+                            target = tmp;
                         }
-                        if ( target ) {
-                            //XML Tree being used directly here while it shouldn't be
-                            gchar const* id = target->getRepr()->attribute("id");
-                            if ( id ) {
-                                strokeId = id;
-                            }
+                    }
+
+                    if (target) {
+                        //XML Tree being used directly here while it shouldn't be
+                        if (auto id = target->getRepr()->attribute("id")) {
+                            strokeId = id;
                         }
                     }
                 }
-                break;
             }
+            break;
         }
+    }
 
-        for (auto & _color : docPalette->_colors) {
-            ColorItem* item = &_color;
-            bool isFill = (fillId == item->def.descr);
-            bool isStroke = (strokeId == item->def.descr);
-            item->setState( isFill, isStroke );
-        }
+    for (auto &color : docPalette->_colors) {
+        bool isFill = fillId == color.def.descr;
+        bool isStroke = strokeId == color.def.descr;
+        color.setState(isFill, isStroke);
+    }
+}
+
+void SwatchesPanel::selectionModified(Selection *selection, guint flags)
+{
+    if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
+        selectionChanged(selection);
     }
 }
 

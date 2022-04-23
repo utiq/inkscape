@@ -39,6 +39,8 @@
 #include <gdkmm/general.h>
 #include "preview.h"
 #include "preferences.h"
+#include <2geom/int-rect.h>
+#include <2geom/rect.h>
 
 namespace Inkscape {
 namespace UI {
@@ -248,98 +250,44 @@ Preview::on_draw(const Cairo::RefPtr<Cairo::Context> &cr)
         cr->paint();
     }
 
-    if (_linked)
-    {
-        /* Draw arrow */
-        GdkRectangle possible = {insetLeft,
-                                 insetTop,
-                                 (allocation.get_width() - (insetLeft + insetRight)),
-                                 (allocation.get_height() - (insetTop + insetBottom))
-                                };
+    if (_linked) {
+        auto possible = Geom::IntRect(insetLeft, insetTop, allocation.get_width() - insetRight, allocation.get_height() - insetBottom);
+        auto minwh = std::min(possible.width(), possible.height());
 
-        GdkRectangle area = {possible.x,
-                             possible.y,
-                             possible.width / 2,
-                             possible.height / 2 };
+        if (_linked & PREVIEW_FILL) {
+            auto size = std::round(minwh / (2.0 * std::sqrt(2.0)));
+            auto area = Geom::Rect(0.5, 0.5, size - 0.5, size - 0.5) + Geom::IntPoint(possible.width() / 4 - size / 2, (possible.height() - size) / 2);
 
-        /* Make it square */
-        if ( area.width > area.height )
-            area.width = area.height;
-        if ( area.height > area.width )
-            area.height = area.width;
-
-        /* Center it horizontally */
-        if ( area.width < possible.width ) {
-            int diff = (possible.width - area.width) / 2;
-            area.x += diff;
+            // Square
+            cr->set_line_width(1.0);
+            cr->rectangle(area.left(), area.top(), area.width(), area.height());
+            cr->set_source_rgb(1.0, 1.0, 1.0);
+            cr->fill_preserve();
+            cr->set_source_rgb(0.0, 0.0, 0.0);
+            cr->stroke();
         }
 
-        if (_linked & PREVIEW_LINK_IN)
-        {
-            context->render_arrow(cr,
-                                  G_PI, // Down-pointing arrow
-                                  area.x, area.y,
-                                  std::min(area.width, area.height)
-                                 );
-        }
+        if (_linked & PREVIEW_STROKE) {
+            auto size = minwh / 2;
+            auto area = Geom::Rect(0.5, 0.5, size - 0.5, size - 0.5) + Geom::IntPoint(possible.width() * 3 / 4 - size / 2, (possible.height() - size) / 2);
 
-        if (_linked & PREVIEW_LINK_OUT)
-        {
-            GdkRectangle otherArea = {area.x, area.y, area.width, area.height};
-            if ( otherArea.height < possible.height ) {
-                otherArea.y = possible.y + (possible.height - otherArea.height);
-            }
-
-            context->render_arrow(cr,
-                                  G_PI, // Down-pointing arrow
-                                  otherArea.x, otherArea.y,
-                                  std::min(otherArea.width, otherArea.height)
-                                 );
-        }
-
-        if (_linked & PREVIEW_LINK_OTHER)
-        {
-            GdkRectangle otherArea = {insetLeft, area.y, area.width, area.height};
-            if ( otherArea.height < possible.height ) {
-                otherArea.y = possible.y + (possible.height - otherArea.height) / 2;
-            }
-
-            context->render_arrow(cr,
-                                  1.5*G_PI, // Left-pointing arrow
-                                  otherArea.x, otherArea.y,
-                                  std::min(otherArea.width, otherArea.height)
-                                 );
-        }
-
-
-        if (_linked & PREVIEW_FILL)
-        {
-            GdkRectangle otherArea = {possible.x + ((possible.width / 4) - (area.width / 2)),
-                                      area.y,
-                                      area.width, area.height};
-            if ( otherArea.height < possible.height ) {
-                otherArea.y = possible.y + (possible.height - otherArea.height) / 2;
-            }
-            context->render_check(cr,
-                                  otherArea.x, otherArea.y,
-                                  otherArea.width, otherArea.height );
-        }
-
-        if (_linked & PREVIEW_STROKE)
-        {
-            GdkRectangle otherArea = {possible.x + (((possible.width * 3) / 4) - (area.width / 2)),
-                                      area.y,
-                                      area.width, area.height};
-            if ( otherArea.height < possible.height ) {
-                otherArea.y = possible.y + (possible.height - otherArea.height) / 2;
-            }
-            // This should be a diamond too?
-            context->render_check(cr,
-                                  otherArea.x, otherArea.y,
-                                  otherArea.width, otherArea.height );
+            // Diamond
+            cr->save();
+            cr->translate(area.left(), area.top());
+            cr->scale(area.width(), area.height());
+            cr->move_to(0.5, 0.0);
+            cr->line_to(1.0, 0.5);
+            cr->line_to(0.5, 1.0);
+            cr->line_to(0.0, 0.5);
+            cr->close_path();
+            cr->set_source_rgb(1.0, 1.0, 1.0);
+            cr->fill_preserve();
+            cr->set_source_rgb(0.0, 0.0, 0.0);
+            cr->set_line_width(1.0 / size);
+            cr->stroke();
+            cr->restore();
         }
     }
-
 
     if ( has_focus() ) {
         allocation = get_allocation();
@@ -428,6 +376,13 @@ Preview::set_linked(LinkType link)
 
         queue_draw();
     }
+}
+
+void Preview::set_fillstroke(bool fill, bool stroke)
+{
+    int val = (fill   ? UI::Widget::PREVIEW_FILL   : 0)
+            | (stroke ? UI::Widget::PREVIEW_STROKE : 0);
+    set_linked((UI::Widget::LinkType)val);
 }
 
 LinkType

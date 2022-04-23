@@ -155,16 +155,14 @@ ColorItem &ColorItem::operator=(ColorItem const &other)
     return *this;
 }
 
-void ColorItem::setState( bool fill, bool stroke )
+void ColorItem::setState(bool fill, bool stroke)
 {
     if (_isFill != fill || _isStroke != stroke) {
         _isFill = fill;
         _isStroke = stroke;
 
         for (auto preview : _previews) {
-            int val = (_isFill   ? UI::Widget::PREVIEW_FILL   : 0)
-                    | (_isStroke ? UI::Widget::PREVIEW_STROKE : 0);
-            preview->set_linked((UI::Widget::LinkType)val);
+            preview->set_fillstroke(_isFill, _isStroke);
         }
     }
 }
@@ -263,7 +261,7 @@ void ColorItem::_regenPreview(UI::Widget::Preview *preview)
         preview->set_pixbuf(pixbuf);
     }
 
-    preview->set_linked((UI::Widget::LinkType)0);
+    preview->set_fillstroke(_isFill, _isStroke);
 }
 
 Gtk::Widget* ColorItem::createWidget()
