@@ -1280,9 +1280,13 @@ void SPDesktop::disableInteraction()
 
 void SPDesktop::setWaitingCursor()
 {
+    auto window = canvas->get_window();
+    if (!window) {
+        return;
+    }
     Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
     Glib::RefPtr<Gdk::Cursor> waiting = Gdk::Cursor::create(display, "wait");
-    canvas->get_window()->set_cursor(waiting);
+    window->set_cursor(waiting);
     // GDK needs the flush for the cursor change to take effect
     display->flush();
     waiting_cursor = true;

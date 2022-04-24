@@ -536,7 +536,7 @@ SPDesktopWidget::on_unrealize()
 
         dtw->_panels->setDesktop(nullptr);
 
-        delete _container;
+        delete _container; // will unrealize dtw->_canvas
 
         _layer_selector->setDesktop(nullptr);
         INKSCAPE.remove_desktop(dtw->desktop); // clears selection and event_context
