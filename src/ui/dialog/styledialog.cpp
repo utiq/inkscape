@@ -34,6 +34,7 @@
 #include "svg/svg-color.h"
 #include "ui/icon-loader.h"
 #include "ui/widget/iconrenderer.h"
+#include "util/trim.h"
 #include "xml/attribute-record.h"
 #include "xml/node-observer.h"
 #include "xml/sp-css-attr.h"
@@ -43,14 +44,6 @@
 // #define G_LOG_DOMAIN "STYLEDIALOG"
 
 using Inkscape::DocumentUndo;
-
-/**
- * This macro is used to remove spaces around selectors or any strings when
- * parsing is done to update XML style element or row labels in this dialog.
- */
-#define REMOVE_SPACES(x)                                                                                               \
-    x.erase(0, x.find_first_not_of(' '));                                                                              \
-    x.erase(x.find_last_not_of(' ') + 1);
 
 namespace Inkscape {
 
@@ -260,14 +253,14 @@ void StyleDialog::_vscroll()
 Glib::ustring StyleDialog::fixCSSSelectors(Glib::ustring selector)
 {
     g_debug("SelectorsDialog::fixCSSSelectors");
-    REMOVE_SPACES(selector);
+    Util::trim(selector);
     std::vector<Glib::ustring> tokens = Glib::Regex::split_simple("[,]+", selector);
     CRSelector *cr_selector = cr_selector_parse_from_buf((guchar const *)selector.c_str(), CR_UTF_8);
     for (auto token : tokens) {
-        REMOVE_SPACES(token);
+        Util::trim(token);
         std::vector<Glib::ustring> subtokens = Glib::Regex::split_simple("[ ]+", token);
         for (auto subtoken : subtokens) {
-            REMOVE_SPACES(subtoken);
+            Util::trim(subtoken);
             CRSelector *cr_selector = cr_selector_parse_from_buf((guchar const *)subtoken.c_str(), CR_UTF_8);
             gchar *selectorchar = reinterpret_cast<gchar *>(cr_selector_to_string(cr_selector));
             if (selectorchar) {
@@ -582,7 +575,7 @@ void StyleDialog::readStyleElement()
     }
     for (unsigned i = 0; i < tokens.size() - 1; i += 2) {
         Glib::ustring selector = tokens[i];
-        REMOVE_SPACES(selector); // Remove leading/trailing spaces
+        Util::trim(selector); // Remove leading/trailing spaces
         // Get list of objects selector matches
         std::vector<Glib::ustring> selectordata = Glib::Regex::split_simple(";", selector);
         Glib::ustring selector_orig = selector;
@@ -1026,11 +1019,11 @@ std::map<Glib::ustring, Glib::ustring> StyleDialog::parseStyle(Glib::ustring sty
 
     std::map<Glib::ustring, Glib::ustring> ret;
 
-    REMOVE_SPACES(style_string); // We'd use const, but we need to trip spaces
+    Util::trim(style_string); // We'd use const, but we need to trip spaces
     std::vector<Glib::ustring> props = r_props->split(style_string);
 
     for (auto token : props) {
-        REMOVE_SPACES(token);
+        Util::trim(token);
 
         if (token.empty())
             break;

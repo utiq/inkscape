@@ -24,6 +24,7 @@ set(util_SRC
 	reference.h
 	share.h
 	signal-blocker.h
+	trim.h
 	units.h
 	ziptool.h
 	numeric/converters.h

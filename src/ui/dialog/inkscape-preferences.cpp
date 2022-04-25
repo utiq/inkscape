@@ -65,6 +65,8 @@
 #include "ui/widget/canvas.h"
 #include "ui/themes.h"
 
+#include "util/trim.h"
+
 #include "widgets/desktop-widget.h"
 #include "widgets/toolbox.h"
 #include "widgets/spw-utilities.h"
@@ -92,10 +94,6 @@ using Inkscape::UI::Widget::StyleSwatch;
 using Inkscape::CMSSystem;
 using Inkscape::IO::Resource::get_filename;
 using Inkscape::IO::Resource::UIS;
-
-#define REMOVE_SPACES(x)                                                                                               \
-    x.erase(0, x.find_first_not_of(' '));                                                                              \
-    x.erase(x.find_last_not_of(' ') + 1);
 
 std::function<Gtk::Image*()> reset_icon = []() {
     auto image = Gtk::make_managed<Gtk::Image>();
@@ -1097,7 +1095,7 @@ void InkscapePreferences::get_highlight_colors(guint32 &colorsetbase, guint32 &c
             size_t startposin = result.find("fill:");
             size_t endposin = result.find(";");
             result = result.substr(startposin + 5, endposin - (startposin + 5));
-            REMOVE_SPACES(result);
+            Util::trim(result);
             Gdk::RGBA base_color = Gdk::RGBA(result);
             SPColor base_color_sp(base_color.get_red(), base_color.get_green(), base_color.get_blue());
             colorsetbase = base_color_sp.toRGBA32(base_color.get_alpha());
@@ -1110,7 +1108,7 @@ void InkscapePreferences::get_highlight_colors(guint32 &colorsetbase, guint32 &c
             size_t startposin = result.find("fill:");
             size_t endposin = result.find(";");
             result = result.substr(startposin + 5, endposin - (startposin + 5));
-            REMOVE_SPACES(result);
+            Util::trim(result);
             Gdk::RGBA success_color = Gdk::RGBA(result);
             SPColor success_color_sp(success_color.get_red(), success_color.get_green(), success_color.get_blue());
             colorsetsuccess = success_color_sp.toRGBA32(success_color.get_alpha());
@@ -1123,7 +1121,7 @@ void InkscapePreferences::get_highlight_colors(guint32 &colorsetbase, guint32 &c
             size_t startposin = result.find("fill:");
             size_t endposin = result.find(";");
             result = result.substr(startposin + 5, endposin - (startposin + 5));
-            REMOVE_SPACES(result);
+            Util::trim(result);
             Gdk::RGBA warning_color = Gdk::RGBA(result);
             SPColor warning_color_sp(warning_color.get_red(), warning_color.get_green(), warning_color.get_blue());
             colorsetwarning = warning_color_sp.toRGBA32(warning_color.get_alpha());
@@ -1136,7 +1134,7 @@ void InkscapePreferences::get_highlight_colors(guint32 &colorsetbase, guint32 &c
             size_t startposin = result.find("fill:");
             size_t endposin = result.find(";");
             result = result.substr(startposin + 5, endposin - (startposin + 5));
-            REMOVE_SPACES(result);
+            Util::trim(result);
             Gdk::RGBA error_color = Gdk::RGBA(result);
             SPColor error_color_sp(error_color.get_red(), error_color.get_green(), error_color.get_blue());
             colorseterror = error_color_sp.toRGBA32(error_color.get_alpha());

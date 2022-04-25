@@ -170,6 +170,7 @@ public:
     // Signal and handlers - Internal
     void _addSelector();
     void _delSelector();
+    static Glib::ustring _getSelectorClasses(Glib::ustring selector);
     bool _handleButtonEvent(GdkEventButton *event);
     void _buttonEventsSelectObjs(GdkEventButton *event);
     void _selectRow(); // Select row in tree when selection changed.

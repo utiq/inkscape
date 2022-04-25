@@ -32,6 +32,8 @@
 #include "ui/icon-names.h"
 #include "ui/widget/iconrenderer.h"
 
+#include "util/trim.h"
+
 #include "xml/attribute-record.h"
 #include "xml/node-observer.h"
 #include "xml/sp-css-attr.h"
@@ -42,18 +44,6 @@
 // #define G_LOG_DOMAIN "SELECTORSDIALOG"
 
 using Inkscape::DocumentUndo;
-
-/**
- * This macro is used to remove spaces around selectors or any strings when
- * parsing is done to update XML style element or row labels in this dialog.
- */
-#define REMOVE_SPACES(x)                                                                                               \
-    x.erase(0, x.find_first_not_of(' '));                                                                              \
-    if (x.size() && x[0] == ',')                                                                                       \
-        x.erase(0, 1);                                                                                                 \
-    if (x.size() && x[x.size() - 1] == ',')                                                                            \
-        x.erase(x.size() - 1, 1);                                                                                      \
-    x.erase(x.find_last_not_of(' ') + 1);
 
 namespace Inkscape {
 namespace UI {
@@ -438,7 +428,7 @@ void SelectorsDialog::_readStyleElement()
     std::vector<std::pair<Glib::ustring, bool>> expanderstatus;
     for (unsigned i = 0; i < tokens.size() - 1; i += 2) {
         Glib::ustring selector = tokens[i];
-        REMOVE_SPACES(selector); // Remove leading/trailing spaces
+        Util::trim(selector, ","); // Remove leading/trailing spaces and commas
         std::vector<Glib::ustring> selectordata = Glib::Regex::split_simple(";", selector);
         if (!selectordata.empty()) {
             selector = selectordata.back();
@@ -457,7 +447,7 @@ void SelectorsDialog::_readStyleElement()
 
     for (unsigned i = 0; i < tokens.size()-1; i += 2) {
         Glib::ustring selector = tokens[i];
-        REMOVE_SPACES(selector); // Remove leading/trailing spaces
+        Util::trim(selector, ","); // Remove leading/trailing spaces and commas
         std::vector<Glib::ustring> selectordata = Glib::Regex::split_simple(";", selector);
         for (auto selectoritem : selectordata) {
             if (selectordata[selectordata.size() - 1] == selectoritem) {
@@ -494,7 +484,7 @@ void SelectorsDialog::_readStyleElement()
                          "for last selector!"
                       << std::endl;
         }
-        REMOVE_SPACES(properties);
+        Util::trim(properties);
         bool colExpand = false;
         for (auto rowstatus : expanderstatus) {
             if (selector == rowstatus.first) {
@@ -566,11 +556,7 @@ void SelectorsDialog::_writeStyleElement()
     for (auto& row: _store->children()) {
         Glib::ustring selector = row[_mColumns._colSelector];
 #if 0
-                REMOVE_SPACES(selector);
-                size_t len = selector.size();
-                if(selector[len-1] == ','){
-                    selector.erase(len-1);
-                }
+                Util::trim(selector, ",");
                 row[_mColumns._colSelector] =  selector;
 #endif
         if (row[_mColumns._colType] == OTHER) {
@@ -601,42 +587,15 @@ void SelectorsDialog::_writeStyleElement()
     g_debug("SelectorsDialog::_writeStyleElement(): | %s |", styleContent.c_str());
 }
 
-/*
-void sp_get_selector_active(Glib::ustring &selector)
+Glib::ustring SelectorsDialog::_getSelectorClasses(Glib::ustring selector)
 {
-    std::vector<Glib::ustring> tokensplus = Glib::Regex::split_simple("[ ]+", selector);
-    selector = tokensplus[tokensplus.size() - 1];
-    // Erase any comma/space
-    REMOVE_SPACES(selector);
-    Glib::ustring toadd = Glib::ustring(selector);
-    Glib::ustring toparse = Glib::ustring(selector);
-    Glib::ustring tag = "";
-    if (toadd[0] != '.' || toadd[0] != '#') {
-        auto i = std::min(toadd.find("#"), toadd.find("."));
-        tag = toadd.substr(0,i-1);
-        toparse.erase(0, i-1);
-    }
-    auto i = toparse.find("#");
-    toparse.erase(i, 1);
-    auto j = toparse.find("#");
-    if (j == std::string::npos) {
-        selector = "";
-    } else if (i != std::string::npos) {
-        Glib::ustring post = toadd.substr(0,i-1);
-        Glib::ustring pre = toadd.substr(i, (toadd.size()-1)-i);
-        selector = tag + pre + post;
-    }
-} */
-
-Glib::ustring sp_get_selector_classes(Glib::ustring selector) //, SelectorType selectortype,  Glib::ustring id = "")
-{
-    g_debug("SelectorsDialog::sp_get_selector_classes");
+    g_debug("SelectorsDialog::_getSelectorClasses");
 
     std::pair<Glib::ustring, Glib::ustring> result;
     std::vector<Glib::ustring> tokensplus = Glib::Regex::split_simple("[ ]+", selector);
     selector = tokensplus[tokensplus.size() - 1];
     // Erase any comma/space
-    REMOVE_SPACES(selector);
+    Util::trim(selector, ",");
     Glib::ustring toparse = Glib::ustring(selector);
     selector = Glib::ustring("");
     auto i = toparse.find(".");
@@ -699,7 +658,7 @@ void SelectorsDialog::_addToSelector(Gtk::TreeModel::Row row)
             if (!id)
                 continue;
             for (auto tok : tokens) {
-                Glib::ustring clases = sp_get_selector_classes(tok);
+                Glib::ustring clases = _getSelectorClasses(tok);
                 if (!clases.empty()) {
                     _insertClass(obj, clases);
                     std::vector<SPObject *> currentobjs = _getObjVec(multiselector);
@@ -775,7 +734,7 @@ void SelectorsDialog::_removeFromSelector(Gtk::TreeModel::Row row)
         if (iter) {
             Gtk::TreeModel::Row parent = *iter;
             Glib::ustring multiselector = parent[_mColumns._colSelector];
-            REMOVE_SPACES(multiselector);
+            Util::trim(multiselector, ",");
             obj = _getObjVec(objectLabel)[0];
             std::vector<Glib::ustring> tokens = Glib::Regex::split_simple("[,]+", multiselector);
             Glib::ustring selector = "";
@@ -784,7 +743,7 @@ void SelectorsDialog::_removeFromSelector(Gtk::TreeModel::Row row)
                     continue;
                 }
                 // TODO: handle when other selectors has the removed class applied to maybe not remove
-                Glib::ustring clases = sp_get_selector_classes(tok);
+                Glib::ustring clases = _getSelectorClasses(tok);
                 if (!clases.empty()) {
                     _removeClass(obj, tok, true);
                 }
@@ -793,7 +752,7 @@ void SelectorsDialog::_removeFromSelector(Gtk::TreeModel::Row row)
                     selector = selector.empty() ? tok : selector + "," + tok;
                 }
             }
-            REMOVE_SPACES(selector);
+            Util::trim(selector);
             if (selector.empty()) {
                 _store->erase(parent);
 
@@ -938,7 +897,7 @@ void SelectorsDialog::_removeClass(SPObject *obj, const Glib::ustring &className
         if (all && notfound) {
             classAttr = classAttrRestore;
         }
-        REMOVE_SPACES(classAttr);
+        Util::trim(classAttr, ",");
         if (classAttr.empty()) {
             obj->getRepr()->removeAttribute("class");
         } else {
@@ -1073,7 +1032,7 @@ void SelectorsDialog::_addSelector()
     delete textDialogPtr;
     // ==== Handle response ====
     // If class selector, add selector name to class attribute for each object
-    REMOVE_SPACES(selectorValue);
+    Util::trim(selectorValue, ",");
     if (originalValue.find("@import ") != std::string::npos) {
         Gtk::TreeModel::Row row = *(_store->prepend());
         row[_mColumns._colSelector] = originalValue;
@@ -1087,7 +1046,7 @@ void SelectorsDialog::_addSelector()
         std::vector<Glib::ustring> tokens = Glib::Regex::split_simple("[,]+", selectorValue);
         for (auto &obj : objVec) {
             for (auto tok : tokens) {
-                Glib::ustring clases = sp_get_selector_classes(tok);
+                Glib::ustring clases = _getSelectorClasses(tok);
                 if (clases.empty()) {
                     continue;
                 }
