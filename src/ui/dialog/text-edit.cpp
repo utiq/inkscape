@@ -70,17 +70,19 @@ namespace UI {
 namespace Dialog {
 
 TextEdit::TextEdit()
-    : DialogBase("/dialogs/textandfont", "Text"),
-      selectChangedConn(),
-      subselChangedConn(),
-      selectModifiedConn(),
-      blocked(false),
+    : DialogBase("/dialogs/textandfont", "Text")
+    , selectChangedConn()
+    , subselChangedConn()
+    , selectModifiedConn()
+    , blocked(false)
       /*
            TRANSLATORS: Test string used in text and font dialog (when no
            * text has been entered) to get a preview of the font.  Choose
            * some representative characters that users of your locale will be
            * interested in.*/
-      samplephrase(_("AaBbCcIiPpQq12369$\342\202\254\302\242?.;/()"))
+    , samplephrase(_("AaBbCcIiPpQq12369$\342\202\254\302\242?.;/()"))
+    , _undo{"doc.undo"}
+    , _redo{"doc.redo"}
 {
 
     std::string gladefile = get_filename_string(Inkscape::IO::Resource::UIS, "dialog-text-edit.glade");
@@ -128,7 +130,7 @@ TextEdit::TextEdit()
     add(*contents);
 
     /* Signal handlers */
-    text_view->signal_key_press_event().connect(sigc::mem_fun(*this, &TextEdit::pauseUndo));
+    text_view->signal_key_press_event().connect(sigc::mem_fun(*this, &TextEdit::captureUndo));
     text_buffer->signal_changed().connect(sigc::mem_fun(*this, &TextEdit::onChange));
     setasdefault_button->signal_clicked().connect(sigc::mem_fun(*this, &TextEdit::onSetDefault));
     apply_button->signal_clicked().connect(sigc::mem_fun(*this, &TextEdit::onApply));
@@ -150,24 +152,12 @@ TextEdit::~TextEdit()
     fontFeaturesChangedConn.disconnect();
 }
 
-bool TextEdit::pauseUndo(GdkEventKey *key)
+bool TextEdit::captureUndo(GdkEventKey *key)
 {
-    auto app = InkscapeApplication::instance()->gtk_app();
-    std::vector<Glib::ustring> undo_shortcut_names = app->get_accels_for_action("doc.undo");
-    std::vector<Glib::ustring> redo_shortcut_names = app->get_accels_for_action("doc.redo");
-
-    auto &shortcuts = Inkscape::Shortcuts::getInstance();
-    auto accelerator = shortcuts.get_from_event(key, false);
-
-    auto pred = [&accelerator](const Gtk::AccelKey &shortcut) {return accelerator.get_key() == shortcut.get_key() && accelerator.get_mod() == shortcut.get_mod();};
-
-    bool undo_redo_event = ((std::find_if(undo_shortcut_names.begin(), undo_shortcut_names.end(), pred) != undo_shortcut_names.end()) ||
-                            (std::find_if(redo_shortcut_names.begin(), redo_shortcut_names.end(), pred) != redo_shortcut_names.end()));
-
-    if(undo_redo_event) {
+    if (_undo.isTriggeredBy(key) || _redo.isTriggeredBy(key)) {
         /*
          * TODO: Handle these events separately after switching to GTKMM4
-	 * Fixes: https://gitlab.com/inkscape/inkscape/-/issues/744
+         * Fixes: https://gitlab.com/inkscape/inkscape/-/issues/744
          */
         return true;
     }

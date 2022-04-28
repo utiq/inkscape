@@ -27,6 +27,8 @@
 #include "ui/widget/font-selector.h"
 #include "ui/widget/font-variants.h"
 
+#include "util/action-accel.h"
+
 namespace Gtk {
 class Box;
 class Button;
@@ -95,7 +97,8 @@ protected:
      * This function would disable undo and redo if the text_view widget is in focus
      * It is to fix the issue: https://gitlab.com/inkscape/inkscape/-/issues/744
      */
-    bool pauseUndo(GdkEventKey *event);
+    bool captureUndo(GdkEventKey *event);
+
     /**
      * Callback invoked when the user modifies the text of the selected text object.
      *
@@ -175,6 +178,9 @@ private:
     double selected_fontsize;
     bool blocked;
     const Glib::ustring samplephrase;
+
+    // Track undo and redo keyboard shortcuts
+    Util::ActionAccel _undo, _redo;
 
     TextEdit(TextEdit const &d) = delete;
     TextEdit operator=(TextEdit const &d) = delete;
