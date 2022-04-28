@@ -508,7 +508,6 @@ bool SPCurve::append_continuous(SPCurve const &c1, double tolerance)
 
 /**
  * Remove last segment of curve.
- * (Only used once in /src/pen-context.cpp)
  */
 void SPCurve::backspace()
 {

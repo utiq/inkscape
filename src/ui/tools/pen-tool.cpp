@@ -85,6 +85,8 @@ const double HANDLE_CUBIC_GAP = 0.001;
 
 PenTool::PenTool(SPDesktop *desktop, std::string prefs_path, const std::string &cursor_filename)
     : FreehandBase(desktop, prefs_path, cursor_filename)
+    , _undo{"doc.undo"}
+    , _redo{"doc.redo"}
 {
     tablet_enabled = false;
 
@@ -163,7 +165,6 @@ void PenTool::setPolylineMode() {
 
 
 void PenTool::_cancel() {
-    this->num_clicks = 0;
     this->state = PenTool::STOP;
     this->_resetColors();
     c0->hide();
@@ -172,6 +173,7 @@ void PenTool::_cancel() {
     cl1->hide();
     this->message_context->clear();
     this->message_context->flash(Inkscape::NORMAL_MESSAGE, _("Drawing cancelled"));
+    _redo_stack.clear();
 }
 
 /**
@@ -976,15 +978,11 @@ bool PenTool::_handleKeyPress(GdkEvent *event) {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     gdouble const nudge = prefs->getDoubleLimited("/options/nudgedistance/value", 2, 0, 1000, "px"); // in px
 
-    // Check for undo if we have started drawing a path. User might have change shortcut.
-    if (this->npoints > 0) {
-        Gtk::AccelKey shortcut = Inkscape::Shortcuts::get_from_event((GdkEventKey*)event);
-        auto app = InkscapeApplication::instance();
-        auto gapp = app->gtk_app();
-        auto actions = gapp->get_actions_for_accel(shortcut.get_abbrev());
-        if (std::find(actions.begin(), actions.end(), "win.undo") != actions.end()) {
-            return _undoLastPoint();
-        }
+    // Check for undo/redo.
+    if (npoints > 0 && _undo.isTriggeredBy(&event->key)) {
+        return _undoLastPoint(true);
+    } else if (_redo.isTriggeredBy(&event->key)) {
+        return _redoLastPoint();
     }
 
     switch (get_latin_keyval (&event->key)) {
@@ -1163,12 +1161,6 @@ bool PenTool::_handleKeyPress(GdkEvent *event) {
         case GDK_KEY_Delete:
         case GDK_KEY_KP_Delete:
             ret = _undoLastPoint();
-            break;
-        case GDK_KEY_Z:
-        case GDK_KEY_z:
-            if (event->key.state & INK_GDK_PRIMARY_MASK) {
-                ret = _undoLastPoint();
-            }
             break;
         default:
             break;
@@ -1794,9 +1786,6 @@ void PenTool::_finishSegment(Geom::Point const q, guint const state) { // use 'q
         this->nextParaxialDirection(q, this->p[0], state);
     }
 
-    ++num_clicks;
-
-
     if (!this->red_curve.is_unset()) {
         this->_bsplineSpiro(state & GDK_SHIFT_MASK);
         if(!this->green_curve->is_unset() &&
@@ -1825,28 +1814,27 @@ void PenTool::_finishSegment(Geom::Point const q, guint const state) { // use 'q
         this->npoints = 2;
 
         red_curve.reset();
+        _redo_stack.clear();
     }
 }
 
-// Partial fix for https://bugs.launchpad.net/inkscape/+bug/171990
-// TODO: implement the redo feature
-bool PenTool::_undoLastPoint() {
+bool PenTool::_undoLastPoint(bool user_undo) {
     bool ret = false;
 
     if ( this->green_curve->is_unset() || (this->green_curve->last_segment() == nullptr) ) {
-        if (!this->red_curve.is_unset()) {
-            this->_cancel ();
-            ret = true;
-        } else {
-            // do nothing; this event should be handled upstream
+        if (red_curve.is_unset()) {
+            return ret; // do nothing; this event should be handled upstream
         }
+        _cancel();
+        ret = true;
     } else {
-        // Reset red curve
-        this->red_curve.reset();
-        // Get last segment
-        if ( this->green_curve->is_unset() ) {
-            g_warning("pen_handle_key_press, case GDK_KP_Delete: Green curve is empty");
-            return false;
+        red_curve.reset();
+        if (user_undo) {
+            if (_did_redo) {
+                _redo_stack.clear();
+                _did_redo = false;
+            }
+            _redo_stack.push_back(green_curve->get_pathvector());
         }
         // The code below assumes that this->green_curve has only ONE path !
         Geom::Curve const * crv = this->green_curve->last_segment();
@@ -1921,14 +1909,41 @@ bool PenTool::_undoLastPoint() {
     return ret;
 }
 
+/** Re-add the last undone point to the path being drawn */
+bool PenTool::_redoLastPoint()
+{
+    if (_redo_stack.empty()) {
+        return false;
+    }
+
+    auto old_green = std::move(_redo_stack.back());
+    _redo_stack.pop_back();
+    green_curve->set_pathvector(old_green);
+
+    if (auto const *last_seg = green_curve->last_segment()) {
+        Geom::Path freshly_added;
+        freshly_added.append(*last_seg);
+        green_bpaths.push_back(new CanvasItemBpath(_desktop->getCanvasSketch(), freshly_added, true));
+    }
+    green_bpaths.back()->set_stroke(green_color);
+    green_bpaths.back()->set_fill(0x0, SP_WIND_RULE_NONZERO);
+
+    auto const last_point = green_curve->last_point();
+    if (last_point) {
+        p[0] = p[1] = *last_point;
+    }
+    _setSubsequentPoint(p[3], true);
+    _bsplineSpiroBuild();
+
+    _did_redo = true;
+    return true;
+}
+
 void PenTool::_finish(gboolean const closed) {
     if (this->expecting_clicks_for_LPE > 1) {
         // don't let the path be finished before we have collected the required number of mouse clicks
         return;
     }
-
-
-    this->num_clicks = 0;
 
     this->_disableEvents();
 
@@ -1951,7 +1966,7 @@ void PenTool::_finish(gboolean const closed) {
     cl1->hide();
 
     this->green_anchor.reset();
-
+    _redo_stack.clear();
     this->_enableEvents();
 }
 
