@@ -388,6 +388,7 @@ Glib::ustring Find::find_replace(const gchar *str, const gchar *find, const gcha
 {
     Glib::ustring ustr = str;
     Glib::ustring ufind = find;
+    gsize replace_length = Glib::ustring(replace).length();
     if (!casematch) {
         ufind = ufind.lowercase();
     }
@@ -398,7 +399,7 @@ Glib::ustring Find::find_replace(const gchar *str, const gchar *find, const gcha
             return ustr;
         }
         // Start the next search after the last replace character to avoid infinite loops (replace "a" with "aaa" etc)
-        n = find_strcmp_pos(ustr.c_str(), ufind.c_str(), exact, casematch, n + strlen(replace) + 1);
+        n = find_strcmp_pos(ustr.c_str(), ufind.c_str(), exact, casematch, n + replace_length);
     }
     return ustr;
 }
