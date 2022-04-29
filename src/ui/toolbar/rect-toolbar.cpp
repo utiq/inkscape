@@ -204,6 +204,7 @@ RectToolbar::~RectToolbar()
         Inkscape::GC::release(_repr);
         _repr = nullptr;
     }
+    _changed.disconnect();
 }
 
 GtkWidget *
@@ -280,20 +281,18 @@ RectToolbar::defaults()
 void
 RectToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
 {
-    static sigc::connection changed;
-
     // use of dynamic_cast<> seems wrong here -- we just need to check the current tool
 
     if (dynamic_cast<Inkscape::UI::Tools::RectTool *>(ec)) {
         Inkscape::Selection *sel = desktop->getSelection();
 
-        changed = sel->connectChanged(sigc::mem_fun(*this, &RectToolbar::selection_changed));
+        _changed = sel->connectChanged(sigc::mem_fun(*this, &RectToolbar::selection_changed));
 
         // Synthesize an emission to trigger the update
         selection_changed(sel);
     } else {
-        if (changed) {
-            changed.disconnect();
+        if (_changed) {
+            _changed.disconnect();
         
             if (_repr) { // remove old listener
                 _repr->removeListenerByData(this);

@@ -90,6 +90,8 @@ private:
     void watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec);
     void selection_changed(Inkscape::Selection *selection);
 
+    sigc::connection _changed;
+
 protected:
     RectToolbar(SPDesktop *desktop);
     ~RectToolbar() override;
