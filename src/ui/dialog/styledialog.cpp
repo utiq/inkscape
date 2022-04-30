@@ -1282,8 +1282,6 @@ StyleDialog::_startValueEdit(Gtk::CellEditable* cell, const Glib::ustring& path,
             _setAutocompletion(entry, enum_shape_rendering);
         } else if (name == "color-rendering") {
             _setAutocompletion(entry, enum_color_rendering);
-        } else if (name == "overflow") {
-            _setAutocompletion(entry, enum_overflow);
         } else if (name == "clip-rule") {
             _setAutocompletion(entry, enum_clip_rule);
         } else if (name == "color-interpolation") {
