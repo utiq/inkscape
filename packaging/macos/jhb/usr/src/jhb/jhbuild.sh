@@ -42,7 +42,7 @@ JHBUILD_PYTHON_VER_MAJOR=3
 JHBUILD_PYTHON_VER_MINOR=8
 JHBUILD_PYTHON_VER=$JHBUILD_PYTHON_VER_MAJOR.$JHBUILD_PYTHON_VER_MINOR
 JHBUILD_PYTHON_URL="https://gitlab.com/api/v4/projects/26780227/packages/\
-generic/python_macos/11/python_${JHBUILD_PYTHON_VER/./}_$(uname -m).tar.xz"
+generic/python_macos/12/python_${JHBUILD_PYTHON_VER/./}_$(uname -m).tar.xz"
 JHBUILD_PYTHON_DIR=$OPT_DIR/Python.framework/Versions/$JHBUILD_PYTHON_VER
 JHBUILD_PYTHON_BIN_DIR=$JHBUILD_PYTHON_DIR/bin
 
@@ -108,7 +108,7 @@ function jhbuild_install
 
     for pem in "$TMP_DIR"/pem-*; do
       if ! openssl x509 -checkend 0 -noout -in "$pem"; then
-        echo_i "removing $pem: $(openssl x509 -enddate -noout -in "$pem")"
+        echo_d "removing $pem: $(openssl x509 -enddate -noout -in "$pem")"
         cat "$pem"
         rm "$pem"
       fi
@@ -154,6 +154,10 @@ function jhbuild_configure
     rsync -a --delete "$moduleset_dir"/ "$ETC_DIR/modulesets/$suffix/"
   fi
 
+  local target
+  target=$(/usr/libexec/PlistBuddy -c "Print \
+    :DefaultProperties:MACOSX_DEPLOYMENT_TARGET" "$SDKROOT"/SDKSettings.plist)
+
   # create custom jhbuildrc configuration
   {
     echo "# -*- mode: python -*-"
@@ -170,8 +174,8 @@ function jhbuild_configure
     echo "tarballdir = '$PKG_DIR'"
     echo "top_builddir = '$VAR_DIR/jhbuild'"
 
-    # set macOS SDK
-    echo "setup_sdk(sdkdir=\"$SDKROOT\")"
+    # setup macOS SDK
+    echo "setup_sdk(target=\"$target\")"
 
     # set release build
     echo "setup_release()"

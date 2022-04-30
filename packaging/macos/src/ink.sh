@@ -60,7 +60,7 @@ INK_PYTHON_VER_MAJOR=3
 INK_PYTHON_VER_MINOR=10
 INK_PYTHON_VER=$INK_PYTHON_VER_MAJOR.$INK_PYTHON_VER_MINOR
 INK_PYTHON_URL="https://gitlab.com/api/v4/projects/26780227/packages/generic/\
-python_macos/10/python_${INK_PYTHON_VER/./}_$(uname -m)_inkscape.tar.xz"
+python_macos/12/python_${INK_PYTHON_VER/./}_$(uname -m)_inkscape.tar.xz"
 INK_PYTHON_ICON_URL="https://gitlab.com/inkscape/vectors/content/-/raw/\
 5f4f4cdf/branding/projects/extensions_c1.svg"
 
@@ -110,8 +110,8 @@ INK_PYTHON_PKG_PILLOW=Pillow==9.0.0
 # https://pypi.org/project/pycairo/
 # https://pypi.org/project/PyGObject/
 INK_PYTHON_PKG_PYGOBJECT="\
-  PyGObject==3.42.0\
-  pycairo==1.20.1\
+  PyGObject==3.42.1\
+  pycairo==1.21.0\
 "
 
 # https://pypi.org/project/pyserial/

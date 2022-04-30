@@ -99,18 +99,6 @@
     </dependencies>
   </autotools>
 
-<!-- GNU Find Utilities https://www.gnu.org/software/findutils/ -->
-  <autotools
-    id="findutils"
-    autogen-sh="configure">
-    <branch
-      module="findutils/findutils-4.7.0.tar.xz"
-      version="4.7.0"
-      hash="sha256:c5fefbdf9858f7e4feb86f036e1247a54c79fc2d8e4b7064d5aaa1f47dfa789a"
-      repo="gnu">
-    </branch>
-  </autotools>
-
   <!-- Google Testing and Mocking Framework https://github.com/google/googletest -->
   <cmake
     id="googletest">
@@ -296,6 +284,7 @@
       <dep package="libcdr"/>
       <dep package="libsoup"/>
       <dep package="libvisio"/>
+      <dep package="libwebp"/>
       <dep package="openjpeg"/>
       <dep package="openmp"/>
       <dep package="poppler"/>
@@ -325,17 +314,12 @@
   <cmake
     id="openmp">
     <branch
-      module="llvm/llvm-project/releases/download/llvmorg-11.0.0/openmp-11.0.0.src.tar.xz"
-      version="11.0.0"
-      hash="sha256:2d704df8ca67b77d6d94ebf79621b0f773d5648963dd19e0f78efef4404b684c"
+      module="llvm/llvm-project/releases/download/llvmorg-12.0.1/openmp-12.0.1.src.tar.xz"
+      version="12.0.1"
+      hash="sha256:60fe79440eaa9ebf583a6ea7f81501310388c02754dbe7dc210776014d06b091"
       repo="github"
-      checkoutdir="openmp-11.0.0">
+      checkoutdir="openmp-12.0.1">
     </branch>
-    <dependencies>
-      <!-- TODO
-      <dep package="package-name"/>
-      -->
-    </dependencies>
   </cmake>
 
   <!-- Poppler https://poppler.freedesktop.org -->
@@ -376,21 +360,21 @@
 
   <!-- Rust https://www.rust-lang.org
 
-       Rust has a custom setup routine (rustup) which is wrapped into
-       a cmake file introduced by that patch below.
+    Rust has a custom setup routine (rustup) which is wrapped into
+    a cmake file introduced by that patch below.
   -->
   <cmake
     id="rust"
-    cmakeargs="-DVERSION=1.48.0"
+    cmakeargs="-DVERSION=1.59.0"
     supports-non-srcdir-builds="no"
     use-ninja="no">
     <branch
-      module="rust-lang/rustup/archive/1.22.1.tar.gz"
-      version="1.22.1"
-      hash="sha256:ad46cc624f318a9493aa62fc9612a450564fe20ba93c689e0ad856bff3c64c5b"
+      module="rust-lang/rustup/archive/1.24.3.tar.gz"
+      version="1.24.3"
+      hash="sha256:24a8cede4ccbbf45ab7b8de141d92f47d1881bb546b3b9180d5a51dc0622d0f6"
       repo="github"
-      checkoutdir="rustup-1.22.1"
-      rename-tarball="rustup-1.22.1.tar.gz">
+      checkoutdir="rustup-1.24.3"
+      rename-tarball="rustup-1.24.3.tar.gz">
       <patch
         file="rust_cmake_install.patch"
         strip="1"/>

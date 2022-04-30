@@ -4,7 +4,7 @@
 
 ### description ################################################################
 
-# JHB variables.
+# Release artifact.
 
 ### shellcheck #################################################################
 
@@ -13,11 +13,13 @@
 
 ### variables ##################################################################
 
-JHB_ARCHIVE=$(basename "$VER_DIR").tar.xz
+RELEASE_ARCHIVE=${RELEASE_ARCHIVE:-$(basename "$VER_DIR")_$(uname -m).tar.xz}
 
-# https://github.com/dehesselle/jhb
-JHB_URL=https://github.com/dehesselle/jhb/releases/download/\
-v$VERSION/$JHB_ARCHIVE
+RELEASE_URL=$(eval echo "${RELEASE_URL:-${RELEASE_URL_TEMPLATE:-\
+https://github.com/dehesselle/jhb/releases/download/\
+v$VERSION/$RELEASE_ARCHIVE}}")
+
+RELEASE_OVERLAY=overlay
 
 ### functions ##################################################################
 
