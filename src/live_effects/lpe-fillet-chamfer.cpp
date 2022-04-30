@@ -415,7 +415,7 @@ void LPEFilletChamfer::doBeforeEffect(SPLPEItem const *lpeItem)
         }
         for (size_t i = 0; i < nodesatellites.size(); ++i) {
             for (size_t j = 0; j < nodesatellites[i].size(); ++j) {
-                if (j >= count_path_nodes(pathvres[i])) {
+                if (pathvres.size() <= i || j >= count_path_nodes(pathvres[i])) {
                     // we are on the end of a open path
                     // for the moment we dont want to use
                     // this nodesatellite so simplest do nothing with it
@@ -438,7 +438,7 @@ void LPEFilletChamfer::doBeforeEffect(SPLPEItem const *lpeItem)
                     nodesatellites[i][j].setSelected(true);
                 }
             }
-            if (!pathvres[i].closed()) {
+            if (pathvres.size() > i && !pathvres[i].closed()) {
                 nodesatellites[i][0].amount = 0;
                 nodesatellites[i][count_path_nodes(pathvres[i]) - 1].amount = 0;
             }

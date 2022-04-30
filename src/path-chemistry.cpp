@@ -234,6 +234,7 @@ ObjectSet::breakApart(bool skip_undo, bool overlapping, bool silent)
         gchar *path_effect = g_strdup(item->getRepr()->attribute("inkscape:path-effect"));
         Geom::Affine transform = path->transform;
         // it's going to resurrect as one of the pieces, so we delete without advertisement
+        SPDocument *document = item->document;
         item->deleteObject(false);
 
         auto list = overlapping ? curve->split() : curve->split_non_overlapping();
@@ -256,7 +257,10 @@ ObjectSet::breakApart(bool skip_undo, bool overlapping, bool silent)
             // add the new repr to the parent
             // move to the saved position
             parent->addChildAtPos(repr, pos);
-
+            SPLPEItem *lpeitem = nullptr;
+            if (path_effect && (( lpeitem = dynamic_cast<SPLPEItem *>(document->getObjectByRepr(repr)) )) ) {
+                lpeitem->forkPathEffectsIfNecessary(1);
+            }
             // if it's the first one, restore id
             if (curve == list.front())
                 repr->setAttribute("id", id);
