@@ -81,9 +81,7 @@
 #include "widget-sizes.h"
 
 #include "ui/widget/color-palette.h"
-#include "ui/widget/preview.h"
-#include "ui/dialog/color-item.h"
-#include "widgets/ege-paint-def.h"
+#include "widgets/paintdef.h"
 
 using Inkscape::DocumentUndo;
 using Inkscape::UI::Dialog::DialogContainer;

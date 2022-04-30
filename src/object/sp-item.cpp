@@ -1621,8 +1621,8 @@ void SPItem::doWriteTransform(Geom::Affine const &transform, Geom::Affine const 
     set_item_transform(transform_attr);
 
     // Note: updateRepr comes before emitting the transformed signal since
-    // it causes clone SPUse's copy of the original object to brought up to
-    // date with the original.  Otherwise, sp_use_bbox returns incorrect
+    // it causes clone SPUse's copy of the original object to be brought up to
+    // date with the original. Otherwise, sp_use_bbox returns incorrect
     // values if called in code handling the transformed signal.
     updateRepr();
 

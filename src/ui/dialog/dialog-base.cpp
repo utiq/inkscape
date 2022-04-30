@@ -288,6 +288,7 @@ void DialogBase::desktopDestroyed(SPDesktop* old_desktop)
 {
     if (old_desktop == desktop && desktop) {
         unsetDesktop();
+        desktopReplaced();
         set_sensitive(false);
     }
 }

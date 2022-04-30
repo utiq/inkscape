@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * @brief Inkscape color swatch UI item.
+ * @brief Color item used in palettes and swatches UI.
  */
-/* Authors:
- *   Jon A. Cruz
- *
- * Copyright (C) 2010 Jon A. Cruz
- *
+/* Authors: PBS <pbs3141@gmail.com>
+ * Copyright (C) 2022 PBS
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_DIALOGS_COLOR_ITEM_H
-#define SEEN_DIALOGS_COLOR_ITEM_H
+#ifndef INKSCAPE_UI_DIALOG_COLOR_ITEM_H
+#define INKSCAPE_UI_DIALOG_COLOR_ITEM_H
 
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <gtkmm.h>
+#include <boost/variant.hpp> // TODO: Upgrade to boost::variant2 or std::variant when possible.
+#include <boost/noncopyable.hpp>
+#include <cairomm/cairomm.h>
+#include <gtkmm/drawingarea.h>
 
-#include "widgets/ege-paint-def.h"
-#include "ui/widget/preview.h"
+#include "src/widgets/paintdef.h"
 
 class SPGradient;
 
@@ -25,86 +23,86 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-class ColorItem;
-
-class SwatchPage
-{
-public:
-    SwatchPage();
-    ~SwatchPage();
-
-    Glib::ustring _name;
-    int _prefWidth;
-    boost::ptr_vector<ColorItem> _colors;
-};
-
+class DialogBase;
 
 /**
- * The color swatch you see on screen as a clickable box.
+ * The color item you see on-screen as a clickable box.
+ *
+ * Note: This widget must be outlived by its parent dialog, passed in the constructor.
  */
-class ColorItem final : public sigc::trackable
+class ColorItem final : public Gtk::DrawingArea, boost::noncopyable
 {
-    friend void _loadPaletteFile( gchar const *filename );
-
 public:
-    ColorItem();
-    ColorItem(ege::PaintDef::ColorType type);
-    ColorItem(unsigned r, unsigned g, unsigned b, Glib::ustring &name);
-    ~ColorItem();
-    virtual ColorItem &operator=(ColorItem const &other);
+    /// Create a static color from a paintdef.
+    ColorItem(PaintDef const&, DialogBase*);
 
-    void buttonClicked(bool secondary = false);
+    /**
+     * Create a dynamically-updating color from a gradient, to which it remains linked.
+     * If the gradient is destroyed, the widget will go into an inactive state.
+     */
+    ColorItem(SPGradient*, DialogBase*);
 
-    void setGradient(SPGradient *grad);
-    SPGradient * getGradient() const { return _grad; }
-    void setPattern(cairo_pattern_t *pattern);
+    /// Update the fill indicator, showing this widget is the fill of the current selection.
+    void set_fill(bool);
 
-    void setState( bool fill, bool stroke );
-    bool isFill() { return _isFill; }
-    bool isStroke() { return _isStroke; }
+    /// Update the stroke indicator, showing this widget is the stroke of the current selection.
+    void set_stroke(bool);
 
-    ege::PaintDef def;
-
-    Gtk::Widget* createWidget();
-
-    void onPreviewDestroyed(UI::Widget::Preview *preview);
+protected:
+    bool on_draw(Cairo::RefPtr<Cairo::Context> const&) override;
+    void on_size_allocate(Gtk::Allocation&) override;
+    bool on_enter_notify_event(GdkEventCrossing*) override;
+    bool on_leave_notify_event(GdkEventCrossing*) override;
+    bool on_button_press_event(GdkEventButton*) override;
+    bool on_button_release_event(GdkEventButton*) override;
+    void on_drag_data_get(Glib::RefPtr<Gdk::DragContext> const &context, Gtk::SelectionData &selection_data, guint info, guint time) override;
+    void on_drag_begin(Glib::RefPtr<Gdk::DragContext> const&) override;
 
 private:
-    void _dragGetColorData(const Glib::RefPtr<Gdk::DragContext> &drag_context,
-                           Gtk::SelectionData                   &data,
-                           guint                                 info,
-                           guint                                 time);
+    // Common post-construction setup.
+    void common_setup();
 
-    void _updatePreviews();
-    void _regenPreview(UI::Widget::Preview * preview);
+    // Perform the on-click action of setting the fill or stroke.
+    void on_click(bool stroke);
 
-    void drag_begin(const Glib::RefPtr<Gdk::DragContext> &dc);
-    void handleClick();
-    void handleSecondaryClick(gint arg1);
-    bool handleEnterNotify(GdkEventCrossing* event);
-    bool handleLeaveNotify(GdkEventCrossing* event);
+    // Perform the right-click action of showing the context menu.
+    void on_rightclick(GdkEventButton *event);
 
-    std::vector<UI::Widget::Preview*> _previews;
+    // Draw the color only (i.e. no indicators) to a Cairo context. Used for drawing both the widget and the drag/drop icon.
+    void draw_color(Cairo::RefPtr<Cairo::Context> const &cr, int w, int h) const;
 
-    bool _isFill = false;
-    bool _isStroke = false;
-    SPGradient *_grad = nullptr;
-    cairo_pattern_t *_pattern = nullptr;
+    // Construct an equivalent paintdef for use during drag/drop.
+    PaintDef to_paintdef() const;
+
+    // Return the color (or average if a gradient), for choosing the color of the fill/stroke indicators.
+    std::array<double, 3> average_color() const;
+
+    // Description of the color, shown in help text.
+    Glib::ustring description;
+
+    // The color.
+    struct NoneData {};
+    struct RGBData { std::array<unsigned, 3> rgb; };
+    struct GradientData { SPGradient *gradient; };
+    boost::variant<NoneData, RGBData, GradientData> data;
+
+    // The dialog this widget belongs to. Used for determining what desktop to take action on.
+    DialogBase *dialog;
+
+    // Whether this color is in use as the fill or stroke of the current selection.
+    bool is_fill = false;
+    bool is_stroke = false;
+
+    // A cache of the widget contents, if necessary.
+    Cairo::RefPtr<Cairo::ImageSurface> cache;
+    bool cache_dirty = true;
+
+    // For ensuring that clicks that release outside the widget don't count.
+    bool mouse_inside = false;
 };
 
 } // namespace Dialog
 } // namespace UI
 } // namespace Inkscape
 
-#endif // SEEN_DIALOGS_COLOR_ITEM_H
-
-/*
-  Local Variables:
-  mode:c++
-  c-file-style:"stroustrup"
-  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
-  indent-tabs-mode:nil
-  fill-column:99
-  End:
-*/
-// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :
+#endif // INKSCAPE_UI_DIALOG_COLOR_ITEM_H

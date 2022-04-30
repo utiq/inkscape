@@ -42,7 +42,7 @@
 #include "ui/widget/canvas.h"  // Target, canvas to world transform.
 
 #include "widgets/desktop-widget.h"
-#include "widgets/ege-paint-def.h"
+#include "widgets/paintdef.h"
 
 using Inkscape::DocumentUndo;
 
@@ -180,27 +180,22 @@ ink_drag_data_received(GtkWidget *widget,
             bool worked = false;
             Glib::ustring colorspec;
             if ( gtk_selection_data_get_format (data) == 8 ) {
-                ege::PaintDef color;
+                PaintDef color;
                 worked = color.fromMIMEData("application/x-oswb-color",
-                                            reinterpret_cast<char const *>(gtk_selection_data_get_data (data)),
-                                            gtk_selection_data_get_length (data),
-                                            gtk_selection_data_get_format (data));
+                                            reinterpret_cast<char const*>(gtk_selection_data_get_data(data)),
+                                            gtk_selection_data_get_length(data));
                 if ( worked ) {
-                    if ( color.getType() == ege::PaintDef::CLEAR ) {
-                        colorspec = ""; // TODO check if this is sufficient
-                    } else if ( color.getType() == ege::PaintDef::NONE ) {
+                    if ( color.get_type() == PaintDef::NONE ) {
                         colorspec = "none";
                     } else {
-                        unsigned int r = color.getR();
-                        unsigned int g = color.getG();
-                        unsigned int b = color.getB();
+                        auto [r, g, b] = color.get_rgb();
 
                         SPGradient* matches = nullptr;
                         std::vector<SPObject *> gradients = doc->getResourceList("gradient");
                         for (auto gradient : gradients) {
                             SPGradient* grad = SP_GRADIENT(gradient);
-                            if ( color.descr == grad->getId() ) {
-                                if ( grad->hasStops() ) {
+                            if (color.get_description() == grad->getId()) {
+                                if (grad->hasStops()) {
                                     matches = grad;
                                     break;
                                 }

@@ -35,14 +35,13 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef SEEN_EGE_PAINT_DEF_H
-#define SEEN_EGE_PAINT_DEF_H
+#ifndef INKSCAPE_WIDGETS_PAINTDEF_H
+#define INKSCAPE_WIDGETS_PAINTDEF_H
 
 #include <string>
 #include <vector>
-#include <sigc++/signal.h>
-
-namespace ege {
+#include <array>
+#include <utility>
 
 /**
  * Pure data representation of a color definition.
@@ -50,39 +49,33 @@ namespace ege {
 class PaintDef
 {
 public:
-    enum ColorType{CLEAR, NONE, RGB};
+    enum ColorType
+    {
+        NONE,
+        RGB
+    };
 
+    /// Create a color of type NONE
     PaintDef();
-    PaintDef(ColorType type);
-    PaintDef(unsigned r, unsigned g, unsigned b, std::string description);
 
-    PaintDef( PaintDef const &other );
-    virtual PaintDef& operator=( PaintDef const &other );
+    /// Create a color of type RGB
+    PaintDef(std::array<unsigned, 3> const &rgb, std::string description);
 
-    ColorType getType() const { return type; }
+    std::string const &get_description() const { return description; }
+    ColorType get_type() const { return type; }
+    std::array<unsigned, 3> const &get_rgb() const { return rgb; }
 
-    std::vector<std::string> getMIMETypes();
-    void getMIMEData(std::string const & type, char*& dest, int& len, int& format);
-    bool fromMIMEData(std::string const & type, char const * data, int len, int format);
-
-    void setRGB(unsigned r, unsigned g, unsigned b);
-    unsigned getR() const { return r; }
-    unsigned getG() const { return g; }
-    unsigned getB() const { return b; }
-
-    std::string descr;
-    bool editable;
-
-    sigc::signal<void()> signal_changed;
+    static std::vector<std::string> const &getMIMETypes();
+    std::pair<std::vector<char>, int> getMIMEData(std::string const &type) const;
+    bool fromMIMEData(std::string const &type, char const *data, int len);
 
 protected:
+    std::string description;
     ColorType type;
-    unsigned r, g, b;
+    std::array<unsigned, 3> rgb;
 };
 
-} // namespace ege
-
-#endif // SEEN_EGE_PAINT_DEF_H
+#endif // INKSCAPE_WIDGETS_PAINTDEF_H
 
 /*
   Local Variables:

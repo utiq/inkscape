@@ -1,385 +1,476 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/**
- * @file
- * Inkscape color swatch UI item.
- */
-/* Authors:
- *   Jon A. Cruz
- *   Abhishek Sharma
- *
- * Copyright (C) 2010 Jon A. Cruz
- *
- * Released under GNU GPL v2+, read the file 'COPYING' for more information.
- */
-
-#include <cerrno>
-
-#include <gtkmm/label.h>
-#include <glibmm/i18n.h>
-
 #include "color-item.h"
 
-#include "desktop.h"
-
-#include "desktop-style.h"
-#include "display/cairo-utils.h"
-#include "document.h"
-#include "document-undo.h"
-#include "inkscape.h" // for SP_ACTIVE_DESKTOP
-#include "message-context.h"
+#include <cstdint>
+#include <cairomm/cairomm.h>
+#include <glibmm/convert.h>
+#include <glibmm/i18n.h>
+#include <gdkmm/general.h>
 
 #include "io/resource.h"
 #include "io/sys.h"
+#include "object/sp-gradient.h"
 #include "svg/svg-color.h"
+#include "hsluv.h"
+#include "display/cairo-utils.h"
+#include "desktop-style.h"
+#include "actions/actions-tools.h"
+#include "message-context.h"
+#include "ui/dialog/dialog-base.h"
+#include "ui/dialog/dialog-container.h"
 #include "ui/icon-names.h"
-#include "ui/widget/gradient-vector-selector.h"
 
+namespace {
+
+double get_perceptual_lightness(double r, double g, double b)
+{
+    double h, s, l;
+    Hsluv::rgb_to_hsluv(r, g, b, &h, &s, &l);
+    return l <= 0.885645168 ? l * 0.09032962963 : std::pow(l, 1.0 / 3.0) * 0.249914424 - 0.16;
+}
+
+class Globals
+{
+    Globals()
+    {
+        load_removecolor();
+        load_mimetargets();
+    }
+
+    void load_removecolor()
+    {
+        auto path_utf8 = (Glib::ustring)Inkscape::IO::Resource::get_path(Inkscape::IO::Resource::SYSTEM, Inkscape::IO::Resource::PIXMAPS, "remove-color.png");
+        auto path = Glib::filename_from_utf8(path_utf8);
+        auto pixbuf = Gdk::Pixbuf::create_from_file(path);
+        if (!pixbuf) {
+            g_warning("Null pixbuf for %p [%s]", path.c_str(), path.c_str());
+        }
+        removecolor = Gdk::Cairo::create_surface_from_pixbuf(pixbuf, 1);
+    }
+
+    void load_mimetargets()
+    {
+        auto &mimetypes = PaintDef::getMIMETypes();
+        mimetargets.reserve(mimetypes.size());
+        for (int i = 0; i < mimetypes.size(); i++) {
+            mimetargets.emplace_back(mimetypes[i], (Gtk::TargetFlags)0, i);
+        }
+    }
+
+public:
+    static Globals &get()
+    {
+        static Globals instance;
+        return instance;
+    }
+
+    // The "remove-color" image.
+    Cairo::RefPtr<Cairo::ImageSurface> removecolor;
+
+    // The MIME targets for drag and drop, in the format expected by GTK.
+    std::vector<Gtk::TargetEntry> mimetargets;
+};
+
+} // namespace
 
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-static std::vector<std::string> mimeStrings;
-static std::map<std::string, guint> mimeToInt;
+ColorItem::ColorItem(PaintDef const &paintdef, DialogBase *dialog)
+    : dialog(dialog)
+{
+    if (paintdef.get_type() == PaintDef::RGB) {
+        data = RGBData{paintdef.get_rgb()};
+    } else {
+        data = NoneData{};
+    }
+    description = paintdef.get_description();
 
-void
-ColorItem::handleClick() {
-    buttonClicked(false);
+    common_setup();
 }
 
-void
-ColorItem::handleSecondaryClick(gint /*arg1*/) {
-    buttonClicked(true);
+ColorItem::ColorItem(SPGradient *gradient, DialogBase *dialog)
+    : dialog(dialog)
+{
+    data = GradientData{gradient};
+    description = gradient->getId();
+
+    gradient->connectRelease(sigc::track_obj([this] (SPObject*) {
+        boost::get<GradientData>(data).gradient = nullptr;
+    }, *this));
+
+    gradient->connectModified(sigc::track_obj([this] (SPObject*, unsigned flags) {
+        if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
+            cache_dirty = true;
+            queue_draw();
+        }
+    }, *this));
+
+    common_setup();
 }
 
-bool
-ColorItem::handleEnterNotify(GdkEventCrossing* /*event*/) {
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    if ( desktop ) {
-        gchar* msg = g_strdup_printf(_("Color: <b>%s</b>; <b>Click</b> to set fill, <b>Shift+click</b> to set stroke"),
-                def.descr.c_str());
-        desktop->tipsMessageContext()->set(Inkscape::INFORMATION_MESSAGE, msg);
-        g_free(msg);
+void ColorItem::common_setup()
+{
+    set_name("ColorItem");
+    set_tooltip_text(description);
+    add_events(Gdk::ENTER_NOTIFY_MASK |
+               Gdk::LEAVE_NOTIFY_MASK |
+               Gdk::BUTTON_PRESS_MASK |
+               Gdk::BUTTON_RELEASE_MASK);
+    drag_source_set(Globals::get().mimetargets, Gdk::BUTTON1_MASK, Gdk::ACTION_MOVE | Gdk::ACTION_COPY);
+}
+
+void ColorItem::draw_color(Cairo::RefPtr<Cairo::Context> const &cr, int w, int h) const
+{
+    if (boost::get<NoneData>(&data)) {
+        if (auto surface = Globals::get().removecolor) {
+            cr->save();
+            cr->scale((double)w / surface->get_width(), (double)h / surface->get_height());
+            cr->set_source(surface, 0, 0);
+            cr->paint();
+            cr->restore();
+        }
+    } else if (auto rgbdata = boost::get<RGBData>(&data)) {
+        auto [r, g, b] = rgbdata->rgb;
+        cr->set_source_rgb(r / 255.0, g / 255.0, b / 255.0);
+        cr->paint();
+    } else if (auto graddata = boost::get<GradientData>(&data)) {
+        // Gradient pointer may be null if the gradient was destroyed.
+        auto grad = graddata->gradient;
+        if (!grad) return;
+
+        auto pat_checkerboard = Cairo::RefPtr<Cairo::Pattern>(new Cairo::Pattern(ink_cairo_pattern_create_checkerboard(), true));
+        auto pat_gradient     = Cairo::RefPtr<Cairo::Pattern>(new Cairo::Pattern(grad->create_preview_pattern(w),         true));
+
+        cr->set_source(pat_checkerboard);
+        cr->paint();
+        cr->set_source(pat_gradient);
+        cr->paint();
+    }
+}
+
+bool ColorItem::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
+{
+    auto w = get_width();
+    auto h = get_height();
+
+    // Only using caching for none and gradients. None is included because the image is huge.
+    bool use_cache = boost::get<NoneData>(&data) || boost::get<GradientData>(&data);
+
+    if (use_cache) {
+        // Ensure cache exists and has correct size.
+        if (!cache || cache->get_width() != w || cache->get_height() != h) {
+            cache = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w, h);
+            cache_dirty = true;
+        }
+        // Ensure cache contents is up-to-date.
+        if (cache_dirty) {
+            draw_color(Cairo::Context::create(cache), w, h);
+            cache_dirty = false;
+        }
+        // Paint from cache.
+        cr->set_source(cache, 0, 0);
+        cr->paint();
+    } else {
+        // Paint directly.
+        draw_color(cr, w, h);
     }
 
+    // Draw fill/stroke indicators.
+    if (is_fill || is_stroke) {
+        auto [r, g, b] = average_color();
+        auto l = get_perceptual_lightness(r, g, b);
+
+        auto constexpr l_threshold = 0.85;
+        if (l > l_threshold) {
+            // Draw dark over light.
+            auto t = (l - l_threshold) / (1.0 - l_threshold);
+            cr->set_source_rgba(0.0, 0.0, 0.0, 0.4 - 0.1 * t);
+        } else {
+            // Draw light over dark.
+            auto t = (l_threshold - l) / l_threshold;
+            cr->set_source_rgba(1.0, 1.0, 1.0, 0.6 + 0.1 * t);
+        }
+
+        // Scale so that the square -1...1 is the biggest possible square centred in the widget.
+        auto minwh = std::min(w, h);
+        cr->translate((w - minwh) / 2.0, (h - minwh) / 2.0);
+        cr->scale(minwh / 2.0, minwh / 2.0);
+        cr->translate(1.0, 1.0);
+
+        if (is_fill) {
+            cr->arc(0.0, 0.0, 0.35, 0.0, 2 * M_PI);
+            cr->fill();
+        }
+
+        if (is_stroke) {
+            cr->set_fill_rule(Cairo::FILL_RULE_EVEN_ODD);
+            cr->arc(0.0, 0.0, 0.65, 0.0, 2 * M_PI);
+            cr->arc(0.0, 0.0, 0.5, 0.0, 2 * M_PI);
+            cr->fill();
+        }
+    }
+
+    return true;
+}
+
+void ColorItem::on_size_allocate(Gtk::Allocation &allocation)
+{
+    Gtk::DrawingArea::on_size_allocate(allocation);
+    cache_dirty = true;
+}
+
+bool ColorItem::on_enter_notify_event(GdkEventCrossing*)
+{
+    mouse_inside = true;
+    if (auto desktop = dialog->getDesktop()) {
+        auto msg = Glib::ustring::compose(_("Color: <b>%1</b>; <b>Click</b> to set fill, <b>Shift+click</b> to set stroke"), description);
+        desktop->tipsMessageContext()->set(Inkscape::INFORMATION_MESSAGE, msg.c_str());
+    }
     return false;
 }
 
-bool
-ColorItem::handleLeaveNotify(GdkEventCrossing* /*event*/) {
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-
-    if ( desktop ) {
+bool ColorItem::on_leave_notify_event(GdkEventCrossing*)
+{
+    mouse_inside = false;
+    if (auto desktop = dialog->getDesktop()) {
         desktop->tipsMessageContext()->clear();
     }
-
     return false;
 }
 
-// TODO resolve this more cleanly:
-extern bool colorItemHandleButtonPress(GdkEventButton* event, UI::Widget::Preview *preview, gpointer user_data);
-
-void
-ColorItem::drag_begin(const Glib::RefPtr<Gdk::DragContext> &dc)
+bool ColorItem::on_button_press_event(GdkEventButton *event)
 {
-    using Inkscape::IO::Resource::get_path;
-    using Inkscape::IO::Resource::PIXMAPS;
-    using Inkscape::IO::Resource::SYSTEM;
-    int width = 32;
-    int height = 24;
-
-    if (def.getType() != ege::PaintDef::RGB){
-        GError *error;
-        gsize bytesRead = 0;
-        gsize bytesWritten = 0;
-        gchar *localFilename = g_filename_from_utf8(get_path(SYSTEM, PIXMAPS, "remove-color.png"), -1, &bytesRead,
-                &bytesWritten, &error);
-        auto pixbuf = Gdk::Pixbuf::create_from_file(localFilename, width, height, false);
-        g_free(localFilename);
-        dc->set_icon(pixbuf, 0, 0);
-    } else {
-        Glib::RefPtr<Gdk::Pixbuf> pixbuf;
-        if (getGradient() ){
-            cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-            cairo_pattern_t *gradient = getGradient()->create_preview_pattern(width);
-            cairo_t *ct = cairo_create(s);
-            cairo_set_source(ct, gradient);
-            cairo_paint(ct);
-            cairo_destroy(ct);
-            cairo_pattern_destroy(gradient);
-            cairo_surface_flush(s);
-
-            pixbuf = Glib::wrap(ink_pixbuf_create_from_cairo_surface(s));
-        } else {
-            pixbuf = Gdk::Pixbuf::create( Gdk::COLORSPACE_RGB, false, 8, width, height );
-            guint32 fillWith = (0xff000000 & (def.getR() << 24))
-                | (0x00ff0000 & (def.getG() << 16))
-                | (0x0000ff00 & (def.getB() <<  8));
-            pixbuf->fill( fillWith );
-        }
-        dc->set_icon(pixbuf, 0, 0);
+    if (event->button == 3) {
+        on_rightclick(event);
+        return true;
     }
+    // Return true necessary to avoid stealing the canvas focus.
+    return true;
 }
 
-SwatchPage::SwatchPage()
-    : _prefWidth(0)
+bool ColorItem::on_button_release_event(GdkEventButton* event)
 {
-}
-
-SwatchPage::~SwatchPage() = default;
-
-ColorItem::ColorItem(ege::PaintDef::ColorType type)
-    : def(type)
-{
-    def.signal_changed.connect([this] { _updatePreviews(); });
-}
-
-ColorItem::ColorItem(unsigned r, unsigned g, unsigned b, Glib::ustring &name)
-    : def(r, g, b, name.raw())
-{
-    def.signal_changed.connect([this] { _updatePreviews(); });
-}
-
-ColorItem::~ColorItem()
-{
-    if (_pattern != nullptr) {
-        cairo_pattern_destroy(_pattern);
+    if (mouse_inside && (event->button == 1 || event->button == 2)) {
+        bool stroke = event->button == 2 || (event->state & GDK_SHIFT_MASK);
+        on_click(stroke);
+        return true;
     }
+    return false;
 }
 
-ColorItem &ColorItem::operator=(ColorItem const &other)
+void ColorItem::on_click(bool stroke)
 {
-    if ( this != &other ) {
-        def = other.def;
-    }
-    return *this;
-}
+    auto desktop = dialog->getDesktop();
+    if (!desktop) return;
 
-void ColorItem::setState(bool fill, bool stroke)
-{
-    if (_isFill != fill || _isStroke != stroke) {
-        _isFill = fill;
-        _isStroke = stroke;
+    auto attr_name = stroke ? "stroke" : "fill";
+    auto css = std::unique_ptr<SPCSSAttr, void(*)(SPCSSAttr*)>(sp_repr_css_attr_new(), [] (auto p) {sp_repr_css_attr_unref(p);});
 
-        for (auto preview : _previews) {
-            preview->set_fillstroke(_isFill, _isStroke);
-        }
-    }
-}
-
-void ColorItem::setGradient(SPGradient *grad)
-{
-    if (_grad != grad) {
-        _grad = grad;
-        // TODO regen and push to listeners
-    }
-}
-
-void ColorItem::setPattern(cairo_pattern_t *pattern)
-{
-    if (_pattern) {
-        cairo_pattern_destroy(_pattern);
-    }
-    _pattern = pattern;
-    if (_pattern) {
-        cairo_pattern_reference(_pattern);
+    Glib::ustring descr;
+    if (boost::get<NoneData>(&data)) {
+        sp_repr_css_set_property(css.get(), attr_name, "none");
+        descr = stroke ? _("Set stroke color to none") : _("Set fill color to none");
+    } else if (auto rgbdata = boost::get<RGBData>(&data)) {
+        auto [r, g, b] = rgbdata->rgb;
+        uint32_t rgba = (r << 24) | (g << 16) | (b << 8) | 0xff;
+        char buf[64];
+        sp_svg_write_color(buf, sizeof(buf), rgba);
+        sp_repr_css_set_property(css.get(), attr_name, buf);
+        descr = stroke ? _("Set stroke color from swatch") : _("Set fill color from swatch");
+    } else if (auto graddata = boost::get<GradientData>(&data)) {
+        auto grad = graddata->gradient;
+        if (!grad) return;
+        auto colorspec = "url(#" + Glib::ustring(grad->getId()) + ")";
+        sp_repr_css_set_property(css.get(), attr_name, colorspec.c_str());
+        descr = stroke ? _("Set stroke color from swatch") : _("Set fill color from swatch");
     }
 
-    _updatePreviews();
+    sp_desktop_set_style(desktop, css.get());
+
+    DocumentUndo::done(desktop->getDocument(), descr.c_str(), INKSCAPE_ICON("swatches"));
 }
 
-void
-ColorItem::_dragGetColorData(const Glib::RefPtr<Gdk::DragContext>& /*drag_context*/,
-                             Gtk::SelectionData                     &data,
-                             guint                                   info,
-                             guint                                 /*time*/)
+void ColorItem::on_rightclick(GdkEventButton *event)
 {
-    std::string key;
-    if ( info < mimeStrings.size() ) {
-        key = mimeStrings[info];
-    } else {
-        g_warning("ERROR: unknown value (%d)", info);
-    }
+    auto menu_gobj = gtk_menu_new(); /* C */
+    auto menu = Glib::wrap(GTK_MENU(menu_gobj)); /* C */
 
-    if ( !key.empty() ) {
-        char* tmp = nullptr;
-        int len = 0;
-        int format = 0;
-        def.getMIMEData(key, tmp, len, format);
-        if ( tmp ) {
-            data.set(key, format, (guchar*)tmp, len );
-            delete[] tmp;
-        }
-    }
-}
+    auto additem = [&, this] (Glib::ustring const &name, sigc::slot<void()> slot) {
+        auto item = Gtk::make_managed<Gtk::MenuItem>(name);
+        menu->append(*item);
+        item->signal_activate().connect(sigc::track_obj(slot, *this));
+    };
 
-void ColorItem::_updatePreviews()
-{
-    for (auto preview : _previews) {
-        _regenPreview(preview);
-        preview->queue_draw();
-    }
-}
+    // TRANSLATORS: An item in context menu on a colour in the swatches
+    additem(_("Set fill"), [this] { on_click(false); });
+    additem(_("Set stroke"), [this] { on_click(true); });
 
-void ColorItem::_regenPreview(UI::Widget::Preview *preview)
-{
-    if ( def.getType() != ege::PaintDef::RGB ) {
-        using Inkscape::IO::Resource::get_path;
-        using Inkscape::IO::Resource::PIXMAPS;
-        using Inkscape::IO::Resource::SYSTEM;
-        GError *error = nullptr;
-        gsize bytesRead = 0;
-        gsize bytesWritten = 0;
-        gchar *localFilename = g_filename_from_utf8(get_path(SYSTEM, PIXMAPS, "remove-color.png"), -1, &bytesRead, &bytesWritten, &error);
-        auto pixbuf = Gdk::Pixbuf::create_from_file(localFilename);
-        if (!pixbuf) {
-            g_warning("Null pixbuf for %p [%s]", localFilename, localFilename );
-        }
-        g_free(localFilename);
+    if (boost::get<GradientData>(&data)) {
+        menu->append(*Gtk::make_managed<Gtk::SeparatorMenuItem>());
 
-        preview->set_pixbuf(pixbuf);
-    }
-    else if ( !_pattern ){
-        preview->set_color((def.getR() << 8) | def.getR(),
-                           (def.getG() << 8) | def.getG(),
-                           (def.getB() << 8) | def.getB() );
-    } else {
-        // These correspond to PREVIEW_PIXBUF_WIDTH and VBLOCK from swatches.cpp
-        // TODO: the pattern to draw should be in the widget that draws the preview,
-        //       so the preview can be scalable
-        int w = 128;
-        int h = 16;
+        additem(_("Delete"), [this] {
+            auto grad = boost::get<GradientData>(data).gradient;
+            if (!grad) return;
 
-        cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-        cairo_t *ct = cairo_create(s);
-        cairo_set_source(ct, _pattern);
-        cairo_paint(ct);
-        cairo_destroy(ct);
-        cairo_surface_flush(s);
+            grad->setSwatch(false);
+            DocumentUndo::done(grad->document, _("Delete swatch"), INKSCAPE_ICON("color-gradient"));
+        });
 
-        auto pixbuf = Glib::wrap(ink_pixbuf_create_from_cairo_surface(s));
-        preview->set_pixbuf(pixbuf);
-    }
+        additem(_("Edit..."), [this] {
+            auto grad = boost::get<GradientData>(data).gradient;
+            if (!grad) return;
 
-    preview->set_fillstroke(_isFill, _isStroke);
-}
+            auto desktop = dialog->getDesktop();
+            auto selection = desktop->getSelection();
+            auto items = std::vector<SPItem*>(selection->items().begin(), selection->items().end());
 
-Gtk::Widget* ColorItem::createWidget()
-{
-    auto preview = Gtk::make_managed<UI::Widget::Preview>();
-    preview->set_name("ColorItemPreview");
-
-    _regenPreview(preview);
-
-    preview->set_details(Inkscape::UI::Widget::VIEW_TYPE_GRID,
-                         Inkscape::UI::Widget::PREVIEW_SIZE_TINY,
-                         100,
-                         0);
-
-    preview->set_focus_on_click(false);
-    preview->set_tooltip_text(def.descr);
-
-    preview->signal_clicked.connect(sigc::mem_fun(*this, &ColorItem::handleClick));
-    preview->signal_alt_clicked.connect(sigc::mem_fun(*this, &ColorItem::handleSecondaryClick));
-    preview->signal_destroyed.connect(sigc::mem_fun(*this, &ColorItem::onPreviewDestroyed));
-    preview->signal_button_press_event().connect(sigc::bind(sigc::ptr_fun(&colorItemHandleButtonPress), preview, this));
-
-    _previews.emplace_back(preview);
-
-    {
-        auto listing = def.getMIMETypes();
-        std::vector<Gtk::TargetEntry> entries;
-
-        for (auto &str : listing) {
-            auto target = str.c_str();
-            guint flags = 0;
-            if (mimeToInt.find(str) == mimeToInt.end()){
-                // these next lines are order-dependent:
-                mimeToInt[str] = mimeStrings.size();
-                mimeStrings.push_back(str);
-            }
-            auto info = mimeToInt[target];
-            Gtk::TargetEntry entry(target, (Gtk::TargetFlags)flags, info);
-            entries.push_back(entry);
-        }
-
-        preview->drag_source_set(entries, Gdk::BUTTON1_MASK,
-                                 Gdk::DragAction(Gdk::ACTION_MOVE | Gdk::ACTION_COPY) );
-    }
-
-    preview->signal_drag_data_get().connect(sigc::mem_fun(*this, &ColorItem::_dragGetColorData));
-    preview->signal_drag_begin().connect(sigc::mem_fun(*this, &ColorItem::drag_begin));
-    preview->signal_enter_notify_event().connect(sigc::mem_fun(*this, &ColorItem::handleEnterNotify));
-    preview->signal_leave_notify_event().connect(sigc::mem_fun(*this, &ColorItem::handleLeaveNotify));
-    preview->set_freesize(true);
-
-    return preview;
-}
-
-void ColorItem::onPreviewDestroyed(Widget::Preview *preview)
-{
-    auto it = std::find(_previews.begin(), _previews.end(), preview);
-    assert(it != _previews.end());
-    _previews.erase(it);
-}
-
-void ColorItem::buttonClicked(bool secondary)
-{
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    if (desktop) {
-        char const * attrName = secondary ? "stroke" : "fill";
-
-        SPCSSAttr *css = sp_repr_css_attr_new();
-        Glib::ustring descr;
-        switch (def.getType()) {
-            case ege::PaintDef::CLEAR: {
-                // TODO actually make this clear
-                sp_repr_css_set_property( css, attrName, "none" );
-                descr = secondary? _("Remove stroke color") : _("Remove fill color");
-                break;
-            }
-            case ege::PaintDef::NONE: {
-                sp_repr_css_set_property( css, attrName, "none" );
-                descr = secondary? _("Set stroke color to none") : _("Set fill color to none");
-                break;
-            }
-//mark
-            case ege::PaintDef::RGB: {
-                Glib::ustring colorspec;
-                if ( _grad ){
-                    colorspec = "url(#";
-                    colorspec += _grad->getId();
-                    colorspec += ")";
-                } else {
-                    gchar c[64];
-                    guint32 rgba = (def.getR() << 24) | (def.getG() << 16) | (def.getB() << 8) | 0xff;
-                    sp_svg_write_color(c, sizeof(c), rgba);
-                    colorspec = c;
+            if (!items.empty()) {
+                auto query = SPStyle(desktop->doc());
+                int result = objects_query_fillstroke(items, &query, true);
+                if (result == QUERY_STYLE_MULTIPLE_SAME || result == QUERY_STYLE_SINGLE) {
+                    if (query.fill.isPaintserver()) {
+                        if (dynamic_cast<SPGradient*>(query.getFillPaintServer()) == grad) {
+                            desktop->getContainer()->new_dialog("FillStroke");
+                            return;
+                        }
+                    }
                 }
-//end mark
-                sp_repr_css_set_property( css, attrName, colorspec.c_str() );
-                descr = secondary? _("Set stroke color from swatch") : _("Set fill color from swatch");
-                break;
             }
-        }
-        sp_desktop_set_style(desktop, css);
-        sp_repr_css_attr_unref(css);
 
-        DocumentUndo::done( desktop->getDocument(), descr.c_str(), INKSCAPE_ICON("swatches"));
+            // Otherwise, invoke the gradient tool.
+            set_active_tool(desktop, "Gradient");
+        });
     }
+
+    Gtk::Menu *convert_submenu = nullptr;
+
+    auto create_convert_submenu = [&] {
+        menu->append(*Gtk::make_managed<Gtk::SeparatorMenuItem>());
+
+        auto convert_item = Gtk::make_managed<Gtk::MenuItem>(_("Convert"));
+        menu->append(*convert_item);
+
+        convert_submenu = Gtk::make_managed<Gtk::Menu>();
+        convert_item->set_submenu(*convert_submenu);
+    };
+
+    auto add_convert_subitem = [&, this] (Glib::ustring const &name, sigc::slot<void()> slot) {
+        if (!convert_submenu) {
+            create_convert_submenu();
+        }
+
+        auto item = Gtk::make_managed<Gtk::MenuItem>(name);
+        convert_submenu->append(*item);
+        item->signal_activate().connect(slot);
+    };
+
+    auto grads = dialog->getDesktop()->getDocument()->getResourceList("gradient");
+    for (auto obj : grads) {
+        auto grad = static_cast<SPGradient*>(obj);
+        if (grad->hasStops() && !grad->isSwatch()) {
+            add_convert_subitem(grad->getId(), [name = grad->getId(), this] {
+                auto doc = dialog->getDesktop()->getDocument();
+                auto grads = doc->getResourceList("gradient");
+                for (auto obj : grads) {
+                    auto grad = static_cast<SPGradient*>(obj);
+                    if (grad->getId() == name) {
+                        grad->setSwatch();
+                        DocumentUndo::done(doc, _("Add gradient stop"), INKSCAPE_ICON("color-gradient"));
+                    }
+                }
+            });
+        }
+    }
+
+    menu->show_all();
+    menu->popup_at_pointer(reinterpret_cast<GdkEvent*>(event));
+
+    // Todo: All lines marked /* C */ in this function are required in order for the menu to
+    // self-destruct after it has finished. Please replace upon discovery of a better method.
+    g_object_ref_sink(menu_gobj); /* C */
+    g_object_unref(menu_gobj); /* C */
+}
+
+PaintDef ColorItem::to_paintdef() const
+{
+    if (boost::get<NoneData>(&data)) {
+        return PaintDef();
+    } else if (auto rgbdata = boost::get<RGBData>(&data)) {
+        return PaintDef(rgbdata->rgb, description);
+    } else if (boost::get<GradientData>(&data)) {
+        return PaintDef({0, 0, 0}, description);
+    }
+
+    // unreachable
+    return {};
+}
+
+void ColorItem::on_drag_data_get(Glib::RefPtr<Gdk::DragContext> const &context, Gtk::SelectionData &selection_data, guint info, guint time)
+{
+    auto &mimetypes = PaintDef::getMIMETypes();
+    if (info < 0 || info >= mimetypes.size()) {
+        g_warning("ERROR: unknown value (%d)", info);
+        return;
+    }
+    auto &key = mimetypes[info];
+
+    auto def = to_paintdef();
+    auto [vec, format] = def.getMIMEData(key);
+    if (vec.empty()) return;
+
+    selection_data.set(key, format, reinterpret_cast<guint8 const*>(vec.data()), vec.size());
+}
+
+void ColorItem::on_drag_begin(Glib::RefPtr<Gdk::DragContext> const &context)
+{
+    constexpr int w = 32;
+    constexpr int h = 24;
+
+    auto surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w, h);
+    draw_color(Cairo::Context::create(surface), w, h);
+
+    context->set_icon(Gdk::Pixbuf::create(surface, 0, 0, w, h), 0, 0);
+}
+
+void ColorItem::set_fill(bool b)
+{
+    is_fill = b;
+    queue_draw();
+}
+
+void ColorItem::set_stroke(bool b)
+{
+    is_stroke = b;
+    queue_draw();
+}
+
+std::array<double, 3> ColorItem::average_color() const
+{
+    if (boost::get<NoneData>(&data)) {
+        return {1.0, 1.0, 1.0};
+    } else if (auto rgbdata = boost::get<RGBData>(&data)) {
+        auto [r, g, b] = rgbdata->rgb;
+        return {r / 255.0, g / 255.0, b / 255.0};
+    } else if (auto graddata = boost::get<GradientData>(&data)) {
+        auto grad = graddata->gradient;
+        auto pat = Cairo::RefPtr<Cairo::Pattern>(new Cairo::Pattern(grad->create_preview_pattern(1), true));
+        auto img = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, 1, 1);
+        auto cr = Cairo::Context::create(img);
+        cr->set_source_rgb(196.0 / 255.0, 196.0 / 255.0, 196.0 / 255.0);
+        cr->paint();
+        cr->set_source(pat);
+        cr->paint();
+        cr.clear();
+        auto rgb = img->get_data();
+        return {rgb[0] / 255.0, rgb[1] / 255.0, rgb[2] / 255.0};
+    }
+
+    // unreachable
+    return {1.0, 1.0, 1.0};
 }
 
 } // namespace Dialog
 } // namespace UI
 } // namespace Inkscape
-
-/*
-  Local Variables:
-  mode:c++
-  c-file-style:"stroustrup"
-  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
-  indent-tabs-mode:nil
-  fill-column:99
-  End:
-*/
-// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

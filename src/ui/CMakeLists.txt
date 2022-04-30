@@ -23,7 +23,7 @@ set(ui_SRC
 
 	cache/svg_preview_cache.cpp
 
-        desktop/document-check.cpp
+	desktop/document-check.cpp
 	desktop/menubar.cpp
 	desktop/menu-icon-shift.cpp
 
@@ -121,6 +121,7 @@ set(ui_SRC
 	dialog/filter-effects-dialog.cpp
 	dialog/find.cpp
 	dialog/font-substitution.cpp
+	dialog/global-palettes.cpp
 	dialog/glyphs.cpp
 	dialog/grid-arrange-tab.cpp
 	dialog/guides.cpp
@@ -170,7 +171,8 @@ set(ui_SRC
 	widget/color-notebook.cpp
 	widget/color-palette.cpp
 	widget/color-picker.cpp
-	widget/color-preview.cpp	icon-loader.cpp
+	widget/color-preview.cpp
+	icon-loader.cpp
 	widget/color-scales.cpp
 	widget/color-slider.cpp
 	widget/combo-box-entry-tool-item.cpp
@@ -214,7 +216,6 @@ set(ui_SRC
 	widget/pixelstreamer.cpp
 	widget/point.cpp
 	widget/preferences-widget.cpp
-	widget/preview.cpp
 	widget/random.cpp
 	widget/registered-widget.cpp
 	widget/registry.cpp
@@ -270,7 +271,7 @@ set(ui_SRC
 
 	cache/svg_preview_cache.h
 
-        desktop/document-check.h
+	desktop/document-check.h
 	desktop/menubar.h
 	desktop/menu-icon-shift.h
 
@@ -301,6 +302,7 @@ set(ui_SRC
 	dialog/filter-effects-dialog.h
 	dialog/find.h
 	dialog/font-substitution.h
+	dialog/global-palettes.h
 	dialog/glyphs.h
 	dialog/grid-arrange-tab.h
 	dialog/guides.h
@@ -469,7 +471,6 @@ set(ui_SRC
 	widget/pixelstreamer.h
 	widget/point.h
 	widget/preferences-widget.h
-	widget/preview.h
 	widget/random.h
 	widget/registered-enums.h
 	widget/registered-widget.h

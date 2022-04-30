@@ -28,10 +28,10 @@ namespace Dialog {
 /**
  * DialogBase is the base class for the dialog system.
  *
- * Each dialog has a reference to the application, in order to update it's inner focus
+ * Each dialog has a reference to the application, in order to update its inner focus
  * (be it of the active desktop, document, selection, etc.) in the update() method.
  *
- * DialogsBase derived classes' instances live in DialogNotebook classes and are managed by
+ * DialogBase derived classes' instances live in DialogNotebook classes and are managed by
  * DialogContainer classes. DialogContainer instances can have at most one type of dialog,
  * differentiated by the associated type.
  */
