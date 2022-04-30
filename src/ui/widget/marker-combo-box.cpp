@@ -316,7 +316,7 @@ void MarkerComboBox::update_preview(Glib::RefPtr<MarkerItem> item) {
 
     _preview.set(surface);
     std::ostringstream ost;
-    ost << "<small>" << label << "</small>";
+    ost << "<small>" << label.raw() << "</small>";
     _marker_name.set_markup(ost.str().c_str());
 }
 
