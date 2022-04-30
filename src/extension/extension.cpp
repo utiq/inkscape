@@ -506,6 +506,15 @@ void Extension::lookup_translation_catalog() {
         }
     }
 
+#ifdef _WIN32
+    // obtain short path, bindtextdomain doesn't understand UTF-8
+    if (!_gettext_catalog_dir.empty()) {
+        auto shortpath = g_win32_locale_filename_from_utf8(_gettext_catalog_dir.c_str());
+        _gettext_catalog_dir = shortpath;
+        g_free(shortpath);
+    }
+#endif
+
     // register catalog with gettext if found, disable translation for this extension otherwise
     if (!_gettext_catalog_dir.empty()) {
         const char *current_dir = bindtextdomain(_translationdomain, nullptr);
