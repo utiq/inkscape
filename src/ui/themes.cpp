@@ -506,7 +506,7 @@ void ThemeContext::adjust_global_font_scale(double factor) {
 
     Inkscape::CSSOStringStream os;
     os.precision(3);
-    os << "widget, menuitem { font-size: " << factor << "rem; }";
+    os << "widget, menuitem, popover { font-size: " << factor << "rem; }";
     _fontsizeprovider->load_from_data(os.str());
 
     // note: priority set to APP - 1 to make sure styles.css take precedence over generic font-size
