@@ -114,6 +114,7 @@ private:
     std::vector<double> random_s;
     std::vector<double> random_r;
     Geom::Affine affinebase = Geom::identity();
+    Geom::Affine transformoriginal = Geom::identity();
     bool prev_split = false;
     SPObject *container;
     LPETiling(const LPETiling&) = delete;

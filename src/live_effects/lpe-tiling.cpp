@@ -424,8 +424,8 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                     if (random_gap_y && gapy) {
                         ran_y = seed.param_get_random_number() * gapy_unit;
                     }
-                    r *= Geom::Translate(Geom::Point(xset + offset_x - ran_x, yset + offset_y - ran_y));
                     item->transform = r * sp_item_transform_repr(sp_lpe_item);
+                    item->transform *= Geom::Translate(Geom::Point(xset + offset_x - ran_x, yset + offset_y - ran_y));
                     item->doWriteTransform(item->transform);
                     item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
                     forcewrite = forcewrite || write;
@@ -1075,6 +1075,7 @@ LPETiling::doOnApply(SPLPEItem const* lpeitem)
 void
 LPETiling::doBeforeEffect (SPLPEItem const* lpeitem)
 {
+    transformoriginal = sp_item_transform_repr(sp_lpe_item).withoutTranslation();
     using namespace Geom;
     seed.resetRandomizer();
     random_x.clear();
@@ -1163,7 +1164,11 @@ LPETiling::doEffect_path (Geom::PathVector const & path_in)
     if (_knotholder) {
         _knotholder->update_knots();
     }
-    return path_out;
+    if (split_items) {
+        return path_out;
+    } else {
+        return path_out * transformoriginal.inverse();
+    }
 }
 
 Geom::PathVector
@@ -1392,6 +1397,7 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
                     random_y.emplace_back(0);
                 }
             }
+            output_pv *= transformoriginal;
             output_pv *= Geom::Translate(Geom::Point(xset + offset_x - random_x[counter],yset + offset_y - random_y[counter]));
             output.insert(output.end(), output_pv.begin(), output_pv.end());
             counter++;
