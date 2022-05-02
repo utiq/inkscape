@@ -1176,6 +1176,12 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
     // Copy clipping objects
     if (SPObject *clip = item->getClipObject()) {
         _copyNode(clip->getRepr(), _doc, _defs);
+        // recurse
+        for (auto &o : clip->children) {
+            if (auto childItem = dynamic_cast<SPItem *>(&o)) {
+                _copyUsedDefs(childItem);
+            }
+        }
     }
     // Copy mask objects
     if (SPObject *mask = item->getMaskObject()) {
