@@ -728,3 +728,8 @@ button.square-button image {
 #ExportDialog #export_preview_batch {
     border: 1px solid;
 }
+
+/* This fix a bad performance on Mac (maybe others) on some themes */
+.mac button,
+.mac spinbutton,
+.mac combobox {box-shadow: none;}

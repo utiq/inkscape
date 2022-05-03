@@ -683,6 +683,9 @@ void SPDesktopWidget::on_realize()
     if (settings && window) {
         g_object_get(settings, "gtk-theme-name", &gtkThemeName, nullptr);
         g_object_get(settings, "gtk-application-prefer-dark-theme", &gtkApplicationPreferDarkTheme, nullptr);
+        if (!window->get_style_context()->has_class("os")) {
+            window->get_style_context()->add_class(ink_get_current_os_class_name());
+        }
         bool dark = INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container *>(window));
         if (dark) {
             prefs->setBool("/theme/darkTheme", true);

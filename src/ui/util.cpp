@@ -28,6 +28,25 @@ Glib::ustring ink_ellipsize_text(Glib::ustring const &src, size_t maxlen)
     return src;
 }
 
+Glib::ustring ink_get_current_os_class_name()
+{
+    #ifdef _WIN32
+    return "os win win32";
+    #elif _WIN64
+    return "os win win64";
+    #elif __APPLE__ || __MACH__
+    return "os mac";
+    #elif __linux__
+    return "os linux";
+    #elif __FreeBSD__
+    return "os freebsd";
+    #elif __unix || __unix__
+    return "os unix";
+    #else
+    return "os";
+    #endif
+} 
+
 /**
  * Show widget, if the widget has a Gtk::Reveal parent, reveal instead.
  *

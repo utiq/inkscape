@@ -25,6 +25,7 @@
 #include "preferences.h"
 #include "ui/widget/canvas.h"
 #include "ui/themes.h"
+#include "ui/util.h"
 
 namespace Inkscape {
 namespace UI {
@@ -76,6 +77,9 @@ void sp_add_top_window_classes_callback(Gtk::Widget *widg)
                 current_window = dynamic_cast<Gtk::Window *>(widg->get_toplevel());
             }
             if (current_window) {
+                if (!current_window->get_style_context()->has_class("os")) {
+                    current_window->get_style_context()->add_class(ink_get_current_os_class_name());
+                }
                 if (toplevel_window->get_style_context()->has_class("dark")) {
                     current_window->get_style_context()->add_class("dark");
                     current_window->get_style_context()->remove_class("bright");
