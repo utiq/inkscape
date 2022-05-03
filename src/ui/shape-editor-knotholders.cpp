@@ -37,6 +37,7 @@
 #include "object/sp-text.h"
 #include "object/sp-textpath.h"
 #include "object/sp-tspan.h"
+#include "svg/css-ostringstream.h"
 
 #include "ui/knot/knot-holder.h"
 #include "ui/knot/knot-holder-entity.h"
@@ -2385,9 +2386,9 @@ TextKnotHolderEntityShapePadding::knot_set(Geom::Point const &p, Geom::Point con
             Geom::Point const point_a = snap_knot_position(p, state);
             Geom::Point point_b = point_a * shape->transform.inverse();
             auto padding = (*bounds).corner(1)[Geom::X] - point_b[Geom::X];
-            gchar *pad = g_strdup_printf("%f", padding);
-            text->style->shape_padding.read(pad);
-            g_free(pad);
+            Inkscape::CSSOStringStream os;
+            os << padding;
+            text->style->shape_padding.read(os.str().c_str());
 
             text->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             text->updateRepr();
@@ -2436,9 +2437,9 @@ TextKnotHolderEntityShapeMargin::knot_set(Geom::Point const &p, Geom::Point cons
         Geom::Point const point_a = snap_knot_position(p, state);
         Geom::Point point_b = point_a * linked_shape->transform.inverse();
         auto margin = (*bounds).corner(1)[Geom::X] - point_b[Geom::X];
-        gchar *pad = g_strdup_printf("%f", -margin);
-        linked_shape->style->shape_margin.read(pad);
-        g_free(pad);
+        Inkscape::CSSOStringStream os;
+        os << margin;
+        linked_shape->style->shape_margin.read(os.str().c_str());
 
         linked_shape->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         linked_shape->updateRepr();
