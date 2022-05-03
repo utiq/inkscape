@@ -196,7 +196,7 @@ void Parameter::update_satellites(bool updatelpe)
                         sp_add_class(iter, "UnoptimicedTransforms");
                         // if selection is current ref we highlight original sp_lpe_item to
                         // give visual feedback to the user to know what's the LPE item that generated the selection
-                        if (iter && selection->includes(iter)) {
+                        if (iter && selection->includes(iter, true)) {
                             const gchar *classtoparentchar = iter->getAttribute("class");
                             if (classtoparentchar) {
                                 Glib::ustring classtoparent = classtoparentchar;

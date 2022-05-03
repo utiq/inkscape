@@ -30,13 +30,19 @@ public:
     LPEFillBetweenMany(LivePathEffectObject *lpeobject);
     ~LPEFillBetweenMany() override;
     void doEffect (SPCurve * curve) override;
+    bool doOnOpen(SPLPEItem const *lpeitem) override;
+    void doBeforeEffect (SPLPEItem const* lpeitem) override;
+    void doOnApply (SPLPEItem const* lpeitem) override;
+    void transform_multiply_nested(Geom::Affine const &postmul);
 private:
     PathArrayParam linked_paths;
     EnumParam<Filllpemethod> method;
     BoolParam join;
     BoolParam close;
     BoolParam autoreverse;
-    HiddenParam applied;
+    bool legacytest = false;
+    bool fixreverseend = false;
+    Geom::Affine prevaffine = Geom::identity();
     Filllpemethod previous_method;
     LPEFillBetweenMany(const LPEFillBetweenMany&) = delete;
     LPEFillBetweenMany& operator=(const LPEFillBetweenMany&) = delete;

@@ -3029,7 +3029,6 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms)
         if (multiple) {
             lpe_repr->setAttribute("effect", "fill_between_many");
             lpe_repr->setAttributeOrRemoveIfEmpty("linkedpaths", os.str());
-            lpe_repr->setAttribute("applied", "true");
         } else {
             lpe_repr->setAttribute("effect", "clone_original");
             lpe_repr->setAttribute("linkeditem", ((Glib::ustring)"#" + (Glib::ustring)firstItem->getId()));

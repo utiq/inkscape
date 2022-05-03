@@ -366,6 +366,13 @@ void PathArrayParam::unlink(PathAndDirectionAndVisible *to)
     }
 }
 
+void PathArrayParam::start_listening()
+{
+    for (auto w : _vector) {
+        linked_changed(nullptr,w->ref.getObject(), w);
+    }
+}
+
 void PathArrayParam::linked_delete(SPObject * /*deleted*/, PathAndDirectionAndVisible * /*to*/)
 {
     // unlink(to);
@@ -388,15 +395,12 @@ void PathArrayParam::linked_changed(SPObject * /*old_obj*/, SPObject *new_obj, P
 {
     to->linked_delete_connection.disconnect();
     to->linked_modified_connection.disconnect();
-    to->linked_transformed_connection.disconnect();
     
     if (new_obj && SP_IS_ITEM(new_obj)) {
         to->linked_delete_connection = new_obj->connectDelete(
             sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::linked_delete), to));
         to->linked_modified_connection = new_obj->connectModified(
             sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::linked_modified), to));
-        to->linked_transformed_connection = SP_ITEM(new_obj)->connectTransformed(
-            sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::linked_transformed), to));
 
         linked_modified(new_obj, SP_OBJECT_MODIFIED_FLAG, to);
     } else {
@@ -468,7 +472,7 @@ void PathArrayParam::setPathVector(SPObject *linked_obj, guint /*flags*/, PathAn
 
 void PathArrayParam::linked_modified(SPObject *linked_obj, guint flags, PathAndDirectionAndVisible *to)
 {
-    if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
+    if (!_updating && param_effect->getSPDoc()->isSensitive() && flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
                  SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
     {
         if (!to) {

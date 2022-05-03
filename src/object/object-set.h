@@ -199,7 +199,12 @@ public:
     /**
      * Returns true if the given object is selected.
      */
-    bool includes(SPObject *object);
+    bool includes(SPObject *object, bool anyAncestor = false);
+
+    /**
+     * Returns ancestor if the given object has ancestor selected.
+     */
+    SPObject * includesAncestor(SPObject *object);
 
     /**
      * Set the selection to a single specific object.

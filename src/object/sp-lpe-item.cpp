@@ -357,7 +357,7 @@ bool SPLPEItem::optimizeTransforms()
         }
     }
     // LPEs with satellites (and his satellites) has this class auto
-    gchar *classes = g_strdup(getRepr()->attribute("class"));
+    gchar *classes = g_strdup(getAttribute("class"));
     if (classes) {
         Glib::ustring classdata = classes;
         size_t pos = classdata.find("UnoptimicedTransforms");
@@ -822,6 +822,24 @@ void SPLPEItem::upCurrentPathEffect()
     this->setAttributeOrRemoveIfEmpty("inkscape:path-effect", patheffectlist_svg_string(new_list));
 
     sp_lpe_item_cleanup_original_path_recursive(this, false);
+}
+
+void
+SPLPEItem::update_satellites(bool updatelpe) {
+    if (path_effect_list->empty()) {
+        return;
+    }
+
+    // go through the list; if some are unknown or invalid, return true
+    PathEffectList path_effect_list(*this->path_effect_list);
+    for (auto &lperef : path_effect_list) {
+        LivePathEffectObject *lpeobj = lperef->lpeobject;
+        if (lpeobj) {
+            if (auto *lpe = lpeobj->get_lpe()) {
+                lpe->update_satellites(updatelpe);
+            }
+        }
+    }
 }
 
 /** used for shapes so they can see if they should also disable shape calculation and read from d= */

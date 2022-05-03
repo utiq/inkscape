@@ -122,8 +122,17 @@ public:
     /**
      * Returns true if the given item is selected.
      */
-    bool includes(XML::Node *repr) {
-        return includes(_objectForXMLNode(repr));
+    bool includes(XML::Node *repr, bool anyAncestor = false) {
+        return includes(_objectForXMLNode(repr), anyAncestor);
+    }
+
+    using ObjectSet::includesAncestor;
+    
+    /**
+     * Returns ancestor if the given object has ancestor selected.
+     */
+    SPObject * includesAncestor(XML::Node *repr) {
+        return includesAncestor(_objectForXMLNode(repr));
     }
 
     /** Returns the number of layers in which there are selected objects. */

@@ -994,6 +994,18 @@ void SPGroup::update_patheffect(bool write) {
             SPLPEItem *lpe_item = dynamic_cast<SPLPEItem *>(sub_item);
             if (lpe_item) {
                 lpe_item->update_patheffect(write);
+                // update satellites
+                if (!lpe_item->hasPathEffect()) {
+                    gchar *classes = g_strdup(lpe_item->getAttribute("class"));
+                    if (classes) {
+                        Glib::ustring classdata = classes;
+                        size_t pos = classdata.find("UnoptimicedTransforms");
+                        if ( pos != std::string::npos ) {
+                            lpe_item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+                        }
+                    }
+                    g_free(classes);
+                }
             }
         }
     }

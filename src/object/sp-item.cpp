@@ -1626,7 +1626,7 @@ void SPItem::doWriteTransform(Geom::Affine const &transform, Geom::Affine const 
     // values if called in code handling the transformed signal.
     updateRepr();
 
-    if (lpeitem && lpeitem->hasPathEffectRecursive()) {
+    if (lpeitem) {
         sp_lpe_item_update_patheffect(lpeitem, true, true);
     }
 

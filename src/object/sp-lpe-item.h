@@ -112,6 +112,7 @@ public:
     void applyToClipPathOrMask(SPItem * clip_mask, SPItem* to, Inkscape::LivePathEffect::Effect *lpe = nullptr);
     bool forkPathEffectsIfNecessary(unsigned int nr_of_allowed_users = 1, bool recursive = true);
     void editNextParamOncanvas(SPDesktop *dt);
+    void update_satellites(bool updatelpe);
 };
 void sp_lpe_item_update_patheffect (SPLPEItem *lpeitem, bool wholetree, bool write); // careful, class already has method with *very* similar name!
 void sp_lpe_item_enable_path_effects(SPLPEItem *lpeitem, bool enable);

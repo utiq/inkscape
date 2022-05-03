@@ -80,11 +80,28 @@ void ObjectSet::_emitChanged(bool persist_selection_context /*= false*/) {
     _sibling_state.clear();
 }
 
-bool ObjectSet::includes(SPObject *object) {
+bool ObjectSet::includes(SPObject *object, bool anyAncestor) {
     g_return_val_if_fail(object != nullptr, false);
     g_return_val_if_fail(SP_IS_OBJECT(object), false);
+    if (anyAncestor) {
+        return _anyAncestorIsInSet(object);
+    } else {
+        return _container.get<hashed>().find(object) != _container.get<hashed>().end();
+    }
+}
 
-    return _container.get<hashed>().find(object) != _container.get<hashed>().end();
+SPObject * 
+ObjectSet::includesAncestor(SPObject *object) {
+    g_return_val_if_fail(object != nullptr, nullptr);
+    g_return_val_if_fail(SP_IS_OBJECT(object), nullptr);
+    SPObject* o = object;
+    while (o != nullptr) {
+        if (includes(o)) {
+            return o;
+        }
+        o = o->parent;
+    }
+    return nullptr;
 }
 
 void ObjectSet::clear() {

@@ -47,6 +47,7 @@ public:
     void set_new_value (Geom::PathVector const &newpath, bool write_to_svg);
     void set_new_value (Geom::Piecewise<Geom::D2<Geom::SBasis> > const &newpath, bool write_to_svg);
     void set_buttons(bool edit_button, bool copy_button, bool paste_button, bool link_button);
+    void setUpdating(bool updating) {_updating = updating;};
     void param_editOncanvas(SPItem * item, SPDesktop * dt) override;
     void param_setup_nodepath(Inkscape::NodePath::Path *np) override;
     void addCanvasIndicators(SPLPEItem const* lpeitem, std::vector<Geom::PathVector> &hp_vec) override;
@@ -73,6 +74,7 @@ protected:
 
     gchar * href;     // contains link to other object, e.g. "#path2428", NULL if PathParam contains pathdata itself
     PathReference ref;
+    friend class LPEFillBetweenStrokes;
     sigc::connection ref_changed_connection;
     sigc::connection linked_delete_connection;
     sigc::connection linked_modified_connection;
@@ -100,6 +102,7 @@ private:
     bool _copy_button;
     bool _paste_button;
     bool _link_button;
+    bool _updating = false;
     PathParam(const PathParam&) = delete;
     PathParam& operator=(const PathParam&) = delete;
 };

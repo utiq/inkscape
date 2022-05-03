@@ -487,7 +487,7 @@ void PathParam::linked_transformed(Geom::Affine const *rel_transf, SPItem *moved
 void
 PathParam::linked_modified_callback(SPObject *linked_obj, guint flags)
 {
-    if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
+    if (!_updating && flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
                  SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
     {
         std::unique_ptr<SPCurve> curve;
