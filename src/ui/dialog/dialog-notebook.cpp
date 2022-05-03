@@ -290,6 +290,7 @@ void DialogNotebook::add_page(Gtk::Widget &page, Gtk::Widget &tab, Glib::ustring
         wrapper->set_propagate_natural_height(true);
         wrapper->set_valign(Gtk::ALIGN_FILL);
         wrapper->set_overlay_scrolling(false);
+        wrapper->set_can_focus(false);
         wrapper->get_style_context()->add_class("noborder");
         auto *wrapperbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL,0));
         wrapperbox->set_valign(Gtk::ALIGN_FILL);
