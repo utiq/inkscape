@@ -621,7 +621,7 @@ void SingleExport::onExport()
 
 void SingleExport::onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev)
 {
-    if (!_app || !_document) {
+    if (!_app || !_app->get_active_window() || !_document) {
         return;
     }
     Gtk::Window *window = _app->get_active_window();

@@ -577,7 +577,7 @@ void BatchExport::onExport()
 
 void BatchExport::onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev)
 {
-    if (!_app) {
+    if (!_app || !_app->get_active_window()) {
         return;
     }
     Gtk::Window *window = _app->get_active_window();

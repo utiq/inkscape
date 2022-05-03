@@ -67,6 +67,7 @@ sp_ui_close_view(GtkWidget */*widget*/)
     auto *app = InkscapeApplication::instance();
 
     auto window = app->get_active_window();
+    assert(window);
     app->destroy_window(window, true); // Keep inkscape alive!
 }
 

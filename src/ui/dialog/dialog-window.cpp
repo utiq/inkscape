@@ -288,7 +288,7 @@ bool DialogWindow::on_key_press_event(GdkEventKey *key_event)
     }
 
     // Pass key event to active InkscapeWindow to handle win (and app) level shortcuts.
-    if (_app->get_active_window()->on_key_press_event(key_event)) {
+    if (auto win = _app->get_active_window(); win && win->on_key_press_event(key_event)) {
         return true;
     }
 

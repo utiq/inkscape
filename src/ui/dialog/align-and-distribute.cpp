@@ -276,6 +276,9 @@ AlignAndDistribute::on_align_node_button_press_event(GdkEventButton* button_even
 
     auto variant = Glib::Variant<Glib::ustring>::create(argument);
     InkscapeWindow* win = InkscapeApplication::instance()->get_active_window();
+    if (!win) {
+        return true;
+    }
     if (direction == "horizontal") {
         win->activate_action("node-align-horizontal", variant);
     } else {

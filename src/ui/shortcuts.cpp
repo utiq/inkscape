@@ -847,6 +847,9 @@ Shortcuts::import_shortcuts() {
 
     // Create and show the dialog
     Gtk::Window* window = app->get_active_window();
+    if (!window) {
+        return false;
+    }
     Inkscape::UI::Dialog::FileOpenDialog *importFileDialog =
         Inkscape::UI::Dialog::FileOpenDialog::create(*window, directory, Inkscape::UI::Dialog::CUSTOM_TYPE, _("Select a file to import"));
     importFileDialog->addFilterMenu(_("Inkscape shortcuts (*.xml)"), "*.xml");
@@ -879,6 +882,9 @@ Shortcuts::export_shortcuts() {
 
     // Create and show the dialog
     Gtk::Window* window = app->get_active_window();
+    if (!window) {
+        return false;
+    }
     Inkscape::UI::Dialog::FileSaveDialog *saveFileDialog =
         Inkscape::UI::Dialog::FileSaveDialog::create(*window, directory, Inkscape::UI::Dialog::CUSTOM_TYPE, _("Select a filename for export"),
                                                      "", "", Inkscape::Extension::FILE_SAVE_METHOD_SAVE_AS);
