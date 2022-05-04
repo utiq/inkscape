@@ -184,6 +184,9 @@ void SPGenericEllipse::set(SPAttr key, gchar const *value)
     case SPAttr::SODIPODI_OPEN:
         // This is for reading in old files.
         if ((!value) || strcmp(value,"true")) {
+            // We rely on this to reset arc_type when changing an arc to
+            // an ellipse/circle, so it is drawn as a closed path.
+            // A clone will not even change it's this->type
             this->arc_type = SP_GENERIC_ELLIPSE_ARC_TYPE_SLICE;
         } else {
             this->arc_type = SP_GENERIC_ELLIPSE_ARC_TYPE_ARC;
@@ -473,7 +476,7 @@ void SPGenericEllipse::set_shape()
         pb.lineTo(Geom::Point(0, 0));
     }
 
-    if ((this->arc_type != SP_GENERIC_ELLIPSE_ARC_TYPE_ARC) || (this->type != SP_GENERIC_ELLIPSE_ARC)) {
+    if (this->arc_type != SP_GENERIC_ELLIPSE_ARC_TYPE_ARC) {
         pb.closePath();
     } else {
         pb.flush();
