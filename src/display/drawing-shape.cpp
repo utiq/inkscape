@@ -38,45 +38,60 @@ namespace Inkscape {
 
 DrawingShape::DrawingShape(Drawing &drawing)
     : DrawingItem(drawing)
+    , style_vector_effect_stroke(false)
+    , style_stroke_extensions_hairline(false)
+    , style_clip_rule(SP_WIND_RULE_EVENODD)
+    , style_fill_rule(SP_WIND_RULE_EVENODD)
+    , style_opacity(SP_SCALE24_MAX)
     , _last_pick(nullptr)
     , _repick_after(0)
-{}
+{
+}
 
 DrawingShape::~DrawingShape()
 {
 }
 
-void
-DrawingShape::setPath(std::shared_ptr<SPCurve const> curve)
+void DrawingShape::setPath(std::shared_ptr<SPCurve const> curve)
 {
     _markForRendering();
     _curve = std::move(curve);
     _markForUpdate(STATE_ALL, false);
 }
 
-void
-DrawingShape::setStyle(SPStyle *style, SPStyle *context_style)
+void DrawingShape::setStyle(SPStyle const *style, SPStyle const *context_style)
 {
-    DrawingItem::setStyle(style, context_style); // Must be first
+    DrawingItem::setStyle(style, context_style);
+    _nrstyle.set(_style, _context_style);
+    if (_style) {
+        style_vector_effect_stroke = _style->vector_effect.stroke;
+        style_stroke_extensions_hairline = _style->stroke_extensions.hairline;
+        style_clip_rule = _style->clip_rule.computed;
+        style_fill_rule = _style->fill_rule.computed;
+        style_opacity = _style->opacity.value;
+    } else {
+        style_vector_effect_stroke = false;
+        style_stroke_extensions_hairline = false;
+        style_clip_rule = SP_WIND_RULE_EVENODD;
+        style_fill_rule = SP_WIND_RULE_EVENODD;
+        style_opacity = SP_SCALE24_MAX;
+    }
+}
+
+void DrawingShape::setChildrenStyle(SPStyle const *context_style)
+{
+    DrawingItem::setChildrenStyle(context_style);
     _nrstyle.set(_style, _context_style);
 }
 
-void
-DrawingShape::setChildrenStyle(SPStyle* context_style)
-{
-    DrawingItem::setChildrenStyle( context_style );
-    _nrstyle.set(_style, _context_style);
-}
-
-unsigned
-DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
+unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
 {
     Geom::OptRect boundingbox;
 
     unsigned beststate = STATE_ALL;
 
     // update markers
-    for (auto & i : _children) {
+    for (auto &i : _children) {
         i.update(area, ctx, flags, reset);
     }
 
@@ -92,7 +107,7 @@ DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, u
                 }
             }
             if (beststate & STATE_BBOX) {
-                for (auto & i : _children) {
+                for (auto &i : _children) {
                     _bbox.unionWith(i.geometricBounds());
                 }
             }
@@ -128,23 +143,19 @@ DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, u
 
     _bbox = boundingbox ? boundingbox->roundOutwards() : Geom::OptIntRect();
 
-    if (!_curve || 
-        !_style ||
-        _curve->is_empty())
-    {
+    if (!_curve || _curve->is_empty()) {
         return STATE_ALL;
     }
 
     if (beststate & STATE_BBOX) {
-        for (auto & i : _children) {
+        for (auto &i : _children) {
             _bbox.unionWith(i.geometricBounds());
         }
     }
     return STATE_ALL;
 }
 
-void
-DrawingShape::_renderFill(DrawingContext &dc)
+void DrawingShape::_renderFill(DrawingContext &dc)
 {
     Inkscape::DrawingContext::Save save(dc);
     dc.transform(_ctm);
@@ -159,21 +170,20 @@ DrawingShape::_renderFill(DrawingContext &dc)
     }
 }
 
-void
-DrawingShape::_renderStroke(DrawingContext &dc)
+void DrawingShape::_renderStroke(DrawingContext &dc)
 {
     Inkscape::DrawingContext::Save save(dc);
     dc.transform(_ctm);
 
     bool has_stroke = _nrstyle.prepareStroke(dc, _item_bbox, _stroke_pattern);
-    if (!_style->stroke_extensions.hairline) {
-        has_stroke &= (_nrstyle.stroke_width != 0);
+    if (!style_stroke_extensions_hairline) {
+        has_stroke &= _nrstyle.stroke_width != 0;
     }
 
-    if( has_stroke ) {
+    if (has_stroke) {
         // TODO: remove segments outside of bbox when no dashes present
         dc.path(_curve->get_pathvector());
-        if (_style && _style->vector_effect.stroke) {
+        if (style_vector_effect_stroke) {
             dc.restore();
             dc.save();
         }
@@ -181,11 +191,11 @@ DrawingShape::_renderStroke(DrawingContext &dc)
 
         // If the stroke is a hairline, set it to exactly 1px on screen.
         // If visible hairline mode is on, make sure the line is at least 1px.
-        if (_drawing.visibleHairlines() || _style->stroke_extensions.hairline) {
+        if (_drawing.visibleHairlines() || style_stroke_extensions_hairline) {
             double dx = 1.0, dy = 0.0;
             dc.device_to_user_distance(dx, dy);
             auto pixel_size = std::hypot(dx, dy);
-            if (_style->stroke_extensions.hairline || _nrstyle.stroke_width < pixel_size) {
+            if (style_stroke_extensions_hairline || _nrstyle.stroke_width < pixel_size) {
                 dc.setHairline();
             }
         }
@@ -195,8 +205,7 @@ DrawingShape::_renderStroke(DrawingContext &dc)
     }
 }
 
-void
-DrawingShape::_renderMarkers(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
+void DrawingShape::_renderMarkers(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
 {
     // marker rendering
     for (auto & i : _children) {
@@ -204,10 +213,9 @@ DrawingShape::_renderMarkers(DrawingContext &dc, Geom::IntRect const &area, unsi
     }
 }
 
-unsigned
-DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
+unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
 {
-    if (!_curve || !_style) return RENDER_OK;
+    if (!_curve) return RENDER_OK;
     if (!area.intersects(_bbox)) return RENDER_OK; // skip if not within bounding box
 
     bool outline = _drawing.outline();
@@ -254,7 +262,7 @@ DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigne
                     _nrstyle.applyFill(dc);
                     dc.fillPreserve();
                 }
-                if (_style && _style->vector_effect.stroke) {
+                if (style_vector_effect_stroke) {
                     dc.restore();
                     dc.save();
                 }
@@ -307,21 +315,17 @@ void DrawingShape::_clipItem(DrawingContext &dc, Geom::IntRect const & /*area*/)
     if (!_curve) return;
 
     Inkscape::DrawingContext::Save save(dc);
-    // handle clip-rule
-    if (_style) {
-        if (_style->clip_rule.computed == SP_WIND_RULE_EVENODD) {
-            dc.setFillRule(CAIRO_FILL_RULE_EVEN_ODD);
-        } else {
-            dc.setFillRule(CAIRO_FILL_RULE_WINDING);
-        }
+    if (style_clip_rule == SP_WIND_RULE_EVENODD) {
+        dc.setFillRule(CAIRO_FILL_RULE_EVEN_ODD);
+    } else {
+        dc.setFillRule(CAIRO_FILL_RULE_WINDING);
     }
     dc.transform(_ctm);
     dc.path(_curve->get_pathvector());
     dc.fill();
 }
 
-DrawingItem *
-DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigned flags)
+DrawingItem *DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigned flags)
 {
     if (_repick_after > 0)
         --_repick_after;
@@ -331,11 +335,10 @@ DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigned flags)
     }
 
     if (!_curve) return nullptr;
-    if (!_style) return nullptr;
     bool outline = _drawing.outline() || _drawing.outlineOverlay() || _drawing.getOutlineSensitive();
     bool pick_as_clip = flags & PICK_AS_CLIP;
 
-    if (SP_SCALE24_TO_FLOAT(_style->opacity.value) == 0 && !outline && !pick_as_clip) {
+    if (SP_SCALE24_TO_FLOAT(style_opacity) == 0 && !outline && !pick_as_clip) {
         // fully transparent, no pick unless outline mode
         return nullptr;
     }
@@ -361,8 +364,7 @@ DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigned flags)
     int wind = 0;
     bool needfill = pick_as_clip || (_nrstyle.fill.type != NRStyle::PAINT_NONE &&
         _nrstyle.fill.opacity > 1e-3 && !outline);
-    bool wind_evenodd = pick_as_clip ? (_style->clip_rule.computed == SP_WIND_RULE_EVENODD) :
-        (_style->fill_rule.computed == SP_WIND_RULE_EVENODD);
+    bool wind_evenodd = (pick_as_clip ? style_clip_rule : style_fill_rule) == SP_WIND_RULE_EVENODD;
 
     // actual shape picking
     if (_drawing.getCanvasItemDrawing()) {
@@ -417,13 +419,12 @@ DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigned flags)
     return nullptr;
 }
 
-bool
-DrawingShape::_canClip()
+bool DrawingShape::_canClip()
 {
     return true;
 }
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
 /*
   Local Variables:

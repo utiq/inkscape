@@ -61,6 +61,9 @@ DrawingItem::DrawingItem(Drawing &drawing)
     , _key(0)
     , _style(nullptr)
     , _context_style(nullptr)
+    , style_vector_effect_size(false)
+    , style_vector_effect_rotate(false)
+    , style_vector_effect_fixed(false)
     , _opacity(1.0)
     , _clip(nullptr)
     , _mask(nullptr)
@@ -144,12 +147,10 @@ DrawingItem::~DrawingItem()
     delete _clip;
     delete _mask;
     delete _filter;
-    if(_style)
-        sp_style_unref(_style);
+    if (_style) sp_style_unref(_style);
 }
 
-DrawingItem *
-DrawingItem::parent() const
+DrawingItem *DrawingItem::parent() const
 {
     // initially I wanted to return NULL if we are a clip or mask child,
     // but the previous behavior was just to return the parent regardless of child type
@@ -157,8 +158,7 @@ DrawingItem::parent() const
 }
 
 /// Returns true if item is among the descendants. Will return false if item == this.
-bool
-DrawingItem::isAncestorOf(DrawingItem *item) const
+bool DrawingItem::isAncestorOf(DrawingItem *item) const
 {
     for (DrawingItem *i = item->_parent; i; i = i->_parent) {
         if (i == this) return true;
@@ -166,8 +166,7 @@ DrawingItem::isAncestorOf(DrawingItem *item) const
     return false;
 }
 
-void
-DrawingItem::appendChild(DrawingItem *item)
+void DrawingItem::appendChild(DrawingItem *item)
 {
     item->_parent = this;
     assert(item->_child_type == CHILD_ORPHAN);
@@ -183,8 +182,7 @@ DrawingItem::appendChild(DrawingItem *item)
     item->_markForUpdate(STATE_ALL, true);
 }
 
-void
-DrawingItem::prependChild(DrawingItem *item)
+void DrawingItem::prependChild(DrawingItem *item)
 {
     item->_parent = this;
     assert(item->_child_type == CHILD_ORPHAN);
@@ -196,8 +194,7 @@ DrawingItem::prependChild(DrawingItem *item)
 }
 
 /// Delete all regular children of this item (not mask or clip).
-void
-DrawingItem::clearChildren()
+void DrawingItem::clearChildren()
 {
     if (_children.empty()) return;
 
@@ -214,8 +211,7 @@ DrawingItem::clearChildren()
 }
 
 /// Set the incremental transform for this item
-void
-DrawingItem::setTransform(Geom::Affine const &new_trans)
+void DrawingItem::setTransform(Geom::Affine const &new_trans)
 {
     double constexpr EPS = 1e-18;
 
@@ -236,8 +232,7 @@ DrawingItem::setTransform(Geom::Affine const &new_trans)
     }
 }
 
-void
-DrawingItem::setOpacity(float opacity)
+void DrawingItem::setOpacity(float opacity)
 {
     if (_opacity != opacity) {
         _opacity = opacity;
@@ -245,8 +240,7 @@ DrawingItem::setOpacity(float opacity)
     }
 }
 
-void
-DrawingItem::setAntialiasing(unsigned a)
+void DrawingItem::setAntialiasing(unsigned a)
 {
     if (_antialias != a) {
         _antialias = a;
@@ -254,24 +248,21 @@ DrawingItem::setAntialiasing(unsigned a)
     }
 }
 
-void
-DrawingItem::setIsolation(bool isolation)
+void DrawingItem::setIsolation(bool isolation)
 {
     _isolation = isolation;
     //if( isolation != 0 ) std::cout << "isolation: " << isolation << std::endl;
     _markForRendering();
 }
 
-void
-DrawingItem::setBlendMode(SPBlendMode mix_blend_mode)
+void DrawingItem::setBlendMode(SPBlendMode mix_blend_mode)
 {
     _mix_blend_mode = mix_blend_mode;
     //if( mix_blend_mode != 0 ) std::cout << "setBlendMode: " << mix_blend_mode << std::endl;
     _markForRendering();
 }
 
-void
-DrawingItem::setVisible(bool v)
+void DrawingItem::setVisible(bool v)
 {
     if (_visible != v) {
         _visible = v;
@@ -319,13 +310,12 @@ DrawingItem::setCached(bool cached, bool persistent)
  *
  * Note: _style is not used by DrawingGlyphs which uses its parent style.
  */
-void
-DrawingItem::setStyle(SPStyle *style, SPStyle *context_style)
+void DrawingItem::setStyle(SPStyle const *style, SPStyle const *context_style)
 {
     // std::cout << "DrawingItem::setStyle: " << name() << " " << style
     //           << " " << context_style << std::endl;
 
-    if( style != _style ) {
+    if (style != _style) {
         if (style) sp_style_ref(style);
         if (_style) sp_style_unref(_style);
         _style = style;
@@ -362,9 +352,18 @@ DrawingItem::setStyle(SPStyle *style, SPStyle *context_style)
         _context_style = _parent->_context_style;
     }
 
+    if (_style) {
+        style_vector_effect_size   = _style->vector_effect.size;
+        style_vector_effect_rotate = _style->vector_effect.rotate;
+        style_vector_effect_fixed  = _style->vector_effect.fixed;
+    } else {
+        style_vector_effect_size   = false;
+        style_vector_effect_rotate = false;
+        style_vector_effect_fixed  = false;
+    }
+
     _markForUpdate(STATE_ALL, false);
 }
-
 
 /**
  * Recursively update children style.
@@ -373,18 +372,15 @@ DrawingItem::setStyle(SPStyle *style, SPStyle *context_style)
  * updated like other 'clones' as marker instances are not included the SP object tree.
  * Note: this is a virtual function.
  */
-void
-DrawingItem::setChildrenStyle(SPStyle* context_style)
+void DrawingItem::setChildrenStyle(SPStyle const *context_style)
 {
     _context_style = context_style;
-    for (auto & i : _children) {
-        i.setChildrenStyle( context_style );
+    for (auto &i : _children) {
+        i.setChildrenStyle(context_style);
     }
 }
 
-
-void
-DrawingItem::setClip(DrawingItem *item)
+void DrawingItem::setClip(DrawingItem *item)
 {
     _markForRendering();
     delete _clip;
@@ -441,8 +437,7 @@ DrawingItem::setStrokePattern(DrawingPattern *pattern)
 
 /// Move this item to the given place in the Z order of siblings.
 /// Does nothing if the item has no parent.
-void
-DrawingItem::setZOrder(unsigned z)
+void DrawingItem::setZOrder(unsigned z)
 {
     if (!_parent) return;
 
@@ -455,8 +450,7 @@ DrawingItem::setZOrder(unsigned z)
     _markForRendering();
 }
 
-void
-DrawingItem::setItemBounds(Geom::OptRect const &bounds)
+void DrawingItem::setItemBounds(Geom::OptRect const &bounds)
 {
     _item_bbox = bounds;
 }
@@ -483,8 +477,7 @@ DrawingItem::setItemBounds(Geom::OptRect const &bounds)
  *              propagating bounding box recomputation to children when the item's
  *              transform changes.
  */
-void
-DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
+void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
 {
 
     // We don't need to update what is not visible
@@ -526,29 +519,26 @@ DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, unsigne
     }
 
     // Vector effects
-    if (_style) {
+    if (style_vector_effect_fixed) {
+        child_ctx.ctm.setTranslation(Geom::Point(0, 0));
+    }
 
-        if (_style->vector_effect.fixed) {
-            child_ctx.ctm.setTranslation(Geom::Point(0,0));
+    if (style_vector_effect_size) {
+        double value = child_ctx.ctm.descrim();
+        if (value > 0.0) {
+            child_ctx.ctm[0] /= value;
+            child_ctx.ctm[1] /= value;
+            child_ctx.ctm[2] /= value;
+            child_ctx.ctm[3] /= value;
         }
+    }
 
-        if (_style->vector_effect.size) {
-            double value = sqrt(child_ctx.ctm.det());
-            if (value > 0 ) {
-                child_ctx.ctm[0] = child_ctx.ctm[0]/value;
-                child_ctx.ctm[1] = child_ctx.ctm[1]/value;
-                child_ctx.ctm[2] = child_ctx.ctm[2]/value;
-                child_ctx.ctm[3] = child_ctx.ctm[3]/value;
-            }
-        }
-
-        if (_style->vector_effect.rotate) {
-            double value = sqrt(child_ctx.ctm.det());
-            child_ctx.ctm[0] = value;
-            child_ctx.ctm[1] = 0;
-            child_ctx.ctm[2] = 0;
-            child_ctx.ctm[3] = value;
-        }
+    if (style_vector_effect_rotate) {
+        double value = child_ctx.ctm.descrim();
+        child_ctx.ctm[0] = value;
+        child_ctx.ctm[1] = 0.0;
+        child_ctx.ctm[2] = 0.0;
+        child_ctx.ctm[3] = value;
     }
 
     /* Remember the transformation matrix */

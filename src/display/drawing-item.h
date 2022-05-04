@@ -117,8 +117,8 @@ public:
     bool cached() const { return _cached; }
     void setCached(bool c, bool persistent = false);
 
-    virtual void setStyle(SPStyle *style, SPStyle *context_style = nullptr);
-    virtual void setChildrenStyle(SPStyle *context_style);
+    virtual void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr);
+    virtual void setChildrenStyle(SPStyle const *context_style);
     void setOpacity(float opacity);
     void setAntialiasing(unsigned a);
     void setIsolation(bool isolation); // CSS Compositing and Blending
@@ -176,7 +176,7 @@ protected:
 
     // static functions start here
 
-    static void _applyAntialias(DrawingContext & /*dc*/, unsigned /*_antialias*/);
+    static void _applyAntialias(DrawingContext &dc, unsigned _antialias);
 
     // member variables start here
 
@@ -194,8 +194,8 @@ protected:
 
     unsigned _key; ///< Some SPItems can have more than one DrawingItem;
                    ///  this value is a hack used to distinguish between them
-    SPStyle *_style; // Not used by DrawingGlyphs
-    SPStyle *_context_style; // Used for 'context-fill', 'context-stroke'
+    SPStyle const *_style; // Not used by DrawingGlyphs
+    SPStyle const *_context_style; // Used for 'context-fill', 'context-stroke'
     
     float _opacity;
 
@@ -217,6 +217,10 @@ protected:
     bool _prev_nir;
 
     CacheList::iterator _cache_iterator;
+
+    bool style_vector_effect_size   : 1;
+    bool style_vector_effect_rotate : 1;
+    bool style_vector_effect_fixed  : 1;
 
     unsigned _state : 8;
     unsigned _propagate_state : 8;

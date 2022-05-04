@@ -71,9 +71,9 @@ public:
     void mergeStatement( CRStatement *statement );
     bool operator==(const SPStyle& rhs);
 
-    int style_ref()   { ++_refcount; return _refcount; }
-    int style_unref() { --_refcount; return _refcount; }
-    int refCount() { return _refcount; }
+    int style_ref()   const { ++_refcount; return _refcount; }
+    int style_unref() const { --_refcount; return _refcount; }
+    int refCount() const { return _refcount; }
 
 private:
     void _mergeString( char const *const p );
@@ -84,7 +84,7 @@ private:
     void _mergeObjectStylesheet( SPObject const *const object, SPDocument *const document );
 
 private:
-    int _refcount;
+    mutable int _refcount;
     static int _count; // Poor man's leak detector
 
 // FIXME: Make private
@@ -359,9 +359,8 @@ public:
     std::map<std::string, std::string> extended_properties;
 };
 
-SPStyle *sp_style_ref(SPStyle *style); // SPStyle::ref();
-
-SPStyle *sp_style_unref(SPStyle *style); // SPStyle::unref();
+void sp_style_ref(SPStyle const *style); // SPStyle::ref();
+void sp_style_unref(SPStyle const *style); // SPStyle::unref();
 
 void sp_style_set_to_uri(SPStyle *style, bool isfill, Inkscape::URI const *uri); // ?
 

@@ -58,7 +58,7 @@ struct NRStyle
     struct CairoPatternFreer {void operator()(cairo_pattern_t *p) const {cairo_pattern_destroy(p);}};
     using CairoPatternUniqPtr = std::unique_ptr<cairo_pattern_t, CairoPatternFreer>;
 
-    void set(SPStyle *style, SPStyle *context_style = nullptr);
+    void set(SPStyle const *style, SPStyle const *context_style = nullptr);
     CairoPatternUniqPtr preparePaint(Inkscape::DrawingContext &dc, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern, Paint& paint);
     bool prepareFill(Inkscape::DrawingContext &dc, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
     bool prepareStroke(Inkscape::DrawingContext &dc, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);

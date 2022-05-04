@@ -31,6 +31,8 @@ public:
     DrawingImage(Drawing &drawing);
     ~DrawingImage() override;
 
+    void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
+
     void setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pb);
     void setScale(double sx, double sy);
     void setOrigin(Geom::Point const &o);
@@ -38,13 +40,13 @@ public:
     Geom::Rect bounds() const;
 
 protected:
-    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
-                                 unsigned flags, unsigned reset) override;
-    unsigned _renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags,
-                                 DrawingItem *stop_at) override;
+    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
+    unsigned _renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at) override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
 
     std::shared_ptr<Inkscape::Pixbuf const> _pixbuf;
+
+    SPImageRendering style_image_rendering;
 
     // TODO: the following three should probably be merged into a new Geom::Viewbox object
     Geom::Rect _clipbox; ///< for preserveAspectRatio

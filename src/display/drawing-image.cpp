@@ -23,44 +23,40 @@ namespace Inkscape {
 
 DrawingImage::DrawingImage(Drawing &drawing)
     : DrawingItem(drawing)
+    , style_image_rendering(SP_CSS_IMAGE_RENDERING_AUTO)
     , _pixbuf(nullptr)
-{}
+{
+}
 
 DrawingImage::~DrawingImage()
 {
-    // _pixbuf is owned by SPImage - do not delete it
 }
 
-void
-DrawingImage::setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pb)
+void DrawingImage::setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pb)
 {
     _pixbuf = std::move(pb);
     _markForUpdate(STATE_ALL, false);
 }
 
-void
-DrawingImage::setScale(double sx, double sy)
+void DrawingImage::setScale(double sx, double sy)
 {
     _scale = Geom::Scale(sx, sy);
     _markForUpdate(STATE_ALL, false);
 }
 
-void
-DrawingImage::setOrigin(Geom::Point const &o)
+void DrawingImage::setOrigin(Geom::Point const &o)
 {
     _origin = o;
     _markForUpdate(STATE_ALL, false);
 }
 
-void
-DrawingImage::setClipbox(Geom::Rect const &box)
+void DrawingImage::setClipbox(Geom::Rect const &box)
 {
     _clipbox = box;
     _markForUpdate(STATE_ALL, false);
 }
 
-Geom::Rect
-DrawingImage::bounds() const
+Geom::Rect DrawingImage::bounds() const
 {
     if (!_pixbuf) return _clipbox;
 
@@ -76,8 +72,17 @@ DrawingImage::bounds() const
     return ret;
 }
 
-unsigned
-DrawingImage::_updateItem(Geom::IntRect const &, UpdateContext const &, unsigned, unsigned)
+void DrawingImage::setStyle(SPStyle const *style, SPStyle const *context_style)
+{
+    DrawingItem::setStyle(style, context_style);
+    if (_style) {
+        style_image_rendering = _style->image_rendering.computed;
+    } else {
+        style_image_rendering = SP_CSS_IMAGE_RENDERING_AUTO;
+    }
+}
+
+unsigned DrawingImage::_updateItem(Geom::IntRect const &, UpdateContext const &, unsigned, unsigned)
 {
     _markForRendering();
 
@@ -116,28 +121,26 @@ unsigned DrawingImage::_renderItem(DrawingContext &dc, Geom::IntRect const &/*ar
         dc.setSource(const_cast<cairo_surface_t*>(_pixbuf->getSurfaceRaw()), 0, 0);
         dc.patternSetExtend(CAIRO_EXTEND_PAD);
 
-        if (_style) {
-            // See: http://www.w3.org/TR/SVG/painting.html#ImageRenderingProperty
-            //      https://drafts.csswg.org/css-images-3/#the-image-rendering
-            //      style.h/style.cpp, cairo-render-context.cpp
-            //
-            // CSS 3 defines:
-            //   'optimizeSpeed' as alias for "pixelated"
-            //   'optimizeQuality' as alias for "smooth"
-            switch (_style->image_rendering.computed) {
-                case SP_CSS_IMAGE_RENDERING_OPTIMIZESPEED:
-                case SP_CSS_IMAGE_RENDERING_PIXELATED:
-                // we don't have an implementation for crisp-edges, but it should *not* smooth or blur
-                case SP_CSS_IMAGE_RENDERING_CRISPEDGES:
-                    dc.patternSetFilter( CAIRO_FILTER_NEAREST );
-                    break;
-                case SP_CSS_IMAGE_RENDERING_AUTO:
-                case SP_CSS_IMAGE_RENDERING_OPTIMIZEQUALITY:
-                default:
-                    // In recent Cairo, BEST used Lanczos3, which is prohibitively slow
-                    dc.patternSetFilter( CAIRO_FILTER_GOOD );
-                    break;
-            }
+        // See: http://www.w3.org/TR/SVG/painting.html#ImageRenderingProperty
+        //      https://drafts.csswg.org/css-images-3/#the-image-rendering
+        //      style.h/style.cpp, cairo-render-context.cpp
+        //
+        // CSS 3 defines:
+        //   'optimizeSpeed' as alias for "pixelated"
+        //   'optimizeQuality' as alias for "smooth"
+        switch (style_image_rendering) {
+            case SP_CSS_IMAGE_RENDERING_OPTIMIZESPEED:
+            case SP_CSS_IMAGE_RENDERING_PIXELATED:
+            // we don't have an implementation for crisp-edges, but it should *not* smooth or blur
+            case SP_CSS_IMAGE_RENDERING_CRISPEDGES:
+                dc.patternSetFilter( CAIRO_FILTER_NEAREST );
+                break;
+            case SP_CSS_IMAGE_RENDERING_AUTO:
+            case SP_CSS_IMAGE_RENDERING_OPTIMIZEQUALITY:
+            default:
+                // In recent Cairo, BEST used Lanczos3, which is prohibitively slow
+                dc.patternSetFilter( CAIRO_FILTER_GOOD );
+                break;
         }
 
         dc.paint(1);

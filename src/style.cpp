@@ -1247,29 +1247,22 @@ sp_style_stroke_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, SPSty
 /**
  * Increase refcount of style.
  */
-SPStyle *
-sp_style_ref(SPStyle *style)
+void sp_style_ref(SPStyle const *style)
 {
-    g_return_val_if_fail(style != nullptr, NULL);
-
-    style->style_ref(); // Increase ref count
-
-    return style;
+    if (style) {
+        style->style_ref(); // Increase ref count
+    }
 }
 
 // Called in display/drawing-item.cpp, display/nr-filter-primitive.cpp, libnrtype/Layout-TNG-Input.cpp
 /**
  * Decrease refcount of style with possible destruction.
  */
-SPStyle *
-sp_style_unref(SPStyle *style)
+void sp_style_unref(SPStyle const *style)
 {
-    g_return_val_if_fail(style != nullptr, NULL);
-    if (style->style_unref() < 1) {
+    if (style && style->style_unref() < 1) {
         delete style;
-        return nullptr;
     }
-    return style;
 }
 
 static CRSelEng *

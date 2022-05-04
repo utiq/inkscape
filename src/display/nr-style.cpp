@@ -99,7 +99,7 @@ NRStyle::NRStyle()
     paint_order_layer[0] = PAINT_ORDER_NORMAL;
 }
 
-void NRStyle::set(SPStyle *style, SPStyle *context_style)
+void NRStyle::set(SPStyle const *style, SPStyle const *context_style)
 {
     // Handle 'context-fill' and 'context-stroke': Work in progress
     const SPIPaint *style_fill = &style->fill;
@@ -240,7 +240,7 @@ void NRStyle::set(SPStyle *style, SPStyle *context_style)
     // closest ancestor where 'text-decoration' was set. That is, setting
     // 'text-decoration' on an ancestor fixes the fill and stroke of the
     // decoration to the fill and stroke values of that ancestor.
-    SPStyle* style_td = style;
+    auto style_td = style;
     if (style->text_decoration.style_td) style_td = style->text_decoration.style_td;
     text_decoration_stroke.opacity = SP_SCALE24_TO_FLOAT(style_td->stroke_opacity.value);
     text_decoration_stroke_width = style_td->stroke_width.computed;

@@ -49,24 +49,21 @@ void DrawingGlyphs::setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom
     _markForUpdate(STATE_ALL, false);
 }
 
-void
-DrawingGlyphs::setStyle(SPStyle * /*style*/, SPStyle * /*context_style*/)
+void DrawingGlyphs::setStyle(SPStyle const */*style*/, SPStyle const */*context_style*/)
 {
     std::cerr << "DrawingGlyphs: Use parent style" << std::endl;
 }
 
-
 unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext const &ctx, unsigned /*flags*/, unsigned /*reset*/)
 {
-    DrawingText *ggroup = dynamic_cast<DrawingText *>(_parent);
+    auto ggroup = dynamic_cast<DrawingText*>(_parent);
     if (!ggroup) {
         throw InvalidItemException();
     }
 
-    if (!_font || !ggroup->_style) {
+    if (!_font) {
         return STATE_ALL;
     }
-
 
     _pick_bbox = Geom::IntRect();
     _bbox = Geom::IntRect();
@@ -204,17 +201,17 @@ DrawingItem *DrawingGlyphs::_pickItem(Geom::Point const &p, double /*delta*/, un
     return result;
 }
 
-
-
 DrawingText::DrawingText(Drawing &drawing)
     : DrawingGroup(drawing)
-{}
+    , style_vector_effect_stroke(false)
+    , style_stroke_extensions_hairline(false)
+    , style_clip_rule(SP_WIND_RULE_EVENODD)
+{
+}
 
-DrawingText::~DrawingText()
-= default;
+DrawingText::~DrawingText() = default;
 
-void
-DrawingText::clear()
+void DrawingText::clear()
 {
     _markForRendering();
     _children.clear_and_dispose(DeleteDisposer());
@@ -224,40 +221,45 @@ bool DrawingText::addComponent(std::shared_ptr<FontInstance> const &font, int gl
 {
 /* original, did not save a glyph for white space characters, causes problems for text-decoration
     if (!font || !font->PathVector(glyph)) {
-        return(false);
+        return false;
     }
 */
-    if (!font)return(false);
+    if (!font) return false;
 
     _markForRendering();
     DrawingGlyphs *ng = new DrawingGlyphs(_drawing);
     ng->setGlyph(font, glyph, trans);
-    if(font->PathVector(glyph)){ ng->_drawable = true;  }
-    else {                       ng->_drawable = false; }
+    ng->_drawable = font->PathVector(glyph);
     ng->_width  = width;   // used especially when _drawable = false, otherwise, it is the advance of the font
     ng->_asc    = ascent;  // of font, not of this one character
     ng->_dsc    = descent; // of font, not of this one character
     ng->_pl     = phase_length; // used for phase of dots, dashes, and wavy
     appendChild(ng);
-    return(true);
+    return true;
 }
 
-void
-DrawingText::setStyle(SPStyle *style, SPStyle *context_style)
+void DrawingText::setStyle(SPStyle const *style, SPStyle const *context_style)
 {
-    DrawingGroup::setStyle(style, context_style); // Must be first
+    DrawingGroup::setStyle(style, context_style);
+    _nrstyle.set(_style, _context_style);
+    if (_style) {
+        style_vector_effect_stroke = _style->vector_effect.stroke;
+        style_stroke_extensions_hairline = _style->stroke_extensions.hairline;
+        style_clip_rule = _style->clip_rule.computed;
+    } else {
+        style_vector_effect_stroke = false;
+        style_stroke_extensions_hairline = false;
+        style_clip_rule = SP_WIND_RULE_EVENODD;
+    }
+}
+
+void DrawingText::setChildrenStyle(SPStyle const *context_style)
+{
+    DrawingGroup::setChildrenStyle(context_style);
     _nrstyle.set(_style, _context_style);
 }
 
-void
-DrawingText::setChildrenStyle(SPStyle* context_style)
-{
-    DrawingGroup::setChildrenStyle( context_style );
-    _nrstyle.set(_style, _context_style);
-}
-
-unsigned
-DrawingText::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
+unsigned DrawingText::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
 {
     _nrstyle.update();
     return DrawingGroup::_updateItem(area, ctx, flags, reset);
@@ -300,7 +302,7 @@ void DrawingText::decorateStyle(DrawingContext &dc, double vextent, double xphas
     Geom::Point pf = Geom::Point(step * round(p2[Geom::X]/step),p2[Geom::Y]);
     Geom::Point poff = Geom::Point(0,thickness/2.0);
 
-    if(_nrstyle.text_decoration_style & NRStyle::TEXT_DECORATION_STYLE_ISDOUBLE){
+    if (_nrstyle.text_decoration_style & NRStyle::TEXT_DECORATION_STYLE_ISDOUBLE) {
         ps -= Geom::Point(0, vextent/12.0);
         pf -= Geom::Point(0, vextent/12.0);
         dc.rectangle( Geom::Rect(ps + poff, pf - poff));
@@ -634,7 +636,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
         }
         {
             Inkscape::DrawingContext::Save save(dc);
-            if (!_style || !(_style->vector_effect.stroke)) {
+            if (!style_vector_effect_stroke) {
                 dc.transform(_ctm);
             }
             if (has_stroke) {
@@ -642,11 +644,11 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
 
                 // If the stroke is a hairline, set it to exactly 1px on screen.
                 // If visible hairline mode is on, make sure the line is at least 1px.
-                if (_drawing.visibleHairlines() || _style->stroke_extensions.hairline) {
+                if (_drawing.visibleHairlines() || style_stroke_extensions_hairline) {
                     double dx = 1.0, dy = 0.0;
                     dc.device_to_user_distance(dx, dy);
                     auto pixel_size = std::hypot(dx, dy);
-                    if (_style->stroke_extensions.hairline || _nrstyle.stroke_width < pixel_size) {
+                    if (style_stroke_extensions_hairline || _nrstyle.stroke_width < pixel_size) {
                        dc.setHairline();
                     }
                 }
@@ -705,13 +707,10 @@ void DrawingText::_clipItem(DrawingContext &dc, Geom::IntRect const &/*area*/)
 {
     Inkscape::DrawingContext::Save save(dc);
 
-    // handle clip-rule
-    if (_style) {
-        if (_style->clip_rule.computed == SP_WIND_RULE_EVENODD) {
-            dc.setFillRule(CAIRO_FILL_RULE_EVEN_ODD);
-        } else {
-            dc.setFillRule(CAIRO_FILL_RULE_WINDING);
-        }
+    if (style_clip_rule == SP_WIND_RULE_EVENODD) {
+        dc.setFillRule(CAIRO_FILL_RULE_EVEN_ODD);
+    } else {
+        dc.setFillRule(CAIRO_FILL_RULE_WINDING);
     }
 
     for (auto & i : _children) {
@@ -729,14 +728,12 @@ void DrawingText::_clipItem(DrawingContext &dc, Geom::IntRect const &/*area*/)
     dc.fill();
 }
 
-DrawingItem *
-DrawingText::_pickItem(Geom::Point const &p, double delta, unsigned flags)
+DrawingItem *DrawingText::_pickItem(Geom::Point const &p, double delta, unsigned flags)
 {
     return DrawingGroup::_pickItem(p, delta, flags) ? this : nullptr;
 }
 
-bool
-DrawingText::_canClip()
+bool DrawingText::_canClip()
 {
     return true;
 }

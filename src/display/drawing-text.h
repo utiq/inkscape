@@ -30,7 +30,7 @@ public:
     ~DrawingGlyphs() override;
 
     void setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom::Affine const &trans);
-    void setStyle(SPStyle *style, SPStyle *context_style = nullptr) override; // Not to be used
+    void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override; // Not to be used
     Geom::IntRect getPickBox() const { return _pick_bbox; };
 
   protected:
@@ -60,8 +60,8 @@ public:
     void clear();
     bool addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans,
         float width, float ascent, float descent, float phase_length);
-    void setStyle(SPStyle *style, SPStyle *context_style = nullptr) override;
-    void setChildrenStyle(SPStyle *context_style) override;
+    void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
+    void setChildrenStyle(SPStyle const *context_style) override;
 
 protected:
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
@@ -75,6 +75,10 @@ protected:
     void decorateItem(DrawingContext &dc, double phase_length, bool under);
     void decorateStyle(DrawingContext &dc, double vextent, double xphase, Geom::Point const &p1, Geom::Point const &p2, double thickness);
     NRStyle _nrstyle;
+
+    bool style_vector_effect_stroke : 1;
+    bool style_stroke_extensions_hairline : 1;
+    SPWindRule style_clip_rule;
 
     friend class DrawingGlyphs;
 };
