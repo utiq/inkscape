@@ -44,8 +44,7 @@ DrawingGroup::setPickChildren(bool p)
  * This is applied after the normal transform and mainly useful for
  * markers, clipping paths, etc.
  */
-void
-DrawingGroup::setChildTransform(Geom::Affine const &new_trans)
+void DrawingGroup::setChildTransform(Geom::Affine const &new_trans)
 {
     double constexpr EPS = 1e-18;
 
@@ -66,32 +65,27 @@ DrawingGroup::setChildTransform(Geom::Affine const &new_trans)
     }
 }
 
-unsigned
-DrawingGroup::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
+unsigned DrawingGroup::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
 {
-    unsigned beststate = STATE_ALL;
     bool outline = _drawing.outline() || _drawing.outlineOverlay();
 
     UpdateContext child_ctx(ctx);
     if (_child_transform) {
         child_ctx.ctm = *_child_transform * ctx.ctm;
     }
-    for (auto & i : _children) {
+    for (auto &i : _children) {
         i.update(area, child_ctx, flags, reset);
     }
-    if (beststate & STATE_BBOX) {
-        _bbox = Geom::OptIntRect();
-        for (auto & i : _children) {
-            if (i.visible()) {
-                _bbox.unionWith(outline ? i.geometricBounds() : i.visualBounds());
-            }
+    _bbox = Geom::OptIntRect();
+    for (auto &i : _children) {
+        if (i.visible()) {
+            _bbox.unionWith(outline ? i.geometricBounds() : i.visualBounds());
         }
     }
-    return beststate;
+    return STATE_ALL;
 }
 
-unsigned
-DrawingGroup::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
+unsigned DrawingGroup::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
 {
     if (stop_at == nullptr) {
         // normal rendering
@@ -118,19 +112,17 @@ DrawingGroup::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigne
     return RENDER_OK;
 }
 
-void
-DrawingGroup::_clipItem(DrawingContext &dc, Geom::IntRect const &area)
+void DrawingGroup::_clipItem(DrawingContext &dc, Geom::IntRect const &area)
 {
-    for (auto & i : _children) {
+    for (auto &i : _children) {
         i.setAntialiasing(_antialias);
         i.clip(dc, area);
     }
 }
 
-DrawingItem *
-DrawingGroup::_pickItem(Geom::Point const &p, double delta, unsigned flags)
+DrawingItem *DrawingGroup::_pickItem(Geom::Point const &p, double delta, unsigned flags)
 {
-    for (auto & i : _children) {
+    for (auto &i : _children) {
         DrawingItem *picked = i.pick(p, delta, flags);
         if (picked) {
             return _pick_children ? picked : this;
@@ -139,15 +131,14 @@ DrawingGroup::_pickItem(Geom::Point const &p, double delta, unsigned flags)
     return nullptr;
 }
 
-bool
-DrawingGroup::_canClip()
+bool DrawingGroup::_canClip()
 {
     return true;
 }
 
 bool is_drawing_group(DrawingItem *item)
 {
-    return dynamic_cast<DrawingGroup *>(item) != nullptr;
+    return dynamic_cast<DrawingGroup*>(item);
 }
 
 } // end namespace Inkscape

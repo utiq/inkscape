@@ -408,11 +408,8 @@ SPPattern *SPPattern::rootPattern()
             return pat_i;
         }
     }
-    return this; // document is broken, we can't get to root; but at least we can return pat which is supposedly a valid
-                 // pattern
+    return this; // document is broken, we can't get to root; but at least we can return pat which is supposedly a valid pattern
 }
-
-
 
 // Access functions that look up fields up the chain of referenced patterns and return the first one which is set
 // FIXME: all of them must use chase_hrefs the same as in SPGradient, to avoid lockup on circular refs
@@ -494,7 +491,7 @@ Geom::OptRect SPPattern::viewbox() const
 
 bool SPPattern::_hasItemChildren() const
 {
-    for (auto& child: children) {
+    for (auto &child : children) {
         if (SP_IS_ITEM(&child)) {
             return true;
         }
@@ -505,17 +502,11 @@ bool SPPattern::_hasItemChildren() const
 
 bool SPPattern::isValid() const
 {
-    double tile_width = width();
-    double tile_height = height();
-
-    if (tile_width <= 0 || tile_height <= 0)
-        return false;
-    return true;
+    return width() > 0 && height() > 0;
 }
 
 cairo_pattern_t *SPPattern::pattern_new(cairo_t *base_ct, Geom::OptRect const &bbox, double opacity)
 {
-
     bool needs_opacity = (1.0 - opacity) >= 1e-3;
     bool visible = opacity >= 1e-3;
 
@@ -544,7 +535,7 @@ cairo_pattern_t *SPPattern::pattern_new(cairo_t *base_ct, Geom::OptRect const &b
     Inkscape::DrawingGroup *root = new Inkscape::DrawingGroup(drawing);
     drawing.setRoot(root);
 
-    for (auto& child: shown->children) {
+    for (auto &child: shown->children) {
         if (SP_IS_ITEM(&child)) {
             // for each item in pattern, show it on our drawing, add to the group,
             // and connect to the release signal in case the item gets deleted
@@ -587,17 +578,14 @@ cairo_pattern_t *SPPattern::pattern_new(cairo_t *base_ct, Geom::OptRect const &b
         content2ps = c2p;
     }
     else {
-
         // Content to bbox
-        if (bbox && (patternContentUnits() == UNITS_OBJECTBOUNDINGBOX)) {
+        if (bbox && patternContentUnits() == UNITS_OBJECTBOUNDINGBOX) {
             content2ps = Geom::Affine(bbox->width(), 0.0, 0.0, bbox->height(), 0, 0);
         }
     }
 
-
     // Tile (pattern space) to user.
     Geom::Affine ps2user = Geom::Translate(tile_x, tile_y) * getTransform();
-
 
     // Transform of object with pattern (includes screen scaling)
     cairo_matrix_t cm;

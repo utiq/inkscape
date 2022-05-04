@@ -487,6 +487,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
     bool has_fill      = false;
     bool has_td_fill   = false;
     bool has_td_stroke = false;
+
     {
         Inkscape::DrawingContext::Save save(dc);
         dc.transform(_ctm);
@@ -495,7 +496,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
         has_stroke    = _nrstyle.prepareStroke(              dc, _item_bbox, _stroke_pattern);
 
         // Avoid creating patterns if not needed
-        if( decorate ) {
+        if (decorate) {
             has_td_fill   = _nrstyle.prepareTextDecorationFill(  dc, _item_bbox, _fill_pattern);
             has_td_stroke = _nrstyle.prepareTextDecorationStroke(dc, _item_bbox, _stroke_pattern);
         }
@@ -516,7 +517,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
         // Determine geometry of text decoration
         double phase_length = 0.0;
         Geom::Affine aff;
-        if( decorate ) {
+        if (decorate) {
 
             Geom::Affine rotinv;
             bool   invset    = false;
@@ -545,7 +546,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
                     first_y = false;
                     start_y = pt[Geom::Y];
                 }
-                else if (fabs(pt[Geom::Y] - start_y) > 1.0e-6) {
+                else if (std::fabs(pt[Geom::Y] - start_y) > 1.0e-6) {
                     //  If the text has been mapped onto a path, which causes y to vary, drop the
                     //  text decorations.  To handle that properly would need a conformal map.
                     decorate = false;
@@ -554,7 +555,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
         }
 
         // Draw text decorations that go UNDER the text (underline, over-line)
-        if( decorate ) {
+        if (decorate) {
 
             {
                 Inkscape::DrawingContext::Save save(dc);
@@ -587,7 +588,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
         }
 
         // Accumulate the path that represents the glyphs and/or draw SVG glyphs.
-        for (auto & i : _children) {
+        for (auto &i : _children) {
             DrawingGlyphs *g = dynamic_cast<DrawingGlyphs *>(&i);
             if (!g) throw InvalidItemException();
 

@@ -298,7 +298,7 @@ void NRStyle::set(SPStyle const *style, SPStyle const *context_style)
     update();
 }
 
-NRStyle::CairoPatternUniqPtr NRStyle::preparePaint(Inkscape::DrawingContext &dc, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern, Paint& paint)
+NRStyle::CairoPatternUniqPtr NRStyle::preparePaint(Inkscape::DrawingContext &dc, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern, Paint &paint)
 {
     switch (paint.type) {
         case PAINT_SERVER:
@@ -308,8 +308,8 @@ NRStyle::CairoPatternUniqPtr NRStyle::preparePaint(Inkscape::DrawingContext &dc,
                 return CairoPatternUniqPtr(paint.server->pattern_new(dc.raw(), paintbox, paint.opacity));
             }
         case PAINT_COLOR: {
-            SPColor const &c = paint.color;
-            return CairoPatternUniqPtr(cairo_pattern_create_rgba(c.v.c[0], c.v.c[1], c.v.c[2], paint.opacity));
+            auto const &c = paint.color.v.c;
+            return CairoPatternUniqPtr(cairo_pattern_create_rgba(c[0], c[1], c[2], paint.opacity));
         }
         default:
             return {};

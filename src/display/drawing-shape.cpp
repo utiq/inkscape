@@ -88,8 +88,6 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
 {
     Geom::OptRect boundingbox;
 
-    unsigned beststate = STATE_ALL;
-
     // update markers
     for (auto &i : _children) {
         i.update(area, ctx, flags, reset);
@@ -106,13 +104,11 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
                     _bbox = Geom::OptIntRect();
                 }
             }
-            if (beststate & STATE_BBOX) {
-                for (auto &i : _children) {
-                    _bbox.unionWith(i.geometricBounds());
-                }
+            for (auto &i : _children) {
+                _bbox.unionWith(i.geometricBounds());
             }
         }
-        return (flags | _state);
+        return flags | _state;
     }
 
     boundingbox = Geom::OptRect();
@@ -128,12 +124,12 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
             float width, scale;
             scale = ctx.ctm.descrim();
             width = std::max(0.125f, _nrstyle.stroke_width * scale);
-            if ( fabs(_nrstyle.stroke_width * scale) > 0.01 ) { // FIXME: this is always true
+            if (std::fabs(_nrstyle.stroke_width * scale) > 0.01) { // FIXME: this is always true
                 boundingbox->expandBy(width);
             }
             // those pesky miters, now
             float miterMax = width * _nrstyle.miter_limit;
-            if ( miterMax > 0.01 ) {
+            if (miterMax > 0.01) {
                 // grunt mode. we should compute the various miters instead
                 // (one for each point on the curve)
                 boundingbox->expandBy(miterMax);
@@ -147,11 +143,10 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
         return STATE_ALL;
     }
 
-    if (beststate & STATE_BBOX) {
-        for (auto &i : _children) {
-            _bbox.unionWith(i.geometricBounds());
-        }
+    for (auto &i : _children) {
+        _bbox.unionWith(i.geometricBounds());
     }
+
     return STATE_ALL;
 }
 
@@ -160,9 +155,9 @@ void DrawingShape::_renderFill(DrawingContext &dc)
     Inkscape::DrawingContext::Save save(dc);
     dc.transform(_ctm);
 
-    bool has_fill =  _nrstyle.prepareFill(dc, _item_bbox, _fill_pattern);
+    bool has_fill = _nrstyle.prepareFill(dc, _item_bbox, _fill_pattern);
 
-    if( has_fill ) {
+    if (has_fill) {
         dc.path(_curve->get_pathvector());
         _nrstyle.applyFill(dc);
         dc.fillPreserve();
@@ -208,7 +203,7 @@ void DrawingShape::_renderStroke(DrawingContext &dc)
 void DrawingShape::_renderMarkers(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
 {
     // marker rendering
-    for (auto & i : _children) {
+    for (auto &i : _children) {
         i.render(dc, area, flags, stop_at);
     }
 }
@@ -224,11 +219,13 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area
         guint32 rgba = _drawing.outlinecolor;
 
         // paint-order doesn't matter
-        {   Inkscape::DrawingContext::Save save(dc);
+        {
+            Inkscape::DrawingContext::Save save(dc);
             dc.transform(_ctm);
             dc.path(_curve->get_pathvector());
         }
-        {   Inkscape::DrawingContext::Save save(dc);
+        {
+            Inkscape::DrawingContext::Save save(dc);
             dc.setSource(rgba);
             dc.setLineWidth(0.5);
             dc.setTolerance(0.5);
@@ -237,17 +234,15 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area
 
         _renderMarkers(dc, area, flags, stop_at);
         return RENDER_OK;
-
     }
 
-    if( _nrstyle.paint_order_layer[0] == NRStyle::PAINT_ORDER_NORMAL ) {
+    if (_nrstyle.paint_order_layer[0] == NRStyle::PAINT_ORDER_NORMAL) {
         // This is the most common case, special case so we don't call get_pathvector(), etc. twice
 
         {
             // we assume the context has no path
             Inkscape::DrawingContext::Save save(dc);
             dc.transform(_ctm);
-
 
             // update fill and stroke paints.
             // this cannot be done during nr_arena_shape_update, because we need a Cairo context
@@ -291,7 +286,7 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area
     }
 
     // Handle different paint orders
-    for (auto & i : _nrstyle.paint_order_layer) {
+    for (auto &i : _nrstyle.paint_order_layer) {
         switch (i) {
             case NRStyle::PAINT_ORDER_FILL:
                 _renderFill(dc);
@@ -307,10 +302,11 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area
                 break;
         }
     }
+
     return RENDER_OK;
 }
 
-void DrawingShape::_clipItem(DrawingContext &dc, Geom::IntRect const & /*area*/)
+void DrawingShape::_clipItem(DrawingContext &dc, Geom::IntRect const &/*area*/)
 {
     if (!_curve) return;
 
@@ -407,7 +403,7 @@ DrawingItem *DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigne
     }
 
     // if not picked on the shape itself, try its markers
-    for (auto & i : _children) {
+    for (auto &i : _children) {
         DrawingItem *ret = i.pick(p, delta, flags & ~PICK_STICKY);
         if (ret) {
             _last_pick = this;
