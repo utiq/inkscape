@@ -40,6 +40,8 @@ LPEAttachPath::LPEAttachPath(LivePathEffectObject *lpeobject) :
     show_orig_path = true;
     curve_start_previous_origin = start_path_curve_end.getOrigin();
     curve_end_previous_origin = end_path_curve_end.getOrigin();
+    start_path.setUpdating(true);
+    end_path.setUpdating(true);
 }
 
 LPEAttachPath::~LPEAttachPath()
@@ -49,6 +51,42 @@ void LPEAttachPath::resetDefaults(SPItem const * /*item*/)
 {
     curve_start_previous_origin = start_path_curve_end.getOrigin();
     curve_end_previous_origin = end_path_curve_end.getOrigin();
+}
+
+void 
+LPEAttachPath::doBeforeEffect (SPLPEItem const* lpeitem)
+{
+    if (is_load) {
+        start_path.setUpdating(false);
+        start_path.start_listening(start_path.getObject());
+        start_path.connect_selection_changed();
+        end_path.setUpdating(false);
+        end_path.start_listening(end_path.getObject());
+        end_path.connect_selection_changed();
+        SPItem * item = nullptr;
+        if (( item = dynamic_cast<SPItem *>(end_path.getObject()) )) {
+            item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        }
+        if (( item = dynamic_cast<SPItem *>(start_path.getObject()) )) {
+            item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        }
+    }
+}
+
+
+bool 
+LPEAttachPath::doOnOpen(SPLPEItem const *lpeitem)
+{
+    if (!is_load || is_applied) {
+        return false;
+    }
+    start_path.setUpdating(false);
+    start_path.start_listening(start_path.getObject());
+    start_path.connect_selection_changed();
+    end_path.setUpdating(false);
+    end_path.start_listening(end_path.getObject());
+    end_path.connect_selection_changed();
+    return false;
 }
 
 void LPEAttachPath::doEffect (SPCurve * curve)

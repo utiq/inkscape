@@ -23,10 +23,38 @@ LPEBoundingBox::LPEBoundingBox(LivePathEffectObject *lpeobject) :
     registerParameter(&linked_path);
     registerParameter(&visual_bounds);
     //perceived_path = true;
+    linked_path.setUpdating(true);
 }
 
 LPEBoundingBox::~LPEBoundingBox()
 = default;
+
+bool 
+LPEBoundingBox::doOnOpen(SPLPEItem const *lpeitem)
+{
+    if (!is_load || is_applied) {
+        return false;
+    }
+    linked_path.setUpdating(false);
+    linked_path.start_listening(linked_path.getObject());
+    linked_path.connect_selection_changed();
+    return false;
+}
+
+void 
+LPEBoundingBox::doBeforeEffect (SPLPEItem const* lpeitem)
+{
+    if (is_load) {
+        linked_path.setUpdating(false);
+        linked_path.start_listening(linked_path.getObject());
+        linked_path.connect_selection_changed();
+        SPItem * item = nullptr;
+        if (( item = dynamic_cast<SPItem *>(linked_path.getObject()) )) {
+            item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        }
+    }
+}
+
 
 void LPEBoundingBox::doEffect (SPCurve * curve)
 {

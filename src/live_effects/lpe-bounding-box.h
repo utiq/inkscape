@@ -20,7 +20,8 @@ class LPEBoundingBox : public Effect {
 public:
     LPEBoundingBox(LivePathEffectObject *lpeobject);
     ~LPEBoundingBox() override;
-
+    void doBeforeEffect (SPLPEItem const* lpeitem) override;
+    bool doOnOpen(SPLPEItem const *lpeitem) override;
     void doEffect (SPCurve * curve) override;
 
 private:

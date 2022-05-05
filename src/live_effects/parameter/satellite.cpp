@@ -220,7 +220,7 @@ void SatelliteParam::linked_released(SPObject *released)
 
 void SatelliteParam::linked_modified(SPObject *linked_obj, guint flags)
 {
-    if ((!param_effect->is_load || ownerlocator || !SP_ACTIVE_DESKTOP) &&
+    if (!_updating && (!param_effect->is_load || ownerlocator || !SP_ACTIVE_DESKTOP) &&
         flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
                  SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
     {
@@ -234,7 +234,9 @@ void SatelliteParam::linked_modified(SPObject *linked_obj, guint flags)
 
 void SatelliteParam::linked_transformed(Geom::Affine const *rel_transf, SPItem *moved_item)
 {
-    update_satellites();
+    if (!_updating) {
+        update_satellites();
+    }
 }
 
 // UI

@@ -83,6 +83,17 @@ LPEFillBetweenStrokes::doBeforeEffect (SPLPEItem const* lpeitem)
     } else {
         linked_path.setUpdating(false);
         second_path.setUpdating(false);
+        linked_path.start_listening(linked_path.getObject());
+        linked_path.connect_selection_changed();
+        second_path.start_listening(second_path.getObject());
+        second_path.connect_selection_changed();
+        SPItem * item = nullptr;
+        if (( item = dynamic_cast<SPItem *>(linked_path.getObject()) )) {
+            item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        }
+        if (( item = dynamic_cast<SPItem *>(second_path.getObject()) )) {
+            item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        }
     }
     Glib::ustring version = lpeversion.param_getSVGValue();
     if (version < "1.2") {

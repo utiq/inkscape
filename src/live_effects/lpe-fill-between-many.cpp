@@ -88,6 +88,8 @@ LPEFillBetweenMany::doBeforeEffect (SPLPEItem const* lpeitem)
         prevaffine = i2anc_affine(sp_lpe_item, sp_lpe_item->document->getRoot());
     } else {
         linked_paths.setUpdating(false);
+        linked_paths.start_listening();
+        linked_paths.connect_selection_changed();
     }
     Glib::ustring version = lpeversion.param_getSVGValue();
     if (version < "1.2") {
