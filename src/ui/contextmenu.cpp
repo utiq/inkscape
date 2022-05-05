@@ -143,10 +143,10 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
                 auto image = dynamic_cast<SPImage*>(item);
                 if (strncmp(image->href, "data", 4) == 0) {
                     // Image is embedded.
-                    AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.extract_image",        _("Extract Image..."),      ""                      );
+                    AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.extract-image",        _("Extract Image..."),      ""                      );
                 } else {
                     // Image is linked.
-                    AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.selected.embed_image", _("Embed Image"),           ""                      );
+                    AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.selected.embed-image", _("Embed Image"),           ""                      );
                     AppendItemFromAction( gmenu_dialogs, "app.element-image-edit",                       _("Edit Externally..."),    ""                      );
                 }
             }
