@@ -100,6 +100,7 @@ private:
     BoolParam split_items;
     BoolParam link_styles;
     BoolParam shrink_interp;
+    HiddenParam transformorigin;
     double original_width = 0;
     double original_height = 0;
     Geom::OptRect gap_bbox;
@@ -115,6 +116,7 @@ private:
     std::vector<double> random_r;
     Geom::Affine affinebase = Geom::identity();
     Geom::Affine transformoriginal = Geom::identity();
+    Geom::Affine hideaffine = Geom::identity();
     bool prev_split = false;
     SPObject *container;
     LPETiling(const LPETiling&) = delete;

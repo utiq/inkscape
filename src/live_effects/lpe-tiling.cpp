@@ -95,8 +95,8 @@ LPETiling::LPETiling(LivePathEffectObject *lpeobject) :
     random_gap_y(_("Random gaps Y"), _("Randomize vertical gaps"), "random_gap_y", &wr, this, false),
     random_rotate(_("Random rotation"), _("Randomize tile rotation"), "random_rotate", &wr, this, false),
     random_scale(_("Random scale"), _("Randomize scale"), "random_scale", &wr, this, false),
-    seed(_("Seed"), _("Randomization seed"), "seed", &wr, this, 1.)
-    
+    seed(_("Seed"), _("Randomization seed"), "seed", &wr, this, 1.),
+    transformorigin("transformorigin:", "transformorigin","transformorigin", &wr, this, "", true)    
 {
     show_orig_path = true;
     _provides_knotholder_entities = true;
@@ -129,6 +129,7 @@ LPETiling::LPETiling(LivePathEffectObject *lpeobject) :
     registerParameter(&random_rotate);
     registerParameter(&random_gap_y);
     registerParameter(&random_gap_x);
+    registerParameter(&transformorigin);
     
     num_cols.param_set_range(1, 9999);// we need the input a bit tiny so this seems enough
     num_cols.param_make_integer();
@@ -1070,12 +1071,20 @@ LPETiling::doOnApply(SPLPEItem const* lpeitem)
     (*originalbbox) *= Geom::Translate((*originalbbox).midpoint()).inverse() * Geom::Scale(scale_fix) * Geom::Translate((*originalbbox).midpoint());
     original_width = (*gap_bbox).width();
     original_height = (*gap_bbox).height();
+    if (lpeitem->getAttribute("transform")) {
+        transformorigin.param_setValue(lpeitem->getAttribute("transform"), true);
+    }
 }
 
 void
 LPETiling::doBeforeEffect (SPLPEItem const* lpeitem)
 {
-    transformoriginal = sp_item_transform_repr(sp_lpe_item).withoutTranslation();
+    auto transformorigin_str = transformorigin.param_getSVGValue();
+    transformoriginal = Geom::identity();
+    if (!transformorigin_str.empty()) {
+        sp_svg_transform_read(transformorigin_str.c_str(), &transformoriginal);
+    }
+    transformoriginal = transformoriginal.withoutTranslation();
     using namespace Geom;
     seed.resetRandomizer();
     random_x.clear();
@@ -1430,8 +1439,20 @@ LPETiling::resetDefaults(SPItem const* item)
 }
 
 void
-LPETiling::doOnVisibilityToggled(SPLPEItem const* /*lpeitem*/)
-{
+LPETiling::doOnVisibilityToggled(SPLPEItem const* lpeitem)
+{   
+    auto transformorigin_str = lpeitem->getAttribute("transform");
+    Geom::Affine ontoggle = Geom::identity();
+    if (transformorigin_str) {
+        sp_svg_transform_read(transformorigin_str, &ontoggle);
+    }
+    ontoggle = ontoggle.withoutTranslation();
+    if (is_visible) {
+        ontoggle = ontoggle * hideaffine.inverse() * transformoriginal;
+        transformorigin.param_setValue(sp_svg_transform_write(ontoggle), true);
+    } else {
+        hideaffine = ontoggle;
+    }
     processObjects(LPE_VISIBILITY);
 }
 
