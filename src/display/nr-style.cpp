@@ -20,10 +20,7 @@
 
 void NRStyle::Paint::clear()
 {
-    if (server) {
-        sp_object_unref(server, nullptr);
-        server = nullptr;
-    }
+    server.reset();
     type = PAINT_NONE;
 }
 
@@ -39,8 +36,7 @@ void NRStyle::Paint::set(SPPaintServer *ps)
     clear();
     if (ps) {
         type = PAINT_SERVER;
-        server = ps;
-        sp_object_ref(server, nullptr);
+        server = ps->create_drawing_paintserver();
     }
 }
 
@@ -315,7 +311,12 @@ void NRStyle::preparePaint(Inkscape::DrawingContext &dc, Geom::IntRect const &ar
     // Handle remaining non-DrawingPattern cases.
     switch (paint.type) {
         case PAINT_SERVER:
-            cp = CairoPatternUniqPtr(paint.server->pattern_new(dc.raw(), paintbox, paint.opacity));
+            if (paint.server) {
+                cp = CairoPatternUniqPtr(paint.server->create_pattern(dc.raw(), paintbox, paint.opacity));
+            } else {
+                std::cerr << "Null pattern detected" << std::endl;
+                cp = CairoPatternUniqPtr(cairo_pattern_create_rgba(0, 0, 0, 0));
+            }
             break;
         case PAINT_COLOR: {
             auto const &c = paint.color.v.c;

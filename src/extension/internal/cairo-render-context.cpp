@@ -37,6 +37,7 @@
 #include "display/drawing.h"
 #include "display/curve.h"
 #include "display/cairo-utils.h"
+#include "display/drawing-paintserver.h"
 
 #include "object/sp-item.h"
 #include "object/sp-item-group.h"
@@ -1380,7 +1381,7 @@ CairoRenderContext::_createPatternForPaintServer(SPPaintServer const *const pain
             cairo_pattern_add_color_stop_rgba(pattern, rg->vector.stops[i].offset, rgb[0], rgb[1], rgb[2], rg->vector.stops[i].opacity * alpha);
         }
     } else if (auto mg = dynamic_cast<SPMeshGradient *>(paintserver_mutable)) {
-        pattern = mg->pattern_new(_cr, pbox, 1.0);
+        pattern = mg->create_drawing_paintserver()->create_pattern(_cr, pbox, 1.0);
     } else if (SP_IS_PATTERN (paintserver)) {
         pattern = _createPatternPainter(paintserver, pbox);
     } else if ( dynamic_cast<SPHatch const *>(paintserver) ) {

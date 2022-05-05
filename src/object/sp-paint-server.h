@@ -16,38 +16,50 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <memory>
 #include <cairo.h>
 #include <2geom/rect.h>
 #include <sigc++/slot.h>
 #include "sp-object.h"
 
 namespace Inkscape {
-
 class Drawing;
 class DrawingPattern;
+class DrawingPaintServer;
+} // namespace Inkscape
 
-}
-
-class SPPaintServer : public SPObject {
+class SPPaintServer
+    : public SPObject
+{
 public:
-	SPPaintServer();
-	~SPPaintServer() override;
+    SPPaintServer();
+    ~SPPaintServer() override;
 
     bool isSwatch() const;
     virtual bool isValid() const;
 
-    //There are two ways to render a paint. The simple one is to create cairo_pattern_t structure
-    //on demand by pattern_new method. It is used for gradients. The other one is to add elements
-    //representing PaintServer in NR tree. It is used by hatches and patterns.
-    //Either pattern new or all three methods show, hide, setBBox need to be implemented
-    virtual Inkscape::DrawingPattern *show(Inkscape::Drawing &drawing, unsigned key, Geom::OptRect const &bbox);
-    virtual void hide(unsigned int key);
-    virtual void setBBox(unsigned int key, Geom::OptRect const &bbox);
+    /*
+     * There are two ways to implement a paint server:
+     *
+     *  1. Simple paint servers (solid colors and gradients) implement the create_drawing_paintserver() method.
+     *     This returns a DrawingPaintServer instance holding a copy of the paint server's resources which is
+     *     used to produce a pattern on-demand using create_pattern().
+     *
+     *  2. The other paint servers (patterns and hatches) implement show(), hide() and setBBox().
+     *     The drawing item subtree returned by show() is attached as a fill/stroke child of the
+     *     drawing item the paint server is applied to, and used directly when rendering.
+     *
+     *  Paint servers only need to implement one method. If both are implemented, then option 2 is used.
+     */
 
-    virtual cairo_pattern_t* pattern_new(cairo_t *ct, Geom::OptRect const &bbox, double opacity);
+    virtual std::unique_ptr<Inkscape::DrawingPaintServer> create_drawing_paintserver();
+
+    virtual Inkscape::DrawingPattern *show(Inkscape::Drawing &drawing, unsigned key, Geom::OptRect const &bbox);
+    virtual void hide(unsigned key);
+    virtual void setBBox(unsigned key, Geom::OptRect const &bbox);
 
 protected:
-    bool swatch;
+    bool swatch = false;
 };
 
 /**

@@ -81,7 +81,9 @@ std::vector<PaintTarget> const &allPaintTargets();
  * Implement spread, stops list
  * \todo fixme: Implement more here (Lauris)
  */
-class SPGradient : public SPPaintServer {
+class SPGradient
+    : public SPPaintServer
+{
 public:
 	SPGradient();
 	~SPGradient() override;

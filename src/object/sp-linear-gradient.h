@@ -18,7 +18,9 @@
 #include "svg/svg-length.h"
 
 /** Linear gradient. */
-class SPLinearGradient : public SPGradient {
+class SPLinearGradient
+    : public SPGradient
+{
 public:
     SPLinearGradient();
     ~SPLinearGradient() override;
@@ -28,7 +30,7 @@ public:
     SVGLength x2;
     SVGLength y2;
 
-    cairo_pattern_t* pattern_new(cairo_t *ct, Geom::OptRect const &bbox, double opacity) override;
+    std::unique_ptr<Inkscape::DrawingPaintServer> create_drawing_paintserver() override;
 
 protected:
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;

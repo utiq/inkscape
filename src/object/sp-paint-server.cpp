@@ -16,6 +16,7 @@
 
 #include "sp-paint-server-reference.h"
 #include "sp-paint-server.h"
+#include "display/drawing-paintserver.h"
 
 #include "sp-gradient.h"
 #include "xml/node.h"
@@ -30,10 +31,7 @@ bool SPPaintServerReference::_acceptObject(SPObject *obj) const
     return SP_IS_PAINT_SERVER(obj) && URIReference::_acceptObject(obj);
 }
 
-SPPaintServer::SPPaintServer()
-{
-    swatch = false;
-}
+SPPaintServer::SPPaintServer() = default;
 
 SPPaintServer::~SPPaintServer() = default;
 
@@ -52,17 +50,17 @@ Inkscape::DrawingPattern *SPPaintServer::show(Inkscape::Drawing &/*drawing*/, un
     return nullptr;
 }
 
-void SPPaintServer::hide(unsigned int /*key*/)
+void SPPaintServer::hide(unsigned key)
 {
 }
 
-void SPPaintServer::setBBox(unsigned int /*key*/, Geom::OptRect const &/*bbox*/)
+void SPPaintServer::setBBox(unsigned key, Geom::OptRect const &bbox)
 {
 }
 
-cairo_pattern_t* SPPaintServer::pattern_new(cairo_t * /*ct*/, Geom::OptRect const &/*bbox*/, double /*opacity*/)
+std::unique_ptr<Inkscape::DrawingPaintServer> SPPaintServer::create_drawing_paintserver()
 {
-    return nullptr;
+    return {};
 }
 
 /*

@@ -31,16 +31,12 @@ class SPHatchPath;
 class SPItem;
 
 namespace Inkscape {
-
 class Drawing;
 class DrawingPattern;
-
 namespace XML {
-
 class Node;
-
-}
-}
+} // namespace XML
+} // namespace Inkscape
 
 #define SP_HATCH(obj) (dynamic_cast<SPHatch *>((SPObject *)obj))
 #define SP_IS_HATCH(obj) (dynamic_cast<const SPHatch *>((SPObject *)obj) != NULL)

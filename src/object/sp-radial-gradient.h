@@ -33,7 +33,7 @@ public:
     SVGLength fy;
     SVGLength fr; // Focus radius. Added in SVG 2
 
-    cairo_pattern_t* pattern_new(cairo_t *ct, Geom::OptRect const &bbox, double opacity) override;
+    std::unique_ptr<Inkscape::DrawingPaintServer> create_drawing_paintserver() override;
 
 protected:
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;

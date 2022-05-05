@@ -27,7 +27,8 @@ public:
     SVGLength y;  // Upper right corner of mesh
     SPMeshType type;
     bool type_set;
-    cairo_pattern_t* pattern_new(cairo_t *ct, Geom::OptRect const &bbox, double opacity) override;
+
+    std::unique_ptr<Inkscape::DrawingPaintServer> create_drawing_paintserver() override;
 
 protected:
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;

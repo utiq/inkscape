@@ -19,6 +19,7 @@
 #include <cairo.h>
 #include <2geom/rect.h>
 #include "color.h"
+#include "drawing-paintserver.h"
 
 class SPPaintServer;
 class SPStyle;
@@ -42,12 +43,10 @@ struct NRStyle
 
     struct Paint
     {
-        ~Paint() { clear(); }
-
-        PaintType type        = PAINT_NONE;
-        SPColor color         = 0;
-        SPPaintServer *server = nullptr;
-        float opacity         = 1.0;
+        PaintType type = PAINT_NONE;
+        SPColor color = 0;
+        std::unique_ptr<Inkscape::DrawingPaintServer> server;
+        float opacity = 1.0;
 
         void clear();
         void set(SPColor const &c);
