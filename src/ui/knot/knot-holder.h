@@ -73,6 +73,7 @@ public:
 
     SPDesktop *getDesktop() { return desktop; }
     SPItem *getItem() { return item; }
+    bool is_dragging() const { return dragging; }
 
     friend class Inkscape::UI::ShapeEditor; // FIXME why?
     friend class Inkscape::LivePathEffect::NodeSatelliteArrayParam;                    // why?

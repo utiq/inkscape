@@ -2381,17 +2381,25 @@ TextKnotHolderEntityShapePadding::knot_set(Geom::Point const &p, Geom::Point con
     }
 
     if (auto shape = text->get_first_shape_dependency()) {
-        Geom::OptRect bounds = shape->geometricBounds();
-        if (bounds) {
+        if (Geom::OptRect optbounds = shape->geometricBounds()) {
+            auto bounds = *optbounds;
             Geom::Point const point_a = snap_knot_position(p, state);
             Geom::Point point_b = point_a * shape->transform.inverse();
-            auto padding = (*bounds).corner(1)[Geom::X] - point_b[Geom::X];
-            Inkscape::CSSOStringStream os;
-            os << padding;
-            text->style->shape_padding.read(os.str().c_str());
 
-            text->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-            text->updateRepr();
+            double padding = 0.0;
+            if (point_b[Geom::X] - 1 > bounds.midpoint()[Geom::X]) {
+                padding = bounds.corner(1)[Geom::X] - point_b[Geom::X];
+            }
+
+            // Padding can only be a positive value according to the CSS/text-padding spec
+            if (padding >= 0.0) {
+                Inkscape::CSSOStringStream os;
+                os << padding;
+                text->style->shape_padding.read(os.str().c_str());
+
+                text->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+                text->updateRepr();
+            }
         }
     }
 }
@@ -2436,13 +2444,17 @@ TextKnotHolderEntityShapeMargin::knot_set(Geom::Point const &p, Geom::Point cons
     if (bounds) {
         Geom::Point const point_a = snap_knot_position(p, state);
         Geom::Point point_b = point_a * linked_shape->transform.inverse();
-        auto margin = (*bounds).corner(1)[Geom::X] - point_b[Geom::X];
-        Inkscape::CSSOStringStream os;
-        os << margin;
-        linked_shape->style->shape_margin.read(os.str().c_str());
+        auto margin = -((*bounds).corner(1)[Geom::X] - point_b[Geom::X]);
 
-        linked_shape->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-        linked_shape->updateRepr();
+        // Margins can only be `non-negative` according to the CSS/shape-margin spec
+        if (margin >= 0.0) {
+            Inkscape::CSSOStringStream os;
+            os << margin;
+            linked_shape->style->shape_margin.read(os.str().c_str());
+
+            linked_shape->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+            linked_shape->updateRepr();
+        }
     }
 }
 

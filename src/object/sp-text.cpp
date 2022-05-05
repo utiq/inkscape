@@ -519,58 +519,27 @@ void SPText::_buildLayoutInit()
 
             // Find inside shape curves
             for (auto *href : style->shape_inside.hrefs) {
-                auto shape = href->getObject();
-
-                    if ( shape ) {
-
-                        // This code adapted from sp-flowregion.cpp: GetDest()
-                        if (!shape->curve()) {
-                            shape->set_shape();
-                        }
-                        SPCurve const *curve = shape->curve();
-
-                        if ( curve ) {
-                            Path *temp = new Path;
-                            Path *padded = new Path;
-                            temp->LoadPathVector( curve->get_pathvector(), shape->transform, true );
-                            if( style->shape_padding.set ) {
-                                // std::cout << "  padding: " << style->shape_padding.computed << std::endl;
-                                temp->OutsideOutline ( padded, style->shape_padding.computed, join_round, butt_straight, 20.0 );
-                            } else {
-                                // std::cout << "  no padding" << std::endl;
-                                padded->Copy( temp );
-                            }
-                            padded->Convert( 0.25 );  // Convert to polyline
-                            Shape* sh = new Shape;
-                            padded->Fill( sh, 0 );
-                            // for( unsigned i = 0; i < temp->pts.size(); ++i ) {
-                            //   std::cout << " ........ " << temp->pts[i].p << std::endl;
-                            // }
-                            // std::cout << " ...... shape: " << sh->numberOfPoints() << std::endl;
-                            Shape *uncross = new Shape;
-                            uncross->ConvertToShape( sh );
-
-                            // Subtract exclusion shape
-                            if(style->shape_subtract.set) {
-                                Shape *copy = new Shape;
-                                if (exclusion_shape && exclusion_shape->hasEdges()) {
-                                    copy->Booleen(uncross, const_cast<Shape*>(exclusion_shape), bool_op_diff);
-                                } else {
-                                    copy->Copy(uncross);
-                                }
-                                layout.appendWrapShape( copy );
-                                continue;
-                            }
-
-                            layout.appendWrapShape( uncross );
-
-                            delete temp;
-                            delete padded;
-                            delete sh;
-                            // delete uncross;
-                        } else {
-                            std::cerr << "SPText::_buildLayoutInit(): Failed to get curve." << std::endl;
-                        }
+                auto obj = href->getObject();
+                if (Shape *uncross = getInclusionShape(obj)) {
+                    // Subtrack padding shape
+                    auto padding = style->shape_padding.computed;
+                    if (std::fabs(padding) > 1e-12) {
+                        auto pad_shape = getInclusionShape(obj, true);
+                        Shape *copy = new Shape;
+                        copy->Booleen(uncross, pad_shape, padding > 0.0 ? bool_op_diff : bool_op_union);
+                        delete uncross;
+                        uncross = copy;
+                    }
+                    // Subtract exclusion shape
+                    if (exclusion_shape && exclusion_shape->hasEdges()) {
+                        Shape *copy = new Shape;
+                        copy->Booleen(uncross, const_cast<Shape*>(exclusion_shape), bool_op_diff);
+                        delete uncross;
+                        uncross = copy;
+                    }
+                    layout.appendWrapShape(uncross);
+                } else {
+                    std::cerr << "SPText::_buildLayoutInit(): Failed to get curve." << std::endl;
                 }
             }
             delete exclusion_shape;
@@ -774,43 +743,73 @@ Shape* SPText::getExclusionShape() const
     for (auto *href : style->shape_subtract.hrefs) {
         auto shape = href->getObject();
 
-            if ( shape ) {
-                // This code adapted from sp-flowregion.cpp: GetDest()
-                if (!shape->curve()) {
-                    shape->set_shape();
+        if ( shape ) {
+            // This code adapted from sp-flowregion.cpp: GetDest()
+            if (!shape->curve()) {
+                shape->set_shape();
+            }
+            SPCurve const *curve = shape->curve();
+
+            if ( curve ) {
+                Path *temp = new Path;
+                Path *margin = new Path;
+                temp->LoadPathVector( curve->get_pathvector(), shape->transform, true );
+
+                if( shape->style->shape_margin.set ) {
+                    temp->OutsideOutline ( margin, -shape->style->shape_margin.computed, join_round, butt_straight, 20.0 );
+                } else {
+                    margin->Copy( temp );
                 }
-                SPCurve const *curve = shape->curve();
 
-                if ( curve ) {
-                    Path *temp = new Path;
-                    Path *margin = new Path;
-                    temp->LoadPathVector( curve->get_pathvector(), shape->transform, true );
+                margin->Convert( 0.25 );  // Convert to polyline
+                Shape* sh = new Shape;
+                margin->Fill( sh, 0 );
 
-                    if( shape->style->shape_margin.set ) {
-                        temp->OutsideOutline ( margin, -shape->style->shape_margin.computed, join_round, butt_straight, 20.0 );
-                    } else {
-                        margin->Copy( temp );
-                    }
+                Shape *uncross = new Shape;
+                uncross->ConvertToShape( sh );
 
-                    margin->Convert( 0.25 );  // Convert to polyline
-                    Shape* sh = new Shape;
-                    margin->Fill( sh, 0 );
-
-                    Shape *uncross = new Shape;
-                    uncross->ConvertToShape( sh );
-
-                    if (result->hasEdges()) {
-                        shape_temp->Booleen(result.get(), uncross, bool_op_union);
-                        std::swap(result, shape_temp);
-                    } else {
-                        result->Copy(uncross);
-                    }
+                if (result->hasEdges()) {
+                    shape_temp->Booleen(result.get(), uncross, bool_op_union);
+                    std::swap(result, shape_temp);
+                } else {
+                    result->Copy(uncross);
                 }
             }
+        }
     }
     return result.release();
 }
 
+Shape* SPText::getInclusionShape(SPShape *shape, bool padding) const
+{
+    if (!shape || (padding && !style->shape_padding.set))
+        return nullptr;
+
+    if (!shape->curve()) {
+        shape->set_shape();
+    }
+    auto curve = shape->curve();
+    if (!curve)
+        return nullptr;
+
+    Path *temp = new Path;
+    temp->LoadPathVector(curve->get_pathvector(), shape->transform, true);
+    if (padding) {
+        Path *padded = new Path;
+        temp->Outline(padded, style->shape_padding.computed, join_round, butt_straight, 20.0);
+        delete temp;
+        temp = padded;
+    }
+    temp->ConvertWithBackData(1.0);  // Convert to polyline
+    Shape* sh = new Shape;
+    temp->Fill( sh, 0 );
+    Shape *uncross = new Shape;
+    uncross->ConvertToShape( sh );
+
+    delete temp;
+    delete sh;
+    return uncross;
+}
 
 // SVG requires one to use the first x/y value found on a child element if x/y not given on text
 // element. TODO: Recurse.

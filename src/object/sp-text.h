@@ -32,6 +32,7 @@
 #define SP_TEXT_CONTENT_MODIFIED_FLAG SP_OBJECT_USER_MODIFIED_FLAG_A
 #define SP_TEXT_LAYOUT_MODIFIED_FLAG SP_OBJECT_USER_MODIFIED_FLAG_A
 
+class SPShape;
 
 /* SPText */
 class SPText : public SPItem {
@@ -71,6 +72,8 @@ public:
 
     /** Union all exclusion shapes. */
     Shape* getExclusionShape() const;
+    /** Add a single inclusion shape with padding */
+    Shape* getInclusionShape(SPShape *shape, bool padding = false) const;
 
     std::optional<Geom::Point> getBaselinePoint() const;
 

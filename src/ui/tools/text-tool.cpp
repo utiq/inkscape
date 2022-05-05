@@ -1508,7 +1508,9 @@ void TextTool::_selectionChanged(Inkscape::Selection *selection)
 
 void TextTool::_selectionModified(Inkscape::Selection */*selection*/, guint /*flags*/)
 {
-    sp_text_context_update_cursor(this);
+    bool scroll = !this->shape_editor->has_knotholder() ||
+                  !this->shape_editor->knotholder->is_dragging();
+    sp_text_context_update_cursor(this, scroll);
     sp_text_context_update_text_selection(this);
 }
 
@@ -1716,38 +1718,61 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
         }
 
         if (!curve.is_empty()) {
+            bool has_padding = std::fabs(padding) > 1e-12;
+            bool has_exlusions = exclusion_shape;
 
-            if (std::fabs(padding) > 1e-12) {
+            if (has_padding || has_exlusions) {
                 // Should only occur for SVG2 autoflowed text
                 // See sp-text.cpp function _buildLayoutInit()
                 Path *temp = new Path;
-                Path *padded = new Path;
-
                 temp->LoadPathVector(curve.get_pathvector());
-                temp->OutsideOutline(padded, padding, join_round, butt_straight, 20.0);
-                padded->Convert(0.25); // Convert to polyline
 
-                Shape* sh = new Shape;
-                padded->Fill(sh, 0);
+                // Get initial shape-inside curve
                 Shape *uncross = new Shape;
-                uncross->ConvertToShape(sh);
+                {
+                    Shape *sh = new Shape;
+                    temp->ConvertWithBackData(0.25); // Convert to polyline
+                    temp->Fill(sh, 0);
+                    uncross->ConvertToShape(sh);
+                    delete sh;
+                }
+
+                // Get padded shape exclusion
+                if (has_padding) {
+                    Shape *pad_shape = new Shape;
+                    Path *padded = new Path;
+                    Path *padt = new Path;
+                    Shape *sh = new Shape;
+                    padt->LoadPathVector(curve.get_pathvector());
+                    padt->Outline(padded, padding, join_round, butt_straight, 20.0);
+                    padded->ConvertWithBackData(1.0); // Convert to polyline
+                    padded->Fill(sh, 0);
+                    pad_shape->ConvertToShape(sh);
+                    delete sh;
+                    delete padt;
+                    delete padded;
+
+                    Shape *copy = new Shape;
+                    copy->Booleen(uncross, pad_shape, (padding > 0.0) ? bool_op_diff : bool_op_union);
+                    delete uncross;
+                    delete pad_shape;
+                    uncross = copy;
+                }
 
                 // Remove exclusions plus margins from padding frame
-                Shape *copy = new Shape;
                 if (exclusion_shape && exclusion_shape->hasEdges()) {
+                    Shape *copy = new Shape;
                     copy->Booleen(uncross, const_cast<Shape*>(exclusion_shape), bool_op_diff);
-                } else {
-                    copy->Copy(uncross);
+                    delete uncross;
+                    uncross = copy;
                 }
-                copy->ConvertToForme(padded);
-                tc->padding_frame->set_bpath(padded->MakePathVector() * tc->text->i2dt_affine());
+
+                uncross->ConvertToForme(temp);
+                tc->padding_frame->set_bpath(temp->MakePathVector() * tc->text->i2dt_affine());
                 tc->padding_frame->show();
 
                 delete temp;
-                delete padded;
-                delete sh;
                 delete uncross;
-                delete copy;
             } else {
                 tc->padding_frame->hide();
             }
