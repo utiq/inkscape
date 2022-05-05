@@ -129,7 +129,7 @@ add_actions_help_url(InkscapeWindow* win)
     const char *lang = _("en"); // TODO: strip /en/ for English version?
     const char *version = Inkscape::version_string_without_revision;
     const bool development_version = g_str_has_suffix(version, "-dev"); // this detection is not perfect but should be close enough
-    const Glib::ustring branch = development_version ? "master" : Glib::ustring::compose("%1.%2.x", Inkscape::version_major,  Inkscape::version_major);
+    const Glib::ustring branch = development_version ? "master" : Glib::ustring::compose("%1.%2.x", Inkscape::version_major,  Inkscape::version_minor);
 
     // clang-format off
     win->add_action( "help-url-ask-question",   sigc::bind<InkscapeWindow*, const char*>(sigc::ptr_fun(&help_url_ask_question), win, lang));
