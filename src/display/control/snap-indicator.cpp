@@ -33,6 +33,8 @@
 
 #include "ui/tools/measure-tool.h"
 
+#define DISTANCE_BG_RADIUS 0.3
+
 namespace Inkscape {
 namespace Display {
 
@@ -434,7 +436,8 @@ void SnapIndicator::make_alignment_indicator(Geom::Point const &p1, Geom::Point 
         text->set_fontsize(fontsize);
         text->set_fill(color);
         text->set_background(0xffffffc8);
-        text->set_bg_radius(2);
+        text->set_bg_radius(DISTANCE_BG_RADIUS);
+        text->set_anchor({0.5, 0.5});
         _alignment_snap_indicators.push_back(_desktop->add_temporary_canvasitem(text, 0));
 
         auto temp_point = text_pos + offset*direction;
@@ -546,7 +549,8 @@ void SnapIndicator::make_distribution_indicators(SnappedPoint const &p,
                     text->set_fontsize(fontsize);
                     text->set_fill(text_fill);
                     text->set_background(text_bg);
-                    text->set_bg_radius(2);
+                    text->set_bg_radius(DISTANCE_BG_RADIUS);
+                    text->set_anchor({0.5, 0.5});
                     _distribution_snap_indicators.push_back(_desktop->add_temporary_canvasitem(text, 0));
                 }
             }
@@ -581,7 +585,8 @@ void SnapIndicator::make_distribution_indicators(SnappedPoint const &p,
                     text->set_fontsize(fontsize);
                     text->set_fill(text_fill);
                     text->set_background(text_bg);
-                    text->set_bg_radius(2);
+                    text->set_bg_radius(DISTANCE_BG_RADIUS);
+                    text->set_anchor({0.5, 0.5});
                     _distribution_snap_indicators.push_back(_desktop->add_temporary_canvasitem(text, 0));
                 }
             }
@@ -608,7 +613,8 @@ void SnapIndicator::make_distribution_indicators(SnappedPoint const &p,
                     text->set_fontsize(fontsize);
                     text->set_fill(text_fill);
                     text->set_background(text_bg);
-                    text->set_bg_radius(2);
+                    text->set_bg_radius(DISTANCE_BG_RADIUS);
+                    text->set_anchor({0.5, 0.5});
                     _distribution_snap_indicators.push_back(_desktop->add_temporary_canvasitem(text, 0));
                 }
             }
