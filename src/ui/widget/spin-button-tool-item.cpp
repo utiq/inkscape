@@ -251,12 +251,14 @@ SpinButtonToolItem::create_numeric_menu_item(Gtk::RadioButtonGroup *group,
     std::ostringstream ss;
     ss << value;
 
+    Glib::ustring item_label = ss.str();
+
     // Append the label if specified
     if (!label.empty()) {
-        ss << ": " << label;
+        item_label += ": " + label;
     }
 
-    auto numeric_option = Gtk::manage(new Gtk::RadioMenuItem(*group, ss.str()));
+    auto numeric_option = Gtk::manage(new Gtk::RadioMenuItem(*group, item_label));
     if (enable) {
         numeric_option->set_active(); // Do before connecting toggled_handler.
     }
