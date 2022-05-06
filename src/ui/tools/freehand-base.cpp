@@ -46,9 +46,8 @@
 #include "ui/clipboard.h"
 #include "ui/draw-anchor.h"
 #include "ui/icon-names.h"
-#include "ui/tools/lpe-tool.h"
-#include "ui/tools/pen-tool.h"
-#include "ui/tools/pencil-tool.h"
+#include "ui/tools/lpe-tool.h" // TODO: Remove in the future
+#include "ui/tools/pencil-tool.h" // TODO: Remove in the future
 
 #define MIN_PRESSURE      0.0
 #define MAX_PRESSURE      1.0
@@ -60,11 +59,6 @@ namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-static void spdc_selection_changed(Inkscape::Selection *sel, FreehandBase *dc);
-static void spdc_selection_modified(Inkscape::Selection *sel, guint flags, FreehandBase *dc);
-
-static void spdc_attach_selection(FreehandBase *dc, Inkscape::Selection *sel);
-
 /**
  * Flushes white curve(s) and additional curve into object.
  *
@@ -73,13 +67,11 @@ static void spdc_attach_selection(FreehandBase *dc, Inkscape::Selection *sel);
  */
 static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc);
 
-static void spdc_reset_white(FreehandBase *dc);
 static void spdc_free_colors(FreehandBase *dc);
 
 FreehandBase::FreehandBase(SPDesktop *desktop, std::string prefs_path, const std::string &cursor_filename)
     : ToolBase(desktop, prefs_path, cursor_filename)
     , selection(nullptr)
-    , attach(false)
     , red_color(0xff00007f)
     , blue_color(0x0000ff7f)
     , green_color(0x00ff007f)
@@ -100,12 +92,8 @@ FreehandBase::FreehandBase(SPDesktop *desktop, std::string prefs_path, const std
     this->selection = desktop->getSelection();
 
     // Connect signals to track selection changes
-    this->sel_changed_connection = this->selection->connectChanged(
-        sigc::bind(sigc::ptr_fun(&spdc_selection_changed), this)
-    );
-    this->sel_modified_connection = this->selection->connectModified(
-        sigc::bind(sigc::ptr_fun(&spdc_selection_modified), this)
-    );
+    sel_changed_connection = selection->connectChanged([=](Selection *) { _attachSelection(); });
+    sel_modified_connection = selection->connectModified([=](Selection *, guint) { onSelectionModified(); });
 
     // Create red bpath
     this->red_bpath = new Inkscape::CanvasItemBpath(desktop->getCanvasSketch());
@@ -127,8 +115,7 @@ FreehandBase::FreehandBase(SPDesktop *desktop, std::string prefs_path, const std
     // Create start anchor alternative curve
     this->sa_overwrited.reset(new SPCurve());
 
-    this->attach = TRUE;
-    spdc_attach_selection(this, this->selection);
+    _attachSelection();
 }
 
 FreehandBase::~FreehandBase()
@@ -187,13 +174,6 @@ std::optional<Geom::Point> FreehandBase::red_curve_get_last_point()
     return p;
 }
 
-static Glib::ustring const tool_name(FreehandBase *dc)
-{
-    return ( SP_IS_PEN_CONTEXT(dc)
-             ? "/tools/freehand/pen"
-             : "/tools/freehand/pencil" );
-}
-
 static void spdc_paste_curve_as_freehand_shape(Geom::PathVector const &newpath, FreehandBase *dc, SPItem *item)
 {
     using namespace Inkscape::LivePathEffect;
@@ -245,8 +225,7 @@ void spdc_apply_style(SPObject *obj)
     sp_desktop_apply_css_recursive(obj, css, true);
     sp_repr_css_attr_unref(css);
 }
-static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, FreehandBase *dc, SPItem *item,
-                                         gint maxrecursion = 0)
+static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, FreehandBase *dc, SPItem *item)
 {
     using namespace Inkscape::LivePathEffect;
     SPDesktop *desktop = dc->getDesktop();
@@ -363,7 +342,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
         //Store the clipboard path to apply in the future without the use of clipboard
         static Geom::PathVector previous_shape_pathv;
         static SPItem *bend_item = nullptr;
-        shapeType shape = (shapeType)prefs->getInt(tool_name(dc) + "/shape", 0);
+        shapeType shape = (shapeType)prefs->getInt(dc->getPrefsPath() + "/shape", 0);
         if (previous_shape_type == NONE) {
             previous_shape_type = shape;
         }
@@ -390,7 +369,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
             return;
         }
         bool shape_applied = false;
-        bool simplify = prefs->getInt(tool_name(dc) + "/simplify", 0);
+        bool simplify = prefs->getInt(dc->getPrefsPath() + "/simplify", 0);
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         guint mode = prefs->getInt("/tools/freehand/pencil/freehand-mode", 0);
         if(simplify && mode != 2){
@@ -401,11 +380,11 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
             spdc_apply_simplify(ss.str(), dc, item);
             sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), true, false);
         }
-        if (prefs->getInt(tool_name(dc) + "/freehand-mode", 0) == 1) {
+        if (prefs->getInt(dc->getPrefsPath() + "/freehand-mode", 0) == 1) {
             Effect::createAndApply(SPIRO, dc->getDesktop()->getDocument(), item);
         }
 
-        if (prefs->getInt(tool_name(dc) + "/freehand-mode", 0) == 2) {
+        if (prefs->getInt(dc->getPrefsPath() + "/freehand-mode", 0) == 2) {
             Effect::createAndApply(BSPLINE, dc->getDesktop()->getDocument(), item);
         }
         if (auto sp_shape = dynamic_cast<SPShape *>(item)) {
@@ -609,35 +588,27 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
  * Selection handlers
  */
 
-static void spdc_selection_changed(Inkscape::Selection *sel, FreehandBase *dc)
-{
-    if (dc->attach) {
-        spdc_attach_selection(dc, sel);
-    }
-}
-
 /* fixme: We have to ensure this is not delayed (Lauris) */
-
-static void spdc_selection_modified(Inkscape::Selection *sel, guint /*flags*/, FreehandBase *dc)
+void FreehandBase::onSelectionModified()
 {
-    if (dc->attach) {
-        spdc_attach_selection(dc, sel);
-    }
+    _attachSelection();
 }
 
-static void spdc_attach_selection(FreehandBase *dc, Inkscape::Selection */*sel*/)
+void FreehandBase::_attachSelection()
 {
     // We reset white and forget white/start/end anchors
-    spdc_reset_white(dc);
-    dc->sa = nullptr;
-    dc->ea = nullptr;
+    white_curves.clear();
+    white_anchors.clear();
+    white_item = nullptr;
+    sa = nullptr;
+    ea = nullptr;
 
-    SPItem *item = dc->selection ? dc->selection->singleItem() : nullptr;
+    SPItem *item = selection ? selection->singleItem() : nullptr;
 
     if ( item && SP_IS_PATH(item) ) {
         // Create new white data
         // Item
-        dc->white_item = item;
+        white_item = item;
 
         // Curve list
         // We keep it in desktop coordinates to eliminate calculation errors
@@ -646,19 +617,19 @@ static void spdc_attach_selection(FreehandBase *dc, Inkscape::Selection */*sel*/
             return;
         }
 
-        auto tmp = path->curveForEdit()->transformed(dc->white_item->i2dt_affine()).split();
-        dc->white_curves.clear();
-        dc->white_curves.reserve(tmp.size());
+        auto tmp = path->curveForEdit()->transformed(white_item->i2dt_affine()).split();
+        white_curves.clear();
+        white_curves.reserve(tmp.size());
         for (auto &t : tmp) {
-            dc->white_curves.emplace_back(std::make_shared<SPCurve>(std::move(t)));
+            white_curves.emplace_back(std::make_shared<SPCurve>(std::move(t)));
         }
 
         // Anchor list
-        for (auto const &c : dc->white_curves) {
+        for (auto const &c : white_curves) {
             g_return_if_fail( c->get_segment_count() > 0 );
             if ( !c->is_closed() ) {
-                dc->white_anchors.emplace_back(std::make_unique<SPDrawAnchor>(dc, c, true , *c->first_point()));
-                dc->white_anchors.emplace_back(std::make_unique<SPDrawAnchor>(dc, c, false, *c->last_point()));
+                white_anchors.emplace_back(std::make_unique<SPDrawAnchor>(this, c, true , *c->first_point()));
+                white_anchors.emplace_back(std::make_unique<SPDrawAnchor>(this, c, false, *c->last_point()));
             }
         }
         // fixme: recalculate active anchor?
@@ -788,8 +759,9 @@ void spdc_concat_colors_and_flush(FreehandBase *dc, gboolean forceclosed)
         if (!dc->ea->start) {
             e = std::make_shared<SPCurve>(e->reversed());
         }
-        if(prefs->getInt(tool_name(dc) + "/freehand-mode", 0) == 1 || 
-            prefs->getInt(tool_name(dc) + "/freehand-mode", 0) == 2){
+        if(prefs->getInt(dc->getPrefsPath() + "/freehand-mode", 0) == 1 ||
+            prefs->getInt(dc->getPrefsPath() + "/freehand-mode", 0) == 2)
+        {
                 e = std::make_shared<SPCurve>(e->reversed());
                 Geom::CubicBezier const * cubic = dynamic_cast<Geom::CubicBezier const*>(&*e->last_segment());
                 if(cubic){
@@ -860,7 +832,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
         } else {
             repr = xml_doc->createElement("svg:path");
             // Set style
-            sp_desktop_apply_style_tool(desktop, repr, tool_name(dc).data(), false);
+            sp_desktop_apply_style_tool(desktop, repr, dc->getPrefsPath(), false);
         }
 
         auto str = sp_svg_write_path(c->get_pathvector());
@@ -905,7 +877,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
         // results in the tool losing all of the selected path's curve except that last subpath. To
         // fix this, we force the selection_modified callback now, to make sure the tool's curve is
         // in sync immediately.
-        spdc_selection_modified(desktop->getSelection(), 0, dc);
+        dc->onSelectionModified();
     }
 
     // Flush pending updates
@@ -928,16 +900,6 @@ SPDrawAnchor *spdc_test_inside(FreehandBase *dc, Geom::Point p)
         }
     }
     return active;
-}
-
-static void spdc_reset_white(FreehandBase *dc)
-{
-    if (dc->white_item) {
-        // We do not hold refcount
-        dc->white_item = nullptr;
-    }
-    dc->white_curves.clear();
-    dc->white_anchors.clear();
 }
 
 static void spdc_free_colors(FreehandBase *dc)

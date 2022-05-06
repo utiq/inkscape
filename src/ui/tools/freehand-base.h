@@ -47,13 +47,13 @@ public:
 
     Inkscape::Selection *selection;
 
-    bool attach;
-
+protected:
     guint32 red_color;
     guint32 blue_color;
     guint32 green_color;
     guint32 highlight_color;
 
+public:
     // Red - Last segment as it's drawn.
     Inkscape::CanvasItemBpath *red_bpath;
     SPCurve red_curve;
@@ -100,8 +100,11 @@ public:
     gdouble pressure;
     void set(const Inkscape::Preferences::Entry& val) override;
 
+    void onSelectionModified();
+
 protected:
     bool root_handler(GdkEvent* event) override;
+    void _attachSelection();
 };
 
 /**
