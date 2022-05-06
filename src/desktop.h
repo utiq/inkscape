@@ -360,6 +360,7 @@ public:
     void toggleCommandPalette();
     void toggleRulers();
     void toggleScrollbars();
+    void setTempHideOverlays(bool hide);
     void layoutWidget();
     void setToolboxFocusTo (gchar const* label);
     Gtk::Toolbar *get_toolbar_by_name(const Glib::ustring& name);
@@ -522,8 +523,9 @@ private:
     bool _quick_zoom_enabled; ///< Signifies that currently we're in quick zoom mode
     DesktopAffine _quick_zoom_affine;  ///< The transform of the screen before quick zoom
 
-    bool grids_visible; /* don't set this variable directly, use the method below */
-    void set_grids_visible(bool visible);
+    bool grids_visible = false;
+    bool _overlays_visible = true; ///< Whether the overlays are temporarily hidden
+    bool _saved_guides_visible = false; ///< Remembers guides' visibility when hiding overlays
 
     std::unique_ptr<Inkscape::LayerManager> _layer_manager;
 

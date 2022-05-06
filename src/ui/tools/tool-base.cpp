@@ -95,11 +95,11 @@ namespace Tools {
 static void set_event_location(SPDesktop *desktop, GdkEvent *event);
 
 ToolBase::ToolBase(SPDesktop *desktop, std::string prefs_path, std::string cursor_filename, bool uses_snap)
-    : _desktop(desktop)
-    , _prefs_path(std::move(prefs_path))
-    , _cursor_default(std::move(cursor_filename))
+    : _prefs_path(std::move(prefs_path))
     , _cursor_filename("none")
+    , _cursor_default(std::move(cursor_filename))
     , _uses_snap(uses_snap)
+    , _desktop(desktop)
 {
     pref_observer = Inkscape::Preferences::PreferencesObserver::create(_prefs_path, [this] (auto &val) { set(val); });
     set_cursor(_cursor_default);
@@ -602,6 +602,15 @@ bool ToolBase::root_handler(GdkEvent *event)
             ret = true;
             break;
 
+        // TODO: make these keys customizable
+        case GDK_KEY_F:
+        case GDK_KEY_f:
+            if (!MOD__SHIFT(event) && !MOD__CTRL(event) && !MOD__ALT(event)) {
+                _desktop->setTempHideOverlays(true);
+                ret = true;
+            }
+            break;
+
         case GDK_KEY_Q:
         case GDK_KEY_q:
             if (_desktop->quick_zoomed()) {
@@ -744,6 +753,13 @@ bool ToolBase::root_handler(GdkEvent *event)
                 return true;
             }
 
+            break;
+
+        // TODO: make these keys customizable
+        case GDK_KEY_F:
+        case GDK_KEY_f:
+            _desktop->setTempHideOverlays(false);
+            ret = true;
             break;
 
         case GDK_KEY_Q:

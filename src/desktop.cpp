@@ -121,7 +121,6 @@ SPDesktop::SPDesktop()
     , _widget(nullptr) // DesktopWidget
     , _guides_message_context(nullptr)
     , _active(false)
-    , grids_visible(false)
 {
     _layer_manager = std::make_unique<Inkscape::LayerManager>(this);
     selection = Inkscape::GC::release(new Inkscape::Selection(this));
@@ -1151,6 +1150,37 @@ void
 SPDesktop::toggleScrollbars()
 {
     _widget->toggle_scrollbars();
+}
+
+/**
+ * Shows or hides the on-canvas overlays and controls, such as grids, guides, manipulation handles,
+ * knots, selection cues, etc.
+ * @param hide - whether the aforementioned UI elements should be hidden
+ */
+void SPDesktop::setTempHideOverlays(bool hide)
+{
+    if (_overlays_visible != hide) {
+        return; // Nothing to do
+    }
+
+    if (hide) {
+        canvas_group_controls->hide();
+        canvas_group_grids->hide();
+        _saved_guides_visible = namedview->getShowGuides();
+        namedview->setShowGuides(false);
+        if (canvas && !canvas->has_focus()) {
+            canvas->grab_focus(); // Ensure we receive the key up event
+            canvas->redraw_all();
+        }
+        _overlays_visible = false;
+    } else {
+        canvas_group_controls->show();
+        showGrids(grids_visible, false);
+        if (_saved_guides_visible) {
+            namedview->setShowGuides(true);
+        }
+        _overlays_visible = true;
+    }
 }
 
 void SPDesktop::toggleToolbar(gchar const *toolbar_name)
