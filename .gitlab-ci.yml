@@ -294,7 +294,6 @@ translations:
   stage: test
   needs: []
   rules:
-    - *do_not_run_for_schedules
     - *run_otherwise
   script:
     # make sure dependencies for inkscape.pot are up-to-date
