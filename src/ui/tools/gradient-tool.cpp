@@ -50,7 +50,6 @@ namespace Tools {
 GradientTool::GradientTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/gradient", "gradient.svg")
     , cursor_addnode(false)
-    , node_added(false)
 // TODO: Why are these connections stored as pointers?
     , selcon(nullptr)
     , subselcon(nullptr)

@@ -2448,7 +2448,7 @@ void PdfParser::doShowText(GooString *s) {
       if (false){ /*!out->beginType3Char(state, curX + riseX, curY + riseY, tdx, tdy,
 			       code, u, uLen)) {*/
         _POPPLER_CALL_ARGS(charProc, _POPPLER_FONTPTR_TO_GFX8(font)->getCharProc, code);
-    if (resDict = _POPPLER_FONTPTR_TO_GFX8(font)->getResources()) {
+    if ((resDict = _POPPLER_FONTPTR_TO_GFX8(font)->getResources())) {
 	  pushResources(resDict);
     }
 	if (charProc.isStream()) {

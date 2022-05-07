@@ -129,7 +129,6 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
             ctx->transform(scale);
             ctx->transform(root->transform);
 
-            int index = 1;
             for (auto &page : pages) {
                 ctx->pushState();
 
@@ -159,7 +158,6 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
                     ctx->popState();
                 }
                 ret = ctx->finishPage();
-                index += 1;
 
                 ctx->popState();
             }

@@ -63,11 +63,6 @@ DialogWindow::DialogWindow(InkscapeWindow *inkscape_window, Gtk::Widget *page)
     // ============ Initialization ===============
     // Setting the window type
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool window_above = true;
-    if (prefs) {
-        window_above =
-            prefs->getInt("/options/transientpolicy/value", PREFS_DIALOGS_WINDOWS_NORMAL) != PREFS_DIALOGS_WINDOWS_NONE;
-    }
 
     set_type_hint(Gdk::WINDOW_TYPE_HINT_DIALOG);
     set_transient_for(*inkscape_window);

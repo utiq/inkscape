@@ -81,7 +81,6 @@ private:
     // Store all items to be displayed in flowbox
     std::map<std::string, BatchItem *> current_items;
 
-    bool filename_modified;
     Glib::ustring original_name;
     Glib::ustring doc_export_name;
 

@@ -378,13 +378,10 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
     //XML Tree being used here directly while it shouldn't be...."
     Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
 
-    long totalNodeCount = 0L;
-
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     double offset = prefs->getDouble("/tools/paintbucket/offset", 0.0);
 
     for (auto result : results) {
-        totalNodeCount += result.getNodeCount();
 
         Inkscape::XML::Node *pathRepr = xml_doc->createElement("svg:path");
         /* Set style */

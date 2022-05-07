@@ -471,7 +471,7 @@ auto region_affine_approxinwards(const Cairo::RefPtr<Cairo::Region> &reg, const 
 auto unioned(Cairo::RefPtr<Cairo::Region> a, const Cairo::RefPtr<Cairo::Region> &b)
 {
     a->do_union(b);
-    return std::move(a); // Just to be safe; not sure if NVRO will apply.
+    return a;
 }
 
 // Colour operations

@@ -662,7 +662,7 @@ void DialogNotebook::on_size_allocate_notebook(Gtk::Allocation &a)
     _notebook.get_preferred_width(total_width, nat_width); // get full notebook allocation (all open)
     prev_tabstatus = tabstatus;
     if (_single_tab_width != _none_tab_width && 
-        (_none_tab_width && _none_tab_width > alloc_width || 
+        ((_none_tab_width && _none_tab_width > alloc_width) || 
         (_single_tab_width > alloc_width && _single_tab_width < total_width)))
     {
         tabstatus = TabsStatus::NONE;

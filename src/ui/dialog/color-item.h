@@ -42,7 +42,7 @@ public:
 /**
  * The color swatch you see on screen as a clickable box.
  */
-class ColorItem : public sigc::trackable
+class ColorItem final : public sigc::trackable
 {
     friend void _loadPaletteFile( gchar const *filename );
 

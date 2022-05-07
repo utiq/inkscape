@@ -1270,10 +1270,7 @@ void SelectorsDialog::_selectRow()
 
     Gtk::TreeModel::Children children = _store->children();
     Inkscape::Selection* selection = getDesktop()->getSelection();
-    SPObject *obj = nullptr;
-    if (!selection->isEmpty()) {
-        obj = selection->objects().back();
-    } else {
+    if (selection->isEmpty()) {
         _style_dialog->setCurrentSelector("");
     }
     for (auto row : children) {

@@ -233,7 +233,7 @@ static std::vector<SPItem *> grid_item_sort(Inkscape::ObjectSet *items)
 
              for (auto item:current_row) {
                  auto min = Geom::Point(0, 0);
-                 double width, height = 0;
+                 double width = 0, height = 0;
                  if (auto vbox = item->documentVisualBounds()) {
                      width = vbox->dimensions()[Geom::X];
                      height = vbox->dimensions()[Geom::Y];

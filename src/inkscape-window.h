@@ -54,7 +54,6 @@ private:
     SPDesktopWidget*     _desktop_widget;
 
     Gtk::Box*      _mainbox;
-    Gtk::MenuBar*  _menubar;
 
     void setup_view();
 

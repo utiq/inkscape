@@ -47,7 +47,6 @@ private:
     Geom::Point mousepoint_doc; // stores mousepoint when over_line in doc coords
     Geom::Point origin;
     bool cursor_addnode;
-    bool node_added;
 
     sigc::connection *selcon;
     sigc::connection *subselcon;

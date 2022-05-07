@@ -595,11 +595,6 @@ sp_lpe_item_cleanup_original_path_recursive(SPLPEItem *lpeitem, bool keep_paths,
                 gchar const *transform_center_x = shape->getRepr()->attribute("inkscape:transform-center-x");
                 gchar const *transform_center_y = shape->getRepr()->attribute("inkscape:transform-center-y");
 
-                // remember highlight color
-                guint32 highlight_color = 0;
-                if (shape->isHighlightSet())
-                    highlight_color = shape->highlight_color();
-
                 // It's going to resurrect, so we delete without notifying listeners.
                 SPDocument * doc = shape->document;
                 shape->deleteObject(false);

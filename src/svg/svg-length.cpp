@@ -67,7 +67,6 @@ static std::string sp_svg_number_write_d( double val, unsigned int tprec, unsign
 
     std::string buf;
     /* Process sign */
-    int i = 0;
     if (val < 0.0) {
         buf.append("-");
         val = fabs(val);
@@ -92,7 +91,6 @@ static std::string sp_svg_number_write_d( double val, unsigned int tprec, unsign
         for(unsigned int j=0; j<(unsigned int)idigits-tprec; j++) {
             buf.append("0");
         }
-        i += idigits-tprec;
     } else {
        buf.append(std::to_string((unsigned int)dival));
     }

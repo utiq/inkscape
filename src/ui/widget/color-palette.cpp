@@ -467,7 +467,7 @@ int ColorPalette::get_palette_height() const {
 }
 
 void ColorPalette::resize() {
-    if (_rows == 1 && _force_scrollbar || !_compact) {
+    if ((_rows == 1 && _force_scrollbar) || !_compact) {
         // auto size for single row to allocate space for scrollbar
         _scroll.set_size_request(-1, -1);
     }

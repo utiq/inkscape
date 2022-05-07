@@ -1412,7 +1412,6 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
     double font_size = 0;
     double doc_scale = 1;
     int count = 0;
-    bool has_flow = false;
 
     for (auto i : itemlist) {
         SPText *text = dynamic_cast<SPText *>(i);
@@ -1421,9 +1420,6 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
             doc_scale = Geom::Affine(i->i2dt_affine()).descrim();
             font_size += i->style->font_size.computed * doc_scale;
             ++count;
-        }
-        if (flowtext) {
-            has_flow = true;
         }
     }
     if (count > 0) {

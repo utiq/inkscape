@@ -805,7 +805,6 @@ Node *Node::_prev()
 void Node::move(Geom::Point const &new_pos)
 {
     // move handles when the node moves.
-    Geom::Point old_pos = position();
     Geom::Point delta = new_pos - position();
 
     // save the previous nodes strength to apply it again once the node is moved 

@@ -74,7 +74,6 @@ private:
     bool legacytest_livarotonly = false;
     bool onremove = false;
     SPItem *operand = nullptr;
-    SPObject *parentlpe = nullptr;
     SPGroup *division = nullptr;
     SPGroup *division_both = nullptr;
     SPGroup *division_other = nullptr;
