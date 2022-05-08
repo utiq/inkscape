@@ -156,6 +156,7 @@ private:
         SPDocument *source, Inkscape::Drawing &drawing, unsigned /*visionkey*/, bool checkerboard, bool no_clip, double scale);
     void refresh_after_markers_modified();
     sigc::connection modified_connection;
+    sigc::connection _idle;
 };
 
 } // namespace Widget
