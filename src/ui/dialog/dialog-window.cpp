@@ -111,6 +111,10 @@ DialogWindow::DialogWindow(InkscapeWindow *inkscape_window, Gtk::Widget *page)
             }
         }
     }
+    // floating dialog windows don't inherit "dark" theme class
+    if (inkscape_window && inkscape_window->get_style_context()->has_class("dark")) {
+        get_style_context()->add_class("dark");
+    }
 
     // ================ Window ==================
     set_title(_title);

@@ -32,6 +32,8 @@
 #include "device-manager.h"
 #include "document.h"
 #include "inkscape.h"
+#include "inkscape-application.h"
+#include "inkscape-window.h"
 #include "message-stack.h"
 #include "path-prefix.h"
 
@@ -48,6 +50,8 @@
 
 #include "ui/themes.h"
 #include "ui/dialog/debug.h"
+#include "ui/dialog/dialog-manager.h"
+#include "ui/dialog/dialog-window.h"
 #include "ui/tools/tool-base.h"
 
 #include <fstream>
@@ -247,6 +251,19 @@ Application::Application(bool use_gui) :
         themecontext->getChangeThemeSignal().connect([=](){
             if (auto desktop = active_desktop()) {
                 set_default_highlight_colors(themecontext->getHighlightColors(desktop->getToplevel()));
+            }
+            // sync "dark" class between app window and floating dialog windows to ensure that
+            // CSS providers relying on it apply in dialog windows too
+            if (auto inkscape_window = InkscapeApplication::instance()->get_active_window()) {
+                auto dark = inkscape_window->get_style_context()->has_class("dark");
+                for (auto wnd : Inkscape::UI::Dialog::DialogManager::singleton().get_all_floating_dialog_windows()) {
+                    if (dark) {
+                        wnd->get_style_context()->add_class("dark");
+                    }
+                    else {
+                        wnd->get_style_context()->remove_class("dark");
+                    }
+                }
             }
         });
     }
