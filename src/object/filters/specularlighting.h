@@ -15,57 +15,54 @@
 #ifndef SP_FESPECULARLIGHTING_H_SEEN
 #define SP_FESPECULARLIGHTING_H_SEEN
 
+#include <optional>
+#include <cstdint>
+#include "svg/svg-icc-color.h"
 #include "sp-filter-primitive.h"
 #include "number-opt-number.h"
-
-#define SP_FESPECULARLIGHTING(obj) (dynamic_cast<SPFeSpecularLighting*>((SPObject*)obj))
-#define SP_IS_FESPECULARLIGHTING(obj) (dynamic_cast<const SPFeSpecularLighting*>((SPObject*)obj) != NULL)
 
 struct SVGICCColor;
 
 namespace Inkscape {
 namespace Filters {
 class FilterSpecularLighting;
-}
-}
+} // namespace Filters
+} // namespace Inkscape
 
-class SPFeSpecularLighting : public SPFilterPrimitive {
-public:
-	SPFeSpecularLighting();
-	~SPFeSpecularLighting() override;
+class SPFeSpecularLighting
+    : public SPFilterPrimitive
+{
+private:
+    float surfaceScale = 1.0f;
+    float specularConstant = 1.0f;
+    float specularExponent = 1.0f;
+    uint32_t lighting_color = 0xffffffff;
 
-    gfloat surfaceScale;
-    guint surfaceScale_set : 1;
-    gfloat specularConstant;
-    guint specularConstant_set : 1;
-    gfloat specularExponent;
-    guint specularExponent_set : 1;
-    NumberOptNumber kernelUnitLength;
-    guint32 lighting_color;
-    guint lighting_color_set : 1;
-    SVGICCColor *icc;
+    bool surfaceScale_set = false;
+    bool specularConstant_set = false;
+    bool specularExponent_set = false;
+    bool lighting_color_set = false;
 
-    Inkscape::Filters::FilterSpecularLighting *renderer;
+    NumberOptNumber kernelUnitLength; // TODO
+    std::optional<SVGICCColor> icc;
 
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void set(SPAttr key, char const *value) override;
+    void update(SPCtx *ctx, unsigned flags) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
-	void child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) override;
-	void remove_child(Inkscape::XML::Node* child) override;
+    void child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref) override;
+    void remove_child(Inkscape::XML::Node *child) override;
+    void order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_repr, Inkscape::XML::Node *new_repr) override;
 
-	void order_changed(Inkscape::XML::Node* child, Inkscape::XML::Node* old_repr, Inkscape::XML::Node* new_repr) override;
-
-	void set(SPAttr key, const gchar* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, guint flags) override;
-
-	void build_renderer(Inkscape::Filters::Filter* filter) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
 };
 
-#endif /* !SP_FESPECULARLIGHTING_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FESPECULARLIGHTING, SPFeSpecularLighting)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FESPECULARLIGHTING, SPFeSpecularLighting)
+
+#endif // SP_FESPECULARLIGHTING_H_SEEN
 
 /*
   Local Variables:

@@ -13,35 +13,30 @@
 #ifndef SP_FEFLOOD_H_SEEN
 #define SP_FEFLOOD_H_SEEN
 
+#include <optional>
+#include <cstdint>
 #include "sp-filter-primitive.h"
 #include "svg/svg-icc-color.h"
 
-#define SP_FEFLOOD(obj) (dynamic_cast<SPFeFlood*>((SPObject*)obj))
-#define SP_IS_FEFLOOD(obj) (dynamic_cast<const SPFeFlood*>((SPObject*)obj) != NULL)
-
-class SPFeFlood : public SPFilterPrimitive {
-public:
-	SPFeFlood();
-	~SPFeFlood() override;
-
-    guint32 color;
-    SVGICCColor *icc;
-    double opacity;
+class SPFeFlood
+    : public SPFilterPrimitive
+{
+private:
+    uint32_t color = 0x0;
+    double opacity = 1.0;
+    std::optional<SVGICCColor> icc;
 
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void set(SPAttr key, char const *value) override;
 
-	void set(SPAttr key, const gchar* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, guint flags) override;
-
-	void build_renderer(Inkscape::Filters::Filter* filter) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
 };
 
-#endif /* !SP_FEFLOOD_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEFLOOD, SPFeFlood)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEFLOOD, SPFeFlood)
+
+#endif // SP_FEFLOOD_H_SEEN
 
 /*
   Local Variables:

@@ -30,26 +30,15 @@ namespace Filters {
 FilterImage::FilterImage()
     : SVGElem(nullptr)
     , document(nullptr)
-    , feImageHref(nullptr)
     , image(nullptr)
-    , broken_ref(false)
-{ }
+    , broken_ref(false) {}
 
-FilterPrimitive * FilterImage::create() {
-    return new FilterImage();
-}
-
-FilterImage::~FilterImage()
-{
-    if (feImageHref)
-        g_free(feImageHref);
-    delete image;
-}
+FilterImage::~FilterImage() = default;
 
 void FilterImage::render_cairo(FilterSlot &slot)
 {
-    std::cout << "FilterImage::render_cairo: Entrance" << std::endl;
-    if (!feImageHref)
+    //std::cout << "FilterImage::render_cairo: Entrance" << std::endl;
+    if (feImageHref.empty())
         return;
 
     //cairo_surface_t *input = slot.getcairo(_input);
@@ -77,8 +66,8 @@ void FilterImage::render_cairo(FilterSlot &slot)
     double bbox_width = Geom::distance(bbox_00, bbox_w0);
     double bbox_height = Geom::distance(bbox_00, bbox_0h);
 
-    if( feImageWidth  == 0 ) feImageWidth  = bbox_width;
-    if( feImageHeight == 0 ) feImageHeight = bbox_height;
+    if (feImageWidth  == 0) feImageWidth  = bbox_width;
+    if (feImageHeight == 0) feImageHeight = bbox_height;
 
     int device_scale = slot.get_device_scale();
 
@@ -144,7 +133,7 @@ void FilterImage::render_cairo(FilterSlot &slot)
 
     // External image, like <image>
     if (!image && !broken_ref) {
-        std::cout << "  External image" << std::endl;
+        //std::cout << "  External image" << std::endl;
         broken_ref = true;
 
         /* TODO: If feImageHref is absolute, then use that (preferably handling the
@@ -154,23 +143,23 @@ void FilterImage::render_cairo(FilterSlot &slot)
          * then use that as the base URI.  Otherwise, use feImageHref directly
          * (i.e. interpreting it as relative to our current working directory).
          * (See http://www.w3.org/TR/xmlbase/#resolution .) */
-        gchar *fullname = feImageHref;
-        if ( !g_file_test( fullname, G_FILE_TEST_EXISTS ) ) {
+        char *fullname = feImageHref.data();
+        if (!g_file_test(fullname, G_FILE_TEST_EXISTS)) {
             // Try to load from relative position combined with document base
-            if( document ) {
-                fullname = g_build_filename( document->getDocumentBase(), feImageHref, nullptr );
+            if (document) {
+                fullname = g_build_filename(document->getDocumentBase(), feImageHref.data(), nullptr);
             }
         }
-        if ( !g_file_test( fullname, G_FILE_TEST_EXISTS ) ) {
+        if (!g_file_test(fullname, G_FILE_TEST_EXISTS)) {
             // Should display Broken Image png.
-            g_warning("FilterImage::render: Can not find: %s", feImageHref  );
+            g_warning("FilterImage::render: Can not find: %s", feImageHref.data());
             return;
         }
-        image = Inkscape::Pixbuf::create_from_file(fullname);
-        if( fullname != feImageHref ) g_free( fullname );
+        image.reset(Inkscape::Pixbuf::create_from_file(fullname));
+        if (fullname != feImageHref) g_free(fullname);
 
-        if ( !image ) {
-            g_warning("FilterImage::render: failed to load image: %s", feImageHref);
+        if (!image) {
+            g_warning("FilterImage::render: failed to load image: %s", feImageHref.data());
             return;
         }
 
@@ -182,19 +171,18 @@ void FilterImage::render_cairo(FilterSlot &slot)
     }
 
     cairo_surface_t *image_surface = image->getSurfaceRaw();
-    std::cout << "    image: " << cairo_image_surface_get_width(image_surface) << std::endl;
+    //std::cout << "    image: " << cairo_image_surface_get_width(image_surface) << std::endl;
     Geom::Rect sa = slot.get_slot_area();
-    cairo_surface_t *out = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-        sa.width() * device_scale, sa.height() * device_scale);
+    cairo_surface_t *out = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, sa.width() * device_scale, sa.height() * device_scale);
     cairo_surface_set_device_scale( out, device_scale, device_scale );
-    std::cout << "    out:   " << cairo_image_surface_get_width(out) << std::endl;
+    //std::cout << "    out:   " << cairo_image_surface_get_width(out) << std::endl;
 
     // For the moment, we'll assume that any image is in sRGB color space
     // set_cairo_surface_ci(out, SP_CSS_COLOR_INTERPOLATION_SRGB);
     // This seemed like a sensible thing to do but it breaks filters-displace-01-f.svg
 
     cairo_t *ct = cairo_create(out);
-    cairo_translate(ct, -sa.min()[Geom::X], -sa.min()[Geom::Y]);
+    cairo_translate(ct, -sa.left(), -sa.top());
 
     // now ct is in pb coordinates, note the feWidth etc. are in user units
     ink_cairo_transform(ct, slot.get_units().get_matrix_user2pb());
@@ -205,15 +193,15 @@ void FilterImage::render_cairo(FilterSlot &slot)
     // Partially copied from sp-image.cpp.
 
     // Do nothing if preserveAspectRatio is "none".
-    if( aspect_align != SP_ASPECT_NONE ) {
+    if (aspect_align != SP_ASPECT_NONE) {
 
         // Check aspect ratio of image vs. viewport
-        double feAspect = feImageHeight/feImageWidth;
-        double aspect = (double)image->height()/(double)image->width();
-        bool ratio = (feAspect < aspect);
+        double feAspect = feImageHeight / feImageWidth;
+        double aspect = (double)image->height() / image->width();
+        bool ratio = feAspect < aspect;
 
         double ax, ay; // Align side
-        switch( aspect_align ) {
+        switch (aspect_align) {
             case SP_ASPECT_XMIN_YMIN:
                 ax = 0.0;
                 ay = 0.0;
@@ -256,10 +244,10 @@ void FilterImage::render_cairo(FilterSlot &slot)
                 break;
         }
 
-        if( aspect_clip == SP_ASPECT_SLICE ) {
+        if (aspect_clip == SP_ASPECT_SLICE) {
             // image clipped by viewbox
 
-            if( ratio ) {
+            if (ratio) {
                 // clip top/bottom
                 feImageY -= ay * (feImageWidth * aspect - feImageHeight);
                 feImageHeight = feImageWidth * aspect;
@@ -272,7 +260,7 @@ void FilterImage::render_cairo(FilterSlot &slot)
         } else {
             // image fits into viewbox
 
-            if( ratio ) {
+            if (ratio) {
                 // fit to height
                 feImageX += ax * (feImageWidth - feImageHeight / aspect );
                 feImageWidth = feImageHeight / aspect;
@@ -293,44 +281,44 @@ void FilterImage::render_cairo(FilterSlot &slot)
     cairo_paint(ct);
     cairo_destroy(ct);
     slot.set(_output, out);
-    std::cout << "FilterImage::render_cairo: Exit 2" << std::endl;
+    //std::cout << "FilterImage::render_cairo: Exit 2" << std::endl;
 }
 
-bool FilterImage::can_handle_affine(Geom::Affine const &)
+bool FilterImage::can_handle_affine(Geom::Affine const &) const
 {
     return true;
 }
 
-double FilterImage::complexity(Geom::Affine const &)
+double FilterImage::complexity(Geom::Affine const &) const
 {
     // TODO: right now we cannot actually measure this in any meaningful way.
     return 1.1;
 }
 
-void FilterImage::set_href(const gchar *href){
-
-    if (feImageHref) g_free (feImageHref);
-    feImageHref = (href) ? g_strdup (href) : nullptr;
-
-    delete image;
-    image = nullptr;
+void FilterImage::set_href(char const *href)
+{
+    feImageHref = href ? std::string(href) : "";
+    image.reset();
     broken_ref = false;
 }
 
-void FilterImage::set_document(SPDocument *doc){
+void FilterImage::set_document(SPDocument *doc)
+{
     document = doc;
 }
 
-void FilterImage::set_align( unsigned int align ) {
+void FilterImage::set_align(unsigned align)
+{
     aspect_align = align;
 }
 
-void FilterImage::set_clip( unsigned int clip ) {
+void FilterImage::set_clip(unsigned clip)
+{
     aspect_clip = clip;
 }
 
-} /* namespace Filters */
-} /* namespace Inkscape */
+} // namespace Filters
+} // namespace Inkscape
 
 /*
   Local Variables:

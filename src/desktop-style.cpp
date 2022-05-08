@@ -1830,7 +1830,7 @@ objects_query_blur (const std::vector<SPItem*> &objects, SPStyle *style_res)
                     //if primitive is gaussianblur
                     SPGaussianBlur * spblur = dynamic_cast<SPGaussianBlur *>(primitive);
                     if (spblur) {
-                        float num = spblur->stdDeviation.getNumber();
+                        float num = spblur->get_std_deviation().getNumber();
                         float dummy = num * i2d.descrim();
                         if (!std::isnan(dummy)) {
                             blur_sum += dummy;

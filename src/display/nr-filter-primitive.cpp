@@ -47,14 +47,10 @@ FilterPrimitive::FilterPrimitive()
     _subregion_width.unset(SVGLength::PERCENT, 1, 0);
     _subregion_height.unset(SVGLength::PERCENT, 1, 0);
 
-    _style = nullptr;
+    color_interpolation = SP_CSS_COLOR_INTERPOLATION_AUTO;
 }
 
-FilterPrimitive::~FilterPrimitive()
-{
-    if(_style)
-        sp_style_unref(_style);
-}
+FilterPrimitive::~FilterPrimitive() = default;
 
 void FilterPrimitive::render_cairo(FilterSlot &slot)
 {
@@ -63,20 +59,23 @@ void FilterPrimitive::render_cairo(FilterSlot &slot)
     slot.set(_output, in);
 }
 
-void FilterPrimitive::area_enlarge(Geom::IntRect &/*area*/, Geom::Affine const &/*m*/)
+void FilterPrimitive::area_enlarge(Geom::IntRect &/*area*/, Geom::Affine const &/*m*/) const
 {
     // This doesn't need to do anything by default
 }
 
-void FilterPrimitive::set_input(int slot) {
+void FilterPrimitive::set_input(int slot)
+{
     set_input(0, slot);
 }
 
-void FilterPrimitive::set_input(int input, int slot) {
+void FilterPrimitive::set_input(int input, int slot)
+{
     if (input == 0) _input = slot;
 }
 
-void FilterPrimitive::set_output(int slot) {
+void FilterPrimitive::set_output(int slot)
+{
     if (slot >= 0) _output = slot;
 }
 
@@ -91,17 +90,20 @@ void FilterPrimitive::set_y(SVGLength const &length)
 {
     _subregion_y = length;
 }
+
 void FilterPrimitive::set_width(SVGLength const &length)
 {
     _subregion_width = length;
 }
+
 void FilterPrimitive::set_height(SVGLength const &length)
 {
     _subregion_height = length;
 }
 
 void FilterPrimitive::set_subregion(SVGLength const &x, SVGLength const &y,
-                                    SVGLength const &width, SVGLength const &height) {
+                                    SVGLength const &width, SVGLength const &height)
+{
     _subregion_x = x;
     _subregion_y = y;
     _subregion_width = width;
@@ -113,7 +115,7 @@ Geom::Rect FilterPrimitive::filter_primitive_area(FilterUnits const &units)
     Geom::OptRect const fa_opt = units.get_filter_area();
     if (!fa_opt) {
         std::cerr << "FilterPrimitive::filter_primitive_area: filter area undefined." << std::endl;
-        return Geom::Rect (Geom::Point(0.,0.), Geom::Point(0.,0.));
+        return Geom::Rect::from_xywh(0, 0, 0, 0);
     }
     Geom::Rect fa = *fa_opt;
 
@@ -172,18 +174,17 @@ Geom::Rect FilterPrimitive::filter_primitive_area(FilterUnits const &units)
     return Geom::Rect (Geom::Point(x,y), Geom::Point(x + width, y + height));
 }
 
-void FilterPrimitive::setStyle(SPStyle *style)
+void FilterPrimitive::setStyle(SPStyle const *style)
 {
-    if( style != _style ) {
-        if (style) sp_style_ref(style);
-        if (_style) sp_style_unref(_style);
-        _style = style;
+    if (style) {
+        color_interpolation = style->color_interpolation_filters.computed;
+    } else {
+        color_interpolation = SP_CSS_COLOR_INTERPOLATION_AUTO;
     }
 }
 
-
-} /* namespace Filters */
-} /* namespace Inkscape */
+} // namespace Filters
+} // namespace Inkscape
 
 /*
   Local Variables:

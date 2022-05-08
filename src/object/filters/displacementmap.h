@@ -14,11 +14,10 @@
 #define SP_FEDISPLACEMENTMAP_H_SEEN
 
 #include "sp-filter-primitive.h"
+#include "display/nr-filter-types.h"
 
-#define SP_FEDISPLACEMENTMAP(obj) (dynamic_cast<SPFeDisplacementMap*>((SPObject*)obj))
-#define SP_IS_FEDISPLACEMENTMAP(obj) (dynamic_cast<const SPFeDisplacementMap*>((SPObject*)obj) != NULL)
-
-enum FilterDisplacementMapChannelSelector {
+enum FilterDisplacementMapChannelSelector
+{
     DISPLACEMENTMAP_CHANNEL_RED,
     DISPLACEMENTMAP_CHANNEL_GREEN,
     DISPLACEMENTMAP_CHANNEL_BLUE,
@@ -26,30 +25,31 @@ enum FilterDisplacementMapChannelSelector {
     DISPLACEMENTMAP_CHANNEL_ENDTYPE
 };
 
-class SPFeDisplacementMap : public SPFilterPrimitive {
+class SPFeDisplacementMap
+    : public SPFilterPrimitive
+{
 public:
-	SPFeDisplacementMap();
-	~SPFeDisplacementMap() override;
+    int get_in2() const { return in2; }
 
-    int in2; 
-    double scale;
-    FilterDisplacementMapChannelSelector xChannelSelector;
-    FilterDisplacementMapChannelSelector yChannelSelector;
+private:
+    int in2 = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
+    double scale = 0.0;
+    FilterDisplacementMapChannelSelector xChannelSelector = DISPLACEMENTMAP_CHANNEL_ALPHA;
+    FilterDisplacementMapChannelSelector yChannelSelector = DISPLACEMENTMAP_CHANNEL_ALPHA;
 
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void set(SPAttr key, char const *value) override;
+    void update(SPCtx *ctx, unsigned int flags) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
-	void set(SPAttr key, const gchar* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, guint flags) override;
-
-	void build_renderer(Inkscape::Filters::Filter* filter) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
 };
 
-#endif /* !SP_FEDISPLACEMENTMAP_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEDISPLACEMENTMAP, SPFeDisplacementMap)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEDISPLACEMENTMAP, SPFeDisplacementMap)
+
+#endif // SP_FEDISPLACEMENTMAP_H_SEEN
 
 /*
   Local Variables:

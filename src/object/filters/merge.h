@@ -13,28 +13,17 @@
 
 #include "sp-filter-primitive.h"
 
-#define SP_FEMERGE(obj) (dynamic_cast<SPFeMerge*>((SPObject*)obj))
-#define SP_IS_FEMERGE(obj) (dynamic_cast<const SPFeMerge*>((SPObject*)obj) != NULL)
-
-class SPFeMerge : public SPFilterPrimitive {
-public:
-	SPFeMerge();
-    ~SPFeMerge() override;
-
+class SPFeMerge
+    : public SPFilterPrimitive
+{
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
-
-	void set(SPAttr key, const gchar* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, guint flags) override;
-
-	void build_renderer(Inkscape::Filters::Filter* filter) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
 };
 
-#endif /* !SP_FEMERGE_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEMERGE, SPFeMerge)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEMERGE, SPFeMerge)
+
+#endif // SP_FEMERGE_H_SEEN
 
 /*
   Local Variables:

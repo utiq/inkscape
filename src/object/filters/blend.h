@@ -17,31 +17,29 @@
 #include "sp-filter-primitive.h"
 #include "display/nr-filter-blend.h"
 
-#define SP_FEBLEND(obj) (dynamic_cast<SPFeBlend*>((SPObject*)obj))
-#define SP_IS_FEBLEND(obj) (dynamic_cast<const SPFeBlend*>((SPObject*)obj) != NULL)
-
-class SPFeBlend : public SPFilterPrimitive {
+class SPFeBlend
+    : public SPFilterPrimitive
+{
 public:
-	SPFeBlend();
-	~SPFeBlend() override;
+    SPBlendMode get_blend_mode() const { return blend_mode; }
+    int get_in2() const { return in2; }
 
-    SPBlendMode blend_mode;
-    int in2;
+private:
+    SPBlendMode blend_mode = SP_CSS_BLEND_NORMAL;
+    int in2 = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void set(SPAttr key, char const *value) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
-	void set(SPAttr key, const gchar* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, guint flags) override;
-
-	void build_renderer(Inkscape::Filters::Filter* filter) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
 };
 
-#endif /* !SP_FEBLEND_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEBLEND, SPFeBlend)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEBLEND, SPFeBlend)
+
+#endif // SP_FEBLEND_H_SEEN
 
 /*
   Local Variables:

@@ -15,29 +15,17 @@
 
 #include "sp-filter-primitive.h"
 
-#define SP_FETILE(obj) (dynamic_cast<SPFeTile*>((SPObject*)obj))
-#define SP_IS_FETILE(obj) (dynamic_cast<const SPFeTile*>((SPObject*)obj) != NULL)
-
-/* FeTile base class */
-class SPFeTile : public SPFilterPrimitive {
-public:
-	SPFeTile();
-    ~SPFeTile() override;
-
+class SPFeTile
+    : public SPFilterPrimitive
+{
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
-
-	void set(SPAttr key, const gchar* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, guint flags) override;
-
-	void build_renderer(Inkscape::Filters::Filter* filter) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
 };
 
-#endif /* !SP_FETILE_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FETILE, SPFeTile)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FETILE, SPFeTile)
+
+#endif // SP_FETILE_H_SEEN
 
 /*
   Local Variables:

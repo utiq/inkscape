@@ -26,10 +26,8 @@
 namespace Inkscape {
 namespace Filters {
 
-FilterSlot::FilterSlot(DrawingItem *item, DrawingContext *bgdc,
-        DrawingContext &graphic, FilterUnits const &u)
-    : _item(item)
-    , _source_graphic(graphic.rawTarget())
+FilterSlot::FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &u)
+    : _source_graphic(graphic.rawTarget())
     , _background_ct(bgdc ? bgdc->raw() : nullptr)
     , _source_graphic_area(graphic.targetLogicalBounds().roundOutwards()) // fixme
     , _background_area(bgdc ? bgdc->targetLogicalBounds().roundOutwards() : Geom::IntRect()) // fixme
@@ -52,14 +50,14 @@ FilterSlot::FilterSlot(DrawingItem *item, DrawingContext *bgdc,
         _slot_w = _source_graphic_area.width();
         _slot_h = _source_graphic_area.height();
     } else {
-        _slot_w = ceil(bbox_trans.width());
-        _slot_h = ceil(bbox_trans.height());
+        _slot_w = std::ceil(bbox_trans.width());
+        _slot_h = std::ceil(bbox_trans.height());
     }
 }
 
 FilterSlot::~FilterSlot()
 {
-    for (auto & _slot : _slots) {
+    for (auto &_slot : _slots) {
         cairo_surface_destroy(_slot.second);
     }
 }
@@ -128,7 +126,7 @@ cairo_surface_t *FilterSlot::getcairo(int slot_nr)
     return s->second;
 }
 
-cairo_surface_t *FilterSlot::_get_transformed_source_graphic()
+cairo_surface_t *FilterSlot::_get_transformed_source_graphic() const
 {
     Geom::Affine trans = _units.get_matrix_display2pb();
 
@@ -153,7 +151,7 @@ cairo_surface_t *FilterSlot::_get_transformed_source_graphic()
     return tsg;
 }
 
-cairo_surface_t *FilterSlot::_get_transformed_background()
+cairo_surface_t *FilterSlot::_get_transformed_background() const
 {
     Geom::Affine trans = _units.get_matrix_display2pb();
 
@@ -241,53 +239,56 @@ void FilterSlot::set_primitive_area(int slot_nr, Geom::Rect &area)
     _primitiveAreas[slot_nr] = area;
 }
 
-Geom::Rect FilterSlot::get_primitive_area(int slot_nr)
+Geom::Rect FilterSlot::get_primitive_area(int slot_nr) const
 {
     if (slot_nr == NR_FILTER_SLOT_NOT_SET)
         slot_nr = _last_out;
 
-    PrimitiveAreaMap::iterator s = _primitiveAreas.find(slot_nr);
+    auto s = _primitiveAreas.find(slot_nr);
 
     if (s == _primitiveAreas.end()) {
-        return *(_units.get_filter_area());
+        return *_units.get_filter_area();
     }
     return s->second;
 }
 
-int FilterSlot::get_slot_count()
+int FilterSlot::get_slot_count() const
 {
     return _slots.size();
 }
 
-void FilterSlot::set_quality(FilterQuality const q) {
+void FilterSlot::set_quality(FilterQuality q)
+{
     filterquality = q;
 }
 
-void FilterSlot::set_blurquality(int const q) {
+void FilterSlot::set_blurquality(int q)
+{
     blurquality = q;
 }
 
-int FilterSlot::get_blurquality() {
+int FilterSlot::get_blurquality() const
+{
     return blurquality;
 }
 
-void FilterSlot::set_device_scale(int const s) {
+void FilterSlot::set_device_scale(int s)
+{
     device_scale = s;
 }
 
-int FilterSlot::get_device_scale() {
+int FilterSlot::get_device_scale() const
+{
     return device_scale;
 }
 
-Geom::Rect FilterSlot::get_slot_area() const {
-    Geom::Point p(_slot_x, _slot_y);
-    Geom::Point dim(_slot_w, _slot_h);
-    Geom::Rect r(p, p+dim);
-    return r;
+Geom::Rect FilterSlot::get_slot_area() const
+{
+    return Geom::Rect::from_xywh(_slot_x, _slot_y, _slot_w, _slot_h);
 }
 
-} /* namespace Filters */
-} /* namespace Inkscape */
+} // namespace Filters
+} // namespace Inkscape
 
 /*
   Local Variables:

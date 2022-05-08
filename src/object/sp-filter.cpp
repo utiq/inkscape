@@ -33,75 +33,69 @@
 #include "uri.h"
 #include "xml/repr.h"
 
-static void filter_ref_changed(SPObject *old_ref, SPObject *ref, SPFilter *filter);
-static void filter_ref_modified(SPObject *href, guint flags, SPFilter *filter);
-
 SPFilter::SPFilter()
-    : SPObject()
-    , filterUnits(SP_FILTER_UNITS_OBJECTBOUNDINGBOX)
+    : filterUnits(SP_FILTER_UNITS_OBJECTBOUNDINGBOX)
     , filterUnits_set(FALSE)
     , primitiveUnits(SP_FILTER_UNITS_USERSPACEONUSE)
     , primitiveUnits_set(FALSE)
-    , filterRes(NumberOptNumber())
     , _refcount(0)
     , _image_number_next(0)
 {
-    this->href = new SPFilterReference(this);
-    this->href->changedSignal().connect(sigc::bind(sigc::ptr_fun(filter_ref_changed), this));
+    href = std::make_unique<SPFilterReference>(this);
 
-    this->x = 0;
-    this->y = 0;
-    this->width = 0;
-    this->height = 0;
-    this->auto_region = true;
+    // Gets called when the filter is (re)attached to another filter.
+    href->changedSignal().connect([this] (SPObject *old_ref, SPObject *ref) {
+        if (old_ref) {
+            modified_connection.disconnect();
+        }
+
+        if (SP_IS_FILTER(ref) && ref != this) {
+            modified_connection = ref->connectModified([this] (SPObject*, unsigned) {
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
+            });
+        }
+
+        requestModified(SP_OBJECT_MODIFIED_FLAG);
+    });
+
+    x = 0;
+    y = 0;
+    width = 0;
+    height = 0;
+    auto_region = true;
 }
 
 SPFilter::~SPFilter() = default;
 
-/**
- * Reads the Inkscape::XML::Node, and initializes SPFilter variables.  For this to get called,
- * our name must be associated with a repr via "sp_object_type_register".  Best done through
- * sp-object-repr.cpp's repr_name_entries array.
- */
 void SPFilter::build(SPDocument *document, Inkscape::XML::Node *repr)
 {
     // Read values of key attributes from XML nodes into object.
-    this->readAttr(SPAttr::STYLE); // struct not derived from SPItem, we need to do this ourselves.
-    this->readAttr(SPAttr::FILTERUNITS);
-    this->readAttr(SPAttr::PRIMITIVEUNITS);
-    this->readAttr(SPAttr::X);
-    this->readAttr(SPAttr::Y);
-    this->readAttr(SPAttr::WIDTH);
-    this->readAttr(SPAttr::HEIGHT);
-    this->readAttr(SPAttr::AUTO_REGION);
-    this->readAttr(SPAttr::FILTERRES);
-    this->readAttr(SPAttr::XLINK_HREF);
+    readAttr(SPAttr::STYLE); // struct not derived from SPItem, we need to do this ourselves.
+    readAttr(SPAttr::FILTERUNITS);
+    readAttr(SPAttr::PRIMITIVEUNITS);
+    readAttr(SPAttr::X);
+    readAttr(SPAttr::Y);
+    readAttr(SPAttr::WIDTH);
+    readAttr(SPAttr::HEIGHT);
+    readAttr(SPAttr::AUTO_REGION);
+    readAttr(SPAttr::FILTERRES);
+    readAttr(SPAttr::XLINK_HREF);
     _refcount = 0;
 
     SPObject::build(document, repr);
 
-    // is this necessary?
     document->addResource("filter", this);
 }
 
-/**
- * Drops any allocated memory.
- */
 void SPFilter::release()
 {
-    if (this->document) {
-        // Unregister ourselves
-        this->document->removeResource("filter", this);
-    }
-
-    // TODO: release resources here
+    document->removeResource("filter", this);
 
     // release href
-    if (this->href) {
-        this->modified_connection.disconnect();
-        this->href->detach();
-        delete this->href;
-        this->href = nullptr;
+    if (href) {
+        modified_connection.disconnect();
+        href->detach();
+        href.reset();
     }
 
     _image_name.clear();
@@ -109,78 +103,71 @@ void SPFilter::release()
     SPObject::release();
 }
 
-/**
- * Sets a specific value in the SPFilter.
- */
 void SPFilter::set(SPAttr key, gchar const *value)
 {
     switch (key) {
         case SPAttr::FILTERUNITS:
             if (value) {
-                if (!strcmp(value, "userSpaceOnUse")) {
-                    this->filterUnits = SP_FILTER_UNITS_USERSPACEONUSE;
+                if (!std::strcmp(value, "userSpaceOnUse")) {
+                    filterUnits = SP_FILTER_UNITS_USERSPACEONUSE;
                 } else {
-                    this->filterUnits = SP_FILTER_UNITS_OBJECTBOUNDINGBOX;
+                    filterUnits = SP_FILTER_UNITS_OBJECTBOUNDINGBOX;
                 }
-
-                this->filterUnits_set = TRUE;
+                filterUnits_set = TRUE;
             } else {
-                this->filterUnits = SP_FILTER_UNITS_OBJECTBOUNDINGBOX;
-                this->filterUnits_set = FALSE;
+                filterUnits = SP_FILTER_UNITS_OBJECTBOUNDINGBOX;
+                filterUnits_set = FALSE;
             }
-
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::PRIMITIVEUNITS:
             if (value) {
-                if (!strcmp(value, "objectBoundingBox")) {
-                    this->primitiveUnits = SP_FILTER_UNITS_OBJECTBOUNDINGBOX;
+                if (!std::strcmp(value, "objectBoundingBox")) {
+                    primitiveUnits = SP_FILTER_UNITS_OBJECTBOUNDINGBOX;
                 } else {
-                    this->primitiveUnits = SP_FILTER_UNITS_USERSPACEONUSE;
+                    primitiveUnits = SP_FILTER_UNITS_USERSPACEONUSE;
                 }
-
-                this->primitiveUnits_set = TRUE;
+                primitiveUnits_set = TRUE;
             } else {
-                this->primitiveUnits = SP_FILTER_UNITS_USERSPACEONUSE;
-                this->primitiveUnits_set = FALSE;
+                primitiveUnits = SP_FILTER_UNITS_USERSPACEONUSE;
+                primitiveUnits_set = FALSE;
             }
-
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::X:
-            this->x.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            x.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::Y:
-            this->y.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            y.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::WIDTH:
-            this->width.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            width.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::HEIGHT:
-            this->height.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            height.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::AUTO_REGION:
-            this->auto_region = (!value || strcmp(value, "false"));
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            auto_region = !value || std::strcmp(value, "false");
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::FILTERRES:
-            this->filterRes.set(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            filterRes.set(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::XLINK_HREF:
             if (value) {
                 try {
-                    this->href->attach(Inkscape::URI(value));
-                } catch (Inkscape::BadURIException &e) {
+                    href->attach(Inkscape::URI(value));
+                } catch (Inkscape::BadURIException const &e) {
                     g_warning("%s", e.what());
-                    this->href->detach();
+                    href->detach();
                 }
             } else {
-                this->href->detach();
+                href->detach();
             }
             break;
         default:
@@ -193,13 +180,13 @@ void SPFilter::set(SPAttr key, gchar const *value)
 /**
  * Returns the number of references to the filter.
  */
-guint SPFilter::getRefCount()
+unsigned SPFilter::getRefCount()
 {
     // NOTE: this is currently updated by sp_style_filter_ref_changed() in style.cpp
     return _refcount;
 }
 
-void SPFilter::modified(guint flags)
+void SPFilter::modified(unsigned flags)
 {
     // We are not an LPE, do not update filter regions on load.
     if (flags & SP_OBJECT_MODIFIED_FLAG) {
@@ -207,21 +194,17 @@ void SPFilter::modified(guint flags)
     }
 }
 
-/**
- * Receives update notifications.
- */
-void SPFilter::update(SPCtx *ctx, guint flags)
+void SPFilter::update(SPCtx *ctx, unsigned flags)
 {
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) {
-        SPItemCtx *ictx = (SPItemCtx *)ctx;
+        auto ictx = static_cast<SPItemCtx*>(ctx);
 
         // Do here since we know viewport (Bounding box case handled during rendering)
         // Note: This only works for root viewport since this routine is not called after
         // setting a new viewport. A true fix requires a strategy like SPItemView or SPMarkerView.
-        if (this->filterUnits == SP_FILTER_UNITS_USERSPACEONUSE) {
-            this->calcDimsFromParentViewport(ictx, true);
+        if (filterUnits == SP_FILTER_UNITS_USERSPACEONUSE) {
+            calcDimsFromParentViewport(ictx, true);
         }
-        /* do something to trigger redisplay, updates? */
     }
 
     // Update filter primitives in order to update filter primitive area
@@ -232,7 +215,7 @@ void SPFilter::update(SPCtx *ctx, guint flags)
         childflags |= SP_OBJECT_PARENT_MODIFIED_FLAG;
     }
     childflags &= SP_OBJECT_MODIFIED_CASCADE;
-    std::vector<SPObject *> l(this->childList(true, SPObject::ActionUpdate));
+    auto l = childList(true, SPObject::ActionUpdate);
     for (SPObject *child : l) {
         if (SP_IS_FILTER_PRIMITIVE(child)) {
             child->updateDisplay(ctx, childflags);
@@ -243,10 +226,7 @@ void SPFilter::update(SPCtx *ctx, guint flags)
     SPObject::update(ctx, flags);
 }
 
-/**
- * Writes its settings to an incoming repr object, if any.
- */
-Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, guint flags)
+Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags)
 {
     // Original from sp-item-group.cpp
     if (flags & SP_OBJECT_WRITE_BUILD) {
@@ -256,8 +236,7 @@ Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML
 
         std::vector<Inkscape::XML::Node *> l;
         for (auto &child : children) {
-            Inkscape::XML::Node *crepr = child.updateRepr(doc, nullptr, flags);
-
+            auto crepr = child.updateRepr(doc, nullptr, flags);
             if (crepr) {
                 l.push_back(crepr);
             }
@@ -273,8 +252,8 @@ Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML
         }
     }
 
-    if ((flags & SP_OBJECT_WRITE_ALL) || this->filterUnits_set) {
-        switch (this->filterUnits) {
+    if ((flags & SP_OBJECT_WRITE_ALL) || filterUnits_set) {
+        switch (filterUnits) {
             case SP_FILTER_UNITS_USERSPACEONUSE:
                 repr->setAttribute("filterUnits", "userSpaceOnUse");
                 break;
@@ -284,8 +263,8 @@ Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML
         }
     }
 
-    if ((flags & SP_OBJECT_WRITE_ALL) || this->primitiveUnits_set) {
-        switch (this->primitiveUnits) {
+    if ((flags & SP_OBJECT_WRITE_ALL) || primitiveUnits_set) {
+        switch (primitiveUnits) {
             case SP_FILTER_UNITS_OBJECTBOUNDINGBOX:
                 repr->setAttribute("primitiveUnits", "objectBoundingBox");
                 break;
@@ -295,39 +274,39 @@ Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML
         }
     }
 
-    if (this->x._set) {
-        repr->setAttributeSvgDouble("x", this->x.computed);
+    if (x._set) {
+        repr->setAttributeSvgDouble("x", x.computed);
     } else {
         repr->removeAttribute("x");
     }
 
-    if (this->y._set) {
-        repr->setAttributeSvgDouble("y", this->y.computed);
+    if (y._set) {
+        repr->setAttributeSvgDouble("y", y.computed);
     } else {
         repr->removeAttribute("y");
     }
 
-    if (this->width._set) {
-        repr->setAttributeSvgDouble("width", this->width.computed);
+    if (width._set) {
+        repr->setAttributeSvgDouble("width", width.computed);
     } else {
         repr->removeAttribute("width");
     }
 
-    if (this->height._set) {
-        repr->setAttributeSvgDouble("height", this->height.computed);
+    if (height._set) {
+        repr->setAttributeSvgDouble("height", height.computed);
     } else {
         repr->removeAttribute("height");
     }
 
-    if (this->filterRes.getNumber() >= 0) {
-        auto tmp = this->filterRes.getValueString();
+    if (filterRes.getNumber() >= 0) {
+        auto tmp = filterRes.getValueString();
         repr->setAttribute("filterRes", tmp);
     } else {
         repr->removeAttribute("filterRes");
     }
 
-    if (this->href->getURI()) {
-        auto uri_string = this->href->getURI()->str();
+    if (href->getURI()) {
+        auto uri_string = href->getURI()->str();
         repr->setAttributeOrRemoveIfEmpty("xlink:href", uri_string);
     }
 
@@ -344,18 +323,19 @@ Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML
  */
 void SPFilter::update_filter_all_regions()
 {
-    if (!this->auto_region || this->filterUnits == SP_FILTER_UNITS_USERSPACEONUSE)
+    if (!auto_region || filterUnits == SP_FILTER_UNITS_USERSPACEONUSE) {
         return;
+    }
 
     // Combine all items into one region for updating.
     Geom::OptRect opt_r;
-    for (auto &obj : this->hrefList) {
-        SPItem *item = dynamic_cast<SPItem *>(obj);
-        opt_r.unionWith(this->get_automatic_filter_region(item));
+    for (auto &obj : hrefList) {
+        auto item = dynamic_cast<SPItem *>(obj);
+        opt_r.unionWith(get_automatic_filter_region(item));
     }
     if (opt_r) {
         Geom::Rect region = *opt_r;
-        this->set_filter_region(region.left(), region.top(), region.width(), region.height());
+        set_filter_region(region.left(), region.top(), region.width(), region.height());
     }
 }
 
@@ -366,13 +346,14 @@ void SPFilter::update_filter_all_regions()
  */
 void SPFilter::update_filter_region(SPItem *item)
 {
-    if (!this->auto_region || this->filterUnits == SP_FILTER_UNITS_USERSPACEONUSE)
+    if (!auto_region || filterUnits == SP_FILTER_UNITS_USERSPACEONUSE) {
         return; // No adjustment for dead box
+    }
 
-    auto region = this->get_automatic_filter_region(item);
+    auto region = get_automatic_filter_region(item);
 
     // Set the filter region into this filter object
-    this->set_filter_region(region.left(), region.top(), region.width(), region.height());
+    set_filter_region(region.left(), region.top(), region.width(), region.height());
 }
 
 /**
@@ -395,7 +376,7 @@ Geom::Rect SPFilter::get_automatic_filter_region(SPItem *item)
     // visual boxes ourselves or find them cut off by renderers of all kinds.
     Geom::Rect inbox = *g_box;
     Geom::Rect outbox = *v_box;
-    for (auto &primitive_obj : this->children) {
+    for (auto &primitive_obj : children) {
         auto primitive = dynamic_cast<SPFilterPrimitive *>(&primitive_obj);
         if (primitive) {
             // Update the region with the primitive's options
@@ -408,7 +389,7 @@ Geom::Rect SPFilter::get_automatic_filter_region(SPItem *item)
     // Scale outbox to width/height scale of input, this scales the geometric
     // into the visual bounding box requiring any changes to it to re-run this.
     outbox *= Geom::Translate(-inbox.left(), -inbox.top());
-    outbox *= Geom::Scale(1 / inbox.width(), 1 / inbox.height());
+    outbox *= Geom::Scale(1.0 / inbox.width(), 1.0 / inbox.height());
     return outbox;
 }
 
@@ -419,7 +400,7 @@ void SPFilter::set_filter_region(double x, double y, double width, double height
 {
     if (width != 0 && height != 0) {
         // TODO: set it in UserSpaceOnUse instead?
-        auto repr = this->getRepr();
+        auto repr = getRepr();
         repr->setAttributeSvgDouble("x", x);
         repr->setAttributeSvgDouble("y", y);
         repr->setAttributeSvgDouble("width", width);
@@ -432,7 +413,7 @@ void SPFilter::set_filter_region(double x, double y, double width, double height
  */
 bool SPFilter::valid_for(SPObject const *obj) const
 {
-    for (auto &primitive_obj : this->children) {
+    for (auto &primitive_obj : children) {
         auto primitive = dynamic_cast<SPFilterPrimitive const *>(&primitive_obj);
         if (primitive && !primitive->valid_for(obj)) {
             return false;
@@ -441,79 +422,41 @@ bool SPFilter::valid_for(SPObject const *obj) const
     return true;
 }
 
-/**
- * Gets called when the filter is (re)attached to another filter.
- */
-static void filter_ref_changed(SPObject *old_ref, SPObject *ref, SPFilter *filter)
-{
-    if (old_ref) {
-        filter->modified_connection.disconnect();
-    }
-
-    if (SP_IS_FILTER(ref) && ref != filter) {
-        filter->modified_connection = ref->connectModified(sigc::bind(sigc::ptr_fun(&filter_ref_modified), filter));
-    }
-
-    filter_ref_modified(ref, 0, filter);
-}
-
-static void filter_ref_modified(SPObject * /*href*/, guint /*flags*/, SPFilter *filter)
-{
-    filter->requestModified(SP_OBJECT_MODIFIED_FLAG);
-}
-
-/**
- * Callback for child_added event.
- */
 void SPFilter::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 {
     SPObject::child_added(child, ref);
-
-    this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
-/**
- * Callback for remove_child event.
- */
 void SPFilter::remove_child(Inkscape::XML::Node *child)
 {
     SPObject::remove_child(child);
-
-    this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFilter::build_renderer(Inkscape::Filters::Filter *nr_filter) const
 {
-    g_assert(nr_filter != nullptr);
+    g_assert(nr_filter);
 
-    nr_filter->set_filter_units(this->filterUnits);
-    nr_filter->set_primitive_units(this->primitiveUnits);
-    nr_filter->set_x(this->x);
-    nr_filter->set_y(this->y);
-    nr_filter->set_width(this->width);
-    nr_filter->set_height(this->height);
+    nr_filter->set_filter_units(filterUnits);
+    nr_filter->set_primitive_units(primitiveUnits);
+    nr_filter->set_x(x);
+    nr_filter->set_y(y);
+    nr_filter->set_width(width);
+    nr_filter->set_height(height);
 
-    if (this->filterRes.getNumber() >= 0) {
-        if (this->filterRes.getOptNumber() >= 0) {
-            nr_filter->set_resolution(this->filterRes.getNumber(), this->filterRes.getOptNumber());
+    if (filterRes.getNumber() >= 0) {
+        if (filterRes.getOptNumber() >= 0) {
+            nr_filter->set_resolution(filterRes.getNumber(), filterRes.getOptNumber());
         } else {
-            nr_filter->set_resolution(this->filterRes.getNumber());
+            nr_filter->set_resolution(filterRes.getNumber());
         }
     }
 
     nr_filter->clear_primitives();
-    for (auto &primitive_obj : this->children) {
-        if (SP_IS_FILTER_PRIMITIVE(&primitive_obj)) {
-            SPFilterPrimitive *primitive = SP_FILTER_PRIMITIVE(&primitive_obj);
-            g_assert(primitive != nullptr);
-
-            //if (((SPFilterPrimitiveClass*) G_OBJECT_GET_CLASS(primitive))->build_renderer) {
-            //    ((SPFilterPrimitiveClass *) G_OBJECT_GET_CLASS(primitive))->build_renderer(primitive,
-            //    nr_filter);
-            //} else {
-            //    g_warning("Cannot build filter renderer: missing builder");
-            //}  // CPPIFY: => FilterPrimitive should be abstract.
-            primitive->build_renderer(nr_filter);
+    for (auto &primitive_obj: children) {
+        if (auto primitive = SP_FILTER_PRIMITIVE(&primitive_obj)) {
+            nr_filter->add_primitive(primitive->build_renderer());
         }
     }
 }
@@ -522,7 +465,7 @@ int SPFilter::primitive_count() const
 {
     int count = 0;
 
-    for (auto const &primitive_obj : this->children) {
+    for (auto const &primitive_obj : children) {
         if (SP_IS_FILTER_PRIMITIVE(&primitive_obj)) {
             count++;
         }
@@ -531,19 +474,21 @@ int SPFilter::primitive_count() const
     return count;
 }
 
-int SPFilter::get_image_name(gchar const *name) const {
+int SPFilter::get_image_name(gchar const *name) const
+{
     auto const result = _image_name.find(name);
     if (result == _image_name.end()) return -1;
-    else return result->second;
+    return result->second;
 }
 
-int SPFilter::set_image_name(gchar const *name) {
+int SPFilter::set_image_name(gchar const *name)
+{
     int value = _image_number_next++;
-    _image_name.try_emplace(name, value);
-    return value;
+    auto [it, ret] = _image_name.try_emplace(name, value);
+    return it->second;
 }
 
-gchar const *SPFilter::name_for_image(int const image) const
+gchar const *SPFilter::name_for_image(int image) const
 {
     switch (image) {
         case Inkscape::Filters::NR_FILTER_SOURCEGRAPHIC:
@@ -582,13 +527,13 @@ Glib::ustring SPFilter::get_new_result_name() const
 {
     int largest = 0;
 
-    for (const auto &primitive_obj : this->children) {
+    for (auto const &primitive_obj : children) {
         if (SP_IS_FILTER_PRIMITIVE(&primitive_obj)) {
-            const Inkscape::XML::Node *repr = primitive_obj.getRepr();
-            char const *result = repr->attribute("result");
-            int index;
+            auto repr = primitive_obj.getRepr();
+            auto result = repr->attribute("result");
             if (result) {
-                if (sscanf(result, "result%5d", &index) == 1) {
+                int index;
+                if (std::sscanf(result, "result%5d", &index) == 1) {
                     if (index > largest) {
                         largest = index;
                     }

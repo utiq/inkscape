@@ -928,7 +928,7 @@ sp_tweak_color_recursive (guint mode, SPItem *item, SPItem *item_at_point,
                         //if primitive is gaussianblur
                         SPGaussianBlur * spblur = dynamic_cast<SPGaussianBlur *>(primitive);
                         if (spblur) {
-                            float num = spblur->stdDeviation.getNumber();
+                            float num = spblur->get_std_deviation().getNumber();
                             blur_now += num * i2dt.descrim(); // sum all blurs in the filter
                         }
                     }

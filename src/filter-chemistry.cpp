@@ -512,7 +512,7 @@ SPBlendMode filter_get_legacy_blend(SPObject *item)
                 SPFeBlend *spblend = dynamic_cast<SPFeBlend *>(primitive);
                 if (spblend) {
                     ++blendcount;
-                    blend = spblend->blend_mode;
+                    blend = spblend->get_blend_mode();
                 }
                 SPGaussianBlur *spgausian = dynamic_cast<SPGaussianBlur *>(primitive);
                 if (spgausian) {
@@ -540,8 +540,8 @@ double get_single_gaussian_blur_radius(SPFilter *filter)
         SP_IS_GAUSSIANBLUR(&filter->children.front())) {
 
         SPGaussianBlur *gb = SP_GAUSSIANBLUR(filter->firstChild());
-        double x = gb->stdDeviation.getNumber();
-        double y = gb->stdDeviation.getOptNumber();
+        double x = gb->get_std_deviation().getNumber();
+        double y = gb->get_std_deviation().getOptNumber();
         if (x > 0 && y > 0) {
             return MAX(x, y);
         }
@@ -549,8 +549,6 @@ double get_single_gaussian_blur_radius(SPFilter *filter)
     }
     return 0.0;
 }
-
-
 
 /*
   Local Variables:

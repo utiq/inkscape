@@ -13,11 +13,10 @@
 #define SP_FECOMPOSITE_H_SEEN
 
 #include "sp-filter-primitive.h"
+#include "display/nr-filter-types.h"
 
-#define SP_FECOMPOSITE(obj) (dynamic_cast<SPFeComposite*>((SPObject*)obj))
-#define SP_IS_FECOMPOSITE(obj) (dynamic_cast<const SPFeComposite*>((SPObject*)obj) != NULL)
-
-enum FeCompositeOperator {
+enum FeCompositeOperator
+{
     // Default value is 'over', but let's distinguish specifying the
     // default and implicitly using the default
     COMPOSITE_DEFAULT,
@@ -31,29 +30,33 @@ enum FeCompositeOperator {
     COMPOSITE_ENDOPERATOR        /* Cairo Saturate is not included in CSS */
 };
 
-class SPFeComposite : public SPFilterPrimitive {
+class SPFeComposite
+    : public SPFilterPrimitive
+{
 public:
-	SPFeComposite();
-	~SPFeComposite() override;
+    FeCompositeOperator get_composite_operator() const { return composite_operator; }
+    int get_in2() const { return in2; }
 
-    FeCompositeOperator composite_operator;
-    double k1, k2, k3, k4;
-    int in2;
+private:
+    FeCompositeOperator composite_operator = COMPOSITE_DEFAULT;
+    double k1 = 0.0;
+    double k2 = 0.0;
+    double k3 = 0.0;
+    double k4 = 0.0;
+    int in2 = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 
 protected:
-    void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void set(SPAttr key, char const *value) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, guint flags) override;
 
-	void set(SPAttr key, const gchar* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, guint flags) override;
-
-	void build_renderer(Inkscape::Filters::Filter* filter) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
 };
 
-#endif /* !SP_FECOMPOSITE_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FECOMPOSITE, SPFeComposite)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FECOMPOSITE, SPFeComposite)
+
+#endif // SP_FECOMPOSITE_H_SEEN
 
 /*
   Local Variables:

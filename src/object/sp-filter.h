@@ -13,8 +13,9 @@
 #ifndef SP_FILTER_H_SEEN
 #define SP_FILTER_H_SEEN
 
-#include <glibmm/ustring.h>
 #include <map>
+#include <memory>
+#include <glibmm/ustring.h>
 
 #include "number-opt-number.h"
 #include "sp-dimensions.h"
@@ -29,7 +30,7 @@
 namespace Inkscape {
 namespace Filters {
 class Filter;
-}
+} // namespace Filters
 } // namespace Inkscape
 
 class SPFilterReference;
@@ -64,9 +65,9 @@ public:
     // Checks each filter primitive to make sure the object won't cause issues
     bool valid_for(SPObject const *obj) const;
 
-    /** Finds image name based on it's slot number. Returns 0 for unknown slot
+    /** Finds image name based on its slot number. Returns 0 for unknown slot
      * numbers. */
-    char const *name_for_image(int const image) const;
+    char const *name_for_image(int image) const;
 
     /// Returns a result image name that is not in use inside this filter.
     Glib::ustring get_new_result_name() const;
@@ -76,13 +77,13 @@ public:
     SPFilterUnits primitiveUnits;
     unsigned int primitiveUnits_set : 1;
     NumberOptNumber filterRes;
-    SPFilterReference *href;
+    std::unique_ptr<SPFilterReference> href;
     bool auto_region;
 
     sigc::connection modified_connection;
 
-    guint getRefCount();
-    guint _refcount;
+    unsigned getRefCount();
+    unsigned _refcount;
 
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
@@ -91,12 +92,12 @@ protected:
     void child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref) override;
     void remove_child(Inkscape::XML::Node *child) override;
 
-    void set(SPAttr key, const char *value) override;
+    void set(SPAttr key, char const *value) override;
 
-    void modified(unsigned int flags) override;
-    void update(SPCtx *ctx, unsigned int flags) override;
+    void modified(unsigned flags) override;
+    void update(SPCtx *ctx, unsigned flags) override;
 
-    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned int flags) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
 private:
     std::map<std::string, int> _image_name;

@@ -15,20 +15,22 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <memory>
 #include "2geom/rect.h"
-#include "../sp-object.h"
-#include "../sp-dimensions.h"
-
-#define SP_FILTER_PRIMITIVE(obj) (dynamic_cast<SPFilterPrimitive*>((SPObject*)obj))
-#define SP_IS_FILTER_PRIMITIVE(obj) (dynamic_cast<const SPFilterPrimitive*>((SPObject*)obj) != NULL)
+#include "object/sp-object.h"
+#include "object/sp-dimensions.h"
 
 namespace Inkscape {
 namespace Filters {
 class Filter;
 class FilterPrimitive;
-} }
+} // namespace Filters
+} // namespace Inkscape
 
-class SPFilterPrimitive : public SPObject, public SPDimensions {
+class SPFilterPrimitive
+    : public SPObject
+    , public SPDimensions
+{
 public:
 	SPFilterPrimitive();
 	~SPFilterPrimitive() override;
@@ -36,36 +38,41 @@ public:
     int image_in, image_out;
 
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
 	void release() override;
 
-	void set(SPAttr key, char const* value) override;
+    void set(SPAttr key, char const *value) override;
 
-	void update(SPCtx* ctx, unsigned int flags) override;
+    void update(SPCtx *ctx, unsigned flags) override;
 
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
 public:
-	virtual void build_renderer(Inkscape::Filters::Filter* filter) = 0;
+    virtual std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const = 0;
 
-        /* Calculate the filter's effect on the region */
-        virtual Geom::Rect calculate_region(Geom::Rect region);
+    /* Calculate the filter's effect on the region */
+    virtual Geom::Rect calculate_region(Geom::Rect const &region) const;
 
-        /* Return true if the object should be allowed to use this filter */
-        virtual bool valid_for(SPObject const *obj) const {
-            // This is used by feImage to stop infinate loops.
-            return true;
-        };
+    /* Return true if the object should be allowed to use this filter */
+    virtual bool valid_for(SPObject const *obj) const
+    {
+        // This is used by feImage to stop infinite loops.
+        return true;
+    };
 
 	/* Common initialization for filter primitives */
-	void renderer_common(Inkscape::Filters::FilterPrimitive *nr_prim);
+    void build_renderer_common(Inkscape::Filters::FilterPrimitive *primitive) const;
 
 	int name_previous_out();
 	int read_in(char const *name);
 	int read_result(char const *name);
 };
 
-#endif
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FILTER_PRIMITIVE, SPFilterPrimitive)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FILTER_PRIMITIVE, SPFilterPrimitive)
+
+#endif // SEEN_SP_FILTER_PRIMITIVE_H
+
 /*
   Local Variables:
   mode:c++

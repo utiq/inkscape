@@ -17,108 +17,89 @@
 #include <cstring>
 
 #include "sp-filter-primitive.h"
-
 #include "attributes.h"
-
 #include "display/nr-filter-primitive.h"
-
 #include "style.h"
 
-
-// CPPIFY: Make pure virtual.
-//void SPFilterPrimitive::build_renderer(Inkscape::Filters::Filter* filter) {
-// throw;
-//}
-
-SPFilterPrimitive::SPFilterPrimitive() : SPObject() {
-    this->image_in = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
-    this->image_out = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
+SPFilterPrimitive::SPFilterPrimitive()
+{
+    image_in = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
+    image_out = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 
     // We must keep track if a value is set or not, if not set then the region defaults to 0%, 0%,
-    // 100%, 100% ("x", "y", "width", "height") of the -> filter <- region.  If set then
+    // 100%, 100% ("x", "y", "width", "height") of the -> filter <- region. If set then
     // percentages are in terms of bounding box or viewbox, depending on value of "primitiveUnits"
 
     // NB: SVGLength.set takes prescaled percent values: 1 means 100%
-    this->x.unset(SVGLength::PERCENT, 0, 0);
-    this->y.unset(SVGLength::PERCENT, 0, 0);
-    this->width.unset(SVGLength::PERCENT, 1, 0);
-    this->height.unset(SVGLength::PERCENT, 1, 0);
+    x.unset(SVGLength::PERCENT, 0, 0);
+    y.unset(SVGLength::PERCENT, 0, 0);
+    width.unset(SVGLength::PERCENT, 1, 0);
+    height.unset(SVGLength::PERCENT, 1, 0);
 }
 
 SPFilterPrimitive::~SPFilterPrimitive() = default;
 
-/**
- * Reads the Inkscape::XML::Node, and initializes SPFilterPrimitive variables.  For this to get called,
- * our name must be associated with a repr via "sp_object_type_register".  Best done through
- * sp-object-repr.cpp's repr_name_entries array.
- */
-void SPFilterPrimitive::build(SPDocument *document, Inkscape::XML::Node *repr) {
-    SPFilterPrimitive* object = this;
-
-    object->readAttr(SPAttr::STYLE); // struct not derived from SPItem, we need to do this ourselves.
-    object->readAttr(SPAttr::IN_);
-    object->readAttr(SPAttr::RESULT);
-    object->readAttr(SPAttr::X);
-    object->readAttr(SPAttr::Y);
-    object->readAttr(SPAttr::WIDTH);
-    object->readAttr(SPAttr::HEIGHT);
+void SPFilterPrimitive::build(SPDocument *document, Inkscape::XML::Node *repr)
+{
+    readAttr(SPAttr::STYLE); // struct not derived from SPItem, we need to do this ourselves.
+    readAttr(SPAttr::IN_);
+    readAttr(SPAttr::RESULT);
+    readAttr(SPAttr::X);
+    readAttr(SPAttr::Y);
+    readAttr(SPAttr::WIDTH);
+    readAttr(SPAttr::HEIGHT);
 
     SPObject::build(document, repr);
 }
 
-/**
- * Drops any allocated memory.
- */
-void SPFilterPrimitive::release() {
+void SPFilterPrimitive::release()
+{
     SPObject::release();
 }
 
-/**
- * Sets a specific value in the SPFilterPrimitive.
- */
-void SPFilterPrimitive::set(SPAttr key, gchar const *value) {
-
+void SPFilterPrimitive::set(SPAttr key, char const *value)
+{
     int image_nr;
     switch (key) {
         case SPAttr::IN_:
             if (value) {
-                image_nr = this->read_in(value);
+                image_nr = read_in(value);
             } else {
                 image_nr = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
             }
-            if (image_nr != this->image_in) {
-                this->image_in = image_nr;
-                this->parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            if (image_nr != image_in) {
+                image_in = image_nr;
+                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         case SPAttr::RESULT:
             if (value) {
-                image_nr = this->read_result(value);
+                image_nr = read_result(value);
             } else {
                 image_nr = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
             }
-            if (image_nr != this->image_out) {
-                this->image_out = image_nr;
-                this->parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            if (image_nr != image_out) {
+                image_out = image_nr;
+                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
 
         /* Filter primitive sub-region */
         case SPAttr::X:
-            this->x.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            x.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::Y:
-            this->y.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            y.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::WIDTH:
-            this->width.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            width.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::HEIGHT:
-            this->height.readOrUnset(value);
-            this->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            height.readOrUnset(value);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
     }
 
@@ -126,89 +107,81 @@ void SPFilterPrimitive::set(SPAttr key, gchar const *value) {
     SPObject::set(key, value);
 }
 
-/**
- * Receives update notifications.
- */
-void SPFilterPrimitive::update(SPCtx *ctx, guint flags) {
-
-    SPItemCtx *ictx = (SPItemCtx *) ctx;
+void SPFilterPrimitive::update(SPCtx *ctx, unsigned flags)
+{
+    auto ictx = static_cast<SPItemCtx*>(ctx);
 
     // Do here since we know viewport (Bounding box case handled during rendering)
-    SPFilter *parent = SP_FILTER(this->parent);
+    auto parent_filter = static_cast<SPFilter*>(parent);
 
-    if( parent->primitiveUnits == SP_FILTER_UNITS_USERSPACEONUSE ) {
-        this->calcDimsFromParentViewport(ictx, true);
+    if (parent_filter->primitiveUnits == SP_FILTER_UNITS_USERSPACEONUSE) {
+        calcDimsFromParentViewport(ictx, true);
     }
 
     SPObject::update(ctx, flags);
 }
 
-/**
- * Writes its settings to an incoming repr object, if any.
- */
-Inkscape::XML::Node* SPFilterPrimitive::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, guint flags) {
-    SPFilterPrimitive* object = this;
-
-    SPFilterPrimitive *prim = SP_FILTER_PRIMITIVE(object);
-    SPFilter *parent = SP_FILTER(object->parent);
+Inkscape::XML::Node* SPFilterPrimitive::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags)
+{
+    auto parent_filter = static_cast<SPFilter*>(parent);
 
     if (!repr) {
-        repr = object->getRepr()->duplicate(doc);
+        repr = getRepr()->duplicate(doc);
     }
 
-    gchar const *in_name = parent->name_for_image(prim->image_in);
+    gchar const *in_name = parent_filter->name_for_image(image_in);
     repr->setAttribute("in", in_name);
 
-    gchar const *out_name = parent->name_for_image(prim->image_out);
+    gchar const *out_name = parent_filter->name_for_image(image_out);
     repr->setAttribute("result", out_name);
 
-    /* Do we need to add x,y,width,height? */
+    /* Do we need to add x, y, width, height? */
     SPObject::write(doc, repr, flags);
 
     return repr;
 }
 
-int SPFilterPrimitive::read_in(gchar const *name)
+int SPFilterPrimitive::read_in(char const *name)
 {
-    if (!name){
+    if (!name) {
         return Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
     }
     // TODO: are these case sensitive or not? (assumed yes)
     switch (name[0]) {
         case 'S':
-            if (strcmp(name, "SourceGraphic") == 0)
+            if (std::strcmp(name, "SourceGraphic") == 0)
                 return Inkscape::Filters::NR_FILTER_SOURCEGRAPHIC;
-            if (strcmp(name, "SourceAlpha") == 0)
+            if (std::strcmp(name, "SourceAlpha") == 0)
                 return Inkscape::Filters::NR_FILTER_SOURCEALPHA;
-            if (strcmp(name, "StrokePaint") == 0)
+            if (std::strcmp(name, "StrokePaint") == 0)
                 return Inkscape::Filters::NR_FILTER_STROKEPAINT;
             break;
         case 'B':
-            if (strcmp(name, "BackgroundImage") == 0)
+            if (std::strcmp(name, "BackgroundImage") == 0)
                 return Inkscape::Filters::NR_FILTER_BACKGROUNDIMAGE;
-            if (strcmp(name, "BackgroundAlpha") == 0)
+            if (std::strcmp(name, "BackgroundAlpha") == 0)
                 return Inkscape::Filters::NR_FILTER_BACKGROUNDALPHA;
             break;
         case 'F':
-            if (strcmp(name, "FillPaint") == 0)
+            if (std::strcmp(name, "FillPaint") == 0)
                 return Inkscape::Filters::NR_FILTER_FILLPAINT;
             break;
     }
 
-    SPFilter *parent = SP_FILTER(this->parent);
-    int ret = parent->get_image_name(name);
+    auto parent_filter = static_cast<SPFilter*>(parent);
+    int ret = parent_filter->get_image_name(name);
     if (ret >= 0) return ret;
 
     return Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 }
 
-int SPFilterPrimitive::read_result(gchar const *name)
+int SPFilterPrimitive::read_result(char const *name)
 {
-    SPFilter *parent = SP_FILTER(this->parent);
-    int ret = parent->get_image_name(name);
+    auto parent_filter = static_cast<SPFilter*>(parent);
+    int ret = parent_filter->get_image_name(name);
     if (ret >= 0) return ret;
 
-    ret = parent->set_image_name(name);
+    ret = parent_filter->set_image_name(name);
     if (ret >= 0) return ret;
 
     return Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
@@ -220,8 +193,9 @@ int SPFilterPrimitive::read_result(gchar const *name)
  * of previous primitive, or NR_FILTER_SOURCEGRAPHIC if this is the first
  * primitive.
  */
-int SPFilterPrimitive::name_previous_out() {
-    SPFilter *parent = SP_FILTER(this->parent);
+int SPFilterPrimitive::name_previous_out()
+{
+    auto parent_filter = static_cast<SPFilter*>(parent);
     SPObject *i = parent->firstChild();
     while (i && i->getNext() != this) {
         i = i->getNext();
@@ -229,8 +203,8 @@ int SPFilterPrimitive::name_previous_out() {
     if (i) {
         SPFilterPrimitive *i_prim = SP_FILTER_PRIMITIVE(i);
         if (i_prim->image_out < 0) {
-            Glib::ustring name = parent->get_new_result_name();
-            int slot = parent->set_image_name(name.c_str());
+            Glib::ustring name = parent_filter->get_new_result_name();
+            int slot = parent_filter->set_image_name(name.c_str());
             i_prim->image_out = slot;
             //XML Tree is being directly used while it shouldn't be.
             i_prim->setAttributeOrRemoveIfEmpty("result", name);
@@ -242,33 +216,30 @@ int SPFilterPrimitive::name_previous_out() {
     return Inkscape::Filters::NR_FILTER_SOURCEGRAPHIC;
 }
 
-/* Common initialization for filter primitives */
-void SPFilterPrimitive::renderer_common(Inkscape::Filters::FilterPrimitive *nr_prim)
+// Common initialization for filter primitives
+void SPFilterPrimitive::build_renderer_common(Inkscape::Filters::FilterPrimitive *primitive) const
 {
-    g_assert(nr_prim != nullptr);
-
+    g_assert(primitive);
     
-    nr_prim->set_input(this->image_in);
-    nr_prim->set_output(this->image_out);
+    primitive->set_input(image_in);
+    primitive->set_output(image_out);
 
     /* TODO: place here code to handle input images, filter area etc. */
     // We don't know current viewport or bounding box, this is wrong approach.
-    nr_prim->set_subregion( this->x, this->y, this->width, this->height );
+    primitive->set_subregion(x, y, width, height);
 
     // Give renderer access to filter properties
-    nr_prim->setStyle( this->style );
+    primitive->setStyle(style);
 }
 
 /* Calculate the region taken up by this filter, given the previous region.
  *
- * @param current_region The original shape's region or previous primitive's
- *                       calcualte_region output.
+ * @param current_region The original shape's region or previous primitive's calculate_region output.
  */
-Geom::Rect SPFilterPrimitive::calculate_region(Geom::Rect region)
+Geom::Rect SPFilterPrimitive::calculate_region(Geom::Rect const &region) const
 {
     return region; // No change.
 }
-
 
 /*
   Local Variables:

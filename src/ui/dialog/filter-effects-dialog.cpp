@@ -435,10 +435,10 @@ public:
             if(SP_IS_FECONVOLVEMATRIX(o)) {
                 SPFeConvolveMatrix* conv = SP_FECONVOLVEMATRIX(o);
                 int cols, rows;
-                cols = (int)conv->order.getNumber();
+                cols = (int)conv->get_order().getNumber();
                 if(cols > 5)
                     cols = 5;
-                rows = conv->order.optNumber_set ? (int)conv->order.getOptNumber() : cols;
+                rows = conv->get_order().optNumIsSet() ? (int)conv->get_order().getOptNumber() : cols;
                 update(o, rows, cols);
             }
             else if(SP_IS_FECOLORMATRIX(o))
@@ -467,11 +467,11 @@ private:
 
         _tree.remove_all_columns();
 
-        std::vector<gdouble>* values = nullptr;
+        std::vector<gdouble> const *values = nullptr;
         if(SP_IS_FECOLORMATRIX(o))
-            values = &SP_FECOLORMATRIX(o)->values;
+            values = &SP_FECOLORMATRIX(o)->get_values();
         else if(SP_IS_FECONVOLVEMATRIX(o))
-            values = &SP_FECONVOLVEMATRIX(o)->kernelMatrix;
+            values = &SP_FECONVOLVEMATRIX(o)->get_kernel_matrix();
         else
             return;
 
@@ -542,7 +542,7 @@ public:
         if(SP_IS_FECOLORMATRIX(o)) {
             SPFeColorMatrix* col = SP_FECOLORMATRIX(o);
             remove();
-            switch(col->type) {
+            switch(col->get_type()) {
                 case COLORMATRIX_SATURATE:
                     add(_saturation);
                     if(_use_stored)
@@ -1689,7 +1689,7 @@ FilterEffectsDialog::CellRendererConnection::CellRendererConnection()
     , _primitive(*this, "primitive", nullptr)
 {}
 
-Glib::PropertyProxy<void*> FilterEffectsDialog::CellRendererConnection::property_primitive()
+Glib::PropertyProxy<SPFilterPrimitive*> FilterEffectsDialog::CellRendererConnection::property_primitive()
 {
     return _primitive.get_proxy();
 }
@@ -1715,8 +1715,8 @@ void FilterEffectsDialog::CellRendererConnection::get_preferred_height_vfunc(Gtk
                                                                              int& natural_height) const
 {
     // Scale the height depending on the number of inputs, unless it's
-    // the first primitive, in which case there are no connections
-    SPFilterPrimitive* prim = SP_FILTER_PRIMITIVE(_primitive.get_value());
+    // the first primitive, in which case there are no connections.
+    auto prim = _primitive.get_value();
     minimum_height = natural_height = size * input_count(prim);
 }
 
@@ -2215,11 +2215,11 @@ const Gtk::TreeIter FilterEffectsDialog::PrimitiveList::find_result(const Gtk::T
             image = prim->image_in;
         else if(attr == SPAttr::IN2) {
             if(SP_IS_FEBLEND(prim))
-                image = SP_FEBLEND(prim)->in2;
+                image = SP_FEBLEND(prim)->get_in2();
             else if(SP_IS_FECOMPOSITE(prim))
-                image = SP_FECOMPOSITE(prim)->in2;
+                image = SP_FECOMPOSITE(prim)->get_in2();
             else if(SP_IS_FEDISPLACEMENTMAP(prim))
-                image = SP_FEDISPLACEMENTMAP(prim)->in2;
+                image = SP_FEDISPLACEMENTMAP(prim)->get_in2();
             else
                 return target;
         }
@@ -2460,15 +2460,15 @@ static void check_single_connection(SPFilterPrimitive* prim, const int result)
         }
 
         if (SP_IS_FEBLEND(prim)) {
-            if (SP_FEBLEND(prim)->in2 == result) {
+            if (SP_FEBLEND(prim)->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
         } else if (SP_IS_FECOMPOSITE(prim)) {
-            if (SP_FECOMPOSITE(prim)->in2 == result) {
+            if (SP_FECOMPOSITE(prim)->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
         } else if (SP_IS_FEDISPLACEMENTMAP(prim)) {
-            if (SP_FEDISPLACEMENTMAP(prim)->in2 == result) {
+            if (SP_FEDISPLACEMENTMAP(prim)->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
         }
@@ -3087,12 +3087,11 @@ void FilterEffectsDialog::update_settings_view()
 void FilterEffectsDialog::update_settings_sensitivity()
 {
     SPFilterPrimitive* prim = _primitive_list.get_selected();
-    const bool use_k = SP_IS_FECOMPOSITE(prim) && SP_FECOMPOSITE(prim)->composite_operator == COMPOSITE_ARITHMETIC;
+    bool use_k = SP_IS_FECOMPOSITE(prim) && SP_FECOMPOSITE(prim)->get_composite_operator() == COMPOSITE_ARITHMETIC;
     _k1->set_sensitive(use_k);
     _k2->set_sensitive(use_k);
     _k3->set_sensitive(use_k);
     _k4->set_sensitive(use_k);
-
 }
 
 void FilterEffectsDialog::update_color_matrix()
