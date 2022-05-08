@@ -46,6 +46,16 @@ void DrawingGlyphs::setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom
     _font = std::move(font);
     _glyph = glyph;
 
+    // Load pathvectors and pixbufs in advance.
+    if (_font) {
+        pathvec     = _font->PathVector(_glyph);
+        pathvec_ref = _font->PathVector(42);
+
+        if (_font->FontHasSVG()) {
+            pixbuf = _font->PixBuf(_glyph);
+        }
+    }
+
     _markForUpdate(STATE_ALL, false);
 }
 
@@ -90,15 +100,15 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
     above and below the max/min y positions of the letters to place the text decorations.*/
 
     Geom::Rect b;
-    if (_drawable) {
-        Geom::OptRect tiltb = bounds_exact(*_font->PathVector(_glyph));
+    if (pathvec) {
+        Geom::OptRect tiltb = Geom::bounds_exact(*pathvec);
         if (tiltb) {
-            Geom::Rect bigbox(Geom::Point(tiltb->left(),-_dsc*scale_bigbox*1.1),Geom::Point(tiltb->right(),_asc*scale_bigbox*1.1));
+            Geom::Rect bigbox(Geom::Point(tiltb->left(), -_dsc * scale_bigbox * 1.1), Geom::Point(tiltb->right(), _asc * scale_bigbox * 1.1));
             b = bigbox * ctx.ctm;
         }
     }
     if (b.hasZeroArea()) { // Fallback, spaces mostly
-        Geom::Rect bigbox(Geom::Point(0.0, -_dsc*scale_bigbox*1.1),Geom::Point(_width*scale_bigbox, _asc*scale_bigbox*1.1));
+        Geom::Rect bigbox(Geom::Point(0.0, -_dsc * scale_bigbox * 1.1),  Geom::Point(_width * scale_bigbox, _asc * scale_bigbox * 1.1));
         b = bigbox * ctx.ctm;
     }
 
@@ -112,23 +122,17 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
     */
 
     Geom::OptRect pb;
-    if (_drawable) {
-        auto glyphv = _font->PathVector(_glyph);
-        if (glyphv && !glyphv->empty()) {
-            pb = bounds_exact_transformed(*glyphv, ctx.ctm);
+    if (pathvec) {
+        if (!pathvec->empty()) {
+            pb = bounds_exact_transformed(*pathvec, ctx.ctm);
         }
-        glyphv = _font->PathVector(42);
-        if (glyphv && !glyphv->empty()) {
-            if (pb) {
-                pb.unionWith(bounds_exact_transformed(*glyphv, ctx.ctm));
-            } else {
-                pb = bounds_exact_transformed(*glyphv, ctx.ctm);
-            }
-            pb.expandTo(Geom::Point((*pb).right() + (_width * ctx.ctm.descrim()), (*pb).bottom()));
+        if (pathvec_ref && !pathvec_ref->empty()) {
+            pb.unionWith(bounds_exact_transformed(*pathvec_ref, ctx.ctm));
+            pb.expandTo(Geom::Point(pb->right() + (_width * ctx.ctm.descrim()), pb->bottom()));
         }
     }
     if (!pb) { // Fallback
-        Geom::Rect pbigbox(Geom::Point(0.0, _asc*scale_bigbox*0.66),Geom::Point(_width*scale_bigbox, 0.0));
+        Geom::Rect pbigbox(Geom::Point(0.0, _asc * scale_bigbox * 0.66),Geom::Point(_width * scale_bigbox, 0.0));
         pb = pbigbox * ctx.ctm;
     }
  
@@ -156,17 +160,17 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
         if (_transform) {
             scale /= _transform->descrim(); // FIXME temporary hack
         }
-        float width = MAX(0.125, ggroup->_nrstyle.stroke_width * scale);
-        if ( fabs(ggroup->_nrstyle.stroke_width * scale) > 0.01 ) { // FIXME: this is always true
+        float width = std::max<double>(0.125, ggroup->_nrstyle.stroke_width * scale);
+        if (std::fabs(ggroup->_nrstyle.stroke_width * scale) > 0.01) { // FIXME: this is always true
             b.expandBy(0.5 * width);
             pb->expandBy(0.5 * width);
         }
 
-       // save bbox without miters for picking
+        // save bbox without miters for picking
         _pick_bbox = pb->roundOutwards();
 
         float miterMax = width * ggroup->_nrstyle.miter_limit;
-        if ( miterMax > 0.01 ) {
+        if (miterMax > 0.01) {
             // grunt mode. we should compute the various miters instead
             // (one for each point on the curve)
             b.expandBy(miterMax);
@@ -176,6 +180,7 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
         _bbox = b.roundOutwards();
         _pick_bbox = pb->roundOutwards();
     }
+
     return STATE_ALL;
 }
 
@@ -186,8 +191,8 @@ DrawingItem *DrawingGlyphs::_pickItem(Geom::Point const &p, double /*delta*/, un
         throw InvalidItemException();
     }
     DrawingItem *result = nullptr;
-    bool invisible = (ggroup->_nrstyle.fill.type == NRStyle::PAINT_NONE) &&
-        (ggroup->_nrstyle.stroke.type == NRStyle::PAINT_NONE);
+    bool invisible = ggroup->_nrstyle.fill.type == NRStyle::PAINT_NONE &&
+                     ggroup->_nrstyle.stroke.type == NRStyle::PAINT_NONE;
 
     if (_font && _bbox && (_drawing.outline() || _drawing.getOutlineSensitive() || !invisible)) {
         // With text we take a simple approach: pick if the point is in a character bbox
@@ -229,7 +234,6 @@ bool DrawingText::addComponent(std::shared_ptr<FontInstance> const &font, int gl
     _markForRendering();
     DrawingGlyphs *ng = new DrawingGlyphs(_drawing);
     ng->setGlyph(font, glyph, trans);
-    ng->_drawable = font->PathVector(glyph);
     ng->_width  = width;   // used especially when _drawable = false, otherwise, it is the advance of the font
     ng->_asc    = ascent;  // of font, not of this one character
     ng->_dsc    = descent; // of font, not of this one character
@@ -465,8 +469,8 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
             // skip glyphs with singular transforms
             if (g->_ctm.isSingular()) continue;
             dc.transform(g->_ctm);
-            if(g->_drawable){
-                dc.path(*g->_font->PathVector(g->_glyph));
+            if (g->pathvec){
+                dc.path(*g->pathvec);
                 dc.fill();
             }
         }
@@ -595,10 +599,10 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
             Inkscape::DrawingContext::Save save(dc);
             if (g->_ctm.isSingular()) continue;
             dc.transform(g->_ctm);
-            if (g->_drawable) {
+            if (g->pathvec) {
                 if (g->_font->FontHasSVG()) {
-                    if (auto pixbuf = g->_font->PixBuf(g->_glyph)) {
-                        // Geom::OptRect box = bounds_exact(*g->_font->PathVector(g->_glyph));
+                    if (g->pixbuf) {
+                        // Geom::OptRect box = bounds_exact(*g->pathvec);
                         // if (box) {
                         //     Inkscape::DrawingContext::Save save(dc);
                         //     dc.newPath();
@@ -613,15 +617,15 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
                             if (scale <= 0) scale = 1000;
                             Inkscape::DrawingContext::Save save(dc);
                             dc.translate(0, 1);
-                            dc.scale(1.0/scale, -1.0/scale);
-                            dc.setSource(pixbuf->getSurfaceRaw(), 0, 0);
+                            dc.scale(1.0 / scale, -1.0 / scale);
+                            dc.setSource(g->pixbuf->getSurfaceRaw(), 0, 0);
                             dc.paint(1);
                         }
                     } else {
-                        dc.path(*g->_font->PathVector(g->_glyph));
+                        dc.path(*g->pathvec);
                     }
                 } else {
-                    dc.path(*g->_font->PathVector(g->_glyph));
+                    dc.path(*g->pathvec);
                 }
             }
         }
@@ -722,8 +726,8 @@ void DrawingText::_clipItem(DrawingContext &dc, Geom::IntRect const &/*area*/)
 
         Inkscape::DrawingContext::Save save(dc);
         dc.transform(g->_ctm);
-        if(g->_drawable){
-            dc.path(*g->_font->PathVector(g->_glyph));
+        if (g->pathvec){
+            dc.path(*g->pathvec);
         }
     }
     dc.fill();

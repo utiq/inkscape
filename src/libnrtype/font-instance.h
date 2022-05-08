@@ -103,6 +103,11 @@ public:
     auto get_font() const { return p_font; }
 
 private:
+    void acquire(PangoFont *p_font, PangoFontDescription *descr);
+    void release();
+    void init_face();
+    void find_font_metrics(); // Find ascent, descent, x-height, and baselines.
+
     /*
      * Resources
      */
@@ -155,15 +160,6 @@ private:
 
     // Lookup table mapping pango glyph ids to glyphs.
     std::unordered_map<int, std::unique_ptr<FontGlyph const>> glyphs;
-
-    /*
-     * Internal functions
-     */
-
-    void acquire(PangoFont *p_font, PangoFontDescription *descr);
-    void release();
-    void init_face();
-    void find_font_metrics(); // Find ascent, descent, x-height, and baselines.
 };
 
 #endif // LIBNRTYPE_FONT_INSTANCE_H

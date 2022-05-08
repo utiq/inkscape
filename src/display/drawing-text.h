@@ -22,6 +22,8 @@ class FontInstance;
 
 namespace Inkscape {
 
+class Pixbuf;
+
 class DrawingGlyphs
     : public DrawingItem
 {
@@ -33,19 +35,21 @@ public:
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override; // Not to be used
     Geom::IntRect getPickBox() const { return _pick_bbox; };
 
-  protected:
-    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
-                                 unsigned flags, unsigned reset) override;
+protected:
+    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
 
     std::shared_ptr<FontInstance> _font;
     int            _glyph;
-    bool           _drawable;
     float          _width;          // These three are used to set up bounding box
     float          _asc;            //
     float          _dsc;            //
     float          _pl;             // phase length
     Geom::IntRect  _pick_bbox;
+
+    Geom::PathVector const *pathvec; // pathvector of actual glyph
+    Geom::PathVector const *pathvec_ref; // pathvector of reference glyph 42
+    Inkscape::Pixbuf const *pixbuf; // pixbuf, if SVG font
 
     friend class DrawingText;
 };
