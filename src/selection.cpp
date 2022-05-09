@@ -22,6 +22,8 @@
 #ifdef HAVE_CONFIG_H
 #endif
 
+#include <cmath>
+
 #include "inkscape.h"
 #include "preferences.h"
 #include "desktop.h"
@@ -174,6 +176,17 @@ std::vector<Inkscape::SnapCandidatePoint> Selection::getSnapPoints(SnapPreferenc
     }
 
     return p;
+}
+
+void Selection::setAnchor(double x, double y, bool set)
+{
+    double const epsilon = 1e-12;
+    if (std::fabs(anchor_x - x) > epsilon || std::fabs(anchor_y - y) > epsilon || set != has_anchor) {
+        anchor_x = x;
+        anchor_y = y;
+        has_anchor = set;
+        this->_emitModified(SP_OBJECT_MODIFIED_FLAG);
+    }
 }
 
 SPObject *Selection::_objectForXMLNode(Inkscape::XML::Node *repr) const {
