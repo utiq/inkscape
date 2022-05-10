@@ -357,7 +357,10 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
     // Step 2: get the number of windows; should be 1
     int windows_count = 0;
     try {
-        windows_count = keyfile->get_integer("Windows", "Count");
+        // we may have no 'Windows' initially when recreating floating dialog state (state is empty)
+        if (keyfile->has_group("Windows") && keyfile->has_key("Windows", "Count")) {
+            windows_count = keyfile->get_integer("Windows", "Count");
+        }
     } catch (Glib::Error &error) {
         std::cerr << G_STRFUNC << ": " << error.what().raw() << std::endl;
     }

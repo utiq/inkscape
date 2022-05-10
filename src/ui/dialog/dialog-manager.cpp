@@ -267,7 +267,7 @@ void DialogManager::restore_dialogs_state(DialogContainer *docking_container, bo
         }
         else {
             // state not available or not valid; prepare defaults
-            dialog_defaults();
+            dialog_defaults(docking_container);
         }
     } catch (Glib::Error &error) {
         std::cerr << G_STRFUNC << ": dialogs state not loaded - " << error.what().raw() << std::endl;
@@ -282,16 +282,18 @@ void DialogManager::remove_dialog_floating_state(const Glib::ustring& dialog_typ
 }
 
 // apply defaults when dialog state cannot be loaded / doesn't exist:
-// here we can define which dialogs should by default be open floating rather then docked
-void DialogManager::dialog_defaults() {
-    std::shared_ptr<Glib::KeyFile> floating;
-    // strings are dialog types
-    _floating_dialogs["CloneTiler"] = floating;
-    _floating_dialogs["DocumentProperties"] = floating;
-    _floating_dialogs["FilterEffects"] = floating;
-    _floating_dialogs["Input"] = floating;
-    _floating_dialogs["Preferences"] = floating;
-    _floating_dialogs["XMLEditor"] = floating;
+// here we load defaults from dedicated ini file
+void DialogManager::dialog_defaults(DialogContainer* docking_container) {
+    auto keyfile = std::make_unique<Glib::KeyFile>();
+    // default/initial state used when running Inkscape for the first time
+    std::string filename = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::UIS, "default-dialog-state.ini");
+    if (filesystem::exists(filename) && keyfile->load_from_file(filename)) {
+        // populate info about floating dialogs, so when users try opening them,
+        // they will pop up in a window, not docked
+        load_transient_state(keyfile.get());
+        // create docked dialogs only, if any
+        docking_container->load_container_state(keyfile.get(), false);
+    }
 }
 
 } // namespace Dialog
