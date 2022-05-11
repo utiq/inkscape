@@ -388,7 +388,7 @@ void sp_tref_update_text(SPTRef *tref)
         // Add this SPString as a child of the tref
         tref->attach(tref->stringChild, tref->lastChild());
         sp_object_unref(tref->stringChild, nullptr);
-        (tref->stringChild)->invoke_build(tref->document, newStringRepr, TRUE);
+        (tref->stringChild)->invoke_build(tref->document, newStringRepr, FALSE);
 
         Inkscape::GC::release(newStringRepr);
     }

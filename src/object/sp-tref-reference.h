@@ -14,6 +14,7 @@
  */
 
 #include <cstddef>
+#include <memory>
 #include <sigc++/sigc++.h>
 
 #include "sp-item.h"
@@ -59,7 +60,7 @@ public:
 protected:
     bool _acceptObject(SPObject * obj) const override; 
     
-    std::optional<Inkscape::XML::Subtree> subtreeObserved;
+    std::unique_ptr<Inkscape::XML::Subtree> subtreeObserved;
 };
 
 #endif // !SEEN_SP_TREF_REFERENCE_H
