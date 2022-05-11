@@ -1744,8 +1744,11 @@ bool SPDocument::addResource(gchar const *key, SPObject *object)
         [this check should be more generally presend on emit() calls since
         the backtrace is unusable with crashed from this cause]
         */
-        if(object->getId() || dynamic_cast<SPGroup*>(object) || dynamic_cast<SPPage*>(object) )
+        if (object->getId() || dynamic_cast<SPGroup*>(object) || dynamic_cast<SPPage*>(object)) {
             resources_changed_signals[q].emit();
+        } else {
+            pending_resource_changes.emplace(q);
+        }
 
         result = true;
     }
@@ -1785,6 +1788,15 @@ std::vector<SPObject *> const SPDocument::getResourceList(gchar const *key)
     g_return_val_if_fail(*key != '\0', emptyset);
 
     return resources[key];
+}
+
+void SPDocument::process_pending_resource_changes()
+{
+    while (!pending_resource_changes.empty()) {
+        auto q = pending_resource_changes.front();
+        pending_resource_changes.pop();
+        resources_changed_signals[q].emit();
+    }
 }
 
 /* Helpers */

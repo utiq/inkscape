@@ -852,6 +852,7 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
         g_assert(this->getId() == nullptr);
     }
 
+    this->document->process_pending_resource_changes();
 
     /* Signalling (should be connected AFTER processing derived methods */
     sp_repr_add_listener(repr, &object_event_vector, this);

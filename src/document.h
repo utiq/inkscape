@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <queue>
 
 #include <boost/ptr_container/ptr_list.hpp>
 
@@ -157,6 +158,7 @@ public:
     bool addResource(char const *key, SPObject *object);
     bool removeResource(char const *key, SPObject *object);
     std::vector<SPObject *> const getResourceList(char const *key);
+    void process_pending_resource_changes();
 
     void do_change_filename(char const *const filename, bool const rebase);
     void changeFilenameAndHrefs(char const *filename);
@@ -174,6 +176,8 @@ private:
     SPObject *_activexmltree;
 
     std::unique_ptr<Inkscape::PageManager> _page_manager;
+
+    std::queue<GQuark> pending_resource_changes;
 
 public:
     void importDefs(SPDocument *source);
