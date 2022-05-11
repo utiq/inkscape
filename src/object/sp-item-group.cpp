@@ -86,13 +86,10 @@ void SPGroup::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) 
         SPItem *item = dynamic_cast<SPItem *>(last_child);
         if ( item ) {
             /* TODO: this should be moved into SPItem somehow */
-            SPItemView *v;
-
-            for (v = this->display; v != nullptr; v = v->next) {
-                Inkscape::DrawingItem *ac = item->invoke_show (v->arenaitem->drawing(), v->key, v->flags);
-
+            for (auto &v : views) {
+                auto ac = item->invoke_show(v.drawingitem->drawing(), v.key, v.flags);
                 if (ac) {
-                    v->arenaitem->appendChild(ac);
+                    v.drawingitem->appendChild(ac);
                 }
             }
         }
@@ -100,14 +97,12 @@ void SPGroup::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) 
         SPItem *item = dynamic_cast<SPItem *>(get_child_by_repr(child));
         if ( item ) {
             /* TODO: this should be moved into SPItem somehow */
-            SPItemView *v;
             unsigned position = item->pos_in_parent();
 
-            for (v = this->display; v != nullptr; v = v->next) {
-                Inkscape::DrawingItem *ac = item->invoke_show (v->arenaitem->drawing(), v->key, v->flags);
-
+            for (auto &v : views) {
+                auto ac = item->invoke_show (v.drawingitem->drawing(), v.key, v.flags);
                 if (ac) {
-                    v->arenaitem->prependChild(ac);
+                    v.drawingitem->prependChild(ac);
                     ac->setZOrder(position);
                 }
             }
@@ -131,10 +126,9 @@ void SPGroup::order_changed (Inkscape::XML::Node *child, Inkscape::XML::Node *ol
     SPItem *item = dynamic_cast<SPItem *>(get_child_by_repr(child));
     if ( item ) {
         /* TODO: this should be moved into SPItem somehow */
-        SPItemView *v;
         unsigned position = item->pos_in_parent();
-        for ( v = item->display ; v != nullptr ; v = v->next ) {
-            v->arenaitem->setZOrder(position);
+        for (auto &v : item->views) {
+            v.drawingitem->setZOrder(position);
         }
     }
 
@@ -177,8 +171,8 @@ void SPGroup::update(SPCtx *ctx, unsigned int flags) {
     SPLPEItem::update(ctx, flags);
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-            Inkscape::DrawingGroup *group = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
+        for (auto &v : views) {
+            Inkscape::DrawingGroup *group = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
             if( this->parent ) {
                 this->context_style = this->parent->context_style;
             }
@@ -197,8 +191,8 @@ void SPGroup::modified(guint flags) {
     flags &= SP_OBJECT_MODIFIED_CASCADE;
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-            Inkscape::DrawingGroup *group = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
+        for (auto &v : views) {
+            Inkscape::DrawingGroup *group = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
             group->setStyle(this->style);
         }
     }
@@ -816,12 +810,11 @@ void SPGroup::setLayerDisplayMode(unsigned int dkey, SPGroup::LayerMode mode) {
 }
 
 void SPGroup::_updateLayerMode(unsigned int display_key) {
-    SPItemView *view;
-    for ( view = this->display ; view ; view = view->next ) {
-        if ( !display_key || view->key == display_key ) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(view->arenaitem);
+    for (auto &v : views) {
+        if (!display_key || v.key == display_key) {
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
             if (g) {
-                g->setPickChildren(effectiveLayerMode(view->key) == SPGroup::LAYER);
+                g->setPickChildren(effectiveLayerMode(v.key) == SPGroup::LAYER);
             }
         }
     }

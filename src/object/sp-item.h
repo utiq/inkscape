@@ -85,12 +85,11 @@ public:
     Inkscape::UI::View::SVGViewWidget* view;
 };
 
-class SPItemView {
-public:
-    SPItemView *next;
-    unsigned int flags;
-    unsigned int key;
-    Inkscape::DrawingItem *arenaitem;
+struct SPItemView
+{
+    unsigned flags;
+    unsigned key;
+    Inkscape::DrawingItem *drawingitem;
 };
 
 /* flags */
@@ -168,7 +167,7 @@ public:
     SPAvoidRef *avoidRef;
 
   public:
-    SPItemView *display;
+    std::vector<SPItemView> views;
 
     sigc::signal<void, Geom::Affine const *, SPItem *> _transformed_signal;
 

@@ -110,12 +110,12 @@ void SPFlowtext::update(SPCtx* ctx, unsigned int flags) {
 
     Geom::OptRect pbox = this->geometricBounds();
 
-    for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-        Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-        this->_clearFlow(g);
-        g->setStyle(this->style);
+    for (auto &v : views) {
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+        _clearFlow(g);
+        g->setStyle(style);
         // pass the bbox of the flowtext object as paintbox (used for paintserver fills)
-        this->layout.show(g, pbox);
+        layout.show(g, pbox);
     }
 }
 
@@ -132,8 +132,8 @@ void SPFlowtext::modified(unsigned int flags) {
     if (flags & ( SP_OBJECT_STYLE_MODIFIED_FLAG )) {
         Geom::OptRect pbox = geometricBounds();
 
-        for (SPItemView* v = display; v != nullptr; v = v->next) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
+        for (auto &v : views) {
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
             _clearFlow(g);
             g->setStyle(style);
             layout.show(g, pbox);
@@ -321,15 +321,15 @@ Inkscape::DrawingItem* SPFlowtext::show(Inkscape::Drawing &drawing, unsigned int
     return flowed;
 }
 
-void SPFlowtext::hide(unsigned int key) {
-    for (SPItemView* v = this->display; v != nullptr; v = v->next) {
-        if (v->key == key) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-            this->_clearFlow(g);
+void SPFlowtext::hide(unsigned key)
+{
+    for (auto &v : views) {
+        if (v.key == key) {
+            auto g = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
+            _clearFlow(g);
         }
     }
 }
-
 
 /*
  *

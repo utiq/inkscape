@@ -85,8 +85,8 @@ void SPShape::release() {
     for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
         if (this->_marker[i]) {
 
-            for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-                sp_marker_hide(_marker[i], v->arenaitem->key() + i);
+            for (auto &v : views) {
+                sp_marker_hide(_marker[i], v.drawingitem->key() + i);
             }
 
             this->_release_connect[i].disconnect();
@@ -138,16 +138,16 @@ void SPShape::update(SPCtx* ctx, guint flags) {
             double const aw = 1.0 / ictx->i2vp.descrim();
             this->style->stroke_width.computed = this->style->stroke_width.value * aw;
 
-            for (SPItemView *v = ((SPItem *) (this))->display; v != nullptr; v = v->next) {
-                Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v->arenaitem);
+            for (auto &v : views) {
+                auto sh = dynamic_cast<Inkscape::DrawingShape*>(v.drawingitem);
                 if (hasMarkers()) {
-                    this->context_style = this->style;
-                    sh->setStyle(this->style, this->context_style);
+                    context_style = style;
+                    sh->setStyle(style, context_style);
                     // Done at end:
                     // sh->setChildrenStyle(this->context_style); //Resolve 'context-xxx' in children.
-                } else if (this->parent) {
-                    this->context_style = this->parent->context_style;
-                    sh->setStyle(this->style, this->context_style);
+                } else if (parent) {
+                    context_style = parent->context_style;
+                    sh->setStyle(style, context_style);
                 }
             }
         }
@@ -156,9 +156,9 @@ void SPShape::update(SPCtx* ctx, guint flags) {
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_PARENT_MODIFIED_FLAG)) {
         /* This is suboptimal, because changing parent style schedules recalculation */
         /* But on the other hand - how can we know that parent does not tie style and transform */
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
+        for (auto &v : views) {
             if (flags & SP_OBJECT_MODIFIED_FLAG) {
-                auto sh = static_cast<Inkscape::DrawingShape *>(v->arenaitem);
+                auto sh = static_cast<Inkscape::DrawingShape *>(v.drawingitem);
                 sh->setPath(_curve);
             }
         }
@@ -167,28 +167,28 @@ void SPShape::update(SPCtx* ctx, guint flags) {
     if (this->hasMarkers ()) {
 
         /* Dimension marker views */
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-            if (!v->arenaitem->key()) {
-                v->arenaitem->setKey(SPItem::display_key_new (SP_MARKER_LOC_QTY));
+        for (auto &v : views) {
+            if (!v.drawingitem->key()) {
+                v.drawingitem->setKey(SPItem::display_key_new (SP_MARKER_LOC_QTY));
             }
 
             for (int i = 0 ; i < SP_MARKER_LOC_QTY ; i++) {
                 if (_marker[i]) {
                     sp_marker_show_dimension(_marker[i],
-                                             v->arenaitem->key() + i,
+                                             v.drawingitem->key() + i,
                                              numberOfMarkers(i));
                 }
             }
         }
 
         /* Update marker views */
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-            sp_shape_update_marker_view (this, v->arenaitem);
+        for (auto &v : views) {
+            sp_shape_update_marker_view (this, v.drawingitem);
         }
     
         // Marker selector needs this here or marker previews are not rendered.
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v->arenaitem);
+        for (auto &v : views) {
+            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v.drawingitem);
 
             sh->setChildrenStyle(this->context_style); // Resolve 'context-xxx' in children.
         }
@@ -438,8 +438,8 @@ void SPShape::modified(unsigned int flags) {
     SPLPEItem::modified(flags);
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v->arenaitem);
+        for (auto &v : views) {
+            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v.drawingitem);
             if (hasMarkers()) {
                 this->context_style = this->style;
                 sh->setStyle(this->style, this->context_style);
@@ -942,12 +942,13 @@ Inkscape::DrawingItem* SPShape::show(Inkscape::Drawing &drawing, unsigned int /*
 /**
  * Sets style, path, and paintbox.  Updates marker views, including dimensions.
  */
-void SPShape::hide(unsigned int key) {
+void SPShape::hide(unsigned key)
+{
     for (int i = 0; i < SP_MARKER_LOC_QTY; ++i) {
         if (_marker[i]) {
-            for (SPItemView* v = display; v != nullptr; v = v->next) {
-                if (key == v->key) {
-                    sp_marker_hide(_marker[i], v->arenaitem->key() + i);
+            for (auto &v : views) {
+                if (key == v.key) {
+                    sp_marker_hide(_marker[i], v.drawingitem->key() + i);
                 }
             }
         }
@@ -1051,10 +1052,9 @@ sp_shape_marker_release (SPObject *marker, SPShape *shape)
 
     for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
         if (marker == shape->_marker[i]) {
-            SPItemView *v;
             /* Hide marker */
-            for (v = item->display; v != nullptr; v = v->next) {
-                sp_marker_hide(shape->_marker[i], v->arenaitem->key() + i);
+            for (auto &v : item->views) {
+                sp_marker_hide(shape->_marker[i], v.drawingitem->key() + i);
             }
             /* Detach marker */
             shape->_release_connect[i].disconnect();
@@ -1096,16 +1096,13 @@ sp_shape_set_marker (SPObject *object, unsigned int key, const gchar *value)
     SPMarker *marker = dynamic_cast<SPMarker *>(mrk);
     if (marker != shape->_marker[key]) {
         if (shape->_marker[key]) {
-            SPItemView *v;
-
             /* Detach marker */
             shape->_release_connect[key].disconnect();
             shape->_modified_connect[key].disconnect();
 
             /* Hide marker */
-            for (v = shape->display; v != nullptr; v = v->next) {
-                sp_marker_hide(shape->_marker[key],
-                               v->arenaitem->key() + key);
+            for (auto &v : shape->views) {
+                sp_marker_hide(shape->_marker[key], v.drawingitem->key() + key);
             }
 
             /* Unref marker */

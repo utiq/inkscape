@@ -612,11 +612,10 @@ void SPUse::href_changed() {
 
                 this->child->invoke_build(refobj->document, childrepr, TRUE);
 
-                for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-                    Inkscape::DrawingItem *ai = this->child->invoke_show(v->arenaitem->drawing(), v->key, v->flags);
-
+                for (auto &v : views) {
+                    auto ai = this->child->invoke_show(v.drawingitem->drawing(), v.key, v.flags);
                     if (ai) {
-                        v->arenaitem->prependChild(ai);
+                        v.drawingitem->prependChild(ai);
                     }
                 }
             } else {
@@ -687,17 +686,17 @@ void SPUse::update(SPCtx *ctx, unsigned flags) {
     SPItem::update(ctx, flags);
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
-        for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-            this->context_style = this->style;
-            g->setStyle(this->style, this->context_style);
+        for (auto &v : views) {
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+            context_style = style;
+            g->setStyle(style, context_style);
         }
     }
 
     /* As last step set additional transform of arena group */
-    for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-        Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-        Geom::Affine t(Geom::Translate(this->x.computed, this->y.computed));
+    for (auto &v : views) {
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+        auto t = Geom::Translate(x.computed, y.computed);
         g->setChildTransform(t);
     }
 }
@@ -711,10 +710,10 @@ void SPUse::modified(unsigned int flags) {
     flags &= SP_OBJECT_MODIFIED_CASCADE;
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
-      for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-        Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-        this->context_style = this->style;
-        g->setStyle(this->style, this->context_style);
+      for (auto &v : views) {
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+        context_style = style;
+        g->setStyle(style, context_style);
       }
     }
 

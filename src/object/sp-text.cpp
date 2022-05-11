@@ -194,12 +194,12 @@ void SPText::update(SPCtx *ctx, guint flags) {
 
         Geom::OptRect paintbox = this->geometricBounds();
 
-        for (SPItemView* v = this->display; v != nullptr; v = v->next) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-            this->_clearFlow(g);
-            g->setStyle(this->style, this->parent->style);
+        for (auto &v : views) {
+            auto g = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
+            _clearFlow(g);
+            g->setStyle(style, parent->style);
             // pass the bbox of this as paintbox (used for paintserver fills)
-            this->layout.show(g, paintbox);
+            layout.show(g, paintbox);
         }
     }
 }
@@ -218,13 +218,13 @@ void SPText::modified(guint flags) {
     // text this. Therefore we do here the same as in _update, that is, destroy all items
     // and create new ones. This is probably quite wasteful.
     if (flags & ( SP_OBJECT_STYLE_MODIFIED_FLAG )) {
-        Geom::OptRect paintbox = this->geometricBounds();
+        Geom::OptRect paintbox = geometricBounds();
 
-        for (SPItemView* v = this->display; v != nullptr; v = v->next) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-            this->_clearFlow(g);
-            g->setStyle(this->style, this->parent->style);
-            this->layout.show(g, paintbox);
+        for (auto &v : views) {
+            auto g = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
+            _clearFlow(g);
+            g->setStyle(style, parent->style);
+            layout.show(g, paintbox);
         }
     }
 
@@ -313,11 +313,12 @@ Inkscape::DrawingItem* SPText::show(Inkscape::Drawing &drawing, unsigned /*key*/
 }
 
 
-void SPText::hide(unsigned int key) {
-    for (SPItemView* v = this->display; v != nullptr; v = v->next) {
-        if (v->key == key) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-            this->_clearFlow(g);
+void SPText::hide(unsigned key)
+{
+    for (auto &v : views) {
+        if (v.key == key) {
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+            _clearFlow(g);
         }
     }
 }

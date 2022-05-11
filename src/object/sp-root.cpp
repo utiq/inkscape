@@ -286,9 +286,9 @@ void SPRoot::update(SPCtx *ctx, guint flags)
     SPGroup::update((SPCtx *) &rctx, flags);
 
     /* As last step set additional transform of drawing group */
-    for (SPItemView *v = this->display; v != nullptr; v = v->next) {
-        Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v->arenaitem);
-        g->setChildTransform(this->c2p);
+    for (auto &v : views) {
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+        g->setChildTransform(c2p);
     }
 }
 
