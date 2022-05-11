@@ -415,28 +415,27 @@ private:
     mutable bool _is_evaluated;
     mutable EvaluatedStatus _evaluated_status;
 
-    static SPItemView *sp_item_view_new_prepend(SPItemView *list, SPItem *item, unsigned flags, unsigned key, Inkscape::DrawingItem *arenaitem);
-    static void clip_ref_changed(SPObject *old_clip, SPObject *clip, SPItem *item);
-    static void mask_ref_changed(SPObject *old_clip, SPObject *clip, SPItem *item);
-    static void fill_ps_ref_changed(SPObject *old_clip, SPObject *clip, SPItem *item);
-    static void stroke_ps_ref_changed(SPObject *old_clip, SPObject *clip, SPItem *item);
+    void clip_ref_changed(SPObject *old_clip, SPObject *clip);
+    void mask_ref_changed(SPObject *old_clip, SPObject *clip);
+    void fill_ps_ref_changed(SPObject *old_clip, SPObject *clip);
+    void stroke_ps_ref_changed(SPObject *old_clip, SPObject *clip);
 
 public:
-        void rotate_rel(Geom::Rotate const &rotation);
-        void scale_rel(Geom::Scale const &scale);
-        void skew_rel(double skewX, double skewY);
-        void move_rel( Geom::Translate const &tr);
+    void rotate_rel(Geom::Rotate const &rotation);
+    void scale_rel(Geom::Scale const &scale);
+    void skew_rel(double skewX, double skewY);
+    void move_rel( Geom::Translate const &tr);
 	void build(SPDocument *document, Inkscape::XML::Node *repr) override;
 	void release() override;
 	void set(SPAttr key, char const* value) override;
 	void update(SPCtx *ctx, unsigned int flags) override;
-        void modified(unsigned int flags) override;
+    void modified(unsigned int flags) override;
 	Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
 
 	virtual Geom::OptRect bbox(Geom::Affine const &transform, SPItem::BBoxType type) const;
 	virtual void print(SPPrintContext *ctx);
-        virtual const char* typeName() const;
-        virtual const char* displayName() const;
+    virtual const char* typeName() const;
+    virtual const char* displayName() const;
 	virtual char* description() const;
 	virtual Inkscape::DrawingItem* show(Inkscape::Drawing &drawing, unsigned int key, unsigned int flags);
 	virtual void hide(unsigned int key);
@@ -447,7 +446,6 @@ public:
 
     virtual int event(SPEvent *event);
 };
-
 
 // Utility
 

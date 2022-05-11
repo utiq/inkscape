@@ -81,23 +81,29 @@ SPItem::SPItem() : SPObject() {
     clip_ref = nullptr;
     mask_ref = nullptr;
 
-    style->signal_fill_ps_changed.connect(sigc::bind(sigc::ptr_fun(fill_ps_ref_changed), this));
-    style->signal_stroke_ps_changed.connect(sigc::bind(sigc::ptr_fun(stroke_ps_ref_changed), this));
+    style->signal_fill_ps_changed.connect([this] (auto old_obj, auto obj) { fill_ps_ref_changed(old_obj, obj); });
+    style->signal_stroke_ps_changed.connect([this] (auto old_obj, auto obj) { stroke_ps_ref_changed(old_obj, obj); });
 
     avoidRef = nullptr;
 }
 
 SPItem::~SPItem() = default;
 
-SPClipPath *SPItem::getClipObject() const { return clip_ref ? clip_ref->getObject() : nullptr; }
+SPClipPath *SPItem::getClipObject() const
+{
+    return clip_ref ? clip_ref->getObject() : nullptr;
+}
 
-SPMask *SPItem::getMaskObject() const { return mask_ref ? mask_ref->getObject() : nullptr; }
+SPMask *SPItem::getMaskObject() const
+{
+    return mask_ref ? mask_ref->getObject() : nullptr;
+}
 
 SPMaskReference &SPItem::getMaskRef()
 {
     if (!mask_ref) {
         mask_ref = new SPMaskReference(this);
-        mask_ref->changedSignal().connect(sigc::bind(sigc::ptr_fun(mask_ref_changed), this));
+        mask_ref->changedSignal().connect([this] (auto old_obj, auto obj) { mask_ref_changed(old_obj, obj); });
     }
 
     return *mask_ref;
@@ -107,7 +113,7 @@ SPClipPathReference &SPItem::getClipRef()
 {
     if (!clip_ref) {
         clip_ref = new SPClipPathReference(this);
-        clip_ref->changedSignal().connect(sigc::bind(sigc::ptr_fun(clip_ref_changed), this));
+        clip_ref->changedSignal().connect([this] (auto old_obj, auto obj) { clip_ref_changed(old_obj, obj); });
     }
 
     return *clip_ref;
@@ -561,12 +567,12 @@ void SPItem::set(SPAttr key, gchar const* value) {
 #endif
 }
 
-void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip, SPItem *item)
+void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip)
 {
-    item->bbox_valid = FALSE; // force a re-evaluation
+    bbox_valid = FALSE; // force a re-evaluation
     if (old_clip) {
         /* Hide clippath */
-        for (auto &v : item->views) {
+        for (auto &v : views) {
             SPClipPath *oldPath = dynamic_cast<SPClipPath *>(old_clip);
             g_assert(oldPath != nullptr);
             oldPath->hide(v.drawingitem->key());
@@ -574,8 +580,8 @@ void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip, SPItem *item)
     }
     SPClipPath *clipPath = dynamic_cast<SPClipPath *>(clip);
     if (clipPath) {
-        Geom::OptRect bbox = item->geometricBounds();
-        for (auto &v : item->views) {
+        Geom::OptRect bbox = geometricBounds();
+        for (auto &v : views) {
             if (!v.drawingitem->key()) {
                 v.drawingitem->setKey(SPItem::display_key_new(3));
             }
@@ -587,15 +593,15 @@ void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip, SPItem *item)
             clip->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }
-    item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
 
-void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask, SPItem *item)
+void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask)
 {
-    item->bbox_valid = FALSE; // force a re-evaluation
+    bbox_valid = FALSE; // force a re-evaluation
     if (old_mask) {
         /* Hide mask */
-        for (auto &v : item->views) {
+        for (auto &v : views) {
             SPMask *maskItem = dynamic_cast<SPMask *>(old_mask);
             g_assert(maskItem != nullptr);
             maskItem->sp_mask_hide(v.drawingitem->key());
@@ -603,8 +609,8 @@ void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask, SPItem *item)
     }
     SPMask *maskItem = dynamic_cast<SPMask *>(mask);
     if (maskItem) {
-        Geom::OptRect bbox = item->geometricBounds();
-        for (auto &v : item->views) {
+        Geom::OptRect bbox = geometricBounds();
+        for (auto &v : views) {
             if (!v.drawingitem->key()) {
                 v.drawingitem->setKey(SPItem::display_key_new(3));
             }
@@ -618,18 +624,19 @@ void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask, SPItem *item)
     }
 }
 
-void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps, SPItem *item) {
+void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps)
+{
     SPPaintServer *old_fill_ps = dynamic_cast<SPPaintServer *>(old_ps);
     if (old_fill_ps) {
-        for (auto &v : item->views) {
+        for (auto &v : views) {
             old_fill_ps->hide(v.drawingitem->key());
         }
     }
 
     SPPaintServer *new_fill_ps = dynamic_cast<SPPaintServer *>(ps);
     if (new_fill_ps) {
-        Geom::OptRect bbox = item->geometricBounds();
-        for (auto &v : item->views) {
+        Geom::OptRect bbox = geometricBounds();
+        for (auto &v : views) {
             if (!v.drawingitem->key()) {
                 v.drawingitem->setKey(SPItem::display_key_new(3));
             }
@@ -643,18 +650,19 @@ void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps, SPItem *item) {
     }
 }
 
-void SPItem::stroke_ps_ref_changed(SPObject *old_ps, SPObject *ps, SPItem *item) {
+void SPItem::stroke_ps_ref_changed(SPObject *old_ps, SPObject *ps)
+{
     SPPaintServer *old_stroke_ps = dynamic_cast<SPPaintServer *>(old_ps);
     if (old_stroke_ps) {
-        for (auto &v : item->views) {
+        for (auto &v : views) {
             old_stroke_ps->hide(v.drawingitem->key());
         }
     }
 
     SPPaintServer *new_stroke_ps = dynamic_cast<SPPaintServer *>(ps);
     if (new_stroke_ps) {
-        Geom::OptRect bbox = item->geometricBounds();
-        for (auto &v : item->views) {
+        Geom::OptRect bbox = geometricBounds();
+        for (auto &v : views) {
             if (!v.drawingitem->key()) {
                 v.drawingitem->setKey(SPItem::display_key_new(3));
             }
