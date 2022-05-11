@@ -477,6 +477,11 @@ private:
     sigc::signal<void> destroySignal;
 
 public:
+    /**
+     * @brief Add the observer to the document's undo listener
+     * The caller is in charge of freeing any memory allocated to the observer
+     * @param observer
+     */
     void addUndoObserver(Inkscape::UndoStackObserver& observer);
     void removeUndoObserver(Inkscape::UndoStackObserver& observer);
 
