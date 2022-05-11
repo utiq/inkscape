@@ -224,6 +224,13 @@ Application::Application(bool use_gui) :
     if(!ui_language.empty())
     {
         setenv("LANGUAGE", ui_language, true);
+#ifdef _WIN32
+        // locale may be set to C with some Windows Region Formats (like English(Europe)).
+        // forcing the LANGUAGE variable to be ignored
+        // see :guess_category_value:gettext-runtime/intl/dcigettext.c,
+        // and :gl_locale_name_from_win32_LANGID:gettext-runtime/gnulib-lib/localename.c
+        setenv("LANG", ui_language, true);
+#endif
     }
 
     /* DebugDialog redirection.  On Linux, default to OFF, on Win32, default to ON.
