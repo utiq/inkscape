@@ -1326,7 +1326,21 @@ void Effect::doOnBeforeCommit()
         }
     }
     if (lpe_action == LPE_ERASE || lpe_action == LPE_TO_OBJECTS) {
-        satelltelist.clear();
+        Inkscape::LivePathEffect::SatelliteArrayParam *lpesatellites = nullptr;
+        Inkscape::LivePathEffect::OriginalSatelliteParam *lpesatellite = nullptr;
+        std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
+        for (p = param_vector.begin(); p != param_vector.end(); ++p) {
+            lpesatellites = dynamic_cast<SatelliteArrayParam *>(*p);
+            lpesatellite = dynamic_cast<OriginalSatelliteParam *>(*p);
+            if (lpesatellites) {
+                lpesatellites->clear();
+                lpesatellites->write_to_SVG();
+            }
+            if (lpesatellite) {
+                lpesatellite->unlink();
+                lpesatellite->write_to_SVG();
+            }
+        }
     }
     if (sp_lpe_item) {
         sp_lpe_item_enable_path_effects(sp_lpe_item, true);

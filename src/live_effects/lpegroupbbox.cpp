@@ -55,7 +55,7 @@ GroupBBoxEffect::clip_mask_bbox(SPLPEItem *item, Geom::Affine transform)
     return bbox;
 }
 
-void GroupBBoxEffect::original_bbox(SPLPEItem const* lpeitem, bool absolute, bool clip_mask)
+void GroupBBoxEffect::original_bbox(SPLPEItem const* lpeitem, bool absolute, bool clip_mask, Geom::Affine base_transform)
 {
     // Get item bounding box
     Geom::Affine transform;
@@ -63,7 +63,7 @@ void GroupBBoxEffect::original_bbox(SPLPEItem const* lpeitem, bool absolute, boo
         transform = lpeitem->i2doc_affine();
     }
     else {
-        transform = Geom::identity();
+        transform = base_transform;
     }
     
     Geom::OptRect bbox = lpeitem->geometricBounds(transform);

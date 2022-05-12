@@ -223,7 +223,7 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
         if (!gap_bbox) {
             return;
         }
-        Geom::Point center = (*gap_bbox).midpoint();
+        Geom::Point center = (*gap_bbox).midpoint() * transformoriginal.inverse();
         bool forcewrite = false;
         Geom::Affine origin = Geom::Translate(center).inverse();
         if (!interpolate_rotatex && !interpolate_rotatey && !random_rotate) {
@@ -244,9 +244,16 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
         double yset = 0;
         Geom::OptRect prev_bbox;
         Geom::OptRect bbox = sp_lpe_item->geometricBounds();
+
+        Geom::Affine base_transform = sp_item_transform_repr(sp_lpe_item);
+        Geom::Affine gapp = base_transform.inverse() * transformoriginal;
+        Geom::Point spcenter_base = (*sp_lpe_item->geometricBounds(transformoriginal)).midpoint();
+        Geom::Point spcenter = (*sp_lpe_item->geometricBounds(base_transform)).midpoint();
+        Geom::Affine gap = gapp.withoutTranslation();
         if (!bbox) {
             return;
         }
+        (*bbox) *= transformoriginal;
         for (int i = 0; i < num_rows; ++i) {
             double fracy = 1;
             if (num_rows != 1) {
@@ -259,9 +266,7 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                     fracx = j/(double)(num_cols - 1);
                 }
                 Geom::Affine r = Geom::identity();
-                r *= Geom::Translate(center).inverse();
-                r *= affinebase.inverse();
-                r *= Geom::Translate(center);
+                Geom::Scale mirror = Geom::Scale(1,1);
                 if(mirrorrowsx || mirrorrowsy || mirrorcolsx || mirrorcolsy) {
                     gint mx = 1;
                     gint my = 1;
@@ -283,9 +288,7 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                             my = j%2 != 0 ? -1 : 1;
                         }
                     }
-                    r *= Geom::Translate(center).inverse();
-                    r *= Geom::Scale(mx, my);
-                    r *= Geom::Translate(center);
+                    mirror = Geom::Scale(mx, my);
                 }
                 if (mirrortrans && interpolate_scalex && i%2 != 0) {
                     fracx = 1-fracx;
@@ -320,21 +323,39 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                 } else {
                     scalein = scaleok;
                 }
-                r *= Geom::Translate(center).inverse();
                 if (!interpolate_rotatex && !interpolate_rotatey && !random_rotate) {
                     r *= Geom::Rotate::from_degrees(rotatein).inverse();
                 }
                 if (random_scale && scaleok != 1.0) {
-                    double max = std::max(1.0, scaleok);
-                    double min = std::min(1.0, scaleok);
-                    scalein = seed.param_get_random_number()  * (max - min) + min;
+                    if (random_s.size() == counter) {
+                        double max = std::max(1.0,scaleok);
+                        double min = std::min(1.0,scaleok);
+                        random_s.emplace_back(seed.param_get_random_number()  * (max - min) + min);
+                    }
+                    scalein = random_s[counter];
                 }
                 if (random_rotate && rotate) {
-                    rotatein = (seed.param_get_random_number() - seed.param_get_random_number()) * rotate;
+                    if (random_r.size() == counter) {
+                        random_r.emplace_back((seed.param_get_random_number() - seed.param_get_random_number()) * rotate);
+                    }
+                    rotatein = random_r[counter];
+                }
+                if (random_x.size() == counter) {
+                    if (random_gap_x && gapx_unit) {
+                        random_x.emplace_back((seed.param_get_random_number() * gapx_unit)); // avoid overlapping
+                    } else {
+                        random_x.emplace_back(0);
+                    }
+                }
+                if (random_y.size() == counter) {
+                    if (random_gap_y && gapy_unit) {
+                        random_y.emplace_back((seed.param_get_random_number() * gapy_unit)); // avoid overlapping
+                    } else {
+                        random_y.emplace_back(0);
+                    }
                 }
                 r *= Geom::Rotate::from_degrees(rotatein);
                 r *= Geom::Scale(scalein, scalein);
-                r *= Geom::Translate(center);
                 double scale_fix = end_scale(scaleok, true);
                 double heightrows = original_height * scale_fix;
                 double widthcols = original_width * scale_fix;
@@ -417,17 +438,13 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                             offset_x = fixed_widthcols/(100.0/(double)offset);
                         }
                     }
-                    double ran_x = 0;
-                    double ran_y = 0;
-                    if (random_gap_x && gapx) {
-                        ran_x = seed.param_get_random_number() * gapx_unit;
-                    }
-                    if (random_gap_y && gapy) {
-                        ran_y = seed.param_get_random_number() * gapy_unit;
-                    }
-                    item->transform = r * sp_item_transform_repr(sp_lpe_item);
-                    item->transform *= Geom::Translate(Geom::Point(xset + offset_x - ran_x, yset + offset_y - ran_y));
-                    item->doWriteTransform(item->transform);
+                    
+                    
+                    auto p = Geom::Point(xset + offset_x - random_x[counter], yset + offset_y - random_y[counter]);
+                    auto translate = p * gap.inverse();
+                    Geom::Affine finalit = (transformoriginal * Geom::Translate(spcenter_base).inverse() * mirror * Geom::Translate(spcenter_base));
+                    finalit *=  gapp.inverse() *  Geom::Translate(spcenter).inverse() * originatrans.withoutTranslation().inverse() * r * translate * Geom::Translate(spcenter) ;
+                    item->doWriteTransform(finalit);
                     item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
                     forcewrite = forcewrite || write;
                 }
@@ -503,7 +520,7 @@ void LPETiling::cloneD(SPObject *orig, SPObject *dest)
     SPShape * shape =  SP_SHAPE(orig);
     SPPath * path =  SP_PATH(dest);
     if (shape) {
-        SPCurve const *c = shape->curve();
+        SPCurve *c = shape->curve();
         if (c) {
             auto str = sp_svg_write_path(c->get_pathvector());
             if (shape && !path) {
@@ -519,8 +536,7 @@ void LPETiling::cloneD(SPObject *orig, SPObject *dest)
             path->setAttribute("d", str);
         } else {
             path->removeAttribute("d");
-        }
-        
+        }        
     }
     if (reset) {
         cloneStyle(orig, dest);
@@ -1054,37 +1070,30 @@ LPETiling::setGapYMode(bool random) {
 void
 LPETiling::doOnApply(SPLPEItem const* lpeitem)
 {
-    using namespace Geom;
-    original_bbox(lpeitem, false, true);
-    Glib::ustring display_unit = lpeitem->document->getDisplayUnit()->abbr.c_str();
-    gapx_unit = Inkscape::Util::Quantity::convert(gapx, unit.get_abbreviation(), display_unit.c_str());
-    gapy_unit = Inkscape::Util::Quantity::convert(gapy, unit.get_abbreviation(), display_unit.c_str());
-    originalbbox = Geom::OptRect(boundingbox_X,boundingbox_Y);
-    Geom::Point A = Point(boundingbox_X.min() - (gapx_unit / 2.0), boundingbox_Y.min() - (gapy_unit / 2.0));
-    Geom::Point B = Point(boundingbox_X.max() + (gapx_unit / 2.0), boundingbox_Y.max() + (gapy_unit / 2.0));
-    gap_bbox = Geom::OptRect(A,B);
-    if (!gap_bbox) {
-        return;
-    }
-    scaleok = (scale + 100) / 100.0;
-    double scale_fix = end_scale(scaleok, true);
-    (*originalbbox) *= Geom::Translate((*originalbbox).midpoint()).inverse() * Geom::Scale(scale_fix) * Geom::Translate((*originalbbox).midpoint());
-    original_width = (*gap_bbox).width();
-    original_height = (*gap_bbox).height();
     if (lpeitem->getAttribute("transform")) {
         transformorigin.param_setValue(lpeitem->getAttribute("transform"), true);
+    } else {
+        transformorigin.param_setValue("", true);
     }
+    doBeforeEffect(lpeitem);
 }
 
 void
 LPETiling::doBeforeEffect (SPLPEItem const* lpeitem)
 {
-    auto transformorigin_str = transformorigin.param_getSVGValue();
-    transformoriginal = Geom::identity();
-    if (!transformorigin_str.empty()) {
-        sp_svg_transform_read(transformorigin_str.c_str(), &transformoriginal);
+    auto transformorigin_str = lpeitem->getAttribute("transform");
+    if (transformorigin_str) {
+        transformorigin.read_from_SVG();
+        auto transformorigin_str = transformorigin.param_getSVGValue();
+        transformoriginal = Geom::identity();
+        if (!transformorigin_str.empty()) {
+            sp_svg_transform_read(transformorigin_str.c_str(), &transformoriginal);
+        }
+    } else {
+        transformorigin.param_setValue("", true);
+        transformoriginal = Geom::identity();
     }
-    transformoriginal = transformoriginal.withoutTranslation();
+    //transformoriginal = transformoriginal.withoutTranslation();
     using namespace Geom;
     seed.resetRandomizer();
     random_x.clear();
@@ -1129,7 +1138,7 @@ LPETiling::doBeforeEffect (SPLPEItem const* lpeitem)
     Glib::ustring display_unit = lpeitem->document->getDisplayUnit()->abbr.c_str();
     gapx_unit = Inkscape::Util::Quantity::convert(gapx, unit.get_abbreviation(), display_unit.c_str());
     gapy_unit = Inkscape::Util::Quantity::convert(gapy, unit.get_abbreviation(), display_unit.c_str());
-    original_bbox(lpeitem, false, true);
+    original_bbox(sp_lpe_item, false, true, transformoriginal);
     originalbbox = Geom::OptRect(boundingbox_X,boundingbox_Y);
     Geom::Point A = Point(boundingbox_X.min() - (gapx_unit / 2.0), boundingbox_Y.min() - (gapy_unit / 2.0));
     Geom::Point B = Point(boundingbox_X.max() + (gapx_unit / 2.0), boundingbox_Y.max() + (gapy_unit / 2.0));
@@ -1137,8 +1146,13 @@ LPETiling::doBeforeEffect (SPLPEItem const* lpeitem)
     if (!gap_bbox) {
         return;
     }
+    
     double scale_fix = end_scale(scaleok, true);
     (*originalbbox) *= Geom::Translate((*originalbbox).midpoint()).inverse() * Geom::Scale(scale_fix) * Geom::Translate((*originalbbox).midpoint());
+    if (!interpolate_scalex && !interpolate_scaley && !random_scale) {
+        (*gap_bbox) *= Geom::Translate((*gap_bbox).midpoint()).inverse() * Geom::Scale(scaleok,scaleok) * Geom::Translate((*gap_bbox).midpoint());
+        (*originalbbox) *= Geom::Translate((*originalbbox).midpoint()).inverse() * Geom::Scale(scaleok,scaleok) * Geom::Translate((*originalbbox).midpoint());
+    }
     original_width = (*gap_bbox).width();
     original_height = (*gap_bbox).height();
 }
@@ -1186,20 +1200,8 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
     if (!gap_bbox) {
         return path_in;
     }
-    Geom::Point center = (*gap_bbox).midpoint();
-    if (split_items) {
-        Geom::PathVector output_pv = pathv_to_linear_and_cubic_beziers(path_in);
-        output_pv *= Geom::Translate(center).inverse();
-        output_pv *= affinebase;
-        if (!interpolate_rotatex && !interpolate_rotatey && !random_rotate) {
-            output_pv *= Geom::Rotate::from_degrees(rotate);
-        }
-        if (!interpolate_scalex && !interpolate_scaley && !random_scale) {
-            output_pv *= Geom::Scale(scaleok, scaleok);
-        }
-        output_pv *= Geom::Translate(center); 
-        return output_pv;
-    }
+    Geom::Point spcenter_base = (*sp_lpe_item->geometricBounds(transformoriginal)).midpoint();
+    Geom::Point center = (*gap_bbox).midpoint() * transformoriginal.inverse();
     Geom::PathVector output;
     gint counter = 0;
     Geom::OptRect prev_bbox;
@@ -1211,6 +1213,7 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
     if (!bbox) {
         return path_in;
     }
+    (*bbox) *= transformoriginal;
 
     double posx = ((*gap_bbox).left() - (*bbox).left()) / (*gap_bbox).width();
     double factorx = original_width/(*bbox).width();
@@ -1230,6 +1233,8 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
                 fracx = j/(double)(num_cols - 1);
             }
             Geom::Affine r = Geom::identity();
+            r = Geom::identity();
+            Geom::Scale mirror = Geom::Scale(1,1);
             if(mirrorrowsx || mirrorrowsy || mirrorcolsx || mirrorcolsy) {
                 gint mx = 1;
                 gint my = 1;
@@ -1251,9 +1256,7 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
                         my = j%2 != 0 ? -1 : 1;
                     }
                 }
-                r *= Geom::Translate(center).inverse();
-                r *= Geom::Scale(mx, my);
-                r *= Geom::Translate(center);
+                mirror = Geom::Scale(mx, my);
             }
             if (mirrortrans && interpolate_scalex && i%2 != 0) {
                 fracx = 1-fracx;
@@ -1291,6 +1294,7 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
             } else {
                 scalein = scaleok;
             }
+            
             if (random_scale && scaleok != 1.0) {
                 if (random_s.size() == counter) {
                     double max = std::max(1.0,scaleok);
@@ -1305,12 +1309,38 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
                 }
                 rotatein = random_r[counter];
             }
-            r *= Geom::Translate(center).inverse();
+            if (random_x.size() == counter) {
+                if (random_gap_x && gapx_unit && (j || i)) {
+                    random_x.emplace_back((seed.param_get_random_number() * gapx_unit)); // avoid overlapping
+                } else {
+                    random_x.emplace_back(0);
+                }
+            }
+            if (random_y.size() == counter) {
+                if (random_gap_y && gapy_unit && (j || i)) {
+                    random_y.emplace_back((seed.param_get_random_number() * gapy_unit)); // avoid overlapping
+                } else {
+                    random_y.emplace_back(0);
+                }
+            }
             r *= Geom::Scale(scalein, scalein);
             r *= Geom::Rotate::from_degrees(rotatein);
-            r *= Geom::Translate(center);
+            
             Geom::PathVector output_pv = pathv_to_linear_and_cubic_beziers(path_in);
+            
+            output_pv *= Geom::Translate(center).inverse();
             output_pv *= r;
+            if (!interpolate_rotatex && !interpolate_rotatey && !random_rotate) {
+                output_pv *= Geom::Rotate::from_degrees(rotate);
+            }
+            if (!interpolate_scalex && !interpolate_scaley && !random_scale) {
+                output_pv *= Geom::Scale(scaleok, scaleok);
+            }
+            originatrans = r;
+            output_pv *= Geom::Translate(center); 
+            if (split_items) {
+                return output_pv;
+            }
             double scale_fix = end_scale(scaleok, true);
             double heightrows = original_height * scale_fix;
             double widthcols = original_width * scale_fix;
@@ -1390,22 +1420,10 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
                 }
                 if (!offset_type && i%2) {
                     offset_x = fixed_widthcols/(100.0/(double)offset);
+                    
                 }
             }
-            if (random_x.size() == counter) {
-                if (random_gap_x && gapx_unit) {
-                    random_x.emplace_back((seed.param_get_random_number() * gapx_unit)); // avoid overlapping
-                } else {
-                    random_x.emplace_back(0);
-                }
-            }
-            if (random_y.size() == counter) {
-                if (random_gap_y && gapy_unit) {
-                    random_y.emplace_back((seed.param_get_random_number() * gapy_unit)); // avoid overlapping
-                } else {
-                    random_y.emplace_back(0);
-                }
-            }
+            output_pv *= Geom::Translate(center).inverse() * mirror * Geom::Translate(center);
             output_pv *= transformoriginal;
             output_pv *= Geom::Translate(Geom::Point(xset + offset_x - random_x[counter],yset + offset_y - random_y[counter]));
             output.insert(output.end(), output_pv.begin(), output_pv.end());
@@ -1425,7 +1443,8 @@ LPETiling::addCanvasIndicators(SPLPEItem const *lpeitem, std::vector<Geom::PathV
     hp_vec.clear();
     Geom::Path hp = Geom::Path(*gap_bbox);
     double scale_fix = end_scale(scaleok, true);
-    hp *= Geom::Translate((*gap_bbox).midpoint()).inverse() * Geom::Scale(scale_fix) * Geom::Translate((*gap_bbox).midpoint());
+    hp *= Geom::Translate((*gap_bbox).midpoint()).inverse() *  Geom::Scale(scale_fix) * Geom::Translate((*gap_bbox).midpoint());
+    hp *= transformoriginal.inverse();
     Geom::PathVector pathv;
     pathv.push_back(hp);
     hp_vec.push_back(pathv);
@@ -1446,10 +1465,14 @@ LPETiling::doOnVisibilityToggled(SPLPEItem const* lpeitem)
     if (transformorigin_str) {
         sp_svg_transform_read(transformorigin_str, &ontoggle);
     }
-    ontoggle = ontoggle.withoutTranslation();
+    ontoggle = ontoggle;
     if (is_visible) {
-        ontoggle = ontoggle * hideaffine.inverse() * transformoriginal;
-        transformorigin.param_setValue(sp_svg_transform_write(ontoggle), true);
+        if ( ontoggle == Geom::identity()) {
+            transformorigin.param_setValue("", true);
+        } else {
+            ontoggle = ontoggle * hideaffine.inverse() * transformoriginal;
+            transformorigin.param_setValue(sp_svg_transform_write(ontoggle), true);
+        }
     } else {
         hideaffine = ontoggle;
     }
@@ -1544,7 +1567,9 @@ void KnotHolderEntityCopyGapX::knot_set(Geom::Point const &p, Geom::Point const&
 
     Geom::Point const s = snap_knot_position(p, state);
     if (lpe->originalbbox) {
-        double value = (((*lpe->originalbbox).corner(1)[Geom::X] - s[Geom::X]) * -1);
+        Geom::Point point = (*lpe->originalbbox).corner(1);
+        point *= lpe->transformoriginal.inverse();
+        double value = s[Geom::X] - point[Geom::X];
         Glib::ustring display_unit = SP_ACTIVE_DOCUMENT->getDisplayUnit()->abbr.c_str();
         value = Inkscape::Util::Quantity::convert((value/lpe->end_scale(lpe->scaleok, false)) * 2, display_unit.c_str(),lpe->unit.get_abbreviation());
         lpe->gapx.param_set_value(value);
@@ -1558,7 +1583,9 @@ void KnotHolderEntityCopyGapY::knot_set(Geom::Point const &p, Geom::Point const&
 
     Geom::Point const s = snap_knot_position(p, state);
     if (lpe->originalbbox) {
-        double value = (((*lpe->originalbbox).corner(3)[Geom::Y] - s[Geom::Y]) * -1);
+        Geom::Point point = (*lpe->originalbbox).corner(3);
+        point *= lpe->transformoriginal.inverse();
+        double value = s[Geom::Y] - point[Geom::Y];
         Glib::ustring display_unit = SP_ACTIVE_DOCUMENT->getDisplayUnit()->abbr.c_str();
         value = Inkscape::Util::Quantity::convert((value/lpe->end_scale(lpe->scaleok, false)) * 2, display_unit.c_str(),lpe->unit.get_abbreviation());
         lpe->gapy.param_set_value(value);
@@ -1569,25 +1596,31 @@ void KnotHolderEntityCopyGapY::knot_set(Geom::Point const &p, Geom::Point const&
 Geom::Point KnotHolderEntityCopyGapX::knot_get() const
 {
     LPETiling const * lpe = dynamic_cast<LPETiling const*> (_effect);
+    Geom::Point ret = Geom::Point(Geom::infinity(),Geom::infinity());
     if (lpe->originalbbox) {
+        auto bbox = (*lpe->originalbbox);
         Glib::ustring display_unit = SP_ACTIVE_DOCUMENT->getDisplayUnit()->abbr.c_str();
         double value = Inkscape::Util::Quantity::convert(lpe->gapx, lpe->unit.get_abbreviation(), display_unit.c_str());
         double scale = lpe->scaleok;
-        return (*lpe->originalbbox).corner(1) + Geom::Point((value * lpe->end_scale(scale, false))/2.0,0);
+        ret = (bbox).corner(1) + Geom::Point((value * lpe->end_scale(scale, false))/2.0,0);
+        ret *= lpe->transformoriginal.inverse();
     }
-    return Geom::Point(Geom::infinity(),Geom::infinity());
+    return ret;
 }
 
 Geom::Point KnotHolderEntityCopyGapY::knot_get() const
 {
     LPETiling const * lpe = dynamic_cast<LPETiling const*> (_effect);
+    Geom::Point ret = Geom::Point(Geom::infinity(),Geom::infinity());
     if (lpe->originalbbox) {
+        auto bbox = (*lpe->originalbbox);
         Glib::ustring display_unit = SP_ACTIVE_DOCUMENT->getDisplayUnit()->abbr.c_str();
         double value = Inkscape::Util::Quantity::convert(lpe->gapy, lpe->unit.get_abbreviation(), display_unit.c_str());
         double scale = lpe->scaleok;
-        return (*lpe->originalbbox).corner(3) + Geom::Point(0,(value * lpe->end_scale(scale, false))/2.0);
+        ret = (bbox).corner(3) + Geom::Point(0,(value * lpe->end_scale(scale, false))/2.0);
+        ret *= lpe->transformoriginal.inverse();
     }
-    return Geom::Point(Geom::infinity(),Geom::infinity());
+    return ret;
 }
 
 } // namespace CoS

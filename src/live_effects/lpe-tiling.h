@@ -117,6 +117,7 @@ private:
     Geom::Affine affinebase = Geom::identity();
     Geom::Affine transformoriginal = Geom::identity();
     Geom::Affine hideaffine = Geom::identity();
+    Geom::Affine originatrans = Geom::identity();
     bool prev_split = false;
     SPObject *container;
     LPETiling(const LPETiling&) = delete;
