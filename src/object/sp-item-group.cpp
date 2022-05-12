@@ -523,33 +523,10 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
     SPRoot *root = doc->getRoot();
     SPObject *defs = root->defs;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool maskonungroup = prefs->getBool("/options/maskobject/maskonungroup", true);
-    bool topmost = prefs->getBool("/options/maskobject/topmost", true);
-    bool remove_original = prefs->getBool("/options/maskobject/remove", true);
-    int grouping = prefs->getInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
-    SPObject *clip = nullptr;
-    SPObject *mask = nullptr;
-    if (maskonungroup) {
-        Inkscape::ObjectSet tmp_clip_set(doc);
-        tmp_clip_set.add(group);
-        Inkscape::ObjectSet tmp_mask_set(doc);
-        tmp_mask_set.add(group);
-        auto *clip_obj = group->getClipObject();
-        auto *mask_obj = group->getMaskObject();
-        prefs->setBool("/options/maskobject/remove", true);
-        prefs->setBool("/options/maskobject/topmost", true);
-        prefs->setInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
-        if (clip_obj) {
-            tmp_clip_set.unsetMask(true,true);
-            tmp_clip_set.remove(group);
-            clip = tmp_clip_set.singleItem();
-        } 
-        if (mask_obj) {
-            tmp_mask_set.unsetMask(false,true);
-            tmp_mask_set.remove(group);
-            mask = tmp_mask_set.singleItem();
-        }
-    }
+    // TODO handle better ungrouping
+    // now is used in clipmask LPE on remove
+    prefs->setBool("/options/onungroup", true);
+    
     Inkscape::XML::Node *grepr = group->getRepr();
 
     g_return_if_fail (!strcmp (grepr->name(), "svg:g")
@@ -572,7 +549,35 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
     }
 
     group->removeAllPathEffects(false);
-
+    bool maskonungroup = prefs->getBool("/options/maskobject/maskonungroup", true);
+    bool topmost = prefs->getBool("/options/maskobject/topmost", true);
+    bool remove_original = prefs->getBool("/options/maskobject/remove", true);
+    int grouping = prefs->getInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
+    SPObject *clip = nullptr;
+    SPObject *mask = nullptr;
+    if (maskonungroup) {
+        Inkscape::ObjectSet tmp_clip_set(doc);
+        tmp_clip_set.add(group);
+        Inkscape::ObjectSet tmp_mask_set(doc);
+        tmp_mask_set.add(group);
+        auto *clip_obj = group->getClipObject();
+        auto *mask_obj = group->getMaskObject();
+        prefs->setBool("/options/maskobject/remove", true);
+        prefs->setBool("/options/maskobject/topmost", true);
+        prefs->setInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
+        if (clip_obj) {
+            tmp_clip_set.unsetMask(true,true);
+            tmp_clip_set.remove(group);
+            tmp_clip_set.group();
+            clip = tmp_clip_set.singleItem();
+        } 
+        if (mask_obj) {
+            tmp_mask_set.unsetMask(false,true);
+            tmp_mask_set.remove(group);
+            tmp_mask_set.group();
+            mask = tmp_mask_set.singleItem();
+        }
+    }
     /* Step 1 - generate lists of children objects */
     std::vector<Inkscape::XML::Node *> items;
     std::vector<Inkscape::XML::Node *> objects;
@@ -686,9 +691,8 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
 
         // fill in the children list if non-null
         SPItem *item = static_cast<SPItem *>(doc->getObjectByRepr(repr));
-
+        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
         if (item) {
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
             if (lpeitem) {
                 lpeitems.push_back(lpeitem);
                 sp_lpe_item_enable_path_effects(lpeitem, false);
@@ -703,9 +707,10 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
         }
 
         Inkscape::GC::release(repr);
-        if (clip && item) { // if !maskonungroup is always null
+        if (!lpeitem && clip && item) { // if !maskonungroup is always null
             Geom::OptRect bbox_item = item->visualBounds();
             if (bbox_item && !equal_clip(item, clip)) {
+                std::cout << (*bbox_item) << std::endl;
                 if (!bbox_clip || !(*bbox_clip).contains(*bbox_item)) {
                     result_clip_set.add(item);
                 }
@@ -713,6 +718,24 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
         }
         if (mask && item) {
             result_mask_set.add(item);
+        }
+    }
+
+    if (mask) {
+        result_mask_set.add(mask);
+        result_mask_set.setMask(false,false,true);
+    }
+    for (auto lpeitem : lpeitems) {
+        sp_lpe_item_enable_path_effects(lpeitem, true);
+        lpeitem->doWriteTransform(lpeitem->transform, nullptr, false);
+        lpeitem->requestModified(SP_OBJECT_MODIFIED_FLAG);
+        if (clip && lpeitem) { // if !maskonungroup is always null
+            Geom::OptRect bbox_item = lpeitem->visualBounds();
+            if (bbox_item && !equal_clip(lpeitem, clip)) {
+                if (!bbox_clip || !(*bbox_clip).contains(*bbox_item)) {
+                    result_clip_set.add(lpeitem);
+                }
+            }
         }
     }
     if (clip) { // if !maskonungroup is always null
@@ -723,18 +746,10 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
             clip->deleteObject(true, false);
         }
     }
-    if (mask) {
-        result_mask_set.add(mask);
-        result_mask_set.setMask(false,false,true);
-    }
     prefs->setBool("/options/maskobject/remove", remove_original); // if !maskonungroup become unchanged
     prefs->setBool("/options/maskobject/topmost", topmost);
     prefs->setBool("/options/maskobject/grouping", grouping);
-    for (auto lpeitem : lpeitems) {
-        sp_lpe_item_enable_path_effects(lpeitem, true);
-        lpeitem->doWriteTransform(lpeitem->transform, nullptr, false);
-        lpeitem->requestModified(SP_OBJECT_MODIFIED_FLAG);
-    }
+    prefs->setBool("/options/onungroup", false);
     if (do_done) {
         DocumentUndo::done(doc, _("Ungroup"), "");
     }

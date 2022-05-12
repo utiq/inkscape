@@ -218,7 +218,8 @@ LPEPowerClip::doOnRemove (SPLPEItem const* /*lpeitem*/)
     if (!document) {
         return;
     }
-    if (keep_paths) {
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    if (keep_paths || prefs->getBool("/options/onungroup", false)) {
         SPObject *clip_path = sp_lpe_item->getClipObject();
         if (clip_path) {
             SPLPEItem *childitem = dynamic_cast<SPLPEItem *>(clip_path->childList(true).front());
