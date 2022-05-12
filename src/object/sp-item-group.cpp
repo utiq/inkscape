@@ -710,7 +710,6 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
         if (!lpeitem && clip && item) { // if !maskonungroup is always null
             Geom::OptRect bbox_item = item->visualBounds();
             if (bbox_item && !equal_clip(item, clip)) {
-                std::cout << (*bbox_item) << std::endl;
                 if (!bbox_clip || !(*bbox_clip).contains(*bbox_item)) {
                     result_clip_set.add(item);
                 }
