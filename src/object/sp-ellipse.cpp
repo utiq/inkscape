@@ -51,6 +51,25 @@ SPGenericEllipse::SPGenericEllipse()
 SPGenericEllipse::~SPGenericEllipse()
 = default;
 
+/*
+ * Ellipse is the only SP object who's repr element tag name changes
+ * during it's lifetime. During undo and redo these changes can cause
+ * the SP object to become unstuck from the repr's true state.
+ */
+void SPGenericEllipse::tag_name_changed(gchar const* oldname, gchar const* newname)
+{
+    const std::string typeString = newname;
+    if (typeString == "svg:circle") {
+        type = SP_GENERIC_ELLIPSE_CIRCLE;
+    } else if (typeString == "svg:ellipse") {
+        type = SP_GENERIC_ELLIPSE_ELLIPSE;
+    } else if (typeString == "svg:path") {
+        type = SP_GENERIC_ELLIPSE_ARC;
+    } else {
+        type = SP_GENERIC_ELLIPSE_UNDEFINED;
+    }
+}
+
 void SPGenericEllipse::build(SPDocument *document, Inkscape::XML::Node *repr)
 {
     // std::cout << "SPGenericEllipse::build: Entrance: " << this->type

@@ -73,7 +73,8 @@ Inkscape::XML::NodeEventVector object_event_vector = {
     SPObject::repr_child_removed,
     SPObject::repr_attr_changed,
     SPObject::repr_content_changed,
-    SPObject::repr_order_changed
+    SPObject::repr_order_changed,
+    SPObject::repr_name_changed
 };
 
 /**
@@ -748,6 +749,10 @@ void SPObject::order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node * /
     ochild->_position_changed_signal.emit(ochild);
 }
 
+void SPObject::tag_name_changed(gchar const* oldname, gchar const* newname) {
+    g_warning("XML Element renamed from %s to %s!", oldname, newname);
+}
+
 void SPObject::build(SPDocument *document, Inkscape::XML::Node *repr) {
 
 #ifdef OBJECT_TRACE
@@ -979,6 +984,13 @@ void SPObject::repr_order_changed(Inkscape::XML::Node * /*repr*/, Inkscape::XML:
     auto object = static_cast<SPObject *>(data);
 
     object->order_changed(child, old, newer);
+}
+
+void SPObject::repr_name_changed(Inkscape::XML::Node* repr, gchar const* oldname, gchar const* newname, void *data)
+{
+    auto object = static_cast<SPObject *>(data);
+
+    object->tag_name_changed(oldname, newname);
 }
 
 void SPObject::set(SPAttr key, gchar const* value) {

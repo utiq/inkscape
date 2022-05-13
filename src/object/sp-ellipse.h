@@ -53,6 +53,8 @@ public:
     GenericEllipseType type;
     GenericEllipseArcType arc_type;
 
+    void tag_name_changed(gchar const* oldname, gchar const* newname) override;
+
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;
 
     void set(SPAttr key, char const *value) override;

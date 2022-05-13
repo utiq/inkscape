@@ -823,6 +823,11 @@ public:
      */
     static void repr_order_changed(Inkscape::XML::Node *repr, Inkscape::XML::Node *child, Inkscape::XML::Node *old, Inkscape::XML::Node *newer, void* data);
 
+    /**
+    * Callback for name_changed node event
+    */
+    static void repr_name_changed(Inkscape::XML::Node* repr, gchar const* oldname, gchar const* newname, void * data);
+
     friend class SPObjectImpl;
 
 protected:
@@ -833,6 +838,7 @@ protected:
 	virtual void remove_child(Inkscape::XML::Node* child);
 
 	virtual void order_changed(Inkscape::XML::Node* child, Inkscape::XML::Node* old_repr, Inkscape::XML::Node* new_repr);
+    virtual void tag_name_changed(gchar const* oldname, gchar const* newname);
 
 	virtual void set(SPAttr key, const char* value);
 
