@@ -1043,7 +1043,7 @@
                         <property name="input-purpose">number</property>
                         <property name="adjustment">RemoveOverlap_VGap</property>
                         <property name="numeric">True</property>
-                        <property name="tooltip-text" translatable="yes">Mininum vertical gap (in pixel units) between bounding boxes</property>
+                        <property name="tooltip-text" translatable="yes">Minimum vertical gap (in pixel units) between bounding boxes</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>

@@ -2582,7 +2582,7 @@ void InkscapePreferences::initPageBehavior()
     _mask_mask_on_top.init ( _("When applying, use the topmost selected object as clippath/mask"), "/options/maskobject/topmost", true);
     _page_mask.add_line(false, "", _mask_mask_on_top, "",
                         _("Uncheck this to use the bottom selected object as the clipping path or mask"));
-    _mask_mask_on_ungroup.init ( _("When ungroup, clip/mask is preserved in childrens"), "/options/maskobject/maskonungroup", true);
+    _mask_mask_on_ungroup.init ( _("When ungroup, clip/mask is preserved in children"), "/options/maskobject/maskonungroup", true);
     _page_mask.add_line(false, "", _mask_mask_on_ungroup, "",
                         _("Uncheck this to remove clip/mask on ungroup"));
     _mask_mask_remove.init ( _("Remove clippath/mask object after applying"), "/options/maskobject/remove", true);
