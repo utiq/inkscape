@@ -27,7 +27,7 @@ namespace Inkscape {
 namespace UI {
 namespace PREVIEW {
 
-GdkPixbuf *render_preview(SPDocument *doc, Inkscape::Drawing &drawing, SPItem *item,
+GdkPixbuf *render_preview(SPDocument *doc, Inkscape::Drawing &drawing, guint32 bg_color, SPItem *item,
                           unsigned width_in, unsigned height_in, Geom::OptRect *dboxIn)
 {
     if (auto name = (item ? item->getId() : nullptr)) {
@@ -83,7 +83,7 @@ GdkPixbuf *render_preview(SPDocument *doc, Inkscape::Drawing &drawing, SPItem *i
     cairo_t *cr = cairo_create(s);
     cairo_rectangle(cr, 0, 0, ua.width(), ua.height());
 
-    guint32 bg = doc->getPageManager().background_color;
+    guint32 bg = bg_color;
 
     // We always use checkerboard to indicate transparency.
     if (SP_RGBA32_A_F(bg) < 1.0) {

@@ -74,7 +74,7 @@ gchar const * const ColorScales<SPColorScalesMode::HSLUV>::_pref_wheel_visibilit
 
 
 template <SPColorScalesMode MODE>
-ColorScales<MODE>::ColorScales(SelectedColor &color)
+ColorScales<MODE>::ColorScales(SelectedColor &color, bool no_alpha)
     : Gtk::Box()
     , _color(color)
     , _range_limit(255.0)
@@ -88,7 +88,7 @@ ColorScales<MODE>::ColorScales(SelectedColor &color)
         _b[i] = nullptr;
     }
 
-    _initUI();
+    _initUI(no_alpha);
 
     _color_changed = _color.signal_changed.connect([this](){ _onColorChanged(); });
     _color_dragged = _color.signal_dragged.connect([this](){ _onColorChanged(); });
@@ -108,7 +108,7 @@ ColorScales<MODE>::~ColorScales()
 }
 
 template <SPColorScalesMode MODE>
-void ColorScales<MODE>::_initUI()
+void ColorScales<MODE>::_initUI(bool no_alpha)
 {
     set_orientation(Gtk::ORIENTATION_VERTICAL);
 
@@ -237,7 +237,7 @@ void ColorScales<MODE>::_initUI()
     _s[4]->set_no_show_all(true);
     _b[4]->set_no_show_all(true);
 
-    setupMode();
+    setupMode(no_alpha);
 
     if constexpr (
             MODE == SPColorScalesMode::HSL ||
@@ -460,10 +460,11 @@ guint32 ColorScales<MODE>::_getRgba32()
 }
 
 template <SPColorScalesMode MODE>
-void ColorScales<MODE>::setupMode()
+void ColorScales<MODE>::setupMode(bool no_alpha)
 {
     gfloat rgba[4];
     gfloat c[4];
+    int alpha_index = 0;
 
     if constexpr (MODE == SPColorScalesMode::NONE) {
         rgba[0] = rgba[1] = rgba[2] = rgba[3] = 1.0;
@@ -483,6 +484,7 @@ void ColorScales<MODE>::setupMode()
         _l[2]->set_markup_with_mnemonic(_("_B:"));
         _s[2]->set_tooltip_text(_("Blue"));
         _b[2]->set_tooltip_text(_("Blue"));
+        alpha_index = 3;
         _l[3]->set_markup_with_mnemonic(_("_A:"));
         _s[3]->set_tooltip_text(_("Alpha (opacity)"));
         _b[3]->set_tooltip_text(_("Alpha (opacity)"));
@@ -513,6 +515,7 @@ void ColorScales<MODE>::setupMode()
         _s[2]->set_tooltip_text(_("Lightness"));
         _b[2]->set_tooltip_text(_("Lightness"));
 
+        alpha_index = 3;
         _l[3]->set_markup_with_mnemonic(_("_A:"));
         _s[3]->set_tooltip_text(_("Alpha (opacity)"));
         _b[3]->set_tooltip_text(_("Alpha (opacity)"));
@@ -548,6 +551,7 @@ void ColorScales<MODE>::setupMode()
         _s[2]->set_tooltip_text(_("Value"));
         _b[2]->set_tooltip_text(_("Value"));
 
+        alpha_index = 3;
         _l[3]->set_markup_with_mnemonic(_("_A:"));
         _s[3]->set_tooltip_text(_("Alpha (opacity)"));
         _b[3]->set_tooltip_text(_("Alpha (opacity)"));
@@ -585,6 +589,7 @@ void ColorScales<MODE>::setupMode()
         _s[3]->set_tooltip_text(_("Black"));
         _b[3]->set_tooltip_text(_("Black"));
 
+        alpha_index = 4;
         _l[4]->set_markup_with_mnemonic(_("_A:"));
         _s[4]->set_tooltip_text(_("Alpha (opacity)"));
         _b[4]->set_tooltip_text(_("Alpha (opacity)"));
@@ -620,6 +625,7 @@ void ColorScales<MODE>::setupMode()
         _s[2]->set_tooltip_text(_("Lightness"));
         _b[2]->set_tooltip_text(_("Lightness"));
 
+        alpha_index = 3;
         _l[3]->set_markup_with_mnemonic(_("_A:"));
         _s[3]->set_tooltip_text(_("Alpha (opacity)"));
         _b[3]->set_tooltip_text(_("Alpha (opacity)"));
@@ -645,6 +651,15 @@ void ColorScales<MODE>::setupMode()
         _updating = false;
     } else {
         g_warning("file %s: line %d: Illegal color selector mode", __FILE__, __LINE__);
+    }
+
+    if (no_alpha && alpha_index > 0) {
+        _l[alpha_index]->hide();
+        _s[alpha_index]->hide();
+        _b[alpha_index]->hide();
+        _l[alpha_index]->set_no_show_all(true);
+        _s[alpha_index]->set_no_show_all(true);
+        _b[alpha_index]->set_no_show_all(true);
     }
 }
 
@@ -1007,9 +1022,9 @@ ColorScalesFactory<MODE>::ColorScalesFactory()
 {}
 
 template <SPColorScalesMode MODE>
-Gtk::Widget *ColorScalesFactory<MODE>::createWidget(Inkscape::UI::SelectedColor &color) const
+Gtk::Widget *ColorScalesFactory<MODE>::createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const
 {
-    Gtk::Widget *w = Gtk::manage(new ColorScales<MODE>(color));
+    Gtk::Widget *w = Gtk::manage(new ColorScales<MODE>(color, no_alpha));
     return w;
 }
 

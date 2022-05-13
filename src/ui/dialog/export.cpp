@@ -27,6 +27,7 @@
 #include "desktop.h"
 #include "document-undo.h"
 #include "document.h"
+#include "color/color-conv.h"
 #include "extension/db.h"
 #include "extension/output.h"
 #include "file.h"
@@ -48,6 +49,7 @@
 #include "ui/dialog/dialog-notebook.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/interface.h"
+#include "ui/widget/color-picker.h"
 #include "ui/widget/scrollprotected.h"
 #include "ui/widget/unit-menu.h"
 
@@ -203,7 +205,7 @@ bool Export::unConflictFilename(SPDocument *doc, Glib::ustring &filename, Glib::
 
 bool Export::exportRaster(
         Geom::Rect const &area, unsigned long int const &width, unsigned long int const &height,
-        float const &dpi, Glib::ustring const &filename, bool overwrite,
+        float const &dpi, guint32 bg_color, Glib::ustring const &filename, bool overwrite,
         unsigned (*callback)(float, void *), ExportProgressDialog *&prog_dialog,
         Inkscape::Extension::Output *extension, std::vector<SPItem *> *items)
 {
@@ -273,7 +275,6 @@ bool Export::exportRaster(
         selected = *items;
     }
 
-    auto bg_color = doc->getPageManager().background_color;
     ExportResult result = sp_export_png_file(desktop->getDocument(), png_filename.c_str(), area, width, height, pHYs,
                                              pHYs, // previously xdpi, ydpi.
                                              bg_color, callback, (void *)prog_dialog, true, selected,
@@ -492,6 +493,20 @@ Glib::ustring Export::defaultFilename(SPDocument *doc, Glib::ustring &filename_e
     return filename;
 }
 
+void set_export_bg_color(SPObject* object, guint32 color) {
+    if (object) {
+        object->setAttribute("inkscape:export-bgcolor", Inkscape::Util::rgba_color_to_string(color).c_str());
+    }
+}
+
+guint32 get_export_bg_color(SPObject* object, guint32 default_color) {
+    if (object) {
+        if (auto color = Inkscape::Util::string_to_rgba_color(object->getAttribute("inkscape:export-bgcolor"))) {
+            return *color;
+        }
+    }
+    return default_color;
+}
 
 
 } // namespace Dialog

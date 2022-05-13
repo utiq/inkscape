@@ -97,7 +97,7 @@ void ColorPicker::open() {
 void ColorPicker::on_clicked()
 {
     if (!_color_selector) {
-        auto selector = Gtk::manage(new ColorNotebook(_selected_color));
+        auto selector = Gtk::manage(new ColorNotebook(_selected_color, _ignore_transparency));
         selector->set_label(_title);
         _color_selector = selector;
         _colorSelectorDialog.get_content_area()->pack_start(*_color_selector, true, true, 0);
@@ -139,8 +139,8 @@ void ColorPicker::_onSelectedColorChanged() {
 
     on_changed(rgba);
     _in_use = false;
-    _changed_signal.emit(rgba);
     _rgba = rgba;
+    _changed_signal.emit(rgba);
 }
 
 void ColorPicker::set_preview(guint32 rgba) {
@@ -150,6 +150,10 @@ void ColorPicker::set_preview(guint32 rgba) {
 void ColorPicker::use_transparency(bool enable) {
     _ignore_transparency = !enable;
     set_preview(_rgba);
+}
+
+guint32 ColorPicker::get_current_color() const {
+    return _rgba;
 }
 
 }//namespace Widget

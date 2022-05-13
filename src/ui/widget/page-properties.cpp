@@ -95,6 +95,7 @@ public:
         _backgnd_color_picker = std::make_unique<ColorPicker>(
             _("Background color"), "", 0xffffff00, true,
             &get_widget<Gtk::Button>(_builder, "background-color"));
+        _backgnd_color_picker->use_transparency(false);
 
         _border_color_picker = std::make_unique<ColorPicker>(
             _("Border and shadow color"), "", 0x0000001f, true,

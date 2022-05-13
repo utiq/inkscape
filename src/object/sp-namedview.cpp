@@ -384,8 +384,6 @@ void SPNamedView::set(SPAttr key, const gchar* value) {
             guide->setHiColor(this->guidehicolor);
         }
         break;
-    case SPAttr::PAGECOLOR:
-        break;
     case SPAttr::INKSCAPE_DESK_COLOR:
         if (value) {
             desk_color = sp_svg_read_color(value, desk_color);

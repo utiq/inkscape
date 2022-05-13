@@ -376,7 +376,7 @@ void DocumentProperties::build_page()
                 set_color(_wr.desktop(), _("Desk color"), color, SPAttr::INKSCAPE_DESK_COLOR);
                 break;
             case PageProperties::Color::Background:
-                set_color(_wr.desktop(), _("Background color"), color, SPAttr::PAGECOLOR, SPAttr::INKSCAPE_PAGEOPACITY);
+                set_color(_wr.desktop(), _("Background color"), color, SPAttr::PAGECOLOR);
                 break;
             case PageProperties::Color::Border:
                 set_color(_wr.desktop(), _("Border color"), color, SPAttr::BORDERCOLOR, SPAttr::BORDEROPACITY);

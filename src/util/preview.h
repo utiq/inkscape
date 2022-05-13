@@ -33,7 +33,7 @@ namespace UI {
 namespace PREVIEW {
 
 // takes doc, drawing, icon, and icon name to produce pixels
-GdkPixbuf *render_preview(SPDocument *doc, Inkscape::Drawing &drawing, SPItem *item,
+GdkPixbuf *render_preview(SPDocument *doc, Inkscape::Drawing &drawing, guint32 bg_color, SPItem *item,
                           unsigned width_in, unsigned height_in, Geom::OptRect *dboxIn = nullptr);
 
 } // namespace PREVIEW

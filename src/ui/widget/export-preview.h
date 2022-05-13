@@ -45,6 +45,8 @@ private:
     Glib::Timer *renderTimer = nullptr;
     bool pending = false;
     gdouble minDelay = 0.1;
+    guint32 _bg_color = 0;
+
 public:
     void setDocument(SPDocument *document);
     void refreshHide(const std::vector<SPItem *> *list);
@@ -59,6 +61,8 @@ public:
         size = newSize;
         resetPixels();
     }
+
+    void set_background_color(guint32 bg_color);
 private:
     void refreshPreview();
     void renderPreview();

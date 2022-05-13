@@ -43,10 +43,10 @@ public:
     static gfloat getScaled(Glib::RefPtr<Gtk::Adjustment> const &a);
     static void setScaled(Glib::RefPtr<Gtk::Adjustment> &a, gfloat v, bool constrained = false);
 
-    ColorScales(SelectedColor &color);
+    ColorScales(SelectedColor &color, bool no_alpha);
     ~ColorScales() override;
 
-    void setupMode();
+    void setupMode(bool no_alpha);
     SPColorScalesMode getMode() const;
 
     static guchar const *hsluvHueMap(gfloat s, gfloat l,
@@ -60,7 +60,7 @@ protected:
     void _onColorChanged();
     void on_show() override;
 
-    virtual void _initUI();
+    void _initUI(bool no_alpha);
 
     void _sliderAnyGrabbed();
     void _sliderAnyReleased();
@@ -106,7 +106,7 @@ class ColorScalesFactory : public Inkscape::UI::ColorSelectorFactory
 public:
     ColorScalesFactory();
 
-    Gtk::Widget *createWidget(Inkscape::UI::SelectedColor &color) const override;
+    Gtk::Widget *createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const override;
     Glib::ustring modeName() const override;
 };
 

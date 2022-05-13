@@ -195,9 +195,9 @@ void ExportPreview::renderPreview()
     if (_document) {
         GdkPixbuf *pb = nullptr;
         if (_item) {
-            pb = Inkscape::UI::PREVIEW::render_preview(_document, *drawing, _item, size, size);
+            pb = Inkscape::UI::PREVIEW::render_preview(_document, *drawing, _bg_color, _item, size, size);
         } else if (_dbox) {
-            pb = Inkscape::UI::PREVIEW::render_preview(_document, *drawing, nullptr, size, size, &_dbox);
+            pb = Inkscape::UI::PREVIEW::render_preview(_document, *drawing, _bg_color, nullptr, size, size, &_dbox);
         }
         if (pb) {
             set(Glib::wrap(pb));
@@ -207,6 +207,10 @@ void ExportPreview::renderPreview()
 
     renderTimer->stop();
     minDelay = std::max(0.1, renderTimer->elapsed() * 3.0);
+}
+
+void ExportPreview::set_background_color(guint32 bg_color) {
+    _bg_color = bg_color;
 }
 
 } // namespace Dialog

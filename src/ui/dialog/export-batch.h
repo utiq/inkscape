@@ -27,6 +27,9 @@ namespace Inkscape {
     class Selection;
 
 namespace UI {
+    namespace Widget {
+        class ColorPicker;
+    }
 namespace Dialog {
 
 class ExportList;
@@ -144,6 +147,8 @@ private:
     sigc::connection selectionChangedConn;
     // SVG Signals
     sigc::connection _pages_changed_connection;
+
+    std::unique_ptr<Inkscape::UI::Widget::ColorPicker> _bgnd_color_picker;
 };
 } // namespace Dialog
 } // namespace UI

@@ -44,6 +44,7 @@
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-names.h"
 #include "ui/interface.h"
+#include "ui/widget/color-picker.h"
 #include "ui/widget/export-lists.h"
 #include "ui/widget/export-preview.h"
 #include "ui/widget/scrollprotected.h"
@@ -120,6 +121,12 @@ void SingleExport::initialise(const Glib::RefPtr<Gtk::Builder> &builder)
     builder->get_widget("si_export", si_export);
 
     builder->get_widget("si_progress", _prog);
+
+    Gtk::Button* button = nullptr;
+    builder->get_widget("si_backgnd", button); 
+    assert(button);
+    _bgnd_color_picker = std::make_unique<Inkscape::UI::Widget::ColorPicker>(
+        _("Background color"), _("Color used to fill background"), 0xffffff00, true, button);
 }
 
 // Inkscape Selection Modified CallBack
@@ -205,7 +212,12 @@ void SingleExport::setup()
     si_filename_entry->signal_activate().connect(sigc::mem_fun(*this, &SingleExport::onExport));
     si_show_preview->signal_toggled().connect(sigc::mem_fun(*this, &SingleExport::refreshPreview));
     si_hide_all->signal_toggled().connect(sigc::mem_fun(*this, &SingleExport::refreshPreview));
-
+    _bgnd_color_picker->connectChanged([=](guint32 color){
+        if (_desktop) {
+            Inkscape::UI::Dialog::set_export_bg_color(_desktop->getNamedView(), color);
+        }
+        refreshPreview();
+    });
     si_default_opts->set_active(prefs->getBool("/dialogs/export/defaultopts", true));
 }
 
@@ -556,7 +568,8 @@ void SingleExport::onExport()
         std::vector<SPItem *> selected(selection->items().begin(), selection->items().end());
 
         exportSuccessful = Export::exportRaster(
-            area, width, height, dpi, filename, false, onProgressCallback, prog_dlg,
+            area, width, height, dpi, _bgnd_color_picker->get_current_color(),
+            filename, false, onProgressCallback, prog_dlg,
             omod, selected_only ? &selected : nullptr);
 
     } else {
@@ -948,6 +961,7 @@ void SingleExport::refreshPreview()
     float y0 = unit->convert(spin_buttons[SPIN_Y0]->get_value(), "px");
     float y1 = unit->convert(spin_buttons[SPIN_Y1]->get_value(), "px");
     preview->setDbox(x0, x1, y0, y1);
+    preview->set_background_color(_bgnd_color_picker->get_current_color());
     preview->refreshHide(hide ? &selected : nullptr);
     preview->queueRefresh();
 }
@@ -970,9 +984,17 @@ void SingleExport::setDocument(SPDocument *document)
             refreshPage();
             refresh();
         });
+
+        auto bg_color = get_export_bg_color(document->getNamedView(), 0xffffff00);
+        _bgnd_color_picker->setRgba32(bg_color);
+
+        //TODO: we should refresh preview, but sometimes it crashes in UnitMenu::getUnit() if invoked from here
+        // refreshPreview();
     }
     preview->setDocument(document);
 }
+
+SingleExport::~SingleExport() {}
 
 } // namespace Dialog
 } // namespace UI

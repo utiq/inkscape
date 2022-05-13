@@ -31,6 +31,7 @@ namespace Util {
 namespace UI {
     namespace Widget {
         class UnitMenu;
+        class ColorPicker;
     }
 namespace Dialog {
     class ExportPreview;
@@ -43,7 +44,7 @@ public:
     SingleExport(){};
     SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade)
         : Gtk::Box(cobject){};
-    ~SingleExport() override{};
+    ~SingleExport() override;
 
 private:
     InkscapeApplication *_app = nullptr;
@@ -199,6 +200,8 @@ private:
     sigc::connection browseConn;
     // Document Signals
     sigc::connection _page_selected_connection;
+
+    std::unique_ptr<Inkscape::UI::Widget::ColorPicker> _bgnd_color_picker;
 };
 } // namespace Dialog
 } // namespace UI

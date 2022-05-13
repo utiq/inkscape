@@ -124,11 +124,22 @@ void CanvasPage::update(Geom::Rect size, const char *txt, bool outline)
             // This undoes the hide for the background rect, and additionally gives it a fill and shadow.
             if (!is_foreground) {
                 rect->show();
+/*
+                if (_checkerboard) {
+                    // draw checkerboard pattern, ignore alpha (background color doesn't support it)
+                    rect->set_background_checkerboard(_background_color, false);
+                }
+                else {
+                    // Background color does not support transparency; draw opaque pages
+                    rect->set_background(_background_color | 0xff);
+                }
+*/
                 rect->set_fill(_background_color);
                 rect->set_shadow(shadow_color, _shadow_size);
             } else {
                 rect->set_fill(0x0);
                 rect->set_shadow(0x0, 0);
+
             }
         }
         if (auto label = dynamic_cast<CanvasItemText *>(item)) {

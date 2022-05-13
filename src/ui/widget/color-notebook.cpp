@@ -55,7 +55,7 @@ namespace UI {
 namespace Widget {
 
 
-ColorNotebook::ColorNotebook(SelectedColor &color)
+ColorNotebook::ColorNotebook(SelectedColor &color, bool no_alpha)
     : Gtk::Grid()
     , _selected_color(color)
 {
@@ -69,7 +69,7 @@ ColorNotebook::ColorNotebook(SelectedColor &color)
     //_available_pages.push_back(new Page(new ColorWheelSelectorFactory, "color-selector-wheel"));
     _available_pages.push_back(new Page(new ColorICCSelectorFactory, "color-selector-cms"));
 
-    _initUI();
+    _initUI(no_alpha);
 
     _selected_color.signal_changed.connect(sigc::mem_fun(this, &ColorNotebook::_onSelectedColorChanged));
     _selected_color.signal_dragged.connect(sigc::mem_fun(this, &ColorNotebook::_onSelectedColorChanged));
@@ -90,7 +90,7 @@ void ColorNotebook::set_label(const Glib::ustring& label) {
     _label->set_markup(label);
 }
 
-void ColorNotebook::_initUI()
+void ColorNotebook::_initUI(bool no_alpha)
 {
     guint row = 0;
 
@@ -118,7 +118,7 @@ void ColorNotebook::_initUI()
     _combo->set_tooltip_text(_("Choose style of color selection"));
 
     for (auto&& page : _available_pages) {
-        _addPage(page);
+        _addPage(page, no_alpha);
     }
 
     _label = Gtk::make_managed<Gtk::Label>();
@@ -318,9 +318,9 @@ void ColorNotebook::_setCurrentPage(int i, bool sync_combo)
     }
 }
 
-void ColorNotebook::_addPage(Page &page)
+void ColorNotebook::_addPage(Page &page, bool no_alpha)
 {
-    if (auto selector_widget = page.selector_factory->createWidget(_selected_color)) {
+    if (auto selector_widget = page.selector_factory->createWidget(_selected_color, no_alpha)) {
         selector_widget->show();
 
         Glib::ustring mode_name = page.selector_factory->modeName();

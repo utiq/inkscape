@@ -611,14 +611,9 @@ bool PageManager::subset(SPAttr key, const gchar *value)
             sp_ink_read_opacity(value, &this->border_color, 0x000000ff);
             break;
         case SPAttr::PAGECOLOR:
-            this->background_color = this->background_color & 0xff;
             if (value) {
-                this->background_color = this->background_color | sp_svg_read_color(value, this->background_color);
-                return false; // propagate further
+                this->background_color = sp_svg_read_color(value, this->background_color) | 0xff;
             }
-            break;
-        case SPAttr::INKSCAPE_PAGEOPACITY:
-            sp_ink_read_opacity(value, &this->background_color, 0xffffff00);
             break;
         case SPAttr::SHOWPAGESHADOW: // Deprecated
             this->shadow_show.readOrUnset(value);
@@ -638,7 +633,10 @@ bool PageManager::subset(SPAttr key, const gchar *value)
 bool PageManager::setDefaultAttributes(Inkscape::CanvasPage *item)
 {
     const int shadow_size = 2; // fixed, not configurable; shadow changes size with zoom
-    return item->setAttributes(border_on_top, border_show ? border_color : 0x0, background_color | (checkerboard ? 0x0 : 0xff),
+    // note: page background color doesn't have configurable transparency; it is considered to be opaque;
+    // here alpha gets manipulated to reveal checkerboard pattern, if needed
+    auto bgcolor = checkerboard ? background_color & ~0xff : background_color | 0xff;
+    return item->setAttributes(border_on_top, border_show ? border_color : 0x0, bgcolor,
                                border_show && shadow_show ? shadow_size : 0);
 }
 

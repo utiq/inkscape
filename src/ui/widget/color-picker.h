@@ -53,7 +53,7 @@ public:
     sigc::connection connectChanged (const sigc::slot<void,guint>& slot)
         { return _changed_signal.connect (slot); }
     void use_transparency(bool enable);
-
+    guint32 get_current_color() const;
 protected:
 
     void _onSelectedColorChanged();

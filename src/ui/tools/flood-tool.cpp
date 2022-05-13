@@ -780,7 +780,7 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
         bgcolor = document->getPageManager().background_color;
 
         // bgcolor is 0xrrggbbaa, we need 0xaarrggbb
-        dtc = (bgcolor >> 8) | (bgcolor << 24);
+        dtc = bgcolor >> 8; // keep color transparent; page color doesn't support transparency anymore
 
         dc.setSource(bgcolor);
         dc.setOperator(CAIRO_OPERATOR_SOURCE);

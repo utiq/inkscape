@@ -41,6 +41,9 @@ enum notebook_page
     BATCH_EXPORT
 };
 
+void set_export_bg_color(SPObject* object, guint32 color);
+guint32 get_export_bg_color(SPObject* object, guint32 default_color);
+
 class ExportProgressDialog : public Gtk::Dialog
 {
 private:
@@ -111,7 +114,7 @@ public:
 
     static bool exportRaster(
         Geom::Rect const &area, unsigned long int const &width, unsigned long int const &height,
-        float const &dpi, Glib::ustring const &filename, bool overwrite,
+        float const &dpi, guint32 bg_color, Glib::ustring const &filename, bool overwrite,
         unsigned (*callback)(float, void *), ExportProgressDialog *&prog_dialog,
         Inkscape::Extension::Output *extension, std::vector<SPItem *> *items = nullptr);
   

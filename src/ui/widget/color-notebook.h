@@ -37,7 +37,7 @@ class ColorNotebook
     : public Gtk::Grid
 {
 public:
-    ColorNotebook(SelectedColor &color);
+    ColorNotebook(SelectedColor &color, bool no_alpha = false);
     ~ColorNotebook() override;
 
     void set_label(const Glib::ustring& label);
@@ -50,8 +50,8 @@ protected:
         Glib::ustring icon_name;
     };
 
-    virtual void _initUI();
-    void _addPage(Page &page);
+    void _initUI(bool no_alpha);
+    void _addPage(Page &page, bool no_alpha);
 
     void _pickColor(ColorRGBA *color);
     static void _onPickerClicked(GtkWidget *widget, ColorNotebook *colorbook);

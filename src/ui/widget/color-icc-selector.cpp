@@ -295,11 +295,11 @@ class ColorICCSelectorImpl {
 
 const gchar *ColorICCSelector::MODE_NAME = N_("CMS");
 
-ColorICCSelector::ColorICCSelector(SelectedColor &color)
+ColorICCSelector::ColorICCSelector(SelectedColor &color, bool no_alpha)
     : _impl(nullptr)
 {
     _impl = new ColorICCSelectorImpl(this, color);
-    init();
+    init(no_alpha);
     color.signal_changed.connect(sigc::mem_fun(this, &ColorICCSelector::_colorChanged));
     // color.signal_dragged.connect(sigc::mem_fun(this, &ColorICCSelector::_colorChanged));
 }
@@ -340,7 +340,7 @@ ColorICCSelectorImpl::~ColorICCSelectorImpl()
     _label = nullptr;
 }
 
-void ColorICCSelector::init()
+void ColorICCSelector::init(bool no_alpha)
 {
     gint row = 0;
 
@@ -478,6 +478,12 @@ void ColorICCSelector::init()
     sp_dialog_defocus_on_enter(_impl->_sbtn);
     gtk_label_set_mnemonic_widget(GTK_LABEL(_impl->_label), _impl->_sbtn);
     gtk_widget_show(_impl->_sbtn);
+
+    if (no_alpha) {
+        _impl->_slider->hide();
+        gtk_widget_hide(_impl->_label);
+        gtk_widget_hide(_impl->_sbtn);
+    }
 
     attachToGridOrTable(t, _impl->_sbtn, 2, row, 1, 1, false, true);
 
@@ -1003,9 +1009,9 @@ void ColorICCSelectorImpl::_sliderChanged()
     //     iccSelector->_dragging );
 }
 
-Gtk::Widget *ColorICCSelectorFactory::createWidget(Inkscape::UI::SelectedColor &color) const
+Gtk::Widget *ColorICCSelectorFactory::createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const
 {
-    Gtk::Widget *w = Gtk::manage(new ColorICCSelector(color));
+    Gtk::Widget *w = Gtk::manage(new ColorICCSelector(color, no_alpha));
     return w;
 }
 
