@@ -1672,7 +1672,7 @@ Contribute Time</property>
                                 <property name="wrap">True</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
-                                  <attribute name="scale" value="1.8"/>
+                                  <attribute name="scale" value="1.4"/>
                                 </attributes>
                               </object>
                               <packing>
@@ -1730,7 +1730,7 @@ Fund Inkscape</property>
                                 <property name="wrap">True</property>
                                 <attributes>
                                   <attribute name="weight" value="bold"/>
-                                  <attribute name="scale" value="1.8"/>
+                                  <attribute name="scale" value="1.4"/>
                                 </attributes>
                               </object>
                               <packing>

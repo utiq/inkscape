@@ -154,6 +154,7 @@ StartScreen::StartScreen()
 
     // Get window from Glade file.
     builder->get_widget("start-screen-window", window);
+    set_name("start-screen-window");
     set_title(Inkscape::inkscape_version());
 
     // Get references to various widgets used globally.
