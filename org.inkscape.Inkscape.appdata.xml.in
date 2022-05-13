@@ -34,6 +34,9 @@
   <url type="help">https://inkscape.org/learn</url>
   <url type="donation">https://inkscape.org/support-us/donate</url>
   <url type="translate">https://inkscape.org/contribute/translations</url>
+  <url type="faq">https://inkscape.org/learn/faq</url>
+  <url type="vcs-browser">https://gitlab.com/inkscape/inkscape</url>
+  <url type="contribute">https://inkscape.org/contribute</url>
   <screenshots>
     <screenshot type="default">
       <image>https://media.inkscape.org/media/resources/file/Screenshot_Freedom_Machine_Inkscape_master_FB3NeUU.png</image>
@@ -161,4 +164,12 @@
     <id>inkscape.desktop</id>
   </provides>
   <content_rating type="oars-1.1" />
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>tablet</control>
+  </supports>
+  <recommends>
+    <display_length compare="ge">medium</display_length>
+  </recommends>
 </component>
