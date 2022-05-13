@@ -117,7 +117,7 @@ void Inkscape::ObjectSnapper::_collectNodes(SnapSourceType const &t,
             }
         }
 
-        for (const auto & _candidate : *_snapmanager->obj_snapper_candidates) {
+        for (const auto & _candidate : *_snapmanager->_obj_snapper_candidates) {
             //Geom::Affine i2doc(Geom::identity());
             SPItem *root_item = _candidate.item;
 
@@ -160,7 +160,7 @@ void Inkscape::ObjectSnapper::_collectNodes(SnapSourceType const &t,
                 // current selection (see the comment in SelTrans::centerRequest())
                 bool old_pref2 = _snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_ROTATION_CENTER);
                 if (old_pref2) {
-                	std::vector<SPItem*> rotationSource=_snapmanager->getRotationCenterSource();
+                    std::vector<SPItem*> rotationSource=_snapmanager->getRotationCenterSource();
                     for (auto itemlist : rotationSource) {
                         if (_candidate.item == itemlist) {
                             // don't snap to this item's rotation center
@@ -302,7 +302,7 @@ void Inkscape::ObjectSnapper::_collectPaths(Geom::Point /*p*/,
             }
         }
 
-        for (const auto & _candidate : *_snapmanager->obj_snapper_candidates) {
+        for (const auto & _candidate : *_snapmanager->_obj_snapper_candidates) {
 
             /* Transform the requested snap point to this item's coordinates */
             Geom::Affine i2doc(Geom::identity());
@@ -514,7 +514,7 @@ void Inkscape::ObjectSnapper::_snapPathsConstrained(IntermSnapResults &isr,
                                      SnapCandidatePoint const &p,
                                      SnapConstraint const &c,
                                      Geom::Point const &p_proj_on_constraint,
-									 std::vector<SnapCandidatePoint> *unselected_nodes,
+                                     std::vector<SnapCandidatePoint> *unselected_nodes,
                                      SPPath const *selected_path) const
 {
 
@@ -556,7 +556,7 @@ void Inkscape::ObjectSnapper::_snapPathsConstrained(IntermSnapResults &isr,
     bool const node_tool_active = _snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PATH, SNAPTARGET_PATH_INTERSECTION) && selected_path != nullptr;
 
     //TODO: code duplication
-	if (p.getSourceNum() <= 0) {
+    if (p.getSourceNum() <= 0) {
         /* findCandidates() is used for snapping to both paths and nodes. It ignores the path that is
          * currently being edited, because that path requires special care: when snapping to nodes
          * only the unselected nodes of that path should be considered, and these will be passed on separately.
@@ -586,31 +586,31 @@ void Inkscape::ObjectSnapper::_snapPathsConstrained(IntermSnapResults &isr,
 
             // Convert the collected intersections to snapped points
             for (const auto & inter : inters) {
-            	int index = inter.second.path_index; // index on the second path, which is the target path that we snapped to
-            	Geom::Curve const *curve = &(k.path_vector->at(index).at(inter.second.curve_index));
+                int index = inter.second.path_index; // index on the second path, which is the target path that we snapped to
+                Geom::Curve const *curve = &(k.path_vector->at(index).at(inter.second.curve_index));
 
-            	bool c1 = true;
-				bool c2 = true;
-				//TODO: Remove code duplication, see _snapPaths; it's documented in detail there
-				if (being_edited) {
-					g_assert(unselected_nodes != nullptr);
-					Geom::Point start_pt = dt->doc2dt(curve->pointAt(0));
-					Geom::Point end_pt = dt->doc2dt(curve->pointAt(1));
-					c1 = isUnselectedNode(start_pt, unselected_nodes);
-					c2 = isUnselectedNode(end_pt, unselected_nodes);
-				}
+                bool c1 = true;
+                bool c2 = true;
+                //TODO: Remove code duplication, see _snapPaths; it's documented in detail there
+                if (being_edited) {
+                    g_assert(unselected_nodes != nullptr);
+                    Geom::Point start_pt = dt->doc2dt(curve->pointAt(0));
+                    Geom::Point end_pt = dt->doc2dt(curve->pointAt(1));
+                    c1 = isUnselectedNode(start_pt, unselected_nodes);
+                    c2 = isUnselectedNode(end_pt, unselected_nodes);
+                }
 
-				if (!being_edited || (c1 && c2)) {
-					// Convert to desktop coordinates
-					Geom::Point p_inters = dt->doc2dt(inter.point());
-					// Construct a snapped point
-					Geom::Coord dist = Geom::L2(p.getPoint() - p_inters);
-					SnappedPoint s = SnappedPoint(p_inters, p.getSourceType(), p.getSourceNum(), k.target_type, dist, getSnapperTolerance(), getSnapperAlwaysSnap(), true, false, k.target_bbox);
-					// Store the snapped point
-					if (dist <= tolerance) { // If the intersection is within snapping range, then we might snap to it
-						isr.points.push_back(s);
-					}
-				}
+                if (!being_edited || (c1 && c2)) {
+                    // Convert to desktop coordinates
+                    Geom::Point p_inters = dt->doc2dt(inter.point());
+                    // Construct a snapped point
+                    Geom::Coord dist = Geom::L2(p.getPoint() - p_inters);
+                    SnappedPoint s = SnappedPoint(p_inters, p.getSourceType(), p.getSourceNum(), k.target_type, dist, getSnapperTolerance(), getSnapperAlwaysSnap(), true, false, k.target_bbox);
+                    // Store the snapped point
+                    if (dist <= tolerance) { // If the intersection is within snapping range, then we might snap to it
+                        isr.points.push_back(s);
+                    }
+                }
             }
         }
     }
@@ -627,12 +627,12 @@ void Inkscape::ObjectSnapper::freeSnap(IntermSnapResults &isr,
         return;
     }
 
-    /* Get a list of all the SPItems that we will try to snap to; this only needs to be done for the object snapper,
+    /* Get a list of all the SPItems that we will try to snap to; this only needs to be done for some snappers, and
     not for the grid snappers, so we'll do this here and not in the Snapmanager::freeSnap(). This saves us from wasting
     precious CPU cycles */
     if (p.getSourceNum() <= 0) {
         Geom::Rect const local_bbox_to_snap = bbox_to_snap ? *bbox_to_snap : Geom::Rect(p.getPoint(), p.getPoint());
-        _snapmanager->_findCandidates(_snapmanager->getDocument()->getRoot(), it, p.getSourceNum() <= 0, local_bbox_to_snap, false, Geom::identity());
+        _snapmanager->_findCandidates(_snapmanager->getDocument()->getRoot(), it, local_bbox_to_snap, false, Geom::identity());
     }
 
     _snapNodes(isr, p, unselected_nodes);
@@ -674,41 +674,41 @@ void Inkscape::ObjectSnapper::constrainedSnap( IntermSnapResults &isr,
     // project the mouse pointer onto the constraint. Only the projected point will be considered for snapping
     Geom::Point pp = c.projection(p.getPoint());
 
-    /* Get a list of all the SPItems that we will try to snap to; this only needs to be done for the object snapper,
+    /* Get a list of all the SPItems that we will try to snap to; this only needs to be done for some snappers, and
     not for the grid snappers, so we'll do this here and not in the Snapmanager::freeSnap(). This saves us from wasting
     precious CPU cycles */
     if (p.getSourceNum() <= 0) {
         Geom::Rect const local_bbox_to_snap = bbox_to_snap ? *bbox_to_snap : Geom::Rect(pp, pp); // Using the projected point here! Not so in freeSnap()!
-        _snapmanager->_findCandidates(_snapmanager->getDocument()->getRoot(), it, p.getSourceNum() <= 0, local_bbox_to_snap, false, Geom::identity());
+        _snapmanager->_findCandidates(_snapmanager->getDocument()->getRoot(), it, local_bbox_to_snap, false, Geom::identity());
     }
 
     // A constrained snap, is a snap in only one degree of freedom (specified by the constraint line).
-    // This is useful for example when scaling an object while maintaining a fixed aspect ratio. It's
+    // This is useful for example when scaling an object while maintaining a fixed aspect ratio. Its
     // nodes are only allowed to move in one direction (i.e. in one degree of freedom).
 
     _snapNodes(isr, p, unselected_nodes, c, pp);
 
     if (_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PATH, SNAPTARGET_PATH_INTERSECTION, SNAPTARGET_BBOX_EDGE, SNAPTARGET_PAGE_BORDER, SNAPTARGET_TEXT_BASELINE)) {
-    	//TODO: Remove code duplication; see freeSnap()
-    	unsigned n = (unselected_nodes == nullptr) ? 0 : unselected_nodes->size();
-		if (n > 0) {
-			/* While editing a path in the node tool, findCandidates must ignore that path because
-			 * of the node snapping requirements (i.e. only unselected nodes must be snapable).
-			 * That path must not be ignored however when snapping to the paths, so we add it here
-			 * manually when applicable
-			 */
-			SPPath const *path = nullptr;
-			if (it != nullptr) {
-				SPPath const *tmpPath = dynamic_cast<SPPath const *>(*it->begin());
-				if ((it->size() == 1) && tmpPath) {
-					path = tmpPath;
-				} // else: *it->begin() might be a SPGroup, e.g. when editing a LPE of text that has been converted to a group of paths
-				// as reported in bug #356743. In that case we can just ignore it, i.e. not snap to this item
-			}
-			_snapPathsConstrained(isr, p, c, pp, unselected_nodes, path);
-		} else {
-			_snapPathsConstrained(isr, p, c, pp, nullptr, nullptr);
-		}
+        //TODO: Remove code duplication; see freeSnap()
+        unsigned n = (unselected_nodes == nullptr) ? 0 : unselected_nodes->size();
+        if (n > 0) {
+            /* While editing a path in the node tool, findCandidates must ignore that path because
+             * of the node snapping requirements (i.e. only unselected nodes must be snapable).
+             * That path must not be ignored however when snapping to the paths, so we add it here
+             * manually when applicable
+             */
+            SPPath const *path = nullptr;
+            if (it != nullptr) {
+                SPPath const *tmpPath = dynamic_cast<SPPath const *>(*it->begin());
+                if ((it->size() == 1) && tmpPath) {
+                    path = tmpPath;
+                } // else: *it->begin() might be a SPGroup, e.g. when editing a LPE of text that has been converted to a group of paths
+                // as reported in bug #356743. In that case we can just ignore it, i.e. not snap to this item
+            }
+            _snapPathsConstrained(isr, p, c, pp, unselected_nodes, path);
+        } else {
+            _snapPathsConstrained(isr, p, c, pp, nullptr, nullptr);
+        }
     }
 }
 

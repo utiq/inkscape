@@ -437,13 +437,13 @@ private:
      */
     void _findCandidates(SPObject* parent,
                        std::vector<SPObject const *> const *it,
-                       bool const &first_point,
                        Geom::Rect const &bbox_to_snap,
                        bool const _clip_or_mask,
-                       Geom::Affine const additional_affine) const;
+                       Geom::Affine const additional_affine);
+    bool _findCandidates_already_called;
 
-    std::unique_ptr<std::vector<Inkscape::SnapCandidateItem>> obj_snapper_candidates;
-    std::unique_ptr<std::vector<Inkscape::SnapCandidateItem>> align_snapper_candidates;
+    std::unique_ptr<std::vector<Inkscape::SnapCandidateItem>> _obj_snapper_candidates;
+    std::unique_ptr<std::vector<Inkscape::SnapCandidateItem>> _align_snapper_candidates;
 
     friend class Inkscape::ObjectSnapper;
     friend class Inkscape::AlignmentSnapper;

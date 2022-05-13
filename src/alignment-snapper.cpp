@@ -87,7 +87,7 @@ void Inkscape::AlignmentSnapper::_collectBBoxPoints(bool const &first_point) con
 
 
     // collect bounding boxes of other objects
-    for (const auto & candidate : *(_snapmanager->align_snapper_candidates)) {
+    for (const auto & candidate : *(_snapmanager->_align_snapper_candidates)) {
         SPItem *root_item = candidate.item; 
 
         // get the root item in case we have a duplicate at hand
@@ -244,12 +244,17 @@ void Inkscape::AlignmentSnapper::freeSnap(IntermSnapResults &isr,
                                           std::vector<SPObject const *> const *it,
                                           std::vector<SnapCandidatePoint> *unselected_nodes) const
 {
+    // toggle checks
+    if (!_snap_enabled || !_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_ALIGNMENT_CATEGORY))
+        return;
+
     bool p_is_bbox = p.getSourceType() & SNAPSOURCE_BBOX_CATEGORY;
     bool p_is_node = p.getSourceType() & SNAPSOURCE_NODE_HANDLE;
     
-    // toggle checks 
-    if (!_snap_enabled || !_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_ALIGNMENT_CATEGORY))
-        return;
+    if (p.getSourceNum() <= 0) {
+        Geom::Rect const local_bbox_to_snap = bbox_to_snap ? *bbox_to_snap : Geom::Rect(p.getPoint(), p.getPoint());
+        _snapmanager->_findCandidates(_snapmanager->getDocument()->getRoot(), it, local_bbox_to_snap, false, Geom::identity());
+    }
 
     unsigned n = (unselected_nodes == nullptr) ? 0 : unselected_nodes->size();
 
@@ -267,15 +272,20 @@ void Inkscape::AlignmentSnapper::constrainedSnap(IntermSnapResults &isr,
               std::vector<SPObject const *> const *it,
               std::vector<SnapCandidatePoint> *unselected_nodes) const
 {
-    bool p_is_bbox = p.getSourceType() & SNAPSOURCE_BBOX_CATEGORY;
-    bool p_is_node = p.getSourceType() & SNAPSOURCE_NODE_HANDLE;
-    
     // project the mouse pointer onto the constraint. Only the projected point will be considered for snapping
     Geom::Point pp = c.projection(p.getPoint());
     
     // toggle checks 
     if (!_snap_enabled || !_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_ALIGNMENT_CATEGORY))
         return;
+
+    bool p_is_bbox = p.getSourceType() & SNAPSOURCE_BBOX_CATEGORY;
+    bool p_is_node = p.getSourceType() & SNAPSOURCE_NODE_HANDLE;
+
+    if (p.getSourceNum() <= 0) {
+        Geom::Rect const local_bbox_to_snap = bbox_to_snap ? *bbox_to_snap : Geom::Rect(p.getPoint(), p.getPoint());
+        _snapmanager->_findCandidates(_snapmanager->getDocument()->getRoot(), it, local_bbox_to_snap, false, Geom::identity());
+    }
 
     unsigned n = (unselected_nodes == nullptr) ? 0 : unselected_nodes->size();
 
