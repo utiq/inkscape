@@ -536,6 +536,8 @@ void PagesTool::connectDocument(SPDocument *doc)
     }
 }
 
+
+
 void PagesTool::selectionChanged(SPDocument *doc, SPPage *page)
 {
     if (_page_modified_connection) {
@@ -546,11 +548,10 @@ void PagesTool::selectionChanged(SPDocument *doc, SPPage *page)
     }
 
     // Loop existing pages because highlight_item is unsafe.
-    if (doc) {
-        for (auto &possible : doc->getPageManager().getPages()) {
-            if (highlight_item == possible) {
-                highlight_item->setSelected(false);
-            }
+    // Use desktop's document instead of doc, which may be nullptr.
+    for (auto &possible : _desktop->getDocument()->getPageManager().getPages()) {
+        if (highlight_item == possible) {
+            highlight_item->setSelected(false);
         }
     }
     highlight_item = page;
