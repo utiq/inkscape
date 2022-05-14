@@ -39,7 +39,7 @@ void SPGaussianBlur::set(SPAttr key, char const *value)
     }
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPGaussianBlur::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPGaussianBlur::build_renderer(Inkscape::DrawingItem*) const
 {
     auto blur = std::make_unique<Inkscape::Filters::FilterGaussian>();
     build_renderer_common(blur.get());

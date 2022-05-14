@@ -102,7 +102,7 @@ void SPFeColorMatrix::set(SPAttr key, char const *str)
     }
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeColorMatrix::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeColorMatrix::build_renderer(Inkscape::DrawingItem*) const
 {
     auto colormatrix = std::make_unique<Inkscape::Filters::FilterColorMatrix>();
     build_renderer_common(colormatrix.get());

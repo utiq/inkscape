@@ -18,7 +18,7 @@
 #include "svg/svg.h"
 #include "xml/repr.h"
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeTile::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeTile::build_renderer(Inkscape::DrawingItem*) const
 {
     auto tile = std::make_unique<Inkscape::Filters::FilterTile>();
     build_renderer_common(tile.get());

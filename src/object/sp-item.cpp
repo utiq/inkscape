@@ -50,6 +50,7 @@
 #include "sp-use.h"
 
 #include "style.h"
+#include "display/nr-filter.h"
 #include "snap-preferences.h"
 #include "snap-candidate.h"
 
@@ -83,8 +84,9 @@ SPItem::SPItem()
     clip_ref = nullptr;
     mask_ref = nullptr;
 
-    style->signal_fill_ps_changed.connect([this] (auto old_obj, auto obj) { fill_ps_ref_changed(old_obj, obj); });
+    style->signal_fill_ps_changed.connect  ([this] (auto old_obj, auto obj) { fill_ps_ref_changed  (old_obj, obj); });
     style->signal_stroke_ps_changed.connect([this] (auto old_obj, auto obj) { stroke_ps_ref_changed(old_obj, obj); });
+    style->signal_filter_changed.connect   ([this] (auto old_obj, auto obj) { filter_ref_changed   (old_obj, obj); });
 
     avoidRef = nullptr;
 }
@@ -457,14 +459,18 @@ void SPItem::release()
 
     SPObject::release();
 
-    SPPaintServer *fill_ps = style->getFillPaintServer();
-    SPPaintServer *stroke_ps = style->getStrokePaintServer();
+    auto fill_ps = style->getFillPaintServer();
+    auto stroke_ps = style->getStrokePaintServer();
+    auto filter = style->getFilter();
     for (auto &v : views) {
         if (fill_ps) {
             fill_ps->hide(v.drawingitem->key() + ITEM_KEY_FILL);
         }
         if (stroke_ps) {
             stroke_ps->hide(v.drawingitem->key() + ITEM_KEY_STROKE);
+        }
+        if (filter) {
+            filter->hide(v.drawingitem);
         }
         delete v.drawingitem;
     }
@@ -678,9 +684,26 @@ void SPItem::stroke_ps_ref_changed(SPObject *old_ps, SPObject *ps)
     }
 }
 
-void SPItem::update(SPCtx* ctx, guint flags) {
+void SPItem::filter_ref_changed(SPObject *old_obj, SPObject *obj)
+{
+    auto old_filter = dynamic_cast<SPFilter*>(old_obj);
+    if (old_filter) {
+        for (auto &v : views) {
+            old_filter->hide(v.drawingitem);
+        }
+    }
 
-    SPItemCtx const *ictx = reinterpret_cast<SPItemCtx const *>(ctx);
+    auto new_filter = dynamic_cast<SPFilter*>(obj);
+    if (new_filter) {
+        for (auto &v : views) {
+            new_filter->show(v.drawingitem);
+        }
+    }
+}
+
+void SPItem::update(SPCtx *ctx, unsigned flags)
+{
+    auto ictx = static_cast<SPItemCtx const*>(ctx);
 
     // Any of the modifications defined in sp-object.h might change bbox,
     // so we invalidate it unconditionally
@@ -1207,6 +1230,9 @@ Inkscape::DrawingItem *SPItem::invoke_show(Inkscape::Drawing &drawing, unsigned 
         auto ap = stroke->show(drawing, stroke_key, bbox);
         ai->setStrokePattern(ap);
     }
+    if (auto filter = style->getFilter()) {
+        filter->show(ai);
+    }
 
     return ai;
 }
@@ -1236,6 +1262,9 @@ void SPItem::invoke_hide(unsigned key)
             }
             if (auto stroke_ps = style->getStrokePaintServer()) {
                 stroke_ps->hide(ai_key + ITEM_KEY_STROKE);
+            }
+            if (auto filter = style->getFilter()) {
+                filter->hide(v.drawingitem);
             }
             delete v.drawingitem;
 

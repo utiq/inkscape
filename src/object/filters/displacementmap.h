@@ -43,7 +43,7 @@ protected:
     void update(SPCtx *ctx, unsigned int flags) override;
     Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
-    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEDISPLACEMENTMAP, SPFeDisplacementMap)

@@ -1137,13 +1137,10 @@ sp_style_object_release(SPObject *object, SPStyle *style)
 /**
  * Emit style modified signal on style's object if the filter changed.
  */
-static void
-sp_style_filter_ref_modified(SPObject *obj, guint flags, SPStyle *style)
+static void sp_style_filter_ref_modified(SPObject *obj, unsigned flags, SPStyle *style)
 {
-    (void)flags; // TODO
-    SPFilter *filter=static_cast<SPFilter *>(obj);
-    if (style->getFilter() == filter && flags & SP_OBJECT_MODIFIED_FLAG)
-    {
+    auto filter = static_cast<SPFilter*>(obj);
+    if (style->getFilter() == filter && flags & SP_OBJECT_MODIFIED_FLAG) {
         if (style->object) {
             style->object->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
         }
@@ -1154,20 +1151,19 @@ sp_style_filter_ref_modified(SPObject *obj, guint flags, SPStyle *style)
 /**
  * Gets called when the filter is (re)attached to the style
  */
-void
-sp_style_filter_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
+void sp_style_filter_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
 {
     if (old_ref) {
-        (dynamic_cast<SPFilter *>( old_ref ))->_refcount--;
+        static_cast<SPFilter*>(old_ref)->_refcount--;
         style->filter_modified_connection.disconnect();
     }
-    if ( SP_IS_FILTER(ref))
-    {
-       (dynamic_cast<SPFilter *>( ref ))->_refcount++;
-        style->filter_modified_connection =
-           ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_filter_ref_modified), style));
+
+    if (SP_IS_FILTER(ref)) {
+        static_cast<SPFilter*>(ref)->_refcount++;
+        style->filter_modified_connection = ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_filter_ref_modified), style));
     }
 
+    style->signal_filter_changed.emit(old_ref, ref);
     sp_style_filter_ref_modified(ref, 0, style);
 }
 
@@ -1175,8 +1171,7 @@ sp_style_filter_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
  * Emit style modified signal on style's object if server is style's fill
  * or stroke paint server.
  */
-static void
-sp_style_paint_server_ref_modified(SPObject *obj, unsigned /*flags*/, SPStyle *style)
+static void sp_style_paint_server_ref_modified(SPObject *obj, unsigned /*flags*/, SPStyle *style)
 {
     // todo: use flags
     auto server = static_cast<SPPaintServer*>(obj);
@@ -1201,15 +1196,14 @@ sp_style_paint_server_ref_modified(SPObject *obj, unsigned /*flags*/, SPStyle *s
 /**
  * Gets called when the paintserver is (re)attached to the style
  */
-void
-sp_style_fill_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
+void sp_style_fill_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
 {
     if (old_ref) {
         style->fill_ps_modified_connection.disconnect();
     }
+
     if (SP_IS_PAINT_SERVER(ref)) {
-        style->fill_ps_modified_connection =
-           ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_paint_server_ref_modified), style));
+        style->fill_ps_modified_connection = ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_paint_server_ref_modified), style));
     }
 
     style->signal_fill_ps_changed.emit(old_ref, ref);
@@ -1219,15 +1213,14 @@ sp_style_fill_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle
 /**
  * Gets called when the paintserver is (re)attached to the style
  */
-void
-sp_style_stroke_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
+void sp_style_stroke_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
 {
     if (old_ref) {
         style->stroke_ps_modified_connection.disconnect();
     }
+
     if (SP_IS_PAINT_SERVER(ref)) {
-        style->stroke_ps_modified_connection =
-          ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_paint_server_ref_modified), style));
+        style->stroke_ps_modified_connection = ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_paint_server_ref_modified), style));
     }
 
     style->signal_stroke_ps_changed.emit(old_ref, ref);

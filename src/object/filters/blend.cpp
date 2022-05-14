@@ -200,7 +200,7 @@ Inkscape::XML::Node *SPFeBlend::write(Inkscape::XML::Document *doc, Inkscape::XM
     return SPFilterPrimitive::write(doc, repr, flags);
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeBlend::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeBlend::build_renderer(Inkscape::DrawingItem*) const
 {
     auto blend = std::make_unique<Inkscape::Filters::FilterBlend>();
     build_renderer_common(blend.get());

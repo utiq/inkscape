@@ -22,6 +22,7 @@ class SPItem;
 
 namespace Inkscape {
 class Pixbuf;
+class DrawingItem;
 
 namespace Filters {
 class FilterSlot;
@@ -29,9 +30,6 @@ class FilterSlot;
 class FilterImage : public FilterPrimitive
 {
 public:
-    FilterImage();
-    ~FilterImage() override;
-
     void render_cairo(FilterSlot &slot) override;
     bool can_handle_affine(Geom::Affine const &) const override;
     double complexity(Geom::Affine const &ctm) const override;
@@ -40,17 +38,13 @@ public:
     void set_href(char const *href);
     void set_align(unsigned align);
     void set_clip(unsigned clip);
-    bool from_element;
-    SPItem *SVGElem;
 
     Glib::ustring name() const override { return Glib::ustring("Image"); }
 
-private:
-    SPDocument *document;
-    std::string feImageHref;
-    std::unique_ptr<Inkscape::Pixbuf> image;
+    Inkscape::DrawingItem *item;
+    bool from_element = false;
+
     unsigned aspect_align, aspect_clip;
-    bool broken_ref;
 };
 
 } // namespace Filters

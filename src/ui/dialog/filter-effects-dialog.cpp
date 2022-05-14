@@ -1716,7 +1716,7 @@ void FilterEffectsDialog::CellRendererConnection::get_preferred_height_vfunc(Gtk
 {
     // Scale the height depending on the number of inputs, unless it's
     // the first primitive, in which case there are no connections.
-    auto prim = _primitive.get_value();
+    auto prim = reinterpret_cast<SPFilterPrimitive*>(_primitive.get_value());
     minimum_height = natural_height = size * input_count(prim);
 }
 
@@ -3087,7 +3087,7 @@ void FilterEffectsDialog::update_settings_view()
 void FilterEffectsDialog::update_settings_sensitivity()
 {
     SPFilterPrimitive* prim = _primitive_list.get_selected();
-    bool use_k = SP_IS_FECOMPOSITE(prim) && SP_FECOMPOSITE(prim)->get_composite_operator() == COMPOSITE_ARITHMETIC;
+    const bool use_k = SP_IS_FECOMPOSITE(prim) && SP_FECOMPOSITE(prim)->get_composite_operator() == COMPOSITE_ARITHMETIC;
     _k1->set_sensitive(use_k);
     _k2->set_sensitive(use_k);
     _k3->set_sensitive(use_k);

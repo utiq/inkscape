@@ -425,18 +425,38 @@ bool SPFilter::valid_for(SPObject const *obj) const
 void SPFilter::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 {
     SPObject::child_added(child, ref);
+
+    if (auto f = SP_FILTER_PRIMITIVE(get_child_by_repr(child))) {
+        for (auto &v : views) {
+            f->show(v);
+        }
+    }
+
     requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFilter::remove_child(Inkscape::XML::Node *child)
 {
+    if (auto f = SP_FILTER_PRIMITIVE(get_child_by_repr(child))) {
+        for (auto &v : views) {
+            f->hide(v);
+        }
+    }
+
     SPObject::remove_child(child);
+
     requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
-void SPFilter::build_renderer(Inkscape::Filters::Filter *nr_filter) const
+void SPFilter::order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_repr, Inkscape::XML::Node *new_repr)
 {
-    g_assert(nr_filter);
+    SPObject::order_changed(child, old_repr, new_repr);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
+}
+
+std::unique_ptr<Inkscape::Filters::Filter> SPFilter::build_renderer(Inkscape::DrawingItem *item) const
+{
+    auto nr_filter = std::make_unique<Inkscape::Filters::Filter>(primitive_count());
 
     nr_filter->set_filter_units(filterUnits);
     nr_filter->set_primitive_units(primitiveUnits);
@@ -456,9 +476,11 @@ void SPFilter::build_renderer(Inkscape::Filters::Filter *nr_filter) const
     nr_filter->clear_primitives();
     for (auto &primitive_obj: children) {
         if (auto primitive = SP_FILTER_PRIMITIVE(&primitive_obj)) {
-            nr_filter->add_primitive(primitive->build_renderer());
+            nr_filter->add_primitive(primitive->build_renderer(item));
         }
     }
+
+    return nr_filter;
 }
 
 int SPFilter::primitive_count() const
@@ -543,6 +565,30 @@ Glib::ustring SPFilter::get_new_result_name() const
     }
 
     return "result" + Glib::Ascii::dtostr(largest + 1);
+}
+
+void SPFilter::show(Inkscape::DrawingItem *item)
+{
+    views.emplace_back(item);
+
+    for (auto &c : children) {
+        if (auto f = SP_FILTER_PRIMITIVE(&c)) {
+            f->show(item);
+        }
+    }
+}
+
+void SPFilter::hide(Inkscape::DrawingItem *item)
+{
+    auto it = std::find(views.begin(), views.end(), item);
+    assert(it != views.end());
+    views.erase(it);
+
+    for (auto &c : children) {
+        if (auto f = SP_FILTER_PRIMITIVE(&c)) {
+            f->hide(item);
+        }
+    }
 }
 
 /*

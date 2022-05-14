@@ -89,7 +89,7 @@ void SPFeFlood::set(SPAttr key, char const *value)
     }
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeFlood::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeFlood::build_renderer(Inkscape::DrawingItem*) const
 {
     auto flood = std::make_unique<Inkscape::Filters::FilterFlood>();
     build_renderer_common(flood.get());

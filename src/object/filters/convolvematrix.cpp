@@ -214,7 +214,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
     }
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeConvolveMatrix::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeConvolveMatrix::build_renderer(Inkscape::DrawingItem*) const
 {
     auto convolve = std::make_unique<Inkscape::Filters::FilterConvolveMatrix>();
     build_renderer_common(convolve.get());

@@ -174,7 +174,7 @@ void SPFeDiffuseLighting::order_changed(Inkscape::XML::Node *child, Inkscape::XM
     parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeDiffuseLighting::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeDiffuseLighting::build_renderer(Inkscape::DrawingItem*) const
 {
     auto diffuselighting = std::make_unique<Inkscape::Filters::FilterDiffuseLighting>();
     build_renderer_common(diffuselighting.get());

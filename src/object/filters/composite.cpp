@@ -205,7 +205,7 @@ Inkscape::XML::Node* SPFeComposite::write(Inkscape::XML::Document *doc, Inkscape
     return repr;
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComposite::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComposite::build_renderer(Inkscape::DrawingItem*) const
 {
     auto composite = std::make_unique<Inkscape::Filters::FilterComposite>();
     build_renderer_common(composite.get());

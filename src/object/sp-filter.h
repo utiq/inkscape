@@ -28,6 +28,8 @@
 #define SP_FILTER_PRIMITIVE_UNITS(f) (SP_FILTER(f)->primitiveUnits)
 
 namespace Inkscape {
+class Drawing;
+class DrawingItem;
 namespace Filters {
 class Filter;
 } // namespace Filters
@@ -44,9 +46,8 @@ public:
     SPFilter();
     ~SPFilter() override;
 
-    /* Initializes the given Inkscape::Filters::Filter object as a renderer for this
-     * SPFilter object. */
-    void build_renderer(Inkscape::Filters::Filter *nr_filter) const;
+    // Returns a renderer for this filter, for use by the DrawingItem item.
+    std::unique_ptr<Inkscape::Filters::Filter> build_renderer(Inkscape::DrawingItem *item) const;
 
     /// Returns the number of filter primitives in this SPFilter object.
     int primitive_count() const;
@@ -72,6 +73,9 @@ public:
     /// Returns a result image name that is not in use inside this filter.
     Glib::ustring get_new_result_name() const;
 
+    void show(Inkscape::DrawingItem *item);
+    void hide(Inkscape::DrawingItem *item);
+
     SPFilterUnits filterUnits;
     unsigned int filterUnits_set : 1;
     SPFilterUnits primitiveUnits;
@@ -91,6 +95,7 @@ protected:
 
     void child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref) override;
     void remove_child(Inkscape::XML::Node *child) override;
+    void order_changed(Inkscape::XML::Node* child, Inkscape::XML::Node* old_repr, Inkscape::XML::Node* new_repr) override;
 
     void set(SPAttr key, char const *value) override;
 
@@ -102,6 +107,8 @@ protected:
 private:
     std::map<std::string, int> _image_name;
     int _image_number_next;
+
+    std::vector<Inkscape::DrawingItem*> views;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FILTER, SPFilter)

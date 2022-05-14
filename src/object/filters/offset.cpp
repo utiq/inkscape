@@ -59,7 +59,7 @@ void SPFeOffset::set(SPAttr key, char const *value)
     }
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeOffset::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeOffset::build_renderer(Inkscape::DrawingItem*) const
 {
     auto offset = std::make_unique<Inkscape::Filters::FilterOffset>();
     build_renderer_common(offset.get());

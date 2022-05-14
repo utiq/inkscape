@@ -78,7 +78,7 @@ void SPFeMorphology::set(SPAttr key, char const *value)
     }
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMorphology::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMorphology::build_renderer(Inkscape::DrawingItem*) const
 {
     auto morphology = std::make_unique<Inkscape::Filters::FilterMorphology>();
     build_renderer_common(morphology.get());

@@ -174,7 +174,7 @@ Inkscape::XML::Node *SPFeDisplacementMap::write(Inkscape::XML::Document *doc, In
     return repr;
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeDisplacementMap::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeDisplacementMap::build_renderer(Inkscape::DrawingItem*) const
 {
     auto displacement_map = std::make_unique<Inkscape::Filters::FilterDisplacementMap>();
     build_renderer_common(displacement_map.get());

@@ -45,7 +45,7 @@ void SPFeComponentTransfer::release()
 	SPFilterPrimitive::release();
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComponentTransfer::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComponentTransfer::build_renderer(Inkscape::DrawingItem*) const
 {
     auto componenttransfer = std::make_unique<Inkscape::Filters::FilterComponentTransfer>();
     build_renderer_common(componenttransfer.get());

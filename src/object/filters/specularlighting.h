@@ -56,7 +56,7 @@ protected:
     void remove_child(Inkscape::XML::Node *child) override;
     void order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_repr, Inkscape::XML::Node *new_repr) override;
 
-    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FESPECULARLIGHTING, SPFeSpecularLighting)

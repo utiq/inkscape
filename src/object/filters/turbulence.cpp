@@ -150,7 +150,7 @@ Inkscape::XML::Node *SPFeTurbulence::write(Inkscape::XML::Document *doc, Inkscap
     return repr;
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeTurbulence::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeTurbulence::build_renderer(Inkscape::DrawingItem*) const
 {
     auto turbulence = std::make_unique<Inkscape::Filters::FilterTurbulence>();
     build_renderer_common(turbulence.get());

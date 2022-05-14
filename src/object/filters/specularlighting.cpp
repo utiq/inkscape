@@ -198,7 +198,7 @@ void SPFeSpecularLighting::order_changed(Inkscape::XML::Node *child, Inkscape::X
     parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeSpecularLighting::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeSpecularLighting::build_renderer(Inkscape::DrawingItem*) const
 {
     auto specularlighting = std::make_unique<Inkscape::Filters::FilterSpecularLighting>();
     build_renderer_common(specularlighting.get());

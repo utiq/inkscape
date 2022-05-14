@@ -320,13 +320,9 @@ void DrawingItem::setStyle(SPStyle const *style, SPStyle const *context_style)
         if (_style) sp_style_unref(_style);
         _style = style;
     }
-    
+
     if (style && style->filter.set && style->getFilter()) {
-        if (!_filter) {
-            int num_primitives = style->getFilter()->primitive_count();
-            _filter = std::make_unique<Inkscape::Filters::Filter>(num_primitives);
-        }
-        style->getFilter()->build_renderer(_filter.get());
+        _filter = style->getFilter()->build_renderer(this);
     } else {
         // no filter set for this group
         _filter.reset();
@@ -449,6 +445,13 @@ void DrawingItem::setZOrder(unsigned z)
 void DrawingItem::setItemBounds(Geom::OptRect const &bounds)
 {
     _item_bbox = bounds;
+}
+
+// Defensive-coding measure to ensure filters containing pointers to deleted DrawingItems are not used, even accidentally.
+// No update needs to be queued since this function is always followed up with a call to setStyle() to set a new filter.
+void DrawingItem::clearFilterRenderer()
+{
+    _filter.reset();
 }
 
 /**
@@ -1039,7 +1042,7 @@ void DrawingItem::recursivePrintTree(unsigned level)
         i.recursivePrintTree(level + 1);
     }
 }
- 
+
 /**
  * Marks the current visual bounding box of the item for redrawing.
  * This is called whenever the object changes its visible appearance.

@@ -40,13 +40,11 @@ class Node;
 }
 }
 
-
 /// An SVG style object.
-class SPStyle {
-
+class SPStyle
+{
 public:
-
-    SPStyle(SPDocument *document = nullptr, SPObject *object = nullptr);// document is ignored if valid object given
+    SPStyle(SPDocument *document = nullptr, SPObject *object = nullptr); // document is ignored if valid object given
     ~SPStyle();
     const std::vector<SPIBase *> properties();
     void clear();
@@ -55,33 +53,33 @@ public:
     void readFromObject(SPObject *object);
     void readFromPrefs(Glib::ustring const &path);
     bool isSet(SPAttr id);
-    void readIfUnset(SPAttr id, char const *val, SPStyleSrc const &source = SPStyleSrc::STYLE_PROP );
+    void readIfUnset(SPAttr id, char const *val, SPStyleSrc const &source = SPStyleSrc::STYLE_PROP);
 
 private:
-    Glib::ustring write(unsigned int flags, SPStyleSrc style_src_req, SPStyle const *base = nullptr) const;
+    Glib::ustring write(unsigned flags, SPStyleSrc style_src_req, SPStyle const *base = nullptr) const;
 
 public:
-    Glib::ustring write(unsigned int flags = SP_STYLE_FLAG_IFSET) const;
+    Glib::ustring write(unsigned flags = SP_STYLE_FLAG_IFSET) const;
     Glib::ustring write(SPStyleSrc style_src_req) const;
     Glib::ustring writeIfDiff(SPStyle const *base) const;
 
-    void cascade( SPStyle const *const parent );
-    void merge(   SPStyle const *const parent );
-    void mergeString( char const *const p );
-    void mergeStatement( CRStatement *statement );
-    bool operator==(const SPStyle& rhs);
+    void cascade(SPStyle const *parent);
+    void merge(  SPStyle const *parent);
+    void mergeString(char const *p);
+    void mergeStatement(CRStatement *statement);
+    bool operator==(SPStyle const &rhs);
 
     int style_ref()   const { ++_refcount; return _refcount; }
     int style_unref() const { --_refcount; return _refcount; }
     int refCount() const { return _refcount; }
 
 private:
-    void _mergeString( char const *const p );
-    void _mergeDeclList( CRDeclaration const *const decl_list, SPStyleSrc const &source );
-    void _mergeDecl(     CRDeclaration const *const decl,      SPStyleSrc const &source );
-    void _mergeProps( CRPropList *const props );
-    void _mergeObjectStylesheet( SPObject const *const object );
-    void _mergeObjectStylesheet( SPObject const *const object, SPDocument *const document );
+    void _mergeString(char const *p);
+    void _mergeDeclList(CRDeclaration const *decl_list, SPStyleSrc const &source);
+    void _mergeDecl(    CRDeclaration const *decl,      SPStyleSrc const &source);
+    void _mergeProps(CRPropList *props);
+    void _mergeObjectStylesheet(SPObject const *object);
+    void _mergeObjectStylesheet(SPObject const *object, SPDocument *document);
 
 private:
     mutable int _refcount;
@@ -103,7 +101,6 @@ private:
     using T = TypedSPI<Id, Base>;
 
 public:
-
     /* ----------------------- THE PROPERTIES ------------------------- */
     /*                    Match order in style.cpp.                     */
 
@@ -319,30 +316,36 @@ public:
     sigc::connection stroke_ps_changed_connection;
 
     /**
-     * Emitted when paint server object, fill paint refers to, is changed. That is
-     * when the reference starts pointing to a different address in memory.
+     * Emitted when the fill paint server changes, meaning it starts pointing
+     * to a different object.
      *
-     * NB It is different from fill_ps_modified signal. When paint server is modified
-     * it means some of it's attributes or children change.
+     * Note that this is different from the fill_ps_modified signal, which happens
+     * when some of its attributes or children have changed.
      */
     sigc::signal<void (SPObject *, SPObject *)> signal_fill_ps_changed;
+
     /**
-     * Emitted when paint server object, fill paint refers to, is changed. That is
-     * when the reference starts pointing to a different address in memory.
+     * Emitted when the stroke paint server changes, meaning it starts pointing
+     * to a different object.
      */
     sigc::signal<void (SPObject *, SPObject *)> signal_stroke_ps_changed;
 
-    SPFilter       *getFilter()          { return (filter.href) ? filter.href->getObject() : nullptr; }
-    SPFilter const *getFilter()    const { return (filter.href) ? filter.href->getObject() : nullptr; }
-    Inkscape::URI const *getFilterURI() const { return (filter.href) ? filter.href->getURI() : nullptr; }
+    /**
+     * Emitted when the filter changes, meaning it starts pointing to a different object.
+     */
+    sigc::signal<void (SPObject *, SPObject *)> signal_filter_changed;
+
+    SPFilter            *getFilter()          { return (filter.href) ? filter.href->getObject() : nullptr; }
+    SPFilter const      *getFilter()    const { return (filter.href) ? filter.href->getObject() : nullptr; }
+    Inkscape::URI const *getFilterURI() const { return (filter.href) ? filter.href->getURI()    : nullptr; }
 
     SPPaintServer       *getFillPaintServer()         { return (fill.value.href) ? fill.value.href->getObject() : nullptr; }
     SPPaintServer const *getFillPaintServer()   const { return (fill.value.href) ? fill.value.href->getObject() : nullptr; }
-    Inkscape::URI const *getFillURI()           const { return (fill.value.href) ? fill.value.href->getURI() : nullptr; }
+    Inkscape::URI const *getFillURI()           const { return (fill.value.href) ? fill.value.href->getURI()    : nullptr; }
 
     SPPaintServer       *getStrokePaintServer()       { return (stroke.value.href) ? stroke.value.href->getObject() : nullptr; }
     SPPaintServer const *getStrokePaintServer() const { return (stroke.value.href) ? stroke.value.href->getObject() : nullptr; }
-    Inkscape::URI const *getStrokeURI()         const { return (stroke.value.href) ? stroke.value.href->getURI() : nullptr; }
+    Inkscape::URI const *getStrokeURI()         const { return (stroke.value.href) ? stroke.value.href->getURI()    : nullptr; }
 
     /**
      * Return a font feature string useful for Pango.

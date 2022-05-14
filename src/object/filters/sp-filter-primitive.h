@@ -21,6 +21,8 @@
 #include "object/sp-dimensions.h"
 
 namespace Inkscape {
+class Drawing;
+class DrawingItem;
 namespace Filters {
 class Filter;
 class FilterPrimitive;
@@ -48,7 +50,10 @@ protected:
     Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
 public:
-    virtual std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const = 0;
+    virtual void show(Inkscape::DrawingItem *item) {}
+    virtual void hide(Inkscape::DrawingItem *item) {}
+
+    virtual std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const = 0;
 
     /* Calculate the filter's effect on the region */
     virtual Geom::Rect calculate_region(Geom::Rect const &region) const;

@@ -127,6 +127,7 @@ public:
     void setZOrder(unsigned z);
     void setItemBounds(Geom::OptRect const &bounds);
     void setFilterBounds(Geom::OptRect const &bounds);
+    void clearFilterRenderer();
 
     void setKey(unsigned key) { _key = key; }
     unsigned key() const { return _key; }

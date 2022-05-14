@@ -436,16 +436,19 @@ public:
 private:
     enum EvaluatedStatus
     {
-        StatusUnknown, StatusCalculated, StatusSet
+        StatusUnknown,
+        StatusCalculated,
+        StatusSet
     };
 
     mutable bool _is_evaluated;
     mutable EvaluatedStatus _evaluated_status;
 
     void clip_ref_changed(SPObject *old_clip, SPObject *clip);
-    void mask_ref_changed(SPObject *old_clip, SPObject *clip);
-    void fill_ps_ref_changed(SPObject *old_clip, SPObject *clip);
-    void stroke_ps_ref_changed(SPObject *old_clip, SPObject *clip);
+    void mask_ref_changed(SPObject *old_mask, SPObject *mask);
+    void fill_ps_ref_changed(SPObject *old_ps, SPObject *ps);
+    void stroke_ps_ref_changed(SPObject *old_ps, SPObject *ps);
+    void filter_ref_changed(SPObject *old_obj, SPObject *obj);
 
 public:
     void rotate_rel(Geom::Rotate const &rotation);

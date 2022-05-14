@@ -20,7 +20,7 @@
 #include "display/nr-filter.h"
 #include "display/nr-filter-merge.h"
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMerge::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMerge::build_renderer(Inkscape::DrawingItem*) const
 {
     auto merge = std::make_unique<Inkscape::Filters::FilterMerge>();
     build_renderer_common(merge.get());

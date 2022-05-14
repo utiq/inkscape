@@ -21,6 +21,9 @@
 #include "attributes.h"
 
 #include "bad-uri-exception.h"
+#include "document.h"
+#include "display/cairo-utils.h"
+#include "display/drawing-image.h"
 
 #include "object/sp-image.h"
 #include "object/uri.h"
@@ -31,76 +34,24 @@
 
 #include "xml/repr.h"
 
+SPFeImage::SPFeImage()
+    : elemref(std::make_unique<Inkscape::URIReference>(this)) {}
+
 void SPFeImage::build(SPDocument *document, Inkscape::XML::Node *repr)
 {
     SPFilterPrimitive::build(document, repr);
 
-    readAttr(SPAttr::PRESERVEASPECTRATIO);
     readAttr(SPAttr::XLINK_HREF);
-}
-
-void SPFeImage::release()
-{
-    _image_modified_connection.disconnect();
-    _href_modified_connection.disconnect();
-    SVGElemRef.reset();
-
-    SPFilterPrimitive::release();
-}
-
-void SPFeImage::on_image_modified()
-{
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
-}
-
-void SPFeImage::on_href_modified(SPObject *new_elem)
-{
-    _image_modified_connection.disconnect();
-
-    if (new_elem) {
-        SVGElem = SP_ITEM(new_elem);
-        _image_modified_connection = SVGElem->connectModified([this] (SPObject*, unsigned) { on_image_modified(); });
-    } else {
-        SVGElem = nullptr;
-    }
-
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    readAttr(SPAttr::PRESERVEASPECTRATIO);
 }
 
 void SPFeImage::set(SPAttr key, char const *value)
 {
     switch (key) {
         case SPAttr::XLINK_HREF:
-            if (href) {
-                g_free(href);
-            }
-            href = value ? g_strdup(value) : nullptr;
-            if (!href) return;
-            SVGElemRef.reset();
-            SVGElem = nullptr;
-            _image_modified_connection.disconnect();
-            _href_modified_connection.disconnect();
-            try {
-                Inkscape::URI SVGElem_uri(href);
-                SVGElemRef = std::make_unique<Inkscape::URIReference>(document);
-                SVGElemRef->attach(SVGElem_uri);
-                from_element = true;
-                _href_modified_connection = SVGElemRef->changedSignal().connect([this] (SPObject*, SPObject *to) { on_href_modified(to); });
-                if (SPObject *elemref = SVGElemRef->getObject()) {
-                    SVGElem = SP_ITEM(elemref);
-                    _image_modified_connection = SVGElem->connectModified([this] (SPObject*, unsigned) { on_image_modified(); });
-                    requestModified(SP_OBJECT_MODIFIED_FLAG);
-                    break;
-                } else {
-                    g_warning("SVG element URI was not found in the document while loading this: %s", value);
-                }
-            } catch (Inkscape::BadURIException const &e) {
-                // catches either MalformedURIException or UnsupportedURIException
-                from_element = false;
-                /* This occurs when using external image as the source */
-                // g_warning("caught Inkscape::BadURIException in sp_feImage_set");
-                break;
-            }
+            href = value ? value : "";
+            reread_href();
+            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::PRESERVEASPECTRATIO:
@@ -108,7 +59,7 @@ void SPFeImage::set(SPAttr key, char const *value)
             /* Do setup before, so we can use break to escape */
             aspect_align = SP_ASPECT_XMID_YMID; // Default
             aspect_clip = SP_ASPECT_MEET; // Default
-            requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG);
+            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
             if (value) {
                 int len;
                 char c[256];
@@ -168,9 +119,210 @@ void SPFeImage::set(SPAttr key, char const *value)
             break;
 
         default:
-        	SPFilterPrimitive::set(key, value);
+            SPFilterPrimitive::set(key, value);
             break;
     }
+}
+
+void SPFeImage::try_load_image()
+{
+    /* TODO: If feImageHref is absolute, then use that (preferably handling the
+     * case that it's not a file URI). Otherwise, go up the tree looking
+     * for an xml:base attribute, and use that as the base URI for resolving
+     * the relative feImageHref URI. Otherwise, if document->base is valid,
+     * then use that as the base URI. Otherwise, use feImageHref directly
+     * (i.e. interpreting it as relative to our current working directory).
+     * (See http://www.w3.org/TR/xmlbase/#resolution .) */
+
+    auto try_assign = [this] (char const *name) {
+        if (!g_file_test(name, G_FILE_TEST_IS_REGULAR)) {
+            return false;
+        }
+
+        auto img = Inkscape::Pixbuf::create_from_file(name);
+        if (!img) {
+            return false;
+        }
+
+        // Rendering code expects cairo format, so ensure this before making pixbuf immutable.
+        img->ensurePixelFormat(Inkscape::Pixbuf::PF_CAIRO);
+
+        pixbuf.reset(img);
+        return true;
+    };
+
+    if (try_assign(href.data())) {
+        // pass
+    } else {
+        auto fullname = g_build_filename(document->getDocumentBase(), href.data(), nullptr);
+        if (try_assign(fullname)) {
+            // pass
+        } else {
+            pixbuf.reset();
+        }
+        g_free(fullname);
+    }
+}
+
+void SPFeImage::reread_href()
+{
+    // Disconnect from modification signals.
+    _href_changed_connection.disconnect();
+    if (type == ELEM) {
+        _href_modified_connection.disconnect();
+    }
+
+    for (auto &v : views) {
+        destroy_view(v);
+    }
+
+    // Set type, elemref, elem and pixbuf.
+    try {
+        elemref->attach(Inkscape::URI(href.data()));
+    } catch (Inkscape::BadURIException const &) {
+        elemref->detach();
+    }
+    pixbuf.reset();
+    if (auto obj = elemref->getObject()) {
+        elem = SP_ITEM(obj);
+        if (elem) {
+            type = ELEM;
+        } else {
+            type = NONE;
+            g_warning("SPFeImage::reread_href: %s points to non-item element", href.data());
+        }
+    } else {
+        try_load_image();
+        if (pixbuf) {
+            type = IMAGE;
+        } else {
+            type = NONE;
+            g_warning("SPFeImage::reread_href: failed to load image: %s", href.data());
+        }
+    }
+
+    for (auto &v : views) {
+        create_view(v);
+    }
+
+    // Connect to modification signals.
+    _href_changed_connection = elemref->changedSignal().connect([this] (SPObject*, SPObject *to) { on_href_changed(to); });
+    if (type == ELEM) {
+        _href_modified_connection = elemref->getObject()->connectModified([this] (SPObject*, unsigned) { on_href_modified(); });
+    }
+}
+
+void SPFeImage::on_href_changed(SPObject *new_obj)
+{
+    if (type == ELEM) {
+        _href_modified_connection.disconnect();
+    }
+
+    for (auto &v : views) {
+        destroy_view(v);
+    }
+
+    // Set type and image.
+    pixbuf.reset();
+    if (new_obj) {
+        elem = SP_ITEM(new_obj);
+        if (elem) {
+            type = ELEM;
+        } else {
+            type = NONE;
+            g_warning("SPFeImage::on_href_changed: %s points to non-item element", href.data());
+        }
+    } else {
+        try_load_image();
+        if (pixbuf) {
+            type = IMAGE;
+        } else {
+            type = NONE;
+            g_warning("SPFeImage::on_href_changed: failed to load image: %s", href.data());
+        }
+    }
+
+    for (auto &v : views) {
+        create_view(v);
+    }
+
+    if (type == ELEM) {
+        _href_modified_connection = elem->connectModified([this] (SPObject*, unsigned) { on_href_modified(); });
+    }
+
+    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+}
+
+void SPFeImage::on_href_modified()
+{
+    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+}
+
+void SPFeImage::release()
+{
+    _href_changed_connection.disconnect();
+    _href_modified_connection.disconnect();
+    elemref.reset();
+    pixbuf.reset();
+
+    // All views on this element should have been closed prior to release.
+    assert(views.empty());
+
+    SPFilterPrimitive::release();
+}
+
+void SPFeImage::destroy_view(View &v)
+{
+    if (type == ELEM) {
+        elem->invoke_hide(v.inner_key);
+    } else if (type == IMAGE) {
+        delete v.child;
+    }
+
+    v.parent->clearFilterRenderer();
+}
+
+void SPFeImage::create_view(View &v)
+{
+    if (type == ELEM) {
+        auto ai = elem->invoke_show(v.parent->drawing(), v.inner_key, SP_ITEM_SHOW_DISPLAY);
+        v.child = ai;
+        if (!v.child) {
+            g_warning("SPFeImage::show: error creating DrawingItem for SVG Element");
+        }
+    } else if (type == IMAGE) {
+        auto ai = new Inkscape::DrawingImage(v.parent->drawing());
+        ai->setStyle(style);
+        ai->setPixbuf(pixbuf);
+        ai->setOrigin(Geom::Point(0, 0));
+        ai->setScale(1.0, 1.0);
+        ai->setClipbox(Geom::Rect(0, 0, pixbuf->width(), pixbuf->height()));
+        v.child = ai;
+    }
+}
+
+void SPFeImage::show(Inkscape::DrawingItem *parent)
+{
+    views.emplace_back();
+    auto &v = views.back();
+
+    v.parent = parent;
+    v.inner_key = SPItem::display_key_new(1);
+
+    create_view(v);
+}
+
+void SPFeImage::hide(Inkscape::DrawingItem *parent)
+{
+    auto it = std::find_if(views.begin(), views.end(), [parent] (auto &v) {
+        return v.parent == parent;
+    });
+    assert(it != views.end());
+    auto &v = *it;
+
+    destroy_view(v);
+
+    views.erase(it);
 }
 
 /*
@@ -179,21 +331,34 @@ void SPFeImage::set(SPAttr key, char const *value)
  */
 bool SPFeImage::valid_for(SPObject const *obj) const
 {
-    // SVGElem could be nullptr, but this should still work.
-    return obj && SP_ITEM(obj) != SVGElem;
+    // elem could be nullptr, but this should still work.
+    return obj && SP_ITEM(obj) != elem;
 }
 
-std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeImage::build_renderer() const
+std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeImage::build_renderer(Inkscape::DrawingItem *parent) const
 {
+    Inkscape::DrawingItem *child = nullptr;
+
+    if (type != NONE) {
+        auto it = std::find_if(views.begin(), views.end(), [parent] (auto &v) {
+            return v.parent == parent;
+        });
+
+        // Due to operations order within invoke_show, this function is called prematurely before the filter has been
+        // attached to the item, then again after the filter has been attached. It does not matter what we do in that
+        // first call, but we have to handle it, so the following check is necessary.
+        if (it != views.end()) {
+            child = it->child;
+        }
+    }
+
     auto image = std::make_unique<Inkscape::Filters::FilterImage>();
     build_renderer_common(image.get());
 
-    image->from_element = from_element;
-    image->SVGElem = SVGElem;
+    image->item = child;
+    image->from_element = type == ELEM;
     image->set_align(aspect_align);
     image->set_clip(aspect_clip);
-    image->set_href(href);
-    image->set_document(document);
 
     return image;
 }

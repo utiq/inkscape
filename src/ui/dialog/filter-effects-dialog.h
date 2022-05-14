@@ -142,7 +142,7 @@ private:
     {
     public:
         CellRendererConnection();
-        Glib::PropertyProxy<SPFilterPrimitive*> property_primitive();
+        Glib::PropertyProxy<void*> property_primitive();
 
         static const int size = 24;
 
@@ -165,7 +165,8 @@ private:
                                                           int& minimum_height,
                                                           int& natural_height) const override;
     private:
-        Glib::Property<SPFilterPrimitive*> _primitive;
+        // void* should be SPFilterPrimitive*, some weirdness with properties prevents this
+        Glib::Property<void*> _primitive;
     };
 
     class PrimitiveList : public Gtk::TreeView

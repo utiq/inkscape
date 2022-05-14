@@ -22,35 +22,65 @@ class SPItem;
 
 namespace Inkscape {
 class URIReference;
+class DrawingItem;
+class Drawing;
+class Pixbuf;
 } // namespace Inksacpe
 
 class SPFeImage
     : public SPFilterPrimitive
 {
+public:
+    SPFeImage();
+
 private:
-    char *href = nullptr;
+    std::string href;
 
     // preserveAspectRatio
-    unsigned aspect_align = SP_ASPECT_XMID_YMID;
-    unsigned aspect_clip = SP_ASPECT_MEET;
+    unsigned char aspect_align = SP_ASPECT_XMID_YMID;
+    unsigned char aspect_clip = SP_ASPECT_MEET;
 
-    bool from_element = false;
-    SPItem *SVGElem = nullptr;
-    std::unique_ptr<Inkscape::URIReference> SVGElemRef;
-    sigc::connection _image_modified_connection;
-    sigc::connection _href_modified_connection;
+    enum Type
+    {
+        ELEM,  // If href points to an element that is an SPItem.
+        IMAGE, // If href points to non-element that is an image filename.
+        NONE   // Neither of the above.
+    };
+    Type type = NONE;
+    std::unique_ptr<Inkscape::URIReference> elemref; // Tracks href if it is a valid URI.
+    SPItem *elem; // If type == ELEM, the referenced element.
+    std::shared_ptr<Inkscape::Pixbuf const> pixbuf; // If type == IMAGE, the loaded image.
+
+    sigc::connection _href_changed_connection; // Tracks the reference being reattached.
+    sigc::connection _href_modified_connection; // If type == ELEM, tracks the referenced object being modified.
+
+    void try_load_image();
+    void reread_href();
+
+    void on_href_changed(SPObject *new_elem);
+    void on_href_modified();
+
+    struct View
+    {
+        Inkscape::DrawingItem *parent; // The item to which the filter is applied.
+        Inkscape::DrawingItem *child; // The element or image shown by the filter.
+        unsigned inner_key; // The display key at which child is shown at.
+    };
+    std::vector<View> views;
+    void create_view(View &v);
+    void destroy_view(View &v);
 
     bool valid_for(SPObject const *obj) const override;
-
-    void on_image_modified();
-    void on_href_modified(SPObject *new_elem);
 
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
 	void release() override;
     void set(SPAttr key, char const *value) override;
 
-    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer() const override;
+    void show(Inkscape::DrawingItem *item) override;
+    void hide(Inkscape::DrawingItem *item) override;
+
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEIMAGE, SPFeImage)
