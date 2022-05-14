@@ -27,7 +27,6 @@ class Revealer;
 class Widget;
 }
 
-Glib::ustring ink_get_current_os_class_name();
 
 Glib::ustring ink_ellipsize_text (Glib::ustring const &src, size_t maxlen);
 void reveal_widget(Gtk::Widget *widget, bool show);

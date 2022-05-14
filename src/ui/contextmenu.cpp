@@ -282,9 +282,6 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
     // Set the style and icon theme of the new menu based on the desktop
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     if (Gtk::Window *window = desktop->getToplevel()) {
-        if (!window->get_style_context()->has_class("os")) {
-            get_style_context()->add_class(ink_get_current_os_class_name());
-        }
         if (window->get_style_context()->has_class("dark")) {
             get_style_context()->add_class("dark");
         } else {

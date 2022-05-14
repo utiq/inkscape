@@ -92,9 +92,6 @@ DialogWindow::DialogWindow(InkscapeWindow *inkscape_window, Gtk::Widget *page)
     // Set the style and icon theme of the new menu based on the desktop
     if (auto desktop = SP_ACTIVE_DESKTOP) {
         if (Gtk::Window *window = desktop->getToplevel()) {
-            if (!get_style_context()->has_class("os")) {
-                get_style_context()->add_class(ink_get_current_os_class_name());
-            }
             if (window->get_style_context()->has_class("dark")) {
                 get_style_context()->add_class("dark");
                 get_style_context()->remove_class("bright");

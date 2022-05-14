@@ -426,6 +426,24 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
         g_critical("CSSProviderError::load_from_data(): failed to load '%s'\n(%s)", css_str.c_str(), ex.what().c_str());
     }
     Gtk::StyleContext::add_provider_for_screen(screen, _colorizeprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+#if __APPLE__
+    Glib::ustring macstyle = get_filename(UIS, "mac.css");
+    if (!macstyle.empty()) {
+        if (_macstyleprovider) {
+            Gtk::StyleContext::remove_provider_for_screen(screen, _macstyleprovider);
+        }
+        if (!_macstyleprovider) {
+            _macstyleprovider = Gtk::CssProvider::create();
+        }
+        try {
+            _macstyleprovider->load_from_path(macstyle);
+        } catch (const Gtk::CssProviderError &ex) {
+            g_critical("CSSProviderError::load_from_path(): failed to load '%s'\n(%s)", macstyle.c_str(),
+                       ex.what().c_str());
+        }
+        Gtk::StyleContext::add_provider_for_screen(screen, _macstyleprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
+#endif
 }
 
 /**

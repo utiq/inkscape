@@ -66,6 +66,9 @@ private:
     Glib::RefPtr<Gtk::CssProvider> _contrastthemeprovider;
     Glib::RefPtr<Gtk::CssProvider> _colorizeprovider;
     Glib::RefPtr<Gtk::CssProvider> _spinbuttonprovider;
+#if __APPLE__
+  Glib::RefPtr<Gtk::CssProvider> _macstyleprovider;
+#endif
     std::unique_ptr<Preferences::Observer> _spinbutton_observer;
     Glib::RefPtr<Gtk::CssProvider> _fontsizeprovider = Gtk::CssProvider::create();
 };
