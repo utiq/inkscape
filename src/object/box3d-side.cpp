@@ -174,8 +174,6 @@ void Box3DSide::set_shape() {
     unsigned int corners[4];
     box3d_side_compute_corner_ids(this, corners);
 
-    auto c = std::make_unique<SPCurve>();
-
     if (!box->get_corner_screen(corners[0]).isFinite() ||
         !box->get_corner_screen(corners[1]).isFinite() ||
         !box->get_corner_screen(corners[2]).isFinite() ||
@@ -185,17 +183,18 @@ void Box3DSide::set_shape() {
         return;
     }
 
-    c->moveto(box->get_corner_screen(corners[0]));
-    c->lineto(box->get_corner_screen(corners[1]));
-    c->lineto(box->get_corner_screen(corners[2]));
-    c->lineto(box->get_corner_screen(corners[3]));
-    c->closepath();
+    SPCurve c;
+    c.moveto(box->get_corner_screen(corners[0]));
+    c.lineto(box->get_corner_screen(corners[1]));
+    c.lineto(box->get_corner_screen(corners[2]));
+    c.lineto(box->get_corner_screen(corners[3]));
+    c.closepath();
 
     /* Reset the shape's curve to the "original_curve"
      * This is very important for LPEs to work properly! (the bbox might be recalculated depending on the curve in shape)*/
 
     SPCurve const *before = curveBeforeLPE();
-    if (before && before->get_pathvector() != c->get_pathvector()) {
+    if (before && before->get_pathvector() != c.get_pathvector()) {
         setCurveBeforeLPE(std::move(c));
         sp_lpe_item_update_patheffect(this, true, false);
         return;

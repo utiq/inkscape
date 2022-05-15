@@ -177,12 +177,12 @@ Inkscape::XML::Node* SPOffset::write(Inkscape::XML::Document *xml_doc, Inkscape:
 
 
     // Make sure the offset has curve
-    if (_curve == nullptr) {
-        this->set_shape();
+    if (!_curve) {
+        set_shape();
     }
 
     // write that curve to "d"
-    repr->setAttribute("d", sp_svg_write_path(this->_curve->get_pathvector()));
+    repr->setAttribute("d", sp_svg_write_path(_curve->get_pathvector()));
 
     SPShape::write(xml_doc, repr, flags | SP_SHAPE_WRITE_PATH);
 
@@ -350,8 +350,7 @@ void SPOffset::set_shape() {
         const char *res_d = this->getRepr()->attribute("inkscape:original");
 
         if ( res_d ) {
-            Geom::PathVector pv = sp_svg_read_pathv(res_d);
-            setCurveInsync(std::make_unique<SPCurve>(pv));
+            setCurveInsync(SPCurve(sp_svg_read_pathv(res_d)));
             setCurveBeforeLPE(curve());
         }
 
@@ -653,8 +652,7 @@ void SPOffset::set_shape() {
 
         delete orig;
 
-        Geom::PathVector pv = sp_svg_read_pathv(res_d);
-        setCurveInsync(std::make_unique<SPCurve>(pv));
+        setCurveInsync(SPCurve(sp_svg_read_pathv(res_d)));
         setCurveBeforeLPE(curve());
 
         free (res_d);
@@ -691,8 +689,6 @@ vectors_are_clockwise (Geom::Point A, Geom::Point B, Geom::Point C)
     using Geom::rot90;
     double ab_s = dot(A, rot90(B));
     double ab_c = dot(A, B);
-    double bc_s = dot(B, rot90(C));
-    double bc_c = dot(B, C);
     double ca_s = dot(C, rot90(A));
     double ca_c = dot(C, A);
 
@@ -708,20 +704,6 @@ vectors_are_clockwise (Geom::Point A, Geom::Point B, Geom::Point C)
 
     if (ab_s < 0) {
         ab_a = 2 * M_PI - ab_a;
-    }
-
-    double bc_a = acos (bc_c);
-
-    if (bc_c <= -1.0) {
-        bc_a = M_PI;
-    }
-
-    if (bc_c >= 1.0) {
-        bc_a = 0;
-    }
-
-    if (bc_s < 0) {
-        bc_a = 2 * M_PI - bc_a;
     }
 
     double ca_a = acos (ca_c);
@@ -1099,22 +1081,21 @@ refresh_offset_source(SPOffset* offset)
     }
 
     SPItem  *item  = SP_ITEM (refobj);
-    std::unique_ptr<SPCurve> curve;
+    SPCurve curve;
 
     if (auto shape = dynamic_cast<SPShape const *>(item)) {
-        curve = SPCurve::copy(shape->curve());
+        if (!shape->curve()) {
+            return;
+        }
+        curve = *shape->curve();
     } else if (auto text = dynamic_cast<SPText const *>(item)) {
         curve = text->getNormalizedBpath();
     } else {
         return;
     }
 
-    if (curve == nullptr) {
-        return;
-    }
-
     Path *orig = new Path;
-    orig->LoadPathVector(curve->get_pathvector());
+    orig->LoadPathVector(curve.get_pathvector());
 
     if (!item->transform.isIdentity()) {
         gchar const *t_attr = item->getRepr()->attribute("transform");

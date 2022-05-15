@@ -14,13 +14,14 @@
  */
 
 #include <map>
-#include <memory>
+#include <optional>
 #include <string>
 
 #include <2geom/point.h>
 #include <sigc++/connection.h>
 
 #include "ui/tools/tool-base.h"
+#include "display/curve.h"
 
 class SPItem;
 class SPCurve;
@@ -71,11 +72,11 @@ public:
 
     // Red curve
     Inkscape::CanvasItemBpath *red_bpath;
-    std::unique_ptr<SPCurve> red_curve;
+    std::optional<SPCurve> red_curve;
     guint32 red_color;
 
     // Green curve
-    std::unique_ptr<SPCurve> green_curve;
+    std::optional<SPCurve> green_curve;
 
     // The new connector
     SPItem *newconn;

@@ -114,7 +114,6 @@ SPImage::SPImage() : SPItem(), SPViewBox() {
     this->dpi = 96.00;
     this->prev_width = 0.0;
     this->prev_height = 0.0;
-    this->curve = nullptr;
 
     this->href = nullptr;
     this->color_profile = nullptr;
@@ -755,17 +754,17 @@ static void sp_image_set_curve( SPImage *image )
         Geom::OptRect rect = image->bbox(Geom::identity(), SPItem::VISUAL_BBOX);
         
         if (rect->isFinite()) {
-            image->curve = SPCurve::new_from_rect(*rect, true);
+            image->curve.emplace(*rect, true);
         }
     }
 }
 
 /**
- * Return duplicate of curve (if any exists) or NULL if there is no curve
+ * Return a borrowed pointer to curve (if any exists) or NULL if there is no curve
  */
-std::unique_ptr<SPCurve> SPImage::get_curve() const
+SPCurve const *SPImage::get_curve() const
 {
-    return SPCurve::copy(curve.get());
+    return curve ? &*curve : nullptr;
 }
 
 void sp_embed_image(Inkscape::XML::Node *image_node, Inkscape::Pixbuf *pb)

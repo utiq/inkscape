@@ -1715,16 +1715,7 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
         return true;
     }
 
-    std::unique_ptr<SPCurve> curve;
-
-    if (auto shape = dynamic_cast<SPShape const *>(item)) {
-        curve = SPCurve::copy(shape->curve());
-    } else if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
-        curve = te_get_layout(item)->convertToCurves();
-    }
-
-    if (curve)
-    {
+    auto process_curve = [&, this] (SPCurve const &curve) {
         //### Default <path> output
         couts.writeString("<draw:path ");
         if (!id.empty())
@@ -1748,18 +1739,25 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
                        bbox_width * 1000.0, bbox_height * 1000.0);
 
         couts.printf(" svg:d=\"");
-        int nrPoints = writePath(couts, curve->get_pathvector(),
+        int nrPoints = writePath(couts, curve.get_pathvector(),
                              tf, bbox_x, bbox_y);
         couts.writeString("\"");
 
         couts.writeString(">\n");
         couts.printf("    <!-- %d nodes -->\n", nrPoints);
         couts.writeString("</draw:path>\n\n");
+    };
+
+    if (auto shape = dynamic_cast<SPShape const *>(item)) {
+        if (shape->curve()) {
+            process_curve(*shape->curve());
+        }
+    } else if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
+        process_curve(te_get_layout(item)->convertToCurves());
     }
 
     return true;
 }
-
 
 /**
  * Write the header for the content.xml file

@@ -34,7 +34,6 @@ class CanvasItemBpath : public CanvasItem {
 
 public:
     CanvasItemBpath(CanvasItemGroup *group);
-    CanvasItemBpath(CanvasItemGroup *group, SPCurve *curve, bool phantom_line = false);
     CanvasItemBpath(CanvasItemGroup *group, Geom::PathVector path, bool phantom_line = false);
 
     // Geometry
@@ -53,7 +52,7 @@ public:
 
     // Properties
     void set_fill (guint32 rgba, SPWindRule fill_rule);
-    void set_dashes (std::vector<double> & dashes) { _dashes = dashes; }
+    void set_dashes (std::vector<double> dashes) { _dashes = std::move(dashes); }
 
 protected:
 
@@ -65,7 +64,6 @@ protected:
     std::vector<double> _dashes;
     bool _phantom_line = false;
 };
-
 
 } // namespace Inkscape
 

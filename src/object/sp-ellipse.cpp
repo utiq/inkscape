@@ -479,7 +479,7 @@ void SPGenericEllipse::set_shape()
         pb.flush();
     }
 
-    auto c = std::make_unique<SPCurve>(pb.peek());
+    auto c = SPCurve(pb.peek());
 
     // gchar *str = sp_svg_write_path(curve->get_pathvector());
     // std::cout << "  path: " << str << std::endl;
@@ -487,9 +487,8 @@ void SPGenericEllipse::set_shape()
 
     // Stretching / moving the calculated shape to fit the actual dimensions.
     Geom::Affine aff = Geom::Scale(rx.computed, ry.computed) * Geom::Translate(cx.computed, cy.computed);
-    c->transform(aff);
-    // this is a memory leak? is done this way in al object/shapes
-    if (prepareShapeForLPE(c.get())) {
+    c.transform(aff);
+    if (prepareShapeForLPE(&c)) {
         return;
     }
     // This happends on undo, fix bug:#1791784

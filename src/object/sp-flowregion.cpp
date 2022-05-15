@@ -348,7 +348,7 @@ static void         GetDest(SPObject* child,Shape **computed)
     if (item == nullptr)
         return;
 
-    std::unique_ptr<SPCurve> curve;
+    std::optional<SPCurve> curve;
     Geom::Affine tr_mat;
 
     SPObject* u_child = child;
@@ -364,7 +364,7 @@ static void         GetDest(SPObject* child,Shape **computed)
         if (!shape->curve()) {
             shape->set_shape();
         }
-        curve = SPCurve::copy(shape->curve());
+        curve = SPCurve::ptr_to_opt(shape->curve());
     } else {
         SPText *text = dynamic_cast<SPText *>(u_child);
         if ( text ) {

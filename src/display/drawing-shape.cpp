@@ -38,7 +38,6 @@ namespace Inkscape {
 
 DrawingShape::DrawingShape(Drawing &drawing)
     : DrawingItem(drawing)
-    , _curve(nullptr)
     , _last_pick(nullptr)
     , _repick_after(0)
 {}
@@ -48,12 +47,10 @@ DrawingShape::~DrawingShape()
 }
 
 void
-DrawingShape::setPath(SPCurve *curve)
+DrawingShape::setPath(std::shared_ptr<SPCurve const> curve)
 {
     _markForRendering();
-
-    _curve = curve ? curve->ref() : nullptr;
-
+    _curve = std::move(curve);
     _markForUpdate(STATE_ALL, false);
 }
 

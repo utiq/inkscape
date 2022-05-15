@@ -105,8 +105,8 @@ private:
                       bool const &first_point) const;
 
     void _clear_paths() const;
-    Geom::PathVector* _getBorderPathv() const;
-    Geom::PathVector* _getPathvFromRect(Geom::Rect const rect) const;
+    Geom::PathVector _getBorderPathv() const;
+    Geom::PathVector _getPathvFromRect(Geom::Rect const rect) const;
     bool _allowSourceToSnapToTarget(SnapSourceType source, SnapTargetType target, bool strict_snapping) const;
 
 }; // end of ObjectSnapper class

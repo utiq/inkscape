@@ -2741,41 +2741,41 @@ void SPMeshNodeArray::update_handles( guint corner, std::vector< guint > /*selec
     //         Geom::Point dsx1 = pnodes[0][1]->p - 
 }
 
-std::unique_ptr<SPCurve> SPMeshNodeArray::outline_path() const
+SPCurve SPMeshNodeArray::outline_path() const
 {
-    auto outline = std::make_unique<SPCurve>();
+    SPCurve outline;
 
     if (nodes.empty() ) {
         std::cerr << "SPMeshNodeArray::outline_path: empty array!" << std::endl;
         return outline;
     }
 
-    outline->moveto( nodes[0][0]->p );
+    outline.moveto( nodes[0][0]->p );
 
     int ncol = nodes[0].size();
     int nrow = nodes.size();
 
     // Top
     for (int i = 1; i < ncol; i += 3 ) {
-        outline->curveto( nodes[0][i]->p, nodes[0][i+1]->p, nodes[0][i+2]->p);
+        outline.curveto( nodes[0][i]->p, nodes[0][i+1]->p, nodes[0][i+2]->p);
     }
 
     // Right
     for (int i = 1; i < nrow; i += 3 ) {
-        outline->curveto( nodes[i][ncol-1]->p, nodes[i+1][ncol-1]->p, nodes[i+2][ncol-1]->p);
+        outline.curveto( nodes[i][ncol-1]->p, nodes[i+1][ncol-1]->p, nodes[i+2][ncol-1]->p);
     }
 
     // Bottom (right to left)
     for (int i = 1; i < ncol; i += 3 ) {
-        outline->curveto( nodes[nrow-1][ncol-i-1]->p, nodes[nrow-1][ncol-i-2]->p, nodes[nrow-1][ncol-i-3]->p);
+        outline.curveto( nodes[nrow-1][ncol-i-1]->p, nodes[nrow-1][ncol-i-2]->p, nodes[nrow-1][ncol-i-3]->p);
     }
 
     // Left (bottom to top)
     for (int i = 1; i < nrow; i += 3 ) {
-        outline->curveto( nodes[nrow-i-1][0]->p, nodes[nrow-i-2][0]->p, nodes[nrow-i-3][0]->p);
+        outline.curveto( nodes[nrow-i-1][0]->p, nodes[nrow-i-2][0]->p, nodes[nrow-i-3][0]->p);
     }
 
-    outline->closepath();
+    outline.closepath();
 
     return outline;
 }
@@ -2801,10 +2801,9 @@ bool SPMeshNodeArray::fill_box(Geom::OptRect &box) {
         mg->gradientTransform.setIdentity();
     }
 
-    auto outline = outline_path();
-    Geom::OptRect mesh_bbox = outline->get_pathvector().boundsExact();
+    auto mesh_bbox = outline_path().get_pathvector().boundsExact();
 
-    if ((*mesh_bbox).width() == 0 || (*mesh_bbox).height() == 0) {
+    if (mesh_bbox->width() == 0 || mesh_bbox->height() == 0) {
         return false;
     }            
 

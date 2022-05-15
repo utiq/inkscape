@@ -189,14 +189,15 @@ void SPUsePath::refresh_source()
 {
     sourceDirty = false;
 
-    originalPath = nullptr;
+    originalPath.reset();
 
     SPObject *refobj = sourceObject;
     if ( refobj == nullptr ) return;
 
     if (auto shape = dynamic_cast<SPShape const *>(refobj)) {
-        originalPath = SPCurve::copy(shape->curve());
-        if (originalPath == nullptr) {
+        if (shape->curve()) {
+            originalPath = *shape->curve();
+        } else {
             sourceDirty = true;
         }
     } else if (auto text = dynamic_cast<SPText const *>(refobj)) {

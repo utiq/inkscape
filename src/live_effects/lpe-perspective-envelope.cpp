@@ -166,7 +166,7 @@ void LPEPerspectiveEnvelope::doEffect(SPCurve *curve)
         if (path_it.empty())
             continue;
         //Itreadores
-        auto nCurve = std::make_unique<SPCurve>();
+        SPCurve nCurve;
         Geom::Path::const_iterator curve_it1 = path_it.begin();
         Geom::Path::const_iterator curve_endit = path_it.end_default();
 
@@ -177,9 +177,9 @@ void LPEPerspectiveEnvelope::doEffect(SPCurve *curve)
             }
         }
         if(deform_type == DEFORMATION_PERSPECTIVE) {
-            nCurve->moveto(projectPoint(curve_it1->initialPoint(), projmatrix));
+            nCurve.moveto(projectPoint(curve_it1->initialPoint(), projmatrix));
         } else {
-            nCurve->moveto(projectPoint(curve_it1->initialPoint()));
+            nCurve.moveto(projectPoint(curve_it1->initialPoint()));
         }
         while (curve_it1 != curve_endit) {
             cubic = dynamic_cast<Geom::CubicBezier const *>(&*curve_it1);
@@ -201,18 +201,18 @@ void LPEPerspectiveEnvelope::doEffect(SPCurve *curve)
                 point_at3 = projectPoint(point_at3);
             }
             if (cubic) {
-                nCurve->curveto(point_at1, point_at2, point_at3);
+                nCurve.curveto(point_at1, point_at2, point_at3);
             } else {
-                nCurve->lineto(point_at3);
+                nCurve.lineto(point_at3);
             }
             ++curve_it1;
         }
         //y cerramos la curva
         if (path_it.closed()) {
-            nCurve->move_endpoints(point_at3, point_at3);
-            nCurve->closepath_current();
+            nCurve.move_endpoints(point_at3, point_at3);
+            nCurve.closepath_current();
         }
-        curve->append(*nCurve);
+        curve->append(std::move(nCurve));
     }
 }
 
@@ -566,13 +566,13 @@ LPEPerspectiveEnvelope::addCanvasIndicators(SPLPEItem const */*lpeitem*/, std::v
 {
     hp_vec.clear();
 
-    auto c = std::make_unique<SPCurve>();
-    c->moveto(up_left_point);
-    c->lineto(up_right_point);
-    c->lineto(down_right_point);
-    c->lineto(down_left_point);
-    c->lineto(up_left_point);
-    hp_vec.push_back(c->get_pathvector());
+    SPCurve c;
+    c.moveto(up_left_point);
+    c.lineto(up_right_point);
+    c.lineto(down_right_point);
+    c.lineto(down_left_point);
+    c.lineto(up_left_point);
+    hp_vec.push_back(c.get_pathvector());
 }
 
 

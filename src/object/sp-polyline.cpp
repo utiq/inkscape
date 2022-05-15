@@ -41,7 +41,7 @@ void SPPolyLine::set(SPAttr key, const gchar* value) {
             	break;
             }
 
-            auto curve = std::make_unique<SPCurve>();
+            SPCurve curve;
             hascpt = FALSE;
 
             cptr = value;
@@ -83,9 +83,9 @@ void SPPolyLine::set(SPAttr key, const gchar* value) {
                 cptr = eptr;
 
                 if (hascpt) {
-                    curve->lineto(x, y);
+                    curve.lineto(x, y);
                 } else {
-                    curve->moveto(x, y);
+                    curve.moveto(x, y);
                     hascpt = TRUE;
                 }
             }

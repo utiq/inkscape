@@ -32,7 +32,6 @@
 SPHatchPath::SPHatchPath()
     : offset(),
       _display(),
-      _curve(nullptr),
       _continuous(false)
 {
     offset.unset();
@@ -69,9 +68,9 @@ void SPHatchPath::set(SPAttr key, const gchar* value)
         if (value) {
             Geom::PathVector pv;
             _readHatchPathVector(value, pv, _continuous);
-            _curve.reset(new SPCurve(pv));
+            _curve.emplace(std::move(pv));
         } else {
-            _curve.reset(nullptr);
+            _curve.reset();
         }
 
         requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
@@ -123,11 +122,7 @@ void SPHatchPath::update(SPCtx* ctx, unsigned int flags)
 
 bool SPHatchPath::isValid() const
 {
-    if (_curve && (_repeatLength() <= 0)) {
-        return false;
-    } else {
-        return true;
-    }
+    return !_curve || _repeatLength() > 0;
 }
 
 Inkscape::DrawingItem *SPHatchPath::show(Inkscape::Drawing &drawing, unsigned int key, Geom::OptInterval extents)
@@ -185,7 +180,7 @@ Geom::Interval SPHatchPath::bounds() const
     return result;
 }
 
-std::unique_ptr<SPCurve> SPHatchPath::calculateRenderCurve(unsigned key) const
+SPCurve SPHatchPath::calculateRenderCurve(unsigned key) const
 {
     for (const auto & iter : _display) {
         if (iter.key == key) {
@@ -193,7 +188,7 @@ std::unique_ptr<SPCurve> SPHatchPath::calculateRenderCurve(unsigned key) const
         }
     }
     g_assert_not_reached();
-    return nullptr;
+    return SPCurve{};
 }
 
 gdouble SPHatchPath::_repeatLength() const
@@ -215,20 +210,20 @@ void SPHatchPath::_updateView(View &view)
     view.arenaitem->setTransform(offset_transform);
     style->fill.setNone();
     view.arenaitem->setStyle(style);
-    view.arenaitem->setPath(calculated_curve.get());
+    view.arenaitem->setPath(std::make_shared<SPCurve>(std::move(calculated_curve)));
 }
 
-std::unique_ptr<SPCurve> SPHatchPath::_calculateRenderCurve(View const &view) const
+SPCurve SPHatchPath::_calculateRenderCurve(View const &view) const
 {
-    auto calculated_curve = std::make_unique<SPCurve>();
+    SPCurve calculated_curve;
 
     if (!view.extents) {
         return calculated_curve;
     }
 
     if (!_curve) {
-        calculated_curve->moveto(0, view.extents->min());
-        calculated_curve->lineto(0, view.extents->max());
+        calculated_curve.moveto(0, view.extents->min());
+        calculated_curve.lineto(0, view.extents->max());
         //TODO: if hatch has a dasharray defined, adjust line ends
     } else {
         gdouble repeatLength = _repeatLength();
@@ -236,17 +231,17 @@ std::unique_ptr<SPCurve> SPHatchPath::_calculateRenderCurve(View const &view) co
             gdouble initial_y = floor(view.extents->min() / repeatLength) * repeatLength;
             int segment_cnt = ceil((view.extents->extent()) / repeatLength) + 1;
 
-            auto segment = _curve->copy();
-            segment->transform(Geom::Translate(0, initial_y));
+            auto segment = *_curve;
+            segment.transform(Geom::Translate(0, initial_y));
 
             Geom::Affine step_transform = Geom::Translate(0, repeatLength);
             for (int i = 0; i < segment_cnt; ++i) {
                 if (_continuous) {
-                    calculated_curve->append_continuous(*segment);
+                    calculated_curve.append_continuous(segment);
                 } else {
-                    calculated_curve->append(*segment);
+                    calculated_curve.append(segment);
                 }
-                segment->transform(step_transform);
+                segment.transform(step_transform);
             }
         }
     }

@@ -36,11 +36,7 @@ namespace Tools {
 
 DynamicBase::DynamicBase(SPDesktop *desktop, std::string prefs_path, const std::string &cursor_filename)
     : ToolBase(desktop, prefs_path, cursor_filename)
-    , accumulated(nullptr)
     , currentshape(nullptr)
-    , currentcurve(nullptr)
-    , cal1(nullptr)
-    , cal2(nullptr)
     , point1()
     , point2()
     , npoints(0)
@@ -77,7 +73,7 @@ DynamicBase::~DynamicBase() {
     }
     segments.clear();
 
-    if (this->currentshape) {
+    if (currentshape) {
         delete currentshape;
     }
 }

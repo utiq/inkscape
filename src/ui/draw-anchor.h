@@ -43,14 +43,14 @@ class SPDrawAnchor
 public:
 
     Inkscape::UI::Tools::FreehandBase *dc;
-    std::unique_ptr<SPCurve> curve;
+    std::shared_ptr<SPCurve> curve;
     bool start : 1;
     bool active : 1;
     Geom::Point dp;
     Inkscape::CanvasItemCtrl *ctrl = nullptr;
 
     SPDrawAnchor(Inkscape::UI::Tools::FreehandBase *dc,
-                 SPCurve *curve, bool start, Geom::Point delta);
+                 std::shared_ptr<SPCurve> curve, bool start, Geom::Point delta);
 
     ~SPDrawAnchor();
 

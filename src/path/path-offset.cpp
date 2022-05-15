@@ -113,9 +113,6 @@ void sp_selected_path_create_offset_object(SPDesktop *desktop, int expand, bool 
     if (auto shape = dynamic_cast<SPShape const *>(item)) {
         if (!shape->curve())
             return;
-    } else if (auto text = dynamic_cast<SPText const *>(item)) {
-        if (!text->getNormalizedBpath())
-            return;
     } else {
         desktop->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("Selected object is <b>not a path</b>, cannot inset/outset."));
         return;
@@ -285,12 +282,6 @@ sp_selected_path_do_offset(SPDesktop *desktop, bool expand, double prefOffset)
     for (auto item : il){
         if (auto shape = dynamic_cast<SPShape const *>(item)) {
             if (!shape->curve())
-                continue;
-        } else if (auto text = dynamic_cast<SPText const *>(item)) {
-            if (!text->getNormalizedBpath())
-                continue;
-        } else if (auto text = dynamic_cast<SPFlowtext const *>(item)) {
-            if (!text->getNormalizedBpath())
                 continue;
         } else {
             continue;

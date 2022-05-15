@@ -41,22 +41,6 @@ CanvasItemBpath::CanvasItemBpath(CanvasItemGroup *group)
 }
 
 /**
- * Create a control bpath. Curve is in document coordinates.
- */
-CanvasItemBpath::CanvasItemBpath(CanvasItemGroup *group, SPCurve *curve, bool phantom_line)
-    : CanvasItem(group)
-    , _phantom_line(phantom_line)
-{
-    _name = "CanvasItemBpath";
-    _pickable = true; // For now, everyone gets events from this class!
-    if (curve) {
-        _path = curve->get_pathvector();
-    }
-
-    request_update(); // Render immediately or temporary bpaths won't show.
-}
-
-/**
  * Create a control bpath. Path is in document coordinates.
  */
 CanvasItemBpath::CanvasItemBpath(CanvasItemGroup *group, Geom::PathVector path, bool phantom_line)

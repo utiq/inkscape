@@ -107,12 +107,6 @@ CalligraphicTool::CalligraphicTool(SPDesktop *desktop)
     this->cap_rounding = 0.0;
     this->abs_width = false;
 
-    this->accumulated.reset(new SPCurve());
-    this->currentcurve.reset(new SPCurve());
-
-    this->cal1.reset(new SPCurve());
-    this->cal2.reset(new SPCurve());
-
     currentshape = new Inkscape::CanvasItemBpath(desktop->getCanvasSketch());
     currentshape->set_stroke(0x0);
     currentshape->set_fill(DDC_RED_RGBA, SP_WIND_RULE_EVENODD);
@@ -153,10 +147,6 @@ CalligraphicTool::~CalligraphicTool()
     if (hatch_area) {
         delete hatch_area;
         hatch_area = nullptr;
-    }
-    if (currentshape) {
-        delete currentshape;
-        currentshape = nullptr;
     }
 }
 
@@ -413,18 +403,16 @@ void CalligraphicTool::cancel() {
     ungrabCanvasEvents();
 
     /* Remove all temporary line segments */
-    for (auto segment :this->segments) {
+    for (auto segment : segments) {
         delete segment;
     }
-    this->segments.clear();
+    segments.clear();
 
     /* reset accumulated curve */
-    this->accumulated->reset();
-    this->clear_current();
+    accumulated.reset();
+    clear_current();
 
-    if (this->repr) {
-        this->repr = nullptr;
-    }
+    repr = nullptr;
 }
 
 bool CalligraphicTool::root_handler(GdkEvent* event) {
@@ -439,14 +427,12 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                     return TRUE;
                 }
 
-                this->accumulated->reset();
+                accumulated.reset();
 
-                if (this->repr) {
-                    this->repr = nullptr;
-                }
+                repr = nullptr;
 
                 /* initialize first point */
-                this->npoints = 0;
+                npoints = 0;
 
                 grabCanvasEvents();
 
@@ -739,10 +725,10 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
             this->apply(motion_dt);
 
             /* Remove all temporary line segments */
-            for (auto segment : this->segments) {
+            for (auto segment : segments) {
                 delete segment;
             }
-            this->segments.clear();
+            segments.clear();
 
             /* Create object */
             this->fit_and_split(true);
@@ -752,12 +738,10 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                 g_warning ("Failed to create path: invalid data in dc->cal1 or dc->cal2");
 
             /* reset accumulated curve */
-            this->accumulated->reset();
+            accumulated.reset();
 
-            this->clear_current();
-            if (this->repr) {
-                this->repr = nullptr;
-            }
+            clear_current();
+            repr = nullptr;
 
             if (!this->hatch_pointer_past.empty()) this->hatch_pointer_past.clear();
             if (!this->hatch_nearest_past.empty()) this->hatch_nearest_past.clear();
@@ -901,20 +885,20 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
 
 void CalligraphicTool::clear_current() {
     /* reset bpath */
-    this->currentshape->set_bpath(nullptr);
+    currentshape->set_bpath(nullptr);
 
     /* reset curve */
-    this->currentcurve->reset();
-    this->cal1->reset();
-    this->cal2->reset();
+    currentcurve.reset();
+    cal1.reset();
+    cal2.reset();
 
     /* reset points */
-    this->npoints = 0;
+    npoints = 0;
 }
 
 void CalligraphicTool::set_to_accumulated(bool unionize, bool subtract) {
-    if (!this->accumulated->is_empty()) {
-        if (!this->repr) {
+    if (!accumulated.is_empty()) {
+        if (!repr) {
             /* Create object */
             Inkscape::XML::Document *xml_doc = _desktop->doc()->getReprDoc();
             Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
@@ -931,8 +915,8 @@ void CalligraphicTool::set_to_accumulated(bool unionize, bool subtract) {
             item->updateRepr();
         }
 
-        Geom::PathVector pathv = this->accumulated->get_pathvector() * _desktop->dt2doc();
-        this->repr->setAttribute("d", sp_svg_write_path(pathv));
+        Geom::PathVector pathv = accumulated.get_pathvector() * _desktop->dt2doc();
+        repr->setAttribute("d", sp_svg_write_path(pathv));
 
         if (unionize) {
             _desktop->getSelection()->add(this->repr);
@@ -987,46 +971,46 @@ add_cap(SPCurve &curve,
 
 bool CalligraphicTool::accumulate() {
 	if (
-		this->cal1->is_empty() ||
-		this->cal2->is_empty() ||
-		(this->cal1->get_segment_count() <= 0) ||
-		this->cal1->first_path()->closed()
+        cal1.is_empty() ||
+        cal2.is_empty() ||
+        (cal1.get_segment_count() <= 0) ||
+        cal1.first_path()->closed()
 		) {
 
-		this->cal1->reset();
-		this->cal2->reset();
+        cal1.reset();
+        cal2.reset();
 
 		return false; // failure
 	}
 
-        auto rev_cal2 = this->cal2->create_reverse();
+        auto rev_cal2 = cal2.reversed();
 
-	if ((rev_cal2->get_segment_count() <= 0) || rev_cal2->first_path()->closed()) {
-		this->cal1->reset();
-		this->cal2->reset();
+    if ((rev_cal2.get_segment_count() <= 0) || rev_cal2.first_path()->closed()) {
+        cal1.reset();
+        cal2.reset();
 
 		return false; // failure
 	}
 
-	Geom::Curve const * dc_cal1_firstseg  = this->cal1->first_segment();
-	Geom::Curve const * rev_cal2_firstseg = rev_cal2->first_segment();
-	Geom::Curve const * dc_cal1_lastseg   = this->cal1->last_segment();
-	Geom::Curve const * rev_cal2_lastseg  = rev_cal2->last_segment();
+    Geom::Curve const * dc_cal1_firstseg  = cal1.first_segment();
+    Geom::Curve const * rev_cal2_firstseg = rev_cal2.first_segment();
+    Geom::Curve const * dc_cal1_lastseg   = cal1.last_segment();
+    Geom::Curve const * rev_cal2_lastseg  = rev_cal2.last_segment();
 
-	this->accumulated->reset(); /*  Is this required ?? */
+    accumulated.reset(); /*  Is this required ?? */
 
-	this->accumulated->append(*cal1);
+    accumulated.append(cal1);
 
-	add_cap(*accumulated, dc_cal1_lastseg->finalPoint(), rev_cal2_firstseg->initialPoint(), cap_rounding);
+    add_cap(accumulated, dc_cal1_lastseg->finalPoint(), rev_cal2_firstseg->initialPoint(), cap_rounding);
 
-	this->accumulated->append(*rev_cal2, true);
+    accumulated.append(rev_cal2, true);
 
-	add_cap(*accumulated, rev_cal2_lastseg->finalPoint(), dc_cal1_firstseg->initialPoint(), cap_rounding);
+    add_cap(accumulated, rev_cal2_lastseg->finalPoint(), dc_cal1_firstseg->initialPoint(), cap_rounding);
 
-	this->accumulated->closepath();
+    accumulated.closepath();
 
-	this->cal1->reset();
-	this->cal2->reset();
+    cal1.reset();
+    cal2.reset();
 
 	return true; // success
 }
@@ -1058,14 +1042,14 @@ void CalligraphicTool::fit_and_split(bool release) {
 #endif
 
         /* Current calligraphic */
-        if ( this->cal1->is_empty() || this->cal2->is_empty() ) {
+        if ( cal1.is_empty() || cal2.is_empty() ) {
             /* dc->npoints > 0 */
             /* g_print("calligraphics(1|2) reset\n"); */
-            this->cal1->reset();
-            this->cal2->reset();
+            cal1.reset();
+            cal2.reset();
 
-            this->cal1->moveto(this->point1[0]);
-            this->cal2->moveto(this->point2[0]);
+            cal1.moveto(this->point1[0]);
+            cal2.moveto(this->point2[0]);
         }
 
         Geom::Point b1[BEZIER_MAX_LENGTH];
@@ -1085,29 +1069,29 @@ void CalligraphicTool::fit_and_split(bool release) {
 #endif
             /* CanvasShape */
             if (! release) {
-                this->currentcurve->reset();
-                this->currentcurve->moveto(b1[0]);
+                currentcurve.reset();
+                currentcurve.moveto(b1[0]);
                 for (Geom::Point *bp1 = b1; bp1 < b1 + BEZIER_SIZE * nb1; bp1 += BEZIER_SIZE) {
-                    this->currentcurve->curveto(bp1[1], bp1[2], bp1[3]);
+                    currentcurve.curveto(bp1[1], bp1[2], bp1[3]);
                 }
-                this->currentcurve->lineto(b2[BEZIER_SIZE*(nb2-1) + 3]);
+                currentcurve.lineto(b2[BEZIER_SIZE*(nb2-1) + 3]);
                 for (Geom::Point *bp2 = b2 + BEZIER_SIZE * ( nb2 - 1 ); bp2 >= b2; bp2 -= BEZIER_SIZE) {
-                    this->currentcurve->curveto(bp2[2], bp2[1], bp2[0]);
+                    currentcurve.curveto(bp2[2], bp2[1], bp2[0]);
                 }
                 // FIXME: dc->segments is always NULL at this point??
                 if (this->segments.empty()) { // first segment
-                    add_cap(*currentcurve, b2[0], b1[0], cap_rounding);
+                    add_cap(currentcurve, b2[0], b1[0], cap_rounding);
                 }
-                this->currentcurve->closepath();
-                currentshape->set_bpath(currentcurve.get(), true);
+                currentcurve.closepath();
+                currentshape->set_bpath(&currentcurve, true);
             }
 
             /* Current calligraphic */
             for (Geom::Point *bp1 = b1; bp1 < b1 + BEZIER_SIZE * nb1; bp1 += BEZIER_SIZE) {
-                this->cal1->curveto(bp1[1], bp1[2], bp1[3]);
+                cal1.curveto(bp1[1], bp1[2], bp1[3]);
             }
             for (Geom::Point *bp2 = b2; bp2 < b2 + BEZIER_SIZE * nb2; bp2 += BEZIER_SIZE) {
-                this->cal2->curveto(bp2[1], bp2[2], bp2[3]);
+                cal2.curveto(bp2[1], bp2[2], bp2[3]);
             }
         } else {
             /* fixme: ??? */
@@ -1117,10 +1101,10 @@ void CalligraphicTool::fit_and_split(bool release) {
             this->draw_temporary_box();
 
             for (gint i = 1; i < this->npoints; i++) {
-                this->cal1->lineto(this->point1[i]);
+                cal1.lineto(this->point1[i]);
             }
             for (gint i = 1; i < this->npoints; i++) {
-                this->cal2->lineto(this->point2[i]);
+                cal2.lineto(this->point2[i]);
             }
         }
 
@@ -1129,21 +1113,21 @@ void CalligraphicTool::fit_and_split(bool release) {
         g_print("[%d]Yup\n", this->npoints);
 #endif
         if (!release) {
-            g_assert(!this->currentcurve->is_empty());
+            g_assert(!currentcurve.is_empty());
 
             guint32 fillColor = sp_desktop_get_color_tool(_desktop, "/tools/calligraphic", true);
             double opacity = sp_desktop_get_master_opacity_tool(_desktop, "/tools/calligraphic");
             double fillOpacity = sp_desktop_get_opacity_tool(_desktop, "/tools/calligraphic", true);
             guint fill = (fillColor & 0xffffff00) | SP_COLOR_F_TO_U(opacity*fillOpacity);
 
-            auto cbp = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), currentcurve.get(), true);
+            auto cbp = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), currentcurve.get_pathvector(), true);
             cbp->set_fill(fill, SP_WIND_RULE_EVENODD);
             cbp->set_stroke(0x0);
 
             /* fixme: Cannot we cascade it to root more clearly? */
             cbp->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), _desktop));
 
-            this->segments.push_back(cbp);
+            segments.push_back(cbp);
         }
 
         this->point1[0] = this->point1[this->npoints - 1];
@@ -1155,24 +1139,24 @@ void CalligraphicTool::fit_and_split(bool release) {
 }
 
 void CalligraphicTool::draw_temporary_box() {
-    this->currentcurve->reset();
+    currentcurve.reset();
 
-    this->currentcurve->moveto(this->point2[this->npoints-1]);
+    currentcurve.moveto(this->point2[this->npoints-1]);
 
     for (gint i = this->npoints-2; i >= 0; i--) {
-        this->currentcurve->lineto(this->point2[i]);
+        currentcurve.lineto(this->point2[i]);
     }
 
     for (gint i = 0; i < this->npoints; i++) {
-        this->currentcurve->lineto(this->point1[i]);
+        currentcurve.lineto(this->point1[i]);
     }
 
     if (this->npoints >= 2) {
-        add_cap(*currentcurve, point1[npoints - 1], point2[npoints - 1], cap_rounding);
+        add_cap(currentcurve, point1[npoints - 1], point2[npoints - 1], cap_rounding);
     }
 
-    this->currentcurve->closepath();
-    currentshape->set_bpath(currentcurve.get(), true);
+    currentcurve.closepath();
+    currentshape->set_bpath(&currentcurve, true);
 }
 
 }

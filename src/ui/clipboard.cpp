@@ -563,34 +563,34 @@ bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, 
         }
 
         if (auto source_path = dynamic_cast<SPPath *>(source_obj)) {
-            auto source_curve = SPCurve::copy(source_path->curveForEdit());
-            auto target_curve = SPCurve::copy(target_path->curveForEdit());
+            auto source_curve = *source_path->curveForEdit();
+            auto target_curve = *target_path->curveForEdit();
 
             // Apply group transformation which is usually the old translation plus document scaling factor
-            source_curve->transform(group_affine);
+            source_curve.transform(group_affine);
             // Convert curve from source units (usually px so 1:1)
-            source_curve->transform(source_scale);
+            source_curve.transform(source_scale);
 
             if (!in_place) {
                 // Move the source curve to the mouse pointer, units are px so do before target_trans
                 auto bbox = *(source_path->geometricBounds()) * group_affine;
                 auto to_mouse = Geom::Translate(desktop->point() - bbox.midpoint());
-                source_curve->transform(to_mouse);
+                source_curve.transform(to_mouse);
             } else if (auto clipnode = sp_repr_lookup_name(clipdoc->getReprRoot(), "inkscape:clipboard", 1)) {
                 // Force translation so a foreign path will end up in the right place.
                 auto bbox = *(source_path->visualBounds()) * group_affine;
                 auto to_origin = Geom::Translate(clipnode->getAttributePoint("min") - bbox.min());
-                source_curve->transform(to_origin);
+                source_curve.transform(to_origin);
             }
 
             // Finally convert the curve into path item's coordinate system
-            source_curve->transform(target_trans.inverse());
+            source_curve.transform(target_trans.inverse());
 
             // Add the source curve to the target copy
-            target_curve->append(*source_curve);
+            target_curve.append(std::move(source_curve));
 
             // Set the attribute to keep the document up to date (fixes undo)
-            auto str = sp_svg_write_path(target_curve->get_pathvector());
+            auto str = sp_svg_write_path(target_curve.get_pathvector());
             target_path->setAttribute("d", str);
         }
     }

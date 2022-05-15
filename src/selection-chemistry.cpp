@@ -2978,15 +2978,14 @@ void ObjectSet::cloneOriginal()
             Geom::OptRect b = original->desktopVisualBounds();
             if ( a && b && desktop()) {
                 // draw a flashing line between the objects
-                auto curve = std::make_unique<SPCurve>();
-                curve->moveto(a->midpoint());
-                curve->lineto(b->midpoint());
+                SPCurve curve;
+                curve.moveto(a->midpoint());
+                curve.lineto(b->midpoint());
 
                 // We use a bpath as it supports dashes.
-                auto canvas_item_bpath = new Inkscape::CanvasItemBpath(desktop()->getCanvasTemp(), curve.get());
+                auto canvas_item_bpath = new Inkscape::CanvasItemBpath(desktop()->getCanvasTemp(), curve.get_pathvector());
                 canvas_item_bpath->set_stroke(0x0000ddff);
-                static std::vector<double> dashes = { 5, 3 };
-                canvas_item_bpath->set_dashes(dashes);
+                canvas_item_bpath->set_dashes({5.0, 3.0});
                 canvas_item_bpath->show();
                 desktop()->add_temporary_canvasitem(canvas_item_bpath, 1000);
             }

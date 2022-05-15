@@ -153,9 +153,7 @@ ConnectorTool::ConnectorTool(SPDesktop *desktop)
     , npoints(0)
     , state(SP_CONNECTOR_CONTEXT_IDLE)
     , red_bpath(nullptr)
-    , red_curve(nullptr)
     , red_color(0xff00007f)
-    , green_curve(nullptr)
     , newconn(nullptr)
     , newConnRef(nullptr)
     , curvature(0.0)
@@ -187,10 +185,10 @@ ConnectorTool::ConnectorTool(SPDesktop *desktop)
     red_bpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
 
     /* Create red curve */
-    this->red_curve = std::make_unique<SPCurve>();
+    red_curve.emplace();
 
     /* Create green curve */
-    green_curve = std::make_unique<SPCurve>();
+    green_curve.emplace();
 
     // Notice the initial selection.
     //cc_selection_changed(this->selection, (gpointer) this);
@@ -615,10 +613,8 @@ bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
         sp_conn_reroute_path_immediate(path);
 
         // Copy this to the temporary visible path
-        this->red_curve = SPCurve::copy(path->curveForEdit());
-        this->red_curve->transform(i2d);
-
-        red_bpath->set_bpath(red_curve.get());
+        red_curve = path->curveForEdit()->transformed(i2d);
+        red_bpath->set_bpath(&*red_curve);
 
         ret = true;
         break;
@@ -816,9 +812,9 @@ void ConnectorTool::_setSubsequentPoint(Geom::Point const p)
     this->newConnRef->makePathInvalid();
     this->newConnRef->router()->processTransaction();
     // Recreate curve from libavoid route.
-    recreateCurve(red_curve.get(), this->newConnRef, this->curvature);
-    this->red_curve->transform(_desktop->doc2dt());
-    red_bpath->set_bpath(red_curve.get(), true);
+    recreateCurve(&*red_curve, newConnRef, curvature);
+    red_curve->transform(_desktop->doc2dt());
+    red_bpath->set_bpath(&*red_curve, true);
 }
 
 
@@ -829,17 +825,17 @@ void ConnectorTool::_setSubsequentPoint(Geom::Point const p)
  */
 void ConnectorTool::_concatColorsAndFlush()
 {
-    auto c = std::make_unique<SPCurve>();
+    auto c = std::make_optional<SPCurve>();
     std::swap(c, green_curve);
 
-    this->red_curve->reset();
+    red_curve->reset();
     red_bpath->set_bpath(nullptr);
 
     if (c->is_empty()) {
         return;
     }
 
-    this->_flushWhite(c.get());
+    _flushWhite(&*c);
 }
 
 
@@ -859,7 +855,7 @@ void ConnectorTool::_flushWhite(SPCurve *c)
     SPDocument *doc = _desktop->getDocument();
     Inkscape::XML::Document *xml_doc = doc->getReprDoc();
 
-    if ( c && !c->is_empty() ) {
+    if ( !c->is_empty() ) {
         /* We actually have something to write */
 
         Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
@@ -1026,10 +1022,8 @@ static bool endpt_handler(GdkEvent *event, ConnectorTool *cc)
 
             // Show the red path for dragging.
             auto path = static_cast<SPPath const *>(cc->clickeditem);
-            cc->red_curve = SPCurve::copy(path->curveForEdit());
-            Geom::Affine i2d = (cc->clickeditem)->i2dt_affine();
-            cc->red_curve->transform(i2d);
-            cc->red_bpath->set_bpath(cc->red_curve.get(), true);
+            cc->red_curve = path->curveForEdit()->transformed(cc->clickeditem->i2dt_affine());
+            cc->red_bpath->set_bpath(&*cc->red_curve, true);
 
             cc->clickeditem->setHidden(true);
 
@@ -1120,8 +1114,7 @@ void ConnectorTool::_setActiveShape(SPItem *item)
             }
         }
         // Special connector points in a symbol
-        SPUse *use = dynamic_cast<SPUse *>(item);
-        if(use) {
+        if (auto use = dynamic_cast<SPUse *>(item)) {
             SPItem *orig = use->root();
             //SPItem *orig = use->get_original();
             for (auto& child: orig->children) {

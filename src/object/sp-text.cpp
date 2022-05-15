@@ -850,7 +850,7 @@ SPText::_getFirstYLength()
     return y;
 }
 
-std::unique_ptr<SPCurve> SPText::getNormalizedBpath() const
+SPCurve SPText::getNormalizedBpath() const
 {
     return layout.convertToCurves();
 }

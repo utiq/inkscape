@@ -30,7 +30,7 @@ public:
     DrawingShape(Drawing &drawing);
     ~DrawingShape() override;
 
-    void setPath(SPCurve *curve);
+    void setPath(std::shared_ptr<SPCurve const> curve);
     void setStyle(SPStyle *style, SPStyle *context_style = nullptr) override;
     void setChildrenStyle(SPStyle *context_style) override;
 
@@ -48,7 +48,7 @@ protected:
     void _renderMarkers(DrawingContext &dc, Geom::IntRect const &area, unsigned flags,
                         DrawingItem *stop_at);
 
-    std::unique_ptr<SPCurve> _curve;
+    std::shared_ptr<SPCurve const> _curve;
     NRStyle _nrstyle;
 
     DrawingItem *_last_pick;

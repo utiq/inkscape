@@ -59,9 +59,9 @@ item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& st
         return false;
     }
 
-    std::unique_ptr<SPCurve> curve;
+    std::optional<SPCurve> curve;
     if (shape) {
-        curve = SPCurve::copy(shape->curve());
+        curve = SPCurve::ptr_to_opt(shape->curve());
     } else if (text) {
         curve = text->getNormalizedBpath();
     } else {

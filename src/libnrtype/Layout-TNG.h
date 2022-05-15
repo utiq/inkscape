@@ -24,6 +24,7 @@
 #include <optional>
 #include <svg/svg-length.h>
 #include "style-enums.h"
+#include "display/curve.h"
 
 namespace Inkscape {
         namespace Extension {
@@ -40,7 +41,6 @@ class SPObject;
 class Shape;
 struct SPPrintContext;
 class Path;
-class SPCurve;
 class font_instance;
 typedef struct _PangoFontDescription PangoFontDescription;
 
@@ -417,8 +417,8 @@ public:
     /** Convert the specified range of characters into their bezier 
     outlines.
     */
-    std::unique_ptr<SPCurve> convertToCurves(iterator const &from_glyph, iterator const &to_glyph) const;
-    std::unique_ptr<SPCurve> convertToCurves() const;
+    SPCurve convertToCurves(iterator const &from_glyph, iterator const &to_glyph) const;
+    SPCurve convertToCurves() const;
 
     /** Apply the given transform to all the output presently stored in
     this object. This only transforms the glyph positions, The glyphs

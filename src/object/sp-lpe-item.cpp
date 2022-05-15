@@ -482,7 +482,7 @@ sp_lpe_item_create_original_path_recursive(SPLPEItem *lpeitem)
             if (gchar const * value = pathrepr->attribute("d")) {
                 Geom::PathVector pv = sp_svg_read_pathv(value);
                 pathrepr->setAttribute("inkscape:original-d", value);
-                path->setCurveBeforeLPE(std::make_unique<SPCurve>(pv));
+                path->setCurveBeforeLPE(SPCurve(std::move(pv)));
             }
         }
     } else if (SPShape * shape = dynamic_cast<SPShape *>(lpeitem)) {
@@ -972,7 +972,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
                 }
             }
         } else if (shape) {
-            shape->setCurveInsync(SPCurve::copy(shape->curveForEdit()));
+            shape->setCurveInsync(shape->curveForEdit());
             if (!hasPathEffectOnClipOrMaskRecursive(shape)) {
                 shape->removeAttribute("inkscape:original-d");
                 shape->setCurveBeforeLPE(nullptr);
@@ -998,7 +998,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
                     }
                 }
             } else if (shape) {
-                shape->setCurveInsync(SPCurve::copy(shape->curveForEdit()));
+                shape->setCurveInsync(shape->curveForEdit());
                 if (!hasPathEffectOnClipOrMaskRecursive(shape)) {
                     shape->removeAttribute("inkscape:original-d");
                     shape->setCurveBeforeLPE(nullptr);
@@ -1024,7 +1024,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
                     }
                 }
             } else if (shape) {
-                shape->setCurveInsync(SPCurve::copy(shape->curveForEdit()));
+                shape->setCurveInsync(shape->curveForEdit());
                 if (!hasPathEffectOnClipOrMaskRecursive(shape)) {
                     shape->removeAttribute("inkscape:original-d");
                     shape->setCurveBeforeLPE(nullptr);
@@ -1082,14 +1082,14 @@ SPLPEItem::applyToClipPathOrMask(SPItem *clip_mask, SPItem* to, Inkscape::LivePa
         if (sp_version_inside_range(root->version.inkscape, 0, 1, 0, 92)) {
             shape->removeAttribute("inkscape:original-d");
         } else {
-            auto c = SPCurve::copy(shape->curve());
-            if (c) {
+            if (shape->curve()) {
+                auto c = *shape->curve();
                 bool success = false;
                 try {
                     if (lpe) {
-                        success = this->performOnePathEffect(c.get(), shape, lpe, true);
+                        success = this->performOnePathEffect(&c, shape, lpe, true);
                     } else {
-                        success = this->performPathEffect(c.get(), shape, true);
+                        success = this->performPathEffect(&c, shape, true);
                     }
                 } catch (std::exception & e) {
                     g_warning("Exception during LPE execution. \n %s", e.what());
@@ -1099,15 +1099,14 @@ SPLPEItem::applyToClipPathOrMask(SPItem *clip_mask, SPItem* to, Inkscape::LivePa
                     }
                     success = false;
                 }
-                if (success && c) {
-                    auto str = sp_svg_write_path(c->get_pathvector());
+                if (success) {
+                    auto str = sp_svg_write_path(c.get_pathvector());
                     shape->setCurveInsync(std::move(c));
                     shape->setAttribute("d", str);
                 } else {
                      // LPE was unsuccessful or doeffect stack return null.. Read the old 'd'-attribute.
                     if (gchar const * value = shape->getAttribute("d")) {
-                        Geom::PathVector pv = sp_svg_read_pathv(value);
-                        shape->setCurve(std::make_unique<SPCurve>(pv));
+                        shape->setCurve(SPCurve(sp_svg_read_pathv(value)));
                     }
                 }
                 shape->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);

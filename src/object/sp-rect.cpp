@@ -216,7 +216,7 @@ void SPRect::set_shape() {
         return;
     }
 
-    auto c = std::make_unique<SPCurve>();
+    SPCurve c;
 
     double const x = this->x.computed;
     double const y = this->y.computed;
@@ -245,41 +245,41 @@ void SPRect::set_shape() {
      * arc fairly well.
      */
     if ((rx > 1e-18) && (ry > 1e-18)) {
-        c->moveto(x + rx, y);
+        c.moveto(x + rx, y);
 
         if (rx < w2) {
-        	c->lineto(x + w - rx, y);
+            c.lineto(x + w - rx, y);
         }
 
-        c->curveto(x + w - rx * (1 - C1), y, x + w, y + ry * (1 - C1), x + w, y + ry);
+        c.curveto(x + w - rx * (1 - C1), y, x + w, y + ry * (1 - C1), x + w, y + ry);
 
         if (ry < h2) {
-        	c->lineto(x + w, y + h - ry);
+            c.lineto(x + w, y + h - ry);
         }
 
-        c->curveto(x + w, y + h - ry * (1 - C1), x + w - rx * (1 - C1), y + h, x + w - rx, y + h);
+        c.curveto(x + w, y + h - ry * (1 - C1), x + w - rx * (1 - C1), y + h, x + w - rx, y + h);
 
         if (rx < w2) {
-        	c->lineto(x + rx, y + h);
+            c.lineto(x + rx, y + h);
         }
 
-        c->curveto(x + rx * (1 - C1), y + h, x, y + h - ry * (1 - C1), x, y + h - ry);
+        c.curveto(x + rx * (1 - C1), y + h, x, y + h - ry * (1 - C1), x, y + h - ry);
 
         if (ry < h2) {
-        	c->lineto(x, y + ry);
+            c.lineto(x, y + ry);
         }
 
-        c->curveto(x, y + ry * (1 - C1), x + rx * (1 - C1), y, x + rx, y);
+        c.curveto(x, y + ry * (1 - C1), x + rx * (1 - C1), y, x + rx, y);
     } else {
-        c->moveto(x + 0.0, y + 0.0);
-        c->lineto(x + w, y + 0.0);
-        c->lineto(x + w, y + h);
-        c->lineto(x + 0.0, y + h);
+        c.moveto(x + 0.0, y + 0.0);
+        c.lineto(x + w, y + 0.0);
+        c.lineto(x + w, y + h);
+        c.lineto(x + 0.0, y + h);
     }
 
-    c->closepath();
+    c.closepath();
 
-    if (prepareShapeForLPE(c.get())) {
+    if (prepareShapeForLPE(&c)) {
         return;
     }
 

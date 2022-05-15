@@ -307,9 +307,9 @@ KnotHolderEntityWidthPatternAlongPath::knot_set(Geom::Point const &p, Geom::Poin
     Geom::Point const s = snap_knot_position(p, state);
     SPShape const *sp_shape = dynamic_cast<SPShape const *>(SP_LPE_ITEM(item));
     if (sp_shape && lpe->original_height) {
-        auto curve_before = SPCurve::copy(sp_shape->curveForEdit());
-        if (curve_before) {
-            Geom::Path const *path_in = curve_before->first_path();
+        if (auto c = sp_shape->curveForEdit()) {
+            auto curve_before = *c;
+            Geom::Path const *path_in = curve_before.first_path();
             Geom::Point ptA = path_in->pointAt(Geom::PathTime(0, 0.0));
             Geom::Point B = path_in->pointAt(Geom::PathTime(1, 0.0));
             Geom::Curve const *first_curve = &path_in->curveAt(Geom::PathTime(0, 0.0));
@@ -340,11 +340,10 @@ Geom::Point
 KnotHolderEntityWidthPatternAlongPath::knot_get() const
 {
     LPEPatternAlongPath *lpe = dynamic_cast<LPEPatternAlongPath *> (_effect);
-    SPShape const *sp_shape = dynamic_cast<SPShape const *>(SP_LPE_ITEM(item));
-    if (sp_shape) {
-        auto curve_before = SPCurve::copy(sp_shape->curveForEdit());
-        if (curve_before) {
-            Geom::Path const *path_in = curve_before->first_path();
+    if (auto const sp_shape = dynamic_cast<SPShape const *>(SP_LPE_ITEM(item))) {
+        if (auto c = sp_shape->curveForEdit()) {
+            auto curve_before = *c;
+            Geom::Path const *path_in = curve_before.first_path();
             Geom::Point ptA = path_in->pointAt(Geom::PathTime(0, 0.0));
             Geom::Point B = path_in->pointAt(Geom::PathTime(1, 0.0));
             Geom::Curve const *first_curve = &path_in->curveAt(Geom::PathTime(0, 0.0));

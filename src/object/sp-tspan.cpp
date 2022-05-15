@@ -363,16 +363,14 @@ void refresh_textpath_source(SPTextPath* tp)
             delete tp->originalPath;
         }
 
-        std::unique_ptr<SPCurve> curve_copy;
-        if (tp->side == SP_TEXT_PATH_SIDE_LEFT) {
-            curve_copy = tp->sourcePath->originalPath->copy();
-        } else {
-            curve_copy = tp->sourcePath->originalPath->create_reverse();
+        auto curve_copy = *tp->sourcePath->originalPath;
+        if (tp->side == SP_TEXT_PATH_SIDE_RIGHT) {
+            curve_copy.reverse();
         }
 
         SPItem *item = SP_ITEM(tp->sourcePath->sourceObject);
         tp->originalPath = new Path;
-        tp->originalPath->LoadPathVector(curve_copy->get_pathvector(), item->transform, true);
+        tp->originalPath->LoadPathVector(curve_copy.get_pathvector(), item->transform, true);
         tp->originalPath->ConvertWithBackData(0.01);
     }
 }

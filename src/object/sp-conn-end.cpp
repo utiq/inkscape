@@ -76,13 +76,10 @@ static bool try_get_intersect_point_with_item_recursive(Geom::PathVector& conn_p
         return false;
 
     // make sure it has an associated curve
-    auto item_curve = SPCurve::copy(shape->curve());
-    if (!item_curve) return false;
+    if (!shape->curve()) return false;
 
     // apply transformations (up to common ancestor)
-    item_curve->transform(item_transform);
-
-    const Geom::PathVector& curve_pv = item_curve->get_pathvector();
+    auto const curve_pv = shape->curve()->get_pathvector() * item_transform;
     Geom::CrossingSet cross = crossings(conn_pv, curve_pv);
     // iterate over all Crossings
     //TODO: check correctness of the following code: inner loop uses loop variable
@@ -107,10 +104,7 @@ static bool try_get_intersect_point_with_item(SPPath* conn, SPItem* item,
         const bool at_start, double& intersect_pos)
 {
     // Copy the curve and apply transformations up to common ancestor.
-    auto conn_curve = conn->curve()->copy();
-    conn_curve->transform(conn_transform);
-
-    Geom::PathVector conn_pv = conn_curve->get_pathvector();
+    auto conn_pv = conn->curve()->get_pathvector() * conn_transform;
 
     // If this is not the starting point, use Geom::Path::reverse() to reverse the path
     if (!at_start) {

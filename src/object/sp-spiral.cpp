@@ -303,7 +303,7 @@ void SPSpiral::set_shape() {
 
     this->requestModified(SP_OBJECT_MODIFIED_FLAG);
 
-    auto c = std::make_unique<SPCurve>();
+    SPCurve c;
 
 #ifdef SPIRAL_VERBOSE
     g_print ("cx=%g, cy=%g, exp=%g, revo=%g, rad=%g, arg=%g, t0=%g\n",
@@ -317,7 +317,7 @@ void SPSpiral::set_shape() {
 #endif
 
     /* Initial moveto. */
-    c->moveto(this->getXY(this->t0));
+    c.moveto(this->getXY(this->t0));
 
     double const tstep = SAMPLE_STEP / this->revo;
     double const dstep = tstep / (SAMPLE_SIZE - 1);
@@ -327,16 +327,16 @@ void SPSpiral::set_shape() {
 
     double t;
     for (t = this->t0; t < (1.0 - tstep);) {
-        this->fitAndDraw(c.get(), dstep, darray, hat1, hat2, &t);
+        this->fitAndDraw(&c, dstep, darray, hat1, hat2, &t);
 
         hat1 = -hat2;
     }
 
     if ((1.0 - t) > SP_EPSILON) {
-        this->fitAndDraw(c.get(), (1.0 - t) / (SAMPLE_SIZE - 1.0), darray, hat1, hat2, &t);
+        this->fitAndDraw(&c, (1.0 - t) / (SAMPLE_SIZE - 1.0), darray, hat1, hat2, &t);
     }
 
-    if (prepareShapeForLPE(c.get())) {
+    if (prepareShapeForLPE(&c)) {
         return;
     }
 

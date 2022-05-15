@@ -18,6 +18,7 @@
 #include "libnrtype/Layout-TNG.h"
 #include "sp-item.h"
 #include "desktop.h"
+#include "display/curve.h"
 
 #include <memory>
 
@@ -60,7 +61,7 @@ public:
     bool _optimizeScaledText;
 
 	/** Converts the text object to its component curves */
-    std::unique_ptr<SPCurve> getNormalizedBpath() const;
+    SPCurve getNormalizedBpath() const;
 
     /** Optimize scaled flow text on next set_transform. */
     void optimizeScaledText()

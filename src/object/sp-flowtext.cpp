@@ -480,7 +480,7 @@ void SPFlowtext::_clearFlow(Inkscape::DrawingGroup *in_arena)
     in_arena->clearChildren();
 }
 
-std::unique_ptr<SPCurve> SPFlowtext::getNormalizedBpath() const
+SPCurve SPFlowtext::getNormalizedBpath() const
 {
     return layout.convertToCurves();
 }

@@ -27,8 +27,8 @@ const guint32 FILL_COLOR_MOUSEOVER = 0xff0000ff;
 /**
  * Creates an anchor object and initializes it.
  */
-SPDrawAnchor::SPDrawAnchor(Inkscape::UI::Tools::FreehandBase *dc, SPCurve *curve, bool start, Geom::Point delta)
-    : dc(dc), curve(curve->ref()), start(start), active(FALSE), dp(delta),
+SPDrawAnchor::SPDrawAnchor(Inkscape::UI::Tools::FreehandBase *dc, std::shared_ptr<SPCurve> curve, bool start, Geom::Point delta)
+    : dc(dc), curve(std::move(curve)), start(start), active(FALSE), dp(delta),
       ctrl(
         new Inkscape::CanvasItemCtrl(
           dc->getDesktop()->getCanvasControls(),

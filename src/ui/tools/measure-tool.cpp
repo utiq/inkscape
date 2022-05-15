@@ -441,11 +441,11 @@ void MeasureTool::knotUngrabbedHandler(SPKnot */*knot*/,  unsigned int state)
 }
 
 static void calculate_intersections(SPDesktop *desktop, SPItem *item, Geom::PathVector const &lineseg,
-                                    std::unique_ptr<SPCurve> &&curve, std::vector<double> &intersections)
+                                    SPCurve curve, std::vector<double> &intersections)
 {
-    curve->transform(item->i2doc_affine());
+    curve.transform(item->i2doc_affine());
     // Find all intersections of the control-line with this shape
-    Geom::CrossingSet cs = Geom::crossings(lineseg, curve->get_pathvector());
+    Geom::CrossingSet cs = Geom::crossings(lineseg, curve.get_pathvector());
     Geom::delete_duplicates(cs[0]);
 
     // Reconstruct and store the points of intersection
@@ -1234,7 +1234,7 @@ void MeasureTool::showCanvasItems(bool to_guides, bool to_item, bool to_phantom,
         }
         if (all_layers || _desktop->layerManager().layerForObject(item) == current_layer) {
             if (auto shape = dynamic_cast<SPShape const *>(item)) {
-                calculate_intersections(_desktop, item, lineseg, SPCurve::copy(shape->curve()), intersection_times);
+                calculate_intersections(_desktop, item, lineseg, *shape->curve(), intersection_times);
             } else {
                 if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
                     Inkscape::Text::Layout::iterator iter = te_get_layout(item)->begin();
@@ -1248,10 +1248,7 @@ void MeasureTool::showCanvasItems(bool to_guides, bool to_item, bool to_phantom,
                         // get path from iter to iter_next:
                         auto curve = te_get_layout(item)->convertToCurves(iter, iter_next);
                         iter = iter_next; // shift to next glyph
-                        if (!curve) {
-                            continue; // error converting this glyph
-                        }
-                        if (curve->is_empty()) { // whitespace glyph?
+                        if (curve.is_empty()) { // whitespace glyph?
                             continue;
                         }
 

@@ -80,13 +80,11 @@ PencilTool::PencilTool(SPDesktop *desktop)
     , _req_tangent(0, 0)
     , _is_drawing(false)
     , sketch_n(0)
-    , _pressure_curve(nullptr)
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     if (prefs->getBool("/tools/freehand/pencil/selcue")) {
         this->enableSelectionCue();
     }
-    this->_pressure_curve = std::make_unique<SPCurve>();
     this->_is_drawing = false;
     this->anchor_statusbar = false;
 }
@@ -207,9 +205,9 @@ bool PencilTool::_handleButtonPress(GdkEventButton const &bevent) {
                     p = anchor->dp;
                     //Put the start overwrite curve always on the same direction
                     if (anchor->start) {
-                        this->sa_overwrited = anchor->curve->create_reverse();
+                        sa_overwrited = std::make_shared<SPCurve>(anchor->curve->reversed());
                     } else {
-                        this->sa_overwrited = anchor->curve->copy();
+                        sa_overwrited = std::make_shared<SPCurve>(*anchor->curve);
                     }
                     _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Continuing selected path"));
                 } else {
@@ -316,9 +314,9 @@ bool PencilTool::_handleMotionNotify(GdkEventMotion const &mevent) {
                 }
                 this->_state = SP_PENCIL_CONTEXT_FREEHAND;
 
-                if ( !this->sa && !this->green_anchor ) {
+                if ( !sa && !green_anchor ) {
                     /* Create green anchor */
-                    this->green_anchor.reset(new SPDrawAnchor(this, this->green_curve.get(), TRUE, this->p[0]));
+                    green_anchor = std::make_unique<SPDrawAnchor>(this, green_curve, true, this->p[0]);
                 }
                 if (anchor) {
                     p = anchor->dp;
@@ -443,13 +441,13 @@ bool PencilTool::_handleButtonRelease(GdkEventButton const &revent) {
                     } else {
                         Geom::Point p_end = p;
                         if (tablet_enabled) {
-                            this->_addFreehandPoint(p_end, revent.state, true);
-                            this->_pressure_curve->reset();
+                            _addFreehandPoint(p_end, revent.state, true);
+                            _pressure_curve.reset();
                         } else {
-                            this->_endpointSnap(p_end, revent.state);
+                            _endpointSnap(p_end, revent.state);
                             if (p_end != p) {
                                 // then we must have snapped!
-                                this->_addFreehandPoint(p_end, revent.state, true);
+                                _addFreehandPoint(p_end, revent.state, true);
                             }
                         }
                     }
@@ -503,8 +501,8 @@ void PencilTool::_cancel() {
     this->_state = SP_PENCIL_CONTEXT_IDLE;
     this->discard_delayed_snap_event();
 
-    this->red_curve->reset();
-    this->red_bpath->set_bpath(red_curve.get());
+    this->red_curve.reset();
+    this->red_bpath->set_bpath(&red_curve);
 
     for (auto path : this->green_bpaths) {
         delete path;
@@ -626,7 +624,7 @@ void PencilTool::_setEndpoint(Geom::Point const &p) {
     }
     g_return_if_fail( this->_npoints > 0 );
 
-    this->red_curve->reset();
+    this->red_curve.reset();
     if ( ( p == this->p[0] )
          || !in_svg_plane(p) )
     {
@@ -635,11 +633,11 @@ void PencilTool::_setEndpoint(Geom::Point const &p) {
         this->p[1] = p;
         this->_npoints = 2;
 
-        this->red_curve->moveto(this->p[0]);
-        this->red_curve->lineto(this->p[1]);
+        this->red_curve.moveto(this->p[0]);
+        this->red_curve.lineto(this->p[1]);
         this->red_curve_is_valid = true;
         if (!tablet_enabled) {
-            red_bpath->set_bpath(red_curve.get());
+            red_bpath->set_bpath(&red_curve);
         }
     }
 }
@@ -652,10 +650,10 @@ void PencilTool::_setEndpoint(Geom::Point const &p) {
  * Still not sure, how it will make most sense.
  */
 void PencilTool::_finishEndpoint() {
-    if (this->red_curve->is_unset() || 
-        this->red_curve->first_point() == this->red_curve->second_point())
+    if (this->red_curve.is_unset() ||
+        this->red_curve.first_point() == this->red_curve.second_point())
     {
-        this->red_curve->reset();
+        this->red_curve.reset();
         if (!tablet_enabled) {
             red_bpath->set_bpath(nullptr);
         }
@@ -686,18 +684,17 @@ void PencilTool::addPowerStrokePencil()
         // worst case gives us a segment per point
         int max_segs = 4 * n_points;
         std::vector<Geom::Point> b(max_segs);
-        auto curvepressure = std::make_unique<SPCurve>();
+        SPCurve curvepressure;
         int const n_segs = Geom::bezier_fit_cubic_r(b.data(), this->ps.data(), n_points, tolerance_sq, max_segs);
         if (n_segs > 0) {
             /* Fit and draw and reset state */
-            curvepressure->moveto(b[0]);
+            curvepressure.moveto(b[0]);
             for (int c = 0; c < n_segs; c++) {
-                curvepressure->curveto(b[4 * c + 1], b[4 * c + 2], b[4 * c + 3]);
+                curvepressure.curveto(b[4 * c + 1], b[4 * c + 2], b[4 * c + 3]);
             }
         }
-        Geom::Affine transform_coordinate = currentLayer()->i2dt_affine().inverse();
-        curvepressure->transform(transform_coordinate);
-        Geom::Path path = curvepressure->get_pathvector()[0];
+        curvepressure.transform(currentLayer()->i2dt_affine().inverse());
+        Geom::Path path = curvepressure.get_pathvector()[0];
 
         if (!path.empty()) {
             Inkscape::XML::Document *xml_doc = document->getReprDoc();
@@ -833,12 +830,12 @@ void PencilTool::_addFreehandPoint(Geom::Point const &p, guint /*state*/, bool l
             pressure_piecewise.push_cut(0);
             pressure_piecewise.push(pressure_dot.toSBasis(), 1);
             Geom::PathVector pressure_path = Geom::path_from_piecewise(pressure_piecewise, 0.1);
-            Geom::PathVector previous_presure = this->_pressure_curve->get_pathvector();
+            Geom::PathVector previous_presure = _pressure_curve.get_pathvector();
             if (!pressure_path.empty() && !previous_presure.empty()) {
                 pressure_path = sp_pathvector_boolop(pressure_path, previous_presure, bool_op_union, fill_nonZero, fill_nonZero);
             }
-            this->_pressure_curve->set_pathvector(pressure_path);
-            red_bpath->set_bpath(_pressure_curve.get());
+            _pressure_curve = SPCurve(std::move(pressure_path));
+            red_bpath->set_bpath(&_pressure_curve);
         }
         if (last) {
             this->addPowerStrokePencil();
@@ -934,7 +931,7 @@ void PencilTool::_interpolate() {
         tol = std::min(tol,tol2);
     }
     this->green_curve->reset();
-    this->red_curve->reset();
+    this->red_curve.reset();
     this->red_curve_is_valid = false;
 
     double tolerance_sq = 0.02 * square(_desktop->w2d().descrim() * tol) * exp(0.2 * tol - 2);
@@ -1018,7 +1015,7 @@ void PencilTool::_sketchInterpolate() {
 
     g_assert(is_zero(this->_req_tangent) || is_unit_vector(this->_req_tangent));
 
-    this->red_curve->reset();
+    this->red_curve.reset();
     this->red_curve_is_valid = false;
 
     int n_points = this->ps.size();
@@ -1112,8 +1109,8 @@ void PencilTool::_fitAndSplit() {
     {
         /* Fit and draw and reset state */
 
-        this->red_curve->reset();
-        this->red_curve->moveto(b[0]);
+        this->red_curve.reset();
+        this->red_curve.moveto(b[0]);
         using Geom::X;
         using Geom::Y;
             // if we are in BSpline we modify the trace to create adhoc nodes
@@ -1123,22 +1120,22 @@ void PencilTool::_fitAndSplit() {
             point_at1 = Geom::Point(point_at1[X] + HANDLE_CUBIC_GAP, point_at1[Y] + HANDLE_CUBIC_GAP);
             Geom::Point point_at2 = b[3] + (1./3)*(b[0] - b[3]);
             point_at2 = Geom::Point(point_at2[X] + HANDLE_CUBIC_GAP, point_at2[Y] + HANDLE_CUBIC_GAP);
-            this->red_curve->curveto(point_at1,point_at2,b[3]);
+            this->red_curve.curveto(point_at1,point_at2,b[3]);
         }else{
-            this->red_curve->curveto(b[1], b[2], b[3]);
+            this->red_curve.curveto(b[1], b[2], b[3]);
         }
         if (!tablet_enabled) {
-            red_bpath->set_bpath(red_curve.get());
+            red_bpath->set_bpath(&red_curve);
         }
         this->red_curve_is_valid = true;
     } else {
         /* Fit and draw and copy last point */
 
-        g_assert(!this->red_curve->is_empty());
+        g_assert(!this->red_curve.is_empty());
 
         /* Set up direction of next curve. */
         {
-            Geom::Curve const * last_seg = this->red_curve->last_segment();
+            Geom::Curve const * last_seg = this->red_curve.last_segment();
             g_assert( last_seg );      // Relevance: validity of (*last_seg)
             this->p[0] = last_seg->finalPoint();
             this->_npoints = 1;
@@ -1150,8 +1147,7 @@ void PencilTool::_fitAndSplit() {
                                 : Geom::unit_vector(req_vec) );
         }
 
-        green_curve->append_continuous(*red_curve);
-        auto curve = this->red_curve->copy();
+        green_curve->append_continuous(red_curve);
 
         /// \todo fixme:
 
@@ -1163,7 +1159,7 @@ void PencilTool::_fitAndSplit() {
             this->green_color = this->highlight_color;
         }
 
-        auto cshape = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), curve.get(), true);
+        auto cshape = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), red_curve.get_pathvector(), true);
         cshape->set_stroke(green_color);
         cshape->set_fill(0x0, SP_WIND_RULE_NONZERO);
 

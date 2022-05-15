@@ -24,8 +24,7 @@
 #include "sp-item.h"
 #include "viewbox.h"
 #include "sp-dimensions.h"
-
-class SPCurve;
+#include "display/curve.h"
 
 #include <memory>
 
@@ -43,7 +42,7 @@ public:
     double dpi;
     double prev_width, prev_height;
 
-    std::unique_ptr<SPCurve> curve; // This curve is at the image's boundary for snapping
+    std::optional<SPCurve> curve; // This curve is at the image's boundary for snapping
 
     char *href;
     char *color_profile;
@@ -68,7 +67,7 @@ public:
 
     void apply_profile(Inkscape::Pixbuf *pixbuf);
 
-    std::unique_ptr<SPCurve> get_curve() const;
+    SPCurve const *get_curve() const;
     void refresh_if_outdated();
 private:
     static Inkscape::Pixbuf *readImage(gchar const *href, gchar const *absref, gchar const *base, double svgdpi = 0);

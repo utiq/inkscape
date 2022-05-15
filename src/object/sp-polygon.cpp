@@ -112,7 +112,7 @@ void SPPolygon::set(SPAttr key, const gchar* value) {
                 break;
             }
 
-            auto curve = std::make_unique<SPCurve>();
+            SPCurve curve;
             gboolean hascpt = FALSE;
 
             gchar const *cptr = value;
@@ -141,9 +141,9 @@ void SPPolygon::set(SPAttr key, const gchar* value) {
                 }
 
                 if (hascpt) {
-                    curve->lineto(x, y);
+                    curve.lineto(x, y);
                 } else {
-                    curve->moveto(x, y);
+                    curve.moveto(x, y);
                     hascpt = TRUE;
                 }
             }
@@ -154,7 +154,7 @@ void SPPolygon::set(SPAttr key, const gchar* value) {
             } else if (hascpt) {
                 /* We might have done a moveto but no lineto.  I'm not sure how we're supposed to represent
                  * a single-point polygon in SPCurve. TODO: add a testcase with only one coordinate pair */
-                curve->closepath();
+                curve.closepath();
             }
 
             setCurve(std::move(curve));

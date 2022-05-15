@@ -234,7 +234,7 @@ LPESlice::originalDtoD(SPItem *item)
         if (c && !c->is_empty()) {
             shape->bbox_vis_cache_is_valid = false;
             shape->bbox_geom_cache_is_valid = false;
-            shape->setCurveInsync(std::move(c));
+            shape->setCurveInsync(c);
             auto str = sp_svg_write_path(c->get_pathvector());
             shape->setAttribute("d", str);
         }
@@ -267,7 +267,7 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
     }
     bool write = false;
     bool active = !lpesatellites.data().size() || is_load;
-    for (auto lpereference : lpesatellites.data()) {
+    for (auto const &lpereference : lpesatellites.data()) {
         if (lpereference && lpereference->isAttached() && lpereference.get()->getObject() != nullptr) {
             active = true;
         }
@@ -336,7 +336,7 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
         reset = false;
         if (is_applied_on && prevslice) {
             sp_lpe_item_update_patheffect(sp_lpe_item, false, false);
-            for (auto link : prevslice->lpesatellites.data()) {
+            for (auto const &link : prevslice->lpesatellites.data()) {
                 if (link && link->isAttached()) {
                     SPGroup *spgrp = dynamic_cast<SPGroup *>(link->getObject());
                     SPShape *spit = dynamic_cast<SPShape *>(link->getObject());
@@ -355,15 +355,13 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                         _gbbox = spgrp->geometricBounds();
                     }
                     if (spit || spgrp) {
-                        for (auto link2 : lpesatellites.data()) {
+                        for (auto const &link2 : lpesatellites.data()) {
                             if (link2 && link2->isAttached()) {
                                 SPGroup *spgrp2 = dynamic_cast<SPGroup *>(link2->getObject());
                                 SPShape *spit2 = dynamic_cast<SPShape *>(link2->getObject());
                                 if (spit && spit2) {
-                                    auto edit = SPCurve::copy(spit->curveForEdit());
-                                    auto edit2 = SPCurve::copy(spit2->curveForEdit());
-                                    Geom::OptRect _bbox = edit->get_pathvector().boundsFast();
-                                    Geom::OptRect _bbox2 = edit2->get_pathvector().boundsFast();
+                                    Geom::OptRect _bbox = spit->curveForEdit()->get_pathvector().boundsFast();
+                                    Geom::OptRect _bbox2 = spit2->curveForEdit()->get_pathvector().boundsFast();
                                     if (_bbox && _bbox2) {
                                         (*_bbox).expandBy(1);
                                         if ((*_bbox).contains(*_bbox2)) {
@@ -395,7 +393,7 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
             
         }
     } else {
-        for (auto itemrf : lpesatellites.data()) {
+        for (auto const &itemrf : lpesatellites.data()) {
             if (itemrf && itemrf->isAttached()) {
                 SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(itemrf->getObject());
                 if (splpeitem) {
@@ -751,12 +749,10 @@ LPESlice::splititem(SPItem* item, SPCurve * curve, std::pair<Geom::Line, size_t>
             if (curve && is_original) {
                 curve->set_pathvector(path_out);
             }
-            auto cpro = SPCurve::copy(shape->curve());
-            if (cpro) {
+            if (shape->curve()) {
                 shape->bbox_vis_cache_is_valid = false;
                 shape->bbox_geom_cache_is_valid = false;
-                cpro->set_pathvector(path_out);
-                shape->setCurveInsync(std::move(cpro));
+                shape->setCurveInsync(SPCurve(path_out));
                 auto str = sp_svg_write_path(path_out);
                 if (!is_original && shape->hasPathEffectRecursive()) {
                     sp_lpe_item_enable_path_effects(shape, false);
@@ -885,7 +881,7 @@ void
 LPESlice::doOnVisibilityToggled(SPLPEItem const* /*lpeitem*/)
 {
     if (!is_visible) {
-        for (auto itemrf : lpesatellites.data()) {
+        for (auto const &itemrf : lpesatellites.data()) {
             if (itemrf && itemrf->isAttached()) {
                 SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(itemrf->getObject());
                 if (splpeitem) {

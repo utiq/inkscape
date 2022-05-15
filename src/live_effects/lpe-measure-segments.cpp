@@ -782,13 +782,10 @@ getNodes(SPItem * item, Geom::Affine transform, bool onbbox, bool centers, bool 
             // get path from iter to iter_next:
             auto curve = te_get_layout(item)->convertToCurves(iter, iter_next);
             iter = iter_next; // shift to next glyph
-            if (!curve) {
-                continue; // error converting this glyph
-            }
-            if (curve->is_empty()) { // whitespace glyph?
+            if (curve.is_empty()) { // whitespace glyph?
                 continue;
             }
-            std::vector< Point > letter_nodes = transformNodes(curve->get_pathvector().nodes(), transform);
+            std::vector< Point > letter_nodes = transformNodes(curve.get_pathvector().nodes(), transform);
             current_nodes.insert(current_nodes.end(),letter_nodes.begin(),letter_nodes.end());
             if (iter == te_get_layout(item)->end()) {
                 break;

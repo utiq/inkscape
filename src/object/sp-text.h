@@ -21,6 +21,7 @@
 #include "sp-item.h"
 #include "sp-string.h" // Provides many other headers with SP_IS_STRING
 #include "text-tag-attributes.h"
+#include "display/curve.h"
 
 #include "libnrtype/Layout-TNG.h"
 
@@ -41,7 +42,7 @@ public:
 	~SPText() override;
 
     /** Converts the text object to its component curves */
-    std::unique_ptr<SPCurve> getNormalizedBpath() const;
+    SPCurve getNormalizedBpath() const;
 
     /** Completely recalculates the layout. */
     void rebuildLayout();

@@ -21,8 +21,9 @@
  */
 
 #include "ui/tools/tool-base.h"
+#include "display/curve.h"
 
-#include <memory>
+#include <optional>
 
 class SPCurve;
 
@@ -50,7 +51,7 @@ public:
 
 protected:
     /** accumulated shape which ultimately goes in svg:path */
-    std::unique_ptr<SPCurve> accumulated;
+    SPCurve accumulated;
 
     /** canvas items for "committed" segments */
     std::vector<Inkscape::CanvasItemBpath *> segments;
@@ -59,13 +60,13 @@ protected:
     Inkscape::CanvasItemBpath *currentshape;
 
     /** shape of red "leading" segment */
-    std::unique_ptr<SPCurve> currentcurve;
+    SPCurve currentcurve;
 
     /** left edge of the stroke; combined to get accumulated */
-    std::unique_ptr<SPCurve> cal1;
+    SPCurve cal1;
 
     /** right edge of the stroke; combined to get accumulated */
-    std::unique_ptr<SPCurve> cal2;
+    SPCurve cal2;
 
     /** left edge points for this segment */
     Geom::Point point1[SAMPLING_SIZE];

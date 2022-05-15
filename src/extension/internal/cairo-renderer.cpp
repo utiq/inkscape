@@ -728,8 +728,8 @@ void CairoRenderer::renderHatchPath(CairoRenderContext *ctx, SPHatchPath const &
     ctx->setStateForStyle(hatchPath.style);
     ctx->transform(Geom::Translate(hatchPath.offset.computed, 0));
 
-    std::unique_ptr<SPCurve> curve = hatchPath.calculateRenderCurve(key);
-    Geom::PathVector const & pathv =curve->get_pathvector();
+    auto curve = hatchPath.calculateRenderCurve(key);
+    Geom::PathVector const & pathv =curve.get_pathvector();
     if (!pathv.empty()) {
         ctx->renderPathVector(pathv, hatchPath.style, Geom::OptRect());
     }

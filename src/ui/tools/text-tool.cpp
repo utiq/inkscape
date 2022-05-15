@@ -1709,10 +1709,8 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
         SPCurve curve;
         for (auto const *shape_item : shapes) {
             if (auto shape = dynamic_cast<SPShape const *>(shape_item)) {
-                auto c = SPCurve::copy(shape->curve());
-                if (c) {
-                    c->transform(shape->transform);
-                    curve.append(*c);
+                if (shape->curve()) {
+                    curve.append(shape->curve()->transformed(shape->transform));
                 }
             }
         }

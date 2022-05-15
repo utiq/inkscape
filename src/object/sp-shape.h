@@ -22,6 +22,7 @@
 
 #include "sp-lpe-item.h"
 #include "sp-marker-loc.h"
+#include "display/curve.h"
 
 #include <memory>
 
@@ -44,17 +45,13 @@ public:
     SPCurve const *curveBeforeLPE() const;
     SPCurve const *curveForEdit() const;
 
-private:
-    void _setCurve(SPCurve const *, bool);
-    void _setCurve(std::unique_ptr<SPCurve> &&, bool);
-
 public:
     void setCurve(SPCurve const *);
-    void setCurve(std::unique_ptr<SPCurve> &&);
+    void setCurve(SPCurve);
     void setCurveInsync(SPCurve const *);
-    void setCurveInsync(std::unique_ptr<SPCurve> &&);
-    void setCurveBeforeLPE(SPCurve const *new_curve);
-    void setCurveBeforeLPE(std::unique_ptr<SPCurve> &&);
+    void setCurveInsync(SPCurve);
+    void setCurveBeforeLPE(SPCurve const *);
+    void setCurveBeforeLPE(SPCurve);
     bool checkBrokenPathEffect();
     bool prepareShapeForLPE(SPCurve const *c);
     int hasMarkers () const;
@@ -69,8 +66,8 @@ public:
     mutable Geom::OptRect bbox_vis_cache;
 
 protected:
-    std::unique_ptr<SPCurve> _curve_before_lpe;
-    std::unique_ptr<SPCurve> _curve;
+    std::optional<SPCurve> _curve_before_lpe;
+    std::shared_ptr<SPCurve> _curve;
 
 public:
     SPMarker *_marker[SP_MARKER_LOC_QTY];
