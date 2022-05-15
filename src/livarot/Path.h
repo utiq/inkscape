@@ -301,7 +301,7 @@ public:
    * The sequence of instructions would be:
    * 1. Path::TempBezierTo to start.
    * 2. Path::IntermBezierTo to specify control points. One call for each control point.
-   * 3. Path::EndBezierTo to specify the final point of the quadratic bezier spline and finish the
+   * 3. Path::EndBezierTo(Geom::Point const&) passing the final point of the quadratic bezier spline and finish the
    * quadratic bezier spline command.
    *
    * @return Index of the description added.
@@ -349,7 +349,7 @@ public:
   void ConvertEvenLines (double treshhold);	// decomposes line segments too, for later recomposition
 
   /**
-   * Creates a polyline approximation of the path. Doesn't keep any back data. Line segments are
+   * Creates a polyline approximation of the path. Line segments are
    * not split into smaller line segments. Stores back data for later recomposition.
    *
    * Threshold has no strict definition. It means different things for each path segment.
@@ -419,7 +419,7 @@ public:
    *
    * Dummy back data will be used if the back variable of the instance is true.
    *
-   * @param iPt The point itself. Unused argument.
+   * @param iPt Unused argument.
    *
    * @return Index of the point added if it was added, -1 otherwise.
    */
@@ -485,6 +485,9 @@ public:
    * @param invert If set to true, the graph is drawn exactly in the manner opposite to the actual
    * polyline approximation that this object stores, if false, it's stored indentical to how it's
    * in the polyline approximation.
+   *
+   * @todo "the graph is drawn exactly in the manner opposite"? Does this mean the edges of the
+   * directed graph are reversed?
    */
   void Fill(Shape *dest, int pathID = -1, bool justAdd = false,
             bool closeIfNeeded = true, bool invert = false);

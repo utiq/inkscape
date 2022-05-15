@@ -35,8 +35,8 @@ Path *Path_for_pathvector(Geom::PathVector const &pathv);
  * the item would be before applying LPEs for SPPath and after applying LPEs for other shapes.
  *
  * @param item A pointer to the SPItem object.
- * @param doTransformation See the same parameter in pathvector_for_curve.
- * @param transformFull See the same parameter in pathvector_for_curve.
+ * @param doTransformation See the same parameter in pathvector_for_curve().
+ * @param transformFull See the same parameter in pathvector_for_curve().
  *
  * @return A pointer to the livarot Path object. The caller would need
  * to free the object after using it.
@@ -48,8 +48,8 @@ Path *Path_for_item(SPItem *item, bool doTransformation, bool transformFull = tr
  * extracted is the one before applying the LPE stack.
  *
  * @param item A pointer to the SPItem object.
- * @param doTransformation See the same parameter in pathvector_for_curve.
- * @param transformFull See the same parameter in pathvector_for_curve.
+ * @param doTransformation See the same parameter in pathvector_for_curve().
+ * @param transformFull See the same parameter in pathvector_for_curve().
  *
  * @return A pointer to the livarot Path object. The caller would need
  * to free the object after using it.

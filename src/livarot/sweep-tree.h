@@ -28,7 +28,7 @@ class SweepTreeList;
  * A node in the sweep tree. For details about the sweep tree, what it is, what we do with it,
  * why it's needed, check out SweepTreeList's documentation.
  *
- * Explaination of what and why is stored in evt:
+ * Explanation of what is stored in evt and why:
  * Say you have two edges in the sweepline `left` and `right` and an intersection is detected between
  * the two. An intersection event (of type SweepEvent) is created and that event object stores
  * pointer to the `left` and `right` edges (of type SweepTree). The left edge's evt[RIGHT]/evt[1]
@@ -262,7 +262,7 @@ public:
      * This is a simplification to the other Insert function. The normal Insert function would
      * traverse the whole tree to find an appropriate place to add the current node. There are
      * situations where we just added an edge and we have more edges connected to the same point
-     * that we wanna add. This function will can be used to directly traverse left and right around
+     * that we wanna add. This function can be used to directly traverse left and right around
      * the existing node to see where this edge would fit. Saves us full Find call. This searching
      * is exactly how you'd insert something in a doubly-linked list. The function uses cross
      * products to see where this edge should go relative to the existing one and then has loops

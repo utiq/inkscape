@@ -302,7 +302,7 @@ public:
      *
      * The traversal algorithm is totally identical to GetWindings with minor differences.
      *
-     * @param dest Pointer to the path where the extracted contours will be stored.
+     * @param[out] dest Pointer to the path where the extracted contours will be stored.
      */
     void ConvertToForme(Path *dest);
     
@@ -315,8 +315,8 @@ public:
      *
      * Since back data is used, the original curves are preserved.
      *
-     * @param dest Point to the shape where extracted contours will be placed in.
-     * @param nbP Number of paths that were originally feeded to the directed graph with Path::Fill.
+     * @param[out] dest Pointer to the path where the extracted contours will be stored.
+     * @param nbP Number of paths that were originally fed to the directed graph with Path::Fill.
      * @param orig An array of pointers to Path, one Path object for each path id in the graph.
      * @param splitWhenForced TODO: Figure this out.
      */
@@ -505,18 +505,16 @@ public:
     
     /**
      * An edge in the directed graph.
-     *
-     * nextS tells the next edge in the double-linked list of the start point
-     * prevS tells the prev edge in the double-linked list of the start point
-     * nextE tells the next edge in the double-linked list of the end point
-     * prevE tells the prev edge in the double-linked list of the end point
      */
     struct dg_arete
     {
         Geom::Point dx;          /*!< edge vector (vector from start point to end point). */
-        int st, en;              /*!< start and end points of the edge. */
-        int nextS, prevS;        /*!< next and previous edge in the double-linked list at the start point. */
-        int nextE, prevE;        /*!< next and previous edge in the double-linked list at the end point. */
+        int st;                  /*!< start point of the edge. */
+        int en;                  /*!< end   point of the edge. */
+        int nextS;               /*!< next     edge in the double-linked list at the start point */
+        int prevS;               /*!< previous edge in the double-linked list at the start point. */
+        int nextE;               /*!< next     edge in the double-linked list at the end point. */
+        int prevE;               /*!< previous edge in the double-linked list at the end point. */
     };
 
     // lists of the nodes and edges
@@ -833,7 +831,7 @@ private:
      * with your fingers. These here only give us the magnitude, however the actual variables in code also have
      * a positive or negative sign depending on the direction. Index finger of right hand to the first vector,
      * middle finger to the second vector and if thumb points out of page, cross product is negative, if it
-     * points in the page, cross product is negative. From figure 2 you can already guess that \f$ slDot < 0\f$
+     * points in the page, cross product is positive. From figure 2 you can already guess that \f$ slDot < 0\f$
      * and \f$ elDot > 0 \f$. So let's rewrite the formula in the code while taking into account these signs.
      *
      * \f[ \vec{atx} = \frac{-|\vec{slDot}|*\vec{rEn} -|\vec{elDot}|*\vec{rSt}}{-|\vec{slDot}|-|\vec{elDot}|}\f]
@@ -1189,7 +1187,7 @@ private:
 };
 
 /**
- * Is the graph Euleraian?
+ * Is the graph Eulerian?
  *
  * A directed graph is Eulerian if every vertex has equal indegree and outdegree.
  * http://mathworld.wolfram.com/EulerianGraph.html
