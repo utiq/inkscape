@@ -1700,12 +1700,9 @@ SPDesktopWidget::ruler_event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget
 bool
 SPDesktopWidget::on_ruler_box_motion_notify_event(GdkEventMotion *event, Gtk::Widget *widget, bool horiz)
 {
-    if (horiz) {
-        sp_event_context_snap_delay_handler(desktop->event_context, (gpointer) widget->gobj(), (gpointer) this, event, Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_HRULER);
-    }
-    else {
-        sp_event_context_snap_delay_handler(desktop->event_context, (gpointer) widget->gobj(), (gpointer) this, event, Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_VRULER);
-    }
+    auto origin = horiz ? Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_HRULER
+                        : Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_VRULER;
+    desktop->event_context->snap_delay_handler(widget->gobj(), this, event, origin);
 
     int wx, wy;
 

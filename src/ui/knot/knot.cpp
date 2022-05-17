@@ -176,10 +176,7 @@ bool SPKnot::eventHandler(GdkEvent *event)
             !desktop->event_context->is_space_panning()) {
 
             // If we have any pending snap event, then invoke it now
-            if (desktop->event_context->_delayed_snap_event) {
-                sp_event_context_snap_watchdog_callback(desktop->event_context->_delayed_snap_event);
-            }
-            desktop->event_context->discard_delayed_snap_event();
+            desktop->event_context->process_delayed_snap_event();
             pressure = 0;
 
             if (transform_escaped) {
@@ -260,7 +257,8 @@ bool SPKnot::eventHandler(GdkEvent *event)
                 grabbed_signal.emit(this, event->button.state);
             }
 
-            sp_event_context_snap_delay_handler(desktop->event_context, nullptr, this, (GdkEventMotion *)event, Inkscape::UI::Tools::DelayedSnapEvent::KNOT_HANDLER);
+            desktop->event_context->snap_delay_handler(nullptr, this, reinterpret_cast<GdkEventMotion*>(event),
+                                                       Inkscape::UI::Tools::DelayedSnapEvent::KNOT_HANDLER);
             sp_knot_handler_request_position(event, this);
             moved = true;
         }

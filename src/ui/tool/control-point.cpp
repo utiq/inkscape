@@ -286,9 +286,8 @@ bool ControlPoint::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, G
 
                 _desktop->scroll_to_point(new_pos);
                 _desktop->set_coordinate_status(_position);
-                sp_event_context_snap_delay_handler(event_context, nullptr,
-                    (gpointer) this, &event->motion,
-                    Inkscape::UI::Tools::DelayedSnapEvent::CONTROL_POINT_HANDLER);
+                event_context->snap_delay_handler(nullptr, this, &event->motion,
+                                                  Inkscape::UI::Tools::DelayedSnapEvent::CONTROL_POINT_HANDLER);
             }
             return true;
         }
@@ -302,9 +301,7 @@ bool ControlPoint::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, G
             // We must snap at some point in time though, and this is our last chance)
             // PS: For other contexts this is handled already in start_item_handler or start_root_handler
             // if (_desktop && _desktop->event_context && _desktop->event_context->_delayed_snap_event) {
-            if (event_context->_delayed_snap_event) {
-                sp_event_context_snap_watchdog_callback(event_context->_delayed_snap_event);
-            }
+            event_context->process_delayed_snap_event();
 
             _canvas_item_ctrl->ungrab();
             _setMouseover(this, event->button.state);

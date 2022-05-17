@@ -171,9 +171,8 @@ bool sp_dt_guide_event(GdkEvent *event, Inkscape::CanvasItemGuideLine *guide_ite
                                            event->motion.y);
                 Geom::Point motion_dt(desktop->w2d(motion_w));
 
-                sp_event_context_snap_delay_handler(
-                    desktop->event_context, (void *) guide_item, (void *) guide, (GdkEventMotion *)event,
-                    Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_HANDLER);
+                desktop->event_context->snap_delay_handler(guide_item, guide, reinterpret_cast<GdkEventMotion*>(event),
+                                                           Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_HANDLER);
 
                 // This is for snapping while dragging existing guidelines. New guidelines,
                 // which are dragged off the ruler, are being snapped in sp_dt_ruler_event
