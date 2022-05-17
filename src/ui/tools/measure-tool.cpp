@@ -908,8 +908,9 @@ void MeasureTool::setLabelText(Glib::ustring const &value, Geom::Point pos, doub
     rtspan->addChild(rstring, nullptr);
     Inkscape::GC::release(rstring);
     auto layer = _desktop->layerManager().currentLayer();
-    SPItem *text_item = SP_ITEM(layer->appendChildRepr(rtext));
+    auto text_item = dynamic_cast<SPText*>(layer->appendChildRepr(rtext));
     Inkscape::GC::release(rtext);
+    text_item->rebuildLayout();
     text_item->updateRepr();
     Geom::OptRect bbox = text_item->geometricBounds();
     if (!measure_repr && bbox) {
