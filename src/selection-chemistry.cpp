@@ -365,7 +365,7 @@ void ObjectSet::deleteItems()
          * associated selection context.  For example: deleting an object
          * while moving it around the canvas.
          */
-        dt->setEventContext(dt->getEventContext()->getPrefsPath());
+        dt->setEventContext(std::string(dt->getEventContext()->getPrefsPath()));
     }
 
     if(document()) {

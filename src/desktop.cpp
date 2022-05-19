@@ -391,7 +391,7 @@ SPDesktop::change_document (SPDocument *theDocument)
     selection->clear();
 
     // Reset any tool actions currently in progress.
-    setEventContext(event_context->getPrefsPath());
+    setEventContext(std::string(event_context->getPrefsPath()));
 
     setDocument (theDocument);
 
