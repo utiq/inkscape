@@ -49,15 +49,17 @@ DrawingGroup::setPickChildren(bool p)
 void
 DrawingGroup::setChildTransform(Geom::Affine const &new_trans)
 {
+    double constexpr EPS = 1e-18;
+
     Geom::Affine current;
     if (_child_transform) {
         current = *_child_transform;
     }
 
-    if (!Geom::are_near(current, new_trans, 1e-18)) {
+    if (!Geom::are_near(current, new_trans, EPS)) {
         // mark the area where the object was for redraw.
         _markForRendering();
-        if (new_trans.isIdentity()) {
+        if (new_trans.isIdentity(EPS)) {
             delete _child_transform; // delete NULL; is safe
             _child_transform = nullptr;
         } else {

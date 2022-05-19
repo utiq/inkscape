@@ -219,16 +219,18 @@ DrawingItem::clearChildren()
 void
 DrawingItem::setTransform(Geom::Affine const &new_trans)
 {
+    double constexpr EPS = 1e-18;
+
     Geom::Affine current;
     if (_transform) {
         current = *_transform;
     }
     
-    if (!Geom::are_near(current, new_trans, 1e-18)) {
+    if (!Geom::are_near(current, new_trans, EPS)) {
         // mark the area where the object was for redraw.
         _markForRendering();
         delete _transform;
-        if (new_trans.isIdentity()) {
+        if (new_trans.isIdentity(EPS)) {
             _transform = nullptr;
         } else {
             _transform = new Geom::Affine(new_trans);

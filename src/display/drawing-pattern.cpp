@@ -32,15 +32,17 @@ DrawingPattern::~DrawingPattern()
 
 void
 DrawingPattern::setPatternToUserTransform(Geom::Affine const &new_trans) {
+    double constexpr EPS = 1e-18;
+
     Geom::Affine current;
     if (_pattern_to_user) {
         current = *_pattern_to_user;
     }
 
-    if (!Geom::are_near(current, new_trans, 1e-18)) {
+    if (!Geom::are_near(current, new_trans, EPS)) {
         // mark the area where the object was for redraw.
         _markForRendering();
-        if (new_trans.isIdentity()) {
+        if (new_trans.isIdentity(EPS)) {
             delete _pattern_to_user; // delete NULL; is safe
             _pattern_to_user = nullptr;
         } else {
