@@ -556,7 +556,7 @@ sp_selected_item_to_curved_repr(SPItem *item, guint32 /*text_grouping_policy*/)
 
     SPCurve curve;
 
-    if (auto shape = dynamic_cast<SPShape *>(item); shape->curveForEdit()) {
+    if (auto shape = dynamic_cast<SPShape *>(item); shape && shape->curveForEdit()) {
         curve = *shape->curveForEdit();
     } else {
         return nullptr;
