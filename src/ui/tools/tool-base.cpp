@@ -516,8 +516,8 @@ bool ToolBase::root_handler(GdkEvent *event)
             }
             angle = start_angle + delta_angle;
 
-            _desktop->rotate_relative_keep_point(_desktop->w2d(_desktop->canvas->get_area_world().midpoint()),
-                                                                Geom::rad_from_deg(angle - current_angle));
+            _desktop->rotate_relative_keep_point(_desktop->w2d(Geom::Rect(_desktop->canvas->get_area_world()).midpoint()),
+                                                 Geom::rad_from_deg(angle - current_angle));
             current_angle = angle;
             ret = true;
         }

@@ -649,7 +649,7 @@ SPDesktop::zoom_absolute(Geom::Point const &center, double zoom, bool keep_point
 {
     Geom::Point w = d2w(center); // Must be before zoom changed.
     if(!keep_point) {
-        w = canvas->get_area_world().midpoint();
+        w = Geom::Rect(canvas->get_area_world()).midpoint();
     }
     zoom = CLAMP (zoom, SP_DESKTOP_ZOOM_MIN, SP_DESKTOP_ZOOM_MAX);
     _current_affine.setScale( Geom::Scale(zoom, yaxisdir() * zoom) );
