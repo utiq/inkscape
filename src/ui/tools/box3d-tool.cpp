@@ -288,8 +288,10 @@ bool Box3dTool::root_handler(GdkEvent* event) {
             this->discard_delayed_snap_event();
 
             if (!this->within_tolerance) {
-                // we've been dragging, finish the box
-                _desktop->getSelection()->set(this->box3d); // Updating the selection will send signals to the box3d-toolbar ...
+                // we've been dragging (or switched tools if !box3d), finish the box
+                if (this->box3d) {
+                    _desktop->getSelection()->set(this->box3d); // Updating the selection will send signals to the box3d-toolbar ...
+                }
                 this->finishItem(); // .. but finishItem() will be called from the deconstructor too and shall NOT fire such signals!
             } else if (this->item_to_select) {
                 // no dragging, select clicked box3d if any
@@ -416,8 +418,10 @@ bool Box3dTool::root_handler(GdkEvent* event) {
                 dragging = false;
                 this->discard_delayed_snap_event();
                 if (!this->within_tolerance) {
-                    // we've been dragging, finish the box
-                    _desktop->getSelection()->set(this->box3d); // Updating the selection will send signals to the box3d-toolbar ...
+                    // we've been dragging (or switched tools if !box3d), finish the box
+                    if (this->box3d) {
+                        _desktop->getSelection()->set(this->box3d); // Updating the selection will send signals to the box3d-toolbar ...
+                    }
                     this->finishItem(); // .. but finishItem() will be called from the deconstructor too and shall NOT fire such signals!
                 }
                 // do not return true, so that space would work switching to selector
