@@ -909,7 +909,7 @@ void SPObject::addChild(Inkscape::XML::Node *child, Inkscape::XML::Node * prev)
 void SPObject::releaseReferences() {
     g_assert(this->document);
     g_assert(this->repr);
-    g_assert(repr->_anchored_refcount() > 0);
+    g_assert(cloned || repr->_anchored_refcount() > 0);
 
     sp_repr_remove_listener_by_data(this->repr, this);
 
