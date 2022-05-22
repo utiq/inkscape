@@ -332,7 +332,7 @@ void MarkerComboBox::update_preview(Glib::RefPtr<MarkerItem> item) {
             _preview_no_alloc = true;
         }
         _sandbox->getRoot()->invoke_hide(visionkey);
-        label = item->label;
+        label = _(item->label.c_str());
     }
 
     _preview.set(surface);

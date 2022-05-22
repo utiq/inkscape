@@ -49,6 +49,7 @@ add_custom_target(inkscape_pot BYPRODUCTS ${_potFile}
 )
 
 add_dependencies(inkscape_pot filters_svg_h)
+add_dependencies(inkscape_pot markers_svg_h)
 add_dependencies(inkscape_pot palettes_h)
 add_dependencies(inkscape_pot patterns_svg_h)
 add_dependencies(inkscape_pot symbols_h)
