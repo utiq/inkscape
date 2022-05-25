@@ -161,6 +161,7 @@ void FontLister::ensureRowStyles(Glib::RefPtr<Gtk::TreeModel> model, Gtk::TreeMo
 Glib::ustring FontLister::get_font_family_markup(Gtk::TreeIter const &iter)
 {
     Gtk::TreeModel::Row row = *iter;
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     Glib::ustring family = row[FontList.family];
     bool onSystem        = row[FontList.onSystem];
@@ -169,7 +170,7 @@ Glib::ustring FontLister::get_font_family_markup(Gtk::TreeIter const &iter)
     Glib::ustring markup;
 
     if (!onSystem) {
-        markup = "<span foreground='darkblue'>";
+        markup = "<span font-weight='bold'>";
 
         // See if font-family is on system (separately for each family in font stack).
         std::vector<Glib::ustring> tokens = Glib::Regex::split_simple("\\s*,\\s*", family);
@@ -208,7 +209,6 @@ Glib::ustring FontLister::get_font_family_markup(Gtk::TreeIter const &iter)
         markup = family_escaped;
     }
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     int show_sample = prefs->getInt("/tools/text/show_sample_in_list", 1);
     if (show_sample) {
 
@@ -1174,12 +1174,8 @@ void font_lister_cell_data_func2(GtkCellLayout * /*cell_layout*/,
     Glib::ustring markup;
 
     if (!onSystem) {
-        markup = "";
-        if (dark) {
-            markup += "<span foreground='powderblue'>";
-        } else {
-            markup += "<span foreground='darkblue'>";
-        }
+        markup = "<span font-weight='bold'>";
+
         /* See if font-family on system */
         std::vector<Glib::ustring> tokens = Glib::Regex::split_simple("\\s*,\\s*", family);
         for (auto token : tokens) {
