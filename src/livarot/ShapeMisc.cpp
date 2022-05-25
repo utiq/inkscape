@@ -41,6 +41,10 @@
 void
 Shape::ConvertToForme (Path * dest)
 {
+  // this function is quite similar to Shape::GetWindings so please check it out
+  // first to learn the overall technique and I'll make sure to comment the parts
+  // that are different
+
   if (numberOfPoints() <= 1 || numberOfEdges() <= 1)
     return;
   
@@ -94,6 +98,7 @@ Shape::ConvertToForme (Path * dest)
       if (fi < numberOfPoints())
       {
         int bestB = getPoint(fi).incidentEdge[FIRST];
+        // we get the edge that starts at this point since we wanna follow the direction of the edges
         while (bestB >= 0 && getEdge(bestB).st != fi)
           bestB = NextAt (fi, bestB);
         if (bestB >= 0)
@@ -110,18 +115,18 @@ Shape::ConvertToForme (Path * dest)
       swdData[startBord].misc = (void *) 1;
       //                      printf("part de %d\n",startBord);
       int curBord = startBord;
-      bool back = false;
+      bool back = false; // a variable that if true, means we are back tracking
       swdData[curBord].precParc = -1;
       swdData[curBord].suivParc = -1;
       do
 	    {
-	      int cPt = getEdge(curBord).en;
+	      int cPt = getEdge(curBord).en; // get the end point, we want to follow the direction of the edge
 	      int nb = curBord;
         //                              printf("de curBord= %d au point %i  -> ",curBord,cPt);
         // get next edge
 	      do
         {
-          int nnb = CycleNextAt (cPt, nb);
+          int nnb = CycleNextAt (cPt, nb); // get the next (clockwise) edge (I don't see why the comment at the top says anti clockwise edge first)
           if (nnb == nb)
           {
             // cul-de-sac
@@ -129,31 +134,34 @@ Shape::ConvertToForme (Path * dest)
             break;
           }
           nb = nnb;
-          if (nb < 0 || nb == curBord)
+          if (nb < 0 || nb == curBord) // if we got to the same edge, we break, cuz now we need to back track
             break;
         }
-	      while (swdData[nb].misc != nullptr || getEdge(nb).st != cPt);
+	      while (swdData[nb].misc != nullptr || getEdge(nb).st != cPt); // keep finding a new edge until we find an edge that we haven't seen or an edge
+        // that starts at the point
         
-	      if (nb < 0 || nb == curBord)
+        if (nb < 0 || nb == curBord)
         {
+          // if we are here, means there was no new edge, so we start back tracking
           // no next edge: end of this contour, we get back
           if (back == false)
             dest->Close ();
           back = true;
           // retour en arriere
-          curBord = swdData[curBord].precParc;
+          curBord = swdData[curBord].precParc; // set previous edge to current edge and back is true to indicate we are backtracking
           //                                      printf("retour vers %d\n",curBord);
-          if (curBord < 0)
+          if (curBord < 0) // break if no edge exists before this one
             break;
         }
 	      else
         {
+          // did we get this new edge after we started backtracking? if yes,  we need a moveTo
           // new edge, maybe for a new contour
           if (back)
           {
             // we were backtracking, so if we have a new edge, that means we're creating a new contour
             dest->MoveTo (getPoint(cPt).x);
-            back = false;
+            back = false; // we are no longer backtracking, we will follow this new edge now
           }
           swdData[nb].misc = (void *) 1;
           swdData[nb].ind = searchInd++;
@@ -163,7 +171,7 @@ Shape::ConvertToForme (Path * dest)
           //                                      printf("suite %d\n",curBord);
           {
             // add that edge
-            dest->LineTo (getPoint(getEdge(nb).en).x);
+            dest->LineTo (getPoint(getEdge(nb).en).x); // add a line segment
           }
         }
 	    }
@@ -184,6 +192,8 @@ Shape::ConvertToForme (Path * dest)
 void
 Shape::ConvertToForme (Path * dest, int nbP, Path * *orig, bool splitWhenForced)
 {
+  // the function is similar to the other version of ConvertToForme, I'm adding comments
+  // where there are significant differences to explain
   if (numberOfPoints() <= 1 || numberOfEdges() <= 1)
     return;
 //  if (Eulerian (true) == false)
@@ -240,7 +250,7 @@ Shape::ConvertToForme (Path * dest, int nbP, Path * *orig, bool splitWhenForced)
           bestB = NextAt (fi, bestB);
         if (bestB >= 0)
 	      {
-          startBord = bestB;
+          startBord = bestB; // no moveTo here unlike the other ConvertToForme because we want AddContour to do all the contour extraction stuff
 	      }
       }
     }
@@ -253,7 +263,7 @@ Shape::ConvertToForme (Path * dest, int nbP, Path * *orig, bool splitWhenForced)
       bool back = false;
       swdData[curBord].precParc = -1;
       swdData[curBord].suivParc = -1;
-      int curStartPt=getEdge(curBord).st;
+      int curStartPt=getEdge(curBord).st; // we record the start point of the current edge (actually the start edge at the moment)
       do
 	    {
 	      int cPt = getEdge(curBord).en;
@@ -269,47 +279,47 @@ Shape::ConvertToForme (Path * dest, int nbP, Path * *orig, bool splitWhenForced)
             break;
           }
           nb = nnb;
-          if (nb < 0 || nb == curBord)
+          if (nb < 0 || nb == curBord) // if we get the same edge, we break
             break;
         }
 	      while (swdData[nb].misc != nullptr || getEdge(nb).st != cPt);
         
 	      if (nb < 0 || nb == curBord)
-        {
-          if (back == false)
+        { // we are backtracking
+          if (back == false) // if we weren't backtracking
           {
-            if (curBord == startBord || curBord < 0)
+            if (curBord == startBord || curBord < 0) // is the current edge the one we started on?
             {
               // probleme -> on vire le moveto
               //                                                      dest->descr_nb--;
             }
-            else
+            else // if not, we now have a contour to add
             {
               swdData[curBord].suivParc = -1;
               AddContour (dest, nbP, orig, startBord, curBord,splitWhenForced);
             }
             //                                              dest->Close();
           }
-          back = true;
+          back = true; // we are backtracking now
           // retour en arriere
-          curBord = swdData[curBord].precParc;
+          curBord = swdData[curBord].precParc; // get the previous edge
           //printf("retour vers %d\n",curBord);
-          if (curBord < 0)
+          if (curBord < 0) // if no previous edge, we break
             break;
         }
 	      else
         {
           if (back)
-          {
+          { // if we are backtracking, now we go forward (since we have found a new edge to explore)
             back = false;
             startBord = nb;
-            curStartPt=getEdge(nb).st;
+            curStartPt=getEdge(nb).st; // reset curStartPt to this as a new contour is starting here
           } else {
-            if ( getEdge(curBord).en == curStartPt ) {
+            if ( getEdge(curBord).en == curStartPt ) { // if we are going forward and the endpoint of this edge is the actual start point
               //printf("contour %i ",curStartPt);
-              swdData[curBord].suivParc = -1;
-              AddContour (dest, nbP, orig, startBord, curBord,splitWhenForced);
-              startBord=nb;
+              swdData[curBord].suivParc = -1; //  why tho? seems useless since we set it right after this block ends
+              AddContour (dest, nbP, orig, startBord, curBord,splitWhenForced); // add the contour
+              startBord=nb; // set startBord to this edge
             }
           }
           swdData[nb].misc = (void *) 1;
@@ -893,18 +903,18 @@ Shape::MakeOffset (Shape * a, double dec, JoinType join, double miter, bool do_p
 void
 Shape::AddContour (Path * dest, int nbP, Path * *orig, int startBord, int curBord, bool splitWhenForced)
 {
-  int bord = startBord;
+  int bord = startBord; // start at the first edge
   
   {
-    dest->MoveTo (getPoint(getEdge(bord).st).x);
+    dest->MoveTo (getPoint(getEdge(bord).st).x); // do a MoveTo to the starting point
   }
   
   while (bord >= 0)
   {
-    int nPiece = ebData[bord].pieceID;
+    int nPiece = ebData[bord].pieceID; // get the piece and the path ID
     int nPath = ebData[bord].pathID;
     
-    if (nPath < 0 || nPath >= nbP || orig[nPath] == nullptr)
+    if (nPath < 0 || nPath >= nbP || orig[nPath] == nullptr) // if the path id is invalid in any way, just add the edge as line segment
     {
       // segment batard
       dest->LineTo (getPoint(getEdge(bord).en).x);
@@ -912,8 +922,8 @@ Shape::AddContour (Path * dest, int nbP, Path * *orig, int startBord, int curBor
     }
     else
     {
-      Path *from = orig[nPath];
-      if (nPiece < 0 || nPiece >= int(from->descr_cmd.size()))
+      Path *from = orig[nPath]; // Get pointer to the path object where this edge comes from
+      if (nPiece < 0 || nPiece >= int(from->descr_cmd.size())) // if the piece id is invalid in anyway, again add the edge as just a line segment
 	    {
 	      // segment batard
 	      dest->LineTo (getPoint(getEdge(bord).en).x);
@@ -921,15 +931,15 @@ Shape::AddContour (Path * dest, int nbP, Path * *orig, int startBord, int curBor
 	    }
       else
 	    {
-	      int nType = from->descr_cmd[nPiece]->getType();
-	      if (nType == descr_close || nType == descr_moveto
+	      int nType = from->descr_cmd[nPiece]->getType(); // get the type of the description
+	      if (nType == descr_close || nType == descr_moveto // if a moveTo, close or forced, we just do a lineTo
             || nType == descr_forced)
         {
           // devrait pas arriver
           dest->LineTo (getPoint(getEdge(bord).en).x);
           bord = swdData[bord].suivParc;
         }
-	      else if (nType == descr_lineto)
+	      else if (nType == descr_lineto) // for the other ones, call the appropriate function, bord gets the return value which tells us the next edge we should look at
         {
           bord = ReFormeLineTo (bord, curBord, dest, from);
         }
@@ -965,6 +975,11 @@ Shape::AddContour (Path * dest, int nbP, Path * *orig, int startBord, int curBor
           dest->LineTo (getPoint(getEdge(bord).en).x);
           bord = swdData[bord].suivParc;
         }
+        // Hard to say what this block of code does really
+        // ForcedPoint gets added in dest but then while dumping the SVG d attribute it has no use so never appears
+        // You can see the code for PathDescrForced in path-description.h to confirm this
+        // Also, I'm not sure if there is anything that increases the degree so oldDegree and totalDegree() would differ
+        // at all.
 	      if (bord >= 0 && getPoint(getEdge(bord).st).totalDegree() > 2 ) {
           dest->ForcePoint ();
         } else if ( bord >= 0 && getPoint(getEdge(bord).st).oldDegree > 2 && getPoint(getEdge(bord).st).totalDegree() == 2)  {
