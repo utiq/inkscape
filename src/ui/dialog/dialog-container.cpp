@@ -289,6 +289,7 @@ void DialogContainer::new_dialog(const Glib::ustring& dialog_type, DialogNoteboo
     dialog = Gtk::manage(dialog);
 
     // Create the notebook tab
+    auto const &dialog_data = get_dialog_data();
     Glib::ustring image("inkscape-logo");
     auto it = dialog_data.find(dialog_type);
     if (it != dialog_data.end()) {
@@ -432,6 +433,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
                 }
 
                 DialogNotebook *notebook = nullptr;
+                auto const &dialog_data = get_dialog_data();
 
                 // Step 3.2.2.1 create each dialog in the current notebook
                 for (auto type : dialogs) {
@@ -755,6 +757,7 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                     column->append(notebook);
                 }
 
+                auto const &dialog_data = get_dialog_data();
                 // Step 3.2.2.1 create each dialog in the current notebook
                 for (auto type : dialogs) {
 

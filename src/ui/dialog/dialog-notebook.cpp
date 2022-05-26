@@ -109,18 +109,28 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
         ScrollProvider provide_scroll;
     };
     std::vector<Dialog> all_dialogs;
+    auto const &dialog_data = get_dialog_data();
     all_dialogs.reserve(dialog_data.size());
     for (auto&& kv : dialog_data) {
         const auto& key = kv.first;
         const auto& data = kv.second;
-        if (data.category == DialogData::Other) continue;
-        // for sorting dialogs alphabetically, remove '_'
-        Glib::ustring order = _(data.label.c_str());
+        if (data.category == DialogData::Other) {
+            continue;
+        }
+        // for sorting dialogs alphabetically, remove '_' (used for accelerators)
+        Glib::ustring order = data.label; // Already translated
         auto underscore = order.find('_');
         if (underscore != Glib::ustring::npos) {
             order = order.erase(underscore, 1);
         }
-        all_dialogs.push_back(Dialog { .key = key, .label = _(data.label.c_str()), .order = order, .icon_name = data.icon_name, .category = data.category, .provide_scroll = data.provide_scroll});
+        all_dialogs.emplace_back(Dialog {
+                                     .key = key,
+                                     .label = data.label,
+                                     .order = order,
+                                     .icon_name = data.icon_name,
+                                     .category = data.category,
+                                     .provide_scroll = data.provide_scroll
+                                 });
     }
     // sort by categories and then by names
     std::sort(all_dialogs.begin(), all_dialogs.end(), [](const Dialog& a, const Dialog& b){
@@ -140,7 +150,7 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
 
             category = data.category;
             auto sep = Gtk::make_managed<Gtk::MenuItem>();
-            sep->set_label(dialog_categories[category].uppercase());
+            sep->set_label(Glib::ustring(gettext(dialog_categories[category])).uppercase());
             sep->get_style_context()->add_class("menu-category");
             sep->set_sensitive(false);
             _menu.attach(*sep, 0, 2, row, row + 1);
@@ -239,6 +249,7 @@ void DialogNotebook::remove_highlight_header()
  */
 bool 
 DialogNotebook::provide_scroll(Gtk::Widget &page) {
+    auto const &dialog_data = get_dialog_data();
     auto dialogbase = dynamic_cast<DialogBase*>(&page);
     if (dialogbase) {
         auto data = dialog_data.find(dialogbase->get_type());

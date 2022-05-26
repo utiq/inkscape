@@ -52,12 +52,13 @@ DialogBase::DialogBase(gchar const *prefs_path, Glib::ustring dialog_type)
     , _dialog_type(dialog_type)
     , _app(InkscapeApplication::instance())
 {
+    auto const &dialog_data = get_dialog_data();
+
     // Derive a pretty display name for the dialog.
     auto it = dialog_data.find(dialog_type);
     if (it != dialog_data.end()) {
 
-        // get translated verb name
-        _name = _(it->second.label.c_str());
+        _name = it->second.label; // Already translated
 
         // remove ellipsis and mnemonics
         int pos = _name.find("...", 0);

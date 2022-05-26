@@ -40,7 +40,12 @@ PrintMetafile::~PrintMetafile()
     return;
 }
 
-static std::map<Glib::ustring, FontfixParams> _ppt_fixable_fonts = {
+static std::map<Glib::ustring, FontfixParams> const &get_ppt_fixable_fonts()
+{
+    static std::map<Glib::ustring, FontfixParams> _ppt_fixable_fonts;
+
+    if (_ppt_fixable_fonts.empty()) {
+        _ppt_fixable_fonts = {
     // clang-format off
     {{"Arial"},                    { 0.05,  -0.055, -0.065}},
     {{"Times New Roman"},          { 0.05,  -0.055, -0.065}},
@@ -62,7 +67,11 @@ static std::map<Glib::ustring, FontfixParams> _ppt_fixable_fonts = {
     {{"Palatino Linotype"},        { 0.175,  0.125,  0.125}},
     {{"Segoe UI"},                 { 0.1,    0.0,    0.0}},
     // clang-format on
-};
+        };
+    }
+    return _ppt_fixable_fonts;
+}
+
 
 bool PrintMetafile::textToPath(Inkscape::Extension::Print *ext)
 {
@@ -90,8 +99,9 @@ unsigned int PrintMetafile::release(Inkscape::Extension::Print * /*mod*/)
 // Finds font fix parameters for the given fontname.
 void PrintMetafile::_lookup_ppt_fontfix(Glib::ustring const &fontname, FontfixParams &params)
 {
-    auto it = _ppt_fixable_fonts.find(fontname);
-    if (it!=_ppt_fixable_fonts.end()) {
+    auto const &fixable_fonts = get_ppt_fixable_fonts();
+    auto it = fixable_fonts.find(fontname);
+    if (it != fixable_fonts.end()) {
         params = it->second;
     }
 }

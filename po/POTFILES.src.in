@@ -264,8 +264,8 @@
 ../src/ui/dialog/color-item.cpp
 ../src/ui/dialog/command-palette.cpp
 ../src/ui/dialog/debug.cpp
-../src/ui/dialog/dialog-base.cpp
 ../src/ui/dialog/dialog-container.cpp
+../src/ui/dialog/dialog-data.cpp
 ../src/ui/dialog/dialog-data.h
 ../src/ui/dialog/dialog-multipaned.cpp
 ../src/ui/dialog/dialog-notebook.cpp

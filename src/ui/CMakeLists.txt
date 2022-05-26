@@ -107,6 +107,7 @@ set(ui_SRC
 	dialog/debug.cpp
 	dialog/dialog-base.cpp
 	dialog/dialog-container.cpp
+	dialog/dialog-data.cpp
 	dialog/dialog-manager.cpp
 	dialog/dialog-multipaned.cpp
 	dialog/dialog-notebook.cpp
