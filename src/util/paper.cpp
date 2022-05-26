@@ -81,9 +81,14 @@ std::string PaperSize::getDescription(bool landscape) const {
     return toDescription(name, size[landscape], size[!landscape], unit);
 }
 
+std::string PaperSize::toDimsString(double x, double y, Util::Unit const *unit)
+{
+    return formatNumber(x) + " x " + formatNumber(y) + " " + unit->abbr;
+}
+
 std::string PaperSize::toDescription(std::string name, double x, double y, Inkscape::Util::Unit const *unit)
 {
-    return name + " (" + formatNumber(x) + " x " + formatNumber(y) + " " + unit->abbr + ")";
+    return name + " (" + toDimsString(x, y, unit) + ")";
 }
 
 std::string PaperSize::formatNumber(double val)

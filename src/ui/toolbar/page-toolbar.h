@@ -42,7 +42,7 @@ protected:
     void labelEdited();
     void sizeChoose();
     void sizeChanged();
-    void setSizeText(SPPage *page = nullptr);
+    void setSizeText(SPPage *page = nullptr, bool display_only = true);
 
 private:
     SPDesktop *_desktop;
@@ -63,6 +63,8 @@ private:
     Gtk::ComboBoxText *combo_page_sizes;
     Gtk::Entry *entry_page_sizes;
     Gtk::Entry *text_page_label;
+    Gtk::Entry *text_page_width;
+    Gtk::Entry *text_page_height;
     Gtk::Label *label_page_pos;
     Gtk::ToolButton *btn_page_backward;
     Gtk::ToolButton *btn_page_foreward;

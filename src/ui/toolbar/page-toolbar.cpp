@@ -60,19 +60,24 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
             entry_page_sizes->set_placeholder_text(_("ex.: 100x100cm"));
             entry_page_sizes->set_tooltip_text(_("Type in width & height of a page. (ex.: 15x10cm, 10in x 100mm)\n"
                                                  "or choose preset from dropdown."));
+            entry_page_sizes->get_style_context()->add_class("symbolic");
             entry_page_sizes->signal_activate().connect(sigc::mem_fun(*this, &PageToolbar::sizeChanged));
             entry_page_sizes->signal_icon_press().connect([=](Gtk::EntryIconPosition, const GdkEventButton*){
                 _document->getPageManager().changeOrientation();
                 DocumentUndo::maybeDone(_document, "page-resize", _("Resize Page"), INKSCAPE_ICON("tool-pages"));
                 setSizeText();
             });
-            entry_page_sizes->signal_focus_in_event().connect([=](GdkEventFocus* focus){
-                entry_page_sizes->set_text("");
+            entry_page_sizes->signal_focus_in_event().connect([=](GdkEventFocus *) {
+                setSizeText(nullptr, false); // Show just raw dimensions when user starts editing
                 return false;
+            });
+            entry_page_sizes->signal_focus_out_event().connect([=](GdkEventFocus *) {
+               setSizeText(nullptr, true);
+               return false;
             });
         }
         auto& page_sizes = Inkscape::PaperSize::getPageSizes();
-        for (int i = 0; i < page_sizes.size(); i++) {
+        for (size_t i = 0; i < page_sizes.size(); i++) {
             combo_page_sizes->append(std::to_string(i), page_sizes[i].getDescription(false));
         }
     }
@@ -153,6 +158,9 @@ void PageToolbar::sizeChoose()
             pm.resizePage(width, height);
             setSizeText();
             DocumentUndo::maybeDone(_document, "page-resize", _("Resize Page"), INKSCAPE_ICON("tool-pages"));
+        } else {
+            // Page not found, i.e., "Custom" was selected.
+            entry_page_sizes->grab_focus();
         }
     } catch (std::invalid_argument const &e) {
         // Ignore because user is typing into Entry
@@ -214,7 +222,7 @@ void PageToolbar::sizeChanged()
 /**
  * Sets the size of the current page into the entry page size.
  */
-void PageToolbar::setSizeText(SPPage *page)
+void PageToolbar::setSizeText(SPPage *page, bool display_only)
 {
     if (!page)
         page = _document->getPageManager().getSelected();
@@ -236,14 +244,30 @@ void PageToolbar::setSizeText(SPPage *page)
         entry_page_sizes->set_icon_from_icon_name(INKSCAPE_ICON(icon), Gtk::ENTRY_ICON_SECONDARY);
     }
 
-    if (auto page_size = Inkscape::PaperSize::findPaperSize(width, height, unit)) {
-        entry_page_sizes->set_text(page_size->getDescription(width > height));
+    if (display_only) {
+        // We simply set the contents of the combo box.
+        if (auto page_size = PaperSize::findPaperSize(width, height, unit)) {
+            entry_page_sizes->set_text(page_size->getDescription(width > height));
+        } else {
+            entry_page_sizes->set_text(PaperSize::toDescription(_("Custom"), width, height, unit));
+        }
     } else {
-        entry_page_sizes->set_text(Inkscape::PaperSize::toDescription(_("Custom"), width, height, unit));
-    }
-    // Select text if box is currently in focus.
-    if (entry_page_sizes->has_focus()) {
-        entry_page_sizes->select_region(0, -1);
+        // The user has started editing the combo box; we set up a convenient initial state.
+        if (auto page_size = PaperSize::findPaperSize(width, height, unit)) {
+            // Set a raw dimension string without a name, e.g., 210 x 297 mm for A4.
+            bool const landscape = width > height;
+            entry_page_sizes->set_text(PaperSize::toDimsString(page_size->size[landscape],
+                                                               page_size->size[!landscape],
+                                                               page_size->unit));
+        } else {
+            // If the size is custom, use the current document unit.
+            entry_page_sizes->set_text(PaperSize::toDimsString(width, height, unit));
+        }
+
+        // Select text if box is currently in focus.
+        if (entry_page_sizes->has_focus()) {
+            entry_page_sizes->select_region(0, -1);
+        }
     }
 }
 

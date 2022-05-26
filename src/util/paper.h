@@ -40,6 +40,7 @@ public:
     Inkscape::Util::Unit const *unit; /// pointer to object in UnitTable, do not delete
 
     std::string getDescription(bool landscape) const;
+    static std::string toDimsString(double x, double y, Util::Unit const *unit);
 
     static const std::vector<PaperSize>& getPageSizes();
     static const PaperSize *findPaperSize(double width, double height, Inkscape::Util::Unit const *unit);
