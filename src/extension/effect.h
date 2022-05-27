@@ -74,6 +74,7 @@ public:
     void        set_pref_dialog (PrefDialog * prefdialog);
 private:
     static gchar *   remove_ (gchar * instr);
+    static void _sanitizeId(std::string &id);
 };
 
 } }  /* namespace Inkscape, Extension */

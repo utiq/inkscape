@@ -10,6 +10,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <regex>
+
 #include "effect.h"
 
 #include "execution-env.h"
@@ -123,9 +125,8 @@ Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
         } // children of "inkscape-extension"
     } // if we have an XML file
 
-    // Replace any dashes with underscores
     std::string aid = std::string(get_id());
-    std::replace(aid.begin(), aid.end(), '_', '-');
+    _sanitizeId(aid);
     std::string action_id = "app." + aid;
 
     static auto gapp = InkscapeApplication::instance()->gtk_app();
@@ -170,6 +171,24 @@ Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
         Glib::ustring menu_name = ellipsized_name ? ellipsized_name : get_name();
         app->get_action_effect_data().add_data(aid, sub_menu_list, menu_name);
         g_free(ellipsized_name);
+    }
+}
+
+/** Sanitizes the passed id in place. If an invalid character is found in the ID, a warning
+ *  is printed to stderr. All invalid characters are replaced with an 'X'.
+ */
+void Effect::_sanitizeId(std::string &id)
+{
+    static std::regex const prohibited_id_chars{"[^A-Za-z0-9.-]"};
+
+    // Silently replace any underscores with dashes.
+    std::replace(id.begin(), id.end(), '_', '-');
+
+    // Detect remaining invalid characters and print a warning if found
+    if (std::regex_search(id, prohibited_id_chars)) {
+        auto message = std::string{"Invalid extension action ID found: \""} + id + "\".";
+        g_warn_message("Inkscape", __FILE__, __LINE__, "Effect::_sanitizeId()", message.c_str());
+        id = std::regex_replace(id, prohibited_id_chars, "X");
     }
 }
 
