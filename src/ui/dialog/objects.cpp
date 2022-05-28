@@ -269,7 +269,7 @@ void ObjectWatcher::updateRowInfo() {
 }
 
 /**
- * Propegate changes to the highlight color to all children.
+ * Propagate changes to the highlight color to all children.
  */
 void ObjectWatcher::updateRowHighlight() {
     if (auto item = dynamic_cast<SPItem *>(panel->getObject(node))) {
@@ -286,7 +286,7 @@ void ObjectWatcher::updateRowHighlight() {
 }
 
 /**
- * Propegate a change in visibility or locked state to all children
+ * Propagate a change in visibility or locked state to all children
  */
 void ObjectWatcher::updateRowAncestorState(bool invisible, bool locked) {
     auto _model = panel->_model;
@@ -303,7 +303,7 @@ void ObjectWatcher::updateRowAncestorState(bool invisible, bool locked) {
 Gdk::RGBA selection_color;
 
 /**
- * Updates the row's background colour as indicated by it's selection.
+ * Updates the row's background colour as indicated by its selection.
  */
 void ObjectWatcher::updateRowBg(guint32 rgba)
 {
@@ -762,7 +762,7 @@ ObjectsPanel::ObjectsPanel() :
     _color_picker.connectChanged([=](guint rgba) {
         if (auto item = getItem(_clicked_item_row)) {
             item->setHighlight(rgba);
-            DocumentUndo::maybeDone(getDocument(), "highligh-color", _("Set item highlight color"), INKSCAPE_ICON("dialog-object-properties"));
+            DocumentUndo::maybeDone(getDocument(), "highlight-color", _("Set item highlight color"), INKSCAPE_ICON("dialog-object-properties"));
         }
     });
 
