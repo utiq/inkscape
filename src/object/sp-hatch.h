@@ -25,6 +25,7 @@
 #include "svg/svg-angle.h"
 #include "sp-paint-server.h"
 #include "uri-references.h"
+#include "display/drawing-item-ptr.h"
 
 class SPHatchReference;
 class SPHatchPath;
@@ -101,10 +102,10 @@ protected:
 private:
     struct View
     {
-        std::unique_ptr<Inkscape::DrawingPattern> drawingitem;
+        DrawingItemPtr<Inkscape::DrawingPattern> drawingitem;
         Geom::OptRect bbox;
         unsigned key;
-        View(std::unique_ptr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key);
+        View(DrawingItemPtr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key);
     };
     std::vector<View> views;
 

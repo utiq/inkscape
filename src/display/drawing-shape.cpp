@@ -48,34 +48,47 @@ DrawingShape::DrawingShape(Drawing &drawing)
 
 void DrawingShape::setPath(std::shared_ptr<SPCurve const> curve)
 {
-    _markForRendering();
-    _curve = std::move(curve);
-    _markForUpdate(STATE_ALL, false);
+    defer([this, curve = std::move(curve)] () mutable {
+        _markForRendering();
+        _curve = std::move(curve);
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 void DrawingShape::setStyle(SPStyle const *style, SPStyle const *context_style)
 {
     DrawingItem::setStyle(style, context_style);
-    _nrstyle.set(_style, _context_style);
-    if (_style) {
-        style_vector_effect_stroke = _style->vector_effect.stroke;
-        style_stroke_extensions_hairline = _style->stroke_extensions.hairline;
-        style_clip_rule = _style->clip_rule.computed;
-        style_fill_rule = _style->fill_rule.computed;
-        style_opacity = _style->opacity.value;
-    } else {
-        style_vector_effect_stroke = false;
-        style_stroke_extensions_hairline = false;
-        style_clip_rule = SP_WIND_RULE_EVENODD;
-        style_fill_rule = SP_WIND_RULE_EVENODD;
-        style_opacity = SP_SCALE24_MAX;
+
+    auto vector_effect_stroke = false;
+    auto stroke_extensions_hairline = false;
+    auto clip_rule = SP_WIND_RULE_EVENODD;
+    auto fill_rule = SP_WIND_RULE_EVENODD;
+    auto opacity = SP_SCALE24_MAX;
+    if (style) {
+        vector_effect_stroke = style->vector_effect.stroke;
+        stroke_extensions_hairline = style->stroke_extensions.hairline;
+        clip_rule = style->clip_rule.value;
+        fill_rule = style->fill_rule.value;
+        opacity = style->opacity.value;
     }
+
+    defer([=, nrstyle = NRStyle(_style)] () mutable {
+        _nrstyle = std::move(nrstyle);
+        style_vector_effect_stroke = vector_effect_stroke;
+        style_stroke_extensions_hairline = stroke_extensions_hairline;
+        style_clip_rule = clip_rule;
+        style_fill_rule = fill_rule;
+        style_opacity = opacity;
+    });
 }
 
 void DrawingShape::setChildrenStyle(SPStyle const *context_style)
 {
     DrawingItem::setChildrenStyle(context_style);
-    _nrstyle.set(_style, _context_style);
+
+    defer([this, nrstyle = NRStyle(_style, _context_style)] () mutable {
+        _nrstyle = std::move(nrstyle);
+    });
 }
 
 unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)

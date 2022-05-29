@@ -193,8 +193,9 @@ void FontInstance::init_face()
     FT_Select_Charmap(face, ft_encoding_unicode);
     FT_Select_Charmap(face, ft_encoding_symbol);
 
-    readOpenTypeSVGTable(hb_font, openTypeSVGGlyphs);
-    readOpenTypeFvarAxes(face, openTypeVarAxes);
+    data = std::make_shared<Data>();
+    readOpenTypeSVGTable(hb_font, data->openTypeSVGGlyphs);
+    readOpenTypeFvarAxes(face, data->openTypeVarAxes);
 
 #if FREETYPE_MAJOR == 2 && FREETYPE_MINOR >= 8  // 2.8 does not seem to work even though it has some support.
 
@@ -222,7 +223,7 @@ void FontInstance::init_face()
             auto regex = Glib::Regex::create("(\\w{4})=([-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?)");
             Glib::MatchInfo matchInfo;
 
-            FT_UInt num_axis = openTypeVarAxes.size();
+            FT_UInt num_axis = data->openTypeVarAxes.size();
             std::vector<FT_Fixed> w(num_axis, 0);
 
             auto tokens = Glib::Regex::split_simple(",", variations);
@@ -241,8 +242,8 @@ void FontInstance::init_face()
                     if (name == "slnt") name = "Slant"      ; // 'font-style'
                     if (name == "ital") name = "Italic"     ; // 'font-style'
 
-                    auto it = openTypeVarAxes.find(name);
-                    if (it != openTypeVarAxes.end()) {
+                    auto it = data->openTypeVarAxes.find(name);
+                    if (it != data->openTypeVarAxes.end()) {
                         it->second.set_val = value;
                         w[it->second.index] = value * 65536;
                     }
@@ -389,7 +390,7 @@ FontGlyph const *FontInstance::LoadGlyph(int glyph_id)
         return nullptr; // bitmap font
     }
 
-    if (auto it = glyphs.find(glyph_id); it != glyphs.end()) {
+    if (auto it = data->glyphs.find(glyph_id); it != data->glyphs.end()) {
         return it->second.get(); // already loaded
     }
 
@@ -457,7 +458,7 @@ FontGlyph const *FontInstance::LoadGlyph(int glyph_id)
         }
     }
 
-    auto ret = glyphs.emplace(glyph_id, std::move(n_g));
+    auto ret = data->glyphs.emplace(glyph_id, std::move(n_g));
 
     return ret.first->second.get();
 }
@@ -527,8 +528,8 @@ Geom::PathVector const *FontInstance::PathVector(int glyph_id)
 
 Inkscape::Pixbuf const *FontInstance::PixBuf(int glyph_id)
 {
-    auto glyph_iter = openTypeSVGGlyphs.find(glyph_id);
-    if (glyph_iter == openTypeSVGGlyphs.end()) {
+    auto glyph_iter = data->openTypeSVGGlyphs.find(glyph_id);
+    if (glyph_iter == data->openTypeSVGGlyphs.end()) {
         return nullptr; // out of range
     }
 
@@ -649,15 +650,15 @@ double FontInstance::Advance(int glyph_id, bool vertical)
 
 std::map<Glib::ustring, OTSubstitution> const &FontInstance::get_opentype_tables()
 {
-    if (!openTypeTables) {
+    if (!data->openTypeTables) {
         auto hb_font = pango_font_get_hb_font(p_font);
         assert(hb_font);
 
-        openTypeTables.emplace();
-        readOpenTypeGsubTable(hb_font, *openTypeTables);
+        data->openTypeTables.emplace();
+        readOpenTypeGsubTable(hb_font, *data->openTypeTables);
     }
 
-    return *openTypeTables;
+    return *data->openTypeTables;
 }
 
 /*

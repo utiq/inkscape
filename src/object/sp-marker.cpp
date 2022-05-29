@@ -31,6 +31,7 @@
 #include "sp-defs.h"
 
 #include "display/drawing-group.h"
+#include "display/drawing-item-ptr.h"
 #include "object/object-set.h"
 #include "svg/css-ostringstream.h"
 #include "svg/svg.h"
@@ -42,7 +43,7 @@ using Inkscape::ObjectSet;
 
 struct SPMarkerView
 {
-    std::vector<std::unique_ptr<Inkscape::DrawingItem>> items;
+    std::vector<DrawingItemPtr<Inkscape::DrawingItem>> items;
 };
 
 SPMarker::SPMarker() : SPGroup(), SPViewBox(),

@@ -35,24 +35,33 @@ DrawingGlyphs::DrawingGlyphs(Drawing &drawing)
 
 void DrawingGlyphs::setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom::Affine const &trans)
 {
-    _markForRendering();
+    defer([=, font = std::move(font)] {
+        _markForRendering();
 
-    setTransform(trans);
+        assert(!_drawing.snapshotted());
+        setTransform(trans);
 
-    _font = std::move(font);
-    _glyph = glyph;
+        _font_data = font->share_data();
+        _glyph = glyph;
 
-    // Load pathvectors and pixbufs in advance.
-    if (_font) {
-        pathvec     = _font->PathVector(_glyph);
-        pathvec_ref = _font->PathVector(42);
+        design_units = 1.0;
+        pathvec = nullptr;
+        pathvec_ref  = nullptr;
+        pixbuf = nullptr;
 
-        if (_font->FontHasSVG()) {
-            pixbuf = _font->PixBuf(_glyph);
+        // Load pathvectors and pixbufs in advance, as must be done on main thread.
+        if (font) {
+            design_units = font->GetDesignUnits();
+            pathvec      = font->PathVector(_glyph);
+            pathvec_ref  = font->PathVector(42);
+
+            if (font->FontHasSVG()) {
+                pixbuf = font->PixBuf(_glyph);
+            }
         }
-    }
 
-    _markForUpdate(STATE_ALL, false);
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 void DrawingGlyphs::setStyle(SPStyle const *, SPStyle const *)
@@ -67,7 +76,7 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
         throw InvalidItemException();
     }
 
-    if (!_font) {
+    if (!pathvec) {
         return STATE_ALL;
     }
 
@@ -191,7 +200,7 @@ DrawingItem *DrawingGlyphs::_pickItem(Geom::Point const &p, double /*delta*/, un
                      ggroup->_nrstyle.stroke.type == NRStyle::PAINT_NONE;
     bool outline = flags & PICK_OUTLINE;
 
-    if (_font && _bbox && (outline || !invisible)) {
+    if (pathvec && _bbox && (outline || !invisible)) {
         // With text we take a simple approach: pick if the point is in a character bbox
         Geom::Rect expanded(_pick_bbox);
         // FIXME, why expand by delta?  When is the next line needed?
@@ -219,36 +228,49 @@ bool DrawingText::addComponent(std::shared_ptr<FontInstance> const &font, int gl
     }*/
     if (!font) return false;
 
-    _markForRendering();
-    DrawingGlyphs *ng = new DrawingGlyphs(_drawing);
-    ng->setGlyph(font, glyph, trans);
-    ng->_width  = width;   // used especially when _drawable = false, otherwise, it is the advance of the font
-    ng->_asc    = ascent;  // of font, not of this one character
-    ng->_dsc    = descent; // of font, not of this one character
-    ng->_pl     = phase_length; // used for phase of dots, dashes, and wavy
-    appendChild(ng);
+    defer([=, font = std::move(font)] () mutable {
+        _markForRendering();
+        auto ng = new DrawingGlyphs(_drawing);
+        assert(!_drawing.snapshotted());
+        ng->setGlyph(font, glyph, trans);
+        ng->_width  = width;   // used especially when _drawable = false, otherwise, it is the advance of the font
+        ng->_asc    = ascent;  // of font, not of this one character
+        ng->_dsc    = descent; // of font, not of this one character
+        ng->_pl     = phase_length; // used for phase of dots, dashes, and wavy
+        appendChild(ng);
+    });
+
     return true;
 }
 
 void DrawingText::setStyle(SPStyle const *style, SPStyle const *context_style)
 {
     DrawingGroup::setStyle(style, context_style);
-    _nrstyle.set(_style, _context_style);
+
+    auto vector_effect_stroke = false;
+    auto stroke_extensions_hairline = false;
+    auto clip_rule = SP_WIND_RULE_EVENODD;
     if (_style) {
-        style_vector_effect_stroke = _style->vector_effect.stroke;
-        style_stroke_extensions_hairline = _style->stroke_extensions.hairline;
-        style_clip_rule = _style->clip_rule.computed;
-    } else {
-        style_vector_effect_stroke = false;
-        style_stroke_extensions_hairline = false;
-        style_clip_rule = SP_WIND_RULE_EVENODD;
+        vector_effect_stroke = _style->vector_effect.stroke;
+        stroke_extensions_hairline = _style->stroke_extensions.hairline;
+        clip_rule = _style->clip_rule.computed;
     }
+
+    defer([=, nrstyle = NRStyle(_style, _context_style)] () mutable {
+        _nrstyle = std::move(nrstyle);
+        style_vector_effect_stroke = vector_effect_stroke;
+        style_stroke_extensions_hairline = stroke_extensions_hairline;
+        style_clip_rule = clip_rule;
+    });
 }
 
 void DrawingText::setChildrenStyle(SPStyle const *context_style)
 {
     DrawingGroup::setChildrenStyle(context_style);
-    _nrstyle.set(_style, _context_style);
+
+    defer([this, nrstyle = NRStyle(_style, _context_style)] () mutable {
+        _nrstyle = std::move(nrstyle);
+    });
 }
 
 unsigned DrawingText::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
@@ -592,29 +614,25 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::I
             if (g->_ctm.isSingular()) continue;
             dc.transform(g->_ctm);
             if (g->pathvec) {
-                if (g->_font->FontHasSVG()) {
-                    if (g->pixbuf) {
-                        // Geom::OptRect box = bounds_exact(*g->pathvec);
-                        // if (box) {
-                        //     Inkscape::DrawingContext::Save save(dc);
-                        //     dc.newPath();
-                        //     dc.rectangle(*box);
-                        //     dc.setLineWidth(0.01);
-                        //     dc.setSource(0x8080ffff);
-                        //     dc.stroke();
-                        // }
-                        {
-                            // pixbuf is in font design units, scale to embox.
-                            double scale = g->_font->GetDesignUnits();
-                            if (scale <= 0) scale = 1000;
-                            Inkscape::DrawingContext::Save save(dc);
-                            dc.translate(0, 1);
-                            dc.scale(1.0 / scale, -1.0 / scale);
-                            dc.setSource(g->pixbuf->getSurfaceRaw(), 0, 0);
-                            dc.paint(1);
-                        }
-                    } else {
-                        dc.path(*g->pathvec);
+                if (g->pixbuf) {
+                    // Geom::OptRect box = bounds_exact(*g->pathvec);
+                    // if (box) {
+                    //     Inkscape::DrawingContext::Save save(dc);
+                    //     dc.newPath();
+                    //     dc.rectangle(*box);
+                    //     dc.setLineWidth(0.01);
+                    //     dc.setSource(0x8080ffff);
+                    //     dc.stroke();
+                    // }
+                    {
+                        // pixbuf is in font design units, scale to embox.
+                        double scale = g->design_units;
+                        if (scale <= 0) scale = 1000;
+                        Inkscape::DrawingContext::Save save(dc);
+                        dc.translate(0, 1);
+                        dc.scale(1.0 / scale, -1.0 / scale);
+                        dc.setSource(g->pixbuf->getSurfaceRaw(), 0, 0);
+                        dc.paint(1);
                     }
                 } else {
                     dc.path(*g->pathvec);

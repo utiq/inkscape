@@ -276,7 +276,7 @@ void SPFeImage::destroy_view(View &v)
     if (type == ELEM) {
         elem->invoke_hide(v.inner_key);
     } else if (type == IMAGE) {
-        delete v.child;
+        v.child->unlink();
     }
 
     // Defensive-coding measure: clear filter renderer immediately.

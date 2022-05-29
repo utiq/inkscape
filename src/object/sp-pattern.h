@@ -24,6 +24,7 @@
 #include "sp-paint-server.h"
 #include "uri-references.h"
 #include "viewbox.h"
+#include "display/drawing-item-ptr.h"
 
 class SPPattern;
 class SPItem;
@@ -163,10 +164,10 @@ private:
 
     struct View
     {
-        std::unique_ptr<Inkscape::DrawingPattern> drawingitem;
+        DrawingItemPtr<Inkscape::DrawingPattern> drawingitem;
         Geom::OptRect bbox;
         unsigned key;
-        View(std::unique_ptr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key);
+        View(DrawingItemPtr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key);
     };
     std::vector<View> views;
     void update_view(View &v);

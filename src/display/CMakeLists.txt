@@ -68,6 +68,7 @@ set(display_SRC
     drawing-group.h
     drawing-image.h
     drawing-item.h
+    drawing-item-ptr.h
     drawing-paintserver.h
     drawing-pattern.h
     drawing-shape.h

@@ -99,7 +99,7 @@ public:
     DrawingItem(Drawing &drawing);
     DrawingItem(DrawingItem const &) = delete;
     DrawingItem &operator=(DrawingItem const &) = delete;
-    virtual ~DrawingItem();
+    void unlink(); /// Unlink this node and its subtree from the rendering tree and destroy.
 
     Geom::OptIntRect const &bbox() const { return _bbox; }
     Geom::OptIntRect const &drawbox() const { return _drawbox; }
@@ -164,6 +164,7 @@ protected:
         RENDER_OK   = 0,
         RENDER_STOP = 1
     };
+    virtual ~DrawingItem(); // Private to prevent deletion of items that are still in use by a snapshot.
     void _renderOutline(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags);
     void _markForUpdate(unsigned state, bool propagate);
     void _markForRendering();
@@ -240,12 +241,15 @@ protected:
     bool _isolation : 1;
     SPBlendMode _blend_mode;
 
-    friend class Drawing;
-};
+    template<typename F>
+    void defer(F &&f)
+    {
+        // Introduce artificial dependence on a template parameter to allow definition with Drawing forward-declared.
+        auto &drawing = static_cast<std::enable_if_t<(sizeof(F) > 0), Drawing&>>(_drawing);
+        drawing.defer(std::forward<F>(f));
+    }
 
-struct DeleteDisposer
-{
-    void operator()(DrawingItem *item) { delete item; }
+    friend class Drawing;
 };
 
 /// Apply antialias setting to Cairo.

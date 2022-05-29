@@ -66,8 +66,8 @@ public:
     Geom::PathVector const *PathVector(int glyph_id);
 
     // Return font has SVG OpenType enties.
-    bool                  FontHasSVG() const { return openTypeSVGGlyphs.size() > 0; };
-    auto const &get_opentype_varaxes() const { return openTypeVarAxes; }
+    bool                  FontHasSVG() const { return data->openTypeSVGGlyphs.size() > 0; };
+    auto const &get_opentype_varaxes() const { return data->openTypeVarAxes; }
 
     // Return the font's OpenType tables, possibly loading them on-demand.
     std::map<Glib::ustring, OTSubstitution> const &get_opentype_tables();
@@ -78,6 +78,9 @@ public:
 
     // Horizontal advance if 'vertical' is false, vertical advance if true.
     double Advance(int glyph_id, bool vertical);
+
+    // Return a shared pointer that will keep alive the pathvector and pixbuf data, but nothing else.
+    std::shared_ptr<void const> share_data() const { return data; }
 
     double        GetTypoAscent()  const { return _ascent; }
     double        GetTypoDescent() const { return _descent; }
@@ -141,25 +144,30 @@ private:
     // Baselines
     double _baselines[SP_CSS_BASELINE_SIZE];
 
-    /*
-     * Tables
-     */
+    struct Data
+    {
+        /*
+         * Tables
+         */
 
-    // Map of SVG in OpenType glyphs
-    std::map<int, SVGTableEntry> openTypeSVGGlyphs;
+        // Map of SVG in OpenType glyphs
+        std::map<int, SVGTableEntry> openTypeSVGGlyphs;
 
-    // Maps for font variations.
-    std::map<Glib::ustring, OTVarAxis> openTypeVarAxes; // Axes with ranges
+        // Maps for font variations.
+        std::map<Glib::ustring, OTVarAxis> openTypeVarAxes; // Axes with ranges
 
-    // Map of OpenType tables found in font. Transparently lazy-loaded.
-    std::optional<std::map<Glib::ustring, OTSubstitution>> openTypeTables;
+        // Map of OpenType tables found in font. Transparently lazy-loaded.
+        std::optional<std::map<Glib::ustring, OTSubstitution>> openTypeTables;
 
-    /*
-     * Glyphs
-     */
+        /*
+         * Glyphs
+         */
 
-    // Lookup table mapping pango glyph ids to glyphs.
-    std::unordered_map<int, std::unique_ptr<FontGlyph const>> glyphs;
+        // Lookup table mapping pango glyph ids to glyphs.
+        std::unordered_map<int, std::unique_ptr<FontGlyph const>> glyphs;
+    };
+
+    std::shared_ptr<Data> data;
 };
 
 #endif // LIBNRTYPE_FONT_INSTANCE_H

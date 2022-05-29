@@ -28,7 +28,6 @@ class DrawingImage
 {
 public:
     DrawingImage(Drawing &drawing);
-    ~DrawingImage() override = default;
 
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
 
@@ -39,6 +38,8 @@ public:
     Geom::Rect bounds() const;
 
 protected:
+    ~DrawingImage() override = default;
+
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
     unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at) override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;

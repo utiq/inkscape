@@ -28,26 +28,34 @@ DrawingImage::DrawingImage(Drawing &drawing)
 
 void DrawingImage::setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pixbuf)
 {
-    _pixbuf = std::move(pixbuf);
-    _markForUpdate(STATE_ALL, false);
+    defer([this, pixbuf = std::move(pixbuf)] () mutable {
+        _pixbuf = std::move(pixbuf);
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 void DrawingImage::setScale(double sx, double sy)
 {
-    _scale = Geom::Scale(sx, sy);
-    _markForUpdate(STATE_ALL, false);
+    defer([=] {
+        _scale = Geom::Scale(sx, sy);
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 void DrawingImage::setOrigin(Geom::Point const &origin)
 {
-    _origin = origin;
-    _markForUpdate(STATE_ALL, false);
+    defer([=] {
+        _origin = origin;
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 void DrawingImage::setClipbox(Geom::Rect const &box)
 {
-    _clipbox = box;
-    _markForUpdate(STATE_ALL, false);
+    defer([=] {
+        _clipbox = box;
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 Geom::Rect DrawingImage::bounds() const
@@ -69,11 +77,15 @@ Geom::Rect DrawingImage::bounds() const
 void DrawingImage::setStyle(SPStyle const *style, SPStyle const *context_style)
 {
     DrawingItem::setStyle(style, context_style);
+
+    auto image_rendering = SP_CSS_IMAGE_RENDERING_AUTO;
     if (_style) {
-        style_image_rendering = _style->image_rendering.computed;
-    } else {
-        style_image_rendering = SP_CSS_IMAGE_RENDERING_AUTO;
+        image_rendering = _style->image_rendering.computed;
     }
+
+    defer([=] {
+        style_image_rendering = image_rendering;
+    });
 }
 
 unsigned DrawingImage::_updateItem(Geom::IntRect const &, UpdateContext const &, unsigned, unsigned)

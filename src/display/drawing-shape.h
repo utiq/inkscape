@@ -26,13 +26,14 @@ class DrawingShape
 {
 public:
     DrawingShape(Drawing &drawing);
-    ~DrawingShape() override = default;
 
     void setPath(std::shared_ptr<SPCurve const> curve);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
     void setChildrenStyle(SPStyle const *context_style) override;
 
 protected:
+    ~DrawingShape() override = default;
+
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
     unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at) override;
     void _clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) override;

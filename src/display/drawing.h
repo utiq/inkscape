@@ -25,6 +25,7 @@
 #include "display/rendermode.h"
 #include "nr-filter-colormatrix.h"
 #include "preferences.h"
+#include "util/funclog.h"
 
 namespace Inkscape {
 
@@ -79,6 +80,10 @@ public:
     void render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, int antialiasing_override = -1);
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags);
 
+    void snapshot();
+    void unsnapshot();
+    bool snapshotted() const { return _snapshotted; }
+
     // Convenience
     void averageColor(Geom::IntRect const &area, double &R, double &G, double &B, double &A);
     void setExact();
@@ -111,6 +116,25 @@ private:
     std::set<DrawingItem*> _cached_items; // modified by DrawingItem::_setCached()
     CacheList _candidate_items;           // keep this list always sorted with std::greater
 
+    /*
+     * Simple cacheline separator compatible with x86 (64 bytes) and M* (128 bytes).
+     * Ideally alignas(std::hardware_destructive_interference_size) could be used instead,
+     * but this is extremely painful to make work across all supported platforms/compilers.
+     */
+    char cacheline_separator[127];
+
+    bool _snapshotted = false;
+    Util::FuncLog _funclog;
+
+    template<typename F>
+    void defer(F &&f)
+    {
+        if (!_snapshotted) {
+            f();
+        } else {
+            _funclog.emplace(std::forward<F>(f));
+        }
+    }
 
     friend class DrawingItem;
 };

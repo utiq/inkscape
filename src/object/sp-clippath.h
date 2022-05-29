@@ -22,6 +22,7 @@
 #include <2geom/rect.h>
 #include "sp-object-group.h"
 #include "uri-references.h"
+#include "display/drawing-item-ptr.h"
 
 namespace Inkscape {
 class Drawing;
@@ -65,10 +66,10 @@ private:
 
     struct View
     {
-        std::unique_ptr<Inkscape::DrawingGroup> drawingitem;
+        DrawingItemPtr<Inkscape::DrawingGroup> drawingitem;
         Geom::OptRect bbox;
         unsigned key;
-        View(std::unique_ptr<Inkscape::DrawingGroup> drawingitem, Geom::OptRect const &bbox, unsigned key);
+        View(DrawingItemPtr<Inkscape::DrawingGroup> drawingitem, Geom::OptRect const &bbox, unsigned key);
     };
     std::vector<View> views;
     void update_view(View &v);

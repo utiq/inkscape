@@ -73,117 +73,146 @@ void Drawing::setRoot(DrawingItem *root)
 void Drawing::setRenderMode(RenderMode mode)
 {
     assert(mode != RenderMode::OUTLINE_OVERLAY && "Drawing::setRenderMode: OUTLINE_OVERLAY is not a true render mode");
-    if (mode == _rendermode) return;
-    _root->_markForRendering();
-    _rendermode = mode;
-    _root->_markForUpdate(DrawingItem::STATE_ALL, true);
-    _clearCache();
+
+    defer([=] {
+        if (mode == _rendermode) return;
+        _root->_markForRendering();
+        _rendermode = mode;
+        _root->_markForUpdate(DrawingItem::STATE_ALL, true);
+        _clearCache();
+    });
 }
 
 void Drawing::setColorMode(ColorMode mode)
 {
-    if (mode == _colormode) return;
-    _colormode = mode;
-    if (_rendermode != RenderMode::OUTLINE || _image_outline_mode) {
-        _root->_markForRendering();
-    }
+    defer([=] {
+        if (mode == _colormode) return;
+        _colormode = mode;
+        if (_rendermode != RenderMode::OUTLINE || _image_outline_mode) {
+            _root->_markForRendering();
+        }
+    });
 }
 
 void Drawing::setOutlineOverlay(bool outlineoverlay)
 {
-    if (outlineoverlay == _outlineoverlay) return;
-    _outlineoverlay = outlineoverlay;
-    _root->_markForUpdate(DrawingItem::STATE_ALL, true);
+    defer([=] {
+        if (outlineoverlay == _outlineoverlay) return;
+        _outlineoverlay = outlineoverlay;
+        _root->_markForUpdate(DrawingItem::STATE_ALL, true);
+    });
 }
 
 void Drawing::setGrayscaleMatrix(double value_matrix[20])
 {
-    _grayscale_matrix = Filters::FilterColorMatrix::ColorMatrixMatrix(std::vector<double>(value_matrix, value_matrix + 20));
-    if (_rendermode != RenderMode::OUTLINE) {
-        _root->_markForRendering();
-    }
+    defer([=] {
+        _grayscale_matrix = Filters::FilterColorMatrix::ColorMatrixMatrix(std::vector<double>(value_matrix, value_matrix + 20));
+        if (_rendermode != RenderMode::OUTLINE) {
+            _root->_markForRendering();
+        }
+    });
 }
 
 void Drawing::setClipOutlineColor(uint32_t col)
 {
-    _clip_outline_color = col;
-    if (_rendermode == RenderMode::OUTLINE || _outlineoverlay) {
-        _root->_markForRendering();
-    }
+    defer([=] {
+        _clip_outline_color = col;
+        if (_rendermode == RenderMode::OUTLINE || _outlineoverlay) {
+            _root->_markForRendering();
+        }
+    });
 }
 
 void Drawing::setMaskOutlineColor(uint32_t col)
 {
-    _mask_outline_color = col;
-    if (_rendermode == RenderMode::OUTLINE || _outlineoverlay) {
-        _root->_markForRendering();
-    }
+    defer([=] {
+        _mask_outline_color = col;
+        if (_rendermode == RenderMode::OUTLINE || _outlineoverlay) {
+            _root->_markForRendering();
+        }
+    });
 }
 
 void Drawing::setImageOutlineColor(uint32_t col)
 {
-    _image_outline_color = col;
-    if ((_rendermode == RenderMode::OUTLINE || _outlineoverlay) && !_image_outline_mode) {
-        _root->_markForRendering();
-    }
+    defer([=] {
+        _image_outline_color = col;
+        if ((_rendermode == RenderMode::OUTLINE || _outlineoverlay) && !_image_outline_mode) {
+            _root->_markForRendering();
+        }
+    });
 }
 
 void Drawing::setImageOutlineMode(bool enabled)
 {
-    _image_outline_mode = enabled;
-    if (_rendermode == RenderMode::OUTLINE || _outlineoverlay) {
-        _root->_markForRendering();
-    }
+    defer([=] {
+        _image_outline_mode = enabled;
+        if (_rendermode == RenderMode::OUTLINE || _outlineoverlay) {
+            _root->_markForRendering();
+        }
+    });
 }
 
 void Drawing::setFilterQuality(int quality)
 {
-    _filter_quality = quality;
-    if (!(_rendermode == RenderMode::OUTLINE || _rendermode == RenderMode::NO_FILTERS)) {
-        _root->_markForUpdate(DrawingItem::STATE_ALL, true);
-        _clearCache();
-    }
+    defer([=] {
+        _filter_quality = quality;
+        if (!(_rendermode == RenderMode::OUTLINE || _rendermode == RenderMode::NO_FILTERS)) {
+            _root->_markForUpdate(DrawingItem::STATE_ALL, true);
+            _clearCache();
+        }
+    });
 }
 
 void Drawing::setBlurQuality(int quality)
 {
-    _blur_quality = quality;
-    if (!(_rendermode == RenderMode::OUTLINE || _rendermode == RenderMode::NO_FILTERS)) {
-        _root->_markForUpdate(DrawingItem::STATE_ALL, true);
-        _clearCache();
-    }
+    defer([=] {
+        _blur_quality = quality;
+        if (!(_rendermode == RenderMode::OUTLINE || _rendermode == RenderMode::NO_FILTERS)) {
+            _root->_markForUpdate(DrawingItem::STATE_ALL, true);
+            _clearCache();
+        }
+    });
 }
 
 void Drawing::setDithering(bool use_dithering)
 {
-    _use_dithering = use_dithering;
-    #ifdef CAIRO_HAS_DITHER
-    if (_rendermode != RenderMode::OUTLINE) {
-        _root->_markForUpdate(DrawingItem::STATE_ALL, true);
-        _clearCache();
-    }
-    #endif
+    defer([=] {
+        _use_dithering = use_dithering;
+        #ifdef CAIRO_HAS_DITHER
+        if (_rendermode != RenderMode::OUTLINE) {
+            _root->_markForUpdate(DrawingItem::STATE_ALL, true);
+            _clearCache();
+        }
+        #endif
+    });
 }
 
 void Drawing::setCacheBudget(size_t bytes)
 {
-    _cache_budget = bytes;
-    _pickItemsForCaching();
+    defer([=] {
+        _cache_budget = bytes;
+        _pickItemsForCaching();
+    });
 }
 
 void Drawing::setCacheLimit(Geom::OptIntRect const &rect)
 {
-    _cache_limit = rect;
-    for (auto item : _cached_items) {
-        item->_markForUpdate(DrawingItem::STATE_CACHE, false);
-    }
+    defer([=] {
+        _cache_limit = rect;
+        for (auto item : _cached_items) {
+            item->_markForUpdate(DrawingItem::STATE_CACHE, false);
+        }
+    });
 }
 
 void Drawing::setClip(std::optional<Geom::PathVector> &&clip)
 {
-    if (clip == _clip) return;
-    _clip = std::move(clip);
-    _root->_markForRendering();
+    defer([=] {
+        if (clip == _clip) return;
+        _clip = std::move(clip);
+        _root->_markForRendering();
+    });
 }
 
 void Drawing::update(Geom::IntRect const &area, Geom::Affine const &affine, unsigned flags, unsigned reset)
@@ -222,6 +251,19 @@ void Drawing::render(DrawingContext &dc, Geom::IntRect const &area, unsigned fla
 DrawingItem *Drawing::pick(Geom::Point const &p, double delta, unsigned flags)
 {
     return _root->pick(p, delta, flags);
+}
+
+void Drawing::snapshot()
+{
+    assert(!_snapshotted);
+    _snapshotted = true;
+}
+
+void Drawing::unsnapshot()
+{
+    assert(_snapshotted);
+    _snapshotted = false; // Unsnapshot before replaying log so further work is not deferred.
+    _funclog();
 }
 
 void Drawing::_pickItemsForCaching()

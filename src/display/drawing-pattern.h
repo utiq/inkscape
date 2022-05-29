@@ -34,7 +34,6 @@ class DrawingPattern
 {
 public:
     DrawingPattern(Drawing &drawing);
-    ~DrawingPattern() override = default;
 
     /**
      * Set the transformation from pattern to user coordinate systems.
@@ -63,6 +62,8 @@ public:
     cairo_pattern_t *renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale);
 
 protected:
+    ~DrawingPattern() override = default;
+
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
 
     void _dropPatternCache() override;

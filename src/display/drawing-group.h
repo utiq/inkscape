@@ -22,7 +22,6 @@ class DrawingGroup
 {
 public:
     DrawingGroup(Drawing &drawing);
-    ~DrawingGroup() override = default;
 
     bool pickChildren() { return _pick_children; }
     void setPickChildren(bool);
@@ -30,6 +29,8 @@ public:
     void setChildTransform(Geom::Affine const &);
 
 protected:
+    ~DrawingGroup() override = default;
+
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
                                  unsigned flags, unsigned reset) override;
     unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags,

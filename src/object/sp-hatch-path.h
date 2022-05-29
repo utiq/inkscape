@@ -27,6 +27,7 @@
 #include "svg/svg-length.h"
 #include "object/sp-object.h"
 #include "display/curve.h"
+#include "display/drawing-item-ptr.h"
 
 namespace Inkscape {
 
@@ -63,10 +64,10 @@ protected:
 private:
     struct View
     {
-        std::unique_ptr<Inkscape::DrawingShape> drawingitem;
+        DrawingItemPtr<Inkscape::DrawingShape> drawingitem;
         Geom::OptInterval extents;
         unsigned key;
-        View(std::unique_ptr<Inkscape::DrawingShape> drawingitem, Geom::OptInterval const &extents, unsigned key);
+        View(DrawingItemPtr<Inkscape::DrawingShape> drawingitem, Geom::OptInterval const &extents, unsigned key);
     };
     std::vector<View> views;
 

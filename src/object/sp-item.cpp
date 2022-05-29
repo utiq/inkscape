@@ -66,7 +66,7 @@
 
 //#define OBJECT_TRACE
 
-SPItemView::SPItemView(unsigned flags, unsigned key, std::unique_ptr<Inkscape::DrawingItem> drawingitem)
+SPItemView::SPItemView(unsigned flags, unsigned key, DrawingItemPtr<Inkscape::DrawingItem> drawingitem)
     : flags(flags)
     , key(key)
     , drawingitem(std::move(drawingitem)) {}
@@ -1214,7 +1214,7 @@ Inkscape::DrawingItem *SPItem::invoke_show(Inkscape::Drawing &drawing, unsigned 
     ai->setBlendMode(style->mix_blend_mode.value);
     ai->setVisible(!isHidden());
     ai->setSensitive(sensitive);
-    views.emplace_back(flags, key, std::unique_ptr<Inkscape::DrawingItem>(ai));
+    views.emplace_back(flags, key, DrawingItemPtr<Inkscape::DrawingItem>(ai));
 
     if (auto clip = getClipObject()) {
         auto clip_key = SPItem::ensure_key(ai) + ITEM_KEY_CLIP;

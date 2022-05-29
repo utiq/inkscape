@@ -104,46 +104,11 @@ DrawingItem::~DrawingItem()
     // Remove from the set of cached items and delete cache.
     _setCached(false, true);
 
-    // remove this item from parent's children list
-    // due to the effect of clearChildren(), this only happens for the top-level deleted item
-    if (_parent) {
-        _markForRendering();
-    }
-    switch (_child_type) {
-    case ChildType::NORMAL: {
-        ChildrenList::iterator ithis = _parent->_children.iterator_to(*this);
-        _parent->_children.erase(ithis);
-        } break;
-    case ChildType::CLIP:
-        // we cannot call setClip(NULL) or setMask(NULL),
-        // because that would be an endless loop
-        _parent->_clip = nullptr;
-        break;
-    case ChildType::MASK:
-        _parent->_mask = nullptr;
-        break;
-    case ChildType::ROOT:
-        _drawing._root = nullptr;
-        break;
-    case ChildType::FILL:
-        _parent->_fill_pattern = nullptr;
-        break;
-    case ChildType::STROKE:
-        _parent->_stroke_pattern = nullptr;
-        break;
-    default: ;
-    }
-
-    if (_parent) {
-        bool propagate = _child_type == ChildType::CLIP || _child_type == ChildType::MASK;
-        _parent->_markForUpdate(STATE_ALL, propagate);
-    }
-    clearChildren();
-    delete _stroke_pattern;
-    delete _fill_pattern;
+    _children.clear_and_dispose([] (auto c) { delete c; });
     delete _clip;
     delete _mask;
-    if (_style) sp_style_unref(_style);
+    delete static_cast<DrawingItem*>(_fill_pattern);
+    delete static_cast<DrawingItem*>(_stroke_pattern);
 }
 
 DrawingItem *DrawingItem::parent() const
@@ -164,97 +129,112 @@ bool DrawingItem::isAncestorOf(DrawingItem *item) const
 
 void DrawingItem::appendChild(DrawingItem *item)
 {
-    item->_parent = this;
+    // Ok to perform non-deferred modification of child, because not part of rendering tree yet.
     assert(item->_child_type == ChildType::ORPHAN);
+    item->_parent = this;
     item->_child_type = ChildType::NORMAL;
-    _children.push_back(*item);
 
-    // This ensures that _markForUpdate() called on the child will recurse to this item
-    item->_state = STATE_ALL;
-    // Because _markForUpdate recurses through ancestors, we can simply call it
-    // on the just-added child. This has the additional benefit that we do not
-    // rely on the appended child being in the default non-updated state.
-    // We set propagate to true, because the child might have descendants of its own.
-    item->_markForUpdate(STATE_ALL, true);
+    defer([=] {
+        _children.push_back(*item);
+
+        // This ensures that _markForUpdate() called on the child will recurse to this item
+        item->_state = STATE_ALL;
+        // Because _markForUpdate recurses through ancestors, we can simply call it
+        // on the just-added child. This has the additional benefit that we do not
+        // rely on the appended child being in the default non-updated state.
+        // We set propagate to true, because the child might have descendants of its own.
+        item->_markForUpdate(STATE_ALL, true);
+    });
 }
 
 void DrawingItem::prependChild(DrawingItem *item)
 {
-    item->_parent = this;
+    // See appendChild for explanations.
     assert(item->_child_type == ChildType::ORPHAN);
+    item->_parent = this;
     item->_child_type = ChildType::NORMAL;
-    _children.push_front(*item);
-    // See appendChild for explanation
-    item->_state = STATE_ALL;
-    item->_markForUpdate(STATE_ALL, true);
+
+    defer([=] {
+        _children.push_front(*item);
+        item->_state = STATE_ALL;
+        item->_markForUpdate(STATE_ALL, true);
+    });
 }
 
-/// Delete all regular children of this item (not mask or clip).
+// Clear this node's ordinary children, deleting them and their descendants without otherwise changing them in any way.
 void DrawingItem::clearChildren()
 {
-    if (_children.empty()) return;
-
-    _markForRendering();
-    // prevent children from referencing the parent during deletion
-    // this way, children won't try to remove themselves from a list
-    // from which they have already been removed by clear_and_dispose
-    for (auto & i : _children) {
-        i._parent = NULL;
-        i._child_type = ChildType::ORPHAN;
-    }
-    _children.clear_and_dispose(DeleteDisposer());
-    _markForUpdate(STATE_ALL, false);
+    defer([=] {
+        if (_children.empty()) return;
+        _markForRendering();
+        _children.clear_and_dispose([] (auto c) { delete c; });
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 void DrawingItem::setTransform(Geom::Affine const &transform)
 {
-    auto constexpr EPS = 1e-18;
-    auto current = _transform ? *_transform : Geom::identity();
-    if (Geom::are_near(transform, current, EPS)) return;
+    defer([=] {
+        auto constexpr EPS = 1e-18;
+        auto current = _transform ? *_transform : Geom::identity();
+        if (Geom::are_near(transform, current, EPS)) return;
 
-    _markForRendering();
-    _transform = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
-    _markForUpdate(STATE_ALL, true);
+        _markForRendering();
+        _transform = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
+        _markForUpdate(STATE_ALL, true);
+    });
 }
 
 void DrawingItem::setOpacity(float opacity)
 {
-    if (opacity == _opacity) return;
-    _opacity = opacity;
-    _markForRendering();
+    defer([=] {
+        if (opacity == _opacity) return;
+        _opacity = opacity;
+        _markForRendering();
+    });
 }
 
 void DrawingItem::setAntialiasing(unsigned antialias)
 {
-    if (_antialias == antialias) return;
-    _antialias = antialias;
-    _markForRendering();
+    defer([=] {
+        if (_antialias == antialias) return;
+        _antialias = antialias;
+        _markForRendering();
+    });
 }
 
 void DrawingItem::setIsolation(bool isolation)
 {
-    if (isolation == _isolation) return;
-    _isolation = isolation;
-    _markForRendering();
+    defer([=] {
+        if (isolation == _isolation) return;
+        _isolation = isolation;
+        _markForRendering();
+    });
 }
 
 void DrawingItem::setBlendMode(SPBlendMode blend_mode)
 {
-    if (blend_mode == _blend_mode) return;
-    _blend_mode = blend_mode;
-    _markForRendering();
+    defer([=] {
+        if (blend_mode == _blend_mode) return;
+        _blend_mode = blend_mode;
+        _markForRendering();
+    });
 }
 
 void DrawingItem::setVisible(bool visible)
 {
-    if (visible == _visible) return;
-    _visible = visible;
-    _markForRendering();
+    defer([=] {
+        if (visible == _visible) return;
+        _visible = visible;
+        _markForRendering();
+    });
 }
 
 void DrawingItem::setSensitive(bool sensitive)
 {
-    _sensitive = sensitive;
+    defer([=] { // Must be deferred, since in bitfield.
+        _sensitive = sensitive;
+    });
 }
 
 /**
@@ -298,47 +278,41 @@ void DrawingItem::_setCached(bool cached, bool persistent)
  */
 void DrawingItem::setStyle(SPStyle const *style, SPStyle const *context_style)
 {
-    // std::cout << "DrawingItem::setStyle: " << name() << " " << style
-    //           << " " << context_style << std::endl;
-
-    _markForRendering();
-
-    if (style != _style) {
-        if (style) sp_style_ref(style);
-        if (_style) sp_style_unref(_style);
-        _style = style;
-    }
-
-    if (style && style->enable_background.set) {
-        bool _background_new_check = _background_new;
-        if (style->enable_background.value == SP_CSS_BACKGROUND_NEW) {
-            _background_new = true;
-        }
-        if (style->enable_background.value == SP_CSS_BACKGROUND_ACCUMULATE) {
-            _background_new = false;
-        }
-        if (_background_new_check != _background_new) {
-            _markForUpdate(STATE_BACKGROUND, true);
-        }
-    }
-
-    if (context_style != nullptr) {
+    // Ok to not defer setting the style pointer, because the pointer itself is only read by SPObject-side code.
+    _style = style;
+    if (context_style) {
         _context_style = context_style;
-    } else if (_parent != nullptr) {
+    } else if (_parent) {
         _context_style = _parent->_context_style;
     }
 
-    if (_style) {
-        style_vector_effect_size   = _style->vector_effect.size;
-        style_vector_effect_rotate = _style->vector_effect.rotate;
-        style_vector_effect_fixed  = _style->vector_effect.fixed;
-    } else {
-        style_vector_effect_size   = false;
-        style_vector_effect_rotate = false;
-        style_vector_effect_fixed  = false;
+    // Copy required information out of style.
+    bool background_new = false;
+    bool vector_effect_size   = false;
+    bool vector_effect_rotate = false;
+    bool vector_effect_fixed  = false;
+    if (style) {
+        background_new = style->enable_background.set && style->enable_background.value == SP_CSS_BACKGROUND_NEW;
+        vector_effect_size   = _style->vector_effect.size;
+        vector_effect_rotate = _style->vector_effect.rotate;
+        vector_effect_fixed  = _style->vector_effect.fixed;
     }
 
-    _markForUpdate(STATE_ALL, false);
+    // Defer setting the style information on the DrawingItem.
+    defer([=] {
+        _markForRendering();
+
+        if (background_new != _background_new) {
+            _background_new = background_new;
+            _markForUpdate(STATE_BACKGROUND, true);
+        }
+
+        style_vector_effect_size   = vector_effect_size;
+        style_vector_effect_rotate = vector_effect_rotate;
+        style_vector_effect_fixed  = vector_effect_fixed;
+
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 /**
@@ -358,79 +332,97 @@ void DrawingItem::setChildrenStyle(SPStyle const *context_style)
 
 void DrawingItem::setClip(DrawingItem *item)
 {
-    _markForRendering();
-    delete _clip;
-    _clip = item;
     if (item) {
-        item->_parent = this;
         assert(item->_child_type == ChildType::ORPHAN);
+        item->_parent = this;
         item->_child_type = ChildType::CLIP;
     }
-    _markForUpdate(STATE_ALL, true);
+
+    defer([=] {
+        _markForRendering();
+        delete _clip;
+        _clip = item;
+        _markForUpdate(STATE_ALL, true);
+    });
 }
 
 void DrawingItem::setMask(DrawingItem *item)
 {
-    _markForRendering();
-    delete _mask;
-    _mask = item;
     if (item) {
-        item->_parent = this;
         assert(item->_child_type == ChildType::ORPHAN);
+        item->_parent = this;
         item->_child_type = ChildType::MASK;
     }
-    _markForUpdate(STATE_ALL, true);
+
+    defer([=] {
+        _markForRendering();
+        delete _mask;
+        _mask = item;
+        _markForUpdate(STATE_ALL, true);
+    });
 }
 
 void DrawingItem::setFillPattern(DrawingPattern *pattern)
 {
-    _markForRendering();
-    delete _fill_pattern;
-    _fill_pattern = pattern;
     if (pattern) {
-        pattern->_parent = this;
         assert(pattern->_child_type == ChildType::ORPHAN);
+        pattern->_parent = this;
         pattern->_child_type = ChildType::FILL;
     }
-    _markForUpdate(STATE_ALL, false);
+
+    defer([=] {
+        _markForRendering();
+        delete static_cast<DrawingItem*>(_fill_pattern);
+        _fill_pattern = pattern;
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
 void DrawingItem::setStrokePattern(DrawingPattern *pattern)
 {
-    _markForRendering();
-    delete _stroke_pattern;
-    _stroke_pattern = pattern;
     if (pattern) {
-        pattern->_parent = this;
         assert(pattern->_child_type == ChildType::ORPHAN);
+        pattern->_parent = this;
         pattern->_child_type = ChildType::STROKE;
     }
-    _markForUpdate(STATE_ALL, false);
+
+    defer([=] {
+        _markForRendering();
+        delete static_cast<DrawingItem*>(_stroke_pattern);
+        _stroke_pattern = pattern;
+        _markForUpdate(STATE_ALL, false);
+    });
 }
 
-/// Move this item to the given place in the Z order of siblings.
-/// Does nothing if the item has no parent.
-void DrawingItem::setZOrder(unsigned z)
+/// Move this item to the given place in the Z order of siblings. Does nothing if the item is not a normal child.
+void DrawingItem::setZOrder(unsigned zorder)
 {
-    if (!_parent) return;
+    if (_child_type != ChildType::NORMAL) return;
 
-    ChildrenList::iterator it = _parent->_children.iterator_to(*this);
-    _parent->_children.erase(it);
+    defer([=] {
+        auto it = _parent->_children.iterator_to(*this);
+        _parent->_children.erase(it);
 
-    ChildrenList::iterator i = _parent->_children.begin();
-    std::advance(i, std::min(z, unsigned(_parent->_children.size())));
-    _parent->_children.insert(i, *this);
-    _markForRendering();
+        auto it2 = _parent->_children.begin();
+        std::advance(it2, std::min<unsigned>(zorder, _parent->_children.size()));
+        _parent->_children.insert(it2, *this);
+        _markForRendering();
+    });
 }
 
 void DrawingItem::setItemBounds(Geom::OptRect const &bounds)
 {
-    _item_bbox = bounds;
+    defer([=] {
+        _item_bbox = bounds;
+    });
 }
 
-void DrawingItem::setFilterRenderer(std::unique_ptr<Filters::Filter> renderer)
+void DrawingItem::setFilterRenderer(std::unique_ptr<Filters::Filter> filter)
 {
-    _filter = std::move(renderer);
+    defer([=, filter = std::move(filter)] () mutable {
+        _filter = std::move(filter);
+        _markForRendering();
+    });
 }
 
 /**
@@ -1204,6 +1196,49 @@ void apply_antialias(DrawingContext &dc, int antialias)
         default:
             g_assert_not_reached();
     }
+}
+
+// Remove this node from its parent, then delete it.
+void DrawingItem::unlink()
+{
+    defer([=] {
+        // This only happens for the top-level deleted item.
+        if (_parent) {
+            _markForRendering();
+        }
+
+        switch (_child_type) {
+            case ChildType::NORMAL: {
+                auto it = _parent->_children.iterator_to(*this);
+                _parent->_children.erase(it);
+                break;
+            }
+            case ChildType::CLIP:
+                _parent->_clip = nullptr;
+                break;
+            case ChildType::MASK:
+                _parent->_mask = nullptr;
+                break;
+            case ChildType::FILL:
+                _parent->_fill_pattern = nullptr;
+                break;
+            case ChildType::STROKE:
+                _parent->_stroke_pattern = nullptr;
+                break;
+            case ChildType::ROOT:
+                _drawing._root = nullptr;
+                break;
+            default:
+                break;
+        }
+
+        if (_parent) {
+            bool propagate = _child_type == ChildType::CLIP || _child_type == ChildType::MASK;
+            _parent->_markForUpdate(STATE_ALL, propagate);
+        }
+
+        delete this;
+    });
 }
 
 } // namespace Inkscape

@@ -555,7 +555,7 @@ bool SPHatch::isValid() const
 
 Inkscape::DrawingPattern *SPHatch::show(Inkscape::Drawing &drawing, unsigned key, Geom::OptRect const &bbox)
 {
-    views.emplace_back(std::make_unique<Inkscape::DrawingPattern>(drawing), bbox, key);
+    views.emplace_back(make_drawingitem<Inkscape::DrawingPattern>(drawing), bbox, key);
     auto &v = views.back();
     auto ai = v.drawingitem.get();
 
@@ -744,7 +744,7 @@ void SPHatch::setBBox(unsigned int key, Geom::OptRect const &bbox)
     }
 }
 
-SPHatch::View::View(std::unique_ptr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key)
+SPHatch::View::View(DrawingItemPtr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key)
     : drawingitem(std::move(drawingitem))
     , bbox(bbox)
     , key(key) {}

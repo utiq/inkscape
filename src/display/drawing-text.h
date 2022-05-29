@@ -29,17 +29,18 @@ class DrawingGlyphs
 {
 public:
     DrawingGlyphs(Drawing &drawing);
-    ~DrawingGlyphs() override = default;
 
     void setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom::Affine const &trans);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override; // Not to be used
     Geom::IntRect getPickBox() const { return _pick_bbox; };
 
 protected:
+    ~DrawingGlyphs() override = default;
+
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
 
-    std::shared_ptr<FontInstance> _font;
+    std::shared_ptr<void const> _font_data; // keeps alive pathvec, pathvec_ref, and pixbuf
     int            _glyph;
     float          _width;          // These three are used to set up bounding box
     float          _asc;            //
@@ -47,6 +48,7 @@ protected:
     float          _pl;             // phase length
     Geom::IntRect  _pick_bbox;
 
+    double design_units;
     Geom::PathVector const *pathvec; // pathvector of actual glyph
     Geom::PathVector const *pathvec_ref; // pathvector of reference glyph 42
     Inkscape::Pixbuf const *pixbuf; // pixbuf, if SVG font
@@ -59,13 +61,14 @@ class DrawingText
 {
 public:
     DrawingText(Drawing &drawing);
-    ~DrawingText() override = default;
 
     bool addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans, float width, float ascent, float descent, float phase_length);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
     void setChildrenStyle(SPStyle const *context_style) override;
 
 protected:
+    ~DrawingText() override = default;
+
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
                                  unsigned flags, unsigned reset) override;
     unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags,

@@ -21,7 +21,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <memory>
 #include <2geom/forward.h>
 #include <2geom/affine.h>
 #include <2geom/rect.h>
@@ -29,6 +28,7 @@
 
 #include "sp-object.h"
 #include "sp-marker-loc.h"
+#include "display/drawing-item-ptr.h"
 #include "xml/repr.h"
 
 class SPGroup;
@@ -90,8 +90,8 @@ struct SPItemView
 {
     unsigned flags;
     unsigned key;
-    std::unique_ptr<Inkscape::DrawingItem> drawingitem;
-    SPItemView(unsigned flags, unsigned key, std::unique_ptr<Inkscape::DrawingItem> drawingitem);
+    DrawingItemPtr<Inkscape::DrawingItem> drawingitem;
+    SPItemView(unsigned flags, unsigned key, DrawingItemPtr<Inkscape::DrawingItem> drawingitem);
 };
 
 enum SPItemKey

@@ -37,25 +37,31 @@ DrawingPattern::DrawingPattern(Drawing &drawing)
 
 void DrawingPattern::setPatternToUserTransform(Geom::Affine const &transform)
 {
-    auto constexpr EPS = 1e-18;
-    auto current = _pattern_to_user ? *_pattern_to_user : Geom::identity();
-    if (Geom::are_near(transform, current, EPS)) return;
-    _markForRendering();
-    _pattern_to_user = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
-    _markForUpdate(STATE_ALL, true);
+    defer([=] {
+        auto constexpr EPS = 1e-18;
+        auto current = _pattern_to_user ? *_pattern_to_user : Geom::identity();
+        if (Geom::are_near(transform, current, EPS)) return;
+        _markForRendering();
+        _pattern_to_user = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
+        _markForUpdate(STATE_ALL, true);
+    });
 }
 
 void DrawingPattern::setTileRect(Geom::Rect const &tile_rect)
 {
-    _tile_rect = tile_rect;
-    _markForUpdate(STATE_ALL, true);
+    defer([=] {
+        _tile_rect = tile_rect;
+        _markForUpdate(STATE_ALL, true);
+    });
 }
 
 void DrawingPattern::setOverflow(Geom::Affine const &initial_transform, int steps, Geom::Affine const &step_transform)
 {
-    _overflow_initial_transform = initial_transform;
-    _overflow_steps = steps;
-    _overflow_step_transform = step_transform;
+    defer([=] {
+        _overflow_initial_transform = initial_transform;
+        _overflow_steps = steps;
+        _overflow_step_transform = step_transform;
+    });
 }
 
 cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale)

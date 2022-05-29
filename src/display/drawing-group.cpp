@@ -29,7 +29,9 @@ DrawingGroup::DrawingGroup(Drawing &drawing)
  */
 void DrawingGroup::setPickChildren(bool pick_children)
 {
-    _pick_children = pick_children;
+    defer([=] {
+        _pick_children = pick_children;
+    });
 }
 
 /**
@@ -39,12 +41,14 @@ void DrawingGroup::setPickChildren(bool pick_children)
  */
 void DrawingGroup::setChildTransform(Geom::Affine const &transform)
 {
-    auto constexpr EPS = 1e-18;
-    auto current = _child_transform ? *_child_transform : Geom::identity();
-    if (Geom::are_near(transform, current, EPS)) return;
-    _markForRendering();
-    _child_transform = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
-    _markForUpdate(STATE_ALL, true);
+    defer([=] {
+        auto constexpr EPS = 1e-18;
+        auto current = _child_transform ? *_child_transform : Geom::identity();
+        if (Geom::are_near(transform, current, EPS)) return;
+        _markForRendering();
+        _child_transform = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
+        _markForUpdate(STATE_ALL, true);
+    });
 }
 
 unsigned DrawingGroup::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
