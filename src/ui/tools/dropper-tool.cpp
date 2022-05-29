@@ -240,7 +240,7 @@ bool DropperTool::root_handler(GdkEvent* event) {
 
                 // Get average color.
                 double R, G, B, A;
-                drawing->average_color(pick_area, R, G, B, A);
+                drawing->averageColor(pick_area, R, G, B, A);
 
                 if (pick == SP_DROPPER_PICK_VISIBLE) {
                     // compose with page color

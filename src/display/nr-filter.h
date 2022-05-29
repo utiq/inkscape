@@ -23,6 +23,7 @@
 namespace Inkscape {
 class DrawingContext;
 class DrawingItem;
+class RenderContext;
 
 namespace Filters {
 
@@ -34,7 +35,7 @@ public:
      * the results of filter rendering. @a bgarea and @a area specify bounding boxes
      * of both surfaces in world coordinates; Cairo contexts are assumed to be in default state
      * (0,0 = surface origin, no path, OVER operator) */
-    int render(Inkscape::DrawingItem const *item, DrawingContext &graphic, DrawingContext *bgdc) const;
+    int render(Inkscape::DrawingItem const *item, DrawingContext &graphic, DrawingContext *bgdc, RenderContext &rc) const;
 
     /**
      * Creates a new filter primitive under this filter object.

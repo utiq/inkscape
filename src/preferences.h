@@ -828,19 +828,6 @@ struct Pref {};
 template<typename T>
 class PrefBase : public Preferences::Observer
 {
-protected:
-    T val;
-
-    PrefBase(Glib::ustring path, T def) : Observer(std::move(path)), def(std::move(def)) {}
-    PrefBase(const PrefBase&) = delete;
-
-    void init() { val = static_cast<Pref<T>*>(this)->read(); Inkscape::Preferences::get()->addObserver(*this); }
-    void act() { if (action) action(); }
-    void assign(const T &val2) { if (val != val2) { val = val2; act(); } }
-    void enable() { assign(static_cast<Pref<T>*>(this)->read()); Inkscape::Preferences::get()->addObserver(*this); }
-    void disable() { assign(def); Inkscape::Preferences::get()->removeObserver(*this); }
-    void notify(const Preferences::Entry &e) override { assign(static_cast<Pref<T>*>(this)->changed(e)); }
-
 public:
     /// The default value.
     T def;
@@ -853,54 +840,73 @@ public:
 
     /// Disable switch. If disabled, the Pref will stick at its default value.
     void set_enabled(bool enabled) { enabled ? enable() : disable(); }
+
+protected:
+    T val;
+
+    PrefBase(Glib::ustring path, T def) : Observer(std::move(path)), def(std::move(def)) {}
+    PrefBase(PrefBase const &) = delete;
+    PrefBase &operator=(PrefBase const &) = delete;
+
+    void init() { val = static_cast<Pref<T>*>(this)->read(); Inkscape::Preferences::get()->addObserver(*this); }
+    void act() { if (action) action(); }
+    void assign(T const &val2) { if (val != val2) { val = val2; act(); } }
+    void enable() { assign(static_cast<Pref<T>*>(this)->read()); Inkscape::Preferences::get()->addObserver(*this); }
+    void disable() { assign(def); Inkscape::Preferences::get()->removeObserver(*this); }
+    void notify(Preferences::Entry const &e) override { assign(static_cast<Pref<T>*>(this)->changed(e)); }
 };
 
 template<>
 class Pref<bool> : public PrefBase<bool>
 {
-    friend PrefBase;
-    auto read() const { return Inkscape::Preferences::get()->getBool(observed_path, def); }
-    auto changed(const Preferences::Entry &e) const { return e.getBool(def); }
 public:
     Pref(Glib::ustring path, bool def = false) : PrefBase(std::move(path), def) { init(); }
+private:
+    friend PrefBase;
+    auto read() const { return Inkscape::Preferences::get()->getBool(observed_path, def); }
+    auto changed(Preferences::Entry const &e) const { return e.getBool(def); }
 };
 
 template<>
 class Pref<int> : public PrefBase<int>
 {
-    friend PrefBase;
-    auto read() const { return Inkscape::Preferences::get()->getIntLimited(observed_path, def, min, max); }
-    auto changed(const Preferences::Entry &e) const { return e.getIntLimited(def, min, max); }
 public:
     int min, max;
     Pref(Glib::ustring path, int def = 0, int min = INT_MIN, int max = INT_MAX) : PrefBase(std::move(path), def), min(min), max(max) { init(); }
+private:
+    friend PrefBase;
+    auto read() const { return Inkscape::Preferences::get()->getIntLimited(observed_path, def, min, max); }
+    auto changed(Preferences::Entry const &e) const { return e.getIntLimited(def, min, max); }
 };
 
 template<>
 class Pref<double> : public PrefBase<double>
 {
-    friend PrefBase;
-    auto read() const { return Inkscape::Preferences::get()->getDoubleLimited(observed_path, def, min, max); }
-    auto changed(const Preferences::Entry &e) const { return e.getDoubleLimited(def, min, max); }
 public:
     double min, max;
     Pref(Glib::ustring path, double def = 0.0, double min = DBL_MIN, double max = DBL_MAX) : PrefBase(std::move(path), def), min(min), max(max) { init(); }
+private:
+    friend PrefBase;
+    auto read() const { return Inkscape::Preferences::get()->getDoubleLimited(observed_path, def, min, max); }
+    auto changed(Preferences::Entry const &e) const { return e.getDoubleLimited(def, min, max); }
 };
 
 template<>
 class Pref<void> : public Preferences::Observer
 {
-    void enable() { Inkscape::Preferences::get()->addObserver(*this); }
-    void disable() { Inkscape::Preferences::get()->removeObserver(*this); }
-    void notify(const Preferences::Entry &e) override { if (action) action(); }
-
 public:
     std::function<void()> action;
 
-    Pref(Glib::ustring path) : Observer(std::move(path)) {}
-    Pref(const Pref&) = delete;
+    Pref(Glib::ustring path) : Observer(std::move(path)) { enable(); }
+    Pref(Pref const &) = delete;
+    Pref &operator=(Pref const &) = delete;
 
     void set_enabled(bool enabled) { enabled ? enable() : disable(); }
+
+private:
+    void enable() { Inkscape::Preferences::get()->addObserver(*this); }
+    void disable() { Inkscape::Preferences::get()->removeObserver(*this); }
+    void notify(Preferences::Entry const &e) override { if (action) action(); }
 };
 
 } // namespace Inkscape

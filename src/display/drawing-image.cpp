@@ -15,9 +15,9 @@
 #include "display/drawing.h"
 #include "display/drawing-context.h"
 #include "display/drawing-image.h"
-#include "preferences.h"
 
 #include "display/cairo-utils.h"
+#include "cairo-templates.h"
 
 namespace Inkscape {
 
@@ -97,14 +97,11 @@ unsigned DrawingImage::_updateItem(Geom::IntRect const &, UpdateContext const &,
     return STATE_ALL;
 }
 
-unsigned DrawingImage::_renderItem(DrawingContext &dc, Geom::IntRect const &/*area*/, unsigned /*flags*/, DrawingItem * /*stop_at*/)
+unsigned DrawingImage::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &/*area*/, unsigned flags, DrawingItem */*stop_at*/)
 {
-    bool outline = _drawing.outline();
+    bool const outline = (flags & RENDER_OUTLINE) && !_drawing.imageOutlineMode();
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool imgoutline = prefs->getBool("/options/rendering/imageinoutlinemode", false);
-
-    if (!outline || imgoutline) {
+    if (!outline) {
         if (!_pixbuf) return RENDER_OK;
 
         Inkscape::DrawingContext::Save save(dc);
@@ -143,11 +140,23 @@ unsigned DrawingImage::_renderItem(DrawingContext &dc, Geom::IntRect const &/*ar
                 break;
         }
 
-        dc.paint(1);
+        // Handle an exceptional case where the greyscale color mode needs to be applied per-image.
+        bool const greyscale_exception = (flags & RENDER_OUTLINE) && _drawing.colorMode() == ColorMode::GRAYSCALE;
+        if (greyscale_exception) {
+            dc.pushGroup();
+        }
+
+        dc.paint();
+
+        if (greyscale_exception) {
+            ink_cairo_surface_filter(dc.rawTarget(), dc.rawTarget(), _drawing.grayscaleMatrix());
+            dc.popGroupToSource();
+            dc.paint();
+        }
 
     } else { // outline; draw a rect instead
 
-        guint32 rgba = prefs->getInt("/options/wireframecolors/images", 0xff0000ff);
+        auto rgba = _drawing.imageOutlineColor();
 
         {   Inkscape::DrawingContext::Save save(dc);
             dc.transform(_ctm);
@@ -179,20 +188,18 @@ unsigned DrawingImage::_renderItem(DrawingContext &dc, Geom::IntRect const &/*ar
 }
 
 /** Calculates the closest distance from p to the segment a1-a2*/
-static double
-distance_to_segment (Geom::Point const &p, Geom::Point const &a1, Geom::Point const &a2)
+static double distance_to_segment(Geom::Point const &p, Geom::Point const &a1, Geom::Point const &a2)
 {
     Geom::LineSegment l(a1, a2);
     Geom::Point np = l.pointAt(l.nearestTime(p));
     return Geom::distance(np, p);
 }
 
-DrawingItem *
-DrawingImage::_pickItem(Geom::Point const &p, double delta, unsigned /*sticky*/)
+DrawingItem *DrawingImage::_pickItem(Geom::Point const &p, double delta, unsigned flags)
 {
     if (!_pixbuf) return nullptr;
 
-    bool outline = _drawing.outline() || _drawing.outlineOverlay() || _drawing.getOutlineSensitive();
+    bool outline = (flags & PICK_OUTLINE) && !_drawing.imageOutlineMode();
 
     if (outline) {
         Geom::Rect r = bounds();
@@ -245,7 +252,7 @@ DrawingImage::_pickItem(Geom::Point const &p, double delta, unsigned /*sticky*/)
     }
 }
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
 /*
   Local Variables:

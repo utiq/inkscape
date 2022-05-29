@@ -220,7 +220,6 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
                        Geom::Point(document->getWidth().value("px"), document->getHeight().value("px")));
 
     canvas_drawing = new Inkscape::CanvasItemDrawing(canvas_group_drawing);
-    canvas_drawing->get_drawing()->delta = prefs->getDouble("/options/cursortolerance/value", 1.0);
     canvas_drawing->connect_drawing_event(sigc::bind(sigc::ptr_fun(_drawing_handler), this));
     canvas->set_drawing(canvas_drawing->get_drawing()); // Canvas needs access.
 

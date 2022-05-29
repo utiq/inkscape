@@ -336,7 +336,7 @@ void CalligraphicTool::brush() {
 
         // Get average color.
         double R, G, B, A;
-        drawing->average_color(area, R, G, B, A);
+        drawing->averageColor(area, R, G, B, A);
 
         // Convert to thickness.
         double max = MAX (MAX (R, G), B);

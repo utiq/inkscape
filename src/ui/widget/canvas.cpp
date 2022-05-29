@@ -29,6 +29,7 @@
 
 #include "display/drawing.h"
 #include "display/cairo-utils.h"
+#include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-group.h"
 #include "display/control/canvas-item-rect.h"
 #include "display/control/snap-indicator.h"
@@ -182,7 +183,7 @@ public:
     // Content drawing
     bool on_idle();
     void paint_rect(Geom::IntRect const &rect);
-    void paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface> &surface, const Geom::IntRect &rect, bool need_background);
+    void paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface> &surface, const Geom::IntRect &rect, bool need_background, bool outline_pass);
     std::optional<Geom::Dim2> old_bisector(const Geom::IntRect &rect);
     std::optional<Geom::Dim2> new_bisector(const Geom::IntRect &rect);
     bool outlines_required() const { return q->_split_mode != Inkscape::SplitMode::NORMAL || q->_render_mode == Inkscape::RenderMode::OUTLINE_OVERLAY; }
@@ -190,6 +191,7 @@ public:
     uint32_t desk   = 0xffffffff; // The background colour, with the alpha channel used to control checkerboard.
     uint32_t border = 0x000000ff; // The border colour, used only to control shadow colour.
     uint32_t page   = 0xffffffff; // The page colour, also with alpha channel used to control checkerboard.
+    bool clip_to_page = false; // Whether to enable clip-to-page mode.
 
     bool outlines_enabled = false;
     int scale_factor = 1; // The device scale the stores are drawn at.
@@ -255,7 +257,6 @@ Canvas::Canvas()
     d->prefs.outline_overlay_opacity.action = [=] { queue_draw(); };
     d->prefs.softproof.action = [=] { redraw_all(); };
     d->prefs.displayprofile.action = [=] { redraw_all(); };
-    d->prefs.imageoutlinemode.action = [=] { redraw_all(); };
     d->prefs.request_opengl.action = [=] {
         if (get_realized()) {
             d->deactivate();
@@ -371,6 +372,11 @@ void Canvas::set_drawing(Drawing *drawing)
 {
     if (d->active && !drawing) d->deactivate();
     _drawing = drawing;
+    if (_drawing) {
+        _drawing->setRenderMode(_render_mode == RenderMode::OUTLINE_OVERLAY ? RenderMode::NORMAL : _render_mode);
+        _drawing->setColorMode(_color_mode);
+        _drawing->setOutlineOverlay(d->outlines_required());
+    }
     if (!d->active && get_realized() && drawing) d->activate();
 }
 
@@ -455,10 +461,9 @@ bool Canvas::on_button_event(GdkEventButton *button_event)
                     cursor_position.y() - get_allocation().get_height() > -5 ) {
 
                     // Reset everything.
-                    _split_mode = Inkscape::SplitMode::NORMAL;
                     _split_frac = {0.5, 0.5};
                     set_cursor();
-                    queue_draw();
+                    set_split_mode(Inkscape::SplitMode::NORMAL);
 
                     // Update action (turn into utility function?).
                     auto window = dynamic_cast<Gtk::ApplicationWindow*>(get_toplevel());
@@ -1007,30 +1012,32 @@ bool CanvasPrivate::pick_current_item(const GdkEvent *event)
         }
 
         // If in split mode, look at where cursor is to see if one should pick with outline mode.
-        auto split_position = q->_split_frac * q->get_dimensions();
-        if (q->_split_mode == Inkscape::SplitMode::SPLIT && q->_render_mode != Inkscape::RenderMode::OUTLINE_OVERLAY) {
-            if ((q->_split_direction == Inkscape::SplitDirection::NORTH && y > split_position.y()) ||
-                (q->_split_direction == Inkscape::SplitDirection::SOUTH && y < split_position.y()) ||
-                (q->_split_direction == Inkscape::SplitDirection::WEST  && x > split_position.x()) ||
-                (q->_split_direction == Inkscape::SplitDirection::EAST  && x < split_position.x()) ) {
-                q->_drawing->setRenderMode(Inkscape::RenderMode::OUTLINE);
-            }
+        bool outline;
+        if (q->_render_mode == Inkscape::RenderMode::OUTLINE || q->_render_mode == Inkscape::RenderMode::OUTLINE_OVERLAY) {
+            outline = true;
+        } else if (q->_split_mode == Inkscape::SplitMode::SPLIT) {
+            auto split_position = q->_split_frac * q->get_dimensions();
+            outline = (q->_split_direction == Inkscape::SplitDirection::NORTH && y > split_position.y())
+                   || (q->_split_direction == Inkscape::SplitDirection::SOUTH && y < split_position.y())
+                   || (q->_split_direction == Inkscape::SplitDirection::WEST  && x > split_position.x())
+                   || (q->_split_direction == Inkscape::SplitDirection::EAST  && x < split_position.x());
+        } else {
+            outline = false;
         }
+
         // Convert to world coordinates.
         auto p = Geom::Point(x, y) + q->_pos;
         if (stores.mode() == Stores::Mode::Decoupled) {
             p *= q->_affine.inverse() * geom_affine;
         }
 
+        q->_drawing->getCanvasItemDrawing()->set_pick_outline(outline);
         q->_current_canvas_item_new = q->_canvas_item_root->pick_item(p);
         // if (q->_current_canvas_item_new) {
         //     std::cout << "  PICKING: FOUND ITEM: " << q->_current_canvas_item_new->get_name() << std::endl;
         // } else {
         //     std::cout << "  PICKING: DID NOT FIND ITEM" << std::endl;
         // }
-        
-        // Reset the drawing back to the requested render mode.
-        q->_drawing->setRenderMode(q->_render_mode);
     }
 
     if (q->_current_canvas_item_new == q->_current_canvas_item && !q->_left_grabbed_item) {
@@ -1400,10 +1407,13 @@ void Canvas::set_drawing_disabled(bool disable)
 
 void Canvas::set_render_mode(Inkscape::RenderMode mode)
 {
-    if (_drawing && _render_mode != mode) {
-        _render_mode = mode;
-        _drawing->setRenderMode(_render_mode);
-        redraw_all();
+    if ((_render_mode == RenderMode::OUTLINE_OVERLAY) != (mode == RenderMode::OUTLINE_OVERLAY) && !get_opengl_enabled()) {
+        queue_draw();
+    }
+    _render_mode = mode;
+    if (_drawing) {
+        _drawing->setRenderMode(_render_mode == RenderMode::OUTLINE_OVERLAY ? RenderMode::NORMAL : _render_mode);
+        _drawing->setOutlineOverlay(d->outlines_required());
     }
     if (_desktop) {
         _desktop->setWindowTitle(); // Mode is listed in title.
@@ -1412,9 +1422,9 @@ void Canvas::set_render_mode(Inkscape::RenderMode mode)
 
 void Canvas::set_color_mode(Inkscape::ColorMode mode)
 {
-    if (_color_mode != mode) {
-        _color_mode = mode;
-        redraw_all();
+    _color_mode = mode;
+    if (_drawing) {
+        _drawing->setColorMode(_color_mode);
     }
     if (_desktop) {
         _desktop->setWindowTitle(); // Mode is listed in title.
@@ -1428,15 +1438,18 @@ void Canvas::set_split_mode(Inkscape::SplitMode mode)
         if (_split_mode == Inkscape::SplitMode::SPLIT) {
             _hover_direction = Inkscape::SplitDirection::NONE;
         }
+        if (_drawing) {
+            _drawing->setOutlineOverlay(d->outlines_required());
+        }
         redraw_all();
     }
 }
 
 void Canvas::set_clip_to_page_mode(bool clip)
 {
-    if (_drawing->get_clip_to_page() != clip) {
-        _drawing->set_clip_to_page(clip);
-        redraw_all();
+    if (clip != d->clip_to_page) {
+        d->clip_to_page = clip;
+        d->add_idle();
     }
 }
 
@@ -1900,15 +1913,14 @@ bool CanvasPrivate::on_idle()
     auto ret = stores.update(Fragment{ q->_affine, q->get_area_world() });
     handle_stores_action(ret);
 
-    if (q->_drawing->get_clip_to_page()) {
+    if (clip_to_page) {
         Geom::PathVector pv;
         for (auto &rect : pi.pages) {
             pv.push_back(Geom::Path(rect));
         }
-        if (pv != q->_drawing->clip) {
-            q->_drawing->clip = std::move(pv);
-            updater->reset();
-        }
+        q->_drawing->setClip(std::move(pv));
+    } else {
+        q->_drawing->setClip({});
     }
 
     // Assert that the clean region is a subregion of the store.
@@ -2120,9 +2132,9 @@ void CanvasPrivate::paint_rect(const Geom::IntRect &rect)
     // Make sure the paint rectangle lies within the store.
     assert(stores.store().rect.contains(rect));
 
-    auto paint = [&, this] (bool outline, bool need_background) {
-        auto surface = graphics->request_tile_surface(rect, outline);
-        paint_single_buffer(surface, rect, need_background);
+    auto paint = [&, this] (bool need_background, bool outline_pass) {
+        auto surface = graphics->request_tile_surface(rect, outline_pass);
+        paint_single_buffer(surface, rect, need_background, outline_pass);
         return surface;
     };
 
@@ -2131,17 +2143,15 @@ void CanvasPrivate::paint_rect(const Geom::IntRect &rect)
     fragment.rect = rect;
 
     Cairo::RefPtr<Cairo::ImageSurface> surface, outline_surface;
-    surface = paint(false, require_background_in_stores());
+    surface = paint(require_background_in_stores(), false);
     if (outlines_enabled) {
-        q->_drawing->setRenderMode(Inkscape::RenderMode::OUTLINE);
-        outline_surface = paint(true, false);
-        q->_drawing->setRenderMode(q->_render_mode); // Leave the drawing in the requested render mode.
+        outline_surface = paint(false, true);
     }
 
     graphics->draw_tile(fragment, surface, outline_surface);
 }
 
-void CanvasPrivate::paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface> &surface, const Geom::IntRect &rect, bool need_background)
+void CanvasPrivate::paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface> &surface, const Geom::IntRect &rect, bool need_background, bool outline_pass)
 {
     // Create Cairo context.
     auto cr = Cairo::Context::create(surface);
@@ -2158,7 +2168,7 @@ void CanvasPrivate::paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface>
 
     // Render drawing on top of background.
     if (q->_canvas_item_root->is_visible()) {
-        auto buf = Inkscape::CanvasItemBuffer{ rect, scale_factor, cr };
+        auto buf = Inkscape::CanvasItemBuffer{ rect, scale_factor, cr, outline_pass };
         q->_canvas_item_root->render(&buf);
     }
 

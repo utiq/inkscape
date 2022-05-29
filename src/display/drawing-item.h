@@ -37,13 +37,19 @@ namespace Inkscape {
 
 class Drawing;
 class DrawingCache;
-class DrawingContext;
 class DrawingItem;
 class DrawingPattern;
+class DrawingContext;
+class RenderContext;
 
 namespace Filters {
 class Filter;
 } // namespace Filters
+
+struct RenderContext
+{
+    uint32_t outline_color;
+};
 
 struct UpdateContext
 {
@@ -59,7 +65,7 @@ struct CacheRecord : boost::totally_ordered<CacheRecord>
     size_t cache_size;
     DrawingItem *item;
 };
-typedef std::list<CacheRecord> CacheList;
+using CacheList = std::list<CacheRecord>;
 
 struct InvalidItemException : std::exception
 {
@@ -69,34 +75,41 @@ struct InvalidItemException : std::exception
 class DrawingItem : boost::noncopyable
 {
 public:
-    enum RenderFlags {
-        RENDER_DEFAULT = 0,
-        RENDER_CACHE_ONLY = 1,
-        RENDER_BYPASS_CACHE = 2,
-        RENDER_FILTER_BACKGROUND = 4
+    enum RenderFlags
+    {
+        RENDER_DEFAULT           = 0,
+        RENDER_CACHE_ONLY        = 1 << 0,
+        RENDER_BYPASS_CACHE      = 1 << 1,
+        RENDER_FILTER_BACKGROUND = 1 << 2,
+        RENDER_OUTLINE           = 1 << 3,
+        RENDER_NO_FILTERS        = 1 << 4,
+        RENDER_VISIBLE_HAIRLINES = 1 << 5
     };
-    enum StateFlags {
-        STATE_NONE = 0,
-        STATE_BBOX = (1<<0),    // bounding boxes are up-to-date
-        STATE_CACHE = (1<<1),   // cache extents and clean area are up-to-date
-        STATE_PICK = (1<<2),    // can process pick requests
-        STATE_RENDER = (1<<3),  // can be rendered
-        STATE_BACKGROUND = (1<<4), // filter background data is up to date
-        STATE_ALL = (1<<5)-1
+    enum StateFlags
+    {
+        STATE_NONE       = 0,
+        STATE_BBOX       = 1 << 0, // bounding boxes are up-to-date
+        STATE_CACHE      = 1 << 1, // cache extents and clean area are up-to-date
+        STATE_PICK       = 1 << 2, // can process pick requests
+        STATE_RENDER     = 1 << 3, // can be rendered
+        STATE_BACKGROUND = 1 << 4, // filter background data is up to date
+        STATE_ALL        = (1 << 5) - 1
     };
-    enum PickFlags {
-        PICK_NORMAL = 0, // normal pick
-        PICK_STICKY = (1<<0), // sticky pick - ignore visibility and sensitivity
-        PICK_AS_CLIP = (1<<2) // pick with no stroke and opaque fill regardless of item style
+    enum PickFlags
+    {
+        PICK_NORMAL  = 0,      // normal pick
+        PICK_STICKY  = 1 << 0, // sticky pick - ignore visibility and sensitivity
+        PICK_AS_CLIP = 1 << 1, // pick with no stroke and opaque fill regardless of item style
+        PICK_OUTLINE = 1 << 2  // pick in outline mode
     };
 
     DrawingItem(Drawing &drawing);
     virtual ~DrawingItem();
 
-    Geom::OptIntRect geometricBounds() const { return _bbox; }
-    Geom::OptIntRect visualBounds() const { return _drawbox; }
-    Geom::OptRect itemBounds() const { return _item_bbox; }
-    Geom::Affine ctm() const { return _ctm; }
+    Geom::OptIntRect const &bbox() const { return _bbox; }
+    Geom::OptIntRect const &drawbox() const { return _drawbox; }
+    Geom::OptRect const &itemBounds() const { return _item_bbox; }
+    Geom::Affine const &ctm() const { return _ctm; }
     Geom::Affine transform() const { return _transform ? *_transform : Geom::identity(); }
     Drawing &drawing() const { return _drawing; }
     DrawingItem *parent() const;
@@ -117,6 +130,7 @@ public:
     virtual void setChildrenStyle(SPStyle const *context_style);
     void setOpacity(float opacity);
     void setAntialiasing(unsigned a);
+    unsigned antialiasing() const { return _antialias; }
     void setIsolation(bool isolation); // CSS Compositing and Blending
     void setBlendMode(SPBlendMode blend_mode);
     void setTransform(Geom::Affine const &trans);
@@ -135,45 +149,43 @@ public:
     SPItem *getItem() const { return _item; } // SPItem
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), UpdateContext const &ctx = UpdateContext(), unsigned flags = STATE_ALL, unsigned reset = 0);
-    unsigned render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, DrawingItem *stop_at = nullptr);
-    void clip(DrawingContext &dc, Geom::IntRect const &area);
+    unsigned render(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags = 0, DrawingItem *stop_at = nullptr);
+    void clip(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area);
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags = 0);
 
     virtual Glib::ustring name(); // For debugging
     void recursivePrintTree(unsigned level = 0);  // For debugging
 
 protected:
-    enum ChildType {
-        CHILD_ORPHAN = 0, // no parent - implies _parent == NULL
-        CHILD_NORMAL = 1, // contained in _children of parent
-        CHILD_CLIP = 2, // referenced by _clip member of parent
-        CHILD_MASK = 3, // referenced by _mask member of parent
-        CHILD_ROOT = 4, // root item of _drawing
-        CHILD_FILL_PATTERN = 5, // referenced by fill pattern of parent
-        CHILD_STROKE_PATTERN = 6 // referenced by stroke pattern of parent
+    enum class ChildType : unsigned char
+    {
+        ORPHAN = 0, // No parent - implies !parent.
+        NORMAL = 1, // Contained in children of parent.
+        CLIP   = 2, // Referenced by clip of parent.
+        MASK   = 3, // Referenced by mask of parent.
+        FILL   = 4, // Referenced by fill pattern of parent.
+        STROKE = 5, // Referenced by stroke pattern of parent.
+        ROOT   = 6  // Referenced by root of drawing.
     };
-    enum RenderResult {
-        RENDER_OK = 0,
+    enum RenderResult
+    {
+        RENDER_OK   = 0,
         RENDER_STOP = 1
     };
-    void _renderOutline(DrawingContext &dc, Geom::IntRect const &area, unsigned flags);
+    void _renderOutline(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags);
     void _markForUpdate(unsigned state, bool propagate);
     void _markForRendering();
     void _invalidateFilterBackground(Geom::IntRect const &area);
     double _cacheScore();
     Geom::OptIntRect _cacheRect();
-    virtual unsigned _updateItem(Geom::IntRect const &/*area*/, UpdateContext const &/*ctx*/,
-                                 unsigned /*flags*/, unsigned /*reset*/) { return 0; }
-    virtual unsigned _renderItem(DrawingContext &/*dc*/, Geom::IntRect const &/*area*/, unsigned /*flags*/,
-                                 DrawingItem * /*stop_at*/) { return RENDER_OK; }
-    virtual void _clipItem(DrawingContext &/*dc*/, Geom::IntRect const &/*area*/) {}
-    virtual DrawingItem *_pickItem(Geom::Point const &/*p*/, double /*delta*/, unsigned /*flags*/) { return nullptr; }
+    virtual unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
+                                 unsigned flags, unsigned reset) { return 0; }
+    virtual unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags,
+                                 DrawingItem *stop_at) { return RENDER_OK; }
+    virtual void _clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) {}
+    virtual DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) { return nullptr; }
     virtual bool _canClip() { return false; }
     virtual void _dropPatternCache() {}
-
-    // static functions start here
-
-    static void _applyAntialias(DrawingContext &dc, unsigned _antialias);
 
     // member variables start here
 
@@ -221,7 +233,7 @@ protected:
 
     unsigned _state : 8;
     unsigned _propagate_state : 8;
-    unsigned _child_type : 3; // see ChildType enum
+    ChildType _child_type : 3;
     unsigned _background_new : 1; ///< Whether enable-background: new is set for this element
     unsigned _background_accumulate : 1; ///< Whether this element accumulates background 
                                          ///  (has any ancestor with enable-background: new)
@@ -236,7 +248,7 @@ protected:
     unsigned _antialias : 2; ///< antialiasing level (NONE/FAST/GOOD(DEFAULT)/BEST)
 
     bool _isolation : 1;
-    SPBlendMode _mix_blend_mode;
+    SPBlendMode _blend_mode;
 
     friend class Drawing;
 };
@@ -245,6 +257,9 @@ struct DeleteDisposer
 {
     void operator()(DrawingItem *item) { delete item; }
 };
+
+/// Apply antialias setting to Cairo.
+void apply_antialias(DrawingContext &dc, int antialias);
 
 } // namespace Inkscape
 

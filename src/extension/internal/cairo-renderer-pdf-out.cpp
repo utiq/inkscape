@@ -92,11 +92,11 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
         return false;
     }
     
-    /* Create new arena */
+    /* Create new drawing */
     Inkscape::Drawing drawing;
-    drawing.setExact(true);
     unsigned dkey = SPItem::display_key_new(1);
-    root->invoke_show(drawing, dkey, SP_ITEM_SHOW_DISPLAY);
+    drawing.setRoot(root->invoke_show(drawing, dkey, SP_ITEM_SHOW_DISPLAY));
+    drawing.setExact();
 
     /* Create renderer and context */
     CairoRenderer *renderer = new CairoRenderer();

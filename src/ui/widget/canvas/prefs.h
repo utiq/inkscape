@@ -18,50 +18,49 @@ public:
     }
 
     // Original parameters
-    Pref<int>    tile_size                = Pref<int>   ("/options/rendering/tile-size", 16, 1, 10000);
-    Pref<int>    tile_multiplier          = Pref<int>   ("/options/rendering/tile-multiplier", 16, 1, 512);
-    Pref<int>    x_ray_radius             = Pref<int>   ("/options/rendering/xray-radius", 100, 1, 1500);
-    Pref<bool>   from_display             = Pref<bool>  ("/options/displayprofile/from_display");
-    Pref<int>    grabsize                 = Pref<int>   ("/options/grabsize/value", 3, 1, 15);
-    Pref<int>    outline_overlay_opacity  = Pref<int>   ("/options/rendering/outline-overlay-opacity", 50, 1, 100);
+    Pref<int>    tile_size                = { "/options/rendering/tile-size", 16, 1, 10000 };
+    Pref<int>    tile_multiplier          = { "/options/rendering/tile-multiplier", 16, 1, 512 };
+    Pref<int>    x_ray_radius             = { "/options/rendering/xray-radius", 100, 1, 1500 };
+    Pref<bool>   from_display             = { "/options/displayprofile/from_display" };
+    Pref<int>    grabsize                 = { "/options/grabsize/value", 3, 1, 15 };
+    Pref<int>    outline_overlay_opacity  = { "/options/rendering/outline-overlay-opacity", 50, 1, 100 };
 
-    // Things that require redraws
-    Pref<void>   softproof                = Pref<void>  ("/options/softproof");
-    Pref<void>   displayprofile           = Pref<void>  ("/options/displayprofile");
-    Pref<bool>   imageoutlinemode         = Pref<bool>  ("/options/rendering/imageinoutlinemode");
+    // Things that require redraws (used by CMS system)
+    Pref<void>   softproof                = { "/options/softproof" };
+    Pref<void>   displayprofile           = { "/options/displayprofile" };
 
     // New parameters
-    Pref<int>    update_strategy          = Pref<int>   ("/options/rendering/update_strategy", 3, 1, 3);
-    Pref<int>    render_time_limit        = Pref<int>   ("/options/rendering/render_time_limit", 1000, 100, 1000000);
-    Pref<bool>   use_new_bisector         = Pref<bool>  ("/options/rendering/use_new_bisector", true);
-    Pref<int>    new_bisector_size        = Pref<int>   ("/options/rendering/new_bisector_size", 500, 1, 10000);
-    Pref<int>    padding                  = Pref<int>   ("/options/rendering/pad", 350, 0, 1000);
-    Pref<int>    prerender                = Pref<int>   ("/options/rendering/margin", 100, 0, 1000);
-    Pref<int>    preempt                  = Pref<int>   ("/options/rendering/preempt", 250, 0, 1000);
-    Pref<int>    coarsener_min_size       = Pref<int>   ("/options/rendering/coarsener_min_size", 200, 0, 1000);
-    Pref<int>    coarsener_glue_size      = Pref<int>   ("/options/rendering/coarsener_glue_size", 80, 0, 1000);
-    Pref<double> coarsener_min_fullness   = Pref<double>("/options/rendering/coarsener_min_fullness", 0.3, 0.0, 1.0);
-    Pref<bool>   request_opengl           = Pref<bool>  ("/options/rendering/request_opengl");
-    Pref<int>    pixelstreamer_method     = Pref<int>   ("/options/rendering/pixelstreamer_method", 1, 1, 4);
-    Pref<bool>   block_updates            = Pref<bool>  ("/options/rendering/block_updates", true);
+    Pref<int>    update_strategy          = { "/options/rendering/update_strategy", 3, 1, 3 };
+    Pref<int>    render_time_limit        = { "/options/rendering/render_time_limit", 1000, 100, 1000000 };
+    Pref<bool>   use_new_bisector         = { "/options/rendering/use_new_bisector", true };
+    Pref<int>    new_bisector_size        = { "/options/rendering/new_bisector_size", 500, 1, 10000 };
+    Pref<int>    padding                  = { "/options/rendering/pad", 350, 0, 1000 };
+    Pref<int>    prerender                = { "/options/rendering/margin", 100, 0, 1000 };
+    Pref<int>    preempt                  = { "/options/rendering/preempt", 250, 0, 1000 };
+    Pref<int>    coarsener_min_size       = { "/options/rendering/coarsener_min_size", 200, 0, 1000 };
+    Pref<int>    coarsener_glue_size      = { "/options/rendering/coarsener_glue_size", 80, 0, 1000 };
+    Pref<double> coarsener_min_fullness   = { "/options/rendering/coarsener_min_fullness", 0.3, 0.0, 1.0 };
+    Pref<bool>   request_opengl           = { "/options/rendering/request_opengl" };
+    Pref<int>    pixelstreamer_method     = { "/options/rendering/pixelstreamer_method", 1, 1, 4 };
+    Pref<bool>   block_updates            = { "/options/rendering/block_updates", true };
 
     // Debug switches
-    Pref<bool>   debug_framecheck         = Pref<bool>  ("/options/rendering/debug_framecheck");
-    Pref<bool>   debug_logging            = Pref<bool>  ("/options/rendering/debug_logging");
-    Pref<bool>   debug_slow_redraw        = Pref<bool>  ("/options/rendering/debug_slow_redraw");
-    Pref<int>    debug_slow_redraw_time   = Pref<int>   ("/options/rendering/debug_slow_redraw_time", 50, 0, 1000000);
-    Pref<bool>   debug_show_redraw        = Pref<bool>  ("/options/rendering/debug_show_redraw");
-    Pref<bool>   debug_show_unclean       = Pref<bool>  ("/options/rendering/debug_show_unclean");
-    Pref<bool>   debug_show_snapshot      = Pref<bool>  ("/options/rendering/debug_show_snapshot");
-    Pref<bool>   debug_show_clean         = Pref<bool>  ("/options/rendering/debug_show_clean");
-    Pref<bool>   debug_disable_redraw     = Pref<bool>  ("/options/rendering/debug_disable_redraw");
-    Pref<bool>   debug_sticky_decoupled   = Pref<bool>  ("/options/rendering/debug_sticky_decoupled");
-    Pref<bool>   debug_animate            = Pref<bool>  ("/options/rendering/debug_animate");
-    Pref<bool>   debug_idle_starvation    = Pref<bool>  ("/options/rendering/debug_idle_starvation");
+    Pref<bool>   debug_framecheck         = { "/options/rendering/debug_framecheck" };
+    Pref<bool>   debug_logging            = { "/options/rendering/debug_logging" };
+    Pref<bool>   debug_slow_redraw        = { "/options/rendering/debug_slow_redraw" };
+    Pref<int>    debug_slow_redraw_time   = { "/options/rendering/debug_slow_redraw_time", 50, 0, 1000000 };
+    Pref<bool>   debug_show_redraw        = { "/options/rendering/debug_show_redraw" };
+    Pref<bool>   debug_show_unclean       = { "/options/rendering/debug_show_unclean" };
+    Pref<bool>   debug_show_snapshot      = { "/options/rendering/debug_show_snapshot" };
+    Pref<bool>   debug_show_clean         = { "/options/rendering/debug_show_clean" };
+    Pref<bool>   debug_disable_redraw     = { "/options/rendering/debug_disable_redraw" };
+    Pref<bool>   debug_sticky_decoupled   = { "/options/rendering/debug_sticky_decoupled" };
+    Pref<bool>   debug_animate            = { "/options/rendering/debug_animate" };
+    Pref<bool>   debug_idle_starvation    = { "/options/rendering/debug_idle_starvation" };
 
 private:
     // Developer mode
-    Pref<bool> devmode = Pref<bool>("/options/rendering/devmode");
+    Pref<bool> devmode = { "/options/rendering/devmode" };
 
     void set_devmode(bool on)
     {

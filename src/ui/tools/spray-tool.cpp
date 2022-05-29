@@ -436,7 +436,7 @@ static guint32 getPickerData(Geom::IntRect area, SPDesktop *desktop)
 
     // Get average color.
     double R, G, B, A;
-    drawing->average_color(area, R, G, B, A);
+    drawing->averageColor(area, R, G, B, A);
 
     //this can fix the bug #1511998 if confirmed
     if ( A < 1e-6) {

@@ -313,11 +313,17 @@ void CairoGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo
             cr->fill();
             cr->restore();
         } else {
-            // Draw transformed snapshot.
+            // Draw transformed snapshot, clipped to the complement of the store's clean region.
             if (prefs.debug_framecheck) f = FrameCheck::Event("composite", 1);
+
             cr->save();
+            cr->set_fill_rule(Cairo::FILL_RULE_EVEN_ODD);
+            cr->rectangle(0, 0, view.rect.width(), view.rect.height());
             cr->translate(-view.rect.left(), -view.rect.top());
-            cr->transform(geom_to_cairo(stores.snapshot().affine.inverse() * view.affine));
+            cr->transform(geom_to_cairo(stores.store().affine.inverse() * view.affine));
+            region_to_path(cr, stores.store().drawn);
+            cr->transform(geom_to_cairo(stores.snapshot().affine.inverse() * stores.store().affine));
+            cr->clip();
             auto const &r = stores.snapshot().rect;
             cr->rectangle(r.left(), r.top(), r.width(), r.height());
             cr->clip();

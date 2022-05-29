@@ -28,6 +28,7 @@ class SPIPaint;
 namespace Inkscape {
 class DrawingContext;
 class DrawingPattern;
+class RenderContext;
 }
 
 struct NRStyle
@@ -58,11 +59,11 @@ struct NRStyle
     using CairoPatternUniqPtr = std::unique_ptr<cairo_pattern_t, CairoPatternFreer>;
 
     void set(SPStyle const *style, SPStyle const *context_style = nullptr);
-    void preparePaint(Inkscape::DrawingContext &dc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern, Paint &paint, CairoPatternUniqPtr &cp);
-    bool prepareFill(Inkscape::DrawingContext &dc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
-    bool prepareStroke(Inkscape::DrawingContext &dc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
-    bool prepareTextDecorationFill(Inkscape::DrawingContext &dc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
-    bool prepareTextDecorationStroke(Inkscape::DrawingContext &dc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
+    void preparePaint(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern, Paint &paint, CairoPatternUniqPtr &cp);
+    bool prepareFill(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
+    bool prepareStroke(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
+    bool prepareTextDecorationFill(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
+    bool prepareTextDecorationStroke(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
     void applyFill(Inkscape::DrawingContext &dc);
     void applyStroke(Inkscape::DrawingContext &dc);
     void applyTextDecorationFill(Inkscape::DrawingContext &dc);

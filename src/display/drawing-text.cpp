@@ -31,7 +31,8 @@ DrawingGlyphs::DrawingGlyphs(Drawing &drawing)
     : DrawingItem(drawing)
     , _font(nullptr)
     , _glyph(0)
-{}
+{
+}
 
 DrawingGlyphs::~DrawingGlyphs()
 {
@@ -184,17 +185,18 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
     return STATE_ALL;
 }
 
-DrawingItem *DrawingGlyphs::_pickItem(Geom::Point const &p, double /*delta*/, unsigned /*flags*/)
+DrawingItem *DrawingGlyphs::_pickItem(Geom::Point const &p, double /*delta*/, unsigned flags)
 {
-    DrawingText *ggroup = dynamic_cast<DrawingText *>(_parent);
+    auto ggroup = dynamic_cast<DrawingText*>(_parent);
     if (!ggroup) {
         throw InvalidItemException();
     }
     DrawingItem *result = nullptr;
     bool invisible = ggroup->_nrstyle.fill.type == NRStyle::PAINT_NONE &&
                      ggroup->_nrstyle.stroke.type == NRStyle::PAINT_NONE;
+    bool outline = flags & PICK_OUTLINE;
 
-    if (_font && _bbox && (_drawing.outline() || _drawing.getOutlineSensitive() || !invisible)) {
+    if (_font && _bbox && (outline || !invisible)) {
         // With text we take a simple approach: pick if the point is in a character bbox
         Geom::Rect expanded(_pick_bbox);
         // FIXME, why expand by delta?  When is the next line needed?
@@ -453,13 +455,15 @@ void DrawingText::decorateItem(DrawingContext &dc, double phase_length, bool und
     }
 }
 
-unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned /*flags*/, DrawingItem */*stop_at*/)
+unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
 {
     auto visible = area & _bbox;
     if (!visible) return RENDER_OK;
 
-    if (_drawing.outline()) {
-        guint32 rgba = _drawing.getOutlineColor();
+    bool outline = flags & RENDER_OUTLINE;
+
+    if (outline) {
+        auto rgba = rc.outline_color;
         Inkscape::DrawingContext::Save save(dc);
         dc.setSource(rgba);
         dc.setTolerance(0.5); // low quality, but good enough for outline mode
@@ -498,13 +502,13 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &area,
         Inkscape::DrawingContext::Save save(dc);
         dc.transform(_ctm);
 
-        has_fill   = _nrstyle.prepareFill(  dc, *visible, _item_bbox, _fill_pattern);
-        has_stroke = _nrstyle.prepareStroke(dc, *visible, _item_bbox, _stroke_pattern);
+        has_fill   = _nrstyle.prepareFill  (dc, rc, *visible, _item_bbox, _fill_pattern);
+        has_stroke = _nrstyle.prepareStroke(dc, rc, *visible, _item_bbox, _stroke_pattern);
 
         // Avoid creating patterns if not needed
         if (decorate) {
-            has_td_fill   = _nrstyle.prepareTextDecorationFill(  dc, *visible, _item_bbox, _fill_pattern);
-            has_td_stroke = _nrstyle.prepareTextDecorationStroke(dc, *visible, _item_bbox, _stroke_pattern);
+            has_td_fill   = _nrstyle.prepareTextDecorationFill  (dc, rc, *visible, _item_bbox, _fill_pattern);
+            has_td_stroke = _nrstyle.prepareTextDecorationStroke(dc, rc, *visible, _item_bbox, _stroke_pattern);
         }
     }
 
@@ -651,7 +655,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &area,
 
                 // If the stroke is a hairline, set it to exactly 1px on screen.
                 // If visible hairline mode is on, make sure the line is at least 1px.
-                if (_drawing.visibleHairlines() || style_stroke_extensions_hairline) {
+                if (flags & RENDER_VISIBLE_HAIRLINES || style_stroke_extensions_hairline) {
                     double dx = 1.0, dy = 0.0;
                     dc.device_to_user_distance(dx, dy);
                     auto pixel_size = std::hypot(dx, dy);
@@ -710,7 +714,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &area,
     return RENDER_OK;
 }
 
-void DrawingText::_clipItem(DrawingContext &dc, Geom::IntRect const &/*area*/)
+void DrawingText::_clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &/*area*/)
 {
     Inkscape::DrawingContext::Save save(dc);
 

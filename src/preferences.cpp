@@ -582,7 +582,7 @@ XML::Node *Preferences::_findObserverNode(Glib::ustring const &pref_path, Glib::
 
     // find the node corresponding to the "directory".
     Inkscape::XML::Node *node = _getNode(node_key, create), *child;
-    if (!node) return node;
+    if (!node) return nullptr;
 
     for (child = node->firstChild(); child; child = child->next()) {
         // If there is a node with id corresponding to the attr key,
@@ -654,7 +654,7 @@ void Preferences::removeObserver(Observer &o)
 Inkscape::XML::Node *Preferences::_getNode(Glib::ustring const &pref_key, bool create)
 {
     // verify path
-    g_assert( pref_key.at(0) == '/' );
+    g_assert( pref_key.empty() || pref_key.at(0) == '/' ); // empty corresponds to root node
     // No longer necessary, can cause problems with input devices which have a dot in the name
     // g_assert( pref_key.find('.') == Glib::ustring::npos );
 

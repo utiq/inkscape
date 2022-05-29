@@ -24,7 +24,6 @@
 #include "display/nr-filter-primitive.h"
 #include "display/nr-filter-slot.h"
 #include "display/nr-filter-types.h"
-#include "preferences.h"
 
 namespace Inkscape {
 namespace Filters {

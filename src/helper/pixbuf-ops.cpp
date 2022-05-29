@@ -65,12 +65,9 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
 
     // Drawing
     Inkscape::Drawing drawing; // New drawing for offscreen rendering.
-    drawing.setExact(true); // Maximum quality for blurs.
-
-    /* Create ArenaItems and set transform */
-    Inkscape::DrawingItem *root = document->getRoot()->invoke_show( drawing, dkey, SP_ITEM_SHOW_DISPLAY);
-    root->setTransform(affine);
-    drawing.setRoot(root);
+    drawing.setRoot(document->getRoot()->invoke_show(drawing, dkey, SP_ITEM_SHOW_DISPLAY));
+    drawing.root()->setTransform(affine);
+    drawing.setExact(); // Maximum quality for blurs.
 
     // Hide all items we don't want, instead of showing only requested items,
     // because that would not work if the shown item references something in defs.

@@ -27,6 +27,7 @@ typedef struct _cairo_surface cairo_surface_t;
 namespace Inkscape {
 class DrawingContext;
 class DrawingItem;
+class RenderContext;
 
 namespace Filters {
 
@@ -34,7 +35,7 @@ class FilterSlot
 {
 public:
     /** Creates a new FilterSlot object. */
-    FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &u);
+    FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &u, RenderContext &rc);
 
     /** Destroys the FilterSlot object and all its contents */
     virtual ~FilterSlot();
@@ -80,6 +81,8 @@ public:
     FilterUnits const &get_units() const { return _units; }
     Geom::Rect get_slot_area() const;
 
+    RenderContext &get_rendercontext() const { return rc; }
+
 private:
     using SlotMap = std::map<int, cairo_surface_t *>;
     SlotMap _slots;
@@ -99,6 +102,7 @@ private:
     FilterQuality filterquality;
     int blurquality;
     int device_scale;
+    RenderContext &rc;
 
     cairo_surface_t *_get_transformed_source_graphic() const;
     cairo_surface_t *_get_transformed_background() const;

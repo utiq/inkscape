@@ -78,7 +78,7 @@ void DrawingPattern::setOverflow(Geom::Affine const &initial_transform, int step
     _overflow_step_transform = step_transform;
 }
 
-cairo_pattern_t *DrawingPattern::renderPattern(Geom::IntRect const &area, float opacity, int device_scale)
+cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale)
 {
     if (opacity < 1e-3) {
         // Invisible.
@@ -208,7 +208,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(Geom::IntRect const &area, float 
 
     auto paint = [&, this] (Geom::IntRect const &rect) {
         if (_overflow_steps == 1) {
-            render(dc, rect);
+            render(dc, rc, rect);
         } else {
             // Overflow transforms need to be transformed to the old coordinate system
             // before stretching to the pattern resolution.
@@ -217,7 +217,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(Geom::IntRect const &area, float 
             dc.transform(initial_transform);
             for (int i = 0; i < _overflow_steps; i++) {
                 // render() fails to handle transforms applied here when using cache.
-                render(dc, rect, RENDER_BYPASS_CACHE);
+                render(dc, rc, rect, RENDER_BYPASS_CACHE);
                 dc.transform(step_transform);
                 // auto raw = pattern_surface.raw();
                 // auto filename = "drawing-pattern" + std::to_string(i) + ".png";

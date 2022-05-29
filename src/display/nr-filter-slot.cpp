@@ -26,7 +26,7 @@
 namespace Inkscape {
 namespace Filters {
 
-FilterSlot::FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &u)
+FilterSlot::FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &u, RenderContext &rc)
     : _source_graphic(graphic.rawTarget())
     , _background_ct(bgdc ? bgdc->raw() : nullptr)
     , _source_graphic_area(graphic.targetLogicalBounds().roundOutwards()) // fixme
@@ -35,6 +35,7 @@ FilterSlot::FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnit
     , _last_out(NR_FILTER_SOURCEGRAPHIC)
     , filterquality(FILTER_QUALITY_BEST)
     , blurquality(BLUR_QUALITY_BEST)
+    , rc(rc)
 {
     using Geom::X;
     using Geom::Y;

@@ -10,122 +10,111 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_H
-#define SEEN_INKSCAPE_DISPLAY_DRAWING_H
+#ifndef INKSCAPE_DISPLAY_DRAWING_H
+#define INKSCAPE_DISPLAY_DRAWING_H
 
+#include <set>
+#include <cstdint>
+#include <vector>
+#include <boost/operators.hpp>
 #include <2geom/rect.h>
 #include <2geom/pathvector.h>
-#include <boost/operators.hpp>
-#include <boost/utility.hpp>
-#include <set>
 #include <sigc++/sigc++.h>
 
 #include "display/drawing-item.h"
 #include "display/rendermode.h"
-#include "nr-filter-gaussian.h" // BLUR_QUALITY_BEST
 #include "nr-filter-colormatrix.h"
-
-typedef unsigned int guint32;
+#include "preferences.h"
 
 namespace Inkscape {
 
 class DrawingItem;
 class CanvasItemDrawing;
+class DrawingContext;
 
 class Drawing
-    : boost::noncopyable
 {
 public:
-    struct OutlineColors {
-        guint32 paths;
-        guint32 clippaths;
-        guint32 masks;
-        guint32 images;
-    };
-
     Drawing(Inkscape::CanvasItemDrawing *drawing = nullptr);
+    Drawing(Drawing const &) = delete;
+    Drawing &operator=(Drawing const &) = delete;
     ~Drawing();
 
+    void setRoot(DrawingItem *root);
     DrawingItem *root() { return _root; }
     Inkscape::CanvasItemDrawing *getCanvasItemDrawing() { return _canvas_item_drawing; }
-    void setRoot(DrawingItem *item);
 
-    RenderMode renderMode() const;
-    ColorMode colorMode() const;
-    bool outline() const;
-    bool visibleHairlines() const;
-    bool outlineOverlay() const;
-    bool renderFilters() const;
-    int blurQuality() const;
-    int filterQuality() const;
-    void setRenderMode(RenderMode mode);
-    void setColorMode(ColorMode mode);
-    void setBlurQuality(int q);
-    void setFilterQuality(int q);
-    void setExact(bool e);
-    bool getExact() const { return _exact; };
-    void setOutlineSensitive(bool e);
-    bool getOutlineSensitive() const { return _outline_sensitive; };
-    Geom::PathVector clip;
-    Geom::OptIntRect const &cacheLimit() const;
-    void setCacheLimit(Geom::OptIntRect const &r);
+    void setRenderMode(RenderMode);
+    void setColorMode(ColorMode);
+    void setOutlineOverlay(bool);
+    void setGrayscaleMatrix(double[20]);
+    void setClipOutlineColor(uint32_t);
+    void setMaskOutlineColor(uint32_t);
+    void setImageOutlineColor(uint32_t);
+    void setImageOutlineMode(bool);
+    void setFilterQuality(int);
+    void setBlurQuality(int);
+    void setCursorTolerance(double tol) { _cursor_tolerance = tol; }
     void setCacheBudget(size_t bytes);
+    void setCacheLimit(Geom::OptIntRect const &rect);
+    void setClip(std::optional<Geom::PathVector> &&clip);
 
-    OutlineColors const &colors() const { return _colors; }
-
-    void setGrayscaleMatrix(double value_matrix[20]);
+    RenderMode renderMode() const { return _rendermode; }
+    ColorMode colorMode() const { return _colormode; }
+    bool outlineOverlay() const { return _outlineoverlay; }
+    auto &grayscaleMatrix() const { return _grayscale_matrix; }
+    uint32_t clipOutlineColor() const { return _clip_outline_color; }
+    uint32_t maskOutlineColor() const { return _mask_outline_color; }
+    uint32_t imageOutlineColor() const { return _image_outline_color; }
+    bool imageOutlineMode() const { return _image_outline_mode; }
+    int filterQuality() const { return _filter_quality; }
+    int blurQuality() const { return _blur_quality; }
+    double cursorTolerance() const { return _cursor_tolerance; }
+    Geom::OptIntRect const &cacheLimit() const { return _cache_limit; }
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), Geom::Affine const &affine = Geom::identity(),
                 unsigned flags = DrawingItem::STATE_ALL, unsigned reset = 0);
-
-    void render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, int antialiasing = -1);
+    void render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, int antialiasing_override = -1);
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags);
 
-    void average_color(Geom::IntRect const &area, double &R, double &G, double &B, double &A);
-
-    void set_clip_to_page(bool clip);
-    bool get_clip_to_page() const;
-
-    guint32 getOutlineColor() const { return outlinecolor; }
-    void setOutlineColor(guint32 color) { outlinecolor = color; }
+    // Convenience
+    void averageColor(Geom::IntRect const &area, double &R, double &G, double &B, double &A);
+    void setExact();
 
 private:
     void _pickItemsForCaching();
+    void _clearCache();
+    void _loadPrefs();
 
-    typedef std::list<CacheRecord> CandidateList;
-    bool _outline_sensitive = false;
     DrawingItem *_root = nullptr;
-    std::set<DrawingItem *> _cached_items; // modified by DrawingItem::setCached()
-    CandidateList _candidate_items;        // keep this list always sorted with std::greater
+    Inkscape::CanvasItemDrawing *_canvas_item_drawing = nullptr;
+    std::unique_ptr<Preferences::PreferencesObserver> _pref_tracker;
 
-public:
-    // TODO: remove these temporarily public members
-    double delta = 0;
-
-private:
-    bool _exact = false;  // if true then rendering must be exact
-    bool _clip_to_page = false;
     RenderMode _rendermode = RenderMode::NORMAL;
     ColorMode _colormode = ColorMode::NORMAL;
-    int _blur_quality = BLUR_QUALITY_BEST;
-    int _filter_quality = Filters::FILTER_QUALITY_BEST;
+    bool _outlineoverlay;
+    Filters::FilterColorMatrix::ColorMatrixMatrix _grayscale_matrix;
+    uint32_t _clip_outline_color;
+    uint32_t _mask_outline_color;
+    uint32_t _image_outline_color;
+    bool _image_outline_mode; ///< Always draw images as images, even in outline mode.
+    int _filter_quality;
+    int _blur_quality;
+    double _cursor_tolerance;
+    size_t _cache_budget; ///< Maximum allowed size of cache.
     Geom::OptIntRect _cache_limit;
+    std::optional<Geom::PathVector> _clip;
 
-    double _cache_score_threshold = 50000.0; ///< do not consider objects for caching below this score
-    size_t _cache_budget = 0;                ///< maximum allowed size of cache
-
-    OutlineColors _colors;
-    Filters::FilterColorMatrix::ColorMatrixMatrix _grayscale_colormatrix;
-    Inkscape::CanvasItemDrawing *_canvas_item_drawing = nullptr;
-
-    guint32 outlinecolor = 0x000000ff;
+    using CandidateList = std::list<CacheRecord>;
+    std::set<DrawingItem *> _cached_items; // modified by DrawingItem::setCached()
+    CandidateList _candidate_items;        // keep this list always sorted with std::greater
 
     friend class DrawingItem;
 };
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
-#endif // !SEEN_INKSCAPE_DRAWING_H
+#endif // INKSCAPE_DISPLAY_DRAWING_H
 
 /*
   Local Variables:

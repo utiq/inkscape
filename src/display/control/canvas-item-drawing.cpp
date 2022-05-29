@@ -18,40 +18,15 @@
 
 #include "desktop.h"
 
-#include "preferences.h"
-
-#include "display/cairo-utils.h"
 #include "display/drawing.h"
 #include "display/drawing-context.h"
 #include "display/drawing-item.h"
 #include "display/drawing-group.h"
-#include "display/drawing-surface.h"
 
 #include "ui/widget/canvas.h"
 #include "ui/modifiers.h"
 
 namespace Inkscape {
-
-struct CachePref2Observer : public Inkscape::Preferences::Observer {
-    CachePref2Observer(Inkscape::CanvasItemDrawing *item)
-        : Inkscape::Preferences::Observer("/options/renderingcache")
-        , _canvas_item_drawing(item)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        std::vector<Inkscape::Preferences::Entry> v = prefs->getAllEntries(observed_path);
-        for (const auto & i : v) {
-            notify(i);
-        }
-        prefs->addObserver(*this);
-    }
-    void notify(Inkscape::Preferences::Entry const &v) override {
-        Glib::ustring name = v.getEntryName();
-        if (name == "size") {
-            _canvas_item_drawing->get_drawing()->setCacheBudget((1 << 20) * v.getIntLimited(64, 0, 4096));
-        }
-    }
-    Inkscape::CanvasItemDrawing *_canvas_item_drawing;
-};
 
 /**
  * Create the drawing. One per window!
@@ -62,19 +37,10 @@ CanvasItemDrawing::CanvasItemDrawing(CanvasItemGroup *group)
     _name = "CanvasItemDrawing";
     _pickable = true;
 
-    _drawing = new Inkscape::Drawing(this);
-    _drawing->delta = 1.0; // Default
-    auto root = new Inkscape::DrawingGroup(*_drawing);
+    _drawing = std::make_unique<Drawing>(this);
+    auto root = new DrawingGroup(*_drawing);
     root->setPickChildren(true);
     _drawing->setRoot(root);
-
-    _observer = new CachePref2Observer(this);
-}
-
-CanvasItemDrawing::~CanvasItemDrawing()
-{
-    delete _observer;
-    delete _drawing;
 }
 
 /**
@@ -97,7 +63,7 @@ bool CanvasItemDrawing::contains(Geom::Point const &p, double tolerance)
     }
 
     _drawing->update(Geom::IntRect::infinite(), _ctx.ctm, DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX);
-    _picked_item = _drawing->pick(p, _drawing->delta, _sticky);
+    _picked_item = _drawing->pick(p, _drawing->cursorTolerance(), _sticky * DrawingItem::PICK_STICKY | _pick_outline * DrawingItem::PICK_OUTLINE);
 
     if (_picked_item) {
         // This will trigger a signal that is handled by our event handler. Seems a bit of a
@@ -134,7 +100,7 @@ void CanvasItemDrawing::update(Geom::Affine const &affine)
 
     _drawing->update(Geom::IntRect::infinite(), _ctx.ctm, DrawingItem::STATE_ALL, reset);
 
-    Geom::OptIntRect bbox = _drawing->root()->visualBounds();
+    Geom::OptIntRect bbox = _drawing->root()->drawbox();
     if (bbox) {
         _bounds = *bbox;
         _bounds.expandBy(1); // Avoid aliasing artifacts.
@@ -143,7 +109,7 @@ void CanvasItemDrawing::update(Geom::Affine const &affine)
     // Todo: This should be managed elsewhere.
     if (_cursor) {
         /* Mess with enter/leave notifiers */
-        DrawingItem *new_drawing_item = _drawing->pick(_c, _delta, _sticky);
+        DrawingItem *new_drawing_item = _drawing->pick(_c, _delta, _sticky * DrawingItem::PICK_STICKY | _pick_outline * DrawingItem::PICK_OUTLINE);
         if (_active_item != new_drawing_item) {
 
             GdkEventCrossing ec;
@@ -186,9 +152,8 @@ void CanvasItemDrawing::render(Inkscape::CanvasItemBuffer *buf)
         return;
     }
 
-    Inkscape::DrawingContext dc(buf->cr->cobj(), buf->rect.min());
-    _drawing->update();
-    _drawing->render(dc, buf->rect);
+    auto dc = Inkscape::DrawingContext(buf->cr->cobj(), buf->rect.min());
+    _drawing->render(dc, buf->rect, buf->outline_pass * DrawingItem::RENDER_OUTLINE);
 }
 
 /**
@@ -211,7 +176,7 @@ bool CanvasItemDrawing::handle_event(GdkEvent *event)
 
                 /* fixme: Not sure abut this, but seems the right thing (Lauris) */
                 //_drawing->update(Geom::IntRect::infinite(), _ctx, DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX, 0);
-                _active_item = _drawing->pick(_c, _drawing->delta, _sticky);
+                _active_item = _drawing->pick(_c, _drawing->cursorTolerance(), _sticky * DrawingItem::PICK_STICKY | _pick_outline * DrawingItem::PICK_OUTLINE);
                 retval = _drawing_event_signal.emit(event, _active_item);
             }
             break;
@@ -232,7 +197,7 @@ bool CanvasItemDrawing::handle_event(GdkEvent *event)
             /* fixme: Not sure abut this, but seems the right thing (Lauris) */
             //_drawing->update(Geom::IntRect::infinite(), _ctx, DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX);
 
-            auto new_drawing_item = _drawing->pick(_c, _drawing->delta, _sticky);
+            auto new_drawing_item = _drawing->pick(_c, _drawing->cursorTolerance(), _sticky * DrawingItem::PICK_STICKY | _pick_outline * DrawingItem::PICK_OUTLINE);
             if (_active_item != new_drawing_item) {
 
                 GdkEventCrossing ec;

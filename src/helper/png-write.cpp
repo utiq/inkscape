@@ -439,12 +439,11 @@ ExportResult sp_export_png_file(SPDocument *doc, gchar const *filename,
 
     /* Create new drawing */
     Inkscape::Drawing drawing;
-    drawing.setExact(true); // export with maximum blur rendering quality
     unsigned const dkey = SPItem::display_key_new(1);
-
-    // Create ArenaItems and set transform
     drawing.setRoot(doc->getRoot()->invoke_show(drawing, dkey, SP_ITEM_SHOW_DISPLAY));
     drawing.root()->setTransform(affine);
+    drawing.setExact(); // export with maximum blur rendering quality
+
     ebp.drawing = &drawing;
 
     // We show all and then hide all items we don't want, instead of showing only requested items,

@@ -34,7 +34,7 @@ void FilterImage::render_cairo(FilterSlot &slot) const
     }
 
     item->update();
-    Geom::OptRect area = item->visualBounds();
+    Geom::OptRect area = item->drawbox();
     if (!area) {
         return;
     }
@@ -80,7 +80,7 @@ void FilterImage::render_cairo(FilterSlot &slot) const
     // Internal image, like <use>
     if (from_element) {
         dc.translate(feImageX, feImageY);
-        item->render(dc, render_rect);
+        item->render(dc, slot.get_rendercontext(), render_rect);
 
         // For the moment, we'll assume that any image is in sRGB color space
         set_cairo_surface_ci(out, SP_CSS_COLOR_INTERPOLATION_SRGB);
@@ -180,7 +180,7 @@ void FilterImage::render_cairo(FilterSlot &slot) const
 
         dc.translate(feImageX, feImageY);
         dc.scale(scaleX, scaleY);
-        item->render(dc, render_rect);
+        item->render(dc, slot.get_rendercontext(), render_rect);
     }
 
     slot.set(_output, out);

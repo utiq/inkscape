@@ -30,6 +30,7 @@ struct CanvasItemBuffer {
     Geom::IntRect rect;
     int device_scale; // For high DPI monitors.
     Cairo::RefPtr<Cairo::Context> cr;
+    bool outline_pass;
 };
 
 } // Namespace Inkscape

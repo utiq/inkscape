@@ -25,20 +25,16 @@
 
 namespace Inkscape {
 
-class CachePref2Observer;
-
 class Drawing;
 class DrawingItem;
 class Updatecontext;
 
 class CanvasItemGroup; // A canvas control that contains other canvas controls.
 
-class CanvasItemDrawing : public CanvasItem {
-
+class CanvasItemDrawing : public CanvasItem
+{
 public:
     CanvasItemDrawing(CanvasItemGroup *group);
-    ~CanvasItemDrawing() override;
-
 
     // Geometry
     UpdateContext get_context() { return _ctx; } // TODO Remove this as ctx only contains affine.
@@ -51,7 +47,7 @@ public:
 
     // Display
     void render(Inkscape::CanvasItemBuffer *buf) override;
-    Inkscape::Drawing * get_drawing() { return _drawing; }
+    Inkscape::Drawing *get_drawing() { return _drawing.get(); }
 
     // Drawing items
     void set_active(Inkscape::DrawingItem *active) { _active_item = active; }
@@ -60,6 +56,7 @@ public:
     // Events
     bool handle_event(GdkEvent* event) override;
     void set_sticky(bool sticky) { _sticky = sticky; }
+    void set_pick_outline(bool pick_outline) { _pick_outline = pick_outline; }
 
     // Signals
     sigc::connection connect_drawing_event(sigc::slot<bool (GdkEvent*, Inkscape::DrawingItem *)> slot) {
@@ -77,15 +74,13 @@ protected:
     Inkscape::DrawingItem *_picked_item = nullptr;
 
     // Display
-    Inkscape::Drawing *_drawing;
+    std::unique_ptr<Inkscape::Drawing> _drawing;
     Inkscape::UpdateContext _ctx;  // TODO Remove this... it's the same as _affine!
 
     // Events
     bool _cursor = false;
     bool _sticky = false; // Pick anything, even if hidden.
-
-    // Properties
-    CachePref2Observer *_observer = nullptr;
+    bool _pick_outline = false;
 
     // Signals
     sigc::signal<bool (GdkEvent*, Inkscape::DrawingItem *)> _drawing_event_signal;

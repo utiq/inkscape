@@ -57,7 +57,7 @@ public:
      *
      * Returns cairo_pattern_t structure that can be set as source surface.
      */
-    cairo_pattern_t *renderPattern(Geom::IntRect const &area, float opacity, int device_scale);
+    cairo_pattern_t *renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale);
 
 protected:
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;

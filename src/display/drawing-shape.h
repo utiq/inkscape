@@ -36,14 +36,14 @@ public:
 
 protected:
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
-    unsigned _renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at) override;
-    void _clipItem(DrawingContext &dc, Geom::IntRect const &area) override;
+    unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at) override;
+    void _clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
     bool _canClip() override;
 
-    void _renderFill(DrawingContext &dc, Geom::IntRect const &area);
-    void _renderStroke(DrawingContext &dc, Geom::IntRect const &area);
-    void _renderMarkers(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at);
+    void _renderFill(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area);
+    void _renderStroke(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags);
+    void _renderMarkers(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at);
 
     bool style_vector_effect_stroke : 1;
     bool style_stroke_extensions_hairline : 1;
