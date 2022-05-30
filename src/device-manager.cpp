@@ -63,19 +63,7 @@ static bool isValidDevice(Glib::RefPtr<Gdk::Device> device)
 
 namespace Inkscape {
 
-using std::pair;
-
-static pair<gint, gint> vals[] = {
-    pair<gint, gint>(0, 1), pair<gint, gint>(1, 1 << 1), pair<gint, gint>(2, 1 << 2), pair<gint, gint>(3, 1 << 3),
-    pair<gint, gint>(4, 1 << 4), pair<gint, gint>(5, 1 << 5), pair<gint, gint>(6, 1 << 6), pair<gint, gint>(7, 1 << 7),
-    pair<gint, gint>(8, 1 << 8), pair<gint, gint>(9, 1 << 9), pair<gint, gint>(10, 1 << 10), pair<gint, gint>(11, 1 << 11),
-    pair<gint, gint>(12, 1 << 12), pair<gint, gint>(13, 1 << 13), pair<gint, gint>(14, 1 << 14), pair<gint, gint>(15, 1 << 15),
-    pair<gint, gint>(16, 1 << 16), pair<gint, gint>(17, 1 << 17), pair<gint, gint>(18, 1 << 18), pair<gint, gint>(19, 1 << 19),
-    pair<gint, gint>(20, 1 << 20), pair<gint, gint>(21, 1 << 21), pair<gint, gint>(22, 1 << 22), pair<gint, gint>(23, 1 << 23)
-};
-static std::map<gint, gint> bitVals(vals, &vals[G_N_ELEMENTS(vals)]);
-
-
+static int const NUM_AXES = 24;
 static const int RUNAWAY_MAX = 1000;
 
 static Glib::ustring getBaseDeviceName(Gdk::InputSource source)
@@ -201,7 +189,8 @@ private:
     guint liveButtons;
 };
 
-class IdMatcher : public std::unary_function<Glib::RefPtr<InputDeviceImpl>&, bool> {
+class IdMatcher
+{
 public:
     IdMatcher(Glib::ustring const& target):target(target) {}
     bool operator ()(Glib::RefPtr<InputDeviceImpl>& dev) {return dev && (target == dev->getId());}
@@ -210,7 +199,8 @@ private:
     Glib::ustring const& target;
 };
 
-class LinkMatcher : public std::unary_function<Glib::RefPtr<InputDeviceImpl>&, bool> {
+class LinkMatcher
+{
 public:
     LinkMatcher(Glib::ustring const& target):target(target) {}
     bool operator ()(Glib::RefPtr<InputDeviceImpl>& dev) {return dev && (target == dev->getLink());}
@@ -511,10 +501,10 @@ sigc::signal<void, Glib::RefPtr<InputDevice const> > DeviceManagerImpl::signalLi
 
 void DeviceManagerImpl::addAxis(Glib::ustring const & id, gint axis)
 {
-    if ( axis >= 0 && axis < static_cast<gint>(bitVals.size()) ) {
+    if ( axis >= 0 && axis < NUM_AXES ) {
         std::list<Glib::RefPtr<InputDeviceImpl> >::iterator it = std::find_if(devices.begin(), devices.end(), IdMatcher(id));
         if ( it != devices.end() ) {
-            gint mask = bitVals[axis];
+            gint mask = 1u << axis;
             if ( (mask & (*it)->getLiveAxes()) == 0 ) {
                 (*it)->setLiveAxes((*it)->getLiveAxes() | mask);
 
@@ -528,10 +518,10 @@ void DeviceManagerImpl::addAxis(Glib::ustring const & id, gint axis)
 
 void DeviceManagerImpl::addButton(Glib::ustring const & id, gint button)
 {
-    if ( button >= 0 && button < static_cast<gint>(bitVals.size()) ) {
+    if ( button >= 0 && button < NUM_AXES ) {
         std::list<Glib::RefPtr<InputDeviceImpl> >::iterator it = std::find_if(devices.begin(), devices.end(), IdMatcher(id));
         if ( it != devices.end() ) {
-            gint mask = bitVals[button];
+            gint mask = 1u << button;
             if ( (mask & (*it)->getLiveButtons()) == 0 ) {
                 (*it)->setLiveButtons((*it)->getLiveButtons() | mask);
 

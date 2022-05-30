@@ -63,7 +63,8 @@ private:
 class CellRendererInt : public Gtk::CellRendererText {
 public:
 
-    struct Filter : std::unary_function<int, bool> {
+    struct Filter
+    {
         virtual ~Filter() = default;
         virtual bool operator() (const int&) const =0;
     };

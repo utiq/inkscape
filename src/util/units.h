@@ -26,8 +26,10 @@
 
 namespace std {
 template <>
-struct hash<Glib::ustring> : public std::unary_function<Glib::ustring, std::size_t> {
-    std::size_t operator()(Glib::ustring const &s) const {
+struct hash<Glib::ustring>
+{
+    std::size_t operator()(Glib::ustring const &s) const
+    {
         return hash<std::string>()(s.raw());
     }
 };

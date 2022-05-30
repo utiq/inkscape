@@ -38,7 +38,6 @@ namespace UI {
 namespace {
 
 struct hash_nodelist_iterator
-    : public std::unary_function<NodeList::iterator, std::size_t>
 {
     std::size_t operator()(NodeList::iterator i) const {
         return std::hash<NodeList::iterator::pointer>()(&*i);
