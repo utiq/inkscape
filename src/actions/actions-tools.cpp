@@ -10,7 +10,6 @@
 
 #include <iostream>
 #include <map>
-#include <chrono>
 
 #include <giomm.h>  // Not <gtkmm.h>! To eventually allow a headless version!
 #include <glibmm/i18n.h>
@@ -149,7 +148,6 @@ get_active_tool_enum(InkscapeWindow *win)
 }
 
 void tool_switch(Glib::ustring const &tool, InkscapeWindow *win);
-void tool_preferences(Glib::ustring const &tool, InkscapeWindow *win);
 
 void
 set_active_tool(InkscapeWindow *win, Glib::ustring const &tool)
@@ -235,40 +233,6 @@ tool_switch(Glib::ustring const &tool, InkscapeWindow *win)
         std::cerr << "tool-switch: action 'tool-switch' not SimpleAction!" << std::endl;
         return;
     }
-
-    // Get current state
-    Glib::ustring current_tool;
-    saction->get_state(current_tool);
-
-    // Initialize time to zero.
-    static std::chrono::time_point old_time = std::chrono::time_point<std::chrono::high_resolution_clock>();
-
-    if (tool == current_tool) {
-        /*
-         * This happens under two circumstances:
-         * 1. The user double clicks a tool. In this case we pop-up the Preference Dialog opened to the
-         *    tool's page. (This only works if the Preference Dialog was not open.)
-         * 2. The user is switching tools. This happens as a RadioButton triggers the action both when
-         *    toggling on and when toggling off. We want to ignore the toggling off event.
-         *    Note, if a user clicks on two different tool buttons quickly, it will trigger opening
-         *    the first tool's preference page. If this is a problem, we could connect to
-         *    the "button_pressed" signal of the buttons via code, but this would be messier.
-         */
-        auto current_time =  std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed_seconds = current_time - old_time; // In seconds
-        // std::cout << "  elapased time: " << elapsed_seconds.count() << std::endl;
-        auto settings = Gtk::Settings::get_default();
-        Glib::PropertyProxy<int> double_click_time = settings->property_gtk_double_click_time(); // In ms. Default: 400ms.
-        if (elapsed_seconds.count() * 1000 < double_click_time.get_value()) {
-            // User double clicked!
-            tool_preferences(tool, win);
-        }
-
-        old_time = current_time; // So if tool is already open, double clicking will still work.
-        return;
-    }
-
-    old_time = std::chrono::high_resolution_clock::now();
 
     // Update button states.
     saction->set_enabled(false); // Avoid infinite loop when called by tool_toogle().

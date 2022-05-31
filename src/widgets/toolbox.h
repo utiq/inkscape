@@ -16,10 +16,12 @@
 
 #include <glibmm/ustring.h>
 #include <gtk/gtk.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/enums.h>
 
 #include "preferences.h"
 
+class InkscapeWindow;
 class SPDesktop;
 
 namespace Inkscape {
@@ -35,7 +37,7 @@ public:
     static void setOrientation(GtkWidget* toolbox, GtkOrientation orientation);
     static void showAuxToolbox(GtkWidget* toolbox);
 
-    static GtkWidget *createToolToolbox();
+    static GtkWidget *createToolToolbox(InkscapeWindow *window);
     static GtkWidget *createAuxToolbox();
     static GtkWidget *createCommandsToolbox();
     static GtkWidget *createSnapToolbox();
@@ -53,6 +55,9 @@ public:
     static constexpr const int min_pixel_size = 16;
     static constexpr const int max_pixel_size = 48;
     static Glib::ustring get_tool_visible_buttons_path(const Glib::ustring& button_action_name);
+
+private:
+    static void _attachDoubleClickHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *window);
 };
 
 

@@ -61,6 +61,8 @@ int get_active_tool_enum(SPDesktop *desktop);
 void set_active_tool(SPDesktop *desktop, Glib::ustring const &tool);
 void set_active_tool(SPDesktop *desktop, SPItem *item, Geom::Point const p);
 
+void tool_preferences(Glib::ustring const &tool, InkscapeWindow *win);
+
 // Standard function to add actions.
 void add_actions_tools(InkscapeWindow* win);
 

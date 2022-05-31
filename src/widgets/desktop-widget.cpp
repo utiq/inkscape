@@ -209,7 +209,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
 
     dtw->_top_toolbars->attach(*Glib::wrap(dtw->aux_toolbox), 0, 1);
 
-    dtw->tool_toolbox = ToolboxFactory::createToolToolbox();
+    dtw->tool_toolbox = ToolboxFactory::createToolToolbox(inkscape_window);
     ToolboxFactory::setOrientation( dtw->tool_toolbox, GTK_ORIENTATION_VERTICAL );
     dtw->_tbbox->pack1(*Glib::wrap(dtw->tool_toolbox), false, true);
     auto tbox_width = prefs->getEntry("/toolbox/tools/width");
