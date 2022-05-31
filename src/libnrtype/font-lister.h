@@ -340,6 +340,8 @@ gboolean font_lister_separator_func2(GtkTreeModel *model,
 
 void font_lister_cell_data_func (Gtk::CellRenderer *renderer, Gtk::TreeIter const &iter);
 
+void font_lister_cell_data_func_markup (Gtk::CellRenderer *renderer, Gtk::TreeIter const &iter);
+
 void font_lister_cell_data_func2(GtkCellLayout * /*cell_layout*/,
                                 GtkCellRenderer *cell,
                                 GtkTreeModel *model,

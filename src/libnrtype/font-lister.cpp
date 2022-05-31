@@ -213,8 +213,12 @@ Glib::ustring FontLister::get_font_family_markup(Gtk::TreeIter const &iter)
     if (show_sample) {
 
         Glib::ustring sample = prefs->getString("/tools/text/font_sample");
-
+        // we setup a small line height to avoid semi hidden fonts (one line height rendering overlap without padding)
+#if PANGO_VERSION_CHECK(1,50,0)
+        markup += "  <span foreground='gray' line-height='0.6' font-size='100%' font_family='";
+#else
         markup += "  <span foreground='gray' font_family='";
+#endif
         markup += family_escaped;
         markup += "'>";
         markup += sample;
@@ -1140,9 +1144,14 @@ gboolean font_lister_separator_func2(GtkTreeModel *model, GtkTreeIter *iter, gpo
     return result;
 }
 
+// do nothing on load initialy
+void font_lister_cell_data_func (Gtk::CellRenderer *renderer, Gtk::TreeIter const &iter)
+{
+}
+
 // Draw system fonts in dark blue, missing fonts with red strikeout.
 // Used by both FontSelector and Text toolbar.
-void font_lister_cell_data_func (Gtk::CellRenderer *renderer, Gtk::TreeIter const &iter)
+void font_lister_cell_data_func_markup (Gtk::CellRenderer *renderer, Gtk::TreeIter const &iter)
 {
     Inkscape::FontLister* font_lister = Inkscape::FontLister::get_instance();
     Glib::ustring markup = font_lister->get_font_family_markup(iter);
@@ -1223,7 +1232,11 @@ void font_lister_cell_data_func2(GtkCellLayout * /*cell_layout*/,
         gchar* sample_escaped = g_markup_escape_text(sample.data(), -1);
         if (data) {
             markup += " <span alpha='55%";
+#if PANGO_VERSION_CHECK(1,50,0)
+            markup += "' font-size='100%' line-height='0.6' font_family='";
+#else
             markup += "' font_family='";
+#endif
             markup += family_escaped;
         } else {
             markup += " <span alpha='1";

@@ -36,15 +36,30 @@ FontSelector::FontSelector (bool with_size, bool with_variations)
 {
 
     Inkscape::FontLister* font_lister = Inkscape::FontLister::get_instance();
-
+    Glib::RefPtr<Gtk::TreeModel> model = font_lister->get_font_list();
     // Font family
     family_treecolumn.pack_start (family_cell, false);
+    int total = model->children().size();
+    int height = 30;
+    if (total > 1000) {
+        height = 30000/total;
+        g_warning("You have a huge number of font families (%d), "
+                    "and Cairo is limiting the size of widgets you can draw.\n"
+                    "Your preview cell height is capped to %d.",
+                    total, height);
+        // hope we dont need a forced height because now pango line height 
+        // not add data outside parent rendered expanding it so no naturall cells become over 30 height
+        family_cell.set_fixed_size(-1, height);
+    } else {
+#if !PANGO_VERSION_CHECK(1,50,0)
+    family_cell.set_fixed_size(-1, height);
+#endif
+    }
     family_treecolumn.set_fixed_width (120); // limit minimal width to keep entire dialog narrow; column can still grow
     family_treecolumn.add_attribute (family_cell, "text", 0);
     family_treecolumn.set_cell_data_func (family_cell, &font_lister_cell_data_func);
-
     family_treeview.set_row_separator_func (&font_lister_separator_func);
-    family_treeview.set_model (font_lister->get_font_list());
+    family_treeview.set_model(model);
     family_treeview.set_name ("FontSelector: Family");
     family_treeview.set_headers_visible (false);
     family_treeview.append_column (family_treecolumn);
@@ -427,6 +442,11 @@ void
 FontSelector::changed_emit() {
     signal_block = true;
     signal_changed.emit (get_fontspec());
+    if (initial) {
+        initial = false;
+        family_treecolumn.unset_cell_data_func (family_cell);
+        family_treecolumn.set_cell_data_func (family_cell, &font_lister_cell_data_func_markup);
+    }
     signal_block = false;
 }
 

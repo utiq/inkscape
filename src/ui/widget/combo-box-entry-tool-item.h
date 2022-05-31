@@ -56,6 +56,8 @@ private:
     gpointer            _warning_cb; // Callback for clicking warning icon.
     gint                _warning_cb_id;
     gboolean            _warning_cb_blocked;
+    gboolean            _isload;
+    gboolean            _markup;
 
     // Signals
     sigc::signal<void> _signal_changed;

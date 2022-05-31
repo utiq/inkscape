@@ -69,7 +69,9 @@ ComboBoxEntryToolItem::ComboBoxEntryToolItem(Glib::ustring name,
       _warning(nullptr),
       _warning_cb(nullptr),
       _warning_cb_id(0),
-      _warning_cb_blocked(false)
+      _warning_cb_blocked(false),
+      _isload(true),
+      _markup(false)
 {
     set_name(name);
 
@@ -118,8 +120,14 @@ ComboBoxEntryToolItem::ComboBoxEntryToolItem(Glib::ustring name,
                       "and Cairo is limiting the size of widgets you can draw.\n"
                       "Your preview cell height is capped to %d.",
                       total, height);
+            // hope we dont need a forced height because now pango line height 
+            // not add data outside parent rendered expanding it so no naturall cells become over 30 height
+            gtk_cell_renderer_set_fixed_size(_cell, -1, height);
+        } else {
+#if !PANGO_VERSION_CHECK(1,50,0)
+          gtk_cell_renderer_set_fixed_size(_cell, -1, height);
+#endif
         }
-        gtk_cell_renderer_set_fixed_size(_cell, -1, height);
         g_signal_connect(G_OBJECT(comboBoxEntry), "popup", G_CALLBACK(combo_box_popup_cb), this);
         gtk_cell_layout_clear( GTK_CELL_LAYOUT( comboBoxEntry ) );
         gtk_cell_layout_pack_start( GTK_CELL_LAYOUT( comboBoxEntry ), _cell, true );
@@ -568,14 +576,14 @@ gboolean ComboBoxEntryToolItem::combo_box_popup_cb(ComboBoxEntryToolItem *widget
 {
     auto w = reinterpret_cast<ComboBoxEntryToolItem *>(data);
     GtkComboBox *comboBoxEntry = GTK_COMBO_BOX(w->_combobox);
-    static int already_clicked = 0;
-    if ((already_clicked == 1) && w->_cell_data_func) {
+    if (!w->_isload && !w->_markup && w->_cell_data_func) {
         // first click is always displaying something wrong.
         // Second loading of the screen should have preallocated space, and only has to render the text now
         gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(comboBoxEntry), w->_cell,
                                            GtkCellLayoutDataFunc(w->_cell_data_func), widget, nullptr);
+        w->_markup = true;
     }
-    already_clicked++;
+    w->_isload = false;
     return true;
 }
 
