@@ -172,7 +172,7 @@ void SPGroup::update(SPCtx *ctx, unsigned int flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            Inkscape::DrawingGroup *group = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
+            auto group = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             if( this->parent ) {
                 this->context_style = this->parent->context_style;
             }
@@ -192,7 +192,7 @@ void SPGroup::modified(guint flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            Inkscape::DrawingGroup *group = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
+            auto group = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             group->setStyle(this->style);
         }
     }
@@ -803,7 +803,7 @@ void SPGroup::setLayerDisplayMode(unsigned int dkey, SPGroup::LayerMode mode) {
 void SPGroup::_updateLayerMode(unsigned int display_key) {
     for (auto &v : views) {
         if (!display_key || v.key == display_key) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             if (g) {
                 g->setPickChildren(effectiveLayerMode(v.key) == SPGroup::LAYER);
             }
@@ -834,9 +834,9 @@ void SPGroup::scaleChildItemsRec(Geom::Scale const &sc, Geom::Point const &p, bo
                     if (defsgroup)
                         defsgroup->scaleChildItemsRec(sc, p, false);
                 }
-            } else if ( SPItem *item = dynamic_cast<SPItem *>(&o) ) {
-                SPGroup *group = dynamic_cast<SPGroup *>(item);
-                if (group && !dynamic_cast<SPBox3D *>(item)) {
+            } else if (auto item = dynamic_cast<SPItem*>(&o)) {
+                auto group = dynamic_cast<SPGroup*>(item);
+                if (group && !dynamic_cast<SPBox3D*>(item)) {
                     /* Using recursion breaks clipping because transforms are applied
                        in coordinates for draws but nothing in defs is changed
                        instead change the transform on the entire group, and the transform

@@ -10,13 +10,11 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_SHAPE_H
-#define SEEN_INKSCAPE_DISPLAY_DRAWING_SHAPE_H
+#ifndef INKSCAPE_DISPLAY_DRAWING_SHAPE_H
+#define INKSCAPE_DISPLAY_DRAWING_SHAPE_H
 
 #include "display/drawing-item.h"
 #include "display/nr-style.h"
-
-#include <memory>
 
 class SPStyle;
 class SPCurve;
@@ -28,7 +26,7 @@ class DrawingShape
 {
 public:
     DrawingShape(Drawing &drawing);
-    ~DrawingShape() override;
+    ~DrawingShape() override = default;
 
     void setPath(std::shared_ptr<SPCurve const> curve);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
@@ -58,9 +56,9 @@ protected:
     unsigned _repick_after;
 };
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
-#endif // !SEEN_INKSCAPE_DISPLAY_DRAWING_ITEM_H
+#endif // INKSCAPE_DISPLAY_DRAWING_SHAPE_H
 
 /*
   Local Variables:

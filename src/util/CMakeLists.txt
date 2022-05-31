@@ -33,6 +33,7 @@ set(util_SRC
 	pool.h
 	preview.h
 	reference.h
+	scope_exit.h
 	share.h
 	signal-blocker.h
 	statics.h

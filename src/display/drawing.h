@@ -54,6 +54,7 @@ public:
     void setImageOutlineMode(bool);
     void setFilterQuality(int);
     void setBlurQuality(int);
+    void setDithering(bool);
     void setCursorTolerance(double tol) { _cursor_tolerance = tol; }
     void setCacheBudget(size_t bytes);
     void setCacheLimit(Geom::OptIntRect const &rect);
@@ -69,6 +70,7 @@ public:
     bool imageOutlineMode() const { return _image_outline_mode; }
     int filterQuality() const { return _filter_quality; }
     int blurQuality() const { return _blur_quality; }
+    bool useDithering() const { return _use_dithering; }
     double cursorTolerance() const { return _cursor_tolerance; }
     Geom::OptIntRect const &cacheLimit() const { return _cache_limit; }
 
@@ -100,14 +102,15 @@ private:
     bool _image_outline_mode; ///< Always draw images as images, even in outline mode.
     int _filter_quality;
     int _blur_quality;
+    bool _use_dithering;
     double _cursor_tolerance;
     size_t _cache_budget; ///< Maximum allowed size of cache.
     Geom::OptIntRect _cache_limit;
     std::optional<Geom::PathVector> _clip;
 
-    using CandidateList = std::list<CacheRecord>;
-    std::set<DrawingItem *> _cached_items; // modified by DrawingItem::setCached()
-    CandidateList _candidate_items;        // keep this list always sorted with std::greater
+    std::set<DrawingItem*> _cached_items; // modified by DrawingItem::_setCached()
+    CacheList _candidate_items;           // keep this list always sorted with std::greater
+
 
     friend class DrawingItem;
 };

@@ -16,16 +16,15 @@
 #include <2geom/path-sink.h>
 #include <2geom/svg-path-parser.h>
 
-#include "drawing-shape.h"
-
 #include "style.h"
 
-#include "display/cairo-utils.h"
-#include "display/curve.h"
-#include "display/drawing.h"
-#include "display/drawing-context.h"
-#include "display/drawing-group.h"
-#include "display/control/canvas-item-drawing.h"
+#include "cairo-utils.h"
+#include "curve.h"
+#include "drawing.h"
+#include "drawing-context.h"
+#include "drawing-group.h"
+#include "drawing-shape.h"
+#include "control/canvas-item-drawing.h"
 
 #include "helper/geom-curves.h"
 #include "helper/geom.h"
@@ -44,10 +43,6 @@ DrawingShape::DrawingShape(Drawing &drawing)
     , style_opacity(SP_SCALE24_MAX)
     , _last_pick(nullptr)
     , _repick_after(0)
-{
-}
-
-DrawingShape::~DrawingShape()
 {
 }
 

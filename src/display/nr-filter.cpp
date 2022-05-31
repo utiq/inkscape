@@ -142,10 +142,7 @@ int Filter::render(Inkscape::DrawingItem const *item, DrawingContext &graphic, D
         }
     }
 
-    FilterSlot slot(bgdc, graphic, units, rc);
-    slot.set_quality(filterquality);
-    slot.set_blurquality(blurquality);
-    slot.set_device_scale(graphic.surface()->device_scale());
+    auto slot = FilterSlot(bgdc, graphic, units, rc, blurquality);
 
     for (auto &i : primitives) {
         i->render_cairo(slot);

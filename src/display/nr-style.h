@@ -34,6 +34,7 @@ class RenderContext;
 struct NRStyle
 {
     NRStyle();
+    explicit NRStyle(SPStyle const *style, SPStyle const *context_style = nullptr) { set(style, context_style); }
 
     enum PaintType
     {

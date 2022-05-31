@@ -167,6 +167,8 @@ public:
     };
 
     SPObject();
+    SPObject(SPObject const &) = delete;
+    SPObject &operator=(SPObject const &) = delete;
     virtual ~SPObject();
 
     unsigned int cloned : 1;
@@ -181,9 +183,6 @@ public:
     SPObject *parent; /* Our parent (only one allowed) */
 
 private:
-    SPObject(const SPObject&);
-    SPObject& operator=(const SPObject&);
-
     char *id; /* Our very own unique id */
     Inkscape::XML::Node *repr; /* Our xml representation */
 

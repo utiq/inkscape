@@ -21,13 +21,11 @@
 #include <2geom/transforms.h>
 #include <sigc++/functors/mem_fun.h>
 
+#include "style.h"
 #include "attributes.h"
 #include "bad-uri-exception.h"
 #include "document.h"
 
-#include "display/cairo-utils.h"
-#include "display/drawing-context.h"
-#include "display/drawing-surface.h"
 #include "display/drawing.h"
 #include "display/drawing-pattern.h"
 
@@ -38,21 +36,12 @@
 #include "svg/svg.h"
 
 SPHatch::SPHatch()
-    : SPPaintServer(),
-      href(),
-      ref(nullptr), // avoiding 'this' in initializer list
+    : ref(nullptr), // avoiding 'this' in initializer list
       _hatchUnits(UNITS_OBJECTBOUNDINGBOX),
       _hatchUnits_set(false),
       _hatchContentUnits(UNITS_USERSPACEONUSE),
       _hatchContentUnits_set(false),
-      _hatchTransform(Geom::identity()),
-      _hatchTransform_set(false),
-      _x(),
-      _y(),
-      _pitch(),
-      _rotate(),
-      _modified_connection(),
-      _display()
+      _hatchTransform_set(false)
 {
     ref = new SPHatchReference(this);
     ref->changedSignal().connect(sigc::mem_fun(*this, &SPHatch::_onRefChanged));
@@ -91,14 +80,14 @@ void SPHatch::release()
         document->removeResource("hatch", this);
     }
 
-    std::vector<SPHatchPath *> children(hatchPaths());
-    for (auto &view_iter : _display) {
+    auto children = hatchPaths();
+    for (auto &v : views) {
         for (auto child : children) {
-            child->hide(view_iter.key);
+            child->hide(v.key);
         }
-        delete view_iter.arenaitem;
-        view_iter.arenaitem = nullptr;
+        v.drawingitem.reset();
     }
+    views.clear();
 
     if (ref) {
         _modified_connection.disconnect();
@@ -117,13 +106,13 @@ void SPHatch::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref)
     SPHatchPath *path_child = dynamic_cast<SPHatchPath *>(document->getObjectByRepr(child));
 
     if (path_child) {
-        for (auto & iter : _display) {
-            Geom::OptInterval extents = _calculateStripExtents(iter.bbox);
-            Inkscape::DrawingItem *ac = path_child->show(iter.arenaitem->drawing(), iter.key, extents);
+        for (auto &v : views) {
+            Geom::OptInterval extents = _calculateStripExtents(v.bbox);
+            auto ac = path_child->show(v.drawingitem->drawing(), v.key, extents);
 
             path_child->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             if (ac) {
-                iter.arenaitem->prependChild(ac);
+                v.drawingitem->prependChild(ac);
             }
         }
     }
@@ -294,9 +283,9 @@ void SPHatch::update(SPCtx* ctx, unsigned int flags)
     for (auto child : children) {
         sp_object_ref(child, nullptr);
 
-        for (auto &view_iter : _display) {
-            Geom::OptInterval strip_extents = _calculateStripExtents(view_iter.bbox);
-            child->setStripExtents(view_iter.key, strip_extents);
+        for (auto &v : views) {
+            Geom::OptInterval strip_extents = _calculateStripExtents(v.bbox);
+            child->setStripExtents(v.key, strip_extents);
         }
 
         if (flags || (child->mflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
@@ -306,8 +295,8 @@ void SPHatch::update(SPCtx* ctx, unsigned int flags)
         sp_object_unref(child, nullptr);
     }
 
-    for (auto &iter : _display) {
-        _updateView(iter);
+    for (auto &v : views) {
+        _updateView(v);
     }
 }
 
@@ -360,17 +349,17 @@ void SPHatch::_onRefChanged(SPObject *old_ref, SPObject *ref)
         }
         if (old_shown != new_shown) {
 
-            for (auto & iter : _display) {
-                Geom::OptInterval extents = _calculateStripExtents(iter.bbox);
+            for (auto &v : views) {
+                Geom::OptInterval extents = _calculateStripExtents(v.bbox);
 
                 for (auto child : oldhatchPaths) {
-                    child->hide(iter.key);
+                    child->hide(v.key);
                 }
                 for (auto child : newhatchPaths) {
-                    Inkscape::DrawingItem *cai = child->show(iter.arenaitem->drawing(), iter.key, extents);
+                    auto cai = child->show(v.drawingitem->drawing(), v.key, extents);
                     child->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
                     if (cai) {
-                        iter.arenaitem->appendChild(cai);
+                        v.drawingitem->appendChild(cai);
                     }
 
                 }
@@ -549,12 +538,14 @@ bool SPHatch::isValid() const
     bool valid = false;
 
     if (pitch() > 0) {
-        std::vector<SPHatchPath const *> children(hatchPaths());
+        auto children = hatchPaths();
         if (!children.empty()) {
             valid = true;
-            for (ConstChildIterator iter = children.begin(); (iter != children.end()) && valid; ++iter) {
-                SPHatchPath const *child = *iter;
-                valid = child->isValid();
+            for (auto c : children) {
+                valid = c->isValid();
+                if (!valid) {
+                    break;
+                }
             }
         }
     }
@@ -564,10 +555,11 @@ bool SPHatch::isValid() const
 
 Inkscape::DrawingPattern *SPHatch::show(Inkscape::Drawing &drawing, unsigned key, Geom::OptRect const &bbox)
 {
-    Inkscape::DrawingPattern *ai = new Inkscape::DrawingPattern(drawing);
-    _display.push_front({ai, bbox, key});
+    views.emplace_back(std::make_unique<Inkscape::DrawingPattern>(drawing), bbox, key);
+    auto &v = views.back();
+    auto ai = v.drawingitem.get();
 
-    std::vector<SPHatchPath *> children(hatchPaths());
+    auto children = hatchPaths();
 
     Geom::OptInterval extents = _calculateStripExtents(bbox);
     for (auto child : children) {
@@ -577,8 +569,7 @@ Inkscape::DrawingPattern *SPHatch::show(Inkscape::Drawing &drawing, unsigned key
         }
     }
 
-    View &view = _display.front();
-    _updateView(view);
+    _updateView(v);
 
     return ai;
 }
@@ -591,12 +582,13 @@ void SPHatch::hide(unsigned int key)
         child->hide(key);
     }
 
-    for (ViewIterator iter = _display.begin(); iter != _display.end(); ++iter) {
-        if (iter->key == key) {
-            delete iter->arenaitem;
-            _display.erase(iter);
-            return;
-        }
+    auto it = std::find_if(views.begin(), views.end(), [=] (auto &v) {
+        return v.key == key;
+    });
+
+    if (it != views.end()) {
+        views.erase(it);
+        return;
     }
 
     g_assert_not_reached();
@@ -605,7 +597,7 @@ void SPHatch::hide(unsigned int key)
 Geom::Interval SPHatch::bounds() const
 {
     Geom::Interval result;
-    std::vector<SPHatchPath const *> children(hatchPaths());
+    auto children = hatchPaths();
 
     for (auto child : children) {
         if (result.extent() == 0) {
@@ -620,9 +612,9 @@ Geom::Interval SPHatch::bounds() const
 SPHatch::RenderInfo SPHatch::calculateRenderInfo(unsigned key) const
 {
     RenderInfo info;
-    for (auto const &iter : _display) {
-        if (iter.key == key) {
-            return _calculateRenderInfo(iter);
+    for (auto const &v : views) {
+        if (v.key == key) {
+            return _calculateRenderInfo(v);
         }
     }
     g_assert_not_reached();
@@ -638,11 +630,11 @@ void SPHatch::_updateView(View &view)
     //as drawing whole strips in left-to-right order.
 
 
-    view.arenaitem->setChildTransform(info.child_transform);
-    view.arenaitem->setPatternToUserTransform(info.pattern_to_user_transform);
-    view.arenaitem->setTileRect(info.tile_rect);
-    view.arenaitem->setStyle(style);
-    view.arenaitem->setOverflow(info.overflow_initial_transform, info.overflow_steps, info.overflow_step_transform);
+    view.drawingitem->setChildTransform(info.child_transform);
+    view.drawingitem->setPatternToUserTransform(info.pattern_to_user_transform);
+    view.drawingitem->setTileRect(info.tile_rect);
+    view.drawingitem->setStyle(style);
+    view.drawingitem->setOverflow(info.overflow_initial_transform, info.overflow_steps, info.overflow_step_transform);
 }
 
 SPHatch::RenderInfo SPHatch::_calculateRenderInfo(View const &view) const
@@ -744,13 +736,18 @@ Geom::OptInterval SPHatch::_calculateStripExtents(Geom::OptRect const &bbox) con
 
 void SPHatch::setBBox(unsigned int key, Geom::OptRect const &bbox)
 {
-    for (auto & iter : _display) {
-        if (iter.key == key) {
-            iter.bbox = bbox;
+    for (auto &v : views) {
+        if (v.key == key) {
+            v.bbox = bbox;
             break;
         }
     }
 }
+
+SPHatch::View::View(std::unique_ptr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key)
+    : drawingitem(std::move(drawingitem))
+    , bbox(bbox)
+    , key(key) {}
 
 /*
  Local Variables:

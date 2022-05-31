@@ -14,11 +14,11 @@
 
 #include "style.h"
 
-#include "display/cairo-utils.h"
-#include "display/drawing-context.h"
-#include "display/drawing-surface.h"
-#include "display/drawing-text.h"
-#include "display/drawing.h"
+#include "cairo-utils.h"
+#include "drawing-context.h"
+#include "drawing-surface.h"
+#include "drawing-text.h"
+#include "drawing.h"
 
 #include "helper/geom.h"
 
@@ -29,12 +29,7 @@ namespace Inkscape {
 
 DrawingGlyphs::DrawingGlyphs(Drawing &drawing)
     : DrawingItem(drawing)
-    , _font(nullptr)
     , _glyph(0)
-{
-}
-
-DrawingGlyphs::~DrawingGlyphs()
 {
 }
 
@@ -60,7 +55,7 @@ void DrawingGlyphs::setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom
     _markForUpdate(STATE_ALL, false);
 }
 
-void DrawingGlyphs::setStyle(SPStyle const */*style*/, SPStyle const */*context_style*/)
+void DrawingGlyphs::setStyle(SPStyle const *, SPStyle const *)
 {
     std::cerr << "DrawingGlyphs: Use parent style" << std::endl;
 }
@@ -216,21 +211,12 @@ DrawingText::DrawingText(Drawing &drawing)
 {
 }
 
-DrawingText::~DrawingText() = default;
-
-void DrawingText::clear()
-{
-    _markForRendering();
-    _children.clear_and_dispose(DeleteDisposer());
-}
-
 bool DrawingText::addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans, float width, float ascent, float descent, float phase_length)
 {
-/* original, did not save a glyph for white space characters, causes problems for text-decoration
-    if (!font || !font->PathVector(glyph)) {
+    // original, did not save a glyph for white space characters, causes problems for text-decoration
+    /*if (!font || !font->PathVector(glyph)) {
         return false;
-    }
-*/
+    }*/
     if (!font) return false;
 
     _markForRendering();

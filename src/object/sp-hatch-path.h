@@ -16,7 +16,7 @@
 #ifndef SEEN_SP_HATCH_PATH_H
 #define SEEN_SP_HATCH_PATH_H
 
-#include <list>
+#include <vector>
 #include <cstddef>
 #include <optional>
 #include <glibmm/ustring.h>
@@ -63,14 +63,12 @@ protected:
 private:
     struct View
     {
-        Inkscape::DrawingShape *arenaitem;
+        std::unique_ptr<Inkscape::DrawingShape> drawingitem;
         Geom::OptInterval extents;
         unsigned key;
+        View(std::unique_ptr<Inkscape::DrawingShape> drawingitem, Geom::OptInterval const &extents, unsigned key);
     };
-
-    using ViewIterator = std::list<SPHatchPath::View>::iterator;
-    using ConstViewIterator = std::list<SPHatchPath::View>::const_iterator;
-    std::list<View> _display;
+    std::vector<View> views;
 
     gdouble _repeatLength() const;
     void _updateView(View &view);
@@ -79,7 +77,7 @@ private:
     void _readHatchPathVector(char const *str, Geom::PathVector &pathv, bool &continous_join);
 
     std::optional<SPCurve> _curve;
-    bool _continuous;
+    bool _continuous = false;
 };
 
 #endif // SEEN_SP_HATCH_PATH_H

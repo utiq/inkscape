@@ -2655,7 +2655,7 @@ void InkscapePreferences::initPageBehavior()
 void InkscapePreferences::initPageRendering()
 {
     /* threaded blur */ //related comments/widgets/functions should be renamed and option should be moved elsewhere when inkscape is fully multi-threaded
-    _filter_multi_threaded.init("/options/threading/numthreads", 1.0, 8.0, 1.0, 2.0, 4.0, true, false);
+    _filter_multi_threaded.init("/options/threading/numthreads", 1.0, 32.0, 1.0, 2.0, 4.0, true, false);
     _page_rendering.add_line( false, _("Number of _Threads:"), _filter_multi_threaded, "", _("Configure number of processors/threads to use when rendering filters"), false, reset_icon());
 
     // rendering cache

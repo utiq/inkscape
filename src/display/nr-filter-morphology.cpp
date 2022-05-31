@@ -67,10 +67,7 @@ void morphologicalFilter1D(cairo_surface_t * const input, cairo_surface_t * cons
 
     #if HAVE_OPENMP
     int limit = w * h;
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    int numOfThreads = prefs->getIntLimited("/options/threading/numthreads", omp_get_num_procs(), 1, 256);
-    (void) numOfThreads; // suppress unused variable warning
-    #pragma omp parallel for if(limit > OPENMP_THRESHOLD) num_threads(numOfThreads)
+    #pragma omp parallel for if(limit > OPENMP_THRESHOLD) num_threads(get_num_filter_threads())
     #endif // HAVE_OPENMP
     for (int i = 0; i < h; ++i) {
         // TODO: Store position and value in one 32 bit integer? 24 bits should be enough for a position, it would be quite strange to have an image with a width/height of more than 16 million(!).

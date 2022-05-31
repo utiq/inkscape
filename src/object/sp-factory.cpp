@@ -94,164 +94,14 @@
 #include "filters/tile.h"
 #include "filters/turbulence.h"
 
-#include <functional>
 #include <unordered_map>
 
 namespace {
 
 class Factory
 {
-    std::unordered_map<std::string, std::function<SPObject*()>> map;
-
 public:
-    Factory()
-    {
-        // primary
-        map.emplace("inkscape:box3d", [] { return new SPBox3D; });
-        map.emplace("inkscape:box3dside", [] { return new Box3DSide; });
-        map.emplace("svg:color-profile", [] { return new Inkscape::ColorProfile; });
-        map.emplace("inkscape:persp3d", [] { return new Persp3D; });
-        map.emplace("svg:a", [] { return new SPAnchor; });
-        map.emplace("svg:clipPath", [] { return new SPClipPath; });
-        map.emplace("svg:defs", [] { return new SPDefs; });
-        map.emplace("svg:desc", [] { return new SPDesc; });
-        map.emplace("svg:ellipse", [] {
-            auto e = new SPGenericEllipse;
-            e->type = SP_GENERIC_ELLIPSE_ELLIPSE;
-            return e;
-        });
-        map.emplace("svg:circle", [] {
-            auto c = new SPGenericEllipse;
-            c->type = SP_GENERIC_ELLIPSE_CIRCLE;
-            return c;
-        });
-        map.emplace("arc", [] {
-            auto a = new SPGenericEllipse;
-            a->type = SP_GENERIC_ELLIPSE_ARC;
-            return a;
-        });
-        map.emplace("svg:filter", [] { return new SPFilter; });
-        map.emplace("svg:flowDiv", [] { return new SPFlowdiv; });
-        map.emplace("svg:flowSpan", [] { return new SPFlowtspan; });
-        map.emplace("svg:flowPara", [] { return new SPFlowpara; });
-        map.emplace("svg:flowLine", [] { return new SPFlowline; });
-        map.emplace("svg:flowRegionBreak", [] { return new SPFlowregionbreak; });
-        map.emplace("svg:flowRegion", [] { return new SPFlowregion; });
-        map.emplace("svg:flowRegionExclude", [] { return new SPFlowregionExclude; });
-        map.emplace("svg:flowRoot", [] { return new SPFlowtext; });
-        map.emplace("svg:font", [] { return new SPFont; });
-        map.emplace("svg:font-face", [] { return new SPFontFace; });
-        map.emplace("svg:glyph", [] { return new SPGlyph; });
-        map.emplace("svg:hkern", [] { return new SPHkern; });
-        map.emplace("svg:vkern", [] { return new SPVkern; });
-        map.emplace("sodipodi:guide", [] { return new SPGuide; });
-        map.emplace("inkscape:page", [] { return new SPPage; });
-        map.emplace("svg:hatch", [] { return new SPHatch; });
-        map.emplace("svg:hatchpath", [] { return new SPHatchPath; });
-        map.emplace("svg:hatchPath", [] {
-            std::cerr << "Warning: <hatchPath> has been renamed <hatchpath>" << std::endl;
-            return new SPHatchPath;
-        });
-        map.emplace("svg:image", [] { return new SPImage; });
-        map.emplace("svg:g", [] { return new SPGroup; });
-        map.emplace("svg:line", [] { return new SPLine; });
-        map.emplace("svg:linearGradient", [] { return new SPLinearGradient; });
-        map.emplace("svg:marker", [] { return new SPMarker; });
-        map.emplace("svg:mask", [] { return new SPMask; });
-        map.emplace("svg:mesh", [] { // SVG 2 old
-             std::cerr << "Warning: <mesh> has been renamed <meshgradient>." << std::endl;
-             std::cerr << "Warning: <mesh> has been repurposed as a shape that tightly wraps a <meshgradient>." << std::endl;
-             return new SPMeshGradient;
-        });
-        map.emplace("svg:meshGradient", [] { // SVG 2 old
-             std::cerr << "Warning: <meshGradient> has been renamed <meshgradient>" << std::endl;
-             return new SPMeshGradient;
-        });
-        map.emplace("svg:meshgradient", [] { // SVG 2
-             return new SPMeshGradient;
-        });
-        map.emplace("svg:meshPatch", [] {
-             std::cerr << "Warning: <meshPatch> and <meshRow> have been renamed <meshpatch> and <meshrow>" << std::endl;
-             return new SPMeshpatch;
-        });
-        map.emplace("svg:meshpatch", [] { return new SPMeshpatch; });
-        map.emplace("svg:meshRow", [] { return new SPMeshrow; });
-        map.emplace("svg:meshrow", [] { return new SPMeshrow; });
-        map.emplace("svg:metadata", [] { return new SPMetadata; });
-        map.emplace("svg:missing-glyph", [] { return new SPMissingGlyph; });
-        map.emplace("sodipodi:namedview", [] { return new SPNamedView; });
-        map.emplace("inkscape:offset", [] { return new SPOffset; });
-        map.emplace("svg:path", [] { return new SPPath; });
-        map.emplace("svg:pattern", [] { return new SPPattern; });
-        map.emplace("svg:polygon", [] { return new SPPolygon; });
-        map.emplace("svg:polyline", [] { return new SPPolyLine; });
-        map.emplace("svg:radialGradient", [] { return new SPRadialGradient; });
-        map.emplace("svg:rect", [] { return new SPRect; });
-        map.emplace("rect", [] { return new SPRect; } ); // LPE rect;
-        map.emplace("svg:svg", [] { return new SPRoot; });
-        map.emplace("svg:script", [] { return new SPScript; });
-        map.emplace("svg:solidColor", [] {
-            std::cerr << "Warning: <solidColor> has been renamed <solidcolor>" << std::endl;
-            return new SPSolidColor;
-        });
-        map.emplace("svg:solidColor", [] {
-            std::cerr << "Warning: <solidColor> has been renamed <solidcolor>" << std::endl;
-            return new SPSolidColor;
-        });
-        map.emplace("svg:solidcolor", [] { return new SPSolidColor; });
-        map.emplace("spiral", [] { return new SPSpiral; });
-        map.emplace("star", [] { return new SPStar; });
-        map.emplace("svg:stop", [] { return new SPStop; });
-        map.emplace("string", [] { return new SPString; });
-        map.emplace("svg:style", [] { return new SPStyleElem; });
-        map.emplace("svg:switch", [] { return new SPSwitch; });
-        map.emplace("svg:symbol", [] { return new SPSymbol; });
-        map.emplace("inkscape:tag", [] { return new SPTag; });
-        map.emplace("inkscape:tagref", [] { return new SPTagUse; });
-        map.emplace("svg:text", [] { return new SPText; });
-        map.emplace("svg:title", [] { return new SPTitle; });
-        map.emplace("svg:tref", [] { return new SPTRef; });
-        map.emplace("svg:tspan", [] { return new SPTSpan; });
-        map.emplace("svg:textPath", [] { return new SPTextPath; });
-        map.emplace("svg:use", [] { return new SPUse; });
-        map.emplace("inkscape:path-effect", [] { return new LivePathEffectObject; });
-
-        // filters
-        map.emplace("svg:feBlend", [] { return new SPFeBlend; });
-        map.emplace("svg:feColorMatrix", [] { return new SPFeColorMatrix; });
-        map.emplace("svg:feComponentTransfer", [] { return new SPFeComponentTransfer; });
-        map.emplace("svg:feFuncR", [] { return new SPFeFuncNode(SPFeFuncNode::R); });
-        map.emplace("svg:feFuncG", [] { return new SPFeFuncNode(SPFeFuncNode::G); });
-        map.emplace("svg:feFuncB", [] { return new SPFeFuncNode(SPFeFuncNode::B); });
-        map.emplace("svg:feFuncA", [] { return new SPFeFuncNode(SPFeFuncNode::A); });
-        map.emplace("svg:feComposite", [] { return new SPFeComposite; });
-        map.emplace("svg:feConvolveMatrix", [] { return new SPFeConvolveMatrix; });
-        map.emplace("svg:feDiffuseLighting", [] { return new SPFeDiffuseLighting; });
-        map.emplace("svg:feDisplacementMap", [] { return new SPFeDisplacementMap; });
-        map.emplace("svg:feDistantLight", [] { return new SPFeDistantLight; });
-        map.emplace("svg:feFlood", [] { return new SPFeFlood; });
-        map.emplace("svg:feGaussianBlur", [] { return new SPGaussianBlur; });
-        map.emplace("svg:feImage", [] { return new SPFeImage; });
-        map.emplace("svg:feMerge", [] { return new SPFeMerge; });
-        map.emplace("svg:feMergeNode", [] { return new SPFeMergeNode; });
-        map.emplace("svg:feMorphology", [] { return new SPFeMorphology; });
-        map.emplace("svg:feOffset", [] { return new SPFeOffset; });
-        map.emplace("svg:fePointLight", [] { return new SPFePointLight; });
-        map.emplace("svg:feSpecularLighting", [] { return new SPFeSpecularLighting; });
-        map.emplace("svg:feSpotLight", [] { return new SPFeSpotLight; });
-        map.emplace("svg:feTile", [] { return new SPFeTile; });
-        map.emplace("svg:feTurbulence", [] { return new SPFeTurbulence; });
-        map.emplace("inkscape:grid", [] { return new SPObject; }); // TODO wtf
-
-        // ignore
-        map.emplace("rdf:RDF", [] { return nullptr; } ); // no SP node yet
-        map.emplace("inkscape:clipboard", [] { return nullptr; } ); // SP node not necessary
-        map.emplace("inkscape:templateinfo", [] { return nullptr; } ); // metadata for templates
-        map.emplace("inkscape:_templateinfo", [] { return nullptr; } ); // metadata for templates
-        map.emplace("", [] { return nullptr; } ); // comments
-    }
-
-    SPObject *create(std::string const &id)
+    SPObject *create(std::string const &id) const
     {
         auto it = map.find(id);
 
@@ -262,36 +112,183 @@ public:
 
         return it->second();
     }
+
+private:
+    using Func = SPObject*(*)();
+
+    template <typename T>
+    static Func constexpr make = [] () -> SPObject* { return new T; };
+    static Func constexpr null = [] () -> SPObject* { return nullptr; };
+
+    std::unordered_map<std::string, Func> const map =
+    {
+        // primary
+        { "inkscape:box3d", make<SPBox3D> },
+        { "inkscape:box3dside", make<Box3DSide> },
+        { "svg:color-profile", make<Inkscape::ColorProfile> },
+        { "inkscape:persp3d", make<Persp3D> },
+        { "svg:a", make<SPAnchor> },
+        { "svg:clipPath", make<SPClipPath> },
+        { "svg:defs", make<SPDefs> },
+        { "svg:desc", make<SPDesc> },
+        { "svg:ellipse", [] () -> SPObject* {
+            auto e = new SPGenericEllipse;
+            e->type = SP_GENERIC_ELLIPSE_ELLIPSE;
+            return e;
+        }},
+        { "svg:circle", [] () -> SPObject* {
+            auto c = new SPGenericEllipse;
+            c->type = SP_GENERIC_ELLIPSE_CIRCLE;
+            return c;
+        }},
+        { "arc", [] () -> SPObject* {
+            auto a = new SPGenericEllipse;
+            a->type = SP_GENERIC_ELLIPSE_ARC;
+            return a;
+        }},
+        { "svg:filter", make<SPFilter> },
+        { "svg:flowDiv", make<SPFlowdiv> },
+        { "svg:flowSpan", make<SPFlowtspan> },
+        { "svg:flowPara", make<SPFlowpara> },
+        { "svg:flowLine", make<SPFlowline> },
+        { "svg:flowRegionBreak", make<SPFlowregionbreak> },
+        { "svg:flowRegion", make<SPFlowregion> },
+        { "svg:flowRegionExclude", make<SPFlowregionExclude> },
+        { "svg:flowRoot", make<SPFlowtext> },
+        { "svg:font", make<SPFont> },
+        { "svg:font-face", make<SPFontFace> },
+        { "svg:glyph", make<SPGlyph> },
+        { "svg:hkern", make<SPHkern> },
+        { "svg:vkern", make<SPVkern> },
+        { "sodipodi:guide", make<SPGuide> },
+        { "inkscape:page", make<SPPage> },
+        { "svg:hatch", make<SPHatch> },
+        { "svg:hatchpath", make<SPHatchPath> },
+        { "svg:hatchPath", [] () -> SPObject* {
+            std::cerr << "Warning: <hatchPath> has been renamed <hatchpath>" << std::endl;
+            return new SPHatchPath;
+        }},
+        { "svg:image", make<SPImage> },
+        { "svg:g", make<SPGroup> },
+        { "svg:line", make<SPLine> },
+        { "svg:linearGradient", make<SPLinearGradient> },
+        { "svg:marker", make<SPMarker> },
+        { "svg:mask", make<SPMask> },
+        { "svg:mesh", [] () -> SPObject* { // SVG 2 old
+             std::cerr << "Warning: <mesh> has been renamed <meshgradient>." << std::endl;
+             std::cerr << "Warning: <mesh> has been repurposed as a shape that tightly wraps a <meshgradient>." << std::endl;
+             return new SPMeshGradient;
+        }},
+        { "svg:meshGradient", [] () -> SPObject* { // SVG 2 old
+             std::cerr << "Warning: <meshGradient> has been renamed <meshgradient>" << std::endl;
+             return new SPMeshGradient;
+        }},
+        { "svg:meshgradient", [] () -> SPObject* { // SVG 2
+             return new SPMeshGradient;
+        }},
+        { "svg:meshPatch", [] () -> SPObject* {
+             std::cerr << "Warning: <meshPatch> and <meshRow> have been renamed <meshpatch> and <meshrow>" << std::endl;
+             return new SPMeshpatch;
+        }},
+        { "svg:meshpatch", make<SPMeshpatch> },
+        { "svg:meshRow", make<SPMeshrow> },
+        { "svg:meshrow", make<SPMeshrow> },
+        { "svg:metadata", make<SPMetadata> },
+        { "svg:missing-glyph", make<SPMissingGlyph> },
+        { "sodipodi:namedview", make<SPNamedView> },
+        { "inkscape:offset", make<SPOffset> },
+        { "svg:path", make<SPPath> },
+        { "svg:pattern", make<SPPattern> },
+        { "svg:polygon", make<SPPolygon> },
+        { "svg:polyline", make<SPPolyLine> },
+        { "svg:radialGradient", make<SPRadialGradient> },
+        { "svg:rect", make<SPRect> },
+        { "rect", make<SPRect> }, // LPE rect;
+        { "svg:svg", make<SPRoot> },
+        { "svg:script", make<SPScript> },
+        { "svg:solidColor", [] () -> SPObject* {
+            std::cerr << "Warning: <solidColor> has been renamed <solidcolor>" << std::endl;
+            return new SPSolidColor;
+        }},
+        { "svg:solidColor", [] () -> SPObject* {
+            std::cerr << "Warning: <solidColor> has been renamed <solidcolor>" << std::endl;
+            return new SPSolidColor;
+        }},
+        { "svg:solidcolor", make<SPSolidColor> },
+        { "spiral", make<SPSpiral> },
+        { "star", make<SPStar> },
+        { "svg:stop", make<SPStop> },
+        { "string", make<SPString> },
+        { "svg:style", make<SPStyleElem> },
+        { "svg:switch", make<SPSwitch> },
+        { "svg:symbol", make<SPSymbol> },
+        { "inkscape:tag", make<SPTag> },
+        { "inkscape:tagref", make<SPTagUse> },
+        { "svg:text", make<SPText> },
+        { "svg:title", make<SPTitle> },
+        { "svg:tref", make<SPTRef> },
+        { "svg:tspan", make<SPTSpan> },
+        { "svg:textPath", make<SPTextPath> },
+        { "svg:use", make<SPUse> },
+        { "inkscape:path-effect", make<LivePathEffectObject> },
+
+        // filters
+        { "svg:feBlend", make<SPFeBlend> },
+        { "svg:feColorMatrix", make<SPFeColorMatrix> },
+        { "svg:feComponentTransfer", make<SPFeComponentTransfer> },
+        { "svg:feFuncR", [] () -> SPObject* { return new SPFeFuncNode(SPFeFuncNode::R); }},
+        { "svg:feFuncG", [] () -> SPObject* { return new SPFeFuncNode(SPFeFuncNode::G); }},
+        { "svg:feFuncB", [] () -> SPObject* { return new SPFeFuncNode(SPFeFuncNode::B); }},
+        { "svg:feFuncA", [] () -> SPObject* { return new SPFeFuncNode(SPFeFuncNode::A); }},
+        { "svg:feComposite", make<SPFeComposite> },
+        { "svg:feConvolveMatrix", make<SPFeConvolveMatrix> },
+        { "svg:feDiffuseLighting", make<SPFeDiffuseLighting> },
+        { "svg:feDisplacementMap", make<SPFeDisplacementMap> },
+        { "svg:feDistantLight", make<SPFeDistantLight> },
+        { "svg:feFlood", make<SPFeFlood> },
+        { "svg:feGaussianBlur", make<SPGaussianBlur> },
+        { "svg:feImage", make<SPFeImage> },
+        { "svg:feMerge", make<SPFeMerge> },
+        { "svg:feMergeNode", make<SPFeMergeNode> },
+        { "svg:feMorphology", make<SPFeMorphology> },
+        { "svg:feOffset", make<SPFeOffset> },
+        { "svg:fePointLight", make<SPFePointLight> },
+        { "svg:feSpecularLighting", make<SPFeSpecularLighting> },
+        { "svg:feSpotLight", make<SPFeSpotLight> },
+        { "svg:feTile", make<SPFeTile> },
+        { "svg:feTurbulence", make<SPFeTurbulence> },
+        { "inkscape:grid", make<SPObject> }, // TODO wtf
+
+        // ignore
+        { "rdf:RDF", null }, // no SP node yet
+        { "inkscape:clipboard", null }, // SP node not necessary
+        { "inkscape:templateinfo", null }, // metadata for templates
+        { "inkscape:_templateinfo", null }, // metadata for templates
+        { "", null } // comments
+    };
 };
 
 } // namespace
 
 SPObject *SPFactory::createObject(std::string const &id)
 {
-    static Factory factory;
+    static Factory const factory;
     return factory.create(id);
 }
 
 std::string NodeTraits::get_type_string(Inkscape::XML::Node const &node)
 {
-    std::string name;
-
     switch (node.type()) {
-    case Inkscape::XML::NodeType::TEXT_NODE:
-        name = "string";
-        break;
-
-    case Inkscape::XML::NodeType::ELEMENT_NODE: {
-        auto sptype = node.attribute("sodipodi:type");
-        name = sptype ? sptype : node.name();
-        break;
+        case Inkscape::XML::NodeType::TEXT_NODE:
+            return "string";
+        case Inkscape::XML::NodeType::ELEMENT_NODE:
+            if (auto sptype = node.attribute("sodipodi:type")) {
+                return sptype;
+            }
+            return node.name();
+        default:
+            return "";
     }
-    default:
-        name = "";
-        break;
-    }
-
-    return name;
 }
 
 /*

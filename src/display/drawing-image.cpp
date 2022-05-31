@@ -12,11 +12,10 @@
 
 #include <2geom/bezier-curve.h>
 
-#include "display/drawing.h"
-#include "display/drawing-context.h"
-#include "display/drawing-image.h"
-
-#include "display/cairo-utils.h"
+#include "drawing.h"
+#include "drawing-context.h"
+#include "drawing-image.h"
+#include "cairo-utils.h"
 #include "cairo-templates.h"
 
 namespace Inkscape {
@@ -24,17 +23,12 @@ namespace Inkscape {
 DrawingImage::DrawingImage(Drawing &drawing)
     : DrawingItem(drawing)
     , style_image_rendering(SP_CSS_IMAGE_RENDERING_AUTO)
-    , _pixbuf(nullptr)
 {
 }
 
-DrawingImage::~DrawingImage()
+void DrawingImage::setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pixbuf)
 {
-}
-
-void DrawingImage::setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pb)
-{
-    _pixbuf = std::move(pb);
+    _pixbuf = std::move(pixbuf);
     _markForUpdate(STATE_ALL, false);
 }
 
@@ -44,9 +38,9 @@ void DrawingImage::setScale(double sx, double sy)
     _markForUpdate(STATE_ALL, false);
 }
 
-void DrawingImage::setOrigin(Geom::Point const &o)
+void DrawingImage::setOrigin(Geom::Point const &origin)
 {
-    _origin = o;
+    _origin = origin;
     _markForUpdate(STATE_ALL, false);
 }
 

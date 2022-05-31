@@ -16,7 +16,7 @@
 #ifndef SEEN_SP_HATCH_H
 #define SEEN_SP_HATCH_H
 
-#include <list>
+#include <vector>
 #include <cstddef>
 #include <glibmm/ustring.h>
 #include <sigc++/connection.h>
@@ -33,9 +33,7 @@ class SPItem;
 namespace Inkscape {
 class Drawing;
 class DrawingPattern;
-namespace XML {
-class Node;
-} // namespace XML
+namespace XML { class Node; }
 } // namespace Inkscape
 
 #define SP_HATCH(obj) (dynamic_cast<SPHatch *>((SPObject *)obj))
@@ -103,15 +101,12 @@ protected:
 private:
     struct View
     {
-        Inkscape::DrawingPattern *arenaitem;
+        std::unique_ptr<Inkscape::DrawingPattern> drawingitem;
         Geom::OptRect bbox;
         unsigned key;
+        View(std::unique_ptr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key);
     };
-
-    using ChildIterator = std::vector<SPHatchPath *>::iterator;
-    using ConstChildIterator = std::vector<SPHatchPath const *>::const_iterator;
-    using ViewIterator = std::list<View>::iterator;
-    using ConstViewIterator = std::list<View>::const_iterator;
+    std::vector<View> views;
 
     static bool _hasHatchPatchChildren(SPHatch const *hatch);
 
@@ -151,8 +146,6 @@ private:
     SVGAngle _rotate;
 
     sigc::connection _modified_connection;
-
-    std::list<View> _display;
 };
 
 class SPHatchReference : public Inkscape::URIReference

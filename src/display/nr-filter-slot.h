@@ -16,8 +16,8 @@
  */
 
 #include <map>
-#include "display/nr-filter-types.h"
-#include "display/nr-filter-units.h"
+#include "nr-filter-types.h"
+#include "nr-filter-units.h"
 
 extern "C" {
 typedef struct _cairo cairo_t;
@@ -31,14 +31,14 @@ class RenderContext;
 
 namespace Filters {
 
-class FilterSlot
+class FilterSlot final
 {
 public:
     /** Creates a new FilterSlot object. */
-    FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &u, RenderContext &rc);
+    FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &units, RenderContext &rc, int blurquality);
 
     /** Destroys the FilterSlot object and all its contents */
-    virtual ~FilterSlot();
+    ~FilterSlot();
 
     /** Returns the pixblock in specified slot.
      * Parameter 'slot' may be either an positive integer or one of
@@ -61,22 +61,13 @@ public:
     Geom::Rect get_primitive_area(int slot) const;
     
     /** Returns the number of slots in use. */
-    int get_slot_count() const;
-
-    /** Sets the filtering quality. Affects used interpolation methods */
-    void set_quality(FilterQuality q);
-
-    /** Sets the gaussian filtering quality. Affects used interpolation methods */
-    void set_blurquality(int q);
+    int get_slot_count() const { return _slots.size(); }
 
     /** Gets the gaussian filtering quality. Affects used interpolation methods */
-    int get_blurquality() const;
-
-    /** Sets the device scale; for high DPI monitors. */
-    void set_device_scale(int s);
+    int get_blurquality() const { return _blurquality; }
 
     /** Gets the device scale; for high DPI monitors. */
-    int get_device_scale() const;
+    int get_device_scale() const { return device_scale; }
 
     FilterUnits const &get_units() const { return _units; }
     Geom::Rect get_slot_area() const;
@@ -99,8 +90,7 @@ private:
     Geom::IntRect _background_area; ///< needed to extract background
     FilterUnits const &_units;
     int _last_out;
-    FilterQuality filterquality;
-    int blurquality;
+    int _blurquality;
     int device_scale;
     RenderContext &rc;
 

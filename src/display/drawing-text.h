@@ -10,8 +10,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_TEXT_H
-#define SEEN_INKSCAPE_DISPLAY_DRAWING_TEXT_H
+#ifndef INKSCAPE_DISPLAY_DRAWING_TEXT_H
+#define INKSCAPE_DISPLAY_DRAWING_TEXT_H
 
 #include <memory>
 #include "display/drawing-group.h"
@@ -29,7 +29,7 @@ class DrawingGlyphs
 {
 public:
     DrawingGlyphs(Drawing &drawing);
-    ~DrawingGlyphs() override;
+    ~DrawingGlyphs() override = default;
 
     void setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom::Affine const &trans);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override; // Not to be used
@@ -59,11 +59,9 @@ class DrawingText
 {
 public:
     DrawingText(Drawing &drawing);
-    ~DrawingText() override;
+    ~DrawingText() override = default;
 
-    void clear();
-    bool addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans,
-        float width, float ascent, float descent, float phase_length);
+    bool addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans, float width, float ascent, float descent, float phase_length);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
     void setChildrenStyle(SPStyle const *context_style) override;
 
@@ -87,9 +85,9 @@ protected:
     friend class DrawingGlyphs;
 };
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
-#endif // !SEEN_INKSCAPE_DISPLAY_DRAWING_ITEM_H
+#endif // INKSCAPE_DISPLAY_DRAWING_TEXT_H
 
 /*
   Local Variables:

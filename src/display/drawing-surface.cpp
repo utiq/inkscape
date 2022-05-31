@@ -15,7 +15,6 @@
 #include "3rdparty/cairo/src/cairo.h"
 #endif
 
-#include "preferences.h"
 #include "display/drawing-surface.h"
 #include "display/drawing-context.h"
 #include "display/cairo-utils.h"
@@ -187,11 +186,6 @@ DrawingSurface::createRawContext()
                                               _pixels[X] * _device_scale,
                                               _pixels[Y] * _device_scale);
         cairo_surface_set_device_scale(_surface, _device_scale, _device_scale);
-#ifdef CAIRO_HAS_DITHER
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        if(prefs->getBool("/options/dithering/value", true))
-            cairo_image_surface_set_dither(_surface, CAIRO_DITHER_BEST);
-#endif
     }
     cairo_t *ct = cairo_create(_surface);
     if (_scale != Geom::Scale::identity()) {

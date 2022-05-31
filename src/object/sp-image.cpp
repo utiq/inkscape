@@ -429,12 +429,11 @@ void SPImage::modified(unsigned int flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            auto img = dynamic_cast<Inkscape::DrawingImage *>(v.drawingitem);
+            auto img = dynamic_cast<Inkscape::DrawingImage*>(v.drawingitem.get());
             img->setStyle(style);
         }
     }
 }
-
 
 Inkscape::XML::Node *SPImage::write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, guint flags ) {
     if ((flags & SP_OBJECT_WRITE_BUILD) && !repr) {
@@ -667,7 +666,7 @@ sp_image_update_arenaitem (SPImage *image, Inkscape::DrawingImage *ai)
 static void sp_image_update_canvas_image(SPImage *image)
 {
     for (auto &v : image->views) {
-        sp_image_update_arenaitem(image, dynamic_cast<Inkscape::DrawingImage*>(v.drawingitem));
+        sp_image_update_arenaitem(image, dynamic_cast<Inkscape::DrawingImage*>(v.drawingitem.get()));
     }
 }
 

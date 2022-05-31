@@ -13,7 +13,9 @@
  */
 
 #include <2geom/transforms.h>
+#include <gdk/gdk.h>
 
+#include "helper/pixbuf-ops.h"
 #include "helper/png-write.h"
 #include "display/cairo-utils.h"
 #include "display/drawing.h"
@@ -23,15 +25,11 @@
 #include "object/sp-defs.h"
 #include "object/sp-use.h"
 #include "util/units.h"
+#include "util/scope_exit.h"
 #include "inkscape.h"
 
-#include "helper/pixbuf-ops.h"
-
-#include <gdk/gdk.h>
-
 /**
-    generates a bitmap from given items
-    the bitmap is stored in RAM and not written to file
+    Generates a bitmap from given items. The bitmap is stored in RAM and not written to file.
     @param document Inkscape document.
     @param area     Export area in document units.
     @param dpi      Resolution.
@@ -44,7 +42,7 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
                                               double dpi,
                                               std::vector<SPItem *> items,
                                               bool opaque,
-                                              unsigned int* checkerboard_color,
+                                              uint32_t const *checkerboard_color,
                                               double device_scale)
 {
     // Geometry
@@ -66,6 +64,7 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
     // Drawing
     Inkscape::Drawing drawing; // New drawing for offscreen rendering.
     drawing.setRoot(document->getRoot()->invoke_show(drawing, dkey, SP_ITEM_SHOW_DISPLAY));
+    auto invoke_hide_guard = scope_exit([&] { document->getRoot()->invoke_hide(dkey); });
     drawing.root()->setTransform(affine);
     drawing.setExact(); // Maximum quality for blurs.
 
@@ -75,7 +74,7 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
         document->getRoot()->invoke_hide_except(dkey, items);
     }
 
-    Geom::IntRect final_area = Geom::IntRect::from_xywh(0, 0, width, height);
+    auto final_area = Geom::IntRect::from_xywh(0, 0, width, height);
     drawing.update(final_area);
 
     if (opaque) {
@@ -89,45 +88,35 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
 
     // Rendering
     cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-    Inkscape::Pixbuf* pixbuf = nullptr;
 
-    if (cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS) {
-        Inkscape::DrawingContext dc(surface, Geom::Point(0,0));
-
-        if (checkerboard_color) {
-            guint rgba = *checkerboard_color;
-            auto pattern = ink_cairo_pattern_create_checkerboard(rgba);
-            dc.save();
-            dc.transform(Geom::Scale(device_scale));
-            dc.setOperator(CAIRO_OPERATOR_SOURCE);
-            dc.setSource(pattern);
-            dc.paint();
-            dc.restore();
-            cairo_pattern_destroy(pattern);
-        }
-
-        // render items
-        drawing.render(dc, final_area, Inkscape::DrawingItem::RENDER_BYPASS_CACHE);
-
-        if (device_scale != 1.0) {
-            cairo_surface_set_device_scale(surface, device_scale, device_scale);
-        }
-
-        pixbuf = new Inkscape::Pixbuf(surface);
-
-    } else {
-
-        long long size =
-            (long long) height *
-            (long long) cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+    if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+        long long size = (long long)height * (long long)cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         g_warning("sp_generate_internal_bitmap: not enough memory to create pixel buffer. Need %lld.", size);
         cairo_surface_destroy(surface);
+        return nullptr;
     }
 
-    // Return to previous state.
-    document->getRoot()->invoke_hide(dkey);
+    Inkscape::DrawingContext dc(surface, Geom::Point(0, 0));
 
-    return pixbuf;
+    if (checkerboard_color) {
+        auto pattern = ink_cairo_pattern_create_checkerboard(*checkerboard_color);
+        dc.save();
+        dc.transform(Geom::Scale(device_scale));
+        dc.setOperator(CAIRO_OPERATOR_SOURCE);
+        dc.setSource(pattern);
+        dc.paint();
+        dc.restore();
+        cairo_pattern_destroy(pattern);
+    }
+
+    // render items
+    drawing.render(dc, final_area, Inkscape::DrawingItem::RENDER_BYPASS_CACHE);
+
+    if (device_scale != 1.0) {
+        cairo_surface_set_device_scale(surface, device_scale, device_scale);
+    }
+
+    return new Inkscape::Pixbuf(surface);
 }
 
 /*

@@ -66,6 +66,11 @@
 
 //#define OBJECT_TRACE
 
+SPItemView::SPItemView(unsigned flags, unsigned key, std::unique_ptr<Inkscape::DrawingItem> drawingitem)
+    : flags(flags)
+    , key(key)
+    , drawingitem(std::move(drawingitem)) {}
+
 SPItem::SPItem()
 {
     sensitive = TRUE;
@@ -171,16 +176,16 @@ void SPItem::setHidden(bool hide) {
     updateRepr();
 }
 
-bool SPItem::isHidden(unsigned display_key) const {
-    if (!isEvaluated())
+bool SPItem::isHidden(unsigned display_key) const
+{
+    if (!isEvaluated()) {
         return true;
+    }
     for (auto &v : views) {
         if (v.key == display_key) {
-            g_assert(v.drawingitem != nullptr);
-            for ( Inkscape::DrawingItem *arenaitem = v.drawingitem ;
-                  arenaitem ; arenaitem = arenaitem->parent() )
-            {
-                if (!arenaitem->visible()) {
+            g_assert(v.drawingitem);
+            for (auto di = v.drawingitem.get(); di; di = di->parent()) {
+                if (!di->visible()) {
                     return true;
                 }
             }
@@ -471,9 +476,9 @@ void SPItem::release()
             stroke_ps->hide(v.drawingitem->key() + ITEM_KEY_STROKE);
         }
         if (filter) {
-            filter->hide(v.drawingitem);
+            filter->hide(v.drawingitem.get());
         }
-        delete v.drawingitem;
+        v.drawingitem.reset();
     }
     views.clear();
 }
@@ -605,7 +610,7 @@ void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip)
     if (clipPath) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto clip_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_CLIP;
+            auto clip_key = SPItem::ensure_key(v.drawingitem.get()) + ITEM_KEY_CLIP;
             auto ai = clipPath->show(v.drawingitem->drawing(), clip_key, bbox);
             v.drawingitem->setClip(ai);
         }
@@ -632,7 +637,7 @@ void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask)
     if (maskItem) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto mask_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_MASK;
+            auto mask_key = SPItem::ensure_key(v.drawingitem.get()) + ITEM_KEY_MASK;
             auto ai = maskItem->show(v.drawingitem->drawing(), mask_key, bbox);
             v.drawingitem->setMask(ai);
         }
@@ -658,7 +663,7 @@ void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps)
     if (new_fill_ps) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto fill_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_FILL;
+            auto fill_key = SPItem::ensure_key(v.drawingitem.get()) + ITEM_KEY_FILL;
             auto pi = new_fill_ps->show(v.drawingitem->drawing(), fill_key, bbox);
             v.drawingitem->setFillPattern(pi);
         }
@@ -678,7 +683,7 @@ void SPItem::stroke_ps_ref_changed(SPObject *old_ps, SPObject *ps)
     if (new_stroke_ps) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto stroke_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_STROKE;
+            auto stroke_key = SPItem::ensure_key(v.drawingitem.get()) + ITEM_KEY_STROKE;
             auto pi = new_stroke_ps->show(v.drawingitem->drawing(), stroke_key, bbox);
             v.drawingitem->setStrokePattern(pi);
         }
@@ -690,14 +695,14 @@ void SPItem::filter_ref_changed(SPObject *old_obj, SPObject *obj)
     auto old_filter = dynamic_cast<SPFilter*>(old_obj);
     if (old_filter) {
         for (auto &v : views) {
-            old_filter->hide(v.drawingitem);
+            old_filter->hide(v.drawingitem.get());
         }
     }
 
     auto new_filter = dynamic_cast<SPFilter*>(obj);
     if (new_filter) {
         for (auto &v : views) {
-            new_filter->show(v.drawingitem);
+            new_filter->show(v.drawingitem.get());
         }
     }
 }
@@ -1209,7 +1214,7 @@ Inkscape::DrawingItem *SPItem::invoke_show(Inkscape::Drawing &drawing, unsigned 
     ai->setBlendMode(style->mix_blend_mode.value);
     ai->setVisible(!isHidden());
     ai->setSensitive(sensitive);
-    views.push_back({flags, key, ai});
+    views.emplace_back(flags, key, std::unique_ptr<Inkscape::DrawingItem>(ai));
 
     if (auto clip = getClipObject()) {
         auto clip_key = SPItem::ensure_key(ai) + ITEM_KEY_CLIP;
@@ -1265,9 +1270,10 @@ void SPItem::invoke_hide(unsigned key)
                 stroke_ps->hide(ai_key + ITEM_KEY_STROKE);
             }
             if (auto filter = style->getFilter()) {
-                filter->hide(v.drawingitem);
+                filter->hide(v.drawingitem.get());
             }
-            delete v.drawingitem;
+
+            v.drawingitem.reset();
 
             *it = std::move(views.back());
             views.pop_back();
@@ -1775,10 +1781,9 @@ Inkscape::DrawingItem *SPItem::get_arenaitem(unsigned key)
 {
     for (auto &v : views) {
         if (v.key == key) {
-            return v.drawingitem;
+            return v.drawingitem.get();
         }
     }
-
     return nullptr;
 }
 

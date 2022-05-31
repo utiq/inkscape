@@ -16,11 +16,9 @@
 #include <string>
 #include <2geom/path.h>
 
+#include "style.h"
 #include "svg/svg.h"
-#include "display/cairo-utils.h"
 #include "display/curve.h"
-#include "display/drawing-context.h"
-#include "display/drawing-surface.h"
 #include "display/drawing.h"
 #include "display/drawing-shape.h"
 #include "helper/geom.h"
@@ -29,13 +27,7 @@
 #include "sp-hatch-path.h"
 #include "svg/css-ostringstream.h"
 
-SPHatchPath::SPHatchPath()
-    : offset()
-    , _display()
-    , _continuous(false)
-{
-    offset.unset();
-}
+SPHatchPath::SPHatchPath() = default;
 
 SPHatchPath::~SPHatchPath() = default;
 
@@ -52,11 +44,7 @@ void SPHatchPath::build(SPDocument *doc, Inkscape::XML::Node *repr)
 
 void SPHatchPath::release()
 {
-    for (auto &iter : _display) {
-        delete iter.arenaitem;
-        iter.arenaitem = nullptr;
-    }
-
+    views.clear();
     SPObject::release();
 }
 
@@ -105,15 +93,15 @@ void SPHatchPath::update(SPCtx *ctx, unsigned int flags)
             double const aw = (ictx) ? 1.0 / ictx->i2vp.descrim() : 1.0;
             style->stroke_width.computed = style->stroke_width.value * aw;
 
-            for (auto &iter : _display) {
-                iter.arenaitem->setStyle(style);
+            for (auto &v : views) {
+                v.drawingitem->setStyle(style);
             }
         }
     }
 
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_PARENT_MODIFIED_FLAG)) {
-        for (auto &iter : _display) {
-            _updateView(iter);
+        for (auto &v : views) {
+            _updateView(v);
         }
     }
 }
@@ -125,22 +113,24 @@ bool SPHatchPath::isValid() const
 
 Inkscape::DrawingItem *SPHatchPath::show(Inkscape::Drawing &drawing, unsigned int key, Geom::OptInterval extents)
 {
-    Inkscape::DrawingShape *s = new Inkscape::DrawingShape(drawing);
-    _display.push_front({s, extents, key});
+    views.emplace_back(std::make_unique<Inkscape::DrawingShape>(drawing), extents, key);
+    auto &v = views.back();
+    auto s = v.drawingitem.get();
 
-    _updateView(_display.front());
+    _updateView(v);
 
     return s;
 }
 
 void SPHatchPath::hide(unsigned int key)
 {
-    for (ViewIterator iter = _display.begin(); iter != _display.end(); ++iter) {
-        if (iter->key == key) {
-            delete iter->arenaitem;
-            _display.erase(iter);
-            return;
-        }
+    auto it = std::find_if(views.begin(), views.end(), [=] (auto &v) {
+        return v.key == key;
+    });
+
+    if (it != views.end()) {
+        views.erase(it);
+        return;
     }
 
     g_assert_not_reached();
@@ -148,9 +138,9 @@ void SPHatchPath::hide(unsigned int key)
 
 void SPHatchPath::setStripExtents(unsigned int key, Geom::OptInterval const &extents)
 {
-    for (auto &iter : _display) {
-        if (iter.key == key) {
-            iter.extents = extents;
+    for (auto &v : views) {
+        if (v.key == key) {
+            v.extents = extents;
             break;
         }
     }
@@ -179,9 +169,9 @@ Geom::Interval SPHatchPath::bounds() const
 
 SPCurve SPHatchPath::calculateRenderCurve(unsigned key) const
 {
-    for (auto const &iter : _display) {
-        if (iter.key == key) {
-            return _calculateRenderCurve(iter);
+    for (auto const &v : views) {
+        if (v.key == key) {
+            return _calculateRenderCurve(v);
         }
     }
     g_assert_not_reached();
@@ -204,10 +194,10 @@ void SPHatchPath::_updateView(View &view)
     auto calculated_curve = _calculateRenderCurve(view);
 
     Geom::Affine offset_transform = Geom::Translate(offset.computed, 0);
-    view.arenaitem->setTransform(offset_transform);
+    view.drawingitem->setTransform(offset_transform);
     style->fill.setNone();
-    view.arenaitem->setStyle(style);
-    view.arenaitem->setPath(std::make_shared<SPCurve>(std::move(calculated_curve)));
+    view.drawingitem->setStyle(style);
+    view.drawingitem->setPath(std::make_shared<SPCurve>(std::move(calculated_curve)));
 }
 
 SPCurve SPHatchPath::_calculateRenderCurve(View const &view) const
@@ -277,6 +267,11 @@ void SPHatchPath::_readHatchPathVector(char const *str, Geom::PathVector &pathv,
         continous_join = true;
     }
 }
+
+SPHatchPath::View::View(std::unique_ptr<Inkscape::DrawingShape> drawingitem, Geom::OptInterval const &extents, unsigned key)
+    : drawingitem(std::move(drawingitem))
+    , extents(extents)
+    , key(key) {}
 
 /*
  Local Variables:

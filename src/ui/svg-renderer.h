@@ -2,6 +2,7 @@
 #ifndef SEEN_SVG_RENDERER_H
 #define SEEN_SVG_RENDERER_H
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <gtkmm.h>
@@ -36,7 +37,7 @@ public:
     Cairo::RefPtr<Cairo::Surface> render_surface(double scale);
 
     // if set, draw checkerboard pattern before image
-    void set_checkerboard_color(unsigned int rgba);
+    void set_checkerboard_color(uint32_t rgba);
 
     double get_width_px() const;
     double get_height_px() const;
@@ -45,7 +46,7 @@ private:
     Pixbuf* do_render(double scale);
     std::shared_ptr<SPDocument> _document;
     SPRoot* _root = nullptr;
-    std::optional<unsigned int> _checkerboard;
+    std::optional<uint32_t> _checkerboard;
 };
 
 }

@@ -70,6 +70,7 @@ void FilterImage::render_cairo(FilterSlot &slot) const
     Geom::Rect sa = slot.get_slot_area();
     cairo_surface_t *out = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, sa.width() * device_scale, sa.height() * device_scale);
     cairo_surface_set_device_scale(out, device_scale, device_scale);
+    ink_cairo_set_dither(out, item->drawing().useDithering());
 
     Inkscape::DrawingContext dc(out, sa.min());
     Geom::Affine user2pb = slot.get_units().get_matrix_user2pb();

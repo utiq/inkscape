@@ -34,7 +34,6 @@
 #include "display/nr-filter-slot.h"
 #include <2geom/affine.h>
 #include "util/fixed_point.h"
-#include "preferences.h"
 
 #ifndef INK_UNUSED
 #define INK_UNUSED(x) ((void)(x))
@@ -598,14 +597,8 @@ void FilterGaussian::render_cairo(FilterSlot &slot) const
             bytes_per_pixel = 4; break;
     }
 
-#if HAVE_OPENMP
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    int threads = prefs->getIntLimited("/options/threading/numthreads", omp_get_num_procs(), 1, 256);
-#else
-    int threads = 1;
-#endif
-
     int quality = slot.get_blurquality();
+    int threads = get_num_filter_threads();
     int x_step = 1 << _effect_subsample_step_log2(deviation_x_orig, quality);
     int y_step = 1 << _effect_subsample_step_log2(deviation_y_orig, quality);
     bool resampling = x_step > 1 || y_step > 1;

@@ -11,27 +11,22 @@
  */
 
 #include <cairomm/region.h>
-#include "preferences.h"
-#include "display/cairo-utils.h"
-#include "display/drawing-context.h"
-#include "display/drawing-pattern.h"
-#include "display/drawing-surface.h"
+#include "cairo-utils.h"
+#include "drawing-context.h"
+#include "drawing-pattern.h"
+#include "drawing-surface.h"
+#include "drawing.h"
 #include "helper/geom.h"
 #include "ui/util.h"
 
 namespace Inkscape {
 
-DrawingPattern::Surface::Surface(Geom::IntRect const &rect, int device_scale)
+DrawingPattern::Surface::Surface(Geom::IntRect const &rect, int device_scale, bool dither)
     : rect(rect)
     , surface(Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, rect.width() * device_scale, rect.height() * device_scale))
 {
     cairo_surface_set_device_scale(surface->cobj(), device_scale, device_scale);
-    #ifdef CAIRO_HAS_DITHER
-        auto prefs = Inkscape::Preferences::get();
-        if (prefs->getBool("/options/dithering/value", true)) {
-            cairo_image_surface_set_dither(surface->cobj(), CAIRO_DITHER_BEST);
-        }
-    #endif
+    ink_cairo_set_dither(surface->cobj(), dither);
 }
 
 DrawingPattern::DrawingPattern(Drawing &drawing)
@@ -40,29 +35,14 @@ DrawingPattern::DrawingPattern(Drawing &drawing)
 {
 }
 
-DrawingPattern::~DrawingPattern()
+void DrawingPattern::setPatternToUserTransform(Geom::Affine const &transform)
 {
-}
-
-void DrawingPattern::setPatternToUserTransform(Geom::Affine const &new_trans)
-{
-    double constexpr EPS = 1e-18;
-
-    Geom::Affine current;
-    if (_pattern_to_user) {
-        current = *_pattern_to_user;
-    }
-
-    if (!Geom::are_near(current, new_trans, EPS)) {
-        // mark the area where the object was for redraw.
-        _markForRendering();
-        if (new_trans.isIdentity(EPS)) {
-            _pattern_to_user.reset();
-        } else {
-            _pattern_to_user = std::make_unique<Geom::Affine>(new_trans);
-        }
-        _markForUpdate(STATE_ALL, true);
-    }
+    auto constexpr EPS = 1e-18;
+    auto current = _pattern_to_user ? *_pattern_to_user : Geom::identity();
+    if (Geom::are_near(transform, current, EPS)) return;
+    _markForRendering();
+    _pattern_to_user = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
+    _markForUpdate(STATE_ALL, true);
 }
 
 void DrawingPattern::setTileRect(Geom::Rect const &tile_rect)
@@ -168,7 +148,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect 
         }
 
         // Create a new surface covering the expanded rectangle.
-        auto surface = Surface(expanded, device_scale);
+        auto surface = Surface(expanded, device_scale, _drawing.useDithering());
         auto cr = Cairo::Context::create(surface.surface);
         cr->translate(-surface.rect.left(), -surface.rect.top());
 

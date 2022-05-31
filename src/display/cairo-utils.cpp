@@ -11,6 +11,7 @@
 
 #include "display/cairo-utils.h"
 
+#include <atomic>
 #include <stdexcept>
 
 #include <glib/gstdio.h>
@@ -45,7 +46,7 @@
  * Only the address of the structure is used, it is never initialized. See:
  * http://www.cairographics.org/manual/cairo-Types.html#cairo-user-data-key-t
  */
-cairo_user_data_key_t ink_color_interpolation_key;
+static cairo_user_data_key_t ink_color_interpolation_key;
 
 namespace Inkscape {
 
@@ -866,6 +867,18 @@ feed_pathvector_to_cairo (cairo_t *ct, Geom::PathVector const &pathv)
     }
 }
 
+static std::atomic<int> num_filter_threads = 4;
+
+int get_num_filter_threads()
+{
+    return num_filter_threads.load(std::memory_order_relaxed);
+}
+
+void set_num_filter_threads(int n)
+{
+    num_filter_threads.store(n, std::memory_order_relaxed);
+}
+
 SPColorInterpolation
 get_cairo_surface_ci(cairo_surface_t *surface) {
     void* data = cairo_surface_get_user_data( surface, &ink_color_interpolation_key );
@@ -961,6 +974,13 @@ ink_cairo_set_hairline(cairo_t *ct)
     double x = 1.0, y = 0.0;
     cairo_device_to_user_distance(ct, &x, &y);
     cairo_set_line_width(ct, std::hypot(x, y));
+#endif
+}
+
+void ink_cairo_set_dither(cairo_surface_t *surface, bool enabled)
+{
+#ifdef CAIRO_HAS_DITHER
+    cairo_image_surface_set_dither(surface, enabled ? CAIRO_DITHER_BEST : CAIRO_DITHER_NONE);
 #endif
 }
 

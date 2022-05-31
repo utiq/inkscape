@@ -26,10 +26,7 @@
 
 #include "style-enums.h"
 
-namespace Glib {
-class ustring;
-} // namespace Glib
-
+namespace Glib { class ustring; }
 class SPStyle;
 class SPItem;
 
@@ -40,11 +37,7 @@ class DrawingCache;
 class DrawingItem;
 class DrawingPattern;
 class DrawingContext;
-class RenderContext;
-
-namespace Filters {
-class Filter;
-} // namespace Filters
+namespace Filters { class Filter; }
 
 struct RenderContext
 {
@@ -72,7 +65,7 @@ struct InvalidItemException : std::exception
     char const *what() const noexcept override { return "Invalid item in drawing"; }
 };
 
-class DrawingItem : boost::noncopyable
+class DrawingItem
 {
 public:
     enum RenderFlags
@@ -104,6 +97,8 @@ public:
     };
 
     DrawingItem(Drawing &drawing);
+    DrawingItem(DrawingItem const &) = delete;
+    DrawingItem &operator=(DrawingItem const &) = delete;
     virtual ~DrawingItem();
 
     Geom::OptIntRect const &bbox() const { return _bbox; }
@@ -120,16 +115,14 @@ public:
     void clearChildren();
 
     bool visible() const { return _visible; }
-    void setVisible(bool v);
+    void setVisible(bool visible);
     bool sensitive() const { return _sensitive; }
-    void setSensitive(bool v);
-    bool cached() const { return _cached; }
-    void setCached(bool c, bool persistent = false);
+    void setSensitive(bool sensitive);
 
     virtual void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr);
     virtual void setChildrenStyle(SPStyle const *context_style);
     void setOpacity(float opacity);
-    void setAntialiasing(unsigned a);
+    void setAntialiasing(unsigned antialias);
     unsigned antialiasing() const { return _antialias; }
     void setIsolation(bool isolation); // CSS Compositing and Blending
     void setBlendMode(SPBlendMode blend_mode);
@@ -138,9 +131,8 @@ public:
     void setMask(DrawingItem *item);
     void setFillPattern(DrawingPattern *pattern);
     void setStrokePattern(DrawingPattern *pattern);
-    void setZOrder(unsigned z);
+    void setZOrder(unsigned zorder);
     void setItemBounds(Geom::OptRect const &bounds);
-    void setFilterBounds(Geom::OptRect const &bounds);
     void setFilterRenderer(std::unique_ptr<Filters::Filter> renderer);
 
     void setKey(unsigned key) { _key = key; }
@@ -153,8 +145,8 @@ public:
     void clip(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area);
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags = 0);
 
-    virtual Glib::ustring name(); // For debugging
-    void recursivePrintTree(unsigned level = 0);  // For debugging
+    Glib::ustring name() const; // For debugging
+    void recursivePrintTree(unsigned level = 0) const;  // For debugging
 
 protected:
     enum class ChildType : unsigned char
@@ -178,6 +170,7 @@ protected:
     void _invalidateFilterBackground(Geom::IntRect const &area);
     double _cacheScore();
     Geom::OptIntRect _cacheRect();
+    void _setCached(bool cached, bool persistent = false);
     virtual unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
                                  unsigned flags, unsigned reset) { return 0; }
     virtual unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags,
@@ -187,27 +180,25 @@ protected:
     virtual bool _canClip() { return false; }
     virtual void _dropPatternCache() {}
 
-    // member variables start here
-
     Drawing &_drawing;
     DrawingItem *_parent;
 
-    typedef boost::intrusive::list_member_hook<> ListHook;
+    using ListHook = boost::intrusive::list_member_hook<>;
     ListHook _child_hook;
 
-    typedef boost::intrusive::list<
+    using ChildrenList = boost::intrusive::list<
         DrawingItem,
         boost::intrusive::member_hook<DrawingItem, ListHook, &DrawingItem::_child_hook>
-        > ChildrenList;
+        >;
     ChildrenList _children;
 
-    unsigned _key; ///< Some SPItems can have more than one DrawingItem;
-                   ///  this value is a hack used to distinguish between them
+    // Todo: Try to get rid of all of these variables, moving them into the object tree.
+    unsigned _key; ///< Auxiliary key used by the object tree for showing clips/masks/patterns.
+    SPItem *_item; ///< Used to associate DrawingItems with SPItems that created them
     SPStyle const *_style; // Not used by DrawingGlyphs
     SPStyle const *_context_style; // Used for 'context-fill', 'context-stroke'
-    
-    float _opacity;
 
+    float _opacity;
     std::unique_ptr<Geom::Affine> _transform; ///< Incremental transform from parent to this item's coords
     Geom::Affine _ctm; ///< Total transform from item coords to display coords
     Geom::OptIntRect _bbox; ///< Bounding box in display (pixel) coords including stroke
@@ -221,8 +212,7 @@ protected:
     DrawingPattern *_fill_pattern;
     DrawingPattern *_stroke_pattern;
     std::unique_ptr<Inkscape::Filters::Filter> _filter;
-    SPItem *_item; ///< Used to associate DrawingItems with SPItems that created them
-    DrawingCache *_cache;
+    std::unique_ptr<DrawingCache> _cache;
     bool _prev_nir = false;
 
     CacheList::iterator _cache_iterator;

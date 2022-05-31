@@ -34,17 +34,19 @@ class DrawingPattern
 {
 public:
     DrawingPattern(Drawing &drawing);
-    ~DrawingPattern() override;
+    ~DrawingPattern() override = default;
 
     /**
      * Set the transformation from pattern to user coordinate systems.
      * @see SPPattern description for explanation of coordinate systems.
      */
-    void setPatternToUserTransform(Geom::Affine const &new_trans);
+    void setPatternToUserTransform(Geom::Affine const &);
+
     /**
      * Set the tile rect position and dimensions in content coordinate system
      */
-    void setTileRect(Geom::Rect const &tile_rect);
+    void setTileRect(Geom::Rect const &);
+
     /**
      * Turn on overflow rendering.
      *
@@ -52,6 +54,7 @@ public:
      * a translation transform is applied.
      */
     void setOverflow(Geom::Affine const &initial_transform, int steps, Geom::Affine const &step_transform);
+
     /**
      * Render the pattern.
      *
@@ -78,7 +81,7 @@ protected:
 
     struct Surface
     {
-        Surface(Geom::IntRect const &rect, int device_scale);
+        Surface(Geom::IntRect const &rect, int device_scale, bool dither);
         Geom::IntRect rect;
         Cairo::RefPtr<Cairo::ImageSurface> surface;
     };
@@ -86,8 +89,6 @@ protected:
     // Parts of the pattern tile that have been rendered. Read/written on render, cleared on update.
     std::vector<Surface> surfaces;
 };
-
-bool is_drawing_group(DrawingItem const *item);
 
 } // namespace Inkscape
 

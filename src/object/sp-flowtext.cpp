@@ -111,7 +111,7 @@ void SPFlowtext::update(SPCtx* ctx, unsigned int flags) {
     Geom::OptRect pbox = this->geometricBounds();
 
     for (auto &v : views) {
-        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
         _clearFlow(g);
         g->setStyle(style);
         // pass the bbox of the flowtext object as paintbox (used for paintserver fills)
@@ -133,7 +133,7 @@ void SPFlowtext::modified(unsigned int flags) {
         Geom::OptRect pbox = geometricBounds();
 
         for (auto &v : views) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             _clearFlow(g);
             g->setStyle(style);
             layout.show(g, pbox);
@@ -325,7 +325,7 @@ void SPFlowtext::hide(unsigned key)
 {
     for (auto &v : views) {
         if (v.key == key) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             _clearFlow(g);
         }
     }

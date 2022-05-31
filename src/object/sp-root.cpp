@@ -287,7 +287,7 @@ void SPRoot::update(SPCtx *ctx, guint flags)
 
     /* As last step set additional transform of drawing group */
     for (auto &v : views) {
-        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem);
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
         g->setChildTransform(c2p);
     }
 }

@@ -138,7 +138,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
             this->style->stroke_width.computed = this->style->stroke_width.value * aw;
 
             for (auto &v : views) {
-                auto sh = dynamic_cast<Inkscape::DrawingShape*>(v.drawingitem);
+                auto sh = dynamic_cast<Inkscape::DrawingShape*>(v.drawingitem.get());
                 if (hasMarkers()) {
                     context_style = style;
                     sh->setStyle(style, context_style);
@@ -157,7 +157,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
         /* But on the other hand - how can we know that parent does not tie style and transform */
         for (auto &v : views) {
             if (flags & SP_OBJECT_MODIFIED_FLAG) {
-                auto sh = static_cast<Inkscape::DrawingShape*>(v.drawingitem);
+                auto sh = static_cast<Inkscape::DrawingShape*>(v.drawingitem.get());
                 sh->setPath(_curve);
             }
         }
@@ -167,7 +167,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
 
         /* Dimension marker views */
         for (auto &v : views) {
-            SPItem::ensure_key(v.drawingitem);
+            SPItem::ensure_key(v.drawingitem.get());
             for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
                 if (_marker[i]) {
                     sp_marker_show_dimension(_marker[i], v.drawingitem->key() + ITEM_KEY_MARKERS + i, numberOfMarkers(i));
@@ -177,12 +177,12 @@ void SPShape::update(SPCtx* ctx, guint flags) {
 
         /* Update marker views */
         for (auto &v : views) {
-            sp_shape_update_marker_view (this, v.drawingitem);
+            sp_shape_update_marker_view (this, v.drawingitem.get());
         }
     
         // Marker selector needs this here or marker previews are not rendered.
         for (auto &v : views) {
-            auto sh = static_cast<Inkscape::DrawingShape*>(v.drawingitem);
+            auto sh = static_cast<Inkscape::DrawingShape*>(v.drawingitem.get());
             sh->setChildrenStyle(this->context_style); // Resolve 'context-xxx' in children.
         }
     }
@@ -432,7 +432,7 @@ void SPShape::modified(unsigned int flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v.drawingitem);
+            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v.drawingitem.get());
             if (hasMarkers()) {
                 this->context_style = this->style;
                 sh->setStyle(this->style, this->context_style);

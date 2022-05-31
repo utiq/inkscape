@@ -10,33 +10,26 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "display/drawing-group.h"
-#include "display/cairo-utils.h"
-#include "display/drawing-context.h"
-#include "display/drawing-item.h"
-#include "display/drawing-surface.h"
-#include "display/drawing-text.h"
-#include "display/drawing.h"
+#include "drawing-group.h"
+#include "cairo-utils.h"
+#include "drawing-context.h"
+#include "drawing-surface.h"
+#include "drawing-text.h"
+#include "drawing.h"
 #include "style.h"
 
 namespace Inkscape {
 
 DrawingGroup::DrawingGroup(Drawing &drawing)
-    : DrawingItem(drawing)
-{}
-
-DrawingGroup::~DrawingGroup()
-{
-}
+    : DrawingItem(drawing) {}
 
 /**
  * Set whether the group returns children from pick calls.
  * Previously this feature was called "transparent groups".
  */
-void
-DrawingGroup::setPickChildren(bool p)
+void DrawingGroup::setPickChildren(bool pick_children)
 {
-    _pick_children = p;
+    _pick_children = pick_children;
 }
 
 /**
@@ -44,25 +37,14 @@ DrawingGroup::setPickChildren(bool p)
  * This is applied after the normal transform and mainly useful for
  * markers, clipping paths, etc.
  */
-void DrawingGroup::setChildTransform(Geom::Affine const &new_trans)
+void DrawingGroup::setChildTransform(Geom::Affine const &transform)
 {
-    double constexpr EPS = 1e-18;
-
-    Geom::Affine current;
-    if (_child_transform) {
-        current = *_child_transform;
-    }
-
-    if (!Geom::are_near(current, new_trans, EPS)) {
-        // mark the area where the object was for redraw.
-        _markForRendering();
-        if (new_trans.isIdentity(EPS)) {
-            _child_transform.reset();
-        } else {
-            _child_transform = std::make_unique<Geom::Affine>(new_trans);
-        }
-        _markForUpdate(STATE_ALL, true);
-    }
+    auto constexpr EPS = 1e-18;
+    auto current = _child_transform ? *_child_transform : Geom::identity();
+    if (Geom::are_near(transform, current, EPS)) return;
+    _markForRendering();
+    _child_transform = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
+    _markForUpdate(STATE_ALL, true);
 }
 
 unsigned DrawingGroup::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
@@ -132,12 +114,7 @@ bool DrawingGroup::_canClip()
     return true;
 }
 
-bool is_drawing_group(DrawingItem *item)
-{
-    return dynamic_cast<DrawingGroup*>(item);
-}
-
-} // end namespace Inkscape
+} // namespace Inkscape
 
 /*
   Local Variables:

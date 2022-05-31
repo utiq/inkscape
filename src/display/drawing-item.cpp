@@ -71,7 +71,6 @@ DrawingItem::DrawingItem(Drawing &drawing)
     , _fill_pattern(nullptr)
     , _stroke_pattern(nullptr)
     , _item(nullptr)
-    , _cache(nullptr)
     , _state(0)
     , _child_type(ChildType::ORPHAN)
     , _background_new(0)
@@ -93,21 +92,18 @@ DrawingItem::DrawingItem(Drawing &drawing)
 DrawingItem::~DrawingItem()
 {
     // Unactivate if active.
-    if (drawing().getCanvasItemDrawing()) {
-        if (drawing().getCanvasItemDrawing()->get_active() == this) {
-            drawing().getCanvasItemDrawing()->set_active(nullptr);
+    if (auto itemdrawing = _drawing.getCanvasItemDrawing()) {
+        if (itemdrawing->get_active() == this) {
+            itemdrawing->set_active(nullptr);
         }
     } else {
         // Can happen, e.g. in Eraser tool.
         // std::cerr << "DrawingItem::~DrawingItem: Missing CanvasItemDrawing!" << std::endl;
     }
 
-    //if (!_children.empty()) {
-    //    g_warning("Removing item with children");
-    //}
+    // Remove from the set of cached items and delete cache.
+    _setCached(false, true);
 
-    // remove from the set of cached items and delete cache
-    setCached(false, true);
     // remove this item from parent's children list
     // due to the effect of clearChildren(), this only happens for the top-level deleted item
     if (_parent) {
@@ -147,7 +143,6 @@ DrawingItem::~DrawingItem()
     delete _fill_pattern;
     delete _clip;
     delete _mask;
-    _filter.reset();
     if (_style) sp_style_unref(_style);
 }
 
@@ -211,64 +206,50 @@ void DrawingItem::clearChildren()
     _markForUpdate(STATE_ALL, false);
 }
 
-/// Set the incremental transform for this item
-void DrawingItem::setTransform(Geom::Affine const &new_trans)
+void DrawingItem::setTransform(Geom::Affine const &transform)
 {
-    double constexpr EPS = 1e-18;
+    auto constexpr EPS = 1e-18;
+    auto current = _transform ? *_transform : Geom::identity();
+    if (Geom::are_near(transform, current, EPS)) return;
 
-    Geom::Affine current;
-    if (_transform) {
-        current = *_transform;
-    }
-
-    if (!Geom::are_near(current, new_trans, EPS)) {
-        // mark the area where the object was for redraw.
-        _markForRendering();
-        if (new_trans.isIdentity(EPS)) {
-            _transform.reset();
-        } else {
-            _transform = std::make_unique<Geom::Affine>(new_trans);
-        }
-        _markForUpdate(STATE_ALL, true);
-    }
+    _markForRendering();
+    _transform = transform.isIdentity(EPS) ? nullptr : std::make_unique<Geom::Affine>(transform);
+    _markForUpdate(STATE_ALL, true);
 }
 
 void DrawingItem::setOpacity(float opacity)
 {
-    if (_opacity != opacity) {
-        _opacity = opacity;
-        _markForRendering();
-    }
+    if (opacity == _opacity) return;
+    _opacity = opacity;
+    _markForRendering();
 }
 
-void DrawingItem::setAntialiasing(unsigned a)
+void DrawingItem::setAntialiasing(unsigned antialias)
 {
-    if (_antialias != a) {
-        _antialias = a;
-        _markForRendering();
-    }
+    if (_antialias == antialias) return;
+    _antialias = antialias;
+    _markForRendering();
 }
 
 void DrawingItem::setIsolation(bool isolation)
 {
+    if (isolation == _isolation) return;
     _isolation = isolation;
-    //if( isolation != 0 ) std::cout << "isolation: " << isolation << std::endl;
     _markForRendering();
 }
 
-void DrawingItem::setBlendMode(SPBlendMode mix_blend_mode)
+void DrawingItem::setBlendMode(SPBlendMode blend_mode)
 {
-    _blend_mode = mix_blend_mode;
-    //if( mix_blend_mode != 0 ) std::cout << "setBlendMode: " << mix_blend_mode << std::endl;
+    if (blend_mode == _blend_mode) return;
+    _blend_mode = blend_mode;
     _markForRendering();
 }
 
-void DrawingItem::setVisible(bool v)
+void DrawingItem::setVisible(bool visible)
 {
-    if (_visible != v) {
-        _visible = v;
-        _markForRendering();
-    }
+    if (visible == _visible) return;
+    _visible = visible;
+    _markForRendering();
 }
 
 void DrawingItem::setSensitive(bool sensitive)
@@ -280,7 +261,7 @@ void DrawingItem::setSensitive(bool sensitive)
  * Enable / disable storing the rendering in memory.
  * Calling setCached(false, true) will also remove the persistent status
  */
-void DrawingItem::setCached(bool cached, bool persistent)
+void DrawingItem::_setCached(bool cached, bool persistent)
 {
     static bool const cache_env = getenv("_INKSCAPE_DISABLE_CACHE");
     if (cache_env) {
@@ -302,8 +283,7 @@ void DrawingItem::setCached(bool cached, bool persistent)
         _drawing._cached_items.insert(this);
     } else {
         _drawing._cached_items.erase(this);
-        delete _cache;
-        _cache = nullptr;
+        _cache.reset();
         if (_has_cache_iterator) {
             _drawing._candidate_items.erase(_cache_iterator);
             _has_cache_iterator = false;
@@ -364,7 +344,7 @@ void DrawingItem::setStyle(SPStyle const *style, SPStyle const *context_style)
 /**
  * Recursively update children style.
  * The purpose of this call is to update fill and stroke for markers that have elements with
- * fill/stroke property values of 'context-fill' or 'context-stroke'.  Marker styling is not
+ * fill/stroke property values of 'context-fill' or 'context-stroke'. Marker styling is not
  * updated like other 'clones' as marker instances are not included the SP object tree.
  * Note: this is a virtual function.
  */
@@ -620,7 +600,7 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
                 // Destroy cache for this item - outside of canvas or invisible.
                 // The opposite transition (invisible -> visible or object
                 // entering the canvas) is handled during the render phase
-                setCached(false, true);
+                _setCached(false, true);
             }
         }
     }
@@ -634,7 +614,7 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
         if (_stroke_pattern) {
             _stroke_pattern->update(area, child_ctx, flags, reset);
         }
-        if (!is_drawing_group(this) || (_filter && filters)) {
+        if (!dynamic_cast<DrawingGroup*>(this) || (_filter && filters)) {
             _markForRendering();
         }
     }
@@ -704,9 +684,9 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
             iarea = carea;
             _filter->area_enlarge(*iarea, this);
             iarea.intersectWith(_drawbox);
-            setCached(false, true);
+            _setCached(false, true);
         } else {
-            setCached(true, true);
+            _setCached(true, true);
         }
     }
     // carea is the area to paint
@@ -722,8 +702,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     // Bypass in case of pattern, see below.
     if (_cached && !(flags & RENDER_BYPASS_CACHE)) {
         if (_cache && _cache->device_scale() != device_scale) {
-            delete _cache;
-            _cache = nullptr;
+            _cache.reset();
         }
 
         if (_cache) {
@@ -741,7 +720,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
             Geom::OptIntRect cl = _cacheRect();
             if (!cl)
                 cl = carea;
-            _cache = new DrawingCache(*cl, device_scale);
+            _cache = std::make_unique<DrawingCache>(*cl, device_scale);
         }
     } else {
         // if our caching was turned off after the last update, it was already deleted in setCached()
@@ -757,7 +736,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
         || _isolation == SP_CSS_ISOLATION_ISOLATE // 6. it is isolated
         || _child_type == ChildType::ROOT;        // 7. is root, need isolation from background
     if (_prev_nir && !needs_intermediate_rendering) {
-        setCached(false, true);
+        _setCached(false, true);
     }
     _prev_nir = needs_intermediate_rendering;
     needs_intermediate_rendering |= !!_cache;     // 8. it is to be cached
@@ -787,6 +766,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     DrawingSurface intermediate(*carea, device_scale);
     DrawingContext ict(intermediate);
     cairo_set_antialias(ict.raw(), cairo_get_antialias(dc.raw())); // propagate antialias setting
+    ink_cairo_set_dither(intermediate.raw(), _drawing.useDithering());
 
     // This path fails for patterns/hatches when stepping the pattern to handle overflows.
     // The offsets are applied to drawing context (dc) but they are not copied to the
@@ -845,6 +825,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
             if (bg_root) {
                 DrawingSurface bg(*carea, device_scale);
                 DrawingContext bgdc(bg);
+                ink_cairo_set_dither(bg.raw(), _drawing.useDithering());
                 bg_root->render(bgdc, rc, *carea, flags | RENDER_FILTER_BACKGROUND, this);
                 _filter->render(this, ict, &bgdc, rc);
                 rendered = true;
@@ -1016,7 +997,7 @@ DrawingItem *DrawingItem::pick(Geom::Point const &p, double delta, unsigned flag
 }
 
 // For debugging
-Glib::ustring DrawingItem::name()
+Glib::ustring DrawingItem::name() const
 {
     if (_item) {
         if (_item->getId())
@@ -1029,7 +1010,7 @@ Glib::ustring DrawingItem::name()
 }
 
 // For debugging: Print drawing tree structure.
-void DrawingItem::recursivePrintTree(unsigned level)
+void DrawingItem::recursivePrintTree(unsigned level) const
 {
     if (level == 0) {
         std::cout << "Display Item Tree" << std::endl;

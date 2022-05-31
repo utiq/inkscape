@@ -10,14 +10,13 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_IMAGE_H
-#define SEEN_INKSCAPE_DISPLAY_DRAWING_IMAGE_H
+#ifndef INKSCAPE_DISPLAY_DRAWING_IMAGE_H
+#define INKSCAPE_DISPLAY_DRAWING_IMAGE_H
 
 #include <memory>
-
-#include <cairo.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <2geom/transforms.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <cairo.h>
 
 #include "display/drawing-item.h"
 
@@ -29,7 +28,7 @@ class DrawingImage
 {
 public:
     DrawingImage(Drawing &drawing);
-    ~DrawingImage() override;
+    ~DrawingImage() override = default;
 
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
 
@@ -54,9 +53,9 @@ protected:
     Geom::Scale _scale;
 };
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
-#endif // !SEEN_INKSCAPE_DISPLAY_DRAWING_ITEM_H
+#endif // INKSCAPE_DISPLAY_DRAWING_IMAGE_H
 
 /*
   Local Variables:

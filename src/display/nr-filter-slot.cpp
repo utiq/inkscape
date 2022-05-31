@@ -16,26 +16,27 @@
 #include <cstring>
 
 #include <2geom/transforms.h>
-#include "display/cairo-utils.h"
-#include "display/drawing-context.h"
-#include "display/nr-filter-types.h"
-#include "display/nr-filter-gaussian.h"
-#include "display/nr-filter-slot.h"
-#include "display/nr-filter-units.h"
+#include "cairo-utils.h"
+#include "drawing-context.h"
+#include "drawing-surface.h"
+#include "nr-filter-types.h"
+#include "nr-filter-gaussian.h"
+#include "nr-filter-slot.h"
+#include "nr-filter-units.h"
 
 namespace Inkscape {
 namespace Filters {
 
-FilterSlot::FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &u, RenderContext &rc)
+FilterSlot::FilterSlot(DrawingContext *bgdc, DrawingContext &graphic, FilterUnits const &units, RenderContext &rc, int blurquality)
     : _source_graphic(graphic.rawTarget())
     , _background_ct(bgdc ? bgdc->raw() : nullptr)
     , _source_graphic_area(graphic.targetLogicalBounds().roundOutwards()) // fixme
     , _background_area(bgdc ? bgdc->targetLogicalBounds().roundOutwards() : Geom::IntRect()) // fixme
-    , _units(u)
+    , _units(units)
     , _last_out(NR_FILTER_SOURCEGRAPHIC)
-    , filterquality(FILTER_QUALITY_BEST)
-    , blurquality(BLUR_QUALITY_BEST)
+    , _blurquality(blurquality)
     , rc(rc)
+    , device_scale(graphic.surface()->device_scale())
 {
     using Geom::X;
     using Geom::Y;
@@ -251,36 +252,6 @@ Geom::Rect FilterSlot::get_primitive_area(int slot_nr) const
         return *_units.get_filter_area();
     }
     return s->second;
-}
-
-int FilterSlot::get_slot_count() const
-{
-    return _slots.size();
-}
-
-void FilterSlot::set_quality(FilterQuality q)
-{
-    filterquality = q;
-}
-
-void FilterSlot::set_blurquality(int q)
-{
-    blurquality = q;
-}
-
-int FilterSlot::get_blurquality() const
-{
-    return blurquality;
-}
-
-void FilterSlot::set_device_scale(int s)
-{
-    device_scale = s;
-}
-
-int FilterSlot::get_device_scale() const
-{
-    return device_scale;
 }
 
 Geom::Rect FilterSlot::get_slot_area() const

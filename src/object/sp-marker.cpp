@@ -37,22 +37,12 @@
 #include "ui/icon-names.h"
 #include "xml/repr.h"
 
-
 using Inkscape::DocumentUndo;
 using Inkscape::ObjectSet;
 
-class SPMarkerView {
-
-public:
-
-    SPMarkerView() = default;;
-    ~SPMarkerView() {
-        for (auto & item : items) {
-            delete item;
-        }
-        items.clear();
-    }
-    std::vector<Inkscape::DrawingItem *> items;
+struct SPMarkerView
+{
+    std::vector<std::unique_ptr<Inkscape::DrawingItem>> items;
 };
 
 SPMarker::SPMarker() : SPGroup(), SPViewBox(),
@@ -115,15 +105,13 @@ void SPMarker::build(SPDocument *document, Inkscape::XML::Node *repr) {
  */
 void SPMarker::release() {
 
-    std::map<unsigned int, SPMarkerView>::iterator it;
-    for (it = views_map.begin(); it != views_map.end(); ++it) {
-        SPGroup::hide( it->first );
+    for (auto &it : views_map) {
+        SPGroup::hide(it.first);
     }
     views_map.clear();
 
     SPGroup::release();
 }
-
 
 void SPMarker::set(SPAttr key, const gchar* value) {
 	switch (key) {
@@ -227,11 +215,10 @@ void SPMarker::update(SPCtx *ctx, guint flags) {
     SPGroup::update((SPCtx *) &rctx, flags);
 
     // As last step set additional transform of drawing group
-    std::map<unsigned int, SPMarkerView>::iterator it;
-    for (it = views_map.begin(); it != views_map.end(); ++it) {
-        for (auto & item : it->second.items) {
+    for (auto &it : views_map) {
+        for (auto &item : it.second.items) {
             if (item) {
-                Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(item);
+                auto g = dynamic_cast<Inkscape::DrawingGroup*>(item.get());
                 g->setChildTransform(this->c2p);
             }
         }
@@ -410,7 +397,7 @@ void SPMarker::print(SPPrintContext* /*ctx*/) {
 void
 sp_marker_show_dimension (SPMarker *marker, unsigned int key, unsigned int size)
 {
-    std::map<unsigned int, SPMarkerView>::iterator it = marker->views_map.find(key);
+    auto it = marker->views_map.find(key);
     if (it != marker->views_map.end()) {
         if (it->second.items.size() != size ) {
             // Need to change size of vector! (We should not really need to do this.)
@@ -444,29 +431,30 @@ sp_marker_show_instance ( SPMarker *marker, Inkscape::DrawingItem *parent,
         return nullptr;
     }
 
-    std::map<unsigned int, SPMarkerView>::iterator it = marker->views_map.find(key);
+    auto it = marker->views_map.find(key);
     if (it == marker->views_map.end()) {
         // Key not found
         return nullptr;
     }
 
-    SPMarkerView *view = &(it->second);
+    SPMarkerView *view = &it->second;
     if (pos >= view->items.size() ) {
         // Position index too large, doesn't exist.
         return nullptr;
     }
 
     // If not already created
-    if (view->items[pos] == nullptr) {
+    if (!view->items[pos]) {
 
         /* Parent class ::show method */
-        view->items[pos] = marker->private_show(parent->drawing(), key, SP_ITEM_REFERENCE_FLAGS);
+        view->items[pos].reset(marker->private_show(parent->drawing(), key, SP_ITEM_REFERENCE_FLAGS));
 
         if (view->items[pos]) {
             /* fixme: Position (Lauris) */
-            parent->prependChild(view->items[pos]);
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(view->items[pos]);
-            if (g) g->setChildTransform(marker->c2p);
+            parent->prependChild(view->items[pos].get());
+            if (auto g = dynamic_cast<Inkscape::DrawingGroup*>(view->items[pos].get())) {
+                g->setChildTransform(marker->c2p);
+            }
         }
     }
 
@@ -489,7 +477,7 @@ sp_marker_show_instance ( SPMarker *marker, Inkscape::DrawingItem *parent,
         view->items[pos]->setTransform(m);
     }
 
-    return view->items[pos];
+    return view->items[pos].get();
 }
 
 /**

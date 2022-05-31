@@ -12,7 +12,7 @@
  */
 
 #include <array>
-
+#include <thread>
 #include "display/drawing.h"
 #include "display/control/canvas-item-drawing.h"
 #include "nr-filter-gaussian.h"
@@ -40,6 +40,12 @@ static auto rendermode_to_renderflags(RenderMode mode)
         case RenderMode::VISIBLE_HAIRLINES: return DrawingItem::RENDER_VISIBLE_HAIRLINES;
         default:                            return DrawingItem::RenderFlags::RENDER_DEFAULT;
     }
+}
+
+static auto default_numthreads()
+{
+    auto ret = std::thread::hardware_concurrency();
+    return ret == 0 ? 4 : ret; // Sensible fallback if not reported.
 }
 
 Drawing::Drawing(Inkscape::CanvasItemDrawing *canvas_item_drawing)
@@ -148,6 +154,17 @@ void Drawing::setBlurQuality(int quality)
     }
 }
 
+void Drawing::setDithering(bool use_dithering)
+{
+    _use_dithering = use_dithering;
+    #ifdef CAIRO_HAS_DITHER
+    if (_rendermode != RenderMode::OUTLINE) {
+        _root->_markForUpdate(DrawingItem::STATE_ALL, true);
+        _clearCache();
+    }
+    #endif
+}
+
 void Drawing::setCacheBudget(size_t bytes)
 {
     _cache_budget = bytes;
@@ -226,12 +243,12 @@ void Drawing::_pickItemsForCaching()
                         to_cache.begin(), to_cache.end(),
                         std::back_inserter(to_uncache));
     for (auto item : to_uncache) {
-        item->setCached(false);
+        item->_setCached(false);
     }
 
     // Cache all items that should be cached (no-op if already cached).
     for (auto item : to_cache) {
-        item->setCached(true);
+        item->_setCached(true);
     }
 }
 
@@ -241,7 +258,7 @@ void Drawing::_clearCache()
     std::vector<DrawingItem*> to_uncache;
     std::copy(_cached_items.begin(), _cached_items.end(), std::back_inserter(to_uncache));
     for (auto item : to_uncache) {
-        item->setCached(false, true);
+        item->_setCached(false, true);
     }
 }
 
@@ -256,6 +273,7 @@ void Drawing::_loadPrefs()
     _image_outline_mode  = prefs->getBool      ("/options/rendering/imageinoutlinemode", false);
     _filter_quality      = prefs->getIntLimited("/options/filterquality/value",          0, Filters::FILTER_QUALITY_WORST, Filters::FILTER_QUALITY_BEST);
     _blur_quality        = prefs->getInt       ("/options/blurquality/value",            0);
+    _use_dithering       = prefs->getBool      ("/options/dithering/value",              true);
     _cursor_tolerance    = prefs->getDouble    ("/options/cursortolerance/value",        1.0);
 
     // Enable caching only for the Canvas's drawing, since only it is persistent.
@@ -264,6 +282,9 @@ void Drawing::_loadPrefs()
     } else {
         _cache_budget = 0;
     }
+
+    // Set the global variable governing the number of filter threads, and track it too. (This is ugly, but hopefully transitional.)
+    set_num_filter_threads(prefs->getIntLimited("/options/threading/numthreads", default_numthreads(), 1, 256));
 
     // Similarly, enable preference tracking only for the Canvas's drawing.
     if (_canvas_item_drawing) {
@@ -276,8 +297,10 @@ void Drawing::_loadPrefs()
         actions.emplace("/options/rendering/imageinoutlinemode", [this] (auto &entry) { setImageOutlineMode(entry.getBool(false)); });
         actions.emplace("/options/filterquality/value",          [this] (auto &entry) { setFilterQuality(entry.getIntLimited(0, Filters::FILTER_QUALITY_WORST, Filters::FILTER_QUALITY_BEST)); });
         actions.emplace("/options/blurquality/value",            [this] (auto &entry) { setBlurQuality(entry.getInt(0)); });
+        actions.emplace("/options/dithering/value",              [this] (auto &entry) { setDithering(entry.getBool(true)); });
         actions.emplace("/options/cursortolerance/value",        [this] (auto &entry) { setCursorTolerance(entry.getDouble(1.0)); });
         actions.emplace("/options/renderingcache/size",          [this] (auto &entry) { setCacheBudget((1 << 20) * entry.getIntLimited(64, 0, 4096)); });
+        actions.emplace("/options/threading/numthreads",         [this] (auto &entry) { set_num_filter_threads(entry.getIntLimited(default_numthreads(), 1, 256)); });
 
         _pref_tracker = Inkscape::Preferences::PreferencesObserver::create("/options", [actions = std::move(actions)] (auto &entry) {
             auto it = actions.find(entry.getPath());

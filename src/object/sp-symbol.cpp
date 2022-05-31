@@ -213,7 +213,7 @@ void SPSymbol::update(SPCtx *ctx, guint flags) {
 
         // As last step set additional transform of drawing group
         for (auto &v : views) {
-            Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(v.drawingitem);
+            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             g->setChildTransform(this->c2p);
         }
     } else {

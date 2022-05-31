@@ -26,9 +26,7 @@
 namespace Inkscape {
 class Drawing;
 class DrawingItem;
-namespace Filters {
-class Filter;
-} // namespace Filters
+namespace Filters { class Filter; }
 } // namespace Inkscape
 
 class SPFilterReference;
