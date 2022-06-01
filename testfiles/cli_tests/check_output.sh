@@ -5,9 +5,10 @@ command -v convert >/dev/null 2>&1 || { echo >&2 "I require ImageMagick's 'conve
 command -v compare >/dev/null 2>&1 || { echo >&2 "I require ImageMagick's 'compare' but it's not installed.  Aborting."; exit 1; }
 
 OUTPUT_FILENAME=$1
-REFERENCE_FILENAME=$2
-EXPECTED_FILES=$3
-TEST_SCRIPT=$4
+OUTPUT_PAGE=$2
+REFERENCE_FILENAME=$3
+EXPECTED_FILES=$4
+TEST_SCRIPT=$5
 
 # check if expected files exist
 for file in ${EXPECTED_FILES}; do
@@ -29,7 +30,14 @@ if [ -n "${REFERENCE_FILENAME}" ]; then
     # - use internal MSVG delegate in SVG conversions for reproducibility reasons (avoid inkscape or rsvg delegates)
     [ "${OUTPUT_FILENAME##*.}"    = "svg" ] && delegate1=MSVG:
     [ "${REFERENCE_FILENAME##*.}" = "svg" ] && delegate2=MSVG:
-    if ! convert ${delegate1}${OUTPUT_FILENAME} ${OUTPUT_FILENAME}.png; then
+
+    # extract a page from multipage PDF if requested and convert it to RGB
+    OUTFILE_SUFFIX=""
+    if [ -n "$OUTPUT_PAGE" ]; then
+        OUTFILE_SUFFIX="[${OUTPUT_PAGE}] -colorspace RGB"
+    fi
+
+    if ! convert ${delegate1}${OUTPUT_FILENAME}${OUTFILE_SUFFIX} ${OUTPUT_FILENAME}.png; then
         echo "Warning: Failed to convert test file '${OUTPUT_FILENAME}' to PNG format. Skipping comparison test."
         exit 42
     fi
@@ -61,7 +69,7 @@ if [ -n "${TEST_SCRIPT}" ]; then
             interpreter=python3
             ;;
         *)
-            interpreter=sh
+            interpreter=bash
             ;;
     esac
 
