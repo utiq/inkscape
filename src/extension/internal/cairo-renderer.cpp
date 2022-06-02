@@ -75,6 +75,7 @@
 #include "object/sp-linear-gradient.h"
 #include "object/sp-marker.h"
 #include "object/sp-mask.h"
+#include "object/sp-page.h"
 #include "object/sp-pattern.h"
 #include "object/sp-radial-gradient.h"
 #include "object/sp-root.h"
@@ -137,7 +138,7 @@ Here comes the rendering part which could be put into the 'render' methods of SP
 */
 
 /* The below functions are copy&pasted plus slightly modified from *_invoke_print functions. */
-static void sp_item_invoke_render(SPItem *item, CairoRenderContext *ctx, SPItem *origin = nullptr);
+static void sp_item_invoke_render(SPItem *item, CairoRenderContext *ctx, SPItem *origin = nullptr, SPPage *page = nullptr);
 static void sp_group_render(SPGroup *group, CairoRenderContext *ctx);
 static void sp_anchor_render(SPAnchor *a, CairoRenderContext *ctx);
 static void sp_use_render(SPUse *use, CairoRenderContext *ctx);
@@ -146,7 +147,7 @@ static void sp_text_render(SPText *text, CairoRenderContext *ctx);
 static void sp_flowtext_render(SPFlowtext *flowtext, CairoRenderContext *ctx);
 static void sp_image_render(SPImage *image, CairoRenderContext *ctx);
 static void sp_symbol_render(SPSymbol *symbol, CairoRenderContext *ctx);
-static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx);
+static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx, SPPage *page = nullptr);
 
 static void sp_shape_render_invoke_marker_rendering(SPMarker* marker, Geom::Affine tr, SPStyle* style, CairoRenderContext *ctx, SPItem *origin)
 {
@@ -514,7 +515,7 @@ static void sp_root_render(SPRoot *root, CairoRenderContext *ctx)
     This function converts the item to a raster image and includes the image into the cairo renderer.
     It is only used for filters and then only when rendering filters as bitmaps is requested.
 */
-static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx)
+static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx, SPPage *page)
 {
 
     // The code was adapted from sp_selection_create_bitmap_copy in selection-chemistry.cpp
@@ -529,18 +530,12 @@ static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx)
     }
     TRACE(("sp_asbitmap_render: resolution: %f\n", res ));
 
-    // Get the bounding box of the selection in desktop coordinates.
+    // Get the bounding box of the selection in document coordinates.
     Geom::OptRect bbox = item->documentVisualBounds();
 
-    // no bbox, e.g. empty group
-    if (!bbox) {
-        return;
-    }
+    bbox &= (page ? page->getDocumentRect() : item->document->getViewBox());
 
-    Geom::Rect docrect(Geom::Rect(Geom::Point(0, 0), item->document->getDimensions()));
-    bbox &= docrect;
-
-    // no bbox, e.g. empty group
+    // no bbox, e.g. empty group or item not overlapping its page
     if (!bbox) {
         return;
     }
@@ -591,7 +586,7 @@ static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx)
 }
 
 
-static void sp_item_invoke_render(SPItem *item, CairoRenderContext *ctx, SPItem *origin)
+static void sp_item_invoke_render(SPItem *item, CairoRenderContext *ctx, SPItem *origin, SPPage *page)
 {
     // Check item's visibility
     if (item->isHidden()) {
@@ -610,7 +605,7 @@ static void sp_item_invoke_render(SPItem *item, CairoRenderContext *ctx, SPItem 
     // TODO: might apply to some degree to masks with filtered elements as well;
     //       we need to figure out where in the stack it would be safe to rasterize
     if (ctx->getFilterToBitmap() && item->style->filter.set && !item->isInClipPath()) {
-        return sp_asbitmap_render(item, ctx);
+        return sp_asbitmap_render(item, ctx, page);
     }
 
     SPRoot *root = dynamic_cast<SPRoot *>(item);
@@ -691,7 +686,7 @@ CairoRenderer::setStateForItem(CairoRenderContext *ctx, SPItem const *item)
 }
 
 // TODO change this to accept a const SPItem:
-void CairoRenderer::renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *origin)
+void CairoRenderer::renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *origin, SPPage *page)
 {
     ctx->pushState();
     setStateForItem(ctx, item);
@@ -711,7 +706,7 @@ void CairoRenderer::renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *or
         ctx->pushLayer();
     }
     ctx->transform(item->transform);
-    sp_item_invoke_render(item, ctx, origin);
+    sp_item_invoke_render(item, ctx, origin, page);
 
     if (state->need_layer) {
         if (blend) {

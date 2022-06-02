@@ -154,7 +154,7 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
                     }
 
                     // Render the page into the context in the new location.
-                    renderer->renderItem(ctx, child);
+                    renderer->renderItem(ctx, child, nullptr, page);
                     ctx->popState();
                 }
                 ret = ctx->finishPage();

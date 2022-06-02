@@ -26,6 +26,7 @@ class SPItem;
 class SPClipPath;
 class SPMask;
 class SPHatchPath;
+class SPPage;
 
 namespace Inkscape {
 namespace Extension {
@@ -53,7 +54,7 @@ public:
     bool setupDocument(CairoRenderContext *ctx, SPDocument *doc, bool pageBoundingBox, double bleedmargin_px, SPItem *base);
 
     /** Traverses the object tree and invokes the render methods. */
-    void renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *clone = nullptr);
+    void renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *clone = nullptr, SPPage *page = nullptr);
     void renderHatchPath(CairoRenderContext *ctx, SPHatchPath const &hatchPath, unsigned key);
 
 private:
