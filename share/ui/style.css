@@ -123,20 +123,25 @@
     border-width:0;
 }
 
-/* blinking animation for dialogs */
+/* blinking animation for dialogs reopen*/
 @keyframes blink_border {
-  from { border-color: @theme_selected_fg_color; }
-  to   { border-color: @theme_selected_bg_color; }
+  0% { border-color: @theme_selected_fg_color;}
+  90%   { border-color: @theme_selected_bg_color; }
+  100%   { border-color: @theme_selected_fg_color;  }
 }
 @keyframes blink_background {
-  from { background-color: @theme_bg_color; }
-  to   { background-color: @theme_selected_bg_color; }
+  0% { background-color: @theme_bg_color;  }
+  90%   { background-color: @theme_selected_bg_color; }
+  100%   { background-color: @theme_bg_color;  }
 }
+
+
 notebook.blink {
-  animation: blink_border 333ms ease-in-out infinite;
+  animation: 0.5s blink_border 0.1s ease 1;
 }
+
 notebook.blink > header > tabs > tab:checked {
-  animation: blink_background 333ms ease-in-out infinite;
+  animation: 0.5s blink_background 0.1s ease 1;
 }
 
 
