@@ -1378,7 +1378,6 @@ void ObjectSet::removeLPE()
 
 void ObjectSet::removeFilter()
 {
-
     // check if something is selected
     if (isEmpty()) {
         if(desktop())
@@ -1388,14 +1387,19 @@ void ObjectSet::removeFilter()
 
     SPCSSAttr *css = sp_repr_css_attr_new();
     sp_repr_css_unset_property(css, "filter");
-    sp_desktop_set_style(this, desktop(), css);
-    sp_repr_css_attr_unref(css);
     if (SPDesktop *d = desktop()) {
+        sp_desktop_set_style(this, desktop(), css);
         // Refreshing the current tool (by switching to same tool)
         // will refresh tool's private information in it's selection context that
         // depends on desktop items.
         set_active_tool (d, get_active_tool(d));
+    } else {
+        auto list = items();
+        for (auto itemlist=list.begin();itemlist!=list.end();++itemlist) {
+            sp_desktop_apply_css_recursive(*itemlist, css, true);
+        }
     }
+    sp_repr_css_attr_unref(css);
     if (document()) {
         DocumentUndo::done(document(), _("Remove filter"), "");
     }
@@ -1437,8 +1441,9 @@ void sp_selection_change_layer_maintain_clones(std::vector<SPItem*> const &items
 
 void ObjectSet::toNextLayer(bool skip_undo)
 {
-    if(!desktop())
+    if (!desktop()) {
         return;
+    }
     SPDesktop *dt=desktop(); //TODO make it desktop-independent
 
     // check if something is selected
@@ -1482,8 +1487,9 @@ void ObjectSet::toNextLayer(bool skip_undo)
 
 void ObjectSet::toPrevLayer(bool skip_undo)
 {
-    if(!desktop())
+    if (!desktop()) {
         return;
+    }
     SPDesktop *dt=desktop(); //TODO make it desktop-independent
 
     // check if something is selected
@@ -4121,9 +4127,6 @@ bool ObjectSet::fitCanvas(bool with_margins, bool skip_undo)
 
 void ObjectSet::swapFillStroke()
 {
-    if (desktop() == nullptr) {
-        return;
-    }
 
     SPIPaint *paint;
     SPPaintServer *server;
@@ -4181,9 +4184,13 @@ void ObjectSet::swapFillStroke()
             }
         }
 
-        Inkscape::ObjectSet set{};
-        set.add(item);
-        sp_desktop_set_style(&set, desktop(), css);
+        if (desktop()) {
+            Inkscape::ObjectSet set{};
+            set.add(item);
+            sp_desktop_set_style(&set, desktop(), css);
+        } else {
+            sp_desktop_apply_css_recursive(item, css, true);
+        }
 
         sp_repr_css_attr_unref (css);
     }

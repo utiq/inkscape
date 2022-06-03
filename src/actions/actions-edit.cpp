@@ -253,6 +253,15 @@ remove_path_effect(InkscapeApplication *app)
 }
 
 void
+swap_fill_and_stroke(InkscapeApplication *app)
+{
+    auto selection = app->get_active_selection();
+
+    // Swap fill and Stroke
+    selection->swapFillStroke();
+}
+
+void
 fit_canvas_to_selection(InkscapeApplication *app)
 {
     auto selection = app->get_active_selection();
@@ -288,6 +297,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit =
     {"app.delete-selection",                    N_("Delete Items"),                     "Edit",     N_("Delete selected items")},
     {"app.paste-path-effect",                   N_("Paste Path Effect"),                "Edit",     N_("Apply the path effect of the copied object to selection")},
     {"app.remove-path-effect",                  N_("Remove Path Effect"),               "Edit",     N_("Remove any path effects from selected objects")},
+    {"app.swap-fill-and-stroke",                N_("Swap fill and stroke"),             "Edit",     N_("Swap fill and stroke of an object")},
     {"app.fit-canvas-to-selection",             N_("Fit Page to Selection"),            "Edit",     N_("Fit the page to the current selection")}
     // clang-format on
 };
@@ -322,6 +332,7 @@ add_actions_edit(InkscapeApplication* app)
     gapp->add_action( "delete-selection",                sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&edit_delete_selection), app));
     gapp->add_action( "paste-path-effect",               sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&paste_path_effect), app));
     gapp->add_action( "remove-path-effect",              sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&remove_path_effect), app));
+    gapp->add_action( "swap-fill-and-stroke",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&swap_fill_and_stroke), app));
     gapp->add_action( "fit-canvas-to-selection",         sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&fit_canvas_to_selection), app));
     // clang-format on
 
