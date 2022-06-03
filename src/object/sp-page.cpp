@@ -21,6 +21,7 @@
 #include "object/object-set.h"
 #include "sp-namedview.h"
 #include "sp-root.h"
+#include "util/numeric/converters.h"
 
 using Inkscape::DocumentUndo;
 
@@ -41,6 +42,7 @@ void SPPage::build(SPDocument *document, Inkscape::XML::Node *repr)
     SPObject::build(document, repr);
 
     this->readAttr(SPAttr::INKSCAPE_LABEL);
+    this->readAttr(SPAttr::PAGE_SIZE);
     this->readAttr(SPAttr::X);
     this->readAttr(SPAttr::Y);
     this->readAttr(SPAttr::WIDTH);
@@ -82,6 +84,9 @@ void SPPage::set(SPAttr key, const gchar *value)
             break;
         case SPAttr::PAGE_BLEED:
             this->bleed.readOrUnset(value);
+            break;
+        case SPAttr::PAGE_SIZE:
+            this->_size_label = value ? std::string(value) : "";
             break;
         default:
             SPObject::set(key, value);
@@ -287,12 +292,12 @@ void SPPage::setMarginSide(int side, const std::string &value, bool confine)
 
 std::string SPPage::getMarginLabel() const
 {
-    return margin.toString(document->getDisplayUnit()->abbr);
+    return margin.toString(document->getDisplayUnit()->abbr, 2);
 }
 
 std::string SPPage::getBleedLabel() const
 {
-    return bleed.toString(document->getDisplayUnit()->abbr);
+    return bleed.toString(document->getDisplayUnit()->abbr, 2);
 }
 
 /**
@@ -547,8 +552,16 @@ Inkscape::XML::Node *SPPage::write(Inkscape::XML::Document *xml_doc, Inkscape::X
     repr->setAttributeSvgDouble("height", this->height.computed);
     repr->setAttributeOrRemoveIfEmpty("margin", this->margin.write());
     repr->setAttributeOrRemoveIfEmpty("bleed", this->bleed.write());
+    repr->setAttributeOrRemoveIfEmpty("page-size", this->_size_label);
 
     return SPObject::write(xml_doc, repr, flags);
+}
+
+void SPPage::setSizeLabel(std::string label)
+{
+    _size_label = label;
+    // This is needed to update the xml
+    this->updateRepr();
 }
 
 std::string SPPage::getDefaultLabel() const
@@ -568,11 +581,17 @@ std::string SPPage::getLabel() const
     return std::string(ret);
 }
 
+std::string SPPage::getSizeLabel() const
+{
+    return _size_label;
+}
+
 /**
  * Copy non-size attributes from the given page.
  */
 void SPPage::copyFrom(SPPage *page)
 {
+    this->_size_label = page->_size_label;
     if (auto margin = page->getMargin()) {
         this->margin.read(margin.write());
     }

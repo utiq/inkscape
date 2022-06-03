@@ -15,6 +15,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <iostream>
 #include <cstring>
 #include <sstream>
 #include <vector>
@@ -102,6 +103,25 @@ inline std::vector<gdouble> read_vector(const gchar *value)
     }
     return v;
 }
+
+/*
+ * Format a number with any trailing zeros removed.
+ */
+inline std::string format_number(double val, unsigned int precision = 3)
+{
+    std::ostringstream out;
+    out.precision(precision);
+    out << std::fixed << val;
+    std::string ret = out.str();
+
+    while(ret.find(".") != std::string::npos
+        && (ret.substr(ret.length() - 1, 1) == "0"
+         || ret.substr(ret.length() - 1, 1) == "."))
+        ret.pop_back();
+
+    return ret;
+}
+
 
 } // namespace Util
 } // namespace Inkscape

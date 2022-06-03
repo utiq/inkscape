@@ -57,6 +57,7 @@ public:
     void copyFrom(SPPage *page);
     void setSelected(bool selected);
     bool setDefaultAttributes();
+    void setSizeLabel(std::string label);
     int getPageIndex() const;
     int getPagePosition() const { return getPageIndex() + 1; }
     bool setPageIndex(int index, bool swap_page);
@@ -82,6 +83,7 @@ public:
     bool isViewportPage() const;
     std::string getDefaultLabel() const;
     std::string getLabel() const;
+    std::string getSizeLabel() const;
 
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
@@ -100,6 +102,7 @@ private:
     SVGLength height;
     SVGBox margin;
     SVGBox bleed;
+    std::string _size_label;
 };
 
 #endif // SEEN_SP_PAGE_H

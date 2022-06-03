@@ -30,8 +30,7 @@ namespace Internal {
 TemplatePresetFile::TemplatePresetFile(Template *mod, const std::string &filename)
     : TemplatePreset(mod, nullptr)
 {
-    _selectable = true;
-    _searchable = false;
+    _visibility = TEMPLATE_NEW_ICON; // No searching
 
     // TODO: Add cache here.
     _prefs["filename"] = filename;
@@ -97,7 +96,7 @@ void TemplateFromFile::init()
             "<category>" N_("Custom") "</category>"
 
             "<param name='filename' gui-text='" N_("Filename") "' type='string'></param>"
-            "<template icon='custom' priority='-1'>"
+            "<template icon='custom' priority='-1' visibility='both'>"
               // Auto & lazy generated content (see function)
             "</template>"
         "</inkscape-extension>",

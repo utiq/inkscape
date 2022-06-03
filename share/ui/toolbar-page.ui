@@ -22,6 +22,46 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
+  <object class="GtkListStore" id="page_sizes_list">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name label -->
+      <column type="gchararray"/>
+      <!-- column-name preset_key -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="page_sizes_search">
+    <columns>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name label -->
+      <column type="gchararray"/>
+      <!-- column-name preset_key -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkEntryCompletion" id="sizes_searcher">
+    <property name="model">page_sizes_search</property>
+    <property name="text-column">0</property>
+    <child>
+      <object class="GtkCellRendererText"/>
+      <attributes>
+        <attribute name="text">0</attribute>
+      </attributes>
+    </child>
+    <child>
+      <object class="GtkCellRendererText">
+        <property name="xalign">1</property>
+        <property name="alignment">right</property>
+        <property name="scale">0.90</property>
+      </object>
+      <attributes>
+        <attribute name="text">1</attribute>
+      </attributes>
+    </child>
+  </object>
   <object class="GtkToolbar" id="page-toolbar">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -44,6 +84,7 @@
         <property name="can-focus">False</property>
         <child>
           <object class="GtkComboBoxText" id="page_sizes">
+            <property name="model">page_sizes_list</property>
             <property name="width-request">250</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -51,11 +92,22 @@
             <property name="has-entry">True</property>
             <property name="active-id">-1</property>
             <items>
-              <item id="-1" translatable="yes">Custom</item>
+              <item id="" translatable="yes">Custom</item>
             </items>
+            <child>
+              <object class="GtkCellRendererText">
+                <property name="xalign">1</property>
+                <property name="alignment">right</property>
+                <property name="scale">0.90</property>
+              </object>
+              <attributes>
+                <attribute name="text">1</attribute>
+              </attributes>
+            </child>
             <child internal-child="entry">
               <object class="GtkEntry">
                 <property name="can-focus">True</property>
+                <property name="completion">sizes_searcher</property>
               </object>
             </child>
           </object>
@@ -115,7 +167,8 @@
         <child>
           <object class="GtkLabel" id="page_pos">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can_focus">False</property>
+            <!--TRANSLATORS: This is a fixed value meaning a single page document-->
             <property name="label" translatable="yes">1/-</property>
           </object>
         </child>

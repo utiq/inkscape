@@ -16,6 +16,7 @@
 #include "extension/prefdialog/parameter.h"
 #include "page-manager.h"
 #include "template-paper.h"
+#include "object/sp-page.h"
 
 using Inkscape::Util::unit_table;
 
@@ -34,6 +35,18 @@ Geom::Point TemplateBase::get_template_size(Inkscape::Extension::Template *tmod)
         g_warning("Template type should provide height and width params!");
     }
     return Geom::Point(100, 100);
+}
+
+/**
+ * Return the template size in the required unit.
+ */
+Geom::Point TemplateBase::get_template_size(Inkscape::Extension::Template *tmod, const Util::Unit *unit) const
+{
+    auto size = get_template_size(tmod);
+    auto t_unit = this->get_template_unit(tmod);
+    auto width = Util::Quantity((double)size.x(), t_unit).value(unit);
+    auto height = Util::Quantity((double)size.y(), t_unit).value(unit);
+    return Geom::Point(width, height);
 }
 
 /**
@@ -70,11 +83,27 @@ SPDocument *TemplateBase::new_from_template(Inkscape::Extension::Template *tmod)
     return doc;
 }
 
-void TemplateBase::resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc)
+void TemplateBase::resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc, SPPage *page)
 {
-    // Get size (as above, maybe shared function)
-    // A. Get page manager from doc
-    // B. Resize the selected page to the size using page-manager functions.
+    static auto px = unit_table.getUnit("px");
+    auto size = this->get_template_size(tmod, px);
+
+    if (page) {
+        page->setSize(size.x(), size.y());
+    } else {
+        doc->getPageManager().resizePage(size.x(), size.y());
+    }
+}
+
+bool TemplateBase::match_template_size(Inkscape::Extension::Template *tmod, double width, double height)
+{
+    static auto px = unit_table.getUnit("px");
+    auto temp_size = get_template_size(tmod, px);
+    auto page_size = Geom::Point(width, height);
+    auto rota_size = Geom::Point(height, width);
+    // We want a half a pixel tollerance to catch floating point errors
+    // We also check the rotated size, as this is a valid match (for now)
+    return Geom::are_near(temp_size, page_size, 0.5) || Geom::are_near(temp_size, rota_size, 0.5);
 }
 
 } // namespace Internal

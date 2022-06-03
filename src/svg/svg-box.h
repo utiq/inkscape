@@ -32,7 +32,7 @@ public:
     operator bool() const { return _is_set; }
 
     std::string write() const;
-    std::string toString(const std::string &unit) const;
+    std::string toString(const std::string &unit, unsigned int precision = 0) const;
     bool fromString(const std::string &value, const std::string &unit);
     bool fromString(BoxSide side, const std::string &value, const std::string &unit);
 

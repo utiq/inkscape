@@ -1415,12 +1415,17 @@ SPDesktop::setDocument (SPDocument *doc)
         }
 
         namedview->show(this);
+
+        showGrids(namedview->grids_visible, false);
+
         /* Ugly hack */
         activate_guides (true);
     }
 
     // set new document before firing signal, so handlers can see new value if they query desktop
     View::setDocument(doc);
+
+    sp_namedview_update_layers_from_document(this);
 
     _document_replaced_signal.emit (this, doc);
 }

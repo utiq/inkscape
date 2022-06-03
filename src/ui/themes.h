@@ -57,6 +57,7 @@ void adjust_global_font_scale(double factor);
 bool isCurrentThemeDark(Gtk::Container *window);
 
 static std::vector<guint32> getHighlightColors(Gtk::Window *window);
+static Gdk::RGBA get_foreground(Gtk::Widget *widget, double alpha);
 
 private:
     // user change theme

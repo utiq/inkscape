@@ -33,7 +33,7 @@ NewFromTemplate::NewFromTemplate()
 
     templates = Gtk::manage(new Inkscape::UI::Widget::TemplateList());
     get_content_area()->pack_start(*templates);
-    templates->init();
+    templates->init(Inkscape::Extension::TEMPLATE_NEW_FROM);
 
     _create_template_button.set_halign(Gtk::ALIGN_END);
     _create_template_button.set_valign(Gtk::ALIGN_END);

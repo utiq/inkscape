@@ -23,6 +23,7 @@
 #include "util/units.h"
 
 class SPDocument;
+class SPPage;
 
 namespace Inkscape {
 namespace Extension {
@@ -32,11 +33,14 @@ class TemplateBase : public Inkscape::Extension::Implementation::Implementation
 {
 public:
     bool check(Inkscape::Extension::Extension *module) override { return true; };
-    void resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc) override;
+
     SPDocument *new_from_template(Inkscape::Extension::Template *tmod) override;
+    void resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc, SPPage *page) override;
+    bool match_template_size(Inkscape::Extension::Template *tmod, double width, double height) override;
 
 protected:
     virtual Geom::Point get_template_size(Inkscape::Extension::Template *tmod) const;
+    virtual Geom::Point get_template_size(Inkscape::Extension::Template *tmod, const Util::Unit *unit) const;
     virtual const Util::Unit *get_template_unit(Inkscape::Extension::Template *tmod) const;
 
 private:

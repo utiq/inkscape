@@ -422,6 +422,7 @@ std::vector<AttributeInfo> getKnownAttrs()
         AttributeInfo("inkscape:locked", true),
         AttributeInfo("margin", true),
         AttributeInfo("bleed", true),
+        AttributeInfo("page-size", true),
         // AttributeInfo("inkscape:object-nodes", true),
         // AttributeInfo("inkscape:object-paths", true),
         AttributeInfo("inkscape:original", true),

@@ -59,7 +59,7 @@ std::string SVGBox::write() const
 /**
  * Write as specific unit for user display
  */
-std::string SVGBox::toString(const std::string &unit) const
+std::string SVGBox::toString(const std::string &unit, unsigned int precision) const
 {
     std::string ret = "";
     bool write = false;
@@ -68,7 +68,7 @@ std::string SVGBox::toString(const std::string &unit) const
         SVGLength fallback = _value[FALLBACK(i)];
         if (i == BOX_TOP || (val != fallback) || write) {
             if (unit.size()) {
-                ret = std::string(val.toString(unit)) + " " + ret;
+                ret = std::string(val.toString(unit, precision)) + " " + ret;
             } else {
                 ret = std::string(val.write()) + " " + ret;
             }

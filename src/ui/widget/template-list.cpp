@@ -52,7 +52,7 @@ TemplateList::TemplateList(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Buil
 /**
  * Initialise this template list with categories and icons
  */
-void TemplateList::init()
+void TemplateList::init(Inkscape::Extension::TemplateShow mode)
 {
     TemplateCols cols;
     std::map<std::string, Glib::RefPtr<Gtk::ListStore>> _stores;
@@ -70,7 +70,7 @@ void TemplateList::init()
                 return;
             }
         }
-        for (auto preset : tmod->get_selectable_presets()) {
+        for (auto preset : tmod->get_presets(mode)) {
             Gtk::TreeModel::Row row = *(_stores[cat]->append());
             row[cols.name] = preset->get_name();
             row[cols.icon] = icon_to_pixbuf(preset->get_icon_path());
@@ -81,22 +81,6 @@ void TemplateList::init()
 
     reset_selection();
 }
-
-/**
- * Get the preset needed via it's key.
- */
-std::shared_ptr<TemplatePreset> TemplateList::get_preset(std::string key)
-{
-    Inkscape::Extension::DB::TemplateList extensions;
-    Inkscape::Extension::db.get_template_list(extensions);
-    for (auto tmod : extensions) {
-        if (auto preset = tmod->get_preset(key)) {
-            return preset;
-        }
-    }   
-    return nullptr;
-}
-
 
 /**
  * Turn the requested template icon name into a pixbuf
@@ -165,7 +149,7 @@ std::shared_ptr<TemplatePreset> TemplateList::get_selected_preset()
             auto iter = iconview->get_model()->get_iter(items[0]);
             if (Gtk::TreeModel::Row row = *iter) {
                 Glib::ustring key = row[cols.key];
-                return get_preset(key);
+                return Extension::Template::get_any_preset(key);
             }
         }
     }

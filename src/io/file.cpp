@@ -8,9 +8,10 @@
  *
  */
 
-#include "file.h"
+#include "io/file.h"
 
 #include <iostream>
+#include <unistd.h>
 #include <giomm.h>
 
 #include "document.h"
@@ -135,6 +136,32 @@ ink_file_open(const Glib::RefPtr<Gio::File>& file, bool *cancelled_param)
     }
     return doc;
 }
+
+namespace Inkscape {
+namespace IO {
+
+/**
+ * Create a temporary filename, which is closed and deleted when deconstructed.
+ */
+TempFilename::TempFilename(const std::string &pattern)
+    : _filename("")
+    , _tempfd(0)
+{
+    try {
+        _tempfd = Glib::file_open_tmp(_filename, pattern.c_str());
+    } catch (...) {
+        /// \todo Popup dialog here
+        return;
+    }
+}
+  
+TempFilename::~TempFilename()
+{
+    close(_tempfd);
+    unlink(_filename.c_str());
+}
+
+}}
 
 /*
   Local Variables:

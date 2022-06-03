@@ -148,7 +148,7 @@ StartScreen::StartScreen()
     builder->get_widget("recent_treeview", recent_treeview);
 
     // Populate with template extensions
-    templates->init();
+    templates->init(Inkscape::Extension::TEMPLATE_NEW_WELCOME);
 
     // Get references to various widget used locally. (In order of appearance.)
     Gtk::ComboBox* canvas = nullptr;

@@ -11,13 +11,11 @@
 #define WIDGET_TEMPLATE_LIST_H
 
 #include <gtkmm.h>
+#include "extension/template.h"
 
 class SPDocument;
 
 namespace Inkscape {
-namespace Extension {
-    class TemplatePreset;
-}
 namespace UI {
 namespace Widget {
 
@@ -28,7 +26,7 @@ public:
     TemplateList(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade);
     ~TemplateList() override{};
 
-    void init();
+    void init(Extension::TemplateShow mode);
     void reset_selection();
     bool has_selected_preset();
     std::shared_ptr<Extension::TemplatePreset> get_selected_preset();

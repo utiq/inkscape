@@ -96,6 +96,8 @@ public:
     bool subset(SPAttr key, const gchar *value);
     bool setDefaultAttributes(CanvasPage *item);
     bool showDefaultLabel() const { return label_style == "below"; }
+    std::string getSizeLabel(SPPage *page = nullptr);
+    std::string getSizeLabel(double width, double height);
 
     static void enablePages(SPDocument *document) { document->getPageManager().enablePages(); }
     static void disablePages(SPDocument *document) { document->getPageManager().disablePages(); }

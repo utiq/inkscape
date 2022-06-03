@@ -18,13 +18,27 @@
 #include <map>
 #include <string>
 
-#include "extension.h"
+#include "extension/db.h"
+#include "extension/extension.h"
 #include "util/units.h"
 
 class SPDocument;
+class SPPage;
 
 namespace Inkscape {
 namespace Extension {
+
+using TemplateShow = int;
+enum TemplateVisibility : TemplateShow {
+    TEMPLATE_ANY = -1, // Any visibility
+    TEMPLATE_HIDDEN = 0,
+    TEMPLATE_NEW_FROM = 1,
+    TEMPLATE_NEW_WELCOME = 2,
+    TEMPLATE_NEW_ICON = 3,
+    TEMPLATE_SIZE_LIST = 4,
+    TEMPLATE_SIZE_SEARCH = 8,
+    TEMPLATE_ALL = 255 // Set as visible everywhere
+};
 
 class Template;
 class TemplatePreset;
@@ -42,11 +56,17 @@ public:
     std::string get_name() const { return _name; }
     std::string get_label() const { return _label; }
     int get_sort_priority() const { return _priority; }
+    int get_visibility() const { return _visibility; }
 
-    bool is_selectable() { return _selectable; }
-    bool is_searchable() { return _searchable; }
+    bool is_visible(TemplateShow mode) {
+        // Not hidden and contains the requested mode.
+        return _visibility && (mode == TEMPLATE_ANY
+            || ((_visibility & (int)mode) == (int)mode));
+    }
 
-    SPDocument *new_from_template();
+    SPDocument *new_from_template(const TemplatePrefs &others = {});
+    void resize_to_template(SPDocument *doc, SPPage *page, const TemplatePrefs &others = {});
+    bool match_size(double width, double height, const TemplatePrefs &others = {});
 
     Glib::ustring get_icon_path() const;
 
@@ -59,14 +79,14 @@ protected:
     std::string _name;
     std::string _label;
     int _priority;
-
-    bool _selectable; // Does this appear in the start screen and page size dropdown
-    bool _searchable; // Does this appear when searching for a named size
+    int _visibility;
 
     // This is a set of preferences given to the extension
     TemplatePrefs _prefs;
 
     Glib::ustring _get_icon_path(const std::string &name) const;
+    bool setup_prefs(const TemplatePrefs &others = {});
+    void _add_prefs(const TemplatePrefs &prefs);
 };
 
 class Template : public Extension
@@ -84,25 +104,37 @@ public:
     bool check() override;
 
     SPDocument *new_from_template();
+    void resize_to_template(SPDocument *doc, SPPage *page);
 
     std::string get_icon() const { return _icon; }
     std::string get_description() const { return _desc; }
     std::string get_category() const { return _category; }
 
-    TemplatePresets get_presets() const;
-    TemplatePresets get_selectable_presets() const;
-    TemplatePresets get_searchable_presets() const;
+    bool can_resize() const { return _can_resize; }
+    int get_visibility() const { return _visibility; }
 
-    std::shared_ptr<TemplatePreset> get_preset(std::string key);
+    TemplatePresets get_presets(TemplateShow visibility = TEMPLATE_ANY) const;
+
+    std::shared_ptr<TemplatePreset> get_preset(const std::string &key);
+    std::shared_ptr<TemplatePreset> get_preset(double width, double height);
+    static std::shared_ptr<TemplatePreset> get_any_preset(const std::string &key);
+    static std::shared_ptr<TemplatePreset> get_any_preset(double width, double height);
 
     Glib::RefPtr<Gio::File> get_template_filename() const;
     SPDocument *get_template_document() const;
 
+protected:
+    friend class TemplatePreset;
+
+    static int parse_visibility(const std::string &value);
 private:
     std::string _source;
     std::string _icon;
     std::string _desc;
     std::string _category;
+
+    bool _can_resize = false; // Can this be used to resize existing pages?
+    int _visibility = TEMPLATE_SIZE_SEARCH;
 
     TemplatePresets _presets;
 };

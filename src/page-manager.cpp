@@ -13,6 +13,7 @@
 #include "desktop.h"
 #include "display/control/canvas-page.h"
 #include "document.h"
+#include "extension/template.h"
 #include "object/object-set.h"
 #include "object/sp-item.h"
 #include "object/sp-namedview.h"
@@ -21,6 +22,7 @@
 #include "selection-chemistry.h"
 #include "svg/svg-color.h"
 #include "util/parse-int-range.h"
+#include "util/numeric/converters.h"
 
 namespace Inkscape {
 
@@ -252,7 +254,6 @@ SPPage *PageManager::newPage(SPPage *page)
     new_page->movePage(page_move, false);
     return new_page;
 }
-
 
 /**
  * Delete the given page.
@@ -688,6 +689,43 @@ bool PageManager::setDefaultAttributes(Inkscape::CanvasPage *item)
     ret = item->setPageColor(border_show ? border_color : 0x0, bgcolor, dkcolor, margin_color, bleed_color) || ret;
     ret = item->setLabelStyle(label_style) || ret;
     return ret;
+}
+
+/**
+ * Return a page's size label, or match via width and height.
+ */
+std::string PageManager::getSizeLabel(SPPage *page)
+{
+    auto box = *_document->preferredBounds();
+    if (page) {
+        box = page->getDesktopRect();
+        auto label = page->getSizeLabel();
+        if (!label.empty())
+            return label;
+    }
+    return getSizeLabel(box.width(), box.height());
+}
+
+/**
+ * Loop through all page sizes to find a matching one for this width and height.
+ *
+ * @param width - The X axis size in pixels
+ * @param height - The Y axis size in pixels
+ */
+std::string PageManager::getSizeLabel(double width, double height)
+{
+    using namespace Inkscape::Util;
+
+    if (auto preset = Inkscape::Extension::Template::get_any_preset(width, height)) {
+        return preset->get_name();
+    }
+
+    static auto px = Inkscape::Util::unit_table.getUnit("px");
+    auto unit = _document->getDisplayUnit();
+    return format_number(Quantity::convert(width, px, unit), 2)
+             + " × " +
+           format_number(Quantity::convert(height, px, unit), 2)
+             + " " + unit->abbr;
 }
 
 /**

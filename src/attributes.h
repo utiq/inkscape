@@ -141,6 +141,7 @@ enum class SPAttr {
     /* SPPage */
     PAGE_MARGIN,
     PAGE_BLEED,
+    PAGE_SIZE,
     /* SPImage, SPRect, etc. */
     X,
     Y,

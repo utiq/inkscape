@@ -24,6 +24,7 @@ namespace Gtk {
 }
 
 class SPDocument;
+class SPPage;
 class SPStyle;
 
 namespace Inkscape {
@@ -104,8 +105,9 @@ public:
 
     // ---- Template and Page functions -----
     virtual SPDocument *new_from_template(Inkscape::Extension::Template *) { return nullptr; }
-    virtual void resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc){};
     virtual void get_template_presets(const Template *tmod, TemplatePresets &presets) const {};
+    virtual void resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc, SPPage *page){};
+    virtual bool match_template_size(Inkscape::Extension::Template *tmod, double width, double height){ return false; }
 
     // ----- Input functions -----
     virtual SPDocument *open(Inkscape::Extension::Input * /*module*/,

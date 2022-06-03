@@ -41,14 +41,14 @@ void TemplateOther::init()
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"
             "<param name='size' gui-text='" N_("Size") "' type='float' min='1.0' max='100000.0'>32.0</param>"
 
-            "<template icon='icon_square' unit='px' priority='-10'>"
+            "<template icon='icon_square' unit='px' priority='-10' visibility='icon,search'>"
 
-"<preset name='Icon 16x16' label='16px x 16px' size='16' selectable='true'/>"
-"<preset name='Icon 32x32' label='32px x 32px' size='32' selectable='true'/>"
-"<preset name='Icon 48x48' label='48px x 48px' size='48' selectable='true'/>"
-"<preset name='Icon 120x120' label='120px x 120px' size='120' selectable='true'/>"
-"<preset name='Icon 180x180' label='180px x 180px' size='180' selectable='true'/>"
-"<preset name='Icon 512x512' label='512px x 512px' size='512' selectable='true'/>"
+"<preset name='Icon 16x16' label='16 × 16 px' size='16'/>"
+"<preset name='Icon 32x32' label='32 × 32 px' size='32'/>"
+"<preset name='Icon 48x48' label='48 × 48 px' size='48'/>"
+"<preset name='Icon 120x120' label='120 × 120 px' size='120'/>"
+"<preset name='Icon 180x180' label='180 × 180 px' size='180'/>"
+"<preset name='Icon 512x512' label='512 × 512 px' size='512'/>"
 
             "</template>"
         "</inkscape-extension>"

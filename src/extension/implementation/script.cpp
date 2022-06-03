@@ -36,9 +36,12 @@
 #include "inkscape-window.h"
 #include "inkscape.h"
 #include "io/resource.h"
+#include "io/file.h"
 #include "layer-manager.h"
 #include "object/sp-namedview.h"
+#include "object/sp-page.h"
 #include "object/sp-path.h"
+#include "object/sp-root.h"
 #include "path-prefix.h"
 #include "preferences.h"
 #include "selection.h"
@@ -281,50 +284,6 @@ bool Script::check(Inkscape::Extension::Extension *module)
     return true;
 }
 
-class ScriptDocCache : public ImplementationDocumentCache {
-    friend class Script;
-protected:
-    std::string _filename;
-    int _tempfd;
-public:
-    ScriptDocCache (Inkscape::UI::View::View * view);
-    ~ScriptDocCache ( ) override;
-};
-
-ScriptDocCache::ScriptDocCache (Inkscape::UI::View::View * view) :
-    ImplementationDocumentCache(view),
-    _filename(""),
-    _tempfd(0)
-{
-    try {
-        _tempfd = Glib::file_open_tmp(_filename, "ink_ext_XXXXXX.svg");
-    } catch (...) {
-        /// \todo Popup dialog here
-        return;
-    }
-
-    SPDesktop *desktop = (SPDesktop *) view;
-    sp_namedview_document_from_window(desktop);
-
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    prefs->setBool("/options/svgoutput/disable_optimizations", true);
-    Inkscape::Extension::save(
-              Inkscape::Extension::db.get(SP_MODULE_KEY_OUTPUT_SVG_INKSCAPE),
-              view->doc(), _filename.c_str(), false, false, Inkscape::Extension::FILE_SAVE_METHOD_TEMPORARY);
-    prefs->setBool("/options/svgoutput/disable_optimizations", false);
-    return;
-}
-
-ScriptDocCache::~ScriptDocCache ( )
-{
-    close(_tempfd);
-    unlink(_filename.c_str());
-}
-
-ImplementationDocumentCache *Script::newDocCache( Inkscape::Extension::Extension * /*ext*/, Inkscape::UI::View::View * view ) {
-    return new ScriptDocCache(view);
-}
-
 /**
  * Create a new document based on the given template.
  */
@@ -342,6 +301,25 @@ SPDocument *Script::new_from_template(Inkscape::Extension::Template *module)
     }
 
     return nullptr;
+}
+
+/**
+ * Take an existing document and selected page and resize or add items as needed.
+ */
+void Script::resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc, SPPage *page)
+{
+    std::list<std::string> params;
+    {
+        std::string param = "--page=";
+        if (page) {
+            param += page->getId();
+        } else {
+            // This means 'resize the svg document'
+            param += doc->getRoot()->getId();
+        }
+        params.push_back(param);
+    }
+    _change_extension(tmod, doc, params, true);
 }
 
 /**
@@ -553,14 +531,6 @@ void Script::effect(Inkscape::Extension::Effect *module,
                Inkscape::UI::View::View *doc,
                ImplementationDocumentCache * docCache)
 {
-    if (docCache == nullptr) {
-        docCache = newDocCache(module, doc);
-    }
-    ScriptDocCache * dc = dynamic_cast<ScriptDocCache *>(docCache);
-    if (dc == nullptr) {
-        printf("TOO BAD TO LIVE!!!");
-        std::terminate();
-    }
     if (doc == nullptr)
     {
         g_warning("Script::effect: View not defined");
@@ -570,19 +540,17 @@ void Script::effect(Inkscape::Extension::Effect *module,
     SPDesktop *desktop = reinterpret_cast<SPDesktop *>(doc);
     sp_namedview_document_from_window(desktop);
 
-    std::list<std::string> params;
-    module->paramListString(params);
-    module->set_environment(desktop->getDocument());
-
-    parent_window = module->get_execution_env()->get_working_dialog();
-
     if (module->no_doc) {
         // this is a no-doc extension, e.g. a Help menu command;
         // just run the command without any files, ignoring errors
 
+        std::list<std::string> params;
+        module->paramListString(params);
+        module->set_environment(desktop->getDocument());
+
         Glib::ustring empty;
         file_listener outfile;
-        execute(command, params, empty, outfile);
+        execute(command, {}, empty, outfile);
 
         // Hack to allow for extension manager to reload extensions
         // TODO: Find a better way to do this, e.g. implement an action and have extensions (or users)
@@ -595,27 +563,44 @@ void Script::effect(Inkscape::Extension::Effect *module,
         return;
     }
 
-    std::string tempfilename_out;
-    int tempfd_out = 0;
-    try {
-        tempfd_out = Glib::file_open_tmp(tempfilename_out, "ink_ext_XXXXXX.svg");
-    } catch (...) {
-        /// \todo Popup dialog here
-        return;
-    }
-
+    std::list<std::string> params;
     if (desktop) {
         Inkscape::Selection * selection = desktop->getSelection();
         if (selection) {
             params = selection->params;
-            module->paramListString(params);
             selection->clear();
         }
     }
+    _change_extension(module, desktop->getDocument(), params, module->ignore_stderr);
+}
+
+/**
+ * Internally, any modification of an existing document, used by effect and resize_page extensions.
+ */
+void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocument *doc, std::list<std::string> &params, bool ignore_stderr)
+{
+    module->paramListString(params);
+    module->set_environment(doc);
+
+    if (auto env = module->get_execution_env()) {
+        parent_window = env->get_working_dialog();
+    }
+
+    auto tempfile_out = Inkscape::IO::TempFilename("ink_ext_XXXXXX.svg");
+    auto tempfile_in = Inkscape::IO::TempFilename("ink_ext_XXXXXX.svg");
+
+    // Save current document to a temporary file we can send to the extension
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    prefs->setBool("/options/svgoutput/disable_optimizations", true);
+    Inkscape::Extension::save(
+              Inkscape::Extension::db.get(SP_MODULE_KEY_OUTPUT_SVG_INKSCAPE),
+              doc, tempfile_in.get_filename().c_str(), false, false,
+              Inkscape::Extension::FILE_SAVE_METHOD_TEMPORARY);
+    prefs->setBool("/options/svgoutput/disable_optimizations", false);
 
     file_listener fileout;
-    int data_read = execute(command, params, dc->_filename, fileout, module->ignore_stderr);
-    fileout.toFile(tempfilename_out);
+    int data_read = execute(command, params, tempfile_in.get_filename(), fileout, ignore_stderr);
+    fileout.toFile(tempfile_out.get_filename());
 
     pump_events();
 
@@ -624,7 +609,7 @@ void Script::effect(Inkscape::Extension::Effect *module,
         try {
             mydoc = Inkscape::Extension::open(
                   Inkscape::Extension::db.get(SP_MODULE_KEY_INPUT_SVG),
-                  tempfilename_out.c_str());
+                  tempfile_out.get_filename().c_str());
         } catch (const Inkscape::Extension::Input::open_failed &e) {
             g_warning("Extension returned output that could not be parsed: %s", e.what());
             Gtk::MessageDialog warning(
@@ -637,45 +622,11 @@ void Script::effect(Inkscape::Extension::Effect *module,
 
     pump_events();
 
-    // make sure we don't leak file descriptors from Glib::file_open_tmp
-    close(tempfd_out);
-
-    g_unlink(tempfilename_out.c_str());
-
     if (mydoc) {
-        SPDocument* vd=doc->doc();
-        if (vd != nullptr)
-        {
-            mydoc->changeFilenameAndHrefs(vd->getDocumentFilename());
-
-            vd->emitReconstructionStart();
-            copy_doc(vd->getReprRoot(), mydoc->getReprRoot());
-            vd->emitReconstructionFinish();
-
-            // Getting the named view from the document generated by the extension
-            SPNamedView *nv = mydoc->getNamedView();
-
-            //Check if it has a default layer set up
-            SPObject *layer = nullptr;
-            if ( nv != nullptr)
-            {
-                SPDocument *document = desktop->doc();
-                if (document != nullptr) {
-                    //If so, get that layer
-                    if( nv->default_layer_id != 0 ) {
-                        layer = document->getObjectById(g_quark_to_string(nv->default_layer_id));
-                    }
-                    desktop->showGrids(nv->grids_visible);
-                }
-            }
-
-            sp_namedview_update_layers_from_document(desktop);
-            //If that layer exists,
-            if (layer) {
-                //set the current layer
-                desktop->layerManager().setCurrentLayer(layer);
-            }
-        }
+        mydoc->changeFilenameAndHrefs(doc->getDocumentFilename());
+        doc->emitReconstructionStart();
+        copy_doc(doc->getReprRoot(), mydoc->getReprRoot());
+        doc->emitReconstructionFinish();
         mydoc->release();
     }
 

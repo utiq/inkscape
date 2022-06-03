@@ -50,7 +50,7 @@ protected:
     void marginBottomEdited();
     void marginLeftEdited();
     void marginSideEdited(int side, const Glib::ustring &value);
-    void sizeChoose();
+    void sizeChoose(const std::string &preset_key);
     void sizeChanged();
     void setSizeText(SPPage *page = nullptr, bool display_only = true);
     void setMarginText(SPPage *page = nullptr);
@@ -63,6 +63,7 @@ private:
     void pagesChanged();
     void selectionChanged(SPPage *page);
     void on_parent_changed(Gtk::Widget *prev) override;
+    void populate_sizes();
 
     sigc::connection _ec_connection;
     sigc::connection _doc_connection;
@@ -84,6 +85,10 @@ private:
     Gtk::ToolButton *btn_page_delete;
     Gtk::ToolButton *btn_move_toggle;
     Gtk::SeparatorToolItem *sep1;
+
+    Glib::RefPtr<Gtk::ListStore> sizes_list;
+    Glib::RefPtr<Gtk::ListStore> sizes_search;
+    Glib::RefPtr<Gtk::EntryCompletion> sizes_searcher;
 
     Gtk::Popover *margin_popover;
 
