@@ -17,14 +17,12 @@
  * Authors:
  */
 
+#include <glibmm/ustring.h>
+
 #include "sp-object.h"
 #include "color.h"
 
 typedef unsigned int guint32;
-
-namespace Glib {
-class ustring;
-}
 
 /** Gradient stop. */
 class SPStop : public SPObject {
@@ -35,7 +33,7 @@ public:
     /// \todo fixme: Should be SPSVGPercentage
     float offset;
 
-    Glib::ustring * path_string;
+    Glib::ustring path_string;
     //SPCurve path;
 
     SPStop* getNextStop();

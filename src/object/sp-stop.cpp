@@ -25,7 +25,6 @@
 #include "svg/css-ostringstream.h"
 
 SPStop::SPStop() : SPObject() {
-    this->path_string = nullptr;
     this->offset = 0.0;
 }
 
@@ -52,7 +51,7 @@ void SPStop::set(SPAttr key, const gchar* value) {
         }
         case SPAttr::STOP_PATH: {
             if (value) {
-                this->path_string = new Glib::ustring( value );
+                this->path_string = Glib::ustring(value);
                 //Geom::PathVector pv = sp_svg_read_pathv(value);
                 //SPCurve *curve = new SPCurve(pv);
                 //if( curve ) {

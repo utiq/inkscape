@@ -761,7 +761,7 @@ bool SPMeshNodeArray::read( SPMeshGradient *mg_in ) {
 
 
                             // Copy path and then replace commas by spaces so we can use stringstream to parse
-                            std::string path_string = stop->path_string->raw();
+                            std::string path_string = stop->path_string.raw();
                             std::replace(path_string.begin(),path_string.end(),',',' ');
 
                             // std::cout << "    path_string: " << path_string << std::endl;
