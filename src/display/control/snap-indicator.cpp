@@ -417,9 +417,9 @@ void SnapIndicator::make_alignment_indicator(Geom::Point const &p1, Geom::Point 
     ctrl->set_pickable(false);
     _alignment_snap_indicators.push_back(_desktop->add_temporary_canvasitem(ctrl, 0));
 
-    if (show_distance) {
-        auto dist = Geom::L2(p2 - p1);
-        double offset = (fontsize + 5)/_desktop->current_zoom();
+    auto dist = Geom::L2(p2 - p1);
+    double offset = (fontsize + 5) / _desktop->current_zoom();
+    if (show_distance && dist > 2 * offset) {
         auto direction = Geom::unit_vector(p1 - p2);
         auto text_pos = (p1 + p2)/2;
 
