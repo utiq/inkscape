@@ -487,7 +487,7 @@ void SymbolsDialog::hideOverlay() {
 }
 
 void SymbolsDialog::insertSymbol() {
-    getDesktop()->selection->toSymbol();
+    getDesktop()->getSelection()->toSymbol();
 }
 
 void SymbolsDialog::revertSymbol() {

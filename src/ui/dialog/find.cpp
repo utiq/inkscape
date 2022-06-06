@@ -968,9 +968,9 @@ void Find::onAction()
     std::vector<SPItem*> l;
     if (check_scope_selection.get_active()) {
         if (check_scope_layer.get_active()) {
-            l = all_selection_items (desktop->selection, l, desktop->layerManager().currentLayer(), hidden, locked);
+            l = all_selection_items (desktop->getSelection(), l, desktop->layerManager().currentLayer(), hidden, locked);
         } else {
-            l = all_selection_items (desktop->selection, l, nullptr, hidden, locked);
+            l = all_selection_items (desktop->getSelection(), l, nullptr, hidden, locked);
         }
     } else {
         if (check_scope_layer.get_active()) {

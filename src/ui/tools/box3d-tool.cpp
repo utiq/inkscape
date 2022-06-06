@@ -361,7 +361,7 @@ bool Box3dTool::root_handler(GdkEvent* event) {
         case GDK_KEY_g:
         case GDK_KEY_G:
             if (MOD__SHIFT_ONLY(event)) {
-                _desktop->selection->toGuides();
+                _desktop->getSelection()->toGuides();
                 ret = true;
             }
             break;

@@ -85,7 +85,7 @@ void
 Grid::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::View *view, Inkscape::Extension::Implementation::ImplementationDocumentCache * /*docCache*/)
 {
     auto desktop = dynamic_cast<SPDesktop *>(view);
-    Inkscape::Selection *selection = desktop->selection;
+    Inkscape::Selection *selection = desktop->getSelection();
     SPDocument *doc = desktop->doc();
 
     Geom::Rect bounding_area = Geom::Rect(Geom::Point(0,0), Geom::Point(100,100));

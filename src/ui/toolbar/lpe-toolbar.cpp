@@ -248,7 +248,7 @@ LPEToolbar::toggle_show_bbox() {
 void
 LPEToolbar::toggle_set_bbox()
 {
-    auto selection = _desktop->selection;
+    auto selection = _desktop->getSelection();
 
     auto bbox = selection->visualBounds();
 

@@ -1421,7 +1421,7 @@ SPItem *sp_event_context_find_item(SPDesktop *desktop, Geom::Point const &p,
     SPItem *item = nullptr;
 
     if (select_under) {
-        auto tmp = desktop->selection->items();
+        auto tmp = desktop->getSelection()->items();
         std::vector<SPItem *> vec(tmp.begin(), tmp.end());
         SPItem *selected_at_point = desktop->getItemFromListAtPointBottom(vec, p);
         item = desktop->getItemAtPoint(p, into_groups, selected_at_point);

@@ -101,7 +101,6 @@ static void _pinch_scale_changed_handler(GtkGesture *gesture, gdouble delta, SPD
 SPDesktop::SPDesktop()
     : namedview(nullptr)
     , canvas(nullptr)
-    , selection(nullptr)
     , temporary_item_list(nullptr)
     , snapindicator(nullptr)
     , current(nullptr)  // current style
@@ -123,7 +122,7 @@ SPDesktop::SPDesktop()
     , _active(false)
 {
     _layer_manager = std::make_unique<Inkscape::LayerManager>(this);
-    selection = Inkscape::GC::release(new Inkscape::Selection(this));
+    _selection = Inkscape::GC::release(new Inkscape::Selection(this));
 }
 
 void
@@ -284,9 +283,9 @@ void SPDesktop::destroy()
         temporary_item_list = nullptr;
     }
 
-    if (selection) {
-        delete selection;
-        selection = nullptr;
+    if (_selection) {
+        delete _selection;
+        _selection = nullptr;
     }
 
     namedview->hide(this);
@@ -388,7 +387,7 @@ SPDesktop::change_document (SPDocument *theDocument)
     g_return_if_fail (theDocument != nullptr);
 
     /* unselect everything before switching documents */
-    selection->clear();
+    _selection->clear();
 
     // Reset any tool actions currently in progress.
     setEventContext(std::string(event_context->getPrefsPath()));
@@ -736,7 +735,7 @@ SPDesktop::zoom_drawing()
 void
 SPDesktop::zoom_selection()
 {
-    Geom::OptRect const d = selection->visualBounds();
+    Geom::OptRect const d = _selection->visualBounds();
 
     if ( !d || d->minExtent() < 0.1 ) {
         return;
@@ -781,7 +780,7 @@ void SPDesktop::zoom_quick(bool enable)
         }
 
         if (!zoomed) {
-            Geom::OptRect const d = selection->visualBounds();
+            Geom::OptRect const d = _selection->visualBounds();
             if (d) {
                 set_display_area(*d, true);
                 zoomed = true;
@@ -1387,7 +1386,7 @@ SPDesktop::setDocument (SPDocument *doc)
         this->doc()->getRoot()->invoke_hide(dkey);
     }
 
-    selection->setDocument(doc);
+    _selection->setDocument(doc);
 
     /// \todo fixme: This condition exists to make sure the code
     /// inside is NOT called on initialization, only on replacement. But there
@@ -1461,7 +1460,7 @@ static void _reconstruction_start(SPDesktop * desktop)
     desktop->_reconstruction_old_layer_id = layer->getId() ? layer->getId() : "";
     desktop->layerManager().reset();
 
-    desktop->selection->clear();
+    desktop->getSelection()->clear();
 }
 
 /// Called when document rebuild is finished.

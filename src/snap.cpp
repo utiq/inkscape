@@ -731,7 +731,7 @@ void SnapManager::setupIgnoreSelection(SPDesktop const *desktop,
     _findCandidates_already_called = false;
     _objects_to_ignore.clear();
 
-    Inkscape::Selection *sel = _desktop->selection;
+    Inkscape::Selection *sel = _desktop->getSelection();
     auto items = sel->items();
     for (auto i=items.begin();i!=items.end();++i) {
         _objects_to_ignore.push_back(*i);

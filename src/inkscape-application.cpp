@@ -14,7 +14,7 @@
  *     InkscapeApplication::InkscapeApplication
  *       Initialized: GC, Debug, Gettext, Autosave, Actions, Commandline
  *     InkscapeApplication::on_handle_local_options
- *       InkscapeAppllication::parse_actions
+ *       InkscapeApplication::parse_actions
  *
  *     -- Switch to main instance if new Inkscape instance is merged with existing instance. --
  *        New instances are merged with existing instance unless app_id is changed, see below.

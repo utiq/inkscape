@@ -90,7 +90,7 @@ SelectTool::SelectTool(SPDesktop *desktop)
         select_click.c_str(), select_scroll.c_str());
 
     this->_describer = new Inkscape::SelectionDescriber(
-                desktop->selection, 
+                desktop->getSelection(),
                 desktop->messageStack(),
                 _("Click selection again to toggle scale/rotation handles"),
                 no_selection_msg);
@@ -1071,7 +1071,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                 case GDK_KEY_g:
                 case GDK_KEY_G:
                     if (MOD__SHIFT_ONLY(event)) {
-                        _desktop->selection->toGuides();
+                        _desktop->getSelection()->toGuides();
                         ret = true;
                     }
                     break;

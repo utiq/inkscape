@@ -107,7 +107,7 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
         // "item" is the object that was under the mouse when right-clicked. It determines what is shown
         // in the menu thus it makes the most sense that it is either selected or part of the current
         // selection.
-        auto selection = desktop->selection;
+        auto selection = desktop->getSelection();
         if (object && !selection->includes(object)) {
             selection->set(object);
         }

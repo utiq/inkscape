@@ -926,12 +926,12 @@ void SelectorsDialog::_selectObjects(int eventX, int eventY)
             return;
         }
         if (col == _treeView.get_column(1) && x2 > 25) {
-            getDesktop()->selection->clear();
+            getDesktop()->getSelection()->clear();
             Gtk::TreeModel::iterator iter = _store->get_iter(path);
             if (iter) {
                 Gtk::TreeModel::Row row = *iter;
                 if (row[_mColumns._colObj]) {
-                    getDesktop()->selection->add(row[_mColumns._colObj]);
+                    getDesktop()->getSelection()->add(row[_mColumns._colObj]);
                 }
                 Gtk::TreeModel::Children children = row.children();
                 if (children.empty() || children.size() == 1) {
@@ -940,7 +940,7 @@ void SelectorsDialog::_selectObjects(int eventX, int eventY)
                 for (auto child : row.children()) {
                     Gtk::TreeModel::Row child_row = *child;
                     if (child[_mColumns._colObj]) {
-                        getDesktop()->selection->add(child[_mColumns._colObj]);
+                        getDesktop()->getSelection()->add(child[_mColumns._colObj]);
                     }
                 }
             }

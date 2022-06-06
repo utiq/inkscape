@@ -43,8 +43,8 @@ PagesTool::PagesTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/pages", "select.svg")
 {
     // Stash the regular object selection so we don't modify them in base-tools root handler.
-    desktop->selection->setBackup();
-    desktop->selection->clear();
+    desktop->getSelection()->setBackup();
+    desktop->getSelection()->clear();
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     drag_tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
@@ -99,7 +99,7 @@ PagesTool::~PagesTool()
 
     ungrabCanvasEvents();
 
-    _desktop->selection->restoreBackup();
+    _desktop->getSelection()->restoreBackup();
 
     if (visual_box) {
         delete visual_box;

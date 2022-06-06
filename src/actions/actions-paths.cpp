@@ -116,8 +116,8 @@ select_path_inset(InkscapeWindow* win)
     SPDesktop* dt = win->get_desktop();
 
     // Inset selected paths
-    dt->selection->removeLPESRecursive(true);
-    dt->selection->unlinkRecursive(true);
+    dt->getSelection()->removeLPESRecursive(true);
+    dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_inset(dt);
 }
 
@@ -127,8 +127,8 @@ select_path_offset(InkscapeWindow* win)
     SPDesktop* dt = win->get_desktop();
 
     // Offset selected paths
-    dt->selection->removeLPESRecursive(true);
-    dt->selection->unlinkRecursive(true);
+    dt->getSelection()->removeLPESRecursive(true);
+    dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_offset(dt);
 }
 
@@ -140,8 +140,8 @@ select_path_inset_screen(const Glib::VariantBase& value, InkscapeWindow *win)
     SPDesktop* dt = win->get_desktop();
 
     // Offset selected paths
-    dt->selection->removeLPESRecursive(true);
-    dt->selection->unlinkRecursive(true);
+    dt->getSelection()->removeLPESRecursive(true);
+    dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_inset_screen(dt, d.get());
 }
 
@@ -153,8 +153,8 @@ select_path_offset_screen(const Glib::VariantBase& value, InkscapeWindow *win)
     SPDesktop* dt = win->get_desktop();
 
     // Offset selected paths
-    dt->selection->removeLPESRecursive(true);
-    dt->selection->unlinkRecursive(true);
+    dt->getSelection()->removeLPESRecursive(true);
+    dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_offset_screen(dt, d.get());
 }
 
@@ -164,8 +164,8 @@ select_path_offset_dynamic(InkscapeWindow* win)
     SPDesktop* dt = win->get_desktop();
 
     // Dynamic Offset
-    dt->selection->removeLPESRecursive(true);
-    dt->selection->unlinkRecursive(true);
+    dt->getSelection()->removeLPESRecursive(true);
+    dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_create_offset_object_zero(dt);
 }
 
@@ -175,8 +175,8 @@ select_path_offset_linked(InkscapeWindow* win)
     SPDesktop* dt = win->get_desktop();
 
     // Linked Offset
-    dt->selection->removeLPESRecursive(true);
-    dt->selection->unlinkRecursive(true);
+    dt->getSelection()->removeLPESRecursive(true);
+    dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_create_updating_offset_object_zero(dt);
 }
 

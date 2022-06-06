@@ -446,12 +446,12 @@ bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place)
     // _copySelection() has put all items in groups, now ungroup them (preserves transform
     // relationships of clones, text-on-path, etc.)
     if (target == "image/x-inkscape-svg") {
-        desktop->selection->ungroup(true);
-        std::vector<SPItem *> vec2(desktop->selection->items().begin(), desktop->selection->items().end());
+        desktop->getSelection()->ungroup(true);
+        std::vector<SPItem *> vec2(desktop->getSelection()->items().begin(), desktop->getSelection()->items().end());
         for (auto item : vec2) {
             // just a bit beauty on paste hidden items unselect
             if (vec2.size() > 1 && item->isHidden()) {
-                desktop->selection->remove(item);
+                desktop->getSelection()->remove(item);
             }
             SPLPEItem *pasted_lpe_item = dynamic_cast<SPLPEItem *>(item);
             if (pasted_lpe_item) {
@@ -536,10 +536,10 @@ bool ClipboardManagerImpl::_copyNodes(SPDesktop *desktop, ObjectSet *set)
 bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, bool in_place)
 {
     auto node_tool = dynamic_cast<Inkscape::UI::Tools::NodeTool *>(desktop->event_context);
-    if (!node_tool || desktop->selection->objects().size() != 1)
+    if (!node_tool || desktop->getSelection()->objects().size() != 1)
         return false;
 
-    SPObject *obj = desktop->selection->objects().back();
+    SPObject *obj = desktop->getSelection()->objects().back();
     auto target_path = dynamic_cast<SPPath *>(obj);
     if (!target_path)
         return false;

@@ -1931,8 +1931,8 @@ sp_desktop_query_style(SPDesktop *desktop, SPStyle *style, int property)
         return ret; // subselection returned a style, pass it on
 
     // otherwise, do querying and averaging over selection
-    if (desktop->selection != nullptr) {
-        std::vector<SPItem *> vec(desktop->selection->items().begin(), desktop->selection->items().end());
+    if (auto selection = desktop->getSelection()) {
+        std::vector<SPItem *> vec(selection->items().begin(), selection->items().end());
         return sp_desktop_query_style_from_list (vec, style, property);
     }
 

@@ -152,8 +152,8 @@ void TweakTool::update_cursor (bool with_shift) {
     guint num = 0;
     gchar *sel_message = nullptr;
 
-    if (!_desktop->selection->isEmpty()) {
-        num = (guint)boost::distance(_desktop->selection->items());
+    if (!_desktop->getSelection()->isEmpty()) {
+        num = (guint)boost::distance(_desktop->getSelection()->items());
         sel_message = g_strdup_printf(ngettext("<b>%i</b> object selected","<b>%i</b> objects selected",num), num);
     } else {
         sel_message = g_strdup_printf("%s", _("<b>Nothing</b> selected"));
@@ -1170,8 +1170,8 @@ bool TweakTool::root_handler(GdkEvent* event) {
             dilate_area->show();
 
             guint num = 0;
-            if (!_desktop->selection->isEmpty()) {
-                num = (guint)boost::distance(_desktop->selection->items());
+            if (!_desktop->getSelection()->isEmpty()) {
+                num = (guint)boost::distance(_desktop->getSelection()->items());
             }
             if (num == 0) {
                 this->message_context->flash(Inkscape::ERROR_MESSAGE, _("<b>Nothing selected!</b> Select objects to tweak."));

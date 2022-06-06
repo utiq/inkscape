@@ -331,10 +331,10 @@ void NodeTool::set(const Inkscape::Preferences::Entry& value) {
             this->show_transform_handles, this->single_node_transform_handles);
     } else if (entry_name == "edit_clipping_paths") {
         this->edit_clipping_paths = value.getBool();
-        this->selection_changed(_desktop->selection);
+        this->selection_changed(_desktop->getSelection());
     } else if (entry_name == "edit_masks") {
         this->edit_masks = value.getBool();
-        this->selection_changed(_desktop->selection);
+        this->selection_changed(_desktop->getSelection());
     } else {
         ToolBase::set(value);
     }
@@ -431,7 +431,7 @@ bool NodeTool::root_handler(GdkEvent* event) {
      */
     using namespace Inkscape::UI; // pull in event helpers
 
-    Inkscape::Selection *selection = _desktop->selection;
+    Inkscape::Selection *selection = _desktop->getSelection();
     static Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     if (this->_multipath->event(this, event)) {
@@ -461,7 +461,7 @@ bool NodeTool::root_handler(GdkEvent* event) {
 
         // We will show a pre-snap indication for when the user adds a node through double-clicking
         // Adding a node will only work when a path has been selected; if that's not the case then snapping is useless
-        if (!_desktop->selection->isEmpty()) {
+        if (!_desktop->getSelection()->isEmpty()) {
             if (!(event->motion.state & GDK_SHIFT_MASK)) {
                 m.setup(_desktop);
                 Inkscape::SnapCandidatePoint scp(motion_dt, Inkscape::SNAPSOURCE_OTHER_HANDLE);
@@ -705,7 +705,7 @@ void NodeTool::select_area(Geom::Rect const &sel, GdkEventButton *event) {
     
     if (this->_multipath->empty()) {
         // if multipath is empty, select rubberbanded items rather than nodes
-        Inkscape::Selection *selection = _desktop->selection;
+        Inkscape::Selection *selection = _desktop->getSelection();
         auto sel_doc = _desktop->dt2doc() * sel;
         std::vector<SPItem *> items = _desktop->getDocument()->getItemsInBox(_desktop->dkey, sel_doc);
         selection->setList(items);
@@ -742,7 +742,7 @@ void NodeTool::select_point(Geom::Point const &/*sel*/, GdkEventButton *event) {
         return;
     }
 
-    Inkscape::Selection *selection = _desktop->selection;
+    Inkscape::Selection *selection = _desktop->getSelection();
 
     SPItem *item_clicked = sp_event_context_find_item (_desktop, event_point(*event),
                     (event->state & GDK_MOD1_MASK) && !(event->state & GDK_CONTROL_MASK), TRUE);

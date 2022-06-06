@@ -404,8 +404,8 @@ bool PencilTool::_handleButtonRelease(GdkEventButton const &revent) {
                             if (lpe) {
                                 LPEPowerStroke* ps = static_cast<LPEPowerStroke*>(lpe);
                                 if (ps) {
-                                    _desktop->selection->clear();
-                                    _desktop->selection->add(item);
+                                    _desktop->getSelection()->clear();
+                                    _desktop->getSelection()->add(item);
                                 }
                             }
                         }
@@ -550,7 +550,7 @@ bool PencilTool::_handleKeyPress(GdkEventKey const &event) {
         case GDK_KEY_g:
         case GDK_KEY_G:
             if (Inkscape::UI::held_only_shift(event)) {
-                _desktop->selection->toGuides();
+                _desktop->getSelection()->toGuides();
                 ret = true;
             }
             break;

@@ -1896,7 +1896,7 @@ static void sptc_commit(GtkIMContext */*imc*/, gchar *string, TextTool *tc)
 
 void sp_text_context_place_cursor (TextTool *tc, SPObject *text, Inkscape::Text::Layout::iterator where)
 {
-    tc->getDesktop()->selection->set (text);
+    tc->getDesktop()->getSelection()->set (text);
     tc->text_sel_start = tc->text_sel_end = where;
     sp_text_context_update_cursor(tc);
     sp_text_context_update_text_selection(tc);
@@ -1904,7 +1904,7 @@ void sp_text_context_place_cursor (TextTool *tc, SPObject *text, Inkscape::Text:
 
 void sp_text_context_place_cursor_at (TextTool *tc, SPObject *text, Geom::Point const p)
 {
-    tc->getDesktop()->selection->set (text);
+    tc->getDesktop()->getSelection()->set (text);
     sp_text_context_place_cursor (tc, text, sp_te_get_position_by_coords(tc->text, p));
 }
 

@@ -1603,7 +1603,7 @@ void TextToolbar::fontsize_unit_changed(int /* Not Used */)
     temp_size_stream << 1 << unit->abbr;
     temp_size.read(temp_size_stream.str().c_str());
     prefs->setInt("/options/font/unitType", temp_size.unit);
-    selection_changed(_desktop->selection);
+    selection_changed(_desktop->getSelection());
 }
 
 void

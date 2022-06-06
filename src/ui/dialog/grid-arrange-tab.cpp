@@ -270,7 +270,7 @@ static std::vector<SPItem *> grid_item_sort(Inkscape::ObjectSet *items)
 void GridArrangeTab::on_row_spinbutton_changed()
 {
     SPDesktop *desktop = Parent->getDesktop();
-    Inkscape::Selection *selection = desktop ? desktop->selection : nullptr;
+    Inkscape::Selection *selection = desktop ? desktop->getSelection() : nullptr;
     if (!selection) return;
 
     int selcount = (int) boost::distance(selection->items());
@@ -285,7 +285,7 @@ void GridArrangeTab::on_row_spinbutton_changed()
 void GridArrangeTab::on_col_spinbutton_changed()
 {
     SPDesktop *desktop = Parent->getDesktop();
-    Inkscape::Selection *selection = desktop ? desktop->selection : nullptr;
+    Inkscape::Selection *selection = desktop ? desktop->getSelection() : nullptr;
     if (!selection) return;
 
     int selcount = (int) boost::distance(selection->items());
@@ -419,7 +419,7 @@ void GridArrangeTab::updateSelection()
     // in turn, prevent listener from responding
     updating = true;
     SPDesktop *desktop = Parent->getDesktop();
-    Inkscape::Selection *selection = desktop ? desktop->selection : nullptr;
+    Inkscape::Selection *selection = desktop ? desktop->getSelection() : nullptr;
     std::vector<SPItem*> items;
     if (selection) {
         items.insert(items.end(), selection->items().begin(), selection->items().end());

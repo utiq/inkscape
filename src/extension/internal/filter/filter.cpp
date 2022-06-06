@@ -121,7 +121,7 @@ void Filter::effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::Vie
     }
 
     //printf("Calling filter effect\n");
-    Inkscape::Selection * selection = ((SPDesktop *)document)->selection;
+    Inkscape::Selection * selection = static_cast<SPDesktop *>(document)->getSelection();
 
     // TODO need to properly refcount the items, at least
     std::vector<SPItem*> items(selection->items().begin(), selection->items().end());

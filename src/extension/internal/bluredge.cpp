@@ -59,7 +59,7 @@ BlurEdge::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::View 
         std::cerr << "BlurEdge::effect: view is not desktop!" << std::endl;
         return;
     }
-    Inkscape::Selection * selection     = desktop->selection;
+    Inkscape::Selection * selection     = desktop->getSelection();
 
     double width = module->get_param_float("blur-width");
     int    steps = module->get_param_int("num-steps");

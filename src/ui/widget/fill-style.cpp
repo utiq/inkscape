@@ -113,7 +113,7 @@ void FillNStroke::setDesktop(SPDesktop *desktop)
             stop_selected_connection.disconnect();
         }
         _desktop = desktop;
-        if (desktop && desktop->selection) {
+        if (desktop && desktop->getSelection()) {
             // subselChangedConn =
                 // desktop->connectToolSubselectionChanged(sigc::hide(sigc::mem_fun(*this, &FillNStroke::performUpdate)));
             eventContextConn = desktop->connectEventContextChanged(sigc::hide(sigc::bind(
@@ -174,8 +174,8 @@ void FillNStroke::performUpdate()
     auto stop = dynamic_cast<SPStop*>(paint.getTag());
     if (stop) {
        // there's a stop selected, which is part of subselection, now query selection only to find selected gradient
-       if (_desktop->selection != nullptr) {
-          std::vector<SPItem*> vec(_desktop->selection->items().begin(), _desktop->selection->items().end());
+       if (auto selection = _desktop->getSelection()) {
+          std::vector<SPItem*> vec(selection->items().begin(), selection->items().end());
           result = sp_desktop_query_style_from_list(vec, &query, property);
        }
     }

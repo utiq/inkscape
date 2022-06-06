@@ -390,9 +390,9 @@ void LPECloneOriginal::doOnRemove(SPLPEItem const *lpeitem)
                 if (owner) {
                     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
                     if (desktop) {
-                        desktop->selection->clone();
+                        desktop->getSelection()->clone();
                         SPUse *clone;
-                        if (( clone = dynamic_cast<SPUse*>(desktop->selection->singleItem()))) {
+                        if (( clone = dynamic_cast<SPUse*>(desktop->getSelection()->singleItem()))) {
                             gchar *href_str = g_strdup_printf("#%s", owner->getAttribute("id"));
                             clone->setAttribute("xlink:href", href_str);
                             clone->setAttribute("transform", transform);

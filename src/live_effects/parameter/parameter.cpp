@@ -116,8 +116,8 @@ void Parameter::param_higlight(bool highlight, bool select)
         if (highlight) {
             if (lpeitems.size() == 1 && param_effect->is_visible) {
                 if (select && !lpeitems[0]->isHidden()) {
-                    desktop->selection->clear();
-                    desktop->selection->add(lpeitems[0]);
+                    desktop->getSelection()->clear();
+                    desktop->getSelection()->add(lpeitems[0]);
                     return;
                 }
                 SPCurve c;
@@ -164,7 +164,7 @@ void Parameter::connect_selection_changed()
 {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
     if (desktop) {
-        Inkscape::Selection *selection = desktop->selection;
+        Inkscape::Selection *selection = desktop->getSelection();
         if (selection) {
             std::vector<SPObject *> satellites = param_get_satellites();
             if (!selection_changed_connection) {
@@ -183,7 +183,7 @@ void Parameter::update_satellites(bool updatelpe)
         if (desktop) {
             DocumentUndo::ScopedInsensitive _no_undo(desktop->getDocument());
             param_higlight(false, false);
-            Inkscape::Selection *selection = desktop->selection;
+            Inkscape::Selection *selection = desktop->getSelection();
             if (selection) {
                 std::vector<SPObject *> satellites = param_get_satellites();
                 connect_selection_changed();

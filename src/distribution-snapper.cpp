@@ -562,7 +562,7 @@ void Inkscape::DistributionSnapper::_correctSelectionBBox(Geom::Point &target,
                                                           Geom::Point const &p,
                                                           Geom::Rect const &bbox_to_snap) const
 {
-    if (_snapmanager->_desktop->selection->size() > 1) {
+    if (_snapmanager->_desktop->getSelection()->size() > 1) {
         auto correction = bbox_to_snap.midpoint() - p;
         target -= correction;
     }

@@ -91,7 +91,7 @@ Grid::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::View *doc
 
     std::cout << "Executing effect" << std::endl;
 
-    Inkscape::Selection * selection     = ((SPDesktop *)document)->selection;
+    Inkscape::Selection *selection = static_cast<SPDocument *>(document)->getSelection();
 
     Geom::Rect bounding_area = Geom::Rect(Geom::Point(0,0), Geom::Point(100,100));
     if (selection->isEmpty()) {
@@ -184,7 +184,7 @@ Grid::prefs_effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::View
 {
     SPDocument * current_document = view->doc();
 
-    auto selected = ((SPDesktop *) view)->getSelection()->items();
+    auto selected = static_cast<SPDocument *>(view)->getSelection()->items();
     Inkscape::XML::Node * first_select = nullptr;
     if (!selected.empty()) {
         first_select = selected.front()->getRepr();

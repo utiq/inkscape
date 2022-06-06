@@ -225,7 +225,7 @@ void Inkscape::SelTrans::setCenter(Geom::Point const &p)
     _center_is_set = true;
 
     // Write the new center position into all selected items
-    auto items= _desktop->selection->items();
+    auto items= _desktop->getSelection()->items();
     for (auto it : items) {
         it->setCenter(p);
         // only set the value; updating repr and document_done will be done once, on ungrab
@@ -254,7 +254,7 @@ void Inkscape::SelTrans::grab(Geom::Point const &p, gdouble x, gdouble y, bool s
         return;
     }
 
-    auto items= _desktop->selection->items();
+    auto items= _desktop->getSelection()->items();
     for (auto iter=items.begin();iter!=items.end(); ++iter) {
         SPItem *it = static_cast<SPItem*>(sp_object_ref(*iter, nullptr));
         _items.push_back(it);
@@ -529,7 +529,7 @@ void Inkscape::SelTrans::ungrab()
 
         if (_center_is_set) {
             // we were dragging center; update reprs and commit undoable action
-        	auto items= _desktop->selection->items();
+        	auto items= _desktop->getSelection()->items();
             for (auto iter=items.begin();iter!=items.end(); ++iter) {
                 SPItem *it = *iter;
                 it->updateRepr();
@@ -688,12 +688,12 @@ void Inkscape::SelTrans::_updateHandles()
         knot->hide();
 
     if ( !_show_handles || _empty ) {
-        _desktop->selection->setAnchor(0.0, 0.0, false);
+        _desktop->getSelection()->setAnchor(0.0, 0.0, false);
         return;
     }
 
     if (!_center_is_set) {
-        _center = _desktop->selection->center();
+        _center = _desktop->getSelection()->center();
         _center_is_set = true;
     }
 
@@ -723,11 +723,11 @@ void Inkscape::SelTrans::_updateHandles()
                 anchor_y = (hands[i].y - 0.5) * (-_desktop->yaxisdir()) + 0.5;
             }
             set = true;
-            _desktop->selection->setAnchor(anchor_x, anchor_y);
+            _desktop->getSelection()->setAnchor(anchor_x, anchor_y);
         }
     }
     if (!set)
-        _desktop->selection->setAnchor(0.0, 0.0, false);
+        _desktop->getSelection()->setAnchor(0.0, 0.0, false);
 }
 
 void Inkscape::SelTrans::_updateVolatileState()
@@ -888,7 +888,7 @@ void Inkscape::SelTrans::handleClick(SPKnot *knot, guint state, SPSelTransHandle
         case HANDLE_CENTER:
             if (state & GDK_SHIFT_MASK) {
                 // Unset the  center position for all selected items
-            	auto items = _desktop->selection->items();
+            	auto items = _desktop->getSelection()->items();
                 for (auto iter=items.begin();iter!=items.end(); ++iter) {
                     SPItem *it = *iter;
                     it->unsetCenter();

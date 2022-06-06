@@ -107,7 +107,7 @@ LPEFillBetweenStrokes::transform_multiply_nested(Geom::Affine const &postmul)
         SPDesktop *desktop = SP_ACTIVE_DESKTOP;
         Inkscape::Selection *selection = nullptr;
         if (desktop) {
-            selection = desktop->selection;
+            selection = desktop->getSelection();
         }
         std::vector<SPLPEItem *> lpeitems = getCurrrentLPEItems();
         if (lpeitems.size() == 1) {

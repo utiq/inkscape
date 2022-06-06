@@ -136,8 +136,6 @@ class SPDesktop : public Inkscape::UI::View::View
 {
 public:
     SPNamedView               *namedview;
-    /// current selection; will never generally be NULL
-    Inkscape::Selection       *selection;
     Inkscape::UI::Tools::ToolBase *event_context = nullptr;
     Inkscape::Display::TemporaryItemList *temporary_item_list;
     Inkscape::Display::SnapIndicator *snapindicator;
@@ -145,7 +143,7 @@ public:
     Inkscape::UI::Dialog::PrinterSettings printer_settings;
 
     Inkscape::UI::Tools::ToolBase* getEventContext() const { return event_context; }
-    Inkscape::Selection* getSelection() const { return selection; }
+    Inkscape::Selection* getSelection() const { return _selection; }
     SPDocument* getDocument() const { return doc(); }
     Inkscape::UI::Widget::Canvas* getCanvas() const { return canvas; }
     Inkscape::MessageStack* getMessageStack() const { return messageStack().get(); }
@@ -167,6 +165,9 @@ public:
     Inkscape::CanvasItemDrawing  *getCanvasDrawing()  const { return canvas_drawing; }
 
 private:
+    /// current selection; will never generally be NULL
+    Inkscape::Selection *_selection;
+
     // Groups
     Inkscape::CanvasItemGroup    *canvas_group_controls  = nullptr; ///< Handles, knots, nodes, etc.
     Inkscape::CanvasItemGroup    *canvas_group_drawing   = nullptr; ///< SVG Drawing

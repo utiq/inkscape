@@ -165,7 +165,7 @@ void LayerPropertiesDialog::_doCreate()
 void LayerPropertiesDialog::_doMove()
 {
     if (auto moveto = _selectedLayer()) {
-        _desktop->selection->toLayer(moveto);
+        _desktop->getSelection()->toLayer(moveto);
     }
 }
 
