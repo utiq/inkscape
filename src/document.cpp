@@ -115,9 +115,7 @@ SPDocument::SPDocument() :
     document_name(nullptr),
     actionkey(),
     object_id_counter(1),
-    _event_log(new Inkscape::EventLog(this)),
     router(new Avoid::Router(Avoid::PolyLineRouting|Avoid::OrthogonalRouting)),
-    _selection(new Inkscape::Selection(this)),
     oldSignalsConnected(false),
     current_persp3d(nullptr),
     current_persp3d_impl(nullptr),
@@ -125,6 +123,11 @@ SPDocument::SPDocument() :
     _node_cache_valid(false),
     _activexmltree(nullptr)
 {
+    // This is kept here so that members are not accessed before they are initialized
+
+    _event_log = new Inkscape::EventLog(this);
+    _selection = std::make_unique<Inkscape::Selection>(this);
+
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     if (!prefs->getBool("/options/yaxisdown", true)) {
@@ -166,8 +169,6 @@ SPDocument::~SPDocument() {
 
     // kill/unhook this first
     _profileManager.reset();
-
-    Inkscape::GC::release(_selection);
 
     if (router) {
         delete router;

@@ -143,7 +143,7 @@ public:
     Inkscape::UI::Dialog::PrinterSettings printer_settings;
 
     Inkscape::UI::Tools::ToolBase* getEventContext() const { return event_context; }
-    Inkscape::Selection* getSelection() const { return _selection; }
+    Inkscape::Selection* getSelection() const { return _selection.get(); }
     SPDocument* getDocument() const { return doc(); }
     Inkscape::UI::Widget::Canvas* getCanvas() const { return canvas; }
     Inkscape::MessageStack* getMessageStack() const { return messageStack().get(); }
@@ -166,7 +166,7 @@ public:
 
 private:
     /// current selection; will never generally be NULL
-    Inkscape::Selection *_selection;
+    std::unique_ptr<Inkscape::Selection> _selection;
 
     // Groups
     Inkscape::CanvasItemGroup    *canvas_group_controls  = nullptr; ///< Handles, knots, nodes, etc.

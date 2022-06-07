@@ -212,7 +212,7 @@ public:
     SPDocument *getParent() { return _parent_document; }
     SPDocument const *getParent() const { return _parent_document; }
 
-    Inkscape::Selection *getSelection() { return _selection; }
+    Inkscape::Selection *getSelection() { return _selection.get(); }
 
     // Styling
     CRCascade    *getStyleCascade() { return style_cascade; }
@@ -368,7 +368,7 @@ private:
     // Document ------------------------------
     std::unique_ptr<Inkscape::ProfileManager> _profileManager;   // Color profile.
     Avoid::Router *router = nullptr; // Instance of the connector router
-    Inkscape::Selection * _selection = nullptr;
+    std::unique_ptr<Inkscape::Selection> _selection;
 
     // Document status -----------------------
 

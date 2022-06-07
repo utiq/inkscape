@@ -121,8 +121,10 @@ SPDesktop::SPDesktop()
     , _guides_message_context(nullptr)
     , _active(false)
 {
+    // Moving this into the list initializer breaks the application because this->_document_replaced_signal
+    // is accessed before it is initialized
     _layer_manager = std::make_unique<Inkscape::LayerManager>(this);
-    _selection = Inkscape::GC::release(new Inkscape::Selection(this));
+    _selection = std::make_unique<Inkscape::Selection>(this);
 }
 
 void
@@ -283,10 +285,7 @@ void SPDesktop::destroy()
         temporary_item_list = nullptr;
     }
 
-    if (_selection) {
-        delete _selection;
-        _selection = nullptr;
-    }
+    _selection.reset();
 
     namedview->hide(this);
 

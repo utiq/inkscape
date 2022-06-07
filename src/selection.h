@@ -21,9 +21,6 @@
 #include <cstddef>
 #include <sigc++/sigc++.h>
 
-#include "inkgc/gc-managed.h"
-#include "gc-finalized.h"
-#include "gc-anchored.h"
 #include "object/object-set.h"
 
 
@@ -52,10 +49,7 @@ namespace Inkscape {
  * It also implements its own asynchronous notification signals that
  * UI elements can listen to.
  */
-class Selection : public Inkscape::GC::Managed<>,
-                  public Inkscape::GC::Finalized,
-                  public Inkscape::GC::Anchored,
-                  public ObjectSet
+class Selection : public ObjectSet
 {
 friend class ObjectSet;
 public:
