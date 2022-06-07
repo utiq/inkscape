@@ -1640,6 +1640,21 @@ object_set_contains_both_clone_and_original(ObjectSet *set)
     return clone_with_original;
 }
 
+/**
+ * Reapply the same transform again.
+ */
+void ObjectSet::reapplyAffine()
+{
+    auto cached = _last_affine;
+    applyAffine(_last_affine);
+    _last_affine = cached;
+}
+
+void ObjectSet::clearLastAffine()
+{
+    _last_affine = Geom::identity(); // Clear last affine
+}
+
 /** Apply matrix to the selection.  \a set_i2d is normally true, which means objects are in the
 original transform, synced with their reprs, and need to jump to the new transform in one go. A
 value of set_i2d==false is only used by seltrans when it's dragging objects live (not outlines); in
@@ -1652,6 +1667,8 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
 {
     if (isEmpty())
         return;
+
+    _last_affine = affine;
 
     // For each perspective with a box in selection, check whether all boxes are selected and
     // unlink all non-selected boxes.

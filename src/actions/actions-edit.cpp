@@ -11,17 +11,18 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include "actions-edit.h"
+
 #include <giomm.h>
 #include <glibmm/i18n.h>
 
-#include "actions-edit.h"
 #include "actions-helper.h"
 #include "inkscape-application.h"
-#include "selection-chemistry.h"
 #include "object/sp-guide.h"
-
-#include "ui/tools/text-tool.h"
+#include "selection-chemistry.h"
+#include "ui/icon-names.h"
 #include "ui/tools/node-tool.h"
+#include "ui/tools/text-tool.h"
 
 void
 object_to_pattern(InkscapeApplication *app)
@@ -149,6 +150,15 @@ duplicate(InkscapeApplication *app)
     selection->duplicate();
 }
 
+void duplicate_transform(InkscapeApplication *app)
+{
+    auto selection = app->get_active_selection();
+    selection->duplicate(true);
+    selection->reapplyAffine();
+    Inkscape::DocumentUndo::done(app->get_active_document(), _("Duplicate and Transform"),
+                                 INKSCAPE_ICON("edit-duplicate"));
+}
+
 void
 clone(InkscapeApplication *app)
 {
@@ -270,8 +280,7 @@ fit_canvas_to_selection(InkscapeApplication *app)
     selection->fitCanvas(true);
 }
 
-std::vector<std::vector<Glib::ustring>> raw_data_edit =
-{
+std::vector<std::vector<Glib::ustring>> raw_data_edit = {
     // clang-format off
     {"app.object-to-pattern",                   N_("Objects to Pattern"),               "Edit",     N_("Convert selection to a rectangle with tiled pattern fill")},
     {"app.pattern-to-object",                   N_("Pattern to Objects"),               "Edit",     N_("Extract objects from a tiled pattern fill")},
@@ -287,6 +296,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit =
     {"app.paste-width-separately",              N_("Paste Width Separately"),           "Edit",     N_("Scale each selected object horizontally to match the width of the copied object")},
     {"app.paste-height-separately",             N_("Paste Height Separately"),          "Edit",     N_("Scale each selected object vertically to match the height of the copied object")},
     {"app.duplicate",                           N_("Duplicate"),                        "Edit",     N_("Duplicate Selected Objects")},
+    {"app.duplicate-transform",                 N_("Duplicate and Transform"),          "Edit",     N_("Duplicate Selected Objects and reapply last transform")},
     {"app.clone",                               N_("Create Clone"),                     "Edit",     N_("Create a clone (a copy linked to the original) of selected object")},
     {"app.clone-unlink",                        N_("Unlink Clone"),                     "Edit",     N_("Cut the selected clones' links to the originals, turning them into standalone objects")},
     {"app.clone-unlink-recursively",            N_("Unlink Clones recursively"),        "Edit",     N_("Unlink all clones in the selection, even if they are in groups.")},
@@ -322,6 +332,7 @@ add_actions_edit(InkscapeApplication* app)
     gapp->add_action( "paste-width-separately",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&paste_width_separately), app));
     gapp->add_action( "paste-height-separately",         sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&paste_height_separately), app));
     gapp->add_action( "duplicate",                       sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&duplicate), app));
+    gapp->add_action( "duplicate-transform",             sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&duplicate_transform), app));
     gapp->add_action( "clone",                           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&clone), app));
     gapp->add_action( "clone-unlink",                    sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&clone_unlink), app));
     gapp->add_action( "clone-unlink-recursively",        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&clone_unlink_recursively), app));

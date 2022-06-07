@@ -147,6 +147,7 @@ override) the bindings in the main default.xml.
   <bind gaction="app.paste-width-separately" />
   <bind gaction="app.paste-height-separately" />
   <bind gaction="app.duplicate"                          keys="&lt;primary&gt;d"/>
+  <bind gaction="app.duplicate-transform"                keys="&lt;primary&gt;&lt;alt&gt;d" />
   <bind gaction="app.clone"                              keys="&lt;alt&gt;d" />
   <bind gaction="app.clone-unlink"                       keys="&lt;alt&gt;&lt;shift&gt;d" />
   <bind gaction="app.clone-unlink-recursively" />
@@ -275,16 +276,17 @@ override) the bindings in the main default.xml.
   <bind gaction="app.object-flip-horizontal"             keys="h" />
   <bind gaction="app.object-flip-vertical"               keys="v" />
 
-  <bind gaction="app.object-align('hcenter pref')"         keys="&lt;primary&gt;&lt;alt&gt;h" />
-  <bind gaction="app.object-align('vcenter pref')"         keys="&lt;primary&gt;&lt;alt&gt;t" />
+  <bind gaction="app.object-align('vcenter pref')"         keys="&lt;primary&gt;&lt;alt&gt;KP_1" />
   <bind gaction="app.object-align('bottom pref')"          keys="&lt;primary&gt;&lt;alt&gt;KP_2" />
   <bind gaction="app.object-align('left pref')"            keys="&lt;primary&gt;&lt;alt&gt;KP_4" />
   <bind gaction="app.object-align('hcenter vcenter pref')" keys="&lt;primary&gt;&lt;alt&gt;KP_5" />
   <bind gaction="app.object-align('right pref')"           keys="&lt;primary&gt;&lt;alt&gt;KP_6" />
+  <bind gaction="app.object-align('hcenter pref')"         keys="&lt;primary&gt;&lt;alt&gt;KP_7" />
   <bind gaction="app.object-align('top pref')"             keys="&lt;primary&gt;&lt;alt&gt;KP_8" />
 
   <!-- Object Transform -->
   <bind gaction="app.transform-remove"                   keys="&lt;shift&gt;&lt;alt&gt;t" />
+  <bind gaction="app.transform-reapply"                  keys="&lt;primary&gt;&lt;alt&gt;t" />
   <bind gaction="app.transform-scale(2.0)"               keys="&lt;primary&gt;period, &lt;primary&gt;greater" />
   <bind gaction="app.transform-grow-step(1.0)"           keys="               period,                greater" /> <!-- uses preference step value -->
   <bind gaction="app.transform-grow-screen(2.0)"         keys="    &lt;alt&gt;period,     &lt;alt&gt;greater" />

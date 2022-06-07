@@ -8,18 +8,18 @@
  *
  */
 
+#include "actions-transform.h"
+
+#include <giomm.h> // Not <gtkmm.h>! To eventually allow a headless version!
+#include <glibmm/i18n.h>
 #include <iostream>
 
-#include <giomm.h>  // Not <gtkmm.h>! To eventually allow a headless version!
-#include <glibmm/i18n.h>
-
-#include "actions-transform.h"
 #include "actions-helper.h"
 #include "document-undo.h"
 #include "inkscape-application.h"
-
-#include "inkscape.h"             // Inkscape::Application
-#include "selection.h"            // Selection
+#include "inkscape.h"  // Inkscape::Application
+#include "selection.h" // Selection
+#include "ui/icon-names.h"
 
 void
 transform_translate(const Glib::VariantBase& value, InkscapeApplication *app)
@@ -107,9 +107,16 @@ transform_remove(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(app->get_active_document(), "ActionTransformRemoveTransform", "");
 }
 
-// SHOULD REALLY BE DOC LEVEL ACTIONS
-std::vector<std::vector<Glib::ustring>> raw_data_transform =
+void transform_reapply(InkscapeApplication *app)
 {
+    auto selection = app->get_active_selection();
+    selection->reapplyAffine();
+    Inkscape::DocumentUndo::maybeDone(app->get_active_document(), "reapply-transform", _("Reapply Transform"),
+                                      INKSCAPE_ICON("tool-pointer"));
+}
+
+// SHOULD REALLY BE DOC LEVEL ACTIONS
+std::vector<std::vector<Glib::ustring>> raw_data_transform = {
     // clang-format off
     {"app.transform-translate",   N_("Translate"),          "Transform",  N_("Translate selected objects (dx,dy)")},
     {"app.transform-rotate",      N_("Rotate"),             "Transform",  N_("Rotate selected objects by degrees")},
@@ -118,6 +125,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_transform =
     {"app.transform-grow-step",   N_("Grow/Shrink Step"),   "Transform",  N_("Grow/shrink selected objects by multiple of step value")},
     {"app.transform-grow-screen", N_("Grow/Shrink Screen"), "Transform",  N_("Grow/shrink selected objects relative to zoom level")},
     {"app.transform-remove",      N_("Remove Transforms"),  "Transform",  N_("Remove any transforms from selected objects")},
+    {"app.transform-reapply",     N_("Reapply Transforms"), "Transform",  N_("Reapply the last transformation to the selection")},
     // clang-format on
 };
 
@@ -151,6 +159,7 @@ add_actions_transform(InkscapeApplication* app)
     gapp->add_action_with_parameter( "transform-grow-step",      Double, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&transform_grow_step),       app));
     gapp->add_action_with_parameter( "transform-grow-screen",    Double, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&transform_grow_screen),     app));
     gapp->add_action(                "transform-remove",                 sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&transform_remove),          app));
+    gapp->add_action(                "transform-reapply",                sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&transform_reapply),         app));
     // clang-format on
 
     app->get_action_extra_data().add_data(raw_data_transform);

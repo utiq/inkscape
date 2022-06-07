@@ -492,6 +492,8 @@ public:
     // in selection-chemistry.cpp
     void removeLPE();
     void removeFilter();
+    void reapplyAffine();
+    void clearLastAffine();
     void applyAffine(Geom::Affine const &affine, bool set_i2d=true,bool compensate=true, bool adjust_transf_center=true);
     void removeTransform();
     void setScaleAbsolute(double, double, double, double);
@@ -546,6 +548,7 @@ private:
     void _disconnect(SPObject* object);
     std::map<SPObject *, SiblingState> _sibling_state;
 
+    Geom::Affine _last_affine;
 };
 
 typedef ObjectSet::SPItemRange SPItemRange;
