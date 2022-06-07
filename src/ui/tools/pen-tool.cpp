@@ -91,15 +91,15 @@ PenTool::PenTool(SPDesktop *desktop, std::string prefs_path, const std::string &
     tablet_enabled = false;
 
     // Pen indicators (temporary handles shown when adding a new node).
-    c0 = new Inkscape::CanvasItemCtrl(desktop->getCanvasControls(), Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE);
-    c1 = new Inkscape::CanvasItemCtrl(desktop->getCanvasControls(), Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE);
-    c0->set_fill(0x0);
-    c1->set_fill(0x0);
-    c0->hide();
-    c1->hide();
+    auto canvas = desktop->getCanvasControls();
+    for (int i = 0; i < 4; i++) {
+        ctrl[i] = new Inkscape::CanvasItemCtrl(canvas, ctrl_types[i]);
+        ctrl[i]->set_fill(0x0);
+        ctrl[i]->hide();
+    }
 
-    cl0 = new Inkscape::CanvasItemCurve(desktop->getCanvasControls());
-    cl1 = new Inkscape::CanvasItemCurve(desktop->getCanvasControls());
+    cl0 = new Inkscape::CanvasItemCurve(canvas);
+    cl1 = new Inkscape::CanvasItemCurve(canvas);
     cl0->hide();
     cl1->hide();
 
@@ -129,11 +129,9 @@ PenTool::~PenTool() {
         }
     }
 
-    if (this->c0) {
-        delete c0;
-    }
-    if (this->c1) {
-        delete c1;
+    for (auto &c : ctrl) {
+        delete c;
+        c = nullptr;
     }
 
     if (this->cl0) {
@@ -167,8 +165,9 @@ void PenTool::setPolylineMode() {
 void PenTool::_cancel() {
     this->state = PenTool::STOP;
     this->_resetColors();
-    c0->hide();
-    c1->hide();
+    for (auto c : ctrl) {
+        c->hide();
+    }
     cl0->hide();
     cl1->hide();
     this->message_context->clear();
@@ -699,7 +698,7 @@ bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
                         this->_finishSegment(p, revent.state);
                         // hude the guide of the penultimate node when closing the curve
                         if(this->spiro){
-                            c1->hide();
+                            ctrl[1]->hide();
                         }
                         this->_finish(true);
                         this->state = PenTool::POINT;
@@ -724,7 +723,7 @@ bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
                         this->_finishSegment(p, revent.state);
                         // hide the penultimate node guide when closing the curve
                         if(this->spiro){
-                            c1->hide();
+                            ctrl[1]->hide();
                         }
                         if (this->green_closed) {
                             // finishing at the start anchor, close curve
@@ -808,15 +807,24 @@ void PenTool::_redrawAll() {
     red_curve.curveto(p[1], p[2], p[3]);
     red_bpath->set_bpath(&red_curve, true);
 
+    for (auto c : ctrl) {
+        c->hide();
+    }
     // handles
     // hide the handlers in bspline and spiro modes
+    if (this->npoints == 5) {
+        ctrl[0]->set_position(p[0]);
+        ctrl[0]->show();
+        ctrl[3]->set_position(p[3]);
+        ctrl[3]->show();
+    }
+
     if (this->p[0] != this->p[1] && !this->spiro && !this->bspline) {
-        c1->set_position(p[1]);
-        c1->show();
+        ctrl[1]->set_position(p[1]);
+        ctrl[1]->show();
         cl1->set_coords(p[0], p[1]);
         cl1->show();
     } else {
-        c1->hide();
         cl1->hide();
     }
 
@@ -828,12 +836,11 @@ void PenTool::_redrawAll() {
              (*cubic)[2] != this->p[0] && !this->spiro && !this->bspline )
         {
             Geom::Point p2 = (*cubic)[2];
-            c0->set_position(p2);
-            c0->show();
+            ctrl[2]->set_position(p2);
+            ctrl[2]->show();
             cl0->set_coords(p2, p[0]);
             cl0->show();
         } else {
-            c0->hide();
             cl0->hide();
         }
     }
@@ -1669,13 +1676,13 @@ void PenTool::_bsplineSpiroBuild()
 
         blue_curve.reset();
         //We hide the holders that doesn't contribute anything
-        if (spiro){
-            c1->set_position(p[0]);
-            c1->show();
-        } else {
-            c1->hide();
+        for (auto c : ctrl) {
+            c->hide();
         }
-        c0->hide();
+        if (spiro){
+            ctrl[1]->set_position(p[0]);
+            ctrl[1]->show();
+        }
         cl0->hide();
         cl1->hide();
     } else {
@@ -1738,21 +1745,25 @@ void PenTool::_setSubsequentPoint(Geom::Point const p, bool statusbar, guint sta
     }
 }
 
+void PenTool::_setCtrl(Geom::Point const q, guint const state)
+{
+    // use 'q' as 'p' shadows member variable.
+    for (auto c : ctrl) {
+        c->hide();
+    }
 
-void PenTool::_setCtrl(Geom::Point const q, guint const state) { // use 'q' as 'p' shadows member variable.
-    c1->show();
+    ctrl[1]->show();
     cl1->show();
 
     if ( this->npoints == 2 ) {
         this->p[1] = q;
-        c0->hide();
         cl0->hide();
-        c1->set_position(p[1]);
+        ctrl[1]->set_position(p[1]);
+        ctrl[1]->show();
         cl1->set_coords(p[0], p[1]);
         this->_setAngleDistanceStatusMessage(q, 0, _("<b>Curve handle</b>: angle %3.2f&#176;, length %s; with <b>Ctrl</b> to snap angle"));
     } else if ( this->npoints == 5 ) {
         this->p[4] = q;
-        c0->show();
         cl0->show();
         bool is_symm = false;
         if ( ( ( this->mode == PenTool::MODE_CLICK ) && ( state & GDK_CONTROL_MASK ) ) ||
@@ -1765,12 +1776,20 @@ void PenTool::_setCtrl(Geom::Point const q, guint const state) { // use 'q' as '
             this->red_curve.curveto(this->p[1], this->p[2], this->p[3]);
             red_bpath->set_bpath(&red_curve, true);
         }
-        c0->set_position(this->p[2]);
+        // Avoid conflicting with initial point ctrl
+        if (green_curve->get_segment_count() > 0) {
+            ctrl[0]->set_position(this->p[0]);
+            ctrl[0]->show();
+        }
+        ctrl[3]->set_position(this->p[3]);
+        ctrl[3]->show();
+        ctrl[2]->set_position(this->p[2]);
+        ctrl[2]->show();
+        ctrl[1]->set_position(this->p[4]);
+        ctrl[1]->show();
+
         cl0->set_coords(this->p[3], this->p[2]);
-        c1->set_position(this->p[4]);
         cl1->set_coords(this->p[3], this->p[4]);
-
-
 
         gchar *message = is_symm ?
             _("<b>Curve handle, symmetric</b>: angle %3.2f&#176;, length %s; with <b>Ctrl</b> to snap angle, with <b>Shift</b> to move this handle only") :
@@ -1877,14 +1896,15 @@ bool PenTool::_undoLastPoint(bool user_undo) {
             Geom::CubicBezier const *cubic = dynamic_cast<Geom::CubicBezier const *>(this->green_curve->last_segment());
             if ( cubic ) {
                 this->p[1] = (*cubic)[3] + (*cubic)[3] - (*cubic)[2];
-                c1->set_position(this->p[0]);
+                ctrl[1]->set_position(this->p[0]);
             } else {
                 this->p[1] = this->p[0];
             }
         }
 
-        c0->hide();
-        c1->hide();
+        for (auto c : ctrl) {
+            c->hide();
+        }
         cl0->hide();
         cl1->hide();
         this->state = PenTool::POINT;
@@ -1960,8 +1980,10 @@ void PenTool::_finish(gboolean const closed) {
     this->npoints = 0;
     this->state = PenTool::POINT;
 
-    c0->hide();
-    c1->hide();
+    for (auto c : ctrl) {
+        c->hide();
+    }
+
     cl0->hide();
     cl1->hide();
 

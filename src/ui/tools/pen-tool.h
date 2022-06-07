@@ -12,8 +12,9 @@
 
 #include <sigc++/sigc++.h>
 
-#include "ui/tools/freehand-base.h"
+#include "display/control/canvas-item-enums.h"
 #include "live_effects/effect.h"
+#include "ui/tools/freehand-base.h"
 #include "util/action-accel.h"
 
 #define SP_PEN_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::PenTool*>((Inkscape::UI::Tools::ToolBase*)obj))
@@ -69,9 +70,11 @@ public:
     Inkscape::LivePathEffect::Effect *waiting_LPE = nullptr; // if NULL, waiting_LPE_type in SPDrawContext is taken into account
     SPLPEItem *waiting_item = nullptr;
 
-    Inkscape::CanvasItemCtrl *c0 = nullptr; // Start point of path.
-    Inkscape::CanvasItemCtrl *c1 = nullptr; // End point of path.
-    
+    Inkscape::CanvasItemCtrl *ctrl[4]; // Origin, Start, Center, End point of path.
+    Inkscape::CanvasItemCtrlType ctrl_types[4] = {
+        Inkscape::CANVAS_ITEM_CTRL_TYPE_NODE_SMOOTH, Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE,
+        Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE, Inkscape::CANVAS_ITEM_CTRL_TYPE_NODE_SMOOTH};
+
     Inkscape::CanvasItemCurve *cl0 = nullptr;
     Inkscape::CanvasItemCurve *cl1 = nullptr;
     
