@@ -195,7 +195,7 @@ int gr_vector_list(Glib::RefPtr<Gtk::ListStore> store, SPDesktop *desktop,
 
 /*
  * Get the list of gradients of the selected desktop item
- * Thise are the gradients containing the repeat settings, not the underlying "getVector" href linked gradient.
+ * These are the gradients containing the repeat settings, not the underlying "getVector" href linked gradient.
  */
 void gr_get_dt_selected_gradient(Inkscape::Selection *selection, std::vector<SPGradient *> &gr_selected)
 {
@@ -731,14 +731,12 @@ GradientToolbar::stop_set_offset()
     if (!_offset_item) {
         return;
     }
-    //bool isEndStop = false;
 
     SPStop *prev = nullptr;
     prev = stop->getPrevStop();
     if (prev != nullptr )  {
         _offset_adj->set_lower(prev->offset);
     } else {
-        //isEndStop = true;
         _offset_adj->set_lower(0);
     }
 
@@ -747,12 +745,11 @@ GradientToolbar::stop_set_offset()
     if (next != nullptr ) {
         _offset_adj->set_upper(next->offset);
     } else {
-        //isEndStop = true;
         _offset_adj->set_upper(1.0);
     }
 
     _offset_adj->set_value(stop->offset);
-    _offset_item->set_sensitive(true); //changed !isEndStop
+    _offset_item->set_sensitive(true);
 }
 
 /**
@@ -770,7 +767,7 @@ GradientToolbar::stop_offset_adjustment_changed()
     SPStop *stop = get_selected_stop();
     if (stop) {
         stop->offset = _offset_adj->get_value();
-        _offset_Adj_Changed = true; // this is checked to stop changing the selected stop after the update of the offset
+        _offset_Adj_Changed = true; // checked to stop changing the selected stop after the update of the offset
         stop->getRepr()->setAttributeCssDouble("offset", stop->offset);
 
         DocumentUndo::maybeDone(stop->document, "gradient:stop:offset", _("Change gradient stop offset"), INKSCAPE_ICON("color-gradient"));
@@ -904,7 +901,7 @@ GradientToolbar::selection_changed(Inkscape::Selection * /*selection*/)
         return;
     }
 
-    if (_offset_Adj_Changed) {        // added to stop change of selection when offset update event is triggered
+    if (_offset_Adj_Changed) {        // stops change of selection when offset update event is triggered
         _offset_Adj_Changed = false;
         return;
     }
