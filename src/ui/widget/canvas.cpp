@@ -3338,7 +3338,7 @@ bool CanvasPrivate::on_idle()
             if (need_outline_store()) {
                 if (!cs->store.outline_surface || dimensions(cs->store.outline_surface) != content_size) {
                     cs->store.outline_surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, content_size.x(), content_size.y());
-                    cairo_surface_set_device_scale(cs->store.surface->cobj(), device_scale, device_scale); // No C++ API!
+                    cairo_surface_set_device_scale(cs->store.outline_surface->cobj(), device_scale, device_scale); // No C++ API!
                 }
                 auto cr = Cairo::Context::create(cs->store.outline_surface);
                 cr->set_operator(Cairo::OPERATOR_CLEAR);
