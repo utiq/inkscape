@@ -138,7 +138,7 @@ int gr_vector_list(Glib::RefPtr<Gtk::ListStore> store, SPDesktop *desktop,
         // Document has gradients, but nothing is currently selected.
 
         row = *(store->append());
-        row[columns.col_label    ] = _("Nothing Selected");
+        row[columns.col_label    ] = _("Nothing selected");
         row[columns.col_tooltip  ] = "";
         row[columns.col_icon     ] = "NotUsed";
         row[columns.col_data     ] = nullptr;
@@ -507,7 +507,7 @@ GradientToolbar::GradientToolbar(SPDesktop *desktop)
     }
 
     /* Offset */
-    _offset_Adj_Changed = false;
+    _offset_adj_changed = false;
     {
         auto offset_val = prefs->getDouble("/tools/gradient/stopoffset", 0);
         _offset_adj = Gtk::Adjustment::create(offset_val, 0.0, 1.0, 0.01, 0.1);
@@ -767,7 +767,7 @@ GradientToolbar::stop_offset_adjustment_changed()
     SPStop *stop = get_selected_stop();
     if (stop) {
         stop->offset = _offset_adj->get_value();
-        _offset_Adj_Changed = true; // checked to stop changing the selected stop after the update of the offset
+        _offset_adj_changed = true; // checked to stop changing the selected stop after the update of the offset
         stop->getRepr()->setAttributeCssDouble("offset", stop->offset);
 
         DocumentUndo::maybeDone(stop->document, "gradient:stop:offset", _("Change gradient stop offset"), INKSCAPE_ICON("color-gradient"));
@@ -901,8 +901,8 @@ GradientToolbar::selection_changed(Inkscape::Selection * /*selection*/)
         return;
     }
 
-    if (_offset_Adj_Changed) {        // stops change of selection when offset update event is triggered
-        _offset_Adj_Changed = false;
+    if (_offset_adj_changed) {        // stops change of selection when offset update event is triggered
+        _offset_adj_changed = false;
         return;
     }
 
@@ -981,7 +981,7 @@ GradientToolbar::update_stop_list( SPGradient *gradient, SPStop *new_stop, bool 
 
     if (gr_multi) {
         row = *(store->append());
-        row[columns.col_label    ] = _("Multiple gradient");
+        row[columns.col_label    ] = _("Multiple gradients");
         row[columns.col_tooltip  ] = "";
         row[columns.col_icon     ] = "NotUsed";
         row[columns.col_data     ] = nullptr;
