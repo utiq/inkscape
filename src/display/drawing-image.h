@@ -13,6 +13,8 @@
 #ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_IMAGE_H
 #define SEEN_INKSCAPE_DISPLAY_DRAWING_IMAGE_H
 
+#include <memory>
+
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <2geom/transforms.h>
@@ -29,7 +31,7 @@ public:
     DrawingImage(Drawing &drawing);
     ~DrawingImage() override;
 
-    void setPixbuf(Inkscape::Pixbuf *pb);
+    void setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pb);
     void setScale(double sx, double sy);
     void setOrigin(Geom::Point const &o);
     void setClipbox(Geom::Rect const &box);
@@ -42,7 +44,7 @@ protected:
                                  DrawingItem *stop_at) override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
 
-    Inkscape::Pixbuf *_pixbuf;
+    std::shared_ptr<Inkscape::Pixbuf const> _pixbuf;
 
     // TODO: the following three should probably be merged into a new Geom::Viewbox object
     Geom::Rect _clipbox; ///< for preserveAspectRatio

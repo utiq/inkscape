@@ -15,6 +15,7 @@
 
 #include "libnrtype/font-lister.h"
 #include "libnrtype/font-instance.h"
+#include "libnrtype/font-factory.h"
 
 // For updating from selection
 #include "inkscape.h"

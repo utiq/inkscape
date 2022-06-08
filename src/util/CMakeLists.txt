@@ -13,6 +13,7 @@ set(util_SRC
 	# -------
 	# Headers
 	action-accel.h
+	cached_map.h
 	const_char_ptr.h
 	enums.h
 	expression-evaluator.h

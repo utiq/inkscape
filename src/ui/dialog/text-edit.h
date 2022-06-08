@@ -40,7 +40,7 @@ class TextView;
 }
 
 class SPItem;
-class font_instance;
+class FontInstance;
 class SPCSSAttr;
 
 namespace Inkscape {

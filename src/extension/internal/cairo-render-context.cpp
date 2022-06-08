@@ -49,9 +49,6 @@
 #include "object/sp-clippath.h"
 
 #include "util/units.h"
-#ifdef _WIN32
-#include "libnrtype/FontFactory.h" // USE_PANGO_WIN32
-#endif
 
 #include "cairo-renderer.h"
 #include "extension/system.h"
@@ -1697,7 +1694,7 @@ CairoRenderContext::renderPathVector(Geom::PathVector const & pathv, SPStyle con
     return true;
 }
 
-bool CairoRenderContext::renderImage(Inkscape::Pixbuf *pb,
+bool CairoRenderContext::renderImage(Inkscape::Pixbuf const *pb,
                                      Geom::Affine const &image_transform, SPStyle const *style)
 {
     g_assert( _is_valid );
@@ -1713,8 +1710,8 @@ bool CairoRenderContext::renderImage(Inkscape::Pixbuf *pb,
 
     // TODO: reenable merge_opacity if useful
 
-    cairo_surface_t *image_surface = pb->getSurfaceRaw();
-    if (cairo_surface_status(image_surface)) {
+    cairo_surface_t const *image_surface = pb->getSurfaceRaw();
+    if (cairo_surface_status(const_cast<cairo_surface_t*>(image_surface))) { // cairo_surface_status does not modify argument
         TRACE(("Image surface creation failed:\n%s\n", cairo_status_to_string(cairo_surface_status(image_surface))));
         return false;
     }
@@ -1724,7 +1721,8 @@ bool CairoRenderContext::renderImage(Inkscape::Pixbuf *pb,
     // scaling by width & height is not needed because it will be done by Cairo
     transform(image_transform);
 
-    cairo_set_source_surface(_cr, image_surface, 0.0, 0.0);
+    // cairo_set_source_surface only modifies refcount of 'image_surface', which is an implementation detail
+    cairo_set_source_surface(_cr, const_cast<cairo_surface_t*>(image_surface), 0.0, 0.0);
 
     // set clip region so that the pattern will not be repeated (bug in Cairo-PDF)
     if (_vector_based_target) {
@@ -1832,21 +1830,6 @@ CairoRenderContext::renderGlyphtext(PangoFont *font, Geom::Affine const &font_ma
 
     FcPattern *fc_pattern = nullptr;
 
-#ifdef USE_PANGO_WIN32
-# ifdef CAIRO_HAS_WIN32_FONT
-    LOGFONTA *lfa = pango_win32_font_logfont(font);
-    LOGFONTW lfw;
-
-    ZeroMemory(&lfw, sizeof(LOGFONTW));
-    memcpy(&lfw, lfa, sizeof(LOGFONTA));
-    MultiByteToWideChar(CP_OEMCP, MB_PRECOMPOSED, lfa->lfFaceName, LF_FACESIZE, lfw.lfFaceName, LF_FACESIZE);
-
-    if(font_face == NULL) {
-        font_face = cairo_win32_font_face_create_for_logfontw(&lfw);
-        font_table[fonthash] = font_face;
-    }
-# endif
-#else
 # ifdef CAIRO_HAS_FT_FONT
     PangoFcFont *fc_font = PANGO_FC_FONT(font);
     fc_pattern = fc_font->font_pattern;
@@ -1855,7 +1838,6 @@ CairoRenderContext::renderGlyphtext(PangoFont *font, Geom::Affine const &font_ma
         font_table[fonthash] = font_face;
     }
 # endif
-#endif
 
     cairo_save(_cr);
     cairo_set_font_face(_cr, font_face);

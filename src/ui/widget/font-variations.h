@@ -32,7 +32,7 @@ namespace Widget {
 class FontVariationAxis : public Gtk::Grid
 {
 public:
-    FontVariationAxis(Glib::ustring name, OTVarAxis& axis);
+    FontVariationAxis(Glib::ustring name, OTVarAxis const &axis);
     Glib::ustring get_name() { return name; }
     Gtk::Label* get_label() { return label; }
     double get_value() { return scale->get_value(); }

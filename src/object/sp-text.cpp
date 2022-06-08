@@ -25,7 +25,7 @@
  */
 
 #include <2geom/affine.h>
-#include <libnrtype/FontFactory.h>
+#include <libnrtype/font-factory.h>
 #include <libnrtype/font-instance.h>
 
 #include <glibmm/i18n.h>
@@ -489,10 +489,9 @@ void SPText::_buildLayoutInit()
     if (style) {
 
         // Strut
-        font_instance *font = font_factory::Default()->FaceFromStyle( style );
+        auto font = FontFactory::get().FaceFromStyle(style);
         if (font) {
             font->FontMetrics(layout.strut.ascent, layout.strut.descent, layout.strut.xheight);
-            font->Unref();
         }
         layout.strut *= style->font_size.computed;
         if (style->line_height.normal ) {

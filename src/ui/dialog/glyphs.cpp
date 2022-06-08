@@ -28,6 +28,7 @@
 
 #include "libnrtype/font-instance.h"
 #include "libnrtype/font-lister.h"
+#include "libnrtype/font-factory.h"
 
 #include "object/sp-flowtext.h"
 #include "object/sp-text.h"
@@ -710,9 +711,9 @@ void GlyphsPanel::rebuild()
 {
     Glib::ustring fontspec = fontSelector->get_fontspec();
 
-    font_instance* font = nullptr;
-    if( !fontspec.empty() ) {
-        font = font_factory::Default()->FaceFromFontSpecification( fontspec.c_str() );
+    std::shared_ptr<FontInstance> font;
+    if (!fontspec.empty()) {
+        font = FontFactory::get().FaceFromFontSpecification(fontspec.c_str());
     }
 
     if (font) {

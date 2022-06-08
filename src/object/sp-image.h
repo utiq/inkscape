@@ -47,7 +47,7 @@ public:
     char *href;
     char *color_profile;
 
-    Inkscape::Pixbuf *pixbuf;
+    std::shared_ptr<Inkscape::Pixbuf const> pixbuf;
 
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;
     void release() override;

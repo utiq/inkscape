@@ -40,10 +40,11 @@ public:
     ~Pixbuf();
 
     GdkPixbuf *getPixbufRaw(bool convert_format = true);
-    //Glib::RefPtr<Gdk::Pixbuf> getPixbuf(bool convert_format = true);
+    GdkPixbuf *getPixbufRaw() const;
 
-    cairo_surface_t *getSurfaceRaw(bool convert_format = true);
-    Cairo::RefPtr<Cairo::Surface> getSurface(bool convert_format = true);
+    cairo_surface_t *getSurfaceRaw();
+    cairo_surface_t *getSurfaceRaw() const;
+    Cairo::RefPtr<Cairo::Surface> getSurface();
 
     int width() const;
     int height() const;

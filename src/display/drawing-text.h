@@ -13,11 +13,12 @@
 #ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_TEXT_H
 #define SEEN_INKSCAPE_DISPLAY_DRAWING_TEXT_H
 
+#include <memory>
 #include "display/drawing-group.h"
 #include "display/nr-style.h"
 
 class SPStyle;
-class font_instance;
+class FontInstance;
 
 namespace Inkscape {
 
@@ -28,7 +29,7 @@ public:
     DrawingGlyphs(Drawing &drawing);
     ~DrawingGlyphs() override;
 
-    void setGlyph(font_instance *font, int glyph, Geom::Affine const &trans);
+    void setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom::Affine const &trans);
     void setStyle(SPStyle *style, SPStyle *context_style = nullptr) override; // Not to be used
     Geom::IntRect getPickBox() const { return _pick_bbox; };
 
@@ -37,7 +38,7 @@ public:
                                  unsigned flags, unsigned reset) override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
 
-    font_instance *_font;
+    std::shared_ptr<FontInstance> _font;
     int            _glyph;
     bool           _drawable;
     float          _width;          // These three are used to set up bounding box
@@ -57,7 +58,7 @@ public:
     ~DrawingText() override;
 
     void clear();
-    bool addComponent(font_instance *font, int glyph, Geom::Affine const &trans, 
+    bool addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans,
         float width, float ascent, float descent, float phase_length);
     void setStyle(SPStyle *style, SPStyle *context_style = nullptr) override;
     void setChildrenStyle(SPStyle *context_style) override;

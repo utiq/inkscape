@@ -47,7 +47,7 @@
 #include "style.h"
 #include "text-editing.h"
 
-#include <libnrtype/FontFactory.h>
+#include <libnrtype/font-factory.h>
 #include <libnrtype/font-instance.h>
 #include <libnrtype/font-lister.h>
 
@@ -475,9 +475,8 @@ void TextEdit::onFontFeatures(Gtk::Widget * widgt, int pos)
     if (pos == 1) {
         Glib::ustring fontspec = font_selector.get_fontspec();
         if (!fontspec.empty()) {
-            font_instance *res = font_factory::Default()->FaceFromFontSpecification(fontspec.c_str());
-            if (res && !res->fulloaded) {
-                res->InitTheFace(true);
+            auto res = FontFactory::get().FaceFromFontSpecification(fontspec.c_str());
+            if (res) {
                 font_features.update_opentype(fontspec);
             }
         }

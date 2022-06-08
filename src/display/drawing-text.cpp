@@ -35,22 +35,15 @@ DrawingGlyphs::DrawingGlyphs(Drawing &drawing)
 
 DrawingGlyphs::~DrawingGlyphs()
 {
-    if (_font) {
-        _font->Unref();
-        _font = nullptr;
-    }
 }
 
-void
-DrawingGlyphs::setGlyph(font_instance *font, int glyph, Geom::Affine const &trans)
+void DrawingGlyphs::setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom::Affine const &trans)
 {
     _markForRendering();
 
     setTransform(trans);
 
-    if (font) font->Ref();
-    if (_font) _font->Unref();
-    _font = font;
+    _font = std::move(font);
     _glyph = glyph;
 
     _markForUpdate(STATE_ALL, false);
@@ -123,7 +116,7 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
 
     Geom::OptRect pb;
     if (_drawable) {
-        Geom::PathVector *glyphv = _font->PathVector(_glyph);
+        auto glyphv = _font->PathVector(_glyph);
         if (glyphv && !glyphv->empty()) {
             pb = bounds_exact_transformed(*glyphv, ctx.ctm);
         }
@@ -227,9 +220,7 @@ DrawingText::clear()
     _children.clear_and_dispose(DeleteDisposer());
 }
 
-bool
-DrawingText::addComponent(font_instance *font, int glyph, Geom::Affine const &trans,
-    float width, float ascent, float descent, float phase_length)
+bool DrawingText::addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans, float width, float ascent, float descent, float phase_length)
 {
 /* original, did not save a glyph for white space characters, causes problems for text-decoration
     if (!font || !font->PathVector(glyph)) {
@@ -603,8 +594,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
             dc.transform(g->_ctm);
             if (g->_drawable) {
                 if (g->_font->FontHasSVG()) {
-                    Inkscape::Pixbuf* pixbuf = g->_font->PixBuf(g->_glyph);
-                    if (pixbuf) {
+                    if (auto pixbuf = g->_font->PixBuf(g->_glyph)) {
                         // Geom::OptRect box = bounds_exact(*g->_font->PathVector(g->_glyph));
                         // if (box) {
                         //     Inkscape::DrawingContext::Save save(dc);

@@ -32,10 +32,9 @@ DrawingImage::~DrawingImage()
 }
 
 void
-DrawingImage::setPixbuf(Inkscape::Pixbuf *pb)
+DrawingImage::setPixbuf(std::shared_ptr<Inkscape::Pixbuf const> pb)
 {
-    _pixbuf = pb;
-
+    _pixbuf = std::move(pb);
     _markForUpdate(STATE_ALL, false);
 }
 
@@ -111,7 +110,10 @@ unsigned DrawingImage::_renderItem(DrawingContext &dc, Geom::IntRect const &/*ar
 
         dc.translate(_origin);
         dc.scale(_scale);
-        dc.setSource(_pixbuf->getSurfaceRaw(), 0, 0);
+        // const_cast required since Cairo needs to modify the internal refcount variable, but we do not want to give up the
+        // benefits of const for the rest of our code. The underlying object is guaranteed to be non-const, so this is well-defined.
+        // It is also thread-safe to modify the refcount in this way, since Cairo uses atomics internally.
+        dc.setSource(const_cast<cairo_surface_t*>(_pixbuf->getSurfaceRaw()), 0, 0);
         dc.patternSetExtend(CAIRO_EXTEND_PAD);
 
         if (_style) {
@@ -205,7 +207,7 @@ DrawingImage::_pickItem(Geom::Point const &p, double delta, unsigned /*sticky*/)
         return nullptr;
 
     } else {
-        unsigned char *const pixels = _pixbuf->pixels();
+        auto pixels = _pixbuf->pixels();
         int width = _pixbuf->width();
         int height = _pixbuf->height();
         size_t rowstride = _pixbuf->rowstride();
@@ -224,7 +226,7 @@ DrawingImage::_pickItem(Geom::Point const &p, double delta, unsigned /*sticky*/)
         if ((ix < 0) || (iy < 0) || (ix >= width) || (iy >= height))
             return nullptr;
 
-        unsigned char *pix_ptr = pixels + iy * rowstride + ix * 4;
+        auto pix_ptr = pixels + iy * rowstride + ix * 4;
         // pick if the image is less than 99% transparent
         guint32 alpha = 0;
         if (_pixbuf->pixelFormat() == Inkscape::Pixbuf::PF_CAIRO) {

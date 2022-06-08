@@ -15,6 +15,7 @@
 #include "Layout-TNG.h"
 #include "style.h"
 #include "font-instance.h"
+#include "font-factory.h"
 #include "svg/svg-length.h"
 #include "object/sp-object.h"
 #include "Layout-TNG-Scanline-Maker.h"
@@ -81,7 +82,7 @@ class Layout::Calculator
 
     /** to stop pango from hinting its output, the font factory creates all fonts very large.
     All numbers returned from pango have to be divided by this number \em and divided by
-    PANGO_SCALE. See font_factory::font_factory(). */
+    PANGO_SCALE. See FontFactory::FontFactory(). */
     double _font_factory_size_multiplier;
 
     /** Temporary storage associated with each item in Layout::_input_stream. */
@@ -110,9 +111,9 @@ class Layout::Calculator
         pango_itemize(). */
     struct PangoItemInfo {
         PangoItem *item;
-        font_instance *font;
+        std::shared_ptr<FontInstance> font;
 
-        PangoItemInfo() : item(nullptr), font(nullptr) {}
+        PangoItemInfo() : item(nullptr) {}
 
         /* fixme: I don't like the fact that InputItemInfo etc. use the default copy constructor and
          * operator= (and thus don't involve incrementing reference counts), yet they provide a free method
@@ -126,13 +127,8 @@ class Layout::Calculator
                 pango_item_free(item);
                 item = nullptr;
             }
-            if (font) {
-                font->Unref();
-                font = nullptr;
-            }
         }
     };
-
 
     /** These spans have approximately the same definition as that used for
       * Layout::Span (constant font, direction, etc), except that they are from
@@ -426,7 +422,7 @@ bool Layout::Calculator::_measureUnbrokenSpan(ParagraphInfo const &para,
 
             // Advance does not include kerning but Pango gives wrong advances for vertical text
             // with upright orientation (pre 1.44.0).
-            font_instance *font = para.pango_items[span->end.iter_span->pango_item_index].font;
+            auto font = para.pango_items[span->end.iter_span->pango_item_index].font;
             double font_size = span->start.iter_span->font_size;
           //double glyph_h_advance = font_size * font->Advance(info->glyph, false);
             double glyph_v_advance = font_size * font->Advance(info->glyph, true );
@@ -730,9 +726,7 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
             new_span.baseline_shift = 0.0;
             new_span.block_progression = _block_progression;
             new_span.text_orientation = unbroken_span.text_orientation;
-            if ((_flow._input_stream[unbroken_span.input_index]->Type() == TEXT_SOURCE) && (new_span.font = para.pango_items[unbroken_span.pango_item_index].font))
-            {
-                new_span.font->Ref();
+            if ((_flow._input_stream[unbroken_span.input_index]->Type() == TEXT_SOURCE) && (new_span.font = para.pango_items[unbroken_span.pango_item_index].font)) {
                 new_span.font_size = unbroken_span.font_size;
                 new_span.direction = para.pango_items[unbroken_span.pango_item_index].item->analysis.level & 1 ? RIGHT_TO_LEFT : LEFT_TO_RIGHT;
                 new_span.input_stream_first_character = Glib::ustring::const_iterator(unbroken_span.input_stream_first_character.base() + it_span->start.char_byte);
@@ -775,7 +769,7 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                 unsigned end_byte                    = 0;
 
                 // Get some pointers (constant for an unbroken span).
-                font_instance *font   = para.pango_items[unbroken_span.pango_item_index].font;
+                auto font = para.pango_items[unbroken_span.pango_item_index].font;
                 PangoItem *pango_item = para.pango_items[unbroken_span.pango_item_index].item;
 
                 // Loop over glyphs in span
@@ -909,7 +903,7 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                         } else {
                             // Upright orientation
 
-                            auto hb_font = pango_font_get_hb_font(font->pFont);
+                            auto hb_font = pango_font_get_hb_font(font->get_font());
 
 #ifdef DEBUG_GLYPH
                             std::cerr << "        Upright"
@@ -930,14 +924,14 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
 
                                 double shift = 0;
                                 double scale_factor = PANGO_SCALE * _font_factory_size_multiplier;
-                                if (!FT_HAS_VERTICAL(font->theFace)) {
+                                if (!font->has_vertical()) {
 
                                     // If there are no vertical metrics, glyphs are vertically
                                     // centered before base anchor to mark anchor distance is
                                     // calculated by shaper. We must undo this!
                                     PangoRectangle ink_rect;
                                     PangoRectangle logical_rect;
-                                    pango_font_get_glyph_extents (font->pFont,
+                                    pango_font_get_glyph_extents (font->get_font(),
                                                                   new_glyph.glyph,
                                                                   &ink_rect,
                                                                   &logical_rect);
@@ -960,7 +954,7 @@ void Layout::Calculator::_outputLine(ParagraphInfo const &para,
                                     x_offset_center = shift;
                                 } else {
                                     // Is non-spacing mark!
-                                    if (!FT_HAS_VERTICAL(font->theFace)) {
+                                    if (!font->has_vertical()) {
 
                                         // If font lacks vertical metrics, all glyphs have em-box advance
                                         // but non-spacing marks should have zero advance.
@@ -1348,12 +1342,13 @@ void  Layout::Calculator::_buildPangoItemizationForPara(ParagraphInfo *para) con
         } else if (_flow._input_stream[input_index]->Type() == TEXT_SOURCE) {
             Layout::InputStreamTextSource *text_source = static_cast<Layout::InputStreamTextSource *>(_flow._input_stream[input_index]);
 
-            // create the font_instance
-            font_instance *font = text_source->styleGetFontInstance();
-            if (font == nullptr)
+            // create the FontInstance
+            auto font = text_source->styleGetFontInstance();
+            if (!font) {
                 continue;  // bad news: we'll have to ignore all this text because we know of no font to render it
+            }
 
-            PangoAttribute *attribute_font_description = pango_attr_font_desc_new(font->descr);
+            PangoAttribute *attribute_font_description = pango_attr_font_desc_new(font->get_descr());
             attribute_font_description->start_index = para->text.bytes();
 
             PangoAttribute *attribute_font_features =
@@ -1374,9 +1369,6 @@ void  Layout::Calculator::_buildPangoItemizationForPara(ParagraphInfo *para) con
                 PangoAttribute *attribute_language = pango_attr_language_new( language );
                 pango_attr_list_insert(attributes_list, attribute_language);
             }
-
-            // ownership of attribute is assumed by the list
-            font->Unref();
         }
     }
 
@@ -1401,14 +1393,14 @@ void  Layout::Calculator::_buildPangoItemizationForPara(ParagraphInfo *para) con
 
     pango_attr_list_unref(attributes_list);
 
-    // convert the GList to our vector<> and make the font_instance for each PangoItem at the same time
+    // convert the GList to our vector<> and make the FontInstance for each PangoItem at the same time
     para->pango_items.reserve(g_list_length(pango_items_glist));
     TRACE(("para itemizes to %d sections\n", g_list_length(pango_items_glist)));
     for (GList *current_pango_item = pango_items_glist ; current_pango_item != nullptr ; current_pango_item = current_pango_item->next) {
         PangoItemInfo new_item;
         new_item.item = (PangoItem*)current_pango_item->data;
         PangoFontDescription *font_description = pango_font_describe(new_item.item->analysis.font);
-        new_item.font = (font_factory::Default())->Face(font_description);
+        new_item.font = FontFactory::get().Face(font_description);
         pango_font_description_free(font_description);   // Face() makes a copy
         para->pango_items.push_back(new_item);
     }
@@ -1492,10 +1484,9 @@ unsigned Layout::Calculator::_buildSpansForPara(ParagraphInfo *para) const
                     SPStyle * style = object->style;
                     if (style) {
                         new_span.font_size = style->font_size.computed * _flow.getTextLengthMultiplierDue();
-                        font_factory * factory = font_factory::Default();
-                        font_instance * font = factory->FaceFromStyle( style );
-                        new_span.line_height_multiplier = _computeFontLineHeight( object->style );
-                        new_span.line_height.set( font );
+                        auto font = FontFactory::get().FaceFromStyle(style);
+                        new_span.line_height_multiplier = _computeFontLineHeight(object->style);
+                        new_span.line_height.set(font.get());
                         new_span.line_height *= new_span.font_size;
                     }
                 }
@@ -1720,8 +1711,8 @@ unsigned Layout::Calculator::_buildSpansForPara(ParagraphInfo *para) const
 
 
                     new_span.pango_item_index = pango_item_index;
-                    new_span.line_height_multiplier = _computeFontLineHeight( text_source->style );
-                    new_span.line_height.set( para->pango_items[pango_item_index].font );
+                    new_span.line_height_multiplier = _computeFontLineHeight(text_source->style);
+                    new_span.line_height.set(para->pango_items[pango_item_index].font.get());
                     new_span.line_height *= new_span.font_size;
 
                     // At some point we may want to calculate baseline_shift here (to take advantage
@@ -1735,12 +1726,11 @@ unsigned Layout::Calculator::_buildSpansForPara(ParagraphInfo *para) const
                 } else {
                     // if there's no text we still need to initialise the styles
                     new_span.pango_item_index = -1;
-                    font_instance *font = text_source->styleGetFontInstance();
+                    auto font = text_source->styleGetFontInstance();
                     if (font) {
                         new_span.line_height_multiplier = _computeFontLineHeight( text_source->style );
-                        new_span.line_height.set( font );
+                        new_span.line_height.set(font.get());
                         new_span.line_height *= new_span.font_size;
-                        font->Unref();
                     } else {
                         new_span.line_height *= 0.0;  // Set all to zero
                         new_span.line_height_multiplier = LINE_HEIGHT_NORMAL;
@@ -2069,7 +2059,7 @@ bool Layout::Calculator::_buildChunksInScanRun(ParagraphInfo const &para,
  */
 void Layout::Calculator::dumpPangoItemsOut(ParagraphInfo *para){
     std::cerr << "Pango items: " << para->pango_items.size() << std::endl;
-    font_factory * factory = font_factory::Default();
+    FontFactory &factory = FontFactory::get();
     for(unsigned pidx = 0 ; pidx < para->pango_items.size(); pidx++){
         std::cerr 
         << "idx: " << pidx 
@@ -2078,7 +2068,7 @@ void Layout::Calculator::dumpPangoItemsOut(ParagraphInfo *para){
         << " length: "
         << para->pango_items[pidx].item->length
         << " font: "
-        << factory->ConstructFontSpecification( para->pango_items[pidx].font )
+        << factory.ConstructFontSpecification(para->pango_items[pidx].font.get())
         << std::endl;
     }
 }
@@ -2121,9 +2111,9 @@ bool Layout::Calculator::calculate()
 
     _flow._clearOutputObjects();
 
-    _pango_context = (font_factory::Default())->fontContext;
+    _pango_context = FontFactory::get().get_font_context();
 
-    _font_factory_size_multiplier = (font_factory::Default())->fontSize;
+    _font_factory_size_multiplier = FontFactory::get().fontSize;
 
     _block_progression = _flow._blockProgression();
     if( _block_progression == RIGHT_TO_LEFT || _block_progression == LEFT_TO_RIGHT ) {
@@ -2269,8 +2259,6 @@ bool Layout::Calculator::calculate()
                         new_span.x_end = 0.0;
                 }
                 new_span.in_chunk = _flow._chunks.size() - 1;
-                if (new_span.font)
-                    new_span.font->Ref();
                 new_span.x_start = new_span.x_end;
                 new_span.baseline_shift = 0.0;
                 new_span.direction = para.direction;
@@ -2336,21 +2324,20 @@ void Layout::_calculateCursorShapeForEmpty()
     if (_input_stream.empty() || _input_stream.front()->Type() != TEXT_SOURCE)
         return;
 
-    InputStreamTextSource const *text_source = static_cast<InputStreamTextSource const *>(_input_stream.front());
+    auto text_source = static_cast<InputStreamTextSource const *>(_input_stream.front());
 
-    font_instance *font = text_source->styleGetFontInstance();
+    auto font = text_source->styleGetFontInstance();
     double font_size = text_source->style->font_size.computed;
     double caret_slope_run = 0.0, caret_slope_rise = 1.0;
     FontMetrics line_height;
     if (font) {
-        const_cast<font_instance*>(font)->FontSlope(caret_slope_run, caret_slope_rise);
+        font->FontSlope(caret_slope_run, caret_slope_rise);
         font->FontMetrics(line_height.ascent, line_height.descent, line_height.xheight);
         line_height *= font_size;
-        font->Unref();
     }
 
     double caret_slope = atan2(caret_slope_run, caret_slope_rise);
-    _empty_cursor_shape.height = font_size / cos(caret_slope);
+    _empty_cursor_shape.height = font_size / std::cos(caret_slope);
     _empty_cursor_shape.rotation = caret_slope;
 
     if (_input_wrap_shapes.empty()) {

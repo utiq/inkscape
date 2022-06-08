@@ -43,7 +43,7 @@
 #include "io/resource.h"
 #include "io/sys.h"
 
-#include "libnrtype/FontFactory.h"
+#include "libnrtype/font-factory.h"
 
 #include "object/sp-item-group.h"
 #include "object/sp-root.h"
@@ -276,19 +276,19 @@ Application::Application(bool use_gui) :
     }
 
     /* Initialize font factory */
-    font_factory *factory = font_factory::Default();
+    auto &factory = FontFactory::get();
     if (prefs->getBool("/options/font/use_fontsdir_system", true)) {
         char const *fontsdir = get_path(SYSTEM, FONTS);
-        factory->AddFontsDir(fontsdir);
+        factory.AddFontsDir(fontsdir);
     }
     if (prefs->getBool("/options/font/use_fontsdir_user", true)) {
         char const *fontsdir = get_path(USER, FONTS);
-        factory->AddFontsDir(fontsdir);
+        factory.AddFontsDir(fontsdir);
     }
     Glib::ustring fontdirs_pref = prefs->getString("/options/font/custom_fontdirs");
     std::vector<Glib::ustring> fontdirs = Glib::Regex::split_simple("\\|", fontdirs_pref);
     for (auto &fontdir : fontdirs) {
-        factory->AddFontsDir(fontdir.c_str());
+        factory.AddFontsDir(fontdir.c_str());
     }
 }
 

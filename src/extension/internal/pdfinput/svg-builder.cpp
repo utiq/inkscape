@@ -38,6 +38,7 @@
 #include "util/units.h"
 #include "display/nr-filter-utils.h"
 #include "libnrtype/font-instance.h"
+#include "libnrtype/font-factory.h"
 #include "object/sp-defs.h"
 
 #include "Function.h"
@@ -119,7 +120,7 @@ void SvgBuilder::_init() {
 
     // Fill _availableFontNames (Bug LP #179589) (code cfr. FontLister)
     std::vector<PangoFontFamily *> families;
-    font_factory::Default()->GetUIFamilies(families);
+    FontFactory::get().GetUIFamilies(families);
     for (auto & familie : families) {
         _availableFontNames.emplace_back(pango_font_family_get_name(familie));
     }
@@ -1357,7 +1358,7 @@ void SvgBuilder::_flushText() {
                 ///////
                 // Create a font specification string and save the attribute in the style
                 PangoFontDescription *descr = pango_font_description_from_string(glyph.font_specification);
-                Glib::ustring properFontSpec = font_factory::Default()->ConstructFontSpecification(descr);
+                Glib::ustring properFontSpec = FontFactory::get().ConstructFontSpecification(descr);
                 pango_font_description_free(descr);
                 sp_repr_css_set_property(glyph.style, "-inkscape-font-specification", properFontSpec.c_str());
 

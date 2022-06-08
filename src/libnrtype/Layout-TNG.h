@@ -41,7 +41,7 @@ class SPObject;
 class Shape;
 struct SPPrintContext;
 class Path;
-class font_instance;
+class FontInstance;
 typedef struct _PangoFontDescription PangoFontDescription;
 
 namespace Inkscape {
@@ -632,7 +632,7 @@ public:
             descent_max =  0.2;
         }            
 
-        void set( font_instance *font );
+        void set(FontInstance const *font);
         
         // CSS 2.1 dictates that font-size is based on em-size which is defined as ascent + descent
         inline double emSize() const {return ascent + descent;}
@@ -716,7 +716,7 @@ private:
         // a few functions for some of the more complicated style accesses
         /// The return value must be freed with pango_font_description_free()
         PangoFontDescription *styleGetFontDescription() const;
-        font_instance *styleGetFontInstance() const;
+        std::shared_ptr<FontInstance> styleGetFontInstance() const;
         Direction styleGetBlockProgression() const;
         SPCSSTextOrientation styleGetTextOrientation() const;
         SPCSSBaseline styleGetDominantBaseline() const;
@@ -837,7 +837,7 @@ private:
     // A collection of characters that share the same style and position start (<text> or <tspan> x, y attributes).
     struct Span {
         unsigned in_chunk;
-        font_instance *font;
+        std::shared_ptr<FontInstance> font;
         float font_size;
         float x_start;   /// relative to the start of the chunk
         float x_end;     /// relative to the start of the chunk

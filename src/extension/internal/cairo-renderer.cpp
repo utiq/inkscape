@@ -437,7 +437,7 @@ static void sp_image_render(SPImage *image, CairoRenderContext *ctx)
     Geom::Scale s(width / (double)w, height / (double)h);
     Geom::Affine t(s * tp);
 
-    ctx->renderImage(image->pixbuf, t, image->style);
+    ctx->renderImage(image->pixbuf.get(), t, image->style);
 }
 
 static void sp_anchor_render(SPAnchor *a, CairoRenderContext *ctx)

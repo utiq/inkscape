@@ -601,8 +601,9 @@ void Layout::queryCursorShape(iterator const &it, Geom::Point &position, double 
         } else {
 	    // Horizontal text
             double caret_slope_run = 0.0, caret_slope_rise = 1.0;
-            if (span->font)
-                const_cast<font_instance*>(span->font)->FontSlope(caret_slope_run, caret_slope_rise);
+            if (span->font) {
+                span->font->FontSlope(caret_slope_run, caret_slope_rise);
+            }
             double caret_slope = atan2(caret_slope_run, caret_slope_rise);
             height = vertical_scale * (span->line_height.emSize()) / cos(caret_slope);
             rotation += caret_slope;

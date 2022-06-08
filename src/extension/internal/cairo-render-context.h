@@ -170,7 +170,7 @@ public:
     };
 
     bool renderPathVector(Geom::PathVector const &pathv, SPStyle const *style, Geom::OptRect const &pbox, CairoPaintOrder order = STROKE_OVER_FILL);
-    bool renderImage(Inkscape::Pixbuf *pb,
+    bool renderImage(Inkscape::Pixbuf const *pb,
                      Geom::Affine const &image_transform, SPStyle const *style);
     bool renderGlyphtext(PangoFont *font, Geom::Affine const &font_matrix,
                          std::vector<CairoGlyphInfo> const &glyphtext, SPStyle const *style);

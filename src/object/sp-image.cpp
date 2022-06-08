@@ -117,7 +117,6 @@ SPImage::SPImage() : SPItem(), SPViewBox() {
 
     this->href = nullptr;
     this->color_profile = nullptr;
-    this->pixbuf = nullptr;
 }
 
 SPImage::~SPImage() = default;
@@ -149,8 +148,7 @@ void SPImage::release() {
         this->href = nullptr;
     }
 
-    delete this->pixbuf;
-    this->pixbuf = nullptr;
+    pixbuf.reset();
 
     if (this->color_profile) {
         g_free (this->color_profile);
@@ -249,7 +247,7 @@ void SPImage::apply_profile(Inkscape::Pixbuf *pixbuf) {
     pixbuf->ensurePixelFormat(Inkscape::Pixbuf::PF_GDK);
     int imagewidth = pixbuf->width();
     int imageheight = pixbuf->height();
-    int rowstride = pixbuf->rowstride();;
+    int rowstride = pixbuf->rowstride();
     guchar* px = pixbuf->pixels();
 
     if ( px ) {
@@ -312,32 +310,31 @@ void SPImage::apply_profile(Inkscape::Pixbuf *pixbuf) {
 
 void SPImage::update(SPCtx *ctx, unsigned int flags) {
 
-    SPDocument *doc = this->document;
-
     SPItem::update(ctx, flags);
+
     if (flags & SP_IMAGE_HREF_MODIFIED_FLAG) {
-        delete this->pixbuf;
-        this->pixbuf = nullptr;
-        if (this->href) {
-            Inkscape::Pixbuf *pixbuf = nullptr;
+        pixbuf.reset();
+        if (href) {
+            Inkscape::Pixbuf *pb = nullptr;
             double svgdpi = 96;
-            if (this->getRepr()->attribute("inkscape:svg-dpi")) {
-                svgdpi = g_ascii_strtod(this->getRepr()->attribute("inkscape:svg-dpi"), nullptr);
+            if (getRepr()->attribute("inkscape:svg-dpi")) {
+                svgdpi = g_ascii_strtod(getRepr()->attribute("inkscape:svg-dpi"), nullptr);
             }
-            this->dpi = svgdpi;
-            pixbuf = readImage(this->getRepr()->attribute("xlink:href"),
-                               this->getRepr()->attribute("sodipodi:absref"),
-                               doc->getDocumentBase(), svgdpi);
-            if (!pixbuf) {
+            dpi = svgdpi;
+            pb = readImage(getRepr()->attribute("xlink:href"),
+                           getRepr()->attribute("sodipodi:absref"),
+                           document->getDocumentBase(), svgdpi);
+            if (!pb) {
                 // Passing in our previous size allows us to preserve the image's expected size.
                 auto broken_width = width._set ? width.computed : 640;
                 auto broken_height = height._set ? height.computed : 640;
-                pixbuf = getBrokenImage(broken_width, broken_height); 
+                pb = getBrokenImage(broken_width, broken_height);
             }
 
-            if (pixbuf) {
-                if ( this->color_profile ) apply_profile( pixbuf );
-                this->pixbuf = pixbuf;
+            if (pb) {
+                if (color_profile) apply_profile(pb);
+                pb->ensurePixelFormat(Inkscape::Pixbuf::PF_CAIRO); // Expected by rendering code, so convert now before making immutable.
+                pixbuf = std::shared_ptr<Inkscape::Pixbuf>(pb);
             }
         }
     }
@@ -487,14 +484,14 @@ Geom::OptRect SPImage::bbox(Geom::Affine const &transform, SPItem::BBoxType /*ty
 }
 
 void SPImage::print(SPPrintContext *ctx) {
-    if (this->pixbuf && (this->width.computed > 0.0) && (this->height.computed > 0.0) ) {
-        Inkscape::Pixbuf *pb = new Inkscape::Pixbuf(*this->pixbuf);
-        pb->ensurePixelFormat(Inkscape::Pixbuf::PF_GDK);
+    if (pixbuf && width.computed > 0.0 && height.computed > 0.0) {
+        auto pb = *pixbuf;
+        pb.ensurePixelFormat(Inkscape::Pixbuf::PF_GDK);
 
-        guchar *px = pb->pixels();
-        int w = pb->width();
-        int h = pb->height();
-        int rs = pb->rowstride();
+        guchar *px = pb.pixels();
+        int w = pb.width();
+        int h = pb.height();
+        int rs = pb.rowstride();
 
         double vx = this->ox;
         double vy = this->oy;
@@ -504,7 +501,6 @@ void SPImage::print(SPPrintContext *ctx) {
         Geom::Scale s(this->sx, this->sy);
         t = s * tp;
         ctx->image_R8G8B8A8_N(px, w, h, rs, t, this->style);
-        delete pb;
     }
 }
 
@@ -528,15 +524,14 @@ gchar* SPImage::description() const {
         href_desc = g_strdup("(null_pointer)"); // we call g_free() on href_desc
     }
 
-    char *ret = ( this->pixbuf == nullptr
+    char *ret = ( !pixbuf
                   ? g_strdup_printf(_("[bad reference]: %s"), href_desc)
                   : g_strdup_printf(_("%d &#215; %d: %s"),
-                                    this->pixbuf->width(),
-                                    this->pixbuf->height(),
+                                    pixbuf->width(),
+                                    pixbuf->height(),
                                     href_desc) );
-                                    
-    if (this->pixbuf == nullptr && 
-        this->document) 
+
+    if (!pixbuf && document)
     {
         Inkscape::Pixbuf * pb = nullptr;
         double svgdpi = 96;

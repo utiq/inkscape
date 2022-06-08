@@ -8,8 +8,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef USE_PANGO_WIN32
-
 #include "OpenTypeUtil.h"
 
 
@@ -31,6 +29,7 @@
 #include "io/stream/gzipstream.h"
 #include "io/stream/bufferstream.h"
 
+#include "display/cairo-utils.h"
 
 // Utilities used in this file
 
@@ -106,6 +105,8 @@ void get_glyphs(GlyphToUnicodeMap& glyphMap, HbSet& set, Glib::ustring& characte
             characters += codepoint;
     }
 }
+
+SVGTableEntry::~SVGTableEntry() = default;
 
 // Make a list of all tables found in the GSUB
 // This list includes all tables regardless of script or language.
@@ -372,10 +373,6 @@ void readOpenTypeSVGTable(hb_font_t* hb_font,
     }
 
     // OpenType fonts use Big Endian
-#if 0
-    uint16_t version = ((data[0] & 0xff) <<  8) +  (data[1] & 0xff);
-    // std::cout << "Version: " << version << std::endl;
-#endif
     uint32_t offset  = ((data[2] & 0xff) << 24) + ((data[3] & 0xff) << 16) + ((data[4] & 0xff) << 8) + (data[5] & 0xff);
 
     // std::cout << "Offset: "  << offset << std::endl;
@@ -432,8 +429,6 @@ void readOpenTypeSVGTable(hb_font_t* hb_font,
         // }
     }
 }
-
-#endif /* !USE_PANGO_WIND32    */
 
 /*
   Local Variables:

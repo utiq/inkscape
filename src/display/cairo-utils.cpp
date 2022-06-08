@@ -455,6 +455,12 @@ GdkPixbuf *Pixbuf::getPixbufRaw(bool convert_format)
     return _pixbuf;
 }
 
+GdkPixbuf *Pixbuf::getPixbufRaw() const
+{
+    assert(_pixel_format == PF_GDK);
+    return _pixbuf;
+}
+
 /**
  * Converts the pixbuf to Cairo pixel format and returns an image surface
  * which can be used as a source.
@@ -463,11 +469,15 @@ GdkPixbuf *Pixbuf::getPixbufRaw(bool convert_format)
  * Calling this function causes the pixbuf to be unsuitable for use
  * with GTK drawing functions until ensurePixelFormat(Pixbuf::PIXEL_FORMAT_PIXBUF) is called.
  */
-cairo_surface_t *Pixbuf::getSurfaceRaw(bool convert_format)
+cairo_surface_t *Pixbuf::getSurfaceRaw()
 {
-    if (convert_format) {
-        ensurePixelFormat(PF_CAIRO);
-    }
+    ensurePixelFormat(PF_CAIRO);
+    return _surface;
+}
+
+cairo_surface_t *Pixbuf::getSurfaceRaw() const
+{
+    assert(_pixel_format == PF_CAIRO);
     return _surface;
 }
 
@@ -489,10 +499,9 @@ Glib::RefPtr<Gdk::Pixbuf> Pixbuf::getPixbuf(bool convert_format = true)
 }
 */
 
-Cairo::RefPtr<Cairo::Surface> Pixbuf::getSurface(bool convert_format)
+Cairo::RefPtr<Cairo::Surface> Pixbuf::getSurface()
 {
-    Cairo::RefPtr<Cairo::Surface> p(new Cairo::Surface(getSurfaceRaw(convert_format), false));
-    return p;
+    return Cairo::RefPtr<Cairo::Surface>(new Cairo::Surface(getSurfaceRaw(), false));
 }
 
 /** Retrieves the original compressed data for the surface, if any.

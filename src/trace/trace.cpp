@@ -324,8 +324,6 @@ Glib::RefPtr<Gdk::Pixbuf> Tracer::sioxProcessImage(SPImage *img, Glib::RefPtr<Gd
 
 Glib::RefPtr<Gdk::Pixbuf> Tracer::getSelectedImage()
 {
-
-
     SPImage *img = getSelectedSPImage();
     if (!img)
         return Glib::RefPtr<Gdk::Pixbuf>(nullptr);
@@ -333,7 +331,7 @@ Glib::RefPtr<Gdk::Pixbuf> Tracer::getSelectedImage()
     if (!img->pixbuf)
         return Glib::RefPtr<Gdk::Pixbuf>(nullptr);
 
-    GdkPixbuf *raw_pb = img->pixbuf->getPixbufRaw(false);
+    GdkPixbuf const *raw_pb = img->pixbuf->getPixbufRaw();
     GdkPixbuf *trace_pb = gdk_pixbuf_copy(raw_pb);
     if (img->pixbuf->pixelFormat() == Inkscape::Pixbuf::PF_CAIRO) {
         convert_pixels_argb32_to_pixbuf(
@@ -416,7 +414,7 @@ void Tracer::traceThread()
         return;
         }
 
-    GdkPixbuf *trace_pb = gdk_pixbuf_copy(img->pixbuf->getPixbufRaw(false));
+    GdkPixbuf *trace_pb = gdk_pixbuf_copy(img->pixbuf->getPixbufRaw());
     if (img->pixbuf->pixelFormat() == Inkscape::Pixbuf::PF_CAIRO) {
         convert_pixels_argb32_to_pixbuf(
             gdk_pixbuf_get_pixels(trace_pb),

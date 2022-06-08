@@ -383,10 +383,8 @@ endif()
 set(INKSCAPE_TARGET_LIBS
         # order from automake
         #sp_LIB
-        #nrtype_LIB
         #inkscape_LIB
         #sp_LIB # annoying, we need both!
-        nrtype_LIB # annoying, we need both!
         croco_LIB
         avoid_LIB
         cola_LIB

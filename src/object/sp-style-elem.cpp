@@ -22,7 +22,7 @@
 #include <fstream>
 
 // For font-rule
-#include "libnrtype/FontFactory.h"
+#include "libnrtype/font-factory.h"
 
 SPStyleElem::SPStyleElem() : SPObject() {
     media_set_all(this->media);
@@ -365,8 +365,7 @@ end_font_face_cb(CRDocHandler *a_handler)
                         Inkscape::IO::Resource::get_filename (document->getDocumentFilename(), value);
 
                     if (!ttf_file.empty()) {
-                        font_factory *factory = font_factory::Default();
-                        factory->AddFontFile( ttf_file.c_str() );
+                        FontFactory::get().AddFontFile(ttf_file.c_str());
                         g_info("end_font_face_cb: Added font: %s", ttf_file.c_str());
 
                         // FIX ME: Need to refresh font list.

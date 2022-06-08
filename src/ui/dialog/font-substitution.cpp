@@ -32,7 +32,7 @@
 #include "object/sp-flowdiv.h"
 #include "object/sp-tspan.h"
 
-#include "libnrtype/FontFactory.h"
+#include "libnrtype/font-factory.h"
 #include "libnrtype/font-instance.h"
 
 #include "ui/dialog-events.h"
@@ -241,13 +241,11 @@ Glib::ustring FontSubstitution::getSubstituteFontName (Glib::ustring font)
 {
     Glib::ustring out = font;
 
-    PangoFontDescription *descr = pango_font_description_new();
+    auto descr = pango_font_description_new();
     pango_font_description_set_family(descr,font.c_str());
-    font_instance *res = (font_factory::Default())->Face(descr);
-    if (res->pFont) {
-        PangoFontDescription *nFaceDesc = pango_font_describe(res->pFont);
-        out = sp_font_description_get_family(nFaceDesc);
-    }
+    auto res = FontFactory::get().Face(descr);
+    auto nFaceDesc = pango_font_describe(res->get_font());
+    out = sp_font_description_get_family(nFaceDesc);
     pango_font_description_free(descr);
 
     return out;

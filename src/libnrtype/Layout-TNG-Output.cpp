@@ -23,6 +23,7 @@
 #include "display/curve.h"
 #include <2geom/pathvector.h>
 #include <3rdparty/libuemf/symbol_convert.h>
+#include "libnrtype/font-factory.h"
 
 
 using Inkscape::Extension::Internal::CairoRenderContext;
@@ -79,18 +80,16 @@ void Layout::_clearOutputObjects()
     _paragraphs.clear();
     _lines.clear();
     _chunks.clear();
-    for (auto & _span : _spans)
-        if (_span.font) _span.font->Unref();
     _spans.clear();
     _characters.clear();
     _glyphs.clear();
     _path_fitted = nullptr;
 }
 
-void Layout::FontMetrics::set(font_instance *font)
+void Layout::FontMetrics::set(FontInstance const *font)
 {
-    if( font != nullptr ) {
-        ascent      = font->GetTypoAscent();  
+    if (font) {
+        ascent      = font->GetTypoAscent();
         descent     = font->GetTypoDescent();
         xheight     = font->GetXHeight();
         ascent_max  = font->GetMaxAscent();
@@ -200,7 +199,7 @@ void Layout::show(DrawingGroup *in_arena, Geom::OptRect const &paintbox) const
                 // dot/dash/wave phase.
                 // Use maximum ascent and descent to ensure glyphs that extend outside the embox
                 // are fully drawn.
-                (void) nr_text->addComponent(_spans[span_index].font, _glyphs[glyph_index].glyph, glyph_matrix,
+                nr_text->addComponent(_spans[span_index].font, _glyphs[glyph_index].glyph, glyph_matrix,
                     _glyphs[glyph_index].advance,
                     _spans[span_index].line_height.getMaxAscent(),
                     _spans[span_index].line_height.getMaxDescent(),
@@ -274,7 +273,7 @@ Geom::Affine glyph_matrix;
         for (unsigned glyph_index = 0 ; glyph_index < _glyphs.size() ; glyph_index++) {
             if (_characters[_glyphs[glyph_index].in_character].in_glyph == -1)continue; //invisible glyphs
             Span const &span = _spans[_characters[_glyphs[glyph_index].in_character].in_span];
-            Geom::PathVector const * pv = span.font->PathVector(_glyphs[glyph_index].glyph);
+            Geom::PathVector const *pv = span.font->PathVector(_glyphs[glyph_index].glyph);
             InputStreamTextSource const *text_source = static_cast<InputStreamTextSource const *>(_input_stream[span.in_input_stream_item]);
             if (pv) {
                 _getGlyphTransformMatrix(glyph_index, &glyph_matrix);
@@ -518,7 +517,7 @@ void Layout::showGlyphs(CairoRenderContext *ctx) const
             ctx->pushLayer();
         }
         if (glyph_index - first_index > 0)
-            ctx->renderGlyphtext(span.font->pFont, font_matrix, glyphtext, style);
+            ctx->renderGlyphtext(span.font->get_font(), font_matrix, glyphtext, style);
         if (opacity != 1.0) {
             ctx->popLayer();
             ctx->popState();
@@ -575,7 +574,7 @@ Glib::ustring Layout::getFontFamily(unsigned span_index) const
         return "";
 
     if (_spans[span_index].font) {
-        return sp_font_description_get_family(_spans[span_index].font->descr);
+        return sp_font_description_get_family(_spans[span_index].font->get_descr());
     }
 
     return "";
@@ -825,7 +824,7 @@ SPCurve Layout::convertToCurves(iterator const &from_glyph, iterator const &to_g
         Span const &span = _glyphs[glyph_index].span(this);
         _getGlyphTransformMatrix(glyph_index, &glyph_matrix);
 
-        Geom::PathVector const * pathv = span.font->PathVector(_glyphs[glyph_index].glyph);
+        Geom::PathVector const *pathv = span.font->PathVector(_glyphs[glyph_index].glyph);
         if (pathv) {
             Geom::PathVector pathv_trans = (*pathv) * glyph_matrix;
             curve.append(SPCurve(std::move(pathv_trans)));

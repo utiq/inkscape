@@ -38,6 +38,7 @@
 #include "sp-use.h"
 
 #include "libnrtype/font-instance.h"
+#include "libnrtype/font-factory.h"
 
 #include "livarot/Shape.h"
 
@@ -344,10 +345,9 @@ void SPFlowtext::_buildLayoutInput(SPObject *root, Shape const *exclusion_shape,
 
         layout.strut.reset();
         if (style) {
-            font_instance *font = font_factory::Default()->FaceFromStyle( style );
+            auto font = FontFactory::get().FaceFromStyle(style);
             if (font) {
                 font->FontMetrics(layout.strut.ascent, layout.strut.descent, layout.strut.xheight);
-                font->Unref();
             }
             layout.strut *= style->font_size.computed;
             if (style->line_height.normal ) {

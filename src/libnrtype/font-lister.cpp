@@ -16,7 +16,7 @@
 #include <libnrtype/font-instance.h>
 
 #include "font-lister.h"
-#include "FontFactory.h"
+#include "font-factory.h"
 
 #include "desktop.h"
 #include "desktop-style.h"
@@ -80,7 +80,7 @@ FontLister::FontLister()
 
     // Get sorted font families from Pango
     std::vector<PangoFontFamily *> familyVector;
-    font_factory::Default()->GetUIFamilies(familyVector);
+    FontFactory::get().GetUIFamilies(familyVector);
 
     // Traverse through the family names and set up the list store
     for (auto & i : familyVector) {
@@ -151,7 +151,7 @@ void FontLister::ensureRowStyles(Glib::RefPtr<Gtk::TreeModel> model, Gtk::TreeMo
     Gtk::TreeModel::Row row = *iter;
     if (!row[FontList.styles]) {
         if (row[FontList.pango_family]) {
-            row[FontList.styles] = font_factory::Default()->GetUIStyles(row[FontList.pango_family]);
+            row[FontList.styles] = FontFactory::get().GetUIStyles(row[FontList.pango_family]);
         } else {
             row[FontList.styles] = default_styles;
         }
@@ -254,7 +254,7 @@ void FontLister::insert_font_family(Glib::ustring new_family)
             Gtk::TreeModel::Row row = *iter2;
             if (row[FontList.onSystem] && familyNamesAreEqual(tokens[0], row[FontList.family])) {
                 if (!row[FontList.styles]) {
-                    row[FontList.styles] = font_factory::Default()->GetUIStyles(row[FontList.pango_family]);
+                    row[FontList.styles] = FontFactory::get().GetUIStyles(row[FontList.pango_family]);
                 }
                 styles = row[FontList.styles];
                 break;
@@ -336,7 +336,7 @@ void FontLister::update_font_list(SPDocument *document)
                 if (row[FontList.onSystem] && familyNamesAreEqual(tokens[0], row[FontList.family])) {
                     // Found font on system, set style list to system font style list.
                     if (!row[FontList.styles]) {
-                        row[FontList.styles] = font_factory::Default()->GetUIStyles(row[FontList.pango_family]);
+                        row[FontList.styles] = FontFactory::get().GetUIStyles(row[FontList.pango_family]);
                     }
 
                     // Add new styles (from 'font-variation-settings', these are not include in GetUIStyles()).
@@ -463,9 +463,9 @@ Glib::ustring FontLister::system_fontspec(Glib::ustring fontspec)
     Glib::ustring out = fontspec;
 
     PangoFontDescription *descr = pango_font_description_from_string(fontspec.c_str());
-    font_instance *res = (font_factory::Default())->Face(descr);
-    if (res && res->pFont) {
-        PangoFontDescription *nFaceDesc = pango_font_describe(res->pFont);
+    auto res = FontFactory::get().Face(descr);
+    if (res) {
+        auto nFaceDesc = pango_font_describe(res->get_font());
         out = sp_font_description_get_family(nFaceDesc);
     }
     pango_font_description_free(descr);
@@ -651,7 +651,7 @@ std::pair<Glib::ustring, Glib::ustring> FontLister::new_font_family(Glib::ustrin
 
         if (familyNamesAreEqual(new_family, row[FontList.family])) {
             if (!row[FontList.styles]) {
-                row[FontList.styles] = font_factory::Default()->GetUIStyles(row[FontList.pango_family]);
+                row[FontList.styles] = FontFactory::get().GetUIStyles(row[FontList.pango_family]);
             }
             styles = row[FontList.styles];
             break;
@@ -1070,7 +1070,7 @@ Glib::ustring FontLister::get_best_style_match(Glib::ustring family, Glib::ustri
 
     GList *styles = default_styles;
     if (row[FontList.onSystem] && !row[FontList.styles]) {
-        row[FontList.styles] = font_factory::Default()->GetUIStyles(row[FontList.pango_family]);
+        row[FontList.styles] = FontFactory::get().GetUIStyles(row[FontList.pango_family]);
         styles = row[FontList.styles];
     }
 

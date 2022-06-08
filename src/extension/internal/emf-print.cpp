@@ -328,7 +328,7 @@ int PrintEmf::create_brush(SPStyle const *style, PU_COLORREF fcolor)
     U_LOGBRUSH    lb;
     uint32_t      brush, fmode;
     MFDrawMode    fill_mode;
-    Inkscape::Pixbuf *pixbuf;
+    Inkscape::Pixbuf const *pixbuf;
     uint32_t      brushStyle;
     int           hatchType;
     U_COLORREF    hatchColor;
@@ -452,14 +452,14 @@ int PrintEmf::create_brush(SPStyle const *style, PU_COLORREF fcolor)
         break;
     case DRAW_IMAGE:
         char                *px;
-        char                *rgba_px;
+        char const          *rgba_px;
         uint32_t             cbPx;
         uint32_t             colortype;
         PU_RGBQUAD           ct;
         int                  numCt;
         U_BITMAPINFOHEADER   Bmih;
         PU_BITMAPINFO        Bmi;
-        rgba_px = (char *) pixbuf->pixels(); // Do NOT free this!!!
+        rgba_px = (char const*) pixbuf->pixels(); // Do NOT free this!!!
         colortype = U_BCBM_COLOR32;
         (void) RGBA_to_DIB(&px, &cbPx, &ct, &numCt,  rgba_px,  width, height, width * 4, colortype, 0, 1);
         // pixbuf can be either PF_CAIRO or PF_GDK, and these have R and B bytes swapped
@@ -524,7 +524,7 @@ int PrintEmf::create_pen(SPStyle const *style, const Geom::Affine &transform)
     int                  linejoin  = 0;
     uint32_t             pen;
     uint32_t             brushStyle;
-    Inkscape::Pixbuf    *pixbuf;
+    Inkscape::Pixbuf const *pixbuf;
     int                  hatchType;
     U_COLORREF           hatchColor;
     U_COLORREF           bkColor;

@@ -146,7 +146,7 @@
 ../src/inkview-application.cpp
 ../src/io/fix-broken-links.cpp
 ../src/io/resource.cpp
-../src/libnrtype/FontFactory.cpp
+../src/libnrtype/font-factory.cpp
 ../src/live_effects/effect.cpp
 ../src/live_effects/lpe-angle_bisector.cpp
 ../src/live_effects/lpe-attach-path.cpp
