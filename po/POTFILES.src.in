@@ -265,6 +265,7 @@
 ../src/ui/clipboard.cpp
 ../src/ui/contextmenu.cpp
 ../src/ui/desktop/document-check.cpp
+../src/ui/desktop/menubar.cpp
 ../src/ui/dialog/attrdialog.cpp
 ../src/ui/dialog/calligraphic-profile-rename.cpp
 ../src/ui/dialog/clonetiler.cpp
