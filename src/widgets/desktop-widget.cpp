@@ -1733,10 +1733,11 @@ SPDesktopWidget::on_ruler_box_motion_notify_event(GdkEventMotion *event, Gtk::Wi
             desktop->namedview->setShowGuides(true);
         }
 
+        Geom::Point normal = _normal;
         if (!(event->state & GDK_SHIFT_MASK)) {
-            ruler_snap_new_guide(desktop, event_dt, _normal);
+            ruler_snap_new_guide(desktop, event_dt, normal);
         }
-        _active_guide->set_normal(_normal);
+        _active_guide->set_normal(normal);
         _active_guide->set_origin(event_dt);
 
         desktop->set_coordinate_status(event_dt);
@@ -1769,8 +1770,9 @@ SPDesktopWidget::on_ruler_box_button_release_event(GdkEventButton *event, Gtk::W
         Geom::Point const event_w(_canvas->canvas_to_world(event_win));
         Geom::Point event_dt(desktop->w2d(event_w));
 
+        Geom::Point normal = _normal;
         if (!(event->state & GDK_SHIFT_MASK)) {
-            ruler_snap_new_guide(desktop, event_dt, _normal);
+            ruler_snap_new_guide(desktop, event_dt, normal);
         }
 
         delete _active_guide;
@@ -1786,7 +1788,7 @@ SPDesktopWidget::on_ruler_box_button_release_event(GdkEventButton *event, Gtk::W
             // <sodipodi:guide> stores inverted y-axis coordinates
             if (desktop->is_yaxisdown()) {
                 newy = desktop->doc()->getHeight().value("px") - newy;
-                _normal[Geom::Y] *= -1.0;
+                normal[Geom::Y] *= -1.0;
             }
 
             SPRoot *root = desktop->doc()->getRoot();
@@ -1795,7 +1797,7 @@ SPDesktopWidget::on_ruler_box_button_release_event(GdkEventButton *event, Gtk::W
                 newy = newy * root->viewBox.height() / root->height.computed;
             }
             repr->setAttributePoint("position", Geom::Point( newx, newy ));
-            repr->setAttributePoint("orientation", _normal);
+            repr->setAttributePoint("orientation", normal);
             desktop->namedview->appendChild(repr);
             Inkscape::GC::release(repr);
             DocumentUndo::done(desktop->getDocument(), _("Create guide"), "");
