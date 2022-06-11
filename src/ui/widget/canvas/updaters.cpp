@@ -11,10 +11,11 @@ class ResponsiveUpdater : public Updater
 public:
     Strategy get_strategy() const override { return Strategy::Responsive; }
 
-    void reset()                               override { clean_region = Cairo::Region::create(); }
-    void intersect (Geom::IntRect const &rect) override { clean_region->intersect(geom_to_cairo(rect)); }
-    void mark_dirty(Geom::IntRect const &rect) override { clean_region->subtract(geom_to_cairo(rect)); }
-    void mark_clean(Geom::IntRect const &rect) override { clean_region->do_union(geom_to_cairo(rect)); }
+    void reset()                                             override { clean_region = Cairo::Region::create(); }
+    void intersect (Geom::IntRect const &rect)               override { clean_region->intersect(geom_to_cairo(rect)); }
+    void mark_dirty(Geom::IntRect const &rect)               override { clean_region->subtract(geom_to_cairo(rect)); }
+    void mark_dirty(Cairo::RefPtr<Cairo::Region> const &reg) override { clean_region->subtract(reg); }
+    void mark_clean(Geom::IntRect const &rect)               override { clean_region->do_union(geom_to_cairo(rect)); }
 
     Cairo::RefPtr<Cairo::Region> get_next_clean_region() override { return clean_region; }
     bool                         report_finished      () override { return false; }
@@ -49,6 +50,12 @@ public:
     {
         if (inprogress && !old_clean_region) old_clean_region = clean_region->copy();
         ResponsiveUpdater::mark_dirty(rect);
+    }
+
+    void mark_dirty(const Cairo::RefPtr<Cairo::Region> &reg) override
+    {
+        if (inprogress && !old_clean_region) old_clean_region = clean_region->copy();
+        ResponsiveUpdater::mark_dirty(reg);
     }
 
     void mark_clean(const Geom::IntRect &rect) override
@@ -117,9 +124,20 @@ public:
     void mark_dirty(Geom::IntRect const &rect) override
     {
         ResponsiveUpdater::mark_dirty(rect);
+        post_mark_dirty();
+    }
+
+    void mark_dirty(const Cairo::RefPtr<Cairo::Region> &reg) override
+    {
+        ResponsiveUpdater::mark_dirty(reg);
+        post_mark_dirty();
+    }
+
+    void post_mark_dirty()
+    {
         if (inprogress && !activated) {
             counter = scale = elapsed = 0;
-            blocked = {Cairo::Region::create()};
+            blocked = { Cairo::Region::create() };
             activated = true;
         }
     }

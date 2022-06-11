@@ -2,13 +2,9 @@
 #ifndef INKSCAPE_FRAMECHECK_H
 #define INKSCAPE_FRAMECHECK_H
 
-#include <ostream>
 #include <glib.h>
 
-namespace Inkscape {
-namespace FrameCheck {
-
-extern std::ostream &logfile();
+namespace Inkscape::FrameCheck {
 
 /// RAII object that logs a timing event for the duration of its lifetime.
 struct Event
@@ -41,16 +37,12 @@ private:
         p.start = -1;
     }
 
-    void finish()
-    {
-        if (start != -1) {
-            logfile() << name << ' ' << start << ' ' << g_get_monotonic_time() << ' ' << subtype << std::endl;
-        }
-    }
+    void finish() { if (start != -1) write(); }
+
+    void write();
 };
 
-} // namespace FrameCheck
-} // namespace Inkscape
+} // namespace Inkscape::FrameCheck
 
 #endif // INKSCAPE_FRAMECHECK_H
 

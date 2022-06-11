@@ -183,6 +183,52 @@ void ToolBase::use_cursor(Glib::RefPtr<Gdk::Cursor> cursor)
 }
 
 /**
+ * Gobbles next key events on the queue with the same keyval and mask. Returns the number of events consumed.
+ */
+gint gobble_key_events(guint keyval, guint mask) {
+    GdkEvent *event_next;
+    gint i = 0;
+
+    event_next = gdk_event_get();
+    // while the next event is also a key notify with the same keyval and mask,
+    while (event_next && (event_next->type == GDK_KEY_PRESS || event_next->type
+            == GDK_KEY_RELEASE) && event_next->key.keyval == keyval && (!mask
+            || (event_next->key.state & mask))) {
+        if (event_next->type == GDK_KEY_PRESS)
+            i++;
+        // kill it
+        gdk_event_free(event_next);
+        // get next
+        event_next = gdk_event_get();
+    }
+    // otherwise, put it back onto the queue
+    if (event_next)
+        gdk_event_put(event_next);
+
+    return i;
+}
+
+/**
+ * Gobbles next motion notify events on the queue with the same mask. Returns the number of events consumed.
+ */
+void gobble_motion_events(guint mask) {
+    GdkEvent *event_next;
+
+    event_next = gdk_event_get();
+    // while the next event is also a key notify with the same keyval and mask,
+    while (event_next && event_next->type == GDK_MOTION_NOTIFY
+            && (event_next->motion.state & mask)) {
+        // kill it
+        gdk_event_free(event_next);
+        // get next
+        event_next = gdk_event_get();
+    }
+    // otherwise, put it back onto the queue
+    if (event_next)
+        gdk_event_put(event_next);
+}
+
+/**
  * Toggles current tool between active tool and selector tool.
  * Subroutine of sp_event_context_private_root_handler().
  */
@@ -1108,7 +1154,9 @@ void ToolBase::ungrabCanvasEvents()
   * to draw a line). Make sure to call it again and restore standard precision afterwards. **/
 void ToolBase::set_high_motion_precision(bool high_precision)
 {
-    _desktop->canvas->set_event_compression(!high_precision);
+    if (auto window = _desktop->getToplevel()->get_window()) {
+        window->set_event_compression(!high_precision);
+    }
 }
 
 Geom::Point ToolBase::setup_for_drag_start(GdkEvent *ev)
@@ -1120,24 +1168,6 @@ Geom::Point ToolBase::setup_for_drag_start(GdkEvent *ev)
     auto const p = Geom::Point(ev->button.x, ev->button.y);
     item_to_select = Inkscape::UI::Tools::sp_event_context_find_item(_desktop, p, ev->button.state & GDK_MOD1_MASK, true);
     return _desktop->w2d(p);
-}
-
-/**
- * Discard and count matching key events from top of event bucket.
- * Convenience function that just passes request to canvas.
- */
-int ToolBase::gobble_key_events(guint keyval, guint mask) const
-{
-    return _desktop->canvas->gobble_key_events(keyval, mask);
-}
-
-/**
- * Discard matching motion events from top of event bucket.
- * Convenience function that just passes request to canvas.
- */
-void ToolBase::gobble_motion_events(guint mask) const
-{
-    _desktop->canvas->gobble_motion_events(mask);
 }
 
 /**

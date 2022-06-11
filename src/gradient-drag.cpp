@@ -2805,7 +2805,7 @@ bool GrDrag::key_press_handler(GdkEvent *event)
 
     y_dir *= -desktop->yaxisdir();
 
-    gint mul = 1 + desktop->canvas->gobble_key_events(keyval, 0); // with any mask
+    gint mul = 1 + Inkscape::UI::Tools::gobble_key_events(keyval, 0); // with any mask
 
     if (MOD__SHIFT(event)) {
         mul *= 10;

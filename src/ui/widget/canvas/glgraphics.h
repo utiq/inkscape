@@ -8,6 +8,7 @@
 #ifndef INKSCAPE_UI_WIDGET_CANVAS_GLGRAPHICS_H
 #define INKSCAPE_UI_WIDGET_CANVAS_GLGRAPHICS_H
 
+#include <mutex>
 #include <epoxy/gl.h>
 #include "graphics.h"
 #include "texturecache.h"
@@ -83,7 +84,7 @@ public:
     bool is_opengl() const override { return true; }
     void invalidated_glstate() override { state = State::None; }
 
-    Cairo::RefPtr<Cairo::ImageSurface> request_tile_surface(Geom::IntRect const &rect, bool outline) override;
+    Cairo::RefPtr<Cairo::ImageSurface> request_tile_surface(Geom::IntRect const &rect, bool nogl) override;
     void draw_tile(Fragment const &fragment, Cairo::RefPtr<Cairo::ImageSurface> surface, Cairo::RefPtr<Cairo::ImageSurface> outline_surface) override;
 
     void paint_widget(Fragment const &view, PaintArgs const &args, Cairo::RefPtr<Cairo::Context> const &cr) override;
@@ -100,6 +101,7 @@ private:
     // Pixel streamer and texture cache for uploading pixel data to GPU.
     std::unique_ptr<PixelStreamer> pixelstreamer;
     std::unique_ptr<TextureCache> texturecache;
+    std::mutex ps_mutex;
 
     // For preventing unnecessary pipeline recreation.
     enum class State { None, Widget, Stores, Tiles };

@@ -169,6 +169,7 @@ set(ui_SRC
 	widget/completion-popup.cpp
 	widget/canvas.cpp
 	widget/canvas/stores.cpp
+	widget/canvas/synchronizer.cpp
 	widget/canvas/util.cpp
 	widget/canvas/texture.cpp
 	widget/canvas/texturecache.cpp
@@ -441,6 +442,7 @@ set(ui_SRC
 	widget/canvas/fragment.h
 	widget/canvas/prefs.h
 	widget/canvas/stores.h
+	widget/canvas/synchronizer.h
 	widget/canvas/util.h
 	widget/canvas/texture.h
 	widget/canvas/texturecache.h

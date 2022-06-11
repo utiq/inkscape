@@ -230,8 +230,8 @@ bool DropperTool::root_handler(GdkEvent* event) {
                 Inkscape::CanvasItemDrawing *canvas_item_drawing = _desktop->getCanvasDrawing();
                 Inkscape::Drawing *drawing = canvas_item_drawing->get_drawing();
 
-                // Ensure drawing up-to-date. (Is this really necessary?)
-                drawing->update();
+                // Non-reentrancy workaround.
+                _desktop->canvas->wait_for_drawing_inactive();
 
                 // Get average color.
                 double R, G, B, A;

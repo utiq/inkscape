@@ -42,8 +42,11 @@ public:
     // Return the method in use.
     virtual Method get_method() const = 0;
 
-    // Request a drawing surface of the given dimensions.
-    virtual Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions) = 0;
+    /**
+     * Request a drawing surface of the given dimensions. If nogl is true, no GL commands will be issued,
+     * but the request may fail. An effort is made to keep such failures to a minimum.
+     */
+    virtual Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions, bool nogl = false) = 0;
 
     /**
      * Give back a drawing surface produced by request(), uploading the contents to the currently bound texture.

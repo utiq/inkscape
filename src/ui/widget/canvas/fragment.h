@@ -5,9 +5,7 @@
 #include <2geom/int-rect.h>
 #include <2geom/affine.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /// A "fragment" is a rectangle of drawn content at a specfic place.
 struct Fragment
@@ -19,9 +17,7 @@ struct Fragment
     Geom::IntRect rect;
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_CANVAS_FRAGMENT_H
 

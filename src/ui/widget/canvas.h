@@ -106,18 +106,16 @@ public:
 
     // Invalidation
     void redraw_all();                  // Mark everything as having changed.
-    void redraw_area(Geom::Rect &area); // Mark a rectangle of world space as having changed.
+    void redraw_area(Geom::Rect const &area); // Mark a rectangle of world space as having changed.
     void redraw_area(int x0, int y0, int x1, int y1);
     void redraw_area(Geom::Coord x0, Geom::Coord y0, Geom::Coord x1, Geom::Coord y1);
     void request_update();              // Mark geometry as needing recalculation.
 
-    // Event compression and gobbling (tool-base.cpp)
-    void set_event_compression(bool enabled);
-    int gobble_key_events(guint keyval, guint mask);
-    void gobble_motion_events(guint mask);
-
     // Callback run on destructor of any canvas item
     void canvas_item_destructed(Inkscape::CanvasItem *item);
+
+    // Wait for background process to become inactive. (Todo: Remove this non-reentrancy workaround when possible.)
+    void wait_for_drawing_inactive() const;
 
     // State
     Inkscape::CanvasItem *get_current_canvas_item() const { return _current_canvas_item; }
@@ -201,7 +199,7 @@ private:
     Geom::Point _split_frac;
     Inkscape::SplitDirection _hover_direction;
     bool _split_dragging;
-    Geom::Point _split_drag_start;
+    Geom::IntPoint _split_drag_start;
 
     void set_cursor();
 

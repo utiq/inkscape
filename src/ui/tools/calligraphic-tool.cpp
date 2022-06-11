@@ -67,6 +67,7 @@
 
 #include "ui/icon-names.h"
 #include "ui/tools/freehand-base.h"
+#include "ui/widget/canvas.h"
 
 #include "util/units.h"
 
@@ -325,8 +326,8 @@ void CalligraphicTool::brush() {
         Inkscape::CanvasItemDrawing *canvas_item_drawing = _desktop->getCanvasDrawing();
         Inkscape::Drawing *drawing = canvas_item_drawing->get_drawing();
 
-        // Ensure drawing up-to-date. (Is this really necessary?)
-        drawing->update();
+        // Non-reentrancy workaround.
+        _desktop->canvas->wait_for_drawing_inactive();
 
         // Get average color.
         double R, G, B, A;

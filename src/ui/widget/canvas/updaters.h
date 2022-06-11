@@ -44,10 +44,11 @@ public:
     // Return the strategy in use.
     virtual Strategy get_strategy() const = 0;
 
-    virtual void reset() = 0;                          // Reset the clean region to empty.
-    virtual void intersect (Geom::IntRect const &) = 0; // Called when the store changes position; clip everything to the new store rectangle.
-    virtual void mark_dirty(Geom::IntRect const &) = 0; // Called on every invalidate event.
-    virtual void mark_clean(Geom::IntRect const &) = 0; // Called on every rectangle redrawn.
+    virtual void reset() = 0;                                          // Reset the clean region to empty.
+    virtual void intersect (Geom::IntRect const &) = 0;                // Called when the store changes position; clip everything to the new store rectangle.
+    virtual void mark_dirty(Geom::IntRect const &) = 0;                // Called on every invalidate event.
+    virtual void mark_dirty(Cairo::RefPtr<Cairo::Region> const &) = 0; // Called on every invalidate event.
+    virtual void mark_clean(Geom::IntRect const &) = 0;                // Called on every rectangle redrawn.
 
     // Called at the start of a redraw to determine what region to consider clean (i.e. will not be drawn).
     virtual Cairo::RefPtr<Cairo::Region> get_next_clean_region() = 0;

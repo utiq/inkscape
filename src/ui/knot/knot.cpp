@@ -341,7 +341,7 @@ void sp_knot_handler_request_position(GdkEvent *event, SPKnot *knot) {
     knot->desktop->set_coordinate_status(knot->pos); // display the coordinate of knot, not cursor - they may be different!
 
     if (event->motion.state & GDK_BUTTON1_MASK) {
-        knot->desktop->canvas->gobble_motion_events(GDK_BUTTON1_MASK);
+        Inkscape::UI::Tools::gobble_motion_events(GDK_BUTTON1_MASK);
     }
 }
 

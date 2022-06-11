@@ -186,7 +186,7 @@ class PrefCombo : public Gtk::ComboBoxText
 {
 public:
     void init(Glib::ustring const &prefs_path,
-              Glib::ustring labels[], int values[], int num_items, int default_value);
+              Glib::ustring const labels[], int const values[], int num_items, int default_value);
 
     /**
      * Initialize a combo box.

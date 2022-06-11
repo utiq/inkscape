@@ -649,7 +649,7 @@ PrefSlider::init(Glib::ustring const &prefs_path,
 }
 
 void PrefCombo::init(Glib::ustring const &prefs_path,
-                     Glib::ustring labels[], int values[], int num_items, int default_value)
+                     Glib::ustring const labels[], int const values[], int num_items, int default_value)
 {
     _prefs_path = prefs_path;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();

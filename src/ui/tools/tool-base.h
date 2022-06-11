@@ -212,9 +212,6 @@ protected:
 
     void set_high_motion_precision(bool high_precision = true);
 
-    int gobble_key_events(guint keyval, guint mask) const;
-    void gobble_motion_events(guint mask) const;
-
     SPDesktop *_desktop = nullptr;
 
 private:
@@ -229,6 +226,9 @@ private:
 void sp_event_context_read(ToolBase *ec, char const *key);
 
 void sp_event_root_menu_popup(SPDesktop *desktop, SPItem *item, GdkEvent *event);
+
+gint gobble_key_events(guint keyval, guint mask);
+void gobble_motion_events(guint mask);
 
 void sp_event_show_modifier_tip(Inkscape::MessageContext *message_context, GdkEvent *event,
                                 char const *ctrl_tip, char const *shift_tip, char const *alt_tip);

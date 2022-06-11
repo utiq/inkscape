@@ -61,7 +61,7 @@
 #include "ui/icon-names.h"
 #include "ui/toolbar/spray-toolbar.h"
 #include "ui/tools/spray-tool.h"
-
+#include "ui/widget/canvas.h"
 
 using Inkscape::DocumentUndo;
 
@@ -425,8 +425,8 @@ static guint32 getPickerData(Geom::IntRect area, SPDesktop *desktop)
     Inkscape::CanvasItemDrawing *canvas_item_drawing = desktop->getCanvasDrawing();
     Inkscape::Drawing *drawing = canvas_item_drawing->get_drawing();
 
-    // Ensure drawing up-to-date. (Is this really necessary?)
-    drawing->update();
+    // Non-reentrancy workaround.
+    desktop->canvas->wait_for_drawing_inactive();
 
     // Get average color.
     double R, G, B, A;

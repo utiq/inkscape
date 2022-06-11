@@ -212,46 +212,31 @@ void CairoGraphics::snapshot_combine(Fragment const &dest)
     snapshot = std::move(fragment);
 }
 
-Cairo::RefPtr<Cairo::ImageSurface> CairoGraphics::request_tile_surface(Geom::IntRect const &rect, bool outline)
+Cairo::RefPtr<Cairo::ImageSurface> CairoGraphics::request_tile_surface(Geom::IntRect const &rect, bool /*nogl*/)
 {
-    // Create temporary surface that draws directly to store.
-    auto &src = outline ? store.outline_surface : store.surface;
-
-    src->flush();
-    auto data = src->get_data();
-    int stride = src->get_stride();
-
-    // Check we are using the correct device scale.
-    #ifndef NDEBUG
-    double x_scale;
-    double y_scale;
-    cairo_surface_get_device_scale(src->cobj(), &x_scale, &y_scale); // No C++ API!
-    assert(x_scale == scale_factor);
-    assert(y_scale == scale_factor);
-    #endif
-
-    // Move to the correct row.
-    data += stride * (rect.top() - stores.store().rect.top()) * scale_factor;
-    // Move to the correct column.
-    data += 4 * (rect.left() - stores.store().rect.left()) * scale_factor;
-    auto surface = Cairo::ImageSurface::create(data, Cairo::FORMAT_ARGB32,
-                                              rect.width()  * scale_factor,
-                                              rect.height() * scale_factor,
-                                              stride);
-
-    cairo_surface_set_device_scale(surface->cobj(), scale_factor, scale_factor); // No C++ API!
-
+    // Create temporary surface, isolated from store.
+    auto surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, rect.width() *  scale_factor, rect.height() *  scale_factor);
+    cairo_surface_set_device_scale(surface->cobj(), scale_factor, scale_factor);
     return surface;
 }
 
 void CairoGraphics::draw_tile(Fragment const &fragment, Cairo::RefPtr<Cairo::ImageSurface> surface, Cairo::RefPtr<Cairo::ImageSurface> outline_surface)
 {
-    surface.clear();
-    store.surface->mark_dirty();
+    // Blit from the temporary surface to the store.
+    auto diff = fragment.rect.min() - stores.store().rect.min();
+
+    auto cr = Cairo::Context::create(store.surface);
+    cr->set_operator(Cairo::OPERATOR_SOURCE);
+    cr->set_source(surface, diff.x(), diff.y());
+    cr->rectangle(diff.x(), diff.y(), fragment.rect.width(), fragment.rect.height());
+    cr->fill();
 
     if (outlines_enabled) {
-        outline_surface.clear();
-        store.outline_surface->mark_dirty();
+        auto cr = Cairo::Context::create(store.outline_surface);
+        cr->set_operator(Cairo::OPERATOR_SOURCE);
+        cr->set_source(outline_surface, diff.x(), diff.y());
+        cr->rectangle(diff.x(), diff.y(), fragment.rect.width(), fragment.rect.height());
+        cr->fill();
     }
 }
 
@@ -403,7 +388,7 @@ void CairoGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo
         if (a.splitmode == Inkscape::SplitMode::XRAY && a.mouse) {
             // Clip to circle
             cr->set_antialias(Cairo::ANTIALIAS_DEFAULT);
-            cr->arc(a.mouse->x(), a.mouse->y(), prefs.x_ray_radius, 0, 2 * M_PI);
+            cr->arc(a.mouse->x(), a.mouse->y(), prefs.xray_radius, 0, 2 * M_PI);
             cr->clip();
             cr->set_antialias(Cairo::ANTIALIAS_NONE);
             // Draw background.
@@ -416,37 +401,6 @@ void CairoGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo
 
     // The rest can be done with antialiasing.
     cr->set_antialias(Cairo::ANTIALIAS_DEFAULT);
-
-    // Paint unclean regions in red.
-    if (prefs.debug_show_unclean) {
-        if (prefs.debug_framecheck) f = FrameCheck::Event("paint_unclean");
-        cr->set_operator(Cairo::OPERATOR_OVER);
-        auto reg = Cairo::Region::create(geom_to_cairo(stores.store().rect));
-        reg->subtract(a.clean_region);
-        cr->save();
-        cr->translate(-view.rect.left(), -view.rect.top());
-        if (stores.mode() == Stores::Mode::Decoupled) {
-            cr->transform(geom_to_cairo(stores.store().affine.inverse() * view.affine));
-        }
-        cr->set_source_rgba(1, 0, 0, 0.2);
-        region_to_path(cr, reg);
-        cr->fill();
-        cr->restore();
-    }
-
-    // Paint internal edges of clean region in green.
-    if (prefs.debug_show_clean) {
-        if (prefs.debug_framecheck) f = FrameCheck::Event("paint_clean");
-        cr->save();
-        cr->translate(-view.rect.left(), -view.rect.top());
-        if (stores.mode() == Stores::Mode::Decoupled) {
-            cr->transform(geom_to_cairo(stores.store().affine.inverse() * view.affine));
-        }
-        cr->set_source_rgba(0, 0.7, 0, 0.4);
-        region_to_path(cr, a.clean_region);
-        cr->stroke();
-        cr->restore();
-    }
 
     if (a.splitmode == Inkscape::SplitMode::SPLIT) {
         paint_splitview_controller(view.rect.dimensions(), a.splitfrac, a.splitdir, a.hoverdir, cr);

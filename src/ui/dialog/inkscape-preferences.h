@@ -337,7 +337,6 @@ protected:
 
     UI::Widget::PrefSpinButton  _filter_multi_threaded;
     UI::Widget::PrefSpinButton  _rendering_cache_size;
-    UI::Widget::PrefSpinButton  _rendering_tile_multiplier;
     UI::Widget::PrefSpinButton  _rendering_xray_radius;
     UI::Widget::PrefSpinButton  _rendering_outline_overlay_opacity;
     UI::Widget::PrefCombo       _canvas_update_strategy;
@@ -357,22 +356,20 @@ protected:
 #endif
 
     UI::Widget::PrefCheckButton _canvas_developer_mode_enabled;
+    UI::Widget::PrefSpinButton  _canvas_tile_size;
     UI::Widget::PrefSpinButton  _canvas_render_time_limit;
-    UI::Widget::PrefCheckButton _canvas_use_new_bisector;
-    UI::Widget::PrefSpinButton  _canvas_new_bisector_size;
-    UI::Widget::PrefSpinButton  _rendering_tile_size;
-    UI::Widget::PrefSpinButton  _canvas_pad;
-    UI::Widget::PrefSpinButton  _canvas_margin;
+    UI::Widget::PrefCheckButton _canvas_block_updates;
+    UI::Widget::PrefCombo       _canvas_pixelstreamer_method;
+    UI::Widget::PrefSpinButton  _canvas_padding;
+    UI::Widget::PrefSpinButton  _canvas_prerender;
     UI::Widget::PrefSpinButton  _canvas_preempt;
     UI::Widget::PrefSpinButton  _canvas_coarsener_min_size;
     UI::Widget::PrefSpinButton  _canvas_coarsener_glue_size;
     UI::Widget::PrefSpinButton  _canvas_coarsener_min_fullness;
-    UI::Widget::PrefCombo       _canvas_pixelstreamer_method;
-    UI::Widget::PrefCheckButton _canvas_block_updates;
     UI::Widget::PrefCheckButton _canvas_debug_framecheck;
     UI::Widget::PrefCheckButton _canvas_debug_logging;
-    UI::Widget::PrefCheckButton _canvas_debug_slow_redraw;
-    UI::Widget::PrefSpinButton  _canvas_debug_slow_redraw_time;
+    UI::Widget::PrefCheckButton _canvas_debug_delay_redraw;
+    UI::Widget::PrefSpinButton  _canvas_debug_delay_redraw_time;
     UI::Widget::PrefCheckButton _canvas_debug_show_redraw;
     UI::Widget::PrefCheckButton _canvas_debug_show_unclean;
     UI::Widget::PrefCheckButton _canvas_debug_show_snapshot;
@@ -380,7 +377,6 @@ protected:
     UI::Widget::PrefCheckButton _canvas_debug_disable_redraw;
     UI::Widget::PrefCheckButton _canvas_debug_sticky_decoupled;
     UI::Widget::PrefCheckButton _canvas_debug_animate;
-    UI::Widget::PrefCheckButton _canvas_debug_idle_starvation;
 
     UI::Widget::PrefCheckButton _trans_scale_stroke;
     UI::Widget::PrefCheckButton _trans_scale_corner;

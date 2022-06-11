@@ -54,7 +54,7 @@ public:
     virtual void invalidated_glstate() = 0; ///< Tells the Graphics to no longer rely on any OpenGL state it had set up.
 
     // Tile drawing.
-    virtual Cairo::RefPtr<Cairo::ImageSurface> request_tile_surface(Geom::IntRect const &rect, bool outline) = 0;
+    virtual Cairo::RefPtr<Cairo::ImageSurface> request_tile_surface(Geom::IntRect const &rect, bool nogl) = 0;
     virtual void draw_tile(Fragment const &fragment, Cairo::RefPtr<Cairo::ImageSurface> surface, Cairo::RefPtr<Cairo::ImageSurface> outline_surface) = 0;
 
     // Widget painting.
@@ -67,7 +67,6 @@ public:
         SplitDirection splitdir;
         SplitDirection hoverdir;
         double yaxisdir;
-        Cairo::RefPtr<Cairo::Region> clean_region; // only used for showing debug info
     };
     virtual void paint_widget(Fragment const &view, PaintArgs const &args, Cairo::RefPtr<Cairo::Context> const &cr) = 0;
 

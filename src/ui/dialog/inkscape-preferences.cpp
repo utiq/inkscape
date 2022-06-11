@@ -2715,15 +2715,11 @@ void InkscapePreferences::initPageRendering()
 {
     /* threaded blur */ //related comments/widgets/functions should be renamed and option should be moved elsewhere when inkscape is fully multi-threaded
     _filter_multi_threaded.init("/options/threading/numthreads", 1.0, 32.0, 1.0, 2.0, 4.0, true, false);
-    _page_rendering.add_line( false, _("Number of _Threads:"), _filter_multi_threaded, "", _("Configure number of processors/threads to use when rendering filters"), false, reset_icon());
+    _page_rendering.add_line( false, _("Number of _Threads:"), _filter_multi_threaded, "", _("Configure number of processors/threads to use when rendering filters"), false);
 
     // rendering cache
     _rendering_cache_size.init("/options/renderingcache/size", 0.0, 4096.0, 1.0, 32.0, 64.0, true, false);
     _page_rendering.add_line( false, _("Rendering _cache size:"), _rendering_cache_size, C_("mebibyte (2^20 bytes) abbreviation","MiB"), _("Set the amount of memory per document which can be used to store rendered parts of the drawing for later reuse; set to zero to disable caching"), false);
-
-    // rendering tile multiplier
-    _rendering_tile_multiplier.init("/options/rendering/tile-multiplier", 1.0, 512.0, 1.0, 16.0, 16.0, true, false);
-    _page_rendering.add_line( false, _("Rendering tile multiplier:"), _rendering_tile_multiplier, "", _("On modern hardware, increasing this value (default is 16) can help to get a better performance when there are large areas with filtered objects (this includes blur and blend modes) in your drawing. Decrease the value to make zooming and panning in relevant areas faster on low-end hardware in drawings with few or no filters."), false);
 
     // rendering x-ray radius
     _rendering_xray_radius.init("/options/rendering/xray-radius", 1.0, 1500.0, 1.0, 100.0, 100.0, true, false);
@@ -2735,21 +2731,17 @@ void InkscapePreferences::initPageRendering()
 
     // update strategy
     {
-        int values[] = {1, 2, 3};
-        Glib::ustring labels[] = {_("Responsive"), _("Full redraw"), _("Multiscale")};
+        constexpr int values[] = { 1, 2, 3 };
+        Glib::ustring const labels[] = { _("Responsive"), _("Full redraw"), _("Multiscale") };
         _canvas_update_strategy.init("/options/rendering/update_strategy", labels, values, 3, 3);
         _page_rendering.add_line(false, _("Update strategy:"), _canvas_update_strategy, "", _("How to update continually changing content when it can't be redrawn fast enough"), false);
     }
-
-    // block updates
-    _canvas_block_updates.init("", "/options/rendering/block_updates", true);
-    _page_rendering.add_line(false, _("Use block updates:"), _canvas_block_updates, "", _("Update the dragged region as a single block"), false);
 
     // opengl
     _canvas_request_opengl.init("", "/options/rendering/request_opengl", false);
     _page_rendering.add_line( false, _("Enable OpenGL:"), _canvas_request_opengl, "", _("Request that the canvas should be painted with OpenGL rather than Cairo. If OpenGL is unsupported, it will fall back to Cairo."), false);
 
-    /* blur quality */
+    // blur quality
     _blur_quality_best.init ( _("Best quality (slowest)"), "/options/blurquality/value",
                                   BLUR_QUALITY_BEST, false, nullptr);
     _blur_quality_better.init ( _("Better quality (slower)"), "/options/blurquality/value",
@@ -2773,7 +2765,7 @@ void InkscapePreferences::initPageRendering()
     _page_rendering.add_line( true, "", _blur_quality_worst, "",
                            _("Lowest quality (considerable artifacts), but display is fastest"));
 
-    /* filter quality */
+    // filter quality
     _filter_quality_best.init ( _("Best quality (slowest)"), "/options/filterquality/value",
                                   Inkscape::Filters::FILTER_QUALITY_BEST, false, nullptr);
     _filter_quality_better.init ( _("Better quality (slower)"), "/options/filterquality/value",
@@ -2811,15 +2803,15 @@ void InkscapePreferences::initPageRendering()
     revealer->add(*grid);
     revealer->set_reveal_child(Inkscape::Preferences::get()->getBool("/options/rendering/devmode"));
     _canvas_developer_mode_enabled.init(_("Enable developer mode"), "/options/rendering/devmode", false);
-    _canvas_developer_mode_enabled.signal_toggled().connect([revealer, this] {revealer->set_reveal_child(_canvas_developer_mode_enabled.get_active());});
+    _canvas_developer_mode_enabled.signal_toggled().connect([revealer, this] { revealer->set_reveal_child(_canvas_developer_mode_enabled.get_active()); });
     _page_rendering.add_group_header(_("Developer mode"));
     _page_rendering.add_line(true, "", _canvas_developer_mode_enabled, "", _("Enable additional debugging options"), false);
     _page_rendering.add(*revealer);
 
-    auto add_devmode_line = [&] (Glib::ustring const &label, Gtk::Widget &widget, Glib::ustring const &suffix, const Glib::ustring &tip) {
+    auto add_devmode_line = [&] (Glib::ustring const &label, Gtk::Widget &widget, Glib::ustring const &suffix, Glib::ustring const &tip) {
         widget.set_tooltip_text(tip);
 
-        auto hb = Gtk::manage(new Gtk::Box());
+        auto hb = Gtk::make_managed<Gtk::Box>();
         hb->set_spacing(12);
         hb->set_hexpand(true);
         hb->pack_start(widget, false, false);
@@ -2834,14 +2826,14 @@ void InkscapePreferences::initPageRendering()
         grid->add(*label_widget);
         grid->attach_next_to(*hb, *label_widget, Gtk::POS_RIGHT, 1, 1);
 
-        if (suffix != "") {
+        if (!suffix.empty()) {
             auto suffix_widget = Gtk::make_managed<Gtk::Label>(suffix, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true);
             suffix_widget->set_markup(suffix_widget->get_text());
             hb->pack_start(*suffix_widget, false, false);
         }
     };
 
-    auto add_devmode_group_header = [&] (Glib::ustring name) {
+    auto add_devmode_group_header = [&] (Glib::ustring const &name) {
         auto label_widget = Gtk::make_managed<Gtk::Label>(Glib::ustring(/*"<span size='large'>*/"<b>") + name + Glib::ustring("</b>"/*</span>"*/) , Gtk::ALIGN_START , Gtk::ALIGN_CENTER, true);
         label_widget->set_use_markup(true);
         label_widget->set_valign(Gtk::ALIGN_CENTER);
@@ -2851,18 +2843,22 @@ void InkscapePreferences::initPageRendering()
     //TRANSLATORS: The following are options for fine-tuning rendering, meant to be used by developers, 
     //find more explanations at https://gitlab.com/inkscape/inbox/-/issues/6544#note_886540227
     add_devmode_group_header(_("Low-level tuning options"));
-    _canvas_render_time_limit.init("/options/rendering/render_time_limit", 100.0, 1000000.0, 1.0, 0.0, 1000.0, true, false);
-    add_devmode_line(_("Render time limit"), _canvas_render_time_limit, C_("microsecond abbreviation", "μs"), _("The maximum time allowed for a rendering time slice"));
-    _canvas_use_new_bisector.init("", "/options/rendering/use_new_bisector", true);
-    add_devmode_line(_("Use new bisector algorithm"), _canvas_use_new_bisector, "", _("Use an alternative, more obvious bisection strategy: just chop tile in half along the larger dimension until small enough"));
-    _canvas_new_bisector_size.init("/options/rendering/new_bisector_size", 1.0, 10000.0, 1.0, 0.0, 500.0, true, false);
-    add_devmode_line(_("Smallest tile size for new bisector"), _canvas_new_bisector_size, C_("pixel abbreviation", "px"), _("Halve rendering tile rectangles until their largest dimension is this small"));
-    _rendering_tile_size.init("/options/rendering/tile-size", 1.0, 10000.0, 1.0, 0.0, 16.0, true, false);
-    add_devmode_line(_("Tile size:"), _rendering_tile_size, "", _("The \"tile size\" parameter previously hard-coded into Inkscape's original tile bisector."));
-    _canvas_pad.init("/options/rendering/pad", 0.0, 1000.0, 1.0, 0.0, 350.0, true, false);
-    add_devmode_line(_("Buffer padding"), _canvas_pad, C_("pixel abbreviation", "px"), _("Use buffers bigger than the window by this amount"));
-    _canvas_margin.init("/options/rendering/margin", 0.0, 1000.0, 1.0, 0.0, 100.0, true, false);
-    add_devmode_line(_("Prerender margin"), _canvas_margin, "", _("Pre-render a margin around the visible region."));
+    _canvas_tile_size.init("/options/rendering/tile_size", 1.0, 10000.0, 1.0, 0.0, 500.0, true, false);
+    add_devmode_line(_("Tile size"), _canvas_tile_size, "", _("Halve rendering tile rectangles until their largest dimension is this small"));
+    _canvas_render_time_limit.init("/options/rendering/render_time_limit", 1.0, 5000.0, 1.0, 0.0, 80.0, true, false);
+    add_devmode_line(_("Render time limit"), _canvas_render_time_limit, C_("millisecond abbreviation", "ms"), _("The maximum time allowed for a rendering time slice"));
+    _canvas_block_updates.init("", "/options/rendering/block_updates", true);
+    add_devmode_line(_("Use block updates"), _canvas_block_updates, "", _("Update the dragged region as a single block"));
+    {
+        constexpr int values[] = { 1, 2, 3, 4 };
+        Glib::ustring const labels[] = { _("Auto"), _("Persistent"), _("Asynchronous"), _("Synchronous") };
+        _canvas_pixelstreamer_method.init("/options/rendering/pixelstreamer_method", labels, values, 4, 1);
+        add_devmode_line(_("Pixel streaming method"), _canvas_pixelstreamer_method, "", _("Change the method used for streaming pixel data to the GPU. The default is Auto, which picks the best method available at runtime. As for the other options, higher up is better. Be warned! No attempt is made to stop you from selecting a method that isn't supported! (This is dev mode, afer all.) If you do so, it will be an instant crash."));
+    }
+    _canvas_padding.init("/options/rendering/padding", 0.0, 1000.0, 1.0, 0.0, 350.0, true, false);
+    add_devmode_line(_("Buffer padding"), _canvas_padding, C_("pixel abbreviation", "px"), _("Use buffers bigger than the window by this amount"));
+    _canvas_prerender.init("/options/rendering/prerender", 0.0, 1000.0, 1.0, 0.0, 100.0, true, false);
+    add_devmode_line(_("Prerender margin"), _canvas_prerender, "", _("Pre-render a margin around the visible region."));
     _canvas_preempt.init("/options/rendering/preempt", 0.0, 1000.0, 1.0, 0.0, 250.0, true, false);
     add_devmode_line(_("Preempt size"), _canvas_preempt, "", _("Prevent thin tiles at the rendering edge by making them at least this size."));
     _canvas_coarsener_min_size.init("/options/rendering/coarsener_min_size", 0.0, 1000.0, 1.0, 0.0, 200.0, true, false);
@@ -2871,22 +2867,16 @@ void InkscapePreferences::initPageRendering()
     add_devmode_line(_("Glue size for coarsener algorithm"), _canvas_coarsener_glue_size, C_("pixel abbreviation", "px"), _("Coarsener algorithm absorbs nearby rectangles within this distance."));
     _canvas_coarsener_min_fullness.init("/options/rendering/coarsener_min_fullness", 0.0, 1.0, 0.0, 0.0, 0.3, false, false);
     add_devmode_line(_("Min fullness for coarsener algorithm"), _canvas_coarsener_min_fullness, "", _("Refuse coarsening algorithm's attempt if the result would be more empty than this."));
-    {
-        int values[] = {1, 2, 3, 4};
-        Glib::ustring labels[] = {_("Auto"), _("Persistent"), _("Asynchronous"), _("Synchronous")};
-        _canvas_pixelstreamer_method.init("/options/rendering/pixelstreamer_method", labels, values, 4, 1);
-        add_devmode_line(_("Pixel streaming method"), _canvas_pixelstreamer_method, "", _("Change the method used for streaming pixel data to the GPU. The default is Auto, which picks the best method available at runtime. As for the other options, higher up is better. Be warned! No attempt is made to stop you from selecting a method that isn't supported! (This is dev mode, afer all.) If you do so, it will be an instant crash."));
-    }
 
     add_devmode_group_header(_("Debugging, profiling and experiments"));
     _canvas_debug_framecheck.init("", "/options/rendering/debug_framecheck", false);
     add_devmode_line(_("Framecheck"), _canvas_debug_framecheck, "", _("Print profiling data of selected operations to a file"));
     _canvas_debug_logging.init("", "/options/rendering/debug_logging", false);
     add_devmode_line(_("Logging"), _canvas_debug_logging, "", _("Log certain events to the console"));
-    _canvas_debug_slow_redraw.init("", "/options/rendering/debug_slow_redraw", false);
-    add_devmode_line(_("Slow redraw"), _canvas_debug_slow_redraw, "", _("Introduce a fixed delay for each tile"));
-    _canvas_debug_slow_redraw_time.init("/options/rendering/debug_slow_redraw_time", 0.0, 1000000.0, 1.0, 0.0, 50.0, true, false);
-    add_devmode_line(_("Slow redraw time"), _canvas_debug_slow_redraw_time, C_("microsecond abbreviation", "μs"), _("The delay to introduce for each tile"));
+    _canvas_debug_delay_redraw.init("", "/options/rendering/debug_delay_redraw", false);
+    add_devmode_line(_("Delay redraw"), _canvas_debug_delay_redraw, "", _("Introduce a fixed delay for each tile"));
+    _canvas_debug_delay_redraw_time.init("/options/rendering/debug_delay_redraw_time", 0.0, 1000000.0, 1.0, 0.0, 50.0, true, false);
+    add_devmode_line(_("Delay redraw time"), _canvas_debug_delay_redraw_time, C_("microsecond abbreviation", "μs"), _("The delay to introduce for each tile"));
     _canvas_debug_show_redraw.init("", "/options/rendering/debug_show_redraw", false);
     add_devmode_line(_("Show redraw"), _canvas_debug_show_redraw, "", _("Paint a translucent random colour over each newly drawn tile"));
     _canvas_debug_show_unclean.init("", "/options/rendering/debug_show_unclean", false);
@@ -2901,10 +2891,8 @@ void InkscapePreferences::initPageRendering()
     add_devmode_line(_("Sticky decoupled mode"), _canvas_debug_sticky_decoupled, "", _("Stay in decoupled mode even after rendering is complete"));
     _canvas_debug_animate.init("", "/options/rendering/debug_animate", false);
     add_devmode_line(_("Animate"), _canvas_debug_animate, "", _("Continuously adjust viewing parameters in an animation loop."));
-    _canvas_debug_idle_starvation.init("", "/options/rendering/debug_idle_starvation", false);
-    add_devmode_line(_("Print render time stats"), _canvas_debug_idle_starvation, "", _("On display of each frame, log to the console how much time was taken away from rendering, and whether rendering is still busy. A high value would explain lag/fragmentation problems, and a low value with 'still busy' would explain tearing."));
 
-    this->AddPage(_page_rendering, _("Rendering"), PREFS_PAGE_RENDERING);
+    AddPage(_page_rendering, _("Rendering"), PREFS_PAGE_RENDERING);
 }
 
 void InkscapePreferences::initPageBitmaps()

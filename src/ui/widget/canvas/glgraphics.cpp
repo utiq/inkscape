@@ -595,9 +595,14 @@ void GLGraphics::setup_tiles_pipeline()
     glDisable(GL_BLEND);
 };
 
-Cairo::RefPtr<Cairo::ImageSurface> GLGraphics::request_tile_surface(Geom::IntRect const &rect, bool /*outline*/)
+Cairo::RefPtr<Cairo::ImageSurface> GLGraphics::request_tile_surface(Geom::IntRect const &rect, bool nogl)
 {
-    auto surface = pixelstreamer->request(rect.dimensions() * scale_factor);
+    Cairo::RefPtr<Cairo::ImageSurface> surface;
+
+    {
+        auto g = std::lock_guard(ps_mutex);
+        surface = pixelstreamer->request(rect.dimensions() * scale_factor, nogl);
+    }
 
     if (surface) {
         cairo_surface_set_device_scale(surface->cobj(), scale_factor, scale_factor);
@@ -608,6 +613,7 @@ Cairo::RefPtr<Cairo::ImageSurface> GLGraphics::request_tile_surface(Geom::IntRec
 
 void GLGraphics::draw_tile(Fragment const &fragment, Cairo::RefPtr<Cairo::ImageSurface> surface, Cairo::RefPtr<Cairo::ImageSurface> outline_surface)
 {
+    auto g = std::lock_guard(ps_mutex);
     auto surface_size = dimensions(surface);
 
     Texture texture, outline_texture;
@@ -839,7 +845,7 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
         // Draw the backing store over the whole view.
         auto const &shader = a.render_mode == Inkscape::RenderMode::OUTLINE_OVERLAY ? outlineoverlayxray : xray;
         glUseProgram(shader.id);
-        glUniform1f(shader.loc("radius"), prefs.x_ray_radius * scale_factor);
+        glUniform1f(shader.loc("radius"), prefs.xray_radius * scale_factor);
         glUniform2fv(shader.loc("pos"), 1, std::begin({(GLfloat)(a.mouse->x() * scale_factor), (GLfloat)((view.rect.height() - a.mouse->y()) * scale_factor)}));
         draw_store(shader, DrawMode::Combine);
     }

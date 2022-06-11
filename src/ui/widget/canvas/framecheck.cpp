@@ -1,29 +1,24 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include <fstream>
 #include <iostream>
+#include <mutex>
 #include <boost/filesystem.hpp> // Using boost::filesystem instead of std::filesystem due to broken C++17 on MacOS.
 #include "framecheck.h"
 namespace fs = boost::filesystem;
 
-namespace Inkscape {
-namespace FrameCheck {
+namespace Inkscape::FrameCheck {
 
-std::ostream &logfile()
+void Event::write()
 {
-    static std::ofstream f;
-    
-    if (!f.is_open()) {
-        try {
-            auto path = fs::temp_directory_path() / "framecheck.txt";
-            auto mode = std::ios_base::out | std::ios_base::app | std::ios_base::binary;
-            f.open(path.string(), mode);
-        } catch (...) {
-            std::cerr << "failed to create framecheck logfile" << std::endl;
-        }
-    }
-    
-    return f;
+    static std::mutex mutex;
+    static auto logfile = [] {
+        auto path = fs::temp_directory_path() / "framecheck.txt";
+        auto mode = std::ios_base::out | std::ios_base::app | std::ios_base::binary;
+        return std::ofstream(path.string(), mode);
+    }();
+
+    auto lock = std::lock_guard(mutex);
+    logfile << name << ' ' << start << ' ' << g_get_monotonic_time() << ' ' << subtype << std::endl;
 }
 
-} // namespace FrameCheck
-} // namespace Inkscape
+} // namespace Inkscape::FrameCheck
