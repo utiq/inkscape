@@ -626,7 +626,6 @@ void SingleExport::onExport()
         }
     }
     setExporting(false);
-    si_export->set_sensitive(true);
     original_name = filename;
     filename_modified = false;
     interrupted = false;

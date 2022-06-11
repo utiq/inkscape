@@ -579,7 +579,6 @@ void BatchExport::onExport()
                 auto copy_doc = _document->copy();
                 Export::exportVector(omod, copy_doc.get(), item_filename, true, &show_only, page);
             }
-            setExporting(false);
 
             if (prog_dlg) {
                 delete prog_dlg;
@@ -587,6 +586,8 @@ void BatchExport::onExport()
             }
         }
     }
+    // Do this right at the end to finish up
+    setExporting(false);
 }
 
 void BatchExport::onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev)
