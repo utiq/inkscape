@@ -420,6 +420,8 @@ std::vector<AttributeInfo> getKnownAttrs()
         AttributeInfo("inkscape:layoutOptions", true),
         AttributeInfo("inkscape:lockguides", true),
         AttributeInfo("inkscape:locked", true),
+        AttributeInfo("margin", true),
+        AttributeInfo("bleed", true),
         // AttributeInfo("inkscape:object-nodes", true),
         // AttributeInfo("inkscape:object-paths", true),
         AttributeInfo("inkscape:original", true),

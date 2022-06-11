@@ -452,6 +452,7 @@ void CanvasItemCtrl::set_shape_default()
 
         case CANVAS_ITEM_CTRL_TYPE_NODE_AUTO:
         case CANVAS_ITEM_CTRL_TYPE_ROTATE:
+        case CANVAS_ITEM_CTRL_TYPE_MARGIN:
             _shape = CANVAS_ITEM_CTRL_SHAPE_CIRCLE;
             break;
 
@@ -538,6 +539,7 @@ void CanvasItemCtrl::set_size_via_index(int size_index)
 
         case CANVAS_ITEM_CTRL_TYPE_POINT:
         case CANVAS_ITEM_CTRL_TYPE_ROTATE:
+        case CANVAS_ITEM_CTRL_TYPE_MARGIN:
         case CANVAS_ITEM_CTRL_TYPE_CENTER:
         case CANVAS_ITEM_CTRL_TYPE_SIZER:
         case CANVAS_ITEM_CTRL_TYPE_SHAPER:

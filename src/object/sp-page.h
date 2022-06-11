@@ -19,6 +19,7 @@
 #include "page-manager.h"
 #include "sp-object.h"
 #include "svg/svg-length.h"
+#include "svg/svg-box.h"
 
 class SPDesktop;
 class SPItem;
@@ -42,22 +43,37 @@ public:
     void showPage() { _canvas_item->show(); }
     void hidePage() { _canvas_item->hide(); }
 
+    double getMarginSide(int side);
+    const SVGBox &getMargin() const { return margin; }
+    void setMargin(const std::string &value);
+    void setMarginSide(int pos, double value, bool confine = false);
+    void setMarginSide(int side, const std::string &value, bool confine = false);
+    std::string getMarginLabel() const;
+
+    const SVGBox &getBleed() const { return bleed; }
+    void setBleed(const std::string &value);
+    std::string getBleedLabel() const;
+
+    void copyFrom(SPPage *page);
     void setSelected(bool selected);
     bool setDefaultAttributes();
     int getPageIndex() const;
     int getPagePosition() const { return getPageIndex() + 1; }
     bool setPageIndex(int index, bool swap_page);
     bool setPagePosition(int position, bool swap_page) { return setPageIndex(position - 1, swap_page); }
+    bool isBarePage() const;
 
     SPPage *getNextPage();
     SPPage *getPreviousPage();
 
     Geom::Rect getRect() const;
     Geom::Rect getDesktopRect() const;
+    Geom::Rect getDesktopMargin() const;
+    Geom::Rect getDesktopBleed() const;
     Geom::Rect getDocumentRect() const;
     Geom::Rect getSensitiveRect() const;
     void setRect(Geom::Rect rect);
-    void setDocumentRect(Geom::Rect rect);
+    void setDocumentRect(Geom::Rect rect, bool add_margins = false);
     void setDesktopRect(Geom::Rect rect);
     void setSize(double width, double height);
     std::vector<SPItem *> getExclusiveItems(bool hidden = true) const;
@@ -74,6 +90,7 @@ protected:
     void set(SPAttr key, const char *value) override;
     Inkscape::XML::Node *write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, guint flags) override;
 
+    void update_relatives();
 private:
     Inkscape::CanvasPage *_canvas_item = nullptr;
 
@@ -81,6 +98,8 @@ private:
     SVGLength y;
     SVGLength width;
     SVGLength height;
+    SVGBox margin;
+    SVGBox bleed;
 };
 
 #endif // SEEN_SP_PAGE_H

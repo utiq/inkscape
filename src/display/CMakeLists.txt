@@ -48,6 +48,7 @@ set(display_SRC
     control/canvas-item.cpp
     control/canvas-item-bpath.cpp
     control/canvas-item-catchall.cpp
+    control/canvas-item-cropmarks.cpp
     control/canvas-item-ctrl.cpp
     control/canvas-item-curve.cpp
     control/canvas-item-drawing.cpp

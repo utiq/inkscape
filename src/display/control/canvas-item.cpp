@@ -134,6 +134,12 @@ void CanvasItem::request_update()
     }
 }
 
+bool CanvasItem::set_visible(bool set)
+{
+    set ? show() : hide();
+    return set;
+}
+
 void CanvasItem::show()
 {
     if (_visible) {

@@ -41,6 +41,8 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
     , text_page_label(nullptr)
 {
     builder->get_widget("page_sizes", combo_page_sizes);
+    builder->get_widget("page_margins", text_page_margins);
+    builder->get_widget("page_bleeds", text_page_bleeds);
     builder->get_widget("page_label", text_page_label);
     builder->get_widget("page_pos", label_page_pos);
     builder->get_widget("page_backward", btn_page_backward);
@@ -49,9 +51,34 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
     builder->get_widget("page_move_objects", btn_move_toggle);
     builder->get_widget("sep1", sep1);
 
+    builder->get_widget("margin_popover", margin_popover);
+    builder->get_widget_derived("margin_top", margin_top);
+    builder->get_widget_derived("margin_right", margin_right);
+    builder->get_widget_derived("margin_bottom", margin_bottom);
+    builder->get_widget_derived("margin_left", margin_left);
+
     if (text_page_label) {
         text_page_label->signal_changed().connect(sigc::mem_fun(*this, &PageToolbar::labelEdited));
     }
+
+    text_page_bleeds->signal_activate().connect(sigc::mem_fun(*this, &PageToolbar::bleedsEdited));
+    text_page_margins->signal_activate().connect(sigc::mem_fun(*this, &PageToolbar::marginsEdited));
+    text_page_margins->signal_icon_press().connect([=](Gtk::EntryIconPosition, const GdkEventButton*){
+        if (auto page = _document->getPageManager().getSelected()) {
+            auto margin = page->getMargin();
+            auto unit = _document->getDisplayUnit()->abbr;
+            margin_top->set_value(margin.top().toValue(unit));
+            margin_right->set_value(margin.right().toValue(unit));
+            margin_bottom->set_value(margin.bottom().toValue(unit));
+            margin_left->set_value(margin.left().toValue(unit));
+            text_page_bleeds->set_text(page->getBleedLabel());
+        }
+        margin_popover->show();
+    });
+    margin_top->signal_value_changed().connect(sigc::mem_fun(*this, &PageToolbar::marginTopEdited));
+    margin_right->signal_value_changed().connect(sigc::mem_fun(*this, &PageToolbar::marginRightEdited));
+    margin_bottom->signal_value_changed().connect(sigc::mem_fun(*this, &PageToolbar::marginBottomEdited));
+    margin_left->signal_value_changed().connect(sigc::mem_fun(*this, &PageToolbar::marginLeftEdited));
 
     if (combo_page_sizes) {
         combo_page_sizes->signal_changed().connect(sigc::mem_fun(*this, &PageToolbar::sizeChoose));
@@ -138,6 +165,67 @@ void PageToolbar::labelEdited()
     if (auto page = _document->getPageManager().getSelected()) {
         page->setLabel(text.empty() ? nullptr : text.c_str());
         DocumentUndo::maybeDone(_document, "page-relabel", _("Relabel Page"), INKSCAPE_ICON("tool-pages"));
+    }
+}
+
+void PageToolbar::bleedsEdited()
+{
+    auto text = text_page_bleeds->get_text();
+
+    // And modifiction to the bleed causes pages to be enabled
+    auto &pm = _document->getPageManager();
+    pm.enablePages();
+
+    if (auto page = pm.getSelected()) {
+        page->setBleed(text);
+        DocumentUndo::maybeDone(_document, "page-bleed", _("Edit Page Bleed"), INKSCAPE_ICON("tool-pages"));
+
+        auto bleed = page->getBleed();
+        text_page_bleeds->set_text(page->getBleedLabel());
+    }
+}
+
+void PageToolbar::marginsEdited()
+{
+    auto text = text_page_margins->get_text();
+
+    // And modifiction to the margin causes pages to be enabled
+    auto &pm = _document->getPageManager();
+    pm.enablePages();
+
+    if (auto page = pm.getSelected()) {
+        page->setMargin(text);
+        DocumentUndo::maybeDone(_document, "page-margin", _("Edit Page Margin"), INKSCAPE_ICON("tool-pages"));
+        setMarginText(page);
+    }
+}
+
+void PageToolbar::marginTopEdited()
+{
+    marginSideEdited(0, margin_top->get_text());
+}
+void PageToolbar::marginRightEdited()
+{
+    marginSideEdited(1, margin_right->get_text());
+}
+void PageToolbar::marginBottomEdited()
+{
+    marginSideEdited(2, margin_bottom->get_text());
+}
+void PageToolbar::marginLeftEdited()
+{
+    marginSideEdited(3, margin_left->get_text());
+}
+void PageToolbar::marginSideEdited(int side, const Glib::ustring &value)
+{
+    // And modifiction to the margin causes pages to be enabled
+    auto &pm = _document->getPageManager();
+    pm.enablePages();
+
+    if (auto page = pm.getSelected()) {
+        page->setMarginSide(side, value, false);
+        DocumentUndo::maybeDone(_document, "page-margin", _("Edit Page Margin"), INKSCAPE_ICON("tool-pages"));
+        setMarginText(page);
     }
 }
 
@@ -271,6 +359,12 @@ void PageToolbar::setSizeText(SPPage *page, bool display_only)
     }
 }
 
+void PageToolbar::setMarginText(SPPage *page)
+{
+    text_page_margins->set_text(page ? page->getMarginLabel() : "");
+    text_page_margins->set_sensitive(true);
+}
+
 void PageToolbar::pagesChanged()
 {
     selectionChanged(_document->getPageManager().getSelected());
@@ -282,6 +376,8 @@ void PageToolbar::selectionChanged(SPPage *page)
     auto &page_manager = _document->getPageManager();
     text_page_label->set_tooltip_text(_("Page label"));
 
+    setMarginText(page);
+
     // Set label widget content with page label.
     if (page) {
         text_page_label->set_sensitive(true);
@@ -292,6 +388,7 @@ void PageToolbar::selectionChanged(SPPage *page)
         } else {
             text_page_label->set_text("");
         }
+
 
         // TRANSLATORS: "%1" is replaced with the page we are on, and "%2" is the total number of pages.
         auto label = Glib::ustring::compose(_("%1/%2"), page->getPagePosition(), page_manager.getPageCount());

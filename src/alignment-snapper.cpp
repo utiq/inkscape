@@ -66,21 +66,29 @@ void Inkscape::AlignmentSnapper::_collectBBoxPoints(bool const &first_point) con
         SPItem::VISUAL_BBOX : SPItem::GEOMETRIC_BBOX;
 
     // collect page corners and center
-    if (_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PAGE_CORNER)) {
-        if (auto document = _snapmanager->getDocument()) {
-            auto ignore_page = _snapmanager->getPageToIgnore();
-            for (auto page : document->getPageManager().getPages()) {
-                if (ignore_page == page)
-                    continue;
+    if (auto document = _snapmanager->getDocument()) {
+        auto ignore_page = _snapmanager->getPageToIgnore();
+        for (auto page : document->getPageManager().getPages()) {
+            if (ignore_page == page)
+                continue;
+            if (_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PAGE_EDGE_CORNER)) {
                 getBBoxPoints(page->getDesktopRect(), _points_to_snap_to.get(), true,
-                    SNAPSOURCE_ALIGNMENT_PAGE_CORNER, SNAPTARGET_ALIGNMENT_PAGE_CORNER,
+                    SNAPSOURCE_ALIGNMENT_PAGE_CORNER, SNAPTARGET_ALIGNMENT_PAGE_EDGE_CORNER,
                     SNAPSOURCE_UNDEFINED, SNAPTARGET_UNDEFINED, // No edges
-                    SNAPSOURCE_ALIGNMENT_PAGE_CENTER, SNAPTARGET_ALIGNMENT_PAGE_CENTER);
+                    SNAPSOURCE_ALIGNMENT_PAGE_CENTER, SNAPTARGET_ALIGNMENT_PAGE_EDGE_CENTER);
             }
+            if (_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PAGE_MARGIN_CORNER)) {
+                getBBoxPoints(page->getDesktopMargin(), _points_to_snap_to.get(), true,
+                    SNAPSOURCE_UNDEFINED, SNAPTARGET_ALIGNMENT_PAGE_MARGIN_CORNER,
+                    SNAPSOURCE_UNDEFINED, SNAPTARGET_UNDEFINED, // No edges
+                    SNAPSOURCE_UNDEFINED, SNAPTARGET_ALIGNMENT_PAGE_MARGIN_CENTER);
+            }
+        }
+        if (_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PAGE_EDGE_CORNER)) {
             getBBoxPoints(document->preferredBounds(), _points_to_snap_to.get(), true,
-                SNAPSOURCE_ALIGNMENT_PAGE_CORNER, SNAPTARGET_ALIGNMENT_PAGE_CORNER,
+                SNAPSOURCE_ALIGNMENT_PAGE_CORNER, SNAPTARGET_ALIGNMENT_PAGE_EDGE_CORNER,
                 SNAPSOURCE_UNDEFINED, SNAPTARGET_UNDEFINED, // No edges
-                SNAPSOURCE_ALIGNMENT_PAGE_CENTER, SNAPTARGET_ALIGNMENT_PAGE_CENTER);
+                SNAPSOURCE_ALIGNMENT_PAGE_CENTER, SNAPTARGET_ALIGNMENT_PAGE_EDGE_CENTER);
         }
     }
 
@@ -231,8 +239,8 @@ bool Inkscape::AlignmentSnapper::_allowSourceToSnapToTarget(SnapSourceType sourc
 {
     if (strict_snapping && (source == SNAPSOURCE_PAGE_CENTER || source == SNAPSOURCE_PAGE_CORNER)) {
         // Restrict page alignment snapping to just other pages (no objects please!)
-        return target == SNAPTARGET_PAGE_CENTER || target == SNAPTARGET_PAGE_CORNER 
-            || target == SNAPTARGET_ALIGNMENT_PAGE_CENTER || target == SNAPTARGET_ALIGNMENT_PAGE_CORNER;
+        return target == SNAPTARGET_PAGE_EDGE_CENTER || target == SNAPTARGET_PAGE_EDGE_CORNER 
+            || target == SNAPTARGET_ALIGNMENT_PAGE_EDGE_CENTER || target == SNAPTARGET_ALIGNMENT_PAGE_EDGE_CORNER;
     }   
     return true;
 }

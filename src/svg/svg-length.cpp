@@ -21,6 +21,7 @@
 #include "svg.h"
 #include "stringstream.h"
 #include "util/units.h"
+#include "util/numeric/converters.h"
 
 using std::pow;
 
@@ -448,6 +449,43 @@ std::string SVGLength::write() const
     return sp_svg_length_write_with_units(*this);
 }
 
+/**
+ * Write out length in user unit, for the user to use.
+ *
+ * @param out_unit - The unit to convert the computed px into
+ * @returns a string containing the value in the given units
+ */
+std::string SVGLength::toString(const std::string &out_unit) const
+{
+    if (unit == SVGLength::PERCENT) {
+        return write();
+    }
+    Inkscape::SVGOStringStream os;
+    os << toValue(out_unit) << out_unit;
+    return os.str();
+}
+
+/**
+ * Caulate the length in a user unit.
+ *
+ * @param out_unit - The unit to convert the computed px into
+ * @returns a double of the computed value in this unit
+ */
+double SVGLength::toValue(const std::string &out_unit) const
+{
+    return Inkscape::Util::Quantity::convert(computed, "px", out_unit);
+}
+
+/**
+ * Read from user input, any non-unitised value is converted internally.
+ */
+bool SVGLength::fromString(const std::string &input, const std::string &default_unit)
+{
+    if (read((input + default_unit).c_str()))
+        return true;
+    return read(input.c_str());
+}
+
 void SVGLength::set(SVGLength::Unit u, float v)
 {
     _set = true;
@@ -467,13 +505,13 @@ void SVGLength::set(SVGLength::Unit u, float v)
             hack = "pc";
             break;
         case MM:
-            hack = "pt";
+            hack = "mm";
             break;
         case CM:
-            hack = "pt";
+            hack = "cm";
             break;
         case INCH:
-            hack = "pt";
+            hack = "in";
             break;
         default:
             break;

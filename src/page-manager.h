@@ -87,8 +87,8 @@ public:
     void deletePage(bool contents = false);
     void resizePage(double width, double height);
     void changeOrientation();
-    void fitToSelection(ObjectSet *selection);
-    void fitToRect(Geom::OptRect box, SPPage *page);
+    void fitToSelection(ObjectSet *selection, bool add_margins = true);
+    void fitToRect(Geom::OptRect box, SPPage *page, bool add_margins = false);
 
     bool subset(SPAttr key, const gchar *value);
     bool setDefaultAttributes(CanvasPage *item);
@@ -106,6 +106,8 @@ public:
 
     // Access from export.cpp and others for the guint32
     guint32 background_color = 0xffffff00;
+    guint32 margin_color = 0x1699d751;
+    guint32 bleed_color = 0xbe310e31;
 
     void movePages(Geom::Affine tr);
     std::vector<SPItem *> getOverlappingItems(SPDesktop *desktop, SPPage *page);

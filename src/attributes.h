@@ -138,6 +138,9 @@ enum class SPAttr {
     POSITION,
     INKSCAPE_COLOR,
     INKSCAPE_LOCKED,
+    /* SPPage */
+    PAGE_MARGIN,
+    PAGE_BLEED,
     /* SPImage, SPRect, etc. */
     X,
     Y,

@@ -45,6 +45,8 @@ void SPPage::build(SPDocument *document, Inkscape::XML::Node *repr)
     this->readAttr(SPAttr::Y);
     this->readAttr(SPAttr::WIDTH);
     this->readAttr(SPAttr::HEIGHT);
+    this->readAttr(SPAttr::PAGE_MARGIN);
+    this->readAttr(SPAttr::PAGE_BLEED);
 
     /* Register */
     document->addResource("page", this);
@@ -75,11 +77,42 @@ void SPPage::set(SPAttr key, const gchar *value)
         case SPAttr::HEIGHT:
             this->height.readOrUnset(value);
             break;
+        case SPAttr::PAGE_MARGIN:
+            this->margin.readOrUnset(value);
+            break;
+        case SPAttr::PAGE_BLEED:
+            this->bleed.readOrUnset(value);
+            break;
         default:
             SPObject::set(key, value);
             break;
     }
+    update_relatives();
     this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+}
+
+/**
+ * Update the percentage values of the svg boxes
+ */
+void SPPage::update_relatives()
+{
+    if (this->width && this->height) {
+        if (this->margin)
+            this->margin.update(12, 6, this->width.computed, this->height.computed);
+        if (this->bleed)
+            this->bleed.update(12, 6, this->width.computed, this->height.computed);
+    }
+}
+
+/**
+ * Returns true if the only aspect to this page is its size
+ */
+bool SPPage::isBarePage() const
+{
+    if (margin || bleed) {
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -97,6 +130,36 @@ Geom::Rect SPPage::getRect() const
 Geom::Rect SPPage::getDesktopRect() const
 {
     return getDocumentRect() * document->doc2dt();
+}
+
+/**
+ * Get desktop rect, minus the margin amounts.
+ */
+Geom::Rect SPPage::getDesktopMargin() const
+{
+    auto rect = getDesktopRect();
+    rect.setTop(rect.top() + margin.top().computed);
+    rect.setLeft(rect.left() + margin.left().computed);
+    rect.setBottom(rect.bottom() - margin.bottom().computed);
+    rect.setRight(rect.right() - margin.right().computed);
+    if (rect.hasZeroArea())
+        return getDesktopRect(); // Cancel!
+    return rect;
+}
+
+/**
+ * Get desktop rect, plus the bleed amounts.
+ */
+Geom::Rect SPPage::getDesktopBleed() const
+{
+    auto rect = getDesktopRect();
+    rect.setTop(rect.top() - bleed.top().computed);
+    rect.setLeft(rect.left() - bleed.left().computed);
+    rect.setBottom(rect.bottom() + bleed.bottom().computed);
+    rect.setRight(rect.right() + bleed.right().computed);
+    if (rect.hasZeroArea())
+        return getDesktopRect(); // Cancel!
+    return rect;
 }
 
 /**
@@ -138,8 +201,15 @@ void SPPage::setRect(Geom::Rect rect)
 /**
  * Set the page rectangle in document coordinates.
  */
-void SPPage::setDocumentRect(Geom::Rect rect)
+void SPPage::setDocumentRect(Geom::Rect rect, bool add_margins)
 {
+    if (add_margins) {
+        // Add margins to rectangle.
+        rect.setTop(rect.top() - margin.top().computed);
+        rect.setLeft(rect.left() - margin.left().computed);
+        rect.setBottom(rect.bottom() + margin.bottom().computed);
+        rect.setRight(rect.right() + margin.right().computed);
+    }
     setRect(rect * document->getDocumentScale().inverse());
 }
 
@@ -164,6 +234,65 @@ void SPPage::setSize(double width, double height)
     auto rect = getDocumentRect();
     rect.setMax(rect.corner(0) + Geom::Point(width, height));
     setDocumentRect(rect);
+}
+
+/**
+ * Set the page's margin
+ */
+void SPPage::setMargin(const std::string &value)
+{
+    this->margin.fromString(value, document->getDisplayUnit()->abbr);
+    this->updateRepr();
+}
+
+/**
+ * Set the page's bleed
+ */
+void SPPage::setBleed(const std::string &value)
+{
+    this->bleed.fromString(value, document->getDisplayUnit()->abbr);
+    this->updateRepr();
+}
+
+/**
+ * Get the margin side of the box.
+ */
+double SPPage::getMarginSide(int side)
+{
+    return this->margin.get((BoxSide)side);
+}
+
+/**
+ * Set the margin at this side of the box.
+ */
+void SPPage::setMarginSide(int side, double value, bool confine)
+{
+    if (confine && !margin) {
+        this->margin.set(value, value, value, value);
+    } else {
+        this->margin.set((BoxSide)side, value, confine);
+    }
+    this->updateRepr();
+}
+void SPPage::setMarginSide(int side, const std::string &value, bool confine)
+{
+    auto unit = document->getDisplayUnit()->abbr;
+    if (confine && !margin) {
+        this->margin.fromString(value, unit);
+    } else {
+        this->margin.fromString((BoxSide)side, value, unit);
+    }
+    this->updateRepr();
+}
+
+std::string SPPage::getMarginLabel() const
+{
+    return margin.toString(document->getDisplayUnit()->abbr);
+}
+
+std::string SPPage::getBleedLabel() const
+{
+    return bleed.toString(document->getDisplayUnit()->abbr);
 }
 
 /**
@@ -399,7 +528,7 @@ void SPPage::update(SPCtx * /*ctx*/, unsigned int /*flags*/)
     if (document->getPageManager().showDefaultLabel()) {
         alt = g_strdup_printf(_("%d"), getPagePosition());
     }
-    _canvas_item->update(getDesktopRect(), lbl ? lbl : alt);
+    _canvas_item->update(getDesktopRect(), getDesktopMargin(), getDesktopBleed(), lbl ? lbl : alt);
     g_free(alt);
 }
 
@@ -416,6 +545,8 @@ Inkscape::XML::Node *SPPage::write(Inkscape::XML::Document *xml_doc, Inkscape::X
     repr->setAttributeSvgDouble("y", this->y.computed);
     repr->setAttributeSvgDouble("width", this->width.computed);
     repr->setAttributeSvgDouble("height", this->height.computed);
+    repr->setAttributeOrRemoveIfEmpty("margin", this->margin.write());
+    repr->setAttributeOrRemoveIfEmpty("bleed", this->bleed.write());
 
     return SPObject::write(xml_doc, repr, flags);
 }
@@ -435,6 +566,19 @@ std::string SPPage::getLabel() const
         return getDefaultLabel();
     }
     return std::string(ret);
+}
+
+/**
+ * Copy non-size attributes from the given page.
+ */
+void SPPage::copyFrom(SPPage *page)
+{
+    if (auto margin = page->getMargin()) {
+        this->margin.read(margin.write());
+    }
+    if (auto bleed = page->getBleed()) {
+        this->bleed.read(bleed.write());
+    }
 }
 
 /*

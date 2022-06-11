@@ -15,8 +15,11 @@
  */
 
 #include <gtkmm.h>
+#include <gtkmm/spinbutton.h>
 
 #include "toolbar.h"
+
+#include "ui/widget/spinbutton.h"
 
 class SPDesktop;
 class SPDocument;
@@ -40,9 +43,17 @@ public:
 
 protected:
     void labelEdited();
+    void bleedsEdited();
+    void marginsEdited();
+    void marginTopEdited();
+    void marginRightEdited();
+    void marginBottomEdited();
+    void marginLeftEdited();
+    void marginSideEdited(int side, const Glib::ustring &value);
     void sizeChoose();
     void sizeChanged();
     void setSizeText(SPPage *page = nullptr, bool display_only = true);
+    void setMarginText(SPPage *page = nullptr);
 
 private:
     SPDesktop *_desktop;
@@ -62,6 +73,8 @@ private:
     bool was_referenced;
     Gtk::ComboBoxText *combo_page_sizes;
     Gtk::Entry *entry_page_sizes;
+    Gtk::Entry *text_page_margins;
+    Gtk::Entry *text_page_bleeds;
     Gtk::Entry *text_page_label;
     Gtk::Entry *text_page_width;
     Gtk::Entry *text_page_height;
@@ -71,6 +84,13 @@ private:
     Gtk::ToolButton *btn_page_delete;
     Gtk::ToolButton *btn_move_toggle;
     Gtk::SeparatorToolItem *sep1;
+
+    Gtk::Popover *margin_popover;
+
+    Inkscape::UI::Widget::MathSpinButton *margin_top;
+    Inkscape::UI::Widget::MathSpinButton *margin_right;
+    Inkscape::UI::Widget::MathSpinButton *margin_bottom;
+    Inkscape::UI::Widget::MathSpinButton *margin_left;
 
     double _unit_to_size(std::string number, std::string unit_str, std::string backup);
 };

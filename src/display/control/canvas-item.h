@@ -94,6 +94,7 @@ public:
     // Display
     virtual void render(Inkscape::CanvasItemBuffer *buf) = 0;
     bool is_visible() const { return _visible; }
+    bool set_visible(bool set);
     virtual void hide();
     virtual void show();
     void request_redraw();  // queue redraw request

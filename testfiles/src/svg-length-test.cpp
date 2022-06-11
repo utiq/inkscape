@@ -119,6 +119,44 @@ TEST(SvgLengthTest, testReadAbsolute)
     }
 }
 
+TEST(SvgLengthTest, testToFromString)
+{
+    SVGLength len;
+    ASSERT_TRUE(len.fromString("10", "mm"));
+    ASSERT_EQ(len.unit, SVGLength::MM);
+    ASSERT_EQ(len.value, 10);
+    ASSERT_EQ(len.toString("mm"), "10mm");
+    ASSERT_EQ(len.toString("in"), "0.3937008in");
+}
+
+struct eq_test_t
+{
+    char const *a;
+    char const *b;
+    bool equal;
+};
+eq_test_t eq_tests[4] = {
+    {"", "", true},
+    {"1", "1", true},
+    {"10mm", "10mm", true},
+    {"20mm", "10mm", false},
+};
+
+TEST(SvgLengthTest, testEquality)
+{
+    for (size_t i = 0; i < G_N_ELEMENTS(eq_tests); i++) {
+        SVGLength len_a;
+        SVGLength len_b;
+        len_a.read(eq_tests[i].a);
+        len_b.read(eq_tests[i].b);
+        if (eq_tests[i].equal) {
+            ASSERT_TRUE(len_a == len_b) << eq_tests[i].a << " == " << eq_tests[i].b;
+        } else {
+            ASSERT_TRUE(len_a != len_b) << eq_tests[i].a << " != " << eq_tests[i].b;
+        }
+    }
+}
+
 TEST(SvgLengthTest, testEnumMappedToString)
 {
     for (int i = (static_cast<int>(SVGLength::NONE) + 1); i <= static_cast<int>(SVGLength::LAST_UNIT); i++) {

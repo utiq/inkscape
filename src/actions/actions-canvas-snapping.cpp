@@ -74,7 +74,8 @@ SnapVector snap_all_the_rest = {
     { "snap-path-mask",          SNAPTARGET_PATH_MASK,          true },
     { "snap-path-clip",          SNAPTARGET_PATH_CLIP,          true },
 
-    { "snap-page-border",        SNAPTARGET_PAGE_BORDER,        true },
+    { "snap-page-border",        SNAPTARGET_PAGE_EDGE_BORDER,   true },
+    { "snap-page-margin",        SNAPTARGET_PAGE_MARGIN_BORDER, true },
     { "snap-grid",               SNAPTARGET_GRID,               true },
     { "snap-guide",              SNAPTARGET_GUIDE,              true },
 };
@@ -266,6 +267,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_canvas_snapping =
     {"win.snap-text-baseline",        N_("Snap Text Baselines"),               "Snap",  N_("Toggle snapping to text baseline and text anchors")  },
 
     {"win.snap-page-border",          N_("Snap Page Border"),                  "Snap",  N_("Toggle snapping to page border")                     },
+    {"win.snap-page-margin",          N_("Snap Page Margin"),                  "Snap",  N_("Toggle snapping to page margin")                     },
     {"win.snap-grid",                 N_("Snap Grids"),                        "Snap",  N_("Toggle snapping to grids")                           },
     {"win.snap-guide",                N_("Snap Guide Lines"),                  "Snap",  N_("Toggle snapping to guide lines")                     },
 
@@ -369,7 +371,8 @@ void set_actions_canvas_snapping(Gio::ActionMap& map) {
         { "snap-rotation-center",    snapprefs.isSnapButtonEnabled(SNAPTARGET_ROTATION_CENTER),    global && other },
         { "snap-text-baseline",      snapprefs.isSnapButtonEnabled(SNAPTARGET_TEXT_BASELINE),      global && other },
 
-        { "snap-page-border",        snapprefs.isSnapButtonEnabled(SNAPTARGET_PAGE_BORDER),        global },
+        { "snap-page-border",        snapprefs.isSnapButtonEnabled(SNAPTARGET_PAGE_EDGE_BORDER),   global },
+        { "snap-page-margin",        snapprefs.isSnapButtonEnabled(SNAPTARGET_PAGE_MARGIN_BORDER), global },
         { "snap-grid",               snapprefs.isSnapButtonEnabled(SNAPTARGET_GRID),               global },
         { "snap-guide",              snapprefs.isSnapButtonEnabled(SNAPTARGET_GUIDE),              global },
 

@@ -20,6 +20,24 @@ namespace Inkscape {
 namespace UI {
 namespace Widget {
 
+MathSpinButton::MathSpinButton(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade)
+    : Gtk::SpinButton(cobject)
+{
+}
+
+int MathSpinButton::on_input(double *newvalue)
+{
+    try {
+        auto eval = Inkscape::Util::ExpressionEvaluator(get_text().c_str(), nullptr);
+        auto result = eval.evaluate();
+        *newvalue = result.value;
+    } catch (Inkscape::Util::EvaluatorException &e) {
+        g_message ("%s", e.what());
+        return false;
+    }
+    return true;
+}
+
 int SpinButton::on_input(double* newvalue)
 {
     if (_dont_evaluate) return false;

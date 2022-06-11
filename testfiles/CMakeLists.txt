@@ -75,6 +75,7 @@ set(TEST_SOURCES
     style-internal-test
     style-test
     svg-affine-test
+    svg-box-test
     svg-color-test
     svg-length-test
     svg-stringstream-test

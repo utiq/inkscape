@@ -555,7 +555,7 @@ void SPNamedView::updateViewPort()
     } else {
         // Otherwise we are showing the viewport item.
         _viewport->show();
-        _viewport->update(*box, nullptr, document->getPageManager().hasPages());
+        _viewport->update(*box, {}, {}, nullptr, document->getPageManager().hasPages());
     }
 }
 
@@ -1017,39 +1017,6 @@ void SPNamedView::updateGuides()
         setShowGuideSingle(guide);
         guide->set_locked(this->getLockGuides(), true);
     }
-}
-
-/**
- * Gets page fitting margin information from the namedview node in the XML.
- * \param nv_repr reference to this document's namedview
- * \param key
- * \param margin_units units for the margin
- * \param return_units units to return the result in
- * \param width width in px (for percentage margins)
- * \param height height in px (for percentage margins)
- * \param use_width true if the this key is left or right margins, false
- *        otherwise.  Used for percentage margins.
- * \return the margin size in px, else 0.0 if anything is invalid.
- */
-double SPNamedView::getMarginLength(gchar const * const key,
-                             Inkscape::Util::Unit const * const margin_units,
-                             Inkscape::Util::Unit const * const return_units,
-                             double const width,
-                             double const height,
-                             bool const use_width)
-{
-    double value;
-    static Inkscape::Util::Unit const *percent = unit_table.getUnit("%");
-    if(!this->storeAsDouble(key,&value)) {
-        return 0.0;
-    }
-    if (*margin_units == *percent) {
-        return (use_width)? width * value : height * value;
-    }
-    if (!margin_units->compatibleWith(return_units)) {
-        return 0.0;
-    }
-    return value;
 }
 
 /**

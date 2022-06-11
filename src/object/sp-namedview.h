@@ -122,7 +122,6 @@ private:
     void updateGuides();
     void setShowGuideSingle(SPGuide *guide);
 
-    double getMarginLength(gchar const * const key,Inkscape::Util::Unit const * const margin_units,Inkscape::Util::Unit const * const return_units,double const width,double const height,bool const use_width);
     friend class SPDocument;
 
     Inkscape::CanvasPage *_viewport = nullptr;

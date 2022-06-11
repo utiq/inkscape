@@ -89,9 +89,12 @@ static std::map<SnapTargetType, Glib::ustring> target2string = {
     {SNAPTARGET_GUIDE_ORIGIN, _("guide origin")},
     {SNAPTARGET_GUIDE_PERPENDICULAR, _("guide (perpendicular)")},
     {SNAPTARGET_GRID_GUIDE_INTERSECTION, _("grid-guide intersection")},
-    {SNAPTARGET_PAGE_BORDER, _("page border")},
-    {SNAPTARGET_PAGE_CORNER, _("page corner")},
-    {SNAPTARGET_PAGE_CENTER, _("page center")},
+    {SNAPTARGET_PAGE_EDGE_BORDER, _("page border")},
+    {SNAPTARGET_PAGE_EDGE_CORNER, _("page corner")},
+    {SNAPTARGET_PAGE_EDGE_CENTER, _("page center")},
+    {SNAPTARGET_PAGE_MARGIN_BORDER, _("page margin border")},
+    {SNAPTARGET_PAGE_MARGIN_CORNER, _("page margin corner")},
+    {SNAPTARGET_PAGE_MARGIN_CENTER, _("page margin center")},
     {SNAPTARGET_OBJECT_MIDPOINT, _("object midpoint")},
     {SNAPTARGET_IMG_CORNER, _("corner")},
     {SNAPTARGET_ROTATION_CENTER, _("object rotation center")},
@@ -340,8 +343,10 @@ guint32 SnapIndicator::get_guide_color(SnapTargetType t)
         case SNAPTARGET_ALIGNMENT_BBOX_MIDPOINT:
         case SNAPTARGET_ALIGNMENT_BBOX_EDGE_MIDPOINT:
             return 0xff0000ff;
-        case SNAPTARGET_ALIGNMENT_PAGE_CENTER:
-        case SNAPTARGET_ALIGNMENT_PAGE_CORNER:
+        case SNAPTARGET_ALIGNMENT_PAGE_EDGE_CENTER:
+        case SNAPTARGET_ALIGNMENT_PAGE_EDGE_CORNER:
+        case SNAPTARGET_ALIGNMENT_PAGE_MARGIN_CENTER:
+        case SNAPTARGET_ALIGNMENT_PAGE_MARGIN_CORNER:
             return 0x00ff00ff;
         case SNAPTARGET_ALIGNMENT_HANDLE:
             return 0x0000ffff;

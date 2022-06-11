@@ -132,7 +132,9 @@ SPPage *PageManager::newPage()
 {
     enablePages();
     auto rect = _selected_page->getRect();
-    return newPage(rect.width(), rect.height());
+    auto new_page = newPage(rect.width(), rect.height());
+    new_page->copyFrom(_selected_page);
+    return new_page;
 }
 
 /**
@@ -217,6 +219,10 @@ SPPage *PageManager::newPage(SPPage *page)
     enablePages();
     auto new_loc = nextPageLocation();
     auto new_page = newDocumentPage(page->getDocumentRect(), false);
+
+    // Set the margin, bleed, etc
+    new_page->copyFrom(page);
+
     Geom::Affine page_move = Geom::Translate((new_loc * _document->getDocumentScale()) - new_page->getDesktopRect().min());
     Geom::Affine item_move = Geom::Translate(new_loc - new_page->getRect().min());
 
@@ -279,10 +285,12 @@ void PageManager::deletePage(SPPage *page, bool content)
 
     // As above with the viewbox shadowing, we need go back to a single page
     // (which is zero pages) when needed.
-    if (getPageCount() == 1) {
-        if (auto page = getFirstPage()) {
+    if (auto page = getFirstPage()) {
+        if (getPageCount() == 1) {
             auto rect = page->getDesktopRect();
-            deletePage(page, false);
+            // We delete the page, only if it's bare (no margins etc)
+            if (page->isBarePage())
+                deletePage(page, false);
             _document->fitToRect(rect, false);
          }
     }
@@ -514,7 +522,7 @@ void PageManager::changeOrientation()
  * Resize the page to the given selection. If nothing is selected,
  * Resize to all the items on the selected page.
  */
-void PageManager::fitToSelection(ObjectSet *selection)
+void PageManager::fitToSelection(ObjectSet *selection, bool add_margins)
 {
     auto desktop = selection->desktop();
 
@@ -522,32 +530,33 @@ void PageManager::fitToSelection(ObjectSet *selection)
         // This means there aren't any pages, so revert to the default assumption
         // that the viewport is resized around ALL objects.
         if (!_selected_page) {
-            fitToRect(_document->getRoot()->documentVisualBounds(), _selected_page);
+            fitToRect(_document->getRoot()->documentVisualBounds(), _selected_page, add_margins);
         } else {
             // This allows the pages to be resized around the items related to the page only.
             auto contents = ObjectSet();
             contents.setList(getOverlappingItems(desktop, _selected_page));
             if (contents.isEmpty()) {
-                fitToRect(_document->getRoot()->documentVisualBounds(), _selected_page);
+                fitToRect(_document->getRoot()->documentVisualBounds(), _selected_page, add_margins);
             } else {
-                fitToSelection(&contents);
+                fitToSelection(&contents, add_margins);
             }
         }
     } else if (auto rect = selection->documentBounds(SPItem::VISUAL_BBOX)) {
-        fitToRect(rect, _selected_page);
+        fitToRect(rect, _selected_page, add_margins);
     }
 }
 
 /**
  * Fit the selected page to the given rectangle.
  */
-void PageManager::fitToRect(Geom::OptRect rect, SPPage *page)
+void PageManager::fitToRect(Geom::OptRect rect, SPPage *page, bool add_margins)
 {
     if (!rect) return;
     bool viewport = true;
     if (page) {
         viewport = page->isViewportPage();
-        page->setDocumentRect(*rect);
+        page->setDocumentRect(*rect, add_margins);
+        rect = page->getDocumentRect();
     }
     if (viewport) {
         _document->fitToRect(*rect);
@@ -629,7 +638,7 @@ bool PageManager::setDefaultAttributes(Inkscape::CanvasPage *item)
     bool ret = item->setOnTop(border_on_top);
     // fixed shadow size, not configurable; shadow changes size with zoom
     ret = item->setShadow(border_show && shadow_show ? 2 : 0) || ret;
-    ret = item->setPageColor(border_show ? border_color : 0x0, bgcolor, dkcolor) || ret;
+    ret = item->setPageColor(border_show ? border_color : 0x0, bgcolor, dkcolor, margin_color, bleed_color) || ret;
     ret = item->setLabelStyle(label_style) || ret;
     return ret;
 }

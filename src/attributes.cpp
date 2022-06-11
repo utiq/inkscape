@@ -139,6 +139,9 @@ static SPStyleProp const props[] = {
     {SPAttr::POSITION, "position"},
     {SPAttr::INKSCAPE_COLOR, "inkscape:color"},
     {SPAttr::INKSCAPE_LOCKED, "inkscape:locked"},
+    /* SPPage */
+    {SPAttr::PAGE_MARGIN, "margin"},
+    {SPAttr::PAGE_BLEED, "bleed"},
     /* SPImage */
     {SPAttr::X, "x"},
     {SPAttr::Y, "y"},

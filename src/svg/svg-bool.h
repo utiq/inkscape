@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_SP_SVG_TYPES_H
-#define SEEN_SP_SVG_TYPES_H
+#ifndef SEEN_SP_SVG_BOOL_H
+#define SEEN_SP_SVG_BOOL_H
 /*
  * Authors:
  *   Martin Owens <doctormo@geek-2.com>
@@ -28,7 +28,7 @@ private:
     bool _default = false;
 };
 
-#endif // SEEN_SP_SVG_ANGLE_H
+#endif // SEEN_SP_SVG_BOOL_H
 
 /*
   Local Variables:

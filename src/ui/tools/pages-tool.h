@@ -59,6 +59,10 @@ private:
     void resizeKnotFinished(SPKnot *knot, guint state);
     void pageModified(SPObject *object, guint flags);
 
+    void marginKnotSet(Geom::Rect margin_rect);
+    bool marginKnotMoved(SPKnot *knot, Geom::Point *point, guint state);
+    void marginKnotFinished(SPKnot *knot, guint state);
+
     void grabPage(SPPage *target);
     Geom::Affine moveTo(Geom::Point xy, bool snap);
 
@@ -74,14 +78,17 @@ private:
     int drag_tolerance = 5;
 
     std::vector<SPKnot *> resize_knots;
+    std::vector<SPKnot *> margin_knots;
+    SPKnot *grabbed_knot = nullptr;
     SPPage *highlight_item = nullptr;
     SPPage *dragging_item = nullptr;
     std::optional<Geom::Rect> on_screen_rect; ///< On-screen rectangle, in desktop coordinates.
     Inkscape::CanvasItemRect *visual_box = nullptr;
     Inkscape::CanvasItemGroup *drag_group = nullptr;
     std::vector<Inkscape::CanvasItemBpath *> drag_shapes;
-
     std::vector<Inkscape::SnapCandidatePoint> _bbox_points;
+
+    static Geom::Point middleOfSide(int side, const Geom::Rect &rect);
 };
 
 } // namespace Tools
