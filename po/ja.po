@@ -20,16 +20,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: inkscape\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2022-05-16 06:55+0900\n"
-"PO-Revision-Date: 2022-05-16 06:57+0900\n"
-"Last-Translator: Masato Hashimoto <cabezon.hashimoto@gmail.com>\n"
+"POT-Creation-Date: 2022-06-10 18:41+0900\n"
+"PO-Revision-Date: 2022-06-10 18:59+0900\n"
+"Last-Translator: Yuka Kachi\n"
 "Language-Team: Japanese <inkscape-translator@lists.sourceforge.net>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.1\n"
 
 #: ../share/filters/filters.svg.h:2
 msgid "Fast Crop"
@@ -4902,7 +4902,7 @@ msgstr "開いているすべてのダイアログの表示/非表示を切り�
 
 #: ../src/actions/actions-edit-document.cpp:57
 #: ../src/actions/actions-edit-document.cpp:78
-#: ../src/selection-chemistry.cpp:4345
+#: ../src/selection-chemistry.cpp:4369
 msgid "Fit Page to Drawing"
 msgstr "ページを描画全体に合わせる"
 
@@ -4979,35 +4979,39 @@ msgstr "次のパスエフェクトパラメーター"
 msgid "Show next editable path effect parameter"
 msgstr "次の編集可能なパスエフェクトパラメーターを表示"
 
-#: ../src/actions/actions-edit.cpp:267
+#: ../src/actions/actions-edit.cpp:158 ../src/actions/actions-edit.cpp:299
+msgid "Duplicate and Transform"
+msgstr "複製と変形"
+
+#: ../src/actions/actions-edit.cpp:285
 msgid "Objects to Pattern"
 msgstr "オブジェクトをパターンに"
 
-#: ../src/actions/actions-edit.cpp:267
+#: ../src/actions/actions-edit.cpp:285
 msgid "Convert selection to a rectangle with tiled pattern fill"
 msgstr "選択オブジェクトを、パターンフィルを敷き詰めた矩形に変換する"
 
-#: ../src/actions/actions-edit.cpp:268
+#: ../src/actions/actions-edit.cpp:286
 msgid "Pattern to Objects"
 msgstr "パターンをオブジェクトに"
 
-#: ../src/actions/actions-edit.cpp:268
+#: ../src/actions/actions-edit.cpp:286
 msgid "Extract objects from a tiled pattern fill"
 msgstr "敷き詰められたパターンフィルからオブジェクトを抽出"
 
-#: ../src/actions/actions-edit.cpp:269
+#: ../src/actions/actions-edit.cpp:287
 msgid "Objects to Marker"
 msgstr "オブジェクトをマーカーに"
 
-#: ../src/actions/actions-edit.cpp:269
+#: ../src/actions/actions-edit.cpp:287
 msgid "Convert selection to a line marker"
 msgstr "選択オブジェクトをラインマーカーに変換します"
 
-#: ../src/actions/actions-edit.cpp:270
+#: ../src/actions/actions-edit.cpp:288
 msgid "Objects to Guides"
 msgstr "オブジェクトをガイドに"
 
-#: ../src/actions/actions-edit.cpp:270
+#: ../src/actions/actions-edit.cpp:288
 msgid ""
 "Convert selected objects to a collection of guidelines aligned with their "
 "edges"
@@ -5015,71 +5019,71 @@ msgstr ""
 "選択オブジェクトをそれらのエッジに整列したガイドラインのコレクションに変換し"
 "ます"
 
-#: ../src/actions/actions-edit.cpp:271 ../src/ui/toolbar/eraser-toolbar.cpp:70
+#: ../src/actions/actions-edit.cpp:289 ../src/ui/toolbar/eraser-toolbar.cpp:70
 msgid "Cut"
 msgstr "切り取り"
 
-#: ../src/actions/actions-edit.cpp:271
+#: ../src/actions/actions-edit.cpp:289
 msgid "Cut selection to clipboard"
 msgstr "選択範囲をクリップボードへ切り取る"
 
-#: ../src/actions/actions-edit.cpp:272
+#: ../src/actions/actions-edit.cpp:290
 msgid "Copy"
 msgstr "コピー"
 
-#: ../src/actions/actions-edit.cpp:272
+#: ../src/actions/actions-edit.cpp:290
 msgid "Copy selection to clipboard"
 msgstr "選択範囲をクリップボードへコピー"
 
-#: ../src/actions/actions-edit.cpp:273
+#: ../src/actions/actions-edit.cpp:291
 msgid "Paste Style"
 msgstr "スタイルを貼り付け"
 
-#: ../src/actions/actions-edit.cpp:273
+#: ../src/actions/actions-edit.cpp:291
 msgid "Apply the style of the copied object to selection"
 msgstr "コピーされたオブジェクトのスタイルを選択オブジェクトに適用"
 
-#: ../src/actions/actions-edit.cpp:274
+#: ../src/actions/actions-edit.cpp:292
 msgid "Paste Size"
 msgstr "サイズを貼り付け"
 
-#: ../src/actions/actions-edit.cpp:274
+#: ../src/actions/actions-edit.cpp:292
 msgid "Scale selection to match the size of the copied object"
 msgstr "コピーされたオブジェクトのサイズに一致するように選択範囲を拡大縮小"
 
-#: ../src/actions/actions-edit.cpp:275
+#: ../src/actions/actions-edit.cpp:293
 msgid "Paste Width"
 msgstr "幅を貼り付け"
 
-#: ../src/actions/actions-edit.cpp:275
+#: ../src/actions/actions-edit.cpp:293
 msgid "Scale selection horizontally to match the width of the copied object"
 msgstr ""
 "コピーされたオブジェクトの幅に一致するように選択範囲を水平方向に拡大縮小"
 
-#: ../src/actions/actions-edit.cpp:276
+#: ../src/actions/actions-edit.cpp:294
 msgid "Paste Height"
 msgstr "高さを貼り付け"
 
-#: ../src/actions/actions-edit.cpp:276
+#: ../src/actions/actions-edit.cpp:294
 msgid "Scale selection vertically to match the height of the copied object"
 msgstr ""
 "コピーされたオブジェクトの高さに一致するように選択範囲を垂直方向に拡大縮小"
 
-#: ../src/actions/actions-edit.cpp:277 ../share/ui/menus.ui:174
+#: ../src/actions/actions-edit.cpp:295 ../share/ui/menus.ui:174
 msgid "Paste Size Separately"
 msgstr "サイズを個別に貼り付け"
 
-#: ../src/actions/actions-edit.cpp:277
+#: ../src/actions/actions-edit.cpp:295
 msgid "Scale each selected object to match the size of the copied object"
 msgstr ""
 "コピーされたオブジェクトのサイズに一致するように、選択オブジェクトのそれぞれ"
 "を拡大縮小"
 
-#: ../src/actions/actions-edit.cpp:278 ../share/ui/menus.ui:179
+#: ../src/actions/actions-edit.cpp:296 ../share/ui/menus.ui:179
 msgid "Paste Width Separately"
 msgstr "幅を個別に貼り付け"
 
-#: ../src/actions/actions-edit.cpp:278
+#: ../src/actions/actions-edit.cpp:296
 msgid ""
 "Scale each selected object horizontally to match the width of the copied "
 "object"
@@ -5087,11 +5091,11 @@ msgstr ""
 "コピーされたオブジェクトの幅に一致するように、選択オブジェクトのそれぞれを水"
 "平方向に拡大縮小"
 
-#: ../src/actions/actions-edit.cpp:279 ../share/ui/menus.ui:184
+#: ../src/actions/actions-edit.cpp:297 ../share/ui/menus.ui:184
 msgid "Paste Height Separately"
 msgstr "高さを個別に貼り付け"
 
-#: ../src/actions/actions-edit.cpp:279
+#: ../src/actions/actions-edit.cpp:297
 msgid ""
 "Scale each selected object vertically to match the height of the copied "
 "object"
@@ -5099,108 +5103,120 @@ msgstr ""
 "コピーされたオブジェクトの高さに一致するように、選択オブジェクトのそれぞれを"
 "垂直方向に拡大縮小"
 
-#: ../src/actions/actions-edit.cpp:280 ../src/filter-enums.cpp:95
+#: ../src/actions/actions-edit.cpp:298 ../src/filter-enums.cpp:95
 #: ../src/selection-chemistry.cpp:585
 msgid "Duplicate"
 msgstr "複製"
 
-#: ../src/actions/actions-edit.cpp:280
+#: ../src/actions/actions-edit.cpp:298
 msgid "Duplicate Selected Objects"
 msgstr "選択オブジェクトを複製"
 
-#: ../src/actions/actions-edit.cpp:281
+#: ../src/actions/actions-edit.cpp:299
+msgid "Duplicate Selected Objects and reapply last transform"
+msgstr "選択オブジェクトを複製して、最後の変形を再適用します"
+
+#: ../src/actions/actions-edit.cpp:300
 msgid "Create Clone"
 msgstr "クローンを作成"
 
-#: ../src/actions/actions-edit.cpp:281
+#: ../src/actions/actions-edit.cpp:300
 msgid "Create a clone (a copy linked to the original) of selected object"
 msgstr "選択オブジェクトのクローン (オリジナルにリンクするコピー) を作成"
 
-#: ../src/actions/actions-edit.cpp:282
+#: ../src/actions/actions-edit.cpp:301
 msgid "Unlink Clone"
 msgstr "クローンをリンク解除"
 
-#: ../src/actions/actions-edit.cpp:282
+#: ../src/actions/actions-edit.cpp:301
 msgid ""
 "Cut the selected clones' links to the originals, turning them into "
 "standalone objects"
 msgstr "選択したクローンのオリジナルへのリンクを解除し単独オブジェクトに"
 
-#: ../src/actions/actions-edit.cpp:283
+#: ../src/actions/actions-edit.cpp:302
 msgid "Unlink Clones recursively"
 msgstr "クローンを再帰的にリンク解除"
 
-#: ../src/actions/actions-edit.cpp:283
+#: ../src/actions/actions-edit.cpp:302
 msgid "Unlink all clones in the selection, even if they are in groups."
 msgstr "たとえグループ化されていても選択範囲内のクローンをすべてリンク解除"
 
-#: ../src/actions/actions-edit.cpp:284 ../share/ui/menus.ui:229
+#: ../src/actions/actions-edit.cpp:303 ../share/ui/menus.ui:229
 msgid "Relink to Copied"
 msgstr "コピーへ再リンク"
 
-#: ../src/actions/actions-edit.cpp:284
+#: ../src/actions/actions-edit.cpp:303
 msgid "Relink the selected clones to the object currently on the clipboard"
 msgstr "選択クローンを現在クリップボードにあるオブジェクトと再リンク"
 
-#: ../src/actions/actions-edit.cpp:285
+#: ../src/actions/actions-edit.cpp:304
 msgid "Select Original"
 msgstr "オリジナルを選択"
 
-#: ../src/actions/actions-edit.cpp:285
+#: ../src/actions/actions-edit.cpp:304
 msgid "Select the object to which the selected clone is linked"
 msgstr "選択されたクローンがリンクするオブジェクトを選択"
 
-#: ../src/actions/actions-edit.cpp:286 ../share/ui/menus.ui:239
+#: ../src/actions/actions-edit.cpp:305 ../share/ui/menus.ui:239
 msgid "Clone original path (LPE)"
 msgstr "クローンオリジナルパス (LPE)"
 
-#: ../src/actions/actions-edit.cpp:286
+#: ../src/actions/actions-edit.cpp:305
 msgid ""
 "Creates a new path, applies the Clone original LPE, and refers it to the "
 "selected path"
 msgstr ""
 "新しくパスを作成し、クローンオリジナル LPE を適用し、選択パスへの参照にします"
 
-#: ../src/actions/actions-edit.cpp:287 ../src/selection-chemistry.cpp:372
+#: ../src/actions/actions-edit.cpp:306 ../src/selection-chemistry.cpp:372
 #: ../src/ui/dialog/color-item.cpp:313 ../src/ui/toolbar/eraser-toolbar.cpp:65
 #: ../src/ui/tools/text-tool.cpp:971
 msgid "Delete"
 msgstr "削除"
 
-#: ../src/actions/actions-edit.cpp:287
+#: ../src/actions/actions-edit.cpp:306
 msgid "Delete selected items, nodes or text."
 msgstr "選択したオブジェクト、ノード、またはテキストを削除"
 
-#: ../src/actions/actions-edit.cpp:288
+#: ../src/actions/actions-edit.cpp:307
 msgid "Delete Items"
 msgstr "オブジェクトを削除"
 
-#: ../src/actions/actions-edit.cpp:288
+#: ../src/actions/actions-edit.cpp:307
 msgid "Delete selected items"
 msgstr "選択オブジェクトを削除"
 
-#: ../src/actions/actions-edit.cpp:289
+#: ../src/actions/actions-edit.cpp:308
 msgid "Paste Path Effect"
 msgstr "パスエフェクトを貼り付け"
 
-#: ../src/actions/actions-edit.cpp:289
+#: ../src/actions/actions-edit.cpp:308
 msgid "Apply the path effect of the copied object to selection"
 msgstr "コピーされたオブジェクトのパスエフェクトを選択範囲に適用します"
 
-#: ../src/actions/actions-edit.cpp:290
+#: ../src/actions/actions-edit.cpp:309
 msgid "Remove Path Effect"
 msgstr "パスエフェクトを除去"
 
-#: ../src/actions/actions-edit.cpp:290
+#: ../src/actions/actions-edit.cpp:309
 msgid "Remove any path effects from selected objects"
 msgstr "選択オブジェクトからあらゆるパスエフェクトを除去します"
 
-#: ../src/actions/actions-edit.cpp:291 ../src/selection-chemistry.cpp:4115
-#: ../share/ui/toolbar-page.ui:53
+#: ../src/actions/actions-edit.cpp:310 ../src/ui/widget/selected-style.cpp:277
+msgid "Swap fill and stroke"
+msgstr "フィルとストロークを交換"
+
+#: ../src/actions/actions-edit.cpp:310 ../src/selection-chemistry.cpp:4215
+msgid "Swap fill and stroke of an object"
+msgstr "オブジェクトのフィルとストロークを交換"
+
+#: ../src/actions/actions-edit.cpp:311 ../src/selection-chemistry.cpp:4138
+#: ../share/ui/toolbar-page.ui:54
 msgid "Fit Page to Selection"
 msgstr "ページを選択オブジェクトに合わせる"
 
-#: ../src/actions/actions-edit.cpp:291
+#: ../src/actions/actions-edit.cpp:311
 msgid "Fit the page to the current selection"
 msgstr "ページを現在の選択オブジェクトに合わせる"
 
@@ -5337,7 +5353,9 @@ msgstr "インポート"
 msgid "Import a bitmap or SVG image into this document"
 msgstr "このドキュメントにビットマップまたは SVG 画像をインポート"
 
-#: ../src/actions/actions-file-window.cpp:124 ../src/ui/dialog/print.cpp:50
+#: ../src/actions/actions-file-window.cpp:124
+#: ../src/extension/internal/template-paper.cpp:47
+#: ../src/ui/dialog/print.cpp:50
 msgid "Print"
 msgstr "印刷"
 
@@ -5753,7 +5771,7 @@ msgstr "選択オブジェクトを現在のレイヤーの背面のレイヤー
 msgid "Move Selection to Layer..."
 msgstr "選択オブジェクトをレイヤーに移動..."
 
-#: ../src/actions/actions-layer.cpp:468 ../src/selection-chemistry.cpp:1588
+#: ../src/actions/actions-layer.cpp:468 ../src/selection-chemistry.cpp:1594
 msgid "Move selection to layer"
 msgstr "選択オブジェクトをレイヤーに移動"
 
@@ -6177,7 +6195,7 @@ msgstr "カンマで区切った数字をふたつ入力: 水平, 垂直"
 msgid "Set Inverse Clip(LPE)"
 msgstr "クリップを反転して設定 (LPE)"
 
-#: ../src/actions/actions-object.cpp:132 ../src/selection-chemistry.cpp:4090
+#: ../src/actions/actions-object.cpp:132 ../src/selection-chemistry.cpp:4113
 msgid "Release clipping path"
 msgstr "クリッピングパスを解除"
 
@@ -6185,7 +6203,7 @@ msgstr "クリッピングパスを解除"
 msgid "Set Inverse Mask (LPE)"
 msgstr "マスクを反転して設定 (LPE)"
 
-#: ../src/actions/actions-object.cpp:172 ../src/selection-chemistry.cpp:4092
+#: ../src/actions/actions-object.cpp:172 ../src/selection-chemistry.cpp:4115
 msgid "Release mask"
 msgstr "マスクを解除"
 
@@ -6665,7 +6683,7 @@ msgid "Enter 1/0 for Yes/No to use dithering"
 msgstr "ディザリングを使用するかどうかを 1 (する) または 2 (しない) で入力"
 
 #: ../src/actions/actions-pages.cpp:75 ../share/ui/toolbar-page.ui:13
-#: ../share/ui/toolbar-page.ui:137
+#: ../share/ui/toolbar-page.ui:138
 msgid "New Page"
 msgstr "新規ページ"
 
@@ -6689,7 +6707,7 @@ msgstr "ページごとオブジェクトを移動"
 msgid "Move overlapping objects as the page is moved."
 msgstr "ページ移動の際、重なっているオブジェクトを移動します。"
 
-#: ../src/actions/actions-pages.cpp:78 ../share/ui/toolbar-page.ui:76
+#: ../src/actions/actions-pages.cpp:78 ../share/ui/toolbar-page.ui:77
 msgid "Move Before Previous"
 msgstr "ふたつ前に移動"
 
@@ -6697,7 +6715,7 @@ msgstr "ふたつ前に移動"
 msgid "Move page backwards in the page order"
 msgstr "ページ順を後ろに移動"
 
-#: ../src/actions/actions-pages.cpp:79 ../share/ui/toolbar-page.ui:107
+#: ../src/actions/actions-pages.cpp:79 ../share/ui/toolbar-page.ui:108
 msgid "Move After Next"
 msgstr "ふたつ先に移動"
 
@@ -6841,7 +6859,7 @@ msgstr ""
 
 #: ../src/actions/actions-paths.cpp:212
 #: ../src/live_effects/parameter/patharray.cpp:103
-#: ../src/ui/toolbar/gradient-toolbar.cpp:437
+#: ../src/ui/toolbar/gradient-toolbar.cpp:436
 msgid "Reverse"
 msgstr "反転"
 
@@ -7075,10 +7093,10 @@ msgid "Clear selection"
 msgstr "選択を解除"
 
 #: ../src/actions/actions-selection.cpp:239
-#: ../src/extension/prefdialog/parameter-path.cpp:214
+#: ../src/extension/prefdialog/parameter-path.cpp:218
 #: ../src/inkview-application.cpp:116
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1396
-#: ../src/ui/toolbar/gradient-toolbar.cpp:409
+#: ../src/ui/toolbar/gradient-toolbar.cpp:408
 msgid "Select"
 msgstr "選択"
 
@@ -7217,7 +7235,7 @@ msgstr "手動カーニングの除去"
 msgid "Remove all manual kerns and glyph rotations from a text object"
 msgstr "テキストオブジェクトから、手動カーニング、文字の回転をすべて除去します"
 
-#: ../src/actions/actions-tools.cpp:80
+#: ../src/actions/actions-tools.cpp:93
 msgid ""
 "<b>Click</b> to Select and Transform objects, <b>Drag</b> to select many "
 "objects."
@@ -7225,11 +7243,11 @@ msgstr ""
 "<b>クリック</b>でオブジェクトを選択および変形します。<b>ドラッグ</b>で複数の"
 "オブジェクトを選択します。"
 
-#: ../src/actions/actions-tools.cpp:81
+#: ../src/actions/actions-tools.cpp:94
 msgid "Modify selected path points (nodes) directly."
 msgstr "選択したパス上の点 (ノード) を変更します。"
 
-#: ../src/actions/actions-tools.cpp:82
+#: ../src/actions/actions-tools.cpp:95
 msgid ""
 "<b>Drag</b> to create a rectangle. <b>Drag controls</b> to round corners and "
 "resize. <b>Click</b> to select."
@@ -7237,7 +7255,7 @@ msgstr ""
 "<b>ドラッグ</b>で矩形を作成します。<b>コントロールをドラッグ</b>して角の丸め"
 "またはサイズ変更、<b>クリック</b>で選択します。"
 
-#: ../src/actions/actions-tools.cpp:83
+#: ../src/actions/actions-tools.cpp:96
 msgid ""
 "<b>Drag</b> to create an ellipse. <b>Drag controls</b> to make an arc or "
 "segment. <b>Click</b> to select."
@@ -7245,7 +7263,7 @@ msgstr ""
 "<b>ドラッグ</b>で円/弧を作成します。<b>コントロールをドラッグ</b>して弧または"
 "扇形を作成、<b>クリック</b>で選択します。"
 
-#: ../src/actions/actions-tools.cpp:84
+#: ../src/actions/actions-tools.cpp:97
 msgid ""
 "<b>Drag</b> to create a star. <b>Drag controls</b> to edit the star shape. "
 "<b>Click</b> to select."
@@ -7253,7 +7271,7 @@ msgstr ""
 "<b>ドラッグ</b>で星形を作成します。<b>コントロールをドラッグ</b>して星形の形"
 "状を編集、<b>クリック</b>で選択します。"
 
-#: ../src/actions/actions-tools.cpp:85
+#: ../src/actions/actions-tools.cpp:98
 msgid ""
 "<b>Drag</b> to create a 3D box. <b>Drag controls</b> to resize in "
 "perspective. <b>Click</b> to select (with <b>Ctrl+Alt</b> for single faces)."
@@ -7262,7 +7280,7 @@ msgstr ""
 "パースペクティブのサイズ変更、<b>クリック</b>で選択 (<b>Ctrl+Alt</b>で一面の"
 "み) します。"
 
-#: ../src/actions/actions-tools.cpp:86
+#: ../src/actions/actions-tools.cpp:99
 msgid ""
 "<b>Drag</b> to create a spiral. <b>Drag controls</b> to edit the spiral "
 "shape. <b>Click</b> to select."
@@ -7270,7 +7288,7 @@ msgstr ""
 "<b>ドラッグ</b>でらせんを作成します。<b>コントロールをドラッグ</b>してらせん"
 "の形状を編集、<b>クリック</b>で選択します。"
 
-#: ../src/actions/actions-tools.cpp:87
+#: ../src/actions/actions-tools.cpp:100
 msgid ""
 "<b>Click</b> a shape to start editing its markers. <b>Drag controls</b> to "
 "change orientation, scale, and position."
@@ -7278,7 +7296,7 @@ msgstr ""
 "<b>クリック</b>でマーカーの編集を開始、<b>コントロールをドラッグ</b>して開始"
 "位置、拡大縮小、位置を変更します。"
 
-#: ../src/actions/actions-tools.cpp:88
+#: ../src/actions/actions-tools.cpp:101
 msgid ""
 "<b>Drag</b> to create a freehand line. <b>Shift</b> appends to selected "
 "path, <b>Alt</b> activates sketch mode."
@@ -7286,7 +7304,7 @@ msgstr ""
 "<b>ドラッグ</b>でフリーハンド線を作成します。<b>Shift</b> を押しながら描き始"
 "めると選択パスに追加、<b>Alt</b> でスケッチモードを有効にします。"
 
-#: ../src/actions/actions-tools.cpp:89
+#: ../src/actions/actions-tools.cpp:102
 msgid ""
 "<b>Click</b> or <b>click and drag</b> to start a path; with <b>Shift</b> to "
 "append to selected path. <b>Ctrl+click</b> to create single dots (straight "
@@ -7296,7 +7314,7 @@ msgstr ""
 "<b>Shift</b> で選択パスに追加、<b>Ctrl+クリック</b>で単一ドットを作成します "
 "(直線モードのみ)。"
 
-#: ../src/actions/actions-tools.cpp:90
+#: ../src/actions/actions-tools.cpp:103
 msgid ""
 "<b>Drag</b> to draw a calligraphic stroke; with <b>Ctrl</b> to track a guide "
 "path. <b>Arrow keys</b> adjust width (left/right) and angle (up/down)."
@@ -7304,7 +7322,7 @@ msgstr ""
 "<b>ドラッグ</b>でカリグラフィ線を描きます。<b>Ctrl</b> でガイドパスをトラック"
 "し、<b>方向キー</b>で幅 (←→) と角度 (↑↓) を調節します。"
 
-#: ../src/actions/actions-tools.cpp:91 ../src/ui/tools/text-tool.cpp:1792
+#: ../src/actions/actions-tools.cpp:104 ../src/ui/tools/text-tool.cpp:1792
 msgid ""
 "<b>Click</b> to select or create text, <b>drag</b> to create flowed text; "
 "then type."
@@ -7312,7 +7330,7 @@ msgstr ""
 "<b>クリック</b>でテキストを選択または作成、<b>ドラッグ</b>で流し込みテキスト"
 "を作成します。その後に入力してください。"
 
-#: ../src/actions/actions-tools.cpp:92
+#: ../src/actions/actions-tools.cpp:105
 msgid ""
 "<b>Drag</b> or <b>double click</b> to create a gradient on selected objects, "
 "<b>drag handles</b> to adjust gradients."
@@ -7320,7 +7338,7 @@ msgstr ""
 "<b>ドラッグ</b>または<b>ダブルクリック</b>で選択オブジェクトにグラデーション"
 "を作成、<b>ハンドルをドラッグ</b>でグラデーションを調整します。"
 
-#: ../src/actions/actions-tools.cpp:93
+#: ../src/actions/actions-tools.cpp:106
 msgid ""
 "<b>Drag</b> or <b>double click</b> to create a mesh on selected objects, "
 "<b>drag handles</b> to adjust meshes."
@@ -7328,7 +7346,7 @@ msgstr ""
 "<b>ドラッグ</b>または<b>ダブルクリック</b>で選択オブジェクトにメッシュを作"
 "成、<b>ハンドルをドラッグ</b>でメッシュを調整します。"
 
-#: ../src/actions/actions-tools.cpp:94
+#: ../src/actions/actions-tools.cpp:107
 msgid ""
 "<b>Click</b> or <b>drag around an area</b> to zoom in, <b>Shift+click</b> to "
 "zoom out."
@@ -7336,11 +7354,11 @@ msgstr ""
 "<b>クリック</b>または<b>領域を囲むようにドラッグ</b>してズームイン、<b>Shift"
 "+クリック</b>でズームアウトします。"
 
-#: ../src/actions/actions-tools.cpp:95
+#: ../src/actions/actions-tools.cpp:108
 msgid "<b>Drag</b> to measure the dimensions of objects."
 msgstr "<b>ドラッグ</b>でオブジェクトの寸法を測ります。"
 
-#: ../src/actions/actions-tools.cpp:96 ../src/ui/tools/dropper-tool.cpp:361
+#: ../src/actions/actions-tools.cpp:109 ../src/ui/tools/dropper-tool.cpp:361
 msgid ""
 "<b>Click</b> to set fill, <b>Shift+click</b> to set stroke; <b>drag</b> to "
 "average color in area; with <b>Alt</b> to pick inverse color; <b>Ctrl+C</b> "
@@ -7350,11 +7368,11 @@ msgstr ""
 "定します。<b>ドラッグ</b>でドラッグ領域の平均色を設定します。<b>Alt</b>で反転"
 "色を設定します。<b>Ctrl+C</b>でマウス位置の色をクリップボードへコピーします。"
 
-#: ../src/actions/actions-tools.cpp:97
+#: ../src/actions/actions-tools.cpp:110
 msgid "To tweak a path by pushing, select it and drag over it."
 msgstr "パスを押して微調整するには、選択してその上でドラッグしてください。"
 
-#: ../src/actions/actions-tools.cpp:98
+#: ../src/actions/actions-tools.cpp:111
 msgid ""
 "<b>Drag</b>, <b>click</b> or <b>click and scroll</b> to spray the selected "
 "objects."
@@ -7362,12 +7380,12 @@ msgstr ""
 "<b>ドラッグ</b>、<b>クリック</b>、あるいは<b>クリック+マウススクロール</b>で"
 "選択オブジェクトをスプレーします。"
 
-#: ../src/actions/actions-tools.cpp:99
+#: ../src/actions/actions-tools.cpp:112
 msgid "<b>Click and drag</b> between shapes to create a connector."
 msgstr ""
 "シェイプの間で<b>クリックおよびドラッグ</b>してコネクターを作成します。"
 
-#: ../src/actions/actions-tools.cpp:100
+#: ../src/actions/actions-tools.cpp:113
 msgid ""
 "<b>Click</b> to paint a bounded area, <b>Shift+click</b> to union the new "
 "fill with the current selection, <b>Ctrl+click</b> to change the clicked "
@@ -7377,298 +7395,310 @@ msgstr ""
 "択オブジェクトを統合して新しく塗り、<b>Ctrl+クリック</b>でクリックしたオブ"
 "ジェクトのフィルとストロークを現在の設定に変更します。"
 
-#: ../src/actions/actions-tools.cpp:101
+#: ../src/actions/actions-tools.cpp:114
 msgid "<b>Drag</b> to erase."
 msgstr "<b>ドラッグ</b>で消去します。"
 
-#: ../src/actions/actions-tools.cpp:102
+#: ../src/actions/actions-tools.cpp:115
 msgid "Choose a subtool from the toolbar"
 msgstr "ツールバーからサブツールを選択してください。"
 
-#: ../src/actions/actions-tools.cpp:103
+#: ../src/actions/actions-tools.cpp:116
 msgid "Create and manage pages."
 msgstr "ページを作成および管理"
 
-#: ../src/actions/actions-tools.cpp:368
+#: ../src/actions/actions-tools.cpp:387
 msgid "Select Tool"
 msgstr "選択ツール"
 
-#: ../src/actions/actions-tools.cpp:368
+#: ../src/actions/actions-tools.cpp:387
 msgid "Select and transform objects"
 msgstr "選択ツール (オブジェクトを選択/移動/変形)"
 
-#: ../src/actions/actions-tools.cpp:369
+#: ../src/actions/actions-tools.cpp:388
 msgid "Node Tool"
 msgstr "ノードツール"
 
-#: ../src/actions/actions-tools.cpp:369
+#: ../src/actions/actions-tools.cpp:388
 msgid "Edit paths by nodes"
 msgstr "ノードツール (ノードでパスを編集)"
 
-#: ../src/actions/actions-tools.cpp:371
+#: ../src/actions/actions-tools.cpp:390
 msgid "Rectangle Tool"
 msgstr "矩形ツール"
 
-#: ../src/actions/actions-tools.cpp:371
+#: ../src/actions/actions-tools.cpp:390
 msgid "Create rectangles and squares"
 msgstr "矩形ツール (矩形を作成)"
 
-#: ../src/actions/actions-tools.cpp:372
+#: ../src/actions/actions-tools.cpp:391
 msgid "Ellipse/Arc Tool"
 msgstr "円/弧ツール"
 
-#: ../src/actions/actions-tools.cpp:372
+#: ../src/actions/actions-tools.cpp:391
 msgid "Create circles, ellipses and arcs"
 msgstr "円/弧を作成"
 
-#: ../src/actions/actions-tools.cpp:373
+#: ../src/actions/actions-tools.cpp:392
 msgid "Star/Polygon Tool"
 msgstr "星型/多角形ツール"
 
-#: ../src/actions/actions-tools.cpp:373
+#: ../src/actions/actions-tools.cpp:392
 msgid "Create stars and polygons"
 msgstr "星形ツール (星形や多角形を作成)"
 
-#: ../src/actions/actions-tools.cpp:374
+#: ../src/actions/actions-tools.cpp:393
 msgid "3D Box Tool"
 msgstr "3D ボックスツール"
 
-#: ../src/actions/actions-tools.cpp:374
+#: ../src/actions/actions-tools.cpp:393
 msgid "Create 3D Boxes"
 msgstr "3D ボックスを作成"
 
-#: ../src/actions/actions-tools.cpp:375
+#: ../src/actions/actions-tools.cpp:394
 msgid "Spiral Tool"
 msgstr "らせんツール"
 
-#: ../src/actions/actions-tools.cpp:375
+#: ../src/actions/actions-tools.cpp:394
 msgid "Create spirals"
 msgstr "らせんツール (らせんを作成)"
 
-#: ../src/actions/actions-tools.cpp:376
+#: ../src/actions/actions-tools.cpp:395
 msgid "Marker Tool"
 msgstr "マーカーツール"
 
-#: ../src/actions/actions-tools.cpp:376
+#: ../src/actions/actions-tools.cpp:395
 msgid "Edit markers"
 msgstr "マーカーを編集"
 
-#: ../src/actions/actions-tools.cpp:378
+#: ../src/actions/actions-tools.cpp:397
 msgid "Pen Tool"
 msgstr "ペンツール"
 
-#: ../src/actions/actions-tools.cpp:378
+#: ../src/actions/actions-tools.cpp:397
 msgid "Draw Bezier curves and straight lines"
 msgstr "ペンツール (ベジエ曲線/直線を描く)"
 
-#: ../src/actions/actions-tools.cpp:379
+#: ../src/actions/actions-tools.cpp:398
 msgid "Pencil Tool"
 msgstr "鉛筆ツール"
 
-#: ../src/actions/actions-tools.cpp:379
+#: ../src/actions/actions-tools.cpp:398
 msgid "Draw freehand lines"
 msgstr "鉛筆ツール (フリーハンド線を描く)"
 
-#: ../src/actions/actions-tools.cpp:380
+#: ../src/actions/actions-tools.cpp:399
 msgid "Calligraphy Tool"
 msgstr "カリグラフィツール"
 
-#: ../src/actions/actions-tools.cpp:380
+#: ../src/actions/actions-tools.cpp:399
 msgid "Draw calligraphic or brush strokes"
 msgstr "カリグラフィツール (カリグラフィやブラシで線を描く)"
 
-#: ../src/actions/actions-tools.cpp:381
+#: ../src/actions/actions-tools.cpp:400
 msgid "Text Tool"
 msgstr "テキストツール"
 
-#: ../src/actions/actions-tools.cpp:381
+#: ../src/actions/actions-tools.cpp:400
 msgid "Create and edit text objects"
 msgstr "テキストツール (テキストを作成/編集)"
 
-#: ../src/actions/actions-tools.cpp:383
+#: ../src/actions/actions-tools.cpp:402
 msgid "Gradient Tool"
 msgstr "グラデーションツール"
 
-#: ../src/actions/actions-tools.cpp:383
+#: ../src/actions/actions-tools.cpp:402
 msgid "Create and edit gradients"
 msgstr "グラデーションツール (グラデーションを作成/編集)"
 
-#: ../src/actions/actions-tools.cpp:384
+#: ../src/actions/actions-tools.cpp:403
 msgid "Mesh Tool"
 msgstr "メッシュツール"
 
-#: ../src/actions/actions-tools.cpp:384
+#: ../src/actions/actions-tools.cpp:403
 msgid "Create and edit meshes"
 msgstr "メッシュを作成/編集"
 
-#: ../src/actions/actions-tools.cpp:385
+#: ../src/actions/actions-tools.cpp:404
 msgid "Dropper Tool"
 msgstr "スポイトツール"
 
-#: ../src/actions/actions-tools.cpp:385 ../src/ui/widget/color-notebook.cpp:201
+#: ../src/actions/actions-tools.cpp:404 ../src/ui/widget/color-notebook.cpp:201
 msgid "Pick colors from image"
 msgstr "スポイトツール (画像から色を採取)"
 
-#: ../src/actions/actions-tools.cpp:386
+#: ../src/actions/actions-tools.cpp:405
 msgid "Paint Bucket Tool"
 msgstr "バケツ (塗りつぶし) ツール"
 
-#: ../src/actions/actions-tools.cpp:386
+#: ../src/actions/actions-tools.cpp:405
 msgid "Fill bounded areas"
 msgstr "バケツツール (境界の中を塗りつぶす)"
 
-#: ../src/actions/actions-tools.cpp:388
+#: ../src/actions/actions-tools.cpp:407
 msgid "Tweak Tool"
 msgstr "微調整ツール"
 
-#: ../src/actions/actions-tools.cpp:388
+#: ../src/actions/actions-tools.cpp:407
 msgid "Tweak objects by sculpting or painting"
 msgstr "微調整ツール (オブジェクトを微調整)"
 
-#: ../src/actions/actions-tools.cpp:389
+#: ../src/actions/actions-tools.cpp:408
 msgid "Spray Tool"
 msgstr "スプレーツール"
 
-#: ../src/actions/actions-tools.cpp:389
+#: ../src/actions/actions-tools.cpp:408
 msgid "Spray copies or clones of objects"
 msgstr "オブジェクトのコピーまたはクローンをスプレー"
 
-#: ../src/actions/actions-tools.cpp:390
+#: ../src/actions/actions-tools.cpp:409
 msgid "Eraser Tool"
 msgstr "消しゴムツール"
 
-#: ../src/actions/actions-tools.cpp:390
+#: ../src/actions/actions-tools.cpp:409
 msgid "Erase objects or paths"
 msgstr "オブジェクトやパスを削除"
 
-#: ../src/actions/actions-tools.cpp:391
+#: ../src/actions/actions-tools.cpp:410
 msgid "Connector Tool"
 msgstr "コネクターツール"
 
-#: ../src/actions/actions-tools.cpp:391
+#: ../src/actions/actions-tools.cpp:410
 msgid "Create diagram connectors"
 msgstr "コネクターツール (ダイアグラムコネクターを作成)"
 
-#: ../src/actions/actions-tools.cpp:392
+#: ../src/actions/actions-tools.cpp:411
 #: ../src/ui/dialog/inkscape-preferences.cpp:868
 msgid "LPE Tool"
 msgstr "LPE ツール"
 
-#: ../src/actions/actions-tools.cpp:392
+#: ../src/actions/actions-tools.cpp:411
 msgid "Do geometric constructions"
 msgstr "幾何学的構成を行います"
 
-#: ../src/actions/actions-tools.cpp:394
+#: ../src/actions/actions-tools.cpp:413
 msgid "Zoom Tool"
 msgstr "拡大縮小ツール"
 
-#: ../src/actions/actions-tools.cpp:394
+#: ../src/actions/actions-tools.cpp:413
 msgid "Zoom in or out"
 msgstr "ズームツール (ズームイン/アウト)"
 
-#: ../src/actions/actions-tools.cpp:395
+#: ../src/actions/actions-tools.cpp:414
 msgid "Measure Tool"
 msgstr "ものさしツール (距離を測る)"
 
-#: ../src/actions/actions-tools.cpp:395
+#: ../src/actions/actions-tools.cpp:414
 msgid "Measure objects"
 msgstr "オブジェクトを計測"
 
-#: ../src/actions/actions-tools.cpp:396
+#: ../src/actions/actions-tools.cpp:415
 msgid "Pages Tool"
 msgstr "ページツール"
 
-#: ../src/actions/actions-tools.cpp:396
+#: ../src/actions/actions-tools.cpp:415
 msgid "Create and edit document pages"
 msgstr "ドキュメントページを作成および編集"
 
-#: ../src/actions/actions-tools.cpp:398
+#: ../src/actions/actions-tools.cpp:417
 msgid "Toggle Tool"
 msgstr "トグルツール"
 
-#: ../src/actions/actions-tools.cpp:398
+#: ../src/actions/actions-tools.cpp:417
 msgid "Toggle between Select tool and last used tool"
 msgstr "選択ツールと最後に使用したツールを切り替え"
 
 #: ../src/actions/actions-transform.cpp:114
+msgid "Reapply Transform"
+msgstr "変形を再適用"
+
+#: ../src/actions/actions-transform.cpp:121
 msgid "Translate"
 msgstr "翻訳"
 
-#: ../src/actions/actions-transform.cpp:114
+#: ../src/actions/actions-transform.cpp:121
 msgid "Translate selected objects (dx,dy)"
 msgstr "選択オブジェクト (dx,dy) を平行移動"
 
-#: ../src/actions/actions-transform.cpp:115 ../src/selection-chemistry.cpp:1962
+#: ../src/actions/actions-transform.cpp:122 ../src/selection-chemistry.cpp:1985
 #: ../src/seltrans.cpp:520 ../src/ui/dialog/transformation.cpp:837
 msgid "Rotate"
 msgstr "回転"
 
-#: ../src/actions/actions-transform.cpp:115
+#: ../src/actions/actions-transform.cpp:122
 msgid "Rotate selected objects by degrees"
 msgstr "選択オブジェクトを角度指定して回転"
 
-#: ../src/actions/actions-transform.cpp:116
+#: ../src/actions/actions-transform.cpp:123
 #: ../src/live_effects/lpe-measure-segments.cpp:81 ../src/seltrans.cpp:518
 #: ../src/ui/dialog/transformation.cpp:812
 #: ../share/extensions/interp_att_g.inx:10
 msgid "Scale"
 msgstr "拡大縮小"
 
-#: ../src/actions/actions-transform.cpp:116
+#: ../src/actions/actions-transform.cpp:123
 msgid "Scale selected objects by scale factor"
 msgstr "選択オブジェクトを表示倍率に従って拡大/縮小"
 
-#: ../src/actions/actions-transform.cpp:117
+#: ../src/actions/actions-transform.cpp:124
 msgid "Grow/Shrink"
 msgstr "膨張/収縮"
 
-#: ../src/actions/actions-transform.cpp:117
+#: ../src/actions/actions-transform.cpp:124
 msgid "Grow/shrink selected objects"
 msgstr "選択オブジェクトを大きく/小さく"
 
-#: ../src/actions/actions-transform.cpp:118
+#: ../src/actions/actions-transform.cpp:125
 msgid "Grow/Shrink Step"
 msgstr "拡縮単位"
 
-#: ../src/actions/actions-transform.cpp:118
+#: ../src/actions/actions-transform.cpp:125
 msgid "Grow/shrink selected objects by multiple of step value"
 msgstr "選択オブジェクトを指定量の倍数で拡大/縮小する"
 
-#: ../src/actions/actions-transform.cpp:119
+#: ../src/actions/actions-transform.cpp:126
 msgid "Grow/Shrink Screen"
 msgstr "画面の拡大/縮小"
 
-#: ../src/actions/actions-transform.cpp:119
+#: ../src/actions/actions-transform.cpp:126
 msgid "Grow/shrink selected objects relative to zoom level"
 msgstr "選択オブジェクトを拡大倍率に合わせて拡大/縮小します"
 
-#: ../src/actions/actions-transform.cpp:120
+#: ../src/actions/actions-transform.cpp:127
 msgid "Remove Transforms"
 msgstr "変形を解除"
 
-#: ../src/actions/actions-transform.cpp:120
+#: ../src/actions/actions-transform.cpp:127
 msgid "Remove any transforms from selected objects"
 msgstr "選択オブジェクトからすべての変形を除去"
 
+#: ../src/actions/actions-transform.cpp:128
+msgid "Reapply Transforms"
+msgstr "変形を再適用"
+
+#: ../src/actions/actions-transform.cpp:128
+msgid "Reapply the last transformation to the selection"
+msgstr "最後の変形を選択範囲に再適用します"
+
 #
 # File: ../share/extensions/nicechart.inx, line: 45
-#: ../src/actions/actions-transform.cpp:127
+#: ../src/actions/actions-transform.cpp:135
 msgid "Enter two comma-separated numbers, e.g. 50,-2.5"
 msgstr "カンマで区切った数字をふたつ入力。例: 50, -2.5"
 
-#: ../src/actions/actions-transform.cpp:128
+#: ../src/actions/actions-transform.cpp:136
 msgid "Enter angle (in degrees) for clockwise rotation"
 msgstr "時計回り回転角 (度数) を入力"
 
-#: ../src/actions/actions-transform.cpp:129
+#: ../src/actions/actions-transform.cpp:137
 msgid "Enter scaling factor, e.g. 1.5"
 msgstr "拡大/縮小の係数を入力。例: 1.5"
 
-#: ../src/actions/actions-transform.cpp:130
+#: ../src/actions/actions-transform.cpp:138
 msgid "Enter positive or negative number to grow/shrink selection"
 msgstr "選択オブジェクトを拡大/縮小するために、正または負の数字を指定"
 
-#: ../src/actions/actions-transform.cpp:131
+#: ../src/actions/actions-transform.cpp:139
 msgid ""
 "Enter positive or negative number to grow or shrink selection relative to "
 "preference step value"
@@ -7676,7 +7706,7 @@ msgstr ""
 "選択オブジェクトを環境設定で指定した値ごとに拡大/縮小するために、正または負の"
 "数字を入力"
 
-#: ../src/actions/actions-transform.cpp:132
+#: ../src/actions/actions-transform.cpp:140
 msgid ""
 "Enter positive or negative number to grow or shrink selection relative to "
 "zoom level"
@@ -7968,25 +7998,25 @@ msgid "<b>Current layer is locked</b>. Unlock it to be able to draw on it."
 msgstr ""
 "<b>現在のレイヤーはロックされています</b>。ロックを解除すれば編集できます。"
 
-#: ../src/desktop-events.cpp:329
+#: ../src/desktop-events.cpp:328
 msgid "Move guide"
 msgstr "ガイドを移動"
 
-#: ../src/desktop-events.cpp:338 ../src/desktop-events.cpp:401
+#: ../src/desktop-events.cpp:337 ../src/desktop-events.cpp:400
 #: ../src/ui/dialog/guides.cpp:146
 msgid "Delete guide"
 msgstr "ガイドを削除"
 
-#: ../src/desktop-events.cpp:376
+#: ../src/desktop-events.cpp:375
 #, c-format
 msgid "<b>Guideline</b>: %s"
 msgstr "<b>ガイドライン</b>: %s"
 
-#: ../src/desktop.cpp:497
+#: ../src/desktop.cpp:496
 msgid "No previous transform."
 msgstr "前の変形はありません。"
 
-#: ../src/desktop.cpp:519
+#: ../src/desktop.cpp:518
 msgid "No next transform."
 msgstr "次の変形はありません。"
 
@@ -8436,11 +8466,11 @@ msgstr "文字列"
 msgid "  description: "
 msgstr "  説明: "
 
-#: ../src/extension/effect.cpp:146 ../src/extension/effect.cpp:153
+#: ../src/extension/effect.cpp:148 ../src/extension/effect.cpp:155
 msgid "(No preferences)"
 msgstr "(設定なし)"
 
-#: ../src/extension/effect.cpp:168
+#: ../src/extension/effect.cpp:170
 #, c-format
 msgid "%s..."
 msgstr "%s..."
@@ -8450,7 +8480,7 @@ msgstr "%s..."
 msgid "'%s' working, please wait..."
 msgstr "'%s' を実行中です。しばらくお待ちください..."
 
-#: ../src/extension/extension.cpp:306
+#: ../src/extension/extension.cpp:301
 msgid ""
 "  This is caused by an improper .inx file for this extension.  An improper ."
 "inx file could have been caused by a faulty installation of Inkscape."
@@ -8459,57 +8489,57 @@ msgstr ""
 "れます。不適切な .inx ファイルは Inkscape の不完全なインストールによって引き"
 "起こされた可能性があります。"
 
-#: ../src/extension/extension.cpp:310
+#: ../src/extension/extension.cpp:305
 msgid "the XML description of it got lost."
 msgstr "XML の説明が失われました。"
 
-#: ../src/extension/extension.cpp:314
+#: ../src/extension/extension.cpp:309
 msgid "no implementation was defined for the extension."
 msgstr "エクステンションの定義は実装されていません。"
 
-#: ../src/extension/extension.cpp:321
+#: ../src/extension/extension.cpp:316
 msgid "a dependency was not met."
 msgstr "(プログラムの) 依存関係が満たされませんでした。"
 
-#: ../src/extension/extension.cpp:344
+#: ../src/extension/extension.cpp:339
 msgid "Extension \"%1\" failed to load because %2"
 msgstr "エクステンション \"%1\" は次の理由により読み込みに失敗しました: %2"
 
-#: ../src/extension/extension.cpp:942
+#: ../src/extension/extension.cpp:951
 #, c-format
 msgid "Could not create extension error log file '%s'"
 msgstr "エクステンションのエラーログ '%s' を作成できませんでした"
 
-#: ../src/extension/extension.cpp:1050
+#: ../src/extension/extension.cpp:1059
 #: ../share/extensions/webslicer_create_rect.inx:6
 msgid "Name:"
 msgstr "名前:"
 
-#: ../src/extension/extension.cpp:1051
+#: ../src/extension/extension.cpp:1060
 msgid "ID:"
 msgstr "ID:"
 
-#: ../src/extension/extension.cpp:1052
+#: ../src/extension/extension.cpp:1061
 msgid "State:"
 msgstr "状態:"
 
-#: ../src/extension/extension.cpp:1052
+#: ../src/extension/extension.cpp:1061
 msgid "Loaded"
 msgstr "ロード済み"
 
-#: ../src/extension/extension.cpp:1052
+#: ../src/extension/extension.cpp:1061
 msgid "Unloaded"
 msgstr "未ロード"
 
-#: ../src/extension/extension.cpp:1052
+#: ../src/extension/extension.cpp:1061
 msgid "Deactivated"
 msgstr "非アクティベート"
 
-#: ../src/extension/implementation/script.cpp:640
+#: ../src/extension/implementation/script.cpp:631
 msgid "The output from the extension could not be parsed."
 msgstr "エクステンションからの出力をパースできませんでした。"
 
-#: ../src/extension/implementation/script.cpp:950
+#: ../src/extension/implementation/script.cpp:941
 msgid ""
 "Inkscape has received additional data from the script executed.  The script "
 "did not return an error, but this may indicate the results will not be as "
@@ -8535,8 +8565,6 @@ msgstr "適応しきい値"
 #: ../src/ui/toolbar/spray-toolbar.cpp:116
 #: ../src/ui/toolbar/tweak-toolbar.cpp:60 ../share/ui/page-properties.glade:108
 #: ../share/ui/page-properties.glade:342 ../share/extensions/foldablebox.inx:5
-#: ../share/extensions/template_desktop.inx:25
-#: ../share/extensions/template_video.inx:18
 msgid "Width:"
 msgstr "幅:"
 
@@ -8547,8 +8575,6 @@ msgstr "幅:"
 #: ../src/ui/dialog/object-attributes.cpp:66
 #: ../share/ui/page-properties.glade:121 ../share/ui/page-properties.glade:358
 #: ../share/extensions/foldablebox.inx:6
-#: ../share/extensions/template_desktop.inx:26
-#: ../share/extensions/template_video.inx:19
 msgid "Height:"
 msgstr "高さ:"
 
@@ -9152,7 +9178,7 @@ msgid "Number of inset/outset copies of the object to make"
 msgstr "作成するオブジェクトのインセット/アウトセットコピー数"
 
 #: ../src/extension/internal/bluredge.cpp:145
-#: ../share/extensions/extrude.inx:32
+#: ../share/extensions/extrude.inx:42
 #: ../share/extensions/generate_voronoi.inx:20
 #: ../share/extensions/interp.inx:17 ../share/extensions/motion.inx:12
 #: ../share/extensions/pathalongpath.inx:36
@@ -9315,7 +9341,7 @@ msgstr "ページ / 全 %i ページ中"
 #: ../src/ui/desktop/document-check.cpp:57
 #: ../src/ui/desktop/document-check.cpp:102
 #: ../src/ui/dialog/calligraphic-profile-rename.cpp:51
-#: ../src/ui/dialog/export-batch.cpp:687 ../src/ui/dialog/export-single.cpp:886
+#: ../src/ui/dialog/export-batch.cpp:685 ../src/ui/dialog/export-single.cpp:886
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:244
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:556
 #: ../src/ui/dialog/guides.cpp:182 ../src/ui/dialog/layer-properties.cpp:42
@@ -9658,6 +9684,7 @@ msgstr "比較 (暗)"
 #: ../src/extension/internal/filter/color.h:1828
 #: ../src/extension/internal/filter/paint.h:725
 #: ../src/extension/internal/filter/transparency.h:64
+#: ../src/extension/internal/template-screen.cpp:30
 #: ../src/ui/dialog/input.cpp:371 ../src/ui/widget/filter-effect-chooser.cpp:23
 msgid "Screen"
 msgstr "スクリーン"
@@ -9771,8 +9798,6 @@ msgstr "ブレンド方式:"
 #: ../src/ui/dialog/inkscape-preferences.cpp:1901
 #: ../src/ui/dialog/inkscape-preferences.cpp:1949
 #: ../src/ui/widget/filter-effect-chooser.cpp:21 ../share/ui/menus.ui:468
-#: ../share/extensions/template_generic.inx:19
-#: ../share/extensions/template_page.inx:21
 msgid "Normal"
 msgstr "標準"
 
@@ -9858,7 +9883,10 @@ msgstr "拡散光"
 
 #: ../src/extension/internal/filter/bumps.h:100
 #: ../src/extension/internal/filter/bumps.h:335
-#: ../src/ui/tools/measure-tool.cpp:1163 ../share/ui/dialog-export.glade:325
+#: ../src/extension/internal/template-screen.cpp:34
+#: ../src/extension/internal/template-social.cpp:34
+#: ../src/extension/internal/template-video.cpp:34
+#: ../src/ui/tools/measure-tool.cpp:1164 ../share/ui/dialog-export.glade:325
 #: ../share/extensions/interp_att_g.inx:9
 msgid "Height"
 msgstr "高さ"
@@ -9983,7 +10011,7 @@ msgstr "背景:"
 
 #: ../src/extension/internal/filter/bumps.h:328
 #: ../src/extension/internal/filter/transparency.h:59
-#: ../src/filter-enums.cpp:32 ../src/object/sp-image.cpp:516
+#: ../src/filter-enums.cpp:32 ../src/object/sp-image.cpp:512
 msgid "Image"
 msgstr "画像"
 
@@ -10707,8 +10735,6 @@ msgstr "検出:"
 
 #: ../src/extension/internal/filter/image.h:54
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:106
-#: ../src/ui/dialog/template-load-tab.cpp:103
-#: ../src/ui/dialog/template-load-tab.cpp:140
 #: ../share/extensions/eps_input.inx:12 ../share/extensions/ps_input.inx:11
 msgid "All"
 msgstr "すべて"
@@ -10748,7 +10774,10 @@ msgid "Open (XOR)"
 msgstr "オープン (XOR)"
 
 #: ../src/extension/internal/filter/morphology.h:67
-#: ../src/ui/tools/measure-tool.cpp:1169 ../share/ui/dialog-export.glade:338
+#: ../src/extension/internal/template-screen.cpp:33
+#: ../src/extension/internal/template-social.cpp:33
+#: ../src/extension/internal/template-video.cpp:33
+#: ../src/ui/tools/measure-tool.cpp:1170 ../share/ui/dialog-export.glade:338
 #: ../share/extensions/interp_att_g.inx:8
 msgid "Width"
 msgstr "幅"
@@ -10981,7 +11010,7 @@ msgid "Clean-up"
 msgstr "整理"
 
 #: ../src/extension/internal/filter/paint.h:244
-#: ../src/ui/tools/measure-tool.cpp:1137 ../share/extensions/measure.inx:6
+#: ../src/ui/tools/measure-tool.cpp:1138 ../share/extensions/measure.inx:6
 msgid "Length"
 msgstr "長さ"
 
@@ -11230,15 +11259,12 @@ msgid "External"
 msgstr "外部"
 
 #: ../src/extension/internal/filter/textures.h:83
-#: ../src/ui/toolbar/page-toolbar.cpp:242
+#: ../src/extension/internal/template-from-file.cpp:97
+#: ../src/ui/toolbar/page-toolbar.cpp:252
 #: ../src/ui/widget/page-properties.cpp:301 ../share/ui/dialog-export.glade:573
-#: ../share/ui/toolbar-page.ui:33 ../share/extensions/color_custom.inx:3
+#: ../share/ui/toolbar-page.ui:34 ../share/extensions/color_custom.inx:3
 #: ../share/extensions/markers_strokepaint.inx:15
 #: ../share/extensions/restack.inx:19
-#: ../share/extensions/template_desktop.inx:7
-#: ../share/extensions/template_desktop.inx:23
-#: ../share/extensions/template_video.inx:7
-#: ../share/extensions/template_video.inx:16
 msgid "Custom"
 msgstr "カスタム"
 
@@ -11851,6 +11877,115 @@ msgstr "プレーン SVG 圧縮 (*.svgz)"
 msgid "Scalable Vector Graphics format compressed with GZip"
 msgstr "GZip で圧縮されたスケーラブル ベクター グラフィックス形式"
 
+#: ../src/extension/internal/template-from-file.cpp:95
+msgid "Load from User File"
+msgstr "ユーザファイルから読み込む"
+
+#: ../src/extension/internal/template-from-file.cpp:96
+msgid "Custom list of templates for a folder"
+msgstr "フォルダのテンプレートのカスタムリスト"
+
+#: ../src/extension/internal/template-from-file.cpp:99
+#: ../src/ui/dialog/document-properties.cpp:892
+#: ../share/ui/dialog-export.glade:820 ../share/ui/dialog-export.glade:1155
+msgid "Filename"
+msgstr "ファイル名"
+
+#: ../src/extension/internal/template-other.cpp:37
+msgid "Other Sizes"
+msgstr "その他のサイズ"
+
+#: ../src/extension/internal/template-other.cpp:38
+msgid "General sizes for miscellaneous"
+msgstr "その他の一般的なサイズ"
+
+#: ../src/extension/internal/template-other.cpp:39
+#: ../src/extension/template.cpp:134 ../src/ui/dialog/dialog-data.h:39
+#: ../share/extensions/interp_att_g.inx:15
+msgid "Other"
+msgstr "その他"
+
+#: ../src/extension/internal/template-other.cpp:41
+#: ../src/extension/internal/template-paper.cpp:49
+#: ../src/extension/internal/template-screen.cpp:32
+#: ../src/extension/internal/template-social.cpp:32
+#: ../src/extension/internal/template-video.cpp:32
+#: ../src/live_effects/lpe-fillet-chamfer.cpp:40
+#: ../src/live_effects/lpe-measure-segments.cpp:70
+#: ../src/live_effects/lpe-offset.cpp:81 ../src/live_effects/lpe-ruler.cpp:40
+#: ../src/live_effects/lpe-tiling.cpp:72
+msgid "Unit"
+msgstr "単位"
+
+#: ../src/extension/internal/template-other.cpp:42
+#: ../src/ui/dialog/clonetiler.cpp:956
+msgid "Size"
+msgstr "サイズ"
+
+#: ../src/extension/internal/template-paper.cpp:45
+msgid "Paper Sizes"
+msgstr "用紙サイズ"
+
+#: ../src/extension/internal/template-paper.cpp:46
+msgid "General sizes for paper"
+msgstr "用紙の一般的なサイズ"
+
+#: ../src/extension/internal/template-paper.cpp:50
+msgid "Shortest Side"
+msgstr "最短辺"
+
+#: ../src/extension/internal/template-paper.cpp:51
+msgid "Longest Side"
+msgstr "最長辺"
+
+#: ../src/extension/internal/template-paper.cpp:52
+#: ../src/live_effects/lpe-measure-segments.cpp:71
+#: ../share/extensions/other/gcodetools/gcodetools_graffiti.inx:18
+#: ../share/extensions/other/gcodetools/gcodetools_orientation_points.inx:8
+msgid "Orientation"
+msgstr "方向"
+
+#: ../src/extension/internal/template-paper.cpp:53
+msgid "Portrait"
+msgstr "縦"
+
+#: ../src/extension/internal/template-paper.cpp:54
+msgid "Landscape"
+msgstr "横"
+
+#: ../src/extension/internal/template-screen.cpp:28
+msgid "Screen Sizes"
+msgstr "画面サイズ"
+
+#: ../src/extension/internal/template-screen.cpp:29
+msgid "General sizes for screens"
+msgstr "画面の一般的なサイズ"
+
+#: ../src/extension/internal/template-social.cpp:28
+msgid "Social Sizes"
+msgstr "ソーシャルサイズ"
+
+#: ../src/extension/internal/template-social.cpp:29
+msgid "General sizes for social media"
+msgstr "ソーシャルメディアの一般的なサイズ"
+
+#: ../src/extension/internal/template-social.cpp:30
+msgid "Social"
+msgstr "ソーシャル"
+
+#: ../src/extension/internal/template-video.cpp:28
+msgid "Video Sizes"
+msgstr "動画サイズ"
+
+#: ../src/extension/internal/template-video.cpp:29
+msgid "General sizes for videos"
+msgstr "動画の一般的なサイズ"
+
+#: ../src/extension/internal/template-video.cpp:30
+#: ../share/extensions/jessyink_video.inx:3
+msgid "Video"
+msgstr "ビデオ"
+
 #: ../src/extension/internal/vsd-input.cpp:314
 msgid "VSD Input"
 msgstr "VSD 入力"
@@ -11936,27 +12071,27 @@ msgstr "WordPerfect グラフィックス (*.wpg)"
 msgid "Vector graphics format used by Corel WordPerfect"
 msgstr "Corel WordPerfect で使用されるベクターグラフィックス形式"
 
-#: ../src/extension/prefdialog/parameter-path.cpp:191
+#: ../src/extension/prefdialog/parameter-path.cpp:195
 msgid "Select existing files"
 msgstr "既存のファイルを選択"
 
-#: ../src/extension/prefdialog/parameter-path.cpp:193
+#: ../src/extension/prefdialog/parameter-path.cpp:197
 msgid "Select existing file"
 msgstr "既存のファイルを選択"
 
-#: ../src/extension/prefdialog/parameter-path.cpp:199
+#: ../src/extension/prefdialog/parameter-path.cpp:203
 msgid "Select existing folders"
 msgstr "既存のフォルダーを選択"
 
-#: ../src/extension/prefdialog/parameter-path.cpp:201
+#: ../src/extension/prefdialog/parameter-path.cpp:205
 msgid "Select existing folder"
 msgstr "既存のフォルダーを選択"
 
-#: ../src/extension/prefdialog/parameter-path.cpp:205
+#: ../src/extension/prefdialog/parameter-path.cpp:209
 msgid "Choose file name"
 msgstr "ファイル名を選択"
 
-#: ../src/extension/prefdialog/parameter-path.cpp:208
+#: ../src/extension/prefdialog/parameter-path.cpp:212
 msgid "Choose folder name"
 msgstr "フォルダー名を選択"
 
@@ -11978,7 +12113,7 @@ msgstr "ライブプレビュー"
 msgid "Is the effect previewed live on canvas?"
 msgstr "キャンバス上でのエフェクトのライブプレビューを有効にしますか?"
 
-#: ../src/extension/system.cpp:130 ../src/extension/system.cpp:132
+#: ../src/extension/system.cpp:131 ../src/extension/system.cpp:133
 msgid ""
 "Could not detect file format. Tried to open it as an SVG anyway but this "
 "also failed."
@@ -12957,7 +13092,7 @@ msgstr "開けるファイルがありません。"
 msgid "Fixup broken links"
 msgstr "壊れたリンクの修正"
 
-#: ../src/libnrtype/FontFactory.cpp:666
+#: ../src/libnrtype/font-factory.cpp:585
 msgid "Ignoring font without family that will crash Pango"
 msgstr "Pango をクラッシュさせる、ファミリのないフォントを無視します"
 
@@ -14540,13 +14675,6 @@ msgstr "ベジエを強制"
 msgid "Unit:"
 msgstr "単位:"
 
-#: ../src/live_effects/lpe-fillet-chamfer.cpp:40
-#: ../src/live_effects/lpe-measure-segments.cpp:70
-#: ../src/live_effects/lpe-offset.cpp:81 ../src/live_effects/lpe-ruler.cpp:40
-#: ../src/live_effects/lpe-tiling.cpp:72
-msgid "Unit"
-msgstr "単位"
-
 #: ../src/live_effects/lpe-fillet-chamfer.cpp:43
 msgid "Method to calculate the fillet or chamfer"
 msgstr "フィレットまたは面取りを計算する方式"
@@ -15210,12 +15338,6 @@ msgstr "パラレル"
 #: ../src/live_effects/lpe-offset.cpp:81
 msgid "Unit of measurement"
 msgstr "寸法の単位"
-
-#: ../src/live_effects/lpe-measure-segments.cpp:71
-#: ../share/extensions/other/gcodetools/gcodetools_graffiti.inx:18
-#: ../share/extensions/other/gcodetools/gcodetools_orientation_points.inx:8
-msgid "Orientation"
-msgstr "方向"
 
 #: ../src/live_effects/lpe-measure-segments.cpp:71
 msgid "Orientation of the line and labels"
@@ -17704,25 +17826,25 @@ msgstr "%s"
 msgid "without URI"
 msgstr "URI なし"
 
-#: ../src/object/sp-ellipse.cpp:417 ../src/ui/toolbar/arc-toolbar.cpp:165
+#: ../src/object/sp-ellipse.cpp:420 ../src/ui/toolbar/arc-toolbar.cpp:165
 msgid "Slice"
 msgstr "スライス"
 
-#: ../src/object/sp-ellipse.cpp:420 ../src/ui/toolbar/arc-toolbar.cpp:175
+#: ../src/object/sp-ellipse.cpp:423 ../src/ui/toolbar/arc-toolbar.cpp:175
 msgid "Chord"
 msgstr "弦"
 
-#: ../src/object/sp-ellipse.cpp:423
+#: ../src/object/sp-ellipse.cpp:426
 msgid "Arc"
 msgstr "弧"
 
-#: ../src/object/sp-ellipse.cpp:428
+#: ../src/object/sp-ellipse.cpp:431
 #: ../src/ui/dialog/inkscape-preferences.cpp:849
 #: ../src/ui/toolbar/pencil-toolbar.cpp:410 ../share/extensions/frame.inx:7
 msgid "Ellipse"
 msgstr "円/弧"
 
-#: ../src/object/sp-ellipse.cpp:430
+#: ../src/object/sp-ellipse.cpp:433
 #: ../share/extensions/render_barcode_qrcode.inx:81
 msgid "Circle"
 msgstr "円"
@@ -17740,20 +17862,20 @@ msgstr "流し込み領域"
 msgid "Flow Excluded Region"
 msgstr "流し込み除外領域"
 
-#: ../src/object/sp-flowtext.cpp:282
+#: ../src/object/sp-flowtext.cpp:283
 msgid "Flowed Text"
 msgstr "流し込みテキスト"
 
-#: ../src/object/sp-flowtext.cpp:284
+#: ../src/object/sp-flowtext.cpp:285
 msgid "Linked Flowed Text"
 msgstr "リンク付き流し込みテキスト"
 
-#: ../src/object/sp-flowtext.cpp:290 ../src/object/sp-text.cpp:357
+#: ../src/object/sp-flowtext.cpp:291 ../src/object/sp-text.cpp:357
 #: ../src/ui/tools/text-tool.cpp:1666
 msgid " [truncated]"
 msgstr " [溢れあり]"
 
-#: ../src/object/sp-flowtext.cpp:292
+#: ../src/object/sp-flowtext.cpp:293
 #, c-format
 msgid "(%d character%s)"
 msgid_plural "(%d characters%s)"
@@ -17786,21 +17908,21 @@ msgstr "水平、%s"
 msgid "at %d degrees, through (%s,%s)"
 msgstr "角度 %d°、座標 (%s,%s)"
 
-#: ../src/object/sp-image.cpp:524
+#: ../src/object/sp-image.cpp:520
 msgid "embedded"
 msgstr "埋め込み"
 
-#: ../src/object/sp-image.cpp:532
+#: ../src/object/sp-image.cpp:528
 #, c-format
 msgid "[bad reference]: %s"
 msgstr "[不正な参照]: %s"
 
-#: ../src/object/sp-image.cpp:533 ../src/object/sp-image.cpp:551
+#: ../src/object/sp-image.cpp:529 ../src/object/sp-image.cpp:546
 #, c-format
 msgid "%d &#215; %d: %s"
 msgstr "%d &#215; %d: %s"
 
-#: ../src/object/sp-image.cpp:557
+#: ../src/object/sp-image.cpp:552
 msgid "{Broken Image}"
 msgstr "{壊れた画像}"
 
@@ -17901,7 +18023,7 @@ msgstr "インセット"
 msgid "Page %d"
 msgstr "%d ページ"
 
-#: ../src/object/sp-path.cpp:58 ../src/ui/dialog/template-widget.cpp:144
+#: ../src/object/sp-path.cpp:58
 msgid "Path"
 msgstr "パス"
 
@@ -18590,148 +18712,148 @@ msgstr ""
 msgid "Remove live path effect"
 msgstr "ライブパスエフェクトの除去"
 
-#: ../src/selection-chemistry.cpp:1385
+#: ../src/selection-chemistry.cpp:1384
 msgid "Select <b>object(s)</b> to remove filters from."
 msgstr "フィルターから除去する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:1400
+#: ../src/selection-chemistry.cpp:1404
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1633
 msgid "Remove filter"
 msgstr "フィルを削除"
 
-#: ../src/selection-chemistry.cpp:1409
+#: ../src/selection-chemistry.cpp:1413
 msgid "Paste size"
 msgstr "サイズを貼り付け"
 
-#: ../src/selection-chemistry.cpp:1417
+#: ../src/selection-chemistry.cpp:1421
 msgid "Paste size separately"
 msgstr "サイズを個別に貼り付け"
 
-#: ../src/selection-chemistry.cpp:1446
+#: ../src/selection-chemistry.cpp:1451
 msgid "Select <b>object(s)</b> to move to the layer above."
 msgstr "前面レイヤーに移動する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:1471
+#: ../src/selection-chemistry.cpp:1476
 msgid "Raise to next layer"
 msgstr "前面のレイヤーに移動"
 
-#: ../src/selection-chemistry.cpp:1478
+#: ../src/selection-chemistry.cpp:1483
 msgid "No more layers above."
 msgstr "これより前面のレイヤーはありません。"
 
-#: ../src/selection-chemistry.cpp:1491
+#: ../src/selection-chemistry.cpp:1497
 msgid "Select <b>object(s)</b> to move to the layer below."
 msgstr "背面レイヤーに移動する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:1516
+#: ../src/selection-chemistry.cpp:1522
 msgid "Lower to previous layer"
 msgstr "背面のレイヤーに移動"
 
-#: ../src/selection-chemistry.cpp:1523
+#: ../src/selection-chemistry.cpp:1529
 msgid "No more layers below."
 msgstr "これより背面のレイヤーはありません。"
 
-#: ../src/selection-chemistry.cpp:1563
+#: ../src/selection-chemistry.cpp:1569
 msgid "Select <b>object(s)</b> to move."
 msgstr "移動する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:1691 ../src/seltrans.cpp:384
+#: ../src/selection-chemistry.cpp:1714 ../src/seltrans.cpp:384
 msgid "Cannot transform an embedded SVG."
 msgstr "埋め込み SVG は変形できません。"
 
-#: ../src/selection-chemistry.cpp:1842
+#: ../src/selection-chemistry.cpp:1865
 msgid "Remove transform"
 msgstr "変形を解除"
 
-#: ../src/selection-chemistry.cpp:1943 ../share/ui/menus.ui:898
+#: ../src/selection-chemistry.cpp:1966 ../share/ui/menus.ui:898
 msgid "Rotate 90° CCW"
 msgstr "90°回転、反時計回り"
 
-#: ../src/selection-chemistry.cpp:1943 ../share/ui/menus.ui:892
+#: ../src/selection-chemistry.cpp:1966 ../share/ui/menus.ui:892
 msgid "Rotate 90° CW"
 msgstr "90°回転、時計回り"
 
-#: ../src/selection-chemistry.cpp:2321
+#: ../src/selection-chemistry.cpp:2344
 msgid "Rotate by pixels"
 msgstr "ピクセル数で回転"
 
-#: ../src/selection-chemistry.cpp:2348
+#: ../src/selection-chemistry.cpp:2371
 msgid "Grow"
 msgstr "大きく"
 
-#: ../src/selection-chemistry.cpp:2348
+#: ../src/selection-chemistry.cpp:2371
 msgid "Shrink"
 msgstr "小さく"
 
-#: ../src/selection-chemistry.cpp:2372
+#: ../src/selection-chemistry.cpp:2395
 msgid "Scale by whole factor"
 msgstr "すべての係数での拡大縮小"
 
-#: ../src/selection-chemistry.cpp:2385
+#: ../src/selection-chemistry.cpp:2408
 msgid "Move vertically"
 msgstr "垂直方向に移動"
 
-#: ../src/selection-chemistry.cpp:2387
+#: ../src/selection-chemistry.cpp:2410
 msgid "Move horizontally"
 msgstr "水平方向に移動"
 
-#: ../src/selection-chemistry.cpp:2389 ../src/selection-chemistry.cpp:2412
+#: ../src/selection-chemistry.cpp:2412 ../src/selection-chemistry.cpp:2435
 #: ../src/seltrans.cpp:516 ../src/ui/dialog/transformation.cpp:750
 msgid "Move"
 msgstr "移動"
 
-#: ../src/selection-chemistry.cpp:2408
+#: ../src/selection-chemistry.cpp:2431
 msgid "Move vertically by pixels"
 msgstr "ピクセル単位に垂直移動"
 
-#: ../src/selection-chemistry.cpp:2410
+#: ../src/selection-chemistry.cpp:2433
 msgid "Move horizontally by pixels"
 msgstr "ピクセル単位に水平移動"
 
-#: ../src/selection-chemistry.cpp:2616
+#: ../src/selection-chemistry.cpp:2639
 msgid "The selection has no applied path effect."
 msgstr "選択オブジェクトに適用されているパスエフェクトはありません。"
 
-#: ../src/selection-chemistry.cpp:2674 ../src/ui/dialog/clonetiler.cpp:2081
+#: ../src/selection-chemistry.cpp:2697 ../src/ui/dialog/clonetiler.cpp:2081
 msgid "Select an <b>object</b> to clone."
 msgstr "クローンを作成する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:2710
+#: ../src/selection-chemistry.cpp:2733
 msgctxt "Action"
 msgid "Clone"
 msgstr "クローン"
 
-#: ../src/selection-chemistry.cpp:2719
+#: ../src/selection-chemistry.cpp:2742
 msgid "Select <b>clones</b> to relink."
 msgstr "再リンクする<b>クローン</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:2727
+#: ../src/selection-chemistry.cpp:2750
 msgid "Copy an <b>object</b> to clipboard to relink clones to."
 msgstr ""
 "クローンを再リンクする<b>オブジェクト</b>をクリップボードにコピーしてくださ"
 "い。"
 
-#: ../src/selection-chemistry.cpp:2747
+#: ../src/selection-chemistry.cpp:2770
 msgid "<b>No clones to relink</b> in the selection."
 msgstr "選択オブジェクトに<b>再リンクするクローンがありません</b>。"
 
-#: ../src/selection-chemistry.cpp:2749
+#: ../src/selection-chemistry.cpp:2772
 msgid "Relink clone"
 msgstr "クローンを再リンク"
 
-#: ../src/selection-chemistry.cpp:2758 ../src/selection-chemistry.cpp:2847
+#: ../src/selection-chemistry.cpp:2781 ../src/selection-chemistry.cpp:2870
 msgid "Select <b>clones</b> to unlink."
 msgstr "リンクを解除する<b>クローン</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:2835 ../src/selection-chemistry.cpp:2873
+#: ../src/selection-chemistry.cpp:2858 ../src/selection-chemistry.cpp:2896
 msgid "<b>No clones to unlink</b> in the selection."
 msgstr "選択オブジェクトに<b>リンクを解除するクローンがありません</b>。"
 
-#: ../src/selection-chemistry.cpp:2839
+#: ../src/selection-chemistry.cpp:2862
 msgid "Unlink clone"
 msgstr "クローンのリンク解除"
 
-#: ../src/selection-chemistry.cpp:2854
+#: ../src/selection-chemistry.cpp:2877
 msgid ""
 "Unable to unlink. Check the setting for 'Unlinking Clones' in your "
 "preferences."
@@ -18739,11 +18861,11 @@ msgstr ""
 "リンク解除できません。環境設定の中にある 'クローンのリンク解除' の設定を確認"
 "してください。"
 
-#: ../src/selection-chemistry.cpp:2876
+#: ../src/selection-chemistry.cpp:2899
 msgid "Unlink clone recursively"
 msgstr "クローンを再帰的にリンク解除"
 
-#: ../src/selection-chemistry.cpp:2920
+#: ../src/selection-chemistry.cpp:2943
 msgid ""
 "Select a <b>clone</b> to go to its original. Select a <b>linked offset</b> "
 "to go to its source. Select a <b>text on path</b> to go to the path. Select "
@@ -18753,7 +18875,7 @@ msgstr ""
 "b>を選択するとそのソースを選択します。<b>パス上テキスト</b>を選択するとそのパ"
 "スを選択します。<b>流し込みテキスト</b>を選択するとそのフレームを選択します。"
 
-#: ../src/selection-chemistry.cpp:2961
+#: ../src/selection-chemistry.cpp:2984
 msgid ""
 "<b>Cannot find</b> the object to select (orphaned clone, offset, textpath, "
 "flowed text?)"
@@ -18761,7 +18883,7 @@ msgstr ""
 "選択すべきオブジェクトが<b>見つかりませんでした</b> (オリジナルのないクロー"
 "ン、オフセット、パス上テキスト、流し込みテキストではありませんか?)"
 
-#: ../src/selection-chemistry.cpp:2968
+#: ../src/selection-chemistry.cpp:2991
 msgid ""
 "The object you're trying to select is <b>not visible</b> (it is in &lt;"
 "defs&gt;)"
@@ -18769,121 +18891,117 @@ msgstr ""
 "選択しようとしているオリジナルは<b>可視ではありません</b> (&lt;defs&gt; にあ"
 "ります)"
 
-#: ../src/selection-chemistry.cpp:3066
+#: ../src/selection-chemistry.cpp:3089
 msgid "Fill between many"
 msgstr "複数の間を塗りつぶす"
 
-#: ../src/selection-chemistry.cpp:3068
+#: ../src/selection-chemistry.cpp:3091
 msgid "Clone original"
 msgstr "クローンオリジナル"
 
-#: ../src/selection-chemistry.cpp:3073
+#: ../src/selection-chemistry.cpp:3096
 msgid "Select path(s) to fill."
 msgstr "塗るパスを選択"
 
-#: ../src/selection-chemistry.cpp:3088
+#: ../src/selection-chemistry.cpp:3111
 msgid "Select <b>object(s)</b> to convert to marker."
 msgstr "マーカーに変換する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:3151
+#: ../src/selection-chemistry.cpp:3174
 msgid "Objects to marker"
 msgstr "オブジェクトをマーカーに"
 
-#: ../src/selection-chemistry.cpp:3174
+#: ../src/selection-chemistry.cpp:3197
 msgid "Select <b>object(s)</b> to convert to guides."
 msgstr "ガイドに変換する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:3195
+#: ../src/selection-chemistry.cpp:3218
 msgid "Objects to guides"
 msgstr "オブジェクトをガイドに"
 
-#: ../src/selection-chemistry.cpp:3226
+#: ../src/selection-chemistry.cpp:3249
 msgid "Select <b>objects</b> to convert to symbol."
 msgstr "シンボルに変換する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:3361
+#: ../src/selection-chemistry.cpp:3384
 msgid "Group to symbol"
 msgstr "グループをシンボルに"
 
-#: ../src/selection-chemistry.cpp:3378
+#: ../src/selection-chemistry.cpp:3401
 msgid "unSymbol all selected symbols"
 msgstr "選択したすべてのシンボルを解除"
 
-#: ../src/selection-chemistry.cpp:3392
+#: ../src/selection-chemistry.cpp:3415
 msgid "Select <b>object(s)</b> to convert to pattern."
 msgstr "パターンに変換する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:3478
+#: ../src/selection-chemistry.cpp:3501
 msgid "Objects to pattern"
 msgstr "オブジェクトをパターンに"
 
-#: ../src/selection-chemistry.cpp:3490
+#: ../src/selection-chemistry.cpp:3513
 msgid "Select an <b>object with pattern fill</b> to extract objects from."
 msgstr ""
 "オブジェクトを抜き出す元となる<b>パターンフィルを有するオブジェクト</b>を選択"
 "してください。"
 
-#: ../src/selection-chemistry.cpp:3550
+#: ../src/selection-chemistry.cpp:3573
 msgid "<b>No pattern fills</b> in the selection."
 msgstr "選択オブジェクトは<b>パターンフィルを有していません</b>。"
 
-#: ../src/selection-chemistry.cpp:3552
+#: ../src/selection-chemistry.cpp:3575
 msgid "Pattern to objects"
 msgstr "パターンをオブジェクトに"
 
-#: ../src/selection-chemistry.cpp:3566
+#: ../src/selection-chemistry.cpp:3589
 msgid "Select <b>object(s)</b> to make a bitmap copy."
 msgstr "ビットマップコピーを作成する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:3571
+#: ../src/selection-chemistry.cpp:3594
 msgid "Rendering bitmap..."
 msgstr "ビットマップをレンダリングしています..."
 
-#: ../src/selection-chemistry.cpp:3658
+#: ../src/selection-chemistry.cpp:3681
 msgid "Create bitmap"
 msgstr "ビットマップを作成"
 
-#: ../src/selection-chemistry.cpp:3679 ../src/selection-chemistry.cpp:3786
+#: ../src/selection-chemistry.cpp:3702 ../src/selection-chemistry.cpp:3809
 msgid "Select <b>object(s)</b> to create clippath or mask from."
 msgstr ""
 "クリップパスまたはマスクを作成する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:3762
+#: ../src/selection-chemistry.cpp:3785
 msgid "Create Clip Group"
 msgstr "クリップグループを作成"
 
-#: ../src/selection-chemistry.cpp:3790
+#: ../src/selection-chemistry.cpp:3813
 msgid "Select mask object and <b>object(s)</b> to apply clippath or mask to."
 msgstr ""
 "マスクオブジェクトと、クリップパスまたはマスクを適用する<b>オブジェクト</b>を"
 "選択してください。"
 
-#: ../src/selection-chemistry.cpp:3957
+#: ../src/selection-chemistry.cpp:3980
 msgid "Set clipping path"
 msgstr "クリッピングパスを設定"
 
-#: ../src/selection-chemistry.cpp:3959
+#: ../src/selection-chemistry.cpp:3982
 msgid "Set mask"
 msgstr "マスクを設定"
 
-#: ../src/selection-chemistry.cpp:3971
+#: ../src/selection-chemistry.cpp:3994
 msgid "Select <b>object(s)</b> to remove clippath or mask from."
 msgstr ""
 "クリップパスまたはマスクを解除する<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:4108
+#: ../src/selection-chemistry.cpp:4131
 msgid "Select <b>object(s)</b> to fit canvas to."
 msgstr "キャンバスサイズを合わせる<b>オブジェクト</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:4191
-msgid "Swap fill and stroke of an object"
-msgstr "オブジェクトのフィルとストロークを交換"
-
-#: ../src/selection-chemistry.cpp:4210
+#: ../src/selection-chemistry.cpp:4234
 msgid "Select <b>path(s)</b> to create fill between."
 msgstr "間にフィルを作成する<b>パス</b>を選択してください。"
 
-#: ../src/selection-chemistry.cpp:4264
+#: ../src/selection-chemistry.cpp:4288
 msgid "Create linked fill object between paths"
 msgstr "リンクした塗りつぶしオブジェクトをパスの間に作成"
 
@@ -19209,23 +19327,23 @@ msgstr "トレース: アクティブデスクトップがありません"
 msgid "Invalid SIOX result"
 msgstr "SIOX の結果が無効です"
 
-#: ../src/trace/trace.cpp:402
+#: ../src/trace/trace.cpp:400
 msgid "Trace: No active document"
 msgstr "トレース: アクティブなドキュメントがありません"
 
-#: ../src/trace/trace.cpp:434
+#: ../src/trace/trace.cpp:432
 msgid "Trace: Image has no bitmap data"
 msgstr "トレース: 画像はビットマップデータを持っていません"
 
-#: ../src/trace/trace.cpp:441
+#: ../src/trace/trace.cpp:439
 msgid "Trace: Starting trace..."
 msgstr "トレース: トレースを開始しています..."
 
-#: ../src/trace/trace.cpp:531
+#: ../src/trace/trace.cpp:529
 msgid "Trace bitmap"
 msgstr "ビットマップをトレース"
 
-#: ../src/trace/trace.cpp:535
+#: ../src/trace/trace.cpp:533
 #, c-format
 msgid "Trace: Done. %ld nodes created"
 msgstr "トレース: 完了しました。 %ld 個のノードが作成されました"
@@ -19556,6 +19674,10 @@ msgstr ""
 #: ../src/ui/desktop/document-check.cpp:103
 msgid "_Save as Inkscape SVG"
 msgstr "Inkscape SVG として保存(_S)"
+
+#: ../src/ui/desktop/menubar.cpp:185
+msgid "No items found"
+msgstr "項目が見つかりません"
 
 #: ../src/ui/dialog/attrdialog.cpp:106 ../src/ui/tools/text-tool.cpp:1894
 msgid "Type text"
@@ -20164,10 +20286,6 @@ msgstr ""
 "その位置から採取した値を基に各クローンの存在確率が決定され、それに従って各ク"
 "ローンを作成します"
 
-#: ../src/ui/dialog/clonetiler.cpp:956
-msgid "Size"
-msgstr "サイズ"
-
 #: ../src/ui/dialog/clonetiler.cpp:959
 msgid "Each clone's size is determined by the picked value in that point"
 msgstr "その位置から採取した値を基に各クローンのサイズが決定されます"
@@ -20383,7 +20501,7 @@ msgstr "変換"
 
 #: ../src/ui/dialog/command-palette.cpp:265
 #: ../src/ui/widget/preferences-widget.cpp:980
-#: ../share/ui/inkscape-start.glade:2177
+#: ../share/ui/inkscape-start.glade:1156
 msgid "Open"
 msgstr "開く"
 
@@ -20423,17 +20541,133 @@ msgstr "ログメッセージを解放"
 msgid "Close Tab"
 msgstr "タブを閉じる"
 
-#: ../src/ui/dialog/dialog-data.h:45
+#: ../src/ui/dialog/dialog-data.cpp:31
+msgid "_Align and Distribute"
+msgstr "整列と配置(_A)"
+
+#: ../src/ui/dialog/dialog-data.cpp:32
+msgid "Create Tiled Clones"
+msgstr "タイルクローンを作成"
+
+#: ../src/ui/dialog/dialog-data.cpp:33
+msgid "_Document Properties"
+msgstr "ドキュメントのプロパティ(_D)"
+
+#: ../src/ui/dialog/dialog-data.cpp:34
+msgid "_Export"
+msgstr "エクスポート(_E)"
+
+#: ../src/ui/dialog/dialog-data.cpp:35
+msgid "_Fill and Stroke"
+msgstr "フィル/ストローク(_F)"
+
+#: ../src/ui/dialog/dialog-data.cpp:36
+msgid "Filter _Editor"
+msgstr "フィルターエディター(_E)"
+
+#: ../src/ui/dialog/dialog-data.cpp:37
+msgid "_Find/Replace"
+msgstr "検索/置換(_F)"
+
+#: ../src/ui/dialog/dialog-data.cpp:38
+msgid "_Unicode Characters"
+msgstr "Unicode 文字(_U)"
+
+#: ../src/ui/dialog/dialog-data.cpp:39 ../share/ui/menus.ui:616
+msgid "Icon Preview"
+msgstr "アイコンプレビュー"
+
+#: ../src/ui/dialog/dialog-data.cpp:40
+msgid "_Input Devices"
+msgstr "入力デバイス(_I)"
+
+#: ../src/ui/dialog/dialog-data.cpp:41
+msgid "Path E_ffects"
+msgstr "パスエフェクト(_F)"
+
+#: ../src/ui/dialog/dialog-data.cpp:42 ../share/ui/menus.ui:1277
+msgid "About _Memory"
+msgstr "メモリ情報(_M)"
+
+#: ../src/ui/dialog/dialog-data.cpp:43
+msgid "_Messages"
+msgstr "デバッグメッセージ(_M)"
+
+#: ../src/ui/dialog/dialog-data.cpp:44
+msgid "_Object attributes"
+msgstr "オブジェクトの属性(_O)"
+
+#: ../src/ui/dialog/dialog-data.cpp:45
+msgid "_Object Properties"
+msgstr "オブジェクトのプロパティ(_O)"
+
+#: ../src/ui/dialog/dialog-data.cpp:46
+msgid "Layers and Object_s"
+msgstr "レイヤーとオブジェクト(_S)"
+
+#: ../src/ui/dialog/dialog-data.cpp:47
+msgid "_Paint Servers"
+msgstr "ペイントサーバー(_P)"
+
+#: ../src/ui/dialog/dialog-data.cpp:48 ../share/ui/menus.ui:346
+msgid "P_references"
+msgstr "環境設定(_P)"
+
+#: ../src/ui/dialog/dialog-data.cpp:49
+msgid "_Selectors and CSS"
+msgstr "セレクターとCSS(_S)"
+
+#: ../src/ui/dialog/dialog-data.cpp:50
+msgid "SVG Font Editor"
+msgstr "SVG フォントエディター"
+
+#: ../src/ui/dialog/dialog-data.cpp:51
+msgid "S_watches"
+msgstr "スウォッチ(_W)"
+
+#: ../src/ui/dialog/dialog-data.cpp:52
+msgid "S_ymbols"
+msgstr "シンボル(_Y)"
+
+#: ../src/ui/dialog/dialog-data.cpp:53
+msgid "_Text and Font"
+msgstr "テキストとフォント(_T)"
+
+#: ../src/ui/dialog/dialog-data.cpp:54
+msgid "_Trace Bitmap"
+msgstr "ビットマップのトレース(_T)"
+
+#: ../src/ui/dialog/dialog-data.cpp:55
+msgid "Transfor_m"
+msgstr "変形(_M)"
+
+#: ../src/ui/dialog/dialog-data.cpp:56
+msgid "Undo _History"
+msgstr "作業履歴(_H)"
+
+#: ../src/ui/dialog/dialog-data.cpp:57
+msgid "_XML Editor"
+msgstr "XML エディター(_X)"
+
+#: ../src/ui/dialog/dialog-data.cpp:59
+msgid "Check Spellin_g"
+msgstr "スペルチェック(_G)"
+
+#: ../src/ui/dialog/dialog-data.cpp:62
+msgid "Prototype"
+msgstr "プロトタイプ"
+
+#: ../src/ui/dialog/dialog-data.h:35
 #: ../share/extensions/image_attributes.inx:10
 msgid "Basic"
 msgstr "基本"
 
-#: ../src/ui/dialog/dialog-data.h:46
+#: ../src/ui/dialog/dialog-data.h:36
 #: ../src/ui/dialog/inkscape-preferences.cpp:1879
 msgid "Advanced"
 msgstr "上級者用"
 
-#: ../src/ui/dialog/dialog-data.h:47
+#: ../src/ui/dialog/dialog-data.h:37
 #: ../share/extensions/jessyink_autotexts.inx:6
 #: ../share/extensions/jessyink_effects.inx:6
 #: ../share/extensions/jessyink_export.inx:7
@@ -20443,129 +20677,9 @@ msgstr "上級者用"
 msgid "Settings"
 msgstr "設定"
 
-#: ../src/ui/dialog/dialog-data.h:48
+#: ../src/ui/dialog/dialog-data.h:38
 msgid "Diagnostic"
 msgstr "診断"
-
-#: ../src/ui/dialog/dialog-data.h:49 ../share/extensions/interp_att_g.inx:15
-msgid "Other"
-msgstr "その他"
-
-#: ../src/ui/dialog/dialog-data.h:60
-msgid "_Align and Distribute"
-msgstr "整列と配置(_A)"
-
-#: ../src/ui/dialog/dialog-data.h:61
-msgid "Create Tiled Clones"
-msgstr "タイルクローンを作成"
-
-#: ../src/ui/dialog/dialog-data.h:62
-msgid "_Document Properties"
-msgstr "ドキュメントのプロパティ(_D)"
-
-#: ../src/ui/dialog/dialog-data.h:63
-msgid "_Export"
-msgstr "エクスポート(_E)"
-
-#: ../src/ui/dialog/dialog-data.h:64
-msgid "_Fill and Stroke"
-msgstr "フィル/ストローク(_F)"
-
-#: ../src/ui/dialog/dialog-data.h:65
-msgid "Filter _Editor"
-msgstr "フィルターエディター(_E)"
-
-#: ../src/ui/dialog/dialog-data.h:66
-msgid "_Find/Replace"
-msgstr "検索/置換(_F)"
-
-#: ../src/ui/dialog/dialog-data.h:67
-msgid "_Unicode Characters"
-msgstr "Unicode 文字(_U)"
-
-#: ../src/ui/dialog/dialog-data.h:68 ../share/ui/menus.ui:616
-msgid "Icon Preview"
-msgstr "アイコンプレビュー"
-
-#: ../src/ui/dialog/dialog-data.h:69
-msgid "_Input Devices"
-msgstr "入力デバイス(_I)"
-
-#: ../src/ui/dialog/dialog-data.h:70
-msgid "Path E_ffects"
-msgstr "パスエフェクト(_F)"
-
-#: ../src/ui/dialog/dialog-data.h:71 ../share/ui/menus.ui:1277
-msgid "About _Memory"
-msgstr "メモリ情報(_M)"
-
-#: ../src/ui/dialog/dialog-data.h:72
-msgid "_Messages"
-msgstr "デバッグメッセージ(_M)"
-
-#: ../src/ui/dialog/dialog-data.h:73
-msgid "_Object attributes"
-msgstr "オブジェクトの属性(_O)"
-
-#: ../src/ui/dialog/dialog-data.h:74
-msgid "_Object Properties"
-msgstr "オブジェクトのプロパティ(_O)"
-
-#: ../src/ui/dialog/dialog-data.h:75
-msgid "Layers and Object_s"
-msgstr "レイヤーとオブジェクト(_S)"
-
-#: ../src/ui/dialog/dialog-data.h:76
-msgid "_Paint Servers"
-msgstr "ペイントサーバー(_P)"
-
-#: ../src/ui/dialog/dialog-data.h:77 ../share/ui/menus.ui:346
-msgid "P_references"
-msgstr "環境設定(_P)"
-
-#: ../src/ui/dialog/dialog-data.h:78
-msgid "_Selectors and CSS"
-msgstr "セレクターとCSS(_S)"
-
-#: ../src/ui/dialog/dialog-data.h:79
-msgid "SVG Font Editor"
-msgstr "SVG フォントエディター"
-
-#: ../src/ui/dialog/dialog-data.h:80
-msgid "S_watches"
-msgstr "スウォッチ(_W)"
-
-#: ../src/ui/dialog/dialog-data.h:81
-msgid "S_ymbols"
-msgstr "シンボル(_Y)"
-
-#: ../src/ui/dialog/dialog-data.h:82
-msgid "_Text and Font"
-msgstr "テキストとフォント(_T)"
-
-#: ../src/ui/dialog/dialog-data.h:83
-msgid "_Trace Bitmap"
-msgstr "ビットマップのトレース(_T)"
-
-#: ../src/ui/dialog/dialog-data.h:84
-msgid "Transfor_m"
-msgstr "変形(_M)"
-
-#: ../src/ui/dialog/dialog-data.h:85
-msgid "Undo _History"
-msgstr "作業履歴(_H)"
-
-#: ../src/ui/dialog/dialog-data.h:86
-msgid "_XML Editor"
-msgstr "XML エディター(_X)"
-
-#: ../src/ui/dialog/dialog-data.h:88
-msgid "Check Spellin_g"
-msgstr "スペルチェック(_G)"
-
-#: ../src/ui/dialog/dialog-data.h:91
-msgid "Prototype"
-msgstr "プロトタイプ"
 
 #: ../src/ui/dialog/dialog-multipaned.cpp:515
 msgid "You can drop dockable dialogs here."
@@ -20776,11 +20890,6 @@ msgstr "現在のファイル名を追加するかファイルを参照します
 msgid "Remove"
 msgstr "削除"
 
-#: ../src/ui/dialog/document-properties.cpp:892
-#: ../share/ui/dialog-export.glade:820 ../share/ui/dialog-export.glade:1155
-msgid "Filename"
-msgstr "ファイル名"
-
 #: ../src/ui/dialog/document-properties.cpp:900
 msgid "<b>Embedded script files:</b>"
 msgstr "<b>埋め込みスクリプトファイル:</b>"
@@ -20857,41 +20966,41 @@ msgstr "グリッドの削除"
 msgid "Color used to fill background"
 msgstr "背景を塗りつぶすのに使用する色"
 
-#: ../src/ui/dialog/export-batch.cpp:322
+#: ../src/ui/dialog/export-batch.cpp:320
 #, c-format
 msgid "%d Item"
 msgid_plural "%d Items"
 msgstr[0] "%d 項目"
 
-#: ../src/ui/dialog/export-batch.cpp:332
+#: ../src/ui/dialog/export-batch.cpp:330
 #, c-format
 msgid "%d Layer"
 msgid_plural "%d Layers"
 msgstr[0] "%d レイヤー"
 
-#: ../src/ui/dialog/export-batch.cpp:339
+#: ../src/ui/dialog/export-batch.cpp:337
 #, c-format
 msgid "%d Page"
 msgid_plural "%d Pages"
 msgstr[0] "%d ページ"
 
-#: ../src/ui/dialog/export-batch.cpp:477
+#: ../src/ui/dialog/export-batch.cpp:475
 msgid "No items selected."
 msgstr "アイテムが選択されていません。"
 
-#: ../src/ui/dialog/export-batch.cpp:563 ../src/ui/dialog/export-batch.cpp:565
+#: ../src/ui/dialog/export-batch.cpp:561 ../src/ui/dialog/export-batch.cpp:563
 msgid "Exporting %1 files"
 msgstr "%1 個のファイルをエクスポートしています"
 
-#: ../src/ui/dialog/export-batch.cpp:580 ../src/ui/dialog/export-single.cpp:576
+#: ../src/ui/dialog/export-batch.cpp:578 ../src/ui/dialog/export-single.cpp:576
 msgid "Exporting %1"
 msgstr "%1 個をエクスポート"
 
-#: ../src/ui/dialog/export-batch.cpp:608 ../src/ui/dialog/export-single.cpp:649
+#: ../src/ui/dialog/export-batch.cpp:606 ../src/ui/dialog/export-single.cpp:649
 msgid "Select a filename for exporting"
 msgstr "エクスポートするファイル名"
 
-#: ../src/ui/dialog/export-batch.cpp:678 ../src/ui/dialog/export-single.cpp:877
+#: ../src/ui/dialog/export-batch.cpp:676 ../src/ui/dialog/export-single.cpp:877
 msgid "Export in progress"
 msgstr "エクスポートの進捗"
 
@@ -22074,967 +22183,967 @@ msgstr "次回からこの警告を表示しない"
 msgid "Font '%1' substituted with '%2'"
 msgstr "フォント '%1' を '%2' に置き換えました。"
 
-#: ../src/ui/dialog/glyphs.cpp:56 ../src/ui/dialog/glyphs.cpp:225
+#: ../src/ui/dialog/glyphs.cpp:57 ../src/ui/dialog/glyphs.cpp:226
 msgid "all"
 msgstr "すべて"
 
-#: ../src/ui/dialog/glyphs.cpp:57
+#: ../src/ui/dialog/glyphs.cpp:58
 msgid "common"
 msgstr "共通"
 
-#: ../src/ui/dialog/glyphs.cpp:58
+#: ../src/ui/dialog/glyphs.cpp:59
 msgid "inherited"
 msgstr "継承"
 
-#: ../src/ui/dialog/glyphs.cpp:59 ../src/ui/dialog/glyphs.cpp:242
+#: ../src/ui/dialog/glyphs.cpp:60 ../src/ui/dialog/glyphs.cpp:243
 msgid "Arabic"
 msgstr "アラビア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:60 ../src/ui/dialog/glyphs.cpp:240
+#: ../src/ui/dialog/glyphs.cpp:61 ../src/ui/dialog/glyphs.cpp:241
 msgid "Armenian"
 msgstr "アルメニア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:61 ../src/ui/dialog/glyphs.cpp:249
+#: ../src/ui/dialog/glyphs.cpp:62 ../src/ui/dialog/glyphs.cpp:250
 msgid "Bengali"
 msgstr "ベンガル文字"
 
-#: ../src/ui/dialog/glyphs.cpp:62 ../src/ui/dialog/glyphs.cpp:331
+#: ../src/ui/dialog/glyphs.cpp:63 ../src/ui/dialog/glyphs.cpp:332
 msgid "Bopomofo"
 msgstr "注音字母"
 
-#: ../src/ui/dialog/glyphs.cpp:63 ../src/ui/dialog/glyphs.cpp:266
+#: ../src/ui/dialog/glyphs.cpp:64 ../src/ui/dialog/glyphs.cpp:267
 msgid "Cherokee"
 msgstr "チェロキー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:64 ../src/ui/dialog/glyphs.cpp:319
+#: ../src/ui/dialog/glyphs.cpp:65 ../src/ui/dialog/glyphs.cpp:320
 msgid "Coptic"
 msgstr "コプト文字"
 
-#: ../src/ui/dialog/glyphs.cpp:65 ../src/ui/dialog/glyphs.cpp:238
+#: ../src/ui/dialog/glyphs.cpp:66 ../src/ui/dialog/glyphs.cpp:239
 msgid "Cyrillic"
 msgstr "キリル文字"
 
-#: ../src/ui/dialog/glyphs.cpp:66
+#: ../src/ui/dialog/glyphs.cpp:67
 msgid "Deseret"
 msgstr "デザレット文字"
 
-#: ../src/ui/dialog/glyphs.cpp:67 ../src/ui/dialog/glyphs.cpp:248
+#: ../src/ui/dialog/glyphs.cpp:68 ../src/ui/dialog/glyphs.cpp:249
 msgid "Devanagari"
 msgstr "デーヴァナーガリー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:68 ../src/ui/dialog/glyphs.cpp:264
+#: ../src/ui/dialog/glyphs.cpp:69 ../src/ui/dialog/glyphs.cpp:265
 msgid "Ethiopic"
 msgstr "エチオピア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:69 ../src/ui/dialog/glyphs.cpp:262
+#: ../src/ui/dialog/glyphs.cpp:70 ../src/ui/dialog/glyphs.cpp:263
 msgid "Georgian"
 msgstr "グルジア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:70
+#: ../src/ui/dialog/glyphs.cpp:71
 msgid "Gothic"
 msgstr "ゴート文字"
 
-#: ../src/ui/dialog/glyphs.cpp:71
+#: ../src/ui/dialog/glyphs.cpp:72
 msgid "Greek"
 msgstr "ギリシャ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:72 ../src/ui/dialog/glyphs.cpp:251
+#: ../src/ui/dialog/glyphs.cpp:73 ../src/ui/dialog/glyphs.cpp:252
 msgid "Gujarati"
 msgstr "グジャラーティー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:73 ../src/ui/dialog/glyphs.cpp:250
+#: ../src/ui/dialog/glyphs.cpp:74 ../src/ui/dialog/glyphs.cpp:251
 msgid "Gurmukhi"
 msgstr "グルムキー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:74
+#: ../src/ui/dialog/glyphs.cpp:75
 msgid "Han"
 msgstr "漢字"
 
-#: ../src/ui/dialog/glyphs.cpp:75
+#: ../src/ui/dialog/glyphs.cpp:76
 msgid "Hangul"
 msgstr "ハングル"
 
-#: ../src/ui/dialog/glyphs.cpp:76 ../src/ui/dialog/glyphs.cpp:241
+#: ../src/ui/dialog/glyphs.cpp:77 ../src/ui/dialog/glyphs.cpp:242
 msgid "Hebrew"
 msgstr "ヘブライ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:77 ../src/ui/dialog/glyphs.cpp:329
+#: ../src/ui/dialog/glyphs.cpp:78 ../src/ui/dialog/glyphs.cpp:330
 msgid "Hiragana"
 msgstr "ひらがな"
 
-#: ../src/ui/dialog/glyphs.cpp:78 ../src/ui/dialog/glyphs.cpp:255
+#: ../src/ui/dialog/glyphs.cpp:79 ../src/ui/dialog/glyphs.cpp:256
 msgid "Kannada"
 msgstr "カンナダ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:79 ../src/ui/dialog/glyphs.cpp:330
+#: ../src/ui/dialog/glyphs.cpp:80 ../src/ui/dialog/glyphs.cpp:331
 msgid "Katakana"
 msgstr "カタカナ"
 
-#: ../src/ui/dialog/glyphs.cpp:80 ../src/ui/dialog/glyphs.cpp:274
+#: ../src/ui/dialog/glyphs.cpp:81 ../src/ui/dialog/glyphs.cpp:275
 msgid "Khmer"
 msgstr "クメール文字"
 
-#: ../src/ui/dialog/glyphs.cpp:81 ../src/ui/dialog/glyphs.cpp:259
+#: ../src/ui/dialog/glyphs.cpp:82 ../src/ui/dialog/glyphs.cpp:260
 msgid "Lao"
 msgstr "ラーオ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:82
+#: ../src/ui/dialog/glyphs.cpp:83
 msgid "Latin"
 msgstr "ラテン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:83 ../src/ui/dialog/glyphs.cpp:256
+#: ../src/ui/dialog/glyphs.cpp:84 ../src/ui/dialog/glyphs.cpp:257
 msgid "Malayalam"
 msgstr "マラヤーラム文字"
 
-#: ../src/ui/dialog/glyphs.cpp:84 ../src/ui/dialog/glyphs.cpp:275
+#: ../src/ui/dialog/glyphs.cpp:85 ../src/ui/dialog/glyphs.cpp:276
 msgid "Mongolian"
 msgstr "モンゴル文字"
 
-#: ../src/ui/dialog/glyphs.cpp:85 ../src/ui/dialog/glyphs.cpp:261
+#: ../src/ui/dialog/glyphs.cpp:86 ../src/ui/dialog/glyphs.cpp:262
 msgid "Myanmar"
 msgstr "ミャンマー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:86 ../src/ui/dialog/glyphs.cpp:268
+#: ../src/ui/dialog/glyphs.cpp:87 ../src/ui/dialog/glyphs.cpp:269
 msgid "Ogham"
 msgstr "オガム文字"
 
-#: ../src/ui/dialog/glyphs.cpp:87
+#: ../src/ui/dialog/glyphs.cpp:88
 msgid "Old Italic"
 msgstr "古代イタリア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:88 ../src/ui/dialog/glyphs.cpp:252
+#: ../src/ui/dialog/glyphs.cpp:89 ../src/ui/dialog/glyphs.cpp:253
 msgid "Oriya"
 msgstr "オリヤー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:89 ../src/ui/dialog/glyphs.cpp:269
+#: ../src/ui/dialog/glyphs.cpp:90 ../src/ui/dialog/glyphs.cpp:270
 msgid "Runic"
 msgstr "ルーン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:90 ../src/ui/dialog/glyphs.cpp:257
+#: ../src/ui/dialog/glyphs.cpp:91 ../src/ui/dialog/glyphs.cpp:258
 msgid "Sinhala"
 msgstr "シンハラ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:91 ../src/ui/dialog/glyphs.cpp:243
+#: ../src/ui/dialog/glyphs.cpp:92 ../src/ui/dialog/glyphs.cpp:244
 msgid "Syriac"
 msgstr "シリア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:92 ../src/ui/dialog/glyphs.cpp:253
+#: ../src/ui/dialog/glyphs.cpp:93 ../src/ui/dialog/glyphs.cpp:254
 msgid "Tamil"
 msgstr "タミル文字"
 
-#: ../src/ui/dialog/glyphs.cpp:93 ../src/ui/dialog/glyphs.cpp:254
+#: ../src/ui/dialog/glyphs.cpp:94 ../src/ui/dialog/glyphs.cpp:255
 msgid "Telugu"
 msgstr "テルグ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:94 ../src/ui/dialog/glyphs.cpp:245
+#: ../src/ui/dialog/glyphs.cpp:95 ../src/ui/dialog/glyphs.cpp:246
 msgid "Thaana"
 msgstr "ターナ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:95 ../src/ui/dialog/glyphs.cpp:258
+#: ../src/ui/dialog/glyphs.cpp:96 ../src/ui/dialog/glyphs.cpp:259
 msgid "Thai"
 msgstr "タイ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:96 ../src/ui/dialog/glyphs.cpp:260
+#: ../src/ui/dialog/glyphs.cpp:97 ../src/ui/dialog/glyphs.cpp:261
 msgid "Tibetan"
 msgstr "チベット文字"
 
-#: ../src/ui/dialog/glyphs.cpp:97
+#: ../src/ui/dialog/glyphs.cpp:98
 msgid "Canadian Aboriginal"
 msgstr "カナダ先住民音節文字"
 
-#: ../src/ui/dialog/glyphs.cpp:98
+#: ../src/ui/dialog/glyphs.cpp:99
 msgid "Yi"
 msgstr "イ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:99 ../src/ui/dialog/glyphs.cpp:270
+#: ../src/ui/dialog/glyphs.cpp:100 ../src/ui/dialog/glyphs.cpp:271
 msgid "Tagalog"
 msgstr "タガログ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:100 ../src/ui/dialog/glyphs.cpp:271
+#: ../src/ui/dialog/glyphs.cpp:101 ../src/ui/dialog/glyphs.cpp:272
 msgid "Hanunoo"
 msgstr "ハヌノオ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:101 ../src/ui/dialog/glyphs.cpp:272
+#: ../src/ui/dialog/glyphs.cpp:102 ../src/ui/dialog/glyphs.cpp:273
 msgid "Buhid"
 msgstr "ブヒッド文字"
 
-#: ../src/ui/dialog/glyphs.cpp:102 ../src/ui/dialog/glyphs.cpp:273
+#: ../src/ui/dialog/glyphs.cpp:103 ../src/ui/dialog/glyphs.cpp:274
 msgid "Tagbanwa"
 msgstr "タグバヌワ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:103
+#: ../src/ui/dialog/glyphs.cpp:104
 msgid "Braille"
 msgstr "点字"
 
-#: ../src/ui/dialog/glyphs.cpp:104
+#: ../src/ui/dialog/glyphs.cpp:105
 msgid "Cypriot"
 msgstr "キプロス音節文字"
 
-#: ../src/ui/dialog/glyphs.cpp:105 ../src/ui/dialog/glyphs.cpp:277
+#: ../src/ui/dialog/glyphs.cpp:106 ../src/ui/dialog/glyphs.cpp:278
 msgid "Limbu"
 msgstr "リンブ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:106
+#: ../src/ui/dialog/glyphs.cpp:107
 msgid "Osmanya"
 msgstr "オスマニア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:107
+#: ../src/ui/dialog/glyphs.cpp:108
 msgid "Shavian"
 msgstr "シェイヴィアン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:108
+#: ../src/ui/dialog/glyphs.cpp:109
 msgid "Linear B"
 msgstr "線文字 B"
 
-#: ../src/ui/dialog/glyphs.cpp:109 ../src/ui/dialog/glyphs.cpp:278
+#: ../src/ui/dialog/glyphs.cpp:110 ../src/ui/dialog/glyphs.cpp:279
 msgid "Tai Le"
 msgstr "タイ・ロ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:110
+#: ../src/ui/dialog/glyphs.cpp:111
 msgid "Ugaritic"
 msgstr "ウガリト文字"
 
-#: ../src/ui/dialog/glyphs.cpp:111 ../src/ui/dialog/glyphs.cpp:279
+#: ../src/ui/dialog/glyphs.cpp:112 ../src/ui/dialog/glyphs.cpp:280
 msgid "New Tai Lue"
 msgstr "新タイ・ロ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:112 ../src/ui/dialog/glyphs.cpp:281
+#: ../src/ui/dialog/glyphs.cpp:113 ../src/ui/dialog/glyphs.cpp:282
 msgid "Buginese"
 msgstr "ブギス文字"
 
-#: ../src/ui/dialog/glyphs.cpp:113 ../src/ui/dialog/glyphs.cpp:317
+#: ../src/ui/dialog/glyphs.cpp:114 ../src/ui/dialog/glyphs.cpp:318
 msgid "Glagolitic"
 msgstr "グラゴル文字"
 
-#: ../src/ui/dialog/glyphs.cpp:114 ../src/ui/dialog/glyphs.cpp:321
+#: ../src/ui/dialog/glyphs.cpp:115 ../src/ui/dialog/glyphs.cpp:322
 msgid "Tifinagh"
 msgstr "ティフナグ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:115 ../src/ui/dialog/glyphs.cpp:350
+#: ../src/ui/dialog/glyphs.cpp:116 ../src/ui/dialog/glyphs.cpp:351
 msgid "Syloti Nagri"
 msgstr "シロティナグリ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:116
+#: ../src/ui/dialog/glyphs.cpp:117
 msgid "Old Persian"
 msgstr "古代ペルシャ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:117
+#: ../src/ui/dialog/glyphs.cpp:118
 msgid "Kharoshthi"
 msgstr "カローシュティー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:118
+#: ../src/ui/dialog/glyphs.cpp:119
 msgid "unassigned"
 msgstr "未割り当て"
 
-#: ../src/ui/dialog/glyphs.cpp:119 ../src/ui/dialog/glyphs.cpp:283
+#: ../src/ui/dialog/glyphs.cpp:120 ../src/ui/dialog/glyphs.cpp:284
 msgid "Balinese"
 msgstr "バリ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:120
+#: ../src/ui/dialog/glyphs.cpp:121
 msgid "Cuneiform"
 msgstr "楔形文字"
 
-#: ../src/ui/dialog/glyphs.cpp:121
+#: ../src/ui/dialog/glyphs.cpp:122
 msgid "Phoenician"
 msgstr "フェニキア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:122 ../src/ui/dialog/glyphs.cpp:352
+#: ../src/ui/dialog/glyphs.cpp:123 ../src/ui/dialog/glyphs.cpp:353
 msgid "Phags-pa"
 msgstr "パスパ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:123
+#: ../src/ui/dialog/glyphs.cpp:124
 msgid "N'Ko"
 msgstr "ンコ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:124 ../src/ui/dialog/glyphs.cpp:355
+#: ../src/ui/dialog/glyphs.cpp:125 ../src/ui/dialog/glyphs.cpp:356
 msgid "Kayah Li"
 msgstr "カヤー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:125 ../src/ui/dialog/glyphs.cpp:285
+#: ../src/ui/dialog/glyphs.cpp:126 ../src/ui/dialog/glyphs.cpp:286
 msgid "Lepcha"
 msgstr "レプチャ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:126 ../src/ui/dialog/glyphs.cpp:356
+#: ../src/ui/dialog/glyphs.cpp:127 ../src/ui/dialog/glyphs.cpp:357
 msgid "Rejang"
 msgstr "ルジャン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:127 ../src/ui/dialog/glyphs.cpp:284
+#: ../src/ui/dialog/glyphs.cpp:128 ../src/ui/dialog/glyphs.cpp:285
 msgid "Sundanese"
 msgstr "スンダ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:128 ../src/ui/dialog/glyphs.cpp:353
+#: ../src/ui/dialog/glyphs.cpp:129 ../src/ui/dialog/glyphs.cpp:354
 msgid "Saurashtra"
 msgstr "サウラーシュトラ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:129 ../src/ui/dialog/glyphs.cpp:359
+#: ../src/ui/dialog/glyphs.cpp:130 ../src/ui/dialog/glyphs.cpp:360
 msgid "Cham"
 msgstr "チャム文字"
 
-#: ../src/ui/dialog/glyphs.cpp:130 ../src/ui/dialog/glyphs.cpp:286
+#: ../src/ui/dialog/glyphs.cpp:131 ../src/ui/dialog/glyphs.cpp:287
 msgid "Ol Chiki"
 msgstr "オルチキ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:131 ../src/ui/dialog/glyphs.cpp:345
+#: ../src/ui/dialog/glyphs.cpp:132 ../src/ui/dialog/glyphs.cpp:346
 msgid "Vai"
 msgstr "ヴァイ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:132
+#: ../src/ui/dialog/glyphs.cpp:133
 msgid "Carian"
 msgstr "カリア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:133
+#: ../src/ui/dialog/glyphs.cpp:134
 msgid "Lycian"
 msgstr "リキア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:134
+#: ../src/ui/dialog/glyphs.cpp:135
 msgid "Lydian"
 msgstr "リディア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:135
+#: ../src/ui/dialog/glyphs.cpp:136
 msgid "Avestan"
 msgstr "アヴェスター文字"
 
-#: ../src/ui/dialog/glyphs.cpp:136 ../src/ui/dialog/glyphs.cpp:347
+#: ../src/ui/dialog/glyphs.cpp:137 ../src/ui/dialog/glyphs.cpp:348
 msgid "Bamum"
 msgstr "バムン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:137
+#: ../src/ui/dialog/glyphs.cpp:138
 msgid "Egyptian Hieroglpyhs"
 msgstr "エジプトのヒエログラフ"
 
-#: ../src/ui/dialog/glyphs.cpp:138
+#: ../src/ui/dialog/glyphs.cpp:139
 msgid "Imperial Aramaic"
 msgstr "アラム文字"
 
-#: ../src/ui/dialog/glyphs.cpp:139
+#: ../src/ui/dialog/glyphs.cpp:140
 msgid "Inscriptional Pahlavi"
 msgstr "碑文パフラヴィー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:140
+#: ../src/ui/dialog/glyphs.cpp:141
 msgid "Inscriptional Parthian"
 msgstr "碑文パルティア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:141 ../src/ui/dialog/glyphs.cpp:358
+#: ../src/ui/dialog/glyphs.cpp:142 ../src/ui/dialog/glyphs.cpp:359
 msgid "Javanese"
 msgstr "ジャワ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:142
+#: ../src/ui/dialog/glyphs.cpp:143
 msgid "Kaithi"
 msgstr "カイティー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:143 ../src/ui/dialog/glyphs.cpp:344
+#: ../src/ui/dialog/glyphs.cpp:144 ../src/ui/dialog/glyphs.cpp:345
 msgid "Lisu"
 msgstr "リス文字"
 
-#: ../src/ui/dialog/glyphs.cpp:144 ../src/ui/dialog/glyphs.cpp:362
+#: ../src/ui/dialog/glyphs.cpp:145 ../src/ui/dialog/glyphs.cpp:363
 msgid "Meetei Mayek"
 msgstr "マニプリ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:145
+#: ../src/ui/dialog/glyphs.cpp:146
 msgid "Old South Arabian"
 msgstr "古代南アラビア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:146
+#: ../src/ui/dialog/glyphs.cpp:147
 msgid "Old Turkic"
 msgstr "突厥文字"
 
-#: ../src/ui/dialog/glyphs.cpp:147 ../src/ui/dialog/glyphs.cpp:247
+#: ../src/ui/dialog/glyphs.cpp:148 ../src/ui/dialog/glyphs.cpp:248
 msgid "Samaritan"
 msgstr "サマリア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:148 ../src/ui/dialog/glyphs.cpp:282
+#: ../src/ui/dialog/glyphs.cpp:149 ../src/ui/dialog/glyphs.cpp:283
 msgid "Tai Tham"
 msgstr "ラーンナー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:149 ../src/ui/dialog/glyphs.cpp:361
+#: ../src/ui/dialog/glyphs.cpp:150 ../src/ui/dialog/glyphs.cpp:362
 msgid "Tai Viet"
 msgstr "タイ・ヴェト文字"
 
-#: ../src/ui/dialog/glyphs.cpp:150
+#: ../src/ui/dialog/glyphs.cpp:151
 msgid "Batak"
 msgstr "バタク文字"
 
-#: ../src/ui/dialog/glyphs.cpp:151
+#: ../src/ui/dialog/glyphs.cpp:152
 msgid "Brahmi"
 msgstr "ブラーフミー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:152
+#: ../src/ui/dialog/glyphs.cpp:153
 msgid "Mandaic"
 msgstr "マンダ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:153
+#: ../src/ui/dialog/glyphs.cpp:154
 msgid "Chakma"
 msgstr "チャクマ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:154
+#: ../src/ui/dialog/glyphs.cpp:155
 msgid "Meroitic Cursive"
 msgstr "メロエ文字草書体"
 
-#: ../src/ui/dialog/glyphs.cpp:155
+#: ../src/ui/dialog/glyphs.cpp:156
 msgid "Meroitic Hieroglyphs"
 msgstr "メロエ記念碑文体"
 
-#: ../src/ui/dialog/glyphs.cpp:156
+#: ../src/ui/dialog/glyphs.cpp:157
 msgid "Miao"
 msgstr "ポラード文字"
 
-#: ../src/ui/dialog/glyphs.cpp:157
+#: ../src/ui/dialog/glyphs.cpp:158
 msgid "Sharada"
 msgstr "シャーラダー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:158
+#: ../src/ui/dialog/glyphs.cpp:159
 msgid "Sora Sompeng"
 msgstr "ソラング・ソンペング文字"
 
-#: ../src/ui/dialog/glyphs.cpp:159
+#: ../src/ui/dialog/glyphs.cpp:160
 msgid "Takri"
 msgstr "タークリー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:160
+#: ../src/ui/dialog/glyphs.cpp:161
 msgid "Bassa"
 msgstr "バサ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:161
+#: ../src/ui/dialog/glyphs.cpp:162
 msgid "Caucasian Albanian"
 msgstr "カフカース・アルバニア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:162
+#: ../src/ui/dialog/glyphs.cpp:163
 msgid "Duployan"
 msgstr "デュプロワエ式速記"
 
-#: ../src/ui/dialog/glyphs.cpp:163
+#: ../src/ui/dialog/glyphs.cpp:164
 msgid "Elbasan"
 msgstr "エルバサン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:164
+#: ../src/ui/dialog/glyphs.cpp:165
 msgid "Grantha"
 msgstr "グランタ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:165
+#: ../src/ui/dialog/glyphs.cpp:166
 msgid "Khojki"
 msgstr "ホジャ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:166
+#: ../src/ui/dialog/glyphs.cpp:167
 msgid "Khudawadi, Sindhi"
 msgstr "フダーワーディ (シンディー) 文字"
 
-#: ../src/ui/dialog/glyphs.cpp:167
+#: ../src/ui/dialog/glyphs.cpp:168
 msgid "Linear A"
 msgstr "線文字 A"
 
-#: ../src/ui/dialog/glyphs.cpp:168
+#: ../src/ui/dialog/glyphs.cpp:169
 msgid "Mahajani"
 msgstr "マハージャニー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:169
+#: ../src/ui/dialog/glyphs.cpp:170
 msgid "Manichaean"
 msgstr "マニ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:170
+#: ../src/ui/dialog/glyphs.cpp:171
 msgid "Mende Kikakui"
 msgstr "メンデ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:171
+#: ../src/ui/dialog/glyphs.cpp:172
 msgid "Modi"
 msgstr "モーディー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:172
+#: ../src/ui/dialog/glyphs.cpp:173
 msgid "Mro"
 msgstr "ムロ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:173
+#: ../src/ui/dialog/glyphs.cpp:174
 msgid "Nabataean"
 msgstr "ナバテア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:174
+#: ../src/ui/dialog/glyphs.cpp:175
 msgid "Old North Arabian"
 msgstr "古代北アラビア文字"
 
-#: ../src/ui/dialog/glyphs.cpp:175
+#: ../src/ui/dialog/glyphs.cpp:176
 msgid "Old Permic"
 msgstr "古代ペルム文字"
 
-#: ../src/ui/dialog/glyphs.cpp:176
+#: ../src/ui/dialog/glyphs.cpp:177
 msgid "Pahawh Hmong"
 msgstr "パハウ・フモン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:177
+#: ../src/ui/dialog/glyphs.cpp:178
 msgid "Palmyrene"
 msgstr "パルミラ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:178
+#: ../src/ui/dialog/glyphs.cpp:179
 msgid "Pau Cin Hau"
 msgstr "パウ・チン・ハウ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:179
+#: ../src/ui/dialog/glyphs.cpp:180
 msgid "Psalter Pahlavi"
 msgstr "詩編用パフラヴィー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:180
+#: ../src/ui/dialog/glyphs.cpp:181
 msgid "Siddham"
 msgstr "悉曇文字"
 
-#: ../src/ui/dialog/glyphs.cpp:181
+#: ../src/ui/dialog/glyphs.cpp:182
 msgid "Tirhuta"
 msgstr "ティルフータ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:182
+#: ../src/ui/dialog/glyphs.cpp:183
 msgid "Warang Citi"
 msgstr "ワラング・チティ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:183
+#: ../src/ui/dialog/glyphs.cpp:184
 msgid "Ahom"
 msgstr "アーホム文字"
 
-#: ../src/ui/dialog/glyphs.cpp:184
+#: ../src/ui/dialog/glyphs.cpp:185
 msgid "Anatolian Hieroglyphs"
 msgstr "アナトリア・ヒエログリフ"
 
-#: ../src/ui/dialog/glyphs.cpp:185
+#: ../src/ui/dialog/glyphs.cpp:186
 msgid "Hatran"
 msgstr "ハトラ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:186
+#: ../src/ui/dialog/glyphs.cpp:187
 msgid "Multani"
 msgstr "ムルターニー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:187
+#: ../src/ui/dialog/glyphs.cpp:188
 msgid "Old Hungarian"
 msgstr "古代ハンガリー文字"
 
-#: ../src/ui/dialog/glyphs.cpp:188
+#: ../src/ui/dialog/glyphs.cpp:189
 msgid "Signwriting"
 msgstr "サットン手話表記法"
 
-#: ../src/ui/dialog/glyphs.cpp:226
+#: ../src/ui/dialog/glyphs.cpp:227
 msgid "Basic Plane"
 msgstr "基本多言語面"
 
-#: ../src/ui/dialog/glyphs.cpp:227
+#: ../src/ui/dialog/glyphs.cpp:228
 msgid "Extended Multilingual Plane"
 msgstr "追加多言語面"
 
-#: ../src/ui/dialog/glyphs.cpp:228
+#: ../src/ui/dialog/glyphs.cpp:229
 msgid "Supplementary Ideographic Plane"
 msgstr "追加漢字面"
 
-#: ../src/ui/dialog/glyphs.cpp:230
+#: ../src/ui/dialog/glyphs.cpp:231
 msgid "Basic Latin"
 msgstr "基本ラテン文字"
 
-#: ../src/ui/dialog/glyphs.cpp:231
+#: ../src/ui/dialog/glyphs.cpp:232
 msgid "Latin-1 Supplement"
 msgstr "ラテン 1 補助"
 
-#: ../src/ui/dialog/glyphs.cpp:232
+#: ../src/ui/dialog/glyphs.cpp:233
 msgid "Latin Extended-A"
 msgstr "ラテン文字拡張 A"
 
-#: ../src/ui/dialog/glyphs.cpp:233
+#: ../src/ui/dialog/glyphs.cpp:234
 msgid "Latin Extended-B"
 msgstr "ラテン文字拡張 B"
 
-#: ../src/ui/dialog/glyphs.cpp:234
+#: ../src/ui/dialog/glyphs.cpp:235
 msgid "IPA Extensions"
 msgstr "IPA 拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:235
+#: ../src/ui/dialog/glyphs.cpp:236
 msgid "Spacing Modifier Letters"
 msgstr "前進を伴う修飾文字"
 
-#: ../src/ui/dialog/glyphs.cpp:236
+#: ../src/ui/dialog/glyphs.cpp:237
 msgid "Combining Diacritical Marks"
 msgstr "ダイアクリティカルマーク"
 
-#: ../src/ui/dialog/glyphs.cpp:237
+#: ../src/ui/dialog/glyphs.cpp:238
 msgid "Greek and Coptic"
 msgstr "ギリシャ文字およびコプト文字"
 
-#: ../src/ui/dialog/glyphs.cpp:239
+#: ../src/ui/dialog/glyphs.cpp:240
 msgid "Cyrillic Supplement"
 msgstr "キリル文字補助"
 
-#: ../src/ui/dialog/glyphs.cpp:244
+#: ../src/ui/dialog/glyphs.cpp:245
 msgid "Arabic Supplement"
 msgstr "アラビア文字補助"
 
-#: ../src/ui/dialog/glyphs.cpp:246
+#: ../src/ui/dialog/glyphs.cpp:247
 msgid "NKo"
 msgstr "ンコ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:263
+#: ../src/ui/dialog/glyphs.cpp:264
 msgid "Hangul Jamo"
 msgstr "ハングル字母"
 
-#: ../src/ui/dialog/glyphs.cpp:265
+#: ../src/ui/dialog/glyphs.cpp:266
 msgid "Ethiopic Supplement"
 msgstr "エチオピア文字補助"
 
-#: ../src/ui/dialog/glyphs.cpp:267
+#: ../src/ui/dialog/glyphs.cpp:268
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "統合カナダ先住民族音節"
 
-#: ../src/ui/dialog/glyphs.cpp:276
+#: ../src/ui/dialog/glyphs.cpp:277
 msgid "Unified Canadian Aboriginal Syllabics Extended"
 msgstr "統合カナダ先住民音節拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:280
+#: ../src/ui/dialog/glyphs.cpp:281
 msgid "Khmer Symbols"
 msgstr "クメール文字用記号"
 
-#: ../src/ui/dialog/glyphs.cpp:287
+#: ../src/ui/dialog/glyphs.cpp:288
 msgid "Vedic Extensions"
 msgstr "ヴェーダ文字拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:288
+#: ../src/ui/dialog/glyphs.cpp:289
 msgid "Phonetic Extensions"
 msgstr "音声記号拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:289
+#: ../src/ui/dialog/glyphs.cpp:290
 msgid "Phonetic Extensions Supplement"
 msgstr "音声記号拡張補助"
 
-#: ../src/ui/dialog/glyphs.cpp:290
+#: ../src/ui/dialog/glyphs.cpp:291
 msgid "Combining Diacritical Marks Supplement"
 msgstr "ダイアクリティカルマーク補助"
 
-#: ../src/ui/dialog/glyphs.cpp:291
+#: ../src/ui/dialog/glyphs.cpp:292
 msgid "Latin Extended Additional"
 msgstr "ラテン文字拡張追加"
 
-#: ../src/ui/dialog/glyphs.cpp:292
+#: ../src/ui/dialog/glyphs.cpp:293
 msgid "Greek Extended"
 msgstr "ギリシャ文字拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:293
+#: ../src/ui/dialog/glyphs.cpp:294
 msgid "General Punctuation"
 msgstr "一般句読点"
 
-#: ../src/ui/dialog/glyphs.cpp:294
+#: ../src/ui/dialog/glyphs.cpp:295
 msgid "Superscripts and Subscripts"
 msgstr "上付き・下付き"
 
-#: ../src/ui/dialog/glyphs.cpp:295
+#: ../src/ui/dialog/glyphs.cpp:296
 msgid "Currency Symbols"
 msgstr "通貨記号"
 
-#: ../src/ui/dialog/glyphs.cpp:296
+#: ../src/ui/dialog/glyphs.cpp:297
 msgid "Combining Diacritical Marks for Symbols"
 msgstr "記号様ダイアクリティカルマーク"
 
-#: ../src/ui/dialog/glyphs.cpp:297
+#: ../src/ui/dialog/glyphs.cpp:298
 msgid "Letterlike Symbols"
 msgstr "文字様記号"
 
-#: ../src/ui/dialog/glyphs.cpp:298
+#: ../src/ui/dialog/glyphs.cpp:299
 msgid "Number Forms"
 msgstr "数字に準じるもの"
 
-#: ../src/ui/dialog/glyphs.cpp:299
+#: ../src/ui/dialog/glyphs.cpp:300
 msgid "Arrows"
 msgstr "矢印"
 
-#: ../src/ui/dialog/glyphs.cpp:300
+#: ../src/ui/dialog/glyphs.cpp:301
 msgid "Mathematical Operators"
 msgstr "数学記号"
 
-#: ../src/ui/dialog/glyphs.cpp:301
+#: ../src/ui/dialog/glyphs.cpp:302
 msgid "Miscellaneous Technical"
 msgstr "その他の技術用記号"
 
-#: ../src/ui/dialog/glyphs.cpp:302
+#: ../src/ui/dialog/glyphs.cpp:303
 msgid "Control Pictures"
 msgstr "制御機能用記号"
 
-#: ../src/ui/dialog/glyphs.cpp:303
+#: ../src/ui/dialog/glyphs.cpp:304
 msgid "Optical Character Recognition"
 msgstr "光学的文字認識 (OCR)"
 
-#: ../src/ui/dialog/glyphs.cpp:304
+#: ../src/ui/dialog/glyphs.cpp:305
 msgid "Enclosed Alphanumerics"
 msgstr "囲み英数字"
 
-#: ../src/ui/dialog/glyphs.cpp:305
+#: ../src/ui/dialog/glyphs.cpp:306
 msgid "Box Drawing"
 msgstr "罫線素片"
 
-#: ../src/ui/dialog/glyphs.cpp:306
+#: ../src/ui/dialog/glyphs.cpp:307
 msgid "Block Elements"
 msgstr "ブロック要素"
 
-#: ../src/ui/dialog/glyphs.cpp:307
+#: ../src/ui/dialog/glyphs.cpp:308
 msgid "Geometric Shapes"
 msgstr "幾何学模様"
 
-#: ../src/ui/dialog/glyphs.cpp:308
+#: ../src/ui/dialog/glyphs.cpp:309
 msgid "Miscellaneous Symbols"
 msgstr "その他の記号"
 
-#: ../src/ui/dialog/glyphs.cpp:309
+#: ../src/ui/dialog/glyphs.cpp:310
 msgid "Dingbats"
 msgstr "装飾記号"
 
-#: ../src/ui/dialog/glyphs.cpp:310
+#: ../src/ui/dialog/glyphs.cpp:311
 msgid "Miscellaneous Mathematical Symbols-A"
 msgstr "その他の数学記号 A"
 
-#: ../src/ui/dialog/glyphs.cpp:311
+#: ../src/ui/dialog/glyphs.cpp:312
 msgid "Supplemental Arrows-A"
 msgstr "補助矢印 A"
 
-#: ../src/ui/dialog/glyphs.cpp:312
+#: ../src/ui/dialog/glyphs.cpp:313
 msgid "Braille Patterns"
 msgstr "ブライユ点字"
 
-#: ../src/ui/dialog/glyphs.cpp:313
+#: ../src/ui/dialog/glyphs.cpp:314
 msgid "Supplemental Arrows-B"
 msgstr "補助矢印 B"
 
-#: ../src/ui/dialog/glyphs.cpp:314
+#: ../src/ui/dialog/glyphs.cpp:315
 msgid "Miscellaneous Mathematical Symbols-B"
 msgstr "その他の数学記号 B"
 
-#: ../src/ui/dialog/glyphs.cpp:315
+#: ../src/ui/dialog/glyphs.cpp:316
 msgid "Supplemental Mathematical Operators"
 msgstr "補助数学記号"
 
-#: ../src/ui/dialog/glyphs.cpp:316
+#: ../src/ui/dialog/glyphs.cpp:317
 msgid "Miscellaneous Symbols and Arrows"
 msgstr "その他の記号および矢印"
 
-#: ../src/ui/dialog/glyphs.cpp:318
+#: ../src/ui/dialog/glyphs.cpp:319
 msgid "Latin Extended-C"
 msgstr "ラテン文字拡張 C"
 
-#: ../src/ui/dialog/glyphs.cpp:320
+#: ../src/ui/dialog/glyphs.cpp:321
 msgid "Georgian Supplement"
 msgstr "グルジア文字補助"
 
-#: ../src/ui/dialog/glyphs.cpp:322
+#: ../src/ui/dialog/glyphs.cpp:323
 msgid "Ethiopic Extended"
 msgstr "エチオピア文字拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:323
+#: ../src/ui/dialog/glyphs.cpp:324
 msgid "Cyrillic Extended-A"
 msgstr "キリル文字拡張 A"
 
-#: ../src/ui/dialog/glyphs.cpp:324
+#: ../src/ui/dialog/glyphs.cpp:325
 msgid "Supplemental Punctuation"
 msgstr "補助句読点"
 
-#: ../src/ui/dialog/glyphs.cpp:325
+#: ../src/ui/dialog/glyphs.cpp:326
 msgid "CJK Radicals Supplement"
 msgstr "CJK 部首補助"
 
-#: ../src/ui/dialog/glyphs.cpp:326
+#: ../src/ui/dialog/glyphs.cpp:327
 msgid "Kangxi Radicals"
 msgstr "康煕部首"
 
-#: ../src/ui/dialog/glyphs.cpp:327
+#: ../src/ui/dialog/glyphs.cpp:328
 msgid "Ideographic Description Characters"
 msgstr "漢字構成記述文字 (IDC)"
 
-#: ../src/ui/dialog/glyphs.cpp:328
+#: ../src/ui/dialog/glyphs.cpp:329
 msgid "CJK Symbols and Punctuation"
 msgstr "CJK の記号および句読点"
 
-#: ../src/ui/dialog/glyphs.cpp:332
+#: ../src/ui/dialog/glyphs.cpp:333
 msgid "Hangul Compatibility Jamo"
 msgstr "ハングル互換字母"
 
-#: ../src/ui/dialog/glyphs.cpp:333
+#: ../src/ui/dialog/glyphs.cpp:334
 msgid "Kanbun"
 msgstr "漢文用記号"
 
-#: ../src/ui/dialog/glyphs.cpp:334
+#: ../src/ui/dialog/glyphs.cpp:335
 msgid "Bopomofo Extended"
 msgstr "注音字母拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:335
+#: ../src/ui/dialog/glyphs.cpp:336
 msgid "CJK Strokes"
 msgstr "CJK 筆画"
 
-#: ../src/ui/dialog/glyphs.cpp:336
+#: ../src/ui/dialog/glyphs.cpp:337
 msgid "Katakana Phonetic Extensions"
 msgstr "カタカナ拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:337
+#: ../src/ui/dialog/glyphs.cpp:338
 msgid "Enclosed CJK Letters and Months"
 msgstr "囲み CJK 文字・月"
 
-#: ../src/ui/dialog/glyphs.cpp:338
+#: ../src/ui/dialog/glyphs.cpp:339
 msgid "CJK Compatibility"
 msgstr "CJK 互換用文字"
 
-#: ../src/ui/dialog/glyphs.cpp:339
+#: ../src/ui/dialog/glyphs.cpp:340
 msgid "CJK Unified Ideographs Extension A"
 msgstr "CJK 統合漢字拡張 A"
 
-#: ../src/ui/dialog/glyphs.cpp:340
+#: ../src/ui/dialog/glyphs.cpp:341
 msgid "Yijing Hexagram Symbols"
 msgstr "易経記号"
 
-#: ../src/ui/dialog/glyphs.cpp:341
+#: ../src/ui/dialog/glyphs.cpp:342
 msgid "CJK Unified Ideographs"
 msgstr "CJK 統合文字"
 
-#: ../src/ui/dialog/glyphs.cpp:342
+#: ../src/ui/dialog/glyphs.cpp:343
 msgid "Yi Syllables"
 msgstr "イ文字"
 
-#: ../src/ui/dialog/glyphs.cpp:343
+#: ../src/ui/dialog/glyphs.cpp:344
 msgid "Yi Radicals"
 msgstr "イ文字部首"
 
-#: ../src/ui/dialog/glyphs.cpp:346
+#: ../src/ui/dialog/glyphs.cpp:347
 msgid "Cyrillic Extended-B"
 msgstr "キリル文字拡張 B"
 
-#: ../src/ui/dialog/glyphs.cpp:348
+#: ../src/ui/dialog/glyphs.cpp:349
 msgid "Modifier Tone Letters"
 msgstr "声調修飾文字"
 
-#: ../src/ui/dialog/glyphs.cpp:349
+#: ../src/ui/dialog/glyphs.cpp:350
 msgid "Latin Extended-D"
 msgstr "ラテン拡張 D"
 
-#: ../src/ui/dialog/glyphs.cpp:351
+#: ../src/ui/dialog/glyphs.cpp:352
 msgid "Common Indic Number Forms"
 msgstr "共通インド数字に準じるもの"
 
-#: ../src/ui/dialog/glyphs.cpp:354
+#: ../src/ui/dialog/glyphs.cpp:355
 msgid "Devanagari Extended"
 msgstr "デーヴァナーガリー文字拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:357
+#: ../src/ui/dialog/glyphs.cpp:358
 msgid "Hangul Jamo Extended-A"
 msgstr "ハングル字母拡張 B"
 
-#: ../src/ui/dialog/glyphs.cpp:360
+#: ../src/ui/dialog/glyphs.cpp:361
 msgid "Myanmar Extended-A"
 msgstr "ミャンマー文字拡張 A"
 
-#: ../src/ui/dialog/glyphs.cpp:363
+#: ../src/ui/dialog/glyphs.cpp:364
 msgid "Hangul Syllables"
 msgstr "ハングル音節文字"
 
-#: ../src/ui/dialog/glyphs.cpp:364
+#: ../src/ui/dialog/glyphs.cpp:365
 msgid "Hangul Jamo Extended-B"
 msgstr "ハングル字母拡張 B"
 
-#: ../src/ui/dialog/glyphs.cpp:365
+#: ../src/ui/dialog/glyphs.cpp:366
 msgid "High Surrogates"
 msgstr "上位代用符号位置"
 
-#: ../src/ui/dialog/glyphs.cpp:366
+#: ../src/ui/dialog/glyphs.cpp:367
 msgid "High Private Use Surrogates"
 msgstr "上位私用代用符号位置"
 
-#: ../src/ui/dialog/glyphs.cpp:367
+#: ../src/ui/dialog/glyphs.cpp:368
 msgid "Low Surrogates"
 msgstr "下位代用符号位置"
 
-#: ../src/ui/dialog/glyphs.cpp:368
+#: ../src/ui/dialog/glyphs.cpp:369
 msgid "Private Use Area"
 msgstr "補助私用領域"
 
-#: ../src/ui/dialog/glyphs.cpp:369
+#: ../src/ui/dialog/glyphs.cpp:370
 msgid "CJK Compatibility Ideographs"
 msgstr "CJK 互換漢字"
 
-#: ../src/ui/dialog/glyphs.cpp:370
+#: ../src/ui/dialog/glyphs.cpp:371
 msgid "Alphabetic Presentation Forms"
 msgstr "アラビア表示形"
 
-#: ../src/ui/dialog/glyphs.cpp:371
+#: ../src/ui/dialog/glyphs.cpp:372
 msgid "Arabic Presentation Forms-A"
 msgstr "アラビア表示形 A"
 
-#: ../src/ui/dialog/glyphs.cpp:372
+#: ../src/ui/dialog/glyphs.cpp:373
 msgid "Variation Selectors"
 msgstr "字形選択子"
 
-#: ../src/ui/dialog/glyphs.cpp:373
+#: ../src/ui/dialog/glyphs.cpp:374
 msgid "Vertical Forms"
 msgstr "縦書き形"
 
-#: ../src/ui/dialog/glyphs.cpp:374
+#: ../src/ui/dialog/glyphs.cpp:375
 msgid "Combining Half Marks"
 msgstr "半記号"
 
-#: ../src/ui/dialog/glyphs.cpp:375
+#: ../src/ui/dialog/glyphs.cpp:376
 msgid "CJK Compatibility Forms"
 msgstr "CJK 互換形"
 
-#: ../src/ui/dialog/glyphs.cpp:376
+#: ../src/ui/dialog/glyphs.cpp:377
 msgid "Small Form Variants"
 msgstr "小文字形"
 
-#: ../src/ui/dialog/glyphs.cpp:377
+#: ../src/ui/dialog/glyphs.cpp:378
 msgid "Arabic Presentation Forms-B"
 msgstr "アラビア表示形 B"
 
-#: ../src/ui/dialog/glyphs.cpp:378
+#: ../src/ui/dialog/glyphs.cpp:379
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "半角・全角形"
 
-#: ../src/ui/dialog/glyphs.cpp:379
+#: ../src/ui/dialog/glyphs.cpp:380
 msgid "Specials"
 msgstr "特殊用途文字"
 
-#: ../src/ui/dialog/glyphs.cpp:382
+#: ../src/ui/dialog/glyphs.cpp:383
 msgid "Miscellaneous Symbols and Pictographs"
 msgstr "その他の記号と絵文字"
 
-#: ../src/ui/dialog/glyphs.cpp:383
+#: ../src/ui/dialog/glyphs.cpp:384
 msgid "Emoticons"
 msgstr "顔文字"
 
-#: ../src/ui/dialog/glyphs.cpp:384
+#: ../src/ui/dialog/glyphs.cpp:385
 msgid "Ornamental Dingbats"
 msgstr "装飾用絵記号"
 
-#: ../src/ui/dialog/glyphs.cpp:385
+#: ../src/ui/dialog/glyphs.cpp:386
 msgid "Transport and Map Symbols"
 msgstr "交通と地図の記号"
 
-#: ../src/ui/dialog/glyphs.cpp:386
+#: ../src/ui/dialog/glyphs.cpp:387
 msgid "Alchemical Symbols"
 msgstr "錬金術記号"
 
-#: ../src/ui/dialog/glyphs.cpp:387
+#: ../src/ui/dialog/glyphs.cpp:388
 msgid "Geometric Shapes Extended"
 msgstr "幾何学模様拡張"
 
-#: ../src/ui/dialog/glyphs.cpp:388
+#: ../src/ui/dialog/glyphs.cpp:389
 msgid "Supplemental Arrows-C"
 msgstr "補助矢印 C"
 
-#: ../src/ui/dialog/glyphs.cpp:389
+#: ../src/ui/dialog/glyphs.cpp:390
 msgid "Supplemental Symbols and Pictographs"
 msgstr "補助記号及び絵文字"
 
-#: ../src/ui/dialog/glyphs.cpp:390
+#: ../src/ui/dialog/glyphs.cpp:391
 msgid "Chess Symbols"
 msgstr "チェス記号"
 
-#: ../src/ui/dialog/glyphs.cpp:391
+#: ../src/ui/dialog/glyphs.cpp:392
 msgid "Symbols and Pictographs Extended-A"
 msgstr "記号と絵文字拡張A"
 
-#: ../src/ui/dialog/glyphs.cpp:452
+#: ../src/ui/dialog/glyphs.cpp:453
 msgid "Script: "
 msgstr "文字:"
 
-#: ../src/ui/dialog/glyphs.cpp:477
+#: ../src/ui/dialog/glyphs.cpp:478
 msgid "Range: "
 msgstr "範囲:"
 
-#: ../src/ui/dialog/glyphs.cpp:545
+#: ../src/ui/dialog/glyphs.cpp:546
 msgid "Append"
 msgstr "追加"
 
-#: ../src/ui/dialog/glyphs.cpp:621
+#: ../src/ui/dialog/glyphs.cpp:622
 msgid "Append text"
 msgstr "テキストの追加"
 
@@ -26724,7 +26833,6 @@ msgid "Shortcuts"
 msgstr "ショートカット"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2974
-#: ../src/ui/dialog/template-load-tab.cpp:47
 msgid "Search:"
 msgstr "検索:"
 
@@ -26775,7 +26883,7 @@ msgid "Export custom keyboard shortcuts to a file"
 msgstr "カスタムキーボードショートカットをファイルにエクスポートします"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3057
-#: ../share/ui/inkscape-start.glade:1270
+#: ../share/ui/inkscape-start.glade:540
 msgid "Keyboard"
 msgstr "キーボード"
 
@@ -27413,11 +27521,11 @@ msgstr "ログのキャプチャを開始。"
 msgid "Log capture stopped."
 msgstr "ログのキャプチャを停止。"
 
-#: ../src/ui/dialog/new-from-template.cpp:22
+#: ../src/ui/dialog/new-from-template.cpp:29
 msgid "Create from template"
 msgstr "テンプレートから作成"
 
-#: ../src/ui/dialog/new-from-template.cpp:24
+#: ../src/ui/dialog/new-from-template.cpp:31
 msgid "New From Template"
 msgstr "テンプレートから作成"
 
@@ -27877,11 +27985,11 @@ msgstr "<i>チェックしています...</i>"
 msgid "Fix spelling"
 msgstr "スペルの修正"
 
-#: ../src/ui/dialog/startup.cpp:341
+#: ../src/ui/dialog/startup.cpp:317
 msgid "Browse for other files..."
 msgstr "他のファイルを参照..."
 
-#: ../src/ui/dialog/startup.cpp:489
+#: ../src/ui/dialog/startup.cpp:408
 msgid "Open a different file"
 msgstr "別のファイルを開く"
 
@@ -28323,22 +28431,6 @@ msgstr "タイトルなし"
 msgid "Symbol without title"
 msgstr "タイトルのないシンボル"
 
-#: ../src/ui/dialog/template-widget.cpp:33
-msgid "More info"
-msgstr "詳細"
-
-#: ../src/ui/dialog/template-widget.cpp:35
-msgid "no template selected"
-msgstr "テンプレートが選択されていません"
-
-#: ../src/ui/dialog/template-widget.cpp:128
-msgid "Author"
-msgstr "作者"
-
-#: ../src/ui/dialog/template-widget.cpp:134
-msgid "Keywords"
-msgstr "キーワード"
-
 #. TRANSLATORS: Test string used in text and font dialog (when no
 #. * text has been entered) to get a preview of the font.  Choose
 #. * some representative characters that users of your locale will be
@@ -28752,7 +28844,7 @@ msgstr ""
 msgid "<b>Resize</b> the filter effect region"
 msgstr "<b>リサイズ</b> フィルターエフェクト領域"
 
-#: ../src/ui/knot/knot.cpp:309
+#: ../src/ui/knot/knot.cpp:307
 msgid "Node or handle drag canceled."
 msgstr "ノードまたはハンドルのドラッグはキャンセルされました。"
 
@@ -28908,7 +29000,7 @@ msgstr "オブジェクトの変形時にスナップを無効"
 msgid "No Category"
 msgstr "カテゴリーなし"
 
-#: ../src/ui/modifiers.cpp:60 ../share/ui/inkscape-start.glade:1255
+#: ../src/ui/modifiers.cpp:60 ../share/ui/inkscape-start.glade:525
 #: ../share/extensions/printing_marks.inx:17
 msgid "Canvas"
 msgstr "キャンバス"
@@ -29108,7 +29200,7 @@ msgid "Drag curve"
 msgstr "曲線をドラッグ"
 
 #: ../src/ui/tool/curve-drag-point.cpp:169
-#: ../src/ui/tool/multi-path-manipulator.cpp:326
+#: ../src/ui/tool/multi-path-manipulator.cpp:325
 msgid "Straighten segments"
 msgstr "セグメントを直線に"
 
@@ -29164,97 +29256,97 @@ msgstr ""
 "<b>ベジエセグメント</b>: ドラッグでセグメントを成形、ダブルクリックでノードを"
 "追加、クリックで選択します。(もっと: Shift、Ctrl+Alt)"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:318
+#: ../src/ui/tool/multi-path-manipulator.cpp:317
 msgid "Retract handles"
 msgstr "ハンドルを引っ込める"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:318 ../src/ui/tool/node.cpp:395
+#: ../src/ui/tool/multi-path-manipulator.cpp:317 ../src/ui/tool/node.cpp:395
 #: ../src/ui/tool/node.cpp:420
 msgid "Change node type"
 msgstr "ノードの種類を変更"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:328
+#: ../src/ui/tool/multi-path-manipulator.cpp:327
 msgid "Make segments curves"
 msgstr "弓形曲線を作成"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:336
-#: ../src/ui/tool/multi-path-manipulator.cpp:350
+#: ../src/ui/tool/multi-path-manipulator.cpp:335
+#: ../src/ui/tool/multi-path-manipulator.cpp:349
 msgid "Add nodes"
 msgstr "ノードを追加"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:342
+#: ../src/ui/tool/multi-path-manipulator.cpp:341
 msgid "Add extremum nodes"
 msgstr "極地ノードを追加"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:357
+#: ../src/ui/tool/multi-path-manipulator.cpp:356
 msgid "Duplicate nodes"
 msgstr "ノードを複製"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:365
+#: ../src/ui/tool/multi-path-manipulator.cpp:364
 msgid "Copy nodes"
 msgstr "ノードをコピー"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:428
+#: ../src/ui/tool/multi-path-manipulator.cpp:427
 #: ../src/ui/toolbar/node-toolbar.cpp:155
 msgid "Join nodes"
 msgstr "ノードを連結"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:435
+#: ../src/ui/tool/multi-path-manipulator.cpp:434
 #: ../src/ui/toolbar/node-toolbar.cpp:163
 msgid "Break nodes"
 msgstr "ノードを切断"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:442
+#: ../src/ui/tool/multi-path-manipulator.cpp:441
 msgid "Delete nodes"
 msgstr "ノードを削除"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:792
+#: ../src/ui/tool/multi-path-manipulator.cpp:791
 msgid "Move nodes"
 msgstr "ノードを移動"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:795
+#: ../src/ui/tool/multi-path-manipulator.cpp:794
 msgid "Move nodes horizontally"
 msgstr "ノードを水平に移動"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:799
+#: ../src/ui/tool/multi-path-manipulator.cpp:798
 msgid "Move nodes vertically"
 msgstr "ノードを垂直に移動"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:803
-#: ../src/ui/tool/multi-path-manipulator.cpp:806
+#: ../src/ui/tool/multi-path-manipulator.cpp:802
+#: ../src/ui/tool/multi-path-manipulator.cpp:805
 msgid "Rotate nodes"
 msgstr "ノードを回転"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:810
-#: ../src/ui/tool/multi-path-manipulator.cpp:816
+#: ../src/ui/tool/multi-path-manipulator.cpp:809
+#: ../src/ui/tool/multi-path-manipulator.cpp:815
 msgid "Scale nodes uniformly"
 msgstr "ノードを均等に拡大縮小"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:813
+#: ../src/ui/tool/multi-path-manipulator.cpp:812
 msgid "Scale nodes"
 msgstr "ノードを拡大縮小"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:820
+#: ../src/ui/tool/multi-path-manipulator.cpp:819
 msgid "Scale nodes horizontally"
 msgstr "ノードを水平方向に拡大縮小"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:824
+#: ../src/ui/tool/multi-path-manipulator.cpp:823
 msgid "Scale nodes vertically"
 msgstr "ノードを垂直方向に拡大縮小"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:828
+#: ../src/ui/tool/multi-path-manipulator.cpp:827
 msgid "Skew nodes horizontally"
 msgstr "ノードを水平方向に傾斜"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:832
+#: ../src/ui/tool/multi-path-manipulator.cpp:831
 msgid "Skew nodes vertically"
 msgstr "ノードを垂直方向に傾斜"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:836
+#: ../src/ui/tool/multi-path-manipulator.cpp:835
 msgid "Flip nodes horizontally"
 msgstr "ノードを水平方向に反転"
 
-#: ../src/ui/tool/multi-path-manipulator.cpp:839
+#: ../src/ui/tool/multi-path-manipulator.cpp:838
 msgid "Flip nodes vertically"
 msgstr "ノードを垂直方向に反転"
 
@@ -30218,94 +30310,98 @@ msgstr "カットしたアイテムを分離"
 
 #: ../src/ui/toolbar/gradient-toolbar.cpp:131
 #: ../src/ui/toolbar/gradient-toolbar.cpp:151
-#: ../src/ui/toolbar/gradient-toolbar.cpp:404
-#: ../src/ui/toolbar/gradient-toolbar.cpp:981
+#: ../src/ui/toolbar/gradient-toolbar.cpp:403
+#: ../src/ui/toolbar/gradient-toolbar.cpp:997
 msgid "No gradient"
 msgstr "グラデーションなし"
 
 #: ../src/ui/toolbar/gradient-toolbar.cpp:141
-msgid "Nothing Selected"
+#: ../src/ui/widget/selected-style.cpp:174
+#: ../src/ui/widget/selected-style.cpp:1020
+#: ../src/ui/widget/selected-style.cpp:1021
+msgid "Nothing selected"
 msgstr "何も選択されていません"
 
 #: ../src/ui/toolbar/gradient-toolbar.cpp:160
+#: ../src/ui/toolbar/gradient-toolbar.cpp:984
 msgid "Multiple gradients"
 msgstr "複数グラデーション"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:341
+#: ../src/ui/toolbar/gradient-toolbar.cpp:340
 #: ../src/ui/toolbar/mesh-toolbar.cpp:161
 msgid "New:"
 msgstr "新規:"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:345
+#: ../src/ui/toolbar/gradient-toolbar.cpp:344
 msgid "linear"
 msgstr "線形"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:346
+#: ../src/ui/toolbar/gradient-toolbar.cpp:345
 msgid "Create linear gradient"
 msgstr "線形グラデーションを作成"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:350
+#: ../src/ui/toolbar/gradient-toolbar.cpp:349
 msgid "radial"
 msgstr "放射"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:351
+#: ../src/ui/toolbar/gradient-toolbar.cpp:350
 msgid "Create radial (elliptic or circular) gradient"
 msgstr "放射 (楕円または真円) グラデーションを作成"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:371
+#: ../src/ui/toolbar/gradient-toolbar.cpp:370
 #: ../src/ui/toolbar/mesh-toolbar.cpp:190
 msgid "fill"
 msgstr "フィル"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:372
+#: ../src/ui/toolbar/gradient-toolbar.cpp:371
 #: ../src/ui/toolbar/mesh-toolbar.cpp:191
 msgid "Create gradient in the fill"
 msgstr "フィルのグラデーションを作成"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:376
+#: ../src/ui/toolbar/gradient-toolbar.cpp:375
 #: ../src/ui/toolbar/mesh-toolbar.cpp:195
 msgid "stroke"
 msgstr "ストローク"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:377
+#: ../src/ui/toolbar/gradient-toolbar.cpp:376
 #: ../src/ui/toolbar/mesh-toolbar.cpp:196
 msgid "Create gradient in the stroke"
 msgstr "ストロークのグラデーションを作成"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:426
+#: ../src/ui/toolbar/gradient-toolbar.cpp:425
 msgid "Link gradients"
 msgstr "グラデーションのリンク"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:427
+#: ../src/ui/toolbar/gradient-toolbar.cpp:426
 msgid "Link gradients to change all related gradients"
 msgstr "関連するすべてのグラデーションを変更するためにグラデーションをリンク"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:438
+#: ../src/ui/toolbar/gradient-toolbar.cpp:437
 #: ../share/ui/gradient-edit.glade:175
 msgid "Reverse the direction of the gradient"
 msgstr "グラデーションの方向を反転"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:451
+#: ../src/ui/toolbar/gradient-toolbar.cpp:450
 msgctxt "Gradient repeat type"
 msgid "None"
 msgstr "なし"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:452
+#: ../src/ui/toolbar/gradient-toolbar.cpp:451
 #: ../share/ui/gradient-edit.glade:44
 msgid "Reflected"
 msgstr "リフレクト"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:453
+#: ../src/ui/toolbar/gradient-toolbar.cpp:452
 #: ../share/ui/gradient-edit.glade:36
 msgid "Direct"
 msgstr "ダイレクト"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:462
+#: ../src/ui/toolbar/gradient-toolbar.cpp:461
 msgid "Repeat"
 msgstr "繰り返し"
 
 #. TRANSLATORS: for info, see http://www.w3.org/TR/2000/CR-SVG-20000802/pservers.html#LinearGradientSpreadMethodAttribute
-#: ../src/ui/toolbar/gradient-toolbar.cpp:464
+#: ../src/ui/toolbar/gradient-toolbar.cpp:463
 msgid ""
 "Whether to fill with flat color beyond the ends of the gradient vector "
 "(spreadMethod=\"pad\"), or repeat the gradient in the same direction "
@@ -30317,11 +30413,11 @@ msgstr ""
 "フレクト: グラデーションを交互に逆向きにしながら繰り返す (spreadMethod="
 "\"reflect\")。"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:489
+#: ../src/ui/toolbar/gradient-toolbar.cpp:488
 msgid "No stops"
 msgstr "色フェーズはありません"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:495
+#: ../src/ui/toolbar/gradient-toolbar.cpp:494
 #: ../share/ui/gradient-edit.glade:273
 msgid "Stops"
 msgstr "色フェーズ"
@@ -30352,21 +30448,21 @@ msgstr "色フェーズを削除"
 msgid "Assign gradient to object"
 msgstr "オブジェクトへのグラデーションの割り当て"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:645
+#: ../src/ui/toolbar/gradient-toolbar.cpp:646
 #: ../src/ui/widget/gradient-editor.cpp:483
 msgid "Set gradient repeat"
 msgstr "グラデーションの繰り返しの設定"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:774
+#: ../src/ui/toolbar/gradient-toolbar.cpp:773
 #: ../src/ui/widget/gradient-editor.cpp:614
 msgid "Change gradient stop offset"
 msgstr "グラデーションの色フェーズの変更"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:991
+#: ../src/ui/toolbar/gradient-toolbar.cpp:1007
 msgid "No stops in gradient"
 msgstr "グラデーションに色フェーズがありません"
 
-#: ../src/ui/toolbar/gradient-toolbar.cpp:1117
+#: ../src/ui/toolbar/gradient-toolbar.cpp:1133
 msgid "Multiple stops"
 msgstr "複数の色フェーズ"
 
@@ -30877,29 +30973,29 @@ msgstr ""
 "ページの縦横の長さ。(例: 15x10cm, 10in x 100mm)\n"
 "またはドロップダウンからサイズ名を選択"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:66 ../src/ui/toolbar/page-toolbar.cpp:155
+#: ../src/ui/toolbar/page-toolbar.cpp:67 ../src/ui/toolbar/page-toolbar.cpp:160
 msgid "Resize Page"
 msgstr "ページをサイズ変更"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:135
+#: ../src/ui/toolbar/page-toolbar.cpp:140
 msgid "Relabel Page"
 msgstr "ページのラベルを変更"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:259
+#: ../src/ui/toolbar/page-toolbar.cpp:283
 msgid "Page label"
 msgstr "ページのラベル"
 
 #. TRANSLATORS: "%1" is replaced with the page we are on, and "%2" is the total number of pages.
-#: ../src/ui/toolbar/page-toolbar.cpp:273
+#: ../src/ui/toolbar/page-toolbar.cpp:297
 msgid "%1/%2"
 msgstr "%1/%2"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:287
+#: ../src/ui/toolbar/page-toolbar.cpp:311
 msgid "Single Page Document"
 msgstr "単一ページのドキュメント"
 
 #. TRANSLATORS: This is a fixed value meaning a single page document
-#: ../src/ui/toolbar/page-toolbar.cpp:288 ../share/ui/toolbar-page.ui:93
+#: ../src/ui/toolbar/page-toolbar.cpp:312 ../share/ui/toolbar-page.ui:94
 msgid "1/-"
 msgstr "1/-"
 
@@ -31771,7 +31867,7 @@ msgstr "フォントスタイル"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:310
 #: ../src/ui/toolbar/text-toolbar.cpp:1967
-#: ../src/ui/widget/font-selector.cpp:32 ../src/ui/widget/font-selector.cpp:152
+#: ../src/ui/widget/font-selector.cpp:33 ../src/ui/widget/font-selector.cpp:168
 msgid "Font size"
 msgstr "フォントサイズ"
 
@@ -32290,18 +32386,18 @@ msgstr ""
 msgid "Create ellipse"
 msgstr "円/弧を作成"
 
-#: ../src/ui/tools/box3d-tool.cpp:325 ../src/ui/tools/box3d-tool.cpp:331
-#: ../src/ui/tools/box3d-tool.cpp:337 ../src/ui/tools/box3d-tool.cpp:343
-#: ../src/ui/tools/box3d-tool.cpp:349 ../src/ui/tools/box3d-tool.cpp:355
+#: ../src/ui/tools/box3d-tool.cpp:327 ../src/ui/tools/box3d-tool.cpp:333
+#: ../src/ui/tools/box3d-tool.cpp:339 ../src/ui/tools/box3d-tool.cpp:345
+#: ../src/ui/tools/box3d-tool.cpp:351 ../src/ui/tools/box3d-tool.cpp:357
 msgid "Change perspective (angle of PLs)"
 msgstr "パースペクティブを変更 (パースペクティブ線の角度)"
 
-#: ../src/ui/tools/box3d-tool.cpp:521
+#: ../src/ui/tools/box3d-tool.cpp:525
 msgid "<b>3D Box</b>; with <b>Shift</b> to extrude along the Z axis"
 msgstr ""
 "<b>3D ボックス</b>; <b>Shift</b> を押しながらで Z 軸に沿って押し出します。"
 
-#: ../src/ui/tools/box3d-tool.cpp:543
+#: ../src/ui/tools/box3d-tool.cpp:547
 msgid "Create 3D box"
 msgstr "3D ボックスを作成..."
 
@@ -32627,19 +32723,19 @@ msgstr "寸法をアイテムに変換"
 msgid "Add global measure line"
 msgstr "グローバルな寸法線を追加"
 
-#: ../src/ui/tools/measure-tool.cpp:1128
+#: ../src/ui/tools/measure-tool.cpp:1129
 msgid "Selected"
 msgstr "選択済み"
 
-#: ../src/ui/tools/measure-tool.cpp:1130
+#: ../src/ui/tools/measure-tool.cpp:1131
 msgid "Not selected"
 msgstr "選択されていません"
 
-#: ../src/ui/tools/measure-tool.cpp:1145
+#: ../src/ui/tools/measure-tool.cpp:1146
 msgid "Press 'CTRL' to measure into group"
 msgstr "'CTRL' を押してグループの内部を計測"
 
-#: ../src/ui/tools/measure-tool.cpp:1339 ../src/ui/tools/measure-tool.cpp:1341
+#: ../src/ui/tools/measure-tool.cpp:1340 ../src/ui/tools/measure-tool.cpp:1342
 #, c-format
 msgid "Crossing %lu"
 msgstr "交点 %lu"
@@ -32768,29 +32864,29 @@ msgstr "ドラッグして編集するオブジェクトを選択してくださ
 msgid "Resize page"
 msgstr "ページのサイズを変更"
 
-#: ../src/ui/tools/pen-tool.cpp:175 ../src/ui/tools/pencil-tool.cpp:515
+#: ../src/ui/tools/pen-tool.cpp:174 ../src/ui/tools/pencil-tool.cpp:515
 msgid "Drawing cancelled"
 msgstr "描画をキャンセルしました"
 
-#: ../src/ui/tools/pen-tool.cpp:400 ../src/ui/tools/pencil-tool.cpp:212
+#: ../src/ui/tools/pen-tool.cpp:399 ../src/ui/tools/pencil-tool.cpp:212
 msgid "Continuing selected path"
 msgstr "選択パスを延長"
 
-#: ../src/ui/tools/pen-tool.cpp:410 ../src/ui/tools/pencil-tool.cpp:220
+#: ../src/ui/tools/pen-tool.cpp:409 ../src/ui/tools/pencil-tool.cpp:220
 #: ../src/ui/tools/pencil-tool.cpp:226
 msgid "Creating new path"
 msgstr "新規パスを作成"
 
-#: ../src/ui/tools/pen-tool.cpp:412 ../src/ui/tools/pencil-tool.cpp:229
+#: ../src/ui/tools/pen-tool.cpp:411 ../src/ui/tools/pencil-tool.cpp:229
 msgid "Appending to selected path"
 msgstr "選択パスに追加"
 
-#: ../src/ui/tools/pen-tool.cpp:576
+#: ../src/ui/tools/pen-tool.cpp:575
 msgid "<b>Click</b> or <b>click and drag</b> to close and finish the path."
 msgstr ""
 "<b>クリック</b>または<b>クリック+ドラッグ</b>すると、パスを閉じて終了します。"
 
-#: ../src/ui/tools/pen-tool.cpp:578
+#: ../src/ui/tools/pen-tool.cpp:577
 msgid ""
 "<b>Click</b> or <b>click and drag</b> to close and finish the path. Shift"
 "+Click make a cusp node"
@@ -32798,14 +32894,14 @@ msgstr ""
 "<b>クリック</b>または<b>クリック+ドラッグ</b>すると、パスを閉じて終了します。"
 "Shift+クリックでシャープノードを作成"
 
-#: ../src/ui/tools/pen-tool.cpp:590
+#: ../src/ui/tools/pen-tool.cpp:589
 msgid ""
 "<b>Click</b> or <b>click and drag</b> to continue the path from this point."
 msgstr ""
 "<b>クリック</b>または<b>クリック+ドラッグ</b>すると、この点からパスを延長しま"
 "す。"
 
-#: ../src/ui/tools/pen-tool.cpp:592
+#: ../src/ui/tools/pen-tool.cpp:591
 msgid ""
 "<b>Click</b> or <b>click and drag</b> to continue the path from this point. "
 "Shift+Click make a cusp node"
@@ -32813,7 +32909,7 @@ msgstr ""
 "<b>クリック</b>または<b>クリック+ドラッグ</b>すると、この点からパスを延長しま"
 "す。Shift+クリックでシャープノードを作成"
 
-#: ../src/ui/tools/pen-tool.cpp:1728
+#: ../src/ui/tools/pen-tool.cpp:1735
 #, c-format
 msgid ""
 "<b>Curve segment</b>: angle %3.2f&#176;; <b>Shift+Click</b> creates cusp "
@@ -32823,7 +32919,7 @@ msgstr ""
 "を作成、<b>ALT</b> で前に移動、<b>Enter</b> または <b>Shift+Enter</b> でパス"
 "を完了します。"
 
-#: ../src/ui/tools/pen-tool.cpp:1729
+#: ../src/ui/tools/pen-tool.cpp:1736
 #, c-format
 msgid ""
 "<b>Line segment</b>: angle %3.2f&#176;; <b>Shift+Click</b> creates cusp "
@@ -32833,7 +32929,7 @@ msgstr ""
 "ド作成、<b>ALT</b> で前のノードに移動、<b>Enter</b> または <b>Shift+Enter</"
 "b> でパスを完了します。"
 
-#: ../src/ui/tools/pen-tool.cpp:1733
+#: ../src/ui/tools/pen-tool.cpp:1740
 #, c-format
 msgid ""
 "<b>Curve segment</b>: angle %3.2f&#176;, distance %s; with <b>Ctrl</b> to "
@@ -32842,7 +32938,7 @@ msgstr ""
 "<b>曲線セグメント</b>: 角度 %3.2f&#176;、距離 %s; <b>Ctrl</b> で角度をスナッ"
 "プ、<b>Enter</b> または <b>Shift+Enter</b> でパスを完了します。"
 
-#: ../src/ui/tools/pen-tool.cpp:1734
+#: ../src/ui/tools/pen-tool.cpp:1741
 #, c-format
 msgid ""
 "<b>Line segment</b>: angle %3.2f&#176;, distance %s; with <b>Ctrl</b> to "
@@ -32851,7 +32947,7 @@ msgstr ""
 "<b>直線セグメント</b>: 角度 %3.2f&#176;、距離 %s; <b>Ctrl</b> で角度をスナッ"
 "プ、<b>Enter</b> または <b>Shift+Enter</b> でパスを完了します。"
 
-#: ../src/ui/tools/pen-tool.cpp:1752
+#: ../src/ui/tools/pen-tool.cpp:1764
 #, c-format
 msgid ""
 "<b>Curve handle</b>: angle %3.2f&#176;, length %s; with <b>Ctrl</b> to snap "
@@ -32860,7 +32956,7 @@ msgstr ""
 "<b>曲線ハンドル</b>: 角度 %3.2f&#176;、長さ %s。<b>Ctrl</b> で角度をスナップ"
 "します。"
 
-#: ../src/ui/tools/pen-tool.cpp:1776
+#: ../src/ui/tools/pen-tool.cpp:1795
 #, c-format
 msgid ""
 "<b>Curve handle, symmetric</b>: angle %3.2f&#176;, length %s; with <b>Ctrl</"
@@ -32869,7 +32965,7 @@ msgstr ""
 "<b>曲線ハンドル、対称</b>: 角度 %3.2f&#176;、長さ %s; <b>Ctrl</b> で角度をス"
 "ナップ、<b>Shift</b> でこのハンドルのみ移動します。"
 
-#: ../src/ui/tools/pen-tool.cpp:1777
+#: ../src/ui/tools/pen-tool.cpp:1796
 #, c-format
 msgid ""
 "<b>Curve handle</b>: angle %3.2f&#176;, length %s; with <b>Ctrl</b> to snap "
@@ -32878,7 +32974,7 @@ msgstr ""
 "<b>曲線ハンドル</b>: 角度 %3.2f&#176;、長さ %s; <b>Ctrl</b> で角度をスナッ"
 "プ、<b>Shift</b> でこのハンドルのみ移動します。"
 
-#: ../src/ui/tools/pen-tool.cpp:1952
+#: ../src/ui/tools/pen-tool.cpp:1972
 msgid "Drawing finished"
 msgstr "描画完了"
 
@@ -33250,7 +33346,7 @@ msgstr[0] ""
 "流し込みテキストの編集 (%d 個の文字%s); <b>Enter</b> で新しい段落を開始しま"
 "す。"
 
-#: ../src/ui/tools/tool-base.cpp:703
+#: ../src/ui/tools/tool-base.cpp:708
 msgid "<b>Space+mouse move</b> to pan canvas"
 msgstr "<b>スペース+マウス移動</b> でキャンバスをパンします。"
 
@@ -33661,280 +33757,280 @@ msgstr "このフォントファミリのテキストをすべて選択"
 msgid "Font not found on system: "
 msgstr "システムにフォントが見つかりません: "
 
-#: ../src/ui/widget/font-selector.cpp:30
+#: ../src/ui/widget/font-selector.cpp:31
 msgid "Font family"
 msgstr "フォント"
 
-#: ../src/ui/widget/font-selector.cpp:31
+#: ../src/ui/widget/font-selector.cpp:32
 msgctxt "Font selector"
 msgid "Style"
 msgstr "スタイル"
 
-#: ../src/ui/widget/font-variants.cpp:152
+#: ../src/ui/widget/font-variants.cpp:153
 msgctxt "Font feature"
 msgid "Ligatures"
 msgstr "合字"
 
-#: ../src/ui/widget/font-variants.cpp:153
+#: ../src/ui/widget/font-variants.cpp:154
 msgctxt "Font feature"
 msgid "Common"
 msgstr "共通"
 
-#: ../src/ui/widget/font-variants.cpp:154
+#: ../src/ui/widget/font-variants.cpp:155
 msgctxt "Font feature"
 msgid "Discretionary"
 msgstr "任意"
 
-#: ../src/ui/widget/font-variants.cpp:155
+#: ../src/ui/widget/font-variants.cpp:156
 msgctxt "Font feature"
 msgid "Historical"
 msgstr "歴史的"
 
-#: ../src/ui/widget/font-variants.cpp:156
+#: ../src/ui/widget/font-variants.cpp:157
 msgctxt "Font feature"
 msgid "Contextual"
 msgstr "文脈的"
 
-#: ../src/ui/widget/font-variants.cpp:158
+#: ../src/ui/widget/font-variants.cpp:159
 msgctxt "Font feature"
 msgid "Position"
 msgstr "位置"
 
-#: ../src/ui/widget/font-variants.cpp:159
-#: ../src/ui/widget/font-variants.cpp:164
+#: ../src/ui/widget/font-variants.cpp:160
+#: ../src/ui/widget/font-variants.cpp:165
 msgctxt "Font feature"
 msgid "Normal"
 msgstr "標準"
 
-#: ../src/ui/widget/font-variants.cpp:160
+#: ../src/ui/widget/font-variants.cpp:161
 msgctxt "Font feature"
 msgid "Subscript"
 msgstr "下付き文字"
 
-#: ../src/ui/widget/font-variants.cpp:161
+#: ../src/ui/widget/font-variants.cpp:162
 msgctxt "Font feature"
 msgid "Superscript"
 msgstr "上付き文字"
 
-#: ../src/ui/widget/font-variants.cpp:163
+#: ../src/ui/widget/font-variants.cpp:164
 msgctxt "Font feature"
 msgid "Capitals"
 msgstr "大文字"
 
-#: ../src/ui/widget/font-variants.cpp:165
+#: ../src/ui/widget/font-variants.cpp:166
 msgctxt "Font feature"
 msgid "Small"
 msgstr "小"
 
-#: ../src/ui/widget/font-variants.cpp:166
+#: ../src/ui/widget/font-variants.cpp:167
 msgctxt "Font feature"
 msgid "All small"
 msgstr "すべて小"
 
-#: ../src/ui/widget/font-variants.cpp:167
+#: ../src/ui/widget/font-variants.cpp:168
 msgctxt "Font feature"
 msgid "Petite"
 msgstr "極小"
 
-#: ../src/ui/widget/font-variants.cpp:168
+#: ../src/ui/widget/font-variants.cpp:169
 msgctxt "Font feature"
 msgid "All petite"
 msgstr "すべて極小"
 
-#: ../src/ui/widget/font-variants.cpp:169
+#: ../src/ui/widget/font-variants.cpp:170
 msgctxt "Font feature"
 msgid "Unicase"
 msgstr "混在"
 
-#: ../src/ui/widget/font-variants.cpp:170
+#: ../src/ui/widget/font-variants.cpp:171
 msgctxt "Font feature"
 msgid "Titling"
 msgstr "題字用"
 
-#: ../src/ui/widget/font-variants.cpp:172
+#: ../src/ui/widget/font-variants.cpp:173
 msgctxt "Font feature"
 msgid "Numeric"
 msgstr "数字"
 
-#: ../src/ui/widget/font-variants.cpp:173
+#: ../src/ui/widget/font-variants.cpp:174
 msgctxt "Font feature"
 msgid "Lining"
 msgstr "ライニング"
 
-#: ../src/ui/widget/font-variants.cpp:174
+#: ../src/ui/widget/font-variants.cpp:175
 msgctxt "Font feature"
 msgid "Old Style"
 msgstr "オールドスタイル"
 
-#: ../src/ui/widget/font-variants.cpp:175
+#: ../src/ui/widget/font-variants.cpp:176
 msgctxt "Font feature"
 msgid "Default Style"
 msgstr "デフォルトのスタイル"
 
-#: ../src/ui/widget/font-variants.cpp:176
-#: ../src/ui/widget/font-variants.cpp:195
+#: ../src/ui/widget/font-variants.cpp:177
+#: ../src/ui/widget/font-variants.cpp:196
 msgctxt "Font feature"
 msgid "Proportional"
 msgstr "可変"
 
-#: ../src/ui/widget/font-variants.cpp:177
+#: ../src/ui/widget/font-variants.cpp:178
 msgctxt "Font feature"
 msgid "Tabular"
 msgstr "一定幅"
 
-#: ../src/ui/widget/font-variants.cpp:178
+#: ../src/ui/widget/font-variants.cpp:179
 msgctxt "Font feature"
 msgid "Default Width"
 msgstr "デフォルトの幅"
 
-#: ../src/ui/widget/font-variants.cpp:179
+#: ../src/ui/widget/font-variants.cpp:180
 msgctxt "Font feature"
 msgid "Diagonal"
 msgstr "斜め括線"
 
-#: ../src/ui/widget/font-variants.cpp:180
+#: ../src/ui/widget/font-variants.cpp:181
 msgctxt "Font feature"
 msgid "Stacked"
 msgstr "水平"
 
-#: ../src/ui/widget/font-variants.cpp:181
+#: ../src/ui/widget/font-variants.cpp:182
 msgctxt "Font feature"
 msgid "Default Fractions"
 msgstr "デフォルトの分数"
 
-#: ../src/ui/widget/font-variants.cpp:182
+#: ../src/ui/widget/font-variants.cpp:183
 msgctxt "Font feature"
 msgid "Ordinal"
 msgstr "序数"
 
-#: ../src/ui/widget/font-variants.cpp:183
+#: ../src/ui/widget/font-variants.cpp:184
 msgctxt "Font feature"
 msgid "Slashed Zero"
 msgstr "スラッシュ付きのゼロ"
 
-#: ../src/ui/widget/font-variants.cpp:185
+#: ../src/ui/widget/font-variants.cpp:186
 msgctxt "Font feature"
 msgid "East Asian"
 msgstr "東アジア"
 
-#: ../src/ui/widget/font-variants.cpp:186
-#: ../src/ui/widget/font-variants.cpp:193
+#: ../src/ui/widget/font-variants.cpp:187
+#: ../src/ui/widget/font-variants.cpp:194
 msgctxt "Font feature"
 msgid "Default"
 msgstr "デフォルト"
 
-#: ../src/ui/widget/font-variants.cpp:187
+#: ../src/ui/widget/font-variants.cpp:188
 msgctxt "Font feature"
 msgid "JIS78"
 msgstr "JIS78"
 
-#: ../src/ui/widget/font-variants.cpp:188
+#: ../src/ui/widget/font-variants.cpp:189
 msgctxt "Font feature"
 msgid "JIS83"
 msgstr "JIS83"
 
-#: ../src/ui/widget/font-variants.cpp:189
+#: ../src/ui/widget/font-variants.cpp:190
 msgctxt "Font feature"
 msgid "JIS90"
 msgstr "JIS90"
 
-#: ../src/ui/widget/font-variants.cpp:190
+#: ../src/ui/widget/font-variants.cpp:191
 msgctxt "Font feature"
 msgid "JIS04"
 msgstr "JIS04"
 
-#: ../src/ui/widget/font-variants.cpp:191
+#: ../src/ui/widget/font-variants.cpp:192
 msgctxt "Font feature"
 msgid "Simplified"
 msgstr "簡略化"
 
-#: ../src/ui/widget/font-variants.cpp:192
+#: ../src/ui/widget/font-variants.cpp:193
 msgctxt "Font feature"
 msgid "Traditional"
 msgstr "伝統的"
 
-#: ../src/ui/widget/font-variants.cpp:194
+#: ../src/ui/widget/font-variants.cpp:195
 msgctxt "Font feature"
 msgid "Full Width"
 msgstr "全角"
 
-#: ../src/ui/widget/font-variants.cpp:196
+#: ../src/ui/widget/font-variants.cpp:197
 msgctxt "Font feature"
 msgid "Ruby"
 msgstr "ルビ"
 
-#: ../src/ui/widget/font-variants.cpp:198
+#: ../src/ui/widget/font-variants.cpp:199
 msgctxt "Font feature"
 msgid "Feature Settings"
 msgstr "機能設定"
 
-#: ../src/ui/widget/font-variants.cpp:199
+#: ../src/ui/widget/font-variants.cpp:200
 msgctxt "Font feature"
 msgid "Selection has different Feature Settings!"
 msgstr "選択範囲には異なる機能が設定されています！"
 
-#: ../src/ui/widget/font-variants.cpp:216
+#: ../src/ui/widget/font-variants.cpp:217
 msgid "Common ligatures. On by default. OpenType tables: 'liga', 'clig'"
 msgstr "共通の合字。デフォルトで有効。OpenType テーブル: 'liga', 'clig'"
 
-#: ../src/ui/widget/font-variants.cpp:218
+#: ../src/ui/widget/font-variants.cpp:219
 msgid "Discretionary ligatures. Off by default. OpenType table: 'dlig'"
 msgstr "任意の合字。デフォルトで無効。OpenType テーブル: 'dlig'"
 
-#: ../src/ui/widget/font-variants.cpp:220
+#: ../src/ui/widget/font-variants.cpp:221
 msgid "Historical ligatures. Off by default. OpenType table: 'hlig'"
 msgstr "歴史的な合字。デフォルトで無効。OpenType テーブル: 'hlig'"
 
-#: ../src/ui/widget/font-variants.cpp:222
+#: ../src/ui/widget/font-variants.cpp:223
 msgid "Contextual forms. On by default. OpenType table: 'calt'"
 msgstr "字形を文脈に合わせる。デフォルトで有効。OpenType テーブル: 'calt'"
 
-#: ../src/ui/widget/font-variants.cpp:277
+#: ../src/ui/widget/font-variants.cpp:278
 msgid "Normal position."
 msgstr "標準の位置"
 
-#: ../src/ui/widget/font-variants.cpp:278
+#: ../src/ui/widget/font-variants.cpp:279
 msgid "Subscript. OpenType table: 'subs'"
 msgstr "下付き文字。OpenType テーブル: 'subs'"
 
-#: ../src/ui/widget/font-variants.cpp:279
+#: ../src/ui/widget/font-variants.cpp:280
 msgid "Superscript. OpenType table: 'sups'"
 msgstr "上付き文字。OpenType テーブル: 'sups'"
 
-#: ../src/ui/widget/font-variants.cpp:307
+#: ../src/ui/widget/font-variants.cpp:308
 msgid "Normal capitalization."
 msgstr "標準の大文字/小文字"
 
-#: ../src/ui/widget/font-variants.cpp:308
+#: ../src/ui/widget/font-variants.cpp:309
 msgid "Small-caps (lowercase). OpenType table: 'smcp'"
 msgstr "小さな大文字 (小文字部分)。OpenType テーブル: 'smcp'"
 
-#: ../src/ui/widget/font-variants.cpp:309
+#: ../src/ui/widget/font-variants.cpp:310
 msgid ""
 "All small-caps (uppercase and lowercase). OpenType tables: 'c2sc' and 'smcp'"
 msgstr ""
 "すべて小さな大文字 (大文字部分と小文字部分)。OpenType テーブル: 'c2sc' & "
 "'smcp'"
 
-#: ../src/ui/widget/font-variants.cpp:310
+#: ../src/ui/widget/font-variants.cpp:311
 msgid "Petite-caps (lowercase). OpenType table: 'pcap'"
 msgstr "極小の大文字 (小文字部分)。OpenType テーブル: 'pcap'"
 
-#: ../src/ui/widget/font-variants.cpp:311
+#: ../src/ui/widget/font-variants.cpp:312
 msgid ""
 "All petite-caps (uppercase and lowercase). OpenType tables: 'c2sc' and 'pcap'"
 msgstr ""
 "すべて極小の大文字 (大文字部分と小文字部分)。OpenType テーブル: 'c2sc' & "
 "'pcap'"
 
-#: ../src/ui/widget/font-variants.cpp:312
+#: ../src/ui/widget/font-variants.cpp:313
 msgid ""
 "Unicase (small caps for uppercase, normal for lowercase). OpenType table: "
 "'unic'"
 msgstr ""
 "混在 (小文字サイズの大文字と標準サイズの小文字)。OpenType テーブル: 'unic'"
 
-#: ../src/ui/widget/font-variants.cpp:313
+#: ../src/ui/widget/font-variants.cpp:314
 msgid ""
 "Titling caps (lighter-weight uppercase for use in titles). OpenType table: "
 "'titl'"
@@ -33942,96 +34038,96 @@ msgstr ""
 "題字用大文字 (タイトルバックなど題字に利用する細字の大文字)。OpenType テーブ"
 "ル: 'titl'"
 
-#: ../src/ui/widget/font-variants.cpp:353
+#: ../src/ui/widget/font-variants.cpp:354
 msgid "Normal style."
 msgstr "標準的なスタイル"
 
-#: ../src/ui/widget/font-variants.cpp:354
+#: ../src/ui/widget/font-variants.cpp:355
 msgid "Lining numerals. OpenType table: 'lnum'"
 msgstr "ライニング数字。OpenType テーブル: 'lnum'"
 
-#: ../src/ui/widget/font-variants.cpp:355
+#: ../src/ui/widget/font-variants.cpp:356
 msgid "Old style numerals. OpenType table: 'onum'"
 msgstr "オールドスタイル数字。OpenType テーブル: 'onum'"
 
-#: ../src/ui/widget/font-variants.cpp:356
+#: ../src/ui/widget/font-variants.cpp:357
 msgid "Normal widths."
 msgstr "標準的な幅"
 
-#: ../src/ui/widget/font-variants.cpp:357
+#: ../src/ui/widget/font-variants.cpp:358
 msgid "Proportional width numerals. OpenType table: 'pnum'"
 msgstr "均衡（可変）幅の数字。OpenType テーブル: 'pnum'"
 
-#: ../src/ui/widget/font-variants.cpp:358
+#: ../src/ui/widget/font-variants.cpp:359
 msgid "Same width numerals. OpenType table: 'tnum'"
 msgstr "一定幅の数字。OpenType テーブル: 'tnum'"
 
-#: ../src/ui/widget/font-variants.cpp:359
+#: ../src/ui/widget/font-variants.cpp:360
 msgid "Normal fractions."
 msgstr "標準的な分数"
 
-#: ../src/ui/widget/font-variants.cpp:360
+#: ../src/ui/widget/font-variants.cpp:361
 msgid "Diagonal fractions. OpenType table: 'frac'"
 msgstr "斜め括線による分数。OpenType テーブル: 'frac'"
 
-#: ../src/ui/widget/font-variants.cpp:361
+#: ../src/ui/widget/font-variants.cpp:362
 msgid "Stacked fractions. OpenType table: 'afrc'"
 msgstr "水平括線。OpenType テーブル: 'afrc'"
 
-#: ../src/ui/widget/font-variants.cpp:362
+#: ../src/ui/widget/font-variants.cpp:363
 msgid "Ordinals (raised 'th', etc.). OpenType table: 'ordn'"
 msgstr ""
 "序数を伴う普通字形 ('1st' の上付きの 'th' など)。OpenType テーブル: 'ordn'"
 
-#: ../src/ui/widget/font-variants.cpp:363
+#: ../src/ui/widget/font-variants.cpp:364
 msgid "Slashed zeros. OpenType table: 'zero'"
 msgstr "スラッシュ付きのゼロ。OpenType テーブル: 'zero'"
 
-#: ../src/ui/widget/font-variants.cpp:425
+#: ../src/ui/widget/font-variants.cpp:426
 msgid "Default variant."
 msgstr "デフォルトの変数"
 
-#: ../src/ui/widget/font-variants.cpp:426
+#: ../src/ui/widget/font-variants.cpp:427
 msgid "JIS78 forms. OpenType table: 'jp78'."
 msgstr "JIS78 形。OpenType テーブル: 'jp78'."
 
-#: ../src/ui/widget/font-variants.cpp:427
+#: ../src/ui/widget/font-variants.cpp:428
 msgid "JIS83 forms. OpenType table: 'jp83'."
 msgstr "JIS83 形。OpenType テーブル: 'jp83'."
 
-#: ../src/ui/widget/font-variants.cpp:428
+#: ../src/ui/widget/font-variants.cpp:429
 msgid "JIS90 forms. OpenType table: 'jp90'."
 msgstr "JIS90 形。OpenType テーブル: 'jp90'."
 
-#: ../src/ui/widget/font-variants.cpp:429
+#: ../src/ui/widget/font-variants.cpp:430
 msgid "JIS2004 forms. OpenType table: 'jp04'."
 msgstr "JIS2004 形。OpenType テーブル: 'jp04'."
 
-#: ../src/ui/widget/font-variants.cpp:430
+#: ../src/ui/widget/font-variants.cpp:431
 msgid "Simplified forms. OpenType table: 'smpl'."
 msgstr "簡略化形。OpenType テーブル: 'smpl'."
 
-#: ../src/ui/widget/font-variants.cpp:431
+#: ../src/ui/widget/font-variants.cpp:432
 msgid "Traditional forms. OpenType table: 'trad'."
 msgstr "伝統的形。OpenType テーブル: 'trad'."
 
-#: ../src/ui/widget/font-variants.cpp:432
+#: ../src/ui/widget/font-variants.cpp:433
 msgid "Default width."
 msgstr "デフォルトの幅です。"
 
-#: ../src/ui/widget/font-variants.cpp:433
+#: ../src/ui/widget/font-variants.cpp:434
 msgid "Full width variants. OpenType table: 'fwid'."
 msgstr "全角異体字。OpenType テーブル: 'fwid'"
 
-#: ../src/ui/widget/font-variants.cpp:434
+#: ../src/ui/widget/font-variants.cpp:435
 msgid "Proportional width variants. OpenType table: 'pwid'."
 msgstr "均衡（可変）幅の異体字。OpenType テーブル: 'pwid'."
 
-#: ../src/ui/widget/font-variants.cpp:435
+#: ../src/ui/widget/font-variants.cpp:436
 msgid "Ruby variants. OpenType table: 'ruby'."
 msgstr "ルビ異体字。OpenType テーブル: 'ruby'."
 
-#: ../src/ui/widget/font-variants.cpp:485
+#: ../src/ui/widget/font-variants.cpp:486
 msgid "Feature settings in CSS form (e.g. \"wxyz\" or \"wxyz\" 3)."
 msgstr "CSS 形式の機能設定 (例: \"wxyz\" または \"wxyz\" 3)"
 
@@ -34312,12 +34408,6 @@ msgstr "O:"
 msgid "N/A"
 msgstr "該当なし"
 
-#: ../src/ui/widget/selected-style.cpp:174
-#: ../src/ui/widget/selected-style.cpp:1020
-#: ../src/ui/widget/selected-style.cpp:1021
-msgid "Nothing selected"
-msgstr "何も選択されていません"
-
 #: ../src/ui/widget/selected-style.cpp:177
 msgctxt "Fill"
 msgid "<i>None</i>"
@@ -34474,10 +34564,6 @@ msgstr "色をコピー"
 #: ../src/ui/widget/selected-style.cpp:273
 msgid "Paste color"
 msgstr "色を貼り付け"
-
-#: ../src/ui/widget/selected-style.cpp:277
-msgid "Swap fill and stroke"
-msgstr "フィルとストロークを交換"
 
 #: ../src/ui/widget/selected-style.cpp:281
 #: ../src/ui/widget/selected-style.cpp:568
@@ -34962,7 +35048,7 @@ msgstr "ページ"
 msgid "Centre Page"
 msgstr "中央ページ"
 
-#: ../src/widgets/desktop-widget.cpp:1804
+#: ../src/widgets/desktop-widget.cpp:1801
 msgid "Create guide"
 msgstr "ガイドを作成"
 
@@ -35668,7 +35754,7 @@ msgstr "デバッグ情報をコピーしました！"
 msgid "Click to copy debug info to the clipboard"
 msgstr "クリックしてデバッグ情報をクリップボードにコピー"
 
-#: ../share/ui/inkscape-start.glade:57 ../share/ui/inkscape-start.glade:1476
+#: ../share/ui/inkscape-start.glade:57 ../share/ui/inkscape-start.glade:746
 msgid "Dark"
 msgstr "ダーク"
 
@@ -35688,363 +35774,43 @@ msgstr "白一色"
 msgid "Inkscape (default)"
 msgstr "Inkscape (デフォルト)"
 
-#: ../share/ui/inkscape-start.glade:128
-msgid "About Screen"
-msgstr "About Screen"
-
-#: ../share/ui/inkscape-start.glade:136
-msgid "Icon 120x120"
-msgstr "アイコン 120x120"
-
-#: ../share/ui/inkscape-start.glade:144
-msgid "Icon 16x16"
-msgstr "アイコン 16x16"
-
-#: ../share/ui/inkscape-start.glade:152
-msgid "Icon 180x180"
-msgstr "アイコン 180x180"
-
-#: ../share/ui/inkscape-start.glade:160
-msgid "Icon 32x32"
-msgstr "アイコン 32x32"
-
-#: ../share/ui/inkscape-start.glade:168
-msgid "Icon 48x48"
-msgstr "アイコン 48x48"
-
-#: ../share/ui/inkscape-start.glade:176
-msgid "Icon 512x512"
-msgstr "アイコン 512x512"
-
-#: ../share/ui/inkscape-start.glade:184
-msgid "ID Card (ISO 7810)"
-msgstr "IDカード (ISO7810)"
-
-#: ../share/ui/inkscape-start.glade:210 ../share/ui/page-properties.glade:468
-msgid "A4"
-msgstr "A4"
-
-#: ../share/ui/inkscape-start.glade:218
-msgid "A4 (Landscape)"
-msgstr "A4 (横)"
-
-#: ../share/ui/inkscape-start.glade:226
-msgid "US Letter"
-msgstr "US レター"
-
-#: ../share/ui/inkscape-start.glade:234
-msgid "US Letter (Landscape)"
-msgstr "US レター (横)"
-
-#: ../share/ui/inkscape-start.glade:242
-msgid "A0"
-msgstr "A0"
-
-#: ../share/ui/inkscape-start.glade:250
-msgid "A0 (Landscape)"
-msgstr "A0 (横)"
-
-#: ../share/ui/inkscape-start.glade:258
-msgid "A1"
-msgstr "A1"
-
-#: ../share/ui/inkscape-start.glade:266
-msgid "A1 (Landscape)"
-msgstr "A1 (横)"
-
-#: ../share/ui/inkscape-start.glade:274
-msgid "A2"
-msgstr "A2"
-
-#: ../share/ui/inkscape-start.glade:282
-msgid "A2 (Landscape)"
-msgstr "A2 (横)"
-
-#: ../share/ui/inkscape-start.glade:290
-msgid "A3"
-msgstr "A3"
-
-#: ../share/ui/inkscape-start.glade:298
-msgid "A3 (Landscape)"
-msgstr "A3 (横)"
-
-#: ../share/ui/inkscape-start.glade:306
-msgid "A5"
-msgstr "A5"
-
-#: ../share/ui/inkscape-start.glade:314
-msgid "A5 (Landscape)"
-msgstr "A5 (横)"
-
-#: ../share/ui/inkscape-start.glade:322
-msgid "Business Card AU/NZ (Landscape)"
-msgstr "名刺 豪州/NZ (横)"
-
-#: ../share/ui/inkscape-start.glade:330
-msgid "Business Card AU/NZ (Portrait)"
-msgstr "名刺 豪州/NZ (縦)"
-
-#: ../share/ui/inkscape-start.glade:338
-msgid "Business Card EU (Landscape)"
-msgstr "名刺 EU (横)"
-
-#: ../share/ui/inkscape-start.glade:346
-msgid "Business Card EU (Portrait)"
-msgstr "名刺 EU (縦)"
-
-#: ../share/ui/inkscape-start.glade:354
-msgid "Business Card EU (Square)"
-msgstr "名刺 EU (正方形)"
-
-#: ../share/ui/inkscape-start.glade:362
-msgid "Business Card US (Landscape)"
-msgstr "名刺 US (横)"
-
-#: ../share/ui/inkscape-start.glade:370
-msgid "Business Card US (Portrait)"
-msgstr "名刺 US (縦)"
-
-#: ../share/ui/inkscape-start.glade:378
-msgid "Business Card US (Square)"
-msgstr "名刺 US (正方形)"
-
-#: ../share/ui/inkscape-start.glade:386
-msgid "DL Envelope"
-msgstr "DL 封筒"
-
-#: ../share/ui/inkscape-start.glade:394
-msgid "Ledger/Tabloid"
-msgstr "レジャー/タブロイド"
-
-#: ../share/ui/inkscape-start.glade:402
-msgid "US #10 Envelope"
-msgstr "US #10 封筒"
-
-#: ../share/ui/inkscape-start.glade:410
-msgid "US Executive"
-msgstr "US エグゼクティブ"
-
-#: ../share/ui/inkscape-start.glade:418
-msgid "US Executive (Landscape)"
-msgstr "US エグゼクティブ (横)"
-
-#: ../share/ui/inkscape-start.glade:426
-msgid "US Legal"
-msgstr "US リーガル"
-
-#: ../share/ui/inkscape-start.glade:434
-msgid "US Legal (Landscape)"
-msgstr "US リーガル (横)"
-
-#: ../share/ui/inkscape-start.glade:460
-msgid "Desktop 1080p"
-msgstr "デスクトップ 1080p"
-
-#: ../share/ui/inkscape-start.glade:468
-msgid "Desktop 2K"
-msgstr "デスクトップ 2K"
-
-#: ../share/ui/inkscape-start.glade:476
-msgid "Desktop 4K"
-msgstr "デスクトップ 4K"
-
-#: ../share/ui/inkscape-start.glade:484
-msgid "Desktop 720p"
-msgstr "デスクトップ 720p"
-
-#: ../share/ui/inkscape-start.glade:492
-msgid "Desktop SD"
-msgstr "デスクトップ SD"
-
-#: ../share/ui/inkscape-start.glade:500
-msgid "iPhone 5"
-msgstr "iPhone 5"
-
-#: ../share/ui/inkscape-start.glade:508
-msgid "iPhone X"
-msgstr "iPhone X"
-
-#: ../share/ui/inkscape-start.glade:516
-msgid "Mobile-smallest"
-msgstr "スマートフォン 小型"
-
-#: ../share/ui/inkscape-start.glade:524
-msgid "iPad Pro"
-msgstr "iPad Pro"
-
-#: ../share/ui/inkscape-start.glade:532
-msgid "Tablet-smallest"
-msgstr "タブレット 小型"
-
-#: ../share/ui/inkscape-start.glade:558
-msgid "Facebook cover photo"
-msgstr "Facebook カバー写真"
-
-#: ../share/ui/inkscape-start.glade:566
-msgid "Facebook event image"
-msgstr "Facebook イベント画像"
-
-#: ../share/ui/inkscape-start.glade:574
-msgid "Facebook image post"
-msgstr "Facebook 画像投稿"
-
-#: ../share/ui/inkscape-start.glade:582
-msgid "Facebook link image"
-msgstr "Facebook リンク画像"
-
-#: ../share/ui/inkscape-start.glade:590
-msgid "Facebook profile picture"
-msgstr "Facebook プロフィール写真"
-
-#: ../share/ui/inkscape-start.glade:598
-msgid "Facebook video"
-msgstr "Facebook 動画"
-
-#: ../share/ui/inkscape-start.glade:606
-msgid "Instagram landscape"
-msgstr "インスタグラム 横"
-
-#: ../share/ui/inkscape-start.glade:614
-msgid "Instagram portrait"
-msgstr "インスタグラム 縦"
-
-#: ../share/ui/inkscape-start.glade:622
-msgid "Instagram square"
-msgstr "インスタグラム 正方形"
-
-#: ../share/ui/inkscape-start.glade:630
-msgid "LinkedIn business banner image"
-msgstr "LinkedIn ビジネスバナー画像"
-
-#: ../share/ui/inkscape-start.glade:638
-msgid "LinkedIn company logo"
-msgstr "LinkedIn 会社ロゴ"
-
-#: ../share/ui/inkscape-start.glade:646
-msgid "LinkedIn cover photo"
-msgstr "LinkedIn カバー写真"
-
-#: ../share/ui/inkscape-start.glade:654
-msgid "LinkedIn dynamic ad"
-msgstr "LinkedIn ダイナミック広告"
-
-#: ../share/ui/inkscape-start.glade:662
-msgid "LinkedIn hero image"
-msgstr "LinkedIn ヒーロー画像"
-
-#: ../share/ui/inkscape-start.glade:670
-msgid "LinkedIn sponsored content image"
-msgstr "LinkedIn スポンサー付きコンテンツ画像"
-
-#: ../share/ui/inkscape-start.glade:678
-msgid "Snapchat advertisement"
-msgstr "Snapchat 広告"
-
-#: ../share/ui/inkscape-start.glade:686
-msgid "Twitter card image"
-msgstr "Twitter カード画像"
-
-#: ../share/ui/inkscape-start.glade:694
-msgid "Twitter header"
-msgstr "Twitter ヘッダー"
-
-#: ../share/ui/inkscape-start.glade:702
-msgid "Twitter post image"
-msgstr "Twitter 投稿画像"
-
-#: ../share/ui/inkscape-start.glade:710
-msgid "Twitter profile picture"
-msgstr "Twitter プロフィール写真"
-
-#: ../share/ui/inkscape-start.glade:718
-msgid "Twitter video landscape"
-msgstr "Twitter 動画 横"
-
-#: ../share/ui/inkscape-start.glade:726
-msgid "Twitter video portrait"
-msgstr "Twitter 動画 縦"
-
-#: ../share/ui/inkscape-start.glade:734
-msgid "Twitter video square"
-msgstr "Twitter 動画 正方形"
-
-#: ../share/ui/inkscape-start.glade:760
-msgid "Video DCI 2k (Full Frame)"
-msgstr "動画 DCI 2k (フルフレーム)"
-
-#: ../share/ui/inkscape-start.glade:768
-msgid "Video DCI 4k (Full Frame)"
-msgstr "動画 DCI 4k (フルフレーム)"
-
-#: ../share/ui/inkscape-start.glade:776
-msgid "Video HD 1080p"
-msgstr "動画 HD 1080p"
-
-#: ../share/ui/inkscape-start.glade:784
-msgid "Video HD 720p"
-msgstr "動画 HD 720p"
-
-#: ../share/ui/inkscape-start.glade:792
-msgid "Video SD / NTSC"
-msgstr "動画 SD / NTSC"
-
-#: ../share/ui/inkscape-start.glade:800
-msgid "Video SD / PAL"
-msgstr "動画 SD / PAL"
-
-#: ../share/ui/inkscape-start.glade:808
-msgid "Video SD-Widescreen / NTSC"
-msgstr "動画 SD-ワイドスクリーン / NTSC"
-
-#: ../share/ui/inkscape-start.glade:816
-msgid "Video SD-Widescreen / PAL"
-msgstr "動画 SD-ワイドスクリーン / PAL"
-
-#: ../share/ui/inkscape-start.glade:824
-msgid "Video UHD 4k"
-msgstr "動画 UHD 4k"
-
-#: ../share/ui/inkscape-start.glade:832
-msgid "Video UHD 8k"
-msgstr "動画 UHD 8k"
-
-#: ../share/ui/inkscape-start.glade:901
+#: ../share/ui/inkscape-start.glade:171
 msgid "Colorful"
 msgstr "カラフル"
 
-#: ../share/ui/inkscape-start.glade:915
+#: ../share/ui/inkscape-start.glade:185
 #: ../share/extensions/color_grayscale.inx:3
 #: ../share/extensions/webslicer_create_rect.inx:27
 msgid "Grayscale"
 msgstr "グレースケール"
 
-#: ../share/ui/inkscape-start.glade:929
+#: ../share/ui/inkscape-start.glade:199
 msgid "Classic Symbolic"
 msgstr "クラシック シンボル風"
 
-#: ../share/ui/inkscape-start.glade:943
+#: ../share/ui/inkscape-start.glade:213
 msgid "Compacted (Small Screens)"
 msgstr "コンパクト (スクリーン小)"
 
-#: ../share/ui/inkscape-start.glade:957
+#: ../share/ui/inkscape-start.glade:227
 msgid "System Default"
 msgstr "システムデフォルト"
 
-#: ../share/ui/inkscape-start.glade:971
+#: ../share/ui/inkscape-start.glade:241
 msgid "Classic Inkscape"
 msgstr "クラシック Inkscape"
 
 #. Not automatic, but will be turned into start-welcome-text.svg
-#: ../share/ui/inkscape-start.glade:1036
+#: ../share/ui/inkscape-start.glade:306
 msgid "Welcome!"
 msgstr "ようこそ！"
 
 #. Not automatic, but will be turned into start-welcome-text.svg
-#: ../share/ui/inkscape-start.glade:1042
+#: ../share/ui/inkscape-start.glade:312
 msgid "Let's set up a few things..."
 msgstr "いくつか簡単に設定しましょう"
 
-#: ../share/ui/inkscape-start.glade:1181
+#: ../share/ui/inkscape-start.glade:451
 msgid ""
 "<b>Warning:</b> Using a non-standard shortcut keyboard layout could make it "
 "harder to follow tutorials."
@@ -36052,23 +35818,23 @@ msgstr ""
 "<b>警告:</b> 標準以外のキーボードレイアウトでショートカットを使用すると、"
 "チュートリアルの内容が理解しづらくなる可能性があります。"
 
-#: ../share/ui/inkscape-start.glade:1240
+#: ../share/ui/inkscape-start.glade:510
 msgid "Appearance"
 msgstr "外観"
 
-#: ../share/ui/inkscape-start.glade:1441
+#: ../share/ui/inkscape-start.glade:711
 msgid "Select the default color background for the canvas"
 msgstr "キャンバスのデフォルトの背景色を選択します"
 
-#: ../share/ui/inkscape-start.glade:1488
+#: ../share/ui/inkscape-start.glade:758
 msgid "Set to dark theme"
 msgstr "ダークテーマを使用"
 
-#: ../share/ui/inkscape-start.glade:1587
+#: ../share/ui/inkscape-start.glade:857
 msgid "Quick Setup"
 msgstr "クイック設定"
 
-#: ../share/ui/inkscape-start.glade:1607
+#: ../share/ui/inkscape-start.glade:877
 msgid ""
 "<big><b>The Inkscape project is supported by users like you.</b> Through our "
 "collective time, money and skill, we have made this software for everyone in "
@@ -36084,7 +35850,7 @@ msgstr ""
 "お考えなら、今日にでも Inksape プロジェクトに参加することを考えてみてくださ"
 "い。</b></big>"
 
-#: ../share/ui/inkscape-start.glade:1669
+#: ../share/ui/inkscape-start.glade:939
 msgid ""
 "Learn how to\n"
 "Contribute Time"
@@ -36092,7 +35858,7 @@ msgstr ""
 "活動に参加する\n"
 "方法を学ぶ"
 
-#: ../share/ui/inkscape-start.glade:1727
+#: ../share/ui/inkscape-start.glade:997
 msgid ""
 "Learn how to\n"
 "Fund Inkscape"
@@ -36100,59 +35866,33 @@ msgstr ""
 "資金提供の\n"
 "方法を学ぶ"
 
-#: ../share/ui/inkscape-start.glade:1775
+#: ../share/ui/inkscape-start.glade:1045
 msgid "Thanks!"
 msgstr "どうも！"
 
-#: ../share/ui/inkscape-start.glade:1809
+#: ../share/ui/inkscape-start.glade:1079
 msgid "Supported by You"
 msgstr "サポートする"
 
-#: ../share/ui/inkscape-start.glade:1844
+#: ../share/ui/inkscape-start.glade:1114
 msgctxt "Welcome dialog"
 msgid "Recent Files"
 msgstr "最近開いたファイル"
 
-#: ../share/ui/inkscape-start.glade:1863
+#: ../share/ui/inkscape-start.glade:1133
 msgctxt "Welcome dialog"
 msgid "Existing Files"
 msgstr "既存のファイル"
 
-#: ../share/ui/inkscape-start.glade:1920
-msgctxt "Document format category"
-msgid "Print"
-msgstr "プリント"
-
-#: ../share/ui/inkscape-start.glade:1979
-msgctxt "Document format category"
-msgid "Screen"
-msgstr "スクリーン"
-
-#: ../share/ui/inkscape-start.glade:2037
-msgctxt "Document format category"
-msgid "Video"
-msgstr "動画"
-
-#. Social Media
-#: ../share/ui/inkscape-start.glade:2095
-msgctxt "Document format category"
-msgid "Social"
-msgstr "ソーシャル"
-
-#: ../share/ui/inkscape-start.glade:2153
-msgctxt "Document format category"
-msgid "Other"
-msgstr "その他"
-
-#: ../share/ui/inkscape-start.glade:2194
+#: ../share/ui/inkscape-start.glade:1173
 msgid "Show this every time"
 msgstr "毎回表示する"
 
-#: ../share/ui/inkscape-start.glade:2210
+#: ../share/ui/inkscape-start.glade:1189
 msgid "New Document"
 msgstr "新規ドキュメント"
 
-#: ../share/ui/inkscape-start.glade:2241
+#: ../share/ui/inkscape-start.glade:1220
 msgid "Time to Draw"
 msgstr "絵を描く"
 
@@ -36236,6 +35976,10 @@ msgstr ""
 #: ../share/ui/page-properties.glade:457
 msgid "Predefined paper sizes to choose from"
 msgstr "選択肢として提示する定義済みの用紙サイズ"
+
+#: ../share/ui/page-properties.glade:468
+msgid "A4"
+msgstr "A4"
 
 #: ../share/ui/page-properties.glade:484
 msgid "Document's units used to specify document size only"
@@ -37073,11 +36817,11 @@ msgstr "ヒントやコツ(_T)"
 msgid "_About Inkscape"
 msgstr "Inkscapeについて(_A)"
 
-#: ../share/ui/toolbar-page.ui:123
+#: ../share/ui/toolbar-page.ui:124
 msgid "Page Label"
 msgstr "ページのラベル"
 
-#: ../share/ui/toolbar-page.ui:160
+#: ../share/ui/toolbar-page.ui:161
 msgid "Move Objects"
 msgstr "オブジェクトを移動"
 
@@ -37204,6 +36948,10 @@ msgstr "その他"
 #: ../share/ui/toolbar-tool-prefs.ui:752
 msgid "CANVAS TOOLS"
 msgstr "キャンバスツール"
+
+#: ../share/ui/widget-new-from-template.ui:21
+msgid "Example Item"
+msgstr "アイテムの例"
 
 #: ../share/extensions/barcode/Base.py:49
 msgid "Error encoding '{}' as {} barcode: {}\n"
@@ -38017,7 +37765,7 @@ msgstr ""
 "パターンの幅を編集してください。"
 
 #: ../share/extensions/pdflatex.py:75
-msgid "An exception occured during LaTeX compilation: "
+msgid "An exception occurred during LaTeX compilation: "
 msgstr "LaTeX のコンパイル中に例外が発生しました: "
 
 #: ../share/extensions/perspective.py:44
@@ -38072,8 +37820,8 @@ msgid "Can't find wavefront object file {}"
 msgstr "wavefront オブジェクトファイル {} が見つかりませんでした"
 
 #: ../share/extensions/polyhedron_3d.py:347
-msgid "numpy is required."
-msgstr "numpy が必要です。"
+msgid "This extension requires the numpy library."
+msgstr "このエクステンションには numpy ライブラリが必要です。"
 
 #: ../share/extensions/polyhedron_3d.py:420
 msgid "Face data not found."
@@ -39214,26 +38962,42 @@ msgstr ""
 #: ../share/extensions/extrude.inx:17
 msgid ""
 "\n"
-"This effect draws lines between each nth node of each selected \n"
-"path. It therefore works best if all selected paths have the \n"
+"This effect draws lines between each nth node of each selected\n"
+"path. It therefore works best if all selected paths have the\n"
 "same number of nodes.\n"
 "\n"
-"It can be chosen whether these regions are filled and whether \n"
-"the fill uses rectangles or copies of the path segments.\n"
+"There are 3 main options:\n"
+"- lines: segments are created between the corresponding nodes.\n"
+"  It is possible to select the option \"Combine lines to single\n"
+"  path\" so that the segments that are created are subpaths of a\n"
+"  single path; otherwise, the segments that are created are\n"
+"  separate paths grouped together.\n"
+"- polygons: Polygons with straight lines are created between\n"
+"  corresponding pairs of nodes of each path. The polygons are\n"
+"  grouped together.\n"
+"- follow curves: the same as polygons, but the 'segments' of the\n"
+"  path that lie on top of the original paths will follow The\n"
+"  same curves as on the original path.\n"
 "\n"
 "The lines will be inserted above the bottom of the two elements.\n"
 "            "
 msgstr ""
 "\n"
-"このエフェクトは、選択したパス中のそれぞれ n 番目のノード間に\n"
-"線を描画します。このため、選択したすべてのパス中にそれぞれ同数の\n"
-"ノードが存在するときに最もうまく動作します。\n"
+"このエフェクトは、選択したパスのそれぞれ n 番目のノード間に線を\n"
+"描画します。したがって選択したすべてのパスのノード数が同じときに\n"
+"最も良い結果を生み出します。\n"
 "\n"
-"これらの領域にフィルを適用するか、フィルに矩形またはパスセグメント\n"
-"のコピーを使用するかを選択できます。\n"
+"メインのオプションには次の 3 種類があります。\n"
+"- 直線: 対応するノード間にセグメントを作成します。\n"
+"  ひとつのパスのサブパスとしてセグメントを作成するよう、\"複数パスを\n"
+"  ひとつのパスに結合\" を選択可能です。選択しないと、グループ化された\n"
+"  別のサブパスとして作成します。\n"
+"- 多角形: それぞれのパスの対応するノードのペアの間に、直線でできた\n"
+"  多角形を作成します。多角形はグループ化されます。\n"
+"- パスに沿う: 多角形と同様ですが、もとのパスの上に置かれるパスの\n"
+"'セグメント' は、もとのパスと同じ曲線に従います。\n"
 "\n"
-"2 つの要素の下端に線が挿入されます。\n"
-"            "
+"線は、2 つの要素の下部に挿入されます。"
 
 #: ../share/extensions/fig_input.inx:3
 msgid "XFIG Input"
@@ -40577,7 +40341,7 @@ msgstr "補間方式:"
 msgid ""
 "The first option rediscretizes both paths before the interpolation with the "
 "other path's node positions. The second option removes extra nodes of the "
-"longer path (yields good results if both subpaths have equal length)"
+"longer path."
 msgstr ""
 "最初のオプションは、別のパスのノード位置で補間する前に両方のパスを離散化しま"
 "す。二番目のオプションは、長い方のパスから余分なノードを除去します (両方のサ"
@@ -41167,10 +40931,6 @@ msgid ""
 msgstr ""
 "このエクステンションで JessyInk スクリプトをアンインストールできます。詳しく"
 "は code.google.com/p/jessyink をご覧ください。"
-
-#: ../share/extensions/jessyink_video.inx:3
-msgid "Video"
-msgstr "ビデオ"
 
 #: ../share/extensions/jessyink_video.inx:7
 msgid ""
@@ -43423,7 +43183,6 @@ msgid "Y-Function:"
 msgstr "Y 関数:"
 
 #: ../share/extensions/path_envelope.inx:3
-#: ../share/extensions/template_envelope.inx:3
 msgid "Envelope"
 msgstr "エンベロープ"
 
@@ -43710,7 +43469,7 @@ msgstr "スタンドアロンのドキュメントクラスを使用"
 msgid ""
 "Without the standalone document class, font sizes other than 10pt are "
 "achieved by scaling the resulting PDF output (internally, the document class "
-"'minimal' is used). More correct spacing for all font sizes can be achived "
+"'minimal' is used). More correct spacing for all font sizes can be achieved "
 "by using 'standalone'. However, the required packages might not be available "
 "on all systems."
 msgstr ""
@@ -44995,17 +44754,27 @@ msgstr "Z順をシャッフル"
 
 #: ../share/extensions/restack.inx:42
 msgid ""
-"This extension changes the z-order of objects based on their position on the "
-"canvas or their current z-order. Selection: The extension restacks either "
-"objects inside a single selected group, or a selection of multiple objects "
-"on the current drawing level (layer or group)."
+"\n"
+"This extension changes the z-order of objects based on their position\n"
+"on the canvas or their current z-order.\n"
+"The extension restacks all the selected objects. Groups are treated as\n"
+"a single object.\n"
+"If elements of a group are selected together with external objects,\n"
+"the elements of the group are extracted and positioned next to the other\n"
+"objects being restacked (elements on different layers are brought together\n"
+"to the same layer).\n"
+"            "
 msgstr ""
-"このエクステンションはオブジェクトのZ順をキャンバス上の位置または現在のZ順に"
-"基づいて変更します。選択: エクステンションは選択したひとつのグループ内で、ま"
-"たは現在の描画レベル (レイヤーまたはグループ) から選択した複数のオブジェクト"
-"の中で重ね直します。"
+"\n"
+"このエクステンションはオブジェクトの Z 順をキャンバス上の位置または\n"
+"現在の Z 順に基づいて変更します。\n"
+"このエクステンションは選択したすべてのオブジェクトを重ね直します。\n"
+"グループは 1 個のオブジェクトとして扱われます。\n"
+"グループ内のオブジェクトを外部のオブジェクトと一緒に選択した場合には\n"
+"そのグループの要素は抽出され、もうひとつのオブジェクトの隣に重ね直して\n"
+"配置されます。(別レイヤーの要素は同じレイヤーに移されます。)"
 
-#: ../share/extensions/restack.inx:51 ../share/extensions/ungroup_deep.inx:12
+#: ../share/extensions/restack.inx:57 ../share/extensions/ungroup_deep.inx:12
 msgid "Arrange"
 msgstr "配列"
 
@@ -45436,297 +45205,91 @@ msgstr "各レイヤーを 1 個の SVG ファイルに分割し、Tar ファイ
 msgid "Business Card"
 msgstr "名刺"
 
-#: ../share/extensions/template_business_card.inx:6
+#: ../share/extensions/template_business_card.inx:9
 msgid "Business card size:"
 msgstr "名刺サイズ:"
 
-#: ../share/extensions/template_business_card.inx:7
+#: ../share/extensions/template_business_card.inx:10
 msgid "74mm x 52mm (A8)"
 msgstr "74mm x 52mm (A8)"
 
-#: ../share/extensions/template_business_card.inx:8
+#: ../share/extensions/template_business_card.inx:11
+msgid "ISO Card (ISO 7810)"
+msgstr "ID カード (ISO 7810)"
+
+#: ../share/extensions/template_business_card.inx:12
 msgid "85mm x 55mm (Europe)"
 msgstr "85mm x 55mm (欧州)"
 
-#: ../share/extensions/template_business_card.inx:9
+#: ../share/extensions/template_business_card.inx:13
+msgid "55mm x 55mm (Europe Square)"
+msgstr "55mm x 55mm (欧州スクエア)"
+
+#: ../share/extensions/template_business_card.inx:14
 msgid "90mm x 55mm (Australia, India, ...)"
 msgstr "90mm x 55mm (豪州, インド, ...)"
 
-#: ../share/extensions/template_business_card.inx:10
+#: ../share/extensions/template_business_card.inx:15
 msgid "91mm x 55mm (Japan)"
 msgstr "91mm x 55mm (日本)"
 
-#: ../share/extensions/template_business_card.inx:11
+#: ../share/extensions/template_business_card.inx:16
 msgid "90mm x 54mm (China, ...)"
 msgstr "90mm x 54mm (中国, ...)"
 
-#: ../share/extensions/template_business_card.inx:12
+#: ../share/extensions/template_business_card.inx:17
 msgid "90mm x 50mm (India, Russia, ...)"
 msgstr "90mm x 50mm (インド, ロシア, ...)"
 
-#: ../share/extensions/template_business_card.inx:13
-msgid "3.5in x 2in (United States, Canada)"
+#: ../share/extensions/template_business_card.inx:18
+msgid "3.5in x 2in (US/Canada)"
 msgstr "3.5in x 2in (北米, カナダ)"
 
-#: ../share/extensions/template_business_card.inx:21
-msgid "Business Card..."
-msgstr "名刺..."
-
-#: ../share/extensions/template_business_card.inx:23
-msgid "Business card of chosen size."
-msgstr "指定サイズの名刺"
-
-#: ../share/extensions/template_business_card.inx:25
-msgid "business card"
-msgstr "名刺"
-
-#: ../share/extensions/template_desktop.inx:3
-msgid "Desktop"
-msgstr "デスクトップ"
-
-#: ../share/extensions/template_desktop.inx:6
-msgid "Desktop size:"
-msgstr "デスクトップのサイズ:"
-
-#: ../share/extensions/template_desktop.inx:33
-msgid "Desktop..."
-msgstr "デスクトップ..."
-
-#: ../share/extensions/template_desktop.inx:35
-msgid "Empty desktop of chosen size."
-msgstr "選択したサイズの空のデスクトップ"
-
-#: ../share/extensions/template_desktop.inx:37
-msgid "empty desktop"
-msgstr "空のデスクトップ"
+#: ../share/extensions/template_business_card.inx:19
+msgid "2in x 2in (US Square)"
+msgstr "2in x 2in (米国スクエア)"
 
 #: ../share/extensions/template_dvd_cover.inx:3
 msgid "DVD Cover"
 msgstr "DVDカバー"
 
-#: ../share/extensions/template_dvd_cover.inx:6
+#: ../share/extensions/template_dvd_cover.inx:9
 msgid "DVD spine width:"
 msgstr "DVD 背幅:"
 
-#: ../share/extensions/template_dvd_cover.inx:7
+#: ../share/extensions/template_dvd_cover.inx:10
 msgid "Normal (14mm)"
 msgstr "標準 (14mm)"
 
-#: ../share/extensions/template_dvd_cover.inx:8
+#: ../share/extensions/template_dvd_cover.inx:11
 msgid "Slim (9mm)"
 msgstr "スリム (9mm)"
 
-#: ../share/extensions/template_dvd_cover.inx:9
+#: ../share/extensions/template_dvd_cover.inx:12
 msgid "Super Slim (7mm)"
 msgstr "スーパースリム (7mm)"
 
-#: ../share/extensions/template_dvd_cover.inx:10
+#: ../share/extensions/template_dvd_cover.inx:13
 msgid "Ultra Slim (5mm)"
 msgstr "ウルトラスリム (5mm)"
 
 #
 # File: ../share/extensions/empty_dvd_cover.inx, line: 14
-#: ../share/extensions/template_dvd_cover.inx:13
+#: ../share/extensions/template_dvd_cover.inx:16
 msgid "DVD cover bleed (mm):"
 msgstr "DVD カバー裁ち切り (mm):"
-
-#: ../share/extensions/template_dvd_cover.inx:20
-msgid "DVD Cover..."
-msgstr "DVDカバー..."
-
-#
-# File: ../share/extensions/empty_dvd_cover.inx, line: 23
-#: ../share/extensions/template_dvd_cover.inx:22
-msgid "DVD cover of chosen size."
-msgstr "指定した幅の DVD カバー"
-
-#
-# File: ../share/extensions/empty_dvd_cover.inx, line: 25
-#: ../share/extensions/template_dvd_cover.inx:24
-msgid "dvd cover"
-msgstr "DVDカバー"
-
-#: ../share/extensions/template_envelope.inx:6
-msgid "Envelope size:"
-msgstr "封筒のサイズ:"
-
-#: ../share/extensions/template_envelope.inx:16
-msgid "Envelope..."
-msgstr "封筒..."
-
-#: ../share/extensions/template_envelope.inx:18
-msgid "Blank envelope of chosen size."
-msgstr "指定したサイズの空の封筒"
-
-#: ../share/extensions/template_envelope.inx:20
-msgid "empty envelope dl no10"
-msgstr "空の封筒 dl no10"
-
-#: ../share/extensions/template_generic.inx:3
-msgid "Generic Canvas"
-msgstr "キャンバスを生成"
-
-#: ../share/extensions/template_generic.inx:6
-msgid "Custom Width:"
-msgstr "カスタム幅:"
-
-#: ../share/extensions/template_generic.inx:7
-msgid "Custom Height:"
-msgstr "カスタム高さ:"
-
-#: ../share/extensions/template_generic.inx:9
-msgid "SVG Unit:"
-msgstr "SVG 単位:"
-
-#: ../share/extensions/template_generic.inx:18
-msgid "Canvas background:"
-msgstr "キャンバスの背景:"
-
-#: ../share/extensions/template_generic.inx:20
-#: ../share/extensions/template_page.inx:22
-msgid "Black Opaque"
-msgstr "不透明な黒"
-
-#: ../share/extensions/template_generic.inx:21
-#: ../share/extensions/template_page.inx:23
-msgid "Gray Opaque"
-msgstr "不透明なグレー"
-
-#: ../share/extensions/template_generic.inx:22
-#: ../share/extensions/template_page.inx:24
-msgid "White Opaque"
-msgstr "不透明な白"
-
-#: ../share/extensions/template_generic.inx:25
-#: ../share/extensions/template_page.inx:27
-msgid "Hide border"
-msgstr "枠を非表示"
-
-#: ../share/extensions/template_generic.inx:32
-msgid "Generic canvas..."
-msgstr "キャンバスを生成..."
-
-#: ../share/extensions/template_generic.inx:34
-msgid "Generic canvas of chosen size."
-msgstr "指定したサイズの空のキャンバス"
-
-#: ../share/extensions/template_generic.inx:36
-msgid "empty generic canvas"
-msgstr "一般的な空のキャンバス"
-
-#: ../share/extensions/template_icon.inx:3
-msgid "Icon"
-msgstr "アイコン"
-
-#: ../share/extensions/template_icon.inx:6
-msgid "Icon size:"
-msgstr "アイコンサイズ:"
-
-#
-# File: ../share/extensions/empty_icon.inx, line: 14
-#: ../share/extensions/template_icon.inx:14
-msgid "Icon..."
-msgstr "アイコン..."
-
-#
-# File: ../share/extensions/empty_icon.inx, line: 16
-#: ../share/extensions/template_icon.inx:16
-msgid "Empty icon of chosen size."
-msgstr "指定したサイズの空のアイコン"
-
-#: ../share/extensions/template_icon.inx:18
-msgid "empty icon"
-msgstr "空のアイコン"
-
-#: ../share/extensions/template_page.inx:3
-msgid "Blank Page"
-msgstr "空白ページ"
-
-#: ../share/extensions/template_page.inx:6
-msgid "Page size:"
-msgstr "ページサイズ:"
-
-#: ../share/extensions/template_page.inx:15
-msgid "Page orientation:"
-msgstr "ページの方向:"
-
-#: ../share/extensions/template_page.inx:16
-msgid "Vertical (Portrait)"
-msgstr "垂直 (縦)"
-
-#: ../share/extensions/template_page.inx:17
-msgid "Horizontal (Landscape)"
-msgstr "水平 (横)"
-
-#: ../share/extensions/template_page.inx:20
-msgid "Page background:"
-msgstr "ページの背景:"
-
-#: ../share/extensions/template_page.inx:34
-msgid "Blank Page..."
-msgstr "空白ページ..."
-
-#
-# File: ../share/extensions/empty_page.inx, line: 35
-#: ../share/extensions/template_page.inx:36
-msgid "Empty page of chosen size."
-msgstr "指定したサイズの空のページ"
-
-#: ../share/extensions/template_page.inx:38
-msgid ""
-"empty page sheet tabloid ledger letter legal print paper a4 a3 a5 letter "
-"black white opaque"
-msgstr ""
-"空白 ページ シート タブロイド レジャー レター リーガル プリント ペーパー a4 "
-"a3 a5 レター 黒 白 不透明"
 
 #: ../share/extensions/template_seamless_pattern.inx:3
 msgid "Seamless Pattern"
 msgstr "シームレスパターン"
 
-#: ../share/extensions/template_seamless_pattern.inx:6
+#: ../share/extensions/template_seamless_pattern.inx:9
 msgid "Custom Width (px):"
 msgstr "カスタム幅 (px):"
 
-#: ../share/extensions/template_seamless_pattern.inx:7
+#: ../share/extensions/template_seamless_pattern.inx:10
 msgid "Custom Height (px):"
 msgstr "カスタム高さ (px):"
-
-#: ../share/extensions/template_seamless_pattern.inx:14
-msgid "Seamless Pattern..."
-msgstr "シームレスなパターン..."
-
-#: ../share/extensions/template_seamless_pattern.inx:16
-msgid "Create seamless patterns."
-msgstr "シームレスなパターンを作成します。"
-
-#: ../share/extensions/template_seamless_pattern.inx:18
-msgid "live seamless patterns"
-msgstr "ライブシームレスパターン"
-
-#: ../share/extensions/template_video.inx:3
-msgid "Video Screen"
-msgstr "動画スクリーン"
-
-#: ../share/extensions/template_video.inx:6
-msgid "Video size:"
-msgstr "動画サイズ:"
-
-#: ../share/extensions/template_video.inx:26
-msgid "Video..."
-msgstr "動画..."
-
-#
-# File: ../share/extensions/empty_video.inx, line: 27
-#: ../share/extensions/template_video.inx:28
-msgid "Video screen of chosen size."
-msgstr "指定したサイズの動画スクリーン"
-
-#
-# File: ../share/extensions/empty_video.inx, line: 29
-#: ../share/extensions/template_video.inx:30
-msgid "empty video"
-msgstr "空の動画"
 
 #: ../share/extensions/text_braille.inx:3
 msgid "Convert to Braille"
@@ -46751,6 +46314,456 @@ msgstr "半 em"
 #: ../share/ui/units.xml:99
 msgid "Half of font height"
 msgstr "フォントの高さの半分"
+
+#~ msgid "Nothing Selected"
+#~ msgstr "何も選択されていません"
+
+#~ msgid "More info"
+#~ msgstr "詳細"
+
+#~ msgid "no template selected"
+#~ msgstr "テンプレートが選択されていません"
+
+#~ msgid "Author"
+#~ msgstr "作者"
+
+#~ msgid "Keywords"
+#~ msgstr "キーワード"
+
+#~ msgid "About Screen"
+#~ msgstr "About Screen"
+
+#~ msgid "Icon 120x120"
+#~ msgstr "アイコン 120x120"
+
+#~ msgid "Icon 16x16"
+#~ msgstr "アイコン 16x16"
+
+#~ msgid "Icon 180x180"
+#~ msgstr "アイコン 180x180"
+
+#~ msgid "Icon 32x32"
+#~ msgstr "アイコン 32x32"
+
+#~ msgid "Icon 48x48"
+#~ msgstr "アイコン 48x48"
+
+#~ msgid "Icon 512x512"
+#~ msgstr "アイコン 512x512"
+
+#~ msgid "A4 (Landscape)"
+#~ msgstr "A4 (横)"
+
+#~ msgid "US Letter"
+#~ msgstr "US レター"
+
+#~ msgid "US Letter (Landscape)"
+#~ msgstr "US レター (横)"
+
+#~ msgid "A0"
+#~ msgstr "A0"
+
+#~ msgid "A0 (Landscape)"
+#~ msgstr "A0 (横)"
+
+#~ msgid "A1"
+#~ msgstr "A1"
+
+#~ msgid "A1 (Landscape)"
+#~ msgstr "A1 (横)"
+
+#~ msgid "A2"
+#~ msgstr "A2"
+
+#~ msgid "A2 (Landscape)"
+#~ msgstr "A2 (横)"
+
+#~ msgid "A3"
+#~ msgstr "A3"
+
+#~ msgid "A3 (Landscape)"
+#~ msgstr "A3 (横)"
+
+#~ msgid "A5"
+#~ msgstr "A5"
+
+#~ msgid "A5 (Landscape)"
+#~ msgstr "A5 (横)"
+
+#~ msgid "Business Card AU/NZ (Landscape)"
+#~ msgstr "名刺 豪州/NZ (横)"
+
+#~ msgid "Business Card AU/NZ (Portrait)"
+#~ msgstr "名刺 豪州/NZ (縦)"
+
+#~ msgid "Business Card EU (Landscape)"
+#~ msgstr "名刺 EU (横)"
+
+#~ msgid "Business Card EU (Portrait)"
+#~ msgstr "名刺 EU (縦)"
+
+#~ msgid "Business Card EU (Square)"
+#~ msgstr "名刺 EU (正方形)"
+
+#~ msgid "Business Card US (Landscape)"
+#~ msgstr "名刺 US (横)"
+
+#~ msgid "Business Card US (Portrait)"
+#~ msgstr "名刺 US (縦)"
+
+#~ msgid "DL Envelope"
+#~ msgstr "DL 封筒"
+
+#~ msgid "Ledger/Tabloid"
+#~ msgstr "レジャー/タブロイド"
+
+#~ msgid "US #10 Envelope"
+#~ msgstr "US #10 封筒"
+
+#~ msgid "US Executive"
+#~ msgstr "US エグゼクティブ"
+
+#~ msgid "US Executive (Landscape)"
+#~ msgstr "US エグゼクティブ (横)"
+
+#~ msgid "US Legal"
+#~ msgstr "US リーガル"
+
+#~ msgid "US Legal (Landscape)"
+#~ msgstr "US リーガル (横)"
+
+#~ msgid "Desktop 1080p"
+#~ msgstr "デスクトップ 1080p"
+
+#~ msgid "Desktop 2K"
+#~ msgstr "デスクトップ 2K"
+
+#~ msgid "Desktop 4K"
+#~ msgstr "デスクトップ 4K"
+
+#~ msgid "Desktop 720p"
+#~ msgstr "デスクトップ 720p"
+
+#~ msgid "Desktop SD"
+#~ msgstr "デスクトップ SD"
+
+#~ msgid "iPhone 5"
+#~ msgstr "iPhone 5"
+
+#~ msgid "iPhone X"
+#~ msgstr "iPhone X"
+
+#~ msgid "Mobile-smallest"
+#~ msgstr "スマートフォン 小型"
+
+#~ msgid "iPad Pro"
+#~ msgstr "iPad Pro"
+
+#~ msgid "Tablet-smallest"
+#~ msgstr "タブレット 小型"
+
+#~ msgid "Facebook cover photo"
+#~ msgstr "Facebook カバー写真"
+
+#~ msgid "Facebook event image"
+#~ msgstr "Facebook イベント画像"
+
+#~ msgid "Facebook image post"
+#~ msgstr "Facebook 画像投稿"
+
+#~ msgid "Facebook link image"
+#~ msgstr "Facebook リンク画像"
+
+#~ msgid "Facebook profile picture"
+#~ msgstr "Facebook プロフィール写真"
+
+#~ msgid "Facebook video"
+#~ msgstr "Facebook 動画"
+
+#~ msgid "Instagram landscape"
+#~ msgstr "インスタグラム 横"
+
+#~ msgid "Instagram portrait"
+#~ msgstr "インスタグラム 縦"
+
+#~ msgid "Instagram square"
+#~ msgstr "インスタグラム 正方形"
+
+#~ msgid "LinkedIn business banner image"
+#~ msgstr "LinkedIn ビジネスバナー画像"
+
+#~ msgid "LinkedIn company logo"
+#~ msgstr "LinkedIn 会社ロゴ"
+
+#~ msgid "LinkedIn cover photo"
+#~ msgstr "LinkedIn カバー写真"
+
+#~ msgid "LinkedIn dynamic ad"
+#~ msgstr "LinkedIn ダイナミック広告"
+
+#~ msgid "LinkedIn hero image"
+#~ msgstr "LinkedIn ヒーロー画像"
+
+#~ msgid "LinkedIn sponsored content image"
+#~ msgstr "LinkedIn スポンサー付きコンテンツ画像"
+
+#~ msgid "Snapchat advertisement"
+#~ msgstr "Snapchat 広告"
+
+#~ msgid "Twitter card image"
+#~ msgstr "Twitter カード画像"
+
+#~ msgid "Twitter header"
+#~ msgstr "Twitter ヘッダー"
+
+#~ msgid "Twitter post image"
+#~ msgstr "Twitter 投稿画像"
+
+#~ msgid "Twitter profile picture"
+#~ msgstr "Twitter プロフィール写真"
+
+#~ msgid "Twitter video landscape"
+#~ msgstr "Twitter 動画 横"
+
+#~ msgid "Twitter video portrait"
+#~ msgstr "Twitter 動画 縦"
+
+#~ msgid "Twitter video square"
+#~ msgstr "Twitter 動画 正方形"
+
+#~ msgid "Video DCI 2k (Full Frame)"
+#~ msgstr "動画 DCI 2k (フルフレーム)"
+
+#~ msgid "Video DCI 4k (Full Frame)"
+#~ msgstr "動画 DCI 4k (フルフレーム)"
+
+#~ msgid "Video HD 1080p"
+#~ msgstr "動画 HD 1080p"
+
+#~ msgid "Video HD 720p"
+#~ msgstr "動画 HD 720p"
+
+#~ msgid "Video SD / NTSC"
+#~ msgstr "動画 SD / NTSC"
+
+#~ msgid "Video SD / PAL"
+#~ msgstr "動画 SD / PAL"
+
+#~ msgid "Video SD-Widescreen / NTSC"
+#~ msgstr "動画 SD-ワイドスクリーン / NTSC"
+
+#~ msgid "Video SD-Widescreen / PAL"
+#~ msgstr "動画 SD-ワイドスクリーン / PAL"
+
+#~ msgid "Video UHD 4k"
+#~ msgstr "動画 UHD 4k"
+
+#~ msgid "Video UHD 8k"
+#~ msgstr "動画 UHD 8k"
+
+#~ msgctxt "Document format category"
+#~ msgid "Print"
+#~ msgstr "プリント"
+
+#~ msgctxt "Document format category"
+#~ msgid "Screen"
+#~ msgstr "スクリーン"
+
+#~ msgctxt "Document format category"
+#~ msgid "Video"
+#~ msgstr "動画"
+
+#~ msgctxt "Document format category"
+#~ msgid "Other"
+#~ msgstr "その他"
+
+#~ msgid "numpy is required."
+#~ msgstr "numpy が必要です。"
+
+#~ msgid ""
+#~ "\n"
+#~ "This effect draws lines between each nth node of each selected \n"
+#~ "path. It therefore works best if all selected paths have the \n"
+#~ "same number of nodes.\n"
+#~ "\n"
+#~ "It can be chosen whether these regions are filled and whether \n"
+#~ "the fill uses rectangles or copies of the path segments.\n"
+#~ "\n"
+#~ "The lines will be inserted above the bottom of the two elements.\n"
+#~ "            "
+#~ msgstr ""
+#~ "\n"
+#~ "このエフェクトは、選択したパス中のそれぞれ n 番目のノード間に\n"
+#~ "線を描画します。このため、選択したすべてのパス中にそれぞれ同数の\n"
+#~ "ノードが存在するときに最もうまく動作します。\n"
+#~ "\n"
+#~ "これらの領域にフィルを適用するか、フィルに矩形またはパスセグメント\n"
+#~ "のコピーを使用するかを選択できます。\n"
+#~ "\n"
+#~ "2 つの要素の下端に線が挿入されます。\n"
+#~ "            "
+
+#~ msgid "Business Card..."
+#~ msgstr "名刺..."
+
+#~ msgid "Business card of chosen size."
+#~ msgstr "指定サイズの名刺"
+
+#~ msgid "business card"
+#~ msgstr "名刺"
+
+#~ msgid "Desktop"
+#~ msgstr "デスクトップ"
+
+#~ msgid "Desktop size:"
+#~ msgstr "デスクトップのサイズ:"
+
+#~ msgid "Desktop..."
+#~ msgstr "デスクトップ..."
+
+#~ msgid "Empty desktop of chosen size."
+#~ msgstr "選択したサイズの空のデスクトップ"
+
+#~ msgid "empty desktop"
+#~ msgstr "空のデスクトップ"
+
+#~ msgid "DVD Cover..."
+#~ msgstr "DVDカバー..."
+
+#
+# File: ../share/extensions/empty_dvd_cover.inx, line: 23
+#~ msgid "DVD cover of chosen size."
+#~ msgstr "指定した幅の DVD カバー"
+
+#
+# File: ../share/extensions/empty_dvd_cover.inx, line: 25
+#~ msgid "dvd cover"
+#~ msgstr "DVDカバー"
+
+#~ msgid "Envelope size:"
+#~ msgstr "封筒のサイズ:"
+
+#~ msgid "Envelope..."
+#~ msgstr "封筒..."
+
+#~ msgid "Blank envelope of chosen size."
+#~ msgstr "指定したサイズの空の封筒"
+
+#~ msgid "empty envelope dl no10"
+#~ msgstr "空の封筒 dl no10"
+
+#~ msgid "Generic Canvas"
+#~ msgstr "キャンバスを生成"
+
+#~ msgid "Custom Width:"
+#~ msgstr "カスタム幅:"
+
+#~ msgid "Custom Height:"
+#~ msgstr "カスタム高さ:"
+
+#~ msgid "SVG Unit:"
+#~ msgstr "SVG 単位:"
+
+#~ msgid "Canvas background:"
+#~ msgstr "キャンバスの背景:"
+
+#~ msgid "Black Opaque"
+#~ msgstr "不透明な黒"
+
+#~ msgid "Gray Opaque"
+#~ msgstr "不透明なグレー"
+
+#~ msgid "White Opaque"
+#~ msgstr "不透明な白"
+
+#~ msgid "Hide border"
+#~ msgstr "枠を非表示"
+
+#~ msgid "Generic canvas..."
+#~ msgstr "キャンバスを生成..."
+
+#~ msgid "Generic canvas of chosen size."
+#~ msgstr "指定したサイズの空のキャンバス"
+
+#~ msgid "empty generic canvas"
+#~ msgstr "一般的な空のキャンバス"
+
+#~ msgid "Icon"
+#~ msgstr "アイコン"
+
+#~ msgid "Icon size:"
+#~ msgstr "アイコンサイズ:"
+
+#
+# File: ../share/extensions/empty_icon.inx, line: 14
+#~ msgid "Icon..."
+#~ msgstr "アイコン..."
+
+#
+# File: ../share/extensions/empty_icon.inx, line: 16
+#~ msgid "Empty icon of chosen size."
+#~ msgstr "指定したサイズの空のアイコン"
+
+#~ msgid "empty icon"
+#~ msgstr "空のアイコン"
+
+#~ msgid "Blank Page"
+#~ msgstr "空白ページ"
+
+#~ msgid "Page size:"
+#~ msgstr "ページサイズ:"
+
+#~ msgid "Page orientation:"
+#~ msgstr "ページの方向:"
+
+#~ msgid "Vertical (Portrait)"
+#~ msgstr "垂直 (縦)"
+
+#~ msgid "Horizontal (Landscape)"
+#~ msgstr "水平 (横)"
+
+#~ msgid "Page background:"
+#~ msgstr "ページの背景:"
+
+#~ msgid "Blank Page..."
+#~ msgstr "空白ページ..."
+
+#
+# File: ../share/extensions/empty_page.inx, line: 35
+#~ msgid "Empty page of chosen size."
+#~ msgstr "指定したサイズの空のページ"
+
+#~ msgid ""
+#~ "empty page sheet tabloid ledger letter legal print paper a4 a3 a5 letter "
+#~ "black white opaque"
+#~ msgstr ""
+#~ "空白 ページ シート タブロイド レジャー レター リーガル プリント ペーパー "
+#~ "a4 a3 a5 レター 黒 白 不透明"
+
+#~ msgid "Seamless Pattern..."
+#~ msgstr "シームレスなパターン..."
+
+#~ msgid "Create seamless patterns."
+#~ msgstr "シームレスなパターンを作成します。"
+
+#~ msgid "live seamless patterns"
+#~ msgstr "ライブシームレスパターン"
+
+#~ msgid "Video Screen"
+#~ msgstr "動画スクリーン"
+
+#~ msgid "Video..."
+#~ msgstr "動画..."
+
+#
+# File: ../share/extensions/empty_video.inx, line: 27
+#~ msgid "Video screen of chosen size."
+#~ msgstr "指定したサイズの動画スクリーン"
+
+#
+# File: ../share/extensions/empty_video.inx, line: 29
+#~ msgid "empty video"
+#~ msgstr "空の動画"
 
 #~ msgid "Remove stroke color"
 #~ msgstr "ストローク色を削除"
@@ -48136,12 +48149,6 @@ msgstr "フォントの高さの半分"
 #~ "SVG は決まった表示倍率以外を使用できるものですが、Inkscape 内では一律の表"
 #~ "示倍率を使用することを推奨します。決まった表示倍率以外のものを設定するに"
 #~ "は、直接 'viewBox' を設定してください。"
-
-#~ msgid "_Landscape"
-#~ msgstr "横(_L)"
-
-#~ msgid "_Portrait"
-#~ msgstr "縦(_P)"
 
 #~ msgid "Custom size"
 #~ msgstr "カスタムサイズ"
@@ -49646,9 +49653,6 @@ msgstr "フォントの高さの半分"
 #, fuzzy
 #~ msgid "Rendering XRay radius:"
 #~ msgstr "レンダリングキャッシュサイズ(_C):"
-
-#~ msgid "Shortcut file:"
-#~ msgstr "ショートカットファイル:"
 
 #, fuzzy
 #~ msgctxt "Spellchecker language"
