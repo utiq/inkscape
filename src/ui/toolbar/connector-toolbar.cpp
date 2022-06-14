@@ -321,8 +321,7 @@ ConnectorToolbar::spacing_changed()
     _desktop->namedview->updateRepr();
     bool modmade = false;
 
-    std::vector<SPItem *> items;
-    items = get_avoided_items(items, _desktop->layerManager().currentRoot(), _desktop);
+    auto items = get_avoided_items(_desktop->layerManager().currentRoot(), _desktop);
     for (auto item : items) {
         Geom::Affine m = Geom::identity();
         avoid_item_move(&m, item);

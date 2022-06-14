@@ -328,9 +328,16 @@ static Avoid::Polygon avoid_item_poly(SPItem const *item)
     return poly;
 }
 
+static inline void get_avoided_items_rec(std::vector<SPItem *> &list, SPObject *from, SPDesktop *desktop, bool initialised);
 
-std::vector<SPItem *> get_avoided_items(std::vector<SPItem *> &list, SPObject *from, SPDesktop *desktop,
-        bool initialised)
+std::vector<SPItem *> get_avoided_items(SPObject *from, SPDesktop *desktop, bool initialised)
+{
+    std::vector<SPItem *> list;
+    get_avoided_items_rec(list, from, desktop, initialised);
+    return list;
+}
+
+static inline void get_avoided_items_rec(std::vector<SPItem *> &list, SPObject *from, SPDesktop *desktop, bool initialised)
 {
     for (auto& child: from->children) {
         if (SP_IS_ITEM(&child) &&
@@ -344,11 +351,9 @@ std::vector<SPItem *> get_avoided_items(std::vector<SPItem *> &list, SPObject *f
         }
 
         if (SP_IS_ITEM(&child) && desktop->layerManager().isLayer(SP_ITEM(&child))) {
-            list = get_avoided_items(list, &child, desktop, initialised);
+            get_avoided_items_rec(list, &child, desktop, initialised);
         }
     }
-
-    return list;
 }
 
 
@@ -373,9 +378,7 @@ void init_avoided_shape_geometry(SPDesktop *desktop)
     DocumentUndo::ScopedInsensitive _no_undo(document);
 
     bool initialised = false;
-    std::vector<SPItem *> tmp;
-    std::vector<SPItem *> items = get_avoided_items(tmp, desktop->layerManager().currentRoot(), desktop,
-            initialised);
+    auto items = get_avoided_items(desktop->layerManager().currentRoot(), desktop, initialised);
 
     for (auto item : items) {
         item->getAvoidRef().handleSettingChange();
