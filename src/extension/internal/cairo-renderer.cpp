@@ -533,7 +533,7 @@ static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx, SPPage *pa
     // Get the bounding box of the selection in document coordinates.
     Geom::OptRect bbox = item->documentVisualBounds();
 
-    bbox &= (page ? page->getDocumentRect() : item->document->getViewBox());
+    bbox &= (page ? page->getDocumentRect() : item->document->preferredBounds());
 
     // no bbox, e.g. empty group or item not overlapping its page
     if (!bbox) {
