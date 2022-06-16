@@ -115,7 +115,7 @@ SPDocument::SPDocument() :
     document_name(nullptr),
     actionkey(),
     object_id_counter(1),
-    router(new Avoid::Router(Avoid::PolyLineRouting|Avoid::OrthogonalRouting)),
+    _router(std::make_unique<Avoid::Router>(Avoid::PolyLineRouting|Avoid::OrthogonalRouting)),
     oldSignalsConnected(false),
     current_persp3d(nullptr),
     current_persp3d_impl(nullptr),
@@ -125,7 +125,7 @@ SPDocument::SPDocument() :
 {
     // This is kept here so that members are not accessed before they are initialized
 
-    _event_log = new Inkscape::EventLog(this);
+    _event_log = std::make_unique<Inkscape::EventLog>(this);
     _selection = std::make_unique<Inkscape::Selection>(this);
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -136,7 +136,7 @@ SPDocument::SPDocument() :
 
     // Penalise libavoid for choosing paths with needless extra segments.
     // This results in much better looking orthogonal connector paths.
-    router->setRoutingPenalty(Avoid::segmentPenalty);
+    _router->setRoutingPenalty(Avoid::segmentPenalty);
 
     _serial = next_serial++;
 
@@ -169,11 +169,6 @@ SPDocument::~SPDocument() {
 
     // kill/unhook this first
     _profileManager.reset();
-
-    if (router) {
-        delete router;
-        router = nullptr;
-    }
 
     if (oldSignalsConnected) {
         selChangeConnection.disconnect();
@@ -230,10 +225,6 @@ SPDocument::~SPDocument() {
     if (this->current_persp3d_impl)
         delete this->current_persp3d_impl;
     this->current_persp3d_impl = nullptr;
-
-    if (_event_log) {
-        delete _event_log;
-    }
 
     // This is at the end of the destructor, because preceding code adds new orphans to the queue
     collectOrphans();
@@ -1358,7 +1349,7 @@ gint SPDocument::ensureUpToDate()
         // changed objects and provide new routings.  This may cause some objects
             // to be modified, hence the second update pass.
         if (pass == 1) {
-            router->processTransaction();
+            _router->processTransaction();
         }
     }
 
@@ -1392,7 +1383,7 @@ SPDocument::rerouting_handler()
     // Process any queued movement actions and determine new routings for
     // object-avoiding connectors.  Callbacks will be used to update and
     // redraw affected connectors.
-    router->processTransaction();
+    _router->processTransaction();
 
     // We don't need to handle rerouting again until there are further
     // diagram updates.

@@ -165,7 +165,7 @@ public:
     void setXMLDialogSelectedObject(SPObject *activexmltree) { _activexmltree = activexmltree; }
     SPObject *getXMLDialogSelectedObject() { return _activexmltree; }
 
-    Inkscape::EventLog* get_event_log() { return _event_log; }
+    Inkscape::EventLog *get_event_log() { return _event_log.get(); }
 
     Inkscape::PageManager& getPageManager() { return *_page_manager; }
     const Inkscape::PageManager& getPageManager() const { return *_page_manager; }
@@ -188,7 +188,7 @@ public:
 
     // Document structure -----------------
     Inkscape::ProfileManager &getProfileManager() const { return *_profileManager; }
-    Avoid::Router* getRouter() const { return router; }
+    Avoid::Router* getRouter() const { return _router.get(); }
 
     
     /** Returns our SPRoot */
@@ -367,7 +367,7 @@ private:
 
     // Document ------------------------------
     std::unique_ptr<Inkscape::ProfileManager> _profileManager;   // Color profile.
-    Avoid::Router *router = nullptr; // Instance of the connector router
+    std::unique_ptr<Avoid::Router> _router; // Instance of the connector router
     std::unique_ptr<Inkscape::Selection> _selection;
 
     // Document status -----------------------
@@ -419,7 +419,7 @@ private:
 
     // Document undo/redo ----------------------
     friend Inkscape::DocumentUndo;
-    Inkscape::EventLog *_event_log = nullptr;
+    std::unique_ptr<Inkscape::EventLog> _event_log;
 
     /* Undo/Redo state */
     bool sensitive; /* If we save actions to undo stack */
