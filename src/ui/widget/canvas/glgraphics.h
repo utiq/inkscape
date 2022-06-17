@@ -10,7 +10,7 @@
 
 #include <epoxy/gl.h>
 #include "graphics.h"
-#include "texture.h"
+#include "texturecache.h"
 
 namespace Inkscape {
 namespace UI {
@@ -78,6 +78,7 @@ public:
     void swap_stores() override;
     void fast_snapshot_combine() override;
     void snapshot_combine(Fragment const &dest) override;
+    void invalidate_snapshot() override;
 
     bool is_opengl() const override { return true; }
     void invalidated_glstate() override { state = State::None; }
@@ -96,8 +97,9 @@ private:
     Program checker, shadow, texcopy, texcopydouble, outlineoverlay, xray, outlineoverlayxray; // Shaders
     GLuint fbo; // Framebuffer object for rendering to stores.
 
-    // Pixel streamer for uploading pixel data to GPU.
+    // Pixel streamer and texture cache for uploading pixel data to GPU.
     std::unique_ptr<PixelStreamer> pixelstreamer;
+    std::unique_ptr<TextureCache> texturecache;
 
     // For preventing unnecessary pipeline recreation.
     enum class State { None, Widget, Stores, Tiles };
@@ -107,7 +109,7 @@ private:
     void setup_widget_pipeline(Fragment const &view);
 
     // For caching frequently-used uniforms.
-    GLuint mat_loc, trans_loc, tex_loc, texoutline_loc;
+    GLuint mat_loc, trans_loc, subrect_loc, tex_loc, texoutline_loc;
 
     // Dependency objects in canvas.
     Prefs const &prefs;

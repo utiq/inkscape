@@ -33,6 +33,11 @@ void geom_to_uniform(Geom::Affine const &affine, GLuint mat_location, GLuint tra
     geom_to_uniform_trans(affine, trans_location);
 }
 
+void geom_to_uniform(Geom::Point const &vec, GLuint location)
+{
+    glUniform2fv(location, 1, std::begin({(GLfloat)vec.x(), (GLfloat)vec.y()}));
+}
+
 // Get the affine transformation required to paste fragment A onto fragment B, assuming
 // coordinates such that A is a texture (0 to 1) and B is a framebuffer (-1 to 1).
 static auto calc_paste_transform(Fragment const &a, Fragment const &b)
@@ -122,12 +127,13 @@ GLGraphics::GLGraphics(Prefs const &prefs, Stores const &stores, PageInfo const 
 
         uniform mat2 mat;
         uniform vec2 trans;
+        uniform vec2 subrect;
         layout(location = 0) in vec2 pos;
         smooth out vec2 uv;
 
         void main()
         {
-            uv = pos;
+            uv = pos * subrect;
             vec2 pos2 = mat * pos + trans;
             gl_Position = vec4(pos2.x, pos2.y, 0.0, 1.0);
         }
@@ -339,6 +345,9 @@ GLGraphics::GLGraphics(Prefs const &prefs, Stores const &stores, PageInfo const 
     // Create the framebuffer object for rendering to off-view fragments.
     glGenFramebuffers(1, &fbo);
 
+    // Create the texture cache.
+    texturecache = TextureCache::create();
+
     // Create the PixelStreamer.
     pixelstreamer = PixelStreamer::create(pref_to_pixelstreamer(prefs.pixelstreamer_method));
 
@@ -380,6 +389,7 @@ void GLGraphics::setup_stores_pipeline()
     glUseProgram(shader.id);
     mat_loc = shader.loc("mat");
     trans_loc = shader.loc("trans");
+    geom_to_uniform({1.0, 1.0}, shader.loc("subrect"));
     tex_loc = shader.loc("tex");
     if (outlines_enabled) texoutline_loc = shader.loc("tex_outline");
 }
@@ -392,8 +402,18 @@ void GLGraphics::recreate_store(Geom::IntPoint const &dims)
     setup_stores_pipeline();
 
     // Recreate the store textures.
-    if                      (!store.texture         || store.texture.size()         != tex_size)  store.texture         = Texture(tex_size);
-    if (outlines_enabled && (!store.outline_texture || store.outline_texture.size() != tex_size)) store.outline_texture = Texture(tex_size);
+    auto recreate = [&] (Texture &tex) {
+        if (tex && tex.size() == tex_size) {
+            tex.invalidate();
+        } else {
+            tex = Texture(tex_size);
+        }
+    };
+
+    recreate(store.texture);
+    if (outlines_enabled) {
+        recreate(store.outline_texture);
+    }
 
     // Bind the store to the framebuffer for writing to.
                           glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, store.texture.id(),         0);
@@ -413,9 +433,20 @@ void GLGraphics::shift_store(Fragment const &dest)
     setup_stores_pipeline();
 
     // Create the new fragment.
+    auto create_or_reuse = [&] (Texture &tex, Texture &from) {
+        if (from && from.size() == tex_size) {
+            from.invalidate();
+            tex = std::move(from);
+        } else {
+            tex = Texture(tex_size);
+        }
+    };
+
     GLFragment fragment;
-                          fragment.texture         = (snapshot.texture         && snapshot.        texture.size() == tex_size) ? std::move(snapshot.        texture) : Texture(tex_size);
-    if (outlines_enabled) fragment.outline_texture = (snapshot.outline_texture && snapshot.outline_texture.size() == tex_size) ? std::move(snapshot.outline_texture) : Texture(tex_size);
+    create_or_reuse(fragment.texture, snapshot.texture);
+    if (outlines_enabled) {
+        create_or_reuse(fragment.outline_texture, snapshot.outline_texture);
+    }
 
     // Bind new store to the framebuffer to writing to.
                           glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fragment.texture        .id(), 0);
@@ -534,6 +565,12 @@ void GLGraphics::snapshot_combine(Fragment const &dest)
     snapshot = std::move(fragment);
 }
 
+void GLGraphics::invalidate_snapshot()
+{
+    if (snapshot.texture) snapshot.texture.invalidate();
+    if (snapshot.outline_texture) snapshot.outline_texture.invalidate();
+}
+
 void GLGraphics::setup_tiles_pipeline()
 {
     if (state == State::Tiles) return;
@@ -550,6 +587,7 @@ void GLGraphics::setup_tiles_pipeline()
     glUseProgram(shader.id);
     mat_loc = shader.loc("mat");
     trans_loc = shader.loc("trans");
+    subrect_loc = shader.loc("subrect");
     glUniform1i(shader.loc("tex"), 0);
     if (outlines_enabled) glUniform1i(shader.loc("tex_outline"), 1);
 
@@ -570,24 +608,30 @@ Cairo::RefPtr<Cairo::ImageSurface> GLGraphics::request_tile_surface(Geom::IntRec
 
 void GLGraphics::draw_tile(Fragment const &fragment, Cairo::RefPtr<Cairo::ImageSurface> surface, Cairo::RefPtr<Cairo::ImageSurface> outline_surface)
 {
+    auto surface_size = dimensions(surface);
+
     Texture texture, outline_texture;
 
-    texture = pixelstreamer->finish(std::move(surface));
+    glActiveTexture(GL_TEXTURE0);
+    texture = texturecache->request(surface_size); // binds
+    pixelstreamer->finish(std::move(surface)); // uploads content
+
     if (outlines_enabled) {
-        outline_texture = pixelstreamer->finish(std::move(outline_surface));
+        glActiveTexture(GL_TEXTURE1);
+        outline_texture = texturecache->request(surface_size);
+        pixelstreamer->finish(std::move(outline_surface));
     }
 
     setup_tiles_pipeline();
 
-    // Paste the texture onto the store.
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture.id());
-    if (outlines_enabled) {
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, outline_texture.id());
-    }
     geom_to_uniform(calc_paste_transform(fragment, stores.store()), mat_loc, trans_loc);
+    geom_to_uniform(Geom::Point(surface_size) / texture.size(), subrect_loc);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    texturecache->finish(std::move(texture));
+    if (outlines_enabled) {
+        texturecache->finish(std::move(outline_texture));
+    }
 }
 
 void GLGraphics::setup_widget_pipeline(Fragment const &view)
@@ -639,6 +683,7 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
             glUniform3fv(checker.loc("col1"), 1, std::begin(rgb_to_array(page)));
             glUniform3fv(checker.loc("col2"), 1, std::begin(checkerboard_darken(page)));
             geom_to_uniform(Geom::Scale(2.0, -2.0) * Geom::Translate(-1.0, 1.0), checker.loc("mat"), checker.loc("trans"));
+            geom_to_uniform({1.0, 1.0}, checker.loc("subrect"));
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         }
 
@@ -656,6 +701,7 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
         glUniform1f(checker.loc("size"), 12.0 * scale_factor);
         glUniform3fv(checker.loc("col1"), 1, std::begin(rgb_to_array(page)));
         glUniform3fv(checker.loc("col2"), 1, std::begin(checkerboard_darken(page)));
+        geom_to_uniform({1.0, 1.0}, checker.loc("subrect"));
         for (auto &rect : pi.pages) {
             set_page_transform(rect, checker);
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -667,6 +713,7 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
         glUniform3fv(checker.loc("col1"), 1, std::begin(rgb_to_array(desk)));
         glUniform3fv(checker.loc("col2"), 1, std::begin(checkerboard_darken(desk)));
         geom_to_uniform(Geom::Scale(2.0, -2.0) * Geom::Translate(-1.0, 1.0), checker.loc("mat"), checker.loc("trans"));
+        geom_to_uniform({1.0, 1.0}, checker.loc("subrect"));
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
         glEnable(GL_BLEND);
@@ -676,6 +723,7 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
         if (SP_RGBA32_A_U(border) != 0) {
             auto dir = (Geom::Point(1.0, a.yaxisdir) * view.affine * Geom::Scale(1.0, -1.0)).normalized(); // Shadow direction rotates with view.
             glUseProgram(shadow.id);
+            geom_to_uniform({1.0, 1.0}, shadow.loc("subrect"));
             glUniform2fv(shadow.loc("wh"), 1, std::begin({(GLfloat)view.rect.width(), (GLfloat)view.rect.height()}));
             glUniform1f(shadow.loc("size"), 40.0 * std::pow(std::abs(view.affine.det()), 0.25));
             glUniform2fv(shadow.loc("dir"), 1, std::begin({(GLfloat)dir.x(), (GLfloat)dir.y()}));
@@ -700,10 +748,11 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
 
     auto draw_store = [&, this] (Program const &prog, DrawMode drawmode) {
         glUseProgram(prog.id);
+        geom_to_uniform({1.0, 1.0}, prog.loc("subrect"));
         glUniform1i(prog.loc("tex"), drawmode == DrawMode::Outline ? 2 : 0);
         if (drawmode == DrawMode::Combine) {
             glUniform1i(prog.loc("tex_outline"), 2);
-            glUniform1f(prog.loc("opacity"), prefs.outline_overlay_opacity / 100.0);
+            glUniform1f(prog.loc("opacity"), 1.0 - prefs.outline_overlay_opacity / 100.0);
         }
 
         if (stores.mode() == Stores::Mode::Normal) {
@@ -758,7 +807,8 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
         rect[dim] = Geom::IntInterval(-21, 21) + std::round(a.splitfrac[dim] * view.rect.dimensions()[dim]);
 
         // Lease out a PixelStreamer mapping to draw on.
-        auto surface = pixelstreamer->request(rect.dimensions() * scale_factor);
+        auto surface_size = rect.dimensions() * scale_factor;
+        auto surface = pixelstreamer->request(surface_size);
         cairo_surface_set_device_scale(surface->cobj(), scale_factor, scale_factor);
 
         // Actually draw the content with Cairo.
@@ -770,15 +820,19 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
         paint_splitview_controller(view.rect.dimensions(), a.splitfrac, a.splitdir, a.hoverdir, cr);
 
         // Convert the surface to a texture.
-        auto texture = pixelstreamer->finish(std::move(surface));
+        glActiveTexture(GL_TEXTURE0);
+        auto texture = texturecache->request(surface_size);
+        pixelstreamer->finish(std::move(surface));
 
         // Paint the texture onto the view.
         glUseProgram(texcopy.id);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.id());
         glUniform1i(texcopy.loc("tex"), 0);
         geom_to_uniform(Geom::Scale(rect.dimensions()) * Geom::Translate(rect.min()) * Geom::Scale(2.0 / view.rect.width(), -2.0 / view.rect.height()) * Geom::Translate(-1.0, 1.0), texcopy.loc("mat"), texcopy.loc("trans"));
+        geom_to_uniform(Geom::Point(surface_size) / texture.size(), texcopy.loc("subrect"));
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+        // Return the texture back to the texture cache.
+        texturecache->finish(std::move(texture));
 
     } else { // if (_split_mode == Inkscape::SplitMode::XRAY && a.mouse)
 

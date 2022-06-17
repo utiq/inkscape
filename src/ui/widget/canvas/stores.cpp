@@ -344,6 +344,7 @@ auto Stores::finished_draw(Fragment const &view) -> Action
             if (_prefs.debug_logging) std::cout << "Exit decoupled mode" << std::endl;
             // Exit decoupled mode.
             _mode = Mode::Normal;
+            _graphics->invalidate_snapshot();
         } else {
             // Content is rendered at the wrong affine - take a new snapshot and continue idle process to continue rendering at the new affine.
             // Snapshot and reset the backing store.

@@ -171,6 +171,7 @@ set(ui_SRC
 	widget/canvas/stores.cpp
 	widget/canvas/util.cpp
 	widget/canvas/texture.cpp
+	widget/canvas/texturecache.cpp
 	widget/canvas/pixelstreamer.cpp
 	widget/canvas/updaters.cpp
 	widget/canvas/framecheck.cpp
@@ -441,6 +442,7 @@ set(ui_SRC
 	widget/canvas/stores.h
 	widget/canvas/util.h
 	widget/canvas/texture.h
+	widget/canvas/texturecache.h
 	widget/canvas/graphics.h
 	widget/canvas/pixelstreamer.h
 	widget/canvas/updaters.h

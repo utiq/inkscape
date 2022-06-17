@@ -35,6 +35,7 @@ public:
     void swap_stores() override;
     void fast_snapshot_combine() override;
     void snapshot_combine(Fragment const &dest) override;
+    void invalidate_snapshot() override {}
 
     bool is_opengl() const override { return false; }
     void invalidated_glstate() override {}

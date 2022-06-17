@@ -47,6 +47,7 @@ public:
     virtual void swap_stores() = 0; ///< Exchange the store and snapshot surfaces.
     virtual void fast_snapshot_combine() = 0; ///< Paste the store onto the snapshot.
     virtual void snapshot_combine(Fragment const &dest) = 0; ///< Paste the snapshot followed by the store onto a new snapshot at \a dest.
+    virtual void invalidate_snapshot() = 0; ///< Indicate that the content in the snapshot store is not going to be used again.
 
     // Misc.
     virtual bool is_opengl() const = 0; ///< Whether this is an OpenGL backend.

@@ -9,9 +9,9 @@
 #define INKSCAPE_UI_WIDGET_CANVAS_PIXELSTREAMER_H
 
 #include <memory>
+#include <2geom/int-point.h>
 #include <cairomm/refptr.h>
 #include <cairomm/surface.h>
-#include "texture.h"
 
 namespace Inkscape {
 namespace UI {
@@ -45,8 +45,11 @@ public:
     // Request a drawing surface of the given dimensions.
     virtual Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions) = 0;
 
-    // Give back the surface to turn it into a texture.
-    virtual Texture finish(Cairo::RefPtr<Cairo::ImageSurface> surface) = 0;
+    /**
+     * Give back a drawing surface produced by request(), uploading the contents to the currently bound texture.
+     * The texture must be at least as big as the surface.
+     */
+    virtual void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) = 0;
 };
 
 } // namespace Widget

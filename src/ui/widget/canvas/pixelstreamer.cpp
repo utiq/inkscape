@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cmath>
 #include <vector>
+#include <epoxy/gl.h>
 #include "pixelstreamer.h"
 #include "helper/mathfns.h"
 
@@ -151,7 +152,7 @@ public:
         return surface;
     }
 
-    Texture finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
+    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
     {
         // Extract the mapping handle from the surface's user data.
         auto mapping = (int)(uintptr_t)cairo_surface_get_user_data(surface->cobj(), &key);
@@ -170,25 +171,14 @@ public:
         m.used = false;
         b.refs--;
 
-        // Create the texture from the mapped subregion.
-        GLuint tex;
-        glGenTextures(1, &tex);
-        glBindTexture(GL_TEXTURE_2D, tex);
+        // Upload to the texture from the mapped subregion.
         glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, m.width, m.height);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, (void*)(uintptr_t)m.off);
-        // Note: Could consider recycling textures rather than recreating them each time as above. But this is difficult because
-        // our textures are all of different sizes, yet we want to do linear filtering with clamp-to-edge. Furthermore, our usage
-        // pattern is few, large textures. That means the bottleneck is expected to lie in upload speed, not GPU texture storage
-        // reallocation. So this optimisation is deemed unhelpful/unnecessary.
 
         // If the buffer is due for recycling, issue a sync command so that we can recycle it when it's ready. (Handle transition 2 --> 3.)
         if (m.buf != current_buffer && b.refs == 0) {
             b.sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
         }
-
-        // Return the texture.
-        return Texture(tex, { m.width, m.height });
     }
 
     ~PersistentPixelStreamer() override
@@ -258,7 +248,7 @@ public:
         return surface;
     }
 
-    Texture finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
+    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
     {
         auto mapping = (int)(uintptr_t)cairo_surface_get_user_data(surface->cobj(), &key);
         surface.clear();
@@ -268,19 +258,13 @@ public:
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m.pbo);
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
-        GLuint tex;
-        glGenTextures(1, &tex);
-        glBindTexture(GL_TEXTURE_2D, tex);
+        // Upload the buffer to the texture.
         glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m.width, m.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
 
         glDeleteBuffers(1, &m.pbo);
 
         m.used = false;
-
-        return Texture(tex, { m.width, m.height });
     }
 };
 
@@ -324,25 +308,18 @@ public:
         return surface;
     }
 
-    Texture finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
+    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
     {
         auto mapping = (int)(uintptr_t)cairo_surface_get_user_data(surface->cobj(), &key);
         surface.clear();
 
         auto &m = mappings[mapping];
 
-        GLuint tex;
-        glGenTextures(1, &tex);
-        glBindTexture(GL_TEXTURE_2D, tex);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m.width, m.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, &m.data[0]);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, &m.data[0]);
 
         m.used = false;
         m.data.clear();
-
-        return Texture(tex, { m.width, m.height });
     }
 };
 

@@ -16,7 +16,7 @@ public:
     // Create null texture owning no resources.
     Texture() = default;
 
-    // Allocate a blank texture of a given size.
+    // Allocate a blank texture of a given size. The texture is bound to GL_TEXTURE_2D.
     Texture(Geom::IntPoint const &size);
 
     // Wrap an existing texture.
@@ -34,6 +34,7 @@ public:
 
     // Methods
     void clear() { _reset(); _id = 0; }
+    void invalidate();
 
 private:
     GLuint _id = 0;
