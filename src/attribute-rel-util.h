@@ -18,6 +18,7 @@
  */
 
 #include <glibmm/ustring.h>
+
 #include "xml/sp-css-attr.h"
 
 using Inkscape::XML::Node;
@@ -29,13 +30,16 @@ using Inkscape::XML::Node;
 /**
  * Enum for preferences
  */
-enum SPAttrClean {
-  SP_ATTRCLEAN_ATTR_WARN      =  1,
-  SP_ATTRCLEAN_ATTR_REMOVE    =  2,
-  SP_ATTRCLEAN_STYLE_WARN     =  4,
-  SP_ATTRCLEAN_STYLE_REMOVE   =  8,
-  SP_ATTRCLEAN_DEFAULT_WARN   = 16,
-  SP_ATTRCLEAN_DEFAULT_REMOVE = 32
+enum SPAttrClean
+{
+    // clang-format off
+    SP_ATTRCLEAN_ATTR_WARN      =  1,
+    SP_ATTRCLEAN_ATTR_REMOVE    =  2,
+    SP_ATTRCLEAN_STYLE_WARN     =  4,
+    SP_ATTRCLEAN_STYLE_REMOVE   =  8,
+    SP_ATTRCLEAN_DEFAULT_WARN   = 16,
+    SP_ATTRCLEAN_DEFAULT_REMOVE = 32
+    // clang-format on
 };
 
 /**
@@ -74,7 +78,7 @@ Glib::ustring sp_attribute_clean_style(Node *repr, gchar const *string, unsigned
 /**
  * Clean style properties for one CSS.
  */
-void sp_attribute_clean_style(Node* repr, SPCSSAttr *css, unsigned int flags);
+void sp_attribute_clean_style(Node *repr, SPCSSAttr *css, unsigned int flags);
 
 /**
  * Remove CSS style properties with default values.
@@ -84,7 +88,8 @@ void sp_attribute_purge_default_style(SPCSSAttr *css, unsigned int flags);
 /**
  * Check one attribute on an element
  */
-bool sp_attribute_check_attribute(Glib::ustring element, Glib::ustring id, Glib::ustring attribute, bool warn);
+bool sp_attribute_check_attribute(Glib::ustring const &element, Glib::ustring const &id, Glib::ustring const &attribute,
+                                  bool warn);
 
 #endif /* __SP_ATTRIBUTE_REL_UTIL_H__ */
 

@@ -18,9 +18,9 @@
 
 #include "number-opt-number.h"
 #include "sp-dimensions.h"
-#include "sp-object.h"
-#include "sp-item.h"
 #include "sp-filter-units.h"
+#include "sp-item.h"
+#include "sp-object.h"
 #include "svg/svg-length.h"
 
 #define SP_FILTER_FILTER_UNITS(f) (SP_FILTER(f)->filterUnits)
@@ -29,16 +29,16 @@
 namespace Inkscape {
 namespace Filters {
 class Filter;
-} }
+}
+} // namespace Inkscape
 
 class SPFilterReference;
 class SPFilterPrimitive;
 
-struct ltstr {
-    bool operator()(const char* s1, const char* s2) const;
-};
-
-class SPFilter : public SPObject, public SPDimensions {
+class SPFilter
+    : public SPObject
+    , public SPDimensions
+{
 public:
     SPFilter();
     ~SPFilter() override;
@@ -84,24 +84,24 @@ public:
     guint getRefCount();
     guint _refcount;
 
-    Inkscape::Filters::Filter *_renderer;
-
-    std::map<gchar *, int, ltstr>* _image_name;
-    int _image_number_next;
-
 protected:
-    void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
     void release() override;
 
-    void child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) override;
-    void remove_child(Inkscape::XML::Node* child) override;
+    void child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref) override;
+    void remove_child(Inkscape::XML::Node *child) override;
 
-    void set(SPAttr key, const char* value) override;
+    void set(SPAttr key, const char *value) override;
 
     void modified(unsigned int flags) override;
-    void update(SPCtx* ctx, unsigned int flags) override;
+    void update(SPCtx *ctx, unsigned int flags) override;
 
-    Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned int flags) override;
+
+private:
+    std::map<std::string, int> _image_name;
+    int _image_number_next;
+    Inkscape::Filters::Filter *_renderer;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FILTER, SPFilter)

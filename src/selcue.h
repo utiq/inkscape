@@ -16,6 +16,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 
 #include <sigc++/sigc++.h>
 
@@ -67,9 +68,9 @@ private:
     Selection *_selection;
     sigc::connection _sel_changed_connection;
     sigc::connection _sel_modified_connection;
-    std::vector<Inkscape::CanvasItem*> _item_bboxes;
-    std::vector<Inkscape::CanvasItem*> _text_baselines;
-    std::vector<Inkscape::CanvasItem*> _item_lines;
+    std::vector<std::unique_ptr<Inkscape::CanvasItem>> _item_bboxes;
+    std::vector<std::unique_ptr<Inkscape::CanvasItem>> _text_baselines;
+    std::vector<std::unique_ptr<Inkscape::CanvasItem>> _item_lines;
 
     BoundingBoxPrefsObserver _bounding_box_prefs_observer;
 };
