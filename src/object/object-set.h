@@ -485,7 +485,8 @@ public:
     void createBitmapCopy();
     void setMask(bool apply_clip_path, bool apply_to_layer = false, bool skip_undo = false);
     void editMask(bool clip);
-    void unsetMask(const bool apply_clip_path, const bool skip_undo = false);
+    void unsetMask(const bool apply_clip_path, const bool skip_undo = false,
+                   const bool delete_helper_group = true);
     void setClipGroup();
     
     // moves

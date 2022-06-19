@@ -566,13 +566,13 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
         prefs->setBool("/options/maskobject/topmost", true);
         prefs->setInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
         if (clip_obj) {
-            tmp_clip_set.unsetMask(true,true);
+            tmp_clip_set.unsetMask(true, true, false);
             tmp_clip_set.remove(group);
             tmp_clip_set.group();
             clip = tmp_clip_set.singleItem();
         } 
         if (mask_obj) {
-            tmp_mask_set.unsetMask(false,true);
+            tmp_mask_set.unsetMask(false, true, false);
             tmp_mask_set.remove(group);
             tmp_mask_set.group();
             mask = tmp_mask_set.singleItem();
