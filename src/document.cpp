@@ -895,65 +895,46 @@ Geom::OptRect SPDocument::pageBounds()
  * this function fits the canvas to that rect by resizing the canvas
  * and translating the document root into position.
  * \param rect fit document size to this, in document coordinates
- * \param with_margins add margins to rect, by taking margins from this
- *        document's namedview (<sodipodi:namedview> "fit-margin-..."
- *        attributes, and "units")
+ * \param (unused)
  */
-void SPDocument::fitToRect(Geom::Rect const &rect, bool with_margins)
+void SPDocument::fitToRect(Geom::Rect const &rect, bool)
 {
-    double const w = rect.width();
-    double const h = rect.height();
+    using namespace Inkscape::Util;
+    Unit const *nv_units = unit_table.getUnit("px");
 
-    Inkscape::Util::Unit const *nv_units = unit_table.getUnit("px");
-    if (root->height.unit && (root->height.unit != SVGLength::PERCENT))
+    if (root->height.unit && (root->height.unit != SVGLength::PERCENT)) {
         nv_units = unit_table.getUnit(root->height.unit);
-    SPNamedView *nv = this->getNamedView();
-
-    /* in px */
-    double margin_top = 0.0;
-    double margin_left = 0.0;
-    double margin_right = 0.0;
-    double margin_bottom = 0.0;
-
-    if (with_margins && nv) {
-        margin_top = nv->getMarginLength("fit-margin-top", nv_units, unit_table.getUnit("px"), w, h, false);
-        margin_left = nv->getMarginLength("fit-margin-left", nv_units, unit_table.getUnit("px"), w, h, true);
-        margin_right = nv->getMarginLength("fit-margin-right", nv_units, unit_table.getUnit("px"), w, h, true);
-        margin_bottom = nv->getMarginLength("fit-margin-bottom", nv_units, unit_table.getUnit("px"), w, h, false);
-        margin_top = Inkscape::Util::Quantity::convert(margin_top, nv_units, "px");
-        margin_left = Inkscape::Util::Quantity::convert(margin_left, nv_units, "px");
-        margin_right = Inkscape::Util::Quantity::convert(margin_right, nv_units, "px");
-        margin_bottom = Inkscape::Util::Quantity::convert(margin_bottom, nv_units, "px");
     }
 
-    double y_dir = yaxisdir();
-
-    Geom::Rect const rect_with_margins(
-            rect.min() - Geom::Point(margin_left, margin_top),
-            rect.max() + Geom::Point(margin_right, margin_bottom));
-
     // rect in desktop coordinates before changing document dimensions
-    auto rect_with_margins_dt_old = rect_with_margins * doc2dt();
+    auto rect_dt_old = rect * doc2dt();
 
-    setWidthAndHeight(
-        Inkscape::Util::Quantity(Inkscape::Util::Quantity::convert(rect_with_margins.width(),  "px", nv_units), nv_units),
-        Inkscape::Util::Quantity(Inkscape::Util::Quantity::convert(rect_with_margins.height(), "px", nv_units), nv_units)
-        );
+    setWidthAndHeight(Quantity(Quantity::convert(rect.width(),  "px", nv_units), nv_units),
+                      Quantity(Quantity::convert(rect.height(), "px", nv_units), nv_units));
 
     // rect in desktop coordinates after changing document dimensions
-    auto rect_with_margins_dt_new = rect_with_margins * doc2dt();
+    auto rect_dt_new = rect * doc2dt();
 
-    Geom::Translate const tr(-rect_with_margins_dt_new.min());
-    root->translateChildItems(tr);
+    bool y_down = is_yaxisdown();
+    {
+        // Translate drawing contents to the origin
+        double const box_x = rect_dt_new[Geom::X].min();
+        double const box_y = y_down ? rect_dt_new[Geom::Y].min()
+                                    : rect_dt_new.height() - rect_dt_old[Geom::Y].max();
+        root->translateChildItems(Geom::Translate(-box_x, -box_y));
+    }
 
-    if(nv) {
-        Geom::Translate tr2(-rect_with_margins_dt_old.min());
+    if (auto *nv = getNamedView()) {
+        Geom::Translate tr2(-rect_dt_old.min());
         nv->translateGuides(tr2);
         nv->translateGrids(tr2);
         _page_manager->movePages(tr2);
 
         // update the viewport so the drawing appears to stay where it was
-        nv->scrollAllDesktops(-tr2[0], -tr2[1] * y_dir);
+        double const delta_x = rect_dt_old[Geom::X].min();
+        double const delta_y = y_down ? rect_dt_old[Geom::Y].min()
+                                      : rect_dt_new[Geom::Y].max() - rect_dt_new.height();
+        nv->scrollAllDesktops(delta_x, delta_y);
     }
 }
 
