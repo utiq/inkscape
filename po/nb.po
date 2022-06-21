@@ -12005,7 +12005,7 @@ msgstr "Øverst til venstre"
 #: ../src/live_effects/lpe-perspective-envelope.cpp:50
 msgid "Top Left - <b>Ctrl+Alt+Click</b>: reset, <b>Ctrl</b>: move along axes"
 msgstr ""
-"Øverst til venstre – <b>Ctrl + Alt + klikk<b/>: tilbakestill, <b>Ctrl</b>: "
+"Øverst til venstre – <b>Ctrl + Alt + klikk</b>: tilbakestill, <b>Ctrl</b>: "
 "flytt langs akser."
 
 #: ../src/live_effects/lpe-perspective-envelope.cpp:51
@@ -12015,7 +12015,7 @@ msgstr "Øverst til høyre"
 #: ../src/live_effects/lpe-perspective-envelope.cpp:51
 msgid "Top Right - <b>Ctrl+Alt+Click</b>: reset, <b>Ctrl</b>: move along axes"
 msgstr ""
-"Øverst til høyre – <b>Ctrl + Alt + klikk<b/>: tilbakestill, <b>Ctrl</b>: "
+"Øverst til høyre – <b>Ctrl + Alt + klikk</b>: tilbakestill, <b>Ctrl</b>: "
 "flytt langs akser."
 
 #: ../src/live_effects/lpe-perspective-envelope.cpp:52
@@ -12025,7 +12025,7 @@ msgstr "Nederst til venstre"
 #: ../src/live_effects/lpe-perspective-envelope.cpp:52
 msgid "Down Left - <b>Ctrl+Alt+Click</b>: reset, <b>Ctrl</b>: move along axes"
 msgstr ""
-"Nederst til venstre – <b>Ctrl + Alt + klikk<b/>: tilbakestill, <b>Ctrl</b>: "
+"Nederst til venstre – <b>Ctrl + Alt + klikk</b>: tilbakestill, <b>Ctrl</b>: "
 "flytt langs akser."
 
 #: ../src/live_effects/lpe-perspective-envelope.cpp:53
@@ -12035,7 +12035,7 @@ msgstr "Nederst til høyre"
 #: ../src/live_effects/lpe-perspective-envelope.cpp:53
 msgid "Down Right - <b>Ctrl+Alt+Click</b>: reset, <b>Ctrl</b>: move along axes"
 msgstr ""
-"Nederst til høyre – <b>Ctrl + Alt + klikk<b/>: tilbakestill, <b>Ctrl</b>: "
+"Nederst til høyre – <b>Ctrl + Alt + klikk</b>: tilbakestill, <b>Ctrl</b>: "
 "flytt langs akser."
 
 #: ../src/live_effects/lpe-perspective-envelope.cpp:280
@@ -16761,7 +16761,7 @@ msgstr "Innebygde skript"
 
 #: ../src/ui/dialog/document-properties.cpp:782
 msgid "<b>External script files:</b>"
-msgstr "<b>Eksterne skriptfiler:</B>"
+msgstr "<b>Eksterne skriptfiler:</b>"
 
 #: ../src/ui/dialog/document-properties.cpp:784
 msgid "Add the current file name or browse for a file"
@@ -28292,7 +28292,7 @@ msgid_plural ""
 msgstr[0] ""
 "<b>Ingen</b> fargeovergangshåndtak valgt ut av %d i %d valgt objekt."
 msgstr[1] ""
-"b>Ingen</b> fargeovergangshåndtak valgt ut av %d i %d valgte objekter."
+"<b>Ingen</b> fargeovergangshåndtak valgt ut av %d i %d valgte objekter."
 
 #: ../src/ui/tools/gradient-tool.cpp:425
 msgid "Simplify gradient"

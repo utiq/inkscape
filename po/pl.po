@@ -22211,7 +22211,7 @@ msgid ""
 msgstr ""
 "Drukuj ostrzeżenie, jeśli znaleziono niewłaściwe właściwości stylu (tj. \"font-"
 "family\" ustawiony na a <rect>). Pliki bazy danych znajdujące się w "
-"inkscape_data_dir/Attributes.</rect>"
+"inkscape_data_dir/Attributes."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2054
 #: ../src/ui/dialog/inkscape-preferences.cpp:2062

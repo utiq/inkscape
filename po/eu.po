@@ -23652,14 +23652,14 @@ msgid ""
 "Position the <b>start point</b> of the arc or segment; with <b>Shift</b> to "
 "move with <b>end point</b>; with <b>Ctrl</b> to snap angle; drag <b>inside</"
 "b> the ellipse for arc, <b>outside</b> for segment"
-msgstr "Kokatu arkuaren edo segmentuaren <b>hasierako puntua</b>; <b>Shift</b> b>amaierako puntuarekin</b> mugitzeko; <b>Ctrl</b> angelua atxikitzeko; arrastatu elipse <b>barruan</b> arkuarentzako, <b>kanpoan</b> segmentuarentzako"
+msgstr "Kokatu arkuaren edo segmentuaren <b>hasierako puntua</b>; <b>Shift</b> <b>amaierako puntuarekin</b> mugitzeko; <b>Ctrl</b> angelua atxikitzeko; arrastatu elipse <b>barruan</b> arkuarentzako, <b>kanpoan</b> segmentuarentzako"
 
 #: ../src/ui/shape-editor-knotholders.cpp:1166
 msgid ""
 "Position the <b>end point</b> of the arc or segment; with <b>Shift</b> to "
 "move with <b>start point</b>; with <b>Ctrl</b> to snap angle; drag "
 "<b>inside</b> the ellipse for arc, <b>outside</b> for segment"
-msgstr "Kokatu arkuaren edo segmentuaren <b>amaierako puntua</b>; <b>Shift</b> b>hasierako puntuarekin</b> mugitzeko; <b>Ctrl</b> angelua atxikitzeko; arrastatu elipse <b>barruan</b> arkuarentzako, <b>kanpoan</b> segmentuarentzako"
+msgstr "Kokatu arkuaren edo segmentuaren <b>amaierako puntua</b>; <b>Shift</b> <b>hasierako puntuarekin</b> mugitzeko; <b>Ctrl</b> angelua atxikitzeko; arrastatu elipse <b>barruan</b> arkuarentzako, <b>kanpoan</b> segmentuarentzako"
 
 #: ../src/ui/shape-editor-knotholders.cpp:1172
 msgid "Drag to move the ellipse"

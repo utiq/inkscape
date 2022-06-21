@@ -15502,7 +15502,7 @@ msgstr "Použijte <b>Shift+D</b> k vyhledání rámce"
 msgid "<b>%1$i</b> objects selected of type %2$s"
 msgid_plural "<b>%1$i</b> objects selected of types %2$s"
 msgstr[0] "<b>%1$i</b> vybraný objekt typu %2$s"
-msgstr[1] "<<b>%1$i</b> vybrané objekty typu %2$s"
+msgstr[1] "<b>%1$i</b> vybrané objekty typu %2$s"
 msgstr[2] "<b>%1$i</b> vybraných objektů typu %2$s"
 
 #: ../src/selection-describer.cpp:230
@@ -28695,7 +28695,7 @@ msgid ""
 "with the current selection, <b>Ctrl+click</b> to change the clicked object's fill "
 "and stroke to the current setting."
 msgstr ""
-"<b>Kliknutím</b> vybarvíte ohraničenou oblast, <b>Shift+kliknutí<b> spojí novou "
+"<b>Kliknutím</b> vybarvíte ohraničenou oblast, <b>Shift+kliknutí</b> spojí novou "
 "výplň s aktuálním výběrem, <b>Ctrl+kliknutí</b> změní výplň a tah objektu na "
 "aktuální nastavení."
 

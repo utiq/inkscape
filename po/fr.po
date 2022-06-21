@@ -13348,10 +13348,6 @@ msgstr "Monter le chemin"
 #: ../src/live_effects/parameter/originalpatharray.cpp:293
 msgid "Move path down"
 msgstr "Descendre le chemin"
- 
-#: ../src/live_effects/parameter/originalpatharray.cpp:311
-msgid "Remove path"
-msgstr "Supprimer le chemin"
 
 #: ../src/live_effects/parameter/originalpatharray.cpp:349
 msgid "Link patharray parameter to path"
@@ -14745,6 +14741,7 @@ msgid ""
 msgstr ""
 "<b>Aligne</b> les objets sur le bord désigné ; <b>Maj</b> pour inverser ; "
 "<b>Ctrl</b> pour manipuler la sélection comme un groupe."
+
 #
 # File: ../src/seltrans-handles.cpp, line: 24
 #: ../src/seltrans-handles.cpp:24
