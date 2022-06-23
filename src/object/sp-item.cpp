@@ -34,6 +34,7 @@
 #include "filter-chemistry.h"
 
 #include "sp-clippath.h"
+#include "sp-defs.h"
 #include "sp-desc.h"
 #include "sp-guide.h"
 #include "sp-hatch.h"
@@ -1281,6 +1282,26 @@ void SPItem::invoke_hide(unsigned key)
             views.pop_back();
         } else {
             ++it;
+        }
+    }
+}
+
+/**
+ * Invoke hide on all non-group items, except for the list of items to keep.
+ */
+void SPItem::invoke_hide_except(unsigned key, const std::vector<SPItem *> &to_keep)
+{
+    // If item is not in the list of items to keep.
+    if (to_keep.end() == find(to_keep.begin(), to_keep.end(), this)) {
+        // Only hide the item if it's not a defs, group or root.
+        if (!SP_IS_DEFS(this) && !SP_IS_ROOT(this) && !SP_IS_GROUP(this)) {
+            this->invoke_hide(key);
+        }
+        // recurse
+        for (auto &obj : this->children) {
+            if (SPItem *child = dynamic_cast<SPItem *>(&obj)) {
+                child->invoke_hide_except(key, to_keep);
+            }
         }
     }
 }

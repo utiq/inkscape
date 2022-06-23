@@ -334,6 +334,7 @@ public:
 
     // Removed item from display tree.
     void invoke_hide(unsigned int key);
+    void invoke_hide_except(unsigned key, const std::vector<SPItem *> &to_keep);
 
     void getSnappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inkscape::SnapPreferences const *snapprefs=nullptr) const;
     void adjust_pattern(/* Geom::Affine const &premul, */ Geom::Affine const &postmul, bool set = false,

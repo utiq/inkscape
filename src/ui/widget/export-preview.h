@@ -54,7 +54,6 @@ private:
 public:
     void setDocument(SPDocument *document);
     void refreshHide(const std::vector<SPItem *> &list = {});
-    void hide_other_items_recursively(SPObject *o, const std::vector<SPItem *> &list);
     void setItem(SPItem *item);
     void setDbox(double x0, double x1, double y0, double y1);
     void queueRefresh();

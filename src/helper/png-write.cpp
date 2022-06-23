@@ -371,29 +371,6 @@ sp_export_get_rows(guchar const **rows, void **to_free, int row, int num_rows, v
     return num_rows;
 }
 
-/**
- * Hide all items that are not listed in list, recursively, skipping groups and defs.
- */
-static void hide_other_items_recursively(SPObject *o, const std::vector<SPItem*> &list, unsigned dkey)
-{
-    if ( SP_IS_ITEM(o)
-         && !SP_IS_DEFS(o)
-         && !SP_IS_ROOT(o)
-         && !SP_IS_GROUP(o)
-         && list.end()==find(list.begin(),list.end(),o))
-    {
-        SP_ITEM(o)->invoke_hide(dkey);
-    }
-
-    // recurse
-    if (list.end()==find(list.begin(),list.end(),o)) {
-        for (auto& child: o->children) {
-            hide_other_items_recursively(&child, list, dkey);
-        }
-    }
-}
-
-
 ExportResult sp_export_png_file(SPDocument *doc, gchar const *filename,
                                 double x0, double y0, double x1, double y1,
                                 unsigned long int width, unsigned long int height, double xdpi, double ydpi,
@@ -473,7 +450,7 @@ ExportResult sp_export_png_file(SPDocument *doc, gchar const *filename,
     // We show all and then hide all items we don't want, instead of showing only requested items,
     // because that would not work if the shown item references something in defs
     if (!items_only.empty()) {
-        hide_other_items_recursively(doc->getRoot(), items_only, dkey);
+        doc->getRoot()->invoke_hide_except(dkey, items_only);
     }
 
     ebp.status = status;

@@ -118,23 +118,8 @@ void ExportPreview::performHide(const std::vector<SPItem *> *list)
             isLastHide = false;
         }
         if (list && !list->empty()) {
-            hide_other_items_recursively(_document->getRoot(), *list);
+            _document->getRoot()->invoke_hide_except(visionkey, *list);
             isLastHide = true;
-        }
-    }
-}
-
-void ExportPreview::hide_other_items_recursively(SPObject *o, const std::vector<SPItem *> &list)
-{
-    if (SP_IS_ITEM(o) && !SP_IS_DEFS(o) && !SP_IS_ROOT(o) && !SP_IS_GROUP(o) &&
-        list.end() == find(list.begin(), list.end(), o)) {
-        SP_ITEM(o)->invoke_hide(visionkey);
-    }
-
-    // recurse
-    if (list.end() == find(list.begin(), list.end(), o)) {
-        for (auto &child : o->children) {
-            hide_other_items_recursively(&child, list);
         }
     }
 }
