@@ -952,7 +952,8 @@ void SingleExport::refreshPreview()
     std::vector<SPItem *> selected;
     if (si_hide_all->get_active()) {
         // This is because selection items is not a std::vector yet. FIXME.
-        selected = std::vector<SPItem *>(_desktop->getSelection()->items().begin(), _desktop->getSelection()->items().end());
+        selected =
+            std::vector<SPItem *>(_desktop->getSelection()->items().begin(), _desktop->getSelection()->items().end());
     }
 
     Unit const *unit = units->getUnit();

@@ -352,7 +352,7 @@ void KnotHolder::add_pattern_knotholder()
         PatternKnotHolderEntityXY *entity_xy = new PatternKnotHolderEntityXY(true);
         PatternKnotHolderEntityAngle *entity_angle = new PatternKnotHolderEntityAngle(true);
         PatternKnotHolderEntityScale *entity_scale = new PatternKnotHolderEntityScale(true);
-        entity_xy->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT, "Pattern:Fill:xy",
+        entity_xy->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_SIZER, "Pattern:Fill:xy",
                           // TRANSLATORS: This refers to the pattern that's inside the object
                           _("<b>Move</b> the pattern fill inside the object"));
 
@@ -441,6 +441,19 @@ void KnotHolder::add_filter_knotholder() {
                       _("<b>Resize</b> the filter effect region"));
     entity.push_back(entity_tl);
     entity.push_back(entity_br);
+}
+
+/**
+ * When editing an object, this extra information tells out knots
+ * where the user has clicked on the item.
+ */
+bool KnotHolder::set_item_clickpos(Geom::Point loc)
+{
+    bool ret = false;
+    for (auto i : entity) {
+        ret = i->set_item_clickpos(loc) || ret;
+    }
+    return ret;
 }
 
 /*

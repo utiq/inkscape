@@ -44,12 +44,16 @@ public:
 
     // Display
     void render(Inkscape::CanvasItemBuffer *buf) override;
- 
+
+    void set_inverted(bool inverted);
+
 protected:
     Geom::Point _p0;
     Geom::Point _p1;
     Geom::Point _p2;
     Geom::Point _p3;
+
+    bool _inverted = false;
 };
 
 

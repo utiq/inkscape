@@ -43,6 +43,7 @@
 #include "object/sp-shape.h"
 #include "object/sp-text.h"
 
+#include "ui/knot/knot-holder.h"
 #include "ui/shape-editor.h" // temporary!
 #include "ui/tool/control-point-selection.h"
 #include "ui/tool/curve-drag-point.h"
@@ -612,6 +613,23 @@ bool NodeTool::root_handler(GdkEvent* event) {
     return ToolBase::root_handler(event);
 }
 
+bool NodeTool::item_handler(SPItem *item, GdkEvent *event)
+{
+    bool ret = ToolBase::item_handler(item, event);
+
+    // Node shape editors are handles differently than shape tools
+    if (!ret && event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
+        for (auto &se : _shape_editors) {
+            // This allows users to select an arbitary position in a pattern to edit on canvas.
+            if (auto knotholder = se.second->knotholder; knotholder->getItem() == item) {
+                auto point = _desktop->w2d(Geom::Point(event->button.x, event->button.y));
+                ret = knotholder->set_item_clickpos(point);
+            }
+        }
+    }
+    return ret;
+}
+
 void NodeTool::update_tip(GdkEvent *event) {
     using namespace Inkscape::UI;
     if (event && (event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE)) {
@@ -761,7 +779,7 @@ void NodeTool::select_point(Geom::Point const &/*sel*/, GdkEventButton *event) {
     } else {
         if (held_shift(*event)) {
             selection->toggle(item_clicked);
-        } else {
+        } else if (!selection->includes(item_clicked)) {
             selection->set(item_clicked);
         }
         // This not need to be called canvas is updated on selection change

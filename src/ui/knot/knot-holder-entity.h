@@ -30,6 +30,7 @@ class SPPattern;
 class KnotHolder;
 
 namespace Inkscape {
+class CanvasItemQuad;
 namespace LivePathEffect {
     class Effect;
 } // namespace LivePathEffect
@@ -59,10 +60,12 @@ public:
     virtual bool knot_missing() const { return false; }
     virtual Geom::Point knot_get() const = 0;
     virtual void knot_click(unsigned int /*state*/) {}
+    virtual bool set_item_clickpos(Geom::Point loc) { return false; }
 
-    void update_knot();
+    virtual void on_created() {}
+    virtual void update_knot();
 
-//private:
+    // private:
     Geom::Point snap_knot_position(Geom::Point const &p, unsigned int state);
     Geom::Point snap_knot_position_constrained(Geom::Point const &p, Inkscape::Snapper::SnapConstraint const &constraint, unsigned int state);
 
@@ -102,20 +105,33 @@ protected:
 class PatternKnotHolderEntity : public KnotHolderEntity {
   public:
     PatternKnotHolderEntity(bool fill) : KnotHolderEntity(), _fill(fill) {}
+    void on_created() override;
     bool knot_missing() const override;
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override{};
+    bool set_item_clickpos(Geom::Point loc) override;
+    void set_offset(Geom::Point loc);
 
-  protected:
+protected:
     // true if the entity tracks fill, false for stroke
     bool _fill;
     SPPattern *_pattern() const;
+    Geom::Point _get_pos(gdouble x, gdouble y) const;
+    Geom::IntPoint _cell;
 };
 
 class PatternKnotHolderEntityXY : public PatternKnotHolderEntity {
 public:
     PatternKnotHolderEntityXY(bool fill) : PatternKnotHolderEntity(fill) {}
+    ~PatternKnotHolderEntityXY() override;
+
+    void on_created() override;
+    void update_knot() override;
     Geom::Point knot_get() const override;
     void knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state) override;
+
+private:
+    // Extra visual element to show the pattern editing area
+    Inkscape::CanvasItemQuad *_quad = nullptr;
 };
 
 class PatternKnotHolderEntityAngle : public PatternKnotHolderEntity {

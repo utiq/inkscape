@@ -19,8 +19,8 @@
 
 #include <glibmm/ustring.h>
 
-#include "sp-object.h"
 #include "color.h"
+#include "sp-object.h"
 
 typedef unsigned int guint32;
 

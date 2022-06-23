@@ -75,6 +75,8 @@ public:
     SPItem *getItem() { return item; }
     bool is_dragging() const { return dragging; }
 
+    bool set_item_clickpos(Geom::Point loc);
+
     friend class Inkscape::UI::ShapeEditor; // FIXME why?
     friend class Inkscape::LivePathEffect::NodeSatelliteArrayParam;                    // why?
     friend class Inkscape::LivePathEffect::PowerStrokePointArrayParamKnotHolderEntity; // why?

@@ -57,6 +57,7 @@ public:
 
     void set(const Inkscape::Preferences::Entry& val) override;
     bool root_handler(GdkEvent* event) override;
+    bool item_handler(SPItem *item, GdkEvent *event) override;
     void deleteSelected();
 private:
     sigc::connection _selection_changed_connection;

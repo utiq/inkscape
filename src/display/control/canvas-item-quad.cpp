@@ -55,7 +55,6 @@ CanvasItemQuad::CanvasItemQuad(CanvasItemGroup *group,
  */
 void CanvasItemQuad::set_coords(Geom::Point const &p0, Geom::Point const &p1, Geom::Point const &p2, Geom::Point const &p3)
 {
-    std::cout << "Canvas_ItemQuad::set_cords: " << p0 << ", " << p1 << ", " << p2 << ", " << p3 << std::endl;
     _p0 = p0;
     _p1 = p1;
     _p2 = p2;
@@ -178,19 +177,30 @@ void CanvasItemQuad::render(Inkscape::CanvasItemBuffer *buf)
     buf->cr->line_to(p2.x(), p2.y());
     buf->cr->line_to(p3.x(), p3.y());
     buf->cr->close_path();
+
+    if (_inverted) {
+        cairo_set_operator(buf->cr->cobj(), CAIRO_OPERATOR_DIFFERENCE);
+    }
+
     buf->cr->set_source_rgba(SP_RGBA32_R_F(_fill), SP_RGBA32_G_F(_fill),
                              SP_RGBA32_B_F(_fill), SP_RGBA32_A_F(_fill));
-    buf->cr->fill();
+    buf->cr->fill_preserve();
 
-    // Uncomment to show bounds
-    // Geom::Rect bounds = _bounds;
-    // bounds.expandBy(-1);
-    // bounds -= buf->rect.min();
-    // buf->cr->set_source_rgba(1.0, 0.0, 0.0, 1.0);
-    // buf->cr->rectangle(bounds.min().x(), bounds.min().y(), bounds.width(), bounds.height());
-    // buf->cr->stroke();
+    buf->cr->set_line_width(1);
+    buf->cr->set_source_rgba(SP_RGBA32_R_F(_stroke), SP_RGBA32_G_F(_stroke),
+                             SP_RGBA32_B_F(_stroke), SP_RGBA32_A_F(_stroke));
+    buf->cr->stroke_preserve();
+    buf->cr->begin_new_path();
 
     buf->cr->restore();
+}
+
+void CanvasItemQuad::set_inverted(bool inverted)
+{
+    if (_inverted != inverted) {
+        _inverted = inverted;
+        request_redraw();
+    }
 }
 
 } // namespace Inkscape

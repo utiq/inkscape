@@ -390,6 +390,10 @@ const gchar *SPPattern::produce(const std::vector<Inkscape::XML::Node *> &reprs,
     for (auto node : reprs) {
         SPItem *copy = SP_ITEM(pat_object->appendChildRepr(node));
 
+        if (!repr->attribute("inkscape:label") && node->attribute("inkscape:label")) {
+            repr->setAttribute("inkscape:label", node->attribute("inkscape:label"));
+        }
+
         Geom::Affine dup_transform;
         if (!sp_svg_transform_read(node->attribute("transform"), &dup_transform))
             dup_transform = Geom::identity();

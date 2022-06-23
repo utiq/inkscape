@@ -1054,6 +1054,8 @@ static void sp_pattern_menu_build(GtkWidget *combo, std::vector<SPPattern *> &pl
         gchar const *label;
         if (repr->attribute("inkscape:stockid")) {
             label = _(repr->attribute("inkscape:stockid"));
+        } else if (repr->attribute("inkscape:label")) {
+            label = _(repr->attribute("inkscape:label"));
         } else {
             label = _(repr->attribute("id"));
         }
