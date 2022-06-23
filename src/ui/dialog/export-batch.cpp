@@ -67,7 +67,7 @@ public:
     SPPage *getPage() { return _page; }
     bool isActive() { return _selector.get_active(); }
     void refresh(bool hide, guint32 bg_color);
-    void refreshHide(const std::vector<SPItem *> *list) { _preview.refreshHide(list); }
+    void refreshHide(const std::vector<SPItem *> &list) { _preview.refreshHide(list); }
     void setDocument(SPDocument *doc) { _preview.setDocument(doc); }
 
 private:
@@ -408,16 +408,16 @@ void BatchExport::refreshPreview()
 
     for (auto &[key, val] : current_items) {
         if (preview) {
-            if (!hide) {
-                val->refreshHide(nullptr);
-            } else if (auto item = val->getItem()) {
-                std::vector<SPItem *> selected = {item};
-                val->refreshHide(&selected);
-            } else if (val->getPage()) {
-                auto sels = _desktop->getSelection()->items();
-                std::vector<SPItem *> selected(sels.begin(), sels.end());
-                val->refreshHide(&selected);
+            std::vector<SPItem *> selected;
+            if (hide) {
+                if (auto item = val->getItem()) {
+                    selected = std::vector<SPItem *>({item});
+                } else if (val->getPage()) {
+                    auto sels = _desktop->getSelection()->items();
+                    selected = std::vector<SPItem *>(sels.begin(), sels.end());
+                }
             }
+            val->refreshHide(selected);
         }
         val->refresh(!preview, _bgnd_color_picker->get_current_color());
     }

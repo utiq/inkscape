@@ -138,10 +138,8 @@ void SingleExport::selectionModified(Inkscape::Selection *selection, guint flags
     if (!(flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_PARENT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
         return;
     }
-    if (!_document) {
-        refreshArea();
-        loadExportHints();
-    }
+    refreshArea();
+    // Do not load export hits for modifications
 }
 
 void SingleExport::selectionChanged(Inkscape::Selection *selection)
@@ -951,8 +949,11 @@ void SingleExport::refreshPreview()
         return;
     }
 
-    std::vector<SPItem *> selected(_desktop->getSelection()->items().begin(), _desktop->getSelection()->items().end());
-    bool hide = si_hide_all->get_active();
+    std::vector<SPItem *> selected;
+    if (si_hide_all->get_active()) {
+        // This is because selection items is not a std::vector yet. FIXME.
+        selected = std::vector<SPItem *>(_desktop->getSelection()->items().begin(), _desktop->getSelection()->items().end());
+    }
 
     Unit const *unit = units->getUnit();
     float x0 = unit->convert(spin_buttons[SPIN_X0]->get_value(), "px");
@@ -961,7 +962,7 @@ void SingleExport::refreshPreview()
     float y1 = unit->convert(spin_buttons[SPIN_Y1]->get_value(), "px");
     preview->setDbox(x0, x1, y0, y1);
     preview->set_background_color(_bgnd_color_picker->get_current_color());
-    preview->refreshHide(hide ? &selected : nullptr);
+    preview->refreshHide(selected);
     preview->queueRefresh();
 }
 

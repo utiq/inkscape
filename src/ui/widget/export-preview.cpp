@@ -92,7 +92,13 @@ void ExportPreview::setDocument(SPDocument *document)
     }
 }
 
-void ExportPreview::refreshHide(const std::vector<SPItem *> *list)
+void ExportPreview::refreshHide(const std::vector<SPItem *> &list)
+{
+    _hidden_excluded = std::vector<SPItem *>(list.begin(), list.end());
+    _hidden_requested = true;
+}
+
+void ExportPreview::performHide(const std::vector<SPItem *> *list)
 {
     if (_document) {
         if (isLastHide) {
@@ -192,6 +198,10 @@ void ExportPreview::renderPreview()
         return;
     }
 
+    if (_hidden_requested) {
+        this->performHide(&_hidden_excluded);
+        _hidden_requested = false;
+    }
     if (_document) {
         GdkPixbuf *pb = nullptr;
         if (_item) {
