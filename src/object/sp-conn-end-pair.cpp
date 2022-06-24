@@ -304,10 +304,9 @@ void SPConnEndPair::makePathInvalid()
     _connRef->makePathInvalid();
 }
 
-
 // Redraws the curve along the recalculated route
 // Straight or curved
-void recreateCurve(SPCurve *curve, Avoid::ConnRef *connRef, const gdouble curvature)
+SPCurve SPConnEndPair::createCurve(Avoid::ConnRef *connRef, const gdouble curvature)
 {
     g_assert(connRef != nullptr);
 
@@ -317,33 +316,34 @@ void recreateCurve(SPCurve *curve, Avoid::ConnRef *connRef, const gdouble curvat
     if (!straight) route = route.curvedPolyline(curvature);
     connRef->calcRouteDist();
 
-    curve->reset();
+    SPCurve curve;
 
-    curve->moveto( Geom::Point(route.ps[0].x, route.ps[0].y) );
+    curve.moveto(Geom::Point(route.ps[0].x, route.ps[0].y));
     int pn = route.size();
     for (int i = 1; i < pn; ++i) {
         Geom::Point p(route.ps[i].x, route.ps[i].y);
         if (straight) {
-            curve->lineto( p );
+            curve.lineto(p);
         } else {
             switch (route.ts[i]) {
                 case 'M':
-                    curve->moveto( p );
+                    curve.moveto(p);
                     break;
                 case 'L':
-                    curve->lineto( p );
+                    curve.lineto(p);
                     break;
                 case 'C':
-                    g_assert( i+2<pn );
-                    curve->curveto( p, Geom::Point(route.ps[i+1].x, route.ps[i+1].y),
-                            Geom::Point(route.ps[i+2].x, route.ps[i+2].y) );
+                    g_assert(i + 2 < pn);
+                    curve.curveto(p, Geom::Point(route.ps[i+1].x, route.ps[i+1].y),
+                                  Geom::Point(route.ps[i+2].x, route.ps[i+2].y));
                     i+=2;
                     break;
             }
         }
     }
-}
 
+    return curve;
+}
 
 void SPConnEndPair::tellLibavoidNewEndpoints(bool const processTransaction)
 {
@@ -360,24 +360,22 @@ void SPConnEndPair::tellLibavoidNewEndpoints(bool const processTransaction)
     return;
 }
 
-
 bool SPConnEndPair::reroutePathFromLibavoid()
 {
-    if (_connRef == nullptr || !isAutoRoutingConn()) {
+    if (!_connRef || !isAutoRoutingConn()) {
         // Do nothing
         return false;
     }
 
-    SPCurve *curve = _path->curve();
+    auto curve = createCurve(_connRef, _connCurvature);
 
-    recreateCurve(curve, _connRef, _connCurvature);
+    auto doc2item = _path->i2doc_affine().inverse();
+    curve.transform(doc2item);
 
-    Geom::Affine doc2item = _path->i2doc_affine().inverse();
-    curve->transform(doc2item);
+    _path->setCurve(std::move(curve));
 
     return true;
 }
-
 
 /*
   Local Variables:

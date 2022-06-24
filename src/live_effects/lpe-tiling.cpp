@@ -520,7 +520,7 @@ void LPETiling::cloneD(SPObject *orig, SPObject *dest)
     SPShape * shape =  SP_SHAPE(orig);
     SPPath * path =  SP_PATH(dest);
     if (shape) {
-        SPCurve *c = shape->curve();
+        SPCurve const *c = shape->curve();
         if (c) {
             auto str = sp_svg_write_path(c->get_pathvector());
             if (shape && !path) {

@@ -23,7 +23,7 @@
 #include "2geom/path-intersection.h"
 
 
-static void change_endpts(SPCurve *const curve, double const endPos[2]);
+static void change_endpts(SPPath *path, double endPos[2]);
 
 SPConnEnd::SPConnEnd(SPObject *const owner)
     : ref(owner)
@@ -159,7 +159,7 @@ static void sp_conn_get_route_and_redraw(SPPath *const path, const bool updatePa
                         (h == 0), endPos[h]);
         }
     }
-    change_endpts(path->curve(), endPos);
+    change_endpts(path, endPos);
     if (updatePathRepr) {
         path->updateRepr();
         path->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
@@ -186,14 +186,12 @@ void sp_conn_reroute_path(SPPath *const path)
 void sp_conn_reroute_path_immediate(SPPath *const path)
 {
     if (path->connEndPair.isAutoRoutingConn()) {
-        bool processTransaction = true;
-        path->connEndPair.tellLibavoidNewEndpoints(processTransaction);
+        path->connEndPair.tellLibavoidNewEndpoints(true);
     }
     // Don't update the path repr or else connector dragging is slowed by
     // constant update of values to the xml editor, and each step is also
     // needlessly remembered by undo/redo.
-    bool const updatePathRepr = false;
-    sp_conn_get_route_and_redraw(path, updatePathRepr);
+    sp_conn_get_route_and_redraw(path, false);
 }
 
 void sp_conn_redraw_path(SPPath *const path)
@@ -202,18 +200,18 @@ void sp_conn_redraw_path(SPPath *const path)
 }
 
 
-static void change_endpts(SPCurve *const curve, double const endPos[2])
+static void change_endpts(SPPath *path, double endPos[2])
 {
     // Use Geom::Path::portion to cut the curve at the end positions
     if (endPos[0] > endPos[1]) {
         // Path is "negative", reset the curve and return
-        curve->reset();
+        path->setCurve({});
         return;
     }
-    const Geom::Path& old_path = curve->get_pathvector()[0];
+    const Geom::Path& old_path = path->curve()->get_pathvector()[0];
     Geom::PathVector new_path_vector;
     new_path_vector.push_back(old_path.portion(endPos[0], endPos[1]));
-    curve->set_pathvector(new_path_vector);
+    path->setCurve(SPCurve(std::move(new_path_vector)));
 }
 
 static void sp_conn_end_deleted(SPObject *, SPObject *const owner, unsigned const handle_ix)

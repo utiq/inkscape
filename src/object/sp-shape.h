@@ -40,7 +40,6 @@ public:
 	SPShape();
 	~SPShape() override;
 
-    SPCurve *curve();
     SPCurve const *curve() const;
     SPCurve const *curveBeforeLPE() const;
     SPCurve const *curveForEdit() const;
@@ -67,7 +66,7 @@ public:
 
 protected:
     std::optional<SPCurve> _curve_before_lpe;
-    std::shared_ptr<SPCurve> _curve;
+    std::shared_ptr<SPCurve const> _curve;
 
 public:
     SPMarker *_marker[SP_MARKER_LOC_QTY];

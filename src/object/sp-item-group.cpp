@@ -504,8 +504,8 @@ bool equal_clip (SPItem *item, SPObject *clip) {
         auto filter = shape->style->getFilter();
         auto stroke = shape->style->getFillOrStroke(false);
         if (!filter && (!stroke || stroke->isNone())) {
-            SPCurve *curve = shape->curve();
-            SPCurve *curve_clip = shape_clip->curve();
+            auto curve = shape->curve();
+            auto curve_clip = shape_clip->curve();
             if (curve && curve_clip) {
                 equal = curve->is_similar(curve_clip, 0.01);
             }

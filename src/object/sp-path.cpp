@@ -305,7 +305,7 @@ Geom::Affine SPPath::set_transform(Geom::Affine const &transform) {
         // fix issue https://gitlab.com/inkscape/inbox/-/issues/5460
         sp_lpe_item_update_patheffect(this, false, false);
     } else {
-        _curve->transform(transform);
+        setCurve(_curve->transformed(transform));
     }
     // Adjust stroke
     this->adjust_stroke(transform.descrim());

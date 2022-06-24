@@ -592,24 +592,25 @@ bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
     case SP_CONNECTOR_CONTEXT_REROUTING:
     {
         gobble_motion_events(GDK_BUTTON1_MASK);
-        g_assert( SP_IS_PATH(this->clickeditem));
+        g_assert(SP_IS_PATH(clickeditem));
 
         m.setup(_desktop);
         m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_OTHER_HANDLE);
         m.unSetup();
 
         // Update the hidden path
-        Geom::Affine i2d ( (this->clickeditem)->i2dt_affine() );
-        Geom::Affine d2i = i2d.inverse();
-        SPPath *path = SP_PATH(this->clickeditem);
-        SPCurve *curve = path->curve();
-        if (this->clickedhandle == this->endpt_handle[0]) {
-            Geom::Point o = this->endpt_handle[1]->pos;
-            curve->stretch_endpoints(p * d2i, o * d2i);
+        auto i2d = clickeditem->i2dt_affine();
+        auto d2i = i2d.inverse();
+        auto path = SP_PATH(clickeditem);
+        auto curve = *path->curve();
+        if (clickedhandle == endpt_handle[0]) {
+            auto o = endpt_handle[1]->pos;
+            curve.stretch_endpoints(p * d2i, o * d2i);
         } else {
-            Geom::Point o = this->endpt_handle[0]->pos;
-            curve->stretch_endpoints(o * d2i, p * d2i);
+            auto o = endpt_handle[0]->pos;
+            curve.stretch_endpoints(o * d2i, p * d2i);
         }
+        path->setCurve(std::move(curve));
         sp_conn_reroute_path_immediate(path);
 
         // Copy this to the temporary visible path
@@ -812,7 +813,7 @@ void ConnectorTool::_setSubsequentPoint(Geom::Point const p)
     this->newConnRef->makePathInvalid();
     this->newConnRef->router()->processTransaction();
     // Recreate curve from libavoid route.
-    recreateCurve(&*red_curve, newConnRef, curvature);
+    red_curve = SPConnEndPair::createCurve(newConnRef, curvature);
     red_curve->transform(_desktop->doc2dt());
     red_bpath->set_bpath(&*red_curve, true);
 }

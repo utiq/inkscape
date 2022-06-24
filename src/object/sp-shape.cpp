@@ -1184,10 +1184,6 @@ void SPShape::setCurveInsync(SPCurve const *new_curve)
 /**
  * Return a borrowed pointer to the curve (if any exists) or NULL if there is no curve
  */
-SPCurve *SPShape::curve()
-{
-    return _curve.get();
-}
 SPCurve const *SPShape::curve() const
 {
     return _curve.get();
