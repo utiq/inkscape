@@ -23,12 +23,10 @@ namespace Inkscape {
 
 DrawingGroup::DrawingGroup(Drawing &drawing)
     : DrawingItem(drawing)
-    , _child_transform(nullptr)
 {}
 
 DrawingGroup::~DrawingGroup()
 {
-    delete _child_transform; // delete NULL; is safe
 }
 
 /**
@@ -60,10 +58,9 @@ DrawingGroup::setChildTransform(Geom::Affine const &new_trans)
         // mark the area where the object was for redraw.
         _markForRendering();
         if (new_trans.isIdentity(EPS)) {
-            delete _child_transform; // delete NULL; is safe
-            _child_transform = nullptr;
+            _child_transform.reset();
         } else {
-            _child_transform = new Geom::Affine(new_trans);
+            _child_transform = std::make_unique<Geom::Affine>(new_trans);
         }
         _markForUpdate(STATE_ALL, true);
     }

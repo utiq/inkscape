@@ -38,7 +38,7 @@ protected:
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
     bool _canClip() override;
 
-    Geom::Affine *_child_transform;
+    std::unique_ptr<Geom::Affine> _child_transform;
 };
 
 bool is_drawing_group(DrawingItem *item);

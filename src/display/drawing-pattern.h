@@ -60,7 +60,7 @@ protected:
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
                                      unsigned flags, unsigned reset) override;
 
-    Geom::Affine *_pattern_to_user;
+    std::unique_ptr<Geom::Affine> _pattern_to_user;
     Geom::Affine _overflow_initial_transform;
     Geom::Affine _overflow_step_transform;
     int _overflow_steps;

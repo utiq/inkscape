@@ -19,7 +19,6 @@ namespace Inkscape {
 
 DrawingPattern::DrawingPattern(Drawing &drawing, bool debug)
     : DrawingGroup(drawing)
-    , _pattern_to_user(nullptr)
     , _overflow_steps(1)
     , _debug(debug)
 {
@@ -27,7 +26,6 @@ DrawingPattern::DrawingPattern(Drawing &drawing, bool debug)
 
 DrawingPattern::~DrawingPattern()
 {
-    delete _pattern_to_user; // delete NULL; is safe
 }
 
 void
@@ -43,10 +41,9 @@ DrawingPattern::setPatternToUserTransform(Geom::Affine const &new_trans) {
         // mark the area where the object was for redraw.
         _markForRendering();
         if (new_trans.isIdentity(EPS)) {
-            delete _pattern_to_user; // delete NULL; is safe
-            _pattern_to_user = nullptr;
+            _pattern_to_user.reset();
         } else {
-            _pattern_to_user = new Geom::Affine(new_trans);
+            _pattern_to_user = std::make_unique<Geom::Affine>(new_trans);
         }
         _markForUpdate(STATE_ALL, true);
     }
@@ -160,7 +157,7 @@ unsigned DrawingPattern::_updateItem(Geom::IntRect const &area, UpdateContext co
 {
     UpdateContext pattern_ctx;
 
-    if (!_tile_rect || (_tile_rect->area() == 0)) {
+    if (!_tile_rect || _tile_rect->area() == 0) {
         return STATE_NONE;
     }
 

@@ -62,7 +62,6 @@ DrawingItem::DrawingItem(Drawing &drawing)
     , _style(nullptr)
     , _context_style(nullptr)
     , _opacity(1.0)
-    , _transform(nullptr)
     , _clip(nullptr)
     , _mask(nullptr)
     , _fill_pattern(nullptr)
@@ -140,7 +139,6 @@ DrawingItem::~DrawingItem()
         _parent->_markForUpdate(STATE_ALL, false);
     }
     clearChildren();
-    delete _transform;
     delete _stroke_pattern;
     delete _fill_pattern;
     delete _clip;
@@ -229,11 +227,10 @@ DrawingItem::setTransform(Geom::Affine const &new_trans)
     if (!Geom::are_near(current, new_trans, EPS)) {
         // mark the area where the object was for redraw.
         _markForRendering();
-        delete _transform;
         if (new_trans.isIdentity(EPS)) {
-            _transform = nullptr;
+            _transform.reset();
         } else {
-            _transform = new Geom::Affine(new_trans);
+            _transform = std::make_unique<Geom::Affine>(new_trans);
         }
         _markForUpdate(STATE_ALL, true);
     }

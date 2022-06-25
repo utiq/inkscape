@@ -20,6 +20,7 @@
 #include <boost/intrusive/list.hpp>
 #include <exception>
 #include <list>
+#include <memory>
 
 #include "style-enums.h"
 
@@ -198,7 +199,7 @@ protected:
     
     float _opacity;
 
-    Geom::Affine *_transform; ///< Incremental transform from parent to this item's coords
+    std::unique_ptr<Geom::Affine> _transform; ///< Incremental transform from parent to this item's coords
     Geom::Affine _ctm; ///< Total transform from item coords to display coords
     Geom::OptIntRect _bbox; ///< Bounding box in display (pixel) coords including stroke
     Geom::OptIntRect _drawbox; ///< Full visual bounding box - enlarged by filters, shrunk by clips and masks
