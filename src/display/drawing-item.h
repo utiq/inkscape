@@ -10,23 +10,25 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_ITEM_H
-#define SEEN_INKSCAPE_DISPLAY_DRAWING_ITEM_H
+#ifndef INKSCAPE_DISPLAY_DRAWING_ITEM_H
+#define INKSCAPE_DISPLAY_DRAWING_ITEM_H
 
-#include <2geom/rect.h>
-#include <2geom/affine.h>
+#include <memory>
+#include <list>
+#include <exception>
+
 #include <boost/operators.hpp>
 #include <boost/utility.hpp>
 #include <boost/intrusive/list.hpp>
-#include <exception>
-#include <list>
-#include <memory>
+
+#include <2geom/rect.h>
+#include <2geom/affine.h>
 
 #include "style-enums.h"
 
 namespace Glib {
 class ustring;
-}
+} // namespace Glib
 
 class SPStyle;
 class SPItem;
@@ -40,37 +42,31 @@ class DrawingItem;
 class DrawingPattern;
 
 namespace Filters {
-
 class Filter;
-
 } // namespace Filters
 
-
-
-struct UpdateContext {
+struct UpdateContext
+{
     Geom::Affine ctm;
 };
 
-struct CacheRecord
-    : boost::totally_ordered<CacheRecord>
+struct CacheRecord : boost::totally_ordered<CacheRecord>
 {
     bool operator<(CacheRecord const &other) const { return score < other.score; }
     bool operator==(CacheRecord const &other) const { return score == other.score; }
-    operator DrawingItem *() const { return item; }
+    operator DrawingItem*() const { return item; }
     double score;
     size_t cache_size;
     DrawingItem *item;
 };
 typedef std::list<CacheRecord> CacheList;
 
-class InvalidItemException : public std::exception {
-    const char *what() const noexcept override {
-        return "Invalid item in drawing";
-    }
+struct InvalidItemException : std::exception
+{
+    char const *what() const noexcept override { return "Invalid item in drawing"; }
 };
 
-class DrawingItem
-    : boost::noncopyable
+class DrawingItem : boost::noncopyable
 {
 public:
     enum RenderFlags {
@@ -135,8 +131,7 @@ public:
     void setKey(unsigned key) { _key = key; }
     unsigned key() const { return _key; }
     void setItem(SPItem *item) { _item = item; }
-    SPItem* getItem() const { return _item; } // SPItem
-
+    SPItem *getItem() const { return _item; } // SPItem
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), UpdateContext const &ctx = UpdateContext(), unsigned flags = STATE_ALL, unsigned reset = 0);
     unsigned render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, DrawingItem *stop_at = nullptr);
@@ -211,7 +206,7 @@ protected:
     DrawingItem *_mask;
     DrawingPattern *_fill_pattern;
     DrawingPattern *_stroke_pattern;
-    Inkscape::Filters::Filter *_filter;
+    std::unique_ptr<Inkscape::Filters::Filter> _filter;
     SPItem *_item; ///< Used to associate DrawingItems with SPItems that created them
     DrawingCache *_cache;
     bool _prev_nir = false;
@@ -234,7 +229,6 @@ protected:
     unsigned _cached_persistent : 1; ///< If set, will always be cached regardless of score
     unsigned _has_cache_iterator : 1; ///< If set, _cache_iterator is valid
     unsigned _propagate : 1; ///< Whether to call update for all children on next update
-    //unsigned _renders_opacity : 1; ///< Whether object needs temporary surface for opacity
     unsigned _pick_children : 1; ///< For groups: if true, children are returned from pick(),
                                  ///  otherwise the group is returned
     unsigned _antialias : 2; ///< antialiasing level (NONE/FAST/GOOD(DEFAULT)/BEST)
@@ -245,13 +239,14 @@ protected:
     friend class Drawing;
 };
 
-struct DeleteDisposer {
+struct DeleteDisposer
+{
     void operator()(DrawingItem *item) { delete item; }
 };
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
-#endif // !SEEN_INKSCAPE_DISPLAY_DRAWING_ITEM_H
+#endif // INKSCAPE_DISPLAY_DRAWING_ITEM_H
 
 /*
   Local Variables:

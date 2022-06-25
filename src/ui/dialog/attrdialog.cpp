@@ -675,9 +675,9 @@ void AttrDialog::valueCanceledPop()
  */
 void AttrDialog::valueEdited (const Glib::ustring& path, const Glib::ustring& value)
 {
-    auto selection = getSelection();
-    if (!selection)
+    if (!getDesktop()) {
         return;
+    }
 
     Gtk::TreeModel::Row row = *_store->get_iter(path);
     if(row && this->_repr) {
@@ -695,14 +695,7 @@ void AttrDialog::valueEdited (const Glib::ustring& path, const Glib::ustring& va
             Glib::ustring renderval = prepare_rendervalue(value.c_str());
             row[_attrColumns._attributeValueRender] = renderval;
         }
-        SPObject *obj = nullptr;
-        if (selection->objects().size() == 1) {
-            obj = selection->objects().back();
-
-            obj->style->readFromObject(obj);
-            obj->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
-        }
-        this->setUndo(_("Change attribute value"));
+        setUndo(_("Change attribute value"));
     }
 }
 

@@ -562,7 +562,7 @@ bool SPHatch::isValid() const
     return valid;
 }
 
-Inkscape::DrawingPattern *SPHatch::show(Inkscape::Drawing &drawing, unsigned int key, Geom::OptRect bbox)
+Inkscape::DrawingPattern *SPHatch::show(Inkscape::Drawing &drawing, unsigned key, Geom::OptRect const &bbox)
 {
     Inkscape::DrawingPattern *ai = new Inkscape::DrawingPattern(drawing);
     _display.push_front({ai, bbox, key});

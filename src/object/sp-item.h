@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "sp-object.h"
+#include "sp-marker-loc.h"
 
 #include "xml/repr.h"
 
@@ -90,6 +91,16 @@ struct SPItemView
     unsigned flags;
     unsigned key;
     Inkscape::DrawingItem *drawingitem;
+};
+
+enum SPItemKey
+{
+    ITEM_KEY_CLIP,
+    ITEM_KEY_MASK,
+    ITEM_KEY_FILL,
+    ITEM_KEY_STROKE,
+    ITEM_KEY_MARKERS,
+    ITEM_KEY_SIZE = ITEM_KEY_MARKERS + SP_MARKER_LOC_QTY
 };
 
 /* flags */

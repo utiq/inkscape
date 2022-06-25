@@ -56,6 +56,7 @@ void DrawingPattern::setPatternToUserTransform(Geom::Affine const &new_trans)
 void DrawingPattern::setTileRect(Geom::Rect const &tile_rect)
 {
     _tile_rect = tile_rect;
+    _markForUpdate(STATE_ALL, true);
 }
 
 void DrawingPattern::setOverflow(Geom::Affine const &initial_transform, int steps, Geom::Affine const &step_transform)

@@ -47,7 +47,7 @@ bool SPPaintServer::isValid() const
     return true;
 }
 
-Inkscape::DrawingPattern *SPPaintServer::show(Inkscape::Drawing &/*drawing*/, unsigned int /*key*/, Geom::OptRect /*bbox*/)
+Inkscape::DrawingPattern *SPPaintServer::show(Inkscape::Drawing &/*drawing*/, unsigned /*key*/, Geom::OptRect const &/*bbox*/)
 {
     return nullptr;
 }

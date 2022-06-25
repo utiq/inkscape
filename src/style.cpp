@@ -1176,34 +1176,25 @@ sp_style_filter_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *style)
  * or stroke paint server.
  */
 static void
-sp_style_paint_server_ref_modified(SPObject *obj, guint flags, SPStyle *style)
+sp_style_paint_server_ref_modified(SPObject *obj, unsigned /*flags*/, SPStyle *style)
 {
-    (void)flags; // TODO
-    SPPaintServer *server = static_cast<SPPaintServer *>(obj);
+    // todo: use flags
+    auto server = static_cast<SPPaintServer*>(obj);
 
-    if ((style->fill.isPaintserver())
-        && style->getFillPaintServer() == server)
-    {
-        if (style->object) {
-            /** \todo
-             * fixme: I do not know, whether it is optimal - we are
-             * forcing reread of everything (Lauris)
-             */
-            /** \todo
-             * fixme: We have to use object_modified flag, because parent
-             * flag is only available downstreams.
-             */
-            style->object->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
-        }
-    } else if ((style->stroke.isPaintserver())
-        && style->getStrokePaintServer() == server)
-    {
-        if (style->object) {
-            /// \todo fixme:
-            style->object->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
-        }
-    } else if (server) {
-        g_assert_not_reached();
+    g_assert((style->fill  .isPaintserver() && style->getFillPaintServer()   == server) ||
+             (style->stroke.isPaintserver() && style->getStrokePaintServer() == server) ||
+             !server);
+
+    if (style->object) {
+        /** \todo
+         * fixme: I do not know, whether it is optimal - we are
+         * forcing reread of everything (Lauris)
+         */
+        /** \todo
+         * fixme: We have to use object_modified flag, because parent
+         * flag is only available downstreams.
+         */
+        style->object->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
     }
 }
 

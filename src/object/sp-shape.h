@@ -94,10 +94,9 @@ public:
 
 	virtual void set_shape();
 	void update_patheffect(bool write) override;
+
+    void set_marker(unsigned key, char const *value);
 };
-
-
-void sp_shape_set_marker (SPObject *object, unsigned int key, const char *value);
 
 Geom::Affine sp_shape_marker_get_transform(Geom::Curve const & c1, Geom::Curve const & c2);
 Geom::Affine sp_shape_marker_get_transform_at_start(Geom::Curve const & c);

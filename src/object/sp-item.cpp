@@ -23,6 +23,7 @@
 #include "svg/svg-color.h"
 #include "print.h"
 #include "display/drawing-item.h"
+#include "display/drawing-pattern.h"
 #include "attributes.h"
 #include "document.h"
 
@@ -63,8 +64,8 @@
 
 //#define OBJECT_TRACE
 
-SPItem::SPItem() : SPObject() {
-
+SPItem::SPItem()
+{
     sensitive = TRUE;
     bbox_valid = FALSE;
 
@@ -129,11 +130,11 @@ SPAvoidRef &SPItem::getAvoidRef()
 }
 
 bool SPItem::isVisibleAndUnlocked() const {
-    return (!isHidden() && !isLocked());
+    return !isHidden() && !isLocked();
 }
 
 bool SPItem::isVisibleAndUnlocked(unsigned display_key) const {
-    return (!isHidden(display_key) && !isLocked());
+    return !isHidden(display_key) && !isLocked();
 }
 
 bool SPItem::isLocked() const {
@@ -460,10 +461,10 @@ void SPItem::release()
     SPPaintServer *stroke_ps = style->getStrokePaintServer();
     for (auto &v : views) {
         if (fill_ps) {
-            fill_ps->hide(v.drawingitem->key());
+            fill_ps->hide(v.drawingitem->key() + ITEM_KEY_FILL);
         }
         if (stroke_ps) {
-            stroke_ps->hide(v.drawingitem->key());
+            stroke_ps->hide(v.drawingitem->key() + ITEM_KEY_STROKE);
         }
         delete v.drawingitem;
     }
@@ -574,23 +575,19 @@ void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip)
     if (old_clip) {
         /* Hide clippath */
         for (auto &v : views) {
-            SPClipPath *oldPath = dynamic_cast<SPClipPath *>(old_clip);
-            g_assert(oldPath != nullptr);
-            oldPath->hide(v.drawingitem->key());
+            auto oldPath = dynamic_cast<SPClipPath*>(old_clip);
+            g_assert(oldPath);
+            oldPath->hide(v.drawingitem->key() + ITEM_KEY_CLIP);
         }
     }
-    SPClipPath *clipPath = dynamic_cast<SPClipPath *>(clip);
+    auto clipPath = dynamic_cast<SPClipPath*>(clip);
     if (clipPath) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            if (!v.drawingitem->key()) {
-                v.drawingitem->setKey(SPItem::display_key_new(3));
-            }
-            Inkscape::DrawingItem *ai = clipPath->show(
-                                               v.drawingitem->drawing(),
-                                               v.drawingitem->key());
+            auto clip_key = v.drawingitem->key() + ITEM_KEY_CLIP;
+            auto ai = clipPath->show(v.drawingitem->drawing(), clip_key);
             v.drawingitem->setClip(ai);
-            clipPath->setBBox(v.drawingitem->key(), bbox);
+            clipPath->setBBox(clip_key, bbox);
             clip->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }
@@ -603,23 +600,19 @@ void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask)
     if (old_mask) {
         /* Hide mask */
         for (auto &v : views) {
-            SPMask *maskItem = dynamic_cast<SPMask *>(old_mask);
-            g_assert(maskItem != nullptr);
-            maskItem->sp_mask_hide(v.drawingitem->key());
+            auto maskItem = dynamic_cast<SPMask*>(old_mask);
+            g_assert(maskItem);
+            maskItem->sp_mask_hide(v.drawingitem->key() + ITEM_KEY_MASK);
         }
     }
-    SPMask *maskItem = dynamic_cast<SPMask *>(mask);
+    auto maskItem = dynamic_cast<SPMask*>(mask);
     if (maskItem) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            if (!v.drawingitem->key()) {
-                v.drawingitem->setKey(SPItem::display_key_new(3));
-            }
-            Inkscape::DrawingItem *ai = maskItem->sp_mask_show(
-                                           v.drawingitem->drawing(),
-                                           v.drawingitem->key());
+            auto mask_key = v.drawingitem->key() + ITEM_KEY_MASK;
+            auto ai = maskItem->sp_mask_show(v.drawingitem->drawing(), mask_key);
             v.drawingitem->setMask(ai);
-            maskItem->sp_mask_set_bbox(v.drawingitem->key(), bbox);
+            maskItem->sp_mask_set_bbox(mask_key, bbox);
             mask->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }
@@ -627,22 +620,19 @@ void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask)
 
 void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps)
 {
-    SPPaintServer *old_fill_ps = dynamic_cast<SPPaintServer *>(old_ps);
+    auto old_fill_ps = dynamic_cast<SPPaintServer*>(old_ps);
     if (old_fill_ps) {
         for (auto &v : views) {
-            old_fill_ps->hide(v.drawingitem->key());
+            old_fill_ps->hide(v.drawingitem->key() + ITEM_KEY_FILL);
         }
     }
 
-    SPPaintServer *new_fill_ps = dynamic_cast<SPPaintServer *>(ps);
+    auto new_fill_ps = dynamic_cast<SPPaintServer*>(ps);
     if (new_fill_ps) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            if (!v.drawingitem->key()) {
-                v.drawingitem->setKey(SPItem::display_key_new(3));
-            }
-            Inkscape::DrawingPattern *pi = new_fill_ps->show(
-                    v.drawingitem->drawing(), v.drawingitem->key(), bbox);
+            auto fill_key = v.drawingitem->key() + ITEM_KEY_FILL;
+            auto pi = new_fill_ps->show(v.drawingitem->drawing(), fill_key, bbox);
             v.drawingitem->setFillPattern(pi);
             if (pi) {
                 new_fill_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
@@ -653,22 +643,19 @@ void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps)
 
 void SPItem::stroke_ps_ref_changed(SPObject *old_ps, SPObject *ps)
 {
-    SPPaintServer *old_stroke_ps = dynamic_cast<SPPaintServer *>(old_ps);
+    auto old_stroke_ps = dynamic_cast<SPPaintServer*>(old_ps);
     if (old_stroke_ps) {
         for (auto &v : views) {
-            old_stroke_ps->hide(v.drawingitem->key());
+            old_stroke_ps->hide(v.drawingitem->key() + ITEM_KEY_STROKE);
         }
     }
 
-    SPPaintServer *new_stroke_ps = dynamic_cast<SPPaintServer *>(ps);
+    auto new_stroke_ps = dynamic_cast<SPPaintServer*>(ps);
     if (new_stroke_ps) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            if (!v.drawingitem->key()) {
-                v.drawingitem->setKey(SPItem::display_key_new(3));
-            }
-            Inkscape::DrawingPattern *pi = new_stroke_ps->show(
-                    v.drawingitem->drawing(), v.drawingitem->key(), bbox);
+            auto stroke_key = v.drawingitem->key() + ITEM_KEY_STROKE;
+            auto pi = new_stroke_ps->show(v.drawingitem->drawing(), stroke_key, bbox);
             v.drawingitem->setStrokePattern(pi);
             if (pi) {
                 new_stroke_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
@@ -699,16 +686,16 @@ void SPItem::update(SPCtx* ctx, guint flags) {
         SPClipPath *clip_path = clip_ref ? clip_ref->getObject() : nullptr;
         SPMask *mask = mask_ref ? mask_ref->getObject() : nullptr;
 
-        if ( clip_path || mask ) {
+        if (clip_path || mask) {
             Geom::OptRect bbox = geometricBounds();
             if (clip_path) {
                 for (auto &v : views) {
-                    clip_path->setBBox(v.drawingitem->key(), bbox);
+                    clip_path->setBBox(v.drawingitem->key() + ITEM_KEY_CLIP, bbox);
                 }
             }
             if (mask) {
                 for (auto &v : views) {
-                    mask->sp_mask_set_bbox(v.drawingitem->key(), bbox);
+                    mask->sp_mask_set_bbox(v.drawingitem->key() + ITEM_KEY_MASK, bbox);
                 }
             }
         }
@@ -1152,7 +1139,7 @@ SPObject* SPItem::isInClipPath() const {
 
 unsigned SPItem::display_key_new(unsigned numkeys)
 {
-    static unsigned dkey = 0;
+    static unsigned dkey = 1;
 
     dkey += numkeys;
 
@@ -1182,60 +1169,46 @@ Inkscape::DrawingItem *SPItem::invoke_show(Inkscape::Drawing &drawing, unsigned 
         //ai->setCompositeOperator( style->composite_op.value );
         ai->setVisible(!isHidden());
         ai->setSensitive(sensitive);
-        if (clip_ref && clip_ref->getObject()) {
-            SPClipPath *cp = clip_ref->getObject();
-
-            if (!ai->key()) {
-                ai->setKey(display_key_new(3));
-            }
-            int clip_key = ai->key();
+        if (!ai->key()) {
+            ai->setKey(SPItem::display_key_new(ITEM_KEY_SIZE));
+        }
+        if (auto cp = getClipObject()) {
+            int clip_key = ai->key() + ITEM_KEY_CLIP;
 
             // Show and set clip
-            Inkscape::DrawingItem *ac = cp->show(drawing, clip_key);
+            auto ac = cp->show(drawing, clip_key);
             ai->setClip(ac);
 
             // Update bbox, in case the clip uses bbox units
             cp->setBBox(clip_key, item_bbox);
             cp->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
-        if (mask_ref && mask_ref->getObject()) {
-            SPMask *mask = mask_ref->getObject();
-
-            if (!ai->key()) {
-                ai->setKey(display_key_new(3));
-            }
-            int mask_key = ai->key();
+        if (auto mask = getMaskObject()) {
+            int mask_key = ai->key() + ITEM_KEY_MASK;
 
             // Show and set mask
-            Inkscape::DrawingItem *ac = mask->sp_mask_show(drawing, mask_key);
+            auto ac = mask->sp_mask_show(drawing, mask_key);
             ai->setMask(ac);
 
             // Update bbox, in case the mask uses bbox units
             mask->sp_mask_set_bbox(mask_key, item_bbox);
             mask->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
+        if (auto fill_ps = style->getFillPaintServer()) {
+            int fill_key = ai->key() + ITEM_KEY_FILL;
 
-        SPPaintServer *fill_ps = style->getFillPaintServer();
-        if (fill_ps) {
-            if (!ai->key()) {
-                ai->setKey(display_key_new(3));
-            }
-            int fill_key = ai->key();
+            auto ap = fill_ps->show(drawing, fill_key, item_bbox);
 
-            Inkscape::DrawingPattern *ap = fill_ps->show(drawing, fill_key, item_bbox);
             ai->setFillPattern(ap);
             if (ap) {
                 fill_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             }
         }
-        SPPaintServer *stroke_ps = style->getStrokePaintServer();
-        if (stroke_ps) {
-            if (!ai->key()) {
-                ai->setKey(display_key_new(3));
-            }
-            int stroke_key = ai->key();
+        if (auto stroke_ps = style->getStrokePaintServer()) {
+            int stroke_key = ai->key() + ITEM_KEY_STROKE;
 
-            Inkscape::DrawingPattern *ap = stroke_ps->show(drawing, stroke_key, item_bbox);
+            auto ap = stroke_ps->show(drawing, stroke_key, item_bbox);
+
             ai->setStrokePattern(ap);
             if (ap) {
                 stroke_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
@@ -1260,21 +1233,19 @@ void SPItem::invoke_hide(unsigned key)
     for (auto it = views.begin(); it != views.end(); ) {
         auto &v = *it;
         if (v.key == key) {
-            if (clip_ref && clip_ref->getObject()) {
-                clip_ref->getObject()->hide(v.drawingitem->key());
-                v.drawingitem->setClip(nullptr);
+            unsigned ai_key = v.drawingitem->key();
+
+            if (auto clip = getClipObject()) {
+                clip->hide(ai_key + ITEM_KEY_CLIP);
             }
-            if (mask_ref && mask_ref->getObject()) {
-                mask_ref->getObject()->sp_mask_hide(v.drawingitem->key());
-                v.drawingitem->setMask(nullptr);
+            if (auto mask = getMaskObject()) {
+                mask->sp_mask_hide(ai_key + ITEM_KEY_MASK);
             }
-            SPPaintServer *fill_ps = style->getFillPaintServer();
-            if (fill_ps) {
-                fill_ps->hide(v.drawingitem->key());
+            if (auto fill_ps = style->getFillPaintServer()) {
+                fill_ps->hide(ai_key + ITEM_KEY_FILL);
             }
-            SPPaintServer *stroke_ps = style->getStrokePaintServer();
-            if (stroke_ps) {
-                stroke_ps->hide(v.drawingitem->key());
+            if (auto stroke_ps = style->getStrokePaintServer()) {
+                stroke_ps->hide(ai_key + ITEM_KEY_STROKE);
             }
             delete v.drawingitem;
 

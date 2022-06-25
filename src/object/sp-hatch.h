@@ -89,8 +89,8 @@ public:
 
     bool isValid() const override;
 
-    Inkscape::DrawingPattern *show(Inkscape::Drawing &drawing, unsigned int key, Geom::OptRect bbox) override;
-    void hide(unsigned int key) override;
+    Inkscape::DrawingPattern *show(Inkscape::Drawing &drawing, unsigned key, Geom::OptRect const &bbox) override;
+    void hide(unsigned key) override;
 
     RenderInfo calculateRenderInfo(unsigned key) const;
     Geom::Interval bounds() const;

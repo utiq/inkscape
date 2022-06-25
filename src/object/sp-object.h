@@ -54,6 +54,12 @@ class SPObject;
 /* Flags that will propagate downstreams */
 /* Parent, Style, Viewport, User */
 #define SP_OBJECT_MODIFIED_CASCADE (SP_OBJECT_FLAGS_ALL & ~(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))
+inline unsigned cascade_flags(unsigned flags)
+{
+    // Unset object-modified and child-modified, set parent-modified if object-modified.
+    static_assert(SP_OBJECT_PARENT_MODIFIED_FLAG == SP_OBJECT_MODIFIED_FLAG << 2);
+    return (flags & SP_OBJECT_MODIFIED_CASCADE) | (flags & SP_OBJECT_MODIFIED_FLAG) << 2;
+}
 
 /* Write flags */
 #define SP_OBJECT_WRITE_BUILD (1 << 0)

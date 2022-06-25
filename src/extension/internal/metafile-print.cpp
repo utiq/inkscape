@@ -261,7 +261,7 @@ void PrintMetafile::brush_classify(SPObject *parent, int depth, Inkscape::Pixbuf
     depth++;
     // first look along the pattern chain, if there is one
     if (SP_IS_PATTERN(parent)) {
-        for (SPPattern *pat_i = SP_PATTERN(parent); pat_i != nullptr; pat_i = pat_i->ref ? pat_i->ref->getObject() : nullptr) {
+        for (SPPattern *pat_i = SP_PATTERN(parent); pat_i; pat_i = pat_i->ref.getObject()) {
             if (auto img = SP_IMAGE(pat_i)) {
                 *epixbuf = img->pixbuf.get();
                 return;

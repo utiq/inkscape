@@ -62,14 +62,14 @@ SPShape::~SPShape() {
     }
 }
 
-void SPShape::build(SPDocument *document, Inkscape::XML::Node *repr) {
+void SPShape::build(SPDocument *document, Inkscape::XML::Node *repr)
+{
     SPLPEItem::build(document, repr);
 
     for (int i = 0 ; i < SP_MARKER_LOC_QTY ; i++) {
-        sp_shape_set_marker (this, i, this->style->marker_ptrs[i]->value());
+        set_marker(i, style->marker_ptrs[i]->value());
     }
 }
-
 
 /**
  * Removes, releases and unrefs all children of object
@@ -86,7 +86,7 @@ void SPShape::release() {
         if (this->_marker[i]) {
 
             for (auto &v : views) {
-                sp_marker_hide(_marker[i], v.drawingitem->key() + i);
+                sp_marker_hide(_marker[i], v.drawingitem->key() + ITEM_KEY_MARKERS + i);
             }
 
             this->_release_connect[i].disconnect();
@@ -129,7 +129,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
      * match the style.
      */
     for (int i = 0 ; i < SP_MARKER_LOC_QTY ; i++) {
-        sp_shape_set_marker (this, i, this->style->marker_ptrs[i]->value());
+        set_marker(i, style->marker_ptrs[i]->value());
     }
 
     if (flags & (SP_OBJECT_STYLE_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) {
@@ -158,7 +158,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
         /* But on the other hand - how can we know that parent does not tie style and transform */
         for (auto &v : views) {
             if (flags & SP_OBJECT_MODIFIED_FLAG) {
-                auto sh = static_cast<Inkscape::DrawingShape *>(v.drawingitem);
+                auto sh = static_cast<Inkscape::DrawingShape*>(v.drawingitem);
                 sh->setPath(_curve);
             }
         }
@@ -169,14 +169,11 @@ void SPShape::update(SPCtx* ctx, guint flags) {
         /* Dimension marker views */
         for (auto &v : views) {
             if (!v.drawingitem->key()) {
-                v.drawingitem->setKey(SPItem::display_key_new (SP_MARKER_LOC_QTY));
+                v.drawingitem->setKey(SPItem::display_key_new(ITEM_KEY_SIZE));
             }
-
-            for (int i = 0 ; i < SP_MARKER_LOC_QTY ; i++) {
+            for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
                 if (_marker[i]) {
-                    sp_marker_show_dimension(_marker[i],
-                                             v.drawingitem->key() + i,
-                                             numberOfMarkers(i));
+                    sp_marker_show_dimension(_marker[i], v.drawingitem->key() + ITEM_KEY_MARKERS + i, numberOfMarkers(i));
                 }
             }
         }
@@ -188,8 +185,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
     
         // Marker selector needs this here or marker previews are not rendered.
         for (auto &v : views) {
-            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v.drawingitem);
-
+            auto sh = static_cast<Inkscape::DrawingShape*>(v.drawingitem);
             sh->setChildrenStyle(this->context_style); // Resolve 'context-xxx' in children.
         }
     }
@@ -346,7 +342,7 @@ sp_shape_update_marker_view(SPShape *shape, Inkscape::DrawingItem *ai)
                     m_auto = Geom::Rotate::from_degrees( 180.0 ) * m;
                 }
                 sp_marker_show_instance(shape->_marker[i], ai,
-                                        ai->key() + i, counter[i], m_auto,
+                                        ai->key() + ITEM_KEY_MARKERS + i, counter[i], m_auto,
                                         shape->style->stroke_width.computed);
                  counter[i]++;
             }
@@ -364,7 +360,7 @@ sp_shape_update_marker_view(SPShape *shape, Inkscape::DrawingItem *ai)
                 for (int i = 0; i < 3; i += 2) {  // SP_MARKER_LOC and SP_MARKER_LOC_MID
                     if ( shape->_marker[i] ) {
                         sp_marker_show_instance(shape->_marker[i], ai,
-                                                ai->key() + i, counter[i], m,
+                                                ai->key() + ITEM_KEY_MARKERS + i, counter[i], m,
                                                 shape->style->stroke_width.computed);
                          counter[i]++;
                     }
@@ -384,7 +380,7 @@ sp_shape_update_marker_view(SPShape *shape, Inkscape::DrawingItem *ai)
                     for (int i = 0; i < 3; i += 2) {  // SP_MARKER_LOC and SP_MARKER_LOC_MID
                         if (shape->_marker[i]) {
                             sp_marker_show_instance(shape->_marker[i], ai,
-                                                    ai->key() + i, counter[i], m,
+                                                    ai->key() + ITEM_KEY_MARKERS + i, counter[i], m,
                                                     shape->style->stroke_width.computed);
                             counter[i]++;
                         }
@@ -401,7 +397,7 @@ sp_shape_update_marker_view(SPShape *shape, Inkscape::DrawingItem *ai)
                 for (int i = 0; i < 3; i += 2) {  // SP_MARKER_LOC and SP_MARKER_LOC_MID
                     if (shape->_marker[i]) {
                         sp_marker_show_instance(shape->_marker[i], ai,
-                                                ai->key() + i, counter[i], m,
+                                                ai->key() + ITEM_KEY_MARKERS + i, counter[i], m,
                                                 shape->style->stroke_width.computed);
                         counter[i]++;
                     }
@@ -425,7 +421,7 @@ sp_shape_update_marker_view(SPShape *shape, Inkscape::DrawingItem *ai)
         for (int i = 0; i < 4; i += 3) {  // SP_MARKER_LOC and SP_MARKER_LOC_END
             if (shape->_marker[i]) {
                 sp_marker_show_instance(shape->_marker[i], ai,
-                                        ai->key() + i, counter[i], m,
+                                        ai->key() + ITEM_KEY_MARKERS + i, counter[i], m,
                                         shape->style->stroke_width.computed);
                 counter[i]++;
             }
@@ -753,7 +749,7 @@ sp_shape_print_invoke_marker_printing(SPObject *obj, Geom::Affine tr, SPStyle co
 }
 
 void SPShape::print(SPPrintContext* ctx) {
-	if (!this->_curve) {
+    if (!this->_curve) {
     	return;
     }
 
@@ -908,26 +904,23 @@ Inkscape::DrawingItem* SPShape::show(Inkscape::Drawing &drawing, unsigned int /*
      * that the appropriate marker objects are present (or absent) to
      * match the style.
      */
-    for (int i = 0 ; i < SP_MARKER_LOC_QTY ; i++) {
-        sp_shape_set_marker (this, i, this->style->marker_ptrs[i]->value());
+    for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
+        set_marker(i, style->marker_ptrs[i]->value());
     }
 
     if (has_markers) {
         /* provide key and dimension the marker views */
         if (!s->key()) {
-            s->setKey(SPItem::display_key_new (SP_MARKER_LOC_QTY));
+            s->setKey(SPItem::display_key_new(ITEM_KEY_SIZE));
         }
-
         for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
             if (_marker[i]) {
-                sp_marker_show_dimension(_marker[i],
-                                         s->key() + i,
-                                         numberOfMarkers(i));
+                sp_marker_show_dimension(_marker[i], s->key() + ITEM_KEY_MARKERS + i, numberOfMarkers(i));
             }
         }
 
         /* Update marker views */
-        sp_shape_update_marker_view (this, s);
+        sp_shape_update_marker_view(this, s);
 
         this->context_style = this->style;
         s->setStyle(this->style, this->context_style);
@@ -948,7 +941,7 @@ void SPShape::hide(unsigned key)
         if (_marker[i]) {
             for (auto &v : views) {
                 if (key == v.key) {
-                    sp_marker_hide(_marker[i], v.drawingitem->key() + i);
+                    sp_marker_hide(_marker[i], v.drawingitem->key() + ITEM_KEY_MARKERS + i);
                 }
             }
         }
@@ -1045,7 +1038,7 @@ int SPShape::numberOfMarkers(int type) const {
  * and unrefs the marker from the shape.
  */
 static void
-sp_shape_marker_release (SPObject *marker, SPShape *shape)
+sp_shape_marker_release(SPObject *marker, SPShape *shape)
 {
     SPItem *item = dynamic_cast<SPItem *>(shape);
     g_return_if_fail(item != nullptr);
@@ -1054,7 +1047,7 @@ sp_shape_marker_release (SPObject *marker, SPShape *shape)
         if (marker == shape->_marker[i]) {
             /* Hide marker */
             for (auto &v : item->views) {
-                sp_marker_hide(shape->_marker[i], v.drawingitem->key() + i);
+                sp_marker_hide(shape->_marker[i], v.drawingitem->key() + ITEM_KEY_MARKERS + i);
             }
             /* Detach marker */
             shape->_release_connect[i].disconnect();
@@ -1082,38 +1075,35 @@ static void sp_shape_marker_modified (SPObject* marker, guint flags, SPItem* ite
  * registered at the given position, it is removed first.  Then the
  * new marker is hrefed and its signals connected.
  */
-void
-sp_shape_set_marker (SPObject *object, unsigned int key, const gchar *value)
+void SPShape::set_marker(unsigned key, char const *value)
 {
-    SPShape *shape = dynamic_cast<SPShape *>(object);
-    g_return_if_fail(shape != nullptr);
-
     if (key > SP_MARKER_LOC_END) {
         return;
     }
 
-    SPObject *mrk = sp_css_uri_reference_resolve(object->document, value);
-    SPMarker *marker = dynamic_cast<SPMarker *>(mrk);
-    if (marker != shape->_marker[key]) {
-        if (shape->_marker[key]) {
+    auto mrk = sp_css_uri_reference_resolve(document, value);
+    auto marker = dynamic_cast<SPMarker*>(mrk);
+
+    if (marker != _marker[key]) {
+        if (_marker[key]) {
             /* Detach marker */
-            shape->_release_connect[key].disconnect();
-            shape->_modified_connect[key].disconnect();
+            _release_connect[key].disconnect();
+            _modified_connect[key].disconnect();
 
             /* Hide marker */
-            for (auto &v : shape->views) {
-                sp_marker_hide(shape->_marker[key], v.drawingitem->key() + key);
+            for (auto &v : views) {
+                sp_marker_hide(_marker[key], v.drawingitem->key() + ITEM_KEY_MARKERS + key);
             }
 
             /* Unref marker */
-            shape->_marker[key]->unhrefObject(object);
-            shape->_marker[key] = nullptr;
+            _marker[key]->unhrefObject(this);
+            _marker[key] = nullptr;
         }
         if (marker) {
-            shape->_marker[key] = marker;
-            shape->_marker[key]->hrefObject(object);
-            shape->_release_connect[key] = marker->connectRelease(sigc::bind<1>(sigc::ptr_fun(&sp_shape_marker_release), shape));
-            shape->_modified_connect[key] = marker->connectModified(sigc::bind<2>(sigc::ptr_fun(&sp_shape_marker_modified), shape));
+            _marker[key] = marker;
+            _marker[key]->hrefObject(this);
+            _release_connect[key] = marker->connectRelease(sigc::bind<1>(sigc::ptr_fun(&sp_shape_marker_release), this));
+            _modified_connect[key] = marker->connectModified(sigc::bind<2>(sigc::ptr_fun(&sp_shape_marker_modified), this));
         }
     }
 }

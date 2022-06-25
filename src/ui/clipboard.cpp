@@ -1260,12 +1260,7 @@ void ClipboardManagerImpl::_copyPattern(SPPattern *pattern)
                 _copyUsedDefs(childItem);
             }
         }
-        if (pattern->ref){
-            pattern = pattern->ref->getObject();
-        }
-        else{
-            pattern = nullptr;
-        }
+        pattern = pattern->ref.getObject();
     }
 }
 

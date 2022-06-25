@@ -213,19 +213,19 @@ void SPPath::set(SPAttr key, const gchar* value) {
             break;
 
         case SPAttr::MARKER:
-            sp_shape_set_marker(this, SP_MARKER_LOC, value);
+            set_marker(SP_MARKER_LOC, value);
             this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::MARKER_START:
-            sp_shape_set_marker(this, SP_MARKER_LOC_START, value);
+            set_marker(SP_MARKER_LOC_START, value);
             this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::MARKER_MID:
-            sp_shape_set_marker(this, SP_MARKER_LOC_MID, value);
+            set_marker(SP_MARKER_LOC_MID, value);
             this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::MARKER_END:
-            sp_shape_set_marker(this, SP_MARKER_LOC_END, value);
+            set_marker(SP_MARKER_LOC_END, value);
             this->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 

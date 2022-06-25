@@ -1124,7 +1124,7 @@ CairoRenderContext::_createPatternPainter(SPPaintServer const *const paintserver
 {
     g_assert( SP_IS_PATTERN(paintserver) );
 
-    SPPattern *pat = SP_PATTERN (paintserver);
+    SPPattern *pat = const_cast<SPPattern*>(SP_PATTERN(paintserver));
 
     Geom::Affine ps2user, pcs2dev;
     ps2user = Geom::identity();
@@ -1209,7 +1209,7 @@ CairoRenderContext::_createPatternPainter(SPPaintServer const *const paintserver
     unsigned dkey = SPItem::display_key_new(1);
 
     // show items and render them
-    for (SPPattern *pat_i = pat; pat_i != nullptr; pat_i = pat_i->ref ? pat_i->ref->getObject() : nullptr) {
+    for (SPPattern *pat_i = pat; pat_i != nullptr; pat_i = pat_i->ref.getObject()) {
         if (pat_i && pattern_hasItemChildren(pat_i)) { // find the first one with item children
             for (auto& child: pat_i->children) {
                 if (SP_IS_ITEM(&child)) {
@@ -1238,7 +1238,7 @@ CairoRenderContext::_createPatternPainter(SPPaintServer const *const paintserver
     delete pattern_ctx;
 
     // hide all items
-    for (SPPattern *pat_i = pat; pat_i != nullptr; pat_i = pat_i->ref ? pat_i->ref->getObject() : nullptr) {
+    for (SPPattern *pat_i = pat; pat_i != nullptr; pat_i = pat_i->ref.getObject()) {
         if (pat_i && pattern_hasItemChildren(pat_i)) { // find the first one with item children
             for (auto& child: pat_i->children) {
                 if (SP_IS_ITEM(&child)) {
