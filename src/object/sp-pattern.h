@@ -31,13 +31,15 @@ namespace Inkscape {
 namespace XML {
 
 class Node;
-}
-}
+
+} // namespace XML
+} // namespace Inkscape
 
 #define SP_PATTERN(obj) (dynamic_cast<SPPattern *>((SPObject *)obj))
 #define SP_IS_PATTERN(obj) (dynamic_cast<const SPPattern *>((SPObject *)obj) != NULL)
 
-class SPPattern : public SPPaintServer, public SPViewBox {
+class SPPattern : public SPPaintServer, public SPViewBox
+{
 public:
     enum PatternUnits { UNITS_USERSPACEONUSE, UNITS_OBJECTBOUNDINGBOX };
 
@@ -76,8 +78,8 @@ protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
     void release() override;
     void set(SPAttr key, const gchar *value) override;
-    void update(SPCtx *ctx, unsigned int flags) override;
-    void modified(unsigned int flags) override;
+    void update(SPCtx *ctx, unsigned flags) override;
+    void modified(unsigned flags) override;
 
 private:
     bool _hasItemChildren() const;
@@ -116,22 +118,23 @@ private:
     sigc::connection _modified_connection;
 };
 
-
-class SPPatternReference : public Inkscape::URIReference {
+class SPPatternReference : public Inkscape::URIReference
+{
 public:
-    SPPatternReference(SPObject *obj)
+    SPPatternReference(SPPattern *obj)
         : URIReference(obj)
     {
     }
 
     SPPattern *getObject() const
     {
-        return reinterpret_cast<SPPattern *>(URIReference::getObject());
+        return static_cast<SPPattern*>(URIReference::getObject());
     }
 
 protected:
-    bool _acceptObject(SPObject *obj) const override {
-        return SP_IS_PATTERN (obj)&& URIReference::_acceptObject(obj);
+    bool _acceptObject(SPObject *obj) const override
+    {
+        return SP_IS_PATTERN(obj) && URIReference::_acceptObject(obj);
     }
 };
 

@@ -92,7 +92,7 @@ void SPHatch::release()
     }
 
     std::vector<SPHatchPath *> children(hatchPaths());
-    for (auto & view_iter : _display) {
+    for (auto &view_iter : _display) {
         for (auto child : children) {
             child->hide(view_iter.key);
         }
@@ -135,7 +135,7 @@ void SPHatch::set(SPAttr key, const gchar* value)
     switch (key) {
     case SPAttr::HATCHUNITS:
         if (value) {
-            if (!strcmp(value, "userSpaceOnUse")) {
+            if (!std::strcmp(value, "userSpaceOnUse")) {
                 _hatchUnits = UNITS_USERSPACEONUSE;
             } else {
                 _hatchUnits = UNITS_OBJECTBOUNDINGBOX;
@@ -151,7 +151,7 @@ void SPHatch::set(SPAttr key, const gchar* value)
 
     case SPAttr::HATCHCONTENTUNITS:
         if (value) {
-            if (!strcmp(value, "userSpaceOnUse")) {
+            if (!std::strcmp(value, "userSpaceOnUse")) {
                 _hatchContentUnits = UNITS_USERSPACEONUSE;
             } else {
                 _hatchContentUnits = UNITS_OBJECTBOUNDINGBOX;
@@ -237,7 +237,7 @@ void SPHatch::set(SPAttr key, const gchar* value)
 
 bool SPHatch::_hasHatchPatchChildren(SPHatch const *hatch)
 {
-    for (auto& child: hatch->children) {
+    for (auto &child: hatch->children) {
         SPHatchPath const *hatchPath = dynamic_cast<SPHatchPath const *>(&child);
         if (hatchPath) {
             return true;
@@ -252,7 +252,7 @@ std::vector<SPHatchPath*> SPHatch::hatchPaths()
     SPHatch *src = chase_hrefs<SPHatch>(this, sigc::ptr_fun(&_hasHatchPatchChildren));
 
     if (src) {
-        for (auto& child: src->children) {
+        for (auto &child: src->children) {
             SPHatchPath *hatchPath = dynamic_cast<SPHatchPath *>(&child);
             if (hatchPath) {
                 list.push_back(hatchPath);
@@ -268,7 +268,7 @@ std::vector<SPHatchPath const*> SPHatch::hatchPaths() const
     SPHatch const *src = chase_hrefs<SPHatch const>(this, sigc::ptr_fun(&_hasHatchPatchChildren));
 
     if (src) {
-        for (auto& child: src->children) {
+        for (auto &child: src->children) {
             SPHatchPath const *hatchPath = dynamic_cast<SPHatchPath const*>(&child);
             if (hatchPath) {
                 list.push_back(hatchPath);
@@ -294,20 +294,19 @@ void SPHatch::update(SPCtx* ctx, unsigned int flags)
     for (auto child : children) {
         sp_object_ref(child, nullptr);
 
-        for (auto & view_iter : _display) {
+        for (auto &view_iter : _display) {
             Geom::OptInterval strip_extents = _calculateStripExtents(view_iter.bbox);
             child->setStripExtents(view_iter.key, strip_extents);
         }
 
         if (flags || (child->mflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
-
             child->updateDisplay(ctx, flags);
         }
 
         sp_object_unref(child, nullptr);
     }
 
-    for (auto & iter : _display) {
+    for (auto &iter : _display) {
         _updateView(iter);
     }
 }
@@ -387,7 +386,6 @@ void SPHatch::_onRefModified(SPObject */*ref*/, guint /*flags*/)
     requestModified(SP_OBJECT_MODIFIED_FLAG);
     // Conditional to avoid causing infinite loop if there's a cycle in the href chain.
 }
-
 
 SPHatch *SPHatch::rootHatch()
 {
@@ -567,9 +565,7 @@ bool SPHatch::isValid() const
 Inkscape::DrawingPattern *SPHatch::show(Inkscape::Drawing &drawing, unsigned int key, Geom::OptRect bbox)
 {
     Inkscape::DrawingPattern *ai = new Inkscape::DrawingPattern(drawing);
-    //TODO: set some debug flag to see DrawingPattern
-    _display.push_front(View(ai, key));
-    _display.front().bbox = bbox;
+    _display.push_front({ai, bbox, key});
 
     std::vector<SPHatchPath *> children(hatchPaths());
 
@@ -581,7 +577,7 @@ Inkscape::DrawingPattern *SPHatch::show(Inkscape::Drawing &drawing, unsigned int
         }
     }
 
-    View& view = _display.front();
+    View &view = _display.front();
     _updateView(view);
 
     return ai;
@@ -606,7 +602,6 @@ void SPHatch::hide(unsigned int key)
     g_assert_not_reached();
 }
 
-
 Geom::Interval SPHatch::bounds() const
 {
     Geom::Interval result;
@@ -625,7 +620,7 @@ Geom::Interval SPHatch::bounds() const
 SPHatch::RenderInfo SPHatch::calculateRenderInfo(unsigned key) const
 {
     RenderInfo info;
-    for (const auto & iter : _display) {
+    for (auto const &iter : _display) {
         if (iter.key == key) {
             return _calculateRenderInfo(iter);
         }
@@ -647,8 +642,7 @@ void SPHatch::_updateView(View &view)
     view.arenaitem->setPatternToUserTransform(info.pattern_to_user_transform);
     view.arenaitem->setTileRect(info.tile_rect);
     view.arenaitem->setStyle(style);
-    view.arenaitem->setOverflow(info.overflow_initial_transform, info.overflow_steps,
-                                info.overflow_step_transform);
+    view.arenaitem->setOverflow(info.overflow_initial_transform, info.overflow_steps, info.overflow_step_transform);
 }
 
 SPHatch::RenderInfo SPHatch::_calculateRenderInfo(View const &view) const
@@ -748,13 +742,6 @@ Geom::OptInterval SPHatch::_calculateStripExtents(Geom::OptRect const &bbox) con
     }
 }
 
-cairo_pattern_t* SPHatch::pattern_new(cairo_t * /*base_ct*/, Geom::OptRect const &/*bbox*/, double /*opacity*/)
-{
-    //this code should not be used
-    //it is however required by the fact that SPPaintServer::hatch_new is pure virtual
-    return cairo_pattern_create_rgb(0.5, 0.5, 1.0);
-}
-
 void SPHatch::setBBox(unsigned int key, Geom::OptRect const &bbox)
 {
     for (auto & iter : _display) {
@@ -763,36 +750,6 @@ void SPHatch::setBBox(unsigned int key, Geom::OptRect const &bbox)
             break;
         }
     }
-}
-
-//
-
-SPHatch::RenderInfo::RenderInfo()
-    : child_transform(),
-      pattern_to_user_transform(),
-      tile_rect(),
-      overflow_steps(0),
-      overflow_step_transform(),
-      overflow_initial_transform()
-{
-}
-
-SPHatch::RenderInfo::~RenderInfo()
-= default;
-
-//
-
-SPHatch::View::View(Inkscape::DrawingPattern *arenaitem, int key)
-    : arenaitem(arenaitem),
-      bbox(),
-      key(key)
-{
-}
-
-SPHatch::View::~View()
-{
-    // remember, do not delete arenaitem here
-    arenaitem = nullptr;
 }
 
 /*

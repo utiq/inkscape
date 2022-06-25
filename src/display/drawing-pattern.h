@@ -31,7 +31,7 @@ class DrawingPattern
     : public DrawingGroup
 {
 public:
-    DrawingPattern(Drawing &drawing, bool debug = false);
+    DrawingPattern(Drawing &drawing);
     ~DrawingPattern() override;
 
     /**
@@ -49,23 +49,26 @@ public:
      * Overflow is implemented as repeated rendering of pattern contents. In every step
      * a translation transform is applied.
      */
-    void setOverflow(Geom::Affine initial_transform, int steps, Geom::Affine step_transform);
+    void setOverflow(Geom::Affine const &initial_transform, int steps, Geom::Affine const &step_transform);
     /**
      * Render the pattern.
      *
-     * Returns caito_pattern_t structure that can be set as source surface.
+     * Returns cairo_pattern_t structure that can be set as source surface.
      */
     cairo_pattern_t *renderPattern(float opacity);
+
 protected:
-    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
-                                     unsigned flags, unsigned reset) override;
+    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
 
     std::unique_ptr<Geom::Affine> _pattern_to_user;
+
+    // Set by overflow.
     Geom::Affine _overflow_initial_transform;
     Geom::Affine _overflow_step_transform;
     int _overflow_steps;
+
     Geom::OptRect _tile_rect;
-    bool _debug;
+
     Geom::IntPoint _pattern_resolution;
 };
 

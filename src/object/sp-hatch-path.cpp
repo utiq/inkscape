@@ -30,17 +30,16 @@
 #include "svg/css-ostringstream.h"
 
 SPHatchPath::SPHatchPath()
-    : offset(),
-      _display(),
-      _continuous(false)
+    : offset()
+    , _display()
+    , _continuous(false)
 {
     offset.unset();
 }
 
-SPHatchPath::~SPHatchPath()
-= default;
+SPHatchPath::~SPHatchPath() = default;
 
-void SPHatchPath::build(SPDocument* doc, Inkscape::XML::Node* repr)
+void SPHatchPath::build(SPDocument *doc, Inkscape::XML::Node *repr)
 {
     SPObject::build(doc, repr);
 
@@ -53,7 +52,7 @@ void SPHatchPath::build(SPDocument* doc, Inkscape::XML::Node* repr)
 
 void SPHatchPath::release()
 {
-    for (auto & iter : _display) {
+    for (auto &iter : _display) {
         delete iter.arenaitem;
         iter.arenaitem = nullptr;
     }
@@ -61,7 +60,7 @@ void SPHatchPath::release()
     SPObject::release();
 }
 
-void SPHatchPath::set(SPAttr key, const gchar* value)
+void SPHatchPath::set(SPAttr key, gchar const *value)
 {
     switch (key) {
     case SPAttr::D:
@@ -92,8 +91,7 @@ void SPHatchPath::set(SPAttr key, const gchar* value)
     }
 }
 
-
-void SPHatchPath::update(SPCtx* ctx, unsigned int flags)
+void SPHatchPath::update(SPCtx *ctx, unsigned int flags)
 {
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) {
         flags &= ~SP_OBJECT_USER_MODIFIED_FLAG_B;
@@ -107,14 +105,14 @@ void SPHatchPath::update(SPCtx* ctx, unsigned int flags)
             double const aw = (ictx) ? 1.0 / ictx->i2vp.descrim() : 1.0;
             style->stroke_width.computed = style->stroke_width.value * aw;
 
-            for (auto & iter : _display) {
+            for (auto &iter : _display) {
                 iter.arenaitem->setStyle(style);
             }
         }
     }
 
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_PARENT_MODIFIED_FLAG)) {
-        for (auto & iter : _display) {
+        for (auto &iter : _display) {
             _updateView(iter);
         }
     }
@@ -128,8 +126,7 @@ bool SPHatchPath::isValid() const
 Inkscape::DrawingItem *SPHatchPath::show(Inkscape::Drawing &drawing, unsigned int key, Geom::OptInterval extents)
 {
     Inkscape::DrawingShape *s = new Inkscape::DrawingShape(drawing);
-    _display.push_front(View(s, key));
-    _display.front().extents = extents;
+    _display.push_front({s, extents, key});
 
     _updateView(_display.front());
 
@@ -151,7 +148,7 @@ void SPHatchPath::hide(unsigned int key)
 
 void SPHatchPath::setStripExtents(unsigned int key, Geom::OptInterval const &extents)
 {
-    for (auto & iter : _display) {
+    for (auto &iter : _display) {
         if (iter.key == key) {
             iter.extents = extents;
             break;
@@ -174,7 +171,7 @@ Geom::Interval SPHatchPath::bounds() const
         bbox = bounds_exact_transformed(_curve->get_pathvector(), transform);
     }
 
-    gdouble stroke_width = style->stroke_width.computed;
+    double stroke_width = style->stroke_width.computed;
     result.setMin(bbox->left() - stroke_width / 2);
     result.setMax(bbox->right() + stroke_width / 2);
     return result;
@@ -182,7 +179,7 @@ Geom::Interval SPHatchPath::bounds() const
 
 SPCurve SPHatchPath::calculateRenderCurve(unsigned key) const
 {
-    for (const auto & iter : _display) {
+    for (auto const &iter : _display) {
         if (iter.key == key) {
             return _calculateRenderCurve(iter);
         }
@@ -248,7 +245,6 @@ SPCurve SPHatchPath::_calculateRenderCurve(View const &view) const
     return calculated_curve;
 }
 
-
 void SPHatchPath::_readHatchPathVector(char const *str, Geom::PathVector &pathv, bool &continous_join)
 {
     if (!str) {
@@ -281,20 +277,6 @@ void SPHatchPath::_readHatchPathVector(char const *str, Geom::PathVector &pathv,
         continous_join = true;
     }
 }
-
-SPHatchPath::View::View(Inkscape::DrawingShape *arenaitem, int key)
-    : arenaitem(arenaitem),
-      extents(),
-      key(key)
-{
-}
-
-SPHatchPath::View::~View()
-{
-    // remember, do not delete arenaitem here
-    arenaitem = nullptr;
-}
-
 
 /*
  Local Variables:

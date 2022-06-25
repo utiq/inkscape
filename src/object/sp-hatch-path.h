@@ -18,6 +18,7 @@
 
 #include <list>
 #include <cstddef>
+#include <optional>
 #include <glibmm/ustring.h>
 #include <sigc++/connection.h>
 #include <2geom/generic-interval.h>
@@ -27,17 +28,16 @@
 #include "object/sp-object.h"
 #include "display/curve.h"
 
-#include <optional>
-
 namespace Inkscape {
 
 class Drawing;
 class DrawingShape;
 class DrawingItem;
 
-}
+} // namespace Inkscape
 
-class SPHatchPath : public SPObject {
+class SPHatchPath : public SPObject
+{
 public:
     SPHatchPath();
     ~SPHatchPath() override;
@@ -61,20 +61,15 @@ protected:
     void update(SPCtx* ctx, unsigned int flags) override;
 
 private:
-    class View {
-    public:
-        View(Inkscape::DrawingShape *arenaitem, int key);
-        //Do not delete arenaitem in destructor.
-
-        ~View();
-
+    struct View
+    {
         Inkscape::DrawingShape *arenaitem;
         Geom::OptInterval extents;
-        unsigned int key;
+        unsigned key;
     };
 
-    typedef std::list<SPHatchPath::View>::iterator ViewIterator;
-    typedef std::list<SPHatchPath::View>::const_iterator ConstViewIterator;
+    using ViewIterator = std::list<SPHatchPath::View>::iterator;
+    using ConstViewIterator = std::list<SPHatchPath::View>::const_iterator;
     std::list<View> _display;
 
     gdouble _repeatLength() const;

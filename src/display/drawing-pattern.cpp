@@ -15,12 +15,16 @@
 #include "display/drawing-pattern.h"
 #include "display/drawing-surface.h"
 
+static auto operator/(Geom::Point const &a, Geom::Point const &b)
+{
+    return Geom::Point(a.x() / b.x(), a.y() / b.y());
+}
+
 namespace Inkscape {
 
-DrawingPattern::DrawingPattern(Drawing &drawing, bool debug)
+DrawingPattern::DrawingPattern(Drawing &drawing)
     : DrawingGroup(drawing)
     , _overflow_steps(1)
-    , _debug(debug)
 {
 }
 
@@ -28,8 +32,8 @@ DrawingPattern::~DrawingPattern()
 {
 }
 
-void
-DrawingPattern::setPatternToUserTransform(Geom::Affine const &new_trans) {
+void DrawingPattern::setPatternToUserTransform(Geom::Affine const &new_trans)
+{
     double constexpr EPS = 1e-18;
 
     Geom::Affine current;
@@ -49,28 +53,28 @@ DrawingPattern::setPatternToUserTransform(Geom::Affine const &new_trans) {
     }
 }
 
-void
-DrawingPattern::setTileRect(Geom::Rect const &tile_rect) {
+void DrawingPattern::setTileRect(Geom::Rect const &tile_rect)
+{
     _tile_rect = tile_rect;
 }
 
-void
-DrawingPattern::setOverflow(Geom::Affine initial_transform, int steps, Geom::Affine step_transform) {
+void DrawingPattern::setOverflow(Geom::Affine const &initial_transform, int steps, Geom::Affine const &step_transform)
+{
     _overflow_initial_transform = initial_transform;
     _overflow_steps = steps;
     _overflow_step_transform = step_transform;
 }
 
-cairo_pattern_t *
-DrawingPattern::renderPattern(float opacity) {
-    bool needs_opacity = (1.0 - opacity) >= 1e-3;
-    bool visible = opacity >= 1e-3;
-
-    if (!visible) {
+cairo_pattern_t *DrawingPattern::renderPattern(float opacity)
+{
+    if (opacity < 1e-3) {
+        // Invisible.
         return nullptr;
     }
 
-    if (!_tile_rect || (_tile_rect->area() == 0)) {
+    bool needs_opacity = opacity < 1.0 - 1e-3;
+
+    if (!_tile_rect || _tile_rect->hasZeroArea()) {
         return nullptr;
     }
     Geom::Rect pattern_tile = *_tile_rect;
@@ -85,27 +89,20 @@ DrawingPattern::renderPattern(float opacity) {
     // based on required resolution (c).
     Inkscape::DrawingSurface pattern_surface(pattern_tile, _pattern_resolution);
     Inkscape::DrawingContext dc(pattern_surface);
-    dc.transform( pattern_surface.drawingTransform().inverse() );
+    dc.transform(pattern_surface.drawingTransform().inverse());
 
     pattern_tile *= pattern_surface.drawingTransform();
     Geom::IntRect one_tile = pattern_tile.roundOutwards();
 
-    // Render pattern.
     if (needs_opacity) {
         dc.pushGroup(); // this group is for pattern + opacity
     }
 
-    if (_debug) {
-        dc.setSource(0.8, 0.0, 0.8);
-        dc.paint();
-    }
-
-    //FIXME: What flags to choose?
     if (_overflow_steps == 1) {
-        render(dc, one_tile, RENDER_DEFAULT);
+        render(dc, one_tile);
     } else {
         //Overflow transforms need to be transformed to the new coordinate system
-        //introduced by dc.transform( pattern_surface.drawingTransform().inverse() );
+        //introduced by dc.transform(pattern_surface.drawingTransform().inverse());
         Geom::Affine dt = pattern_surface.drawingTransform();
         Geom::Affine idt = pattern_surface.drawingTransform().inverse();
         Geom::Affine initial_transform = idt * _overflow_initial_transform * dt;
@@ -143,11 +140,7 @@ DrawingPattern::renderPattern(float opacity) {
         ink_cairo_pattern_set_matrix(cp, pattern_surface.drawingTransform());
     }
 
-    if (_debug) {
-        cairo_pattern_set_extend(cp, CAIRO_EXTEND_NONE);
-    } else {
-        cairo_pattern_set_extend(cp, CAIRO_EXTEND_REPEAT);
-    }
+    cairo_pattern_set_extend(cp, CAIRO_EXTEND_REPEAT);
 
     return cp;
 }
@@ -155,9 +148,7 @@ DrawingPattern::renderPattern(float opacity) {
 // TODO investigate if area should be used.
 unsigned DrawingPattern::_updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
 {
-    UpdateContext pattern_ctx;
-
-    if (!_tile_rect || _tile_rect->area() == 0) {
+    if (!_tile_rect || _tile_rect->hasZeroArea()) {
         return STATE_NONE;
     }
 
@@ -166,7 +157,7 @@ unsigned DrawingPattern::_updateItem(Geom::IntRect const &area, UpdateContext co
     Geom::Coord det_ps2user = _pattern_to_user ? _pattern_to_user->descrim() : 1.0;
     Geom::Coord det_child_transform = _child_transform ? _child_transform->descrim() : 1.0;
     const double oversampling = 2.0;
-    double scale = det_ctm*det_ps2user*det_child_transform * oversampling;
+    double scale = det_ctm * det_ps2user * det_child_transform * oversampling;
     //FIXME: When scale is too big (zooming in a hatch), cairo doesn't render the pattern
     //More precisely it fails when setting pattern matrix in DrawingPattern::renderPattern
     //Fully correct solution should make use of visible area bbox and change hatch tile rect
@@ -174,16 +165,13 @@ unsigned DrawingPattern::_updateItem(Geom::IntRect const &area, UpdateContext co
     if (scale > 25) {
         scale = 25;
     }
-    Geom::Point c(pattern_tile.dimensions()*scale*oversampling);
+    auto c = pattern_tile.dimensions() * scale * oversampling;
     _pattern_resolution = c.ceil();
 
-    Inkscape::DrawingSurface pattern_surface(pattern_tile, _pattern_resolution);
-
-    pattern_ctx.ctm = pattern_surface.drawingTransform();
-    return DrawingGroup::_updateItem(Geom::IntRect::infinite(), pattern_ctx, flags, reset);
+    return DrawingGroup::_updateItem(Geom::IntRect::infinite(), {Geom::Translate(-pattern_tile.min()) * Geom::Scale(_pattern_resolution / pattern_tile.dimensions())}, flags, reset);
 }
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
 /*
   Local Variables:

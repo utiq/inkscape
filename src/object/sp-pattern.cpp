@@ -35,6 +35,7 @@
 #include "display/drawing-surface.h"
 #include "display/drawing.h"
 #include "display/drawing-group.h"
+#include "display/drawing-pattern.h"
 
 #include "svg/svg.h"
 
@@ -84,22 +85,22 @@ void SPPattern::build(SPDocument *doc, Inkscape::XML::Node *repr)
 
 void SPPattern::release()
 {
-    if (this->document) {
+    if (document) {
         // Unregister ourselves
-        this->document->removeResource("pattern", this);
+        document->removeResource("pattern", this);
     }
 
-    if (this->ref) {
-        this->_modified_connection.disconnect();
-        this->ref->detach();
-        delete this->ref;
-        this->ref = nullptr;
+    if (ref) {
+        _modified_connection.disconnect();
+        ref->detach();
+        delete ref;
+        ref = nullptr;
     }
 
     SPPaintServer::release();
 }
 
-void SPPattern::set(SPAttr key, const gchar *value)
+void SPPattern::set(SPAttr key, gchar const *value)
 {
     switch (key) {
         case SPAttr::PATTERNUNITS:
@@ -221,7 +222,7 @@ void SPPattern::set(SPAttr key, const gchar *value)
 
 /* fixme: We need ::order_changed handler too (Lauris) */
 
-void SPPattern::_getChildren(std::list<SPObject *> &l)
+void SPPattern::_getChildren(std::list<SPObject*> &l)
 {
     for (SPPattern *pat_i = this; pat_i != nullptr; pat_i = pat_i->ref ? pat_i->ref->getObject() : nullptr) {
         if (pat_i->firstChild()) { // find the first one with children
@@ -233,7 +234,7 @@ void SPPattern::_getChildren(std::list<SPObject *> &l)
     }
 }
 
-void SPPattern::update(SPCtx *ctx, unsigned int flags)
+void SPPattern::update(SPCtx *ctx, unsigned flags)
 {
     if (flags & SP_OBJECT_MODIFIED_FLAG) {
         flags |= SP_OBJECT_PARENT_MODIFIED_FLAG;
@@ -241,7 +242,7 @@ void SPPattern::update(SPCtx *ctx, unsigned int flags)
 
     flags &= SP_OBJECT_MODIFIED_CASCADE;
 
-    std::list<SPObject *> l;
+    std::list<SPObject*> l;
     _getChildren(l);
 
     for (auto child : l) {
@@ -255,7 +256,7 @@ void SPPattern::update(SPCtx *ctx, unsigned int flags)
     }
 }
 
-void SPPattern::modified(unsigned int flags)
+void SPPattern::modified(unsigned flags)
 {
     if (flags & SP_OBJECT_MODIFIED_FLAG) {
         flags |= SP_OBJECT_PARENT_MODIFIED_FLAG;

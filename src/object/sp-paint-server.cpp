@@ -30,8 +30,9 @@ bool SPPaintServerReference::_acceptObject(SPObject *obj) const
     return SP_IS_PAINT_SERVER(obj) && URIReference::_acceptObject(obj);
 }
 
-SPPaintServer::SPPaintServer() : SPObject() {
-	this->swatch = false;
+SPPaintServer::SPPaintServer()
+{
+    swatch = false;
 }
 
 SPPaintServer::~SPPaintServer() = default;
