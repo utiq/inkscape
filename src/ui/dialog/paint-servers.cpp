@@ -352,7 +352,12 @@ void PaintServersDialog::_regenerateAll()
     std::sort(all_paints.begin(), all_paints.end(),
         [=](PaintDescription const &a, PaintDescription const &b) -> bool
         {
-            return (a.url < b.url) || ((a.url == b.url) && a.doc_title != CURRENTDOC);
+            int cmp = a.url.compare(b.url);
+            if (cmp < 0) return true;
+            if (cmp > 0) return false;
+
+            auto external = [=] (PaintDescription const &p) { return p.doc_title != CURRENTDOC; };
+            return external(a) && !external(b);
         });
     all_paints.erase(std::unique(all_paints.begin(), all_paints.end()), all_paints.end());
 
