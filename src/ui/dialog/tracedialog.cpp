@@ -50,10 +50,10 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-class TraceDialogImpl2 : public TraceDialog {
-  public:
-    TraceDialogImpl2();
-    ~TraceDialogImpl2() override;
+class TraceDialogImpl : public TraceDialog {
+public:
+    TraceDialogImpl();
+    ~TraceDialogImpl() override;
 
     void selectionModified(Selection *selection, guint flags) override;
     void selectionChanged(Inkscape::Selection *selection) override;
@@ -98,7 +98,7 @@ enum Page {
     SingleScan, MultiScan, PixelArt
 };
 
-void TraceDialogImpl2::traceProcess(bool do_i_trace)
+void TraceDialogImpl::traceProcess(bool do_i_trace)
 {
     SPDesktop* desktop = getDesktop();
     if (desktop)
@@ -122,24 +122,24 @@ void TraceDialogImpl2::traceProcess(bool do_i_trace)
     switch (potraceType->second) {
         case Inkscape::Trace::Potrace::AUTOTRACE_SINGLE:
             use_autotrace = true;
-            ate.opts->color_count = 2;
+            ate.setColorCount(2);
             break;
         case Inkscape::Trace::Potrace::AUTOTRACE_CENTERLINE:
             use_autotrace = true;
-            ate.opts->color_count = 2;
-            ate.opts->centerline = true;
-            ate.opts->preserve_width = true;
+            ate.setColorCount(2);
+            ate.setCenterLine(true);
+            ate.setPreserveWidth(true);
             break;
         case Inkscape::Trace::Potrace::AUTOTRACE_MULTI:
             use_autotrace = true;
-            ate.opts->color_count = (int)MS_scans->get_value() + 1;
+            ate.setColorCount((int)MS_scans->get_value() + 1);
             break;
         default:
             break;
     }
 
-    ate.opts->filter_iterations = (int) SS_AT_FI_T->get_value();
-    ate.opts->error_threshold = SS_AT_ET_T->get_value();
+    ate.setFilterIterations((int)SS_AT_FI_T->get_value());
+    ate.setErrorThreshold(SS_AT_ET_T->get_value());
 
     Inkscape::Trace::Potrace::PotraceTracingEngine pte(
         potraceType->second, CB_invert->get_active(), (int)SS_CQ_T->get_value(), SS_BC_T->get_value(),
@@ -148,14 +148,14 @@ void TraceDialogImpl2::traceProcess(bool do_i_trace)
         CB_MS_rb->get_active());
 
     auto cb_optimize = current_page == SingleScan ? CB_optimize : CB_optimize1;
-    pte.potraceParams->opticurve = cb_optimize->get_active();
-    pte.potraceParams->opttolerance = optimize->get_value();
+    pte.setOptiCurve(cb_optimize->get_active());
+    pte.setOptTolerance(optimize->get_value());
 
     auto cb_smooth = current_page == SingleScan ? CB_smooth : CB_smooth1;
-    pte.potraceParams->alphamax = cb_smooth->get_active() ? smooth->get_value() : 0;
+    pte.setAlphaMax(cb_smooth->get_active() ? smooth->get_value() : 0);
 
     auto cb_speckles = current_page == SingleScan ? CB_speckles : CB_speckles1;
-    pte.potraceParams->turdsize = cb_speckles->get_active() ? (int)speckles->get_value() : 0;
+    pte.setTurdSize(cb_speckles->get_active() ? (int)speckles->get_value() : 0);
 
     //Inkscape::Trace::Autotrace::AutotraceTracingEngine ate; // TODO
     Inkscape::Trace::Depixelize::DepixelizeTracingEngine dte(
@@ -169,8 +169,7 @@ void TraceDialogImpl2::traceProcess(bool do_i_trace)
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = tracer.getSelectedImage();
     if (pixbuf) {
         scaledPreview = use_autotrace ? ate.preview(pixbuf) : pte.preview(pixbuf);
-    }
-    else {
+    } else {
         scaledPreview.reset();
     }
 
@@ -193,7 +192,7 @@ void TraceDialogImpl2::traceProcess(bool do_i_trace)
         desktop->clearWaitingCursor();
 }
 
-bool TraceDialogImpl2::previewResize(const Cairo::RefPtr<Cairo::Context>& cr)
+bool TraceDialogImpl::previewResize(const Cairo::RefPtr<Cairo::Context>& cr)
 {
     /* Checkerboard - is not applicable here; left for reference
     if (auto wnd = dynamic_cast<Gtk::Window*>(this->get_toplevel())) {
@@ -237,7 +236,7 @@ bool TraceDialogImpl2::previewResize(const Cairo::RefPtr<Cairo::Context>& cr)
     return false;
 }
 
-void TraceDialogImpl2::abort()
+void TraceDialogImpl::abort()
 {
      SPDesktop *desktop = SP_ACTIVE_DESKTOP;
      if (desktop)
@@ -245,12 +244,12 @@ void TraceDialogImpl2::abort()
      tracer.abort();
 }
 
-void TraceDialogImpl2::selectionChanged(Inkscape::Selection *selection) {
+void TraceDialogImpl::selectionChanged(Inkscape::Selection *selection) {
     // refresh preview when selecting or deselecting images (in general: when selection changes)
     previewCallback(false);
 }
 
-void TraceDialogImpl2::selectionModified(Selection *selection, guint flags) {
+void TraceDialogImpl::selectionModified(Selection *selection, guint flags) {
     // Note: original refresh condition commended out, as selection modified fires when moving images around slowing on-canvas operations.
     // Note: is there a use-case where preview needs to be refreshed when images are manipulated? I haven't found one.
 
@@ -264,7 +263,7 @@ void TraceDialogImpl2::selectionModified(Selection *selection, guint flags) {
     }
 }
 
-void TraceDialogImpl2::onSetDefaults()
+void TraceDialogImpl::onSetDefaults()
 {
     MS_scans->set_value(8);
     PA_curves->set_value(1);
@@ -294,16 +293,15 @@ void TraceDialogImpl2::onSetDefaults()
     CB_SIOX1->set_active(false);
 }
 
-void TraceDialogImpl2::previewCallback(bool force) {
+void TraceDialogImpl::previewCallback(bool force) {
     if (force || (_live_preview->get_active() && is_widget_effectively_visible(this))) {
         traceProcess(false);
     }
 }
 
-void TraceDialogImpl2::traceCallback() { traceProcess(true); }
+void TraceDialogImpl::traceCallback() { traceProcess(true); }
 
-
-TraceDialogImpl2::TraceDialogImpl2()
+TraceDialogImpl::TraceDialogImpl()
     : TraceDialog()
 {
     const std::string req_widgets[] = { "MS_scans",    "PA_curves", "PA_islands",  "PA_sparse1", "PA_sparse2",
@@ -331,8 +329,8 @@ TraceDialogImpl2::TraceDialogImpl2()
         }
     }
 
-#define GET_O(name)                                                                                                    \
-    tmp = builder->get_object(#name);                                                                                  \
+#define GET_O(name) \
+    tmp = builder->get_object(#name); \
     name = Glib::RefPtr<Gtk::Adjustment>::cast_dynamic(tmp);
 
     Glib::RefPtr<Glib::Object> tmp;
@@ -388,10 +386,10 @@ TraceDialogImpl2::TraceDialogImpl2()
     _live_preview->set_active(prefs->getBool(getPrefsPath() + "liveUpdate", true));
 
     B_Update->signal_clicked().connect([=](){ previewCallback(true); });
-    B_OK->signal_clicked().connect(sigc::mem_fun(*this, &TraceDialogImpl2::traceCallback));
-    B_STOP->signal_clicked().connect(sigc::mem_fun(*this, &TraceDialogImpl2::abort));
-    B_RESET->signal_clicked().connect(sigc::mem_fun(*this, &TraceDialogImpl2::onSetDefaults));
-    previewArea->signal_draw().connect(sigc::mem_fun(*this, &TraceDialogImpl2::previewResize));
+    B_OK->signal_clicked().connect(sigc::mem_fun(*this, &TraceDialogImpl::traceCallback));
+    B_STOP->signal_clicked().connect(sigc::mem_fun(*this, &TraceDialogImpl::abort));
+    B_RESET->signal_clicked().connect(sigc::mem_fun(*this, &TraceDialogImpl::onSetDefaults));
+    previewArea->signal_draw().connect(sigc::mem_fun(*this, &TraceDialogImpl::previewResize));
 
     // attempt at making UI responsive: relocate preview to the right or bottom of dialog depending on dialog size
     this->signal_size_allocate().connect([=](const Gtk::Allocation& alloc){
@@ -433,7 +431,7 @@ TraceDialogImpl2::TraceDialogImpl2()
     });
 }
 
-TraceDialogImpl2::~TraceDialogImpl2() {
+TraceDialogImpl::~TraceDialogImpl() {
     Inkscape::Preferences* prefs = Inkscape::Preferences::get();
     prefs->setBool(getPrefsPath() + "liveUpdate", _live_preview->get_active());
 
@@ -442,20 +440,20 @@ TraceDialogImpl2::~TraceDialogImpl2() {
     }
 }
 
-gboolean TraceDialogImpl2::update_cb(gpointer user_data) {
-    auto self = static_cast<TraceDialogImpl2*>(user_data);
+gboolean TraceDialogImpl::update_cb(gpointer user_data) {
+    auto self = static_cast<TraceDialogImpl*>(user_data);
     self->previewCallback(false);
     self->_source = 0;
     return FALSE;
 }
 
-void TraceDialogImpl2::schedule_preview_update() {
+void TraceDialogImpl::schedule_preview_update() {
     if (!_live_preview->get_active() || _source) return;
 
-    _source = g_idle_add(&TraceDialogImpl2::update_cb, this);
+    _source = g_idle_add(&TraceDialogImpl::update_cb, this);
 }
 
-void TraceDialogImpl2::show_hide_params() {
+void TraceDialogImpl::show_hide_params() {
     int start_row = 2;
     int option = CBT_SS->get_active_row_number();
     if (option >= 3) option = 3;
@@ -474,11 +472,9 @@ void TraceDialogImpl2::show_hide_params() {
 
 TraceDialog &TraceDialog::getInstance()
 {
-    TraceDialog *dialog = new TraceDialogImpl2();
+    TraceDialog *dialog = new TraceDialogImpl();
     return *dialog;
 }
-
-
 
 } // namespace Dialog
 } // namespace UI

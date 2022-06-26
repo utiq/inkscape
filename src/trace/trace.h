@@ -7,204 +7,101 @@
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef SEEN_TRACE_H
-#define SEEN_TRACE_H
+#ifndef INKSCAPE_TRACE_H
+#define INKSCAPE_TRACE_H
 
-# include <cstring>
-
-#include <glibmm/refptr.h>
-#include <gdkmm/pixbuf.h>
-#include <utility>
 #include <vector>
+#include <utility>
+#include <cstring>
+#include <gdkmm/pixbuf.h>
 
 class SPImage;
 class SPItem;
 class SPShape;
 
 namespace Inkscape {
-
 namespace Trace {
 
-
-
-/**
- *
- */
-class TracingEngineResult
+struct TracingEngineResult
 {
-
-public:
-
-    /**
-     *
-     */
-    TracingEngineResult(std::string theStyle,
-                        std::string thePathData,
-                        long theNodeCount) :
-	    style(std::move(theStyle)),
-	    pathData(std::move(thePathData)),
-	    nodeCount(theNodeCount)
-        {}
-
-    TracingEngineResult(const TracingEngineResult &other)
-        { assign(other); }
-
-    virtual TracingEngineResult &operator=(const TracingEngineResult &other)
-        { assign(other); return *this; }
-
-
-    /**
-     *
-     */
-    virtual ~TracingEngineResult()
-        = default;
-
-
-    /**
-     *
-     */
-    std::string getStyle()
-        { return style; }
-
-    /**
-     *
-     */
-    std::string getPathData()
-        { return pathData; }
-
-    /**
-     *
-     */
-    long getNodeCount()
-        { return nodeCount; }
-
-private:
-
-    void assign(const TracingEngineResult &other)
-        {
-        style = other.style;
-        pathData = other.pathData;
-        nodeCount = other.nodeCount;
-        }
+    TracingEngineResult(std::string style_, std::string pathData_, long nodeCount_)
+        : style(std::move(style_))
+        , pathData(std::move(pathData_))
+        , nodeCount(nodeCount_) {}
 
     std::string style;
-
     std::string pathData;
-
     long nodeCount;
-
 };
 
-
-
 /**
- * A generic interface for plugging different
- *  autotracers into Inkscape.
+ * A generic interface for plugging different autotracers into Inkscape.
  */
 class TracingEngine
 {
-
-    public:
+public:
+    TracingEngine() = default;
+    virtual ~TracingEngine() = default;
 
     /**
-     *
+     * This is the working method of this interface, and all
+     * implementing classes. Take a GdkPixbuf, trace it, and
+     * return a style attribute and the path data that is
+     * compatible with the d="" attribute
+     * of an SVG <path> element.
      */
-    TracingEngine()
-        = default;
+    virtual std::vector<TracingEngineResult> trace(Glib::RefPtr<Gdk::Pixbuf> const &) = 0;
+
+    virtual Glib::RefPtr<Gdk::Pixbuf> preview(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) = 0;
 
     /**
-     *
-     */
-    virtual ~TracingEngine()
-        = default;
-
-    /**
-     *  This is the working method of this interface, and all
-     *  implementing classes.  Take a GdkPixbuf, trace it, and
-     *  return a style attribute and the path data that is
-     *  compatible with the d="" attribute
-     *  of an SVG <path> element.
-     */
-    virtual  std::vector<TracingEngineResult> trace(
-                           Glib::RefPtr<Gdk::Pixbuf> /*pixbuf*/) = 0;
-
-    /**
-     *  Abort the thread that is executing getPathDataFromPixbuf()
+     * Abort the thread that is executing getPathDataFromPixbuf().
      */
     virtual void abort() = 0;
-
-
-
-};//class TracingEngine
-
-
-
-
-
-
-
-
+};
 
 /**
- *  This simple class allows a generic wrapper around a given
- *  TracingEngine object.  Its purpose is to provide a gateway
- *  to a variety of tracing engines, while maintaining a
- *  consistent interface.
+ * This simple class allows a generic wrapper around a given
+ * TracingEngine object. Its purpose is to provide a gateway
+ * to a variety of tracing engines, while maintaining a
+ * consistent interface.
  */
 class Tracer
 {
-
 public:
-
-
-    /**
-     *
-     */
     Tracer()
-        {
-        engine       = nullptr;
-        sioxEnabled  = false;
-        }
-
-
+    {
+        engine = nullptr;
+        sioxEnabled = false;
+    }
 
     /**
-     *
-     */
-    ~Tracer()
-        = default;
-
-
-    /**
-     *  A convenience method to allow other software to 'see' the
-     *  same image that this class sees.
+     * A convenience method to allow other software to 'see' the
+     * same image that this class sees.
      */
     Glib::RefPtr<Gdk::Pixbuf> getSelectedImage();
 
     /**
-     * This is the main working method.  Trace the selected image, if
+     * This is the main working method. Trace the selected image, if
      * any, and create a <path> element from it, inserting it into
      * the current document.
      */
     void trace(TracingEngine *engine);
 
-
     /**
-     *  Abort the thread that is executing convertImageToPath()
+     * Abort the thread that is executing convertImageToPath()
      */
     void abort();
 
     /**
-     *  Whether we want to enable SIOX subimage selection.
+     * Whether we want to enable SIOX subimage selection.
      */
     void enableSiox(bool enable);
 
-
 private:
-
     /**
      * This is the single path code that is called by its counterpart above.
-     * Threaded method that does single bitmap--->path conversion.
+     * Threaded method that does single bitmap -> path conversion.
      */
     void traceThread();
 
@@ -215,18 +112,18 @@ private:
     bool keepGoing;
 
     /**
-     *  During tracing, this is Non-null, and refers to the
-     *  engine that is currently doing the tracing.
+     * During tracing, this is non-null, and refers to the
+     * engine that is currently doing the tracing.
      */
     TracingEngine *engine;
 
     /**
-     * Get the selected image.  Also check for any SPItems over it, in
+     * Get the selected image. Also check for any SPItems over it, in
      * case the user wants SIOX pre-processing.
      */
     SPImage *getSelectedSPImage();
 
-    std::vector<SPShape *> sioxShapes;
+    std::vector<SPItem*> sioxItems;
 
     bool sioxEnabled;
 
@@ -234,25 +131,13 @@ private:
      * Process a GdkPixbuf, according to which areas have been
      * obscured in the GUI.
      */
-    Glib::RefPtr<Gdk::Pixbuf> sioxProcessImage(SPImage *img, Glib::RefPtr<Gdk::Pixbuf> origPixbuf);
+    Glib::RefPtr<Gdk::Pixbuf> sioxProcessImage(SPImage *img, Glib::RefPtr<Gdk::Pixbuf> const &origPixbuf);
 
+    unsigned lastSioxHash = 0;
     Glib::RefPtr<Gdk::Pixbuf> lastSioxPixbuf;
-    Glib::RefPtr<Gdk::Pixbuf> lastOrigPixbuf;
-
-};//class Tracer
-
-
-
+};
 
 } // namespace Trace
-
 } // namespace Inkscape
 
-
-
-#endif // SEEN_TRACE_H
-
-//#########################################################################
-//# E N D   O F   F I L E
-//#########################################################################
-
+#endif // INKSCAPE_TRACE_H

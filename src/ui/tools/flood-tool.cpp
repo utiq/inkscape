@@ -347,35 +347,30 @@ inline static bool check_if_pixel_is_paintable(guchar *px, unsigned char *trace_
  * @param transform The transform to apply to the final SVG path.
  * @param union_with_selection If true, merge the final SVG path with the current selection.
  */
-static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *desktop, Geom::Affine transform, unsigned int min_x, unsigned int max_x, unsigned int min_y, unsigned int max_y, bool union_with_selection) {
+static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *desktop, Geom::Affine transform, unsigned int min_x, unsigned int max_x, unsigned int min_y, unsigned int max_y, bool union_with_selection)
+{
     SPDocument *document = desktop->getDocument();
 
     unsigned char *trace_t;
 
-    GrayMap *gray_map = GrayMapCreate((max_x - min_x + 1), (max_y - min_y + 1));
-    if (!gray_map) {
-        desktop->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("Failed mid-operation, no objects created."));
-        return;
-    }
-    unsigned int gray_map_y = 0;
-    for (unsigned int y = min_y; y <= max_y; y++) {
-        unsigned long *gray_map_t = gray_map->rows[gray_map_y];
+    auto gray_map = Trace::GrayMap(max_x - min_x + 1, max_y - min_y + 1);
+    unsigned gray_map_y = 0;
+    for (unsigned y = min_y; y <= max_y; y++) {
+        auto gray_map_t = gray_map.row(gray_map_y);
 
         trace_t = get_trace_pixel(trace_px, min_x, y, bci.width);
-        for (unsigned int x = min_x; x <= max_x; x++) {
-            *gray_map_t = is_pixel_colored(trace_t) ? GRAYMAP_BLACK : GRAYMAP_WHITE;
+        for (unsigned x = min_x; x <= max_x; x++) {
+            *gray_map_t = is_pixel_colored(trace_t) ? Trace::GrayMap::BLACK : Trace::GrayMap::WHITE;
             gray_map_t++;
             trace_t++;
         }
         gray_map_y++;
     }
 
-    Inkscape::Trace::Potrace::PotraceTracingEngine pte;
-    pte.keepGoing = 1;
-    std::vector<Inkscape::Trace::TracingEngineResult> results = pte.traceGrayMap(gray_map);
-    gray_map->destroy(gray_map);
+    Trace::Potrace::PotraceTracingEngine pte;
+    auto results = pte.traceGrayMap(gray_map);
 
-    //XML Tree being used here directly while it shouldn't be...."
+    // XML Tree being used here directly while it shouldn't be...."
     Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -387,7 +382,7 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
         /* Set style */
         sp_desktop_apply_style_tool (desktop, pathRepr, "/tools/paintbucket", false);
 
-        Geom::PathVector pathv = sp_svg_read_pathv(result.getPathData().c_str());
+        Geom::PathVector pathv = sp_svg_read_pathv(result.pathData.c_str());
         Path *path = new Path;
         path->LoadPathVector(pathv);
 

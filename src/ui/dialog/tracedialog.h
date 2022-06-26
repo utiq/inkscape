@@ -10,8 +10,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __TRACEDIALOG_H__
-#define __TRACEDIALOG_H__
+#ifndef INKSCAPE_UI_DIALOG_TRACE_H
+#define INKSCAPE_UI_DIALOG_TRACE_H
 
 #include "ui/dialog/dialog-base.h"
 
@@ -19,20 +19,16 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-
 /**
  * A dialog that displays log messages
  */
 class TraceDialog : public DialogBase
 {
-
 public:
-
     /**
      * Constructor
      */
     TraceDialog() : DialogBase("/dialogs/trace", "Trace") {}
-
 
     /**
      * Factory method
@@ -43,16 +39,13 @@ public:
      * Destructor
      */
     ~TraceDialog() override = default;;
-
-
 };
-
 
 } //namespace Dialog
 } //namespace UI
 } //namespace Inkscape
 
-#endif /* __TRACEDIALOG_H__ */
+#endif // INKSCAPE_UI_DIALOG_TRACE_H
 
 /*
   Local Variables:

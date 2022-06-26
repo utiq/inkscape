@@ -14,19 +14,18 @@
  * is provided by the generosity of Peter Selinger, to whom we are grateful.
  *
  */
-
 #include "inkscape-depixelize.h"
 
+#include <iomanip>
+#include <thread>
 #include <glibmm/i18n.h>
 #include <gtkmm/main.h>
 #include <gtkmm.h>
-#include <iomanip>
 
 #include "desktop.h"
 #include "message-stack.h"
 #include "helper/geom.h"
 #include "object/sp-path.h"
-
 #include "display/cairo-templates.h"
 
 #include <svg/path-string.h>
@@ -34,52 +33,27 @@
 #include <svg/svg-color.h>
 #include "svg/css-ostringstream.h"
 
-using Glib::ustring;
-
-
-
 namespace Inkscape {
-
 namespace Trace {
-
 namespace Depixelize {
 
-
-/**
- *
- */
 DepixelizeTracingEngine::DepixelizeTracingEngine()
-    : keepGoing(1)
-    , traceType(TRACE_VORONOI)
+    : traceType(TRACE_VORONOI)
 {
-    params = new ::Tracer::Kopf2011::Options();
 }
 
-
-
-DepixelizeTracingEngine::DepixelizeTracingEngine(TraceType traceType, double curves, int islands, int sparsePixels,
-                                                 double sparseMultiplier, bool optimize)
-    : keepGoing(1)
-    , traceType(traceType)
+DepixelizeTracingEngine::DepixelizeTracingEngine(TraceType traceType, double curves, int islands, int sparsePixels, double sparseMultiplier, bool optimize)
+    : traceType(traceType)
 {
-    params = new ::Tracer::Kopf2011::Options();
-    params->curvesMultiplier = curves;
-    params->islandsWeight = islands;
-    params->sparsePixelsRadius = sparsePixels;
-    params->sparsePixelsMultiplier = sparseMultiplier;
-    params->optimize = optimize;
-    params->nthreads = Inkscape::Preferences::get()->getIntLimited("/options/threading/numthreads",
-#ifdef HAVE_OPENMP
-                                                                   omp_get_num_procs(),
-#else
-                                                                   1,
-#endif // HAVE_OPENMP
-                                                                   1, 256);
+    params.curvesMultiplier = curves;
+    params.islandsWeight = islands;
+    params.sparsePixelsRadius = sparsePixels;
+    params.sparsePixelsMultiplier = sparseMultiplier;
+    params.optimize = optimize;
+    params.nthreads = Inkscape::Preferences::get()->getIntLimited("/options/threading/numthreads", std::thread::hardware_concurrency(), 1, 256);
 }
 
-DepixelizeTracingEngine::~DepixelizeTracingEngine() { delete params; }
-
-std::vector<TracingEngineResult> DepixelizeTracingEngine::trace(Glib::RefPtr<Gdk::Pixbuf> pixbuf)
+std::vector<TracingEngineResult> DepixelizeTracingEngine::trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf)
 {
     std::vector<TracingEngineResult> res;
 
@@ -96,33 +70,39 @@ std::vector<TracingEngineResult> DepixelizeTracingEngine::trace(Glib::RefPtr<Gdk
 
     ::Tracer::Splines splines;
 
-    if (traceType == TRACE_VORONOI)
-        splines = ::Tracer::Kopf2011::to_voronoi(pixbuf, *params);
-    else
-        splines = ::Tracer::Kopf2011::to_splines(pixbuf, *params);
+    if (traceType == TRACE_VORONOI) {
+        splines = ::Tracer::Kopf2011::to_voronoi(pixbuf, params);
+    } else {
+        splines = ::Tracer::Kopf2011::to_splines(pixbuf, params);
+    }
 
-    for (::Tracer::Splines::const_iterator it = splines.begin(), end = splines.end(); it != end; ++it) {
-                gchar b[64];
-                sp_svg_write_color(b, sizeof(b),
-                                   SP_RGBA32_U_COMPOSE(unsigned(it->rgba[0]),
-                                                       unsigned(it->rgba[1]),
-                                                       unsigned(it->rgba[2]),
-                                                       unsigned(it->rgba[3])));
+    for (auto const &it : splines) {
+        char b[64];
+        sp_svg_write_color(b, sizeof(b),
+                           SP_RGBA32_U_COMPOSE(unsigned(it.rgba[0]),
+                                               unsigned(it.rgba[1]),
+                                               unsigned(it.rgba[2]),
+                                               unsigned(it.rgba[3])));
         Inkscape::CSSOStringStream osalpha;
-        osalpha << float(it->rgba[3]) / 255.;
-        gchar* style = g_strdup_printf("fill:%s;fill-opacity:%s;", b, osalpha.str().c_str());
+        osalpha << it.rgba[3] / 255.0f;
+        char *style = g_strdup_printf("fill:%s;fill-opacity:%s;", b, osalpha.str().c_str());
         printf("%s\n", style);
-        TracingEngineResult r(style, sp_svg_write_path(it->pathVector), count_pathvector_nodes(it->pathVector));
-        res.push_back(r);
+        res.emplace_back(style, sp_svg_write_path(it.pathVector), count_pathvector_nodes(it.pathVector));
         g_free(style);
     }
+
     return res;
 }
 
-void DepixelizeTracingEngine::abort() { keepGoing = 0; }
+void DepixelizeTracingEngine::abort()
+{
+    // Unimplemented, as this operation is not supported by libdepixelize.
+}
 
-Glib::RefPtr<Gdk::Pixbuf> DepixelizeTracingEngine::preview(Glib::RefPtr<Gdk::Pixbuf> pixbuf) { return pixbuf; }
-
+Glib::RefPtr<Gdk::Pixbuf> DepixelizeTracingEngine::preview(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf)
+{
+    return pixbuf;
+}
 
 } // namespace Depixelize
 } // namespace Trace
