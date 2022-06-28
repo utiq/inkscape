@@ -182,9 +182,10 @@ DrawingShape::_renderStroke(DrawingContext &dc)
         // If the stroke is a hairline, set it to exactly 1px on screen.
         // If visible hairline mode is on, make sure the line is at least 1px.
         if (_drawing.visibleHairlines() || _style->stroke_extensions.hairline) {
-            double pixel_size_x = 1.0, pixel_size_y = 1.0;
-            dc.device_to_user_distance(pixel_size_x, pixel_size_y);
-            if (_style->stroke_extensions.hairline || _nrstyle.stroke_width < std::min(pixel_size_x, pixel_size_y)) {
+            double dx = 1.0, dy = 0.0;
+            dc.device_to_user_distance(dx, dy);
+            auto pixel_size = std::hypot(dx, dy);
+            if (_style->stroke_extensions.hairline || _nrstyle.stroke_width < pixel_size) {
                 dc.setHairline();
             }
         }
@@ -263,8 +264,9 @@ DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigne
                     // If the draw mode is set to visible hairlines, don't let anything get smaller
                     // than half a pixel.
                     if (_drawing.visibleHairlines()) {
-                        double half_pixel_size = 0.5, trash = 0.5;
-                        dc.device_to_user_distance(half_pixel_size, trash);
+                        double dx = 1.0, dy = 0.0;
+                        dc.device_to_user_distance(dx, dy);
+                        auto half_pixel_size = std::hypot(dx, dy) * 0.5;
                         if (_nrstyle.stroke_width < half_pixel_size) {
                             dc.setLineWidth(half_pixel_size);
                         }

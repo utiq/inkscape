@@ -36,6 +36,9 @@
 #include "util/units.h"
 #include "helper/pixbuf-ops.h"
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 17, 6)
+#define CAIRO_HAS_HAIRLINE
+#endif
 
 /**
  * Key for cairo_surface_t to keep track of current color interpolation value
@@ -924,12 +927,12 @@ void
 ink_cairo_set_hairline(cairo_t *ct)
 {
 #ifdef CAIRO_HAS_HAIRLINE
-    cairo_set_hairline(ct);
+    cairo_set_hairline(ct, true);
 #else
     // As a backup, use a device unit of 1
-    double x = 1, y = 1;
+    double x = 1.0, y = 0.0;
     cairo_device_to_user_distance(ct, &x, &y);
-    cairo_set_line_width(ct, std::min(x, y));
+    cairo_set_line_width(ct, std::hypot(x, y));
 #endif
 }
 
