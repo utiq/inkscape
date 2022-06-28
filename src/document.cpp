@@ -116,7 +116,6 @@ SPDocument::SPDocument() :
     actionkey(),
     object_id_counter(1),
     _event_log(new Inkscape::EventLog(this)),
-    profileManager(nullptr), // deferred until after other initialization
     router(new Avoid::Router(Avoid::PolyLineRouting|Avoid::OrthogonalRouting)),
     _selection(new Inkscape::Selection(this)),
     oldSignalsConnected(false),
@@ -144,7 +143,7 @@ SPDocument::SPDocument() :
     seeking = false;
 
     // Once things are set, hook in the manager
-    profileManager = new Inkscape::ProfileManager(this);
+    _profileManager = std::make_unique<Inkscape::ProfileManager>(this);
 
     // For undo/redo
     undoStackObservers.add(*_event_log);
@@ -166,12 +165,7 @@ SPDocument::~SPDocument() {
     destroySignal.emit();
 
     // kill/unhook this first
-    if ( profileManager ) {
-        Inkscape::GC::release(profileManager);
-        assert(profileManager->_anchored_refcount() == 0);
-        delete profileManager;
-        profileManager = nullptr;
-    }
+    _profileManager.reset();
 
     Inkscape::GC::release(_selection);
 

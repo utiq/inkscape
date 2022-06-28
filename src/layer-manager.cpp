@@ -28,11 +28,9 @@
 
 #include "desktop.h"
 #include "document.h"
-#include "gc-finalized.h"
 #include "layer-manager.h"
 #include "selection.h"
 
-#include "inkgc/gc-managed.h"
 
 #include "object-hierarchy.h"
 #include "object/sp-defs.h"

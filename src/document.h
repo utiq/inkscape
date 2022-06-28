@@ -187,7 +187,7 @@ public:
     /******** Getters and Setters **********/
 
     // Document structure -----------------
-    Inkscape::ProfileManager* getProfileManager() const { return profileManager; }
+    Inkscape::ProfileManager &getProfileManager() const { return *_profileManager; }
     Avoid::Router* getRouter() const { return router; }
 
     
@@ -366,7 +366,7 @@ public:
 private:
 
     // Document ------------------------------
-    Inkscape::ProfileManager* profileManager = nullptr;   // Color profile.
+    std::unique_ptr<Inkscape::ProfileManager> _profileManager;   // Color profile.
     Avoid::Router *router = nullptr; // Instance of the connector router
     Inkscape::Selection * _selection = nullptr;
 

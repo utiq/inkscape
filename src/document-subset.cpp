@@ -11,7 +11,6 @@
 
 #include <map>
 
-#include "gc-finalized.h"
 #include "document-subset.h"
 #include "document.h"
 
@@ -20,8 +19,7 @@
 
 namespace Inkscape {
 
-struct DocumentSubset::Relations : public GC::Managed<GC::ATOMIC>,
-                                   public GC::Finalized
+struct DocumentSubset::Relations
 {
     typedef std::vector<SPObject *> Siblings;
 
@@ -129,7 +127,7 @@ struct DocumentSubset::Relations : public GC::Managed<GC::ATOMIC>,
 
     Relations() { records[nullptr]; }
 
-    ~Relations() override {
+    ~Relations() {
         for (auto & iter : records)
         {
             if (iter.first) {
@@ -142,9 +140,9 @@ struct DocumentSubset::Relations : public GC::Managed<GC::ATOMIC>,
     }
 
     Record *get(SPObject *obj) {
-        Map::iterator found=records.find(obj);
+        auto found=records.find(obj);
         if ( found != records.end() ) {
-            return &(*found).second;
+            return &found->second;
         } else {
             return nullptr;
         }
@@ -214,9 +212,12 @@ private:
 };
 
 DocumentSubset::DocumentSubset()
-: _relations(new DocumentSubset::Relations())
+    : _relations(std::make_unique<DocumentSubset::Relations>())
 {
 }
+
+DocumentSubset::~DocumentSubset() = default;
+
 
 void DocumentSubset::Relations::addOne(SPObject *obj) {
     g_return_if_fail( obj != nullptr );
@@ -352,23 +353,23 @@ bool DocumentSubset::includes(SPObject *obj) const {
 }
 
 SPObject *DocumentSubset::parentOf(SPObject *obj) const {
-    Relations::Record *record=_relations->get(obj);
+    auto const record = _relations->get(obj);
     return ( record ? record->parent : nullptr );
 }
 
 unsigned DocumentSubset::childCount(SPObject *obj) const {
-    Relations::Record *record=_relations->get(obj);
+    auto const record = _relations->get(obj);
     return ( record ? record->children.size() : 0 );
 }
 
 unsigned DocumentSubset::indexOf(SPObject *obj) const {
     SPObject *parent=parentOf(obj);
-    Relations::Record *record=_relations->get(parent);
+    auto const record = _relations->get(parent);
     return ( record ? record->childIndex(obj) : 0 );
 }
 
 SPObject *DocumentSubset::nthChildOf(SPObject *obj, unsigned n) const {
-    Relations::Record *record=_relations->get(obj);
+    auto const record = _relations->get(obj);
     return ( record ? record->children[n] : nullptr );
 }
 

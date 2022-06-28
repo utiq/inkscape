@@ -16,7 +16,6 @@
 #include <glibmm/ustring.h>
 
 #include "document-subset.h"
-#include "inkgc/gc-soft-ptr.h"
 #include "object/sp-item-group.h"
 
 class SPDesktop;
@@ -29,7 +28,7 @@ class LayerManager : public DocumentSubset
 {
 public:
     LayerManager(SPDesktop *desktop);
-    ~LayerManager() override;
+    ~LayerManager();
 
     void renameLayer( SPObject* obj, char const *label, bool uniquify );
     Glib::ustring getNextLayerName( SPObject* obj, char const *label);
