@@ -444,11 +444,26 @@ add_cli_test(export-with-filters_png  PARAMETERS --export-type=png INPUT_FILENAM
 add_cli_test(export-with-filters_ps   PARAMETERS --export-type=ps  INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.ps  REFERENCE_FILENAME export-with-filters_expected.ps )
 add_cli_test(export-with-filters_eps  PARAMETERS --export-type=eps INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.eps REFERENCE_FILENAME export-with-filters_expected.eps)
 add_cli_test(export-with-filters_pdf  PARAMETERS --export-type=pdf INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.pdf REFERENCE_FILENAME export-with-filters_expected.pdf)
+add_cli_test(export-grouped-mp PARAMETERS --export-type=pdf
+                               INPUT_FILENAME export-grouped-mp.svg
+                               OUTPUT_FILENAME export-grouped-mp.pdf
+                               OUTPUT_PAGE 1
+                               REFERENCE_FILENAME export-grouped-mp_expected.png)
 add_cli_test(export-with-filters-multipage PARAMETERS --export-type=pdf
                                            INPUT_FILENAME export-with-filters-multipage.svg
                                            OUTPUT_FILENAME export-with-filters-multipage.pdf
                                            OUTPUT_PAGE 1
                                            REFERENCE_FILENAME export-with-filters-multipage_expected.png)
+add_cli_test(export-filtered-clones-mp PARAMETERS --export-type=pdf --export-dpi=600
+                                       INPUT_FILENAME  export-filtered-clones-mp.svg
+                                       OUTPUT_FILENAME export-filtered-clones-mp.pdf
+                                       OUTPUT_PAGE 1
+                                       REFERENCE_FILENAME export-filtered-clones-mp_expected.png)
+add_cli_test(export-clone-group-filtered-mp PARAMETERS --export-type=pdf
+                                            INPUT_FILENAME  export-clone-group-filtered-mp.svg
+                                            OUTPUT_FILENAME export-clone-group-filtered-mp.pdf
+                                            OUTPUT_PAGE 1
+                                            REFERENCE_FILENAME export-clone-group-filtered-mp_expected.png)
 # EMF, WMF: No support for exporting filters. Feature request: https://gitlab.com/inkscape/inbox/-/issues/2275
 # add_cli_test(export-with-filters_emf  PARAMETERS --export-type=emf INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.emf REFERENCE_FILENAME export-with-filters_expected.emf)
 # add_cli_test(export-with-filters_wmf  PARAMETERS --export-type=wmf INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.wmf REFERENCE_FILENAME export-with-filters_expected.wmf)
