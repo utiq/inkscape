@@ -74,6 +74,7 @@ public:
     Geom::Affine get_parent_transform() const;
     Geom::Affine get_root_transform() const;
     SPItem *trueOriginal() const;
+    bool anyInChain(bool (*predicate)(SPItem const *)) const;
 
 private:
     void href_changed();

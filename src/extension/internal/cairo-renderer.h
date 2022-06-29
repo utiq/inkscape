@@ -60,6 +60,14 @@ public:
 private:
     /** Extract metadata from doc and set it on ctx. */
     void setMetadata(CairoRenderContext *ctx, SPDocument *doc);
+
+    /** Decide whether the given item should be rendered as a bitmap. */
+    static bool _shouldRasterize(CairoRenderContext *ctx, SPItem const *item);
+
+    /** Render a single item in a fully set up context. */
+    static void _doRender(SPItem *item, CairoRenderContext *ctx, SPItem *origin = nullptr,
+                          SPPage *page = nullptr);
+
 };
 
 // FIXME: this should be a static method of CairoRenderer

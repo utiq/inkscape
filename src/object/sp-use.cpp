@@ -379,6 +379,39 @@ SPItem *SPUse::trueOriginal() const
 }
 
 /**
+ * @brief Test the passed predicate on all items in a chain of uses.
+ *
+ * The chain includes this item, all of its intermediate ancestors in a chain of uses, as well as
+ * the ultimate original item.
+ *
+ * @return Whether any of the items in the chain satisfies the predicate.
+ */
+bool SPUse::anyInChain(bool (*predicate)(SPItem const *)) const
+{
+    int const depth = cloneDepth();
+    if (depth < 0) {
+        return predicate(this);
+    }
+
+    SPItem const *item = this;
+    if (predicate(item)) {
+        return true;
+    }
+
+    for (int i = 0; i < depth; ++i) {
+        if (auto const *intermediate_clone = dynamic_cast<SPUse const *>(item)) {
+            item = intermediate_clone->get_original();
+            if (predicate(item)) {
+                return true;
+            }
+        } else {
+            break;
+        }
+    }
+    return false;
+}
+
+/**
  * Get the number of dereferences or calls to get_original() needed to get an object
  * which is not an svg:use. Returns -1 if there is no original object.
  */
