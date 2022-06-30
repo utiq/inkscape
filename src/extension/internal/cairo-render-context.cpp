@@ -108,6 +108,8 @@ static cairo_status_t _write_callback(void *closure, const unsigned char *data, 
 CairoRenderContext::CairoRenderContext(CairoRenderer *parent) :
     _dpi(72),
     _pdf_level(1),
+    _is_pdf(false),
+    _is_ps(false),
     _ps_level(1),
     _eps(false),
     _is_texttopath(FALSE),
@@ -405,6 +407,8 @@ bool CairoRenderContext::setPsTarget(gchar const *utf8_fn)
 void CairoRenderContext::setPSLevel(unsigned int level)
 {
     _ps_level = level;
+    _is_pdf = false;
+    _is_ps = true;
 }
 
 void CairoRenderContext::setEPS(bool eps)
@@ -420,6 +424,8 @@ unsigned int CairoRenderContext::getPSLevel()
 void CairoRenderContext::setPDFLevel(unsigned int level)
 {
     _pdf_level = level;
+    _is_pdf = true;
+    _is_ps = false;
 }
 
 void CairoRenderContext::setTextToPath(bool texttopath)
@@ -968,10 +974,16 @@ CairoRenderContext::nextPage(double width, double height, char const *label)
     _width = width;
     _height = height;
     _is_show_page = false;
-    cairo_pdf_surface_set_size(_surface, width, height);
 
-    if (label) {
-        cairo_pdf_surface_set_page_label(_surface, label);
+    if (_is_pdf) {
+        cairo_pdf_surface_set_size(_surface, width, height);
+
+        if (label) {
+            cairo_pdf_surface_set_page_label(_surface, label);
+        }
+    }
+    if (_is_ps) {
+        cairo_ps_surface_set_size(_surface, width, height);
     }
 
     auto status = cairo_surface_status(_surface);

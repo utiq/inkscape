@@ -110,65 +110,10 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
     bool ret = ctx->setPdfTarget (filename);
     if(ret) {
         /* Render document */
-        ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
-
-        auto pages = doc->getPageManager().getPages();
-        if (pages.size() == 0) {
-            // Output the page bounding box as already set up in the initial setupDocument.
-            renderer->renderItem(ctx, root);
-            ret = ctx->finish();
-        } else {
-            auto scale = doc->getDocumentScale();
-            auto const unit_conversion = Geom::Scale(Inkscape::Util::Quantity::convert(1, "px", "pt"));
-
-            for (auto &page : pages) {
-                ctx->pushState();
-
-                // Calculate exact page rectangle in PostScript points:
-                auto rect = page->getRect();
-                auto exact_rect = rect * scale * unit_conversion;
-
-                // Round page size up to the nearest integer:
-                auto page_rect = exact_rect.roundOutwards();
-
-                if (flags.stretch_to_fit) {
-                    // Calculate distortion from rounding (only really matters for small paper sizes):
-                    auto distortion = Geom::Scale(page_rect.width() / exact_rect.width(),
-                                                  page_rect.height() / exact_rect.height());
-
-                    // Make the drawing a little bit larger so that it still fills the rounded-up page:
-                    ctx->transform(scale * distortion);
-                } else {
-                    ctx->transform(scale);
-                }
-
-                ctx->transform(root->transform);
-                ctx->nextPage(page_rect.width(), page_rect.height(), page->label());
-
-                // Set up page transformation which pushes objects back into the 0,0 location
-                ctx->transform(Geom::Translate(rect.corner(0)).inverse());
-
-                for (auto &child : page->getOverlappingItems(false)) {
-                    ctx->pushState();
-
-                    // This process does not return layers, so those affines are added manually.
-                    for (auto anc : child->ancestorList(true)) {
-                        if (auto layer = dynamic_cast<SPItem *>(anc)) {
-                            if (layer != child && layer != root) {
-                                ctx->transform(layer->transform);
-                            }
-                        }
-                    }
-
-                    // Render the page into the context in the new location.
-                    renderer->renderItem(ctx, child, nullptr, page);
-                    ctx->popState();
-                }
-                ret = ctx->finishPage();
-
-                ctx->popState();
-            }
-            ret = ctx->finish();
+        if (ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base)) {
+            /* Render multiple pages */
+            ret = renderer->renderPages(ctx, doc, flags.stretch_to_fit);
+            ctx->finish();
         }
     }
 

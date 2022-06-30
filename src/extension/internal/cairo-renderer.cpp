@@ -842,6 +842,82 @@ CairoRenderer::setupDocument(CairoRenderContext *ctx, SPDocument *doc, bool page
     return ret;
 }
 
+/**
+ * Handle multiple pages, pushing each out to cairo as needed using renderItem()
+ */
+bool
+CairoRenderer::renderPages(CairoRenderContext *ctx, SPDocument *doc, bool stretch_to_fit)
+{
+    auto pages = doc->getPageManager().getPages();
+    if (pages.size() == 0) {
+        // Output the page bounding box as already set up in the initial setupDocument.
+        renderItem(ctx, doc->getRoot());
+        return true;
+    }
+
+    for (auto &page : pages) {
+        ctx->pushState();
+        if (!renderPage(ctx, doc, page, stretch_to_fit)) {
+            return false;
+        }
+        if (!ctx->finishPage()) {
+            g_warning("Couldn't render page in output!");
+            return false;
+        }
+        ctx->popState();
+    }
+    return true;
+}
+
+bool
+CairoRenderer::renderPage(CairoRenderContext *ctx, SPDocument *doc, SPPage *page, bool stretch_to_fit)
+{
+    // Calculate exact page rectangle in PostScript points:
+    auto rect = page->getRect();
+    auto scale = doc->getDocumentScale();
+    auto const unit_conversion = Geom::Scale(Inkscape::Util::Quantity::convert(1, "px", "pt"));
+    auto exact_rect = rect * scale * unit_conversion;
+
+    // Round page size up to the nearest integer:
+    auto page_rect = exact_rect.roundOutwards();
+
+    if (stretch_to_fit) {
+        // Calculate distortion from rounding (only really matters for small paper sizes):
+        auto distortion = Geom::Scale(page_rect.width() / exact_rect.width(),
+                                      page_rect.height() / exact_rect.height());
+
+        // Make the drawing a little bit larger so that it still fills the rounded-up page:
+        ctx->transform(scale * distortion);
+    } else {
+        ctx->transform(scale);
+    }
+
+    SPRoot *root = doc->getRoot();
+    ctx->transform(root->transform);
+    ctx->nextPage(page_rect.width(), page_rect.height(), page->label());
+
+    // Set up page transformation which pushes objects back into the 0,0 location
+    ctx->transform(Geom::Translate(rect.corner(0)).inverse());
+
+    for (auto &child : page->getOverlappingItems(false)) {
+        ctx->pushState();
+
+        // This process does not return layers, so those affines are added manually.
+        for (auto anc : child->ancestorList(true)) {
+            if (auto layer = dynamic_cast<SPItem *>(anc)) {
+                if (layer != child && layer != root) {
+                    ctx->transform(layer->transform);
+                }
+            }
+        }
+
+        // Render the page into the context in the new location.
+        renderItem(ctx, child, nullptr, page);
+        ctx->popState();
+    }
+    return true;
+}
+
 // Apply an SVG clip path
 void
 CairoRenderer::applyClipPath(CairoRenderContext *ctx, SPClipPath const *cp)

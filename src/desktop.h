@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <sigc++/sigc++.h>
 #include <glibmm/ustring.h>
+#include <gtkmm.h> // Many downstream includes
 
 #include <2geom/affine.h>
 #include <2geom/transforms.h>
@@ -36,7 +37,6 @@
 
 #include "object/sp-gradient.h" // TODO refactor enums out to their own .h file
 
-#include "ui/dialog/print.h"
 #include "ui/view/view.h"
 
 namespace Gtk
@@ -139,8 +139,6 @@ public:
     Inkscape::UI::Tools::ToolBase *event_context = nullptr;
     Inkscape::Display::TemporaryItemList *temporary_item_list;
     Inkscape::Display::SnapIndicator *snapindicator;
-    /// Stored settings for print dialogue
-    Inkscape::UI::Dialog::PrinterSettings printer_settings;
 
     Inkscape::UI::Tools::ToolBase* getEventContext() const { return event_context; }
     Inkscape::Selection* getSelection() const { return _selection.get(); }
