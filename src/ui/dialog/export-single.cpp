@@ -994,7 +994,7 @@ void SingleExport::setDocument(SPDocument *document)
     preview->setDocument(document);
 }
 
-SingleExport::~SingleExport() {}
+SingleExport::~SingleExport() { _page_selected_connection.disconnect(); }
 
 } // namespace Dialog
 } // namespace UI

@@ -101,14 +101,6 @@ Export::Export()
     });
 }
 
-Export::~Export()
-{
-    single_image->setDocument(nullptr);
-    single_image->setDesktop(nullptr);
-    batch_export->setDocument(nullptr);
-    batch_export->setDesktop(nullptr);
-}
-
 // Set current page based on preference/last visited page
 void Export::setDefaultNotebookPage()
 {

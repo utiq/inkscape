@@ -42,7 +42,7 @@ public:
     BatchExport() {};
     BatchExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade)
         : Gtk::Box(cobject){};
-    ~BatchExport() override = default;
+    ~BatchExport() override { _pages_changed_connection.disconnect(); };
 
 private:
     InkscapeApplication *_app;

@@ -78,7 +78,7 @@ class Export : public DialogBase
 {
 public:
     Export();
-    ~Export() override;
+    ~Export() override = default;
 
     static Export &getInstance() { return *new Export(); }
 
