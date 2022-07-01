@@ -44,12 +44,12 @@ in the style of Corel DRAW X8. See default.xml for more information.
 
 <!-- Context -->
 
-<bind gaction="app.object-align('hcenter')"            keys="c, C" />
-<bind gaction="app.object-align('vcenter')"            keys="e, E" />
-<bind gaction="app.object-align('bottom')"             keys="b, B" />
-<bind gaction="app.object-align('left')"               keys="l, L" />
-<bind gaction="app.object-align('right')"              keys="r, R" />
-<bind gaction="app.object-align('top')"                keys="t, T" />
+<bind gaction="app.object-align('hcenter pref')"       keys="c, C" />
+<bind gaction="app.object-align('vcenter pref')"       keys="e, E" />
+<bind gaction="app.object-align('bottom pref')"        keys="b, B" />
+<bind gaction="app.object-align('left pref')"          keys="l, L" />
+<bind gaction="app.object-align('right pref')"         keys="r, R" />
+<bind gaction="app.object-align('top pref')"           keys="t, T" />
 
 <bind gaction="win.tool-switch('Arc')"                  keys="F7" />
 <bind gaction="win.tool-switch('Eraser')"               keys="x, X" />

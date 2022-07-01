@@ -233,13 +233,13 @@ See "inkscape.xml" for information about file structure.
   <bind gaction="app.object-flip-horizontal"             keys="h, H" />
   <bind gaction="app.object-flip-vertical"               keys="v, V" />
 
-  <bind gaction="app.object-align('hcenter')"            keys="&lt;primary&gt;&lt;alt&gt;h" />
-  <bind gaction="app.object-align('vcenter')"            keys="&lt;primary&gt;&lt;alt&gt;t" />
-  <bind gaction="app.object-align('bottom')"             keys="&lt;primary&gt;&lt;alt&gt;KP_2" />
-  <bind gaction="app.object-align('left')"               keys="&lt;primary&gt;&lt;alt&gt;KP_4" />
-  <bind gaction="app.object-align('hcenter vcenter')"    keys="&lt;primary&gt;&lt;alt&gt;KP_5" />
-  <bind gaction="app.object-align('right')"              keys="&lt;primary&gt;&lt;alt&gt;KP_6" />
-  <bind gaction="app.object-align('top')"                keys="&lt;primary&gt;&lt;alt&gt;KP_8" />
+  <bind gaction="app.object-align('hcenter pref')"         keys="&lt;primary&gt;&lt;alt&gt;h" />
+  <bind gaction="app.object-align('vcenter pref')"         keys="&lt;primary&gt;&lt;alt&gt;t" />
+  <bind gaction="app.object-align('bottom pref')"          keys="&lt;primary&gt;&lt;alt&gt;KP_2" />
+  <bind gaction="app.object-align('left pref')"            keys="&lt;primary&gt;&lt;alt&gt;KP_4" />
+  <bind gaction="app.object-align('hcenter vcenter pref')" keys="&lt;primary&gt;&lt;alt&gt;KP_5" />
+  <bind gaction="app.object-align('right pref')"           keys="&lt;primary&gt;&lt;alt&gt;KP_6" />
+  <bind gaction="app.object-align('top pref')"             keys="&lt;primary&gt;&lt;alt&gt;KP_8" />
 
   <bind gaction="win.unhide-all" />
   <bind gaction="win.unlock-all" />
