@@ -1876,7 +1876,8 @@ void InkscapePreferences::initPageUI()
 
         std::vector<PrefItem> snap = {
             { _("Simple"), 1, _("Present simplified snapping options that manage all advanced settings"), true },
-            { _("Advanced"), 0, _("Expose all snapping options for manual control") }
+            { _("Advanced"), 0, _("Expose all snapping options for manual control") },
+            { _("Permanent"), 2, _("All advanced snap options appear in a permanent bar") },
         };
         _page_toolbars.add_line(false, _("Snap controls bar:"), *Gtk::make_managed<PrefRadioButtons>(snap, "/toolbox/simplesnap"), "", "");
     } catch (const Glib::Error &ex) {

@@ -200,8 +200,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->aux_toolbox = ToolboxFactory::createAuxToolbox();
 
     dtw->snap_toolbox = ToolboxFactory::createSnapToolbox();
-    ToolboxFactory::setOrientation(dtw->snap_toolbox, GTK_ORIENTATION_HORIZONTAL);
-    dtw->_top_toolbars->attach(*Glib::wrap(dtw->snap_toolbox), 1, 0, 1, 2);
 
     dtw->commands_toolbox = ToolboxFactory::createCommandsToolbox();
     auto cmd = Glib::wrap(dtw->commands_toolbox);
@@ -212,6 +210,10 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->tool_toolbox = ToolboxFactory::createToolToolbox(inkscape_window);
     ToolboxFactory::setOrientation( dtw->tool_toolbox, GTK_ORIENTATION_VERTICAL );
     dtw->_tbbox->pack1(*Glib::wrap(dtw->tool_toolbox), false, true);
+
+    _tb_snap_pos = prefs->createObserver("/toolbox/simplesnap", sigc::mem_fun(this, &SPDesktopWidget::repack_snaptoolbar));
+    repack_snaptoolbar();
+
     auto tbox_width = prefs->getEntry("/toolbox/tools/width");
     if (tbox_width.isValid()) {
         _tbbox->set_position(tbox_width.getIntLimited(32, 8, 500));
@@ -1268,6 +1270,25 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
     dtw->_panels->setDesktop(dtw->desktop);
 }
 
+/**
+ * Choose where to pack the snap toolbar.
+ */
+void SPDesktopWidget::repack_snaptoolbar()
+{
+    Inkscape::Preferences* prefs = Inkscape::Preferences::get();
+    if (auto widget = Glib::wrap(snap_toolbox)) {
+        if (auto parent = widget->get_parent()) {
+            parent->remove(*widget);
+        }
+        if (prefs->getInt("/toolbox/simplesnap", 1) == 2) {
+            ToolboxFactory::setOrientation(snap_toolbox, GTK_ORIENTATION_VERTICAL);
+            _hbox->pack_end(*widget, false, true);
+        } else {
+            ToolboxFactory::setOrientation(snap_toolbox, GTK_ORIENTATION_HORIZONTAL);
+            _top_toolbars->attach(*Glib::wrap(snap_toolbox), 1, 0, 1, 2);
+        }
+    }
+}
 
 void
 SPDesktopWidget::update_rulers()

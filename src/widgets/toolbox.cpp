@@ -292,7 +292,6 @@ GtkWidget *ToolboxFactory::createSnapToolbox()
 {
     auto tb = new SnapBar();
     tb->set_name("SnapToolbox");
-    tb->set_orientation(Gtk::ORIENTATION_VERTICAL);
     tb->set_homogeneous(false);
 
     Glib::ustring snap_toolbar_builder_file = get_filename(UIS, "toolbar-snap.ui");

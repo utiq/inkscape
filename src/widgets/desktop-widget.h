@@ -199,6 +199,7 @@ public:
     void update_zoom();
     void update_rotation();
     void update_rulers();
+    void repack_snaptoolbar();
 
     void iconify();
     void maximize();
@@ -218,6 +219,7 @@ private:
     GtkWidget *aux_toolbox;
     GtkWidget *commands_toolbox;
     GtkWidget *snap_toolbox;
+    Inkscape::PrefObserver _tb_snap_pos;
     Inkscape::PrefObserver _tb_icon_sizes1;
     Inkscape::PrefObserver _tb_icon_sizes2;
     Inkscape::PrefObserver _tb_visible_buttons;
