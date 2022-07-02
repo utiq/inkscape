@@ -38,6 +38,7 @@
 #include "display/drawing-pattern.h"
 
 #include "svg/svg.h"
+#include "xml/href-attribute-helper.h"
 
 SPPatternReference::SPPatternReference(SPPattern *owner)
     : URIReference(owner)
@@ -454,7 +455,7 @@ SPPattern *SPPattern::_chain() const
     Inkscape::XML::Node *repr = xml_doc->createElement("svg:pattern");
     repr->setAttribute("inkscape:collect", "always");
     Glib::ustring parent_ref = Glib::ustring::compose("#%1", getRepr()->attribute("id"));
-    repr->setAttribute("xlink:href", parent_ref);
+    Inkscape::setHrefAttribute(*repr, parent_ref);
     // this attribute is used to express uniform pattern scaling in pattern editor, so keep it
     repr->setAttribute("preserveAspectRatio", getRepr()->attribute("preserveAspectRatio"));
 

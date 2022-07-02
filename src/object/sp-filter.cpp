@@ -34,6 +34,7 @@
 #include "uri.h"
 #include "xml/repr.h"
 #include "filters/slot-resolver.h"
+#include "xml/href-attribute-helper.h"
 
 SPFilter::SPFilter()
     : filterUnits(SP_FILTER_UNITS_OBJECTBOUNDINGBOX)
@@ -311,7 +312,8 @@ Inkscape::XML::Node *SPFilter::write(Inkscape::XML::Document *doc, Inkscape::XML
 
     if (href->getURI()) {
         auto uri_string = href->getURI()->str();
-        repr->setAttributeOrRemoveIfEmpty("xlink:href", uri_string);
+        auto href_key = Inkscape::getHrefAttribute(*repr).first;
+        repr->setAttributeOrRemoveIfEmpty(href_key, uri_string);
     }
 
     SPObject::write(doc, repr, flags);

@@ -27,6 +27,7 @@
 #include "object/sp-rect.h"
 #include "ui/tools/select-tool.h"
 #include "util/format_size.h"
+#include "xml/href-attribute-helper.h"
 
 Glib::ustring image_get_editor_name(bool is_svg)
 {
@@ -57,7 +58,7 @@ void image_edit(InkscapeApplication *app)
         if (image) {
 
             Inkscape::XML::Node *node = item->getRepr();
-            const gchar *href = node->attribute("xlink:href");
+            const gchar *href = Inkscape::getHrefAttribute(*node).second;
             if (!href) {
                 std::cerr << "image_edit: no xlink:href" << std::endl;
                 continue;

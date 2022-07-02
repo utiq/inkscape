@@ -44,6 +44,7 @@
 #include "livarot/Path.h"
 
 #include "svg/stringstream.h"
+#include "xml/href-attribute-helper.h"
 
 
 /*#####################################################
@@ -415,7 +416,7 @@ Inkscape::XML::Node* SPTextPath::write(Inkscape::XML::Document *xml_doc, Inkscap
     }
 
     if ( this->sourcePath->sourceHref ) {
-    	repr->setAttribute("xlink:href", this->sourcePath->sourceHref);
+        Inkscape::setHrefAttribute(*repr, this->sourcePath->sourceHref);
     }
 
     if ( flags & SP_OBJECT_WRITE_BUILD ) {

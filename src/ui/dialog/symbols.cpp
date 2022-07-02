@@ -45,6 +45,7 @@
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/widget/scrollprotected.h"
+#include "xml/href-attribute-helper.h"
 
 #ifdef WITH_LIBVISIO
   #include <libvisio/libvisio.h>
@@ -977,7 +978,7 @@ gchar const* SymbolsDialog::styleFromUse( gchar const* id, SPDocument* document)
   std::vector<SPUse*> l = useInDoc( document );
   for( auto use:l ) {
     if ( use ) {
-      gchar const *href = use->getRepr()->attribute("xlink:href");
+      gchar const *href = Inkscape::getHrefAttribute(*use->getRepr()).second;
       if( href ) {
         Glib::ustring href2(href);
         Glib::ustring id2(id);

@@ -36,6 +36,7 @@
 #include <lcms2.h>
 
 #include "xml/repr.h"
+#include "xml/href-attribute-helper.h"
 #include "color.h"
 #include "color-profile.h"
 #include "cms-system.h"
@@ -411,7 +412,7 @@ Inkscape::XML::Node* ColorProfile::write(Inkscape::XML::Document *xml_doc, Inksc
     }
 
     if ( (flags & SP_OBJECT_WRITE_ALL) || this->href ) {
-        repr->setAttribute( "xlink:href", this->href );
+        Inkscape::setHrefAttribute(*repr, this->href );
     }
 
     if ( (flags & SP_OBJECT_WRITE_ALL) || this->local ) {

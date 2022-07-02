@@ -30,11 +30,11 @@
 
 <path d="M0,10 h80 M10,0 v20 M25,0 v20 M40,0 v20 M55,0 v20 M70,0 v20" fill="none" stroke="pink" />
 
-<use xlink:href="#mySym" x="5"  y="5" style="opacity:1.0" />
-<use xlink:href="#mySvg" x="20" y="5" style="opacity:0.8" />
-<use xlink:href="#mySym" x="35" y="5" style="opacity:0.6" />
-<use xlink:href="#mySvg" x="50" y="5" style="opacity:0.4" />
-<use xlink:href="#mySym" x="65" y="5" style="opacity:0.2" />
+<use href="#mySym" x="5"  y="5" style="opacity:1.0" />
+<use href="#mySvg" x="20" y="5" style="opacity:0.8" />
+<use href="#mySym" x="35" y="5" style="opacity:0.6" />
+<use href="#mySvg" x="50" y="5" style="opacity:0.4" />
+<use href="#mySym" x="65" y="5" style="opacity:0.2" />
 
 <path d="M0,10 h80 M10,0 v20 M25,0 v20 M40,0 v20 M55,0 v20 M70,0 v20" fill="none" stroke="orange" transform="translate(15, 20)" />
 

@@ -18,6 +18,7 @@
 #include <glibmm/i18n.h>
 #include "xml/quote.h"
 #include "xml/repr.h"
+#include "xml/href-attribute-helper.h"
 #include "attributes.h"
 #include "sp-anchor.h"
 #include "ui/view/svg-view-widget.h"
@@ -118,7 +119,7 @@ Inkscape::XML::Node* SPAnchor::write(Inkscape::XML::Document *xml_doc, Inkscape:
         repr = xml_doc->createElement("svg:a");
     }
 
-    repr->setAttribute("xlink:href", this->href);
+    Inkscape::setHrefAttribute(*repr, this->href);
     if (this->type) repr->setAttribute("xlink:type", this->type);
     if (this->title) repr->setAttribute("xlink:title", this->title);
 

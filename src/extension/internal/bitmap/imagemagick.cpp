@@ -27,6 +27,8 @@
 #include "imagemagick.h"
 #include <Magick++.h>
 
+#include "xml/href-attribute-helper.h"
+
 namespace Inkscape {
 namespace Extension {
 namespace Internal {
@@ -80,7 +82,7 @@ ImageMagickDocCache::ImageMagickDocCache(Inkscape::UI::View::View * view) :
         if (!strcmp(node->name(), "image") || !strcmp(node->name(), "svg:image"))
         {
             _nodes[_imageCount] = node;    
-            char const *xlink = node->attribute("xlink:href");
+            char const *xlink = Inkscape::getHrefAttribute(*node).second;
             char const *id = node->attribute("id");
             _originals[_imageCount] = xlink;
             _caches[_imageCount] = (char*)"";
@@ -215,7 +217,7 @@ ImageMagick::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::Vi
             }
             *formatted_i = '\0';
 
-            dc->_nodes[i]->setAttribute("xlink:href", dc->_caches[i]);
+            Inkscape::setHrefAttribute(*dc->_nodes[i], dc->_caches[i]);
             dc->_nodes[i]->removeAttribute("sodipodi:absref");
             delete blob;
         }

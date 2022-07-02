@@ -40,6 +40,7 @@
 #include "sp-image.h"
 #include "sp-clippath.h"
 #include "xml/quote.h"
+#include "xml/href-attribute-helper.h"
 #include "preferences.h"
 #include "io/sys.h"
 
@@ -321,7 +322,7 @@ void SPImage::update(SPCtx *ctx, unsigned int flags) {
                 svgdpi = g_ascii_strtod(getRepr()->attribute("inkscape:svg-dpi"), nullptr);
             }
             dpi = svgdpi;
-            pb = readImage(getRepr()->attribute("xlink:href"),
+            pb = readImage(Inkscape::getHrefAttribute(*getRepr()).second,
                            getRepr()->attribute("sodipodi:absref"),
                            document->getDocumentBase(), svgdpi);
             if (!pb) {
@@ -440,7 +441,7 @@ Inkscape::XML::Node *SPImage::write(Inkscape::XML::Document *xml_doc, Inkscape::
         repr = xml_doc->createElement("svg:image");
     }
 
-    repr->setAttribute("xlink:href", this->href);
+    Inkscape::setHrefAttribute(*repr, this->href);
 
     /* fixme: Reset attribute if needed (Lauris) */
     if (this->x._set) {
@@ -537,7 +538,7 @@ gchar* SPImage::description() const {
         if (this->getRepr()->attribute("inkscape:svg-dpi")) {
             svgdpi = g_ascii_strtod(this->getRepr()->attribute("inkscape:svg-dpi"), nullptr);
         }
-        pb = readImage(this->getRepr()->attribute("xlink:href"),
+        pb = readImage(Inkscape::getHrefAttribute(*this->getRepr()).second,
                        this->getRepr()->attribute("sodipodi:absref"),
                        this->document->getDocumentBase(), svgdpi);
 
@@ -798,7 +799,7 @@ void sp_embed_image(Inkscape::XML::Node *image_node, Inkscape::Pixbuf *pb)
     // TODO: this is very wasteful memory-wise.
     // It would be better to only keep the binary data around,
     // and base64 encode on the fly when saving the XML.
-    image_node->setAttribute("xlink:href", buffer);
+    Inkscape::setHrefAttribute(*image_node, buffer);
 
     g_free(buffer);
     if (free_data) g_free(data);
@@ -851,7 +852,7 @@ void sp_embed_svg(Inkscape::XML::Node *image_node, std::string const &fn)
         // TODO: this is very wasteful memory-wise.
         // It would be better to only keep the binary data around,
         // and base64 encode on the fly when saving the XML.
-        image_node->setAttribute("xlink:href", buffer);
+        Inkscape::setHrefAttribute(*image_node, buffer);
 
         g_free(buffer);
         g_free(data);

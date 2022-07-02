@@ -29,6 +29,7 @@
 #include "ui/icon-names.h"
 
 #include "xml/node.h"
+#include "xml/href-attribute-helper.h"
 
 namespace Inkscape {
 
@@ -207,7 +208,7 @@ static std::vector<Glib::ustring> findBrokenLinks( SPDocument *doc )
         for (auto image : images) {
             Inkscape::XML::Node *ir = image->getRepr();
 
-            gchar const *href = ir->attribute("xlink:href");
+            gchar const *href = Inkscape::getHrefAttribute(*ir).second;
             if ( href &&  ( uniques.find(href) == uniques.end() ) ) {
                 std::string filename;
                 if (extractFilepath(href, filename)) {
@@ -341,14 +342,14 @@ bool fixBrokenLinks(SPDocument *doc)
         for (auto image : images) {
             Inkscape::XML::Node *ir = image->getRepr();
 
-            gchar const *href = ir->attribute("xlink:href");
+            auto [href_key, href] = Inkscape::getHrefAttribute(*ir);
             if ( href ) {
                 // TODO debug g_message("                  consider [%s]", href);
                 
                 if ( mapping.find(href) != mapping.end() ) {
                     // TODO debug g_message("                     Found a replacement");
 
-                    ir->setAttributeOrRemoveIfEmpty( "xlink:href", mapping[href] );
+                    ir->setAttributeOrRemoveIfEmpty(href_key, mapping[href]);
                     if ( ir->attribute( "sodipodi:absref" ) ) {
                         ir->removeAttribute("sodipodi:absref"); // Remove this attribute
                     }

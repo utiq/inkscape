@@ -33,6 +33,7 @@
 #include "uri.h"
 #include "print.h"
 #include "xml/repr.h"
+#include "xml/href-attribute-helper.h"
 #include "svg/svg.h"
 #include "preferences.h"
 #include "style.h"
@@ -172,7 +173,8 @@ Inkscape::XML::Node* SPUse::write(Inkscape::XML::Document *xml_doc, Inkscape::XM
 
     if (this->ref->getURI()) {
         auto uri_string = this->ref->getURI()->str();
-        repr->setAttributeOrRemoveIfEmpty("xlink:href", uri_string);
+        auto href_key = Inkscape::getHrefAttribute(*repr).first;
+        repr->setAttributeOrRemoveIfEmpty(href_key, uri_string);
     }
 
     auto shape = cast<SPShape>(child);

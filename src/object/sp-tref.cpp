@@ -28,6 +28,7 @@
 #include "sp-text.h"
 #include "style.h"
 #include "text-editing.h"
+#include "xml/href-attribute-helper.h"
 
 //#define DEBUG_TREF
 #ifdef DEBUG_TREF
@@ -176,7 +177,7 @@ Inkscape::XML::Node* SPTRef::write(Inkscape::XML::Document *xml_doc, Inkscape::X
         auto uri = uriOriginalRef.getURI()->str();
         auto uri_string = uri.c_str();
         debug("uri_string=%s", uri_string);
-        repr->setAttribute("xlink:href", uri_string);
+        Inkscape::setHrefAttribute(*repr, uri_string);
     }
 
     SPItem::write(xml_doc, repr, flags);

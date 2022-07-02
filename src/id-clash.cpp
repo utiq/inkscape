@@ -60,6 +60,7 @@ const char *href_like_attributes[] = {"inkscape:connection-end",
                                       "inkscape:perspectiveID",
                                       "inkscape:linked-fill",
                                       "inkscape:tiled-clone-of",
+                                      "href",
                                       "xlink:href"};
 #define NUM_HREF_LIKE_ATTRIBUTES (sizeof(href_like_attributes) / sizeof(*href_like_attributes))
 

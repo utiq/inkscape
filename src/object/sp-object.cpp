@@ -43,6 +43,7 @@
 #include "streq.h"
 #include "strneq.h"
 #include "xml/node-fns.h"
+#include "xml/href-attribute-helper.h"
 #include "debug/event-tracker.h"
 #include "debug/simple-event.h"
 #include "debug/demangle.h"
@@ -1083,6 +1084,12 @@ void SPObject::setKeyValue(SPAttr key, gchar const *value)
 
 void SPObject::readAttr(SPAttr keyid)
 {
+    if (keyid == SPAttr::XLINK_HREF) {
+        auto value = Inkscape::getHrefAttribute(*getRepr()).second;
+        setKeyValue(keyid, value);
+        return;
+    }
+
     char const *key = sp_attribute_name(keyid);
 
     assert(key != nullptr);

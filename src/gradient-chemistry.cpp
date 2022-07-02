@@ -51,6 +51,7 @@
 #include "ui/icon-names.h"
 #include "ui/tools/tool-base.h"
 #include "ui/widget/gradient-vector-selector.h"
+#include "xml/href-attribute-helper.h"
 
 #define noSP_GR_VERBOSE
 
@@ -1733,9 +1734,10 @@ static void sp_gradient_repr_set_link(Inkscape::XML::Node *repr, SPGradient *lin
     if (link) {
         Glib::ustring ref("#");
         ref += link->getId();
-        repr->setAttribute("xlink:href", ref);
+        Inkscape::setHrefAttribute(*repr, ref);
     } else {
         repr->removeAttribute("xlink:href");
+        repr->removeAttribute("href");
     }
 }
 

@@ -34,6 +34,7 @@
 #include "sp-item.h"
 
 #include "svg/svg.h"
+#include "xml/href-attribute-helper.h"
 
 SPHatch::SPHatch()
     : ref(nullptr), // avoiding 'this' in initializer list
@@ -501,7 +502,7 @@ SPHatch *SPHatch::clone_if_necessary(SPItem *item, const gchar *property)
         Inkscape::XML::Node *repr = xml_doc->createElement("svg:hatch");
         repr->setAttribute("inkscape:collect", "always");
         Glib::ustring parent_ref = Glib::ustring::compose("#%1", getRepr()->attribute("id"));
-        repr->setAttribute("xlink:href", parent_ref);
+        Inkscape::setHrefAttribute(*repr, parent_ref);
 
         defsrepr->addChild(repr, nullptr);
         const gchar *child_id = repr->attribute("id");

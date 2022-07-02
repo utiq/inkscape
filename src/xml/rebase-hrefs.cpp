@@ -24,6 +24,7 @@
 
 #include "xml/node.h"
 #include "xml/rebase-hrefs.h"
+#include "xml/href-attribute-helper.h"
 
 using Inkscape::XML::AttributeRecord;
 using Inkscape::XML::AttributeVector;
@@ -67,7 +68,8 @@ Inkscape::XML::rebase_href_attrs(gchar const *const old_abs_base,
         return ret;
     }
 
-    static GQuark const href_key = g_quark_from_static_string("xlink:href");
+    static GQuark const href_key = g_quark_from_static_string("href");
+    static GQuark const xlink_href_key = g_quark_from_static_string("xlink:href");
     static GQuark const absref_key = g_quark_from_static_string("sodipodi:absref");
 
     auto const find_record = [&ret](GQuark const key) {
@@ -75,6 +77,9 @@ Inkscape::XML::rebase_href_attrs(gchar const *const old_abs_base,
     };
 
     auto href_it = find_record(href_key);
+    if (href_it == ret.end()) {
+        href_it = find_record(xlink_href_key);
+    }
     if (href_it == ret.end() || !href_needs_rebasing(href_it->value.pointer())) {
         return ret;
     }
@@ -139,7 +144,7 @@ void Inkscape::XML::rebase_hrefs(SPDocument *const doc, gchar const *const new_b
     for (auto image : images) {
         Inkscape::XML::Node *ir = image->getRepr();
 
-        auto href_cstr = ir->attribute("xlink:href");
+        auto [href_key, href_cstr] = Inkscape::getHrefAttribute(*ir);
         if (!href_cstr) {
             continue;
         }
@@ -178,7 +183,7 @@ void Inkscape::XML::rebase_hrefs(SPDocument *const doc, gchar const *const new_b
         auto href_str = url.str(new_base_url_str.c_str());
         href_str = Inkscape::uri_to_iri(href_str.c_str());
 
-        ir->setAttribute("xlink:href", href_str);
+        ir->setAttribute(href_key, href_str);
     }
 
     doc->setDocumentBase(new_base);

@@ -22,6 +22,7 @@
 #include "ui/dialog/object-attributes.h"
 
 #include "widgets/sp-attribute-widget.h"
+#include "xml/href-attribute-helper.h"
 
 namespace Inkscape {
 namespace UI {
@@ -110,7 +111,7 @@ void ObjectAttributes::widget_setup ()
     else if (is<SPImage>(item))
     {
         Inkscape::XML::Node *ir = obj->getRepr();
-        const gchar *href = ir->attribute("xlink:href");
+        const gchar *href = Inkscape::getHrefAttribute(*ir).second;
         if ( (!href) || ((strncmp(href, "data:", 5) == 0)) )
         {
             desc = image_nohref_desc;

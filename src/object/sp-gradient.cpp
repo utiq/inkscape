@@ -54,6 +54,7 @@
 
 #include "svg/svg.h"
 #include "svg/css-ostringstream.h"
+#include "xml/href-attribute-helper.h"
 
 bool SPGradient::hasStops() const
 {
@@ -635,7 +636,8 @@ Inkscape::XML::Node *SPGradient::write(Inkscape::XML::Document *xml_doc, Inkscap
 
     if (this->ref->getURI()) {
         auto uri_string = this->ref->getURI()->str();
-        repr->setAttributeOrRemoveIfEmpty("xlink:href", uri_string);
+        auto href_key = Inkscape::getHrefAttribute(*repr).first;
+        repr->setAttributeOrRemoveIfEmpty(href_key, uri_string);
     }
 
     if ((flags & SP_OBJECT_WRITE_ALL) || this->units_set) {

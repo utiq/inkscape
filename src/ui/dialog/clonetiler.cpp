@@ -56,6 +56,7 @@
 
 #include "svg/svg-color.h"
 #include "svg/svg.h"
+#include "xml/href-attribute-helper.h"
 
 using Inkscape::DocumentUndo;
 using Inkscape::Util::unit_table;
@@ -1875,9 +1876,10 @@ bool CloneTiler::is_a_clone_of(SPObject *tile, SPObject *obj)
         id_href = g_strdup_printf("#%s", obj_repr->attribute("id"));
     }
 
+    auto href = Inkscape::getHrefAttribute(*tile->getRepr()).second;
+
     if (dynamic_cast<SPUse *>(tile) &&
-        tile->getRepr()->attribute("xlink:href") &&
-        (!id_href || !strcmp(id_href, tile->getRepr()->attribute("xlink:href"))) &&
+        href && (!id_href || !strcmp(id_href, href)) &&
         tile->getRepr()->attribute("inkscape:tiled-clone-of") &&
         (!id_href || !strcmp(id_href, tile->getRepr()->attribute("inkscape:tiled-clone-of"))))
     {
