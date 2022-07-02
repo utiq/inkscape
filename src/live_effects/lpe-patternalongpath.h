@@ -42,13 +42,10 @@ public:
     ~LPEPatternAlongPath() override;
 
     void doBeforeEffect (SPLPEItem const* lpeitem) override;
-
     Geom::Piecewise<Geom::D2<Geom::SBasis> > doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd2_in) override;
-
+    bool doOnOpen(SPLPEItem const *lpeitem) override;
     void transform_multiply(Geom::Affine const &postmul, bool set) override;
-
     void addCanvasIndicators(SPLPEItem const */*lpeitem*/, std::vector<Geom::PathVector> &hp_vec) override;
-    
     void addKnotHolderEntities(KnotHolder * knotholder, SPItem * item) override;
 
     PathParam  pattern;
@@ -69,6 +66,7 @@ private:
     BoolParam    hide_knot;
     ScalarParam  fuse_tolerance;
     KnotHolderEntity * _knot_entity;
+    Geom::Affine prevaffine = Geom::identity();
     Geom::PathVector helper_path;
     void on_pattern_pasted();
 

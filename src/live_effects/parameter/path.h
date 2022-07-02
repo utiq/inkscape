@@ -75,6 +75,7 @@ protected:
     gchar * href;     // contains link to other object, e.g. "#path2428", NULL if PathParam contains pathdata itself
     PathReference ref;
     friend class LPEFillBetweenStrokes;
+    friend class LPEPatternAlongPath;
     friend class LPEAttachPath;
     friend class LPEBoundingBox;
     sigc::connection ref_changed_connection;
