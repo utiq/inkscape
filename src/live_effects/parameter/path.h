@@ -33,6 +33,8 @@ public:
     ~PathParam() override;
 
     Geom::PathVector const & get_pathvector() const;
+    void reload();
+    Geom::Affine get_relative_affine();
     Geom::Piecewise<Geom::D2<Geom::SBasis> > const & get_pwd2();
 
     Gtk::Widget * param_newWidget() override;
@@ -76,8 +78,13 @@ protected:
     PathReference ref;
     friend class LPEFillBetweenStrokes;
     friend class LPEPatternAlongPath;
+    friend class LPEBendPath;
+    friend class LPECurveStitch;
     friend class LPEAttachPath;
+    friend class LPEEnvelope;
     friend class LPEBoundingBox;
+    friend class LPEInterpolate;
+    friend class LPEVonKoch;
     sigc::connection ref_changed_connection;
     sigc::connection linked_delete_connection;
     sigc::connection linked_modified_connection;

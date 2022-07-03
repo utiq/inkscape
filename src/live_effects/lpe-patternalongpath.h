@@ -66,7 +66,6 @@ private:
     BoolParam    hide_knot;
     ScalarParam  fuse_tolerance;
     KnotHolderEntity * _knot_entity;
-    Geom::Affine prevaffine = Geom::identity();
     Geom::PathVector helper_path;
     void on_pattern_pasted();
 

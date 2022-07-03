@@ -36,6 +36,7 @@
 #include "live_effects/lpeobject.h"
 #include "object/uri.h"
 #include "object/sp-shape.h"
+#include "object/sp-item.h"
 #include "object/sp-text.h"
 #include "svg/svg.h"
 
@@ -106,6 +107,30 @@ PathParam::~PathParam()
         }
     }
     g_free(defvalue);
+}
+
+void PathParam::reload() {
+    setUpdating(false);
+    start_listening(getObject());
+    connect_selection_changed();
+    SPItem *item = nullptr;
+    if (( item = dynamic_cast<SPItem *>(getObject()) )) {
+        item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+    }
+}
+
+Geom::Affine 
+PathParam::get_relative_affine() {
+    Geom::Affine affine = Geom::identity();
+    SPItem *item = nullptr;
+    if (( item = dynamic_cast<SPItem *>(getObject()) )) {
+        std::vector<SPLPEItem *> lpeitems = param_effect->getCurrrentLPEItems();
+        if (lpeitems.size() == 1) {
+            param_effect->sp_lpe_item = lpeitems[0];
+        }
+        affine = item->getRelativeTransform(param_effect->sp_lpe_item);
+    }
+    return affine;
 }
 
 Geom::PathVector const &

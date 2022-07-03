@@ -125,13 +125,7 @@ LPEPatternAlongPath::doOnOpen(SPLPEItem const *lpeitem)
     if (!is_load || is_applied) {
         return false;
     }
-    pattern.setUpdating(false);
-    pattern.start_listening(pattern.getObject());
-    pattern.connect_selection_changed();
-    SPItem * item = nullptr;
-    if (( item = dynamic_cast<SPItem *>(pattern.getObject()) )) {
-        item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-    }
+    pattern.reload();
     return false;
 }
 
@@ -151,13 +145,7 @@ LPEPatternAlongPath::doBeforeEffect (SPLPEItem const* lpeitem)
         original_height = (*bbox)[Geom::Y].max() - (*bbox)[Geom::Y].min();
     }
     if (is_load) {
-        pattern.setUpdating(false);
-        pattern.start_listening(pattern.getObject());
-        pattern.connect_selection_changed();
-        SPItem * item = nullptr;
-        if (( item = dynamic_cast<SPItem *>(pattern.getObject()) )) {
-            item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-        }
+        pattern.reload();
     }
     if (_knot_entity) {
         if (hide_knot) {
@@ -185,15 +173,7 @@ LPEPatternAlongPath::doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > con
     std::vector<Geom::Piecewise<Geom::D2<Geom::SBasis> > > pre_output;
 
     PAPCopyType type = copytype.get_value();
-    SPItem * item = nullptr;
-    Geom::Affine affine = Geom::identity();
-    if (( item = dynamic_cast<SPItem *>(pattern.getObject()) )) {
-        std::vector<SPLPEItem *> lpeitems = getCurrrentLPEItems();
-        if (lpeitems.size() == 1) {
-            sp_lpe_item = lpeitems[0];
-        }
-        affine = item->getRelativeTransform(sp_lpe_item);
-    }
+    Geom::Affine affine = pattern.get_relative_affine();
     D2<Piecewise<SBasis> > patternd2 = make_cuts_independent(pattern.get_pwd2() * affine);
     Piecewise<SBasis> x0 = vertical_pattern.get_value() ? Piecewise<SBasis>(patternd2[1]) : Piecewise<SBasis>(patternd2[0]);
     Piecewise<SBasis> y0 = vertical_pattern.get_value() ? Piecewise<SBasis>(patternd2[0]) : Piecewise<SBasis>(patternd2[1]);

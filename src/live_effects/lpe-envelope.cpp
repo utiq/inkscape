@@ -35,6 +35,19 @@ LPEEnvelope::LPEEnvelope(LivePathEffectObject *lpeobject) :
 LPEEnvelope::~LPEEnvelope()
 = default;
 
+bool 
+LPEEnvelope::doOnOpen(SPLPEItem const *lpeitem)
+{
+    if (!is_load || is_applied) {
+        return false;
+    }
+    bend_path1.reload();
+    bend_path2.reload();
+    bend_path3.reload();
+    bend_path4.reload();
+    return false;
+}
+
 void LPEEnvelope::transform_multiply(Geom::Affine const &postmul, bool /*set*/)
 {
     if (sp_lpe_item && sp_lpe_item->pathEffectsEnabled() && sp_lpe_item->optimizeTransforms()) {
@@ -50,6 +63,14 @@ LPEEnvelope::doBeforeEffect (SPLPEItem const* lpeitem)
 {
     // get the item bounding box
     original_bbox(lpeitem, false, true);
+    if (is_load) {
+        bend_path1.reload();
+        bend_path2.reload();
+        bend_path3.reload();
+        bend_path4.reload();
+    }
+
+
 }
 
 Geom::Piecewise<Geom::D2<Geom::SBasis> >
@@ -77,22 +98,27 @@ LPEEnvelope::doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd
     Please, read it before trying to understand this one
     */
 
-    Piecewise<D2<SBasis> > uskeleton1 = arc_length_parametrization(bend_path1.get_pwd2(),2,.1);
+    Geom::Affine affine = bend_path1.get_relative_affine();
+    Piecewise<D2<SBasis> > uskeleton1 = arc_length_parametrization(bend_path1.get_pwd2() * affine,2,.1);
     uskeleton1 = remove_short_cuts(uskeleton1,.01);
     Piecewise<D2<SBasis> > n1 = rot90(derivative(uskeleton1));
     n1 = force_continuity(remove_short_cuts(n1,.1));
 
-    Piecewise<D2<SBasis> > uskeleton2 = arc_length_parametrization(bend_path2.get_pwd2(),2,.1);
+    affine = bend_path2.get_relative_affine();
+
+    Piecewise<D2<SBasis> > uskeleton2 = arc_length_parametrization(bend_path2.get_pwd2() * affine,2,.1);
     uskeleton2 = remove_short_cuts(uskeleton2,.01);
     Piecewise<D2<SBasis> > n2 = rot90(derivative(uskeleton2));
     n2 = force_continuity(remove_short_cuts(n2,.1));
 
-    Piecewise<D2<SBasis> > uskeleton3 = arc_length_parametrization(bend_path3.get_pwd2(),2,.1);
+    affine = bend_path3.get_relative_affine();
+    Piecewise<D2<SBasis> > uskeleton3 = arc_length_parametrization(bend_path3.get_pwd2() * affine,2,.1);
     uskeleton3 = remove_short_cuts(uskeleton3,.01);
     Piecewise<D2<SBasis> > n3 = rot90(derivative(uskeleton3));
     n3 = force_continuity(remove_short_cuts(n3,.1));
 
-    Piecewise<D2<SBasis> > uskeleton4 = arc_length_parametrization(bend_path4.get_pwd2(),2,.1);
+    affine = bend_path4.get_relative_affine();
+    Piecewise<D2<SBasis> > uskeleton4 = arc_length_parametrization(bend_path4.get_pwd2() * affine,2,.1);
     uskeleton4 = remove_short_cuts(uskeleton4,.01);
     Piecewise<D2<SBasis> > n4 = rot90(derivative(uskeleton4));
     n4 = force_continuity(remove_short_cuts(n4,.1));

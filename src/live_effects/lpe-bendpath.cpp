@@ -81,12 +81,27 @@ LPEBendPath::LPEBendPath(LivePathEffectObject *lpeobject) :
 LPEBendPath::~LPEBendPath()
 = default;
 
+
+bool 
+LPEBendPath::doOnOpen(SPLPEItem const *lpeitem)
+{
+    if (!is_load || is_applied) {
+        return false;
+    }
+    bend_path.reload();
+    return false;
+}
+
+
 void
 LPEBendPath::doBeforeEffect (SPLPEItem const* lpeitem)
 {
     // get the item bounding box
     original_bbox(lpeitem, false, true);
     original_height = boundingbox_Y.max() - boundingbox_Y.min();
+    if (is_load) {
+        bend_path.reload();
+    }
     if (_knot_entity) {
         if (hide_knot) {
             helper_path.clear();
@@ -105,6 +120,10 @@ void LPEBendPath::transform_multiply(Geom::Affine const &postmul, bool /*set*/)
     if (SP_ACTIVE_DESKTOP) {
         selection = SP_ACTIVE_DESKTOP->getSelection();
         linked = dynamic_cast<SPItem *>(bend_path.getObject());
+    }
+    if (linked) {
+        linked->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        return;
     }
     if (sp_lpe_item && sp_lpe_item->pathEffectsEnabled() && sp_lpe_item->optimizeTransforms()) {
         bend_path.param_transform_multiply(postmul, false);
@@ -125,10 +144,11 @@ LPEBendPath::doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd
 {
     using namespace Geom;
 
-/* Much credit should go to jfb and mgsloan of lib2geom development for the code below! */
+    /* Much credit should go to jfb and mgsloan of lib2geom development for the code below! */
+    Geom::Affine affine = bend_path.get_relative_affine();
 
     if (bend_path.changed) {
-        uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(bend_path.get_pwd2()),2,.1);
+        uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(bend_path.get_pwd2() * affine),2,.1);
         uskeleton = remove_short_cuts(uskeleton,.01);
         n = rot90(derivative(uskeleton));
         n = force_continuity(remove_short_cuts(n,.01));
