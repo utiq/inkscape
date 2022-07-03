@@ -3209,7 +3209,7 @@ void InkscapePreferences::onKBShortcutRenderer(Gtk::CellRenderer *renderer, Gtk:
     unsigned int user_set = (*iter)[onKBGetCols().user_set];
     Gtk::CellRendererAccel *accel = dynamic_cast<Gtk::CellRendererAccel *>(renderer);
     if (user_set) {
-        accel->property_markup() = Glib::ustring("<span foreground=\"blue\"> " + shortcut + " </span>").c_str();
+        accel->property_markup() = Glib::ustring("<span font-weight='bold'> " + shortcut + " </span>").c_str();
     } else {
         accel->property_markup() = Glib::ustring("<span> " + shortcut + " </span>").c_str();
     }
