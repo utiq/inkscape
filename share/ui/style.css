@@ -445,10 +445,13 @@ SPCanvas {
     -GtkComboBox-appears-as-list: true;
 }
 
-#LockGuides,
-#StickyZoom,
-#CMS_Adjust {
+#StickyZoom ,#StickyZoom *,
+#LockGuides, #LockGuides *,
+#PreviewMode,#PreviewMode  *,
+#CMS_Adjust, #CMS_Adjust * {
     padding: 0;
+    min-height:3px;
+    font-size:16px;
 }
 
 /* Keep palette scrollbar from generating warnings. */

@@ -589,7 +589,10 @@ SPDesktopWidget::updateTitle(gchar const* uri)
             Name += N_("visible hairlines");
         } else if (render_mode == Inkscape::RenderMode::OUTLINE_OVERLAY) {
             Name += N_("outline overlay");
+        } else if (render_mode == Inkscape::RenderMode::PREVIEW) {
+            Name += N_("clip pages");
         }
+
 
         if (color_mode != Inkscape::ColorMode::NORMAL &&
             render_mode != Inkscape::RenderMode::NORMAL) {
@@ -791,6 +794,19 @@ SPDesktopWidget::update_guides_lock()
         } else {
             setMessage (Inkscape::NORMAL_MESSAGE, _("Unlocked all guides"));
         }
+    }
+}
+
+void
+SPDesktopWidget::toggle_preview_mode()
+{
+    bool down = _canvas_grid->GetPreviewMode()->get_active();
+    if (down) {
+        _canvas->set_render_mode(Inkscape::RenderMode::PREVIEW);
+        setMessage (Inkscape::NORMAL_MESSAGE, _("Cliped pages content"));
+    } else {
+        _canvas->set_render_mode(Inkscape::RenderMode::NORMAL);
+        setMessage (Inkscape::NORMAL_MESSAGE, _("Uncliped pages content"));
     }
 }
 

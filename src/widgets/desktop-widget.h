@@ -190,6 +190,7 @@ public:
 
     void updateNamedview();
     void update_guides_lock();
+    void toggle_preview_mode();
 
     // Canvas Grid Widget
     void cms_adjust_set_sensitive(bool enabled);

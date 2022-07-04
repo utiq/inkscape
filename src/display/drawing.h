@@ -14,6 +14,7 @@
 #define SEEN_INKSCAPE_DISPLAY_DRAWING_H
 
 #include <2geom/rect.h>
+#include <2geom/pathvector.h>
 #include <boost/operators.hpp>
 #include <boost/utility.hpp>
 #include <set>
@@ -54,6 +55,7 @@ public:
     bool outline() const;
     bool visibleHairlines() const;
     bool outlineOverlay() const;
+    bool previewMode() const;
     bool renderFilters() const;
     int blurQuality() const;
     int filterQuality() const;
@@ -65,7 +67,7 @@ public:
     bool getExact() const { return _exact; };
     void setOutlineSensitive(bool e);
     bool getOutlineSensitive() const { return _outline_sensitive; };
-
+    Geom::PathVector clip;
     Geom::OptIntRect const &cacheLimit() const;
     void setCacheLimit(Geom::OptIntRect const &r, bool update_cache = true);
     void setCacheBudget(size_t bytes);

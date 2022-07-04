@@ -79,15 +79,22 @@ Drawing::outlineOverlay() const
 {
     return renderMode() == RenderMode::OUTLINE_OVERLAY;
 }
+
+bool
+Drawing::previewMode() const
+{
+    return renderMode() == RenderMode::PREVIEW;
+}
+
 bool
 Drawing::renderFilters() const
 {
-    return renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::VISIBLE_HAIRLINES || renderMode() == RenderMode::OUTLINE_OVERLAY;
+    return renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::VISIBLE_HAIRLINES || renderMode() == RenderMode::OUTLINE_OVERLAY || renderMode() == RenderMode::PREVIEW;
 }
 int
 Drawing::blurQuality() const
 {
-    if (renderMode() == RenderMode::NORMAL) {
+    if (renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::PREVIEW) {
         return _exact ? BLUR_QUALITY_BEST : _blur_quality;
     } else {
         return BLUR_QUALITY_WORST;
@@ -96,7 +103,7 @@ Drawing::blurQuality() const
 int
 Drawing::filterQuality() const
 {
-    if (renderMode() == RenderMode::NORMAL) {
+    if (renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::PREVIEW) {
         return _exact ? Filters::FILTER_QUALITY_BEST : _filter_quality;
     } else {
         return Filters::FILTER_QUALITY_WORST;

@@ -26,6 +26,7 @@
 #include "preferences.h"
 
 #include "display/drawing.h"
+#include "display/cairo-utils.h"
 #include "display/control/canvas-item-group.h"
 #include "display/control/snap-indicator.h"
 #include "display/control/canvas-item-rect.h"
@@ -3268,6 +3269,19 @@ bool CanvasPrivate::on_idle()
 
     // Because GTK keeps making it not current.
     if (q->get_opengl_enabled()) q->make_current();
+
+    if (q->_drawing->previewMode()) {
+        Geom::PathVector pv;
+        auto pi = PageInfo(q->_canvas_item_root);
+        for (auto &rect : pi.pages) {
+            pv.push_back(Geom::Path(rect));
+        }
+        if (pv != q->_drawing->clip) {
+            q->_drawing->clip = std::move(pv);
+            updater->reset();
+            q->request_update();
+        }
+    }
 
     auto setup_pipeline = [this] {
         auto gl = glstate();

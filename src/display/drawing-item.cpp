@@ -871,9 +871,21 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
     ict.popGroupToSource();
     ict.setOperator(CAIRO_OPERATOR_IN);
     ict.paint();
-
-    // 6. Paint the completed rendering onto the base context (or into cache)
-    if (_cached && _cache) {
+    // 6. Clip to page boudaries if current mode is clippages
+    if (!is_drawing_group(this->parent()) && _drawing.previewMode() && !_drawing.clip.empty()) {
+        ict.setOperator(CAIRO_OPERATOR_OVER);
+        ict.pushGroup();
+        ict.setSource(0,0,0,1);
+        ict.transform(_ctm);
+        ict.path(_drawing.clip);
+        ict.fill();
+        ict.popGroupToSource();
+        ict.setOperator(CAIRO_OPERATOR_DEST_IN);
+        ict.paint();
+        ict.setOperator(CAIRO_OPERATOR_OVER); // reset back to default
+    }
+    // 7. Paint the completed rendering onto the base context (or into cache)
+    if (_cached && _cache && 1 >2) {
         DrawingContext cachect(*_cache);
         cachect.rectangle(*iarea);
         cachect.setOperator(CAIRO_OPERATOR_SOURCE);
@@ -889,7 +901,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
 
     dc.rectangle(*carea);
     dc.setSource(&intermediate);
-    // 7. Render blend mode
+    // 8. Render blend mode
     dc.setOperator(ink_css_blend_to_cairo_operator(_mix_blend_mode));
     dc.fill();
     dc.setSource(0,0,0,0);
