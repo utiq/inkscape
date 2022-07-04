@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Inkscape master\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2022-06-19 04:06+0000\n"
-"PO-Revision-Date: 2022-06-19 10:06+0200\n"
+"POT-Creation-Date: 2022-07-03 20:33+0000\n"
+"PO-Revision-Date: 2022-07-04 07:10+0200\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language: sl_SI\n"
@@ -2142,7 +2142,6 @@ msgid "Legs"
 msgstr "Noge"
 
 #: ../share/markers/markers.svg.h:32
-#, fuzzy
 msgid "Red pin"
 msgstr "Rdeča bucika"
 
@@ -5102,7 +5101,7 @@ msgstr "Pokaži ali skrij vsa pogovorna okna"
 
 #: ../src/actions/actions-edit-document.cpp:57
 #: ../src/actions/actions-edit-document.cpp:78
-#: ../src/selection-chemistry.cpp:4369
+#: ../src/selection-chemistry.cpp:4371
 msgid "Fit Page to Drawing"
 msgstr "Umeri stran na risbo"
 
@@ -5407,11 +5406,11 @@ msgstr "Odstrani učinke poti iz izbranih predmetov"
 msgid "Swap fill and stroke"
 msgstr "Zamenjaj barvo polnila in poteze"
 
-#: ../src/actions/actions-edit.cpp:310 ../src/selection-chemistry.cpp:4215
+#: ../src/actions/actions-edit.cpp:310 ../src/selection-chemistry.cpp:4217
 msgid "Swap fill and stroke of an object"
 msgstr "Zamenjaj barvo polnila in poteze predmeta"
 
-#: ../src/actions/actions-edit.cpp:311 ../src/selection-chemistry.cpp:4138
+#: ../src/actions/actions-edit.cpp:311 ../src/selection-chemistry.cpp:4140
 #: ../share/ui/toolbar-page.ui:54
 msgid "Fit Page to Selection"
 msgstr "Umeri stran na izbor"
@@ -5556,7 +5555,7 @@ msgstr "V dokument uvozi bitno sliko ali SVG"
 
 #: ../src/actions/actions-file-window.cpp:124
 #: ../src/extension/internal/template-paper.cpp:47
-#: ../src/ui/dialog/print.cpp:50
+#: ../src/ui/dialog/print.cpp:52
 msgid "Print"
 msgstr "Natisni"
 
@@ -6402,7 +6401,7 @@ msgstr "Vnesite dve z vejico ločeni števili: vodoravno,navpično"
 msgid "Set Inverse Clip(LPE)"
 msgstr "Nastavi inverzni izrezek (LPE)"
 
-#: ../src/actions/actions-object.cpp:132 ../src/selection-chemistry.cpp:4113
+#: ../src/actions/actions-object.cpp:132 ../src/selection-chemistry.cpp:4115
 msgid "Release clipping path"
 msgstr "Sprosti pot obrezovanja"
 
@@ -6410,7 +6409,7 @@ msgstr "Sprosti pot obrezovanja"
 msgid "Set Inverse Mask (LPE)"
 msgstr "Nastavi inverzno masko (LPE)"
 
-#: ../src/actions/actions-object.cpp:172 ../src/selection-chemistry.cpp:4115
+#: ../src/actions/actions-object.cpp:172 ../src/selection-chemistry.cpp:4117
 msgid "Release mask"
 msgstr "Sprosti masko"
 
@@ -7085,7 +7084,7 @@ msgid "Resize page to fit"
 msgstr "Umeri velikost strani na vsebino"
 
 #: ../src/actions/actions-selection-object.cpp:153
-#: ../src/object/sp-item-group.cpp:315 ../src/selection-chemistry.cpp:804
+#: ../src/object/sp-item-group.cpp:309 ../src/selection-chemistry.cpp:804
 msgid "Group"
 msgstr "Skupina"
 
@@ -7094,7 +7093,7 @@ msgid "Group selected objects"
 msgstr "Združi izbrane predmete v skupino"
 
 #: ../src/actions/actions-selection-object.cpp:154
-#: ../src/object/sp-item-group.cpp:753 ../src/selection-chemistry.cpp:932
+#: ../src/object/sp-item-group.cpp:747 ../src/selection-chemistry.cpp:932
 msgid "Ungroup"
 msgstr "Razdruži"
 
@@ -8203,11 +8202,11 @@ msgstr "Izbriši vodilo"
 msgid "<b>Guideline</b>: %s"
 msgstr "<b>Vodilo</b>: %s"
 
-#: ../src/desktop.cpp:496
+#: ../src/desktop.cpp:494
 msgid "No previous transform."
 msgstr "Brez prejšnjega preoblikovanja."
 
-#: ../src/desktop.cpp:518
+#: ../src/desktop.cpp:516
 msgid "No next transform."
 msgstr "Brez naslednjega preoblikovanja."
 
@@ -8612,21 +8611,21 @@ msgstr "konstanta"
 msgid " to "
 msgstr " do "
 
-#: ../src/document.cpp:615
+#: ../src/document.cpp:601
 #, c-format
 msgid "New document %d"
 msgstr "Nov dokument %d"
 
-#: ../src/document.cpp:625
+#: ../src/document.cpp:611
 #, c-format
 msgid "Memory document %d"
 msgstr "Pomnilniški dokument %d"
 
-#: ../src/document.cpp:654
+#: ../src/document.cpp:640
 msgid "Memory document %1"
 msgstr "Pomnilniški dokument %1"
 
-#: ../src/document.cpp:988
+#: ../src/document.cpp:955
 #, c-format
 msgid "Unnamed document %d"
 msgstr "Neimenovan dokument %d"
@@ -9409,37 +9408,37 @@ msgstr "PostScript ravni 2"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:344
 #: ../src/extension/internal/cairo-ps-out.cpp:388
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:306
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:265
 msgid "Text output options:"
 msgstr "Možnosti izhoda besedila:"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:345
 #: ../src/extension/internal/cairo-ps-out.cpp:389
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:307
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:266
 msgid "Embed fonts"
 msgstr "Vdelaj pisave"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:346
 #: ../src/extension/internal/cairo-ps-out.cpp:390
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:308
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:267
 msgid "Convert text to paths"
 msgstr "Pretvori besedilo v poti"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:347
 #: ../src/extension/internal/cairo-ps-out.cpp:391
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:309
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:268
 msgid "Omit text in PDF and create LaTeX file"
 msgstr "Opusti besedilo v PDF in ustvari datoteko LaTeX"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:349
 #: ../src/extension/internal/cairo-ps-out.cpp:393
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:311
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:270
 msgid "Rasterize filter effects"
 msgstr "Rasteriziraj učinke filtrov"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:350
 #: ../src/extension/internal/cairo-ps-out.cpp:394
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:312
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:271
 msgid "Resolution for rasterization (dpi):"
 msgstr "Ločljivost rasterizacije (dpi):"
 
@@ -9450,24 +9449,24 @@ msgstr "Izhodna velikost strani"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:352
 #: ../src/extension/internal/cairo-ps-out.cpp:396
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:314
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:274
 msgid "Use document's page size"
 msgstr "Uporabi velikost strani dokumenta"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:353
 #: ../src/extension/internal/cairo-ps-out.cpp:397
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:315
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:275
 msgid "Use exported object's size"
 msgstr "Uporabi velikost izvoženega predmeta"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:355
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:317
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:284
 msgid "Bleed/margin (mm):"
 msgstr "Rob dodatka za porezavo (mm):"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:356
 #: ../src/extension/internal/cairo-ps-out.cpp:400
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:318
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:285
 msgid "Limit export to the object with ID:"
 msgstr "Omeji izvoz v predmet z ID:"
 
@@ -9498,23 +9497,43 @@ msgstr "Encapsulated PostScript (*.eps)"
 msgid "Encapsulated PostScript File"
 msgstr "Datoteka EPS (Encapsulated Postscript)"
 
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:302
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:261
 msgid "Restrict to PDF version:"
 msgstr "Omeji na različico PDF:"
 
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:303
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:262
 #: ../share/extensions/scribus_export_pdf.inx:12
 msgid "PDF 1.5"
 msgstr "PDF 1.5"
 
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:304
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:263
 #: ../share/extensions/scribus_export_pdf.inx:11
 msgid "PDF 1.4"
 msgstr "PDF 1.4"
 
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:313
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:273
 msgid "Output page size:"
 msgstr "Velikost strani izhoda:"
+
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:277
+msgid "Drawing size:"
+msgstr "Velikost risbe:"
+
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:278
+msgid ""
+"Whether the exported objects should maintain their relative sizes (compared "
+"to the page size) or the absolute size in real-world units."
+msgstr ""
+"Ali naj izvoženi predmeti ohranijo svoje relativne velikosti (v primerjavi z "
+"velikostjo strani) ali absolutno velikost v realnih enotah."
+
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:281
+msgid "Preserve size relative to page"
+msgstr "Ohrani velikost relativno glede na stran"
+
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:282
+msgid "Preserve size in absolute units"
+msgstr "Ohrani velikost v absolutnih enotah"
 
 #: ../src/extension/internal/cdr-input.cpp:104
 #: ../src/extension/internal/vsd-input.cpp:104
@@ -9541,7 +9560,7 @@ msgstr "od %i"
 #: ../src/ui/desktop/document-check.cpp:57
 #: ../src/ui/desktop/document-check.cpp:102
 #: ../src/ui/dialog/calligraphic-profile-rename.cpp:51
-#: ../src/ui/dialog/export-batch.cpp:686 ../src/ui/dialog/export-single.cpp:885
+#: ../src/ui/dialog/export-batch.cpp:686 ../src/ui/dialog/export-single.cpp:883
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:244
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:556
 #: ../src/ui/dialog/guides.cpp:182 ../src/ui/dialog/layer-properties.cpp:42
@@ -14091,8 +14110,8 @@ msgstr ""
 msgid "Hide width knot"
 msgstr "Skrij vozel širine"
 
-#: ../src/live_effects/lpe-bendpath.cpp:201
-#: ../src/live_effects/lpe-patternalongpath.cpp:292
+#: ../src/live_effects/lpe-bendpath.cpp:221
+#: ../src/live_effects/lpe-patternalongpath.cpp:305
 msgid "Change the width"
 msgstr "Spremeni širino"
 
@@ -14970,27 +14989,27 @@ msgstr "Najm. polmer:"
 msgid "Minimum radius, low values can be slow"
 msgstr "Najmanjši polmer, nizke vrednosti lahko upočasnijo delovanje"
 
-#: ../src/live_effects/lpe-interpolate.cpp:30
+#: ../src/live_effects/lpe-interpolate.cpp:27
 msgid "Trajectory:"
 msgstr "Tirnica:"
 
-#: ../src/live_effects/lpe-interpolate.cpp:30
+#: ../src/live_effects/lpe-interpolate.cpp:27
 msgid "Path along which intermediate steps are created."
 msgstr "Pot, vzdolž katere naj bodo ustvarjeni vmesni koraki"
 
-#: ../src/live_effects/lpe-interpolate.cpp:32
+#: ../src/live_effects/lpe-interpolate.cpp:29
 msgid "Steps_:"
 msgstr "Koraki_:"
 
-#: ../src/live_effects/lpe-interpolate.cpp:32
+#: ../src/live_effects/lpe-interpolate.cpp:29
 msgid "Determines the number of steps from start to end path."
 msgstr "Določa število korakov od začetka do konca poti."
 
-#: ../src/live_effects/lpe-interpolate.cpp:33
+#: ../src/live_effects/lpe-interpolate.cpp:30
 msgid "E_quidistant spacing"
 msgstr "E_kvidistančen razmik"
 
-#: ../src/live_effects/lpe-interpolate.cpp:34
+#: ../src/live_effects/lpe-interpolate.cpp:31
 msgid ""
 "If true, the spacing between intermediates is constant along the length of "
 "the path. If false, the distance depends on the location of the nodes of the "
@@ -17853,7 +17872,7 @@ msgstr ""
 "pogovorno okno, <b>Ctrl+Alt+Kliknite</b> ponastavi"
 
 #: ../src/live_effects/parameter/originalpath.cpp:65
-#: ../src/live_effects/parameter/path.cpp:286
+#: ../src/live_effects/parameter/path.cpp:311
 #: ../src/live_effects/parameter/patharray.cpp:182
 msgid "Link to path in clipboard"
 msgstr "Poveži s potjo v odložišču"
@@ -17868,23 +17887,23 @@ msgstr "Izberi izvirnik"
 msgid "Link to item"
 msgstr "Poveži z elementom"
 
-#: ../src/live_effects/parameter/path.cpp:251
+#: ../src/live_effects/parameter/path.cpp:276
 msgid "Edit on-canvas"
 msgstr "Uredi na platnu"
 
-#: ../src/live_effects/parameter/path.cpp:263
+#: ../src/live_effects/parameter/path.cpp:288
 msgid "Copy path"
 msgstr "Kopiraj pot"
 
-#: ../src/live_effects/parameter/path.cpp:275
+#: ../src/live_effects/parameter/path.cpp:300
 msgid "Paste path"
 msgstr "Prilepi pot"
 
-#: ../src/live_effects/parameter/path.cpp:576
+#: ../src/live_effects/parameter/path.cpp:601
 msgid "Paste path parameter"
 msgstr "Prilepi parameter poti"
 
-#: ../src/live_effects/parameter/path.cpp:604
+#: ../src/live_effects/parameter/path.cpp:629
 #: ../src/live_effects/parameter/patharray.cpp:144
 msgid "Link path parameter to path"
 msgstr "Poveži parameter poti s potjo"
@@ -18084,7 +18103,7 @@ msgstr "Tekoče besedilo"
 msgid "Linked Flowed Text"
 msgstr "Povezano tekoče besedilo"
 
-#: ../src/object/sp-flowtext.cpp:291 ../src/object/sp-text.cpp:357
+#: ../src/object/sp-flowtext.cpp:291 ../src/object/sp-text.cpp:358
 #: ../src/ui/tools/text-tool.cpp:1666
 msgid " [truncated]"
 msgstr " [prirezano]"
@@ -18143,22 +18162,22 @@ msgstr "%d &#215; %d: %s"
 msgid "{Broken Image}"
 msgstr "{okvarjena slika}"
 
-#: ../src/object/sp-item-group.cpp:310
+#: ../src/object/sp-item-group.cpp:304
 #: ../src/ui/dialog/layer-properties.cpp:205
 #: ../src/ui/dialog/layer-properties.cpp:215
 msgid "Layer"
 msgstr "Plast"
 
-#: ../src/object/sp-item-group.cpp:312
+#: ../src/object/sp-item-group.cpp:306
 msgid "Mask Helper"
 msgstr "Pomočnik pri maski"
 
-#: ../src/object/sp-item-group.cpp:322 ../src/object/sp-switch.cpp:74
+#: ../src/object/sp-item-group.cpp:316 ../src/object/sp-switch.cpp:74
 #, c-format
 msgid "of <b>%d</b> object"
 msgstr "od <b>%d</b> predmeta"
 
-#: ../src/object/sp-item-group.cpp:322 ../src/object/sp-switch.cpp:74
+#: ../src/object/sp-item-group.cpp:316 ../src/object/sp-switch.cpp:74
 #, c-format
 msgid "of <b>%d</b> objects"
 msgstr "od <b>%d</b> predmetov"
@@ -18309,15 +18328,15 @@ msgstr "z %d oglišči"
 msgid "Conditional Group"
 msgstr "Pogojna skupina"
 
-#: ../src/object/sp-text.cpp:333
+#: ../src/object/sp-text.cpp:334
 msgid "Auto-wrapped text"
 msgstr "Samo-prelomljeno besedilo"
 
-#: ../src/object/sp-text.cpp:335
+#: ../src/object/sp-text.cpp:336
 msgid "Text in-a-shape"
 msgstr "Besedilo v liku"
 
-#: ../src/object/sp-text.cpp:337 ../share/extensions/hershey.inx:124
+#: ../src/object/sp-text.cpp:338 ../share/extensions/hershey.inx:124
 #: ../share/extensions/lorem_ipsum.inx:19
 #: ../share/extensions/replace_font.inx:29
 #: ../share/extensions/text_braille.inx:8
@@ -18333,12 +18352,12 @@ msgstr "Besedilo v liku"
 msgid "Text"
 msgstr "Besedilo"
 
-#: ../src/object/sp-text.cpp:361
+#: ../src/object/sp-text.cpp:362
 #, c-format
 msgid "on path%s (%s, %s)"
 msgstr "na poti%s (%s, %s)"
 
-#: ../src/object/sp-text.cpp:362
+#: ../src/object/sp-text.cpp:363
 #, c-format
 msgid "%s (%s, %s)"
 msgstr "%s (%s, %s)"
@@ -19199,19 +19218,19 @@ msgstr "Nastavi pot obrezovanja"
 msgid "Set mask"
 msgstr "Nastavi masko"
 
-#: ../src/selection-chemistry.cpp:3994
+#: ../src/selection-chemistry.cpp:3996
 msgid "Select <b>object(s)</b> to remove clippath or mask from."
 msgstr "Izberite <b>predmete</b> za odstranitev poti obrezovanja ali maske."
 
-#: ../src/selection-chemistry.cpp:4131
+#: ../src/selection-chemistry.cpp:4133
 msgid "Select <b>object(s)</b> to fit canvas to."
 msgstr "Izberite <b>predmet(e)</b> za prilagoditev velikosti platna."
 
-#: ../src/selection-chemistry.cpp:4234
+#: ../src/selection-chemistry.cpp:4236
 msgid "Select <b>path(s)</b> to create fill between."
 msgstr "Izberite <b>eno ali več poti</b> za izdelavo vmesnega polnila."
 
-#: ../src/selection-chemistry.cpp:4288
+#: ../src/selection-chemistry.cpp:4290
 msgid "Create linked fill object between paths"
 msgstr "Ustvari polnjeni povezani predmet med potmi"
 
@@ -19506,7 +19525,7 @@ msgstr "V izbiri <b>ni tekočega besedila</b>, ki bi ga lahko pretvorili."
 msgid "You cannot edit <b>cloned character data</b>."
 msgstr "<b>Podatkov kloniranega znaka</b> ne morete urejati."
 
-#: ../src/trace/depixelize/inkscape-depixelize.cpp:87
+#: ../src/trace/depixelize/inkscape-depixelize.cpp:61
 msgid ""
 "Image looks too big. Process may take a while and it is wise to save your "
 "document before continuing.\n"
@@ -19518,49 +19537,49 @@ msgstr ""
 "\n"
 "Ali želite nadaljevati s postopkom (brez shranjevanje)?"
 
-#: ../src/trace/potrace/inkscape-potrace.cpp:540
-#: ../src/trace/potrace/inkscape-potrace.cpp:603
+#: ../src/trace/potrace/inkscape-potrace.cpp:439
+#: ../src/trace/potrace/inkscape-potrace.cpp:499
 msgid "Trace: %1.  %2 nodes"
 msgstr "Preriši: %1.  %2 vozlišč"
 
-#: ../src/trace/trace.cpp:65 ../src/trace/trace.cpp:130
-#: ../src/trace/trace.cpp:138 ../src/trace/trace.cpp:229
+#: ../src/trace/trace.cpp:80 ../src/trace/trace.cpp:109
+#: ../src/trace/trace.cpp:115 ../src/trace/trace.cpp:154
 msgid "Select an <b>image</b> to trace"
 msgstr "Izberite <b>sliko</b> za prerisovanje"
 
-#: ../src/trace/trace.cpp:100
+#: ../src/trace/trace.cpp:91
 msgid "Select only one <b>image</b> to trace"
 msgstr "Izberite le eno <b>sliko</b> za prerisovanje"
 
-#: ../src/trace/trace.cpp:118
+#: ../src/trace/trace.cpp:101
 msgid "Select one image and one or more shapes above it"
 msgstr "Izberite eno sliko in eno ali več oblik nad njo"
 
-#: ../src/trace/trace.cpp:220
+#: ../src/trace/trace.cpp:146
 msgid "Trace: No active desktop"
 msgstr "Preriši: Ni aktivnega namizja"
 
-#: ../src/trace/trace.cpp:309
+#: ../src/trace/trace.cpp:200
 msgid "Invalid SIOX result"
 msgstr "Neveljaven rezultat SIOX"
 
-#: ../src/trace/trace.cpp:400
+#: ../src/trace/trace.cpp:259
 msgid "Trace: No active document"
 msgstr "Preriši: Ni aktivnega dokumenta"
 
-#: ../src/trace/trace.cpp:432
+#: ../src/trace/trace.cpp:278
 msgid "Trace: Image has no bitmap data"
 msgstr "Preriši: V sliki ni rasterskih podatkov"
 
-#: ../src/trace/trace.cpp:439
+#: ../src/trace/trace.cpp:283
 msgid "Trace: Starting trace..."
 msgstr "Preriši: Začetek prerisovanja ..."
 
-#: ../src/trace/trace.cpp:529
+#: ../src/trace/trace.cpp:352
 msgid "Trace bitmap"
 msgstr "Preriši bitno sliko"
 
-#: ../src/trace/trace.cpp:533
+#: ../src/trace/trace.cpp:356
 #, c-format
 msgid "Trace: Done. %ld nodes created"
 msgstr "Preriši: opravljeno. Ustvarjenih %ld vozlišč."
@@ -21218,29 +21237,29 @@ msgstr "Ni izbranih predmetov."
 msgid "Exporting %1 files"
 msgstr "Izvoz %1 datotek"
 
-#: ../src/ui/dialog/export-batch.cpp:578 ../src/ui/dialog/export-single.cpp:576
+#: ../src/ui/dialog/export-batch.cpp:578 ../src/ui/dialog/export-single.cpp:574
 msgid "Exporting %1"
 msgstr "Izvažanje %1"
 
-#: ../src/ui/dialog/export-batch.cpp:607 ../src/ui/dialog/export-single.cpp:648
+#: ../src/ui/dialog/export-batch.cpp:607 ../src/ui/dialog/export-single.cpp:646
 msgid "Select a filename for exporting"
 msgstr "Izberite ime datoteke za izvoz"
 
-#: ../src/ui/dialog/export-batch.cpp:677 ../src/ui/dialog/export-single.cpp:876
+#: ../src/ui/dialog/export-batch.cpp:677 ../src/ui/dialog/export-single.cpp:874
 msgid "Export in progress"
 msgstr "Izvoz je v teku"
 
-#: ../src/ui/dialog/export-single.cpp:328
+#: ../src/ui/dialog/export-single.cpp:326
 msgid "First Page"
 msgstr "Prva stran"
 
 #. TRANSLATORS: %1 will be the filename, %2 the width, and %3 the height of the image
+#: ../src/ui/dialog/export-single.cpp:560
 #: ../src/ui/dialog/export-single.cpp:562
-#: ../src/ui/dialog/export-single.cpp:564
 msgid "Exporting %1 (%2 x %3)"
 msgstr "Izvoz %1 (%2 x %3)"
 
-#: ../src/ui/dialog/export-single.cpp:625
+#: ../src/ui/dialog/export-single.cpp:623
 msgid "Set Export Options"
 msgstr "Nastavitev možnosti izvoza"
 
@@ -25650,7 +25669,7 @@ msgstr "Ohrani črno"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2301
 #: ../src/ui/widget/color-icc-selector.cpp:377
-#: ../src/ui/widget/color-icc-selector.cpp:650
+#: ../src/ui/widget/color-icc-selector.cpp:649
 msgid "<none>"
 msgstr "<brez>"
 
@@ -26901,8 +26920,7 @@ msgstr ""
 "vrednost bi pojasnila težave z zakasnitvijo/fragmentacijo, nizka vrednost z "
 "»še vedno zasedeno« pa bi pojasnila trganje."
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:2830
-#: ../src/ui/dialog/print.cpp:107
+#: ../src/ui/dialog/inkscape-preferences.cpp:2830 ../src/ui/dialog/print.cpp:84
 msgid "Rendering"
 msgstr "Upodabljanje"
 
@@ -28115,19 +28133,19 @@ msgstr "V izboru ni bilo mogoče najti elipse"
 msgid "Arrange on ellipse"
 msgstr "Razporedi na elipso"
 
-#: ../src/ui/dialog/print.cpp:49
+#: ../src/ui/dialog/print.cpp:51
 msgid "SVG Document"
 msgstr "Dokument SVG"
 
-#: ../src/ui/dialog/print.cpp:176
+#: ../src/ui/dialog/print.cpp:214
 msgid "Could not open temporary PNG for bitmap printing"
 msgstr "Začasne PNG za tiskanje bitne slike ni bilo mogoče odpreti"
 
-#: ../src/ui/dialog/print.cpp:202
+#: ../src/ui/dialog/print.cpp:243
 msgid "Could not set up Document"
 msgstr "Dokumenta ni mogoče vzpostaviti"
 
-#: ../src/ui/dialog/print.cpp:206
+#: ../src/ui/dialog/print.cpp:247
 msgid "Failed to set CairoRenderContext"
 msgstr "Nastavitev CairoRenderContext ni uspela"
 
@@ -30455,7 +30473,7 @@ msgid "Avoid"
 msgstr "Izogni"
 
 #: ../src/ui/toolbar/connector-toolbar.cpp:75
-#: ../src/ui/tools/connector-tool.cpp:1305
+#: ../src/ui/tools/connector-tool.cpp:1306
 msgid "Make connectors avoid selected objects"
 msgstr "Konektorji naj se izogibajo izbranih predmetov"
 
@@ -30464,7 +30482,7 @@ msgid "Ignore"
 msgstr "Prezri"
 
 #: ../src/ui/toolbar/connector-toolbar.cpp:83
-#: ../src/ui/tools/connector-tool.cpp:1306
+#: ../src/ui/tools/connector-tool.cpp:1307
 msgid "Make connectors ignore selected objects"
 msgstr "Konektorji naj prezrejo izbrane predmete"
 
@@ -30533,11 +30551,11 @@ msgstr "Določi vrsto konektorja: mnogočrten"
 msgid "Change connector curvature"
 msgstr "Spremeni ukrivljenost konektorja"
 
-#: ../src/ui/toolbar/connector-toolbar.cpp:333
+#: ../src/ui/toolbar/connector-toolbar.cpp:332
 msgid "Change connector spacing"
 msgstr "Spremeni razmik med konektorji"
 
-#: ../src/ui/toolbar/connector-toolbar.cpp:357
+#: ../src/ui/toolbar/connector-toolbar.cpp:356
 msgid "Arrange connector network"
 msgstr "Razporedi omrežje konektorjev"
 
@@ -32740,33 +32758,33 @@ msgstr "Nariši kaligrafsko potezo"
 msgid "Creating new connector"
 msgstr "Ustvarjanje novega konektorja"
 
-#: ../src/ui/tools/connector-tool.cpp:719
+#: ../src/ui/tools/connector-tool.cpp:720
 msgid "Connector endpoint drag cancelled."
 msgstr "Preklican premik končne točke konektorja."
 
-#: ../src/ui/tools/connector-tool.cpp:765
+#: ../src/ui/tools/connector-tool.cpp:766
 msgid "Reroute connector"
 msgstr "Preveži konektor"
 
-#: ../src/ui/tools/connector-tool.cpp:912
+#: ../src/ui/tools/connector-tool.cpp:913
 msgid "Create connector"
 msgstr "Ustvari konektor"
 
-#: ../src/ui/tools/connector-tool.cpp:931
+#: ../src/ui/tools/connector-tool.cpp:932
 msgid "Finishing connector"
 msgstr "Zaključni konektor"
 
-#: ../src/ui/tools/connector-tool.cpp:957
+#: ../src/ui/tools/connector-tool.cpp:958
 msgid "Click to join at this point"
 msgstr "Kliknite, če se želite pridružiti na tej točki"
 
-#: ../src/ui/tools/connector-tool.cpp:1181
+#: ../src/ui/tools/connector-tool.cpp:1182
 msgid "<b>Connector endpoint</b>: drag to reroute or connect to new shapes"
 msgstr ""
 "<b>Končna točka konektorja</b>: povlecite za preusmeritev ali navezavo na "
 "nove oblike"
 
-#: ../src/ui/tools/connector-tool.cpp:1300
+#: ../src/ui/tools/connector-tool.cpp:1301
 msgid "Select <b>at least one non-connector object</b>."
 msgstr "Izberite <b>vsaj en predmet, ki ni konektor</b>."
 
@@ -32841,15 +32859,11 @@ msgctxt "Flood autogap"
 msgid "Large"
 msgstr "velik"
 
-#: ../src/ui/tools/flood-tool.cpp:357
-msgid "Failed mid-operation, no objects created."
-msgstr "Vmesna operacija ni uspela, predmeti niso bili ustvarjeni."
-
-#: ../src/ui/tools/flood-tool.cpp:423
+#: ../src/ui/tools/flood-tool.cpp:418
 msgid "<b>Too much inset</b>, the result is empty."
 msgstr "<b>Preveč vloženo</b>, rezultat je prazen."
 
-#: ../src/ui/tools/flood-tool.cpp:463
+#: ../src/ui/tools/flood-tool.cpp:458
 #, c-format
 msgid ""
 "Area filled, path with <b>%d</b> node created and unioned with selection."
@@ -32868,7 +32882,7 @@ msgstr[3] ""
 "Območje je zapolnjeno, ustvarjena je bila pot s/z <b>%d</b> vozlišči, ki je "
 "bila združena z izborom."
 
-#: ../src/ui/tools/flood-tool.cpp:469
+#: ../src/ui/tools/flood-tool.cpp:464
 #, c-format
 msgid "Area filled, path with <b>%d</b> node created."
 msgid_plural "Area filled, path with <b>%d</b> nodes created."
@@ -32879,11 +32893,11 @@ msgstr[2] ""
 "Območje je zapolnjeno, ustvarjena je bila pot z <b>%d</b> vozliščema."
 msgstr[3] "Območje je zapolnjeno, ustvarjena je bila pot z <b>%d</b> vozlišči."
 
-#: ../src/ui/tools/flood-tool.cpp:741 ../src/ui/tools/flood-tool.cpp:1046
+#: ../src/ui/tools/flood-tool.cpp:736 ../src/ui/tools/flood-tool.cpp:1041
 msgid "<b>Area is not bounded</b>, cannot fill."
 msgstr "<b>Območje ni sklenjeno</b>, zato ga ni mogoče zapolniti."
 
-#: ../src/ui/tools/flood-tool.cpp:1051
+#: ../src/ui/tools/flood-tool.cpp:1046
 msgid ""
 "<b>Only the visible part of the bounded area was filled.</b> If you want to "
 "fill all of the area, undo, zoom out, and fill again."
@@ -32892,15 +32906,15 @@ msgstr ""
 "zapolniti celo področje, razveljavite dejanje, odmaknite oz. pomanjšajte "
 "pogled in znova zapolnite."
 
-#: ../src/ui/tools/flood-tool.cpp:1066 ../src/ui/tools/flood-tool.cpp:1212
+#: ../src/ui/tools/flood-tool.cpp:1061 ../src/ui/tools/flood-tool.cpp:1207
 msgid "Fill bounded area"
 msgstr "Zapolni sklenjeno območje"
 
-#: ../src/ui/tools/flood-tool.cpp:1082
+#: ../src/ui/tools/flood-tool.cpp:1077
 msgid "Set style on object"
 msgstr "Določi slog predmeta"
 
-#: ../src/ui/tools/flood-tool.cpp:1142
+#: ../src/ui/tools/flood-tool.cpp:1137
 msgid "<b>Draw over</b> areas to add to fill, hold <b>Alt</b> for touch fill"
 msgstr ""
 "<b>Rišite prek</b> področij, da jih dodate polnjenju; držite pritisnjeno "
@@ -40716,19 +40730,13 @@ msgid "Interpolation method:"
 msgstr "Metoda interpolacije:"
 
 #: ../share/extensions/interp.inx:7
-#, fuzzy
-#| msgid ""
-#| "The first option rediscretizes both paths before the interpolation with "
-#| "the other path's node positions. The second option removes extra nodes of "
-#| "the longer path (yields good results if both subpaths have equal length)"
 msgid ""
 "The first option rediscretizes both paths before the interpolation with the "
 "other path's node positions. The second option removes extra nodes of the "
 "longer path."
 msgstr ""
 "Prva možnost ponovno diskretizira obe poti pred interpolacijo s položaji "
-"vozlišč druge poti. Druga možnost odstrani dodatna vozlišča daljše poti "
-"(prinaša dobre rezultate, če sta obe podpoti enake dolžine)"
+"vozlišč druge poti. Druga možnost odstrani dodatna vozlišča daljše poti."
 
 #: ../share/extensions/interp.inx:8
 msgid "Split paths into segments of equal lengths"
