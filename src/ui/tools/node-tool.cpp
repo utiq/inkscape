@@ -617,13 +617,13 @@ bool NodeTool::item_handler(SPItem *item, GdkEvent *event)
 {
     bool ret = ToolBase::item_handler(item, event);
 
-    // Node shape editors are handles differently than shape tools
+    // Node shape editors are handled differently than shape tools
     if (!ret && event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
         for (auto &se : _shape_editors) {
             // This allows users to select an arbitary position in a pattern to edit on canvas.
             if (auto knotholder = se.second->knotholder; knotholder->getItem() == item) {
                 auto point = _desktop->w2d(Geom::Point(event->button.x, event->button.y));
-                ret = knotholder->set_item_clickpos(point);
+                ret = knotholder->set_item_clickpos(point * _desktop->dt2doc());
             }
         }
     }

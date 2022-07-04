@@ -236,11 +236,26 @@ KnotHolder::unselect_knots(){
     }
 }
 
+/** Notifies an entity that its knot has just been grabbed. */
+void KnotHolder::knot_grabbed_handler(SPKnot *knot, unsigned state)
+{
+    auto grab_entity = std::find_if(entity.begin(), entity.end(),
+                                    [=](KnotHolderEntity *khe) -> bool { return khe->knot == knot; });
+    if (grab_entity == entity.end()) {
+        return;
+    }
+    auto const item_origin = (*grab_entity)->knot->drag_origin * item->dt2i_affine()
+                             * _edit_transform.inverse();
+    (*grab_entity)->knot_grabbed(item_origin, state);
+}
+
 void
 KnotHolder::knot_moved_handler(SPKnot *knot, Geom::Point const &p, guint state)
 {
-    if (this->dragging == false) {
-    	this->dragging = true;
+    if (!dragging) {
+        // The knot has just been grabbed
+        knot_grabbed_handler(knot, state);
+        dragging = true;
     }
 
     // this was a local change and the knotholder does not need to be recreated:

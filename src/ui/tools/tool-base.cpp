@@ -1010,7 +1010,7 @@ bool ToolBase::item_handler(SPItem *item, GdkEvent *event)
             auto knotholder = shape_editor->knotholder;
             if (knotholder->getItem() == item) {
                 auto point = _desktop->w2d(Geom::Point(event->button.x, event->button.y));
-                ret = knotholder->set_item_clickpos(point);
+                ret = knotholder->set_item_clickpos(point * _desktop->dt2doc());
             }
         }
     }

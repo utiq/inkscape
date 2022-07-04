@@ -21,6 +21,7 @@
 #include "snapper.h"
 
 #include "display/control/canvas-item-enums.h"
+#include "display/control/canvas-item-quad.h"
 
 class SPHatch;
 class SPItem;
@@ -30,7 +31,6 @@ class SPPattern;
 class KnotHolder;
 
 namespace Inkscape {
-class CanvasItemQuad;
 namespace LivePathEffect {
     class Effect;
 } // namespace LivePathEffect
@@ -56,6 +56,7 @@ public:
     /* the get/set/click handlers are virtual functions; each handler class for a knot
        should be derived from KnotHolderEntity and override these functions */
     virtual void knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state) = 0;
+    virtual void knot_grabbed(Geom::Point const &/*grab_position*/, unsigned /*state*/) {}
     virtual void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, unsigned int state) = 0;
     virtual bool knot_missing() const { return false; }
     virtual Geom::Point knot_get() const = 0;
@@ -115,14 +116,14 @@ protected:
     // true if the entity tracks fill, false for stroke
     bool _fill;
     SPPattern *_pattern() const;
-    Geom::Point _get_pos(gdouble x, gdouble y) const;
+    Geom::Point _get_pos(gdouble x, gdouble y, bool transform = true) const;
     Geom::IntPoint _cell;
 };
 
 class PatternKnotHolderEntityXY : public PatternKnotHolderEntity {
 public:
     PatternKnotHolderEntityXY(bool fill) : PatternKnotHolderEntity(fill) {}
-    ~PatternKnotHolderEntityXY() override;
+    ~PatternKnotHolderEntityXY() override = default;
 
     void on_created() override;
     void update_knot() override;
@@ -131,7 +132,7 @@ public:
 
 private:
     // Extra visual element to show the pattern editing area
-    Inkscape::CanvasItemQuad *_quad = nullptr;
+    std::unique_ptr<Inkscape::CanvasItemQuad> _quad;
 };
 
 class PatternKnotHolderEntityAngle : public PatternKnotHolderEntity {
@@ -146,6 +147,14 @@ public:
     PatternKnotHolderEntityScale(bool fill) : PatternKnotHolderEntity(fill) {}
     Geom::Point knot_get() const override;
     void knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state) override;
+    void knot_grabbed(Geom::Point const &grab_pos, unsigned state) override;
+
+private:
+    /// Maximum number of pattern repetitons allowed in an item
+    inline static double const MAX_REPETITIONS = 1e6;
+    Geom::Affine _cached_transform, _cached_inverse_linear;
+    Geom::Point _cached_origin, _cached_diagonal;
+    double _cached_min_scale;
 };
 
 /* Hatch manipulation */
