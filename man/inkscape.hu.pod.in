@@ -52,19 +52,19 @@ kapcsolók:
     -h, --export-height=MAGASSÁG
         --export-margin=MARGÓ
 
-    -i, --export-id=OBJECT-ID[;OBJECT-ID]*
+    -i, --export-id=OBJEKTUMAZONOSÍTÓ[;OBJEKTUMAZONOSÍTÓ]*
     -j, --export-id-only
     -l, --export-plain-svg
-        --export-png-color-mode=COLORMODE
-        --export-png-use-dithering=BOOLEAN
-        --export-ps-level=LEVEL
-        --export-pdf-version=VERSION
+        --export-png-color-mode=SZÍNMÓD
+        --export-png-use-dithering=LOGIKAI
+        --export-ps-level=SZINT
+        --export-pdf-version=VERZIÓ
     -T, --export-text-to-path
         --export-latex
         --export-ignore-filters
     -t, --export-use-hints
-    -b, --export-background=COLOR
-    -y, --export-background-opacity=VALUE
+    -b, --export-background=SZÍN
+    -y, --export-background-opacity=ÉRTÉK
 
     -I, --query-id=OBJEKTUMAZONOSÍTÓ[,OBJEKTUMAZONOSÍTÓ]*
     -S, --query-all
@@ -74,13 +74,13 @@ kapcsolók:
     -H, --query-height
 
         --vacuum-defs
-        --select=OBJECT-ID[,OBJECT-ID]*
-        --actions=ACTION(:ARG)[;ACTION(:ARG)]*
+        --select=OBJEKTUMAZONOSÍTÓ[,OBJEKTUMAZONOSÍTÓ]*
+        --actions=MŰVELET(:ARGUMENTUM)[;MŰVELET(:ARGUMENTUM)]*
         --action-list
 
     -g, --with-gui
-        --display=DISPLAY
-        --app-id-tag=TAG
+        --display=KIJELZŐ
+        --app-id-tag=CÍMKE
         --batch-process
         --shell
 
@@ -127,15 +127,15 @@ Megjeleníti a súgóüzeneteket.
 
 =item B<--help-all>
 
-Shows all help options.
+Megjeleníti az összes súgóüzenetet.
 
 =item B<--help-gapplication>
 
-Shows the GApplication options.
+Megjeleníti a GApplication kapcsolókat.
 
 =item B<--help-gtk>
 
-Shows the GTK+ options.
+Megjeleníti a GTK+ kapcsolókat.
 
 =item B<-V>, B<--version>
 
@@ -338,15 +338,15 @@ Beállítja, hogy az exportált állomány egyszerű SVG legyen, sodipodi: és
 inkscape: névterek, valamint RDF metaadatok nélkül. Az L<--export-filename>
 kapcsolóval lehet megadni a fájl kívánt nevét.
 
-=item B<--export-png-color-mode>=I<COLORMODE>
+=item B<--export-png-color-mode>=I<SZÍNMÓD>
 
-Sets the color mode (bit depth and color type) for exported bitmaps
+Beállítja az exportálandó bitkép színmódját (bitmélység és színtípus)
 (Gray_1/Gray_2/Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16)
 
 =item B<--export-png-use-dithering>=I<false|true>
 
-Forces dithering or disables it (the Inkscape build must support dithering
-for this).
+Kikényszeríti a zajmodulációt vagy letiltja azt (az Inkscape buildnek
+támogatni kell a zajmodulációt ehhez)
 
 =item B<--export-ps-level>=I<SZINT>
 
@@ -514,16 +514,16 @@ Felsorol minden elérhető műveletet.
 Megkísérli a grafikus felhasználói felület alkalmazását (Unix rendszereken
 az X szervert használja, ha a $DISPLAY nincs beállítva).
 
-=item B<--display>=I<DISPLAY>
+=item B<--display>=I<KIJELZŐ>
 
-Sets the X display to use for the Inkscape window.
+Beállítja az Inkscape ablak X-kijelzőjét.
 
-=item B<--app-id-tag>=I<TAG>
+=item B<--app-id-tag>=I<CÍMKE>
 
-Creates a unique instance of Inkscape with the application ID
-'org.inkscape.Inkscape.TAG'. This is useful to separate the Inkscape
-instances when running different Inkscape versions or using different
-preferences files concurrently.
+Létrehoz egy egyedi példányt az Inkscape-ből az
+'org.inkscape.Inkscape.CÍMKE' alkalmazásazonosítóval. Ez hasznos az
+Inkscape-példányok elkülönítéséhez, ha egyidejűleg különböző
+Inkscape-verziókat futtatunk vagy különböző beállításfájlokat használunk.
 
 =item B<--batch-process>
 
@@ -561,23 +561,23 @@ testreszabási beállítást tárol, melyet jellemzően az Inkscape Beállítás
 párbeszédablakában lehet módosítani. Ugyanitt, az almappákba saját
 beállításokat helyezhet el a következőképpen:
 
-B<$HOME>/.config/inkscape/extensions/ - extensions.
+B<$HOME>/.config/inkscape/extensions/ – kiterjesztések.
 
-B<$HOME>/.config/inkscape/fonts/ - fonts.
+B<$HOME>/.config/inkscape/fonts/ – betűkészletek.
 
-B<$HOME>/.config/inkscape/icons/ - icon sets.
+B<$HOME>/.config/inkscape/icons/ – ikoncsomagok.
 
 B<$HOME>/.config/inkscape/keys/ – gyorsbillentyűkiosztások.
 
-B<$HOME>/.config/inkscape/paint/ - patterns and hatches.
+B<$HOME>/.config/inkscape/paint/ – minták és vonalkák
 
-B<$HOME>/.config/inkscape/palettes/ - palettes.
+B<$HOME>/.config/inkscape/palettes/ – paletták.
 
-B<$HOME>/.config/inkscape/symbols/ - symbol files.
+B<$HOME>/.config/inkscape/symbols/ – szimbólumfájlok.
 
 B<$HOME>/.config/inkscape/templates/ – sablonok az új fájlok számára.
 
-B<$HOME>/.config/inkscape/ui/ - user interface files.
+B<$HOME>/.config/inkscape/ui/ – felhasználói felület fájlok.
 
 =head1 DIAGNOSZTIKA
 
@@ -644,18 +644,18 @@ Lekérdezi a „text1555” azonosítójú objektum szélességét:
 Megkettőzi a „path1555” és a „rect835” azonosítójú objektumokat, majd
 elforgatja azokat 90°-kal, elmenti SVG-be és kilép.
 
-    inkscape --select=path1555,rect835 --actions="duplicate;object-rotate-90-cw" --export-overwrite filename.svg
+    inkscape --select=path1555,rect835 --actions="duplicate;object-rotate-90-cw" --export-overwrite fájlnév.svg
 
 Kijelöl minden ellipszis elemet, elforgatja azokat 30°-kal, elmenti a fájlt
 és kilép.
 
-    inkscape --actions="select-by-element:ellipse;transform-rotate:30" --export-overwrite filename.svg
+    inkscape --actions="select-by-element:ellipse;transform-rotate:30" --export-overwrite fájlnév.svg
 
 A „MyTriangle” azonosítójú objektumot exportálja először egy félig áttetsző
 lila háttérrel a lila_háromszög.png-be, majd vörös háttérrel a
 vörös_háromszög.png-be.
 
-    inkscape --actions="export-id:MyTriangle; export-id-only; export-background:purple; export-background-opacity:0.5;export-filename:triangle_purple.png; export-do; export-background:red; export-background-opacity:1; export-filename:triangle_red.png; export-do" filename.svg
+    inkscape --actions="export-id:MyTriangle; export-id-only; export-background:purple; export-background-opacity:0.5;export-filename:lila_háromszög.png; export-do; export-background:red; export-background-opacity:1; export-filename:vörös_háromszög.png; export-do" fájlnév.svg
 
 Beolvassa az SVG-t a szabványos bemenetről (stdin) és PDF-be exportálja:
 
@@ -837,10 +837,10 @@ ${INKSCAPE_AUTHORS}
 
 =head1 SZERZŐI JOGOK ÉS LICENC
 
-B<Copyright (C)> 1999-2022 by Authors.
+B<Copyright (C)> 1999–2022 a szerzők.
 
-B<Inkscape> is free software; you can redistribute it and/or modify it under
-the terms of the GPL version 2 or later.
+Az B<Inkscape> szabad szoftver és GPL 2-as verziója szerint lehet
+terjeszteni, ill. módosítani.
 
 
 
