@@ -1479,9 +1479,19 @@ void Effect::doOnRemove_impl(SPLPEItem const* lpeitem)
     if (!document || !sp_lpe_item) {
         return;
     }
-    //sp_lpe_item_enable_path_effects(sp_lpe_item,false);
+    std::vector<SPObject *> satellites = effect_get_satellites(true);
+    satellites.insert(satellites.begin(), sp_lpe_item);
     doOnRemove(lpeitem);
-    //sp_lpe_item_enable_path_effects(sp_lpe_item,true);
+    for (auto obj:satellites) {
+        if (obj->getAttribute("class")){
+            Glib::ustring newclass = obj->getAttribute("class");
+            size_t pos = newclass.find("UnoptimicedTransforms");
+            if (pos != std::string::npos) {
+                newclass.erase(pos, 21);
+                obj->setAttribute("class",newclass.empty() ? nullptr : newclass.c_str());
+            }
+        }
+    }
 }
 
 /**
