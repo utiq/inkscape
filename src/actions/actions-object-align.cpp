@@ -221,7 +221,7 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
 
     g_return_if_fail(b);
 
-    if (auto desktop = selection->desktop(); desktop && desktop->is_yaxisdown()) {
+    if (auto desktop = selection->desktop(); desktop && !desktop->is_yaxisdown()) {
          std::swap(my0, my1);
          std::swap(sy0, sy1);
     }
