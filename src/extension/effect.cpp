@@ -63,7 +63,7 @@ action_menu_name (std::string menu)
 
 Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in_imp, std::string *base_directory)
     : Extension(in_repr, in_imp, base_directory)
-    , _menu_node(nullptr), _workingDialog(true)
+    , _menu_node(nullptr)
     , _prefDialog(nullptr)
 {
     Inkscape::XML::Node * local_effects_menu = nullptr;
@@ -105,6 +105,7 @@ Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
                 }
                 if (child->attribute("implements-custom-gui") && !strcmp(child->attribute("implements-custom-gui"), "true")) {
                     _workingDialog = false;
+                    ignore_stderr = true;
                 }
                 for (Inkscape::XML::Node *effect_child = child->firstChild(); effect_child != nullptr; effect_child = effect_child->next()) {
                     if (!strcmp(effect_child->name(), INKSCAPE_EXTENSION_NS "effects-menu")) {

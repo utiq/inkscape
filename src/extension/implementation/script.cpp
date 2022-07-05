@@ -614,7 +614,7 @@ void Script::effect(Inkscape::Extension::Effect *module,
     }
 
     file_listener fileout;
-    int data_read = execute(command, params, dc->_filename, fileout);
+    int data_read = execute(command, params, dc->_filename, fileout, module->ignore_stderr);
     fileout.toFile(tempfilename_out);
 
     pump_events();
@@ -848,7 +848,8 @@ bool Script::cancelProcessing () {
 int Script::execute (const std::list<std::string> &in_command,
                  const std::list<std::string> &in_params,
                  const Glib::ustring &filein,
-                 file_listener &fileout)
+                 file_listener &fileout,
+                 bool ignore_stderr)
 {
     g_return_val_if_fail(!in_command.empty(), 0);
 
@@ -934,9 +935,7 @@ int Script::execute (const std::list<std::string> &in_command,
     }
 
     Glib::ustring stderr_data = fileerr.string();
-    if (stderr_data.length() != 0 &&
-        INKSCAPE.use_gui()
-       ) {
+    if (stderr_data.length() != 0 && INKSCAPE.use_gui() && !ignore_stderr) {
         checkStderr(stderr_data, Gtk::MESSAGE_INFO,
                                  _("Inkscape has received additional data from the script executed.  "
                                    "The script did not return an error, but this may indicate the results will not be as expected."));

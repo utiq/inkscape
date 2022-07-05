@@ -104,7 +104,8 @@ private:
     int execute (const std::list<std::string> &in_command,
                  const std::list<std::string> &in_params,
                  const Glib::ustring &filein,
-                 file_listener &fileout);
+                 file_listener &fileout,
+                 bool ignore_stderr = false);
 
     void pump_events();
 
