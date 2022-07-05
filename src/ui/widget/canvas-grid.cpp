@@ -80,10 +80,7 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     // Guide Lock
     _preview_mode.set_name("PreviewMode");
     _preview_mode.add(*Gtk::make_managed<Gtk::Image>("preview-mode", Gtk::ICON_SIZE_MENU));
-    // To be replaced by Gio::Action:
 
-    _cms_adjust.set_name("CMS_Adjust");
-    _cms_adjust.add(*Gtk::make_managed<Gtk::Image>("color-management", Gtk::ICON_SIZE_MENU));
     // Can't access via C++ API, fixed in Gtk4.
     gtk_actionable_set_action_name( GTK_ACTIONABLE(_preview_mode.gobj()), "win.canvas-display-mode-toggle-preview");
     _preview_mode.set_tooltip_text(_("Toggle clip pages"));
@@ -109,7 +106,7 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     _vscrollbar.set_name("CanvasScrollbar");
     _vscrollbar.set_vexpand(true);
 
-    // CMS Adjust
+    // CMS Adjust (To be replaced by Gio::Action)
     _cms_adjust.set_name("CMS_Adjust");
     _cms_adjust.add(*Gtk::make_managed<Gtk::Image>("color-management", Gtk::ICON_SIZE_MENU));
     // Can't access via C++ API, fixed in Gtk4.

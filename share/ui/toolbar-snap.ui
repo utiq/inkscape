@@ -1226,6 +1226,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-bbox</property>
+        <property name="label" translatable="yes">Bounding boxes</property>
         <property name="icon-name">snap-bounding-box</property>
       </object>
       <packing>
@@ -1240,6 +1241,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-bbox-edge</property>
+        <property name="label" translatable="yes">Edges</property>
         <property name="icon-name">snap-bounding-box-edges</property>
       </object>
       <packing>
@@ -1254,6 +1256,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-bbox-corner</property>
+        <property name="label" translatable="yes">Corners</property>
         <property name="icon-name">snap-bounding-box-corners</property>
       </object>
       <packing>
@@ -1268,6 +1271,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-bbox-edge-midpoint</property>
+        <property name="label" translatable="yes">Edge midpoints</property>
         <property name="icon-name">snap-bounding-box-midpoints</property>
       </object>
       <packing>
@@ -1282,6 +1286,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-bbox-center</property>
+        <property name="label" translatable="yes">Centers</property>
         <property name="icon-name">snap-bounding-box-center</property>
       </object>
       <packing>
@@ -1307,6 +1312,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-node-category</property>
+        <property name="label" translatable="yes">Nodes</property>
         <property name="icon-name">snap-nodes</property>
       </object>
       <packing>
@@ -1321,6 +1327,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-path</property>
+        <property name="label" translatable="yes">Paths</property>
         <property name="icon-name">snap-nodes-path</property>
       </object>
       <packing>
@@ -1335,6 +1342,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-path-intersection</property>
+        <property name="label" translatable="yes">Path intersections</property>
         <property name="icon-name">snap-nodes-intersection</property>
       </object>
       <packing>
@@ -1349,6 +1357,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-node-cusp</property>
+        <property name="label" translatable="yes">Cusp nodes</property>
         <property name="icon-name">snap-nodes-cusp</property>
       </object>
       <packing>
@@ -1363,6 +1372,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-node-smooth</property>
+        <property name="label" translatable="yes">Smooth nodes</property>
         <property name="icon-name">snap-nodes-smooth</property>
       </object>
       <packing>
@@ -1377,7 +1387,38 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-line-midpoint</property>
+        <property name="label" translatable="yes">Line midpoints</property>
         <property name="icon-name">snap-nodes-midpoint</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="homogeneous">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleToolButton">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="no-show-all">True</property>
+        <property name="visible-horizontal">False</property>
+        <property name="action-name">win.snap-line-perpendicular</property>
+        <property name="label" translatable="yes">Perpendicular lines</property>
+        <property name="icon-name">snap-lines-perpendicular</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="homogeneous">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleToolButton">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="no-show-all">True</property>
+        <property name="visible-horizontal">False</property>
+        <property name="action-name">win.snap-line-tangential</property>
+        <property name="label" translatable="yes">Tangential lines</property>
+        <property name="icon-name">snap-lines-tangential</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -1402,6 +1443,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-others</property>
+        <property name="label" translatable="yes">Other points</property>
         <property name="icon-name">snap-others</property>
       </object>
       <packing>
@@ -1416,6 +1458,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-object-midpoint</property>
+        <property name="label" translatable="yes">Object midpoints</property>
         <property name="icon-name">snap-nodes-center</property>
       </object>
       <packing>
@@ -1430,6 +1473,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-rotation-center</property>
+        <property name="label" translatable="yes">Object rotation centers</property>
         <property name="icon-name">snap-nodes-rotation-center</property>
       </object>
       <packing>
@@ -1444,6 +1488,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-text-baseline</property>
+        <property name="label" translatable="yes">Text baselines and anchors</property>
         <property name="icon-name">snap-text-baseline</property>
       </object>
       <packing>
@@ -1457,88 +1502,8 @@
         <property name="can-focus">False</property>
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
-        <property name="action-name">win.snap-grid</property>
-        <property name="icon-name">grid-rectangular</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="homogeneous">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkToggleToolButton">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="no-show-all">True</property>
-        <property name="visible-horizontal">False</property>
-        <property name="action-name">win.snap-guide</property>
-        <property name="icon-name">guides</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="homogeneous">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkToggleToolButton">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="no-show-all">True</property>
-        <property name="visible-horizontal">False</property>
-        <property name="action-name">win.snap-page-border</property>
-        <property name="icon-name">snap-page</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="homogeneous">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSeparatorToolItem">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="visible-horizontal">False</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="homogeneous">True</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkToggleToolButton">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="no-show-all">True</property>
-        <property name="visible-horizontal">False</property>
-        <property name="action-name">win.snap-alignment</property>
-        <property name="icon-name">snap-alignment</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="homogeneous">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkToggleToolButton">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="no-show-all">True</property>
-        <property name="visible-horizontal">False</property>
-        <property name="action-name">win.snap-alignment-self</property>
-        <property name="icon-name">snap-alignment-self</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="homogeneous">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkToggleToolButton">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="no-show-all">True</property>
-        <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-path-mask</property>
+        <property name="label" translatable="yes">Masks</property>
         <property name="icon-name">path-mask-edit</property>
       </object>
       <packing>
@@ -1553,6 +1518,7 @@
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-path-clip</property>
+        <property name="label" translatable="yes">Clips</property>
         <property name="icon-name">path-clip-edit</property>
       </object>
       <packing>
@@ -1577,7 +1543,38 @@
         <property name="can-focus">False</property>
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
+        <property name="action-name">win.snap-alignment</property>
+        <property name="label" translatable="yes">Alignment</property>
+        <property name="icon-name">snap-alignment</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="homogeneous">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleToolButton">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="no-show-all">True</property>
+        <property name="visible-horizontal">False</property>
+        <property name="action-name">win.snap-alignment-self</property>
+        <property name="label" translatable="yes">Nodes in same path</property>
+        <property name="icon-name">snap-alignment-self</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="homogeneous">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleToolButton">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="no-show-all">True</property>
+        <property name="visible-horizontal">False</property>
         <property name="action-name">win.snap-distribution</property>
+        <property name="label" translatable="yes">Same distances</property>
         <property name="icon-name">snap-distribution</property>
       </object>
       <packing>
@@ -1586,13 +1583,25 @@
       </packing>
     </child>
     <child>
+      <object class="GtkSeparatorToolItem">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="visible-horizontal">False</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="homogeneous">True</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkToggleToolButton">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
-        <property name="action-name">win.snap-line-perpendicular</property>
-        <property name="icon-name">snap-lines-perpendicular</property>
+        <property name="action-name">win.snap-grid</property>
+        <property name="label" translatable="yes">Grids</property>
+        <property name="icon-name">grid-rectangular</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -1605,8 +1614,24 @@
         <property name="can-focus">False</property>
         <property name="no-show-all">True</property>
         <property name="visible-horizontal">False</property>
-        <property name="action-name">win.snap-line-tangential</property>
-        <property name="icon-name">snap-lines-tangential</property>
+        <property name="action-name">win.snap-guide</property>
+        <property name="label" translatable="yes">Guide lines</property>
+        <property name="icon-name">guides</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="homogeneous">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleToolButton">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="no-show-all">True</property>
+        <property name="visible-horizontal">False</property>
+        <property name="action-name">win.snap-page-border</property>
+        <property name="label" translatable="yes">Page borders</property>
+        <property name="icon-name">snap-page</property>
       </object>
       <packing>
         <property name="expand">False</property>

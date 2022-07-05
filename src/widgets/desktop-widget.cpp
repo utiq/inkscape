@@ -1125,21 +1125,7 @@ void SPDesktopWidget::layoutWidgets()
     // Temporary for Gtk3: Gtk toolbar resets icon sizes, so reapply them.
     // TODO: remove this call in Gtk4 after Gtk::Toolbar is eliminated.
     apply_ctrlbar_settings();
-
-    auto& snap = *Glib::wrap(snap_toolbox);
-    auto& aux = *Glib::wrap(aux_toolbox);
-
-    // This ensures that the Snap toolbox is on the top and only takes the needed space.
-    if (_top_toolbars->get_children().size() == 3 && gtk_widget_get_visible(commands_toolbox)) {
-        _top_toolbars->child_property_height(snap) =  1;
-        _top_toolbars->child_property_width(aux) = 2;
-        snap.set_valign(Gtk::ALIGN_START);
-    }
-    else {
-        _top_toolbars->child_property_width(aux) = 1;
-        _top_toolbars->child_property_height(snap) =  2;
-        snap.set_valign(Gtk::ALIGN_CENTER);
-    }
+    repack_snaptoolbar();
 
     Inkscape::UI::resize_widget_children(_top_toolbars);
 }
@@ -1276,16 +1262,41 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
 void SPDesktopWidget::repack_snaptoolbar()
 {
     Inkscape::Preferences* prefs = Inkscape::Preferences::get();
-    if (auto widget = Glib::wrap(snap_toolbox)) {
-        if (auto parent = widget->get_parent()) {
-            parent->remove(*widget);
-        }
-        if (prefs->getInt("/toolbox/simplesnap", 1) == 2) {
+    bool is_perm = prefs->getInt("/toolbox/simplesnap", 1) == 2;
+    auto& aux = *Glib::wrap(aux_toolbox);
+    auto& snap = *Glib::wrap(snap_toolbox);
+
+    // Only remove from the parent if the status has changed
+    auto parent = snap.get_parent();
+    if (parent && ((is_perm && parent != _hbox) || (!is_perm && parent != _top_toolbars))) {
+        parent->remove(snap);
+    }
+
+    // Only repack if there's no parent widget now.
+    if (!snap.get_parent()) {
+        if (is_perm) {
             ToolboxFactory::setOrientation(snap_toolbox, GTK_ORIENTATION_VERTICAL);
-            _hbox->pack_end(*widget, false, true);
+            _hbox->pack_end(snap, false, true);
         } else {
             ToolboxFactory::setOrientation(snap_toolbox, GTK_ORIENTATION_HORIZONTAL);
-            _top_toolbars->attach(*Glib::wrap(snap_toolbox), 1, 0, 1, 2);
+            _top_toolbars->attach(snap, 1, 0, 1, 2);
+        }
+    }
+
+    // Always reset the various constraints, even if not repacked.
+    if (is_perm) {
+        snap.set_valign(Gtk::ALIGN_START);
+    } else {
+        // This ensures that the Snap toolbox is on the top and only takes the needed space.
+        if (_top_toolbars->get_children().size() == 3 && gtk_widget_get_visible(commands_toolbox)) {
+            _top_toolbars->child_property_width(aux) = 2;
+            _top_toolbars->child_property_height(snap) =  1;
+            snap.set_valign(Gtk::ALIGN_START);
+        }
+        else {
+            _top_toolbars->child_property_width(aux) = 1;
+            _top_toolbars->child_property_height(snap) =  2;
+            snap.set_valign(Gtk::ALIGN_CENTER);
         }
     }
 }
