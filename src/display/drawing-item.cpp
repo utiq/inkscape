@@ -885,7 +885,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
         ict.setOperator(CAIRO_OPERATOR_OVER); // reset back to default
     }
     // 7. Paint the completed rendering onto the base context (or into cache)
-    if (_cached && _cache && 1 >2) {
+    if (_cached && _cache) {
         DrawingContext cachect(*_cache);
         cachect.rectangle(*iarea);
         cachect.setOperator(CAIRO_OPERATOR_SOURCE);
