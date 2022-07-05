@@ -592,7 +592,7 @@ SPDesktopWidget::updateTitle(gchar const* uri)
         } else if (render_mode == Inkscape::RenderMode::OUTLINE_OVERLAY) {
             Name += N_("outline overlay");
         } else if (render_mode == Inkscape::RenderMode::PREVIEW) {
-            Name += N_("clip pages");
+            Name += N_("preview");
         }
 
 
