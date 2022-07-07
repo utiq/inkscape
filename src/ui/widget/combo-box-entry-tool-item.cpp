@@ -25,6 +25,7 @@
  */
 
 #include "combo-box-entry-tool-item.h"
+#include "libnrtype/font-lister.h"
 
 #include <cassert>
 #include <iostream>
@@ -69,9 +70,7 @@ ComboBoxEntryToolItem::ComboBoxEntryToolItem(Glib::ustring name,
       _warning(nullptr),
       _warning_cb(nullptr),
       _warning_cb_id(0),
-      _warning_cb_blocked(false),
-      _isload(true),
-      _markup(false)
+      _warning_cb_blocked(false)
 {
     set_name(name);
 
@@ -132,7 +131,7 @@ ComboBoxEntryToolItem::ComboBoxEntryToolItem(Glib::ustring name,
         gtk_cell_layout_clear( GTK_CELL_LAYOUT( comboBoxEntry ) );
         gtk_cell_layout_pack_start( GTK_CELL_LAYOUT( comboBoxEntry ), _cell, true );
         gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT( comboBoxEntry ), _cell,
-                GtkCellLayoutDataFunc (_cell_data_func), 0, nullptr );
+                GtkCellLayoutDataFunc (_cell_data_func), this, nullptr );
     }
 
     // Optionally widen the combobox width... which widens the drop-down list in list mode.
@@ -572,18 +571,26 @@ ComboBoxEntryToolItem::combo_box_changed_cb( GtkComboBox* widget, gpointer data 
   }
 }
 
+static gboolean add_more_font_families_idle(gpointer user_data)
+{
+    FontLister* fl = FontLister::get_instance();
+    static int q = 1;
+    static unsigned recurse_times = fl->get_font_families_size() / FONT_FAMILIES_GROUP_SIZE;
+
+    fl->init_font_families(q, FONT_FAMILIES_GROUP_SIZE);
+    if (q < recurse_times)
+        gdk_threads_add_idle (add_more_font_families_idle, NULL);
+    q++;
+    return false;
+}
+
 gboolean ComboBoxEntryToolItem::combo_box_popup_cb(ComboBoxEntryToolItem *widget, gpointer data)
 {
-    auto w = reinterpret_cast<ComboBoxEntryToolItem *>(data);
-    GtkComboBox *comboBoxEntry = GTK_COMBO_BOX(w->_combobox);
-    if (!w->_isload && !w->_markup && w->_cell_data_func) {
-        // first click is always displaying something wrong.
-        // Second loading of the screen should have preallocated space, and only has to render the text now
-        gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(comboBoxEntry), w->_cell,
-                                           GtkCellLayoutDataFunc(w->_cell_data_func), widget, nullptr);
-        w->_markup = true;
+    static bool first_time = true;
+    if (first_time) {
+        gdk_threads_add_idle (add_more_font_families_idle, NULL);
+        first_time = false;
     }
-    w->_isload = false;
     return true;
 }
 

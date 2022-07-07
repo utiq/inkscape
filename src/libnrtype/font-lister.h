@@ -27,6 +27,8 @@
 #include <gtkmm/treemodelcolumn.h>
 #include <gtkmm/treepath.h>
 
+#define FONT_FAMILIES_GROUP_SIZE 30
+
 class SPObject;
 class SPDocument;
 class SPCSSAttr;
@@ -299,6 +301,10 @@ public:
     }
 
     bool blocked() { return block; }
+
+    int get_font_families_size();
+
+    void init_font_families(int group_offset = -1, int group_size = -1);
 
 private:
     FontLister();

@@ -1603,7 +1603,7 @@ void TextToolbar::fontsize_unit_changed(int /* Not Used */)
     temp_size_stream << 1 << unit->abbr;
     temp_size.read(temp_size_stream.str().c_str());
     prefs->setInt("/options/font/unitType", temp_size.unit);
-    selection_changed(_desktop->getSelection());
+    //selection_changed(_desktop->getSelection());
 }
 
 void
@@ -2202,6 +2202,7 @@ void
 TextToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec) {
     bool is_text_toolbar = SP_IS_TEXT_CONTEXT(ec);
     bool is_select_toolbar = !is_text_toolbar && SP_IS_SELECT_CONTEXT(ec);
+    static bool gtkcombobox_workaround_applied = false;
     if (is_text_toolbar) {
         // Watch selection
         // Ensure FontLister is updated here first..................
@@ -2214,6 +2215,13 @@ TextToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec) {
         this->_sub_active_item = nullptr;
         this->_cusor_numbers = 0;
         selection_changed(desktop->getSelection());
+
+        if (!gtkcombobox_workaround_applied) {
+            FontLister* fl = FontLister::get_instance();
+            fl->init_font_families(0, FONT_FAMILIES_GROUP_SIZE);
+            gtkcombobox_workaround_applied = true;
+        }
+
     } else if (is_select_toolbar) {
         c_selection_modified_select_tool = desktop->getSelection()->connectModifiedFirst(
             sigc::mem_fun(*this, &TextToolbar::selection_modified_select_tool));

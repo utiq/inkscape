@@ -69,8 +69,6 @@ FontLister::FontLister()
     , current_style ("Normal")
     , block (false)
 {
-    font_list_store = Gtk::ListStore::create(FontList);
-    font_list_store->freeze_notify();
     
     /* Create default styles for use when font-family is unknown on system. */
     default_styles = g_list_append(nullptr, new StyleNames("Normal"));
@@ -78,33 +76,7 @@ FontLister::FontLister()
     default_styles = g_list_append(default_styles, new StyleNames("Bold"));
     default_styles = g_list_append(default_styles, new StyleNames("Bold Italic"));
 
-    // Get sorted font families from Pango
-    std::vector<PangoFontFamily *> familyVector;
-    FontFactory::get().GetUIFamilies(familyVector);
-
-    // Traverse through the family names and set up the list store
-    for (auto & i : familyVector) {
-        const char* displayName = sp_font_family_get_name(i);
-        
-        if (displayName == nullptr || *displayName == '\0') {
-            continue;
-        }
-        
-        Glib::ustring familyName = displayName;
-        if (!familyName.empty()) {
-            Gtk::TreeModel::iterator treeModelIter = font_list_store->append();
-            (*treeModelIter)[FontList.family] = familyName;
-
-            // we don't set this now (too slow) but the style will be cached if the user 
-            // ever decides to use this font
-            (*treeModelIter)[FontList.styles] = NULL;
-            // store the pango representation for generating the style
-            (*treeModelIter)[FontList.pango_family] = i;
-            (*treeModelIter)[FontList.onSystem] = true;
-        }
-    }
-
-    font_list_store->thaw_notify();
+    init_font_families();
 
     style_list_store = Gtk::ListStore::create(FontStyleList);
 
@@ -136,6 +108,66 @@ FontLister::~FontLister()
         }
         ++iter;
     }
+}
+
+int FontLister::get_font_families_size() {
+    std::vector<PangoFontFamily *> familyVector;
+    FontFactory::get().GetUIFamilies(familyVector);
+    return familyVector.size();
+}
+
+void FontLister::init_font_families(int group_offset, int group_size)
+{
+    static bool first_call = true;
+
+    if (first_call)
+    {
+        font_list_store = Gtk::ListStore::create(FontList);
+        first_call = false;
+    }
+
+    if (group_offset <= 0) {
+        font_list_store->clear();
+        if (group_offset == 0)
+            insert_font_family("sans-serif");
+    }
+
+    font_list_store->freeze_notify();
+    // Get sorted font families from Pango
+    std::vector<PangoFontFamily *> familyVector;
+    FontFactory::get().GetUIFamilies(familyVector);
+    int i = group_offset*group_size;
+
+    // Traverse through the family names and set up the list store
+    while(true) {
+        if (i >= familyVector.size())
+            break;
+
+        if ((group_offset >= 0) && (group_size > 0) &&
+            (i >= group_offset*group_size + group_size))
+            break;
+
+        PangoFontFamily *pff = familyVector[i++];
+        const char* displayName = sp_font_family_get_name(pff);
+
+        if (displayName == nullptr || *displayName == '\0') {
+            continue;
+        }
+
+        Glib::ustring familyName = displayName;
+        if (!familyName.empty()) {
+            Gtk::TreeModel::iterator treeModelIter = font_list_store->append();
+            (*treeModelIter)[FontList.family] = familyName;
+            // we don't set this now (too slow) but the style will be cached if the user
+            // ever decides to use this font
+            (*treeModelIter)[FontList.styles] = NULL;
+            // store the pango representation for generating the style
+            (*treeModelIter)[FontList.pango_family] = pff;
+            (*treeModelIter)[FontList.onSystem] = true;
+        }
+    }
+
+    font_list_store->thaw_notify();
 }
 
 FontLister *FontLister::get_instance()
