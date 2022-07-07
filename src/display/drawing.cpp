@@ -173,7 +173,7 @@ Drawing::update(Geom::IntRect const &area, unsigned flags, unsigned reset)
         auto ctx = _canvas_item_drawing ? _canvas_item_drawing->get_context() : UpdateContext();
         _root->update(area, ctx, flags, reset);
     }
-    if ((flags & DrawingItem::STATE_CACHE) || (flags & DrawingItem::STATE_ALL)) {
+    if (flags & DrawingItem::STATE_CACHE) {
         // process the updated cache scores
         _pickItemsForCaching();
     }

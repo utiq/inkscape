@@ -150,12 +150,12 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
     return STATE_ALL;
 }
 
-void DrawingShape::_renderFill(DrawingContext &dc)
+void DrawingShape::_renderFill(DrawingContext &dc, Geom::IntRect const &area)
 {
     Inkscape::DrawingContext::Save save(dc);
     dc.transform(_ctm);
 
-    bool has_fill = _nrstyle.prepareFill(dc, _item_bbox, _fill_pattern);
+    bool has_fill = _nrstyle.prepareFill(dc, area, _item_bbox, _fill_pattern);
 
     if (has_fill) {
         dc.path(_curve->get_pathvector());
@@ -165,12 +165,12 @@ void DrawingShape::_renderFill(DrawingContext &dc)
     }
 }
 
-void DrawingShape::_renderStroke(DrawingContext &dc)
+void DrawingShape::_renderStroke(DrawingContext &dc, Geom::IntRect const &area)
 {
     Inkscape::DrawingContext::Save save(dc);
     dc.transform(_ctm);
 
-    bool has_stroke = _nrstyle.prepareStroke(dc, _item_bbox, _stroke_pattern);
+    bool has_stroke = _nrstyle.prepareStroke(dc, area, _item_bbox, _stroke_pattern);
     if (!style_stroke_extensions_hairline) {
         has_stroke &= _nrstyle.stroke_width != 0;
     }
@@ -211,7 +211,9 @@ void DrawingShape::_renderMarkers(DrawingContext &dc, Geom::IntRect const &area,
 unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
 {
     if (!_curve) return RENDER_OK;
-    if (!area.intersects(_bbox)) return RENDER_OK; // skip if not within bounding box
+
+    auto visible = area & _bbox;
+    if (!visible) return RENDER_OK; // skip if not within bounding box
 
     bool outline = _drawing.outline();
 
@@ -247,8 +249,8 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area
             // update fill and stroke paints.
             // this cannot be done during nr_arena_shape_update, because we need a Cairo context
             // to render svg:pattern
-            bool has_fill   = _nrstyle.prepareFill(dc, _item_bbox, _fill_pattern);
-            bool has_stroke = _nrstyle.prepareStroke(dc, _item_bbox, _stroke_pattern);
+            bool has_fill   = _nrstyle.prepareFill(dc, *visible, _item_bbox, _fill_pattern);
+            bool has_stroke = _nrstyle.prepareStroke(dc, *visible, _item_bbox, _stroke_pattern);
             has_stroke &= (_nrstyle.stroke_width != 0 || _nrstyle.hairline == true);
             if (has_fill || has_stroke) {
                 dc.path(_curve->get_pathvector());
@@ -289,10 +291,10 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area
     for (auto &i : _nrstyle.paint_order_layer) {
         switch (i) {
             case NRStyle::PAINT_ORDER_FILL:
-                _renderFill(dc);
+                _renderFill(dc, *visible);
                 break;
             case NRStyle::PAINT_ORDER_STROKE:
-                _renderStroke(dc);
+                _renderStroke(dc, *visible);
                 break;
             case NRStyle::PAINT_ORDER_MARKER:
                 _renderMarkers(dc, area, flags, stop_at);

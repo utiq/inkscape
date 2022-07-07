@@ -10,12 +10,14 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_INKSCAPE_DISPLAY_DRAWING_PATTERN_H
-#define SEEN_INKSCAPE_DISPLAY_DRAWING_PATTERN_H
+#ifndef INKSCAPE_DISPLAY_DRAWING_PATTERN_H
+#define INKSCAPE_DISPLAY_DRAWING_PATTERN_H
 
-#include "display/drawing-group.h"
+#include <cairomm/surface.h>
+#include "drawing-group.h"
+#include "drawing-surface.h"
 
-typedef struct _cairo_pattern cairo_pattern_t;
+using cairo_pattern_t = struct _cairo_pattern;
 
 namespace Inkscape {
 
@@ -24,7 +26,7 @@ namespace Inkscape {
  *
  * DrawingPattern is used for rendering patterns and hatches.
  *
- * It renders it's children to a cairo_pattern_t structure that can be
+ * It renders its children to a cairo_pattern_t structure that can be
  * applied as source for fill or stroke operations.
  */
 class DrawingPattern
@@ -55,10 +57,12 @@ public:
      *
      * Returns cairo_pattern_t structure that can be set as source surface.
      */
-    cairo_pattern_t *renderPattern(float opacity);
+    cairo_pattern_t *renderPattern(Geom::IntRect const &area, float opacity, int device_scale);
 
 protected:
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
+
+    void _dropPatternCache() override;
 
     std::unique_ptr<Geom::Affine> _pattern_to_user;
 
@@ -69,14 +73,25 @@ protected:
 
     Geom::OptRect _tile_rect;
 
+    // Set on update.
     Geom::IntPoint _pattern_resolution;
+
+    struct Surface
+    {
+        Surface(Geom::IntRect const &rect, int device_scale);
+        Geom::IntRect rect;
+        Cairo::RefPtr<Cairo::ImageSurface> surface;
+    };
+
+    // Parts of the pattern tile that have been rendered. Read/written on render, cleared on update.
+    std::vector<Surface> surfaces;
 };
 
-bool is_drawing_group(DrawingItem *item);
+bool is_drawing_group(DrawingItem const *item);
 
-} // end namespace Inkscape
+} // namespace Inkscape
 
-#endif // !SEEN_INKSCAPE_DISPLAY_DRAWING_PATTERN_H
+#endif // INKSCAPE_DISPLAY_DRAWING_PATTERN_H
 
 /*
   Local Variables:

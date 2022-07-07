@@ -168,6 +168,7 @@ protected:
     virtual void _clipItem(DrawingContext &/*dc*/, Geom::IntRect const &/*area*/) {}
     virtual DrawingItem *_pickItem(Geom::Point const &/*p*/, double /*delta*/, unsigned /*flags*/) { return nullptr; }
     virtual bool _canClip() { return false; }
+    virtual void _dropPatternCache() {}
 
     // static functions start here
 

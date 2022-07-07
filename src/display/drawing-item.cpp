@@ -474,7 +474,6 @@ void DrawingItem::setItemBounds(Geom::OptRect const &bounds)
  */
 void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
 {
-
     // We don't need to update what is not visible
     if (!visible()) {
         _state = STATE_ALL; // Touch the state for future change to this item
@@ -1065,6 +1064,7 @@ void DrawingItem::_markForRendering()
         if (i->_cache) {
             i->_cache->markDirty(*dirty);
         }
+        i->_dropPatternCache();
         if (i->_background_accumulate) {
             bkg_root = i;
         }

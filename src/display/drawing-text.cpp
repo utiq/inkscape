@@ -453,8 +453,11 @@ void DrawingText::decorateItem(DrawingContext &dc, double phase_length, bool und
     }
 }
 
-unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*area*/, unsigned /*flags*/, DrawingItem * /*stop_at*/)
+unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &area, unsigned /*flags*/, DrawingItem */*stop_at*/)
 {
+    auto visible = area & _bbox;
+    if (!visible) return RENDER_OK;
+
     if (_drawing.outline()) {
         guint32 rgba = _drawing.outlinecolor;
         Inkscape::DrawingContext::Save save(dc);
@@ -480,7 +483,6 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
     // NOTE: This is very similar to drawing-shape.cpp; the only differences are in path feeding
     // and in applying text decorations.
 
-
     // Do we have text decorations?
     bool decorate = (_nrstyle.text_decoration_line != NRStyle::TEXT_DECORATION_LINE_CLEAR );
 
@@ -496,13 +498,13 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &/*are
         Inkscape::DrawingContext::Save save(dc);
         dc.transform(_ctm);
 
-        has_fill      = _nrstyle.prepareFill(                dc, _item_bbox, _fill_pattern);
-        has_stroke    = _nrstyle.prepareStroke(              dc, _item_bbox, _stroke_pattern);
+        has_fill   = _nrstyle.prepareFill(  dc, *visible, _item_bbox, _fill_pattern);
+        has_stroke = _nrstyle.prepareStroke(dc, *visible, _item_bbox, _stroke_pattern);
 
         // Avoid creating patterns if not needed
         if (decorate) {
-            has_td_fill   = _nrstyle.prepareTextDecorationFill(  dc, _item_bbox, _fill_pattern);
-            has_td_stroke = _nrstyle.prepareTextDecorationStroke(dc, _item_bbox, _stroke_pattern);
+            has_td_fill   = _nrstyle.prepareTextDecorationFill(  dc, *visible, _item_bbox, _fill_pattern);
+            has_td_stroke = _nrstyle.prepareTextDecorationStroke(dc, *visible, _item_bbox, _stroke_pattern);
         }
     }
 
