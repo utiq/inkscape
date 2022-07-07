@@ -1294,7 +1294,11 @@ void SPItem::invoke_hide_except(unsigned key, const std::vector<SPItem *> &to_ke
     // If item is not in the list of items to keep.
     if (to_keep.end() == find(to_keep.begin(), to_keep.end(), this)) {
         // Only hide the item if it's not a defs, group or root.
-        if (!SP_IS_DEFS(this) && !SP_IS_ROOT(this) && !SP_IS_GROUP(this)) {
+        if (!dynamic_cast<SPDefs  *>(this) &&
+            !dynamic_cast<SPRoot  *>(this) &&
+            !dynamic_cast<SPGroup *>(this) &&
+            !dynamic_cast<SPUse   *>(this)
+            ) {
             this->invoke_hide(key);
         }
         // recurse
