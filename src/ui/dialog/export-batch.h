@@ -16,25 +16,58 @@
 
 #include <gtkmm.h>
 
+#include "ui/widget/export-preview.h"
 #include "ui/widget/scrollprotected.h"
 
+
+class ExportProgressDialog;
 class InkscapeApplication;
-class SPDocument;
 class SPDesktop;
+class SPDocument;
+class SPItem;
+class SPPage;
 
 namespace Inkscape {
-    class Preferences;
-    class Selection;
+class Preferences;
+class Selection;
 
 namespace UI {
-    namespace Widget {
-        class ColorPicker;
-    }
+
+namespace Widget {
+class ColorPicker;
+} // namespace Widget
+
 namespace Dialog {
 
 class ExportList;
-class BatchItem;
-class ExportProgressDialog;
+
+class BatchItem : public Gtk::FlowBoxChild
+{
+public:
+    BatchItem(SPItem *item);
+    BatchItem(SPPage *page);
+    ~BatchItem() override = default;
+
+    Glib::ustring getLabel() { return _label_str; }
+    SPItem *getItem() { return _item; }
+    SPPage *getPage() { return _page; }
+    bool isActive() { return _selector.get_active(); }
+    void refresh(bool hide, guint32 bg_color);
+    void refreshHide(const std::vector<SPItem *> &list) { _preview.refreshHide(list); }
+    void setDocument(SPDocument *doc) { _preview.setDocument(doc); }
+
+private:
+    void init(SPDocument *doc, Glib::ustring label);
+
+    Glib::ustring _label_str;
+    Gtk::Grid _grid;
+    Gtk::Label _label;
+    Gtk::CheckButton _selector;
+    ExportPreview _preview;
+    SPItem *_item = nullptr;
+    SPPage *_page = nullptr;
+    bool is_hide = false;
+};
 
 class BatchExport : public Gtk::Box
 {
@@ -82,7 +115,7 @@ private:
     ExportList *export_list = nullptr;
 
     // Store all items to be displayed in flowbox
-    std::map<std::string, BatchItem *> current_items;
+    std::map<std::string, std::unique_ptr<BatchItem>> current_items;
 
     Glib::ustring original_name;
     Glib::ustring doc_export_name;

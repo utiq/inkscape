@@ -11,49 +11,50 @@
 #define SP_EXPORT_PREVIEW_H
 
 #include <gtkmm.h>
+#include <glibmm/timer.h>
 
 #include "desktop.h"
 #include "document.h"
+#include "display/drawing.h"
 
 class SPObject;
 class SPItem;
 
-namespace Glib {
-class Timer;
-}
-
 namespace Inkscape {
-class Drawing;
 namespace UI {
 namespace Dialog {
 
 class ExportPreview : public Gtk::Image
 {
 public:
-    ExportPreview() {};
+    ExportPreview() = default;
     ~ExportPreview() override;
+    ExportPreview(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder> &)
+        : Gtk::Image(cobject)
+    {
+    }
 
-    ExportPreview(BaseObjectType* cobject, const Glib::RefPtr<Gtk::Builder>& refGlade):Gtk::Image(cobject){};
 private:
     int size = 128; // size of preview image
     bool isLastHide = false;
+    bool pending = false;
+    bool _hidden_requested = false;
+
     SPDocument *_document = nullptr;
     SPItem *_item = nullptr;
     Geom::OptRect _dbox;
 
-    Drawing *drawing = nullptr;
-    unsigned int visionkey = 0;
-    Glib::Timer *timer = nullptr;
-    Glib::Timer *renderTimer = nullptr;
-    bool pending = false;
+    std::unique_ptr<Drawing> drawing;
+    std::unique_ptr<Glib::Timer> timer;
+    std::unique_ptr<Glib::Timer> renderTimer;
     gdouble minDelay = 0.1;
     guint32 _bg_color = 0;
+    unsigned int visionkey = 0;
 
     std::vector<SPItem *> _hidden_excluded;
-    bool _hidden_requested = false;
 public:
     void setDocument(SPDocument *document);
-    void refreshHide(const std::vector<SPItem *> &list = {});
+    void refreshHide(std::vector<SPItem *> const &list = {});
     void setItem(SPItem *item);
     void setDbox(double x0, double x1, double y0, double y1);
     void queueRefresh();
@@ -70,7 +71,7 @@ private:
     void refreshPreview();
     void renderPreview();
     bool refreshCB();
-    void performHide(const std::vector<SPItem *> *list);
+    void performHide();
 };
 } // namespace Dialog
 } // namespace UI

@@ -56,9 +56,11 @@ private:
 class ExportList : public Gtk::Grid
 {
 public:
-    ExportList(){};
-    ExportList(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade)
-        : Gtk::Grid(cobject){};
+    ExportList() = default;
+    ExportList(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &)
+        : Gtk::Grid(cobject)
+    {
+    }
     ~ExportList() override = default;
 
 public:
