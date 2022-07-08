@@ -741,9 +741,8 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
             // There is no cache. This could be because caching of this item
             // was just turned on after the last update phase, or because
             // we were previously outside of the canvas.
-            if (iarea) {
-                _cache = new DrawingCache(*iarea, device_scale);
-            }
+            Geom::OptIntRect cl = _cacheRect();
+            _cache = new DrawingCache(*cl, device_scale);
         }
     } else {
         // if our caching was turned off after the last update, it was already
@@ -871,6 +870,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
     ict.popGroupToSource();
     ict.setOperator(CAIRO_OPERATOR_IN);
     ict.paint();
+
     // 6. Clip to page boudaries if current mode is clippages
     if (!is_drawing_group(this->parent()) && _drawing.previewMode() && !_drawing.clip.empty()) {
         ict.setOperator(CAIRO_OPERATOR_OVER);
@@ -884,14 +884,20 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
         ict.paint();
         ict.setOperator(CAIRO_OPERATOR_OVER); // reset back to default
     }
+
     // 7. Paint the completed rendering onto the base context (or into cache)
     if (_cached && _cache) {
         DrawingContext cachect(*_cache);
-        cachect.rectangle(*iarea);
+        Geom::OptIntRect cl = _cacheRect();
+        if (_filter && render_filters && cl) {
+            cachect.rectangle(*cl);
+        } else {
+            cachect.rectangle(*iarea);
+        }
         cachect.setOperator(CAIRO_OPERATOR_SOURCE);
         cachect.setSource(&intermediate);
         cachect.fill();
-        Geom::OptIntRect cl = _cacheRect();
+
         if (_filter && render_filters && cl) {
             _cache->markClean(*cl);
         } else {
@@ -901,6 +907,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
 
     dc.rectangle(*carea);
     dc.setSource(&intermediate);
+
     // 8. Render blend mode
     dc.setOperator(ink_css_blend_to_cairo_operator(_mix_blend_mode));
     dc.fill();
