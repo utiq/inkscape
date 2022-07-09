@@ -71,6 +71,9 @@ public:
     void set_desk  (uint32_t rgba);
     void set_border(uint32_t rgba);
     void set_page  (uint32_t rgba);
+    uint32_t  get_desk_color  ();
+    uint32_t  get_border_color();
+    uint32_t  get_page_color  ();
     uint32_t get_effective_background() const; // This function is now wrong.
 
     //  Rendering modes

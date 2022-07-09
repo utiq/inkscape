@@ -800,19 +800,6 @@ SPDesktopWidget::update_guides_lock()
 }
 
 void
-SPDesktopWidget::toggle_preview_mode()
-{
-    bool down = _canvas_grid->GetPreviewMode()->get_active();
-    if (down) {
-        _canvas->set_render_mode(Inkscape::RenderMode::PREVIEW);
-        setMessage (Inkscape::NORMAL_MESSAGE, _("Cliped pages content"));
-    } else {
-        _canvas->set_render_mode(Inkscape::RenderMode::NORMAL);
-        setMessage (Inkscape::NORMAL_MESSAGE, _("Uncliped pages content"));
-    }
-}
-
-void
 SPDesktopWidget::cms_adjust_toggled()
 {
     auto _cms_adjust = _canvas_grid->GetCmsAdjust();

@@ -150,7 +150,7 @@ canvas_display_mode_toggle_preview(InkscapeWindow *win)
         return;
     }
 
-    static Inkscape::RenderMode old_value = Inkscape::RenderMode::OUTLINE;
+    static Inkscape::RenderMode old_value = Inkscape::RenderMode::NORMAL;
 
     int value = -1;
     saction->get_state(value);

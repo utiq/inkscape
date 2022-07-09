@@ -15,6 +15,7 @@
 #include "display/control/canvas-item-drawing.h"
 #include "nr-filter-gaussian.h"
 #include "nr-filter-types.h"
+#include "ui/widget/canvas.h"
 
 //grayscale colormode:
 #include "cairo-templates.h"
@@ -187,7 +188,15 @@ Drawing::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, i
         int prev_a = _root->_antialias;
         if(antialiasing >= 0)
             _root->setAntialiasing(antialiasing);
+        if (previewMode() && !clip.empty()) {
+            dc.save();
+            dc.path(clip * _root->_ctm);
+            dc.clip();
+        }
         _root->render(dc, area, flags);
+        if (previewMode() && !clip.empty()) {
+            dc.restore();
+        }
         _root->setAntialiasing(prev_a);
     }
 

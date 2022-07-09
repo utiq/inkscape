@@ -2267,6 +2267,15 @@ void Canvas::set_desk(uint32_t rgba)
 }
 
 /**
+ * Get the desk colour.
+ */
+uint32_t Canvas::get_desk_color()
+{
+    return d->desk;
+}
+
+
+/**
  * Set the page border colour. Although we don't draw the borders, this colour affects the shadows which we do draw (in OpenGL mode).
  */
 void Canvas::set_border(uint32_t rgba)
@@ -2274,6 +2283,14 @@ void Canvas::set_border(uint32_t rgba)
     if (d->border == rgba) return;
     d->border = rgba;
     if (get_realized() && get_opengl_enabled()) queue_draw();
+}
+
+/**
+ * Get the border colour.
+ */
+uint32_t Canvas::get_border_color()
+{
+    return d->border;
 }
 
 /**
@@ -2285,6 +2302,14 @@ void Canvas::set_page(uint32_t rgba)
     d->page = rgba;
     if (get_realized() && !get_opengl_enabled() && d->crstate()->update_colours(d->page, d->desk)) redraw_all();
     queue_draw();
+}
+
+/**
+ * Get the page colour.
+ */
+uint32_t Canvas::get_page_color()
+{
+    return d->page;
 }
 
 uint32_t Canvas::get_effective_background() const

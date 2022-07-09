@@ -77,15 +77,6 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     // To be replaced by Gio::Action:
     _guide_lock.signal_toggled().connect(sigc::mem_fun(_dtw, &SPDesktopWidget::update_guides_lock));
     _guide_lock.set_tooltip_text(_("Toggle lock of all guides in the document"));
-    // Guide Lock
-    _preview_mode.set_name("PreviewMode");
-    _preview_mode.add(*Gtk::make_managed<Gtk::Image>("preview-mode", Gtk::ICON_SIZE_MENU));
-
-    // Can't access via C++ API, fixed in Gtk4.
-    gtk_actionable_set_action_name( GTK_ACTIONABLE(_preview_mode.gobj()), "win.canvas-display-mode-toggle-preview");
-    _preview_mode.set_tooltip_text(_("Toggle clip pages"));
-    _preview_mode.show_all_children();
-    _preview_mode_and_scroll.pack_start(_preview_mode, false,false,0);
     // Subgrid
     _subgrid.attach(_guide_lock,     0, 0, 1, 1);
     _subgrid.attach(*_vruler,        0, 1, 1, 1);
@@ -121,11 +112,10 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     _sticky_zoom.set_tooltip_text(_("Zoom drawing if window size changes"));
 
     // Main grid
-    _preview_mode_and_scroll.pack_start(_hscrollbar, true,true,0);
     attach(_subgrid,     0, 0, 1, 2);
     attach(_sticky_zoom, 1, 0, 1, 1);
     attach(_vscrollbar,  1, 1, 1, 1);
-    attach(_preview_mode_and_scroll, 0, 2, 1, 1);
+    attach(_hscrollbar, 0, 2, 1, 1);
     attach(_cms_adjust,  1, 2, 1, 1);
 
     // For creating guides, etc.

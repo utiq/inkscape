@@ -58,7 +58,6 @@ public:
     Gtk::Adjustment *GetHAdj() { return _hadj.get(); };
     Gtk::Adjustment *GetVAdj() { return _vadj.get(); };
     Gtk::ToggleButton *GetGuideLock()  { return &_guide_lock; }
-    Gtk::ToggleButton *GetPreviewMode()  { return &_preview_mode; }
     Gtk::ToggleButton *GetCmsAdjust()  { return &_cms_adjust; }
     Gtk::ToggleButton *GetStickyZoom() { return &_sticky_zoom; };
 
@@ -82,10 +81,8 @@ private:
     std::unique_ptr<Inkscape::UI::Widget::Ruler> _vruler;
 
     Gtk::ToggleButton _guide_lock;
-    Gtk::ToggleButton _preview_mode;
     Gtk::ToggleButton _cms_adjust;
     Gtk::ToggleButton _sticky_zoom;
-    Gtk::Box _preview_mode_and_scroll;
 
     // To be replaced by stateful Gio::Actions
     bool _show_scrollbars = true;
