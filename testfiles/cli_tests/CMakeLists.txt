@@ -9,6 +9,8 @@
 #   INPUT_FILENAME     - name of input file (optional)
 #   OUTPUT_FILENAME    - name of output file (optional)
 #   OUTPUT_PAGE        - index of page in multipage output (optional), starts from 0
+#   FUZZ_PERCENTAGE    - maximum allowed normalized root-mean-squared distance between compared images
+#   RASTER_DPI         - DPI setting for rasterizing vector formats before root-mean-squared comparison
 #   PARAMETERS         - additional command line parameters to pass to Inkscape
 #
 # Pass/fail criteria:
@@ -19,6 +21,8 @@
 #   REFERENCE_FILENAME - compare OUTPUT_FILENAME with this pre-rendered reference file
 #                        both files are converted to PNG and compared with ImageMagick's 'compare'
 #                        for multipage output, use OUTPUT_PAGE to specify a single page for comparison
+#   FUZZYREF_FILENAME  - comparison of OUTPUT_FILENAME with this pre-rendered reference file will be
+#                        performed in the L2 metric, subject to the specified FUZZ_PERCENTAGE
 #   EXPECTED_FILES     - verify the command produced the expected files (i.e. they exist on disk)
 #   TEST_SCRIPT        - additional script to run after performing all checks and before cleaning up
 #
@@ -26,7 +30,8 @@
 #   ENVIRONMENT        - Additional environment variables to set while running the test
 function(add_cli_test name)
     # parse arguments
-    set(oneValueArgs INPUT_FILENAME OUTPUT_FILENAME OUTPUT_PAGE PASS_FOR_OUTPUT FAIL_FOR_OUTPUT REFERENCE_FILENAME)
+    set(oneValueArgs INPUT_FILENAME OUTPUT_FILENAME OUTPUT_PAGE PASS_FOR_OUTPUT FAIL_FOR_OUTPUT REFERENCE_FILENAME
+        FUZZYREF_FILENAME FUZZ_PERCENTAGE RASTER_DPI)
     set(multiValueArgs PARAMETERS EXPECTED_FILES TEST_SCRIPT ENVIRONMENT)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -85,8 +90,23 @@ function(add_cli_test name)
         set_tests_properties(${testname}_check_output PROPERTIES
             ENVIRONMENT "${CMAKE_CTEST_ENV}" DEPENDS ${testname} SKIP_RETURN_CODE 42)
     endif()
-endfunction(add_cli_test)
 
+    # add a fuzzy test to check the output files
+    if(DEFINED ARG_FUZZYREF_FILENAME)
+        file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/testcases/${ARG_FUZZYREF_FILENAME}" ARG_FUZZYREF_FILENAME)
+        if(DEFINED ARG_FUZZ_PERCENTAGE)
+            set(ARG_FUZZ "${ARG_FUZZ_PERCENTAGE}")
+        else()
+            set(ARG_FUZZ "0")
+        endif()
+        add_test(NAME ${testname}_check_output
+            COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/l2compare.sh
+            "${ARG_OUTPUT_FILENAME}" "${ARG_OUTPUT_PAGE}" "${ARG_FUZZYREF_FILENAME}" "${ARG_FUZZ}" "${ARG_RASTER_DPI}")
+        set_tests_properties(${testname}_check_output PROPERTIES
+            ENVIRONMENT "${CMAKE_CTEST_ENV}" DEPENDS ${testname} SKIP_RETURN_CODE 42)
+    endif()
+
+endfunction(add_cli_test)
 
 
 ##### Tests follow below #####
@@ -448,22 +468,27 @@ add_cli_test(export-grouped-mp PARAMETERS --export-type=pdf
                                INPUT_FILENAME export-grouped-mp.svg
                                OUTPUT_FILENAME export-grouped-mp.pdf
                                OUTPUT_PAGE 1
-                               REFERENCE_FILENAME export-grouped-mp_expected.png)
+                               FUZZYREF_FILENAME export-grouped-mp_expected.png
+                               FUZZ_PERCENTAGE 3)
 add_cli_test(export-with-filters-multipage PARAMETERS --export-type=pdf
                                            INPUT_FILENAME export-with-filters-multipage.svg
                                            OUTPUT_FILENAME export-with-filters-multipage.pdf
                                            OUTPUT_PAGE 1
-                                           REFERENCE_FILENAME export-with-filters-multipage_expected.png)
+                                           FUZZYREF_FILENAME export-with-filters-multipage_expected.png
+                                           FUZZ_PERCENTAGE 1)
 add_cli_test(export-filtered-clones-mp PARAMETERS --export-type=pdf --export-dpi=600
+                                       RASTER_DPI 600
                                        INPUT_FILENAME  export-filtered-clones-mp.svg
                                        OUTPUT_FILENAME export-filtered-clones-mp.pdf
                                        OUTPUT_PAGE 1
-                                       REFERENCE_FILENAME export-filtered-clones-mp_expected.png)
+                                       FUZZYREF_FILENAME export-filtered-clones-mp_expected.png
+                                       FUZZ_PERCENTAGE 3)
 add_cli_test(export-clone-group-filtered-mp PARAMETERS --export-type=pdf
                                             INPUT_FILENAME  export-clone-group-filtered-mp.svg
                                             OUTPUT_FILENAME export-clone-group-filtered-mp.pdf
                                             OUTPUT_PAGE 1
-                                            REFERENCE_FILENAME export-clone-group-filtered-mp_expected.png)
+                                            FUZZYREF_FILENAME export-clone-group-filtered-mp_expected.png
+                                            FUZZ_PERCENTAGE 3)
 # EMF, WMF: No support for exporting filters. Feature request: https://gitlab.com/inkscape/inbox/-/issues/2275
 # add_cli_test(export-with-filters_emf  PARAMETERS --export-type=emf INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.emf REFERENCE_FILENAME export-with-filters_expected.emf)
 # add_cli_test(export-with-filters_wmf  PARAMETERS --export-type=wmf INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.wmf REFERENCE_FILENAME export-with-filters_expected.wmf)
