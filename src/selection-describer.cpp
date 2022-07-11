@@ -92,8 +92,8 @@ SelectionDescriber::SelectionDescriber(Inkscape::Selection *selection, std::shar
 {
     _selection_changed_connection = new sigc::connection (
              selection->connectChanged(
-                 sigc::mem_fun(*this, &SelectionDescriber::_updateMessageFromSelection)));
-    _updateMessageFromSelection(selection);
+                 sigc::mem_fun(*this, &SelectionDescriber::updateMessage)));
+    updateMessage(selection);
 }
 
 SelectionDescriber::~SelectionDescriber()
@@ -102,7 +102,7 @@ SelectionDescriber::~SelectionDescriber()
     delete _selection_changed_connection;
 }
 
-void SelectionDescriber::_updateMessageFromSelection(Inkscape::Selection *selection) {
+void SelectionDescriber::updateMessage(Inkscape::Selection *selection) {
 	std::vector<SPItem*> items(selection->items().begin(), selection->items().end());
 
     if (items.empty()) { // no items

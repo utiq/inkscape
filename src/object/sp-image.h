@@ -69,6 +69,8 @@ public:
 
     SPCurve const *get_curve() const;
     void refresh_if_outdated();
+    bool cropToArea(Geom::Rect area);
+    bool cropToArea(const Geom::IntRect &area);
 private:
     static Inkscape::Pixbuf *readImage(gchar const *href, gchar const *absref, gchar const *base, double svgdpi = 0);
     static Inkscape::Pixbuf *getBrokenImage(double width, double height);

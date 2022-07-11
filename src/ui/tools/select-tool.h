@@ -50,6 +50,8 @@ public:
     void set(const Inkscape::Preferences::Entry& val) override;
     bool root_handler(GdkEvent* event) override;
     bool item_handler(SPItem* item, GdkEvent* event) override;
+
+    void updateDescriber(Inkscape::Selection *sel);
 private:
     bool sp_select_context_abort();
     void sp_select_context_cycle_through_items(Inkscape::Selection *selection, GdkEventScroll *scroll_event);

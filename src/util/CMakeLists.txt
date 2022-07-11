@@ -19,6 +19,7 @@ set(util_SRC
 	expression-evaluator.h
 	fixed_point.h
 	format.h
+	format_size.h
 	forward-pointer-iterator.h
 	longest-common-suffix.h
 	pages-skeleton.h

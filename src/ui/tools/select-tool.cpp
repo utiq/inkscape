@@ -1130,6 +1130,14 @@ bool SelectTool::root_handler(GdkEvent* event) {
     return ret;
 }
 
+/**
+ * Update the toolbar description to this selection.
+ */
+void SelectTool::updateDescriber(Inkscape::Selection *selection)
+{
+    _describer->updateMessage(selection);
+}
+
 }
 }
 }

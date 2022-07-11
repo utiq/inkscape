@@ -119,12 +119,10 @@ Pixbuf::Pixbuf(Inkscape::Pixbuf const &other)
 
 Pixbuf::~Pixbuf()
 {
-    if (_cairo_store) {
-        g_object_unref(_pixbuf);
-    } else {
+    if (!_cairo_store) {
         cairo_surface_destroy(_surface);
-        g_object_unref(_pixbuf);
     }
+    g_object_unref(_pixbuf);
 }
 
 #if !GDK_PIXBUF_CHECK_VERSION(2, 41, 0)
@@ -150,6 +148,19 @@ static bool _workaround_issue_70__gdk_pixbuf_loader_write( //
 }
 #define gdk_pixbuf_loader_write _workaround_issue_70__gdk_pixbuf_loader_write
 #endif
+
+/**
+ * Create a new Pixbuf with the image cropped to the given area.
+ */
+Pixbuf *Pixbuf::cropTo(const Geom::IntRect &area) const
+{
+    // This copies twice, but can be run on const, which is useful.
+    auto copy = gdk_pixbuf_copy(_pixbuf);
+    // Without conversion the colors will shift
+    ensure_argb32(copy);
+    return new Pixbuf(gdk_pixbuf_new_subpixbuf(copy,
+        area.left(), area.top(), area.width(), area.height()));
+}
 
 Pixbuf *Pixbuf::create_from_data_uri(gchar const *uri_data, double svgdpi)
 {
@@ -579,39 +590,61 @@ void Pixbuf::_setMimeData(guchar *data, gsize len, Glib::ustring const &format)
     }
 }
 
+/**
+ * Convert the internal pixel format between CAIRO and GDK formats.
+ */
 void Pixbuf::ensurePixelFormat(PixelFormat fmt)
 {
-    if (_pixel_format == PF_GDK) {
-        if (fmt == PF_GDK) {
-            return;
-        }
-        if (fmt == PF_CAIRO) {
-            convert_pixels_pixbuf_to_argb32(
-                gdk_pixbuf_get_pixels(_pixbuf),
-                gdk_pixbuf_get_width(_pixbuf),
-                gdk_pixbuf_get_height(_pixbuf),
-                gdk_pixbuf_get_rowstride(_pixbuf));
-            _pixel_format = fmt;
-            return;
-        }
+    if (fmt == PF_CAIRO && _pixel_format == PF_GDK) {
+        ensure_argb32(_pixbuf);
+        _pixel_format = fmt;
+    } else if (fmt == PF_GDK && _pixel_format == PF_CAIRO) {
+        ensure_pixbuf(_pixbuf);
+        _pixel_format = fmt;
+    } else if (fmt != _pixel_format) {
         g_assert_not_reached();
     }
-    if (_pixel_format == PF_CAIRO) {
-        if (fmt == PF_GDK) {
-            convert_pixels_argb32_to_pixbuf(
-                gdk_pixbuf_get_pixels(_pixbuf),
-                gdk_pixbuf_get_width(_pixbuf),
-                gdk_pixbuf_get_height(_pixbuf),
-                gdk_pixbuf_get_rowstride(_pixbuf));
-            _pixel_format = fmt;
-            return;
-        }
-        if (fmt == PF_CAIRO) {
-            return;
-        }
-        g_assert_not_reached();
+}
+
+/**
+ * Converts GdkPixbuf's data to premultiplied ARGB.
+ * This function will convert a GdkPixbuf in place into Cairo's native pixel format.
+ * Note that this is a hack intended to save memory. When the pixbuf is in Cairo's format,
+ * using it with GTK will result in corrupted drawings.
+ */
+void Pixbuf::ensure_argb32(GdkPixbuf *pb)
+{
+    gchar *pixel_format = reinterpret_cast<gchar*>(g_object_get_data(G_OBJECT(pb), "pixel_format"));
+    if (pixel_format != nullptr && strcmp(pixel_format, "argb32") == 0) {
+        // nothing to do
+        return;
     }
-    g_assert_not_reached();
+    convert_pixels_pixbuf_to_argb32(
+        gdk_pixbuf_get_pixels(pb),
+        gdk_pixbuf_get_width(pb),
+        gdk_pixbuf_get_height(pb),
+        gdk_pixbuf_get_rowstride(pb));
+    g_object_set_data_full(G_OBJECT(pb), "pixel_format", g_strdup("argb32"), g_free);
+}
+
+/**
+ * Converts GdkPixbuf's data back to its native format.
+ * Once this is done, the pixbuf can be used with GTK again.
+ */
+void Pixbuf::ensure_pixbuf(GdkPixbuf *pb)
+{
+    gchar *pixel_format = reinterpret_cast<gchar*>(g_object_get_data(G_OBJECT(pb), "pixel_format"));
+    if (pixel_format == nullptr || strcmp(pixel_format, "pixbuf") == 0) {
+        // nothing to do
+        return;
+    }
+
+    convert_pixels_argb32_to_pixbuf(
+        gdk_pixbuf_get_pixels(pb),
+        gdk_pixbuf_get_width(pb),
+        gdk_pixbuf_get_height(pb),
+        gdk_pixbuf_get_rowstride(pb));
+    g_object_set_data_full(G_OBJECT(pb), "pixel_format", g_strdup("pixbuf"), g_free);
 }
 
 } // namespace Inkscape
@@ -1713,50 +1746,6 @@ convert_pixels_argb32_to_pixbuf(guchar *data, int w, int h, int stride, guint32 
             ++px;
         }
     }
-}
-
-/**
- * Converts GdkPixbuf's data to premultiplied ARGB.
- * This function will convert a GdkPixbuf in place into Cairo's native pixel format.
- * Note that this is a hack intended to save memory. When the pixbuf is in Cairo's format,
- * using it with GTK will result in corrupted drawings.
- */
-void
-ink_pixbuf_ensure_argb32(GdkPixbuf *pb)
-{
-    gchar *pixel_format = reinterpret_cast<gchar*>(g_object_get_data(G_OBJECT(pb), "pixel_format"));
-    if (pixel_format != nullptr && strcmp(pixel_format, "argb32") == 0) {
-        // nothing to do
-        return;
-    }
-
-    convert_pixels_pixbuf_to_argb32(
-        gdk_pixbuf_get_pixels(pb),
-        gdk_pixbuf_get_width(pb),
-        gdk_pixbuf_get_height(pb),
-        gdk_pixbuf_get_rowstride(pb));
-    g_object_set_data_full(G_OBJECT(pb), "pixel_format", g_strdup("argb32"), g_free);
-}
-
-/**
- * Converts GdkPixbuf's data back to its native format.
- * Once this is done, the pixbuf can be used with GTK again.
- */
-void
-ink_pixbuf_ensure_normal(GdkPixbuf *pb)
-{
-    gchar *pixel_format = reinterpret_cast<gchar*>(g_object_get_data(G_OBJECT(pb), "pixel_format"));
-    if (pixel_format == nullptr || strcmp(pixel_format, "pixbuf") == 0) {
-        // nothing to do
-        return;
-    }
-
-    convert_pixels_argb32_to_pixbuf(
-        gdk_pixbuf_get_pixels(pb),
-        gdk_pixbuf_get_width(pb),
-        gdk_pixbuf_get_height(pb),
-        gdk_pixbuf_get_rowstride(pb));
-    g_object_set_data_full(G_OBJECT(pb), "pixel_format", g_strdup("pixbuf"), g_free);
 }
 
 guint32 argb32_from_rgba(guint32 in)

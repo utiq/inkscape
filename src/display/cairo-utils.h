@@ -39,6 +39,8 @@ public:
     Pixbuf(Inkscape::Pixbuf const &other);
     ~Pixbuf();
 
+    Pixbuf *cropTo(const Geom::IntRect &area) const;
+
     GdkPixbuf *getPixbufRaw(bool convert_format = true);
     GdkPixbuf *getPixbufRaw() const;
 
@@ -60,6 +62,8 @@ public:
 
     PixelFormat pixelFormat() const { return _pixel_format; }
     void ensurePixelFormat(PixelFormat fmt);
+    static void ensure_pixbuf(GdkPixbuf *pb);
+    static void ensure_argb32(GdkPixbuf *pb);
 
     static Pixbuf *create_from_data_uri(gchar const *uri, double svgdpi = 0);
     static Pixbuf *create_from_file(std::string const &fn, double svgddpi = 0);

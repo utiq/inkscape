@@ -21,61 +21,13 @@
 
 #include "inkgc/gc-core.h"
 #include "debug/heap.h"
+#include "util/format_size.h"
+
+using Inkscape::Util::format_size;
 
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
-
-namespace {
-
-Glib::ustring format_size(std::size_t value) {
-    if (!value) {
-        return Glib::ustring("0");
-    }
-
-    typedef std::vector<char> Digits;
-    typedef std::vector<Digits *> Groups;
-
-    Groups groups;
-
-    Digits *digits;
-
-    while (value) {
-        unsigned places=3;
-        digits = new Digits();
-        digits->reserve(places);
-
-        while ( value && places ) {
-            digits->push_back('0' + (char)( value % 10 ));
-            value /= 10;
-            --places;
-        }
-
-        groups.push_back(digits);
-    }
-
-    Glib::ustring temp;
-
-    while (true) {
-        digits = groups.back();
-        while (!digits->empty()) {
-            temp.append(1, digits->back());
-            digits->pop_back();
-        }
-        delete digits;
-
-        groups.pop_back();
-        if (groups.empty()) {
-            break;
-        }
-
-        temp.append(",");
-    }
-
-    return temp;
-}
-
-}
 
 struct Memory::Private {
     class ModelColumns : public Gtk::TreeModel::ColumnRecord {

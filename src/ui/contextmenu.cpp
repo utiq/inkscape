@@ -137,10 +137,13 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
             }
 
             // Image dialogs (mostly).
-            if (dynamic_cast<SPImage*>(item)) {
+            if (auto image = dynamic_cast<SPImage*>(item)) {
                 AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('ObjectAttributes')",          _("Image _Properties..."),  "dialog-fill-and-stroke");
                 AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Trace')",                     _("_Trace Bitmap..."),      "bitmap-trace"          );
-                auto image = dynamic_cast<SPImage*>(item);
+
+                if (image->getClipObject()) {
+                    AppendItemFromAction( gmenu_dialogs, "app.element-image-crop",                       _("Crop Image to Clip"),    ""                      );
+                }
                 if (strncmp(image->href, "data", 4) == 0) {
                     // Image is embedded.
                     AppendItemFromAction( gmenu_dialogs, "app.org.inkscape.filter.extract-image",        _("Extract Image..."),      ""                      );

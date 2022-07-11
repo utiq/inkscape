@@ -18,10 +18,15 @@
 
 #include "inkscape-application.h"
 #include "inkscape-window.h"
+#include "message-stack.h"
 #include "preferences.h"
 
 #include "selection.h"            // Selection
 #include "object/sp-image.h"
+#include "object/sp-clippath.h"
+#include "object/sp-rect.h"
+#include "ui/tools/select-tool.h"
+#include "util/format_size.h"
 
 Glib::ustring image_get_editor_name(bool is_svg)
 {
@@ -123,9 +128,82 @@ void image_edit(InkscapeApplication *app)
     }
 }
 
+/**
+ * Attempt to crop an image's physical pixels by the rectangle give
+ * OR if not specified, by any applied clipping object.
+ */
+void image_crop(InkscapeApplication *app)
+{
+    auto win = app->get_active_window();
+    auto doc = app->get_active_document();
+    auto msg = win->get_desktop()->messageStack();
+    auto tool = win->get_desktop()->getEventContext();
+    int done = 0;
+    int bytes = 0;
+
+    auto selection = app->get_active_selection();
+    if (selection->isEmpty()) {
+        msg->flash(Inkscape::ERROR_MESSAGE, _("Nothing selected."));
+        return;
+    }
+
+    // Find a target rectangle, if provided.
+    Geom::OptRect target;
+    SPRect *rect = nullptr;
+    for (auto item : selection->items()) {
+        rect = dynamic_cast<SPRect *>(item);
+        if (rect) {
+            target = rect->geometricBounds(rect->i2doc_affine());
+            break;
+        }
+    }
+
+    // For each selected item, we loop through and attempt to crop the
+    // raster image to the geometric bounds of the clipping object.
+    for (auto item : selection->items()) {
+        if (auto image = dynamic_cast<SPImage *>(item)) {
+            bytes -= std::strlen(image->href);
+            Geom::OptRect area;
+            if (target) {
+                // MODE A. Crop to selected rectangle.
+                area = target;
+            } else if (auto clip = image->getClipObject()) {
+                // MODE B. Crop to image's xisting clip region
+                area = clip->geometricBounds(image->i2doc_affine());
+            }
+            done += (int)(area && image->cropToArea(*area));
+            bytes += std::strlen(image->href);
+        }
+    }
+    if (rect) {
+        rect->deleteObject();
+    }
+
+    // Tell the user what happened, since so many things could have changed.
+    if (done) {
+        // The select tool has no idea the image description needs updating. Force it.
+        if (auto selector = dynamic_cast<Inkscape::UI::Tools::SelectTool*>(tool)) {
+            selector->updateDescriber(selection);
+        }
+        std::stringstream ss;
+        ss << ngettext(_("<b>%d</b> image cropped"), _("<b>%d</b> images cropped"), done);
+        if (bytes < 0) {
+            ss << ", " << ngettext(_("%s byte removed"), _("%s bytes removed"), abs(bytes));
+        } else if (bytes > 0) {
+            ss << ", <b>" << ngettext(_("%s byte added!"), _("%s bytes added!"), bytes) << "</b>";
+        }
+        // Do flashing after select tool update.
+        msg->flashF(Inkscape::INFORMATION_MESSAGE, ss.str().c_str(), done, Inkscape::Util::format_size(abs(bytes)).c_str());
+        Inkscape::DocumentUndo::done(doc, "ActionImageCrop", "Crop Images");
+    } else {
+        msg->flash(Inkscape::WARNING_MESSAGE, _("No images cropped!"));
+    }
+}
+
 std::vector<std::vector<Glib::ustring>> raw_data_element_image =
 {
     // clang-format off
+    {"app.element-image-crop",          N_("Image crop to clip"),  "Image",    N_("Remove parts of the image outside the applied clipping area.") },
     {"app.element-image-edit",          N_("Edit externally"),   "Image",    N_("Edit image externally (image must be selected and not embedded).")    },
     // clang-format on
 };
@@ -136,6 +214,7 @@ add_actions_element_image(InkscapeApplication* app)
     auto *gapp = app->gio_app();
 
     // clang-format off
+    gapp->add_action(                "element-image-crop",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&image_crop),      app));
     gapp->add_action(                "element-image-edit",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&image_edit),      app));
     // clang-format on
 

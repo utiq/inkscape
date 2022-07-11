@@ -879,6 +879,64 @@ void SPImage::refresh_if_outdated()
     }
 }
 
+/**
+ * Crop the image (remove pixels) based on the area rectangle
+ * and translate image to componsate for movement.
+ *
+ * @param area - Rectangle in document units
+ *
+ * @returns true if any pixels were removed.
+ */
+bool SPImage::cropToArea(Geom::Rect area)
+{
+    area *= i2doc_affine().inverse();
+
+    // Apply the image's viewbox and scal to get us image pixels
+    area *= Geom::Translate(-x.computed, -y.computed);
+    area *= Geom::Scale(pixbuf->width() / width.computed, pixbuf->height() / height.computed);
+
+    // Any precision problems and we choose to retain more pixels (roundOut)
+    return cropToArea(area.roundOutwards());
+}
+
+/**
+ * Crop to the actual pixel area of the image, and adjusting the
+ * image's coordinates to compensate for the changes.
+ *
+ * @param area - Rectangle in image pixel units
+ *
+ * @returns true if any pixels were removed.
+ */
+bool SPImage::cropToArea(const Geom::IntRect &area)
+{
+    // Contrain requested area to the available pixels.
+    auto px = Geom::IntRect::from_xywh(0.0, 0.0, pixbuf->width(), pixbuf->height());
+    auto px_area = area & px;
+    if (!px_area)
+        return false;
+
+    if (auto pb = pixbuf->cropTo(*px_area)) {
+        // Crop ended up with bad pixels, this should rarely happen.
+        if (pb->width() <= 0 || pb->height() <= 0)
+            return false;
+
+        // Cropping is done, now embed this image back into image tag.
+        sp_embed_image(getRepr(), pb);
+
+        // Our new image has new sizes, so adjust image tag's internal viewbox
+        auto repr = getRepr();
+        auto scale_x = px.width() / width.computed;
+        auto scale_y = px.height() / height.computed;
+        repr->setAttributeSvgDouble("x", this->x.computed + (px_area->left() / scale_x));
+        repr->setAttributeSvgDouble("y", this->y.computed + (px_area->top() / scale_y));
+        repr->setAttributeSvgDouble("width", px_area->width() / scale_x);
+        repr->setAttributeSvgDouble("height", px_area->height() / scale_y);
+
+        return true;
+    }
+    return false;
+}
+
 /*
   Local Variables:
   mode:c++
