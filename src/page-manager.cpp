@@ -496,7 +496,7 @@ void PageManager::resizePage(double width, double height)
             auto rect = Geom::Rect(Geom::Point(0, 0), Geom::Point(width, height));
             _document->fitToRect(rect, false);
         } else {
-            _selected_page->setDesktopSize(width, height);
+            _selected_page->setSize(width, height);
         }
     }
 }
@@ -517,7 +517,6 @@ void PageManager::changeOrientation()
 void PageManager::fitToSelection(ObjectSet *selection)
 {
     auto desktop = selection->desktop();
-    bool move_items = false; // DISABLED: This feature was set as a bug, but it's design is a little odd
 
     if (!selection || selection->isEmpty()) {
         // This means there aren't any pages, so revert to the default assumption
@@ -528,31 +527,14 @@ void PageManager::fitToSelection(ObjectSet *selection)
             // This allows the pages to be resized around the items related to the page only.
             auto contents = ObjectSet();
             contents.setList(getOverlappingItems(desktop, _selected_page));
-            // Do we have anything to do?
-            if (contents.isEmpty())
-                return;
-            fitToSelection(&contents);
-        }
-    } else if (auto rect = selection->visualBounds()) {
-        if (move_objects() && move_items) {
-            auto prev_items = getOverlappingItems(desktop, _selected_page);
-            auto selected = selection->items();
-            auto origin = Geom::Point(0, 0);
-            if (_selected_page) {
-                origin = _selected_page->getDesktopRect().min();
+            if (contents.isEmpty()) {
+                fitToRect(_document->getRoot()->documentVisualBounds(), _selected_page);
+            } else {
+                fitToSelection(&contents);
             }
-
-            fitToRect(rect, _selected_page);
-
-            // Do not move the selected items, as the page has just been moved around them.
-            std::vector<SPItem *> page_items;
-            std::set_difference(prev_items.begin(), prev_items.end(), selected.begin(), selected.end(),
-                                std::insert_iterator<std::vector<SPItem *> >(page_items, page_items.begin()));
-
-            SPPage::moveItems(Geom::Translate(rect->min() - origin), page_items);
-        } else {
-            fitToRect(rect, _selected_page);
         }
+    } else if (auto rect = selection->documentBounds(SPItem::VISUAL_BBOX)) {
+        fitToRect(rect, _selected_page);
     }
 }
 
@@ -565,13 +547,13 @@ void PageManager::fitToRect(Geom::OptRect rect, SPPage *page)
     bool viewport = true;
     if (page) {
         viewport = page->isViewportPage();
-        page->setDesktopRect(*rect);
+        page->setDocumentRect(*rect);
     }
     if (viewport) {
         _document->fitToRect(*rect);
         if (page && !page->isViewportPage()) {
             // The document's fitToRect has slightly mangled the page rect, fix it.
-            page->setDesktopRect(Geom::Rect(Geom::Point(0, 0), rect->dimensions()));
+            page->setDocumentRect(Geom::Rect(Geom::Point(0, 0), rect->dimensions()));
         }
     }
 }

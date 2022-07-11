@@ -76,7 +76,7 @@ private:
     std::vector<SPKnot *> resize_knots;
     SPPage *highlight_item = nullptr;
     SPPage *dragging_item = nullptr;
-    std::optional<Geom::Rect> on_screen_rect;
+    std::optional<Geom::Rect> on_screen_rect; ///< On-screen rectangle, in desktop coordinates.
     Inkscape::CanvasItemRect *visual_box = nullptr;
     Inkscape::CanvasItemGroup *drag_group = nullptr;
     std::vector<Inkscape::CanvasItemBpath *> drag_shapes;

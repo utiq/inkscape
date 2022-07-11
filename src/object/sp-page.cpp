@@ -96,9 +96,7 @@ Geom::Rect SPPage::getRect() const
  */
 Geom::Rect SPPage::getDesktopRect() const
 {
-    auto rect = getDocumentRect();
-    rect *= document->dt2doc();
-    return rect;
+    return getDocumentRect() * document->doc2dt();
 }
 
 /**
@@ -121,7 +119,7 @@ Geom::Rect SPPage::getSensitiveRect() const
 }
 
 /**
- * Set the page rectangle in it's native units.
+ * Set the page rectangle in its native units.
  */
 void SPPage::setRect(Geom::Rect rect)
 {
@@ -138,22 +136,34 @@ void SPPage::setRect(Geom::Rect rect)
 }
 
 /**
- * Set the page rectangle is desktop coordinates.
+ * Set the page rectangle in document coordinates.
  */
-void SPPage::setDesktopRect(Geom::Rect rect)
+void SPPage::setDocumentRect(Geom::Rect rect)
 {
-    rect *= document->doc2dt();
     setRect(rect * document->getDocumentScale().inverse());
 }
 
 /**
- * Set just the height and width from a predefined size.
+ * Set the page rectangle in desktop coordinates.
  */
-void SPPage::setDesktopSize(double width, double height)
+void SPPage::setDesktopRect(Geom::Rect rect)
 {
-    auto rect = getDesktopRect();
+    setDocumentRect(rect * document->dt2doc());
+}
+
+/** @brief
+ * Set just the height and width from a predefined size.
+ * These dimensions are in document units, which happen to be the same
+ * as desktop units, since pages are aligned to the coordinate axes.
+ *
+ * @param width The desired width in document/desktop units.
+ * @param height The desired height in document/desktop units.
+ */
+void SPPage::setSize(double width, double height)
+{
+    auto rect = getDocumentRect();
     rect.setMax(rect.corner(0) + Geom::Point(width, height));
-    setDesktopRect(rect);
+    setDocumentRect(rect);
 }
 
 /**
@@ -200,7 +210,7 @@ bool SPPage::itemOnPage(SPItem *item, bool contains) const
 bool SPPage::isViewportPage() const
 {
     auto rect = document->preferredBounds();
-    return getDesktopRect().corner(0) == rect->corner(0);
+    return getDocumentRect().corner(0) == rect->corner(0);
 }
 
 /**

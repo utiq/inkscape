@@ -57,8 +57,9 @@ public:
     Geom::Rect getDocumentRect() const;
     Geom::Rect getSensitiveRect() const;
     void setRect(Geom::Rect rect);
+    void setDocumentRect(Geom::Rect rect);
     void setDesktopRect(Geom::Rect rect);
-    void setDesktopSize(double width, double height);
+    void setSize(double width, double height);
     std::vector<SPItem *> getExclusiveItems(bool hidden = true) const;
     std::vector<SPItem *> getOverlappingItems(bool hidden = true) const;
     bool itemOnPage(SPItem *item, bool contains = false) const;

@@ -131,7 +131,7 @@ void PagesTool::resizeKnotSet(Geom::Rect rect)
 
 void PagesTool::resizeKnotMoved(SPKnot *knot, Geom::Point const &ppointer, guint state)
 {
-    Geom::Rect rect;
+    Geom::Rect rect; ///< Page rectangle in desktop coordinates.
 
     auto page = _desktop->getDocument()->getPageManager().getSelected();
     if (page) {
@@ -139,7 +139,7 @@ void PagesTool::resizeKnotMoved(SPKnot *knot, Geom::Point const &ppointer, guint
         rect = page->getDesktopRect();
     } else if (auto document = _desktop->getDocument()) {
         // Resizing the naked viewBox
-        rect = *(document->preferredBounds());
+        rect = *(document->preferredBounds()) * document->doc2dt();
     }
 
     int index;
@@ -164,7 +164,7 @@ void PagesTool::resizeKnotMoved(SPKnot *knot, Geom::Point const &ppointer, guint
 
         visual_box->show();
         visual_box->set_rect(rect);
-        on_screen_rect = Geom::Rect(rect);
+        on_screen_rect = rect;
         mouse_is_pressed = true;
     }
 }
@@ -191,11 +191,7 @@ void PagesTool::resizeKnotFinished(SPKnot *knot, guint state)
     auto document = _desktop->getDocument();
     auto page = document->getPageManager().getSelected();
     if (on_screen_rect) {
-        if (!page || page->isViewportPage()) {
-            // Adjust viewport so it's scroll adjustment is correct
-            *on_screen_rect *= document->dt2doc();
-        }
-        document->getPageManager().fitToRect(*on_screen_rect, page);
+        document->getPageManager().fitToRect(*on_screen_rect * document->dt2doc(), page);
         Inkscape::DocumentUndo::done(document, "Resize page", INKSCAPE_ICON("tool-pages"));
         on_screen_rect = {};
     }

@@ -892,35 +892,41 @@ void SPDocument::fitToRect(Geom::Rect const &rect, bool)
         nv_units = unit_table.getUnit(root->height.unit);
     }
 
-    // rect in desktop coordinates before changing document dimensions
-    auto rect_dt_old = rect * doc2dt();
+    // 1. Calculate geometric transformations that must be applied to the drawing,
+    //    pages, grids and guidelines to compensate for the changed origin.
+    bool y_down = is_yaxisdown();
+    double const old_height = root->height.computed;
+    double const tr_x = -rect[Geom::X].min();
+    double const tr_y_items = -rect[Geom::Y].min() * yaxisdir();
+    double const tr_y_gadgets = y_down ? -rect[Geom::Y].min() : rect[Geom::Y].max() - old_height;
 
+    // Item translation (in desktop coordinates)
+    auto const item_translation = Geom::Translate(tr_x, tr_y_items);
+    // Translation of grids and guides (in document coordinates)
+    auto const gadget_translation = Geom::Translate(tr_x, tr_y_gadgets);
+
+    // 2. Translate the guides.
+    auto *nv = getNamedView();
+    if (nv) {
+        // It's important to do it BEFORE the document is resized, in order to ensure
+        // the correct undo sequence. During undo, the document height will be restored
+        // first, so the guides can then correctly recalculate their own position.
+        // See https://gitlab.com/inkscape/inkscape/-/issues/615
+        nv->translateGuides(gadget_translation);
+    }
+
+    // 3. Resize the document. This changes the SVG origin relative to the drawing.
     setWidthAndHeight(Quantity(Quantity::convert(rect.width(),  "px", nv_units), nv_units),
                       Quantity(Quantity::convert(rect.height(), "px", nv_units), nv_units));
 
-    // rect in desktop coordinates after changing document dimensions
-    auto rect_dt_new = rect * doc2dt();
+    // 4. Translate everything to cancel out the change in the origin position.
+    root->translateChildItems(item_translation);
+    if (nv) {
+        nv->translateGrids(gadget_translation);
+        _page_manager->movePages(item_translation);
 
-    bool y_down = is_yaxisdown();
-    {
-        // Translate drawing contents to the origin
-        double const box_x = rect_dt_new[Geom::X].min();
-        double const box_y = y_down ? rect_dt_new[Geom::Y].min()
-                                    : rect_dt_new.height() - rect_dt_old[Geom::Y].max();
-        root->translateChildItems(Geom::Translate(-box_x, -box_y));
-    }
-
-    if (auto *nv = getNamedView()) {
-        Geom::Translate tr2(-rect_dt_old.min());
-        nv->translateGuides(tr2);
-        nv->translateGrids(tr2);
-        _page_manager->movePages(tr2);
-
-        // update the viewport so the drawing appears to stay where it was
-        double const delta_x = rect_dt_old[Geom::X].min();
-        double const delta_y = y_down ? rect_dt_old[Geom::Y].min()
-                                      : rect_dt_new[Geom::Y].max() - rect_dt_new.height();
-        nv->scrollAllDesktops(delta_x, delta_y);
+        // FIXME: The scroll state isn't restored during undo.
+        nv->scrollAllDesktops(-tr_x, -tr_y_gadgets * yaxisdir());
     }
 }
 
