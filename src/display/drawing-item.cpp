@@ -219,12 +219,6 @@ void DrawingItem::setTransform(Geom::Affine const &new_trans)
     if (_transform) {
         current = *_transform;
     }
-    bool should_cache = !(new_trans.isTranslation(EPS) && !new_trans.isIdentity(EPS));
-    if (_cached && !should_cache) {
-        setCached(false, true);
-    } else if (!_cached && should_cache) {
-        setCached(true, (_filter && _drawing.renderFilters()));
-    }
 
     if (!Geom::are_near(current, new_trans, EPS)) {
         // mark the area where the object was for redraw.
@@ -1172,7 +1166,7 @@ double
 DrawingItem::_cacheScore()
 {
     Geom::OptIntRect cache_rect = _cacheRect();
-    if (!cache_rect || !_cached) return -1.0;
+    if (!cache_rect) return -1.0;
     // a crude first approximation:
     // the basic score is the number of pixels in the drawbox
     double score = cache_rect->area();

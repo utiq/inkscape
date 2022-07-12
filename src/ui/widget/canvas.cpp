@@ -118,6 +118,7 @@ struct Prefs
     Pref<int>    update_strategy          = Pref<int>   ("/options/rendering/update_strategy", 3, 1, 3);
     Pref<int>    render_time_limit        = Pref<int>   ("/options/rendering/render_time_limit", 1000, 100, 1000000);
     Pref<bool>   use_new_bisector         = Pref<bool>  ("/options/rendering/use_new_bisector", true);
+    Pref<bool>   no_tiles                 = Pref<bool>  ("/options/rendering/no_tiles", false);
     Pref<int>    new_bisector_size        = Pref<int>   ("/options/rendering/new_bisector_size", 500, 1, 10000);
     Pref<int>    pad                      = Pref<int>   ("/options/rendering/pad", 350, 0, 1000);
     Pref<int>    margin                   = Pref<int>   ("/options/rendering/margin", 100, 0, 1000);
@@ -150,6 +151,7 @@ struct Prefs
         render_time_limit.set_enabled(on);
         use_new_bisector.set_enabled(on);
         new_bisector_size.set_enabled(on);
+        // no tiles not added to not make a extra pref
         pad.set_enabled(on);
         margin.set_enabled(on);
         preempt.set_enabled(on);
@@ -3886,13 +3888,27 @@ bool CanvasPrivate::on_idle()
         // Get the region we are asked to paint.
         auto region = Cairo::Region::create(geom_to_cairo(bounds));
         region->subtract(clean);
-
+        
+        Geom::OptIntRect dragged = Geom::OptIntRect(); 
+        if (q->_grabbed_canvas_item) {
+            dragged = q->_grabbed_canvas_item->get_bounds().roundOutwards();
+            if (dragged) {
+                (*dragged).expandBy(prefs.margin + prefs.pad);
+                dragged = dragged & store->rect;
+                if (dragged) {
+                    region->subtract(geom_to_cairo(*dragged));
+                }
+            }
+        }
         // Get the list of rectangles to paint, coarsened to avoid fragmentation.
         auto rects = coarsen(region,
                              std::min<int>(prefs.coarsener_min_size, prefs.new_bisector_size / 2),
                              std::min<int>(prefs.coarsener_glue_size, prefs.new_bisector_size / 2),
                              prefs.coarsener_min_fullness);
-
+        if (dragged) {
+            // this become the first after look for cursor
+            rects.push_back(*dragged);
+        }
         // Put the rectangles into a heap sorted by distance from mouse.
         auto cmp = [&] (const Geom::IntRect &a, const Geom::IntRect &b) {
             return distSq(mouse_loc, a) > distSq(mouse_loc, b);
@@ -3900,6 +3916,7 @@ bool CanvasPrivate::on_idle()
         std::make_heap(rects.begin(), rects.end(), cmp);
 
         // Process rectangles until none left or timed out.
+        size_t counter = 0;
         while (!rects.empty()) {
             // Extract the closest rectangle to the mouse.
             std::pop_heap(rects.begin(), rects.end(), cmp);
@@ -3925,7 +3942,7 @@ bool CanvasPrivate::on_idle()
 
             // If the rectangle needs bisecting, bisect it and put it back on the heap.
             auto axis = prefs.use_new_bisector ? new_bisector(rect) : old_bisector(rect);
-            if (axis) {
+            if (axis && !prefs.no_tiles && !(dragged && !counter)) {
                 int mid = rect[*axis].middle();
                 auto lo = rect; lo[*axis].setMax(mid); add_rect(lo);
                 auto hi = rect; hi[*axis].setMin(mid); add_rect(hi);
