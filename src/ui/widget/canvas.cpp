@@ -3332,7 +3332,10 @@ bool CanvasPrivate::on_idle()
         // Recreate the store fragment at the current affine so that it covers the visible region + prerender margin.
         auto store = graphics->get_store();
         store->rect = expandedBy(q->get_area_world(), prefs.margin + prefs.pad);
-        q->_drawing->setCacheLimit(store->rect, false);
+        Geom::IntRect expanded = store->rect;
+        Geom::IntPoint expansion(expanded.width()/2, expanded.height()/2);
+        expanded.expandBy(expansion);
+        q->_drawing->setCacheLimit(expanded);
         store->affine = q->_affine;
         auto content_size = store->rect.dimensions() * device_scale;
 
@@ -3407,7 +3410,10 @@ bool CanvasPrivate::on_idle()
         // Create a new fragment centred on the viewport.
         auto rect = expandedBy(q->get_area_world(), prefs.margin + prefs.pad);
         auto content_size = rect.dimensions() * device_scale;
-
+        Geom::IntRect expanded = rect;
+        Geom::IntPoint expansion(expanded.width()/2, expanded.height()/2);
+        expanded.expandBy(expansion);
+        q->_drawing->setCacheLimit(expanded);
         if (q->get_opengl_enabled()) {
             auto gl = glstate();
 

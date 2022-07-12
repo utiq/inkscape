@@ -219,7 +219,13 @@ void DrawingItem::setTransform(Geom::Affine const &new_trans)
     if (_transform) {
         current = *_transform;
     }
-    
+    bool should_cache = !(new_trans.isTranslation(EPS) && !new_trans.isIdentity(EPS));
+    if (_cached && !should_cache) {
+        setCached(false, true);
+    } else if (!_cached && should_cache) {
+        setCached(true, (_filter && _drawing.renderFilters()));
+    }
+
     if (!Geom::are_near(current, new_trans, EPS)) {
         // mark the area where the object was for redraw.
         _markForRendering();
@@ -665,6 +671,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
 {
     bool outline = _drawing.outline();
     bool render_filters = _drawing.renderFilters();
+    bool forcecache = _filter && render_filters;
     // stop_at is handled in DrawingGroup, but this check is required to handle the case
     // where a filtered item with background-accessing filter has enable-background: new
     if (this == stop_at) {
@@ -686,21 +693,20 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
         return RENDER_OK;
     }
 
-    // carea is the area to paint
-    Geom::OptIntRect carea = Geom::intersect(area, _drawbox);
-
+    Geom::OptIntRect carea = area & _drawbox;
     if (!carea) {
         return RENDER_OK;
     }
-    // iarea is the bounding box for intermediate rendering
-    // Note 1: Pixels inside iarea but outside carea are invalid
-    //         (incomplete filter dependence region).
-    // Note 2: We only need to render carea of clip and mask, but
-    //         iarea of the object.
-    
+    // TODO study chenge the next iarea funcitions to this one commented
+    // Nonmaly _cacheRect is not in comandline.
+    // If we decide do it we need to chage a test rendering
+    // a few chaged
+    //if (_filter && render_filters) {
+    //    carea = _cacheRect(); ? _cacheRect() : _drawbox;
+    //}
     Geom::OptIntRect iarea = carea;
     // expand carea to contain the dependent area of filters.
-    if (_filter && render_filters) {
+    if (forcecache) {
         iarea = _cacheRect();
         if (!iarea) {
             iarea = carea;
@@ -711,11 +717,12 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
             setCached(true, true);
         }
     }
-
-    if (!iarea) {
+    // carea is the area to paint
+    carea = iarea & _drawbox;
+    if (!carea) {
         return RENDER_OK;
     }
-    
+
     // Device scale for HiDPI screens (typically 1 or 2)
     int device_scale = dc.surface()->device_scale();
 
@@ -732,7 +739,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
         if (_cache) {
             _cache->prepare();
             dc.setOperator(ink_css_blend_to_cairo_operator(_mix_blend_mode));
-            _cache->paintFromCache(dc, carea, _filter && render_filters);
+            _cache->paintFromCache(dc, carea, forcecache);
             if (!carea) {
                 dc.setSource(0, 0, 0, 0);
                 return RENDER_OK;
@@ -742,6 +749,8 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
             // was just turned on after the last update phase, or because
             // we were previously outside of the canvas.
             Geom::OptIntRect cl = _cacheRect();
+            if (!cl) 
+                cl = carea;
             _cache = new DrawingCache(*cl, device_scale);
         }
     } else {
@@ -766,7 +775,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
         setCached(false, true);
     }
     _prev_nir = needs_intermediate_rendering;
-    nir |= (_cache != nullptr);                      // 5. it is to be cached
+    nir |= (_cache != nullptr);                      // 8. it is to be cached
 
     /* How the rendering is done.
      *
@@ -787,11 +796,11 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
 
     if ((flags & RENDER_FILTER_BACKGROUND) || !needs_intermediate_rendering) {
         dc.setOperator(ink_css_blend_to_cairo_operator(SP_CSS_BLEND_NORMAL));
-        return _renderItem(dc, *iarea, flags & ~RENDER_FILTER_BACKGROUND, stop_at);
+        return _renderItem(dc, *carea, flags & ~RENDER_FILTER_BACKGROUND, stop_at);
     }
 
 
-    DrawingSurface intermediate(*iarea, device_scale);
+    DrawingSurface intermediate(*carea, device_scale);
     DrawingContext ict(intermediate);
 
     // This path fails for patterns/hatches when stepping the pattern to handle overflows.
@@ -840,7 +849,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
 
     // 3. Render object itself
     ict.pushGroup();
-    render_result = _renderItem(ict, *iarea, flags, stop_at);
+    render_result = _renderItem(ict, *carea, flags, stop_at);
 
     // 4. Apply filter.
     if (_filter && render_filters) {
@@ -851,9 +860,9 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
                 if (bg_root->_background_new) break;
             }
             if (bg_root) {
-                DrawingSurface bg(*iarea, device_scale);
+                DrawingSurface bg(*carea, device_scale);
                 DrawingContext bgdc(bg);
-                bg_root->render(bgdc, *iarea, flags | RENDER_FILTER_BACKGROUND, this);
+                bg_root->render(bgdc, *carea, flags | RENDER_FILTER_BACKGROUND, this);
                 _filter->render(this, ict, &bgdc);
                 rendered = true;
             }
@@ -874,25 +883,16 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
     // 6. Paint the completed rendering onto the base context (or into cache)
     if (_cached && _cache) {
         DrawingContext cachect(*_cache);
-        Geom::OptIntRect cl = _cacheRect();
-        if (_filter && render_filters && cl) {
-            cachect.rectangle(*cl);
-        } else {
-            cachect.rectangle(*iarea);
-        }
+        cachect.rectangle(*carea);
         cachect.setOperator(CAIRO_OPERATOR_SOURCE);
         cachect.setSource(&intermediate);
         cachect.fill();
-
-        if (_filter && render_filters && cl) {
-            _cache->markClean(*cl);
-        } else {
-            _cache->markClean(*iarea);
-        }
+        _cache->markClean(*carea);
     }
 
     dc.rectangle(*carea);
     dc.setSource(&intermediate);
+
     // 7. Render blend mode
     dc.setOperator(ink_css_blend_to_cairo_operator(_mix_blend_mode));
     dc.fill();

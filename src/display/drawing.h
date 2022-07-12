@@ -69,7 +69,7 @@ public:
     bool getOutlineSensitive() const { return _outline_sensitive; };
     Geom::PathVector clip;
     Geom::OptIntRect const &cacheLimit() const;
-    void setCacheLimit(Geom::OptIntRect const &r, bool update_cache = true);
+    void setCacheLimit(Geom::OptIntRect const &r);
     void setCacheBudget(size_t bytes);
 
     OutlineColors const &colors() const { return _colors; }

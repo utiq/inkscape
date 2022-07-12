@@ -323,6 +323,10 @@ void DrawingCache::paintFromCache(DrawingContext &dc, Geom::OptIntRect &area, bo
     cairo_region_subtract(dirty_region, _clean_region);
 
     if (is_filter && !cairo_region_is_empty(dirty_region)) { // To allow fast panning on high zoom on filters
+        cairo_region_destroy(cache_region);
+        cairo_region_destroy(dirty_region);
+        cairo_region_destroy(_clean_region);
+        _clean_region = cairo_region_create();
         return;
     }
     if (cairo_region_is_empty(dirty_region)) {

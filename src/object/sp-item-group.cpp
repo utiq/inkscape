@@ -1003,15 +1003,13 @@ void SPGroup::update_patheffect(bool write) {
                 lpe_item->update_patheffect(write);
                 // update satellites
                 if (!lpe_item->hasPathEffect()) {
-                    gchar *classes = g_strdup(lpe_item->getAttribute("class"));
-                    if (classes) {
-                        Glib::ustring classdata = classes;
+                    if (auto classes = lpe_item->getAttribute("class")) {
+                        auto classdata = Glib::ustring(classes);
                         size_t pos = classdata.find("UnoptimicedTransforms");
-                        if ( pos != std::string::npos ) {
+                        if (pos != Glib::ustring::npos) {
                             lpe_item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
                         }
                     }
-                    g_free(classes);
                 }
             }
         }

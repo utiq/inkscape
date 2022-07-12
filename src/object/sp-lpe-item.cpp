@@ -357,15 +357,14 @@ bool SPLPEItem::optimizeTransforms()
         }
     }
     // LPEs with satellites (and his satellites) has this class auto
-    gchar *classes = g_strdup(getAttribute("class"));
-    if (classes) {
-        Glib::ustring classdata = classes;
+    if (auto classes = getAttribute("class")) {
+        auto classdata = Glib::ustring(classes);
         size_t pos = classdata.find("UnoptimicedTransforms");
-        if ( pos != std::string::npos ) {
+        if (pos != Glib::ustring::npos) {
             return false;
         }
     }
-    g_free(classes);
+
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     return !prefs->getBool("/options/preservetransform/value", false);
 }
