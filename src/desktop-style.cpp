@@ -409,6 +409,7 @@ sp_desktop_apply_style_tool(SPDesktop *desktop, Inkscape::XML::Node *repr, Glib:
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     if (prefs->getBool(tool_path + "/usecurrent") && css_current) {
+        sp_repr_css_unset_property(css_current, "shape-inside");
         sp_repr_css_unset_property(css_current, "mix-blend-mode");
         sp_repr_css_unset_property(css_current, "filter");
         sp_repr_css_set(repr, css_current, "style");
