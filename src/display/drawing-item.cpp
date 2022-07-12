@@ -697,13 +697,7 @@ DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flag
     if (!carea) {
         return RENDER_OK;
     }
-    // TODO study chenge the next iarea funcitions to this one commented
-    // Nonmaly _cacheRect is not in comandline.
-    // If we decide do it we need to chage a test rendering
-    // a few chaged
-    //if (_filter && render_filters) {
-    //    carea = _cacheRect(); ? _cacheRect() : _drawbox;
-    //}
+
     Geom::OptIntRect iarea = carea;
     // expand carea to contain the dependent area of filters.
     if (forcecache) {
@@ -1178,7 +1172,7 @@ double
 DrawingItem::_cacheScore()
 {
     Geom::OptIntRect cache_rect = _cacheRect();
-    if (!cache_rect) return -1.0;
+    if (!cache_rect || !_cached) return -1.0;
     // a crude first approximation:
     // the basic score is the number of pixels in the drawbox
     double score = cache_rect->area();
