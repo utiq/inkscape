@@ -150,7 +150,6 @@ struct Prefs
         render_time_limit.set_enabled(on);
         use_new_bisector.set_enabled(on);
         new_bisector_size.set_enabled(on);
-        // no tiles not added to not make a extra pref
         pad.set_enabled(on);
         margin.set_enabled(on);
         preempt.set_enabled(on);
