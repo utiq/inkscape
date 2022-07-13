@@ -920,6 +920,7 @@ void ObjectsPanel::setRootWatcher()
 void ObjectsPanel::selectionChanged(Selection *selected)
 {
     root_watcher->setSelectedBitRecursive(SELECTED_OBJECT, false);
+    bool keep_current_item = false;
 
     for (auto item : selected->items()) {
         ObjectWatcher *watcher = nullptr;
@@ -935,6 +936,7 @@ void ObjectsPanel::selectionChanged(Selection *selected)
                 }
             }
         }
+        keep_current_item |= (item == current_item);
         if (watcher) {
             if (auto final_watcher = watcher->findChild(item->getRepr())) {
                 final_watcher->setSelectedBit(SELECTED_OBJECT, true);
@@ -945,6 +947,9 @@ void ObjectsPanel::selectionChanged(Selection *selected)
         } else {
             g_warning("Can't find a mid step in tree selection!");
         }
+    }
+    if (!keep_current_item) {
+        current_item = nullptr;
     }
 }
 
