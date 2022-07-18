@@ -114,7 +114,8 @@ ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int l
     bool ret = ctx->setPsTarget(filename);
     if(ret) {
         /* Render document */
-        if (ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base)) {
+        ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
+        if (ret) {
             /* Render multiple pages */
             ret = renderer->renderPages(ctx, doc, false);
             ctx->finish();

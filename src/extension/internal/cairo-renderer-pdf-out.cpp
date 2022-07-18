@@ -110,7 +110,8 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
     bool ret = ctx->setPdfTarget (filename);
     if(ret) {
         /* Render document */
-        if (ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base)) {
+        ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
+        if (ret) {
             /* Render multiple pages */
             ret = renderer->renderPages(ctx, doc, flags.stretch_to_fit);
             ctx->finish();

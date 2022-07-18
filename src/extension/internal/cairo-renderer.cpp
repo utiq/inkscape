@@ -188,7 +188,8 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
         SPMarker *marker = nullptr;
         auto parentobj = shape->parent;
         while (parentobj) {
-            if (marker = dynamic_cast<SPMarker *>(parentobj)) {
+            marker = dynamic_cast<SPMarker *>(parentobj);
+            if (marker) {
                 break;
             }
             parentobj = parentobj->parent;
