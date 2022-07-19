@@ -154,12 +154,21 @@ static bool _workaround_issue_70__gdk_pixbuf_loader_write( //
  */
 Pixbuf *Pixbuf::cropTo(const Geom::IntRect &area) const
 {
-    // This copies twice, but can be run on const, which is useful.
-    auto copy = gdk_pixbuf_copy(_pixbuf);
-    // Without conversion the colors will shift
-    ensure_argb32(copy);
-    return new Pixbuf(gdk_pixbuf_new_subpixbuf(copy,
-        area.left(), area.top(), area.width(), area.height()));
+    GdkPixbuf *copy = nullptr;
+    auto source = _pixbuf;
+    if (_pixel_format == PF_CAIRO) {
+        // This copies twice, but can be run on const, which is useful.
+        copy = gdk_pixbuf_copy(_pixbuf);
+        ensure_pixbuf(copy);
+        source = copy;
+    }
+    auto cropped = gdk_pixbuf_new_subpixbuf(source,
+        area.left(), area.top(), area.width(), area.height());
+    if (copy) {
+        // Clean up our pixbuf copy
+        g_object_unref(copy);
+    }
+    return new Pixbuf(cropped);
 }
 
 Pixbuf *Pixbuf::create_from_data_uri(gchar const *uri_data, double svgdpi)
@@ -614,17 +623,11 @@ void Pixbuf::ensurePixelFormat(PixelFormat fmt)
  */
 void Pixbuf::ensure_argb32(GdkPixbuf *pb)
 {
-    gchar *pixel_format = reinterpret_cast<gchar*>(g_object_get_data(G_OBJECT(pb), "pixel_format"));
-    if (pixel_format != nullptr && strcmp(pixel_format, "argb32") == 0) {
-        // nothing to do
-        return;
-    }
     convert_pixels_pixbuf_to_argb32(
         gdk_pixbuf_get_pixels(pb),
         gdk_pixbuf_get_width(pb),
         gdk_pixbuf_get_height(pb),
         gdk_pixbuf_get_rowstride(pb));
-    g_object_set_data_full(G_OBJECT(pb), "pixel_format", g_strdup("argb32"), g_free);
 }
 
 /**
@@ -633,18 +636,11 @@ void Pixbuf::ensure_argb32(GdkPixbuf *pb)
  */
 void Pixbuf::ensure_pixbuf(GdkPixbuf *pb)
 {
-    gchar *pixel_format = reinterpret_cast<gchar*>(g_object_get_data(G_OBJECT(pb), "pixel_format"));
-    if (pixel_format == nullptr || strcmp(pixel_format, "pixbuf") == 0) {
-        // nothing to do
-        return;
-    }
-
     convert_pixels_argb32_to_pixbuf(
         gdk_pixbuf_get_pixels(pb),
         gdk_pixbuf_get_width(pb),
         gdk_pixbuf_get_height(pb),
         gdk_pixbuf_get_rowstride(pb));
-    g_object_set_data_full(G_OBJECT(pb), "pixel_format", g_strdup("pixbuf"), g_free);
 }
 
 } // namespace Inkscape
