@@ -588,6 +588,8 @@ gboolean ComboBoxEntryToolItem::combo_box_popup_cb(ComboBoxEntryToolItem *widget
 {
     static bool first_time = true;
     if (first_time) {
+        FontLister* fl = FontLister::get_instance();
+        fl->init_font_families(0, FONT_FAMILIES_GROUP_SIZE);
         gdk_threads_add_idle (add_more_font_families_idle, NULL);
         first_time = false;
     }
