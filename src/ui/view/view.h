@@ -116,8 +116,8 @@ protected:
      */
     virtual void setDocument(SPDocument *doc);
 
-    sigc::signal<void,double,double>   _resized_signal;
-    sigc::signal<void,gchar const*>    _document_filename_set_signal;
+    sigc::signal<void (double,double)>   _resized_signal;
+    sigc::signal<void (gchar const*)>    _document_filename_set_signal;
 
 private:
     sigc::connection _resized_connection;

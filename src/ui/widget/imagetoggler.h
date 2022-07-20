@@ -24,8 +24,8 @@ public:
     ImageToggler( char const *on, char const *off);
     ~ImageToggler() override = default;;
 
-    sigc::signal<void, const Glib::ustring&> signal_toggled() { return _signal_toggled;}
-    sigc::signal<void, GdkEvent const *> signal_pre_toggle()  { return _signal_pre_toggle; }
+    sigc::signal<void (const Glib::ustring&)> signal_toggled() { return _signal_toggled;}
+    sigc::signal<void (GdkEvent const *)> signal_pre_toggle()  { return _signal_pre_toggle; }
 
     Glib::PropertyProxy<bool> property_active() { return _property_active.get_proxy(); }
     Glib::PropertyProxy<bool> property_activatable() { return _property_activatable.get_proxy(); }
@@ -67,8 +67,8 @@ private:
     Glib::Property< Glib::RefPtr<Gdk::Pixbuf> > _property_pixbuf_on;
     Glib::Property< Glib::RefPtr<Gdk::Pixbuf> > _property_pixbuf_off;
 
-    sigc::signal<void, const Glib::ustring&> _signal_toggled;
-    sigc::signal<void, GdkEvent const *> _signal_pre_toggle;
+    sigc::signal<void (const Glib::ustring&)> _signal_toggled;
+    sigc::signal<void (GdkEvent const *)> _signal_pre_toggle;
 };
 
 

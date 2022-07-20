@@ -75,14 +75,14 @@ unsigned int ParamColor::set(unsigned int in)
     return in;
 }
 
-Gtk::Widget *ParamColor::get_widget(sigc::signal<void> *changeSignal)
+Gtk::Widget *ParamColor::get_widget(sigc::signal<void ()> *changeSignal)
 {
     if (_hidden) {
         return nullptr;
     }
 
     if (changeSignal) {
-        _changeSignal = new sigc::signal<void>(*changeSignal);
+        _changeSignal = new sigc::signal<void ()>(*changeSignal);
     }
 
     Gtk::Box *hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, GUI_PARAM_WIDGETS_SPACING));

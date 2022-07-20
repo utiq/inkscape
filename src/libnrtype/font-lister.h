@@ -296,7 +296,7 @@ public:
      * Handlers should block signals.
      * Input is fontspec to set.
      */
-    sigc::connection connectUpdate(sigc::slot<void> slot) {
+    sigc::connection connectUpdate(sigc::slot<void ()> slot) {
         return update_signal.connect(slot);
     }
 
@@ -331,7 +331,7 @@ private:
 
     bool block;
     void emit_update();
-    sigc::signal<void> update_signal;
+    sigc::signal<void ()> update_signal;
 };
 
 } // namespace Inkscape

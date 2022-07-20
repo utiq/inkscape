@@ -153,10 +153,10 @@ public:
      * @return the resulting connection
      */
     void emitModified(){ _emitModified(this->_flags); };
-    sigc::connection connectChanged(sigc::slot<void, Selection *> const &slot) {
+    sigc::connection connectChanged(sigc::slot<void (Selection *)> const &slot) {
         return _changed_signal.connect(slot);
     }
-    sigc::connection connectChangedFirst(sigc::slot<void, Selection *> const &slot)
+    sigc::connection connectChangedFirst(sigc::slot<void (Selection *)> const &slot)
     {
         return _changed_signal.slots().insert(_changed_signal.slots().begin(), slot);
     }
@@ -185,11 +185,11 @@ public:
      * @return the resulting connection
      *
      */
-    sigc::connection connectModified(sigc::slot<void, Selection *, unsigned int> const &slot)
+    sigc::connection connectModified(sigc::slot<void (Selection *, unsigned int)> const &slot)
     {
         return _modified_signal.connect(slot);
     }
-    sigc::connection connectModifiedFirst(sigc::slot<void, Selection *, unsigned int> const &slot)
+    sigc::connection connectModifiedFirst(sigc::slot<void (Selection *, unsigned int)> const &slot)
     {
         return _modified_signal.slots().insert(_modified_signal.slots().begin(), slot);
     }
@@ -238,8 +238,8 @@ private:
     std::map<SPObject *, sigc::connection> _modified_connections;
     sigc::connection _context_release_connection;
 
-    sigc::signal<void, Selection *> _changed_signal;
-    sigc::signal<void, Selection *, unsigned int> _modified_signal;
+    sigc::signal<void (Selection *)> _changed_signal;
+    sigc::signal<void (Selection *, unsigned int)> _modified_signal;
 };
 
 }

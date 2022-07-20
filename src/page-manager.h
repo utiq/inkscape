@@ -97,11 +97,11 @@ public:
     static void disablePages(SPDocument *document) { document->getPageManager().disablePages(); }
     static SPPage *newPage(SPDocument *document) { return document->getPageManager().newPage(); }
 
-    sigc::connection connectPageSelected(const sigc::slot<void, SPPage *> &slot)
+    sigc::connection connectPageSelected(const sigc::slot<void (SPPage *)> &slot)
     {
         return _page_selected_signal.connect(slot);
     }
-    sigc::connection connectPagesChanged(const sigc::slot<void> &slot) { return _pages_changed_signal.connect(slot); }
+    sigc::connection connectPagesChanged(const sigc::slot<void ()> &slot) { return _pages_changed_signal.connect(slot); }
 
     // Access from export.cpp and others for the guint32
     guint32 background_color = 0xffffff00;
@@ -125,8 +125,8 @@ private:
     SPPage *_selected_page = nullptr;
     std::vector<SPPage *> pages;
 
-    sigc::signal<void, SPPage *> _page_selected_signal;
-    sigc::signal<void> _pages_changed_signal;
+    sigc::signal<void (SPPage *)> _page_selected_signal;
+    sigc::signal<void ()> _pages_changed_signal;
 };
 
 } // namespace Inkscape

@@ -45,7 +45,7 @@ ControlPoint::ColorSet ControlPoint::_default_color_set = {
 
 ControlPoint *ControlPoint::mouseovered_point = nullptr;
 
-sigc::signal<void, ControlPoint*> ControlPoint::signal_mouseover_change;
+sigc::signal<void (ControlPoint*)> ControlPoint::signal_mouseover_change;
 
 Geom::Point ControlPoint::_drag_event_origin(Geom::infinity(), Geom::infinity());
 

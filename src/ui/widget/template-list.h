@@ -34,8 +34,8 @@ public:
     std::shared_ptr<Extension::TemplatePreset> get_selected_preset();
     SPDocument *new_document();
 
-    sigc::connection connectItemSelected(const sigc::slot<void> &slot) { return _item_selected_signal.connect(slot); }
-    sigc::connection connectItemActivated(const sigc::slot<void> &slot) { return _item_activated_signal.connect(slot); }
+    sigc::connection connectItemSelected(const sigc::slot<void ()> &slot) { return _item_selected_signal.connect(slot); }
+    sigc::connection connectItemActivated(const sigc::slot<void ()> &slot) { return _item_activated_signal.connect(slot); }
 
 private:
     Glib::RefPtr<Gtk::ListStore> generate_category(std::string label);
@@ -43,8 +43,8 @@ private:
     Gtk::IconView *get_iconview(Gtk::Widget *widget);
     std::shared_ptr<Extension::TemplatePreset> get_preset(std::string key);
 
-    sigc::signal<void> _item_selected_signal;
-    sigc::signal<void> _item_activated_signal;
+    sigc::signal<void ()> _item_selected_signal;
+    sigc::signal<void ()> _item_activated_signal;
 };
 
 } // namespace Widget

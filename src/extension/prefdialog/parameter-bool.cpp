@@ -62,7 +62,7 @@ public:
      *
      * @param  param  Which parameter to adjust on changing the check button
      */
-    ParamBoolCheckButton(ParamBool *param, char *label, sigc::signal<void> *changeSignal)
+    ParamBoolCheckButton(ParamBool *param, char *label, sigc::signal<void ()> *changeSignal)
         : Gtk::CheckButton(label)
         , _pref(param)
         , _changeSignal(changeSignal) {
@@ -80,7 +80,7 @@ public:
 private:
     /** Param to change. */
     ParamBool *_pref;
-    sigc::signal<void> *_changeSignal;
+    sigc::signal<void ()> *_changeSignal;
 };
 
 void ParamBoolCheckButton::on_toggle()
@@ -109,7 +109,7 @@ void ParamBool::string_to_value(const std::string &in)
     }
 }
 
-Gtk::Widget *ParamBool::get_widget(sigc::signal<void> *changeSignal)
+Gtk::Widget *ParamBool::get_widget(sigc::signal<void ()> *changeSignal)
 {
     if (_hidden) {
         return nullptr;

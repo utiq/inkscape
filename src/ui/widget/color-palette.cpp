@@ -596,11 +596,11 @@ void ColorPalette::set_palettes(const std::vector<ColorPalette::palette_t>& pale
     }
 }
 
-sigc::signal<void, Glib::ustring>& ColorPalette::get_palette_selected_signal() {
+sigc::signal<void (Glib::ustring)>& ColorPalette::get_palette_selected_signal() {
     return _signal_palette_selected;
 }
 
-sigc::signal<void>& ColorPalette::get_settings_changed_signal() {
+sigc::signal<void ()>& ColorPalette::get_settings_changed_signal() {
     return _signal_settings_changed;
 }
 

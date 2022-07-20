@@ -448,15 +448,15 @@ private:
 
     /*********** Signals **************/
 
-    typedef sigc::signal<void, SPObject *> IDChangedSignal;
-    typedef sigc::signal<void> ResourcesChangedSignal;
-    typedef sigc::signal<void, unsigned> ModifiedSignal;
-    typedef sigc::signal<void, char const *> FilenameSetSignal;
-    typedef sigc::signal<void, double, double> ResizedSignal;
-    typedef sigc::signal<void> ReconstructionStart;
-    typedef sigc::signal<void> ReconstructionFinish;
-    typedef sigc::signal<void> CommitSignal;
-    typedef sigc::signal<void> BeforeCommitSignal; // allow to add actions berfore commit to include in undo
+    typedef sigc::signal<void (SPObject *)> IDChangedSignal;
+    typedef sigc::signal<void ()> ResourcesChangedSignal;
+    typedef sigc::signal<void (unsigned)> ModifiedSignal;
+    typedef sigc::signal<void (char const *)> FilenameSetSignal;
+    typedef sigc::signal<void (double, double)> ResizedSignal;
+    typedef sigc::signal<void ()> ReconstructionStart;
+    typedef sigc::signal<void ()> ReconstructionFinish;
+    typedef sigc::signal<void ()> CommitSignal;
+    typedef sigc::signal<void ()> BeforeCommitSignal; // allow to add actions berfore commit to include in undo
 
     typedef std::map<GQuark, SPDocument::IDChangedSignal> IDChangedSignalMap;
     typedef std::map<GQuark, SPDocument::ResourcesChangedSignal> ResourcesChangedSignalMap;
@@ -478,7 +478,7 @@ private:
     sigc::connection selChangeConnection;
     sigc::connection desktopActivatedConnection;
 
-    sigc::signal<void> destroySignal;
+    sigc::signal<void ()> destroySignal;
 
 public:
     /**
@@ -489,7 +489,7 @@ public:
     void addUndoObserver(Inkscape::UndoStackObserver& observer);
     void removeUndoObserver(Inkscape::UndoStackObserver& observer);
 
-    sigc::connection connectDestroy(sigc::signal<void>::slot_type slot);
+    sigc::connection connectDestroy(sigc::signal<void ()>::slot_type slot);
     sigc::connection connectModified(ModifiedSignal::slot_type slot);
     sigc::connection connectFilenameSet(FilenameSetSignal::slot_type slot);
     sigc::connection connectCommit(CommitSignal::slot_type slot);

@@ -97,15 +97,15 @@ public:
 
     // FIXME: signals should NOT need to emit the object they came from, the callee should
     // be able to figure that out
-    sigc::signal<void, SPKnot *, unsigned int> click_signal;
-    sigc::signal<void, SPKnot*, unsigned int> doubleclicked_signal;
-    sigc::signal<void, SPKnot*, unsigned int> mousedown_signal;
-    sigc::signal<void, SPKnot*, unsigned int> grabbed_signal;
-    sigc::signal<void, SPKnot *, unsigned int> ungrabbed_signal;
-    sigc::signal<void, SPKnot *, Geom::Point const &, unsigned int> moved_signal;
-    sigc::signal<bool, SPKnot*, GdkEvent*> event_signal;
+    sigc::signal<void (SPKnot *, unsigned int)> click_signal;
+    sigc::signal<void (SPKnot*, unsigned int)> doubleclicked_signal;
+    sigc::signal<void (SPKnot*, unsigned int)> mousedown_signal;
+    sigc::signal<void (SPKnot*, unsigned int)> grabbed_signal;
+    sigc::signal<void (SPKnot *, unsigned int)> ungrabbed_signal;
+    sigc::signal<void (SPKnot *, Geom::Point const &, unsigned int)> moved_signal;
+    sigc::signal<bool (SPKnot*, GdkEvent*)> event_signal;
 
-    sigc::signal<bool, SPKnot*, Geom::Point*, unsigned int> request_signal;
+    sigc::signal<bool (SPKnot*, Geom::Point*, unsigned int)> request_signal;
 
 
     //TODO: all the members above should eventualle become private, accessible via setters/getters

@@ -179,10 +179,10 @@ Glib::ustring ParamOptionGroup::value_from_label(const Glib::ustring label)
 class RadioWidget : public Gtk::RadioButton {
 private:
     ParamOptionGroup *_pref;
-    sigc::signal<void> *_changeSignal;
+    sigc::signal<void ()> *_changeSignal;
 public:
     RadioWidget(Gtk::RadioButtonGroup& group, const Glib::ustring& label,
-                ParamOptionGroup *pref, sigc::signal<void> *changeSignal)
+                ParamOptionGroup *pref, sigc::signal<void ()> *changeSignal)
         : Gtk::RadioButton(group, label)
         , _pref(pref)
         , _changeSignal(changeSignal)
@@ -220,10 +220,10 @@ void RadioWidget::changed()
 class ComboWidget : public Gtk::ComboBoxText {
 private:
     ParamOptionGroup *_pref;
-    sigc::signal<void> *_changeSignal;
+    sigc::signal<void ()> *_changeSignal;
 
 public:
-    ComboWidget(ParamOptionGroup *pref, sigc::signal<void> *changeSignal)
+    ComboWidget(ParamOptionGroup *pref, sigc::signal<void ()> *changeSignal)
         : _pref(pref)
         , _changeSignal(changeSignal)
     {
@@ -252,7 +252,7 @@ void ComboWidget::changed()
 /**
  * Creates the widget for the optiongroup parameter.
  */
-Gtk::Widget *ParamOptionGroup::get_widget(sigc::signal<void> *changeSignal)
+Gtk::Widget *ParamOptionGroup::get_widget(sigc::signal<void ()> *changeSignal)
 {
     if (_hidden) {
         return nullptr;

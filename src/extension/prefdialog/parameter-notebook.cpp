@@ -68,7 +68,7 @@ ParamNotebook::ParamNotebookPage::ParamNotebookPage(Inkscape::XML::Node *xml, In
  *
  * Builds a notebook page (a vbox) and puts parameters on it.
  */
-Gtk::Widget *ParamNotebook::ParamNotebookPage::get_widget(sigc::signal<void> *changeSignal)
+Gtk::Widget *ParamNotebook::ParamNotebookPage::get_widget(sigc::signal<void ()> *changeSignal)
 {
     if (_hidden) {
         return nullptr;
@@ -234,7 +234,7 @@ void NotebookWidget::changed_page(Gtk::Widget * /*page*/, guint pagenum)
  *
  * Builds a notebook and puts pages in it.
  */
-Gtk::Widget *ParamNotebook::get_widget(sigc::signal<void> *changeSignal)
+Gtk::Widget *ParamNotebook::get_widget(sigc::signal<void ()> *changeSignal)
 {
     if (_hidden) {
         return nullptr;

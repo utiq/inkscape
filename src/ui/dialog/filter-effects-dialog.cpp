@@ -753,7 +753,7 @@ private:
 class FilterEffectsDialog::Settings
 {
 public:
-    typedef sigc::slot<void, const AttrWidget*> SetAttrSlot;
+    typedef sigc::slot<void (const AttrWidget*)> SetAttrSlot;
 
     Settings(FilterEffectsDialog& d, Gtk::Box& b, SetAttrSlot slot, const int maxtypes)
         : _dialog(d), _set_attr_slot(std::move(slot)), _current_type(-1), _max_types(maxtypes)
@@ -1319,8 +1319,8 @@ FilterEffectsDialog::LightSourceControl* FilterEffectsDialog::Settings::add_ligh
 }
 
 static Gtk::Menu * create_popup_menu(Gtk::Widget& parent,
-                                     sigc::slot<void> dup,
-                                     sigc::slot<void> rem)
+                                     sigc::slot<void ()> dup,
+                                     sigc::slot<void ()> rem)
 {
     auto menu = Gtk::manage(new Gtk::Menu);
 
@@ -1783,7 +1783,7 @@ void FilterEffectsDialog::PrimitiveList::init_text()
     }
 }
 
-sigc::signal<void>& FilterEffectsDialog::PrimitiveList::signal_primitive_changed()
+sigc::signal<void ()>& FilterEffectsDialog::PrimitiveList::signal_primitive_changed()
 {
     return _signal_primitive_changed;
 }
@@ -1855,8 +1855,8 @@ void FilterEffectsDialog::PrimitiveList::update()
 }
 
 void FilterEffectsDialog::PrimitiveList::set_menu(Gtk::Widget& parent,
-                                                  sigc::slot<void> dup,
-                                                  sigc::slot<void> rem)
+                                                  sigc::slot<void ()> dup,
+                                                  sigc::slot<void ()> rem)
 {
     _primitive_menu = create_popup_menu(parent, dup, rem);
 }

@@ -101,14 +101,14 @@ void ParamString::string_to_value(const std::string &in)
 class ParamStringEntry : public Gtk::Entry {
 private:
     ParamString *_pref;
-    sigc::signal<void> *_changeSignal;
+    sigc::signal<void ()> *_changeSignal;
 public:
     /**
      * Build a string preference for the given parameter.
      * @param  pref  Where to get the string from, and where to put it
      *                when it changes.
      */
-    ParamStringEntry(ParamString *pref, sigc::signal<void> *changeSignal)
+    ParamStringEntry(ParamString *pref, sigc::signal<void ()> *changeSignal)
         : Gtk::Entry()
         , _pref(pref)
         , _changeSignal(changeSignal)
@@ -142,14 +142,14 @@ void ParamStringEntry::changed_text()
 class ParamMultilineStringEntry : public Gtk::TextView {
 private:
     ParamString *_pref;
-    sigc::signal<void> *_changeSignal;
+    sigc::signal<void ()> *_changeSignal;
 public:
     /**
      * Build a string preference for the given parameter.
      * @param  pref  Where to get the string from, and where to put it
      *                when it changes.
      */
-    ParamMultilineStringEntry(ParamString *pref, sigc::signal<void> *changeSignal)
+    ParamMultilineStringEntry(ParamString *pref, sigc::signal<void ()> *changeSignal)
         : Gtk::TextView()
         , _pref(pref)
         , _changeSignal(changeSignal)
@@ -189,7 +189,7 @@ void ParamMultilineStringEntry::changed_text()
  *
  * Builds a hbox with a label and a text box in it.
  */
-Gtk::Widget *ParamString::get_widget(sigc::signal<void> *changeSignal)
+Gtk::Widget *ParamString::get_widget(sigc::signal<void ()> *changeSignal)
 {
     if (_hidden) {
         return nullptr;

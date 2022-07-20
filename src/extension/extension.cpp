@@ -1011,7 +1011,7 @@ public:
     If there are no visible parameters, this function just returns NULL.
 */
 Gtk::Widget *
-Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<void> *changeSignal)
+Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<void ()> *changeSignal)
 {
     if (!_gui || widget_visible_count() == 0) {
         return nullptr;

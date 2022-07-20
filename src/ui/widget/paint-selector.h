@@ -116,12 +116,12 @@ class PaintSelector : public Gtk::Box {
     static gboolean isSeparator(GtkTreeModel *model, GtkTreeIter *iter, gpointer data);
 
   private:
-    sigc::signal<void, FillRule> _signal_fillrule_changed;
-    sigc::signal<void> _signal_dragged;
-    sigc::signal<void, Mode, bool> _signal_mode_changed;
-    sigc::signal<void> _signal_grabbed;
-    sigc::signal<void> _signal_released;
-    sigc::signal<void> _signal_changed;
+    sigc::signal<void (FillRule)> _signal_fillrule_changed;
+    sigc::signal<void ()> _signal_dragged;
+    sigc::signal<void (Mode, bool)> _signal_mode_changed;
+    sigc::signal<void ()> _signal_grabbed;
+    sigc::signal<void ()> _signal_released;
+    sigc::signal<void ()> _signal_changed;
     sigc::signal<void (SPStop*)> _signal_stop_selected;
 
     StyleToggleButton *style_button_add(gchar const *px, PaintSelector::Mode mode, gchar const *tip);

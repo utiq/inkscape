@@ -46,7 +46,7 @@ public:
     ~DropperTool() override;
 
     guint32 get_color(bool invert = false, bool non_dropping = false);
-    sigc::signal<void, ColorRGBA *> onetimepick_signal;
+    sigc::signal<void (ColorRGBA *)> onetimepick_signal;
 
 protected:
     bool root_handler(GdkEvent *event) override;

@@ -914,7 +914,7 @@ Shortcuts::export_shortcuts() {
 };
 
 /** Connects to a signal emitted whenever the shortcuts change */
-sigc::connection Shortcuts::connect_changed(sigc::slot<void> const &slot)
+sigc::connection Shortcuts::connect_changed(sigc::slot<void ()> const &slot)
 {
     return _changed.connect(slot);
 }

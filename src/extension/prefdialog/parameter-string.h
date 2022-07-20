@@ -30,7 +30,7 @@ public:
     const Glib::ustring& get() const { return _value; }
     const Glib::ustring& set(const Glib::ustring in);
 
-    Gtk::Widget *get_widget(sigc::signal<void> *changeSignal) override;
+    Gtk::Widget *get_widget(sigc::signal<void ()> *changeSignal) override;
 
     std::string value_to_string() const override;
     void string_to_value(const std::string &in) override;

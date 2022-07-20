@@ -57,8 +57,8 @@ public:
 
     void set_selected(const Glib::ustring& name);
 
-    sigc::signal<void, Glib::ustring>& get_palette_selected_signal();
-    sigc::signal<void>& get_settings_changed_signal();
+    sigc::signal<void (Glib::ustring)>& get_palette_selected_signal();
+    sigc::signal<void ()>& get_settings_changed_signal();
 
 private:
     void resize();
@@ -96,8 +96,8 @@ private:
     double _aspect = 0.0;
     int _count = 1;
     bool _compact = true;
-    sigc::signal<void, Glib::ustring> _signal_palette_selected;
-    sigc::signal<void> _signal_settings_changed;
+    sigc::signal<void (Glib::ustring)> _signal_palette_selected;
+    sigc::signal<void ()> _signal_settings_changed;
     bool _in_update = false;
     guint _active_timeout = 0;
     bool _force_scrollbar = false;

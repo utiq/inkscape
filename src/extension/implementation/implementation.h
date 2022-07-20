@@ -124,7 +124,7 @@ public:
     /** Find out information about the file. */
     virtual Gtk::Widget * prefs_effect(Inkscape::Extension::Effect *module,
                                        Inkscape::UI::View::View *view,
-                                       sigc::signal<void> *changeSignal,
+                                       sigc::signal<void ()> *changeSignal,
                                        ImplementationDocumentCache *docCache);
     virtual void effect(Inkscape::Extension::Effect * /*module*/,
                         Inkscape::UI::View::View * /*document*/,

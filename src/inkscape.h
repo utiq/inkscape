@@ -120,27 +120,27 @@ public:
     // signals
     
     // one of selections changed
-    sigc::signal<void, Inkscape::Selection *> signal_selection_changed;
+    sigc::signal<void (Inkscape::Selection *)> signal_selection_changed;
     // one of subselections (text selection, gradient handle, etc) changed
-    sigc::signal<void, SPDesktop *> signal_subselection_changed;
+    sigc::signal<void (SPDesktop *)> signal_subselection_changed;
     // one of selections modified
-    sigc::signal<void, Inkscape::Selection *, guint /*flags*/> signal_selection_modified;
+    sigc::signal<void (Inkscape::Selection *, guint /*flags*/)> signal_selection_modified;
     // one of selections set
-    sigc::signal<void, Inkscape::Selection *> signal_selection_set;
+    sigc::signal<void (Inkscape::Selection *)> signal_selection_set;
     // some desktop got focus
-    sigc::signal<void, SPDesktop *> signal_activate_desktop;
+    sigc::signal<void (SPDesktop *)> signal_activate_desktop;
     // some desktop lost focus
-    sigc::signal<void, SPDesktop *> signal_deactivate_desktop;
+    sigc::signal<void (SPDesktop *)> signal_deactivate_desktop;
     
     // these are orphaned signals (nothing emits them and nothing connects to them)
-    sigc::signal<void, SPDocument *> signal_destroy_document;
-    sigc::signal<void, SPColor *, double /*opacity*/> signal_color_set;
+    sigc::signal<void (SPDocument *)> signal_destroy_document;
+    sigc::signal<void (SPColor *, double /*opacity*/)> signal_color_set;
     
     // inkscape is quitting
-    sigc::signal<void> signal_shut_down;
+    sigc::signal<void ()> signal_shut_down;
     // a document was changed by some external means (undo or XML editor); this
     // may not be reflected by a selection change and thus needs a separate signal
-    sigc::signal<void> signal_external_change;
+    sigc::signal<void ()> signal_external_change;
 
     void set_pdf_poppler(bool p) {
         _pdf_poppler = p;

@@ -25,7 +25,7 @@ namespace Inkscape {
 namespace Extension {
 namespace Implementation {
 
-Gtk::Widget *Implementation::prefs_effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::View * view, sigc::signal<void> * changeSignal, ImplementationDocumentCache * /*docCache*/)
+Gtk::Widget *Implementation::prefs_effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::View * view, sigc::signal<void ()> * changeSignal, ImplementationDocumentCache * /*docCache*/)
 {
     if (module->widget_visible_count() == 0) {
         return nullptr;

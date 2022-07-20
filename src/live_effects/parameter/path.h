@@ -57,8 +57,8 @@ public:
     void param_transform_multiply(Geom::Affine const &postmul, bool set) override;
     void setFromOriginalD(bool from_original_d){ _from_original_d = from_original_d; };
 
-    sigc::signal <void> signal_path_pasted;
-    sigc::signal <void> signal_path_changed;
+    sigc::signal<void ()> signal_path_pasted;
+    sigc::signal<void ()> signal_path_changed;
     bool changed; /* this gets set whenever the path is changed (this is set to true, and then the signal_path_changed signal is emitted).
                    * the user must set it back to false if she wants to use it sensibly */
     SPObject * getObject() const { if (ref.isAttached()) {return ref.getObject();} return nullptr;}

@@ -180,7 +180,7 @@ public:
   public:
     std::vector<SPItemView> views;
 
-    sigc::signal<void, Geom::Affine const *, SPItem *> _transformed_signal;
+    sigc::signal<void (Geom::Affine const *, SPItem *)> _transformed_signal;
 
     bool isLocked() const;
     void setLocked(bool lock);
@@ -248,7 +248,7 @@ public:
      */
     void moveTo(SPItem *target, bool intoafter);
 
-    sigc::connection connectTransformed(sigc::slot<void, Geom::Affine const *, SPItem *> slot)  {
+    sigc::connection connectTransformed(sigc::slot<void (Geom::Affine const *, SPItem *)> slot)  {
         return _transformed_signal.connect(slot);
     }
 

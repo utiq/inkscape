@@ -143,7 +143,7 @@ InxWidget::~InxWidget()
 }
 
 Gtk::Widget *
-InxWidget::get_widget(sigc::signal<void> * /*changeSignal*/)
+InxWidget::get_widget(sigc::signal<void ()> * /*changeSignal*/)
 {
     // if we end up here we're missing a definition of ::get_widget() in one of the subclasses
     g_critical("InxWidget::get_widget called from widget of type '%s' in extension '%s'",

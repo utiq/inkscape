@@ -170,7 +170,7 @@ NodeTool::NodeTool(SPDesktop *desktop)
 
     this->_selected_nodes->signal_selection_changed.connect(
         // Hide both signal parameters and bind the function parameter to 0
-        // sigc::signal<void, SelectableControlPoint *, bool>
+        // sigc::signal<void (SelectableControlPoint *, bool)>
         // <=>
         // void update_tip(GdkEvent *event)
         sigc::hide(sigc::hide(sigc::bind(

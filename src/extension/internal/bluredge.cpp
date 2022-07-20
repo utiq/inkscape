@@ -122,7 +122,7 @@ BlurEdge::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::View 
 }
 
 Gtk::Widget *
-BlurEdge::prefs_effect(Inkscape::Extension::Effect * module, Inkscape::UI::View::View * /*view*/, sigc::signal<void> * changeSignal, Inkscape::Extension::Implementation::ImplementationDocumentCache * /*docCache*/)
+BlurEdge::prefs_effect(Inkscape::Extension::Effect * module, Inkscape::UI::View::View * /*view*/, sigc::signal<void ()> * changeSignal, Inkscape::Extension::Implementation::ImplementationDocumentCache * /*docCache*/)
 {
     return module->autogui(nullptr, nullptr, changeSignal);
 }

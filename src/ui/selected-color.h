@@ -53,10 +53,10 @@ public:
 
     void preserveICC();
 
-    sigc::signal<void> signal_grabbed;
-    sigc::signal<void> signal_dragged;
-    sigc::signal<void> signal_released;
-    sigc::signal<void> signal_changed;
+    sigc::signal<void ()> signal_grabbed;
+    sigc::signal<void ()> signal_dragged;
+    sigc::signal<void ()> signal_released;
+    sigc::signal<void ()> signal_changed;
 
 private:
     SPColor _color;

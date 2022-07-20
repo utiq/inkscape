@@ -229,7 +229,7 @@ public:
      *
      * @return the sigc::connection formed
      */
-    sigc::connection connectRelease(sigc::slot<void, SPObject *> slot) {
+    sigc::connection connectRelease(sigc::slot<void (SPObject *)> slot) {
         return _release_signal.connect(slot);
     }
 
@@ -503,11 +503,11 @@ public:
      *
      * @see SPObject::deleteObject
      */
-    sigc::connection connectDelete(sigc::slot<void, SPObject *> slot) {
+    sigc::connection connectDelete(sigc::slot<void (SPObject *)> slot) {
         return _delete_signal.connect(slot);
     }
 
-    sigc::connection connectPositionChanged(sigc::slot<void, SPObject *> slot) {
+    sigc::connection connectPositionChanged(sigc::slot<void (SPObject *)> slot) {
         return _position_changed_signal.connect(slot);
     }
 
@@ -649,7 +649,7 @@ public:
      * @return the connection formed thereby
      */
     sigc::connection connectModified(
-      sigc::slot<void, SPObject *, unsigned int> slot
+      sigc::slot<void (SPObject *, unsigned int)> slot
     ) {
         return _modified_signal.connect(slot);
     }
@@ -671,10 +671,10 @@ public:
      */
     void _requireSVGVersion(Inkscape::Version version);
 
-    sigc::signal<void, SPObject *> _release_signal;
-    sigc::signal<void, SPObject *> _delete_signal;
-    sigc::signal<void, SPObject *> _position_changed_signal;
-    sigc::signal<void, SPObject *, unsigned int> _modified_signal;
+    sigc::signal<void (SPObject *)> _release_signal;
+    sigc::signal<void (SPObject *)> _delete_signal;
+    sigc::signal<void (SPObject *)> _position_changed_signal;
+    sigc::signal<void (SPObject *, unsigned int)> _modified_signal;
     SPObject *_successor;
     CollectionPolicy _collection_policy;
     char *_label;

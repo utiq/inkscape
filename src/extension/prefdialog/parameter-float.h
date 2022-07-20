@@ -39,7 +39,7 @@ public:
     double min () { return _min; }
     double precision () { return _precision; }
 
-    Gtk::Widget *get_widget(sigc::signal<void> *changeSignal) override;
+    Gtk::Widget *get_widget(sigc::signal<void ()> *changeSignal) override;
 
     std::string value_to_string() const override;
     void string_to_value(const std::string &in) override;

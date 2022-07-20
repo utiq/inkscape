@@ -31,7 +31,7 @@ public:
     TemporaryItem(const TemporaryItem&) = delete;
     TemporaryItem& operator=(const TemporaryItem&) = delete;
 
-    sigc::signal<void, TemporaryItem *> signal_timeout;
+    sigc::signal<void (TemporaryItem *)> signal_timeout;
 
 protected:
     friend class TemporaryItemList;

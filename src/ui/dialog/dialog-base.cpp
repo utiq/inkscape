@@ -128,7 +128,7 @@ void DialogBase::blink()
         notebook->get_style_context()->add_class("blink");
 
         // Add timer to turn off blink.
-        sigc::slot<bool> slot = sigc::mem_fun(*this, &DialogBase::blink_off);
+        sigc::slot<bool ()> slot = sigc::mem_fun(*this, &DialogBase::blink_off);
         sigc::connection connection = Glib::signal_timeout().connect(slot, 1000); // msec
     }
 }

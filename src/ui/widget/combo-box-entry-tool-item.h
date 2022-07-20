@@ -58,7 +58,7 @@ private:
     gboolean            _warning_cb_blocked;
 
     // Signals
-    sigc::signal<void> _signal_changed;
+    sigc::signal<void ()> _signal_changed;
 
     static gint get_active_row_from_text(ComboBoxEntryToolItem *action,
                                          const gchar         *target_text,

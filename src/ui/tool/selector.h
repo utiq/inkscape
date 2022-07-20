@@ -34,8 +34,8 @@ public:
     bool event(Inkscape::UI::Tools::ToolBase *, GdkEvent *) override;
     virtual bool doubleClicked();
     
-    sigc::signal<void, Geom::Rect const &, GdkEventButton*> signal_area;
-    sigc::signal<void, Geom::Point const &, GdkEventButton*> signal_point;
+    sigc::signal<void (Geom::Rect const &, GdkEventButton*)> signal_area;
+    sigc::signal<void (Geom::Point const &, GdkEventButton*)> signal_point;
 private:
     SelectorPoint *_dragger;
     Geom::Point _start;

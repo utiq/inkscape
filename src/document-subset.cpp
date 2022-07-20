@@ -121,9 +121,9 @@ struct DocumentSubset::Relations
     typedef std::map<SPObject *, Record> Map;
     Map records;
 
-    sigc::signal<void> changed_signal;
-    sigc::signal<void, SPObject *> added_signal;
-    sigc::signal<void, SPObject *> removed_signal;
+    sigc::signal<void ()> changed_signal;
+    sigc::signal<void (SPObject *)> added_signal;
+    sigc::signal<void (SPObject *)> removed_signal;
 
     Relations() { records[nullptr]; }
 
@@ -373,17 +373,17 @@ SPObject *DocumentSubset::nthChildOf(SPObject *obj, unsigned n) const {
     return ( record ? record->children[n] : nullptr );
 }
 
-sigc::connection DocumentSubset::connectChanged(sigc::slot<void> slot) const {
+sigc::connection DocumentSubset::connectChanged(sigc::slot<void ()> slot) const {
     return _relations->changed_signal.connect(slot);
 }
 
 sigc::connection
-DocumentSubset::connectAdded(sigc::slot<void, SPObject *> slot) const {
+DocumentSubset::connectAdded(sigc::slot<void (SPObject *)> slot) const {
     return _relations->added_signal.connect(slot);
 }
 
 sigc::connection
-DocumentSubset::connectRemoved(sigc::slot<void, SPObject *> slot) const {
+DocumentSubset::connectRemoved(sigc::slot<void (SPObject *)> slot) const {
     return _relations->removed_signal.connect(slot);
 }
 

@@ -73,7 +73,7 @@ protected:
  * \pre SP_IS_GRADIENT(src).
  */
 template <class PaintServer>
-PaintServer *chase_hrefs(PaintServer *src, sigc::slot<bool, PaintServer const *> match) {
+PaintServer *chase_hrefs(PaintServer *src, sigc::slot<bool (PaintServer const *)> match) {
     /* Use a pair of pointers for detecting loops: p1 advances half as fast as p2.  If there is a
        loop, then once p1 has entered the loop, we'll detect it the next time the distance between
        p1 and p2 is a multiple of the loop size. */

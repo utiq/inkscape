@@ -42,10 +42,10 @@ public:
 
   SimpleFilterModifier(int flags);
 
-  sigc::signal<void> &signal_blend_changed();
-  sigc::signal<void> &signal_blur_changed();
-  sigc::signal<void> &signal_opacity_changed();
-  sigc::signal<void> &signal_isolation_changed();
+  sigc::signal<void ()> &signal_blend_changed();
+  sigc::signal<void ()> &signal_blur_changed();
+  sigc::signal<void ()> &signal_opacity_changed();
+  sigc::signal<void ()> &signal_isolation_changed();
 
   SPIsolation get_isolation_mode();
   void set_isolation_mode(const SPIsolation, bool notify);
@@ -72,11 +72,11 @@ private:
     SpinScale _opacity;
     Gtk::CheckButton _isolation;
 
-    sigc::signal<void> _signal_null;
-    sigc::signal<void> _signal_blend_changed;
-    sigc::signal<void> _signal_blur_changed;
-    sigc::signal<void> _signal_opacity_changed;
-    sigc::signal<void> _signal_isolation_changed;
+    sigc::signal<void ()> _signal_null;
+    sigc::signal<void ()> _signal_blend_changed;
+    sigc::signal<void ()> _signal_blur_changed;
+    sigc::signal<void ()> _signal_opacity_changed;
+    sigc::signal<void ()> _signal_isolation_changed;
 };
 
 }

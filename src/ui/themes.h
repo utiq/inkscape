@@ -49,7 +49,7 @@ Glib::RefPtr<Gtk::CssProvider> getColorizeProvider() { return _colorizeprovider;
 Glib::RefPtr<Gtk::CssProvider> getContrastThemeProvider() { return _contrastthemeprovider;}
 Glib::RefPtr<Gtk::CssProvider> getThemeProvider() { return _themeprovider;}
 Glib::RefPtr<Gtk::CssProvider> getStyleProvider() { return _styleprovider;}
-sigc::signal<void> getChangeThemeSignal() { return _signal_change_theme;}
+sigc::signal<void ()> getChangeThemeSignal() { return _signal_change_theme;}
 // set application-wide font size adjustment by a factor, where 1 is 100% (no change)
 void adjust_global_font_scale(double factor);
 
@@ -60,7 +60,7 @@ static std::vector<guint32> getHighlightColors(Gtk::Window *window);
 
 private:
     // user change theme
-    sigc::signal<void> _signal_change_theme;
+    sigc::signal<void ()> _signal_change_theme;
     Glib::RefPtr<Gtk::CssProvider> _styleprovider;
     Glib::RefPtr<Gtk::CssProvider> _themeprovider;
     Glib::RefPtr<Gtk::CssProvider> _contrastthemeprovider;

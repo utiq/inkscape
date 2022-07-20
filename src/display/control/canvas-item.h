@@ -108,7 +108,7 @@ public:
     // Events
     void set_pickable(bool pickable) { _pickable = pickable; }
     bool is_pickable() const { return _pickable; }
-    sigc::connection connect_event(sigc::slot<bool, GdkEvent*> slot) {
+    sigc::connection connect_event(sigc::slot<bool (GdkEvent*)> slot) {
         return _event_signal.connect(slot);
     }
     virtual bool handle_event(GdkEvent *event) {
@@ -143,7 +143,7 @@ protected:
     std::string _name; // For debugging
 
     // Events
-    sigc::signal<bool, GdkEvent*> _event_signal;
+    sigc::signal<bool (GdkEvent*)> _event_signal;
 };
 
 } // namespace Inkscape

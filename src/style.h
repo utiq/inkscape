@@ -325,12 +325,12 @@ public:
      * NB It is different from fill_ps_modified signal. When paint server is modified
      * it means some of it's attributes or children change.
      */
-    sigc::signal<void, SPObject *, SPObject *> signal_fill_ps_changed;
+    sigc::signal<void (SPObject *, SPObject *)> signal_fill_ps_changed;
     /**
      * Emitted when paint server object, fill paint refers to, is changed. That is
      * when the reference starts pointing to a different address in memory.
      */
-    sigc::signal<void, SPObject *, SPObject *> signal_stroke_ps_changed;
+    sigc::signal<void (SPObject *, SPObject *)> signal_stroke_ps_changed;
 
     SPFilter       *getFilter()          { return (filter.href) ? filter.href->getObject() : nullptr; }
     SPFilter const *getFilter()    const { return (filter.href) ? filter.href->getObject() : nullptr; }

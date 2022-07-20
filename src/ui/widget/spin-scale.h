@@ -79,7 +79,7 @@ public:
     Glib::ustring get_as_attribute() const override;
     void set_from_attribute(SPObject*) override;
 
-    sigc::signal<void>& signal_value_changed();
+    sigc::signal<void ()>& signal_value_changed();
 
     const SpinScale& get_SpinScale1() const;
     SpinScale& get_SpinScale1();
@@ -91,7 +91,7 @@ public:
 private:
     void link_toggled();
     void update_linked();
-    sigc::signal<void> _signal_value_changed;
+    sigc::signal<void ()> _signal_value_changed;
     SpinScale _s1, _s2;
     Gtk::ToggleButton _link;
 };

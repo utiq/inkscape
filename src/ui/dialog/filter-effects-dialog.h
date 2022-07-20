@@ -74,7 +74,7 @@ private:
         SPFilter* get_selected_filter();
         void select_filter(const SPFilter*);
 
-        sigc::signal<void>& signal_filter_changed()
+        sigc::signal<void ()>& signal_filter_changed()
         {
             return _signal_filter_changed;
         }
@@ -117,7 +117,7 @@ private:
         Gtk::CellRendererToggle _cell_toggle;
         Gtk::Button _add;
         Gtk::Menu   *_menu;
-        sigc::signal<void> _signal_filter_changed;
+        sigc::signal<void ()> _signal_filter_changed;
         std::unique_ptr<Inkscape::XML::SignalObserver> _observer;
     };
 
@@ -174,12 +174,12 @@ private:
     public:
         PrimitiveList(FilterEffectsDialog&);
 
-        sigc::signal<void>& signal_primitive_changed();
+        sigc::signal<void ()>& signal_primitive_changed();
 
         void update();
         void set_menu(Gtk::Widget      &parent,
-                      sigc::slot<void>  dup,
-                      sigc::slot<void>  rem);
+                      sigc::slot<void ()>  dup,
+                      sigc::slot<void ()>  rem);
 
         SPFilterPrimitive* get_selected();
         void select(SPFilterPrimitive *prim);
@@ -224,7 +224,7 @@ private:
         Glib::RefPtr<Pango::Layout> _vertical_layout;
         int _in_drag;
         SPFilterPrimitive* _drag_prim;
-        sigc::signal<void> _signal_primitive_changed;
+        sigc::signal<void ()> _signal_primitive_changed;
         sigc::connection _scroll_connection;
         int _autoscroll_y;
         int _autoscroll_x;

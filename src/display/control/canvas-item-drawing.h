@@ -62,7 +62,7 @@ public:
     void set_sticky(bool sticky) { _sticky = sticky; }
 
     // Signals
-    sigc::connection connect_drawing_event(sigc::slot<bool, GdkEvent*, Inkscape::DrawingItem *> slot) {
+    sigc::connection connect_drawing_event(sigc::slot<bool (GdkEvent*, Inkscape::DrawingItem *)> slot) {
         return _drawing_event_signal.connect(slot);
     }
 
@@ -88,7 +88,7 @@ protected:
     CachePref2Observer *_observer = nullptr;
 
     // Signals
-    sigc::signal<bool, GdkEvent*, Inkscape::DrawingItem *> _drawing_event_signal;
+    sigc::signal<bool (GdkEvent*, Inkscape::DrawingItem *)> _drawing_event_signal;
 };
 
 

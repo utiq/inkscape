@@ -65,7 +65,7 @@ public:
       *
       * @teturn A Gtk::Widget for the \a InxWidget. \c nullptr if the widget is hidden.
       */
-    virtual Gtk::Widget *get_widget(sigc::signal<void> *changeSignal);
+    virtual Gtk::Widget *get_widget(sigc::signal<void ()> *changeSignal);
 
     virtual const char *get_tooltip() const { return nullptr; } // tool-tips are exclusive to InxParameters for now
 

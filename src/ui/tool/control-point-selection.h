@@ -112,11 +112,11 @@ public:
     void restoreTransformHandles();
     void toggleTransformHandlesMode();
 
-    sigc::signal<void> signal_update;
+    sigc::signal<void ()> signal_update;
     // It turns out that emitting a signal after every point is selected or deselected is not too efficient,
     // so this can be done in a massive group once the selection is finally changed.
-    sigc::signal<void, std::vector<SelectableControlPoint *>, bool> signal_selection_changed;
-    sigc::signal<void, CommitEvent> signal_commit;
+    sigc::signal<void (std::vector<SelectableControlPoint *>, bool)> signal_selection_changed;
+    sigc::signal<void (CommitEvent)> signal_commit;
 
     void getOriginalPoints(std::vector<Inkscape::SnapCandidatePoint> &pts);
     void getUnselectedPoints(std::vector<Inkscape::SnapCandidatePoint> &pts);

@@ -189,7 +189,7 @@ bool ColorWheel::on_key_release_event(GdkEventKey* key_event)
     return false;
 }
 
-sigc::signal<void> ColorWheel::signal_color_changed()
+sigc::signal<void ()> ColorWheel::signal_color_changed()
 {
     return _signal_color_changed;
 }

@@ -69,7 +69,7 @@ public:
 class ActionAccel
 {
 private:
-    sigc::signal<void> _we_changed;   ///< Emitted when the keybindings for the action are changed
+    sigc::signal<void ()> _we_changed;   ///< Emitted when the keybindings for the action are changed
     sigc::connection _prefs_changed;  ///< To listen to changes to the keyboard shortcuts
     Glib::ustring _action;            ///< Name of the action
     std::set<AcceleratorKey> _accels; ///< Stores the accelerator keys for the action
@@ -105,7 +105,7 @@ public:
      * @param slot - the sigc::slot representing the callback function.
      * @return the resulting sigc::connection.
      */
-    sigc::connection connectModified(sigc::slot<void> const &slot) { return _we_changed.connect(slot); }
+    sigc::connection connectModified(sigc::slot<void ()> const &slot) { return _we_changed.connect(slot); }
 
     /**
      * @brief Checks whether a given key event triggers this action.

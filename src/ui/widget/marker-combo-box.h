@@ -55,8 +55,8 @@ public:
 
     void setDocument(SPDocument *);
 
-    sigc::signal<void> changed_signal;
-    sigc::signal<void> edit_signal;
+    sigc::signal<void ()> changed_signal;
+    sigc::signal<void ()> edit_signal;
 
     void set_current(SPObject *marker);
     std::string get_active_marker_uri();

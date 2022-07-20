@@ -116,9 +116,9 @@ public:
     bool has_empty_widget() { return (bool)_empty_widget; }
 
     // Signals
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> signal_prepend_drag_data();
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> signal_append_drag_data();
-    sigc::signal<void> signal_now_empty();
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> signal_prepend_drag_data();
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> signal_append_drag_data();
+    sigc::signal<void ()> signal_now_empty();
 
     // UI functions
     void set_dropzone_sizes(int start, int end);
@@ -142,9 +142,9 @@ protected:
     void on_remove(Gtk::Widget *child) override;
 
     // Signals
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> _signal_prepend_drag_data;
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> _signal_append_drag_data;
-    sigc::signal<void> _signal_now_empty;
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> _signal_prepend_drag_data;
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> _signal_append_drag_data;
+    sigc::signal<void ()> _signal_now_empty;
 
 private:
     // We must manage children ourselves.

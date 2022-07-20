@@ -666,7 +666,7 @@ void DocumentProperties::linked_profiles_list_button_release(GdkEventButton* eve
     }
 }
 
-void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem)
+void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _EmbProfContextMenu.append(*mi);
@@ -676,7 +676,7 @@ void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<v
 }
 
 
-void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem)
+void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _ExternalScriptsContextMenu.append(*mi);
@@ -685,7 +685,7 @@ void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::s
     _ExternalScriptsContextMenu.accelerate(parent);
 }
 
-void DocumentProperties::embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem)
+void DocumentProperties::embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _EmbeddedScriptsContextMenu.append(*mi);

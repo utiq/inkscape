@@ -50,7 +50,7 @@ public:
     void setSensitive(bool sensitive);
     void open();
     void closeWindow();
-    sigc::connection connectChanged (const sigc::slot<void,guint>& slot)
+    sigc::connection connectChanged (const sigc::slot<void (guint)>& slot)
         { return _changed_signal.connect (slot); }
     void use_transparency(bool enable);
     guint32 get_current_color() const;
@@ -63,7 +63,7 @@ protected:
     ColorPreview *_preview;
 
     /*const*/ Glib::ustring _title;
-    sigc::signal<void,guint32> _changed_signal;
+    sigc::signal<void (guint32)> _changed_signal;
     guint32             _rgba;
     bool                _undo;
     bool                _updating;
@@ -97,7 +97,7 @@ public:
     void closeWindow()
         { static_cast<ColorPicker*>(_widget)->closeWindow (); }
 
-    sigc::connection connectChanged (const sigc::slot<void,guint>& slot)
+    sigc::connection connectChanged (const sigc::slot<void (guint)>& slot)
         { return static_cast<ColorPicker*>(_widget)->connectChanged(slot); }
 };
 

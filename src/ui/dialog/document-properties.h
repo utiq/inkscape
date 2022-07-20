@@ -79,7 +79,7 @@ protected:
     void  removeSelectedProfile();
     void  onColorProfileSelectRow();
     void  linked_profiles_list_button_release(GdkEventButton* event);
-    void  cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem);
+    void  cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
 
     void  external_scripts_list_button_release(GdkEventButton* event);
     void  embedded_scripts_list_button_release(GdkEventButton* event);
@@ -93,8 +93,8 @@ protected:
     void  onExternalScriptSelectRow();
     void  onEmbeddedScriptSelectRow();
     void  editEmbeddedScript();
-    void  external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem);
-    void  embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem);
+    void  external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
+    void  embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
     void  load_default_metadata();
     void  save_default_metadata();
     void update_viewbox(SPDesktop* desktop);

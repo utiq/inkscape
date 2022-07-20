@@ -262,7 +262,7 @@ public:
     static void      error_file_write (Glib::ustring text);
 
 public:
-    Gtk::Widget *autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<void> *changeSignal = nullptr);
+    Gtk::Widget *autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<void ()> *changeSignal = nullptr);
     void paramListString(std::list <std::string> &retlist);
     void set_gui(bool s) { _gui = s; }
     bool get_gui() { return _gui; }

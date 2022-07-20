@@ -897,7 +897,7 @@ int Script::execute (const std::list<std::string> &in_command,
         Glib::spawn_async_with_pipes(working_directory, // working directory
                                      argv,  // arg v
                                      static_cast<Glib::SpawnFlags>(0), // no flags
-                                     sigc::slot<void>(),
+                                     sigc::slot<void ()>(),
                                      &_pid,          // Pid
                                      nullptr,           // STDIN
                                      &stdout_pipe,   // STDOUT

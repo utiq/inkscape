@@ -620,7 +620,7 @@ public:
         return _width;
     }
 
-    sigc::signal<void, const Glib::ustring&> signal_clicked() {
+    sigc::signal<void (const Glib::ustring&)> signal_clicked() {
         return _signal_clicked;
     }
 
@@ -655,7 +655,7 @@ private:
     int _width = 8;
     int _height;
     Glib::Property<unsigned int> _property_color;
-    sigc::signal<void, const Glib::ustring&> _signal_clicked;
+    sigc::signal<void (const Glib::ustring&)> _signal_clicked;
 };
 
 /**

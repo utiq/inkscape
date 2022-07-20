@@ -93,7 +93,7 @@ public:
     bool invoke_action(GdkEventKey const *event);
 
     // Utility
-    sigc::connection connect_changed(sigc::slot<void> const &slot);
+    sigc::connection connect_changed(sigc::slot<void ()> const &slot);
     static Glib::ustring get_label(const Gtk::AccelKey& shortcut);
     static Gtk::AccelKey get_from_event(GdkEventKey const *event, bool fix = false);
     std::vector<Glib::ustring> list_all_detailed_action_names();
@@ -121,7 +121,7 @@ private:
     void _read(XML::Node const &keysnode, bool user_set);
 
     bool initialized = false;
-    sigc::signal<void> _changed;
+    sigc::signal<void ()> _changed;
 };
 
 } // Namespace Inkscape

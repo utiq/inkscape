@@ -49,7 +49,7 @@ class PrefCheckButton : public Gtk::CheckButton
 public:
     void init(Glib::ustring const &label, Glib::ustring const &prefs_path,
               bool default_value);
-    sigc::signal<void, bool> changed_signal;
+    sigc::signal<void (bool)> changed_signal;
 protected:
     Glib::ustring _prefs_path;
     void on_toggled() override;
@@ -62,7 +62,7 @@ public:
               int int_value, bool default_value, PrefRadioButton* group_member);
     void init(Glib::ustring const &label, Glib::ustring const &prefs_path,
               Glib::ustring const &string_value, bool default_value, PrefRadioButton* group_member);
-    sigc::signal<void, bool> changed_signal;
+    sigc::signal<void (bool)> changed_signal;
 protected:
     Glib::ustring _prefs_path;
     Glib::ustring _string_value;
@@ -91,7 +91,7 @@ public:
     void init(Glib::ustring const &prefs_path,
               double lower, double upper, double step_increment, double page_increment,
               double default_value, bool is_int, bool is_percent);
-    sigc::signal<void, double> changed_signal;
+    sigc::signal<void (double)> changed_signal;
 protected:
     Glib::ustring _prefs_path;
     bool _is_int;

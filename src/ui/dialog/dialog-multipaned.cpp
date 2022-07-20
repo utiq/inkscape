@@ -1247,19 +1247,19 @@ void DialogMultipaned::on_append_drag_data(const Glib::RefPtr<Gdk::DragContext> 
 }
 
 // Signals
-sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> DialogMultipaned::signal_prepend_drag_data()
+sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> DialogMultipaned::signal_prepend_drag_data()
 {
     resize_widget_children(this);
     return _signal_prepend_drag_data;
 }
 
-sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> DialogMultipaned::signal_append_drag_data()
+sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> DialogMultipaned::signal_append_drag_data()
 {
     resize_widget_children(this);
     return _signal_append_drag_data;
 }
 
-sigc::signal<void> DialogMultipaned::signal_now_empty()
+sigc::signal<void ()> DialogMultipaned::signal_now_empty()
 {
     return _signal_now_empty;
 }

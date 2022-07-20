@@ -56,10 +56,10 @@ private:
 
     // Signals
 public:
-    sigc::signal<void> signal_color_changed();
+    sigc::signal<void ()> signal_color_changed();
 
 protected:
-    sigc::signal<void> _signal_color_changed;
+    sigc::signal<void ()> _signal_color_changed;
 };
 
 /**

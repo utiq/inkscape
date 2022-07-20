@@ -52,7 +52,7 @@ public:
         , InxParameter(xml, ext)
     {}
 
-    Gtk::Widget *get_widget(sigc::signal<void> *changeSignal) override
+    Gtk::Widget *get_widget(sigc::signal<void ()> *changeSignal) override
     {
         return this->WidgetLabel::get_widget(changeSignal);
     }

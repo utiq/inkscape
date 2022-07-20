@@ -281,10 +281,10 @@ public:
 
     std::list<Glib::RefPtr<InputDevice const> > getDevices() override;
 
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalDeviceChanged() override;
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalAxesChanged() override;
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalButtonsChanged() override;
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalLinkChanged() override;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalDeviceChanged() override;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalAxesChanged() override;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalButtonsChanged() override;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalLinkChanged() override;
 
     void addAxis(Glib::ustring const & id, gint axis) override;
     void addButton(Glib::ustring const & id, gint button) override;
@@ -297,10 +297,10 @@ public:
 protected:
     std::list<Glib::RefPtr<InputDeviceImpl> > devices;
 
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalDeviceChangedPriv;
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalAxesChangedPriv;
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalButtonsChangedPriv;
-    sigc::signal<void, Glib::RefPtr<InputDevice const> > signalLinkChangedPriv;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalDeviceChangedPriv;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalAxesChangedPriv;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalButtonsChangedPriv;
+    sigc::signal<void (Glib::RefPtr<InputDevice const> )> signalLinkChangedPriv;
 };
 
 
@@ -479,22 +479,22 @@ void DeviceManagerImpl::setKey( Glib::ustring const & id, guint index, guint key
     }
 }
 
-sigc::signal<void, Glib::RefPtr<InputDevice const> > DeviceManagerImpl::signalDeviceChanged()
+sigc::signal<void (Glib::RefPtr<InputDevice const> )> DeviceManagerImpl::signalDeviceChanged()
 {
     return signalDeviceChangedPriv;
 }
 
-sigc::signal<void, Glib::RefPtr<InputDevice const> > DeviceManagerImpl::signalAxesChanged()
+sigc::signal<void (Glib::RefPtr<InputDevice const> )> DeviceManagerImpl::signalAxesChanged()
 {
     return signalAxesChangedPriv;
 }
 
-sigc::signal<void, Glib::RefPtr<InputDevice const> > DeviceManagerImpl::signalButtonsChanged()
+sigc::signal<void (Glib::RefPtr<InputDevice const> )> DeviceManagerImpl::signalButtonsChanged()
 {
     return signalButtonsChangedPriv;
 }
 
-sigc::signal<void, Glib::RefPtr<InputDevice const> > DeviceManagerImpl::signalLinkChanged()
+sigc::signal<void (Glib::RefPtr<InputDevice const> )> DeviceManagerImpl::signalLinkChanged()
 {
     return signalLinkChangedPriv;
 }

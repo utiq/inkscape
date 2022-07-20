@@ -39,7 +39,7 @@ public:
 
     const std::vector<double>& get_dash(double* offset) const;
 
-    sigc::signal<void> changed_signal;
+    sigc::signal<void ()> changed_signal;
 
     double get_offset();
 

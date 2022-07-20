@@ -2070,7 +2070,7 @@ SPDocument::removeUndoObserver(Inkscape::UndoStackObserver& observer)
     this->undoStackObservers.remove(observer);
 }
 
-sigc::connection SPDocument::connectDestroy(sigc::signal<void>::slot_type slot)
+sigc::connection SPDocument::connectDestroy(sigc::signal<void ()>::slot_type slot)
 {
     return destroySignal.connect(slot);
 }

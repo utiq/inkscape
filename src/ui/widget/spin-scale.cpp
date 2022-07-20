@@ -177,7 +177,7 @@ void DualSpinScale::set_from_attribute(SPObject* o)
     }
 }
 
-sigc::signal<void>& DualSpinScale::signal_value_changed()
+sigc::signal<void ()>& DualSpinScale::signal_value_changed()
 {
     return _signal_value_changed;
 }

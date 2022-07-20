@@ -216,13 +216,13 @@ private:
 
     void add_kerning_pair();
 
-    void create_glyphs_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem);
+    void create_glyphs_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
     void glyphs_list_button_release(GdkEventButton* event);
 
-    void create_fonts_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem);
+    void create_fonts_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
     void fonts_list_button_release(GdkEventButton* event);
 
-    void create_kerning_pairs_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem);
+    void create_kerning_pairs_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem);
     void kerning_pairs_list_button_release(GdkEventButton* event);
 
     Gtk::TreeModel::iterator get_selected_glyph_iter();

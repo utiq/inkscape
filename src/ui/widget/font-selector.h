@@ -108,7 +108,7 @@ private:
     void on_variations_changed();
 
     // Signals
-    sigc::signal<void, Glib::ustring> signal_changed;
+    sigc::signal<void (Glib::ustring)> signal_changed;
     void changed_emit();
     bool signal_block;
 
@@ -142,7 +142,7 @@ public:
      * Let others know that user has changed GUI settings.
      * (Used to enable 'Apply' and 'Default' buttons.)
      */
-    sigc::connection connectChanged(sigc::slot<void, Glib::ustring> slot) {
+    sigc::connection connectChanged(sigc::slot<void (Glib::ustring)> slot) {
         return signal_changed.connect(slot);
     }
 };

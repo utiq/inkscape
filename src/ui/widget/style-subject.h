@@ -56,7 +56,7 @@ public:
     virtual void setCSS(SPCSSAttr *css) = 0;
     virtual std::vector<SPObject*> list(){return std::vector<SPObject*>();};
 
-    sigc::connection connectChanged(sigc::signal<void>::slot_type slot) {
+    sigc::connection connectChanged(sigc::signal<void ()>::slot_type slot) {
         return _changed_signal.connect(slot);
     }
 
@@ -71,7 +71,7 @@ protected:
     }
 
 private:
-    sigc::signal<void> _changed_signal;
+    sigc::signal<void ()> _changed_signal;
     SPDesktop *_desktop = nullptr;
 };
 

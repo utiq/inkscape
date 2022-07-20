@@ -37,12 +37,12 @@ public:
     unsigned int get() const { return _color.value(); }
     unsigned int set(unsigned int in);
 
-    Gtk::Widget *get_widget(sigc::signal<void> *changeSignal) override;
+    Gtk::Widget *get_widget(sigc::signal<void ()> *changeSignal) override;
 
     std::string value_to_string() const override;
     void string_to_value(const std::string &in) override;
 
-    sigc::signal<void> *_changeSignal;
+    sigc::signal<void ()> *_changeSignal;
 
 private:
     void _onColorChanged();

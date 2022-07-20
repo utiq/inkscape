@@ -47,7 +47,7 @@ public:
      * Creates a bool check button for a bool parameter.
      * Builds a hbox with a label and a check button in it.
      */
-    Gtk::Widget *get_widget(sigc::signal<void> *changeSignal) override;
+    Gtk::Widget *get_widget(sigc::signal<void ()> *changeSignal) override;
 
     /**
      * Appends 'true' or 'false'.

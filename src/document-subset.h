@@ -31,9 +31,9 @@ public:
     unsigned indexOf(SPObject *obj) const;
     SPObject *nthChildOf(SPObject *obj, unsigned n) const;
 
-    sigc::connection connectChanged(sigc::slot<void> slot) const;
-    sigc::connection connectAdded(sigc::slot<void, SPObject *> slot) const;
-    sigc::connection connectRemoved(sigc::slot<void, SPObject *> slot) const;
+    sigc::connection connectChanged(sigc::slot<void ()> slot) const;
+    sigc::connection connectAdded(sigc::slot<void (SPObject *)> slot) const;
+    sigc::connection connectRemoved(sigc::slot<void (SPObject *)> slot) const;
 
 protected:
     DocumentSubset();

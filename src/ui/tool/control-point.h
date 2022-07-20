@@ -183,7 +183,7 @@ public:
      * Emitted when the mouseovered point changes. The parameter is the new mouseovered point.
      * When a point ceases to be mouseovered, the parameter will be NULL.
      */
-    static sigc::signal<void, ControlPoint*> signal_mouseover_change;
+    static sigc::signal<void (ControlPoint*)> signal_mouseover_change;
 
     static Glib::ustring format_tip(char const *format, ...) G_GNUC_PRINTF(1,2);
 
