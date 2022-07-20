@@ -813,13 +813,15 @@ struct GLState : GraphicsState
 
                 vec2 a = normalize((v1 - v0).xy * wh);
                 vec2 b = normalize((v3 - v0).xy * wh);
-                vec2 c = size / abs(a.x * b.y - a.y * b.x) / wh;
+                float det = a.x * b.y - a.y * b.x;
+                float s = -sign(det);
+                vec2 c = size / abs(det) / wh;
                 vec4 d = vec4(a * c, 0.0, 0.0);
                 vec4 e = vec4(b * c, 0.0, 0.0);
-                mat2 m = mat2(a.y, -b.y, -a.x, b.x) * mat2(wh.x, 0.0, 0.0, wh.y) / size;
+                mat2 m = s * mat2(a.y, -b.y, -a.x, b.x) * mat2(wh.x, 0.0, 0.0, wh.y) / size;
 
-                float ap = dot(vec2(a.y, -a.x), dir);
-                float bp = dot(vec2(-b.y, b.x), dir);
+                float ap = s * dot(vec2(a.y, -a.x), dir);
+                float bp = s * dot(vec2(-b.y, b.x), dir);
                 v0.xy += (b *  push( ap) + a *  push( bp)) * size / wh;
                 v1.xy += (b *  push( ap) + a * -push(-bp)) * size / wh;
                 v2.xy += (b * -push(-ap) + a * -push(-bp)) * size / wh;
@@ -2736,7 +2738,7 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
 
             // Shadows
             if (SP_RGBA32_A_U(d->border) != 0) {
-                auto dir = (Geom::Point(1.0, 1.0) * _affine * Geom::Scale(1.0, -1.0)).normalized(); // Shadow direction rotates with view.
+                auto dir = (Geom::Point(1.0, _desktop ? _desktop->yaxisdir() : 1.0) * _affine * Geom::Scale(1.0, -1.0)).normalized(); // Shadow direction rotates with view.
                 glUseProgram(gl->shadow.id);
                 glUniform2fv(gl->shadow.loc("wh"), 1, std::begin({(GLfloat)get_allocation().get_width(), (GLfloat)get_allocation().get_height()}));
                 glUniform1f(gl->shadow.loc("size"), 40.0 * std::pow(std::abs(_affine.det()), 0.25));
@@ -2886,10 +2888,10 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
             cr->set_fill_rule(Cairo::FILL_RULE_EVEN_ODD);
             cr->rectangle(0, 0, get_allocation().get_width(), get_allocation().get_height());
             cr->translate(-_pos.x(), -_pos.y());
-            cr->transform(geom_to_cairo(_affine * cs->snapshot.affine.inverse()));
+            cr->transform(geom_to_cairo(cs->snapshot.affine.inverse() * _affine));
             cr->rectangle(cs->snapshot.rect.left(), cs->snapshot.rect.top(), cs->snapshot.rect.width(), cs->snapshot.rect.height());
             cr->clip();
-            cr->transform(geom_to_cairo(cs->snapshot.affine * _affine.inverse()));
+            cr->transform(geom_to_cairo(_affine.inverse() * cs->snapshot.affine));
             cr->translate(_pos.x(), _pos.y());
             d->paint_background(screen, cr);
             cr->restore();
@@ -2910,10 +2912,10 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
                 cr->set_fill_rule(Cairo::FILL_RULE_EVEN_ODD);
                 cr->rectangle(0, 0, get_allocation().get_width(), get_allocation().get_height());
                 cr->translate(-_pos.x(), -_pos.y());
-                cr->transform(geom_to_cairo(_affine * cs->store.affine.inverse()));
+                cr->transform(geom_to_cairo(cs->store.affine.inverse() * _affine));
                 region_to_path(cr, d->updater->clean_region);
                 cr->clip();
-                cr->transform(geom_to_cairo(cs->store.affine * cs->snapshot.affine.inverse()));
+                cr->transform(geom_to_cairo(cs->snapshot.affine.inverse() * cs->store.affine));
                 cr->rectangle(cs->snapshot.rect.left(), cs->snapshot.rect.top(), cs->snapshot.rect.width(), cs->snapshot.rect.height());
                 cr->clip();
                 cr->set_source(snapshot_store, cs->snapshot.rect.left(), cs->snapshot.rect.top());
@@ -2930,7 +2932,7 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
                 if (d->prefs.debug_framecheck) f = FrameCheck::Event("composite", 0);
                 cr->save();
                 cr->translate(-_pos.x(), -_pos.y());
-                cr->transform(geom_to_cairo(_affine * cs->store.affine.inverse()));
+                cr->transform(geom_to_cairo(cs->store.affine.inverse() * _affine));
                 cr->set_source(store, cs->store.rect.left(), cs->store.rect.top());
                 Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::FILTER_FAST);
                 region_to_path(cr, d->updater->clean_region);
@@ -3015,7 +3017,7 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
             cr->save();
             cr->translate(-_pos.x(), -_pos.y());
             if (d->decoupled_mode) {
-                cr->transform(geom_to_cairo(_affine * cs->store.affine.inverse()));
+                cr->transform(geom_to_cairo(cs->store.affine.inverse() * _affine));
             }
             cr->set_source_rgba(1, 0, 0, 0.2);
             region_to_path(cr, reg);
@@ -3029,7 +3031,7 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
             cr->save();
             cr->translate(-_pos.x(), -_pos.y());
             if (d->decoupled_mode) {
-                cr->transform(geom_to_cairo(_affine * cs->store.affine.inverse()));
+                cr->transform(geom_to_cairo(cs->store.affine.inverse() * _affine));
             }
             cr->set_source_rgba(0, 0.7, 0, 0.4);
             region_to_path(cr, d->updater->clean_region);
@@ -3646,7 +3648,7 @@ bool CanvasPrivate::on_idle()
                     cr->set_antialias(Cairo::ANTIALIAS_NONE);
                     cr->set_operator(Cairo::OPERATOR_SOURCE);
                     cr->translate(-snapshot->rect.left(), -snapshot->rect.top());
-                    cr->transform(geom_to_cairo(snapshot->affine * store->affine.inverse()));
+                    cr->transform(geom_to_cairo(store->affine.inverse() * snapshot->affine));
                     cr->translate(-1.0, -1.0);
                     region_to_path(cr, shrink_region(updater->clean_region, 2));
                     cr->translate(1.0, 1.0);
@@ -3741,12 +3743,12 @@ bool CanvasPrivate::on_idle()
                     cr->set_operator(Cairo::OPERATOR_SOURCE);
                     if (background) paint_background(fragment, cr);
                     cr->translate(-fragment.rect.left(), -fragment.rect.top());
-                    cr->transform(geom_to_cairo(fragment.affine * snapshot->affine.inverse()));
+                    cr->transform(geom_to_cairo(snapshot->affine.inverse() * fragment.affine));
                     cr->rectangle(snapshot->rect.left(), snapshot->rect.top(), snapshot->rect.width(), snapshot->rect.height());
                     cr->set_source(snapshot_from, snapshot->rect.left(), snapshot->rect.top());
                     Cairo::SurfacePattern(cr->get_source()->cobj()).set_filter(Cairo::FILTER_FAST);
                     cr->fill();
-                    cr->transform(geom_to_cairo(snapshot->affine * store->affine.inverse()));
+                    cr->transform(geom_to_cairo(store->affine.inverse() * snapshot->affine));
                     cr->translate(-1.0, -1.0);
                     region_to_path(cr, shrink_region(updater->clean_region, 2));
                     cr->translate(1.0, 1.0);
@@ -3864,7 +3866,7 @@ bool CanvasPrivate::on_idle()
     // Map the mouse to canvas space.
     mouse_loc += q->_pos;
     if (decoupled_mode) {
-        mouse_loc = (Geom::Point(mouse_loc) * store->affine * q->_affine.inverse()).round();
+        mouse_loc = (Geom::Point(mouse_loc) * q->_affine.inverse() * store->affine).round();
     }
 
     // Get the visible rect.
@@ -3979,7 +3981,7 @@ bool CanvasPrivate::on_idle()
             } else {
                 // Transform into screen space, take bounding box, and round outwards.
                 auto pl = Geom::Parallelogram(rect);
-                pl *= q->_affine * store->affine.inverse();
+                pl *= store->affine.inverse() * q->_affine;
                 pl *= Geom::Translate(-q->_pos);
                 repaint_rect = pl.bounds().roundOutwards();
             }
