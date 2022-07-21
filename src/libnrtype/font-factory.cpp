@@ -460,8 +460,8 @@ GList *FontFactory::GetUIStyles(PangoFontFamily *in)
                 if( ((StyleNames*)temp->data)->CssName.compare( styleUIName ) == 0 ) {
                     exists = true;
                     std::cerr << "Warning: Font face with same CSS values already added: "
-                              << familyUIName << " " << styleUIName
-                              << " (" << ((StyleNames*)temp->data)->DisplayName
+                              << familyUIName.raw() << " " << styleUIName.raw()
+                              << " (" << ((StyleNames*)temp->data)->DisplayName.raw()
                               << ", " << displayName << ")" << std::endl;
                     break;
                 }
