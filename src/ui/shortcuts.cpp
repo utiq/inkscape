@@ -486,8 +486,8 @@ Shortcuts::add_shortcut(Glib::ustring name, const Gtk::AccelKey& shortcut, bool 
 {
     // Remove previous use of shortcut (already removed if new user shortcut).
     if (Glib::ustring old_name = remove_shortcut(shortcut); old_name != "") {
-        std::cerr << "Shortcut::add_shortcut: duplicate shortcut found for: " << shortcut.get_abbrev()
-                  << "  Old: " << old_name << "  New: " << name << " !" << std::endl;
+        std::cerr << "Shortcut::add_shortcut: duplicate shortcut found for: " << shortcut.get_abbrev().raw()
+                  << "  Old: " << old_name.raw() << "  New: " << name.raw() << " !" << std::endl;
     }
 
     // Add shortcut
@@ -514,7 +514,7 @@ Shortcuts::add_shortcut(Glib::ustring name, const Gtk::AccelKey& shortcut, bool 
     }
 
     // Oops, not an action!
-    std::cerr << "Shortcuts::add_shortcut: No Action for " << name << std::endl;
+    std::cerr << "Shortcuts::add_shortcut: No Action for " << name.raw() << std::endl;
     return false;
 }
 
@@ -535,7 +535,7 @@ Shortcuts::add_user_shortcut(Glib::ustring name, const Gtk::AccelKey& shortcut)
         return write_user();
     }
 
-    std::cerr << "Shortcut::add_user_shortcut: Failed to add: " << name << " with shortcut " << shortcut.get_abbrev() << std::endl;
+    std::cerr << "Shortcut::add_user_shortcut: Failed to add: " << name.raw() << " with shortcut " << shortcut.get_abbrev().raw() << std::endl;
     return false;
 };
 
@@ -604,7 +604,7 @@ Shortcuts::remove_user_shortcut(Glib::ustring name)
         return true;
     }
 
-    std::cerr << "Shortcuts::remove_user_shortcut: Failed to remove shortcut for: " << name << std::endl;
+    std::cerr << "Shortcuts::remove_user_shortcut: Failed to remove shortcut for: " << name.raw() << std::endl;
     return false;
 }
 
@@ -721,7 +721,7 @@ Shortcuts::get_file_names()
 
         XML::Document *document = sp_repr_read_file(filename.c_str(), nullptr);
         if (!document) {
-            std::cerr << "Shortcut::get_file_names: could not parse file: " << filename << std::endl;
+            std::cerr << "Shortcut::get_file_names: could not parse file: " << filename.raw() << std::endl;
             continue;
         }
 
@@ -738,7 +738,7 @@ Shortcuts::get_file_names()
             }
         }
         if (!iter) {
-            std::cerr << "Shortcuts::get_File_names: not a shortcut keys file: " << filename << std::endl;
+            std::cerr << "Shortcuts::get_File_names: not a shortcut keys file: " << filename.raw() << std::endl;
         }
 
         Inkscape::GC::release(document);
@@ -798,7 +798,7 @@ Shortcuts::update_gui_text_recursive(Gtk::Widget* widget)
                     variant = std::to_string(g_variant_get_int32(gvariant));
                     action += "(" + variant + ")";
                 } else {
-                    std::cerr << "Shortcuts::update_gui_text_recursive: unhandled variant type: " << type << std::endl;
+                    std::cerr << "Shortcuts::update_gui_text_recursive: unhandled variant type: " << type.raw() << std::endl;
                 }
             }
 

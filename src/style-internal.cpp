@@ -294,7 +294,7 @@ SPIScale24::merge( const SPIBase* const parent ) {
         } else {
             // Needed only for 'opacity' and 'stop-opacity' which do not inherit. See comment at bottom of file.
             if (id() != SPAttr::OPACITY && id() != SPAttr::STOP_OPACITY)
-                std::cerr << "SPIScale24::merge: unhandled property: " << name() << std::endl;
+                std::cerr << "SPIScale24::merge: unhandled property: " << name().raw() << std::endl;
             if( !set || (!inherit && value == SP_SCALE24_MAX) ) {
                 value = p->value;
                 set = (value != SP_SCALE24_MAX);
@@ -1341,7 +1341,7 @@ SPIShapes::read( gchar const *str) {
     // The object/repr this property is connected to..
     SPObject* object = style->object;
     if (!object) {
-        std::cout << "  No object" << std::endl;
+        std::cerr << "  No object" << std::endl;
         return;
     }
 
@@ -1351,7 +1351,7 @@ SPIShapes::read( gchar const *str) {
     std::vector<Glib::ustring> shapes_url = Glib::Regex::split_simple(" ", str);
     for (auto shape_url : shapes_url) {
         if ( shape_url.compare(0,5,"url(#") != 0 || shape_url.compare(shape_url.size()-1,1,")") != 0 ){
-            std::cerr << "SPIShapes::read: Invalid shape value: " << shape_url << std::endl;
+            std::cerr << "SPIShapes::read: Invalid shape value: " << shape_url.raw() << std::endl;
         } else {
             auto uri = extract_uri(shape_url.c_str()); // Do before we erase "url(#"
 

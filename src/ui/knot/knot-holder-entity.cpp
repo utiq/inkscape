@@ -108,8 +108,8 @@ KnotHolderEntity::snap_knot_position(Geom::Point const &p, guint state)
     Geom::Affine const i2dt (parent_holder->getEditTransform() * item->i2dt_affine());
     Geom::Point s = p * i2dt;
 
-    if (!desktop) std::cout << "No desktop" << std::endl;
-    if (!desktop->namedview) std::cout << "No named view" << std::endl;
+    if (!desktop) std::cerr << "No desktop" << std::endl;
+    if (!desktop->namedview) std::cerr << "No named view" << std::endl;
     SnapManager &m = desktop->namedview->snap_manager;
     m.setup(desktop, true, item);
     m.freeSnapReturnByRef(s, Inkscape::SNAPSOURCE_NODE_HANDLE);

@@ -327,7 +327,7 @@ Geom::Point
 Persp3D::get_infinite_dir (Proj::Axis axis) const {
     Proj::Pt2 vp(this->get_VP(axis));
     if (vp[2] != 0.0) {
-        g_print ("VP should be infinite but is (%f : %f : %f)\n", vp[0], vp[1], vp[2]);
+        g_warning ("VP should be infinite but is (%f : %f : %f)", vp[0], vp[1], vp[2]);
         g_return_val_if_fail(vp[2] != 0.0, Geom::Point(0.0, 0.0));
     }
     return Geom::Point(vp[0], vp[1]);

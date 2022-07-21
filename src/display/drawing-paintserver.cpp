@@ -140,7 +140,7 @@ cairo_pattern_t *DrawingMeshGradient::create_pattern(cairo_t *, Geom::OptRect co
                     break;
                 default:
                     // Shouldn't happen
-                    std::cout << "sp_mesh_create_pattern: path error" << std::endl;
+                    std::cerr << "sp_mesh_create_pattern: path error" << std::endl;
                 }
 
                 if (data.tensorIsSet[k]) {

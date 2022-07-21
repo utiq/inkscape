@@ -188,7 +188,7 @@ FontSelector::update_font ()
         path = font_lister->get_row_for_font (family);
     } catch (...) {
         std::cerr << "FontSelector::update_font: Couldn't find row for font-family: "
-                  << family << std::endl;
+                  << family.raw() << std::endl;
         path.clear();
         path.push_back(0);
     }
@@ -409,7 +409,7 @@ FontSelector::on_size_changed() {
         size = std::stod (input);
     }
     catch (std::invalid_argument) {
-        std::cerr << "FontSelector::on_size_changed: Invalid input: " << input << std::endl;
+        std::cerr << "FontSelector::on_size_changed: Invalid input: " << input.raw() << std::endl;
         size = -1;
     }
 

@@ -121,7 +121,7 @@ FontSelectorToolbar::update_font ()
         family_combo.set_active (row);
     } catch (...) {
         std::cerr << "FontSelectorToolbar::update_font: Couldn't find row for family: "
-                  << font_lister->get_font_family() << std::endl;
+                  << font_lister->get_font_family().raw() << std::endl;
     }
 
     // Set style.
@@ -130,7 +130,7 @@ FontSelectorToolbar::update_font ()
         style_combo.set_active (row);
     } catch (...) {
         std::cerr << "FontSelectorToolbar::update_font: Couldn't find row for style: "
-                  << font_lister->get_font_style() << std::endl;
+                  << font_lister->get_font_style().raw() << std::endl;
     }
 
     // Check for missing fonts.
@@ -233,8 +233,8 @@ FontSelectorToolbar::on_style_changed() {
 
 void
 FontSelectorToolbar::on_icon_pressed (Gtk::EntryIconPosition icon_position, const GdkEventButton* event) {
-    std::cout << "FontSelectorToolbar::on_entry_icon_pressed" << std::endl;
-    std::cout << "    .... Should select all items with same font-family. FIXME" << std::endl;
+    std::cerr << "FontSelectorToolbar::on_entry_icon_pressed" << std::endl;
+    std::cerr << "    .... Should select all items with same font-family. FIXME" << std::endl;
     // Call equivalent of sp_text_toolbox_select_cb() in text-toolbar.cpp
     // Should be action!  (Maybe: select_all_fontfamily( Glib::ustring font_family );).
     // Check how Find dialog works.

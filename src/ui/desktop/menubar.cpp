@@ -301,7 +301,7 @@ void rebuild_menu (Glib::RefPtr<Gio::MenuModel>    menu, Glib::RefPtr<Gio::Menu>
             } else if (link_iter->get_name() == "section") {
                 menu_item->set_section(submenu);
             } else {
-                std::cerr << "rebuild_menu: Unknown link type: " << link_iter->get_name() << std::endl;
+                std::cerr << "rebuild_menu: Unknown link type: " << link_iter->get_name().raw() << std::endl;
             }
             rebuild_menu (link_iter->get_value(), submenu, useIcons, quark, recent_files);
         }

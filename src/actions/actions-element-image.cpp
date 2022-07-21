@@ -119,7 +119,7 @@ void image_edit(InkscapeApplication *app)
                     dialog.set_secondary_text(message2);
                     dialog.run();
                 } else {
-                    std::cerr << "image_edit: " << message << std::endl;
+                    std::cerr << "image_edit: " << message.raw() << std::endl;
                 }
                 g_error_free(error);
                 error = nullptr;

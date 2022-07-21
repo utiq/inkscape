@@ -191,7 +191,6 @@ canvas_rotate_lock(InkscapeWindow *win)
     // Save value as a preference
     Inkscape::Preferences *pref = Inkscape::Preferences::get();
     pref->setBool("/options/rotationlock", state);
-    std::cout << "rotate_lock: set to: " << state << std::endl;
 
     SPDesktop* dt = win->get_desktop();
     dt->set_rotation_lock(state);

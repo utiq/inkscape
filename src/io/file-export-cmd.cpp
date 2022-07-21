@@ -118,7 +118,7 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
         }
         if (export_type_list.size() > 1 || (export_type_list.size() == 1 && export_type_list[0] != "png")) {
             std::cerr << "InkFileExportCmd::do_export: --export-use-hints can only be used with PNG export! "
-                      << "Ignoring --export-type=" << export_type << "." << std::endl;
+                      << "Ignoring --export-type=" << export_type.raw() << "." << std::endl;
         }
         if (!export_filename.empty()) {
             std::cerr << "InkFileExportCmd::do_export: --export-filename is ignored when using --export-use-hints!" << std::endl;
@@ -164,7 +164,7 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
         if (!export_type_filename.empty() && (type != export_type_filename)) {
             std::cerr << "InkFileExportCmd::do_export: "
                       << "Ignoring extension of export filename (" << export_type_filename << ") "
-                      << "as it does not match the current export type (" << type << ")." << std::endl;
+                      << "as it does not match the current export type (" << type.raw() << ")." << std::endl;
         }
         bool export_extension_forced = !export_extension.empty();
         // For PNG export, there is no extension, so the method below can not be used.
@@ -229,7 +229,7 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
                 copy(exts_for_fn.begin(), exts_for_fn.end(), std::ostream_iterator<std::string>(std::cerr, ", "));
                 std::cerr << "\b\b]" << std::endl;
             } else {
-                std::cerr << "InkFileExportCmd::do_export: Unknown export type: " << type << ". Allowed values: [";
+                std::cerr << "InkFileExportCmd::do_export: Unknown export type: " << type.raw() << ". Allowed values: [";
                 filetypes.sort();
                 filetypes.unique();
                 copy(filetypes.begin(), filetypes.end(), std::ostream_iterator<std::string>(std::cerr, ", "));
@@ -373,7 +373,7 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &filename
             // "crop" the document to the specified object, cleaning as we go.
             SPObject *obj = doc->getObjectById(object);
             if (obj == nullptr) {
-                std::cerr << "InkFileExportCmd::do_export_svg: Object " << object << " not found in document, nothing to export." << std::endl;
+                std::cerr << "InkFileExportCmd::do_export_svg: Object " << object.raw() << " not found in document, nothing to export." << std::endl;
                 return 1;
             }
             if (export_id_only) {
@@ -473,14 +473,14 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
 
         if (!object) {
             std::cerr << "InkFileExport::do_export_png: "
-                      << "Object with id=\"" << object_id
+                      << "Object with id=\"" << object_id.raw()
                       << "\" was not found in the document. Skipping." << std::endl;
             continue;
         }
 
         if (!SP_IS_ITEM (object)) {
             std::cerr << "InkFileExportCmd::do_export_png: "
-                      << "Object with id=\"" << object_id
+                      << "Object with id=\"" << object_id.raw()
                       << "\" is not a visible item. Skipping." << std::endl;
             continue;
         }
@@ -489,7 +489,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
 
         if (export_id_only) {
             std::cerr << "Exporting only object with id=\""
-                      << object_id << "\"; all other objects hidden." << std::endl;
+                      << object_id.raw() << "\"; all other objects hidden." << std::endl;
         }
 
         // Find file name and dpi from hints.
@@ -502,7 +502,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
                 filename_from_hint = true;
             } else {
                 std::cerr << "InkFileExport::do_export_png: "
-                          << "Export filename hint not found for object " << object_id << ". Skipping." << std::endl;
+                          << "Export filename hint not found for object " << object_id.raw() << ". Skipping." << std::endl;
                 continue;
             }
 
@@ -675,7 +675,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
             auto it = color_modes.find(export_png_color_mode);
             if (it == color_modes.end()) {
                 std::cerr << "InkFileExport::do_export_png: "
-                          << "Color mode " << export_png_color_mode << " is invalid. It must be one of Gray_1/Gray_2/Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16." << std::endl;
+                          << "Color mode " << export_png_color_mode.raw() << " is invalid. It must be one of Gray_1/Gray_2/Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16." << std::endl;
                 continue;
             } else {
                 std::tie(color_type, bit_depth) = it->second;
@@ -833,7 +833,7 @@ int InkFileExportCmd::do_export_ps_pdf(SPDocument *doc, std::string const &filen
         if (!object.empty()) {
             SPObject *o = doc->getObjectById(object);
             if (o == nullptr) {
-                std::cerr << "InkFileExportCmd::do_export_ps_pdf: Object " << object << " not found in document, nothing to export." << std::endl;
+                std::cerr << "InkFileExportCmd::do_export_ps_pdf: Object " << object.raw() << " not found in document, nothing to export." << std::endl;
                 return 1;
             }
             extension.set_param_string("exportId", object.c_str());

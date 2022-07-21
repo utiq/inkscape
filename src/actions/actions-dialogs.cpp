@@ -82,7 +82,7 @@ dialog_open(const Glib::VariantBase& value, InkscapeWindow *win)
     auto const &dialog_data = get_dialog_data();
     auto dialog_it = dialog_data.find(dialog);
     if (dialog_it == dialog_data.end()) {
-        std::cerr << "dialog_open: invalid dialog name: " << dialog << std::endl;
+        std::cerr << "dialog_open: invalid dialog name: " << dialog.raw() << std::endl;
         return;
     }
 

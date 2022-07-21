@@ -126,13 +126,13 @@ get_active_tool(InkscapeWindow *win)
 
     auto action = win->lookup_action("tool-switch");
     if (!action) {
-        std::cerr << "git_active_tool: action 'tool-switch' missing!" << std::endl;
+        std::cerr << "get_active_tool: action 'tool-switch' missing!" << std::endl;
         return state;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "git_active_tool: action 'tool-switch' not SimpleAction!" << std::endl;
+        std::cerr << "get_active_tool: action 'tool-switch' not SimpleAction!" << std::endl;
         return state;
     }
 
@@ -211,7 +211,7 @@ tool_switch(Glib::ustring const &tool, InkscapeWindow *win)
     // Valid tool?
     auto tool_it = tool_data.find(tool);
     if (tool_it == tool_data.end()) {
-        std::cerr << "tool-switch: invalid tool name: " << tool << std::endl;
+        std::cerr << "tool-switch: invalid tool name: " << tool.raw() << std::endl;
         return;
     }
 
@@ -255,7 +255,7 @@ tool_preferences(Glib::ustring const &tool, InkscapeWindow *win)
     // Valid tool?
     auto tool_it = tool_data.find(tool);
     if (tool_it == tool_data.end()) {
-        std::cerr << "tool-preferences: invalid tool name: " << tool << std::endl;
+        std::cerr << "tool-preferences: invalid tool name: " << tool.raw() << std::endl;
         return;
     }
 

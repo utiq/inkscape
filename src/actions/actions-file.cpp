@@ -28,7 +28,7 @@ file_open(const Glib::VariantBase& value, InkscapeApplication *app)
 
     Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(s.get());
     if (!file->query_exists()) {
-        std::cerr << "file_open: file '" << s.get() << "' does not exist." << std::endl;
+        std::cerr << "file_open: file '" << s.get().raw() << "' does not exist." << std::endl;
         return;
     }
     SPDocument *document = app->document_open(file);
@@ -47,7 +47,7 @@ file_open_with_window(const Glib::VariantBase& value, InkscapeApplication *app)
     Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring> >(value);
     Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(s.get());
     if (!file->query_exists()) {
-        std::cerr << "file_open: file '" << s.get() << "' does not exist." << std::endl;
+        std::cerr << "file_open: file '" << s.get().raw() << "' does not exist." << std::endl;
         return;
     }
     app->create_window(file);

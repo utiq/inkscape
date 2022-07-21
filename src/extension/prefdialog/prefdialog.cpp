@@ -56,7 +56,7 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
     Gtk::Box *hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
     if (controls == nullptr) {
         if (_effect == nullptr) {
-            std::cout << "AH!!!  No controls and no effect!!!" << std::endl;
+            std::cerr << "AH!!!  No controls and no effect!!!" << std::endl;
             return;
         }
         controls = _effect->get_imp()->prefs_effect(_effect, SP_ACTIVE_DESKTOP, &_signal_param_change, nullptr);
@@ -77,7 +77,7 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
         if (_param_preview == nullptr) {
             XML::Document * doc = sp_repr_read_mem(live_param_xml, strlen(live_param_xml), nullptr);
             if (doc == nullptr) {
-                std::cout << "Error encountered loading live parameter XML !!!" << std::endl;
+                std::cerr << "Error encountered loading live parameter XML !!!" << std::endl;
                 return;
             }
             _param_preview = InxParameter::make(doc->root(), _effect);

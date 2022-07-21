@@ -191,7 +191,7 @@ InkscapeApplication::document_open(const Glib::RefPtr<Gio::File>& file, bool *ca
 
         document_add (document);
     } else if (cancelled == nullptr || !(*cancelled)) {
-        std::cerr << "InkscapeApplication::document_open: Failed to open: " << file->get_parse_name() << std::endl;
+        std::cerr << "InkscapeApplication::document_open: Failed to open: " << file->get_parse_name().raw() << std::endl;
     }
 
     return document;
@@ -604,7 +604,7 @@ InkscapeApplication::InkscapeApplication()
         flags |= Gio::APPLICATION_CAN_OVERRIDE_APP_ID;
         app_id += "." + Glib::getenv("INKSCAPE_APP_ID_TAG");
         if (!Gio::Application::id_is_valid(app_id)) {
-            std::cerr << "InkscapeApplication: invalid application id: " << app_id << std::endl;
+            std::cerr << "InkscapeApplication: invalid application id: " << app_id.raw() << std::endl;
             std::cerr << "  tag must be ASCII and not start with a number." << std::endl;
         }
         non_unique = true;
@@ -834,7 +834,7 @@ InkscapeApplication::create_window(const Glib::RefPtr<Gio::File>& file)
             document_fix(window);
         } else if (!cancelled) {
             std::cerr << "ConcreteInkscapeApplication<T>::create_window: Failed to load: "
-                      << file->get_parse_name() << std::endl;
+                      << file->get_parse_name().raw() << std::endl;
 
             gchar *text = g_strdup_printf(_("Failed to load the requested file %s"), file->get_parse_name().c_str());
             sp_ui_error_dialog(text);
@@ -1367,7 +1367,7 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         if (Gio::Application::id_is_valid(app_id)) {
             _gio_application->set_id(app_id);
         } else {
-            std::cerr << "InkscapeApplication: invalid application id: " << app_id << std::endl;
+            std::cerr << "InkscapeApplication: invalid application id: " << app_id.raw() << std::endl;
             std::cerr << "  tag must be ASCII and not start with a number." << std::endl;
         }
     }

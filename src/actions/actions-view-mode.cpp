@@ -34,13 +34,13 @@ canvas_set_state(InkscapeWindow *win, Glib::ustring action_name, bool state)
     // Get Action
     auto action = win->lookup_action(action_name);
     if (!action) {
-        std::cerr << "canvas_set_state: " << action_name << " action missing!" << std::endl;
+        std::cerr << "canvas_set_state: " << action_name.raw() << " action missing!" << std::endl;
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_set_state: " << action_name << " not SimpleAction!" << std::endl;
+        std::cerr << "canvas_set_state: " << action_name.raw() << " not SimpleAction!" << std::endl;
         return;
     }
 
@@ -55,13 +55,13 @@ canvas_toggle_state(InkscapeWindow *win, Glib::ustring action_name)
     // Get Action
     auto action = win->lookup_action(action_name);
     if (!action) {
-        std::cerr << "canvas_toggle_state: " << action_name << " action missing!" << std::endl;
+        std::cerr << "canvas_toggle_state: " << action_name.raw() << " action missing!" << std::endl;
         return false;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_toggle_state: " << action_name << " not SimpleAction!" << std::endl;
+        std::cerr << "canvas_toggle_state: " << action_name.raw() << " not SimpleAction!" << std::endl;
         return false;
     }
 

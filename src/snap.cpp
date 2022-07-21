@@ -974,7 +974,7 @@ void SnapManager::_findCandidates(SPObject* parent,
                                 static Glib::Timer timer;
                                 if (timer.elapsed() > 1.0) {
                                     timer.reset();
-                                    std::cout << "Warning: limit of 200 snap target paths reached, some will be ignored" << std::endl;
+                                    std::cerr << "Warning: limit of 200 snap target paths reached, some will be ignored" << std::endl;
                                 }
                                 break;
                             }

@@ -499,7 +499,7 @@ void ObjectSet::_remove3DBoxesRecursively(SPObject *obj) {
     for (auto box : boxes) {
         std::list<SPBox3D *>::iterator b = std::find(_3dboxes.begin(), _3dboxes.end(), box);
         if (b == _3dboxes.end()) {
-            g_print ("Warning! Trying to remove unselected box from selection.\n");
+            g_warning ("Warning! Trying to remove unselected box from selection.");
             return;
         }
         _3dboxes.erase(b);

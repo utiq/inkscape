@@ -315,7 +315,7 @@ static Avoid::Polygon avoid_item_poly(SPItem const *item)
             else
             {
                 // something went wrong...
-                std::cout<<"conn-avoid-ref.cpp: avoid_item_poly: Geom:intersection failed."<<std::endl;
+                std::cerr<<"conn-avoid-ref.cpp: avoid_item_poly: Geom:intersection failed."<<std::endl;
             }
         }
         catch (Geom::InfiniteSolutions const &e) {

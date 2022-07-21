@@ -318,13 +318,13 @@ set_actions_canvas_snapping_helper(Gio::ActionMap& map, Glib::ustring action_nam
     // "set" it! We need to cast to Gio::SimpleAction)
     Glib::RefPtr<Gio::Action> action = map.lookup_action(action_name);
     if (!action) {
-        std::cerr << "set_actions_canvas_snapping_helper: action " << action_name << " missing!" << std::endl;
+        std::cerr << "set_actions_canvas_snapping_helper: action " << action_name.raw() << " missing!" << std::endl;
         return;
     }
 
     auto simple = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!simple) {
-        std::cerr << "set_actions_canvas_snapping_helper: action " << action_name << " not SimpleAction!" << std::endl;
+        std::cerr << "set_actions_canvas_snapping_helper: action " << action_name.raw() << " not SimpleAction!" << std::endl;
         return;
     }
 

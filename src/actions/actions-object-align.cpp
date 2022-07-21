@@ -717,7 +717,7 @@ object_rearrange(const Glib::VariantBase& value, InkscapeApplication *app)
     else if (token == "randomize" ) { randomize(selection); }
     else if (token == "unclump"   ) { unclump(items); }
     else {
-        std::cerr << "object_rearrange: unhandled argument: " << token << std::endl;
+        std::cerr << "object_rearrange: unhandled argument: " << token.raw() << std::endl;
      }
     // clang-format on
 

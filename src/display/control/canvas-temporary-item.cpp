@@ -32,7 +32,7 @@ TemporaryItem::TemporaryItem(CanvasItem *item, guint lifetime, bool deselect_des
       destroy_on_deselect(deselect_destroy)
 {
     if (lifetime > 0 && destroy_on_deselect) {
-        g_print ("Warning: lifetime should be 0 when destroy_on_deselect is true\n");
+        g_warning ("Warning: lifetime should be 0 when destroy_on_deselect is true");
         lifetime = 0;
     }
     // zero lifetime means stay forever, so do not add timeout event.

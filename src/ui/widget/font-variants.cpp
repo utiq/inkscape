@@ -1179,7 +1179,7 @@ namespace Widget {
 
       } else {
           std::cerr << "FontVariants::update(): Couldn't find FontInstance for: "
-                    << font_spec << std::endl;
+                    << font_spec.raw() << std::endl;
       }
 
       _ligatures_changed = false;

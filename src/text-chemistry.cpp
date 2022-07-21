@@ -635,14 +635,14 @@ Glib::ustring text_relink_shapes_str(gchar const *prop, std::map<Glib::ustring, 
     Glib::ustring res;
     for (auto shape_url : shapes_url) {
         if (shape_url.compare(0, 5, "url(#") != 0 || shape_url.compare(shape_url.size() - 1, 1, ")") != 0) {
-            std::cerr << "text_relink_shapes_str: Invalid shape value: " << shape_url << std::endl;
+            std::cerr << "text_relink_shapes_str: Invalid shape value: " << shape_url.raw() << std::endl;
         } else {
             auto old_id = shape_url.substr(5, shape_url.size() - 6);
             auto find_it = old_to_new.find(old_id);
             if (find_it != old_to_new.end()) {
                 res.append("url(#").append(find_it->second).append(") ");
             } else {
-                std::cerr << "Failed to replace reference " << old_id << std::endl;
+                std::cerr << "Failed to replace reference " << old_id.raw() << std::endl;
             }
         }
     }

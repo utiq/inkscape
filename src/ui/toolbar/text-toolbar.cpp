@@ -2463,7 +2463,7 @@ Inkscape::XML::Node *TextToolbar::unindent_node(Inkscape::XML::Node *repr, Inksc
             return newrepr;
         }
     }
-    std::cout << "error on TextToolbar.cpp::2433" << std::endl;
+    std::cerr << "TextToolbar::unindent_node error: node has no (grand)parent, nothing done.\n";
     return repr;
 }
 

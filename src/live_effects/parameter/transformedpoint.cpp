@@ -180,7 +180,7 @@ public:
         return param->origin + param->vector;
     };
     void knot_click(guint /*state*/) override{
-        g_print ("This is the vector handle associated to parameter '%s'\n", param->param_key.c_str());
+        g_message ("This is the vector handle associated to parameter '%s'", param->param_key.c_str());
     };
 
 private:

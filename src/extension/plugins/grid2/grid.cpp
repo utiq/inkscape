@@ -45,7 +45,7 @@ namespace Internal {
 bool
 Grid::load (Inkscape::Extension::Extension */*module*/)
 {
-    // std::cout << "Hey, I'm Grid, I'm loading!" << std::endl;
+    // std::cerr << "Hey, I'm Grid, I'm loading!" << std::endl;
     return TRUE;
 }
 
@@ -55,7 +55,7 @@ Glib::ustring build_lines(Geom::Rect bounding_area,
                           Geom::Point const &offset, Geom::Point const &spacing)
 {
 
-    std::cout << "Building lines" << std::endl;
+    std::cerr << "Building lines" << std::endl;
 
     Geom::Point point_offset(0.0, 0.0);
 
@@ -74,7 +74,7 @@ Glib::ustring build_lines(Geom::Rect bounding_area,
                 .lineTo(end_point + point_offset);
         }
     }
-    std::cout << "Path data:" << path_data.c_str() << std::endl;
+    std::cerr << "Path data:" << path_data.c_str() << std::endl;
     return path_data;
 }
 
@@ -89,7 +89,7 @@ void
 Grid::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::View *document, Inkscape::Extension::Implementation::ImplementationDocumentCache * /*docCache*/)
 {
 
-    std::cout << "Executing effect" << std::endl;
+    std::cerr << "Executing effect" << std::endl;
 
     Inkscape::Selection *selection = static_cast<SPDocument *>(document)->getSelection();
 
@@ -168,7 +168,7 @@ public:
 void
 PrefAdjustment::val_changed ()
 {
-    // std::cout << "Value Changed to: " << this->get_value() << std::endl;
+    // std::cerr << "Value Changed to: " << this->get_value() << std::endl;
     _ext->set_param_float(_pref, this->get_value());
     return;
 }

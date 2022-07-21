@@ -805,7 +805,7 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
         PopplerPage* page = nullptr;
 
         if(error != NULL) {
-            std::cerr << "PDFInput::open: error opening document: " << full_uri << std::endl;
+            std::cerr << "PDFInput::open: error opening document: " << full_uri.raw() << std::endl;
             g_error_free (error);
         }
 
@@ -842,7 +842,7 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
 
             doc = SPDocument::createNewDocFromMem(output.c_str(), output.length(), TRUE);
         } else if (document) {
-            std::cerr << "PDFInput::open: error opening page " << page_num << " of document: " << full_uri << std::endl;
+            std::cerr << "PDFInput::open: error opening page " << page_num << " of document: " << full_uri.raw() << std::endl;
         }
 
         // Cleanup

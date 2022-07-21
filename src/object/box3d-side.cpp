@@ -82,10 +82,9 @@ void Box3DSide::set(SPAttr key, const gchar* value) {
                 guint desc = atoi (value);
 
                 if (!Box3D::is_face_id(desc)) {
-                    g_print ("desc is not a face id: =%s=\n", value);
+                    g_warning ("desc is not a face id: =%s=", value);
+                    return;
                 }
-
-                g_return_if_fail (Box3D::is_face_id (desc));
 
                 Box3D::Axis plane = (Box3D::Axis) (desc & 0x7);
                 plane = (Box3D::is_plane(plane) ? plane : Box3D::orth_plane_or_axis(plane));
@@ -156,7 +155,7 @@ void Box3DSide::set_shape() {
 
     SPBox3D *box = dynamic_cast<SPBox3D *>(parent);
     if (!box) {
-        g_warning("Parent of 3D box side is not a 3D box.\n");
+        g_warning("Parent of 3D box side is not a 3D box.");
         return;
     }
 
@@ -179,7 +178,7 @@ void Box3DSide::set_shape() {
         !box->get_corner_screen(corners[2]).isFinite() ||
         !box->get_corner_screen(corners[3]).isFinite() )
     {
-        g_warning ("Trying to draw a 3D box side with invalid coordinates.\n");
+        g_warning ("Trying to draw a 3D box side with invalid coordinates.");
         return;
     }
 

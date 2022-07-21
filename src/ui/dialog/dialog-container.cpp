@@ -161,7 +161,7 @@ DialogBase *DialogContainer::dialog_factory(const Glib::ustring& dialog_type)
     else if(dialog_type == "Prototype")           return &Inkscape::UI::Dialog::Prototype::getInstance();
 #endif
     else {
-        std::cerr << "DialogContainer::dialog_factory: Unhandled dialog: " << dialog_type << std::endl;
+        std::cerr << "DialogContainer::dialog_factory: Unhandled dialog: " << dialog_type.raw() << std::endl;
         return nullptr;
     }
     // clang-format on
@@ -281,7 +281,7 @@ void DialogContainer::new_dialog(const Glib::ustring& dialog_type, DialogNoteboo
     DialogBase *dialog = dialog_factory(dialog_type);
 
     if (!dialog) {
-        std::cerr << "DialogContainer::new_dialog(): couldn't find dialog for: " << dialog_type << std::endl;
+        std::cerr << "DialogContainer::new_dialog(): couldn't find dialog for: " << dialog_type.raw() << std::endl;
         return;
     }
 
@@ -449,7 +449,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
                         }
                         active_container->new_dialog(type, notebook);
                     } else {
-                        std::cerr << "recreate_dialogs_from_state: invalid dialog type: " << type << std::endl;
+                        std::cerr << "recreate_dialogs_from_state: invalid dialog type: " << type.raw() << std::endl;
                     }
                 }
             }
@@ -502,7 +502,7 @@ DialogWindow *DialogContainer::create_new_floating_dialog(const Glib::ustring& d
     DialogBase *dialog = dialog_factory(dialog_type);
 
     if (!dialog) {
-        std::cerr << "DialogContainer::new_dialog(): couldn't find dialog for: " << dialog_type << std::endl;
+        std::cerr << "DialogContainer::new_dialog(): couldn't find dialog for: " << dialog_type.raw() << std::endl;
         return nullptr;
     }
 
@@ -768,7 +768,7 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                             dialog_window = create_new_floating_dialog(type, false);
                         }
                     } else {
-                        std::cerr << "load_container_state: invalid dialog type: " << type << std::endl;
+                        std::cerr << "load_container_state: invalid dialog type: " << type.raw() << std::endl;
                     }
                 }
             }

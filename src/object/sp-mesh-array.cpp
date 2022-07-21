@@ -1967,7 +1967,7 @@ guint SPMeshNodeArray::side_toggle( std::vector<guint> corners ) {
                         break;
                     }
                     default:
-                        std::cout << "Toggle sides: Invalid path type: " << path_type << std::endl;
+                        std::cerr << "Toggle sides: Invalid path type: " << path_type << std::endl;
                 }
                 ++toggled;
             }

@@ -589,7 +589,7 @@ bool CommandPalette::ask_action_parameter(const ActionPtrName &action_ptr_name)
     TypeOfVariant action_param_type = get_action_variant_type(action_ptr_name.first);
     if (action_param_type == TypeOfVariant::UNKNOWN) {
         std::cerr << "CommandPalette::ask_action_parameter: unhandled action value type (Unknown Type) "
-                  << action_ptr_name.second << std::endl;
+                  << action_ptr_name.second.raw() << std::endl;
         return false;
     }
 
@@ -1251,7 +1251,7 @@ bool CommandPalette::execute_action(const ActionPtrName &action_ptr_name, const 
             } else if (value == "0" || value == "f" || value == "false") {
                 action_ptr->activate(Glib::Variant<bool>::create(false));
             } else {
-                std::cerr << "CommandPalette::execute_action: Invalid boolean value: " << action_name << ":" << value
+                std::cerr << "CommandPalette::execute_action: Invalid boolean value: " << action_name.raw() << ":" << value
                           << std::endl;
             }
             break;
@@ -1306,7 +1306,7 @@ bool CommandPalette::execute_action(const ActionPtrName &action_ptr_name, const 
             }
             break;
         case TypeOfVariant::UNKNOWN:
-            std::cerr << "CommandPalette::execute_action: unhandled action value type (Unknown Type) " << action_name
+            std::cerr << "CommandPalette::execute_action: unhandled action value type (Unknown Type) " << action_name.raw()
                       << std::endl;
             break;
         case TypeOfVariant::NONE:

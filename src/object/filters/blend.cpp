@@ -86,7 +86,7 @@ static SPBlendMode read_mode(char const *value)
             if (std::strcmp(value, "exclusion") == 0)
                 return SP_CSS_BLEND_EXCLUSION;
         default:
-            std::cout << "SPBlendMode: Unimplemented mode: " << value << std::endl;
+            std::cerr << "SPBlendMode: Unimplemented mode: " << value << std::endl;
             // do nothing by default
             break;
     }

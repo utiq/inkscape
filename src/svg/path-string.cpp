@@ -80,7 +80,7 @@ void Inkscape::SVG::PathString::_appendOp(char abs_op, char rel_op) {
             }
             break;
         default:
-            std::cout << "Better not be here!" << std::endl;
+            std::cerr << "Better not be here!" << std::endl;
     }
 }
 

@@ -77,7 +77,7 @@ void Prototype::on_click()
 {
     Gtk::Window *window = dynamic_cast<Gtk::Window *>(get_toplevel());
     if (window) {
-        std::cout << "Dialog is part of: " << window->get_name() << "  (" << window->get_title() << ")" << std::endl;
+        std::cerr << "Dialog is part of: " << window->get_name() << "  (" << window->get_title() << ")" << std::endl;
     } else {
         std::cerr << "Prototype::on_click(): Dialog not attached to window!" << std::endl;
     }

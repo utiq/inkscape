@@ -57,7 +57,7 @@ static FeCompositeOperator read_operator(char const *value)
     	return COMPOSITE_LIGHTER;
     }
 
-    std::cout << "Inkscape::Filters::FilterCompositeOperator: Unimplemented operator: " << value << std::endl;
+    std::cerr << "Inkscape::Filters::FilterCompositeOperator: Unimplemented operator: " << value << std::endl;
     return COMPOSITE_DEFAULT;
 }
 

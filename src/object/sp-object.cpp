@@ -1330,7 +1330,7 @@ void SPObject::requestDisplayUpdate(unsigned int flags)
     // expect no nested update calls
     if (document->update_in_progress) {
         // observed with LPE on <rect>
-        g_print("WARNING: Requested update while update in progress, counter = %d\n", document->update_in_progress);
+        g_warning("WARNING: Requested update while update in progress, counter = %d", document->update_in_progress);
     }
 #endif
 

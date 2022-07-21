@@ -185,7 +185,7 @@ public:
         param->write_to_SVG();
     };
     void knot_click(guint /*state*/) override{
-        g_print ("This is the origin handle associated to parameter '%s'\n", param->param_key.c_str());
+        g_message ("This is the origin handle associated to parameter '%s'", param->param_key.c_str());
     };
 
 private:
@@ -213,7 +213,7 @@ public:
         param->write_to_SVG();
     };
     void knot_click(guint /*state*/) override{
-        g_print ("This is the vector handle associated to parameter '%s'\n", param->param_key.c_str());
+        g_message ("This is the vector handle associated to parameter '%s'", param->param_key.c_str());
     };
 
 private:

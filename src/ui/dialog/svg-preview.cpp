@@ -91,7 +91,7 @@ void SVGPreview::showImage(Glib::ustring const &theFileName)
     // Let's get real width and height from SVG file. These are template
     // files so we assume they are well formed.
 
-    // std::cout << "SVGPreview::showImage: " << theFileName << std::endl;
+    // std::cout << "SVGPreview::showImage: " << theFileName.raw() << std::endl;
     std::string width;
     std::string height;
 
@@ -135,7 +135,7 @@ void SVGPreview::showImage(Glib::ustring const &theFileName)
     if (hasSuffix(fileName, svg)) {
         std::ifstream input(theFileName);
         if( !input ) {
-            std::cerr << "SVGPreview::showImage: Failed to open file: " << theFileName << std::endl;
+            std::cerr << "SVGPreview::showImage: Failed to open file: " << theFileName.raw() << std::endl;
         } else {
 
             Glib::ustring token;

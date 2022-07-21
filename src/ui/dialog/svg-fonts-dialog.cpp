@@ -1255,7 +1255,7 @@ void SvgFontsDialog::glyph_advance_edit(const Glib::ustring&, const Glib::ustrin
 
         update_glyphs(glyph);
     } else {
-        std::cerr << "SvgFontDialog::glyph_advance_edit: Error in input: " << str << std::endl;
+        std::cerr << "SvgFontDialog::glyph_advance_edit: Error in input: " << str.raw() << std::endl;
     }
 }
 

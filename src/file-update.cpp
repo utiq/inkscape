@@ -277,13 +277,13 @@ bool sp_file_save_backup( Glib::ustring uri ) {
 
     FILE *filein  = Inkscape::IO::fopen_utf8name(uri.c_str(), "rb");
     if (!filein) {
-        std::cerr << "sp_file_save_backup: failed to open: " << uri << std::endl;
+        std::cerr << "sp_file_save_backup: failed to open: " << uri.raw() << std::endl;
         return false;
     }
 
     FILE *fileout = Inkscape::IO::fopen_utf8name(out.c_str(), "wb");
     if (!fileout) {
-        std::cerr << "sp_file_save_backup: failed to open: " << out << std::endl;
+        std::cerr << "sp_file_save_backup: failed to open: " << out.raw() << std::endl;
         fclose( filein );
         return false;
     }
@@ -296,7 +296,7 @@ bool sp_file_save_backup( Glib::ustring uri ) {
 
     bool return_value = true;
     if (ferror(fileout)) {
-        std::cerr << "sp_file_save_backup: error when writing to: " << out << std::endl;
+        std::cerr << "sp_file_save_backup: error when writing to: " << out.raw() << std::endl;
         return_value = false;
     }
 

@@ -66,7 +66,7 @@ KnotHolder::KnotHolder(SPDesktop *desktop, SPItem *item, SPKnotHolderReleasedFun
     _edit_transform(Geom::identity())
 {
     if (!desktop || !item) {
-        g_print ("Error! Throw an exception, please!\n");
+        g_warning ("Error! Throw an exception, please!");
     }
 
     sp_object_ref(item);

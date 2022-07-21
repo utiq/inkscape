@@ -48,7 +48,7 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg)
     }
     catch (const Glib::Error& ex)
     {
-        std::cerr << "AlignAndDistribute::AlignAndDistribute: " << builder_file << " file not read! " << ex.what().raw() << std::endl;
+        std::cerr << "AlignAndDistribute::AlignAndDistribute: " << builder_file.raw() << " file not read! " << ex.what().raw() << std::endl;
     }
 
     builder->get_widget("align-and-distribute-box", align_and_distribute_box);

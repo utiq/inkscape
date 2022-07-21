@@ -77,7 +77,7 @@ Inkscape::XML::Node* SPSpiral::write(Inkscape::XML::Document *xml_doc, Inkscape:
 
     // Nulls might be possible if this called iteratively
     if (!this->_curve) {
-            //g_warning("sp_spiral_write(): No path to copy\n");
+            //g_warning("sp_spiral_write(): No path to copy");
             return nullptr;
     }
 
@@ -543,14 +543,14 @@ bool SPSpiral::isInvalid() const {
     this->getPolar(0.0, &rad, nullptr);
 
     if (rad < 0.0 || rad > SP_HUGE) {
-        g_print("rad(t=0)=%g\n", rad);
+        g_warning("rad(t=0)=%g", rad);
         return true;
     }
 
     this->getPolar(1.0, &rad, nullptr);
 
     if (rad < 0.0 || rad > SP_HUGE) {
-        g_print("rad(t=1)=%g\n", rad);
+        g_warning("rad(t=1)=%g", rad);
         return true;
     }
 

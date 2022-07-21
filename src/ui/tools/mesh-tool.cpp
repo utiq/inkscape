@@ -315,7 +315,7 @@ void MeshTool::corner_operation(MeshCornerOperation operation)
                     break;
 
                 default:
-                    std::cout << "sp_mesh_corner_operation: unknown operation" << std::endl;
+                    std::cerr << "sp_mesh_corner_operation: unknown operation" << std::endl;
             }                    
 
             if( noperation > 0 ) {
@@ -355,7 +355,7 @@ void MeshTool::corner_operation(MeshCornerOperation operation)
                         break;
 
                     default:
-                        std::cout << "sp_mesh_corner_operation: unknown operation" << std::endl;
+                        std::cerr << "sp_mesh_corner_operation: unknown operation" << std::endl;
                 }
             }
         }

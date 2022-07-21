@@ -54,7 +54,7 @@ ink_file_new(const std::string &Template)
             delete nodeToRemove;
         }
     } else {
-        std::cout << "ink_file_new: Did not create new document!" << std::endl;
+        std::cerr << "ink_file_new: Did not create new document!" << std::endl;
     }
 
     return doc;

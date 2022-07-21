@@ -1118,7 +1118,7 @@ public:
                     if( _funcNode ) {
                         _funcNode->setAttribute( "type", "identity" );
                     } else {
-                        //std::cout << "ERROR ERROR: feFuncX not found!" << std::endl;
+                        //std::cerr << "ERROR ERROR: feFuncX not found!" << std::endl;
                     }
                 }
             }

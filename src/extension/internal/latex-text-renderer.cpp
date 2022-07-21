@@ -166,10 +166,10 @@ LaTeXTextRenderer::setTargetFile(gchar const *filename) {
     /* flush this to test output stream as early as possible */
     if (fflush(_stream)) {
         if (ferror(_stream)) {
-            g_print("Error %d on LaTeX file output stream: %s\n", errno,
+            g_warning("Error %d on LaTeX file output stream: %s", errno,
                     g_strerror(errno));
         }
-        g_print("Output to LaTeX file failed\n");
+        g_warning("Output to LaTeX file failed");
         /* fixme: should use pclose() for pipes */
         fclose(_stream);
         _stream = nullptr;

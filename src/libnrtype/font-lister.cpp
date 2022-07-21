@@ -1091,7 +1091,7 @@ Glib::ustring FontLister::get_best_style_match(Glib::ustring family, Glib::ustri
     }
     catch (...)
     {
-        std::cerr << "FontLister::get_best_style_match(): can't find family: " << family << std::endl;
+        std::cerr << "FontLister::get_best_style_match(): can't find family: " << family.raw() << std::endl;
         return (target_style);
     }
 
@@ -1294,7 +1294,7 @@ void font_lister_style_cell_data_func (Gtk::CellRenderer *renderer, Gtk::TreeIte
     Glib::ustring markup;
 
     markup = "<span font='" + font_desc + "'>" + style_escaped + "</span>";
-    std::cout << "  markup: " << markup << std::endl;
+    std::cerr << "  markup: " << markup.raw() << std::endl;
 
     renderer->set_property("markup", markup);
 }

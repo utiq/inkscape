@@ -49,7 +49,7 @@ select_by_id(Glib::ustring ids, InkscapeApplication* app)
         if (object) {
             selection->add(object);
         } else {
-            std::cerr << "select_by_id: Did not find object with id: " << id << std::endl;
+            std::cerr << "select_by_id: Did not find object with id: " << id.raw() << std::endl;
         }
     }
 }
@@ -69,7 +69,7 @@ unselect_by_id(Glib::ustring ids, InkscapeApplication* app)
         if (object) {
             selection->remove(object);
         } else {
-            std::cerr << "unselect_by_id: Did not find object with id: " << id << std::endl;
+            std::cerr << "unselect_by_id: Did not find object with id: " << id.raw() << std::endl;
         }
     }
 }

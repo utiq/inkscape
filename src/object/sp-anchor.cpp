@@ -165,7 +165,7 @@ int SPAnchor::event(SPEvent* event) {
 	case SPEvent::ACTIVATE:
             if (this->href) {
                 // If this actually worked, it could be useful to open a webpage with the link.
-                g_print("Activated xlink:href=\"%s\"\n", this->href);
+                g_message("Activated xlink:href=\"%s\"", this->href);
                 return TRUE;
             }
             break;

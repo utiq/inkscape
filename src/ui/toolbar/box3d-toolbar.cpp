@@ -316,7 +316,7 @@ void
 Box3DToolbar::resync_toolbar(Inkscape::XML::Node *persp_repr)
 {
     if (!persp_repr) {
-        g_print ("No perspective given to box3d_resync_toolbar().\n");
+        g_warning ("No perspective given to box3d_resync_toolbar().");
         return;
     }
 
