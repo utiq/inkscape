@@ -69,11 +69,13 @@ protected:
     void documentReplaced() override;
     void layerChanged(SPObject *obj);
     void selectionChanged(Selection *selected) override;
+    ObjectWatcher *unpackToObject(SPObject *item);
 
     // Accessed by ObjectWatcher directly (friend class)
     SPObject* getObject(Node *node);
     ObjectWatcher* getWatcher(Node *node);
     ObjectWatcher *getRootWatcher() const { return root_watcher; };
+    bool showChildInTree(SPItem *item);
 
     Node *getRepr(Gtk::TreeModel::Row const &row) const;
     SPItem *getItem(Gtk::TreeModel::Row const &row) const;
@@ -114,6 +116,7 @@ private:
     Gtk::Box _buttonsRow;
     Gtk::Box _buttonsPrimary;
     Gtk::Box _buttonsSecondary;
+    Gtk::SearchEntry _searchBox;
     Gtk::ScrolledWindow _scroller;
     Gtk::Menu _popupMenu;
     Gtk::Box _page;
@@ -128,12 +131,15 @@ private:
     Gtk::Button *_addBarButton(char const* iconName, char const* tooltip, char const *action_name);
     void _objects_toggle();
     
-    bool toggleVisible(GdkEventButton* event, Gtk::TreeModel::Row row);
-    bool toggleLocked(GdkEventButton* event, Gtk::TreeModel::Row row);
+    bool toggleVisible(unsigned int state, Gtk::TreeModel::Row row);
+    bool toggleLocked(unsigned int state, Gtk::TreeModel::Row row);
     
     bool _handleButtonEvent(GdkEventButton *event);
+    bool _handleKeyPress(GdkEventKey *event);
     bool _handleKeyEvent(GdkEventKey *event);
     bool _handleMotionEvent(GdkEventMotion* motion_event);
+    void _searchActivated();
+    void _searchChanged();
     
     void _handleEdited(const Glib::ustring& path, const Glib::ustring& new_text);
     void _handleTransparentHover(bool enabled);
@@ -146,10 +152,18 @@ private:
     void on_drag_start(const Glib::RefPtr<Gdk::DragContext> &);
     void on_drag_end(const Glib::RefPtr<Gdk::DragContext> &) override;
 
+    bool selectCursorItem(unsigned int state);
+    SPItem *_getCursorItem(Gtk::TreeViewColumn *column);
+
     friend class ObjectWatcher;
 
     SPItem *_solid_item;
     std::list<SPItem *> _translucent_items;
+    int _msg_id;
+
+    // Special column dragging mode
+    Gtk::TreeViewColumn* _drag_column = nullptr;
+    bool _drag_flip;
 };
 
 

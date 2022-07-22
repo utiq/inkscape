@@ -793,7 +793,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
             while(item != nullptr) {
                 this->cycling_items.push_back(item);
                 item = _desktop->getItemAtPoint(p, true, item);
-                if (selection->includes(item)) tmp = item;
+                if (item && selection->includes(item)) tmp = item;
             }
 
             /* Compare current item list with item list during previous scroll ... */

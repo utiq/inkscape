@@ -158,6 +158,10 @@ public:
     double transform_center_y;
     bool freeze_stroke_width;
 
+    // Used in the layers/objects dialog, this remembers if this item's
+    // children are visible in the expanded state in the tree.
+    bool _is_expanded = false;
+
     Geom::Affine transform;
     mutable Geom::OptRect doc_bbox;
     Geom::Rect viewport;  // Cache viewport information
@@ -425,6 +429,9 @@ public:
     Geom::Affine dt2i_affine() const;
 
     guint32 _highlightColor;
+
+    bool isExpanded() const { return _is_expanded; }
+    void setExpanded(bool expand) { _is_expanded = expand; }
 
 private:
     enum EvaluatedStatus

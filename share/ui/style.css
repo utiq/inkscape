@@ -531,6 +531,28 @@ SPCanvas {
     font-size: 16px;
 }
 
+#ObjectsTreeView.view:focus {
+    outline-style: double;
+    outline-width: 5px;
+    outline-color: alpha (@theme_fg_color, 0.1);
+    -gtk-outline-radius: 50%;
+}
+#ObjectsTreeView.view:hover {
+    border-color: alpha (@theme_fg_color, 0.1);
+    border-style: solid;
+    border-width: 1px 0px;
+}
+#ObjectsTreeView {
+    -GtkTreeView-expander-size: 12;
+    -GtkTreeView-horizontal-separator: 2;
+    -GtkTreeView-vertical-separator: 2;
+}
+#Objects .search {
+  padding: 2px 4px;
+  min-height: 16px;
+  font-size: small;
+}
+
 /* GtkTreeView: clarify drop locations (especially important for XML editor) */
 treeview.view:drop(active) {
     border-style: solid;

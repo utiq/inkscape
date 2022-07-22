@@ -207,6 +207,7 @@ set(ui_SRC
 	widget/marker-combo-box.cpp
 	widget/notebook-page.cpp
 	widget/object-composite-settings.cpp
+	widget/objects-dialog-cells.cpp
 	widget/optglarea.cpp
 	widget/page-properties.cpp
 	widget/page-size-preview.cpp
@@ -464,6 +465,7 @@ set(ui_SRC
 	widget/marker-combo-box.h
 	widget/notebook-page.h
 	widget/object-composite-settings.h
+	widget/objects-dialog-cells.h
 	widget/optglarea.h
 	widget/page-selector.h
 	widget/paint-selector.h
