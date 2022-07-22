@@ -107,7 +107,7 @@ void AboutDialog::show_about() {
         builder->get_widget("copyright", copyright);
         if (copyright) {
             copyright->set_label(
-                Glib::ustring::sprintf(copyright->get_label().c_str(), Inkscape::inkscape_build_year()));
+                Glib::ustring::compose(copyright->get_label(), Inkscape::inkscape_build_year()));
         }
 
         // Render the about screen image via inkscape SPDocument
