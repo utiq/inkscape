@@ -330,7 +330,7 @@ void LivePathEffectAdd::viewChanged(gint mode)
     prefs->setInt("/dialogs/livepatheffect/dialogmode", mode);
     if (changed) {
         _LPESelectorFlowBox->unset_sort_func();
-        _LPESelectorFlowBox->set_sort_func(sigc::mem_fun(this, &LivePathEffectAdd::on_sort));
+        _LPESelectorFlowBox->set_sort_func(sigc::mem_fun(*this, &LivePathEffectAdd::on_sort));
         std::vector<Gtk::FlowBoxChild *> selected = _LPESelectorFlowBox->get_selected_children();
         if (selected.size() == 1) {
             _LPESelectorFlowBox->get_selected_children()[0]->grab_focus();

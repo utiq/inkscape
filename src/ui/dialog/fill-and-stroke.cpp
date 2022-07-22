@@ -60,7 +60,7 @@ FillAndStroke::FillAndStroke()
     _notebook.append_page(*_page_stroke_style, _createPageTabLabel(_("Stroke st_yle"), INKSCAPE_ICON("object-stroke-style")));
     _notebook.set_vexpand(true);
 
-    _notebook.signal_switch_page().connect(sigc::mem_fun(this, &FillAndStroke::_onSwitchPage));
+    _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &FillAndStroke::_onSwitchPage));
 
     _layoutPageFill();
     _layoutPageStrokePaint();

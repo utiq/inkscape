@@ -67,7 +67,7 @@ GradientTool::GradientTool(SPDesktop *desktop)
     Inkscape::Selection *selection = desktop->getSelection();
 
     this->selcon = new sigc::connection(selection->connectChanged(
-       sigc::mem_fun(this, &GradientTool::selection_changed)
+       sigc::mem_fun(*this, &GradientTool::selection_changed)
     ));
 
     subselcon = new sigc::connection(desktop->connect_gradient_stop_selected(

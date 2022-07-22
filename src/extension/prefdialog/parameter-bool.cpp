@@ -67,7 +67,7 @@ public:
         , _pref(param)
         , _changeSignal(changeSignal) {
         this->set_active(_pref->get());
-        this->signal_toggled().connect(sigc::mem_fun(this, &ParamBoolCheckButton::on_toggle));
+        this->signal_toggled().connect(sigc::mem_fun(*this, &ParamBoolCheckButton::on_toggle));
         return;
     }
 

@@ -49,7 +49,7 @@ LayerManager::LayerManager(SPDesktop *desktop)
     _layer_hierarchy->connectAdded(sigc::mem_fun(*this, &LayerManager::_layer_activated));
     _layer_hierarchy->connectRemoved(sigc::mem_fun(*this, &LayerManager::_layer_deactivated));
     _layer_hierarchy->connectChanged(sigc::mem_fun(*this, &LayerManager::_selectedLayerChanged));
-    _document_connection = desktop->connectDocumentReplaced(sigc::mem_fun(this, &LayerManager::_setDocument));
+    _document_connection = desktop->connectDocumentReplaced(sigc::mem_fun(*this, &LayerManager::_setDocument));
     _setDocument(desktop, desktop->doc());
 }
 

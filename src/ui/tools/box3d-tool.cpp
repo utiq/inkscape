@@ -65,7 +65,7 @@ Box3dTool::Box3dTool(SPDesktop *desktop)
 
     this->sel_changed_connection.disconnect();
     this->sel_changed_connection = desktop->getSelection()->connectChanged(
-    	sigc::mem_fun(this, &Box3dTool::selection_changed)
+        sigc::mem_fun(*this, &Box3dTool::selection_changed)
     );
 
     this->_vpdrag = new Box3D::VPDrag(desktop->getDocument());
@@ -444,7 +444,7 @@ bool Box3dTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-    	ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(event);
     }
 
     return ret;

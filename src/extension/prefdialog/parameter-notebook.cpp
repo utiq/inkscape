@@ -207,7 +207,7 @@ public:
         , activated(false)
     {
         // don't have to set the correct page: this is done in ParamNotebook::get_widget hook function
-        this->signal_switch_page().connect(sigc::mem_fun(this, &NotebookWidget::changed_page));
+        this->signal_switch_page().connect(sigc::mem_fun(*this, &NotebookWidget::changed_page));
     }
 
     void changed_page(Gtk::Widget *page, guint pagenum);

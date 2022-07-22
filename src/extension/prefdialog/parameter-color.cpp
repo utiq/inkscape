@@ -47,9 +47,9 @@ ParamColor::ParamColor(Inkscape::XML::Node *xml, Inkscape::Extension::Extension 
 
     _color.setValue(_value);
 
-    _color_changed = _color.signal_changed.connect(sigc::mem_fun(this, &ParamColor::_onColorChanged));
+    _color_changed = _color.signal_changed.connect(sigc::mem_fun(*this, &ParamColor::_onColorChanged));
     // TODO: SelectedColor does not properly emit signal_changed after dragging, so we also need the following
-    _color_released = _color.signal_released.connect(sigc::mem_fun(this, &ParamColor::_onColorChanged));
+    _color_released = _color.signal_released.connect(sigc::mem_fun(*this, &ParamColor::_onColorChanged));
 
     // parse appearance
     if (_appearance) {
@@ -105,7 +105,7 @@ Gtk::Widget *ParamColor::get_widget(sigc::signal<void ()> *changeSignal)
         _color_button->show();
         hbox->pack_end(*_color_button, false, false);
 
-        _color_button->signal_color_set().connect(sigc::mem_fun(this, &ParamColor::_onColorButtonChanged));
+        _color_button->signal_color_set().connect(sigc::mem_fun(*this, &ParamColor::_onColorButtonChanged));
     } else {
         Gtk::Widget *selector = Gtk::manage(new Inkscape::UI::Widget::ColorNotebook(_color));
         hbox->pack_start(*selector, true, true, 0);

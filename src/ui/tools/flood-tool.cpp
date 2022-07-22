@@ -114,7 +114,7 @@ FloodTool::FloodTool(SPDesktop *desktop)
 
     this->sel_changed_connection.disconnect();
     this->sel_changed_connection = desktop->getSelection()->connectChanged(
-    	sigc::mem_fun(this, &FloodTool::selection_changed)
+        sigc::mem_fun(*this, &FloodTool::selection_changed)
     );
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -1191,7 +1191,7 @@ bool FloodTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-    	ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(event);
     }
 
     return ret;

@@ -85,17 +85,17 @@ GradientSelector::GradientSelector()
     count_column->set_clickable(true);
     count_column->set_resizable(true);
 
-    _treeview->signal_key_press_event().connect(sigc::mem_fun(this, &GradientSelector::onKeyPressEvent), false);
+    _treeview->signal_key_press_event().connect(sigc::mem_fun(*this, &GradientSelector::onKeyPressEvent), false);
 
     _treeview->show();
 
-    icon_column->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::onTreeColorColClick));
-    name_column->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::onTreeNameColClick));
-    count_column->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::onTreeCountColClick));
+    icon_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeColorColClick));
+    name_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeNameColClick));
+    count_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeCountColClick));
 
-    auto tree_select_connection = _treeview->get_selection()->signal_changed().connect(sigc::mem_fun(this, &GradientSelector::onTreeSelection));
+    auto tree_select_connection = _treeview->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &GradientSelector::onTreeSelection));
     _vectors->set_tree_select_connection(tree_select_connection);
-    _text_renderer->signal_edited().connect(sigc::mem_fun(this, &GradientSelector::onGradientRename));
+    _text_renderer->signal_edited().connect(sigc::mem_fun(*this, &GradientSelector::onGradientRename));
 
     _scrolled_window = Gtk::manage(new Gtk::ScrolledWindow());
     _scrolled_window->add(*_treeview);
@@ -119,7 +119,7 @@ GradientSelector::GradientSelector()
     _nonsolid.push_back(_add);
     hb->pack_start(*_add, false, false, 0);
 
-    _add->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::add_vector_clicked));
+    _add->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::add_vector_clicked));
     _add->set_sensitive(false);
     _add->set_relief(Gtk::RELIEF_NONE);
     _add->set_tooltip_text(_("Create a duplicate gradient"));
@@ -129,7 +129,7 @@ GradientSelector::GradientSelector()
 
     _nonsolid.push_back(_del2);
     hb->pack_start(*_del2, false, false, 0);
-    _del2->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::delete_vector_clicked_2));
+    _del2->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::delete_vector_clicked_2));
     _del2->set_sensitive(false);
     _del2->set_relief(Gtk::RELIEF_NONE);
     _del2->set_tooltip_text(_("Delete unused gradient"));
@@ -140,7 +140,7 @@ GradientSelector::GradientSelector()
 
     _nonsolid.push_back(_edit);
     hb->pack_start(*_edit, false, false, 0);
-    _edit->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::edit_vector_clicked));
+    _edit->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::edit_vector_clicked));
     _edit->set_sensitive(false);
     _edit->set_relief(Gtk::RELIEF_NONE);
     _edit->set_tooltip_text(_("Edit gradient"));
@@ -151,7 +151,7 @@ GradientSelector::GradientSelector()
 
     _swatch_widgets.push_back(_del);
     hb->pack_start(*_del, false, false, 0);
-    _del->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::delete_vector_clicked));
+    _del->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::delete_vector_clicked));
     _del->set_sensitive(false);
     _del->set_relief(Gtk::RELIEF_NONE);
     _del->set_tooltip_text(_("Delete swatch"));

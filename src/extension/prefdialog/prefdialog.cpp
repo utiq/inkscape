@@ -60,7 +60,7 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
             return;
         }
         controls = _effect->get_imp()->prefs_effect(_effect, SP_ACTIVE_DESKTOP, &_signal_param_change, nullptr);
-        _signal_param_change.connect(sigc::mem_fun(this, &PrefDialog::param_change));
+        _signal_param_change.connect(sigc::mem_fun(*this, &PrefDialog::param_change));
     }
 
     hbox->pack_start(*controls, true, true, 0);
@@ -103,7 +103,7 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
         }
 
         preview_toggle();
-        _signal_preview.connect(sigc::mem_fun(this, &PrefDialog::preview_toggle));
+        _signal_preview.connect(sigc::mem_fun(*this, &PrefDialog::preview_toggle));
     }
 
     // Set window modality for effects that don't use live preview
@@ -166,7 +166,7 @@ PrefDialog::param_change () {
             _effect->set_state(Extension::STATE_LOADED);
         }
         _timersig.disconnect();
-        _timersig = Glib::signal_timeout().connect(sigc::mem_fun(this, &PrefDialog::param_timer_expire),
+        _timersig = Glib::signal_timeout().connect(sigc::mem_fun(*this, &PrefDialog::param_timer_expire),
                                                    250, /* ms */
                                                    Glib::PRIORITY_DEFAULT_IDLE);
     }

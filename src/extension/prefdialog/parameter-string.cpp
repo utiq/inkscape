@@ -115,7 +115,7 @@ public:
     {
         this->set_text(_pref->get());
         this->set_max_length(_pref->getMaxLength()); //Set the max length - default zero means no maximum
-        this->signal_changed().connect(sigc::mem_fun(this, &ParamStringEntry::changed_text));
+        this->signal_changed().connect(sigc::mem_fun(*this, &ParamStringEntry::changed_text));
     };
     void changed_text();
 };
@@ -158,7 +158,7 @@ public:
         Glib::ustring value = Glib::Regex::create("\\\\n")->replace_literal(_pref->get(), 0, "\n", (Glib::RegexMatchFlags)0);
 
         this->get_buffer()->set_text(value);
-        this->get_buffer()->signal_changed().connect(sigc::mem_fun(this, &ParamMultilineStringEntry::changed_text));
+        this->get_buffer()->signal_changed().connect(sigc::mem_fun(*this, &ParamMultilineStringEntry::changed_text));
     };
     void changed_text();
 };

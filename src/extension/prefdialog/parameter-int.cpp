@@ -105,7 +105,7 @@ public:
         , _changeSignal(changeSignal)
     {
         this->set_value(_pref->get());
-        this->signal_value_changed().connect(sigc::mem_fun(this, &ParamIntAdjustment::val_changed));
+        this->signal_value_changed().connect(sigc::mem_fun(*this, &ParamIntAdjustment::val_changed));
     };
 
     void val_changed ();

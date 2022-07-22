@@ -71,8 +71,8 @@ ColorNotebook::ColorNotebook(SelectedColor &color, bool no_alpha)
 
     _initUI(no_alpha);
 
-    _selected_color.signal_changed.connect(sigc::mem_fun(this, &ColorNotebook::_onSelectedColorChanged));
-    _selected_color.signal_dragged.connect(sigc::mem_fun(this, &ColorNotebook::_onSelectedColorChanged));
+    _selected_color.signal_changed.connect(sigc::mem_fun(*this, &ColorNotebook::_onSelectedColorChanged));
+    _selected_color.signal_dragged.connect(sigc::mem_fun(*this, &ColorNotebook::_onSelectedColorChanged));
 }
 
 ColorNotebook::~ColorNotebook()

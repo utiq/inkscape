@@ -122,11 +122,11 @@ void GradientVectorSelector::set_gradient(SPDocument *doc, SPGradient *gr)
 
         // Connect signals
         if (doc) {
-            _defs_release_connection = doc->getDefs()->connectRelease(sigc::mem_fun(this, &GradientVectorSelector::defs_release));
-            _defs_modified_connection = doc->getDefs()->connectModified(sigc::mem_fun(this, &GradientVectorSelector::defs_modified));
+            _defs_release_connection = doc->getDefs()->connectRelease(sigc::mem_fun(*this, &GradientVectorSelector::defs_release));
+            _defs_modified_connection = doc->getDefs()->connectModified(sigc::mem_fun(*this, &GradientVectorSelector::defs_modified));
         }
         if (gr) {
-            _gradient_release_connection = gr->connectRelease(sigc::mem_fun(this, &GradientVectorSelector::gradient_release));
+            _gradient_release_connection = gr->connectRelease(sigc::mem_fun(*this, &GradientVectorSelector::gradient_release));
         }
         _doc = doc;
         _gr = gr;

@@ -292,9 +292,9 @@ void GuidelinePropertiesDialog::_setup() {
     auto sby = dynamic_cast<UI::Widget::SpinButton *>(_spin_button_y.getWidget());
     auto sba = dynamic_cast<UI::Widget::SpinButton *>(_spin_button_y.getWidget());
 
-    if(sbx) sbx->signal_activate().connect(sigc::mem_fun(this, &GuidelinePropertiesDialog::on_sb_activate));
-    if(sby) sby->signal_activate().connect(sigc::mem_fun(this, &GuidelinePropertiesDialog::on_sb_activate));
-    if(sba) sba->signal_activate().connect(sigc::mem_fun(this, &GuidelinePropertiesDialog::on_sb_activate));
+    if(sbx) sbx->signal_activate().connect(sigc::mem_fun(*this, &GuidelinePropertiesDialog::on_sb_activate));
+    if(sby) sby->signal_activate().connect(sigc::mem_fun(*this, &GuidelinePropertiesDialog::on_sb_activate));
+    if(sba) sba->signal_activate().connect(sigc::mem_fun(*this, &GuidelinePropertiesDialog::on_sb_activate));
 
     // dialog
     set_default_response(Gtk::RESPONSE_OK);

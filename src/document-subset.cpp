@@ -159,11 +159,11 @@ private:
         Record &record=records[obj];
         record.release_connection
           = obj->connectRelease(
-              sigc::mem_fun(this, &Relations::_release_object)
+              sigc::mem_fun(*this, &Relations::_release_object)
             );
         record.position_changed_connection
           = obj->connectPositionChanged(
-              sigc::mem_fun(this, &Relations::reorder)
+              sigc::mem_fun(*this, &Relations::reorder)
             );
         return record;
     }

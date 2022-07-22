@@ -142,6 +142,9 @@ public:
      */
     std::vector<Inkscape::SnapCandidatePoint> getSnapPoints(SnapPreferences const *snapprefs) const;
 
+    // Fixme: Hack should not exist, but used by live_effects.
+    void emitModified() { _emitModified(_flags); };
+
     /**
      * Connects a slot to be notified of selection changes.
      *
@@ -152,13 +155,18 @@ public:
      *
      * @return the resulting connection
      */
-    void emitModified(){ _emitModified(this->_flags); };
-    sigc::connection connectChanged(sigc::slot<void (Selection *)> const &slot) {
+    sigc::connection connectChanged(sigc::slot<void (Selection *)> const &slot)
+    {
         return _changed_signal.connect(slot);
     }
+    /**
+     * Similar to connectChanged, but will be run first.
+     *
+     * This is a hack; see cf86d4abd17 for explanation.
+     */
     sigc::connection connectChangedFirst(sigc::slot<void (Selection *)> const &slot)
     {
-        return _changed_signal.slots().insert(_changed_signal.slots().begin(), slot);
+        return _changed_first_signal.connect(slot);
     }
 
     /**
@@ -189,9 +197,12 @@ public:
     {
         return _modified_signal.connect(slot);
     }
+    /**
+     * Similar to connectModified, but will be run first.
+     */
     sigc::connection connectModifiedFirst(sigc::slot<void (Selection *, unsigned int)> const &slot)
     {
-        return _modified_signal.slots().insert(_modified_signal.slots().begin(), slot);
+        return _modified_first_signal.connect(slot);
     }
 
     /**
@@ -240,6 +251,9 @@ private:
 
     sigc::signal<void (Selection *)> _changed_signal;
     sigc::signal<void (Selection *, unsigned int)> _modified_signal;
+
+    sigc::signal<void (Selection *)> _changed_first_signal;
+    sigc::signal<void (Selection *, unsigned int)> _modified_first_signal;
 };
 
 }

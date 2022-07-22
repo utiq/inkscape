@@ -53,8 +53,8 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
     action_group = Gio::SimpleActionGroup::create();
     insert_action_group("ctx", action_group);
     auto document = desktop->getDocument();
-    action_group->add_action("unhide-objects-below-cursor", sigc::bind<SPDocument*, bool>(sigc::mem_fun(this, &ContextMenu::unhide_or_unlock), document, true));
-    action_group->add_action("unlock-objects-below-cursor", sigc::bind<SPDocument*, bool>(sigc::mem_fun(this, &ContextMenu::unhide_or_unlock), document, false));
+    action_group->add_action("unhide-objects-below-cursor", sigc::bind<SPDocument*, bool>(sigc::mem_fun(*this, &ContextMenu::unhide_or_unlock), document, true));
+    action_group->add_action("unlock-objects-below-cursor", sigc::bind<SPDocument*, bool>(sigc::mem_fun(*this, &ContextMenu::unhide_or_unlock), document, false));
 
     auto gmenu         = Gio::Menu::create(); // Main menu
     auto gmenu_section = Gio::Menu::create(); // Section (used multiple times)

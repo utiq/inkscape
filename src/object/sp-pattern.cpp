@@ -67,7 +67,7 @@ SPPattern::SPPattern()
     , _pattern_transform_set(false)
     , shown(nullptr)
 {
-    ref.changedSignal().connect(sigc::mem_fun(this, &SPPattern::_onRefChanged));
+    ref.changedSignal().connect(sigc::mem_fun(*this, &SPPattern::_onRefChanged));
 }
 
 SPPattern::~SPPattern() = default;
@@ -348,7 +348,7 @@ void SPPattern::_onRefChanged(SPObject *old_ref, SPObject *ref)
     }
 
     if (SP_IS_PATTERN(ref)) {
-        _modified_connection = ref->connectModified(sigc::mem_fun(this, &SPPattern::_onRefModified));
+        _modified_connection = ref->connectModified(sigc::mem_fun(*this, &SPPattern::_onRefModified));
     }
 
     _onRefModified(ref, 0);

@@ -99,7 +99,9 @@ gboolean Selection::_emit_modified(Selection *selection)
     return FALSE;
 }
 
-void Selection::_emitModified(guint flags) {
+void Selection::_emitModified(guint flags)
+{
+    _modified_first_signal.emit(this, flags);
     _modified_signal.emit(this, flags);
 
     if (_desktop) {
@@ -136,6 +138,7 @@ void Selection::_emitChanged(bool persist_selection_context/* = false */) {
         }
     }
 
+    _changed_first_signal.emit(this);
     _changed_signal.emit(this);
 }
 

@@ -61,7 +61,7 @@ SPUse::SPUse()
     this->height.unset(SVGLength::PERCENT, 1.0, 1.0);
 
     this->_changed_connection = this->ref->changedSignal().connect(
-        sigc::hide(sigc::hide(sigc::mem_fun(this, &SPUse::href_changed)))
+        sigc::hide(sigc::hide(sigc::mem_fun(*this, &SPUse::href_changed)))
     );
 }
 
@@ -624,11 +624,11 @@ void SPUse::href_changed() {
             }
 
             this->_delete_connection = refobj->connectDelete(
-                sigc::hide(sigc::mem_fun(this, &SPUse::delete_self))
+                sigc::hide(sigc::mem_fun(*this, &SPUse::delete_self))
             );
 
             this->_transformed_connection = refobj->connectTransformed(
-                sigc::hide(sigc::mem_fun(this, &SPUse::move_compensate))
+                sigc::hide(sigc::mem_fun(*this, &SPUse::move_compensate))
             );
         }
     }

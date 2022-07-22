@@ -649,10 +649,10 @@ void PaintSelector::set_mode_gradient(PaintSelector::Mode mode)
             try {
                 _selector_gradient = Gtk::manage(new GradientEditor("/gradient-edit"));
                 _selector_gradient->show();
-                _selector_gradient->signal_grabbed().connect(sigc::mem_fun(this, &PaintSelector::gradient_grabbed));
-                _selector_gradient->signal_dragged().connect(sigc::mem_fun(this, &PaintSelector::gradient_dragged));
-                _selector_gradient->signal_released().connect(sigc::mem_fun(this, &PaintSelector::gradient_released));
-                _selector_gradient->signal_changed().connect(sigc::mem_fun(this, &PaintSelector::gradient_changed));
+                _selector_gradient->signal_grabbed().connect(sigc::mem_fun(*this, &PaintSelector::gradient_grabbed));
+                _selector_gradient->signal_dragged().connect(sigc::mem_fun(*this, &PaintSelector::gradient_dragged));
+                _selector_gradient->signal_released().connect(sigc::mem_fun(*this, &PaintSelector::gradient_released));
+                _selector_gradient->signal_changed().connect(sigc::mem_fun(*this, &PaintSelector::gradient_changed));
                 _selector_gradient->signal_stop_selected().connect([=](SPStop* stop) { _signal_stop_selected.emit(stop); });
                 /* Pack everything to frame */
                 _frame->add(*_selector_gradient);
@@ -1367,10 +1367,10 @@ void PaintSelector::set_mode_swatch(PaintSelector::Mode mode)
             _selector_swatch = Gtk::manage(new SwatchSelector());
 
             auto gsel = _selector_swatch->getGradientSelector();
-            gsel->signal_grabbed().connect(sigc::mem_fun(this, &PaintSelector::gradient_grabbed));
-            gsel->signal_dragged().connect(sigc::mem_fun(this, &PaintSelector::gradient_dragged));
-            gsel->signal_released().connect(sigc::mem_fun(this, &PaintSelector::gradient_released));
-            gsel->signal_changed().connect(sigc::mem_fun(this, &PaintSelector::gradient_changed));
+            gsel->signal_grabbed().connect(sigc::mem_fun(*this, &PaintSelector::gradient_grabbed));
+            gsel->signal_dragged().connect(sigc::mem_fun(*this, &PaintSelector::gradient_dragged));
+            gsel->signal_released().connect(sigc::mem_fun(*this, &PaintSelector::gradient_released));
+            gsel->signal_changed().connect(sigc::mem_fun(*this, &PaintSelector::gradient_changed));
 
             // Pack everything to frame
             _frame->add(*_selector_swatch);

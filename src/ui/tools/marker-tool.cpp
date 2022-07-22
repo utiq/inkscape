@@ -40,7 +40,7 @@ MarkerTool::MarkerTool(SPDesktop *desktop)
 
     this->sel_changed_connection.disconnect();
     this->sel_changed_connection = selection->connectChanged(
-    	sigc::mem_fun(this, &MarkerTool::selection_changed)
+        sigc::mem_fun(*this, &MarkerTool::selection_changed)
     );
     this->selection_changed(selection);
 

@@ -64,7 +64,7 @@ ArcTool::ArcTool(SPDesktop *desktop)
 
     this->sel_changed_connection.disconnect();
     this->sel_changed_connection = selection->connectChanged(
-        sigc::mem_fun(this, &ArcTool::selection_changed)
+        sigc::mem_fun(*this, &ArcTool::selection_changed)
     );
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();

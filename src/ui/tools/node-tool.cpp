@@ -148,11 +148,11 @@ NodeTool::NodeTool(SPDesktop *desktop)
 
     this->_selection_changed_connection.disconnect();
     this->_selection_changed_connection =
-        selection->connectChanged(sigc::mem_fun(this, &NodeTool::selection_changed));
+        selection->connectChanged(sigc::mem_fun(*this, &NodeTool::selection_changed));
 
     this->_mouseover_changed_connection.disconnect();
     this->_mouseover_changed_connection = 
-        Inkscape::UI::ControlPoint::signal_mouseover_change.connect(sigc::mem_fun(this, &NodeTool::mouseover_changed));
+        Inkscape::UI::ControlPoint::signal_mouseover_change.connect(sigc::mem_fun(*this, &NodeTool::mouseover_changed));
 
     if (this->_transform_handle_group) {
         this->_selected_nodes = new Inkscape::UI::ControlPointSelection(desktop, this->_transform_handle_group);
@@ -161,8 +161,8 @@ NodeTool::NodeTool(SPDesktop *desktop)
 
     this->_multipath = new Inkscape::UI::MultiPathManipulator(data, this->_selection_changed_connection);
 
-    this->_selector->signal_point.connect(sigc::mem_fun(this, &NodeTool::select_point));
-    this->_selector->signal_area.connect(sigc::mem_fun(this, &NodeTool::select_area));
+    this->_selector->signal_point.connect(sigc::mem_fun(*this, &NodeTool::select_point));
+    this->_selector->signal_area.connect(sigc::mem_fun(*this, &NodeTool::select_area));
 
     this->_multipath->signal_coords_changed.connect([=](){
         desktop->emit_control_point_selected(this, _selected_nodes);
@@ -174,7 +174,7 @@ NodeTool::NodeTool(SPDesktop *desktop)
         // <=>
         // void update_tip(GdkEvent *event)
         sigc::hide(sigc::hide(sigc::bind(
-                sigc::mem_fun(this, &NodeTool::update_tip),
+                sigc::mem_fun(*this, &NodeTool::update_tip),
                 (GdkEvent*)nullptr
         )))
     );

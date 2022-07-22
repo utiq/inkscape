@@ -68,7 +68,7 @@ SpiralTool::SpiralTool(SPDesktop *desktop)
     Inkscape::Selection *selection = desktop->getSelection();
     this->sel_changed_connection.disconnect();
 
-    this->sel_changed_connection = selection->connectChanged(sigc::mem_fun(this, &SpiralTool::selection_changed));
+    this->sel_changed_connection = selection->connectChanged(sigc::mem_fun(*this, &SpiralTool::selection_changed));
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 

@@ -142,7 +142,7 @@ public:
     PrefAdjustment(Inkscape::Extension::Extension * ext, char * pref) :
             Gtk::Adjustment(0.0, 0.0, 10.0, 0.1), _ext(ext), _pref(pref) {
         this->set_value(_ext->get_param_float(_pref));
-        this->signal_value_changed().connect(sigc::mem_fun(this, &PrefAdjustment::val_changed));
+        this->signal_value_changed().connect(sigc::mem_fun(*this, &PrefAdjustment::val_changed));
         return;
     };
 

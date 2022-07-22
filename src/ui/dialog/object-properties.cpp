@@ -114,7 +114,7 @@ void ObjectProperties::_init()
     _label_id.set_mnemonic_widget(_entry_id);
 
     // pressing enter in the id field is the same as clicking Set:
-    _entry_id.signal_activate().connect(sigc::mem_fun(this, &ObjectProperties::_labelChanged));
+    _entry_id.signal_activate().connect(sigc::mem_fun(*this, &ObjectProperties::_labelChanged));
     // focus is in the id field initially:
     _entry_id.grab_focus();
 
@@ -134,7 +134,7 @@ void ObjectProperties::_init()
     _label_label.set_mnemonic_widget(_entry_label);
 
     // pressing enter in the label field is the same as clicking Set:
-    _entry_label.signal_activate().connect(sigc::mem_fun(this, &ObjectProperties::_labelChanged));
+    _entry_label.signal_activate().connect(sigc::mem_fun(*this, &ObjectProperties::_labelChanged));
 
 
     /* Create the label for the object title */
@@ -151,7 +151,7 @@ void ObjectProperties::_init()
 
     _label_title.set_mnemonic_widget(_entry_title);
     // pressing enter in the label field is the same as clicking Set:
-    _entry_title.signal_activate().connect(sigc::mem_fun(this, &ObjectProperties::_labelChanged));
+    _entry_title.signal_activate().connect(sigc::mem_fun(*this, &ObjectProperties::_labelChanged));
 
     _label_color.set_mnemonic_widget(_highlight_color);
     _label_color.set_halign(Gtk::ALIGN_START);
@@ -186,7 +186,7 @@ void ObjectProperties::_init()
 
     _label_dpi.set_mnemonic_widget(_spin_dpi);
     // pressing enter in the label field is the same as clicking Set:
-    _spin_dpi.signal_activate().connect(sigc::mem_fun(this, &ObjectProperties::_labelChanged));
+    _spin_dpi.signal_activate().connect(sigc::mem_fun(*this, &ObjectProperties::_labelChanged));
 
     /* Image rendering */
     /* Create the label for the object ImageRendering */
@@ -212,7 +212,7 @@ void ObjectProperties::_init()
     _label_image_rendering.set_mnemonic_widget(_combo_image_rendering);
 
     _combo_image_rendering.signal_changed().connect(
-        sigc::mem_fun(this, &ObjectProperties::_imageRenderingChanged)
+        sigc::mem_fun(*this, &ObjectProperties::_imageRenderingChanged)
     );
 
 
@@ -246,7 +246,7 @@ void ObjectProperties::_init()
     _cb_hide.set_valign(Gtk::ALIGN_CENTER);
     grid_cb->attach(_cb_hide, 0, 0, 1, 1);
 
-    _cb_hide.signal_toggled().connect(sigc::mem_fun(this, &ObjectProperties::_hiddenToggled));
+    _cb_hide.signal_toggled().connect(sigc::mem_fun(*this, &ObjectProperties::_hiddenToggled));
 
     /* Lock */
     // TRANSLATORS: "Lock" is a verb here
@@ -255,7 +255,7 @@ void ObjectProperties::_init()
     _cb_lock.set_valign(Gtk::ALIGN_CENTER);
     grid_cb->attach(_cb_lock, 1, 0, 1, 1);
 
-    _cb_lock.signal_toggled().connect(sigc::mem_fun(this, &ObjectProperties::_sensitivityToggled));
+    _cb_lock.signal_toggled().connect(sigc::mem_fun(*this, &ObjectProperties::_sensitivityToggled));
 
     /* Preserve aspect ratio */
     _cb_aspect_ratio.set_tooltip_text(_("Check to preserve aspect ratio on images"));
@@ -263,7 +263,7 @@ void ObjectProperties::_init()
     _cb_aspect_ratio.set_valign(Gtk::ALIGN_CENTER);
     grid_cb->attach(_cb_aspect_ratio, 0, 1, 1, 1);
 
-    _cb_aspect_ratio.signal_toggled().connect(sigc::mem_fun(this, &ObjectProperties::_aspectRatioToggled));
+    _cb_aspect_ratio.signal_toggled().connect(sigc::mem_fun(*this, &ObjectProperties::_aspectRatioToggled));
 
 
     /* Button for setting the object's id, label, title and description. */
@@ -272,7 +272,7 @@ void ObjectProperties::_init()
     btn_set->set_valign(Gtk::ALIGN_CENTER);
     grid_cb->attach(*btn_set, 1, 1, 1, 1);
 
-    btn_set->signal_clicked().connect(sigc::mem_fun(this, &ObjectProperties::_labelChanged));
+    btn_set->signal_clicked().connect(sigc::mem_fun(*this, &ObjectProperties::_labelChanged));
 
     /* Interactivity options */
     _exp_interactivity.set_vexpand(false);

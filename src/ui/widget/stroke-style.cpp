@@ -406,7 +406,7 @@ void StrokeStyle::setDesktop(SPDesktop *desktop)
         }
 
         _document_replaced_connection =
-            desktop->connectDocumentReplaced(sigc::mem_fun(this, &StrokeStyle::_handleDocumentReplaced));
+            desktop->connectDocumentReplaced(sigc::mem_fun(*this, &StrokeStyle::_handleDocumentReplaced));
 
         _handleDocumentReplaced(nullptr, desktop->getDocument());
 

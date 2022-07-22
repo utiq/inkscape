@@ -121,7 +121,7 @@ void ExportPreview::queueRefresh()
         if (!timer) {
             timer = std::make_unique<Glib::Timer>();
         }
-        Glib::signal_idle().connect(sigc::mem_fun(this, &ExportPreview::refreshCB), Glib::PRIORITY_DEFAULT_IDLE);
+        Glib::signal_idle().connect(sigc::mem_fun(*this, &ExportPreview::refreshCB), Glib::PRIORITY_DEFAULT_IDLE);
     }
 }
 

@@ -220,10 +220,10 @@ add_actions_base(InkscapeApplication* app)
     gapp->add_action(               "debug-info",                                          sigc::ptr_fun(&print_debug_info)                       );
     gapp->add_action(               "system-data-directory",                               sigc::ptr_fun(&print_system_data_directory)            );
     gapp->add_action(               "user-data-directory",                                 sigc::ptr_fun(&print_user_data_directory)              );
-    gapp->add_action(               "action-list",        sigc::mem_fun(app, &InkscapeApplication::print_action_list)                             );
+    gapp->add_action(               "action-list",        sigc::mem_fun(*app, &InkscapeApplication::print_action_list)                            );
     gapp->add_action(               "vacuum-defs",        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&vacuum_defs),               app)        );
-    gapp->add_action(               "quit",               sigc::mem_fun(app, &InkscapeApplication::on_quit)                                       );
-    gapp->add_action(               "quit-immediate",     sigc::mem_fun(app, &InkscapeApplication::on_quit_immediate)                             );
+    gapp->add_action(               "quit",               sigc::mem_fun(*app, &InkscapeApplication::on_quit)                                      );
+    gapp->add_action(               "quit-immediate",     sigc::mem_fun(*app, &InkscapeApplication::on_quit_immediate)                            );
 
     gapp->add_action_radio_integer( "open-page",                                           sigc::ptr_fun(&pdf_page),                             0);
     gapp->add_action_radio_string(  "convert-dpi-method",                                  sigc::ptr_fun(&convert_dpi_method),              "none");

@@ -388,7 +388,7 @@ void IconPreviewPanel::queueRefresh()
         if (!timer) {
             timer = new Glib::Timer();
         }
-        Glib::signal_idle().connect( sigc::mem_fun(this, &IconPreviewPanel::refreshCB), Glib::PRIORITY_DEFAULT_IDLE );
+        Glib::signal_idle().connect( sigc::mem_fun(*this, &IconPreviewPanel::refreshCB), Glib::PRIORITY_DEFAULT_IDLE );
     }
 }
 

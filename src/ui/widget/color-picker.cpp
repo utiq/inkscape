@@ -45,9 +45,9 @@ ColorPicker::ColorPicker (const Glib::ustring& title, const Glib::ustring& tip,
     if (!tip.empty()) {
         button->set_tooltip_text(tip);
     }
-    _selected_color.signal_changed.connect(sigc::mem_fun(this, &ColorPicker::_onSelectedColorChanged));
-    _selected_color.signal_dragged.connect(sigc::mem_fun(this, &ColorPicker::_onSelectedColorChanged));
-    _selected_color.signal_released.connect(sigc::mem_fun(this, &ColorPicker::_onSelectedColorChanged));
+    _selected_color.signal_changed.connect(sigc::mem_fun(*this, &ColorPicker::_onSelectedColorChanged));
+    _selected_color.signal_dragged.connect(sigc::mem_fun(*this, &ColorPicker::_onSelectedColorChanged));
+    _selected_color.signal_released.connect(sigc::mem_fun(*this, &ColorPicker::_onSelectedColorChanged));
 
     if (external_button) {
         external_button->signal_clicked().connect([=](){ on_clicked(); });

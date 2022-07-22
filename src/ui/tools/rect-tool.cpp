@@ -61,7 +61,7 @@ RectTool::RectTool(SPDesktop *desktop)
 
     this->sel_changed_connection.disconnect();
     this->sel_changed_connection = desktop->getSelection()->connectChanged(
-    	sigc::mem_fun(this, &RectTool::selection_changed)
+        sigc::mem_fun(*this, &RectTool::selection_changed)
     );
 
     sp_event_context_read(this, "rx");
@@ -129,7 +129,7 @@ bool RectTool::item_handler(SPItem* item, GdkEvent* event) {
         break;
     }
 
-   	ret = ToolBase::item_handler(item, event);
+       ret = ToolBase::item_handler(item, event);
 
     return ret;
 }
@@ -320,7 +320,7 @@ bool RectTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-    	ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(event);
     }
 
     return ret;
@@ -351,14 +351,15 @@ void RectTool::drag(Geom::Point const pt, guint state) {
     this->rect->setPosition(r.min()[Geom::X], r.min()[Geom::Y], r.dimensions()[Geom::X], r.dimensions()[Geom::Y]);
 
     if (this->rx != 0.0) {
-    	this->rect->setRx(true, this->rx);
+        this->rect->setRx(true, this->rx);
     }
 
     if (this->ry != 0.0) {
-        if (this->rx == 0.0)
-        	this->rect->setRy(true, CLAMP(this->ry, 0, MIN(r.dimensions()[Geom::X], r.dimensions()[Geom::Y])/2));
-        else
-        	this->rect->setRy(true, CLAMP(this->ry, 0, r.dimensions()[Geom::Y]));
+        if (this->rx == 0.0) {
+            this->rect->setRy(true, CLAMP(this->ry, 0, MIN(r.dimensions()[Geom::X], r.dimensions()[Geom::Y])/2));
+        } else {
+            this->rect->setRy(true, CLAMP(this->ry, 0, r.dimensions()[Geom::Y]));
+        }
     }
 
     // status text

@@ -86,7 +86,7 @@ SPKnot::SPKnot(SPDesktop *desktop, gchar const *tip, Inkscape::CanvasItemCtrlTyp
     ctrl->set_fill(0xffffff00);
     ctrl->set_stroke(0x01000000);
 
-    _event_connection = ctrl->connect_event(sigc::mem_fun(this, &SPKnot::eventHandler));
+    _event_connection = ctrl->connect_event(sigc::mem_fun(*this, &SPKnot::eventHandler));
 
     knot_created_callback(this);
 }

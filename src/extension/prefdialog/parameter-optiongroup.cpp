@@ -191,7 +191,7 @@ public:
     };
 
     void add_changesignal() {
-        this->signal_toggled().connect(sigc::mem_fun(this, &RadioWidget::changed));
+        this->signal_toggled().connect(sigc::mem_fun(*this, &RadioWidget::changed));
     };
 
     void changed();
@@ -227,7 +227,7 @@ public:
         : _pref(pref)
         , _changeSignal(changeSignal)
     {
-        this->signal_changed().connect(sigc::mem_fun(this, &ComboWidget::changed));
+        this->signal_changed().connect(sigc::mem_fun(*this, &ComboWidget::changed));
     }
 
     ~ComboWidget() override = default;

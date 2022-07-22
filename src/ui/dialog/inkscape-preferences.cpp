@@ -1797,10 +1797,10 @@ void InkscapePreferences::initPageUI()
     _symbolic_success_color.get_style_context()->add_class("symboliccolors");
     _symbolic_warning_color.get_style_context()->add_class("symboliccolors");
     _symbolic_error_color.get_style_context()->add_class("symboliccolors");
-    _symbolic_base_color.connectChanged(sigc::mem_fun(this, &InkscapePreferences::changeIconsColor));
-    _symbolic_warning_color.connectChanged(sigc::mem_fun(this, &InkscapePreferences::changeIconsColor));
-    _symbolic_success_color.connectChanged(sigc::mem_fun(this, &InkscapePreferences::changeIconsColor));
-    _symbolic_error_color.connectChanged(sigc::mem_fun(this, &InkscapePreferences::changeIconsColor));
+    _symbolic_base_color.connectChanged(sigc::mem_fun(*this, &InkscapePreferences::changeIconsColor));
+    _symbolic_warning_color.connectChanged(sigc::mem_fun(*this, &InkscapePreferences::changeIconsColor));
+    _symbolic_success_color.connectChanged(sigc::mem_fun(*this, &InkscapePreferences::changeIconsColor));
+    _symbolic_error_color.connectChanged(sigc::mem_fun(*this, &InkscapePreferences::changeIconsColor));
     /* _complementary_colors = Gtk::manage(new Gtk::Image()); */
     Gtk::Box *icon_buttons = Gtk::manage(new Gtk::Box());
     icon_buttons->pack_start(_symbolic_base_color, true, true, 4);

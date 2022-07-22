@@ -221,9 +221,9 @@ void ColorSlider::setAdjustment(Glib::RefPtr<Gtk::Adjustment> adjustment)
 
         _adjustment = adjustment;
         _adjustment_changed_connection =
-            _adjustment->signal_changed().connect(sigc::mem_fun(this, &ColorSlider::_onAdjustmentChanged));
+            _adjustment->signal_changed().connect(sigc::mem_fun(*this, &ColorSlider::_onAdjustmentChanged));
         _adjustment_value_changed_connection =
-            _adjustment->signal_value_changed().connect(sigc::mem_fun(this, &ColorSlider::_onAdjustmentValueChanged));
+            _adjustment->signal_value_changed().connect(sigc::mem_fun(*this, &ColorSlider::_onAdjustmentValueChanged));
 
         _value = ColorScales<>::getScaled(_adjustment);
 

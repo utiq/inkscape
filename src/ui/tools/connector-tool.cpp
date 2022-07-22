@@ -176,7 +176,7 @@ ConnectorTool::ConnectorTool(SPDesktop *desktop)
 
     this->sel_changed_connection.disconnect();
     this->sel_changed_connection = this->selection->connectChanged(
-        sigc::mem_fun(this, &ConnectorTool::_selectionChanged)
+        sigc::mem_fun(*this, &ConnectorTool::_selectionChanged)
     );
 
     /* Create red bpath */

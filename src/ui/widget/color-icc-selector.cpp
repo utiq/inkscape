@@ -300,8 +300,8 @@ ColorICCSelector::ColorICCSelector(SelectedColor &color, bool no_alpha)
 {
     _impl = new ColorICCSelectorImpl(this, color);
     init(no_alpha);
-    color.signal_changed.connect(sigc::mem_fun(this, &ColorICCSelector::_colorChanged));
-    // color.signal_dragged.connect(sigc::mem_fun(this, &ColorICCSelector::_colorChanged));
+    color.signal_changed.connect(sigc::mem_fun(*this, &ColorICCSelector::_colorChanged));
+    // color.signal_dragged.connect(sigc::mem_fun(*this, &ColorICCSelector::_colorChanged));
 }
 
 ColorICCSelector::~ColorICCSelector()
@@ -438,13 +438,13 @@ void ColorICCSelector::init(bool no_alpha)
 
 
         // Signals
-        _impl->_compUI[i]._adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_compUI[i]._adj));
+        _impl->_compUI[i]._adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_compUI[i]._adj));
 
-        _impl->_compUI[i]._slider->signal_grabbed.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderGrabbed));
+        _impl->_compUI[i]._slider->signal_grabbed.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderGrabbed));
         _impl->_compUI[i]._slider->signal_released.connect(
-            sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderReleased));
+            sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderReleased));
         _impl->_compUI[i]._slider->signal_value_changed.connect(
-            sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderChanged));
+            sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderChanged));
 
         row++;
     }
@@ -488,11 +488,11 @@ void ColorICCSelector::init(bool no_alpha)
     attachToGridOrTable(t, _impl->_sbtn, 2, row, 1, 1, false, true);
 
     // Signals
-    _impl->_adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_adj));
+    _impl->_adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_adj));
 
-    _impl->_slider->signal_grabbed.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderGrabbed));
-    _impl->_slider->signal_released.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderReleased));
-    _impl->_slider->signal_value_changed.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderChanged));
+    _impl->_slider->signal_grabbed.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderGrabbed));
+    _impl->_slider->signal_released.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderReleased));
+    _impl->_slider->signal_value_changed.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderChanged));
 
     gtk_widget_show(t);
 }

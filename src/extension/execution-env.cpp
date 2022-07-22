@@ -136,7 +136,7 @@ ExecutionEnv::createWorkingDialog () {
                                Gtk::MESSAGE_INFO,
                                Gtk::BUTTONS_CANCEL,
                                true); // modal
-    _visibleDialog->signal_response().connect(sigc::mem_fun(this, &ExecutionEnv::workingCanceled));
+    _visibleDialog->signal_response().connect(sigc::mem_fun(*this, &ExecutionEnv::workingCanceled));
     g_free(dlgmessage);
 
     Gtk::Dialog *dlg = _effect->get_pref_dialog();
@@ -224,7 +224,7 @@ ExecutionEnv::wait () {
             _mainloop = Glib::MainLoop::create(false);
         }
 
-        sigc::connection conn = _runComplete.connect(sigc::mem_fun(this, &ExecutionEnv::runComplete));
+        sigc::connection conn = _runComplete.connect(sigc::mem_fun(*this, &ExecutionEnv::runComplete));
         _mainloop->run();
 
         conn.disconnect();

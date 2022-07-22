@@ -75,7 +75,7 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     _guide_lock.set_name("LockGuides");
     _guide_lock.add(*Gtk::make_managed<Gtk::Image>("object-locked", Gtk::ICON_SIZE_MENU));
     // To be replaced by Gio::Action:
-    _guide_lock.signal_toggled().connect(sigc::mem_fun(_dtw, &SPDesktopWidget::update_guides_lock));
+    _guide_lock.signal_toggled().connect(sigc::mem_fun(*_dtw, &SPDesktopWidget::update_guides_lock));
     _guide_lock.set_tooltip_text(_("Toggle lock of all guides in the document"));
     // Subgrid
     _subgrid.attach(_guide_lock,     0, 0, 1, 1);
@@ -85,14 +85,14 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
 
     // Horizontal Scrollbar
     _hadj = Gtk::Adjustment::create(0.0, -4000.0, 4000.0, 10.0, 100.0, 4.0);
-    _hadj->signal_value_changed().connect(sigc::mem_fun(_dtw, &SPDesktopWidget::on_adjustment_value_changed));
+    _hadj->signal_value_changed().connect(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_adjustment_value_changed));
     _hscrollbar = Gtk::Scrollbar(_hadj, Gtk::ORIENTATION_HORIZONTAL);
     _hscrollbar.set_name("CanvasScrollbar");
     _hscrollbar.set_hexpand(true);
 
     // Vertical Scrollbar
     _vadj = Gtk::Adjustment::create(0.0, -4000.0, 4000.0, 10.0, 100.0, 4.0);
-    _vadj->signal_value_changed().connect(sigc::mem_fun(_dtw, &SPDesktopWidget::on_adjustment_value_changed));
+    _vadj->signal_value_changed().connect(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_adjustment_value_changed));
     _vscrollbar = Gtk::Scrollbar(_vadj, Gtk::ORIENTATION_VERTICAL);
     _vscrollbar.set_name("CanvasScrollbar");
     _vscrollbar.set_vexpand(true);
@@ -108,7 +108,7 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     _sticky_zoom.set_name("StickyZoom");
     _sticky_zoom.add(*Gtk::manage(sp_get_icon_image("zoom-original", Gtk::ICON_SIZE_MENU)));
     // To be replaced by Gio::Action:
-    _sticky_zoom.signal_toggled().connect(sigc::mem_fun(_dtw, &SPDesktopWidget::sticky_zoom_toggled));
+    _sticky_zoom.signal_toggled().connect(sigc::mem_fun(*_dtw, &SPDesktopWidget::sticky_zoom_toggled));
     _sticky_zoom.set_tooltip_text(_("Zoom drawing if window size changes"));
 
     // Main grid

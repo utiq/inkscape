@@ -127,7 +127,7 @@ public:
         , _changeSignal(changeSignal)
     {
         this->set_text(_pref->get());
-        this->signal_changed().connect(sigc::mem_fun(this, &ParamPathEntry::changed_text));
+        this->signal_changed().connect(sigc::mem_fun(*this, &ParamPathEntry::changed_text));
     };
     void changed_text();
 };

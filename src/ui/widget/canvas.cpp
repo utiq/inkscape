@@ -3092,11 +3092,11 @@ void CanvasPrivate::add_idle()
     }
 
     if (!hipri_idle.connected()) {
-        hipri_idle = Glib::signal_idle().connect(sigc::mem_fun(this, &CanvasPrivate::on_hipri_idle), G_PRIORITY_HIGH_IDLE + 15); // after resize, before draw
+        hipri_idle = Glib::signal_idle().connect(sigc::mem_fun(*this, &CanvasPrivate::on_hipri_idle), G_PRIORITY_HIGH_IDLE + 15); // after resize, before draw
     }
 
     if (!lopri_idle.connected()) {
-        lopri_idle = Glib::signal_idle().connect(sigc::mem_fun(this, &CanvasPrivate::on_lopri_idle), G_PRIORITY_DEFAULT_IDLE);
+        lopri_idle = Glib::signal_idle().connect(sigc::mem_fun(*this, &CanvasPrivate::on_lopri_idle), G_PRIORITY_DEFAULT_IDLE);
     }
 
     idle_running = true;
