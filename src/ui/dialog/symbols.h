@@ -31,7 +31,23 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-class SymbolColumns; // For Gtk::ListStore
+struct SymbolColumns : public Gtk::TreeModel::ColumnRecord
+{
+    Gtk::TreeModelColumn<Glib::ustring>             symbol_id;
+    Gtk::TreeModelColumn<Glib::ustring>             symbol_title;
+    Gtk::TreeModelColumn<Glib::ustring>             symbol_doc_title;
+    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf>> symbol_image;
+    Gtk::TreeModelColumn<Geom::Point>               doc_dimensions;
+
+    SymbolColumns()
+    {
+        add(symbol_id);
+        add(symbol_title);
+        add(symbol_doc_title);
+        add(symbol_image);
+        add(doc_dimensions);
+    }
+};
 
 /**
  * A dialog that displays selectable symbols and allows users to drag or paste
@@ -45,7 +61,7 @@ class SymbolColumns; // For Gtk::ListStore
  * This then updates an icon-view with all the symbols available. Selecting one
  * puts it onto the clipboard. Dragging it or pasting it onto the canvas copies
  * the symbol from the symbol document, into the current document and places a
- * new <use element at the correct location on the canvas.
+ * new <use> element at the correct location on the canvas.
  *
  * Selected groups on the canvas can be added to the current document's symbols
  * table, and symbols can be removed from the current document. This allows
@@ -66,12 +82,12 @@ private:
     SymbolsDialog(SymbolsDialog const &) = delete; // no copy
     SymbolsDialog &operator=(SymbolsDialog const &) = delete; // no assign
 
-    static SymbolColumns *getColumns();
     void documentReplaced() override;
     void selectionChanged(Inkscape::Selection *selection) override;
 
     Glib::ustring CURRENTDOC;
     Glib::ustring ALLDOCS;
+    SymbolColumns const _columns;
 
     void packless();
     void packmore();
@@ -82,14 +98,18 @@ private:
     void revertSymbol();
     void defsModified(SPObject *object, guint flags);
     SPDocument* selectedSymbols();
-    Glib::ustring selectedSymbolId();
-    Glib::ustring selectedSymbolDocTitle();
     void iconChanged();
+    void sendToClipboard(Gtk::TreeModel::Path const &symbol_path, Geom::Rect const &bbox);
+    std::optional<Gtk::TreeModel::Path> getSelected() const;
+    Glib::ustring getSymbolId(std::optional<Gtk::TreeModel::Path> const &path) const;
+    Glib::ustring getSymbolDocTitle(std::optional<Gtk::TreeModel::Path> const &path) const;
+    Geom::Point getSymbolDimensions(std::optional<Gtk::TreeModel::Path> const &path) const;
     void iconDragDataGet(const Glib::RefPtr<Gdk::DragContext>& context, Gtk::SelectionData& selection_data, guint info, guint time);
+    void onDragStart();
     void getSymbolsTitle();
     Glib::ustring documentTitle(SPDocument* doc);
     std::pair<Glib::ustring, SPDocument*> getSymbolsSet(Glib::ustring title);
-    void addSymbol( SPObject* symbol, Glib::ustring doc_title);
+    void addSymbol(SPSymbol *symbol, Glib::ustring doc_title);
     SPDocument* symbolsPreviewDoc();
     void symbolsInDocRecursive (SPObject *r, std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > &l, Glib::ustring doc_title);
     std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > symbolsInDoc( SPDocument* document, Glib::ustring doc_title);
@@ -120,11 +140,12 @@ private:
     bool sensitive;
     double previous_height;
     double previous_width;
+    Geom::Point _last_mousedown; ///< Last button press position in the icon view coordinates.
     bool all_docs_processed;
+    bool icons_found;
     size_t number_docs;
     size_t number_symbols;
     size_t counter_symbols;
-    bool icons_found;
     Glib::RefPtr<Gtk::ListStore> store;
     Glib::ustring search_str;
     Gtk::ComboBoxText* symbol_set;

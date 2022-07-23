@@ -78,6 +78,13 @@ static int completeDropTargetsCount = 0;
 
 static guint nui_drop_target_entries = G_N_ELEMENTS(ui_drop_target_entries);
 
+/** Convert screen (x, y) coordinates to desktop coordinates. */
+inline Geom::Point world2desktop(SPDesktop *desktop, int x, int y)
+{
+    g_assert(desktop);
+    return (Geom::Point(x, y) + desktop->canvas->get_area_world().min()) * desktop->w2d();
+}
+
 /* Drag and Drop */
 static
 void
@@ -335,9 +342,9 @@ ink_drag_data_received(GtkWidget *widget,
         }
 
         case APP_X_INK_PASTE: {
-            Inkscape::UI::ClipboardManager *cm = Inkscape::UI::ClipboardManager::get();
-            cm->paste(desktop);
-            DocumentUndo::done( doc, _("Drop Symbol"), "" );
+            auto *cm = Inkscape::UI::ClipboardManager::get();
+            cm->insertSymbol(desktop, world2desktop(desktop, x, y));
+            DocumentUndo::done(doc, _("Drop Symbol"), "");
             break;
         }
 

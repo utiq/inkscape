@@ -104,7 +104,8 @@ class ClipboardManagerImpl : public ClipboardManager {
 public:
     void copy(ObjectSet *set) override;
     void copyPathParameter(Inkscape::LivePathEffect::PathParam *) override;
-    void copySymbol(Inkscape::XML::Node* symbol, gchar const* style, SPDocument *source) override;
+    void copySymbol(Inkscape::XML::Node* symbol, gchar const* style, SPDocument *source, Geom::Rect const &bbox) override;
+    void insertSymbol(SPDesktop *desktop, Geom::Point const &shift_dt) override;
     bool paste(SPDesktop *desktop, bool in_place) override;
     bool pasteStyle(ObjectSet *set) override;
     bool pasteSize(ObjectSet *set, bool separately, bool apply_x, bool apply_y) override;
@@ -324,9 +325,14 @@ void ClipboardManagerImpl::copyPathParameter(Inkscape::LivePathEffect::PathParam
 
 /**
  * Copy a symbol from the symbol dialog.
+ *
  * @param symbol The Inkscape::XML::Node for the symbol.
+ * @param style The style to be applied to the symbol.
+ * @param source The source document of the symbol.
+ * @param bbox The bounding box of the symbol, in desktop coordinates.
  */
-void ClipboardManagerImpl::copySymbol(Inkscape::XML::Node* symbol, gchar const* style, SPDocument *source)
+void ClipboardManagerImpl::copySymbol(Inkscape::XML::Node* symbol, gchar const* style, SPDocument *source,
+                                      Geom::Rect const &bbox)
 {
     if (!symbol)
         return;
@@ -383,12 +389,40 @@ void ClipboardManagerImpl::copySymbol(Inkscape::XML::Node* symbol, gchar const* 
         use->doWriteTransform(affine, &affine, false);
     }
 
-    // This min and max sets offsets, we don't have any so set to zero.
-    _clipnode->setAttributePoint("min", Geom::Point(0, 0));
-    _clipnode->setAttributePoint("max", Geom::Point(0, 0));
+    // Set min and max offsets based on the bounding rectangle.
+    _clipnode->setAttributePoint("min", bbox.min());
+    _clipnode->setAttributePoint("max", bbox.max());
 
     fit_canvas_to_drawing(_clipboardSPDoc.get());
     _setClipboardTargets();
+}
+
+/**
+ * Insert a symbol into the document at the prescribed position (at the end of a drag).
+ *
+ * @param desktop The desktop onto which the symbol has been dropped.
+ * @param shift_dt The vector by which the symbol position should be shifted, in desktop coordinates.
+ */
+void ClipboardManagerImpl::insertSymbol(SPDesktop *desktop, Geom::Point const &shift_dt)
+{
+    if (!desktop || !Inkscape::have_viable_layer(desktop, desktop->getMessageStack())) {
+        return;
+    }
+    auto symbol = _retrieveClipboard("image/x-inkscape-svg");
+    if (!symbol) {
+        return;
+    }
+
+    prevent_id_clashes(symbol.get(), desktop->getDocument(), true);
+    auto *root = symbol->getRoot();
+
+    // Synthesize a clipboard position in order to paste the symbol where it got dropped.
+    if (auto *clipnode = sp_repr_lookup_name(root->getRepr(), "inkscape:clipboard", 1)) {
+        clipnode->setAttributePoint("min", clipnode->getAttributePoint("min") + shift_dt);
+        clipnode->setAttributePoint("max", clipnode->getAttributePoint("max") + shift_dt);
+    }
+
+    sp_import_document(desktop, symbol.get(), true);
 }
 
 /**

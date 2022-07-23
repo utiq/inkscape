@@ -64,37 +64,13 @@ namespace UI {
 
 namespace Dialog {
 
-// See: http://developer.gnome.org/gtkmm/stable/classGtk_1_1TreeModelColumnRecord.html
-class SymbolColumns : public Gtk::TreeModel::ColumnRecord
-{
-public:
-
-  Gtk::TreeModelColumn<Glib::ustring>                symbol_id;
-  Gtk::TreeModelColumn<Glib::ustring>                symbol_title;
-  Gtk::TreeModelColumn<Glib::ustring>                symbol_doc_title;
-  Gtk::TreeModelColumn< Glib::RefPtr<Gdk::Pixbuf> >  symbol_image;
-
-
-  SymbolColumns() {
-    add(symbol_id);
-    add(symbol_title);
-    add(symbol_doc_title);
-    add(symbol_image);
-  }
-};
-
-SymbolColumns* SymbolsDialog::getColumns()
-{
-  SymbolColumns* columns = new SymbolColumns();
-  return columns;
-}
-
 /**
  * Constructor
  */
 SymbolsDialog::SymbolsDialog(gchar const *prefsPath)
     : DialogBase(prefsPath, "Symbols")
-    , store(Gtk::ListStore::create(*getColumns()))
+    , _columns{}
+    , store(Gtk::ListStore::create(_columns))
     , all_docs_processed(false)
     , icon_view(nullptr)
     , preview_document(nullptr)
@@ -152,12 +128,9 @@ SymbolsDialog::SymbolsDialog(gchar const *prefsPath)
 
 
   /********************* Icon View **************************/
-  SymbolColumns* columns = getColumns();
-
   icon_view = new Gtk::IconView(static_cast<Glib::RefPtr<Gtk::TreeModel> >(store));
-  //icon_view->set_text_column(  columns->symbol_id  );
-  icon_view->set_tooltip_column( 1 );
-  icon_view->set_pixbuf_column( columns->symbol_image );
+  icon_view->set_tooltip_column(_columns.symbol_title.index());
+  icon_view->set_pixbuf_column(_columns.symbol_image);
   // Giving the iconview a small minimum size will help users understand
   // What the dialog does.
   icon_view->set_size_request( 100, 250 );
@@ -170,6 +143,13 @@ SymbolsDialog::SymbolsDialog(gchar const *prefsPath)
       icon_view->signal_drag_data_get().connect(sigc::mem_fun(*this, &SymbolsDialog::iconDragDataGet)));
   gtk_connections.emplace_back(
       icon_view->signal_selection_changed().connect(sigc::mem_fun(*this, &SymbolsDialog::iconChanged)));
+  gtk_connections.emplace_back(
+      icon_view->signal_drag_begin().connect(
+          [=](Glib::RefPtr<Gdk::DragContext> const &) { onDragStart(); }));
+  gtk_connections.emplace_back(icon_view->signal_button_press_event().connect([=](GdkEventButton *ev) -> bool {
+      _last_mousedown = {ev->x, ev->y - icon_view->get_vadjustment()->get_value()};
+      return false;
+  }, false));
 
   scroller = new Gtk::ScrolledWindow();
   scroller->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
@@ -492,7 +472,7 @@ void SymbolsDialog::insertSymbol() {
 
 void SymbolsDialog::revertSymbol() {
     if (auto document = getDocument()) {
-        if (auto symbol = dynamic_cast<SPSymbol*> (document->getObjectById(selectedSymbolId()))) {
+        if (auto symbol = dynamic_cast<SPSymbol *>(document->getObjectById(getSymbolId(getSelected())))) {
             symbol->unSymbol();
         }
         Inkscape::DocumentUndo::done(document, _("Group from symbol"), "");
@@ -501,18 +481,14 @@ void SymbolsDialog::revertSymbol() {
 
 void SymbolsDialog::iconDragDataGet(const Glib::RefPtr<Gdk::DragContext>& /*context*/, Gtk::SelectionData& data, guint /*info*/, guint /*time*/)
 {
-  auto iconArray = icon_view->get_selected_items();
-
-  if( iconArray.empty() ) {
-    //std::cout << "  iconArray empty: huh? " << std::endl;
-  } else {
-    Gtk::TreeModel::Path const & path = *iconArray.begin();
-    Gtk::ListStore::iterator row = store->get_iter(path);
-    Glib::ustring symbol_id = (*row)[getColumns()->symbol_id];
-    GdkAtom dataAtom = gdk_atom_intern( "application/x-inkscape-paste", FALSE );
-    gtk_selection_data_set( data.gobj(), dataAtom, 9, (guchar*)symbol_id.c_str(), symbol_id.length() );
-  }
-
+    auto selected = getSelected();
+    if (!selected) {
+        return;
+    }
+    auto row = store->get_iter(*selected);
+    Glib::ustring symbol_id = (*row)[_columns.symbol_id];
+    GdkAtom dataAtom = gdk_atom_intern("application/x-inkscape-paste", false);
+    gtk_selection_data_set(data.gobj(), dataAtom, 9, (guchar*)symbol_id.c_str(), symbol_id.length());
 }
 
 void SymbolsDialog::defsModified(SPObject * /*object*/, guint /*flags*/)
@@ -524,8 +500,9 @@ void SymbolsDialog::defsModified(SPObject * /*object*/, guint /*flags*/)
 }
 
 void SymbolsDialog::selectionChanged(Inkscape::Selection *selection) {
-  Glib::ustring symbol_id = selectedSymbolId();
-  Glib::ustring doc_title = selectedSymbolDocTitle();
+  auto selected = getSelected();
+  Glib::ustring symbol_id = getSymbolId(selected);
+  Glib::ustring doc_title = getSymbolDocTitle(selected);
   if (!doc_title.empty()) {
     SPDocument* symbol_document = symbol_sets[doc_title];
     if (!symbol_document) {
@@ -577,28 +554,45 @@ SPDocument* SymbolsDialog::selectedSymbols() {
   return symbol_document;
 }
 
-Glib::ustring SymbolsDialog::selectedSymbolId() {
-
-  auto iconArray = icon_view->get_selected_items();
-
-  if( !iconArray.empty() ) {
-    Gtk::TreeModel::Path const & path = *iconArray.begin();
-    Gtk::ListStore::iterator row = store->get_iter(path);
-    return (*row)[getColumns()->symbol_id];
-  }
-  return Glib::ustring("");
+/** Return the path to the selected symbol, or an empty optional if nothing is selected. */
+std::optional<Gtk::TreeModel::Path> SymbolsDialog::getSelected() const
+{
+    auto selected = icon_view->get_selected_items();
+    if (selected.empty()) {
+        return std::nullopt;
+    }
+    return selected.front();
 }
 
-Glib::ustring SymbolsDialog::selectedSymbolDocTitle() {
+/** Return the dimensions of the symbol at the given path, in document units. */
+Geom::Point SymbolsDialog::getSymbolDimensions(std::optional<Gtk::TreeModel::Path> const &path) const
+{
+    if (!path) {
+        return Geom::Point();
+    }
+    auto row = store->get_iter(*path);
+    return (*row)[_columns.doc_dimensions];
+}
 
-  auto iconArray = icon_view->get_selected_items();
+/** Return the ID of the symbol at the given path, with empty string fallback. */
+Glib::ustring SymbolsDialog::getSymbolId(std::optional<Gtk::TreeModel::Path> const &path) const
+{
+    if (!path) {
+        return "";
+    }
+    auto row = store->get_iter(*path);
+    return (*row)[_columns.symbol_id];
+}
 
-  if( !iconArray.empty() ) {
-    Gtk::TreeModel::Path const & path = *iconArray.begin();
-    Gtk::ListStore::iterator row = store->get_iter(path);
-    return (*row)[getColumns()->symbol_doc_title];
-  }
-  return Glib::ustring("");
+/** Return the title of the document from which the symbol at the given path comes,
+ *  with empty string fallback. */
+Glib::ustring SymbolsDialog::getSymbolDocTitle(std::optional<Gtk::TreeModel::Path> const &path) const
+{
+    if (!path) {
+        return "";
+    }
+    auto row = store->get_iter(*path);
+    return (*row)[_columns.symbol_doc_title];
 }
 
 Glib::ustring SymbolsDialog::documentTitle(SPDocument* symbol_doc) {
@@ -617,37 +611,96 @@ Glib::ustring SymbolsDialog::documentTitle(SPDocument* symbol_doc) {
   return _("Untitled document");
 }
 
-void SymbolsDialog::iconChanged() {
-
-  Glib::ustring symbol_id = selectedSymbolId();
-  SPDocument* symbol_document = selectedSymbols();
-  if (!symbol_document) {
-    //we are in global search so get the original symbol document by title
-      Glib::ustring doc_title = selectedSymbolDocTitle();
-      if (!doc_title.empty()) {
-        symbol_document = symbol_sets[doc_title];
-      }
-  }
-  if (symbol_document) {
-    SPObject* symbol = symbol_document->getObjectById(symbol_id);
-
-    if( symbol ) {
-      // Find style for use in <use>
-      // First look for default style stored in <symbol>
-      gchar const* style = symbol->getAttribute("inkscape:symbol-style");
-      if( !style ) {
-        // If no default style in <symbol>, look in documents.
-        if(symbol_document == getDocument()) {
-          style = styleFromUse(symbol_id.c_str(), symbol_document);
-        } else {
-          style = symbol_document->getReprRoot()->attribute("style");
+/** Store the symbol in the clipboard for further manipulation/insertion into document.
+ *
+ * @param symbol_path The path to the symbol in the tree model.
+ * @param bbox The bounding box to set on the clipboard document's clipnode.
+ */
+void SymbolsDialog::sendToClipboard(Gtk::TreeModel::Path const &symbol_path, Geom::Rect const &bbox)
+{
+    Glib::ustring symbol_id = getSymbolId(symbol_path);
+    SPDocument* symbol_document = selectedSymbols();
+    if (!symbol_document) {
+        //we are in global search so get the original symbol document by title
+        Glib::ustring doc_title = getSymbolDocTitle(symbol_path);
+        if (!doc_title.empty()) {
+            symbol_document = symbol_sets[doc_title];
         }
-      }
-
-      ClipboardManager *cm = ClipboardManager::get();
-      cm->copySymbol(symbol->getRepr(), style, symbol_document);
     }
-  }
+    if (!symbol_document) {
+        return;
+    }
+    if (SPObject* symbol = symbol_document->getObjectById(symbol_id)) {
+        // Find style for use in <use>
+        // First look for default style stored in <symbol>
+        gchar const* style = symbol->getAttribute("inkscape:symbol-style");
+        if (!style) {
+            // If no default style in <symbol>, look in documents.
+            if (symbol_document == getDocument()) {
+                style = styleFromUse(symbol_id.c_str(), symbol_document);
+            } else {
+                style = symbol_document->getReprRoot()->attribute("style");
+            }
+        }
+        auto const dims = getSymbolDimensions(symbol_path);
+        ClipboardManager *cm = ClipboardManager::get();
+        cm->copySymbol(symbol->getRepr(), style, symbol_document, bbox);
+    }
+}
+
+void SymbolsDialog::iconChanged()
+{
+    if (auto selected = getSelected()) {
+        auto const dims = getSymbolDimensions(selected);
+        sendToClipboard(*selected, Geom::Rect(-0.5 * dims, 0.5 * dims));
+    }
+}
+
+/** Handle the start of a drag on a symbol preview icon. */
+void SymbolsDialog::onDragStart()
+{
+    auto selected = getSelected();
+    if (!selected) {
+        return;
+    }
+
+    // Get the rectangle of the cell where the drag started.
+    Gdk::Rectangle temprect;
+    icon_view->get_cell_rect(*selected, temprect);
+    auto cell_rect = Geom::IntRect::from_xywh({temprect.get_x(), temprect.get_y()},
+                                              {temprect.get_width(), temprect.get_height()});
+
+    // Find the rectangle of the actual symbol preview
+    // (not the same as the cell rectangle, due to fitting and padding).
+    auto const dims = getSymbolDimensions(selected);
+    unsigned preview_size = SYMBOL_ICON_SIZES[pack_size];
+    Geom::Dim2 larger_dim = dims[Geom::X] > dims[Geom::Y] ? Geom::X : Geom::Y;
+    Geom::Dim2 smaller_dim = (Geom::Dim2)(!larger_dim);
+    Geom::Rect preview_rect; ///< The actual rectangle taken up by the bbox of the rendered preview.
+
+    Geom::Interval larger_interval = cell_rect[larger_dim];
+    larger_interval.expandBy(0.5 * (preview_size - larger_interval.extent())); // Trim off the padding.
+    preview_rect[larger_dim] = larger_interval;
+
+    double const proportionally_scaled_smaller = preview_size * dims[smaller_dim] / dims[larger_dim];
+    double const smaller_trim = 0.5 * (cell_rect[smaller_dim].extent() - proportionally_scaled_smaller);
+    Geom::Interval smaller_interval = cell_rect[smaller_dim];
+    smaller_interval.expandBy(-smaller_trim); // Trim off padding and the "letterboxes" for non-square bbox.
+    preview_rect[smaller_dim] = smaller_interval;
+
+    // Map the last mousedown position to [0, 1] x [0, 1] coordinates in the preview rectangle.
+    Geom::Point normalized_position = _last_mousedown - preview_rect.min();
+    normalized_position.x() = std::clamp(normalized_position.x() / preview_rect.width(), 0.0, 1.0);
+    normalized_position.y() /= preview_rect.height();
+    if (auto desktop = getDesktop(); desktop && !desktop->is_yaxisdown()) {
+        normalized_position.y() = 1.0 - normalized_position.y();
+    }
+    normalized_position.y() = std::clamp(normalized_position.y(), 0.0, 1.0);
+
+    // Push the symbol into the private clipboard with the correct bounding box. This box has dimensions
+    // `dims` but is positioned in such a way that the origin point (0, 0) lies at `normalized_position`.
+    auto const box_position = -Geom::Point(normalized_position.x() * dims.x(), normalized_position.y() * dims.y());
+    sendToClipboard(*selected, Geom::Rect::from_xywh(box_position, dims));
 }
 
 #ifdef WITH_LIBVISIO
@@ -1178,7 +1231,7 @@ void SymbolsDialog::addSymbols() {
   }
 }
 
-void SymbolsDialog::addSymbol( SPObject* symbol, Glib::ustring doc_title)
+void SymbolsDialog::addSymbol(SPSymbol *symbol, Glib::ustring doc_title)
 {
   gchar const *id = symbol->getRepr()->attribute("id");
 
@@ -1197,15 +1250,19 @@ void SymbolsDialog::addSymbol( SPObject* symbol, Glib::ustring doc_title)
   }
   g_free(title);
 
+  Geom::Point dimensions{64, 64}; // Default to 64x64 px if size not available.
+  if (auto rect = symbol->documentVisualBounds()) {
+      dimensions = rect->dimensions();
+  }
+
   Glib::RefPtr<Gdk::Pixbuf> pixbuf = drawSymbol( symbol );
   if( pixbuf ) {
     Gtk::ListStore::iterator row = store->append();
-    SymbolColumns* columns = getColumns();
-    (*row)[columns->symbol_id]        = Glib::ustring( id );
-    (*row)[columns->symbol_title]     = Glib::Markup::escape_text(symbol_title);
-    (*row)[columns->symbol_doc_title] = Glib::Markup::escape_text(doc_title);
-    (*row)[columns->symbol_image]     = pixbuf;
-    delete columns;
+    (*row)[_columns.symbol_id]        = Glib::ustring(id);
+    (*row)[_columns.symbol_title]     = Glib::Markup::escape_text(symbol_title);
+    (*row)[_columns.symbol_doc_title] = Glib::Markup::escape_text(doc_title);
+    (*row)[_columns.symbol_image]     = pixbuf;
+    (*row)[_columns.doc_dimensions]   = dimensions;
   }
 }
 
