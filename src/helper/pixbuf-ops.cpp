@@ -60,7 +60,7 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
     int height = std::ceil(scale_factor * area.height());
 
     // Document
-    // document->ensureUpToDate();
+    document->ensureUpToDate();
     unsigned dkey = SPItem::display_key_new(1);
 
     // Drawing
@@ -72,7 +72,6 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
     root->setTransform(affine);
     drawing.setRoot(root);
 
-    document->ensureUpToDate();
     // Hide all items we don't want, instead of showing only requested items,
     // because that would not work if the shown item references something in defs.
     if (!items.empty()) {

@@ -113,44 +113,47 @@ void SPPattern::set(SPAttr key, char const *value)
 {
     switch (key) {
         case SPAttr::PATTERNUNITS:
+            _pattern_units = UNITS_OBJECTBOUNDINGBOX;
+            _pattern_units_set = false;
+
             if (value) {
-                if (std::strcmp(value, "userSpaceOnUse") == 0) {
+                if (!std::strcmp(value, "userSpaceOnUse")) {
                     _pattern_units = UNITS_USERSPACEONUSE;
-                } else {
-                    _pattern_units = UNITS_OBJECTBOUNDINGBOX;
+                    _pattern_units_set = true;
+                } else if (!std::strcmp(value, "objectBoundingBox")) {
+                    _pattern_units_set = true;
                 }
-                _pattern_units_set = true;
-            } else {
-                _pattern_units_set = false;
             }
 
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::PATTERNCONTENTUNITS:
+            _pattern_content_units = UNITS_USERSPACEONUSE;
+            _pattern_content_units_set = false;
+
             if (value) {
-                if (std::strcmp(value, "userSpaceOnUse") == 0) {
-                    _pattern_content_units = UNITS_USERSPACEONUSE;
-                } else {
+                if (!std::strcmp(value, "userSpaceOnUse")) {
+                    _pattern_content_units_set = true;
+                } else if (!std::strcmp(value, "objectBoundingBox")) {
                     _pattern_content_units = UNITS_OBJECTBOUNDINGBOX;
+                    _pattern_content_units_set = true;
                 }
-                _pattern_content_units_set = true;
-            } else {
-                _pattern_content_units_set = false;
             }
 
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::PATTERNTRANSFORM: {
-            Geom::Affine t;
+            _pattern_transform = Geom::identity();
+            _pattern_transform_set = false;
 
-            if (value && sp_svg_transform_read(value, &t)) {
-                _pattern_transform = t;
-                _pattern_transform_set = true;
-            } else {
-                _pattern_transform = Geom::identity();
-                _pattern_transform_set = false;
+            if (value) {
+                Geom::Affine t;
+                if (sp_svg_transform_read(value, &t)) {
+                    _pattern_transform = t;
+                    _pattern_transform_set = true;
+                }
             }
 
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
@@ -219,7 +222,7 @@ void SPPattern::set(SPAttr key, char const *value)
 
 void SPPattern::update(SPCtx *ctx, unsigned flags)
 {
-    auto cflags = cascade_flags(flags);
+    auto const cflags = cascade_flags(flags);
 
     for (auto c : childList(true)) {
         if (cflags || (c->uflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
@@ -229,59 +232,64 @@ void SPPattern::update(SPCtx *ctx, unsigned flags)
     }    
 
     for (auto &v : views) {
-        // * "width" and "height" determine tile size.
-        // * "viewBox" (if defined) or "patternContentUnits" determines placement of content inside tile.
-        // * "x", "y", and "patternTransform" transform tile to user space after tile is generated.
-
-        // These functions recursively search up the tree to find the values.
-        double tile_x = x();
-        double tile_y = y();
-        double tile_width = width();
-        double tile_height = height();
-        if (v.bbox && patternUnits() == UNITS_OBJECTBOUNDINGBOX) {
-            tile_x *= v.bbox->width();
-            tile_y *= v.bbox->height();
-            tile_width *= v.bbox->width();
-            tile_height *= v.bbox->height();
-        }
-
-        // Pattern size in pattern space
-        auto pattern_tile = Geom::Rect::from_xywh(0, 0, tile_width, tile_height);
-
-        // Content to tile (pattern space)
-        Geom::Affine content2ps;
-        if (auto effective_view_box = viewbox()) {
-            // viewBox to pattern server (using SPViewBox)
-            viewBox = *effective_view_box;
-            c2p.setIdentity();
-            apply_viewbox(pattern_tile);
-            content2ps = c2p;
-        }
-        else {
-            // Content to bbox
-            if (v.bbox && patternContentUnits() == UNITS_OBJECTBOUNDINGBOX) {
-                content2ps = Geom::Affine(v.bbox->width(), 0.0, 0.0, v.bbox->height(), 0, 0);
-            }
-        }
-
-        // Tile (pattern space) to user.
-        Geom::Affine ps2user = Geom::Translate(tile_x, tile_y) * getTransform();
-
-        v.drawingitem->setTileRect(pattern_tile);
-        v.drawingitem->setChildTransform(content2ps);
-        v.drawingitem->setPatternToUserTransform(ps2user);
+        update_view(v);
     }
+}
+
+void SPPattern::update_view(View &v)
+{
+    // * "width" and "height" determine tile size.
+    // * "viewBox" (if defined) or "patternContentUnits" determines placement of content inside tile.
+    // * "x", "y", and "patternTransform" transform tile to user space after tile is generated.
+
+    // These functions recursively search up the tree to find the values.
+    double tile_x = x();
+    double tile_y = y();
+    double tile_width = width();
+    double tile_height = height();
+    if (v.bbox && patternUnits() == UNITS_OBJECTBOUNDINGBOX) {
+        tile_x *= v.bbox->width();
+        tile_y *= v.bbox->height();
+        tile_width *= v.bbox->width();
+        tile_height *= v.bbox->height();
+    }
+
+    // Pattern size in pattern space
+    auto pattern_tile = Geom::Rect::from_xywh(0, 0, tile_width, tile_height);
+
+    // Content to tile (pattern space)
+    Geom::Affine content2ps;
+    if (auto effective_view_box = viewbox()) {
+        // viewBox to pattern server (using SPViewBox)
+        viewBox = *effective_view_box;
+        c2p.setIdentity();
+        apply_viewbox(pattern_tile);
+        content2ps = c2p;
+    }
+    else {
+        // Content to bbox
+        if (v.bbox && patternContentUnits() == UNITS_OBJECTBOUNDINGBOX) {
+            content2ps = Geom::Affine(v.bbox->width(), 0.0, 0.0, v.bbox->height(), 0, 0);
+        }
+    }
+
+    // Tile (pattern space) to user.
+    Geom::Affine ps2user = Geom::Translate(tile_x, tile_y) * getTransform();
+
+    v.drawingitem->setTileRect(pattern_tile);
+    v.drawingitem->setChildTransform(content2ps);
+    v.drawingitem->setPatternToUserTransform(ps2user);
 }
 
 void SPPattern::modified(unsigned flags)
 {
-    auto cflags = cascade_flags(flags);
+    auto const cflags = cascade_flags(flags);
 
     for (auto c : childList(true)) {
         if (cflags || (c->mflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
             c->emitModified(cflags);
         }
-        sp_object_unref(c, nullptr);
+        sp_object_unref(c);
     }
 
     set_shown(rootPattern());
@@ -356,7 +364,6 @@ void SPPattern::_onRefChanged(SPObject *old_ref, SPObject *ref)
 
 void SPPattern::_onRefModified(SPObject */*ref*/, unsigned /*flags*/)
 {
-    // requestModified(SP_OBJECT_MODIFIED_FLAG);
     requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
 
@@ -510,7 +517,7 @@ char const *SPPattern::produce(std::vector<Inkscape::XML::Node*> const &reprs, G
     SPObject *pat_object = document->getObjectById(pd);
 
     for (auto node : reprs) {
-        SPItem *copy = SP_ITEM(pat_object->appendChildRepr(node));
+        auto copy = dynamic_cast<SPItem*>(pat_object->appendChildRepr(node));
 
         if (!repr->attribute("inkscape:label") && node->attribute("inkscape:label")) {
             repr->setAttribute("inkscape:label", node->attribute("inkscape:label"));
@@ -643,13 +650,16 @@ bool SPPattern::isValid() const
 Inkscape::DrawingPattern *SPPattern::show(Inkscape::Drawing &drawing, unsigned key, Geom::OptRect const &bbox)
 {
     views.emplace_back(std::make_unique<Inkscape::DrawingPattern>(drawing), bbox, key);
-    auto root = views.back().drawingitem.get();
+    auto &v = views.back();
+    auto root = v.drawingitem.get();
 
     if (shown) {
         shown->attach_view(root, key);
     }
 
     root->setStyle(style);
+
+    update_view(v);
 
     return root;
 }
@@ -677,17 +687,16 @@ void SPPattern::setBBox(unsigned key, Geom::OptRect const &bbox)
         return v.key == key;
     });
     assert(it != views.end());
+    auto &v = *it;
 
-    it->bbox = bbox;
-    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+    v.bbox = bbox;
+    update_view(v);
 }
 
 SPPattern::View::View(std::unique_ptr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key)
     : drawingitem(std::move(drawingitem))
     , bbox(bbox)
-    , key(key)
-{
-}
+    , key(key) {}
 
 /*
   Local Variables:

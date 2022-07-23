@@ -81,16 +81,17 @@ void SPShape::build(SPDocument *document, Inkscape::XML::Node *repr)
  *
  * \see SPObject::release()
  */
-void SPShape::release() {
+void SPShape::release()
+{
     for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
-        if (this->_marker[i]) {
+        if (_marker[i]) {
 
             for (auto &v : views) {
                 sp_marker_hide(_marker[i], v.drawingitem->key() + ITEM_KEY_MARKERS + i);
             }
 
-            this->_release_connect[i].disconnect();
-            this->_modified_connect[i].disconnect();
+            _release_connect[i].disconnect();
+            _modified_connect[i].disconnect();
             _marker[i]->unhrefObject(this);
             _marker[i] = nullptr;
         }
@@ -168,9 +169,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
 
         /* Dimension marker views */
         for (auto &v : views) {
-            if (!v.drawingitem->key()) {
-                v.drawingitem->setKey(SPItem::display_key_new(ITEM_KEY_SIZE));
-            }
+            SPItem::ensure_key(v.drawingitem);
             for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
                 if (_marker[i]) {
                     sp_marker_show_dimension(_marker[i], v.drawingitem->key() + ITEM_KEY_MARKERS + i, numberOfMarkers(i));
@@ -910,9 +909,7 @@ Inkscape::DrawingItem* SPShape::show(Inkscape::Drawing &drawing, unsigned int /*
 
     if (has_markers) {
         /* provide key and dimension the marker views */
-        if (!s->key()) {
-            s->setKey(SPItem::display_key_new(ITEM_KEY_SIZE));
-        }
+        SPItem::ensure_key(s);
         for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
             if (_marker[i]) {
                 sp_marker_show_dimension(_marker[i], s->key() + ITEM_KEY_MARKERS + i, numberOfMarkers(i));

@@ -138,7 +138,8 @@ DrawingItem::~DrawingItem()
     }
 
     if (_parent) {
-        _parent->_markForUpdate(STATE_ALL, false);
+        bool propagate = _child_type == CHILD_CLIP || _child_type == CHILD_MASK;
+        _parent->_markForUpdate(STATE_ALL, propagate);
     }
     clearChildren();
     delete _stroke_pattern;
@@ -414,7 +415,7 @@ void DrawingItem::setFillPattern(DrawingPattern *pattern)
         assert(pattern->_child_type == CHILD_ORPHAN);
         pattern->_child_type = CHILD_FILL_PATTERN;
     }
-    _markForUpdate(STATE_ALL, true);
+    _markForUpdate(STATE_ALL, false);
 }
 
 void DrawingItem::setStrokePattern(DrawingPattern *pattern)
@@ -427,7 +428,7 @@ void DrawingItem::setStrokePattern(DrawingPattern *pattern)
         assert(pattern->_child_type == CHILD_ORPHAN);
         pattern->_child_type = CHILD_STROKE_PATTERN;
     }
-    _markForUpdate(STATE_ALL, true);
+    _markForUpdate(STATE_ALL, false);
 }
 
 /// Move this item to the given place in the Z order of siblings.

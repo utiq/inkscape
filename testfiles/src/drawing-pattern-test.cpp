@@ -34,6 +34,8 @@ TEST(DrawingPatternTest, fragments)
     ASSERT_TRUE((bool)doc);
     ASSERT_TRUE((bool)doc->getRoot());
 
+    doc->ensureUpToDate();
+
     class Display
     {
     public:
@@ -42,7 +44,6 @@ TEST(DrawingPatternTest, fragments)
             dkey = SPItem::display_key_new(1);
             rootitem = root->invoke_show(drawing, dkey, SP_ITEM_SHOW_DISPLAY);
             drawing.setRoot(rootitem);
-            doc->ensureUpToDate();
             drawing.update();
         }
 

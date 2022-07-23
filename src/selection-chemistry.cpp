@@ -3953,7 +3953,7 @@ void ObjectSet::setClipGroup()
         if (apply_clip_path) {
             mask_id = SPClipPath::create(mask_items_dup, doc);
         } else {
-            mask_id = sp_mask_create(mask_items_dup, doc);
+            mask_id = SPMask::create(mask_items_dup, doc);
         }
 
         // inverted object transform should be applied to a mask object,

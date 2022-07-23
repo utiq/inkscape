@@ -339,7 +339,15 @@ public:
      * @return First allocated key; hence if the returned key is n
      * you can use n, n + 1, ..., n + (numkeys - 1)
      */
-    static unsigned int display_key_new(unsigned int numkeys);
+    static unsigned int display_key_new(unsigned numkeys);
+
+    /**
+     * Ensures that a drawing item's key is the first of a block of ITEM_KEY_SIZE keys,
+     * assigning it such a key if necessary.
+     *
+     * @return The value of di->key() after assignment.
+     */
+    static unsigned ensure_key(Inkscape::DrawingItem *di);
 
     Inkscape::DrawingItem *invoke_show(Inkscape::Drawing &drawing, unsigned int key, unsigned int flags);
 

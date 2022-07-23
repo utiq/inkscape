@@ -30,9 +30,7 @@ class SPItem;
 
 namespace Inkscape {
 namespace XML {
-
 class Node;
-
 } // namespace XML
 } // namespace Inkscape
 
@@ -171,6 +169,7 @@ private:
         View(std::unique_ptr<Inkscape::DrawingPattern> drawingitem, Geom::OptRect const &bbox, unsigned key);
     };
     std::vector<View> views;
+    void update_view(View &v);
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_PATTERN, SPPattern)

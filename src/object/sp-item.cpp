@@ -469,8 +469,6 @@ void SPItem::release()
         delete v.drawingitem;
     }
     views.clear();
-
-    //item->_transformed_signal.~signal();
 }
 
 void SPItem::set(SPAttr key, gchar const* value) {
@@ -569,11 +567,27 @@ void SPItem::set(SPAttr key, gchar const* value) {
 #endif
 }
 
+template <typename F>
+class lazy
+{
+public:
+    explicit lazy(F f): f(std::move(f)) {}
+
+    auto operator()()
+    {
+        if (!result) result = f();
+        return *result;
+    }
+
+private:
+    F f;
+    std::optional<typename std::invoke_result<F>::type> result;
+};
+
 void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip)
 {
     bbox_valid = FALSE; // force a re-evaluation
     if (old_clip) {
-        /* Hide clippath */
         for (auto &v : views) {
             auto oldPath = dynamic_cast<SPClipPath*>(old_clip);
             g_assert(oldPath);
@@ -584,38 +598,34 @@ void SPItem::clip_ref_changed(SPObject *old_clip, SPObject *clip)
     if (clipPath) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto clip_key = v.drawingitem->key() + ITEM_KEY_CLIP;
-            auto ai = clipPath->show(v.drawingitem->drawing(), clip_key);
+            auto clip_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_CLIP;
+            auto ai = clipPath->show(v.drawingitem->drawing(), clip_key, bbox);
             v.drawingitem->setClip(ai);
-            clipPath->setBBox(clip_key, bbox);
-            clip->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }
-    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG); // To update bbox.
 }
 
 void SPItem::mask_ref_changed(SPObject *old_mask, SPObject *mask)
 {
     bbox_valid = FALSE; // force a re-evaluation
     if (old_mask) {
-        /* Hide mask */
         for (auto &v : views) {
             auto maskItem = dynamic_cast<SPMask*>(old_mask);
             g_assert(maskItem);
-            maskItem->sp_mask_hide(v.drawingitem->key() + ITEM_KEY_MASK);
+            maskItem->hide(v.drawingitem->key() + ITEM_KEY_MASK);
         }
     }
     auto maskItem = dynamic_cast<SPMask*>(mask);
     if (maskItem) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto mask_key = v.drawingitem->key() + ITEM_KEY_MASK;
-            auto ai = maskItem->sp_mask_show(v.drawingitem->drawing(), mask_key);
+            auto mask_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_MASK;
+            auto ai = maskItem->show(v.drawingitem->drawing(), mask_key, bbox);
             v.drawingitem->setMask(ai);
-            maskItem->sp_mask_set_bbox(mask_key, bbox);
-            mask->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }
+    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG); // To update bbox.
 }
 
 void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps)
@@ -631,12 +641,9 @@ void SPItem::fill_ps_ref_changed(SPObject *old_ps, SPObject *ps)
     if (new_fill_ps) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto fill_key = v.drawingitem->key() + ITEM_KEY_FILL;
+            auto fill_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_FILL;
             auto pi = new_fill_ps->show(v.drawingitem->drawing(), fill_key, bbox);
             v.drawingitem->setFillPattern(pi);
-            if (pi) {
-                new_fill_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-            }
         }
     }
 }
@@ -654,12 +661,9 @@ void SPItem::stroke_ps_ref_changed(SPObject *old_ps, SPObject *ps)
     if (new_stroke_ps) {
         Geom::OptRect bbox = geometricBounds();
         for (auto &v : views) {
-            auto stroke_key = v.drawingitem->key() + ITEM_KEY_STROKE;
+            auto stroke_key = SPItem::ensure_key(v.drawingitem) + ITEM_KEY_STROKE;
             auto pi = new_stroke_ps->show(v.drawingitem->drawing(), stroke_key, bbox);
             v.drawingitem->setStrokePattern(pi);
-            if (pi) {
-                new_stroke_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-            }
         }
     }
 }
@@ -674,48 +678,50 @@ void SPItem::update(SPCtx* ctx, guint flags) {
 
     viewport = ictx->viewport; // Cache viewport
 
+    auto bbox = lazy([this] {
+        return geometricBounds();
+    });
+
     if (flags & (SP_OBJECT_CHILD_MODIFIED_FLAG |
                  SP_OBJECT_MODIFIED_FLAG |
-                 SP_OBJECT_STYLE_MODIFIED_FLAG) ) {
+                 SP_OBJECT_STYLE_MODIFIED_FLAG))
+    {
         if (flags & SP_OBJECT_MODIFIED_FLAG) {
             for (auto &v : views) {
                 v.drawingitem->setTransform(transform);
             }
         }
 
-        SPClipPath *clip_path = clip_ref ? clip_ref->getObject() : nullptr;
-        SPMask *mask = mask_ref ? mask_ref->getObject() : nullptr;
+        auto set_bboxes = [&, this] (auto obj, int type) {
+            if (obj) {
+                for (auto &v : views) {
+                    obj->setBBox(v.drawingitem->key() + type, bbox());
+                }
+            }
+        };
 
-        if (clip_path || mask) {
-            Geom::OptRect bbox = geometricBounds();
-            if (clip_path) {
-                for (auto &v : views) {
-                    clip_path->setBBox(v.drawingitem->key() + ITEM_KEY_CLIP, bbox);
-                }
-            }
-            if (mask) {
-                for (auto &v : views) {
-                    mask->sp_mask_set_bbox(v.drawingitem->key() + ITEM_KEY_MASK, bbox);
-                }
-            }
-        }
+        set_bboxes(getClipObject(), ITEM_KEY_CLIP);
+        set_bboxes(getMaskObject(), ITEM_KEY_MASK);
+        set_bboxes(style->getFillPaintServer(), ITEM_KEY_FILL);
+        set_bboxes(style->getStrokePaintServer(), ITEM_KEY_STROKE);
 
         if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
             for (auto &v : views) {
                 v.drawingitem->setOpacity(SP_SCALE24_TO_FLOAT(style->opacity.value));
                 v.drawingitem->setAntialiasing(style->shape_rendering.computed == SP_CSS_SHAPE_RENDERING_CRISPEDGES ? 0 : 2);
-                v.drawingitem->setIsolation( style->isolation.value );
-                v.drawingitem->setBlendMode( style->mix_blend_mode.value );
+                v.drawingitem->setIsolation(style->isolation.value);
+                v.drawingitem->setBlendMode(style->mix_blend_mode.value);
                 v.drawingitem->setVisible(!isHidden());
             }
         }
     }
-    /* Update bounding box in user space, used for filter and objectBoundingBox units */
-    if (style->filter.set && !views.empty()) {
-        Geom::OptRect item_bbox = geometricBounds();
+
+    // Update bounding box in user space, used for filter and objectBoundingBox units.
+    if (style->filter.set) {
         for (auto &v : views) {
-            if (v.drawingitem)
-                v.drawingitem->setItemBounds(item_bbox);
+            if (v.drawingitem) {
+                v.drawingitem->setItemBounds(bbox());
+            }
         }
     }
 
@@ -1146,6 +1152,14 @@ unsigned SPItem::display_key_new(unsigned numkeys)
     return dkey - numkeys;
 }
 
+unsigned SPItem::ensure_key(Inkscape::DrawingItem *di)
+{
+    if (!di->key()) {
+        di->setKey(SPItem::display_key_new(ITEM_KEY_SIZE));
+    }
+    return di->key();
+}
+
 // CPPIFY: make pure virtual
 Inkscape::DrawingItem* SPItem::show(Inkscape::Drawing& /*drawing*/, unsigned int /*key*/, unsigned int /*flags*/) {
 	//throw;
@@ -1154,68 +1168,42 @@ Inkscape::DrawingItem* SPItem::show(Inkscape::Drawing& /*drawing*/, unsigned int
 
 Inkscape::DrawingItem *SPItem::invoke_show(Inkscape::Drawing &drawing, unsigned key, unsigned flags)
 {
-    Inkscape::DrawingItem *ai = nullptr;
+    auto ai = show(drawing, key, flags);
+    if (!ai) {
+        return nullptr;
+    }
 
-    ai = show(drawing, key, flags);
+    auto const bbox = geometricBounds();
 
-    if (ai) {
-        Geom::OptRect item_bbox = geometricBounds();
+    ai->setItem(this);
+    ai->setItemBounds(bbox);
+    ai->setTransform(transform);
+    ai->setOpacity(SP_SCALE24_TO_FLOAT(style->opacity.value));
+    ai->setIsolation(style->isolation.value);
+    ai->setBlendMode(style->mix_blend_mode.value);
+    ai->setVisible(!isHidden());
+    ai->setSensitive(sensitive);
+    views.push_back({flags, key, ai});
 
-        views.push_back({flags, key, ai});
-        ai->setTransform(transform);
-        ai->setOpacity(SP_SCALE24_TO_FLOAT(style->opacity.value));
-        ai->setIsolation( style->isolation.value );
-        ai->setBlendMode( style->mix_blend_mode.value );
-        //ai->setCompositeOperator( style->composite_op.value );
-        ai->setVisible(!isHidden());
-        ai->setSensitive(sensitive);
-        if (!ai->key()) {
-            ai->setKey(SPItem::display_key_new(ITEM_KEY_SIZE));
-        }
-        if (auto cp = getClipObject()) {
-            int clip_key = ai->key() + ITEM_KEY_CLIP;
-
-            // Show and set clip
-            auto ac = cp->show(drawing, clip_key);
-            ai->setClip(ac);
-
-            // Update bbox, in case the clip uses bbox units
-            cp->setBBox(clip_key, item_bbox);
-            cp->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-        }
-        if (auto mask = getMaskObject()) {
-            int mask_key = ai->key() + ITEM_KEY_MASK;
-
-            // Show and set mask
-            auto ac = mask->sp_mask_show(drawing, mask_key);
-            ai->setMask(ac);
-
-            // Update bbox, in case the mask uses bbox units
-            mask->sp_mask_set_bbox(mask_key, item_bbox);
-            mask->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-        }
-        if (auto fill_ps = style->getFillPaintServer()) {
-            int fill_key = ai->key() + ITEM_KEY_FILL;
-
-            auto ap = fill_ps->show(drawing, fill_key, item_bbox);
-
-            ai->setFillPattern(ap);
-            if (ap) {
-                fill_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-            }
-        }
-        if (auto stroke_ps = style->getStrokePaintServer()) {
-            int stroke_key = ai->key() + ITEM_KEY_STROKE;
-
-            auto ap = stroke_ps->show(drawing, stroke_key, item_bbox);
-
-            ai->setStrokePattern(ap);
-            if (ap) {
-                stroke_ps->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-            }
-        }
-        ai->setItem(this);
-        ai->setItemBounds(geometricBounds());
+    if (auto clip = getClipObject()) {
+        auto clip_key = SPItem::ensure_key(ai) + ITEM_KEY_CLIP;
+        auto ac = clip->show(drawing, clip_key, bbox);
+        ai->setClip(ac);
+    }
+    if (auto mask = getMaskObject()) {
+        auto mask_key = SPItem::ensure_key(ai) + ITEM_KEY_MASK;
+        auto ac = mask->show(drawing, mask_key, bbox);
+        ai->setMask(ac);
+    }
+    if (auto fill = style->getFillPaintServer()) {
+        auto fill_key = SPItem::ensure_key(ai) + ITEM_KEY_FILL;
+        auto ap = fill->show(drawing, fill_key, bbox);
+        ai->setFillPattern(ap);
+    }
+    if (auto stroke = style->getStrokePaintServer()) {
+        auto stroke_key = SPItem::ensure_key(ai) + ITEM_KEY_STROKE;
+        auto ap = stroke->show(drawing, stroke_key, bbox);
+        ai->setStrokePattern(ap);
     }
 
     return ai;
@@ -1239,7 +1227,7 @@ void SPItem::invoke_hide(unsigned key)
                 clip->hide(ai_key + ITEM_KEY_CLIP);
             }
             if (auto mask = getMaskObject()) {
-                mask->sp_mask_hide(ai_key + ITEM_KEY_MASK);
+                mask->hide(ai_key + ITEM_KEY_MASK);
             }
             if (auto fill_ps = style->getFillPaintServer()) {
                 fill_ps->hide(ai_key + ITEM_KEY_FILL);

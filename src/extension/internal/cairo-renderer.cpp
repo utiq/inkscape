@@ -933,8 +933,8 @@ CairoRenderer::applyClipPath(CairoRenderContext *ctx, SPClipPath const *cp)
 
     // FIXME: the access to the first clippath view to obtain the bbox is completely bogus
     Geom::Affine saved_ctm;
-    if (cp->clipPathUnits == SP_CONTENT_UNITS_OBJECTBOUNDINGBOX && cp->display->bbox) {
-        Geom::Rect clip_bbox = *cp->display->bbox;
+    if (cp->clippath_units() == SP_CONTENT_UNITS_OBJECTBOUNDINGBOX && cp->get_last_bbox()) {
+        Geom::Rect clip_bbox = *cp->get_last_bbox();
         Geom::Affine t(Geom::Scale(clip_bbox.dimensions()));
         t[4] = clip_bbox.left();
         t[5] = clip_bbox.top();
@@ -968,7 +968,7 @@ CairoRenderer::applyClipPath(CairoRenderContext *ctx, SPClipPath const *cp)
         && saved_mode == CairoRenderContext::RENDER_MODE_NORMAL)
         cairo_clip(ctx->_cr);
 
-    if (cp->clipPathUnits == SP_CONTENT_UNITS_OBJECTBOUNDINGBOX)
+    if (cp->clippath_units() == SP_CONTENT_UNITS_OBJECTBOUNDINGBOX)
         ctx->setTransform(saved_ctm);
 
     ctx->setRenderMode(saved_mode);
@@ -985,8 +985,8 @@ CairoRenderer::applyMask(CairoRenderContext *ctx, SPMask const *mask)
 
     // FIXME: the access to the first mask view to obtain the bbox is completely bogus
     // TODO: should the bbox be transformed if maskUnits != userSpaceOnUse ?
-    if (mask->maskContentUnits == SP_CONTENT_UNITS_OBJECTBOUNDINGBOX && mask->display->bbox) {
-        Geom::Rect mask_bbox = *mask->display->bbox;
+    if (mask->mask_content_units() == SP_CONTENT_UNITS_OBJECTBOUNDINGBOX && mask->get_last_bbox()) {
+        Geom::Rect mask_bbox = *mask->get_last_bbox();
         Geom::Affine t(Geom::Scale(mask_bbox.dimensions()));
         t[4] = mask_bbox.left();
         t[5] = mask_bbox.top();

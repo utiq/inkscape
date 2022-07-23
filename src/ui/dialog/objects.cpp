@@ -37,6 +37,8 @@
 
 #include "include/gtkmm_version.h"
 
+#include "display/drawing-group.h"
+
 #include "object/filters/blend.h"
 #include "object/filters/gaussian-blur.h"
 #include "object/sp-clippath.h"
