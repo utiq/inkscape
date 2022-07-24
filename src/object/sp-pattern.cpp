@@ -356,7 +356,8 @@ void SPPattern::_onRefChanged(SPObject *old_ref, SPObject *ref)
 
 void SPPattern::_onRefModified(SPObject */*ref*/, unsigned /*flags*/)
 {
-    requestModified(SP_OBJECT_MODIFIED_FLAG);
+    // requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPPattern::set_shown(SPPattern *new_shown)
@@ -447,6 +448,8 @@ SPPattern *SPPattern::_chain() const
     repr->setAttribute("inkscape:collect", "always");
     Glib::ustring parent_ref = Glib::ustring::compose("#%1", getRepr()->attribute("id"));
     repr->setAttribute("xlink:href", parent_ref);
+    // this attribute is used to express uniform pattern scaling in pattern editor, so keep it
+    repr->setAttribute("preserveAspectRatio", getRepr()->attribute("preserveAspectRatio"));
 
     defsrepr->addChild(repr, nullptr);
     SPObject *child = document->getObjectByRepr(repr);
@@ -500,6 +503,8 @@ char const *SPPattern::produce(std::vector<Inkscape::XML::Node*> const &reprs, G
     repr->setAttributeSvgDouble("width", bounds.dimensions()[Geom::X]);
     repr->setAttributeSvgDouble("height", bounds.dimensions()[Geom::Y]);
     repr->setAttributeOrRemoveIfEmpty("patternTransform", sp_svg_transform_write(transform));
+    // by default use uniform scaling
+    repr->setAttribute("preserveAspectRatio", "xMidYMid");
     defsrepr->appendChild(repr);
     const gchar *pd = repr->attribute("id");
     SPObject *pat_object = document->getObjectById(pd);
@@ -564,6 +569,10 @@ Geom::Affine const &SPPattern::getTransform() const
         if (p->_pattern_transform_set)
             return p->_pattern_transform;
     }
+    return _pattern_transform;
+}
+
+const Geom::Affine& SPPattern::get_this_transform() const {
     return _pattern_transform;
 }
 

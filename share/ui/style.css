@@ -653,6 +653,15 @@ stackswitcher button {
     padding: 4px;
 }
 
+/* slider with tighter margins */
+scale.tight-slider {
+    padding: 8px 4px 7px 4px;
+}
+
+scale.small-font {
+    font-size: small;
+}
+
 /* add .small-marks class to Gtk::Scale to have smaller font used, since markup didn't work there */
 scale.small-marks.marks-after {
     font-size: small;

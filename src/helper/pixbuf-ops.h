@@ -23,5 +23,7 @@ Inkscape::Pixbuf *sp_generate_internal_bitmap(SPDocument *document,
                                               Geom::Rect const &area,
                                               double dpi,
                                               std::vector<SPItem *> items = std::vector<SPItem*>(),
-                                              bool set_opaque = false);
+                                              bool set_opaque = false,
+                                              unsigned int* checkerboard_color = nullptr,
+                                              double device_scale = 1.0);
 #endif

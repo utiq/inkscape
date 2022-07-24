@@ -75,6 +75,7 @@ public:
     Geom::Affine const &getTransform() const;
     SPPattern const *rootPattern() const;
     SPPattern *rootPattern();
+    const Geom::Affine& get_this_transform() const;
 
     SPPattern *clone_if_necessary(SPItem *item, char const *property);
     void transform_multiply(Geom::Affine postmul, bool set);

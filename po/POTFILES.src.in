@@ -403,6 +403,7 @@
 ../src/ui/widget/page-properties.cpp
 ../src/ui/widget/page-selector.cpp
 ../src/ui/widget/paint-selector.cpp
+../src/ui/widget/pattern-editor.cpp
 ../src/ui/widget/preferences-widget.cpp
 ../src/ui/widget/random.cpp
 ../src/ui/widget/registered-widget.cpp

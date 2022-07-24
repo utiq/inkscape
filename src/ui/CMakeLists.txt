@@ -212,6 +212,7 @@ set(ui_SRC
 	widget/page-size-preview.cpp
 	widget/page-selector.cpp
 	widget/paint-selector.cpp
+	widget/pattern-editor.cpp
 	widget/pixelstreamer.cpp
 	widget/point.cpp
 	widget/preferences-widget.cpp
@@ -466,6 +467,7 @@ set(ui_SRC
 	widget/optglarea.h
 	widget/page-selector.h
 	widget/paint-selector.h
+	widget/pattern-editor.h
 	widget/pixelstreamer.h
 	widget/point.h
 	widget/preferences-widget.h

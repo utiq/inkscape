@@ -47,13 +47,17 @@ Glib::ustring double_to_css_value(double value) {
     return Glib::ustring(buffer);
 }
 
-svg_renderer::svg_renderer(const char* svg_file_path) {
-
+std::shared_ptr<SPDocument> load_document(const char* svg_file_path) {
     auto file = Gio::File::create_for_path(svg_file_path);
+    return std::shared_ptr<SPDocument>(ink_file_open(file, nullptr));
+}
 
-    _document.reset(ink_file_open(file, nullptr));
+svg_renderer::svg_renderer(const char* svg_file_path): svg_renderer(load_document(svg_file_path)) {
+}
 
-    if (_document) {
+svg_renderer::svg_renderer(std::shared_ptr<SPDocument> document) {
+    _document = document;
+    if (document) {
         _root = _document->getRoot();
     }
 
@@ -86,7 +90,9 @@ Inkscape::Pixbuf* svg_renderer::do_render(double scale) {
     auto dpi = 96 * scale;
     auto area = Geom::Rect(0, 0, w, h);
 
-    return sp_generate_internal_bitmap(_document.get(), area, dpi);
+    unsigned int color = _checkerboard.value_or(0);
+    return sp_generate_internal_bitmap(_document.get(), area, dpi, std::vector<SPItem*>(), false,
+        _checkerboard.has_value() ? &color : nullptr, scale);
 }
 
 Glib::RefPtr<Gdk::Pixbuf> svg_renderer::render(double scale) {
@@ -107,6 +113,10 @@ Cairo::RefPtr<Cairo::Surface> svg_renderer::render_surface(double scale) {
     auto surface = Cairo::RefPtr<Cairo::Surface>(new Cairo::Surface(pixbuf->getSurfaceRaw(), false));
     delete pixbuf;
     return surface;
+}
+
+void svg_renderer::set_checkerboard_color(unsigned int rgba) {
+    _checkerboard.emplace(rgba);
 }
 
 } // namespace

@@ -29,6 +29,7 @@
 #include "inkscape.h"
 #include "selection.h"
 
+#include "actions/actions-tools.h"
 #include "object/sp-defs.h"
 #include "object/sp-linear-gradient.h"
 #include "object/sp-mesh-gradient.h"
@@ -38,7 +39,7 @@
 #include "object/sp-stop.h"
 #include "ui/dialog/dialog-base.h"
 #include "style.h"
-
+#include "pattern-manipulation.h"
 #include "ui/icon-names.h"
 
 // These can be deleted once we sort out the libart dependence.
@@ -66,6 +67,9 @@ FillNStroke::FillNStroke(FillOrStroke k)
     _psel->signal_changed().connect(sigc::mem_fun(*this, &FillNStroke::paintChangedCB));
     _psel->signal_stop_selected().connect([=](SPStop* stop) {
        if (_desktop) { _desktop->emit_gradient_stop_selected(this, stop); }
+    });
+    _psel->signal_edit_pattern().connect([=](){
+        if (_desktop) set_active_tool(_desktop, "Node");
     });
 
     if (kind == FILL) {
@@ -230,8 +234,7 @@ void FillNStroke::performUpdate()
                         _psel->updateMeshList(SP_MESHGRADIENT(array));
 #endif
                     } else if (SP_IS_PATTERN(server)) {
-                        SPPattern *pat = SP_PATTERN(server)->rootPattern();
-                        _psel->updatePatternList(pat);
+                        _psel->updatePatternList(SP_PATTERN(server));
                     }
                 }
             }
@@ -608,15 +611,28 @@ void FillNStroke::updateFromPaint(bool switch_style)
 
             if (!items.empty()) {
 
-                auto pattern = _psel->getPattern();
-                if (!pattern) {
+                auto link_pattern = _psel->getPattern();
+                if (!link_pattern) {
 
                     /* No Pattern in paint selector should mean that we just
                      * changed mode - don't do jack.
                      */
 
                 } else {
-                    Inkscape::XML::Node *patrepr = pattern->getRepr();
+                    auto root_pattern = link_pattern->rootPattern();
+                    if (auto color = _psel->get_pattern_color()) {
+                        sp_pattern_set_color(root_pattern, color.value());
+                    }
+                    auto transform = _psel->get_pattern_transform();
+                    sp_pattern_set_transform(link_pattern, transform);
+                    auto offset = _psel->get_pattern_offset();
+                    sp_pattern_set_offset(link_pattern, offset);
+                    auto uniform = _psel->is_pattern_scale_uniform();
+                    sp_pattern_set_uniform_scale(link_pattern, uniform);
+                    auto gap = _psel->get_pattern_gap();
+                    sp_pattern_set_gap(link_pattern, gap);
+
+                    Inkscape::XML::Node *patrepr = root_pattern->getRepr();
                     SPCSSAttr *css = sp_repr_css_attr_new();
                     gchar *urltext = g_strdup_printf("url(#%s)", patrepr->attribute("id"));
                     sp_repr_css_set_property(css, (kind == FILL) ? "fill" : "stroke", urltext);
@@ -641,7 +657,7 @@ void FillNStroke::updateFromPaint(bool switch_style)
                         if (style && ((kind == FILL) ? style->fill.isPaintserver() : style->stroke.isPaintserver())) {
                             SPPaintServer *server = (kind == FILL) ? selobj->style->getFillPaintServer()
                                                                    : selobj->style->getStrokePaintServer();
-                            if (SP_IS_PATTERN(server) && SP_PATTERN(server)->rootPattern() == pattern)
+                            if (SP_IS_PATTERN(server) && SP_PATTERN(server)->rootPattern() == root_pattern)
                                 // only if this object's pattern is not rooted in our selected pattern, apply
                                 continue;
                         }
@@ -651,12 +667,15 @@ void FillNStroke::updateFromPaint(bool switch_style)
                         } else {
                             sp_repr_css_change_recursive(selrepr, css, "style");
                         }
+
+                        // create link to pattern right away, without waiting for object to be moved;
+                        // otherwise pattern editor may end up modifying pattern shared by different objects
+                        item->adjust_pattern(Geom::Affine());
                     }
 
                     sp_repr_css_attr_unref(css);
                     css = nullptr;
                     g_free(urltext);
-
                 } // end if
 
                 DocumentUndo::done(document, (kind == FILL) ? _("Set pattern on fill") : _("Set pattern on stroke"), INKSCAPE_ICON("dialog-fill-and-stroke"));

@@ -27,8 +27,9 @@
 
 #include "io/sys.h"
 #include "io/resource.h"
+#include "pattern-manipulation.h"
 #include "stock-items.h"
-
+#include "manipulation/copy-resource.h"
 #include "object/sp-gradient.h"
 #include "object/sp-pattern.h"
 #include "object/sp-marker.h"
@@ -90,18 +91,10 @@ sp_pattern_load_from_svg(gchar const *name, SPDocument *current_doc)
         return nullptr;
     }
     /* Try to load from document */
-    static SPDocument *doc = load_paint_doc("patterns.svg");
-
-    if (doc) {
+    if (auto doc = sp_get_stock_patterns()) {
         /* Get the pattern we want */
-        SPObject *object = doc->getObjectById(name);
-        if (object && SP_IS_PATTERN(object)) {
-            SPDefs *defs = current_doc->getDefs();
-            Inkscape::XML::Document *xml_doc = current_doc->getReprDoc();
-            Inkscape::XML::Node *pat_repr = object->getRepr()->duplicate(xml_doc);
-            defs->getRepr()->addChild(pat_repr, nullptr);
-            Inkscape::GC::release(pat_repr);
-            return object;
+        if (auto* pattern = dynamic_cast<SPPattern*>(doc->getObjectById(name))) {
+            return sp_copy_resource(pattern, current_doc);
         }
     }
     return nullptr;
@@ -206,6 +199,9 @@ SPObject *get_stock_item(gchar const *urn, gboolean stock)
             }
             else if (!strcmp(base, "pattern"))  {
                 object = sp_pattern_load_from_svg(name_p, doc);
+                if (object) {
+                    object->getRepr()->setAttribute("inkscape:collect", "always");
+                }
             }
             else if (!strcmp(base, "gradient"))  {
                 object = sp_gradient_load_from_svg(name_p, doc);
