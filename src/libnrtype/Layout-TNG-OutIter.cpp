@@ -430,10 +430,10 @@ std::vector<Geom::Point> Layout::createSelectionShape(iterator const &it_start, 
     
     if (it_start._char_index < it_end._char_index) {
         char_index = it_start._char_index;
-        end_char_index = it_end._char_index;
+        end_char_index = std::min((size_t)it_end._char_index, _characters.size());
     } else {
         char_index = it_end._char_index;
-        end_char_index = it_start._char_index;
+        end_char_index = std::min((size_t)it_start._char_index, _characters.size());
     }
     for ( ; char_index < end_char_index ; ) {
         if (_characters[char_index].in_glyph == -1) {
@@ -733,8 +733,8 @@ void Layout::simulateLayoutUsingKerning(iterator const &from, iterator const &to
         _cursor_moving_vertically = false;                                               \
         if (_char_index == 0) return false;                                              \
         unsigned original_item;                                                          \
-        if (_char_index == _parent_layout->_characters.size()) {                         \
-            _char_index--;                                                               \
+        if (_char_index >= _parent_layout->_characters.size()) {                         \
+            _char_index = _parent_layout->_characters.size() - 1;                        \
             original_item = item_getter;                                                 \
         } else {                                                                         \
             original_item = item_getter;                                                 \
@@ -756,7 +756,7 @@ void Layout::simulateLayoutUsingKerning(iterator const &from, iterator const &to
 #define NEXT_START_OF_ITEM(item_getter)                                                  \
     {                                                                                    \
         _cursor_moving_vertically = false;                                               \
-        if (_char_index == _parent_layout->_characters.size()) return false;             \
+        if (_char_index >= _parent_layout->_characters.size()) return false;             \
         unsigned original_item = item_getter;                                            \
         for( ; ; ) {                                                                     \
             _char_index++;                                                               \
@@ -833,7 +833,7 @@ bool Layout::iterator::nextStartOfSource()
 
 bool Layout::iterator::thisEndOfLine()
 {
-    if (_char_index == _parent_layout->_characters.size()) return false;
+    if (_char_index >= _parent_layout->_characters.size()) return false;
     if (nextStartOfLine())
     {
         if (_char_index && _parent_layout->_characters[_char_index - 1].char_attributes.is_white)
@@ -847,7 +847,7 @@ bool Layout::iterator::thisEndOfLine()
 
 void Layout::iterator::beginCursorUpDown()
 {
-    if (_char_index == _parent_layout->_characters.size())
+    if (_char_index >= _parent_layout->_characters.size())
         _x_coordinate = _parent_layout->_chunks.back().left_x + _parent_layout->_spans.back().x_end;
     else
         _x_coordinate = _parent_layout->_characters[_char_index].x + _parent_layout->_characters[_char_index].span(_parent_layout).x_start + _parent_layout->_characters[_char_index].chunk(_parent_layout).left_x;
@@ -858,7 +858,7 @@ bool Layout::iterator::nextLineCursor(int n)
 {
     if (!_cursor_moving_vertically)
         beginCursorUpDown();
-    if (_char_index == _parent_layout->_characters.size())
+    if (_char_index >= _parent_layout->_characters.size())
         return false;
     unsigned line_index = _parent_layout->_characters[_char_index].chunk(_parent_layout).in_line;
     if (line_index == _parent_layout->_lines.size() - 1) 
@@ -871,7 +871,7 @@ bool Layout::iterator::nextLineCursor(int n)
                          - _parent_layout->_chunks[_parent_layout->_spans[_parent_layout->_lineToSpan(line_index)].in_chunk].left_x;
     }
     _char_index = _parent_layout->_cursorXOnLineToIterator(line_index + n, _x_coordinate)._char_index;
-    if (_char_index == _parent_layout->_characters.size())
+    if (_char_index >= _parent_layout->_characters.size())
         _glyph_index = _parent_layout->_glyphs.size();
     else
         _glyph_index = _parent_layout->_characters[_char_index].in_glyph;
@@ -883,7 +883,7 @@ bool Layout::iterator::prevLineCursor(int n)
     if (!_cursor_moving_vertically)
         beginCursorUpDown();
     int line_index;
-    if (_char_index == _parent_layout->_characters.size())
+    if (_char_index >= _parent_layout->_characters.size())
         line_index = _parent_layout->_lines.size() - 1;
     else
         line_index = _parent_layout->_characters[_char_index].chunk(_parent_layout).in_line;
@@ -971,7 +971,7 @@ bool Layout::iterator::_cursorLeftOrRightLocalX(Direction direction)
     if (_parent_layout->_characters.empty()) return false;
     unsigned old_span_index;
     Direction old_span_direction;
-    if (_char_index == _parent_layout->_characters.size())
+    if (_char_index >= _parent_layout->_characters.size())
         old_span_index = _parent_layout->_spans.size() - 1;
     else
         old_span_index = _parent_layout->_characters[_char_index].in_span;
@@ -982,7 +982,7 @@ bool Layout::iterator::_cursorLeftOrRightLocalX(Direction direction)
     unsigned old_char_index = _char_index;
     if (old_span_direction != para_direction
         && ((_char_index == 0 && direction == para_direction)
-            || (_char_index == _parent_layout->_characters.size() && direction != para_direction))) {
+            || (_char_index >= _parent_layout->_characters.size() && direction != para_direction))) {
         // the end of the text is actually in the middle because of reordering. Do cleverness
         scan_direction = direction == para_direction ? +1 : -1;
     } else {
@@ -1057,7 +1057,7 @@ bool Layout::iterator::_cursorLeftOrRightLocalX(Direction direction)
         } else
             _char_index = _parent_layout->_spanToCharacter(new_span_index);
     }
-    if (_char_index == _parent_layout->_characters.size()) {
+    if (_char_index >= _parent_layout->_characters.size()) {
         _glyph_index = _parent_layout->_glyphs.size();
         return false;
     }
