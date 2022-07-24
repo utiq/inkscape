@@ -34,10 +34,14 @@ public:
 
     // set colors presented in a palette
     void set_colors(const std::vector<Gtk::Widget*>& swatches);
+    // set colors presented in a fixed panel (always visible, not scrollable)
+    void set_fixed_colors(const std::vector<Gtk::Widget*>& swatches);
     // list of palettes to present in the menu
     void set_palettes(const std::vector<palette_t>& palettes);
     // enable compact mode (true) with mini-scroll buttons, or normal mode (false) with regular scrollbars
     void set_compact(bool compact);
+    // enlarge color tiles in a fixed panel
+    void set_large_fixed_panel(bool large);
 
     void set_tile_size(int size_px);
     void set_tile_border(int border_px);
@@ -54,6 +58,7 @@ public:
     double get_aspect() const;
     bool is_scrollbar_enabled() const;
     bool is_stretch_enabled() const;
+    bool is_fixed_panel_large() const;
 
     void set_selected(const Glib::ustring& name);
 
@@ -63,7 +68,7 @@ public:
 private:
     void resize();
     void set_up_scrolling();
-    void free();
+    void free(Gtk::FlowBox& box);
     void scroll(int dx, int dy, double snap, bool smooth);
     void do_scroll(int dx, int dy);
     static gboolean scroll_cb(gpointer self);
@@ -73,6 +78,7 @@ private:
     void _set_aspect(double aspect);
     void _enable_scrollbar(bool show);
     void _enable_stretch(bool enable);
+    void _set_large_fixed_panel(bool large);
     static gboolean check_scrollbar(gpointer self);
     void update_checkbox();
     void update_stretch();
@@ -83,6 +89,7 @@ private:
 
     Glib::RefPtr<Gtk::Builder> _builder;
     Gtk::FlowBox& _flowbox;
+    Gtk::FlowBox& _fixed;
     Gtk::ScrolledWindow& _scroll;
     Gtk::FlowBox& _scroll_btn;
     Gtk::Button& _scroll_up;
@@ -104,6 +111,7 @@ private:
     bool _stretch_tiles = false;
     double _scroll_step = 0.0; // smooth scrolling step
     double _scroll_final = 0.0; // smooth scroll final value
+    bool _large_fixed_panel = false;
 };
 
 }}} // namespace

@@ -33,6 +33,8 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
+// small palette with "fixed" colors: always visible, not scrollable
+static const char* DEFAULT_FIXED = "DefaultFixedColors";
 /*
  * Lifecycle
  */
@@ -44,11 +46,8 @@ SwatchesPanel::SwatchesPanel(char const *prefsPath)
     pack_start(*_palette);
     update_palettes();
 
-    if (_prefs_path == "/dialogs/swatches") {
-        _palette->set_compact(false);
-    } else {
-        _palette->set_compact(true);
-    }
+    bool embedded = _prefs_path != "/dialogs/swatches";
+    _palette->set_compact(embedded);
 
     auto name = Preferences::get()->getString(_prefs_path + "/palette");
     index = name_to_index(name);
@@ -60,6 +59,7 @@ SwatchesPanel::SwatchesPanel(char const *prefsPath)
     _palette->set_tile_border(prefs->getInt(_prefs_path + "/tile_border", 1));
     _palette->set_rows(prefs->getInt(_prefs_path + "/rows", 1));
     _palette->enable_stretch(prefs->getBool(_prefs_path + "/tile_stretch", false));
+    _palette->set_large_fixed_panel(embedded && prefs->getBool(_prefs_path + "/enlarge_fixed", true));
 
     // save settings when they change
     _palette->get_settings_changed_signal().connect([=] {
@@ -68,6 +68,7 @@ SwatchesPanel::SwatchesPanel(char const *prefsPath)
         prefs->setInt(_prefs_path + "/tile_border", _palette->get_tile_border());
         prefs->setInt(_prefs_path + "/rows", _palette->get_rows());
         prefs->setBool(_prefs_path + "/tile_stretch", _palette->is_stretch_enabled());
+        prefs->setBool(_prefs_path + "/enlarge_fixed", _palette->is_fixed_panel_large());
     });
 
     // Respond to requests from the palette widget to change palettes.
@@ -366,6 +367,8 @@ void SwatchesPanel::update_palettes()
 
     // The remaining palettes in the list are the global palettes.
     for (auto &p : GlobalPalettes::get().palettes) {
+        if (p.name == DEFAULT_FIXED) continue;
+
         Inkscape::UI::Widget::ColorPalette::palette_t palette;
         palette.name = p.name;
         for (auto const &c : p.colors) {
@@ -391,11 +394,6 @@ void SwatchesPanel::rebuild()
     current_fill.clear();
     current_stroke.clear();
 
-    // Add the "remove-color" color.
-    auto w = Gtk::make_managed<ColorItem>(PaintDef(), this);
-    palette.emplace_back(w);
-    widgetmap.emplace(std::monostate{}, w);
-
     if (index >= PALETTE_GLOBAL) {
         auto &pal = GlobalPalettes::get().palettes[index - PALETTE_GLOBAL];
         palette.reserve(palette.size() + pal.colors.size());
@@ -414,6 +412,26 @@ void SwatchesPanel::rebuild()
                 widgetmap.emplace(grad, w);
             }
         }
+    }
+
+    // add colors from special "default-fixed-colors.gpl" palette to the fixed
+    // section of colors - always visible, not scrollable, easily accessible
+    auto fixed_index = name_to_index(DEFAULT_FIXED);
+    if (fixed_index != PALETTE_NONE) {
+        std::vector<Widget*> palette;
+        // Add the "remove-color" color.
+        auto w = Gtk::make_managed<ColorItem>(PaintDef(), this);
+        palette.emplace_back(w);
+        widgetmap.emplace(std::monostate{}, w);
+
+        auto &pal = GlobalPalettes::get().palettes.at(fixed_index);
+        palette.reserve(palette.size() + pal.colors.size());
+        for (auto &c : pal.colors) {
+            auto w = Gtk::make_managed<ColorItem>(PaintDef(c.rgb, c.name), this);
+            palette.emplace_back(w);
+            widgetmap.emplace(c.rgb, w);
+        }
+        _palette->set_fixed_colors(palette);
     }
 
     if (getDocument()) {

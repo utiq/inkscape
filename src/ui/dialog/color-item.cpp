@@ -125,8 +125,9 @@ void ColorItem::draw_color(Cairo::RefPtr<Cairo::Context> const &cr, int w, int h
 {
     if (boost::get<NoneData>(&data)) {
         if (auto surface = Globals::get().removecolor) {
+            const auto device_scale = get_scale_factor();
             cr->save();
-            cr->scale((double)w / surface->get_width(), (double)h / surface->get_height());
+            cr->scale((double)w / surface->get_width() / device_scale, (double)h / surface->get_height() / device_scale);
             cr->set_source(surface, 0, 0);
             cr->paint();
             cr->restore();
@@ -159,14 +160,16 @@ bool ColorItem::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
     bool use_cache = boost::get<NoneData>(&data) || boost::get<GradientData>(&data);
 
     if (use_cache) {
+        auto scale = get_scale_factor();
         // Ensure cache exists and has correct size.
-        if (!cache || cache->get_width() != w || cache->get_height() != h) {
-            cache = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w, h);
+        if (!cache || cache->get_width() * scale != w * scale || cache->get_height() * scale != h * scale) {
+            cache = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w * scale, h * scale);
+            cairo_surface_set_device_scale(cache->cobj(), scale, scale);
             cache_dirty = true;
         }
         // Ensure cache contents is up-to-date.
         if (cache_dirty) {
-            draw_color(Cairo::Context::create(cache), w, h);
+            draw_color(Cairo::Context::create(cache), w * scale, h * scale);
             cache_dirty = false;
         }
         // Paint from cache.
