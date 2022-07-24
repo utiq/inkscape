@@ -146,6 +146,8 @@ set(inkscape_SRC
   page-manager.h
   path-chemistry.h
   path-prefix.h
+  pattern-manager.cpp
+  pattern-manager.h
   pattern-manipulation.cpp
   pattern-manipulation.h
   perspective-line.h

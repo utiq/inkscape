@@ -500,34 +500,27 @@ void StrokeStyle::markerSelectCB(MarkerComboBox *marker_combo, SPMarkerLoc const
     gchar const *combo_id = marker_combo->get_id();
     sp_repr_css_set_property(css, combo_id, marker.c_str());
 
-    Inkscape::Selection *selection = desktop->getSelection();
-    auto itemlist= selection->items();
-    for(auto i=itemlist.begin();i!=itemlist.end();++i){
-        SPItem *item = *i;
+    for (auto item : desktop->getSelection()->items()) {
         if (!SP_IS_SHAPE(item)) {
             continue;
         }
-        Inkscape::XML::Node *selrepr = item->getRepr();
-        if (selrepr) {
+        if (Inkscape::XML::Node* selrepr = item->getRepr()) {
             sp_repr_css_change_recursive(selrepr, css, "style");
         }
 
         item->requestModified(SP_OBJECT_MODIFIED_FLAG);
         item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
+        // perform update to make sure any previously referenced markers are released,
+        // so they can be collected by DocumentUndo::done collect orphans
+        document->ensureUpToDate();
 
         DocumentUndo::done(document, _("Set markers"), INKSCAPE_ICON("dialog-fill-and-stroke"));
     }
 
-    /* edit marker mode - update */
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-
-    if (desktop) {
-        Inkscape::UI::Tools::MarkerTool *mt = dynamic_cast<Inkscape::UI::Tools::MarkerTool*>(desktop->event_context);
-
-        if(mt) {
-            mt->editMarkerMode = which;
-            mt->selection_changed(desktop->getSelection());
-        }
+    // edit marker mode - update
+    if (auto mt = dynamic_cast<Inkscape::UI::Tools::MarkerTool*>(desktop->event_context)) {
+        mt->editMarkerMode = which;
+        mt->selection_changed(desktop->getSelection());
     }
 
     sp_repr_css_attr_unref(css);

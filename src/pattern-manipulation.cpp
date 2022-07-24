@@ -1,28 +1,23 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <glibmm/fileutils.h>
+#include <glibmm/i18n.h>
 #include "pattern-manipulation.h"
 #include "document.h"
 #include "color.h"
+#include "helper/stock-items.h"
 #include "object/sp-pattern.h"
 #include "io/resource.h"
 #include "xml/repr.h"
 
 
-SPDocument* sp_get_stock_patterns() {
-    static SPDocument* patterns = nullptr;
-
-    if (!patterns) {
-        using namespace Inkscape::IO::Resource;
-        auto patterns_source = get_path_string(SYSTEM, PAINT, "patterns.svg");
-        if (Glib::file_test(patterns_source, Glib::FILE_TEST_IS_REGULAR)) {
-            patterns = SPDocument::createNewDoc(patterns_source.c_str(), false);
-        }
-        if (!patterns) {
-            g_warning("No stock patterns: %s", patterns_source.c_str());
-        }
+std::vector<std::shared_ptr<SPDocument>> sp_get_stock_patterns() {
+    auto patterns = sp_get_paint_documents([](SPDocument* doc){
+        return !sp_get_pattern_list(doc).empty();
+    });
+    if (patterns.empty()) {
+        g_warning("No stock patterns!");
     }
-
     return patterns;
 }
 
@@ -126,4 +121,17 @@ Geom::Scale sp_pattern_get_gap(SPPattern* link_pattern) {
         get_gap(root->width(),  link_pattern->width())  * 100.0,
         get_gap(root->height(), link_pattern->height()) * 100.0
     );
+}
+
+
+std::string sp_get_pattern_label(SPPattern* pattern) {
+    if (!pattern) return std::string();
+
+    Inkscape::XML::Node* repr = pattern->getRepr();
+    if (auto label = pattern->getAttribute("inkscape:label")) {
+        return std::string(label);
+    }
+    const char* stock_id = _(repr->attribute("inkscape:stockid"));
+    const char* pat_id = stock_id ? stock_id : _(repr->attribute("id"));
+    return std::string(pat_id ? pat_id : "");
 }

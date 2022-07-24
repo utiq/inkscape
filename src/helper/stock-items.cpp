@@ -35,6 +35,35 @@
 #include "object/sp-marker.h"
 #include "object/sp-defs.h"
 
+std::vector<std::shared_ptr<SPDocument>> sp_get_paint_documents(const std::function<bool (SPDocument*)>& filter) {
+    static std::vector<std::shared_ptr<SPDocument>> documents;
+
+    if (documents.empty()) {
+        using namespace Inkscape::IO::Resource;
+        auto files = get_filenames(SYSTEM, PAINT, {".svg"});
+        auto user = get_filenames(USER, PAINT, {".svg"});
+        files.insert(files.end(), user.begin(), user.end());
+        for (auto&& file : files) {
+            if (Glib::file_test(file, Glib::FILE_TEST_IS_REGULAR)) {
+                std::shared_ptr<SPDocument> doc(SPDocument::createNewDoc(file.c_str(), false));
+                if (doc) {
+                    documents.push_back(std::move(doc));
+                }
+                else {
+                    g_warning("File %s not loaded.", file.c_str());
+                }
+            }
+        }
+    }
+
+    std::vector<std::shared_ptr<SPDocument>> out;
+    std::copy_if(documents.begin(), documents.end(), std::back_inserter(out), [=](const std::shared_ptr<SPDocument>& doc) {
+        return filter(doc.get());
+    });
+
+    return out;
+}
+
 static SPDocument *load_paint_doc(char const *basename,
                                   Inkscape::IO::Resource::Type type = Inkscape::IO::Resource::PAINT)
 {
@@ -84,18 +113,14 @@ static SPObject * sp_marker_load_from_svg(gchar const *name, SPDocument *current
 }
 
 
-static SPObject *
-sp_pattern_load_from_svg(gchar const *name, SPDocument *current_doc)
-{
-    if (!current_doc) {
+static SPObject* sp_pattern_load_from_svg(gchar const *name, SPDocument *current_doc, SPDocument* source_doc) {
+    if (!current_doc || !source_doc) {
         return nullptr;
     }
-    /* Try to load from document */
-    if (auto doc = sp_get_stock_patterns()) {
-        /* Get the pattern we want */
-        if (auto* pattern = dynamic_cast<SPPattern*>(doc->getObjectById(name))) {
-            return sp_copy_resource(pattern, current_doc);
-        }
+    // Try to load from document
+    // Get the pattern we want
+    if (auto pattern = dynamic_cast<SPPattern*>(source_doc->getObjectById(name))) {
+        return sp_copy_resource(pattern, current_doc);
     }
     return nullptr;
 }
@@ -129,7 +154,7 @@ sp_gradient_load_from_svg(gchar const *name, SPDocument *current_doc)
 // if necessary it will import the object. Copes with name clashes through use of the inkscape:stockid property
 // This should be set to be the same as the id in the library file.
 
-SPObject *get_stock_item(gchar const *urn, gboolean stock)
+SPObject *get_stock_item(gchar const *urn, bool stock, SPDocument* stock_doc)
 {
     g_assert(urn != nullptr);
 
@@ -198,7 +223,7 @@ SPObject *get_stock_item(gchar const *urn, gboolean stock)
                 object = sp_marker_load_from_svg(name_p, doc);
             }
             else if (!strcmp(base, "pattern"))  {
-                object = sp_pattern_load_from_svg(name_p, doc);
+                object = sp_pattern_load_from_svg(name_p, doc, stock_doc);
                 if (object) {
                     object->getRepr()->setAttribute("inkscape:collect", "always");
                 }

@@ -40,9 +40,9 @@ SPObject* sp_copy_resource(const SPObject* source, SPDocument* dest_document) {
     // make a copy of the 'source' object
     auto src_doc = source->document;
     auto dest_defs = dest_document->getDefs();
-    Inkscape::XML::Document* xml_doc = src_doc->getReprDoc();
+    Inkscape::XML::Document* xml_doc = dest_document->getReprDoc();
     Inkscape::XML::Node* repr = source->getRepr()->duplicate(xml_doc);
-    dest_defs->getRepr()->appendChild(repr);
+    dest_defs->getRepr()->addChild(repr, nullptr);
     auto object = dest_document->getObjectByRepr(repr);
     g_assert(object != nullptr);
     Inkscape::GC::release(repr);

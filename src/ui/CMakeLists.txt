@@ -258,6 +258,7 @@ set(ui_SRC
 	drag-and-drop.h
 	draw-anchor.h
 	event-debug.h
+	filtered-store.h
 	icon-names.h
 	icon-loader.h
 	interface.h

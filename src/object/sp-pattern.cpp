@@ -480,6 +480,16 @@ SPPattern *SPPattern::clone_if_necessary(SPItem *item, const gchar *property)
     return pattern;
 }
 
+// do not remove identity transform in pattern elements; when patterns are referenced then linking
+// pattern transform overrides root/referenced pattern transform; if it disappears then root transform
+// takes over and that's not what we want
+static std::string write_transform(const Geom::Affine& transform) {
+    if (transform.isIdentity()) {
+        return "scale(1)";
+    }
+    return sp_svg_transform_write(transform);
+}
+
 void SPPattern::transform_multiply(Geom::Affine postmul, bool set)
 {
     // this formula is for a different interpretation of pattern transforms as described in (*) in sp-pattern.cpp
@@ -496,7 +506,7 @@ void SPPattern::transform_multiply(Geom::Affine postmul, bool set)
     }
     _pattern_transform_set = true;
 
-    setAttributeOrRemoveIfEmpty("patternTransform", sp_svg_transform_write(_pattern_transform));
+    setAttributeOrRemoveIfEmpty("patternTransform", write_transform(_pattern_transform));
 }
 
 char const *SPPattern::produce(std::vector<Inkscape::XML::Node*> const &reprs, Geom::Rect const &bounds,
@@ -509,12 +519,13 @@ char const *SPPattern::produce(std::vector<Inkscape::XML::Node*> const &reprs, G
     repr->setAttribute("patternUnits", "userSpaceOnUse");
     repr->setAttributeSvgDouble("width", bounds.dimensions()[Geom::X]);
     repr->setAttributeSvgDouble("height", bounds.dimensions()[Geom::Y]);
-    repr->setAttributeOrRemoveIfEmpty("patternTransform", sp_svg_transform_write(transform));
+    repr->setAttributeOrRemoveIfEmpty("patternTransform", write_transform(transform));
     // by default use uniform scaling
     repr->setAttribute("preserveAspectRatio", "xMidYMid");
     defsrepr->appendChild(repr);
     const gchar *pd = repr->attribute("id");
     SPObject *pat_object = document->getObjectById(pd);
+    bool can_colorize = false;
 
     for (auto node : reprs) {
         auto copy = dynamic_cast<SPItem*>(pat_object->appendChildRepr(node));
@@ -523,12 +534,32 @@ char const *SPPattern::produce(std::vector<Inkscape::XML::Node*> const &reprs, G
             repr->setAttribute("inkscape:label", node->attribute("inkscape:label"));
         }
 
+        // if some elements have undefined color or solid black, then their fill color is customizable
+        if (copy->style && copy->style->isSet(SPAttr::FILL)) {
+            if (auto paint = copy->style->getFillOrStroke(true)) {
+                if (paint->isColor() && paint->value.color.toRGBA32(255) == 255) { // black color set?
+                    can_colorize = true;
+                    // remove black fill, it will be inherited from pattern
+                    paint->clear();
+                }
+            }
+        }
+        else {
+            // no color - it will be inherited
+            can_colorize = true;
+        }
+
         Geom::Affine dup_transform;
         if (!sp_svg_transform_read(node->attribute("transform"), &dup_transform))
             dup_transform = Geom::identity();
         dup_transform *= move;
 
         copy->doWriteTransform(dup_transform, nullptr, false);
+    }
+
+    if (can_colorize && pat_object->style) {
+        // add black fill style to the pattern object - it will tell pattern editor to enable color selector
+        pat_object->style->readIfUnset(SPAttr::FILL, "black");
     }
 
     Inkscape::GC::release(repr);

@@ -10,12 +10,18 @@
 
 #include <optional>
 #include <2geom/transforms.h>
+#include <giomm/liststore.h>
+#include <gtkmm/widget.h>
 #include "color.h"
+#include "ui/filtered-store.h"
+
+class SPDocument;
 
 namespace Inkscape {
 namespace UI {
 namespace Widget {
 
+// pattern parameters
 struct PatternItem : Glib::Object {
     Cairo::RefPtr<Cairo::Surface> pix;
     std::string id;
@@ -25,10 +31,11 @@ struct PatternItem : Glib::Object {
     Geom::Affine transform;
     Geom::Point offset;
     std::optional<SPColor> color;
-    std::string link_id;
     Geom::Scale gap;
+    SPDocument* collection = nullptr;
 
     bool operator == (const PatternItem& item) const {
+        // compare all attributes apart from pixmap preview
         return
             id == item.id &&
             label == item.label &&
@@ -37,17 +44,13 @@ struct PatternItem : Glib::Object {
             transform == item.transform &&
             offset == item.offset &&
             color == item.color &&
-            gap == item.gap;
-            // skip link_id
+            gap == item.gap &&
+            collection == item.collection;
     }
 };
 
 struct PatternStore {
-    PatternStore() {
-        store = Gio::ListStore<PatternItem>::create();
-    }
-
-    Glib::RefPtr<Gio::ListStore<PatternItem>> store;
+    Inkscape::FilteredStore<PatternItem> store;
     std::map<Gtk::Widget*, Glib::RefPtr<PatternItem>> widgets_to_pattern;
 };
 

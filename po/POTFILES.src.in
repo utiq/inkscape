@@ -251,6 +251,8 @@
 ../src/path/path-boolop.cpp
 ../src/path/path-object-set.cpp
 ../src/path/path-offset.cpp
+../src/pattern-manager.cpp
+../src/pattern-manipulation.cpp
 ../src/preferences-skeleton.h
 ../src/preferences.cpp
 ../src/rdf.cpp

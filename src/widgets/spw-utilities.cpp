@@ -168,7 +168,7 @@ Gtk::Widget* sp_traverse_widget_tree(Gtk::Widget* widget, const std::function<bo
         return sp_traverse_widget_tree(bin->get_child(), eval);
     }
     else if (auto container = dynamic_cast<Gtk::Container*>(widget)) {
-        auto children = container->get_children();
+        auto&& children = container->get_children();
         for (auto child : children) {
             if (auto found = sp_traverse_widget_tree(child, eval)) {
                 return found;

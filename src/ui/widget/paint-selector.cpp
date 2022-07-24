@@ -1019,61 +1019,6 @@ void PaintSelector::pattern_destroy(GtkWidget *widget, PaintSelector * /*psel*/)
 void PaintSelector::pattern_change(GtkWidget * /*widget*/, PaintSelector *psel) { psel->_signal_changed.emit(); }
 
 
-/**
- *  Returns a list of patterns in the defs of the given source document as a vector
- */
-static std::vector<SPPattern *> ink_pattern_list_get(SPDocument *source)
-{
-    std::vector<SPPattern *> pl;
-    if (source == nullptr)
-        return pl;
-
-    std::vector<SPObject *> patterns = source->getResourceList("pattern");
-    for (auto pattern : patterns) {
-        if (SP_PATTERN(pattern) == SP_PATTERN(pattern)->rootPattern()) { // only if this is a root pattern
-            pl.push_back(SP_PATTERN(pattern));
-        }
-    }
-
-    return pl;
-}
-
-/**
- * Adds menu items for pattern list - derived from marker code, left hb etc in to make addition of previews easier at
- * some point.
- */
-static void sp_pattern_menu_build(GtkWidget *combo, std::vector<SPPattern *> &pl, SPDocument * /*source*/)
-{
-    GtkListStore *store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(combo)));
-    GtkTreeIter iter;
-
-    for (auto i = pl.rbegin(); i != pl.rend(); ++i) {
-
-        Inkscape::XML::Node *repr = (*i)->getRepr();
-
-        // label for combobox
-        gchar const *label;
-        if (repr->attribute("inkscape:stockid")) {
-            label = _(repr->attribute("inkscape:stockid"));
-        } else if (repr->attribute("inkscape:label")) {
-            label = _(repr->attribute("inkscape:label"));
-        } else {
-            label = _(repr->attribute("id"));
-        }
-
-        gchar const *patid = repr->attribute("id");
-
-        gboolean stockid = false;
-        if (repr->attribute("inkscape:stockid")) {
-            stockid = true;
-        }
-
-        gtk_list_store_append(store, &iter);
-        gtk_list_store_set(store, &iter, COMBO_COL_LABEL, label, COMBO_COL_STOCK, stockid, COMBO_COL_PATTERN, patid,
-                           COMBO_COL_SEP, FALSE, -1);
-    }
-}
-
 /*update pattern list*/
 void PaintSelector::updatePatternList(SPPattern *pattern)
 {
@@ -1097,9 +1042,7 @@ void PaintSelector::set_mode_pattern(PaintSelector::Mode mode)
         clear_frame();
 
         if (!_selector_pattern) {
-            _selector_pattern = Gtk::manage(new PatternEditor("/pattern-edit"));
-
-            _selector_pattern->set_stock_patterns(sp_get_stock_patterns());
+            _selector_pattern = Gtk::manage(new PatternEditor("/pattern-edit", PatternManager::get()));
             _selector_pattern->signal_changed().connect([=](){ _signal_changed.emit(); });
             _selector_pattern->signal_color_changed().connect([=](unsigned){ _signal_changed.emit(); });
             _selector_pattern->signal_edit().connect([=](){ _signal_edit_pattern.emit(); });
@@ -1110,7 +1053,7 @@ void PaintSelector::set_mode_pattern(PaintSelector::Mode mode)
         SPDocument* document = SP_ACTIVE_DOCUMENT;
         _selector_pattern->set_document(document);
         _selector_pattern->show();
-        _label->set_markup(_("<b>Pattern fill</b>"));
+        _label->hide();
     }
 #ifdef SP_PS_VERBOSE
     g_print("Pattern req\n");
@@ -1172,44 +1115,41 @@ Geom::Scale PaintSelector::get_pattern_gap() {
     return _selector_pattern->get_selected_gap();
 }
 
+Glib::ustring PaintSelector::get_pattern_label() {
+    if (!_selector_pattern) return Glib::ustring();
+
+    return _selector_pattern->get_label();
+}
+
 bool PaintSelector::is_pattern_scale_uniform() {
     if (!_selector_pattern) return false;
 
     return _selector_pattern->is_selected_scale_uniform();
-
 }
 
 SPPattern* PaintSelector::getPattern() {
-    SPPattern *pat = nullptr;
     g_return_val_if_fail(_mode == MODE_PATTERN, nullptr);
 
     if (!_selector_pattern) return nullptr;
 
     auto sel = _selector_pattern->get_selected();
-    auto stockid = sel.second;
+    auto stock_doc = sel.second;
 
     if (sel.first.empty()) return nullptr;
 
-    auto patid = sel.first.c_str();
-    if (strcmp(patid, "none") != 0) {
-        gchar *paturn;
-
-        if (stockid) {
-            paturn = g_strconcat("urn:inkscape:pattern:", patid, nullptr);
-        } else {
-            paturn = g_strdup(patid);
+    auto patid = sel.first;
+    SPObject* pat_obj = nullptr;
+    if (patid != "none") {
+        if (stock_doc) {
+            patid = "urn:inkscape:pattern:" + patid;
         }
-        SPObject *pat_obj = get_stock_item(paturn);
-        if (pat_obj) {
-            pat = SP_PATTERN(pat_obj);
-        }
-        g_free(paturn);
+        pat_obj = get_stock_item(patid.c_str(), stock_doc != nullptr, stock_doc);
     } else {
         SPDocument *doc = SP_ACTIVE_DOCUMENT;
-        SPObject *pat_obj = doc->getObjectById(patid);
+        pat_obj = doc->getObjectById(patid);
     }
 
-    return pat;
+    return dynamic_cast<SPPattern*>(pat_obj);
 }
 
 void PaintSelector::set_mode_swatch(PaintSelector::Mode mode)

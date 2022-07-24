@@ -611,26 +611,32 @@ void FillNStroke::updateFromPaint(bool switch_style)
 
             if (!items.empty()) {
 
-                auto link_pattern = _psel->getPattern();
-                if (!link_pattern) {
-
+                auto pattern = _psel->getPattern();
+                if (!pattern) {
                     /* No Pattern in paint selector should mean that we just
                      * changed mode - don't do jack.
                      */
-
                 } else {
-                    auto root_pattern = link_pattern->rootPattern();
+                    auto link_pattern = pattern;
+                    auto root_pattern = pattern->rootPattern();
                     if (auto color = _psel->get_pattern_color()) {
                         sp_pattern_set_color(root_pattern, color.value());
                     }
-                    auto transform = _psel->get_pattern_transform();
-                    sp_pattern_set_transform(link_pattern, transform);
-                    auto offset = _psel->get_pattern_offset();
-                    sp_pattern_set_offset(link_pattern, offset);
-                    auto uniform = _psel->is_pattern_scale_uniform();
-                    sp_pattern_set_uniform_scale(link_pattern, uniform);
-                    auto gap = _psel->get_pattern_gap();
-                    sp_pattern_set_gap(link_pattern, gap);
+                    // pattern name is applied to the root
+                    root_pattern->setAttribute("inkscape:label", _psel->get_pattern_label().c_str());
+                    // remaining settings apply to link pattern
+                    if (link_pattern != root_pattern) {
+                        auto transform = _psel->get_pattern_transform();
+                        sp_pattern_set_transform(link_pattern, transform);
+                        auto offset = _psel->get_pattern_offset();
+                        sp_pattern_set_offset(link_pattern, offset);
+                        auto uniform = _psel->is_pattern_scale_uniform();
+                        sp_pattern_set_uniform_scale(link_pattern, uniform);
+                        // gap requires both patterns, but they are only created later by calling "adjust_pattern" below
+                        // it is OK to ignore it for now, during initial creation gap is 0,0
+                        auto gap = _psel->get_pattern_gap();
+                        sp_pattern_set_gap(link_pattern, gap);
+                    }
 
                     Inkscape::XML::Node *patrepr = root_pattern->getRepr();
                     SPCSSAttr *css = sp_repr_css_attr_new();

@@ -206,6 +206,7 @@ class PaintSelector : public Gtk::Box {
     Geom::Affine get_pattern_transform();
     Geom::Point get_pattern_offset();
     Geom::Scale get_pattern_gap();
+    Glib::ustring get_pattern_label();
     bool is_pattern_scale_uniform();
 };
 
