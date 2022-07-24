@@ -1242,8 +1242,8 @@ void CanvasPrivate::activate()
     // Split view
     q->_split_dragging = false;
 
-    // Ensure GTK event compression is disabled.
-    q->get_window()->set_event_compression(false);
+    // Todo: Disable GTK event compression again when doing so is no longer buggy.
+    q->get_window()->set_event_compression(true);
 
     active = true;
 
