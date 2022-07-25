@@ -84,6 +84,9 @@ public:
 
     void average_color(Geom::IntRect const &area, double &R, double &G, double &B, double &A);
 
+    void set_clip_to_page(bool clip);
+    bool get_clip_to_page() const;
+
 private:
     void _pickItemsForCaching();
 
@@ -100,6 +103,7 @@ public:
 
 private:
     bool _exact = false;  // if true then rendering must be exact
+    bool _clip_to_page = false;
     RenderMode _rendermode = RenderMode::NORMAL;
     ColorMode _colormode = ColorMode::NORMAL;
     int _blur_quality = BLUR_QUALITY_BEST;

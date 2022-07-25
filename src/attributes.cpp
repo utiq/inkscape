@@ -568,7 +568,8 @@ static SPStyleProp const props[] = {
     {SPAttr::INKSCAPE_DESK_COLOR, "inkscape:deskcolor"},
     {SPAttr::INKSCAPE_DESK_OPACITY, "inkscape:deskopacity"},
     {SPAttr::INKSCAPE_DESK_CHECKERBOARD, "inkscape:pagecheckerboard"}, // old attr
-
+    // rendering mode
+    {SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, "inkscape:clip-to-page"},
 };
 
 #define n_attrs (sizeof(props) / sizeof(props[0]))

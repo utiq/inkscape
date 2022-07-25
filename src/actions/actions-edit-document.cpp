@@ -68,6 +68,15 @@ set_display_unit(Glib::ustring abbr, SPDocument* document)
     Inkscape::DocumentUndo::done(document, _("Changed default display unit"), "");
 }
 
+void toggle_clip_to_page(SPDocument* document) {
+    if (!document || !document->getNamedView()) return;
+
+    auto clip = !document->getNamedView()->clip_to_page;
+    document->getNamedView()->change_bool_setting(SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, clip);
+    document->setModifiedSinceSave();
+    Inkscape::DocumentUndo::done(document, _("Clip to page"), "");
+}
+
 std::vector<std::vector<Glib::ustring>> raw_data_edit_document =
 {
     // clang-format off
@@ -75,7 +84,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit_document =
     {"doc.lock-all-guides",                      N_("Lock All Guides"),                  "Edit Document",     N_("Toggle lock of all guides in the document")},
     {"doc.show-all-guides",                      N_("Show All Guides"),                  "Edit Document",     N_("Toggle visibility of all guides in the document")},
     {"doc.delete-all-guides",                    N_("Delete All Guides"),                "Edit Document",     N_("Delete all the guides in the document")},
-    {"doc.fit-canvas-to-drawing",                N_("Fit Page to Drawing"),              "Edit Document",     N_("Fit the page to the drawing")}
+    {"doc.fit-canvas-to-drawing",                N_("Fit Page to Drawing"),              "Edit Document",     N_("Fit the page to the drawing")},
+    {"doc.clip-to-page"                      ,   N_("Toggle Clip to Page"),              "Edit Document",     N_("Toggle between clipped to page and complete rendering")},
     // clang-format on
 };
 
@@ -90,8 +100,8 @@ add_actions_edit_document(SPDocument* document)
     map->add_action( "fit-canvas-to-drawing",               sigc::bind<SPDocument*>(sigc::ptr_fun(&fit_canvas_drawing),  document));
     map->add_action_bool( "lock-all-guides",                sigc::bind<SPDocument*>(sigc::ptr_fun(&lock_all_guides),   document));
     map->add_action_bool( "show-all-guides",                sigc::bind<SPDocument*>(sigc::ptr_fun(&show_all_guides),   document));
-
     map->add_action_radio_string("set-display-unit",        sigc::bind<SPDocument*>(sigc::ptr_fun(&set_display_unit), document), "px");
+    map->add_action("clip-to-page",                         [=](){ toggle_clip_to_page(document); });
     // clang-format on
 
     // Check if there is already an application instance (GUI or non-GUI).

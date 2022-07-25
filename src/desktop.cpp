@@ -1165,7 +1165,9 @@ void SPDesktop::setTempHideOverlays(bool hide)
         canvas_group_controls->hide();
         canvas_group_grids->hide();
         _saved_guides_visible = namedview->getShowGuides();
-        namedview->setShowGuides(false);
+        if (_saved_guides_visible) {
+            namedview->temporarily_show_guides(false);
+        }
         if (canvas && !canvas->has_focus()) {
             canvas->grab_focus(); // Ensure we receive the key up event
             canvas->redraw_all();
@@ -1175,9 +1177,17 @@ void SPDesktop::setTempHideOverlays(bool hide)
         canvas_group_controls->show();
         showGrids(grids_visible, false);
         if (_saved_guides_visible) {
-            namedview->setShowGuides(true);
+            namedview->temporarily_show_guides(true);
         }
         _overlays_visible = true;
+    }
+}
+
+// (De)Activate preview mode: hide overlays (grid, guides, etc) and crop content to page areas
+void SPDesktop::quick_preview(bool activate) {
+    setTempHideOverlays(activate);
+    if (canvas) {
+        canvas->set_clip_to_page_mode(activate ? true : static_cast<bool>(namedview->clip_to_page));
     }
 }
 

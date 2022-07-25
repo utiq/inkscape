@@ -24,7 +24,6 @@ enum class RenderMode {
     NO_FILTERS,
     VISIBLE_HAIRLINES,
     OUTLINE_OVERLAY,
-    PREVIEW,
     size
 };
 

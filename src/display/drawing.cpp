@@ -84,18 +84,18 @@ Drawing::outlineOverlay() const
 bool
 Drawing::previewMode() const
 {
-    return renderMode() == RenderMode::PREVIEW;
+    return _clip_to_page;
 }
 
 bool
 Drawing::renderFilters() const
 {
-    return renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::VISIBLE_HAIRLINES || renderMode() == RenderMode::OUTLINE_OVERLAY || renderMode() == RenderMode::PREVIEW;
+    return renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::VISIBLE_HAIRLINES || renderMode() == RenderMode::OUTLINE_OVERLAY;
 }
 int
 Drawing::blurQuality() const
 {
-    if (renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::PREVIEW) {
+    if (renderMode() == RenderMode::NORMAL) {
         return _exact ? BLUR_QUALITY_BEST : _blur_quality;
     } else {
         return BLUR_QUALITY_WORST;
@@ -104,7 +104,7 @@ Drawing::blurQuality() const
 int
 Drawing::filterQuality() const
 {
-    if (renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::PREVIEW) {
+    if (renderMode() == RenderMode::NORMAL) {
         return _exact ? Filters::FILTER_QUALITY_BEST : _filter_quality;
     } else {
         return Filters::FILTER_QUALITY_WORST;
@@ -264,6 +264,13 @@ Drawing::average_color(Geom::IntRect const &area, double &R, double &G, double &
     ink_cairo_surface_average_color_premul(surface->cobj(), R, G, B, A);
 }
 
+void Drawing::set_clip_to_page(bool clip) {
+    _clip_to_page = clip;
+}
+
+bool Drawing::get_clip_to_page() const {
+    return _clip_to_page;
+}
 
 } // end namespace Inkscape
 

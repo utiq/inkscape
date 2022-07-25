@@ -588,13 +588,10 @@ SPDesktopWidget::updateTitle(gchar const* uri)
         } else if (render_mode == Inkscape::RenderMode::NO_FILTERS) {
             Name += N_("no filters");
         } else if (render_mode == Inkscape::RenderMode::VISIBLE_HAIRLINES) {
-            Name += N_("visible hairlines");
+            Name += N_("enhance thin lines");
         } else if (render_mode == Inkscape::RenderMode::OUTLINE_OVERLAY) {
             Name += N_("outline overlay");
-        } else if (render_mode == Inkscape::RenderMode::PREVIEW) {
-            Name += N_("preview");
         }
-
 
         if (color_mode != Inkscape::ColorMode::NORMAL &&
             render_mode != Inkscape::RenderMode::NORMAL) {
@@ -1968,6 +1965,10 @@ SPDesktopWidget::ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt,
     m.snapprefs.setTargetSnappable(Inkscape::SNAPTARGET_PATH_PERPENDICULAR, pref_perp);
     m.snapprefs.setTargetSnappable(Inkscape::SNAPTARGET_PATH_TANGENTIAL, pref_tang);
     m.unSetup();
+}
+
+Gio::ActionMap* SPDesktopWidget::get_action_map() {
+    return window;
 }
 
 /*

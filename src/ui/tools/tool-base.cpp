@@ -606,7 +606,7 @@ bool ToolBase::root_handler(GdkEvent *event)
         case GDK_KEY_F:
         case GDK_KEY_f:
             if (!MOD__SHIFT(event) && !MOD__CTRL(event) && !MOD__ALT(event)) {
-                _desktop->setTempHideOverlays(true);
+                _desktop->quick_preview(true);
                 ret = true;
             }
             break;
@@ -758,7 +758,7 @@ bool ToolBase::root_handler(GdkEvent *event)
         // TODO: make these keys customizable
         case GDK_KEY_F:
         case GDK_KEY_f:
-            _desktop->setTempHideOverlays(false);
+            _desktop->quick_preview(false);
             ret = true;
             break;
 

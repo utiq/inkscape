@@ -2362,6 +2362,13 @@ void Canvas::set_split_mode(Inkscape::SplitMode mode)
     }
 }
 
+void Canvas::set_clip_to_page_mode(bool clip) {
+    if (_drawing->get_clip_to_page() != clip) {
+        _drawing->set_clip_to_page(clip);
+        redraw_all();
+    }
+}
+
 void Canvas::set_cms_key(std::string key)
 {
     _cms_key = std::move(key);

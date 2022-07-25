@@ -83,6 +83,7 @@ public:
     Inkscape::RenderMode get_render_mode() const { return _render_mode; }
     Inkscape::ColorMode  get_color_mode()  const { return _color_mode; }
     Inkscape::SplitMode  get_split_mode()  const { return _split_mode; }
+    void set_clip_to_page_mode(bool clip);
 
     // CMS
     void set_cms_key(std::string key);

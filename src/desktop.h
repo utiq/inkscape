@@ -318,6 +318,8 @@ public:
     /** \brief  Returns whether the desktop is in quick zoom mode or not */
     bool quick_zoomed() { return _quick_zoom_enabled; }
 
+    void quick_preview(bool activate);
+
     void set_rotation_lock(bool lock) { rotation_locked = lock; }
     bool get_rotation_lock() const { return rotation_locked; }
 

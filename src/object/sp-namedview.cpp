@@ -64,6 +64,7 @@ SPNamedView::SPNamedView()
     , snap_manager(this, get_snapping_preferences())
     , showguides(true)
     , lockguides(false)
+    , clip_to_page(false)
     , grids_visible(false)
     , desk_checkerboard(false)
 {
@@ -228,6 +229,7 @@ void SPNamedView::build(SPDocument *document, Inkscape::XML::Node *repr) {
     this->readAttr(SPAttr::INKSCAPE_CURRENT_LAYER);
     this->readAttr(SPAttr::INKSCAPE_CONNECTOR_SPACING);
     this->readAttr(SPAttr::INKSCAPE_LOCKGUIDES);
+    readAttr(SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING);
 
     /* Construct guideline and pages list */
     for (auto &child : children) {
@@ -255,6 +257,12 @@ void SPNamedView::release() {
         delete grid;
     this->grids.clear();
     SPObjectGroup::release();
+}
+
+void SPNamedView::set_clip_to_page(SPDesktop* desktop, bool enable) {
+    if (desktop) {
+        desktop->getCanvas()->set_clip_to_page_mode(enable);
+    }
 }
 
 void SPNamedView::set_desk_color(SPDesktop* desktop) {
@@ -287,9 +295,10 @@ void SPNamedView::modified(unsigned int flags)
 
         updateGuides();
     }
-    // Add desk color, and chckerboard pattern to desk view
+    // Add desk color and checkerboard pattern to desk view
     for (auto desktop : views) {
         set_desk_color(desktop);
+        set_clip_to_page(desktop, clip_to_page);
     }
 
     for (auto child : this->childList(false)) {
@@ -455,6 +464,9 @@ void SPNamedView::set(SPAttr key, const gchar* value) {
         this->display_units = new_unit;
         break;
     }
+    case SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING:
+        clip_to_page.readOrUnset(value);
+        break;
     /*
     case SPAttr::UNITS: {
         // Only used in "Custom size" section of Document Properties dialog
@@ -1115,6 +1127,15 @@ void SPNamedView::change_bool_setting(SPAttr key, bool value) {
         str_value = value ? "true" : "false";
     }
     getRepr()->setAttribute(sp_attribute_name(key), str_value);
+}
+
+// show/hide guide lines without modifying view; used to quickly and temporarily hide them and restore them
+void SPNamedView::temporarily_show_guides(bool show) {
+    for (auto& child : children) {
+        if (auto guide = dynamic_cast<SPGuide*>(&child)) {
+            show ? guide->showSPGuide() : guide->hideSPGuide();
+        }
+    }
 }
 
 /*

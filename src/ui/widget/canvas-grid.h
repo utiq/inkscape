@@ -14,6 +14,8 @@
 #include <gtkmm.h>
 #include <gtkmm/label.h>
 #include <gtkmm/overlay.h>
+#include <gtkmm/menubutton.h>
+#include <gtkmm/builder.h>
 
 class SPCanvas;
 class SPDesktopWidget;
@@ -36,6 +38,7 @@ class Ruler;
  */ 
 class CanvasGrid : public Gtk::Grid
 {
+    using parent_type = Gtk::Grid;
 public:
     CanvasGrid(SPDesktopWidget *dtw);
     ~CanvasGrid() override;
@@ -59,12 +62,13 @@ public:
     Gtk::Adjustment *GetVAdj() { return _vadj.get(); };
     Gtk::ToggleButton *GetGuideLock()  { return &_guide_lock; }
     Gtk::ToggleButton *GetCmsAdjust()  { return &_cms_adjust; }
-    Gtk::ToggleButton *GetStickyZoom() { return &_sticky_zoom; };
+    Gtk::ToggleButton *GetStickyZoom();
 
 private:
     // Signal callbacks
     void on_size_allocate(Gtk::Allocation& allocation) override;
     bool SignalEvent(GdkEvent *event);
+    void on_realize() override;
 
     // The widgets
     std::unique_ptr<Inkscape::UI::Widget::Canvas> _canvas;
@@ -82,7 +86,8 @@ private:
 
     Gtk::ToggleButton _guide_lock;
     Gtk::ToggleButton _cms_adjust;
-    Gtk::ToggleButton _sticky_zoom;
+    Gtk::MenuButton _quick_actions;
+    Glib::RefPtr<Gtk::Builder> _display_popup;
 
     // To be replaced by stateful Gio::Actions
     bool _show_scrollbars = true;

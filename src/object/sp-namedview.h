@@ -49,7 +49,7 @@ public:
     SVGBool showguides;
     SVGBool lockguides;
     SVGBool grids_visible;
-
+    SVGBool clip_to_page; // if true, clip rendered content to pages' boundaries
     guint32 desk_color;
     SVGBool desk_checkerboard;
 
@@ -113,6 +113,10 @@ public:
     void change_bool_setting(SPAttr key, bool value);
     // sync desk colors
     void set_desk_color(SPDesktop* desktop);
+    // turn clip to page mode on/off
+    void set_clip_to_page(SPDesktop* desktop, bool enable);
+    // immediate show/hide guides request, not recorded in a named view
+    void temporarily_show_guides(bool show);
 
 private:
     void updateGuides();
