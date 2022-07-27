@@ -45,8 +45,8 @@ public:
     void hide(unsigned key);
     void setBBox(unsigned key, Geom::OptRect const &bbox);
 
-    Geom::OptRect geometricBounds(Geom::Affine const &transform);
-    Geom::OptRect visualBounds(Geom::Affine const &transform);
+    Geom::OptRect geometricBounds(Geom::Affine const &transform) const;
+    Geom::OptRect visualBounds(Geom::Affine const &transform) const;
 
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
@@ -87,6 +87,8 @@ public:
     {
         return static_cast<SPMask*>(URIReference::getObject());
 	}
+
+    sigc::connection modified_connection;
 
 protected:
     /**

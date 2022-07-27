@@ -33,7 +33,6 @@
 #include "display/drawing-group.h"
 
 SPClipPath::SPClipPath()
-    : SPObjectGroup()
 {
     clipPathUnits_set = false;
     clipPathUnits = SP_CONTENT_UNITS_USERSPACEONUSE;
@@ -41,7 +40,7 @@ SPClipPath::SPClipPath()
 
 SPClipPath::~SPClipPath() = default;
 
-void SPClipPath::build(SPDocument* doc, Inkscape::XML::Node* repr)
+void SPClipPath::build(SPDocument *doc, Inkscape::XML::Node *repr)
 {
     SPObjectGroup::build(doc, repr);
 
@@ -94,7 +93,7 @@ void SPClipPath::set(SPAttr key, char const *value)
 
 void SPClipPath::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 {
-	SPObjectGroup::child_added(child, ref);
+    SPObjectGroup::child_added(child, ref);
 
     if (auto item = dynamic_cast<SPItem*>(document->getObjectByRepr(child))) {
         for (auto &v : views) {
@@ -208,13 +207,12 @@ void SPClipPath::setBBox(unsigned key, Geom::OptRect const &bbox)
     update_view(v);
 }
 
-Geom::OptRect SPClipPath::geometricBounds(Geom::Affine const &transform)
+Geom::OptRect SPClipPath::geometricBounds(Geom::Affine const &transform) const
 {
     Geom::OptRect bbox;
     for (auto &child : children) {
-        if (auto item = dynamic_cast<SPItem*>(&child)) {
-            auto tmp = item->geometricBounds(item->transform * transform);
-            bbox.unionWith(tmp);
+        if (auto item = dynamic_cast<SPItem const*>(&child)) {
+            bbox.unionWith(item->geometricBounds(item->transform * transform));
         }
     }
     return bbox;

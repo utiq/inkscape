@@ -31,7 +31,6 @@
 #include "sp-mask.h"
 
 SPMask::SPMask()
-    : SPObjectGroup()
 {
     maskUnits_set = false;
     maskUnits = SP_CONTENT_UNITS_OBJECTBOUNDINGBOX;
@@ -44,13 +43,13 @@ SPMask::~SPMask() = default;
 
 void SPMask::build(SPDocument *doc, Inkscape::XML::Node *repr)
 {
-	SPObjectGroup::build(doc, repr);
+    SPObjectGroup::build(doc, repr);
 
     readAttr(SPAttr::MASKUNITS);
     readAttr(SPAttr::MASKCONTENTUNITS);
     readAttr(SPAttr::STYLE);
 
-	doc->addResource("mask", this);
+    doc->addResource("mask", this);
 }
 
 void SPMask::release()
@@ -66,7 +65,7 @@ void SPMask::release()
 
 void SPMask::set(SPAttr key, char const *value)
 {
-	switch (key) {
+    switch (key) {
         case SPAttr::MASKUNITS:
             maskUnits = SP_CONTENT_UNITS_OBJECTBOUNDINGBOX;
             maskUnits_set = false;
@@ -102,31 +101,29 @@ void SPMask::set(SPAttr key, char const *value)
         default:
             SPObjectGroup::set(key, value);
             break;
-	}
+    }
 }
 
-Geom::OptRect SPMask::geometricBounds(Geom::Affine const &transform)
+Geom::OptRect SPMask::geometricBounds(Geom::Affine const &transform) const
 {
     Geom::OptRect bbox;
 
     for (auto &c : children) {
-        if (auto item = dynamic_cast<SPItem*>(&c)) {
-            auto tmp = item->geometricBounds(item->transform * transform);
-            bbox.unionWith(tmp);
+        if (auto item = dynamic_cast<SPItem const*>(&c)) {
+            bbox.unionWith(item->geometricBounds(item->transform * transform));
         }
     }
 
     return bbox;
 }
 
-Geom::OptRect SPMask::visualBounds(Geom::Affine const &transform)
+Geom::OptRect SPMask::visualBounds(Geom::Affine const &transform) const
 {
     Geom::OptRect bbox;
 
     for (auto &c : children) {
-        if (auto item = dynamic_cast<SPItem*>(&c)) {
-            auto tmp = item->visualBounds(item->transform * transform);
-            bbox.unionWith(tmp);
+        if (auto item = dynamic_cast<SPItem const*>(&c)) {
+            bbox.unionWith(item->visualBounds(item->transform * transform));
         }
     }
 
@@ -135,17 +132,17 @@ Geom::OptRect SPMask::visualBounds(Geom::Affine const &transform)
 
 void SPMask::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 {
-	SPObjectGroup::child_added(child, ref);
+    SPObjectGroup::child_added(child, ref);
 
     if (auto item = dynamic_cast<SPItem*>(document->getObjectByRepr(child))) {
         for (auto &v : views) {
             auto ac = item->invoke_show(v.drawingitem->drawing(), v.key, SP_ITEM_REFERENCE_FLAGS);
-			if (ac) {
+            if (ac) {
                 // Fixme: Must take position into account.
                 v.drawingitem->prependChild(ac);
-			}
-		}
-	}
+            }
+        }
+    }
 }
 
 void SPMask::update(SPCtx *ctx, unsigned flags)
@@ -187,13 +184,13 @@ void SPMask::modified(unsigned flags)
 
 Inkscape::XML::Node *SPMask::write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned flags)
 {
-	if ((flags & SP_OBJECT_WRITE_BUILD) && !repr) {
-		repr = xml_doc->createElement("svg:mask");
-	}
+    if ((flags & SP_OBJECT_WRITE_BUILD) && !repr) {
+        repr = xml_doc->createElement("svg:mask");
+    }
 
-	SPObjectGroup::write(xml_doc, repr, flags);
+    SPObjectGroup::write(xml_doc, repr, flags);
 
-	return repr;
+    return repr;
 }
 
 // Create a mask element (using passed elements), add it to <defs>
@@ -230,11 +227,11 @@ Inkscape::DrawingItem *SPMask::show(Inkscape::Drawing &drawing, unsigned key, Ge
     for (auto &child : children) {
         if (auto item = dynamic_cast<SPItem*>(&child)) {
             auto ac = item->invoke_show(drawing, key, SP_ITEM_REFERENCE_FLAGS);
-			if (ac) {
+            if (ac) {
                 root->appendChild(ac);
-			}
-		}
-	}
+            }
+        }
+    }
 
     update_view(v);
 
@@ -246,7 +243,7 @@ void SPMask::hide(unsigned key)
     for (auto &child : children) {
         if (auto item = dynamic_cast<SPItem*>(&child)) {
             item->invoke_hide(key);
-		}
+        }
     }
 
     auto it = std::find_if(views.begin(), views.end(), [=] (auto &v) {
