@@ -162,7 +162,7 @@ bool ColorItem::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
     if (use_cache) {
         auto scale = get_scale_factor();
         // Ensure cache exists and has correct size.
-        if (!cache || cache->get_width() * scale != w * scale || cache->get_height() * scale != h * scale) {
+        if (!cache || cache->get_width() != w * scale || cache->get_height() != h * scale) {
             cache = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w * scale, h * scale);
             cairo_surface_set_device_scale(cache->cobj(), scale, scale);
             cache_dirty = true;
