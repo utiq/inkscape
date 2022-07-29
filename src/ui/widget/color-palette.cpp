@@ -425,9 +425,9 @@ void ColorPalette::set_up_scrolling() {
             _scroll_btn.show();
         }
 
-        auto fixed_count = _fixed.get_children().size();
+        auto fixed_count = static_cast<int>(_fixed.get_children().size());
         int div = _large_fixed_panel ? (_rows > 2 ? 2 : 1) : _rows;
-        _fixed.set_max_children_per_line((fixed_count + div - 1) / div);
+        _fixed.set_max_children_per_line(std::max((fixed_count + div - 1) / div, 1));
         _fixed.set_margin_end(_border);
     }
     else {
