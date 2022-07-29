@@ -22,13 +22,6 @@
 
 namespace {
 
-double get_perceptual_lightness(double r, double g, double b)
-{
-    double h, s, l;
-    Hsluv::rgb_to_hsluv(r, g, b, &h, &s, &l);
-    return l <= 0.885645168 ? l * 0.09032962963 : std::pow(l, 1.0 / 3.0) * 0.249914424 - 0.16;
-}
-
 class Globals
 {
     Globals()
@@ -182,19 +175,9 @@ bool ColorItem::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
 
     // Draw fill/stroke indicators.
     if (is_fill || is_stroke) {
-        auto [r, g, b] = average_color();
-        auto l = get_perceptual_lightness(r, g, b);
-
-        auto constexpr l_threshold = 0.85;
-        if (l > l_threshold) {
-            // Draw dark over light.
-            auto t = (l - l_threshold) / (1.0 - l_threshold);
-            cr->set_source_rgba(0.0, 0.0, 0.0, 0.4 - 0.1 * t);
-        } else {
-            // Draw light over dark.
-            auto t = (l_threshold - l) / l_threshold;
-            cr->set_source_rgba(1.0, 1.0, 1.0, 0.6 + 0.1 * t);
-        }
+        double const lightness = Hsluv::rgb_to_perceptual_lightness(average_color());
+        auto [gray, alpha] = Hsluv::get_contrasting_color(lightness);
+        cr->set_source_rgba(gray, gray, gray, alpha);
 
         // Scale so that the square -1...1 is the biggest possible square centred in the widget.
         auto minwh = std::min(w, h);

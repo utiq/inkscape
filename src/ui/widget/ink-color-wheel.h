@@ -17,12 +17,14 @@
 #define INK_COLORWHEEL_H
 
 #include <gtkmm.h>
+#include <2geom/point.h>
+#include <2geom/line.h>
+
+#include "hsluv.h"
 
 namespace Inkscape {
 namespace UI {
 namespace Widget {
-
-struct PickerGeometry;
 
 /**
  * @class ColorWheel
@@ -112,7 +114,7 @@ class ColorWheelHSLuv : public ColorWheel
 {
 public:
     ColorWheelHSLuv();
-    ~ColorWheelHSLuv() override;
+    ~ColorWheelHSLuv() override = default;
 
     void setRgb(double r, double g, double b, bool overrideHue = true) override;
     void getRgb(double *r, double *g, double *b) const override;
@@ -123,13 +125,26 @@ public:
     void setLightness(double l) override;
 
     void getHsluv(double *h, double *s, double *l) const;
+    void updateGeometry();
 
 protected:
-    bool on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) override;
+    bool on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr) override;
 
 private:
     void _set_from_xy(double const x, double const y) override;
-    void _update_polygon();
+    void _setFromPoint(Geom::Point const &pt) { _set_from_xy(pt[Geom::X], pt[Geom::Y]); }
+    void _updatePolygon();
+
+    static Geom::IntPoint _getMargin(Gtk::Allocation const &allocation);
+    inline static Geom::IntPoint _getAllocationDimensions(Gtk::Allocation const &allocation)
+    {
+        return {allocation.get_width(), allocation.get_height()};
+    }
+    inline static int _getAllocationSize(Gtk::Allocation const &allocation)
+    {
+        return std::min(allocation.get_width(), allocation.get_height());
+    }
+    bool _vertex() const;
 
     // Callbacks
     bool on_button_press_event(GdkEventButton* event) override;
@@ -137,12 +152,12 @@ private:
     bool on_motion_notify_event(GdkEventMotion* event) override;
     bool on_key_press_event(GdkEventKey* key_event) override;
 
-    double _scale;
-    PickerGeometry *_picker_geometry;
+    double _scale = 1.0;
+    std::unique_ptr<Hsluv::PickerGeometry> _picker_geometry;
     std::vector<guint32> _buffer_polygon;
     Cairo::RefPtr<::Cairo::ImageSurface> _surface_polygon;
-    int _cache_width, _cache_height;
-    int _square_size;
+    int _cache_width = 0, _cache_height = 0;
+    int _square_size = 1;
 };
 
 } // namespace Widget

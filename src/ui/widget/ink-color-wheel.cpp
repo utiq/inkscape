@@ -13,12 +13,16 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "ink-color-wheel.h"
-
 #include <cstring>
 #include <algorithm>
+#include <2geom/angle.h>
+#include <2geom/coord.h>
+#include <2geom/point.h>
+#include <2geom/line.h>
 
+#include "ui/dialog/color-item.h"
 #include "hsluv.h"
+#include "ui/widget/ink-color-wheel.h"
 
 // Sizes in pixels
 static int const SIZE = 400;
@@ -33,16 +37,19 @@ static double const MIN_LIGHTNESS = 0.0;
 static double const OUTER_CIRCLE_DASH_SIZE = 10.0;
 static double const VERTEX_EPSILON = 0.01;
 
-using Hsluv::Line;
-
-class ColorPoint {
-public:
+struct ColorPoint
+{
     ColorPoint();
     ColorPoint(double x, double y, double r, double g, double b);
     ColorPoint(double x, double y, guint color);
 
     guint32 get_color();
-    void set_color(double red, double green, double blue);
+    void set_color(Hsluv::Triplet const &rgb)
+    {
+        r = rgb[0];
+        g = rgb[1];
+        b = rgb[2];
+    }
 
     double x;
     double y;
@@ -51,74 +58,45 @@ public:
     double b;
 };
 
-/* FIXME: replace with Geom::Point */
-class Point {
-public:
-    Point();
-    Point(double x, double y);
-
-    double x;
-    double y;
-};
-
-class Intersection {
-public:
+/** Represents a vertex of the Luv color polygon (intersection of bounding lines). */
+struct Intersection
+{
     Intersection();
-    Intersection (int line1, int line2, Point intersectionPoint,
-            double intersectionPointAngle, double relativeAngle);
+    Intersection(int line_1, int line_2, Geom::Point &&intersection_point, Geom::Angle start_angle)
+        : line1{line_1}
+        , line2{line_2}
+        , point{intersection_point}
+        , polar_angle{point}
+        , relative_angle{polar_angle - start_angle}
+    {
+    }
 
-    int line1;
-    int line2;
-    Point intersectionPoint;
-    double intersectionPointAngle;
-    double relativeAngle;
+    int line1 = 0; ///< Index of the first of the intersecting lines.
+    int line2 = 0; ///< Index of the second of the intersecting lines.
+    Geom::Point point; ///< The geometric position of the intersection.
+    Geom::Angle polar_angle = 0.0; ///< Polar angle of the point (in radians).
+    /** Angle relative to the polar angle of the point at which the boundary of the polygon
+     *  passes the origin at the minimum distance (i.e., where an expanding origin-centered
+     *  circle inside the polygon starts touching an edge of the polygon.)
+     */
+    Geom::Angle relative_angle = 0.0;
 };
 
-static Point intersect_line_line(Line a, Line b);
-static double distance_from_origin(Point point);
-static double distance_line_from_origin(Line line);
-static double angle_from_origin(Point point);
-static double normalize_angle(double angle);
 static double lerp(double v0, double v1, double t0, double t1, double t);
 static ColorPoint lerp(ColorPoint const &v0, ColorPoint const &v1, double t0, double t1, double t);
 static guint32 hsv_to_rgb(double h, double s, double v);
 static double luminance(guint32 color);
-static Point to_pixel_coordinate(Point const &point, double scale, double resize);
-static Point from_pixel_coordinate(Point const &point, double scale, double resize);
-static std::vector<Point> to_pixel_coordinate( std::vector<Point> const &points, double scale,
-        double resize);
-static void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding,
-        bool pad_upwards, guint32 *buffer, int height, int stride);
+static Geom::Point to_pixel_coordinate(Geom::Point const &point, double scale, double resize);
+static Geom::Point from_pixel_coordinate(Geom::Point const &point, double scale, double resize);
+static std::vector<Geom::Point> to_pixel_coordinate(std::vector<Geom::Point> const &points, double scale,
+                                                    double resize);
+static void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding, bool pad_upwards, guint32 *buffer,
+                                  int height, int stride);
 
 namespace Inkscape {
 namespace UI {
 namespace Widget {
 
-/**
- * Used to represent the in RGB gamut colors polygon of the color wheel.
- *
- * @struct
- */
-struct PickerGeometry {
-    std::vector<Line> lines;
-    /** Ordered such that 1st vertex is intersection between first and second
-     *  line, 2nd vertex between second and third line etc. */
-    std::vector<Point> vertices;
-    /** Angles from origin to corresponding vertex, in radians */
-    std::vector<double> angles;
-    /** Smallest circle with center at origin such that polygon fits inside */
-    double outerCircleRadius;
-    /** Largest circle with center at origin such that it fits inside polygon */
-    double innerCircleRadius;
-};
-
-/**
- * Update the passed in PickerGeometry structure to the given lightness value.
- *
- * @param[out] pickerGeometry The PickerGeometry instance to update.
- * @param lightness The lightness value.
- */
-static void get_picker_geometry(PickerGeometry *pickerGeometry, double lightness);
 
 /* Base Color Wheel */
 ColorWheel::ColorWheel()
@@ -452,9 +430,9 @@ bool ColorWheelHSL::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     // Draw focus
     if (has_focus() && !_focus_on_ring) {
         Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-        style_context->render_focus(cr, mx-4, my-4, 8, 8); // This doesn't seem to work.
+        style_context->render_focus(cr, mx - 4, my - 4, 8, 8); // This doesn't seem to work.
         cr->set_line_width(0.5);
-        cr->set_source_rgb(1-a, 1-a, 1-a);
+        cr->set_source_rgb(1 - a, 1 - a, 1 - a);
         cr->begin_new_path();
         cr->arc(mx, my, 7, 0, 2 * M_PI);
         cr->stroke();
@@ -691,10 +669,10 @@ bool ColorWheelHSL::on_key_press_event(GdkEventKey* key_event)
     _triangle_corners(x0, y0, x1, y1, x2, y2);
 
     // Marker position
-    double mx = x1 + (x2-x1) * _values[2] + (x0-x2) * _values[1] * _values[2];
-    double my = y1 + (y2-y1) * _values[2] + (y0-y2) * _values[1] * _values[2];
+    double mx = x1 + (x2 - x1) * _values[2] + (x0 - x2) * _values[1] * _values[2];
+    double my = y1 + (y2 - y1) * _values[2] + (y0 - y2) * _values[1] * _values[2];
 
-    double const delta_hue = 2.0 / 360.0;
+    double const delta_hue = 2.0 / MAX_HUE;
 
     switch (key) {
         case GDK_KEY_Up:
@@ -755,49 +733,42 @@ bool ColorWheelHSL::on_key_press_event(GdkEventKey* key_event)
 
 /* HSLuv Color Wheel */
 ColorWheelHSLuv::ColorWheelHSLuv()
-    : _scale(1.0)
-    , _cache_width(0)
-    , _cache_height(0)
-    , _square_size(1)
 {
-    _picker_geometry = new PickerGeometry;
-    setHsluv(0.0, 100.0, 50.0);
-}
-
-ColorWheelHSLuv::~ColorWheelHSLuv()
-{
-    delete _picker_geometry;
+    _picker_geometry = std::make_unique<Hsluv::PickerGeometry>();
+    setHsluv(MIN_HUE, MAX_SATURATION, 0.5 * MAX_LIGHTNESS);
 }
 
 void ColorWheelHSLuv::setRgb(double r, double g, double b, bool /*overrideHue*/)
 {
-    double h, s ,l;
-    Hsluv::rgb_to_hsluv(r, g, b, &h, &s, &l);
-
-    setHue(h);
-    setSaturation(s);
-    setLightness(l);
+    auto hsl = Hsluv::rgb_to_hsluv(r, g, b);
+    setHue(hsl[0]);
+    setSaturation(hsl[1]);
+    setLightness(hsl[2]);
 }
 
 void ColorWheelHSLuv::getRgb(double *r, double *g, double *b) const
 {
-    Hsluv::hsluv_to_rgb(_values[0], _values[1], _values[2], r, g, b);
+    auto rgb = Hsluv::hsluv_to_rgb(_values[0], _values[1], _values[2]);
+    *r = rgb[0];
+    *g = rgb[1];
+    *b = rgb[2];
 }
 
 void ColorWheelHSLuv::getRgbV(double *rgb) const
 {
-    Hsluv::hsluv_to_rgb(_values[0], _values[1], _values[2], &rgb[0], &rgb[1], &rgb[2]);
+    auto converted = Hsluv::hsluv_to_rgb(_values[0], _values[1], _values[2]);
+    for (size_t i : {0, 1, 2}) {
+        rgb[i] = converted[i];
+    }
 }
 
 guint32 ColorWheelHSLuv::getRgb() const
 {
-    double r, g, b;
-    Hsluv::hsluv_to_rgb(_values[0], _values[1], _values[2], &r, &g, &b);
-
+    auto rgb = Hsluv::hsluv_to_rgb(_values[0], _values[1], _values[2]);
     return (
-        (static_cast<guint32>(r * 255.0) << 16) |
-        (static_cast<guint32>(g * 255.0) <<  8) |
-        (static_cast<guint32>(b * 255.0)      )
+        (static_cast<guint32>(rgb[0] * 255.0) << 16) |
+        (static_cast<guint32>(rgb[1] * 255.0) <<  8) |
+        (static_cast<guint32>(rgb[2] * 255.0)      )
     );
 }
 
@@ -808,14 +779,82 @@ void ColorWheelHSLuv::setHsluv(double h, double s, double l)
     setLightness(l);
 }
 
+/**
+ * Update the PickerGeometry structure owned by the instance.
+ */
+void ColorWheelHSLuv::updateGeometry()
+{
+    // Separate from the extremes to avoid overlapping intersections
+    double lightness = std::clamp(_values[2] + 0.01, 0.1, 99.9);
+
+    // Find the lines bounding the gamut polygon
+    auto const lines = Hsluv::get_bounds(lightness);
+
+    // Find the line closest to origin
+    Geom::Line const *closest_line = nullptr;
+    double closest_distance = -1;
+
+    for (auto const &line : lines) {
+        double d = Geom::distance(Geom::Point(0, 0), line);
+        if (closest_distance < 0 || d < closest_distance) {
+            closest_distance = d;
+            closest_line = &line;
+        }
+    }
+
+    g_assert(closest_line);
+    auto const nearest_time = closest_line->nearestTime(Geom::Point(0, 0));
+    Geom::Angle start_angle{closest_line->pointAt(nearest_time)};
+
+    std::vector<Intersection> intersections;
+    unsigned const num_lines = 6;
+    unsigned const max_intersections = num_lines * (num_lines - 1) / 2;
+    intersections.reserve(max_intersections);
+
+    for (int i = 0; i < num_lines - 1; i++) {
+        for (int j = i + 1; j < num_lines; j++) {
+            auto xings = lines[i].intersect(lines[j]);
+            if (xings.empty()) {
+                continue;
+            }
+            intersections.emplace_back(i, j, xings.front().point(), start_angle);
+        }
+    }
+
+    std::sort(intersections.begin(), intersections.end(), [](Intersection const &lhs, Intersection const &rhs) {
+        return lhs.relative_angle.radians0() >= rhs.relative_angle.radians0();
+    });
+
+    // Find the relevant vertices of the polygon, in the counter-clockwise order.
+    std::vector<Geom::Point> ordered_vertices;
+    double circumradius = 0.0;
+    unsigned current_index = closest_line - &lines[0];
+
+    for (auto const &intersection : intersections) {
+        if (intersection.line1 == current_index) {
+            current_index = intersection.line2;
+        } else if (intersection.line2 == current_index) {
+            current_index = intersection.line1;
+        } else {
+            continue;
+        }
+        ordered_vertices.emplace_back(intersection.point);
+        circumradius = std::max(circumradius, intersection.point.length());
+    }
+
+    _picker_geometry->vertices = std::move(ordered_vertices);
+    _picker_geometry->outer_circle_radius = circumradius;
+    _picker_geometry->inner_circle_radius = closest_distance;
+}
+
 void ColorWheelHSLuv::setLightness(double l)
 {
     _values[2] = std::clamp(l, MIN_LIGHTNESS, MAX_LIGHTNESS);
 
     // Update polygon
-    get_picker_geometry(_picker_geometry, _values[2]);
-    _scale = OUTER_CIRCLE_RADIUS / _picker_geometry->outerCircleRadius;
-    _update_polygon();
+    updateGeometry();
+    _scale = OUTER_CIRCLE_RADIUS / _picker_geometry->outer_circle_radius;
+    _updatePolygon();
 
     queue_draw();
 }
@@ -825,44 +864,51 @@ void ColorWheelHSLuv::getHsluv(double *h, double *s, double *l) const
     getValues(h, s, l);
 }
 
-bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
+Geom::IntPoint ColorWheelHSLuv::_getMargin(Gtk::Allocation const &allocation)
 {
-    Gtk::Allocation allocation = get_allocation();
     int const width = allocation.get_width();
     int const height = allocation.get_height();
 
-    int const cx = width/2;
-    int const cy = height/2;
+    return {std::max(0, (width - height) / 2),
+            std::max(0, (height - width) / 2)};
+}
 
-    double const resize = std::min(width, height) / static_cast<double>(SIZE);
+/// Detect whether we're at the top or bottom vertex of the color space.
+bool ColorWheelHSLuv::_vertex() const
+{
+    return _values[2] < VERTEX_EPSILON || _values[2] > MAX_LIGHTNESS - VERTEX_EPSILON;
+}
 
-    int const marginX = std::max(0.0, (width - height) / 2.0);
-    int const marginY = std::max(0.0, (height - width) / 2.0);
+bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
+{
+    Gtk::Allocation allocation = get_allocation();
+    auto dimensions = _getAllocationDimensions(allocation);
+    auto center = (0.5 * (Geom::Point)dimensions).floor();
 
-    std::vector<Point> shapePointsPixel =
-        to_pixel_coordinate(_picker_geometry->vertices, _scale, resize);
-    for (Point &point : shapePointsPixel) {
-        point.x += marginX;
-        point.y += marginY;
+    auto size = _getAllocationSize(allocation);
+    double const resize = size / static_cast<double>(SIZE);
+
+    auto const margin = _getMargin(allocation);
+    auto polygon_vertices_px = to_pixel_coordinate(_picker_geometry->vertices, _scale, resize);
+    for (auto &point : polygon_vertices_px) {
+        point += margin;
     }
 
-    // Detect if we're at the top or bottom vertex of the color space
-    bool is_vertex = (_values[2] < VERTEX_EPSILON || _values[2] > 100.0 - VERTEX_EPSILON);
-
+    bool const is_vertex = _vertex();
     cr->set_antialias(Cairo::ANTIALIAS_SUBPIXEL);
 
-    if (width > _square_size && height > _square_size) {
-        if (_cache_width != width || _cache_height != height) {
-            _update_polygon();
+    if (size > _square_size) {
+        if (_cache_width != dimensions[Geom::X] || _cache_height != dimensions[Geom::Y]) {
+            _updatePolygon();
         }
         if (!is_vertex) {
             // Paint with surface, clipping to polygon
             cr->save();
             cr->set_source(_surface_polygon, 0, 0);
-            cr->move_to(shapePointsPixel[0].x, shapePointsPixel[0].y);
-            for (size_t i = 1; i < shapePointsPixel.size(); i++) {
-                Point const &point = shapePointsPixel[i];
-                cr->line_to(point.x, point.y);
+            auto it = polygon_vertices_px.begin();
+            cr->move_to((*it)[Geom::X], (*it)[Geom::Y]);
+            for (++it; it != polygon_vertices_px.end(); ++it) {
+                cr->line_to((*it)[Geom::X], (*it)[Geom::Y]);
             }
             cr->close_path();
             cr->fill();
@@ -879,53 +925,51 @@ bool ColorWheelHSLuv::on_draw(::Cairo::RefPtr<::Cairo::Context> const &cr)
     cr->set_source_rgb(1.0, 1.0, 1.0);
     cr->set_dash(dashes, 0.0);
     cr->begin_new_path();
-    cr->arc(cx, cy, _scale * resize * _picker_geometry->outerCircleRadius, 0, 2 * M_PI);
+    cr->arc(center[Geom::X], center[Geom::Y], _scale * resize * _picker_geometry->outer_circle_radius, 0, 2 * M_PI);
     cr->stroke();
     // Black dashes
     cr->set_source_rgb(0.0, 0.0, 0.0);
     cr->set_dash(dashes, OUTER_CIRCLE_DASH_SIZE);
     cr->begin_new_path();
-    cr->arc(cx, cy, _scale * resize * _picker_geometry->outerCircleRadius, 0, 2 * M_PI);
+    cr->arc(center[Geom::X], center[Geom::Y], _scale * resize * _picker_geometry->outer_circle_radius, 0, 2 * M_PI);
     cr->stroke();
     cr->unset_dash();
 
     // Contrast
-    double a = (_values[2] > 70.0) ? 0.0 : 1.0;
-    cr->set_source_rgb(a, a, a);
+    auto [gray, alpha] = Hsluv::get_contrasting_color(Hsluv::perceptual_lightness(_values[2]));
+    cr->set_source_rgba(gray, gray, gray, alpha);
 
-    // Pastel circle
-    double const innerRadius = is_vertex ? 0.01 : _picker_geometry->innerCircleRadius;
-    cr->set_line_width(2);
+    // Draw inscribed circle
+    double const inner_stroke_width = 2.0;
+    double inner_radius = is_vertex ? 0.01 : _picker_geometry->inner_circle_radius;
+    cr->set_line_width(inner_stroke_width);
     cr->begin_new_path();
-    cr->arc(cx, cy, _scale * resize * innerRadius, 0, 2 * M_PI);
+    cr->arc(center[Geom::X], center[Geom::Y], _scale * resize * inner_radius, 0, 2 * M_PI);
     cr->stroke();
 
     // Center
     cr->begin_new_path();
-    cr->arc(cx, cy, 2, 0, 2 * M_PI);
+    cr->arc(center[Geom::X], center[Geom::Y], 2, 0, 2 * M_PI);
     cr->fill();
 
     // Draw marker
-    double l, u, v;
-    Hsluv::hsluv_to_luv(_values[0], _values[1], _values[2], &l, &u, &v);
-    Point mp = to_pixel_coordinate(Point(u, v), _scale, resize);
-    mp.x += marginX;
-    mp.y += marginY;
+    auto luv = Hsluv::hsluv_to_luv(_values);
+    auto mp = to_pixel_coordinate({luv[1], luv[2]}, _scale, resize) + margin;
 
-    cr->set_line_width(2);
+    cr->set_line_width(inner_stroke_width);
     cr->begin_new_path();
-    cr->arc(mp.x, mp.y, 4, 0, 2 * M_PI);
+    cr->arc(mp[Geom::X], mp[Geom::Y], 2 * inner_stroke_width, 0, 2 * M_PI);
     cr->stroke();
 
     // Focus
     if (has_focus()) {
         Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-        style_context->render_focus(cr, mp.x-4, mp.y-4, 8, 8);
+        style_context->render_focus(cr, mp[Geom::X] - 4, mp[Geom::Y] - 4, 8, 8);
 
-        cr->set_line_width(0.5);
-        cr->set_source_rgb(1-a, 1-a, 1-a);
+        cr->set_line_width(0.25 * inner_stroke_width);
+        cr->set_source_rgb(1 - gray, 1 - gray, 1 - gray);
         cr->begin_new_path();
-        cr->arc(mp.x, mp.y, 7, 0, 2 * M_PI);
+        cr->arc(mp[Geom::X], mp[Geom::Y], 7, 0, 2 * M_PI);
         cr->stroke();
     }
 
@@ -939,95 +983,64 @@ void ColorWheelHSLuv::_set_from_xy(double const x, double const y)
     int const height = allocation.get_height();
 
     double const resize = std::min(width, height) / static_cast<double>(SIZE);
+    auto const p = from_pixel_coordinate(Geom::Point(x, y) - _getMargin(allocation), _scale, resize);
 
-    int const margin_x = std::max(0.0, (width - height) / 2.0);
-    int const margin_y = std::max(0.0, (height - width) / 2.0);
-
-    Point const p = from_pixel_coordinate(Point(
-        x - margin_x,
-        y - margin_y
-    ), _scale, resize);
-
-    double h, s, l;
-    Hsluv::luv_to_hsluv(_values[2], p.x, p.y, &h, &s, &l);
-
-    setHue(h);
-    setSaturation(s);
+    auto hsluv = Hsluv::luv_to_hsluv(_values[2], p[Geom::X], p[Geom::Y]);
+    setHue(hsluv[0]);
+    setSaturation(hsluv[1]);
 
     _signal_color_changed.emit();
     queue_draw();
 }
 
-void ColorWheelHSLuv::_update_polygon()
+void ColorWheelHSLuv::_updatePolygon()
 {
     Gtk::Allocation allocation = get_allocation();
-    int const width = allocation.get_width();
-    int const height = allocation.get_height();
-    int const size = std::min(width, height);
+    auto allocation_size = _getAllocationDimensions(allocation);
+    int const size = std::min(allocation_size[Geom::X], allocation_size[Geom::Y]);
 
     // Update square size
-    _square_size = std::max(1, static_cast<int>(size/50));
-
-    if (width < _square_size || height < _square_size) {
+    _square_size = std::max(1, static_cast<int>(size / 50));
+    if (size < _square_size) {
         return;
     }
 
-    _cache_width = width;
-    _cache_height = height;
+    _cache_width = allocation_size[Geom::X];
+    _cache_height = allocation_size[Geom::Y];
 
     double const resize = size / static_cast<double>(SIZE);
 
-    int const marginX = std::max(0.0, (width - height) / 2.0);
-    int const marginY = std::max(0.0, (height - width) / 2.0);
+    auto const margin = _getMargin(allocation);
+    auto polygon_vertices_px = to_pixel_coordinate(_picker_geometry->vertices, _scale, resize);
 
-    std::vector<Point> shapePointsPixel =
-        to_pixel_coordinate(_picker_geometry->vertices, _scale, resize);
-
-    for (Point &point : shapePointsPixel) {
-        point.x += marginX;
-        point.y += marginY;
+    // Find the bounding rectangle containing all points (adjusted by the margin).
+    Geom::Rect bounding_rect;
+    for (auto const &point : polygon_vertices_px) {
+        bounding_rect.expandTo(point + margin);
     }
+    bounding_rect *= Geom::Scale(1.0 / _square_size);
 
-    std::vector<double> xs;
-    std::vector<double> ys;
+    // Round to integer pixel coords
+    auto const bounding_max = bounding_rect.max().ceil();
+    auto const bounding_min = bounding_rect.min().floor();
 
-    for (Point const &point : shapePointsPixel) {
-        xs.emplace_back(point.x);
-        ys.emplace_back(point.y);
-    }
+    int const stride = Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_RGB24, _cache_width);
 
-    int const xmin = std::floor(*std::min_element(xs.begin(), xs.end()) / _square_size);
-    int const ymin = std::floor(*std::min_element(ys.begin(), ys.end()) / _square_size);
-    int const xmax = std::ceil(*std::max_element(xs.begin(), xs.end()) / _square_size);
-    int const ymax = std::ceil(*std::max_element(ys.begin(), ys.end()) / _square_size);
-
-    int const stride =
-        Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_RGB24, width);
-
-    _buffer_polygon.resize(height * stride / 4);
+    _buffer_polygon.resize(_cache_height * stride / 4);
     std::vector<guint32> buffer_line;
     buffer_line.resize(stride / 4);
 
     ColorPoint clr;
+    auto const square_center = Geom::IntPoint(_square_size / 2, _square_size / 2);
 
     // Set the color of each pixel/square
-    for (int y = ymin; y < ymax; y++) {
-        for (int x = xmin; x < xmax; x++) {
-            double px = x * _square_size;
-            double py = y * _square_size;
-            Point point = from_pixel_coordinate(Point(
-                px + (_square_size / 2) - marginX,
-                py + (_square_size / 2) - marginY
-            ), _scale, resize);
+    for (int y = bounding_min[Geom::Y]; y < bounding_max[Geom::Y]; y++) {
+        for (int x = bounding_min[Geom::X]; x < bounding_max[Geom::X]; x++) {
+            auto pos = Geom::IntPoint(x * _square_size, y * _square_size);
+            auto point = from_pixel_coordinate(pos + square_center - margin, _scale, resize);
 
-            double r, g ,b;
-            Hsluv::luv_to_rgb(_values[2], point.x, point.y, &r, &g, &b); // safe with _values[2] == 0
-
-            r = std::clamp(r, 0.0, 1.0);
-            g = std::clamp(g, 0.0, 1.0);
-            b = std::clamp(b, 0.0, 1.0);
-
-            clr.set_color(r, g, b);
+            auto rgb = Hsluv::luv_to_rgb(_values[2], point[Geom::X], point[Geom::Y]); // safe with _values[2] == 0
+            clr.set_color(rgb);
 
             guint32 *p = buffer_line.data() + (x * _square_size);
             for (int i = 0; i < _square_size; i++) {
@@ -1036,36 +1049,28 @@ void ColorWheelHSLuv::_update_polygon()
         }
 
         // Copy the line buffer to the surface buffer
-        int Y = y * _square_size;
+        int const scaled_y = y * _square_size;
         for (int i = 0; i < _square_size; i++) {
-            guint32 *t = _buffer_polygon.data() + (Y + i) * (stride / 4);
+            guint32 *t = _buffer_polygon.data() + (scaled_y + i) * (stride / 4);
             std::memcpy(t, buffer_line.data(), stride);
         }
     }
 
-    _surface_polygon = ::Cairo::ImageSurface::create(
-        reinterpret_cast<unsigned char *>(_buffer_polygon.data()),
-        Cairo::FORMAT_RGB24, width, height, stride
-    );
+    _surface_polygon = ::Cairo::ImageSurface::create(reinterpret_cast<unsigned char *>(_buffer_polygon.data()),
+                                                     Cairo::FORMAT_RGB24, _cache_width, _cache_height, stride);
 }
 
 bool ColorWheelHSLuv::on_button_press_event(GdkEventButton* event)
 {
-    double const x = event->x;
-    double const y = event->y;
-
+    auto event_pt = Geom::Point(event->x, event->y);
     Gtk::Allocation allocation = get_allocation();
-    int const width = allocation.get_width();
-    int const height = allocation.get_height();
+    int const size = _getAllocationSize(allocation);
+    auto const region = Geom::IntRect::from_xywh(_getMargin(allocation), {size, size});
 
-    int const margin_x = std::max(0.0, (width - height) / 2.0);
-    int const margin_y = std::max(0.0, (height - width) / 2.0);
-    int const size = std::min(width, height);
-
-    if (x > margin_x && x < (margin_x+size) && y > margin_y && y < (margin_y+size)) {
+    if (region.contains(event_pt.round())) {
         _adjusting = true;
         grab_focus();
-        _set_from_xy(x, y);
+        _setFromPoint(event_pt);
         return true;
     }
 
@@ -1080,13 +1085,10 @@ bool ColorWheelHSLuv::on_button_release_event(GdkEventButton */*event*/)
 
 bool ColorWheelHSLuv::on_motion_notify_event(GdkEventMotion* event)
 {
-    if (!_adjusting) { return false; }
-
-    double x = event->x;
-    double y = event->y;
-
-    _set_from_xy(x, y);
-
+    if (!_adjusting) {
+        return false;
+    }
+    _set_from_xy(event->x, event->y);
     return true;
 }
 
@@ -1101,40 +1103,37 @@ bool ColorWheelHSLuv::on_key_press_event(GdkEventKey* key_event)
                                         0, &key, nullptr, nullptr, nullptr);
 
     // Get current point
-    double l, u, v;
-    Hsluv::hsluv_to_luv(_values[0], _values[1], _values[2], &l, &u, &v);
+    auto luv = Hsluv::hsluv_to_luv(_values);
 
     double const marker_move = 1.0 / _scale;
 
     switch (key) {
         case GDK_KEY_Up:
         case GDK_KEY_KP_Up:
-            v += marker_move;
+            luv[2] += marker_move;
             consumed = true;
             break;
         case GDK_KEY_Down:
         case GDK_KEY_KP_Down:
-            v -= marker_move;
+            luv[2] -= marker_move;
             consumed = true;
             break;
         case GDK_KEY_Left:
         case GDK_KEY_KP_Left:
-            u -= marker_move;
+            luv[1] -= marker_move;
             consumed = true;
             break;
         case GDK_KEY_Right:
         case GDK_KEY_KP_Right:
-            u += marker_move;
+            luv[1] += marker_move;
             consumed = true;
             break;
     }
 
     if (consumed) {
-        double h, s, l;
-        Hsluv::luv_to_hsluv(_values[2], u, v, &h, &s, &l);
-
-        setHue(h);
-        setSaturation(s);
+        auto hsluv = Hsluv::luv_to_hsluv(luv[0], luv[1], luv[1]);
+        setHue(hsluv[0]);
+        setSaturation(hsluv[1]);
 
         _adjusting = true;
         _signal_color_changed.emit();
@@ -1173,73 +1172,10 @@ guint32 ColorPoint::get_color()
     );
 };
 
-void ColorPoint::set_color(double red, double green, double blue)
-{
-    r = red;
-    g = green;
-    b = blue;
-};
-
-/* Point */
-Point::Point() : x(0), y(0)
-{}
-
-Point::Point(double x, double y) : x(x), y(y)
-{}
-
-/* Intersection */
-Intersection::Intersection() : line1(0), line2(0)
-{}
-
-Intersection::Intersection(int line1, int line2, Point intersectionPoint,
-        double intersectionPointAngle, double relativeAngle)
-    : line1(line1)
-    , line2(line2)
-    , intersectionPoint(intersectionPoint)
-    , intersectionPointAngle(intersectionPointAngle)
-    , relativeAngle(relativeAngle)
-{}
-
-/* FIXME: replace these utility functions with calls into lib2geom */
-/* Utility functions */
-static Point intersect_line_line(Line a, Line b)
-{
-    double x = (a.intercept - b.intercept) / (b.slope - a.slope);
-    double y = a.slope * x + a.intercept;
-    return {x, y};
-}
-
-static double distance_from_origin(Point point)
-{
-    return std::sqrt(std::pow(point.x, 2) + std::pow(point.y, 2));
-}
-
-static double distance_line_from_origin(Line line)
-{
-    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-    return std::abs(line.intercept) / std::sqrt(std::pow(line.slope, 2) + 1);
-}
-
-static double angle_from_origin(Point point)
-{
-    return std::atan2(point.y, point.x);
-}
-
-static double normalize_angle(double angle)
-{
-    double m = 2 * M_PI;
-    return std::fmod(std::fmod(angle, m) + m, m);
-}
-
 static double lerp(double v0, double v1, double t0, double t1, double t)
 {
-    double s = 0;
-
-    if (t0 != t1) {
-        s = (t - t0) / (t1 - t0);
-    }
-
-    return (1.0 - s) * v0 + s * v1;
+    double const s = (t0 != t1) ? (t - t0) / (t1 - t0) : 0.0;
+    return Geom::lerp(s, v0, v1);
 }
 
 static ColorPoint lerp(ColorPoint const &v0, ColorPoint const &v1, double t0, double t1,
@@ -1304,17 +1240,17 @@ double luminance(guint32 color)
 }
 
 /**
- * Convert the vertice of the in gamut color polygon (Luv) to pixel coordinates.
+ * Convert a point of the gamut color polygon (Luv) to pixel coordinates.
  *
  * @param point The point in Luv coordinates.
  * @param scale Zoom amount to fit polygon to outer circle.
  * @param resize Zoom amount to fit wheel in widget.
  */
-static Point to_pixel_coordinate(Point const &point, double scale, double resize)
+static Geom::Point to_pixel_coordinate(Geom::Point const &point, double scale, double resize)
 {
-    return Point(
-        point.x * scale * resize + (SIZE * resize / 2.0),
-        (SIZE * resize / 2.0) - point.y * scale * resize
+    return Geom::Point(
+        point[Geom::X] * scale * resize + (SIZE * resize / 2.0),
+        (SIZE * resize / 2.0) - point[Geom::Y] * scale * resize
     );
 }
 
@@ -1325,11 +1261,11 @@ static Point to_pixel_coordinate(Point const &point, double scale, double resize
  * @param scale Zoom amount to fit polygon to outer circle.
  * @param resize Zoom amount to fit wheel in widget.
  */
-static Point from_pixel_coordinate(Point const &point, double scale, double resize)
+static Geom::Point from_pixel_coordinate(Geom::Point const &point, double scale, double resize)
 {
-    return Point(
-        (point.x - (SIZE * resize / 2.0)) / (scale * resize),
-        ((SIZE * resize / 2.0) - point.y) / (scale * resize)
+    return Geom::Point(
+        (point[Geom::X] - (SIZE * resize / 2.0)) / (scale * resize),
+        ((SIZE * resize / 2.0) - point[Geom::Y]) / (scale * resize)
     );
 }
 
@@ -1339,12 +1275,12 @@ static Point from_pixel_coordinate(Point const &point, double scale, double resi
  * @param scale Zoom amount to fit polygon to outer circle.
  * @param resize Zoom amount to fit wheel in widget.
  */
-static std::vector<Point> to_pixel_coordinate(std::vector<Point> const &points,
-        double scale, double resize)
+static std::vector<Geom::Point> to_pixel_coordinate(std::vector<Geom::Point> const &points,
+                                                    double scale, double resize)
 {
-    std::vector<Point> result;
+    std::vector<Geom::Point> result;
 
-    for (Point const &p : points) {
+    for (auto const &p : points) {
         result.emplace_back(to_pixel_coordinate(p, scale, resize));
     }
 
@@ -1363,6 +1299,7 @@ static std::vector<Point> to_pixel_coordinate(std::vector<Point> const &points,
   * @param height Height of buffer
   * @param stride Stride of buffer
 */
+
 void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding, bool pad_upwards,
         guint32 *buffer, int height, int stride)
 {
@@ -1407,94 +1344,6 @@ void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding, bool pad_u
     }
 }
 
-static void Inkscape::UI::Widget::get_picker_geometry(PickerGeometry *pickerGeometry, double lightness)
-{
-    // Add a lambda to avoid overlapping intersections
-    lightness = std::clamp(lightness + 0.01, 0.1, 99.9);
-
-    // Array of lines
-    std::array<Line, 6> const lines = Hsluv::getBounds(lightness);
-    int numLines = lines.size();
-    double outerCircleRadius = 0.0;
-
-    // Find the line closest to origin
-    int closestIndex2 = -1;
-    double closestLineDistance = -1;
-
-    for (int i = 0; i < numLines; i++) {
-        double d = distance_line_from_origin(lines[i]);
-        if (closestLineDistance < 0 || d < closestLineDistance) {
-            closestLineDistance = d;
-            closestIndex2 = i;
-        }
-    }
-
-    Line closestLine = lines[closestIndex2];
-    Line perpendicularLine (0 - (1 / closestLine.slope), 0.0);
-
-    Point intersectionPoint = intersect_line_line(closestLine,
-            perpendicularLine);
-    double startingAngle = angle_from_origin(intersectionPoint);
-
-    std::vector<Intersection> intersections;
-    double intersectionPointAngle;
-    double relativeAngle;
-
-    for (int i = 0; i < numLines - 1; i++) {
-        for (int j = i + 1; j < numLines; j++) {
-            intersectionPoint = intersect_line_line(lines[i], lines[j]);
-            intersectionPointAngle = angle_from_origin(intersectionPoint);
-            relativeAngle = normalize_angle(
-                    intersectionPointAngle - startingAngle);
-            intersections.emplace_back(i, j, intersectionPoint,
-                    intersectionPointAngle, relativeAngle);
-        }
-    }
-
-    std::sort(intersections.begin(), intersections.end(),
-            [] (Intersection const &lhs, Intersection const &rhs)
-    {
-        return lhs.relativeAngle >= rhs.relativeAngle;
-    });
-
-    std::vector<Line> orderedLines;
-    std::vector<Point> orderedVertices;
-    std::vector<double> orderedAngles;
-
-    int nextIndex;
-    double intersectionPointDistance;
-    int currentIndex = closestIndex2;
-
-    for (Intersection intersection : intersections) {
-        nextIndex = -1;
-
-        if (intersection.line1 == currentIndex) {
-            nextIndex = intersection.line2;
-        }
-        else if (intersection.line2 == currentIndex) {
-            nextIndex = intersection.line1;
-        }
-
-        if (nextIndex > -1) {
-            currentIndex = nextIndex;
-
-            orderedLines.emplace_back(lines[nextIndex]);
-            orderedVertices.emplace_back(intersection.intersectionPoint);
-            orderedAngles.emplace_back(intersection.intersectionPointAngle);
-
-            intersectionPointDistance = distance_from_origin(intersection.intersectionPoint);
-            if (intersectionPointDistance > outerCircleRadius) {
-                outerCircleRadius = intersectionPointDistance;
-            }
-        }
-    }
-
-    pickerGeometry->lines = orderedLines;
-    pickerGeometry->vertices = orderedVertices;
-    pickerGeometry->angles = orderedAngles;
-    pickerGeometry->outerCircleRadius = outerCircleRadius;
-    pickerGeometry->innerCircleRadius = closestLineDistance;
-}
 /*
   Local Variables:
   mode:c++

@@ -452,36 +452,27 @@ SPColor::cmyk_to_rgb_floatv (float *rgb, float c, float m, float y, float k)
  * Fill hsluv float array from r,g,b float values.
  */
 void
-SPColor::rgb_to_hsluv_floatv (float *hsluv, float r, float g, float b)
+SPColor::rgb_to_hsluv_floatv(float *hsluv, float r, float g, float b)
 {
-    double h, s, l;
-    Hsluv::rgb_to_hsluv(r, g, b, &h, &s, &l);
-
-    h /= 360.0;
-    s /= 100.0;
-    l /= 100.0;
-
-    hsluv[0] = std::min(1.0, std::max(0.0, h));
-    hsluv[1] = std::min(1.0, std::max(0.0, s));
-    hsluv[2] = std::min(1.0, std::max(0.0, l));
+    auto tmp = Hsluv::rgb_to_hsluv(r, g, b);
+    tmp[0] /= 360.0;
+    tmp[1] /= 100.0;
+    tmp[2] /= 100.0;
+    for (size_t i : {0, 1, 2}) {
+        hsluv[i] = std::clamp(tmp[i], 0.0, 1.0);
+    }
 }
 
 /**
  * Fill rgb float array from h,s,l float values.
  */
 void
-SPColor::hsluv_to_rgb_floatv (float *rgb, float h, float s, float l)
+SPColor::hsluv_to_rgb_floatv(float *rgb, float h, float s, float l)
 {
-    h *= 360.0;
-    s *= 100.0;
-    l *= 100.0;
-
-    double r, g, b;
-    Hsluv::hsluv_to_rgb(h, s, l, &r, &g, &b);
-
-    rgb[0] = r;
-    rgb[1] = g;
-    rgb[2] = b;
+    auto tmp = Hsluv::hsluv_to_rgb(h * 360, s * 100, l * 100);
+    for (size_t i : {0, 1, 2}) {
+        rgb[i] = tmp[i];
+    }
 }
 
 /*

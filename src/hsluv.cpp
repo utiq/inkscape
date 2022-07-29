@@ -34,6 +34,8 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>
+#include <2geom/line.h>
+#include <2geom/ray.h>
 
 namespace Hsluv {
 
@@ -58,25 +60,15 @@ static const double REF_V = 0.46831999493879100370;
 static const double KAPPA = 903.29629629629629629630;
 static const double EPSILON = 0.00885645167903563082;
 
-// Types
-Line::Line() : slope(0), intercept(0) {}
-Line::Line(double slope, double intercept) : slope(slope), intercept(intercept) {}
-Line::Line (const Line& other) : slope(other.slope), intercept(other.intercept) {}
-void Line::operator=(const Line& other)
-{
-    slope = other.slope;
-    intercept = other.intercept;
-}
-
 /**
  * Calculate the bounds of the Luv colors in RGB gamut.
  *
  * @param l Lightness. Between 0.0 and 100.0.
  * @return Bounds of Luv colors in RGB gamut.
  */
-std::array<Line, 6> getBounds(double l)
+std::array<Geom::Line, 6> get_bounds(double l)
 {
-    std::array<Line, 6> bounds;
+    std::array<Geom::Line, 6> bounds;
 
     double tl = l + 16.0;
     double sub1 = (tl * tl * tl) / 1560896.0;
@@ -94,25 +86,11 @@ std::array<Line, 6> getBounds(double l)
             double top2 = (838422.0 * m3 + 769860.0 * m2 + 731718.0 * m1) * l * sub2 -  769860.0 * t * l;
             double bottom = (632260.0 * m3 - 126452.0 * m2) * sub2 + 126452.0 * t;
 
-            bounds[channel * 2 + t].slope = top1 / bottom;
-            bounds[channel * 2 + t].intercept = top2 / bottom;
+            bounds[channel * 2 + t].setCoefficients(top1, -bottom, top2);
         }
     }
 
     return bounds;
-}
-
-/**
- * Calculate the length of a ray at a given angle until it intersects with the
- * passed in line.
- *
- * @param theta The angle of the ray.
- * @param line The line to test.
- * @return The length of the ray.
- */
-static double rayLengthUntilIntersect(double theta, const Line &line)
-{
-    return line.intercept / (std::sin(theta) - line.slope * std::cos(theta));
 }
 
 /**
@@ -122,18 +100,21 @@ static double rayLengthUntilIntersect(double theta, const Line &line)
  * @param h Hue.
  * @return The maximum chromaticity.
  */
-static double maxChromaForLh(double l, double h)
+static double max_chroma_for_lh(double l, double h)
 {
     double min_len = std::numeric_limits<double>::max();
-    double hrad = h * 0.01745329251994329577; /* (2 * pi / 360) */
-    std::array<Line, 6> bounds = getBounds(l);
-    int i;
+    auto const ray = Geom::Ray(Geom::Point(0, 0), Geom::rad_from_deg(h));
 
-    for (i = 0; i < 6; i++) {
-        double len = rayLengthUntilIntersect(hrad, bounds[i]);
+    for (auto const &line : get_bounds(l)) {
+        auto intersections = line.intersect(ray);
+        if (intersections.empty()) {
+            continue;
+        }
+        double len = intersections[0].point().length();
 
-        if (len >= 0  &&  len < min_len)
+        if (len >= 0 && len < min_len) {
             min_len = len;
+        }
     }
 
     return min_len;
@@ -146,7 +127,7 @@ static double maxChromaForLh(double l, double h)
  * @param t2 The second array.
  * @return The resulting dot product.
  */
-static double dotProduct(const Triplet &t1, const Triplet &t2)
+static double dot_product(const Triplet &t1, const Triplet &t2)
 {
     return (t1[0] * t2[0] + t1[1] * t2[1] + t1[2] * t2[2]);
 }
@@ -157,12 +138,13 @@ static double dotProduct(const Triplet &t1, const Triplet &t2)
  * @param c Value.
  * @return RGB color component.
  */
-static double fromLinear(double c)
+static double from_linear(double c)
 {
-    if (c <= 0.0031308)
+    if (c <= 0.0031308) {
         return 12.92 * c;
-    else
+    } else {
         return 1.055 * std::pow(c, 1.0 / 2.4) - 0.055;
+    }
 }
 
 /**
@@ -171,12 +153,13 @@ static double fromLinear(double c)
  * @param c Value.
  * @return XYZ color component.
  */
-static double toLinear(double c)
+static double to_linear(double c)
 {
-    if (c > 0.04045)
+    if (c > 0.04045) {
         return std::pow((c + 0.055) / 1.055, 2.4);
-    else
+    } else {
         return c / 12.92;
+    }
 }
 
 /**
@@ -184,12 +167,12 @@ static double toLinear(double c)
  * @param t RGB color components.
  * @return XYZ color components.
  */
-static Triplet toLinear(const Triplet &t)
+static Triplet to_linear(const Triplet &t)
 {
     return {
-        toLinear(t[0]),
-        toLinear(t[1]),
-        toLinear(t[2])
+        to_linear(t[0]),
+        to_linear(t[1]),
+        to_linear(t[2])
     };
 }
 
@@ -198,15 +181,13 @@ static Triplet toLinear(const Triplet &t)
  *
  * @param in_out[in,out] The XYZ color converted to a RGB color.
  */
-static void xyz2rgb(Triplet *in_out)
+static void xyz2rgb(Triplet &in_out)
 {
-    double r = fromLinear(dotProduct(m[0], *in_out));
-    double g = fromLinear(dotProduct(m[1], *in_out));
-    double b = fromLinear(dotProduct(m[2], *in_out));
-
-    (*in_out)[0] = r;
-    (*in_out)[1] = g;
-    (*in_out)[2] = b;
+    Triplet result;
+    for (size_t i : {0, 1, 2}) {
+        result[i] = from_linear(dot_product(m[i], in_out));
+    }
+    in_out = result;
 }
 
 /**
@@ -214,17 +195,12 @@ static void xyz2rgb(Triplet *in_out)
  *
  * @param in_out[in,out] The RGB color converted to a XYZ color.
  */
-static void rgb2xyz(Triplet *in_out)
+static void rgb2xyz(Triplet &in_out)
 {
-    Triplet rgbl = toLinear(*in_out);
-
-    double x = dotProduct(m_inv[0], rgbl);
-    double y = dotProduct(m_inv[1], rgbl);
-    double z = dotProduct(m_inv[2], rgbl);
-
-    (*in_out)[0] = x;
-    (*in_out)[1] = y;
-    (*in_out)[2] = z;
+    Triplet rgbl = to_linear(in_out);
+    for (size_t i : {0, 1, 2}) {
+        in_out[i] = dot_product(m_inv[i], rgbl);
+    }
 }
 
 /**
@@ -252,8 +228,7 @@ static double l2y(double l)
 {
     if (l <= 8.0) {
         return l / KAPPA;
-    }
-    else {
+    } else {
         double x = (l + 16.0) / 116.0;
         return (x * x * x);
     }
@@ -264,22 +239,22 @@ static double l2y(double l)
  *
  * @param in_out[in,out] The XYZ color converted to a Luv color.
  */
-static void xyz2luv(Triplet* in_out)
+static void xyz2luv(Triplet &in_out)
 {
-    double var_u = (4.0 * (*in_out)[0]) / ((*in_out)[0] + (15.0 * (*in_out)[1]) + (3.0 * (*in_out)[2]));
-    double var_v = (9.0 * (*in_out)[1]) / ((*in_out)[0] + (15.0 * (*in_out)[1]) + (3.0 * (*in_out)[2]));
-    double l = y2l((*in_out)[1]);
+    double const denominator = in_out[0] + (15.0 * in_out[1]) + (3.0 * in_out[2]);
+    double var_u = 4.0 * in_out[0] / denominator;
+    double var_v = 9.0 * in_out[1] / denominator;
+    double l = y2l(in_out[1]);
     double u = 13.0 * l * (var_u - REF_U);
     double v = 13.0 * l * (var_v - REF_V);
 
-    (*in_out)[0] = l;
+    in_out[0] = l;
     if (l < 0.00000001) {
-        (*in_out)[1] = 0.0;
-        (*in_out)[2] = 0.0;
-    }
-    else {
-        (*in_out)[1] = u;
-        (*in_out)[2] = v;
+        in_out[1] = 0.0;
+        in_out[2] = 0.0;
+    } else {
+        in_out[1] = u;
+        in_out[2] = v;
     }
 }
 
@@ -288,25 +263,25 @@ static void xyz2luv(Triplet* in_out)
  *
  * @param in_out[in,out] The Luv color converted to a XYZ color.
  */
-static void luv2xyz(Triplet* in_out)
+static void luv2xyz(Triplet &in_out)
 {
-    if((*in_out)[0] <= 0.00000001) {
-        /* Black will create a divide-by-zero error. */
-        (*in_out)[0] = 0.0;
-        (*in_out)[1] = 0.0;
-        (*in_out)[2] = 0.0;
+    if (in_out[0] <= 0.00000001) {
+        /* Black would create a divide-by-zero error. */
+        in_out[0] = 0.0;
+        in_out[1] = 0.0;
+        in_out[2] = 0.0;
         return;
     }
 
-    double var_u = (*in_out)[1] / (13.0 * (*in_out)[0]) + REF_U;
-    double var_v = (*in_out)[2] / (13.0 * (*in_out)[0]) + REF_V;
-    double y = l2y((*in_out)[0]);
+    double var_u = in_out[1] / (13.0 * in_out[0]) + REF_U;
+    double var_v = in_out[2] / (13.0 * in_out[0]) + REF_V;
+    double y = l2y(in_out[0]);
     double x = -(9.0 * y * var_u) / ((var_u - 4.0) * var_v - var_u * var_v);
     double z = (9.0 * y - (15.0 * var_v * y) - (var_v * x)) / (3.0 * var_v);
 
-    (*in_out)[0] = x;
-    (*in_out)[1] = y;
-    (*in_out)[2] = z;
+    in_out[0] = x;
+    in_out[1] = y;
+    in_out[2] = z;
 }
 
 /**
@@ -314,26 +289,26 @@ static void luv2xyz(Triplet* in_out)
  *
  * @param in_out[in,out] The Luv color converted to a LCH color.
  */
-static void luv2lch(Triplet* in_out)
+static void luv2lch(Triplet &in_out)
 {
-    double l = (*in_out)[0];
-    double u = (*in_out)[1];
-    double v = (*in_out)[2];
+    double l = in_out[0];
+    auto uv = Geom::Point(in_out[1], in_out[2]);
     double h;
-    double c = std::sqrt(u * u + v * v);
+    double const c = uv.length();
 
     /* Grays: disambiguate hue */
-    if(c < 0.00000001) {
+    if (c < 0.00000001) {
         h = 0;
     } else {
-        h = std::atan2(v, u) * 57.29577951308232087680;  /* (180 / pi) */
-        if(h < 0.0)
+        h = Geom::deg_from_rad(Geom::atan2(uv));
+        if (h < 0.0) {
             h += 360.0;
+        }
     }
 
-    (*in_out)[0] = l;
-    (*in_out)[1] = c;
-    (*in_out)[2] = h;
+    in_out[0] = l;
+    in_out[1] = c;
+    in_out[2] = h;
 }
 
 /**
@@ -341,14 +316,15 @@ static void luv2lch(Triplet* in_out)
  *
  * @param in_out[in,out] The LCH color converted to a Luv color.
  */
-static void lch2luv(Triplet* in_out)
+static void lch2luv(Triplet &in_out)
 {
-    double hrad = (*in_out)[2] * 0.01745329251994329577;  /* (pi / 180.0) */
-    double u = std::cos(hrad) * (*in_out)[1];
-    double v = std::sin(hrad) * (*in_out)[1];
+    double sinhrad, coshrad;
+    Geom::sincos(Geom::rad_from_deg(in_out[2]), sinhrad, coshrad);
+    double u = coshrad * in_out[1];
+    double v = sinhrad * in_out[1];
 
-    (*in_out)[1] = u;
-    (*in_out)[2] = v;
+    in_out[1] = u;
+    in_out[2] = v;
 }
 
 /**
@@ -356,26 +332,28 @@ static void lch2luv(Triplet* in_out)
  *
  * @param in_out[in,out] The HSLuv color converted to a LCH color.
  */
-static void hsluv2lch(Triplet* in_out)
+static void hsluv2lch(Triplet &in_out)
 {
-    double h = (*in_out)[0];
-    double s = (*in_out)[1];
-    double l = (*in_out)[2];
+    double h = in_out[0];
+    double s = in_out[1];
+    double l = in_out[2];
     double c;
 
     /* White and black: disambiguate chroma */
-    if(l > 99.9999999 || l < 0.00000001)
+    if(l > 99.9999999 || l < 0.00000001) {
         c = 0.0;
-    else
-        c = maxChromaForLh(l, h) / 100.0 * s;
+    } else {
+        c = max_chroma_for_lh(l, h) / 100.0 * s;
+    }
 
     /* Grays: disambiguate hue */
-    if (s < 0.00000001)
+    if (s < 0.00000001) {
         h = 0.0;
+    }
 
-    (*in_out)[0] = l;
-    (*in_out)[1] = c;
-    (*in_out)[2] = h;
+    in_out[0] = l;
+    in_out[1] = c;
+    in_out[2] = h;
 }
 
 /**
@@ -383,91 +361,108 @@ static void hsluv2lch(Triplet* in_out)
  *
  * @param in_out[in,out] The LCH color converted to a HSLuv color.
  */
-static void lch2hsluv(Triplet* in_out)
+static void lch2hsluv(Triplet &in_out)
 {
-    double l = (*in_out)[0];
-    double c = (*in_out)[1];
-    double h = (*in_out)[2];
+    double l = in_out[0];
+    double c = in_out[1];
+    double h = in_out[2];
     double s;
 
     /* White and black: disambiguate saturation */
-    if(l > 99.9999999 || l < 0.00000001)
+    if (l > 99.9999999 || l < 0.00000001) {
         s = 0.0;
-    else
-        s = c / maxChromaForLh(l, h) * 100.0;
+    } else {
+        s = c / max_chroma_for_lh(l, h) * 100.0;
+    }
 
     /* Grays: disambiguate hue */
-    if (c < 0.00000001)
+    if (c < 0.00000001) {
         h = 0.0;
+    }
 
-    (*in_out)[0] = h;
-    (*in_out)[1] = s;
-    (*in_out)[2] = l;
+    in_out[0] = h;
+    in_out[1] = s;
+    in_out[2] = l;
 }
 
 // Interface functions
-void luv_to_rgb(double l, double u, double v, double *pr, double *pg, double *pb)
+Triplet luv_to_rgb(double l, double u, double v)
 {
-    Triplet tmp {l, u, v};
+    Triplet result{l, u, v};
+    luv2xyz(result);
+    xyz2rgb(result);
 
-    luv2xyz(&tmp);
-    xyz2rgb(&tmp);
-
-    *pr = std::clamp(tmp[0], 0.0, 1.0);
-    *pg = std::clamp(tmp[1], 0.0, 1.0);
-    *pb = std::clamp(tmp[2], 0.0, 1.0);
+    for (size_t i : {0, 1, 2}) {
+        result[i] = std::clamp(result[i], 0.0, 1.0);
+    }
+    return result;
 }
 
-void hsluv_to_luv(double h, double s, double l, double *pl, double *pu, double *pv)
+Triplet hsluv_to_luv(double h, double s, double l)
 {
-    Triplet tmp {h, s, l};
-
-    hsluv2lch(&tmp);
-    lch2luv(&tmp);
-
-    *pl = tmp[0];
-    *pu = tmp[1];
-    *pv = tmp[2];
+    Triplet result{h, s, l};
+    hsluv2lch(result);
+    lch2luv(result);
+    return result;
 }
 
-void luv_to_hsluv(double l, double u, double v, double *ph, double *ps, double *pl)
+Triplet luv_to_hsluv(double l, double u, double v)
 {
-    Triplet tmp {l, u, v};
-
-    luv2lch(&tmp);
-    lch2hsluv(&tmp);
-
-    *ph = tmp[0];
-    *ps = tmp[1];
-    *pl = tmp[2];
+    Triplet result{l, u, v};
+    luv2lch(result);
+    lch2hsluv(result);
+    return result;
 }
 
-void rgb_to_hsluv(double r, double g, double b, double *ph, double *ps, double *pl)
+Triplet rgb_to_hsluv(double r, double g, double b)
 {
-    Triplet tmp {r, g, b};
-
-    rgb2xyz(&tmp);
-    xyz2luv(&tmp);
-    luv2lch(&tmp);
-    lch2hsluv(&tmp);
-
-    *ph = tmp[0];
-    *ps = tmp[1];
-    *pl = tmp[2];
+    Triplet result{r, g, b};
+    rgb2xyz(result);
+    xyz2luv(result);
+    luv2lch(result);
+    lch2hsluv(result);
+    return result;
 }
 
-void hsluv_to_rgb(double h, double s, double l, double *pr, double *pg, double *pb)
+Triplet hsluv_to_rgb(double h, double s, double l)
 {
-    Triplet tmp {h, s, l};
+    Triplet result{h, s, l};
+    hsluv2lch(result);
+    lch2luv(result);
+    luv2xyz(result);
+    xyz2rgb(result);
 
-    hsluv2lch(&tmp);
-    lch2luv(&tmp);
-    luv2xyz(&tmp);
-    xyz2rgb(&tmp);
+    for (size_t i : {0, 1, 2}) {
+        result[i] = std::clamp(result[i], 0.0, 1.0);
+    }
+    return result;
+}
 
-    *pr = std::clamp(tmp[0], 0.0, 1.0);
-    *pg = std::clamp(tmp[1], 0.0, 1.0);
-    *pb = std::clamp(tmp[2], 0.0, 1.0);
+Triplet hsluv_to_luv(double *hsl)
+{
+    return hsluv_to_luv(hsl[0], hsl[1], hsl[2]);
+}
+
+double perceptual_lightness(double l)
+{
+    return l <= 0.885645168 ? l * 0.09032962963 : std::cbrt(l) * 0.249914424 - 0.16;
+}
+
+double rgb_to_perceptual_lightness(Triplet const &rgb)
+{
+    return perceptual_lightness(rgb_to_hsluv(rgb[0], rgb[1], rgb[2])[2]);
+}
+
+std::pair<double, double> get_contrasting_color(double l)
+{
+    double constexpr l_threshold = 0.85;
+    if (l > l_threshold) { // Draw dark over light.
+        auto t = (l - l_threshold) / (1.0 - l_threshold);
+        return {0.0, 0.4 - 0.1 * t};
+    } else { // Draw light over dark.
+        auto t = (l_threshold - l) / l_threshold;
+        return {1.0, 0.6 + 0.1 * t};
+    }
 }
 
 } // namespace Hsluv
