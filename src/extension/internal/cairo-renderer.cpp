@@ -183,6 +183,25 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
     auto fill_origin = style->fill.paintOrigin;
     auto stroke_origin = style->stroke.paintOrigin;
 
+    /** An RAII class to temporarily replace a paint server href. */
+    using PaintHref = decltype(style->fill.value.href);
+    class TemporaryReplace
+    {
+    public:
+        TemporaryReplace(PaintHref *where, PaintHref what)
+            : _where{where}
+            , _oldval{*where}
+        {
+            *where = what;
+        }
+        ~TemporaryReplace() { *_where = _oldval; }
+
+    private:
+        PaintHref *const _where;
+        PaintHref const _oldval;
+    };
+    std::unique_ptr<TemporaryReplace> replace_fill, replace_stroke;
+
     if (origin) {
         // If the shape is a child of a marker, we must set styles from the origin.
         SPMarker *marker = nullptr;
@@ -210,7 +229,9 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
                 if (fillctxfill ? iscolorfill : iscolorstroke) {
                     style->fill.setColor(fillctxfill ? styleorig->fill.value.color : styleorig->stroke.value.color);
                 } else if (fillctxfill ? styleorig->fill.isPaintserver() : styleorig->stroke.isPaintserver()) {
-                    style->fill.value.href = fillctxfill ? styleorig->fill.value.href : styleorig->stroke.value.href;
+                    replace_fill = std::make_unique<TemporaryReplace>(&style->fill.value.href,
+                                                                      fillctxfill ? styleorig->fill.value.href
+                                                                                  : styleorig->stroke.value.href);
                 } else {
                     style->fill.setNone();
                 }
@@ -219,7 +240,9 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
                 if (strokectxfill ? iscolorfill : iscolorstroke) {
                     style->stroke.setColor(strokectxfill ? styleorig->fill.value.color : styleorig->stroke.value.color);
                 } else if (strokectxfill ? styleorig->fill.isPaintserver() : styleorig->stroke.isPaintserver()) {
-                    style->stroke.value.href = strokectxfill ? styleorig->fill.value.href : styleorig->stroke.value.href;
+                    replace_stroke = std::make_unique<TemporaryReplace>(&style->stroke.value.href,
+                                                                        strokectxfill ? styleorig->fill.value.href
+                                                                                      : styleorig->stroke.value.href);
                 } else {
                     style->stroke.setNone();
                 }
