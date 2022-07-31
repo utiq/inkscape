@@ -65,7 +65,7 @@ private:
     double _scalex, _scaley;
 };
 
-void FilterDisplacementMap::render_cairo(FilterSlot &slot)
+void FilterDisplacementMap::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *texture = slot.getcairo(_input);
     cairo_surface_t *map = slot.getcairo(_input2);

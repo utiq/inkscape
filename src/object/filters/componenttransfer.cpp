@@ -28,13 +28,13 @@ void SPFeComponentTransfer::build(SPDocument *document, Inkscape::XML::Node *rep
 void SPFeComponentTransfer::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 {
     SPFilterPrimitive::child_added(child, ref);
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFeComponentTransfer::remove_child(Inkscape::XML::Node *child)
 {
     SPFilterPrimitive::remove_child(child);
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFeComponentTransfer::release()
@@ -42,7 +42,18 @@ void SPFeComponentTransfer::release()
     if (document) {
         document->removeResource("feComponentTransfer", this);
     }
-	SPFilterPrimitive::release();
+    SPFilterPrimitive::release();
+}
+
+void SPFeComponentTransfer::modified(unsigned flags)
+{
+    auto const cflags = cascade_flags(flags);
+
+    for (auto &c : children) {
+        if (cflags || (c.mflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
+            c.emitModified(cflags);
+        }
+    }
 }
 
 std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComponentTransfer::build_renderer(Inkscape::DrawingItem*) const

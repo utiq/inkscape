@@ -47,8 +47,7 @@ public:
         , _inited(false)
         , _fractalnoise(false) {}
 
-    void init(long seed, Geom::Rect const &tile, Geom::Point const &freq, bool stitch,
-              bool fractalnoise, int octaves)
+    void init(long seed, Geom::Rect const &tile, Geom::Point const &freq, bool stitch, bool fractalnoise, int octaves)
     {
         // setup random number generator
         _setupSeed(seed);
@@ -381,7 +380,7 @@ private:
     int _x0, _y0;
 };
 
-void FilterTurbulence::render_cairo(FilterSlot &slot)
+void FilterTurbulence::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *input = slot.getcairo(_input);
     cairo_surface_t *out = ink_cairo_surface_create_same_size(input, CAIRO_CONTENT_COLOR_ALPHA);

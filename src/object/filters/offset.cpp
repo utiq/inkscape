@@ -40,7 +40,7 @@ void SPFeOffset::set(SPAttr key, char const *value)
             double read_num = value ? Inkscape::Util::read_number(value) : 0.0;
             if (read_num != dx) {
                 dx = read_num;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -49,7 +49,7 @@ void SPFeOffset::set(SPAttr key, char const *value)
             double read_num = value ? Inkscape::Util::read_number(value) : 0.0;
             if (read_num != dy) {
                 dy = read_num;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }

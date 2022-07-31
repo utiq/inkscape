@@ -321,13 +321,6 @@ void DrawingItem::setStyle(SPStyle const *style, SPStyle const *context_style)
         _style = style;
     }
 
-    if (style && style->filter.set && style->getFilter()) {
-        _filter = style->getFilter()->build_renderer(this);
-    } else {
-        // no filter set for this group
-        _filter.reset();
-    }
-
     if (style && style->enable_background.set) {
         bool _background_new_check = _background_new;
         if (style->enable_background.value == SP_CSS_BACKGROUND_NEW) {
@@ -447,11 +440,9 @@ void DrawingItem::setItemBounds(Geom::OptRect const &bounds)
     _item_bbox = bounds;
 }
 
-// Defensive-coding measure to ensure filters containing pointers to deleted DrawingItems are not used, even accidentally.
-// No update needs to be queued since this function is always followed up with a call to setStyle() to set a new filter.
-void DrawingItem::clearFilterRenderer()
+void DrawingItem::setFilterRenderer(std::unique_ptr<Filters::Filter> renderer)
 {
-    _filter.reset();
+    _filter = std::move(renderer);
 }
 
 /**

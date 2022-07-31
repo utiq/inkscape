@@ -58,7 +58,7 @@ void SPFeMorphology::set(SPAttr key, char const *value)
             auto n_op = ::read_operator(value);
             if (n_op != Operator) {
                 Operator = n_op;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -70,7 +70,7 @@ void SPFeMorphology::set(SPAttr key, char const *value)
                 radius.setOptNumber(radius.getNumber());
             }
 
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         default:
         	SPFilterPrimitive::set(key, value);

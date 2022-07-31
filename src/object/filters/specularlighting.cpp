@@ -62,7 +62,7 @@ void SPFeSpecularLighting::set(SPAttr key, char const *value)
                 surfaceScale = 1;
                 surfaceScale_set = FALSE;
             }
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         }
         case SPAttr::SPECULARCONSTANT: {
@@ -80,7 +80,7 @@ void SPFeSpecularLighting::set(SPAttr key, char const *value)
                 specularConstant = 1;
                 specularConstant_set = FALSE;
             }
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         }
         case SPAttr::SPECULAREXPONENT: {
@@ -98,13 +98,13 @@ void SPFeSpecularLighting::set(SPAttr key, char const *value)
                 specularExponent = 1;
                 specularExponent_set = FALSE;
             }
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         }
         case SPAttr::KERNELUNITLENGTH:
             // TODO kernelUnit
             // kernelUnitLength.set(value);
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::LIGHTING_COLOR: {
             char const *end_ptr = nullptr;
@@ -125,7 +125,7 @@ void SPFeSpecularLighting::set(SPAttr key, char const *value)
                 // lighting_color already contains the default value
                 lighting_color_set = false;
             }
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         }
         default:
@@ -134,17 +134,16 @@ void SPFeSpecularLighting::set(SPAttr key, char const *value)
     }
 }
 
-void SPFeSpecularLighting::update(SPCtx *ctx, unsigned flags)
+void SPFeSpecularLighting::modified(unsigned flags)
 {
-    if (flags & SP_OBJECT_MODIFIED_FLAG) {
-        readAttr(SPAttr::SURFACESCALE);
-        readAttr(SPAttr::SPECULARCONSTANT);
-        readAttr(SPAttr::SPECULAREXPONENT);
-        readAttr(SPAttr::KERNELUNITLENGTH);
-        readAttr(SPAttr::LIGHTING_COLOR);
-    }
+    auto const cflags = cascade_flags(flags);
 
-    SPFilterPrimitive::update(ctx, flags);
+    for (auto c : childList(true)) {
+        if (cflags || (c->mflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
+            c->emitModified(cflags);
+        }
+        sp_object_unref(c, nullptr);
+    }
 }
 
 Inkscape::XML::Node *SPFeSpecularLighting::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags)
@@ -183,19 +182,19 @@ Inkscape::XML::Node *SPFeSpecularLighting::write(Inkscape::XML::Document *doc, I
 void SPFeSpecularLighting::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 {
     SPFilterPrimitive::child_added(child, ref);
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFeSpecularLighting::remove_child(Inkscape::XML::Node *child)
 {
     SPFilterPrimitive::remove_child(child);
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFeSpecularLighting::order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_ref, Inkscape::XML::Node *new_ref)
 {
     SPFilterPrimitive::order_changed(child, old_ref, new_ref);
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeSpecularLighting::build_renderer(Inkscape::DrawingItem*) const
@@ -218,16 +217,12 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeSpecularLighting::build_
         specularlighting->light_type = Inkscape::Filters::DISTANT_LIGHT;
         specularlighting->light.distant.azimuth = l->azimuth;
         specularlighting->light.distant.elevation = l->elevation;
-    }
-
-    if (auto l = SP_FEPOINTLIGHT(firstChild())) {
+    } else if (auto l = SP_FEPOINTLIGHT(firstChild())) {
         specularlighting->light_type = Inkscape::Filters::POINT_LIGHT;
         specularlighting->light.point.x = l->x;
         specularlighting->light.point.y = l->y;
         specularlighting->light.point.z = l->z;
-    }
-
-    if (auto l = SP_FESPOTLIGHT(firstChild())) {
+    } else if (auto l = SP_FESPOTLIGHT(firstChild())) {
         specularlighting->light_type = Inkscape::Filters::SPOT_LIGHT;
         specularlighting->light.spot.x = l->x;
         specularlighting->light.spot.y = l->y;

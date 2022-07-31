@@ -20,6 +20,8 @@
 #include "display/nr-filter.h"
 #include "object/sp-filter.h"
 #include "xml/repr.h"
+#include "slot-resolver.h"
+#include "util/optstr.h"
 
 void SPFeBlend::build(SPDocument *document, Inkscape::XML::Node *repr)
 {
@@ -99,23 +101,14 @@ void SPFeBlend::set(SPAttr key, char const *value)
             auto mode = ::read_mode(value);
             if (mode != blend_mode) {
                 blend_mode = mode;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
         case SPAttr::IN2: {
-            int input = read_in(value);
-            if (input != in2) {
-                in2 = input;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
-            }
-            // Unlike normal in, in2 is a required attribute. Make sure we can call it by some name.
-            // This may not be true.... see issue at http://www.w3.org/TR/filter-effects/#feBlendElement (but it doesn't hurt).
-            if (in2 == Inkscape::Filters::NR_FILTER_SLOT_NOT_SET || in2 == Inkscape::Filters::NR_FILTER_UNNAMED_SLOT) {
-                auto filter_parent = SP_FILTER(parent);
-                in2 = name_previous_out();
-                //XML Tree being used directly here while it shouldn't be.
-                setAttribute("in2", filter_parent->name_for_image(in2));
+            if (Inkscape::Util::assign(in2_name, value)) {
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
+                invalidate_parent_slots();
             }
             break;
         }
@@ -131,30 +124,7 @@ Inkscape::XML::Node *SPFeBlend::write(Inkscape::XML::Document *doc, Inkscape::XM
         repr = doc->createElement("svg:feBlend");
     }
 
-    auto filter_parent = SP_FILTER(parent);
-
-    char const *in2_name = filter_parent->name_for_image(in2);
-
-    if (!in2_name) {
-        // This code is very similar to name_previous_out()
-        SPObject *i = parent->firstChild();
-
-        // Find previous filter primitive
-        while (i && i->getNext() != this) {
-        	i = i->getNext();
-        }
-
-        if (i) {
-            auto i_prim = SP_FILTER_PRIMITIVE(i);
-            in2_name = filter_parent->name_for_image(i_prim->image_out);
-        }
-    }
-
-    if (in2_name) {
-        repr->setAttribute("in2", in2_name);
-    } else {
-        g_warning("Unable to set in2 for feBlend");
-    }
+    repr->setAttributeOrRemoveIfEmpty("in2", Inkscape::Util::to_cstr(in2_name));
 
     char const *mode;
     switch (blend_mode) {
@@ -168,7 +138,6 @@ Inkscape::XML::Node *SPFeBlend::write(Inkscape::XML::Document *doc, Inkscape::XM
             mode = "darken";      break;
         case SP_CSS_BLEND_LIGHTEN:
             mode = "lighten";     break;
-        // New
         case SP_CSS_BLEND_OVERLAY:
             mode = "overlay";     break;
         case SP_CSS_BLEND_COLORDODGE:
@@ -200,13 +169,19 @@ Inkscape::XML::Node *SPFeBlend::write(Inkscape::XML::Document *doc, Inkscape::XM
     return SPFilterPrimitive::write(doc, repr, flags);
 }
 
+void SPFeBlend::resolve_slots(SlotResolver &resolver)
+{
+    in2_slot = resolver.read(in2_name);
+    SPFilterPrimitive::resolve_slots(resolver);
+}
+
 std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeBlend::build_renderer(Inkscape::DrawingItem*) const
 {
     auto blend = std::make_unique<Inkscape::Filters::FilterBlend>();
     build_renderer_common(blend.get());
 
     blend->set_mode(blend_mode);
-    blend->set_input(1, in2);
+    blend->set_input(1, in2_slot);
 
     return blend;
 }

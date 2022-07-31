@@ -1140,9 +1140,16 @@ sp_style_object_release(SPObject *object, SPStyle *style)
 static void sp_style_filter_ref_modified(SPObject *obj, unsigned flags, SPStyle *style)
 {
     auto filter = static_cast<SPFilter*>(obj);
-    if (style->getFilter() == filter && flags & SP_OBJECT_MODIFIED_FLAG) {
+
+    g_assert(style->getFilter() == filter);
+
+    if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG)) {
         if (style->object) {
+            // FIXME: This line results in now-unnecessary filter recreation.
             style->object->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
+            if (!style->block_filter_bbox_updates) {
+                style->object->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG); // To update bbox.
+            }
         }
     }
 }
@@ -1164,7 +1171,7 @@ void sp_style_filter_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *styl
     }
 
     style->signal_filter_changed.emit(old_ref, ref);
-    sp_style_filter_ref_modified(ref, 0, style);
+    sp_style_filter_ref_modified(ref, SP_OBJECT_FLAGS_ALL, style);
 }
 
 /**
@@ -1189,6 +1196,7 @@ static void sp_style_paint_server_ref_modified(SPObject *obj, unsigned /*flags*/
          * fixme: We have to use object_modified flag, because parent
          * flag is only available downstreams.
          */
+        // FIXME: For patterns and hatches, this line results in now-unnecessary pattern recreation.
         style->object->requestModified(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
     }
 }

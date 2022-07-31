@@ -15,10 +15,13 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <optional>
 #include <memory>
+#include <string>
 #include "2geom/rect.h"
 #include "object/sp-object.h"
 #include "object/sp-dimensions.h"
+#include "display/nr-filter-types.h"
 
 namespace Inkscape {
 class Drawing;
@@ -29,6 +32,8 @@ class FilterPrimitive;
 } // namespace Filters
 } // namespace Inkscape
 
+class SlotResolver;
+
 class SPFilterPrimitive
     : public SPObject
     , public SPDimensions
@@ -37,19 +42,9 @@ public:
 	SPFilterPrimitive();
 	~SPFilterPrimitive() override;
 
-    int image_in, image_out;
+    int get_in() const { return in_slot; }
+    int get_out() const { return out_slot; }
 
-protected:
-    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
-	void release() override;
-
-    void set(SPAttr key, char const *value) override;
-
-    void update(SPCtx *ctx, unsigned flags) override;
-
-    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
-
-public:
     virtual void show(Inkscape::DrawingItem *item) {}
     virtual void hide(Inkscape::DrawingItem *item) {}
 
@@ -65,12 +60,23 @@ public:
         return true;
     };
 
-	/* Common initialization for filter primitives */
+    void invalidate_parent_slots();
+    virtual void resolve_slots(SlotResolver &);
+
+protected:
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void release() override;
+    void set(SPAttr key, char const *value) override;
+    void update(SPCtx *ctx, unsigned flags) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
+
+    // Common initialization for filter primitives.
     void build_renderer_common(Inkscape::Filters::FilterPrimitive *primitive) const;
 
-	int name_previous_out();
-	int read_in(char const *name);
-	int read_result(char const *name);
+private:
+    std::optional<std::string> in_name, out_name;
+    int in_slot = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
+    int out_slot = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FILTER_PRIMITIVE, SPFilterPrimitive)

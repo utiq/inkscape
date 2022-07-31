@@ -63,7 +63,7 @@ private:
     gint32 _k1, _k2, _k3, _k4;
 };
 
-void FilterComposite::render_cairo(FilterSlot &slot)
+void FilterComposite::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *input1 = slot.getcairo(_input);
     cairo_surface_t *input2 = slot.getcairo(_input2);

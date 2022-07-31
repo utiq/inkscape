@@ -38,7 +38,7 @@ FilterSkeleton::~FilterSkeleton()
 {
 }
 
-void FilterSkeleton::render_cairo(FilterSlot &slot)
+void FilterSkeleton::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *in = slot.getcairo(_input);
     cairo_surface_t *out = ink_cairo_surface_create_identical(in);

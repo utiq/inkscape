@@ -91,14 +91,14 @@ void SPFeTurbulence::set(SPAttr key, char const *value)
             }
 
             updated = false;
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::NUMOCTAVES: {
             int n_int = value ? (int)std::floor(Inkscape::Util::read_number(value)) : 1;
             if (n_int != numOctaves){
                 numOctaves = n_int;
                 updated = false;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -107,7 +107,7 @@ void SPFeTurbulence::set(SPAttr key, char const *value)
             if (n_num != seed){
                 seed = n_num;
                 updated = false;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -116,7 +116,7 @@ void SPFeTurbulence::set(SPAttr key, char const *value)
             if (n_bool != stitchTiles){
                 stitchTiles = n_bool;
                 updated = false;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -125,7 +125,7 @@ void SPFeTurbulence::set(SPAttr key, char const *value)
             if (n_type != type) {
                 type = n_type;
                 updated = false;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }

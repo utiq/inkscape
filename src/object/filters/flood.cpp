@@ -59,7 +59,7 @@ void SPFeFlood::set(SPAttr key, char const *value)
             }
 
             if (modified) {
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -79,7 +79,7 @@ void SPFeFlood::set(SPAttr key, char const *value)
 
             if (n_opacity != opacity) {
                 opacity = n_opacity;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }

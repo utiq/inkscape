@@ -20,6 +20,8 @@
 #include "svg/svg.h"
 #include "util/numeric/converters.h"
 #include "xml/repr.h"
+#include "slot-resolver.h"
+#include "util/optstr.h"
 
 void SPFeDisplacementMap::build(SPDocument *document, Inkscape::XML::Node *repr)
 {
@@ -54,7 +56,7 @@ static FilterDisplacementMapChannelSelector read_channel_selector(char const *va
             break;
     }
     
-    return DISPLACEMENTMAP_CHANNEL_ALPHA; //default is Alpha Channel
+    return DISPLACEMENTMAP_CHANNEL_ALPHA; // default is Alpha Channel
 }
 
 void SPFeDisplacementMap::set(SPAttr key, char const *value)
@@ -64,7 +66,7 @@ void SPFeDisplacementMap::set(SPAttr key, char const *value)
             auto n_selector = ::read_channel_selector(value);
             if (n_selector != xChannelSelector) {
                 xChannelSelector = n_selector;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -72,7 +74,7 @@ void SPFeDisplacementMap::set(SPAttr key, char const *value)
             auto n_selector = ::read_channel_selector(value);
             if (n_selector != yChannelSelector) {
                 yChannelSelector = n_selector;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -80,21 +82,14 @@ void SPFeDisplacementMap::set(SPAttr key, char const *value)
             double n_num = value ? Inkscape::Util::read_number(value) : 0.0;
             if (n_num != scale) {
                 scale = n_num;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
         case SPAttr::IN2: {
-            int n_in = read_in(value);
-            if (n_in != in2) {
-                in2 = n_in;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
-            }
-            // Unlike normal in, in2 is a required attribute. Make sure we can call it by some name.
-            if (in2 == Inkscape::Filters::NR_FILTER_SLOT_NOT_SET || in2 == Inkscape::Filters::NR_FILTER_UNNAMED_SLOT) {
-                auto filter_parent = SP_FILTER(parent);
-                in2 = name_previous_out();
-                setAttribute("in2", filter_parent->name_for_image(in2));
+            if (Inkscape::Util::assign(in2_name, value)) {
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
+                invalidate_parent_slots();
             }
             break;
         }
@@ -104,23 +99,9 @@ void SPFeDisplacementMap::set(SPAttr key, char const *value)
     }
 }
 
-void SPFeDisplacementMap::update(SPCtx *ctx, unsigned flags)
-{
-    // Unlike normal in, in2 is a required attribute. Make sure we can call it by some name.
-    if (in2 == Inkscape::Filters::NR_FILTER_SLOT_NOT_SET || in2 == Inkscape::Filters::NR_FILTER_UNNAMED_SLOT) {
-        auto filter_parent = SP_FILTER(parent);
-        in2 = name_previous_out();
-
-        //XML Tree being used directly here while it shouldn't be.
-        setAttribute("in2", filter_parent->name_for_image(in2));
-    }
-
-    SPFilterPrimitive::update(ctx, flags);
-}
-
 static char const *get_channelselector_name(FilterDisplacementMapChannelSelector selector)
 {
-    switch(selector) {
+    switch (selector) {
         case DISPLACEMENTMAP_CHANNEL_RED:
             return "R";
         case DISPLACEMENTMAP_CHANNEL_GREEN:
@@ -136,35 +117,11 @@ static char const *get_channelselector_name(FilterDisplacementMapChannelSelector
 
 Inkscape::XML::Node *SPFeDisplacementMap::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags)
 {
-    auto filter_parent = SP_FILTER(parent);
-
     if (!repr) {
         repr = doc->createElement("svg:feDisplacementMap");
     }
 
-    char const *in2_name = filter_parent->name_for_image(in2);
-
-    if (!in2_name) {
-        // This code is very similar to name_previous_out()
-        SPObject *i = filter_parent->firstChild();
-
-        // Find previous filter primitive
-        while (i && i->getNext() != this) {
-        	i = i->getNext();
-        }
-
-        if (i) {
-            SPFilterPrimitive *i_prim = SP_FILTER_PRIMITIVE(i);
-            in2_name = filter_parent->name_for_image(i_prim->image_out);
-        }
-    }
-
-    if (in2_name) {
-        repr->setAttribute("in2", in2_name);
-    } else {
-        g_warning("Unable to set in2 for feDisplacementMap");
-    }
-
+    repr->setAttributeOrRemoveIfEmpty("in2", Inkscape::Util::to_cstr(in2_name));
     repr->setAttributeSvgDouble("scale", scale);
     repr->setAttribute("xChannelSelector", get_channelselector_name(xChannelSelector));
     repr->setAttribute("yChannelSelector", get_channelselector_name(yChannelSelector));
@@ -174,12 +131,18 @@ Inkscape::XML::Node *SPFeDisplacementMap::write(Inkscape::XML::Document *doc, In
     return repr;
 }
 
+void SPFeDisplacementMap::resolve_slots(SlotResolver &resolver)
+{
+    in2_slot = resolver.read(in2_name);
+    SPFilterPrimitive::resolve_slots(resolver);
+}
+
 std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeDisplacementMap::build_renderer(Inkscape::DrawingItem*) const
 {
     auto displacement_map = std::make_unique<Inkscape::Filters::FilterDisplacementMap>();
     build_renderer_common(displacement_map.get());
 
-    displacement_map->set_input(1, in2);
+    displacement_map->set_input(1, in2_slot);
     displacement_map->set_scale(scale);
     displacement_map->set_channel_selector(0, xChannelSelector);
     displacement_map->set_channel_selector(1, yChannelSelector);

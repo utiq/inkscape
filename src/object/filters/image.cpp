@@ -51,7 +51,7 @@ void SPFeImage::set(SPAttr key, char const *value)
         case SPAttr::XLINK_HREF:
             href = value ? value : "";
             reread_href();
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
 
         case SPAttr::PRESERVEASPECTRATIO:
@@ -59,7 +59,7 @@ void SPFeImage::set(SPAttr key, char const *value)
             /* Do setup before, so we can use break to escape */
             aspect_align = SP_ASPECT_XMID_YMID; // Default
             aspect_clip = SP_ASPECT_MEET; // Default
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             if (value) {
                 int len;
                 char c[256];
@@ -250,12 +250,12 @@ void SPFeImage::on_href_changed(SPObject *new_obj)
         _href_modified_connection = elem->connectModified([this] (SPObject*, unsigned) { on_href_modified(); });
     }
 
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFeImage::on_href_modified()
 {
-    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
 void SPFeImage::release()
@@ -279,7 +279,8 @@ void SPFeImage::destroy_view(View &v)
         delete v.child;
     }
 
-    v.parent->clearFilterRenderer();
+    // Defensive-coding measure: clear filter renderer immediately.
+    v.parent->setFilterRenderer(nullptr);
 }
 
 void SPFeImage::create_view(View &v)
@@ -327,7 +328,7 @@ void SPFeImage::hide(Inkscape::DrawingItem *parent)
 
 /*
  * Check if the object is being used in the filter's definition
- * and returns true if it is being used (to avoid infinate loops)
+ * and returns true if it is being used (to avoid infinite loops)
  */
 bool SPFeImage::valid_for(SPObject const *obj) const
 {
@@ -343,13 +344,8 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeImage::build_renderer(In
         auto it = std::find_if(views.begin(), views.end(), [parent] (auto &v) {
             return v.parent == parent;
         });
-
-        // Due to operations order within invoke_show, this function is called prematurely before the filter has been
-        // attached to the item, then again after the filter has been attached. It does not matter what we do in that
-        // first call, but we have to handle it, so the following check is necessary.
-        if (it != views.end()) {
-            child = it->child;
-        }
+        assert(it != views.end());
+        child = it->child;
     }
 
     auto image = std::make_unique<Inkscape::Filters::FilterImage>();

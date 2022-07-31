@@ -20,6 +20,8 @@
 #include "svg/svg.h"
 #include "util/numeric/converters.h"
 #include "xml/repr.h"
+#include "slot-resolver.h"
+#include "util/optstr.h"
 
 void SPFeComposite::build(SPDocument *document, Inkscape::XML::Node *repr)
 {
@@ -66,7 +68,7 @@ void SPFeComposite::set(SPAttr key, char const *value)
             auto n_op = ::read_operator(value);
             if (n_op != composite_operator) {
                 composite_operator = n_op;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -76,7 +78,7 @@ void SPFeComposite::set(SPAttr key, char const *value)
             if (n_k != k1) {
                 k1 = n_k;
                 if (composite_operator == COMPOSITE_ARITHMETIC)
-                    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                    requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -86,7 +88,7 @@ void SPFeComposite::set(SPAttr key, char const *value)
             if (n_k != k2) {
                 k2 = n_k;
                 if (composite_operator == COMPOSITE_ARITHMETIC)
-                    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                    requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -96,7 +98,7 @@ void SPFeComposite::set(SPAttr key, char const *value)
             if (n_k != k3) {
                 k3 = n_k;
                 if (composite_operator == COMPOSITE_ARITHMETIC)
-                    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                    requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -106,24 +108,15 @@ void SPFeComposite::set(SPAttr key, char const *value)
             if (n_k != k4) {
                 k4 = n_k;
                 if (composite_operator == COMPOSITE_ARITHMETIC)
-                    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                    requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
 
         case SPAttr::IN2: {
-            int n_in = read_in(value);
-            if (n_in != in2) {
-                in2 = n_in;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
-            }
-            // Unlike normal in, in2 is a required attribute. Make sure we can call it by some name.
-            // This may not be true.... see issue at http://www.w3.org/TR/filter-effects/#feBlendElement (but it doesn't hurt).
-            if (in2 == Inkscape::Filters::NR_FILTER_SLOT_NOT_SET || in2 == Inkscape::Filters::NR_FILTER_UNNAMED_SLOT) {
-                auto filter_parent = SP_FILTER(parent);
-                in2 = name_previous_out();
-                //XML Tree being used directly here while it shouldn't be.
-                setAttribute("in2", filter_parent->name_for_image(in2));
+            if (Inkscape::Util::assign(in2_name, value)) {
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
+                invalidate_parent_slots();
             }
             break;
         }
@@ -134,40 +127,16 @@ void SPFeComposite::set(SPAttr key, char const *value)
     }
 }
 
-Inkscape::XML::Node* SPFeComposite::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, guint flags)
+Inkscape::XML::Node *SPFeComposite::write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, guint flags)
 {
-    auto filter_parent = SP_FILTER(parent);
-
     if (!repr) {
         repr = doc->createElement("svg:feComposite");
     }
 
-    char const *in2_name = filter_parent->name_for_image(in2);
-
-    if (!in2_name) {
-        // This code is very similar to name_previous_out()
-        SPObject *i = parent->firstChild();
-
-        // Find previous filter primitive
-        while (i && i->getNext() != this) {
-        	i = i->getNext();
-        }
-
-        if (i) {
-            auto i_prim = SP_FILTER_PRIMITIVE(i);
-            in2_name = filter_parent->name_for_image(i_prim->image_out);
-        }
-    }
-
-    if (in2_name) {
-        repr->setAttribute("in2", in2_name);
-    } else {
-        g_warning("Unable to set in2 for feComposite");
-    }
+    repr->setAttributeOrRemoveIfEmpty("in2", Inkscape::Util::to_cstr(in2_name));
 
     char const *comp_op;
-
-    switch (this->composite_operator) {
+    switch (composite_operator) {
         case COMPOSITE_OVER:
             comp_op = "over"; break;
         case COMPOSITE_IN:
@@ -185,7 +154,6 @@ Inkscape::XML::Node* SPFeComposite::write(Inkscape::XML::Document *doc, Inkscape
         default:
             comp_op = nullptr;
     }
-
     repr->setAttribute("operator", comp_op);
 
     if (composite_operator == COMPOSITE_ARITHMETIC) {
@@ -200,9 +168,13 @@ Inkscape::XML::Node* SPFeComposite::write(Inkscape::XML::Document *doc, Inkscape
         repr->removeAttribute("k4");
     }
 
-    SPFilterPrimitive::write(doc, repr, flags);
+    return SPFilterPrimitive::write(doc, repr, flags);
+}
 
-    return repr;
+void SPFeComposite::resolve_slots(SlotResolver &resolver)
+{
+    in2_slot = resolver.read(in2_name);
+    SPFilterPrimitive::resolve_slots(resolver);
 }
 
 std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComposite::build_renderer(Inkscape::DrawingItem*) const
@@ -211,7 +183,7 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComposite::build_rendere
     build_renderer_common(composite.get());
 
     composite->set_operator(composite_operator);
-    composite->set_input(1, in2);
+    composite->set_input(1, in2_slot);
 
     if (composite_operator == COMPOSITE_ARITHMETIC) {
         composite->set_arithmetic(k1, k2, k3, k4);

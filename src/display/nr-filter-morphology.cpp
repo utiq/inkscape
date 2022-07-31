@@ -158,7 +158,7 @@ void morphologicalFilter1D(cairo_surface_t * const input, cairo_surface_t * cons
 
 } // namespace
 
-void FilterMorphology::render_cairo(FilterSlot &slot)
+void FilterMorphology::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *input = slot.getcairo(_input);
 

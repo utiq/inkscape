@@ -90,7 +90,7 @@ void Filter::_common_init()
     _primitive_units = SP_FILTER_UNITS_USERSPACEONUSE;
 }
 
-int Filter::render(Inkscape::DrawingItem const *item, DrawingContext &graphic, DrawingContext *bgdc)
+int Filter::render(Inkscape::DrawingItem const *item, DrawingContext &graphic, DrawingContext *bgdc) const
 {
     // std::cout << "Filter::render() for: " << const_cast<Inkscape::DrawingItem *>(item)->name() << std::endl;
     // std::cout << "  graphic drawing_scale: " << graphic.surface()->device_scale() << std::endl;
@@ -224,7 +224,7 @@ void Filter::area_enlarge(Geom::IntRect &bbox, Inkscape::DrawingItem const *item
 */
 }
 
-Geom::OptRect Filter::filter_effect_area(Geom::OptRect const &bbox)
+Geom::OptRect Filter::filter_effect_area(Geom::OptRect const &bbox) const
 {
     Geom::Point minp, maxp;
 
@@ -234,33 +234,37 @@ Geom::OptRect Filter::filter_effect_area(Geom::OptRect const &bbox)
         /* TODO: fetch somehow the object ex and em lengths */
 
         // Update for em, ex, and % values
-        _region_x.update(12, 6, len_x);
-        _region_y.update(12, 6, len_y);
-        _region_width.update(12, 6, len_x);
-        _region_height.update(12, 6, len_y);
+        auto compute = [] (SVGLength length, double scale) {
+            length.update(12, 6, scale);
+            return length.computed;
+        };
+        auto const region_x_computed = compute(_region_x, len_x);
+        auto const region_y_computed = compute(_region_y, len_y);
+        auto const region_w_computed = compute(_region_width, len_x);
+        auto const region_h_computed = compute(_region_height, len_y);;
 
         if (!bbox) return Geom::OptRect();
 
         if (_region_x.unit == SVGLength::PERCENT) {
-            minp[X] = bbox->left() + _region_x.computed;
+            minp[X] = bbox->left() + region_x_computed;
         } else {
-            minp[X] = bbox->left() + _region_x.computed * len_x;
+            minp[X] = bbox->left() + region_x_computed * len_x;
         }
         if (_region_width.unit == SVGLength::PERCENT) {
-            maxp[X] = minp[X] + _region_width.computed;
+            maxp[X] = minp[X] + region_w_computed;
         } else {
-            maxp[X] = minp[X] + _region_width.computed * len_x;
+            maxp[X] = minp[X] + region_w_computed * len_x;
         }
 
         if (_region_y.unit == SVGLength::PERCENT) {
-            minp[Y] = bbox->top() + _region_y.computed;
+            minp[Y] = bbox->top() + region_y_computed;
         } else {
-            minp[Y] = bbox->top() + _region_y.computed * len_y;
+            minp[Y] = bbox->top() + region_y_computed * len_y;
         }
         if (_region_height.unit == SVGLength::PERCENT) {
-            maxp[Y] = minp[Y] + _region_height.computed;
+            maxp[Y] = minp[Y] + region_h_computed;
         } else {
-            maxp[Y] = minp[Y] + _region_height.computed * len_y;
+            maxp[Y] = minp[Y] + region_h_computed * len_y;
         }
     } else if (_filter_units == SP_FILTER_UNITS_USERSPACEONUSE) {
         // Region already set in sp-filter.cpp

@@ -305,6 +305,10 @@ public:
     /// style belongs to a cloned object
     bool cloned;
 
+    /// (hack) Temporarily set to true to block filter changes from updating
+    /// the object's bbox in situations where this update is undesirable.
+    bool block_filter_bbox_updates = false;
+
     sigc::connection release_connection;
 
     sigc::connection filter_modified_connection;

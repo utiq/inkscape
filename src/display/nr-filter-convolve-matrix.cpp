@@ -97,7 +97,7 @@ private:
     double _bias;
 };
 
-void FilterConvolveMatrix::render_cairo(FilterSlot &slot)
+void FilterConvolveMatrix::render_cairo(FilterSlot &slot) const
 {
     static bool bias_warning = false;
     static bool edge_warning = false;

@@ -27,7 +27,7 @@
 namespace Inkscape {
 namespace Filters {
 
-void FilterImage::render_cairo(FilterSlot &slot)
+void FilterImage::render_cairo(FilterSlot &slot) const
 {
     if (!item) {
         return;

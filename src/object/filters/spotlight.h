@@ -18,52 +18,49 @@
 
 #include "object/sp-object.h"
 
-#define SP_FESPOTLIGHT(obj) (dynamic_cast<SPFeSpotLight*>((SPObject*)obj))
-#define SP_IS_FESPOTLIGHT(obj) (dynamic_cast<const SPFeSpotLight*>((SPObject*)obj) != NULL)
-
-class SPFeSpotLight : public SPObject {
+class SPFeSpotLight
+    : public SPObject
+{
 public:
 	SPFeSpotLight();
 	~SPFeSpotLight() override;
 
-    /** x coordinate of the light source */
+    /// x coordinate of the light source
     float x; 
-    unsigned int x_set : 1;
-    /** y coordinate of the light source */
+    bool x_set : 1;
+    /// y coordinate of the light source
     float y; 
-    unsigned int y_set : 1;
-    /** z coordinate of the light source */
+    bool y_set : 1;
+    /// z coordinate of the light source
     float z; 
-    unsigned int z_set : 1;
-    /** x coordinate of the point the source is pointing at */
+    bool z_set : 1;
+    /// x coordinate of the point the source is pointing at
     float pointsAtX;
-    unsigned int pointsAtX_set : 1;
-    /** y coordinate of the point the source is pointing at */
+    bool pointsAtX_set : 1;
+    /// y coordinate of the point the source is pointing at
     float pointsAtY;
-    unsigned int pointsAtY_set : 1;
-    /** z coordinate of the point the source is pointing at */
+    bool pointsAtY_set : 1;
+    /// z coordinate of the point the source is pointing at
     float pointsAtZ;
-    unsigned int pointsAtZ_set : 1;
-    /** specular exponent (focus of the light) */
+    bool pointsAtZ_set : 1;
+    /// specular exponent (focus of the light)
     float specularExponent;
-    unsigned int specularExponent_set : 1;
-    /** limiting cone angle */
+    bool specularExponent_set : 1;
+    /// limiting cone angle
     float limitingConeAngle;
-    unsigned int limitingConeAngle_set : 1;
-    //other fields
+    bool limitingConeAngle_set : 1;
 
 protected:
-	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
-	void release() override;
-
-	void set(SPAttr key, char const* value) override;
-
-	void update(SPCtx* ctx, unsigned int flags) override;
-
-	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void release() override;
+    void set(SPAttr key, char const *value) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 };
 
-#endif /* !SP_FESPOTLIGHT_H_SEEN */
+MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FESPOTLIGHT, SPFeSpotLight)
+MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FESPOTLIGHT, SPFeSpotLight)
+
+#endif // SP_FESPOTLIGHT_H_SEEN
 
 /*
   Local Variables:

@@ -47,7 +47,7 @@ public:
     FilterTurbulence();
     ~FilterTurbulence() override;
 
-    void render_cairo(FilterSlot &slot) override;
+    void render_cairo(FilterSlot &slot) const override;
     double complexity(Geom::Affine const &ctm) const override;
     bool uses_background() const override { return false; }
 

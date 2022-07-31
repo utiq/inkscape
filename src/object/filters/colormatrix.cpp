@@ -81,7 +81,7 @@ void SPFeColorMatrix::set(SPAttr key, char const *str)
             if (type != n_type){
                 type = n_type;
                 if (!value_set) set_default_value();
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -94,7 +94,7 @@ void SPFeColorMatrix::set(SPAttr key, char const *str)
                 set_default_value();
                 value_set = false;
             }
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         default:
         	SPFilterPrimitive::set(key, str);

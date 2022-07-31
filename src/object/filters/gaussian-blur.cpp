@@ -31,7 +31,7 @@ void SPGaussianBlur::set(SPAttr key, char const *value)
     switch (key) {
         case SPAttr::STDDEVIATION:
             stdDeviation.set(value);
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         default:
         	SPFilterPrimitive::set(key, value);

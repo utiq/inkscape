@@ -36,7 +36,7 @@ public:
     FilterPrimitive();
     virtual ~FilterPrimitive();
 
-    virtual void render_cairo(FilterSlot &slot);
+    virtual void render_cairo(FilterSlot &slot) const;
     virtual void area_enlarge(Geom::IntRect &area, Geom::Affine const &m) const;
 
     /**
@@ -95,7 +95,7 @@ public:
     /**
      * Returns the filter primitive area in user coordinate system.
      */
-    Geom::Rect filter_primitive_area(FilterUnits const &units);
+    Geom::Rect filter_primitive_area(FilterUnits const &units) const;
 
     /**
      *Indicate whether the filter primitive can handle the given affine.

@@ -166,7 +166,7 @@ private:
     double _offset;
 };
 
-void FilterComponentTransfer::render_cairo(FilterSlot &slot)
+void FilterComponentTransfer::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *input = slot.getcairo(_input);
     cairo_surface_t *out = ink_cairo_surface_create_same_size(input, CAIRO_CONTENT_COLOR_ALPHA);

@@ -33,7 +33,7 @@ class Pixbuf;
  * Most data is loaded upon construction. Some rarely-used OpenType tables are lazy-loaded,
  * as are the curves/pixbufs for each glyph.
  *
- * Althought FontInstance can be used on its own, in practice it is always obtained through
+ * Although FontInstance can be used on its own, in practice it is always obtained through
  * a FontFactory.
  *
  * Note: The font size is a scale factor in the transform matrix of the style.

@@ -91,7 +91,7 @@ static inline cairo_operator_t get_cairo_op(SPBlendMode _blend_mode)
     }
 }
 
-void FilterBlend::render_cairo(FilterSlot &slot)
+void FilterBlend::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *input1 = slot.getcairo(_input);
     cairo_surface_t *input2 = slot.getcairo(_input2);

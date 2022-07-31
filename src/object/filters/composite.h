@@ -35,7 +35,15 @@ class SPFeComposite
 {
 public:
     FeCompositeOperator get_composite_operator() const { return composite_operator; }
-    int get_in2() const { return in2; }
+    int get_in2() const { return in2_slot; }
+
+protected:
+    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
+    void set(SPAttr key, char const *value) override;
+    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, guint flags) override;
+
+    void resolve_slots(SlotResolver &) override;
+    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 
 private:
     FeCompositeOperator composite_operator = COMPOSITE_DEFAULT;
@@ -43,14 +51,9 @@ private:
     double k2 = 0.0;
     double k3 = 0.0;
     double k4 = 0.0;
-    int in2 = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 
-protected:
-    void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
-    void set(SPAttr key, char const *value) override;
-    Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, guint flags) override;
-
-    std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
+    std::optional<std::string> in2_name;
+    int in2_slot = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FECOMPOSITE, SPFeComposite)

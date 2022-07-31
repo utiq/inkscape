@@ -35,7 +35,7 @@ public:
     FilterDiffuseLighting();
     ~FilterDiffuseLighting() override;
 
-    void render_cairo(FilterSlot &slot) override;
+    void render_cairo(FilterSlot &slot) const override;
     void set_icc(SVGICCColor const &icc_) { icc = icc_; }
     void area_enlarge(Geom::IntRect &area, Geom::Affine const &trans) const override;
     double complexity(Geom::Affine const &ctm) const override;

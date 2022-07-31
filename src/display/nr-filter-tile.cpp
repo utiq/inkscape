@@ -24,7 +24,7 @@ FilterTile::FilterTile() = default;
 
 FilterTile::~FilterTile() = default;
 
-void FilterTile::render_cairo(FilterSlot &slot)
+void FilterTile::render_cairo(FilterSlot &slot) const
 {
     // This input source contains only the "rendering" tile.
     cairo_surface_t *in = slot.getcairo(_input);

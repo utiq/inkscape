@@ -17,6 +17,14 @@ class SPFeMerge
     : public SPFilterPrimitive
 {
 protected:
+    void modified(unsigned flags) override;
+
+protected:
+    void child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref) override;
+    void remove_child(Inkscape::XML::Node *child) override;
+    void order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_ref, Inkscape::XML::Node *new_ref) override;
+
+    void resolve_slots(SlotResolver &) override;
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 

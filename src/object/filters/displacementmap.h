@@ -29,21 +29,23 @@ class SPFeDisplacementMap
     : public SPFilterPrimitive
 {
 public:
-    int get_in2() const { return in2; }
-
-private:
-    int in2 = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
-    double scale = 0.0;
-    FilterDisplacementMapChannelSelector xChannelSelector = DISPLACEMENTMAP_CHANNEL_ALPHA;
-    FilterDisplacementMapChannelSelector yChannelSelector = DISPLACEMENTMAP_CHANNEL_ALPHA;
+    int get_in2() const { return in2_slot; }
 
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
     void set(SPAttr key, char const *value) override;
-    void update(SPCtx *ctx, unsigned int flags) override;
     Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 
+    void resolve_slots(SlotResolver &) override;
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
+
+private:
+    double scale = 0.0;
+    FilterDisplacementMapChannelSelector xChannelSelector = DISPLACEMENTMAP_CHANNEL_ALPHA;
+    FilterDisplacementMapChannelSelector yChannelSelector = DISPLACEMENTMAP_CHANNEL_ALPHA;
+
+    std::optional<std::string> in2_name;
+    int in2_slot = Inkscape::Filters::NR_FILTER_SLOT_NOT_SET;
 };
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEDISPLACEMENTMAP, SPFeDisplacementMap)

@@ -38,7 +38,7 @@ public:
     FilterSkeleton();
     ~FilterSkeleton() override;
 
-    void render_cairo(FilterSlot &slot) override;
+    void render_cairo(FilterSlot &slot) const override;
 };
 
 } // namespace Filters

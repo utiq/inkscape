@@ -1689,7 +1689,7 @@ FilterEffectsDialog::CellRendererConnection::CellRendererConnection()
     , _primitive(*this, "primitive", nullptr)
 {}
 
-Glib::PropertyProxy<SPFilterPrimitive*> FilterEffectsDialog::CellRendererConnection::property_primitive()
+Glib::PropertyProxy<void*> FilterEffectsDialog::CellRendererConnection::property_primitive()
 {
     return _primitive.get_proxy();
 }
@@ -2202,7 +2202,7 @@ const Gtk::TreeIter FilterEffectsDialog::PrimitiveList::find_result(const Gtk::T
         bool found = false;
         for (auto& o: prim->children) {
             if(c == pos && SP_IS_FEMERGENODE(&o)) {
-                image = SP_FEMERGENODE(&o)->input;
+                image = SP_FEMERGENODE(&o)->get_in();
                 found = true;
             }
             ++c;
@@ -2212,7 +2212,7 @@ const Gtk::TreeIter FilterEffectsDialog::PrimitiveList::find_result(const Gtk::T
     }
     else {
         if(attr == SPAttr::IN_)
-            image = prim->image_in;
+            image = prim->get_in();
         else if(attr == SPAttr::IN2) {
             if(SP_IS_FEBLEND(prim))
                 image = SP_FEBLEND(prim)->get_in2();
@@ -2230,7 +2230,7 @@ const Gtk::TreeIter FilterEffectsDialog::PrimitiveList::find_result(const Gtk::T
     if(image >= 0) {
         for(Gtk::TreeIter i = _model->children().begin();
             i != start; ++i) {
-            if(((SPFilterPrimitive*)(*i)[_columns.primitive])->image_out == image)
+            if(((SPFilterPrimitive*)(*i)[_columns.primitive])->get_out() == image)
                 target = i;
         }
         return target;
@@ -2455,7 +2455,7 @@ bool FilterEffectsDialog::PrimitiveList::on_button_release_event(GdkEventButton*
 static void check_single_connection(SPFilterPrimitive* prim, const int result)
 {
     if (prim && (result >= 0)) {
-        if (prim->image_in == result) {
+        if (prim->get_in() == result) {
             prim->removeAttribute("in");
         }
 
@@ -2488,9 +2488,9 @@ void FilterEffectsDialog::PrimitiveList::sanitize_connections(const Gtk::TreeIte
         else {
             SPFilterPrimitive* cur_prim = (*iter)[_columns.primitive];
             if(before)
-                check_single_connection(cur_prim, prim->image_out);
+                check_single_connection(cur_prim, prim->get_out());
             else
-                check_single_connection(prim, cur_prim->image_out);
+                check_single_connection(prim, cur_prim->get_out());
         }
     }
 }

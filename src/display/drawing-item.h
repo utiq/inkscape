@@ -127,7 +127,7 @@ public:
     void setZOrder(unsigned z);
     void setItemBounds(Geom::OptRect const &bounds);
     void setFilterBounds(Geom::OptRect const &bounds);
-    void clearFilterRenderer();
+    void setFilterRenderer(std::unique_ptr<Filters::Filter> renderer);
 
     void setKey(unsigned key) { _key = key; }
     unsigned key() const { return _key; }

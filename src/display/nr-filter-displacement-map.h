@@ -24,7 +24,7 @@ namespace Filters {
 class FilterDisplacementMap : public FilterPrimitive
 {
 public:
-    void render_cairo(FilterSlot &slot) override;
+    void render_cairo(FilterSlot &slot) const override;
     void area_enlarge(Geom::IntRect &area, Geom::Affine const &trans) const override;
     double complexity(Geom::Affine const &ctm) const override;
 

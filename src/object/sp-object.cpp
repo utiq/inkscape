@@ -1396,11 +1396,13 @@ void SPObject::updateDisplay(SPCtx *ctx, unsigned int flags)
      * done immediately. I think this is correct (Lauris).
      */
     if (style) {
+        style->block_filter_bbox_updates = true;
         if ((flags & SP_OBJECT_STYLESHEET_MODIFIED_FLAG)) {
             style->readFromObject(this);
         } else if (parent && (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) && (flags & SP_OBJECT_PARENT_MODIFIED_FLAG)) {
             style->cascade( this->parent->style );
         }
+        style->block_filter_bbox_updates = false;
     }
 
     try

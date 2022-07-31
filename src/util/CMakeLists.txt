@@ -22,6 +22,7 @@ set(util_SRC
 	format_size.h
 	forward-pointer-iterator.h
 	longest-common-suffix.h
+	optstr.h
 	pages-skeleton.h
 	paper.h
 	preview.h

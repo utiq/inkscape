@@ -560,7 +560,7 @@ void SPItem::set(SPAttr key, gchar const* value) {
                 // FIXME: See if this is really necessary. Also, check after modifying SPIPaint to preserve
                 // non-#abcdef color formats.
 
-                // Propergate the property change to all clones
+                // Propagate the property change to all clones
                 style->readFromObject(object);
                 object->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
             } else {

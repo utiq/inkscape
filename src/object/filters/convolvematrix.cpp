@@ -84,7 +84,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
                 targetY = std::floor(order.getOptNumber() / 2);
             }
             
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::KERNELMATRIX:
             if (value) {
@@ -103,7 +103,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
                     }
                 }
                 
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             } else {
                 g_warning("For feConvolveMatrix you MUST pass a kernelMatrix parameter!");
             }
@@ -127,12 +127,12 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
                     if (divisorIsSet || divisor != n_num) {
                         divisorIsSet = false;
                         divisor = n_num;
-                        parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                        requestModified(SP_OBJECT_MODIFIED_FLAG);
                     }
                 } else if (!divisorIsSet || divisor != n_num) {
                     divisorIsSet = true;
                     divisor = n_num;
-                    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                    requestModified(SP_OBJECT_MODIFIED_FLAG);
                 }
             }
             break;
@@ -144,7 +144,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
             }
             if (n_num != bias) {
                 bias = n_num;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -161,7 +161,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
                 
                 if (n_int != targetX) {
                     targetX = n_int;
-                    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                    requestModified(SP_OBJECT_MODIFIED_FLAG);
                 }
             }
             break;
@@ -178,7 +178,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
                 
                 if (n_int != targetY){
                     targetY = n_int;
-                    parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                    requestModified(SP_OBJECT_MODIFIED_FLAG);
                 }
             }
             break;
@@ -186,7 +186,7 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
             auto n_mode = ::read_edgemode(value);
             if (n_mode != edgeMode) {
                 edgeMode = n_mode;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }
@@ -198,13 +198,13 @@ void SPFeConvolveMatrix::set(SPAttr key, gchar const *value)
                 kernelUnitLength.setOptNumber(kernelUnitLength.getNumber());
             }
             
-            parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+            requestModified(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::PRESERVEALPHA: {
             bool read_bool = Inkscape::Util::read_bool(value, false);
             if (read_bool != preserveAlpha) {
                 preserveAlpha = read_bool;
-                parent->requestModified(SP_OBJECT_MODIFIED_FLAG);
+                requestModified(SP_OBJECT_MODIFIED_FLAG);
             }
             break;
         }

@@ -29,7 +29,7 @@ FilterFlood::FilterFlood() = default;
 
 FilterFlood::~FilterFlood() = default;
 
-void FilterFlood::render_cairo(FilterSlot &slot)
+void FilterFlood::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *input = slot.getcairo(_input);
 

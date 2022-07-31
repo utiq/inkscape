@@ -132,7 +132,7 @@ private:
     double _x0, _y0;
 };
 
-void FilterDiffuseLighting::render_cairo(FilterSlot &slot)
+void FilterDiffuseLighting::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *input = slot.getcairo(_input);
     cairo_surface_t *out = ink_cairo_surface_create_same_size(input, CAIRO_CONTENT_COLOR_ALPHA);

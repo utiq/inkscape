@@ -547,7 +547,7 @@ gaussian_pass_FIR(Geom::Dim2 d, double deviation, cairo_surface_t *src, cairo_su
     };
 }
 
-void FilterGaussian::render_cairo(FilterSlot &slot)
+void FilterGaussian::render_cairo(FilterSlot &slot) const
 {
     cairo_surface_t *in = slot.getcairo(_input);
     if (!(in && ink_cairo_surface_get_width(in) && ink_cairo_surface_get_height(in))) {

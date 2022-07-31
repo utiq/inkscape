@@ -26,6 +26,7 @@ class SPFeComponentTransfer
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
 	void release() override;
+    void modified(unsigned flags) override;
 
     void child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref) override;
     void remove_child(Inkscape::XML::Node *child) override;

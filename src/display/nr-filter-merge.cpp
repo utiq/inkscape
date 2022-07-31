@@ -22,7 +22,7 @@ namespace Filters {
 FilterMerge::FilterMerge()
     : _input_image({NR_FILTER_SLOT_NOT_SET}) {}
 
-void FilterMerge::render_cairo(FilterSlot &slot)
+void FilterMerge::render_cairo(FilterSlot &slot) const
 {
     if (_input_image.empty()) return;
 
@@ -32,7 +32,7 @@ void FilterMerge::render_cairo(FilterSlot &slot)
     // output is RGBA if at least one input is RGBA
     bool rgba32 = false;
     cairo_surface_t *out = nullptr;
-    for (int & i : _input_image) {
+    for (auto &i : _input_image) {
         cairo_surface_t *in = slot.getcairo(i);
         if (cairo_surface_get_content(in) == CAIRO_CONTENT_COLOR_ALPHA) {
             out = ink_cairo_surface_create_identical(in);
@@ -47,7 +47,7 @@ void FilterMerge::render_cairo(FilterSlot &slot)
     }
     cairo_t *out_ct = cairo_create(out);
 
-    for (int & i : _input_image) {
+    for (auto &i : _input_image) {
         cairo_surface_t *in = slot.getcairo(i);
 
         set_cairo_surface_ci(in, color_interpolation);

@@ -25,7 +25,8 @@ namespace Filters {
 
 class FilterSlot;
 
-enum FilterColorMatrixType {
+enum FilterColorMatrixType
+{
     COLORMATRIX_MATRIX,
     COLORMATRIX_SATURATE,
     COLORMATRIX_HUEROTATE,
@@ -39,7 +40,7 @@ public:
     FilterColorMatrix();
     ~FilterColorMatrix() override;
 
-    void render_cairo(FilterSlot &slot) override;
+    void render_cairo(FilterSlot &slot) const override;
     bool can_handle_affine(Geom::Affine const &) const override;
     double complexity(Geom::Affine const &ctm) const override;
 

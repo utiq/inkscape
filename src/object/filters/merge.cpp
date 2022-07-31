@@ -20,6 +20,45 @@
 #include "display/nr-filter.h"
 #include "display/nr-filter-merge.h"
 
+void SPFeMerge::modified(unsigned flags)
+{
+    auto const cflags = cascade_flags(flags);
+
+    for (auto &c : children) {
+        if (cflags || (c.mflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
+            c.emitModified(cflags);
+        }
+    }
+}
+
+void SPFeMerge::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
+{
+    SPFilterPrimitive::child_added(child, ref);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
+}
+
+void SPFeMerge::remove_child(Inkscape::XML::Node *child)
+{
+    SPFilterPrimitive::remove_child(child);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
+}
+
+void SPFeMerge::order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *old_ref, Inkscape::XML::Node *new_ref)
+{
+    SPFilterPrimitive::order_changed(child, old_ref, new_ref);
+    requestModified(SP_OBJECT_MODIFIED_FLAG);
+}
+
+void SPFeMerge::resolve_slots(SlotResolver &resolver)
+{
+    for (auto &input : children) {
+        if (auto node = dynamic_cast<SPFeMergeNode*>(&input)) {
+            node->resolve_slots(std::as_const(resolver));
+        }
+    }
+    SPFilterPrimitive::resolve_slots(resolver);
+}
+
 std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMerge::build_renderer(Inkscape::DrawingItem*) const
 {
     auto merge = std::make_unique<Inkscape::Filters::FilterMerge>();
@@ -28,8 +67,8 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMerge::build_renderer(In
     int in_nr = 0;
 
     for (auto const &input : children) {
-        if (auto node = SP_FEMERGENODE(&input)) {
-            merge->set_input(in_nr, node->input);
+        if (auto node = dynamic_cast<SPFeMergeNode const*>(&input)) {
+            merge->set_input(in_nr, node->get_in());
             in_nr++;
         }
     }
