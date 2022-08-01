@@ -22,7 +22,7 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-#define DEFAULT_UNIT_NAME "mm";
+#define DEFAULT_UNIT_NAME "mm"
 
 namespace std {
 template <>

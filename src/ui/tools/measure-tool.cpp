@@ -1074,7 +1074,7 @@ void MeasureTool::showItemInfoText(Geom::Point pos, Glib::ustring const &measure
 
 void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
 {
-    Inkscape::Util::Unit const *unit = _desktop->getNamedView()->getDisplayUnit();
+    using Inkscape::Util::Quantity;
 
     for (auto & idx : measure_item) {
         delete(idx);
@@ -1082,97 +1082,94 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
     measure_item.clear();
 
     SPItem *newover = _desktop->getItemAtPoint(cursor, into_groups);
-    if (newover) {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        double fontsize = prefs->getDouble("/tools/measure/fontsize", 10.0);
-        double scale    = prefs->getDouble("/tools/measure/scale", 100.0) / 100.0;
-        int precision = prefs->getInt("/tools/measure/precision", 2);
-        Glib::ustring unit_name = prefs->getString("/tools/measure/unit");
-        bool only_selected = prefs->getBool("/tools/measure/only_selected", false);
-        if (!unit_name.compare("")) {
-            unit_name = DEFAULT_UNIT_NAME;
-        }
-        Geom::Scale zoom = Geom::Scale(Inkscape::Util::Quantity::convert(_desktop->current_zoom(), "px", unit->abbr)).inverse();
-        if(newover != over){
-            over = newover;
-            Preferences *prefs = Preferences::get();
-            int prefs_bbox = prefs->getBool("/tools/bounding_box", false);
-            SPItem::BBoxType bbox_type = !prefs_bbox ? SPItem::VISUAL_BBOX : SPItem::GEOMETRIC_BBOX;
-            Geom::OptRect bbox = over->bounds(bbox_type);
-            if (bbox) {
-                item_width  = Inkscape::Util::Quantity::convert((*bbox).width()  * scale, unit->abbr, unit_name);
-                item_height = Inkscape::Util::Quantity::convert((*bbox).height() * scale, unit->abbr, unit_name);
-                item_x      = Inkscape::Util::Quantity::convert((*bbox).left(),           unit->abbr, unit_name);
-
-                Geom::Point y_point(0,Inkscape::Util::Quantity::convert((*bbox).bottom() * scale, unit->abbr, "px"));
-                y_point *= _desktop->doc2dt();
-                item_y      = Inkscape::Util::Quantity::convert(y_point[Geom::Y] * scale,       "px", unit_name);
-                if (SP_IS_SHAPE(over)) {
-                    Geom::PathVector shape = SP_SHAPE(over)->curve()->get_pathvector();
-                    item_length = Geom::length(paths_to_pw(shape));
-                    item_length = Inkscape::Util::Quantity::convert(item_length * scale, unit->abbr, unit_name);
-                }
-            }
-        }
-
-        gchar *measure_str = nullptr;
-        std::stringstream precision_str;
-        precision_str.imbue(std::locale::classic());
-        double origin = Inkscape::Util::Quantity::convert(14, "px", unit->abbr);
-        Geom::Point rel_position = Geom::Point(origin, origin);
-        Geom::Point pos = _desktop->w2d(cursor);
-        double gap = Inkscape::Util::Quantity::convert(7 + fontsize, "px", unit->abbr);
-        double yaxisdir = _desktop->yaxisdir();
-
-        if (only_selected) {
-            if (_desktop->getSelection()->includes(over)) {
-                showItemInfoText(pos - (yaxisdir * rel_position * zoom), _("Selected"), fontsize);
-            } else {
-                showItemInfoText(pos - (yaxisdir * rel_position * zoom), _("Not selected"), fontsize);
-            }
-            rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
-        }
-
-        if (SP_IS_SHAPE(over)) {
-
-            precision_str << _("Length") <<  ": %." << precision << "f %s";
-            measure_str = g_strdup_printf(precision_str.str().c_str(), item_length, unit_name.c_str());
-            precision_str.str("");
-            showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
-            rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
-
-        } else if (SP_IS_GROUP(over)) {
-
-            measure_str = _("Press 'CTRL' to measure into group");
-            showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
-            rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
-
-        }
-
-        precision_str <<  "Y: %." << precision << "f %s";
-        measure_str = g_strdup_printf(precision_str.str().c_str(), item_y, unit_name.c_str());
-        precision_str.str("");
-        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
-        rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
-
-        precision_str <<  "X: %." << precision << "f %s";
-        measure_str = g_strdup_printf(precision_str.str().c_str(), item_x, unit_name.c_str());
-        precision_str.str("");
-        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
-        rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
-
-        precision_str << _("Height") << ": %." << precision << "f %s";
-        measure_str = g_strdup_printf(precision_str.str().c_str(), item_height, unit_name.c_str());
-        precision_str.str("");
-        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
-        rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
-
-        precision_str << _("Width") << ": %." << precision << "f %s";
-        measure_str = g_strdup_printf(precision_str.str().c_str(), item_width, unit_name.c_str());
-        precision_str.str("");
-        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
-        g_free(measure_str);
+    if (!newover) {
+        // Clear over when the cursor isn't over anything.
+        over = nullptr;
+        return;
     }
+    Inkscape::Util::Unit const *unit = _desktop->getNamedView()->getDisplayUnit();
+
+    // Load preferences for measuring the new object.
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    int precision = prefs->getInt("/tools/measure/precision", 2);
+    bool selected = prefs->getBool("/tools/measure/only_selected", false);
+    auto box_type = prefs->getBool("/tools/bounding_box", false) ? SPItem::GEOMETRIC_BBOX : SPItem::VISUAL_BBOX;
+    double fontsize = prefs->getDouble("/tools/measure/fontsize", 10.0);
+    double scale    = prefs->getDouble("/tools/measure/scale", 100.0) / 100.0;
+    Glib::ustring unit_name = prefs->getString("/tools/measure/unit", unit->abbr);
+
+    Geom::Scale zoom = Geom::Scale(Quantity::convert(_desktop->current_zoom(), "px", unit->abbr)).inverse();
+
+    if(newover != over) {
+        // Get information for the item, and cache it to save time.
+        over = newover;
+        auto affine = over->i2dt_affine() * Geom::Scale(scale);
+        if (auto bbox = over->bounds(box_type, affine)) {
+            item_width  = Quantity::convert(bbox->width(), "px", unit_name);
+            item_height = Quantity::convert(bbox->height(), "px", unit_name);
+            item_x      = Quantity::convert(bbox->left(), "px", unit_name);
+            item_y      = Quantity::convert(bbox->top(), "px", unit_name);
+
+            if (auto shape = dynamic_cast<SPShape *>(over)) {
+                auto pw = paths_to_pw(shape->curve()->get_pathvector());
+                item_length = Quantity::convert(Geom::length(pw * affine), "px", unit_name);
+            }
+        }
+    }
+
+    gchar *measure_str = nullptr;
+    std::stringstream precision_str;
+    precision_str.imbue(std::locale::classic());
+    double origin = Quantity::convert(14, "px", unit->abbr);
+    Geom::Point rel_position = Geom::Point(origin, origin);
+    Geom::Point pos = _desktop->w2d(cursor);
+    double gap = Quantity::convert(7 + fontsize, "px", unit->abbr);
+    double yaxisdir = _desktop->yaxisdir();
+
+    if (selected) {
+        showItemInfoText(pos - (yaxisdir * rel_position * zoom), _desktop->getSelection()->includes(over) ? _("Selected") : _("Not selected"), fontsize);
+        rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
+    }
+
+    if (SP_IS_SHAPE(over)) {
+
+        precision_str << _("Length") <<  ": %." << precision << "f %s";
+        measure_str = g_strdup_printf(precision_str.str().c_str(), item_length, unit_name.c_str());
+        precision_str.str("");
+        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+        rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
+
+    } else if (SP_IS_GROUP(over)) {
+
+        measure_str = _("Press 'CTRL' to measure into group");
+        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+        rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
+
+    }
+
+    precision_str <<  "Y: %." << precision << "f %s";
+    measure_str = g_strdup_printf(precision_str.str().c_str(), item_y, unit_name.c_str());
+    precision_str.str("");
+    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
+
+    precision_str <<  "X: %." << precision << "f %s";
+    measure_str = g_strdup_printf(precision_str.str().c_str(), item_x, unit_name.c_str());
+    precision_str.str("");
+    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
+
+    precision_str << _("Height") << ": %." << precision << "f %s";
+    measure_str = g_strdup_printf(precision_str.str().c_str(), item_height, unit_name.c_str());
+    precision_str.str("");
+    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
+
+    precision_str << _("Width") << ": %." << precision << "f %s";
+    measure_str = g_strdup_printf(precision_str.str().c_str(), item_width, unit_name.c_str());
+    precision_str.str("");
+    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    g_free(measure_str);
 }
 
 void MeasureTool::showCanvasItems(bool to_guides, bool to_item, bool to_phantom, Inkscape::XML::Node *measure_repr)

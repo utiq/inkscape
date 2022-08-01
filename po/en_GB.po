@@ -6834,7 +6834,7 @@ msgstr "Open"
 #: ../src/ui/tools/measure-tool.cpp:1233 ../src/ui/widget/page-sizer.cpp:59
 #: ../share/extensions/interp_att_g.inx:9
 msgid "Width"
-msgstr "Width:"
+msgstr "Width"
 
 #: ../src/extension/internal/filter/morphology.h:70
 #: ../src/extension/internal/filter/morphology.h:191
