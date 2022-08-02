@@ -89,15 +89,12 @@ load_svg_cursor(Glib::RefPtr<Gdk::Display> display,
 
     // Find the rendered size of the icon.
     int scale = 1;
-    bool cursor_scaling = false;
-#ifndef GDK_WINDOWING_QUARTZ
-    // Default cursor size (get_default_cursor_size()) fixed to 32 on Quartz. Cursor scaling handled elsewhere.
-
-    cursor_scaling = prefs->getBool("/options/cursorscaling"); // Fractional scaling is broken but we can't detect it.
+    // cursor scaling? note: true by default - this has to be in sync with inkscape-preferences where it is true
+    bool cursor_scaling = prefs->getBool("/options/cursorscaling", true); // Fractional scaling is broken but we can't detect it.
     if (cursor_scaling) {
         scale = window->get_scale_factor(); // Adjust for HiDPI screens.
     }
-#endif
+
     static std::unordered_map<Key, Glib::RefPtr<Gdk::Cursor>, KeyHasher> cursor_cache;
     Key cursor_key;
 
