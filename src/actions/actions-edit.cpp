@@ -24,6 +24,8 @@
 #include "ui/tools/node-tool.h"
 #include "ui/tools/text-tool.h"
 
+namespace ActionsEdit {
+
 void
 object_to_pattern(InkscapeApplication *app)
 {
@@ -312,6 +314,10 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit = {
     // clang-format on
 };
 
+} // namespace ActionsEdit
+
+using namespace ActionsEdit;
+
 void
 add_actions_edit(InkscapeApplication* app)
 {
@@ -333,7 +339,8 @@ add_actions_edit(InkscapeApplication* app)
     gapp->add_action( "paste-height-separately",         sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&paste_height_separately), app));
     gapp->add_action( "duplicate",                       sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&duplicate), app));
     gapp->add_action( "duplicate-transform",             sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&duplicate_transform), app));
-    gapp->add_action( "clone",                           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&clone), app));
+    // explicit namespace reference added because NetBSD provides a conflicting clone() function in its libc headers
+    gapp->add_action( "clone",                           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&ActionsEdit::clone), app));
     gapp->add_action( "clone-unlink",                    sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&clone_unlink), app));
     gapp->add_action( "clone-unlink-recursively",        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&clone_unlink_recursively), app));
     gapp->add_action( "clone-link",                      sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&clone_link), app));
