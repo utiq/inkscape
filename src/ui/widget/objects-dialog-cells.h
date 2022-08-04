@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __UI_WIDGET_OBJECTS_CELLs_H__
-#define __UI_WIDGET_OBJECTS_CELLS_H__
+#ifndef SEEN_UI_WIDGET_OBJECTS_CELLS_H
+#define SEEN_UI_WIDGET_OBJECTS_CELLS_H
 /*
  * Authors:
  *   Mike Kowalski
@@ -57,7 +57,7 @@ private:
 } // namespace UI
 } // namespace Inkscape
 
-#endif /* __UI_WIDGET_OBJECTS_CELLs_H__ */
+#endif // SEEN_UI_WIDGET_OBJECTS_CELLS_H
 
 /*
   Local Variables:
