@@ -363,10 +363,10 @@ void KnotHolder::add(KnotHolderEntity *e)
 
 void KnotHolder::add_pattern_knotholder()
 {
-    if ((item->style->fill.isPaintserver()) && dynamic_cast<SPPattern *>(item->style->getFillPaintServer())) {
-        PatternKnotHolderEntityXY *entity_xy = new PatternKnotHolderEntityXY(true);
-        PatternKnotHolderEntityAngle *entity_angle = new PatternKnotHolderEntityAngle(true);
-        PatternKnotHolderEntityScale *entity_scale = new PatternKnotHolderEntityScale(true);
+    if (dynamic_cast<SPPattern*>(item->style->getFillPaintServer())) {
+        auto entity_xy = new PatternKnotHolderEntityXY(true);
+        auto entity_angle = new PatternKnotHolderEntityAngle(true);
+        auto entity_scale = new PatternKnotHolderEntityScale(true);
         entity_xy->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_SIZER, "Pattern:Fill:xy",
                           // TRANSLATORS: This refers to the pattern that's inside the object
                           _("<b>Move</b> the pattern fill inside the object"));
@@ -382,10 +382,10 @@ void KnotHolder::add_pattern_knotholder()
         entity.push_back(entity_scale);
     }
 
-    if ((item->style->stroke.isPaintserver()) && dynamic_cast<SPPattern *>(item->style->getStrokePaintServer())) {
-        PatternKnotHolderEntityXY *entity_xy = new PatternKnotHolderEntityXY(false);
-        PatternKnotHolderEntityAngle *entity_angle = new PatternKnotHolderEntityAngle(false);
-        PatternKnotHolderEntityScale *entity_scale = new PatternKnotHolderEntityScale(false);
+    if (dynamic_cast<SPPattern*>(item->style->getStrokePaintServer())) {
+        auto entity_xy = new PatternKnotHolderEntityXY(false);
+        auto entity_angle = new PatternKnotHolderEntityAngle(false);
+        auto entity_scale = new PatternKnotHolderEntityScale(false);
         entity_xy->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT, "Pattern:Stroke:xy",
                           // TRANSLATORS: This refers to the pattern that's inside the object
                           _("<b>Move</b> the stroke's pattern inside the object"));
@@ -400,6 +400,9 @@ void KnotHolder::add_pattern_knotholder()
         entity.push_back(entity_angle);
         entity.push_back(entity_scale);
     }
+
+    // watch patterns and update knots when they change
+    install_modification_watch();
 }
 
 void KnotHolder::add_hatch_knotholder()
@@ -469,6 +472,32 @@ bool KnotHolder::set_item_clickpos(Geom::Point loc)
         ret = i->set_item_clickpos(loc) || ret;
     }
     return ret;
+}
+
+/**
+ * When object being edited has some attributes changed (fill, stroke)
+ * update what objects we watch
+ */
+void KnotHolder::install_modification_watch() {
+    g_assert(item); 
+
+    if (auto pattern = dynamic_cast<SPPattern*>(item->style->getFillPaintServer())) {
+        _watch_fill = pattern->connectModified([=](SPObject*, unsigned int){
+            update_knots();
+        });
+    }
+    else {
+        _watch_fill.disconnect();
+    }
+
+    if (auto pattern = dynamic_cast<SPPattern*>(item->style->getStrokePaintServer())) {
+        _watch_stroke = pattern->connectModified([=](SPObject*, unsigned int){
+            update_knots();
+        });
+    }
+    else {
+        _watch_stroke.disconnect();
+    }
 }
 
 /*

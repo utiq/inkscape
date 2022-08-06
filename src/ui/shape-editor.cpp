@@ -156,6 +156,7 @@ void ShapeEditor::set_item(SPItem *item) {
             this->lpeknotholder = createLPEKnotHolder(item, desktop);
         }
         if (this->knotholder) {
+            knotholder->install_modification_watch(); // let knotholder know item's attribute may have changed
             this->knotholder->setEditTransform(_edit_transform);
             this->knotholder->update_knots();
             // setting new listener

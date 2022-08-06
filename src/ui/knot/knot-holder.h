@@ -22,6 +22,7 @@
 #include <2geom/affine.h>
 #include <list>
 #include <sigc++/connection.h>
+#include "helper/auto-connection.h"
 
 namespace Inkscape {
 namespace UI {
@@ -77,6 +78,7 @@ public:
     bool is_dragging() const { return dragging; }
 
     bool set_item_clickpos(Geom::Point loc);
+    void install_modification_watch();
 
     friend class Inkscape::UI::ShapeEditor; // FIXME why?
     friend class Inkscape::LivePathEffect::NodeSatelliteArrayParam;                    // why?
@@ -97,6 +99,8 @@ protected:
     bool dragging;
 
     Geom::Affine _edit_transform;
+    Inkscape::auto_connection _watch_fill;
+    Inkscape::auto_connection _watch_stroke;
 };
 
 /**

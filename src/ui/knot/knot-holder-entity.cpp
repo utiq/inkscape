@@ -178,8 +178,14 @@ bool PatternKnotHolderEntity::set_item_clickpos(Geom::Point loc)
     return true;
 }
 
-void PatternKnotHolderEntity::set_offset(Geom::Point loc)
-{
+void PatternKnotHolderEntity::update_knot() {
+    if (_location) {
+        _cell = offset_to_cell(*_location);
+    }
+    KnotHolderEntity::update_knot();
+}
+
+Geom::IntPoint PatternKnotHolderEntity::offset_to_cell(Geom::Point loc) const {
     auto pat = _pattern();
 
     // 1. Turn the location into the pattern grid coordinate
@@ -188,7 +194,12 @@ void PatternKnotHolderEntity::set_offset(Geom::Point loc)
     auto i2p = pat->getTransform().inverse();
 
     // Get grid index of nearest pattern repetition.
-    _cell = (loc * d2i * i2p * scale.inverse()).floor();
+    return (loc * d2i * i2p * scale.inverse()).floor();
+}
+
+void PatternKnotHolderEntity::set_offset(Geom::Point loc)
+{
+    _location = loc;
 }
 
 SPPattern *PatternKnotHolderEntity::_pattern() const
@@ -217,7 +228,7 @@ void PatternKnotHolderEntityXY::on_created()
 
 void PatternKnotHolderEntityXY::update_knot()
 {
-    KnotHolderEntity::update_knot();
+    PatternKnotHolderEntity::update_knot();
     auto tr = item->i2dt_affine();
     _quad->set_coords(_get_pos(0, 0) * tr, _get_pos(0, 1) * tr,
                       _get_pos(1, 1) * tr, _get_pos(1, 0) * tr);
