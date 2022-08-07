@@ -269,18 +269,6 @@ PatternEditor::PatternEditor(const char* prefs, Inkscape::PatternManager& manage
     // current pattern category
     _combo_set.set_active(Inkscape::Preferences::get()->getIntLimited(_prefs + "/currentSet", 1, 0, std::max(cat_count - 1, 0)));
 
-    // now we need to preselect one pattern, so there's something available initially
-    // when users switch to pattern fill in F&S dialog; otherwise nothing gets assigned
-    auto first_pattern = _stock_pattern_store.store.get_store()->get_item(0);
-    if (first_pattern) {
-        auto scoped(_update.block());
-        // auto pat = patterns.front();
-        update_ui(first_pattern);
-        if (auto first = _stock_gallery.get_child_at_index(0)) {
-            _stock_gallery.select_child(*first);
-        }
-    }
-
     update_scale_link();
     pack_start(_main_grid);
 }
@@ -612,7 +600,13 @@ std::pair<std::string, SPDocument*> PatternEditor::get_selected() {
         }
     }
     else {
-        // no selection: none
+        // if nothing is selected, pick first stock pattern, so we have something to assign
+        // to selected object(s); without it, pattern editing will not be activated
+        if (auto first = _stock_pattern_store.store.get_store()->get_item(0)) {
+            return std::make_pair(first->id, first->collection);
+        }
+
+        // no stock patterns available
         return std::make_pair("", nullptr);
     }
 }
