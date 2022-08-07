@@ -22,6 +22,7 @@
 
 #include "inkscape-window.h"
 #include "object/sp-namedview.h"
+#include "ui/dialog-run.h"
 
 #include "file.h"
 #include "extension/system.h" // Inkscape::Extension::FILE...
@@ -58,7 +59,7 @@ document_check_for_data_loss(InkscapeWindow* window)
         dialog.add_button(_("_Save"),                 Gtk::RESPONSE_YES);
         dialog.set_default_response(Gtk::RESPONSE_YES);
 
-        int response = dialog.run();
+        int response = Inkscape::UI::dialog_run(dialog);
 
         switch (response) {
             case GTK_RESPONSE_YES:
@@ -103,7 +104,7 @@ document_check_for_data_loss(InkscapeWindow* window)
         dialog.add_button(_("_Save as Inkscape SVG"), Gtk::RESPONSE_YES);
         dialog.set_default_response(Gtk::RESPONSE_YES);
 
-        int response = dialog.run();
+        int response = Inkscape::UI::dialog_run(dialog);
 
         switch (response) {
             case GTK_RESPONSE_YES:

@@ -13,6 +13,8 @@
 
 #include "libnrtype/font-lister.h"
 
+#include "ui/dialog-run.h"
+
 // For updating from selection
 #include "util/document-fonts.h"
 
@@ -469,7 +471,7 @@ int FontCollectionSelector::deleltion_warning_message_dialog(const Glib::ustring
         Glib::ustring::compose(_("Are you sure want to delete the \"%1\" font collection?\n"), collection_name);
     Gtk::MessageDialog dialog(message, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true);
     dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
-    return dialog.run();
+    return dialog_run(dialog);
 }
 
 bool FontCollectionSelector::on_key_pressed(GdkEventKey *event)

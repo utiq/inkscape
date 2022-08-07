@@ -12,6 +12,7 @@
 
 #include "util.h"
 #include "inkscape.h"
+#include "ui/dialog-run.h"
 
 #include <cairomm/pattern.h>
 #include <cstdint>
@@ -121,7 +122,7 @@ void gui_warning(const std::string &msg, Gtk::Window *parent_window) {
     if (INKSCAPE.active_desktop()) {
         Gtk::MessageDialog warning(_(msg.c_str()), false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_OK, true);
         warning.set_transient_for( parent_window ? *parent_window : *(INKSCAPE.active_desktop()->getToplevel()) );
-        warning.run();
+        dialog_run(warning);
     }
 }
 

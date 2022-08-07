@@ -26,6 +26,7 @@
 #include "object/sp-shape.h"
 #include "object/sp-use.h"
 #include "preferences.h"
+#include "ui/dialog-run.h"
 #include "ui/widget/canvas.h"
 #include "ui/themes.h"
 #include "ui/util.h"
@@ -974,7 +975,6 @@ void LivePathEffectAdd::show(SPDesktop *desktop)
     vadjust->set_value(vadjust->get_lower());
     Gtk::Window *window = desktop->getToplevel();
     dial._LPEDialogSelector->set_transient_for(*window);
-    dial._LPEDialogSelector->show();
     int searchlen = dial._LPEFilter->get_text().length();
     if (searchlen > 0) {
         dial._LPEFilter->select_region (0, searchlen);
@@ -982,8 +982,7 @@ void LivePathEffectAdd::show(SPDesktop *desktop)
     } else if (dial._lasteffect) {
         dial._lasteffect->grab_focus();
     }
-    dial._LPEDialogSelector->run();
-    dial._LPEDialogSelector->hide();
+    dialog_run(*dial._LPEDialogSelector);
 }
 
 } // namespace Dialog

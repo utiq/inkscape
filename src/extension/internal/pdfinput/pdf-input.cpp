@@ -56,6 +56,7 @@
 #include "pdf-parser.h"
 #include "ui/builder-utils.h"
 #include "ui/dialog-events.h"
+#include "ui/dialog-run.h"
 #include "ui/widget/frame.h"
 #include "ui/widget/spinbutton.h"
 #include "util/parse-int-range.h"
@@ -221,9 +222,7 @@ PdfImportDialog::~PdfImportDialog() {
 }
 
 bool PdfImportDialog::showDialog() {
-    show();
-    gint b = run();
-    hide();
+    gint b = UI::dialog_run(*this);
     if ( b == Gtk::RESPONSE_OK ) {
         return TRUE;
     } else {

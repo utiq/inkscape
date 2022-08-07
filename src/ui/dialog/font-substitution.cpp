@@ -38,6 +38,7 @@
 #include "libnrtype/font-instance.h"
 
 #include "ui/dialog-events.h"
+#include "ui/dialog-run.h"
 
 namespace Inkscape {
 namespace UI {
@@ -82,7 +83,7 @@ void show(std::vector<SPItem*> const &list, Glib::ustring const &out)
    box->pack_start(cbSelect, false, false, 0);
    box->pack_start(cbWarning, false, false, 0);
 
-   warning.run();
+   Inkscape::UI::dialog_run(warning);
 
    if (cbWarning.get_active()) {
        Inkscape::Preferences::get()->setBool("/options/font/substitutedlg", false);

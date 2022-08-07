@@ -45,6 +45,7 @@ using librevenge::RVNGStringVector;
 #include "inkscape.h"
 
 #include "ui/dialog-events.h"
+#include "ui/dialog-run.h"
 #include <glibmm/i18n.h>
 
 #include "ui/view/svg-view-widget.h"
@@ -163,9 +164,7 @@ CdrImportDialog::~CdrImportDialog() = default;
 
 bool CdrImportDialog::showDialog()
 {
-     show();
-     gint b = run();
-     hide();
+     gint b = UI::dialog_run(*this);
      if (b == Gtk::RESPONSE_OK || b == Gtk::RESPONSE_ACCEPT) {
           return TRUE;
      } else {

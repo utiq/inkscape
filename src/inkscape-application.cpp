@@ -88,6 +88,7 @@
 #include "ui/dialog/font-substitution.h"  // Warn user about font substitution.
 #include "ui/dialog/startup.h"
 #include "ui/shortcuts.h"           // Shortcuts... init
+#include "ui/dialog-run.h"
 
 #include "util/units.h"           // Redimension window
 #include "util/statics.h"
@@ -1090,7 +1091,7 @@ InkscapeApplication::on_activate()
         // add start window to gtk_app to ensure proper closing on quit
         gtk_app()->add_window(start_screen);
 
-        start_screen.run();
+        Inkscape::UI::dialog_run(start_screen);
         document = start_screen.get_document();
     } else {
 

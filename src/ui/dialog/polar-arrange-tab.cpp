@@ -25,6 +25,7 @@
 #include "ui/dialog/polar-arrange-tab.h"
 #include "ui/dialog/tile.h"
 #include "ui/icon-names.h"
+#include "ui/dialog-run.h"
 
 
 namespace Inkscape {
@@ -304,7 +305,7 @@ void PolarArrangeTab::arrange()
 		if(referenceEllipse == nullptr)
 		{
 			Gtk::MessageDialog dialog(_("Couldn't find an ellipse in selection"), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_CLOSE, true);
-			dialog.run();
+            Inkscape::UI::dialog_run(dialog);
 			return;
 		} else {
 			cx = referenceEllipse->cx.value;

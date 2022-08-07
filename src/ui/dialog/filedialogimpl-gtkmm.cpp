@@ -38,6 +38,7 @@
 #include "path-prefix.h"
 #include "preferences.h"
 #include "ui/dialog-events.h"
+#include "ui/dialog-run.h"
 #include "ui/util.h"
 #include "ui/view/svg-view-widget.h"
 
@@ -317,9 +318,8 @@ bool FileOpenDialogImplGtk::show()
 {
     set_modal(TRUE); // Window
     sp_transientize(GTK_WIDGET(gobj())); // Make transient
-    gint b = run(); // Dialog
+    gint b = dialog_run(*this); // Dialog
     svgPreview.showNoPreview();
-    hide();
 
     if (b == Gtk::RESPONSE_OK) {
         if (auto iter = filterComboBox->get_active()) {
@@ -548,10 +548,9 @@ bool FileSaveDialogImplGtk::show()
     change_path(getFilename());
     set_modal(TRUE); // Window
     sp_transientize(GTK_WIDGET(gobj())); // Make transient
-    gint b = run(); // Dialog
+    gint b = dialog_run(*this); // Dialog
     svgPreview.showNoPreview();
     set_preview_widget_active(false);
-    hide();
 
     if (b == Gtk::RESPONSE_OK) {
         updateNameAndExtension();

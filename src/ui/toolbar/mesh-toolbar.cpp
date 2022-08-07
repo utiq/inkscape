@@ -47,6 +47,7 @@
 #include "ui/widget/combo-tool-item.h"
 #include "ui/widget/gradient-image.h"
 #include "ui/widget/spin-button-tool-item.h"
+#include "ui/dialog-run.h"
 
 using Inkscape::DocumentUndo;
 using Inkscape::UI::Tools::MeshTool;
@@ -537,7 +538,7 @@ MeshToolbar::warning_popup()
                   "For print: export to PDF.");
     Gtk::MessageDialog dialog(msg, false, Gtk::MESSAGE_WARNING,
                               Gtk::BUTTONS_OK, true);
-    dialog.run();
+    Inkscape::UI::dialog_run(dialog);
 }
 
 /**

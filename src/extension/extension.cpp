@@ -40,6 +40,7 @@
 #include "prefdialog/prefdialog.h"
 #include "prefdialog/widget.h"
 #include "timer.h"
+#include "ui/dialog-run.h"
 #include "xml/repr.h"
 
 namespace Inkscape {
@@ -1127,11 +1128,9 @@ bool Extension::prefs()
         return false;
 
     if (auto controls = autogui(nullptr, nullptr)) {
-        auto dialog = new PrefDialog(get_name(), controls);
-        int response = dialog->run();
-        dialog->hide();
-        delete dialog;
-        return (response == Gtk::RESPONSE_OK);
+        auto dialog = PrefDialog(get_name(), controls);
+        int response = Inkscape::UI::dialog_run(dialog);
+        return response == Gtk::RESPONSE_OK;
     }
 
     // No controls, no prefs

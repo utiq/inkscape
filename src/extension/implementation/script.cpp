@@ -42,6 +42,7 @@
 #include "io/dir-util.h"
 #include "ui/desktop/menubar.h"
 #include "ui/dialog-events.h"
+#include "ui/dialog-run.h"
 #include "ui/tool/control-point-selection.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/path-manipulator.h"
@@ -692,7 +693,7 @@ void Script::showPopupError (const Glib::ustring &data,
 
     vbox->pack_start(*scrollwindow, true, true, 5 /* fix these */);
 
-    warning.run();
+    Inkscape::UI::dialog_run(warning);
 
     delete textview;
     delete scrollwindow;

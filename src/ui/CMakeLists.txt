@@ -5,6 +5,7 @@ set(ui_SRC
 	contextmenu.cpp
 	cursor-utils.cpp
 	dialog-events.cpp
+	dialog-run.cpp
 	draw-anchor.cpp
 	drag-and-drop.cpp
 	icon-loader.cpp
@@ -273,6 +274,7 @@ set(ui_SRC
 	cursor-utils.h
 	control-types.h
 	dialog-events.h
+	dialog-run.h
 	drag-and-drop.h
 	draw-anchor.h
 	event-debug.h

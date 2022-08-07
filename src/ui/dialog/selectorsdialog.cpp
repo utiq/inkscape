@@ -28,6 +28,7 @@
 #include "selection.h"
 #include "style.h"
 
+#include "ui/dialog-run.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/widget/iconrenderer.h"
@@ -1001,9 +1002,8 @@ void SelectorsDialog::_addSelector()
     Glib::ustring selectorValue;
     Glib::ustring originalValue;
     while (invalid) {
-        result = textDialogPtr->run();
+        result = dialog_run(*textDialogPtr);
         if (result != Gtk::RESPONSE_OK) { // Cancel, close dialog, etc.
-            textDialogPtr->hide();
             delete textDialogPtr;
             return;
         }

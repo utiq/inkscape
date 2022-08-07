@@ -21,6 +21,7 @@
 #include "inkscape-window.h"
 #include "message-stack.h"
 #include "preferences.h"
+#include "ui/dialog-run.h"
 
 #include "selection.h"            // Selection
 #include "object/sp-image.h"
@@ -119,7 +120,7 @@ void image_edit(InkscapeApplication *app)
                     dialog.set_name("SetEditorDialog");
                     dialog.set_title(_("External Edit Image:"));
                     dialog.set_secondary_text(message2);
-                    dialog.run();
+                    Inkscape::UI::dialog_run(dialog);
                 } else {
                     show_output(Glib::ustring("image_edit: ") + message.raw());
                 }

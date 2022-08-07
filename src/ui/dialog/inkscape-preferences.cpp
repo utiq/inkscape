@@ -71,6 +71,7 @@
 #include "svg/svg-color.h"
 
 #include "ui/desktop/menubar.h"
+#include "ui/dialog-run.h"
 #include "ui/interface.h"
 #include "ui/shortcuts.h"
 #include "ui/modifiers.h"
@@ -1900,8 +1901,7 @@ void InkscapePreferences::initPageUI()
             });
             dlg.set_font_desc(theme->getMonospacedFont());
             dlg.set_position(Gtk::WIN_POS_MOUSE);
-            dlg.set_modal();
-            if (dlg.run() == Gtk::RESPONSE_OK) {
+            if (Inkscape::UI::dialog_run(dlg) == Gtk::RESPONSE_OK) {
                 auto desc = dlg.get_font_desc();
                 theme->saveMonospacedFont(desc);
                 theme->adjustGlobalFontScale(theme->getFontScale() / 100);
@@ -3314,7 +3314,7 @@ void InkscapePreferences::onKBTreeEdited (const Glib::ustring& path, guint accel
             dialog.set_title(_("Reassign shortcut?"));
             dialog.set_secondary_text(_("Are you sure you want to reassign this shortcut?"));
             dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
-            int response = dialog.run();
+            int response = Inkscape::UI::dialog_run(dialog);
             if (response != Gtk::RESPONSE_YES) {
                 return;
             }

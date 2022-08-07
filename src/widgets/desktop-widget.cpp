@@ -53,6 +53,7 @@
 
 #include "ui/shortcuts.h"
 #include "ui/dialog/swatches.h"
+#include "ui/dialog-run.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/monitor.h"   // Monitor aspect ratio
@@ -923,7 +924,7 @@ bool SPDesktopWidget::showInfoDialog( Glib::ustring const &message )
         dialog.property_destroy_with_parent() = true;
         dialog.set_name("InfoDialog");
         dialog.set_title(_("Note:")); // probably want to take this as a parameter.
-        dialog.run();
+        Inkscape::UI::dialog_run(dialog);
     }
     return result;
 }
@@ -931,11 +932,8 @@ bool SPDesktopWidget::showInfoDialog( Glib::ustring const &message )
 bool SPDesktopWidget::warnDialog (Glib::ustring const &text)
 {
     Gtk::MessageDialog dialog (*window, text, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_OK_CANCEL);
-    gint response = dialog.run();
-    if (response == Gtk::RESPONSE_OK)
-        return true;
-    else
-        return false;
+    gint response = Inkscape::UI::dialog_run(dialog);
+    return response == Gtk::RESPONSE_OK;
 }
 
 void

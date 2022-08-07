@@ -59,6 +59,7 @@
 #include "style.h"
 #include "text-editing.h"
 #include "ui/shape-editor.h"
+#include "ui/dialog-run.h"
 
 using Inkscape::DocumentUndo;
 
@@ -396,7 +397,7 @@ int gui_request_dpi_fix_method(SPDocument *doc)
     }
     ok_button->grab_focus();
 
-    int status = scale_dialog.run();
+    int status = Inkscape::UI::dialog_run(scale_dialog);
     if (status == GTK_RESPONSE_ACCEPT) {
         backup = backup_button.get_active();
         prefs->setBool("/options/dpifixbackup", backup);

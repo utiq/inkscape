@@ -56,6 +56,7 @@
 #include "ui/themes.h"
 #include "ui/dialog-events.h"
 #include "ui/dialog/debug.h"
+#include "ui/dialog-run.h"
 #include "ui/dialog/dialog-manager.h"
 #include "ui/dialog/dialog-window.h"
 #include "ui/tools/tool-base.h"
@@ -104,7 +105,7 @@ public:
         if (_useGui) {
             Gtk::MessageDialog err(primary, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_OK, true);
             err.set_secondary_text(secondary);
-            err.run();
+            Inkscape::UI::dialog_run(err);
         } else {
             g_message("%s", primary.data());
             g_message("%s", secondary.data());
@@ -552,7 +553,7 @@ Application::crash_handler (int /*signum*/)
             UI::get_object<Gtk::TextBuffer>(builder, "stacktrace")->set_text("<pre>\n" + boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "</pre>\n<details><summary>System info</summary>\n" + debug_info() + "\n</details>");
             Gtk::MessageDialog &m = UI::get_widget<Gtk::MessageDialog>(builder, "crash_dialog");
             sp_transientize(GTK_WIDGET(m.gobj()));
-            m.run();
+            UI::dialog_run(m);
         } catch (const Glib::Error &ex) {
             g_message("Glade file loading failed for crash handler... Anyway, error was: %s", b);
             std::cerr << boost::stacktrace::stacktrace();

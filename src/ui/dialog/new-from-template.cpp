@@ -20,6 +20,7 @@
 #include "inkscape.h"
 #include "object/sp-namedview.h"
 #include "ui/widget/template-list.h"
+#include "ui/dialog-run.h"
 
 namespace Inkscape {
 namespace UI {
@@ -83,7 +84,7 @@ void NewFromTemplate::_onClose()
 void NewFromTemplate::load_new_from_template()
 {
     NewFromTemplate dl;
-    dl.run();
+    Inkscape::UI::dialog_run(dl);
 }
 
 }

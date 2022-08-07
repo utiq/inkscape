@@ -19,6 +19,7 @@
 #include <gtkmm/grid.h>
 
 #include "desktop.h"
+#include "ui/dialog-run.h"
 
 namespace Inkscape {
 namespace UI {
@@ -105,7 +106,6 @@ void CalligraphicProfileRename::show(SPDesktop *desktop, const Glib::ustring pro
     CalligraphicProfileRename &dial = instance();
     dial._applied=false;
     dial._deleted=false;
-    dial.set_modal(true);
 
     dial._profile_name = profile_name;
     dial._profile_name_entry.set_text(profile_name);
@@ -121,9 +121,7 @@ void CalligraphicProfileRename::show(SPDesktop *desktop, const Glib::ustring pro
 
     desktop->setWindowTransient (dial.gobj());
     dial.property_destroy_with_parent() = true;
-    //  dial.Gtk::Dialog::show();
-    //dial.present();
-    dial.run();
+    Inkscape::UI::dialog_run(dial);
 }
 
 } // namespace Dialog
