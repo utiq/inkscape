@@ -363,12 +363,6 @@ static gint StyleNameCompareInternalGlib(gconstpointer a, gconstpointer b)
            StyleNameValue(((StyleNames*)b)->CssName) ? -1 : 1;
 }
 
-static bool ustringPairSort(std::pair<PangoFontFamily*, Glib::ustring> const& first, std::pair<PangoFontFamily*, Glib::ustring> const& second)
-{
-    // well, this looks weird.
-    return first.second < second.second;
-}
-
 /**
  * Returns a list of all font names available in this font config
  */
@@ -385,19 +379,27 @@ std::vector<std::string> FontFactory::GetAllFontNames()
     return ret;
 }
 
-void FontFactory::GetUIFamilies(std::vector<PangoFontFamily*> &out)
+/*
+ * Returns true if the font family is in the local font server map.
+ */
+bool FontFactory::hasFontFamily(const std::string &family)
 {
+    return getSubstituteFontName(family) == family;
+}
+
+std::map <std::string, PangoFontFamily*> FontFactory::GetUIFamilies()
+{
+    std::map <std::string, PangoFontFamily*> out;
+
     // Gather the family names as listed by Pango
     PangoFontFamily **families = nullptr;
     int numFamilies = 0;
     pango_font_map_list_families(fontServer, &families, &numFamilies);
-    
-    std::vector<std::pair<PangoFontFamily*, Glib::ustring>> sorted;
 
     // not size_t
     for (int currentFamily = 0; currentFamily < numFamilies; ++currentFamily) {
         char const *displayName = pango_font_family_get_name(families[currentFamily]);
-        
+
         if (!displayName || *displayName == '\0') {
             std::cerr << "FontFactory::GetUIFamilies: Missing displayName! " << std::endl;
             continue;
@@ -408,22 +410,10 @@ void FontFactory::GetUIFamilies(std::vector<PangoFontFamily*> &out)
             std::cerr << "Ignoring font '" << displayName << "'" << std::endl;
             continue;
         }
-        sorted.emplace_back(families[currentFamily], displayName);
+        out.insert({displayName, families[currentFamily]});
     }
 
-    std::sort(sorted.begin(), sorted.end(), ustringPairSort);
-    
-    for (auto &i : sorted) {
-        out.push_back(i.first);
-    }
-}
-
-/*
- * Returns true if the font family is in the local font server map.
- */
-bool FontFactory::hasFontFamily(const std::string &family)
-{
-    return getSubstituteFontName(family) == family;
+    return out;
 }
 
 GList *FontFactory::GetUIStyles(PangoFontFamily *in)

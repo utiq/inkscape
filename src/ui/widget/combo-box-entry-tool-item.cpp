@@ -586,13 +586,17 @@ static gboolean add_more_font_families_idle(gpointer user_data)
 
 gboolean ComboBoxEntryToolItem::combo_box_popup_cb(ComboBoxEntryToolItem *widget, gpointer data)
 {
+    // No need to initialize the font-list again and again.
+    /*
     static bool first_time = true;
     if (first_time) {
         FontLister* fl = FontLister::get_instance();
         fl->init_font_families(0, FONT_FAMILIES_GROUP_SIZE);
+
         gdk_threads_add_idle (add_more_font_families_idle, NULL);
         first_time = false;
     }
+    */
     return true;
 }
 

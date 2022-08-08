@@ -2,14 +2,17 @@
 
 set(util_SRC
 	action-accel.cpp
+    document-fonts.cpp
 	expression-evaluator.cpp
 	funclog.cpp
 	pool.cpp
+    font-collections.cpp
 	share.cpp
     object-renderer.cpp
 	paper.cpp
 	preview.cpp
 	statics.cpp
+    recently-used-fonts.cpp
 	units.cpp
 	ziptool.cpp
 
@@ -20,8 +23,10 @@ set(util_SRC
 	cached_map.h
 	cast.h
 	const_char_ptr.h
+    document-fonts.h
 	enums.h
 	expression-evaluator.h
+    font-collections.h
 	fixed_point.h
 	format.h
 	format_size.h
@@ -35,6 +40,7 @@ set(util_SRC
 	parse-int-range.h
 	pool.h
 	preview.h
+    recently-used-fonts.h
 	reference.h
 	scope_exit.h
 	share.h

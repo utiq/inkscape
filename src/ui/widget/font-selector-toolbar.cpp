@@ -66,7 +66,6 @@ FontSelectorToolbar::FontSelectorToolbar ()
     family_combo.set_cell_data_func (family_cell,
                                      sigc::bind(sigc::ptr_fun(family_cell_data_func), &family_cell));
     family_combo.pack_start (family_cell);
-    
 
     Gtk::Entry* entry = family_combo.get_entry();
     entry->signal_icon_press().connect (sigc::mem_fun(*this, &FontSelectorToolbar::on_icon_pressed));
@@ -91,16 +90,16 @@ FontSelectorToolbar::FontSelectorToolbar ()
     attach (style_combo,   1, 0, 1, 1);
 
     // Add signals
-    family_combo.signal_changed().connect (sigc::mem_fun(*this, &FontSelectorToolbar::on_family_changed));
-    style_combo.signal_changed().connect (sigc::mem_fun(*this, &FontSelectorToolbar::on_style_changed));
-    
+    family_combo.signal_changed().connect ([=](){ on_family_changed(); });
+    style_combo.signal_changed().connect ([=](){ on_style_changed(); });
+
     show_all_children();
 
     // Initialize font family lists. (May already be done.) Should be done on document change.
     font_lister->update_font_list(SP_ACTIVE_DESKTOP->getDocument());
 
     // When FontLister is changed, update family and style shown in GUI.
-    font_lister->connectUpdate(sigc::mem_fun(*this, &FontSelectorToolbar::update_font));
+    font_lister->connectUpdate([=](){ update_font(); });
 }
 
 

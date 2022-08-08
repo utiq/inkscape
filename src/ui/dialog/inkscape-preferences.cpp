@@ -81,6 +81,7 @@
 #include "ui/builder-utils.h"
 
 #include "util/trim.h"
+#include "util/recently-used-fonts.h"
 
 #include "widgets/desktop-widget.h"
 #include "widgets/toolbox.h"
@@ -1052,6 +1053,13 @@ void InkscapePreferences::initPageTools()
         cb = Gtk::manage(new PrefCheckButton);
         cb->init ( _("Use SVG2 auto-flowed text"),  "/tools/text/use_svg2", true);
         _page_text.add_line( false, "", *cb, "", _("Use SVG2 auto-flowed text instead of SVG1.2 auto-flowed text. (Recommended)"));
+
+        _recently_used_fonts_size.init("/tools/text/recently_used_fonts_size", 0, 100, 1, 10, 10, true, false);
+        _page_text.add_line( false, _("Size of recently used font list:"), _recently_used_fonts_size, "",
+                           _("Default size of the recently used font list"), false);
+        _recently_used_fonts_size.changed_signal.connect([](double new_size) {
+            Inkscape::RecentlyUsedFonts* recently_used_fonts = Inkscape::RecentlyUsedFonts::get();
+            recently_used_fonts->change_max_list_size(new_size); });
     }
 
     //_page_text.add_group_header( _("Text units"));

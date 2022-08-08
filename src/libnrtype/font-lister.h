@@ -141,6 +141,10 @@ public:
 
     FontStyleListClass FontStyleList;
 
+    // This map will give constant time access to each font and it's
+    // PangoFontFamily.
+    std::map <std::string, PangoFontFamily *> pango_family_map;
+
     /** 
      * @return the ListStore with the family names
      *
@@ -161,6 +165,8 @@ public:
      */
     void insert_font_family(Glib::ustring new_family);
 
+    int add_document_fonts_at_top(SPDocument *document);
+
     /**
      * Updates font list to include fonts in document.
      */
@@ -173,6 +179,15 @@ public:
      * Takes a hand written font spec and returns a Pango generated one in
      *  standard form.
      */
+
+    /**
+     * Functions to display the search results in the font list.
+     */
+    bool find_string_case_insensitive(const std::string& text, const std::string& pat);
+    void show_results(const Glib::ustring &search_text);
+    void apply_collections(std::set <Glib::ustring>& selected_collections);
+    void set_dragging_family(const Glib::ustring &new_family);
+
     Glib::ustring canonize_fontspec(Glib::ustring fontspec);
 
     /**
@@ -235,6 +250,11 @@ public:
     Glib::ustring get_font_family()
     {
         return current_family;
+    }
+
+    Glib::ustring get_dragging_family()
+    {
+        return dragging_family;
     }
 
     int get_font_family_row()
@@ -303,8 +323,11 @@ public:
     bool blocked() { return block; }
 
     int get_font_families_size();
+    bool font_installed_on_system(const Glib::ustring& font);
 
     void init_font_families(int group_offset = -1, int group_size = -1);
+    void init_default_styles();
+    std::string get_font_count_label();
 
 private:
     FontLister();
@@ -322,6 +345,7 @@ private:
      */
     int current_family_row;
     Glib::ustring current_family;
+    Glib::ustring dragging_family;
     Glib::ustring current_style;
 
     /**

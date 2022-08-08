@@ -126,6 +126,8 @@ set(ui_SRC
 	dialog/fill-and-stroke.cpp
 	dialog/filter-effects-dialog.cpp
 	dialog/find.cpp
+	dialog/font-collections-manager.cpp
+	widget/font-collection-selector.cpp
 	dialog/font-substitution.cpp
 	dialog/global-palettes.cpp
 	dialog/glyphs.cpp
@@ -319,6 +321,7 @@ set(ui_SRC
 	dialog/fill-and-stroke.h
 	dialog/filter-effects-dialog.h
 	dialog/find.h
+	dialog/font-collections-manager.h
 	dialog/font-substitution.h
 	dialog/global-palettes.h
 	dialog/glyphs.h
@@ -476,6 +479,7 @@ set(ui_SRC
 	widget/fill-style.h
 	widget/filter-effect-chooser.h
 	widget/font-button.h
+	widget/font-collection-selector.h
 	widget/font-selector.h
 	widget/font-selector-toolbar.h
 	widget/font-variants.h

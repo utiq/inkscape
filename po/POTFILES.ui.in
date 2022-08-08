@@ -5,6 +5,7 @@
 ../share/ui/dialog-css.glade
 ../share/ui/dialog-document-resources.glade
 ../share/ui/dialog-export.glade
+../share/ui/dialog-font-collections.glade
 ../share/ui/dialog-livepatheffect-add.glade
 ../share/ui/dialog-livepatheffect-effect.glade
 ../share/ui/dialog-livepatheffect-item.glade

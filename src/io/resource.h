@@ -31,6 +31,7 @@ enum Type {
     EXAMPLES,
     EXTENSIONS,
     FONTS,
+    FONTCOLLECTIONS,
     ICONS,
     KEYS,
     MARKERS,

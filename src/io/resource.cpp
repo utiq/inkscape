@@ -88,6 +88,7 @@ gchar *_get_path(Domain domain, Type type, char const *filename)
                 case EXTENSIONS: name = "extensions"; envor = "INKSCAPE_EXTENSIONS_DIR"; break;
                 case FILTERS: name = "filters"; break;
                 case FONTS: name = "fonts"; break;
+                case FONTCOLLECTIONS: name = "fontcollections"; break;
                 case ICONS: name = "icons"; break;
                 case KEYS: name = "keys"; break;
                 case MARKERS: name = "markers"; break;
@@ -497,7 +498,7 @@ std::string profile_path()
                 g_warning("Unable to create profile directory (%s) (%d)", g_strerror(problem), problem);
             } else {
                 gchar const *userDirs[] = { "keys", "templates", "icons", "extensions", "ui",
-                                            "symbols", "paint", "themes", "palettes", nullptr };
+                                            "symbols", "paint", "themes", "palettes", "fontcollections", nullptr };
                 for (gchar const** name = userDirs; *name; ++name) {
                     gchar *dir = g_build_filename(prefdir.c_str(), *name, nullptr);
                     g_mkdir_with_parents(dir, mode);

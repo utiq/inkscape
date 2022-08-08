@@ -432,6 +432,7 @@ protected:
     UI::Widget::PrefCheckButton _export_all_extensions;
     UI::Widget::PrefCheckButton _misc_forkvectors;
     UI::Widget::PrefSpinButton  _misc_gradientangle;
+    UI::Widget::PrefSpinButton  _recently_used_fonts_size;
     UI::Widget::PrefCheckButton _misc_gradient_collect;
     UI::Widget::PrefCheckButton _misc_scripts;
 

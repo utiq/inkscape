@@ -39,6 +39,7 @@ static const std::vector<std::vector<Glib::ustring>> raw_data_dialogs =
     {"win.dialog-open('FillStroke')",         N_("Open Fill and Stroke"),      "Dialog",  N_("Edit objects' colors, gradients, arrowheads, and other fill and stroke properties...")   },
     {"win.dialog-open('FilterEffects')",      N_("Open Filter Effects"),       "Dialog",  N_("Manage, edit, and apply SVG filters")                                                    },
     {"win.dialog-open('Find')",               N_("Open Find"),                 "Dialog",  N_("Find objects in document")                                                               },
+    {"win.dialog-open('FontCollections')",    N_("Open Font Collections"),     "Dialog",  N_("Manage Font Collections")                                                                },
     {"win.dialog-open('Glyphs')",             N_("Open Glyphs"),               "Dialog",  N_("Select Unicode characters from a palette")                                               },
     {"win.dialog-open('IconPreview')",        N_("Open Icon Preview"),         "Dialog",  N_("Preview Icon")                                                                           },
     {"win.dialog-open('Input')",              N_("Open Input"),                "Dialog",  N_("Configure extended input devices, such as a graphics tablet")                            },

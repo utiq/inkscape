@@ -67,6 +67,7 @@ public:
      * Constructor
      */
     FontSelector (bool with_size = true, bool with_variations = true);
+    void hide_others();
 
 protected:
 
@@ -120,6 +121,13 @@ private:
     // control font variations update and UI element size
     void update_variations(const Glib::ustring& fontspec);
 
+    // What type of object can be dropped.
+    std::vector<Gtk::TargetEntry> target_entries;
+
+    // For drag and drop.
+    void on_drag_start(const Glib::RefPtr<Gdk::DragContext> &context);
+    void on_drag_data_get(Glib::RefPtr<Gdk::DragContext> const &context, Gtk::SelectionData &selection_data, guint info, guint time) override;
+
 public:
 
     /**
@@ -127,6 +135,8 @@ public:
      */
     void update_font ();
     void update_size (double size);
+    void unset_model();
+    void set_model();
 
     /**
      * Get fontspec based on current settings. (Does not handle size, yet.)

@@ -147,6 +147,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/io/fix-broken-links.cpp
 ../src/io/resource.cpp
 ../src/libnrtype/font-factory.cpp
+../src/libnrtype/font-lister.cpp
 ../src/live_effects/effect.cpp
 ../src/live_effects/lpe-angle_bisector.cpp
 ../src/live_effects/lpe-attach-path.cpp
@@ -290,6 +291,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/ui/dialog/fill-and-stroke.cpp
 ../src/ui/dialog/filter-effects-dialog.cpp
 ../src/ui/dialog/find.cpp
+../src/ui/dialog/font-collections-manager.cpp
 ../src/ui/dialog/font-substitution.cpp
 ../src/ui/dialog/glyphs.cpp
 ../src/ui/dialog/grid-arrange-tab.cpp
@@ -394,6 +396,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/ui/widget/export-lists.cpp
 ../src/ui/widget/fill-style.cpp
 ../src/ui/widget/filter-effect-chooser.cpp
+../src/ui/widget/font-collection-selector.cpp
 ../src/ui/widget/font-selector-toolbar.cpp
 ../src/ui/widget/font-selector.cpp
 ../src/ui/widget/font-variants.cpp
@@ -417,6 +420,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/ui/widget/style-swatch.cpp
 ../src/ui/widget/swatch-selector.cpp
 ../src/util/enums.h
+../src/util/font-collections.h
 ../src/util/paper.cpp
 ../src/vanishing-point.cpp
 ../src/widgets/desktop-widget.cpp

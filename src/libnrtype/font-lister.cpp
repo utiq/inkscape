@@ -36,7 +36,9 @@
 #include "object/sp-tref.h"
 #include "object/sp-flowtext.h"
 #include "object/sp-flowdiv.h"
-
+#include "util/font-collections.h"
+#include "util/recently-used-fonts.h"
+#include "util/document-fonts.h"
 #include "xml/repr.h"
 
 
@@ -49,18 +51,6 @@ bool familyNamesAreEqual(const Glib::ustring &a, const Glib::ustring &b)
     return (a.casefold().compare(b.casefold()) == 0);
 }
 
-static const char* sp_font_family_get_name(PangoFontFamily* family)
-{
-    const char* name = pango_font_family_get_name(family);
-    if (strncmp(name, "Sans", 4) == 0 && strlen(name) == 4)
-        return "sans-serif";
-    if (strncmp(name, "Serif", 5) == 0 && strlen(name) == 5)
-        return "serif";
-    if (strncmp(name, "Monospace", 9) == 0 && strlen(name) == 9)
-        return "monospace";
-    return name;
-}
-
 namespace Inkscape {
 
 FontLister::FontLister()
@@ -69,26 +59,17 @@ FontLister::FontLister()
     , current_style ("Normal")
     , block (false)
 {
-    
     /* Create default styles for use when font-family is unknown on system. */
     default_styles = g_list_append(nullptr, new StyleNames("Normal"));
     default_styles = g_list_append(default_styles, new StyleNames("Italic"));
     default_styles = g_list_append(default_styles, new StyleNames("Bold"));
     default_styles = g_list_append(default_styles, new StyleNames("Bold Italic"));
 
+    pango_family_map = FontFactory::get().GetUIFamilies();
     init_font_families();
 
     style_list_store = Gtk::ListStore::create(FontStyleList);
-
-    // Initialize style store with defaults
-    style_list_store->freeze_notify();
-    style_list_store->clear();
-    for (GList *l = default_styles; l; l = l->next) {
-        Gtk::TreeModel::iterator treeModelIter = style_list_store->append();
-        (*treeModelIter)[FontStyleList.cssStyle] = ((StyleNames *)l->data)->CssName;
-        (*treeModelIter)[FontStyleList.displayStyle] = ((StyleNames *)l->data)->DisplayName;
-    }
-    style_list_store->thaw_notify();
+    init_default_styles();
 }
 
 FontLister::~FontLister()
@@ -111,9 +92,12 @@ FontLister::~FontLister()
 }
 
 int FontLister::get_font_families_size() {
-    std::vector<PangoFontFamily *> familyVector;
-    FontFactory::get().GetUIFamilies(familyVector);
-    return familyVector.size();
+    return pango_family_map.size();
+}
+
+bool FontLister::font_installed_on_system(const Glib::ustring& font)
+{
+    return pango_family_map.find(font) != pango_family_map.end();
 }
 
 void FontLister::init_font_families(int group_offset, int group_size)
@@ -133,36 +117,17 @@ void FontLister::init_font_families(int group_offset, int group_size)
     }
 
     font_list_store->freeze_notify();
-    // Get sorted font families from Pango
-    std::vector<PangoFontFamily *> familyVector;
-    FontFactory::get().GetUIFamilies(familyVector);
-    int i = group_offset*group_size;
 
     // Traverse through the family names and set up the list store
-    while(true) {
-        if (i >= familyVector.size())
-            break;
-
-        if ((group_offset >= 0) && (group_size > 0) &&
-            (i >= group_offset*group_size + group_size))
-            break;
-
-        PangoFontFamily *pff = familyVector[i++];
-        const char* displayName = sp_font_family_get_name(pff);
-
-        if (displayName == nullptr || *displayName == '\0') {
-            continue;
-        }
-
-        Glib::ustring familyName = displayName;
-        if (!familyName.empty()) {
+    for(auto const &key_val: pango_family_map) {
+        if(!key_val.first.empty()) {
             Gtk::TreeModel::iterator treeModelIter = font_list_store->append();
-            (*treeModelIter)[FontList.family] = familyName;
+            (*treeModelIter)[FontList.family] = key_val.first;
             // we don't set this now (too slow) but the style will be cached if the user
             // ever decides to use this font
-            (*treeModelIter)[FontList.styles] = NULL;
+            (*treeModelIter)[FontList.styles] = nullptr;
             // store the pango representation for generating the style
-            (*treeModelIter)[FontList.pango_family] = pff;
+            (*treeModelIter)[FontList.pango_family] = key_val.second;
             (*treeModelIter)[FontList.onSystem] = true;
         }
     }
@@ -170,10 +135,159 @@ void FontLister::init_font_families(int group_offset, int group_size)
     font_list_store->thaw_notify();
 }
 
+void FontLister::init_default_styles()
+{
+    // Initialize style store with defaults
+    style_list_store->freeze_notify();
+    style_list_store->clear();
+    for (GList *l = default_styles; l; l = l->next) {
+        Gtk::TreeModel::iterator treeModelIter = style_list_store->append();
+        (*treeModelIter)[FontStyleList.cssStyle] = ((StyleNames *)l->data)->CssName;
+        (*treeModelIter)[FontStyleList.displayStyle] = ((StyleNames *)l->data)->DisplayName;
+    }
+    style_list_store->thaw_notify();
+    update_signal.emit ();
+}
+
+std::string FontLister::get_font_count_label()
+{
+    std::string label;
+
+    int size = font_list_store->children().size();
+    int total_families = get_font_families_size();
+
+    if(size >= total_families) {
+        label += _("All Fonts");
+    } else {
+        label += _("Fonts ");
+        label += std::to_string(size);
+        label += "/";
+        label += std::to_string(total_families);
+    }
+
+    return label;
+}
+
 FontLister *FontLister::get_instance()
 {
     static Inkscape::FontLister *instance = new Inkscape::FontLister();
     return instance;
+}
+
+/// Try to find in the Haystack the Needle - ignore case
+bool FontLister::find_string_case_insensitive(const std::string& text, const std::string& pat)
+{
+  auto it = std::search(
+    text.begin(), text.end(),
+    pat.begin(),   pat.end(),
+    [](unsigned char ch1, unsigned char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
+  );
+
+  return (it != text.end());
+}
+
+void FontLister::show_results(const Glib::ustring& search_text)
+{
+    if(search_text == "") {
+        init_font_families();
+        init_default_styles();
+
+        return;
+    }
+
+    // Clear the list store.
+    font_list_store->freeze_notify();
+    font_list_store->clear();
+
+    // Start iterating over the families.
+    // Take advantage of sorted families to speed up the search.
+    for(auto const& key_val: pango_family_map) {
+        std::string family_str = key_val.first;
+
+        if(find_string_case_insensitive(family_str, search_text)) {
+            // count++;
+            Gtk::TreeModel::iterator treeModelIter = font_list_store->append();
+            (*treeModelIter)[FontList.family] = family_str;
+
+            // we don't set this now (too slow) but the style will be cached if the user
+            // ever decides to use this font
+            (*treeModelIter)[FontList.styles] = nullptr;
+            // store the pango representation for generating the style
+            (*treeModelIter)[FontList.pango_family] = key_val.second;
+            (*treeModelIter)[FontList.onSystem] = true;
+        }
+    }
+
+    // selected_fonts_count = count;
+    font_list_store->thaw_notify();
+    init_default_styles();
+
+    // To update the count of fonts in the label.
+    // update_signal.emit ();
+}
+
+void FontLister::apply_collections(std::set <Glib::ustring>& selected_collections)
+{
+    // Get the master set of fonts present in all the selected collections.
+    std::set <Glib::ustring> fonts;
+
+    FontCollections *font_collections = Inkscape::FontCollections::get();
+
+    for(auto const& col: selected_collections) {
+        if(col == Inkscape::DOCUMENT_FONTS) {
+            DocumentFonts* document_fonts = Inkscape::DocumentFonts::get();
+
+            for(auto font: document_fonts->get_fonts()) {
+                fonts.insert(font);
+            }
+        } else if(col == Inkscape::RECENTLY_USED_FONTS) {
+            RecentlyUsedFonts *recently_used = Inkscape::RecentlyUsedFonts::get();
+
+            for(auto font: recently_used->get_fonts()) {
+                fonts.insert(font);
+            }
+
+        } else {
+            std::set <Glib::ustring> temp_set = font_collections->get_fonts(col);
+
+            for(auto const& font: temp_set) {
+                fonts.insert(font);
+            }
+        }
+
+    }
+
+    // Freeze the font list.
+    font_list_store->freeze_notify();
+    font_list_store->clear();
+
+    if(fonts.empty()) {
+        // Re-initialize the font list if
+        // initialize_font_list();
+        init_font_families();
+        init_default_styles();
+
+        return;
+    }
+
+    for(auto const& f: fonts) {
+        Gtk::TreeModel::iterator treeModelIter = font_list_store->append();
+        (*treeModelIter)[FontList.family] = f;
+
+        // we don't set this now (too slow) but the style will be cached if the user
+        // ever decides to use this font
+        (*treeModelIter)[FontList.styles] = nullptr;
+
+        // store the pango representation for generating the style
+        (*treeModelIter)[FontList.pango_family] = pango_family_map[f];
+        (*treeModelIter)[FontList.onSystem] = true;
+    }
+
+    font_list_store->thaw_notify();
+    init_default_styles();
+
+    // To update the count of fonts in the label.
+    update_signal.emit ();
 }
 
 // To do: remove model (not needed for C++ version).
@@ -208,19 +322,7 @@ Glib::ustring FontLister::get_font_family_markup(Gtk::TreeIter const &iter)
         std::vector<Glib::ustring> tokens = Glib::Regex::split_simple("\\s*,\\s*", family);
 
         for (auto token: tokens) {
-            bool found = false;
-            Gtk::TreeModel::Children children = get_font_list()->children();
-            for (auto iter2: children) {
-                Gtk::TreeModel::Row row2 = *iter2;
-                Glib::ustring family2 = row2[FontList.family];
-                bool onSystem2        = row2[FontList.onSystem];
-                if (onSystem2 && familyNamesAreEqual(token, family2)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
+            if (font_installed_on_system(token)) {
                 markup += Glib::Markup::escape_text (token);
                 markup += ", ";
             } else {
@@ -299,7 +401,7 @@ void FontLister::insert_font_family(Glib::ustring new_family)
     (*treeModelIter)[FontList.family] = new_family;
     (*treeModelIter)[FontList.styles] = styles;
     (*treeModelIter)[FontList.onSystem] = false;
-    (*treeModelIter)[FontList.pango_family] = NULL;
+    (*treeModelIter)[FontList.pango_family] = nullptr;
 
     current_family = new_family;
     current_family_row = 0;
@@ -308,25 +410,15 @@ void FontLister::insert_font_family(Glib::ustring new_family)
     emit_update();
 }
 
-void FontLister::update_font_list(SPDocument *document)
+int FontLister::add_document_fonts_at_top(SPDocument *document)
 {
-    SPObject *root = document->getRoot();
-    if (!root) {
-        return;
+    if(!document) {
+        return 0;
     }
 
-    font_list_store->freeze_notify();
-
-    /* Find if current row is in document or system part of list */
-    gboolean row_is_system = false;
-    if (current_family_row > -1) {
-        Gtk::TreePath path;
-        path.push_back(current_family_row);
-        Gtk::TreeModel::iterator iter = font_list_store->get_iter(path);
-        if (iter) {
-            row_is_system = (*iter)[FontList.onSystem];
-            // std::cout << "  In:  row: " << current_family_row << "  " << (*iter)[FontList.family] << std::endl;
-        }
+    SPObject *root = document->getRoot();
+    if (!root) {
+        return 0;
     }
 
     /* Clear all old document font-family entries */
@@ -400,10 +492,41 @@ void FontLister::update_font_list(SPDocument *document)
         (*treeModelIter)[FontList.styles] = styles;
         (*treeModelIter)[FontList.onSystem] = false;    // false if document font
         (*treeModelIter)[FontList.pango_family] = NULL; // CHECK ME (set to pango_family if on system?)
-
     }
 
-	font_family_row_update(row_is_system ? font_data.size() : 0);
+    // For document fonts.
+    DocumentFonts* document_fonts = Inkscape::DocumentFonts::get();
+    document_fonts->update_document_fonts(font_data);
+    RecentlyUsedFonts *recently_used = Inkscape::RecentlyUsedFonts::get();
+    recently_used->prepend_to_list(current_family);
+
+    return font_data.size();
+}
+
+void FontLister::update_font_list(SPDocument *document)
+{
+    SPObject *root = document->getRoot();
+    if (!root) {
+        return;
+    }
+
+    font_list_store->freeze_notify();
+
+    /* Find if current row is in document or system part of list */
+    gboolean row_is_system = false;
+    if (current_family_row > -1) {
+        Gtk::TreePath path;
+        path.push_back(current_family_row);
+        Gtk::TreeModel::iterator iter = font_list_store->get_iter(path);
+        if (iter) {
+            row_is_system = (*iter)[FontList.onSystem];
+            // std::cout << "  In:  row: " << current_family_row << "  " << (*iter)[FontList.family] << std::endl;
+        }
+    }
+
+    int font_data_size = add_document_fonts_at_top(document);
+
+    font_family_row_update(row_is_system ? font_data_size : 0);
     // std::cout << "  Out: row: " << current_family_row << "  " << current_family << std::endl;
 
     font_list_store->thaw_notify();
@@ -543,7 +666,7 @@ std::pair<Glib::ustring, Glib::ustring> FontLister::ui_from_fontspec(Glib::ustri
  * font family part and once in the system font family part. Above we determined
  * which part it is in.
  */
-void FontLister::font_family_row_update(int start) 
+void FontLister::font_family_row_update(int start)
 {
     if (this->current_family_row > -1 && start > -1) {
         int length = this->font_list_store->children().size();
@@ -722,6 +845,11 @@ std::pair<Glib::ustring, Glib::ustring> FontLister::new_font_family(Glib::ustrin
     return std::make_pair(new_family, best_style);
 }
 
+void FontLister::set_dragging_family(const Glib::ustring &new_family)
+{
+    dragging_family = new_family;
+}
+
 std::pair<Glib::ustring, Glib::ustring> FontLister::set_font_family(Glib::ustring new_family, bool check_style,
                                                                     bool emit)
 {
@@ -734,6 +862,8 @@ std::pair<Glib::ustring, Glib::ustring> FontLister::set_font_family(Glib::ustrin
     std::pair<Glib::ustring, Glib::ustring> ui = new_font_family(new_family, check_style);
     current_family = ui.first;
     current_style = ui.second;
+    RecentlyUsedFonts *recently_used = Inkscape::RecentlyUsedFonts::get();
+    recently_used->prepend_to_list(current_family);
 
 #ifdef DEBUG_FONT
     std::cout << "   family_row:           :" << current_family_row << ":" << std::endl;
@@ -1215,20 +1345,8 @@ void font_lister_cell_data_func2(GtkCellLayout * /*cell_layout*/,
             GtkTreeIter iter;
             gboolean valid;
             gboolean onSystem = true;
-            gboolean found = false;
-            for (valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model), &iter);
-                 valid;
-                 valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(model), &iter)) {
+            bool found = Inkscape::FontLister::get_instance()->font_installed_on_system(token);
 
-                gchar *token_family = nullptr;
-                gtk_tree_model_get(model, &iter, 0, &token_family, 2, &onSystem, -1);
-                if (onSystem && familyNamesAreEqual(token, token_family)) {
-                    found = true;
-                    g_free(token_family);
-                    break;
-                }
-                g_free(token_family);
-            }
             if (found) {
                 markup += g_markup_escape_text(token.c_str(), -1);
                 markup += ", ";

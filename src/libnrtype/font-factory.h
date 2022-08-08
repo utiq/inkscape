@@ -70,8 +70,8 @@ public:
     Glib::ustring GetUIStyleString(PangoFontDescription const *fontDescr);
     bool hasFontFamily(const std::string &family);
 
-    // Helpfully inserts all font families into the provided vector
-    void GetUIFamilies(std::vector<PangoFontFamily*> &out);
+    // Helpfully inserts all font families into the provided map.
+    std::map <std::string, PangoFontFamily*> GetUIFamilies();
     // Retrieves style information about a family in a newly allocated GList.
     GList *GetUIStyles(PangoFontFamily *in);
 
