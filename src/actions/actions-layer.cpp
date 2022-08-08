@@ -457,8 +457,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_layer =
     {"win.layer-delete",                    N_("Delete Current Layer"),             "Layers",     N_("Delete the current layer")},
     {"win.layer-rename",                    N_("Rename Layer"),                     "Layers",     N_("Rename the current layer")},
 
-    {"win.layer-toggle-hide",               N_("Show/Hide Current Layer"),          "Layers",     N_("Toggle visibility of current layer")},
-    {"win.layer-toggle-lock",               N_("Lock/Unlock Current Layer"),        "Layers",     N_("Toggle lock on current layer")},
+    {"win.layer-hide-toggle",               N_("Show/Hide Current Layer"),          "Layers",     N_("Toggle visibility of current layer")},
+    {"win.layer-lock-toggle",               N_("Lock/Unlock Current Layer"),        "Layers",     N_("Toggle lock on current layer")},
 
     {"win.layer-previous",                  N_("Switch to Layer Above"),            "Layers",     N_("Switch to the layer above the current")},
     {"win.layer-next",                      N_("Switch to Layer Below"),            "Layers",     N_("Switch to the layer below the current")},
