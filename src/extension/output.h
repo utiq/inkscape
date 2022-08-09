@@ -27,8 +27,8 @@ class Output : public Extension {
     gchar *filetypetooltip;      /**< A more detailed description of the filetype */
     bool   dataloss;             /**< The extension causes data loss on save */
     bool   savecopyonly;         /**< Limit output option to Save a Copy */
-    bool   raster;               /**< Is the extension expecting a png file */
-    bool   exported;             /**< Is the extension available in the export dialog */
+    bool   raster = false;       /**< Is the extension expecting a png file */
+    bool   exported = false;     /**< Is the extension available in the export dialog */
 
 public:
     class save_failed {};        /**< Generic failure for an undescribed reason */

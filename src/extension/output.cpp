@@ -17,7 +17,7 @@
 #include "implementation/implementation.h"
 
 #include "xml/repr.h"
-
+#include "xml/attribute-record.h"
 
 /* Inkscape::Extension::Output */
 
@@ -49,8 +49,6 @@ Output::Output (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
     filetypetooltip = nullptr;
     dataloss = true;
     savecopyonly = false;
-    exported = false;
-    raster = false;
 
     if (repr != nullptr) {
         Inkscape::XML::Node * child_repr;
@@ -60,11 +58,15 @@ Output::Output (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
         while (child_repr != nullptr) {
             if (!strcmp(child_repr->name(), INKSCAPE_EXTENSION_NS "output")) {
 
-                if (child_repr->attribute("raster") && !strcmp(child_repr->attribute("raster"), "true")) {
-                     raster = true;
-                }
-                if (child_repr->attribute("is_exported") && !strcmp(child_repr->attribute("is_exported"), "true")) {
-                     exported = true;
+                for (const auto &iter : child_repr->attributeList()) {
+                    std::string name = g_quark_to_string(iter.key);
+                    std::string value = std::string(iter.value);
+                    if (name == "raster")
+                        raster = value == "true";
+                    else if (name == "is_exported")
+                        exported = value == "true";
+                    else if (name == "priority")
+                        set_sort_priority(strtol(value.c_str(), nullptr, 0));
                 }
 
                 child_repr = child_repr->firstChild();

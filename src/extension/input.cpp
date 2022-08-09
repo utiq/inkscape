@@ -15,6 +15,7 @@
 #include "implementation/implementation.h"
 
 #include "xml/repr.h"
+#include "xml/attribute-record.h"
 
 
 /* Inkscape::Extension::Input */
@@ -53,6 +54,14 @@ Input::Input (Inkscape::XML::Node *in_repr, Implementation::Implementation *in_i
 
         while (child_repr != nullptr) {
             if (!strcmp(child_repr->name(), INKSCAPE_EXTENSION_NS "input")) {
+                // Input tag attributes
+                for (const auto &iter : child_repr->attributeList()) {
+                    std::string name = g_quark_to_string(iter.key);
+                    std::string value = std::string(iter.value);
+                    if (name == "priority")
+                        set_sort_priority(strtol(value.c_str(), nullptr, 0));
+                }
+
                 child_repr = child_repr->firstChild();
                 while (child_repr != nullptr) {
                     char const * chname = child_repr->name();

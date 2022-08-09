@@ -48,63 +48,38 @@ struct ModuleGenericCmp
 };
 
 struct ModuleInputCmp {
-  bool operator()(Input* module1, Input* module2) const {
+    bool operator()(Input* module1, Input* module2) const {
 
-    // Ensure SVG files are at top
-    int n1 = 0;
-    int n2 = 0;
-    //                             12345678901234567890123456789012
-    // XXX TODO: Add priority to extension format, so these can be removed.
-    if (strncmp(module1->get_id(),"org.inkscape.input.svg",  22) == 0) n1 = 1;
-    if (strncmp(module2->get_id(),"org.inkscape.input.svg",  22) == 0) n2 = 1;
-    if (strncmp(module1->get_id(),"org.inkscape.input.svgz", 23) == 0) n1 = 2;
-    if (strncmp(module2->get_id(),"org.inkscape.input.svgz", 23) == 0) n2 = 2;
+        int n1 = module1->get_sort_priority();
+        int n2 = module2->get_sort_priority();
+        // Treat zero as not-defined for purpose of comparison.
+        if (n1 || n2)
+            return n1 && n2 ? (n1 < n2) : !n2;
 
-    if (n1 != 0 || n2 != 0)
-        return (n1 < n2);
-    return ( strcmp(module1->get_filetypename(), module2->get_filetypename()) <= 0 );
-  }
+        return (strcmp(module1->get_filetypename(), module2->get_filetypename()) <= 0);
+    }
 };
 
 
 struct ModuleOutputCmp {
-  bool operator()(Output* module1, Output* module2) const {
+    bool operator()(Output* module1, Output* module2) const {
 
-    // Ensure SVG files are at top
-    int n1 = 0;
-    int n2 = 0;
-    //                             12345678901234567890123456789012
-    // XXX TODO: Add priority to extension format, so these can be removed.
-    if (strncmp(module1->get_id(),"org.inkscape.output.png.inkscape",  32) == 0) n1 = 1;
-    if (strncmp(module2->get_id(),"org.inkscape.output.png.inkscape",  32) == 0) n2 = 1;
-    if (strncmp(module1->get_id(),"org.inkscape.output.svg.inkscape",  32) == 0) n1 = 1;
-    if (strncmp(module2->get_id(),"org.inkscape.output.svg.inkscape",  32) == 0) n2 = 1;
-    if (strncmp(module1->get_id(),"org.inkscape.output.svg.plain",     29) == 0) n1 = 2;
-    if (strncmp(module2->get_id(),"org.inkscape.output.svg.plain",     29) == 0) n2 = 2;
-    if (strncmp(module1->get_id(),"org.inkscape.output.svgz.inkscape", 33) == 0) n1 = 3;
-    if (strncmp(module2->get_id(),"org.inkscape.output.svgz.inkscape", 33) == 0) n2 = 3;
-    if (strncmp(module1->get_id(),"org.inkscape.output.svgz.plain",    30) == 0) n1 = 4;
-    if (strncmp(module2->get_id(),"org.inkscape.output.svgz.plain",    30) == 0) n2 = 4;
-    if (strncmp(module1->get_id(),"org.inkscape.output.scour",         25) == 0) n1 = 5;
-    if (strncmp(module2->get_id(),"org.inkscape.output.scour",         25) == 0) n2 = 5;
-    if (strncmp(module1->get_id(),"org.inkscape.output.ZIP",           23) == 0) n1 = 6;
-    if (strncmp(module2->get_id(),"org.inkscape.output.ZIP",           23) == 0) n2 = 6;
-    if (strncmp(module1->get_id(),"org.inkscape.output.LAYERS",        26) == 0) n1 = 7;
-    if (strncmp(module2->get_id(),"org.inkscape.output.LAYERS",        26) == 0) n2 = 7;
+        int n1 = module1->get_sort_priority();
+        int n2 = module2->get_sort_priority();
+        // Treat zero as not-defined for purpose of comparison.
+        if (n1 || n2)
+            return n1 && n2 ? (n1 < n2) : !n2;
 
-    if (n1 != 0 || n2 != 0)
-        return (n1 < n2);
-
-    // special case: two extensions for the same file type. I only one of them is a script, prefer the other one
-    if (Glib::ustring(module1->get_extension()).lowercase() == Glib::ustring(module2->get_extension()).lowercase()) {
-        bool module1_is_script = dynamic_cast<Inkscape::Extension::Implementation::Script *>(module1->get_imp());
-        bool module2_is_script = dynamic_cast<Inkscape::Extension::Implementation::Script *>(module2->get_imp());
-        if (module1_is_script != module2_is_script) {
-            return module1_is_script ? false : true;
+        // special case: two extensions for the same file type. I only one of them is a script, prefer the other one
+        if (Glib::ustring(module1->get_extension()).lowercase() == Glib::ustring(module2->get_extension()).lowercase()) {
+            bool module1_is_script = dynamic_cast<Inkscape::Extension::Implementation::Script *>(module1->get_imp());
+            bool module2_is_script = dynamic_cast<Inkscape::Extension::Implementation::Script *>(module2->get_imp());
+            if (module1_is_script != module2_is_script) {
+                return module1_is_script ? false : true;
+            }
         }
+        return (strcmp(module1->get_filetypename(), module2->get_filetypename()) <= 0);
     }
-    return ( strcmp(module1->get_filetypename(), module2->get_filetypename()) <= 0 );
-  }
 };
 
 
