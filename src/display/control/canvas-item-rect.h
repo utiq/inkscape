@@ -55,7 +55,6 @@ public:
  
 protected:
     double get_shadow_size() const;
-    double get_scale() const;
 
     Geom::Rect _rect;
     bool _is_page = false;

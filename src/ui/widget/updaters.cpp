@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "updaters.h"
-
-static auto geom_to_cairo(const Geom::IntRect &rect)
-{
-    return Cairo::RectangleInt{rect.left(), rect.top(), rect.width(), rect.height()};
-}
+#include "ui/util.h"
 
 namespace Inkscape {
 

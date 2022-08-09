@@ -394,7 +394,13 @@ void SPPage::swapPage(SPPage *other, bool with_objects)
 void SPPage::update(SPCtx * /*ctx*/, unsigned int /*flags*/)
 {
     // This is manual because this is not an SPItem, but it's own visual identity.
-    _canvas_item->update(getDesktopRect(), this->label());
+    auto lbl = label();
+    char *alt = nullptr;
+    if (document->getPageManager().showDefaultLabel()) {
+        alt = g_strdup_printf(_("%d"), getPagePosition());
+    }
+    _canvas_item->update(getDesktopRect(), lbl ? lbl : alt);
+    g_free(alt);
 }
 
 /**

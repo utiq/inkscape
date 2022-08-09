@@ -83,6 +83,7 @@ static SPStyleProp const props[] = {
     {SPAttr::BORDERCOLOR, "bordercolor"},
     {SPAttr::BORDEROPACITY, "borderopacity"},
     {SPAttr::PAGECOLOR, "pagecolor"},
+    {SPAttr::PAGELABELSTYLE, "labelstyle"},
     {SPAttr::FIT_MARGIN_TOP, "fit-margin-top"},
     {SPAttr::FIT_MARGIN_LEFT, "fit-margin-left"},
     {SPAttr::FIT_MARGIN_RIGHT, "fit-margin-right"},

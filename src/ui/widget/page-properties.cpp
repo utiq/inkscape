@@ -84,6 +84,7 @@ public:
         GET(_checkerboard, "checkerboard"),
         GET(_antialias, "use-antialias"),
         GET(_clip_to_page, "clip-to-page"),
+        GET(_page_label_style, "page-label-style"),
         GET(_border, "border"),
         GET(_border_on_top, "border-top"),
         GET(_shadow, "shadow"),
@@ -135,7 +136,7 @@ public:
         _preview->set_vexpand();
         _preview_box.add(*_preview);
 
-        for (auto check : {Check::Border, Check::Shadow, Check::Checkerboard, Check::BorderOnTop, Check::AntiAlias, Check::ClipToPage}) {
+        for (auto check : {Check::Border, Check::Shadow, Check::Checkerboard, Check::BorderOnTop, Check::AntiAlias, Check::ClipToPage, Check::PageLabelStyle}) {
             auto checkbutton = &get_checkbutton(check);
             checkbutton->signal_toggled().connect([=](){ fire_checkbox_toggled(*checkbutton, check); });
         }
@@ -451,6 +452,7 @@ private:
             case Check::BorderOnTop: return _border_on_top;
             case Check::Checkerboard: return _checkerboard;
             case Check::ClipToPage: return _clip_to_page;
+            case Check::PageLabelStyle: return _page_label_style;
 
             default:
                 throw std::runtime_error("missing case in get_checkbutton");
@@ -499,6 +501,7 @@ private:
     Gtk::CheckButton& _checkerboard;
     Gtk::CheckButton& _antialias;
     Gtk::CheckButton& _clip_to_page;
+    Gtk::CheckButton& _page_label_style;
     Gtk::Button& _link_width_height;
     UnitMenu *_display_units;
     UnitMenu *_page_units;

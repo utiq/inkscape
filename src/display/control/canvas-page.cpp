@@ -13,6 +13,7 @@
 #include "canvas-page.h"
 #include "canvas-item-rect.h"
 #include "canvas-item-text.h"
+#include "color.h"
 
 namespace Inkscape {
 
@@ -45,12 +46,7 @@ void CanvasPage::add(Geom::Rect size, CanvasItemGroup *background_group, CanvasI
     }
 
     if (auto label = new CanvasItemText(border_group, Geom::Point(0, 0), "{Page Label}")) {
-        label->set_fontsize(10.0);
-        label->set_fill(0xffffffff);
-        label->set_background(0x00000099);
-        label->set_bg_radius(0.2);
-        label->set_anchor(Geom::Point(0.0, 1.0));
-        label->set_fixed_line(true);
+        label->set_fixed_line(false);
         canvas_items.push_back(label);
     }
 }
@@ -96,7 +92,7 @@ void CanvasPage::update(Geom::Rect size, const char *txt, bool outline)
     // Put these in the preferences?
     bool border_on_top = _border_on_top;
     guint32 shadow_color = _border_color; // there's no separate shadow color in the UI, border color is used
-    guint32 select_color = 0xff0000cc;
+    guint32 select_color = 0x000000cc;
     guint32 border_color = _border_color;
 
     // This is used when showing the viewport as *not a page* it's mostly
@@ -143,26 +139,93 @@ void CanvasPage::update(Geom::Rect size, const char *txt, bool outline)
             }
         }
         if (auto label = dynamic_cast<CanvasItemText *>(item)) {
-            if (txt) {
-                auto corner = size.corner(0);
-                label->set_coord(corner);
-                label->set_text(txt);
-                label->show();
-            } else {
-                label->set_text("");
-                label->hide();
-            }
+            _updateTextItem(label, size, txt ? txt : "");
         }
     }
 }
 
-bool CanvasPage::setAttributes(bool on_top, uint32_t border, uint32_t bg, int shadow)
+/**
+ * Update the page's textual label.
+ */
+void CanvasPage::_updateTextItem(CanvasItemText *label, Geom::Rect page, std::string txt)
 {
-    if (on_top != _border_on_top || border != _border_color || bg != _background_color || shadow != _shadow_size) {
-        this->_border_on_top = on_top;
-        this->_border_color = border;
-        this->_background_color = bg;
+    // Default style for the label
+    int fontsize = 10.0;
+    uint32_t foreground = 0xffffffff;
+    uint32_t background = 0x00000099;
+    uint32_t selected = 0x0e5bf199;
+    Geom::Point anchor(0.0, 1.0);
+    Geom::Point coord = page.corner(0);
+    double radius = 0.2;
+
+    // Change the colors for whiter/lighter backgrounds
+    unsigned char luminance = SP_RGBA32_LUMINANCE(_canvas_color);
+    if (luminance < 0x88) {
+        foreground = 0x000000ff;
+        background = 0xffffff99;
+        selected = 0x50afe7ff;
+    }
+
+    if (_label_style == "below") {
+        radius = 1.0;
+        fontsize = 14.0;
+        anchor = Geom::Point(0.5, -0.2);
+        coord = Geom::Point(page.midpoint()[Geom::X], page.bottom());
+
+        if (!txt.empty()) {
+            std::string bullet = is_selected ? " \u2022 " : "   ";
+            txt = bullet + txt + bullet;
+        }
+    }
+
+    label->show();
+    label->set_fontsize(fontsize);
+    label->set_fill(foreground);
+    label->set_background(is_selected ? selected : background);
+    label->set_bg_radius(radius);
+    label->set_anchor(anchor);
+    label->set_coord(coord);
+    label->set_text(txt.c_str());
+    label->set_border(4.0);
+
+    if (txt.empty()) {
+        label->hide();
+    }
+}
+
+bool CanvasPage::setOnTop(bool on_top)
+{
+    if (on_top != _border_on_top) {
+        _border_on_top = on_top;
+        return true;
+    }
+    return false;
+}
+
+bool CanvasPage::setShadow(int shadow)
+{
+    if (_shadow_size != shadow) {
         _shadow_size = shadow;
+        return true;
+    }
+    return false;
+}
+
+bool CanvasPage::setPageColor(uint32_t border, uint32_t bg, uint32_t canvas)
+{
+    if (border != _border_color || bg != _background_color || canvas != _canvas_color) {
+        _border_color = border;
+        _background_color = bg;
+        _canvas_color = canvas;
+        return true;
+    }
+    return false;
+}
+
+bool CanvasPage::setLabelStyle(const std::string &style)
+{
+    if (style != _label_style) {
+        _label_style = style;
         return true;
     }
     return false;

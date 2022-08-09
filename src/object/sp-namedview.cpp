@@ -214,6 +214,7 @@ void SPNamedView::build(SPDocument *document, Inkscape::XML::Node *repr) {
     this->readAttr(SPAttr::BORDERCOLOR);
     this->readAttr(SPAttr::BORDEROPACITY);
     this->readAttr(SPAttr::PAGECOLOR);
+    this->readAttr(SPAttr::PAGELABELSTYLE);
     this->readAttr(SPAttr::INKSCAPE_DESK_COLOR);
     this->readAttr(SPAttr::INKSCAPE_DESK_CHECKERBOARD);
     this->readAttr(SPAttr::INKSCAPE_PAGESHADOW);
@@ -272,6 +273,8 @@ void SPNamedView::set_desk_color(SPDesktop* desktop) {
         } else {
             desktop->getCanvas()->set_desk(desk_color | 0xff);
         }
+        // Update pages, who's colours sometimes change whe the desk color changes.
+        document->getPageManager().setDefaultAttributes(_viewport);
     }
 }
 
@@ -1122,8 +1125,9 @@ void SPNamedView::change_bool_setting(SPAttr key, bool value) {
     const char* str_value = nullptr;
     if (key == SPAttr::SHAPE_RENDERING) {
         str_value = value ? "auto" : "crispEdges";
-    }
-    else {
+    } else if (key == SPAttr::PAGELABELSTYLE) {
+        str_value = value ? "below" : "default";
+    } else {
         str_value = value ? "true" : "false";
     }
     getRepr()->setAttribute(sp_attribute_name(key), str_value);

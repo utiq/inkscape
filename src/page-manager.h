@@ -92,6 +92,7 @@ public:
 
     bool subset(SPAttr key, const gchar *value);
     bool setDefaultAttributes(CanvasPage *item);
+    bool showDefaultLabel() const { return label_style == "below"; }
 
     static void enablePages(SPDocument *document) { document->getPageManager().enablePages(); }
     static void disablePages(SPDocument *document) { document->getPageManager().disablePages(); }
@@ -119,6 +120,7 @@ protected:
     SVGBool checkerboard;
 
     guint32 border_color = 0x0000003f;
+    std::string label_style = "default";
 
 private:
     SPDocument *_document;

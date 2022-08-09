@@ -16,6 +16,7 @@
 #include "display/drawing-context.h"
 #include "display/drawing-pattern.h"
 #include "display/drawing-surface.h"
+#include "ui/util.h"
 
 namespace {
 
@@ -27,16 +28,6 @@ auto operator/(Geom::Point const &a, Geom::Point const &b)
 auto operator*(Geom::IntPoint const &a, Geom::IntPoint const &b)
 {
     return Geom::IntPoint(a.x() * b.x(), a.y() * b.y());
-}
-
-auto geom_to_cairo(Geom::IntRect const &rect)
-{
-    return Cairo::RectangleInt{rect.left(), rect.top(), rect.width(), rect.height()};
-}
-
-auto cairo_to_geom(Cairo::RectangleInt const &rect)
-{
-    return Geom::IntRect::from_xywh(rect.x, rect.y, rect.width, rect.height);
 }
 
 int safemod(int a, int b)

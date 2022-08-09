@@ -21,6 +21,7 @@
 
 #include "color.h"    // SP_RGBA_x_F
 #include "inkscape.h" //
+#include "ui/util.h"
 #include "ui/widget/canvas.h"
 
 namespace Inkscape {
@@ -205,8 +206,7 @@ void CanvasItemRect::render(Inkscape::CanvasItemBuffer *buf)
             rect *= desktop->doc2dt();
             affine = desktop->doc2dt() * affine;
         }
-        Cairo::Matrix m(affine[0], affine[1], affine[2], affine[3], affine[4], affine[5]);
-        buf->cr->transform(m);
+        buf->cr->transform(geom_to_cairo(affine));
         ink_cairo_draw_drop_shadow(buf->cr, rect, get_shadow_size(), _shadow_color, a);
         buf->cr->restore();
     }
@@ -299,10 +299,6 @@ void CanvasItemRect::set_shadow(guint32 color, int width)
         request_redraw();
         if (_is_page) _canvas->set_border(_shadow_width > 0 ? color : 0x0);
     }
-}
-
-double CanvasItemRect::get_scale() const {
-    return std::sqrt(std::abs(_affine.det()));
 }
 
 double CanvasItemRect::get_shadow_size() const {

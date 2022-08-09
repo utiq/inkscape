@@ -603,6 +603,14 @@ bool PageManager::subset(SPAttr key, const gchar *value)
         case SPAttr::INKSCAPE_DESK_CHECKERBOARD:
             checkerboard.readOrUnset(value);
             return false; // propagate further
+        case SPAttr::PAGELABELSTYLE:
+            label_style = value ? value : "default";
+
+            // Update user action button
+            if (auto action = _document->getActionGroup()->lookup_action("page-label-style")) {
+                action->change_state(label_style == "below");
+            }
+            break;
         default:
             return false;
     }
@@ -614,12 +622,16 @@ bool PageManager::subset(SPAttr key, const gchar *value)
  */
 bool PageManager::setDefaultAttributes(Inkscape::CanvasPage *item)
 {
-    const int shadow_size = 2; // fixed, not configurable; shadow changes size with zoom
     // note: page background color doesn't have configurable transparency; it is considered to be opaque;
     // here alpha gets manipulated to reveal checkerboard pattern, if needed
     auto bgcolor = checkerboard ? background_color & ~0xff : background_color | 0xff;
-    return item->setAttributes(border_on_top, border_show ? border_color : 0x0, bgcolor,
-                               border_show && shadow_show ? shadow_size : 0);
+    auto dkcolor = _document->getNamedView()->desk_color;
+    bool ret = item->setOnTop(border_on_top);
+    // fixed shadow size, not configurable; shadow changes size with zoom
+    ret = item->setShadow(border_show && shadow_show ? 2 : 0) || ret;
+    ret = item->setPageColor(border_show ? border_color : 0x0, bgcolor, dkcolor) || ret;
+    ret = item->setLabelStyle(label_style) || ret;
+    return ret;
 }
 
 /**

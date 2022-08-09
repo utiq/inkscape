@@ -32,6 +32,7 @@
 #include "display/control/canvas-item-rect.h"
 
 #include "ui/tools/tool-base.h"      // Default cursor
+#include "ui/util.h"
 
 #include "updaters.h"         // Update strategies
 #include "pixelstreamer.h"    // OpenGL
@@ -176,23 +177,6 @@ struct Prefs
  * Conversion functions
  */
 
-// 2Geom <-> Cairo
-
-auto geom_to_cairo(const Geom::IntRect &rect)
-{
-    return Cairo::RectangleInt{rect.left(), rect.top(), rect.width(), rect.height()};
-}
-
-auto cairo_to_geom(const Cairo::RectangleInt &rect)
-{
-    return Geom::IntRect::from_xywh(rect.x, rect.y, rect.width, rect.height);
-}
-
-auto geom_to_cairo(const Geom::Affine &affine)
-{
-    return Cairo::Matrix(affine[0], affine[1], affine[2], affine[3], affine[4], affine[5]);
-}
-
 // 2Geom <-> OpenGL
 
 void geom_to_uniform_mat(const Geom::Affine &affine, GLuint location)
@@ -209,16 +193,6 @@ void geom_to_uniform(const Geom::Affine &affine, GLuint mat_location, GLuint tra
 {
     geom_to_uniform_mat(affine, mat_location);
     geom_to_uniform_trans(affine, trans_location);
-}
-
-auto dimensions(const Cairo::RefPtr<Cairo::ImageSurface> &surface)
-{
-    return Geom::IntPoint(surface->get_width(), surface->get_height());
-}
-
-auto dimensions(const Gtk::Allocation &allocation)
-{
-    return Geom::IntPoint(allocation.get_width(), allocation.get_height());
 }
 
 // 2Geom additions

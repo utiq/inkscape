@@ -80,9 +80,10 @@ public:
     // Geometry
     void request_update();
     virtual void update(Geom::Affine const &affine) = 0;
+    virtual void visit_page_rects(std::function<void(const Geom::Rect&)>) const {}
     Geom::Affine get_affine() const { return _affine; }
     Geom::Rect get_bounds() const { return _bounds; }
-    virtual void visit_page_rects(std::function<void(const Geom::Rect&)>) const {}
+    double get_scale() const { return std::sqrt(std::abs(_affine.det())); }
 
     // Selection
     virtual bool contains(Geom::Point const &p, double tolerance = 0) { return _bounds.interiorContains(p); }

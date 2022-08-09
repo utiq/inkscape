@@ -26,6 +26,7 @@ namespace Inkscape {
     };
 
     class CanvasItemGroup;
+    class CanvasItemText;
 
 class CanvasPage
 {
@@ -39,11 +40,15 @@ public:
     void show();
     void hide();
 
-    bool setAttributes(bool on_top, uint32_t border, uint32_t bg, int shadow);
-    void setOutline(bool outline);
+    bool setOnTop(bool on_top);
+    bool setShadow(int shadow);
+    bool setPageColor(uint32_t border, uint32_t bg, uint32_t canvas);
+    bool setLabelStyle(const std::string &style);
 
     bool is_selected = false;
 private:
+    void _updateTextItem(CanvasItemText *label, Geom::Rect page, std::string txt);
+
     // This may make this look like a CanvasItemGroup, but it's not one. This
     // isn't a collection of items, but a set of items in multiple Canvases.
     // Each item can belong in either a foreground or background group.
@@ -53,6 +58,9 @@ private:
     bool _border_on_top = true;
     uint32_t _background_color = 0xffffffff;
     uint32_t _border_color = 0x00000040;
+    uint32_t _canvas_color = 0xffffffff;
+
+    std::string _label_style = "default";
 };
 
 };

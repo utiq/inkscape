@@ -433,6 +433,8 @@ void DocumentProperties::build_page()
             case PageProperties::Check::ClipToPage:
                 set_namedview_bool(_wr.desktop(), _("Toggle clipping to page mode"), SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, checked);
                 break;
+            case PageProperties::Check::PageLabelStyle:
+                set_namedview_bool(_wr.desktop(), _("Toggle page label style"), SPAttr::PAGELABELSTYLE, checked);
         }
         _wr.setUpdating(false);
     });
@@ -1505,6 +1507,7 @@ void DocumentProperties::update_widgets()
     _page->set_check(PageProperties::Check::BorderOnTop, page_manager.border_on_top);
     _page->set_color(PageProperties::Color::Border, page_manager.border_color);
     _page->set_check(PageProperties::Check::Shadow, page_manager.shadow_show);
+    _page->set_check(PageProperties::Check::PageLabelStyle, page_manager.label_style != "default");
 
     _page->set_check(PageProperties::Check::AntiAlias, root->style->shape_rendering.computed != SP_CSS_SHAPE_RENDERING_CRISPEDGES);
     _page->set_check(PageProperties::Check::ClipToPage, nv->clip_to_page);

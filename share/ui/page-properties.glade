@@ -902,14 +902,14 @@ SVG element positions are expressed in user units.</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkCheckButton" id="page-label-style">
+                <property name="label" translatable="yes">Show big page labels</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="tooltip-text" translatable="yes">Show the big page labels below the page border.</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Render</property>
-                <style>
-                  <class name="heading"/>
-                </style>
+                <property name="draw-indicator">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -918,15 +918,14 @@ SVG element positions are expressed in user units.</property>
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="use-antialias">
-                <property name="label" translatable="yes">Use antialiasing</property>
+              <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">If unset, no antialiasing will be done on the drawing.</property>
+                <property name="can-focus">False</property>
                 <property name="halign">start</property>
-                <property name="valign">center</property>
-                <property name="draw-indicator">True</property>
+                <property name="label" translatable="yes">Render</property>
+                <style>
+                  <class name="heading"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -942,6 +941,23 @@ SVG element positions are expressed in user units.</property>
                 <property name="receives-default">False</property>
                 <property name="tooltip-text" translatable="yes">Clip rendered objects to pages' boundaries</property>
                 <property name="halign">start</property>
+                <property name="draw-indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="use-antialias">
+                <property name="label" translatable="yes">Use antialiasing</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="tooltip-text" translatable="yes">If unset, no antialiasing will be done on the drawing.</property>
+                <property name="halign">start</property>
+                <property name="valign">center</property>
                 <property name="draw-indicator">True</property>
               </object>
               <packing>

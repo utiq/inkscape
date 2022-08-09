@@ -82,6 +82,34 @@ Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
     return bg_color;
 }
 
+// 2Geom <-> Cairo
+
+Cairo::RectangleInt geom_to_cairo(const Geom::IntRect &rect)
+{
+    return Cairo::RectangleInt{rect.left(), rect.top(), rect.width(), rect.height()};
+}
+
+Geom::IntRect cairo_to_geom(const Cairo::RectangleInt &rect)
+{
+    return Geom::IntRect::from_xywh(rect.x, rect.y, rect.width, rect.height);
+}
+
+Cairo::Matrix geom_to_cairo(const Geom::Affine &affine)
+{
+    return Cairo::Matrix(affine[0], affine[1], affine[2], affine[3], affine[4], affine[5]);
+}
+
+Geom::IntPoint dimensions(const Cairo::RefPtr<Cairo::ImageSurface> &surface)
+{
+    return Geom::IntPoint(surface->get_width(), surface->get_height());
+}
+
+Geom::IntPoint dimensions(const Gdk::Rectangle &allocation)
+{
+    return Geom::IntPoint(allocation.get_width(), allocation.get_height());
+}
+
+
 /*
   Local Variables:
   mode:c++

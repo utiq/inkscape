@@ -539,6 +539,7 @@ std::vector<AttributeInfo> getKnownAttrs()
         AttributeInfo("bordercolor", true),
         AttributeInfo("borderopacity", true),
         AttributeInfo("pagecolor", true),
+        AttributeInfo("labelstyle", true),
 
         // SPGuide
         AttributeInfo("position", true),

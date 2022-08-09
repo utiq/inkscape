@@ -32,8 +32,10 @@ typedef unsigned int guint32; // uint is guaranteed to hold up to 2^32 − 1
 #define SP_RGBA32_U_COMPOSE(r,g,b,a) ((((r) & 0xff) << 24) | (((g) & 0xff) << 16) | (((b) & 0xff) << 8) | ((a) & 0xff))
 #define SP_RGBA32_F_COMPOSE(r,g,b,a) SP_RGBA32_U_COMPOSE (SP_COLOR_F_TO_U (r), SP_COLOR_F_TO_U (g), SP_COLOR_F_TO_U (b), SP_COLOR_F_TO_U (a))
 #define SP_RGBA32_C_COMPOSE(c,o) SP_RGBA32_U_COMPOSE(SP_RGBA32_R_U(c),SP_RGBA32_G_U(c),SP_RGBA32_B_U(c),SP_COLOR_F_TO_U(o))
+#define SP_RGBA32_LUMINANCE(v) (SP_RGBA32_R_U(v) * 0.30 + SP_RGBA32_G_U(v) * 0.59 + SP_RGBA32_B_U(v) * 0.11 + 0.5)
 
 struct SVGICCColor;
+
 
 /**
  * An RGB color with optional icc-color part
