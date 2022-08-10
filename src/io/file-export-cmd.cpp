@@ -21,16 +21,19 @@
 #include "document.h"
 #include "object/object-set.h"
 #include "object/sp-item.h"
+#include "object/sp-page.h"
 #include "object/sp-root.h"
 #include "object/sp-text.h"
 #include "object/sp-flowtext.h"
 #include "object/sp-namedview.h"
 #include "object/sp-object-group.h"
+#include "page-manager.h"
 #include "path-chemistry.h" // sp_item_list_to_curves
 #include "text-editing.h" // te_update_layout_now_recursive
 #include "selection-chemistry.h" // fit_canvas_to_drawing
 #include "svg/svg-color.h" // Background color
 #include "helper/png-write.h" // PNG Export
+#include "util/parse-int-range.h"
 
 #include "extension/extension.h"
 #include "extension/system.h"
@@ -80,6 +83,11 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
 
     // Get export type from filename supplied with --export-filename
     if (!export_filename.empty() && export_filename != "-") {
+
+        // Attempt to result variable and home path use in export filenames.
+        Glib::RefPtr<Gio::File> gfile = Gio::File::create_for_parse_name(export_filename);
+        export_filename = gfile->get_parse_name();
+
 #ifdef G_OS_WIN32
         auto fn = filesystem::u8path(export_filename);
 #else
@@ -144,6 +152,10 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
             export_type_list.emplace_back("svg"); // fall-back to SVG by default
         }
     }
+    // Export filename should be used when specified as the output file
+    if (export_filename.empty()) {
+        export_filename = filename_in;
+    }
     // check if multiple export files are requested, but --export_extension was supplied
     if (!export_extension.empty() && export_type_list.size() != 1) {
         std::cerr
@@ -170,7 +182,7 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
         // For PNG export, there is no extension, so the method below can not be used.
         if (type == "png") {
             if (!export_extension_forced) {
-                do_export_png(doc, filename_in);
+                do_export_png(doc, export_filename);
             } else {
                 std::cerr << "InkFileExportCmd::do_export: "
                           << "The parameter --export-extension is invalid for PNG export" << std::endl;
@@ -181,7 +193,7 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
         // an extension ID was explicitly given. This makes handling of --export-plain-svg easier (which
         // should also work when multiple file types are given, unlike --export-extension)
         if (type == "svg" && !export_extension_forced) {
-            do_export_svg(doc, filename_in);
+            do_export_svg(doc, export_filename);
             continue;
         }
 
@@ -203,15 +215,15 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
                 if (!export_extension_forced ||
                     (export_extension == Glib::ustring(oext->get_id()).lowercase())) {
                     if (type == "svg") {
-                        do_export_svg(doc, filename_in, *oext);
+                        do_export_svg(doc, export_filename, *oext);
                     } else if (type == "ps") {
-                        do_export_ps_pdf(doc, filename_in, "image/x-postscript", *oext);
+                        do_export_ps_pdf(doc, export_filename, "image/x-postscript", *oext);
                     } else if (type == "eps") {
-                        do_export_ps_pdf(doc, filename_in, "image/x-e-postscript", *oext);
+                        do_export_ps_pdf(doc, export_filename, "image/x-e-postscript", *oext);
                     } else if (type == "pdf") {
-                        do_export_ps_pdf(doc, filename_in, "application/pdf", *oext);
+                        do_export_ps_pdf(doc, export_filename, "application/pdf", *oext);
                     } else {
-                        do_export_extension(doc, filename_in, oext);
+                        do_export_extension(doc, export_filename, oext);
                     }
                     exported = true;
                     break;
@@ -302,9 +314,9 @@ InkFileExportCmd::get_filename_out(std::string filename_in, std::string object_i
  *  Perform an SVG export
  *
  *  \param doc Document to export.
- *  \param filename_in Filename for export
+ *  \param export_filename Filename for export
  */
-int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &filename_in)
+int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_filename)
 {
     Inkscape::Extension::Output *oext;
     if (export_plain_svg) {
@@ -314,16 +326,16 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &filename
         oext = dynamic_cast<Inkscape::Extension::Output *>(
             Inkscape::Extension::db.get("org.inkscape.output.svg.inkscape"));
     }
-    return do_export_svg(doc, filename_in, *oext);
+    return do_export_svg(doc, export_filename, *oext);
 }
 /**
  *  Perform an SVG export
  *
  *  \param doc Document to export.
- *  \param filename_in Filename for export
+ *  \param export_filename Filename for export
  *  \param extension Output extension used for exporting
  */
-int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &filename_in,
+int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_filename,
                                     Inkscape::Extension::Output &extension)
 {
     // Start with options that are once per document.
@@ -346,13 +358,47 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &filename
 
     if (export_area_drawing) {
         fit_canvas_to_drawing(doc, export_margin != 0 ? true : false);
-    } else if (export_area_page || export_id.empty() ) {
+    } else if (export_area_page || export_id.empty()) {
         if (export_margin) {
             doc->ensureUpToDate();
-            doc->fitToRect(*(doc->preferredBounds()), true);
+            doc->fitToRect(*(doc->preferredBounds()), export_margin);
         }
     }
 
+    // Export pages instead of objects
+    if (!export_page.empty()) {
+        std::string base = export_filename;
+        std::string ext = "svg";
+        // Strip any possible extension
+        auto extension_pos = export_filename.find_last_of('.');
+        if (extension_pos != std::string::npos) {
+            base = export_filename.substr(0, extension_pos);
+            ext = export_filename.substr(extension_pos+1);
+        }
+
+        auto pages = Inkscape::parseIntRange(export_page);
+        for (auto page_num : pages) {
+            // And if only one page is selected then we assume the user knows the filename they intended.
+            std::string filename_out = base + (pages.size() > 1 ? "_p" + std::to_string(page_num) : "") + "." + ext;
+
+            auto copy_doc = doc->copy();
+            copy_doc->prunePages(std::to_string(page_num), true);
+            copy_doc->ensureUpToDate();
+            copy_doc->vacuumDocument();
+
+            try {
+                Inkscape::Extension::save(dynamic_cast<Inkscape::Extension::Extension *>(&extension), copy_doc.get(),
+                                          filename_out.c_str(), false, false,
+                                          export_plain_svg ? Inkscape::Extension::FILE_SAVE_METHOD_SAVE_COPY
+                                                           : Inkscape::Extension::FILE_SAVE_METHOD_INKSCAPE_SVG);
+            } catch (Inkscape::Extension::Output::save_failed const &) {
+                std::cerr << "InkFileExportCmd::do_export_svg: Failed to save " << (export_plain_svg ? "" : "Inkscape")
+                          << " SVG to: " << filename_out << std::endl;
+                return 1;
+            }
+        }
+        return 0;
+    }
 
     // Export each object in list (or root if empty).  Use ';' so in future it could be possible to selected multiple objects to export together.
     std::vector<Glib::ustring> objects = Glib::Regex::split_simple("\\s*;\\s*", export_id);
@@ -362,7 +408,7 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &filename
 
     for (auto object : objects) {
 
-        std::string filename_out = get_filename_out(filename_in, Glib::filename_from_utf8(object));
+        std::string filename_out = get_filename_out(export_filename, Glib::filename_from_utf8(object));
         if (filename_out.empty()) {
             return 1;
         }
@@ -383,7 +429,7 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &filename
             if (!(export_area_page || export_area_drawing)) {
                 Inkscape::ObjectSet s(doc);
                 s.set(obj);
-                s.fitCanvas(export_margin ? true : false);
+                s.fitCanvas((bool)export_margin);
             }
         }
         g_assert(std::string(extension.get_extension()) == ".svg");
@@ -440,14 +486,13 @@ guint32 InkFileExportCmd::get_bgcolor(SPDocument *doc) {
  *  Perform a PNG export
  *
  *  \param doc Document to export.
- *  \param filename_in filename for export
+ *  \param export_filename filename for export
  */
 int
-InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
+InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &export_filename)
 {
     bool filename_from_hint = false;
     gdouble dpi = 0.0;
-    guint32 bgcolor = get_bgcolor(doc);
 
     auto prefs = Inkscape::Preferences::get();
     bool old_dither = prefs->getBool("/options/dithering/value", true);
@@ -455,21 +500,11 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
 
     // Export each object in list (or root if empty).  Use ';' so in future it could be possible to selected multiple objects to export together.
     std::vector<Glib::ustring> objects = Glib::Regex::split_simple("\\s*;\\s*", export_id);
-    if (objects.empty()) {
-        objects.emplace_back(); // So we do loop at least once for root.
-    }
 
+    std::vector<SPItem*> items;
     for (auto object_id : objects) {
-
-        std::string filename_out = get_filename_out(filename_in, Glib::filename_from_utf8(object_id));
-
-        std::vector<SPItem*> items;
-
         // Find export object. (Either root or object with specified id.)
-        SPObject *object = doc->getRoot();
-        if (!object_id.empty()) {
-            object = doc->getObjectById(object_id);
-        }
+        auto object = doc->getObjectById(object_id);
 
         if (!object) {
             std::cerr << "InkFileExport::do_export_png: "
@@ -485,7 +520,41 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
             continue;
         }
 
-        items.push_back(SP_ITEM(object)); // There is only one item, why do this?
+        items.push_back(SP_ITEM(object));
+    }
+
+    // Export pages instead of objects
+    if (!export_page.empty()) {
+        auto &pm = doc->getPageManager();
+        std::string base = export_filename;
+        // Strip any possible extension
+        auto extension_pos = export_filename.find_last_of('.');
+        if (extension_pos != std::string::npos)
+            base = export_filename.substr(0, extension_pos);
+
+        auto pages = Inkscape::parseIntRange(export_page);
+        for (auto page_num : pages) {
+            // We always use the png extension and ignore the extension given by the user
+            // And if only one page is selected then we assume the user knows the filename they intended.
+            std::string filename_out = base + (pages.size() > 1 ? "_p" + std::to_string(page_num) : "") + ".png";
+            if (auto page = pm.getPage(page_num - 1)) {
+                do_export_png_now(doc, filename_out, page->getDesktopRect(), dpi, items);
+            }
+        }
+        return 0;
+    }
+
+    if (objects.empty()) {
+        objects.emplace_back(); // So we do loop at least once for root.
+    }
+
+    for (auto object_id : objects) {
+        SPObject *object = doc->getRoot();
+        if (!object_id.empty()) {
+            object = doc->getObjectById(object_id);
+        }
+
+        std::string filename_out = get_filename_out(export_filename, Glib::filename_from_utf8(object_id));
 
         if (export_id_only) {
             std::cerr << "Exporting only object with id=\""
@@ -549,23 +618,6 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
             continue;
         }
 
-        // -------------------------- DPI -------------------------------
-
-        if (export_dpi != 0.0 && dpi == 0.0) {
-            dpi = export_dpi;
-            if ((dpi < 0.1) || (dpi > 10000.0)) {
-                std::cerr << "InkFileExport::do_export_png: "
-                          << "DPI value " << export_dpi
-                          << " out of range [0.1 - 10000.0]. Skipping.";
-                continue;
-            }
-        }
-
-        // default dpi
-        if (dpi == 0.0) {
-            dpi = Inkscape::Util::Quantity::convert(1, "in", "px");
-        }
-
         // -------------------------  Area -------------------------------
 
         Geom::Rect area;
@@ -607,6 +659,34 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
             area = area.roundOutwards();
         }
         // End finding area.
+        do_export_png_now(doc, filename_out, area, dpi, items);
+
+    } // End loop over objects.
+    prefs->setBool("/options/dithering/value", old_dither);
+    return 0;
+}
+
+void
+InkFileExportCmd::do_export_png_now(SPDocument *doc, std::string const &filename_out, Geom::Rect area, double dpi_in, const std::vector<SPItem *> &items)
+{
+    // -------------------------- DPI -------------------------------
+
+    double dpi = dpi_in;
+
+    if (export_dpi != 0.0 && dpi == 0.0) {
+        dpi = export_dpi;
+        if ((dpi < 0.1) || (dpi > 10000.0)) {
+            std::cerr << "InkFileExport::do_export_png: "
+                      << "DPI value " << export_dpi
+                      << " out of range [0.1 - 10000.0]. Skipping.";
+            return;
+        }
+    }
+
+    // default dpi
+    if (dpi == 0.0) {
+        dpi = Inkscape::Util::Quantity::convert(1, "in", "px");
+    }
 
         // -------------------------- Width and Height ---------------------------------
 
@@ -620,7 +700,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
             if ((height < 1) || (height > PNG_UINT_31_MAX)) {
                 std::cerr << "InkFileExport::do_export_png: "
                           << "Export height " << height << " out of range (1 to " << PNG_UINT_31_MAX << ")" << std::endl;
-                continue;
+                return;
             }
             ydpi = Inkscape::Util::Quantity::convert(height, "in", "px") / area.height();
             xdpi = ydpi;
@@ -632,7 +712,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
             if ((width < 1) || (width > PNG_UINT_31_MAX)) {
                 std::cerr << "InkFileExport::do_export_png: "
                           << "Export width " << width << " out of range (1 to " << PNG_UINT_31_MAX << ")." << std::endl;
-                continue;
+                return;
             }
             xdpi = Inkscape::Util::Quantity::convert(width, "in", "px") / area.width();
             ydpi = export_height ? ydpi : xdpi;
@@ -649,7 +729,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
 
         if ((width < 1) || (height < 1) || (width > PNG_UINT_31_MAX) || (height > PNG_UINT_31_MAX)) {
             std::cerr << "InkFileExport::do_export_png: Dimensions " << width << "x" << height << " are out of range (1 to " << PNG_UINT_31_MAX << ")." << std::endl;
-            continue;
+            return;
         }
 
         // -------------------------- Bit Depth and Color Type --------------------
@@ -676,12 +756,13 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
             if (it == color_modes.end()) {
                 std::cerr << "InkFileExport::do_export_png: "
                           << "Color mode " << export_png_color_mode.raw() << " is invalid. It must be one of Gray_1/Gray_2/Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16." << std::endl;
-                continue;
+                return;
             } else {
                 std::tie(color_type, bit_depth) = it->second;
             }
         }
 
+        guint32 bgcolor = get_bgcolor(doc);
         // ----------------------  Generate the PNG -------------------------------
 #ifdef DEBUG
         std::cerr << "Background RRGGBBAA: " << std::hex << bgcolor << std::dec << std::endl;
@@ -691,19 +772,12 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &filename_in)
                   << width << " x " << height << " pixels (" << dpi << " dpi)" << std::endl;
 #endif
 
-        reverse(items.begin(),items.end()); // But there was only one item!
-
         if( sp_export_png_file(doc, filename_out.c_str(), area, width, height, xdpi, ydpi,
                                bgcolor, nullptr, nullptr, true, export_id_only ? items : std::vector<SPItem*>(),
                                false, color_type, bit_depth) == 1 ) {
         } else {
             std::cerr << "InkFileExport::do_export_png: Failed to export to " << filename_out << std::endl;
-            continue;
         }
-
-    } // End loop over objects.
-    prefs->setBool("/options/dithering/value", old_dither);
-    return 0;
 }
 
 

@@ -130,6 +130,7 @@ public:
            SPDocument *createChildDoc(std::string const &filename);
 
     void setPages(bool enabled);
+    void prunePages(const std::string &page_nums, bool invert = false);
 
     // Make a copy, you are responsible for the copy.
     std::unique_ptr<SPDocument> copy() const;

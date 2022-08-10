@@ -14,8 +14,10 @@
 
 #include <iostream>
 #include <glibmm.h>
+#include "2geom/rect.h"
 
 class SPDocument;
+class SPItem;
 namespace Inkscape {
 namespace Extension {
 class Output;
@@ -41,6 +43,7 @@ private:
     int do_export_extension(SPDocument *doc, std::string const &filename_in, Inkscape::Extension::Output *extension);
     Glib::ustring export_type_current;
 
+    void do_export_png_now(SPDocument *doc, std::string const &filename_out, Geom::Rect area, double dpi_in, const std::vector<SPItem *> &items);
 public:
     // Should be private, but this is just temporary code (I hope!).
 
@@ -58,6 +61,8 @@ public:
     bool          export_area_snap;
     int           export_width;
     int           export_height;
+
+    Glib::ustring export_page;
 
     double        export_dpi;
     bool          export_ignore_filters;

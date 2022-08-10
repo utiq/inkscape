@@ -819,6 +819,10 @@ Svg::open (Inkscape::Extension::Input *mod, const gchar *uri)
     Glib::ustring import_mode_svg  = prefs->getString("/dialogs/import/import_mode_svg");
     Glib::ustring scale            = prefs->getString("/dialogs/import/scale");
 
+    // Selecting some of the pages (via command line) in some future update
+    // we could add an option which would allow user page selection.
+    auto page_nums = INKSCAPE.get_pages();
+
     // If we popped up a window asking about import preferences, get values from
     // there and update preferences.
     if(mod->get_gui() && ask_svg) {
@@ -945,6 +949,12 @@ Svg::open (Inkscape::Extension::Input *mod, const gchar *uri)
     }
 
     SPDocument *doc = SPDocument::createNewDoc(uri, true);
+
+    // Page selection is achieved by removing any page not in the found list, the exports
+    // Can later figure out how they'd like to process the remaining pages.
+    if (!page_nums.empty()) {
+        doc->prunePages(page_nums, true);
+    }
 
     // Convert single page docs into multi page mode, and visa-versa if
     // we are importing. We never change the mode for opening.

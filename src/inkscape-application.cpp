@@ -693,7 +693,7 @@ InkscapeApplication::InkscapeApplication()
     // Open/Import
     _start_main_option_section(_("File import"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "pipe",                    'p', N_("Read input file from standard input (stdin)"),                             "");
-    gapp->add_main_option_entry(T::OPTION_TYPE_INT,      "pdf-page",               '\0', N_("PDF page number to import"),                                       N_("PAGE"));
+    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "pages",                   'n', N_("Page numbers to import from multi-page document, i.e. PDF"), N_("PAGE[,PAGE]"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "pdf-poppler",            '\0', N_("Use poppler when importing via commandline"),                              "");
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "convert-dpi-method",     '\0', N_("Method used to convert pre-0.92 document dpi, if needed: [none|scale-viewbox|scale-document]"), N_("METHOD"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "no-convert-text-baseline-spacing", '\0', N_("Do not fix pre-0.92 document's text baseline spacing on opening"), "");
@@ -718,6 +718,7 @@ InkscapeApplication::InkscapeApplication()
 
     // Export - Options
     _start_main_option_section(_("Export options"));
+    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "export-page",           '\0', N_("Page number to export"), N_("all|n[,a-b]"));
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "export-id",              'i', N_("ID(s) of object(s) to export"),                   N_("OBJECT-ID[;OBJECT-ID]*")); // BSP
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "export-id-only",         'j', N_("Hide all objects except object with ID selected by export-id"),             ""); // BSx
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "export-plain-svg",       'l', N_("Remove Inkscape-specific SVG attributes/properties"),                       ""); // xSx
@@ -1085,8 +1086,8 @@ InkscapeApplication::on_open(const Gio::Application::type_vec_files& files, cons
 {
     if(_pdf_poppler)
         INKSCAPE.set_pdf_poppler(_pdf_poppler);
-    if(_pdf_page)
-        INKSCAPE.set_pdf_page(_pdf_page);
+    if(!_pages.empty())
+        INKSCAPE.set_pages(_pages);
 
     if (files.size() > 1 && !_file_export.export_filename.empty()) {
         std::cerr << "ConcreteInkscapeApplication<Gtk::Application>::on_open: "
@@ -1414,6 +1415,7 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         options->contains("export-filename")       ||
         options->contains("export-overwrite")      ||
         options->contains("export-type")           ||
+        options->contains("export-page")           ||
 
         options->contains("export-area-page")      ||
         options->contains("export-area-drawing")   ||
@@ -1466,7 +1468,6 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     if (options->contains("shell"))          _use_shell = true;
     if (options->contains("pipe"))           _use_pipe  = true;
 
-
     // Enable auto-export
     if (options->contains("export-filename")  ||
         options->contains("export-type")      ||
@@ -1501,13 +1502,12 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
 
     // ================= OPEN/IMPORT ===================
 
+    if (options->contains("pages")) {
+        options->lookup_value("pages", _pages);
+    }
+
     if (options->contains("pdf-poppler")) {
         _pdf_poppler = true;
-    }
-    if (options->contains("pdf-page")) {   // Maybe useful for other file types?
-        int page = 0;
-        options->lookup_value("pdf-page", page);
-        _pdf_page = page;
     }
 
     if (options->contains("convert-dpi-method")) {
@@ -1568,6 +1568,10 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     }
 
     if (options->contains("export-overwrite"))    _file_export.export_overwrite    = true;
+
+    if (options->contains("export-page")) {
+        options->lookup_value("export-page", _file_export.export_page);
+    }
 
     // Export - Geometry
     if (options->contains("export-area")) {

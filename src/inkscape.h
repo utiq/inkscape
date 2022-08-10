@@ -148,11 +148,11 @@ public:
     bool get_pdf_poppler() {
         return _pdf_poppler;
     }
-    void set_pdf_page(gint page) {
-        _pdf_page = page;
+    void set_pages(const std::string &pages) {
+        _pages = pages;
     }
-    gint get_pdf_page() {
-        return _pdf_page;
+    const std::string &get_pages() const {
+        return _pages;
     }
 
   private:
@@ -167,13 +167,13 @@ public:
 
     std::map<SPDocument *, int> _document_set;
     std::vector<SPDesktop *> *_desktops = nullptr;
+    std::string _pages;
 
     unsigned refCount = 1;
     guint _mapalt = GDK_MOD1_MASK;
     guint _trackalt = false;
     static bool _crashIsHappening;
     bool _use_gui = false;
-    gint _pdf_page = 1;
     bool _pdf_poppler = false;
 };
 

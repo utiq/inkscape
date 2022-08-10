@@ -151,7 +151,7 @@ query_all(InkscapeApplication* app)
 void
 pdf_page(int page)
 {
-    INKSCAPE.set_pdf_page(page);
+    INKSCAPE.set_pages(std::to_string(page));
 }
 
 void

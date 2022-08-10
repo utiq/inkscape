@@ -20,6 +20,7 @@
 #include "object/sp-root.h"
 #include "selection-chemistry.h"
 #include "svg/svg-color.h"
+#include "util/parse-int-range.h"
 
 namespace Inkscape {
 
@@ -252,6 +253,7 @@ SPPage *PageManager::newPage(SPPage *page)
     return new_page;
 }
 
+
 /**
  * Delete the given page.
  *
@@ -413,6 +415,39 @@ SPPage *PageManager::getPage(int index) const
         return nullptr;
     }
     return pages[index];
+}
+
+/**
+ * Get the pages from a set of pages in the given set.
+ *
+ * @param pages - A set of page positions in the format "1,2-3...etc"
+ * @param inverse - Reverse the selection, selecting pages not in page_pos.
+ *
+ * @returns A vector of SPPage objects found. Not found pages are ignored.
+ */
+std::vector<SPPage *> PageManager::getPages(const std::string &pages, bool inverse) const
+{
+    return getPages(parseIntRange(pages, 1, getPageCount()), inverse);
+}
+
+/**
+ * Get the pages from a set of pages in the given set.
+ *
+ * @param page_pos - A set of page positions indexed from 1.
+ * @param inverse - Reverse the selection, selecting pages not in page_pos.
+ *
+ * @returns A vector of SPPage objects found. Not found pages are ignored.
+ */
+std::vector<SPPage *> PageManager::getPages(std::set<unsigned int> page_pos, bool inverse) const
+{
+    std::vector<SPPage *> ret;
+    for (auto page : pages) {
+        bool contains = page_pos.find(page->getPagePosition()) != page_pos.end();
+        if (contains != inverse) {
+            ret.push_back(page);
+        }
+    }
+    return ret;
 }
 
 /**

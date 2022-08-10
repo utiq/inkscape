@@ -44,6 +44,7 @@ namespace Gtk {
   class RadioButton;
   class Box;
   class Label;
+  class Entry;
 }
 
 namespace Inkscape {
@@ -68,7 +69,7 @@ public:
     ~PdfImportDialog() override;
 
     bool showDialog();
-    int getSelectedPage();
+    std::string getSelectedPages();
     bool getImportMethod();
     void getImportSettings(Inkscape::XML::Node *prefs);
 
@@ -89,7 +90,7 @@ private:
     class Gtk::Button * okbutton;
     class Gtk::Label * _labelSelect;
     class Gtk::CheckButton *_pageAllPages;
-    class Inkscape::UI::Widget::SpinButton * _pageNumberSpin;
+    class Gtk::Entry *_pageNumbers;
     class Gtk::Label * _labelTotalPages;
     class Gtk::Box * hbox2;
     class Gtk::CheckButton * _cropCheck;
@@ -123,7 +124,7 @@ private:
     class Gtk::Box * hbox1;
 
     std::shared_ptr<PDFDoc> _pdf_doc;   // Document to be imported
-    int _current_page;  // Current selected page
+    std::string _current_pages;  // Current selected pages
     Page *_previewed_page;    // Currently previewed page
     unsigned char *_thumb_data; // Thumbnail image data
     int _thumb_width, _thumb_height;    // Thumbnail size

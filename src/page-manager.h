@@ -38,6 +38,8 @@ public:
 
     static bool move_objects();
     const std::vector<SPPage *> &getPages() const { return pages; }
+    std::vector<SPPage *> getPages(const std::string &pages, bool inverse) const;
+    std::vector<SPPage *> getPages(std::set<unsigned int> indexes, bool inverse = false) const;
 
     void addPage(SPPage *page);
     void removePage(Inkscape::XML::Node *child);

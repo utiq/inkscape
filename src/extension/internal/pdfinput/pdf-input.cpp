@@ -54,9 +54,8 @@
 #include "ui/dialog-events.h"
 #include "ui/widget/frame.h"
 #include "ui/widget/spinbutton.h"
+#include "util/parse-int-range.h"
 #include "util/units.h"
-
-
 
 namespace {
 
@@ -106,9 +105,9 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     _pageAllPages = Gtk::manage(new class Gtk::CheckButton(_("All")));
 
     // Page number
-    auto _pageNumberSpin_adj = Gtk::Adjustment::create(1, 1, _pdf_doc->getNumPages(), 1, 10, 0);
-    _pageNumberSpin = Gtk::manage(new Inkscape::UI::Widget::SpinButton(_pageNumberSpin_adj, 1, 1));
-    _pageNumberSpin->set_sensitive(false);
+    _pageNumbers = Gtk::manage(new Gtk::Entry());
+    _pageNumbers->set_text("all");
+    _pageNumbers->set_sensitive(false);
     _labelTotalPages = Gtk::manage(new class Gtk::Label());
     hbox2 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
 
@@ -209,18 +208,14 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     _pageAllPages->set_relief(Gtk::RELIEF_NORMAL);
     _pageAllPages->set_mode(true);
     _pageAllPages->set_active(true);
-    _pageNumberSpin->set_can_focus();
-    _pageNumberSpin->set_update_policy(Gtk::UPDATE_ALWAYS);
-    _pageNumberSpin->set_numeric(true);
-    _pageNumberSpin->set_digits(0);
-    _pageNumberSpin->set_wrap(false);
+    _pageNumbers->set_can_focus();
     _labelTotalPages->set_justify(Gtk::JUSTIFY_LEFT);
     _labelTotalPages->set_line_wrap(false);
     _labelTotalPages->set_use_markup(false);
     _labelTotalPages->set_selectable(false);
     hbox2->pack_start(*_pageAllPages, Gtk::PACK_SHRINK, 4);
     hbox2->pack_start(*_labelSelect, Gtk::PACK_SHRINK, 4);
-    hbox2->pack_start(*_pageNumberSpin, Gtk::PACK_SHRINK, 4);
+    hbox2->pack_start(*_pageNumbers, Gtk::PACK_SHRINK, 4);
     hbox2->pack_start(*_labelTotalPages, Gtk::PACK_SHRINK, 4);
     _cropCheck->set_can_focus();
     _cropCheck->set_relief(Gtk::RELIEF_NORMAL);
@@ -323,7 +318,7 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     // Connect signals
     _previewArea->signal_draw().connect(sigc::mem_fun(*this, &PdfImportDialog::_onDraw));
     _pageAllPages->signal_toggled().connect(sigc::mem_fun(*this, &PdfImportDialog::_onToggleAllPages));
-    _pageNumberSpin_adj->signal_value_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPageNumberChanged));
+    _pageNumbers->signal_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPageNumberChanged));
     _cropCheck->signal_toggled().connect(sigc::mem_fun(*this, &PdfImportDialog::_onToggleCropping));
     _fallbackPrecisionSlider_adj->signal_value_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPrecisionChanged));
 #ifdef HAVE_POPPLER_CAIRO
@@ -356,8 +351,7 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
 
     // Init preview
     _thumb_data = nullptr;
-    _pageNumberSpin_adj->set_value(1.0);
-    _current_page = -1;
+    _current_pages = "all";
     _setPreviewPage(1);
 
     set_default (*okbutton);
@@ -389,8 +383,11 @@ bool PdfImportDialog::showDialog() {
     }
 }
 
-int PdfImportDialog::getSelectedPage() {
-    return _current_page;
+std::string PdfImportDialog::getSelectedPages() {
+    if (_pageNumbers->get_sensitive()) {
+        return _current_pages;
+    }
+    return "all";
 }
 
 bool PdfImportDialog::getImportMethod() {
@@ -406,7 +403,7 @@ bool PdfImportDialog::getImportMethod() {
  *        for determining the behaviour desired by the user
  */
 void PdfImportDialog::getImportSettings(Inkscape::XML::Node *prefs) {
-    prefs->setAttributeSvgDouble("selectedPage", (double)_current_page);
+    prefs->setAttribute("selectedPages", _current_pages);
     if (_cropCheck->get_active()) {
         Glib::ustring current_choice = _cropTypeCombo->get_active_text();
         int num_crop_choices = sizeof(crop_setting_choices) / sizeof(crop_setting_choices[0]);
@@ -463,12 +460,17 @@ void PdfImportDialog::_onPrecisionChanged() {
 }
 
 void PdfImportDialog::_onToggleAllPages() {
+    _pageNumbers->set_sensitive(!_pageAllPages->get_active());
+
     if (_pageAllPages->get_active()) {
-        _pageNumberSpin->set_sensitive(false);
-        _current_page = -1;
         _setPreviewPage(1);
     } else {
-        _pageNumberSpin->set_sensitive(true);
+        if (_current_pages == "all") {
+            std::ostringstream example;
+            example << "1-" << _pdf_doc->getCatalog()->getNumPages();
+            _current_pages = example.str();
+        }
+        _pageNumbers->set_text(_current_pages);
         _onPageNumberChanged();
     }
 }
@@ -478,9 +480,11 @@ void PdfImportDialog::_onToggleCropping() {
 }
 
 void PdfImportDialog::_onPageNumberChanged() {
-    int page = _pageNumberSpin->get_value_as_int();
-    _current_page = CLAMP(page, 1, _pdf_doc->getCatalog()->getNumPages());
-    _setPreviewPage(_current_page);
+    _current_pages = _pageNumbers->get_text();
+    auto nums = parseIntRange(_current_pages, 1, _pdf_doc->getCatalog()->getNumPages());
+    if (!nums.empty()) {
+        _setPreviewPage(*nums.begin());
+    }
 }
 
 #ifdef HAVE_POPPLER_CAIRO
@@ -492,6 +496,7 @@ void PdfImportDialog::_onToggleImport() {
         hbox6->set_sensitive(false);
         _pageAllPages->set_sensitive(false);
         _pageAllPages->set_active(false);
+        _pageNumbers->set_sensitive(false);
     } else {
         hbox3->set_sensitive();
         _localFontsCheck->set_sensitive();
@@ -499,6 +504,7 @@ void PdfImportDialog::_onToggleImport() {
         hbox6->set_sensitive();
         _pageAllPages->set_sensitive(true);
         _pageAllPages->set_active(true);
+        _pageNumbers->set_sensitive(false);
     }
 }
 #endif
@@ -733,16 +739,16 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
     }
 
     // Get options
-    int page_num = 1;
+    std::string page_nums = "1";
     bool is_importvia_poppler = false;
     if (dlg) {
-        page_num = dlg->getSelectedPage();
+        page_nums = dlg->getSelectedPages();
 #ifdef HAVE_POPPLER_CAIRO
         is_importvia_poppler = dlg->getImportMethod();
         // printf("PDF import via %s.\n", is_importvia_poppler ? "poppler" : "native");
 #endif
     } else {
-        page_num = INKSCAPE.get_pdf_page();
+        page_nums = INKSCAPE.get_pages();
 #ifdef HAVE_POPPLER_CAIRO
         is_importvia_poppler = INKSCAPE.get_pdf_poppler();
 #endif
@@ -766,22 +772,21 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
         }
         SvgBuilder *builder = new SvgBuilder(doc, docname, pdf_doc->getXRef());
 
+        auto pages = parseIntRange(page_nums, 1, pdf_doc->getCatalog()->getNumPages());
+        if (pages.empty()) {
+            pages.insert(1);
+        }
+
         // Get preferences
         Inkscape::XML::Node *prefs = builder->getPreferences();
         if (dlg)
             dlg->getImportSettings(prefs);
 
-        if (page_num > 0) {
-            add_builder_page(pdf_doc, builder, doc, page_num);
-        } else {
-            // Multi page (open all pages)
-            Catalog *catalog = pdf_doc->getCatalog();
-            for (int p = 1; p <= catalog->getNumPages(); p++) {
-                // Incriment the page building here.
-                builder->pushPage();
-                // And then add each of the pages
-                add_builder_page(pdf_doc, builder, doc, p);
-            }
+        for (auto p : pages) {
+            // Increment the page building here.
+            builder->pushPage();
+            // And then add each of the pages
+            add_builder_page(pdf_doc, builder, doc, p);
         }
 
         delete builder;
@@ -809,10 +814,12 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
             g_error_free (error);
         }
 
+        int page_num = 1;
         if (document) {
-            int const num_pages = poppler_document_get_n_pages(document);
-            sanitize_page_number(page_num, num_pages);
-            page = poppler_document_get_page(document, page_num - 1);
+            auto pages = parseIntRange(page_nums, 1, poppler_document_get_n_pages(document));
+            if (pages.empty())
+                pages.insert(1);
+            page = poppler_document_get_page(document, (*pages.begin()) - 1);
         }
 
         if (page) {

@@ -136,9 +136,9 @@ protected:
     bool _use_shell   = false;
     bool _use_pipe    = false;
     bool _auto_export = false;
-    int _pdf_page     = 1;
     int _pdf_poppler  = false;
     bool _use_command_line_argument = false;
+    Glib::ustring _pages;
     InkscapeApplication();
 
     // Documents are owned by the application which is responsible for opening/saving/exporting. WIP

@@ -310,6 +310,23 @@ void SPDocument::setPages(bool enabled)
     }
 }
 
+/**
+ * Remove pages in bulk using the integer range format "1,2,3-4" etc.
+ *
+ * @param page_nums - A string containing a range of page numbers
+ * @param invert - Keep the pages and remove the rest.
+ */
+void SPDocument::prunePages(const std::string &page_nums, bool invert)
+{
+    auto pages = _page_manager->getPages(page_nums, invert);
+    for (auto page : pages) {
+        if (page->getId()) {
+            ensureUpToDate();
+            _page_manager->deletePage(page, true);
+        }
+    }    
+}
+
 void SPDocument::queueForOrphanCollection(SPObject *object) {
     g_return_if_fail(object != nullptr);
     g_return_if_fail(object->document == this);

@@ -25,6 +25,7 @@ set(util_SRC
 	optstr.h
 	pages-skeleton.h
 	paper.h
+	parse-int-range.h
 	preview.h
 	reference.h
 	share.h
