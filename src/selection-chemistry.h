@@ -64,7 +64,7 @@ void sp_edit_invert_in_all_layers (SPDesktop *desktop);
 
 SPCSSAttr *take_style_from_item (SPObject *object);
 
-void sp_selection_paste(SPDesktop *desktop, bool in_place);
+void sp_selection_paste(SPDesktop *desktop, bool in_place, bool on_page = false);
 
 void sp_set_style_clipboard (SPCSSAttr *css);
 

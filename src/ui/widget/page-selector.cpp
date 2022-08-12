@@ -117,6 +117,7 @@ void PageSelector::pagesChanged()
 
 void PageSelector::selectonChanged(SPPage *page)
 {
+    _selector_changed_connection.block();
     _next_button.set_sensitive(_document->getPageManager().hasNextPage());
     _prev_button.set_sensitive(_document->getPageManager().hasPrevPage());
 
@@ -126,10 +127,11 @@ void PageSelector::selectonChanged(SPPage *page)
         for (auto row : _page_model->children()) {
             if (page == row->get_value(_model_columns.object)) {
                 _selector.set_active(row);
-                return;
+                break;
             }
         }
     }
+    _selector_changed_connection.unblock();
 }
 
 /**

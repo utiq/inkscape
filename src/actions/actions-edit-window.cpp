@@ -39,6 +39,15 @@ paste_in_place(InkscapeWindow* win)
 }
 
 void
+paste_on_page(InkscapeWindow* win)
+{
+    SPDesktop* dt = win->get_desktop();
+
+    // Paste In Place
+    sp_selection_paste(dt, true, true);
+}
+
+void
 path_effect_parameter_next(InkscapeWindow* win)
 {
     SPDesktop* dt = win->get_desktop();
@@ -62,6 +71,7 @@ add_actions_edit_window(InkscapeWindow* win)
     // clang-format off
     win->add_action(        "paste",                           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&paste), win));
     win->add_action(        "paste-in-place",                  sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&paste_in_place), win));
+    win->add_action(        "paste-on-page",                   sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&paste_on_page), win));
     win->add_action(        "path-effect-parameter-next",      sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&path_effect_parameter_next), win));
     // clang-format on
 

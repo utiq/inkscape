@@ -36,6 +36,7 @@
 #include "actions/actions-tools.h"
 #include "actions/actions-view-mode.h"
 #include "actions/actions-view-window.h"
+#include "actions/actions-pages.h"
 
 #include "object/sp-namedview.h"  // TODO Remove need for this!
 
@@ -115,6 +116,7 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
     add_actions_tools(this);                // Actions to switch between tools.
     add_actions_view_mode(this);            // Actions to change how Inkscape canvas is displayed.
     add_actions_view_window(this);          // Actions to add/change window of Inkscape
+    add_actions_page_tools(this);           // Actions specific to pages tool and toolbar
 
     // Add document action group to window and export to DBus.
     insert_action_group("doc", document->getActionGroup());

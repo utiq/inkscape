@@ -62,8 +62,10 @@
 
 #include "object/sp-defs.h"
 #include "object/sp-namedview.h"
+#include "object/sp-page.h"
 #include "object/sp-root.h"
 #include "object/sp-use.h"
+#include "page-manager.h"
 #include "style.h"
 
 #include "ui/dialog/filedialog.h"
@@ -891,7 +893,7 @@ sp_file_save_template(Gtk::Window &parentWindow, Glib::ustring name,
  * @param in_place Whether to paste the selection where it was when copied
  * @pre @c clipdoc is not empty and items can be added to the current layer
  */
-void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place)
+void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, bool on_page)
 {
     //TODO: merge with file_import()
 
@@ -900,6 +902,10 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place)
     Inkscape::XML::Node *target_parent = desktop->layerManager().currentLayer()->getRepr();
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+
+    // Get page manager for on_page pasting, this must be done before selection changes
+    Inkscape::PageManager &pm = target_document->getPageManager();
+    SPPage *to_page = pm.getSelected();
 
     auto *node_after = desktop->getSelection()->topRepr();
     if (node_after && prefs->getBool("/options/paste/aboveselected", true)) {
@@ -953,7 +959,12 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place)
     auto layer = desktop->layerManager().currentLayer();
     Geom::Affine doc2parent = layer->i2doc_affine().inverse();
 
+    Geom::OptRect from_page;
     if (clipboard) {
+        if (clipboard->attribute("page-min")) {
+            from_page = Geom::OptRect(clipboard->getAttributePoint("page-min"), clipboard->getAttributePoint("page-max"));
+        }
+
         for (Inkscape::XML::Node *obj = clipboard->firstChild(); obj; obj = obj->next()) {
             if (target_document->getObjectById(obj->attribute("id")))
                 continue;
@@ -980,10 +991,9 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place)
     // Apply inverse of parent transform
     selection->applyAffine(desktop->dt2doc() * doc2parent * desktop->doc2dt(), true, false, false);
 
-
-
     // Update (among other things) all curves in paths, for bounds() to work
     target_document->ensureUpToDate();
+
 
     // move selection either to original position (in_place) or to mouse pointer
     Geom::OptRect sel_bbox = selection->visualBounds();
@@ -1008,6 +1018,11 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place)
             Geom::Point mouse_offset = desktop->point() - sel_bbox->midpoint();
             offset = m.multipleOfGridPitch(mouse_offset - offset, sel_bbox->midpoint() + offset) + offset;
             m.unSetup();
+        } else if (on_page && from_page && to_page) {
+            // Moving to the same location on a different page requires us to remove the original page translation
+            offset *= Geom::Translate(from_page->min()).inverse();
+            // Then add the new page's transform on top.
+            offset *= Geom::Translate(to_page->getDesktopRect().min());
         }
 
         selection->moveRelative(offset);

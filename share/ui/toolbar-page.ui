@@ -29,7 +29,7 @@
       <object class="GtkToolButton" id="page_new">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="action-name">doc.page-new</property>
+        <property name="action-name">win.page-new</property>
         <property name="label" translatable="yes">New Page</property>
         <property name="icon-name">pages-add</property>
       </object>
@@ -159,7 +159,7 @@
       <object class="GtkToolButton" id="page_delete">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="action-name">doc.page-delete</property>
+        <property name="action-name">win.page-delete</property>
         <property name="label" translatable="yes">New Page</property>
         <property name="icon-name">pages-remove</property>
       </object>

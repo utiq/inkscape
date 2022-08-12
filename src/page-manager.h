@@ -51,6 +51,7 @@ public:
     SPPage *getLastPage() const { return getPage(pages.size() - 1); }
     SPPage *getViewportPage() const;
     std::vector<SPPage *> getPagesFor(SPItem *item, bool contains) const;
+    SPPage *getPageFor(SPItem *item, bool contains) const;
     Geom::OptRect getDesktopRect() const;
     bool hasPages() const { return !pages.empty(); }
     int getPageCount() const { return pages.size(); }

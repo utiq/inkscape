@@ -15,6 +15,7 @@
 
 #include "actions-pages.h"
 #include "inkscape-application.h"
+#include "inkscape-window.h"
 #include "document-undo.h"
 
 #include "page-manager.h"
@@ -27,11 +28,27 @@ void page_new(SPDocument *document)
     Inkscape::DocumentUndo::done(document, "New Automatic Page", INKSCAPE_ICON("tool-pages"));
 }
 
+void page_new_and_center(SPDesktop *desktop)
+{
+    if (auto document = desktop->getDocument()) {
+        page_new(document);
+        document->getPageManager().centerToSelectedPage(desktop);
+    }
+}
+
 void page_delete(SPDocument *document)
 {
     // Delete page's content if move_objects is checked.
     document->getPageManager().deletePage(document->getPageManager().move_objects());
     Inkscape::DocumentUndo::done(document, "Delete Page", INKSCAPE_ICON("tool-pages"));
+}
+
+void page_delete_and_center(SPDesktop *desktop)
+{
+    if (auto document = desktop->getDocument()) {
+        page_delete(document);
+        document->getPageManager().centerToSelectedPage(desktop);
+    }
 }
 
 void page_backward(SPDocument *document)
@@ -69,7 +86,7 @@ void set_move_objects(SPDocument *doc)
     }
 }
 
-std::vector<std::vector<Glib::ustring>> raw_data_actions =
+std::vector<std::vector<Glib::ustring>> doc_page_actions =
 {
     // clang-format off
     {"doc.page-new",               N_("New Page"),                "Page",     N_("Create a new page")                                  },
@@ -98,7 +115,26 @@ void add_actions_pages(SPDocument* doc)
         std::cerr << "add_actions_pages: no app!" << std::endl;
         return;
     }
-    app->get_action_extra_data().add_data(raw_data_actions);
+    app->get_action_extra_data().add_data(doc_page_actions);
+}
+
+std::vector<std::vector<Glib::ustring>> win_page_actions =
+{
+    // clang-format off
+    {"win.page-new",    N_("New Page"),    "Page", N_("Create a new page and center window.")},
+    {"win.page-delete", N_("Delete Page"), "Page", N_("Delete the selected page and center on next page")},
+    // clang-format on
+};
+
+void add_actions_page_tools(InkscapeWindow* win)
+{
+    auto desktop = win->get_desktop();
+
+    win->add_action("page-new", sigc::bind<SPDesktop*>(sigc::ptr_fun(&page_new_and_center), desktop));
+    win->add_action("page-delete", sigc::bind<SPDesktop*>(sigc::ptr_fun(&page_delete_and_center), desktop));
+
+    auto app = InkscapeApplication::instance();
+    app->get_action_extra_data().add_data(win_page_actions);
 }
 
 /*

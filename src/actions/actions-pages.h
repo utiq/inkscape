@@ -12,8 +12,10 @@
 #define INK_ACTIONS_PAGES_H
 
 class SPDocument;
+class InkscapeWindow;
 
 void add_actions_pages(SPDocument* doc);
+void add_actions_page_tools(InkscapeWindow* win);
 
 #endif // INK_ACTIONS_PAGES_H
 

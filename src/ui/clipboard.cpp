@@ -61,6 +61,7 @@
 #include "object/sp-mask.h"
 #include "object/sp-mesh-gradient.h"
 #include "object/sp-path.h"
+#include "object/sp-page.h"
 #include "object/sp-pattern.h"
 #include "object/sp-radial-gradient.h"
 #include "object/sp-rect.h"
@@ -68,6 +69,7 @@
 #include "object/sp-shape.h"
 #include "object/sp-textpath.h"
 #include "object/sp-use.h"
+#include "page-manager.h"
 #include "path-chemistry.h"
 #include "selection-chemistry.h"
 #include "style.h"
@@ -106,7 +108,7 @@ public:
     void copyPathParameter(Inkscape::LivePathEffect::PathParam *) override;
     void copySymbol(Inkscape::XML::Node* symbol, gchar const* style, SPDocument *source, Geom::Rect const &bbox) override;
     void insertSymbol(SPDesktop *desktop, Geom::Point const &shift_dt) override;
-    bool paste(SPDesktop *desktop, bool in_place) override;
+    bool paste(SPDesktop *desktop, bool in_place, bool on_page) override;
     bool pasteStyle(ObjectSet *set) override;
     bool pasteSize(ObjectSet *set, bool separately, bool apply_x, bool apply_y) override;
     bool pastePathEffect(ObjectSet *set) override;
@@ -133,7 +135,7 @@ private:
 
     bool _pasteImage(SPDocument *doc);
     bool _pasteText(SPDesktop *desktop);
-    bool _pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, bool in_place);
+    bool _pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, bool on_page);
     void _applyPathEffect(SPItem *, gchar const *);
     std::unique_ptr<SPDocument> _retrieveClipboard(Glib::ustring = "");
 
@@ -429,7 +431,7 @@ void ClipboardManagerImpl::insertSymbol(SPDesktop *desktop, Geom::Point const &s
  * Paste from the system clipboard into the active desktop.
  * @param in_place Whether to put the contents where they were when copied.
  */
-bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place)
+bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place, bool on_page)
 {
     // do any checking whether we really are able to paste before requesting the contents
     if ( desktop == nullptr ) {
@@ -446,10 +448,10 @@ bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place)
     // TODO: Handle x-special/gnome-copied-files and text/uri-list to support pasting files
 
     // if there is an image on the clipboard, paste it
-    if ( target == CLIPBOARD_GDK_PIXBUF_TARGET ) {
+    if ( !on_page && target == CLIPBOARD_GDK_PIXBUF_TARGET ) {
         return _pasteImage(desktop->doc());
     }
-    if (target == CLIPBOARD_TEXT_TARGET ) {
+    if ( !on_page && target == CLIPBOARD_TEXT_TARGET ) {
         // It was text, and we did paste it. If not, continue on.
         if (_pasteText(desktop)) {
             return true;
@@ -470,13 +472,13 @@ bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place)
         }
     }
 
-    if (_pasteNodes(desktop, tempdoc.get(), in_place)) {
+    if (_pasteNodes(desktop, tempdoc.get(), in_place, on_page)) {
         return true;
     }
 
     // copy definitions
     prevent_id_clashes(tempdoc.get(), desktop->getDocument(), true);
-    sp_import_document(desktop, tempdoc.get(), in_place);
+    sp_import_document(desktop, tempdoc.get(), in_place, on_page);
     // _copySelection() has put all items in groups, now ungroup them (preserves transform
     // relationships of clones, text-on-path, etc.)
     if (target == "image/x-inkscape-svg") {
@@ -567,7 +569,7 @@ bool ClipboardManagerImpl::_copyNodes(SPDesktop *desktop, ObjectSet *set)
  *   and one path selected in target
  *   and one path in source
  */
-bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, bool in_place)
+bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, bool on_page)
 {
     auto node_tool = dynamic_cast<Inkscape::UI::Tools::NodeTool *>(desktop->event_context);
     if (!node_tool || desktop->getSelection()->objects().size() != 1)
@@ -626,6 +628,10 @@ bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, 
             // Set the attribute to keep the document up to date (fixes undo)
             auto str = sp_svg_write_path(target_curve.get_pathvector());
             target_path->setAttribute("d", str);
+
+            if (on_page) {
+                g_warning("Node paste on page not Implemented");
+            }
         }
     }
     // Finally we invert the selection, this selects all newly added nodes.
@@ -980,11 +986,16 @@ std::vector<Glib::ustring> ClipboardManagerImpl::getElementsOfType(SPDesktop *de
  */
 void ClipboardManagerImpl::_copySelection(ObjectSet *selection)
 {
+    SPPage *page = nullptr;
+
     // copy the defs used by all items
-    auto itemlist= selection->items();
+    auto itemlist = selection->items();
     cloned_elements.clear();
     std::vector<SPItem *> items(itemlist.begin(), itemlist.end());
     for (auto item : itemlist) {
+        if (!page) {
+            page = item->document->getPageManager().getPageFor(item, false);
+        }
         SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
         if (lpeitem) {
             for (auto satellite : lpeitem->get_satellites(false, true)) {
@@ -1081,6 +1092,11 @@ void ClipboardManagerImpl::_copySelection(ObjectSet *selection)
     if (Geom::OptRect geom_size = selection->geometricBounds()) {
         _clipnode->setAttributePoint("geom-min", geom_size->min());
         _clipnode->setAttributePoint("geom-max", geom_size->max());
+    }
+    if (page) {
+        auto page_rect = page->getDesktopRect();
+        _clipnode->setAttributePoint("page-min", page_rect.min());
+        _clipnode->setAttributePoint("page-max", page_rect.max());
     }
 }
 

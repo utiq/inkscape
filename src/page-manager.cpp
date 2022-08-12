@@ -430,6 +430,18 @@ std::vector<SPPage *> PageManager::getPagesFor(SPItem *item, bool contains) cons
 }
 
 /**
+ * Return the first page that contains the given item
+ */
+SPPage *PageManager::getPageFor(SPItem *item, bool contains) const
+{
+    for (auto &page : pages) {
+        if (page->itemOnPage(item, contains))
+            return page;
+    }
+    return nullptr;
+}
+
+/**
  * Get a page at a specific starting location.
  */
 SPPage *PageManager::getPageAt(Geom::Point pos) const

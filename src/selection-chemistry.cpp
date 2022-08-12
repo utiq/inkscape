@@ -1320,10 +1320,10 @@ void ObjectSet::copy()
     cm->copy(this);
 }
 
-void sp_selection_paste(SPDesktop *desktop, bool in_place)
+void sp_selection_paste(SPDesktop *desktop, bool in_place, bool on_page)
 {
     Inkscape::UI::ClipboardManager *cm = Inkscape::UI::ClipboardManager::get();
-    if (cm->paste(desktop, in_place)) {
+    if (cm->paste(desktop, in_place, on_page)) {
         DocumentUndo::done(desktop->getDocument(), _("Paste"), INKSCAPE_ICON("edit-paste"));
     }
 }
