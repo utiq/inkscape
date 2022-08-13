@@ -58,6 +58,9 @@ if(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
 endif()
 
 set(TEST_SOURCES
+    async_channel-test
+    async_funclog-test
+    async_progress-test
     uri-test
     util-test
     drag-and-drop-svgz

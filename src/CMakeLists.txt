@@ -307,6 +307,7 @@ list(APPEND inkscape_SRC
 # All folders for internal inkscape
 # these call add_inkscape_source
 add_subdirectory(actions)
+add_subdirectory(async)
 add_subdirectory(color)
 add_subdirectory(debug)
 add_subdirectory(display)

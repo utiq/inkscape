@@ -3,6 +3,8 @@
 set(util_SRC
 	action-accel.cpp
 	expression-evaluator.cpp
+	funclog.cpp
+	pool.cpp
 	share.cpp
 	paper.cpp
 	preview.cpp
@@ -21,11 +23,13 @@ set(util_SRC
 	format.h
 	format_size.h
 	forward-pointer-iterator.h
+	funclog.h
 	longest-common-suffix.h
 	optstr.h
 	pages-skeleton.h
 	paper.h
 	parse-int-range.h
+	pool.h
 	preview.h
 	reference.h
 	share.h
