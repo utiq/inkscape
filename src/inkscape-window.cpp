@@ -158,10 +158,17 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
     // ================= Shift Icons =================
     // Note: The menu is defined at the app level but shifting icons requires actual widgets and
     // must be done on the window level.
-    for (auto child : get_children()) {
-        auto menubar = dynamic_cast<Gtk::MenuBar *>(child);
-        if (menubar) {
-            shift_icons_recursive(menubar);
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    if (prefs->getInt("/theme/shiftIcons", true)) {
+        bool shifted = false;
+        for (auto child : get_children()) {
+            auto menubar = dynamic_cast<Gtk::MenuBar *>(child);
+            if (menubar) {
+                menubar->get_style_context()->add_class("shifticonmenu");
+                if (!shifted) {
+                    shifted = shift_icons(menubar);
+                }
+            }
         }
     }
 

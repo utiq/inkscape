@@ -285,6 +285,7 @@ protected:
     UI::Widget::PrefCombo _misc_small_secondary;
     UI::Widget::PrefCombo _misc_small_tools;
     UI::Widget::PrefCombo _menu_icons;
+    UI::Widget::PrefCheckButton _shift_icons;
 
     UI::Widget::PrefRadioButton _win_dockable;
     UI::Widget::PrefRadioButton _win_floating;

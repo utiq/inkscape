@@ -1825,6 +1825,9 @@ void InkscapePreferences::initPageUI()
         _menu_icons.init("/theme/menuIcons", menu_icons_labels, menu_icons_values, G_N_ELEMENTS(menu_icons_labels), 0);
         _page_theme.add_line(false, _("Show icons in menus:"), _menu_icons, "",
                              _("You can either enable or disable all icons in menus. By default, the setting for the 'use-icon' attribute in the 'menus.ui' file determines whether to display icons in menus."), false, reset_icon());
+        _shift_icons.init(_("Shift icons in menus"), "/theme/shiftIcons", true);
+        _page_theme.add_line(true, "", _shift_icons, "",
+                             _("This preference fixes icon positions in menus."), false, reset_icon());
 
 
     this->AddPage(_page_theme, _("Theming"), iter_ui, PREFS_PAGE_UI_THEME);

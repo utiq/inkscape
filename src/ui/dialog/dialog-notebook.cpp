@@ -159,10 +159,15 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
         }
         auto key = data.key;
         auto dlg = Gtk::make_managed<Gtk::MenuItem>();
-        auto box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 8);
-        box->pack_start(*Gtk::make_managed<Gtk::Image>(data.icon_name, Gtk::ICON_SIZE_MENU), false, true);
-        box->pack_start(*Gtk::make_managed<Gtk::Label>(data.label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true), false, true);
-        dlg->add(*box);
+        auto *grid = Gtk::make_managed<Gtk::Grid>();
+        grid->set_row_spacing(10);
+        grid->set_column_spacing(8);
+        grid->insert_row(0);
+        grid->insert_column(0);
+        grid->insert_column(1);
+        grid->attach(*Gtk::make_managed<Gtk::Image>(data.icon_name, Gtk::ICON_SIZE_MENU),0,0);
+        grid->attach(*Gtk::make_managed<Gtk::Label>(data.label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true),1,0);
+        dlg->add(*grid);
         dlg->signal_activate().connect([=](){
             // get desktop's container, it may be different than current '_container'!
             if (auto desktop = SP_ACTIVE_DESKTOP) {

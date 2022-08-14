@@ -277,13 +277,12 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
     // Do not install this CSS provider; it messes up menus with icons (like popup menu with all dialogs).
     // It doesn't work well with context menu either, introducing disturbing visual glitch 
     // where menu shifts upon opening.
-#if 0
-    // Install CSS to shift icons into the space reserved for toggles (i.e. check and radio items).
-    signal_map().connect(sigc::bind<Gtk::MenuShell *>(sigc::ptr_fun(shift_icons), this));
-#endif
-
-    // Set the style and icon theme of the new menu based on the desktop
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    if (prefs->getInt("/theme/shiftIcons", true)) {
+        get_style_context()->add_class("shifticonmenu");
+        shift_icons(this);
+    }
+    // Set the style and icon theme of the new menu based on the desktop
     if (Gtk::Window *window = desktop->getToplevel()) {
         if (window->get_style_context()->has_class("dark")) {
             get_style_context()->add_class("dark");
@@ -302,7 +301,7 @@ void
 ContextMenu::AppendItemFromAction(Glib::RefPtr<Gio::Menu> gmenu, Glib::ustring action, Glib::ustring label, Glib::ustring icon)
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool show_icons = prefs->getInt("/theme/menuIcons_canvas", true);
+    bool show_icons = prefs->getInt("/theme/menuIcons", true);
 
     auto menu_item = Gio::MenuItem::create(label, action);
     if (icon != "" && show_icons) {
