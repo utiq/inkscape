@@ -22,12 +22,12 @@
 
 #include <string>
 #include <vector>
-#include <optional>
 #include <gdkmm/pixbuf.h>
 #include <glib.h>
 #include "cielab.h"
 
 namespace Inkscape {
+namespace Async { template <typename... T> class Progress; }
 namespace Trace {
 
 /**
@@ -97,32 +97,6 @@ private:
     int constexpr offset(int x, int y) const { return width * y + x; }
 };
 
-/**
- * This is a class for observing the progress of a Siox engine. Reimplement
- * the methods in your subclass to get the desired behaviour.
- */
-class SioxObserver
-{
-public:
-    virtual ~SioxObserver() = default;
-
-    /**
-     * Informs the observer how much has been completed.
-     * Return false if the processing should be aborted.
-     */
-    virtual bool progress(float percentCompleted) { return true; }
-
-    /**
-     * Send an status string to the Observer.
-     */
-    virtual void trace(std::string const &msg) { g_message("Siox: %s\n", msg.c_str()); }
-
-    /**
-     * Send an error string to the Observer. Processing will be halted.
-     */
-    virtual void error(std::string const &msg) { g_warning("Siox error: %s\n", msg.c_str()); }
-};
-
 class Siox
 {
 public:
@@ -151,22 +125,21 @@ public:
      */
     static constexpr float CERTAIN_BACKGROUND_CONFIDENCE = 0.0f;
 
-    Siox(SioxObserver *observer = nullptr);
+    Siox(Async::Progress<double> &progress);
 
     /**
      * Extract the foreground of the original image, according to the values in the confidence matrix.
-     * If the operation fails or is aborted, an empty optional is returned.
-     * backgroundFillColor is any ARGB color, such as 0xffffff (white) or 0x000000 (black).
+     * If the operation fails or is aborted, an exception is thrown.
+     * \param backgroundFillColor Any ARGB color, such as 0xffffff (white) or 0x000000 (black).
+     * \throws Siox::Exception on error.
+     * \throws Async::CancelledException on cancellation.
      */
-    std::optional<SioxImage> extractForeground(SioxImage const &originalImage, uint32_t backgroundFillColor);
+    SioxImage extractForeground(SioxImage const &originalImage, uint32_t backgroundFillColor);
+
+    class Exception {};
 
 private:
-    SioxObserver *observer;
-
-    /**
-     * Progress reporting
-     */
-    bool progressReport(float percentCompleted);
+    Async::Progress<double> *progress;
 
     int width;       ///< Width of the image
     int height;      ///< Height of the image

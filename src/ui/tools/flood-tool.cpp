@@ -28,6 +28,7 @@
 
 #include <2geom/pathvector.h>
 
+#include "async/progress.h"
 #include "color.h"
 #include "context-fns.h"
 #include "desktop-style.h"
@@ -368,7 +369,8 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
     }
 
     Trace::Potrace::PotraceTracingEngine pte;
-    auto results = pte.traceGrayMap(gray_map);
+    auto progress = Async::ProgressAlways<double>();
+    auto results = pte.traceGrayMap(gray_map, progress);
 
     // XML Tree being used here directly while it shouldn't be...."
     Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
@@ -382,9 +384,8 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
         /* Set style */
         sp_desktop_apply_style_tool (desktop, pathRepr, "/tools/paintbucket", false);
 
-        Geom::PathVector pathv = sp_svg_read_pathv(result.pathData.c_str());
         Path *path = new Path;
-        path->LoadPathVector(pathv);
+        path->LoadPathVector(result.path);
 
         if (offset != 0) {
         

@@ -684,10 +684,10 @@ pathv_to_cubicbezier( Geom::PathVector const &pathv)
 }
 
 //Study move to 2Geom
-size_t 
+size_t
 count_pathvector_nodes(Geom::PathVector const &pathv) {
     size_t tot = 0;
-    for (auto subpath : pathv) {
+    for (auto const &subpath : pathv) {
         tot += count_path_nodes(subpath);
     }
     return tot;

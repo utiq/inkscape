@@ -18,31 +18,43 @@
 #define INKSCAPE_TRACE_POTRACE_H
 
 #include <optional>
+#include <unordered_set>
+#include <boost/functional/hash.hpp>
 #include <2geom/point.h>
+#include <2geom/path-sink.h>
 #include "trace/trace.h"
 #include "trace/imagemap.h"
 using potrace_param_t = struct potrace_param_s;
 using potrace_path_t  = struct potrace_path_s;
 
 namespace Inkscape {
-namespace SVG {
-class PathString;
-} // namespace SVG
 namespace Trace {
 namespace Potrace {
 
-enum TraceType
+enum class TraceType
 {
-    TRACE_BRIGHTNESS,
-    TRACE_BRIGHTNESS_MULTI,
-    TRACE_CANNY,
-    TRACE_QUANT,
-    TRACE_QUANT_COLOR,
-    TRACE_QUANT_MONO,
+    BRIGHTNESS,
+    BRIGHTNESS_MULTI,
+    CANNY,
+    QUANT,
+    QUANT_COLOR,
+    QUANT_MONO,
     // Used in tracedialog.cpp
     AUTOTRACE_SINGLE,
     AUTOTRACE_MULTI,
     AUTOTRACE_CENTERLINE
+};
+
+// Todo: Make lib2geom types hashable.
+struct geom_point_hash
+{
+    std::size_t operator()(Geom::Point const &pt) const
+    {
+        std::size_t hash = 0;
+        boost::hash_combine(hash, pt.x());
+        boost::hash_combine(hash, pt.y());
+        return hash;
+    }
 };
 
 class PotraceTracingEngine final
@@ -62,21 +74,20 @@ public:
                          bool multiScanRemoveBackground);
     ~PotraceTracingEngine() override;
 
-    std::vector<TracingEngineResult> trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) override;
+    TraceResult trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress) override;
     Glib::RefPtr<Gdk::Pixbuf> preview(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) override;
-    void abort() override;
+
+    TraceResult traceGrayMap(GrayMap const &grayMap, Async::Progress<double> &progress);
 
     void setOptiCurve(int);
     void setOptTolerance(double);
     void setAlphaMax(double);
     void setTurdSize(int);
 
-    std::vector<TracingEngineResult> traceGrayMap(GrayMap const &grayMap);
-
 private:
     potrace_param_t *potraceParams;
 
-    TraceType traceType = TRACE_BRIGHTNESS;
+    TraceType traceType = TraceType::BRIGHTNESS;
 
     // Whether the image should be inverted at the end.
     bool invert = false;
@@ -97,22 +108,18 @@ private:
     bool multiScanSmooth = false; // do we use gaussian filter?
     bool multiScanRemoveBackground = false; // do we remove the bottom trace?
 
-    bool keepGoing = true;
-
     void common_init();
 
-    void status_callback(double progress);
-    
-    std::string grayMapToPath(GrayMap const &gm, long *nodeCount);
+    TraceResult traceQuant          (Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress);
+    TraceResult traceBrightnessMulti(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress);
+    TraceResult traceSingle         (Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress);
 
-    std::vector<TracingEngineResult> traceBrightnessMulti(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf);
-    std::vector<TracingEngineResult> traceQuant          (Glib::RefPtr<Gdk::Pixbuf> const &pixbuf);
-    std::vector<TracingEngineResult> traceSingle         (Glib::RefPtr<Gdk::Pixbuf> const &pixbuf);
+    IndexedMap filterIndexed(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) const;
+    std::optional<GrayMap> filter(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) const;
 
-    long writePaths(potrace_path_t *plist, SVG::PathString &data, std::vector<Geom::Point> &points) const;
+    Geom::PathVector grayMapToPath(GrayMap const &gm, Async::Progress<double> &progress);
 
-    std::optional<GrayMap>    filter       (Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) const;
-    std::optional<IndexedMap> filterIndexed(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) const;
+    void writePaths(potrace_path_t *paths, Geom::PathBuilder &builder, std::unordered_set<Geom::Point, geom_point_hash> &points, Async::Progress<double> &progress) const;
 };
 
 } // namespace Potrace

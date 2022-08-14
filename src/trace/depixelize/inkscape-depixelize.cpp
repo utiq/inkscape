@@ -14,33 +14,21 @@
  * is provided by the generosity of Peter Selinger, to whom we are grateful.
  *
  */
-#include "inkscape-depixelize.h"
-
 #include <iomanip>
 #include <thread>
 #include <glibmm/i18n.h>
-#include <gtkmm/main.h>
-#include <gtkmm.h>
 
-#include "desktop.h"
-#include "message-stack.h"
-#include "helper/geom.h"
-#include "object/sp-path.h"
-#include "display/cairo-templates.h"
+#include "inkscape-depixelize.h"
 
-#include <svg/path-string.h>
-#include <svg/svg.h>
-#include <svg/svg-color.h>
+#include "color.h"
+#include "preferences.h"
+#include "async/progress.h"
+#include "svg/svg-color.h"
 #include "svg/css-ostringstream.h"
 
 namespace Inkscape {
 namespace Trace {
 namespace Depixelize {
-
-DepixelizeTracingEngine::DepixelizeTracingEngine()
-    : traceType(TRACE_VORONOI)
-{
-}
 
 DepixelizeTracingEngine::DepixelizeTracingEngine(TraceType traceType, double curves, int islands, int sparsePixels, double sparseMultiplier, bool optimize)
     : traceType(traceType)
@@ -53,30 +41,30 @@ DepixelizeTracingEngine::DepixelizeTracingEngine(TraceType traceType, double cur
     params.nthreads = Inkscape::Preferences::get()->getIntLimited("/options/threading/numthreads", std::thread::hardware_concurrency(), 1, 256);
 }
 
-std::vector<TracingEngineResult> DepixelizeTracingEngine::trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf)
+TraceResult DepixelizeTracingEngine::trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress)
 {
-    std::vector<TracingEngineResult> res;
-
-    if (pixbuf->get_width() > 256 || pixbuf->get_height() > 256) {
-        char *msg = _("Image looks too big. Process may take a while and it is"
-                      " wise to save your document before continuing."
-                      "\n\nContinue the procedure (without saving)?");
-        Gtk::MessageDialog dialog(msg, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_OK_CANCEL, true);
-
-        if (dialog.run() != Gtk::RESPONSE_OK) {
-            return res;
-        }
-    }
+    TraceResult res;
 
     ::Tracer::Splines splines;
 
-    if (traceType == TRACE_VORONOI) {
+    if (traceType == TraceType::VORONOI) {
         splines = ::Tracer::Kopf2011::to_voronoi(pixbuf, params);
     } else {
         splines = ::Tracer::Kopf2011::to_splines(pixbuf, params);
     }
 
-    for (auto const &it : splines) {
+    progress.report_or_throw(0.5);
+
+    auto subprogress = Async::SubProgress(progress, 0.5, 0.5);
+    auto throttled = Async::ProgressStepThrottler(subprogress, 0.02);
+
+    int num_splines = std::distance(splines.begin(), splines.end());
+    int i = 0;
+
+    for (auto &it : splines) {
+        throttled.report_or_throw((double)i / num_splines);
+        i++;
+
         char b[64];
         sp_svg_write_color(b, sizeof(b),
                            SP_RGBA32_U_COMPOSE(unsigned(it.rgba[0]),
@@ -86,22 +74,21 @@ std::vector<TracingEngineResult> DepixelizeTracingEngine::trace(Glib::RefPtr<Gdk
         Inkscape::CSSOStringStream osalpha;
         osalpha << it.rgba[3] / 255.0f;
         char *style = g_strdup_printf("fill:%s;fill-opacity:%s;", b, osalpha.str().c_str());
-        printf("%s\n", style);
-        res.emplace_back(style, sp_svg_write_path(it.pathVector), count_pathvector_nodes(it.pathVector));
+        res.emplace_back(style, std::move(it.pathVector));
         g_free(style);
     }
 
     return res;
 }
 
-void DepixelizeTracingEngine::abort()
-{
-    // Unimplemented, as this operation is not supported by libdepixelize.
-}
-
 Glib::RefPtr<Gdk::Pixbuf> DepixelizeTracingEngine::preview(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf)
 {
     return pixbuf;
+}
+
+bool DepixelizeTracingEngine::check_image_size(Geom::IntPoint const &size) const
+{
+    return size.x() > 256 || size.y() > 256;
 }
 
 } // namespace Depixelize

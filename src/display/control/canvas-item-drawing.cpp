@@ -96,7 +96,7 @@ bool CanvasItemDrawing::contains(Geom::Point const &p, double tolerance)
         std::cerr << "CanvasItemDrawing::contains: Non-zero tolerance not implemented!" << std::endl;
     }
 
-    _drawing->update(Geom::IntRect::infinite(), DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX);
+    _drawing->update(Geom::IntRect::infinite(), _ctx.ctm, DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX);
     _picked_item = _drawing->pick(p, _drawing->delta, _sticky);
 
     if (_picked_item) {
@@ -132,7 +132,7 @@ void CanvasItemDrawing::update(Geom::Affine const &affine)
 
     _affine = new_affine;
 
-    _drawing->update(Geom::IntRect::infinite(), DrawingItem::STATE_ALL, reset);
+    _drawing->update(Geom::IntRect::infinite(), _ctx.ctm, DrawingItem::STATE_ALL, reset);
 
     Geom::OptIntRect bbox = _drawing->root()->visualBounds();
     if (bbox) {

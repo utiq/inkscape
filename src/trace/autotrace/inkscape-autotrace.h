@@ -30,9 +30,8 @@ public:
     AutotraceTracingEngine();
     ~AutotraceTracingEngine() override;
 
-    std::vector<TracingEngineResult> trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) override;
+    TraceResult trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress) override;
     Glib::RefPtr<Gdk::Pixbuf> preview(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) override;
-    void abort() override;
 
     void setColorCount(unsigned);
     void setCenterLine(bool);
@@ -42,10 +41,6 @@ public:
 
 private:
     at_fitting_opts_type *opts;
-
-    bool keepGoing;
-
-    bool test_cancel() const;
 };
 
 } // namespace Autotrace

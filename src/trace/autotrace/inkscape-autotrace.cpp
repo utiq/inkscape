@@ -12,19 +12,11 @@
  *
  */
 #include <iomanip>
+#include <2geom/path-sink.h>
 #include <glibmm/i18n.h>
-#include <gtkmm/main.h>
 
 #include "inkscape-autotrace.h"
-#include "trace/filterset.h"
-#include "trace/imagemap-gdk.h"
-#include "trace/quantize.h"
-
-#include "inkscape.h"
-#include "desktop.h"
-#include "message-stack.h"
-#include "object/sp-path.h"
-#include "svg/path-string.h"
+#include "async/progress.h"
 
 extern "C" {
 #include "3rdparty/autotrace/autotrace.h"
@@ -35,8 +27,10 @@ extern "C" {
 namespace Inkscape {
 namespace Trace {
 namespace Autotrace {
-
 namespace {
+
+struct at_splines_deleter { void operator()(at_splines_type *p) { at_splines_free(p); }; };
+using at_splines_uniqptr = std::unique_ptr<at_splines_type, at_splines_deleter>;
 
 /**
  * Eliminate the alpha channel by overlaying on top of white, and ensure the result is in packed RGB8 format.
@@ -76,7 +70,6 @@ Glib::RefPtr<Gdk::Pixbuf> to_rgb8_packed(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf
 } // namespace
 
 AutotraceTracingEngine::AutotraceTracingEngine()
-    : keepGoing(true)
 {
     // Create options struct, automatically filled with defaults.
     opts = at_fitting_opts_new();
@@ -95,7 +88,7 @@ Glib::RefPtr<Gdk::Pixbuf> AutotraceTracingEngine::preview(Glib::RefPtr<Gdk::Pixb
     return to_rgb8_packed(pixbuf);
 }
 
-std::vector<TracingEngineResult> AutotraceTracingEngine::trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf)
+TraceResult AutotraceTracingEngine::trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress)
 {
     auto pb = to_rgb8_packed(pixbuf);
     
@@ -104,90 +97,92 @@ std::vector<TracingEngineResult> AutotraceTracingEngine::trace(Glib::RefPtr<Gdk:
     bitmap.width  = pb->get_width();
     bitmap.bitmap = pb->get_pixels();
     bitmap.np     = 3;
+
+    auto throttled = Async::ProgressStepThrottler(progress, 0.02);
+    auto sub_trace = Async::SubProgress(throttled, 0.0, 0.8);
     
-    auto splines = at_splines_new_full(&bitmap, opts, nullptr, nullptr, nullptr, nullptr, [] (gpointer data) -> gboolean {
-        return reinterpret_cast<AutotraceTracingEngine const *>(data)->test_cancel();
-    }, this);
+    auto splines = at_splines_uniqptr(at_splines_new_full(
+        &bitmap, opts,
+        nullptr, nullptr,
+        [] (gfloat frac, gpointer data) { reinterpret_cast<decltype(sub_trace)*>(data)->report(frac); }, &sub_trace,
+        [] (gpointer data) -> gboolean { return !reinterpret_cast<decltype(sub_trace)*>(data)->keepgoing(); }, &sub_trace
+    ));
     // at_output_write_func wfunc = at_output_get_handler_by_suffix("svg");
     // at_spline_writer *wfunc = at_output_get_handler_by_suffix("svg");
+    // at_splines_write(wfunc, stdout, "", NULL, splines, NULL, NULL);
+
+    sub_trace.report_or_throw(1.0);
+    auto sub_convert = Async::SubProgress(throttled, 0.8, 0.2);
 
     int height = splines->height;
-    at_spline_list_array_type spline = *splines;
-
-    unsigned this_list;
     at_spline_list_type list;
     at_color last_color = { 0, 0, 0 };
 
-    std::stringstream theStyle;
-    std::stringstream thePath;
-    char color[10];
-    int nNodes = 0;
+    std::string style;
+    Geom::PathBuilder pathbuilder;
+    TraceResult res;
 
-    std::vector<TracingEngineResult> res;
+    auto get_style = [&] {
+        char color[10];
+        std::sprintf(color, "#%02x%02x%02x;", list.color.r, list.color.g, list.color.b);
 
-    // at_splines_write(wfunc, stdout, "", NULL, splines, NULL, NULL);
+        std::stringstream ss;
+        ss << (splines->centerline || list.open ? "stroke:" : "fill:") << color
+           << (splines->centerline || list.open ? "fill:" : "stroke:") << "none";
 
-    for (this_list = 0; this_list < SPLINE_LIST_ARRAY_LENGTH(spline); this_list++) {
-        unsigned this_spline;
-        at_spline_type first;
+        return ss.str();
+    };
 
-        list = SPLINE_LIST_ARRAY_ELT(spline, this_list);
-        first = SPLINE_LIST_ELT(list, 0);
+    auto to_geom = [=] (at_real_coord const &c) {
+        return Geom::Point(c.x, height - c.y);
+    };
 
-        if (this_list == 0 || !at_color_equal(&list.color, &last_color)) {
-            if (this_list > 0) {
-                if (!(spline.centerline || list.open)) {
-                    thePath << "z";
-                    nNodes++;
+    int const num_splines = SPLINE_LIST_ARRAY_LENGTH(*splines);
+    for (int list_i = 0; list_i < num_splines; list_i++) {
+        sub_convert.report_or_throw((double)list_i / num_splines);
+
+        list = SPLINE_LIST_ARRAY_ELT(*splines, list_i);
+
+        if (list_i == 0 || !at_color_equal(&list.color, &last_color)) {
+            if (list_i > 0) {
+                if (!(splines->centerline || list.open)) {
+                    pathbuilder.closePath();
+                } else {
+                    pathbuilder.flush();
                 }
-                res.emplace_back(theStyle.str(), thePath.str(), nNodes);
-                theStyle.clear();
-                thePath.clear();
-                nNodes = 0;
+                res.emplace_back(std::move(style), pathbuilder.peek());
+                pathbuilder.clear();
             }
-            std::sprintf(color, "#%02x%02x%02x;", list.color.r, list.color.g, list.color.b);
 
-            theStyle << ((spline.centerline || list.open) ? "stroke:" : "fill:") << color
-                     << ((spline.centerline || list.open) ? "fill:" : "stroke:") << "none";
+            style = get_style();
         }
-        thePath << "M" << START_POINT(first).x << " " << height - START_POINT(first).y;
-        nNodes++;
-        for (this_spline = 0; this_spline < SPLINE_LIST_LENGTH(list); this_spline++) {
-            at_spline_type s = SPLINE_LIST_ELT(list, this_spline);
 
-            if (SPLINE_DEGREE(s) == AT_LINEARTYPE) {
-                thePath << "L" << END_POINT(s).x << " " << height - END_POINT(s).y;
-                nNodes++;
+        auto const first = SPLINE_LIST_ELT(list, 0);
+        pathbuilder.moveTo(to_geom(START_POINT(first)));
+
+        for (int spline_i = 0; spline_i < SPLINE_LIST_LENGTH(list); spline_i++) {
+            auto const spline = SPLINE_LIST_ELT(list, spline_i);
+
+            if (SPLINE_DEGREE(spline) == AT_LINEARTYPE) {
+                pathbuilder.lineTo(to_geom(END_POINT(spline)));
+            } else {
+                pathbuilder.curveTo(to_geom(CONTROL1(spline)), to_geom(CONTROL2(spline)), to_geom(END_POINT(spline)));
             }
-            else {
-                thePath << "C" << CONTROL1(s).x << " " << height - CONTROL1(s).y << " " << CONTROL2(s).x << " "
-                        << height - CONTROL2(s).y << " " << END_POINT(s).x << " " << height - END_POINT(s).y;
-                nNodes++;
-            }
+
             last_color = list.color;
         }
     }
 
-    if (!(spline.centerline || list.open)) {
-        thePath << "z";
-    }
-    nNodes++;
-
-    if (SPLINE_LIST_ARRAY_LENGTH(spline) > 0) {
-        TracingEngineResult ter(theStyle.str(), thePath.str(), nNodes);
-        res.push_back(ter);
-        theStyle.clear();
-        thePath.clear();
-        nNodes = 0;
+    if (SPLINE_LIST_ARRAY_LENGTH(*splines) > 0) {
+        if (!(splines->centerline || list.open)) {
+            pathbuilder.closePath();
+        } else {
+            pathbuilder.flush();
+        }
+        res.emplace_back(std::move(style), pathbuilder.peek());
     }
 
     return res;
-}
-
-void AutotraceTracingEngine::abort()
-{
-    // g_message("PotraceTracingEngine::abort()\n");
-    keepGoing = false;
 }
 
 void AutotraceTracingEngine::setColorCount(unsigned color_count)
@@ -213,11 +208,6 @@ void AutotraceTracingEngine::setFilterIterations(unsigned filter_iterations)
 void AutotraceTracingEngine::setErrorThreshold(float error_threshold)
 {
     opts->error_threshold = error_threshold;
-}
-
-bool AutotraceTracingEngine::test_cancel() const
-{
-    return !keepGoing;
 }
 
 } // namespace Autotrace

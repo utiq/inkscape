@@ -167,11 +167,10 @@ Drawing::setGrayscaleMatrix(gdouble value_matrix[20]) {
 }
 
 void
-Drawing::update(Geom::IntRect const &area, unsigned flags, unsigned reset)
+Drawing::update(Geom::IntRect const &area, Geom::Affine const &affine, unsigned flags, unsigned reset)
 {
     if (_root) {
-        auto ctx = _canvas_item_drawing ? _canvas_item_drawing->get_context() : UpdateContext();
-        _root->update(area, ctx, flags, reset);
+        _root->update(area, {affine}, flags, reset);
     }
     if (flags & DrawingItem::STATE_CACHE) {
         // process the updated cache scores

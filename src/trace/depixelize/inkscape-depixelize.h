@@ -20,26 +20,26 @@ namespace Inkscape {
 namespace Trace {
 namespace Depixelize {
 
-enum TraceType
+enum class TraceType
 {
-    TRACE_VORONOI,
-    TRACE_BSPLINES
+    VORONOI,
+    BSPLINES
 };
 
 class DepixelizeTracingEngine final
     : public TracingEngine
 {
 public:
-    DepixelizeTracingEngine();
+    DepixelizeTracingEngine() = default;
     DepixelizeTracingEngine(TraceType traceType, double curves, int islands, int sparsePixels, double sparseMultiplier, bool optimize);
 
-    std::vector<TracingEngineResult> trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) override;
+    TraceResult trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress) override;
     Glib::RefPtr<Gdk::Pixbuf> preview(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) override;
-    void abort() override;
+    bool check_image_size(Geom::IntPoint const &size) const override;
 
 private:
     ::Tracer::Kopf2011::Options params;
-    TraceType traceType;
+    TraceType traceType = TraceType::VORONOI;
 };
 
 } // namespace Depixelize

@@ -13,26 +13,27 @@
 #include <vector>
 #include <utility>
 #include <cstring>
+#include <2geom/pathvector.h>
 #include <gdkmm/pixbuf.h>
-
-class SPImage;
-class SPItem;
-class SPShape;
+#include "async/channel.h"
+#include "object/weakptr.h"
+#include "object/sp-image.h"
 
 namespace Inkscape {
+namespace Async { template <typename... T> class Progress; }
 namespace Trace {
 
-struct TracingEngineResult
+struct TraceResultItem
 {
-    TracingEngineResult(std::string style_, std::string pathData_, long nodeCount_)
+    TraceResultItem(std::string style_, Geom::PathVector path_)
         : style(std::move(style_))
-        , pathData(std::move(pathData_))
-        , nodeCount(nodeCount_) {}
+        , path(std::move(path_)) {}
 
     std::string style;
-    std::string pathData;
-    long nodeCount;
+    Geom::PathVector path;
 };
+
+using TraceResult = std::vector<TraceResultItem>;
 
 /**
  * A generic interface for plugging different autotracers into Inkscape.
@@ -44,98 +45,57 @@ public:
     virtual ~TracingEngine() = default;
 
     /**
-     * This is the working method of this interface, and all
-     * implementing classes. Take a GdkPixbuf, trace it, and
-     * return a style attribute and the path data that is
-     * compatible with the d="" attribute
-     * of an SVG <path> element.
+     * This is the working method of this interface, and all implementing classes. Take a
+     * GdkPixbuf, trace it, and return a style attribute and the path data that is
+     * compatible with the d="" attribute of an SVG <path> element.
+     *
+     * This function will be called off-main-thread, so is required to be thread-safe.
+     * The lack of const however indicates that it is not required to be re-entrant.
      */
-    virtual std::vector<TracingEngineResult> trace(Glib::RefPtr<Gdk::Pixbuf> const &) = 0;
+    virtual TraceResult trace(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf, Async::Progress<double> &progress) = 0;
 
+    /**
+     * Generate a quick preview without any actual tracing. Like trace(), this must be thread-safe.
+     */
     virtual Glib::RefPtr<Gdk::Pixbuf> preview(Glib::RefPtr<Gdk::Pixbuf> const &pixbuf) = 0;
 
     /**
-     * Abort the thread that is executing getPathDataFromPixbuf().
+     * Return true if the user should be checked with before tracing because the image is too big.
      */
-    virtual void abort() = 0;
+    virtual bool check_image_size(Geom::IntPoint const &size) const { return false; }
+};
+
+namespace detail { struct TraceFutureCreate; }
+
+class TraceFuture
+{
+public:
+    void cancel() { channel.close(); image_watcher.reset(); }
+    explicit operator bool() const { return (bool)channel; }
+
+private:
+    Async::Channel::Dest channel;
+    std::shared_ptr<SPWeakPtr<SPImage>> image_watcher;
+    friend class detail::TraceFutureCreate;
 };
 
 /**
- * This simple class allows a generic wrapper around a given
- * TracingEngine object. Its purpose is to provide a gateway
- * to a variety of tracing engines, while maintaining a
- * consistent interface.
+ * Launch an asynchronous trace operation taking as input \a engine and \a sioxEnabled.
+ * If this returns null, the task failed to launch and no further action will be taken.
+ * Otherwise, a background task is launched which will call \a onprogress some number of times
+ * followed by \a onfinished exactly once. Both callbacks are invoked from the GTK main loop.
  */
-class Tracer
-{
-public:
-    Tracer()
-    {
-        engine = nullptr;
-        sioxEnabled = false;
-    }
+TraceFuture trace(std::unique_ptr<TracingEngine> engine,
+                  bool sioxEnabled,
+                  std::function<void(double)> onprogress,
+                  std::function<void()> onfinished);
 
-    /**
-     * A convenience method to allow other software to 'see' the
-     * same image that this class sees.
-     */
-    Glib::RefPtr<Gdk::Pixbuf> getSelectedImage();
-
-    /**
-     * This is the main working method. Trace the selected image, if
-     * any, and create a <path> element from it, inserting it into
-     * the current document.
-     */
-    void trace(TracingEngine *engine);
-
-    /**
-     * Abort the thread that is executing convertImageToPath()
-     */
-    void abort();
-
-    /**
-     * Whether we want to enable SIOX subimage selection.
-     */
-    void enableSiox(bool enable);
-
-private:
-    /**
-     * This is the single path code that is called by its counterpart above.
-     * Threaded method that does single bitmap -> path conversion.
-     */
-    void traceThread();
-
-    /**
-     * This is true during execution. Setting it to false (like abort()
-     * does) should inform the threaded code that it needs to stop
-     */
-    bool keepGoing;
-
-    /**
-     * During tracing, this is non-null, and refers to the
-     * engine that is currently doing the tracing.
-     */
-    TracingEngine *engine;
-
-    /**
-     * Get the selected image. Also check for any SPItems over it, in
-     * case the user wants SIOX pre-processing.
-     */
-    SPImage *getSelectedSPImage();
-
-    std::vector<SPItem*> sioxItems;
-
-    bool sioxEnabled;
-
-    /**
-     * Process a GdkPixbuf, according to which areas have been
-     * obscured in the GUI.
-     */
-    Glib::RefPtr<Gdk::Pixbuf> sioxProcessImage(SPImage *img, Glib::RefPtr<Gdk::Pixbuf> const &origPixbuf);
-
-    unsigned lastSioxHash = 0;
-    Glib::RefPtr<Gdk::Pixbuf> lastSioxPixbuf;
-};
+/**
+ * Similar to \a trace(), but computes the preview and passes it to \a onfinished when done.
+ */
+TraceFuture preview(std::unique_ptr<TracingEngine> engine,
+                    bool sioxEnabled,
+                    std::function<void(Glib::RefPtr<Gdk::Pixbuf>)> onfinished);
 
 } // namespace Trace
 } // namespace Inkscape

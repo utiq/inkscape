@@ -17,7 +17,6 @@ class CieLab
 public:
     CieLab()
     {
-        init_tables();
         C = 0;
         L = A = B = 0.0f;
     }
@@ -29,7 +28,6 @@ public:
 
     CieLab(float l, float a, float b)
     {
-        init_tables();
         C = 0;
         L = l;
         A = a;
@@ -38,7 +36,6 @@ public:
 
     CieLab(CieLab const &other)
     {
-        init_tables();
         C = other.C;
         L = other.L;
         A = other.A;
@@ -47,7 +44,6 @@ public:
 
     CieLab &operator=(CieLab const &other)
     {
-        init_tables();
         C = other.C;
         L = other.L;
         A = other.A;
@@ -102,9 +98,6 @@ public:
     float L;
     float A;
     float B;
-
-private:
-    static void init_tables();
 };
 
 } // namespace Trace

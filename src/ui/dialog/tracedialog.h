@@ -4,9 +4,9 @@
  */
 /* Authors:
  *   Bob Jamison
- *   Other dudes from The Inkscape Organization
+ *   Others - see git history.
  *
- * Copyright (C) 2004, 2005 Authors
+ * Copyright (C) 2004-2022 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
@@ -38,7 +38,7 @@ public:
     /**
      * Destructor
      */
-    ~TraceDialog() override = default;;
+    ~TraceDialog() override = default;
 };
 
 } //namespace Dialog

@@ -14,6 +14,7 @@
 #include <cassert>
 
 #include "siox.h"
+#include "async/progress.h"
 
 namespace Inkscape {
 namespace Trace {
@@ -256,47 +257,25 @@ float sqrEuclideanDist(float *p, int pSize, float *q)
 
 } // namespace
 
-Siox::Siox(SioxObserver *observer)
-    : observer(observer)
+Siox::Siox(Async::Progress<double> &progress)
+    : progress(&progress)
     , width(0)
     , height(0)
     , pixelCount(0)
     , image(nullptr)
-    , cm(nullptr)
-{
-    init();
-}
+    , cm(nullptr) {}
 
 void Siox::error(std::string const &msg)
 {
-    if (observer) {
-        observer->error(msg);
-    }
+     g_warning("Siox error: %s\n", msg.c_str());
 }
 
 void Siox::trace(std::string const &msg)
 {
-    if (observer) {
-        observer->trace(msg);
-    }
+    g_message("Siox: %s\n", msg.c_str());
 }
 
-bool Siox::progressReport(float percentCompleted)
-{
-    if (!observer) {
-        return true;
-    }
-
-    bool ret = observer->progress(percentCompleted);
-
-    if (!ret) {
-        error("User aborted");
-    }
-
-    return ret;
-}
-
-std::optional<SioxImage> Siox::extractForeground(SioxImage const &originalImage, uint32_t backgroundFillColor)
+SioxImage Siox::extractForeground(SioxImage const &originalImage, uint32_t backgroundFillColor)
 {
     trace("### Start");
 
@@ -332,18 +311,14 @@ std::optional<SioxImage> Siox::extractForeground(SioxImage const &originalImage,
         }
     }
 
-    if (!progressReport(10.0)) {
-        return {};
-    }
+    progress->report_or_throw(0.1);
 
     trace("knownBg:" + std::to_string(knownBg.size()) + " knownFg:" + std::to_string(knownFg.size()));
 
     std::vector<CieLab> bgSignature;
     colorSignature(knownBg, bgSignature, 3);
 
-    if (!progressReport(30.0)) {
-        return {};
-    }
+    progress->report_or_throw(0.2);
 
     std::vector<CieLab> fgSignature;
     colorSignature(knownFg, fgSignature, 3);
@@ -353,12 +328,10 @@ std::optional<SioxImage> Siox::extractForeground(SioxImage const &originalImage,
     if (bgSignature.empty()) {
         // segmentation impossible
         error("Signature size is < 1. Segmentation is impossible");
-        return {};
+        throw Exception();
     }
 
-    if (!progressReport(30.0)) {
-        return {};
-    }
+    progress->report_or_throw(0.3);
 
     // classify using color signatures,
     // classification cached in hashmap for drb and speedup purposes
@@ -370,10 +343,7 @@ std::optional<SioxImage> Siox::extractForeground(SioxImage const &originalImage,
 
     for (int i = 0; i < pixelCount; i++) {
         if (i % progressResolution == 0) {
-            float progress = 30.0f + 60.0f * i / pixelCount;
-            if (!progressReport(progress)) {
-                return {};
-            }
+            progress->report_or_throw(0.3 + 0.6 * i / pixelCount);
         }
 
         if (cm[i] >= FOREGROUND_CONFIDENCE) {
@@ -434,9 +404,7 @@ std::optional<SioxImage> Siox::extractForeground(SioxImage const &originalImage,
     fillColorRegions();
     dilate(cm, width, height);
 
-    if (!progressReport(100.0)) {
-        return {};
-    }
+    progress->report_or_throw(1.0);
 
     // We are done. Now clear everything but the background.
     for (int i = 0; i < pixelCount; i++) {

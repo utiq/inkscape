@@ -39,9 +39,22 @@ uint32_t getRGB(float r, float g, float b)
 //# By njh!
 //#########################################
 
-int constexpr ROOT_TAB_SIZE = 16;
-float cbrt_table[ROOT_TAB_SIZE + 1];
-float qn_table[ROOT_TAB_SIZE + 1];
+class Tables
+{
+public:
+    static int constexpr SIZE = 16;
+    float cbrt[SIZE + 1];
+    float qn[SIZE + 1];
+
+    static auto &get()
+    {
+        static Tables const instance;
+        return instance;
+    }
+
+private:
+    Tables();
+};
 
 template <typename T>
 auto sq(T t)
@@ -55,7 +68,7 @@ double cbrt(double x)
     auto polish = [x] (double y) {
         return (2.0 * y + x / sq(y)) / 3.0;
     };
-    double y = cbrt_table[(int)(x * ROOT_TAB_SIZE)]; // assuming x \in [0, 1]
+    double y = Tables::get().cbrt[(int)(x * Tables::SIZE)]; // assuming x \in [0, 1]
     y = polish(y);
     y = polish(y);
     return y;
@@ -67,7 +80,7 @@ double qnrt(double x)
     auto polish = [x] (double y) {
         return (4.0 * y + x / sq(sq(y))) / 5.0;
     };
-    double y = qn_table[(int)(x * ROOT_TAB_SIZE)]; // assuming x \in [0, 1]
+    double y = Tables::get().qn[(int)(x * Tables::SIZE)]; // assuming x \in [0, 1]
     y = polish(y);
     y = polish(y);
     return y;
@@ -78,29 +91,23 @@ double pow24(double x)
     return sq(x * qnrt(x));
 }
 
-} // namespace
-
-void CieLab::init_tables()
+Tables::Tables()
 {
-    static bool inited = false;
-    if (inited) return;
-    inited = true;
-
     auto entry = [&] (int i, float x) {
-        cbrt_table[i] = std::pow(x / ROOT_TAB_SIZE, 0.3333f);
-        qn_table[i]   = std::pow(x / ROOT_TAB_SIZE, 0.2f);
+        cbrt[i] = std::pow(x / SIZE, 0.3333f);
+        qn[i]   = std::pow(x / SIZE, 0.2f);
     };
 
     entry(0, 0.5f);
-    for (int i = 1; i < ROOT_TAB_SIZE + 1; i++) {
+    for (int i = 1; i < SIZE + 1; i++) {
         entry(i, i);
     }
 }
 
+} // namespace
+
 CieLab::CieLab(uint32_t rgb)
 {
-    init_tables();
-
     uint8_t ir  = (rgb >> 16) & 0xff;
     uint8_t ig  = (rgb >>  8) & 0xff;
     uint8_t ib  = (rgb      ) & 0xff;

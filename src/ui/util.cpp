@@ -48,7 +48,7 @@ void reveal_widget(Gtk::Widget *widget, bool show)
 }
 
 
-bool is_widget_effectively_visible(Gtk::Widget* widget) {
+bool is_widget_effectively_visible(Gtk::Widget const *widget) {
     if (!widget) return false;
 
     // TODO: what's the right way to determine if widget is visible on the screen?
