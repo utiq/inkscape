@@ -1294,7 +1294,7 @@ void font_lister_style_cell_data_func (Gtk::CellRenderer *renderer, Gtk::TreeIte
     Glib::ustring markup;
 
     markup = "<span font='" + font_desc + "'>" + style_escaped + "</span>";
-    std::cerr << "  markup: " << markup.raw() << std::endl;
+    // std::cout << "  markup: " << markup.raw() << std::endl;
 
     renderer->set_property("markup", markup);
 }

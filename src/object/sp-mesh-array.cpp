@@ -2240,11 +2240,11 @@ guint SPMeshNodeArray::color_smooth( std::vector<guint> corners ) {
                 // Move closest handle a maximum of mid point... but don't shorten
                 double max = 0.8;
                 if( length_left  > max * d[0].length() && length_left > d[2].length() ) {
-                    std::cout << " Can't smooth left side" << std::endl;
+                    std::cerr << " Can't smooth left side" << std::endl;
                     length_left  = std::max( max * d[0].length(), d[2].length() );
                 }
                 if( length_right  > max * d[6].length() && length_right > d[4].length() ) {
-                    std::cout << " Can't smooth right side" << std::endl;
+                    std::cerr << " Can't smooth right side" << std::endl;
                     length_right  = std::max( max * d[6].length(), d[4].length() );
                 }
 

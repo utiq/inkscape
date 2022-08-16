@@ -33,7 +33,7 @@ namespace Dialog {
 class Prototype : public DialogBase
 {
 public:
-    ~Prototype() override { std::cout << "Prototype::~Prototype()" << std::endl; }
+    ~Prototype() override { std::cerr << "Prototype::~Prototype()" << std::endl; }
     static Prototype &getInstance() { return *new Prototype(); }
 
     void documentReplaced(SPDocument *document) override;
