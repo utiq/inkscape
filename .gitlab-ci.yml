@@ -145,6 +145,40 @@ inkscape:macos:
       - toolset_overlay.tar.xz
 
 
+# This job uses GitLab's shared runners for macOS. Please note:
+#   - Its purpose is to verify that our CI works on common platforms. The
+#     artifacts produced here are neither used for testing nor official
+#     releases.
+#   - The produced artifact does not provide the same backward compatibility
+#     as the one from 'inkscape:macos'. The minimum supported OS version is
+#     the one from the image being used.
+#   - This job is "on demand only" on purpose as it is very expensive.
+#     https://docs.gitlab.com/ee/ci/pipelines/cicd_minutes.html#cost-factor
+inkscape:macos:gitlab:
+  stage: build
+  tags:
+    - shared-macos-amd64
+  image: macos-10.15-xcode-11
+  when: manual   # on demand only!
+  variables:
+    CCACHE_DIR: $CI_PROJECT_DIR/ccache
+    SYS_IGNORE_USR_LOCAL: "true"
+  cache:
+    key: "cache-macos"
+    paths:
+      - $CI_PROJECT_DIR/ccache
+  before_script:
+    - packaging/macos/install_toolset.sh
+  script:
+    - packaging/macos/build_inkscape.sh
+  after_script:
+    - packaging/macos/uninstall_toolset.sh
+  artifacts:
+    expire_in: 1 month
+    paths:
+      - Inkscape.dmg
+
+
 inkscape:windows:x64: &windows_job
   stage: build
   tags:
