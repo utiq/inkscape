@@ -365,7 +365,7 @@ sp_file_open_dialog(Gtk::Window &parentWindow, gpointer /*object*/, gpointer /*d
     Glib::ustring fileName = openDialogInstance->getFilename();
 
     // Inkscape::Extension::Extension *fileType =
-    //         openDialogInstance->getSelectionType();
+    //         openDialogInstance->getExtension();
 
     //# Code to check & open if multiple files.
     std::vector<Glib::ustring> flist = openDialogInstance->getFilenames();
@@ -636,7 +636,7 @@ sp_file_save_dialog(Gtk::Window &parentWindow, SPDocument *doc, Inkscape::Extens
             save_method
             );
 
-    saveDialog->setSelectionType(extension);
+    saveDialog->setExtension(extension);
 
     bool success = saveDialog->show();
     if (!success) {
@@ -649,7 +649,7 @@ sp_file_save_dialog(Gtk::Window &parentWindow, SPDocument *doc, Inkscape::Extens
     rdf_set_work_entity(doc, rdf_find_entity("title"), saveDialog->getDocTitle().c_str());
 
     Glib::ustring fileName = saveDialog->getFilename();
-    Inkscape::Extension::Extension *selectionType = saveDialog->getSelectionType();
+    Inkscape::Extension::Extension *selectionType = saveDialog->getExtension();
 
     delete saveDialog;
     saveDialog = nullptr;
@@ -1266,7 +1266,7 @@ sp_file_import(Gtk::Window &parentWindow)
 
     // Get file name and extension type
     Glib::ustring fileName = importDialogInstance->getFilename();
-    Inkscape::Extension::Extension *selection = importDialogInstance->getSelectionType();
+    Inkscape::Extension::Extension *selection = importDialogInstance->getExtension();
 
     delete importDialogInstance;
     importDialogInstance = nullptr;

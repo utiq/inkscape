@@ -41,9 +41,11 @@ class ustring;
 
 namespace Gtk {
 class Revealer;
+class Container;
 class Widget;
 }
 
+Gtk::Widget *get_widget_by_name(Gtk::Container *parent, const std::string &name);
 
 Glib::ustring ink_ellipsize_text (Glib::ustring const &src, size_t maxlen);
 void reveal_widget(Gtk::Widget *widget, bool show);

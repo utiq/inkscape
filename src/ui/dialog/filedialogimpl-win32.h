@@ -4,9 +4,9 @@
  */
 /* Authors:
  *   Joel Holdsworth
- *   The Inkscape Organization
+ *   Inkscape Authors
  *
- * Copyright (C) 2004-2008 The Inkscape Organization
+ * Copyright (C) 2004-2008 Inkscape Authors
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
@@ -55,14 +55,8 @@ protected:
 
 public:
 
-    /// Gets the currently selected extension. Valid after an [OK]
-    /// @return Returns a pointer to the selected extension, or NULL
-    /// if the selected filter requires an automatic type detection
-    Inkscape::Extension::Extension* getSelectionType();
-
     /// Get the path of the current directory
     Glib::ustring getCurrentDirectory();
-
 
 protected:
     /// The dialog type
@@ -110,9 +104,6 @@ protected:
     /// filter in the list. NULL if no specific extension is
     /// specified/
     Inkscape::Extension::Extension **_extension_map;
-
-	/// The currently selected extension. Valid after an [OK]
-    Inkscape::Extension::Extension *_extension;
 };
 
 
@@ -152,18 +143,11 @@ public:
     virtual Glib::ustring getCurrentDirectory()
         { return FileDialogBaseWin32::getCurrentDirectory(); }
 
-    /// Gets the currently selected extension. Valid after an [OK]
-    /// @return Returns a pointer to the selected extension, or NULL
-    /// if the selected filter requires an automatic type detection
-    virtual Inkscape::Extension::Extension* getSelectionType()
-        { return FileDialogBaseWin32::getSelectionType(); }
-
-
     /// Add a custom file filter menu item
     /// @param name - Name of the filter (such as "Javscript")
     /// @param pattern - File filtering pattern (such as "*.js")
     /// Use the FileDialogType::CUSTOM_TYPE in constructor to not include other file types
-    virtual void addFilterMenu(Glib::ustring name, Glib::ustring pattern);
+    void addFilterMenu(const Glib::ustring &name, Glib::ustring pattern = "", Inkscape::Extension::Extension *mod = nullptr) override;
 
 private:
 
@@ -342,15 +326,10 @@ public:
     virtual Glib::ustring getCurrentDirectory()
         { return FileDialogBaseWin32::getCurrentDirectory(); }
 
-    /// Gets the currently selected extension. Valid after an [OK]
-    /// @return Returns a pointer to the selected extension, or NULL
-    /// if the selected filter requires an automatic type detection
-    virtual Inkscape::Extension::Extension* getSelectionType()
-        { return FileDialogBaseWin32::getSelectionType(); }
-
-    virtual void setSelectionType( Inkscape::Extension::Extension *key );
-
-    virtual void addFileType(Glib::ustring name, Glib::ustring pattern);
+    void addFileType(Glib::ustring name, Glib::ustring pattern);
+    void addFilterMenu(const Glib::ustring &name, Glib::ustring pattern = "", Inkscape::Extension::Extension *mod = nullptr) override
+    {
+    }
 
 private:
 	/// A handle to the title label and edit box

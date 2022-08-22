@@ -30,8 +30,9 @@
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 
-#include "io/resource.h"
 #include "io/dir-util.h"
+#include "io/resource.h"
+#include "io/sys.h"
 
 #include "ui/modifiers.h"
 #include "ui/tools/tool-base.h"    // For latin keyval
@@ -892,12 +893,16 @@ Shortcuts::export_shortcuts() {
     Inkscape::UI::Dialog::FileSaveDialog *saveFileDialog =
         Inkscape::UI::Dialog::FileSaveDialog::create(*window, directory, Inkscape::UI::Dialog::CUSTOM_TYPE, _("Select a filename for export"),
                                                      "", "", Inkscape::Extension::FILE_SAVE_METHOD_SAVE_AS);
-    saveFileDialog->addFileType(_("Inkscape shortcuts (*.xml)"), "*.xml");
+    saveFileDialog->addFilterMenu(_("Inkscape shortcuts (*.xml)"), "*.xml");
+    saveFileDialog->setFilename("shortcuts.xml");
     bool success = saveFileDialog->show();
 
     // Get file name and write.
     if (success) {
         Glib::ustring path = saveFileDialog->getFilename(); // It's a full path, not just a filename!
+        if (Inkscape::IO::get_file_extension(path) != ".xml") {
+            path += ".xml";
+        }
         if (path.size() > 0) {
             Glib::ustring newFileName = Glib::filename_to_utf8(path);  // Is this really correct? (Paths should be std::string.)
             Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(path);

@@ -14,6 +14,21 @@
 
 #include <gtkmm.h>
 
+/**
+ * Recursively look through pre-constructed widget parents for a specific named widget.
+ */
+Gtk::Widget *get_widget_by_name(Gtk::Container *parent, const std::string &name)
+{
+    for (auto child : parent->get_children()) {
+        if (name == child->get_name())
+            return child;
+        if (auto recurse = dynamic_cast<Gtk::Container *>(child)) {
+            if (auto decendant = get_widget_by_name(recurse, name))
+                return decendant;
+        }
+    }
+    return nullptr;
+}
 
 /*
  * Ellipse text if longer than maxlen, "50% start text + ... + ~50% end text"
