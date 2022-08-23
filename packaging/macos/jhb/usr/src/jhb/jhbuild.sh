@@ -20,7 +20,7 @@ export JHBUILDRC=$ETC_DIR/jhbuildrc
 export JHBUILDRC_CUSTOM=$JHBUILDRC-custom
 
 JHBUILD_REQUIREMENTS="\
-  certifi==2022.5.18.1\
+  certifi==2022.6.15\
   meson==0.59.2\
   ninja==1.10.2.3\
 "
@@ -42,7 +42,7 @@ JHBUILD_PYTHON_VER_MAJOR=3
 JHBUILD_PYTHON_VER_MINOR=8
 JHBUILD_PYTHON_VER=$JHBUILD_PYTHON_VER_MAJOR.$JHBUILD_PYTHON_VER_MINOR
 JHBUILD_PYTHON_URL="https://gitlab.com/api/v4/projects/26780227/packages/\
-generic/python_macos/12/python_${JHBUILD_PYTHON_VER/./}_$(uname -m).tar.xz"
+generic/python_macos/14/python_${JHBUILD_PYTHON_VER/./}_$(uname -m).tar.xz"
 JHBUILD_PYTHON_DIR=$OPT_DIR/Python.framework/Versions/$JHBUILD_PYTHON_VER
 JHBUILD_PYTHON_BIN_DIR=$JHBUILD_PYTHON_DIR/bin
 
@@ -104,12 +104,13 @@ function jhbuild_install
 
     # BSD's csplit does not support '{*}' (it's a GNU extension)
     csplit -n 3 -k -f "$TMP_DIR"/pem- "$pem_bundle" \
-     '/END CERTIFICATE/+1' '{999}' >/dev/null || true
+     '/END CERTIFICATE/+1' '{999}' >/dev/null 2>&1 || true
 
     for pem in "$TMP_DIR"/pem-*; do
-      if ! openssl x509 -checkend 0 -noout -in "$pem"; then
+      if   [ "$(stat -f%z "$pem")" -eq 0 ]; then
+        rm "$pem"  # the csplit command above created one superfluous empty file
+      elif ! openssl x509 -checkend 0 -noout -in "$pem"; then
         echo_d "removing $pem: $(openssl x509 -enddate -noout -in "$pem")"
-        cat "$pem"
         rm "$pem"
       fi
     done
@@ -204,6 +205,12 @@ function jhbuild_configure
     if ! $CI; then
       echo "quiet_mode = True"
       echo "progress_bar = True"
+    fi
+
+    # add moduleset-specific settings if exist
+    local moduleset_rc=$ETC_DIR/modulesets/$suffix/jhbuildrc
+    if [ -f "$moduleset_rc" ]; then
+      cat "$moduleset_rc"
     fi
 
   } > "$JHBUILDRC-$suffix"

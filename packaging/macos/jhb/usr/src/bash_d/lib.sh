@@ -14,10 +14,11 @@
 
 assert_darwin
 bash_d_include echo
+bash_d_include readlinkf
 
 ### variables ##################################################################
 
-LIB_STRIP_ID_TO_BASENAME=true
+LIB_RESET_ID=keep   # options: basename, canonical, keep
 
 ### functions ##################################################################
 
@@ -33,13 +34,10 @@ function lib_change_path
   local source_lib=${target##*/}   # get library filename from target location
 
   for binary in $binaries; do   # won't work if spaces in paths
-    if $LIB_STRIP_ID_TO_BASENAME; then
-      # strip ID for libraries
-      if [[ $binary == *.so ]] ||
-         [[ $binary == *.dylib ]] ||
-         [ $(file $binary | grep "shared library" | wc -l) -eq 1 ]; then
-        lib_strip_id $binary
-      fi
+    if [[ $binary == *.so ]] ||
+       [[ $binary == *.dylib ]] ||
+       [ $(file $binary | grep "shared library" | wc -l) -eq 1 ]; then
+      lib_reset_id $binary
     fi
 
     local source=$(otool -L $binary | grep "$source_lib " | awk '{ print $1 }')
@@ -83,7 +81,7 @@ function lib_change_siblings
   local lib_dir=$1
 
   for lib in $lib_dir/*.dylib; do
-    lib_strip_id $lib
+    lib_reset_id $lib
     for linked_lib in $(otool -L $lib | tail -n +2 | awk '{ print $1 }'); do
       if [ "$(basename $lib)" != "$(basename $linked_lib)" ] &&
          [ -f $lib_dir/$(basename $linked_lib) ]; then
@@ -93,11 +91,24 @@ function lib_change_siblings
   done
 }
 
-function lib_strip_id
+function lib_reset_id
 {
   local lib=$1
 
-  install_name_tool -id $(basename $lib) $lib
+  case "$LIB_RESET_ID" in
+    basename)
+      install_name_tool -id $(basename $lib) $lib
+      ;;
+    canonical)
+      install_name_tool -id $(readlinkf $lib) $lib
+      ;;
+    keep)
+      : # don't do anything
+      ;;
+    *)
+      echo_e "invalid value for LIB_RESET_ID: $LIB_RESET_ID"
+      ;;
+  esac
 }
 
 function lib_add_rpath

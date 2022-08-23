@@ -15,12 +15,12 @@
 
 ### dependencies ###############################################################
 
-source "$(dirname "${BASH_SOURCE[0]}")"/jhb-custom.conf.sh
-source "$(dirname "${BASH_SOURCE[0]}")"/jhb/etc/jhb.conf.sh
+source "$(dirname "${BASH_SOURCE[0]}")"/jhb/etc/jhb.conf.sh \
+  "$(dirname "${BASH_SOURCE[0]}")"/jhb-custom.conf.sh
 
 ### variables ##################################################################
 
-SELF_DIR=$(dirname "${BASH_SOURCE[0]}")
+SELF_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1; pwd)
 
 ### functions ##################################################################
 
@@ -28,12 +28,9 @@ SELF_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 ### main #######################################################################
 
-cp "$SELF_DIR"/jhb-custom.conf.sh "$SELF_DIR"/jhb/etc/jhb-custom.conf.sh
-
 "$SELF_DIR"/jhb/usr/bin/archive install_dmg 3
 
 if [ "$1" = "restore_overlay" ]; then
   # restore files fronm build stage
   gtar -C "$VER_DIR" -xpJf "$ARTIFACT_DIR"/toolset_overlay.tar.xz
 fi
-

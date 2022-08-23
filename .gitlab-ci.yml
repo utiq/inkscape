@@ -117,7 +117,7 @@ appimage:linux:
       - Inkscape*.AppImage*
 
 
-inkscape:macos:
+inkscape:macos:x64:
   stage: build
   tags:
     - mac
@@ -145,6 +145,29 @@ inkscape:macos:
       - toolset_overlay.tar.xz
 
 
+inkscape:macos:arm:
+  stage: build
+  tags:
+    - macarm
+  when: manual   # on demand only!
+  variables:
+    SDKROOT: /opt/sdks/MacOSX11.3.sdk
+  before_script:
+    # workaround: after_script doesn't run for cancelled/timed out jobs, leaving
+    #             non-ephemeral runners in an unclean state
+    #             https://gitlab.com/gitlab-org/gitlab/-/issues/15603
+    - packaging/macos/uninstall_toolset.sh
+    - packaging/macos/install_toolset.sh
+  script:
+    - packaging/macos/build_inkscape.sh
+  after_script:
+    - packaging/macos/uninstall_toolset.sh save_overlay
+  artifacts:
+    expire_in: 1 year
+    paths:
+      - Inkscape.dmg
+
+
 # This job uses GitLab's shared runners for macOS. Please note:
 #   - Its purpose is to verify that our CI works on common platforms. The
 #     artifacts produced here are neither used for testing nor official
@@ -154,7 +177,7 @@ inkscape:macos:
 #     the one from the image being used.
 #   - This job is "on demand only" on purpose as it is very expensive.
 #     https://docs.gitlab.com/ee/ci/pipelines/cicd_minutes.html#cost-factor
-inkscape:macos:gitlab:
+inkscape:macos:x64:gitlab:
   stage: build
   tags:
     - shared-macos-amd64
@@ -235,7 +258,7 @@ test:linux:
       - build/testfiles
     when: on_failure
 
-test:macos:
+test:macos:x64:
   stage: test
   tags:
     - mac
@@ -245,8 +268,8 @@ test:macos:
     - if: '$CI_PROJECT_NAMESPACE == "inkscape"'
     - if: '$CI_PROJECT_NAMESPACE == "dehesselle"'
   dependencies:
-    - inkscape:macos
-  needs: ["inkscape:macos"]
+    - inkscape:macos:x64
+  needs: ["inkscape:macos:x64"]
   variables:
     SDKROOT: /opt/sdks/MacOSX10.13.sdk
   before_script:

@@ -17,8 +17,8 @@
 
 ### variables ##################################################################
 
-ANSI_ENABLED=true       # allow ANSI escape sequences for e.g. colors...
-ANSI_TERM_ONLY=true     # ...but only when running in a terminal
+ANSI_ENABLED=${ANSI_ENABLED:-true}      # allow ANSI escape sequences...
+ANSI_TERM_ONLY=${ANSI_TERM_ONLY:-true}  # ...but only when running in a terminal
 
 ANSI_CURSOR_LEFT="\033[1D"
 
