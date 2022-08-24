@@ -10,8 +10,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "builder-toolbar.h"
-#include "ui/tools//builder-tool.h"
+#include "ui/toolbar/booleans-toolbar.h"
+#include "ui/tools/booleans-tool.h"
 
 #include <glibmm/i18n.h>
 
@@ -25,8 +25,6 @@
 #include "selection.h"
 #include "message-stack.h"
 #include "selection-chemistry.h"
-#include "verbs.h"
-
 
 #include "object/sp-namedview.h"
 
@@ -40,13 +38,13 @@ namespace Inkscape {
 namespace UI {
 namespace Toolbar {
 
-BuilderToolbar::BuilderToolbar(SPDesktop *desktop) :
+InteractiveBooleansToolbar::InteractiveBooleansToolbar(SPDesktop *desktop) :
     Toolbar(desktop)
 {
     init();
 }
 
-void BuilderToolbar::init()
+void InteractiveBooleansToolbar::init()
 {
     add_label("Mode: ");
     mode_buttons_init();
@@ -64,10 +62,10 @@ void BuilderToolbar::init()
     show_all();
 }
 
-void BuilderToolbar::normal_mode_setup()
+void InteractiveBooleansToolbar::normal_mode_setup()
 {
 //    std::cout << "In normal_mode_setup.\n";
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
 
     hide_interactive_mode_buttons();
     show_normal_mode_buttons();
@@ -86,7 +84,7 @@ void BuilderToolbar::normal_mode_setup()
 
 }
 
-void BuilderToolbar::set_mode_normal()
+void InteractiveBooleansToolbar::set_mode_normal()
 {
     mode_changed_called = false;
     auto normal_mode_button = _mode_buttons[1];
@@ -96,7 +94,7 @@ void BuilderToolbar::set_mode_normal()
     }
 }
 
-void BuilderToolbar::interactive_mode_setup()
+void InteractiveBooleansToolbar::interactive_mode_setup()
 {
 //    std::cout << "In interactive_mode_setup.\n";
     hide_normal_mode_buttons();
@@ -104,7 +102,7 @@ void BuilderToolbar::interactive_mode_setup()
     operation_buttons_init_set_active_button();
 //    std::cout << "Set the buttons to interactive mode buttons.\n";
 
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
     if (builder_tool) {
         if (builder_tool->in_interactive_mode() && notify_back) {
 //            std::cout << "In builder mode. Returning.\n";
@@ -125,7 +123,7 @@ void BuilderToolbar::interactive_mode_setup()
 
 }
 
-void BuilderToolbar::set_mode_interactive()
+void InteractiveBooleansToolbar::set_mode_interactive()
 {
     mode_changed_called = false;
     auto normal_mode_button = _mode_buttons[0];
@@ -142,30 +140,30 @@ void set_widgets_visibility(const std::vector<Gtk::Widget*> widgets, bool visibi
     }
 }
 
-void BuilderToolbar::show_normal_mode_buttons()
+void InteractiveBooleansToolbar::show_normal_mode_buttons()
 {
     set_widgets_visibility(_operation_widgets, true);
     set_widgets_visibility(_command_widgets, true);
 }
 
-void BuilderToolbar::hide_normal_mode_buttons()
+void InteractiveBooleansToolbar::hide_normal_mode_buttons()
 {
-    _operation_buttons[Tools::BuilderTool::SELECT_AND_INTERSECT]->set_visible(false);
-    _operation_buttons[Tools::BuilderTool::JUST_SELECT]->set_visible(false);
+    _operation_buttons[Tools::InteractiveBooleansTool ::SELECT_AND_INTERSECT]->set_visible(false);
+    _operation_buttons[Tools::InteractiveBooleansTool ::JUST_SELECT]->set_visible(false);
     set_widgets_visibility(_command_widgets, false);
 }
 
-void BuilderToolbar::show_interactive_mode_buttons()
+void InteractiveBooleansToolbar::show_interactive_mode_buttons()
 {
     set_widgets_visibility(_interactive_mode_widgets, true);
 }
 
-void BuilderToolbar::hide_interactive_mode_buttons()
+void InteractiveBooleansToolbar::hide_interactive_mode_buttons()
 {
     set_widgets_visibility(_interactive_mode_widgets, false);
 }
 
-void BuilderToolbar::mode_buttons_init()
+void InteractiveBooleansToolbar::mode_buttons_init()
 {
     // TODO change the icons and tooltips text.
     const static std::vector<ButtonDescriptor> mode_buttons_descriptors = {
@@ -173,13 +171,13 @@ void BuilderToolbar::mode_buttons_init()
             .label = _("Interactive"),
             .tooltip_text = _("Merge and Delete shapes interactively"),
             .icon_name = "interactive-builder",
-            .handler = &BuilderToolbar::interactive_mode_setup,
+            .handler = &InteractiveBooleansToolbar::interactive_mode_setup,
         },
         {
             .label = _("Normal"),
             .tooltip_text = _("Perform boolean operations"),
             .icon_name = "path-union",
-            .handler = &BuilderToolbar::normal_mode_setup,
+            .handler = &InteractiveBooleansToolbar::normal_mode_setup,
         },
     };
 
@@ -187,7 +185,7 @@ void BuilderToolbar::mode_buttons_init()
     mode_buttons_init_add_buttons();
 }
 
-void BuilderToolbar::mode_buttons_init_create_buttons(const std::vector<ButtonDescriptor>& descriptors)
+void InteractiveBooleansToolbar::mode_buttons_init_create_buttons(const std::vector<ButtonDescriptor>& descriptors)
 {
     Gtk::RadioToolButton::Group mode_group;
 
@@ -202,19 +200,19 @@ void BuilderToolbar::mode_buttons_init_create_buttons(const std::vector<ButtonDe
     }
 }
 
-void BuilderToolbar::mode_buttons_init_add_buttons()
+void InteractiveBooleansToolbar::mode_buttons_init_add_buttons()
 {
     int button_index = 0;
     for (auto button : _mode_buttons)
     {
         button->set_sensitive();
-        button->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &BuilderToolbar::mode_changed), button_index++));
+        button->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &InteractiveBooleansToolbar::mode_changed), button_index++));
         _mode_widgets.push_back(button);
         add(*button);
     }
 }
 
-void BuilderToolbar::mode_changed(int mode)
+void InteractiveBooleansToolbar::mode_changed(int mode)
 {
 //    std::cout << "Mode changed to " << mode << '\n';
     mode_changed_called = true;
@@ -222,7 +220,7 @@ void BuilderToolbar::mode_changed(int mode)
     (this->*handler)();
 }
 
-void BuilderToolbar::operation_buttons_init()
+void InteractiveBooleansToolbar::operation_buttons_init()
 {
     // TODO change the icons.
     // if you're going to edit this, remember to edit the BuilderTool::Mode enum and
@@ -232,25 +230,25 @@ void BuilderToolbar::operation_buttons_init()
             .label = _("Union"),
             .tooltip_text = _("Union whatever the mouse moves over"),
             .icon_name = "path-union",
-            .handler = &BuilderToolbar::set_operation_union,
+            .handler = &InteractiveBooleansToolbar::set_operation_union,
         },
         {
             .label = _("Delete"),
             .tooltip_text = _("Delete whatever the mouse moves over"),
             .icon_name = "path-difference",
-            .handler = &BuilderToolbar::set_operation_delete,
+            .handler = &InteractiveBooleansToolbar::set_operation_delete,
         },
         {
             .label = _("Intersection"),
             .tooltip_text = _("Intersect whatever the mouse moves over"),
             .icon_name = "path-intersection",
-            .handler = &BuilderToolbar::set_operation_intersection,
+            .handler = &InteractiveBooleansToolbar::set_operation_intersection,
         },
         {
             .label = _("Just Select"),
             .tooltip_text = _("Just select whatever the mouse moves over"),
             .icon_name = "tool-pointer",
-            .handler = &BuilderToolbar::set_operation_just_select,
+            .handler = &InteractiveBooleansToolbar::set_operation_just_select,
         },
     };
 
@@ -259,7 +257,7 @@ void BuilderToolbar::operation_buttons_init()
     operation_buttons_init_add_buttons();
 }
 
-void BuilderToolbar::operation_buttons_init_create_buttons(const std::vector<ButtonDescriptor>& descriptors)
+void InteractiveBooleansToolbar::operation_buttons_init_create_buttons(const std::vector<ButtonDescriptor>& descriptors)
 {
     Gtk::RadioToolButton::Group operation_group;
 
@@ -274,12 +272,12 @@ void BuilderToolbar::operation_buttons_init_create_buttons(const std::vector<But
     }
 }
 
-void BuilderToolbar::operation_buttons_init_set_active_button()
+void InteractiveBooleansToolbar::operation_buttons_init_set_active_button()
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     gint type;
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
     if (builder_tool && builder_tool->in_interactive_mode()) {
         type = prefs->getInt("/tools/builder/interactive_operation", 0);
     } else {
@@ -289,19 +287,19 @@ void BuilderToolbar::operation_buttons_init_set_active_button()
     _operation_buttons[type]->set_active();
 }
 
-void BuilderToolbar::operation_buttons_init_add_buttons()
+void InteractiveBooleansToolbar::operation_buttons_init_add_buttons()
 {
     int button_index = 0;
     for (auto button : _operation_buttons)
     {
         button->set_sensitive();
-        button->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &BuilderToolbar::operation_changed), button_index++));
+        button->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &InteractiveBooleansToolbar::operation_changed), button_index++));
         _operation_widgets.push_back(button);
         add(*button);
     }
 }
 
-void BuilderToolbar::operation_changed(int operation)
+void InteractiveBooleansToolbar::operation_changed(int operation)
 {
     // each operation has its own handler so that it's
     // easier to attach more logic in the future.
@@ -310,7 +308,7 @@ void BuilderToolbar::operation_changed(int operation)
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
     if (builder_tool && builder_tool->in_interactive_mode()) {
         prefs->setInt("/tools/builder/interactive_operation", operation);
     } else {
@@ -318,63 +316,61 @@ void BuilderToolbar::operation_changed(int operation)
     }
 }
 
-void BuilderToolbar::set_current_operation(int operation)
+void InteractiveBooleansToolbar::set_current_operation(int operation)
 {
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
     if (builder_tool) {
         builder_tool->set_current_operation(operation);
     }
 }
 
-void BuilderToolbar::set_operation_union()
+void InteractiveBooleansToolbar::set_operation_union()
 {
-    set_current_operation(Tools::BuilderTool::SELECT_AND_UNION);
+    set_current_operation(Tools::InteractiveBooleansTool ::SELECT_AND_UNION);
 }
 
-void BuilderToolbar::set_operation_delete()
+void InteractiveBooleansToolbar::set_operation_delete()
 {
-    set_current_operation(Tools::BuilderTool::SELECT_AND_DELETE);
+    set_current_operation(Tools::InteractiveBooleansTool ::SELECT_AND_DELETE);
 }
 
-void BuilderToolbar::set_operation_intersection()
+void InteractiveBooleansToolbar::set_operation_intersection()
 {
-    set_current_operation(Tools::BuilderTool::SELECT_AND_INTERSECT);
+    set_current_operation(Tools::InteractiveBooleansTool ::SELECT_AND_INTERSECT);
 }
 
-void BuilderToolbar::set_operation_just_select()
+void InteractiveBooleansToolbar::set_operation_just_select()
 {
-    set_current_operation(Tools::BuilderTool::JUST_SELECT);
+    set_current_operation(Tools::InteractiveBooleansTool ::JUST_SELECT);
 }
 
 
-void BuilderToolbar::boolop_buttons_init()
+void InteractiveBooleansToolbar::boolop_buttons_init()
 {
-    boolop_buttons_init_verbs();
     boolop_buttons_init_actions();
 }
 
-void BuilderToolbar::boolop_buttons_init_actions()
+void InteractiveBooleansToolbar::boolop_buttons_init_actions()
 {
-    // TODO find a better way than this. Using verbs is easier.
     const static std::vector<ButtonDescriptor> boolop_buttons_descriptors = {
         {
             .label = _("Fracture"),
             .tooltip_text = _("Break the selected paths into non-overlapping (fractured) paths"),
             .icon_name = "path-fracture",
-            .handler = &BuilderToolbar::perform_fracture,
+            .handler = &InteractiveBooleansToolbar::perform_fracture,
         },
         {
             .label = _("Flatten"),
             .tooltip_text = _("Remove any hidden part part of the selection (has an item on top of it)"),
             .icon_name = "path-flatten",
-            .handler = &BuilderToolbar::perform_flatten,
+            .handler = &InteractiveBooleansToolbar::perform_flatten,
         },
     };
 
     boolop_buttons_init_actions_add_buttons(boolop_buttons_descriptors);
 }
 
-void BuilderToolbar::boolop_buttons_init_actions_add_buttons(const std::vector<ButtonDescriptor>& descriptors)
+void InteractiveBooleansToolbar::boolop_buttons_init_actions_add_buttons(const std::vector<ButtonDescriptor>& descriptors)
 {
     for (auto& boolop : descriptors)
     {
@@ -387,113 +383,97 @@ void BuilderToolbar::boolop_buttons_init_actions_add_buttons(const std::vector<B
     }
 }
 
-void BuilderToolbar::perform_fracture()
+void InteractiveBooleansToolbar::perform_fracture()
 {
-    auto selection = _desktop->getSelection();
-    selection->fracture();
+    if (auto ec = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context)) {
+        ec->fracture();
+    }
 }
 
-void BuilderToolbar::perform_flatten()
+void InteractiveBooleansToolbar::perform_flatten()
 {
-    auto selection = _desktop->getSelection();
-    selection->flatten();
+    if (auto ec = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context)) {
+        ec->flatten();
+    }
 }
 
-void BuilderToolbar::boolop_buttons_init_verbs()
+void InteractiveBooleansToolbar::compound_operations_buttons_init()
 {
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_UNION));
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_DIFF));
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_INTERSECT));
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_SYMDIFF));
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_CUT));
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_SLICE));
-}
-
-void BuilderToolbar::compound_operations_buttons_init()
-{
-    compound_operations_buttons_init_verbs();
     compound_operations_buttons_init_actions();
 }
 
-void BuilderToolbar::compound_operations_buttons_init_actions()
+void InteractiveBooleansToolbar::compound_operations_buttons_init_actions()
 {
-    // TODO find a better way than this. Using verbs is easier.
     const static std::vector<ButtonDescriptor> boolop_buttons_descriptors = {
         {
             .label = _("Split Non-Intersecting paths"),
             .tooltip_text = _("Split the combined path into separate non-intersecting paths"),
             .icon_name = "path-split-non-intersecting",
-            .handler = &BuilderToolbar::perform_split_non_intersecting,
+            .handler = &InteractiveBooleansToolbar::perform_split_non_intersecting,
         },
     };
 
     boolop_buttons_init_actions_add_buttons(boolop_buttons_descriptors);
 }
 
-void BuilderToolbar::perform_split_non_intersecting()
+void InteractiveBooleansToolbar::perform_split_non_intersecting()
 {
-    auto selection = _desktop->getSelection();
-    selection->splitNonIntersecting();
+    if (auto ec = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context)) {
+        ec->splitNonIntersecting();
+    }
 }
 
-void BuilderToolbar::compound_operations_buttons_init_verbs()
+void InteractiveBooleansToolbar::interactive_mode_buttons_init()
 {
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_COMBINE));
-    _command_widgets.push_back(add_toolbutton_for_verb(SP_VERB_SELECTION_BREAK_APART));
-}
-
-void BuilderToolbar::interactive_mode_buttons_init()
-{
-    // TODO find a better way than this. Using verbs is easier.
     const static std::vector<ButtonDescriptor> interactive_mode_buttons_descriptors = {
         {
             .label = _("Apply"),
             .tooltip_text = _("Apply changes"),
             .icon_name = "interactive-mode-apply",
-            .handler = &BuilderToolbar::interactive_mode_apply,
+            .handler = &InteractiveBooleansToolbar::interactive_mode_apply,
         },
         {
             .label = _("Reset"),
             .tooltip_text = _("Reset changes"),
             .icon_name = "interactive-mode-reset",
-            .handler = &BuilderToolbar::interactive_mode_reset,
+            .handler = &InteractiveBooleansToolbar::interactive_mode_reset,
         },
         {
             .label = _("Discard"),
             .tooltip_text = _("Discard interactive mode"),
             .icon_name = "interactive-mode-discard",
-            .handler = &BuilderToolbar::interactive_mode_discard,
+            .handler = &InteractiveBooleansToolbar::interactive_mode_discard,
         },
     };
 
     interactive_mode_buttons_init_add_buttons(interactive_mode_buttons_descriptors);
 }
 
-void BuilderToolbar::interactive_mode_apply()
+void InteractiveBooleansToolbar::interactive_mode_apply()
 {
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
     if (builder_tool) {
         builder_tool->apply();
     }
 }
 
-void BuilderToolbar::interactive_mode_reset()
+void InteractiveBooleansToolbar::interactive_mode_reset()
 {
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
     if (builder_tool) {
         builder_tool->reset();
     }
 }
 
-void BuilderToolbar::interactive_mode_discard()
+void InteractiveBooleansToolbar::interactive_mode_discard()
 {
-    auto builder_tool = dynamic_cast<Tools::BuilderTool*>(_desktop->event_context);
+    auto builder_tool = dynamic_cast<Tools::InteractiveBooleansTool *>(_desktop->event_context);
     if (builder_tool) {
         builder_tool->discard();
     }
 }
 
-void BuilderToolbar::interactive_mode_buttons_init_add_buttons(const std::vector<ButtonDescriptor> &descriptors)
+void InteractiveBooleansToolbar::interactive_mode_buttons_init_add_buttons(const std::vector<ButtonDescriptor> &descriptors)
 {
     for (auto&descriptor : descriptors)
     {
@@ -506,7 +486,7 @@ void BuilderToolbar::interactive_mode_buttons_init_add_buttons(const std::vector
     }
 }
 
-void BuilderToolbar::add_separator(std::vector<Gtk::Widget*> &group)
+void InteractiveBooleansToolbar::add_separator(std::vector<Gtk::Widget*> &group)
 {
     auto separator = Gtk::manage(new Gtk::SeparatorToolItem());
     group.push_back(separator);
@@ -514,9 +494,9 @@ void BuilderToolbar::add_separator(std::vector<Gtk::Widget*> &group)
 }
 
 GtkWidget *
-BuilderToolbar::create(SPDesktop *desktop)
+InteractiveBooleansToolbar::create(SPDesktop *desktop)
 {
-    auto toolbar = new BuilderToolbar(desktop);
+    auto toolbar = new InteractiveBooleansToolbar(desktop);
     return GTK_WIDGET(toolbar->gobj());
 }
 

@@ -59,6 +59,7 @@ public:
     int getItemCount() const;
     virtual void _showChildren (Inkscape::Drawing &drawing, Inkscape::DrawingItem *ai, unsigned int key, unsigned int flags);
 
+    std::vector<SPItem *> item_list() const;
 private:
     void _updateLayerMode(unsigned int display_key=0);
 
@@ -89,6 +90,8 @@ public:
     void update_patheffect(bool write) override;
 
     guint32 highlight_color() const override;
+
+    static std::vector<SPItem*> get_expanded(const std::vector<SPItem*> &items);
 };
 
 /**

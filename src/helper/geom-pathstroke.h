@@ -93,6 +93,11 @@ Geom::Path half_outline(
  */
 void outline_join(Geom::Path &res, Geom::Path const& outgoing, Geom::Point in_tang, Geom::Point out_tang, double width, double miter, LineJoinType join);
 
+std::vector<Geom::PathVector> split_non_intersecting_paths(const Geom::PathVector &paths);
+
+template <typename Path1, typename Path2>
+bool is_intersecting(const Path1 &a, const Path2 &b);
+
 } // namespace Inkscape
 
 #endif // INKSCAPE_HELPER_PATH_STROKE_H

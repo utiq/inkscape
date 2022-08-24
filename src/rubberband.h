@@ -52,6 +52,9 @@ public:
     void setMode(int mode);
     void defaultMode();
 
+    void setColor(guint32 color);
+    void resetColor() { _color.reset(); }
+
     static Rubberband* get(SPDesktop *desktop);
 
 private:
@@ -73,6 +76,8 @@ private:
 
     bool _started = false;
     int _mode = RUBBERBAND_MODE_RECT;
+
+    std::optional<guint32> _color;
 };
 
 }

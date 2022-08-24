@@ -10,13 +10,13 @@ set(sp_marshal_SRC
 )
 
 set(helper_SRC
+	disjoint-sets.cpp
 	geom.cpp
 	geom-nodetype.cpp
 	geom-pathstroke.cpp
 	geom-pathvector_nodesatellites.cpp
 	geom-nodesatellite.cpp
 	gettext.cpp
-	InteractiveShapesBuilder.cpp
 	pixbuf-ops.cpp
 	png-write.cpp
 	stock-items.cpp
@@ -28,6 +28,7 @@ set(helper_SRC
 
 	# -------
 	# Headers
+	disjoint-sets.h
 	geom-curves.h
 	geom-nodetype.h
 	geom-pathstroke.h
@@ -35,7 +36,6 @@ set(helper_SRC
 	geom-nodesatellite.h
 	geom.h
 	gettext.h
-	InteractiveShapesBuilder.h
 	mathfns.h
 	pixbuf-ops.h
 	png-write.h

@@ -61,6 +61,7 @@ set(ui_SRC
 	toolbar/pencil-toolbar.cpp
 	toolbar/rect-toolbar.cpp
 	toolbar/select-toolbar.cpp
+	toolbar/booleans-toolbar.cpp
 	toolbar/spiral-toolbar.cpp
 	toolbar/spray-toolbar.cpp
 	toolbar/star-toolbar.cpp
@@ -89,6 +90,9 @@ set(ui_SRC
 	tools/rect-tool.cpp
 	tools/marker-tool.cpp
 	tools/select-tool.cpp
+        tools/booleans-tool.cpp
+        tools/booleans-interactive.cpp
+        tools/booleans-nonintersecting.cpp
 	tools/spiral-tool.cpp
 	tools/spray-tool.cpp
 	tools/star-tool.cpp
@@ -387,6 +391,7 @@ set(ui_SRC
 	toolbar/pencil-toolbar.h
 	toolbar/rect-toolbar.h
 	toolbar/select-toolbar.h
+	toolbar/booleans-toolbar.h
 	toolbar/spiral-toolbar.h
 	toolbar/spray-toolbar.h
 	toolbar/star-toolbar.h
@@ -415,6 +420,9 @@ set(ui_SRC
 	tools/rect-tool.h
 	tools/marker-tool.h
 	tools/select-tool.h
+        tools/booleans-tool.h
+        tools/booleans-interactive.h
+        tools/booleans-nonintersecting.h
 	tools/spiral-tool.h
 	tools/spray-tool.h
 	tools/star-tool.h

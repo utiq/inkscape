@@ -387,6 +387,13 @@ public:
     bool collidesWith(SPItem const &other) const;
 
     /**
+     * Combine all shapes into a single path vector.
+     *
+     * @param depth - Number of group depths to recurse for shapes.
+     */
+    Geom::PathVector combined_pathvector(int depth = -1) const;
+
+    /**
      * Set a new transform on an object.
      *
      * Compensate for stroke scaling and gradient/pattern fill transform, if

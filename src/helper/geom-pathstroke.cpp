@@ -15,6 +15,7 @@
 #include <2geom/path-intersection.h>
 #include <2geom/circle.h>
 
+#include "helper/disjoint-sets.h"
 #include "helper/geom-pathstroke.h"
 
 namespace Geom {
@@ -1142,7 +1143,62 @@ void outline_join(Geom::Path &res, Geom::Path const& temp, Geom::Point in_tang, 
             jf = &miter_join;
     }
     jf(jd);
- }
+}
+
+template <typename Path1, typename Path2>
+bool is_intersecting(const Path1 &a, const Path2 &b) {
+    for (auto &node : b.nodes()) {
+        if (a.winding(node)) {
+            return true;
+        }
+    }
+    for (auto &node : a.nodes()) {
+        if (b.winding(node)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<Geom::PathVector> split_non_intersecting_paths(const Geom::PathVector &paths)
+{
+    int n = paths.size();
+
+    DisjointSets sets(n);
+    std::vector<bool> visited(n);
+
+    for (int i = n - 1; i >= 0; i--) {
+
+        if (visited[i]) { continue; }
+        visited[i] = true;
+
+        for (int j = 0; j < n; j++) {
+            if (visited[j]) { continue; }
+            if (is_intersecting(paths[i], paths[j])) {
+                sets.merge(i, j);
+            }
+        }
+    }
+
+    int sets_count = sets.sets_count(); // this is O(N).
+    std::map<int, std::vector<int>> map;
+    for (int i = 0; i < n; i++) {
+        int parent = sets.parent_of(i);
+        map[parent].push_back(i);
+    }
+
+    int i = 0;
+    std::vector<Geom::PathVector> result(sets_count);
+    for (auto &paths_idx : map) {
+        for (auto path_idx : paths_idx.second) {
+            auto &path = paths[path_idx];
+            result[i].push_back(path);
+        }
+        i++;
+    }
+
+    return result;
+}
 
 } // namespace Inkscape
 

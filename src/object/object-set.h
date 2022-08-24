@@ -406,7 +406,7 @@ public:
 
     //item groups operations
     //in selection-chemistry.cpp
-    void deleteItems();
+    void deleteItems(bool skip_undo = false);
     void duplicate(bool suppressDone = false, bool duplicateLayer = false);
     void clone();
 
@@ -429,6 +429,7 @@ public:
     Inkscape::XML::Node* group(bool is_anchor = false);
     void popFromGroup();
     void ungroup(bool skip_undo = false);
+    void ungroup_all();
     
     //z-order management
     //in selection-chemistry.cpp
@@ -520,10 +521,6 @@ public:
     void insertSiblingState(SPObject *object, SiblingState state);
     void clearSiblingStates();
 
-    void activate();
-    void deactivate();
-    bool is_active() const;
-
 protected:
     virtual void _connectSignals(SPObject* object) {};
     virtual void _releaseSignals(SPObject* object) {};
@@ -539,7 +536,6 @@ protected:
     virtual void _add3DBoxesRecursively(SPObject *obj);
     virtual void _remove3DBoxesRecursively(SPObject *obj);
 
-    bool _is_active = true;
     MultiIndexContainer _container;
     GC::soft_ptr<SPDesktop> _desktop;
     GC::soft_ptr<SPDocument> _document;

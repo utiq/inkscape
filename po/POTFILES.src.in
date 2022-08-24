@@ -335,6 +335,7 @@
 ../src/ui/tool/path-manipulator.cpp
 ../src/ui/tool/transform-handle-set.cpp
 ../src/ui/toolbar/arc-toolbar.cpp
+../src/ui/toolbar/booleans-toolbar.cpp
 ../src/ui/toolbar/box3d-toolbar.cpp
 ../src/ui/toolbar/calligraphy-toolbar.cpp
 ../src/ui/toolbar/connector-toolbar.cpp
@@ -356,6 +357,7 @@
 ../src/ui/toolbar/text-toolbar.cpp
 ../src/ui/toolbar/tweak-toolbar.cpp
 ../src/ui/tools/arc-tool.cpp
+../src/ui/tools/booleans-tool.cpp
 ../src/ui/tools/box3d-tool.cpp
 ../src/ui/tools/calligraphic-tool.cpp
 ../src/ui/tools/connector-tool.cpp

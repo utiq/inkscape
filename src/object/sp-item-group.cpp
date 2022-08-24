@@ -361,6 +361,16 @@ void SPGroup::hide (unsigned int key) {
 //    SPLPEItem::onHide(key);
 }
 
+std::vector<SPItem *> SPGroup::item_list() const
+{
+    std::vector<SPItem *> ret;
+    for (auto& child: children) {
+        if (auto item = dynamic_cast<SPItem *>(const_cast<SPObject *>(&child))) {
+            ret.push_back(item);
+        }
+    }
+    return ret;
+}
 
 void SPGroup::snappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inkscape::SnapPreferences const *snapprefs) const {
     for (auto& o: children)
@@ -746,18 +756,8 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
  * some API for list aspect of SPGroup
  */
 
-std::vector<SPItem*> sp_item_group_item_list(SPGroup * group)
-{
-    std::vector<SPItem*> s;
-    g_return_val_if_fail(group != nullptr, s);
-
-    for (auto& o: group->children) {
-        if ( dynamic_cast<SPItem *>(&o) ) {
-            s.push_back((SPItem*)&o);
-        }
-    }
-    return s;
-}
+// TODO: Remove me
+std::vector<SPItem*> sp_item_group_item_list(SPGroup *group) { return group->item_list(); }
 
 SPObject *sp_item_group_get_child_by_name(SPGroup *group, SPObject *ref, const gchar *name)
 {
@@ -975,6 +975,21 @@ void SPGroup::_showChildren (Inkscape::Drawing &drawing, Inkscape::DrawingItem *
         }
     }
 }
+
+std::vector<SPItem*> SPGroup::get_expanded(const std::vector<SPItem*> &items)
+{
+    std::vector<SPItem*> result;
+    for (auto item : items) {
+        if (SPGroup *group = dynamic_cast<SPGroup*>(item)) {
+            auto sub = get_expanded(sp_item_group_item_list(group));
+            result.insert(result.end(), sub.begin(), sub.end());
+        } else {
+            result.push_back(item);
+        }
+    }
+    return result;
+}
+
 
 void SPGroup::update_patheffect(bool write) {
 #ifdef GROUP_VERBOSE

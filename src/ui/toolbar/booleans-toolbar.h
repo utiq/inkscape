@@ -31,28 +31,28 @@ class UnitTracker;
 
 namespace Toolbar {
 
-class BuilderToolbar;
+class InteractiveBooleansToolbar;
 
-// A method that belongs to BuilderToolbar that returns void and accepts noting.
-typedef void (BuilderToolbar::*BuilderToolbarVoidMethod)();
+// A method that belongs to InteractiveBooleansToolbar that returns void and accepts noting.
+typedef void (InteractiveBooleansToolbar::*InteractiveBooleansToolbarVoidMethod)();
 
 struct ButtonDescriptor
 {
     std::string label;
     std::string tooltip_text;
     std::string icon_name;
-    BuilderToolbarVoidMethod handler;
+    InteractiveBooleansToolbarVoidMethod handler;
 };
 
-class BuilderToolbar : public Toolbar {
+class InteractiveBooleansToolbar : public Toolbar {
     using parent_type = Toolbar;
 
 private:
     std::vector<Gtk::RadioToolButton *> _operation_buttons;
-    std::vector<BuilderToolbarVoidMethod> _operation_handlers;
+    std::vector<InteractiveBooleansToolbarVoidMethod> _operation_handlers;
 
     std::vector<Gtk::RadioToolButton *> _mode_buttons;
-    std::vector<BuilderToolbarVoidMethod> _mode_handlers;
+    std::vector<InteractiveBooleansToolbarVoidMethod> _mode_handlers;
 
     std::vector<Gtk::Widget*> _mode_widgets;
     std::vector<Gtk::Widget*> _operation_widgets;
@@ -113,7 +113,7 @@ private:
     void add_separator(std::vector<Gtk::Widget*> &group);
 
 protected:
-    BuilderToolbar(SPDesktop *desktop);
+    InteractiveBooleansToolbar(SPDesktop *desktop);
 
 public:
     void set_mode_normal();

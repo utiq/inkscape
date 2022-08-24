@@ -51,6 +51,7 @@
 #include "ui/toolbar/mesh-toolbar.h"
 #include "ui/toolbar/measure-toolbar.h"
 #include "ui/toolbar/node-toolbar.h"
+#include "ui/toolbar/booleans-toolbar.h"
 #include "ui/toolbar/rect-toolbar.h"
 #include "ui/toolbar/marker-toolbar.h"
 #include "ui/toolbar/page-toolbar.h"
@@ -122,6 +123,7 @@ static struct {
     // clang-format off
     { "/tools/select",          "Select",       Inkscape::UI::Toolbar::SelectToolbar::create,        nullptr},
     { "/tools/nodes",           "Node",         Inkscape::UI::Toolbar::NodeToolbar::create,          nullptr},
+    { "/tools/booleans",        "Booleans",     Inkscape::UI::Toolbar::InteractiveBooleansToolbar::create, nullptr},
     { "/tools/marker",          "Marker",       Inkscape::UI::Toolbar::MarkerToolbar::create,        nullptr},
     { "/tools/shapes/rect",     "Rect",         Inkscape::UI::Toolbar::RectToolbar::create,          N_("Style of new rectangles")},
     { "/tools/shapes/arc",      "Arc",          Inkscape::UI::Toolbar::ArcToolbar::create,           N_("Style of new ellipses")},

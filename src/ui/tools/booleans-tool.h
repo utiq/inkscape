@@ -14,10 +14,8 @@
 #pragma once
 
 #include "ui/tools/tool-base.h"
-#include "helper/InteractiveShapesBuilder.h"
 
-#define SP_SELECT_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::BuilderTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_SELECT_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::BuilderTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
+#include "booleans-interactive.h"
 
 namespace Inkscape {
 class CanvasItem;
@@ -29,10 +27,10 @@ namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-class BuilderTool : public ToolBase {
+class InteractiveBooleansTool : public ToolBase {
 public:
 
-    typedef bool (BuilderTool::*EventHandler)(GdkEvent*);
+    typedef bool (InteractiveBooleansTool::*EventHandler)(GdkEvent*);
 
     enum Operation {
         SELECT_AND_UNION = 0,
@@ -41,8 +39,8 @@ public:
         JUST_SELECT = 3,
     };
 
-    BuilderTool();
-    ~BuilderTool() override;
+    InteractiveBooleansTool(SPDesktop *desktop);
+    ~InteractiveBooleansTool() override;
 
     bool dragging;
     bool moved;
@@ -56,12 +54,9 @@ public:
 
     static const std::string prefsPath;
 
-    void setup() override;
     void set(const Inkscape::Preferences::Entry& val) override;
     bool root_handler(GdkEvent* event) override;
     bool item_handler(SPItem* item, GdkEvent* event) override;
-
-    const std::string& getPrefsPath() override;
 
     void set_current_operation(GdkEvent* event);
     void set_current_operation(int current_operation = -1);
@@ -75,6 +70,13 @@ public:
     void reset();
     void discard();
 
+    // XXX These look like actions to me.
+    void fracture(bool skip_undo = false);
+    void flatten(bool skip_undo = false);
+    void splitNonIntersecting(bool skip_undo = false);
+    std::vector<SubItem> split_non_intersecting_paths(std::vector<SubItem> &subitems);
+    std::vector<Geom::PathVector> split_non_intersecting_paths(const Geom::PathVector &paths);
+
 private:
 
     bool sp_select_context_abort();
@@ -86,8 +88,8 @@ private:
     bool event_key_press_handler(GdkEvent* event);
     bool event_key_release_handler(GdkEvent* event);
 
-    void perform_operation(Selection *selection, int operation);
-    void perform_current_operation(Selection *selection);
+    void perform_operation(int operation);
+    void perform_current_operation();
 
     void set_modifiers_state(GdkEvent* event);
     int get_current_operation();
@@ -101,7 +103,7 @@ private:
     static const std::vector<guint32> operation_colors;
     static const std::map<GdkEventType, EventHandler> handlers;
 
-    InteractiveShapesBuilder shapes_builder;
+    InteractiveBooleanBuilder boolean_builder;
 
     int active_operation = JUST_SELECT; // default to the select operation since this is the default cursor.
     bool ctrl_on = false;

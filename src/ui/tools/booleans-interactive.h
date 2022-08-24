@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * Interactive Shapes Builder.
+ * Interactive Booleans Builder.
  *
  *
  *//*
@@ -16,7 +16,8 @@
 #include <vector>
 #include <map>
 #include <stack>
-#include "NonIntersectingPathsBuilder.h"
+
+#include "booleans-nonintersecting.h"
 
 class SPDesktop;
 class SPDocument;
@@ -30,7 +31,7 @@ namespace XML {
     class Node;
 }
 
-class InteractiveShapesBuilder
+class InteractiveBooleanBuilder
 {
 
     // FIXME find a way to keep references to items on the canvas. right now
@@ -112,7 +113,7 @@ public:
     void undo();
     void redo();
 
-    ~InteractiveShapesBuilder() { commit(); }
+    ~InteractiveBooleanBuilder() { commit(); }
 };
 
 }

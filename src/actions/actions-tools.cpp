@@ -54,6 +54,7 @@ static std::map<Glib::ustring, ToolData> const &get_tool_data()
         // clang-format off
     {"Select",       {TOOLS_SELECT,          PREFS_PAGE_TOOLS_SELECTOR,       "/tools/select",          }},
     {"Node",         {TOOLS_NODES,           PREFS_PAGE_TOOLS_NODE,           "/tools/nodes",           }},
+    {"Booleans",     {TOOLS_BOOLEANS,        PREFS_PAGE_TOOLS,/*No Page*/     "/tools/booleans",        }},
     {"Marker",       {TOOLS_MARKER,          PREFS_PAGE_TOOLS,/*No Page*/     "/tools/marker",          }},
     {"Rect",         {TOOLS_SHAPES_RECT,     PREFS_PAGE_TOOLS_SHAPES_RECT,    "/tools/shapes/rect",     }},
     {"Arc",          {TOOLS_SHAPES_ARC,      PREFS_PAGE_TOOLS_SHAPES_ELLIPSE, "/tools/shapes/arc",      }},
@@ -91,6 +92,7 @@ static std::map<Glib::ustring, Glib::ustring> const &get_tool_msg()
         // clang-format off
     {"Select",       _("<b>Click</b> to Select and Transform objects, <b>Drag</b> to select many objects.")                                                                                                                   },
     {"Node",         _("Modify selected path points (nodes) directly.")                                                                                                                                                       },
+    {"Booleans",     _("Construct shapes with the interactive boolean tool.")                                                                                                                                                 },
     {"Rect",         _("<b>Drag</b> to create a rectangle. <b>Drag controls</b> to round corners and resize. <b>Click</b> to select.")                                                                                        },
     {"Arc",          _("<b>Drag</b> to create an ellipse. <b>Drag controls</b> to make an arc or segment. <b>Click</b> to select.")                                                                                           },
     {"Star",         _("<b>Drag</b> to create a star. <b>Drag controls</b> to edit the star shape. <b>Click</b> to select.")                                                                                                  },
@@ -350,6 +352,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_tools =
     // clang-format off
     {"win.tool-switch('Select')",       N_("Select Tool"),        "Tool Switch",   N_("Select and transform objects")                  },
     {"win.tool-switch('Node')",         N_("Node Tool"),          "Tool Switch",   N_("Edit paths by nodes")                           },
+    {"win.tool-switch('Booleans')",     N_("Shape Builder Tool"), "Tool Switch",   N_("Build shapes with the boolean tools")           },
 
     {"win.tool-switch('Rect')",         N_("Rectangle Tool"),     "Tool Switch",   N_("Create rectangles and squares")                 },
     {"win.tool-switch('Arc')",          N_("Ellipse/Arc Tool"),   "Tool Switch",   N_("Create circles, ellipses and arcs")             },

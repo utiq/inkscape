@@ -18,6 +18,8 @@
 #include <cstring>
 #include <string>
 
+#include "ui/tools/booleans-tool.h"
+
 #include <gtkmm/widget.h>
 #include <gdk/gdkkeysyms.h>
 #include <glibmm/i18n.h>
@@ -43,17 +45,14 @@
 #include "style.h"
 
 #include "ui/cursor-utils.h"
+#include "ui/icon-names.h"
 #include "ui/modifiers.h"
-
-#include "ui/tools/builder-tool.h"
-
 #include "ui/widget/canvas.h"
 
-#include "ui/toolbar/builder-toolbar.h"
-
-#ifdef WITH_DBUS
-#include "extension/dbus/document-interface.h"
-#endif
+#include "livarot/LivarotDefs.h"
+#include "path/path-boolop.h"
+#include "helper/geom-pathstroke.h"
+#include "helper/disjoint-sets.h"
 
 // TODO refactor the duplication between this tool and the selector tool.
 // TODO break the methods below into smaller and more descriptive methods.
@@ -65,41 +64,35 @@ namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-using EventHandler = BuilderTool::EventHandler;
+using EventHandler = InteractiveBooleansTool::EventHandler;
 
 static gint rb_escaped = 0; // if non-zero, rubberband was canceled by esc, so the next button release should not deselect
 static gint drag_escaped = 0; // if non-zero, drag was canceled by esc
 
-const std::string& BuilderTool::getPrefsPath() {
-    return BuilderTool::prefsPath;
-}
-
-const std::string BuilderTool::prefsPath = "/tools/builder";
-
-const std::vector<std::string> BuilderTool::operation_cursor_filenames = {
+const std::vector<std::string> InteractiveBooleansTool::operation_cursor_filenames = {
     "cursor-union.svg",
     "cursor-delete.svg",
     "cursor-intersect.svg",
     "select.svg",
 };
 
-const std::vector<guint32> BuilderTool::operation_colors = {
+const std::vector<guint32> InteractiveBooleansTool::operation_colors = {
     0x0000ffff,
     0x000000ff,
     0xff00ffff,
     0xff0000ff,
 };
 
-const std::map<GdkEventType, EventHandler> BuilderTool::handlers = {
-    {GDK_BUTTON_PRESS, &BuilderTool::event_button_press_handler},
-    {GDK_BUTTON_RELEASE, &BuilderTool::event_button_release_handler},
-    {GDK_KEY_PRESS, &BuilderTool::event_key_press_handler},
-    {GDK_KEY_RELEASE, &BuilderTool::event_key_release_handler},
-    {GDK_MOTION_NOTIFY, &BuilderTool::event_motion_handler},
+const std::map<GdkEventType, EventHandler> InteractiveBooleansTool::handlers = {
+    {GDK_BUTTON_PRESS, &InteractiveBooleansTool::event_button_press_handler},
+    {GDK_BUTTON_RELEASE, &InteractiveBooleansTool::event_button_release_handler},
+    {GDK_KEY_PRESS, &InteractiveBooleansTool::event_key_press_handler},
+    {GDK_KEY_RELEASE, &InteractiveBooleansTool::event_key_release_handler},
+    {GDK_MOTION_NOTIFY, &InteractiveBooleansTool::event_motion_handler},
 };
 
-BuilderTool::BuilderTool()
-    : ToolBase("select.svg")
+InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
+    : ToolBase(desktop, "/tools/booleans", "select.svg")
     , dragging(false)
     , moved(false)
     , button_press_state(0)
@@ -107,9 +100,49 @@ BuilderTool::BuilderTool()
     , _seltrans(nullptr)
     , _describer(nullptr)
 {
+    auto select_click = Modifier::get(Modifiers::Type::SELECT_ADD_TO)->get_label();
+    auto select_scroll = Modifier::get(Modifiers::Type::SELECT_CYCLE)->get_label();
+
+    no_selection_msg = g_strdup_printf(
+        _("No objects selected. Click, %s+click, %s+scroll mouse on top of objects, or drag around objects to select."),
+        select_click.c_str(), select_scroll.c_str());
+
+    this->_describer = new Inkscape::SelectionDescriber(
+        _desktop->getSelection(),
+        _desktop->messageStack(),
+        _("Click selection again to toggle scale/rotation handles"),
+        no_selection_msg);
+
+    this->_seltrans = new Inkscape::SelTrans(_desktop);
+
+    sp_event_context_read(this, "show");
+    sp_event_context_read(this, "transform");
+
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+
+    if (prefs->getBool("/tools/select/gradientdrag")) {
+        this->enableGrDrag();
+    }
+
+    set_current_operation();
+    start_interactive_mode();
 }
 
-BuilderTool::~BuilderTool() {
+
+void InteractiveBooleansTool::set(const Inkscape::Preferences::Entry& val) {
+    Glib::ustring path = val.getEntryName();
+
+    if (path == "show") {
+        if (val.getString() == "outline") {
+            this->_seltrans->setShow(Inkscape::SelTrans::SHOW_OUTLINE);
+        } else {
+            this->_seltrans->setShow(Inkscape::SelTrans::SHOW_CONTENT);
+        }
+    }
+}
+
+
+InteractiveBooleansTool::~InteractiveBooleansTool() {
     this->enableGrDrag(false);
 
     if (grabbed) {
@@ -129,64 +162,15 @@ BuilderTool::~BuilderTool() {
         item = nullptr;
     }
 
-    forced_redraws_stop();
-
     end_interactive_mode();
 }
 
-void BuilderTool::setup() {
-    ToolBase::setup();
-
-    auto select_click = Modifier::get(Modifiers::Type::SELECT_ADD_TO)->get_label();
-    auto select_scroll = Modifier::get(Modifiers::Type::SELECT_CYCLE)->get_label();
-
-    no_selection_msg = g_strdup_printf(
-        _("No objects selected. Click, %s+click, %s+scroll mouse on top of objects, or drag around objects to select."),
-        select_click.c_str(), select_scroll.c_str());
-
-    this->_describer = new Inkscape::SelectionDescriber(
-        desktop->selection,
-        desktop->messageStack(),
-        _("Click selection again to toggle scale/rotation handles"),
-        no_selection_msg);
-
-    this->_seltrans = new Inkscape::SelTrans(desktop);
-
-    sp_event_context_read(this, "show");
-    sp_event_context_read(this, "transform");
-
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-
-    if (prefs->getBool("/tools/select/gradientdrag")) {
-        this->enableGrDrag();
-    }
-
-    set_current_operation();
-
-    start_interactive_mode();
-}
-
-void BuilderTool::set(const Inkscape::Preferences::Entry& val) {
-    Glib::ustring path = val.getEntryName();
-
-    if (path == "show") {
-        if (val.getString() == "outline") {
-            this->_seltrans->setShow(Inkscape::SelTrans::SHOW_OUTLINE);
-        } else {
-            this->_seltrans->setShow(Inkscape::SelTrans::SHOW_CONTENT);
-        }
-    }
-}
-
-bool BuilderTool::sp_select_context_abort() {
-    if (in_interactive_mode()) {
-        desktop->getSelection()->deactivate();
-    }
-    if (Inkscape::Rubberband::get(desktop)->is_started()) {
-        Inkscape::Rubberband::get(desktop)->stop();
+bool InteractiveBooleansTool::sp_select_context_abort() {
+    if (Inkscape::Rubberband::get(_desktop)->is_started()) {
+        Inkscape::Rubberband::get(_desktop)->stop();
         rb_escaped = 1;
         defaultMessageContext()->clear();
-        desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Selection canceled."));
+        _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Selection canceled."));
         return true;
     }
     return false;
@@ -204,13 +188,13 @@ key_is_a_modifier (guint key) {
             key == GDK_KEY_Meta_R);
 }
 
-bool BuilderTool::item_handler(SPItem* item, GdkEvent* event)
+bool InteractiveBooleansTool::item_handler(SPItem* item, GdkEvent* event)
 {
     // TODO consider the case for when the ENTER_NOTIFY (to set a pattern).
     return root_handler(event);
 }
 
-EventHandler BuilderTool::get_event_handler(GdkEvent* event)
+EventHandler InteractiveBooleansTool::get_event_handler(GdkEvent* event)
 {
     auto handler = handlers.find(event->type);
     if (handler != handlers.end()) {
@@ -219,14 +203,12 @@ EventHandler BuilderTool::get_event_handler(GdkEvent* event)
     return nullptr;
 }
 
-bool BuilderTool::root_handler(GdkEvent* event) {
+bool InteractiveBooleansTool::root_handler(GdkEvent* event) {
 
     // make sure we still have valid objects to move around
     if (this->item && this->item->document == nullptr) {
         this->sp_select_context_abort();
     }
-
-    forced_redraws_start(5);
 
     bool ret = false;
 
@@ -242,7 +224,7 @@ bool BuilderTool::root_handler(GdkEvent* event) {
     return ret;
 }
 
-bool BuilderTool::event_button_press_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_button_press_handler(GdkEvent *event)
 {
     if (event->button.button == 1) {
 
@@ -252,21 +234,21 @@ bool BuilderTool::event_button_press_handler(GdkEvent *event)
         within_tolerance = true;
 
         Geom::Point const button_pt(event->button.x, event->button.y);
-        Geom::Point const p(desktop->w2d(button_pt));
+        Geom::Point const p(_desktop->w2d(button_pt));
 
         int current_operation = get_current_operation();
         guint32 current_color = operation_colors[current_operation];
-        Inkscape::Rubberband::get(desktop)->setColor(current_color);
+        Inkscape::Rubberband::get(_desktop)->setColor(current_color);
 
-        Inkscape::Rubberband::get(desktop)->setMode(RUBBERBAND_MODE_TOUCHPATH);
-        Inkscape::Rubberband::get(desktop)->start(desktop, p);
+        Inkscape::Rubberband::get(_desktop)->setMode(RUBBERBAND_MODE_TOUCHPATH);
+        Inkscape::Rubberband::get(_desktop)->start(_desktop, p);
 
         if (this->grabbed) {
             grabbed->ungrab();
             this->grabbed = nullptr;
         }
 
-        grabbed = desktop->getCanvasCatchall();
+        grabbed = _desktop->getCanvasCatchall();
         grabbed->grab(Gdk::KEY_PRESS_MASK      |
                       Gdk::KEY_RELEASE_MASK    |
                       Gdk::BUTTON_PRESS_MASK   |
@@ -290,15 +272,15 @@ bool BuilderTool::event_button_press_handler(GdkEvent *event)
     return false;
 }
 
-bool BuilderTool::event_button_release_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_button_release_handler(GdkEvent *event)
 {
     xp = yp = 0;
-    Inkscape::Selection *selection = desktop->getSelection();
+    Inkscape::Selection *selection = _desktop->getSelection();
 
 
     if ((event->button.button == 1) && (this->grabbed)) {
 
-        Inkscape::Rubberband *r = Inkscape::Rubberband::get(desktop);
+        Inkscape::Rubberband *r = Inkscape::Rubberband::get(_desktop);
 
         if (r->is_started() && !within_tolerance) {
             // this was a rubberband drag
@@ -306,12 +288,12 @@ bool BuilderTool::event_button_release_handler(GdkEvent *event)
 
             if (r->getMode() == RUBBERBAND_MODE_RECT) {
                 Geom::OptRect const b = r->getRectangle();
-                items = desktop->getDocument()->getItemsInBox(desktop->dkey, (*b) * desktop->dt2doc());
+                items = _desktop->getDocument()->getItemsInBox(_desktop->dkey, (*b) * _desktop->dt2doc());
             } else if (r->getMode() == RUBBERBAND_MODE_TOUCHRECT) {
                 Geom::OptRect const b = r->getRectangle();
-                items = desktop->getDocument()->getItemsPartiallyInBox(desktop->dkey, (*b) * desktop->dt2doc());
+                items = _desktop->getDocument()->getItemsPartiallyInBox(_desktop->dkey, (*b) * _desktop->dt2doc());
             } else if (r->getMode() == RUBBERBAND_MODE_TOUCHPATH) {
-                items = desktop->getDocument()->getItemsAtPoints(desktop->dkey, r->getPoints(), true, false);
+                items = _desktop->getDocument()->getItemsAtPoints(_desktop->dkey, r->getPoints(), true, false);
             }
 
             _seltrans->resetState();
@@ -323,10 +305,8 @@ bool BuilderTool::event_button_release_handler(GdkEvent *event)
             if(is_operation_add_to_selection(operation, event)) {
                 selection->addList (items);
             } else {
-                if (in_interactive_mode()) selection->activate();
-                selection->setList (items);
-                perform_operation(selection, operation);
-                if (in_interactive_mode()) selection->deactivate();
+                selection->setList(items);
+                perform_operation(operation);
             }
 
         } else { // it was just a click, or a too small rubberband
@@ -340,12 +320,10 @@ bool BuilderTool::event_button_release_handler(GdkEvent *event)
 
             bool in_groups = Modifier::get(Modifiers::Type::SELECT_IN_GROUPS)->active(event->button.state);
 
-            auto item = sp_event_context_find_item(desktop, Geom::Point(event->button.x, event->button.y), false, in_groups);
+            auto item = sp_event_context_find_item(_desktop, Geom::Point(event->button.x, event->button.y), false, in_groups);
             if (item) {
-                if (in_interactive_mode()) selection->activate();
                 selection->add(item);
-                perform_operation(selection, operation);
-                if (in_interactive_mode()) selection->deactivate();
+                perform_operation(operation);
             } else {
                 // clicked in an empty area
                 selection->clear();
@@ -358,7 +336,7 @@ bool BuilderTool::event_button_release_handler(GdkEvent *event)
     }
 
     if (event->button.button == 1) {
-        Inkscape::Rubberband::get(desktop)->stop(); // might have been started in another tool!
+        Inkscape::Rubberband::get(_desktop)->stop(); // might have been started in another tool!
     }
 
     this->button_press_state = 0;
@@ -366,14 +344,14 @@ bool BuilderTool::event_button_release_handler(GdkEvent *event)
     return true;
 }
 
-bool BuilderTool::event_motion_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_motion_handler(GdkEvent *event)
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
 
     if ((event->motion.state & GDK_BUTTON1_MASK)) {
         Geom::Point const motion_pt(event->motion.x, event->motion.y);
-        Geom::Point const p(desktop->w2d(motion_pt));
+        Geom::Point const p(_desktop->w2d(motion_pt));
         if ( within_tolerance
              && ( abs( (gint) event->motion.x - xp ) < tolerance )
              && ( abs( (gint) event->motion.y - yp ) < tolerance ) ) {
@@ -384,11 +362,11 @@ bool BuilderTool::event_motion_handler(GdkEvent *event)
         // motion notify coordinates as given (no snapping back to origin)
         within_tolerance = false;
 
-        if (Inkscape::Rubberband::get(desktop)->is_started()) {
-            Inkscape::Rubberband::get(desktop)->move(p);
+        if (Inkscape::Rubberband::get(_desktop)->is_started()) {
+            Inkscape::Rubberband::get(_desktop)->move(p);
 
             auto touch_path = Modifier::get(Modifiers::Type::SELECT_TOUCH_PATH)->get_label();
-            auto operation = Inkscape::Rubberband::get(desktop)->getMode();
+            auto operation = Inkscape::Rubberband::get(_desktop)->getMode();
             if (operation == RUBBERBAND_MODE_TOUCHPATH) {
                 this->defaultMessageContext()->setF(Inkscape::NORMAL_MESSAGE,
                                                     _("<b>Draw over</b> objects to select them; release <b>%s</b> to switch to rubberband selection"), touch_path.c_str());
@@ -407,15 +385,15 @@ bool BuilderTool::event_motion_handler(GdkEvent *event)
     return false;
 }
 
-bool BuilderTool::event_key_press_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_key_press_handler(GdkEvent *event)
 {
     set_current_operation(event);
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    Inkscape::Selection *selection = desktop->getSelection();
+    Inkscape::Selection *selection = _desktop->getSelection();
 
     int const snaps = prefs->getInt("/options/rotationsnapsperpi/value", 12);
-    auto const y_dir = desktop->yaxisdir();
+    auto const y_dir = _desktop->yaxisdir();
 
     bool ret = false;
     switch (get_latin_keyval (&event->key)) {
@@ -430,7 +408,7 @@ bool BuilderTool::event_key_press_handler(GdkEvent *event)
         case GDK_KEY_a:
         case GDK_KEY_A:
             if (MOD__CTRL_ONLY(event)) {
-                sp_edit_select_all(desktop);
+                sp_edit_select_all(_desktop);
                 ret = true;
             }
             break;
@@ -481,18 +459,10 @@ bool BuilderTool::event_key_press_handler(GdkEvent *event)
             }
             break;
 
-        case GDK_KEY_g:
-        case GDK_KEY_G:
-            if (MOD__SHIFT_ONLY(event)) {
-                desktop->selection->toGuides();
-                ret = true;
-            }
-            break;
-
         case GDK_KEY_z:
         case GDK_KEY_Z:
             if (ctrl_on && in_interactive_mode()) {
-                shapes_builder.undo();
+                boolean_builder.undo();
                 ret = true;
             }
             break;
@@ -500,7 +470,7 @@ bool BuilderTool::event_key_press_handler(GdkEvent *event)
         case GDK_KEY_y:
         case GDK_KEY_Y:
             if (ctrl_on && in_interactive_mode()) {
-                shapes_builder.redo();
+                boolean_builder.redo();
                 ret = true;
             }
             break;
@@ -512,7 +482,7 @@ bool BuilderTool::event_key_press_handler(GdkEvent *event)
     return ret;
 }
 
-bool BuilderTool::event_key_release_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_key_release_handler(GdkEvent *event)
 {
     set_current_operation(event);
     guint keyval = get_latin_keyval(&event->key);
@@ -523,15 +493,16 @@ bool BuilderTool::event_key_release_handler(GdkEvent *event)
     return false;
 }
 
-void BuilderTool::perform_operation(Selection *selection, int operation)
+void InteractiveBooleansTool::perform_operation(int operation)
 {
+    auto selection = _desktop->getSelection();
     int size = selection->size();
 
-    if (shapes_builder.is_started()) {
+    if (boolean_builder.is_started()) {
         if (operation == SELECT_AND_UNION) {
-            shapes_builder.set_union(selection);
+            boolean_builder.set_union(selection);
         } else if (operation == SELECT_AND_DELETE) {
-            shapes_builder.set_delete(selection);
+            boolean_builder.set_delete(selection);
         }
         return;
     }
@@ -548,13 +519,12 @@ void BuilderTool::perform_operation(Selection *selection, int operation)
     }
 }
 
-void BuilderTool::perform_current_operation(Selection *selection)
+void InteractiveBooleansTool::perform_current_operation()
 {
-    int operation = get_current_operation();
-    return perform_operation(selection, operation);
+    return perform_operation(get_current_operation());
 }
 
-void BuilderTool::set_modifiers_state(GdkEvent* event)
+void InteractiveBooleansTool::set_modifiers_state(GdkEvent* event)
 {
     // TODO This function is deprecated.
     GdkModifierType modifiers;
@@ -565,7 +535,7 @@ void BuilderTool::set_modifiers_state(GdkEvent* event)
     shift_on = modifiers & GDK_SHIFT_MASK;
 }
 
-int BuilderTool::get_current_operation()
+int InteractiveBooleansTool::get_current_operation()
 {
     if (ctrl_on) {
         if (alt_on && !in_interactive_mode()) return SELECT_AND_INTERSECT;
@@ -582,7 +552,7 @@ int BuilderTool::get_current_operation()
     }
 }
 
-void BuilderTool::set_current_operation(int current_operation)
+void InteractiveBooleansTool::set_current_operation(int current_operation)
 {
     if (current_operation == -1) {
         current_operation = get_current_operation();
@@ -605,84 +575,78 @@ void BuilderTool::set_current_operation(int current_operation)
     //  patter of the items the cursor went over.
 }
 
-void BuilderTool::set_current_operation(GdkEvent *event)
+void InteractiveBooleansTool::set_current_operation(GdkEvent *event)
 {
     set_modifiers_state(event);
     set_current_operation();
 }
 
-void BuilderTool::set_cursor_operation()
+void InteractiveBooleansTool::set_cursor_operation()
 {
-    if (active_operation > operation_cursor_filenames.size()) {
-        std::cerr << "BuilderTool: operation " << active_operation << " is unknown.\n";
+    /*if (active_operation > operation_cursor_filenames.size()) {
+        std::cerr << "InteractiveBooleansTool: operation " << active_operation << " is unknown.\n";
         return;
     }
 
     auto &current_cursor = operation_cursor_filenames[active_operation];
     ToolBase::cursor_filename = current_cursor;
-    ToolBase::sp_event_context_update_cursor();
+    ToolBase::sp_event_context_update_cursor();*/
 }
 
-void BuilderTool::set_rubberband_color()
+void InteractiveBooleansTool::set_rubberband_color()
 {
     if (active_operation > operation_colors.size()) {
-        std::cerr << "BuilderTool: operation " << active_operation << " is unknown.\n";
+        std::cerr << "InteractiveBooleansTool: operation " << active_operation << " is unknown.\n";
         return;
     }
 
-    auto instance = Rubberband::get(desktop);
+    auto instance = Rubberband::get(_desktop);
     instance->setColor(operation_colors[active_operation]);
 }
 
-bool BuilderTool::is_operation_add_to_selection(int operation, GdkEvent *event)
+bool InteractiveBooleansTool::is_operation_add_to_selection(int operation, GdkEvent *event)
 {
     return operation == JUST_SELECT && Modifier::get(Modifiers::Type::SELECT_ADD_TO)->active(event->button.state);
 }
 
-void BuilderTool::start_interactive_mode()
+void InteractiveBooleansTool::start_interactive_mode()
 {
-//    std::cout << "started start_interactive_mode.\n";
+    Inkscape::Selection *selection = _desktop->getSelection();
+    boolean_builder.start(selection);
 
-    Inkscape::Selection *selection = desktop->getSelection();
+    //auto toolbar = _desktop->get_toolbar_by_name("InteractiveBooleansToolbar");
+    //auto builder_toolbar = dynamic_cast<Toolbar::InteractiveBooleansToolbar*>(toolbar);
 
-    auto toolbar = desktop->get_toolbar_by_name("BuilderToolbar");
-    auto builder_toolbar = dynamic_cast<Toolbar::BuilderToolbar*>(toolbar);
 
-    shapes_builder.start(selection);
-
-    builder_toolbar->notify_back = false;
+    /*builder_toolbar->notify_back = false;
     if (in_interactive_mode()) {
-        desktop->getSelection()->deactivate();
-//        std::cout << "Calling BuilderToolbar::set_mode_interactive\n";
         builder_toolbar->set_mode_interactive();
     } else {
-//        std::cout << "Calling BuilderToolbar::set_mode_normal\n";
         builder_toolbar->set_mode_normal();
     }
-    builder_toolbar->notify_back = true;
+    builder_toolbar->notify_back = true;*/
 
 //    std::cout << "finished start_interactive_mode.\n";
 }
 
-void BuilderTool::end_interactive_mode()
+void InteractiveBooleansTool::end_interactive_mode()
 {
-    shapes_builder.commit();
-    desktop->getSelection()->activate();
-    auto toolbar = desktop->get_toolbar_by_name("BuilderToolbar");
-    auto builder_toolbar = dynamic_cast<Toolbar::BuilderToolbar*>(toolbar);
+    boolean_builder.commit();
+    /*auto toolbar = _desktop->get_toolbar_by_name("InteractiveBooleansToolbar");
+    auto builder_toolbar = dynamic_cast<Toolbar::InteractiveBooleansToolbar*>(toolbar);
     if (builder_toolbar) {
         builder_toolbar->notify_back = false;
         builder_toolbar->set_mode_normal();
         builder_toolbar->notify_back = true;
-    }
+    }*/
 }
 
-bool BuilderTool::in_interactive_mode() const
+bool InteractiveBooleansTool::in_interactive_mode() const
 {
-    return shapes_builder.is_started();
+    return boolean_builder.is_started();
 }
 
-void BuilderTool::apply()
+void InteractiveBooleansTool::apply()
 {
     if (in_interactive_mode()) {
         end_interactive_mode();
@@ -691,28 +655,186 @@ void BuilderTool::apply()
     }
 }
 
-void BuilderTool::reset()
+void InteractiveBooleansTool::reset()
 {
     if (in_interactive_mode()) {
-        shapes_builder.reset();
+        boolean_builder.reset();
     } else {
         std::cerr << "Resetting while not in interactive mode?...\n";
     }
 }
 
-void BuilderTool::discard()
+void InteractiveBooleansTool::discard()
 {
     if (in_interactive_mode()) {
-        shapes_builder.discard();
-        desktop->getSelection()->activate();
-        auto toolbar = desktop->get_toolbar_by_name("BuilderToolbar");
-        auto builder_toolbar = dynamic_cast<Toolbar::BuilderToolbar*>(toolbar);
+        boolean_builder.discard();
+        /*auto toolbar = _desktop->get_toolbar_by_name("InteractiveBooleansToolbar");
+        auto builder_toolbar = dynamic_cast<Toolbar::InteractiveBooleansToolbar*>(toolbar);
         if (builder_toolbar) {
             builder_toolbar->notify_back = false;
             builder_toolbar->set_mode_normal();
-        }
+        }*/
     } else {
         std::cerr << "Discarding while not in interactive mode?...\n";
+    }
+}
+
+void InteractiveBooleansTool::fracture(bool skip_undo)
+{
+    //set_desktop_busy(_desktop);
+    NonIntersectingPathsBuilder builder(_desktop->getSelection());
+    builder.fracture(skip_undo);
+    //unset_desktop_busy(_desktop);
+}
+
+std::vector<SubItem> InteractiveBooleansTool::split_non_intersecting_paths(std::vector<SubItem> &subitems)
+{
+    std::vector<SubItem> result;
+    for (auto &path : subitems) {
+        auto split = split_non_intersecting_paths(path.paths);
+        for (auto &split_path : split) {
+            result.emplace_back(split_path, path.items, path.top_item);
+        }
+    }
+    return result;
+}
+
+std::vector<Geom::PathVector> InteractiveBooleansTool::split_non_intersecting_paths(const Geom::PathVector &paths)
+{
+    int n = paths.size();
+
+    DisjointSets sets(n);
+    std::vector<bool> visited(n);
+
+    for (int i = n - 1; i >= 0; i--) {
+
+        if (visited[i]) { continue; }
+        visited[i] = true;
+
+        for (int j = 0; j < n; j++) {
+            if (visited[j]) { continue; }
+            if (is_intersecting(paths[i], paths[j])) {
+                sets.merge(i, j);
+            }
+        }
+    }
+
+    int sets_count = sets.sets_count(); // this is O(N).
+    std::map<int, std::vector<int>> map;
+    for (int i = 0; i < n; i++) {
+        int parent = sets.parent_of(i);
+        map[parent].push_back(i);
+    }
+
+    int i = 0;
+    std::vector<Geom::PathVector> result(sets_count);
+    for (auto &paths_idx : map) {
+        for (auto path_idx : paths_idx.second) {
+            auto &path = paths[path_idx];
+            result[i].push_back(path);
+        }
+        i++;
+    }
+
+    return result;
+}
+
+void InteractiveBooleansTool::flatten(bool skip_undo)
+{
+    auto sel = _desktop->getSelection();
+    sel->toCurves(true);
+    sel->ungroup(true);
+
+    struct SubItem
+    {
+        Geom::PathVector paths;
+        SPItem *item;
+
+        bool operator<(const SubItem& other) {
+            return sp_item_repr_compare_position_bool(item, other.item);
+        }
+    };
+
+    int n = sel->size();
+    std::vector<SubItem> paths;
+    paths.reserve(n);
+
+    for (auto item : sel->items()) {
+        paths.push_back({item->combined_pathvector(), item});
+    }
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            SubItem *top = &paths[i];
+            SubItem *bottom = &paths[j];
+
+            if (*top < *bottom) {
+                std::swap(top, bottom);
+            }
+
+            auto diff = sp_pathvector_boolop(top->paths, bottom->paths, bool_op_diff, fill_nonZero, fill_nonZero);
+            if (!diff.empty()) {
+                bottom->paths = diff;
+            }
+        }
+    }
+
+    std::vector<XML::Node*> nodes;
+    for (int i = 0; i < n; i++) {
+        auto split = split_non_intersecting_paths(paths[i].paths);
+        for (auto pathvec : split) {
+            if (!pathvec.empty()) {
+                nodes.push_back(write_path_xml(pathvec, paths[i].item));
+            }
+        }
+    }
+
+    sel->deleteItems(true);
+
+    for (int i = 0; i < n; i++) {
+        sel->add(nodes[i]);
+    }
+
+    if (!skip_undo) {
+        if (auto document = _desktop->getDocument()) {
+            DocumentUndo::done(document, "Flatten", INKSCAPE_ICON("path-flatten"));
+        }
+    }
+}
+
+void InteractiveBooleansTool::splitNonIntersecting(bool skip_undo)
+{
+    auto sel = _desktop->getSelection();
+
+    if (sel->isEmpty()) {
+        return;
+    }
+
+    sel->ungroup();
+
+    std::vector<SPItem*> items_vec(sel->items().begin(), sel->items().end());
+
+    int n = items_vec.size();
+    std::vector<XML::Node*> result(n);
+
+    for (int i = 0; i < n; i++) {
+        auto pathvec = items_vec[i]->combined_pathvector();
+        auto broken = split_non_intersecting_paths(pathvec);
+        for (auto paths : broken) {
+            result.push_back(write_path_xml(paths, items_vec[i]));
+        }
+    }
+
+    sel->deleteItems(true);
+
+    for (auto &node : result) {
+        sel->add(node);
+    }
+
+    if (!skip_undo) {
+        if (auto document = _desktop->getDocument()) {
+            DocumentUndo::done(document, "Split Non-Intersecting Paths", INKSCAPE_ICON("path-split-non-intersecting"));
+        }
     }
 }
 

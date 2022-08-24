@@ -346,9 +346,9 @@ static void sp_selection_delete_impl(std::vector<SPItem*> const &items, bool pro
 }
 
 
-void ObjectSet::deleteItems()
+void ObjectSet::deleteItems(bool skip_undo)
 {
-    if (isEmpty()) {
+    if (isEmpty() && !skip_undo) {
         selection_display_message(desktop(),Inkscape::WARNING_MESSAGE, _("<b>Nothing</b> was deleted."));
         return;
     }
@@ -356,6 +356,10 @@ void ObjectSet::deleteItems()
     std::vector<SPItem*> selected(items().begin(), items().end());
     clear();
     sp_selection_delete_impl(selected);
+
+    if (skip_undo)
+        return;
+
     if (SPDesktop *dt = desktop()) {
         dt->layerManager().currentLayer()->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 
@@ -930,6 +934,18 @@ void ObjectSet::ungroup(bool skip_undo)
     }
     if(document() && !skip_undo)
         DocumentUndo::done(document(), _("Ungroup"), INKSCAPE_ICON("object-ungroup"));
+}
+
+/**
+ * Keep ungrouping until there are no more groups.
+ */
+void ObjectSet::ungroup_all()
+{
+  int last = 0;
+  while (size() != last) {
+      last = size();
+      ungroup(true);
+  }
 }
 
 // TODO replace it with ObjectSet::degroup_list

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * Interactive Shapes Builder.
+ * Interactive Booleans Builder.
  *
  *
  *//*
@@ -11,15 +11,16 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "InteractiveShapesBuilder.h"
-#include "NonIntersectingPathsBuilder.h"
+#include "booleans-interactive.h"
+
 #include <ui/icon-names.h>
 #include "display/drawing-item.h"
 #include "path/path-boolop.h"
 #include "style.h"
 #include "document.h"
 #include "object/sp-item.h"
-#include "useful-functions.h"
+#include "object/sp-item-group.h"
+#include "helper/geom-pathstroke.h"
 #include "selection.h"
 
 namespace Inkscape {
@@ -39,8 +40,9 @@ std::vector<SPItem*> &get_all_items(std::vector<SPItem*> &list, SPObject *from, 
 {
     for (auto& child: from->children) {
         SPItem *item = dynamic_cast<SPItem *>(&child);
+        SPGroup *group = dynamic_cast<SPGroup *>(&child);
         if (item &&
-            !desktop->isLayer(item) &&
+            (!group || !group->isLayer()) &&
             (!onlysensitive || !item->isLocked()) &&
             (!onlyvisible || !desktop->itemIsHidden(item)) &&
             (exclude.empty() || exclude.end() == std::find(exclude.begin(), exclude.end(), &child))
@@ -49,7 +51,7 @@ std::vector<SPItem*> &get_all_items(std::vector<SPItem*> &list, SPObject *from, 
             list.insert(list.begin(),item);
         }
 
-        if (ingroups || (item && desktop->isLayer(item))) {
+        if (ingroups || (group && group->isLayer())) {
             list = get_all_items(list, &child, desktop, onlyvisible, onlysensitive, ingroups, exclude);
         }
     }
@@ -64,22 +66,22 @@ void delete_object(SPObject* item)
     sp_object_unref(item, nullptr);
 }
 
-bool InteractiveShapesBuilder::is_started() const
+bool InteractiveBooleanBuilder::is_started() const
 {
     return started;
 }
 
-void Inkscape::InteractiveShapesBuilder::start(Inkscape::ObjectSet *set)
+void Inkscape::InteractiveBooleanBuilder::start(Inkscape::ObjectSet *set)
 {
     desktop = set->desktop();
     document = set->document();
 
     if (is_started()) {
-        std::cerr << "InteractiveShapesBuilder: already started. Resetting before starting again.\n";
+        std::cerr << "InteractiveBooleanBuilder: already started. Resetting before starting again.\n";
         commit();
     }
 
-    ungroup_all(set);
+    set->ungroup_all();
 
     NonIntersectingPathsBuilder builder(set);
 
@@ -93,7 +95,7 @@ void Inkscape::InteractiveShapesBuilder::start(Inkscape::ObjectSet *set)
     selected_items = std::vector<SPItem*>(set->items().begin(), set->items().end());
     set->clear();
 
-    get_all_items(not_selected_items, desktop->currentRoot(), desktop, true, true, false, selected_items);
+    get_all_items(not_selected_items, (SPObject *)document->getRoot(), desktop, true, true, false, selected_items);
     hide_items(not_selected_items);
 
     builder.show_output(false);
@@ -110,7 +112,7 @@ void Inkscape::InteractiveShapesBuilder::start(Inkscape::ObjectSet *set)
     is_virgin = true;
 }
 
-std::vector<int> InteractiveShapesBuilder::get_subitems(const std::vector<SPItem*> &items)
+std::vector<int> InteractiveBooleanBuilder::get_subitems(const std::vector<SPItem*> &items)
 {
     std::vector<int> result;
     for (auto item : items) {
@@ -122,7 +124,7 @@ std::vector<int> InteractiveShapesBuilder::get_subitems(const std::vector<SPItem
         if (subitem == enabled.end()) {
             subitem = disabled.find(item_id);
             if (subitem == disabled.end()) {
-                std::cerr << "InteractiveShapesBuilder::get_subitems: Item that is not in either the enabled or disabled sets is involved?...\n";
+                std::cerr << "InteractiveBooleanBuilder::get_subitems: Item that is not in either the enabled or disabled sets is involved?...\n";
                 continue;
             }
         }
@@ -134,7 +136,7 @@ std::vector<int> InteractiveShapesBuilder::get_subitems(const std::vector<SPItem
     return result;
 }
 
-SubItem InteractiveShapesBuilder::get_union_subitem(const std::vector<int> &subitems)
+SubItem InteractiveBooleanBuilder::get_union_subitem(const std::vector<int> &subitems)
 {
     SubItem res_subitem = get_subitem_from_id(subitems.back());
 
@@ -149,7 +151,7 @@ SubItem InteractiveShapesBuilder::get_union_subitem(const std::vector<int> &subi
     return res_subitem;
 }
 
-void InteractiveShapesBuilder::remove_items(const std::vector<SPItem*> &items)
+void InteractiveBooleanBuilder::remove_items(const std::vector<SPItem*> &items)
 {
     for (auto item : items) {
 
@@ -163,7 +165,7 @@ void InteractiveShapesBuilder::remove_items(const std::vector<SPItem*> &items)
     }
 }
 
-void InteractiveShapesBuilder::perform_union(ObjectSet *set, bool draw_result)
+void InteractiveBooleanBuilder::perform_union(ObjectSet *set, bool draw_result)
 {
     if (set->isEmpty()) {
         return;
@@ -192,17 +194,17 @@ void InteractiveShapesBuilder::perform_union(ObjectSet *set, bool draw_result)
     is_virgin = false;
 }
 
-void InteractiveShapesBuilder::set_union(ObjectSet *set)
+void InteractiveBooleanBuilder::set_union(ObjectSet *set)
 {
     perform_union(set, true);
 }
 
-void InteractiveShapesBuilder::set_delete(ObjectSet *set)
+void InteractiveBooleanBuilder::set_delete(ObjectSet *set)
 {
     perform_union(set, false);
 }
 
-void InteractiveShapesBuilder::commit()
+void InteractiveBooleanBuilder::commit()
 {
     if (!is_started()) {
         return;
@@ -214,7 +216,7 @@ void InteractiveShapesBuilder::commit()
 
     std::map<SPItem*, Geom::PathVector> final_paths;
     for (auto item : selected_items) {
-        final_paths[item] = item->get_pathvector();
+        final_paths[item] = item->combined_pathvector();
     }
 
     for (auto subitem_id : enabled) {
@@ -223,7 +225,7 @@ void InteractiveShapesBuilder::commit()
         for (auto item : items) {
             auto paths_it = final_paths.find(item);
             if (paths_it == final_paths.end()) {
-                std::cerr << "InteractiveShapesBuilder: No Geom::PathVector is for the item " << item << ".\n";
+                std::cerr << "InteractiveBooleanBuilder: No Geom::PathVector is for the item " << item << ".\n";
                 continue;
             }
             final_paths[item] = sp_pathvector_boolop(subitem.paths, paths_it->second, bool_op_diff, fill_nonZero, fill_nonZero);
@@ -235,7 +237,7 @@ void InteractiveShapesBuilder::commit()
     for (auto item : selected_items) {
         for (auto sub_pathvec : split_non_intersecting_paths(final_paths[item])) {
             if (!sub_pathvec.empty()) {
-                draw_on_canvas(sub_pathvec, item);
+                write_path_xml(sub_pathvec, item);
             }
         }
         delete_object(item);
@@ -247,40 +249,40 @@ void InteractiveShapesBuilder::commit()
     DocumentUndo::done(document, "Interactive Mode", INKSCAPE_ICON("interactive-builder"));
 }
 
-XML::Node* InteractiveShapesBuilder::get_node_from_id(int id)
+XML::Node* InteractiveBooleanBuilder::get_node_from_id(int id)
 {
     auto node = id_to_node.find(id);
     if (node == id_to_node.end()) {
-        std::cerr << "InteractiveShapesBuilder::get_node_from_id: ID << " << id << " is not registered.\n";
+        std::cerr << "InteractiveBooleanBuilder::get_node_from_id: ID << " << id << " is not registered.\n";
     }
     return node->second;
 }
 
-int InteractiveShapesBuilder::get_id_from_node(XML::Node *node)
+int InteractiveBooleanBuilder::get_id_from_node(XML::Node *node)
 {
     auto id = node_to_id.find(node);
     if (id == node_to_id.end()) {
-        std::cerr << "InteractiveShapesBuilder::get_node_from_id: Node << " << node << " is not registered.\n";
+        std::cerr << "InteractiveBooleanBuilder::get_node_from_id: Node << " << node << " is not registered.\n";
     }
     return id->second;
 }
 
-SubItem &InteractiveShapesBuilder::get_subitem_from_id(int id)
+SubItem &InteractiveBooleanBuilder::get_subitem_from_id(int id)
 {
     auto subitem = id_to_subitem.find(id);
     if (subitem == id_to_subitem.end()) {
-        std::cerr << "InteractiveShapesBuilder::get_node_from_id: ID << " << id << " is not registered.\n";
+        std::cerr << "InteractiveBooleanBuilder::get_node_from_id: ID << " << id << " is not registered.\n";
     }
     return subitem->second;
 }
 
-void InteractiveShapesBuilder::renew_node_id(XML::Node *node, int id)
+void InteractiveBooleanBuilder::renew_node_id(XML::Node *node, int id)
 {
     id_to_node[id] = node;
     node_to_id[node] = id;
 }
 
-int InteractiveShapesBuilder::add_disabled_item(XML::Node *node, int id)
+int InteractiveBooleanBuilder::add_disabled_item(XML::Node *node, int id)
 {
     renew_node_id(node, id);
     disabled.insert(id);
@@ -288,14 +290,14 @@ int InteractiveShapesBuilder::add_disabled_item(XML::Node *node, int id)
     return id;
 }
 
-int InteractiveShapesBuilder::add_disabled_item(XML::Node *node, const SubItem &subitem)
+int InteractiveBooleanBuilder::add_disabled_item(XML::Node *node, const SubItem &subitem)
 {
     int id = last_id++;
     id_to_subitem[id] = subitem;
     return add_disabled_item(node, id);
 }
 
-void InteractiveShapesBuilder::remove_disabled_item(int id)
+void InteractiveBooleanBuilder::remove_disabled_item(int id)
 {
     auto result = disabled.find(id);
     if (result != disabled.end()) {
@@ -307,21 +309,21 @@ void InteractiveShapesBuilder::remove_disabled_item(int id)
     }
 }
 
-int InteractiveShapesBuilder::add_enabled_item(XML::Node *node, int id)
+int InteractiveBooleanBuilder::add_enabled_item(XML::Node *node, int id)
 {
     renew_node_id(node, id);
     enabled.insert(id);
     return id;
 }
 
-int InteractiveShapesBuilder::add_enabled_item(XML::Node *node, const SubItem &subitem)
+int InteractiveBooleanBuilder::add_enabled_item(XML::Node *node, const SubItem &subitem)
 {
     int id = last_id++;
     id_to_subitem[id] = subitem;
     return add_enabled_item(node, id);
 }
 
-void InteractiveShapesBuilder::remove_enabled_item(int id)
+void InteractiveBooleanBuilder::remove_enabled_item(int id)
 {
     auto result = enabled.find(id);
     if (result != enabled.end()) {
@@ -334,50 +336,52 @@ void InteractiveShapesBuilder::remove_enabled_item(int id)
 
 std::string get_disabled_stroke(const std::string &style)
 {
-    std::string fill_color = getSubAttribute(style, "fill");
+    // NO, BAD CODE!
+    /*std::string fill_color = getSubAttribute(style, "fill");
     if (fill_color == "#000000") {
         return setSubAttribute(style, "stroke", "#ffffff");
     }
-    return setSubAttribute(style, "stroke", "#000000");
+    return setSubAttribute(style, "stroke", "#000000");*/
+    return "";
 }
 
-void InteractiveShapesBuilder::set_style_disabled(int id)
+void InteractiveBooleanBuilder::set_style_disabled(int id)
 {
     auto node = get_node_from_id(id);
     std::string original_style = node->attribute("style");
     original_styles[id] = original_style;
-    std::string new_style = setSubAttribute(original_style, "opacity", "0.5");
-    new_style = get_disabled_stroke(new_style);
-    node->setAttribute("style", new_style);
-    std::cout << "Original: " << original_style << "\nNew: " << new_style << "\n\n";
+    //std::string new_style = setSubAttribute(original_style, "opacity", "0.5");
+    //new_style = get_disabled_stroke(new_style);
+    node->setAttribute("style", original_style);
+    //std::cout << "Original: " << original_style << "\nNew: " << new_style << "\n\n";
 }
 
-void InteractiveShapesBuilder::restore_original_style(int id)
+void InteractiveBooleanBuilder::restore_original_style(int id)
 {
     auto style = original_styles.find(id);
     if (style == original_styles.end()) {
-//        std::cerr << "InteractiveShapeBuilder: The node " << node << " doesn't have its original style stored.\n";
+//        std::cerr << "InteractiveBooleanBuilder: The node " << node << " doesn't have its original style stored.\n";
         return;
     }
     auto node = get_node_from_id(id);
     node->setAttribute("style", style->second);
 }
 
-void InteractiveShapesBuilder::hide_items(const std::vector<SPItem*> &items)
+void InteractiveBooleanBuilder::hide_items(const std::vector<SPItem*> &items)
 {
     for (auto item : items) {
         item->setHidden(true);
     }
 }
 
-void InteractiveShapesBuilder::show_items(const std::vector<SPItem*> &items)
+void InteractiveBooleanBuilder::show_items(const std::vector<SPItem*> &items)
 {
     for (auto item : items) {
         item->setHidden(false);
     }
 }
 
-void InteractiveShapesBuilder::reset_internals()
+void InteractiveBooleanBuilder::reset_internals()
 {
     for (auto node_id : disabled) {
         auto repr = get_node_from_id(node_id);
@@ -406,7 +410,7 @@ void InteractiveShapesBuilder::reset_internals()
     }
 }
 
-void InteractiveShapesBuilder::reset()
+void InteractiveBooleanBuilder::reset()
 {
     // TODO do this in a better way
     while (!undo_stack.empty()) {
@@ -417,7 +421,7 @@ void InteractiveShapesBuilder::reset()
     }
 }
 
-void InteractiveShapesBuilder::discard()
+void InteractiveBooleanBuilder::discard()
 {
     for (auto node_id : enabled) {
         auto repr = get_node_from_id(node_id);
@@ -433,16 +437,16 @@ void InteractiveShapesBuilder::discard()
     reset_internals();
 }
 
-XML::Node* InteractiveShapesBuilder::draw_and_set_visible(const SubItem &subitem)
+XML::Node* InteractiveBooleanBuilder::draw_and_set_visible(const SubItem &subitem)
 {
-    auto node = draw_on_canvas(subitem.paths, subitem.top_item);
+    auto node = write_path_xml(subitem.paths, subitem.top_item);
     // TODO find a better way to do this.
     auto item = dynamic_cast<SPItem*>(document->getObjectByRepr(node));
     item->setHidden(false);
     return node;
 }
 
-void InteractiveShapesBuilder::push_undo_command(const UnionCommand &command)
+void InteractiveBooleanBuilder::push_undo_command(const UnionCommand &command)
 {
     undo_stack.push(std::move(command));
     while (!redo_stack.empty()) {
@@ -450,7 +454,7 @@ void InteractiveShapesBuilder::push_undo_command(const UnionCommand &command)
     }
 }
 
-void InteractiveShapesBuilder::undo()
+void InteractiveBooleanBuilder::undo()
 {
     if (undo_stack.empty()) {
         return;
@@ -467,7 +471,7 @@ void InteractiveShapesBuilder::undo()
         if (object) {
             delete_object(object);
         } else {
-            std::cerr << "InteractiveShapesBuilder::undo: Node " << node << " doesn't have an object...\n";
+            std::cerr << "InteractiveBooleanBuilder::undo: Node " << node << " doesn't have an object...\n";
         }
     }
 
@@ -494,7 +498,7 @@ void InteractiveShapesBuilder::undo()
     }
 }
 
-void InteractiveShapesBuilder::redo()
+void InteractiveBooleanBuilder::redo()
 {
     if (redo_stack.empty()) {
         return;
@@ -517,7 +521,7 @@ void InteractiveShapesBuilder::redo()
         if (object) {
             delete_object(object);
         } else {
-            std::cerr << "InteractiveShapesBuilder::redo: Node " << node << " doesn't have an object...\n";
+            std::cerr << "InteractiveBooleanBuilder::redo: Node " << node << " doesn't have an object...\n";
         }
 
         remove_enabled_item(id);
