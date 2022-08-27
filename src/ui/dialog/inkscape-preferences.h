@@ -366,6 +366,7 @@ protected:
     UI::Widget::PrefSpinButton  _canvas_coarsener_glue_size;
     UI::Widget::PrefSpinButton  _canvas_coarsener_min_fullness;
     UI::Widget::PrefCombo       _canvas_pixelstreamer_method;
+    UI::Widget::PrefCheckButton _canvas_block_updates;
     UI::Widget::PrefCheckButton _canvas_debug_framecheck;
     UI::Widget::PrefCheckButton _canvas_debug_logging;
     UI::Widget::PrefCheckButton _canvas_debug_slow_redraw;

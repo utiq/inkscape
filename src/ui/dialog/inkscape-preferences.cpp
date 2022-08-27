@@ -2688,6 +2688,10 @@ void InkscapePreferences::initPageRendering()
         _page_rendering.add_line(false, _("Update strategy:"), _canvas_update_strategy, "", _("How to update continually changing content when it can't be redrawn fast enough"), false);
     }
 
+    // block updates
+    _canvas_block_updates.init("", "/options/rendering/block_updates", true);
+    _page_rendering.add_line(false, _("Use block updates:"), _canvas_block_updates, "", _("Update the dragged region as a single block"), false);
+
     // opengl
     _canvas_request_opengl.init("", "/options/rendering/request_opengl", false);
     _page_rendering.add_line( false, _("Enable OpenGL:"), _canvas_request_opengl, "", _("Request that the canvas should be painted with OpenGL rather than Cairo. If OpenGL is unsupported, it will fall back to Cairo."), false);

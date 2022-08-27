@@ -43,6 +43,7 @@ public:
     Pref<double> coarsener_min_fullness   = Pref<double>("/options/rendering/coarsener_min_fullness", 0.3, 0.0, 1.0);
     Pref<bool>   request_opengl           = Pref<bool>  ("/options/rendering/request_opengl");
     Pref<int>    pixelstreamer_method     = Pref<int>   ("/options/rendering/pixelstreamer_method", 1, 1, 4);
+    Pref<bool>   block_updates            = Pref<bool>  ("/options/rendering/block_updates", true);
 
     // Debug switches
     Pref<bool>   debug_framecheck         = Pref<bool>  ("/options/rendering/debug_framecheck");
