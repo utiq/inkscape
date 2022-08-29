@@ -69,6 +69,7 @@ set(TEST_SOURCES
     attributes-test
     color-profile-test
     dir-util-test
+    min-bbox-test
     sp-object-test
     object-set-test
     object-style-test

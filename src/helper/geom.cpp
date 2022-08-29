@@ -1002,7 +1002,7 @@ std::pair<Geom::Affine, Geom::Rect> min_bounding_box(std::vector<Geom::Point> co
         }
     };
 
-    double maxa = 0.0;
+    double mina = std::numeric_limits<double>::max();
     std::pair<Geom::Affine, Geom::Rect> result;
 
     // Run rotating callipers.
@@ -1031,9 +1031,9 @@ std::pair<Geom::Affine, Geom::Rect> min_bounding_box(std::vector<Geom::Point> co
         auto h = Geom::dot(hull[k] - hull[i], n);
         auto a = w * h;
 
-        // Track the maxmimum.
-        if (a > maxa) {
-            maxa = a;
+        // Track the minimum.
+        if (a < mina) {
+            mina = a;
             result = std::make_pair(Geom::Affine(v.x(), -v.y(), v.y(), v.x(), 0.0, 0.0),
                                     Geom::Rect::from_xywh(Geom::dot(hull[l], v), Geom::dot(hull[i], n), w, h));
         }

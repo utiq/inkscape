@@ -123,8 +123,6 @@ void Stores::take_snapshot(Fragment const &view)
     _snapshot.drawn = shrink_region(region_affine_approxinwards(_snapshot.drawn, _snapshot.affine.inverse() * _store.affine, _store.rect), 4, -2);
 }
 
-// Todo: Prefer rectilinearly aligning the new fragment to store if possible.
-
 void Stores::snapshot_combine(Fragment const &view)
 {
     // Add the drawn region to the snapshot drawn region (they both exist in store space, so this is valid), and save its affine.
