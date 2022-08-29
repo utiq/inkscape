@@ -1396,9 +1396,22 @@ void SvgBuilder::_flushText() {
         last_delta_pos = delta_pos;
 
         // Append the character to the text buffer
-	if ( !glyph.code.empty() ) {
+        if ( !glyph.code.empty() ) {
             text_buffer.append(1, glyph.code[0]);
-	}
+        }
+
+        /* Append any utf8 conversion doublets and request a new tspan.
+         *
+         * This is a fix for the unusual situation in some PDF files that use
+         * certain fonts where two ascii letters have been bolted together into
+         * one Unicode position and our conversion to UTF8 produces extra glyphs
+         * which if we don't add will be missing and if we add without ending the
+         * tspan will cause the rest of the glyph-positions to be off by one.
+         */
+        for (int j = 1; j < glyph.code.size(); j++) {
+            text_buffer.append(1, glyph.code[j]);
+            new_tspan = true;
+        }
 
         glyphs_in_a_row++;
         ++i;
