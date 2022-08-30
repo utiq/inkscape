@@ -36,8 +36,8 @@ Labelled::Labelled(Glib::ustring const &label, Glib::ustring const &tooltip,
 
     set_spacing(6);
     // Setting margins separately allows for more control over them
-    set_margin_start(6);
-    set_margin_end(6);
+    // set_margin_start(6);
+    // set_margin_end(6);
     pack_start(*Gtk::manage(_label), Gtk::PACK_SHRINK);
     pack_start(*Gtk::manage(_widget), Gtk::PACK_SHRINK);
     if (mnemonic) {

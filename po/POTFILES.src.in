@@ -409,7 +409,6 @@
 ../src/ui/widget/registered-widget.cpp
 ../src/ui/widget/rendering-options.cpp
 ../src/ui/widget/selected-style.cpp
-../src/ui/widget/spin-scale.cpp
 ../src/ui/widget/stroke-style.cpp
 ../src/ui/widget/style-swatch.cpp
 ../src/ui/widget/swatch-selector.cpp

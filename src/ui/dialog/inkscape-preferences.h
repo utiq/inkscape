@@ -465,7 +465,6 @@ protected:
     UI::Widget::PrefCheckButton _ui_realworldzoom;
     UI::Widget::PrefCheckButton _ui_partialdynamic;
     UI::Widget::ZoomCorrRulerSlider _ui_zoom_correction;
-    UI::Widget::PrefCheckButton _show_filters_info_box;
     UI::Widget::PrefCheckButton _ui_yaxisdown;
     UI::Widget::PrefCheckButton _ui_rotationlock;
     UI::Widget::PrefCheckButton _ui_cursorscaling;

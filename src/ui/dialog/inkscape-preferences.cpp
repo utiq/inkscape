@@ -1603,11 +1603,6 @@ void InkscapePreferences::initPageUI()
     _ui_realworldzoom.init( _("Show zoom percentage corrected by factor"), "/options/zoomcorrection/shown", true);
     _page_ui.add_line( false, "", _ui_realworldzoom, "", _("Zoom percentage can be either by the physical units or by pixels."));
 
-    /* show infobox */
-    _show_filters_info_box.init( _("Show filter primitives infobox"), "/options/showfiltersinfobox/value", true);
-    _page_ui.add_line(false, "", _show_filters_info_box, "",
-                        _("Show icons and descriptions for the filter primitives available at the filter effects dialog"), false, reset_icon());
-
     _ui_yaxisdown.init( _("Origin at upper left with y-axis pointing down"), "/options/yaxisdown", true);
     _page_ui.add_line( false, "", _ui_yaxisdown, "",
                        _("When off, origin is at lower left corner and y-axis points up"), false, reset_icon());

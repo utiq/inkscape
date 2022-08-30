@@ -477,9 +477,7 @@ SPCanvas {
 
 /* InkSpinScale */
 #InkSpinScale {
-    background: @theme_bg_color;
     padding: 0px;
-    margin: 2px 4px;
 }
 
 #InkSpinScale trough,
@@ -506,8 +504,11 @@ SPCanvas {
 }
 
 #InkSpinScale trough {
-    min-height: 26px;
-    padding: 2px; /* some themes have humongous scale margins; rein in */
+    min-height: 25px;
+    padding: 0; /* remove padding to make inkspinscale the same height as spinbutton */
+}
+#InkSpinScale trough highlight {
+    margin: 0;
 }
 
 #InkSpinScale box.active {
@@ -523,7 +524,7 @@ SPCanvas {
 }
 
 #InkSpinScale spinbutton entry {
-    min-height: 30px;
+    min-height: 25px;
     outline-style: none;
 }
 
@@ -551,6 +552,10 @@ SPCanvas {
   padding: 2px 4px;
   min-height: 16px;
   font-size: small;
+}
+
+#SimpleFilterModifier #InkSpinScale {
+    padding: 2px 4px;
 }
 
 /* GtkTreeView: clarify drop locations (especially important for XML editor) */
@@ -716,6 +721,10 @@ button.square-button image {
     margin-right: 4px;
 }
 
+.dialog-heading {
+    font-weight: bold;
+}
+
 /* heading label in dialogs */
 .heading {
     font-weight: bold;
@@ -785,4 +794,8 @@ combobox.flat-combobox button {
     border: none;
     background-color: transparent;
     background-image: image(transparent);
+}
+
+.filter-effects, .effects-params {
+    min-height: 50px;
 }

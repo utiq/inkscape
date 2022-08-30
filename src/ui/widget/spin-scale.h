@@ -91,9 +91,11 @@ public:
 private:
     void link_toggled();
     void update_linked();
+    void set_link_active(bool link);
     sigc::signal<void ()> _signal_value_changed;
     SpinScale _s1, _s2;
-    Gtk::ToggleButton _link;
+    bool _linked = true;
+    Gtk::Button _link;
 };
 
 } // namespace Widget

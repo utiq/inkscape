@@ -12,6 +12,7 @@
 
 #include "util.h"
 
+#include <gdkmm/rgba.h>
 #include <gtkmm.h>
 
 /**
@@ -83,6 +84,17 @@ void resize_widget_children(Gtk::Widget *widget) {
 }
 }
 
+Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio) {
+    auto lerp = [](double v0, double v1, double t){ return (1.0 - t) * v0 + t * v1; };
+    Gdk::RGBA result;
+    result.set_rgba(
+        lerp(a.get_red(),   b.get_red(),   ratio),
+        lerp(a.get_green(), b.get_green(), ratio),
+        lerp(a.get_blue(),  b.get_blue(),  ratio),
+        lerp(a.get_alpha(), b.get_alpha(), ratio)
+    );
+    return result;
+}
 
 Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
                                Gtk::StateFlags                  state) {

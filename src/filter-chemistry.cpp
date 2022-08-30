@@ -129,6 +129,7 @@ filter_add_primitive(SPFilter *filter, const Inkscape::Filters::FilterPrimitiveT
         case Inkscape::Filters::NR_FILTER_MERGE:
             break;
         case Inkscape::Filters::NR_FILTER_MORPHOLOGY:
+            repr->setAttribute("radius", "1");
             break;
         case Inkscape::Filters::NR_FILTER_OFFSET:
             repr->setAttribute("dx", "0");

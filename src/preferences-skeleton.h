@@ -310,7 +310,6 @@ static char const preferences_skeleton[] =
     <group id="maskobject" topmost="1" remove="1"/>
     <group id="blurquality" value="0"/>
     <group id="filterquality" value="1"/>
-    <group id="showfiltersinfobox" value="1" />
     <group id="startmode" outline="0"/>
     <group id="outlinemode" value="0"/>
 

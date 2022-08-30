@@ -81,8 +81,8 @@ const EnumDataConverter<FeCompositeOperator> CompositeOperatorConverter(Composit
 const EnumData<Inkscape::Filters::FilterComponentTransferType> ComponentTransferTypeData[Inkscape::Filters::COMPONENTTRANSFER_TYPE_ERROR] = {
     // clang-format off
     {Inkscape::Filters::COMPONENTTRANSFER_TYPE_IDENTITY, _("Identity"), "identity"},
-    {Inkscape::Filters::COMPONENTTRANSFER_TYPE_TABLE,    _("Table"),    "table"},
-    {Inkscape::Filters::COMPONENTTRANSFER_TYPE_DISCRETE, _("Discrete"), "discrete"},
+    {Inkscape::Filters::COMPONENTTRANSFER_TYPE_TABLE,    _("Table Lookup"),    "table"},
+    {Inkscape::Filters::COMPONENTTRANSFER_TYPE_DISCRETE, _("Discrete Values"), "discrete"},
     {Inkscape::Filters::COMPONENTTRANSFER_TYPE_LINEAR,   _("Linear"),   "linear"},
     {Inkscape::Filters::COMPONENTTRANSFER_TYPE_GAMMA,    _("Gamma"),    "gamma"},
     // clang-format on
