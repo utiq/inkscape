@@ -1133,6 +1133,9 @@ InkscapeApplication::parse_actions(const Glib::ustring& input, action_vector_t& 
         if (tokens2.size() > 0) {
             action = tokens2[0];
         }
+        if (action.find_first_not_of(" \f\n\r\t\v") == std::string::npos) {
+            continue;
+        }
         if (tokens2.size() > 1) {
             value = tokens2[1];
         }
