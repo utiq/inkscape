@@ -5,8 +5,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef INKSCAPE_PIXELSTREAMER_H
-#define INKSCAPE_PIXELSTREAMER_H
+#ifndef INKSCAPE_UI_WIDGET_CANVAS_PIXELSTREAMER_H
+#define INKSCAPE_UI_WIDGET_CANVAS_PIXELSTREAMER_H
 
 #include <memory>
 #include <cairomm/refptr.h>
@@ -14,12 +14,14 @@
 #include "texture.h"
 
 namespace Inkscape {
+namespace UI {
+namespace Widget {
 
 // A class for turning Cairo image surfaces into OpenGL textures.
 class PixelStreamer
 {
 public:
-    virtual ~PixelStreamer() {}
+    virtual ~PixelStreamer() = default;
 
     // Method for streaming pixels to the GPU.
     enum class Method
@@ -41,12 +43,25 @@ public:
     virtual Method get_method() const = 0;
 
     // Request a drawing surface of the given dimensions.
-    virtual Cairo::RefPtr<Cairo::ImageSurface> request(const Geom::IntPoint &dimensions) = 0;
+    virtual Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions) = 0;
 
     // Give back the surface to turn it into a texture.
     virtual Texture finish(Cairo::RefPtr<Cairo::ImageSurface> surface) = 0;
 };
 
+} // namespace Widget
+} // namespace UI
 } // namespace Inkscape
 
-#endif // INKSCAPE_PIXELSTREAMER_H
+#endif // INKSCAPE_UI_WIDGET_CANVAS_PIXELSTREAMER_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :

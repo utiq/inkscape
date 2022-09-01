@@ -55,7 +55,6 @@ public:
     bool outline() const;
     bool visibleHairlines() const;
     bool outlineOverlay() const;
-    bool previewMode() const;
     bool renderFilters() const;
     int blurQuality() const;
     int filterQuality() const;

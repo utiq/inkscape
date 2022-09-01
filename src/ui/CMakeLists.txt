@@ -164,6 +164,15 @@ set(ui_SRC
 	widget/alignment-selector.cpp
 	widget/anchor-selector.cpp
 	widget/canvas.cpp
+	widget/canvas/stores.cpp
+	widget/canvas/util.cpp
+	widget/canvas/texture.cpp
+	widget/canvas/pixelstreamer.cpp
+	widget/canvas/updaters.cpp
+	widget/canvas/framecheck.cpp
+	widget/canvas/glgraphics.cpp
+	widget/canvas/cairographics.cpp
+	widget/canvas/graphics.cpp
 	widget/canvas-grid.cpp
 	widget/color-entry.cpp
 	widget/color-icc-selector.cpp
@@ -189,7 +198,6 @@ set(ui_SRC
 	widget/font-variants.cpp
 	widget/font-variations.cpp
 	widget/frame.cpp
-	widget/framecheck.cpp
 	widget/gradient-image.cpp
 	widget/gradient-editor.cpp
 	widget/gradient-selector.cpp
@@ -214,7 +222,6 @@ set(ui_SRC
 	widget/page-selector.cpp
 	widget/paint-selector.cpp
 	widget/pattern-editor.cpp
-	widget/pixelstreamer.cpp
 	widget/point.cpp
 	widget/preferences-widget.cpp
 	widget/random.cpp
@@ -236,11 +243,9 @@ set(ui_SRC
 	widget/swatch-selector.cpp
         widget/template-list.cpp
 	widget/text.cpp
-	widget/texture.cpp
 	widget/tolerance-slider.cpp
 	widget/unit-menu.cpp
 	widget/unit-tracker.cpp
-	widget/updaters.cpp
 
 	view/svg-view-widget.cpp
 	view/view.cpp
@@ -423,6 +428,17 @@ set(ui_SRC
 	widget/anchor-selector.h
 	widget/attr-widget.h
 	widget/canvas.h
+	widget/canvas/fragment.h
+	widget/canvas/prefs.h
+	widget/canvas/stores.h
+	widget/canvas/util.h
+	widget/canvas/texture.h
+	widget/canvas/graphics.h
+	widget/canvas/pixelstreamer.h
+	widget/canvas/updaters.h
+	widget/canvas/framecheck.h
+	widget/canvas/glgraphics.h
+	widget/canvas/cairographics.h
 	widget/canvas-grid.h
 	widget/color-entry.h
 	widget/color-icc-selector.h
@@ -448,7 +464,6 @@ set(ui_SRC
 	widget/font-variants.h
 	widget/font-variations.h
 	widget/frame.h
-	widget/framecheck.h
 	widget/gradient-image.h
 	widget/gradient-editor.h
 	widget/gradient-selector.h
@@ -471,7 +486,6 @@ set(ui_SRC
 	widget/page-selector.h
 	widget/paint-selector.h
 	widget/pattern-editor.h
-	widget/pixelstreamer.h
 	widget/point.h
 	widget/preferences-widget.h
 	widget/random.h
@@ -495,11 +509,9 @@ set(ui_SRC
 	widget/swatch-selector.h
         widget/template-list.h
 	widget/text.h
-	widget/texture.h
 	widget/tolerance-slider.h
 	widget/unit-menu.h
 	widget/unit-tracker.h
-	widget/updaters.h
 
 	view/svg-view-widget.h
 	view/view.h

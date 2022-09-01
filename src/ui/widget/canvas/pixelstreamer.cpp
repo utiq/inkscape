@@ -1,25 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#include "pixelstreamer.h"
 #include <cassert>
 #include <cmath>
 #include <vector>
+#include "pixelstreamer.h"
+#include "helper/mathfns.h"
+
+namespace Inkscape {
+namespace UI {
+namespace Widget {
 
 namespace {
 
-constexpr auto roundup(int x, int m)
-{
-    return ((x - 1) / m + 1) * m;
-}
-
-constexpr cairo_user_data_key_t key{};
-
-} // namespace
-
-namespace Inkscape {
+cairo_user_data_key_t constexpr key{};
 
 class PersistentPixelStreamer : public PixelStreamer
 {
-    static constexpr int bufsize = 0x1000000; // 16 MiB
+    static int constexpr bufsize = 0x1000000; // 16 MiB
 
     struct Buffer
     {
@@ -84,12 +80,12 @@ public:
 
     Method get_method() const override { return Method::Persistent; }
 
-    Cairo::RefPtr<Cairo::ImageSurface> request(const Geom::IntPoint &dimensions) override
+    Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions) override
     {
         // Calculate image properties required by cairo.
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, dimensions.x());
         int size = stride * dimensions.y();
-        int sizeup = roundup(size, 64);
+        int sizeup = Util::roundup(size, 64);
         assert(sizeup < bufsize);
 
         // Continue using the current buffer if possible.
@@ -192,7 +188,7 @@ public:
         }
 
         // Return the texture.
-        return Texture(tex, {m.width, m.height});
+        return Texture(tex, { m.width, m.height });
     }
 
     ~PersistentPixelStreamer() override
@@ -216,7 +212,7 @@ public:
 
 class AsynchronousPixelStreamer : public PixelStreamer
 {
-    static constexpr int bufsize_multiple = 0x100000; // 1 MiB
+    static int constexpr bufsize_multiple = 0x100000; // 1 MiB
 
     struct Mapping
     {
@@ -230,12 +226,14 @@ class AsynchronousPixelStreamer : public PixelStreamer
 public:
     Method get_method() const override { return Method::Asynchronous; }
 
-    Cairo::RefPtr<Cairo::ImageSurface> request(const Geom::IntPoint &dimensions) override
+    Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions) override
     {
         auto choose_mapping = [&, this] {
-            for (int i = 0; i < mappings.size(); i++)
-                if (!mappings[i].used)
+            for (int i = 0; i < mappings.size(); i++) {
+                if (!mappings[i].used) {
                     return i;
+                }
+            }
             mappings.emplace_back();
             return (int)mappings.size() - 1;
         };
@@ -248,7 +246,7 @@ public:
         m.height = dimensions.y();
         m.stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, m.width);
         m.size = m.stride * m.height;
-        int bufsize = roundup(m.size, bufsize_multiple);
+        int bufsize = Util::roundup(m.size, bufsize_multiple);
 
         glGenBuffers(1, &m.pbo);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m.pbo);
@@ -282,7 +280,7 @@ public:
 
         m.used = false;
 
-        return Texture(tex, {m.width, m.height});
+        return Texture(tex, { m.width, m.height });
     }
 };
 
@@ -299,12 +297,14 @@ class SynchronousPixelStreamer : public PixelStreamer
 public:
     Method get_method() const override { return Method::Synchronous; }
 
-    Cairo::RefPtr<Cairo::ImageSurface> request(const Geom::IntPoint &dimensions) override
+    Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions) override
     {
         auto choose_mapping = [&, this] {
-            for (int i = 0; i < mappings.size(); i++)
-                if (!mappings[i].used)
+            for (int i = 0; i < mappings.size(); i++) {
+                if (!mappings[i].used) {
                     return i;
+                }
+            }
             mappings.emplace_back();
             return (int)mappings.size() - 1;
         };
@@ -342,13 +342,15 @@ public:
         m.used = false;
         m.data.clear();
 
-        return Texture(tex, {m.width, m.height});
+        return Texture(tex, { m.width, m.height });
     }
 };
 
-template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Persistent>()   {return std::make_unique<PersistentPixelStreamer>();}
-template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Asynchronous>() {return std::make_unique<AsynchronousPixelStreamer>();}
-template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Synchronous>()  {return std::make_unique<SynchronousPixelStreamer>();}
+} // namespace
+
+template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Persistent>()   { return std::make_unique<PersistentPixelStreamer>(); }
+template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Asynchronous>() { return std::make_unique<AsynchronousPixelStreamer>(); }
+template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Synchronous>()  { return std::make_unique<SynchronousPixelStreamer>(); }
 
 template<>
 std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Auto>()
@@ -368,8 +370,7 @@ std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Auto
 
 std::unique_ptr<PixelStreamer> PixelStreamer::create(Method method)
 {
-    switch (method)
-    {
+    switch (method) {
         case Method::Persistent:   return create<Method::Persistent>();
         case Method::Asynchronous: return create<Method::Asynchronous>();
         case Method::Synchronous:  return create<Method::Synchronous>();
@@ -378,4 +379,17 @@ std::unique_ptr<PixelStreamer> PixelStreamer::create(Method method)
     }
 }
 
+} // namespace Widget
+} // namespace UI
 } // namespace Inkscape
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :

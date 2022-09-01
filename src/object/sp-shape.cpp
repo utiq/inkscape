@@ -43,8 +43,6 @@
 #include "snap-preferences.h"
 #include "live_effects/lpeobject.h"
 
-#include "helper/mathfns.h" // for triangle_area()
-
 #define noSHAPE_VERBOSE
 
 static void sp_shape_update_marker_view (SPShape *shape, Inkscape::DrawingItem *ai);

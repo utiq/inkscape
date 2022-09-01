@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * A class hierarchy used by the canvas for controlling what order to update invalidated regions.
+ * Controls the order to update invalidated regions.
  * Copyright (C) 2022 PBS <pbs3141@gmail.com>
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef INKSCAPE_UPDATERS_H
-#define INKSCAPE_UPDATERS_H
+#ifndef INKSCAPE_UI_WIDGET_CANVAS_UPDATERS_H
+#define INKSCAPE_UI_WIDGET_CANVAS_UPDATERS_H
 
 #include <vector>
 #include <memory>
@@ -15,6 +15,8 @@
 #include <cairomm/region.h>
 
 namespace Inkscape {
+namespace UI {
+namespace Widget {
 
 // A class for tracking invalidation events and producing redraw regions.
 class Updater
@@ -43,20 +45,33 @@ public:
     virtual Strategy get_strategy() const = 0;
 
     virtual void reset() = 0;                          // Reset the clean region to empty.
-    virtual void intersect (const Geom::IntRect&) = 0; // Called when the store changes position; clip everything to the new store rectangle.
-    virtual void mark_dirty(const Geom::IntRect&) = 0; // Called on every invalidate event.
-    virtual void mark_clean(const Geom::IntRect&) = 0; // Called on every rectangle redrawn.
+    virtual void intersect (Geom::IntRect const &) = 0; // Called when the store changes position; clip everything to the new store rectangle.
+    virtual void mark_dirty(Geom::IntRect const &) = 0; // Called on every invalidate event.
+    virtual void mark_clean(Geom::IntRect const &) = 0; // Called on every rectangle redrawn.
 
-    // Called by on_idle to determine what regions to consider clean for the current redraw.
+    // Called at the start of a redraw to determine what region to consider clean (i.e. will not be drawn).
     virtual Cairo::RefPtr<Cairo::Region> get_next_clean_region() = 0;
 
-    // Called in on_idle if the redraw has finished. Returns true to indicate that further redraws are required with a different clean region.
+    // Called after a redraw has finished. Returns true to indicate that further redraws are required with different clean regions.
     virtual bool report_finished() = 0;
 
-    // Called by on_draw to notify the updater of the display of the frame.
-    virtual void frame() = 0;
+    // Called at the start of each frame. Some updaters (Multiscale) require this information.
+    virtual void next_frame() = 0;
 };
 
+} // namespace Widget
+} // namespace UI
 } // namespace Inkscape
 
-#endif // INKSCAPE_UPDATERS_H
+#endif // INKSCAPE_UI_WIDGET_CANVAS_UPDATERS_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :

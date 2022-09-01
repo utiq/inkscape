@@ -3,6 +3,8 @@
 #include "ui/util.h"
 
 namespace Inkscape {
+namespace UI {
+namespace Widget {
 
 class ResponsiveUpdater : public Updater
 {
@@ -10,13 +12,13 @@ public:
     Strategy get_strategy() const override { return Strategy::Responsive; }
 
     void reset()                               override { clean_region = Cairo::Region::create(); }
-    void intersect (const Geom::IntRect &rect) override { clean_region->intersect(geom_to_cairo(rect)); }
-    void mark_dirty(const Geom::IntRect &rect) override { clean_region->subtract(geom_to_cairo(rect)); }
-    void mark_clean(const Geom::IntRect &rect) override { clean_region->do_union(geom_to_cairo(rect)); }
+    void intersect (Geom::IntRect const &rect) override { clean_region->intersect(geom_to_cairo(rect)); }
+    void mark_dirty(Geom::IntRect const &rect) override { clean_region->subtract(geom_to_cairo(rect)); }
+    void mark_clean(Geom::IntRect const &rect) override { clean_region->do_union(geom_to_cairo(rect)); }
 
     Cairo::RefPtr<Cairo::Region> get_next_clean_region() override { return clean_region; }
     bool                         report_finished      () override { return false; }
-    void                         frame                () override {}
+    void                         next_frame           () override {}
 };
 
 class FullRedrawUpdater : public ResponsiveUpdater
@@ -43,7 +45,7 @@ public:
         if (old_clean_region) old_clean_region->intersect(geom_to_cairo(rect));
     }
 
-    void mark_dirty(const Geom::IntRect &rect) override
+    void mark_dirty(Geom::IntRect const &rect) override
     {
         if (inprogress && !old_clean_region) old_clean_region = clean_region->copy();
         ResponsiveUpdater::mark_dirty(rect);
@@ -112,7 +114,7 @@ public:
         }
     }
 
-    void mark_dirty(const Geom::IntRect &rect) override
+    void mark_dirty(Geom::IntRect const &rect) override
     {
         ResponsiveUpdater::mark_dirty(rect);
         if (inprogress && !activated) {
@@ -155,7 +157,7 @@ public:
         }
     }
 
-    void frame() override
+    void next_frame() override
     {
         if (!activated) return;
 
@@ -199,4 +201,17 @@ std::unique_ptr<Updater> Updater::create(Strategy strategy)
     }
 }
 
+} // namespace Widget
+} // namespace UI
 } // namespace Inkscape
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :

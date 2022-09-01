@@ -16,42 +16,8 @@
 #include "display/drawing-context.h"
 #include "display/drawing-pattern.h"
 #include "display/drawing-surface.h"
+#include "helper/geom.h"
 #include "ui/util.h"
-
-namespace {
-
-auto operator/(Geom::Point const &a, Geom::Point const &b)
-{
-    return Geom::Point(a.x() / b.x(), a.y() / b.y());
-}
-
-auto operator*(Geom::IntPoint const &a, Geom::IntPoint const &b)
-{
-    return Geom::IntPoint(a.x() * b.x(), a.y() * b.y());
-}
-
-int safemod(int a, int b)
-{
-    a %= b;
-    return a < 0 ? a + b : a;
-}
-
-int rounddown(int a, int b)
-{
-    return a - safemod(a, b);
-}
-
-int roundup(int a, int b)
-{
-    return rounddown(a - 1, b) + b;
-}
-
-auto rounddown(Geom::IntPoint const &a, Geom::IntPoint const &b)
-{
-    return Geom::IntPoint(rounddown(a.x(), b.x()), rounddown(a.y(), b.y()));
-}
-
-} // namespace
 
 namespace Inkscape {
 
@@ -146,7 +112,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(Geom::IntRect const &area, float 
             int const period = _pattern_resolution[i];
             if (a[i].extent() >= period) return true;
             if (b[i].extent() > a[i].extent()) return false;
-            return rounddown(b[i].min() - a[i].min(), period) >= b[i].max() - a[i].max();
+            return Util::rounddown(b[i].min() - a[i].min(), period) >= b[i].max() - a[i].max();
         };
         return check(0) && check(1);
     };
@@ -157,7 +123,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(Geom::IntRect const &area, float 
             int const period = _pattern_resolution[i];
             if (a[i].extent() >= period) return true;
             if (b[i].extent() >= period) return true;
-            return rounddown(b[i].max() - a[i].min(), period) >= b[i].min() - a[i].max();
+            return Util::rounddown(b[i].max() - a[i].min(), period) >= b[i].min() - a[i].max();
         };
         return check(0) && check(1);
     };
@@ -197,7 +163,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(Geom::IntRect const &area, float 
             if (expanded.dimensions()[i] >= _pattern_resolution[i]) {
                 expanded[i] = {0, _pattern_resolution[i]};
             } else {
-                expanded[i] -= rounddown(expanded[i].min(), _pattern_resolution[i]);
+                expanded[i] -= Util::rounddown(expanded[i].min(), _pattern_resolution[i]);
             }
         }
 
@@ -218,8 +184,8 @@ cairo_pattern_t *DrawingPattern::renderPattern(Geom::IntRect const &area, float 
         for (auto &m : merged) {
             Geom::IntPoint smin, smax;
             for (int i = 0; i < 2; i++) {
-                smin[i] = roundup(expanded[i].min() - m.rect[i].max() + 1, _pattern_resolution[i]);
-                smax[i] = rounddown(expanded[i].max() - m.rect[i].min() - 1, _pattern_resolution[i]);
+                smin[i] = Util::roundup(expanded[i].min() - m.rect[i].max() + 1, _pattern_resolution[i]);
+                smax[i] = Util::rounddown(expanded[i].max() - m.rect[i].min() - 1, _pattern_resolution[i]);
             }
 
             for (int x = smin.x(); x <= smax.x(); x += _pattern_resolution.x()) {

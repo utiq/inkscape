@@ -82,12 +82,6 @@ Drawing::outlineOverlay() const
 }
 
 bool
-Drawing::previewMode() const
-{
-    return _clip_to_page;
-}
-
-bool
 Drawing::renderFilters() const
 {
     return renderMode() == RenderMode::NORMAL || renderMode() == RenderMode::VISIBLE_HAIRLINES || renderMode() == RenderMode::OUTLINE_OVERLAY;
@@ -185,13 +179,13 @@ Drawing::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, i
         int prev_a = _root->_antialias;
         if(antialiasing >= 0)
             _root->setAntialiasing(antialiasing);
-        if (previewMode() && !clip.empty()) {
+        if (_clip_to_page && !clip.empty()) {
             dc.save();
             dc.path(clip * _root->_ctm);
             dc.clip();
         }
         _root->render(dc, area, flags);
-        if (previewMode() && !clip.empty()) {
+        if (_clip_to_page && !clip.empty()) {
             dc.restore();
         }
         _root->setAntialiasing(prev_a);

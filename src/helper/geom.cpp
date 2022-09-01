@@ -11,11 +11,14 @@
  */
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include "helper/geom.h"
 #include "helper/geom-curves.h"
 #include <2geom/curves.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/path-intersection.h>
+#include <2geom/convex-hull.h>
 
 using Geom::X;
 using Geom::Y;
@@ -959,11 +962,86 @@ recursive_bezier4(const double x1, const double y1,
         recursive_bezier4(x1234, y1234, x234, y234, x34, y34, x4, y4, m_points, level + 1); 
 }
 
-void 
-swap(Geom::Point &A, Geom::Point &B){
-    Geom::Point tmp = A;
-    A = B;
-    B = tmp;
+/**
+ * Returns whether an affine transformation is approximately a dihedral transformation, i.e.
+ * it maps the axis-aligned unit square centred at the origin to itself.
+ */
+bool approx_dihedral(Geom::Affine const &affine, double eps)
+{
+    // Ensure translation is zero.
+    if (std::abs(affine[4]) > eps || std::abs(affine[5]) > eps) return false;
+
+    // Ensure matrix has integer components.
+    std::array<int, 4> arr;
+    for (int i = 0; i < 4; i++) {
+        arr[i] = std::round(affine[i]);
+        if (std::abs(affine[i] - arr[i]) > eps) return false;
+        arr[i] = std::abs(arr[i]);
+    }
+
+    // Ensure rounded matrix is correct.
+    return arr == std::array {1, 0, 0, 1 } || arr == std::array{ 0, 1, 1, 0 };
+}
+
+/**
+ * Computes the rotation which puts a set of points in a position where they can be wrapped in the
+ * smallest possible axis-aligned rectangle, and returns it along with the rectangle.
+ */
+std::pair<Geom::Affine, Geom::Rect> min_bounding_box(std::vector<Geom::Point> const &pts)
+{
+    // Compute the convex hull.
+    auto const hull = Geom::ConvexHull(pts);
+
+    // Move the point i along until it maximises distance in the direction n.
+    auto advance = [&] (int &i, Geom::Point const &n) {
+        auto ih = Geom::dot(hull[i], n);
+        while (true) {
+            int j = (i + 1) % hull.size();
+            auto jh = Geom::dot(hull[j], n);
+            if (ih >= jh) break;
+            i = j;
+            ih = jh;
+        }
+    };
+
+    double maxa = 0.0;
+    std::pair<Geom::Affine, Geom::Rect> result;
+
+    // Run rotating callipers.
+    int j, k, l;
+    for (int i = 0; i < hull.size(); i++) {
+        // Get the current segment.
+        auto &p1 = hull[i];
+        auto &p2 = hull[(i + 1) % hull.size()];
+        auto v = (p2 - p1).normalized();
+        auto n = Geom::Point(-v.y(), v.x());
+
+        if (i == 0) {
+            // Initialise the points.
+            j = 0; advance(j,  v);
+            k = j; advance(k,  n);
+            l = k; advance(l, -v);
+        } else {
+            // Advance the points.
+            advance(j,  v);
+            advance(k,  n);
+            advance(l, -v);
+        }
+
+        // Compute the dimensions of the unconstrained rectangle.
+        auto w = Geom::dot(hull[j] - hull[l], v);
+        auto h = Geom::dot(hull[k] - hull[i], n);
+        auto a = w * h;
+
+        // Track the maxmimum.
+        if (a > maxa) {
+            maxa = a;
+            result = std::make_pair(Geom::Affine(v.x(), -v.y(), v.y(), v.x(), 0.0, 0.0),
+                                    Geom::Rect::from_xywh(Geom::dot(hull[l], v), Geom::dot(hull[i], n), w, h));
+        }
+    }
+
+    return result;
 }
 
 /*

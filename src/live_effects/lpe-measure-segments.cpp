@@ -1077,8 +1077,8 @@ LPEMeasureSegments::doBeforeEffect (SPLPEItem const* lpeitem)
                         hstart[Geom::X] = xpos;
                         hend[Geom::X] = xpos;
                         if (hstart[Geom::Y] > hend[Geom::Y]) {
-                            swap(hstart,hend);
-                            swap(start,end);
+                            std::swap(hstart,hend);
+                            std::swap(start,end);
                         }
                         if (Geom::are_near(hstart[Geom::Y], hend[Geom::Y])) {
                             remove = true;
@@ -1091,8 +1091,8 @@ LPEMeasureSegments::doBeforeEffect (SPLPEItem const* lpeitem)
                         hstart[Geom::Y] = ypos;
                         hend[Geom::Y] = ypos;
                         if (hstart[Geom::X] < hend[Geom::X]) {
-                            swap(hstart,hend);
-                            swap(start,end);
+                            std::swap(hstart,hend);
+                            std::swap(start,end);
                         }
                         if (Geom::are_near(hstart[Geom::X], hend[Geom::X])) {
                             remove = true;
