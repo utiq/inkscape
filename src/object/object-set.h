@@ -429,7 +429,7 @@ public:
     Inkscape::XML::Node* group(bool is_anchor = false);
     void popFromGroup();
     void ungroup(bool skip_undo = false);
-    void ungroup_all();
+    void ungroup_all(bool skip_undo = false);
     
     //z-order management
     //in selection-chemistry.cpp

@@ -59,7 +59,8 @@ public:
     int getItemCount() const;
     virtual void _showChildren (Inkscape::Drawing &drawing, Inkscape::DrawingItem *ai, unsigned int key, unsigned int flags);
 
-    std::vector<SPItem *> item_list() const;
+    std::vector<SPItem*> item_list();
+
 private:
     void _updateLayerMode(unsigned int display_key=0);
 
@@ -91,7 +92,10 @@ public:
 
     guint32 highlight_color() const override;
 
-    static std::vector<SPItem*> get_expanded(const std::vector<SPItem*> &items);
+    /**
+     * Return the result of recursively ungrouping all groups in \a items.
+     */
+    static std::vector<SPItem*> get_expanded(std::vector<SPItem*> const &items);
 };
 
 /**
@@ -105,9 +109,6 @@ public:
 void sp_item_group_ungroup_handle_clones(SPItem *parent, Geom::Affine const g);
 
 void sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children);
-
-
-std::vector<SPItem*> sp_item_group_item_list (SPGroup *group);
 
 SPObject *sp_item_group_get_child_by_name (SPGroup *group, SPObject *ref, const char *name);
 

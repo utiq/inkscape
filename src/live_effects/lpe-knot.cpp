@@ -556,7 +556,7 @@ collectPathsAndWidths (SPLPEItem const *lpeitem, Geom::PathVector &paths, std::v
     auto lpeitem_mutable = const_cast<SPLPEItem *>(lpeitem);
 
     if (auto group = dynamic_cast<SPGroup *>(lpeitem_mutable)) {
-    	std::vector<SPItem*> item_list = sp_item_group_item_list(group);
+        std::vector<SPItem*> item_list = group->item_list();
         for (auto subitem : item_list) {
             if (SP_IS_LPE_ITEM(subitem)) {
                 collectPathsAndWidths(SP_LPE_ITEM(subitem), paths, stroke_widths);

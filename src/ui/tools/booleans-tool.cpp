@@ -1,22 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/**
- * @file
- * A tool for building shapes.
- */
-/* Authors:
+/*
+ * Authors:
  *   Osama Ahmad
  *
- * Copyright (C) 2021 Authors
- *
+ * Copyright (C) 2022 Authors
+
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"  // only include where actually required!
+#include "config.h"  // only include where actually required!
 #endif
 
 #include <cstring>
 #include <string>
+#include <array>
 
 #include "ui/tools/booleans-tool.h"
 
@@ -35,24 +33,18 @@
 #include "selection.h"
 #include "seltrans.h"
 
-#include "actions/actions-tools.h" // set_active_tool()
-
-#include "display/drawing-item.h"
 #include "display/control/canvas-item-catchall.h"
-#include "display/control/canvas-item-drawing.h"
 
-#include "object/box3d.h"
 #include "style.h"
 
 #include "ui/cursor-utils.h"
 #include "ui/icon-names.h"
 #include "ui/modifiers.h"
-#include "ui/widget/canvas.h"
 
 #include "livarot/LivarotDefs.h"
 #include "path/path-boolop.h"
+#include "helper/geom.h"
 #include "helper/geom-pathstroke.h"
-#include "helper/disjoint-sets.h"
 
 // TODO refactor the duplication between this tool and the selector tool.
 // TODO break the methods below into smaller and more descriptive methods.
@@ -69,26 +61,18 @@ using EventHandler = InteractiveBooleansTool::EventHandler;
 static gint rb_escaped = 0; // if non-zero, rubberband was canceled by esc, so the next button release should not deselect
 static gint drag_escaped = 0; // if non-zero, drag was canceled by esc
 
-const std::vector<std::string> InteractiveBooleansTool::operation_cursor_filenames = {
+static constexpr std::array<char const*, 4> operation_cursor_filenames = {
     "cursor-union.svg",
     "cursor-delete.svg",
     "cursor-intersect.svg",
     "select.svg",
 };
 
-const std::vector<guint32> InteractiveBooleansTool::operation_colors = {
+static constexpr std::array<uint32_t, 4> operation_colors = {
     0x0000ffff,
     0x000000ff,
     0xff00ffff,
     0xff0000ff,
-};
-
-const std::map<GdkEventType, EventHandler> InteractiveBooleansTool::handlers = {
-    {GDK_BUTTON_PRESS, &InteractiveBooleansTool::event_button_press_handler},
-    {GDK_BUTTON_RELEASE, &InteractiveBooleansTool::event_button_release_handler},
-    {GDK_KEY_PRESS, &InteractiveBooleansTool::event_key_press_handler},
-    {GDK_KEY_RELEASE, &InteractiveBooleansTool::event_key_release_handler},
-    {GDK_MOTION_NOTIFY, &InteractiveBooleansTool::event_motion_handler},
 };
 
 InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
@@ -128,8 +112,8 @@ InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
     start_interactive_mode();
 }
 
-
-void InteractiveBooleansTool::set(const Inkscape::Preferences::Entry& val) {
+void InteractiveBooleansTool::set(const Inkscape::Preferences::Entry& val)
+{
     Glib::ustring path = val.getEntryName();
 
     if (path == "show") {
@@ -141,8 +125,8 @@ void InteractiveBooleansTool::set(const Inkscape::Preferences::Entry& val) {
     }
 }
 
-
-InteractiveBooleansTool::~InteractiveBooleansTool() {
+InteractiveBooleansTool::~InteractiveBooleansTool()
+{
     this->enableGrDrag(false);
 
     if (grabbed) {
@@ -165,7 +149,8 @@ InteractiveBooleansTool::~InteractiveBooleansTool() {
     end_interactive_mode();
 }
 
-bool InteractiveBooleansTool::sp_select_context_abort() {
+bool InteractiveBooleansTool::sp_select_context_abort()
+{
     if (Inkscape::Rubberband::get(_desktop)->is_started()) {
         Inkscape::Rubberband::get(_desktop)->stop();
         rb_escaped = 1;
@@ -176,35 +161,38 @@ bool InteractiveBooleansTool::sp_select_context_abort() {
     return false;
 }
 
-static bool
-key_is_a_modifier (guint key) {
-    return (key == GDK_KEY_Alt_L ||
-            key == GDK_KEY_Alt_R ||
-            key == GDK_KEY_Control_L ||
-            key == GDK_KEY_Control_R ||
-            key == GDK_KEY_Shift_L ||
-            key == GDK_KEY_Shift_R ||
-            key == GDK_KEY_Meta_L ||  // Meta is when you press Shift+Alt (at least on my machine)
-            key == GDK_KEY_Meta_R);
+static bool key_is_a_modifier (guint key)
+{
+    return key == GDK_KEY_Alt_L ||
+           key == GDK_KEY_Alt_R ||
+           key == GDK_KEY_Control_L ||
+           key == GDK_KEY_Control_R ||
+           key == GDK_KEY_Shift_L ||
+           key == GDK_KEY_Shift_R ||
+           key == GDK_KEY_Meta_L ||  // Meta is when you press Shift+Alt (at least on my machine)
+           key == GDK_KEY_Meta_R;
 }
 
-bool InteractiveBooleansTool::item_handler(SPItem* item, GdkEvent* event)
+bool InteractiveBooleansTool::item_handler(SPItem *item, GdkEvent *event)
 {
     // TODO consider the case for when the ENTER_NOTIFY (to set a pattern).
     return root_handler(event);
 }
 
-EventHandler InteractiveBooleansTool::get_event_handler(GdkEvent* event)
+EventHandler InteractiveBooleansTool::get_event_handler(GdkEvent *event)
 {
-    auto handler = handlers.find(event->type);
-    if (handler != handlers.end()) {
-        return handler->second; // first is the key
+    switch (event->type) {
+        case GDK_BUTTON_PRESS:   return &InteractiveBooleansTool::event_button_press_handler;
+        case GDK_BUTTON_RELEASE: return &InteractiveBooleansTool::event_button_release_handler;
+        case GDK_KEY_PRESS:      return &InteractiveBooleansTool::event_key_press_handler;
+        case GDK_KEY_RELEASE:    return &InteractiveBooleansTool::event_key_release_handler;
+        case GDK_MOTION_NOTIFY:  return &InteractiveBooleansTool::event_motion_handler;
+        default:                 return nullptr;
     }
-    return nullptr;
 }
 
-bool InteractiveBooleansTool::root_handler(GdkEvent* event) {
-
+bool InteractiveBooleansTool::root_handler(GdkEvent *event)
+{
     // make sure we still have valid objects to move around
     if (this->item && this->item->document == nullptr) {
         this->sp_select_context_abort();
@@ -227,7 +215,6 @@ bool InteractiveBooleansTool::root_handler(GdkEvent* event) {
 bool InteractiveBooleansTool::event_button_press_handler(GdkEvent *event)
 {
     if (event->button.button == 1) {
-
         // save drag origin
         xp = (gint) event->button.x;
         yp = (gint) event->button.y;
@@ -277,8 +264,7 @@ bool InteractiveBooleansTool::event_button_release_handler(GdkEvent *event)
     xp = yp = 0;
     Inkscape::Selection *selection = _desktop->getSelection();
 
-
-    if ((event->button.button == 1) && (this->grabbed)) {
+    if (event->button.button == 1 && grabbed) {
 
         Inkscape::Rubberband *r = Inkscape::Rubberband::get(_desktop);
 
@@ -339,7 +325,7 @@ bool InteractiveBooleansTool::event_button_release_handler(GdkEvent *event)
         Inkscape::Rubberband::get(_desktop)->stop(); // might have been started in another tool!
     }
 
-    this->button_press_state = 0;
+    button_press_state = 0;
 
     return true;
 }
@@ -524,7 +510,7 @@ void InteractiveBooleansTool::perform_current_operation()
     return perform_operation(get_current_operation());
 }
 
-void InteractiveBooleansTool::set_modifiers_state(GdkEvent* event)
+void InteractiveBooleansTool::set_modifiers_state(GdkEvent *event)
 {
     // TODO This function is deprecated.
     GdkModifierType modifiers;
@@ -571,8 +557,8 @@ void InteractiveBooleansTool::set_current_operation(int current_operation)
     set_cursor_operation();
     set_rubberband_color();
 
-    // TODO add a function here to change the
-    //  patter of the items the cursor went over.
+    // TODO: Add a function here to change the
+    // pattern of the items the cursor went over.
 }
 
 void InteractiveBooleansTool::set_current_operation(GdkEvent *event)
@@ -583,14 +569,12 @@ void InteractiveBooleansTool::set_current_operation(GdkEvent *event)
 
 void InteractiveBooleansTool::set_cursor_operation()
 {
-    /*if (active_operation > operation_cursor_filenames.size()) {
+    if (active_operation < 0 || active_operation >= operation_cursor_filenames.size()) {
         std::cerr << "InteractiveBooleansTool: operation " << active_operation << " is unknown.\n";
         return;
     }
 
-    auto &current_cursor = operation_cursor_filenames[active_operation];
-    ToolBase::cursor_filename = current_cursor;
-    ToolBase::sp_event_context_update_cursor();*/
+    set_cursor(operation_cursor_filenames[active_operation]);
 }
 
 void InteractiveBooleansTool::set_rubberband_color()
@@ -681,62 +665,8 @@ void InteractiveBooleansTool::discard()
 
 void InteractiveBooleansTool::fracture(bool skip_undo)
 {
-    //set_desktop_busy(_desktop);
     NonIntersectingPathsBuilder builder(_desktop->getSelection());
     builder.fracture(skip_undo);
-    //unset_desktop_busy(_desktop);
-}
-
-std::vector<SubItem> InteractiveBooleansTool::split_non_intersecting_paths(std::vector<SubItem> &subitems)
-{
-    std::vector<SubItem> result;
-    for (auto &path : subitems) {
-        auto split = split_non_intersecting_paths(path.paths);
-        for (auto &split_path : split) {
-            result.emplace_back(split_path, path.items, path.top_item);
-        }
-    }
-    return result;
-}
-
-std::vector<Geom::PathVector> InteractiveBooleansTool::split_non_intersecting_paths(const Geom::PathVector &paths)
-{
-    int n = paths.size();
-
-    DisjointSets sets(n);
-    std::vector<bool> visited(n);
-
-    for (int i = n - 1; i >= 0; i--) {
-
-        if (visited[i]) { continue; }
-        visited[i] = true;
-
-        for (int j = 0; j < n; j++) {
-            if (visited[j]) { continue; }
-            if (is_intersecting(paths[i], paths[j])) {
-                sets.merge(i, j);
-            }
-        }
-    }
-
-    int sets_count = sets.sets_count(); // this is O(N).
-    std::map<int, std::vector<int>> map;
-    for (int i = 0; i < n; i++) {
-        int parent = sets.parent_of(i);
-        map[parent].push_back(i);
-    }
-
-    int i = 0;
-    std::vector<Geom::PathVector> result(sets_count);
-    for (auto &paths_idx : map) {
-        for (auto path_idx : paths_idx.second) {
-            auto &path = paths[path_idx];
-            result[i].push_back(path);
-        }
-        i++;
-    }
-
-    return result;
 }
 
 void InteractiveBooleansTool::flatten(bool skip_undo)
@@ -772,7 +702,7 @@ void InteractiveBooleansTool::flatten(bool skip_undo)
                 std::swap(top, bottom);
             }
 
-            auto diff = sp_pathvector_boolop(top->paths, bottom->paths, bool_op_diff, fill_nonZero, fill_nonZero);
+            auto diff = sp_pathvector_boolop(top->paths, bottom->paths, bool_op_diff, fill_nonZero, fill_nonZero, true);
             if (!diff.empty()) {
                 bottom->paths = diff;
             }
@@ -781,10 +711,10 @@ void InteractiveBooleansTool::flatten(bool skip_undo)
 
     std::vector<XML::Node*> nodes;
     for (int i = 0; i < n; i++) {
-        auto split = split_non_intersecting_paths(paths[i].paths);
+        auto split = Inkscape::split_non_intersecting_paths(Geom::PathVector(paths[i].paths)); // todo: eliminate copy
         for (auto pathvec : split) {
             if (!pathvec.empty()) {
-                nodes.push_back(write_path_xml(pathvec, paths[i].item));
+                nodes.push_back(write_path_xml(pathvec, paths[i].item)->getRepr());
             }
         }
     }
@@ -819,9 +749,9 @@ void InteractiveBooleansTool::splitNonIntersecting(bool skip_undo)
 
     for (int i = 0; i < n; i++) {
         auto pathvec = items_vec[i]->combined_pathvector();
-        auto broken = split_non_intersecting_paths(pathvec);
+        auto broken = Inkscape::split_non_intersecting_paths(std::move(pathvec));
         for (auto paths : broken) {
-            result.push_back(write_path_xml(paths, items_vec[i]));
+            result.push_back(write_path_xml(paths, items_vec[i])->getRepr());
         }
     }
 
@@ -838,6 +768,6 @@ void InteractiveBooleansTool::splitNonIntersecting(bool skip_undo)
     }
 }
 
-}
-}
-}
+} // namespace Tools
+} // namespace UI
+} // namespace Inkscape

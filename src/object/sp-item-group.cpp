@@ -361,7 +361,7 @@ void SPGroup::hide (unsigned int key) {
 //    SPLPEItem::onHide(key);
 }
 
-std::vector<SPItem *> SPGroup::item_list() const
+std::vector<SPItem*> SPGroup::item_list()
 {
     std::vector<SPItem *> ret;
     for (auto& child: children) {
@@ -756,9 +756,6 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
  * some API for list aspect of SPGroup
  */
 
-// TODO: Remove me
-std::vector<SPItem*> sp_item_group_item_list(SPGroup *group) { return group->item_list(); }
-
 SPObject *sp_item_group_get_child_by_name(SPGroup *group, SPObject *ref, const gchar *name)
 {
     SPObject *child = (ref) ? ref->getNext() : group->firstChild();
@@ -976,27 +973,27 @@ void SPGroup::_showChildren (Inkscape::Drawing &drawing, Inkscape::DrawingItem *
     }
 }
 
-std::vector<SPItem*> SPGroup::get_expanded(const std::vector<SPItem*> &items)
+std::vector<SPItem*> SPGroup::get_expanded(std::vector<SPItem*> const &items)
 {
     std::vector<SPItem*> result;
+
     for (auto item : items) {
-        if (SPGroup *group = dynamic_cast<SPGroup*>(item)) {
-            auto sub = get_expanded(sp_item_group_item_list(group));
+        if (auto group = dynamic_cast<SPGroup*>(item)) {
+            auto sub = get_expanded(group->item_list());
             result.insert(result.end(), sub.begin(), sub.end());
         } else {
-            result.push_back(item);
+            result.emplace_back(item);
         }
     }
+
     return result;
 }
-
 
 void SPGroup::update_patheffect(bool write) {
 #ifdef GROUP_VERBOSE
     g_message("sp_group_update_patheffect: %p\n", lpeitem);
 #endif
-    std::vector<SPItem*> const item_list = sp_item_group_item_list(this);
-    for (auto sub_item : item_list) {
+    for (auto sub_item : item_list()) {
         if (sub_item) {
             // don't need lpe version < 1 (issue only reply on lower LPE on nested LPEs
             // this doesn't happen because it's done at very first stage
@@ -1044,7 +1041,7 @@ void SPGroup::update_patheffect(bool write) {
 static void
 sp_group_perform_patheffect(SPGroup *group, SPGroup *top_group, Inkscape::LivePathEffect::Effect *lpe, bool write)
 {
-    std::vector<SPItem*> const item_list = sp_item_group_item_list(group);
+    std::vector<SPItem*> const item_list = group->item_list();
     for (auto sub_item : item_list) {
         SPGroup *sub_group = dynamic_cast<SPGroup *>(sub_item);
         if (sub_group) {

@@ -1527,26 +1527,24 @@ bool SPItem::collidesWith(SPItem const &other) const
     return other_shape ? collidesWith(*other_shape) : false;
 }
 
-/**
- * Combine all the pathvectors for this SPShape and SPGroup children
- * into a single pathvector with multiple curves.
- */
 Geom::PathVector SPItem::combined_pathvector(int depth) const
 {
-    if (auto group = dynamic_cast<const SPGroup *>(this)) {
-        if (depth == 0)
-            return {};
+    if (dynamic_cast<SPGroup const*>(this)) {
+        if (depth == 0) return {};
         Geom::PathVector result;
-        for (SPItem *item : group->item_list()) {
-            auto pathv = item->combined_pathvector(depth - 1);
-            result.insert(result.end(), pathv.begin(), pathv.end());
+        for (auto const &c : children) {
+            if (auto item = dynamic_cast<SPItem const*>(&c)) {
+                auto pathv = item->combined_pathvector(depth - 1);
+                result.insert(result.end(), pathv.begin(), pathv.end());
+            }
         }
         return result;
     }
 
-    if (auto shape = dynamic_cast<const SPShape *>(this)) {
+    if (auto shape = dynamic_cast<SPShape const*>(this)) {
         return shape->curve()->get_pathvector();
     }
+
     return {};
 }
 

@@ -90,7 +90,7 @@ std::vector<SPCurve> SPCurve::split_non_overlapping() const
         newpathv.push_back(path_it);
 
         for (auto &existing : result) {
-            if (is_intersecting(existing._pathv, newpathv)) {
+            if (pathvs_have_nonempty_overlap(existing._pathv, newpathv)) {
                 existing.append(newpathv, false);
                 goto nested_continue;
             }

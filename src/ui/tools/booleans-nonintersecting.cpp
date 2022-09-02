@@ -1,33 +1,57 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/** @file
- * Builder class that construct non-overlapping paths given an ObjectSet.
- *
- *
- *//*
+/*
  * Authors:
- * Osama Ahmad
+ *   Osama Ahmad
  *
- * Copyright (C) 2021 Authors
+ * Copyright (C) 2022 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <utility>
+#include <algorithm>
+
 #include "booleans-nonintersecting.h"
 
-#include <livarot/LivarotDefs.h>
-#include <path/path-boolop.h>
-#include <svg/svg.h>
-#include <ui/icon-names.h>
-#include <utility>
-
+#include "livarot/LivarotDefs.h"
 #include "helper/geom-pathstroke.h"
-
 #include "object/object-set.h"
-
-#include "ui/widget/canvas.h"
+#include "path/path-boolop.h"
+#include "svg/svg.h"
+#include "ui/icon-names.h"
 
 namespace Inkscape {
 
-// TODO this is a duplicate code from selection-chemistry.cpp. refactor it.
+template <typename T>
+SPObject *write_path_xml(T const &path, SPObject const *style_from, SPObject *parent, SPObject *after)
+{
+    auto doc = parent->document;
+    auto rdoc = doc->getReprDoc();
+    auto repr = rdoc->createElement("svg:path");
+    repr->setAttribute("d", sp_svg_write_path(path));
+
+    if (style_from) {
+        auto style = style_from->getRepr()->attribute("style");
+        repr->setAttribute("style", style);
+    }
+
+    parent->addChild(repr, after->getRepr());
+
+    Inkscape::GC::release(repr);
+    return doc->getObjectByRepr(repr);
+}
+
+template <typename T>
+SPObject *write_path_xml(T const &path, SPObject *after)
+{
+    return write_path_xml(path, after, after->parent, after);
+}
+
+template SPObject *write_path_xml<Geom::Path>      (Geom::Path       const&, SPObject const*, SPObject*, SPObject*);
+template SPObject *write_path_xml<Geom::PathVector>(Geom::PathVector const&, SPObject const*, SPObject*, SPObject*);
+template SPObject *write_path_xml<Geom::Path>      (Geom::Path       const&, SPObject*);
+template SPObject *write_path_xml<Geom::PathVector>(Geom::PathVector const&, SPObject*);
+
+// TODO: This is duplicated from selection-chemistry.cpp. Make the original accessible, and use it here.
 static void sp_selection_delete_impl(std::vector<SPItem*> const &items, bool propagate = true, bool propagate_descendants = true)
 {
     for (auto item : items) {
@@ -39,66 +63,80 @@ static void sp_selection_delete_impl(std::vector<SPItem*> const &items, bool pro
     }
 }
 
-void NonIntersectingPathsBuilder::prepare_input()
+/*
+ * Split a collection of subitems into disconnected components, and remove empty subitems.
+ */
+static auto split_non_intersecting(std::vector<SubItem> &&subitems)
 {
-    // FIXME this causes a crash if the function ObjectSet::move is
-    //  called with a dx or dy equals 0. this is because of an assertion
-    //  in the function maybeDone. fix it later.
-    // FIXME enable this and investigate why the program crashes when undoing.
-    // DocumentUndo::ScopedInsensitive scopedInsensitive(set->document());
+    std::vector<SubItem> result;
 
-    // Ideally shouldn't be converting to paths?
-    set->toCurves(true);
-    set->ungroup_all();
+    for (auto &subitem : subitems) {
+        auto paths = split_non_intersecting_paths(std::move(subitem.paths));
+        auto const size = paths.size();
 
-    // TODO get rid of this line and use affines.
-    //set->the_temporary_fix_for_the_transform_bug();
-
-    set_parameters();
-}
-
-void NonIntersectingPathsBuilder::show_output(bool delete_original)
-{
-    draw_subitems(result_subitems);
-
-    if (delete_original) {
-        sp_selection_delete_impl(items);
-    }
-}
-
-void NonIntersectingPathsBuilder::add_result_to_set()
-{
-    for (auto node : result_nodes) {
-        set->add(node);
-    }
-}
-
-void NonIntersectingPathsBuilder::perform_operation(SubItemOperation operation)
-{
-    if (set->isEmpty()) {
-        return;
+        int i = 0;
+        for (auto &path : paths) {
+            if (path.empty()) {
+                continue; // should not be necessary
+            }
+            if (++i == size) { // last path
+                result.emplace_back(std::move(path), std::move(subitem.items));
+            } else {
+                result.emplace_back(std::move(path), decltype(subitem.items)(subitem.items));
+            }
+        }
     }
 
-    prepare_input();
-    items_intersect = false;
-    result_subitems = get_operation_result(operation);
+    return result;
 }
 
-void NonIntersectingPathsBuilder::perform_fracture()
+/*
+ * Add an SPItem to a list of SubItems, fracturing any overlapping ones even further.
+ */
+static auto incremental_fracture(std::vector<SubItem> &&subitems, SPItem *item)
 {
-    auto operation = [](SubItem & a, SubItem & b) { return a.fracture(b); };
-    perform_operation(operation);
+    std::vector<SubItem> result;
+    result.reserve(subitems.size() + 1);
+
+    auto pathvec = item->combined_pathvector();
+
+    for (auto &subitem : subitems) {
+        auto intersection = sp_pathvector_boolop(subitem.paths, pathvec, bool_op_inters, fill_nonZero, fill_nonZero, true);
+        if (intersection.empty()) {
+            result.emplace_back(std::move(subitem));
+            continue;
+        }
+
+        auto subitem_uniq = sp_pathvector_boolop(pathvec, subitem.paths, bool_op_diff, fill_nonZero, fill_nonZero, true);
+        auto pathvec_uniq = sp_pathvector_boolop(subitem.paths, pathvec, bool_op_diff, fill_nonZero, fill_nonZero, true);
+
+        auto intersect_items = subitem.items;
+        intersect_items.emplace_back(item);
+
+        result.emplace_back(std::move(intersection), std::move(intersect_items));
+        result.emplace_back(std::move(subitem_uniq), std::move(subitem.items));
+        pathvec = std::move(pathvec_uniq);
+    }
+
+    result.emplace_back(SubItem(std::move(pathvec), { item }));
+
+    return result;
 }
 
-const std::vector<SubItem>& NonIntersectingPathsBuilder::get_result_subitems() const
+std::vector<SubItem> fracture(std::vector<SPItem*> items)
 {
-    return result_subitems;
+    std::vector<SubItem> result;
+
+    for (auto item : items) {
+        result = incremental_fracture(std::move(result), item);
+    }
+
+    return split_non_intersecting(std::move(result));
 }
 
-const std::vector<XML::Node*>& NonIntersectingPathsBuilder::get_result_nodes() const
-{
-    return result_nodes;
-}
+/*
+ *
+ */
 
 void NonIntersectingPathsBuilder::fracture(bool skip_undo)
 {
@@ -111,179 +149,61 @@ void NonIntersectingPathsBuilder::fracture(bool skip_undo)
     }
 }
 
-void NonIntersectingPathsBuilder::set_parameters()
+void NonIntersectingPathsBuilder::perform_fracture()
 {
-    auto _items = set->items();
-    // items will be placed in place
-    //  of the first item in the selection.
-    after = _items.front()->getRepr();
-    parent = after->parent();
-
-    items = std::vector<SPItem*>(_items.begin(), _items.end());
-}
-
-SPDesktop *NonIntersectingPathsBuilder::desktop()
-{
-    return set->desktop();
-}
-
-SPItem* SubItem::get_common_item(const SubItem &other_subitem) const
-{
-    for (auto item : other_subitem.items) {
-        if (is_subitem_of(item)) {
-            return item;
-        }
-    }
-    return nullptr;
-}
-
-SPItem* SubItem::get_top_item() const
-{
-    SPItem *result = *items.begin();
-    for (SPItem *item : items) {
-        if (sp_item_repr_compare_position_bool(result, item)) {
-            result = item;
-        }
-    }
-    return result;
-}
-
-bool SubItem::is_virgin() const
-{
-    return items.size() == 1;
-}
-
-bool SubItem::operator<(const SubItem &other) const
-{
-    return sp_object_compare_position_bool(top_item, other.top_item);
-}
-
-std::vector<SubItem> SubItem::fracture(const SubItem &other_subitem)
-{
-    auto intersection_paths = sp_pathvector_boolop(paths, other_subitem.paths, bool_op_inters, fill_nonZero, fill_nonZero);
-    auto intersection_top_item = other_subitem < *this ? this->top_item : other_subitem.top_item;
-    SubItem intersection(intersection_paths, items, other_subitem.items, intersection_top_item);
-
-    if (intersection.paths.empty()) {
-        return {};
+    if (set->isEmpty()) {
+        return;
     }
 
-    auto diff1_paths = sp_pathvector_boolop(paths, other_subitem.paths, bool_op_diff, fill_nonZero, fill_nonZero);
-    SubItem diff1(diff1_paths, other_subitem.items, other_subitem.top_item);
+    prepare_input();
 
-    auto diff2_paths = sp_pathvector_boolop(other_subitem.paths, paths, bool_op_diff, fill_nonZero, fill_nonZero);
-    SubItem diff2(diff2_paths, items, top_item);
+    auto itemrange = set->items();
+    items = std::vector<SPItem*>(itemrange.begin(), itemrange.end());
 
-    return {intersection, diff1, diff2};
+    std::sort(items.begin(), items.end(), [] (auto a, auto b) {
+        return sp_object_compare_position_bool(b, a);
+    });
+
+    result_subitems = Inkscape::fracture(items);
 }
 
-std::vector<SubItem> split_non_intersecting_paths(std::vector<SubItem> &subitems)
+void NonIntersectingPathsBuilder::prepare_input()
 {
-    std::vector<SubItem> result;
-    for (auto &path : subitems) {
-        auto split = split_non_intersecting_paths(path.paths);
-        for (auto &split_path : split) {
-            result.emplace_back(split_path, path.items, path.top_item);
-        }
-    }
-    return result;
+    // FIXME: This causes a crash if the function ObjectSet::move is
+    // called with a dx or dy equals 0. This is because of an assertion
+    // in the function maybeDone. Enable this and investigate why
+    // program crashes when undoing.
+    // DocumentUndo::ScopedInsensitive scopedInsensitive(set->document());
+
+    // Ideally shouldn't be converting to paths?
+    set->toCurves(true);
+    set->ungroup_all(true);
 }
 
-std::vector<SubItem> NonIntersectingPathsBuilder::get_operation_result(SubItemOperation operation)
+void NonIntersectingPathsBuilder::show_output(bool delete_original)
 {
-    std::vector<SubItem> result;
-    int n = items.size();
-    result.resize(n);
+    draw_subitems(result_subitems);
 
-    for (int i = 0; i < n; i++) {
-        result[i] = SubItem(items[i]->combined_pathvector(), {items[i]}, items[i]);
-    }
-
-    // TODO This should not be there.
-    int max_operations_count = 5000;
-
-    // result will grow as items are pushed
-    // into it, so does result.size().
-    for (int i = 0; i < result.size(); i++) {
-        if (!max_operations_count) { break; }
-        for (int j = 0; j < result.size(); j++) {
-            if (!max_operations_count) { break; }
-
-            if (i == j) { continue; }
-
-            max_operations_count--;
-
-            // if 2 subitems share at least one item, then
-            //  they don't intersect by definition (since operations
-            //  in this class yields non-intersecting paths). continue.
-            SPItem *common_item = result[i].get_common_item(result[j]);
-            if (common_item) { continue; }
-
-            auto broken = operation(result[i], result[j]);
-            remove_empty_subitems(broken);
-            if (broken.empty()) { continue; } // don't intersect. continue.
-
-            items_intersect = true;
-
-            // the bigger index should be erased first.
-            int bigger_index = (i > j) ? i : j;
-            int smaller_index = (i > j) ? j : i;
-
-            result.erase(result.begin() + bigger_index);
-            result.erase(result.begin() + smaller_index);
-
-            result.insert(result.end(), broken.begin(), broken.end());
-
-            i--; // to cancel the next incrementation.
-
-            break;
-        }
-    }
-
-    return split_non_intersecting_paths(result);
-}
-
-void NonIntersectingPathsBuilder::draw_subitems(const std::vector<SubItem> &subitems)
-{
-    int n = subitems.size();
-    result_nodes.resize(n);
-
-    for (int i = 0; i < n; i++) {
-        result_nodes[i] = write_path_xml(subitems[i].paths, subitems[i].top_item);
+    if (delete_original) {
+        sp_selection_delete_impl(items);
     }
 }
 
-void NonIntersectingPathsBuilder::remove_empty_subitems(std::vector<SubItem> &subitems)
+void NonIntersectingPathsBuilder::draw_subitems(std::vector<SubItem> const &subitems)
 {
-    for (int i = 0; i < subitems.size(); i++) {
-        if (subitems[i].paths.empty()) {
-            subitems.erase(subitems.begin() + i);
-            i--;
-        }
+    result_nodes.clear();
+    result_nodes.reserve(subitems.size());
+
+    for (auto &subitem : subitems) {
+        result_nodes.emplace_back(write_path_xml(subitem.paths, subitem.top_item()));
     }
 }
 
-XML::Node *write_path_xml(const Geom::PathVector &path, const SPItem *to_copy_from, XML::Node *parent, XML::Node *after)
+void NonIntersectingPathsBuilder::add_result_to_set()
 {
-    Inkscape::XML::Node *repr = parent->document()->createElement("svg:path");
-    repr->setAttribute("d", sp_svg_write_path(path));
-
-    if (to_copy_from) {
-        gchar *style = g_strdup(to_copy_from->getRepr()->attribute("style"));
-        repr->setAttribute("style", style);
+    for (auto node : result_nodes) {
+        set->add(node);
     }
-
-    parent->addChild(repr, after);
-
-    return repr;
 }
 
-XML::Node *write_path_xml(const Geom::PathVector &path, SPItem *to_copy_from)
-{
-    XML::Node *after = to_copy_from->getRepr();
-    XML::Node *parent = after->parent();
-    return write_path_xml(path, to_copy_from, parent, after);
-}
-
-
-};
+} // namespace Inkscape

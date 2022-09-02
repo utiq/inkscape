@@ -67,7 +67,7 @@ static void te_update_layout_now (SPItem *item)
 void te_update_layout_now_recursive(SPItem *item)
 {
     if (SP_IS_GROUP(item)) {
-    	std::vector<SPItem*> item_list = sp_item_group_item_list(SP_GROUP(item));
+        std::vector<SPItem*> item_list = SP_GROUP(item)->item_list();
         for(auto list_item : item_list){
             te_update_layout_now_recursive(list_item);
         }

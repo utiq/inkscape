@@ -1,25 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/** @file
- * Interactive Booleans Builder.
- *
- *
- *//*
+/*
  * Authors:
- * Osama Ahmad
+ *   Osama Ahmad
  *
- * Copyright (C) 2021 Authors
+ * Copyright (C) 2022 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
 #include "booleans-interactive.h"
 
-#include <ui/icon-names.h>
+#include "ui/icon-names.h"
 #include "display/drawing-item.h"
 #include "path/path-boolop.h"
 #include "style.h"
 #include "document.h"
 #include "object/sp-item.h"
 #include "object/sp-item-group.h"
+#include "helper/geom.h"
 #include "helper/geom-pathstroke.h"
 #include "selection.h"
 
@@ -81,12 +78,12 @@ void Inkscape::InteractiveBooleanBuilder::start(Inkscape::ObjectSet *set)
         commit();
     }
 
-    set->ungroup_all();
+    set->ungroup_all(true);
 
     NonIntersectingPathsBuilder builder(set);
 
     builder.perform_fracture();
-    if (!builder.items_intersected()) {
+    if (!builder.modified()) {
         return;
     }
 
@@ -105,7 +102,7 @@ void Inkscape::InteractiveBooleanBuilder::start(Inkscape::ObjectSet *set)
     int n = nodes.size();
 
     for (int i = 0; i < n; i++) {
-        add_disabled_item(nodes[i], subitems[i]);
+        add_disabled_item(nodes[i]->getRepr(), subitems[i]);
     }
 
     started = true;
@@ -144,8 +141,8 @@ SubItem InteractiveBooleanBuilder::get_union_subitem(const std::vector<int> &sub
     {
         int subitem_id = subitems[i];
         auto &subitem = get_subitem_from_id(subitem_id);
-        res_subitem.paths = sp_pathvector_boolop(res_subitem.paths, subitem.paths, bool_op_union, fill_nonZero, fill_nonZero);
-        res_subitem.items.insert(subitem.items.begin(), subitem.items.end());
+        res_subitem.paths = sp_pathvector_boolop(res_subitem.paths, subitem.paths, bool_op_union, fill_nonZero, fill_nonZero, true);
+        res_subitem.items.insert(res_subitem.items.end(), subitem.items.begin(), subitem.items.end());
     }
 
     return res_subitem;
@@ -228,14 +225,14 @@ void InteractiveBooleanBuilder::commit()
                 std::cerr << "InteractiveBooleanBuilder: No Geom::PathVector is for the item " << item << ".\n";
                 continue;
             }
-            final_paths[item] = sp_pathvector_boolop(subitem.paths, paths_it->second, bool_op_diff, fill_nonZero, fill_nonZero);
+            final_paths[item] = sp_pathvector_boolop(subitem.paths, paths_it->second, bool_op_diff, fill_nonZero, fill_nonZero, true);
         }
     }
 
     show_items(selected_items);
 
     for (auto item : selected_items) {
-        for (auto sub_pathvec : split_non_intersecting_paths(final_paths[item])) {
+        for (auto sub_pathvec : split_non_intersecting_paths(Geom::PathVector(final_paths[item]))) { // Todo: Can eliminate copy?
             if (!sub_pathvec.empty()) {
                 write_path_xml(sub_pathvec, item);
             }
@@ -337,8 +334,8 @@ void InteractiveBooleanBuilder::remove_enabled_item(int id)
 std::string get_disabled_stroke(const std::string &style)
 {
     // NO, BAD CODE!
-    /*std::string fill_color = getSubAttribute(style, "fill");
-    if (fill_color == "#000000") {
+    /*auto fill_color = getSubAttribute(style, "fill");
+    if (fill_color && fill_color == "#000000") {
         return setSubAttribute(style, "stroke", "#ffffff");
     }
     return setSubAttribute(style, "stroke", "#000000");*/
@@ -439,11 +436,11 @@ void InteractiveBooleanBuilder::discard()
 
 XML::Node* InteractiveBooleanBuilder::draw_and_set_visible(const SubItem &subitem)
 {
-    auto node = write_path_xml(subitem.paths, subitem.top_item);
+    auto node = write_path_xml(subitem.paths, subitem.top_item());
     // TODO find a better way to do this.
-    auto item = dynamic_cast<SPItem*>(document->getObjectByRepr(node));
+    auto item = dynamic_cast<SPItem*>(node);
     item->setHidden(false);
-    return node;
+    return node->getRepr();
 }
 
 void InteractiveBooleanBuilder::push_undo_command(const UnionCommand &command)
@@ -532,4 +529,4 @@ void InteractiveBooleanBuilder::redo()
     is_virgin = false;
 }
 
-}
+} // namespace Inkscape

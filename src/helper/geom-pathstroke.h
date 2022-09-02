@@ -11,6 +11,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <vector>
+#include <functional>
 #include <2geom/path.h>
 #include <2geom/pathvector.h>
 
@@ -93,10 +95,18 @@ Geom::Path half_outline(
  */
 void outline_join(Geom::Path &res, Geom::Path const& outgoing, Geom::Point in_tang, Geom::Point out_tang, double width, double miter, LineJoinType join);
 
-std::vector<Geom::PathVector> split_non_intersecting_paths(const Geom::PathVector &paths);
+/**
+ * Return the list of connected components of a graph described by an adjacency-test function.
+ * \param size The number of nodes in the graph. (Nodes are labelled from 0 to size - 1.)
+ * \param adj_test The adjacency-test function.
+ */
+std::vector<std::vector<int>> connected_components(int size, std::function<bool(int, int)> const &adj_test);
 
-template <typename Path1, typename Path2>
-bool is_intersecting(const Path1 &a, const Path2 &b);
+/**
+ * Split a collection of paths into connected components.
+ * Two paths are viewed as connected if they overlap.
+ */
+std::vector<Geom::PathVector> split_non_intersecting_paths(Geom::PathVector &&paths);
 
 } // namespace Inkscape
 

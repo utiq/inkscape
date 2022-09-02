@@ -431,7 +431,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
         if (legacy) {
             return nullptr;
         }
-        std::vector<SPItem*> const item_list = sp_item_group_item_list(group);
+        std::vector<SPItem*> const item_list = group->item_list();
         bool did = false;
         for (auto subitem : item_list) {
             if (item_to_paths(subitem, legacy)) {

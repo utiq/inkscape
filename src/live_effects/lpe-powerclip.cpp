@@ -63,7 +63,7 @@ Geom::PathVector sp_get_recursive_pathvector(SPLPEItem *item, Geom::PathVector r
 {
     SPGroup *group = dynamic_cast<SPGroup *>(item);
     if (group) {
-        std::vector<SPItem *> item_list = sp_item_group_item_list(group);
+        std::vector<SPItem *> item_list = group->item_list();
         for (auto child : item_list) {
             if (child) {
                 SPLPEItem *childitem = dynamic_cast<SPLPEItem *>(child);

@@ -102,7 +102,7 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
         case RUBBERBAND_MODE_RECT:
             if (_rect == nullptr) {
                 _rect = new Inkscape::CanvasItemRect(_desktop->getCanvasControls());
-                _rect->set_stroke(_color.has_value() ? *_color : 0x808080ff);
+                _rect->set_stroke(_color.value_or(0x808080ff));
                 _rect->set_shadow(0xffffffff, 0); // Not a shadow
                 _rect->set_dashed(false);
                 _rect->set_inverted(true);
@@ -113,7 +113,7 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
         case RUBBERBAND_MODE_TOUCHRECT:
             if (_rect == nullptr) {
                 _rect = new Inkscape::CanvasItemRect(_desktop->getCanvasControls());
-                _rect->set_stroke(_color.has_value() ? *_color : 0xff0000ff);
+                _rect->set_stroke(_color.value_or(0xff0000ff));
                 _rect->set_shadow(0xffffffff, 0); // Not a shadow
                 _rect->set_dashed(false);
                 _rect->set_inverted(false);
@@ -124,7 +124,7 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
         case RUBBERBAND_MODE_TOUCHPATH:
             if (_touchpath == nullptr) {
                 _touchpath = new Inkscape::CanvasItemBpath(_desktop->getCanvasControls()); // Should be sketch?
-                _touchpath->set_stroke(_color.has_value() ? *_color : 0xff0000ff);
+                _touchpath->set_stroke(_color.value_or(0xff0000ff));
                 _touchpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
             }
             _touchpath->set_bpath(_touchpath_curve);
@@ -135,7 +135,7 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
     }
 }
 
-void Inkscape::Rubberband::setColor(guint32 color)
+void Inkscape::Rubberband::setColor(uint32_t color)
 {
     _color = color;
 

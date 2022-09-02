@@ -609,7 +609,7 @@ Geom::PathVector LPEBool::get_union(SPObject *root, SPObject *object, bool _from
         }
     }
     if (auto group = dynamic_cast<SPGroup *>(object)) {
-        std::vector<SPItem *> item_list = sp_item_group_item_list(group);
+        std::vector<SPItem *> item_list = group->item_list();
         for (auto iter : item_list) {
             Geom::PathVector tmp = get_union(root, iter, _from_original_d);
             if (res.empty()) {

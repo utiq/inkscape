@@ -240,7 +240,7 @@ static std::vector<Geom::Point> approxItemWithPoints(SPItem const *item, const G
     if (auto group = dynamic_cast<SPGroup *>(item_mutable)) {
         std::vector<Geom::Point> poly_points;
         // consider all first-order children
-        std::vector<SPItem*> itemlist = sp_item_group_item_list(group);
+        std::vector<SPItem*> itemlist = group->item_list();
         for (auto child_item : itemlist) {
             std::vector<Geom::Point> child_points = approxItemWithPoints(child_item, item_transform * child_item->transform);
             poly_points.insert(poly_points.end(), child_points.begin(), child_points.end());

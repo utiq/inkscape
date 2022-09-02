@@ -671,7 +671,7 @@ Geom::Point KnotHolderEntityOffsetPoint::knot_get() const
         SPGroup *group = dynamic_cast<SPGroup *>(item);
         SPShape *shape = dynamic_cast<SPShape *>(item);
         if (group) {
-            std::vector<SPItem *> item_list = sp_item_group_item_list(group);
+            std::vector<SPItem *> item_list = group->item_list();
             for (auto child : item_list) {
                 SPShape *subchild = dynamic_cast<SPShape *>(child);
                 if (subchild) {

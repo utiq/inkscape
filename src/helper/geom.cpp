@@ -499,9 +499,18 @@ pathv_matrix_point_bbox_wind_distance (Geom::PathVector const & pathv, Geom::Aff
 //#################################################################################
 
 /**
- * Basic check on intersecting path vectors
+ * An exact check for whether the two pathvectors intersect or overlap, including the case of
+ * a line crossing through a solid shape.
  */
-bool is_intersecting(Geom::PathVector const&a, Geom::PathVector const&b) {
+bool pathvs_have_nonempty_overlap(Geom::PathVector const &a, Geom::PathVector const &b)
+{
+    // Fast negative check using bounds.
+    auto intersected_bounds = a.boundsFast() & b.boundsFast();
+    if (!intersected_bounds) {
+        return false;
+    }
+
+    // Slightly slower positive check using vertex containment.
     for (auto &node : b.nodes()) {
         if (a.winding(node)) {
             return true;
@@ -512,18 +521,7 @@ bool is_intersecting(Geom::PathVector const&a, Geom::PathVector const&b) {
             return true;
         }
     }
-    return false;
-}
 
-/**
- * An exact check for whether the two pathvectors intersect or overlap, including the case of
- * a line crossing through a solid shape.
- */
-bool pathvs_have_nonempty_overlap(Geom::PathVector const &a, Geom::PathVector const &b)
-{
-    if (is_intersecting(a, b)) {
-        return true;
-    }
     // The winding method may not detect nodeless Bézier arcs in one pathvector glancing
     // the edge of the other pathvector. We must deal with this possibility by also checking for
     // intersections of boundaries.

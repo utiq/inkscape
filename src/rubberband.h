@@ -11,6 +11,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <cstdint>
 #include <2geom/point.h>
 #include <2geom/rect.h>
 #include <optional>
@@ -21,14 +22,14 @@
 class SPCurve;
 class SPDesktop;
 
-enum {
+enum
+{
     RUBBERBAND_MODE_RECT,
     RUBBERBAND_MODE_TOUCHPATH,
     RUBBERBAND_MODE_TOUCHRECT
 };
 
-namespace Inkscape
-{
+namespace Inkscape {
 
 class CanvasItemBpath;
 class CanvasItemRect;
@@ -39,7 +40,6 @@ class CanvasItemRect;
 class Rubberband
 {
 public:
-
     void start(SPDesktop *desktop, Geom::Point const &p);
     void move(Geom::Point const &p);
     Geom::OptRect getRectangle() const;
@@ -52,13 +52,12 @@ public:
     void setMode(int mode);
     void defaultMode();
 
-    void setColor(guint32 color);
+    void setColor(uint32_t color);
     void resetColor() { _color.reset(); }
 
     static Rubberband* get(SPDesktop *desktop);
 
 private:
-
     Rubberband(SPDesktop *desktop);
     static Rubberband* _instance;
     
@@ -77,10 +76,10 @@ private:
     bool _started = false;
     int _mode = RUBBERBAND_MODE_RECT;
 
-    std::optional<guint32> _color;
+    std::optional<uint32_t> _color;
 };
 
-}
+} // namespace Inkscape
 
 #endif // SEEN_RUBBERBAND_H
 

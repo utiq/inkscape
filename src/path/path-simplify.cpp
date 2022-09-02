@@ -37,7 +37,7 @@ path_simplify(SPItem *item, float threshold, bool justCoalesce, double size)
     SPGroup* group = dynamic_cast<SPGroup *>(item);
     if (group) {
         int pathsSimplified = 0;
-        std::vector<SPItem*> items = sp_item_group_item_list(group);
+        std::vector<SPItem*> items = group->item_list();
         for (auto item : items) {
             pathsSimplified += path_simplify(item, threshold, justCoalesce, size);
         }

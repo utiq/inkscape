@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
  * Interactive Booleans Builder.
- *
- *
- *//*
+ */
+/*
  * Authors:
- * Osama Ahmad
+ *   Osama Ahmad
  *
- * Copyright (C) 2021 Authors
+ * Copyright (C) 2022 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#pragma once
+#ifndef INKSCAPE_UI_TOOLS_BOOLEANS_INTERACTIVE
+#define INKSCAPE_UI_TOOLS_BOOLEANS_INTERACTIVE
 
 #include <vector>
 #include <map>
+#include <set>
 #include <stack>
 
 #include "booleans-nonintersecting.h"
@@ -26,20 +27,29 @@ class SPItem;
 namespace Inkscape {
 
 class ObjectSet;
+namespace XML { class Node; }
 
-namespace XML {
-    class Node;
-}
-
+// FIXME: Find a way to keep references to items on the canvas. Right now
+// the program crashes if the items being used here are removed (or
+// replaced) by any other operation other than the ones this tool supports.
 class InteractiveBooleanBuilder
 {
+public:
+    bool is_started() const;
+    void start(ObjectSet *set);
+    void reset();
+    void discard();
+    void commit();
 
-    // FIXME find a way to keep references to items on the canvas. right now
-    //  the program crashes if the items being used here are removed (or
-    //  replaced) by any other operation other than the ones this tool supports.
+    void set_union(ObjectSet *set);
+    void set_delete(ObjectSet *set);
+
+    void undo();
+    void redo();
+
+    ~InteractiveBooleanBuilder() { commit(); }
 
 private:
-
     struct UnionCommand
     {
         int result;
@@ -98,22 +108,8 @@ private:
     void remove_items(const std::vector<SPItem*> &items);
 
     void push_undo_command(const UnionCommand& command);
-
-public:
-
-    bool is_started() const;
-    void start(ObjectSet *set);
-    void reset();
-    void discard();
-    void commit();
-
-    void set_union(ObjectSet *set);
-    void set_delete(ObjectSet *set);
-
-    void undo();
-    void redo();
-
-    ~InteractiveBooleanBuilder() { commit(); }
 };
 
-}
+} // namespace Inkscape
+
+#endif // INKSCAPE_UI_TOOLS_BOOLEANS_INTERACTIVE

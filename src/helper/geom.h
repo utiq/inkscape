@@ -28,7 +28,6 @@ void pathv_matrix_point_bbox_wind_distance ( Geom::PathVector const & pathv, Geo
                                              Geom::Rect *bbox, int *wind, Geom::Coord *dist,
                                              Geom::Coord tolerance, Geom::Rect const *viewbox);
 
-bool is_intersecting(Geom::PathVector const&a, Geom::PathVector const&b);
 bool pathvs_have_nonempty_overlap(Geom::PathVector const &a, Geom::PathVector const &b);
 
 size_t count_pathvector_nodes(Geom::PathVector const &pathv );

@@ -3,36 +3,37 @@
  * @file
  * A tool for building shapes.
  */
-/* Authors:
+/*
+ * Authors:
  *   Osama Ahmad
  *
- * Copyright (C) 2021 Authors
+ * Copyright (C) 2022 Authors
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#pragma once
+#ifndef INKSCAPE_UI_TOOLS_BOOLEANS_TOOL
+#define INKSCAPE_UI_TOOLS_BOOLEANS_TOOL
 
 #include "ui/tools/tool-base.h"
-
 #include "booleans-interactive.h"
 
 namespace Inkscape {
 class CanvasItem;
 class SelTrans;
 class SelectionDescriber;
-}
 
-namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-class InteractiveBooleansTool : public ToolBase {
+class InteractiveBooleansTool
+    : public ToolBase
+{
 public:
+    using EventHandler = bool (InteractiveBooleansTool::*)(GdkEvent*);
 
-    typedef bool (InteractiveBooleansTool::*EventHandler)(GdkEvent*);
-
-    enum Operation {
+    enum Operation
+    {
         SELECT_AND_UNION = 0,
         SELECT_AND_DELETE = 1,
         SELECT_AND_INTERSECT = 2,
@@ -51,8 +52,6 @@ public:
     Inkscape::SelTrans *_seltrans;
     Inkscape::SelectionDescriber *_describer;
     gchar *no_selection_msg = nullptr;
-
-    static const std::string prefsPath;
 
     void set(const Inkscape::Preferences::Entry& val) override;
     bool root_handler(GdkEvent* event) override;
@@ -74,11 +73,8 @@ public:
     void fracture(bool skip_undo = false);
     void flatten(bool skip_undo = false);
     void splitNonIntersecting(bool skip_undo = false);
-    std::vector<SubItem> split_non_intersecting_paths(std::vector<SubItem> &subitems);
-    std::vector<Geom::PathVector> split_non_intersecting_paths(const Geom::PathVector &paths);
 
 private:
-
     bool sp_select_context_abort();
 
     EventHandler get_event_handler(GdkEvent* event);
@@ -97,12 +93,6 @@ private:
     void set_cursor_operation();
     void set_rubberband_color();
 
-    // TODO you might pre-load the cursors and store them
-    //  in this vector instead of loading them each time.
-    static const std::vector<std::string> operation_cursor_filenames;
-    static const std::vector<guint32> operation_colors;
-    static const std::map<GdkEventType, EventHandler> handlers;
-
     InteractiveBooleanBuilder boolean_builder;
 
     int active_operation = JUST_SELECT; // default to the select operation since this is the default cursor.
@@ -111,6 +101,8 @@ private:
     bool shift_on = false;
 };
 
-}
-}
-}
+} // namespace Tools
+} // namespace UI
+} // namespace Inkscape
+
+#endif // INKSCAPE_UI_TOOLS_BOOLEANS_TOOL

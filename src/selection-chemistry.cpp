@@ -357,8 +357,9 @@ void ObjectSet::deleteItems(bool skip_undo)
     clear();
     sp_selection_delete_impl(selected);
 
-    if (skip_undo)
+    if (skip_undo) {
         return;
+    }
 
     if (SPDesktop *dt = desktop()) {
         dt->layerManager().currentLayer()->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
@@ -609,7 +610,7 @@ void sp_edit_clear_all(Inkscape::Selection *selection)
 
     SPGroup *group = dynamic_cast<SPGroup *>(desktop->layerManager().currentLayer());
     g_return_if_fail(group != nullptr);
-    std::vector<SPItem*> items = sp_item_group_item_list(group);
+    std::vector<SPItem*> items = group->item_list();
 
     for(auto & item : items){
         item->deleteObject();
@@ -680,7 +681,7 @@ static void sp_edit_select_all_full(SPDesktop *dt, bool force_all_layers, bool i
         if ((onlysensitive && layer->isLocked()) || (onlyvisible && dt->itemIsHidden(layer)))
         return;
 
-        std::vector<SPItem*> all_items = sp_item_group_item_list(layer);
+        std::vector<SPItem*> all_items = layer->item_list();
 
         for (std::vector<SPItem*>::const_reverse_iterator i=all_items.rbegin();i!=all_items.rend();++i) {
             SPItem *item = *i;
@@ -939,13 +940,13 @@ void ObjectSet::ungroup(bool skip_undo)
 /**
  * Keep ungrouping until there are no more groups.
  */
-void ObjectSet::ungroup_all()
+void ObjectSet::ungroup_all(bool skip_undo)
 {
-  int last = 0;
-  while (size() != last) {
-      last = size();
-      ungroup(true);
-  }
+    std::size_t last = 0;
+    while (size() != last) {
+        last = size();
+        ungroup(skip_undo);
+    }
 }
 
 // TODO replace it with ObjectSet::degroup_list
@@ -962,7 +963,7 @@ sp_degroup_list(std::vector<SPItem*> &items)
             out.push_back(item);
         } else {
             has_groups = true;
-            std::vector<SPItem*> members = sp_item_group_item_list(group);
+            std::vector<SPItem*> members = group->item_list();
             for (auto member : members) {
                 out.push_back(member);
             }
@@ -3193,7 +3194,7 @@ void ObjectSet::toMarker(bool apply)
 static void sp_selection_to_guides_recursive(SPItem *item, bool wholegroups) {
     SPGroup *group = dynamic_cast<SPGroup *>(item);
     if (group && !dynamic_cast<SPBox3D *>(item) && !wholegroups) {
-        std::vector<SPItem*> items=sp_item_group_item_list(group);
+        std::vector<SPItem*> items=group->item_list();
         for (auto item : items){
             sp_selection_to_guides_recursive(item, wholegroups);
         }

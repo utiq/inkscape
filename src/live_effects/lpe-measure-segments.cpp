@@ -761,7 +761,7 @@ getNodes(SPItem * item, Geom::Affine transform, bool onbbox, bool centers, bool 
     //TODO handle clones/use
 
     if (group) {
-        std::vector<SPItem*> const item_list = sp_item_group_item_list(group);
+        std::vector<SPItem*> const item_list = group->item_list();
         for (auto sub_item : item_list) {
             std::vector< Point > nodes = transformNodes(getNodes(sub_item, sub_item->transform, onbbox, centers, bboxonly, angle_projection), transform);
             current_nodes.insert(current_nodes.end(), nodes.begin(), nodes.end());

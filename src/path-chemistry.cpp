@@ -415,7 +415,7 @@ sp_item_list_to_curves(const std::vector<SPItem*> &items, std::vector<SPItem*>& 
         }
 
         if (group) {
-            std::vector<SPItem*> item_list = sp_item_group_item_list(group);
+            std::vector<SPItem*> item_list = group->item_list();
             
             std::vector<Inkscape::XML::Node*> item_to_select;
             std::vector<SPItem*> item_selected;

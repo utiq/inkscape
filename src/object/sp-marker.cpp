@@ -631,7 +631,7 @@ void sp_marker_flip_horizontally(SPMarker* marker) {
     if (!marker) return;
 
     ObjectSet set(marker->document);
-    set.addList(sp_item_group_item_list(marker));
+    set.addList(marker->item_list());
     Geom::OptRect bbox = set.visualBounds();
     if (bbox) {
         set.setScaleRelative(bbox->midpoint(), Geom::Scale(-1.0, 1.0));

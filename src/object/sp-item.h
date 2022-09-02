@@ -387,10 +387,12 @@ public:
     bool collidesWith(SPItem const &other) const;
 
     /**
-     * Combine all shapes into a single path vector.
+     * Combine all the pathvectors for this SPShape and SPGroup children
+     * into a single pathvector with multiple curves.
      *
      * @param depth - Number of group depths to recurse for shapes.
      */
+
     Geom::PathVector combined_pathvector(int depth = -1) const;
 
     /**

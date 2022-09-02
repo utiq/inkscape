@@ -469,7 +469,7 @@ sp_lpe_item_create_original_path_recursive(SPLPEItem *lpeitem)
         }
     }
     if (SP_IS_GROUP(lpeitem)) {
-        std::vector<SPItem*> item_list = sp_item_group_item_list(SP_GROUP(lpeitem));
+        std::vector<SPItem*> item_list = SP_GROUP(lpeitem)->item_list();
         for (auto subitem : item_list) {
             if (SP_IS_LPE_ITEM(subitem)) {
                 sp_lpe_item_create_original_path_recursive(SP_LPE_ITEM(subitem));
@@ -525,7 +525,7 @@ sp_lpe_item_cleanup_original_path_recursive(SPLPEItem *lpeitem, bool keep_paths,
     }
 
     if (group) {
-        std::vector<SPItem*> item_list = sp_item_group_item_list(SP_GROUP(lpeitem));
+        std::vector<SPItem*> item_list = SP_GROUP(lpeitem)->item_list();
         for (auto iter : item_list) {
             SPLPEItem* subitem = dynamic_cast<SPLPEItem*>(iter);
             if (subitem) {
@@ -735,7 +735,7 @@ void SPLPEItem::removeAllPathEffects(bool keep_paths, bool recursive)
     if (recursive) {
         SPGroup *grp = dynamic_cast<SPGroup *>(this);
         if (grp) {
-            std::vector<SPItem *> item_list = sp_item_group_item_list(grp);
+            std::vector<SPItem *> item_list = grp->item_list();
             for (auto iter : item_list) {
                 SPLPEItem *subitem = dynamic_cast<SPLPEItem *>(iter);
                 if (subitem) {
@@ -963,7 +963,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
         SPGroup*   group = dynamic_cast<SPGroup  *>(this);
         SPShape*   shape = dynamic_cast<SPShape  *>(this);
         if (group) {
-            std::vector<SPItem*> item_list = sp_item_group_item_list(group);
+            std::vector<SPItem*> item_list = group->item_list();
             for (auto iter2 : item_list) {
                 SPLPEItem * subitem = dynamic_cast<SPLPEItem *>(iter2);
                 if (subitem) {
@@ -989,7 +989,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
             SPGroup*   group = dynamic_cast<SPGroup  *>(iter);
             SPShape*   shape = dynamic_cast<SPShape  *>(iter);
             if (group) {
-                std::vector<SPItem*> item_list = sp_item_group_item_list(group);
+                std::vector<SPItem*> item_list = group->item_list();
                 for (auto iter2 : item_list) {
                     SPLPEItem * subitem = dynamic_cast<SPLPEItem *>(iter2);
                     if (subitem) {
@@ -1015,7 +1015,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
             SPGroup*   group = dynamic_cast<SPGroup  *>(iter);
             SPShape*   shape = dynamic_cast<SPShape  *>(iter);
             if (group) {
-                std::vector<SPItem*> item_list = sp_item_group_item_list(group);
+                std::vector<SPItem*> item_list = group->item_list();
                 for (auto iter2 : item_list) {
                     SPLPEItem * subitem = dynamic_cast<SPLPEItem *>(iter2);
                     if (subitem) {
@@ -1073,7 +1073,7 @@ SPLPEItem::applyToClipPathOrMask(SPItem *clip_mask, SPItem* to, Inkscape::LivePa
     SPShape*   shape = dynamic_cast<SPShape  *>(clip_mask);
     SPRoot *root = this->document->getRoot();
     if (group) {
-        std::vector<SPItem*> item_list = sp_item_group_item_list(group);
+        std::vector<SPItem*> item_list = group->item_list();
         for (auto subitem : item_list) {
             applyToClipPathOrMask(subitem, to, lpe);
         }
@@ -1485,7 +1485,7 @@ bool SPLPEItem::forkPathEffectsIfNecessary(unsigned int nr_of_allowed_users, boo
     bool forked = false;
     SPGroup * group = dynamic_cast<SPGroup *>(this);
     if (group && recursive) {
-        std::vector<SPItem*> item_list = sp_item_group_item_list(group);
+        std::vector<SPItem*> item_list = group->item_list();
         for (auto child:item_list) {
             SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(child);
             if (lpeitem && lpeitem->forkPathEffectsIfNecessary(nr_of_allowed_users, recursive)) {

@@ -1,118 +1,102 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * Builder class that construct non-overlapping paths given an ObjectSet.
- *
- *
- *//*
+ * Builder class that constructs non-overlapping paths given an ObjectSet.
+ */
+/*
  * Authors:
- * Osama Ahmad
+ *   Osama Ahmad
  *
- * Copyright (C) 2021 Authors
+ * Copyright (C) 2022 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#pragma once
+#ifndef INKSCAPE_UI_TOOLS_BOOLEANS_NONINTERSECTING
+#define INKSCAPE_UI_TOOLS_BOOLEANS_NONINTERSECTING
 
 #include <vector>
-#include <functional>
-#include <set>
 #include <2geom/pathvector.h>
 
 class SPItem;
+class SPObject;
 class SPDesktop;
 class SPDocument;
 
 namespace Inkscape {
 
-class SubItem;
 class ObjectSet;
 
-namespace XML {
-class Node;
-}
-
-XML::Node *write_path_xml(const Geom::PathVector &path, const SPItem *to_copy_from, XML::Node *parent, XML::Node *after = nullptr);
-XML::Node *write_path_xml(const Geom::PathVector &path, SPItem *to_copy_from);
-
-class SubItem;
-
-class NonIntersectingPathsBuilder
-{
-    // TODO you might simplify this class so that it only constructs
-    //  paths, and move the rest of the logic somewhere else.
-
-private:
-
-    XML::Node *parent;
-    XML::Node *after;
-
-    ObjectSet *set;
-    std::vector<SPItem*> items;
-    std::vector<SubItem> result_subitems;
-    std::vector<XML::Node *> result_nodes;
-
-    bool items_intersect = false;
-
-public:
-
-    NonIntersectingPathsBuilder(ObjectSet *set) : set(set) {}
-    void fracture(bool skip_undo = false);
-    void perform_fracture();
-    void show_output(bool delete_original = true);
-    void add_result_to_set();
-    const std::vector<SubItem>& get_result_subitems() const;
-    const std::vector<XML::Node*>& get_result_nodes() const;
-    bool items_intersected() const { return items_intersect; };
-
-private:
-
-    using SubItemOperation = std::function<std::vector<SubItem>(SubItem &, SubItem &)>;
-
-    void prepare_input();
-    void perform_operation(SubItemOperation operation);
-    std::vector<SubItem> get_operation_result(SubItemOperation operation);
-    void draw_subitems(const std::vector<SubItem> &subitems);
-    SPDesktop *desktop();
-    void set_parameters();
-    void remove_empty_subitems(std::vector<SubItem> &subitems);
-};
+/**
+ * Add a path to a document as a child of \a parent.
+ * \param style_from The object whose style to copy. (If null, no style is set.)
+ * \tparam T The type of path, either Geom::Path or Geom::PathVector.
+ * \return The newly-created item.
+ */
+template <typename T>
+SPObject *write_path_xml(T const &path, SPObject const *style_from, SPObject *parent, SPObject *after = nullptr);
 
 /**
-* When an item from the original ObjectSet is broken, each
-* broken part is represented by the SubItem class. This
-* class hold information such as the original items it originated
-* from and the paths that the SubItem consists of.
-**/
+ * Add a path to a document as the next sibling of \a after, also copying its style.
+ * \tparam T The type of path, either Geom::Path or Geom::PathVector.
+ * \return The newly-created item.
+ */
+template <typename T>
+SPObject *write_path_xml(T const &path, SPObject *after);
+
+/**
+ * When a collection of items is fractured, each broken piece is represented by a SubItem.
+ * This class holds information such as the path and the list of contributing items.
+ */
 class SubItem
 {
 public:
-
     Geom::PathVector paths;
-    std::set<SPItem*> items;
-    SPItem *top_item;
+    std::vector<SPItem*> items; // guaranteed non-empty and sorted top-to-bottom
 
-    SubItem() {}
+    SPItem *top_item() const { return items.front(); }
 
-    SubItem(Geom::PathVector paths, std::set<SPItem*> items, SPItem *top_item)
-        : paths(std::move(paths))
-        , items(std::move(items))
-        , top_item(top_item)
-    {}
+    SubItem() = default;
 
-    SubItem(Geom::PathVector paths, const std::set<SPItem*> &items1, const std::set<SPItem*> &items2, SPItem *top_item)
-        : SubItem(paths, items1, top_item)
-    {
-        items.insert(items2.begin(), items2.end());
-    }
-
-    bool is_subitem_of(SPItem* item) const { return items.find(item) != items.end(); }
-
-    SPItem* get_common_item(const SubItem &other_subitem) const;
-    SPItem* get_top_item() const;
-    bool is_virgin() const;
-    std::vector<SubItem> fracture(const SubItem &other_subitem);
-
-    bool operator<(const SubItem &other) const;
+    SubItem(Geom::PathVector &&pathvec, std::vector<SPItem*> &&items)
+        : paths(std::move(pathvec))
+        , items(std::move(items)) {}
 };
 
-}
+/**
+ * Split a collection of SPItems into non-overlapping disconnected pieces.
+ *
+ * The result is returned as a collection of SubItems, encoding the shape of the piece
+ * together with the list of contributing items, in order.
+ */
+std::vector<SubItem> fracture(std::vector<SPItem*> items);
+
+/**
+ * A helper class for fracturing an ObjectSet and constructing the associated paths.
+ */
+class NonIntersectingPathsBuilder
+{
+public:
+    NonIntersectingPathsBuilder(ObjectSet *set)
+        : set(set) {}
+
+    void fracture(bool skip_undo = false);
+    void perform_fracture();
+    void show_output(bool delete_original = true);
+
+    std::vector<SubItem> const &get_result_subitems() const { return result_subitems; }
+    std::vector<SPObject*> const &get_result_nodes() const { return result_nodes; }
+    bool modified() const { return result_subitems.size() > items.size(); }
+
+private:
+    ObjectSet *set;
+    std::vector<SPItem*> items;
+    std::vector<SubItem> result_subitems;
+    std::vector<SPObject*> result_nodes;
+
+    void prepare_input();
+    void draw_subitems(std::vector<SubItem> const &subitems);
+    void add_result_to_set();
+};
+
+} // namespace Inkscape
+
+#endif // INKSCAPE_UI_TOOLS_BOOLEANS_NONINTERSECTING

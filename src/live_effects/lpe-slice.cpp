@@ -518,7 +518,7 @@ LPESlice::createPathBase(SPObject *elemref) {
         container->setAttribute("transform", prev->attribute("transform"));
         container->setAttribute("mask", prev->attribute("mask"));
         container->setAttribute("clip-path", prev->attribute("clip-path"));
-        std::vector<SPItem*> const item_list = sp_item_group_item_list(group);
+        std::vector<SPItem*> const item_list = group->item_list();
         Inkscape::XML::Node *previous = nullptr;
         for (auto sub_item : item_list) {
             Inkscape::XML::Node *resultnode = createPathBase(sub_item);
