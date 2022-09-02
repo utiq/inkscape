@@ -2616,7 +2616,7 @@ void InkscapePreferences::initPageBehavior()
 
     this->AddPage(_page_mask, _("Clippaths and masks"), iter_behavior, PREFS_PAGE_BEHAVIOR_MASKS);
 
-
+    // Markers options
     _page_markers.add_group_header( _("Stroke Style Markers"));
     _page_markers.add_line( true, "", _markers_color_stock, "",
                            _("Stroke color same as object, fill color either object fill color or marker fill color"));
@@ -2627,7 +2627,22 @@ void InkscapePreferences::initPageBehavior()
 
     this->AddPage(_page_markers, _("Markers"), iter_behavior, PREFS_PAGE_BEHAVIOR_MARKERS);
 
+    // Clipboard options
+    _clipboard_style_computed.init(_("Copy computed style"), "/options/copycomputedstyle/value", 1, true, nullptr);
+    _clipboard_style_verbatim.init(_("Copy class and style attributes verbatim"), "/options/copycomputedstyle/value", 0,
+                                   false, &_clipboard_style_computed);
 
+    _page_clipboard.add_group_header(_("Copying objects to the clipboard"));
+    _page_clipboard.add_line(true, "", _clipboard_style_computed, "",
+                             _("Object style= attribute will be set to the computed style, "
+                               "preserving the object's appearance as in previous Inkscape versions"));
+    _page_clipboard.add_line(
+        true, "", _clipboard_style_verbatim, "",
+        _("Object style= and class= values will be copied verbatim and may be removed by 'paste style'"));
+
+    this->AddPage(_page_clipboard, _("Clipboard"), iter_behavior, PREFS_PAGE_BEHAVIOR_CLIPBOARD);
+
+    // Document cleanup options
     _page_cleanup.add_group_header( _("Document cleanup"));
     _cleanup_swatches.init ( _("Remove unused swatches when doing a document cleanup"), "/options/cleanupswatches/value", false); // text label
     _page_cleanup.add_line( true, "", _cleanup_swatches, "",

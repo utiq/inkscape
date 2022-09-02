@@ -52,7 +52,8 @@
 // UPDATE THIS IF YOU'RE ADDING PREFS PAGES.
 // Otherwise the commands that open the dialog with the new page will fail.
 
-enum {
+enum
+{
     PREFS_PAGE_TOOLS,
     PREFS_PAGE_TOOLS_SELECTOR,
     PREFS_PAGE_TOOLS_NODE,
@@ -92,6 +93,7 @@ enum {
     PREFS_PAGE_BEHAVIOR_CLONES,
     PREFS_PAGE_BEHAVIOR_MASKS,
     PREFS_PAGE_BEHAVIOR_MARKERS,
+    PREFS_PAGE_BEHAVIOR_CLIPBOARD,
     PREFS_PAGE_BEHAVIOR_CLEANUP,
     PREFS_PAGE_BEHAVIOR_LPE,
     PREFS_PAGE_IO,
@@ -192,6 +194,7 @@ protected:
     UI::Widget::DialogPage _page_clones;
     UI::Widget::DialogPage _page_mask;
     UI::Widget::DialogPage _page_markers;
+    UI::Widget::DialogPage _page_clipboard;
     UI::Widget::DialogPage _page_cleanup;
     UI::Widget::DialogPage _page_lpe;
 
@@ -397,6 +400,9 @@ protected:
     UI::Widget::PrefCheckButton _markers_color_stock;
     UI::Widget::PrefCheckButton _markers_color_custom;
     UI::Widget::PrefCheckButton _markers_color_update;
+
+    UI::Widget::PrefRadioButton _clipboard_style_computed;
+    UI::Widget::PrefRadioButton _clipboard_style_verbatim;
 
     UI::Widget::PrefCheckButton _cleanup_swatches;
 

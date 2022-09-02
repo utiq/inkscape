@@ -440,7 +440,7 @@ bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place, bool on_page
     if ( Inkscape::have_viable_layer(desktop, desktop->getMessageStack()) == false ) {
         return false;
     }
-    
+
     Glib::ustring target = _getBestTarget();
 
     // Special cases of clipboard content handling go here
@@ -727,16 +727,28 @@ bool ClipboardManagerImpl::pasteStyle(ObjectSet *set)
         }
     }
 
+    static auto *const prefs = Inkscape::Preferences::get();
+    auto const copy_computed = prefs->getBool("/options/copycomputedstyle/value", true);
+
     Inkscape::XML::Node *root = tempdoc->getReprRoot();
     Inkscape::XML::Node *clipnode = sp_repr_lookup_name(root, "inkscape:clipboard", 1);
 
     bool pasted = false;
 
     if (clipnode) {
-        set->document()->importDefs(tempdoc.get());
-        SPCSSAttr *style = sp_repr_css_attr(clipnode, "style");
-        sp_desktop_set_style(set, set->desktop(), style);
-        pasted = true;
+        if (copy_computed) {
+            SPCSSAttr *style = sp_repr_css_attr(clipnode, "style");
+            sp_desktop_set_style(set, set->desktop(), style);
+        } else {
+            for (auto node : set->xmlNodes()) {
+                pasted = node->copyAttribute("class", clipnode, true) || pasted;
+                pasted = node->copyAttribute("style", clipnode, true) || pasted;
+            }
+        }
+        if (pasted) {
+            // pasted style might depend on defs from the source
+            set->document()->importDefs(tempdoc.get());
+        }
     }
     else {
         _userWarn(set->desktop(), _("No style on the clipboard."));
@@ -986,6 +998,8 @@ std::vector<Glib::ustring> ClipboardManagerImpl::getElementsOfType(SPDesktop *de
  */
 void ClipboardManagerImpl::_copySelection(ObjectSet *selection)
 {
+    static auto *const prefs = Inkscape::Preferences::get();
+    auto const copy_computed = prefs->getBool("/options/copycomputedstyle/value", true);
     SPPage *page = nullptr;
 
     // copy the defs used by all items
@@ -1068,16 +1082,23 @@ void ClipboardManagerImpl::_copySelection(ObjectSet *selection)
             else
                 obj_copy = _copyNode(obj, _doc, _clipnode);
 
-            // copy complete inherited style
-            _copyCompleteStyle(item, obj_copy);
+            if (copy_computed) {
+                // copy complete inherited style
+                _copyCompleteStyle(item, obj_copy);
+            }
         }
     }
     // copy style for Paste Style action
     if (auto item = selection->singleItem()) {
-        SPCSSAttr *style = take_style_from_item(item);
-        _cleanStyle(style);
-        sp_repr_css_set(_clipnode, style, "style");
-        sp_repr_css_attr_unref(style);
+        if (copy_computed) {
+            SPCSSAttr *style = take_style_from_item(item);
+            _cleanStyle(style);
+            sp_repr_css_set(_clipnode, style, "style");
+            sp_repr_css_attr_unref(style);
+        } else {
+            _clipnode->copyAttribute("class", item->getRepr(), true);
+            _clipnode->copyAttribute("style", item->getRepr(), true);
+        }
 
         // copy path effect from the first path
         if (gchar const *effect = item->getRepr()->attribute("inkscape:path-effect")) {

@@ -206,10 +206,24 @@ public:
      *
      * @param key Name of the attribute to change
      * @param value The new value of the attribute
-     * @param is_interactive Ignored
      */
 
     void setAttribute(Util::const_char_ptr key, Util::const_char_ptr value);
+
+    /**
+     * @brief Copy attribute value from another node to this node
+     *
+     * @param key Name of the attribute to change
+     * @param source_node Node from which to take the attribute value
+     * @param remove_if_empty
+     *   If true, and the source node has no such attribute, or the source
+     *   node's value for the attribute is an empty string, the attribute
+     *   will be removed (if present) from this node.
+     *
+     * @return true if the attribute was set, false otherwise.
+     */
+
+    bool copyAttribute(Util::const_char_ptr key, Node const *source_node, bool remove_if_empty = false);
 
     /**
      * Parses the boolean value of an attribute "key" in repr and sets val accordingly, or to false if
