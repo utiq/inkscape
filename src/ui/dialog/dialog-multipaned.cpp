@@ -662,6 +662,10 @@ void DialogMultipaned::get_preferred_width_vfunc(int &minimum_width, int &natura
             }
         }
     }
+
+    if (_natural_width > natural_width) {
+        natural_width = _natural_width;
+    }
 }
 
 void DialogMultipaned::get_preferred_height_vfunc(int &minimum_height, int &natural_height) const
@@ -701,6 +705,10 @@ void DialogMultipaned::get_preferred_width_for_height_vfunc(int height, int &min
                 natural_width += child_natural_width;
             }
         }
+    }
+
+    if (_natural_width > natural_width) {
+        natural_width = _natural_width;
     }
 }
 
@@ -750,6 +758,10 @@ void DialogMultipaned::on_size_allocate(Gtk::Allocation &allocation)
         children[_drag_handle]->size_allocate(allocationh);
         children[_drag_handle + 1]->size_allocate(allocation2);
         _drag_handle = -1;
+    }
+    // initially widgets get created with a 1x1 size; ignore it and wait for the final resize
+    else if (allocation.get_width() > 1 && allocation.get_height() > 1) {
+        _natural_width = allocation.get_width();
     }
 
     {
@@ -1262,6 +1274,10 @@ sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> DialogMultipaned::sign
 sigc::signal<void ()> DialogMultipaned::signal_now_empty()
 {
     return _signal_now_empty;
+}
+
+void DialogMultipaned::set_restored_width(int width) {
+    _natural_width = width;
 }
 
 } // namespace Dialog

@@ -125,6 +125,7 @@ public:
     void toggle_multipaned_children(bool show);
     void children_toggled();
     void ensure_multipaned_children();
+    void set_restored_width(int width);
 
 protected:
     // Overrides
@@ -181,6 +182,7 @@ private:
     void add_empty_widget();
     void remove_empty_widget();
     std::vector<sigc::connection> _connections;
+    int _natural_width = 0;
 };
 
 } // namespace Dialog

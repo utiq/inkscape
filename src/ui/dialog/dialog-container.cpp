@@ -732,6 +732,9 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                     continue;
                 }
 
+                auto width = keyfile->get_integer(column_group_name, "ColumnWidth");
+                column->set_restored_width(width);
+
                 before_canvas ? active_columns->prepend(column) : active_columns->append(column);
             }
 
@@ -940,6 +943,7 @@ std::unique_ptr<Glib::KeyFile> DialogContainer::save_container_state()
         for (int column_idx = 0; column_idx < (int)multipanes.size(); ++column_idx) {
             Glib::ustring group_name = "Window" + std::to_string(window_idx) + "Column" + std::to_string(column_idx);
             int notebook_count = 0; // non-empty notebooks count
+            int width = multipanes[column_idx]->get_allocated_width();
 
             // Step 3.1.0: for each notebook, get its dialogs' types
             for (auto const &columns_widget : multipanes[column_idx]->get_children()) {
@@ -968,6 +972,8 @@ std::unique_ptr<Glib::KeyFile> DialogContainer::save_container_state()
             if (notebook_count != 0) {
                 column_count++;
             }
+
+            keyfile->set_integer(group_name, "ColumnWidth", width);
 
             // Step 3.1.2: Save the column's data
             keyfile->set_integer(group_name, "NotebookCount", notebook_count);
