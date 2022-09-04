@@ -45,7 +45,13 @@ void ActionAccel::_onShortcutsModified()
 
 bool ActionAccel::_query()
 {
-    auto *gtk_app = InkscapeApplication::singleton().gtk_app();
+    auto *app = InkscapeApplication::instance();
+    if (!app) {
+        g_warn_message("Inkscape", __FILE__, __LINE__, __func__,
+                       "Attempt to read keyboard shortcuts while running without an InkscapeApplication!");
+        return false;
+    }
+    auto *gtk_app = app->gtk_app();
     if (!gtk_app) {
         g_warn_message("Inkscape", __FILE__, __LINE__, __func__,
                        "Attempt to read keyboard shortcuts while running without a GUI!");

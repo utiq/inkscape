@@ -41,10 +41,12 @@ class InkscapeApplication
     Glib::RefPtr<Gio::Application> _gio_application;
 
 public:
-    /// Singleton instance
-    static InkscapeApplication &singleton();
     /// Singleton instance, if it exists (will not create it)
     static InkscapeApplication *instance();
+
+    /// Exclusively for the creation of the singleton instance inside main().
+    InkscapeApplication();
+    ~InkscapeApplication();
 
     /// The Gtk application instance, or NULL if running headless without display
     Gtk::Application *gtk_app() { return dynamic_cast<Gtk::Application *>(_gio_application.get()); }
@@ -139,7 +141,6 @@ protected:
     int _pdf_poppler  = false;
     bool _use_command_line_argument = false;
     Glib::ustring _pages;
-    InkscapeApplication();
 
     // Documents are owned by the application which is responsible for opening/saving/exporting. WIP
     // std::vector<SPDocument*> _documents;   For a true headless version

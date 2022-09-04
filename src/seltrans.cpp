@@ -1311,7 +1311,7 @@ gboolean Inkscape::SelTrans::skewRequest(SPSelTransHandle const &handle, Geom::P
             break;
         default:
             g_assert_not_reached();
-            abort();
+            std::terminate();
             break;
     }
 

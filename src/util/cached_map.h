@@ -48,6 +48,48 @@ namespace Util {
 template <typename Tk, typename Tv, typename Hash = std::hash<Tk>, typename Compare = std::equal_to<Tk>>
 class cached_map
 {
+public:
+    /**
+     * Construct an empty cached_map.
+     *
+     * The optional max_cache_size argument specifies the maximum number of unused elements which
+     * will be kept in memory.
+     */
+    cached_map(std::size_t max_cache_size = 32) : max_cache_size(max_cache_size) {}
+
+    /**
+     * Given a key and a unique_ptr to a value, inserts them into the map, or discards them if the
+     * key is already present.
+     *
+     * Returns a non-null shared_ptr to the new value in the map corresponding to key.
+     */
+    auto add(Tk key, std::unique_ptr<Tv> value)
+    {
+        auto ret = map.emplace(std::move(key), std::move(value));
+        return get_view(ret.first->second);
+    }
+
+    /**
+     * Look up a key in the map.
+     *
+     * Returns a shared pointer to the corresponding value, or null if the key is not present.
+     */
+    auto lookup(Tk const &key) -> std::shared_ptr<Tv>
+    {
+        if (auto it = map.find(key); it != map.end()) {
+            return get_view(it->second);
+        } else {
+            return {};
+        }
+    }
+
+    void clear()
+    {
+        unused.clear();
+        map.clear();
+    }
+
+private:
     struct Item
     {
         std::unique_ptr<Tv> value; // The unique_ptr owning the actual value.
@@ -96,41 +138,6 @@ class cached_map
             return it.second.value.get() == value;
         }));
         unused.pop_front();
-    }
-
-public:
-    /**
-     * Construct an empty cached_map.
-     *
-     * The optional max_cache_size argument specifies the maximum number of unused elements which
-     * will be kept in memory.
-     */
-    cached_map(std::size_t max_cache_size = 32) : max_cache_size(max_cache_size) {}
-
-    /**
-     * Given a key and a unique_ptr to a value, inserts them into the map, or discards them if the
-     * key is already present.
-     *
-     * Returns a non-null shared_ptr to the new value in the map corresponding to key.
-     */
-    auto add(Tk key, std::unique_ptr<Tv> value)
-    {
-        auto ret = map.emplace(std::move(key), std::move(value));
-        return get_view(ret.first->second);
-    }
-
-    /**
-     * Look up a key in the map.
-     *
-     * Returns a shared pointer to the corresponding value, or null if the key is not present.
-     */
-    auto lookup(Tk const &key) -> std::shared_ptr<Tv>
-    {
-        if (auto it = map.find(key); it != map.end()) {
-            return get_view(it->second);
-        } else {
-            return {};
-        }
     }
 };
 

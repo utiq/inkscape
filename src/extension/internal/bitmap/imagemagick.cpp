@@ -163,7 +163,7 @@ ImageMagick::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::Vi
     ImageMagickDocCache * dc = dynamic_cast<ImageMagickDocCache *>(docCache);
     if (dc == NULL) { // should really never happen
         printf("AHHHHHHHHH!!!!!");
-        exit(1);
+        std::terminate();
     }
 
     for (int i = 0; i < dc->_imageCount; i++)

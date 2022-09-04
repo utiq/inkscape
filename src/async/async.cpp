@@ -4,6 +4,7 @@
 #include <mutex>
 #include <chrono>
 #include "async.h"
+#include "util/statics.h"
 
 namespace {
 
@@ -19,8 +20,12 @@ class AsyncBin
 public:
     static auto const &get()
     {
-        static AsyncBin const instance;
-        return instance;
+        /*
+         * Using Static<AsyncBin> to ensure destruction before main() exits, so that lifetimes
+         * of background threads are synchronized with the destruction of statics.
+         */
+        static Inkscape::Util::Static<AsyncBin const> instance;
+        return instance.get();
     }
 
     void add(std::future<void> &&future) const
@@ -34,11 +39,11 @@ public:
         futures.emplace_back(std::move(future));
     }
 
+    ~AsyncBin() { drain(); }
+
 private:
     mutable std::mutex mutables;
     mutable std::vector<std::future<void>> futures;
-
-    ~AsyncBin() { drain(); }
 
     auto grab() const
     {

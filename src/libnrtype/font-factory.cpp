@@ -35,6 +35,8 @@
 #include "libnrtype/font-instance.h"
 #include "libnrtype/OpenTypeUtil.h"
 
+#include "util/statics.h"
+
 #ifdef _WIN32
 #include <glibmm.h>
 #include <windows.h>
@@ -192,10 +194,14 @@ static void FactorySubstituteFunc(FcPattern *pattern, gpointer /*data*/)
 
 FontFactory &FontFactory::get()
 {
-    // FIXME: This intentionally leaks at program exit. It is a workaround for the fact the
-    // destructor crashes at program exit due to Pango being unloaded first.
-    static auto factory = new FontFactory();
-    return *factory;
+    /*
+     * Using Static<FontFactory> to ensure destruction before main() exits, otherwise Harfbuzz's internal
+     * FreeType instance will come before us in the static destruction order and our destructor will crash.
+     * Related - https://gitlab.com/inkscape/inkscape/-/issues/3765.
+     */
+    struct ConstructibleFontFactory : FontFactory {};
+    static auto factory = Inkscape::Util::Static<ConstructibleFontFactory>();
+    return factory.get();
 }
 
 FontFactory::FontFactory()
@@ -212,6 +218,8 @@ FontFactory::FontFactory()
 
 FontFactory::~FontFactory()
 {
+    loaded.clear();
+    g_object_unref(fontContext);
     g_object_unref(fontServer);
 }
 

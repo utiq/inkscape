@@ -198,11 +198,11 @@ KnotHolder::knot_clicked_handler(SPKnot *knot, guint state)
 
     // for drag, this is done by ungrabbed_handler, but for click we must do it here
 
-    if (saved_item) { //increasingly aggressive sanity checks
-       if (saved_item->document) {
-           DocumentUndo::done(saved_item->document, _("Change handle"), icon_name);
-       }
-    } // else { abort(); }
+    if (saved_item && saved_item->document) { // increasingly aggressive sanity checks
+       DocumentUndo::done(saved_item->document, _("Change handle"), icon_name);
+    } else {
+        std::terminate();
+    }
 }
 
 void

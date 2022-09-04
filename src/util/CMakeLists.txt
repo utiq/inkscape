@@ -8,6 +8,7 @@ set(util_SRC
 	share.cpp
 	paper.cpp
 	preview.cpp
+	statics.cpp
 	units.cpp
 	ziptool.cpp
 
@@ -34,6 +35,7 @@ set(util_SRC
 	reference.h
 	share.h
 	signal-blocker.h
+	statics.h
 	trim.h
 	units.h
 	ziptool.h

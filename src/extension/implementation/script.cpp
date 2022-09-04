@@ -559,7 +559,7 @@ void Script::effect(Inkscape::Extension::Effect *module,
     ScriptDocCache * dc = dynamic_cast<ScriptDocCache *>(docCache);
     if (dc == nullptr) {
         printf("TOO BAD TO LIVE!!!");
-        exit(1);
+        std::terminate();
     }
     if (doc == nullptr)
     {

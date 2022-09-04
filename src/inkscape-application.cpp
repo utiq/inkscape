@@ -5,7 +5,6 @@
  * Copyright (C) 2018 Tavmjong Bah
  *
  * The contents of this file may be used under the GNU General Public License Version 2 or later.
- *
  */
 
 /* Application flow:
@@ -87,6 +86,7 @@
 #include "ui/shortcuts.h"           // Shortcuts... init
 
 #include "util/units.h"           // Redimension window
+#include "util/statics.h"
 
 #include "actions/actions-base.h"                   // Actions
 #include "actions/actions-file.h"                   // Actions
@@ -551,14 +551,6 @@ InkscapeApplication::dump()
 
 static InkscapeApplication *_instance = nullptr;
 
-InkscapeApplication &InkscapeApplication::singleton()
-{
-    if (!_instance) {
-        _instance = new InkscapeApplication();
-    }
-    return *_instance;
-}
-
 InkscapeApplication *InkscapeApplication::instance()
 {
     return _instance;
@@ -589,6 +581,12 @@ InkscapeApplication::_start_main_option_section(const Glib::ustring& section_nam
 
 InkscapeApplication::InkscapeApplication()
 {
+    if (_instance) {
+        std::cerr << "Multiple instances of InkscapeApplication" << std::endl;
+        std::terminate();
+    }
+    _instance = this;
+
     using T = Gio::Application;
 
     auto app_id = Glib::ustring("org.inkscape.Inkscape");
@@ -770,6 +768,12 @@ InkscapeApplication::InkscapeApplication()
         //   - system menu "Quit"
         gtk_app()->property_register_session() = true;
     }
+}
+
+InkscapeApplication::~InkscapeApplication()
+{
+    _instance = nullptr;
+    Inkscape::Util::StaticsBin::get().destroy();
 }
 
 /** Create a window given a document. This is used internally in InkscapeApplication.
