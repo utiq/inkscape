@@ -1526,7 +1526,10 @@ void FilterEffectsDialog::FilterModifier::update_counts()
    Keeps the same selection if possible, otherwise selects the first element */
 void FilterEffectsDialog::FilterModifier::update_filters()
 {
-    std::vector<SPObject *> filters = _dialog.getDocument()->getResourceList("filter");
+    auto document = _dialog.getDocument();
+    if (!document) return; // no document at shut down
+
+    std::vector<SPObject *> filters = document->getResourceList("filter");
 
     _model->clear();
 
