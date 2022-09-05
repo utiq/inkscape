@@ -37,9 +37,8 @@ void
 select_object_group(InkscapeApplication* app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
-
-    // Group
     selection->group();
+    Inkscape::DocumentUndo::done(selection->document(), _("Group"), INKSCAPE_ICON("object-group"));
 }
 
 void
@@ -47,8 +46,8 @@ select_object_ungroup(InkscapeApplication* app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
 
-    // Ungroup
     selection->ungroup();
+    Inkscape::DocumentUndo::done(selection->document(), _("Ungroup"), INKSCAPE_ICON("object-ungroup"));
 }
 
 void
@@ -66,13 +65,12 @@ select_object_link(InkscapeApplication* app)
     Inkscape::Selection *selection = app->get_active_selection();
 
     // Group with <a>
-    auto anchor = selection->group(1);
+    auto anchor = selection->group(true);
     selection->set(anchor);
 
     // Open dialog to set link.
-    if (app->get_active_window()) {
-        app->get_active_window()->get_desktop()->getContainer()->new_dialog("ObjectAttributes");
-    }
+    selection->desktop()->getContainer()->new_dialog("ObjectAttributes");
+    Inkscape::DocumentUndo::done(selection->document(), _("Anchor"), INKSCAPE_ICON("object-group"));
 }
 
 void

@@ -509,7 +509,7 @@ bool equal_clip (SPItem *item, SPObject *clip) {
 }
 
 void
-sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_done)
+sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
 {
     g_return_if_fail (group != nullptr);
 
@@ -545,7 +545,6 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
     group->removeAllPathEffects(false);
     bool maskonungroup = prefs->getBool("/options/maskobject/maskonungroup", true);
     bool topmost = prefs->getBool("/options/maskobject/topmost", true);
-    bool remove_original = prefs->getBool("/options/maskobject/remove", true);
     int grouping = prefs->getInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
     SPObject *clip = nullptr;
     SPObject *mask = nullptr;
@@ -556,17 +555,16 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
         tmp_mask_set.add(group);
         auto *clip_obj = group->getClipObject();
         auto *mask_obj = group->getMaskObject();
-        prefs->setBool("/options/maskobject/remove", true);
         prefs->setBool("/options/maskobject/topmost", true);
         prefs->setInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
         if (clip_obj) {
-            tmp_clip_set.unsetMask(true, true, false);
+            tmp_clip_set.unsetMask(true, false, true);
             tmp_clip_set.remove(group);
             tmp_clip_set.group();
             clip = tmp_clip_set.singleItem();
         } 
         if (mask_obj) {
-            tmp_mask_set.unsetMask(false, true, false);
+            tmp_mask_set.unsetMask(false, false, true);
             tmp_mask_set.remove(group);
             tmp_mask_set.group();
             mask = tmp_mask_set.singleItem();
@@ -716,7 +714,8 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
 
     if (mask) {
         result_mask_set.add(mask);
-        result_mask_set.setMask(false,false,true);
+        result_mask_set.setMask(false, false, false);
+        mask->deleteObject(true, false);
     }
     for (auto lpeitem : lpeitems) {
         sp_lpe_item_enable_path_effects(lpeitem, true);
@@ -734,18 +733,13 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_d
     if (clip) { // if !maskonungroup is always null
         if (result_clip_set.size()) {
             result_clip_set.add(clip);
-            result_clip_set.setMask(true,false,true);
-        } else {
-            clip->deleteObject(true, false);
+            result_clip_set.setMask(true, false, false);
         }
+        clip->deleteObject(true, false);
     }
-    prefs->setBool("/options/maskobject/remove", remove_original); // if !maskonungroup become unchanged
     prefs->setBool("/options/maskobject/topmost", topmost);
     prefs->setBool("/options/maskobject/grouping", grouping);
     prefs->setBool("/options/onungroup", false);
-    if (do_done) {
-        DocumentUndo::done(doc, _("Ungroup"), "");
-    }
 }
 
 /*

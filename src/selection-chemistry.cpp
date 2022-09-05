@@ -730,7 +730,7 @@ void sp_edit_invert_in_all_layers(SPDesktop *desktop)
     sp_edit_select_all_full(desktop, true, true);
 }
 
-Inkscape::XML::Node* ObjectSet::group(int type) {
+Inkscape::XML::Node* ObjectSet::group(bool is_anchor) {
     SPDocument *doc = document();
     if(!doc)
         return nullptr;
@@ -739,7 +739,7 @@ Inkscape::XML::Node* ObjectSet::group(int type) {
         return nullptr;
     }
     Inkscape::XML::Document *xml_doc = doc->getReprDoc();
-    Inkscape::XML::Node *group = (type == 0) ? xml_doc->createElement("svg:g") : xml_doc->createElement("svg:a");
+    Inkscape::XML::Node *group = xml_doc->createElement(is_anchor ? "svg:a" : "svg:g");
 
     std::vector<Inkscape::XML::Node*> p(xmlNodes().begin(), xmlNodes().end());
     std::sort(p.begin(), p.end(), sp_repr_compare_position_bool);
@@ -797,14 +797,14 @@ Inkscape::XML::Node* ObjectSet::group(int type) {
     }
 
     // Add the new group to the topmost members' parent
-    topmost_parent->addChildAtPos(group, topmost + 1);
+    auto sibling = (topmost == 0) ? nullptr : topmost_parent->nthChild(topmost);
+    // Fix problematic adding, many functions depend on a group's order being maintained
+    // But a bad return from nthChild will put objects at the start instead of the end.
+    if (topmost && !sibling)
+        sibling = topmost_parent->lastChild();
+    topmost_parent->addChild(group, sibling);
 
     set(doc->getObjectByRepr(group));
-    if (type == 0) {
-        DocumentUndo::done(doc, _("Group"), INKSCAPE_ICON("object-group"));
-    } else {
-        DocumentUndo::done(doc, _("Anchor"), INKSCAPE_ICON("object-group"));
-    }
 
     return group;
 }
@@ -892,7 +892,7 @@ static void ungroup_impl(ObjectSet *set)
     std::vector<SPItem *> children;
 
     for (auto *group : groups) {
-        sp_item_group_ungroup(group, children, false);
+        sp_item_group_ungroup(group, children);
     }
 
     set->addList(children);
@@ -2797,17 +2797,17 @@ bool ObjectSet::unlink(const bool skip_undo)
         if (clip_obj) {
             SPUse *clipuse = dynamic_cast<SPUse *>(clip_obj);
             if (clipuse) {
-                tmp_set.unsetMask(true,true);
+                tmp_set.unsetMask(true, true, true);
                 unlinked = tmp_set.unlink(true) || unlinked;
-                tmp_set.setMask(true,false,true);
+                tmp_set.setMask(true, false, true);
             }
             new_select.push_back(tmp_set.singleItem());
         } else if (mask_obj) {
             SPUse *maskuse = dynamic_cast<SPUse *>(mask_obj);
             if (maskuse) {
-                tmp_set.unsetMask(false,true);
+                tmp_set.unsetMask(false, true, true);
                 unlinked = tmp_set.unlink(true) || unlinked;
-                tmp_set.setMask(false,false,true);
+                tmp_set.setMask(false, false, true);
             }
             new_select.push_back(tmp_set.singleItem());
         } else {
@@ -3794,7 +3794,7 @@ void ObjectSet::setClipGroup()
  * If \a apply_clip_path parameter is true, clipPath is created, otherwise mask
  *
  */
- void ObjectSet::setMask(bool apply_clip_path, bool apply_to_layer, bool skip_undo)
+ void ObjectSet::setMask(bool apply_clip_path, bool apply_to_layer, bool remove_original)
 {
     if(!desktop() && apply_to_layer)
         return;
@@ -3818,33 +3818,15 @@ void ObjectSet::setClipGroup()
     // Remove this when bboxes are fixed to not blow up on an item clipped/masked with its own clone
     bool clone_with_original = object_set_contains_both_clone_and_original(this);
     if (clone_with_original) {
+        g_warning("Unable to clip/mask an object with its own clone");
         return; // in this version, you cannot clip/mask an object with its own clone
     }
     // /END FIXME
 
     doc->ensureUpToDate();
 
-    // Comment out this section because we don't need it, I think.
-    // Also updated comment code to work correctly if indeed it's needed.
-    // To reactivate, remove the next line and uncomment the section.
     std::vector<SPItem*> items_(items().begin(), items().end());
-    /*
-    std::vector<SPItem*> items_prerect_(items().begin(), items().end());
-    std::vector<SPItem*> items_;
 
-    // convert any rects to paths
-    for (std::vector<SPItem *>::const_iterator i = items_prerect_.begin(); i != items_prerect_.end(); ++i) {
-        clear();
-        if (dynamic_cast<SPRect *>(*i)) {
-            add(*i);
-            toCurves();
-            items_.push_back(*items().begin());
-        } else {
-            items_.push_back(*i);
-        }
-    }
-    clear();
-    */
     sort(items_.begin(),items_.end(),sp_object_compare_position_bool);
 
     // See lp bug #542004
@@ -3858,7 +3840,6 @@ void ObjectSet::setClipGroup()
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     bool topmost = prefs->getBool("/options/maskobject/topmost", true);
-    bool remove_original = prefs->getBool("/options/maskobject/remove", true);
     int grouping = prefs->getInt("/options/maskobject/grouping", PREFS_MASKOBJECT_GROUPING_NONE);
 
     if (apply_to_layer) {
@@ -3965,7 +3946,6 @@ void ObjectSet::setClipGroup()
         }
 
         apply_mask_to->setAttribute(attributeName, Glib::ustring("url(#") + mask_id + ')');
-
     }
 
     for (auto i : items_to_delete) {
@@ -3975,17 +3955,11 @@ void ObjectSet::setClipGroup()
     }
 
     addList(items_to_select);
-    if (!skip_undo) {
-        if (apply_clip_path) {
-            DocumentUndo::done(doc, _("Set clipping path"), "");
-        } else {
-            DocumentUndo::done(doc, _("Set mask"), "");
-        }
-    }
 }
 
-void ObjectSet::unsetMask(const bool apply_clip_path, const bool skip_undo,
-                          const bool delete_helper_group)
+void ObjectSet::unsetMask(const bool apply_clip_path,
+                          const bool delete_helper_group,
+                          const bool remove_original)
 {
     SPDocument *doc = document();
     Inkscape::XML::Document *xml_doc = doc->getReprDoc();
@@ -3998,7 +3972,6 @@ void ObjectSet::unsetMask(const bool apply_clip_path, const bool skip_undo,
     }
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool remove_original = prefs->getBool("/options/maskobject/remove", true);
     bool ungroup_masked = prefs->getBool("/options/maskobject/ungrouping", true);
     doc->ensureUpToDate();
 
@@ -4101,7 +4074,7 @@ void ObjectSet::unsetMask(const bool apply_clip_path, const bool skip_undo,
         if (group) {
             items_to_select.erase(std::remove(items_to_select.begin(), items_to_select.end(), group), items_to_select.end());
             std::vector<SPItem*> children;
-            sp_item_group_ungroup(group, children, false);
+            sp_item_group_ungroup(group, children);
             items_to_select.insert(items_to_select.end(),children.rbegin(),children.rend());
         } else {
             g_assert_not_reached();
@@ -4110,13 +4083,6 @@ void ObjectSet::unsetMask(const bool apply_clip_path, const bool skip_undo,
 
     // rebuild selection
     addList(items_to_select);
-    if (!skip_undo) {
-        if (apply_clip_path) {
-            DocumentUndo::done(doc, _("Release clipping path"), "");
-        } else {
-            DocumentUndo::done(doc, _("Release mask"), "");
-        }
-    }
 }
 
 /**

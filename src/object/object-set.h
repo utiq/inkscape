@@ -426,7 +426,7 @@ public:
     void relink();
     void cloneOriginal();
     void cloneOriginalPathLPE(bool allow_transforms = false);
-    Inkscape::XML::Node* group(int type = 0);
+    Inkscape::XML::Node* group(bool is_anchor = false);
     void popFromGroup();
     void ungroup(bool skip_undo = false);
     
@@ -483,10 +483,9 @@ public:
     void tile(bool apply = true); //"Object to Pattern"
     void untile();
     void createBitmapCopy();
-    void setMask(bool apply_clip_path, bool apply_to_layer = false, bool skip_undo = false);
+    void setMask(bool apply_clip_path, bool apply_to_layer, bool remove_original);
     void editMask(bool clip);
-    void unsetMask(const bool apply_clip_path, const bool skip_undo = false,
-                   const bool delete_helper_group = true);
+    void unsetMask(const bool apply_clip_path, const bool delete_helper_group, bool remove_original);
     void setClipGroup();
     
     // moves

@@ -101,7 +101,7 @@ public:
  */
 void sp_item_group_ungroup_handle_clones(SPItem *parent, Geom::Affine const g);
 
-void sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_done = true);
+void sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children);
 
 
 std::vector<SPItem*> sp_item_group_item_list (SPGroup *group);

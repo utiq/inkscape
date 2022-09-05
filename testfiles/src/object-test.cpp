@@ -157,7 +157,7 @@ TEST_F(ObjectTest, Grouping) {
     ASSERT_TRUE(n_group != nullptr);
 
     std::vector<SPItem*> ch;
-    sp_item_group_ungroup(n_group, ch, false);
+    sp_item_group_ungroup(n_group, ch);
 
     // Remove those elements
     for (size_t i = 0; i < num_elements; ++i) {

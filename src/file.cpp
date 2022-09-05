@@ -1106,7 +1106,7 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
         bool did_ungroup = false;
         while(items_count==1 && o && SP_IS_GROUP(o) && o->children.size()==1){
             std::vector<SPItem *>v;
-            sp_item_group_ungroup(SP_GROUP(o),v,false);
+            sp_item_group_ungroup(SP_GROUP(o), v);
             o = v.empty() ? nullptr : v[0];
             did_ungroup=true;
         }
