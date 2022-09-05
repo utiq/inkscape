@@ -87,6 +87,14 @@ bool ObjectSet::includes(SPObject *object, bool anyAncestor) {
     }
 }
 
+bool ObjectSet::includes(Inkscape::XML::Node *node, bool anyAncestor)
+{
+    if (node) {
+        return includes(document()->getObjectByRepr(node), anyAncestor);
+    }
+    return false;
+}
+
 SPObject * 
 ObjectSet::includesAncestor(SPObject *object) {
     g_return_val_if_fail(object != nullptr, nullptr);

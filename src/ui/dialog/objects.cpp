@@ -1716,8 +1716,9 @@ bool ObjectsPanel::on_drag_drop(const Glib::RefPtr<Gdk::DragContext> &context, i
             selection->toLayer(document->getObjectByRepr(drop_repr));
         } else {
             Node *after = (pos == Gtk::TREE_VIEW_DROP_BEFORE) ? drop_repr : drop_repr->prev();
-            selection->toLayer(document->getObjectByRepr(drop_repr->parent()), false, after);
+            selection->toLayer(document->getObjectByRepr(drop_repr->parent()), after);
         }
+        DocumentUndo::done(document, _("Move items"), INKSCAPE_ICON("selection-move-to-layer"));
     }
 
     on_drag_end(context);

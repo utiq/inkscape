@@ -849,7 +849,7 @@ void ObjectSet::popFromGroup(){
         return;
     }
 
-    toLayer(*grandparents.begin(), true);
+    toLayer(*grandparents.begin());
 
     if(document())
         DocumentUndo::done(document(), _("Pop selection from group"), INKSCAPE_ICON("object-ungroup-pop-selection"));
@@ -1535,7 +1535,7 @@ void ObjectSet::toPrevLayer(bool skip_undo)
  *
  * @pre moveto is of type SPItem (or even SPGroup?)
  */
-void ObjectSet::toLayer(SPObject *moveto, bool skip_undo)
+void ObjectSet::toLayer(SPObject *moveto)
 {
     if(!document())
         return;
@@ -1546,13 +1546,13 @@ void ObjectSet::toLayer(SPObject *moveto, bool skip_undo)
         return;
     }
 
-    toLayer(moveto, skip_undo, moveto->getRepr()->lastChild());
+    toLayer(moveto, moveto->getRepr()->lastChild());
 }
 
 /**
  * Move selection to group `moveto`, after child `after`.
  */
-void ObjectSet::toLayer(SPObject *moveto, bool skip_undo, Inkscape::XML::Node *after)
+void ObjectSet::toLayer(SPObject *moveto, Inkscape::XML::Node *after)
 {
     assert(moveto);
     assert(!after || after->parent() == moveto->getRepr());
@@ -1567,12 +1567,12 @@ void ObjectSet::toLayer(SPObject *moveto, bool skip_undo, Inkscape::XML::Node *a
         return;
     }
 
-    // check for aliasing: the object corresponding to `after` shouldn't belong to us:
-    if (after) {
-        auto obj = document()->getObjectByRepr(after);
-        if (obj && includes(obj)) {
-            return;
-        }
+    /* Make sure after is not in the selected group.
+     * Iterate after's siblings backwards, finding the nearest that
+     * isn't selected. This is important for positioning in the layer.
+     */
+    while (after && includes(after)) {
+        after = after->prev();
     }
 
     std::vector<SPItem*> items_copy(items().begin(), items().end());
@@ -1584,12 +1584,10 @@ void ObjectSet::toLayer(SPObject *moveto, bool skip_undo, Inkscape::XML::Node *a
         sp_selection_copy_impl(items_copy, temp_clip, document()->getReprDoc()); // we're in the same doc, so no need to copy defs
         sp_selection_delete_impl(items_copy, false, false);
         std::vector<Inkscape::XML::Node*> copied = sp_selection_paste_impl(document(), moveto, temp_clip, after);
+
         setReprList(copied);
         if (!temp_clip.empty()) temp_clip.clear();
         if (moveto && dt) dt->layerManager().setCurrentLayer(moveto);
-        if (!skip_undo) {
-            DocumentUndo::done(document(), _("Move selection to layer"), INKSCAPE_ICON("selection-move-to-layer"));
-        }
     }
 }
 

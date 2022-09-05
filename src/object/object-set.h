@@ -200,6 +200,7 @@ public:
      * Returns true if the given object is selected.
      */
     bool includes(SPObject *object, bool anyAncestor = false);
+    bool includes(Inkscape::XML::Node *node, bool anyAncestor = false);
 
     /**
      * Returns ancestor if the given object has ancestor selected.
@@ -446,8 +447,8 @@ public:
     void lowerToBottom(bool skip_undo = false);
     void toNextLayer(bool skip_undo = false);
     void toPrevLayer(bool skip_undo = false);
-    void toLayer(SPObject *layer, bool skip_undo = false);
-    void toLayer(SPObject *layer, bool skip_undo, Inkscape::XML::Node *after);
+    void toLayer(SPObject *layer);
+    void toLayer(SPObject *layer, Inkscape::XML::Node *after);
 
     //clipboard management
     //in selection-chemistry.cpp

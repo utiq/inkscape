@@ -166,6 +166,7 @@ void LayerPropertiesDialog::_doMove()
 {
     if (auto moveto = _selectedLayer()) {
         _desktop->getSelection()->toLayer(moveto);
+        DocumentUndo::done(_desktop->getDocument(), _("Move selection to layer"), INKSCAPE_ICON("selection-move-to-layer"));
     }
 }
 

@@ -133,14 +133,17 @@ TEST_F(ObjectSetTest, Basics) {
     set->add(A);
     EXPECT_EQ(1, set->size());
     EXPECT_TRUE(set->includes(A));
+    EXPECT_TRUE(set->includes(A->getRepr()));
     set->add(B);
     set->add(C);
     EXPECT_EQ(3, set->size());
     EXPECT_TRUE(set->includes(B));
     EXPECT_TRUE(set->includes(C));
     EXPECT_FALSE(set->includes(D));
+    EXPECT_FALSE(set->includes(D->getRepr()));
     EXPECT_FALSE(set->includes(X));
-    EXPECT_FALSE(set->includes(nullptr));
+    EXPECT_FALSE(set->includes((SPObject*)nullptr));
+    EXPECT_FALSE(set->includes((Inkscape::XML::Node*)nullptr));
     set->remove(A);
     EXPECT_EQ(2, set->size());
     EXPECT_FALSE(set->includes(A));
