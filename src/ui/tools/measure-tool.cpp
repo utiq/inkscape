@@ -1121,13 +1121,18 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
     std::stringstream precision_str;
     precision_str.imbue(std::locale::classic());
     double origin = Quantity::convert(14, "px", unit->abbr);
-    Geom::Point rel_position = Geom::Point(origin, origin);
+    Geom::Point rel_position = Geom::Point(origin, origin + fontsize - 2);
+    /*
+       why (fontsize-2)?
+       fonsize -> To keep avoid overlapping while FontSize changes.
+       -2 -> To keep InfoBox as close as possible to cursor pointer and avoid ovelapping at minimum FontSize also.
+    */
     Geom::Point pos = _desktop->w2d(cursor);
     double gap = Quantity::convert(7 + fontsize, "px", unit->abbr);
     double yaxisdir = _desktop->yaxisdir();
 
     if (selected) {
-        showItemInfoText(pos - (yaxisdir * rel_position * zoom), _desktop->getSelection()->includes(over) ? _("Selected") : _("Not selected"), fontsize);
+        showItemInfoText(pos - (yaxisdir * Geom::Point(0, rel_position[Geom::Y]) * zoom), _desktop->getSelection()->includes(over) ? _("Selected") : _("Not selected"), fontsize);
         rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
     }
 
@@ -1136,13 +1141,13 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
         precision_str << _("Length") <<  ": %." << precision << "f %s";
         measure_str = g_strdup_printf(precision_str.str().c_str(), item_length, unit_name.c_str());
         precision_str.str("");
-        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+        showItemInfoText(pos - (yaxisdir * Geom::Point(0, rel_position[Geom::Y]) * zoom), measure_str, fontsize);
         rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
 
     } else if (is<SPGroup>(over)) {
 
         measure_str = _("Press 'CTRL' to measure into group");
-        showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+        showItemInfoText(pos - (yaxisdir * Geom::Point(0, rel_position[Geom::Y]) * zoom), measure_str, fontsize);
         rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
 
     }
@@ -1150,25 +1155,25 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
     precision_str <<  "Y: %." << precision << "f %s";
     measure_str = g_strdup_printf(precision_str.str().c_str(), item_y, unit_name.c_str());
     precision_str.str("");
-    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    showItemInfoText(pos - (yaxisdir * Geom::Point(0, rel_position[Geom::Y]) * zoom), measure_str, fontsize);
     rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
 
     precision_str <<  "X: %." << precision << "f %s";
     measure_str = g_strdup_printf(precision_str.str().c_str(), item_x, unit_name.c_str());
     precision_str.str("");
-    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    showItemInfoText(pos - (yaxisdir * Geom::Point(0, rel_position[Geom::Y]) * zoom), measure_str, fontsize);
     rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
 
     precision_str << _("Height") << ": %." << precision << "f %s";
     measure_str = g_strdup_printf(precision_str.str().c_str(), item_height, unit_name.c_str());
     precision_str.str("");
-    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    showItemInfoText(pos - (yaxisdir * Geom::Point(0, rel_position[Geom::Y]) * zoom), measure_str, fontsize);
     rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
 
     precision_str << _("Width") << ": %." << precision << "f %s";
     measure_str = g_strdup_printf(precision_str.str().c_str(), item_width, unit_name.c_str());
     precision_str.str("");
-    showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
+    showItemInfoText(pos - (yaxisdir * Geom::Point(0, rel_position[Geom::Y]) * zoom), measure_str, fontsize);
     g_free(measure_str);
 }
 
