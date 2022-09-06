@@ -389,10 +389,17 @@ void SvgBuilder::_setStrokeStyle(SPCSSAttr *css, GfxState *state) {
     sp_repr_css_set_property(css, "stroke-miterlimit", os_ml.str().c_str());
 
     // Line dash
-    double *dash_pattern;
     int dash_length;
     double dash_start;
+#if POPPLER_CHECK_VERSION(22, 9, 0)
+    const double *dash_pattern;
+    const std::vector<double> &dash = state->getLineDash(&dash_start);
+    dash_pattern = dash.data();
+    dash_length = dash.size();
+#else
+    double *dash_pattern;
     state->getLineDash(&dash_pattern, &dash_length, &dash_start);
+#endif
     if ( dash_length > 0 ) {
         Inkscape::CSSOStringStream os_array;
         for ( int i = 0 ; i < dash_length ; i++ ) {

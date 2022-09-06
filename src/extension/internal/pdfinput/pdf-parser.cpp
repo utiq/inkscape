@@ -697,7 +697,11 @@ void PdfParser::opSetDash(Object args[], int /*numArgs*/)
       _POPPLER_FREE(obj);
     }
   }
+#if POPPLER_CHECK_VERSION(22, 9, 0)
+  state->setLineDash(std::vector<double> (dash, dash + length), args[1].getNum());
+#else
   state->setLineDash(dash, length, args[1].getNum());
+#endif
   builder->updateStyle(state);
 }
 
