@@ -459,7 +459,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, Geom::IntRect const &area,
     if (!visible) return RENDER_OK;
 
     if (_drawing.outline()) {
-        guint32 rgba = _drawing.outlinecolor;
+        guint32 rgba = _drawing.getOutlineColor();
         Inkscape::DrawingContext::Save save(dc);
         dc.setSource(rgba);
         dc.setTolerance(0.5); // low quality, but good enough for outline mode

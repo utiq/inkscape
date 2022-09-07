@@ -115,6 +115,8 @@ public:
     virtual bool root_handler(GdkEvent *event);
     virtual bool item_handler(SPItem *item, GdkEvent *event);
     virtual void menu_popup(GdkEvent *event, SPObject *obj = nullptr);
+    virtual bool catch_undo(bool redo = false) { return false; }
+    virtual bool can_undo(bool redo = false) { return false; }
 
     void set_on_buttons(GdkEvent *event);
     bool are_buttons_1_and_3_on() const;
@@ -136,6 +138,7 @@ public:
                           Gdk::BUTTON_PRESS_MASK);
     void ungrabCanvasEvents();
 
+    virtual void switching_away(const std::string &new_tool) {}
 private:
     std::unique_ptr<Inkscape::Preferences::PreferencesObserver> pref_observer;
     std::string _prefs_path;

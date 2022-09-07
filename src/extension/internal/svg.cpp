@@ -393,7 +393,7 @@ static void insert_text_fallback( Inkscape::XML::Node *repr, const SPDocument *o
                 sp_repr_css_attr_unref(css);
             }
 
-            // We need to put trailing white space into it's own tspan for inline size so
+            // We need to put trailing white space into its own tspan for inline size so
             // it is excluded during calculation of line position in SVG 1.1 renderers.
             bool trim = text->has_inline_size() &&
                 !(text->style->text_anchor.computed == SP_CSS_TEXT_ANCHOR_START);

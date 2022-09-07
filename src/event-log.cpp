@@ -14,6 +14,8 @@
 
 #include <glibmm/i18n.h>
 
+#include "actions/actions-undo-document.h"
+
 #include "desktop.h"
 #include "document.h"
 #include "inkscape.h"
@@ -373,25 +375,7 @@ void
 EventLog::updateUndoVerbs()
 {
     if (_document) {
-
-        auto group = _document->getActionGroup();
-        if (group) {
-            auto undo_action = group->lookup_action("undo");
-            auto redo_action = group->lookup_action("redo");
-            auto undo_saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(undo_action);
-            auto redo_saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(redo_action);
-            // GTK4
-            // auto undo_saction = dynamic_cast<Gio::SimpleAction*>(undo_action);
-            // auto redo_saction = dynamic_cast<Gio::SimpleAction*>(redo_action);
-            if (!undo_saction || !redo_saction) {
-                std::cerr << "EventLog::updateUndoVerbs: can't find undo or redo action!" << std::endl;
-                return;
-            }
-
-            // Enable/disable menu items.
-            undo_saction->set_enabled(static_cast<bool>(_getUndoEvent()));
-            redo_saction->set_enabled(static_cast<bool>(_getRedoEvent()));
-        }
+        enable_undo_actions(_document, static_cast<bool>(_getUndoEvent()), static_cast<bool>(_getRedoEvent()));
     }
 }
 

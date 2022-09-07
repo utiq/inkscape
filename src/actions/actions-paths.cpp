@@ -14,11 +14,14 @@
 #include <glibmm/i18n.h>
 
 #include "actions-paths.h"
+#include "document-undo.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "selection.h"            // Selection
 #include "selection-chemistry.h"  // SelectionHelper
 #include "path/path-offset.h"
+#include "ui/icon-names.h"
+#include "ui/tools/booleans-builder.h"
 
 void
 object_path_union(InkscapeApplication *app)
@@ -94,6 +97,15 @@ select_path_split(InkscapeApplication *app)
 {
     auto selection = app->get_active_selection();
     selection->breakApart(false, false);
+}
+
+void
+select_path_fracture(InkscapeApplication *app)
+{
+    auto selection = app->get_active_selection();
+    auto boolean_builder = Inkscape::BooleanBuilder(selection);
+    selection->setList(boolean_builder.shape_commit(true));
+    Inkscape::DocumentUndo::done(selection->document(), "Fracture", INKSCAPE_ICON("path-fracture"));
 }
 
 void
@@ -189,6 +201,17 @@ select_path_reverse(InkscapeWindow* win)
     Inkscape::SelectionHelper::reverse(dt);
 }
 
+void
+shape_builder_mode(int value, InkscapeWindow* win)
+{
+    Inkscape::Preferences *pref = Inkscape::Preferences::get();
+
+    auto action = win->lookup_action("shape-builder-mode");
+    auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
+    saction->change_state((int)value);
+    pref->setInt("/tools/booleans/mode", value);
+}
+
 
 std::vector<std::vector<Glib::ustring>> raw_data_path =
 {
@@ -202,6 +225,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_path =
     {"app.path-combine",             N_("Combine"),              "Path",   N_("Combine several paths into one")},
     {"app.path-break-apart",         N_("Break Apart"),          "Path",   N_("Break selected paths into subpaths")},
     {"app.path-split",               N_("Split Apart"),          "Path",   N_("Split selected paths into non-overlapping sections")},
+    {"app.path-fracture",            N_("Fracture"),             "Path",   N_("Fracture a shape into its visible segments.")},
     {"app.path-fill-between-paths",  N_("Fill between paths"),   "Path",   N_("Create a fill object using the selected paths")},
     {"app.path-simplify",            N_("Simplify"),             "Path",   N_("Simplify selected paths (remove extra nodes)")},
 
@@ -212,6 +236,9 @@ std::vector<std::vector<Glib::ustring>> raw_data_path =
     {"win.path-reverse",             N_("Reverse"),              "Path",   N_("Reverse the direction of selected paths (useful for flipping markers)")},
     {"win.path-inset-screen",        N_("Inset Screen"),         "Path",   N_("Inset selected paths by screen pixels")},
     {"win.path-offset-screen",       N_("Offset Screen"),        "Path",   N_("Offset selected paths by screen pixels")},
+
+    {"win.shape-builder-mode(0)",    N_("Shape Builder: Add"),   "Path",   N_("Add shapes when clicking and dragging.")},
+    {"win.shape-builder-mode(1)",    N_("Shape Builder: Delete"),"Path",   N_("Delete shapes when clicking and dragging.")},
     // clang-format on
 };
 
@@ -230,6 +257,7 @@ add_actions_path(InkscapeApplication* app)
     gapp->add_action(               "path-combine",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_combine),       app));
     gapp->add_action(               "path-break-apart",        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_break_apart),   app));
     gapp->add_action(               "path-split",              sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_split),         app));
+    gapp->add_action(               "path-fracture",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_fracture),      app));
     gapp->add_action(               "path-fill-between-paths", sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&fill_between_paths),        app));
     gapp->add_action(               "path-simplify",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_simplify),      app));
     // clang-format on
@@ -243,6 +271,9 @@ add_actions_path(InkscapeWindow* win)
 {
     Glib::VariantType Double(Glib::VARIANT_TYPE_DOUBLE);
 
+    auto prefs = Inkscape::Preferences::get();
+    int current_mode = prefs->getInt("/tool/booleans/mode", 0);
+
     // clang-format off
     win->add_action(                "path-inset",                   sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_inset),          win));
     win->add_action(                "path-offset",                  sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_offset),         win));
@@ -251,6 +282,7 @@ add_actions_path(InkscapeWindow* win)
     win->add_action(                "path-offset-dynamic",          sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_offset_dynamic), win));
     win->add_action(                "path-offset-linked",           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_offset_linked),  win));
     win->add_action(                "path-reverse",                 sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_reverse),        win));
+    win->add_action_radio_integer(  "shape-builder-mode",           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&shape_builder_mode),         win), current_mode);
     // clang-format on
 }
 

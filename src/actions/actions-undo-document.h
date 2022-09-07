@@ -18,4 +18,6 @@ class SPDocument;
 
 void add_actions_undo_document(SPDocument* document);
 
+void enable_undo_actions(SPDocument* document, bool undo, bool redo);
+
 #endif // INK_ACTIONS_DOCUMENT_UNDO_H

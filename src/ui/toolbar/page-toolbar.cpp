@@ -25,6 +25,7 @@
 #include "io/resource.h"
 #include "object/sp-namedview.h"
 #include "object/sp-page.h"
+#include "ui/builder-utils.h"
 #include "ui/icon-names.h"
 #include "ui/themes.h"
 #include "ui/tools/pages-tool.h"
@@ -496,23 +497,15 @@ void PageToolbar::selectionChanged(SPPage *page)
 
 GtkWidget *PageToolbar::create(SPDesktop *desktop)
 {
-    Glib::ustring page_toolbar_builder_file = get_filename(UIS, "toolbar-page.ui");
     PageToolbar *toolbar = nullptr;
+    auto builder = Inkscape::UI::create_builder("toolbar-page.ui");
+    builder->get_widget_derived("page-toolbar", toolbar, desktop);
 
-    try {
-        auto builder = Gtk::Builder::create_from_file(page_toolbar_builder_file);
-        builder->get_widget_derived("page-toolbar", toolbar, desktop);
-
-        if (!toolbar) {
-            std::cerr << "InkscapeWindow: Failed to load page toolbar!" << std::endl;
-            return nullptr;
-        }
-        // Usually we should be packing this widget into a parent before the builder
-        // is destroyed, but the create method expects a blind widget so this widget
-        // contains a special keep-alive pattern which can be removed when refactoring.
-    } catch (const Glib::Error &ex) {
-        std::cerr << "PageToolbar: " << page_toolbar_builder_file.raw() << " file not read! " << ex.what().raw() << std::endl;
+    if (!toolbar) {
+        std::cerr << "InkscapeWindow: Failed to load page toolbar!" << std::endl;
+        return nullptr;
     }
+    // This widget will be auto-freed by the builder unless you have called reference();
     return GTK_WIDGET(toolbar->gobj());
 }
 

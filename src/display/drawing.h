@@ -86,6 +86,9 @@ public:
     void set_clip_to_page(bool clip);
     bool get_clip_to_page() const;
 
+    guint32 getOutlineColor() const { return outlinecolor; }
+    void setOutlineColor(guint32 color) { outlinecolor = color; }
+
 private:
     void _pickItemsForCaching();
 
@@ -97,7 +100,6 @@ private:
 
 public:
     // TODO: remove these temporarily public members
-    guint32 outlinecolor = 0x000000ff;
     double delta = 0;
 
 private:
@@ -115,6 +117,8 @@ private:
     OutlineColors _colors;
     Filters::FilterColorMatrix::ColorMatrixMatrix _grayscale_colormatrix;
     Inkscape::CanvasItemDrawing *_canvas_item_drawing = nullptr;
+
+    guint32 outlinecolor = 0x000000ff;
 
     friend class DrawingItem;
 };

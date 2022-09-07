@@ -1171,7 +1171,18 @@ std::vector<std::vector<int>> connected_components(int size, std::function<bool(
     return components;
 }
 
-std::vector<Geom::PathVector> split_non_intersecting_paths(Geom::PathVector &&paths)
+/**
+ * Check for an empty path.
+ */
+bool is_path_empty(const Geom::Path &path)
+{
+    double area;
+    Geom::Point _;
+    Geom::centroid(path.toPwSb(), _, area);
+    return area > -1 && area < 1;
+}
+
+std::vector<Geom::PathVector> split_non_intersecting_paths(Geom::PathVector &&paths, bool remove_empty)
 {
     // Get connected components of indices.
     auto const comps = connected_components(paths.size(), [&] (int i, int j) {
@@ -1187,6 +1198,8 @@ std::vector<Geom::PathVector> split_non_intersecting_paths(Geom::PathVector &&pa
          // Todo: Fix when 2geom supports reserve.
 
         for (auto i : comp) {
+            if (is_path_empty(paths[i]))
+                continue;
             pv.push_back(std::move(paths[i])); // Todo: Fix when 2geom supports emplace.
         }
 

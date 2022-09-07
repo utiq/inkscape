@@ -892,19 +892,19 @@ void DrawingItem::_renderOutline(DrawingContext &dc, Geom::IntRect const &area, 
     _renderItem(dc, *carea, flags, nullptr);
 
     // render clip and mask, if any
-    guint32 saved_rgba = _drawing.outlinecolor; // save current outline color
+    guint32 saved_rgba = _drawing.getOutlineColor(); // save current outline color
     // render clippath as an object, using a different color
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     if (_clip) {
-        _drawing.outlinecolor = prefs->getInt("/options/wireframecolors/clips", 0x00ff00ff); // green clips
+        _drawing.setOutlineColor(prefs->getInt("/options/wireframecolors/clips", 0x00ff00ff)); // green clips
         _clip->render(dc, *carea, flags);
     }
     // render mask as an object, using a different color
     if (_mask) {
-        _drawing.outlinecolor = prefs->getInt("/options/wireframecolors/masks", 0x0000ffff); // blue masks
+        _drawing.setOutlineColor(prefs->getInt("/options/wireframecolors/masks", 0x0000ffff)); // blue masks
         _mask->render(dc, *carea, flags);
     }
-    _drawing.outlinecolor = saved_rgba; // restore outline color
+    _drawing.setOutlineColor(saved_rgba); // restore outline color
 }
 
 /**

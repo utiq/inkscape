@@ -103,10 +103,15 @@ void outline_join(Geom::Path &res, Geom::Path const& outgoing, Geom::Point in_ta
 std::vector<std::vector<int>> connected_components(int size, std::function<bool(int, int)> const &adj_test);
 
 /**
+ * Return true if the given path has close to zero area.
+ */
+bool is_path_empty(const Geom::Path &path);
+
+/**
  * Split a collection of paths into connected components.
  * Two paths are viewed as connected if they overlap.
  */
-std::vector<Geom::PathVector> split_non_intersecting_paths(Geom::PathVector &&paths);
+std::vector<Geom::PathVector> split_non_intersecting_paths(Geom::PathVector &&paths, bool remove_empty = false);
 
 } // namespace Inkscape
 

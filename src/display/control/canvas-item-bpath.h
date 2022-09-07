@@ -53,6 +53,7 @@ public:
     // Properties
     void set_fill (guint32 rgba, SPWindRule fill_rule);
     void set_dashes (std::vector<double> dashes) { _dashes = std::move(dashes); }
+    void set_stroke_width(double width);
 
 protected:
 
@@ -63,6 +64,7 @@ protected:
     SPWindRule _fill_rule = SP_WIND_RULE_EVENODD;
     std::vector<double> _dashes;
     bool _phantom_line = false;
+    double _stroke_width = 1.0;
 };
 
 } // namespace Inkscape

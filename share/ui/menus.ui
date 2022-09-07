@@ -1026,6 +1026,12 @@
         <attribute name='icon'>path-split</attribute>
         <attribute name='use-icon'>true</attribute>
       </item>
+      <item>
+        <attribute name='label' translatable="yes">_Fracture</attribute>
+        <attribute name='action'>app.path-fracture</attribute>
+        <attribute name='icon'>path-fracture</attribute>
+        <attribute name='use-icon'>true</attribute>
+      </item>
     </section>
     <section>
       <item>

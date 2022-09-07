@@ -30,8 +30,8 @@
 #include "display/drawing.h"
 #include "display/cairo-utils.h"
 #include "display/control/canvas-item-group.h"
-#include "display/control/snap-indicator.h"
 #include "display/control/canvas-item-rect.h"
+#include "display/control/snap-indicator.h"
 
 #include "ui/tools/tool-base.h"      // Default cursor
 
@@ -1424,7 +1424,7 @@ void Canvas::set_drawing_disabled(bool disable)
 
 void Canvas::set_render_mode(Inkscape::RenderMode mode)
 {
-    if (_render_mode != mode) {
+    if (_drawing && _render_mode != mode) {
         _render_mode = mode;
         _drawing->setRenderMode(_render_mode);
         redraw_all();

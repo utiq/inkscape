@@ -90,9 +90,9 @@ set(ui_SRC
 	tools/rect-tool.cpp
 	tools/marker-tool.cpp
 	tools/select-tool.cpp
-        tools/booleans-tool.cpp
-        tools/booleans-interactive.cpp
-        tools/booleans-nonintersecting.cpp
+	tools/booleans-builder.cpp
+	tools/booleans-tool.cpp
+	tools/booleans-subitems.cpp
 	tools/spiral-tool.cpp
 	tools/spray-tool.cpp
 	tools/star-tool.cpp
@@ -245,7 +245,7 @@ set(ui_SRC
 	widget/style-subject.cpp
 	widget/style-swatch.cpp
 	widget/swatch-selector.cpp
-        widget/template-list.cpp
+	widget/template-list.cpp
 	widget/text.cpp
 	widget/tolerance-slider.cpp
 	widget/unit-menu.cpp
@@ -420,9 +420,9 @@ set(ui_SRC
 	tools/rect-tool.h
 	tools/marker-tool.h
 	tools/select-tool.h
-        tools/booleans-tool.h
-        tools/booleans-interactive.h
-        tools/booleans-nonintersecting.h
+	tools/booleans-builder.h
+	tools/booleans-tool.h
+	tools/booleans-subitems.h
 	tools/spiral-tool.h
 	tools/spray-tool.h
 	tools/star-tool.h
@@ -515,7 +515,7 @@ set(ui_SRC
 	widget/style-subject.h
 	widget/style-swatch.h
 	widget/swatch-selector.h
-        widget/template-list.h
+	widget/template-list.h
 	widget/text.h
 	widget/tolerance-slider.h
 	widget/unit-menu.h

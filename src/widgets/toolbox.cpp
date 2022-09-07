@@ -36,6 +36,7 @@
 #include "actions/actions-canvas-snapping.h"
 #include "actions/actions-tools.h"
 #include "io/resource.h"
+#include "ui/builder-utils.h"
 #include "ui/widget/style-swatch.h"
 #include "widgets/spw-utilities.h" // sp_traverse_widget_tree()
 #include "widgets/widget-sizes.h"
@@ -123,7 +124,7 @@ static struct {
     // clang-format off
     { "/tools/select",          "Select",       Inkscape::UI::Toolbar::SelectToolbar::create,        nullptr},
     { "/tools/nodes",           "Node",         Inkscape::UI::Toolbar::NodeToolbar::create,          nullptr},
-    { "/tools/booleans",        "Booleans",     Inkscape::UI::Toolbar::InteractiveBooleansToolbar::create, nullptr},
+    { "/tools/booleans",        "Booleans",     Inkscape::UI::Toolbar::BooleansToolbar::create,      nullptr},
     { "/tools/marker",          "Marker",       Inkscape::UI::Toolbar::MarkerToolbar::create,        nullptr},
     { "/tools/shapes/rect",     "Rect",         Inkscape::UI::Toolbar::RectToolbar::create,          N_("Style of new rectangles")},
     { "/tools/shapes/arc",      "Arc",          Inkscape::UI::Toolbar::ArcToolbar::create,           N_("Style of new ellipses")},
@@ -177,18 +178,9 @@ static GtkWidget* toolboxNewCommon( GtkWidget* tb, BarId id, GtkPositionType /*h
 
 GtkWidget *ToolboxFactory::createToolToolbox(InkscapeWindow *window)
 {
-    Glib::ustring tool_toolbar_builder_file = get_filename(UIS, "toolbar-tool.ui");
-    auto builder = Gtk::Builder::create();
-    try
-    {
-        builder->add_from_file(tool_toolbar_builder_file);
-    }
-    catch (const Glib::Error& ex)
-    {
-        std::cerr << "ToolboxFactor::createToolToolbox: " << tool_toolbar_builder_file.raw() << " file not read! " << ex.what().raw() << std::endl;
-    }
-
     Gtk::Widget* toolbar = nullptr;
+
+    auto builder = Inkscape::UI::create_builder("toolbar-tool.ui");
     builder->get_widget("tool-toolbar", toolbar);
     if (!toolbar) {
         std::cerr << "InkscapeWindow: Failed to load tool toolbar!" << std::endl;
@@ -249,18 +241,9 @@ GtkWidget *ToolboxFactory::createCommandsToolbox()
     tb->set_orientation(Gtk::ORIENTATION_VERTICAL);
     tb->set_homogeneous(false);
 
-    Glib::ustring commands_toolbar_builder_file = get_filename(UIS, "toolbar-commands.ui");
-    auto builder = Gtk::Builder::create();
-    try
-    {
-        builder->add_from_file(commands_toolbar_builder_file);
-    }
-    catch (const Glib::Error& ex)
-    {
-        std::cerr << "ToolboxFactor::createCommandsToolbox: " << commands_toolbar_builder_file.raw() << " file not read! " << ex.what().raw() << std::endl;
-    }
-
     Gtk::Toolbar* toolbar = nullptr;
+
+    auto builder = Inkscape::UI::create_builder("toolbar-commands.ui");
     builder->get_widget("commands-toolbar", toolbar);
     if (!toolbar) {
         std::cerr << "ToolboxFactory: Failed to load commands toolbar!" << std::endl;
@@ -296,19 +279,10 @@ GtkWidget *ToolboxFactory::createSnapToolbox()
     tb->set_name("SnapToolbox");
     tb->set_homogeneous(false);
 
-    Glib::ustring snap_toolbar_builder_file = get_filename(UIS, "toolbar-snap.ui");
-    auto builder = Gtk::Builder::create();
-    try
-    {
-        builder->add_from_file(snap_toolbar_builder_file);
-    }
-    catch (const Glib::Error& ex)
-    {
-        std::cerr << "ToolboxFactor::createSnapToolbox: " << snap_toolbar_builder_file.raw() << " file not read! " << ex.what().raw() << std::endl;
-    }
-
     bool simple_snap = true;
     Gtk::Toolbar* toolbar = nullptr;
+
+    auto builder = Inkscape::UI::create_builder("toolbar-snap.ui");
     builder->get_widget("snap-toolbar", toolbar);
     if (!toolbar) {
         std::cerr << "InkscapeWindow: Failed to load snap toolbar!" << std::endl;

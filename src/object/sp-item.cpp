@@ -1544,6 +1544,9 @@ Geom::PathVector SPItem::combined_pathvector(int depth) const
     if (auto shape = dynamic_cast<SPShape const*>(this)) {
         return shape->curve()->get_pathvector();
     }
+    if (auto text = dynamic_cast<SPText const*>(this)) {
+        return text->getNormalizedBpath().get_pathvector();
+    }
 
     return {};
 }

@@ -64,6 +64,7 @@
 #include "ui/widget/style-swatch.h"
 #include "ui/widget/canvas.h"
 #include "ui/themes.h"
+#include "ui/builder-utils.h"
 
 #include "util/trim.h"
 
@@ -1836,7 +1837,7 @@ void InkscapePreferences::initPageUI()
     // Toolbars
     _page_toolbars.add_group_header(_("Toolbars"));
     try {
-        auto builder = Gtk::Builder::create_from_file(get_filename(UIS, "toolbar-tool-prefs.ui"));
+        auto builder = Inkscape::UI::create_builder("toolbar-tool-prefs.ui");
         Gtk::Widget* toolbox = nullptr;
         builder->get_widget("tool-toolbar-prefs", toolbox);
 

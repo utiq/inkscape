@@ -538,7 +538,7 @@ void SPPage::update(SPCtx * /*ctx*/, unsigned int /*flags*/)
 }
 
 /**
- * Write out the page's data into it's xml structure.
+ * Write out the page's data into its xml structure.
  */
 Inkscape::XML::Node *SPPage::write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, guint flags)
 {

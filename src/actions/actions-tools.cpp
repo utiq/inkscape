@@ -236,10 +236,18 @@ tool_switch(Glib::ustring const &tool, InkscapeWindow *win)
         return;
     }
 
+    // Gtk sometimes fires multiple actions at us, including when switch 'away' from
+    // an option. So we catch duplications here and don't switch to ourselves.
+    Glib::ustring current_tool;
+    saction->get_state(current_tool);
+    if (current_tool == tool)
+        return;
+
     // Update button states.
     saction->set_enabled(false); // Avoid infinite loop when called by tool_toogle().
     saction->change_state(tool);
     saction->set_enabled(true);
+
 
     // Switch to new tool. TODO: Clean this up. This should be one window function.
     // Setting tool via preference path is a bit strange.

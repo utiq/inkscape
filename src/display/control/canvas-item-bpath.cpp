@@ -91,6 +91,16 @@ void CanvasItemBpath::set_fill(guint rgba, SPWindRule fill_rule)
         request_redraw();
     }
 }
+/**
+ * Set the stroke width
+ */
+void CanvasItemBpath::set_stroke_width(double width)
+{
+    if (_stroke_width != width) {
+        _stroke_width = width;
+        request_redraw();
+    }
+}
 
 /**
  * Returns distance between point in canvas units and nearest point on bpath.
@@ -116,6 +126,14 @@ bool CanvasItemBpath::contains(Geom::Point const &p, double tolerance)
         tolerance = 1; // Need a minimum tolerance value or always returns false.
     }
 
+    // Check for 'inside' a filled bpath if a fill is being used.
+    if ((_fill & 0xff) != 0) {
+        Geom::Point p_doc = p * _affine.inverse();
+        if (_path.winding(p_doc) % 2 != 0) {
+            return true;
+        }
+    }
+    // Otherwise see how close we are to the outside line.
     return closest_distance_to(p) < tolerance;
 }
 
@@ -214,7 +232,7 @@ void CanvasItemBpath::render(Inkscape::CanvasItemBuffer *buf)
 
         buf->cr->set_source_rgba(SP_RGBA32_R_F(_stroke), SP_RGBA32_G_F(_stroke),
                                  SP_RGBA32_B_F(_stroke), SP_RGBA32_A_F(_stroke));
-        buf->cr->set_line_width(1.0);
+        buf->cr->set_line_width(_stroke_width);
         buf->cr->stroke();
 
     } else {

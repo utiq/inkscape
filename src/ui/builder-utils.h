@@ -18,7 +18,7 @@ namespace Inkscape {
 namespace UI {
 
 // get widget from builder or throw
-template<class W> W& get_widget(Glib::RefPtr<Gtk::Builder>& builder, const char* id) {
+template<class W> W& get_widget(const Glib::RefPtr<Gtk::Builder>& builder, const char* id) {
     W* widget;
     builder->get_widget(id, widget);
         if (!widget) {

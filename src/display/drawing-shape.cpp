@@ -218,7 +218,7 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, Geom::IntRect const &area
     bool outline = _drawing.outline();
 
     if (outline) {
-        guint32 rgba = _drawing.outlinecolor;
+        guint32 rgba = _drawing.getOutlineColor();
 
         // paint-order doesn't matter
         {

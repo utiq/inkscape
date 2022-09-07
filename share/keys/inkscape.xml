@@ -86,11 +86,12 @@ override) the bindings in the main default.xml.
   <!-- Tools -->
   <bind gaction="win.tool-switch('Select')"              keys="s,   F1"/>
   <bind gaction="win.tool-switch('Node')"                keys="n,   F2"/>
+  <bind gaction="win.tool-switch('Booleans')"            keys="x"/>
 
   <bind gaction="win.tool-switch('Rect')"                keys="r,   F4"/>
   <bind gaction="win.tool-switch('Arc')"                 keys="e,   F5"/>
   <bind gaction="win.tool-switch('Star')"                keys="asterisk, &lt;shift&gt;F9, KP_Multiply"/>
-  <bind gaction="win.tool-switch('3DBox')"               keys="x,   &lt;shift&gt;F4"/>
+  <bind gaction="win.tool-switch('3DBox')"               keys="&lt;shift&gt;F4"/>
   <bind gaction="win.tool-switch('Spiral')"              keys="i,   F9"/>
 
   <bind gaction="win.tool-switch('Pencil')"              keys="p,   F6"/>

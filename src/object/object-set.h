@@ -279,6 +279,11 @@ public:
            | boost::adaptors::transformed(object_to_item()));
     };
 
+    std::vector<SPItem*> items_vector() {
+        auto i = items();
+        return {i.begin(), i.end()};
+    }
+
     /** Returns a range of selected groups. */
     SPGroupRange groups() {
         return SPGroupRange (_container.get<random_access>()

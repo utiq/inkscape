@@ -416,6 +416,7 @@ void SPDesktop::setEventContext(const std::string& toolName)
 {
     // Tool should be able to be replaced with itself. See commit 29df5ca05d
     if (event_context) {
+        event_context->switching_away(toolName);
         delete event_context;
         event_context = nullptr;
     }
