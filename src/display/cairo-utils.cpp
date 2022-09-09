@@ -376,8 +376,7 @@ Pixbuf *Pixbuf::create_from_buffer(gchar *&&data, gsize len, double svgdpi, std:
         if(idx != std::string::npos)
         {
             if (boost::iequals(fn.substr(idx+1).c_str(), "svg")) {
-
-                std::unique_ptr<SPDocument> svgDoc(SPDocument::createNewDocFromMem(data, len, true));
+                std::unique_ptr<SPDocument> svgDoc(SPDocument::createNewDocFromMem(data, len, true, fn.c_str()));
 
                 // Check the document loaded properly
                 if (!svgDoc || !svgDoc->getRoot()) {

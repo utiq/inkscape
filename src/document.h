@@ -126,8 +126,9 @@ public:
             SPDocument *parent);
     static SPDocument *createNewDoc(char const *filename, bool keepalive,
             bool make_new = false, SPDocument *parent=nullptr );
-    static SPDocument *createNewDocFromMem(char const*buffer, int length, bool keepalive);
-           SPDocument *createChildDoc(std::string const &filename);
+    static SPDocument *createNewDocFromMem(char const *buffer, int length, bool keepalive,
+                                           Glib::ustring const &filename = "");
+    SPDocument *createChildDoc(std::string const &filename);
 
     void setPages(bool enabled);
     void prunePages(const std::string &page_nums, bool invert = false);

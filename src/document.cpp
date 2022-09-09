@@ -642,7 +642,8 @@ SPDocument *SPDocument::createNewDoc(gchar const *filename, bool keepalive, bool
     return doc;
 }
 
-SPDocument *SPDocument::createNewDocFromMem(gchar const *buffer, gint length, bool keepalive)
+SPDocument *SPDocument::createNewDocFromMem(gchar const *buffer, gint length, bool keepalive,
+                                            Glib::ustring const &filename)
 {
     SPDocument *doc = nullptr;
 
@@ -654,8 +655,12 @@ SPDocument *SPDocument::createNewDocFromMem(gchar const *buffer, gint length, bo
             // If xml file is not svg, return NULL without warning
             // TODO fixme: destroy document
         } else {
+            Glib::ustring document_base = g_path_get_dirname(filename.c_str());
+            if (document_base == ".")
+                document_base = "";
+
             Glib::ustring document_name = Glib::ustring::compose( _("Memory document %1"), ++doc_mem_count );
-            doc = createDoc(rdoc, nullptr, nullptr, document_name.c_str(), keepalive, nullptr);
+            doc = createDoc(rdoc, filename.c_str(), document_base.c_str(), document_name.c_str(), keepalive, nullptr);
         }
     }
 
