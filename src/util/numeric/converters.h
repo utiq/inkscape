@@ -110,6 +110,7 @@ inline std::vector<gdouble> read_vector(const gchar *value)
 inline std::string format_number(double val, unsigned int precision = 3)
 {
     std::ostringstream out;
+    out.imbue(std::locale("C"));
     out.precision(precision);
     out << std::fixed << val;
     std::string ret = out.str();

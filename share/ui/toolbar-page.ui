@@ -98,10 +98,9 @@
               <object class="GtkCellRendererText">
                 <property name="xalign">1</property>
                 <property name="alignment">right</property>
-                <property name="scale">0.90</property>
               </object>
               <attributes>
-                <attribute name="text">1</attribute>
+                <attribute name="markup">1</attribute>
               </attributes>
             </child>
             <child internal-child="entry">

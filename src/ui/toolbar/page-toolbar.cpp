@@ -177,7 +177,7 @@ void PageToolbar::populate_sizes()
                 // Goes into drop down
                 Gtk::TreeModel::Row row = *(sizes_list->append());
                 row[cols.name] = preset->get_name();
-                row[cols.label] = preset->get_label();
+                row[cols.label] = " <small><span fgalpha=\"50%\">" + preset->get_label() + "</span></small>";
                 row[cols.key] = preset->get_key();
             }
             if (preset->is_visible(Inkscape::Extension::TEMPLATE_SIZE_SEARCH)) {
@@ -197,16 +197,6 @@ void PageToolbar::on_parent_changed(Gtk::Widget *)
         // Undo the gtkbuilder protection now that we have a parent
         this->unreference();
         was_referenced = false;
-    }
-    // This attempts to change the rendering color to add alpha to the existing color (workaround)
-    {
-        auto fg_color = ThemeContext::get_foreground(combo_page_sizes, 0.5);
-
-        auto cell = dynamic_cast<Gtk::CellRendererText *>(sizes_searcher->get_cells()[1]);
-        cell->property_foreground_rgba() = fg_color;
-
-        cell = dynamic_cast<Gtk::CellRendererText *>(combo_page_sizes->get_cells()[1]);
-        cell->property_foreground_rgba() = fg_color;
     }
 }
 

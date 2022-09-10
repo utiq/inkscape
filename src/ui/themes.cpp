@@ -531,15 +531,6 @@ void ThemeContext::adjust_global_font_scale(double factor) {
     Gtk::StyleContext::add_provider_for_screen(screen, _fontsizeprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION - 1);
 }
 
-Gdk::RGBA ThemeContext::get_foreground(Gtk::Widget *widget, double alpha) {
-    Gdk::RGBA foreground;
-    if (!widget->get_style_context()->lookup_color("theme_fg_color", foreground)) {
-        g_warning("Couldn't lookup widget theme fg_color");
-    }
-    foreground.set_alpha(alpha);
-    return foreground;
-}
-
 } // UI
 } // Inkscape
 
