@@ -1786,9 +1786,7 @@ Shape::TesteIntersection (SweepTree * iL, SweepTree * iR, Geom::Point &atx, doub
   }
   else
   {
-    int swap = lSt;
-    lSt = lEn;
-    lEn = swap;
+    std::swap(lSt, lEn);
     ldir = -ldir;
   }
   if (rSt < rEn)
@@ -1796,9 +1794,7 @@ Shape::TesteIntersection (SweepTree * iL, SweepTree * iR, Geom::Point &atx, doub
   }
   else
   {
-    int swap = rSt;
-    rSt = rEn;
-    rEn = swap;
+    std::swap(rSt, rEn);
     rdir = -rdir;
   }
 
@@ -2763,29 +2759,21 @@ Shape::TesteIntersection (Shape * ils, Shape * irs, int ilb, int irb,
     ils->pData[lEn].rx[0], ib = ils->pData[lEn].rx[1];
   if (il > ir)
     {
-      double swf = il;
-      il = ir;
-      ir = swf;
+      std::swap(il, ir);
     }
   if (it > ib)
     {
-      double swf = it;
-      it = ib;
-      ib = swf;
+      std::swap(it, ib);
     }
   double jl = irs->pData[rSt].rx[0], jt = irs->pData[rSt].rx[1], jr =
     irs->pData[rEn].rx[0], jb = irs->pData[rEn].rx[1];
   if (jl > jr)
     {
-      double swf = jl;
-      jl = jr;
-      jr = swf;
+      std::swap(jl, jr);
     }
   if (jt > jb)
     {
-      double swf = jt;
-      jt = jb;
-      jb = swf;
+      std::swap(jt, jb);
     }
 
   if (il > jr || it > jb || ir < jl || ib < jt)
