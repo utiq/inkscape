@@ -129,7 +129,7 @@ ExecutionEnv::createWorkingDialog () {
         return;
     }
 
-    gchar * dlgmessage = g_strdup_printf(_("'%s' working, please wait..."), _effect->get_name());
+    gchar * dlgmessage = g_strdup_printf(_("'%s' complete, loading result..."), _effect->get_name());
     _visibleDialog = new Gtk::MessageDialog(*window,
                                dlgmessage,
                                false, // use markup
