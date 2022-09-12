@@ -382,9 +382,6 @@ public:
     void toggleColorProfAdjust();
     bool colorProfAdjustEnabled();
 
-    void toggleGrids();
-    bool gridsEnabled() const { return grids_visible; };
-    void showGrids(bool show, bool dirty_document = true);
     void toggleToolbar(gchar const *toolbar_name);
 
     bool is_iconified();
@@ -524,7 +521,6 @@ private:
     bool _quick_zoom_enabled; ///< Signifies that currently we're in quick zoom mode
     DesktopAffine _quick_zoom_affine;  ///< The transform of the screen before quick zoom
 
-    bool grids_visible = false;
     bool _overlays_visible = true; ///< Whether the overlays are temporarily hidden
     bool _saved_guides_visible = false; ///< Remembers guides' visibility when hiding overlays
 

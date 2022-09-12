@@ -120,7 +120,7 @@ Hom/end keys-select minimum or maximum feather values
   <bind gaction="win.window-previous"               keys="&lt;ctrl&gt;&lt;shift&gt;Tab, &lt;ctrl&gt;ISO_Left_Tab" />
   <bind gaction="win.canvas-rulers"                 keys="&lt;ctrl&gt;L, &lt;ctrl&gt;l" />
   <bind gaction="doc.show-all-guides"               keys="&lt;shift&gt;bar, bar, KP_1" /><!-- | -->
-  <bind gaction="win.canvas-show-grid"              keys="&lt;shift&gt;numbersign, numbersign" /> <!-- # -->
+  <bind gaction="doc.show-grids"                    keys="&lt;shift&gt;numbersign, numbersign" /> <!-- # -->
   <bind gaction="win.canvas-scroll-bars" />
   <bind gaction="win.window-new"/>
   <bind gaction="win.dialog-open('IconPreview')"/>

@@ -544,6 +544,21 @@ std::vector<AttributeInfo> getKnownAttrs()
         AttributeInfo("pagecolor", true),
         AttributeInfo("labelstyle", true),
 
+        // SPGrid
+        AttributeInfo("originx", true),
+        AttributeInfo("originy", true),
+        AttributeInfo("spacingx", true),
+        AttributeInfo("spacingy", true),
+        AttributeInfo("gridanglex", true),
+        AttributeInfo("gridanglez", true),
+        AttributeInfo("enabled", true),
+        AttributeInfo("visible", true),
+        AttributeInfo("empopacity", true),
+        AttributeInfo("empcolor", true),
+        AttributeInfo("empspacing", true),
+        AttributeInfo("dotted", true),
+        AttributeInfo("snapvisiblegridlinesonly", true),
+
         // SPGuide
         AttributeInfo("position", true),
 

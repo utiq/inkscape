@@ -541,7 +541,7 @@
     </section>
     <item>
       <attribute name='label' translatable="yes">Page _Grid</attribute>
-      <attribute name='action'>win.canvas-show-grid</attribute>
+      <attribute name='action'>doc.show-grids</attribute>
     </item>
     <item>
       <attribute name='label' translatable="yes">G_uides</attribute>

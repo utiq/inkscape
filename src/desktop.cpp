@@ -44,7 +44,6 @@
 
 #include "display/drawing.h"
 #include "display/control/canvas-temporary-item-list.h"
-#include "display/control/canvas-grid.h" // Grid types
 #include "display/control/snap-indicator.h"
 
 #include "display/control/canvas-item-catchall.h"
@@ -258,8 +257,6 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
     _reconstruction_finish_connection =
         document->connectReconstructionFinish(sigc::bind(sigc::ptr_fun(_reconstruction_finish), this));
     _reconstruction_old_layer_id.clear();
-
-    showGrids(namedview->grids_visible, false);
 }
 
 void SPDesktop::destroy()
@@ -1175,10 +1172,10 @@ void SPDesktop::setTempHideOverlays(bool hide)
         _overlays_visible = false;
     } else {
         canvas_group_controls->show();
-        showGrids(grids_visible, false);
         if (_saved_guides_visible) {
             namedview->temporarily_show_guides(true);
         }
+        canvas_group_grids->show();
         _overlays_visible = true;
     }
 }
@@ -1351,28 +1348,6 @@ bool SPDesktop::colorProfAdjustEnabled()
     return _widget->get_color_prof_adj_enabled();
 }
 
-void SPDesktop::toggleGrids()
-{
-    if (! namedview->grids.empty()) {
-            showGrids(!grids_visible);
-    } else {
-        //there is no grid present at the moment. add a rectangular grid and make it visible
-        namedview->writeNewGrid(this->getDocument(), Inkscape::GRID_RECTANGULAR);
-        showGrids(true);
-    }
-}
-
-void SPDesktop::showGrids(bool show, bool dirty_document)
-{
-    grids_visible = show;
-    sp_namedview_show_grids(namedview, grids_visible, dirty_document);
-    if (show) {
-        canvas_group_grids->show();
-    } else {
-        canvas_group_grids->hide();
-    }
-}
-
 //----------------------------------------------------------------------
 // Callback implementations. The virtual ones are connected by the view.
 
@@ -1416,7 +1391,7 @@ SPDesktop::setDocument (SPDocument *doc)
 
         namedview->show(this);
 
-        showGrids(namedview->grids_visible, false);
+        namedview->setShowGrids(namedview->getShowGrids());
 
         /* Ugly hack */
         activate_guides (true);

@@ -243,7 +243,7 @@ Path -> Unsmooth - Ctrl+Alt+U
 Display -> Size - Shift+F8
 -->
 
-  <bind gaction="win.canvas-show-grid"    keys="&lt;shift&gt;F9" />
+  <bind gaction="doc.show-grids"          keys="&lt;shift&gt;F9" />
 
   <bind gaction="win.canvas-rulers"       keys="&lt;shift&gt;F11" />
 

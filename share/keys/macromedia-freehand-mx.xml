@@ -128,7 +128,7 @@ File, Edit, View, Modify, Text, Xtras, Window, Help.
   <!-- <bind gaction="doc.show-all-guides" keys="&lt;ctrl&gt;;" /> -->
 
   <!-- View, Grid, Show  Ctrl+Alt+G.  -->
-  <bind gaction="win.canvas-show-grid"  keys="&lt;ctrl&gt;&lt;alt&gt;g, &lt;ctrl&gt;&lt;alt&gt;G" />
+  <bind gaction="doc.show-grids"        keys="&lt;ctrl&gt;&lt;alt&gt;g, &lt;ctrl&gt;&lt;alt&gt;G" />
   <!-- TODO: View, Grid, Snap to Grid Ctrl+Alt+Shift+G.  -->
 
   <!-- New View in Inkscape is equivalent to New Window in Freehand.  -->

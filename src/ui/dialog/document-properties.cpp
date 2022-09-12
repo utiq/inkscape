@@ -28,17 +28,18 @@
 #include "rdf.h"
 
 #include "actions/actions-tools.h"
-#include "display/control/canvas-grid.h"
 #include "document-properties.h"
 #include "include/gtkmm_version.h"
 #include "io/sys.h"
 #include "object/sp-root.h"
+#include "object/sp-grid.h"
 #include "object/sp-script.h"
 #include "object/color-profile.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/shape-editor.h"
+#include "ui/widget/alignment-selector.h"
 #include "ui/widget/entity-entry.h"
 #include "ui/widget/notebook-page.h"
 #include "xml/node-event-vector.h"
@@ -1344,6 +1345,7 @@ void DocumentProperties::populate_script_lists(){
 
 /**
 * Called for _updating_ the dialog. DO NOT call this a lot. It's expensive!
+* Will need to probably create a GridManager with signals to each Grid attribute
 */
 void DocumentProperties::update_gridspage()
 {
@@ -1359,20 +1361,10 @@ void DocumentProperties::update_gridspage()
 
     //add tabs
     for(auto grid : nv->grids) {
-        if (!grid->repr->attribute("id")) continue; // update_gridspage is called again when "id" is added
-        Glib::ustring name(grid->repr->attribute("id"));
-        const char *icon = nullptr;
-        switch (grid->getGridType()) {
-            case GRID_RECTANGULAR:
-                icon = "grid-rectangular";
-                break;
-            case GRID_AXONOMETRIC:
-                icon = "grid-axonometric";
-                break;
-            default:
-                break;
-        }
-        _grids_notebook.append_page(*grid->newWidget(), _createPageTabLabel(name, icon));
+        if (!grid->getRepr()->attribute("id")) continue; // update_gridspage is called again when "id" is added
+        Glib::ustring name(grid->getRepr()->attribute("id"));
+        const char *icon = grid->typeName();
+        _grids_notebook.append_page(*createNewGridWidget(grid), _createPageTabLabel(name, icon));
     }
     _grids_notebook.show_all();
 
@@ -1393,6 +1385,212 @@ void DocumentProperties::update_gridspage()
     }
 }
 
+void *DocumentProperties::notifyGridWidgetsDestroyed(void *data)
+{
+    if (auto prop = reinterpret_cast<DocumentProperties *>(data)) {
+        prop->_grid_rcb_enabled = nullptr;
+        prop->_grid_rcb_snap_visible_only = nullptr;
+        prop->_grid_rcb_visible = nullptr;
+        prop->_grid_rcb_dotted = nullptr;
+        prop->_grid_as_alignment = nullptr;
+    }
+    return nullptr;
+}
+
+Gtk::Widget *DocumentProperties::createNewGridWidget(SPGrid *grid)
+{
+    auto vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    auto namelabel = Gtk::make_managed<Gtk::Label>("", Gtk::ALIGN_CENTER);
+
+    Inkscape::XML::Node *repr = grid->getRepr();
+    auto doc = getDocument();
+
+    namelabel->set_markup(Glib::ustring("<b>") + grid->displayName() + "</b>");
+    vbox->pack_start(*namelabel, false, false);
+
+    _grid_rcb_enabled = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+            _("_Enabled"),
+            _("Makes the grid available for working with on the canvas."),
+            "enabled", _wr, false, repr, doc);
+    // grid_rcb_enabled serves as a canary that tells us that the widgets have been destroyed
+    _grid_rcb_enabled->add_destroy_notify_callback(this, notifyGridWidgetsDestroyed);
+
+    _grid_rcb_snap_visible_only = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+            _("Snap to visible _grid lines only"),
+            _("When zoomed out, not all grid lines will be displayed. Only the visible ones will be snapped to"),
+            "snapvisiblegridlinesonly", _wr, false, repr, doc);
+
+    _grid_rcb_visible = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+            _("_Visible"),
+            _("Determines whether the grid is displayed or not. Objects are still snapped to invisible grids."),
+            "visible", _wr, false, repr, doc);
+
+    _grid_as_alignment = Gtk::make_managed<Inkscape::UI::Widget::AlignmentSelector>();
+    _grid_as_alignment->on_alignmentClicked().connect([this, grid](int align) {
+                auto doc = getDocument();
+                Geom::Point dimensions = doc->getDimensions();
+                dimensions[Geom::X] *= align % 3 * 0.5;
+                dimensions[Geom::Y] *= align / 3 * 0.5;
+                dimensions *= doc->doc2dt();
+                grid->setOrigin(dimensions);
+    });
+
+    auto left = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
+    left->pack_start(*_grid_rcb_enabled, false, false);
+    left->pack_start(*_grid_rcb_visible, false, false);
+    left->pack_start(*_grid_rcb_snap_visible_only, false, false);
+
+    if (grid->getType() == GridType::RECTANGULAR) {
+        _grid_rcb_dotted = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+                _("_Show dots instead of lines"), _("If set, displays dots at gridpoints instead of gridlines"),
+                "dotted", _wr, false, repr, doc );
+        left->pack_start(*_grid_rcb_dotted, false, false);
+    }
+
+    left->pack_start(*Gtk::make_managed<Gtk::Label>(_("Align to page:")), false, false);
+    left->pack_start(*_grid_as_alignment, false, false);
+
+    auto right = createRightGridColumn(grid);
+    right->set_hexpand(false);
+
+    auto inner = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
+    inner->pack_start(*left, true, true);
+    inner->pack_start(*right, false, false);
+    vbox->pack_start(*inner, false, false);
+    vbox->set_border_width(4);
+
+    std::list<Gtk::Widget*> slaves;
+    for (auto &item : left->get_children()) {
+        if (item != _grid_rcb_enabled) {
+            slaves.push_back(item);
+        }
+    }
+    slaves.push_back(right);
+    _grid_rcb_enabled->setSlaveWidgets(slaves);
+
+    // set widget values
+    _wr.setUpdating (true);
+    _grid_rcb_enabled->setActive(grid->isEnabled());
+    _grid_rcb_visible->setActive(grid->isVisible());
+
+    if (_grid_rcb_dotted)
+        _grid_rcb_dotted->setActive(grid->isDotted());
+
+    _grid_rcb_snap_visible_only->setActive(grid->getSnapToVisibleOnly());
+    _grid_rcb_enabled->setActive(grid->snapper()->getEnabled());
+    _grid_rcb_snap_visible_only->setActive(grid->snapper()->getSnapVisibleOnly());
+    _wr.setUpdating (false);
+
+    return vbox;
+}
+
+// needs to switch based on grid type, need to find a better way
+Gtk::Widget *DocumentProperties::createRightGridColumn(SPGrid *grid)
+{
+    using namespace Inkscape::UI::Widget;
+    Inkscape::XML::Node *repr = grid->getRepr();
+    auto doc = getDocument();
+
+    auto rumg = Gtk::make_managed<RegisteredUnitMenu>(
+                    _("Grid _units:"), "units", _wr, repr, doc);
+    auto rsu_ox = Gtk::make_managed<RegisteredScalarUnit>(
+                    _("_Origin X:"), _("X coordinate of grid origin"), "originx",
+                    *rumg, _wr, repr, doc, RSU_x);
+    auto rsu_oy = Gtk::make_managed<RegisteredScalarUnit>(
+                _("O_rigin Y:"), _("Y coordinate of grid origin"), "originy",
+                *rumg, _wr, repr, doc, RSU_y);
+    auto rsu_sx = Gtk::make_managed<RegisteredScalarUnit>(
+                _("Spacing _X:"), _("Distance between vertical grid lines"), "spacingx",
+                *rumg, _wr, repr, doc, RSU_x);
+    auto rsu_sy = Gtk::make_managed<RegisteredScalarUnit>(
+                _("Spacing _Y:"), _("Base length of z-axis"), "spacingy",
+                *rumg, _wr, repr, doc, RSU_y);
+    auto rsu_ax = Gtk::make_managed<RegisteredScalar>(
+                _("Angle X:"), _("Angle of x-axis"), "gridanglex", _wr, repr, doc);
+    auto rsu_az = Gtk::make_managed<RegisteredScalar>(
+                _("Angle Z:"), _("Angle of z-axis"), "gridanglez", _wr, repr, doc);
+    auto rcp_gcol = Gtk::make_managed<RegisteredColorPicker>(
+                _("Minor grid line _color:"), _("Minor grid line color"), _("Color of the minor grid lines"),
+                "color", "opacity", _wr, repr, doc);
+    auto rcp_gmcol = Gtk::make_managed<RegisteredColorPicker>(
+                _("Ma_jor grid line color:"), _("Major grid line color"),
+                _("Color of the major (highlighted) grid lines"),
+                "empcolor", "empopacity", _wr, repr, doc);
+    auto rsi = Gtk::make_managed<RegisteredSuffixedInteger>(
+                _("_Major grid line every:"), "", _("lines"), "empspacing", _wr, repr, doc);
+
+    rumg->set_hexpand();
+    rsu_ox->set_hexpand();
+    rsu_oy->set_hexpand();
+    rsu_sx->set_hexpand();
+    rsu_sy->set_hexpand();
+    rsu_ax->set_hexpand();
+    rsu_az->set_hexpand();
+    rcp_gcol->set_hexpand();
+    rcp_gmcol->set_hexpand();
+    rsi->set_hexpand();
+
+    // set widget values
+    _wr.setUpdating (true);
+
+    rsu_ox->setDigits(5);
+    rsu_ox->setIncrements(0.1, 1.0);
+
+    rsu_oy->setDigits(5);
+    rsu_oy->setIncrements(0.1, 1.0);
+
+    rsu_sx->setDigits(5);
+    rsu_sx->setIncrements(0.1, 1.0);
+
+    rsu_sy->setDigits(5);
+    rsu_sy->setIncrements(0.1, 1.0);
+
+    rumg->setUnit(grid->getUnit()->abbr);
+
+    // SPGrid stores in px, for converting to user units
+    auto doc_scale = doc->getDocumentScale().vector();
+
+    using namespace Inkscape::Util;
+    rsu_ox->setValue( Quantity::convert(grid->getOrigin()[Geom::X], "px", grid->getUnit()) * doc_scale[Geom::X] );
+    rsu_oy->setValue( Quantity::convert(grid->getOrigin()[Geom::Y], "px", grid->getUnit()) * doc_scale[Geom::Y] );
+    rsu_sx->setValue( Quantity::convert(grid->getSpacing()[Geom::X], "px", grid->getUnit()) * doc_scale[Geom::X] );
+    rsu_sy->setValue( Quantity::convert(grid->getSpacing()[Geom::Y], "px", grid->getUnit()) * doc_scale[Geom::Y] );
+
+    rsu_ax->setValue(grid->getAngleX());
+    rsu_az->setValue(grid->getAngleZ());
+
+    rcp_gcol->setRgba32 (grid->getMinorColor());
+    rcp_gmcol->setRgba32 (grid->getMajorColor());
+    rsi->setValue (grid->getMajorLineInterval());
+
+    _wr.setUpdating (false);
+
+    rsu_ox->setProgrammatically = false;
+    rsu_oy->setProgrammatically = false;
+
+    auto column = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
+    column->pack_start(*rumg, true, false);
+    column->pack_start(*rsu_ox, true, false);
+    column->pack_start(*rsu_oy, true, false);
+
+    if (grid->getType() == GridType::RECTANGULAR) {
+        column->pack_start(*rsu_sx, true, false);
+    }
+
+    column->pack_start(*rsu_sy, true, false);
+
+    if (grid->getType() == GridType::AXONOMETRIC) {
+        column->pack_start(*rsu_ax, true, false);
+        column->pack_start(*rsu_az, true, false);
+    }
+
+    column->pack_start(*rcp_gcol, true, false);
+    column->pack_start(*rcp_gmcol, true, false);
+    column->pack_start(*rsi, true, false);
+
+    return column;
+}
+
 /**
  * Build grid page of dialog.
  */
@@ -1406,10 +1604,10 @@ void DocumentProperties::build_gridspage()
     _grids_hbox_crea.pack_start(_grids_combo_gridtype, true, true);
     _grids_hbox_crea.pack_start(_grids_button_new, true, true);
 
-    for (gint t = 0; t <= GRID_MAXTYPENR; t++) {
-        _grids_combo_gridtype.append( CanvasGrid::getName( (GridType) t ) );
-    }
-    _grids_combo_gridtype.set_active_text( CanvasGrid::getName(GRID_RECTANGULAR) );
+    _grids_combo_gridtype.append( N_("Rectangular Grid") );
+    _grids_combo_gridtype.append( N_("Axonometric Grid") );
+
+    _grids_combo_gridtype.set_active_text( N_("Rectangular Grid") );
 
     _grids_space.set_size_request (SPACE_SIZE_X, SPACE_SIZE_Y);
 
@@ -1423,7 +1621,6 @@ void DocumentProperties::build_gridspage()
     _grids_vbox.pack_start(_grids_notebook, false, false);
     _grids_vbox.pack_start(_grids_button_remove, false, false);
 }
-
 
 void DocumentProperties::update_viewbox(SPDesktop* desktop) {
     if (!desktop) return;
@@ -1627,8 +1824,6 @@ static void on_child_removed(Inkscape::XML::Node */*repr*/, Inkscape::XML::Node 
         dialog->update_gridspage();
 }
 
-
-
 /**
  * Called when XML node attribute changed; updates dialog widgets.
  */
@@ -1648,10 +1843,21 @@ void DocumentProperties::onNewGrid()
     if (auto desktop = getDesktop()) {
         Inkscape::XML::Node *repr = desktop->getNamedView()->getRepr();
         Glib::ustring typestring = _grids_combo_gridtype.get_active_text();
-        CanvasGrid::writeNewGridToRepr(repr, getDocument(), CanvasGrid::getGridTypeFromName(typestring.c_str()));
 
-        // toggle grid showing to ON:
-        desktop->showGrids(true);
+        if (auto document = getDocument()) {
+            Inkscape::XML::Node *new_node = document->getReprDoc()->createElement("inkscape:grid");
+
+            if (!strcmp(typestring.c_str(), "Axonometric Grid"))
+                new_node->setAttribute("type", "axonomgrid");
+
+            repr->appendChild(new_node);
+            Inkscape::GC::release(new_node);
+
+            // toggle grid showing to ON:
+            // side effect: any pre-existing grids set to invisible will be set to visible
+            desktop->getNamedView()->setShowGrids(true);
+            DocumentUndo::done(document, _("Create new grid"), INKSCAPE_ICON("document-properties"));
+        }
     }
 }
 
@@ -1663,7 +1869,7 @@ void DocumentProperties::onRemoveGrid()
       return;
 
     SPNamedView *nv = getDesktop()->getNamedView();
-    Inkscape::CanvasGrid * found_grid = nullptr;
+    SPGrid *found_grid = nullptr;
     if( pagenum < (gint)nv->grids.size())
         found_grid = nv->grids[pagenum];
 
@@ -1671,7 +1877,7 @@ void DocumentProperties::onRemoveGrid()
         if (found_grid) {
             // delete the grid that corresponds with the selected tab
             // when the grid is deleted from SVG, the SPNamedview handler automatically deletes the object, so found_grid becomes an invalid pointer!
-            found_grid->repr->parent()->removeChild(found_grid->repr);
+            found_grid->getRepr()->parent()->removeChild(found_grid->getRepr());
             DocumentUndo::done(document, _("Remove grid"), INKSCAPE_ICON("document-properties"));
         }
     }

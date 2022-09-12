@@ -20,7 +20,7 @@
 #include "object/sp-font-face.h"
 #include "object/sp-glyph.h"
 #include "object/sp-glyph-kerning.h"
-//#include "object/sp-grid.h"
+#include "object/sp-grid.h"
 #include "object/sp-guide.h"
 #include "object/sp-hatch.h"
 #include "object/sp-hatch-path.h"
@@ -170,7 +170,7 @@ TEST(SPObjectTagsTest, compare_dynamic_cast)
         SPGlyphKerning,
         SPHkern,
         SPVkern,
-        //SPGrid,
+        SPGrid,
         SPGuide,
         SPHatchPath,
         SPItem,

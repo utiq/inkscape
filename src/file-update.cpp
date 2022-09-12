@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "desktop.h"
-#include "display/control/canvas-grid.h"
+#include "display/control/canvas-item-grid.h"
 #include "document-undo.h"
 #include "document.h"
 #include "extension/db.h"
@@ -45,6 +45,7 @@
 #include "object/sp-flowdiv.h"
 #include "object/sp-flowtext.h"
 #include "object/sp-guide.h"
+#include "object/sp-grid.h"
 #include "object/sp-item.h"
 #include "object/sp-namedview.h"
 #include "object/sp-object.h"
@@ -567,37 +568,32 @@ void sp_file_convert_dpi(SPDocument *doc)
             }
 
             for (auto grid : nv->grids) {
-                Inkscape::CanvasXYGrid *xy = dynamic_cast<Inkscape::CanvasXYGrid *>(grid);
-                if (xy) {
-                    // std::cout << "A grid: " << xy->getSVGName() << std::endl;
-                    // std::cout << "  Origin: " << xy->origin
-                    //           << "  Spacing: " << xy->spacing << std::endl;
-                    // std::cout << (xy->isLegacy()?"  Legacy":"  Not Legacy") << std::endl;
+                if (grid->getType() == GridType::RECTANGULAR) {
                     Geom::Scale scale = doc->getDocumentScale();
-                    if (xy->isLegacy()) {
-                        if (xy->isPixel()) {
+                    if (grid->isLegacy()) {
+                        if (grid->isPixel()) {
                             if (need_fix_grid_mm) {
-                                xy->Scale(Geom::Scale(1, 1)); // See note below
+                                grid->scale(Geom::Scale(1, 1)); // See note below
                             } else {
                                 scale *= Geom::Scale(ratio, ratio);
-                                xy->Scale(scale.inverse()); /* *** */
+                                grid->scale(scale.inverse()); /* *** */
                             }
                         } else {
                             if (need_fix_grid_mm) {
-                                xy->Scale(Geom::Scale(ratio, ratio));
+                                grid->scale(Geom::Scale(ratio, ratio));
                             } else {
-                                xy->Scale(scale.inverse()); /* *** */
+                                grid->scale(scale.inverse()); /* *** */
                             }
                         }
                     } else {
                         if (need_fix_guides) {
                             if (did_scaling) {
-                                xy->Scale(Geom::Scale(ratio, ratio).inverse());
+                                grid->scale(Geom::Scale(ratio, ratio).inverse());
                             } else {
                                 // HACK: Scaling the document does not seem to cause
                                 // grids defined in document units to be updated.
                                 // This forces an update.
-                                xy->Scale(Geom::Scale(1, 1));
+                                grid->scale(Geom::Scale(1, 1));
                             }
                         }
                     }

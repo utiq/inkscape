@@ -75,17 +75,6 @@ canvas_toggle_state(InkscapeWindow *win, Glib::ustring action_name)
 }
 
 void
-canvas_show_grid_toggle(InkscapeWindow *win)
-{
-    // Toggle State
-    canvas_toggle_state(win, "canvas-show-grid");
-
-    // Do Action
-    SPDesktop* dt = win->get_desktop();
-    dt->toggleGrids();
-}
-
-void
 canvas_commands_bar_toggle(InkscapeWindow *win)
 {
     // Toggle State
@@ -272,8 +261,6 @@ view_set_gui(InkscapeWindow* win)
 std::vector<std::vector<Glib::ustring>> raw_data_view_mode =
 {
     // clang-format off
-    {"win.canvas-show-grid",                N_("Page Grid"),                "Canvas Display",   N_("Show or hide the page grid")},
-
     {"win.canvas-commands-bar",             N_("Commands Bar"),             "Canvas Display",   N_("Show or hide the Commands bar (under the menu)")},
     {"win.canvas-snap-controls-bar",        N_("Snap Controls Bar"),        "Canvas Display",   N_("Show or hide the snapping controls")},
     {"win.canvas-tool-control-bar",         N_("Tool Controls Bar"),        "Canvas Display",   N_("Show or hide the Tool Controls bar")},
@@ -330,8 +317,6 @@ add_actions_view_mode(InkscapeWindow* win)
     bool statusbar_toggle   = prefs->getBool(pref_root + "statusbar/state", true);
 
     bool interface_mode     = prefs->getBool(pref_root + "interface_mode", widescreen);
-
-    win->add_action_bool(          "canvas-show-grid",              sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_show_grid_toggle),            win));
 
     win->add_action_bool(          "canvas-commands-bar",           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_commands_bar_toggle),         win), commands_toggle);
     win->add_action_bool(          "canvas-snap-controls-bar",      sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_snap_controls_bar_toggle),    win), snaptoolbox_toggle);

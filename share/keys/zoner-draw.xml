@@ -103,7 +103,7 @@ win.canvas-zoom-page-width: Zoom to fit page width in window
 -->
 
   <bind gaction="doc.show-all-guides"                   keys="l, L" />
-  <bind gaction="win.canvas-show-grid"                  keys="g, G" />
+  <bind gaction="doc.show-grids"                        keys="g, G" />
   
 <!-- Not implemented in Zoner Draw? !!!!!!!!!!!!
 

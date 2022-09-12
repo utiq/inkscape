@@ -41,7 +41,6 @@
 #include "inkscape-window.h"
 #include "inkscape-version.h"
 
-#include "display/control/canvas-axonomgrid.h"
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-guideline.h"
 
@@ -50,6 +49,7 @@
 #include "object/sp-image.h"
 #include "object/sp-namedview.h"
 #include "object/sp-root.h"
+#include "object/sp-grid.h"
 
 #include "ui/shortcuts.h"
 #include "ui/dialog/swatches.h"
@@ -1882,17 +1882,18 @@ SPDesktopWidget::on_ruler_box_button_press_event(GdkEventButton *event, Gtk::Wid
         Geom::Point normal_tr_to_bl(-1., y_dir); //topright to bottomleft
         normal_bl_to_tr.normalize();
         normal_tr_to_bl.normalize();
-        Inkscape::CanvasGrid * grid = sp_namedview_get_first_enabled_grid(desktop->namedview);
-        if (grid){
-            if (grid->getGridType() == Inkscape::GRID_AXONOMETRIC ) {
-                Inkscape::CanvasAxonomGrid *axonomgrid = dynamic_cast<Inkscape::CanvasAxonomGrid *>(grid);
+        SPGrid * grid = desktop->namedview->getFirstEnabledGrid();
+        if (grid) {
+            if (grid->getType() == GridType::AXONOMETRIC ) {
+                auto angle_x = Geom::rad_from_deg(grid->getAngleX());
+                auto angle_z = Geom::rad_from_deg(grid->getAngleZ());
                 if (event->state & GDK_CONTROL_MASK) {
                     // guidelines normal to gridlines
-                    normal_bl_to_tr = Geom::Point::polar(-axonomgrid->angle_rad[0], 1.0);
-                    normal_tr_to_bl = Geom::Point::polar(axonomgrid->angle_rad[2], 1.0);
+                    normal_bl_to_tr = Geom::Point::polar(-angle_x, 1.0);
+                    normal_tr_to_bl = Geom::Point::polar(angle_z, 1.0);
                 } else {
-                    normal_bl_to_tr = rot90(Geom::Point::polar(axonomgrid->angle_rad[2], 1.0));
-                    normal_tr_to_bl = rot90(Geom::Point::polar(-axonomgrid->angle_rad[0], 1.0));
+                    normal_bl_to_tr = Geom::rot90(Geom::Point::polar(angle_z, 1.0));
+                    normal_tr_to_bl = Geom::rot90(Geom::Point::polar(-angle_x, 1.0));
                 }
             }
         }

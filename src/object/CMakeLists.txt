@@ -28,6 +28,7 @@ set(object_SRC
   sp-glyph.cpp
   sp-gradient-reference.cpp
   sp-gradient.cpp
+  sp-grid.cpp
   sp-guide.cpp
   sp-hatch-path.cpp
   sp-hatch.cpp
@@ -116,6 +117,7 @@ set(object_SRC
   sp-gradient-units.h
   sp-gradient-vector.h
   sp-gradient.h
+  sp-grid.h
   sp-guide.h
   sp-hatch-path.h
   sp-hatch.h

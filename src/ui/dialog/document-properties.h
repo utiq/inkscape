@@ -40,6 +40,7 @@ namespace Inkscape {
     }
     namespace UI {
         namespace Widget {
+            class AlignmentSelector;
             class EntityEntry;
             class NotebookPage;
             class PageProperties;
@@ -220,6 +221,16 @@ private:
 
     // callback for display unit change
     void display_unit_change(const Inkscape::Util::Unit* unit);
+
+    Gtk::Widget *createNewGridWidget(SPGrid *grid);
+    Gtk::Widget *createRightGridColumn(SPGrid *grid);
+    static void *notifyGridWidgetsDestroyed(void *data);
+
+    UI::Widget::RegisteredCheckButton *_grid_rcb_enabled = nullptr;
+    UI::Widget::RegisteredCheckButton *_grid_rcb_snap_visible_only = nullptr;
+    UI::Widget::RegisteredCheckButton *_grid_rcb_visible = nullptr;
+    UI::Widget::RegisteredCheckButton *_grid_rcb_dotted = nullptr;
+    UI::Widget::AlignmentSelector     *_grid_as_alignment = nullptr;
 
     struct watch_connection {
         ~watch_connection() { disconnect(); }

@@ -206,7 +206,7 @@ override) the bindings in the main default.xml.
   <bind gaction="win.canvas-color-manage" />
 
   <!-- View - Other -->
-  <bind gaction="win.canvas-show-grid"                   keys="&lt;shift&gt;numbersign, numbersign" /> <!-- # -->
+  <bind gaction="doc.show-grids"                         keys="&lt;shift&gt;numbersign, numbersign" /> <!-- # -->
   <bind gaction="doc.show-all-guides"                    keys="&lt;shift&gt;bar,        bar" />        <!-- | -->
   <bind gaction="win.canvas-commands-bar" />
   <bind gaction="win.canvas-snap-controls-bar" />

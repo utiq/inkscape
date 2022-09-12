@@ -41,13 +41,13 @@
 #include "inkscape.h"
 #include "pure-transform.h"
 
-#include "display/control/canvas-grid.h"
 #include "display/control/snap-indicator.h"
 
 #include "helper/mathfns.h"
 
 #include "object/sp-namedview.h"
 #include "object/sp-guide.h"
+#include "object/sp-grid.h"
 
 #include "ui/tools/tool-base.h"
 
@@ -94,9 +94,9 @@ SnapManager::SnapperList SnapManager::getGridSnappers() const
 {
     SnapperList s;
 
-    if (_desktop && _desktop->gridsEnabled() && snapprefs.isTargetSnappable(Inkscape::SNAPTARGET_GRID)) {
+    if (_desktop && _desktop->getNamedView()->getShowGrids() && snapprefs.isTargetSnappable(Inkscape::SNAPTARGET_GRID)) {
         for(auto grid : _named_view->grids) {
-            s.push_back(grid->snapper);
+            s.push_back(grid->snapper());
         }
     }
 
@@ -186,7 +186,8 @@ Geom::Point SnapManager::multipleOfGridPitch(Geom::Point const &t, Geom::Point c
     if (!snapprefs.getSnapEnabledGlobally() || snapprefs.getSnapPostponedGlobally())
         return t;
 
-    if (_desktop && _desktop->gridsEnabled()) {
+    // get from pref
+    if (_desktop && _desktop->getNamedView()->getShowGrids()) {
         bool success = false;
         Geom::Point nearest_multiple;
         Geom::Coord nearest_distance = Geom::infinity();
@@ -199,13 +200,13 @@ Geom::Point SnapManager::multipleOfGridPitch(Geom::Point const &t, Geom::Point c
         // Cannot use getGridSnappers() because we need both the grids AND their snappers
         // Therefore we iterate through all grids manually
         for (auto grid : _named_view->grids) {
-            const Inkscape::Snapper* snapper = grid->snapper;
+            const Inkscape::Snapper* snapper = grid->snapper();
             if (snapper && snapper->ThisSnapperMightSnap()) {
                 // To find the nearest multiple of the grid pitch for a given translation t, we
                 // will use the grid snapper. Simply snapping the value t to the grid will do, but
                 // only if the origin of the grid is at (0,0). If it's not then compensate for this
                 // in the translation t
-                Geom::Point const t_offset = t + grid->origin;
+                Geom::Point const t_offset = t + grid->getOrigin();
                 IntermSnapResults isr;
                 // Only the first three parameters are being used for grid snappers
                 snapper->freeSnap(isr, Inkscape::SnapCandidatePoint(t_offset, Inkscape::SNAPSOURCE_GRID_PITCH),Geom::OptRect(), nullptr, nullptr);
@@ -218,7 +219,7 @@ Geom::Point SnapManager::multipleOfGridPitch(Geom::Point const &t, Geom::Point c
                     // use getSnapDistance() instead of getWeightedDistance() here because the pointer's position
                     // doesn't tell us anything about which node to snap
                     success = true;
-                    nearest_multiple = s.getPoint() - grid->origin;
+                    nearest_multiple = s.getPoint() - grid->getOrigin();
                     nearest_distance = s.getSnapDistance();
                     bestSnappedPoint = s;
                 }

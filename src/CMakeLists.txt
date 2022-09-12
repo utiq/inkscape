@@ -39,6 +39,7 @@ set(inkscape_SRC
   gradient-chemistry.cpp
   gradient-drag.cpp
   guide-snapper.cpp
+  grid-snapper.cpp
   id-clash.cpp
   inkscape.cpp
   inkscape-version-info.cpp
@@ -128,6 +129,7 @@ set(inkscape_SRC
   gradient-chemistry.h
   gradient-drag.h
   guide-snapper.h
+  grid-snapper.h
   id-clash.h
   inkscape-version.h
   inkscape-version-info.h

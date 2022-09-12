@@ -39,8 +39,6 @@ set(display_SRC
     nr-style.cpp
     nr-svgfonts.cpp
 
-    control/canvas-axonomgrid.cpp
-    control/canvas-grid.cpp
     control/canvas-temporary-item-list.cpp
     control/canvas-temporary-item.cpp
     control/snap-indicator.cpp
@@ -105,8 +103,6 @@ set(display_SRC
     nr-svgfonts.h
     rendermode.h
 
-    control/canvas-axonomgrid.h
-    control/canvas-grid.h
     control/canvas-temporary-item-list.h
     control/canvas-temporary-item.h
     control/snap-indicator.h

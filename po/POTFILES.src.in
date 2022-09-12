@@ -43,8 +43,6 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/context-fns.cpp
 ../src/desktop-events.cpp
 ../src/desktop.cpp
-../src/display/control/canvas-axonomgrid.cpp
-../src/display/control/canvas-grid.cpp
 ../src/display/control/canvas-item-text.cpp
 ../src/display/control/snap-indicator.cpp
 ../src/document.cpp
@@ -226,6 +224,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/object/sp-ellipse.cpp
 ../src/object/sp-flowregion.cpp
 ../src/object/sp-flowtext.cpp
+../src/object/sp-grid.cpp
 ../src/object/sp-guide.cpp
 ../src/object/sp-image.cpp
 ../src/object/sp-item-group.cpp
@@ -233,7 +232,6 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/object/sp-line.cpp
 ../src/object/sp-lpe-item.cpp
 ../src/object/sp-marker.cpp
-../src/object/sp-namedview.cpp
 ../src/object/sp-offset.cpp
 ../src/object/sp-page.cpp
 ../src/object/sp-path.cpp

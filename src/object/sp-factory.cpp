@@ -30,6 +30,7 @@
 #include "sp-font-face.h"
 #include "sp-glyph.h"
 #include "sp-glyph-kerning.h"
+#include "sp-grid.h"
 #include "sp-guide.h"
 #include "sp-hatch.h"
 #include "sp-hatch-path.h"
@@ -257,7 +258,7 @@ private:
         { "svg:feSpotLight", make<SPFeSpotLight> },
         { "svg:feTile", make<SPFeTile> },
         { "svg:feTurbulence", make<SPFeTurbulence> },
-        { "inkscape:grid", make<SPObject> }, // TODO wtf
+        { "inkscape:grid", make<SPGrid> },
 
         // ignore
         { "rdf:RDF", null }, // no SP node yet

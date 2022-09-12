@@ -77,6 +77,12 @@ void toggle_clip_to_page(SPDocument* document) {
     Inkscape::DocumentUndo::done(document, _("Clip to page"), "");
 }
 
+void
+show_grids(SPDocument *document)
+{
+    document->getNamedView()->toggleShowGrids();
+}
+
 std::vector<std::vector<Glib::ustring>> raw_data_edit_document =
 {
     // clang-format off
@@ -86,6 +92,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit_document =
     {"doc.delete-all-guides",                    N_("Delete All Guides"),                "Edit Document",     N_("Delete all the guides in the document")},
     {"doc.fit-canvas-to-drawing",                N_("Fit Page to Drawing"),              "Edit Document",     N_("Fit the page to the drawing")},
     {"doc.clip-to-page"                      ,   N_("Toggle Clip to Page"),              "Edit Document",     N_("Toggle between clipped to page and complete rendering")},
+    {"doc.show-grids",                           N_("Show Grids"),                       "Edit Document",     N_("Toggle the visibility of grids")},
     // clang-format on
 };
 
@@ -100,6 +107,8 @@ add_actions_edit_document(SPDocument* document)
     map->add_action( "fit-canvas-to-drawing",               sigc::bind<SPDocument*>(sigc::ptr_fun(&fit_canvas_drawing),  document));
     map->add_action_bool( "lock-all-guides",                sigc::bind<SPDocument*>(sigc::ptr_fun(&lock_all_guides),   document));
     map->add_action_bool( "show-all-guides",                sigc::bind<SPDocument*>(sigc::ptr_fun(&show_all_guides),   document));
+    map->add_action_bool( "show-grids",                     sigc::bind<SPDocument*>(sigc::ptr_fun(&show_grids),   document));
+
     map->add_action_radio_string("set-display-unit",        sigc::bind<SPDocument*>(sigc::ptr_fun(&set_display_unit), document), "px");
     map->add_action("clip-to-page",                         [=](){ toggle_clip_to_page(document); });
     // clang-format on

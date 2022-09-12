@@ -75,7 +75,7 @@ See default.xml for more information.
 <!-- View -->
 
   <!--Show Grid Ctrl+" -->
-  <bind gaction="win.canvas-show-grid"    keys="&lt;primary&gt;quotedbl" />
+  <bind gaction="doc.show-grids"       keys="&lt;primary&gt;quotedbl" />
   
   <!-- Toggle Guides -->
   <bind gaction="doc.show-all-guides"     keys="&lt;primary&gt;semicolon" />
