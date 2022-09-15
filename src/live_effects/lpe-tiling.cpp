@@ -974,7 +974,7 @@ Gtk::Widget * LPETiling::newWidget()
                     widg->set_has_tooltip(false);
                 }                
             
-                if (auto scalar = dynamic_cast<ScalarParam*>(param)) {
+                if (dynamic_cast<ScalarParam*>(param)) {
                     scalars.push_back(widg);
                 }
             }
