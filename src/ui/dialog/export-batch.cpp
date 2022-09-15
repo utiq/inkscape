@@ -122,7 +122,7 @@ void BatchItem::refresh(bool hide, guint32 bg_color)
         _preview.setDbox(b.left(), b.right(), b.top(), b.bottom());
     }
 
-    _preview.set_background_color(bg_color);
+    _preview.setBackgroundColor(bg_color);
 
     // When hiding the preview, we show the items as a checklist
     // So all items must be packed differently on refresh.
@@ -387,7 +387,7 @@ void BatchExport::refreshPreview()
                     selected = std::vector<SPItem *>(sels.begin(), sels.end());
                 }
             }
-            val->refreshHide(selected);
+            val->refreshHide(std::move(selected));
         }
         val->refresh(!preview, _bgnd_color_picker->get_current_color());
     }

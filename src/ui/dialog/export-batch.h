@@ -53,7 +53,7 @@ public:
     SPPage *getPage() { return _page; }
     bool isActive() { return _selector.get_active(); }
     void refresh(bool hide, guint32 bg_color);
-    void refreshHide(const std::vector<SPItem *> &list) { _preview.refreshHide(list); }
+    void refreshHide(std::vector<SPItem*> &&list) { _preview.refreshHide(std::move(list)); }
     void setDocument(SPDocument *doc) { _preview.setDocument(doc); }
 
 private:

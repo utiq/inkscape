@@ -9,16 +9,9 @@
 
 #include "export-preview.h"
 
-#include <glibmm/i18n.h>
-#include <glibmm/main.h>
-#include <glibmm/timer.h>
-#include <gtkmm.h>
-
+#include "document.h"
 #include "display/cairo-utils.h"
-#include "inkscape.h"
-#include "object/sp-defs.h"
 #include "object/sp-item.h"
-#include "object/sp-namedview.h"
 #include "object/sp-root.h"
 #include "util/preview.h"
 
@@ -32,60 +25,60 @@ void ExportPreview::resetPixels()
     show();
 }
 
+void ExportPreview::setSize(int newSize)
+{
+    size = newSize;
+    resetPixels();
+}
+
 ExportPreview::~ExportPreview()
 {
-    if (drawing && _document) {
+    refresh_conn.disconnect();
+    if (drawing) {
         _document->getRoot()->invoke_hide(visionkey);
     }
-    if (timer) {
-        timer->stop();
-    }
-    if (renderTimer) {
-        renderTimer->stop();
-    }
-    _item = nullptr;
-    _document = nullptr;
 }
 
 void ExportPreview::setItem(SPItem *item)
 {
     _item = item;
-    _dbox = Geom::OptRect();
+    _dbox = {};
 }
+
 void ExportPreview::setDbox(double x0, double x1, double y0, double y1)
 {
     if (!_document) {
         return;
     }
-    if ((x1 - x0 == 0) || (y1 - y0) == 0) {
+    if (x1 == x0 || y1 == y0) {
         return;
     }
     _item = nullptr;
-    _dbox = Geom::Rect(Geom::Point(x0, y0), Geom::Point(x1, y1)) * _document->dt2doc();
+    _dbox = Geom::Rect(x0, y0, x1, y1) * _document->dt2doc();
 }
 
 void ExportPreview::setDocument(SPDocument *document)
 {
     if (drawing) {
-        if (_document) {
-            _document->getRoot()->invoke_hide(visionkey);
-        }
+        _document->getRoot()->invoke_hide(visionkey);
         drawing.reset();
+        _item = nullptr;
     }
     _document = document;
     if (_document) {
-        drawing = std::make_unique<Inkscape::Drawing>();
+        drawing = std::make_shared<Inkscape::Drawing>();
         visionkey = SPItem::display_key_new(1);
-        DrawingItem *ai = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY);
-        if (ai) {
-            drawing->setRoot(ai);
+        if (auto di = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY)) {
+            drawing->setRoot(di);
+        } else {
+            drawing.reset();
         }
     }
 }
 
-void ExportPreview::refreshHide(std::vector<SPItem *> const &list)
+void ExportPreview::refreshHide(std::vector<SPItem*> &&list)
 {
-    _hidden_excluded = list;
+    _hidden_excluded = std::move(list);
     _hidden_requested = true;
 }
 
@@ -96,11 +89,12 @@ void ExportPreview::performHide()
             if (drawing) {
                 _document->getRoot()->invoke_hide(visionkey);
             }
-            drawing = std::make_unique<Inkscape::Drawing>();
+            drawing = std::make_shared<Inkscape::Drawing>();
             visionkey = SPItem::display_key_new(1);
-            DrawingItem *ai = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY);
-            if (ai) {
-                drawing->setRoot(ai);
+            if (auto di = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY)) {
+                drawing->setRoot(di);
+            } else {
+                drawing.reset();
             }
             isLastHide = false;
         }
@@ -111,62 +105,30 @@ void ExportPreview::performHide()
     }
 }
 
+static bool debug_busyloop()
+{
+    static bool enabled = std::getenv("INKSCAPE_DEBUG_EXPORTDIALOG_BUSYLOOP");
+    return enabled;
+}
+
 void ExportPreview::queueRefresh()
 {
-    if (drawing == nullptr) {
+    if (!drawing || refresh_conn.connected() || dest) {
         return;
     }
-    if (!pending) {
-        pending = true;
-        if (!timer) {
-            timer = std::make_unique<Glib::Timer>();
-        }
-        Glib::signal_idle().connect(sigc::mem_fun(*this, &ExportPreview::refreshCB), Glib::PRIORITY_DEFAULT_IDLE);
-    }
-}
 
-bool ExportPreview::refreshCB()
-{
-    bool callAgain = true;
-    if (!timer) {
-        timer = std::make_unique<Glib::Timer>();
-    }
-    if (timer->elapsed() > minDelay) {
-        callAgain = false;
-        refreshPreview();
-        pending = false;
-    }
-    return callAgain;
-}
-
-void ExportPreview::refreshPreview()
-{
-    auto document = _document;
-    if (!timer) {
-        timer = std::make_unique<Glib::Timer>();
-    }
-    if (timer->elapsed() < minDelay) {
-        // Do not refresh too quickly
-        queueRefresh();
-    } else if (document) {
-        renderPreview();
-        timer->reset();
-    }
+    refresh_conn = Glib::signal_timeout().connect([this] { renderPreview(); return false; }, debug_busyloop() ? 1 : delay_msecs);
 }
 
 /*
-This is main function which finally render preview. Call this after setting document, item and dbox.
-If dbox is given it will use it.
-if item is given and not dbox then item is used
-If both are not given then simply we do nothing.
-*/
+ * This is the main function which finally renders the preview. Call this after setting document, item and dbox.
+ * If dbox is given it will use it.
+ * if item is given and not dbox then item is used.
+ * If both are not given then we simply do nothing.
+ */
 void ExportPreview::renderPreview()
 {
-    if (!renderTimer) {
-        renderTimer = std::make_unique<Glib::Timer>();
-    }
-    renderTimer->reset();
-    if (drawing == nullptr) {
+    if (!drawing || dest) {
         return;
     }
 
@@ -174,24 +136,23 @@ void ExportPreview::renderPreview()
         performHide();
         _hidden_requested = false;
     }
-    if (_document) {
-        GdkPixbuf *pb = nullptr;
-        if (_item) {
-            pb = Inkscape::UI::PREVIEW::render_preview(_document, *drawing, _bg_color, _item, size, size);
-        } else if (_dbox) {
-            pb = Inkscape::UI::PREVIEW::render_preview(_document, *drawing, _bg_color, nullptr, size, size, &_dbox);
-        }
-        if (pb) {
-            set(Glib::wrap(pb));
+
+    dest = UI::Preview::render_preview(_document, drawing, _bg_color, _item, size, size, _dbox ? &_dbox : nullptr, [this] (Cairo::RefPtr<Cairo::ImageSurface> surface, int elapsed_msecs) {
+        if (surface) {
+            set(Gdk::Pixbuf::create(surface, 0, 0, surface->get_width(), surface->get_height()));
             show();
         }
-    }
+        delay_msecs = std::max(100, elapsed_msecs * 3);
+        dest.close();
 
-    renderTimer->stop();
-    minDelay = std::max(0.1, renderTimer->elapsed() * 3.0);
+        if (debug_busyloop()) {
+            renderPreview();
+        }
+    });
 }
 
-void ExportPreview::set_background_color(guint32 bg_color) {
+void ExportPreview::setBackgroundColor(uint32_t bg_color)
+{
     _bg_color = bg_color;
 }
 

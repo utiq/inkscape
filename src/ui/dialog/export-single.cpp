@@ -962,8 +962,8 @@ void SingleExport::refreshPreview()
     float y0 = unit->convert(spin_buttons[SPIN_Y0]->get_value(), "px");
     float y1 = unit->convert(spin_buttons[SPIN_Y1]->get_value(), "px");
     preview->setDbox(x0, x1, y0, y1);
-    preview->set_background_color(_bgnd_color_picker->get_current_color());
-    preview->refreshHide(selected);
+    preview->setBackgroundColor(_bgnd_color_picker->get_current_color());
+    preview->refreshHide(std::move(selected));
     preview->queueRefresh();
 }
 
