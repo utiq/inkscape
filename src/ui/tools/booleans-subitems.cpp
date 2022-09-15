@@ -59,6 +59,34 @@ static void add_paths(WorkItems &result, Geom::PathVector &&pathv, SPItem *item)
     }
 }
 
+/**
+ * Cut all the WorkItems with the given line and discard the line from the final shape.
+ */
+static auto incremental_cut(WorkItems &&subitems, Geom::PathVector &pathv)
+{
+    WorkItems result;
+    result.reserve(subitems.size() + 1);
+
+    for (auto subitem : subitems) {
+        auto pathv_cut = sp_pathvector_boolop(pathv, subitem->get_pathv(), bool_op_cut, fill_nonZero, fill_nonZero, true);
+        if (pathv_cut == subitem->get_pathv()) {
+            result.push_back(subitem);
+            continue;
+        }
+        // Add_paths will break each part of the cut shape out
+        for (auto path : pathv_cut) {
+            if (path.closed()) {
+                add_paths(result, Geom::PathVector(path), subitem->get_item());
+            }
+        }
+    }
+    return result;
+}
+
+/**
+ * Create a fracture between two shapes such that their overlaps are their own
+ * third shape added to the WorkItems collection.
+ */
 static auto incremental_fracture(WorkItems &&subitems, SPItem *item, Geom::PathVector &&pathv)
 {
     WorkItems result;
@@ -93,18 +121,30 @@ static auto incremental_fracture(WorkItems &&subitems, SPItem *item, Geom::PathV
  */
 WorkItems SubItem::build_mosaic(std::vector<SPItem*> &&items)
 {
+    std::vector<Geom::PathVector> lines;
     std::sort(items.begin(), items.end(), [] (auto a, auto b) {
         return sp_object_compare_position_bool(b, a);
     });
 
     WorkItems result;
     for (auto item : items) {
+        auto pathv = item->combined_pathvector() * item->i2dt_affine();
+        if (pathv.size() == 1 && !pathv[0].closed()) {
+            lines.push_back(pathv);
+            continue;
+        }
         // Each item's path might actually be overlapping paths which must be
         // broken up so each sub-path is fractured individually.
-        for (auto &path : item->combined_pathvector() * item->i2dt_affine()) {
+        for (auto &path : pathv) {
             result = incremental_fracture(std::move(result), item, std::move(path));
         }
     }
+
+    // Cut the fracture pattern by the detected lines
+    for (auto line : lines) {
+        result = incremental_cut(std::move(result), line);
+    }
+
     // Currently unifiying the entire fracture, may be a better
     // way to generate holes in the future.
     auto holes = generate_holes(result);
