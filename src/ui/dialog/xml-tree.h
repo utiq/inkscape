@@ -14,6 +14,8 @@
 #define INKSCAPE_UI_DIALOG_XML_TREE_H
 
 #include <memory>
+#include <glibmm/refptr.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/paned.h>
@@ -61,11 +63,6 @@ private:
      * Select a node in the xml tree
      */
     void set_tree_repr(Inkscape::XML::Node *repr);
-
-    /**
-     * Sets the XML status bar when the tree is selected.
-     */
-    void tree_reset_context();
 
     /**
      * Is the selected tree node editable
@@ -117,16 +114,6 @@ private:
     static void after_tree_move(SPXMLViewTree *tree, gpointer value, gpointer data);
 
     /**
-      * Callback for when an attribute is edited.
-      */
-    //static void on_attr_edited(SPXMLViewAttrList *attributes, const gchar * name, const gchar * value, gpointer /*data*/);
-
-    /**
-      * Callback for when attribute list values change
-      */
-    //static void on_attr_row_changed(SPXMLViewAttrList *attributes, const gchar * name, gpointer data);
-
-    /**
       * Enable widgets based on current selections
       */
     void on_tree_select_row_enable(GtkTreeIter *node);
@@ -155,7 +142,6 @@ private:
     void cmd_indent_node();
     void cmd_unindent_node();
 
-    void _attrtoggler();
     void _toggleDirection(Gtk::RadioButton *vertical);
     void _resized();
     bool in_dt_coordsys(SPObject const &item);
@@ -163,52 +149,37 @@ private:
     /**
      * Flag to ensure only one operation is performed at once
      */
-    gint blocked;
-
-    bool _updating;
-    /**
-     * Status bar
-     */
-    std::shared_ptr<Inkscape::MessageStack> _message_stack;
-    std::unique_ptr<Inkscape::MessageContext> _message_context;
+    gint blocked = 0;
 
     /**
      * Signal handlers
      */
-    sigc::connection _message_changed_connection;
     sigc::connection document_uri_set_connection;
 
-    gint selected_attr;
-    Inkscape::XML::Node *selected_repr;
+    Inkscape::XML::Node *selected_repr = nullptr;
 
     /* XmlTree Widgets */
-    SPXMLViewTree *tree;
-    //SPXMLViewAttrList *attributes;
+    SPXMLViewTree *tree = nullptr;
     AttrDialog *attributes;
     Gtk::Box *_attrbox;
 
     /* XML Node Creation pop-up window */
+    Glib::RefPtr<Gtk::Builder> _builder;
     Gtk::Entry *name_entry;
     Gtk::Button *create_button;
-    Gtk::Paned _paned;
+    Gtk::Paned& _paned;
 
-    Gtk::Box node_box;
-    Gtk::Box status_box;
+    // Gtk::Box node_box;
     Gtk::Switch _attrswitch;
     Gtk::Label status;
-    Gtk::Toolbar tree_toolbar;
-    Gtk::ToolButton xml_element_new_button;
-    Gtk::ToolButton xml_text_new_button;
-    Gtk::ToolButton xml_node_delete_button;
-    Gtk::SeparatorToolItem separator;
-    Gtk::ToolButton xml_node_duplicate_button;
-    Gtk::SeparatorToolItem separator2;
-    Gtk::ToolButton unindent_node_button;
-    Gtk::ToolButton indent_node_button;
-    Gtk::ToolButton raise_node_button;
-    Gtk::ToolButton lower_node_button;
-
-    GtkWidget *new_window;
+    Gtk::Button& xml_element_new_button;
+    Gtk::Button& xml_text_new_button;
+    Gtk::Button& xml_node_delete_button;
+    Gtk::Button& xml_node_duplicate_button;
+    Gtk::Button& unindent_node_button;
+    Gtk::Button& indent_node_button;
+    Gtk::Button& raise_node_button;
+    Gtk::Button& lower_node_button;
 
     gulong _selection_changed = 0;
     gulong _tree_move = 0;

@@ -342,8 +342,10 @@ void AttrDialog::startValueEdit(Gtk::CellEditable *cell, const Glib::ustring &pa
     int width = 0;
     int height = 0;
     int colwidth = _valueCol->get_width();
-    _textview->set_size_request(510, -1);
-    _popover->set_size_request(520, -1);
+    // popover in GTK3 is clipped to dialog window (in a floating dialog); limit size:
+    int dlg_width = get_allocated_width() - 10;
+    _textview->set_size_request(std::min(510, dlg_width), -1);
+    _popover->set_size_request(std::min(520, dlg_width), -1);
     valuepath = path;
     entry->get_layout()->get_pixel_size(width, height);
     Gtk::TreeIter iter = *_store->get_iter(path);
