@@ -17,6 +17,7 @@
  */
 
 #include <vector>
+#include <list>
 #include <map>
 #include <cstddef>
 #include <sigc++/sigc++.h>
@@ -155,19 +156,8 @@ public:
      *
      * @return the resulting connection
      */
-    sigc::connection connectChanged(sigc::slot<void (Selection *)> const &slot)
-    {
-        return _changed_signal.connect(slot);
-    }
-    /**
-     * Similar to connectChanged, but will be run first.
-     *
-     * This is a hack; see cf86d4abd17 for explanation.
-     */
-    sigc::connection connectChangedFirst(sigc::slot<void (Selection *)> const &slot)
-    {
-        return _changed_first_signal.connect(slot);
-    }
+    sigc::connection connectChanged(sigc::slot<void (Selection *)> const &slot);
+    sigc::connection connectChangedFirst(sigc::slot<void (Selection *)> const &slot);
 
     /**
      * Set the anchor point of the selection, used for telling it how transforms
@@ -193,17 +183,8 @@ public:
      * @return the resulting connection
      *
      */
-    sigc::connection connectModified(sigc::slot<void (Selection *, unsigned int)> const &slot)
-    {
-        return _modified_signal.connect(slot);
-    }
-    /**
-     * Similar to connectModified, but will be run first.
-     */
-    sigc::connection connectModifiedFirst(sigc::slot<void (Selection *, unsigned int)> const &slot)
-    {
-        return _modified_first_signal.connect(slot);
-    }
+    sigc::connection connectModified(sigc::slot<void (Selection *, unsigned)> const &slot);
+    sigc::connection connectModifiedFirst(sigc::slot<void (Selection *, unsigned)> const &slot);
 
     /**
      * Set a backup of current selection and store it also to be command line readable by extension system
@@ -249,11 +230,8 @@ private:
     std::map<SPObject *, sigc::connection> _modified_connections;
     sigc::connection _context_release_connection;
 
-    sigc::signal<void (Selection *)> _changed_signal;
-    sigc::signal<void (Selection *, unsigned int)> _modified_signal;
-
-    sigc::signal<void (Selection *)> _changed_first_signal;
-    sigc::signal<void (Selection *, unsigned int)> _modified_first_signal;
+    std::list<sigc::signal<void (Selection *)>> _changed_signals;
+    std::list<sigc::signal<void (Selection *, unsigned int)>> _modified_signals;
 };
 
 }

@@ -101,8 +101,10 @@ gboolean Selection::_emit_modified(Selection *selection)
 
 void Selection::_emitModified(guint flags)
 {
-    _modified_first_signal.emit(this, flags);
-    _modified_signal.emit(this, flags);
+    for (auto it = _modified_signals.begin(); it != _modified_signals.end(); ) {
+        it->emit(this, flags);
+        if (it->empty()) it = _modified_signals.erase(it); else ++it;
+    }
 
     if (_desktop) {
         if (auto item = singleItem()) {
@@ -138,8 +140,10 @@ void Selection::_emitChanged(bool persist_selection_context/* = false */) {
         }
     }
 
-    _changed_first_signal.emit(this);
-    _changed_signal.emit(this);
+    for (auto it = _changed_signals.begin(); it != _changed_signals.end(); ) {
+        it ->emit(this);
+        if (it->empty()) it = _changed_signals.erase(it); else ++it;
+    }
 }
 
 void Selection::_releaseContext(SPObject *obj)
@@ -181,6 +185,18 @@ std::vector<Inkscape::SnapCandidatePoint> Selection::getSnapPoints(SnapPreferenc
     return p;
 }
 
+sigc::connection Selection::connectChanged(sigc::slot<void (Selection *)> const &slot)
+{
+    if (_changed_signals.empty()) _changed_signals.emplace_back();
+    return _changed_signals.back().connect(slot);
+}
+
+sigc::connection Selection::connectChangedFirst(sigc::slot<void (Selection *)> const &slot)
+{
+    _changed_signals.emplace_front();
+    return _changed_signals.front().connect(slot);
+}
+
 void Selection::setAnchor(double x, double y, bool set)
 {
     double const epsilon = 1e-12;
@@ -190,6 +206,18 @@ void Selection::setAnchor(double x, double y, bool set)
         has_anchor = set;
         this->_emitModified(SP_OBJECT_MODIFIED_FLAG);
     }
+}
+
+sigc::connection Selection::connectModified(sigc::slot<void (Selection *, unsigned)> const &slot)
+{
+    if (_modified_signals.empty()) _modified_signals.emplace_back();
+    return _modified_signals.back().connect(slot);
+}
+
+sigc::connection Selection::connectModifiedFirst(sigc::slot<void (Selection *, unsigned)> const &slot)
+{
+    _modified_signals.emplace_front();
+    return _modified_signals.front().connect(slot);
 }
 
 SPObject *Selection::_objectForXMLNode(Inkscape::XML::Node *repr) const {
