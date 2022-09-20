@@ -334,11 +334,6 @@ SymbolsDialog::~SymbolsDialog()
   delete preview_document;
 }
 
-SymbolsDialog& SymbolsDialog::getInstance()
-{
-  return *new SymbolsDialog();
-}
-
 void SymbolsDialog::packless() {
   if(pack_size < 4) {
       pack_size++;

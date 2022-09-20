@@ -49,12 +49,8 @@ namespace Dialog {
 class SelectorsDialog : public DialogBase
 {
 public:
-    // No default constructor, noncopyable, nonassignable
     SelectorsDialog();
     ~SelectorsDialog() override;
-    SelectorsDialog(SelectorsDialog const &d) = delete;
-    SelectorsDialog operator=(SelectorsDialog const &d) = delete;
-    static SelectorsDialog &getInstance() { return *new SelectorsDialog(); }
 
     void update() override;
     void desktopReplaced() override;

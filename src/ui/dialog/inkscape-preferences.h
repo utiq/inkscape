@@ -121,9 +121,9 @@ namespace Dialog {
 class InkscapePreferences : public DialogBase
 {
 public:
+    InkscapePreferences();
     ~InkscapePreferences() override;
 
-    static InkscapePreferences &getInstance() { return *new InkscapePreferences(); }
     void showPage(); // Show page indicated by "/dialogs/preferences/page".
 
 protected:
@@ -735,9 +735,6 @@ private:
 
   bool on_outline_overlay_changed(GdkEventFocus * /* focus_event */);
   std::map<Glib::ustring, bool> dark_themes;
-  InkscapePreferences();
-  InkscapePreferences(InkscapePreferences const &d);
-  InkscapePreferences operator=(InkscapePreferences const &d);
   bool _init;
   Inkscape::PrefObserver _theme_oberver;
 };

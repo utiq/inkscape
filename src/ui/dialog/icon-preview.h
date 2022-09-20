@@ -44,10 +44,8 @@ class IconPreviewPanel : public DialogBase
 {
 public:
     IconPreviewPanel();
-    //IconPreviewPanel(Glib::ustring const &label);
     ~IconPreviewPanel() override;
 
-    static IconPreviewPanel& getInstance();
     void selectionModified(Selection *selection, guint flags) override;
     void documentReplaced() override;
 
@@ -55,9 +53,6 @@ public:
     void modeToggled();
 
 private:
-    IconPreviewPanel(IconPreviewPanel const &) = delete; // no copy
-    IconPreviewPanel &operator=(IconPreviewPanel const &) = delete; // no assign
-
     Drawing *drawing;
     SPDocument *drawing_doc;
     unsigned int visionkey;

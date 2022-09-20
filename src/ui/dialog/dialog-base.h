@@ -40,7 +40,9 @@ class DialogBase : public Gtk::Box
     using parent_type = Gtk::Box;
 
 public:
-    DialogBase(gchar const *prefs_path = nullptr, Glib::ustring dialog_type = "");
+    DialogBase(char const *prefs_path = nullptr, Glib::ustring dialog_type = "");
+    DialogBase(DialogBase const &) = delete;
+    DialogBase &operator=(DialogBase const &) = delete;
     ~DialogBase() override;
 
     /**

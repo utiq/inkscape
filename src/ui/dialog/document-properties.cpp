@@ -77,14 +77,6 @@ static void docprops_style_button(Gtk::Button& btn, char const* iconName)
     btn.set_relief(Gtk::RELIEF_NONE);
 }
 
-DocumentProperties& DocumentProperties::getInstance()
-{
-    DocumentProperties &instance = *new DocumentProperties();
-    instance.init();
-
-    return instance;
-}
-
 DocumentProperties::DocumentProperties()
     : DialogBase("/dialogs/documentoptions", "DocumentProperties")
     , _page_page(Gtk::manage(new UI::Widget::NotebookPage(1, 1, false, true)))
@@ -134,10 +126,7 @@ DocumentProperties::DocumentProperties()
 
     _grids_button_new.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::onNewGrid));
     _grids_button_remove.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::onRemoveGrid));
-}
 
-void DocumentProperties::init()
-{
     show_all_children();
     _grids_button_remove.hide();
 }

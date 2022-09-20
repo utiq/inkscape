@@ -52,16 +52,6 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-
-IconPreviewPanel &IconPreviewPanel::getInstance()
-{
-    IconPreviewPanel *instance = new IconPreviewPanel();
-
-    instance->refreshPreview();
-
-    return *instance;
-}
-
 //#########################################################################
 //## E V E N T S
 //#########################################################################
@@ -241,6 +231,8 @@ IconPreviewPanel::IconPreviewPanel()
     pack_start(iconBox, Gtk::PACK_SHRINK);
 
     show_all_children();
+
+    refreshPreview();
 }
 
 IconPreviewPanel::~IconPreviewPanel()

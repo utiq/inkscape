@@ -543,12 +543,6 @@ void TraceDialogImpl::adjustParamsVisible()
     }
 }
 
-TraceDialog &TraceDialog::getInstance()
-{
-    TraceDialog *dialog = new TraceDialogImpl();
-    return *dialog;
-}
-
 } // namespace Dialog
 } // namespace UI
 } // namespace Inkscape

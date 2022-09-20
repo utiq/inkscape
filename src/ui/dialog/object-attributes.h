@@ -28,18 +28,11 @@ namespace Dialog {
 class ObjectAttributes : public DialogBase
 {
 public:
-    ObjectAttributes ();
-    ~ObjectAttributes () override = default;
+    ObjectAttributes();
+    ~ObjectAttributes() override = default;
 
     void selectionChanged(Selection *selection) override;
     void selectionModified(Selection *selection, guint flags) override;
-
-    /**
-     * Returns a new instance of the object attributes dialog.
-     *
-	 * Auxiliary function needed by the DialogManager.
-     */
-    static ObjectAttributes &getInstance() { return *new ObjectAttributes(); }
 
     /**
      * Updates entries and other child widgets on selection change, object modification, etc.

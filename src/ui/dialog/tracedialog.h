@@ -31,11 +31,6 @@ public:
     TraceDialog() : DialogBase("/dialogs/trace", "Trace") {}
 
     /**
-     * Factory method
-     */
-    static TraceDialog &getInstance();
-
-    /**
      * Destructor
      */
     ~TraceDialog() override = default;

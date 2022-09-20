@@ -51,6 +51,9 @@ typedef std::list<UI::Widget::EntityEntry*> RDElist;
 class DocumentProperties : public DialogBase
 {
 public:
+    DocumentProperties();
+    ~DocumentProperties() override;
+
     void  update_widgets();
     static DocumentProperties &getInstance();
     static void destroy();
@@ -70,7 +73,6 @@ protected:
     void  build_cms();
     void  build_scripting();
     void  build_metadata();
-    void  init();
 
     virtual void  on_response (int);
     void  populate_available_profiles();
@@ -212,9 +214,6 @@ protected:
     Gtk::Box& _createPageTabLabel(const Glib::ustring& label, const char *label_image);
 
 private:
-    DocumentProperties();
-    ~DocumentProperties() override;
-
     // callback methods for buttons on grids page.
     void onNewGrid();
     void onRemoveGrid();

@@ -20,11 +20,8 @@
 #include <gtkmm/textview.h>
 #include <gtkmm/treeview.h>
 
-#include "desktop.h"
 #include "message.h"
 #include "ui/dialog/dialog-base.h"
-
-#define ATTR_DIALOG(obj) (dynamic_cast<Inkscape::UI::Dialog::AttrDialog*>((Inkscape::UI::Dialog::AttrDialog*)obj))
 
 namespace Inkscape {
 class MessageStack;
@@ -43,15 +40,15 @@ public:
     AttrDialog();
     ~AttrDialog() override;
 
-    static AttrDialog &getInstance() { return *new AttrDialog(); }
-
     // Data structure
-    class AttrColumns : public Gtk::TreeModel::ColumnRecord {
+    class AttrColumns : public Gtk::TreeModel::ColumnRecord
+    {
     public:
-        AttrColumns() {
-	  add(_attributeName);
-	  add(_attributeValue);
-      add(_attributeValueRender);
+        AttrColumns()
+        {
+            add(_attributeName);
+            add(_attributeValue);
+            add(_attributeValueRender);
         }
         Gtk::TreeModelColumn<Glib::ustring> _attributeName;
         Gtk::TreeModelColumn<Glib::ustring> _attributeValue;
@@ -122,9 +119,8 @@ public:
     void valueEditedPop();
 };
 
-
 } // namespace Dialog
 } // namespace UI
 } // namespace Inkscape
 
-#endif // ATTRDIALOG_H
+#endif // SEEN_UI_DIALOGS_ATTRDIALOG_H

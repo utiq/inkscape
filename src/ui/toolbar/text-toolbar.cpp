@@ -169,8 +169,7 @@ static void sp_text_toolbox_select_cb( GtkEntry* entry, GtkEntryIconPosition /*p
 
   SPDesktop *desktop = SP_ACTIVE_DESKTOP;
   SPDocument *document = desktop->getDocument();
-  std::vector<SPItem*> x,y;
-  std::vector<SPItem*> allList = get_all_items(x, document->getRoot(), desktop, false, false, true, y);
+  auto allList = get_all_items(document->getRoot(), desktop, false, false, true);
   for(std::vector<SPItem*>::const_reverse_iterator i=allList.rbegin();i!=allList.rend(); ++i){
       SPItem *item = *i;
     SPStyle *style = item->style;

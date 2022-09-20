@@ -38,13 +38,11 @@ class ColorItem;
  * the "/embedded/swatches" is the horizontal color palette at the bottom
  * of the window.
  */
-class SwatchesPanel : public DialogBase, boost::noncopyable
+class SwatchesPanel : public DialogBase
 {
 public:
-    SwatchesPanel(char const* prefsPath = "/dialogs/swatches");
+    SwatchesPanel(char const *prefsPath = "/dialogs/swatches");
     ~SwatchesPanel() override;
-
-    static SwatchesPanel& getInstance();
 
 protected:
     void documentReplaced() override;

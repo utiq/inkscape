@@ -33,6 +33,9 @@ PangoFontDescription *ink_font_description_from_style(SPStyle const *style);
 // Wraps calls to pango_font_description_get_family with some name substitution
 char const *sp_font_description_get_family(PangoFontDescription const *fontDescr);
 
+// Map a non-existent font name to an existing one.
+std::string getSubstituteFontName(std::string const &font);
+
 // Class for style strings: both CSS and as suggested by font.
 struct StyleNames
 {

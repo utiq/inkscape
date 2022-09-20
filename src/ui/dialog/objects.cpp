@@ -192,14 +192,6 @@ public:
 };
 
 /**
- * Gets an instance of the Objects panel
- */
-ObjectsPanel& ObjectsPanel::getInstance()
-{
-    return *new ObjectsPanel();
-}
-
-/**
  * Creates a new ObjectWatcher, a gtk TreeView iterated watching device.
  *
  * @param panel The panel to which the object watcher belongs

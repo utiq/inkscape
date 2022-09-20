@@ -270,13 +270,11 @@ Glib::ustring FontFactory::ConstructFontSpecification(FontInstance *font)
  */
 char const *sp_font_description_get_family(PangoFontDescription const *fontDescr)
 {
-    static std::map<Glib::ustring, Glib::ustring> fontNameMap;
-
-    if (fontNameMap.empty()) {
-        fontNameMap.emplace("Sans", "sans-serif");
-        fontNameMap.emplace("Serif", "serif");
-        fontNameMap.emplace("Monospace", "monospace");
-    }
+    static auto const fontNameMap = std::map<Glib::ustring, Glib::ustring>{
+        { "Sans", "sans-serif" },
+        { "Serif", "serif" },
+        { "Monospace", "monospace" }
+    };
 
     char const *pangoFamily = pango_font_description_get_family(fontDescr);
 
@@ -287,6 +285,17 @@ char const *sp_font_description_get_family(PangoFontDescription const *fontDescr
     }
 
     return pangoFamily;
+}
+
+std::string getSubstituteFontName(std::string const &font)
+{
+    auto descr = pango_font_description_new();
+    pango_font_description_set_family(descr, font.c_str());
+    auto fontinstance = FontFactory::get().Face(descr);
+    auto descr2 = pango_font_describe(fontinstance->get_font());
+    auto name = std::string(sp_font_description_get_family(descr2));
+    pango_font_description_free(descr);
+    return name;
 }
 
 Glib::ustring FontFactory::GetUIFamilyString(PangoFontDescription const *fontDescr)

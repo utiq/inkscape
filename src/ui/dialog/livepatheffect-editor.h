@@ -46,8 +46,6 @@ public:
     LivePathEffectEditor();
     ~LivePathEffectEditor() override;
 
-    static LivePathEffectEditor &getInstance() { return *new LivePathEffectEditor(); }
-
     void selectionChanged(Inkscape::Selection *selection) override;
     void selectionModified(Inkscape::Selection *selection, guint flags) override;
 
@@ -117,9 +115,6 @@ private:
 
     friend void lpeeditor_selection_changed (Inkscape::Selection * selection, gpointer data);
     friend void lpeeditor_selection_modified (Inkscape::Selection * selection, guint /*flags*/, gpointer data);
-
-    LivePathEffectEditor(LivePathEffectEditor const &d) = delete;
-    LivePathEffectEditor& operator=(LivePathEffectEditor const &d) = delete;
 };
 
 } // namespace Dialog

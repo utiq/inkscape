@@ -1610,8 +1610,7 @@ void FilterEffectsDialog::FilterModifier::remove_filter()
         SPDocument* doc = filter->document;
 
         // Delete all references to this filter
-        std::vector<SPItem*> x,y;
-        std::vector<SPItem*> all = get_all_items(x, desktop->layerManager().currentRoot(), desktop, false, false, true, y);
+        auto all = get_all_items(desktop->layerManager().currentRoot(), desktop, false, false, true);
         for(std::vector<SPItem*>::const_iterator i=all.begin(); all.end() != i; ++i) {
             if (!SP_IS_ITEM(*i)) {
                 continue;
@@ -1668,9 +1667,8 @@ void FilterEffectsDialog::FilterModifier::select_filter_elements()
     if(!filter)
         return;
 
-    std::vector<SPItem*> x,y;
     std::vector<SPItem*> items;
-    std::vector<SPItem*> all = get_all_items(x, desktop->layerManager().currentRoot(), desktop, false, false, true, y);
+    auto all = get_all_items(desktop->layerManager().currentRoot(), desktop, false, false, true);
     for(SPItem *item: all) {
         if (!item->style) {
             continue;

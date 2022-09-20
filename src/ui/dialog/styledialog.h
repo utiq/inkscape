@@ -62,16 +62,12 @@ namespace Dialog {
 class StyleDialog : public DialogBase
 {
 public:
-    // No default constructor, noncopyable, nonassignable
     StyleDialog();
     ~StyleDialog() override;
-    StyleDialog(StyleDialog const &d) = delete;
-    StyleDialog operator=(StyleDialog const &d) = delete;
 
     void documentReplaced() override;
     void selectionChanged(Selection *selection) override;
 
-    static StyleDialog &getInstance() { return *new StyleDialog(); }
     void setCurrentSelector(Glib::ustring current_selector);
     Gtk::TreeView *_current_css_tree;
     Gtk::TreeViewColumn *_current_value_col;

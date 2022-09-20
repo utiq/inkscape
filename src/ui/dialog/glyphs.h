@@ -40,17 +40,10 @@ public:
     GlyphsPanel();
     ~GlyphsPanel() override;
 
-    static GlyphsPanel& getInstance();
-
     void selectionChanged(Selection *selection) override;
     void selectionModified(Selection *selection, guint flags) override;
 
-protected:
-
 private:
-    GlyphsPanel(GlyphsPanel const &) = delete; // no copy
-    GlyphsPanel &operator=(GlyphsPanel const &) = delete; // no assign
-
     static GlyphColumns *getColumns();
 
     void rebuild();

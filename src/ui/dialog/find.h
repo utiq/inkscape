@@ -51,11 +51,6 @@ public:
 
     void desktopReplaced() override;
     void selectionChanged(Selection *selection) override;
-    /**
-     * Helper function which returns a new instance of the dialog.
-     * getInstance is needed by the dialog manager (Inkscape::UI::Dialog::DialogManager).
-     */
-    static Find &getInstance() { return *new Find(); }
 
 protected:
 
@@ -198,9 +193,6 @@ protected:
     void        squeeze_window();
 
 private:
-    Find(Find const &d) = delete;
-    Find& operator=(Find const &d) = delete;
-
     /*
      * Find and replace combo box widgets
      */

@@ -398,7 +398,7 @@ InkscapeApplication::document_fix(InkscapeWindow* window)
         sp_file_fix_lpe(document);
 
         // Check for font substitutions, requires text to have been rendered.
-        Inkscape::UI::Dialog::FontSubstitution::getInstance().checkFontSubstitutions(document);
+        Inkscape::UI::Dialog::checkFontSubstitutions(document);
     }
 }
 

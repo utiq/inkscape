@@ -138,9 +138,7 @@ class SvgFontsDialog : public DialogBase
 {
 public:
     SvgFontsDialog();
-    ~SvgFontsDialog() override {};
-
-    static SvgFontsDialog &getInstance() { return *new SvgFontsDialog(); }
+    ~SvgFontsDialog() override = default;
 
     void documentReplaced() override;
 

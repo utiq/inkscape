@@ -80,11 +80,6 @@ SwatchesPanel::SwatchesPanel(char const *prefsPath)
     rebuild();
 }
 
-SwatchesPanel &SwatchesPanel::getInstance()
-{
-    return *new SwatchesPanel();
-}
-
 SwatchesPanel::~SwatchesPanel()
 {
     untrack_gradients();

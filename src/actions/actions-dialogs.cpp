@@ -35,7 +35,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_dialogs =
     {"win.dialog-open('CloneTiler')",         N_("Open Clone Tiler"),          "Dialog",  N_("Create multiple clones of selected object, arranging them into a pattern or scattering") },
     {"win.dialog-open('DocumentProperties')", N_("Open Document Properties"),  "Dialog",  N_("Edit properties of this document (to be saved with the document)")                       },
     {"win.dialog-open('Export')",             N_("Open Export"),               "Dialog",  N_("Export this document or a selection as a PNG image")                                     },
-    {"win.dialog-open('FillStroke')",         N_("Open Fill and Stroke"),          "Dialog",  N_("Edit objects' colors, gradients, arrowheads, and other fill and stroke properties...")   },
+    {"win.dialog-open('FillStroke')",         N_("Open Fill and Stroke"),      "Dialog",  N_("Edit objects' colors, gradients, arrowheads, and other fill and stroke properties...")   },
     {"win.dialog-open('FilterEffects')",      N_("Open Filter Effects"),       "Dialog",  N_("Manage, edit, and apply SVG filters")                                                    },
     {"win.dialog-open('Find')",               N_("Open Find"),                 "Dialog",  N_("Find objects in document")                                                               },
     {"win.dialog-open('Glyphs')",             N_("Open Glyphs"),               "Dialog",  N_("Select Unicode characters from a palette")                                               },

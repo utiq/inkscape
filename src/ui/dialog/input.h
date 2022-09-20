@@ -21,8 +21,6 @@ namespace Dialog {
 class InputDialog : public DialogBase
 {
 public:
-    static InputDialog &getInstance();
-
     InputDialog() : DialogBase("/dialogs/inputdevices", "Input") {}
     ~InputDialog() override = default;
 };

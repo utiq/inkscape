@@ -48,8 +48,6 @@ public:
     FilterEffectsDialog();
     ~FilterEffectsDialog() override;
 
-    static FilterEffectsDialog &getInstance() { return *new FilterEffectsDialog(); }
-
     void set_attrs_locked(const bool);
 protected:
     void show_all_vfunc() override;
@@ -310,9 +308,6 @@ private:
     // other FilterEffectsDialog members
     FilterModifier _filter_modifier;
     PrimitiveList _primitive_list;
-
-    FilterEffectsDialog(FilterEffectsDialog const &d);
-    FilterEffectsDialog& operator=(FilterEffectsDialog const &d);
 };
 
 } // namespace Dialog

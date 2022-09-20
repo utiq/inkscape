@@ -80,8 +80,6 @@ public:
     Export();
     ~Export() override = default;
 
-    static Export &getInstance() { return *new Export(); }
-
 private:
     Glib::RefPtr<Gtk::Builder> builder;
     Gtk::Box *container = nullptr;            // Main Container

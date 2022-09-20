@@ -49,7 +49,8 @@ static void on_attr_changed (Inkscape::XML::Node * repr,
                          bool /*is_interactive*/,
                          gpointer data)
 {
-    ATTR_DIALOG(data)->onAttrChanged(repr, name, new_value);
+    auto self = reinterpret_cast<Inkscape::UI::Dialog::AttrDialog*>(data);
+    self->onAttrChanged(repr, name, new_value);
 }
 
 static void on_content_changed (Inkscape::XML::Node * repr,
@@ -57,7 +58,7 @@ static void on_content_changed (Inkscape::XML::Node * repr,
                                 gchar const * newcontent,
                                 gpointer data)
 {
-    auto self = ATTR_DIALOG(data);
+    auto self = reinterpret_cast<Inkscape::UI::Dialog::AttrDialog*>(data);
     auto buffer = self->_content_tv->get_buffer();
     if (!buffer->get_modified()) {
         const char *c = repr->content();
@@ -66,7 +67,7 @@ static void on_content_changed (Inkscape::XML::Node * repr,
     buffer->set_modified(false);
 }
 
-Inkscape::XML::NodeEventVector _repr_events = {
+static Inkscape::XML::NodeEventVector repr_events = {
     nullptr, /* child_added */
     nullptr, /* child_removed */
     on_attr_changed,
@@ -393,8 +394,8 @@ void AttrDialog::setRepr(Inkscape::XML::Node * repr)
     _repr = repr;
     if (repr) {
         Inkscape::GC::anchor(_repr);
-        _repr->addListener(&_repr_events, this);
-        _repr->synthesizeEvents(&_repr_events, this);
+        _repr->addListener(&repr_events, this);
+        _repr->synthesizeEvents(&repr_events, this);
 
         // show either attributes or content
         bool show_content = is_text_or_comment_node(*_repr);

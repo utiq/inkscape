@@ -95,7 +95,7 @@ private:
     std::multimap<Glib::ustring, DialogBase *>dialogs;
 
     void new_dialog(const Glib::ustring& dialog_type, DialogNotebook* notebook);
-    DialogBase *dialog_factory(const Glib::ustring& dialog_type);
+    std::unique_ptr<DialogBase> dialog_factory(Glib::ustring const &dialog_type);
     Gtk::Widget *create_notebook_tab(Glib::ustring label, Glib::ustring image, const Glib::ustring shortcut);
     DialogWindow* create_new_floating_dialog(const Glib::ustring& dialog_type, bool blink);
 

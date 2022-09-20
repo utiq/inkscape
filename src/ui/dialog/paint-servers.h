@@ -82,18 +82,14 @@ struct PaintDescription
 class PaintServersDialog : public DialogBase
 {
     using MaybeString = std::optional<Glib::ustring>;
+
 public:
+    PaintServersDialog();
     ~PaintServersDialog() override;
-    static PaintServersDialog &getInstance() { return *new PaintServersDialog(); }
 
     void documentReplaced() override;
 
 private:
-    // No default constructor, noncopyable, nonassignable
-    PaintServersDialog();
-    PaintServersDialog(PaintServersDialog const &d) = delete;
-    PaintServersDialog operator=(PaintServersDialog const &d) = delete;
-
     void _addToStore(PaintDescription &paint);
     void _buildDialogWindow(char const *const glade_file);
     void _createPaints(std::vector<PaintDescription> &collection);

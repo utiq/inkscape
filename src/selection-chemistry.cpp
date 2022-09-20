@@ -629,25 +629,30 @@ void sp_edit_clear_all(Inkscape::Selection *selection)
  * onlysensitive - TRUE includes only non-locked items
  * ingroups - TRUE to recursively get grouped items children
  */
-std::vector<SPItem*> &get_all_items(std::vector<SPItem*> &list, SPObject *from, SPDesktop *desktop, bool onlyvisible, bool onlysensitive, bool ingroups, std::vector<SPItem*> const &exclude)
+static void get_all_items_recursive(std::vector<SPItem*> &list, SPObject *from, SPDesktop *desktop, bool onlyvisible, bool onlysensitive, bool ingroups, std::vector<SPItem*> const &exclude)
 {
-    for (auto& child: from->children) {
-        SPItem *item = dynamic_cast<SPItem *>(&child);
+    for (auto &child : from->children) {
+        auto item = dynamic_cast<SPItem*>(&child);
         if (item &&
             !desktop->layerManager().isLayer(item) &&
             (!onlysensitive || !item->isLocked()) &&
             (!onlyvisible || !desktop->itemIsHidden(item)) &&
-            (exclude.empty() || exclude.end() == std::find(exclude.begin(), exclude.end(), &child))
-            )
+            (exclude.empty() || std::find(exclude.begin(), exclude.end(), &child) == exclude.end()))
         {
-            list.insert(list.begin(),item);
+            list.emplace_back(item);
         }
 
         if (ingroups || (item && desktop->layerManager().isLayer(item))) {
-            list = get_all_items(list, &child, desktop, onlyvisible, onlysensitive, ingroups, exclude);
+            get_all_items_recursive(list, &child, desktop, onlyvisible, onlysensitive, ingroups, exclude);
         }
     }
+}
 
+std::vector<SPItem*> get_all_items(SPObject *from, SPDesktop *desktop, bool onlyvisible, bool onlysensitive, bool ingroups, std::vector<SPItem*> const &exclude)
+{
+    std::vector<SPItem*> list;
+    get_all_items_recursive(list, from, desktop, onlyvisible, onlysensitive, ingroups, exclude);
+    std::reverse(list.begin(), list.end()); // Todo: For compatibility; is it necessary?
     return list;
 }
 
@@ -700,13 +705,11 @@ static void sp_edit_select_all_full(SPDesktop *dt, bool force_all_layers, bool i
             break;
         }
         case PREFS_SELECTION_LAYER_RECURSIVE: {
-            std::vector<SPItem*> x;
-            items = get_all_items(x, dt->layerManager().currentLayer(), dt, onlyvisible, onlysensitive, FALSE, exclude);
+            items = get_all_items(dt->layerManager().currentLayer(), dt, onlyvisible, onlysensitive, FALSE, exclude);
             break;
         }
         default: {
-            std::vector<SPItem*> x;
-            items = get_all_items(x, dt->layerManager().currentRoot(), dt, onlyvisible, onlysensitive, FALSE, exclude);
+            items = get_all_items(dt->layerManager().currentRoot(), dt, onlyvisible, onlysensitive, FALSE, exclude);
             break;
     }
     }
@@ -948,36 +951,6 @@ void ObjectSet::ungroup_all(bool skip_undo)
         ungroup(skip_undo);
     }
 }
-
-// TODO replace it with ObjectSet::degroup_list
-
-/** Replace all groups in the list with their member objects, recursively; returns a new list, frees old */
-std::vector<SPItem*>
-sp_degroup_list(std::vector<SPItem*> &items)
-{
-    std::vector<SPItem*> out;
-    bool has_groups = false;
-    for (auto item : items) {
-        SPGroup *group = dynamic_cast<SPGroup *>(item);
-        if (!group) {
-            out.push_back(item);
-        } else {
-            has_groups = true;
-            std::vector<SPItem*> members = group->item_list();
-            for (auto member : members) {
-                out.push_back(member);
-            }
-            members.clear();
-        }
-    }
-
-    if (has_groups) { // recurse if we unwrapped a group - it may have contained others
-        out = sp_degroup_list(out);
-    }
-
-    return out;
-}
-
 
 /** If items in the list have a common parent, return it, otherwise return NULL */
 static SPGroup *
@@ -2040,8 +2013,7 @@ void sp_select_same_fill_stroke_style(SPDesktop *desktop, gboolean fill, gboolea
         }
     }
 
-    std::vector<SPItem*> x,y;
-    std::vector<SPItem*> all_list = get_all_items(x, root, desktop, onlyvisible, onlysensitive, ingroup, y);
+    std::vector<SPItem*> all_list = get_all_items(root, desktop, onlyvisible, onlysensitive, ingroup);
     std::vector<SPItem*> all_matches;
 
     auto items = selection->items();
@@ -2095,9 +2067,7 @@ void sp_select_same_object_type(SPDesktop *desktop)
     bool onlyvisible = prefs->getBool("/options/kbselection/onlyvisible", true);
     bool onlysensitive = prefs->getBool("/options/kbselection/onlysensitive", true);
     bool ingroups = TRUE;
-    std::vector<SPItem*> x,y;
-    std::vector<SPItem*> all_list = get_all_items(x, desktop->layerManager().currentRoot(), desktop, onlyvisible, onlysensitive, ingroups, y);
-    std::vector<SPItem*> matches = all_list;
+    auto matches = get_all_items(desktop->layerManager().currentRoot(), desktop, onlyvisible, onlysensitive, ingroups);
 
     Inkscape::Selection *selection = desktop->getSelection();
 

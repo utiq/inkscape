@@ -39,8 +39,6 @@ public:
     FillAndStroke();
     ~FillAndStroke() override;
 
-    static FillAndStroke &getInstance() { return *new FillAndStroke(); }
-
     void desktopReplaced() override;
 
     void showPageFill();
@@ -69,8 +67,6 @@ protected:
 private:
     void selectionChanged(Selection *selection) override;
     void selectionModified(Selection *selection, guint flags) override;
-    FillAndStroke(FillAndStroke const &d) = delete;
-    FillAndStroke& operator=(FillAndStroke const &d) = delete;
 
     UI::Widget::FillNStroke *fillWdgt;
     UI::Widget::FillNStroke *strokeWdgt;

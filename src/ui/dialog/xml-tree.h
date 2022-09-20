@@ -10,9 +10,10 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_UI_DIALOGS_XML_TREE_H
-#define SEEN_UI_DIALOGS_XML_TREE_H
+#ifndef INKSCAPE_UI_DIALOG_XML_TREE_H
+#define INKSCAPE_UI_DIALOG_XML_TREE_H
 
+#include <memory>
 #include <gtkmm/button.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/paned.h>
@@ -22,11 +23,10 @@
 #include <gtkmm/switch.h>
 #include <gtkmm/textview.h>
 #include <gtkmm/toolbar.h>
-#include <memory>
 
 #include "message.h"
-#include "ui/dialog/attrdialog.h"
-#include "ui/dialog/dialog-base.h"
+#include "attrdialog.h"
+#include "dialog-base.h"
 
 class SPObject;
 struct SPXMLViewAttrList;
@@ -36,26 +36,20 @@ struct SPXMLViewTree;
 namespace Inkscape {
 class MessageStack;
 class MessageContext;
-
-namespace XML {
-class Node;
-}
+namespace XML { class Node; }
 
 namespace UI {
 namespace Dialog {
 
 /**
  * A dialog widget to view and edit the document xml
- *
  */
 
 class XmlTree : public DialogBase
 {
 public:
-    XmlTree ();
-    ~XmlTree () override;
-
-    static XmlTree &getInstance() { return *new XmlTree(); }
+    XmlTree();
+    ~XmlTree() override;
 
 private:
     void unsetDocument();
@@ -220,11 +214,11 @@ private:
     gulong _tree_move = 0;
 };
 
-}
-}
-}
+} // namespace Dialog
+} // namespace UI
+} // namespace Inkscape
 
-#endif
+#endif // INKSCAPE_UI_DIALOG_XML_TREE_H
 
 /*
   Local Variables:

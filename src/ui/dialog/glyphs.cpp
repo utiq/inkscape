@@ -41,13 +41,6 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-
-GlyphsPanel &GlyphsPanel::getInstance()
-{
-    return *new GlyphsPanel();
-}
-
-
 static std::map<GUnicodeScript, Glib::ustring> & getScriptToName()
 {
     static bool init = false;

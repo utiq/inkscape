@@ -65,14 +65,7 @@ public:
     void selectionChanged(Selection *selection) override;
     void selectionModified(Selection *selection, guint flags) override;
 
-    /**
-     * Helper function which returns a new instance of the dialog.
-     * getInstance is needed by the dialog manager (Inkscape::UI::Dialog::DialogManager).
-     */
-    static TextEdit &getInstance() { return *new TextEdit(); }
-
 protected:
-
     /**
      * Callback for pressing the default button.
      */
@@ -181,9 +174,6 @@ private:
 
     // Track undo and redo keyboard shortcuts
     Util::ActionAccel _undo, _redo;
-
-    TextEdit(TextEdit const &d) = delete;
-    TextEdit operator=(TextEdit const &d) = delete;
 };
 
 } //namespace Dialog

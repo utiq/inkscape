@@ -58,10 +58,8 @@ using LanguagePair = std::pair<std::string, std::string>;
 class SpellCheck : public DialogBase
 {
 public:
-    SpellCheck ();
-    ~SpellCheck () override;
-
-    static SpellCheck &getInstance() { return *new SpellCheck(); }
+    SpellCheck();
+    ~SpellCheck() override;
 
     static std::vector<LanguagePair> get_available_langs();
 

@@ -74,14 +74,10 @@ const int SYMBOL_ICON_SIZES[] = {16, 24, 32, 48, 64};
 class SymbolsDialog : public DialogBase
 {
 public:
-    SymbolsDialog( gchar const* prefsPath = "/dialogs/symbols" );
+    SymbolsDialog(char const *prefsPath = "/dialogs/symbols");
     ~SymbolsDialog() override;
 
-    static SymbolsDialog& getInstance();
 private:
-    SymbolsDialog(SymbolsDialog const &) = delete; // no copy
-    SymbolsDialog &operator=(SymbolsDialog const &) = delete; // no assign
-
     void documentReplaced() override;
     void selectionChanged(Inkscape::Selection *selection) override;
 

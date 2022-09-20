@@ -81,11 +81,6 @@ void CellRendererInt::render_vfunc(const Cairo::RefPtr<Cairo::Context>& cr,
 
 const CellRendererInt::Filter& CellRendererInt::no_filter = CellRendererInt::NoFilter();
 
-UndoHistory& UndoHistory::getInstance()
-{
-    return *new UndoHistory();
-}
-
 UndoHistory::UndoHistory()
     : DialogBase("/dialogs/undo-history", "UndoHistory"),
       _event_log(nullptr),

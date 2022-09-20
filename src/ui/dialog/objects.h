@@ -61,10 +61,8 @@ public:
     ~ObjectsPanel() override;
 
     class ModelColumns;
-    static ObjectsPanel& getInstance();
 
 protected:
-
     void desktopReplaced() override;
     void documentReplaced() override;
     void layerChanged(SPObject *obj);
@@ -124,9 +122,6 @@ private:
     Inkscape::auto_connection _tree_style;
     Inkscape::UI::Widget::ColorPicker _color_picker;
     Gtk::TreeRow _clicked_item_row;
-
-    ObjectsPanel(ObjectsPanel const &) = delete; // no copy
-    ObjectsPanel &operator=(ObjectsPanel const &) = delete; // no assign
 
     Gtk::Button *_addBarButton(char const* iconName, char const* tooltip, char const *action_name);
     void _objects_toggle();

@@ -123,42 +123,41 @@ DialogMultipaned *DialogContainer::create_column()
 /**
  * Get an instance of a DialogBase dialog using the associated dialog name.
  */
-DialogBase *DialogContainer::dialog_factory(const Glib::ustring& dialog_type)
+std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const &dialog_type)
 {
-
     // clang-format off
-    if(     dialog_type == "AlignDistribute")     return &Inkscape::UI::Dialog::ArrangeDialog::getInstance();
-    else if(dialog_type == "CloneTiler")          return &Inkscape::UI::Dialog::CloneTiler::getInstance();
-    else if(dialog_type == "DocumentProperties")  return &Inkscape::UI::Dialog::DocumentProperties::getInstance();
-    else if(dialog_type == "Export")              return &Inkscape::UI::Dialog::Export::getInstance();
-    else if(dialog_type == "FillStroke")          return &Inkscape::UI::Dialog::FillAndStroke::getInstance();
-    else if(dialog_type == "FilterEffects")       return &Inkscape::UI::Dialog::FilterEffectsDialog::getInstance();
-    else if(dialog_type == "Find")                return &Inkscape::UI::Dialog::Find::getInstance();
-    else if(dialog_type == "Glyphs")              return &Inkscape::UI::Dialog::GlyphsPanel::getInstance();
-    else if(dialog_type == "IconPreview")         return &Inkscape::UI::Dialog::IconPreviewPanel::getInstance();
-    else if(dialog_type == "Input")               return &Inkscape::UI::Dialog::InputDialog::getInstance();
-    else if(dialog_type == "LivePathEffect")      return &Inkscape::UI::Dialog::LivePathEffectEditor::getInstance();
-    else if(dialog_type == "Memory")              return &Inkscape::UI::Dialog::Memory::getInstance();
-    else if(dialog_type == "Messages")            return &Inkscape::UI::Dialog::Messages::getInstance();
-    else if(dialog_type == "ObjectAttributes")    return &Inkscape::UI::Dialog::ObjectAttributes::getInstance();
-    else if(dialog_type == "ObjectProperties")    return &Inkscape::UI::Dialog::ObjectProperties::getInstance();
-    else if(dialog_type == "Objects")             return &Inkscape::UI::Dialog::ObjectsPanel::getInstance();
-    else if(dialog_type == "PaintServers")        return &Inkscape::UI::Dialog::PaintServersDialog::getInstance();
-    else if(dialog_type == "Preferences")         return &Inkscape::UI::Dialog::InkscapePreferences::getInstance();
-    else if(dialog_type == "Selectors")           return &Inkscape::UI::Dialog::SelectorsDialog::getInstance();
-    else if(dialog_type == "SVGFonts")            return &Inkscape::UI::Dialog::SvgFontsDialog::getInstance();
-    else if(dialog_type == "Swatches")            return &Inkscape::UI::Dialog::SwatchesPanel::getInstance();
-    else if(dialog_type == "Symbols")             return &Inkscape::UI::Dialog::SymbolsDialog::getInstance();
-    else if(dialog_type == "Text")                return &Inkscape::UI::Dialog::TextEdit::getInstance();
-    else if(dialog_type == "Trace")               return &Inkscape::UI::Dialog::TraceDialog::getInstance();
-    else if(dialog_type == "Transform")           return &Inkscape::UI::Dialog::Transformation::getInstance();
-    else if(dialog_type == "UndoHistory")         return &Inkscape::UI::Dialog::UndoHistory::getInstance();
-    else if(dialog_type == "XMLEditor")           return &Inkscape::UI::Dialog::XmlTree::getInstance();
+         if (dialog_type == "AlignDistribute")    return std::make_unique<ArrangeDialog>();
+    else if (dialog_type == "CloneTiler")         return std::make_unique<CloneTiler>();
+    else if (dialog_type == "DocumentProperties") return std::make_unique<DocumentProperties>();
+    else if (dialog_type == "Export")             return std::make_unique<Export>();
+    else if (dialog_type == "FillStroke")         return std::make_unique<FillAndStroke>();
+    else if (dialog_type == "FilterEffects")      return std::make_unique<FilterEffectsDialog>();
+    else if (dialog_type == "Find")               return std::make_unique<Find>();
+    else if (dialog_type == "Glyphs")             return std::make_unique<GlyphsPanel>();
+    else if (dialog_type == "IconPreview")        return std::make_unique<IconPreviewPanel>();
+    else if (dialog_type == "Input")              return std::make_unique<InputDialog>();
+    else if (dialog_type == "LivePathEffect")     return std::make_unique<LivePathEffectEditor>();
+    else if (dialog_type == "Memory")             return std::make_unique<Memory>();
+    else if (dialog_type == "Messages")           return std::make_unique<Messages>();
+    else if (dialog_type == "ObjectAttributes")   return std::make_unique<ObjectAttributes>();
+    else if (dialog_type == "ObjectProperties")   return std::make_unique<ObjectProperties>();
+    else if (dialog_type == "Objects")            return std::make_unique<ObjectsPanel>();
+    else if (dialog_type == "PaintServers")       return std::make_unique<PaintServersDialog>();
+    else if (dialog_type == "Preferences")        return std::make_unique<InkscapePreferences>();
+    else if (dialog_type == "Selectors")          return std::make_unique<SelectorsDialog>();
+    else if (dialog_type == "SVGFonts")           return std::make_unique<SvgFontsDialog>();
+    else if (dialog_type == "Swatches")           return std::make_unique<SwatchesPanel>();
+    else if (dialog_type == "Symbols")            return std::make_unique<SymbolsDialog>();
+    else if (dialog_type == "Text")               return std::make_unique<TextEdit>();
+    else if (dialog_type == "Trace")              return std::make_unique<TraceDialog>();
+    else if (dialog_type == "Transform")          return std::make_unique<Transformation>();
+    else if (dialog_type == "UndoHistory")        return std::make_unique<UndoHistory>();
+    else if (dialog_type == "XMLEditor")          return std::make_unique<XmlTree>();
 #if WITH_GSPELL
-    else if(dialog_type == "Spellcheck")          return &Inkscape::UI::Dialog::SpellCheck::getInstance();
+    else if (dialog_type == "Spellcheck")         return std::make_unique<SpellCheck>();
 #endif
 #ifdef DEBUG
-    else if(dialog_type == "Prototype")           return &Inkscape::UI::Dialog::Prototype::getInstance();
+    else if (dialog_type == "Prototype")          return std::make_unique<Prototype>();
 #endif
     else {
         std::cerr << "DialogContainer::dialog_factory: Unhandled dialog: " << dialog_type.raw() << std::endl;
@@ -278,7 +277,7 @@ void DialogContainer::new_dialog(const Glib::ustring& dialog_type, DialogNoteboo
     }
 
     // Create the dialog widget
-    DialogBase *dialog = dialog_factory(dialog_type);
+    DialogBase *dialog = dialog_factory(dialog_type).release(); // Evil, but necessitated by GTK.
 
     if (!dialog) {
         std::cerr << "DialogContainer::new_dialog(): couldn't find dialog for: " << dialog_type.raw() << std::endl;
@@ -499,7 +498,7 @@ DialogWindow *DialogContainer::create_new_floating_dialog(const Glib::ustring& d
     }
 
     // Create the dialog widget
-    DialogBase *dialog = dialog_factory(dialog_type);
+    DialogBase *dialog = dialog_factory(dialog_type).release(); // Evil, but necessitated by GTK.
 
     if (!dialog) {
         std::cerr << "DialogContainer::new_dialog(): couldn't find dialog for: " << dialog_type.raw() << std::endl;
