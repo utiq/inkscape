@@ -17,11 +17,10 @@
 #include <glib/gi18n.h>
 #include <gdk/gdkkeysyms.h>
 
-
-
 #include "desktop.h"
 #include "document.h"
 #include "message-context.h"
+#include "rubberband.h"
 #include "selection-chemistry.h"
 #include "selection.h"
 #include "snap.h"
@@ -44,14 +43,16 @@
 #include "object/sp-text.h"
 
 #include "ui/knot/knot-holder.h"
+#include "ui/modifiers.h"
 #include "ui/shape-editor.h" // temporary!
 #include "ui/tool/control-point-selection.h"
 #include "ui/tool/curve-drag-point.h"
 #include "ui/tool/event-utils.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/path-manipulator.h"
-#include "ui/tool/selector.h"
 #include "ui/tools/node-tool.h"
+
+using Inkscape::Modifiers::Modifier;
 
 /** @struct NodeTool
  *
@@ -130,9 +131,6 @@ NodeTool::NodeTool(SPDesktop *desktop)
     Inkscape::UI::PathSharedData &data = *this->_path_data;
     data.node_data.desktop = desktop;
 
-    // selector has to be created here, so that its hidden control point is on the bottom
-    this->_selector = new Inkscape::UI::Selector(desktop);
-
     // Prepare canvas groups for controls. This guarantees correct z-order, so that
     // for example a dragpoint won't obscure a node
     data.outline_group          = create_control_group(desktop);
@@ -160,9 +158,6 @@ NodeTool::NodeTool(SPDesktop *desktop)
     data.node_data.selection = this->_selected_nodes;
 
     this->_multipath = new Inkscape::UI::MultiPathManipulator(data, this->_selection_changed_connection);
-
-    this->_selector->signal_point.connect(sigc::mem_fun(*this, &NodeTool::select_point));
-    this->_selector->signal_area.connect(sigc::mem_fun(*this, &NodeTool::select_area));
 
     this->_multipath->signal_coords_changed.connect([=](){
         desktop->emit_control_point_selected(this, _selected_nodes);
@@ -217,6 +212,7 @@ NodeTool::NodeTool(SPDesktop *desktop)
 NodeTool::~NodeTool()
 {
     this->_selected_nodes->clear();
+    this->get_rubberband()->stop();
 
     this->enableGrDrag(false);
 
@@ -232,7 +228,6 @@ NodeTool::~NodeTool()
 
     delete this->_multipath;
     delete this->_selected_nodes;
-    delete this->_selector;
 
     Inkscape::UI::PathSharedData &data = *this->_path_data;
     delete data.node_data.node_group;
@@ -241,6 +236,11 @@ NodeTool::~NodeTool()
     delete data.outline_group;
     delete data.dragpoint_group;
     delete _transform_handle_group;
+}
+
+Inkscape::Rubberband *NodeTool::get_rubberband() const
+{
+    return Inkscape::Rubberband::get(_desktop);
 }
 
 void NodeTool::deleteSelected()
@@ -434,17 +434,11 @@ bool NodeTool::root_handler(GdkEvent* event) {
 
     Inkscape::Selection *selection = _desktop->getSelection();
     static Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto rband = get_rubberband();
 
-    if (this->_multipath->event(this, event)) {
-        return true;
-    }
-
-    if (this->_selector->event(this, event)) {
-        return true;
-    }
-
-    if (this->_selected_nodes->event(this, event)) {
-        return true;
+    if (!rband->is_started()) {
+        if (_multipath->event(this, event) || _selected_nodes->event(this, event))
+            return true;
     }
 
     switch (event->type)
@@ -457,6 +451,25 @@ bool NodeTool::root_handler(GdkEvent* event) {
 
         Geom::Point const motion_w(event->motion.x, event->motion.y);
         Geom::Point const motion_dt(_desktop->w2d(motion_w));
+
+        if (event->motion.state & GDK_BUTTON1_MASK) {
+            if (rband->is_started()) {
+                rband->move(motion_dt);
+            }
+  
+            auto touch_path = Modifier::get(Modifiers::Type::SELECT_TOUCH_PATH)->get_label();
+            if (rband->getMode() == RUBBERBAND_MODE_TOUCHPATH) {
+                this->defaultMessageContext()->setF(Inkscape::NORMAL_MESSAGE,
+                    _("<b>Draw over</b> lines to select their nodes; release <b>%s</b> to switch to rubberband selection"), touch_path.c_str());
+            } else {
+                this->defaultMessageContext()->setF(Inkscape::NORMAL_MESSAGE,
+                    _("<b>Drag around</b> nodes to select them; press <b>%s</b> to switch to box selection"), touch_path.c_str());
+            }
+            return true;
+        } else if (rband->is_moved()) {
+            // Mouse button is up, but rband is still kicking.
+            rband->stop();
+        }
 
         SnapManager &m = _desktop->namedview->snap_manager;
 
@@ -574,8 +587,32 @@ bool NodeTool::root_handler(GdkEvent* event) {
         this->update_tip(event);
         break;
 
+    case GDK_BUTTON_PRESS:
+        if (event->button.button == 1) {
+            if(Modifier::get(Modifiers::Type::SELECT_TOUCH_PATH)->active(event->button.state)) {
+                rband->setMode(RUBBERBAND_MODE_TOUCHPATH);
+            } else {
+                rband->defaultMode();
+            }
+
+            Geom::Point const event_pt(event->button.x, event->button.y);
+            Geom::Point const desktop_pt(_desktop->w2d(event_pt));
+            rband->start(_desktop, desktop_pt, true);
+            return true;
+        }
+        break;
+
     case GDK_BUTTON_RELEASE:
-        if (this->_selector->doubleClicked()) {
+        if (rband->is_started() && rband->is_moved()) {
+            select_area(rband->getPath(), &event->button);
+            return true;
+        } else {
+            select_point(&event->button);
+        }
+        rband->stop();
+
+    case GDK_2BUTTON_PRESS:
+        if ( event->button.button == 1 ) {
             // If the selector received the doubleclick event, then we're at some distance from
             // the path; otherwise, the doubleclick event would have been received by
             // CurveDragPoint; we will insert nodes into the path anyway but only if we can snap
@@ -715,16 +752,13 @@ void NodeTool::update_tip(GdkEvent *event) {
     }
 }
 
-/**
- * @param sel Area in desktop coordinates
- */
-void NodeTool::select_area(Geom::Rect const &sel, GdkEventButton *event) {
+void NodeTool::select_area(Geom::Path const &path, GdkEventButton *event) {
     using namespace Inkscape::UI;
     
     if (this->_multipath->empty()) {
         // if multipath is empty, select rubberbanded items rather than nodes
         Inkscape::Selection *selection = _desktop->getSelection();
-        auto sel_doc = _desktop->dt2doc() * sel;
+        auto sel_doc = _desktop->dt2doc() * *path.boundsFast();
         std::vector<SPItem *> items = _desktop->getDocument()->getItemsInBox(_desktop->dkey, sel_doc);
         selection->setList(items);
     } else {
@@ -737,10 +771,10 @@ void NodeTool::select_area(Geom::Rect const &sel, GdkEventButton *event) {
         }
         if (shift && ctrl) {
             // D. Shift+Ctrl pressed, removes nodes under box from existing selection.
-            this->_selected_nodes->selectArea(sel, true);
+            this->_selected_nodes->selectArea(path, true);
         } else {
             // A/B/C. Adds nodes under box to existing selection.
-            this->_selected_nodes->selectArea(sel);
+            this->_selected_nodes->selectArea(path);
             if (ctrl) {
                 // C. Selects the inverse of all nodes under the box.
                 this->_selected_nodes->invertSelection();
@@ -749,7 +783,7 @@ void NodeTool::select_area(Geom::Rect const &sel, GdkEventButton *event) {
     }
 }
 
-void NodeTool::select_point(Geom::Point const &/*sel*/, GdkEventButton *event) {
+void NodeTool::select_point(GdkEventButton *event) {
     using namespace Inkscape::UI; // pull in event helpers
     
     if (!event) {

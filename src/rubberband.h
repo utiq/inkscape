@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <2geom/point.h>
+#include <2geom/path.h>
 #include <2geom/rect.h>
 #include <optional>
 #include <vector>
@@ -40,14 +41,16 @@ class CanvasItemRect;
 class Rubberband
 {
 public:
-    void start(SPDesktop *desktop, Geom::Point const &p);
+    void start(SPDesktop *desktop, Geom::Point const &p, bool tolerance = false);
     void move(Geom::Point const &p);
     Geom::OptRect getRectangle() const;
     void stop();
-    bool is_started();
+    bool is_started() { return _started; }
+    bool is_moved() { return _moved; }
 
     inline int getMode() {return _mode;}
-    inline std::vector<Geom::Point> getPoints() {return _points;}
+    std::vector<Geom::Point> getPoints() const;
+    Geom::Path getPath() const;
 
     void setMode(int mode);
     void defaultMode();
@@ -64,8 +67,7 @@ private:
     SPDesktop *_desktop;
     Geom::Point _start;
     Geom::Point _end;
-
-    std::vector<Geom::Point> _points;
+    Geom::Path _path;
 
     Inkscape::CanvasItemRect *_rect = nullptr;
     Inkscape::CanvasItemBpath *_touchpath = nullptr;
@@ -74,7 +76,9 @@ private:
     void delete_canvas_items();
 
     bool _started = false;
+    bool _moved = false;
     int _mode = RUBBERBAND_MODE_RECT;
+    double _tolerance = 0.0;
 
     std::optional<uint32_t> _color;
 };

@@ -41,7 +41,6 @@ set(ui_SRC
 	tool/node.cpp
 	tool/path-manipulator.cpp
 	tool/selectable-control-point.cpp
-	tool/selector.cpp
 	tool/transform-handle-set.cpp
 
 	toolbar/arc-toolbar.cpp
@@ -371,7 +370,6 @@ set(ui_SRC
 	tool/node.h
 	tool/path-manipulator.h
 	tool/selectable-control-point.h
-	tool/selector.h
 	tool/shape-record.h
 	tool/transform-handle-set.h
 

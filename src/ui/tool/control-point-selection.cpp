@@ -163,11 +163,11 @@ void ControlPointSelection::selectAll()
     }
 }
 /** Select all points inside the given rectangle (in desktop coordinates). */
-void ControlPointSelection::selectArea(Geom::Rect const &r, bool invert)
+void ControlPointSelection::selectArea(Geom::Path const &path, bool invert)
 {
     std::vector<SelectableControlPoint *> out;
     for (auto _all_point : _all_points) {
-        if (r.contains(*_all_point)) {
+        if (path.winding(*_all_point) % 2 != 0) {
             if (invert) {
                 erase(_all_point);
             } else {

@@ -15,6 +15,8 @@
 
 #include "rubberband.h"
 
+#include "2geom/path.h"
+
 #include "display/curve.h"
 #include "display/control/canvas-item-bpath.h"
 #include "display/control/canvas-item-rect.h"
@@ -42,19 +44,35 @@ void Inkscape::Rubberband::delete_canvas_items()
     }
 }
 
+Geom::Path Inkscape::Rubberband::getPath() const
+{
+    g_assert(_started);
+    if (_mode == RUBBERBAND_MODE_TOUCHPATH) {
+        return _path * _desktop->w2d();
+    }
+    return Geom::Path(*getRectangle());
+}
 
-void Inkscape::Rubberband::start(SPDesktop *d, Geom::Point const &p)
+std::vector<Geom::Point> Inkscape::Rubberband::getPoints() const
+{
+    return _path.nodes();
+}
+
+void Inkscape::Rubberband::start(SPDesktop *d, Geom::Point const &p, bool tolerance)
 {
     _desktop = d;
 
     _start = p;
     _started = true;
+    _moved = false;
+
+    auto prefs = Inkscape::Preferences::get();
+    _tolerance = tolerance ? prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100) : 0.0;
 
     _touchpath_curve->reset();
     _touchpath_curve->moveto(p);
 
-    _points.clear();
-    _points.push_back(_desktop->d2w(p));
+    _path = Geom::Path(_desktop->d2w(p));
 
     delete_canvas_items();
 }
@@ -62,10 +80,11 @@ void Inkscape::Rubberband::start(SPDesktop *d, Geom::Point const &p)
 void Inkscape::Rubberband::stop()
 {
     _started = false;
+    _moved = false;
     defaultMode(); // restore the default
 
-    _points.clear();
     _touchpath_curve->reset();
+    _path.clear();
 
     delete_canvas_items();
 
@@ -77,7 +96,13 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
     if (!_started) 
         return;
 
+    if (!_moved) {
+        if (Geom::are_near(_start, p, _tolerance))
+            return;
+    }
+
     _end = p;
+    _moved = true;
     _desktop->scroll_to_point(p);
     _touchpath_curve->lineto(p);
 
@@ -85,14 +110,14 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
     // we want the points to be at most 0.5 screen pixels apart,
     // so that we don't lose anything small;
     // if they are farther apart, we interpolate more points
-    if (!_points.empty() && Geom::L2(next-_points.back()) > 0.5) {
-        Geom::Point prev = _points.back();
+    auto prev = _path.finalPoint();
+    if (Geom::L2(next-prev) > 0.5) {
         int subdiv = 2 * (int) round(Geom::L2(next-prev) + 0.5);
         for (int i = 1; i <= subdiv; i ++) {
-            _points.push_back(prev + ((double)i/subdiv) * (next - prev));
+            _path.appendNew<Geom::LineSegment>(prev + ((double)i/subdiv) * (next - prev));
         }
     } else {
-        _points.push_back(next);
+        _path.appendNew<Geom::LineSegment>(next);
     }
 
     if (_touchpath) _touchpath->hide();
@@ -187,11 +212,6 @@ Inkscape::Rubberband *Inkscape::Rubberband::get(SPDesktop *desktop)
     }
 
     return _instance;
-}
-
-bool Inkscape::Rubberband::is_started()
-{
-    return _started;
 }
 
 /*

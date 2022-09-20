@@ -31,6 +31,8 @@ namespace Inkscape {
 
         struct PathSharedData;
     }
+
+    class Rubberband;
 }
 
 struct SPCanvasGroup;
@@ -60,6 +62,8 @@ public:
     bool item_handler(SPItem *item, GdkEvent *event) override;
     void deleteSelected();
 private:
+    Inkscape::Rubberband *get_rubberband() const;
+
     sigc::connection _selection_changed_connection;
     sigc::connection _mouseover_changed_connection;
 
@@ -85,8 +89,8 @@ private:
 
     void selection_changed(Inkscape::Selection *sel);
 
-    void select_area(Geom::Rect const &sel, GdkEventButton *event);
-    void select_point(Geom::Point const &sel, GdkEventButton *event);
+    void select_area(Geom::Path const &path, GdkEventButton *event);
+    void select_point(GdkEventButton *event);
     void mouseover_changed(Inkscape::UI::ControlPoint *p);
     void update_tip(GdkEvent *event);
     void handleControlUiStyleChange();
