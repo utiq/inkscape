@@ -1127,9 +1127,9 @@ void StyleDialog::_writeStyleElement(Glib::RefPtr<Gtk::TreeStore> store, Glib::u
         std::string pos = std::to_string(selectorpos);
         std::string selectormatch = "(";
         for (; selectorpos > 1; selectorpos--) {
-            selectormatch = selectormatch + "[^}]*?}";
+            selectormatch = selectormatch + "[^\\}]*?\\}";
         }
-        selectormatch = selectormatch + ")([^}]*?})((.|\n)*)";
+        selectormatch = selectormatch + ")([^\\}]*?\\})((.|\n)*)";
 
         Inkscape::XML::Node *textNode = _getStyleTextNode(true);
         std::regex e(selectormatch.c_str());
