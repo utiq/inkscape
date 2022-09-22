@@ -146,7 +146,7 @@ std::vector<SPItem *> SPAvoidRef::getAttachedShapes(const unsigned int type)
                     "found. Skipping.", connId);
             continue;
         }
-        SPItem *shapeItem = SP_ITEM(obj);
+        auto shapeItem = cast<SPItem>(obj);
         list.push_back(shapeItem);
     }
     return list;
@@ -170,7 +170,7 @@ std::vector<SPItem *> SPAvoidRef::getAttachedConnectors(const unsigned int type)
                     "found. Skipping.", connId);
             continue;
         }
-        SPItem *connItem = SP_ITEM(obj);
+        auto connItem = cast<SPItem>(obj);
         list.push_back(connItem);
     }
     return list;
@@ -340,17 +340,17 @@ std::vector<SPItem *> get_avoided_items(SPObject *from, SPDesktop *desktop, bool
 static inline void get_avoided_items_rec(std::vector<SPItem *> &list, SPObject *from, SPDesktop *desktop, bool initialised)
 {
     for (auto& child: from->children) {
-        if (SP_IS_ITEM(&child) &&
-            !desktop->layerManager().isLayer(SP_ITEM(&child)) &&
-            !SP_ITEM(&child)->isLocked() &&
-            !desktop->itemIsHidden(SP_ITEM(&child)) &&
-            (!initialised || SP_ITEM(&child)->getAvoidRef().shapeRef)
+        if (is<SPItem>(&child) &&
+            !desktop->layerManager().isLayer(cast<SPItem>(&child)) &&
+            !cast<SPItem>(&child)->isLocked() &&
+            !desktop->itemIsHidden(cast<SPItem>(&child)) &&
+            (!initialised || cast<SPItem>(&child)->getAvoidRef().shapeRef)
             )
         {
-            list.push_back(SP_ITEM(&child));
+            list.push_back(cast<SPItem>(&child));
         }
 
-        if (SP_IS_ITEM(&child) && desktop->layerManager().isLayer(SP_ITEM(&child))) {
+        if (is<SPItem>(&child) && desktop->layerManager().isLayer(cast<SPItem>(&child))) {
             get_avoided_items_rec(list, &child, desktop, initialised);
         }
     }

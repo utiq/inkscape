@@ -234,14 +234,14 @@ void SPNamedView::build(SPDocument *document, Inkscape::XML::Node *repr) {
 
     /* Construct guideline and pages list */
     for (auto &child : children) {
-        if (auto guide = dynamic_cast<SPGuide *>(&child)) {
+        if (auto guide = cast<SPGuide>(&child)) {
             this->guides.push_back(guide);
             //g_object_set(G_OBJECT(g), "color", nv->guidecolor, "hicolor", nv->guidehicolor, NULL);
             guide->setColor(this->guidecolor);
             guide->setHiColor(this->guidehicolor);
             guide->readAttr(SPAttr::INKSCAPE_COLOR);
         }
-        if (auto page = dynamic_cast<SPPage *>(&child)) {
+        if (auto page = cast<SPPage>(&child)) {
             document->getPageManager().addPage(page);
         }
     }
@@ -569,14 +569,14 @@ void SPNamedView::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *r
     if (!strcmp(child->name(), "inkscape:grid")) {
         sp_namedview_add_grid(this, child, nullptr);
     } else if (!strcmp(child->name(), "inkscape:page")) {
-        if (auto page = dynamic_cast<SPPage *>(no)) {
+        if (auto page = cast<SPPage>(no)) {
             document->getPageManager().addPage(page);
             for (auto view : this->views) {
                 page->showPage(view->getCanvasPagesBg(), view->getCanvasPagesFg());
             }
         }
     } else {
-        if (auto g = dynamic_cast<SPGuide *>(no)) {
+        if (auto g = cast<SPGuide>(no)) {
             this->guides.push_back(g);
 
             //g_object_set(G_OBJECT(g), "color", this->guidecolor, "hicolor", this->guidehicolor, NULL);
@@ -802,7 +802,7 @@ void sp_namedview_update_layers_from_document (SPDesktop *desktop)
         layer = document->getObjectById(g_quark_to_string(nv->default_layer_id));
     }
     // don't use that object if it's not at least group
-    if ( !layer || !SP_IS_GROUP(layer) ) {
+    if ( !layer || !is<SPGroup>(layer) ) {
         layer = nullptr;
     }
     // if that didn't work out, look for the topmost layer
@@ -1095,7 +1095,7 @@ void SPNamedView::change_bool_setting(SPAttr key, bool value) {
 // show/hide guide lines without modifying view; used to quickly and temporarily hide them and restore them
 void SPNamedView::temporarily_show_guides(bool show) {
     for (auto& child : children) {
-        if (auto guide = dynamic_cast<SPGuide*>(&child)) {
+        if (auto guide = cast<SPGuide>(&child)) {
             show ? guide->showSPGuide() : guide->hideSPGuide();
         }
     }

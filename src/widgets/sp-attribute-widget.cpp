@@ -136,7 +136,6 @@ void SPAttributeTable::set_object(SPObject *object,
                             std::vector<Glib::ustring> &attributes,
                             GtkWidget* parent)
 {
-    g_return_if_fail (!object || SP_IS_OBJECT (object));
     g_return_if_fail (!object || !labels.empty() || !attributes.empty());
     g_return_if_fail (labels.size() == attributes.size());
 
@@ -195,7 +194,6 @@ void SPAttributeTable::set_object(SPObject *object,
 
 void SPAttributeTable::change_object(SPObject *object)
 {
-    g_return_if_fail (!object || SP_IS_OBJECT (object));
     if (_object)
     {
         modified_connection.disconnect();

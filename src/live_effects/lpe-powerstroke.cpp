@@ -206,7 +206,7 @@ LPEPowerStroke::doBeforeEffect(SPLPEItem const *lpeItem)
 
 void LPEPowerStroke::applyStyle(SPLPEItem *lpeitem)
 {
-    lpe_shape_convert_stroke_and_fill(SP_SHAPE(lpeitem));
+    lpe_shape_convert_stroke_and_fill(cast<SPShape>(lpeitem));
 }
 
 void
@@ -245,7 +245,7 @@ LPEPowerStroke::doOnApply(SPLPEItem const* lpeitem)
         }
         offset_points.set_scale_width(scale_width);
     } else {
-        if (!SP_IS_SHAPE(lpeitem)) {
+        if (!is<SPShape>(lpeitem)) {
             g_warning("LPE Powerstroke can only be applied to shapes (not groups).");
         }
     }

@@ -225,7 +225,7 @@ bool PencilTool::_handleButtonPress(GdkEventButton const &bevent) {
                         selection->clear();
                         _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Creating new path"));
                         m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_NODE_HANDLE);
-                    } else if (selection->singleItem() && SP_IS_PATH(selection->singleItem())) {
+                    } else if (selection->singleItem() && is<SPPath>(selection->singleItem())) {
                         _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Appending to selected path"));
                         m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_NODE_HANDLE);
                     }
@@ -399,8 +399,8 @@ bool PencilTool::_handleButtonRelease(GdkEventButton const &revent) {
                     using namespace Inkscape::LivePathEffect;
                     SPItem *item = sp_event_context_find_item(_desktop, Geom::Point(revent.x, revent.y), FALSE, FALSE);
                     if (item && (!this->white_item || item != white_item)) {
-                        if (SP_IS_LPE_ITEM(item)) {
-                            Effect* lpe = SP_LPE_ITEM(item)->getCurrentLPE();
+                        if (is<SPLPEItem>(item)) {
+                            Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
                             if (lpe) {
                                 LPEPowerStroke* ps = static_cast<LPEPowerStroke*>(lpe);
                                 if (ps) {
@@ -704,7 +704,7 @@ void PencilTool::addPowerStrokePencil()
             pp->setAttribute("id", "power_stroke_preview");
             Inkscape::GC::release(pp);
 
-            SPShape *powerpreview = SP_SHAPE(currentLayer()->appendChildRepr(pp));
+            auto powerpreview = cast<SPShape>(currentLayer()->appendChildRepr(pp));
             SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(powerpreview);
             if (!lpeitem) {
                 return;

@@ -492,7 +492,7 @@ void LPETiling::cloneD(SPObject *orig, SPObject *dest)
     if (!document) {
         return;
     }
-    if ( SP_IS_GROUP(orig) && SP_IS_GROUP(dest) && SP_GROUP(orig)->getItemCount() == SP_GROUP(dest)->getItemCount() ) {
+    if ( is<SPGroup>(orig) && is<SPGroup>(dest) && cast<SPGroup>(orig)->getItemCount() == cast<SPGroup>(dest)->getItemCount() ) {
         if (reset) {
             cloneStyle(orig, dest);
         }
@@ -504,25 +504,25 @@ void LPETiling::cloneD(SPObject *orig, SPObject *dest)
             index++;
         }
         return;
-    }  else if( SP_IS_GROUP(orig) && SP_IS_GROUP(dest) && SP_GROUP(orig)->getItemCount() != SP_GROUP(dest)->getItemCount()) {
+    }  else if( is<SPGroup>(orig) && is<SPGroup>(dest) && cast<SPGroup>(orig)->getItemCount() != cast<SPGroup>(dest)->getItemCount()) {
         split_items.param_setValue(false);
         return;
     }
 
-    if ( SP_IS_TEXT(orig) && SP_IS_TEXT(dest) && SP_TEXT(orig)->children.size() == SP_TEXT(dest)->children.size()) {
+    if ( is<SPText>(orig) && is<SPText>(dest) && cast<SPText>(orig)->children.size() == cast<SPText>(dest)->children.size()) {
         if (reset) {
             cloneStyle(orig, dest);
         }
         size_t index = 0;
-        for (auto & child : SP_TEXT(orig)->children) {
+        for (auto & child : cast<SPText>(orig)->children) {
             SPObject *dest_child = dest->nthChild(index);
             cloneD(&child, dest_child);
             index++;
         }
     }
     
-    SPShape * shape =  SP_SHAPE(orig);
-    SPPath * path =  SP_PATH(dest);
+    auto shape = cast<SPShape>(orig);
+    auto path = cast<SPPath>(dest);
     if (shape) {
         SPCurve const *c = shape->curve();
         if (c) {
@@ -535,7 +535,7 @@ void LPETiling::cloneD(SPObject *orig, SPObject *dest)
                 dest_node->setAttribute("id", id);
                 dest_node->setAttribute("style", style);
                 dest->updateRepr(xml_doc, dest_node, SP_OBJECT_WRITE_ALL);
-                path =  SP_PATH(dest);
+                path =  cast<SPPath>(dest);
             }
             path->setAttribute("d", str);
         } else {
@@ -1526,7 +1526,7 @@ void
 LPETiling::resetDefaults(SPItem const* item)
 {
     Effect::resetDefaults(item);
-    original_bbox(SP_LPE_ITEM(item), false, true);
+    original_bbox(cast<SPLPEItem>(item), false, true);
 }
 
 void
@@ -1604,7 +1604,7 @@ void KnotHolderEntityCopyGapX::knot_click(guint state)
 
     lpe->gapx.param_set_value(0);
     startpos = 0;
-    sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+    sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), false, false);
 }
 
 void KnotHolderEntityCopyGapY::knot_click(guint state)
@@ -1617,7 +1617,7 @@ void KnotHolderEntityCopyGapY::knot_click(guint state)
 
     lpe->gapy.param_set_value(0);
     startpos = 0;
-    sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+    sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), false, false);
 }
 
 void KnotHolderEntityCopyGapX::knot_set(Geom::Point const &p, Geom::Point const&/*origin*/, guint state)

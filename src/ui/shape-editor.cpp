@@ -188,10 +188,10 @@ void ShapeEditor::reset_item()
 {
     if (knotholder) {
         SPObject *obj = desktop->getDocument()->getObjectByRepr(knotholder_listener_attached_for); /// note that it is not certain that this is an SPItem; it could be a LivePathEffectObject.
-        set_item(SP_ITEM(obj));
+        set_item(cast<SPItem>(obj));
     } else if (lpeknotholder) {
         SPObject *obj = desktop->getDocument()->getObjectByRepr(lpeknotholder_listener_attached_for); /// note that it is not certain that this is an SPItem; it could be a LivePathEffectObject.
-        set_item(SP_ITEM(obj));
+        set_item(cast<SPItem>(obj));
     }
 }
 

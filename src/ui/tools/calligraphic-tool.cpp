@@ -462,7 +462,7 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
             if (event->motion.state & GDK_CONTROL_MASK) { // hatching - sense the item
 
                 SPItem *selected = _desktop->getSelection()->singleItem();
-                if (selected && (SP_IS_SHAPE(selected) || SP_IS_TEXT(selected))) {
+                if (selected && (is<SPShape>(selected) || is<SPText>(selected))) {
                     // One item selected, and it's a path;
                     // let's try to track it as a guide
 
@@ -909,7 +909,7 @@ void CalligraphicTool::set_to_accumulated(bool unionize, bool subtract) {
             this->repr = repr;
 
             auto layer = currentLayer();
-            SPItem *item=SP_ITEM(layer->appendChildRepr(this->repr));
+            auto item = cast<SPItem>(layer->appendChildRepr(this->repr));
             Inkscape::GC::release(this->repr);
             item->transform = layer->i2doc_affine().inverse();
             item->updateRepr();
@@ -934,7 +934,7 @@ void CalligraphicTool::set_to_accumulated(bool unionize, bool subtract) {
         // First, find out whether our repr is still linked to a valid object. In this case,
         // we need to write the transform data only for this element.
         // Either there was no boolean op or it failed.
-        SPItem *result = SP_ITEM(_desktop->doc()->getObjectByRepr(this->repr));
+        auto result = cast<SPItem>(_desktop->doc()->getObjectByRepr(this->repr));
 
         if (result == nullptr) {
             // The boolean operation succeeded.

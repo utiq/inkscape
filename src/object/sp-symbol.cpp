@@ -133,7 +133,7 @@ void SPSymbol::unSymbol()
     // group that only adds a transform to the symbol content).
     if( children.size() == 1 ) {
         SPObject *object = children[0];
-        if ( dynamic_cast<SPGroup *>( object ) ) {
+        if ( cast<SPGroup>( object ) ) {
             if( object->getAttribute("style") == nullptr ||
                 object->getAttribute("class") == nullptr ) {
 
@@ -174,7 +174,7 @@ std::optional<Geom::PathVector> SPSymbol::documentExactBounds() const
     Geom::PathVector shape;
     bool is_empty = true;
     for (auto &child : children) {
-        if (auto const item = dynamic_cast<SPItem const *>(&child)) {
+        if (auto const item = cast<SPItem>(&child)) {
             if (auto bounds = item->documentExactBounds()) {
                 shape.insert(shape.end(), bounds->begin(), bounds->end());
                 is_empty = false;
@@ -194,7 +194,7 @@ void SPSymbol::update(SPCtx *ctx, guint flags) {
         SPItemCtx *ictx = (SPItemCtx *) ctx;
 
         // Calculate x, y, width, height from parent/initial viewport
-        this->calcDimsFromParentViewport(ictx, false, dynamic_cast<SPUse const *>(parent));
+        this->calcDimsFromParentViewport(ictx, false, cast<SPUse>(parent));
 
         SPItemCtx rctx = *ictx;
         rctx.viewport = Geom::Rect::from_xywh(x.computed, y.computed, width.computed, height.computed);
@@ -254,7 +254,7 @@ Inkscape::DrawingItem* SPSymbol::show(Inkscape::Drawing &drawing, unsigned int k
     if (this->cloned) {
         // Cloned <symbol> is actually renderable
         ai = SPGroup::show(drawing, key, flags);
-        Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(ai);
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(ai);
 
 		if (g) {
 			g->setChildTransform(this->c2p);

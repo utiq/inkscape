@@ -345,11 +345,11 @@ void XmlTree::set_dt_select(Inkscape::XML::Node *repr)
     } else if (isRealLayer(object)) {
         getDesktop()->layerManager().setCurrentLayer(object);
     } else {
-        if (SP_IS_GROUP(object->parent)) {
+        if (is<SPGroup>(object->parent)) {
             getDesktop()->layerManager().setCurrentLayer(object->parent);
         }
 
-        getSelection()->set(SP_ITEM(object));
+        getSelection()->set(cast<SPItem>(object));
     }
 
     document->setXMLDialogSelectedObject(object);
@@ -797,10 +797,10 @@ bool XmlTree::in_dt_coordsys(SPObject const &item)
 {
     /* Definition based on sp_item_i2doc_affine. */
     SPObject const *child = &item;
-    while (SP_IS_ITEM(child)) {
+    while (is<SPItem>(child)) {
         SPObject const * const parent = child->parent;
         if (parent == nullptr) {
-            g_assert(SP_IS_ROOT(child));
+            g_assert(is<SPRoot>(child));
             if (child == &item) {
                 // item is root
                 return false;
@@ -809,7 +809,7 @@ bool XmlTree::in_dt_coordsys(SPObject const &item)
         }
         child = parent;
     }
-    g_assert(!SP_IS_ROOT(child));
+    g_assert(!is<SPRoot>(child));
     return false;
 }
 

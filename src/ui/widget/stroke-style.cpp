@@ -501,7 +501,7 @@ void StrokeStyle::markerSelectCB(MarkerComboBox *marker_combo, SPMarkerLoc const
     sp_repr_css_set_property(css, combo_id, marker.c_str());
 
     for (auto item : desktop->getSelection()->items()) {
-        if (!SP_IS_SHAPE(item)) {
+        if (!is<SPShape>(item)) {
             continue;
         }
         if (Inkscape::XML::Node* selrepr = item->getRepr()) {
@@ -1127,7 +1127,7 @@ StrokeStyle::setPaintOrderButtons(Gtk::ToggleButton *active)
  */
 static void buildGroupedItemList(SPObject *element, std::vector<SPObject*> &simple_list)
 {
-    if (SP_IS_GROUP(element)) {
+    if (is<SPGroup>(element)) {
         for (SPObject *i = element->firstChild(); i; i = i->getNext()) {
             buildGroupedItemList(i, simple_list);
         }
@@ -1158,7 +1158,7 @@ StrokeStyle::updateAllMarkers(std::vector<SPItem*> const &objects, bool skip_und
     }
 
     for (SPObject *object : simplified_list) {
-        if (!SP_IS_TEXT(object)) {
+        if (!is<SPText>(object)) {
             all_texts = false;
             break;
         }

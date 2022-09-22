@@ -99,7 +99,7 @@ static SPObject * sp_marker_load_from_svg(gchar const *name, SPDocument *current
     if (doc) {
         /* Get the marker we want */
         SPObject *object = doc->getObjectById(name);
-        if (object && SP_IS_MARKER(object)) {
+        if (object && is<SPMarker>(object)) {
             SPDefs *defs = current_doc->getDefs();
             Inkscape::XML::Document *xml_doc = current_doc->getReprDoc();
             Inkscape::XML::Node *mark_repr = object->getRepr()->duplicate(xml_doc);
@@ -138,7 +138,7 @@ sp_gradient_load_from_svg(gchar const *name, SPDocument *current_doc)
     if (doc) {
         /* Get the gradient we want */
         SPObject *object = doc->getObjectById(name);
-        if (object && SP_IS_GRADIENT(object)) {
+        if (object && is<SPGradient>(object)) {
             SPDefs *defs = current_doc->getDefs();
             Inkscape::XML::Document *xml_doc = current_doc->getReprDoc();
             Inkscape::XML::Node *pat_repr = object->getRepr()->duplicate(xml_doc);
@@ -188,7 +188,7 @@ SPObject *get_stock_item(gchar const *urn, bool stock, SPDocument* stock_doc)
             {
                 if (child.getRepr()->attribute("inkscape:stockid") &&
                     !strcmp(name_p, child.getRepr()->attribute("inkscape:stockid")) &&
-                    SP_IS_MARKER(&child))
+                    is<SPMarker>(&child))
                 {
                     object = &child;
                 }
@@ -199,7 +199,7 @@ SPObject *get_stock_item(gchar const *urn, bool stock, SPDocument* stock_doc)
             {
                 if (child.getRepr()->attribute("inkscape:stockid") &&
                     !strcmp(name_p, child.getRepr()->attribute("inkscape:stockid")) &&
-                    SP_IS_PATTERN(&child))
+                    is<SPPattern>(&child))
                 {
                     object = &child;
                 }
@@ -210,7 +210,7 @@ SPObject *get_stock_item(gchar const *urn, bool stock, SPDocument* stock_doc)
             {
                 if (child.getRepr()->attribute("inkscape:stockid") &&
                     !strcmp(name_p, child.getRepr()->attribute("inkscape:stockid")) &&
-                    SP_IS_GRADIENT(&child))
+                    is<SPGradient>(&child))
                 {
                     object = &child;
                 }

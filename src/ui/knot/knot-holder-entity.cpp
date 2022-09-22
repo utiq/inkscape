@@ -207,7 +207,7 @@ void PatternKnotHolderEntity::set_offset(Geom::Point loc)
 
 SPPattern *PatternKnotHolderEntity::_pattern() const
 {
-    return _fill ? SP_PATTERN(item->style->getFillPaintServer()) : SP_PATTERN(item->style->getStrokePaintServer());
+    return _fill ? cast<SPPattern>(item->style->getFillPaintServer()) : cast<SPPattern>(item->style->getStrokePaintServer());
 }
 
 bool PatternKnotHolderEntity::knot_missing() const
@@ -357,7 +357,7 @@ bool HatchKnotHolderEntity::knot_missing() const
 
 SPHatch *HatchKnotHolderEntity::_hatch() const
 {
-    return _fill ? SP_HATCH(item->style->getFillPaintServer()) : SP_HATCH(item->style->getStrokePaintServer());
+    return _fill ? cast<SPHatch>(item->style->getFillPaintServer()) : cast<SPHatch>(item->style->getStrokePaintServer());
 }
 
 static Geom::Point sp_hatch_knot_get(SPHatch const *hatch, gdouble x, gdouble y)

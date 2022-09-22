@@ -284,11 +284,11 @@ void PolarArrangeTab::arrange()
 		{
 				if(!arrangeOnFirstEllipse)
 			{
-				if(SP_IS_GENERICELLIPSE(item))
-					referenceEllipse = SP_GENERICELLIPSE(item);
+				if(is<SPGenericEllipse>(item))
+					referenceEllipse = cast<SPGenericEllipse>(item);
 			} else {
-				if(SP_IS_GENERICELLIPSE(item) && referenceEllipse == nullptr)
-					referenceEllipse = SP_GENERICELLIPSE(item);
+				if(is<SPGenericEllipse>(item) && referenceEllipse == nullptr)
+					referenceEllipse = cast<SPGenericEllipse>(item);
 			}
 		}
 		++count;

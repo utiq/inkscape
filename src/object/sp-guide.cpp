@@ -246,7 +246,7 @@ SPGuide *SPGuide::createSPGuide(SPDocument *doc, Geom::Point const &pt1, Geom::P
     }
     Inkscape::GC::release(repr);
 
-    SPGuide *guide= SP_GUIDE(doc->getObjectByRepr(repr));
+    auto guide = cast<SPGuide>(doc->getObjectByRepr(repr));
     return guide;
 }
 
@@ -290,7 +290,7 @@ void sp_guide_delete_all_guides(SPDocument *doc)
 {
     std::vector<SPObject *> current = doc->getResourceList("guide");
     while (!current.empty()){
-        SPGuide* guide = SP_GUIDE(*(current.begin()));
+        auto guide = cast<SPGuide>(*(current.begin()));
         guide->remove(true);
         current = doc->getResourceList("guide");
     }

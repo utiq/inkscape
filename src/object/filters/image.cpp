@@ -184,7 +184,7 @@ void SPFeImage::reread_href()
     }
     pixbuf.reset();
     if (auto obj = elemref->getObject()) {
-        elem = SP_ITEM(obj);
+        elem = cast<SPItem>(obj);
         if (elem) {
             type = ELEM;
         } else {
@@ -225,7 +225,7 @@ void SPFeImage::on_href_changed(SPObject *new_obj)
     // Set type and image.
     pixbuf.reset();
     if (new_obj) {
-        elem = SP_ITEM(new_obj);
+        elem = cast<SPItem>(new_obj);
         if (elem) {
             type = ELEM;
         } else {
@@ -333,7 +333,7 @@ void SPFeImage::hide(Inkscape::DrawingItem *parent)
 bool SPFeImage::valid_for(SPObject const *obj) const
 {
     // elem could be nullptr, but this should still work.
-    return obj && SP_ITEM(obj) != elem;
+    return obj && cast<SPItem>(obj) != elem;
 }
 
 std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeImage::build_renderer(Inkscape::DrawingItem *parent) const

@@ -52,7 +52,7 @@ void SPFeMerge::order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *o
 void SPFeMerge::resolve_slots(SlotResolver &resolver)
 {
     for (auto &input : children) {
-        if (auto node = dynamic_cast<SPFeMergeNode*>(&input)) {
+        if (auto node = cast<SPFeMergeNode>(&input)) {
             node->resolve_slots(std::as_const(resolver));
         }
     }
@@ -67,7 +67,7 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMerge::build_renderer(In
     int in_nr = 0;
 
     for (auto const &input : children) {
-        if (auto node = dynamic_cast<SPFeMergeNode const*>(&input)) {
+        if (auto node = cast<SPFeMergeNode>(&input)) {
             merge->set_input(in_nr, node->get_in());
             in_nr++;
         }

@@ -181,8 +181,8 @@ LPECloneOriginal::cloneAttributes(SPObject *origin, SPObject *dest, const gchar 
         }
     }
 
-    SPClipPath *clippath_origin = SP_ITEM(origin)->getClipObject();
-    SPClipPath *clippath_dest = SP_ITEM(dest)->getClipObject();
+    SPClipPath *clippath_origin = cast<SPItem>(origin)->getClipObject();
+    SPClipPath *clippath_dest = cast<SPItem>(dest)->getClipObject();
     if(clippath_origin && clippath_dest) {
         std::vector<SPObject*> clippath_list = clippath_origin->childList(true);
         std::vector<SPObject*> clippath_list_dest = clippath_dest->childList(true);
@@ -216,7 +216,7 @@ LPECloneOriginal::cloneAttributes(SPObject *origin, SPObject *dest, const gchar 
                 std::optional<SPCurve> c;
                 if (method == CLM_BSPLINESPIRO) {
                     c = SPCurve::ptr_to_opt(shape_origin->curveForEdit());
-                    SPLPEItem * lpe_item = SP_LPE_ITEM(origin);
+                    auto lpe_item = cast<SPLPEItem>(origin);
                     if (lpe_item) {
                         PathEffectList lpelist = lpe_item->getEffectList();
                         PathEffectList::iterator i;

@@ -127,22 +127,22 @@ std::pair<std::vector<SPItem*>, Glib::ustring> getFontReplacedItems(SPDocument *
         }
         else if (auto textpath = dynamic_cast<SPTextPath const*>(item)) {
             if (textpath->originalPath) {
-                family = SP_TEXT(item->parent)->layout.getFontFamily(0);
+                family = cast<SPText>(item->parent)->layout.getFontFamily(0);
                 setFontSpans.insert(family);
             }
         }
-        else if (SP_IS_TSPAN(item) || SP_IS_FLOWTSPAN(item)) {
+        else if (is<SPTSpan>(item) || is<SPFlowtspan>(item)) {
             // is_part_of_text_subtree (item)
              // TSPAN layout comes from the parent->layout->_spans
              SPObject *parent_text = item;
-             while (parent_text && !SP_IS_TEXT(parent_text)) {
+             while (parent_text && !is<SPText>(parent_text)) {
                  parent_text = parent_text->parent;
              }
              if (parent_text) {
-                 family = SP_TEXT(parent_text)->layout.getFontFamily(0);
+                 family = cast<SPText>(parent_text)->layout.getFontFamily(0);
                  // Add all the spans fonts to the set
                  for (unsigned int f = 0; f < parent_text->children.size(); f++) {
-                     family = SP_TEXT(parent_text)->layout.getFontFamily(f);
+                     family = cast<SPText>(parent_text)->layout.getFontFamily(f);
                      setFontSpans.insert(family);
                  }
              }

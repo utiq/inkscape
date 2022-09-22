@@ -87,7 +87,7 @@ LPEJoinType::~LPEJoinType()= default;
 
 void LPEJoinType::doOnApply(SPLPEItem const* lpeitem)
 {
-    if (!SP_IS_SHAPE(lpeitem)) {
+    if (!is<SPShape>(lpeitem)) {
         return;
     }
 

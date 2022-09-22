@@ -175,17 +175,17 @@ Inkscape::XML::Node* SPUse::write(Inkscape::XML::Document *xml_doc, Inkscape::XM
         repr->setAttributeOrRemoveIfEmpty("xlink:href", uri_string);
     }
 
-    SPShape *shape = dynamic_cast<SPShape *>(child);
+    auto shape = cast<SPShape>(child);
     if (shape) {
         shape->set_shape(); // evaluate SPCurve of child
     } else {
-        SPText *text = dynamic_cast<SPText *>(child);
+        auto text = cast<SPText>(child);
         if (text) {
             text->rebuildLayout(); // refresh Layout, LP Bug 1339305
         } else {
-            SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(child);
+            auto flowtext = cast<SPFlowtext>(child);
             if (flowtext) {
-                SPFlowregion *flowregion = dynamic_cast<SPFlowregion *>(flowtext->firstChild());
+                auto flowregion = cast<SPFlowregion>(flowtext->firstChild());
                 if (flowregion) {
                     flowregion->UpdateComputed();
                 }
@@ -219,9 +219,9 @@ std::optional<Geom::PathVector> SPUse::documentExactBounds() const
     result = original->documentExactBounds();
 
     Geom::Affine private_transform;
-    if (dynamic_cast<SPSymbol *>(original)) {
+    if (is<SPSymbol>(original)) {
         private_transform = i2doc_affine();
-    } else if (auto const *parent = dynamic_cast<SPItem *>(original->parent)) {
+    } else if (auto const *parent = cast<SPItem>(original->parent)) {
         private_transform = get_root_transform() * parent->transform.inverse() * parent->i2doc_affine();
     }
     result = result ? (*result // TODO: is there a simpler way to get the transform below?
@@ -250,7 +250,7 @@ void SPUse::print(SPPrintContext* ctx) {
 }
 
 const char* SPUse::typeName() const {
-    if (dynamic_cast<SPSymbol *>(child)) {
+    if (is<SPSymbol>(child)) {
         return "symbol";
     } else {
         return "clone";
@@ -258,7 +258,7 @@ const char* SPUse::typeName() const {
 }
 
 const char* SPUse::displayName() const {
-    if (dynamic_cast<SPSymbol *>(child)) {
+    if (is<SPSymbol>(child)) {
         return _("Symbol");
     } else {
         return _("Clone");
@@ -267,7 +267,7 @@ const char* SPUse::displayName() const {
 
 gchar* SPUse::description() const {
     if (child) {
-        if ( dynamic_cast<SPSymbol *>(child) ) {
+        if (is<SPSymbol>(child)) {
             if (child->title()) {
                 return g_strdup_printf(_("called %s"), Glib::Markup::escape_text(Glib::ustring( g_dpgettext2(nullptr, "Symbol", child->title()))).c_str());
             } else if (child->getAttribute("id")) {
@@ -342,10 +342,10 @@ void SPUse::hide(unsigned int key) {
 SPItem *SPUse::root() {
     SPItem *orig = this->child;
 
-    SPUse *use = dynamic_cast<SPUse *>(orig);
+    auto use = cast<SPUse>(orig);
     while (orig && use) {
         orig = use->child;
-        use = dynamic_cast<SPUse *>(orig);
+        use = cast<SPUse>(orig);
     }
 
     return orig;
@@ -369,7 +369,7 @@ SPItem *SPUse::trueOriginal() const
 
     SPItem *original_item = (SPItem *)this;
     for (int i = 0; i < depth; ++i) {
-        if (auto const *intermediate_clone = dynamic_cast<SPUse *>(original_item)) {
+        if (auto const *intermediate_clone = cast<SPUse>(original_item)) {
             original_item = intermediate_clone->get_original();
         } else {
             return nullptr;
@@ -399,7 +399,7 @@ bool SPUse::anyInChain(bool (*predicate)(SPItem const *)) const
     }
 
     for (int i = 0; i < depth; ++i) {
-        if (auto const *intermediate_clone = dynamic_cast<SPUse const *>(item)) {
+        if (auto const *intermediate_clone = cast<SPUse>(item)) {
             item = intermediate_clone->get_original();
             if (predicate(item)) {
                 return true;
@@ -419,9 +419,9 @@ int SPUse::cloneDepth() const {
     unsigned depth = 1;
     SPItem *orig = this->child;
 
-    while (orig && dynamic_cast<SPUse *>(orig)) {
+    while (orig && cast<SPUse>(orig)) {
         ++depth;
-        orig = dynamic_cast<SPUse *>(orig)->child;
+        orig = cast<SPUse>(orig)->child;
     }
 
     if (!orig) {
@@ -443,12 +443,12 @@ Geom::Affine SPUse::get_root_transform() const
     std::vector<SPItem const *> chain;
     chain.push_back(this);
 
-    while (dynamic_cast<SPUse *>(orig)) {
-        chain.push_back(dynamic_cast<SPItem *>(orig));
-        orig = dynamic_cast<SPUse *>(orig)->child;
+    while (cast<SPUse>(orig)) {
+        chain.push_back(cast<SPItem>(orig));
+        orig = cast<SPUse>(orig)->child;
     }
 
-    chain.push_back(dynamic_cast<SPItem *>(orig));
+    chain.push_back(cast<SPItem>(orig));
 
     // calculate the accumulated transform, starting from the original
     Geom::Affine t(Geom::identity());
@@ -459,7 +459,7 @@ Geom::Affine SPUse::get_root_transform() const
         // "An additional transformation translate(x,y) is appended to the end (i.e.,
         // right-side) of the transform attribute on the generated 'g', where x and y
         // represent the values of the x and y attributes on the 'use' element." - http://www.w3.org/TR/SVG11/struct.html#UseElement
-        auto *i_use = dynamic_cast<SPUse const *>(i_tem);
+        auto *i_use = cast<SPUse>(i_tem);
         if (i_use) {
             if ((i_use->x._set && i_use->x.computed != 0) || (i_use->y._set && i_use->y.computed != 0)) {
                 t = t * Geom::Translate(i_use->x._set ? i_use->x.computed : 0, i_use->y._set ? i_use->y.computed : 0);
@@ -500,7 +500,7 @@ void SPUse::move_compensate(Geom::Affine const *mp) {
     }
 
     // never compensate uses which are used in flowtext
-    if (parent && dynamic_cast<SPFlowregion *>(parent)) {
+    if (parent && cast<SPFlowregion>(parent)) {
         return;
     }
 
@@ -603,7 +603,7 @@ void SPUse::href_changed() {
 
             SPObject* obj = SPFactory::createObject(NodeTraits::get_type_string(*childrepr));
 
-            SPItem *item = dynamic_cast<SPItem *>(obj);
+            auto item = cast<SPItem>(obj);
             if (item) {
                 child = item;
 
@@ -636,7 +636,7 @@ void SPUse::href_changed() {
 
 void SPUse::delete_self() {
     // always delete uses which are used in flowtext
-    if (parent && dynamic_cast<SPFlowregion *>(parent)) {
+    if (parent && cast<SPFlowregion>(parent)) {
         deleteObject();
         return;
     }
@@ -673,11 +673,10 @@ void SPUse::update(SPCtx *ctx, unsigned flags) {
         sp_object_ref(this->child);
 
         if (childflags || (this->child->uflags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
-            SPItem const *chi = dynamic_cast<SPItem const *>(child);
-            g_assert(chi != nullptr);
-            cctx.i2doc = chi->transform * ictx->i2doc;
-            cctx.i2vp = chi->transform * ictx->i2vp;
-            this->child->updateDisplay((SPCtx *)&cctx, childflags);
+            g_assert(child);
+            cctx.i2doc = child->transform * ictx->i2doc;
+            cctx.i2vp = child->transform * ictx->i2vp;
+            child->updateDisplay(&cctx, childflags);
         }
 
         sp_object_unref(this->child);
@@ -751,7 +750,7 @@ SPItem *SPUse::unlink() {
 
     Inkscape::XML::Node *copy = nullptr;
 
-    if (auto symbol = dynamic_cast<SPSymbol *>(orig)) {
+    if (auto symbol = cast<SPSymbol>(orig)) {
         // make a group, copy children
         copy = xml_doc->createElement("svg:g");
 
@@ -800,7 +799,7 @@ SPItem *SPUse::unlink() {
     this->setSuccessor(unlinked);
     sp_object_unref(this);
 
-    SPItem *item = dynamic_cast<SPItem *>(unlinked);
+    auto item = cast<SPItem>(unlinked);
     g_assert(item != nullptr);
 
     // Set the accummulated transform.

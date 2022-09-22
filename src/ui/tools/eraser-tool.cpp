@@ -928,21 +928,21 @@ void EraserTool::_clipErase(SPItem *item) const
     SPClipPath *clip_path = item->getClipObject();
     if (clip_path) {
         std::vector<SPItem *> selected;
-        selected.push_back(SP_ITEM(clip_path->firstChild()));
+        selected.push_back(cast<SPItem>(clip_path->firstChild()));
         std::vector<Inkscape::XML::Node *> to_select;
         std::vector<SPItem *> items(selected);
         sp_item_list_to_curves(items, selected, to_select);
-        Inkscape::XML::Node *clip_data = SP_ITEM(clip_path->firstChild())->getRepr();
+        Inkscape::XML::Node *clip_data = cast<SPItem>(clip_path->firstChild())->getRepr();
         if (!clip_data && !to_select.empty()) {
             clip_data = *(to_select.begin());
         }
         if (clip_data) {
             Inkscape::XML::Node *dup_clip = clip_data->duplicate(xml_doc);
             if (dup_clip) {
-                SPItem *dup_clip_obj = SP_ITEM(item->parent->appendChildRepr(dup_clip));
+                auto dup_clip_obj = cast<SPItem>(item->parent->appendChildRepr(dup_clip));
                 Inkscape::GC::release(dup_clip);
                 if (dup_clip_obj) {
-                    dup_clip_obj->transform *= item->getRelativeTransform(SP_ITEM(item->parent));
+                    dup_clip_obj->transform *= item->getRelativeTransform(cast<SPItem>(item->parent));
                     dup_clip_obj->updateRepr();
                     delete_old_clip_path = true;
                     w_selection.raiseToTop(true);
@@ -954,10 +954,10 @@ void EraserTool::_clipErase(SPItem *item) const
     } else {
         Inkscape::XML::Node *rect_repr = xml_doc->createElement("svg:rect");
         sp_desktop_apply_style_tool(_desktop, rect_repr, "/tools/eraser", false);
-        SPRect *rect = SP_RECT(item->parent->appendChildRepr(rect_repr));
+        auto rect = cast<SPRect>(item->parent->appendChildRepr(rect_repr));
         Inkscape::GC::release(rect_repr);
         rect->setPosition(bbox->left(), bbox->top(), bbox->width(), bbox->height());
-        rect->transform = SP_ITEM(rect->parent)->i2doc_affine().inverse();
+        rect->transform = cast<SPItem>(rect->parent)->i2doc_affine().inverse();
 
         rect->updateRepr();
         rect->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);

@@ -534,7 +534,7 @@ LPESlice::cloneD(SPObject *orig, SPObject *dest, bool is_original)
         return;
     }
     SPItem *originalitem = dynamic_cast<SPItem *>(orig);
-    if ( SP_IS_GROUP(orig) && SP_IS_GROUP(dest) && SP_GROUP(orig)->getItemCount() == SP_GROUP(dest)->getItemCount() ) {
+    if ( is<SPGroup>(orig) && is<SPGroup>(dest) && cast<SPGroup>(orig)->getItemCount() == cast<SPGroup>(dest)->getItemCount() ) {
         if (reset) {
             cloneStyle(orig, dest);
         }
@@ -552,8 +552,8 @@ LPESlice::cloneD(SPObject *orig, SPObject *dest, bool is_original)
         return;
     }
 
-    SPShape * shape =  SP_SHAPE(orig);
-    SPPath * path =  SP_PATH(dest);
+    auto shape = cast<SPShape>(orig);
+    auto path = cast<SPPath>(dest);
     SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(path);
     if (path && shape && splpeitem) {
         SPCurve const *c = shape->curve();

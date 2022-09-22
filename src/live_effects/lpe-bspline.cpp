@@ -68,7 +68,7 @@ void LPEBSpline::doBeforeEffect (SPLPEItem const* /*lpeitem*/)
 
 void LPEBSpline::doOnApply(SPLPEItem const* lpeitem)
 {
-    if (!SP_IS_SHAPE(lpeitem)) {
+    if (!is<SPShape>(lpeitem)) {
         g_warning("LPE BSpline can only be applied to shapes (not groups).");
         SPLPEItem * item = const_cast<SPLPEItem*>(lpeitem);
         item->removeCurrentPathEffect(false);

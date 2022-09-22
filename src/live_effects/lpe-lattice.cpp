@@ -171,7 +171,7 @@ LPELattice::resetDefaults(SPItem const* item)
 {
     Effect::resetDefaults(item);
 
-    original_bbox(SP_LPE_ITEM(item), false, true);
+    original_bbox(cast<SPLPEItem>(item), false, true);
     
     // place the 16 control points
     grid_point0[Geom::X] = boundingbox_X.min();

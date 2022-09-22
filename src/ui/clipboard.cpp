@@ -515,7 +515,7 @@ bool ClipboardManagerImpl::_copyNodes(SPDesktop *desktop, ObjectSet *set)
 
     SPObject *first_path = nullptr;
     for (auto obj : set->items()) {
-        if(SP_IS_PATH(obj)) {
+        if(is<SPPath>(obj)) {
             first_path = obj;
             break;
         }
@@ -1375,7 +1375,7 @@ void ClipboardManagerImpl::_copyTextPath(SPTextPath *tp)
     }
     // textpaths that aren't in defs (on the canvas) shouldn't be copied because if
     // both objects are being copied already, this ends up stealing the refs id.
-    if(path->parent && SP_IS_DEFS(path->parent)) {
+    if(path->parent && is<SPDefs>(path->parent)) {
         _copyIgnoreDup(path->getRepr(), _doc, _defs);
     }
 }

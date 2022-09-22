@@ -256,11 +256,11 @@ lpetool_mode_to_index(Inkscape::LivePathEffect::EffectType const type) {
  */
 int lpetool_item_has_construction(LpeTool */*lc*/, SPItem *item)
 {
-    if (!SP_IS_LPE_ITEM(item)) {
+    if (!is<SPLPEItem>(item)) {
         return -1;
     }
 
-    Inkscape::LivePathEffect::Effect* lpe = SP_LPE_ITEM(item)->getCurrentLPE();
+    Inkscape::LivePathEffect::Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
     if (!lpe) {
         return -1;
     }
@@ -278,7 +278,7 @@ lpetool_try_construction(LpeTool *lc, Inkscape::LivePathEffect::EffectType const
     SPItem *item = selection->singleItem();
 
     // TODO: should we check whether type represents a valid geometric construction?
-    if (item && SP_IS_LPE_ITEM(item) && Inkscape::LivePathEffect::Effect::acceptsNumClicks(type) == 0) {
+    if (item && is<SPLPEItem>(item) && Inkscape::LivePathEffect::Effect::acceptsNumClicks(type) == 0) {
         Inkscape::LivePathEffect::Effect::createAndApply(type, lc->getDesktop()->getDocument(), item);
         return true;
     }

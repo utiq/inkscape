@@ -357,7 +357,7 @@ void ObjectProperties::update_entries()
         _entry_title.set_sensitive(TRUE);
 
         /* Image Rendering */
-        if (SP_IS_IMAGE(item)) {
+        if (is<SPImage>(item)) {
             _combo_image_rendering.show();
             _label_image_rendering.show();
             _combo_image_rendering.set_active(obj->style->image_rendering.value);
@@ -444,7 +444,7 @@ void ObjectProperties::_labelChanged()
     }
 
     /* Retrieve the DPI */
-    if (SP_IS_IMAGE(obj)) {
+    if (is<SPImage>(obj)) {
         Glib::ustring dpi_value = Glib::ustring::format(_spin_dpi.get_value());
         obj->setAttribute("inkscape:svg-dpi", dpi_value);
         DocumentUndo::done(getDocument(), _("Set image DPI"), INKSCAPE_ICON("dialog-object-properties"));
@@ -532,7 +532,7 @@ void ObjectProperties::_aspectRatioToggled()
         active = "none";
     }
     /* Retrieve the DPI */
-    if (SP_IS_IMAGE(item)) {
+    if (is<SPImage>(item)) {
         Glib::ustring dpi_value = Glib::ustring::format(_spin_dpi.get_value());
         item->setAttribute("preserveAspectRatio", active);
         DocumentUndo::done(getDocument(), _("Set preserve ratio"), INKSCAPE_ICON("dialog-object-properties"));

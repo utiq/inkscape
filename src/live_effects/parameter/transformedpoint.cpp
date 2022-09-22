@@ -169,7 +169,7 @@ public:
         /// @todo implement angle snapping when holding CTRL
         param->setVector(s);
         param->set_and_write_new_values(param->origin, param->vector);
-        sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+        sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), false, false);
     };
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override
     {

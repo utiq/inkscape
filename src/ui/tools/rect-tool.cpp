@@ -339,7 +339,7 @@ void RectTool::drag(Geom::Point const pt, guint state) {
         // Set style
         sp_desktop_apply_style_tool(_desktop, repr, "/tools/shapes/rect", false);
 
-        this->rect = SP_RECT(currentLayer()->appendChildRepr(repr));
+        this->rect = cast<SPRect>(currentLayer()->appendChildRepr(repr));
         Inkscape::GC::release(repr);
 
         this->rect->transform = currentLayer()->i2doc_affine().inverse();

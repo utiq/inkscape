@@ -1094,7 +1094,7 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
         guint items_count = 0;
         SPObject *o = nullptr;
         for (auto& child: doc->getRoot()->children) {
-            if (SP_IS_ITEM(&child)) {
+            if (is<SPItem>(&child)) {
                 items_count++;
                 o = &child;
             }
@@ -1102,9 +1102,9 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
 
         //ungroup if necessary
         bool did_ungroup = false;
-        while(items_count==1 && o && SP_IS_GROUP(o) && o->children.size()==1){
+        while(items_count==1 && o && is<SPGroup>(o) && o->children.size()==1){
             std::vector<SPItem *>v;
-            sp_item_group_ungroup(SP_GROUP(o), v);
+            sp_item_group_ungroup(cast<SPGroup>(o), v);
             o = v.empty() ? nullptr : v[0];
             did_ungroup=true;
         }
@@ -1133,7 +1133,7 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
         // and insert it into the current document.
         SPObject *new_obj = nullptr;
         for (auto& child: doc->getRoot()->children) {
-            if (SP_IS_ITEM(&child)) {
+            if (is<SPItem>(&child)) {
                 Inkscape::XML::Node *newitem = did_ungroup ? o->getRepr()->duplicate(xml_in_doc) : child.getRepr()->duplicate(xml_in_doc);
 
                 // convert layers to groups, and make sure they are unlocked
@@ -1162,14 +1162,14 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
         if (style) sp_repr_css_attr_unref(style);
 
         // select and move the imported item
-        if (new_obj && SP_IS_ITEM(new_obj)) {
+        if (new_obj && is<SPItem>(new_obj)) {
             Inkscape::Selection *selection = desktop->getSelection();
-            selection->set(SP_ITEM(new_obj));
+            selection->set(cast<SPItem>(new_obj));
 
             // preserve parent and viewBox transformations
             // c2p is identity matrix at this point unless ensureUpToDate is called
             doc->ensureUpToDate();
-            Geom::Affine affine = doc->getRoot()->c2p * SP_ITEM(place_to_insert)->i2doc_affine().inverse();
+            Geom::Affine affine = doc->getRoot()->c2p * cast<SPItem>(place_to_insert)->i2doc_affine().inverse();
             selection->applyAffine(desktop->dt2doc() * affine * desktop->doc2dt(), true, false, false);
 
             // move to mouse pointer

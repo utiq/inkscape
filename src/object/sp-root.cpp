@@ -80,8 +80,8 @@ void SPRoot::build(SPDocument *document, Inkscape::XML::Node *repr)
 
     // Search for first <defs> node
     for (auto& o: children) {
-        if (SP_IS_DEFS(&o)) {
-            this->defs = SP_DEFS(&o);
+        if (is<SPDefs>(&o)) {
+            this->defs = cast<SPDefs>(&o);
             break;
         }
     }
@@ -178,11 +178,11 @@ void SPRoot::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
     // See LP bug #1227827
     //g_assert (co != NULL || !strcmp("comment", child->name())); // comment repr node has no object
 
-    if (co && SP_IS_DEFS(co)) {
+    if (co && is<SPDefs>(co)) {
         // We search for first <defs> node - it is not beautiful, but works
         for (auto& c: children) {
-            if (SP_IS_DEFS(&c)) {
-                this->defs = SP_DEFS(&c);
+            if (is<SPDefs>(&c)) {
+                this->defs = cast<SPDefs>(&c);
                 break;
             }
         }
@@ -197,7 +197,7 @@ void SPRoot::remove_child(Inkscape::XML::Node *child)
         // We search for first remaining <defs> node - it is not beautiful, but works
         for (auto& child: children) {
             iter = &child;
-            if (SP_IS_DEFS(iter) && (SPDefs *)iter != this->defs) {
+            if (is<SPDefs>(iter) && (SPDefs *)iter != this->defs) {
                 this->defs = (SPDefs *)iter;
                 break;
             }
@@ -268,7 +268,7 @@ void SPRoot::update(SPCtx *ctx, guint flags)
     }
 
     // Calculate x, y, width, height from parent/initial viewport
-    this->calcDimsFromParentViewport(ictx, false, cloned ? dynamic_cast<SPUse const *>(parent) : nullptr);
+    this->calcDimsFromParentViewport(ictx, false, cloned ? cast<SPUse>(parent) : nullptr);
 
     // std::cout << "SPRoot::update: final:"
     //           << " x: " << x.computed
@@ -348,7 +348,7 @@ Inkscape::DrawingItem *SPRoot::show(Inkscape::Drawing &drawing, unsigned int key
     Inkscape::DrawingItem *ai = SPGroup::show(drawing, key, flags);
 
     if (ai) {
-        Inkscape::DrawingGroup *g = dynamic_cast<Inkscape::DrawingGroup *>(ai);
+        auto g = dynamic_cast<Inkscape::DrawingGroup*>(ai);
         g->setChildTransform(this->c2p);
     }
 

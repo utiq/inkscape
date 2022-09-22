@@ -480,9 +480,9 @@ void Inkscape::convert_text_to_curves(SPDocument *doc)
 
     for (auto &child : doc->getRoot()->children) {
         auto item = dynamic_cast<SPItem *>(&child);
-        if (!(SP_IS_TEXT(item) ||     //
-              SP_IS_FLOWTEXT(item) || //
-              SP_IS_GROUP(item))) {
+        if (!(is<SPText>(item) ||     //
+              is<SPFlowtext>(item) || //
+              is<SPGroup>(item))) {
             continue;
         }
 

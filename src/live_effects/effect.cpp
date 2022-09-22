@@ -1068,7 +1068,7 @@ void Effect::createAndApply(const char* name, SPDocument *doc, SPItem *item)
     Inkscape::GC::release(repr);
 
     gchar *href = g_strdup_printf("#%s", repr_id);
-    SP_LPE_ITEM(item)->addPathEffect(href, true);
+    cast<SPLPEItem>(item)->addPathEffect(href, true);
     g_free(href);
 }
 

@@ -107,10 +107,10 @@ ObjectCompositeSettings::_blendBlurValueChanged()
     //apply created filter to every selected item
     std::vector<SPObject*> sel = _subject->list();
     for (auto i : sel) {
-        if (!SP_IS_ITEM(i)) {
+        if (!is<SPItem>(i)) {
             continue;
         }
-        SPItem * item = SP_ITEM(i);
+        auto item = cast<SPItem>(i);
         SPStyle *style = item->style;
         g_assert(style != nullptr);
         bool change_blend = set_blend_mode(item, _filter_modifier.get_blend_mode());

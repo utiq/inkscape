@@ -240,9 +240,9 @@ RectToolbar::value_changed(Glib::RefPtr<Gtk::Adjustment>&  adj,
     Inkscape::Selection *selection = _desktop->getSelection();
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
-        if (SP_IS_RECT(*i)) {
+        if (is<SPRect>(*i)) {
             if (adj->get_value() != 0) {
-                (SP_RECT(*i)->*setter)(Quantity::convert(adj->get_value(), unit, "px"));
+                (cast<SPRect>(*i)->*setter)(Quantity::convert(adj->get_value(), unit, "px"));
             } else {
                 (*i)->removeAttribute(value_name);
             }
@@ -322,7 +322,7 @@ RectToolbar::selection_changed(Inkscape::Selection *selection)
 
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
-        if (SP_IS_RECT(*i)) {
+        if (is<SPRect>(*i)) {
             n_selected++;
             item = *i;
             repr = item->getRepr();
@@ -373,24 +373,24 @@ void RectToolbar::event_attr_changed(Inkscape::XML::Node * /*repr*/, gchar const
     Unit const *unit = toolbar->_tracker->getActiveUnit();
     g_return_if_fail(unit != nullptr);
 
-    if (toolbar->_item && SP_IS_RECT(toolbar->_item)) {
+    if (toolbar->_item && is<SPRect>(toolbar->_item)) {
         {
-            gdouble rx = SP_RECT(toolbar->_item)->getVisibleRx();
+            gdouble rx = cast<SPRect>(toolbar->_item)->getVisibleRx();
             toolbar->_rx_adj->set_value(Quantity::convert(rx, "px", unit));
         }
 
         {
-            gdouble ry = SP_RECT(toolbar->_item)->getVisibleRy();
+            gdouble ry = cast<SPRect>(toolbar->_item)->getVisibleRy();
             toolbar->_ry_adj->set_value(Quantity::convert(ry, "px", unit));
         }
 
         {
-            gdouble width = SP_RECT(toolbar->_item)->getVisibleWidth();
+            gdouble width = cast<SPRect>(toolbar->_item)->getVisibleWidth();
             toolbar->_width_adj->set_value(Quantity::convert(width, "px", unit));
         }
 
         {
-            gdouble height = SP_RECT(toolbar->_item)->getVisibleHeight();
+            gdouble height = cast<SPRect>(toolbar->_item)->getVisibleHeight();
             toolbar->_height_adj->set_value(Quantity::convert(height, "px", unit));
         }
     }

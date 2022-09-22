@@ -958,7 +958,7 @@ static void sp_offset_start_listening(SPOffset *offset,SPObject* to)
     offset->sourceRepr = to->getRepr();
 
     offset->_delete_connection = to->connectDelete(sigc::bind(sigc::ptr_fun(&sp_offset_delete_self), offset));
-    offset->_transformed_connection = SP_ITEM(to)->connectTransformed(sigc::bind(sigc::ptr_fun(&sp_offset_move_compensate), offset));
+    offset->_transformed_connection = cast<SPItem>(to)->connectTransformed(sigc::bind(sigc::ptr_fun(&sp_offset_move_compensate), offset));
     offset->_modified_connection = to->connectModified(sigc::bind<2>(sigc::ptr_fun(&sp_offset_source_modified), offset));
 }
 
@@ -1055,7 +1055,7 @@ sp_offset_delete_self(SPObject */*deleted*/, SPOffset *offset)
 static void
 sp_offset_source_modified (SPObject */*iSource*/, guint flags, SPItem *item)
 {
-    SPOffset *offset = SP_OFFSET(item);
+    auto offset = cast<SPOffset>(item);
     offset->sourceDirty=true;
 
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG)) {
@@ -1080,15 +1080,15 @@ refresh_offset_source(SPOffset* offset)
     	return;
     }
 
-    SPItem  *item  = SP_ITEM (refobj);
+    auto item = cast<SPItem>(refobj);
     SPCurve curve;
 
-    if (auto shape = dynamic_cast<SPShape const *>(item)) {
+    if (auto shape = cast<SPShape>(item)) {
         if (!shape->curve()) {
             return;
         }
         curve = *shape->curve();
-    } else if (auto text = dynamic_cast<SPText const *>(item)) {
+    } else if (auto text = cast<SPText>(item)) {
         curve = text->getNormalizedBpath();
     } else {
         return;
@@ -1155,20 +1155,14 @@ refresh_offset_source(SPOffset* offset)
     }
 }
 
-SPItem *
-sp_offset_get_source (SPOffset *offset)
+SPItem *sp_offset_get_source(SPOffset *offset)
 {
     if (offset && offset->sourceRef) {
-        SPItem *refobj = offset->sourceRef->getObject();
-
-        if (SP_IS_ITEM (refobj)) {
-            return (SPItem *) refobj;
-        }
+        return offset->sourceRef->getObject();
     }
 
     return nullptr;
 }
-
 
 /*
   Local Variables:

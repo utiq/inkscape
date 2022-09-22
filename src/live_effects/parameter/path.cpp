@@ -460,8 +460,8 @@ PathParam::start_listening(SPObject * to)
     }
     linked_deleted_connection = to->connectDelete(sigc::mem_fun(*this, &PathParam::linked_deleted));
     linked_modified_connection = to->connectModified(sigc::mem_fun(*this, &PathParam::linked_modified));
-    if (SP_IS_ITEM(to)) {
-        linked_transformed_connection = SP_ITEM(to)->connectTransformed(sigc::mem_fun(*this, &PathParam::linked_transformed));
+    if (is<SPItem>(to)) {
+        linked_transformed_connection = cast<SPItem>(to)->connectTransformed(sigc::mem_fun(*this, &PathParam::linked_transformed));
     }
     linked_modified(to, SP_OBJECT_MODIFIED_FLAG); // simulate linked_modified signal, so that path data is updated
 }

@@ -46,7 +46,7 @@ using namespace vpsc;
  * Returns true if item is a connector
  */
 bool isConnector(SPItem const * const item) {
-    auto path = dynamic_cast<SPPath const *>(item);
+    auto path = cast<SPPath>(item);
     return path && path->connEndPair.isAutoRoutingConn();
 }
 
@@ -146,7 +146,7 @@ void graphlayout(std::vector<SPItem*> const & items) {
     bool avoid_overlaps = prefs->getBool("/tools/connector/avoidoverlaplayout");
 
     for (SPItem* conn: connectors) {
-        SPPath* path = SP_PATH(conn);
+        auto path = cast<SPPath>(conn);
         std::array<SPItem*, 2> attachedItems;
         path->connEndPair.getAttachedItems(attachedItems.data());
         if (attachedItems[0] == nullptr) continue;

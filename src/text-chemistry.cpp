@@ -44,7 +44,7 @@ text_or_flowtext_in_selection(Inkscape::Selection *selection)
 {
     auto items = selection->items();
     for(auto i=items.begin();i!=items.end();++i){
-        if (SP_IS_TEXT(*i) || SP_IS_FLOWTEXT(*i))
+        if (is<SPText>(*i) || is<SPFlowtext>(*i))
             return *i;
     }
     return nullptr;
@@ -55,7 +55,7 @@ shape_in_selection(Inkscape::Selection *selection)
 {
     auto items = selection->items();
     for(auto i=items.begin();i!=items.end();++i){
-        if (SP_IS_SHAPE(*i))
+        if (is<SPShape>(*i))
             return *i;
     }
     return nullptr;
@@ -85,22 +85,22 @@ text_put_on_path()
         return;
     }
 
-    if (SP_IS_RECT(shape)) {
+    if (is<SPRect>(shape)) {
         // rect is the only SPShape which is not <path> yet, and thus SVG forbids us from putting text on it
         desktop->getMessageStack()->flash(Inkscape::ERROR_MESSAGE, _("You cannot put text on a rectangle in this version. Convert rectangle to path first."));
         return;
     }
 
     // if a flowed text is selected, convert it to a regular text object
-    if (SP_IS_FLOWTEXT(text)) {
+    if (is<SPFlowtext>(text)) {
 
-        if (!SP_FLOWTEXT(text)->layout.outputExists()) {
+        if (!cast<SPFlowtext>(text)->layout.outputExists()) {
             desktop->getMessageStack()->
                 flash(Inkscape::WARNING_MESSAGE,
                       _("The flowed text(s) must be <b>visible</b> in order to be put on a path."));
         }
 
-        Inkscape::XML::Node *repr = SP_FLOWTEXT(text)->getAsText();
+        Inkscape::XML::Node *repr = cast<SPFlowtext>(text)->getAsText();
 
         if (!repr) return;
 
@@ -130,7 +130,7 @@ text_put_on_path()
     Inkscape::Text::Layout::Alignment text_alignment = layout->paragraphAlignment(layout->begin());
 
     // remove transform from text, but recursively scale text's fontsize by the expansion
-    SP_TEXT(text)->_adjustFontsizeRecursive (text, text->transform.descrim());
+    cast<SPText>(text)->_adjustFontsizeRecursive (text, text->transform.descrim());
     text->removeAttribute("transform");
 
     // make a list of text children
@@ -255,7 +255,7 @@ text_remove_all_kerns()
     for(auto i=items.begin();i!=items.end();++i){
         SPObject *obj = *i;
 
-        if (!SP_IS_TEXT(obj) && !SP_IS_TSPAN(obj) && !SP_IS_FLOWTEXT(obj)) {
+        if (!is<SPText>(obj) && !is<SPTSpan>(obj) && !is<SPFlowtext>(obj)) {
             continue;
         }
 
@@ -282,12 +282,12 @@ text_flow_shape_subtract()
     Inkscape::Selection *selection = desktop->getSelection();
     SPItem *text = text_or_flowtext_in_selection(selection);
 
-    if (SP_IS_TEXT(text)) {
+    if (is<SPText>(text)) {
         // Make list of all shapes.
         Glib::ustring shapes;
         auto items = selection->items();
         for (auto item : items) {
-            if (SP_IS_SHAPE(item)) {
+            if (is<SPShape>(item)) {
                 if (!shapes.empty()) shapes += " ";
                 shapes += item->getUrl();
             }
@@ -328,12 +328,12 @@ text_flow_into_shape()
     if (prefs->getBool("/tools/text/use_svg2", true)) {
         // SVG 2 Text
 
-        if (SP_IS_TEXT(text)) {
+        if (is<SPText>(text)) {
             // Make list of all shapes.
             Glib::ustring shapes;
             auto items = selection->items();
             for (auto item : items) {
-                if (SP_IS_SHAPE(item)) {
+                if (is<SPShape>(item)) {
                     if (!shapes.empty()) {
                         shapes += " ";
                     } else {
@@ -357,10 +357,10 @@ text_flow_into_shape()
             DocumentUndo::done(doc, _("Flow text into shape"), INKSCAPE_ICON("draw-text"));
         }
     } else {
-        if (SP_IS_TEXT(text) || SP_IS_FLOWTEXT(text)) {
+        if (is<SPText>(text) || is<SPFlowtext>(text)) {
             // remove transform from text, but recursively scale text's fontsize by the expansion
             auto ex = i2i_affine(text, shape->parent).descrim();
-            SP_TEXT(text)->_adjustFontsizeRecursive(text, ex);
+            cast<SPText>(text)->_adjustFontsizeRecursive(text, ex);
             text->removeAttribute("transform");
         }
 
@@ -369,18 +369,18 @@ text_flow_into_shape()
         root_repr->setAttribute("style", text->getRepr()->attribute("style")); // fixme: transfer style attrs too
         shape->parent->getRepr()->appendChild(root_repr);
         SPObject *root_object = doc->getObjectByRepr(root_repr);
-        g_return_if_fail(SP_IS_FLOWTEXT(root_object));
+        g_return_if_fail(is<SPFlowtext>(root_object));
 
         Inkscape::XML::Node *region_repr = xml_doc->createElement("svg:flowRegion");
         root_repr->appendChild(region_repr);
         SPObject *object = doc->getObjectByRepr(region_repr);
-        g_return_if_fail(SP_IS_FLOWREGION(object));
+        g_return_if_fail(is<SPFlowregion>(object));
 
         /* Add clones */
         auto items = selection->items();
         for(auto i=items.begin();i!=items.end();++i){
             SPItem *item = *i;
-            if (SP_IS_SHAPE(item)){
+            if (is<SPShape>(item)){
                 Inkscape::XML::Node *clone = xml_doc->createElement("svg:use");
                 clone->setAttribute("x", "0");
                 clone->setAttribute("y", "0");
@@ -393,11 +393,11 @@ text_flow_into_shape()
             }
         }
 
-        if (SP_IS_TEXT(text)) { // flow from text, as string
+        if (is<SPText>(text)) { // flow from text, as string
             Inkscape::XML::Node *para_repr = xml_doc->createElement("svg:flowPara");
             root_repr->appendChild(para_repr);
             object = doc->getObjectByRepr(para_repr);
-            g_return_if_fail(SP_IS_FLOWPARA(object));
+            g_return_if_fail(is<SPFlowpara>(object));
 
             Inkscape::Text::Layout const *layout = te_get_layout(text);
             Glib::ustring text_ustring = sp_te_get_string_multiline(text, layout->begin(), layout->end());
@@ -410,11 +410,11 @@ text_flow_into_shape()
 
         } else { // reflow an already flowed text, preserving paras
             for(auto& o: text->children) {
-                if (SP_IS_FLOWPARA(&o)) {
+                if (is<SPFlowpara>(&o)) {
                     Inkscape::XML::Node *para_repr = o.getRepr()->duplicate(xml_doc);
                     root_repr->appendChild(para_repr);
                     object = doc->getObjectByRepr(para_repr);
-                    g_return_if_fail(SP_IS_FLOWPARA(object));
+                    g_return_if_fail(is<SPFlowpara>(object));
                     Inkscape::GC::release(para_repr);
                 }
             }
@@ -424,7 +424,7 @@ text_flow_into_shape()
 
         DocumentUndo::done(doc, _("Flow text into shape"), INKSCAPE_ICON("draw-text"));
 
-        desktop->getSelection()->set(SP_ITEM(root_object));
+        desktop->getSelection()->set(cast<SPItem>(root_object));
 
         Inkscape::GC::release(root_repr);
         Inkscape::GC::release(region_repr);
@@ -495,7 +495,7 @@ text_unflow ()
             SPObject *text_object = doc->getObjectByRepr(rtext);
 
             // restore the font size multiplier from the flowtext's transform
-            SPText *text = SP_TEXT(text_object);
+            auto text = cast<SPText>(text_object);
             text->_adjustFontsizeRecursive(text, ex);
 
             new_objs.push_back((SPItem *)text_object);
@@ -585,15 +585,15 @@ flowtext_to_text()
     std::vector<SPItem*> items(selection->items().begin(), selection->items().end());
     for(auto item : items){
 
-        if (!SP_IS_FLOWTEXT(item))
+        if (!is<SPFlowtext>(item))
             continue;
 
-        if (!SP_FLOWTEXT(item)->layout.outputExists()) {
+        if (!cast<SPFlowtext>(item)->layout.outputExists()) {
             ignored = true;
             continue;
         }
 
-        Inkscape::XML::Node *repr = SP_FLOWTEXT(item)->getAsText();
+        Inkscape::XML::Node *repr = cast<SPFlowtext>(item)->getAsText();
 
         if (!repr) break;
 

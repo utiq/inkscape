@@ -25,7 +25,6 @@ namespace Inkscape {
 
 bool ObjectSet::add(SPObject* object, bool nosignal) {
     g_return_val_if_fail(object != nullptr, false);
-    g_return_val_if_fail(SP_IS_OBJECT(object), false);
 
     // any ancestor is in the set - do nothing
     if (_anyAncestorIsInSet(object)) {
@@ -56,7 +55,6 @@ void ObjectSet::add(XML::Node *repr)
 
 bool ObjectSet::remove(SPObject* object) {
     g_return_val_if_fail(object != nullptr, false);
-    g_return_val_if_fail(SP_IS_OBJECT(object), false);
 
     // object is the top of subtree
     if (includes(object)) {
@@ -82,7 +80,6 @@ void ObjectSet::_emitChanged(bool persist_selection_context /*= false*/) {
 
 bool ObjectSet::includes(SPObject *object, bool anyAncestor) {
     g_return_val_if_fail(object != nullptr, false);
-    g_return_val_if_fail(SP_IS_OBJECT(object), false);
     if (anyAncestor) {
         return _anyAncestorIsInSet(object);
     } else {
@@ -93,7 +90,6 @@ bool ObjectSet::includes(SPObject *object, bool anyAncestor) {
 SPObject * 
 ObjectSet::includesAncestor(SPObject *object) {
     g_return_val_if_fail(object != nullptr, nullptr);
-    g_return_val_if_fail(SP_IS_OBJECT(object), nullptr);
     SPObject* o = object;
     while (o != nullptr) {
         if (includes(o)) {
@@ -220,8 +216,8 @@ SPObject *ObjectSet::single() {
 SPItem *ObjectSet::singleItem() {
     if (_container.size() == 1) {
         SPObject* obj = *_container.begin();
-        if (SP_IS_ITEM(obj)) {
-            return SP_ITEM(obj);
+        if (is<SPItem>(obj)) {
+            return cast<SPItem>(obj);
         }
     }
 
@@ -230,12 +226,12 @@ SPItem *ObjectSet::singleItem() {
 
 SPItem *ObjectSet::firstItem() const
 {
-    return _container.size() ? SP_ITEM(_container.front()) : nullptr;
+    return _container.size() ? cast<SPItem>(_container.front()) : nullptr;
 }
 
 SPItem *ObjectSet::lastItem() const
 {
-    return _container.size() ? SP_ITEM(_container.back()) : nullptr;
+    return _container.size() ? cast<SPItem>(_container.back()) : nullptr;
 }
 
 SPItem *ObjectSet::smallestItem(CompareSize compare) {

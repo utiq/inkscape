@@ -482,16 +482,16 @@ void KnotHolderEntityAttachBegin::knot_set(Geom::Point const &p, Geom::Point con
 {
     using namespace Geom;
 
-    LPETaperStroke* lpe = dynamic_cast<LPETaperStroke *>(_effect);
+    auto lpe = dynamic_cast<LPETaperStroke *>(_effect);
 
     Geom::Point const s = snap_knot_position(p, state);
 
-    if (!SP_IS_SHAPE(lpe->sp_lpe_item)) {
+    if (!is<SPShape>(lpe->sp_lpe_item)) {
         printf("WARNING: LPEItem is not a path!\n");
         return;
     }
     
-    if (!SP_SHAPE(lpe->sp_lpe_item)->curve()) {
+    if (!cast<SPShape>(lpe->sp_lpe_item)->curve()) {
         // oops
         return;
     }
@@ -512,22 +512,22 @@ void KnotHolderEntityAttachEnd::knot_set(Geom::Point const &p, Geom::Point const
 {
     using namespace Geom;
 
-    LPETaperStroke* lpe = dynamic_cast<LPETaperStroke *>(_effect);
+    auto lpe = dynamic_cast<LPETaperStroke *>(_effect);
 
     Geom::Point const s = snap_knot_position(p, state);
 
-    if (!SP_IS_SHAPE(lpe->sp_lpe_item) ) {
+    if (!is<SPShape>(lpe->sp_lpe_item)) {
         printf("WARNING: LPEItem is not a path!\n");
         return;
     }
     
-    if (!SP_SHAPE(lpe->sp_lpe_item)->curve()) {
+    if (!cast_unsafe<SPShape>(lpe->sp_lpe_item)->curve()) {
         // oops
         return;
     }
     Geom::PathVector pathv = lpe->pathvector_before_effect;
     Geom::Path p_in = return_at_first_cusp(pathv[0].reversed());
-    Piecewise<D2<SBasis> > pwd2 = p_in.toPwSb();
+    Piecewise<D2<SBasis>> pwd2 = p_in.toPwSb();
     
     double t0 = nearest_time(s, pwd2);
     lpe->attach_end.param_set_value(t0);
@@ -558,11 +558,10 @@ void KnotHolderEntityAttachEnd::knot_click(guint state)
     lpe->end_shape.write_to_SVG();
 }
 
-
 Geom::Point KnotHolderEntityAttachBegin::knot_get() const
 {
     if (_effect->getRepr()) {
-        LPETaperStroke const * lpe = dynamic_cast<LPETaperStroke const*> (_effect);
+        auto lpe = dynamic_cast<LPETaperStroke const*> (_effect);
         return lpe->start_attach_point;
     }
     return Geom::Point();
@@ -571,7 +570,7 @@ Geom::Point KnotHolderEntityAttachBegin::knot_get() const
 Geom::Point KnotHolderEntityAttachEnd::knot_get() const
 {
     if (_effect->getRepr()) {
-        LPETaperStroke const * lpe = dynamic_cast<LPETaperStroke const*> (_effect);
+        auto lpe = dynamic_cast<LPETaperStroke const*> (_effect);
         return lpe->end_attach_point;
     }
     return Geom::Point();

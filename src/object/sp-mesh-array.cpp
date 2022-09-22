@@ -681,7 +681,7 @@ SPMeshNodeArray& SPMeshNodeArray::operator=( const SPMeshNodeArray& rhs ) {
 bool SPMeshNodeArray::read( SPMeshGradient *mg_in ) {
 
     mg = mg_in;
-    SPMeshGradient* mg_array = dynamic_cast<SPMeshGradient*>(mg->getArray());
+    auto mg_array = cast<SPMeshGradient>(mg->getArray());
     if (!mg_array) {
         std::cerr << "SPMeshNodeArray::read: No mesh array!" << std::endl;
         return false;
@@ -692,11 +692,11 @@ bool SPMeshNodeArray::read( SPMeshGradient *mg_in ) {
     unsigned cols = 0;
     unsigned rows = 0;
     for (auto& ro: mg_array->children) {
-        if (SP_IS_MESHROW(&ro)) {
+        if (is<SPMeshrow>(&ro)) {
             ++rows;
             if (rows == 1 ) {
                 for (auto& po: ro.children) {
-                    if (SP_IS_MESHPATCH(&po)) {
+                    if (is<SPMeshpatch>(&po)) {
                         ++cols;
                     }
                 }
@@ -718,14 +718,14 @@ bool SPMeshNodeArray::read( SPMeshGradient *mg_in ) {
     guint irow = 0; // Corresponds to top of patch being read in.
     for (auto& ro: mg_array->children) {
 
-        if (SP_IS_MESHROW(&ro)) {
+        if (is<SPMeshrow>(&ro)) {
 
             guint icolumn = 0; // Corresponds to left of patch being read in.
             for (auto& po: ro.children) {
 
-                if (SP_IS_MESHPATCH(&po)) {
+                if (is<SPMeshpatch>(&po)) {
 
-                    SPMeshpatch *patch = SP_MESHPATCH(&po);
+                    auto patch = cast<SPMeshpatch>(&po);
 
                     // std::cout << "SPMeshNodeArray::read: row size: " << nodes.size() << std::endl;
                     SPMeshPatchI new_patch( &nodes, irow, icolumn ); // Adds new nodes.
@@ -737,14 +737,14 @@ bool SPMeshNodeArray::read( SPMeshGradient *mg_in ) {
                     if( irow != 0 ) ++istop;
 
                     for (auto& so: po.children) {
-                        if (SP_IS_STOP(&so)) {
+                        if (is<SPStop>(&so)) {
 
                             if( istop > 3 ) {
                                 // std::cout << " Mesh Gradient: Too many stops: " << istop << std::endl;
                                 break;
                             }
 
-                            SPStop *stop = SP_STOP(&so);
+                            auto stop = cast<SPStop>(&so);
 
                             // Handle top of first row.
                             if( istop == 0 && icolumn == 0 ) {
@@ -928,7 +928,7 @@ void SPMeshNodeArray::write( SPMeshGradient *mg ) {
     using Geom::X;
     using Geom::Y;
 
-    SPMeshGradient* mg_array = dynamic_cast<SPMeshGradient*>(mg->getArray());
+    auto mg_array = cast<SPMeshGradient>(mg->getArray());
     if (!mg_array) {
         // std::cerr << "SPMeshNodeArray::write: missing patches!" << std::endl;
         mg_array = mg;
@@ -1083,7 +1083,7 @@ static SPColor default_color( SPItem *item ) {
             color = paint.value.color;
         } else if ( paint.isPaintserver() ) {
             auto *server = item->style->getFillPaintServer();
-            auto gradient = dynamic_cast<SPGradient *>(server);
+            auto gradient = cast<SPGradient>(server);
             if (gradient && gradient->getVector()) {
                 SPStop *firstStop = gradient->getVector()->getFirstStop();
                 if ( firstStop ) {
@@ -1165,9 +1165,9 @@ void SPMeshNodeArray::create( SPMeshGradient *mg, SPItem *item, Geom::OptRect bb
         gdouble start = 0.0;
         gdouble end   = 2.0 * M_PI;
 
-        if ( SP_IS_STAR( item ) ) {
+        if ( is<SPStar>( item ) ) {
             // But if it is a star... use star parameters!
-            SPStar* star = SP_STAR( item );
+            auto star = cast<SPStar>( item );
             center = star->center;
             rx = star->r[0];
             ry = star->r[0];
@@ -1175,9 +1175,9 @@ void SPMeshNodeArray::create( SPMeshGradient *mg, SPItem *item, Geom::OptRect bb
             end   = start + 2.0 * M_PI;
         }
 
-        if ( SP_IS_GENERICELLIPSE( item ) ) {
+        if ( is<SPGenericEllipse>( item ) ) {
             // For arcs use set start/stop
-            SPGenericEllipse* arc = SP_GENERICELLIPSE( item );
+            auto arc = cast<SPGenericEllipse>( item );
             center[Geom::X] = arc->cx.computed;
             center[Geom::Y] = arc->cy.computed;
             rx = arc->rx.computed;
@@ -1249,11 +1249,11 @@ void SPMeshNodeArray::create( SPMeshGradient *mg, SPItem *item, Geom::OptRect bb
 
         // Normal grid meshes
 
-        if( SP_IS_GENERICELLIPSE( item ) ) {
+        if( is<SPGenericEllipse>( item ) ) {
 
             // std::cout << "We've got ourselves an arc!" << std::endl;
 
-            SPGenericEllipse* arc = SP_GENERICELLIPSE( item );
+            auto arc = cast<SPGenericEllipse>( item );
             center[Geom::X] = arc->cx.computed;
             center[Geom::Y] = arc->cy.computed;
             gdouble rx = arc->rx.computed;
@@ -1302,12 +1302,12 @@ void SPMeshNodeArray::create( SPMeshGradient *mg, SPItem *item, Geom::OptRect bb
 
             // END Arc
 
-        } else if ( SP_IS_STAR( item ) ) {
+        } else if ( is<SPStar>( item ) ) {
 
             // Do simplest thing... assume star is not rounded or randomized.
             // (It should be easy to handle the rounded/randomized cases by making
             //  the appropriate star class function public.)
-            SPStar* star = SP_STAR( item );
+            auto star = cast<SPStar>( item );
             guint sides =  star->sides;
 
             // std::cout << "We've got ourselves an star! Sides: " << sides << std::endl;

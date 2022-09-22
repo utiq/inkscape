@@ -260,12 +260,8 @@ void PrintMetafile::brush_classify(SPObject *parent, int depth, Inkscape::Pixbuf
     }
     depth++;
     // first look along the pattern chain, if there is one
-    if (SP_IS_PATTERN(parent)) {
-        for (SPPattern *pat_i = SP_PATTERN(parent); pat_i; pat_i = pat_i->ref.getObject()) {
-            if (auto img = SP_IMAGE(pat_i)) {
-                *epixbuf = img->pixbuf.get();
-                return;
-            }
+    if (is<SPPattern>(parent)) {
+        for (auto pat_i = cast_unsafe<SPPattern>(parent); pat_i; pat_i = pat_i->ref.getObject()) {
             char temp[32];  // large enough
             strncpy(temp, pat_i->getAttribute("id"), sizeof(temp)-1); // Some names may be longer than [EW]MFhatch#_######
             temp[sizeof(temp)-1] = '\0';
@@ -282,7 +278,7 @@ void PrintMetafile::brush_classify(SPObject *parent, int depth, Inkscape::Pixbuf
                 brush_classify(&child, depth, epixbuf, hatchType, hatchColor, bkColor);
             }
         }
-    } else if (auto img = SP_IMAGE(parent)) {
+    } else if (auto img = cast<SPImage>(parent)) {
         *epixbuf = img->pixbuf.get();
         return;
     } else { // some inkscape rearrangements pass through nodes between pattern and image which are not classified as either.

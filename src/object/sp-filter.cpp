@@ -49,7 +49,7 @@ SPFilter::SPFilter()
             modified_connection.disconnect();
         }
 
-        if (SP_IS_FILTER(ref) && ref != this) {
+        if (is<SPFilter>(ref) && ref != this) {
             modified_connection = ref->connectModified([this] (SPObject*, unsigned) {
                 requestModified(SP_OBJECT_MODIFIED_FLAG);
             });
@@ -334,7 +334,7 @@ void SPFilter::update_filter_all_regions()
     // Combine all items into one region for updating.
     Geom::OptRect opt_r;
     for (auto &obj : hrefList) {
-        auto item = dynamic_cast<SPItem *>(obj);
+        auto item = cast<SPItem>(obj);
         opt_r.unionWith(get_automatic_filter_region(item));
     }
     if (opt_r) {
@@ -381,7 +381,7 @@ Geom::Rect SPFilter::get_automatic_filter_region(SPItem const *item) const
     Geom::Rect inbox = *g_box;
     Geom::Rect outbox = *v_box;
     for (auto &primitive_obj : children) {
-        auto primitive = dynamic_cast<SPFilterPrimitive const*>(&primitive_obj);
+        auto primitive = cast<SPFilterPrimitive>(&primitive_obj);
         if (primitive) {
             // Update the region with the primitive's options
             outbox = primitive->calculate_region(outbox);
@@ -418,7 +418,7 @@ void SPFilter::set_filter_region(double x, double y, double width, double height
 bool SPFilter::valid_for(SPObject const *obj) const
 {
     for (auto &primitive_obj : children) {
-        auto primitive = dynamic_cast<SPFilterPrimitive const *>(&primitive_obj);
+        auto primitive = cast<SPFilterPrimitive>(&primitive_obj);
         if (primitive && !primitive->valid_for(obj)) {
             return false;
         }
@@ -430,7 +430,7 @@ void SPFilter::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 {
     SPObject::child_added(child, ref);
 
-    if (auto f = SP_FILTER_PRIMITIVE(get_child_by_repr(child))) {
+    if (auto f = cast<SPFilterPrimitive>(get_child_by_repr(child))) {
         for (auto &v : views) {
             f->show(v);
         }
@@ -441,7 +441,7 @@ void SPFilter::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 
 void SPFilter::remove_child(Inkscape::XML::Node *child)
 {
-    if (auto f = SP_FILTER_PRIMITIVE(get_child_by_repr(child))) {
+    if (auto f = cast<SPFilterPrimitive>(get_child_by_repr(child))) {
         for (auto &v : views) {
             f->hide(v);
         }
@@ -473,7 +473,7 @@ void SPFilter::ensure_slots()
     SlotResolver resolver;
 
     for (auto &c : children) {
-        if (auto prim = dynamic_cast<SPFilterPrimitive*>(&c)) {
+        if (auto prim = cast<SPFilterPrimitive>(&c)) {
             prim->resolve_slots(resolver);
         }
     }
@@ -502,7 +502,7 @@ std::unique_ptr<Inkscape::Filters::Filter> SPFilter::build_renderer(Inkscape::Dr
 
     nr_filter->clear_primitives();
     for (auto &primitive_obj : children) {
-        if (auto primitive = SP_FILTER_PRIMITIVE(&primitive_obj)) {
+        if (auto primitive = cast<SPFilterPrimitive>(&primitive_obj)) {
             nr_filter->add_primitive(primitive->build_renderer(item));
         }
     }
@@ -515,7 +515,7 @@ int SPFilter::primitive_count() const
     int count = 0;
 
     for (auto const &primitive_obj : children) {
-        if (SP_IS_FILTER_PRIMITIVE(&primitive_obj)) {
+        if (is<SPFilterPrimitive>(&primitive_obj)) {
             count++;
         }
     }
@@ -528,7 +528,7 @@ Glib::ustring SPFilter::get_new_result_name() const
     int largest = 0;
 
     for (auto const &primitive_obj : children) {
-        if (SP_IS_FILTER_PRIMITIVE(&primitive_obj)) {
+        if (is<SPFilterPrimitive>(&primitive_obj)) {
             auto repr = primitive_obj.getRepr();
             auto result = repr->attribute("result");
             if (result) {
@@ -550,7 +550,7 @@ void SPFilter::show(Inkscape::DrawingItem *item)
     views.emplace_back(item);
 
     for (auto &c : children) {
-        if (auto f = SP_FILTER_PRIMITIVE(&c)) {
+        if (auto f = cast<SPFilterPrimitive>(&c)) {
             f->show(item);
         }
     }
@@ -565,7 +565,7 @@ void SPFilter::hide(Inkscape::DrawingItem *item)
     views.erase(it);
 
     for (auto &c : children) {
-        if (auto f = SP_FILTER_PRIMITIVE(&c)) {
+        if (auto f = cast<SPFilterPrimitive>(&c)) {
             f->hide(item);
         }
     }

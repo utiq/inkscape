@@ -51,7 +51,7 @@ SPPattern *SPPatternReference::getObject() const
 
 bool SPPatternReference::_acceptObject(SPObject *obj) const
 {
-    return SP_IS_PATTERN(obj) && URIReference::_acceptObject(obj);
+    return is<SPPattern>(obj) && URIReference::_acceptObject(obj);
 }
 
 /*
@@ -303,7 +303,7 @@ void SPPattern::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref
 
     auto last_child = lastChild();
     if (last_child && last_child->getRepr() == child) {
-        if (auto item = dynamic_cast<SPItem*>(last_child)) {
+        if (auto item = cast<SPItem>(last_child)) {
             for (auto &v : attached_views) {
                 auto ac = item->invoke_show(v.drawingitem->drawing(), v.key, SP_ITEM_SHOW_DISPLAY);
                 if (ac) {
@@ -312,7 +312,7 @@ void SPPattern::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref
             }
         }
     } else {
-        if (auto item = dynamic_cast<SPItem*>(get_child_by_repr(child))) {
+        if (auto item = cast<SPItem>(get_child_by_repr(child))) {
             unsigned position = item->pos_in_parent();
             for (auto &v : attached_views) {
                 auto ac = item->invoke_show(v.drawingitem->drawing(), v.key, SP_ITEM_SHOW_DISPLAY);
@@ -338,7 +338,7 @@ void SPPattern::order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node *o
 {
     SPPaintServer::order_changed(child, old_prev, new_prev);
 
-    if (auto item = dynamic_cast<SPItem*>(get_child_by_repr(child))) {
+    if (auto item = cast<SPItem>(get_child_by_repr(child))) {
         unsigned position = item->pos_in_parent();
         for (auto &v : attached_views) {
             auto ac = item->get_arenaitem(v.key);
@@ -355,7 +355,7 @@ void SPPattern::_onRefChanged(SPObject *old_ref, SPObject *ref)
         _modified_connection.disconnect();
     }
 
-    if (SP_IS_PATTERN(ref)) {
+    if (is<SPPattern>(ref)) {
         _modified_connection = ref->connectModified(sigc::mem_fun(*this, &SPPattern::_onRefModified));
     }
 
@@ -399,7 +399,7 @@ void SPPattern::attach_view(Inkscape::DrawingPattern *di, unsigned key)
     attached_views.push_back({di, key});
 
     for (auto &c : children) {
-        if (auto child = dynamic_cast<SPItem*>(&c)) {
+        if (auto child = cast<SPItem>(&c)) {
             auto item = child->invoke_show(di->drawing(), key, SP_ITEM_SHOW_DISPLAY);
             di->appendChild(item);
         }
@@ -414,7 +414,7 @@ void SPPattern::unattach_view(Inkscape::DrawingPattern *di)
     assert(it != attached_views.end());
 
     for (auto &c : children) {
-        if (auto child = dynamic_cast<SPItem*>(&c)) {
+        if (auto child = cast<SPItem>(&c)) {
             child->invoke_hide(it->key);
         }
     }
@@ -430,12 +430,12 @@ unsigned SPPattern::_countHrefs(SPObject *o) const
     guint i = 0;
 
     SPStyle *style = o->style;
-    if (style && style->fill.isPaintserver() && SP_IS_PATTERN(SP_STYLE_FILL_SERVER(style)) &&
-        SP_PATTERN(SP_STYLE_FILL_SERVER(style)) == this) {
+    if (style && style->fill.isPaintserver() && is<SPPattern>(SP_STYLE_FILL_SERVER(style)) &&
+        cast<SPPattern>(SP_STYLE_FILL_SERVER(style)) == this) {
         i++;
     }
-    if (style && style->stroke.isPaintserver() && SP_IS_PATTERN(SP_STYLE_STROKE_SERVER(style)) &&
-        SP_PATTERN(SP_STYLE_STROKE_SERVER(style)) == this) {
+    if (style && style->stroke.isPaintserver() && is<SPPattern>(SP_STYLE_STROKE_SERVER(style)) &&
+        cast<SPPattern>(SP_STYLE_STROKE_SERVER(style)) == this) {
         i++;
     }
 
@@ -461,9 +461,9 @@ SPPattern *SPPattern::_chain() const
     defsrepr->addChild(repr, nullptr);
     SPObject *child = document->getObjectByRepr(repr);
     assert(child == document->getObjectById(repr->attribute("id")));
-    g_assert(SP_IS_PATTERN(child));
+    g_assert(is<SPPattern>(child));
 
-    return SP_PATTERN(child);
+    return cast<SPPattern>(child);
 }
 
 SPPattern *SPPattern::clone_if_necessary(SPItem *item, const gchar *property)
@@ -528,7 +528,7 @@ char const *SPPattern::produce(std::vector<Inkscape::XML::Node*> const &reprs, G
     bool can_colorize = false;
 
     for (auto node : reprs) {
-        auto copy = dynamic_cast<SPItem*>(pat_object->appendChildRepr(node));
+        auto copy = cast<SPItem>(pat_object->appendChildRepr(node));
 
         if (!repr->attribute("inkscape:label") && node->attribute("inkscape:label")) {
             repr->setAttribute("inkscape:label", node->attribute("inkscape:label"));
@@ -665,7 +665,7 @@ Geom::OptRect SPPattern::viewbox() const
 bool SPPattern::_hasItemChildren() const
 {
     for (auto &child : children) {
-        if (SP_IS_ITEM(&child)) {
+        if (is<SPItem>(&child)) {
             return true;
         }
     }

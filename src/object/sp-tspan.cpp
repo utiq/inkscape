@@ -64,7 +64,7 @@ void SPTSpan::build(SPDocument *doc, Inkscape::XML::Node *repr) {
 
     // Strip sodipodi:role from SVG 2 flowed text.
     // this->role = SP_TSPAN_ROLE_UNSPECIFIED;
-    SPText* text = dynamic_cast<SPText *>(parent);
+    auto text = cast<SPText>(parent);
     if (text && !(text->has_shape_inside()|| text->has_inline_size())) {
         this->readAttr(SPAttr::SODIPODI_ROLE);
     }
@@ -159,7 +159,7 @@ Geom::OptRect SPTSpan::bbox(Geom::Affine const &transform, SPItem::BBoxType type
     // find out the ancestor text which holds our layout
     SPObject const *parent_text = this;
     
-    while (parent_text && !SP_IS_TEXT(parent_text)) {
+    while (parent_text && !is<SPText>(parent_text)) {
         parent_text = parent_text->parent;
     }
     
@@ -168,7 +168,7 @@ Geom::OptRect SPTSpan::bbox(Geom::Affine const &transform, SPItem::BBoxType type
     }
 
     // get the bbox of our portion of the layout
-    return SP_TEXT(parent_text)->layout.bounds(transform,
+    return cast<SPText>(parent_text)->layout.bounds(transform,
             type == SPItem::VISUAL_BBOX,
             sp_text_get_length_upto(parent_text, this),
             sp_text_get_length_upto(this, nullptr) - 1);
@@ -187,12 +187,12 @@ Inkscape::XML::Node* SPTSpan::write(Inkscape::XML::Document *xml_doc, Inkscape::
         for (auto& child: children) {
             Inkscape::XML::Node* c_repr=nullptr;
 
-            if ( SP_IS_TSPAN(&child) || SP_IS_TREF(&child) ) {
+            if ( is<SPTSpan>(&child) || is<SPTRef>(&child) ) {
                 c_repr = child.updateRepr(xml_doc, nullptr, flags);
-            } else if ( SP_IS_TEXTPATH(&child) ) {
+            } else if ( is<SPTextPath>(&child) ) {
                 //c_repr = child.updateRepr(xml_doc, NULL, flags); // shouldn't happen
-            } else if ( SP_IS_STRING(&child) ) {
-                c_repr = xml_doc->createTextNode(SP_STRING(&child)->string.c_str());
+            } else if ( is<SPString>(&child) ) {
+                c_repr = xml_doc->createTextNode(cast<SPString>(&child)->string.c_str());
             }
 
             if ( c_repr ) {
@@ -206,12 +206,12 @@ Inkscape::XML::Node* SPTSpan::write(Inkscape::XML::Document *xml_doc, Inkscape::
         }
     } else {
         for (auto& child: children) {
-            if ( SP_IS_TSPAN(&child) || SP_IS_TREF(&child) ) {
+            if ( is<SPTSpan>(&child) || is<SPTRef>(&child) ) {
                 child.updateRepr(flags);
-            } else if ( SP_IS_TEXTPATH(&child) ) {
+            } else if ( is<SPTextPath>(&child) ) {
                 //c_repr = child->updateRepr(xml_doc, NULL, flags); // shouldn't happen
-            } else if ( SP_IS_STRING(&child) ) {
-                child.getRepr()->setContent(SP_STRING(&child)->string.c_str());
+            } else if ( is<SPString>(&child) ) {
+                child.getRepr()->setContent(cast<SPString>(&child)->string.c_str());
             }
         }
     }
@@ -368,7 +368,7 @@ void refresh_textpath_source(SPTextPath* tp)
             curve_copy.reverse();
         }
 
-        SPItem *item = SP_ITEM(tp->sourcePath->sourceObject);
+        auto item = cast<SPItem>(tp->sourcePath->sourceObject);
         tp->originalPath = new Path;
         tp->originalPath->LoadPathVector(curve_copy.get_pathvector(), item->transform, true);
         tp->originalPath->ConvertWithBackData(0.01);
@@ -424,12 +424,12 @@ Inkscape::XML::Node* SPTextPath::write(Inkscape::XML::Document *xml_doc, Inkscap
         for (auto& child: children) {
             Inkscape::XML::Node* c_repr=nullptr;
 
-            if ( SP_IS_TSPAN(&child) || SP_IS_TREF(&child) ) {
+            if ( is<SPTSpan>(&child) || is<SPTRef>(&child) ) {
                 c_repr = child.updateRepr(xml_doc, nullptr, flags);
-            } else if ( SP_IS_TEXTPATH(&child) ) {
+            } else if ( is<SPTextPath>(&child) ) {
                 //c_repr = child->updateRepr(xml_doc, NULL, flags); // shouldn't happen
-            } else if ( SP_IS_STRING(&child) ) {
-                c_repr = xml_doc->createTextNode(SP_STRING(&child)->string.c_str());
+            } else if ( is<SPString>(&child) ) {
+                c_repr = xml_doc->createTextNode(cast<SPString>(&child)->string.c_str());
             }
 
             if ( c_repr ) {
@@ -443,12 +443,12 @@ Inkscape::XML::Node* SPTextPath::write(Inkscape::XML::Document *xml_doc, Inkscap
         }
     } else {
         for (auto& child: children) {
-            if ( SP_IS_TSPAN(&child) || SP_IS_TREF(&child) ) {
+            if ( is<SPTSpan>(&child) || is<SPTRef>(&child) ) {
                 child.updateRepr(flags);
-            } else if ( SP_IS_TEXTPATH(&child) ) {
+            } else if ( is<SPTextPath>(&child) ) {
                 //c_repr = child.updateRepr(xml_doc, NULL, flags); // shouldn't happen
-            } else if ( SP_IS_STRING(&child) ) {
-                child.getRepr()->setContent(SP_STRING(&child)->string.c_str());
+            } else if ( is<SPString>(&child) ) {
+                child.getRepr()->setContent(cast<SPString>(&child)->string.c_str());
             }
         }
     }
@@ -462,11 +462,7 @@ Inkscape::XML::Node* SPTextPath::write(Inkscape::XML::Document *xml_doc, Inkscap
 SPItem *sp_textpath_get_path_item(SPTextPath *tp)
 {
     if (tp && tp->sourcePath) {
-        SPItem *refobj = tp->sourcePath->getObject();
-
-        if (SP_IS_ITEM(refobj)) {
-            return refobj;
-        }
+        return tp->sourcePath->getObject();
     }
     return nullptr;
 }
@@ -493,8 +489,8 @@ void sp_textpath_to_text(SPObject *tp)
 
     // set x/y on text (to be near where it was when on path)
     // Copied from Layout::fitToPathAlign
-    Path *path = dynamic_cast<SPTextPath*>(tp)->originalPath;
-    SVGLength const startOffset = dynamic_cast<SPTextPath*>(tp)->startOffset;
+    Path *path = cast<SPTextPath>(tp)->originalPath;
+    SVGLength const startOffset = cast<SPTextPath>(tp)->startOffset;
     double offset = 0.0;
     if (startOffset._set) {
         if (startOffset.unit == SVGLength::PERCENT)

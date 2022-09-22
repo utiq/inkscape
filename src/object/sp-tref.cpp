@@ -189,7 +189,7 @@ Geom::OptRect SPTRef::bbox(Geom::Affine const &transform, SPItem::BBoxType type)
     // find out the ancestor text which holds our layout
     SPObject const *parent_text = this;
 
-    while ( parent_text && !SP_IS_TEXT(parent_text) ) {
+    while ( parent_text && !is<SPText>(parent_text) ) {
         parent_text = parent_text->parent;
     }
 
@@ -198,7 +198,7 @@ Geom::OptRect SPTRef::bbox(Geom::Affine const &transform, SPItem::BBoxType type)
     }
 
     // get the bbox of our portion of the layout
-    return SP_TEXT(parent_text)->layout.bounds(transform,
+    return cast<SPText>(parent_text)->layout.bounds(transform,
         type == SPItem::VISUAL_BBOX,
         sp_text_get_length_upto(parent_text, this),
         sp_text_get_length_upto(this, nullptr) - 1);
@@ -218,14 +218,14 @@ gchar* SPTRef::description() const {
     if (referred) {
 	char *child_desc;
 
-	if (SP_IS_ITEM(referred)) {
-	    child_desc = SP_ITEM(referred)->detailedDescription();
+	if (is<SPItem>(referred)) {
+	    child_desc = cast<SPItem>(referred)->detailedDescription();
 	} else {
 	    child_desc = g_strdup("");
 	}
 
 	char *ret = g_strdup_printf("%s%s",
-	    (SP_IS_ITEM(referred) ? _(" from ") : ""), child_desc);
+	    (is<SPItem>(referred) ? _(" from ") : ""), child_desc);
 	g_free(child_desc);
 
 	return ret;
@@ -330,34 +330,34 @@ sp_tref_fully_contained(SPObject *start_item, Glib::ustring::iterator &start,
         // If neither the beginning or the end is a tref then we return true (whether there
         // is a tref in the innards or not, because if there is one then it must be totally
         // contained)
-        if (!(SP_IS_STRING(start_item) && SP_IS_TREF(start_item->parent))
-                && !(SP_IS_STRING(end_item) && SP_IS_TREF(end_item->parent))) {
+        if (!(is<SPString>(start_item) && is<SPTRef>(start_item->parent))
+                && !(is<SPString>(end_item) && is<SPTRef>(end_item->parent))) {
             fully_contained = true;
         }
 
         // Both the beginning and end are trefs; but in this case, the string iterators
         // must be at the right places
-        else if ((SP_IS_STRING(start_item) && SP_IS_TREF(start_item->parent))
-                && (SP_IS_STRING(end_item) && SP_IS_TREF(end_item->parent))) {
-            if (start == SP_STRING(start_item)->string.begin()
-                    && end == SP_STRING(start_item)->string.end()) {
+        else if ((is<SPString>(start_item) && is<SPTRef>(start_item->parent))
+                && (is<SPString>(end_item) && is<SPTRef>(end_item->parent))) {
+            if (start == cast<SPString>(start_item)->string.begin()
+                    && end == cast<SPString>(start_item)->string.end()) {
                 fully_contained = true;
             }
         }
 
         // If the beginning is a string that is a child of a tref, the iterator has to be
         // at the beginning of the item
-        else if ((SP_IS_STRING(start_item) && SP_IS_TREF(start_item->parent))
-                    && !(SP_IS_STRING(end_item) && SP_IS_TREF(end_item->parent))) {
-            if (start == SP_STRING(start_item)->string.begin()) {
+        else if ((is<SPString>(start_item) && is<SPTRef>(start_item->parent))
+                    && !(is<SPString>(end_item) && is<SPTRef>(end_item->parent))) {
+            if (start == cast<SPString>(start_item)->string.begin()) {
                 fully_contained = true;
             }
         }
 
         // Same, but the for the end
-        else if (!(SP_IS_STRING(start_item) && SP_IS_TREF(start_item->parent))
-                    && (SP_IS_STRING(end_item) && SP_IS_TREF(end_item->parent))) {
-            if (end == SP_STRING(start_item)->string.end()) {
+        else if (!(is<SPString>(start_item) && is<SPTRef>(start_item->parent))
+                    && (is<SPString>(end_item) && is<SPTRef>(end_item->parent))) {
+            if (end == cast<SPString>(start_item)->string.end()) {
                 fully_contained = true;
             }
         }
@@ -436,9 +436,9 @@ sp_tref_convert_to_tspan(SPObject *obj)
     ////////////////////
     // BASE CASE
     ////////////////////
-    if (SP_IS_TREF(obj)) {
+    if (is<SPTRef>(obj)) {
 
-        SPTRef *tref = SP_TREF(obj);
+        auto tref = cast<SPTRef>(obj);
 
         if (tref && tref->stringChild) {
             Inkscape::XML::Node *tref_repr = tref->getRepr();

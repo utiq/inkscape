@@ -181,7 +181,7 @@ static void spdc_paste_curve_as_freehand_shape(Geom::PathVector const &newpath, 
     // TODO: Don't paste path if nothing is on the clipboard
     SPDocument *document = dc->getDesktop()->doc();
     Effect::createAndApply(PATTERN_ALONG_PATH, document, item);
-    Effect* lpe = SP_LPE_ITEM(item)->getCurrentLPE();
+    Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
     static_cast<LPEPatternAlongPath*>(lpe)->pattern.set_new_value(newpath,true);
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     double scale = prefs->getDouble("/live_effects/skeletal/width", 1);
@@ -256,7 +256,7 @@ static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, Freeha
         }
     }
     Effect::createAndApply(POWERSTROKE, document, item);
-    Effect* lpe = SP_LPE_ITEM(item)->getCurrentLPE();
+    Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
 
     static_cast<LPEPowerStroke*>(lpe)->offset_points.param_set_and_write_new_value(points);
 
@@ -284,13 +284,13 @@ static void spdc_apply_bend_shape(gchar const *svgd, FreehandBase *dc, SPItem *i
     if (!document || !desktop) {
         return;
     }
-    if (!SP_IS_LPE_ITEM(item)) {
+    if (!is<SPLPEItem>(item)) {
         return;
     }
-    if(!SP_LPE_ITEM(item)->hasPathEffectOfType(BEND_PATH)){
+    if(!cast<SPLPEItem>(item)->hasPathEffectOfType(BEND_PATH)){
         Effect::createAndApply(BEND_PATH, document, item);
     }
-    Effect* lpe = SP_LPE_ITEM(item)->getCurrentLPE();
+    Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
 
     // write bend parameters:
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -316,7 +316,7 @@ static void spdc_apply_simplify(std::string threshold, FreehandBase *dc, SPItem 
     using namespace Inkscape::LivePathEffect;
 
     Effect::createAndApply(SIMPLIFY, document, item);
-    Effect* lpe = SP_LPE_ITEM(item)->getCurrentLPE();
+    Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
     // write simplify parameters:
     lpe->getRepr()->setAttribute("steps", "1");
     lpe->getRepr()->setAttributeOrRemoveIfEmpty("threshold", threshold);
@@ -335,7 +335,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
 
     auto *desktop = dc->getDesktop();
 
-    if (item && SP_IS_LPE_ITEM(item)) {
+    if (item && is<SPLPEItem>(item)) {
         double defsize = 10 / (0.265 * dc->getDesktop()->getDocument()->getDocumentScale()[0]);
 #define SHAPE_LENGTH defsize
 #define SHAPE_HEIGHT defsize
@@ -358,7 +358,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
             cm->paste(desktop, true))
         {
             bend_item = dc->selection->singleItem();
-            if(!bend_item || (!SP_IS_SHAPE(bend_item) && !SP_IS_GROUP(bend_item))){
+            if(!bend_item || (!is<SPShape>(bend_item) && !is<SPGroup>(bend_item))){
                 previous_shape_type = NONE;
                 return;
             }
@@ -378,7 +378,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
             std::ostringstream ss;
             ss << tol;
             spdc_apply_simplify(ss.str(), dc, item);
-            sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), true, false);
+            sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), true, false);
         }
         if (prefs->getInt(dc->getPrefsPath() + "/freehand-mode", 0) == 1) {
             Effect::createAndApply(SPIRO, dc->getDesktop()->getDocument(), item);
@@ -489,7 +489,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
             case BEND_CLIPBOARD:
             {
                 gchar const *svgd = item->getRepr()->attribute("d");
-                if(bend_item && (SP_IS_SHAPE(bend_item) || SP_IS_GROUP(bend_item))){
+                if(bend_item && (is<SPShape>(bend_item) || is<SPGroup>(bend_item))){
                     // If item is a SPRect, convert it to path first:
                     if ( dynamic_cast<SPRect *>(bend_item) ) {
                         if (desktop) {
@@ -605,7 +605,7 @@ void FreehandBase::_attachSelection()
 
     SPItem *item = selection ? selection->singleItem() : nullptr;
 
-    if ( item && SP_IS_PATH(item) ) {
+    if ( item && is<SPPath>(item) ) {
         // Create new white data
         // Item
         white_item = item;
@@ -828,7 +828,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
 
         if (dc->white_item) {
             repr = dc->white_item->getRepr();
-            has_lpe = SP_LPE_ITEM(dc->white_item)->hasPathEffectRecursive();
+            has_lpe = cast<SPLPEItem>(dc->white_item)->hasPathEffectRecursive();
         } else {
             repr = xml_doc->createElement("svg:path");
             // Set style
@@ -844,7 +844,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
         auto layer = dc->currentLayer();
         if (SP_IS_PENCIL_CONTEXT(dc) && dc->tablet_enabled) {
             if (!dc->white_item) {
-                dc->white_item = SP_ITEM(layer->appendChildRepr(repr));
+                dc->white_item = cast<SPItem>(layer->appendChildRepr(repr));
             }
             spdc_check_for_and_apply_waiting_LPE(dc, dc->white_item, c.get(), false);
         }
@@ -946,7 +946,7 @@ void spdc_create_single_dot(ToolBase *ec, Geom::Point const &pt, char const *too
     Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
     repr->setAttribute("sodipodi:type", "arc");
     auto layer = ec->currentLayer();
-    SPItem *item = SP_ITEM(layer->appendChildRepr(repr));
+    auto item = cast<SPItem>(layer->appendChildRepr(repr));
     item->transform = layer->i2doc_affine().inverse();
     Inkscape::GC::release(repr);
 

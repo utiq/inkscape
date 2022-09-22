@@ -52,23 +52,17 @@
 #include "xml/sp-css-attr.h"
 #include "xml/attribute-record.h"
 
-namespace {
-
-bool isTextualItem(SPObject const *obj)
+static bool isTextualItem(SPObject const *obj)
 {
-    bool isTextual = dynamic_cast<SPText const *>(obj) //
-        || dynamic_cast<SPFlowtext const *>(obj) //
-        || dynamic_cast<SPTSpan const *>(obj) //
-        || dynamic_cast<SPTRef const *>(obj) //
-        || dynamic_cast<SPTextPath const *>(obj) //
-        || dynamic_cast<SPFlowdiv const *>(obj) //
-        || dynamic_cast<SPFlowpara const *>(obj) //
-        || dynamic_cast<SPFlowtspan const *>(obj);
-
-    return isTextual;
+    return is<SPText>(obj)
+        || is<SPFlowtext>(obj)
+        || is<SPTSpan>(obj)
+        || is<SPTRef>(obj)
+        || is<SPTextPath>(obj)
+        || is<SPFlowdiv>(obj)
+        || is<SPFlowpara>(obj)
+        || is<SPFlowtspan>(obj);
 }
-
-} // namespace
 
 /**
  * Set color on selection on desktop.
@@ -110,7 +104,7 @@ void
 sp_desktop_apply_css_recursive(SPObject *o, SPCSSAttr *css, bool skip_lines)
 {
     // non-items should not have style
-    SPItem *item = dynamic_cast<SPItem *>(o);
+    auto item = cast<SPItem>(o);
     if (!item) {
         return;
     }
@@ -123,21 +117,21 @@ sp_desktop_apply_css_recursive(SPObject *o, SPCSSAttr *css, bool skip_lines)
     // it, be it clone or not; it's just styleless shape (because that's how Inkscape does
     // flowtext).
 
-    SPTSpan *tspan = dynamic_cast<SPTSpan *>(o);
+    auto tspan = cast<SPTSpan>(o);
 
     if (!(skip_lines
           && ((tspan && tspan->role == SP_TSPAN_ROLE_LINE)
-              || dynamic_cast<SPFlowdiv *>(o)
-              || dynamic_cast<SPFlowpara *>(o)
-              || dynamic_cast<SPTextPath *>(o))
+              || is<SPFlowdiv>(o)
+              || is<SPFlowpara>(o)
+              || is<SPTextPath>(o))
           &&  !o->getAttribute("style"))
         &&
-        !(dynamic_cast<SPFlowregionbreak *>(o) ||
-          dynamic_cast<SPFlowregionExclude *>(o) ||
-          (dynamic_cast<SPUse *>(o) &&
+        !(is<SPFlowregionbreak>(o) ||
+          is<SPFlowregionExclude>(o) ||
+          (is<SPUse>(o) &&
            o->parent &&
-           (dynamic_cast<SPFlowregion *>(o->parent) ||
-            dynamic_cast<SPFlowregionExclude *>(o->parent)
+           (is<SPFlowregion>(o->parent) ||
+            is<SPFlowregionExclude>(o->parent)
                )
               )
             )
@@ -162,7 +156,7 @@ sp_desktop_apply_css_recursive(SPObject *o, SPCSSAttr *css, bool skip_lines)
     }
 
     // setting style on child of clone spills into the clone original (via shared repr), don't do it!
-    if (dynamic_cast<SPUse *>(o)) {
+    if (is<SPUse>(o)) {
         return;
     }
 
@@ -207,7 +201,7 @@ sp_desktop_set_style(Inkscape::ObjectSet *set, SPDesktop *desktop, SPCSSAttr *cs
         for (auto i = itemlist.begin(); i!= itemlist.end(); ++i) {
             /* last used styles for 3D box faces are stored separately */
             SPObject *obj = *i;
-            Box3DSide *side = dynamic_cast<Box3DSide *>(obj);
+            auto side = cast<Box3DSide>(obj);
             if (side) {
                 prefs->mergeStyle(
                         Glib::ustring("/desktop/") + side->axes_string() + "/style", css_write);
@@ -542,9 +536,9 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
         // We consider paint "effectively set" for anything within text hierarchy
         SPObject *parent = obj->parent;
         bool paint_effectively_set =
-            paint->set || (dynamic_cast<SPText *>(parent) || dynamic_cast<SPTextPath *>(parent) || dynamic_cast<SPTSpan *>(parent)
-            || dynamic_cast<SPFlowtext *>(parent) || dynamic_cast<SPFlowdiv *>(parent) || dynamic_cast<SPFlowpara *>(parent)
-            || dynamic_cast<SPFlowtspan *>(parent) || dynamic_cast<SPFlowline*>(parent));
+            paint->set || is<SPText>(parent) || is<SPTextPath>(parent) || is<SPTSpan>(parent)
+            || is<SPFlowtext>(parent) || is<SPFlowdiv>(parent) || is<SPFlowpara>(parent)
+            || is<SPFlowtspan>(parent) || is<SPFlowline>(parent);
 
         // 1. Bail out with QUERY_STYLE_MULTIPLE_DIFFERENT if necessary
 
@@ -559,14 +553,14 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
             SPPaintServer *server_res = isfill ? style_res->getFillPaintServer() : style_res->getStrokePaintServer();
             SPPaintServer *server = isfill ? style->getFillPaintServer() : style->getStrokePaintServer();
 
-            SPLinearGradient *linear_res = dynamic_cast<SPLinearGradient *>(server_res);
-            SPRadialGradient *radial_res = linear_res ? nullptr : dynamic_cast<SPRadialGradient *>(server_res);
-            SPPattern *pattern_res = (linear_res || radial_res) ? nullptr : dynamic_cast<SPPattern *>(server_res);
+            SPLinearGradient *linear_res = cast<SPLinearGradient>(server_res);
+            SPRadialGradient *radial_res = linear_res ? nullptr : cast<SPRadialGradient>(server_res);
+            SPPattern *pattern_res = (linear_res || radial_res) ? nullptr : cast<SPPattern>(server_res);
             SPHatch *hatch_res =
-                (linear_res || radial_res || pattern_res) ? nullptr : dynamic_cast<SPHatch *>(server_res);
+                (linear_res || radial_res || pattern_res) ? nullptr : cast<SPHatch>(server_res);
 
             if (linear_res) {
-                SPLinearGradient *linear = dynamic_cast<SPLinearGradient *>(server);
+                auto linear = cast<SPLinearGradient>(server);
                 if (!linear) {
                    return QUERY_STYLE_MULTIPLE_DIFFERENT;  // different kind of server
                 }
@@ -577,7 +571,7 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
                    return QUERY_STYLE_MULTIPLE_DIFFERENT;  // different gradient vectors
                 }
             } else if (radial_res) {
-                SPRadialGradient *radial = dynamic_cast<SPRadialGradient *>(server);
+                auto radial = cast<SPRadialGradient>(server);
                 if (!radial) {
                    return QUERY_STYLE_MULTIPLE_DIFFERENT;  // different kind of server
                 }
@@ -588,24 +582,24 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
                    return QUERY_STYLE_MULTIPLE_DIFFERENT;  // different gradient vectors
                 }
             } else if (pattern_res) {
-                SPPattern *pattern = dynamic_cast<SPPattern *>(server);
+                auto pattern = cast<SPPattern>(server);
                 if (!pattern) {
                    return QUERY_STYLE_MULTIPLE_DIFFERENT;  // different kind of server
                 }
 
-                SPPattern *pat = SP_PATTERN (server)->rootPattern();
-                SPPattern *pat_res = SP_PATTERN (server_res)->rootPattern();
+                auto pat = cast<SPPattern>(server)->rootPattern();
+                auto pat_res = cast<SPPattern>(server_res)->rootPattern();
                 if (pat_res != pat) {
                    return QUERY_STYLE_MULTIPLE_DIFFERENT;  // different pattern roots
                 }
             } else if (hatch_res) {
-                SPHatch *hatch = dynamic_cast<SPHatch *>(server);
+                auto hatch = cast<SPHatch>(server);
                 if (!hatch) {
                     return QUERY_STYLE_MULTIPLE_DIFFERENT; // different kind of server
                 }
 
-                SPHatch *hat = SP_HATCH(server)->rootHatch();
-                SPHatch *hat_res = SP_HATCH(server_res)->rootHatch();
+                auto hat = cast<SPHatch>(server)->rootHatch();
+                auto hat_res = cast<SPHatch>(server_res)->rootHatch();
                 if (hat_res != hat) {
                     return QUERY_STYLE_MULTIPLE_DIFFERENT; // different hatch roots
                 }
@@ -781,7 +775,7 @@ objects_query_strokewidth (const std::vector<SPItem*> &objects, SPStyle *style_r
         if (!obj) {
             continue;
         }
-        SPItem *item = dynamic_cast<SPItem *>(obj);
+        auto item = obj;
         if (!item) {
             continue;
         }
@@ -854,7 +848,7 @@ objects_query_miterlimit (const std::vector<SPItem*> &objects, SPStyle *style_re
     bool same_ml = true;
 
     for (auto obj : objects) {
-        if (!dynamic_cast<SPItem *>(obj)) {
+        if (!obj) {
             continue;
         }
         SPStyle *style = obj->style;
@@ -911,7 +905,7 @@ objects_query_strokecap (const std::vector<SPItem*> &objects, SPStyle *style_res
     int n_stroked = 0;
 
     for (auto obj : objects) {
-        if (!dynamic_cast<SPItem *>(obj)) {
+        if (!obj) {
             continue;
         }
         SPStyle *style = obj->style;
@@ -961,7 +955,7 @@ objects_query_strokejoin (const std::vector<SPItem*> &objects, SPStyle *style_re
     int n_stroked = 0;
 
     for (auto obj : objects) {
-        if (!dynamic_cast<SPItem *>(obj)) {
+        if (!obj) {
             continue;
         }
         SPStyle *style = obj->style;
@@ -1012,7 +1006,7 @@ objects_query_paintorder (const std::vector<SPItem*> &objects, SPStyle *style_re
     int n_order = 0;
 
     for (auto obj : objects) {
-        if (!dynamic_cast<SPItem *>(obj)) {
+        if (!obj) {
             continue;
         }
         SPStyle *style = obj->style;
@@ -1092,7 +1086,7 @@ objects_query_fontnumbers (const std::vector<SPItem*> &objects, SPStyle *style_r
         }
 
         texts ++;
-        SPItem *item = dynamic_cast<SPItem *>(obj);
+        auto item = obj;
         g_assert(item != nullptr);
 
         // Quick way of getting document scale. Should be same as:
@@ -1701,7 +1695,7 @@ objects_query_blend (const std::vector<SPItem*> &objects, SPStyle *style_res)
             continue;
         }
         SPStyle *style = obj->style;
-        if (!style || !dynamic_cast<SPItem *>(obj)) {
+        if (!style || !obj) {
             continue;
         }
 
@@ -1752,7 +1746,7 @@ int objects_query_isolation(const std::vector<SPItem *> &objects, SPStyle *style
             continue;
         }
         SPStyle *style = obj->style;
-        if (!style || !dynamic_cast<SPItem *>(obj)) {
+        if (!style || !obj) {
             continue;
         }
 
@@ -1811,7 +1805,7 @@ objects_query_blur (const std::vector<SPItem*> &objects, SPStyle *style_res)
         if (!style) {
             continue;
         }
-        SPItem *item = dynamic_cast<SPItem *>(obj);
+        auto item = obj;
         if (!item) {
             continue;
         }
@@ -1824,11 +1818,11 @@ objects_query_blur (const std::vector<SPItem*> &objects, SPStyle *style_res)
         if (style->filter.set && style->getFilter()) {
             //cycle through filter primitives
             for(auto& primitive_obj: style->getFilter()->children) {
-                SPFilterPrimitive *primitive = dynamic_cast<SPFilterPrimitive *>(&primitive_obj);
+                auto primitive = cast<SPFilterPrimitive>(&primitive_obj);
                 if (primitive) {
 
                     //if primitive is gaussianblur
-                    SPGaussianBlur * spblur = dynamic_cast<SPGaussianBlur *>(primitive);
+                    auto spblur = cast<SPGaussianBlur>(primitive);
                     if (spblur) {
                         float num = spblur->get_std_deviation().getNumber();
                         float dummy = num * i2d.descrim();

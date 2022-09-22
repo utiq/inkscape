@@ -161,10 +161,10 @@ void LPEInterpolate::resetDefaults(SPItem const *item)
 {
     Effect::resetDefaults(item);
 
-    if (!SP_IS_PATH(item))
+    if (!is<SPPath>(item))
         return;
 
-    SPCurve const *crv = SP_PATH(item)->curveForEdit();
+    SPCurve const *crv = cast<SPPath>(item)->curveForEdit();
     Geom::PathVector const &pathv = crv->get_pathvector();
     if ((pathv.size() < 2))
         return;

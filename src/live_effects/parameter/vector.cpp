@@ -174,7 +174,7 @@ public:
         Geom::Point const s = snap_knot_position(p, state);
         param->setOrigin(s);
         param->set_and_write_new_values(param->origin, param->vector);
-        sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+        sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), false, false);
     };
     Geom::Point knot_get() const override {
         return param->origin;
@@ -202,7 +202,7 @@ public:
         /// @todo implement angle snapping when holding CTRL
         param->setVector(s);
         param->set_and_write_new_values(param->origin, param->vector);
-        sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+        sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), false, false);
     };
     Geom::Point knot_get() const override {
         return param->origin + param->vector;

@@ -407,7 +407,7 @@ bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
                                     // so don't append to an existing one
                                     selection->clear();
                                     _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Creating new path"));
-                                } else if (selection->singleItem() && SP_IS_PATH(selection->singleItem())) {
+                                } else if (selection->singleItem() && is<SPPath>(selection->singleItem())) {
                                     _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Appending to selected path"));
                                 }
 
@@ -761,7 +761,7 @@ bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
 
         if (this->waiting_LPE) {
             // we have an already created LPE waiting for a path
-            this->waiting_LPE->acceptParamPath(SP_PATH(selection->singleItem()));
+            this->waiting_LPE->acceptParamPath(cast<SPPath>(selection->singleItem()));
             selection->add(this->waiting_item);
             this->waiting_LPE = nullptr;
         } else {
@@ -1330,9 +1330,9 @@ void PenTool::_bsplineSpiroStartAnchor(bool shift)
 
     LivePathEffect::LPEBSpline *lpe_bsp = nullptr;
 
-    if (SP_IS_LPE_ITEM(this->white_item) && SP_LPE_ITEM(this->white_item)->hasPathEffect()){
+    if (is<SPLPEItem>(this->white_item) && cast<SPLPEItem>(this->white_item)->hasPathEffect()){
         Inkscape::LivePathEffect::Effect *thisEffect =
-            SP_LPE_ITEM(this->white_item)->getFirstPathEffectOfType(Inkscape::LivePathEffect::BSPLINE);
+            cast<SPLPEItem>(this->white_item)->getFirstPathEffectOfType(Inkscape::LivePathEffect::BSPLINE);
         if(thisEffect){
             lpe_bsp = dynamic_cast<LivePathEffect::LPEBSpline*>(thisEffect->getLPEObj()->get_lpe());
         }
@@ -1344,9 +1344,9 @@ void PenTool::_bsplineSpiroStartAnchor(bool shift)
     }
     LivePathEffect::LPESpiro *lpe_spi = nullptr;
 
-    if (SP_IS_LPE_ITEM(this->white_item) && SP_LPE_ITEM(this->white_item)->hasPathEffect()){
+    if (is<SPLPEItem>(this->white_item) && cast<SPLPEItem>(this->white_item)->hasPathEffect()){
         Inkscape::LivePathEffect::Effect *thisEffect =
-            SP_LPE_ITEM(this->white_item)->getFirstPathEffectOfType(Inkscape::LivePathEffect::SPIRO);
+            cast<SPLPEItem>(this->white_item)->getFirstPathEffectOfType(Inkscape::LivePathEffect::SPIRO);
         if(thisEffect){
             lpe_spi = dynamic_cast<LivePathEffect::LPESpiro*>(thisEffect->getLPEObj()->get_lpe());
         }

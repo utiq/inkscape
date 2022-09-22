@@ -490,7 +490,7 @@ static ColorProfile *bruteFind(SPDocument *document, gchar const *name)
 {
     std::vector<SPObject *> current = document->getResourceList("iccprofile");
     for (auto *obj : current) {
-        if (auto prof = dynamic_cast<ColorProfile*>(obj)) {
+        if (auto prof = cast<ColorProfile>(obj)) {
             if ( prof->name && (strcmp(prof->name, name) == 0) ) {
                 return prof;
             }

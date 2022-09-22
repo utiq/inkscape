@@ -1522,7 +1522,7 @@ bool ObjectsPanel::_handleButtonEvent(GdkEventButton* event)
         SPItem *item = getItem(row);
 
         if (!item) return false;
-        SPGroup *group = SP_GROUP(item);
+        auto group = cast<SPGroup>(item);
 
         // Load the right click menu
         const bool context_menu = event->type == GDK_BUTTON_PRESS && event->button == 3;

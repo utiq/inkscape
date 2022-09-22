@@ -266,15 +266,15 @@ void StyleSwatch::setStyle(SPStyle *query)
         if (paint->set && paint->isPaintserver()) {
             SPPaintServer *server = (i == SS_FILL)? SP_STYLE_FILL_SERVER (query) : SP_STYLE_STROKE_SERVER (query);
 
-            if (SP_IS_LINEARGRADIENT (server)) {
+            if (is<SPLinearGradient>(server)) {
                 _value[i].set_markup(_("L Gradient"));
                 place->add(_value[i]);
                 place->set_tooltip_text((i == SS_FILL)? (_("Linear gradient (fill)")) : (_("Linear gradient (stroke)")));
-            } else if (SP_IS_RADIALGRADIENT (server)) {
+            } else if (is<SPRadialGradient>(server)) {
                 _value[i].set_markup(_("R Gradient"));
                 place->add(_value[i]);
                 place->set_tooltip_text((i == SS_FILL)? (_("Radial gradient (fill)")) : (_("Radial gradient (stroke)")));
-            } else if (SP_IS_PATTERN (server)) {
+            } else if (is<SPPattern>(server)) {
                 _value[i].set_markup(_("Pattern"));
                 place->add(_value[i]);
                 place->set_tooltip_text((i == SS_FILL)? (_("Pattern (fill)")) : (_("Pattern (stroke)")));

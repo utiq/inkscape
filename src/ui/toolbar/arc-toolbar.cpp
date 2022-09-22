@@ -267,9 +267,9 @@ ArcToolbar::value_changed(Glib::RefPtr<Gtk::Adjustment>&  adj,
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_GENERICELLIPSE(item)) {
+        if (is<SPGenericEllipse>(item)) {
 
-            SPGenericEllipse *ge = SP_GENERICELLIPSE(item);
+            auto ge = cast<SPGenericEllipse>(item);
 
             if (!strcmp(value_name, "rx")) {
                 ge->setVisibleRx(Quantity::convert(adj->get_value(), unit, "px"));
@@ -316,9 +316,9 @@ ArcToolbar::startend_value_changed(Glib::RefPtr<Gtk::Adjustment>&  adj,
     auto itemlist= _desktop->getSelection()->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_GENERICELLIPSE(item)) {
+        if (is<SPGenericEllipse>(item)) {
 
-            SPGenericEllipse *ge = SP_GENERICELLIPSE(item);
+            auto ge = cast<SPGenericEllipse>(item);
 
             if (!strcmp(value_name, "start")) {
                 ge->start = (adj->get_value() * M_PI)/ 180;
@@ -384,7 +384,7 @@ ArcToolbar::type_changed( int type )
     auto itemlist= _desktop->getSelection()->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_GENERICELLIPSE(item)) {
+        if (is<SPGenericEllipse>(item)) {
             Inkscape::XML::Node *repr = item->getRepr();
             repr->setAttribute("sodipodi:open", (open?"true":nullptr) );
             repr->setAttribute("sodipodi:arc-type", arc_type);
@@ -457,7 +457,7 @@ ArcToolbar::selection_changed(Inkscape::Selection *selection)
     SPItem *item = nullptr;
 
     for(auto i : selection->items()){
-        if (SP_IS_GENERICELLIPSE(i)) {
+        if (is<SPGenericEllipse>(i)) {
             n_selected++;
             item = i;
             repr = item->getRepr();
@@ -503,8 +503,8 @@ ArcToolbar::event_attr_changed(Inkscape::XML::Node *repr, gchar const * /*name*/
     // in turn, prevent callbacks from responding
     toolbar->_freeze = true;
 
-    if (toolbar->_item && SP_IS_GENERICELLIPSE(toolbar->_item)) {
-        SPGenericEllipse *ge = SP_GENERICELLIPSE(toolbar->_item);
+    if (toolbar->_item && is<SPGenericEllipse>(toolbar->_item)) {
+        auto ge = cast<SPGenericEllipse>(toolbar->_item);
 
         Unit const *unit = toolbar->_tracker->getActiveUnit();
         g_return_if_fail(unit != nullptr);

@@ -54,12 +54,12 @@ void gr_apply_gradient_to_item( SPItem *item, SPGradient *gr, SPGradientType ini
     bool isFill = (mode == Inkscape::FOR_FILL);
     if (style
         && (isFill ? style->fill.isPaintserver() : style->stroke.isPaintserver())
-        //&& SP_IS_GRADIENT(isFill ? style->getFillPaintServer() : style->getStrokePaintServer()) ) {
-        && (isFill ? SP_IS_GRADIENT(style->getFillPaintServer()) : SP_IS_GRADIENT(style->getStrokePaintServer())) ) {
+        //&& is<SPGradient>(isFill ? style->getFillPaintServer() : style->getStrokePaintServer()) ) {
+        && (isFill ? is<SPGradient>(style->getFillPaintServer()) : is<SPGradient>(style->getStrokePaintServer())) ) {
         SPPaintServer *server = isFill ? style->getFillPaintServer() : style->getStrokePaintServer();
-        if ( SP_IS_LINEARGRADIENT(server) ) {
+        if ( is<SPLinearGradient>(server) ) {
             sp_item_set_gradient(item, gr, SP_GRADIENT_TYPE_LINEAR, mode);
-        } else if ( SP_IS_RADIALGRADIENT(server) ) {
+        } else if ( is<SPRadialGradient>(server) ) {
             sp_item_set_gradient(item, gr, SP_GRADIENT_TYPE_RADIAL, mode);
         }
     }
@@ -113,7 +113,7 @@ int gr_vector_list(Glib::RefPtr<Gtk::ListStore> store, SPDesktop *desktop,
     std::vector<SPObject *> gl;
     std::vector<SPObject *> gradients = document->getResourceList( "gradient" );
     for (auto gradient : gradients) {
-        SPGradient *grad = SP_GRADIENT(gradient);
+        auto grad = cast<SPGradient>(gradient);
         if ( grad->hasStops() && !grad->isSolid() ) {
             gl.push_back(gradient);
         }
@@ -166,7 +166,7 @@ int gr_vector_list(Glib::RefPtr<Gtk::ListStore> store, SPDesktop *desktop,
 
         int idx = 0;
         for (auto it : gl) {
-            SPGradient *gradient = SP_GRADIENT(it);
+            auto gradient = cast<SPGradient>(it);
 
             Glib::ustring label = gr_prepare_label(gradient);
             Glib::RefPtr<Gdk::Pixbuf> pixbuf = sp_gradient_to_pixbuf_ref(gradient, 64, 16);
@@ -214,8 +214,8 @@ void gr_get_dt_selected_gradient(Inkscape::Selection *selection, std::vector<SPG
              server = item->style->getStrokePaintServer();
          }
 
-         if ( SP_IS_GRADIENT(server) ) {
-             gradient = SP_GRADIENT(server);
+         if ( is<SPGradient>(server) ) {
+             gradient = cast<SPGradient>(server);
          }
         if (gradient && gradient->isSolid()) {
             gradient = nullptr;
@@ -274,9 +274,9 @@ void gr_read_selection( Inkscape::Selection *selection,
 
         if (style && (style->fill.isPaintserver())) {
             SPPaintServer *server = item->style->getFillPaintServer();
-            if ( SP_IS_GRADIENT(server) ) {
-                SPGradient *gradient = SP_GRADIENT(server)->getVector();
-                SPGradientSpread spread = SP_GRADIENT(server)->fetchSpread();
+            if ( is<SPGradient>(server) ) {
+                auto gradient = cast<SPGradient>(server)->getVector();
+                SPGradientSpread spread = cast<SPGradient>(server)->fetchSpread();
 
                 if (gradient && gradient->isSolid()) {
                     gradient = nullptr;
@@ -300,9 +300,9 @@ void gr_read_selection( Inkscape::Selection *selection,
         }
         if (style && (style->stroke.isPaintserver())) {
             SPPaintServer *server = item->style->getStrokePaintServer();
-            if ( SP_IS_GRADIENT(server) ) {
-                SPGradient *gradient = SP_GRADIENT(server)->getVector();
-                SPGradientSpread spread = SP_GRADIENT(server)->fetchSpread();
+            if ( is<SPGradient>(server) ) {
+                auto gradient = cast<SPGradient>(server)->getVector();
+                SPGradientSpread spread = cast<SPGradient>(server)->fetchSpread();
 
                 if (gradient && gradient->isSolid()) {
                     gradient = nullptr;
@@ -990,7 +990,7 @@ GradientToolbar::update_stop_list( SPGradient *gradient, SPStop *new_stop, bool 
         return selected;
     }
 
-    if (!SP_IS_GRADIENT(gradient)) {
+    if (!gradient) {
         // No valid gradient
 
         row = *(store->append());
@@ -1015,9 +1015,9 @@ GradientToolbar::update_stop_list( SPGradient *gradient, SPStop *new_stop, bool 
 
         // Get list of stops
         for (auto& ochild: gradient->children) {
-            if (SP_IS_STOP(&ochild)) {
+            if (is<SPStop>(&ochild)) {
 
-                SPStop *stop = SP_STOP(&ochild);
+                auto stop = cast<SPStop>(&ochild);
                 Glib::RefPtr<Gdk::Pixbuf> pixbuf = sp_gradstop_to_pixbuf_ref (stop, 32, 16);
 
                 Inkscape::XML::Node *repr = reinterpret_cast<SPItem *>(&ochild)->getRepr();
@@ -1049,7 +1049,7 @@ GradientToolbar::select_stop_in_list(SPGradient *gradient, SPStop *new_stop)
 {
     int i = 0;
     for (auto& ochild: gradient->children) {
-        if (SP_IS_STOP(&ochild)) {
+        if (is<SPStop>(&ochild)) {
             if (&ochild == new_stop) {
                 return i;
             }

@@ -213,16 +213,16 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeSpecularLighting::build_
     // We assume there is at most one child
     specularlighting->light_type = Inkscape::Filters::NO_LIGHT;
 
-    if (auto l = SP_FEDISTANTLIGHT(firstChild())) {
+    if (auto l = cast<SPFeDistantLight>(firstChild())) {
         specularlighting->light_type = Inkscape::Filters::DISTANT_LIGHT;
         specularlighting->light.distant.azimuth = l->azimuth;
         specularlighting->light.distant.elevation = l->elevation;
-    } else if (auto l = SP_FEPOINTLIGHT(firstChild())) {
+    } else if (auto l = cast<SPFePointLight>(firstChild())) {
         specularlighting->light_type = Inkscape::Filters::POINT_LIGHT;
         specularlighting->light.point.x = l->x;
         specularlighting->light.point.y = l->y;
         specularlighting->light.point.z = l->z;
-    } else if (auto l = SP_FESPOTLIGHT(firstChild())) {
+    } else if (auto l = cast<SPFeSpotLight>(firstChild())) {
         specularlighting->light_type = Inkscape::Filters::SPOT_LIGHT;
         specularlighting->light.spot.x = l->x;
         specularlighting->light.spot.y = l->y;

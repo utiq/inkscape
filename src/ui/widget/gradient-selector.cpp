@@ -404,7 +404,6 @@ void GradientSelector::selectGradientInTree(SPGradient *vector)
 
 void GradientSelector::setVector(SPDocument *doc, SPGradient *vector)
 {
-    g_return_if_fail(!vector || SP_IS_GRADIENT(vector));
     g_return_if_fail(!vector || (vector->document == doc));
 
     if (vector && !vector->hasStops()) {
@@ -570,7 +569,7 @@ void GradientSelector::add_vector_clicked()
         repr->appendChild(stop);
         Inkscape::GC::release(stop);
         doc->getDefs()->getRepr()->addChild(repr, nullptr);
-        gr = SP_GRADIENT(doc->getObjectByRepr(repr));
+        gr = cast<SPGradient>(doc->getObjectByRepr(repr));
     }
 
     _vectors->set_gradient(doc, gr);

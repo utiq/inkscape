@@ -268,7 +268,7 @@ void MeshTool::corner_operation(MeshCornerOperation operation)
             if( d->point_type != POINT_MG_CORNER ) continue;
 
             // Find the gradient
-            SPMeshGradient *gradient = SP_MESHGRADIENT( getGradient (d->item, d->fill_or_stroke) );
+            auto gradient = cast<SPMeshGradient>( getGradient (d->item, d->fill_or_stroke) );
 
             // Collect points together for same gradient
             points[gradient].push_back( d->point_i );
@@ -389,10 +389,10 @@ void MeshTool::fit_mesh_in_bbox()
 
             if (style->fill.isPaintserver()) {
                 SPPaintServer *server = item->style->getFillPaintServer();
-                if ( SP_IS_MESHGRADIENT(server) ) {
+                if ( is<SPMeshGradient>(server) ) {
 
                     Geom::OptRect item_bbox = item->geometricBounds();
-                    SPMeshGradient *gradient = SP_MESHGRADIENT(server);
+                    auto gradient = cast<SPMeshGradient>(server);
                     if (gradient->array.fill_box( item_bbox )) {
                         changed = true;
                     }
@@ -401,10 +401,10 @@ void MeshTool::fit_mesh_in_bbox()
 
             if (style->stroke.isPaintserver()) {
                 SPPaintServer *server = item->style->getStrokePaintServer();
-                if ( SP_IS_MESHGRADIENT(server) ) {
+                if ( is<SPMeshGradient>(server) ) {
 
                     Geom::OptRect item_bbox = item->visualBounds();
-                    SPMeshGradient *gradient = SP_MESHGRADIENT(server);
+                    auto gradient = cast<SPMeshGradient>(server);
                     if (gradient->array.fill_box( item_bbox )) {
                         changed = true;
                     }
@@ -471,7 +471,7 @@ bool MeshTool::root_handler(GdkEvent* event) {
                             (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
                             style->getFillPaintServer():
                             style->getStrokePaintServer();
-                        if (server && SP_IS_MESHGRADIENT(server)) 
+                        if (server && is<SPMeshGradient>(server)) 
                             has_mesh = true;
                     }
                 }
@@ -538,7 +538,7 @@ bool MeshTool::root_handler(GdkEvent* event) {
                         (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
                         style->getFillPaintServer():
                         style->getStrokePaintServer();
-                    if (server && SP_IS_MESHGRADIENT(server)) 
+                    if (server && is<SPMeshGradient>(server)) 
                         has_mesh = true;
                 }
             }
@@ -673,7 +673,7 @@ bool MeshTool::root_handler(GdkEvent* event) {
                                 (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
                                 style->getFillPaintServer():
                                 style->getStrokePaintServer();
-                            if (server && SP_IS_MESHGRADIENT(server)) 
+                            if (server && is<SPMeshGradient>(server)) 
                                 has_mesh = true;
                         }
                     }
@@ -930,7 +930,7 @@ void MeshTool::new_default()
             mg->array.create(mg, *i, (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
                              (*i)->geometricBounds() : (*i)->visualBounds());
 
-            bool isText = SP_IS_TEXT(*i);
+            bool isText = is<SPText>(*i);
             sp_style_set_property_url(*i,
                                       ((fill_or_stroke_pref == Inkscape::FOR_FILL) ? "fill":"stroke"),
                                       mg, isText);

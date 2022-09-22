@@ -231,7 +231,7 @@ void SpellCheck::disconnect()
 
 void SpellCheck::allTextItems (SPObject *r, std::vector<SPItem *> &l, bool hidden, bool locked)
 {
-    if (SP_IS_DEFS(r))
+    if (is<SPDefs>(r))
         return; // we're not interested in items in defs
 
     if (!strcmp(r->getRepr()->name(), "svg:metadata")) {
@@ -243,7 +243,7 @@ void SpellCheck::allTextItems (SPObject *r, std::vector<SPItem *> &l, bool hidde
             if (auto item = dynamic_cast<SPItem *>(&child)) {
                 if (!child.cloned && !desktop->layerManager().isLayer(item)) {
                     if ((hidden || !desktop->itemIsHidden(item)) && (locked || !item->isLocked())) {
-                        if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item))
+                        if (is<SPText>(item) || is<SPFlowtext>(item))
                             l.push_back(item);
                     }
                 }
@@ -421,13 +421,13 @@ SpellCheck::nextWord()
     SPObject *char_item = nullptr;
     Glib::ustring::iterator text_iter;
     _layout->getSourceOfCharacter(_end_w, &char_item, &text_iter);
-    if (SP_IS_STRING(char_item)) {
+    if (is<SPString>(char_item)) {
         int this_char = *text_iter;
         if (this_char == '\'' || this_char == 0x2019) {
             Inkscape::Text::Layout::iterator end_t = _end_w;
             end_t.nextCharacter();
             _layout->getSourceOfCharacter(end_t, &char_item, &text_iter);
-            if (SP_IS_STRING(char_item)) {
+            if (is<SPString>(char_item)) {
                 int this_char = *text_iter;
                 if (g_ascii_isalpha(this_char)) { // 's
                     _end_w.nextEndOfWord();

@@ -443,7 +443,7 @@ SPPage *SPPage::getNextPage()
 {
     SPObject *item = this;
     while ((item = item->getNext())) {
-        if (auto next = dynamic_cast<SPPage *>(item)) {
+        if (auto next = cast<SPPage>(item)) {
             return next;
         }
     }
@@ -457,7 +457,7 @@ SPPage *SPPage::getPreviousPage()
 {
     SPObject *item = this;
     while ((item = item->getPrev())) {
-        if (auto prev = dynamic_cast<SPPage *>(item)) {
+        if (auto prev = cast<SPPage>(item)) {
             return prev;
         }
     }
@@ -493,7 +493,7 @@ void SPPage::moveItems(Geom::Affine translate, std::vector<SPItem *> const &obje
         if (item->isLocked()) {
             continue;
         }
-        if (auto parent_item = dynamic_cast<SPItem *>(item->parent)) {
+        if (auto parent_item = cast<SPItem>(item->parent)) {
             auto move = item->i2dt_affine() * (translate * parent_item->i2doc_affine().inverse());
             item->doWriteTransform(move, &move, false);
         }

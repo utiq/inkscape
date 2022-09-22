@@ -112,12 +112,13 @@ void Box3dTool::selection_changed(Inkscape::Selection* selection) {
 /* Create a default perspective in document defs if none is present (which can happen, among other
  * circumstances, after 'vacuum defs' or when a pre-0.46 file is opened).
  */
-static void sp_box3d_context_ensure_persp_in_defs(SPDocument *document) {
-    SPDefs *defs = document->getDefs();
+static void sp_box3d_context_ensure_persp_in_defs(SPDocument *document)
+{
+    auto defs = document->getDefs();
 
     bool has_persp = false;
-    for (auto& child: defs->children) {
-        if (SP_IS_PERSP3D(&child)) {
+    for (auto &child : defs->children) {
+        if (is<Persp3D>(&child)) {
             has_persp = true;
             break;
         }

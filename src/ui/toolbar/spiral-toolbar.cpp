@@ -178,7 +178,7 @@ SpiralToolbar::value_changed(Glib::RefPtr<Gtk::Adjustment> &adj,
     auto itemlist= _desktop->getSelection()->items();
     for(auto i=itemlist.begin();i!=itemlist.end(); ++i){
         SPItem *item = *i;
-        if (SP_IS_SPIRAL(item)) {
+        if (is<SPSpiral>(item)) {
             Inkscape::XML::Node *repr = item->getRepr();
             repr->setAttributeSvgDouble(namespaced_name, adj->get_value() );
             item->updateRepr();
@@ -225,7 +225,7 @@ SpiralToolbar::selection_changed(Inkscape::Selection *selection)
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end(); ++i){
         SPItem *item = *i;
-        if (SP_IS_SPIRAL(item)) {
+        if (is<SPSpiral>(item)) {
             n_selected++;
             repr = item->getRepr();
         }

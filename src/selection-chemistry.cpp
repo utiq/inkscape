@@ -2006,7 +2006,7 @@ void sp_select_same_fill_stroke_style(SPDesktop *desktop, gboolean fill, gboolea
 
     std::vector<SPItem*> tmp;
     for (auto iter : all_list) {
-        if(!SP_IS_GROUP(iter)){
+        if(!is<SPGroup>(iter)){
             tmp.push_back(iter);
         }
     }
@@ -2615,20 +2615,6 @@ void sp_selection_next_patheffect_param(SPDesktop * dt)
     }
 }
 
-/*bool has_path_recursive(SPObject *obj)
-{
-    if (!obj) return false;
-    if (SP_IS_PATH(obj)) {
-        return true;
-    }
-    if (SP_IS_GROUP(obj) || SP_IS_OBJECTGROUP(obj)) {
-        for (SPObject *c = obj->children; c; c = c->next) {
-            if (has_path_recursive(c)) return true;
-        }
-    }
-    return false;
-}*/
-
 void ObjectSet::editMask(bool /*clip*/)
 {
     return;
@@ -2811,7 +2797,7 @@ bool ObjectSet::unlink(const bool skip_undo)
                     new_select.push_back(item);
                     continue;
                 }
-            } else /*if (SP_IS_TREF(use))*/ {
+            } else /*if (is<SPTRef>(use))*/ {
                 unlink = dynamic_cast<SPItem *>(sp_tref_convert_to_tspan(item));
                 g_assert(unlink != nullptr);
             }
@@ -2858,7 +2844,7 @@ bool ObjectSet::unlinkRecursive(const bool skip_undo, const bool force) {
         tmp_set.set(it);
         unlinked = tmp_set.unlink(true) || unlinked;
         it = tmp_set.singleItem();
-        if (SP_IS_GROUP(it)) {
+        if (is<SPGroup>(it)) {
             std::vector<SPObject*> c = it->childList(false);
             tmp_set.setList(c);
             unlinked = tmp_set.unlinkRecursive(skip_undo, force) || unlinked;
@@ -3006,7 +2992,7 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool skip_undo)
     auto items_= items();
     bool multiple = false;
     for (auto *item : items_) {
-        if (SP_IS_SHAPE(item) || SP_IS_TEXT(item) || SP_IS_GROUP(item)) {
+        if (is<SPShape>(item) || is<SPText>(item) || is<SPGroup>(item)) {
             if (firstItem) {
                 os << "|";
                 multiple = true;
@@ -3708,7 +3694,7 @@ void ObjectSet::setClipGroup()
             Geom::Affine item_t(Geom::identity());
             if (t_str)
                 sp_svg_transform_read(t_str, &item_t);
-            item_t *= SP_ITEM(doc->getObjectByRepr(current->parent()))->i2doc_affine();
+            item_t *= cast<SPItem>(doc->getObjectByRepr(current->parent()))->i2doc_affine();
             // FIXME: when moving both clone and original from a transformed group (either by
             // grouping into another parent, or by cut/paste) the transform from the original's
             // parent becomes embedded into original itself, and this affects its clones. Fix
@@ -3917,7 +3903,7 @@ void ObjectSet::setClipGroup()
         // inverted object transform should be applied to a mask object,
         // as mask is calculated in user space (after applying transform)
         for (auto & it : mask_items_dup) {
-            SPItem *clip_item = SP_ITEM(doc->getObjectByRepr(it));
+            auto clip_item = cast<SPItem>(doc->getObjectByRepr(it));
             clip_item->doWriteTransform(dup_transf[it]);
             clip_item->doWriteTransform(clip_item->transform * item->i2doc_affine().inverse());
         }
@@ -4009,7 +3995,7 @@ void ObjectSet::unsetMask(const bool apply_clip_path,
             } else if (copy->attribute("inkscape:original-d")) {
                 copy->setAttribute("d", copy->attribute("inkscape:original-d"));
                 copy->removeAttribute("inkscape:original-d");
-            } else if (!copy->attribute("inkscape:path-effect") && !SP_IS_PATH(&child)) {
+            } else if (!copy->attribute("inkscape:path-effect") && !is<SPPath>(&child)) {
                 copy->removeAttribute("d");
                 copy->removeAttribute("inkscape:original-d");
             }

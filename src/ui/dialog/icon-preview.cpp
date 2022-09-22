@@ -464,8 +464,8 @@ sp_icon_doc_icon( SPDocument *doc, Inkscape::Drawing &drawing,
 
     if (doc) {
         SPObject *object = doc->getObjectById(name);
-        if (object && SP_IS_ITEM(object)) {
-            SPItem *item = SP_ITEM(object);
+        if (object && is<SPItem>(object)) {
+            auto item = cast<SPItem>(object);
             // Find bbox in document
             Geom::OptRect dbox = item->documentVisualBounds();
 

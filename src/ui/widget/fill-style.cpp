@@ -212,29 +212,29 @@ void FillNStroke::performUpdate()
                 SPPaintServer* server = (kind == FILL) ? query.getFillPaintServer() : query.getStrokePaintServer();
 
                 if (server) {
-                    if (SP_IS_GRADIENT(server) && SP_GRADIENT(server)->getVector()->isSwatch()) {
-                        SPGradient *vector = SP_GRADIENT(server)->getVector();
+                    if (is<SPGradient>(server) && cast<SPGradient>(server)->getVector()->isSwatch()) {
+                        auto vector = cast<SPGradient>(server)->getVector();
                         _psel->setSwatch(vector);
-                    } else if (SP_IS_LINEARGRADIENT(server)) {
-                        SPGradient *vector = SP_GRADIENT(server)->getVector();
-                        SPLinearGradient *lg = SP_LINEARGRADIENT(server);
+                    } else if (is<SPLinearGradient>(server)) {
+                        auto vector = cast<SPGradient>(server)->getVector();
+                        auto lg = cast<SPLinearGradient>(server);
                         _psel->setGradientLinear(vector, lg, stop);
 
                         _psel->setGradientProperties(lg->getUnits(), lg->getSpread());
-                    } else if (SP_IS_RADIALGRADIENT(server)) {
-                        SPGradient *vector = SP_GRADIENT(server)->getVector();
-                        SPRadialGradient *rg = SP_RADIALGRADIENT(server);
+                    } else if (is<SPRadialGradient>(server)) {
+                        auto vector = cast<SPGradient>(server)->getVector();
+                        auto rg = cast<SPRadialGradient>(server);
                         _psel->setGradientRadial(vector, rg, stop);
 
                         _psel->setGradientProperties(rg->getUnits(), rg->getSpread());
 #ifdef WITH_MESH
-                    } else if (SP_IS_MESHGRADIENT(server)) {
-                        SPGradient *array = SP_GRADIENT(server)->getArray();
-                        _psel->setGradientMesh(SP_MESHGRADIENT(array));
-                        _psel->updateMeshList(SP_MESHGRADIENT(array));
+                    } else if (is<SPMeshGradient>(server)) {
+                        auto array = cast<SPGradient>(server)->getArray();
+                        _psel->setGradientMesh(cast<SPMeshGradient>(array));
+                        _psel->updateMeshList(cast<SPMeshGradient>(array));
 #endif
-                    } else if (SP_IS_PATTERN(server)) {
-                        _psel->updatePatternList(SP_PATTERN(server));
+                    } else if (is<SPPattern>(server)) {
+                        _psel->updatePatternList(cast<SPPattern>(server));
                     }
                 }
             }
@@ -543,7 +543,7 @@ void FillNStroke::updateFromPaint(bool switch_style)
                     if (style) {
                         SPPaintServer *server =
                             (kind == FILL) ? style->getFillPaintServer() : style->getStrokePaintServer();
-                        if (server && SP_IS_MESHGRADIENT(server))
+                        if (server && is<SPMeshGradient>(server))
                             has_mesh = true;
                     }
 
@@ -565,7 +565,7 @@ void FillNStroke::updateFromPaint(bool switch_style)
                         SPMeshGradient *mg = static_cast<SPMeshGradient *>(document->getObjectByRepr(repr));
                         mg->array.create(mg, item, (kind == FILL) ? item->geometricBounds() : item->visualBounds());
 
-                        bool isText = SP_IS_TEXT(item);
+                        bool isText = is<SPText>(item);
                         sp_style_set_property_url(item, ((kind == FILL) ? "fill" : "stroke"), mg, isText);
 
                         // (*i)->requestModified(SP_OBJECT_MODIFIED_FLAG|SP_OBJECT_STYLE_MODIFIED_FLAG);
@@ -592,7 +592,7 @@ void FillNStroke::updateFromPaint(bool switch_style)
                         Geom::OptRect item_bbox = (kind == FILL) ? item->geometricBounds() : item->visualBounds();
                         mg->array.fill_box(item_bbox);
 
-                        bool isText = SP_IS_TEXT(item);
+                        bool isText = is<SPText>(item);
                         sp_style_set_property_url(item, ((kind == FILL) ? "fill" : "stroke"), mg, isText);
                     }
                 }
@@ -663,7 +663,7 @@ void FillNStroke::updateFromPaint(bool switch_style)
                         if (style && ((kind == FILL) ? style->fill.isPaintserver() : style->stroke.isPaintserver())) {
                             SPPaintServer *server = (kind == FILL) ? selobj->style->getFillPaintServer()
                                                                    : selobj->style->getStrokePaintServer();
-                            if (SP_IS_PATTERN(server) && SP_PATTERN(server)->rootPattern() == root_pattern)
+                            if (is<SPPattern>(server) && cast<SPPattern>(server)->rootPattern() == root_pattern)
                                 // only if this object's pattern is not rooted in our selected pattern, apply
                                 continue;
                         }

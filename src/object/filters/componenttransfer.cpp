@@ -63,7 +63,7 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeComponentTransfer::build
 
     bool set[4] = {false, false, false, false};
     for (auto const &node : children) {
-        auto funcNode = SP_FEFUNCNODE(&node);
+        auto funcNode = cast<SPFeFuncNode>(&node);
         if (!funcNode) {
             continue;
         }

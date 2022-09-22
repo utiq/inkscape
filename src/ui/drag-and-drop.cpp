@@ -145,7 +145,7 @@ ink_drag_data_received(GtkWidget *widget,
                 if (!consumed && item) {
                     bool fillnotstroke = (gdk_drag_context_get_actions (drag_context) != GDK_ACTION_MOVE);
                     if (fillnotstroke &&
-                        (SP_IS_SHAPE(item) || SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item))) {
+                        (is<SPShape>(item) || is<SPText>(item) || is<SPFlowtext>(item))) {
                         Path *livarot_path = Path_for_item(item, true, true);
                         livarot_path->ConvertWithBackData(0.04);
 
@@ -200,7 +200,7 @@ ink_drag_data_received(GtkWidget *widget,
                         SPGradient* matches = nullptr;
                         std::vector<SPObject *> gradients = doc->getResourceList("gradient");
                         for (auto gradient : gradients) {
-                            SPGradient* grad = SP_GRADIENT(gradient);
+                            auto grad = cast<SPGradient>(gradient);
                             if (color.get_description() == grad->getId()) {
                                 if (grad->hasStops()) {
                                     matches = grad;
@@ -243,7 +243,7 @@ ink_drag_data_received(GtkWidget *widget,
                 if (!consumed && item) {
                     bool fillnotstroke = (gdk_drag_context_get_actions (drag_context) != GDK_ACTION_MOVE);
                     if (fillnotstroke &&
-                        (SP_IS_SHAPE(item) || SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item))) {
+                        (is<SPShape>(item) || is<SPText>(item) || is<SPFlowtext>(item))) {
                         Path *livarot_path = Path_for_item(item, true, true);
                         livarot_path->ConvertWithBackData(0.04);
 
@@ -314,7 +314,7 @@ ink_drag_data_received(GtkWidget *widget,
             new_obj = desktop->layerManager().currentLayer()->appendChildRepr(newgroup);
 
             Inkscape::Selection *selection = desktop->getSelection();
-            selection->set(SP_ITEM(new_obj));
+            selection->set(cast<SPItem>(new_obj));
 
             // move to mouse pointer
             {

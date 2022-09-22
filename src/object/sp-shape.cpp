@@ -432,7 +432,7 @@ void SPShape::modified(unsigned int flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            Inkscape::DrawingShape *sh = dynamic_cast<Inkscape::DrawingShape *>(v.drawingitem.get());
+            auto sh = dynamic_cast<Inkscape::DrawingShape*>(v.drawingitem.get());
             if (hasMarkers()) {
                 this->context_style = this->style;
                 sh->setStyle(this->style, this->context_style);
@@ -730,7 +730,7 @@ Geom::OptRect SPShape::either_bbox(Geom::Affine const &transform, SPItem::BBoxTy
 static void
 sp_shape_print_invoke_marker_printing(SPObject *obj, Geom::Affine tr, SPStyle const *style, SPPrintContext *ctx)
 {
-    SPMarker *marker = SP_MARKER(obj);
+    auto marker = cast<SPMarker>(obj);
     if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
         tr = Geom::Scale(style->stroke_width.computed) * tr;
     }
@@ -958,7 +958,7 @@ int SPShape::hasMarkers() const
 
     // Ignore markers for objects which are inside markers themselves.
     for (SPObject *parent = this->parent; parent != nullptr; parent = parent->parent) {
-      if (dynamic_cast<SPMarker *>(parent)) {
+      if (is<SPMarker>(parent)) {
         return 0;
       }
     }
@@ -1036,7 +1036,7 @@ int SPShape::numberOfMarkers(int type) const {
 static void
 sp_shape_marker_release(SPObject *marker, SPShape *shape)
 {
-    SPItem *item = dynamic_cast<SPItem *>(shape);
+    auto item = shape;
     g_return_if_fail(item != nullptr);
 
     for (int i = 0; i < SP_MARKER_LOC_QTY; i++) {
@@ -1078,7 +1078,7 @@ void SPShape::set_marker(unsigned key, char const *value)
     }
 
     auto mrk = sp_css_uri_reference_resolve(document, value);
-    auto marker = dynamic_cast<SPMarker*>(mrk);
+    auto marker = cast<SPMarker>(mrk);
 
     if (marker != _marker[key]) {
         if (_marker[key]) {

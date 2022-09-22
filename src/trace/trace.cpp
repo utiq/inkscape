@@ -71,7 +71,7 @@ std::optional<std::pair<SPImage*, std::vector<SPItem*>>> getImageAndItems(bool s
         std::vector<SPItem*> items;
 
         for (auto item : selection) {
-            if (auto itemimg = SP_IMAGE(item)) {
+            if (auto itemimg = cast<SPImage>(item)) {
                 if (img) { // we want only one
                     if (notifications) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Select only one <b>image</b> to trace"));
                     return {};
@@ -96,7 +96,7 @@ std::optional<std::pair<SPImage*, std::vector<SPItem*>>> getImageAndItems(bool s
             return {};
         }
 
-        auto img = SP_IMAGE(item);
+        auto img = cast<SPImage>(item);
         if (!img) {
             if (notifications) msgStack->flash(Inkscape::ERROR_MESSAGE, _("Select an <b>image</b> to trace"));
             return {};

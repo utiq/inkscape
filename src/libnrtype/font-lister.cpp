@@ -436,17 +436,17 @@ void FontLister::update_font_data_recursive(SPObject& r, std::map<Glib::ustring,
     }
     pango_font_description_free(descr);
 
-    if (SP_IS_GROUP(&r)    ||
-        SP_IS_ANCHOR(&r)   ||
-        SP_IS_ROOT(&r)     ||
-        SP_IS_TEXT(&r)     ||
-        SP_IS_TSPAN(&r)    ||
-        SP_IS_TEXTPATH(&r) ||
-        SP_IS_TREF(&r)     ||
-        SP_IS_FLOWTEXT(&r) ||
-        SP_IS_FLOWDIV(&r)  ||
-        SP_IS_FLOWPARA(&r) ||
-        SP_IS_FLOWLINE(&r)) {
+    if (is<SPGroup>(&r)    ||
+        is<SPAnchor>(&r)   ||
+        is<SPRoot>(&r)     ||
+        is<SPText>(&r)     ||
+        is<SPTSpan>(&r)    ||
+        is<SPTextPath>(&r) ||
+        is<SPTRef>(&r)     ||
+        is<SPFlowtext>(&r) ||
+        is<SPFlowdiv>(&r)  ||
+        is<SPFlowpara>(&r) ||
+        is<SPFlowline>(&r)) {
         for (auto& child: r.children) {
             update_font_data_recursive(child, font_data);
         }

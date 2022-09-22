@@ -387,7 +387,7 @@ void PathArrayParam::linked_changed(SPObject * /*old_obj*/, SPObject *new_obj, P
     if (to) {
         to->linked_modified_connection.disconnect();
         
-        if (new_obj && SP_IS_ITEM(new_obj)) {
+        if (new_obj && is<SPItem>(new_obj)) {
             to->linked_release_connection.disconnect();
             to->linked_release_connection = new_obj->connectRelease(
                 sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::linked_release), to));
@@ -413,7 +413,7 @@ void PathArrayParam::setPathVector(SPObject *linked_obj, guint /*flags*/, PathAn
     std::optional<SPCurve> curve;
     SPText *text = dynamic_cast<SPText *>(linked_obj);
     if (auto shape = dynamic_cast<SPShape const *>(linked_obj)) {
-        SPLPEItem * lpe_item = SP_LPE_ITEM(linked_obj);
+        auto lpe_item = cast<SPLPEItem>(linked_obj);
         if (_from_original_d) {
             curve = SPCurve::ptr_to_opt(shape->curveForEdit());
         } else if (_allow_only_bspline_spiro && lpe_item && lpe_item->hasPathEffect()){

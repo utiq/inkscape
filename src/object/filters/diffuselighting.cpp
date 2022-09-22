@@ -201,16 +201,16 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeDiffuseLighting::build_r
     // We assume there is at most one child
     diffuselighting->light_type = Inkscape::Filters::NO_LIGHT;
 
-    if (auto l = SP_FEDISTANTLIGHT(firstChild())) {
+    if (auto l = cast<SPFeDistantLight>(firstChild())) {
         diffuselighting->light_type = Inkscape::Filters::DISTANT_LIGHT;
         diffuselighting->light.distant.azimuth = l->azimuth;
         diffuselighting->light.distant.elevation = l->elevation;
-    } else if (auto l = SP_FEPOINTLIGHT(firstChild())) {
+    } else if (auto l = cast<SPFePointLight>(firstChild())) {
         diffuselighting->light_type = Inkscape::Filters::POINT_LIGHT;
         diffuselighting->light.point.x = l->x;
         diffuselighting->light.point.y = l->y;
         diffuselighting->light.point.z = l->z;
-    } else if (auto l = SP_FESPOTLIGHT(firstChild())) {
+    } else if (auto l = cast<SPFeSpotLight>(firstChild())) {
         diffuselighting->light_type = Inkscape::Filters::SPOT_LIGHT;
         diffuselighting->light.spot.x = l->x;
         diffuselighting->light.spot.y = l->y;

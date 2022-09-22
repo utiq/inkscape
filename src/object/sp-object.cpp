@@ -270,8 +270,6 @@ Inkscape::XML::Node const* SPObject::getRepr() const{
 SPObject *sp_object_ref(SPObject *object, SPObject *owner)
 {
     g_return_val_if_fail(object != nullptr, NULL);
-    g_return_val_if_fail(SP_IS_OBJECT(object), NULL);
-    g_return_val_if_fail(!owner || SP_IS_OBJECT(owner), NULL);
 
     Inkscape::Debug::EventTracker<RefEvent> tracker(object);
 
@@ -283,8 +281,6 @@ SPObject *sp_object_ref(SPObject *object, SPObject *owner)
 SPObject *sp_object_unref(SPObject *object, SPObject *owner)
 {
     g_return_val_if_fail(object != nullptr, NULL);
-    g_return_val_if_fail(SP_IS_OBJECT(object), NULL);
-    g_return_val_if_fail(!owner || SP_IS_OBJECT(owner), NULL);
 
     Inkscape::Debug::EventTracker<UnrefEvent> tracker(object);
 
@@ -479,17 +475,17 @@ void SPObject::requestOrphanCollection() {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     // do not remove style or script elements (Bug #276244)
-    if (dynamic_cast<SPStyleElem *>(this)) {
+    if (is<SPStyleElem>(this)) {
         // leave it
-    } else if (dynamic_cast<SPScript *>(this)) {
+    } else if (is<SPScript>(this)) {
         // leave it
-    } else if (dynamic_cast<SPFont*>(this)) {
+    } else if (is<SPFont>(this)) {
         // leave it
-    } else if ((! prefs->getBool("/options/cleanupswatches/value", false)) && SP_IS_PAINT_SERVER(this) && static_cast<SPPaintServer*>(this)->isSwatch() ) {
+    } else if (!prefs->getBool("/options/cleanupswatches/value", false) && is<SPPaintServer>(this) && static_cast<SPPaintServer*>(this)->isSwatch()) {
         // leave it
-    } else if (IS_COLORPROFILE(this)) {
+    } else if (is<Inkscape::ColorProfile>(this)) {
         // leave it
-    } else if (dynamic_cast<LivePathEffectObject *>(this)) {
+    } else if (is<LivePathEffectObject>(this)) {
         document->queueForOrphanCollection(this);
     } else {
         document->queueForOrphanCollection(this);
@@ -518,8 +514,8 @@ void SPObject::_sendDeleteSignalRecursive() {
 void SPObject::deleteObject(bool propagate, bool propagate_descendants)
 {
     sp_object_ref(this, nullptr);
-    if (SP_IS_LPE_ITEM(this)) {
-        SP_LPE_ITEM(this)->removeAllPathEffects(false, propagate_descendants);
+    if (is<SPLPEItem>(this)) {
+        cast<SPLPEItem>(this)->removeAllPathEffects(false, propagate_descendants);
     }
     if (propagate) {
         _delete_signal.emit(this);
@@ -543,7 +539,7 @@ void SPObject::cropToObject(SPObject *except)
 {
     std::vector<SPObject *> toDelete;
     for (auto &child : children) {
-        if (SP_IS_ITEM(&child)) {
+        if (is<SPItem>(&child)) {
             if (child.isAncestorOf(except)) {
                 child.cropToObject(except);
             } else if (&child != except) {
@@ -574,7 +570,7 @@ void SPObject::cropToObjects(std::vector<SPObject *> except_objects)
     }
     std::vector<SPObject *> toDelete;
     for (auto &child : children) {
-        if (SP_IS_ITEM(&child)) {
+        if (is<SPItem>(&child)) {
             std::vector<SPObject *> except_in_child;
             bool child_delete_flag = true;
             for (auto except : except_objects) {
@@ -604,11 +600,7 @@ void SPObject::cropToObjects(std::vector<SPObject *> except_objects)
 
 void SPObject::attach(SPObject *object, SPObject *prev)
 {
-    //g_return_if_fail(parent != NULL);
-    //g_return_if_fail(SP_IS_OBJECT(parent));
     g_return_if_fail(object != nullptr);
-    g_return_if_fail(SP_IS_OBJECT(object));
-    g_return_if_fail(!prev || SP_IS_OBJECT(prev));
     g_return_if_fail(!prev || prev->parent == this);
     g_return_if_fail(!object->parent);
 
@@ -643,10 +635,7 @@ void SPObject::reorder(SPObject* obj, SPObject* prev) {
 
 void SPObject::detach(SPObject *object)
 {
-    //g_return_if_fail(parent != NULL);
-    //g_return_if_fail(SP_IS_OBJECT(parent));
     g_return_if_fail(object != nullptr);
-    g_return_if_fail(SP_IS_OBJECT(object));
     g_return_if_fail(object->parent == this);
 
     children.erase(children.iterator_to(*object));
@@ -814,8 +803,6 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
 #endif
     debug("id=%p, typename=%s", this, g_type_name_from_instance((GTypeInstance*)this));
 
-    //g_assert(object != NULL);
-    //g_assert(SP_IS_OBJECT(object));
     g_assert(document != nullptr);
     g_assert(repr != nullptr);
 
@@ -1116,9 +1103,6 @@ void SPObject::set(SPAttr key, gchar const* value) {
 
 void SPObject::setKeyValue(SPAttr key, gchar const *value)
 {
-    //g_assert(object != NULL);
-    //g_assert(SP_IS_OBJECT(object));
-
     this->set(key, value);
 }
 
@@ -1136,8 +1120,6 @@ void SPObject::readAttr(SPAttr keyid)
 
 void SPObject::readAttr(gchar const *key)
 {
-    //g_assert(object != NULL);
-    //g_assert(SP_IS_OBJECT(object));
     g_assert(key != nullptr);
 
     //XML Tree being used here.
@@ -1647,8 +1629,8 @@ std::string SPObject::generate_unique_id(char const *default_id) const
 void SPObject::_requireSVGVersion(Inkscape::Version version) {
     for ( SPObject::ParentIterator iter=this ; iter ; ++iter ) {
         SPObject *object = iter;
-        if (SP_IS_ROOT(object)) {
-            SPRoot *root = SP_ROOT(object);
+        if (is<SPRoot>(object)) {
+            auto root = cast<SPRoot>(object);
             if ( root->version.svg < version ) {
                 root->version.svg = version;
             }

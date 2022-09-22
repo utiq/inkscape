@@ -378,9 +378,9 @@ LPEToolbar::sel_changed(Inkscape::Selection *selection)
 
     // activate line segment combo box if a single item with LPELineSegment is selected
     SPItem *item = selection->singleItem();
-    if (item && SP_IS_LPE_ITEM(item) && lpetool_item_has_construction(lc, item)) {
+    if (item && is<SPLPEItem>(item) && lpetool_item_has_construction(lc, item)) {
 
-        SPLPEItem *lpeitem = SP_LPE_ITEM(item);
+        auto lpeitem = cast<SPLPEItem>(item);
         Effect* lpe = lpeitem->getCurrentLPE();
         if (lpe && lpe->effectType() == LINE_SEGMENT) {
             LPELineSegment *lpels = static_cast<LPELineSegment*>(lpe);

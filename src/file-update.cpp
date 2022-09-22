@@ -73,9 +73,9 @@ bool is_line(SPObject *i)
 
 void fix_blank_line(SPObject *o)
 {
-    if (SP_IS_TEXT(o))
+    if (is<SPText>(o))
         ((SPText *)o)->rebuildLayout();
-    else if (SP_IS_FLOWTEXT(o))
+    else if (is<SPFlowtext>(o))
         ((SPFlowtext *)o)->rebuildLayout();
 
     SPIFontSize fontsize = o->style->font_size;
@@ -84,10 +84,10 @@ void fix_blank_line(SPObject *o)
     bool beginning = true;
     for (std::vector<SPObject *>::const_iterator ci = cl.begin(); ci != cl.end(); ++ci) {
         SPObject *i = *ci;
-        if ((SP_IS_TSPAN(i) && is_line(i)) || SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i)) {
+        if ((is<SPTSpan>(i) && is_line(i)) || is<SPFlowpara>(i) || is<SPFlowdiv>(i)) {
             if (sp_text_get_length((SPItem *)i) <= 1) { // empty line
                 Inkscape::Text::Layout::iterator pos = te_get_layout((SPItem*)(o))->charIndexToIterator(
-                        ((SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i))?0:((ci==cl.begin())?0:1)) + sp_text_get_length_upto(o,i) );
+                        ((is<SPFlowpara>(i) || is<SPFlowdiv>(i))?0:((ci==cl.begin())?0:1)) + sp_text_get_length_upto(o,i) );
                 sp_te_insert((SPItem *)o, pos, "\u00a0"); //"\u00a0"
                 gchar *l = g_strdup_printf("%f", lineheight.value);
                 gchar *f = g_strdup_printf("%f", fontsize.value);
@@ -113,7 +113,7 @@ void fix_line_spacing(SPObject *o)
     bool inner = false;
     std::vector<SPObject *> cl = o->childList(false);
     for (auto i : cl) {
-        if ((SP_IS_TSPAN(i) && is_line(i)) || SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i)) {
+        if ((is<SPTSpan>(i) && is_line(i)) || is<SPFlowpara>(i) || is<SPFlowdiv>(i)) {
             // if no line-height attribute, set it
             gchar *l = g_strdup_printf("%f", lineheight.value);
             i->style->line_height.readIfUnset(l);
@@ -122,7 +122,7 @@ void fix_line_spacing(SPObject *o)
         inner = true;
     }
     if (inner) {
-        if (SP_IS_TEXT(o)) {
+        if (is<SPText>(o)) {
             o->style->line_height.read("0.00%");
         } else {
             o->style->line_height.read("0.01%");
@@ -154,7 +154,7 @@ void fix_font_size(SPObject *o)
     std::vector<SPObject *> cl = o->childList(false);
     for (auto i : cl) {
         fix_font_size(i);
-        if ((SP_IS_TSPAN(i) && is_line(i)) || SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i)) {
+        if ((is<SPTSpan>(i) && is_line(i)) || is<SPFlowpara>(i) || is<SPFlowdiv>(i)) {
             inner = true;
             gchar *s = g_strdup_printf("%f", fontsize.value);
             if (fontsize.set)
@@ -162,7 +162,7 @@ void fix_font_size(SPObject *o)
             g_free(s);
         }
     }
-    if (inner && (SP_IS_TEXT(o) || SP_IS_FLOWTEXT(o)))
+    if (inner && (is<SPText>(o) || is<SPFlowtext>(o)))
         o->style->font_size.clear();
 }
 
@@ -180,7 +180,7 @@ void fix_osb(SPObject *i)
 // helper function
 void sp_file_text_run_recursive(void (*f)(SPObject *), SPObject *o)
 {
-    if (SP_IS_TEXT(o) || SP_IS_FLOWTEXT(o))
+    if (is<SPText>(o) || is<SPFlowtext>(o))
         f(o);
     else {
         std::vector<SPObject *> cl = o->childList(false);
@@ -232,7 +232,7 @@ void _fix_pre_v1_empty_lines(SPObject *o)
     bool begin = true;
     std::string cur_y = "";
     for (auto ci : cl) {
-        if (!SP_IS_TSPAN(ci))
+        if (!is<SPTSpan>(ci))
             continue;
         if (!is_line(ci))
             continue;
@@ -646,7 +646,7 @@ void sp_file_convert_dpi(SPDocument *doc)
 // Do not use canvas API-specific feComposite operators, they do *not* apply to SVG.
 // https://github.com/w3c/csswg-drafts/issues/5267
 void fix_feComposite(SPObject *i){
-    if (!SP_IS_FECOMPOSITE(i)) return;
+    if (!is<SPFeComposite>(i)) return;
     auto oper = i->getAttribute("operator");
     if (!g_strcmp0(oper, "clear")) {
         i->setAttribute("operator", "arithmetic");

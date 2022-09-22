@@ -709,9 +709,9 @@ static std::vector<SPMeshGradient *> ink_mesh_list_get(SPDocument *source)
 
     std::vector<SPObject *> meshes = source->getResourceList("gradient");
     for (auto meshe : meshes) {
-        if (SP_IS_MESHGRADIENT(meshe) && SP_GRADIENT(meshe) == SP_GRADIENT(meshe)->getArray()) { // only if this is a
+        if (is<SPMeshGradient>(meshe) && cast<SPGradient>(meshe) == cast<SPGradient>(meshe)->getArray()) { // only if this is a
                                                                                                  // root mesh
-            pl.push_back(SP_MESHGRADIENT(meshe));
+            pl.push_back(cast<SPMeshGradient>(meshe));
         }
     }
     return pl;
@@ -980,8 +980,8 @@ SPMeshGradient *PaintSelector::getMeshGradient()
         }
 
         SPObject *mesh_obj = get_stock_item(mesh_name);
-        if (mesh_obj && SP_IS_MESHGRADIENT(mesh_obj)) {
-            mesh = SP_MESHGRADIENT(mesh_obj);
+        if (mesh_obj && is<SPMeshGradient>(mesh_obj)) {
+            mesh = cast<SPMeshGradient>(mesh_obj);
         }
         g_free(mesh_name);
     } else {
@@ -1230,24 +1230,24 @@ PaintSelector::Mode PaintSelector::getModeForStyle(SPStyle const &style, FillOrS
 #ifdef SP_PS_VERBOSE
         g_message("PaintSelector::getModeForStyle(%p, %d)", &style, kind);
         g_message("==== server:%p %s  grad:%s   swatch:%s", server, server->getId(),
-                  (SP_IS_GRADIENT(server) ? "Y" : "n"),
-                  (SP_IS_GRADIENT(server) && SP_GRADIENT(server)->getVector()->isSwatch() ? "Y" : "n"));
+                  (is<SPGradient>(server) ? "Y" : "n"),
+                  (is<SPGradient>(server) && cast<SPGradient>(server)->getVector()->isSwatch() ? "Y" : "n"));
 #endif // SP_PS_VERBOSE
 
 
-        if (server && SP_IS_GRADIENT(server) && SP_GRADIENT(server)->getVector()->isSwatch()) {
+        if (server && is<SPGradient>(server) && cast<SPGradient>(server)->getVector()->isSwatch()) {
             mode = MODE_SWATCH;
-        } else if (SP_IS_LINEARGRADIENT(server)) {
+        } else if (is<SPLinearGradient>(server)) {
             mode = MODE_GRADIENT_LINEAR;
-        } else if (SP_IS_RADIALGRADIENT(server)) {
+        } else if (is<SPRadialGradient>(server)) {
             mode = MODE_GRADIENT_RADIAL;
 #ifdef WITH_MESH
-        } else if (SP_IS_MESHGRADIENT(server)) {
+        } else if (is<SPMeshGradient>(server)) {
             mode = MODE_GRADIENT_MESH;
 #endif
-        } else if (SP_IS_PATTERN(server)) {
+        } else if (is<SPPattern>(server)) {
             mode = MODE_PATTERN;
-        } else if (SP_IS_HATCH(server)) {
+        } else if (is<SPHatch>(server)) {
             mode = MODE_HATCH;
         } else {
             g_warning("file %s: line %d: Unknown paintserver", __FILE__, __LINE__);

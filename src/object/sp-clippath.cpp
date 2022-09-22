@@ -95,7 +95,7 @@ void SPClipPath::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *re
 {
     SPObjectGroup::child_added(child, ref);
 
-    if (auto item = dynamic_cast<SPItem*>(document->getObjectByRepr(child))) {
+    if (auto item = cast<SPItem>(document->getObjectByRepr(child))) {
         for (auto &v : views) {
             auto ac = item->invoke_show(v.drawingitem->drawing(), v.key, SP_ITEM_REFERENCE_FLAGS);
             if (ac) {
@@ -160,7 +160,7 @@ Inkscape::DrawingItem *SPClipPath::show(Inkscape::Drawing &drawing, unsigned key
     auto root = v.drawingitem.get();
 
     for (auto &child : children) {
-        if (auto item = dynamic_cast<SPItem*>(&child)) {
+        if (auto item = cast<SPItem>(&child)) {
             auto ac = item->invoke_show(drawing, key, SP_ITEM_REFERENCE_FLAGS);
             if (ac) {
                 // The order is not important in clippath.
@@ -179,7 +179,7 @@ Inkscape::DrawingItem *SPClipPath::show(Inkscape::Drawing &drawing, unsigned key
 void SPClipPath::hide(unsigned key)
 {
     for (auto &child : children) {
-        if (auto item = dynamic_cast<SPItem*>(&child)) {
+        if (auto item = cast<SPItem>(&child)) {
             item->invoke_hide(key);
         }
     }
@@ -211,7 +211,7 @@ Geom::OptRect SPClipPath::geometricBounds(Geom::Affine const &transform) const
 {
     Geom::OptRect bbox;
     for (auto &child : children) {
-        if (auto item = dynamic_cast<SPItem const*>(&child)) {
+        if (auto item = cast<SPItem>(&child)) {
             bbox.unionWith(item->geometricBounds(item->transform * transform));
         }
     }
@@ -246,7 +246,7 @@ SPClipPath::View::View(DrawingItemPtr<Inkscape::DrawingGroup> drawingitem, Geom:
 
 bool SPClipPathReference::_acceptObject(SPObject *obj) const
 {
-    if (!dynamic_cast<SPClipPath*>(obj)) {
+    if (!is<SPClipPath>(obj)) {
         return false;
     }
 

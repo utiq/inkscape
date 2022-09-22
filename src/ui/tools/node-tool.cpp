@@ -353,11 +353,11 @@ void gather_items(NodeTool *nt, SPItem *base, SPObject *obj, Inkscape::UI::Shape
     }
 
     //XML Tree being used directly here while it shouldn't be.
-    if (role != SHAPE_ROLE_NORMAL && (SP_IS_GROUP(obj) || SP_IS_OBJECTGROUP(obj))) {
+    if (role != SHAPE_ROLE_NORMAL && (is<SPGroup>(obj) || is<SPObjectGroup>(obj))) {
         for (auto& c: obj->children) {
             gather_items(nt, base, &c, role, s);
         }
-    } else if (SP_IS_ITEM(obj)) {
+    } else if (is<SPItem>(obj)) {
         SPObject *object = obj;
         SPItem *item = dynamic_cast<SPItem *>(obj);
         ShapeRecord r;
@@ -406,9 +406,9 @@ void NodeTool::selection_changed(Inkscape::Selection *sel) {
     }
 
     for (const auto & r : shapes) {
-        if (this->_shape_editors.find(SP_ITEM(r.object)) == this->_shape_editors.end()) {
+        if (this->_shape_editors.find(cast<SPItem>(r.object)) == this->_shape_editors.end()) {
             auto si = std::make_unique<ShapeEditor>(_desktop, r.edit_transform);
-            SPItem *item = SP_ITEM(r.object);
+            auto item = cast<SPItem>(r.object);
             si->set_item(item);
             this->_shape_editors.insert({item, std::move(si)});
         }

@@ -82,11 +82,10 @@ SPFilter *new_filter(SPDocument *document)
     Inkscape::GC::release(repr);
 
     // get corresponding object
-    SPFilter *f = SP_FILTER( document->getObjectByRepr(repr) );
+    auto f = cast<SPFilter>( document->getObjectByRepr(repr) );
     
     
     g_assert(f != nullptr);
-    g_assert(SP_IS_FILTER(f));
 
     return f;
 }
@@ -151,10 +150,9 @@ filter_add_primitive(SPFilter *filter, const Inkscape::Filters::FilterPrimitiveT
     Inkscape::GC::release(repr);
     
     // get corresponding object
-    SPFilterPrimitive *prim = SP_FILTER_PRIMITIVE( filter->document->getObjectByRepr(repr) );
+    auto prim = cast<SPFilterPrimitive>( filter->document->getObjectByRepr(repr) );
  
     g_assert(prim != nullptr);
-    g_assert(SP_IS_FILTER_PRIMITIVE(prim));
 
     return prim;
 }
@@ -207,13 +205,11 @@ new_filter_gaussian_blur (SPDocument *document, gdouble radius, double expansion
     Inkscape::GC::release(repr);
 
     // get corresponding object
-    SPFilter *f = SP_FILTER( document->getObjectByRepr(repr) );
-    SPGaussianBlur *b = SP_GAUSSIANBLUR( document->getObjectByRepr(b_repr) );
+    auto f = cast<SPFilter>( document->getObjectByRepr(repr) );
+    auto b = cast<SPGaussianBlur>( document->getObjectByRepr(b_repr) );
     
     g_assert(f != nullptr);
-    g_assert(SP_IS_FILTER(f));
     g_assert(b != nullptr);
-    g_assert(SP_IS_GAUSSIANBLUR(b));
 
     return f;
 }
@@ -251,7 +247,7 @@ new_filter_blend_gaussian_blur (SPDocument *document, const char *blendmode, gdo
     Inkscape::GC::release(repr);
  
     // get corresponding object
-    SPFilter *f = SP_FILTER( document->getObjectByRepr(repr) );
+    auto f = cast<SPFilter>( document->getObjectByRepr(repr) );
     // Gaussian blur primitive
     if(radius != 0) {
         //create feGaussianBlur node
@@ -270,9 +266,8 @@ new_filter_blend_gaussian_blur (SPDocument *document, const char *blendmode, gdo
         repr->appendChild(b_repr);
         Inkscape::GC::release(b_repr);
 
-        SPGaussianBlur *b = SP_GAUSSIANBLUR( document->getObjectByRepr(b_repr) );
+        auto b = cast<SPGaussianBlur>( document->getObjectByRepr(b_repr) );
         g_assert(b != nullptr);
-        g_assert(SP_IS_GAUSSIANBLUR(b));
     }
     // Blend primitive
     if(strcmp(blendmode, "normal")) {
@@ -292,13 +287,11 @@ new_filter_blend_gaussian_blur (SPDocument *document, const char *blendmode, gdo
             root->setAttribute("enable-background", "new");
         }
 
-        SPFeBlend *b = SP_FEBLEND(document->getObjectByRepr(b_repr));
+        auto b = cast<SPFeBlend>(document->getObjectByRepr(b_repr));
         g_assert(b != nullptr);
-        g_assert(SP_IS_FEBLEND(b));
     }
     
     g_assert(f != nullptr);
-    g_assert(SP_IS_FILTER(f));
  
     return f;
 }
@@ -343,7 +336,7 @@ SPFilter *modify_filter_gaussian_blur_from_item(SPDocument *document, SPItem *it
         SPDefs *defs = document->getDefs();
         defs->appendChild(repr);
 
-        filter = SP_FILTER( document->getObjectByRepr(repr) );
+        filter = cast<SPFilter>( document->getObjectByRepr(repr) );
         Inkscape::GC::release(repr);
     }
 
@@ -532,15 +525,15 @@ SPBlendMode filter_get_legacy_blend(SPObject *item)
 bool filter_is_single_gaussian_blur(SPFilter *filter)
 {
     return (filter->children.size() == 1 &&
-            SP_IS_GAUSSIANBLUR(&filter->children.front()));
+            is<SPGaussianBlur>(&filter->children.front()));
 }
 
 double get_single_gaussian_blur_radius(SPFilter *filter)
 {
     if (filter->children.size() == 1 &&
-        SP_IS_GAUSSIANBLUR(&filter->children.front())) {
+        is<SPGaussianBlur>(&filter->children.front())) {
 
-        SPGaussianBlur *gb = SP_GAUSSIANBLUR(filter->firstChild());
+        auto gb = cast<SPGaussianBlur>(filter->firstChild());
         double x = gb->get_std_deviation().getNumber();
         double y = gb->get_std_deviation().getOptNumber();
         if (x > 0 && y > 0) {

@@ -415,8 +415,8 @@ void
 NodeToolbar::sel_changed(Inkscape::Selection *selection)
 {
     SPItem *item = selection->singleItem();
-    if (item && SP_IS_LPE_ITEM(item)) {
-       if (SP_LPE_ITEM(item)->hasPathEffect()) {
+    if (item && is<SPLPEItem>(item)) {
+       if (cast<SPLPEItem>(item)->hasPathEffect()) {
            _nodes_lpeedit_item->set_sensitive(true);
        } else {
            _nodes_lpeedit_item->set_sensitive(false);

@@ -314,7 +314,7 @@ void sp_validate_marker(SPMarker *sp_marker, SPDocument *doc) {
 
     Geom::OptRect r;
     for (auto *i : items) {
-        SPItem *item = dynamic_cast<SPItem*>(i);
+        auto item = cast<SPItem>(i);
         r.unionWith(item->desktopVisualBounds());
     }
 
@@ -518,7 +518,7 @@ const gchar *generate_marker(std::vector<Inkscape::XML::Node*> &reprs, Geom::Rec
     SPObject *mark_object = document->getObjectById(mark_id);
 
     for (auto node : reprs){
-        SPItem *copy = SP_ITEM(mark_object->appendChildRepr(node));
+        auto copy = cast<SPItem>(mark_object->appendChildRepr(node));
 
         Geom::Affine dup_transform;
         if (!sp_svg_transform_read (node->attribute("transform"), &dup_transform))

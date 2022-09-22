@@ -109,8 +109,8 @@ SPStop* SPStop::getNextStop() {
     SPStop *result = nullptr;
 
     for (SPObject* obj = getNext(); obj && !result; obj = obj->getNext()) {
-        if (SP_IS_STOP(obj)) {
-            result = SP_STOP(obj);
+        if (is<SPStop>(obj)) {
+            result = cast<SPStop>(obj);
         }
     }
 
@@ -122,8 +122,8 @@ SPStop* SPStop::getPrevStop() {
 
     for (SPObject* obj = getPrev(); obj; obj = obj->getPrev()) {
         // The closest previous SPObject that is an SPStop *should* be ourself.
-        if (SP_IS_STOP(obj)) {
-            SPStop* stop = SP_STOP(obj);
+        if (is<SPStop>(obj)) {
+            auto stop = cast<SPStop>(obj);
             // Sanity check to ensure we have a proper sibling structure.
             if (stop->getNextStop() == this) {
                 result = stop;

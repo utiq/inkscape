@@ -252,8 +252,8 @@ Persp3D::document_first_persp(SPDocument *document)
 {
     Persp3D *first = nullptr;
     for (auto& child: document->getDefs()->children) {
-        if (SP_IS_PERSP3D(&child)) {
-            first = SP_PERSP3D(&child);
+        if (is<Persp3D>(&child)) {
+            first = cast<Persp3D>(&child);
             break;
         }
     }
@@ -560,8 +560,8 @@ void
 Persp3D::print_debugging_info_all(SPDocument *document)
 {
     for (auto& child: document->getDefs()->children) {
-        if (SP_IS_PERSP3D(&child)) {
-            SP_PERSP3D(&child)->print_debugging_info();
+        if (is<Persp3D>(&child)) {
+            cast<Persp3D>(&child)->print_debugging_info();
         }
     }
     Persp3D::print_all_selected();
@@ -575,7 +575,7 @@ Persp3D::print_all_selected() {
     std::list<Persp3D *> sel_persps = SP_ACTIVE_DESKTOP->getSelection()->perspList();
 
     for (auto & sel_persp : sel_persps) {
-        Persp3D *persp = SP_PERSP3D(sel_persp);
+        auto persp = sel_persp;
         Persp3DImpl *persp_impl = persp->perspective_impl;
         g_print ("  %s (%d):  ", persp->getRepr()->attribute("id"), persp->perspective_impl->my_counter);
         for (auto & boxe : persp_impl->boxes) {

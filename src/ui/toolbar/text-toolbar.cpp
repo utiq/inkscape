@@ -1041,13 +1041,13 @@ TextToolbar::align_mode_changed(int mode)
                         break;
                 }
             }
-            Geom::Point XY = SP_TEXT(item)->attributes.firstXY();
+            Geom::Point XY = cast<SPText>(item)->attributes.firstXY();
             if (axis == Geom::X) {
                 XY = XY + Geom::Point (move, 0);
             } else {
                 XY = XY + Geom::Point (0, move);
             }
-            SP_TEXT(item)->attributes.setFirstXY(XY);
+            cast<SPText>(item)->attributes.setFirstXY(XY);
             item->updateRepr();
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }

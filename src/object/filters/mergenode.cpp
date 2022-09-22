@@ -45,7 +45,7 @@ void SPFeMergeNode::set(SPAttr key, char const *value)
 
 void SPFeMergeNode::invalidate_parent_slots()
 {
-    if (auto merge = dynamic_cast<SPFeMerge*>(parent)) {
+    if (auto merge = cast<SPFeMerge>(parent)) {
         merge->invalidate_parent_slots();
     }
 }

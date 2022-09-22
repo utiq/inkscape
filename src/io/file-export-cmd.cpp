@@ -513,14 +513,14 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &export_filen
             continue;
         }
 
-        if (!SP_IS_ITEM (object)) {
+        if (!is<SPItem>(object)) {
             std::cerr << "InkFileExportCmd::do_export_png: "
                       << "Object with id=\"" << object_id.raw()
                       << "\" is not a visible item. Skipping." << std::endl;
             continue;
         }
 
-        items.push_back(SP_ITEM(object));
+        items.push_back(cast<SPItem>(object));
     }
 
     // Export pages instead of objects

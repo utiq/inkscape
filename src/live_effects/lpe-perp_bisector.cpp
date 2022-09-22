@@ -77,7 +77,7 @@ KnotHolderEntityEnd::bisector_end_set(Geom::Point const &p, guint state, bool le
     }
 
     // FIXME: this should not directly ask for updating the item. It should write to SVG, which triggers updating.
-    sp_lpe_item_update_patheffect (SP_LPE_ITEM(item), true, true);
+    sp_lpe_item_update_patheffect (cast<SPLPEItem>(item), true, true);
 }
 
 void
@@ -114,7 +114,7 @@ LPEPerpBisector::doOnApply (SPLPEItem const*/*lpeitem*/)
 {
     /* make the path a straight line */
     /**
-    SPCurve* curve = sp_path_getCurveForEdit (SP_PATH(lpeitem)); // TODO: Should we use sp_shape_get_curve()?
+    SPCurve* curve = sp_path_getCurveForEdit (cast<SPPath>(lpeitem)); // TODO: Should we use sp_shape_get_curve()?
 
     Geom::Point A(curve->first_point());
     Geom::Point B(curve->last_point());
@@ -122,8 +122,8 @@ LPEPerpBisector::doOnApply (SPLPEItem const*/*lpeitem*/)
     SPCurve *c = new SPCurve();
     c->moveto(A);
     c->lineto(B);
-    // TODO: Why doesn't sp_path_set_curve_before_LPE(SP_PATH(lpeitem), c, TRUE, true) work?
-    SP_PATH(lpeitem)->original_curve = c->ref();
+    // TODO: Why doesn't sp_path_set_curve_before_LPE(cast<SPPath>(lpeitem), c, TRUE, true) work?
+    cast<SPPath>(lpeitem)->original_curve = c->ref();
     c->unref();
     **/
 }

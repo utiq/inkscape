@@ -21,7 +21,7 @@ namespace LivePathEffect {
 /**
  * Updates the \c boundingbox_X and \c boundingbox_Y values from the geometric bounding box of \c lpeitem.
  *
- * @pre   lpeitem must have an existing geometric boundingbox (usually this is guaranteed when: \code SP_SHAPE(lpeitem)->curve != NULL \endcode )
+ * @pre   lpeitem must have an existing geometric boundingbox (usually this is guaranteed when: \code cast<SPShape>(lpeitem)->curve != NULL \endcode )
  *        It's not possible to run LPEs on items without their original-d having a bbox.
  * @param lpeitem   This is not allowed to be NULL.
  * @param absolute  Determines whether the bbox should be calculated of the untransformed lpeitem (\c absolute = \c false)

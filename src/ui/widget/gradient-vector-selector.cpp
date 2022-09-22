@@ -104,7 +104,6 @@ void GradientVectorSelector::set_gradient(SPDocument *doc, SPGradient *gr)
     static gboolean suppress = FALSE;
 
     g_return_if_fail(!gr || (doc != nullptr));
-    g_return_if_fail(!gr || SP_IS_GRADIENT(gr));
     g_return_if_fail(!gr || (gr->document == doc));
     g_return_if_fail(!gr || gr->hasStops());
 
@@ -195,9 +194,9 @@ GradientVectorSelector::rebuild_gui_full()
     if (_gr) {
         auto gradients = _gr->document->getResourceList("gradient");
         for (auto gradient : gradients) {
-            SPGradient* grad = SP_GRADIENT(gradient);
+            auto grad = cast<SPGradient>(gradient);
             if ( grad->hasStops() && (grad->isSwatch() == _swatched) ) {
-                gl.push_back(SP_GRADIENT(gradient));
+                gl.push_back(cast<SPGradient>(gradient));
             }
         }
     }

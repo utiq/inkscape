@@ -127,7 +127,7 @@ std::optional<SPCurve> curve_for_item(SPItem *item)
         return SPCurve::ptr_to_opt(path->curveForEdit());
     } else if (auto shape = dynamic_cast<SPShape const *>(item)) {
         return SPCurve::ptr_to_opt(shape->curve());
-    } else if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
+    } else if (is<SPText>(item) || is<SPFlowtext>(item)) {
         return te_get_layout(item)->convertToCurves();
     } else if (auto image = dynamic_cast<SPImage const *>(item)) {
         return SPCurve::ptr_to_opt(image->get_curve());
@@ -144,7 +144,7 @@ std::optional<SPCurve> curve_for_item_before_LPE(SPItem *item)
 
     if (auto shape = dynamic_cast<SPShape const *>(item)) {
         return SPCurve::ptr_to_opt(shape->curveForEdit());
-    } else if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
+    } else if (is<SPText>(item) || is<SPFlowtext>(item)) {
         return te_get_layout(item)->convertToCurves();
     } else if (auto image = dynamic_cast<SPImage const *>(item)) {
         return SPCurve::ptr_to_opt(image->get_curve());

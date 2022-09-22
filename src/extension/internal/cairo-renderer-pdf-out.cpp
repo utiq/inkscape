@@ -78,7 +78,7 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
     bool pageBoundingBox = !flags.drawing_only;
     if (exportId && strcmp(exportId, "")) {
         // we want to export the given item only
-        base = SP_ITEM(doc->getObjectById(exportId));
+        base = cast<SPItem>(doc->getObjectById(exportId));
         if (!base) {
             throw Inkscape::Extension::Output::export_id_not_found(exportId);
         }

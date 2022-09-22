@@ -313,11 +313,11 @@ void GradientTool::add_stops_between_selected_stops()
         SPStop *next_stop = *j;
         gfloat offset = 0.5*(this_stop->offset + next_stop->offset);
         SPObject *parent = this_stop->parent;
-        if (SP_IS_GRADIENT (parent)) {
+        if (is<SPGradient>(parent)) {
             doc = parent->document;
-            SPStop *new_stop = sp_vector_add_stop (SP_GRADIENT (parent), this_stop, next_stop, offset);
+            SPStop *new_stop = sp_vector_add_stop (cast<SPGradient>(parent), this_stop, next_stop, offset);
             new_stops.push_back(new_stop);
-            SP_GRADIENT(parent)->ensureVector();
+            cast<SPGradient>(parent)->ensureVector();
         }
     }
 

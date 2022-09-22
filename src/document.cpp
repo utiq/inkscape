@@ -279,9 +279,9 @@ void SPDocument::setCurrentPersp3D(Persp3D * const persp) {
 
 void SPDocument::getPerspectivesInDefs(std::vector<Persp3D*> &list) const
 {
-    for (auto& i: root->defs->children) {
-        if (SP_IS_PERSP3D(&i)) {
-            list.push_back(SP_PERSP3D(&i));
+    for (auto &c : root->defs->children) {
+        if (auto p = cast<Persp3D>(&c)) {
+            list.emplace_back(p);
         }
     }
 }
@@ -1457,7 +1457,7 @@ static std::vector<SPItem*> &find_items_in_area(std::vector<SPItem*> &s,
                                                 bool take_groups = true,
                                                 bool enter_groups = false)
 {
-    g_return_val_if_fail(SP_IS_GROUP(group), s);
+    g_return_val_if_fail(group, s);
 
     for (auto& o: group->children) {
         if (SPItem *item = dynamic_cast<SPItem *>(&o)) {
@@ -1499,8 +1499,8 @@ SPItem *SPDocument::getItemFromListAtPointBottom(unsigned int dkey, SPGroup *gro
         if (bottomMost) {
             break;
         }
-        if (SP_IS_ITEM(&o)) {
-            SPItem *item = SP_ITEM(&o);
+        if (is<SPItem>(&o)) {
+            auto item = cast<SPItem>(&o);
             Inkscape::DrawingItem *arenaitem = item->get_arenaitem(dkey);
 
             if (arenaitem) {
@@ -1514,9 +1514,9 @@ SPItem *SPDocument::getItemFromListAtPointBottom(unsigned int dkey, SPGroup *gro
                 }
             }
 
-            if (!bottomMost && SP_IS_GROUP(&o)) {
+            if (!bottomMost && is<SPGroup>(&o)) {
                 // return null if not found:
-                bottomMost = getItemFromListAtPointBottom(dkey, SP_GROUP(&o), list, p, take_insensitive);
+                bottomMost = getItemFromListAtPointBottom(dkey, cast<SPGroup>(&o), list, p, take_insensitive);
             }
         }
     }
@@ -1531,14 +1531,14 @@ The list can be persisted, which improves "find at multiple points" speed.
 void SPDocument::build_flat_item_list(unsigned int dkey, SPGroup *group, gboolean into_groups) const
 {
     for (auto& o: group->children) {
-        if (!SP_IS_ITEM(&o)) {
+        if (!is<SPItem>(&o)) {
             continue;
         }
 
-        if (SP_IS_GROUP(&o) && (SP_GROUP(&o)->effectiveLayerMode(dkey) == SPGroup::LAYER || into_groups)) {
-            build_flat_item_list(dkey, SP_GROUP(&o), into_groups);
+        if (is<SPGroup>(&o) && (cast<SPGroup>(&o)->effectiveLayerMode(dkey) == SPGroup::LAYER || into_groups)) {
+            build_flat_item_list(dkey, cast<SPGroup>(&o), into_groups);
         } else {
-            SPItem *child = SP_ITEM(&o);
+            auto child = cast<SPItem>(&o);
             if (child->isVisibleAndUnlocked(dkey)) {
                 _node_cache.push_front(child);
             }
@@ -1606,17 +1606,17 @@ static SPItem *find_group_at_point(unsigned int dkey, SPGroup *group, Geom::Poin
     gdouble delta = prefs->getDouble("/options/cursortolerance/value", 1.0);
 
     for (auto& o: group->children) {
-        if (!SP_IS_ITEM(&o)) {
+        if (!is<SPItem>(&o)) {
             continue;
         }
-        if (SP_IS_GROUP(&o) && SP_GROUP(&o)->effectiveLayerMode(dkey) == SPGroup::LAYER) {
-            SPItem *newseen = find_group_at_point(dkey, SP_GROUP(&o), p);
+        if (is<SPGroup>(&o) && cast<SPGroup>(&o)->effectiveLayerMode(dkey) == SPGroup::LAYER) {
+            SPItem *newseen = find_group_at_point(dkey, cast<SPGroup>(&o), p);
             if (newseen) {
                 seen = newseen;
             }
         }
-        if (SP_IS_GROUP(&o) && SP_GROUP(&o)->effectiveLayerMode(dkey) != SPGroup::LAYER ) {
-            SPItem *child = SP_ITEM(&o);
+        if (is<SPGroup>(&o) && cast<SPGroup>(&o)->effectiveLayerMode(dkey) != SPGroup::LAYER ) {
+            auto child = cast<SPItem>(&o);
             Inkscape::DrawingItem *arenaitem = child->get_arenaitem(dkey);
             if (arenaitem) {
                 arenaitem->drawing().update();
@@ -1739,7 +1739,6 @@ bool SPDocument::addResource(gchar const *key, SPObject *object)
     g_return_val_if_fail(key != nullptr, false);
     g_return_val_if_fail(*key != '\0', false);
     g_return_val_if_fail(object != nullptr, false);
-    g_return_val_if_fail(SP_IS_OBJECT(object), false);
 
     bool result = false;
 
@@ -1773,7 +1772,6 @@ bool SPDocument::removeResource(gchar const *key, SPObject *object)
     g_return_val_if_fail(key != nullptr, false);
     g_return_val_if_fail(*key != '\0', false);
     g_return_val_if_fail(object != nullptr, false);
-    g_return_val_if_fail(SP_IS_OBJECT(object), false);
 
     bool result = false;
 
@@ -1842,7 +1840,7 @@ static unsigned int objects_in_document(SPDocument *document)
  */
 static void vacuum_document_recursive(SPObject *obj)
 {
-    if (SP_IS_DEFS(obj)) {
+    if (is<SPDefs>(obj)) {
         for (auto& def: obj->children) {
             // fixme: some inkscape-internal nodes in the future might not be collectable
             def.requestOrphanCollection();
@@ -2067,7 +2065,7 @@ void SPDocument::_importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, 
         // Prevent duplication of symbols... could be more clever.
         // The tag "_inkscape_duplicate" is added to "id" by ClipboardManagerImpl::copySymbol().
         // We assume that symbols are in defs section (not required by SVG spec).
-        if (src && SP_IS_SYMBOL(src)) {
+        if (src && is<SPSymbol>(src)) {
 
             Glib::ustring id = src->getRepr()->attribute("id");
             size_t pos = id.find( "_inkscape_duplicate" );
@@ -2078,7 +2076,7 @@ void SPDocument::_importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, 
 
                 // Check that it really is a duplicate
                 for (auto& trg: getDefs()->children) {
-                    if (SP_IS_SYMBOL(&trg) && src != &trg) {
+                    if (is<SPSymbol>(&trg) && src != &trg) {
                         std::string id2 = trg.getRepr()->attribute("id");
 
                         if( !id.compare( id2 ) ) {

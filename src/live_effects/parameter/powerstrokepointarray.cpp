@@ -224,7 +224,7 @@ PowerStrokePointArrayParamKnotHolderEntity::knot_set(Geom::Point const &p, Geom:
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         prefs->setDouble("/live_effects/powerstroke/width", offset);
     }
-    sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+    sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), false, false);
 }
 
 Geom::Point

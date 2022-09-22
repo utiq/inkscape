@@ -592,7 +592,7 @@ bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
     case SP_CONNECTOR_CONTEXT_REROUTING:
     {
         gobble_motion_events(GDK_BUTTON1_MASK);
-        g_assert(SP_IS_PATH(clickeditem));
+        g_assert(is<SPPath>(clickeditem));
 
         m.setup(_desktop);
         m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_OTHER_HANDLE);
@@ -601,7 +601,7 @@ bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
         // Update the hidden path
         auto i2d = clickeditem->i2dt_affine();
         auto d2i = i2d.inverse();
-        auto path = SP_PATH(clickeditem);
+        auto path = cast<SPPath>(clickeditem);
         auto curve = *path->curve();
         if (clickedhandle == endpt_handle[0]) {
             auto o = endpt_handle[1]->pos;
@@ -761,7 +761,7 @@ void ConnectorTool::_reroutingFinish(Geom::Point *const p)
         }
     }
     this->clickeditem->setHidden(false);
-    sp_conn_reroute_path_immediate(SP_PATH(this->clickeditem));
+    sp_conn_reroute_path_immediate(cast<SPPath>(this->clickeditem));
     this->clickeditem->updateRepr();
     DocumentUndo::done(doc, _("Reroute connector"), INKSCAPE_ICON("draw-connector"));
     this->cc_set_active_conn(this->clickeditem);
@@ -867,7 +867,7 @@ void ConnectorTool::_flushWhite(SPCurve *c)
 
         /* Attach repr */
         auto layer = currentLayer();
-        this->newconn = SP_ITEM(layer->appendChildRepr(repr));
+        this->newconn = cast<SPItem>(layer->appendChildRepr(repr));
         this->newconn->transform = layer->i2doc_affine().inverse();
 
         bool connection = false;
@@ -896,7 +896,7 @@ void ConnectorTool::_flushWhite(SPCurve *c)
 
         if (connection) {
             // Adjust endpoints to shape edge.
-            sp_conn_reroute_path_immediate(SP_PATH(this->newconn));
+            sp_conn_reroute_path_immediate(cast<SPPath>(this->newconn));
             this->newconn->updateRepr();
         }
 
@@ -1136,9 +1136,9 @@ void ConnectorTool::_setActiveShape(SPItem *item)
 
 void ConnectorTool::cc_set_active_conn(SPItem *item)
 {
-    g_assert( SP_IS_PATH(item) );
+    g_assert( is<SPPath>(item) );
 
-    const SPCurve *curve = SP_PATH(item)->curveForEdit();
+    const SPCurve *curve = cast<SPPath>(item)->curveForEdit();
     Geom::Affine i2dt = item->i2dt_affine();
 
     if (this->active_conn == item) {
@@ -1248,7 +1248,7 @@ static bool cc_item_is_shape(SPItem *item)
             // Open paths are connectors.
             return false;
         }
-    } else if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
+    } else if (is<SPText>(item) || is<SPFlowtext>(item)) {
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         if (prefs->getBool("/tools/connector/ignoretext", true)) {
             // Don't count text as a shape we can connect connector to.
@@ -1261,9 +1261,9 @@ static bool cc_item_is_shape(SPItem *item)
 
 bool cc_item_is_connector(SPItem *item)
 {
-    if (SP_IS_PATH(item)) {
-        bool closed = SP_PATH(item)->curveForEdit()->is_closed();
-        if (SP_PATH(item)->connEndPair.isAutoRoutingConn() && !closed) {
+    if (is<SPPath>(item)) {
+        bool closed = cast<SPPath>(item)->curveForEdit()->is_closed();
+        if (cast<SPPath>(item)->connEndPair.isAutoRoutingConn() && !closed) {
             // To be considered a connector, an object must be a non-closed
             // path that is marked with a "inkscape:connector-type" attribute.
             return true;

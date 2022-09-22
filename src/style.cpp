@@ -417,7 +417,6 @@ SPStyle::SPStyle(SPDocument *document_in, SPObject *object_in) :
 
     object = object_in;
     if( object ) {
-        g_assert( SP_IS_OBJECT(object) );
         document = object->document;
         release_connection =
             object->connectRelease(sigc::bind<1>(sigc::ptr_fun(&sp_style_object_release), this));
@@ -630,7 +629,6 @@ SPStyle::readFromObject( SPObject *object ) {
     // std::cout << "SPStyle::readFromObject: "<< (object->getId()?object->getId():"null") << std::endl;
 
     g_return_if_fail(object != nullptr);
-    g_return_if_fail(SP_IS_OBJECT(object));
 
     Inkscape::XML::Node *repr = object->getRepr();
     g_return_if_fail(repr != nullptr);
@@ -1165,7 +1163,7 @@ void sp_style_filter_ref_changed(SPObject *old_ref, SPObject *ref, SPStyle *styl
         style->filter_modified_connection.disconnect();
     }
 
-    if (SP_IS_FILTER(ref)) {
+    if (is<SPFilter>(ref)) {
         static_cast<SPFilter*>(ref)->_refcount++;
         style->filter_modified_connection = ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_filter_ref_modified), style));
     }
@@ -1210,7 +1208,7 @@ void sp_style_fill_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, SP
         style->fill_ps_modified_connection.disconnect();
     }
 
-    if (SP_IS_PAINT_SERVER(ref)) {
+    if (is<SPPaintServer>(ref)) {
         style->fill_ps_modified_connection = ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_paint_server_ref_modified), style));
     }
 
@@ -1227,7 +1225,7 @@ void sp_style_stroke_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, 
         style->stroke_ps_modified_connection.disconnect();
     }
 
-    if (SP_IS_PAINT_SERVER(ref)) {
+    if (is<SPPaintServer>(ref)) {
         style->stroke_ps_modified_connection = ref->connectModified(sigc::bind(sigc::ptr_fun(&sp_style_paint_server_ref_modified), style));
     }
 

@@ -153,7 +153,7 @@ void Box3DSide::set_shape() {
 
     SPObject *parent = this->parent;
 
-    SPBox3D *box = dynamic_cast<SPBox3D *>(parent);
+    auto box = cast<SPBox3D>(parent);
     if (!box) {
         g_warning("Parent of 3D box side is not a 3D box.");
         return;
@@ -244,7 +244,7 @@ box3d_side_compute_corner_ids(Box3DSide *side, unsigned int corners[4]) {
 
 Persp3D *
 Box3DSide::perspective() const {
-    SPBox3D *box = dynamic_cast<SPBox3D *>(this->parent);
+    auto box = cast<SPBox3D>(parent);
     return box ? box->persp_ref->getObject() : nullptr;
 }
 

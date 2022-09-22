@@ -98,7 +98,7 @@ void SPFilterPrimitive::update(SPCtx *ctx, unsigned flags)
     auto ictx = static_cast<SPItemCtx const*>(ctx);
 
     // Do here since we know viewport (Bounding box case handled during rendering)
-    if (auto parent_filter = dynamic_cast<SPFilter const*>(parent);
+    if (auto parent_filter = cast<SPFilter>(parent);
         parent_filter &&
         parent_filter->primitiveUnits == SP_FILTER_UNITS_USERSPACEONUSE)
     {
@@ -123,7 +123,7 @@ Inkscape::XML::Node *SPFilterPrimitive::write(Inkscape::XML::Document *doc, Inks
 
 void SPFilterPrimitive::invalidate_parent_slots()
 {
-    if (auto filter = dynamic_cast<SPFilter*>(parent)) {
+    if (auto filter = cast<SPFilter>(parent)) {
         filter->invalidate_slots();
     }
 }

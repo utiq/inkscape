@@ -508,7 +508,7 @@ LPEMeasureSegments::createTextLabel(Geom::Point pos, size_t counter, double leng
     rstring->setContent(label_value.c_str());
     // this boring hack is to update the text with document scale inituialy loaded without root transform
     if (elemref) {
-        Geom::OptRect bounds = SP_ITEM(elemref)->geometricBounds();
+        Geom::OptRect bounds = cast<SPItem>(elemref)->geometricBounds();
         if (bounds) {
             anotation_width = bounds->width();
             rtext->setAttributeSvgDouble("x", pos[Geom::X] - (anotation_width / 2.0));
@@ -649,7 +649,7 @@ LPEMeasureSegments::createLine(Geom::Point start,Geom::Point end, Glib::ustring 
 void
 LPEMeasureSegments::doOnApply(SPLPEItem const* lpeitem)
 {
-    if (!SP_IS_SHAPE(lpeitem)) {
+    if (!is<SPShape>(lpeitem)) {
         g_warning("LPE measure line can only be applied to shapes (not groups).");
         SPLPEItem * item = const_cast<SPLPEItem*>(lpeitem);
         item->removeCurrentPathEffect(false);
@@ -895,7 +895,7 @@ LPEMeasureSegments::doBeforeEffect (SPLPEItem const* lpeitem)
             prevsatellitecount = satellites.size();
             for (auto & iter : satellites) {
                 SPObject *obj;
-                if (iter && iter->isAttached() && iter->getActive() && (obj = iter->getObject()) && SP_IS_ITEM(obj)) {
+                if (iter && iter->isAttached() && iter->getActive() && (obj = iter->getObject()) && is<SPItem>(obj)) {
                     SPItem * item = dynamic_cast<SPItem *>(obj);
                     if (item) {
                         Geom::Affine affinetransform_sub = i2anc_affine(item, document->getRoot());
@@ -1269,7 +1269,7 @@ LPEMeasureSegments::processObjects(LPEAction lpe_action)
                     item->deleteObject(true);
                 } else {
                     elemnode->removeAttribute("sodipodi:insensitive");
-                    if (!SP_IS_DEFS(item->parent)) {
+                    if (!is<SPDefs>(item->parent)) {
                         item->moveTo(sp_lpe_item, false);
                     }
                 }

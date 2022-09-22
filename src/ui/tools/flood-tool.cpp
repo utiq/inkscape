@@ -436,7 +436,7 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
 
         SPObject *reprobj = document->getObjectByRepr(pathRepr);
         if (reprobj) {
-            SP_ITEM(reprobj)->doWriteTransform(transform);
+            cast<SPItem>(reprobj)->doWriteTransform(transform);
             
             // premultiply the item transform by the accumulated parent transform in the paste layer
             Geom::Affine local (layer->i2doc_affine());
@@ -457,13 +457,13 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
             if (union_with_selection) {
                 desktop->messageStack()->flashF( Inkscape::WARNING_MESSAGE,
                     ngettext("Area filled, path with <b>%d</b> node created and unioned with selection.","Area filled, path with <b>%d</b> nodes created and unioned with selection.",
-                    SP_PATH(reprobj)->nodesInPath()), SP_PATH(reprobj)->nodesInPath() );
+                    cast<SPPath>(reprobj)->nodesInPath()), cast<SPPath>(reprobj)->nodesInPath() );
                 selection->add(reprobj);
                 selection->pathUnion(true);
             } else {
                 desktop->messageStack()->flashF( Inkscape::WARNING_MESSAGE,
                     ngettext("Area filled, path with <b>%d</b> node created.","Area filled, path with <b>%d</b> nodes created.",
-                    SP_PATH(reprobj)->nodesInPath()), SP_PATH(reprobj)->nodesInPath() );
+                    cast<SPPath>(reprobj)->nodesInPath()), cast<SPPath>(reprobj)->nodesInPath() );
                 selection->set(reprobj);
             }
 

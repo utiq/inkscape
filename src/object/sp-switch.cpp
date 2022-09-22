@@ -33,7 +33,7 @@ SPObject *SPSwitch::_evaluateFirst() {
     SPObject *first = nullptr;
 
     for (auto& child: children) {
-        if (SP_IS_ITEM(&child) && sp_item_evaluate(SP_ITEM(&child))) {
+        if (is<SPItem>(&child) && sp_item_evaluate(cast<SPItem>(&child))) {
         	first = &child;
             break;
         }
@@ -104,11 +104,11 @@ void SPSwitch::_reevaluate(bool /*add_to_drawing*/) {
     std::vector<SPObject*> item_list = _childList(false, SPObject::ActionShow);
     for ( std::vector<SPObject*>::const_reverse_iterator iter=item_list.rbegin();iter!=item_list.rend();++iter) {
         SPObject *o = *iter;
-        if ( !SP_IS_ITEM (o) ) {
+        if ( !is<SPItem>(o) ) {
             continue;
         }
 
-        SPItem * child = SP_ITEM(o);
+        auto child = cast<SPItem>(o);
         child->setEvaluated(o == evaluated_child);
     }
 
@@ -140,8 +140,8 @@ void SPSwitch::_showChildren (Inkscape::Drawing &drawing, Inkscape::DrawingItem 
     for ( std::vector<SPObject*>::const_reverse_iterator iter=l.rbegin();iter!=l.rend();++iter) {
         SPObject *o = *iter;
 
-        if (SP_IS_ITEM (o)) {
-            SPItem * child = SP_ITEM(o);
+        if (is<SPItem>(o)) {
+            auto child = cast<SPItem>(o);
             child->setEvaluated(o == evaluated_child);
             Inkscape::DrawingItem *ac = child->invoke_show (drawing, key, flags);
 

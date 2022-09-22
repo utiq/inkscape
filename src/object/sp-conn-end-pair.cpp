@@ -89,7 +89,7 @@ void sp_conn_end_pair_build(SPObject *object)
 
 static void avoid_conn_transformed(Geom::Affine const */*mp*/, SPItem *moved_item)
 {
-    SPPath *path = SP_PATH(moved_item);
+    auto path = cast<SPPath>(moved_item);
     if (path->connEndPair.isAutoRoutingConn()) {
         path->connEndPair.tellLibavoidNewEndpoints();
     }
@@ -182,7 +182,7 @@ void SPConnEndPair::getAttachedItems(SPItem *h2attItem[2]) const {
         if(sub_obj) {
             // For sub objects, we have to go fishing for the virtual/shadow
             // object which has the correct position for this use/symbol
-            SPUse *use = dynamic_cast<SPUse *>(obj);
+            auto use = cast<SPUse>(obj);
             if(use) {
                 auto root = use->root();
                 bool found = false;
@@ -206,8 +206,8 @@ void SPConnEndPair::getAttachedItems(SPItem *h2attItem[2]) const {
         // group no longer has an onscreen representation and can only be
         // selected through the XML editor, it makes sense just to detach
         // connectors from them.
-        if (SP_IS_GROUP(h2attItem[h])) {
-            if (SP_GROUP(h2attItem[h])->getItemCount() == 0) {
+        if (is<SPGroup>(h2attItem[h])) {
+            if (cast<SPGroup>(h2attItem[h])->getItemCount() == 0) {
                 // This group is empty, so detach.
                 sp_conn_end_detach(_path, h);
                 h2attItem[h] = nullptr;

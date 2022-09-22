@@ -314,7 +314,7 @@ void SpiralTool::drag(Geom::Point const &p, guint state) {
         // Set style
         sp_desktop_apply_style_tool(_desktop, repr, "/tools/shapes/spiral", false);
 
-        this->spiral = SP_SPIRAL(currentLayer()->appendChildRepr(repr));
+        this->spiral = cast<SPSpiral>(currentLayer()->appendChildRepr(repr));
         Inkscape::GC::release(repr);
         this->spiral->transform = currentLayer()->i2doc_affine().inverse();
         this->spiral->updateRepr();

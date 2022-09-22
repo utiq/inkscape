@@ -111,14 +111,12 @@ public:
     int N; //!< Number of root children in default document
 };
 
-#define SP_IS_CLONE(obj) (dynamic_cast<const SPUse*>(obj) != NULL)
-
 bool containsClone(ObjectSet* set) {
     for (auto it : set->items()) {
-        if (SP_IS_CLONE(it)) {
+        if (is<SPUse>(it)) {
             return true;
         }
-        if (SP_IS_GROUP(it)) {
+        if (is<SPGroup>(it)) {
             ObjectSet tmp_set(set->document());
             std::vector<SPObject*> c = it->childList(false);
             tmp_set.setList(c);

@@ -113,9 +113,9 @@ static int input_count(const SPFilterPrimitive* prim)
 {
     if(!prim)
         return 0;
-    else if(SP_IS_FEBLEND(prim) || SP_IS_FECOMPOSITE(prim) || SP_IS_FEDISPLACEMENTMAP(prim))
+    else if(is<SPFeBlend>(prim) || is<SPFeComposite>(prim) || is<SPFeDisplacementMap>(prim))
         return 2;
-    else if(SP_IS_FEMERGE(prim)) {
+    else if(is<SPFeMerge>(prim)) {
         // Return the number of feMergeNode connections plus an extra
         return (int) (prim->children.size() + 1);
     }
@@ -458,8 +458,8 @@ public:
     void set_from_attribute(SPObject* o) override
     {
         if(o) {
-            if(SP_IS_FECONVOLVEMATRIX(o)) {
-                SPFeConvolveMatrix* conv = SP_FECONVOLVEMATRIX(o);
+            if(is<SPFeConvolveMatrix>(o)) {
+                auto conv = cast<SPFeConvolveMatrix>(o);
                 int cols, rows;
                 cols = (int)conv->get_order().getNumber();
                 if (cols > max_convolution_kernel_size)
@@ -467,7 +467,7 @@ public:
                 rows = conv->get_order().optNumIsSet() ? (int)conv->get_order().getOptNumber() : cols;
                 update(o, rows, cols);
             }
-            else if(SP_IS_FECOLORMATRIX(o))
+            else if(is<SPFeColorMatrix>(o))
                 update(o, 4, 5);
         }
     }
@@ -494,10 +494,10 @@ private:
         _tree.remove_all_columns();
 
         std::vector<gdouble> const *values = nullptr;
-        if(SP_IS_FECOLORMATRIX(o))
-            values = &SP_FECOLORMATRIX(o)->get_values();
-        else if(SP_IS_FECONVOLVEMATRIX(o))
-            values = &SP_FECONVOLVEMATRIX(o)->get_kernel_matrix();
+        if(is<SPFeColorMatrix>(o))
+            values = &cast<SPFeColorMatrix>(o)->get_values();
+        else if(is<SPFeConvolveMatrix>(o))
+            values = &cast<SPFeConvolveMatrix>(o)->get_kernel_matrix();
         else
             return;
 
@@ -565,8 +565,8 @@ public:
     void set_from_attribute(SPObject* o) override
     {
         std::string values_string;
-        if(SP_IS_FECOLORMATRIX(o)) {
-            SPFeColorMatrix* col = SP_FECOLORMATRIX(o);
+        if(is<SPFeColorMatrix>(o)) {
+            auto col = cast<SPFeColorMatrix>(o);
             remove();
             switch(col->get_type()) {
                 case COLORMATRIX_SATURATE:
@@ -1106,7 +1106,7 @@ public:
         SPFeFuncNode* funcNode = nullptr;
         bool found = false;
         for(auto& node: ct->children) {
-            funcNode = SP_FEFUNCNODE(&node);
+            funcNode = cast<SPFeFuncNode>(&node);
             if( funcNode->channel == _channel ) {
                 found = true;
                 break;
@@ -1127,8 +1127,8 @@ public:
     void set_from_attribute(SPObject* o) override
     {
         // See componenttransfer.cpp
-        if(SP_IS_FECOMPONENTTRANSFER(o)) {
-            SPFeComponentTransfer* ct = SP_FECOMPONENTTRANSFER(o);
+        if(is<SPFeComponentTransfer>(o)) {
+            auto ct = cast<SPFeComponentTransfer>(o);
 
             _funcNode = find_node(ct);
             if( _funcNode ) {
@@ -1274,11 +1274,11 @@ protected:
 
         SPObject* child = o->firstChild();
 
-        if(SP_IS_FEDISTANTLIGHT(child))
+        if(is<SPFeDistantLight>(child))
             _light_source.set_active(0);
-        else if(SP_IS_FEPOINTLIGHT(child))
+        else if(is<SPFePointLight>(child))
             _light_source.set_active(1);
-        else if(SP_IS_FESPOTLIGHT(child))
+        else if(is<SPFeSpotLight>(child))
             _light_source.set_active(2);
         else
             _light_source.set_active(-1);
@@ -1301,9 +1301,9 @@ private:
             const int ls = _light_source.get_active_row_number();
             // Check if the light source type has changed
             if(!(ls == -1 && !child) &&
-               !(ls == 0 && SP_IS_FEDISTANTLIGHT(child)) &&
-               !(ls == 1 && SP_IS_FEPOINTLIGHT(child)) &&
-               !(ls == 2 && SP_IS_FESPOTLIGHT(child))) {
+               !(ls == 0 && is<SPFeDistantLight>(child)) &&
+               !(ls == 1 && is<SPFePointLight>(child)) &&
+               !(ls == 2 && is<SPFeSpotLight>(child))) {
                 if(child)
                     //XML Tree being used directly here while it shouldn't be.
                     sp_repr_unparent(child->getRepr());
@@ -1462,7 +1462,7 @@ void FilterEffectsDialog::FilterModifier::update_selection(Selection *sel)
 
     for (auto obj : sel->items()) {
         SPStyle *style = obj->style;
-        if (!style || !SP_IS_ITEM(obj)) {
+        if (!style || !obj) {
             continue;
         }
 
@@ -1596,7 +1596,7 @@ void FilterEffectsDialog::FilterModifier::update_filters()
 
     for (auto filter : filters) {
         Gtk::TreeModel::Row row = *_filters_model->append();
-        SPFilter* f = SP_FILTER(filter);
+        auto f = cast<SPFilter>(filter);
         row[_columns.filter] = f;
         row[_columns.label] = get_filter_name(f);
         if (!first) {
@@ -1697,7 +1697,7 @@ void FilterEffectsDialog::FilterModifier::remove_filter()
         // Delete all references to this filter
         auto all = get_all_items(desktop->layerManager().currentRoot(), desktop, false, false, true);
         for (auto item : all) {
-            if (!SP_IS_ITEM(item)) {
+            if (!item) {
                 continue;
             }
             if (!item->style) {
@@ -1902,7 +1902,7 @@ void FilterEffectsDialog::PrimitiveList::update()
         _dialog._primitive_box->set_sensitive(true);
         _dialog.update_filter_general_settings_view();
         for(auto& prim_obj: f->children) {
-            SPFilterPrimitive *prim = SP_FILTER_PRIMITIVE(&prim_obj);
+            auto prim = cast<SPFilterPrimitive>(&prim_obj);
             if(!prim) {
                 break;
             }
@@ -2097,7 +2097,7 @@ bool FilterEffectsDialog::PrimitiveList::on_draw_signal(const Cairo::RefPtr<Cair
         const SPFilterPrimitive* row_prim = (*row)[_columns.primitive];
         const int inputs = input_count(row_prim);
 
-        if(SP_IS_FEMERGE(row_prim)) {
+        if(is<SPFeMerge>(row_prim)) {
             for(int i = 0; i < inputs; ++i) {
                 inside = do_connection_node(row, i, con_poly, mx, my);
 
@@ -2170,7 +2170,7 @@ void FilterEffectsDialog::PrimitiveList::draw_connection(const Cairo::RefPtr<Cai
     Gtk::TreeIter res = find_result(input, attr, src_id, pos);
 
     const bool is_first = input == get_model()->children().begin();
-    const bool is_merge = SP_IS_FEMERGE((SPFilterPrimitive*)(*input)[_columns.primitive]);
+    const bool is_merge = is<SPFeMerge>((SPFilterPrimitive*)(*input)[_columns.primitive]);
     const bool use_default = !res && !is_merge;
 
     if(res == input || (use_default && is_first)) {
@@ -2283,12 +2283,12 @@ const Gtk::TreeIter FilterEffectsDialog::PrimitiveList::find_result(const Gtk::T
     Gtk::TreeIter target = _model->children().end();
     int image = 0;
 
-    if(SP_IS_FEMERGE(prim)) {
+    if(is<SPFeMerge>(prim)) {
         int c = 0;
         bool found = false;
         for (auto& o: prim->children) {
-            if(c == pos && SP_IS_FEMERGENODE(&o)) {
-                image = SP_FEMERGENODE(&o)->get_in();
+            if(c == pos && is<SPFeMergeNode>(&o)) {
+                image = cast<SPFeMergeNode>(&o)->get_in();
                 found = true;
             }
             ++c;
@@ -2300,12 +2300,12 @@ const Gtk::TreeIter FilterEffectsDialog::PrimitiveList::find_result(const Gtk::T
         if(attr == SPAttr::IN_)
             image = prim->get_in();
         else if(attr == SPAttr::IN2) {
-            if(SP_IS_FEBLEND(prim))
-                image = SP_FEBLEND(prim)->get_in2();
-            else if(SP_IS_FECOMPOSITE(prim))
-                image = SP_FECOMPOSITE(prim)->get_in2();
-            else if(SP_IS_FEDISPLACEMENTMAP(prim))
-                image = SP_FEDISPLACEMENTMAP(prim)->get_in2();
+            if(is<SPFeBlend>(prim))
+                image = cast<SPFeBlend>(prim)->get_in2();
+            else if(is<SPFeComposite>(prim))
+                image = cast<SPFeComposite>(prim)->get_in2();
+            else if(is<SPFeDisplacementMap>(prim))
+                image = cast<SPFeDisplacementMap>(prim)->get_in2();
             else
                 return target;
         }
@@ -2464,7 +2464,7 @@ bool FilterEffectsDialog::PrimitiveList::on_button_release_event(GdkEventButton*
                         // Make sure the target has a result
                         const gchar *gres = repr->attribute("result");
                         if(!gres) {
-                            result = SP_FILTER(prim->parent)->get_new_result_name();
+                            result = cast<SPFilter>(prim->parent)->get_new_result_name();
                             repr->setAttributeOrRemoveIfEmpty("result", result);
                             in_val = result.c_str();
                         }
@@ -2475,11 +2475,11 @@ bool FilterEffectsDialog::PrimitiveList::on_button_release_event(GdkEventButton*
                 }
             }
 
-            if(SP_IS_FEMERGE(prim)) {
+            if(is<SPFeMerge>(prim)) {
                 int c = 1;
                 bool handled = false;
                 for (auto& o: prim->children) {
-                    if(c == _in_drag && SP_IS_FEMERGENODE(&o)) {
+                    if(c == _in_drag && is<SPFeMergeNode>(&o)) {
                         // If input is null, delete it
                         if(!in_val) {
 
@@ -2503,7 +2503,7 @@ bool FilterEffectsDialog::PrimitiveList::on_button_release_event(GdkEventButton*
 
                     //XML Tree being used directly here while it shouldn't be.
                     prim->getRepr()->appendChild(repr);
-                    SPFeMergeNode *node = SP_FEMERGENODE(prim->document->getObjectByRepr(repr));
+                    auto node = cast<SPFeMergeNode>(prim->document->getObjectByRepr(repr));
                     Inkscape::GC::release(repr);
                     _dialog.set_attr(node, SPAttr::IN_, in_val);
                     (*get_selection()->get_selected())[_columns.primitive] = prim;
@@ -2545,16 +2545,16 @@ static void check_single_connection(SPFilterPrimitive* prim, const int result)
             prim->removeAttribute("in");
         }
 
-        if (SP_IS_FEBLEND(prim)) {
-            if (SP_FEBLEND(prim)->get_in2() == result) {
+        if (is<SPFeBlend>(prim)) {
+            if (cast<SPFeBlend>(prim)->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
-        } else if (SP_IS_FECOMPOSITE(prim)) {
-            if (SP_FECOMPOSITE(prim)->get_in2() == result) {
+        } else if (is<SPFeComposite>(prim)) {
+            if (cast<SPFeComposite>(prim)->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
-        } else if (SP_IS_FEDISPLACEMENTMAP(prim)) {
-            if (SP_FEDISPLACEMENTMAP(prim)->get_in2() == result) {
+        } else if (is<SPFeDisplacementMap>(prim)) {
+            if (cast<SPFeDisplacementMap>(prim)->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
         }
@@ -3326,7 +3326,7 @@ void FilterEffectsDialog::update_settings_view()
 void FilterEffectsDialog::update_settings_sensitivity()
 {
     SPFilterPrimitive* prim = _primitive_list.get_selected();
-    const bool use_k = SP_IS_FECOMPOSITE(prim) && SP_FECOMPOSITE(prim)->get_composite_operator() == COMPOSITE_ARITHMETIC;
+    const bool use_k = is<SPFeComposite>(prim) && cast<SPFeComposite>(prim)->get_composite_operator() == COMPOSITE_ARITHMETIC;
     _k1->set_sensitive(use_k);
     _k2->set_sensitive(use_k);
     _k3->set_sensitive(use_k);

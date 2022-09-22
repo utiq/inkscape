@@ -533,7 +533,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
     // otherwise bail out
     for (auto item : il)
     {
-        if (!SP_IS_SHAPE(item) && !SP_IS_TEXT(item) && !SP_IS_FLOWTEXT(item))
+        if (!is<SPShape>(item) && !is<SPText>(item) && !is<SPFlowtext>(item))
         {
             return ERR_NO_PATHS;
         }
@@ -828,7 +828,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
 
     // adjust style properties that depend on a possible transform in the source object in order
     // to get a correct style attribute for the new path
-    SPItem* item_source = SP_ITEM(source);
+    auto item_source = cast<SPItem>(source);
     Geom::Affine i2doc(item_source->i2doc_affine());
 
     Inkscape::XML::Node *repr_source = source->getRepr();

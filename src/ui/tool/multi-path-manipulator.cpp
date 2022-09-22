@@ -182,7 +182,7 @@ void MultiPathManipulator::setItems(std::set<ShapeRecord> const &s)
     // add newly selected items
     for (const auto & r : shapes) {
         LivePathEffectObject *lpobj = dynamic_cast<LivePathEffectObject *>(r.object);
-        if (!SP_IS_PATH(r.object) && !lpobj) continue;
+        if (!is<SPPath>(r.object) && !lpobj) continue;
         std::shared_ptr<PathManipulator> newpm(new PathManipulator(*this, (SPPath*) r.object,
             r.edit_transform, _getOutlineColor(r.role, r.object), r.lpe_key));
         newpm->showHandles(_show_handles);
@@ -879,7 +879,7 @@ guint32 MultiPathManipulator::_getOutlineColor(ShapeRole role, SPObject *object)
         return prefs->getColor("/tools/nodes/lpe_param_color", 0x009000ff);
     case SHAPE_ROLE_NORMAL:
     default:
-        return SP_ITEM(object)->highlight_color();
+        return cast<SPItem>(object)->highlight_color();
     }
 }
 

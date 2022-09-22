@@ -639,7 +639,7 @@ void MeasureTool::setMarker(bool isStart)
     rmarker->setAttribute("refX", "0.0");
     rmarker->setAttribute("refY", "0.0");
     rmarker->setAttribute("style", "overflow:visible;");
-    SPItem *marker = SP_ITEM(defs->appendChildRepr(rmarker));
+    auto marker = cast<SPItem>(defs->appendChildRepr(rmarker));
     Inkscape::GC::release(rmarker);
     marker->updateRepr();
     Inkscape::XML::Node *rpath;
@@ -655,7 +655,7 @@ void MeasureTool::setMarker(bool isStart)
     rpath->setAttribute("style", css_str);
     sp_repr_css_attr_unref (css);
     rpath->setAttribute("transform", isStart ? "scale(0.3) translate(-2.3,0)" : "scale(0.3) rotate(180) translate(-2.3,0)");
-    SPItem *path = SP_ITEM(marker->appendChildRepr(rpath));
+    auto path = cast<SPItem>(marker->appendChildRepr(rpath));
     Inkscape::GC::release(rpath);
     path->updateRepr();
 }
@@ -725,7 +725,7 @@ void MeasureTool::toItem()
     Inkscape::XML::Node *rgroup = xml_doc->createElement("svg:g");
     showCanvasItems(false, true, false, rgroup);
     setLine(start_p,end_p, false, line_color_primary, rgroup);
-    SPItem *measure_item = SP_ITEM(_desktop->layerManager().currentLayer()->appendChildRepr(rgroup));
+    auto measure_item = cast<SPItem>(_desktop->layerManager().currentLayer()->appendChildRepr(rgroup));
     Inkscape::GC::release(rgroup);
     measure_item->updateRepr();
     doc->ensureUpToDate();
@@ -945,7 +945,7 @@ void MeasureTool::setLabelText(Glib::ustring const &value, Geom::Point pos, doub
         Inkscape::GC::release(rtextitem);
         rgroup->addChild(rrect, nullptr);
         Inkscape::GC::release(rrect);
-        SPItem *text_item_box = SP_ITEM(layer->appendChildRepr(rgroup));
+        auto text_item_box = cast<SPItem>(layer->appendChildRepr(rgroup));
         Geom::Scale scale = Geom::Scale(_desktop->current_zoom()).inverse();
         if(bbox) {
             text_item_box->transform *= Geom::Translate(bbox->midpoint() - Geom::Point(1.0,1.0)).inverse();
@@ -1131,7 +1131,7 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
         rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
     }
 
-    if (SP_IS_SHAPE(over)) {
+    if (is<SPShape>(over)) {
 
         precision_str << _("Length") <<  ": %." << precision << "f %s";
         measure_str = g_strdup_printf(precision_str.str().c_str(), item_length, unit_name.c_str());
@@ -1139,7 +1139,7 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
         showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
         rel_position = Geom::Point(rel_position[Geom::X], rel_position[Geom::Y] + gap);
 
-    } else if (SP_IS_GROUP(over)) {
+    } else if (is<SPGroup>(over)) {
 
         measure_str = _("Press 'CTRL' to measure into group");
         showItemInfoText(pos - (yaxisdir * rel_position * zoom), measure_str, fontsize);
@@ -1234,7 +1234,7 @@ void MeasureTool::showCanvasItems(bool to_guides, bool to_item, bool to_phantom,
             if (auto shape = dynamic_cast<SPShape const *>(item)) {
                 calculate_intersections(_desktop, item, lineseg, *shape->curve(), intersection_times);
             } else {
-                if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
+                if (is<SPText>(item) || is<SPFlowtext>(item)) {
                     Inkscape::Text::Layout::iterator iter = te_get_layout(item)->begin();
                     do {
                         Inkscape::Text::Layout::iterator iter_next = iter;
@@ -1444,7 +1444,7 @@ void MeasureTool::setMeasureItem(Geom::PathVector pathv, bool is_curve, bool mar
         measure_repr->addChild(repr, nullptr);
         Inkscape::GC::release(repr);
     } else {
-        SPItem *item = SP_ITEM(layer->appendChildRepr(repr));
+        auto item = cast<SPItem>(layer->appendChildRepr(repr));
         Inkscape::GC::release(repr);
         item->updateRepr();
         _desktop->getSelection()->clear();

@@ -168,12 +168,12 @@ box3d_ref_changed(SPObject *old_ref, SPObject *ref, SPBox3D *box)
     if (old_ref && G_TYPE_CHECK_INSTANCE((gpointer)old_ref)) { // See issue 2390 (crash when quitting while dragging a 3D Box) ...
         //... G_TYPE_CHECK_INSTANCE prevents triggering a glib assert after the SPObject has been deleted; a warning will still be thrown though
         sp_signal_disconnect_by_data(old_ref, box);
-        Persp3D *oldPersp = dynamic_cast<Persp3D *>(old_ref);
+        auto oldPersp = cast<Persp3D>(old_ref);
         if (oldPersp) {
             oldPersp->remove_box(box);
         }
     }
-    Persp3D *persp = dynamic_cast<Persp3D *>(ref);
+    auto persp = cast<Persp3D>(ref);
     if ( persp && (ref != box) ) // FIXME: Comparisons sane?
     {
         persp->add_box(box);
@@ -248,7 +248,7 @@ void SPBox3D::position_set()
     /* This draws the curve and calls requestDisplayUpdate() for each side (the latter is done in
        Box3DSide::position_set() to avoid update conflicts with the parent box) */
     for (auto& obj: this->children) {
-        Box3DSide *side = dynamic_cast<Box3DSide *>(&obj);
+        auto side = cast<Box3DSide>(&obj);
         if (side) {
             side->position_set();
         }
@@ -264,7 +264,7 @@ Geom::Affine SPBox3D::set_transform(Geom::Affine const &xform) {
     gdouble const sh = hypot(ret[2], ret[3]);
 
     for (auto& child: children) {
-        SPItem *childitem = dynamic_cast<SPItem *>(&child);
+        auto childitem = cast<SPItem>(&child);
         if (childitem) {
             // Adjust stroke width
             childitem->adjust_stroke(sqrt(fabs(sw * sh)));
@@ -1067,7 +1067,7 @@ static std::map<int, Box3DSide *> box3d_get_sides(SPBox3D *box)
 {
     std::map<int, Box3DSide *> sides;
     for (auto& obj: box->children) {
-        Box3DSide *side = dynamic_cast<Box3DSide *>(&obj);
+        auto side = cast<Box3DSide>(&obj);
         if (side) {
             sides[Box3D::face_to_int(side->getFaceId())] = side;
         }
@@ -1205,10 +1205,10 @@ SPBox3D::check_for_swapped_coords() {
 }
 
 static void box3d_extract_boxes_rec(SPObject *obj, std::list<SPBox3D *> &boxes) {
-    SPBox3D *box = dynamic_cast<SPBox3D *>(obj);
+    auto box = cast<SPBox3D>(obj);
     if (box) {
         boxes.push_back(box);
-    } else if (dynamic_cast<SPGroup *>(obj)) {
+    } else if (is<SPGroup>(obj)) {
         for (auto& child: obj->children) {
             box3d_extract_boxes_rec(&child, boxes);
         }
@@ -1272,7 +1272,7 @@ SPGroup *SPBox3D::convert_to_group()
     Inkscape::XML::Node *grepr = xml_doc->createElement("svg:g");
 
     for (auto& obj: this->children) {
-        Box3DSide *side = dynamic_cast<Box3DSide *>(&obj);
+        auto side = cast<Box3DSide>(&obj);
         if (side) {
             Inkscape::XML::Node *repr = side->convert_to_path();
             grepr->appendChild(repr);
@@ -1293,7 +1293,7 @@ SPGroup *SPBox3D::convert_to_group()
 
     grepr->setAttribute("id", id);
 
-    SPGroup *group = dynamic_cast<SPGroup *>(doc->getObjectByRepr(grepr));
+    auto group = cast<SPGroup>(doc->getObjectByRepr(grepr));
     g_assert(group != nullptr);
     return group;
 }

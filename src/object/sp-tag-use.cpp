@@ -148,12 +148,12 @@ SPTagUse::write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, gui
 SPItem * SPTagUse::root()
 {
     SPObject *orig = child;
-    while (orig && SP_IS_TAG_USE(orig)) {
-        orig = SP_TAG_USE(orig)->child;
+    while (orig && is<SPTagUse>(orig)) {
+        orig = cast<SPTagUse>(orig)->child;
     }
-    if (!orig || !SP_IS_ITEM(orig))
+    if (!orig || !is<SPItem>(orig))
         return nullptr;
-    return SP_ITEM(orig);
+    return cast<SPItem>(orig);
 }
 
 void

@@ -371,9 +371,9 @@ int PrintWmf::create_brush(SPStyle const *style, U_COLORREF *fcolor)
             hatchColor = U_RGB(255 * rgb[0], 255 * rgb[1], 255 * rgb[2]);
 
             fmode = style->fill_rule.computed == 0 ? U_WINDING : (style->fill_rule.computed == 2 ? U_ALTERNATE : U_ALTERNATE);
-        } else if (SP_IS_PATTERN(SP_STYLE_FILL_SERVER(style))) { // must be paint-server
+        } else if (is<SPPattern>(SP_STYLE_FILL_SERVER(style))) { // must be paint-server
             SPPaintServer *paintserver = style->fill.value.href->getObject();
-            SPPattern *pat = SP_PATTERN(paintserver);
+            auto pat = cast<SPPattern>(paintserver);
             double dwidth  = pat->width();
             double dheight = pat->height();
             width  = dwidth;
@@ -396,18 +396,18 @@ int PrintWmf::create_brush(SPStyle const *style, U_COLORREF *fcolor)
                 }
             }
             brushStyle = U_BS_HATCHED;
-        } else if (SP_IS_GRADIENT(SP_STYLE_FILL_SERVER(style))) { // must be a gradient
+        } else if (is<SPGradient>(SP_STYLE_FILL_SERVER(style))) { // must be a gradient
             // currently we do not do anything with gradients, the code below just sets the color to the average of the stops
             SPPaintServer *paintserver = style->fill.value.href->getObject();
             SPLinearGradient *lg = nullptr;
             SPRadialGradient *rg = nullptr;
 
-            if (SP_IS_LINEARGRADIENT(paintserver)) {
-                lg = SP_LINEARGRADIENT(paintserver);
+            if (is<SPLinearGradient>(paintserver)) {
+                lg = cast<SPLinearGradient>(paintserver);
                 lg->ensureVector(); // when exporting from commandline, vector is not built
                 fill_mode = DRAW_LINEAR_GRADIENT;
-            } else if (SP_IS_RADIALGRADIENT(paintserver)) {
-                rg = SP_RADIALGRADIENT(paintserver);
+            } else if (is<SPRadialGradient>(paintserver)) {
+                rg = cast<SPRadialGradient>(paintserver);
                 rg->ensureVector(); // when exporting from commandline, vector is not built
                 fill_mode = DRAW_RADIAL_GRADIENT;
             } else {

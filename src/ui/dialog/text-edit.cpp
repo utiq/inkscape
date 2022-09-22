@@ -308,7 +308,7 @@ SPItem *TextEdit::getSelectedTextItem ()
     auto tmp= getDesktop()->getSelection()->items();
 	for(auto i=tmp.begin();i!=tmp.end();++i)
     {
-        if (SP_IS_TEXT(*i) || SP_IS_FLOWTEXT(*i))
+        if (is<SPText>(*i) || is<SPFlowtext>(*i))
             return *i;
     }
 
@@ -326,7 +326,7 @@ unsigned TextEdit::getSelectedTextCount ()
     auto tmp= getDesktop()->getSelection()->items();
 	for(auto i=tmp.begin();i!=tmp.end();++i)
     {
-        if (SP_IS_TEXT(*i) || SP_IS_FLOWTEXT(*i))
+        if (is<SPText>(*i) || is<SPFlowtext>(*i))
             ++items;
     }
 
@@ -422,7 +422,7 @@ void TextEdit::onApply()
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     for(auto i=item_list.begin();i!=item_list.end();++i){
         // apply style to the reprs of all text objects in the selection
-        if (SP_IS_TEXT (*i) || (SP_IS_FLOWTEXT (*i)) ) {
+        if (is<SPText>(*i) || (is<SPFlowtext>(*i)) ) {
             ++items;
         }
     }
@@ -440,10 +440,10 @@ void TextEdit::onApply()
     } else if (items == 1) {
         // exactly one text object; now set its text, too
         SPItem *item = desktop->getSelection()->singleItem();
-        if (SP_IS_TEXT (item) || SP_IS_FLOWTEXT(item)) {
+        if (is<SPText>(item) || is<SPFlowtext>(item)) {
             updateObjectText (item);
             SPStyle *item_style = item->style;
-            if (SP_IS_TEXT(item) && item_style->inline_size.value == 0) {
+            if (is<SPText>(item) && item_style->inline_size.value == 0) {
                 css = sp_css_attr_from_style(item_style, SP_STYLE_FLAG_IFSET);
                 sp_repr_css_unset_property(css, "inline-size");
                 item->changeCSS(css, "style");

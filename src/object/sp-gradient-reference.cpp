@@ -11,7 +11,7 @@
 
 bool SPGradientReference::_acceptObject(SPObject *obj) const
 {
-    return SP_IS_GRADIENT(obj) && URIReference::_acceptObject(obj);
+    return is<SPGradient>(obj) && URIReference::_acceptObject(obj);
     /* effic: Don't bother making this an inline function: _acceptObject is a virtual function,
        typically called from a context where the runtime type is not known at compile time. */
 }

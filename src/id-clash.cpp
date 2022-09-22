@@ -388,12 +388,12 @@ static void change_clashing_ids(SPDocument *imported_doc, SPDocument *current_do
         // may have had, the new ID is the old ID followed by a hyphen
         // and one or more digits.
 
-        if (SP_IS_GRADIENT(elem)) {
+        if (is<SPGradient>(elem)) {
             SPObject *cd_obj =  current_doc->getObjectById(id);
 
-            if (cd_obj && SP_IS_GRADIENT(cd_obj)) {
-                SPGradient *cd_gr = SP_GRADIENT(cd_obj);
-                if ( cd_gr->isEquivalent(SP_GRADIENT(elem))) {
+            if (cd_obj && is<SPGradient>(cd_obj)) {
+                auto cd_gr = cast<SPGradient>(cd_obj);
+                if ( cd_gr->isEquivalent(cast<SPGradient>(elem))) {
                     fix_clashing_ids = false;
                  }
              }

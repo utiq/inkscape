@@ -233,7 +233,7 @@ StarToolbar::side_mode_changed(int mode)
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_STAR(item)) {
+        if (is<SPStar>(item)) {
             Inkscape::XML::Node *repr = item->getRepr();
             if (flat) {
                 gint sides = (gint)_magnitude_adj->get_value();
@@ -285,7 +285,7 @@ StarToolbar::magnitude_value_changed()
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_STAR(item)) {
+        if (is<SPStar>(item)) {
             Inkscape::XML::Node *repr = item->getRepr();
             repr->setAttributeInt("sodipodi:sides", (gint)_magnitude_adj->get_value());
             double arg1 = repr->getAttributeDouble("sodipodi:arg1", 0.5);
@@ -325,7 +325,7 @@ StarToolbar::proportion_value_changed()
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_STAR(item)) {
+        if (is<SPStar>(item)) {
             Inkscape::XML::Node *repr = item->getRepr();
 
             gdouble r1 = repr->getAttributeDouble("sodipodi:r1", 1.0);;
@@ -371,7 +371,7 @@ StarToolbar::rounded_value_changed()
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_STAR(item)) {
+        if (is<SPStar>(item)) {
             Inkscape::XML::Node *repr = item->getRepr();
             repr->setAttributeSvgDouble("inkscape:rounded", (gdouble) _roundedness_adj->get_value());
             item->updateRepr();
@@ -408,7 +408,7 @@ StarToolbar::randomized_value_changed()
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_STAR(item)) {
+        if (is<SPStar>(item)) {
             Inkscape::XML::Node *repr = item->getRepr();
             repr->setAttributeSvgDouble("inkscape:randomized", (gdouble) _randomization_adj->get_value());
             item->updateRepr();
@@ -476,7 +476,7 @@ StarToolbar::selection_changed(Inkscape::Selection *selection)
     auto itemlist= selection->items();
     for(auto i=itemlist.begin();i!=itemlist.end();++i){
         SPItem *item = *i;
-        if (SP_IS_STAR(item)) {
+        if (is<SPStar>(item)) {
             n_selected++;
             repr = item->getRepr();
         }

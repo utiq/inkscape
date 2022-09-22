@@ -385,7 +385,7 @@ void Inkscape::SelTrans::transform(Geom::Affine const &rel_affine, Geom::Point c
         // update the content
         for (unsigned i = 0; i < _items.size(); i++) {
             SPItem &item = *_items[i];
-            if( SP_IS_ROOT(&item) ) {
+            if( is<SPRoot>(&item) ) {
                 _desktop->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("Cannot transform an embedded SVG."));
                 break;
             }

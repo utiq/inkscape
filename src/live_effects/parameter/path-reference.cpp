@@ -22,7 +22,7 @@ SPItem *PathReference::getObject() const
 
 bool PathReference::_acceptObject(SPObject *obj) const
 {
-    if (SP_IS_SHAPE(obj) || SP_IS_TEXT(obj)) {
+    if (is<SPShape>(obj) || is<SPText>(obj)) {
         /* Refuse references to lpeobject */
         if (obj == getOwner()) {
             return false;

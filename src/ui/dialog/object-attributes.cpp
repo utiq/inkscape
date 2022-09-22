@@ -102,12 +102,12 @@ void ObjectAttributes::widget_setup ()
     const SPAttrDesc *desc;
 
 //    if (type == SP_TYPE_ANCHOR)
-    if (SP_IS_ANCHOR(item))
+    if (is<SPAnchor>(item))
     {
         desc = anchor_desc;
     }
 //    else if (type == SP_TYPE_IMAGE)
-    else if (SP_IS_IMAGE(item))
+    else if (is<SPImage>(item))
     {
         Inkscape::XML::Node *ir = obj->getRepr();
         const gchar *href = ir->attribute("xlink:href");

@@ -25,7 +25,7 @@ namespace LivePathEffect {
 
 bool SatelliteReference::_acceptObject(SPObject *const obj) const
 {
-    if (SP_IS_SHAPE(obj) || SP_IS_TEXT(obj) || SP_IS_GROUP(obj)) {
+    if (is<SPShape>(obj) || is<SPText>(obj) || is<SPGroup>(obj)) {
         /* Refuse references to lpeobject */
         SPObject *owner = getOwner();
         if (obj == owner) {

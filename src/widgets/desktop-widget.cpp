@@ -1294,7 +1294,7 @@ SPDesktopWidget::update_rulers()
 
 void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
 {
-    SPNamedView *nv=SP_NAMEDVIEW(obj);
+    auto nv = cast<SPNamedView>(obj);
 
     if (flags & SP_OBJECT_MODIFIED_FLAG) {
         _dt2r = 1. / nv->display_units->factor;
@@ -1366,7 +1366,7 @@ bool SPDesktopWidget::onFocusInEvent(GdkEventFocus*)
     if (prefs->getBool("/options/bitmapautoreload/value", true)) {
         std::vector<SPObject *> imageList = (desktop->doc())->getResourceList("image");
         for (auto it : imageList) {
-            SPImage* image = SP_IMAGE(it);
+            auto image = cast<SPImage>(it);
             image->refresh_if_outdated();
         }
     }

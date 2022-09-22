@@ -360,8 +360,8 @@ SPMarker* find_marker(SPDocument* document, const Glib::ustring& marker_id) {
     if (!defs) return nullptr;
 
     for (auto& child : defs->children) {
-        if (SP_IS_MARKER(&child)) {
-            auto marker = SP_MARKER(&child);
+        if (is<SPMarker>(&child)) {
+            auto marker = cast<SPMarker>(&child);
             auto id = marker->getId();
             if (id && marker_id == id) {
                 // found it
@@ -662,8 +662,8 @@ std::vector<SPMarker*> MarkerComboBox::get_marker_list(SPDocument* source)
     }
 
     for (auto& child: defs->children) {
-        if (SP_IS_MARKER(&child)) {
-            auto marker = SP_MARKER(&child);
+        if (is<SPMarker>(&child)) {
+            auto marker = cast<SPMarker>(&child);
             ml.push_back(marker);
         }
     }
@@ -801,8 +801,8 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
             defsrepr->appendChild(grepr);
             Inkscape::GC::release(grepr);
 
-            if (SP_IS_GRADIENT(linkObj)) {
-                SPGradient *vector = sp_gradient_get_forked_vector_if_necessary (SP_GRADIENT(linkObj), false);
+            if (is<SPGradient>(linkObj)) {
+                SPGradient *vector = sp_gradient_get_forked_vector_if_necessary (cast<SPGradient>(linkObj), false);
                 if (vector) {
                     Inkscape::XML::Node *grepr = vector->getRepr()->duplicate(xml_doc);
                     SPObject *oldmarker = _sandbox->getObjectById(vector->getId());
@@ -824,7 +824,7 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
     // object to render; note that the id is the same as that of the combo we're building
     SPObject *object = _sandbox->getObjectById(_combo_id);
 
-    if (object == nullptr || !SP_IS_ITEM(object)) {
+    if (object == nullptr || !is<SPItem>(object)) {
         g_warning("no obj: %s", _combo_id.c_str());
         return g_bad_marker;
     }
@@ -860,7 +860,7 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
     _sandbox->getRoot()->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     _sandbox->ensureUpToDate();
 
-    SPItem *item = SP_ITEM(object);
+    auto item = cast<SPItem>(object);
     // Find object's bbox in document
     Geom::OptRect dbox = item->documentVisualBounds();
 

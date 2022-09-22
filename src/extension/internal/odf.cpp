@@ -1015,7 +1015,7 @@ void OdfOutput::preprocess(ZipFile &zf, SPDocument *doc, Inkscape::XML::Node *no
     {
         return;
     }
-    if (!SP_IS_ITEM(reprobj))
+    if (!is<SPItem>(reprobj))
     {
         return;
     }
@@ -1297,7 +1297,7 @@ bool OdfOutput::processStyle(SPItem *item, const Glib::ustring &id, const Glib::
     }
     else if (style->fill.isPaintserver())
     {
-        SPGradient *gradient = SP_GRADIENT(SP_STYLE_FILL_SERVER(style));
+        auto gradient = cast<SPGradient>(SP_STYLE_FILL_SERVER(style));
         if (gradient)
         {
             si.fill = "gradient";
@@ -1324,7 +1324,7 @@ bool OdfOutput::processStyle(SPItem *item, const Glib::ustring &id, const Glib::
     }
     else if (style->stroke.isPaintserver())
     {
-        SPGradient *gradient = SP_GRADIENT(SP_STYLE_STROKE_SERVER(style));
+        auto gradient = cast<SPGradient>(SP_STYLE_STROKE_SERVER(style));
         if (gradient)
         {
             si.stroke = "gradient";
@@ -1411,7 +1411,7 @@ bool OdfOutput::processGradient(SPItem *item,
     }
 
     //## Gradient
-    SPGradient *gradient = SP_GRADIENT((checkFillGradient?(SP_STYLE_FILL_SERVER(style)) :(SP_STYLE_STROKE_SERVER(style))));
+    auto gradient = cast<SPGradient>((checkFillGradient?(SP_STYLE_FILL_SERVER(style)) :(SP_STYLE_STROKE_SERVER(style))));
 
     if (gradient == nullptr)
     {
@@ -1430,20 +1430,20 @@ bool OdfOutput::processGradient(SPItem *item,
     }
 
     Glib::ustring gradientName2;
-    if (SP_IS_LINEARGRADIENT(gradient))
+    if (is<SPLinearGradient>(gradient))
     {
         gi.style = "linear";
-        SPLinearGradient *linGrad = SP_LINEARGRADIENT(gradient);
+        auto linGrad = cast<SPLinearGradient>(gradient);
         gi.x1 = linGrad->x1.value;
         gi.y1 = linGrad->y1.value;
         gi.x2 = linGrad->x2.value;
         gi.y2 = linGrad->y2.value;
         gradientName2 = Glib::ustring::compose("ImportedLinearGradient%1", gradientTable.size());
     }
-    else if (SP_IS_RADIALGRADIENT(gradient))
+    else if (is<SPRadialGradient>(gradient))
     {
         gi.style = "radial";
-        SPRadialGradient *radGrad = SP_RADIALGRADIENT(gradient);
+        auto radGrad = cast<SPRadialGradient>(gradient);
         Geom::OptRect bbox = item->documentVisualBounds();
         gi.cx = (radGrad->cx.value-bbox->left())/bbox->width();
         gi.cy = (radGrad->cy.value-bbox->top())/bbox->height();
@@ -1565,11 +1565,11 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
     {
         return true;
     }
-    if (!SP_IS_ITEM(reprobj))
+    if (!is<SPItem>(reprobj))
     {
         return true;
     }
-    SPItem *item = SP_ITEM(reprobj);
+    auto item = cast<SPItem>(reprobj);
 
     Glib::ustring nodeName = node->name();
     Glib::ustring id       = getAttribute(node, "id");
@@ -1655,13 +1655,13 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
     //# ITEM DATA
     if (nodeName == "image" || nodeName == "svg:image")
     {
-        if (!SP_IS_IMAGE(item))
+        if (!is<SPImage>(item))
         {
             g_warning("<image> is not an SPImage.");
             return false;
         }
 
-        SPImage *img   = SP_IMAGE(item);
+        auto img = cast<SPImage>(item);
         double ix      = img->x.value;
         double iy      = img->y.value;
         double iwidth  = img->width.value;
@@ -1752,7 +1752,7 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
         if (shape->curve()) {
             process_curve(*shape->curve());
         }
-    } else if (SP_IS_TEXT(item) || SP_IS_FLOWTEXT(item)) {
+    } else if (is<SPText>(item) || is<SPFlowtext>(item)) {
         process_curve(te_get_layout(item)->convertToCurves());
     }
 

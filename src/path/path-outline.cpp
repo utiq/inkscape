@@ -192,7 +192,7 @@ void item_to_outline_add_marker_child( SPItem const *item, Geom::Affine marker_t
     tr = item->transform * tr;
 
     // note: a marker child item can be an item group!
-    if (SP_IS_GROUP(item)) {
+    if (is<SPGroup>(item)) {
         // recurse through all childs:
         for (auto& o: item->children) {
             if (auto childitem = dynamic_cast<SPItem const *>(&o)) {
@@ -215,7 +215,7 @@ static
 void item_to_outline_add_marker( SPObject const *marker_object, Geom::Affine marker_transform,
                               Geom::Scale stroke_scale, Geom::PathVector* pathv_in )
 {
-    SPMarker const * marker = SP_MARKER(marker_object);
+    SPMarker const * marker = cast<SPMarker>(marker_object);
 
     Geom::Affine tr(marker_transform);
     if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
@@ -349,7 +349,7 @@ void item_to_paths_add_marker( SPItem *context,
                                Inkscape::XML::Node *g_repr, Inkscape::XML::Document *xml_doc,
                                SPDocument * doc, bool legacy)
 {
-    SPMarker* marker = SP_MARKER (marker_object);
+    auto marker = cast<SPMarker>(marker_object);
     SPItem* marker_item = sp_item_first_item_child(marker_object);
     if (!marker_item) {
         return;
@@ -391,7 +391,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
     SPDocument *doc = item->document;
     bool flatten = false;
     // flatten all paths effects
-    SPLPEItem *lpeitem = SP_LPE_ITEM(item);
+    auto lpeitem = cast<SPLPEItem>(item);
     if (lpeitem && lpeitem->hasPathEffect()) {
         lpeitem->removeAllPathEffects(true);
         SPObject *elemref = doc->getObjectById(id);

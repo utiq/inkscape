@@ -374,10 +374,10 @@ void
 ConnectorToolbar::selection_changed(Inkscape::Selection *selection)
 {
     SPItem *item = selection->singleItem();
-    if (SP_IS_PATH(item))
+    if (is<SPPath>(item))
     {
-        gdouble curvature = SP_PATH(item)->connEndPair.getCurvature();
-        bool is_orthog = SP_PATH(item)->connEndPair.isOrthogonal();
+        gdouble curvature = cast<SPPath>(item)->connEndPair.getCurvature();
+        bool is_orthog = cast<SPPath>(item)->connEndPair.isOrthogonal();
         _orthogonal->set_active(is_orthog);
         _curvature_adj->set_value(curvature);
     }

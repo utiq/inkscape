@@ -573,8 +573,8 @@ void GradientEditor::set_gradient(SPGradient* gradient) {
 
     size_t index = 0;
     for (auto& child : vector->children) {
-        if (SP_IS_STOP(&child)) {
-            auto stop = SP_STOP(&child);
+        if (is<SPStop>(&child)) {
+            auto stop = cast<SPStop>(&child);
             auto it = _stop_list_store->append();
             it->set_value(_stopObj, stop);
             it->set_value(_stopIdx, index);

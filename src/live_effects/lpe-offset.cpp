@@ -270,7 +270,7 @@ void LPEOffset::doAfterEffect(SPLPEItem const * /*lpeitem*/, SPCurve *curve)
         // we don do this on groups, editing is joining ito so no need to update knot
         SPShape *shape = dynamic_cast<SPShape *>(sp_lpe_item);
         if (shape) {
-            out = SP_SHAPE(sp_lpe_item)->curve()->get_pathvector();
+            out = cast<SPShape>(sp_lpe_item)->curve()->get_pathvector();
             offset_pt = get_nearest_point(out, offset_pt);
             _knot_entity->knot_get();
         }
@@ -641,7 +641,7 @@ void KnotHolderEntityOffsetPoint::knot_set(Geom::Point const &p, Geom::Point con
     if (lpe->update_on_knot_move) {
         lpe->liveknot = true;
         lpe->offset.param_set_value(offset);
-        sp_lpe_item_update_patheffect (SP_LPE_ITEM(item), false, false);
+        sp_lpe_item_update_patheffect (cast<SPLPEItem>(item), false, false);
     } else {
         lpe->liveknot = false;
     }

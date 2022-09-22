@@ -45,8 +45,6 @@ LivePathEffectObject::~LivePathEffectObject() = default;
  * Virtual build: set livepatheffect attributes from its associated XML node.
  */
 void LivePathEffectObject::build(SPDocument *document, Inkscape::XML::Node *repr) {
-    g_assert(SP_IS_OBJECT(this));
-
     SPObject::build(document, repr);
 
     this->readAttr(SPAttr::PATH_EFFECT);

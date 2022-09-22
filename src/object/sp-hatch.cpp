@@ -103,7 +103,7 @@ void SPHatch::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref)
 {
     SPObject::child_added(child, ref);
 
-    SPHatchPath *path_child = dynamic_cast<SPHatchPath *>(document->getObjectByRepr(child));
+    auto path_child = cast<SPHatchPath>(document->getObjectByRepr(child));
 
     if (path_child) {
         for (auto &v : views) {
@@ -227,7 +227,7 @@ void SPHatch::set(SPAttr key, const gchar* value)
 bool SPHatch::_hasHatchPatchChildren(SPHatch const *hatch)
 {
     for (auto &child: hatch->children) {
-        SPHatchPath const *hatchPath = dynamic_cast<SPHatchPath const *>(&child);
+        SPHatchPath const *hatchPath = cast<SPHatchPath>(&child);
         if (hatchPath) {
             return true;
         }
@@ -242,7 +242,7 @@ std::vector<SPHatchPath*> SPHatch::hatchPaths()
 
     if (src) {
         for (auto &child: src->children) {
-            SPHatchPath *hatchPath = dynamic_cast<SPHatchPath *>(&child);
+            auto hatchPath = cast<SPHatchPath>(&child);
             if (hatchPath) {
                 list.push_back(hatchPath);
             }
@@ -258,7 +258,7 @@ std::vector<SPHatchPath const*> SPHatch::hatchPaths() const
 
     if (src) {
         for (auto &child: src->children) {
-            SPHatchPath const *hatchPath = dynamic_cast<SPHatchPath const*>(&child);
+            SPHatchPath const *hatchPath = cast<SPHatchPath>(&child);
             if (hatchPath) {
                 list.push_back(hatchPath);
             }
@@ -327,7 +327,7 @@ void SPHatch::_onRefChanged(SPObject *old_ref, SPObject *ref)
         _modified_connection.disconnect();
     }
 
-    SPHatch *hatch = dynamic_cast<SPHatch *>(ref);
+    auto hatch = cast<SPHatch>(ref);
     if (hatch) {
         _modified_connection = ref->connectModified(sigc::mem_fun(*this, &SPHatch::_onRefModified));
     }
@@ -338,7 +338,7 @@ void SPHatch::_onRefChanged(SPObject *old_ref, SPObject *ref)
         std::vector<SPHatchPath *> oldhatchPaths;
         std::vector<SPHatchPath *> newhatchPaths;
 
-        SPHatch *old_hatch = dynamic_cast<SPHatch *>(old_ref);
+        auto old_hatch = cast<SPHatch>(old_ref);
         if (old_hatch) {
             old_shown = old_hatch->rootHatch();
             oldhatchPaths = old_shown->hatchPaths();
@@ -475,12 +475,12 @@ guint SPHatch::_countHrefs(SPObject *o) const
     guint i = 0;
 
     SPStyle *style = o->style;
-    if (style && style->fill.isPaintserver() && SP_IS_HATCH(SP_STYLE_FILL_SERVER(style)) &&
-        SP_HATCH(SP_STYLE_FILL_SERVER(style)) == this) {
+    if (style && style->fill.isPaintserver() && is<SPHatch>(SP_STYLE_FILL_SERVER(style)) &&
+        cast<SPHatch>(SP_STYLE_FILL_SERVER(style)) == this) {
         i++;
     }
-    if (style && style->stroke.isPaintserver() && SP_IS_HATCH(SP_STYLE_STROKE_SERVER(style)) &&
-        SP_HATCH(SP_STYLE_STROKE_SERVER(style)) == this) {
+    if (style && style->stroke.isPaintserver() && is<SPHatch>(SP_STYLE_STROKE_SERVER(style)) &&
+        cast<SPHatch>(SP_STYLE_STROKE_SERVER(style)) == this) {
         i++;
     }
 
@@ -506,9 +506,9 @@ SPHatch *SPHatch::clone_if_necessary(SPItem *item, const gchar *property)
         defsrepr->addChild(repr, nullptr);
         const gchar *child_id = repr->attribute("id");
         SPObject *child = document->getObjectById(child_id);
-        g_assert(SP_IS_HATCH(child));
+        g_assert(is<SPHatch>(child));
 
-        hatch = SP_HATCH(child);
+        hatch = cast<SPHatch>(child);
 
         Glib::ustring href = Glib::ustring::compose("url(#%1)", hatch->getRepr()->attribute("id"));
 

@@ -936,31 +936,31 @@ SelectedStyle::update()
                     _paintserver_id[i] += srepr->attribute("id");
                     _paintserver_id[i] += ")";
 
-                    if (SP_IS_LINEARGRADIENT(server)) {
-                        SPGradient *vector = SP_GRADIENT(server)->getVector();
+                    if (is<SPLinearGradient>(server)) {
+                        auto vector = cast<SPGradient>(server)->getVector();
                         _gradient_preview_l[i]->set_gradient(vector);
                         place->add(_gradient_box_l[i]);
                         place->set_tooltip_text(__lgradient[i]);
                         _mode[i] = SS_LGRADIENT;
-                    } else if (SP_IS_RADIALGRADIENT(server)) {
-                        SPGradient *vector = SP_GRADIENT(server)->getVector();
+                    } else if (is<SPRadialGradient>(server)) {
+                        auto vector = cast<SPGradient>(server)->getVector();
                         _gradient_preview_r[i]->set_gradient(vector);
                         place->add(_gradient_box_r[i]);
                         place->set_tooltip_text(__rgradient[i]);
                         _mode[i] = SS_RGRADIENT;
 #ifdef WITH_MESH
-                    } else if (SP_IS_MESHGRADIENT(server)) {
-                        SPGradient *array = SP_GRADIENT(server)->getArray();
+                    } else if (is<SPMeshGradient>(server)) {
+                        auto array = cast<SPGradient>(server)->getArray();
                         _gradient_preview_m[i]->set_gradient(array);
                         place->add(_gradient_box_m[i]);
                         place->set_tooltip_text(__mgradient[i]);
                         _mode[i] = SS_MGRADIENT;
 #endif
-                    } else if (SP_IS_PATTERN(server)) {
+                    } else if (is<SPPattern>(server)) {
                         place->add(_pattern[i]);
                         place->set_tooltip_text(__pattern[i]);
                         _mode[i] = SS_PATTERN;
-                    } else if (SP_IS_HATCH(server)) {
+                    } else if (is<SPHatch>(server)) {
                         place->add(_hatch[i]);
                         place->set_tooltip_text(__hatch[i]);
                         _mode[i] = SS_HATCH;
