@@ -832,8 +832,8 @@ bool SelectTool::root_handler(GdkEvent* event) {
 
         case GDK_KEY_PRESS: // keybindings for select context
             {
-            {
             guint keyval = get_latin_keyval(&event->key);
+            {
             
                 bool alt = ( MOD__ALT(event)
                                     || (keyval == GDK_KEY_Alt_L)
@@ -879,11 +879,11 @@ bool SelectTool::root_handler(GdkEvent* event) {
             int const snaps = prefs->getInt("/options/rotationsnapsperpi/value", 12);
             auto const y_dir = _desktop->yaxisdir();
 
-            switch (get_latin_keyval (&event->key)) {
+            switch (keyval) {
                 case GDK_KEY_Left: // move selection left
                 case GDK_KEY_KP_Left:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events( get_latin_keyval(&event->key), 0); // with any mask
+                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         
                         if (MOD__ALT(event)) { // alt
                             if (MOD__SHIFT(event)) {
@@ -906,7 +906,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                 case GDK_KEY_Up: // move selection up
                 case GDK_KEY_KP_Up:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events(get_latin_keyval(&event->key), 0); // with any mask
+                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         mul *= -y_dir;
                         
                         if (MOD__ALT(event)) { // alt
@@ -930,7 +930,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                 case GDK_KEY_Right: // move selection right
                 case GDK_KEY_KP_Right:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events(get_latin_keyval(&event->key), 0); // with any mask
+                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         
                         if (MOD__ALT(event)) { // alt
                             if (MOD__SHIFT(event)) {
@@ -953,7 +953,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                 case GDK_KEY_Down: // move selection down
                 case GDK_KEY_KP_Down:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events(get_latin_keyval(&event->key), 0); // with any mask
+                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         mul *= -y_dir;
                         
                         if (MOD__ALT(event)) { // alt
@@ -991,10 +991,11 @@ bool SelectTool::root_handler(GdkEvent* event) {
                     break;
                     
                 case GDK_KEY_space:
+                case GDK_KEY_c:
+                case GDK_KEY_C:
                     /* stamping mode: show outline mode moving */
-                    /* FIXME: Is next condition ok? (lauris) */
                     if (this->dragging && this->grabbed) {
-                        _seltrans->stamp();
+                        _seltrans->stamp(keyval != GDK_KEY_space);
                         ret = TRUE;
                     }
                     break;
@@ -1009,7 +1010,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                     
                 case GDK_KEY_bracketleft:
                     if (MOD__ALT(event)) {
-                        gint mul = 1 + gobble_key_events(get_latin_keyval(&event->key), 0); // with any mask
+                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         selection->rotateScreen(-mul * y_dir);
                     } else if (MOD__CTRL(event)) {
                         selection->rotate(-90 * y_dir);
@@ -1022,7 +1023,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                     
                 case GDK_KEY_bracketright:
                     if (MOD__ALT(event)) {
-                        gint mul = 1 + gobble_key_events(get_latin_keyval(&event->key), 0); // with any mask
+                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         selection->rotateScreen(mul * y_dir);
                     } else if (MOD__CTRL(event)) {
                         selection->rotate(90 * y_dir);

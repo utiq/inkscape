@@ -57,7 +57,7 @@ public:
     void grab(Geom::Point const &p, double x, double y, bool show_handles, bool translating);
     void transform(Geom::Affine const &rel_affine, Geom::Point const &norm);
     void ungrab();
-    void stamp();
+    void stamp(bool clone = false);
     void moveTo(Geom::Point const &xy, unsigned int state);
     void stretch(SPSelTransHandle const &handle, Geom::Point &pt, unsigned int state);
     void scale(Geom::Point &pt, unsigned int state);

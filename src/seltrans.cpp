@@ -76,6 +76,8 @@ static gboolean sp_sel_trans_handle_event(SPKnot *knot, GdkEvent *event, SPSelTr
                 }
                 SPDesktop *desktop = knot->desktop;
                 Inkscape::SelTrans *seltrans = SP_SELECT_CONTEXT(desktop->event_context)->_seltrans;
+                // This stamp can't produce clones without requiring extra support of "undoing"
+                // the cascaded transform from this knot's changes.
                 seltrans->stamp();
                 return TRUE;
             }
@@ -550,7 +552,7 @@ void Inkscape::SelTrans::ungrab()
 /* fixme: This is really bad, as we compare positions for each stamp (Lauris) */
 /* fixme: IMHO the best way to keep sort cache would be to implement timestamping at last */
 
-void Inkscape::SelTrans::stamp()
+void Inkscape::SelTrans::stamp(bool clone)
 {
     Inkscape::Selection *selection = _desktop->getSelection();
 
@@ -610,26 +612,41 @@ void Inkscape::SelTrans::stamp()
                 }
             }
         }
+
         for(auto &original_item : l) {
             Inkscape::XML::Node *original_repr = original_item->getRepr();
 
             // remember parent
             Inkscape::XML::Node *parent = original_repr->parent();
 
-            Inkscape::XML::Node *copy_repr = original_repr->duplicate(parent->document());
+            Inkscape::XML::Node *copy_repr = nullptr;
+
+            if (clone) {
+                copy_repr = parent->document()->createElement("svg:use");
+                copy_repr->setAttribute("x", "0");
+                copy_repr->setAttribute("y", "0");
+                copy_repr->setAttribute("xlink:href", std::string("#") + original_item->getId());
+                copy_repr->setAttribute("inkscape:transform-center-x", original_repr->attribute("inkscape:transform-center-x"));
+                copy_repr->setAttribute("inkscape:transform-center-y", original_repr->attribute("inkscape:transform-center-y"));
+            } else {
+                copy_repr = original_repr->duplicate(parent->document());
+            }
 
             // add the new repr to the parent
             parent->addChild(copy_repr, original_repr->prev());
 
             SPItem *copy_item = (SPItem *) _desktop->getDocument()->getObjectByRepr(copy_repr);
-            Geom::Affine const *new_affine;
-            if (_show == SHOW_OUTLINE) {
+            Geom::Affine new_affine = Geom::identity();
+            if (_show == SHOW_OUTLINE || clone) {
                 Geom::Affine const i2d(original_item->i2dt_affine());
                 Geom::Affine const i2dnew( i2d * _current_relative_affine );
                 copy_item->set_i2d_affine(i2dnew);
-                new_affine = &copy_item->transform;
+                new_affine = copy_item->transform;
+                if (clone) {
+                    new_affine = original_item->transform.inverse() * new_affine;
+                }
             } else {
-                new_affine = &original_item->transform;
+                new_affine = original_item->transform;
             }
             original_item->setSuccessor(copy_item);
             SPLPEItem *newLPEObj = dynamic_cast<SPLPEItem *>(copy_item);
@@ -646,7 +663,7 @@ void Inkscape::SelTrans::stamp()
                 (!newLPEObj->hasPathEffectOfType(Inkscape::LivePathEffect::CLONE_ORIGINAL) &&
                  !newLPEObj->hasPathEffectOfType(Inkscape::LivePathEffect::BEND_PATH))) 
             {
-                copy_item->doWriteTransform(*new_affine);
+                copy_item->doWriteTransform(new_affine);
                 if ( copy_item->isCenterSet() && _center ) {
                     copy_item->setCenter(*_center * _current_relative_affine);
                 }
