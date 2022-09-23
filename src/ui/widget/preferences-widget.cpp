@@ -446,26 +446,15 @@ ZoomCorrRuler::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
 
     auto context = get_style_context();
     Gdk::RGBA fg = context->get_color(get_state_flags());
-    Gdk::RGBA bg;
-    bg.set_grey(0.5);
-    if (auto wnd = dynamic_cast<Gtk::Window*>(this->get_toplevel())) {
-        auto sc = wnd->get_style_context();
-        bg = get_background_color(sc);
-    }
 
-    cr->set_source_rgb(bg.get_red(), bg.get_green(), bg.get_blue());
-    cr->set_fill_rule(Cairo::FILL_RULE_WINDING);
-    cr->rectangle(0, 0, w, _height + _border*2);
-    cr->fill();
+    context->render_background(cr, 0, 0, w, _height + _border * 2);
 
-    cr->set_source_rgb(0.0, 0.0, 0.0);
-    cr->set_line_width(0.5);
+    cr->set_line_width(1);
+    cr->set_source_rgb(fg.get_red(), fg.get_green(), fg.get_blue());
 
     cr->translate(_border, _border); // so that we have a small white border around the ruler
     cr->move_to (0, _height);
     cr->line_to (_drawing_width, _height);
-
-    cr->set_source_rgb(fg.get_red(), fg.get_green(), fg.get_blue());
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     Glib::ustring abbr = prefs->getString("/options/zoomcorrection/unit");
