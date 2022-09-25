@@ -185,7 +185,8 @@ object_rotate_90_cw(InkscapeApplication *app)
     Inkscape::Selection *selection = app->get_active_selection();
 
     // Object Rotate 90
-    selection->rotate90(false);
+    auto desktop = selection->desktop();
+    selection->rotate((!desktop || desktop->is_yaxisdown()) ? 90 : -90);
 }
 
 void
@@ -194,7 +195,8 @@ object_rotate_90_ccw(InkscapeApplication *app)
     Inkscape::Selection *selection = app->get_active_selection();
 
     // Object Rotate 90 CCW
-    selection->rotate90(true);
+    auto desktop = selection->desktop();
+    selection->rotate((!desktop || desktop->is_yaxisdown()) ? -90 : 90);
 }
 
 void

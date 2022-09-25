@@ -1931,33 +1931,6 @@ void ObjectSet::moveRelative(double dx, double dy)
     applyAffine(Geom::Affine(Geom::Translate(dx, dy)));
 }
 
-/**
- * Rotates selected objects 90 degrees, either clock-wise or counter-clockwise, depending on the value of ccw.
- */
-void ObjectSet::rotate90(bool ccw)
-{
-    if (isEmpty())
-        return;
-
-    auto items_copy = items();
-    double y_dir = document() ? document()->yaxisdir() : 1;
-    Geom::Rotate const rot_90(Geom::Point(0, ccw ? -y_dir : y_dir)); // pos. or neg. rotation, depending on the value of ccw
-    for (auto l=items_copy.begin();l!=items_copy.end() ;++l) {
-        SPItem *item = *l;
-        if (item) {
-            item->rotate_rel(rot_90);
-        } else {
-            g_assert_not_reached();
-        }
-    }
-
-    if (document()) {
-        DocumentUndo::done(document(),
-                           ccw ? _("Rotate 90\xc2\xb0 CCW") : _("Rotate 90\xc2\xb0 CW"),
-                           ccw ? INKSCAPE_ICON("object-rotate-left") : INKSCAPE_ICON("object-rotate-right"));
-    }
-}
-
 void ObjectSet::rotate(gdouble const angle_degrees)
 {
     if (isEmpty())
@@ -1970,9 +1943,15 @@ void ObjectSet::rotate(gdouble const angle_degrees)
     rotateRelative(*center_, angle_degrees);
 
     if (document()) {
-        DocumentUndo::maybeDone(document(),
+        if (angle_degrees == 90.0) {
+            DocumentUndo::done(document(), _("Rotate 90\xc2\xb0 CW"), INKSCAPE_ICON("object-rotate-right"));
+        } else if (angle_degrees == -90.0) {
+            DocumentUndo::done(document(), _("Rotate 90\xc2\xb0 CCW"), INKSCAPE_ICON("object-rotate-left"));
+        } else {
+            DocumentUndo::maybeDone(document(),
                                 ( ( angle_degrees > 0 )? "selector:rotate:ccw": "selector:rotate:cw" ),
                                 _("Rotate"), INKSCAPE_ICON("tool-pointer"));
+        }
     }
 }
 

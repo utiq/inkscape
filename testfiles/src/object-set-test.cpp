@@ -634,8 +634,7 @@ TEST_F(ObjectSetTest, Moves) {
     r1.release();
     auto x = set->singleItem();
     EXPECT_EQ(20,(*(x->documentVisualBounds()))[0].extent());
-    set->rotate90(true);
-    set->rotate90(true);
+    set->rotate(180);
     EXPECT_EQ(20,(*(x->documentVisualBounds()))[0].extent());
     set->deleteItems();
 }
