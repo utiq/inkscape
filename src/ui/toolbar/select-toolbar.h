@@ -52,7 +52,6 @@ private:
     std::vector<sigc::connection> _connections;
 
     bool _update;
-    std::uint64_t _selection_seq = 0; ///< Increment to prevent coalescing of consecutive undo events
     std::string _action_key;
     std::string const _action_prefix;
 

@@ -28,6 +28,7 @@
 #include "preferences.h"
 #include "desktop.h"
 #include "document.h"
+#include "document-undo.h"
 #include "ui/tools/node-tool.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/path-manipulator.h"
@@ -129,19 +130,20 @@ void Selection::_emitChanged(bool persist_selection_context/* = false */) {
     /** Change the layer selection to the item selection
       * TODO: Should it only change if there's a single object?
       */
-    if (_desktop) {
+    if (_document && _desktop) {
         if (auto item = singleItem()) {
             auto layer = _desktop->layerManager().layerForObject(item);
             if (layer && layer != _selection_context) {
                 _desktop->layerManager().setCurrentLayer(layer);
             }
             // This could be more complex if we want to be smarter.
-            _desktop->getDocument()->getPageManager().selectPage(item, false);
+            _document->getPageManager().selectPage(item, false);
         }
+        DocumentUndo::resetKey(_document);
     }
 
     for (auto it = _changed_signals.begin(); it != _changed_signals.end(); ) {
-        it ->emit(this);
+        it->emit(this);
         if (it->empty()) it = _changed_signals.erase(it); else ++it;
     }
 }

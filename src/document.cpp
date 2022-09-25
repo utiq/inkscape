@@ -116,7 +116,6 @@ SPDocument::SPDocument() :
     actionkey(),
     object_id_counter(1),
     _router(std::make_unique<Avoid::Router>(Avoid::PolyLineRouting|Avoid::OrthogonalRouting)),
-    oldSignalsConnected(false),
     current_persp3d(nullptr),
     current_persp3d_impl(nullptr),
     _parent_document(nullptr),
@@ -127,6 +126,10 @@ SPDocument::SPDocument() :
 
     _event_log = std::make_unique<Inkscape::EventLog>(this);
     _selection = std::make_unique<Inkscape::Selection>(this);
+
+    _desktop_activated_connection = INKSCAPE.signal_activate_desktop.connect(
+                sigc::hide(sigc::bind(
+                sigc::ptr_fun(&DocumentUndo::resetKey), this)));
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
@@ -169,14 +172,7 @@ SPDocument::~SPDocument() {
 
     // kill/unhook this first
     _profileManager.reset();
-
-    if (oldSignalsConnected) {
-        selChangeConnection.disconnect();
-        desktopActivatedConnection.disconnect();
-    } else {
-        _selection_changed_connection.disconnect();
-        _desktop_activated_connection.disconnect();
-    }
+    _desktop_activated_connection.disconnect();
 
     if (partial) {
         sp_repr_free_log(partial);
@@ -469,18 +465,6 @@ SPDocument *SPDocument::createDoc(Inkscape::XML::Document *rdoc,
     }
 
     DocumentUndo::setUndoSensitive(document, true);
-
-    // reset undo key when selection changes, so that same-key actions on different objects are not coalesced
-    document->selChangeConnection = INKSCAPE.signal_selection_changed.connect(
-                sigc::hide(sigc::bind(
-                sigc::ptr_fun(&DocumentUndo::resetKey), document)
-    ));
-    document->desktopActivatedConnection = INKSCAPE.signal_activate_desktop.connect(
-                sigc::hide(sigc::bind(
-                sigc::ptr_fun(&DocumentUndo::resetKey), document)
-    ));
-    document->oldSignalsConnected = true;
-
 
     // ************* Fix Document **************
     // Move to separate function?

@@ -473,12 +473,7 @@ private:
     SPDocument::CommitSignal commit_signal; // Used by friend Inkscape::DocumentUndo
     SPDocument::BeforeCommitSignal before_commit_signal; // Used by friend Inkscape::DocumentUndo
 
-    bool oldSignalsConnected;
-
-    sigc::connection _selection_changed_connection;
     sigc::connection _desktop_activated_connection;
-    sigc::connection selChangeConnection;
-    sigc::connection desktopActivatedConnection;
 
     sigc::signal<void ()> destroySignal;
 

@@ -514,7 +514,6 @@ SelectToolbar::on_inkscape_selection_changed(Inkscape::Selection *selection)
         }
 
         layout_widget_update(selection);
-        _selection_seq++;
     }
 }
 
@@ -533,7 +532,7 @@ char const *SelectToolbar::get_action_key(double mh, double sh, double mv, doubl
     if (!action) {
         return nullptr;
     }
-    _action_key = _action_prefix + action + std::to_string(_selection_seq);
+    _action_key = _action_prefix + action;
     return _action_key.c_str();
 }
 
