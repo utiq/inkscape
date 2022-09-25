@@ -35,7 +35,6 @@ set(xml_SRC
 	helper-observer.h
 	invalid-operation-exception.h
 	log-builder.h
-	node-event-vector.h
 	node-fns.h
 	node-iterators.h
 	node-observer.h

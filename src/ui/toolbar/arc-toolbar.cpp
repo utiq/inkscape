@@ -51,30 +51,17 @@
 
 #include "widgets/widget-sizes.h"
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::UI::Widget::UnitTracker;
 using Inkscape::DocumentUndo;
 using Inkscape::Util::Quantity;
 using Inkscape::Util::unit_table;
 
-
-static Inkscape::XML::NodeEventVector arc_tb_repr_events = {
-    nullptr, /* child_added */
-    nullptr, /* child_removed */
-    Inkscape::UI::Toolbar::ArcToolbar::event_attr_changed,
-    nullptr, /* content_changed */
-    nullptr  /* order_changed */
-};
-
 namespace Inkscape {
 namespace UI {
 namespace Toolbar {
-ArcToolbar::ArcToolbar(SPDesktop *desktop) :
-        Toolbar(desktop),
-        _tracker(new UnitTracker(Inkscape::Util::UNIT_TYPE_LINEAR)),
-        _freeze(false),
-        _repr(nullptr)
+ArcToolbar::ArcToolbar(SPDesktop *desktop)
+    : Toolbar(desktop)
+    , _tracker(new UnitTracker(Inkscape::Util::UNIT_TYPE_LINEAR))
 {
     auto init_units = desktop->getNamedView()->display_units;
     _tracker->setActiveUnit(init_units);
@@ -219,7 +206,7 @@ ArcToolbar::ArcToolbar(SPDesktop *desktop) :
 ArcToolbar::~ArcToolbar()
 {
     if(_repr) {
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         GC::release(_repr);
         _repr = nullptr;
     }
@@ -433,7 +420,7 @@ ArcToolbar::check_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
         if (_changed) {
             _changed.disconnect();
             if(_repr) {
-                _repr->removeListenerByData(this);
+                _repr->removeObserver(*this);
                 Inkscape::GC::release(_repr);
                 _repr = nullptr;
             }
@@ -449,7 +436,7 @@ ArcToolbar::selection_changed(Inkscape::Selection *selection)
 
     if ( _repr ) {
         _item = nullptr;
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         GC::release(_repr);
         _repr = nullptr;
     }
@@ -477,8 +464,8 @@ ArcToolbar::selection_changed(Inkscape::Selection *selection)
             _repr = repr;
             _item = item;
             Inkscape::GC::anchor(_repr);
-            _repr->addListener(&arc_tb_repr_events, this);
-            _repr->synthesizeEvents(&arc_tb_repr_events, this);
+            _repr->addObserver(*this);
+            _repr->synthesizeEvents(*this);
         }
     } else {
         // FIXME: implement averaging of all parameters for multiple selected
@@ -488,58 +475,54 @@ ArcToolbar::selection_changed(Inkscape::Selection *selection)
     }
 }
 
-void
-ArcToolbar::event_attr_changed(Inkscape::XML::Node *repr, gchar const * /*name*/,
-                               gchar const * /*old_value*/, gchar const * /*new_value*/,
-                               bool /*is_interactive*/, gpointer data)
-{
-    auto toolbar = reinterpret_cast<ArcToolbar *>(data);
 
+void ArcToolbar::notifyAttributeChanged(Inkscape::XML::Node &repr, GQuark,
+                                        Inkscape::Util::ptr_shared,
+                                        Inkscape::Util::ptr_shared)
+{
     // quit if run by the _changed callbacks
-    if (toolbar->_freeze) {
+    if (_freeze) {
         return;
     }
 
     // in turn, prevent callbacks from responding
-    toolbar->_freeze = true;
+    _freeze = true;
 
-    if (toolbar->_item && is<SPGenericEllipse>(toolbar->_item)) {
-        auto ge = cast<SPGenericEllipse>(toolbar->_item);
-
-        Unit const *unit = toolbar->_tracker->getActiveUnit();
+    if (auto ge = cast<SPGenericEllipse>(_item)) {
+        Unit const *unit = _tracker->getActiveUnit();
         g_return_if_fail(unit != nullptr);
 
         gdouble rx = ge->getVisibleRx();
         gdouble ry = ge->getVisibleRy();
-        toolbar->_rx_adj->set_value(Quantity::convert(rx, "px", unit));
-        toolbar->_ry_adj->set_value(Quantity::convert(ry, "px", unit));
+        _rx_adj->set_value(Quantity::convert(rx, "px", unit));
+        _ry_adj->set_value(Quantity::convert(ry, "px", unit));
     }
 
-    gdouble start = repr->getAttributeDouble("sodipodi:start", 0.0);;
-    gdouble end = repr->getAttributeDouble("sodipodi:end", 0.0);
+    gdouble start = repr.getAttributeDouble("sodipodi:start", 0.0);;
+    gdouble end = repr.getAttributeDouble("sodipodi:end", 0.0);
 
-    toolbar->_start_adj->set_value(mod360((start * 180)/M_PI));
-    toolbar->_end_adj->set_value(mod360((end * 180)/M_PI));
+    _start_adj->set_value(mod360((start * 180)/M_PI));
+    _end_adj->set_value(mod360((end * 180)/M_PI));
 
-    toolbar->sensitivize(toolbar->_start_adj->get_value(), toolbar->_end_adj->get_value());
+    sensitivize(_start_adj->get_value(), _end_adj->get_value());
 
     char const *arctypestr = nullptr;
-    arctypestr = repr->attribute("sodipodi:arc-type");
+    arctypestr = repr.attribute("sodipodi:arc-type");
     if (!arctypestr) { // For old files.
         char const *openstr = nullptr;
-        openstr = repr->attribute("sodipodi:open");
+        openstr = repr.attribute("sodipodi:open");
         arctypestr = (openstr ? "arc" : "slice");
     }
 
     if (!strcmp(arctypestr,"slice")) {
-        toolbar->_type_buttons[0]->set_active();
+        _type_buttons[0]->set_active();
     } else if (!strcmp(arctypestr,"arc")) {
-        toolbar->_type_buttons[1]->set_active();
+        _type_buttons[1]->set_active();
     } else {
-        toolbar->_type_buttons[2]->set_active();
+        _type_buttons[2]->set_active();
     }
 
-    toolbar->_freeze = false;
+    _freeze = false;
 }
 
 }

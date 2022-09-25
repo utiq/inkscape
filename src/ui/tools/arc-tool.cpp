@@ -41,7 +41,6 @@
 #include "ui/tools/tool-base.h"
 
 #include "xml/repr.h"
-#include "xml/node-event-vector.h"
 
 using Inkscape::DocumentUndo;
 

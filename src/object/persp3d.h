@@ -17,49 +17,48 @@
 #include <map>
 #include <vector>
 
-#include "transf_mat_3x4.h"
 #include "document.h"
 #include "inkscape.h" // for SP_ACTIVE_DOCUMENT
-
 #include "sp-object.h"
+#include "transf_mat_3x4.h"
+#include "xml/node-observer.h"
 
 class SPBox3D;
+class Persp3D;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+class Persp3DNodeObserver : public Inkscape::XML::NodeObserver
+{
+    friend class Persp3D;
+    ~Persp3DNodeObserver() override = default; // can only exist as a direct base of Persp3D
 
-class Box3dTool;
+    void notifyAttributeChanged(Inkscape::XML::Node &, GQuark, Inkscape::Util::ptr_shared, Inkscape::Util::ptr_shared) final;
+};
 
-}
-}
-}
-
-
-class Persp3DImpl {
+class Persp3DImpl
+{
 public:
     Persp3DImpl();
 
-//private:
-    Proj::TransfMat3x4 tmat;
+    Proj::TransfMat3x4 tmat{Proj::TransfMat3x4()};
 
     // Also write the list of boxes into the xml repr and vice versa link boxes to their persp3d?
     std::vector<SPBox3D *> boxes;
-    SPDocument *document;
+    SPDocument *document{nullptr};
 
     // for debugging only
     int my_counter;
-
-//    friend class Persp3D;
 };
 
-class Persp3D final : public SPObject {
+class Persp3D final
+    : public SPObject
+    , private Persp3DNodeObserver
+{
 public:
 	Persp3D();
 	~Persp3D() override;
     int tag() const override { return tag_of<decltype(*this)>; }
 
-    Persp3DImpl *perspective_impl;
+    std::unique_ptr<Persp3DImpl> perspective_impl;
 
 protected:
 	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
@@ -112,6 +111,10 @@ public:
     void print_debugging_info () const;
     static void print_debugging_info_all(SPDocument *doc);
     static void print_all_selected();
+
+private:
+    friend Persp3DNodeObserver; // for static_cast
+    Persp3DNodeObserver &nodeObserver() { return *this; }
 };
 
 #endif /* __PERSP3D_H__ */

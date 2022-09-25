@@ -26,7 +26,6 @@
 #include <glib.h>
 
 #include "xml/composite-node-observer.h"
-#include "xml/node-event-vector.h"
 #include "debug/event-tracker.h"
 #include "debug/simple-event.h"
 
@@ -118,62 +117,6 @@ void CompositeNodeObserver::add(NodeObserver &observer) {
     } else {
         _active.emplace_back(observer);
     }
-}
-
-namespace {
-
-class VectorNodeObserver : public NodeObserver, public GC::Managed<> {
-public:
-    VectorNodeObserver(NodeEventVector const &v, void *d)
-    : vector(v), data(d) {}
-
-    NodeEventVector const &vector;
-    void * const data;
-
-    void notifyChildAdded(Node &node, Node &child, Node *prev) override {
-        if (vector.child_added) {
-            vector.child_added(&node, &child, prev, data);
-        }
-    }
-
-    void notifyChildRemoved(Node &node, Node &child, Node *prev) override {
-        if (vector.child_removed) {
-            vector.child_removed(&node, &child, prev, data);
-        }
-    }
-
-    void notifyChildOrderChanged(Node &node, Node &child, Node *old_prev, Node *new_prev) override {
-        if (vector.order_changed) {
-            vector.order_changed(&node, &child, old_prev, new_prev, data);
-        }
-    }
-
-    void notifyContentChanged(Node &node, Util::ptr_shared old_content, Util::ptr_shared new_content) override {
-        if (vector.content_changed) {
-            vector.content_changed(&node, old_content, new_content, data);
-        }
-    }
-
-    void notifyAttributeChanged(Node &node, GQuark name, Util::ptr_shared old_value, Util::ptr_shared new_value) override {
-        if (vector.attr_changed) {
-            vector.attr_changed(&node, g_quark_to_string(name), old_value, new_value, false, data);
-        }
-    }
-
-    void notifyElementNameChanged(Node& node, GQuark old_name, GQuark new_name) override {
-        if (vector.element_name_changed) {
-            vector.element_name_changed(&node, g_quark_to_string(old_name), g_quark_to_string(new_name), data);
-        }
-    }
-};
-
-}
-
-void CompositeNodeObserver::addListener(NodeEventVector const &vector,
-                                        void *data)
-{
-    Debug::EventTracker<Debug::SimpleEvent<Debug::Event::XML> > tracker("add-listener");
-    add(*(new VectorNodeObserver(vector, data)));
 }
 
 namespace {
@@ -270,43 +213,9 @@ void CompositeNodeObserver::remove(NodeObserver &observer) {
         remove_one(_pending, _pending_marked, p);
     }
 }
-
-namespace {
-
-struct vector_data_matches {
-    void * const data;
-    vector_data_matches(void *d) : data(d) {}
     
-    bool operator()(NodeObserver const &observer) {
-        VectorNodeObserver const *vo=dynamic_cast<VectorNodeObserver const *>(&observer);
-        bool OK = false;
-        if (vo) {
-            if (vo && vo->data == data) {
-                OK = true;
-            }
-        }
-        return OK;
-    }
-};
-
-}
-
-void CompositeNodeObserver::removeListenerByData(void *data) {
-    Debug::EventTracker<Debug::SimpleEvent<Debug::Event::XML> > tracker("remove-listener-by-data");
-    vector_data_matches p(data);
-    if (_iterating) {
-        mark_one(_active, _active_marked, p) ||
-        mark_one(_pending, _pending_marked, p);
-    } else {
-        remove_one(_active, _active_marked, p) ||
-        remove_one(_pending, _pending_marked, p);
-    }
-}
-    
-}
-
-}
-
+} // XML
+} // Inkscape
 /*
   Local Variables:
   mode:c++

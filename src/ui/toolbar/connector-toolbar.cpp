@@ -48,25 +48,13 @@
 #include "ui/widget/canvas.h"
 #include "ui/widget/spin-button-tool-item.h"
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::DocumentUndo;
-
-static Inkscape::XML::NodeEventVector connector_tb_repr_events = {
-    nullptr, /* child_added */
-    nullptr, /* child_removed */
-    Inkscape::UI::Toolbar::ConnectorToolbar::event_attr_changed,
-    nullptr, /* content_changed */
-    nullptr  /* order_changed */
-};
 
 namespace Inkscape {
 namespace UI {
 namespace Toolbar {
 ConnectorToolbar::ConnectorToolbar(SPDesktop *desktop)
-    : Toolbar(desktop),
-    _freeze(false),
-    _repr(nullptr)
+    : Toolbar(desktop)
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
@@ -166,7 +154,7 @@ ConnectorToolbar::ConnectorToolbar(SPDesktop *desktop)
     g_assert(repr != nullptr);
 
     if(_repr) {
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         Inkscape::GC::release(_repr);
         _repr = nullptr;
     }
@@ -174,8 +162,8 @@ ConnectorToolbar::ConnectorToolbar(SPDesktop *desktop)
     if (repr) {
         _repr = repr;
         Inkscape::GC::anchor(_repr);
-        _repr->addListener(&connector_tb_repr_events, this);
-        _repr->synthesizeEvents(&connector_tb_repr_events, this);
+        _repr->addObserver(*this);
+        _repr->synthesizeEvents(*this);
     }
 
     show_all();
@@ -392,24 +380,18 @@ ConnectorToolbar::nooverlaps_graph_layout_toggled()
                 _overlap_item->get_active());
 }
 
-void
-ConnectorToolbar::event_attr_changed(Inkscape::XML::Node *repr,
-                                     gchar const         *name,
-                                     gchar const         * /*old_value*/,
-                                     gchar const         * /*new_value*/,
-                                     bool                  /*is_interactive*/,
-                                     gpointer             data)
+void ConnectorToolbar::notifyAttributeChanged(Inkscape::XML::Node &repr, GQuark name_,
+                                              Inkscape::Util::ptr_shared,
+                                              Inkscape::Util::ptr_shared)
 {
-    auto toolbar = reinterpret_cast<ConnectorToolbar *>(data);
+    auto const name = g_quark_to_string(name_);
+    if (!_freeze && (strcmp(name, "inkscape:connector-spacing") == 0) ) {
+        gdouble spacing = repr.getAttributeDouble("inkscape:connector-spacing", defaultConnSpacing);
 
-    if ( !toolbar->_freeze
-         && (strcmp(name, "inkscape:connector-spacing") == 0) ) {
-        gdouble spacing = repr->getAttributeDouble("inkscape:connector-spacing", defaultConnSpacing);
+        _spacing_adj->set_value(spacing);
 
-        toolbar->_spacing_adj->set_value(spacing);
-
-        if (toolbar->_desktop->canvas) {
-            toolbar->_desktop->canvas->grab_focus();
+        if (_desktop->canvas) {
+            _desktop->canvas->grab_focus();
         }
     }
 }

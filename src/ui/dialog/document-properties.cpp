@@ -20,21 +20,23 @@
  */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"  // only include where actually required!
+#include "config.h" // only include where actually required!
 #endif
 
 #include <vector>
-#include "style.h"
-#include "rdf.h"
 
 #include "actions/actions-tools.h"
 #include "document-properties.h"
 #include "include/gtkmm_version.h"
 #include "io/sys.h"
+#include "object/color-profile.h"
 #include "object/sp-root.h"
 #include "object/sp-grid.h"
 #include "object/sp-script.h"
-#include "object/color-profile.h"
+#include "page-manager.h"
+#include "rdf.h"
+#include "style.h"
+#include "svg/svg-color.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
@@ -42,11 +44,6 @@
 #include "ui/widget/alignment-selector.h"
 #include "ui/widget/entity-entry.h"
 #include "ui/widget/notebook-page.h"
-#include "xml/node-event-vector.h"
-
-#include "page-manager.h"
-#include "svg/svg-color.h"
-
 #include "ui/widget/page-properties.h"
 
 namespace Inkscape {
@@ -55,20 +52,6 @@ namespace Dialog {
 
 #define SPACE_SIZE_X 15
 #define SPACE_SIZE_Y 10
-
-//===================================================
-
-static void on_child_added(Inkscape::XML::Node *repr, Inkscape::XML::Node *child, Inkscape::XML::Node *ref, void * data);
-static void on_child_removed(Inkscape::XML::Node *repr, Inkscape::XML::Node *child, Inkscape::XML::Node *ref, void * data);
-static void on_repr_attr_changed (Inkscape::XML::Node *, gchar const *, gchar const *, gchar const *, bool, gpointer);
-
-static Inkscape::XML::NodeEventVector const _repr_events = {
-    on_child_added, // child_added
-    on_child_removed, // child_removed
-    on_repr_attr_changed,
-    nullptr, // content_changed
-    nullptr  // order_changed
-};
 
 static void docprops_style_button(Gtk::Button& btn, char const* iconName)
 {
@@ -104,6 +87,9 @@ DocumentProperties::DocumentProperties()
     , _grids_vbox(Gtk::ORIENTATION_VERTICAL)
     , _grids_hbox_crea(Gtk::ORIENTATION_HORIZONTAL)
     , _grids_space(Gtk::ORIENTATION_HORIZONTAL)
+    // Attach nodeobservers to this document
+    , _namedview_connection(this)
+    , _root_connection(this)
 {
     set_spacing (0);
     pack_start(_notebook, true, true);
@@ -134,7 +120,7 @@ DocumentProperties::DocumentProperties()
 
 DocumentProperties::~DocumentProperties()
 {
-    for (auto & it : _rdflist)
+    for (auto &it : _rdflist)
         delete it;
 }
 
@@ -299,8 +285,7 @@ std::optional<Geom::Scale> get_document_scale_helper(SPDocument& doc) {
             if (vw > 0 && vh > 0) {
                 return Geom::Scale(root->width.value / vw, root->height.value / vh);
             }
-        }
-        else {
+        } else {
             // no viewbox, use SVG size in pixels
             auto w = root->width.computed;
             auto h = root->height.computed;
@@ -329,8 +314,7 @@ void DocumentProperties::update_scale_ui(SPDesktop* desktop) {
         _page->set_dimension(PageProperties::Dimension::Scale, sx, sx); // only report one, only one "scale" is used
         _page->set_check(PageProperties::Check::NonuniformScale, !uniform);
         _page->set_check(PageProperties::Check::DisabledScale, false);
-    }
-    else {
+    } else {
         // no scale
         _page->set_dimension(PageProperties::Dimension::Scale, 1, 1);
         _page->set_check(PageProperties::Check::NonuniformScale, false);
@@ -533,7 +517,7 @@ static void sanitizeName( Glib::ustring& str )
             && ((val < 'a') || (val > 'z'))
             && (val != '_')
             && (val != ':')) {
-          str.insert(0, "_");
+            str.insert(0, "_");
         }
         for (Glib::ustring::size_type i = 1; i < str.size(); i++) {
             char val = str.at(i);
@@ -1022,7 +1006,7 @@ void DocumentProperties::build_metadata()
     for (entity = rdf_work_entities; entity && entity->name; entity++, row++) {
         if ( entity->editable == RDF_EDIT_GENERIC ) {
             EntityEntry *w = EntityEntry::create (entity, _wr);
-            _rdflist.push_back (w);
+            _rdflist.push_back(w);
 
             w->_label.set_halign(Gtk::ALIGN_START);
             w->_label.set_valign(Gtk::ALIGN_CENTER);
@@ -1717,7 +1701,7 @@ void DocumentProperties::update_widgets()
     //-----------------------------------------------------------meta pages
     /* update the RDF entities */
     if (auto document = getDocument()) {
-        for (auto & it : _rdflist)
+        for (auto &it : _rdflist)
             it->update(document);
 
         _licensor.update(document);
@@ -1759,7 +1743,7 @@ void DocumentProperties::on_response (int id)
 void DocumentProperties::load_default_metadata()
 {
     /* Get the data RDF entities data from preferences*/
-    for (auto & it : _rdflist) {
+    for (auto &it : _rdflist) {
         it->load_from_preferences ();
     }
 }
@@ -1768,27 +1752,41 @@ void DocumentProperties::save_default_metadata()
 {
     /* Save these RDF entities to preferences*/
     if (auto document = getDocument()) {
-        for (auto & it : _rdflist) {
+        for (auto &it : _rdflist) {
             it->save_to_preferences(document);
         }
     }
 }
 
-void DocumentProperties::watch_connection::connect(Inkscape::XML::Node* node, const Inkscape::XML::NodeEventVector& vector, void* data) {
+void DocumentProperties::WatchConnection::connect(Inkscape::XML::Node *node)
+{
     disconnect();
     if (!node) return;
 
     _node = node;
-    _data = data;
-    node->addListener(&vector, data);
+    _node->addObserver(*this);
 }
 
-void DocumentProperties::watch_connection::disconnect() {
+void DocumentProperties::WatchConnection::disconnect() {
     if (_node) {
-        _node->removeListenerByData(_data);
+        _node->removeObserver(*this);
         _node = nullptr;
-        _data = nullptr;
     }
+}
+
+void DocumentProperties::WatchConnection::notifyChildAdded(XML::Node&, XML::Node&, XML::Node*)
+{
+    _dialog->update_gridspage();
+}
+
+void DocumentProperties::WatchConnection::notifyChildRemoved(XML::Node&, XML::Node&, XML::Node*)
+{
+    _dialog->update_gridspage();
+}
+
+void DocumentProperties::WatchConnection::notifyAttributeChanged(XML::Node&, GQuark, Util::ptr_shared, Util::ptr_shared)
+{
+    _dialog->update_widgets();
 }
 
 void DocumentProperties::documentReplaced()
@@ -1798,9 +1796,9 @@ void DocumentProperties::documentReplaced()
 
     if (auto desktop = getDesktop()) {
         _wr.setDesktop(desktop);
-        _namedview_connection.connect(desktop->getNamedView()->getRepr(), _repr_events, this);
+        _namedview_connection.connect(desktop->getNamedView()->getRepr());
         if (auto document = desktop->getDocument()) {
-            _root_connection.connect(document->getRoot()->getRepr(), _repr_events, this);
+            _root_connection.connect(document->getRoot()->getRepr());
         }
         populate_linked_profiles_box();
         update_widgets();
@@ -1811,28 +1809,6 @@ void DocumentProperties::update()
 {
     update_widgets();
 }
-
-static void on_child_added(Inkscape::XML::Node */*repr*/, Inkscape::XML::Node */*child*/, Inkscape::XML::Node */*ref*/, void *data)
-{
-    if (DocumentProperties *dialog = static_cast<DocumentProperties *>(data))
-        dialog->update_gridspage();
-}
-
-static void on_child_removed(Inkscape::XML::Node */*repr*/, Inkscape::XML::Node */*child*/, Inkscape::XML::Node */*ref*/, void *data)
-{
-    if (DocumentProperties *dialog = static_cast<DocumentProperties *>(data))
-        dialog->update_gridspage();
-}
-
-/**
- * Called when XML node attribute changed; updates dialog widgets.
- */
-static void on_repr_attr_changed(Inkscape::XML::Node *, gchar const *, gchar const *, gchar const *, bool, gpointer data)
-{
-    if (DocumentProperties *dialog = static_cast<DocumentProperties *>(data))
-        dialog->update_widgets();
-}
-
 
 /*########################################################################
 # BUTTON CLICK HANDLERS    (callbacks)

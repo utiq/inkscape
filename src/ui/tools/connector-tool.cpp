@@ -105,24 +105,45 @@
 #include "ui/knot/knot.h"
 #include "ui/widget/canvas.h"  // Enter events
 
+#include "xml/node.h"
+
 #include "svg/svg.h"
 
-#include "xml/node-event-vector.h"
+namespace Inkscape::UI::Tools {
+
+void CCToolShapeNodeObserver::notifyAttributeChanged(Inkscape::XML::Node &repr, GQuark name_, Util::ptr_shared, Util::ptr_shared)
+{
+    auto tool = static_cast<ConnectorTool*>(this);
+
+    auto const name = g_quark_to_string(name_);
+    // Look for changes that result in onscreen movement.
+    if (!strcmp(name, "d") || !strcmp(name, "x") || !strcmp(name, "y") ||
+        !strcmp(name, "width") || !strcmp(name, "height") ||
+        !strcmp(name, "transform")) {
+        if (&repr == tool->active_shape_repr) {
+            // Active shape has moved. Clear active shape.
+            tool->cc_clear_active_shape();
+        } else if (&repr == tool->active_conn_repr) {
+            // The active conn has been moved.
+            // Set it again, which just sets new handle positions.
+            tool->cc_set_active_conn(tool->active_conn);
+        }
+    }
+}
+
+void CCToolLayerNodeObserver::notifyChildRemoved(Inkscape::XML::Node&, Inkscape::XML::Node &child, Inkscape::XML::Node*)
+{
+    auto tool = static_cast<ConnectorTool*>(this);
+
+    if (&child == tool->active_shape_repr) {
+        // The active shape has been deleted. Clear active shape.
+        tool->cc_clear_active_shape();
+    }
+}
 
 using Inkscape::DocumentUndo;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
-
 static void cc_clear_active_knots(SPKnotList k);
-
-static void shape_event_attr_deleted(Inkscape::XML::Node *repr,
-        Inkscape::XML::Node *child, Inkscape::XML::Node *ref, gpointer data);
-
-static void shape_event_attr_changed(Inkscape::XML::Node *repr, gchar const *name,
-        gchar const *old_value, gchar const *new_value, bool is_interactive,
-        gpointer data);
 
 static void cc_select_handle(SPKnot* knot);
 static void cc_deselect_handle(SPKnot* knot);
@@ -131,46 +152,9 @@ static bool cc_item_is_shape(SPItem *item);
 /*static Geom::Point connector_drag_origin_w(0, 0);
 static bool connector_within_tolerance = false;*/
 
-static Inkscape::XML::NodeEventVector shape_repr_events = {
-    nullptr, /* child_added */
-    nullptr, /* child_added */
-    shape_event_attr_changed,
-    nullptr, /* content_changed */
-    nullptr  /* order_changed */
-};
-
-static Inkscape::XML::NodeEventVector layer_repr_events = {
-    nullptr, /* child_added */
-    shape_event_attr_deleted,
-    nullptr, /* child_added */
-    nullptr, /* content_changed */
-    nullptr  /* order_changed */
-};
-
 ConnectorTool::ConnectorTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/connector", "connector.svg")
-    , selection(nullptr)
-    , npoints(0)
-    , state(SP_CONNECTOR_CONTEXT_IDLE)
-    , red_bpath(nullptr)
-    , red_color(0xff00007f)
-    , newconn(nullptr)
-    , newConnRef(nullptr)
-    , curvature(0.0)
-    , isOrthogonal(false)
-    , active_shape(nullptr)
-    , active_shape_repr(nullptr)
-    , active_shape_layer_repr(nullptr)
-    , active_conn(nullptr)
-    , active_conn_repr(nullptr)
-    , active_handle(nullptr)
-    , selected_handle(nullptr)
-    , clickeditem(nullptr)
-    , clickedhandle(nullptr)
-    , shref(nullptr)
-    , sub_shref(nullptr)
-    , ehref(nullptr)
-    , sub_ehref(nullptr)
+    , state {SP_CONNECTOR_CONTEXT_IDLE}
 {
     this->selection = desktop->getSelection();
 
@@ -272,11 +256,11 @@ void ConnectorTool::cc_clear_active_shape()
     this->active_shape = nullptr;
 
     if (this->active_shape_repr) {
-        sp_repr_remove_listener_by_data(this->active_shape_repr, this);
+        this->active_shape_repr->removeObserver(shapeNodeObserver());
         Inkscape::GC::release(this->active_shape_repr);
         this->active_shape_repr = nullptr;
 
-        sp_repr_remove_listener_by_data(this->active_shape_layer_repr, this);
+        this->active_shape_layer_repr->removeObserver(layerNodeObserver());
         Inkscape::GC::release(this->active_shape_layer_repr);
         this->active_shape_layer_repr = nullptr;
     }
@@ -304,7 +288,7 @@ void ConnectorTool::cc_clear_active_conn()
     this->active_conn = nullptr;
 
     if (this->active_conn_repr) {
-        sp_repr_remove_listener_by_data(this->active_conn_repr, this);
+        this->active_conn_repr->removeObserver(shapeNodeObserver());
         Inkscape::GC::release(this->active_conn_repr);
         this->active_conn_repr = nullptr;
     }
@@ -1087,10 +1071,10 @@ void ConnectorTool::_setActiveShape(SPItem *item)
         this->active_shape = item;
         // Remove existing active shape listeners
         if (this->active_shape_repr) {
-            sp_repr_remove_listener_by_data(this->active_shape_repr, this);
+            this->active_shape_repr->removeObserver(shapeNodeObserver());
             Inkscape::GC::release(this->active_shape_repr);
 
-            sp_repr_remove_listener_by_data(this->active_shape_layer_repr, this);
+            this->active_shape_layer_repr->removeObserver(layerNodeObserver());
             Inkscape::GC::release(this->active_shape_layer_repr);
         }
 
@@ -1098,11 +1082,11 @@ void ConnectorTool::_setActiveShape(SPItem *item)
         this->active_shape_repr = item->getRepr();
         if (this->active_shape_repr) {
             Inkscape::GC::anchor(this->active_shape_repr);
-            sp_repr_add_listener(this->active_shape_repr, &shape_repr_events, this);
+            this->active_shape_repr->addObserver(shapeNodeObserver());
 
             this->active_shape_layer_repr = this->active_shape_repr->parent();
             Inkscape::GC::anchor(this->active_shape_layer_repr);
-            sp_repr_add_listener(this->active_shape_layer_repr, &layer_repr_events, this);
+            this->active_shape_layer_repr->addObserver(layerNodeObserver());
         }
 
         cc_clear_active_knots(this->knots);
@@ -1163,7 +1147,7 @@ void ConnectorTool::cc_set_active_conn(SPItem *item)
 
     // Remove existing active conn listeners
     if (this->active_conn_repr) {
-        sp_repr_remove_listener_by_data(this->active_conn_repr, this);
+        this->active_conn_repr->removeObserver(shapeNodeObserver());
         Inkscape::GC::release(this->active_conn_repr);
         this->active_conn_repr = nullptr;
     }
@@ -1172,7 +1156,7 @@ void ConnectorTool::cc_set_active_conn(SPItem *item)
     this->active_conn_repr = item->getRepr();
     if (this->active_conn_repr) {
         Inkscape::GC::anchor(this->active_conn_repr);
-        sp_repr_add_listener(this->active_conn_repr, &shape_repr_events, this);
+        this->active_conn_repr->addObserver(shapeNodeObserver());
     }
 
     for (int i = 0; i < 2; ++i) {
@@ -1326,44 +1310,7 @@ void ConnectorTool::_selectionChanged(Inkscape::Selection *selection)
     }
 }
 
-static void shape_event_attr_deleted(Inkscape::XML::Node */*repr*/, Inkscape::XML::Node *child,
-        Inkscape::XML::Node */*ref*/, gpointer data)
-{
-    g_assert(data);
-    ConnectorTool *cc = SP_CONNECTOR_CONTEXT(data);
-
-    if (child == cc->active_shape_repr) {
-        // The active shape has been deleted.  Clear active shape.
-        cc->cc_clear_active_shape();
-    }
-}
-
-
-static void shape_event_attr_changed(Inkscape::XML::Node *repr, gchar const *name,
-        gchar const */*old_value*/, gchar const */*new_value*/, bool /*is_interactive*/, gpointer data)
-{
-    g_assert(data);
-    ConnectorTool *cc = SP_CONNECTOR_CONTEXT(data);
-
-    // Look for changes that result in onscreen movement.
-    if (!strcmp(name, "d") || !strcmp(name, "x") || !strcmp(name, "y") ||
-            !strcmp(name, "width") || !strcmp(name, "height") ||
-            !strcmp(name, "transform")) {
-        if (repr == cc->active_shape_repr) {
-            // Active shape has moved. Clear active shape.
-            cc->cc_clear_active_shape();
-        } else if (repr == cc->active_conn_repr) {
-            // The active conn has been moved.
-            // Set it again, which just sets new handle positions.
-            cc->cc_set_active_conn(cc->active_conn);
-        }
-    }
-}
-
-}
-}
-}
-
+} // namespace Inkscape::UI::Tools
 
 /*
   Local Variables:

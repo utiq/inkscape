@@ -10,19 +10,26 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <cstring>
-#include <gmodule.h>
-
-#include "xml/node-event-vector.h"
 #include "sp-xmlview-tree.h"
 
+#include <cstring>
+#include <gmodule.h>
+#include <memory>
+#include <string>
+
+#include "xml/node-observer.h"
+#include "xml/node.h"
+
 namespace {
-struct NodeData {
-	SPXMLViewTree * tree;
-	GtkTreeRowReference  *rowref;
-	Inkscape::XML::Node * repr;
+
+struct NodeData
+{
+    SPXMLViewTree *tree;
+    GtkTreeRowReference *rowref;
+    Inkscape::XML::Node *repr;
     bool expanded = false; //< true if tree view has been expanded to this node
     bool dragging = false;
+    std::unique_ptr<Inkscape::XML::NodeObserver> observer;
 
     NodeData(SPXMLViewTree *tree, GtkTreeIter *node, Inkscape::XML::Node *repr);
     ~NodeData();
@@ -30,6 +37,7 @@ struct NodeData {
 
 // currently dragged node
 Inkscape::XML::Node *dragging_repr = nullptr;
+
 } // namespace
 
 enum { STORE_TEXT_COL = 0, STORE_DATA_COL, STORE_N_COLS };
@@ -39,17 +47,6 @@ static void sp_xmlview_tree_destroy(GtkWidget * object);
 static NodeData *sp_xmlview_tree_node_get_data(GtkTreeModel *model, GtkTreeIter *iter);
 
 static void add_node(SPXMLViewTree *tree, GtkTreeIter *parent, GtkTreeIter *before, Inkscape::XML::Node *repr);
-
-static void element_child_added (Inkscape::XML::Node * repr, Inkscape::XML::Node * child, Inkscape::XML::Node * ref, gpointer data);
-static void element_attr_changed (Inkscape::XML::Node * repr, const gchar * key, const gchar * old_value, const gchar * new_value, bool is_interactive, gpointer data);
-static void element_child_removed (Inkscape::XML::Node * repr, Inkscape::XML::Node * child, Inkscape::XML::Node * ref, gpointer data);
-static void element_order_changed (Inkscape::XML::Node * repr, Inkscape::XML::Node * child, Inkscape::XML::Node * oldref, Inkscape::XML::Node * newref, gpointer data);
-static void element_name_changed (Inkscape::XML::Node* repr, gchar const* oldname, gchar const* newname, gpointer data);
-static void element_attr_or_name_change_update(Inkscape::XML::Node* repr, NodeData* data);
-
-static void text_content_changed (Inkscape::XML::Node * repr, const gchar * old_content, const gchar * new_content, gpointer data);
-static void comment_content_changed (Inkscape::XML::Node * repr, const gchar * old_content, const gchar * new_content, gpointer data);
-static void pi_content_changed (Inkscape::XML::Node * repr, const gchar * old_content, const gchar * new_content, gpointer data);
 
 static gboolean ref_to_sibling (NodeData *node, Inkscape::XML::Node * ref, GtkTreeIter *);
 static gboolean repr_to_child (NodeData *node, Inkscape::XML::Node * repr, GtkTreeIter *);
@@ -64,41 +61,217 @@ static void on_drag_begin(GtkWidget *, GdkDragContext *, gpointer userdata);
 static void on_drag_end(GtkWidget *, GdkDragContext *, gpointer userdata);
 static gboolean do_drag_motion(GtkWidget *, GdkDragContext *, gint x, gint y, guint time, gpointer user_data);
 
-static const Inkscape::XML::NodeEventVector element_repr_events = {
-        element_child_added,
-        element_child_removed,
-        element_attr_changed,
-        nullptr, /* content_changed */
-        element_order_changed,
-        element_name_changed
+static bool get_first_child(NodeData *data, GtkTreeIter *child_iter);
+static void remove_dummy_rows(GtkTreeStore *store, GtkTreeIter *iter);
+static void sp_remove_newlines_and_tabs(std::string &val, size_t const maxlen = 200);
+
+namespace {
+
+class ElementNodeObserver final : public Inkscape::XML::NodeObserver
+{
+    NodeData *_nodedata;
+
+public:
+    ElementNodeObserver(NodeData *nodedata)
+        : _nodedata(nodedata)
+    {}
+
+    void notifyChildAdded(Inkscape::XML::Node&, Inkscape::XML::Node &child_, Inkscape::XML::Node *ref) override
+    {
+        GtkTreeIter before;
+        Inkscape::XML::Node *child = &child_;
+
+        if (_nodedata->tree->blocked) return;
+
+        if (!ref_to_sibling (_nodedata, ref, &before)) {
+            return;
+        }
+
+        GtkTreeIter data_iter;
+        tree_ref_to_iter(_nodedata->tree, &data_iter,  _nodedata->rowref);
+
+        if (!_nodedata->expanded) {
+            auto model = GTK_TREE_MODEL(_nodedata->tree->store);
+            GtkTreeIter childiter;
+            if (!gtk_tree_model_iter_children(model, &childiter, &data_iter)) {
+                // no children yet, add a dummy
+                child = nullptr;
+            } else if (sp_xmlview_tree_node_get_repr(model, &childiter) == nullptr) {
+                // already has a dummy child
+                return;
+            }
+        }
+
+        add_node(_nodedata->tree, &data_iter, &before, child);
+    }
+
+    void notifyAttributeChanged(Inkscape::XML::Node &node, GQuark key_, Inkscape::Util::ptr_shared,
+                                Inkscape::Util::ptr_shared) override
+    {
+        auto const key = g_quark_to_string(key_);
+        if (std::strcmp(key, "id") != 0 && std::strcmp(key, "inkscape:label") != 0)
+            return;
+        elementAttrOrNameChangedUpdate(&node);
+    }
+
+    void notifyElementNameChanged(Inkscape::XML::Node &node, GQuark, GQuark) override
+    {
+        elementAttrOrNameChangedUpdate(&node);
+    }
+
+    void notifyChildOrderChanged(Inkscape::XML::Node &, Inkscape::XML::Node &child, Inkscape::XML::Node *,
+                                 Inkscape::XML::Node *newref) override
+    {
+        GtkTreeIter before, node;
+
+        if (_nodedata->tree->blocked)
+            return;
+
+        ref_to_sibling(_nodedata, newref, &before);
+        repr_to_child(_nodedata, &child, &node);
+
+        if (gtk_tree_store_iter_is_valid(_nodedata->tree->store, &before)) {
+            gtk_tree_store_move_before(_nodedata->tree->store, &node, &before);
+        } else {
+            repr_to_child(_nodedata, newref, &before);
+            gtk_tree_store_move_after(_nodedata->tree->store, &node, &before);
+        }
+    }
+
+    void notifyChildRemoved(Inkscape::XML::Node &repr, Inkscape::XML::Node &child, Inkscape::XML::Node *) override
+    {
+        if (_nodedata->tree->blocked)
+            return;
+
+        GtkTreeIter iter;
+        if (repr_to_child(_nodedata, &child, &iter)) {
+            delete sp_xmlview_tree_node_get_data(GTK_TREE_MODEL(_nodedata->tree->store), &iter);
+            gtk_tree_store_remove(_nodedata->tree->store, &iter);
+        } else if (!repr.firstChild() && get_first_child(_nodedata, &iter)) {
+            // remove dummy when all children gone
+            remove_dummy_rows(_nodedata->tree->store, &iter);
+        } else {
+            return;
+        }
+
+#ifndef GTK_ISSUE_2510_IS_FIXED
+        // https://gitlab.gnome.org/GNOME/gtk/issues/2510
+        gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(GTK_TREE_VIEW(_nodedata->tree)));
+#endif
+    }
+
+    void elementAttrOrNameChangedUpdate(Inkscape::XML::Node *repr)
+    {
+        if (_nodedata->tree->blocked) {
+            return;
+        }
+
+        gchar const* node_name = repr->name();
+        gchar const* id_value = repr->attribute("id");
+        gchar const* label_value = repr->attribute("inkscape:label");
+        gchar* display_text;
+
+        if (id_value && label_value) {
+            display_text = g_strdup_printf ("<%s id=\"%s\" inkscape:label=\"%s\">", node_name, id_value, label_value);
+        } else if (id_value) {
+            display_text = g_strdup_printf ("<%s id=\"%s\">", node_name, id_value);
+        } else if (label_value) {
+            display_text = g_strdup_printf ("<%s inkscape:label=\"%s\">", node_name, label_value);
+        } else {
+            display_text = g_strdup_printf ("<%s>", node_name);
+        }
+
+        GtkTreeIter iter;
+        if (tree_ref_to_iter(_nodedata->tree, &iter,  _nodedata->rowref)) {
+            gtk_tree_store_set (GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, display_text, -1);
+        }
+
+        g_free(display_text);
+    }
 };
 
-static const Inkscape::XML::NodeEventVector text_repr_events = {
-        nullptr, /* child_added */
-        nullptr, /* child_removed */
-        nullptr, /* attr_changed */
-        text_content_changed,
-        nullptr  /* order_changed */,
-        nullptr  /* element_name_changed */
+static auto null_to_empty(char const *str)
+{
+    return str ? str : "";
+}
+
+class TextNodeObserver final : public Inkscape::XML::NodeObserver
+{
+    NodeData *_nodedata;
+
+public:
+    TextNodeObserver(NodeData *nodedata)
+        : _nodedata(nodedata)
+    {}
+
+    void notifyContentChanged(Inkscape::XML::Node &, Inkscape::Util::ptr_shared,
+                              Inkscape::Util::ptr_shared new_content) override
+    {
+        if (_nodedata->tree->blocked)
+            return;
+
+        auto nolinecontent = std::string("\"").append(null_to_empty(new_content.pointer())).append("\"");
+        sp_remove_newlines_and_tabs(nolinecontent);
+
+        GtkTreeIter iter;
+        if (tree_ref_to_iter(_nodedata->tree, &iter, _nodedata->rowref)) {
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(),
+                               -1);
+        }
+    }
 };
 
-static const Inkscape::XML::NodeEventVector comment_repr_events = {
-        nullptr, /* child_added */
-        nullptr, /* child_removed */
-        nullptr, /* attr_changed */
-        comment_content_changed,
-        nullptr  /* order_changed */,
-        nullptr  /* element_name_changed */
+class CommentNodeObserver final : public Inkscape::XML::NodeObserver
+{
+    NodeData *_nodedata;
+
+public:
+    CommentNodeObserver(NodeData *nodedata)
+        : _nodedata(nodedata)
+    {}
+    void notifyContentChanged(Inkscape::XML::Node &, Inkscape::Util::ptr_shared,
+                              Inkscape::Util::ptr_shared new_content) override
+    {
+        if (_nodedata->tree->blocked)
+            return;
+
+        auto nolinecontent = std::string("<!--").append(null_to_empty(new_content.pointer())).append("-->");
+        sp_remove_newlines_and_tabs(nolinecontent);
+
+        GtkTreeIter iter;
+        if (tree_ref_to_iter(_nodedata->tree, &iter, _nodedata->rowref)) {
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(),
+                               -1);
+        }
+    }
 };
 
-static const Inkscape::XML::NodeEventVector pi_repr_events = {
-        nullptr, /* child_added */
-        nullptr, /* child_removed */
-        nullptr, /* attr_changed */
-        pi_content_changed,
-        nullptr  /* order_changed */,
-        nullptr  /* element_name_changed */
+class PINodeObserver final : public Inkscape::XML::NodeObserver
+{
+    NodeData *_nodedata;
+
+public:
+    PINodeObserver(NodeData *nodedata)
+        : _nodedata(nodedata)
+    {}
+    void notifyContentChanged(Inkscape::XML::Node &repr, Inkscape::Util::ptr_shared,
+                              Inkscape::Util::ptr_shared new_content) override
+    {
+        if (_nodedata->tree->blocked)
+            return;
+
+        auto nolinecontent = std::string("<?").append(repr.name()).append(" ").append(null_to_empty(new_content.pointer())).append("?>");
+        sp_remove_newlines_and_tabs(nolinecontent);
+
+        GtkTreeIter iter;
+        if (tree_ref_to_iter(_nodedata->tree, &iter, _nodedata->rowref)) {
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(),
+                               -1);
+        }
+    }
 };
+
+} // namespace
 
 /**
  * Get an iterator to the first child of `data`
@@ -148,7 +321,8 @@ static gboolean on_test_expand_row( //
 
         // insert real rows
         data->expanded = true;
-        sp_repr_synthesize_events(data->repr, &element_repr_events, data);
+        ElementNodeObserver e(data);
+        data->repr->synthesizeEvents(e);
     }
 
     return false;
@@ -219,8 +393,6 @@ void sp_xmlview_tree_destroy(GtkWidget * object)
 void
 add_node (SPXMLViewTree * tree, GtkTreeIter *parent, GtkTreeIter *before, Inkscape::XML::Node * repr)
 {
-	const Inkscape::XML::NodeEventVector * vec;
-
 	g_assert (tree != nullptr);
 
     if (before && !gtk_tree_store_iter_is_valid(tree->store, before)) {
@@ -241,30 +413,29 @@ add_node (SPXMLViewTree * tree, GtkTreeIter *parent, GtkTreeIter *before, Inksca
 
     auto data = new NodeData(tree, &iter, repr);
 
-    g_assert (data != nullptr);
+    g_assert(data != nullptr);
 
     gtk_tree_store_set(tree->store, &iter, STORE_DATA_COL, data, -1);
 
-	if ( repr->type() == Inkscape::XML::NodeType::TEXT_NODE ) {
-		vec = &text_repr_events;
-	} else if ( repr->type() == Inkscape::XML::NodeType::COMMENT_NODE ) {
-		vec = &comment_repr_events;
-	} else if ( repr->type() == Inkscape::XML::NodeType::PI_NODE ) {
-		vec = &pi_repr_events;
-	} else if ( repr->type() == Inkscape::XML::NodeType::ELEMENT_NODE ) {
-		vec = &element_repr_events;
-	} else {
-		vec = nullptr;
-	}
+    if (repr->type() == Inkscape::XML::NodeType::TEXT_NODE) {
+        data->observer = std::make_unique<TextNodeObserver>(data);
+    } else if (repr->type() == Inkscape::XML::NodeType::COMMENT_NODE) {
+        data->observer = std::make_unique<CommentNodeObserver>(data);
+    } else if (repr->type() == Inkscape::XML::NodeType::PI_NODE) {
+        data->observer = std::make_unique<PINodeObserver>(data);
+    } else if (repr->type() == Inkscape::XML::NodeType::ELEMENT_NODE) {
+        data->observer = std::make_unique<ElementNodeObserver>(data);
+    }
 
-	if (vec) {
-		/* cheat a little to get the text updated on nodes without id */
+    if (data->observer) {
+        /* cheat a little to get the text updated on nodes without id */
         if (repr->type() == Inkscape::XML::NodeType::ELEMENT_NODE && repr->attribute("id") == nullptr) {
-			element_attr_changed (repr, "id", nullptr, nullptr, false, data);
-		}
-		sp_repr_add_listener (repr, vec, data);
-		sp_repr_synthesize_events (repr, vec, data);
-	}
+            data->observer->notifyAttributeChanged(*repr, g_quark_from_static_string("id"),
+                                                   Inkscape::Util::ptr_shared(), Inkscape::Util::ptr_shared());
+        }
+        repr->addObserver(*data->observer);
+        repr->synthesizeEvents(*data->observer);
+    }
 }
 
 static gboolean remove_all_listeners(GtkTreeModel *model, GtkTreePath *, GtkTreeIter *iter, gpointer)
@@ -287,127 +458,12 @@ NodeData::NodeData(SPXMLViewTree *tree, GtkTreeIter *iter, Inkscape::XML::Node *
 NodeData::~NodeData()
 {
     if (repr) {
-        sp_repr_remove_listener_by_data(repr, this);
+        if (observer) {
+            repr->removeObserver(*observer);
+        }
         Inkscape::GC::release(repr);
     }
     gtk_tree_row_reference_free(rowref);
-}
-
-void element_child_added (Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node * child, Inkscape::XML::Node * ref, gpointer ptr)
-{
-    NodeData *data = static_cast<NodeData *>(ptr);
-    GtkTreeIter before;
-
-    if (data->tree->blocked) return;
-
-    if (!ref_to_sibling (data, ref, &before)) {
-        return;
-    }
-
-    GtkTreeIter data_iter;
-    tree_ref_to_iter(data->tree, &data_iter,  data->rowref);
-
-    if (!data->expanded) {
-        auto model = GTK_TREE_MODEL(data->tree->store);
-        GtkTreeIter childiter;
-        if (!gtk_tree_model_iter_children(model, &childiter, &data_iter)) {
-            // no children yet, add a dummy
-            child = nullptr;
-        } else if (sp_xmlview_tree_node_get_repr(model, &childiter) == nullptr) {
-            // already has a dummy child
-            return;
-        }
-    }
-
-    add_node (data->tree, &data_iter, &before, child);
-}
-
-void element_attr_changed(
-        Inkscape::XML::Node* repr, gchar const* key,
-        gchar const* /*old_value*/, gchar const* /*new_value*/, bool /*is_interactive*/,
-        gpointer ptr)
-{
-    if (0 != strcmp (key, "id") && 0 != strcmp (key, "inkscape:label"))
-        return;
-    element_attr_or_name_change_update(repr, static_cast<NodeData*>(ptr));
-}
-
-void element_name_changed(
-        Inkscape::XML::Node* repr,
-        gchar const* /*oldname*/, gchar const* /*newname*/, gpointer ptr)
-{
-    element_attr_or_name_change_update(repr, static_cast<NodeData*>(ptr));
-}
-
-void element_attr_or_name_change_update(Inkscape::XML::Node* repr, NodeData* data)
-{
-    if (data->tree->blocked) {
-        return;
-    }
-
-    gchar const* node_name = repr->name();
-    gchar const* id_value = repr->attribute("id");
-    gchar const* label_value = repr->attribute("inkscape:label");
-    gchar* display_text;
-
-    if (id_value && label_value) {
-        display_text = g_strdup_printf ("<%s id=\"%s\" inkscape:label=\"%s\">", node_name, id_value, label_value);
-    } else if (id_value) {
-        display_text = g_strdup_printf ("<%s id=\"%s\">", node_name, id_value);
-    } else if (label_value) {
-        display_text = g_strdup_printf ("<%s inkscape:label=\"%s\">", node_name, label_value);
-    } else {
-        display_text = g_strdup_printf ("<%s>", node_name);
-    }
-
-    GtkTreeIter iter;
-    if (tree_ref_to_iter(data->tree, &iter,  data->rowref)) {
-        gtk_tree_store_set (GTK_TREE_STORE(data->tree->store), &iter, STORE_TEXT_COL, display_text, -1);
-    }
-
-    g_free(display_text);
-}
-
-void element_child_removed(Inkscape::XML::Node *repr, Inkscape::XML::Node *child, Inkscape::XML::Node * /*ref*/,
-                           gpointer ptr)
-{
-    NodeData *data = static_cast<NodeData *>(ptr);
-
-    if (data->tree->blocked) return;
-
-    GtkTreeIter iter;
-    if (repr_to_child(data, child, &iter)) {
-        delete sp_xmlview_tree_node_get_data(GTK_TREE_MODEL(data->tree->store), &iter);
-        gtk_tree_store_remove(data->tree->store, &iter);
-    } else if (!repr->firstChild() && get_first_child(data, &iter)) {
-        // remove dummy when all children gone
-        remove_dummy_rows(data->tree->store, &iter);
-    } else {
-        return;
-    }
-
-#ifndef GTK_ISSUE_2510_IS_FIXED
-    // https://gitlab.gnome.org/GNOME/gtk/issues/2510
-    gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(GTK_TREE_VIEW(data->tree)));
-#endif
-}
-
-void element_order_changed(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node * child, Inkscape::XML::Node * /*oldref*/, Inkscape::XML::Node * newref, gpointer ptr)
-{
-    NodeData *data = static_cast<NodeData *>(ptr);
-    GtkTreeIter before, node;
-
-    if (data->tree->blocked) return;
-
-    ref_to_sibling (data, newref, &before);
-    repr_to_child (data, child, &node);
-
-    if (gtk_tree_store_iter_is_valid(data->tree->store, &before)) {
-        gtk_tree_store_move_before (data->tree->store, &node, &before);
-    } else {
-        repr_to_child (data, newref, &before);
-        gtk_tree_store_move_after (data->tree->store, &node, &before);
-    }
 }
 
 /**
@@ -415,7 +471,7 @@ void element_order_changed(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node *
  * with placeholder symbols. The string is modified in place.
  * @param[in,out] val String in UTF-8 encoding
  */
-static void sp_remove_newlines_and_tabs(std::string &val, size_t const maxlen = 200)
+static void sp_remove_newlines_and_tabs(std::string &val, size_t const maxlen)
 {
     if (g_utf8_strlen(val.data(), maxlen * 2) > maxlen) {
         size_t newlen = g_utf8_offset_to_pointer(val.data(), maxlen - 3) - val.data();
@@ -437,51 +493,6 @@ static void sp_remove_newlines_and_tabs(std::string &val, size_t const maxlen = 
         for (size_t pos = 0; (pos = val.find(item.query, pos)) != std::string::npos;) {
             val.replace(pos, strlen(item.query), item.replacement);
         }
-    }
-}
-
-void text_content_changed(Inkscape::XML::Node * /*repr*/, const gchar * /*old_content*/, const gchar * new_content, gpointer ptr)
-{
-    NodeData *data = static_cast<NodeData *>(ptr);
-
-    if (data->tree->blocked) return;
-
-    auto nolinecontent = std::string("\"").append(new_content ? new_content : "").append("\"");
-    sp_remove_newlines_and_tabs(nolinecontent);
-
-    GtkTreeIter iter;
-    if (tree_ref_to_iter(data->tree, &iter,  data->rowref)) {
-        gtk_tree_store_set(GTK_TREE_STORE(data->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(), -1);
-    }
-}
-
-void comment_content_changed(Inkscape::XML::Node * /*repr*/, const gchar * /*old_content*/, const gchar *new_content, gpointer ptr)
-{
-    NodeData *data = static_cast<NodeData*>(ptr);
-
-    if (data->tree->blocked) return;
-
-    auto nolinecontent = std::string("<!--").append(new_content ? new_content : "").append("-->");
-    sp_remove_newlines_and_tabs(nolinecontent);
-
-    GtkTreeIter iter;
-    if (tree_ref_to_iter(data->tree, &iter,  data->rowref)) {
-        gtk_tree_store_set(GTK_TREE_STORE(data->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(), -1);
-    }
-}
-
-void pi_content_changed(Inkscape::XML::Node *repr, const gchar * /*old_content*/, const gchar *new_content, gpointer ptr)
-{
-    NodeData *data = static_cast<NodeData *>(ptr);
-
-    if (data->tree->blocked) return;
-
-    auto nolinecontent = std::string("<?").append(repr->name()).append(" ").append(new_content ? new_content : "").append("?>");
-    sp_remove_newlines_and_tabs(nolinecontent);
-
-    GtkTreeIter iter;
-    if (tree_ref_to_iter(data->tree, &iter,  data->rowref)) {
-        gtk_tree_store_set(GTK_TREE_STORE(data->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(), -1);
     }
 }
 

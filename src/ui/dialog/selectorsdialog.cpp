@@ -50,8 +50,9 @@ namespace UI {
 namespace Dialog {
 
 // Keeps a watch on style element
-class SelectorsDialog::NodeObserver : public Inkscape::XML::NodeObserver {
-  public:
+class SelectorsDialog::NodeObserver : public Inkscape::XML::NodeObserver
+{
+public:
     NodeObserver(SelectorsDialog *selectorsdialog)
         : _selectorsdialog(selectorsdialog)
     {
@@ -59,18 +60,16 @@ class SelectorsDialog::NodeObserver : public Inkscape::XML::NodeObserver {
     };
 
     void notifyContentChanged(Inkscape::XML::Node &node,
-                                      Inkscape::Util::ptr_shared old_content,
-                                      Inkscape::Util::ptr_shared new_content) override;
+                              Inkscape::Util::ptr_shared old_content,
+                              Inkscape::Util::ptr_shared new_content) override;
 
     SelectorsDialog *_selectorsdialog;
 };
 
-
-void SelectorsDialog::NodeObserver::notifyContentChanged(Inkscape::XML::Node & /*node*/,
-                                                         Inkscape::Util::ptr_shared /*old_content*/,
-                                                         Inkscape::Util::ptr_shared /*new_content*/)
+void SelectorsDialog::NodeObserver::notifyContentChanged(Inkscape::XML::Node &,
+                                                         Inkscape::Util::ptr_shared,
+                                                         Inkscape::Util::ptr_shared)
 {
-
     g_debug("SelectorsDialog::NodeObserver::notifyContentChanged");
     _selectorsdialog->_scrollock = true;
     _selectorsdialog->_updating = false;
@@ -78,36 +77,36 @@ void SelectorsDialog::NodeObserver::notifyContentChanged(Inkscape::XML::Node & /
     _selectorsdialog->_selectRow();
 }
 
-
 // Keeps a watch for new/removed/changed nodes
 // (Must update objects that selectors match.)
-class SelectorsDialog::NodeWatcher : public Inkscape::XML::NodeObserver {
-  public:
+class SelectorsDialog::NodeWatcher : public Inkscape::XML::NodeObserver
+{
+public:
     NodeWatcher(SelectorsDialog *selectorsdialog)
         : _selectorsdialog(selectorsdialog)
     {
         g_debug("SelectorsDialog::NodeWatcher: Constructor");
     };
 
-    void notifyChildAdded( Inkscape::XML::Node &/*node*/,
-                                   Inkscape::XML::Node &child,
-                                   Inkscape::XML::Node */*prev*/ ) override
+    void notifyChildAdded(Inkscape::XML::Node &,
+                          Inkscape::XML::Node &child,
+                          Inkscape::XML::Node *) override
     {
-            _selectorsdialog->_nodeAdded(child);
+        _selectorsdialog->_nodeAdded(child);
     }
 
-    void notifyChildRemoved( Inkscape::XML::Node &/*node*/,
-                                     Inkscape::XML::Node &child,
-                                     Inkscape::XML::Node */*prev*/ ) override
+    void notifyChildRemoved(Inkscape::XML::Node &,
+                            Inkscape::XML::Node &child,
+                            Inkscape::XML::Node *) override
     {
-            _selectorsdialog->_nodeRemoved(child);
+        _selectorsdialog->_nodeRemoved(child);
     }
 
-    void notifyAttributeChanged( Inkscape::XML::Node &node,
-                                         GQuark qname,
-                                         Util::ptr_shared /*old_value*/,
-                                         Util::ptr_shared /*new_value*/ ) override {
-
+    void notifyAttributeChanged(Inkscape::XML::Node &node,
+                                GQuark qname,
+                                Util::ptr_shared,
+                                Util::ptr_shared) override
+    {
         static GQuark const CODE_id = g_quark_from_static_string("id");
         static GQuark const CODE_class = g_quark_from_static_string("class");
 
@@ -137,7 +136,6 @@ void SelectorsDialog::_nodeRemoved(Inkscape::XML::Node &repr)
 
 void SelectorsDialog::_nodeChanged(Inkscape::XML::Node &object)
 {
-
     g_debug("SelectorsDialog::NodeChanged");
 
     _scrollock = true;
@@ -147,7 +145,6 @@ void SelectorsDialog::_nodeChanged(Inkscape::XML::Node &object)
 }
 
 SelectorsDialog::TreeStore::TreeStore() = default;
-
 
 /**
  * Allow dragging only selectors.
@@ -210,15 +207,11 @@ Glib::RefPtr<SelectorsDialog::TreeStore> SelectorsDialog::TreeStore::create(Sele
  */
 SelectorsDialog::SelectorsDialog()
     : DialogBase("/dialogs/selectors", "Selectors")
-    , _updating(false)
-    , _textNode(nullptr)
-    , _scrollpos(0)
-    , _scrollock(false)
 {
     g_debug("SelectorsDialog::SelectorsDialog");
 
-    m_nodewatcher.reset(new SelectorsDialog::NodeWatcher(this));
-    m_styletextwatcher.reset(new SelectorsDialog::NodeObserver(this));
+    m_nodewatcher = std::make_unique<NodeWatcher>(this);
+    m_styletextwatcher = std::make_unique<NodeObserver>(this);
 
     // Tree
     Inkscape::UI::Widget::IconRenderer * addRenderer = manage(

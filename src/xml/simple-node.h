@@ -95,18 +95,10 @@ public:
         return _attributes;
     }
 
-    void synthesizeEvents(NodeEventVector const *vector, void *data) override;
     void synthesizeEvents(NodeObserver &observer) override;
 
-    void addListener(NodeEventVector const *vector, void *data) override {
-        assert(vector != NULL);
-        _observers.addListener(*vector, data);
-    }
     void addObserver(NodeObserver &observer) override {
         _observers.add(observer);
-    }
-    void removeListenerByData(void *data) override {
-        _observers.removeListenerByData(data);
     }
     void removeObserver(NodeObserver &observer) override {
         _observers.remove(observer);
@@ -146,8 +138,8 @@ private:
 
     Inkscape::Util::ptr_shared _content;
 
-    unsigned _child_count;
-    mutable bool _cached_positions_valid;
+    unsigned _child_count{0};
+    mutable bool _cached_positions_valid{false};
     SimpleNode *_first_child;
     SimpleNode *_last_child;
 

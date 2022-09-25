@@ -26,8 +26,6 @@
 #include "libnrtype/Layout-TNG.h"
 #include "libnrtype/style-attachments.h"
 
-#include "xml/node-event-vector.h"
-
 #include <memory>
 
 /* Text specific flags */

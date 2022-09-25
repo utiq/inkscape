@@ -23,6 +23,8 @@
 #include "message.h"
 #include "ui/dialog/dialog-base.h"
 
+#include "xml/node-observer.h"
+
 namespace Inkscape {
 class MessageStack;
 class MessageContext;
@@ -34,7 +36,9 @@ namespace Dialog {
  * This dialog allows to add, delete and modify XML attributes created in the
  * xml editor.
  */
-class AttrDialog : public DialogBase
+class AttrDialog
+	: public DialogBase
+	, private XML::NodeObserver
 {
 public:
     AttrDialog();
@@ -85,7 +89,7 @@ public:
     Gtk::ScrolledWindow _scrolled_text_view;
     Gtk::Button _buttonAddAttribute;
     // Variables - Inkscape
-    Inkscape::XML::Node* _repr;
+    Inkscape::XML::Node* _repr{nullptr};
     Gtk::Box status_box;
     Gtk::Label status;
     bool _updating;
@@ -103,7 +107,6 @@ public:
      * Signal handlers
      */
     sigc::connection _message_changed_connection;
-    void onAttrChanged(Inkscape::XML::Node *repr, const gchar * name, const gchar * new_value);
     bool onNameKeyPressed(GdkEventKey *event, Gtk::Entry *entry);
     bool onValueKeyPressed(GdkEventKey *event, Gtk::Entry *entry);
     void onAttrDelete(Glib::ustring path);
@@ -117,6 +120,10 @@ public:
     void textViewMap();
     void valueCanceledPop();
     void valueEditedPop();
+
+private:
+    void notifyAttributeChanged(XML::Node &repr, GQuark name, Util::ptr_shared old_value, Util::ptr_shared new_value) final;
+	void notifyContentChanged(XML::Node &node, Util::ptr_shared old_content, Util::ptr_shared new_content) final;
 };
 
 } // namespace Dialog

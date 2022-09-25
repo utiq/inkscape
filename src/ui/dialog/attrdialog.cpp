@@ -22,7 +22,6 @@
 #include "ui/icon-names.h"
 #include "ui/widget/iconrenderer.h"
 
-#include "xml/node-event-vector.h"
 #include "xml/attribute-record.h"
 
 #include <gdk/gdkkeysyms.h>
@@ -42,39 +41,6 @@ static bool is_text_or_comment_node(Inkscape::XML::Node const &node)
     }
 }
 
-static void on_attr_changed (Inkscape::XML::Node * repr,
-                         const gchar * name,
-                         const gchar * /*old_value*/,
-                         const gchar * new_value,
-                         bool /*is_interactive*/,
-                         gpointer data)
-{
-    auto self = reinterpret_cast<Inkscape::UI::Dialog::AttrDialog*>(data);
-    self->onAttrChanged(repr, name, new_value);
-}
-
-static void on_content_changed (Inkscape::XML::Node * repr,
-                                gchar const * oldcontent,
-                                gchar const * newcontent,
-                                gpointer data)
-{
-    auto self = reinterpret_cast<Inkscape::UI::Dialog::AttrDialog*>(data);
-    auto buffer = self->_content_tv->get_buffer();
-    if (!buffer->get_modified()) {
-        const char *c = repr->content();
-        buffer->set_text(c ? c : "");
-    }
-    buffer->set_modified(false);
-}
-
-static Inkscape::XML::NodeEventVector repr_events = {
-    nullptr, /* child_added */
-    nullptr, /* child_removed */
-    on_attr_changed,
-    on_content_changed, /* content_changed */
-    nullptr  /* order_changed */
-};
-
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
@@ -87,7 +53,6 @@ static gboolean key_callback(GtkWidget *widget, GdkEventKey *event, AttrDialog *
  */
 AttrDialog::AttrDialog()
     : DialogBase("/dialogs/attr", "AttrDialog")
-    , _repr(nullptr)
     , _mainBox(Gtk::ORIENTATION_VERTICAL)
     , status_box(Gtk::ORIENTATION_HORIZONTAL)
 {
@@ -389,15 +354,15 @@ void AttrDialog::setRepr(Inkscape::XML::Node * repr)
     if ( repr == _repr ) return;
     if (_repr) {
         _store->clear();
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         Inkscape::GC::release(_repr);
         _repr = nullptr;
     }
     _repr = repr;
     if (repr) {
         Inkscape::GC::anchor(_repr);
-        _repr->addListener(&repr_events, this);
-        _repr->synthesizeEvents(&repr_events, this);
+        _repr->addObserver(*this);
+        _repr->synthesizeEvents(*this);
 
         // show either attributes or content
         bool show_content = is_text_or_comment_node(*_repr);
@@ -434,17 +399,20 @@ void AttrDialog::attr_reset_context(gint attr)
 }
 
 /**
- * @brief AttrDialog::onAttrChanged
+ * @brief AttrDialog::notifyAttributeChanged
  * This is called when the XML has an updated attribute
  */
-void AttrDialog::onAttrChanged(Inkscape::XML::Node *repr, const gchar * name, const gchar * new_value)
+void AttrDialog::notifyAttributeChanged(XML::Node&, GQuark name_, Util::ptr_shared, Util::ptr_shared new_value)
 {
     if (_updating) {
         return;
     }
+
+	auto const name = g_quark_to_string(name_);
+
     Glib::ustring renderval;
     if (new_value) {
-        renderval = prepare_rendervalue(new_value);
+        renderval = prepare_rendervalue(new_value.pointer());
     }
     for(auto iter: this->_store->children())
     {
@@ -452,9 +420,9 @@ void AttrDialog::onAttrChanged(Inkscape::XML::Node *repr, const gchar * name, co
         Glib::ustring col_name = row[_attrColumns._attributeName];
         if(name == col_name) {
             if(new_value) {
-                row[_attrColumns._attributeValue] = new_value;
+                row[_attrColumns._attributeValue] = new_value.pointer();
                 row[_attrColumns._attributeValueRender] = renderval;
-                new_value = nullptr; // Don't make a new one
+                new_value = Util::ptr_shared(); // Don't make a new one
             } else {
                 _store->erase(iter);
             }
@@ -464,7 +432,7 @@ void AttrDialog::onAttrChanged(Inkscape::XML::Node *repr, const gchar * name, co
     if (new_value) {
         Gtk::TreeModel::Row row = *(_store->prepend());
         row[_attrColumns._attributeName] = name;
-        row[_attrColumns._attributeValue] = new_value;
+        row[_attrColumns._attributeValue] = new_value.pointer();
         row[_attrColumns._attributeValueRender] = renderval;
     }
 }
@@ -503,6 +471,19 @@ void AttrDialog::onAttrDelete(Glib::ustring path)
         }
     }
 }
+
+void AttrDialog::notifyContentChanged(XML::Node &,
+									  Util::ptr_shared,
+									  Util::ptr_shared new_content)
+{
+    auto buffer = _content_tv->get_buffer();
+    if (!buffer->get_modified()) {
+        auto const c = new_content.pointer();
+        buffer->set_text(c ? c : "");
+    }
+    buffer->set_modified(false);
+}
+
 
 /**
  * @brief AttrDialog::onKeyPressed

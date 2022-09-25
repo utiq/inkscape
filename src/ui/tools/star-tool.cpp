@@ -39,8 +39,6 @@
 #include "ui/icon-names.h"
 #include "ui/shape-editor.h"
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::DocumentUndo;
 
 namespace Inkscape {

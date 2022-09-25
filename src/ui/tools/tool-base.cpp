@@ -68,8 +68,6 @@
 
 #include "widgets/desktop-widget.h"
 
-#include "xml/node-event-vector.h"
-
 // globals for temporary switching to selector by space
 static bool selector_toggled = FALSE;
 static Glib::ustring switch_selector_to;

@@ -151,11 +151,11 @@ public:
 
     void _selectObjects(int, int);
     // Variables
-    double _scrollpos;
-    bool _scrollock;
-    bool _updating;                 // Prevent cyclic actions: read <-> write, select via dialog <-> via desktop
-    Inkscape::XML::Node *m_root = nullptr;
-    Inkscape::XML::Node *_textNode; // Track so we know when to add a NodeObserver.
+    double _scrollpos{0.0};
+    bool _scrollock{false};
+    bool _updating{false};          // Prevent cyclic actions: read <-> write, select via dialog <-> via desktop
+    Inkscape::XML::Node *m_root{nullptr};
+    Inkscape::XML::Node *_textNode{nullptr}; // Track so we know when to add a NodeObserver.
 
     void _rowExpand(const Gtk::TreeModel::iterator &iter, const Gtk::TreeModel::Path &path);
     void _rowCollapse(const Gtk::TreeModel::iterator &iter, const Gtk::TreeModel::Path &path);
@@ -176,7 +176,7 @@ public:
     void _styleButton(Gtk::Button& btn, char const* iconName, char const* tooltip);
 };
 
-} // namespace Dialogc
+} // namespace Dialog
 } // namespace UI
 } // namespace Inkscape
 

@@ -31,7 +31,6 @@ class AttributeRecord;
 struct Document;
 class Event;
 class NodeObserver;
-struct NodeEventVector;
 
 typedef std::vector<AttributeRecord, Inkscape::GC::Alloc<AttributeRecord, Inkscape::GC::AUTO>> AttributeVector;
 
@@ -548,22 +547,6 @@ public:
      * @param observer The object to be removed
      */
     virtual void removeSubtreeObserver(NodeObserver &observer) = 0;
-
-    /**
-     * @brief Add a set node change callbacks with an associated data
-     * @deprecated Use addObserver(NodeObserver &) instead
-     */
-    virtual void addListener(NodeEventVector const *vector, void *data) = 0;
-    /**
-     * @brief Remove a set of node change callbacks by their associated data
-     * @deprecated Use removeObserver(NodeObserver &) instead
-     */
-    virtual void removeListenerByData(void *data) = 0;
-    /**
-     * @brief Generate a sequence of events corresponding to the state of this node
-     * @deprecated Use synthesizeEvents(NodeObserver &) instead
-     */
-    virtual void synthesizeEvents(NodeEventVector const *vector, void *data) = 0;
 
     virtual void recursivePrintTree(unsigned level) = 0;
 

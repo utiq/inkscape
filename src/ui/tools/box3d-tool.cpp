@@ -41,8 +41,6 @@
 #include "ui/shape-editor.h"
 #include "ui/tools/box3d-tool.h"
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::DocumentUndo;
 
 namespace Inkscape {

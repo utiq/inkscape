@@ -210,11 +210,6 @@ void StyleDialog::_nodeChanged(Inkscape::XML::Node &object)
  */
 StyleDialog::StyleDialog()
     : DialogBase("/dialogs/style", "Style")
-    , _updating(false)
-    , _textNode(nullptr)
-    , _scrollpos(0)
-    , _deleted_pos(0)
-    , _deletion(false)
 {
     g_debug("StyleDialog::StyleDialog");
 
@@ -317,7 +312,6 @@ Inkscape::XML::Node *StyleDialog::_getStyleTextNode(bool create_if_missing)
 
     return textNode;
 }
-
 
 Glib::RefPtr<Gtk::TreeModel> StyleDialog::_selectTree(Glib::ustring selector)
 {

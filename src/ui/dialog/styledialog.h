@@ -72,7 +72,7 @@ public:
     Gtk::TreeView *_current_css_tree;
     Gtk::TreeViewColumn *_current_value_col;
     Gtk::TreeModel::Path _current_path;
-    bool _deletion;
+    bool _deletion{false};
     Glib::ustring fixCSSSelectors(Glib::ustring selector);
     void readStyleElement();
 
@@ -121,7 +121,7 @@ public:
         Gtk::TreeModelColumn<Glib::ustring> _colCSSData; // Name of the property.
     };
     CSSData _mCSSData;
-    guint _deleted_pos;
+    guint _deleted_pos{0};
     // Widgets
     Gtk::ScrolledWindow _scrolledWindow;
     Glib::RefPtr<Gtk::Adjustment> _vadj;
@@ -157,7 +157,7 @@ public:
     void _reload();
     void _vscroll();
     bool _scrollock;
-    double _scrollpos;
+    double _scrollpos{0};
     Glib::ustring _current_selector;
 
     // Update watchers
@@ -170,9 +170,9 @@ public:
     std::map<Glib::ustring, Glib::ustring> _owner_style;
     void _addOwnerStyle(Glib::ustring name, Glib::ustring selector);
     // Variables
-    Inkscape::XML::Node *m_root = nullptr;
-    Inkscape::XML::Node *_textNode; // Track so we know when to add a NodeObserver.
-    bool _updating;                 // Prevent cyclic actions: read <-> write, select via dialog <-> via desktop
+    Inkscape::XML::Node *m_root{nullptr};
+    Inkscape::XML::Node *_textNode{nullptr}; // Track so we know when to add a NodeObserver.
+    bool _updating{false};                   // Prevent cyclic actions: read <-> write, select via dialog <-> via desktop
 
     void _closeDialog(Gtk::Dialog *textDialogPtr);
 };

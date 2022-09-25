@@ -356,7 +356,7 @@ box3d_snap (SPBox3D *box, int id, Proj::Pt3 const &pt_proj, Proj::Pt3 const &sta
     Proj::Pt3 D_proj (x_coord,          y_coord + diff_y, z_coord, 1.0);
     Proj::Pt3 E_proj (x_coord - diff_x, y_coord + diff_y, z_coord, 1.0);
 
-    Persp3DImpl *persp_impl = box->get_perspective()->perspective_impl;
+    auto persp_impl = box->get_perspective()->perspective_impl.get();
     Geom::Point A = persp_impl->tmat.image(A_proj).affine();
     Geom::Point B = persp_impl->tmat.image(B_proj).affine();
     Geom::Point C = persp_impl->tmat.image(C_proj).affine();
@@ -440,7 +440,7 @@ SPBox3D::set_corner (const guint id, Geom::Point const &new_pos, const Box3D::Ax
 
     /* update corners 0 and 7 according to which handle was moved and to the axes of movement */
     if (!(movement & Box3D::Z)) {
-        Persp3DImpl *persp_impl = this->get_perspective()->perspective_impl;
+        auto persp_impl = get_perspective()->perspective_impl.get();
         Proj::Pt3 pt_proj (persp_impl->tmat.preimage (new_pos, (id < 4) ? this->orig_corner0[Proj::Z] :
                                                       this->orig_corner7[Proj::Z], Proj::Z));
         if (constrained) {
@@ -459,7 +459,7 @@ SPBox3D::set_corner (const guint id, Geom::Point const &new_pos, const Box3D::Ax
                                        1.0);
     } else {
         Persp3D *persp = this->get_perspective();
-        Persp3DImpl *persp_impl = this->get_perspective()->perspective_impl;
+        auto persp_impl = persp->perspective_impl.get();
         Box3D::PerspectiveLine pl(persp_impl->tmat.image(
                                       box3d_get_proj_corner (id, this->save_corner0, this->save_corner7)).affine(),
                                   Proj::Z, persp);
@@ -543,7 +543,7 @@ void SPBox3D::corners_for_PLs (Proj::Axis axis,
 {
     Persp3D *persp = this->get_perspective();
     g_return_if_fail (persp);
-    Persp3DImpl *persp_impl = persp->perspective_impl;
+    auto persp_impl = persp->perspective_impl.get();
     //this->orig_corner0.normalize();
     //this->orig_corner7.normalize();
     double coord = (this->orig_corner0[axis] > this->orig_corner7[axis]) ?
@@ -925,7 +925,7 @@ SPBox3D::recompute_z_orders () {
     Geom::Point dirs[3];
     for (int i = 0; i < 3; ++i) {
         dirs[i] = persp->get_PL_dir_from_pt(c3, Box3D::toProj(Box3D::axes[i]));
-        if (Persp3D::VP_is_finite(persp->perspective_impl, Proj::axes[i])) {
+        if (Persp3D::VP_is_finite(persp->perspective_impl.get(), Proj::axes[i])) {
             num_finite++;
             axis_finite = Box3D::axes[i];
         } else {
@@ -1114,7 +1114,7 @@ SPBox3D::pt_lies_in_PL_sector (Geom::Point const &pt, int id1, int id2, Box3D::A
     Geom::Point c2(this->get_corner_screen(id2, false));
 
     int ret = 0;
-    if (Persp3D::VP_is_finite(persp->perspective_impl, Box3D::toProj(axis))) {
+    if (Persp3D::VP_is_finite(persp->perspective_impl.get(), Box3D::toProj(axis))) {
         Geom::Point vp(persp->get_VP(Box3D::toProj(axis)).affine());
         Geom::Point v1(c1 - vp);
         Geom::Point v2(c2 - vp);
@@ -1141,7 +1141,7 @@ int
 SPBox3D::VP_lies_in_PL_sector (Proj::Axis vpdir, int id1, int id2, Box3D::Axis axis) const {
     Persp3D *persp = this->get_perspective();
 
-    if (!Persp3D::VP_is_finite(persp->perspective_impl, vpdir)) {
+    if (!Persp3D::VP_is_finite(persp->perspective_impl.get(), vpdir)) {
         return 0;
     } else {
         return this->pt_lies_in_PL_sector(persp->get_VP(vpdir).affine(), id1, id2, axis);

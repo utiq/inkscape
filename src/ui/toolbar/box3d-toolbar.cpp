@@ -43,26 +43,14 @@
 #include "ui/widget/canvas.h"
 #include "ui/widget/spin-button-tool-item.h"
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::DocumentUndo;
-
-static Inkscape::XML::NodeEventVector box3d_persp_tb_repr_events =
-{
-    nullptr, /* child_added */
-    nullptr, /* child_removed */
-    Inkscape::UI::Toolbar::Box3DToolbar::event_attr_changed,
-    nullptr, /* content_changed */
-    nullptr  /* order_changed */
-};
 
 namespace Inkscape {
 namespace UI {
 namespace Toolbar {
+
 Box3DToolbar::Box3DToolbar(SPDesktop *desktop)
-        : Toolbar(desktop),
-        _repr(nullptr),
-        _freeze(false)
+    : Toolbar(desktop)
 {
     auto prefs      = Inkscape::Preferences::get();
     auto document   = desktop->getDocument();
@@ -249,7 +237,7 @@ Box3DToolbar::check_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
             _changed.disconnect();
 
         if (_repr) { // remove old listener
-            _repr->removeListenerByData(this);
+            _repr->removeObserver(*this);
             Inkscape::GC::release(_repr);
             _repr = nullptr;
         }
@@ -259,7 +247,7 @@ Box3DToolbar::check_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
 Box3DToolbar::~Box3DToolbar()
 {
     if (_repr) { // remove old listener
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         Inkscape::GC::release(_repr);
         _repr = nullptr;
     }
@@ -280,7 +268,7 @@ Box3DToolbar::selection_changed(Inkscape::Selection *selection)
     Inkscape::XML::Node *persp_repr = nullptr;
 
     if (_repr) { // remove old listener
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         Inkscape::GC::release(_repr);
         _repr = nullptr;
     }
@@ -298,8 +286,8 @@ Box3DToolbar::selection_changed(Inkscape::Selection *selection)
         if (persp_repr) {
             _repr = persp_repr;
             Inkscape::GC::anchor(_repr);
-            _repr->addListener(&box3d_persp_tb_repr_events, this);
-            _repr->synthesizeEvents(&box3d_persp_tb_repr_events, this);
+            _repr->addObserver(*this);
+            _repr->synthesizeEvents(*this);
 
             selection->document()->setCurrentPersp3D(Persp3D::get_from_repr(_repr));
             Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -349,7 +337,7 @@ Box3DToolbar::set_button_and_adjustment(Persp3D                        *persp,
     // TODO: Take all selected perspectives into account but don't touch the state button if not all of them
     //       have the same state (otherwise a call to box3d_vp_z_state_changed() is triggered and the states
     //       are reset).
-    bool is_infinite = !Persp3D::VP_is_finite(persp->perspective_impl, axis);
+    bool is_infinite = !Persp3D::VP_is_finite(persp->perspective_impl.get(), axis);
 
     if (is_infinite) {
         toggle_btn->set_active(true);
@@ -365,36 +353,28 @@ Box3DToolbar::set_button_and_adjustment(Persp3D                        *persp,
     }
 }
 
-void
-Box3DToolbar::event_attr_changed(Inkscape::XML::Node *repr,
-                                 gchar const         * /*name*/,
-                                 gchar const         * /*old_value*/,
-                                 gchar const         * /*new_value*/,
-                                 bool                  /*is_interactive*/,
-                                 gpointer              data)
+void Box3DToolbar::notifyAttributeChanged(Inkscape::XML::Node &repr, GQuark, Inkscape::Util::ptr_shared, Inkscape::Util::ptr_shared)
 {
-    auto toolbar = reinterpret_cast<Box3DToolbar*>(data);
-
     // quit if run by the attr_changed or selection changed listener
-    if (toolbar->_freeze) {
+    if (_freeze) {
         return;
     }
 
     // set freeze so that it can be caught in box3d_angle_z_value_changed() (to avoid calling
     // SPDocumentUndo::maybeDone() when the document is undo insensitive)
-    toolbar->_freeze = true;
+    _freeze = true;
 
     // TODO: Only update the appropriate part of the toolbar
 //    if (!strcmp(name, "inkscape:vp_z")) {
-        toolbar->resync_toolbar(repr);
+        resync_toolbar(&repr);
 //    }
 
-    Persp3D *persp = Persp3D::get_from_repr(repr);
+    Persp3D *persp = Persp3D::get_from_repr(&repr);
     if (persp) {
         persp->update_box_reprs();
     }
 
-    toolbar->_freeze = false;
+    _freeze = false;
 }
 
 /**

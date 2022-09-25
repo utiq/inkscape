@@ -7,32 +7,68 @@
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#include <3rdparty/libcroco/cr-parser.h>
-#include "xml/node-event-vector.h"
-#include "xml/repr.h"
-#include "document.h"
 #include "sp-style-elem.h"
-#include "sp-root.h"
+
+#include "3rdparty/libcroco/cr-parser.h"
+
 #include "attributes.h"
+#include "document.h"
+#include "sp-root.h"
 #include "style.h"
+#include "xml/repr.h"
 
 // For external style sheets
-#include "io/resource.h"
-#include <iostream>
 #include <fstream>
+#include <iostream>
+
+#include "io/resource.h"
 
 // For font-rule
 #include "libnrtype/font-factory.h"
 
-SPStyleElem::SPStyleElem() : SPObject() {
+void SPStyleElemTextNodeObserver::notifyContentChanged(Inkscape::XML::Node &, Inkscape::Util::ptr_shared,
+                                                       Inkscape::Util::ptr_shared)
+{
+    auto styleelem = static_cast<SPStyleElem *>(this);
+    styleelem->read_content();
+    styleelem->document->getRoot()->emitModified(SP_OBJECT_MODIFIED_CASCADE);
+}
+
+void SPStyleElemNodeObserver::notifyChildAdded(Inkscape::XML::Node &, Inkscape::XML::Node &child, Inkscape::XML::Node *)
+{
+    auto styleelem = static_cast<SPStyleElem *>(this);
+
+    if (child.type() == Inkscape::XML::NodeType::TEXT_NODE) {
+        child.addObserver(styleelem->textNodeObserver());
+    }
+
+    styleelem->read_content();
+}
+
+void SPStyleElemNodeObserver::notifyChildRemoved(Inkscape::XML::Node &, Inkscape::XML::Node &child, Inkscape::XML::Node *)
+{
+    auto styleelem = static_cast<SPStyleElem *>(this);
+
+    child.removeObserver(styleelem->textNodeObserver());
+    styleelem->read_content();
+}
+
+void SPStyleElemNodeObserver::notifyChildOrderChanged(Inkscape::XML::Node &, Inkscape::XML::Node &, Inkscape::XML::Node *,
+                                                      Inkscape::XML::Node *)
+{
+    auto stylelem = static_cast<SPStyleElem *>(this);
+    stylelem->read_content();
+}
+
+SPStyleElem::SPStyleElem()
+{
     media_set_all(this->media);
-    this->is_css = false;
-    this->style_sheet = nullptr;
 }
 
 SPStyleElem::~SPStyleElem() = default;
 
-void SPStyleElem::set(SPAttr key, const gchar* value) {
+void SPStyleElem::set(SPAttr key, char const *value)
+{
     switch (key) {
         case SPAttr::TYPE: {
             if (!value) {
@@ -62,65 +98,6 @@ void SPStyleElem::set(SPAttr key, const gchar* value) {
             break;
         }
     }
-}
-
-/**
- * Callback for changing the content of a <style> child text node
- */
-static void content_changed_cb(Inkscape::XML::Node *, gchar const *, gchar const *, void *const data)
-{
-    SPObject *obj = reinterpret_cast<SPObject *>(data);
-    g_assert(data != nullptr);
-    obj->read_content();
-    obj->document->getRoot()->emitModified(SP_OBJECT_MODIFIED_CASCADE);
-}
-
-static Inkscape::XML::NodeEventVector const textNodeEventVector = {
-    nullptr,            // child_added
-    nullptr,            // child_removed
-    nullptr,            // attr_changed
-    content_changed_cb, // content_changed
-    nullptr,            // order_changed
-};
-
-/**
- * Callback for adding a text child to a <style> node
- */
-static void child_add_cb(Inkscape::XML::Node *, Inkscape::XML::Node *child, Inkscape::XML::Node *, void *const data)
-{
-    SPObject *obj = reinterpret_cast<SPObject *>(data);
-    g_assert(data != nullptr);
-
-    if (child->type() == Inkscape::XML::NodeType::TEXT_NODE) {
-        child->addListener(&textNodeEventVector, obj);
-    }
-
-    obj->read_content();
-}
-
-/**
- * Callback for removing a (text) child from a <style> node
- */
-static void child_rm_cb(Inkscape::XML::Node *, Inkscape::XML::Node *child, Inkscape::XML::Node *, void *const data)
-{
-    SPObject *obj = reinterpret_cast<SPObject *>(data);
-
-    child->removeListenerByData(obj);
-
-    obj->read_content();
-}
-
-/**
- * Callback for rearranging text nodes inside a <style> node
- */
-static void
-child_order_changed_cb(Inkscape::XML::Node *, Inkscape::XML::Node *,
-                       Inkscape::XML::Node *, Inkscape::XML::Node *,
-                       void *const data)
-{
-    SPObject *obj = reinterpret_cast<SPObject *>(data);
-    g_assert(data != nullptr);
-    obj->read_content();
 }
 
 Inkscape::XML::Node* SPStyleElem::write(Inkscape::XML::Document* xml_doc, Inkscape::XML::Node* repr, guint flags) {
@@ -528,14 +505,6 @@ void SPStyleElem::read_content() {
                                               SP_OBJECT_MODIFIED_FLAG);
 }
 
-static Inkscape::XML::NodeEventVector const nodeEventVector = {
-    child_add_cb,           // child_added
-    child_rm_cb,            // child_removed
-    nullptr,                // attr_changed
-    nullptr,                // content_changed
-    child_order_changed_cb, // order_changed
-};
-
 void SPStyleElem::build(SPDocument *document, Inkscape::XML::Node *repr) {
     read_content();
 
@@ -544,10 +513,10 @@ void SPStyleElem::build(SPDocument *document, Inkscape::XML::Node *repr) {
     readAttr( "media" );
 #endif
 
-    repr->addListener(&nodeEventVector, this);
-    for (Inkscape::XML::Node *child = repr->firstChild(); child != nullptr; child = child->next()) {
+    repr->addObserver(nodeObserver());
+    for (auto child = repr->firstChild(); child; child = child->next()) {
         if (child->type() == Inkscape::XML::NodeType::TEXT_NODE) {
-            child->addListener(&textNodeEventVector, this);
+            child->addObserver(textNodeObserver());
         }
     }
 
@@ -555,9 +524,9 @@ void SPStyleElem::build(SPDocument *document, Inkscape::XML::Node *repr) {
 }
 
 void SPStyleElem::release() {
-    getRepr()->removeListenerByData(this);
-    for (Inkscape::XML::Node *child = getRepr()->firstChild(); child != nullptr; child = child->next()) {
-        child->removeListenerByData(this);
+    getRepr()->removeObserver(nodeObserver());
+    for (auto child = getRepr()->firstChild(); child; child = child->next()) {
+        child->removeObserver(textNodeObserver());
     }
 
     clear_style_sheet(*this);

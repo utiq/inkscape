@@ -50,33 +50,18 @@
 
 #include "widgets/widget-sizes.h"
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::UI::Widget::UnitTracker;
 using Inkscape::DocumentUndo;
 using Inkscape::Util::Unit;
 using Inkscape::Util::Quantity;
 using Inkscape::Util::unit_table;
 
-static Inkscape::XML::NodeEventVector rect_tb_repr_events = {
-    nullptr, /* child_added */
-    nullptr, /* child_removed */
-    Inkscape::UI::Toolbar::RectToolbar::event_attr_changed,
-    nullptr, /* content_changed */
-    nullptr  /* order_changed */
-};
-
-namespace Inkscape {
-namespace UI {
-namespace Toolbar {
+namespace Inkscape::UI::Toolbar {
 
 RectToolbar::RectToolbar(SPDesktop *desktop)
-    : Toolbar(desktop),
-      _tracker(new UnitTracker(Inkscape::Util::UNIT_TYPE_LINEAR)),
-      _freeze(false),
-      _single(true),
-      _repr(nullptr),
-      _mode_item(Gtk::manage(new UI::Widget::LabelToolItem(_("<b>New:</b>"))))
+    : Toolbar(desktop)
+    , _tracker(new UnitTracker(Inkscape::Util::UNIT_TYPE_LINEAR))
+    , _mode_item(Gtk::manage(new UI::Widget::LabelToolItem(_("<b>New:</b>"))))
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
@@ -200,7 +185,7 @@ RectToolbar::RectToolbar(SPDesktop *desktop)
 RectToolbar::~RectToolbar()
 {
     if (_repr) { // remove old listener
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         Inkscape::GC::release(_repr);
         _repr = nullptr;
     }
@@ -295,7 +280,7 @@ RectToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
             _changed.disconnect();
         
             if (_repr) { // remove old listener
-                _repr->removeListenerByData(this);
+                _repr->removeObserver(*this);
                 Inkscape::GC::release(_repr);
                 _repr = nullptr;
             }
@@ -315,7 +300,7 @@ RectToolbar::selection_changed(Inkscape::Selection *selection)
 
     if (_repr) { // remove old listener
         _item = nullptr;
-        _repr->removeListenerByData(this);
+        _repr->removeObserver(*this);
         Inkscape::GC::release(_repr);
         _repr = nullptr;
     }
@@ -345,8 +330,8 @@ RectToolbar::selection_changed(Inkscape::Selection *selection)
             _repr = repr;
             _item = item;
             Inkscape::GC::anchor(_repr);
-            _repr->addListener(&rect_tb_repr_events, this);
-            _repr->synthesizeEvents(&rect_tb_repr_events, this);
+            _repr->addObserver(*this);
+            _repr->synthesizeEvents(*this);
         }
     } else {
         // FIXME: implement averaging of all parameters for multiple selected
@@ -356,53 +341,35 @@ RectToolbar::selection_changed(Inkscape::Selection *selection)
     }
 }
 
-void RectToolbar::event_attr_changed(Inkscape::XML::Node * /*repr*/, gchar const * /*name*/,
-                                     gchar const * /*old_value*/, gchar const * /*new_value*/,
-                                     bool /*is_interactive*/, gpointer data)
+void RectToolbar::notifyAttributeChanged(Inkscape::XML::Node &repr, GQuark,
+                                         Inkscape::Util::ptr_shared,
+                                         Inkscape::Util::ptr_shared)
 {
-    auto toolbar = reinterpret_cast<RectToolbar*>(data);
-
     // quit if run by the _changed callbacks
-    if (toolbar->_freeze) {
+    if (_freeze) {
         return;
     }
 
     // in turn, prevent callbacks from responding
-    toolbar->_freeze = true;
+    _freeze = true;
 
-    Unit const *unit = toolbar->_tracker->getActiveUnit();
-    g_return_if_fail(unit != nullptr);
-
-    if (toolbar->_item && is<SPRect>(toolbar->_item)) {
-        {
-            gdouble rx = cast<SPRect>(toolbar->_item)->getVisibleRx();
-            toolbar->_rx_adj->set_value(Quantity::convert(rx, "px", unit));
-        }
-
-        {
-            gdouble ry = cast<SPRect>(toolbar->_item)->getVisibleRy();
-            toolbar->_ry_adj->set_value(Quantity::convert(ry, "px", unit));
-        }
-
-        {
-            gdouble width = cast<SPRect>(toolbar->_item)->getVisibleWidth();
-            toolbar->_width_adj->set_value(Quantity::convert(width, "px", unit));
-        }
-
-        {
-            gdouble height = cast<SPRect>(toolbar->_item)->getVisibleHeight();
-            toolbar->_height_adj->set_value(Quantity::convert(height, "px", unit));
-        }
+    auto unit = _tracker->getActiveUnit();
+    if (!unit) {
+        return;
     }
 
-    toolbar->sensitivize();
-    toolbar->_freeze = false;
+    if (auto rect = cast<SPRect>(_item)) {
+        _rx_adj    ->set_value(Quantity::convert(rect->getVisibleRx(),     "px", unit));
+        _ry_adj    ->set_value(Quantity::convert(rect->getVisibleRy(),     "px", unit));
+        _width_adj ->set_value(Quantity::convert(rect->getVisibleWidth(),  "px", unit));
+        _height_adj->set_value(Quantity::convert(rect->getVisibleHeight(), "px", unit));
+    }
+
+    sensitivize();
+    _freeze = false;
 }
 
-}
-}
-}
-
+} // namespace Inkscape::UI::Toolbar
 
 /*
   Local Variables:

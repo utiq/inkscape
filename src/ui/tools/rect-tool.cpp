@@ -38,8 +38,6 @@
 #include "ui/shape-editor.h"
 #include "ui/tools/rect-tool.h"
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::DocumentUndo;
 
 namespace Inkscape {

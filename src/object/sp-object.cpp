@@ -25,7 +25,6 @@
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "helper/sp-marshal.h"
-#include "xml/node-event-vector.h"
 #include "attributes.h"
 #include "attribute-rel-util.h"
 #include "color-profile.h"
@@ -69,15 +68,6 @@
 //#define OBJECT_TRACE
 static unsigned indent_level = 0;
 
-Inkscape::XML::NodeEventVector object_event_vector = {
-    SPObject::repr_child_added,
-    SPObject::repr_child_removed,
-    SPObject::repr_attr_changed,
-    SPObject::repr_content_changed,
-    SPObject::repr_order_changed,
-    SPObject::repr_name_changed
-};
-
 /**
  * A friend class used to set internal members on SPObject so as to not expose settors in SPObject's public API
  */
@@ -119,12 +109,11 @@ public:
  * Constructor, sets all attributes to default values.
  */
 SPObject::SPObject()
-    : cloned(0), clone_original(nullptr), uflags(0), mflags(0), hrefcount(0), _total_hrefcount(0),
-      document(nullptr), parent(nullptr), id(nullptr), repr(nullptr), refCount(1), hrefList(std::list<SPObject*>()),
-      _successor(nullptr),_tmpsuccessor(nullptr), _collection_policy(SPObject::COLLECT_WITH_PARENT),
-      _label(nullptr), _default_label(nullptr)
+    : cloned{0}
+    , uflags{0}
+    , mflags{0}
 {
-    debug("id=%p, typename=%s",this, g_type_name_from_instance((GTypeInstance*)this));
+    debug("id=%p, typename=%s", this, g_type_name_from_instance((GTypeInstance *)this));
 
     SPObjectImpl::setIdNull(this);
 
@@ -139,12 +128,10 @@ SPObject::SPObject()
 /**
  * Destructor, frees the used memory and unreferences a potential successor of the object.
  */
-SPObject::~SPObject() {
+SPObject::~SPObject()
+{
     g_free(this->_label);
     g_free(this->_default_label);
-
-    this->_label = nullptr;
-    this->_default_label = nullptr;
 
     if (this->_successor) {
         sp_object_unref(this->_successor, nullptr);
@@ -212,7 +199,7 @@ public:
     {}
 };
 
-}
+} // namespace
 
 gchar const* SPObject::getId() const {
     return id;
@@ -835,7 +822,7 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
     this->document->process_pending_resource_changes();
 
     /* Signalling (should be connected AFTER processing derived methods */
-    sp_repr_add_listener(repr, &object_event_vector, this);
+    repr->addObserver(*this);
 
 #ifdef OBJECT_TRACE
     objectTrace( "SPObject::invoke_build", false );
@@ -886,7 +873,7 @@ void SPObject::releaseReferences() {
     g_assert(this->repr);
     g_assert(cloned || repr->_anchored_refcount() > 0);
 
-    sp_repr_remove_listener_by_data(this->repr, this);
+    repr->removeObserver(*this);
 
     this->_release_signal.emit(this);
 
@@ -934,32 +921,28 @@ SPObject* SPObject::getNext()
     return next;
 }
 
-void SPObject::repr_child_added(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node *child, Inkscape::XML::Node *ref, gpointer data)
+void SPObject::notifyChildAdded(Inkscape::XML::Node &node, Inkscape::XML::Node &child, Inkscape::XML::Node *ref)
 {
-    auto object = static_cast<SPObject *>(data);
-
-    object->child_added(child, ref);
+    child_added(&child, ref);
 }
 
-void SPObject::repr_child_removed(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node *child, Inkscape::XML::Node * /*ref*/, gpointer data)
+void SPObject::notifyChildRemoved(Inkscape::XML::Node &, Inkscape::XML::Node &child, Inkscape::XML::Node *)
 {
-    auto object = static_cast<SPObject *>(data);
-
-    object->remove_child(child);
+    remove_child(&child);
 }
 
-void SPObject::repr_order_changed(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node *child, Inkscape::XML::Node *old, Inkscape::XML::Node *newer, gpointer data)
+void SPObject::notifyChildOrderChanged(Inkscape::XML::Node &, Inkscape::XML::Node &child, Inkscape::XML::Node *old_prev,
+                                       Inkscape::XML::Node *new_prev)
 {
-    auto object = static_cast<SPObject *>(data);
-
-    object->order_changed(child, old, newer);
+    order_changed(&child, old_prev, new_prev);
 }
 
-void SPObject::repr_name_changed(Inkscape::XML::Node* repr, gchar const* oldname, gchar const* newname, void *data)
+void SPObject::notifyElementNameChanged(Inkscape::XML::Node &node, GQuark old_name, GQuark new_name)
 {
-    auto object = static_cast<SPObject *>(data);
+    auto const oldname = g_quark_to_string(old_name);
+    auto const newname = g_quark_to_string(new_name);
 
-    object->tag_name_changed(oldname, newname);
+    tag_name_changed(oldname, newname);
 }
 
 void SPObject::set(SPAttr key, gchar const* value) {
@@ -1116,28 +1099,20 @@ void SPObject::readAttr(gchar const *key)
     }
 }
 
-void SPObject::repr_attr_changed(Inkscape::XML::Node * /*repr*/, gchar const *key, gchar const * /*oldval*/, gchar const * /*newval*/, bool is_interactive, gpointer data)
+void SPObject::notifyAttributeChanged(Inkscape::XML::Node &, GQuark key_, Util::ptr_shared, Util::ptr_shared)
 {
-    auto object = static_cast<SPObject *>(data);
+    auto const key = g_quark_to_string(key_);
+    readAttr(key);
 
-    object->readAttr(key);
-
-    // manual changes to extension attributes require the normal
-    // attributes, which depend on them, to be updated immediately
-    if (is_interactive) {
-        object->updateRepr(0);
-    }
-    auto lpeitem = static_cast<SPLPEItem *>(data);
+    auto lpeitem = cast<SPLPEItem>(this);
     if (lpeitem && lpeitem->document->isSeeking()) {
         lpeitem->modified(SP_OBJECT_MODIFIED_FLAG);
     }
 }
 
-void SPObject::repr_content_changed(Inkscape::XML::Node * /*repr*/, gchar const * /*oldcontent*/, gchar const * /*newcontent*/, gpointer data)
+void SPObject::notifyContentChanged(Inkscape::XML::Node &, Util::ptr_shared, Util::ptr_shared)
 {
-    auto object = static_cast<SPObject *>(data);
-
-    object->read_content();
+    read_content();
 }
 
 /**

@@ -65,8 +65,6 @@
 #include "ui/shape-editor.h"
 #include "ui/widget/canvas.h"  // Canvas area
 
-#include "xml/node-event-vector.h"
-
 using Inkscape::DocumentUndo;
 
 using Inkscape::Display::ExtractARGB32;

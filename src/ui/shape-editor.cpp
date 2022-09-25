@@ -19,7 +19,6 @@
 #include "live_effects/effect.h"
 #include "object/sp-lpe-item.h"
 #include "ui/knot/knot-holder.h"
-#include "xml/node-event-vector.h"
 
 namespace Inkscape {
 namespace UI {
@@ -29,15 +28,11 @@ KnotHolder *createLPEKnotHolder(SPItem *item, SPDesktop *desktop);
 
 bool ShapeEditor::_blockSetItem = false;
 
-ShapeEditor::ShapeEditor(SPDesktop *dt, Geom::Affine edit_transform, double edit_rotation, int edit_marker_mode) :
-    desktop(dt),
-    knotholder(nullptr),
-    lpeknotholder(nullptr),
-    knotholder_listener_attached_for(nullptr),
-    lpeknotholder_listener_attached_for(nullptr),
-    _edit_transform(edit_transform),
-    _edit_rotation(edit_rotation),
-    _edit_marker_mode(edit_marker_mode)
+ShapeEditor::ShapeEditor(SPDesktop *dt, Geom::Affine edit_transform, double edit_rotation, int edit_marker_mode)
+    : desktop(dt)
+    , _edit_transform(edit_transform)
+    , _edit_rotation(edit_rotation)
+    , _edit_marker_mode(edit_marker_mode)
 {
 }
 
@@ -49,7 +44,7 @@ void ShapeEditor::unset_item(bool keep_knotholder) {
     if (this->knotholder) {
         Inkscape::XML::Node *old_repr = this->knotholder->repr;
         if (old_repr && old_repr == knotholder_listener_attached_for) {
-            sp_repr_remove_listener_by_data(old_repr, this);
+            old_repr->removeObserver(*this);
             Inkscape::GC::release(old_repr);
             knotholder_listener_attached_for = nullptr;
         }
@@ -63,7 +58,7 @@ void ShapeEditor::unset_item(bool keep_knotholder) {
         Inkscape::XML::Node *old_repr = this->lpeknotholder->repr;
         bool remove = false;
         if (old_repr && old_repr == lpeknotholder_listener_attached_for) {
-            sp_repr_remove_listener_by_data(old_repr, this);
+            old_repr->removeObserver(*this);
             Inkscape::GC::release(old_repr);
             remove = true;
         }
@@ -102,29 +97,20 @@ void ShapeEditor::decrement_local_change() {
     }
 }
 
-void ShapeEditor::event_attr_changed(Inkscape::XML::Node * node, gchar const *name, gchar const *, gchar const *, bool, void *data)
+void ShapeEditor::notifyAttributeChanged(Inkscape::XML::Node&, GQuark,
+                                         Inkscape::Util::ptr_shared,
+                                         Inkscape::Util::ptr_shared)
 {
-    g_assert(data);
-    ShapeEditor *sh = static_cast<ShapeEditor *>(data);
     bool changed_kh = false;
 
-    if (sh->has_knotholder())
-    {
-        changed_kh = !sh->has_local_change();
-        sh->decrement_local_change();
+    if (has_knotholder()) {
+        changed_kh = !has_local_change();
+        decrement_local_change();
         if (changed_kh) {
-            sh->reset_item();
+            reset_item();
         }
     }
 }
-
-static Inkscape::XML::NodeEventVector shapeeditor_repr_events = {
-    nullptr, /* child_added */
-    nullptr, /* child_removed */
-    ShapeEditor::event_attr_changed,
-    nullptr, /* content_changed */
-    nullptr  /* order_changed */
-};
 
 
 void ShapeEditor::set_item(SPItem *item) {
@@ -163,7 +149,7 @@ void ShapeEditor::set_item(SPItem *item) {
             repr = this->knotholder->repr;
             if (repr != knotholder_listener_attached_for) {
                 Inkscape::GC::anchor(repr);
-                sp_repr_add_listener(repr, &shapeeditor_repr_events, this);
+                repr->addObserver(*this);
                 knotholder_listener_attached_for = repr;
             }
         }
@@ -174,7 +160,7 @@ void ShapeEditor::set_item(SPItem *item) {
             repr = this->lpeknotholder->repr;
             if (repr != lpeknotholder_listener_attached_for) {
                 Inkscape::GC::anchor(repr);
-                sp_repr_add_listener(repr, &shapeeditor_repr_events, this);
+                repr->addObserver(*this);
                 lpeknotholder_listener_attached_for = repr;
             }
         }

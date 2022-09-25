@@ -167,7 +167,6 @@ PencilToolbar::create_pencil(SPDesktop *desktop)
 PencilToolbar::~PencilToolbar()
 {
     if(_repr) {
-        _repr->removeListenerByData(this);
         GC::release(_repr);
         _repr = nullptr;
     }

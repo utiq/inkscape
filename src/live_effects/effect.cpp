@@ -87,7 +87,6 @@
 #include "ui/icon-loader.h"
 #include "ui/tools/node-tool.h"
 #include "ui/tools/pen-tool.h"
-#include "xml/node-event-vector.h"
 #include "xml/sp-css-attr.h"
 
 namespace Inkscape {

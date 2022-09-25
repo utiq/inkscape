@@ -22,8 +22,6 @@ namespace Inkscape {
 
 namespace XML {
 
-struct NodeEventVector;
-
 /**
  * @brief An observer that relays notifications to multiple other observers
  *
@@ -55,16 +53,6 @@ public:
      * @param observer The observer object to remove
      */
     void remove(NodeObserver &observer);
-    /**
-     * @brief Add a set of callbacks with associated data
-     * @deprecated Use add() instead
-     */
-    void addListener(NodeEventVector const &vector, void *data);
-    /**
-     * @brief Remove a set of callbacks by its associated data
-     * @deprecated Use remove() instead
-     */
-    void removeListenerByData(void *data);
     
     void notifyChildAdded(Node &node, Node &child, Node *prev) override;
 
