@@ -180,9 +180,10 @@ void LayerManager::renameLayer( SPObject* obj, gchar const *label, bool uniquify
  * Make \a object the top layer.
  */
 void LayerManager::setCurrentLayer(SPObject *object, bool clear) {
-    if (currentRoot()) {
+    if (auto root = currentRoot()) {
+        if (root != object && !root->isAncestorOf(object))
+            return;
         g_return_if_fail(SP_IS_GROUP(object));
-        g_return_if_fail( currentRoot() == object || (currentRoot() && currentRoot()->isAncestorOf(object)) );
         _layer_hierarchy->setBottom(object);
 
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
