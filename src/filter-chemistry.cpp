@@ -550,6 +550,31 @@ double get_single_gaussian_blur_radius(SPFilter *filter)
     return 0.0;
 }
 
+bool set_blend_mode(SPItem* item, SPBlendMode blend_mode) {
+    if (!item || !item->style) {
+        return false;
+    }
+
+    bool change_blend = (item->style->mix_blend_mode.set ? item->style->mix_blend_mode.value : SP_CSS_BLEND_NORMAL) != blend_mode;
+    // < 1.0 filter based blend removal
+    if (!item->style->mix_blend_mode.set && item->style->filter.set && item->style->getFilter()) {
+        remove_filter_legacy_blend(item);
+    }
+    item->style->mix_blend_mode.set = TRUE;
+    if (item->style->isolation.value == SP_CSS_ISOLATION_ISOLATE) {
+        item->style->mix_blend_mode.value = SP_CSS_BLEND_NORMAL;
+    } else { 
+        item->style->mix_blend_mode.value = blend_mode;
+    }
+
+    if (change_blend) { // we do blend so we need to update display style
+        item->updateRepr(SP_OBJECT_WRITE_NO_CHILDREN | SP_OBJECT_WRITE_EXT);
+    }
+
+    return change_blend;
+}
+
+
 /*
   Local Variables:
   mode:c++

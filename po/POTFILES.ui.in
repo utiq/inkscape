@@ -15,6 +15,7 @@
 ../share/ui/marker-popup.glade
 ../share/ui/page-properties.glade
 ../share/ui/pattern-edit.glade
+../share/ui/widget-blendmode-popup.glade
 ../share/ui/align-and-distribute.ui
 ../share/ui/menus.ui
 ../share/ui/toolbar-booleans.ui

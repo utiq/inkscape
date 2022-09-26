@@ -37,6 +37,7 @@ void remove_filter_legacy_blend(SPObject *item);
 SPBlendMode filter_get_legacy_blend(SPObject *item);
 bool filter_is_single_gaussian_blur(SPFilter *filter);
 double get_single_gaussian_blur_radius(SPFilter *filter);
+bool set_blend_mode(SPItem* item, SPBlendMode mode);
 
 #endif
 

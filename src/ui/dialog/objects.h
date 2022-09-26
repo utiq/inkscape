@@ -16,7 +16,11 @@
 #define SEEN_OBJECTS_PANEL_H
 
 #include <gtkmm/box.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/dialog.h>
+#include <gtkmm/modelbutton.h>
+#include <gtkmm/popover.h>
+#include <gtkmm/scale.h>
 
 #include "helper/auto-connection.h"
 #include "xml/node-observer.h"
@@ -25,6 +29,7 @@
 #include "ui/widget/color-picker.h"
 
 #include "selection.h"
+#include "style-enums.h"
 #include "color-rgba.h"
 #include "helper/auto-connection.h"
 
@@ -36,6 +41,8 @@ class SPGroup;
 
 namespace Inkscape {
 namespace UI {
+
+namespace Widget { class ImageToggler; }
 namespace Dialog {
 
 class ObjectsPanel;
@@ -109,6 +116,7 @@ private:
     Gtk::TreeView _tree;
     Gtk::CellRendererText *_text_renderer;
     Gtk::TreeView::Column *_name_column;
+    Gtk::TreeView::Column *_blend_mode_column = nullptr;
     Gtk::TreeView::Column *_eye_column = nullptr;
     Gtk::TreeView::Column *_lock_column = nullptr;
     Gtk::Box _buttonsRow;
@@ -125,10 +133,11 @@ private:
 
     Gtk::Button *_addBarButton(char const* iconName, char const* tooltip, char const *action_name);
     void _objects_toggle();
-    
+
+    bool blendModePopup(GdkEventButton* event, Gtk::TreeModel::Row row);
     bool toggleVisible(unsigned int state, Gtk::TreeModel::Row row);
     bool toggleLocked(unsigned int state, Gtk::TreeModel::Row row);
-    
+
     bool _handleButtonEvent(GdkEventButton *event);
     bool _handleKeyPress(GdkEventKey *event);
     bool _handleKeyEvent(GdkEventKey *event);
@@ -155,7 +164,12 @@ private:
     SPItem *_solid_item;
     std::list<SPItem *> _translucent_items;
     int _msg_id;
-
+    Glib::RefPtr<Gtk::Builder> _menu_builder;
+    Gtk::Popover& _object_menu;
+    Gtk::Scale& _opacity_slider;
+    std::map<SPBlendMode, Gtk::ModelButton*> _blend_items;
+    std::map<SPBlendMode, Glib::ustring> _blend_mode_names;
+    Inkscape::UI::Widget::ImageToggler* _item_state_toggler;
     // Special column dragging mode
     Gtk::TreeViewColumn* _drag_column = nullptr;
     bool _drag_flip;

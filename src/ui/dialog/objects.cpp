@@ -14,12 +14,23 @@
 
 #include "objects.h"
 
+#include <glibmm/ustring.h>
+#include <gtkmm/builder.h>
+#include <gtkmm/button.h>
 #include <gtkmm/cellrenderer.h>
+#include <gtkmm/checkbutton.h>
+#include <gtkmm/enums.h>
 #include <gtkmm/icontheme.h>
 #include <gtkmm/imagemenuitem.h>
+#include <gtkmm/modelbutton.h>
+#include <gtkmm/object.h>
+#include <gtkmm/popover.h>
+#include <gtkmm/scale.h>
 #include <gtkmm/separatormenuitem.h>
 #include <glibmm/main.h>
 #include <glibmm/i18n.h>
+#include <iomanip>
+#include <string>
 
 #include "desktop-style.h"
 #include "desktop.h"
@@ -42,8 +53,10 @@
 #include "object/sp-mask.h"
 #include "object/sp-root.h"
 #include "object/sp-shape.h"
+#include "style-enums.h"
 #include "style.h"
-
+#include "svg/css-ostringstream.h"
+#include "ui/builder-utils.h"
 #include "ui/dialog-events.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
@@ -54,9 +67,11 @@
 #include "ui/contextmenu.h"
 #include "ui/util.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/filter-effect-chooser.h"
 #include "ui/widget/imagetoggler.h"
 #include "ui/widget/shapeicon.h"
 #include "ui/widget/objects-dialog-cells.h"
+#include "util/numeric/converters.h"
 
 // alpha (transparency) multipliers corresponding to item selection state combinations (SelectionState)
 // when 0 - do not color item's background
@@ -176,6 +191,10 @@ public:
         add(_colAncestorInvisible);
         add(_colAncestorLocked);
         add(_colHover);
+        add(_colItemStateSet);
+        add(_colBlendMode);
+        add(_colOpacity);
+        add(_colItemState);
     }
     ~ModelColumns() override = default;
     Gtk::TreeModelColumn<Node*> _colNode;
@@ -189,6 +208,10 @@ public:
     Gtk::TreeModelColumn<bool> _colAncestorInvisible;
     Gtk::TreeModelColumn<bool> _colAncestorLocked;
     Gtk::TreeModelColumn<bool> _colHover;
+    Gtk::TreeModelColumn<bool> _colItemStateSet;
+    Gtk::TreeModelColumn<SPBlendMode> _colBlendMode;
+    Gtk::TreeModelColumn<double> _colOpacity;
+    Gtk::TreeModelColumn<Glib::ustring> _colItemState;
 };
 
 /**
@@ -266,6 +289,25 @@ void ObjectWatcher::updateRowInfo()
             (item->getMaskObject() ? Inkscape::UI::Widget::OVERLAY_MASK : 0);
         row[_model->_colInvisible] = item->isHidden();
         row[_model->_colLocked] = !item->isSensitive();
+        auto blend = item->style && item->style->mix_blend_mode.set ? item->style->mix_blend_mode.value : SP_CSS_BLEND_NORMAL;
+        row[_model->_colBlendMode] = blend;
+        auto opacity = 1.0;
+        if (item->style && item->style->opacity.set) {
+            opacity = SP_SCALE24_TO_FLOAT(item->style->opacity.value);
+        }
+        row[_model->_colOpacity] = opacity;
+        std::string item_state;
+        if (opacity == 0.0) {
+            item_state = "object-transparent";
+        }
+        else if (blend != SP_CSS_BLEND_NORMAL) {
+            item_state = opacity == 1.0 ? "object-blend-mode" : "object-translucent-blend-mode";
+        }
+        else if (opacity < 1.0) {
+            item_state = "object-translucent";
+        }
+        row[_model->_colItemState] = item_state;
+        row[_model->_colItemStateSet] = !item_state.empty();
 
         updateRowHighlight();
         updateRowAncestorState(row[_model->_colAncestorInvisible], row[_model->_colAncestorLocked]);
@@ -624,7 +666,10 @@ ObjectsPanel::ObjectsPanel() :
     _layer(nullptr),
     _is_editing(false),
     _page(Gtk::ORIENTATION_VERTICAL),
-    _color_picker(_("Highlight color"), "", 0, true)
+    _color_picker(_("Highlight color"), "", 0, true),
+    _menu_builder(create_builder("widget-blendmode-popup.glade")),
+    _object_menu(get_widget<Gtk::Popover>(_menu_builder, "popover")),
+    _opacity_slider(get_widget<Gtk::Scale>(_menu_builder, "opacity-slider"))
 {
     _store = Gtk::TreeStore::create(*_model);
     _color_picker.hide();
@@ -672,6 +717,88 @@ ObjectsPanel::ObjectsPanel() :
     _name_column->add_attribute(icon_renderer->property_color(), _model->_colIconColor);
     _name_column->add_attribute(icon_renderer->property_clipmask(), _model->_colClipMask);
     _name_column->add_attribute(icon_renderer->property_cell_background_rgba(), _model->_colBgColor);
+
+    // blend mode and opacity icon(s)
+    _item_state_toggler = Gtk::manage(new Inkscape::UI::Widget::ImageToggler(
+        INKSCAPE_ICON("object-blend-mode"), INKSCAPE_ICON("object-opaque")));
+    int modeColNum = _tree.append_column("mode", *_item_state_toggler) - 1;
+    if (auto col = _tree.get_column(modeColNum)) {
+        col->add_attribute(_item_state_toggler->property_active(), _model->_colItemStateSet);
+        col->add_attribute(_item_state_toggler->property_active_icon(), _model->_colItemState);
+        col->add_attribute(_item_state_toggler->property_cell_background_rgba(), _model->_colBgColor);
+        col->add_attribute(_item_state_toggler->property_activatable(), _model->_colHover);
+        col->set_fixed_width(icon_col_width);
+        _blend_mode_column = col;
+    }
+
+    _tree.set_has_tooltip();
+    _tree.signal_query_tooltip().connect([=](int x, int y, bool kbd, const Glib::RefPtr<Gtk::Tooltip>& tooltip){
+        Gtk::TreeModel::iterator iter;
+        if (!_tree.get_tooltip_context_iter(x, y, kbd, iter) || !iter) {
+            return false;
+        }
+        auto blend = (*iter)[_model->_colBlendMode];
+        auto opacity = (*iter)[_model->_colOpacity];
+        auto label = Glib::ustring::compose("<span>%1 %2%%\n</span><span line_height=\"0.5\">\n</span><span>%3\n<i>%4</i></span>",
+            _("Opacity:"), Util::format_number(opacity * 100.0, 1),
+            _("Blend mode:"), _blend_mode_names[blend]);
+        tooltip->set_markup(label);
+        _tree.set_tooltip_cell(tooltip, nullptr, _blend_mode_column, _item_state_toggler);
+        return true;
+    });
+
+    _object_menu.set_relative_to(_tree);
+    _object_menu.signal_closed().connect([=](){ _item_state_toggler->set_active(false); _tree.queue_draw(); });
+    auto& modes = get_widget<Gtk::Grid>(_menu_builder, "modes");
+    _opacity_slider.signal_format_value().connect([](double val){
+        return Util::format_number(val, 1) + "%";
+    });
+    const int min = 0, max = 100;
+    for (int i = min; i <= max; i += 50) {
+        _opacity_slider.add_mark(i, Gtk::POS_BOTTOM, "");
+    }
+    _opacity_slider.signal_value_changed().connect([=](){
+        if (current_item) {
+            auto value = _opacity_slider.get_value() / 100.0;
+            Inkscape::CSSOStringStream os;
+            os << CLAMP(value, 0.0, 1.0);
+            auto css = sp_repr_css_attr_new();
+            sp_repr_css_set_property(css, "opacity", os.str().c_str());
+            current_item->changeCSS(css, "style");
+            sp_repr_css_attr_unref(css);
+            DocumentUndo::maybeDone(current_item->document, ":opacity", _("Change opacity"), INKSCAPE_ICON("dialog-object-properties"));
+        }
+    });
+
+    // object blend mode and opacity popup
+    int top = 0;
+    int left = 0;
+    for (size_t i = 0; i < Inkscape::SPBlendModeConverter._length; ++i) {
+        auto& data = Inkscape::SPBlendModeConverter.data(i);
+        auto check = Gtk::make_managed<Gtk::ModelButton>();
+        check->set_label(data.label);
+        check->property_role().set_value(Gtk::BUTTON_ROLE_RADIO);
+        check->property_inverted().set_value(true);
+        check->property_centered().set_value(false);
+        check->set_halign(Gtk::ALIGN_START);
+        check->signal_clicked().connect([=](){
+            // set blending mode
+            if (set_blend_mode(current_item, data.id)) {
+                for (auto btn : _blend_items) {
+                    btn.second->property_active().set_value(btn.first == data.id);
+                }
+                DocumentUndo::done(getDocument(), "set-blend-mode", _("Change blend mode"));
+            }
+        });
+        _blend_items[data.id] = check;
+        _blend_mode_names[data.id] = data.label;
+        check->show();
+        modes.attach(*check, left, top++);
+        if (top >= (Inkscape::SPBlendModeConverter._length + 1) / 2) {
+            ++left;
+            top = 0;
+        }
+    }
 
     // Visible icon
     auto *eyeRenderer = Gtk::manage( new Inkscape::UI::Widget::ImageToggler(
@@ -1051,6 +1178,33 @@ bool ObjectsPanel::toggleVisible(unsigned int state, Gtk::TreeModel::Row row)
     return false;
 }
 
+// show blend mode popup menu for current item
+bool ObjectsPanel::blendModePopup(GdkEventButton* event, Gtk::TreeModel::Row row) {
+    if (SPItem* item = getItem(row)) { 
+        current_item = nullptr;
+        auto blend = SP_CSS_BLEND_NORMAL;
+        if (item->style && item->style->mix_blend_mode.set) {
+            blend = item->style->mix_blend_mode.value;
+        }
+        auto opacity = 1.0;
+        if (item->style && item->style->opacity.set) {
+            opacity = SP_SCALE24_TO_FLOAT(item->style->opacity.value);
+        }
+        for (auto btn : _blend_items) {
+            btn.second->property_active().set_value(btn.first == blend);
+        }
+        _opacity_slider.set_value(opacity * 100);
+        current_item = item;
+
+        Gdk::Rectangle rect(event->x, event->y, 1, 1);
+        _object_menu.set_pointing_to(rect);
+        _item_state_toggler->set_active();
+        _object_menu.popup();
+    }
+
+    return true;
+}
+
 /**
  * Sets sensitivity of items in the tree
  * @param iter Current item in the tree
@@ -1325,6 +1479,9 @@ bool ObjectsPanel::_handleButtonEvent(GdkEventButton* event)
                     _drag_flip = toggleVisible(event->state, row);
                 } else if (col == _lock_column) {
                     _drag_flip = toggleLocked(event->state, row);
+                }
+                else if (col == _blend_mode_column) {
+                    return blendModePopup(event, row);
                 }
             }
         }
@@ -1657,7 +1814,7 @@ void ObjectsPanel::_searchChanged()
     }
 }
 
-} //namespace Dialogs
+} //namespace Dialog
 } //namespace UI
 } //namespace Inkscape
 

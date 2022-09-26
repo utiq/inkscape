@@ -28,6 +28,7 @@ ImageToggler::ImageToggler( char const* on, char const* off) :
     _property_active(*this, "active", false),
     _property_activatable(*this, "activatable", true),
     _property_gossamer(*this, "gossamer", false),
+    _property_active_icon(*this, "active_icon", ""),
     _property_pixbuf_on(*this, "pixbuf_on", Glib::RefPtr<Gdk::Pixbuf>(nullptr)),
     _property_pixbuf_off(*this, "pixbuf_off", Glib::RefPtr<Gdk::Pixbuf>(nullptr))
 {
@@ -47,6 +48,10 @@ void ImageToggler::get_preferred_width_vfunc(Gtk::Widget& widget, int& min_w, in
     nat_w = _size + 16;
 }
 
+void ImageToggler::set_active(bool active) {
+    _active = active;
+}
+
 void ImageToggler::render_vfunc( const Cairo::RefPtr<Cairo::Context>& cr,
                                  Gtk::Widget& widget,
                                  const Gdk::Rectangle& background_area,
@@ -60,10 +65,18 @@ void ImageToggler::render_vfunc( const Cairo::RefPtr<Cairo::Context>& cr,
         _property_pixbuf_off = sp_get_icon_pixbuf(_pixOffName, _size * scale);
     }
 
+    std::string icon_name = _property_active_icon.get_value();
+    // if the icon isn't cached, render it to a pixbuf
+    if (!icon_name.empty() && !_icon_cache[icon_name]) { 
+        int scale = widget.get_scale_factor();
+        _icon_cache[icon_name] = sp_get_icon_pixbuf(icon_name, _size * scale);
+    }
+
     // Hide when not being used.
     double alpha = 1.0;
     bool visible = _property_activatable.get_value()
-                || _property_active.get_value();
+                || _property_active.get_value()
+                || _active;
     if (!visible) {
         // XXX There is conflict about this value, some users want 0.2, others want 0.0
         alpha = 0.0;
@@ -76,8 +89,8 @@ void ImageToggler::render_vfunc( const Cairo::RefPtr<Cairo::Context>& cr,
     }
 
     Glib::RefPtr<Gdk::Pixbuf> pixbuf;
-    if(_property_active.get_value()) {
-        pixbuf = _property_pixbuf_on.get_value();
+    if (_property_active.get_value()) {
+        pixbuf = icon_name.empty() ? _property_pixbuf_on.get_value() : _icon_cache[icon_name];
     } else {
         pixbuf = _property_pixbuf_off.get_value();
     }

@@ -30,8 +30,11 @@ public:
     Glib::PropertyProxy<bool> property_active() { return _property_active.get_proxy(); }
     Glib::PropertyProxy<bool> property_activatable() { return _property_activatable.get_proxy(); }
     Glib::PropertyProxy<bool> property_gossamer() { return _property_gossamer.get_proxy(); }
+    Glib::PropertyProxy<std::string> property_active_icon() { return _property_active_icon.get_proxy(); }
     Glib::PropertyProxy< Glib::RefPtr<Gdk::Pixbuf> > property_pixbuf_on();
     Glib::PropertyProxy< Glib::RefPtr<Gdk::Pixbuf> > property_pixbuf_off();
+
+    void set_active(bool active = true);
 
 protected:
     void render_vfunc( const Cairo::RefPtr<Cairo::Context>& cr,
@@ -60,12 +63,14 @@ private:
     int _size;
     Glib::ustring _pixOnName;
     Glib::ustring _pixOffName;
-
+    bool _active = false;
     Glib::Property<bool> _property_active;
     Glib::Property<bool> _property_activatable;
     Glib::Property<bool> _property_gossamer;
     Glib::Property< Glib::RefPtr<Gdk::Pixbuf> > _property_pixbuf_on;
     Glib::Property< Glib::RefPtr<Gdk::Pixbuf> > _property_pixbuf_off;
+    Glib::Property<std::string> _property_active_icon;
+    std::map<const std::string, Glib::RefPtr<Gdk::Pixbuf>> _icon_cache;
 
     sigc::signal<void (const Glib::ustring&)> _signal_toggled;
     sigc::signal<void (GdkEvent const *)> _signal_pre_toggle;

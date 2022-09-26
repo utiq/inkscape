@@ -113,17 +113,7 @@ ObjectCompositeSettings::_blendBlurValueChanged()
         SPItem * item = SP_ITEM(i);
         SPStyle *style = item->style;
         g_assert(style != nullptr);
-        bool change_blend = (item->style->mix_blend_mode.set ? item->style->mix_blend_mode.value : SP_CSS_BLEND_NORMAL) != _filter_modifier.get_blend_mode();
-        // < 1.0 filter based blend removal
-        if (!item->style->mix_blend_mode.set && item->style->filter.set && item->style->getFilter()) {
-            remove_filter_legacy_blend(item);
-        }
-        item->style->mix_blend_mode.set = TRUE;
-        if (item->style->isolation.value == SP_CSS_ISOLATION_ISOLATE) {
-            item->style->mix_blend_mode.value = SP_CSS_BLEND_NORMAL;
-        } else { 
-            item->style->mix_blend_mode.value = _filter_modifier.get_blend_mode();
-        }
+        bool change_blend = set_blend_mode(item, _filter_modifier.get_blend_mode());
 
         if (radius == 0 && item->style->filter.set && item->style->getFilter()
             && filter_is_single_gaussian_blur(item->style->getFilter())) {
@@ -133,8 +123,10 @@ ObjectCompositeSettings::_blendBlurValueChanged()
             filter->update_filter_region(item);
             sp_style_set_property_url(item, "filter", filter, false);
         } 
-        if (change_blend) { //we do blend so we need update display style
-            item->updateRepr(SP_OBJECT_WRITE_NO_CHILDREN | SP_OBJECT_WRITE_EXT);
+        if (change_blend) {
+            ; // update done already
+        } else {
+            item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
         }
     }
 
