@@ -610,6 +610,7 @@ bool NodeTool::root_handler(GdkEvent* event) {
             select_point(&event->button);
         }
         rband->stop();
+        break;
 
     case GDK_2BUTTON_PRESS:
         if ( event->button.button == 1 ) {
