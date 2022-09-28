@@ -313,7 +313,6 @@ SymbolsDialog::SymbolsDialog(gchar const *prefsPath)
   sensitive = true;
 
   preview_document = symbolsPreviewDoc(); /* Template to render symbols in */
-  preview_document->ensureUpToDate(); /* Necessary? */
   key = SPItem::display_key_new(1);
   renderDrawing.setRoot(preview_document->getRoot()->invoke_show(renderDrawing, key, SP_ITEM_SHOW_DISPLAY ));
 
@@ -1274,18 +1273,8 @@ Glib::RefPtr<Gdk::Pixbuf>
 SymbolsDialog::drawSymbol(SPObject *symbol)
 {
   // Create a copy repr of the symbol with id="the_symbol"
-  Inkscape::XML::Document *xml_doc = preview_document->getReprDoc();
-  Inkscape::XML::Node *repr = symbol->getRepr()->duplicate(xml_doc);
+  Inkscape::XML::Node *repr = symbol->getRepr()->duplicate(preview_document->getReprDoc());
   repr->setAttribute("id", "the_symbol");
-
-  // Replace old "the_symbol" in preview_document by new.
-  Inkscape::XML::Node *root = preview_document->getReprRoot();
-  SPObject *symbol_old = preview_document->getObjectById("the_symbol");
-  if (symbol_old) {
-      symbol_old->deleteObject(false);
-  }
-
-  SPDocument::install_reference_document scoped(preview_document, getDocument());
 
   // First look for default style stored in <symbol>
   gchar const* style = repr->attribute("inkscape:symbol-style");
@@ -1302,7 +1291,8 @@ SymbolsDialog::drawSymbol(SPObject *symbol)
   // This is for display in Symbols dialog only
   if( style ) repr->setAttribute( "style", style );
 
-  root->appendChild(repr);
+  SPDocument::install_reference_document scoped(preview_document, getDocument());
+  preview_document->getDefs()->getRepr()->appendChild(repr);
   Inkscape::GC::release(repr);
 
   // Uncomment this to get the preview_document documents saved (useful for debugging)
@@ -1311,7 +1301,6 @@ SymbolsDialog::drawSymbol(SPObject *symbol)
   // fclose (fp);
 
   // Make sure preview_document is up-to-date.
-  preview_document->getRoot()->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
   preview_document->ensureUpToDate();
 
   // Make sure we have symbol in preview_document
@@ -1347,6 +1336,8 @@ SymbolsDialog::drawSymbol(SPObject *symbol)
     pixbuf = Glib::wrap(render_pixbuf(renderDrawing, scale, *dbox, psize));
   }
 
+  preview_document->getObjectByRepr(repr)->deleteObject(false);
+
   return pixbuf;
 }
 
@@ -1363,9 +1354,6 @@ SPDocument* SymbolsDialog::symbolsPreviewDoc()
 "     xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\""
 "     xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\""
 "     xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
-"  <defs id=\"defs\">"
-"    <symbol id=\"the_symbol\"/>"
-"  </defs>"
 "  <use id=\"the_use\" xlink:href=\"#the_symbol\"/>"
 "</svg>";
   return SPDocument::createNewDocFromMem( buffer, strlen(buffer), FALSE );

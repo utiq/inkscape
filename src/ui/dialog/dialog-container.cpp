@@ -45,13 +45,10 @@
 #include "ui/dialog/object-properties.h"
 #include "ui/dialog/objects.h"
 #include "ui/dialog/paint-servers.h"
-#include "ui/dialog/prototype.h"
 #include "ui/dialog/selectorsdialog.h"
-#include "ui/shortcuts.h"
 #if WITH_GSPELL
 #include "ui/dialog/spellcheck.h"
 #endif
-#include "ui/dialog/styledialog.h"
 #include "ui/dialog/svg-fonts-dialog.h"
 #include "ui/dialog/swatches.h"
 #include "ui/dialog/symbols.h"
@@ -135,7 +132,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "Find")               return std::make_unique<Find>();
     else if (dialog_type == "Glyphs")             return std::make_unique<GlyphsPanel>();
     else if (dialog_type == "IconPreview")        return std::make_unique<IconPreviewPanel>();
-    else if (dialog_type == "Input")              return std::make_unique<InputDialog>();
+    else if (dialog_type == "Input")              return InputDialog::create();
     else if (dialog_type == "LivePathEffect")     return std::make_unique<LivePathEffectEditor>();
     else if (dialog_type == "Memory")             return std::make_unique<Memory>();
     else if (dialog_type == "Messages")           return std::make_unique<Messages>();
@@ -149,7 +146,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "Swatches")           return std::make_unique<SwatchesPanel>();
     else if (dialog_type == "Symbols")            return std::make_unique<SymbolsDialog>();
     else if (dialog_type == "Text")               return std::make_unique<TextEdit>();
-    else if (dialog_type == "Trace")              return std::make_unique<TraceDialog>();
+    else if (dialog_type == "Trace")              return TraceDialog::create();
     else if (dialog_type == "Transform")          return std::make_unique<Transformation>();
     else if (dialog_type == "UndoHistory")        return std::make_unique<UndoHistory>();
     else if (dialog_type == "XMLEditor")          return std::make_unique<XmlTree>();

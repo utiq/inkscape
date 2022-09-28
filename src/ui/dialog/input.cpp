@@ -562,6 +562,11 @@ Glib::RefPtr<Gdk::Pixbuf> InputDialogImpl::getPix(PixId id)
     return pix;
 }
 
+std::unique_ptr<InputDialog> InputDialog::create()
+{
+    return std::make_unique<InputDialogImpl>();
+}
+
 InputDialogImpl::InputDialogImpl() :
     InputDialog(),
     lastSourceSeen(static_cast<Gdk::InputSource>(-1)),
@@ -1771,11 +1776,9 @@ bool InputDialogImpl::eventSnoop(GdkEvent* event)
     return false;
 }
 
-
 } // end namespace Inkscape
 } // end namespace UI
 } // end namespace Dialog
-
 
 /*
   Local Variables:

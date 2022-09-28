@@ -13,27 +13,20 @@
 #ifndef INKSCAPE_UI_DIALOG_TRACE_H
 #define INKSCAPE_UI_DIALOG_TRACE_H
 
+#include <memory>
 #include "ui/dialog/dialog-base.h"
 
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-/**
- * A dialog that displays log messages
- */
 class TraceDialog : public DialogBase
 {
 public:
-    /**
-     * Constructor
-     */
-    TraceDialog() : DialogBase("/dialogs/trace", "Trace") {}
+    static std::unique_ptr<TraceDialog> create();
 
-    /**
-     * Destructor
-     */
-    ~TraceDialog() override = default;
+protected:
+    TraceDialog() : DialogBase("/dialogs/trace", "Trace") {}
 };
 
 } //namespace Dialog

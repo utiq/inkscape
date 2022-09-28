@@ -543,6 +543,11 @@ void TraceDialogImpl::adjustParamsVisible()
     }
 }
 
+std::unique_ptr<TraceDialog> TraceDialog::create()
+{
+    return std::make_unique<TraceDialogImpl>();
+}
+
 } // namespace Dialog
 } // namespace UI
 } // namespace Inkscape

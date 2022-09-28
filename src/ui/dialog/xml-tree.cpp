@@ -92,7 +92,6 @@ XmlTree::XmlTree()
     fix_inner_scroll(&tree_scroller);
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool attrtoggler = prefs->getBool("/dialogs/xml/attrtoggler", true);
     bool dir = prefs->getBool("/dialogs/xml/vertical", true);
 
     /* attributes */
