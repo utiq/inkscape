@@ -145,7 +145,7 @@ protected:
 
 class RegisteredCheckButton : public RegisteredWidget<Gtk::CheckButton> {
 public:
-    ~RegisteredCheckButton() override;
+    ~RegisteredCheckButton() override = default;
     RegisteredCheckButton (const Glib::ustring& label, const Glib::ustring& tip, const Glib::ustring& key, Registry& wr, bool right=false, Inkscape::XML::Node* repr_in=nullptr, SPDocument *doc_in=nullptr, char const *active_str = "true", char const *inactive_str = "false");
 
     void setActive (bool);
@@ -164,13 +164,12 @@ public:
 
 protected:
     char const *_active_str, *_inactive_str;
-    sigc::connection  _toggled_connection;
     void on_toggled() override;
 };
 
 class RegisteredToggleButton : public RegisteredWidget<Gtk::ToggleButton> {
 public:
-    ~RegisteredToggleButton() override;
+    ~RegisteredToggleButton() override = default;
     RegisteredToggleButton (const Glib::ustring& label, const Glib::ustring& tip, const Glib::ustring& key, Registry& wr, bool right=true, Inkscape::XML::Node* repr_in=nullptr, SPDocument *doc_in=nullptr, char const *icon_active = "true", char const *icon_inactive = "false");
 
     void setActive (bool);
@@ -188,7 +187,6 @@ public:
                                 // if a callback checks it, it must reset it back to false
 
 protected:
-    sigc::connection  _toggled_connection;
     void on_toggled() override;
 };
 

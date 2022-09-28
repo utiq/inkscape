@@ -33,11 +33,6 @@ namespace Widget {
  * Registered CHECKBUTTON
  */
 
-RegisteredCheckButton::~RegisteredCheckButton()
-{
-    _toggled_connection.disconnect();
-}
-
 RegisteredCheckButton::RegisteredCheckButton (const Glib::ustring& label, const Glib::ustring& tip, const Glib::ustring& key, Registry& wr, bool right, Inkscape::XML::Node* repr_in, SPDocument *doc_in, char const *active_str, char const *inactive_str)
     : RegisteredWidget<Gtk::CheckButton>()
     , _active_str(active_str)
@@ -57,7 +52,6 @@ RegisteredCheckButton::RegisteredCheckButton (const Glib::ustring& label, const 
     else      set_halign(Gtk::ALIGN_START);
 
     set_valign(Gtk::ALIGN_CENTER);
-    _toggled_connection = signal_toggled().connect (sigc::mem_fun (*this, &RegisteredCheckButton::on_toggled));
 }
 
 void
@@ -97,11 +91,6 @@ RegisteredCheckButton::on_toggled()
  * Registered TOGGLEBUTTON
  */
 
-RegisteredToggleButton::~RegisteredToggleButton()
-{
-    _toggled_connection.disconnect();
-}
-
 RegisteredToggleButton::RegisteredToggleButton (const Glib::ustring& /*label*/, const Glib::ustring& tip, const Glib::ustring& key, Registry& wr, bool right, Inkscape::XML::Node* repr_in, SPDocument *doc_in, char const *icon_active, char const *icon_inactive)
     : RegisteredWidget<Gtk::ToggleButton>()
 {
@@ -113,7 +102,6 @@ RegisteredToggleButton::RegisteredToggleButton (const Glib::ustring& /*label*/, 
     else      set_halign(Gtk::ALIGN_START);
 
     set_valign(Gtk::ALIGN_CENTER);
-    _toggled_connection = signal_toggled().connect (sigc::mem_fun (*this, &RegisteredToggleButton::on_toggled));
 }
 
 void
