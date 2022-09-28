@@ -30,6 +30,7 @@
 #include <glibmm/main.h>
 #include <glibmm/i18n.h>
 #include <iomanip>
+#include <pango/pango-utils.h>
 #include <string>
 
 #include "desktop-style.h"
@@ -739,7 +740,10 @@ ObjectsPanel::ObjectsPanel() :
         }
         auto blend = (*iter)[_model->_colBlendMode];
         auto opacity = (*iter)[_model->_colOpacity];
-        auto label = Glib::ustring::compose("<span>%1 %2%%\n</span><span line_height=\"0.5\">\n</span><span>%3\n<i>%4</i></span>",
+        auto templt = !pango_version_check(1, 50, 0) ?
+            "<span>%1 %2%%\n</span><span line_height=\"0.5\">\n</span><span>%3\n<i>%4</i></span>" :
+            "<span>%1 %2%%\n</span><span>\n</span><span>%3\n<i>%4</i></span>";
+        auto label = Glib::ustring::compose(templt,
             _("Opacity:"), Util::format_number(opacity * 100.0, 1),
             _("Blend mode:"), _blend_mode_names[blend]);
         tooltip->set_markup(label);
