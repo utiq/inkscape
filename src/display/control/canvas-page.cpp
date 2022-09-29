@@ -13,7 +13,6 @@
 #include "canvas-page.h"
 #include "canvas-item-rect.h"
 #include "canvas-item-text.h"
-#include "canvas-item-cropmarks.h"
 #include "color.h"
 
 namespace Inkscape {
@@ -59,10 +58,6 @@ void CanvasPage::add(Geom::Rect size, CanvasItemGroup *background_group, CanvasI
         item->set_dashed(false);
         item->set_inverted(false);
         item->set_stroke(_bleed_color);
-        canvas_items.push_back(item);
-    }
-    if (auto item = new CanvasItemCropMarks(border_group)) {
-        item->set_stroke(0x000000ff);
         canvas_items.push_back(item);
     }
 
@@ -173,12 +168,6 @@ void CanvasPage::update(Geom::Rect size, Geom::OptRect margin, Geom::OptRect ble
             } else {
                 rect->set_fill(0x0);
                 rect->set_shadow(0x0, 0);
-            }
-        }
-        if (auto marks = dynamic_cast<CanvasItemCropMarks *>(item)) {
-            if (marks->set_visible(bleed && *bleed != size)) {
-                marks->set_stroke(border_color);
-                marks->set_size(size, *bleed);
             }
         }
         if (auto label = dynamic_cast<CanvasItemText *>(item)) {
