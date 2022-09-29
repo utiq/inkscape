@@ -173,7 +173,7 @@ cairo_surface_t *FilterSlot::_get_transformed_background() const
         cairo_paint(tbg_ct);
         cairo_destroy(tbg_ct);
     } else {
-        tbg = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, _slot_w, _slot_h);
+        tbg = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, _slot_w * device_scale, _slot_h * device_scale);
     }
 
     return tbg;
