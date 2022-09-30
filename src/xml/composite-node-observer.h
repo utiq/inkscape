@@ -16,7 +16,8 @@
 #include "inkgc/gc-alloc.h"
 #include "inkgc/gc-managed.h"
 #include "xml/node-observer.h"
-#include <list>
+
+#include <vector>
 
 namespace Inkscape {
 
@@ -32,13 +33,14 @@ namespace XML {
  */
 class CompositeNodeObserver : public NodeObserver, public GC::Managed<> {
 public:
-    struct ObserverRecord : public GC::Managed<> {
-        explicit ObserverRecord(NodeObserver &o) : observer(o), marked(false) {}
+    struct ObserverRecord
+    {
+        explicit ObserverRecord(NodeObserver *o) : observer(o), marked(false) {}
 
-        NodeObserver &observer;
+        NodeObserver *observer;
         bool marked; //< if marked for removal
     };
-    typedef std::list<ObserverRecord, Inkscape::GC::Alloc<ObserverRecord, Inkscape::GC::AUTO>> ObserverRecordList;
+    using ObserverRecordList = std::vector<ObserverRecord, Inkscape::GC::Alloc<ObserverRecord, Inkscape::GC::ATOMIC>>;
 
     CompositeNodeObserver()
     : _iterating(0), _active_marked(0), _pending_marked(0) {}
