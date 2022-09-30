@@ -33133,8 +33133,8 @@ msgstr "<b>Maj</b> : cliquer-glisser pour ajouter des nœuds à la sélection"
 #, c-format
 msgid "<b>%u of %u</b> node selected."
 msgid_plural "<b>%u of %u</b> nodes selected."
-msgstr[0] "<b>%u</b> objet sur <b>%u</b> sélectionné."
-msgstr[1] "<b>%u</b> objets sur <b>%u</b> sélectionnés."
+msgstr[0] "<b>%u</b> nœud sur <b>%u</b> sélectionné."
+msgstr[1] "<b>%u</b> nœuds sur <b>%u</b> sélectionnés."
 
 #: ../src/ui/tools/node-tool.cpp:681
 msgid "Angle: %1°."
