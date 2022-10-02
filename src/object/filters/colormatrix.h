@@ -16,10 +16,12 @@
 #include "sp-filter-primitive.h"
 #include "display/nr-filter-colormatrix.h"
 
-class SPFeColorMatrix
+class SPFeColorMatrix final
     : public SPFilterPrimitive
 {
 public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
     Inkscape::Filters::FilterColorMatrixType get_type() const { return type; }
     std::vector<double> const &get_values() const { return values; }
 

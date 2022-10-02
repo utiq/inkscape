@@ -39,6 +39,7 @@ class SPFilter
 public:
     SPFilter();
     ~SPFilter() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /// Returns a renderer for this filter, for use by the DrawingItem item.
     std::unique_ptr<Inkscape::Filters::Filter> build_renderer(Inkscape::DrawingItem *item);

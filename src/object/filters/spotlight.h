@@ -18,12 +18,13 @@
 
 #include "object/sp-object.h"
 
-class SPFeSpotLight
+class SPFeSpotLight final
     : public SPObject
 {
 public:
 	SPFeSpotLight();
 	~SPFeSpotLight() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /// x coordinate of the light source
     float x; 

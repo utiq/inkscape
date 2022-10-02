@@ -18,9 +18,12 @@
 #include "sp-filter-primitive.h"
 #include "svg/svg-icc-color.h"
 
-class SPFeFlood
+class SPFeFlood final
     : public SPFilterPrimitive
 {
+public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
 private:
     uint32_t color = 0x0;
     double opacity = 1.0;

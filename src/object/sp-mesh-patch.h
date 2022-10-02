@@ -17,10 +17,11 @@
 #include "sp-object.h"
 
 /** Gradient Meshpatch. */
-class SPMeshpatch : public SPObject {
+class SPMeshpatch final : public SPObject {
 public:
     SPMeshpatch();
     ~SPMeshpatch() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SPMeshpatch* getNextMeshpatch();
     SPMeshpatch* getPrevMeshpatch();

@@ -26,10 +26,11 @@ class SPCurve;
 /**
  * SVG <path> implementation
  */
-class SPPath : public SPShape {
+class SPPath final : public SPShape {
 public:
     SPPath();
     ~SPPath() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     int nodesInPath() const;
     friend class SPConnEndPair;

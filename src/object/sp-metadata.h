@@ -17,10 +17,11 @@
 
 /* Metadata base class */
 
-class SPMetadata : public SPObject {
+class SPMetadata final : public SPObject {
 public:
 	SPMetadata();
 	~SPMetadata() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 protected:
 	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;

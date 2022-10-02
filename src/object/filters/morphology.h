@@ -17,9 +17,12 @@
 #include "number-opt-number.h"
 #include "display/nr-filter-morphology.h"
 
-class SPFeMorphology
+class SPFeMorphology final
     : public SPFilterPrimitive
 {
+public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
 private:
     Inkscape::Filters::FilterMorphologyOperator Operator = Inkscape::Filters::MORPHOLOGY_OPERATOR_ERODE;
     NumberOptNumber radius = NumberOptNumber(0);

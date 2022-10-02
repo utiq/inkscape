@@ -15,10 +15,11 @@
 #include "sp-object.h"
 
 /** Gradient Meshrow. */
-class SPMeshrow : public SPObject {
+class SPMeshrow final : public SPObject {
 public:
     SPMeshrow();
     ~SPMeshrow() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SPMeshrow* getNextMeshrow();
     SPMeshrow* getPrevMeshrow();

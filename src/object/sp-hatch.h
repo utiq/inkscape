@@ -40,7 +40,7 @@ namespace XML { class Node; }
 #define SP_HATCH(obj) (dynamic_cast<SPHatch *>((SPObject *)obj))
 #define SP_IS_HATCH(obj) (dynamic_cast<const SPHatch *>((SPObject *)obj) != NULL)
 
-class SPHatch : public SPPaintServer
+class SPHatch final : public SPPaintServer
 {
 public:
     enum HatchUnits
@@ -62,6 +62,7 @@ public:
 
     SPHatch();
     ~SPHatch() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     // Reference (href)
     Glib::ustring href;
@@ -164,7 +165,7 @@ public:
 protected:
     bool _acceptObject(SPObject *obj) const override
     {
-        return dynamic_cast<SPHatch*>(obj) && URIReference::_acceptObject(obj);
+        return is<SPHatch>(obj) && URIReference::_acceptObject(obj);
     }
 };
 

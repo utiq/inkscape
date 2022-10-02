@@ -151,6 +151,7 @@ public:
 
     SPItem();
     ~SPItem() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     unsigned int sensitive : 1;
     unsigned int stop_paint: 1;
@@ -422,7 +423,7 @@ public:
 
     /**
      * Returns the accumulated transformation of the item and all its ancestors, including root's viewport.
-     * @pre (item != NULL) and SP_IS_ITEM(item).
+     * @pre (item != NULL) and is<SPItem>(item).
      */
     Geom::Affine i2doc_affine() const;
 
@@ -508,7 +509,6 @@ inline bool sp_item_repr_compare_position_bool(SPObject const *first, SPObject c
     return sp_repr_compare_position(first->getRepr(),
             second->getRepr())<0;
 }
-
 
 SPItem *sp_item_first_item_child (SPObject *obj);
 SPItem const *sp_item_first_item_child (SPObject const *obj);

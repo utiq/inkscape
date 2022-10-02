@@ -22,10 +22,11 @@ enum TextPathSide {
     SP_TEXT_PATH_SIDE_RIGHT
 };
 
-class SPTextPath : public SPItem {
+class SPTextPath final : public SPItem {
 public:
     SPTextPath();
     ~SPTextPath() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     TextTagAttributes attributes;
     SVGLength startOffset;
@@ -43,7 +44,7 @@ public:
     Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
 };
 
-#define SP_IS_TEXT_TEXTPATH(obj) (SP_IS_TEXT(obj) && obj->firstChild() && SP_IS_TEXTPATH(obj->firstChild()))
+inline bool SP_IS_TEXT_TEXTPATH(SPObject const *obj) { return is<SPText>(obj) && obj->firstChild() && is<SPTextPath>(obj->firstChild()); }
 
 SPItem *sp_textpath_get_path_item(SPTextPath *tp);
 void sp_textpath_to_text(SPObject *tp);

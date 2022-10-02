@@ -65,10 +65,11 @@ enum FontFaceUnicodeRangeType{
 	FONTFACE_UNICODERANGE_FIXME_HERE,
 };
 
-class SPFontFace : public SPObject {
+class SPFontFace final : public SPObject {
 public:
 	SPFontFace();
 	~SPFontFace() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     char* font_family;
     std::vector<FontFaceStyleType> font_style;

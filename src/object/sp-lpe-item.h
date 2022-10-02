@@ -41,6 +41,7 @@ class SPLPEItem : public SPItem {
 public:
     SPLPEItem();
     ~SPLPEItem() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     int path_effects_enabled;
 

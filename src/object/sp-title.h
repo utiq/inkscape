@@ -15,10 +15,11 @@
 
 #include "sp-object.h"
 
-class SPTitle : public SPObject {
+class SPTitle final : public SPObject {
 public:
 	SPTitle();
 	~SPTitle() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
 };

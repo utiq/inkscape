@@ -16,10 +16,11 @@
 
 #include "sp-item-group.h"
 
-class SPAnchor : public SPGroup {
+class SPAnchor final : public SPGroup {
 public:
 	SPAnchor();
 	~SPAnchor() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	char *href;
 	char *type;

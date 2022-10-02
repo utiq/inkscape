@@ -39,10 +39,11 @@ enum {
     SP_BORDER_LAYER_TOP
 };
 
-class SPNamedView : public SPObjectGroup {
+class SPNamedView final : public SPObjectGroup {
 public:
     SPNamedView();
     ~SPNamedView() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     unsigned int editable : 1;
 
@@ -153,7 +154,6 @@ Inkscape::CanvasGrid * sp_namedview_get_first_enabled_grid(SPNamedView *namedvie
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_NAMEDVIEW, SPNamedView)
 
 #endif /* !INKSCAPE_SP_NAMEDVIEW_H */
-
 
 /*
   Local Variables:

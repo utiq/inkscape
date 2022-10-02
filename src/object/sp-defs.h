@@ -16,10 +16,11 @@
 
 #include "sp-object.h"
 
-class SPDefs : public SPObject {
+class SPDefs final : public SPObject {
 public:
 	SPDefs();
 	~SPDefs() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 protected:
         void build(SPDocument* doc, Inkscape::XML::Node* repr) override;

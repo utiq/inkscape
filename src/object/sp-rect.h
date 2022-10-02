@@ -26,10 +26,11 @@ enum GenericRectType {
     SP_GENERIC_PATH // LPE
 };
 
-class SPRect : public SPShape {
+class SPRect final : public SPShape {
 public:
 	SPRect();
 	~SPRect() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     void tag_name_changed(gchar const* oldname, gchar const* newname) override;
 

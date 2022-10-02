@@ -46,7 +46,7 @@ protected:
     bool _acceptObject(SPObject *obj) const override;
 };
 
-class SPPattern
+class SPPattern final
     : public SPPaintServer
     , public SPViewBox
 {
@@ -59,6 +59,7 @@ public:
 
     SPPattern();
     ~SPPattern() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     // Reference (href)
     Glib::ustring href;

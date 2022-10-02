@@ -28,6 +28,7 @@ class SPGroup : public SPLPEItem {
 public:
 	SPGroup();
 	~SPGroup() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     enum LayerMode { GROUP, LAYER, MASK_HELPER };
 
@@ -117,7 +118,7 @@ MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_GROUP, SPGroup)
 
 inline bool SP_IS_LAYER(SPObject const *obj)
 {
-    auto group = dynamic_cast<SPGroup const *>(obj);
+    auto group = cast<SPGroup>(obj);
     return group && group->layerMode() == SPGroup::LAYER;
 }
 

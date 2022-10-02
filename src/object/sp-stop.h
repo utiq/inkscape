@@ -25,10 +25,11 @@
 typedef unsigned int guint32;
 
 /** Gradient stop. */
-class SPStop : public SPObject {
+class SPStop final : public SPObject {
 public:
 	SPStop();
 	~SPStop() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /// \todo fixme: Should be SPSVGPercentage
     float offset;

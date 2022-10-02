@@ -29,9 +29,12 @@ class FilterSpecularLighting;
 } // namespace Filters
 } // namespace Inkscape
 
-class SPFeSpecularLighting
+class SPFeSpecularLighting final
     : public SPFilterPrimitive
 {
+public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
 private:
     float surfaceScale = 1.0f;
     float specularConstant = 1.0f;

@@ -25,10 +25,12 @@ enum FilterDisplacementMapChannelSelector
     DISPLACEMENTMAP_CHANNEL_ENDTYPE
 };
 
-class SPFeDisplacementMap
+class SPFeDisplacementMap final
     : public SPFilterPrimitive
 {
 public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
     int get_in2() const { return in2_slot; }
 
 protected:

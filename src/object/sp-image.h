@@ -31,10 +31,11 @@
 #define SP_IMAGE_HREF_MODIFIED_FLAG SP_OBJECT_USER_MODIFIED_FLAG_A
 
 namespace Inkscape { class Pixbuf; }
-class SPImage : public SPItem, public SPViewBox, public SPDimensions {
+class SPImage final : public SPItem, public SPViewBox, public SPDimensions {
 public:
     SPImage();
     ~SPImage() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     Geom::Rect clipbox;
     double sx, sy;

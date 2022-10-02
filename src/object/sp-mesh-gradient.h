@@ -18,10 +18,11 @@
 #include "sp-gradient.h"
 
 /** Mesh gradient. */
-class SPMeshGradient : public SPGradient {
+class SPMeshGradient final : public SPGradient {
 public:
     SPMeshGradient();
     ~SPMeshGradient() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SVGLength x;  // Upper left corner of meshgradient
     SVGLength y;  // Upper right corner of mesh

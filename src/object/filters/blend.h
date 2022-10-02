@@ -17,12 +17,13 @@
 #include "sp-filter-primitive.h"
 #include "display/nr-filter-blend.h"
 
-class SPFeBlend
+class SPFeBlend final
     : public SPFilterPrimitive
 {
 public:
     SPBlendMode get_blend_mode() const { return blend_mode; }
     int get_in2() const { return in2_slot; }
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;

@@ -28,10 +28,11 @@ class DrawingGroup;
 
 } // namespace Inkscape
 
-class SPFlowtext : public SPItem {
+class SPFlowtext final : public SPItem {
 public:
 	SPFlowtext();
 	~SPFlowtext() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /** Completely recalculates the layout. */
     void rebuildLayout();

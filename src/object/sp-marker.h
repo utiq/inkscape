@@ -38,10 +38,11 @@ enum markerOrient {
   MARKER_ORIENT_AUTO_START_REVERSE
 };
 
-class SPMarker : public SPGroup, public SPViewBox {
+class SPMarker final : public SPGroup, public SPViewBox {
 public:
 	SPMarker();
 	~SPMarker() override;
+	int tag() const override { return tag_of<decltype(*this)>; }
 
 	/* units */
 	unsigned int markerUnits_set : 1;
@@ -92,7 +93,7 @@ class SPMarkerReference : public Inkscape::URIReference {
 	}
 protected:
 	bool _acceptObject(SPObject *obj) const override {
-		return SP_IS_MARKER(obj) && URIReference::_acceptObject(obj);
+		return is<SPMarker>(obj) && URIReference::_acceptObject(obj);
 	}
 };
 

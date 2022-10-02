@@ -28,12 +28,13 @@ class DrawingItem;
 class DrawingGroup;
 } // namespace Inkscape
 
-class SPMask
+class SPMask final
     : public SPObjectGroup
 {
 public:
 	SPMask();
 	~SPMask() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     bool mask_content_units() const { return maskContentUnits; }
 

@@ -19,10 +19,11 @@
 
 #include "sp-object.h"
 
-class SPString : public SPObject {
+class SPString final : public SPObject {
 public:
 	SPString();
 	~SPString() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     Glib::ustring  string;
 

@@ -15,9 +15,12 @@
 
 #include "sp-filter-primitive.h"
 
-class SPFeTile
+class SPFeTile final
     : public SPFilterPrimitive
 {
+public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
 protected:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };

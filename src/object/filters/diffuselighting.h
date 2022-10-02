@@ -27,9 +27,12 @@ class FilterDiffuseLighting;
 } // namespace Filters
 } // namespace Inkscape
 
-class SPFeDiffuseLighting
+class SPFeDiffuseLighting final
     : public SPFilterPrimitive
 {
+public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
 private:
     float surfaceScale = 1.0f;
     float diffuseConstant = 1.0f;

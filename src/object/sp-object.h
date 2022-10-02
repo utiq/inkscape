@@ -77,6 +77,7 @@ inline unsigned cascade_flags(unsigned flags)
 #include "2geom/point.h" // Used for dpi only
 #include "version.h"
 #include "util/forward-pointer-iterator.h"
+#include "tags.h"
 
 enum class SPAttr;
 
@@ -170,6 +171,7 @@ public:
     SPObject(SPObject const &) = delete;
     SPObject &operator=(SPObject const &) = delete;
     virtual ~SPObject();
+    virtual int tag() const { return tag_of<decltype(*this)>; }
 
     unsigned int cloned : 1;
     SPObject *clone_original;

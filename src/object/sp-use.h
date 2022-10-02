@@ -26,10 +26,11 @@
 
 class SPUseReference;
 
-class SPUse : public SPItem, public SPDimensions {
+class SPUse final : public SPItem, public SPDimensions {
 public:
 	SPUse();
 	~SPUse() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     // item built from the original's repr (the visible clone)
     // relative to the SPUse itself, it is treated as a child, similar to a grouped item relative to its group

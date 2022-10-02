@@ -24,10 +24,11 @@
 class SPDefs;
 
 /** \<svg\> element */
-class SPRoot : public SPGroup, public SPViewBox, public SPDimensions {
+class SPRoot final : public SPGroup, public SPViewBox, public SPDimensions {
 public:
 	SPRoot();
 	~SPRoot() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     struct {
         Inkscape::Version svg;

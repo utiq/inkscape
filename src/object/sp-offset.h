@@ -47,10 +47,11 @@ class SPUseReference;
  * points, or more precisely one control point, that's enough to define the
  * radius (look in shape-editor-knotholders).
  */
-class SPOffset : public SPShape {
+class SPOffset final : public SPShape {
 public:
 	SPOffset();
 	~SPOffset() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     void *originalPath; ///< will be a livarot Path, just don't declare it here to please the gcc linker FIXME what?
     char *original;     ///< SVG description of the source path

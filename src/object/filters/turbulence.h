@@ -18,9 +18,12 @@
 #include "number-opt-number.h"
 #include "display/nr-filter-turbulence.h"
 
-class SPFeTurbulence
+class SPFeTurbulence final
     : public SPFilterPrimitive
 {
+public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
 private:
     int numOctaves = 0;
     double seed = 0.0f;

@@ -37,6 +37,7 @@ class SPGlyphKerning : public SPObject {
 public:
     SPGlyphKerning();
     ~SPGlyphKerning() override = default;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     // FIXME encapsulation
     UnicodeRange* u1;
@@ -53,12 +54,14 @@ protected:
     Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
 };
 
-class SPHkern : public SPGlyphKerning {
+class SPHkern final : public SPGlyphKerning {
     ~SPHkern() override = default;
+    int tag() const override { return tag_of<decltype(*this)>; }
 };
 
-class SPVkern : public SPGlyphKerning {
+class SPVkern final : public SPGlyphKerning {
     ~SPVkern() override = default;
+    int tag() const override { return tag_of<decltype(*this)>; }
 };
 
 #endif // !SEEN_SP_GLYPH_KERNING_H

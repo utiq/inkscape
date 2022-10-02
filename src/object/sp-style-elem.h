@@ -18,10 +18,11 @@
 
 #include <3rdparty/libcroco/cr-statement.h>
 
-class SPStyleElem : public SPObject {
+class SPStyleElem final : public SPObject {
 public:
     SPStyleElem();
     ~SPStyleElem() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     // Container for the libcroco style sheet instance created on load.
     CRStyleSheet *style_sheet;
@@ -38,7 +39,6 @@ public:
 
     Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
 };
-
 
 #endif /* !INKSCAPE_SP_STYLE_ELEM_H */
 

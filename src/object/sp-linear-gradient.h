@@ -18,12 +18,13 @@
 #include "svg/svg-length.h"
 
 /** Linear gradient. */
-class SPLinearGradient
+class SPLinearGradient final
     : public SPGradient
 {
 public:
     SPLinearGradient();
     ~SPLinearGradient() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SVGLength x1;
     SVGLength y1;

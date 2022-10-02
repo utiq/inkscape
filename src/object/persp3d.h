@@ -56,10 +56,11 @@ public:
 //    friend class Persp3D;
 };
 
-class Persp3D : public SPObject {
+class Persp3D final : public SPObject {
 public:
 	Persp3D();
 	~Persp3D() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     Persp3DImpl *perspective_impl;
 
@@ -77,7 +78,7 @@ protected:
 public:
     // FIXME: Make more of these inline!
     static Persp3D * get_from_repr (Inkscape::XML::Node *repr) {
-        return SP_PERSP3D(SP_ACTIVE_DOCUMENT->getObjectByRepr(repr));
+        return cast<Persp3D>(SP_ACTIVE_DOCUMENT->getObjectByRepr(repr));
     }
     Proj::Pt2 get_VP (Proj::Axis axis) const {
         return perspective_impl->tmat.column(axis);

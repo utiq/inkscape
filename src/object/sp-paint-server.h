@@ -34,6 +34,7 @@ class SPPaintServer
 public:
     SPPaintServer();
     ~SPPaintServer() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     bool isSwatch() const;
     virtual bool isValid() const;
@@ -70,7 +71,7 @@ protected:
  * The raison d'être of this routine is that it correctly handles cycles in the href chain (e.g., if
  * a gradient gives itself as its href, or if each of two gradients gives the other as its href).
  *
- * \pre SP_IS_GRADIENT(src).
+ * \pre is<SPGradient>(src).
  */
 template <class PaintServer>
 PaintServer *chase_hrefs(PaintServer *src, sigc::slot<bool (PaintServer const *)> match) {

@@ -16,10 +16,12 @@
 #include "sp-filter-primitive.h"
 #include "number-opt-number.h"
 
-class SPGaussianBlur
+class SPGaussianBlur final
     : public SPFilterPrimitive
 {
 public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
     Geom::Rect calculate_region(Geom::Rect const &region) const override;
 
     NumberOptNumber const &get_std_deviation() const { return stdDeviation; }

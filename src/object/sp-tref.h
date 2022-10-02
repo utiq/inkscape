@@ -22,10 +22,11 @@
 
 /* tref base class */
 
-class SPTRef : public SPItem {
+class SPTRef final : public SPItem {
 public:
 	SPTRef();
 	~SPTRef() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     // Attributes that are used in the same way they would be in a tspan
     TextTagAttributes attributes;

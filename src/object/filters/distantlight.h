@@ -18,12 +18,13 @@
 
 #include "object/sp-object.h"
 
-class SPFeDistantLight
+class SPFeDistantLight final
     : public SPObject
 {
 public:
 	SPFeDistantLight();
 	~SPFeDistantLight() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /// azimuth attribute
     float azimuth;

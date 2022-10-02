@@ -30,12 +30,13 @@ class DrawingItem;
 class DrawingGroup;
 } // namespace Inkscape
 
-class SPClipPath
+class SPClipPath final
     : public SPObjectGroup
 {
 public:
 	SPClipPath();
     ~SPClipPath() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     bool clippath_units() const { return clipPathUnits; }
 

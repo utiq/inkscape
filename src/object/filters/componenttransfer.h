@@ -20,9 +20,12 @@ class FilterComponentTransfer;
 } // namespace Filters
 } // namespace Inkscape
 
-class SPFeComponentTransfer
+class SPFeComponentTransfer final
     : public SPFilterPrimitive
 {
+public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
 	void release() override;

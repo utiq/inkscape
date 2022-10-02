@@ -28,10 +28,11 @@ namespace Inkscape {
 #define LIVEPATHEFFECT(obj) ((LivePathEffectObject*)obj)
 #define IS_LIVEPATHEFFECT(obj) (dynamic_cast<const LivePathEffectObject*>((SPObject*)obj))
 
-class LivePathEffectObject : public SPObject {
+class LivePathEffectObject final : public SPObject {
 public:
-	LivePathEffectObject();
-	~LivePathEffectObject() override;
+    LivePathEffectObject();
+    ~LivePathEffectObject() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     Inkscape::LivePathEffect::EffectType effecttype;
 

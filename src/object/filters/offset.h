@@ -15,10 +15,12 @@
 
 #include "sp-filter-primitive.h"
 
-class SPFeOffset
+class SPFeOffset final
     : public SPFilterPrimitive
 {
 public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
     Geom::Rect calculate_region(Geom::Rect const &region) const override;
 
 private:

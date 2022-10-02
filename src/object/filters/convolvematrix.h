@@ -19,10 +19,12 @@
 #include "number-opt-number.h"
 #include "display/nr-filter-convolve-matrix.h"
 
-class SPFeConvolveMatrix
+class SPFeConvolveMatrix final
     : public SPFilterPrimitive
 {
 public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
     NumberOptNumber get_order() const { return order; }
     std::vector<double> const &get_kernel_matrix() const { return kernelMatrix; }
 

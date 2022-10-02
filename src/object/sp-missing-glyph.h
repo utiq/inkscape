@@ -15,10 +15,11 @@
 
 #include "sp-object.h"
 
-class SPMissingGlyph : public SPObject {
+class SPMissingGlyph final : public SPObject {
 public:
 	SPMissingGlyph();
 	~SPMissingGlyph() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	char* d;
 

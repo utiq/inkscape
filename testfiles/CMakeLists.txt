@@ -71,6 +71,7 @@ set(TEST_SOURCES
     dir-util-test
     min-bbox-test
     sp-object-test
+    sp-object-tags-test
     object-set-test
     object-style-test
     path-boolop-test

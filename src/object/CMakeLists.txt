@@ -175,6 +175,7 @@ set(object_SRC
   uri.h
   viewbox.h
   weakptr.h
+  tags.h
 )
 
 add_inkscape_source("${object_SRC}")

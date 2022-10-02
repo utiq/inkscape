@@ -39,6 +39,7 @@ class SPShape : public SPLPEItem {
 public:
 	SPShape();
 	~SPShape() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SPCurve const *curve() const;
     SPCurve const *curveBeforeLPE() const;

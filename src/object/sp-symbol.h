@@ -23,10 +23,11 @@
 #include "sp-item-group.h"
 #include "viewbox.h"
 
-class SPSymbol : public SPGroup, public SPViewBox, public SPDimensions {
+class SPSymbol final : public SPGroup, public SPViewBox, public SPDimensions {
 public:
 	SPSymbol();
 	~SPSymbol() override;
+	int tag() const override { return tag_of<decltype(*this)>; }
 
 	void build(SPDocument *document, Inkscape::XML::Node *repr) override;
 	void release() override;

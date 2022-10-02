@@ -23,10 +23,11 @@ enum {
     SP_TSPAN_ROLE_LINE
 };
 
-class SPTSpan : public SPItem {
+class SPTSpan final : public SPItem {
 public:
 	SPTSpan();
 	~SPTSpan() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     unsigned int role : 2;
     TextTagAttributes attributes;

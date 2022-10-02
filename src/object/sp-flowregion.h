@@ -19,10 +19,11 @@ class Path;
 class Shape;
 class flow_dest;
 
-class SPFlowregion : public SPItem {
+class SPFlowregion final : public SPItem {
 public:
 	SPFlowregion();
 	~SPFlowregion() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	std::vector<Shape*>     computed;
 	
@@ -37,10 +38,11 @@ public:
 	const char* displayName() const override;
 };
 
-class SPFlowregionExclude : public SPItem {
+class SPFlowregionExclude final : public SPItem {
 public:
 	SPFlowregionExclude();
 	~SPFlowregionExclude() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	Shape            *computed;
 	
@@ -56,7 +58,6 @@ public:
 };
 
 MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FLOWREGION, SPFlowregion)
-
 MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FLOWREGIONEXCLUDE, SPFlowregionExclude)
 
 #endif

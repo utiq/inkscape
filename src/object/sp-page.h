@@ -27,11 +27,12 @@ namespace Inkscape {
     class ObjectSet;
 }
 
-class SPPage : public SPObject
+class SPPage final : public SPObject
 {
 public:
     SPPage();
     ~SPPage() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     void movePage(Geom::Affine translate, bool with_objects);
     void swapPage(SPPage *other, bool with_objects);

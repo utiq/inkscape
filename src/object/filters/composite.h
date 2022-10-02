@@ -30,10 +30,12 @@ enum FeCompositeOperator
     COMPOSITE_ENDOPERATOR        /* Cairo Saturate is not included in CSS */
 };
 
-class SPFeComposite
+class SPFeComposite final
     : public SPFilterPrimitive
 {
 public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
     FeCompositeOperator get_composite_operator() const { return composite_operator; }
     int get_in2() const { return in2_slot; }
 

@@ -21,10 +21,11 @@ typedef struct _cairo cairo_t;
 typedef struct _cairo_pattern cairo_pattern_t;
 
 /** Radial gradient. */
-class SPRadialGradient : public SPGradient {
+class SPRadialGradient final : public SPGradient {
 public:
     SPRadialGradient();
     ~SPRadialGradient() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SVGLength cx;
     SVGLength cy;

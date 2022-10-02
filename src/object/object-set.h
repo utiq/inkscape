@@ -90,20 +90,20 @@ struct random_access{};
 
 struct is_item {
     bool operator()(SPObject* obj) {
-        return SP_IS_ITEM(obj);
+        return is<SPItem>(obj);
     }
 };
 
 struct is_group {
     bool operator()(SPObject* obj) {
-        return SP_IS_GROUP(obj);
+        return is<SPGroup>(obj);
     }
 };
 
 struct object_to_item {
     typedef SPItem* result_type;
     SPItem* operator()(SPObject* obj) const {
-        return SP_ITEM(obj);
+        return cast<SPItem>(obj);
     }
 };
 
@@ -117,7 +117,7 @@ struct object_to_node {
 struct object_to_group {
     typedef SPGroup* result_type;
     SPGroup* operator()(SPObject* obj) const {
-        return SP_GROUP(obj);
+        return cast<SPGroup>(obj);
     }
 };
 

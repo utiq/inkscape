@@ -41,6 +41,7 @@ class SPFilterPrimitive
 public:
 	SPFilterPrimitive();
 	~SPFilterPrimitive() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     int get_in() const { return in_slot; }
     int get_out() const { return out_slot; }

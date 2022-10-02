@@ -37,11 +37,12 @@ class DrawingItem;
 
 } // namespace Inkscape
 
-class SPHatchPath : public SPObject
+class SPHatchPath final : public SPObject
 {
 public:
     SPHatchPath();
     ~SPHatchPath() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SVGLength offset;
 

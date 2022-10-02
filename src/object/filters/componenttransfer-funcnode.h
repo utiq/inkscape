@@ -19,7 +19,7 @@
 #include "object/sp-object.h"
 #include "display/nr-filter-component-transfer.h"
 
-class SPFeFuncNode
+class SPFeFuncNode final
     : public SPObject
 {
 public:
@@ -30,6 +30,7 @@ public:
 
     SPFeFuncNode(Channel channel)
         : channel(channel) {}
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     Inkscape::Filters::FilterComponentTransferType type = Inkscape::Filters::COMPONENTTRANSFER_TYPE_IDENTITY;
     std::vector<double> tableValues;

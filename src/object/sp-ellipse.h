@@ -33,10 +33,11 @@ enum GenericEllipseArcType {
     SP_GENERIC_ELLIPSE_ARC_TYPE_CHORD
 };
 
-class SPGenericEllipse : public SPShape {
+class SPGenericEllipse final : public SPShape {
 public:
     SPGenericEllipse();
     ~SPGenericEllipse() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     // Regardless of type, the ellipse/circle/arc is stored
     // internally with these variables. (Circle radius is rx).

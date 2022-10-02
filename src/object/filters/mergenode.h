@@ -23,10 +23,12 @@
 
 class SlotResolver;
 
-class SPFeMergeNode
+class SPFeMergeNode final
     : public SPObject
 {
 public:
+    int tag() const override { return tag_of<decltype(*this)>; }
+
     int get_in() const { return in_slot; }
 
     void invalidate_parent_slots();

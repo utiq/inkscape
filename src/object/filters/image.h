@@ -27,11 +27,12 @@ class Drawing;
 class Pixbuf;
 } // namespace Inksacpe
 
-class SPFeImage
+class SPFeImage final
     : public SPFilterPrimitive
 {
 public:
     SPFeImage();
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 private:
     std::string href;

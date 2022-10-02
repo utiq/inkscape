@@ -41,10 +41,11 @@ class ColorProfileImpl;
 /**
  * Color Profile.
  */
-class ColorProfile : public SPObject {
+class ColorProfile final : public SPObject {
 public:
     ColorProfile();
     ~ColorProfile() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     bool operator<(ColorProfile const &other) const;
 

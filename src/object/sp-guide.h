@@ -38,10 +38,11 @@ namespace UI::Widget {
 
 
 /* Represents the constraint on p that dot(g.direction, p) == g.position. */
-class SPGuide : public SPObject {
+class SPGuide final : public SPObject {
 public:
     SPGuide();
     ~SPGuide() override = default;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     void set_color(const unsigned r, const unsigned g, const unsigned b, bool const commit);
     void setColor(guint32 c);
@@ -98,7 +99,6 @@ protected:
 void sp_guide_pt_pairs_to_guides(SPDocument *doc, std::list<std::pair<Geom::Point, Geom::Point> > &pts);
 void sp_guide_create_guides_around_page(SPDocument *doc);
 void sp_guide_delete_all_guides(SPDocument *doc);
-
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_GUIDE, SPGuide)
 MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_GUIDE, SPGuide)

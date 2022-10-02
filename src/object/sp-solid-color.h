@@ -19,12 +19,13 @@ typedef struct _cairo cairo_t;
 typedef struct _cairo_pattern cairo_pattern_t;
 
 /** Gradient SolidColor. */
-class SPSolidColor
+class SPSolidColor final
     : public SPPaintServer
 {
 public:
     SPSolidColor();
     ~SPSolidColor() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     std::unique_ptr<Inkscape::DrawingPaintServer> create_drawing_paintserver() override;
 

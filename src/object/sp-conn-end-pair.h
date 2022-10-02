@@ -81,7 +81,6 @@ enum {
     SP_CONNECTOR_ORTHOGONAL   // Object avoiding orthogonal polyline (only horizontal and vertical segments).
 };
 
-
 #endif /* !SEEN_SP_CONN_END_PAIR */
 
 /*

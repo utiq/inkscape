@@ -19,7 +19,7 @@
 
 #include "desktop.h"
 #include "sp-item.h"
-#include "sp-string.h" // Provides many other headers with SP_IS_STRING
+#include "sp-string.h" // Provides many other headers with is<SPString>
 #include "text-tag-attributes.h"
 #include "display/curve.h"
 
@@ -36,10 +36,11 @@
 class SPShape;
 
 /* SPText */
-class SPText : public SPItem {
+class SPText final : public SPItem {
 public:
 	SPText();
 	~SPText() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /** Converts the text object to its component curves */
     SPCurve getNormalizedBpath() const;
