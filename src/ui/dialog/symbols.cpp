@@ -63,7 +63,7 @@ namespace Inkscape {
 namespace UI {
 
 namespace Dialog {
-
+static std::map<Glib::ustring, std::pair<Glib::ustring, SPDocument*> > symbol_sets;
 /**
  * Constructor
  */
@@ -379,7 +379,7 @@ void SymbolsDialog::rebuild() {
   icons_found = false;
   //We are not in search all docs
   if (search->get_text() != _("Searching...") && search->get_text() != _("Loading all symbols...")) {
-      Glib::ustring current = Glib::Markup::escape_text(symbol_set->get_active_text());
+      Glib::ustring current = Glib::Markup::escape_text(get_active_base_text());
       if (current == ALLDOCS && search->get_text() != "") {
           searchsymbols();
           return;
@@ -392,7 +392,7 @@ void SymbolsDialog::rebuild() {
   }
 }
 void SymbolsDialog::showOverlay() {
-  Glib::ustring current = Glib::Markup::escape_text(symbol_set->get_active_text());
+  Glib::ustring current = Glib::Markup::escape_text(get_active_base_text());
   if (current == ALLDOCS && !l.size())
   {
     overlay_icon->hide();
@@ -487,8 +487,8 @@ void SymbolsDialog::iconDragDataGet(const Glib::RefPtr<Gdk::DragContext>& /*cont
 
 void SymbolsDialog::defsModified(SPObject * /*object*/, guint /*flags*/)
 {
-  Glib::ustring doc_title = symbol_set->get_active_text();
-  if (doc_title != ALLDOCS && !symbol_sets[doc_title] ) {
+  Glib::ustring doc_title = get_active_base_text();
+  if (doc_title != ALLDOCS && !symbol_sets[doc_title].second ) {
     rebuild();
   }
 }
@@ -498,7 +498,7 @@ void SymbolsDialog::selectionChanged(Inkscape::Selection *selection) {
   Glib::ustring symbol_id = getSymbolId(selected);
   Glib::ustring doc_title = getSymbolDocTitle(selected);
   if (!doc_title.empty()) {
-    SPDocument* symbol_document = symbol_sets[doc_title];
+    SPDocument* symbol_document = symbol_sets[doc_title].second;
     if (!symbol_document) {
       //we are in global search so get the original symbol document by title
       symbol_document = selectedSymbols();
@@ -517,7 +517,7 @@ void SymbolsDialog::documentReplaced()
     defs_modified.disconnect();
     if (auto document = getDocument()) {
         defs_modified = document->getDefs()->connectModified(sigc::mem_fun(*this, &SymbolsDialog::defsModified));
-        if (!symbol_sets[symbol_set->get_active_text()]) {
+        if (!symbol_sets[get_active_base_text()].second) {
             // Symbol set is from Current document, need to rebuild
             rebuild();
         }
@@ -526,11 +526,11 @@ void SymbolsDialog::documentReplaced()
 
 SPDocument* SymbolsDialog::selectedSymbols() {
   /* OK, we know symbol name... now we need to copy it to clipboard, bon chance! */
-  Glib::ustring doc_title = symbol_set->get_active_text();
+  Glib::ustring doc_title = get_active_base_text();
   if (doc_title == ALLDOCS) {
     return nullptr;
   }
-  SPDocument* symbol_document = symbol_sets[doc_title];
+  SPDocument* symbol_document = symbol_sets[doc_title].second;
   if( !symbol_document ) {
     symbol_document = getSymbolsSet(doc_title).second;
     // Symbol must be from Current Document (this method of checking should be language independent).
@@ -598,7 +598,7 @@ Glib::ustring SymbolsDialog::documentTitle(SPDocument* symbol_doc) {
     }
     g_free(title);
   }
-  Glib::ustring current = symbol_set->get_active_text();
+  Glib::ustring current = get_active_base_text();
   if (current == CURRENTDOC) {
     return current;
   }
@@ -618,7 +618,7 @@ void SymbolsDialog::sendToClipboard(Gtk::TreeModel::Path const &symbol_path, Geo
         //we are in global search so get the original symbol document by title
         Glib::ustring doc_title = getSymbolDocTitle(symbol_path);
         if (!doc_title.empty()) {
-            symbol_document = symbol_sets[doc_title];
+            symbol_document = symbol_sets[doc_title].second;
         }
     }
     if (!symbol_document) {
@@ -819,7 +819,8 @@ void SymbolsDialog::getSymbolsTitle() {
           if(title.empty()) {
             title = _("Unnamed Symbols");
           }
-          symbol_sets[title]= nullptr;
+          if (!symbol_sets[title].second)
+            symbol_sets[title]= std::make_pair(title,nullptr);
           ++number_docs;
         } else {
           std::ifstream infile(filename);
@@ -828,7 +829,8 @@ void SymbolsDialog::getSymbolsTitle() {
               std::string title_res = std::regex_replace (line, matchtitle,"$1",std::regex_constants::format_no_copy);
               if (!title_res.empty()) {
                   title_res = g_dpgettext2(nullptr, "Symbol", title_res.c_str());
-                  symbol_sets[ellipsize(Glib::ustring(title_res), 33)]= nullptr;
+                  if (!symbol_sets[ellipsize(Glib::ustring(title_res), 33)].second)
+                    symbol_sets[ellipsize(Glib::ustring(title_res), 33)]= std::make_pair(ellipsize(Glib::ustring(title_res), 33),nullptr);
                   ++number_docs;
                   break;
               }
@@ -840,7 +842,8 @@ void SymbolsDialog::getSymbolsTitle() {
                   if(title.empty()) {
                     title = _("Unnamed Symbols");
                   }
-                  symbol_sets[title]= nullptr;
+                  if (!symbol_sets[title].second)
+                    symbol_sets[title]= std::make_pair(title,nullptr);
                   ++number_docs;
                   break;
               }
@@ -857,23 +860,24 @@ std::pair<Glib::ustring, SPDocument*>
 SymbolsDialog::getSymbolsSet(Glib::ustring title)
 {
     SPDocument* symbol_doc = nullptr;
-    Glib::ustring current = symbol_set->get_active_text();
-    if (current == CURRENTDOC) {
-      return std::make_pair(CURRENTDOC, symbol_doc);
+    Glib::ustring current = get_active_base_text();
+    if (title == CURRENTDOC) {
+      symbol_sets[CURRENTDOC] = std::make_pair(CURRENTDOC, nullptr);
+      return symbol_sets[CURRENTDOC];
     }
-    if (symbol_sets[title]) {
+    if (symbol_sets[title].second) {
       sensitive = false;
       symbol_set->remove_all();
       symbol_set->append(CURRENTDOC);
       symbol_set->append(ALLDOCS);
       for(auto const &symbol_document_map : symbol_sets) {
-        if (CURRENTDOC != symbol_document_map.first) {
-          symbol_set->append(symbol_document_map.first);
+        if (CURRENTDOC != symbol_document_map.second.first) {
+          symbol_set->append(symbol_document_map.second.first);
         }
       }
       symbol_set->set_active_text(title);
       sensitive = true;
-      return std::make_pair(title, symbol_sets[title]);
+      return symbol_sets[title];
     }
     using namespace Inkscape::IO::Resource;
     Glib::ustring new_title;
@@ -926,21 +930,20 @@ SymbolsDialog::getSymbolsSet(Glib::ustring title)
         }
     }
     if(symbol_doc) {
-      symbol_sets.erase(title);
-      symbol_sets[new_title] = symbol_doc;
+      symbol_sets[title] = std::make_pair(new_title,symbol_doc);
       sensitive = false;
       symbol_set->remove_all();
       symbol_set->append(CURRENTDOC);
       symbol_set->append(ALLDOCS);
       for(auto const &symbol_document_map : symbol_sets) {
-        if (CURRENTDOC != symbol_document_map.first) {
-          symbol_set->append(symbol_document_map.first);
+        if (CURRENTDOC != symbol_document_map.second.first) {
+          symbol_set->append(symbol_document_map.second.first);
         }
       }
-      symbol_set->set_active_text(new_title);
+      symbol_set->set_active_text(title);
       sensitive = true;
     }
-    return std::make_pair(new_title, symbol_doc);
+    return symbol_sets[title];
 }
 
 void SymbolsDialog::symbolsInDocRecursive (SPObject *r, std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > &l, Glib::ustring doc_title)
@@ -1133,18 +1136,34 @@ bool SymbolsDialog::callbackSymbols(){
   return true;
 }
 
+Glib::ustring SymbolsDialog::get_active_base_text()
+{
+    Glib::ustring out = symbol_set->get_active_text();
+    for(auto const &symbol_document_map : symbol_sets) {
+      if (symbol_document_map.second.first == out) {
+          out = symbol_document_map.first;
+      }
+    }
+    return out;
+}
+
+
 bool SymbolsDialog::callbackAllSymbols(){
-  Glib::ustring current = symbol_set->get_active_text();
+  Glib::ustring current = get_active_base_text();
   if (current == ALLDOCS && search->get_text() == _("Loading all symbols...")) {
     size_t counter = 0;
-    std::map<Glib::ustring, SPDocument*> symbol_sets_tmp = symbol_sets;
+    std::map<Glib::ustring, std::pair<Glib::ustring, SPDocument*> > symbol_sets_tmp = symbol_sets;
     for(auto const &symbol_document_map : symbol_sets_tmp) {
       ++counter;
-      SPDocument* symbol_document = symbol_document_map.second;
+      Glib::ustring current = get_active_base_text();
+      if (current == CURRENTDOC) {
+        return true;
+      }
+      SPDocument* symbol_document = symbol_document_map.second.second;
       if (symbol_document) {
         continue;
       }
-      symbol_document = getSymbolsSet(symbol_document_map.first).second;
+      symbol_document = getSymbolsSet(symbol_document_map.second.first).second;
       symbol_set->set_active_text(ALLDOCS);
       if (!symbol_document) {
         continue;
@@ -1198,7 +1217,7 @@ void SymbolsDialog::addSymbols() {
   store->clear();
   icons_found = false;
   for(auto const &symbol_document_map : symbol_sets) {
-    SPDocument* symbol_document = symbol_document_map.second;
+    SPDocument* symbol_document = symbol_document_map.second.second;
     if (!symbol_document) {
       continue;
     }
@@ -1232,7 +1251,7 @@ void SymbolsDialog::addSymbol(SPSymbol *symbol, Glib::ustring doc_title)
   if (doc_title.empty()) {
     doc_title = CURRENTDOC;
   } else {
-      doc_title = g_dpgettext2(nullptr, "Symbol", doc_title.c_str());
+    doc_title = g_dpgettext2(nullptr, "Symbol", doc_title.c_str());
   }
 
   Glib::ustring symbol_title;

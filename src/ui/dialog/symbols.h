@@ -121,13 +121,13 @@ private:
     void clearSearch();
     bool callbackSymbols();
     bool callbackAllSymbols();
+    Glib::ustring get_active_base_text();
     void enableWidgets(bool enable);
     Glib::ustring ellipsize(Glib::ustring data, size_t limit);
     gchar const* styleFromUse( gchar const* id, SPDocument* document);
     Glib::RefPtr<Gdk::Pixbuf> drawSymbol(SPObject *symbol);
     Glib::RefPtr<Gdk::Pixbuf> getOverlay(gint width, gint height);
     /* Keep track of all symbol template documents */
-    std::map<Glib::ustring, SPDocument*> symbol_sets;
     std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > l;
     // Index into sizes which is selected
     int pack_size;
