@@ -103,9 +103,6 @@ Geom::Affine sp_shape_marker_get_transform(Geom::Curve const & c1, Geom::Curve c
 Geom::Affine sp_shape_marker_get_transform_at_start(Geom::Curve const & c);
 Geom::Affine sp_shape_marker_get_transform_at_end(Geom::Curve const & c);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_SHAPE, SPShape)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_SHAPE, SPShape)
-
 #endif // SEEN_SP_SHAPE_H
 
 /*

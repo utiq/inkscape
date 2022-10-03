@@ -35,7 +35,4 @@ public:
 	void update(SPCtx* ctx, unsigned int flags) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_STRING, SPString)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_STRING, SPString)
-
 #endif

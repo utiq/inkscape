@@ -17,9 +17,6 @@
 
 /* Skeleton base class */
 
-#define SP_TAG(o) (dynamic_cast<SPTag*>(o))
-#define SP_IS_TAG(o) (dynamic_cast<SPTag*>(o) != NULL)
-
 class SPTag final : public SPObject {
 public:
     SPTag() = default;

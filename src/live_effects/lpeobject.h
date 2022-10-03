@@ -25,9 +25,6 @@ namespace Inkscape {
     }
 }
 
-#define LIVEPATHEFFECT(obj) ((LivePathEffectObject*)obj)
-#define IS_LIVEPATHEFFECT(obj) (dynamic_cast<const LivePathEffectObject*>((SPObject*)obj))
-
 class LivePathEffectObject final : public SPObject {
 public:
     LivePathEffectObject();

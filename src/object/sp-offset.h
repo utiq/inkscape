@@ -92,8 +92,6 @@ void sp_offset_top_point (SPOffset const *offset, Geom::Point *px);
 
 SPItem *sp_offset_get_source (SPOffset *offset);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_OFFSET, SPOffset)
-
 #endif
 
 /*

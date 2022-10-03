@@ -64,9 +64,6 @@ private:
     void setRootDimensions();
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_ROOT, SPRoot)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_ROOT, SPRoot)
-
 #endif /* !SP_ROOT_H_SEEN */
 
 /*

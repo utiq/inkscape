@@ -39,6 +39,4 @@ public:
 	int event(SPEvent *event) override;
 };
 
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_ANCHOR, SPAnchor)
-
 #endif

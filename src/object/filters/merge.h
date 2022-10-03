@@ -30,9 +30,6 @@ protected:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEMERGE, SPFeMerge)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEMERGE, SPFeMerge)
-
 #endif // SP_FEMERGE_H_SEEN
 
 /*

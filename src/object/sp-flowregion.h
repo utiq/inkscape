@@ -57,7 +57,4 @@ public:
 	const char* displayName() const override;
 };
 
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FLOWREGION, SPFlowregion)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FLOWREGIONEXCLUDE, SPFlowregionExclude)
-
 #endif

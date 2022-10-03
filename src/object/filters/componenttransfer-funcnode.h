@@ -47,9 +47,6 @@ protected:
     void set(SPAttr key, char const *value) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEFUNCNODE, SPFeFuncNode)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEFUNCNODE, SPFeFuncNode)
-
 #endif // SP_FECOMPONENTTRANSFER_FUNCNODE_H_SEEN
 
 /*

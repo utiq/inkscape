@@ -68,9 +68,6 @@ bool sp_tref_fully_contained(SPObject *start_item, Glib::ustring::iterator &star
                              SPObject *end_item, Glib::ustring::iterator &end);
 SPObject * sp_tref_convert_to_tspan(SPObject *item);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_TREF, SPTRef)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_TREF, SPTRef)
-
 #endif /* !SP_TREF_H */
 
 /*

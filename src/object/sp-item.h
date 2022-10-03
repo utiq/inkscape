@@ -514,9 +514,6 @@ inline bool sp_item_repr_compare_position_bool(SPObject const *first, SPObject c
 SPItem *sp_item_first_item_child (SPObject *obj);
 SPItem const *sp_item_first_item_child (SPObject const *obj);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_ITEM, SPItem)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_ITEM, SPItem)
-
 #endif // SEEN_SP_ITEM_H
 
 /*

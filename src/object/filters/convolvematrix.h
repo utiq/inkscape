@@ -53,9 +53,6 @@ protected:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FECONVOLVEMATRIX, SPFeConvolveMatrix)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FECONVOLVEMATRIX, SPFeConvolveMatrix)
-
 #endif // SP_FECONVOLVEMATRIX_H_SEEN
 
 /*

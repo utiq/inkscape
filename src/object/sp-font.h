@@ -52,7 +52,4 @@ private:
     bool _block = false;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FONT, SPFont)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FONT, SPFont)
-
 #endif //#ifndef SP_FONT_H_SEEN

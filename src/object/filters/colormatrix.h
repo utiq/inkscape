@@ -38,9 +38,6 @@ protected:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FECOLORMATRIX, SPFeColorMatrix)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FECOLORMATRIX, SPFeColorMatrix)
-
 #endif // SP_FECOLORMATRIX_H_SEEN
 
 /*

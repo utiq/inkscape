@@ -13,9 +13,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#define SP_PERSP3D(obj) (dynamic_cast<Persp3D*>((SPObject*)obj))
-#define SP_IS_PERSP3D(obj) (dynamic_cast<const Persp3D*>((SPObject*)obj) != NULL)
-
 #include <list>
 #include <map>
 #include <vector>

@@ -37,9 +37,6 @@ class DrawingPattern;
 namespace XML { class Node; }
 } // namespace Inkscape
 
-#define SP_HATCH(obj) (dynamic_cast<SPHatch *>((SPObject *)obj))
-#define SP_IS_HATCH(obj) (dynamic_cast<const SPHatch *>((SPObject *)obj) != NULL)
-
 class SPHatch final : public SPPaintServer
 {
 public:

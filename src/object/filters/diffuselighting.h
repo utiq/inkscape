@@ -58,9 +58,6 @@ protected:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEDIFFUSELIGHTING, SPFeDiffuseLighting)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEDIFFUSELIGHTING, SPFeDiffuseLighting)
-
 #endif // SP_FEDIFFUSELIGHTING_H_SEEN
 
 /*

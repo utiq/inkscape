@@ -40,9 +40,6 @@ protected:
     Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEDISTANTLIGHT, SPFeDistantLight)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEDISTANTLIGHT, SPFeDistantLight)
-
 #endif // SP_FEDISTANTLIGHT_H_SEEN
 
 /*

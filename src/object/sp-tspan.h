@@ -44,9 +44,6 @@ public:
         const char* displayName() const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_TSPAN, SPTSpan)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_TSPAN, SPTSpan)
-
 #endif /* !INKSCAPE_SP_TSPAN_H */
 
 /*

@@ -76,7 +76,4 @@ private:
 	void fitAndDraw(SPCurve* c, double dstep, Geom::Point darray[], Geom::Point const& hat1, Geom::Point& hat2, double* t) const;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_SPIRAL, SPSpiral)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_SPIRAL, SPSpiral)
-
 #endif // SEEN_SP_SPIRAL_H

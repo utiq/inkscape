@@ -157,7 +157,6 @@ void sp_namedview_document_from_window(SPDesktop *desktop);
 void sp_namedview_update_layers_from_document (SPDesktop *desktop);
 
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_NAMEDVIEW, SPNamedView)
 
 #endif /* !INKSCAPE_SP_NAMEDVIEW_H */
 

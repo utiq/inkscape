@@ -37,9 +37,6 @@ protected:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FECOMPONENTTRANSFER, SPFeComponentTransfer)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FECOMPONENTTRANSFER, SPFeComponentTransfer)
-
 #endif // SP_FECOMPONENTTRANSFER_H_SEEN
 
 /*

@@ -98,8 +98,6 @@ protected:
 
 } // namespace Inkscape
 
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(IS_COLORPROFILE, Inkscape::ColorProfile)
-
 #endif // !SEEN_COLOR_PROFILE_H
 
 /*

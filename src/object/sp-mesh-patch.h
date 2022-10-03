@@ -36,9 +36,6 @@ protected:
     Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_MESHPATCH, SPMeshpatch)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_MESHPATCH, SPMeshpatch)
-
 #endif /* !SEEN_SP_MESHPATCH_H */
 
 /*

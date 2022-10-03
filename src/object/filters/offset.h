@@ -33,9 +33,6 @@ private:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEOFFSET, SPFeOffset)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEOFFSET, SPFeOffset)
-
 #endif // SP_FEOFFSET_H_SEEN
 
 /*

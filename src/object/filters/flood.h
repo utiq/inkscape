@@ -36,9 +36,6 @@ protected:
     std::unique_ptr<Inkscape::Filters::FilterPrimitive> build_renderer(Inkscape::DrawingItem *item) const override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEFLOOD, SPFeFlood)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEFLOOD, SPFeFlood)
-
 #endif // SP_FEFLOOD_H_SEEN
 
 /*

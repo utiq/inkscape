@@ -40,9 +40,6 @@ protected:
     Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_LINEARGRADIENT, SPLinearGradient)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_LINEARGRADIENT, SPLinearGradient)
-
 #endif /* !SP_LINEAR_GRADIENT_H */
 
 /*

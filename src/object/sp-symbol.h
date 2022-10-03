@@ -51,6 +51,4 @@ public:
     SVGLength refY;
 };
 
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_SYMBOL, SPSymbol)
-
 #endif

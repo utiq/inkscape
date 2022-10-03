@@ -99,9 +99,6 @@ private:
     static double vectorStretch(Geom::Point p0, Geom::Point p1, Geom::Affine xform);
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_GENERICELLIPSE, SPGenericEllipse)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_GENERICELLIPSE, SPGenericEllipse)
-
 #endif
 
 /*

@@ -113,8 +113,6 @@ void sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children);
 
 SPObject *sp_item_group_get_child_by_name (SPGroup *group, SPObject *ref, const char *name);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_GROUP, SPGroup)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_GROUP, SPGroup)
 
 inline bool SP_IS_LAYER(SPObject const *obj)
 {

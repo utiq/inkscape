@@ -43,9 +43,6 @@ protected:
     Inkscape::XML::Node *write(Inkscape::XML::Document *doc, Inkscape::XML::Node *repr, unsigned flags) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_FEPOINTLIGHT, SPFePointLight)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FEPOINTLIGHT, SPFePointLight)
-
 #endif // SP_FEPOINTLIGHT_H_SEEN
 
 /*

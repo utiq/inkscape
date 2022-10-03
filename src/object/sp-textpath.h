@@ -49,9 +49,6 @@ inline bool SP_IS_TEXT_TEXTPATH(SPObject const *obj) { return is<SPText>(obj) &&
 SPItem *sp_textpath_get_path_item(SPTextPath *tp);
 void sp_textpath_to_text(SPObject *tp);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_TEXTPATH, SPTextPath)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_TEXTPATH, SPTextPath)
-
 #endif /* !INKSCAPE_SP_TEXTPATH_H */
 
 /*

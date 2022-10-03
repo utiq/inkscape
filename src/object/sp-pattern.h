@@ -174,9 +174,6 @@ private:
     void update_view(View &v);
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_PATTERN, SPPattern)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_PATTERN, SPPattern)
-
 #endif // SEEN_SP_PATTERN_H
 
 /*

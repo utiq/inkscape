@@ -83,8 +83,6 @@ public:
 	void print(SPPrintContext *ctx) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_MARKER, SPMarker)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_MARKER, SPMarker)
 
 class SPMarkerReference : public Inkscape::URIReference {
 	SPMarkerReference(SPObject *obj) : URIReference(obj) {}

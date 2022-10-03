@@ -53,9 +53,6 @@ private:
     SPStyleSrc d_source;  // Source of 'd' value, saved for output.
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_PATH, SPPath)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_PATH, SPPath)
-
 #endif // SEEN_SP_PATH_H
 
 /*

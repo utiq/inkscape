@@ -125,9 +125,6 @@ public:
 void sp_lpe_item_update_patheffect (SPLPEItem *lpeitem, bool wholetree, bool write, bool with_satellites = false); // careful, class already has method with *very* similar name!
 void sp_lpe_item_enable_path_effects(SPLPEItem *lpeitem, bool enable);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_LPE_ITEM, SPLPEItem)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_LPE_ITEM, SPLPEItem)
-
 #endif /* !SP_LPE_ITEM_H_SEEN */
 
 /*

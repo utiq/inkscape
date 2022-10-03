@@ -16,14 +16,6 @@
 #include "sp-object.h"
 #include "unicoderange.h"
 
-#define SP_HKERN(obj) (dynamic_cast<SPHkern*>(obj))
-#define SP_IS_HKERN(obj) (dynamic_cast<const SPHkern*>(obj) != NULL)
-
-#define SP_VKERN(obj) (dynamic_cast<SPVkern*>(obj))
-#define SP_IS_VKERN(obj) (dynamic_cast<const SPVkern*>(obj) != NULL)
-
-// CPPIFY: These casting macros are buggy, as Vkern and Hkern aren't "real" classes.
-
 class GlyphNames {
 public: 
     GlyphNames(char const* value);

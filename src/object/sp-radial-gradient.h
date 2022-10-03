@@ -43,9 +43,6 @@ protected:
     Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
 };
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_RADIALGRADIENT, SPRadialGradient)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_RADIALGRADIENT, SPRadialGradient)
-
 #endif /* !SP_RADIAL_GRADIENT_H */
 
 /*

@@ -81,7 +81,4 @@ private:
 void sp_embed_image(Inkscape::XML::Node *imgnode, Inkscape::Pixbuf *pb);
 void sp_embed_svg(Inkscape::XML::Node *image_node, std::string const &fn);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_IMAGE, SPImage)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_IMAGE, SPImage)
-
 #endif
