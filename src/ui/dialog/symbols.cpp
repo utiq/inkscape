@@ -63,7 +63,7 @@ namespace Inkscape {
 namespace UI {
 
 namespace Dialog {
-static std::map<Glib::ustring, std::pair<Glib::ustring, SPDocument*> > symbol_sets;
+static std::map<std::string, std::pair<Glib::ustring, SPDocument*> > symbol_sets;
 /**
  * Constructor
  */
@@ -96,6 +96,15 @@ SymbolsDialog::SymbolsDialog(gchar const *prefsPath)
   symbol_set->append(ALLDOCS);
   symbol_set->set_active_text(CURRENTDOC);
   symbol_set->set_hexpand();
+  auto cb = dynamic_cast<Gtk::ComboBoxText *>(symbol_set);
+  if (cb) {
+      auto renderer = dynamic_cast<Gtk::CellRendererText *>(cb->get_cells()[0]); //Get the ComboBoxText only renderer
+      if (renderer) {
+          // not needed because container limit
+          // renderer->property_width_chars() = 12; // always show min 15 chars
+          renderer->property_ellipsize() = Pango::EllipsizeMode::ELLIPSIZE_END;
+      }
+  }
   gtk_connections.emplace_back(
       symbol_set->signal_changed().connect(sigc::mem_fun(*this, &SymbolsDialog::rebuild)));
 
@@ -207,15 +216,6 @@ SymbolsDialog::SymbolsDialog(gchar const *prefsPath)
   previous_width = 0;
   ++row;
 
-  /******************** Progress *******************************/
-  progress = new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
-  progress_bar = Gtk::manage(new Gtk::ProgressBar());
-  table->attach(*Gtk::manage(progress),0,row, 2, 1);
-  progress->pack_start(* progress_bar, Gtk::PACK_EXPAND_WIDGET);
-  progress->set_margin_top(15);
-  progress->set_margin_bottom(15);
-  progress->set_margin_start(20);
-  progress->set_margin_end(20);
 
   ++row;
 
@@ -331,6 +331,11 @@ SymbolsDialog::~SymbolsDialog()
   Inkscape::GC::release(preview_document);
   assert(preview_document->_anchored_refcount() == 0);
   delete preview_document;
+}
+
+bool findString(const Glib::ustring & haystack, const Glib::ustring & needle)
+{
+  return strstr(haystack.c_str(), needle.c_str()) != nullptr;
 }
 
 void SymbolsDialog::packless() {
@@ -496,7 +501,7 @@ void SymbolsDialog::defsModified(SPObject * /*object*/, guint /*flags*/)
 void SymbolsDialog::selectionChanged(Inkscape::Selection *selection) {
   auto selected = getSelected();
   Glib::ustring symbol_id = getSymbolId(selected);
-  Glib::ustring doc_title = getSymbolDocTitle(selected);
+  Glib::ustring doc_title = get_active_base_text(getSymbolDocTitle(selected));
   if (!doc_title.empty()) {
     SPDocument* symbol_document = symbol_sets[doc_title].second;
     if (!symbol_document) {
@@ -616,7 +621,7 @@ void SymbolsDialog::sendToClipboard(Gtk::TreeModel::Path const &symbol_path, Geo
     SPDocument* symbol_document = selectedSymbols();
     if (!symbol_document) {
         //we are in global search so get the original symbol document by title
-        Glib::ustring doc_title = getSymbolDocTitle(symbol_path);
+        Glib::ustring doc_title = get_active_base_text(getSymbolDocTitle(symbol_path));
         if (!doc_title.empty()) {
             symbol_document = symbol_sets[doc_title].second;
         }
@@ -722,7 +727,7 @@ class REVENGE_API RVNGSVGDrawingGenerator_WithTitle : public RVNGSVGDrawingGener
 };
 
 // Read Visio stencil files
-SPDocument* read_vss(Glib::ustring filename, Glib::ustring name ) {
+SPDocument* read_vss(std::string filename, std::string name, std::string search_str ) {
   gchar *fullname;
   #ifdef _WIN32
     // RVNGFileStream uses fopen() internally which unfortunately only uses ANSI encoding on Windows
@@ -770,6 +775,7 @@ SPDocument* read_vss(Glib::ustring filename, Glib::ustring name ) {
   tmpSVGOutput += "  <defs>\n";
 
   // Each "symbol" is in its own SVG file, we wrap with <symbol> and merge into one file.
+  bool load = false;
   for (unsigned i=0; i<output.size(); ++i) {
 
     std::stringstream ss;
@@ -784,6 +790,16 @@ SPDocument* read_vss(Glib::ustring filename, Glib::ustring name ) {
 
     if (titles.size() == output.size() && titles[i] != "") {
       tmpSVGOutput += "      <title>" + Glib::ustring(RVNGString::escapeXML(titles[i].cstr()).cstr()) + "</title>\n";
+      try {
+        Glib::ustring haystack = RVNGString::escapeXML(titles[i].cstr()).cstr();
+        Glib::ustring needle = search_str;
+        if (findString(haystack.lowercase(), needle)) {
+            load = true;
+        }
+      } catch (...) {
+          g_warning("A error happends reading the symbols file, probably encoding");
+          load = true; //we try to load symbols in this error case
+      }
     }
 
     std::istringstream iss( output[i].cstr() );
@@ -799,8 +815,11 @@ SPDocument* read_vss(Glib::ustring filename, Glib::ustring name ) {
 
   tmpSVGOutput += "  </defs>\n";
   tmpSVGOutput += "</svg>\n";
-  return SPDocument::createNewDocFromMem( tmpSVGOutput.c_str(), strlen( tmpSVGOutput.c_str()), false );
-
+  if (load) {
+    return SPDocument::createNewDocFromMem( tmpSVGOutput.c_str(), strlen( tmpSVGOutput.c_str()), false );
+  } else {
+    return nullptr;
+  }
 }
 #endif
 
@@ -819,8 +838,8 @@ void SymbolsDialog::getSymbolsTitle() {
           if(title.empty()) {
             title = _("Unnamed Symbols");
           }
-          if (!symbol_sets[title].second)
-            symbol_sets[title]= std::make_pair(title,nullptr);
+          if (!symbol_sets[filename].second)
+            symbol_sets[filename]= std::make_pair(title,nullptr);
           ++number_docs;
         } else {
           std::ifstream infile(filename);
@@ -829,8 +848,8 @@ void SymbolsDialog::getSymbolsTitle() {
               std::string title_res = std::regex_replace (line, matchtitle,"$1",std::regex_constants::format_no_copy);
               if (!title_res.empty()) {
                   title_res = g_dpgettext2(nullptr, "Symbol", title_res.c_str());
-                  if (!symbol_sets[ellipsize(Glib::ustring(title_res), 33)].second)
-                    symbol_sets[ellipsize(Glib::ustring(title_res), 33)]= std::make_pair(ellipsize(Glib::ustring(title_res), 33),nullptr);
+                  if (!symbol_sets[filename].second)
+                    symbol_sets[filename]= std::make_pair(Glib::ustring(title_res),nullptr);
                   ++number_docs;
                   break;
               }
@@ -842,108 +861,59 @@ void SymbolsDialog::getSymbolsTitle() {
                   if(title.empty()) {
                     title = _("Unnamed Symbols");
                   }
-                  if (!symbol_sets[title].second)
-                    symbol_sets[title]= std::make_pair(title,nullptr);
+                  if (!symbol_sets[filename].second)
+                    symbol_sets[filename]= std::make_pair(title,nullptr);
                   ++number_docs;
                   break;
               }
           }
         }
     }
+
     for(auto const &symbol_document_map : symbol_sets) {
-      symbol_set->append(symbol_document_map.first);
+      symbol_set->append(symbol_document_map.second.first);
     }
 }
 
 /* Hunts preference directories for symbol files */
-std::pair<Glib::ustring, SPDocument*>
-SymbolsDialog::getSymbolsSet(Glib::ustring title)
+std::pair<std::string, SPDocument*>
+SymbolsDialog::getSymbolsSet(std::string filename)
 {
     SPDocument* symbol_doc = nullptr;
-    Glib::ustring current = get_active_base_text();
-    if (title == CURRENTDOC) {
-      symbol_sets[CURRENTDOC] = std::make_pair(CURRENTDOC, nullptr);
-      return symbol_sets[CURRENTDOC];
-    }
-    if (symbol_sets[title].second) {
-      sensitive = false;
-      symbol_set->remove_all();
-      symbol_set->append(CURRENTDOC);
-      symbol_set->append(ALLDOCS);
-      for(auto const &symbol_document_map : symbol_sets) {
-        if (CURRENTDOC != symbol_document_map.second.first) {
-          symbol_set->append(symbol_document_map.second.first);
-        }
-      }
-      symbol_set->set_active_text(title);
-      sensitive = true;
-      return symbol_sets[title];
+    if (symbol_sets[filename].second) {
+      return symbol_sets[filename];
     }
     using namespace Inkscape::IO::Resource;
-    Glib::ustring new_title;
-
-    std::regex matchtitle (".*?<title.*?>(.*?)<(/| /)");
-    for(auto &filename: get_filenames(SYMBOLS, {".svg", ".vss"})) {
-        if(Glib::str_has_suffix(filename, ".vss")) {
+    if(Glib::str_has_suffix(filename, ".vss")) {
 #ifdef WITH_LIBVISIO
-          std::size_t pos = filename.find_last_of("/\\");
-          Glib::ustring filename_short = "";
-          if (pos != std::string::npos) {
-            filename_short = filename.substr(pos+1);
-          }
-          if (filename_short == title + ".vss") {
-              new_title = title;
-              symbol_doc = read_vss(Glib::ustring(filename), title);
-          }
+      symbol_doc = read_vss(filename, symbol_sets[filename].first, std::string(search_str));
 #endif
-        } else {
-            std::ifstream infile(filename);
-            std::string line;
-            while (std::getline(infile, line)) {
-                std::string title_res = std::regex_replace (line, matchtitle,"$1",std::regex_constants::format_no_copy);
-                if (!title_res.empty()) {
-                  title_res = g_dpgettext2(nullptr, "Symbol", title_res.c_str());
-                  new_title = ellipsize(Glib::ustring(title_res), 33);
-                }
-                std::size_t pos = filename.find_last_of("/\\");
-                Glib::ustring filename_short = "";
-                if (pos != std::string::npos) {
-                  filename_short = filename.substr(pos+1);
-                }
-                if (title == new_title || filename_short == title + ".svg") {
-                    new_title = title;
-                    if(Glib::str_has_suffix(filename, ".svg")) {
-                        symbol_doc = SPDocument::createNewDoc(filename.c_str(), FALSE);
-                    }
-                }
-                if (symbol_doc) {
-                    break;
-                }
-                std::string::size_type position_exit = line.find ("<defs");
-                if (position_exit != std::string::npos) {
-                    break;
-                }
+    } else if(Glib::str_has_suffix(filename, ".svg")) {
+        std::ifstream infile(filename);
+        std::string line;
+        bool load = false;
+        while (std::getline(infile, line)) {
+          try {
+            Glib::ustring haystack = Glib::ustring(line);
+            Glib::ustring needle = search_str;
+            if (findString(haystack.lowercase(), needle)) {
+                load = true;
+                break;
             }
+          } catch (...) {
+              g_warning("A error happends reading the symbols file, probably encoding");
+              load = true; //we try to load symbols in this error case
+              break;
+          }
         }
-        if (symbol_doc) {
-            break;
+        if (load) {
+          symbol_doc = SPDocument::createNewDoc(filename.c_str(), FALSE);
         }
     }
     if(symbol_doc) {
-      symbol_sets[title] = std::make_pair(new_title,symbol_doc);
-      sensitive = false;
-      symbol_set->remove_all();
-      symbol_set->append(CURRENTDOC);
-      symbol_set->append(ALLDOCS);
-      for(auto const &symbol_document_map : symbol_sets) {
-        if (CURRENTDOC != symbol_document_map.second.first) {
-          symbol_set->append(symbol_document_map.second.first);
-        }
-      }
-      symbol_set->set_active_text(title);
-      sensitive = true;
+      symbol_sets[filename] = std::make_pair(symbol_sets[filename].first,symbol_doc);
     }
-    return symbol_sets[title];
+    return symbol_sets[filename];
 }
 
 void SymbolsDialog::symbolsInDocRecursive (SPObject *r, std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > &l, Glib::ustring doc_title)
@@ -1059,7 +1029,6 @@ void SymbolsDialog::beforeSearch(GdkEventKey* evt)
 
 void SymbolsDialog::searchsymbols()
 {
-    progress_bar->set_fraction(0.0);
     enableWidgets(false);
     SPDocument *symbol_document = selectedSymbols();
     if (symbol_document) {
@@ -1110,8 +1079,6 @@ bool SymbolsDialog::callbackSymbols(){
         addSymbol( symbol, doc_title);
         icons_found = true;
       }
-
-      progress_bar->set_fraction(((100.0/number_symbols) * counter_symbols)/100.0);
       symbol_data = l.erase(l.begin());
       //to get more items and best performance
       int modulus = number_symbols > 200 ? 50 : (number_symbols/4);
@@ -1126,7 +1093,6 @@ bool SymbolsDialog::callbackSymbols(){
     } else {
       hideOverlay();
     }
-    progress_bar->set_fraction(0);
     sensitive = false;
     search->set_text(search_str);
     sensitive = true;
@@ -1136,9 +1102,9 @@ bool SymbolsDialog::callbackSymbols(){
   return true;
 }
 
-Glib::ustring SymbolsDialog::get_active_base_text()
+Glib::ustring SymbolsDialog::get_active_base_text(Glib::ustring title)
 {
-    Glib::ustring out = symbol_set->get_active_text();
+    Glib::ustring out = title == "selectedcombo" ? symbol_set->get_active_text() : title;
     for(auto const &symbol_document_map : symbol_sets) {
       if (symbol_document_map.second.first == out) {
           out = symbol_document_map.first;
@@ -1152,7 +1118,7 @@ bool SymbolsDialog::callbackAllSymbols(){
   Glib::ustring current = get_active_base_text();
   if (current == ALLDOCS && search->get_text() == _("Loading all symbols...")) {
     size_t counter = 0;
-    std::map<Glib::ustring, std::pair<Glib::ustring, SPDocument*> > symbol_sets_tmp = symbol_sets;
+    std::map<std::string, std::pair<Glib::ustring, SPDocument*> > symbol_sets_tmp = symbol_sets;
     for(auto const &symbol_document_map : symbol_sets_tmp) {
       ++counter;
       Glib::ustring current = get_active_base_text();
@@ -1163,20 +1129,14 @@ bool SymbolsDialog::callbackAllSymbols(){
       if (symbol_document) {
         continue;
       }
-      symbol_document = getSymbolsSet(symbol_document_map.second.first).second;
+      symbol_document = getSymbolsSet(symbol_document_map.first).second;
       symbol_set->set_active_text(ALLDOCS);
-      if (!symbol_document) {
-        continue;
-      }
-      progress_bar->set_fraction(((100.0/number_docs) * counter)/100.0);
-      return true;
     }
     symbol_sets_tmp.clear();
     hideOverlay();
     all_docs_processed = true;
     addSymbols();
-    progress_bar->set_fraction(0);
-    search->set_text("Searching...");
+    search->set_text(search_str);
     return false;
   }
   return true;
@@ -1196,7 +1156,6 @@ void SymbolsDialog::addSymbolsInDoc(SPDocument* symbol_document) {
     return; //Search all
   }
   Glib::ustring doc_title = documentTitle(symbol_document);
-  progress_bar->set_fraction(0.0);
   counter_symbols = 0;
   l = symbolsInDoc(symbol_document, doc_title);
   number_symbols = l.size();
@@ -1229,7 +1188,6 @@ void SymbolsDialog::addSymbols() {
     l_tmp.clear();
   }
   counter_symbols = 0;
-  progress_bar->set_fraction(0.0);
   number_symbols = l.size();
   if (!number_symbols) {
     showOverlay();

@@ -104,7 +104,7 @@ private:
     void onDragStart();
     void getSymbolsTitle();
     Glib::ustring documentTitle(SPDocument* doc);
-    std::pair<Glib::ustring, SPDocument*> getSymbolsSet(Glib::ustring title);
+    std::pair<std::string, SPDocument*> getSymbolsSet(std::string title);
     void addSymbol(SPSymbol *symbol, Glib::ustring doc_title);
     SPDocument* symbolsPreviewDoc();
     void symbolsInDocRecursive (SPObject *r, std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > &l, Glib::ustring doc_title);
@@ -121,7 +121,7 @@ private:
     void clearSearch();
     bool callbackSymbols();
     bool callbackAllSymbols();
-    Glib::ustring get_active_base_text();
+    Glib::ustring get_active_base_text(Glib::ustring title = "selectedcombo");
     void enableWidgets(bool enable);
     Glib::ustring ellipsize(Glib::ustring data, size_t limit);
     gchar const* styleFromUse( gchar const* id, SPDocument* document);
@@ -145,8 +145,6 @@ private:
     Glib::RefPtr<Gtk::ListStore> store;
     Glib::ustring search_str;
     Gtk::ComboBoxText* symbol_set;
-    Gtk::ProgressBar* progress_bar;
-    Gtk::Box* progress;
     Gtk::SearchEntry* search;
     Gtk::IconView* icon_view;
     Gtk::Button* add_symbol;
