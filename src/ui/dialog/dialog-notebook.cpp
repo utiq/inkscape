@@ -852,7 +852,7 @@ void DialogNotebook::toggle_tab_labels_callback(bool show)
         }
     }
     _labels_set_off = _labels_off;
-    if (_prev_alloc_width && prev_tabstatus != tabstatus && show) {
+    if (_prev_alloc_width && prev_tabstatus != tabstatus && (show || tabstatus != TabsStatus::NONE || !_labels_off)) {
         resize_widget_children(&_notebook);
     }
     if (show && _single_tab_width) {
