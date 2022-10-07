@@ -69,6 +69,8 @@ cmake .. -G Ninja \
     -DCMAKE_C_COMPILER_LAUNCHER="ccache" \
     -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
     -DCMAKE_INSTALL_MESSAGE="NEVER" \
+    -DWITH_IMAGE_MAGICK=OFF \
+    -DWITH_GRAPHICS_MAGICK=ON \
     || error "cmake failed"
 
 # build

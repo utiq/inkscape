@@ -6,7 +6,7 @@
 #    - run "msys2.exe" in MSYS2's installation folder
 #
 # MSYS2 and installed libraries can be updated later by executing
-#   pacman -Syu --ignore=mingw-w64-*-imagemagick
+#   pacman -Syu
 # in an MSYS shell
 # -------------------------------------------------------------------------------
 
@@ -61,22 +61,9 @@ $ARCH-libvisio \
 $ARCH-libwpg \
 $ARCH-aspell \
 $ARCH-aspell-en \
-$ARCH-gspell
-
-# install ImageMagick (as Inkscape requires old version ImageMagick 6 we have to specify it explicitly)
-# to prevent future updates:
-#     add the line
-#        "IgnorePkg = mingw-w64-*-imagemagick"
-#     to
-#        "C:\msys64\etc\pacman.conf"
-#     or (always!) run pacman with the additional command line switch
-#        --ignore=mingw-w64-*-imagemagick
-for arch in $(eval echo $ARCH); do
-  wget -nv https://gitlab.com/ede123/bintray/-/raw/master/${arch}-imagemagick-6.9.10.69-1-any.pkg.tar.xz \
-    && pacman -U $PACMAN_OPTIONS ${arch}-imagemagick-6.9.10.69-1-any.pkg.tar.xz \
-    && rm  ${arch}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
-done
-
+$ARCH-gspell \
+$ARCH-graphicsmagick \
+$ARCH-libjxl
 
 # install Python and modules used by Inkscape
 eval pacman -S $PACMAN_OPTIONS \
