@@ -833,8 +833,8 @@ void SymbolsDialog::getSymbolsTitle() {
     for(auto &filename: get_filenames(SYMBOLS, {".svg", ".vss"})) {
         if(Glib::str_has_suffix(filename, ".vss")) {
           std::size_t found = filename.find_last_of("/\\");
-          filename = filename.substr(found+1);
-          title = filename.erase(filename.rfind('.'));
+          title = filename.substr(found+1);
+          title = title.erase(title.rfind('.'));
           if(title.empty()) {
             title = _("Unnamed Symbols");
           }
