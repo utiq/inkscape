@@ -29,11 +29,10 @@ class KnotHolderEntityAttachEnd;
 class LPETaperStroke : public Effect {
 public:
     LPETaperStroke(LivePathEffectObject *lpeobject);
-    ~LPETaperStroke() override = default;
+    ~LPETaperStroke() override;
 
     void doOnApply(SPLPEItem const* lpeitem) override;
     void doOnRemove(SPLPEItem const* lpeitem) override;
-
     Geom::PathVector doEffect_path (Geom::PathVector const& path_in) override;
     Geom::PathVector doEffect_simplePath(Geom::PathVector const& path_in);
     void transform_multiply(Geom::Affine const &postmul, bool set) override;

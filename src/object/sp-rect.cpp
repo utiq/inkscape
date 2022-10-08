@@ -30,10 +30,27 @@
 
 //#define OBJECT_TRACE
 
-SPRect::SPRect() : SPShape() {
+SPRect::SPRect() : SPShape()
+    ,type(SP_GENERIC_RECT_UNDEFINED) 
+{
 }
 
 SPRect::~SPRect() = default;
+
+/*
+* Ellipse and rects are the only SP object who's repr element tag name changes
+* during it's lifetime. During undo and redo these changes can cause
+* the SP object to become unstuck from the repr's true state.
+*/
+void SPRect::tag_name_changed(gchar const* oldname, gchar const* newname)
+{
+    const std::string typeString = newname;
+    if (typeString == "svg:rect") {
+        type = SP_GENERIC_RECT;
+    } else if (typeString == "svg:path") {
+        type = SP_GENERIC_PATH;
+    }
+}
 
 void SPRect::build(SPDocument* doc, Inkscape::XML::Node* repr) {
 #ifdef OBJECT_TRACE
@@ -160,13 +177,37 @@ Inkscape::XML::Node * SPRect::write(Inkscape::XML::Document *xml_doc, Inkscape::
 #ifdef OBJECT_TRACE
     objectTrace( "SPRect::write", true, flags );
 #endif
-
-    if ((flags & SP_OBJECT_WRITE_BUILD) && !repr) {
-        repr = xml_doc->createElement("svg:rect");
+    GenericRectType new_type = SP_GENERIC_RECT;
+    if (hasPathEffectOnClipOrMaskRecursive(this)) {
+        new_type = SP_GENERIC_PATH;
     }
-    if (this->hasPathEffectOnClipOrMaskRecursive(this) && repr && strcmp(repr->name(), "svg:rect") == 0) {
-        repr->setCodeUnsafe(g_quark_from_string("svg:path"));
-        repr->setAttribute("sodipodi:type", "rect");
+    if ((flags & SP_OBJECT_WRITE_BUILD) && !repr) {
+
+        switch ( new_type ) {
+
+            case SP_GENERIC_RECT:
+                repr = xml_doc->createElement("svg:rect");
+                break;
+            case SP_GENERIC_PATH:
+                repr = xml_doc->createElement("svg:path");
+                break;
+            default:
+                std::cerr << "SPGenericRect::write(): unknown type." << std::endl;
+        }
+    }
+    if (type != new_type) {
+        switch (new_type) {
+            case SP_GENERIC_RECT:
+                repr->setCodeUnsafe(g_quark_from_string("svg:rect"));
+                break;
+            case SP_GENERIC_PATH:
+                repr->setCodeUnsafe(g_quark_from_string("svg:path"));
+                repr->setAttribute("sodipodi:type", "rect");
+                break;
+            default:
+                std::cerr << "SPGenericRect::write(): unknown type." << std::endl;
+        }
+        type = new_type;
     }
     repr->setAttributeSvgLength("width", this->width);
     repr->setAttributeSvgLength("height", this->height);
@@ -182,7 +223,7 @@ Inkscape::XML::Node * SPRect::write(Inkscape::XML::Document *xml_doc, Inkscape::
     repr->setAttributeSvgLength("x", this->x);
     repr->setAttributeSvgLength("y", this->y);
     // write d=
-    if (strcmp(repr->name(), "svg:rect") != 0) {
+    if (type == SP_GENERIC_PATH) {
         set_rect_path_attribute(repr); // include set_shape()
     } else {
         this->set_shape(); // evaluate SPCurve
@@ -279,12 +320,7 @@ void SPRect::set_shape() {
 
     c.closepath();
 
-    if (prepareShapeForLPE(&c)) {
-        return;
-    }
-
-    // This happends on undo, fix bug:#1791784
-    setCurveInsync(std::move(c));
+    prepareShapeForLPE(&c);
 }
 
 bool SPRect::set_rect_path_attribute(Inkscape::XML::Node *repr)
@@ -342,6 +378,9 @@ void SPRect::setRy(bool set, gdouble value) {
 }
 
 void SPRect::update_patheffect(bool write) {
+    if (type != SP_GENERIC_PATH && hasPathEffectOnClipOrMaskRecursive(this)) {
+        SPRect::write(document->getReprDoc(), getRepr(), SP_OBJECT_MODIFIED_FLAG);
+    }
     SPShape::update_patheffect(write);
 }
 

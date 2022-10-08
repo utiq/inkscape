@@ -174,7 +174,7 @@ public:
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override
     {
         param->param_effect->refresh_widgets = true;
-        param->write_to_SVG();
+        param->param_effect->makeUndoDone(_("Move handle"));
     };
     Geom::Point knot_get() const override{
         return param->origin + param->vector;

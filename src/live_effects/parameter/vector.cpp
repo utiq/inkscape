@@ -182,7 +182,7 @@ public:
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override
     {
         param->param_effect->refresh_widgets = true;
-        param->write_to_SVG();
+        param->param_effect->makeUndoDone(_("Move handle"));
     };
     void knot_click(guint /*state*/) override{
         g_message ("This is the origin handle associated to parameter '%s'", param->param_key.c_str());
@@ -210,8 +210,8 @@ public:
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override
     {
         param->param_effect->refresh_widgets = true;
-        param->write_to_SVG();
-    };
+        param->param_effect->makeUndoDone(_("Move handle"));
+    }
     void knot_click(guint /*state*/) override{
         g_message ("This is the vector handle associated to parameter '%s'", param->param_key.c_str());
     };

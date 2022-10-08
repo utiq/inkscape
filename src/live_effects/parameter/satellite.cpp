@@ -70,13 +70,13 @@ bool SatelliteParam::param_readSVGValue(const gchar *strvalue)
         if (!lpeitems.size() && !param_effect->is_applied && !param_effect->getSPDoc()->isSeeking()) {
             SPObject * old_ref = param_effect->getSPDoc()->getObjectByHref(strvalue);
             if (old_ref) {
-                SPObject * successor = old_ref->_successor;
+                SPObject * tmpsuccessor = old_ref->_tmpsuccessor;
                 // cast to effect is not possible now
                 if (!g_strcmp0("clone_original", param_effect->getLPEObj()->getAttribute("effect"))) {
                     id_tmp = strvalue;
                 }
-                if (successor) {
-                    id_tmp = successor->getId();
+                if (tmpsuccessor && tmpsuccessor->getId()) {
+                    id_tmp = tmpsuccessor->getId();
                     id_tmp.insert(id_tmp.begin(), '#');
                     write = true;
                 }
@@ -156,14 +156,13 @@ void SatelliteParam::link(Glib::ustring itemid)
     }
     auto *document = param_effect->getSPDoc();
     SPObject *object = document->getObjectById(itemid);
-
     if (object && object != getObject()) {
         itemid.insert(itemid.begin(), '#');
         param_write_to_repr(itemid.c_str());
     } else {
         param_write_to_repr("");
     }
-    DocumentUndo::done(document, _("Link item parameter to path"), "");
+    param_effect->makeUndoDone(_("Link item parameter to path"));
 }
 
 // SIGNALS
@@ -213,14 +212,16 @@ void SatelliteParam::linked_changed(SPObject *old_obj, SPObject *new_obj)
 
 void SatelliteParam::linked_released(SPObject *released)
 {
-    unlink();
-    param_effect->processObjects(LPE_UPDATE);
+    if (param_effect->getLPEObj()) {
+        unlink();
+        param_effect->processObjects(LPE_UPDATE);
+    }
 }
 
 
 void SatelliteParam::linked_modified(SPObject *linked_obj, guint flags)
 {
-    if (!_updating && (!param_effect->is_load || ownerlocator || !SP_ACTIVE_DESKTOP) &&
+    if (!_updating && (!param_effect->is_load || ownerlocator || !SP_ACTIVE_DESKTOP && param_effect->isReady()) &&
         flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
                  SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
     {

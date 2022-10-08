@@ -252,7 +252,7 @@ void
 PowerStrokePointArrayParamKnotHolderEntity::knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state)
 {
     _pparam->param_effect->refresh_widgets = true;
-    _pparam->write_to_SVG();
+    _pparam->param_effect->makeUndoDone(_("Move handle"));
 }
 
 void PowerStrokePointArrayParamKnotHolderEntity::knot_set_offset(Geom::Point offset)

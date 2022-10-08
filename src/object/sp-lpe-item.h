@@ -76,6 +76,7 @@ public:
     bool hasPathEffectOfType(int const type, bool is_ready = true) const;
     bool hasPathEffectOfTypeRecursive(int const type, bool is_ready = true) const;
     bool hasPathEffectRecursive() const;
+    SPLPEItem const * getTopPathEffect() const;
     bool hasPathEffectOnClipOrMask(SPLPEItem * shape) const;
     bool hasPathEffectOnClipOrMaskRecursive(SPLPEItem * shape) const;
     size_t getLPEIndex(Inkscape::LivePathEffect::Effect* lpe) const;
@@ -87,7 +88,7 @@ public:
     std::vector<Inkscape::LivePathEffect::Effect const *> getPathEffectsOfType(int type) const;
     std::vector<Inkscape::LivePathEffect::Effect *> getPathEffects();
     std::vector<Inkscape::LivePathEffect::Effect const *> getPathEffects() const;
-    std::vector<SPObject *> get_satellites(bool force = true, bool recursive = false);
+    std::vector<SPObject *> get_satellites(bool force = true, bool recursive = false, bool onchilds = false);
     bool isOnClipboard();
     bool hasBrokenPathEffect() const;
     PathEffectList getEffectList();
@@ -101,7 +102,11 @@ public:
     Inkscape::LivePathEffect::Effect* getPrevLPE(Inkscape::LivePathEffect::Effect* lpe);
     std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> getNextLPEReference(std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference>);
     Inkscape::LivePathEffect::Effect* getNextLPE(Inkscape::LivePathEffect::Effect* lpe);
+    std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> getLastLPEReference();
+    Inkscape::LivePathEffect::Effect* getLastLPE();
     bool setCurrentPathEffect(std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> lperef);
+    bool setCurrentPathEffect(LivePathEffectObject const * lopeobj);
+
     void removeCurrentPathEffect(bool keep_paths);
     void removeAllPathEffects(bool keep_paths, bool recursive = false);
     void addPathEffect(std::string value, bool reset);
@@ -110,11 +115,11 @@ public:
     void applyToMask(SPItem* to, Inkscape::LivePathEffect::Effect *lpe = nullptr);
     void applyToClipPath(SPItem* to, Inkscape::LivePathEffect::Effect *lpe = nullptr);
     void applyToClipPathOrMask(SPItem * clip_mask, SPItem* to, Inkscape::LivePathEffect::Effect *lpe = nullptr);
-    bool forkPathEffectsIfNecessary(unsigned int nr_of_allowed_users = 1, bool recursive = true);
+    bool forkPathEffectsIfNecessary(unsigned int nr_of_allowed_users = 1, bool recursive = true, bool force = false);
     void editNextParamOncanvas(SPDesktop *dt);
-    void update_satellites(bool updatelpe);
+    void update_satellites(bool recursive = true);
 };
-void sp_lpe_item_update_patheffect (SPLPEItem *lpeitem, bool wholetree, bool write); // careful, class already has method with *very* similar name!
+void sp_lpe_item_update_patheffect (SPLPEItem *lpeitem, bool wholetree, bool write, bool with_satellites = false); // careful, class already has method with *very* similar name!
 void sp_lpe_item_enable_path_effects(SPLPEItem *lpeitem, bool enable);
 
 MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_LPE_ITEM, SPLPEItem)

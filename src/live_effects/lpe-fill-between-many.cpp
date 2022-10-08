@@ -117,7 +117,7 @@ LPEFillBetweenMany::transform_multiply_nested(Geom::Affine const &postmul)
                 if (iter->_pathvector.front().closed() && linked_paths._vector.size() > 1) {
                     continue;
                 }
-                if (selection && !selection->includes(item, true) && selection->includes(sp_lpe_item, true)) {
+                if (item->document->isSensitive() && selection && !selection->includes(item, true) && selection->includes(sp_lpe_item, true)) {
                     item->transform *= i2anc_affine(item->parent, item->document->getRoot());
                     item->transform *=  postmul.inverse();
                     item->transform *= i2anc_affine(item->parent, item->document->getRoot()).inverse();
@@ -261,6 +261,12 @@ LPEFillBetweenMany::doEffect (SPCurve * curve)
                         linked_path *= itemnear->getRelativeTransform(sp_lpe_item);
                     }
                     if (!res_pathv.empty() && join) {
+                        if (!sp_version_inside_range( getSPDoc()->getRoot()->version.inkscape, 0, 1, 1, 1 ) && // not in tests
+                            Geom::distance(res_pathv.front().finalPoint(), linked_path.initialPoint()) > 
+                            Geom::distance(res_pathv.front().finalPoint(), linked_path.finalPoint())) 
+                        {
+                            linked_path = linked_path.reversed();
+                        }
                         if (!are_near(res_pathv.front().finalPoint(), linked_path.initialPoint(), 0.1)) {
                             res_pathv.front().appendNew<Geom::LineSegment>(linked_path.initialPoint());
                         } else {

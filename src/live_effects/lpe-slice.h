@@ -38,7 +38,7 @@ public:
     void doBeforeEffect (SPLPEItem const* lpeitem) override;
     void doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve) override;
     Geom::PathVector doEffect_path (Geom::PathVector const & path_in) override;
-    void doOnRemove (SPLPEItem const* /*lpeitem*/) override;
+    void doOnRemove(SPLPEItem const* /*lpeitem*/) override;
     void doOnVisibilityToggled(SPLPEItem const* /*lpeitem*/) override;
     Gtk::Widget *newWidget() override;
     bool doOnOpen(SPLPEItem const *lpeitem) override;
@@ -46,7 +46,7 @@ public:
     bool split(SPItem *item, SPCurve *curve, std::vector<std::pair<Geom::Line, size_t>> slicer, size_t splitindex,
                bool &creation);
     bool splititem(SPItem *item, SPCurve *curve, std::pair<Geom::Line, size_t> slicer, bool toggle,
-                   bool is_original = false);
+                   bool is_original = false, Geom::Affine tpass = Geom::identity(), bool top = true);
     bool haschildslice(SPItem *item);
     std::vector<std::pair<Geom::Line, size_t> > getSplitLines();
     void cloneD(SPObject *orig, SPObject *dest, bool is_original); 

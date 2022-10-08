@@ -47,14 +47,14 @@ public:
     void doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve) override;
     void split(Geom::PathVector &path_in, Geom::Path const &divider);
     void resetDefaults(SPItem const* item) override;
-    void doOnRemove (SPLPEItem const* /*lpeitem*/) override;
+    void doOnRemove(SPLPEItem const* /*lpeitem*/) override;
     bool doOnOpen(SPLPEItem const * /*lpeitem*/) override;
     void doOnVisibilityToggled(SPLPEItem const* /*lpeitem*/) override;
     Gtk::Widget * newWidget() override;
     void cloneStyle(SPObject *orig, SPObject *dest);
     Geom::PathVector doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fillrule);
     void toItem(Geom::Affine transform, size_t i, bool reset, bool &write);
-    void cloneD(SPObject *orig, SPObject *dest, Geom::Affine transform);
+    void cloneD(SPObject *orig, SPObject *dest);
     Inkscape::XML::Node * createPathBase(SPObject *elemref);
     //virtual void setFusion(Geom::PathVector &path_in, Geom::Path divider, double sizeDivider);
     BoolParam split_items;

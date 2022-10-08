@@ -207,10 +207,7 @@ LPEMeasureSegments::LPEMeasureSegments(LivePathEffectObject *lpeobject) :
                     "<b><i>Set Defaults:</i></b> For every LPE, default values can be set at the bottom."));
 }
 
-LPEMeasureSegments::~LPEMeasureSegments() {
-    keep_paths = false;
-    doOnRemove(nullptr);
-}
+LPEMeasureSegments::~LPEMeasureSegments() = default;
 
 Gtk::Widget *
 LPEMeasureSegments::newWidget()
@@ -659,8 +656,7 @@ LPEMeasureSegments::doOnApply(SPLPEItem const* lpeitem)
         return;
     }
     SPDocument *document = getSPDoc();
-    bool saved = DocumentUndo::getUndoSensitive(document);
-    DocumentUndo::setUndoSensitive(document, false);
+    DocumentUndo::ScopedInsensitive _no_undo(document);
     Inkscape::XML::Node *styleNode = nullptr;
     Inkscape::XML::Node* textNode = nullptr;
     Inkscape::XML::Node *root = document->getReprRoot();
@@ -701,7 +697,6 @@ LPEMeasureSegments::doOnApply(SPLPEItem const* lpeitem)
         textNode->setContent(styleContent.c_str());
     }
     linked_items.update_satellites();
-    DocumentUndo::setUndoSensitive(document, saved);
 }
 
 bool
@@ -895,7 +890,7 @@ LPEMeasureSegments::doBeforeEffect (SPLPEItem const* lpeitem)
             auto satellites = linked_items.data();
             if (satellites.size() != prevsatellitecount ) {
                 prevsatellitecount = satellites.size();
-                linked_items.update_satellites(true);
+                sp_lpe_item_update_patheffect(sp_lpe_item, false, false, true);
             }
             prevsatellitecount = satellites.size();
             for (auto & iter : satellites) {

@@ -428,7 +428,7 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
             items.push_back(item);
             SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
             if (lpeitem) {
-                for (auto satellite : lpeitem->get_satellites(false, true)) {
+                for (auto satellite : lpeitem->get_satellites(false, true, true)) {
                     if (satellite) {
                         SPItem *item2 = dynamic_cast<SPItem *>(satellite);
                         if (item2 && std::find(items.begin(), items.end(), item2) == items.end()) {
@@ -481,7 +481,9 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
         }
         SPObject *old_obj = doc->getObjectByRepr(old_repr);
         SPObject *new_obj = doc->getObjectByRepr(copy);
-        old_obj->setSuccessor(new_obj);
+        if (old_obj && new_obj) {
+            old_obj->setTmpSuccessor(new_obj);
+        }
         if (relink_clones) {
             add_ids_recursive(old_ids, old_obj);
             add_ids_recursive(new_ids, new_obj);
@@ -572,31 +574,36 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
             SPObject *new_obj = doc->getObjectByRepr(node);
             SPLPEItem *newLPEObj = dynamic_cast<SPLPEItem *>(new_obj);
             if (newLPEObj) {
-                // force always fork with 0 some issues on slices drom slices dont fork
-                newLPEObj->forkPathEffectsIfNecessary(0);
-                sp_lpe_item_update_patheffect(newLPEObj, false, true);
+                // force always fork
+                newLPEObj->forkPathEffectsIfNecessary(1, true, true);
             }
         }
     }
     for(auto old_repr : reprs) {
         SPObject *old_obj = doc->getObjectByRepr(old_repr);
-        if (old_obj->_successor) {
-            sp_object_unref(old_obj->_successor, nullptr);
-            old_obj->_successor = nullptr;
-            
+        if (old_obj) {
+            old_obj->fixTmpSuccessors();
+            old_obj->unsetTmpSuccessor();
         }
     }
-    if ( !suppressDone ) {
-        DocumentUndo::done(document(), _("Duplicate"), INKSCAPE_ICON("edit-duplicate"));
-    }
+    
     if(!duplicateLayer)
         setReprList(newsel);
+        // we update clip and mask LPE
+        document()->fix_lpe_data();
+        if ( !suppressDone ) {
+            DocumentUndo::done(document(), _("Duplicate"), INKSCAPE_ICON("edit-duplicate"));
+        }
     else{
+        if ( !suppressDone ) {
+            DocumentUndo::done(document(), _("Duplicate"), INKSCAPE_ICON("edit-duplicate"));
+        }
         SPObject* new_layer = doc->getObjectByRepr(copies[0]);
         gchar* name = g_strdup_printf(_("%s copy"), new_layer->label());
         desktop()->layerManager().renameLayer( new_layer, name, TRUE );
         g_free(name);
     }
+    
 }
 
 void sp_edit_clear_all(Inkscape::Selection *selection)
@@ -930,10 +937,10 @@ void ObjectSet::ungroup(bool skip_undo)
                     //lpe->doOnOpen(lpeitem);
                     for (auto & p : lpe->param_vector) {
                         p->read_from_SVG();
-                        p->update_satellites(true);
                     }
                 }
             }
+            sp_lpe_item_update_patheffect(lpeitem, false, false, true);
         }
     }
     if(document() && !skip_undo)
@@ -2991,7 +2998,7 @@ void ObjectSet::cloneOriginal()
 /**
 * This applies the Fill Between Many LPE, and has it refer to the selection.
 */
-void ObjectSet::cloneOriginalPathLPE(bool allow_transforms)
+void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool skip_undo)
 {
 
     Inkscape::SVGOStringStream os;
@@ -3019,8 +3026,11 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms)
             lpe_repr->setAttributeOrRemoveIfEmpty("linkedpaths", os.str());
         } else {
             lpe_repr->setAttribute("effect", "clone_original");
+            lpe_repr->setAttribute("css_properties", "");
+            lpe_repr->setAttribute("attributes", "");
             lpe_repr->setAttribute("linkeditem", ((Glib::ustring)"#" + (Glib::ustring)firstItem->getId()));
         }
+        lpe_repr->setAttribute("is_visible", "true");
         gchar const *method_str = allow_transforms ?  "d" : "bsplinespiro";
         lpe_repr->setAttribute("method", method_str);
         gchar const *allow_transforms_str = allow_transforms ? "true" : "false";
@@ -3038,7 +3048,6 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms)
             // create the new path
             clone = xml_doc->createElement("svg:path");
             clone->setAttribute("d", "M 0 0");
-
         }
         if (clone) {
             // add the new clone to the top of the original's parent
@@ -3051,10 +3060,12 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms)
             if (clone_lpeitem) {
                 clone_lpeitem->addPathEffect(lpe_id_href, false);
             }
-            if (multiple) {
-                DocumentUndo::done(document(), _("Fill between many"), INKSCAPE_ICON("edit-clone-link-lpe"));
-            } else {
-                DocumentUndo::done(document(), _("Clone original"), INKSCAPE_ICON("edit-clone-link-lpe"));
+            if (!skip_undo) {
+                if (multiple) {
+                    DocumentUndo::done(document(), _("Fill between many"), INKSCAPE_ICON("edit-clone-link-lpe"));
+                } else {
+                    DocumentUndo::done(document(), _("Clone original"), INKSCAPE_ICON("edit-clone-link-lpe"));
+                }
             }
         }
     } else {

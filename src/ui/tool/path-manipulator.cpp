@@ -1560,10 +1560,8 @@ void PathManipulator::_setGeometry()
         if (empty()) return;
         if (path->curveBeforeLPE()) {
             path->setCurveBeforeLPE(&_spcurve);
-            if (!path->hasPathEffectOfTypeRecursive(Inkscape::LivePathEffect::SLICE)) {
+            if (path->hasPathEffectRecursive()) {
                 sp_lpe_item_update_patheffect(path, true, false);
-            } else {
-                path->setCurve(&_spcurve);
             }
         } else {
             path->setCurve(&_spcurve);

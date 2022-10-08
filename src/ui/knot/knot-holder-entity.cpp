@@ -31,6 +31,10 @@
 #include "preferences.h"
 #include "snap.h"
 #include "style.h"
+#include "object/sp-marker.h"
+
+#include "display/control/canvas-item-ctrl.h"
+#include <glibmm/i18n.h>
 
 void KnotHolderEntity::create(SPDesktop *desktop, SPItem *item, KnotHolder *parent,
                               Inkscape::CanvasItemCtrlType type,
@@ -143,10 +147,9 @@ KnotHolderEntity::snap_knot_position_constrained(Geom::Point const &p, Inkscape:
 void
 LPEKnotHolderEntity::knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state)
 {
-    Inkscape::LivePathEffect::Effect *effect = _effect;
-    if (effect) {
-        effect->refresh_widgets = true;
-        effect->writeParamsToSVG();
+    if (_effect) {
+        _effect->refresh_widgets = true;
+        _effect->makeUndoDone(_("Move handle"));
     }
 }
 

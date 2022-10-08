@@ -336,7 +336,7 @@ public:
      * perspective in the defs. If no perspective exists, returns NULL.
      */
     Persp3D * getCurrentPersp3D();
-
+    void fix_lpe_data();
     void setCurrentPersp3DImpl(Persp3DImpl * const persp_impl) { current_persp3d_impl = persp_impl; }
     Persp3DImpl * getCurrentPersp3DImpl() { return current_persp3d_impl; }
 
@@ -355,7 +355,6 @@ public:
     void reset_key(void *dummy) { actionkey.clear(); }
     bool isSensitive() const { return sensitive; }
 
-
     // Garbage collecting ----------------------
     void queueForOrphanCollection(SPObject *object);
     void collectOrphans();
@@ -364,6 +363,12 @@ public:
     // Actions ---------------------------------
     Glib::RefPtr<Gio::SimpleActionGroup> getActionGroup() { return action_group; }
 
+protected:
+    friend class Inkscape::DocumentUndo;
+    bool isUndoBusy() const { return _undobusy; }
+    void setUndoBusy(bool undobussy) { _undobusy = undobussy; }
+    Glib::ustring getEventDescriptionStacked() const { return _event_description_stacked; }
+    void setEventDescriptionStacked(Glib::ustring event_description_stacked) { _event_description_stacked = event_description_stacked; }
     /************* Data ***************/
 private:
 
@@ -429,7 +434,8 @@ private:
     int history_size;
     std::vector<Inkscape::Event *> undo; /* Undo stack of reprs */
     std::vector<Inkscape::Event *> redo; /* Redo stack of reprs */
-
+    bool _undobusy = false;
+    Glib::ustring _event_description_stacked = "";  
     /* Undo listener */
     Inkscape::CompositeUndoStackObserver undoStackObservers;
 

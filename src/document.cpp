@@ -54,6 +54,8 @@
 #include "profile-manager.h"
 #include "rdf.h"
 
+#include "live_effects/effect.h"
+
 #include "actions/actions-edit-document.h"
 #include "actions/actions-undo-document.h"
 #include "actions/actions-pages.h"
@@ -572,6 +574,37 @@ SPDocument *SPDocument::createChildDoc(std::string const &filename)
     }
     return document;
 }
+
+void SPDocument::fix_lpe_data() {
+    std::vector<SPObject*> l(getDefs()->childList(true));
+    std::reverse(l.begin(), l.end());
+    for(auto child : l){
+        std::vector<SPObject*> l2(child->childList(true));
+        auto *lpeobj = dynamic_cast<LivePathEffectObject *>(child);
+        if (lpeobj) {
+            auto lpe = lpeobj->get_lpe();
+            if (lpe) {
+                std::vector<SPLPEItem *> lpeitems = lpe->getCurrrentLPEItems();
+                if (lpeitems.size()) {
+                    lpe->sp_lpe_item = lpeitems[0];
+                }
+                if (lpe->on_undo  && lpe->sp_lpe_item) {
+                    Inkscape::DocumentUndo::ScopedInsensitive tmp(lpe->sp_lpe_item->document);
+                    sp_lpe_item_update_patheffect(lpe->sp_lpe_item, true, true);
+                }
+                lpe->on_undo = false;
+            }
+        } else { // TODO: get a better wey to uplate clipmask lpe item (eye in athumgaze.svg duplicate)
+            for(auto child2 : l2){
+                SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(child2);
+                if (lpeitem) {
+                    sp_lpe_item_update_patheffect(lpeitem, true, true);
+                }
+            }
+        }
+    }
+}
+
 /**
  * Fetches document from filename, or creates new, if NULL; public document
  * appears in document list.
@@ -973,18 +1006,18 @@ void SPDocument::do_change_filename(gchar const *const filename, bool const reba
     Inkscape::XML::Node *repr = getReprRoot();
 
     // Changing filename in the document repr must not be not undoable.
-    bool const saved = DocumentUndo::getUndoSensitive(this);
-    DocumentUndo::setUndoSensitive(this, false);
+    {
+        DocumentUndo::ScopedInsensitive _no_undo(this);
 
-    if (rebase) {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        bool use_sodipodi_absref = prefs->getBool("/options/svgoutput/usesodipodiabsref", false);
-        Inkscape::XML::rebase_hrefs(this, new_document_base, use_sodipodi_absref);
+        if (rebase) {
+            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+            bool use_sodipodi_absref = prefs->getBool("/options/svgoutput/usesodipodiabsref", false);
+            Inkscape::XML::rebase_hrefs(this, new_document_base, use_sodipodi_absref);
+        }
+
+        if (strncmp(new_document_name, "ink_ext_XXXXXX", 14))	// do not use temporary filenames
+            repr->setAttribute("sodipodi:docname", new_document_name);
     }
-
-    if (strncmp(new_document_name, "ink_ext_XXXXXX", 14))	// do not use temporary filenames
-        repr->setAttribute("sodipodi:docname", new_document_name);
-    DocumentUndo::setUndoSensitive(this, saved);
 
 
     g_free(this->document_name);

@@ -101,11 +101,7 @@ LPECopyRotate::LPECopyRotate(LivePathEffectObject *lpeobject) :
     reset = link_styles;
 }
 
-LPECopyRotate::~LPECopyRotate()
-{
-    keep_paths = false;
-    doOnRemove(nullptr);
-};
+LPECopyRotate::~LPECopyRotate() = default;
 
 bool LPECopyRotate::doOnOpen(SPLPEItem const *lpeitem)
 {
@@ -216,7 +212,11 @@ LPECopyRotate::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
         if (forcewrite || !connected) {
             lpesatellites.write_to_SVG();
             lpesatellites.start_listening();
-            lpesatellites.update_satellites(!connected);
+            if (!connected) {
+                sp_lpe_item_update_patheffect(sp_lpe_item, false, false, true);
+            } else {
+                lpesatellites.update_satellites();
+            }
         }
         reset = link_styles;
     }
@@ -243,12 +243,13 @@ void LPECopyRotate::cloneStyle(SPObject *orig, SPObject *dest)
     }
 }
 
-void LPECopyRotate::cloneD(SPObject *orig, SPObject *dest, Geom::Affine transform)
+void LPECopyRotate::cloneD(SPObject *orig, SPObject *dest)
 {
     SPDocument *document = getSPDoc();
     if (!document) {
         return;
     }
+    dest->setAttribute("transform", orig->getAttribute("transform"));
     if ( SP_IS_GROUP(orig) && SP_IS_GROUP(dest) && SP_GROUP(orig)->getItemCount() == SP_GROUP(dest)->getItemCount() ) {
         if (reset) {
             cloneStyle(orig, dest);
@@ -257,7 +258,7 @@ void LPECopyRotate::cloneD(SPObject *orig, SPObject *dest, Geom::Affine transfor
         size_t index = 0;
         for (auto & child : childs) {
             SPObject *dest_child = dest->nthChild(index);
-            cloneD(child, dest_child, transform);
+            cloneD(child, dest_child);
             index++;
         }
         return;
@@ -273,7 +274,7 @@ void LPECopyRotate::cloneD(SPObject *orig, SPObject *dest, Geom::Affine transfor
         size_t index = 0;
         for (auto & child : SP_TEXT(orig)->children) {
             SPObject *dest_child = dest->nthChild(index);
-            cloneD(&child, dest_child, transform);
+            cloneD(&child, dest_child);
             index++;
         }
     }
@@ -369,7 +370,7 @@ LPECopyRotate::toItem(Geom::Affine transform, size_t i, bool reset, bool &write)
 
         Inkscape::GC::release(phantom);
     }
-    cloneD(sp_lpe_item, elemref, transform);
+    cloneD(sp_lpe_item, elemref);
     elemref->setAttributeOrRemoveIfEmpty("transform", sp_svg_transform_write(transform));
     reset = link_styles;
     // allow use on clones even in different parent

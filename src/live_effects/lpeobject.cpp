@@ -63,6 +63,14 @@ void LivePathEffectObject::build(SPDocument *document, Inkscape::XML::Node *repr
  * Virtual release of livepatheffect members before destruction.
  */
 void LivePathEffectObject::release() {
+    
+    if (this->lpe) {
+        std::vector<SPLPEItem *> lpeitems = lpe->getCurrrentLPEItems();
+        if (lpeitems.size() >= 1) {
+            lpe->sp_lpe_item = lpeitems[0];
+        }
+        lpe->sp_lpe_item = nullptr;
+    }
     this->getRepr()->removeListenerByData(this);
 
 /*

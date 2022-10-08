@@ -430,7 +430,7 @@ public:
     void removeLPESRecursive(bool keep_paths);
     void relink();
     void cloneOriginal();
-    void cloneOriginalPathLPE(bool allow_transforms = false);
+    void cloneOriginalPathLPE(bool allow_transforms = false, bool skip_undo = false);
     Inkscape::XML::Node* group(bool is_anchor = false);
     void popFromGroup();
     void ungroup(bool skip_undo = false);

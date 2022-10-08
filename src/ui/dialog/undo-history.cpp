@@ -213,17 +213,7 @@ UndoHistory::_onListSelectionChange()
     /* If no event is selected in the view, find the right one and select it. This happens whenever
      * a branch we're currently in is collapsed.
      */
-    // this fix crashes on redo with knots forcing regenerate knots on undo
-    SPDesktop *dt = getDesktop();
-    Glib::ustring switch_selector_to = "";
-    if (dt) {
-        switch_selector_to = get_active_tool(dt);
-        if (switch_selector_to != "Select") {
-            set_active_tool(dt, "Select");
-        }
-    }
     if (!selected) {
-
         EventLog::iterator curr_event = _event_log->getCurrEvent();
 
         if (curr_event->parent()) {
@@ -290,7 +280,7 @@ UndoHistory::_onListSelectionChange()
 
             _event_log->blockNotifications();
 
-            while ( selected != last_selected ) {
+            while (last_selected && selected != last_selected ) {
 
                 DocumentUndo::redo(getDocument());
 
@@ -315,9 +305,6 @@ UndoHistory::_onListSelectionChange()
         _event_log->setCurrEvent(selected);
         _event_log->updateUndoVerbs();
     }
-    if (dt && switch_selector_to != "Select") {
-        set_active_tool(dt, switch_selector_to);
-    }
 }
 
 void
@@ -333,15 +320,6 @@ UndoHistory::_onCollapseEvent(const Gtk::TreeModel::iterator &iter, const Gtk::T
 {
     // Collapsing a branch we're currently in is equal to stepping to the last event in that branch
     if ( iter == _event_log->getCurrEvent() ) {
-        // this fix crashes on redo with knots forcing regenerate knots on undo
-        SPDesktop *dt = getDesktop();
-        Glib::ustring switch_selector_to = "";
-        if (dt) {
-            switch_selector_to = get_active_tool(dt);
-            if (switch_selector_to != "Select") {
-                set_active_tool(dt, "Select");
-            }
-        }
         EventLog::const_iterator curr_event_parent = _event_log->getCurrEvent();
         EventLog::const_iterator curr_event = curr_event_parent->children().begin();
         EventLog::const_iterator last = curr_event_parent->children().end();
@@ -357,9 +335,6 @@ UndoHistory::_onCollapseEvent(const Gtk::TreeModel::iterator &iter, const Gtk::T
         _event_log->setCurrEvent(curr_event);
         _event_log->setCurrEventParent(curr_event_parent);
         _event_list_selection->select(curr_event_parent);
-        if (dt && switch_selector_to != "Select") {
-            set_active_tool(dt, switch_selector_to);
-        }
     }
 }
 

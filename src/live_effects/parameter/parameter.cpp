@@ -54,7 +54,9 @@ Parameter::~Parameter()
 
 void Parameter::param_write_to_repr(const char *svgd)
 {
-    param_effect->getRepr()->setAttribute(param_key, svgd);
+    if (param_effect->getRepr()) {
+        param_effect->getRepr()->setAttribute(param_key, svgd);
+    }
 }
 
 void Parameter::write_to_SVG()
@@ -68,11 +70,6 @@ EffectType Parameter::effectType() const
         return param_effect->effectType(); 
     }
     return INVALID_LPE;
-};
-
-ParamType Parameter::paramType() const 
-{ 
-    return INVALID_PARAM;
 };
 
 void
@@ -129,7 +126,7 @@ void Parameter::param_higlight(bool highlight, bool select)
                     for (auto iter : satellites) {
                         SPItem *satelliteitem = dynamic_cast<SPItem *>(iter);
                         if (satelliteitem) {
-                            bbox.unionWith(satelliteitem->documentVisualBounds());
+                            bbox.unionWith(lpeitems[0]->documentVisualBounds());
                         }
                     }
                 }
@@ -157,7 +154,7 @@ void Parameter::param_higlight(bool highlight, bool select)
 
 void Parameter::change_selection(Inkscape::Selection *selection)
 {
-    update_satellites(false);
+    update_satellites();
 }
 
 void Parameter::connect_selection_changed()
@@ -175,7 +172,7 @@ void Parameter::connect_selection_changed()
     }
 }
 
-void Parameter::update_satellites(bool updatelpe)
+void Parameter::update_satellites()
 {
     if (paramType() == ParamType::SATELLITE || paramType() == ParamType::SATELLITE_ARRAY || paramType() == ParamType::PATH ||
         paramType() == ParamType::PATH_ARRAY || paramType() == ParamType::ORIGINAL_PATH || paramType() == ParamType::ORIGINAL_SATELLITE) {
@@ -216,9 +213,8 @@ void Parameter::update_satellites(bool updatelpe)
                     }
                 }
             }
-            if (updatelpe && param_effect->is_visible) {
-                sp_lpe_item_update_patheffect(lpeitems[0], false, false);
-            }
+        } else {
+            param_higlight(false, false);
         }
     }
 }

@@ -100,6 +100,7 @@ enum ParamType {
     RANDOM,
     SATELLITE,
     SATELLITE_ARRAY,
+    SCALAR,
     TEXT,
     TOGGLE_BUTTON,
     TRANSFORMED_POINT,

@@ -84,7 +84,6 @@ LPEFilletChamfer::LPEFilletChamfer(LivePathEffectObject *lpeobject)
     radius.param_set_range(0.0, std::numeric_limits<double>::max());
     radius.param_set_increments(1, 1);
     radius.param_set_digits(4);
-    radius.param_set_undo(false);
     chamfer_steps.param_set_range(1, std::numeric_limits<gint>::max());
     chamfer_steps.param_set_increments(1, 1);
     chamfer_steps.param_make_integer();
@@ -574,20 +573,21 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
             if (time1 == time0) {
                 start_arc_point = curve_it1->pointAt(time1 + GAP_HELPER);
             }
-
-            double k1 = distance(start_arc_point, curve_it1->finalPoint()) * K;
+            Geom::Point curveit1 = curve_it1->finalPoint();
+            Geom::Point curveit2 = curve_it2.initialPoint();
+            double k1 = distance(start_arc_point, curveit1) * K;
             double k2 = distance(curve_it2.initialPoint(), end_arc_point) * K;
             Geom::CubicBezier const *cubic_1 = dynamic_cast<Geom::CubicBezier const *>(&*knot_curve_1);
             Geom::CubicBezier const *cubic_2 = dynamic_cast<Geom::CubicBezier const *>(&*knot_curve_2);
-            Geom::Ray ray_1(start_arc_point, curve_it1->finalPoint());
-            Geom::Ray ray_2(curve_it2.initialPoint(), end_arc_point);
+            Geom::Ray ray_1(start_arc_point, curveit1);
+            Geom::Ray ray_2(curveit2, end_arc_point);
             if (cubic_1) {
                 ray_1.setPoints((*cubic_1)[2], start_arc_point);
             }
             if (cubic_2) {
                 ray_2.setPoints(end_arc_point, (*cubic_2)[1]);
             }
-            bool ccw_toggle = cross(curve_it1->finalPoint() - start_arc_point, end_arc_point - start_arc_point) < 0;
+            bool ccw_toggle = cross(curveit1 - start_arc_point, end_arc_point - start_arc_point) < 0;
             double angle = angle_between(ray_1, ray_2, ccw_toggle);
             double handle_angle_1 = ray_1.angle() - angle;
             double handle_angle_2 = ray_2.angle() + angle;
@@ -635,7 +635,7 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
                         Geom::Path path_chamfer;
                         path_chamfer.start(tmp_path.finalPoint());
                         if (eliptical) {
-                            ccw_toggle = ccw_toggle ? false : true;
+                            ccw_toggle = !ccw_toggle;
                             path_chamfer.appendNew<Geom::EllipticalArc>(rx, ry, arc_angle, false, ccw_toggle, end_arc_point);
                         } else {
                             path_chamfer.appendNew<Geom::CubicBezier>(handle_1, handle_2, end_arc_point);
@@ -658,12 +658,7 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
                 case INVERSE_FILLET:
                     {
                         if (eliptical) {
-                            bool side = false;
-                            if (helperpath && !getSPDoc()->is_yaxisdown()) {
-                                side = true;
-                                ccw_toggle = ccw_toggle ? false : true;
-                            }
-                            tmp_path.appendNew<Geom::EllipticalArc>(rx, ry, arc_angle, side, ccw_toggle, end_arc_point);
+                            tmp_path.appendNew<Geom::EllipticalArc>(rx, ry, arc_angle, false, ccw_toggle, end_arc_point);
                         } else {
                             tmp_path.appendNew<Geom::CubicBezier>(inverse_handle_1, inverse_handle_2, end_arc_point);
                         }
@@ -672,13 +667,8 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
                 default: //fillet
                     {
                         if (eliptical) {
-                            bool side = false;
-                            if (helperpath && !getSPDoc()->is_yaxisdown()) {
-                                side = true;
-                            } else {
-                                ccw_toggle = ccw_toggle ? false : true;
-                            }
-                            tmp_path.appendNew<Geom::EllipticalArc>(rx, ry, arc_angle, side, ccw_toggle, end_arc_point);
+                            ccw_toggle = !ccw_toggle;
+                            tmp_path.appendNew<Geom::EllipticalArc>(rx, ry, arc_angle, false, ccw_toggle, end_arc_point);
                         } else {
                             tmp_path.appendNew<Geom::CubicBezier>(handle_1, handle_2, end_arc_point);
                         }

@@ -120,7 +120,7 @@ public:
 SPObject::SPObject()
     : cloned(0), clone_original(nullptr), uflags(0), mflags(0), hrefcount(0), _total_hrefcount(0),
       document(nullptr), parent(nullptr), id(nullptr), repr(nullptr), refCount(1), hrefList(std::list<SPObject*>()),
-      _successor(nullptr), _collection_policy(SPObject::COLLECT_WITH_PARENT),
+      _successor(nullptr),_tmpsuccessor(nullptr), _collection_policy(SPObject::COLLECT_WITH_PARENT),
       _label(nullptr), _default_label(nullptr)
 {
     debug("id=%p, typename=%s",this, g_type_name_from_instance((GTypeInstance*)this));
@@ -152,6 +152,10 @@ SPObject::~SPObject() {
         sp_object_unref(this->_successor, nullptr);
         this->_successor = nullptr;
     }
+    if (this->_tmpsuccessor) {
+        sp_object_unref(this->_tmpsuccessor, nullptr);
+        this->_tmpsuccessor = nullptr;
+    }
     if (parent) {
         parent->children.erase(parent->children.iterator_to(*this));
     }
@@ -173,6 +177,8 @@ SPObject::~SPObject() {
     } else {
         delete this->style;
     }
+    this->document = nullptr;
+    this->repr = nullptr;
 }
 
 // CPPIFY: make pure virtual
@@ -1157,6 +1163,10 @@ void SPObject::repr_attr_changed(Inkscape::XML::Node * /*repr*/, gchar const *ke
     if (is_interactive) {
         object->updateRepr(0);
     }
+    auto lpeitem = static_cast<SPLPEItem *>(data);
+    if (lpeitem && lpeitem->document->isSeeking()) {
+        lpeitem->modified(SP_OBJECT_MODIFIED_FLAG);
+    }
 }
 
 void SPObject::repr_content_changed(Inkscape::XML::Node * /*repr*/, gchar const * /*oldcontent*/, gchar const * /*newcontent*/, gpointer data)
@@ -1260,6 +1270,80 @@ Inkscape::XML::Node* SPObject::write(Inkscape::XML::Document *doc, Inkscape::XML
 #endif
     return repr;
 }
+
+/**
+* Indicates that another object supercedes this one.
+* Used by duple and stamp to keep references of LPE
+*/
+void 
+SPObject::setTmpSuccessor(SPObject *tmpsuccessor) {
+    assert(tmpsuccessor != NULL);
+    assert(_tmpsuccessor == NULL);
+    assert(tmpsuccessor->_tmpsuccessor == NULL);
+    sp_object_ref(tmpsuccessor, nullptr);
+    _tmpsuccessor = tmpsuccessor;
+    if (repr) {
+        char const *linked_fill_id = getAttribute("inkscape:linked-fill");
+        if (linked_fill_id && document) {
+            SPObject *lfill = document->getObjectById(linked_fill_id);
+            if (lfill && lfill->_tmpsuccessor) {
+                lfill->_tmpsuccessor->setAttribute("inkscape:linked-fill",lfill->_tmpsuccessor->getId());
+            }
+        }
+
+        if (children.size() == _tmpsuccessor->children.size()) {
+            for (auto &obj : children) {
+                auto tmpsuccessorchild = _tmpsuccessor->nthChild(obj.getPosition());
+                if (tmpsuccessorchild && !obj._tmpsuccessor) {
+                    obj.setTmpSuccessor(tmpsuccessorchild);
+                }
+            }
+        }
+    }
+}
+
+/**
+* Fix temporary successors in duple stamp.
+*/
+void 
+SPObject::fixTmpSuccessors() {
+    for (auto &obj : children) {
+        obj.fixTmpSuccessors();
+    }
+    if (_tmpsuccessor) {
+        char const *linked_fill_id = getAttribute("inkscape:linked-fill");
+        if (linked_fill_id && document) {
+            SPObject *lfill = document->getObjectById(linked_fill_id);
+            if (lfill && lfill->_tmpsuccessor) {
+                _tmpsuccessor->setAttribute("inkscape:linked-fill", lfill->_tmpsuccessor->getId());
+            }
+        }
+    }
+}
+
+void 
+SPObject::unsetTmpSuccessor() {
+    for (auto &object : children) {
+        object.unsetTmpSuccessor();
+    }
+    if (_tmpsuccessor) {
+        sp_object_unref(_tmpsuccessor, nullptr);
+        _tmpsuccessor = nullptr;
+    }
+}
+
+/**
+* Returns ancestor non layer.
+*/
+SPObject const * SPObject::getTopAncestorNonLayer() const {
+    auto group = dynamic_cast<SPGroup *>(parent);
+    if (group && group->layerMode() != SPGroup::LAYER) {
+        return group->getTopAncestorNonLayer();
+    } else {
+        return this;
+    }
+};
+
 
 Inkscape::XML::Node * SPObject::updateRepr(unsigned int flags)
 {

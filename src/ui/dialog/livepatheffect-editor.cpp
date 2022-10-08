@@ -429,16 +429,13 @@ void LivePathEffectEditor::onAdd()
                     {
                         // select original
                         selection->set(orig);
-
                         // delete clone but remember its id and transform
                         gchar *id = g_strdup(item->getAttribute("id"));
                         gchar *transform = g_strdup(item->getAttribute("transform"));
-                        item->deleteObject(false);
+                        item->deleteObject(true);
                         item = nullptr;
-
                         // run sp_selection_clone_original_path_lpe
-                        selection->cloneOriginalPathLPE(true);
-
+                        selection->cloneOriginalPathLPE(true, true);
                         SPItem *new_item = selection->singleItem();
                         // Check that the cloning was successful. We don't want to change the ID of the original referenced path!
                         if (new_item && (new_item != orig)) {
@@ -448,6 +445,7 @@ void LivePathEffectEditor::onAdd()
                                 sp_svg_transform_read(transform, &item_t);
                                 new_item->transform *= item_t;
                                 new_item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+                                new_item->doWriteTransform(new_item->transform);
                             }
                             new_item->setAttribute("class", "fromclone");
                         }

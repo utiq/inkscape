@@ -114,14 +114,13 @@ protected:
             local_repr = reinterpret_cast<SPObject *>(dt->getNamedView())->getRepr();
             local_doc = dt->getDocument();
         }
-
-        bool saved = DocumentUndo::getUndoSensitive(local_doc);
-        DocumentUndo::setUndoSensitive(local_doc, false);
         const char * svgstr_old = local_repr->attribute(_key.c_str());
-        if (!write_undo) {
-            local_repr->setAttribute(_key, svgstr);
+        {
+            DocumentUndo::ScopedInsensitive _no_undo(local_doc);
+            if (!write_undo) {
+                local_repr->setAttribute(_key, svgstr);
+            }
         }
-        DocumentUndo::setUndoSensitive(local_doc, saved);
         if (svgstr_old && svgstr && strcmp(svgstr_old,svgstr)) {
             local_doc->setModifiedSinceSave();
         }

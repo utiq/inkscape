@@ -335,8 +335,7 @@ bool fixBrokenLinks(SPDocument *doc)
             // TODO debug g_message("     [%s] ==> {%s}", it->first.c_str(), it->second.c_str());
         }
 
-        bool savedUndoState = DocumentUndo::getUndoSensitive(doc);
-        DocumentUndo::setUndoSensitive(doc, true);
+        DocumentUndo::ScopedInsensitive _no_undo(doc);
         
         std::vector<SPObject *> images = doc->getResourceList("image");
         for (auto image : images) {
@@ -367,7 +366,6 @@ bool fixBrokenLinks(SPDocument *doc)
         if ( changed ) {
             DocumentUndo::done( doc, _("Fixup broken links"), INKSCAPE_ICON("dialog-xml-editor"));
         }
-        DocumentUndo::setUndoSensitive(doc, savedUndoState);
     }
 
     return changed;

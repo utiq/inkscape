@@ -336,12 +336,8 @@ void SPSpiral::set_shape() {
         this->fitAndDraw(&c, (1.0 - t) / (SAMPLE_SIZE - 1.0), darray, hat1, hat2, &t);
     }
 
-    if (prepareShapeForLPE(&c)) {
-        return;
-    }
+    prepareShapeForLPE(&c);
 
-    // This happends on undo, fix bug:#1791784
-    setCurveInsync(std::move(c));
 }
 
 /**

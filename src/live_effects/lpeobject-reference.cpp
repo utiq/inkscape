@@ -37,10 +37,18 @@ LPEObjectReference::LPEObjectReference(SPObject* i_owner) : URIReference(i_owner
 
 LPEObjectReference::~LPEObjectReference()
 {
+    std::vector<SPLPEItem *> lpeitems;
+    if (lpeobject && lpeobject->get_lpe()) {
+        lpeitems = lpeobject->get_lpe()->getCurrrentLPEItems();
+        lpeobject->get_lpe()->doOnBeforeCommit();
+        lpeobject->get_lpe()->sp_lpe_item = nullptr;
+    } 
     _changed_connection.disconnect(); // to do before unlinking
-
     quit_listening();
     unlink();
+    for (auto lpeitem : lpeitems) {
+        sp_lpe_item_update_patheffect(lpeitem,false,false);
+    }
 }
 
 bool LPEObjectReference::_acceptObject(SPObject * const obj) const

@@ -57,7 +57,6 @@ namespace CoS {
         ~KnotHolderEntityCopyGapX() override;
         void knot_set(Geom::Point const &p, Geom::Point const &origin, guint state) override;
         void knot_click(guint state) override;
-        void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override;
         Geom::Point knot_get() const override;
         double startpos = dynamic_cast<LPETiling const*> (_effect)->gapx_unit;
     };
@@ -67,7 +66,6 @@ namespace CoS {
         ~KnotHolderEntityCopyGapY() override;
         void knot_set(Geom::Point const &p, Geom::Point const &origin, guint state) override;
         void knot_click(guint state) override;
-        void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override;
         Geom::Point knot_get() const override;
         double startpos = dynamic_cast<LPETiling const*> (_effect)->gapy_unit;
     };
@@ -165,12 +163,7 @@ LPETiling::LPETiling(LivePathEffectObject *lpeobject) :
     prev_unit = unit.get_abbreviation();
 }
 
-LPETiling::~LPETiling()
-{
-    keep_paths = false;
-    doOnRemove(nullptr);
-};
-
+LPETiling::~LPETiling() = default;
 bool LPETiling::doOnOpen(SPLPEItem const *lpeitem)
 {
     bool fixed = false;
@@ -463,7 +456,11 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
         if (forcewrite || !connected) {
             lpesatellites.write_to_SVG();
             lpesatellites.start_listening();
-            lpesatellites.update_satellites(!connected);
+            if (!connected) {
+                sp_lpe_item_update_patheffect(sp_lpe_item, false, false, true);
+            } else {
+                lpesatellites.update_satellites();
+            }
         }
         reset = link_styles;
     }
@@ -1554,6 +1551,7 @@ LPETiling::doOnVisibilityToggled(SPLPEItem const* lpeitem)
     processObjects(LPE_VISIBILITY);
 }
 
+
 void 
 LPETiling::doOnRemove (SPLPEItem const* lpeitem)
 {
@@ -1594,20 +1592,6 @@ KnotHolderEntityCopyGapY::~KnotHolderEntityCopyGapY()
     if (lpe) {
         lpe->_knotholder = nullptr;
     }
-}
-
-void KnotHolderEntityCopyGapX::knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state)
-{
-    LPETiling* lpe = dynamic_cast<LPETiling *>(_effect);
-    lpe->refresh_widgets = true;
-    sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
-}
-
-void KnotHolderEntityCopyGapY::knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state)
-{
-    LPETiling* lpe = dynamic_cast<LPETiling *>(_effect);
-    lpe->refresh_widgets = true;
-    sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
 }
 
 void KnotHolderEntityCopyGapX::knot_click(guint state)

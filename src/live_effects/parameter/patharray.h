@@ -48,7 +48,7 @@ public:
     bool visibled;
     
     sigc::connection linked_changed_connection;
-    sigc::connection linked_delete_connection;
+    sigc::connection linked_release_connection;
     sigc::connection linked_modified_connection;
 };
 
@@ -75,7 +75,6 @@ public:
     void addCanvasIndicators(SPLPEItem const* /*lpeitem*/, std::vector<Geom::PathVector> & /*hp_vec*/) override {};
     void setFromOriginalD(bool from_original_d){ _from_original_d = from_original_d; update();};
     void allowOnlyBsplineSpiro(bool allow_only_bspline_spiro){ _allow_only_bspline_spiro = allow_only_bspline_spiro; update();};
-    void setUpdating(bool updating) {_updating = updating;};
     std::vector<PathAndDirectionAndVisible*> _vector;
     ParamType paramType() const override { return ParamType::PATH_ARRAY; };
 protected:
@@ -88,7 +87,7 @@ protected:
     
     void linked_changed(SPObject *old_obj, SPObject *new_obj, PathAndDirectionAndVisible* to);
     void linked_modified(SPObject *linked_obj, guint flags, PathAndDirectionAndVisible* to);
-    void linked_delete(SPObject *deleted, PathAndDirectionAndVisible* to);
+    void linked_release(SPObject *release, PathAndDirectionAndVisible* to);
     
     ModelColumns *_model;
     Glib::RefPtr<Gtk::TreeStore> _store;
@@ -105,7 +104,6 @@ protected:
 private:
     bool _from_original_d;
     bool _allow_only_bspline_spiro;
-    bool _updating = false;
     void update();
     void initui();
     PathArrayParam(const PathArrayParam &) = delete;

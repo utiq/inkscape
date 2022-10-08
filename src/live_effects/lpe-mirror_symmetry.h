@@ -48,7 +48,7 @@ public:
     void doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve) override;
     bool doOnOpen(SPLPEItem const * /*lpeitem*/) override;
     Geom::PathVector doEffect_path (Geom::PathVector const & path_in) override;
-    void doOnRemove (SPLPEItem const* /*lpeitem*/) override;
+    void doOnRemove(SPLPEItem const* /*lpeitem*/) override;
     void doOnVisibilityToggled(SPLPEItem const* /*lpeitem*/) override;
     Gtk::Widget * newWidget() override;
     void cloneStyle(SPObject *orig, SPObject *dest);

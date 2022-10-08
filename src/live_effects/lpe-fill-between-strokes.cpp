@@ -115,7 +115,7 @@ LPEFillBetweenStrokes::transform_multiply_nested(Geom::Affine const &postmul)
         }
         SPItem *item;
         if (( item = dynamic_cast<SPItem*>(linked_path.getObject()) )) {
-            if (selection && !selection->includes(item, true) && selection->includes(sp_lpe_item, true)) {
+            if (item->document->isSensitive() && selection && !selection->includes(item, true) && selection->includes(sp_lpe_item, true)) {
                 item->transform *= i2anc_affine(item->parent, item->document->getRoot());
                 item->transform *=  postmul.inverse();
                 item->transform *= i2anc_affine(item->parent, item->document->getRoot()).inverse();
@@ -125,7 +125,7 @@ LPEFillBetweenStrokes::transform_multiply_nested(Geom::Affine const &postmul)
         }
         SPItem *item2;
         if (( item2 = dynamic_cast<SPItem*>(second_path.getObject()) )) {
-            if (selection && !selection->includes(item2, true) && selection->includes(sp_lpe_item, true)) {
+            if (item2->document->isSensitive() && selection && !selection->includes(item2, true) && selection->includes(sp_lpe_item, true)) {
                 item2->transform *= i2anc_affine(item2->parent, item2->document->getRoot());
                 item2->transform *=  postmul.inverse();
                 item2->transform *= i2anc_affine(item2->parent, item2->document->getRoot()).inverse();

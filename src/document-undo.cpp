@@ -56,6 +56,8 @@
 #include "debug/simple-event.h"
 #include "debug/timestamp.h"
 #include "xml/repr.h"
+#include "object/sp-root.h"
+#include "object/sp-lpe-item.h"
 
 
 /*
@@ -139,16 +141,39 @@ public:
 void Inkscape::DocumentUndo::maybeDone(SPDocument *doc,
                                        const gchar *key,
                                        Glib::ustring const &event_description,
-                                       Glib::ustring const &icon_name)
+                                       Glib::ustring const &icon_name,
+                                       bool ended)
 {
 	g_assert (doc != nullptr);
     g_assert (doc->sensitive);
     if ( key && !*key ) {
         g_warning("Blank undo key specified.");
     }
+    if (doc->isUndoBusy() && !ended) {
+#ifdef DEBUG
+        g_warning("Multiple operations in the same loop. All joined into a single undo");
+#endif
+        Glib::ustring _event_description_stacked = doc->getEventDescriptionStacked();
+        _event_description_stacked += ";";
+        _event_description_stacked += event_description;
+        doc->setEventDescriptionStacked(_event_description_stacked);
+        return;
+    }
+    if (!ended) {
+        doc->setUndoBusy(true);
+        doc->setEventDescriptionStacked(event_description);
+        Glib::signal_idle().connect([=](){
+            maybeDone(doc,key,event_description,icon_name,true);
+            doc->setUndoBusy(false);
+            doc->setEventDescriptionStacked("");
+            return false; // don't call again
+        });
+        return;
+    }
+
     doc->before_commit_signal.emit();
     // This is only used for output to debug log file (and not for undo).
-    Inkscape::Debug::EventTracker<CommitEvent> tracker(doc, key, event_description.c_str(), icon_name.c_str());
+    Inkscape::Debug::EventTracker<CommitEvent> tracker(doc, key, doc->getEventDescriptionStacked().c_str(), icon_name.c_str());
 
 	doc->collectOrphans();
 
@@ -168,20 +193,20 @@ void Inkscape::DocumentUndo::maybeDone(SPDocument *doc,
                 (doc->undo.back())->event =
                     sp_repr_coalesce_log ((doc->undo.back())->event, log);
 	} else {
-                Inkscape::Event *event = new Inkscape::Event(log, event_description, icon_name);
-                doc->undo.push_back(event);
+        Inkscape::Event *event = new Inkscape::Event(log, doc->getEventDescriptionStacked(), icon_name);
+        doc->undo.push_back(event);
 		doc->history_size++;
 		doc->undoStackObservers.notifyUndoCommitEvent(event);
 	}
 
-        if ( key ) {
-            doc->actionkey = key;
-        } else {
-            doc->actionkey.clear();
-        }
+    if ( key ) {
+        doc->actionkey = key;
+    } else {
+        doc->actionkey.clear();
+    }
 
 	doc->virgin = FALSE;
-        doc->setModifiedSinceSave();
+    doc->setModifiedSinceSave();
 
 	sp_repr_begin_transaction (doc->rdoc);
 
@@ -190,14 +215,16 @@ void Inkscape::DocumentUndo::maybeDone(SPDocument *doc,
 
 void Inkscape::DocumentUndo::cancel(SPDocument *doc)
 {
-	g_assert (doc != nullptr);
-        g_assert (doc->sensitive);
-
+    g_assert (doc != nullptr);
+    if (doc->isUndoBusy()) {
+        g_warning("Cancel is dropped because Inkscape is busy");
+    }
+    g_assert (doc->sensitive);
 	sp_repr_rollback (doc->rdoc);
 
 	if (doc->partial) {
 		sp_repr_undo_log (doc->partial);
-                doc->emitReconstructionFinish();
+        doc->emitReconstructionFinish();
 		sp_repr_free_log (doc->partial);
 		doc->partial = nullptr;
 	}
@@ -207,15 +234,17 @@ void Inkscape::DocumentUndo::cancel(SPDocument *doc)
 
 // Member function for friend access to SPDocument privates.
 void Inkscape::DocumentUndo::finish_incomplete_transaction(SPDocument &doc) {
-	Inkscape::XML::Event *log=sp_repr_commit_undoable(doc.rdoc);
-	if (log || doc.partial) {
-        g_warning ("Incomplete undo transaction:");
+    Inkscape::XML::Event *log=sp_repr_commit_undoable(doc.rdoc);
+    if (log || doc.partial) {
+        g_warning ("Incomplete undo transaction (added to next undo):");
         doc.partial = sp_repr_coalesce_log(doc.partial, log);
-		sp_repr_debug_print_log(doc.partial);
-                Inkscape::Event *event = new Inkscape::Event(doc.partial);
-		doc.undo.push_back(event);
-                doc.undoStackObservers.notifyUndoCommitEvent(event);
-		doc.partial = nullptr;
+        if (!doc.undo.empty()) {
+            Inkscape::Event* undo_stack_top = doc.undo.back();
+            undo_stack_top->event = sp_repr_coalesce_log(undo_stack_top->event, doc.partial);
+        } else {
+            sp_repr_free_log(doc.partial);
+        }
+        doc.partial = nullptr;
 	}
 }
 
@@ -243,49 +272,59 @@ void Inkscape::DocumentUndo::perform_document_update(SPDocument &doc) {
 
 gboolean Inkscape::DocumentUndo::undo(SPDocument *doc)
 {
+    g_assert (doc != nullptr);
+
+    if (doc->isUndoBusy()) {
+        g_warning("One undo is dropped because Inkscape is busy");
+        return false;
+    }
+
     using Inkscape::Debug::EventTracker;
     using Inkscape::Debug::SimpleEvent;
 
     gboolean ret;
 
     EventTracker<SimpleEvent<Inkscape::Debug::Event::DOCUMENT> > tracker("undo");
-
-    g_assert (doc != nullptr);
     g_assert (doc->sensitive);
 
     doc->sensitive = FALSE;
     doc->seeking = true;
 
     doc->actionkey.clear();
-
+    
     finish_incomplete_transaction(*doc);
-
     if (! doc->undo.empty()) {
-	    Inkscape::Event *log = doc->undo.back();
-	    doc->undo.pop_back();
-	    sp_repr_undo_log (log->event);
-	    perform_document_update(*doc);
-
-	    doc->redo.push_back(log);
+        Inkscape::Event *log = doc->undo.back();
+        doc->undo.pop_back();
+        sp_repr_undo_log (log->event);
+        perform_document_update(*doc);
+        doc->redo.push_back(log);
         doc->setModifiedSinceSave();
         doc->undoStackObservers.notifyUndoEvent(log);
-	    ret = TRUE;
+        ret = TRUE;
     } else {
 	    ret = FALSE;
     }
 
     sp_repr_begin_transaction (doc->rdoc);
-
     doc->sensitive = TRUE;
-        doc->seeking = false;
-
+    doc->seeking = false;
     if (ret) INKSCAPE.external_change();
-
+    if (doc->undo.empty()) {
+        sp_lpe_item_update_patheffect(dynamic_cast<SPLPEItem *>(doc->getRoot()), false, true);
+    }
+    doc->fix_lpe_data();
     return ret;
 }
 
 gboolean Inkscape::DocumentUndo::redo(SPDocument *doc)
 {
+    g_assert (doc != nullptr);
+
+    if (doc->isUndoBusy()) {
+        g_warning("One redo is dropped because Inkscape is busy");
+        return false;
+    }
 	using Inkscape::Debug::EventTracker;
 	using Inkscape::Debug::SimpleEvent;
 
@@ -293,39 +332,35 @@ gboolean Inkscape::DocumentUndo::redo(SPDocument *doc)
 
 	EventTracker<SimpleEvent<Inkscape::Debug::Event::DOCUMENT> > tracker("redo");
 
-	g_assert (doc != nullptr);
     g_assert (doc->sensitive);
-
-	doc->sensitive = FALSE;
+    doc->sensitive = FALSE;
     doc->seeking = true;
-
 	doc->actionkey.clear();
 
-	finish_incomplete_transaction(*doc);
-
-	if (! doc->redo.empty()) {
-		Inkscape::Event *log = doc->redo.back();
+    finish_incomplete_transaction(*doc);
+    if (! doc->redo.empty()) {
+        Inkscape::Event *log = doc->redo.back();
 		doc->redo.pop_back();
 		sp_repr_replay_log (log->event);
-		doc->undo.push_back(log);
+        doc->undo.push_back(log);
+        perform_document_update(*doc);
 
         doc->setModifiedSinceSave();
-		doc->undoStackObservers.notifyRedoEvent(log);
+        doc->undoStackObservers.notifyRedoEvent(log);
 		ret = TRUE;
 	} else {
 		ret = FALSE;
 	}
-
+    
 	sp_repr_begin_transaction (doc->rdoc);
 
 	doc->sensitive = TRUE;
-        doc->seeking = false;
-
+    doc->seeking = false;
 	if (ret) {
 		INKSCAPE.external_change();
-                doc->emitReconstructionFinish();
-        }
-
+        doc->emitReconstructionFinish();
+    }
+    doc->fix_lpe_data();
 	return ret;
 }
 

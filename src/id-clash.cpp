@@ -58,6 +58,7 @@ const char *href_like_attributes[] = {"inkscape:connection-end",
                                       "inkscape:href",
                                       "inkscape:path-effect",
                                       "inkscape:perspectiveID",
+                                      "inkscape:linked-fill",
                                       "inkscape:tiled-clone-of",
                                       "xlink:href"};
 #define NUM_HREF_LIKE_ATTRIBUTES (sizeof(href_like_attributes) / sizeof(*href_like_attributes))
@@ -121,7 +122,11 @@ fix_ref(IdReference const &idref, SPObject *to_obj, const char *old_id) {
                 old += old_id;
                 size_t posid = value.find(old_id);
                 if (new_uri && posid != Glib::ustring::npos) {
-                    value = value.replace(posid - 1, old.size(), new_uri);
+                    if (!g_strcmp0(idref.attr,"inkscape:linked-fill")) {
+                        value = value.replace(posid, old.size() - 1, to_obj->getId());
+                    } else {
+                        value = value.replace(posid - 1, old.size(), new_uri);
+                    }
                     idref.elem->setAttribute(idref.attr, value.c_str());
                 }
                 g_free(new_uri);
@@ -269,8 +274,15 @@ static void find_references(SPObject *elem, refmap_type &refmap, bool from_clipb
     }
     /* check for xlink:href="#..." and similar */
     for (auto attr : href_like_attributes) {
-        const gchar *val = repr_elem->attribute(attr);
-        if (val && val[0] == '#') {
+        Glib::ustring attfixed = "";
+        if (repr_elem->attribute(attr)) {
+            if (!g_strcmp0(attr,"inkscape:linked-fill")) {
+                attfixed += "#";
+            }
+            attfixed += repr_elem->attribute(attr);
+        }
+        const gchar *val = attfixed.c_str();
+        if (!attfixed.empty() && attfixed[0] == '#') {
             gchar **strarray = g_strsplit(val, ";", 0);
             if (strarray) {
                 unsigned int i = 0;

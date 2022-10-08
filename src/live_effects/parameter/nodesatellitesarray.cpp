@@ -338,8 +338,7 @@ FilletChamferKnotHolderEntity::knot_ungrabbed(Geom::Point const &p, Geom::Point 
     if (filletchamfer) {
         filletchamfer->refresh_widgets = true;
         filletchamfer->helperpath = false;
-        filletchamfer->writeParamsToSVG();
-        sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+        filletchamfer->makeUndoDone(_("Move handle"));
     }
 }
 
@@ -547,10 +546,7 @@ void FilletChamferKnotHolderEntity::knot_set_offset(NodeSatellite nodesatellite)
     nodesatellite.amount = amount;
     _pparam->_vector[satelite_index][subsatelite_index] = nodesatellite;
     this->parent_holder->knot_ungrabbed_handler(this->knot, 0);
-    SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(item);
-    if (splpeitem) {
-        sp_lpe_item_update_patheffect(splpeitem, false, false);
-    }
+    _pparam->write_to_SVG();
 }
 
 } /* namespace LivePathEffect */

@@ -83,8 +83,7 @@ LPEJoinType::LPEJoinType(LivePathEffectObject *lpeobject) :
     //end_lean.param_set_digits(4);
 }
 
-LPEJoinType::~LPEJoinType()
-= default;
+LPEJoinType::~LPEJoinType()= default;
 
 void LPEJoinType::doOnApply(SPLPEItem const* lpeitem)
 {
@@ -128,12 +127,9 @@ void LPEJoinType::doOnRemove(SPLPEItem const* lpeitem)
 {
     auto lpeitem_mutable = const_cast<SPLPEItem *>(lpeitem);
     auto shape = dynamic_cast<SPShape *>(lpeitem_mutable);
-
-    if (!shape) {
-        return;
+    if (shape) {
+        lpe_shape_revert_stroke_and_fill(shape, line_width);
     }
-
-    lpe_shape_revert_stroke_and_fill(shape, line_width);
 }
 
 Geom::PathVector LPEJoinType::doEffect_path(Geom::PathVector const & path_in)

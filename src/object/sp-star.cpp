@@ -419,12 +419,8 @@ void SPStar::set_shape() {
 
     c.closepath();
 
-    if (prepareShapeForLPE(&c)) {
-        return;
-    }
+    prepareShapeForLPE(&c);
 
-    // This happends on undo, fix bug:#1791784
-    setCurveInsync(std::move(c));
 }
 
 void

@@ -11,6 +11,7 @@
 #include "inkscape.h"
 #include "ui/clipboard.h"
 #include "ui/icon-loader.h"
+#include "ui/icon-names.h"
 #include <glibmm/i18n.h>
 
 namespace Inkscape {
@@ -117,9 +118,12 @@ void SatelliteArrayParam::start_listening()
 }
 
 void SatelliteArrayParam::linked_modified(SPObject *linked_obj, guint flags) {
-    if (!param_effect->is_load && param_effect->_lpe_action == LPE_NONE && 
-        flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
-                 SP_OBJECT_VIEWPORT_MODIFIED_FLAG))
+    if (!_updating && (!SP_ACTIVE_DESKTOP || SP_ACTIVE_DESKTOP->getSelection()->includes(linked_obj)) &&
+        (!param_effect->is_load || ownerlocator || !SP_ACTIVE_DESKTOP ) && 
+        param_effect->_lpe_action == LPE_NONE &&
+        param_effect->isReady() &&
+        flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
+                 SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG))
     {
         param_effect->processObjects(LPE_UPDATE);
     }
@@ -127,7 +131,11 @@ void SatelliteArrayParam::linked_modified(SPObject *linked_obj, guint flags) {
 
 void SatelliteArrayParam::updatesignal()
 {
-    if (!param_effect->is_load && param_effect->_lpe_action == LPE_NONE) {
+    if (!_updating && 
+        (!param_effect->is_load || ownerlocator || !SP_ACTIVE_DESKTOP ) && 
+        param_effect->_lpe_action == LPE_NONE 
+        && param_effect->isReady()) 
+    {
         param_effect->processObjects(LPE_UPDATE);
     }
 }
@@ -157,9 +165,7 @@ void SatelliteArrayParam::on_active_toggled(const Glib::ustring &item)
             }
         }
     }
-    auto full = param_getSVGValue();
-    param_write_to_repr(full.c_str());
-    DocumentUndo::done(param_effect->getSPDoc(), _("Active switched"), "");
+    param_effect->makeUndoDone(_("Active switched"));
 }
 
 bool SatelliteArrayParam::param_readSVGValue(const gchar *strvalue)
@@ -176,10 +182,10 @@ bool SatelliteArrayParam::param_readSVGValue(const gchar *strvalue)
                 if (w) {
                     SPObject * tmp = w->getObject();
                     if (tmp) {
-                        SPObject * successor = tmp->_successor;
+                        SPObject * tmpsuccessor = tmp->_tmpsuccessor;
                         unlink(tmp);
-                        if (successor) {
-                            link(successor,pos);
+                        if (tmpsuccessor && tmpsuccessor->getId()) {
+                            link(tmpsuccessor,pos);
                         }
                     }
                 }
@@ -187,7 +193,7 @@ bool SatelliteArrayParam::param_readSVGValue(const gchar *strvalue)
             }
             auto full = param_getSVGValue();
             param_write_to_repr(full.c_str());
-            update_satellites(false);
+            update_satellites();
         }
         if (_store.get()) {
             _store->clear();
@@ -237,11 +243,7 @@ void SatelliteArrayParam::on_up_button_click()
                 i++;
             }
         }
-        auto full = param_getSVGValue();
-        param_write_to_repr(full.c_str());
-
-        DocumentUndo::done(param_effect->getSPDoc(), _("Move item up"), "");
-
+        param_effect->makeUndoDone(_("Move item up"));
         _store->foreach_iter(sigc::bind<int *>(sigc::mem_fun(*this, &SatelliteArrayParam::_selectIndex), &i));
     }
 }
@@ -263,11 +265,7 @@ void SatelliteArrayParam::on_down_button_click()
                 i++;
             }
         }
-        auto full = param_getSVGValue();
-        param_write_to_repr(full.c_str());
-
-        DocumentUndo::done(param_effect->getSPDoc(), _("Move item down"), "");
-
+        param_effect->makeUndoDone(_("Move item down"));
         _store->foreach_iter(sigc::bind<int *>(sigc::mem_fun(*this, &SatelliteArrayParam::_selectIndex), &i));
     }
 }
@@ -278,11 +276,7 @@ void SatelliteArrayParam::on_remove_button_click()
     if (iter) {
         Gtk::TreeModel::Row row = *iter;
         unlink(param_effect->getSPDoc()->getObjectById((const Glib::ustring&)(row[_model->_colObject])));
-
-        auto full = param_getSVGValue();
-        param_write_to_repr(full.c_str());
-
-        DocumentUndo::done(param_effect->getSPDoc(), _("Remove item"), "");
+        param_effect->makeUndoDone(_("Remove item"));
     }
 }
 
@@ -329,8 +323,7 @@ void SatelliteArrayParam::on_link_button_click()
             }
         }
     }
-    write_to_SVG();
-    DocumentUndo::done(param_effect->getSPDoc(), _("Link itemarray parameter to item"), "");
+    param_effect->makeUndoDone(_("Link itemarray parameter to item"));
 }
 
 Gtk::Widget *SatelliteArrayParam::param_newWidget()

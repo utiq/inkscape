@@ -68,9 +68,7 @@ LPETransform2Pts::LPETransform2Pts(LivePathEffectObject *lpeobject) :
     registerParameter(&lock_angle);
 
     first_knot.param_make_integer();
-    first_knot.param_set_undo(false);
     last_knot.param_make_integer();
-    last_knot.param_set_undo(false);
     helper_size.param_set_range(0, 999);
     helper_size.param_set_increments(1, 1);
     helper_size.param_set_digits(0);
@@ -105,7 +103,11 @@ LPETransform2Pts::doOnApply(SPLPEItem const* lpeitem)
             point_b = pathvector.back().finalCurve().initialPoint();
         }
         size_t nnodes = nodeCount(pathvector);
+        // this is need to fix undo on apply
+        first_knot.param_set_value(1);
         last_knot.param_set_value(nnodes);
+        first_knot.write_to_SVG();
+        last_knot.write_to_SVG();
     }
 
     previous_length = Geom::distance(point_a,point_b);
@@ -208,8 +210,11 @@ LPETransform2Pts::updateIndex()
         end.param_update_default(point_b);
         start.param_set_default();
         end.param_set_default();
+        // seems silly but fix undo resetting value on it
+        first_knot.param_set_value(first_knot);
+        last_knot.param_set_value(last_knot);
     }
-    DocumentUndo::done(getSPDoc(), _("Change index of knot"), INKSCAPE_ICON("dialog-path-effects"));
+    refresh_widgets = true;
 }
 //todo migrate to PathVector class?
 size_t
@@ -270,6 +275,7 @@ LPETransform2Pts::reset()
         first_knot.param_set_value(1);
         last_knot.param_set_value(2);
     }
+    refresh_widgets = true;
     offset.param_set_value(0.0);
     stretch.param_set_value(1.0);
     Geom::Ray transformed(point_a, point_b);

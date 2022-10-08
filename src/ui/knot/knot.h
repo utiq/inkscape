@@ -66,6 +66,7 @@ public:
     unsigned int size   = 9;                        /**< Always square. Must be odd. */
     bool size_set       = false;                    /**< Use default size unless explicitly set. */
     double angle        = 0.0;                      /**< Angle of mesh handle. */
+    bool is_lpe         = false;                    /**< is lpe knot. */
     Geom::Point pos;                                /**< Our desktop coordinates. */
     Geom::Point grabbed_rel_pos;                    /**< Grabbed relative position. */
     Geom::Point drag_origin;                        /**< Origin of drag. */

@@ -52,7 +52,7 @@ SPGenericEllipse::~SPGenericEllipse()
 = default;
 
 /*
- * Ellipse is the only SP object who's repr element tag name changes
+ * Ellipse and rect is the only SP object who's repr element tag name changes
  * during it's lifetime. During undo and redo these changes can cause
  * the SP object to become unstuck from the repr's true state.
  */
@@ -246,7 +246,7 @@ Inkscape::XML::Node *SPGenericEllipse::write(Inkscape::XML::Document *xml_doc, I
     //           << ")" << std::endl;
 
     GenericEllipseType new_type = SP_GENERIC_ELLIPSE_UNDEFINED;
-    if (_isSlice() || hasPathEffect() ) {
+    if (_isSlice() || hasPathEffectOnClipOrMaskRecursive(this) ) {
         new_type = SP_GENERIC_ELLIPSE_ARC;
     } else if ( rx.computed == ry.computed ) {
         new_type = SP_GENERIC_ELLIPSE_CIRCLE;
@@ -491,11 +491,7 @@ void SPGenericEllipse::set_shape()
     // Stretching / moving the calculated shape to fit the actual dimensions.
     Geom::Affine aff = Geom::Scale(rx.computed, ry.computed) * Geom::Translate(cx.computed, cy.computed);
     c.transform(aff);
-    if (prepareShapeForLPE(&c)) {
-        return;
-    }
-    // This happends on undo, fix bug:#1791784
-    setCurveInsync(std::move(c));
+    prepareShapeForLPE(&c);
 }
 
 Geom::Affine SPGenericEllipse::set_transform(Geom::Affine const &xform)

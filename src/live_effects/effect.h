@@ -78,13 +78,13 @@ public:
     void doOnRemove_impl(SPLPEItem const* lpeitem);
     void transform_multiply_impl(Geom::Affine const &postmul, SPLPEItem *);
     void doOnBeforeCommit();
-    void doOnUndo();
+    void read_from_SVG();
     void setCurrentZoom(double cZ);
     void setSelectedNodePoints(std::vector<Geom::Point> sNP);
     bool isNodePointSelected(Geom::Point const &nodePoint) const;
     bool isOnClipboard();
     std::vector<SPLPEItem *> getCurrrentLPEItems() const;
-    void update_satellites(bool updatelpe = false);
+    void update_satellites();
     virtual void doOnException(SPLPEItem const *lpeitem);
     virtual void doOnVisibilityToggled(SPLPEItem const* lpeitem);
     void writeParamsToSVG();
@@ -95,7 +95,7 @@ public:
     SPShape * getCurrentShape() const { return current_shape; };
     void setCurrentShape(SPShape * shape) { current_shape = shape; }
     virtual void processObjects(LPEAction lpe_action);
-
+    void makeUndoDone(Glib::ustring message);
     /*
      * isReady() indicates whether all preparations which are necessary to apply the LPE are done,
      * e.g., waiting for a parameter path either before the effect is created or when it needs a
@@ -145,17 +145,19 @@ public:
     bool apply_to_clippath_and_mask;
     bool keep_paths; // set this to false allow retain extra generated objects, see measure line LPE
     bool is_load;
+    bool on_undo = false; // is first LPE and on undo
     bool is_applied;
     bool on_remove_all;
     bool refresh_widgets;
     bool finishiddle = false;
     bool satellitestoclipboard = false;
     bool helperLineSatellites = false;
+    void setLPEAction(LPEAction lpe_action) { _lpe_action = lpe_action; }
     BoolParam is_visible;
     HiddenParam lpeversion;
     Geom::PathVector pathvector_before_effect;
     Geom::PathVector pathvector_after_effect;
-    SPLPEItem *sp_lpe_item; // these get stored in doBeforeEffect_impl, and derived classes may do as they please with
+    SPLPEItem *sp_lpe_item = nullptr; // these get stored in doBeforeEffect_impl, and derived classes may do as they please with
                             // them.
     SPShape *current_shape; // these get stored in performPathEffects.
     std::vector<Parameter *> param_vector;
@@ -198,7 +200,8 @@ private:
     virtual void transform_multiply(Geom::Affine const &postmul, bool set);
     virtual bool doOnOpen(SPLPEItem const *lpeitem);
     virtual void doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve);
-    virtual void doOnRemove (SPLPEItem const* lpeitem);
+    // we want to call always to overrided methods not effect ones
+    virtual void doOnRemove(SPLPEItem const* /*lpeitem*/);
     virtual void doOnApply (SPLPEItem const* lpeitem);
     virtual void doBeforeEffect (SPLPEItem const* lpeitem);
     void onDefaultsExpanderChanged(Gtk::Expander * expander);
@@ -208,7 +211,7 @@ private:
                            Gtk::Button *set, Gtk::Button *unset);
     bool provides_own_flash_paths; // if true, the standard flash path is suppressed
     sigc::connection _before_commit_connection;
-
+    bool destroying = false;
     bool is_ready;
     bool defaultsopen;
 };

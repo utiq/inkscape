@@ -324,6 +324,7 @@
 ../src/ui/dialog/xml-tree.cpp
 ../src/ui/drag-and-drop.cpp
 ../src/ui/interface.cpp
+../src/ui/knot/knot-holder-entity.cpp
 ../src/ui/knot/knot-holder.cpp
 ../src/ui/knot/knot.cpp
 ../src/ui/modifiers.cpp

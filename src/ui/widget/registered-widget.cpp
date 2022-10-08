@@ -400,12 +400,11 @@ RegisteredColorPicker::on_changed (guint32 rgba)
     } else {
         sp_svg_write_color(c, sizeof(c), rgba);
     }
-    bool saved = DocumentUndo::getUndoSensitive(local_doc);
-    DocumentUndo::setUndoSensitive(local_doc, false);
-    local_repr->setAttribute(_ckey, c);
-    local_repr->setAttributeCssDouble(_akey.c_str(), (rgba & 0xff) / 255.0);
-    DocumentUndo::setUndoSensitive(local_doc, saved);
-
+    {
+        DocumentUndo::ScopedInsensitive _no_undo(local_doc);
+        local_repr->setAttribute(_ckey, c);
+        local_repr->setAttributeCssDouble(_akey.c_str(), (rgba & 0xff) / 255.0);
+    }
     local_doc->setModifiedSinceSave();
     DocumentUndo::done(local_doc, "registered-widget.cpp: RegisteredColorPicker::on_changed", ""); // TODO Fix description.
 

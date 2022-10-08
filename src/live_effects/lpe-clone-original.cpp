@@ -73,10 +73,7 @@ LPECloneOriginal::LPECloneOriginal(LivePathEffectObject *lpeobject)
     css_properties.param_hide_canvas_text();
 }
 
-LPECloneOriginal::~LPECloneOriginal()
-{
-    doOnRemove(nullptr);
-}
+LPECloneOriginal::~LPECloneOriginal() = default;
 
 bool LPECloneOriginal::doOnOpen(SPLPEItem const *lpeitem)
 {
@@ -310,8 +307,6 @@ LPECloneOriginal::doBeforeEffect (SPLPEItem const* lpeitem){
     if (!document) {
         return;
     }
-
-    
     bool active = true;
     if (linkeditem.lperef && linkeditem.lperef->isAttached() && linkeditem.lperef.get()->getObject() == nullptr) {
         active = false;
@@ -324,7 +319,7 @@ LPECloneOriginal::doBeforeEffect (SPLPEItem const* lpeitem){
     if (linkeditem.linksToItem()) {
         if (!linkeditem.isConnected() && linkeditem.getObject()) {
             linkeditem.start_listening(linkeditem.getObject());
-            linkeditem.update_satellites(true);
+            sp_lpe_item_update_patheffect(sp_lpe_item, false, false, true);
             return;
         }
         sp_lpe_item = nullptr;
@@ -339,7 +334,7 @@ LPECloneOriginal::doBeforeEffect (SPLPEItem const* lpeitem){
         SPText  *text_origin = dynamic_cast<SPText *>(orig);
         SPItem *dest = dynamic_cast<SPItem *>(sp_lpe_item);
         const gchar * id = orig->getId();
-        bool init = !is_load && g_strcmp0(id, linked.c_str()) != 0;
+        bool init = is_load || g_strcmp0(id, linked.c_str()) != 0;
         /* if (sp_lpe_item->getRepr()->attribute("style")) {
             init = false;
         } */
@@ -383,7 +378,7 @@ void LPECloneOriginal::doOnRemove(SPLPEItem const *lpeitem)
         if (sp_lpe_item && sp_lpe_item->getAttribute("class")) {
             Glib::ustring fromclone = sp_lpe_item->getAttribute("class");
             size_t pos = fromclone.find("fromclone");
-            if (pos != Glib::ustring::npos) {
+            if (pos != Glib::ustring::npos && !sp_lpe_item->document->isSeeking()) {
                 gchar *transform =  g_strdup(sp_lpe_item->getAttribute("transform"));
                 linkeditem.quit_listening();
                 SPObject *owner = linkeditem.lperef->getObject();
@@ -410,6 +405,10 @@ void LPECloneOriginal::doOnRemove(SPLPEItem const *lpeitem)
 void
 LPECloneOriginal::doEffect (SPCurve * curve)
 {
+    SPCurve const *current_curve_before = current_shape->curveBeforeLPE();
+    if (!current_curve_before || current_curve_before->get_pathvector() == sp_svg_read_pathv("M 0 0")) {
+        syncOriginal();
+    }
     if (method != CLM_NONE) {
         SPCurve const *current_curve = current_shape->curve();
         if (current_curve != nullptr) {

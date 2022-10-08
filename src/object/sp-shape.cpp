@@ -427,7 +427,7 @@ sp_shape_update_marker_view(SPShape *shape, Inkscape::DrawingItem *ai)
 }
 
 void SPShape::modified(unsigned int flags) {
-    // std::cout << "SPShape::modified(): " << (getId()?getId():"null") << std::endl;
+    // std::cout << "SPShape::modified(): " << (getId()?getId():"null") << std::endl; 
     SPLPEItem::modified(flags);
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
@@ -494,6 +494,7 @@ bool SPShape::prepareShapeForLPE(SPCurve const *c)
         setCurveBeforeLPE(c);
         return true;
     }
+    setCurveInsync(c);
     return false;
 }
 

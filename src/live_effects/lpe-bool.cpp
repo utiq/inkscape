@@ -103,10 +103,7 @@ LPEBool::LPEBool(LivePathEffectObject *lpeobject)
     }
 }
 
-LPEBool::~LPEBool() {
-    keep_paths = false;
-    doOnRemove(nullptr);
-}
+LPEBool::~LPEBool() = default;
 
 bool LPEBool::doOnOpen(SPLPEItem const *lpeitem)
 {
@@ -517,12 +514,12 @@ void LPEBool::doBeforeEffect(SPLPEItem const *lpeitem)
     }
     if (current_operand && !operand ) {
         operand_id = current_operand->getId();
-        operand_item.update_satellites(true);
+        sp_lpe_item_update_patheffect(sp_lpe_item, false, false, true);
         return;
     }
     if (current_operand && !operand_item.isConnected()) {
         operand_item.start_listening(current_operand);
-        operand_item.update_satellites(true);
+        sp_lpe_item_update_patheffect(sp_lpe_item, false, false, true);
         return;
     }
 

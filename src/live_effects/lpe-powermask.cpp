@@ -121,7 +121,7 @@ LPEPowerMask::doBeforeEffect (SPLPEItem const* lpeitem){
             previous_color = background_color.get_value();
             setMask();
         } else {
-            uri.param_setValue(Glib::ustring(extract_uri(sp_lpe_item->getRepr()->attribute("mask"))), true);
+            uri.param_setValue(Glib::ustring(extract_uri(sp_lpe_item->getAttribute("mask"))), true);
             sp_lpe_item->getMaskRef().detach();
             Geom::OptRect bbox = lpeitem->visualBounds();
             if(!bbox) {

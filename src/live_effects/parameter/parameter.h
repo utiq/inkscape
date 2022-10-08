@@ -67,7 +67,8 @@ class Parameter {
     virtual void param_widget_is_enabled(bool is_enabled) { widget_is_enabled = is_enabled; }
     void write_to_SVG();
     void read_from_SVG();
-
+    void setUpdating(bool updating) { _updating = updating; }
+    bool getUpdating() const { return _updating; }
     virtual void param_set_default() = 0;
     virtual void param_update_default(const gchar *default_value) = 0;
     // This creates a new widget (newed with Gtk::manage(new ...);)
@@ -87,22 +88,24 @@ class Parameter {
     void param_higlight(bool highlight, bool select);
     sigc::connection *selection_changed_connection = nullptr;
     void change_selection(Inkscape::Selection *selection);
-    void update_satellites(bool updatelpe = false);
+    void update_satellites();
     Glib::ustring param_key;
     Glib::ustring param_tooltip;
     Inkscape::UI::Widget::Registry *param_wr;
     Glib::ustring param_label;
     EffectType effectType() const;
-    virtual ParamType paramType() const;
+    // force all LPE params has overrided method
+    virtual ParamType paramType() const = 0;
     bool oncanvas_editable;
     bool widget_is_visible;
     bool widget_is_enabled;
     void connect_selection_changed();
 
   protected:
-      Inkscape::Display::TemporaryItem *ownerlocator = nullptr;
-      Effect *param_effect;
-      void param_write_to_repr(const char *svgd);
+    bool _updating = false;
+    Inkscape::Display::TemporaryItem *ownerlocator = nullptr;
+    Effect *param_effect;
+    void param_write_to_repr(const char *svgd);
 };
 
 
@@ -132,7 +135,7 @@ class ScalarParam : public Parameter {
     double param_get_min() { return min; };
     void param_set_undo(bool set_undo);
     Gtk::Widget *param_newWidget() override;
-
+    ParamType paramType() const override { return ParamType::SCALAR; };
     inline operator gdouble() const { return value; };
 
   protected:

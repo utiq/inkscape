@@ -20,10 +20,18 @@
 #include "svg/svg-length.h"
 #include "sp-shape.h"
 
+enum GenericRectType {
+	SP_GENERIC_RECT_UNDEFINED, // FIXME shouldn't exist
+    SP_GENERIC_RECT, // Default
+    SP_GENERIC_PATH // LPE
+};
+
 class SPRect : public SPShape {
 public:
 	SPRect();
 	~SPRect() override;
+
+    void tag_name_changed(gchar const* oldname, gchar const* newname) override;
 
 	void setPosition(double x, double y, double width, double height);
 
@@ -63,7 +71,7 @@ public:
 
 	void snappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inkscape::SnapPreferences const *snapprefs) const override;
 	void convert_to_guides() const override;
-
+	GenericRectType type;
 	SVGLength x;
 	SVGLength y;
 	SVGLength width;

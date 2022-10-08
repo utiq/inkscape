@@ -177,8 +177,7 @@ void Metafile::toPNG(PMEMPNG accum, int width, int height, const char *px){
 void Metafile::setViewBoxIfMissing(SPDocument *doc) {
 
     if (doc && !doc->getRoot()->viewBox_set) {
-        bool saved = Inkscape::DocumentUndo::getUndoSensitive(doc);
-        Inkscape::DocumentUndo::setUndoSensitive(doc, false);
+        DocumentUndo::ScopedInsensitive _no_undo(doc);
         
         doc->ensureUpToDate();
         
@@ -223,8 +222,6 @@ void Metafile::setViewBoxIfMissing(SPDocument *doc) {
         prefs->setBool("/options/transform/rectcorners", transform_rectcorners);
         prefs->setBool("/options/transform/pattern",     transform_pattern);
         prefs->setBool("/options/transform/gradient",    transform_gradient);
-
-        Inkscape::DocumentUndo::setUndoSensitive(doc, saved);
     }
 }
 

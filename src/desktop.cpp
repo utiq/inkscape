@@ -157,10 +157,10 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
      * A proper fix would involve modifying the way ensureUpToDate() works,
      * so that the LPE results are not rewritten.
      */
-    Inkscape::DocumentUndo::setUndoSensitive(document, false);
-    document->ensureUpToDate();
-    Inkscape::DocumentUndo::setUndoSensitive(document, true);
-
+    {
+        Inkscape::DocumentUndo::ScopedInsensitive _no_undo(document);
+        document->ensureUpToDate();
+    }
     dkey = SPItem::display_key_new(1);
 
     /* Connect document */

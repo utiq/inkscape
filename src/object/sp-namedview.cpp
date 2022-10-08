@@ -830,8 +830,7 @@ void sp_namedview_document_from_window(SPDesktop *desktop)
     Inkscape::XML::Node *view = desktop->namedview->getRepr();
 
     // saving window geometry is not undoable
-    bool saved = DocumentUndo::getUndoSensitive(desktop->getDocument());
-    DocumentUndo::setUndoSensitive(desktop->getDocument(), false);
+    DocumentUndo::ScopedInsensitive _no_undo(desktop->getDocument());
 
     if (save_viewport_in_file) {
         view->setAttributeSvgDouble("inkscape:zoom", desktop->current_zoom());
@@ -853,9 +852,6 @@ void sp_namedview_document_from_window(SPDesktop *desktop)
     }
 
     view->setAttribute("inkscape:current-layer", desktop->layerManager().currentLayer()->getId());
-
-    // restore undoability
-    DocumentUndo::setUndoSensitive(desktop->getDocument(), saved);
 }
 
 void SPNamedView::hide(SPDesktop const *desktop)
@@ -914,11 +910,11 @@ void sp_namedview_show_grids(SPNamedView * namedview, bool show, bool dirty_docu
     SPDocument *doc = namedview->document;
     Inkscape::XML::Node *repr = namedview->getRepr();
 
-    bool saved = DocumentUndo::getUndoSensitive(doc);
-    DocumentUndo::setUndoSensitive(doc, false);
-    repr->setAttributeBoolean("showgrid", namedview->grids_visible);
-    DocumentUndo::setUndoSensitive(doc, saved);
-
+    {
+        DocumentUndo::ScopedInsensitive _no_undo(doc);
+        repr->setAttributeBoolean("showgrid", namedview->grids_visible);
+    }
+    
     /* we don't want the document to get dirty on startup; that's when
        we call this function with dirty_document = false */
     if (dirty_document) {
@@ -949,12 +945,10 @@ void SPNamedView::toggleLockGuides()
 void SPNamedView::setShowGuides(bool v)
 {
     if (auto repr = getRepr()) {
-        bool saved = DocumentUndo::getUndoSensitive(document);
-        DocumentUndo::setUndoSensitive(document, false);
-
-        repr->setAttributeBoolean("showguides", v);
-
-        DocumentUndo::setUndoSensitive(document, saved);
+        {
+            DocumentUndo::ScopedInsensitive _no_undo(document);
+            repr->setAttributeBoolean("showguides", v);
+        }
         requestModified(SP_OBJECT_MODIFIED_FLAG);
     }
 }
@@ -962,12 +956,10 @@ void SPNamedView::setShowGuides(bool v)
 void SPNamedView::setLockGuides(bool v)
 {
     if (auto repr = getRepr()) {
-        bool saved = DocumentUndo::getUndoSensitive(document);
-        DocumentUndo::setUndoSensitive(document, false);
-
-        repr->setAttributeBoolean("inkscape:lockguides", v);
-
-        DocumentUndo::setUndoSensitive(document, saved);
+        {
+            DocumentUndo::ScopedInsensitive _no_undo(document);
+            repr->setAttributeBoolean("inkscape:lockguides", v);
+        }
         requestModified(SP_OBJECT_MODIFIED_FLAG);
     }
 }

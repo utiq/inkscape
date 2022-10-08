@@ -110,7 +110,9 @@ static KnotHolder *sp_lpe_knot_holder(SPLPEItem *item, SPDesktop *desktop)
 
     Inkscape::LivePathEffect::Effect *effect = item->getCurrentLPE();
     effect->addHandles(knot_holder, item);
-
+    for (auto i : knot_holder->entity) {
+        i->knot->is_lpe = true;
+    }
     return knot_holder;
 }
 

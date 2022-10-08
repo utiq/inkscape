@@ -110,7 +110,7 @@ private:
     };
 
     friend class Inkscape::SelTrans::BoundingBoxPrefsObserver;
-
+    void _clear_stamp();
     void _updateHandles();
     void _updateVolatileState();
     void _selChanged(Inkscape::Selection *selection);

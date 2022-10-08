@@ -1671,7 +1671,9 @@ void SPItem::doWriteTransform(Geom::Affine const &transform, Geom::Affine const 
     updateRepr();
 
     if (lpeitem) {
-        sp_lpe_item_update_patheffect(lpeitem, true, true);
+        if (!lpeitem->hasPathEffectOfType(Inkscape::LivePathEffect::SLICE)) {
+            sp_lpe_item_update_patheffect(lpeitem, false, true);
+        }
     }
 
     // send the relative transform with a _transformed_signal

@@ -790,7 +790,7 @@ sp_file_save_template(Gtk::Window &parentWindow, Glib::ustring name,
 
     auto document = SP_ACTIVE_DOCUMENT;
 
-    DocumentUndo::setUndoSensitive(document, false);
+    DocumentUndo::ScopedInsensitive _no_undo(document);
 
     auto root = document->getReprRoot();
     auto xml_doc = document->getReprDoc();
@@ -875,8 +875,6 @@ sp_file_save_template(Gtk::Window &parentWindow, Glib::ustring name,
     
     // remove this node from current document after saving it as template
     root->removeChild(templateinfo_node);
-
-    DocumentUndo::setUndoSensitive(document, true);
 
     return operation_confirmed;
 }

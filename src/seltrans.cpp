@@ -179,14 +179,7 @@ Inkscape::SelTrans::~SelTrans()
         }
     }
 
-    if (_stamped) {
-        for (auto old_obj :_stamp_cache) {
-            SPLPEItem *oldLPEObj = dynamic_cast<SPLPEItem *>(old_obj);
-            if (oldLPEObj) {
-                sp_lpe_item_enable_path_effects(oldLPEObj,true);
-            }
-        }
-    }
+    _clear_stamp();
 
     for (auto & _item : _items) {
         sp_object_unref(_item, nullptr);
@@ -196,6 +189,20 @@ Inkscape::SelTrans::~SelTrans()
     _objects_const.clear();
     _items_affines.clear();
     _items_centers.clear();
+}
+
+void
+Inkscape::SelTrans::_clear_stamp() {
+    _stamped = false;
+    for (auto old_obj :_stamp_cache) {
+        SPLPEItem *oldLPEObj = dynamic_cast<SPLPEItem *>(old_obj);
+        if (oldLPEObj) {
+            sp_lpe_item_enable_path_effects(oldLPEObj, true);
+        }
+    }
+    if(!_stamp_cache.empty()){
+        _stamp_cache.clear();
+    }
 }
 
 void Inkscape::SelTrans::resetState()
@@ -257,16 +264,12 @@ void Inkscape::SelTrans::grab(Geom::Point const &p, gdouble x, gdouble y, bool s
     }
 
     auto items= _desktop->getSelection()->items();
-    for (auto iter=items.begin();iter!=items.end(); ++iter) {
-        SPItem *it = static_cast<SPItem*>(sp_object_ref(*iter, nullptr));
+    for (auto item : items) {
+        SPItem *it = static_cast<SPItem*>(sp_object_ref(item, nullptr));
         _items.push_back(it);
         _objects_const.push_back(it);
         _items_affines.push_back(it->i2dt_affine());
         _items_centers.push_back(it->getCenter()); // for content-dragging, we need to remember original centers
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(it);
-        if (lpeitem && lpeitem->hasPathEffectRecursive()) {
-            sp_lpe_item_update_patheffect(lpeitem, true, false);
-        }
     }
 
     if (y != -1 && _desktop->is_yaxisdown()) {
@@ -425,22 +428,6 @@ void Inkscape::SelTrans::transform(Geom::Affine const &rel_affine, Geom::Point c
     _updateHandles();
 }
 
-void sp_meassure_lpe_update(SPLPEItem *item, bool root) {
-    SPGroup *group = dynamic_cast<SPGroup *>(item);
-    SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
-    if (group) {
-        std::vector<SPObject*> l = group->childList(false);
-        for(auto o : l){
-            SPLPEItem *olpeitem = dynamic_cast<SPLPEItem *>(o);
-            if (olpeitem) {
-                sp_meassure_lpe_update(olpeitem, false);
-            }
-        }
-    } else if (!root && lpeitem && lpeitem->hasPathEffectOfType(Inkscape::LivePathEffect::EffectType::MEASURE_SEGMENTS)) {
-        sp_lpe_item_update_patheffect(lpeitem, false, false);
-    }
-}
-
 void Inkscape::SelTrans::ungrab()
 {
     g_return_if_fail(_grabbed);
@@ -464,16 +451,7 @@ void Inkscape::SelTrans::ungrab()
             i->hide();
     }
     if (_stamped) {
-        _stamped = false;
-        for (auto old_obj :_stamp_cache) {
-            SPLPEItem *oldLPEObj = dynamic_cast<SPLPEItem *>(old_obj);
-            if (oldLPEObj) {
-                sp_lpe_item_enable_path_effects(oldLPEObj,true);
-            }
-        }
-    }
-    if(!_stamp_cache.empty()){
-        _stamp_cache.clear();
+        _clear_stamp();
     }
 
     _message_context.clear();
@@ -502,10 +480,11 @@ void Inkscape::SelTrans::ungrab()
             }
             for (unsigned i = 0; i < _items_centers.size(); i++) {
                 SPLPEItem *currentItem = dynamic_cast<SPLPEItem *>(_items[i]);
-                sp_meassure_lpe_update(currentItem, true);
+                if (currentItem) {
+                    sp_lpe_item_update_patheffect(currentItem, true, true);
+                }
             }
-        }
-
+        } 
         _items.clear();
         _objects_const.clear();
         _items_affines.clear();
@@ -528,12 +507,14 @@ void Inkscape::SelTrans::ungrab()
         }
 
     } else {
-
+        if (_stamped) {
+            _clear_stamp();
+        }
         if (_center_is_set) {
             // we were dragging center; update reprs and commit undoable action
         	auto items= _desktop->getSelection()->items();
-            for (auto iter=items.begin();iter!=items.end(); ++iter) {
-                SPItem *it = *iter;
+            for (auto item : items) {
+                SPItem *it = item;
                 it->updateRepr();
             }
             DocumentUndo::done(_desktop->getDocument(), _("Set center"), INKSCAPE_ICON("tool-pointer"));
@@ -581,7 +562,7 @@ void Inkscape::SelTrans::stamp(bool clone)
                 }
             }
         }
-        std::vector<Inkscape::XML::Node *> copies;
+        std::vector<SPObject *> copies;
         // special case on clones when dragging a clone without its original
         // we check if its satellite is selected. if it has a clone original
         // to allow perform the write statement on line:616
@@ -648,7 +629,9 @@ void Inkscape::SelTrans::stamp(bool clone)
             } else {
                 new_affine = original_item->transform;
             }
-            original_item->setSuccessor(copy_item);
+            if (original_item && copy_item && !clone) {
+                original_item->setTmpSuccessor(copy_item);
+            }
             SPLPEItem *newLPEObj = dynamic_cast<SPLPEItem *>(copy_item);
             if (newLPEObj) {
                 // disable LPE bool on dowrite to prevent move of selection original satellite
@@ -669,33 +652,34 @@ void Inkscape::SelTrans::stamp(bool clone)
                 }
             }
             Inkscape::GC::release(copy_repr);
-            copies.push_back(copy_repr);
+            copies.push_back(copy_item);
         }
-        for (auto node : copies) {
-            SPObject *new_obj = _desktop->getDocument()->getObjectByRepr(node);
+        for (auto new_obj : copies) {
             SPLPEItem *newLPEObj = dynamic_cast<SPLPEItem *>(new_obj);
-            if (newLPEObj) {
+            if (newLPEObj && !clone) {
                 sp_lpe_item_enable_path_effects(newLPEObj,true);
-                // we need 0 to force fork, we are sure we need new LPE and with 
-                // 1 sometimes (slice LPE) doesn't work
-                newLPEObj->forkPathEffectsIfNecessary(0);
-                sp_lpe_item_update_patheffect(newLPEObj, false, true);
+                newLPEObj->forkPathEffectsIfNecessary(1, true, true);
+                if (!newLPEObj->hasPathEffectOfType(Inkscape::LivePathEffect::SLICE)) {
+                    sp_lpe_item_update_patheffect(newLPEObj,false, true, true);
+                }
             }
         }
         for(auto original_item : l) {
-            // unrefering tmp _sucessor (not needed anymore) used on fork to keep new satellite 
+            // unrefering tmp _successor (not needed anymore) used on fork to keep new satellite 
             // items forked along the LPEs
-            if (original_item->_successor) {
-                sp_object_unref(original_item->_successor, nullptr);
-                original_item->_successor = nullptr;
+            if (original_item && !clone) {
+                original_item->fixTmpSuccessors();
+                original_item->unsetTmpSuccessor();
             }
         }
+        // we update clip and mask LPE
+        _desktop->getDocument()->fix_lpe_data();
         DocumentUndo::done(_desktop->getDocument(), _("Stamp"), INKSCAPE_ICON("tool-pointer"));
     }
 
-    if ( fixup && !_stamp_cache.empty() ) {
+    if ( fixup && _stamped ) {
         // TODO - give a proper fix. Simple temporary work-around for the grab() issue
-        _stamp_cache.clear();
+        _clear_stamp();
     }
 }
 
@@ -906,8 +890,7 @@ void Inkscape::SelTrans::handleClick(SPKnot *knot, guint state, SPSelTransHandle
             if (state & GDK_SHIFT_MASK) {
                 // Unset the  center position for all selected items
             	auto items = _desktop->getSelection()->items();
-                for (auto iter=items.begin();iter!=items.end(); ++iter) {
-                    SPItem *it = *iter;
+                for (auto it : items) {
                     it->unsetCenter();
                     it->updateRepr();
                     _center_is_set = false;  // center has changed
@@ -1033,7 +1016,7 @@ gboolean Inkscape::SelTrans::handleRequest(SPKnot *knot, Geom::Point *position, 
 }
 
 
-void Inkscape::SelTrans::_selChanged(Inkscape::Selection */*selection*/)
+void Inkscape::SelTrans::_selChanged(Inkscape::Selection *selection)
 {
     if (!_grabbed) {
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -1045,6 +1028,14 @@ void Inkscape::SelTrans::_selChanged(Inkscape::Selection */*selection*/)
         _updateVolatileState();
         _current_relative_affine.setIdentity();
         _center_is_set = false; // center(s) may have changed
+        auto items= selection->items();
+        for (auto item : items) {
+            SPItem *it = static_cast<SPItem*>(sp_object_ref(item, nullptr));
+            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(it);
+            if (lpeitem) {
+                sp_lpe_item_update_patheffect(lpeitem, true, true);
+            }
+        }
         _updateHandles();
     }
 }

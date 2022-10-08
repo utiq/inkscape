@@ -135,7 +135,7 @@ LPEOffset::doOnApply(SPLPEItem const* lpeitem)
 void
 LPEOffset::modified(SPObject *obj, guint flags)
 {
-    if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
+    if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG && sp_lpe_item) {
         // Get the used fillrule
         SPCSSAttr *css;
         const gchar *val;
@@ -235,7 +235,10 @@ LPEOffset::doBeforeEffect (SPLPEItem const* lpeitem)
     }
     this->scale = lpeitem->i2doc_affine().descrim();
     if (!is_load && prev_unit != unit.get_abbreviation()) {
+        offset.param_set_undo(false);
         offset.param_set_value(Inkscape::Util::Quantity::convert(offset, prev_unit, unit.get_abbreviation()));
+    } else {
+        offset.param_set_undo(true);
     }
     prev_unit = unit.get_abbreviation();
 }
@@ -653,7 +656,7 @@ void KnotHolderEntityOffsetPoint::knot_ungrabbed(Geom::Point const &p, Geom::Poi
     Geom::Point s = lpe->offset_pt;
     double offset = lpe->sp_get_offset(s);
     lpe->offset.param_set_value(offset);
-    sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+    lpe->makeUndoDone(_("Move handle"));
 }
 
 Geom::Point KnotHolderEntityOffsetPoint::knot_get() const

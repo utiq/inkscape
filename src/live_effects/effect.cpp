@@ -1129,9 +1129,11 @@ Effect::getCurrrentLPEItems() const {
     std::vector<SPLPEItem *> result;
     auto hreflist = getLPEObj()->hrefList;
     for (auto item : hreflist) {
-        SPLPEItem * lpeitem = dynamic_cast<SPLPEItem *>(item);
-        if (lpeitem) {
-            result.push_back(lpeitem);
+        if (item->document) {
+            SPLPEItem * lpeitem = dynamic_cast<SPLPEItem *>(item);
+            if (lpeitem) {
+                result.push_back(lpeitem);
+            }
         }
     }
     return result;
@@ -1221,7 +1223,13 @@ void Effect::doOnBeforeCommit()
     if (_lpe_action == LPE_NONE) {
         return;
     }
-    sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+    if (!sp_lpe_item || !sp_lpe_item->document) {
+        sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+        if (!sp_lpe_item) {
+            _lpe_action = LPE_NONE;
+            return;
+        }
+    }
     if (sp_lpe_item && _lpe_action == LPE_UPDATE) {
         if (sp_lpe_item->getCurrentLPE() == this) {
             DocumentUndo::ScopedInsensitive _no_undo(sp_lpe_item->document);
@@ -1230,12 +1238,15 @@ void Effect::doOnBeforeCommit()
         _lpe_action = LPE_NONE;
         return;
     }
+    LPEAction lpe_action = _lpe_action;
+    _lpe_action = LPE_NONE;
     Inkscape::LivePathEffect::SatelliteArrayParam *lpesatellites = nullptr;
     Inkscape::LivePathEffect::OriginalSatelliteParam *lpesatellite = nullptr;
     std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
-    for (p = param_vector.begin(); p != param_vector.end(); ++p) {
-        lpesatellites = dynamic_cast<SatelliteArrayParam *>(*p);
-        lpesatellite = dynamic_cast<OriginalSatelliteParam *>(*p);
+    for (auto &p : param_vector) {
+
+        lpesatellites = dynamic_cast<SatelliteArrayParam *>(p);
+        lpesatellite = dynamic_cast<OriginalSatelliteParam *>(p);
         if (lpesatellites || lpesatellite) {
             break;
         }
@@ -1243,8 +1254,6 @@ void Effect::doOnBeforeCommit()
     if (!lpesatellites && !lpesatellite) {
         return;
     }
-    LPEAction lpe_action = _lpe_action;
-    _lpe_action = LPE_NONE;
     SPDocument *document = getSPDoc();
     if (!document) {
         return;
@@ -1329,9 +1338,10 @@ void Effect::doOnBeforeCommit()
         Inkscape::LivePathEffect::SatelliteArrayParam *lpesatellites = nullptr;
         Inkscape::LivePathEffect::OriginalSatelliteParam *lpesatellite = nullptr;
         std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
-        for (p = param_vector.begin(); p != param_vector.end(); ++p) {
-            lpesatellites = dynamic_cast<SatelliteArrayParam *>(*p);
-            lpesatellite = dynamic_cast<OriginalSatelliteParam *>(*p);
+        for (auto &p : param_vector) {
+
+            lpesatellites = dynamic_cast<SatelliteArrayParam *>(p);
+            lpesatellite = dynamic_cast<OriginalSatelliteParam *>(p);
             if (lpesatellites) {
                 lpesatellites->clear();
                 lpesatellites->write_to_SVG();
@@ -1358,9 +1368,9 @@ void Effect::processObjects(LPEAction lpe_action)
     Inkscape::LivePathEffect::SatelliteArrayParam *lpesatellites = nullptr;
     Inkscape::LivePathEffect::OriginalSatelliteParam *lpesatellite = nullptr;
     std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
-    for (p = param_vector.begin(); p != param_vector.end(); ++p) {
-        lpesatellites = dynamic_cast<SatelliteArrayParam *>(*p);
-        lpesatellite = dynamic_cast<OriginalSatelliteParam *>(*p);
+    for (auto &p : param_vector) {
+        lpesatellites = dynamic_cast<SatelliteArrayParam *>(p);
+        lpesatellite = dynamic_cast<OriginalSatelliteParam *>(p);
         if (lpesatellites || lpesatellite) {
             break;
         }
@@ -1372,9 +1382,11 @@ void Effect::processObjects(LPEAction lpe_action)
     if (!document) {
         return;
     }
-    sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
-    if (!document || !sp_lpe_item) {
-        return;
+    if (!sp_lpe_item || !sp_lpe_item->document) {
+        sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+        if (!sp_lpe_item) {
+            return;
+        }
     }
     std::vector<std::shared_ptr<SatelliteReference> > satelltelist;
     if (lpesatellites) {
@@ -1420,10 +1432,10 @@ bool Effect::doOnOpen(SPLPEItem const * /*lpeitem*/)
 }
 
 void
-Effect::update_satellites(bool updatelpe) {
+Effect::update_satellites() {
     std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
-    for (p = param_vector.begin(); p != param_vector.end(); ++p) {
-        (*p)->update_satellites(updatelpe);
+    for (auto &p : param_vector) {
+        p->update_satellites();
     }
 }
 
@@ -1475,13 +1487,20 @@ void Effect::doAfterEffect_impl(SPLPEItem const *lpeitem, SPCurve *curve)
 void Effect::doOnRemove_impl(SPLPEItem const* lpeitem)
 {
     SPDocument *document = getSPDoc();
-    sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
-    if (!document || !sp_lpe_item) {
+    if (!document) {
         return;
     }
-    std::vector<SPObject *> satellites = effect_get_satellites(true);
-    satellites.insert(satellites.begin(), sp_lpe_item);
-    doOnRemove(lpeitem);
+    if (!sp_lpe_item || !sp_lpe_item->document) {
+        sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+        if (!sp_lpe_item || !sp_lpe_item->document) {
+            sp_lpe_item = nullptr;
+        }
+    }
+    std::vector<SPObject *> satellites = effect_get_satellites();
+    if (sp_lpe_item)  {
+        satellites.insert(satellites.begin(), sp_lpe_item);  
+    }
+    doOnRemove(sp_lpe_item);
     for (auto obj:satellites) {
         if (obj->getAttribute("class")){
             Glib::ustring newclass = obj->getAttribute("class");
@@ -1500,9 +1519,22 @@ void Effect::doOnRemove_impl(SPLPEItem const* lpeitem)
 void Effect::doOnOpen_impl()
 {
     std::vector<SPLPEItem *> lpeitems = getCurrrentLPEItems();
-    if (lpeitems.size() == 1) {
+    if (lpeitems.size() == 1 && !isReady()) {
         is_load = true;
         doOnOpen(lpeitems[0]);
+        setReady(true);
+    }
+}
+
+void 
+Effect::makeUndoDone(Glib::ustring message) {
+    std::vector<SPLPEItem *> lpeitems = getCurrrentLPEItems();
+    if (lpeitems.size() == 1) {
+        refresh_widgets = true;
+        sp_lpe_item = lpeitems[0];
+        writeParamsToSVG();
+        sp_lpe_item_update_patheffect(sp_lpe_item, true, true);
+        DocumentUndo::done(getSPDoc(), message.c_str(), INKSCAPE_ICON(LPETypeConverter.get_icon(effectType()).c_str()));
     }
 }
 
@@ -1527,7 +1559,7 @@ void Effect::doBeforeEffect_impl(SPLPEItem const* lpeitem)
     sp_lpe_item = const_cast<SPLPEItem *>(lpeitem);
     doBeforeEffect(lpeitem);
     if (is_load) {
-        update_satellites(false);
+        update_satellites();
     }
     update_helperpath();
 }
@@ -1535,8 +1567,15 @@ void Effect::doBeforeEffect_impl(SPLPEItem const* lpeitem)
 void
 Effect::writeParamsToSVG() {
     std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
-    for (p = param_vector.begin(); p != param_vector.end(); ++p) {
-        (*p)->write_to_SVG();
+    for (auto &p : param_vector) {
+        p->write_to_SVG();
+    }
+}
+void 
+Effect::read_from_SVG() {
+    std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
+    for (auto &p : param_vector) {
+        p->read_from_SVG();
     }
 }
 
@@ -1547,8 +1586,8 @@ std::vector<SPObject *> Effect::effect_get_satellites(bool force)
         return satellites;
     }
     std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
-    for (p = param_vector.begin(); p != param_vector.end(); ++p) {
-        std::vector<SPObject *> tmp = (*p)->param_get_satellites();
+    for (auto &p : param_vector) {
+        std::vector<SPObject *> tmp = p->param_get_satellites();
         satellites.insert(satellites.begin(), tmp.begin(), tmp.end());
     }
     return satellites;
@@ -1994,9 +2033,9 @@ void
 Effect::resetDefaults(SPItem const* /*item*/)
 {
     std::vector<Inkscape::LivePathEffect::Parameter *>::iterator p;
-    for (p = param_vector.begin(); p != param_vector.end(); ++p) {
-        (*p)->param_set_default();
-        (*p)->write_to_SVG();
+    for (auto &p : param_vector) {
+        p->param_set_default();
+        p->write_to_SVG();
     }
 }
 

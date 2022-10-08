@@ -276,6 +276,11 @@ public:
      */
     SPObject const *nearestCommonAncestor(SPObject const *object) const;
 
+    /**
+     * Returns ancestor non layer.
+     */
+    SPObject const * getTopAncestorNonLayer() const;
+
     /* Returns next object in sibling list or NULL. */
     SPObject *getNext();
 
@@ -530,6 +535,21 @@ public:
         _successor = successor;
     }
 
+    /**
+     * Indicates that another object supercedes temporaty this one.
+     */
+    void setTmpSuccessor(SPObject *tmpsuccessor);
+    
+    /**
+     * Unset object supercedes.
+     */
+    void unsetTmpSuccessor();
+
+    /**
+     * Fix temporary successors in duple stamp.
+     */
+    void fixTmpSuccessors();
+
     /* modifications; all three sets of methods should probably ultimately be protected, as they
      * are not really part of its public interface.  However, other parts of the code to
      * occasionally use them at present. */
@@ -676,6 +696,7 @@ public:
     sigc::signal<void (SPObject *)> _position_changed_signal;
     sigc::signal<void (SPObject *, unsigned int)> _modified_signal;
     SPObject *_successor;
+    SPObject *_tmpsuccessor;
     CollectionPolicy _collection_policy;
     char *_label;
     mutable char *_default_label;

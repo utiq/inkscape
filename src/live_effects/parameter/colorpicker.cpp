@@ -121,10 +121,10 @@ ColorPickerParam::param_newWidget()
                                                          param_effect->getRepr(),
                                                          param_effect->getSPDoc() );
     SPDocument *document = param_effect->getSPDoc();
-    bool saved = DocumentUndo::getUndoSensitive(document);
-    DocumentUndo::setUndoSensitive(document, false);
-    colorpickerwdg->setRgba32(value);
-    DocumentUndo::setUndoSensitive(document, saved);
+    {
+        DocumentUndo::ScopedInsensitive _no_undo(document);
+        colorpickerwdg->setRgba32(value);
+    }
     colorpickerwdg->set_undo_parameters(_("Change color button parameter"), INKSCAPE_ICON("dialog-path-effects"));
     hbox->pack_start(*dynamic_cast<Gtk::Widget *> (colorpickerwdg), true, true);
     return dynamic_cast<Gtk::Widget *> (hbox);
