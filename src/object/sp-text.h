@@ -24,6 +24,7 @@
 #include "display/curve.h"
 
 #include "libnrtype/Layout-TNG.h"
+#include "libnrtype/style-attachments.h"
 
 #include "xml/node-event-vector.h"
 
@@ -51,6 +52,7 @@ public:
     //semiprivate:  (need to be accessed by the C-style functions still)
     TextTagAttributes attributes;
     Inkscape::Text::Layout layout;
+    std::unordered_map<unsigned, Inkscape::Text::StyleAttachments> view_style_attachments;
 
     /** when the object is transformed it's nicer to change the font size
     and coordinates when we can, rather than just applying a matrix

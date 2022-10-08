@@ -55,6 +55,11 @@ SPFlowtext::SPFlowtext() : SPItem(),
 
 SPFlowtext::~SPFlowtext() = default;
 
+void SPFlowtext::release()
+{
+    view_style_attachments.clear();
+}
+
 void SPFlowtext::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) {
 	SPItem::child_added(child, ref);
 
@@ -111,11 +116,13 @@ void SPFlowtext::update(SPCtx* ctx, unsigned int flags) {
     Geom::OptRect pbox = this->geometricBounds();
 
     for (auto &v : views) {
+        auto &sa = view_style_attachments[v.key];
+        sa.unattachAll();
         auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
         _clearFlow(g);
         g->setStyle(style);
         // pass the bbox of the flowtext object as paintbox (used for paintserver fills)
-        layout.show(g, pbox);
+        layout.show(g, sa, pbox);
     }
 }
 
@@ -133,10 +140,12 @@ void SPFlowtext::modified(unsigned int flags) {
         Geom::OptRect pbox = geometricBounds();
 
         for (auto &v : views) {
+            auto &sa = view_style_attachments[v.key];
+            sa.unattachAll();
             auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             _clearFlow(g);
             g->setStyle(style);
-            layout.show(g, pbox);
+            layout.show(g, sa, pbox);
         }
     }
 
@@ -309,20 +318,22 @@ void SPFlowtext::snappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inksca
     }
 }
 
-Inkscape::DrawingItem* SPFlowtext::show(Inkscape::Drawing &drawing, unsigned int /*key*/, unsigned int /*flags*/) {
+Inkscape::DrawingItem* SPFlowtext::show(Inkscape::Drawing &drawing, unsigned int key, unsigned int /*flags*/) {
     Inkscape::DrawingGroup *flowed = new Inkscape::DrawingGroup(drawing);
     flowed->setPickChildren(false);
     flowed->setStyle(this->style);
 
     // pass the bbox of the flowtext object as paintbox (used for paintserver fills)
     Geom::OptRect bbox = this->geometricBounds();
-    this->layout.show(flowed, bbox);
+    layout.show(flowed, view_style_attachments[key], bbox);
 
     return flowed;
 }
 
 void SPFlowtext::hide(unsigned key)
 {
+    view_style_attachments.erase(key);
+
     for (auto &v : views) {
         if (v.key == key) {
             auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());

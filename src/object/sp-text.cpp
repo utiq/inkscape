@@ -91,7 +91,9 @@ void SPText::build(SPDocument *doc, Inkscape::XML::Node *repr) {
     this->readAttr(SPAttr::SODIPODI_LINESPACING);    // has to happen after the styles are read
 }
 
-void SPText::release() {
+void SPText::release()
+{
+    view_style_attachments.clear();
     SPItem::release();
 }
 
@@ -195,11 +197,13 @@ void SPText::update(SPCtx *ctx, guint flags) {
         Geom::OptRect paintbox = this->geometricBounds();
 
         for (auto &v : views) {
+            auto &sa = view_style_attachments[v.key];
+            sa.unattachAll();
             auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             _clearFlow(g);
             g->setStyle(style, parent->style);
             // pass the bbox of this as paintbox (used for paintserver fills)
-            layout.show(g, paintbox);
+            layout.show(g, sa, paintbox);
         }
     }
 }
@@ -221,10 +225,12 @@ void SPText::modified(guint flags) {
         Geom::OptRect paintbox = geometricBounds();
 
         for (auto &v : views) {
+            auto &sa = view_style_attachments[v.key];
+            sa.unattachAll();
             auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
             _clearFlow(g);
             g->setStyle(style, parent->style);
-            layout.show(g, paintbox);
+            layout.show(g, sa, paintbox);
         }
     }
 
@@ -301,13 +307,13 @@ Geom::OptRect SPText::bbox(Geom::Affine const &transform, SPItem::BBoxType type)
     return this->layout.bounds(transform, type == SPItem::VISUAL_BBOX);
 }
 
-Inkscape::DrawingItem* SPText::show(Inkscape::Drawing &drawing, unsigned /*key*/, unsigned /*flags*/) {
+Inkscape::DrawingItem* SPText::show(Inkscape::Drawing &drawing, unsigned key, unsigned /*flags*/) {
     Inkscape::DrawingGroup *flowed = new Inkscape::DrawingGroup(drawing);
     flowed->setPickChildren(false);
     flowed->setStyle(this->style, this->parent->style);
 
     // pass the bbox of the text object as paintbox (used for paintserver fills)
-    this->layout.show(flowed, this->geometricBounds());
+    layout.show(flowed, view_style_attachments[key], geometricBounds());
 
     return flowed;
 }
@@ -315,6 +321,7 @@ Inkscape::DrawingItem* SPText::show(Inkscape::Drawing &drawing, unsigned /*key*/
 
 void SPText::hide(unsigned key)
 {
+    view_style_attachments.erase(key);
     for (auto &v : views) {
         if (v.key == key) {
             auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());

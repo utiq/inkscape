@@ -16,6 +16,7 @@
 #include <2geom/forward.h>
 
 #include "libnrtype/Layout-TNG.h"
+#include "libnrtype/style-attachments.h"
 #include "sp-item.h"
 #include "desktop.h"
 #include "display/curve.h"
@@ -53,6 +54,7 @@ public:
 
 //semiprivate:  (need to be accessed by the C-style functions still)
     Inkscape::Text::Layout layout;
+    std::unordered_map<unsigned, Inkscape::Text::StyleAttachments> view_style_attachments;
 
     /** discards the drawing objects representing this text. */
     void _clearFlow(Inkscape::DrawingGroup* in_arena);
@@ -65,8 +67,7 @@ public:
     SPCurve getNormalizedBpath() const;
 
     /** Optimize scaled flow text on next set_transform. */
-    void optimizeScaledText()
-        {_optimizeScaledText = true;}
+    void optimizeScaledText() { _optimizeScaledText = true; }
 
 private:
     /** Recursively walks the xml tree adding tags and their contents. */
@@ -78,6 +79,7 @@ private:
 
 public:
 	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;
+    void release() override;
 
 	void child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) override;
 	void remove_child(Inkscape::XML::Node* child) override;

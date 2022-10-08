@@ -446,7 +446,7 @@ void text_content_changed(Inkscape::XML::Node * /*repr*/, const gchar * /*old_co
 
     if (data->tree->blocked) return;
 
-    auto nolinecontent = std::string("\"").append(new_content).append("\"");
+    auto nolinecontent = std::string("\"").append(new_content ? new_content : "").append("\"");
     sp_remove_newlines_and_tabs(nolinecontent);
 
     GtkTreeIter iter;
@@ -461,7 +461,7 @@ void comment_content_changed(Inkscape::XML::Node * /*repr*/, const gchar * /*old
 
     if (data->tree->blocked) return;
 
-    auto nolinecontent = std::string("<!--").append(new_content).append("-->");
+    auto nolinecontent = std::string("<!--").append(new_content ? new_content : "").append("-->");
     sp_remove_newlines_and_tabs(nolinecontent);
 
     GtkTreeIter iter;
@@ -476,7 +476,7 @@ void pi_content_changed(Inkscape::XML::Node *repr, const gchar * /*old_content*/
 
     if (data->tree->blocked) return;
 
-    auto nolinecontent = std::string("<?").append(repr->name()).append(" ").append(new_content).append("?>");
+    auto nolinecontent = std::string("<?").append(repr->name()).append(" ").append(new_content ? new_content : "").append("?>");
     sp_remove_newlines_and_tabs(nolinecontent);
 
     GtkTreeIter iter;

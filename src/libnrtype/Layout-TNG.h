@@ -23,6 +23,7 @@
 #include <vector>
 #include <optional>
 #include <svg/svg-length.h>
+#include "helper/auto-connection.h"
 #include "style-enums.h"
 #include "display/curve.h"
 
@@ -42,12 +43,13 @@ class Shape;
 struct SPPrintContext;
 class Path;
 class FontInstance;
-typedef struct _PangoFontDescription PangoFontDescription;
+using PangoFontDescription = struct _PangoFontDescription;
 
 namespace Inkscape {
 class DrawingGroup;
 
 namespace Text {
+class StyleAttachments;
 
 /** \brief Generates the layout for either wrapped or non-wrapped text and stores the result
 
@@ -369,7 +371,7 @@ public:
      \param in_arena  The arena to add the glyphs group to
      \param paintbox  The current rendering tile
     */
-    void show(DrawingGroup *in_arena, Geom::OptRect const &paintbox) const;
+    void show(DrawingGroup *in_arena, StyleAttachments &style_attachments, Geom::OptRect const &paintbox) const;
 
     /** Calculates the smallest rectangle completely enclosing all the
     glyphs.
@@ -702,6 +704,7 @@ private:
         Glib::ustring::const_iterator text_begin, text_end;
         int text_length;    /// in characters, from text_start to text_end only
         SPStyle *style;
+        Inkscape::auto_connection style_conn;
         /** These vectors can (often will) be shorter than the text
         in this source, but never longer. */
         std::vector<SVGLength> x;
@@ -882,36 +885,44 @@ private:
     std::vector<Character> _characters;
     std::vector<Glyph> _glyphs;
 
-    /** gets the overall matrix that transforms the given glyph from local
-    space to world space. */
+    /// Gets the overall matrix that transforms the given glyph from local space to world space.
     void _getGlyphTransformMatrix(int glyph_index, Geom::Affine *matrix) const;
 
-    // loads of functions to drill down the object tree, all of them
-    // annoyingly similar and all of them requiring predicate functors.
-    // I'll be buggered if I can find a way to make it work with
-    // functions or with a templated functor, so macros it is.
-#define EMIT_PREDICATE(name, object_type, index_generator)                  \
-    class name {                                                            \
-        Layout const * const _flow;                                         \
-    public:                                                                 \
-        inline name(Layout const *flow) : _flow(flow) {}                    \
-        inline bool operator()(object_type const &object, unsigned index)   \
-            {g_assert(_flow); return index_generator < index;}              \
-    }
-// end of macro
-    EMIT_PREDICATE(PredicateLineToSpan,        Span,      _flow->_chunks[object.in_chunk].in_line);
-    EMIT_PREDICATE(PredicateLineToCharacter,   Character, _flow->_chunks[_flow->_spans[object.in_span].in_chunk].in_line);
-    EMIT_PREDICATE(PredicateSpanToCharacter,   Character, object.in_span);
-    EMIT_PREDICATE(PredicateSourceToCharacter, Character, _flow->_spans[object.in_span].in_input_stream_item);
-
     inline unsigned _lineToSpan(unsigned line_index) const
-        {return std::lower_bound(_spans.begin(), _spans.end(), line_index, PredicateLineToSpan(this)) - _spans.begin();}
+    {
+        return std::distance(_spans.begin(),
+            std::lower_bound(_spans.begin(), _spans.end(), line_index, [this] (auto &span, unsigned index) {
+                return _chunks[span.in_chunk].in_line < index;
+            })
+        );
+    }
+
     inline unsigned _lineToCharacter(unsigned line_index) const
-        {return std::lower_bound(_characters.begin(), _characters.end(), line_index, PredicateLineToCharacter(this)) - _characters.begin();}
+    {
+        return std::distance(_characters.begin(),
+            std::lower_bound(_characters.begin(), _characters.end(), line_index, [this] (auto &character, unsigned index) {
+                return _chunks[_spans[character.in_span].in_chunk].in_line < index;
+            })
+        );
+    }
+
     inline unsigned _spanToCharacter(unsigned span_index) const
-        {return std::lower_bound(_characters.begin(), _characters.end(), span_index, PredicateSpanToCharacter(this)) - _characters.begin();}
+    {
+        return std::distance(_characters.begin(),
+            std::lower_bound(_characters.begin(), _characters.end(), span_index, [this] (auto &character, unsigned index) {
+                return character.in_span < index;
+            })
+        );
+    }
+
     inline unsigned _sourceToCharacter(unsigned source_index) const
-        {return std::lower_bound(_characters.begin(), _characters.end(), source_index, PredicateSourceToCharacter(this)) - _characters.begin();}
+    {
+        return std::distance(_characters.begin(),
+            std::lower_bound(_characters.begin(), _characters.end(), source_index, [this] (auto &character, unsigned index) {
+                return _spans[character.in_span].in_input_stream_item < index;
+            })
+        );
+    }
 
     /** given an x and y coordinate and a line number, returns an iterator
     pointing to the closest cursor position on that line to the

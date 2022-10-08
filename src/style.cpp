@@ -59,7 +59,7 @@ using Inkscape::CSSOStringStream;
 
 struct SPStyleEnum;
 
-int SPStyle::_count = 0;
+// static int _count = 0;
 
 /*#########################
 ## FORWARD DECLARATIONS
@@ -388,7 +388,7 @@ SPStyle::SPStyle(SPDocument *document_in, SPObject *object_in) :
     stop_color(             false),       // SPIColor, does not inherit
     stop_opacity(           false)        // Does not inherit
 {
-    // std::cout << "SPStyle::SPStyle( SPDocument ): Entrance: (" << _count << ")" << std::endl;
+    // std::cout << "SPStyle::SPStyle( SPDocument ): Entrance" << std::endl;
     // std::cout << "                      Document: " << (document_in?"present":"null") << std::endl;
     // std::cout << "                        Object: "
     //           << (object_in?(object_in->getId()?object_in->getId():"id null"):"object null") << std::endl;
@@ -409,9 +409,8 @@ SPStyle::SPStyle(SPDocument *document_in, SPObject *object_in) :
     //     first = false;
     // }
 
-    ++_count; // Poor man's memory leak detector
-
-    _refcount = 1;
+    // ++_count; // Poor man's memory leak detector
+    // std::cout << "Style count: " << _count << std::endl;
 
     cloned = false;
 
@@ -473,7 +472,7 @@ SPStyle::SPStyle(SPDocument *document_in, SPObject *object_in) :
 SPStyle::~SPStyle() {
 
     // std::cout << "SPStyle::~SPStyle" << std::endl;
-    --_count; // Poor man's memory leak detector.
+    // --_count; // Poor man's memory leak detector.
 
     // Remove connections
     release_connection.disconnect();
@@ -494,13 +493,6 @@ SPStyle::~SPStyle() {
         filter_modified_connection.disconnect();
     }
 
-    // Conjecture: all this SPStyle ref counting is not needed. SPObject creates an instance of
-    // SPStyle when it is constructed and deletes it when it is destructed. The refcount is
-    // incremented and decremented only in the files: display/drawing-item.cpp,
-    // display/nr-filter-primitive.cpp, and libnrtype/Layout-TNG-Input.cpp.
-    if( _refcount > 1 ) {
-        std::cerr << "SPStyle::~SPStyle: ref count greater than 1! " << _refcount << std::endl;
-    }
     // std::cout << "SPStyle::~SPStyle(): Exit\n" << std::endl;
 }
 
@@ -1231,28 +1223,6 @@ void sp_style_stroke_paint_server_ref_changed(SPObject *old_ref, SPObject *ref, 
 
     style->signal_stroke_ps_changed.emit(old_ref, ref);
     sp_style_paint_server_ref_modified(ref, 0, style);
-}
-
-// Called in display/drawing-item.cpp, display/nr-filter-primitive.cpp, libnrtype/Layout-TNG-Input.cpp
-/**
- * Increase refcount of style.
- */
-void sp_style_ref(SPStyle const *style)
-{
-    if (style) {
-        style->style_ref(); // Increase ref count
-    }
-}
-
-// Called in display/drawing-item.cpp, display/nr-filter-primitive.cpp, libnrtype/Layout-TNG-Input.cpp
-/**
- * Decrease refcount of style with possible destruction.
- */
-void sp_style_unref(SPStyle const *style)
-{
-    if (style && style->style_unref() < 1) {
-        delete style;
-    }
 }
 
 static CRSelEng *

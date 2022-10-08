@@ -11,6 +11,7 @@ set(nrtype_SRC
 	Layout-TNG-Output.cpp
 	Layout-TNG-Scanline-Makers.cpp
 	OpenTypeUtil.cpp
+	style-attachments.cpp
 
 	# -------
 	# Headers
@@ -20,7 +21,8 @@ set(nrtype_SRC
 	font-lister.h
 	Layout-TNG-Scanline-Maker.h
 	Layout-TNG.h
-	OpenTypeUtil.cpp
+	OpenTypeUtil.h
+	style-attachments.h
 )
 
 add_inkscape_source("${nrtype_SRC}")

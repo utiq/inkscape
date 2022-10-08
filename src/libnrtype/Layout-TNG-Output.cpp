@@ -12,6 +12,7 @@
 
 #include <glib.h>
 #include "Layout-TNG.h"
+#include "style-attachments.h"
 #include "display/drawing-text.h"
 #include "style.h"
 #include "print.h"
@@ -140,80 +141,92 @@ void Layout::_getGlyphTransformMatrix(int glyph_index, Geom::Affine *matrix) con
     }
 }
 
-void Layout::show(DrawingGroup *in_arena, Geom::OptRect const &paintbox) const
+void Layout::show(DrawingGroup *parent, StyleAttachments &style_attachments, Geom::OptRect const &paintbox) const
 {
     int glyph_index = 0;
     double phase0 = 0.0;
-    for (unsigned span_index = 0 ; span_index < _spans.size() ; span_index++) {
-        if (_input_stream[_spans[span_index].in_input_stream_item]->Type() != TEXT_SOURCE) continue;
 
-        if (_spans[span_index].line(this).hidden) continue; // Line corresponds to text overflow. Don't show!
-
-        InputStreamTextSource const *text_source = static_cast<InputStreamTextSource const *>(_input_stream[_spans[span_index].in_input_stream_item]);
-
-        text_source->style->text_decoration_data.tspan_width             =  _spans[span_index].width();
-        text_source->style->text_decoration_data.ascender                =  _spans[span_index].line_height.getTypoAscent();
-        text_source->style->text_decoration_data.descender               =  _spans[span_index].line_height.getTypoDescent();
-
-        if(!span_index ||
-           (_chunks[_spans[span_index].in_chunk].in_line != _chunks[_spans[span_index-1].in_chunk].in_line)){
-            text_source->style->text_decoration_data.tspan_line_start = true;
-        }
-        else {
-            text_source->style->text_decoration_data.tspan_line_start = false;
-        }
-        if((span_index == _spans.size() -1) || 
-           (_chunks[_spans[span_index].in_chunk].in_line != _chunks[_spans[span_index+1].in_chunk].in_line)){
-            text_source->style->text_decoration_data.tspan_line_end = true;
-        }
-        else {
-            text_source->style->text_decoration_data.tspan_line_end = false;
-        }
-        if(_spans[span_index].font){
-            double underline_thickness, underline_position, line_through_thickness,line_through_position;
-            _spans[span_index].font->FontDecoration(underline_position, underline_thickness, line_through_position, line_through_thickness);
-            text_source->style->text_decoration_data.underline_thickness     = underline_thickness;
-            text_source->style->text_decoration_data.underline_position      = underline_position; 
-            text_source->style->text_decoration_data.line_through_thickness  = line_through_thickness;
-            text_source->style->text_decoration_data.line_through_position   = line_through_position;
-        }
-        else { // can this case ever occur?
-            text_source->style->text_decoration_data.underline_thickness     = 
-            text_source->style->text_decoration_data.underline_position      =  
-            text_source->style->text_decoration_data.line_through_thickness  = 
-            text_source->style->text_decoration_data.line_through_position   = 0.0;
+    for (int i = 0; i < _spans.size(); i++) {
+        if (_input_stream[_spans[i].in_input_stream_item]->Type() != TEXT_SOURCE) {
+            continue;
         }
 
-        DrawingText *nr_text = new DrawingText(in_arena->drawing());
+        if (_spans[i].line(this).hidden) {
+            continue; // Line corresponds to text overflow. Don't show!
+        }
+
+        auto text_source = static_cast<InputStreamTextSource const *>(_input_stream[_spans[i].in_input_stream_item]);
+        auto style = text_source->style;
+
+        style->text_decoration_data.tspan_width = _spans[i].width();
+        style->text_decoration_data.ascender    = _spans[i].line_height.getTypoAscent();
+        style->text_decoration_data.descender   = _spans[i].line_height.getTypoDescent();
+
+        auto line_of_span = [this] (int i) { return _chunks[_spans[i].in_chunk].in_line; };
+        style->text_decoration_data.tspan_line_start = i == 0                 || line_of_span(i) != line_of_span(i - 1);
+        style->text_decoration_data.tspan_line_end   = i == _spans.size() - 1 || line_of_span(i) != line_of_span(i + 1);
+
+        if (_spans[i].font) {
+            double underline_thickness, underline_position, line_through_thickness, line_through_position;
+            _spans[i].font->FontDecoration(underline_position, underline_thickness, line_through_position, line_through_thickness);
+            style->text_decoration_data.underline_thickness    = underline_thickness;
+            style->text_decoration_data.underline_position     = underline_position;
+            style->text_decoration_data.line_through_thickness = line_through_thickness;
+            style->text_decoration_data.line_through_position  = line_through_position;
+        } else { // can this case ever occur?
+            style->text_decoration_data.underline_thickness    = 0.0;
+            style->text_decoration_data.underline_position     = 0.0;
+            style->text_decoration_data.line_through_thickness = 0.0;
+            style->text_decoration_data.line_through_position  = 0.0;
+        }
+
+        auto drawing_text = new DrawingText(parent->drawing());
+
+        if (style->filter.set) {
+            if (auto filter = style->getFilter()) {
+                style_attachments.attachFilter(drawing_text, filter);
+            }
+        }
+
+        if (style->fill.isPaintserver()) {
+            if (auto fill = style->getFillPaintServer()) {
+                style_attachments.attachFill(drawing_text, fill, paintbox);
+            }
+        }
+
+        if (style->stroke.isPaintserver()) {
+            if (auto stroke = style->getStrokePaintServer()) {
+                style_attachments.attachStroke(drawing_text, stroke, paintbox);
+            }
+        }
 
         bool first_line_glyph = true;
-        while (glyph_index < (int)_glyphs.size() && _characters[_glyphs[glyph_index].in_character].in_span == span_index) {
+        while (glyph_index < _glyphs.size() && _characters[_glyphs[glyph_index].in_character].in_span == i) {
             if (_characters[_glyphs[glyph_index].in_character].in_glyph != -1) {
                 Geom::Affine glyph_matrix;
                 _getGlyphTransformMatrix(glyph_index, &glyph_matrix);
-                if(first_line_glyph && text_source->style->text_decoration_data.tspan_line_start){
+                if (first_line_glyph && style->text_decoration_data.tspan_line_start) {
                     first_line_glyph = false;
-                    phase0 =  glyph_matrix.translation()[Geom::X];
+                    phase0 =  glyph_matrix.translation().x();
                 }
-                // Save the starting coordinates for the line - these are needed for figuring out
-                // dot/dash/wave phase.
-                // Use maximum ascent and descent to ensure glyphs that extend outside the embox
-                // are fully drawn.
-                nr_text->addComponent(_spans[span_index].font, _glyphs[glyph_index].glyph, glyph_matrix,
+                // Save the starting coordinates for the line - these are needed for figuring out dot/dash/wave phase.
+                // Use maximum ascent and descent to ensure glyphs that extend outside the embox are fully drawn.
+                drawing_text->addComponent(_spans[i].font, _glyphs[glyph_index].glyph, glyph_matrix,
                     _glyphs[glyph_index].advance,
-                    _spans[span_index].line_height.getMaxAscent(),
-                    _spans[span_index].line_height.getMaxDescent(),
-                    glyph_matrix.translation()[Geom::X] - phase0
+                    _spans[i].line_height.getMaxAscent(),
+                    _spans[i].line_height.getMaxDescent(),
+                    glyph_matrix.translation().x() - phase0
                 );
             }
             glyph_index++;
         }
-        nr_text->setStyle(text_source->style);
-        nr_text->setItemBounds(paintbox);
+
+        drawing_text->setStyle(style);
+        drawing_text->setItemBounds(paintbox);
         // Text spans must be painted in the right order (see inkscape/685)
-        in_arena->appendChild(nr_text);
+        parent->appendChild(drawing_text);
         // Set item bounds without filter enlargement
-        in_arena->setItemBounds(paintbox);
+        parent->setItemBounds(paintbox);
     }
 }
 

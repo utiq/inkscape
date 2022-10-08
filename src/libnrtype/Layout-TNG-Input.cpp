@@ -55,7 +55,12 @@ void Layout::appendText(Glib::ustring const &text,
     new_source->text_begin = text_begin;
     new_source->text_end = text_end;
     new_source->style = style;
-    sp_style_ref(style);
+    /*
+     * Clear all input sources when any input source's style is deleted.
+     * This is ok, because this is always followed up shortly afterwards
+     * with a full teardown + recreation, so there is no visible effect.
+     */
+    new_source->style_conn = style->object->connectRelease([this] (auto) { clear(); });
 
     new_source->text_length = 0;
     for ( ; text_begin != text_end && text_begin != text.end() ; ++text_begin)
@@ -215,10 +220,7 @@ PangoFontDescription *Layout::InputStreamTextSource::styleGetFontDescription() c
     return descr;
 }
 
-Layout::InputStreamTextSource::~InputStreamTextSource()
-{
-    sp_style_unref(style);
-}
+Layout::InputStreamTextSource::~InputStreamTextSource() = default;
 
 }//namespace Text
 }//namespace Inkscape

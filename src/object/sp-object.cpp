@@ -125,17 +125,14 @@ SPObject::SPObject()
 {
     debug("id=%p, typename=%s",this, g_type_name_from_instance((GTypeInstance*)this));
 
-    //used XML Tree here.
-    this->getRepr(); // TODO check why this call is made
-
     SPObjectImpl::setIdNull(this);
 
     // FIXME: now we create style for all objects, but per SVG, only the following can have style attribute:
     // vg, g, defs, desc, title, symbol, use, image, switch, path, rect, circle, ellipse, line, polyline,
     // polygon, text, tspan, tref, textPath, altGlyph, glyphRef, marker, linearGradient, radialGradient,
     // stop, pattern, clipPath, mask, filter, feImage, a, font, glyph, missing-glyph, foreignObject
-    this->style = new SPStyle( nullptr, this ); // Is it necessary to call with "this"?
-    this->context_style = nullptr;
+    style = new SPStyle(nullptr, this);
+    context_style = nullptr;
 }
 
 /**
@@ -160,23 +157,7 @@ SPObject::~SPObject() {
         parent->children.erase(parent->children.iterator_to(*this));
     }
 
-    if( style == nullptr ) {
-        // style pointer could be NULL if unreffed too many times.
-        // Conjecture: style pointer is never NULL.
-        std::cerr << "SPObject::~SPObject(): style pointer is NULL" << std::endl;
-    } else if( style->refCount() > 1 ) {
-        // Conjecture: style pointer should be unreffed by other classes before reaching here.
-        // Conjecture is false for SPTSpan where ref is held by InputStreamTextSource.
-        // As an additional note:
-        //   The outer tspan of a nested tspan will result in a ref count of five: one for the
-        //   TSpan itself, one for the InputStreamTextSource instance before the inner tspan and
-        //   one for the one after, along with one for each corresponding DrawingText instance.
-        // std::cerr << "SPObject::~SPObject(): someone else still holding ref to style" << std::endl;
-        //
-        sp_style_unref( this->style );
-    } else {
-        delete this->style;
-    }
+    delete style;
     this->document = nullptr;
     this->repr = nullptr;
 }
@@ -930,15 +911,9 @@ void SPObject::releaseReferences() {
         g_assert(!this->id);
     }
 
-    // style belongs to SPObject, we should not need to unref here.
-    // if (this->style) {
-    //     this->style = sp_style_unref(this->style);
-    // }
-
     this->document = nullptr;
     this->repr = nullptr;
 }
-
 
 SPObject *SPObject::getPrev()
 {
