@@ -159,15 +159,18 @@ void XmlTree::_toggleDirection(Gtk::RadioButton *vertical)
     prefs->setInt("/dialogs/xml/panedpos", _paned.property_position());
 }
 
-XmlTree::~XmlTree ()
-{
-    // disconnect signals, they can fire after we leave destructor when 'tree' gets deleted
+void XmlTree::on_unrealize() {
+    // disconnect signals, they can fire after 'tree' gets deleted
     GtkTreeSelection* selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(tree));
     g_signal_handler_disconnect(G_OBJECT(selection), _selection_changed);
     g_signal_handler_disconnect(G_OBJECT(tree), _tree_move);
 
     unsetDocument();
+
+    DialogBase::on_unrealize();
 }
+
+XmlTree::~XmlTree () { }
 
 void XmlTree::unsetDocument()
 {

@@ -146,6 +146,8 @@ private:
     void _resized();
     bool in_dt_coordsys(SPObject const &item);
 
+    void on_unrealize() override;
+
     /**
      * Flag to ensure only one operation is performed at once
      */
