@@ -856,8 +856,8 @@ void SymbolsDialog::getSymbolsTitle() {
               std::string::size_type position_exit = line.find ("<defs");
               if (position_exit != std::string::npos) {
                   std::size_t found = filename.find_last_of("/\\");
-                  filename = filename.substr(found+1);
-                  title = filename.erase(filename.rfind('.'));
+                  title = filename.substr(found+1);
+                  title = title.erase(title.rfind('.'));
                   if(title.empty()) {
                     title = _("Unnamed Symbols");
                   }
