@@ -146,26 +146,14 @@ inkscape:macos:x64:
 
 
 inkscape:macos:arm:
-  stage: build
+  extends: inkscape:macos:x64
   tags:
     - macarm
-  when: manual   # on demand only!
+  when: manual   # on-demand only as we don't have a 24/7 runner
   variables:
     SDKROOT: /opt/sdks/MacOSX11.3.sdk
-  before_script:
-    # workaround: after_script doesn't run for cancelled/timed out jobs, leaving
-    #             non-ephemeral runners in an unclean state
-    #             https://gitlab.com/gitlab-org/gitlab/-/issues/15603
-    - packaging/macos/uninstall_toolset.sh
-    - packaging/macos/install_toolset.sh
-  script:
-    - packaging/macos/build_inkscape.sh
   after_script:
-    - packaging/macos/uninstall_toolset.sh save_overlay
-  artifacts:
-    expire_in: 1 year
-    paths:
-      - Inkscape.dmg
+    - packaging/macos/uninstall_toolset.sh
 
 
 # This job uses GitLab's shared runners for macOS. Please note:
@@ -178,28 +166,19 @@ inkscape:macos:arm:
 #   - This job is "on demand only" on purpose as it is very expensive.
 #     https://docs.gitlab.com/ee/ci/pipelines/cicd_minutes.html#cost-factor
 inkscape:macos:x64:gitlab:
-  stage: build
+  extends: inkscape:macos:x64
   tags:
     - shared-macos-amd64
   image: macos-10.15-xcode-11
-  when: manual   # on demand only!
+  when: manual
   variables:
     CCACHE_DIR: $CI_PROJECT_DIR/ccache
     SYS_IGNORE_USR_LOCAL: "true"
+    SDKROOT: ""
   cache:
     key: "cache-macos"
     paths:
       - $CI_PROJECT_DIR/ccache
-  before_script:
-    - packaging/macos/install_toolset.sh
-  script:
-    - packaging/macos/build_inkscape.sh
-  after_script:
-    - packaging/macos/uninstall_toolset.sh
-  artifacts:
-    expire_in: 1 month
-    paths:
-      - Inkscape.dmg
 
 
 inkscape:windows:x64: &windows_job
