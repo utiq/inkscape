@@ -119,6 +119,7 @@ private:
     Gtk::TreeView::Column *_blend_mode_column = nullptr;
     Gtk::TreeView::Column *_eye_column = nullptr;
     Gtk::TreeView::Column *_lock_column = nullptr;
+    Gtk::TreeView::Column *_color_tag_column = nullptr;
     Gtk::Box _buttonsRow;
     Gtk::Box _buttonsPrimary;
     Gtk::Box _buttonsSecondary;

@@ -196,6 +196,7 @@ public:
         add(_colBlendMode);
         add(_colOpacity);
         add(_colItemState);
+        add(_colHoverColor);
     }
     ~ModelColumns() override = default;
     Gtk::TreeModelColumn<Node*> _colNode;
@@ -213,6 +214,8 @@ public:
     Gtk::TreeModelColumn<SPBlendMode> _colBlendMode;
     Gtk::TreeModelColumn<double> _colOpacity;
     Gtk::TreeModelColumn<Glib::ustring> _colItemState;
+    // Set when hovering over the color tag cell
+    Gtk::TreeModelColumn<bool> _colHoverColor;
 };
 
 /**
@@ -835,7 +838,9 @@ ObjectsPanel::ObjectsPanel() :
     int tag_column = _tree.append_column("tag", *tag_renderer) - 1;
     if (auto tag = _tree.get_column(tag_column)) {
         tag->add_attribute(tag_renderer->property_color(), _model->_colIconColor);
+        tag->add_attribute(tag_renderer->property_hover(), _model->_colHoverColor);
         tag->set_fixed_width(tag_renderer->get_width());
+        _color_tag_column = tag;
     }
     tag_renderer->signal_clicked().connect([=](const Glib::ustring& path) {
         // object's color indicator clicked - open color picker
@@ -1359,8 +1364,10 @@ bool ObjectsPanel::_handleMotionEvent(GdkEventMotion* motion_event)
 
     // Unhover any existing hovered row.
     if (_hovered_row_ref) {
-        if (auto row = *_store->get_iter(_hovered_row_ref.get_path()))
+        if (auto row = *_store->get_iter(_hovered_row_ref.get_path())) {
             row[_model->_colHover] = false;
+            row[_model->_colHoverColor] = false;
+        }
     }
     // Allow this function to be called by LEAVE motion
     if (!motion_event) {
@@ -1383,6 +1390,10 @@ bool ObjectsPanel::_handleMotionEvent(GdkEventMotion* motion_event)
             row[_model->_colHover] = true;
             _hovered_row_ref = Gtk::TreeModel::RowReference(_store, path);
             _tree.set_cursor(path);
+
+            if (col == _color_tag_column) {
+                row[_model->_colHoverColor] = true;
+            }
 
             // Dragging over the eye or locks will set them all
             auto item = getItem(row);

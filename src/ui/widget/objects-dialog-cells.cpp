@@ -11,6 +11,7 @@
 
 #include "ui/widget/objects-dialog-cells.h"
 #include "color-rgba.h"
+#include "preferences.h"
 
 namespace Inkscape {
 namespace UI {
@@ -22,7 +23,8 @@ namespace Widget {
 ColorTagRenderer::ColorTagRenderer() :
     Glib::ObjectBase(typeid(CellRenderer)),
     Gtk::CellRenderer(),
-    _property_color(*this, "tagcolor", 0)
+    _property_color(*this, "tagcolor", 0),
+    _property_hover(*this, "taghover", false)
 {
     property_mode() = Gtk::CELL_RENDERER_MODE_ACTIVATABLE;
 
@@ -40,6 +42,18 @@ void ColorTagRenderer::render_vfunc(const Cairo::RefPtr<Cairo::Context>& cr,
     ColorRGBA color(_property_color.get_value());
     cr->set_source_rgb(color[0], color[1], color[2]);
     cr->fill();
+    if (_property_hover.get_value()) {
+        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        Glib::ustring themeiconname = prefs->getString("/theme/iconTheme", prefs->getString("/theme/defaultIconTheme", ""));
+        guint32 colorsetbase = prefs->getUInt("/theme/" + themeiconname + "/symbolicBaseColor", 0x2E3436ff);
+        double r = ((colorsetbase >> 24) & 0xFF) / 255.0;
+        double g = ((colorsetbase >> 16) & 0xFF) / 255.0;
+        double b = ((colorsetbase >> 8) & 0xFF) / 255.0;
+        cr->set_source_rgba(r, g, b, 0.6);
+        cr->rectangle(background_area.get_x() + 0.5, background_area.get_y() + 0.5, background_area.get_width() - 1.0, background_area.get_height() - 1.0);
+        cr->set_line_width(1.0);
+        cr->stroke();
+    }
 }
 
 void ColorTagRenderer::get_preferred_width_vfunc(Gtk::Widget& widget, int& min_w, int& nat_w) const {

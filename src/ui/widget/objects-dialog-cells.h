@@ -27,6 +27,9 @@ public:
     Glib::PropertyProxy<unsigned int> property_color() {
         return _property_color.get_proxy();
     }
+    Glib::PropertyProxy<bool> property_hover() {
+        return _property_hover.get_proxy();
+    }
     sigc::signal<void (const Glib::ustring&)> signal_clicked() {
         return _signal_clicked;
     }
@@ -49,6 +52,7 @@ private:
     int _width = 8;
     int _height;
     Glib::Property<unsigned int> _property_color;
+    Glib::Property<bool> _property_hover;
     sigc::signal<void (const Glib::ustring&)> _signal_clicked;
 };
 
