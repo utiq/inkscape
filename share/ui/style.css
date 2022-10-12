@@ -799,3 +799,19 @@ combobox.flat-combobox button {
 .filter-effects, .effects-params {
     min-height: 50px;
 }
+
+.dark .symbolsoverlay iconview > * {
+    background-color:transparent;
+}
+
+.dark .symbolsoverlay iconview {
+    background-color:transparent;
+}
+
+.dark .symbolsoverlay > scrolledwindow {
+    background-color:@theme_fg_color;
+}
+
+.dark .symbolsoverlay {
+    color:@theme_bg_color;
+}
