@@ -1050,6 +1050,7 @@ void SymbolsDialog::unsensitive(GdkEventKey* evt)
 }
 
 bool SymbolsDialog::callbackSymbols(){
+  icon_view->hide();
   if (l.size()) {
     showOverlay();
     for (auto symbol_data = l.begin(); symbol_data != l.end();) {
@@ -1081,12 +1082,8 @@ bool SymbolsDialog::callbackSymbols(){
       }
       symbol_data = l.erase(l.begin());
       //to get more items and best performance
-      int modulus = number_symbols > 200 ? 50 : (number_symbols/4);
       g_free(symbol_title_char);
       g_free(symbol_desc_char);
-      if (modulus && counter_symbols % modulus == 0 && !l.empty()) {
-        return true;
-      }
     }
     if (!icons_found && !search_str.empty()) {
       showOverlay();
@@ -1097,8 +1094,10 @@ bool SymbolsDialog::callbackSymbols(){
     search->set_text(search_str);
     sensitive = true;
     enableWidgets(true);
+    icon_view->show();
     return false;
   }
+  icon_view->show();
   return true;
 }
 
@@ -1115,6 +1114,7 @@ Glib::ustring SymbolsDialog::get_active_base_text(Glib::ustring title)
 
 
 bool SymbolsDialog::callbackAllSymbols(){
+  icon_view->hide();
   Glib::ustring current = get_active_base_text();
   if (current == ALLDOCS && search->get_text() == _("Loading all symbols...")) {
     size_t counter = 0;
@@ -1137,8 +1137,10 @@ bool SymbolsDialog::callbackAllSymbols(){
     all_docs_processed = true;
     addSymbols();
     search->set_text(search_str);
+    icon_view->show();
     return false;
   }
+  icon_view->show();
   return true;
 }
 
