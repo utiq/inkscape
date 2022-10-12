@@ -17,18 +17,14 @@
 #include "display/control/canvas-item-bpath.h"
 #include "object/object-set.h"
 #include "object/sp-item.h"
+#include "object/sp-namedview.h"
 #include "ui/widget/canvas.h"
 #include "svg/svg.h"
 
 namespace Inkscape {
 
-using TaskType = int;
-enum TaskTypes : TaskType {
-    TASKED_NONE,
-    TASKED_ADD,
-    TASKED_DELETE
-};
-static constexpr std::array<uint32_t, 6> fills = {0x00000055, 0x0291ffff, 0x8eceffff, 0x0291ffff, 0xf299d6ff, 0xff0db3ff};
+static constexpr std::array<uint32_t, 6> fill_lite = {0x00000055, 0x0291ffff, 0x8eceffff, 0x0291ffff, 0xf299d6ff, 0xff0db3ff};
+static constexpr std::array<uint32_t, 6> fill_dark = {0xffffff55, 0x0291ffff, 0x8eceffff, 0x0291ffff, 0xf299d6ff, 0xff0db3ff};
 
 BooleanBuilder::BooleanBuilder(ObjectSet *set)
     : _set(set)
@@ -39,6 +35,10 @@ BooleanBuilder::BooleanBuilder(ObjectSet *set)
     auto root = _set->desktop()->getCanvas()->get_canvas_item_root();
     _group = std::make_unique<Inkscape::CanvasItemGroup>(root);
 
+    auto nv = _set->desktop()->getNamedView();
+    desk_modified_connection = nv->connectModified([=](SPObject *obj, guint flags) {
+        redraw_items();
+    });
     redraw_items();
 }
 
@@ -47,9 +47,10 @@ BooleanBuilder::~BooleanBuilder() = default;
 /**
  * Control the visual appearence of this particular bpath
  */
-static void redraw_item(CanvasItemBpath &bpath, bool selected, TaskType task)
+void BooleanBuilder::redraw_item(CanvasItemBpath &bpath, bool selected, TaskType task)
 {
-    bpath.set_fill(fills[(int)task * 2 + (int)selected], SP_WIND_RULE_POSITIVE);
+    int i = (int)task * 2 + (int)selected;
+    bpath.set_fill(_dark ? fill_dark[i] : fill_lite[i], SP_WIND_RULE_POSITIVE);
     bpath.set_stroke(task == TASKED_NONE ? 0x000000dd : 0xffffffff);
     bpath.set_stroke_width(task == TASKED_NONE ? 1.0 : 3.0);
 }
@@ -59,6 +60,9 @@ static void redraw_item(CanvasItemBpath &bpath, bool selected, TaskType task)
  */
 void BooleanBuilder::redraw_items()
 {
+    auto nv = _set->desktop()->getNamedView();
+    _dark = SP_RGBA32_LUMINANCE(nv->desk_color) < 100;
+
     _screen_items.clear();
 
     for (auto &subitem : _work_items) {

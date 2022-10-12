@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <optional>
+#include <sigc++/connection.h>
 
 #include "booleans-subitems.h"
 
@@ -28,6 +29,13 @@ class ObjectSet;
 
 using VisualItem = std::shared_ptr<CanvasItemBpath>;
 using ItemPair = std::pair<WorkItem, VisualItem>;
+
+using TaskType = int;
+enum TaskTypes : TaskType {
+    TASKED_NONE,
+    TASKED_ADD,
+    TASKED_DELETE
+};
 
 class BooleanBuilder
 {
@@ -58,10 +66,15 @@ private:
     WorkItem _work_task;
     VisualItem _screen_task;
     bool _add_task;
+    bool _dark = false;
 
     // Lists of _work_items which can be brought back.
     std::vector<std::vector<WorkItem>> _undo;
     std::vector<std::vector<WorkItem>> _redo;
+
+    sigc::connection desk_modified_connection;
+
+    void redraw_item(CanvasItemBpath &bpath, bool selected, TaskType task);
 };
 
 } // namespace Inkscape
