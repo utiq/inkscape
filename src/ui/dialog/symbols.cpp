@@ -830,8 +830,8 @@ void SymbolsDialog::getSymbolsTitle() {
     Glib::ustring title;
     number_docs = 0;
     std::regex matchtitle (".*?<title.*?>(.*?)<(/| /)");
-    for(auto &filename: get_filenames(SYMBOLS, {".svg", ".vss"})) {
-        if(Glib::str_has_suffix(filename, ".vss")) {
+    for(auto &filename: get_filenames(SYMBOLS, {".svg", ".vss", "vssx", "vsdx"})) {
+        if(Glib::str_has_suffix(filename, ".vss") || Glib::str_has_suffix(filename, ".vssx") || Glib::str_has_suffix(filename, ".vsdx")) {
           std::size_t found = filename.find_last_of("/\\");
           title = filename.substr(found+1);
           title = title.erase(title.rfind('.'));
@@ -884,7 +884,7 @@ SymbolsDialog::getSymbolsSet(std::string filename)
       return symbol_sets[filename];
     }
     using namespace Inkscape::IO::Resource;
-    if(Glib::str_has_suffix(filename, ".vss")) {
+    if(Glib::str_has_suffix(filename, ".vss") || Glib::str_has_suffix(filename, ".vssx") || Glib::str_has_suffix(filename, ".vsdx")) {
 #ifdef WITH_LIBVISIO
       symbol_doc = read_vss(filename, symbol_sets[filename].first, std::string(search_str));
 #endif
