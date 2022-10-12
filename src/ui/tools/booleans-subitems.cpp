@@ -101,7 +101,7 @@ WorkItems SubItem::build_mosaic(std::vector<SPItem*> &&items)
     for (auto item : items) {
         // Each item's path might actually be overlapping paths which must be
         // broken up so each sub-path is fractured individually.
-        for (auto &path : item->combined_pathvector() * item->i2doc_affine()) {
+        for (auto &path : item->combined_pathvector() * item->i2dt_affine()) {
             result = incremental_fracture(std::move(result), item, std::move(path));
         }
     }
