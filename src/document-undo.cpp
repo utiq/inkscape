@@ -47,6 +47,7 @@
 
 #include "document-undo.h"
 
+#include <cstddef>
 #include <string>
 
 #include "event.h"
@@ -55,6 +56,7 @@
 #include "debug/event-tracker.h"
 #include "debug/simple-event.h"
 #include "debug/timestamp.h"
+#include "util/optstr.h"
 #include "xml/repr.h"
 #include "object/sp-root.h"
 #include "object/sp-lpe-item.h"
@@ -159,11 +161,13 @@ void Inkscape::DocumentUndo::maybeDone(SPDocument *doc,
         doc->setEventDescriptionStacked(_event_description_stacked);
         return;
     }
+
     if (!ended) {
         doc->setUndoBusy(true);
         doc->setEventDescriptionStacked(event_description);
+        auto key_copy = Util::to_opt(key);
         Glib::signal_idle().connect([=](){
-            maybeDone(doc,key,event_description,icon_name,true);
+            maybeDone(doc, Util::to_cstr(key_copy), event_description, icon_name, true);
             doc->setUndoBusy(false);
             doc->setEventDescriptionStacked("");
             return false; // don't call again
