@@ -224,7 +224,7 @@ static char const preferences_skeleton[] =
     <group id="extension-error" show-on-startup="0"/>
     <group id="memory" />
     <group id="messages" />
-    <group id="swatches" />
+    <group id="swatches" palette="Auto"/>
     <group id="iconpreview" />
     <group id="aboutextensions" />
     <group id="treeeditor" />
