@@ -464,15 +464,16 @@ void PdfImportDialog::_onToggleAllPages() {
 
     if (_pageAllPages->get_active()) {
         _setPreviewPage(1);
+        _current_pages = "all";
     } else {
         if (_current_pages == "all") {
             std::ostringstream example;
             example << "1-" << _pdf_doc->getCatalog()->getNumPages();
             _current_pages = example.str();
         }
-        _pageNumbers->set_text(_current_pages);
-        _onPageNumberChanged();
     }
+    _pageNumbers->set_text(_current_pages);
+    _onPageNumberChanged();
 }
 
 void PdfImportDialog::_onToggleCropping() {
@@ -482,6 +483,11 @@ void PdfImportDialog::_onToggleCropping() {
 void PdfImportDialog::_onPageNumberChanged() {
     _current_pages = _pageNumbers->get_text();
     auto nums = parseIntRange(_current_pages, 1, _pdf_doc->getCatalog()->getNumPages());
+    // Constrain to just one page when in cario mode.
+    if (_importViaPoppler->get_active() && nums.size() > 1) {
+        _pageNumbers->set_text(std::to_string(*nums.begin()));
+        return;
+    }
     if (!nums.empty()) {
         _setPreviewPage(*nums.begin());
     }
@@ -496,7 +502,7 @@ void PdfImportDialog::_onToggleImport() {
         hbox6->set_sensitive(false);
         _pageAllPages->set_sensitive(false);
         _pageAllPages->set_active(false);
-        _pageNumbers->set_sensitive(false);
+        _onPageNumberChanged();
     } else {
         hbox3->set_sensitive();
         _localFontsCheck->set_sensitive();
@@ -504,7 +510,6 @@ void PdfImportDialog::_onToggleImport() {
         hbox6->set_sensitive();
         _pageAllPages->set_sensitive(true);
         _pageAllPages->set_active(true);
-        _pageNumbers->set_sensitive(false);
     }
 }
 #endif
@@ -753,6 +758,12 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
         is_importvia_poppler = INKSCAPE.get_pdf_poppler();
 #endif
     }
+    // Both poppler and poppler+cairo can get page num info from poppler.
+    auto pages = parseIntRange(page_nums, 1, pdf_doc->getCatalog()->getNumPages());
+    if (pages.empty()) {
+        g_warning("No pages selected, getting first page only.");
+        pages.insert(1);
+    }
 
     // Create Inkscape document from file
     SPDocument *doc = nullptr;
@@ -772,10 +783,6 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
         }
         SvgBuilder *builder = new SvgBuilder(doc, docname, pdf_doc->getXRef());
 
-        auto pages = parseIntRange(page_nums, 1, pdf_doc->getCatalog()->getNumPages());
-        if (pages.empty()) {
-            pages.insert(1);
-        }
 
         // Get preferences
         Inkscape::XML::Node *prefs = builder->getPreferences();
@@ -807,22 +814,15 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
         /// @todo handle password
         /// @todo check if win32 unicode needs special attention
         PopplerDocument* document = poppler_document_new_from_file(full_uri.c_str(), NULL, &error);
-        PopplerPage* page = nullptr;
 
         if(error != NULL) {
             std::cerr << "PDFInput::open: error opening document: " << full_uri.raw() << std::endl;
             g_error_free (error);
+            return nullptr;
         }
 
-        int page_num = 1;
-        if (document) {
-            auto pages = parseIntRange(page_nums, 1, poppler_document_get_n_pages(document));
-            if (pages.empty())
-                pages.insert(1);
-            page = poppler_document_get_page(document, (*pages.begin()) - 1);
-        }
-
-        if (page) {
+        int page_num = *pages.begin();
+        if (PopplerPage* page = poppler_document_get_page(document, page_num - 1)) {
             double width, height;
             poppler_page_get_size(page, &width, &height);
 
@@ -848,17 +848,12 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
             cairo_surface_destroy(surface);
 
             doc = SPDocument::createNewDocFromMem(output.c_str(), output.length(), TRUE);
+
+            g_object_unref(G_OBJECT(page));
         } else if (document) {
             std::cerr << "PDFInput::open: error opening page " << page_num << " of document: " << full_uri.raw() << std::endl;
         }
-
-        // Cleanup
-        if (document) {
-            g_object_unref(G_OBJECT(document));
-            if (page) {
-                g_object_unref(G_OBJECT(page));
-            }
-        }
+        g_object_unref(G_OBJECT(document));
 
         if (!doc) {
             return nullptr;
