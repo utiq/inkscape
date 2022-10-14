@@ -116,9 +116,9 @@ TEST_F(LPETest, FillBetweenStrokes_path_multi_mm_1_0_2)     { run(); }
 // TEST_F(LPETest, FillBetweenMany_multi_0_92_5)               { run(); }
 TEST_F(LPETest, FillBetweenMany_multi_px_1_0_2)             { run(); }
 TEST_F(LPETest, FillBetweenMany_multi_mm_1_0_2)             { run(); }
-TEST_F(LPETest, Ellipse5pts_path_0_92_5)                    { run(); }
-TEST_F(LPETest, Ellipse5pts_ellipse_px_1_0_2)               { run(); }
-TEST_F(LPETest, Ellipse5pts_ellipse_mm_1_0_2)               { run(); }
+TEST_F(LPETest, Ellipse5pts_path_1_2_1)                     { run(); }
+TEST_F(LPETest, Ellipse5pts_ellipse_px_1_2_1)               { run(); }
+TEST_F(LPETest, Ellipse5pts_ellipse_mm_1_2_1)               { run(); }
 TEST_F(LPETest, DashedStroke_multi_px_1_0_2)                { run(); }
 TEST_F(LPETest, DashedStroke_multi_mm_1_0_2)                { run(); }
 TEST_F(LPETest, RotateCopies_multi_mm_1_0_2)                { run(); }
