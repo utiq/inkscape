@@ -69,6 +69,7 @@ ArrangeDialog::ArrangeDialog()
     _arrangeButton->set_use_underline(true);
     _arrangeButton->set_tooltip_text(_("Arrange selected objects"));
     _arrangeButton->get_style_context()->add_class("wide-apply-button");
+    _arrangeButton->set_no_show_all();
 
     Gtk::ButtonBox *button_box = Gtk::manage(new Gtk::ButtonBox());
     button_box->set_layout(Gtk::BUTTONBOX_CENTER);

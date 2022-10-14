@@ -19,6 +19,7 @@
           <object class="GtkBox" id="Single Image">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="no-show-all">True</property>
             <property name="double-buffered">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
@@ -889,6 +890,7 @@
         <child>
           <object class="GtkBox" id="Batch Export">
             <property name="visible">True</property>
+            <property name="no-show-all">True</property>
             <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>

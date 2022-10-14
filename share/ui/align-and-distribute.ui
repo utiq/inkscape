@@ -301,6 +301,7 @@
       <object class="GtkBox" id="align-and-distribute-object">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="no-show-all">True</property>
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
         <child>
@@ -1101,6 +1102,7 @@
       <object class="GtkBox" id="align-and-distribute-node">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="no-show-all">True</property>
         <property name="orientation">vertical</property>
         <property name="spacing">4</property>
         <child>
