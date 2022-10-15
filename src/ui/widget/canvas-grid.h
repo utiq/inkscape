@@ -17,6 +17,8 @@
 #include <gtkmm/menubutton.h>
 #include <gtkmm/builder.h>
 
+class SPPage;
+class SPDocument;
 class SPCanvas;
 class SPDesktopWidget;
 
@@ -95,9 +97,16 @@ private:
 
     // Hopefully temp
     SPDesktopWidget *_dtw;
+    SPDocument *_document = nullptr;
 
     // Store allocation so we don't redraw too often.
     Gtk::Allocation _allocation;
+
+    // Connections for page and selection tracking
+    sigc::connection _page_selected_connection;
+    sigc::connection _page_modified_connection;
+    sigc::connection _sel_changed_connection;
+    sigc::connection _sel_modified_connection;
 };
 
 } // namespace Widget

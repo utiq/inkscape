@@ -154,7 +154,6 @@ private:
     unsigned int _interaction_disabled_counter = 0;
 
 public:
-    Geom::Point _ruler_origin;
     double _dt2r;
 
 private:

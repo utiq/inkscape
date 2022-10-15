@@ -125,8 +125,7 @@ bool SPPage::isBarePage() const
  */
 Geom::Rect SPPage::getRect() const
 {
-    return Geom::Rect(this->x.computed, this->y.computed, this->x.computed + this->width.computed,
-                      this->y.computed + this->height.computed);
+    return Geom::Rect::from_xywh(x.computed, y.computed, width.computed, height.computed);
 }
 
 /**
@@ -135,6 +134,15 @@ Geom::Rect SPPage::getRect() const
 Geom::Rect SPPage::getDesktopRect() const
 {
     return getDocumentRect() * document->doc2dt();
+}
+
+/**
+ * Gets the page's position as a translation in desktop units.
+ */
+Geom::Translate SPPage::getDesktopAffine() const
+{
+    auto box = getDesktopRect();
+    return Geom::Translate(box.left(), box.top());
 }
 
 /**

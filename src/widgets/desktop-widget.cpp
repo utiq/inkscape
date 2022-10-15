@@ -1205,8 +1205,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
 
     dtw->_dt2r = 1. / namedview->display_units->factor;
 
-    dtw->_ruler_origin = Geom::Point(0,0); //namedview->gridorigin;   Why was the grid origin used here?
-
     // This section seems backwards!
     dtw->desktop = new SPDesktop();
     dtw->desktop->init (namedview, dtw->_canvas, this);
@@ -1298,7 +1296,6 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
 
     if (flags & SP_OBJECT_MODIFIED_FLAG) {
         _dt2r = 1. / nv->display_units->factor;
-        _ruler_origin = Geom::Point(0,0); //nv->gridorigin;   Why was the grid origin used here?
 
         _canvas_grid->GetVRuler()->set_unit(nv->getDisplayUnit());
         _canvas_grid->GetHRuler()->set_unit(nv->getDisplayUnit());

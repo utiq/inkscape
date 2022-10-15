@@ -60,13 +60,19 @@ void resize_widget_children(Gtk::Widget *widget);
 }
 }
 
+// Take a color and make it more transparent.
+Gdk::RGBA faded_color(const Gdk::RGBA& a, float amount);
+
 // Mix two RGBA colors using simple linear interpolation:
 //  0 -> only a, 1 -> only b, x in 0..1 -> (1 - x)*a + x*b
 Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio);
 
 // Get the background-color style property for a given StyleContext
+Gdk::RGBA get_context_color(const Glib::RefPtr<Gtk::StyleContext> &context,
+                            const gchar *property,
+                            Gtk::StateFlags state = static_cast<Gtk::StateFlags>(0));
 Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
-                               Gtk::StateFlags                  state = static_cast<Gtk::StateFlags>(0));
+                               Gtk::StateFlags state = static_cast<Gtk::StateFlags>(0));
 
 Geom::IntRect cairo_to_geom(const Cairo::RectangleInt &rect);
 Cairo::RectangleInt geom_to_cairo(const Geom::IntRect &rect);

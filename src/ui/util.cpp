@@ -84,6 +84,13 @@ void resize_widget_children(Gtk::Widget *widget) {
 }
 }
 
+Gdk::RGBA faded_color(const Gdk::RGBA& a, float amount)
+{
+    Gdk::RGBA result = a;
+    result.set_alpha(a.get_alpha() * (1-amount));
+    return result;
+}
+
 Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio) {
     auto lerp = [](double v0, double v1, double t){ return (1.0 - t) * v0 + t * v1; };
     Gdk::RGBA result;
@@ -97,16 +104,18 @@ Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio) {
 }
 
 Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
-                               Gtk::StateFlags                  state) {
-    GdkRGBA *c;
+                               Gtk::StateFlags state) {
+    return get_context_color(context, GTK_STYLE_PROPERTY_BACKGROUND_COLOR, state);
+}
 
+Gdk::RGBA get_context_color(const Glib::RefPtr<Gtk::StyleContext> &context,
+                            const gchar *property,
+                            Gtk::StateFlags state) {
+    GdkRGBA *c;
     gtk_style_context_get(context->gobj(),
                           static_cast<GtkStateFlags>(state),
-                          GTK_STYLE_PROPERTY_BACKGROUND_COLOR, &c,
-                          nullptr);
-    auto bg_color = Glib::wrap(c);
-
-    return bg_color;
+                          property, &c, nullptr);
+    return Glib::wrap(c);
 }
 
 // 2Geom <-> Cairo

@@ -27,6 +27,8 @@
 
 #include "display/control/canvas-item-drawing.h" // sticky
 
+#include "page-manager.h"
+
 #include "ui/dialog/command-palette.h"
 #include "ui/icon-loader.h"
 #include "ui/widget/canvas.h"
@@ -148,6 +150,11 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
 
 CanvasGrid::~CanvasGrid()
 {
+    _page_modified_connection.disconnect();
+    _page_selected_connection.disconnect();
+    _sel_modified_connection.disconnect();
+    _sel_changed_connection.disconnect();
+    _document = nullptr;
 }
 
 void CanvasGrid::on_realize() {
@@ -215,25 +222,52 @@ Gtk::ToggleButton* CanvasGrid::GetStickyZoom() {
 void
 CanvasGrid::UpdateRulers()
 {
-    Geom::Rect viewbox = _dtw->desktop->get_display_area().bounds();
-    // Use integer values of the canvas for calculating the display area, similar
-    // to the integer values used for positioning the grid lines. (see Canvas::set_pos(),
-    // where ix and iy are rounded integer values; these values are stored in CanvasItemBuffer->rect,
-    // and used for drawing the grid). By using the integer values here too, the ruler ticks
-    // will be perfectly aligned to the grid
-    double _dt2r = _dtw->_dt2r;
-    Geom::Point _ruler_origin = _dtw->_ruler_origin;
+    auto prefs = Inkscape::Preferences::get();
+    auto desktop = _dtw->desktop;
+    auto document = desktop->getDocument();
+    auto &pm = document->getPageManager();
+    auto sel = desktop->getSelection();
 
-    double lower_x = _dt2r * (viewbox.left()  - _ruler_origin[Geom::X]);
-    double upper_x = _dt2r * (viewbox.right() - _ruler_origin[Geom::X]);
-    _hruler->set_range(lower_x, upper_x);
-
-    double lower_y = _dt2r * (viewbox.bottom() - _ruler_origin[Geom::Y]);
-    double upper_y = _dt2r * (viewbox.top()    - _ruler_origin[Geom::Y]);
-    if (_dtw->desktop->is_yaxisdown()) {
-        std::swap(lower_y, upper_y);
+    // Our connections to the document are handled with a lazy pattern to avoid
+    // having to refactor the SPDesktopWidget class. We know UpdateRulers is
+    // called in all situations when documents are loaded and replaced.
+    if (document != _document) {
+        _document = document;
+        _page_selected_connection = pm.connectPageSelected([=](SPPage *) { UpdateRulers(); });
+        _page_modified_connection = pm.connectPageModified([=](SPPage *) { UpdateRulers(); });
+        _sel_modified_connection = sel->connectModified([=](Inkscape::Selection *, int) { UpdateRulers(); });
+        _sel_changed_connection = sel->connectChanged([=](Inkscape::Selection *) { UpdateRulers(); });
     }
-    _vruler->set_range(lower_y, upper_y);
+
+    Geom::Rect viewbox = desktop->get_display_area().bounds();
+    Geom::Rect startbox = viewbox;
+    if (prefs->getBool("/options/origincorrection/page", true)) {
+        // Move viewbox according to the selected page's position (if any)
+        startbox *= pm.getSelectedPageAffine().inverse();
+    }
+
+    // Scale and offset the ruler coordinates
+    // Use an integer box to align the ruler to the grid and page.
+    auto rulerbox = (startbox * Geom::Scale(_dtw->_dt2r));
+    _hruler->set_range(rulerbox.left(), rulerbox.right());
+    if (_dtw->desktop->is_yaxisdown()) {
+        _vruler->set_range(rulerbox.top(), rulerbox.bottom());
+    } else {
+        _vruler->set_range(rulerbox.bottom(), rulerbox.top());
+    }
+
+    Geom::Point pos(_canvas->get_pos());
+    auto scale = _canvas->get_affine();
+    auto d2c = Geom::Translate(pos * scale.inverse()).inverse() * scale;
+    auto pagebox = (pm.getSelectedPageRect() * d2c).roundOutwards();
+    _hruler->set_page(pagebox.left(), pagebox.right());
+    _vruler->set_page(pagebox.top(), pagebox.bottom());
+
+    Geom::Rect selbox = Geom::IntRect(0, 0, 0, 0);
+    if (auto bbox = sel->preferredBounds())
+        selbox = (*bbox * d2c).roundOutwards();
+    _hruler->set_selection(selbox.left(), selbox.right());
+    _vruler->set_selection(selbox.top(), selbox.bottom());
 }
 
 void

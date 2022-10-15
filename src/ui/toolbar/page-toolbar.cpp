@@ -140,7 +140,8 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
                 return false;
             });
             entry_page_sizes->signal_focus_out_event().connect([=](GdkEventFocus *) {
-               setSizeText(nullptr, true);
+               if (_document)
+                   setSizeText(nullptr, true);
                return false;
             });
             populate_sizes();

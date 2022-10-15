@@ -14,6 +14,7 @@
 /* Rewrite of the C Ruler. */
 
 #include <gtkmm.h>
+#include <map>
 
 namespace Inkscape {
 namespace Util {
@@ -32,6 +33,8 @@ public:
 
     void set_unit(Inkscape::Util::Unit const *unit);
     void set_range(const double& lower, const double& upper);
+    void set_page(const double &lower, const double &upper);
+    void set_selection(const double &lower, const double &upper);
 
     void add_track_widget(Gtk::Widget& widget);
 
@@ -51,6 +54,7 @@ protected:
 
 private:
     Gtk::Menu *getContextMenu();
+    Cairo::RefPtr<Cairo::Surface> draw_label(Cairo::RefPtr<Cairo::Surface> surface_in, int label_value);
 
     Gtk::Orientation    _orientation;
 
@@ -60,10 +64,30 @@ private:
     double _position;
     double _max_size;
 
+    // Page block
+    double _page_lower = 0.0;
+    double _page_upper = 0.0;
+
+    // Selection block
+    double _sel_lower = 0.0;
+    double _sel_upper = 0.0;
+
     bool   _backing_store_valid;
 
     Cairo::RefPtr<::Cairo::Surface> _backing_store;
     Cairo::RectangleInt _rect;
+
+    std::map<int, Cairo::RefPtr<::Cairo::Surface>> _label_cache;
+
+    // Cached style properties
+    Gtk::Border _border;
+    Gdk::RGBA _shadow;
+    Gdk::RGBA _foreground;
+    Pango::FontDescription _font;
+    int _font_size;
+    Gdk::RGBA _page_fill;
+    Gdk::RGBA _select_fill;
+    Gdk::RGBA _select_stroke;
 };
 
 } // Namespace Inkscape

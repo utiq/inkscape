@@ -1603,6 +1603,9 @@ void InkscapePreferences::initPageUI()
     _ui_realworldzoom.init( _("Show zoom percentage corrected by factor"), "/options/zoomcorrection/shown", true);
     _page_ui.add_line( false, "", _ui_realworldzoom, "", _("Zoom percentage can be either by the physical units or by pixels."));
 
+    _ui_pageorigin.init( _("Use selected page as position origin"), "/options/origincorrection/page", true);
+    _page_ui.add_line( false, "", _ui_pageorigin, "", _("Rulers and tools will use the page's position instead of the canvas position."));
+
     _ui_yaxisdown.init( _("Origin at upper left with y-axis pointing down"), "/options/yaxisdown", true);
     _page_ui.add_line( false, "", _ui_yaxisdown, "",
                        _("When off, origin is at lower left corner and y-axis points up"), false, reset_icon());

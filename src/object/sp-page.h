@@ -86,6 +86,8 @@ public:
     std::string getLabel() const;
     std::string getSizeLabel() const;
 
+    Geom::Translate getDesktopAffine() const;
+
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;
     void release() override;

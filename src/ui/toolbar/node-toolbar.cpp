@@ -41,6 +41,8 @@
 
 #include "object/sp-namedview.h"
 
+#include "page-manager.h"
+
 #include "ui/icon-names.h"
 #include "ui/simple-pref-pusher.h"
 #include "ui/tool/control-point-selection.h"
@@ -403,6 +405,14 @@ NodeToolbar::value_changed(Geom::Dim2 d)
     if (nt && !nt->_selected_nodes->empty()) {
         double val = Quantity::convert(adj->get_value(), unit, "px");
         double oldval = nt->_selected_nodes->pointwiseBounds()->midpoint()[d];
+
+        // Adjust the coordinate to the current page, if needed
+        auto &pm = _desktop->getDocument()->getPageManager();
+        if (prefs->getBool("/options/origincorrection/page", true)) {
+            auto page = pm.getSelectedPageRect();
+            oldval -= page.corner(0)[d];
+        }
+
         Geom::Point delta(0,0);
         delta[d] = val - oldval;
         nt->_multipath->move(delta);
@@ -482,6 +492,13 @@ NodeToolbar::coord_changed(Inkscape::UI::ControlPointSelection* selected_nodes) 
         Geom::Coord oldx = Quantity::convert(_nodes_x_adj->get_value(), unit, "px");
         Geom::Coord oldy = Quantity::convert(_nodes_y_adj->get_value(), unit, "px");
         Geom::Point mid = selected_nodes->pointwiseBounds()->midpoint();
+
+        // Adjust shown coordinate according to the selected page
+        auto prefs = Inkscape::Preferences::get();
+        if (prefs->getBool("/options/origincorrection/page", true)) {
+            auto &pm = _desktop->getDocument()->getPageManager();
+            mid *= pm.getSelectedPageAffine().inverse();
+        }
 
         if (oldx != mid[Geom::X]) {
             _nodes_x_adj->set_value(Quantity::convert(mid[Geom::X], "px", unit));

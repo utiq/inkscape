@@ -29,6 +29,7 @@
 #include "document-undo.h"
 #include "inkscape.h"
 #include "layer-manager.h"
+#include "page-manager.h"
 #include "path-chemistry.h"
 #include "rubberband.h"
 #include "text-editing.h"
@@ -1104,6 +1105,10 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
         // Get information for the item, and cache it to save time.
         over = newover;
         auto affine = over->i2dt_affine() * Geom::Scale(scale);
+        // Correct for the current page's position.
+        if (prefs->getBool("/options/origincorrection/page", true)) {
+            affine *= _desktop->getDocument()->getPageManager().getSelectedPageAffine().inverse();
+        }
         if (auto bbox = over->bounds(box_type, affine)) {
             item_width  = Quantity::convert(bbox->width(), "px", unit_name);
             item_height = Quantity::convert(bbox->height(), "px", unit_name);

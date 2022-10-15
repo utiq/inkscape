@@ -351,6 +351,11 @@ Geom::Rect PageManager::getSelectedPageRect() const
     return _selected_page ? _selected_page->getDesktopRect() : *(_document->preferredBounds());
 }
 
+Geom::Affine PageManager::getSelectedPageAffine() const
+{
+    return _selected_page ? _selected_page->getDesktopAffine() : Geom::identity();
+}
+
 /**
  * Called when the pages vector is updated, either page
  * deleted or page created (but not if the page is modified)
@@ -382,6 +387,15 @@ bool PageManager::selectPage(SPPage *page)
         if (_selected_page != page) {
             _selected_page = page;
             _page_selected_signal.emit(_selected_page);
+
+            // Modified signal for when the attributes themselves are modified.
+            _page_modified_connection.disconnect();
+            if (page) {
+                _page_modified_connection = page->connectModified([=](SPObject *, unsigned int) {
+                    _page_modified_signal.emit(_selected_page);
+                });
+            }
+
             return true;
         }
     }

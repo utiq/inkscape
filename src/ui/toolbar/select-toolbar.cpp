@@ -32,6 +32,8 @@
 #include "object/sp-item-transform.h"
 #include "object/sp-namedview.h"
 
+#include "page-manager.h"
+
 #include "ui/icon-names.h"
 #include "ui/widget/canvas.h" // Focus widget
 #include "ui/widget/combo-tool-item.h"
@@ -349,11 +351,14 @@ SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment>& adj)
     }
     _update = true;
 
-    SPDesktop *desktop = _desktop;
-    Inkscape::Selection *selection = desktop->getSelection();
-    SPDocument *document = desktop->getDocument();
+    auto prefs = Inkscape::Preferences::get();
+    auto selection = _desktop->getSelection();
+    auto document = _desktop->getDocument();
+    auto &pm = document->getPageManager();
+    auto page = pm.getSelectedPageRect();
+    auto page_correction = prefs->getBool("/options/origincorrection/page", true);
 
-    document->ensureUpToDate ();
+    document->ensureUpToDate();
 
     Geom::OptRect bbox_vis = selection->visualBounds();
     Geom::OptRect bbox_geom = selection->geometricBounds();
@@ -381,6 +386,12 @@ SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment>& adj)
         gdouble old_x = bbox_user->min()[Geom::X] + (old_w * selection->anchor_x);
         gdouble old_y = bbox_user->min()[Geom::Y] + (old_h * selection->anchor_y);
 
+        // Adjust against selected page, so later correction isn't broken.
+        if (page_correction) {
+            old_x -= page.left();
+            old_y -= page.top();
+        }
+
         new_x = old_x * (_adj_x->get_value() / 100 / unit->factor);
         new_y = old_y * (_adj_y->get_value() / 100 / unit->factor);
         new_w = old_w * (_adj_w->get_value() / 100 / unit->factor);
@@ -390,6 +401,12 @@ SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment>& adj)
     // Adjust depending on the selected anchor.
     gdouble x0 = (new_x - (old_w * selection->anchor_x)) - ((new_w - old_w) * selection->anchor_x);
     gdouble y0 = (new_y - (old_h * selection->anchor_y)) - ((new_h - old_h) * selection->anchor_y);
+
+    // Adjust according to the selected page, if needed
+    if (page_correction) {
+        x0 += page.left();
+        y0 += page.top();
+    }
 
     gdouble x1 = x0 + new_w;
     gdouble xrel = new_w / old_w;
@@ -423,7 +440,6 @@ SelectToolbar::any_value_changed(Glib::RefPtr<Gtk::Adjustment>& adj)
 
     if (actionkey != nullptr) {
 
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         bool transform_stroke = prefs->getBool("/options/transform/stroke", true);
         bool preserve = prefs->getBool("/options/preservetransform/value", false);
 
@@ -465,6 +481,14 @@ SelectToolbar::layout_widget_update(Inkscape::Selection *sel)
             auto height = bbox->dimensions()[Y];
             auto x = bbox->min()[X] + (width * sel->anchor_x);
             auto y = bbox->min()[Y] + (height * sel->anchor_y);
+
+            auto prefs = Inkscape::Preferences::get();
+            if (prefs->getBool("/options/origincorrection/page", true)) {
+                auto &pm = _desktop->getDocument()->getPageManager();
+                auto page = pm.getSelectedPageRect();
+                x -= page.left();
+                y -= page.top();
+            }
 
             if (unit->type == Inkscape::Util::UNIT_TYPE_DIMENSIONLESS) {
                 double const val = unit->factor * 100;

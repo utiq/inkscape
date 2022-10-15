@@ -60,6 +60,7 @@ public:
     int getPageIndex(const SPPage *page) const;
     int getSelectedPageIndex() const;
     Geom::Rect getSelectedPageRect() const;
+    Geom::Affine getSelectedPageAffine() const;
     Geom::Point nextPageLocation() const;
 
     void enablePages();
@@ -107,7 +108,14 @@ public:
     {
         return _page_selected_signal.connect(slot);
     }
-    sigc::connection connectPagesChanged(const sigc::slot<void ()> &slot) { return _pages_changed_signal.connect(slot); }
+    sigc::connection connectPageModified(const sigc::slot<void (SPPage *)> &slot)
+    {
+        return _page_modified_signal.connect(slot);
+    }
+    sigc::connection connectPagesChanged(const sigc::slot<void ()> &slot)
+    {
+        return _pages_changed_signal.connect(slot);
+    }
 
     // Access from export.cpp and others for the guint32
     guint32 background_color = 0xffffff00;
@@ -135,7 +143,10 @@ private:
     std::vector<SPPage *> pages;
 
     sigc::signal<void (SPPage *)> _page_selected_signal;
+    sigc::signal<void (SPPage *)> _page_modified_signal;
     sigc::signal<void ()> _pages_changed_signal;
+
+    sigc::connection _page_modified_connection;
 };
 
 } // namespace Inkscape

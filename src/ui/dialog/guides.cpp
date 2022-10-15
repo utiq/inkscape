@@ -28,6 +28,8 @@
 #include "object/sp-guide.h"
 #include "object/sp-namedview.h"
 
+#include "page-manager.h"
+
 #include "ui/dialog-events.h"
 #include "ui/tools/tool-base.h"
 #include "ui/widget/spinbutton.h"
@@ -82,8 +84,17 @@ void GuidelinePropertiesDialog::_modeChanged()
         // absolute
         _spin_angle.setValueKeepUnit(_oldangle, DEG);
 
-        _spin_button_x.setValueKeepUnit(_oldpos[Geom::X], "px");
-        _spin_button_y.setValueKeepUnit(_oldpos[Geom::Y], "px");
+        auto pos = _oldpos;
+
+        // Adjust position by the page position
+        auto prefs = Inkscape::Preferences::get();
+        if (prefs->getBool("/options/origincorrection/page", true)) {
+            auto &pm = _guide->document->getPageManager();
+            pos *= pm.getSelectedPageAffine().inverse();
+        }
+
+        _spin_button_x.setValueKeepUnit(pos[Geom::X], "px");
+        _spin_button_y.setValueKeepUnit(pos[Geom::Y], "px");
     }
 }
 
@@ -116,8 +127,15 @@ void GuidelinePropertiesDialog::_onOKimpl()
     double const points_x = _spin_button_x.getValue("px");
     double const points_y = _spin_button_y.getValue("px");
     Geom::Point newpos(points_x, points_y);
-    if (!_mode)
+
+    // Adjust position by either the relative position, or the page offset
+    auto prefs = Inkscape::Preferences::get();
+    if (!_mode) {
         newpos += _oldpos;
+    } else if (prefs->getBool("/options/origincorrection/page", true)) {
+        auto &pm = _guide->document->getPageManager();
+        newpos *= pm.getSelectedPageAffine();
+    }
 
     _guide->moveto(newpos, true);
 
