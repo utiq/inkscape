@@ -12,14 +12,15 @@
 # 驿窗 <classenu@163.com>, 2020.
 # Rong "Mantle" Bao <mantlejonse@foxmail.com>, 2021.
 # Fince <fince10086@qq.com>
+# Copy2Translator <flagfox@gmail.com>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Inkscape 0.92.x\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
 "POT-Creation-Date: 2022-05-30 20:32+0000\n"
-"PO-Revision-Date: 2022-10-12 22:53+0800\n"
-"Last-Translator: Fince <fince10086@qq.com>\n"
+"PO-Revision-Date: 2022-10-15 22:30+0800\n"
+"Last-Translator: Copy2Translator <flagfox@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
@@ -24424,7 +24425,7 @@ msgid ""
 "Searched directories:%s"
 msgstr ""
 "用于校准显示器输出的 ICC 配置文件。\n"
-"搜索目录:% s"
+"搜索目录：%s"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2242
 msgid "Display profile:"
