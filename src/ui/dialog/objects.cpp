@@ -1110,7 +1110,9 @@ void ObjectsPanel::selectionChanged(Selection *selected)
                 auto focus_watcher = (group && group->isLayer()) ? child_watcher : watcher;
                 child_watcher->setSelectedBit(SELECTED_OBJECT, true);
                 _tree.expand_to_path(focus_watcher->getTreePath());
-                _tree.scroll_to_row(child_watcher->getTreePath(), 0.5);
+                if (!_scroll_lock) {
+                    _tree.scroll_to_row(child_watcher->getTreePath(), 0.5);
+                }
             }
         }
     }
@@ -1791,6 +1793,7 @@ bool ObjectsPanel::selectCursorItem(unsigned int state)
     } else if (column == _name_column) {
         auto item = getItem(row);
         auto group = dynamic_cast<SPGroup *>(item);
+        _scroll_lock = true; // Clicking to select shouldn't scroll the treeview.
         if (state & GDK_SHIFT_MASK && !selection->isEmpty()) {
             // Select everything between this row and the last selected item
             selection->setBetween(item);
@@ -1805,6 +1808,7 @@ bool ObjectsPanel::selectCursorItem(unsigned int state)
             }
             selection->set(item);
         }
+        _scroll_lock = false;
         return true;
     }
     return false;
