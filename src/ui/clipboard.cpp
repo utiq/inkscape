@@ -1615,6 +1615,8 @@ void ClipboardManagerImpl::_onGet(Gtk::SelectionData &sel, guint /*info*/)
         return;
 
     Glib::ustring target = sel.get_target();
+    g_info("Clipboard _onGet target: %s", target.c_str());
+
     if (target == "") {
         return; // this shouldn't happen
     }

@@ -5541,7 +5541,7 @@ msgstr "Ignorovať rotácie obrazu"
 
 #: ../src/extension/internal/emf-inout.cpp:3664
 msgid "Enhanced Metafile (*.emf)"
-msgstr "Rozšírený Metasúbor (*.wmf)"
+msgstr "Rozšírený Metasúbor (*.emf)"
 
 #: ../src/extension/internal/emf-inout.cpp:3665
 msgid "Enhanced Metafile"

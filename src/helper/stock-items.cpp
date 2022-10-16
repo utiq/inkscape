@@ -15,8 +15,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#define noSP_SS_VERBOSE
-
 #include <cstring>
 #include <glibmm/fileutils.h>
 
