@@ -146,6 +146,7 @@ DualSpinScale::DualSpinScale(const Glib::ustring label1, const Glib::ustring lab
     pack_start(*vb);
     pack_start(_link, false, false);
     set_link_active(true);
+    _s2.set_sensitive(false);
 
     show_all();
 }
