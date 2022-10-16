@@ -599,9 +599,14 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
             DocumentUndo::done(document(), _("Duplicate"), INKSCAPE_ICON("edit-duplicate"));
         }
         SPObject* new_layer = doc->getObjectByRepr(copies[0]);
-        gchar* name = g_strdup_printf(_("%s copy"), new_layer->label());
-        desktop()->layerManager().renameLayer( new_layer, name, TRUE );
-        g_free(name);
+
+        if (auto label = new_layer->label()) {
+            if (std::string(label).find("copy") == std::string::npos) {
+                gchar* name = g_strdup_printf(_("%s copy"), label);
+                desktop()->layerManager().renameLayer( new_layer, name, TRUE );
+                g_free(name);
+            }
+        }
     }
     
 }
