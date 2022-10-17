@@ -766,7 +766,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
     sp_repr_css_change(out, r_style, "style");
 
     sp_repr_css_attr_unref(r_style);
-    if (unique) {
+    if (unique && out != markers) { // markers are already a child of g_repr
         g_assert(out != g_repr);
         parent->addChild(out, g_repr);
         parent->removeChild(g_repr);
