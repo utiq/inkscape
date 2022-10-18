@@ -94,7 +94,7 @@ transform_grow_screen(const Glib::VariantBase& value, InkscapeApplication *app)
 {
     Glib::Variant<double> d = Glib::VariantBase::cast_dynamic<Glib::Variant<double> >(value);
     auto selection = app->get_active_selection();
-    selection->scaleGrow(d.get());
+    selection->scaleScreen(d.get());
 }
 
 void
