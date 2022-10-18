@@ -36,7 +36,9 @@ InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
     change_mode(true);
     update_status();
     if (auto selection = desktop->getSelection()) {
+        desktop->setWaitingCursor();
         boolean_builder = std::make_unique<BooleanBuilder>(selection);
+        desktop->clearWaitingCursor();
 
         // Any changes to the selection cancel the shape building process
         _sel_modified = selection->connectModified([=](Selection *sel, int) { shape_cancel(); });
