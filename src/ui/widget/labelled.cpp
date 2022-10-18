@@ -28,6 +28,7 @@ Labelled::Labelled(Glib::ustring const &label, Glib::ustring const &tooltip,
       _label(new Gtk::Label(label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, mnemonic)),
       _suffix(nullptr)
 {
+    _widget->drag_dest_unset();
     g_assert(g_utf8_validate(icon.c_str(), -1, nullptr));
     if (icon != "") {
         _icon = Gtk::manage(sp_get_icon_image(icon, Gtk::ICON_SIZE_LARGE_TOOLBAR));

@@ -327,7 +327,7 @@ void DialogContainer::new_dialog(const Glib::ustring& dialog_type, DialogNoteboo
 
     if (auto panel = dynamic_cast<DialogMultipaned*>(notebook->get_parent())) {
         // if panel is collapsed, show it now, or else new dialog will be mysteriously missing
-        panel->show();
+        panel->show_all();
     }
 }
 

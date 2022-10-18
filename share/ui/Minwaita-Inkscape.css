@@ -138,6 +138,27 @@ button.toggle:checked {
 #InkSpinScale trough {
     border: 1px solid alpha(@theme_fg_color, 0.15);
 }
+
 .dark #InkSpinScale trough {
     border-color: alpha(black, 0.25);
+}
+
+#LPEEffectItem expander title label {
+  min-height:21px;
+}
+
+/*************
+ * Expanders *
+ *************/
+
+expander combobox arrow {
+  -gtk-icon-source: -gtk-icontheme("pan-down-symbolic");
+}
+
+expander combobox arrow:dir(rtl) {
+  -gtk-icon-source: -gtk-icontheme("pan-down-symbolic");
+}
+
+expander combobox arrow:checked {
+  -gtk-icon-source: -gtk-icontheme("pan-down-symbolic");
 }

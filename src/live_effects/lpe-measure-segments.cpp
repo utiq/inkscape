@@ -293,15 +293,6 @@ LPEMeasureSegments::newWidget()
     vbox->pack_start(*notebook, true, true, 2);
     notebook->set_current_page(pagenumber);
     notebook->signal_switch_page().connect(sigc::mem_fun(*this, &LPEMeasureSegments::on_my_switch_page));
-    if(Gtk::Widget* widg = defaultParamSet()) {
-        //Wrap to make it more omogenious
-        Gtk::Box *vbox4 = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
-        vbox4->set_border_width(5);
-        vbox4->set_homogeneous(false);
-        vbox4->set_spacing(2);
-        vbox4->pack_start(*widg, true, true, 2);
-        vbox->pack_start(*vbox4, true, true, 2);
-    }
     return dynamic_cast<Gtk::Widget *>(vbox);
 }
 

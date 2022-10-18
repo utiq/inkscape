@@ -107,7 +107,6 @@ public:
     virtual void doEffect (SPCurve * curve);
 
     virtual Gtk::Widget * newWidget();
-    virtual Gtk::Widget * defaultParamSet();
     /**
      * Sets all parameters to their default values and writes them to SVG.
      */
@@ -161,7 +160,9 @@ public:
                             // them.
     SPShape *current_shape; // these get stored in performPathEffects.
     std::vector<Parameter *> param_vector;
-
+    void setDefaultParameters();
+    void resetDefaultParameters();
+    bool hasDefaultParameters();
 protected:
     Effect(LivePathEffectObject *lpeobject);
     friend class SatelliteArrayParam;
@@ -194,7 +195,6 @@ protected:
     double current_zoom;
     std::vector<Geom::Point> selectedNodesPoints;
     Inkscape::UI::Widget::Registry wr;
-    
 private:
     LivePathEffectObject *lpeobj;
     virtual void transform_multiply(Geom::Affine const &postmul, bool set);
@@ -204,11 +204,9 @@ private:
     virtual void doOnRemove(SPLPEItem const* /*lpeitem*/);
     virtual void doOnApply (SPLPEItem const* lpeitem);
     virtual void doBeforeEffect (SPLPEItem const* lpeitem);
-    void onDefaultsExpanderChanged(Gtk::Expander * expander);
-    void setDefaultParam(Glib::ustring pref_path, Glib::ustring tooltip, Parameter *param, Gtk::Image *info,
-                         Gtk::Button *set, Gtk::Button *unset);
-    void unsetDefaultParam(Glib::ustring pref_path, Glib::ustring tooltip, Parameter *param, Gtk::Image *info,
-                           Gtk::Button *set, Gtk::Button *unset);
+    
+    void setDefaultParam(Glib::ustring pref_path, Parameter *param);
+    void unsetDefaultParam(Glib::ustring pref_path, Parameter *param);
     bool provides_own_flash_paths; // if true, the standard flash path is suppressed
     sigc::connection _before_commit_connection;
     bool destroying = false;

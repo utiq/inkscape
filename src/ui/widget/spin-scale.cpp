@@ -31,7 +31,7 @@ SpinScale::SpinScale(const Glib::ustring label, double value,
     , _inkspinscale(value, lower, upper, step_increment, page_increment, 0)
 {
     set_name("SpinScale");
-
+    _inkspinscale.drag_dest_unset();
     _inkspinscale.set_label (label);
     _inkspinscale.set_digits (digits);
     _inkspinscale.set_tooltip_text (tip_text);

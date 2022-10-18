@@ -2987,7 +2987,7 @@ void ObjectSet::cloneOriginal()
 /**
 * This applies the Fill Between Many LPE, and has it refer to the selection.
 */
-void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool skip_undo)
+void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool sync, bool skip_undo)
 {
 
     Inkscape::SVGOStringStream os;
@@ -3029,6 +3029,8 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool skip_undo)
         Inkscape::GC::release(lpe_repr);
         Inkscape::XML::Node* clone = nullptr;
         SPGroup *firstgroup = dynamic_cast<SPGroup *>(firstItem);
+        SPShape *shape = dynamic_cast<SPShape *>(firstItem);
+        SPPath *path = dynamic_cast<SPPath *>(firstItem);
         if (firstgroup) {
             if (!multiple) {
                 clone = firstgroup->getRepr()->duplicate(xml_doc);
@@ -3036,7 +3038,20 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool skip_undo)
         } else {
             // create the new path
             clone = xml_doc->createElement("svg:path");
-            clone->setAttribute("d", "M 0 0");
+            if (sync && !multiple && shape) {
+                std::optional<SPCurve> c = SPCurve::ptr_to_opt(shape->curveForEdit());
+                if (c) {
+                    if (path) {
+                        clone->setAttribute("original-d", sp_svg_write_path(c->get_pathvector()));
+                    }
+                    clone->setAttribute("d", sp_svg_write_path(c->get_pathvector()));
+                } else {
+                    clone->setAttribute("d", "M 0 0");
+                }
+            } else {
+                clone->setAttribute("d", "M 0 0");
+            }
+
         }
         if (clone) {
             // add the new clone to the top of the original's parent
@@ -3047,6 +3062,10 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool skip_undo)
             SPObject *clone_obj = document()->getObjectById(clone->attribute("id"));
             SPLPEItem *clone_lpeitem = dynamic_cast<SPLPEItem *>(clone_obj);
             if (clone_lpeitem) {
+                if (sync && !multiple) {
+                    lpe_repr->setAttribute("attributes", "style,clip-path,mask");
+                }
+                lpe_repr->setAttribute("is_visible", "true");
                 clone_lpeitem->addPathEffect(lpe_id_href, false);
             }
             if (!skip_undo) {

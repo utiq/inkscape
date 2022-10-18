@@ -249,125 +249,6 @@ iconview *:hover {
     border-bottom: 1px solid @bg_color5;
 }
 
-/* LPE Dialog add */
-#LPESelectorFlowBox GtkFlowBoxChild,
-#LPESelectorFlowBox flowboxchild {
-    border-width: 0px;
-    border-radius: 6px;
-    margin: 10px;
-    padding: 10px;
-    margin-bottom: 0px;
-    padding-bottom: 10px;
-    outline: none;
-}
-
-#LPESelectorFlowBox flowboxchild * {
-    color: @theme_fg_color;
-}
-
-#LPESelectorFlowBox flowboxchild image,
-#LPESelectorFlowBox flowboxchild label {
-    background-color: transparent;
-    background-image: image(transparent);
-}
-
-#LPESelectorFlowBox flowboxchild:selected image,
-#LPESelectorFlowBox flowboxchild:selected label {
-    color: @theme_selected_fg_color;
-}
-
-#LPESelectorFlowBox *:selected #LPESelectorEffectFavTop,
-#LPESelectorFlowBox *:selected:focus #LPESelectorEffectFavTop {
-    opacity: 0;
-}
-
-#LPESelectorFlowBox .lpename {
-    font-size: 16px;
-    margin-bottom: 5px;
-}
-
-#LPESelectorFlowBox .lpeinfo {
-    font-size: 16px;
-    padding: 20px;
-}
-
-#LPESelectorFlowBox .lpedisabled {
-    opacity: 0.3;
-}
-
-#LPESelectorEffectInfoPop {
-    padding: 15px;
-}
-
-#LPESelectorEffectInfoName {
-    font-weight: bold;
-    padding: 15px;
-}
-
-#LPEDialogSelector .lpeinfo {
-    padding: 8px;
-    background-color: @theme_bg_color;
-    color: @theme_selected_fg_color;
-    border-color: @theme_selected_bg_color;
-    border-style: solid;
-    margin: 0px 0px 10px 0px;
-    border-radius: 0px;
-    border-width: 0 0 1px 0;
-    padding:5px;
-}
-
-#LPESelectorFlowBox image{
-    background-color:@theme_bg_color;
-    border-color:transparent;
-}
-
-#LPEExperimental image {
-    color: transparent;
-}
-
-#LPEDialogSelector .searchbar entry image,
-#LPEDialogSelector .searchbar label,
-#LPEDialogSelector .searchbar #LPESelectorEffectFavShowImage {
-    color: @theme_fg_color;
-}
-
-#LPEDialogSelector.LPEPackMore flowboxchild {
-margin:5px 1px 0px;
-padding:3px 3px 10px 3px;
-}
-
-#LPEDialogSelector.LPEPackMore flowboxchild label {
-font-size:14px;
-}
-
-#LPEDialogSelector.LPEPackMore #LPESelectorEffectInfoPop label{
-font-size:13px;
-}
-
-#LPEDialogSelector.LPEList .lpename {
-    margin-bottom: 1px;
-    font-weight:bold;
-}
-
-#LPEDialogSelector.LPEList flowboxchild {
-    padding:3px 1px 3px 10px;
-    margin:1px 0px 1px;
-    border-radius:0;
-    border-style:dotted;
-    border-color:@theme_fg_color;
-    border-width: 0 0 1px 0;
-}
-
-#LPEDialogSelector.LPEList flowboxchild:selected {
-    border-style:none;
-    margin:-3px 0px 0px;
-    padding:4px 1px 4px 10px;
-}
-
-#LPEDialogSelector.LPEList #LPESelectorFlowBox *:selected #LPESelectorEffectFavTop,
-#LPEDialogSelector.LPEList #LPESelectorFlowBox *:selected:focus #LPESelectorEffectFavTop {
-    opacity: 1;
-}
 
 /* Selector and XML dialog */
 #SelectorsAndStyleDialog button {
@@ -814,4 +695,297 @@ combobox.flat-combobox button {
 
 .dark .symbolsoverlay {
     color:@theme_bg_color;
+}
+
+/* LPE Dialog add */
+#LPEScrolled {
+    border:none;
+}
+
+#LPESelectorFlowBox GtkFlowBoxChild,
+#LPESelectorFlowBox flowboxchild {
+    border-width: 0px;
+    border-radius: 6px;
+    margin: 10px;
+    padding: 10px;
+    margin-bottom: 0px;
+    padding-bottom: 10px;
+    outline: none;
+}
+
+#LPESelectorFlowBox flowboxchild * {
+    color: @theme_fg_color;
+}
+
+#LPESelectorFlowBox flowboxchild image,
+#LPESelectorFlowBox flowboxchild label {
+    background-color: transparent;
+    background-image: image(transparent);
+}
+
+#LPESelectorFlowBox flowboxchild:selected image,
+#LPESelectorFlowBox flowboxchild:selected label {
+    color: @theme_selected_fg_color;
+}
+
+#LPESelectorFlowBox *:selected #LPESelectorEffectFavTop,
+#LPESelectorFlowBox *:selected:focus #LPESelectorEffectFavTop {
+    opacity: 0;
+}
+
+#LPESelectorFlowBox .lpename {
+    margin-bottom: 5px;
+}
+
+#LPESelectorFlowBox .lpeinfo {
+    padding: 20px;
+}
+
+#LPESelectorFlowBox .lpedisabled {
+    opacity: 0.3;
+}
+
+#LPESelectorEffectInfoPop {
+    padding: 15px;
+}
+
+#LPESelectorEffectInfoName {
+    font-weight: bold;
+    padding: 15px;
+}
+
+#LPEDialogSelector .lpeinfo {
+    padding: 8px;
+    background-color: @theme_bg_color;
+    color: @theme_selected_fg_color;
+    border-color: @theme_selected_bg_color;
+    border-style: solid;
+    margin: 0px 0px 10px 0px;
+    border-radius: 0px;
+    border-width: 0 0 1px 0;
+    padding:5px;
+}
+
+#LPESelectorFlowBox image{
+    background-color:@theme_bg_color;
+    border-color:transparent;
+}
+
+#LPEExperimental image {
+    color: transparent;
+}
+
+#LPEDialogSelector .searchbar entry image,
+#LPEDialogSelector .searchbar label,
+#LPEDialogSelector .searchbar #LPESelectorEffectFavShowImage {
+    color: @theme_fg_color;
+}
+
+#LPEDialogSelector.LPEPackMore flowboxchild {
+margin:5px 1px 0px;
+padding:3px 3px 10px 3px;
+}
+
+
+#LPEDialogSelector.LPEList .lpename {
+    margin-bottom: 1px;
+    font-weight:bold;
+}
+
+#LPEDialogSelector.LPEList flowboxchild {
+    padding:3px 1px 3px 10px;
+    margin:1px 0px 1px;
+    border-radius:0;
+    border-style:dotted;
+    border-color:@theme_fg_color;
+    border-width: 0 0 1px 0;
+}
+
+#LPEDialogSelector.LPEList flowboxchild:selected {
+    border-style:none;
+    margin:-3px 0px 0px;
+    padding:4px 1px 4px 10px;
+}
+
+#LPEDialogSelector.LPEList #LPESelectorFlowBox *:selected #LPESelectorEffectFavTop,
+#LPEDialogSelector.LPEList #LPESelectorFlowBox *:selected:focus #LPESelectorEffectFavTop {
+    opacity: 1;
+}
+
+#LivePathEffect {
+    padding-top:5px;
+}
+
+#LivePathEffect expander:focus, #LivePathEffect expander > label:focus{
+    outline-width:0;
+}
+
+#LivePathEffect list{
+    margin:5px 5px 0 5px;
+}
+
+#LivePathEffect list row{
+    margin:0;
+    padding:0;
+    border-width:0;
+    border-style:none;
+    outline-width:0;
+}
+#LivePathEffect list row > box{
+    margin:0;
+    padding:1px;
+    border-width:1px;
+    border-radius:4px;
+    margin-bottom:5px;
+    border-style:solid;
+    border-color:@borders;
+    outline-width:0;
+}
+
+#LivePathEffect list row:last-child  > box{
+    margin-bottom:0px;
+}
+
+#LPEEffectItem{
+    border-radius:3px;
+    padding:2px;
+    outline:0;
+}
+
+#LPEEffectItem .minbutton {
+    padding:0;
+    margin:0;
+    outline:0;
+    border-color:@borders;
+}
+
+#LPEEffectItem expander title label {
+    min-height:26px;
+}
+
+#LPEEffectItem expander, 
+#LPEEffectItem expander *,
+#LPEEffectItem expander:focus, 
+#LPEEffectItem expander *:focus {
+    outline:0;
+}
+
+.LPEDrag,.LPEDrag:active,.LPEDrag:focus,.LPEDrag:hover {
+    margin:0;
+    padding:0;
+    border-style:none;
+    opacity:0.7;
+    background-color:transparent;
+    background-image:none;
+    outline:0;
+}
+
+.LPEDrag:hover {
+    opacity:1;
+    background-color:transparent;
+    background-image:none;
+}
+
+#LivePathEffect list#LPEParentBox row{
+    border-style:none;
+    outline:0;
+}
+
+#LivePathEffect list#LPEParentBox row > button {
+    padding:2px;
+    margin:0;
+}
+
+#LPEContainer:drop(active) {
+    box-shadow:none;
+}
+
+#LPECurrentItem *{
+    color:@theme_fg_color;
+}
+
+#LPEContainer #LPEListBox{
+    border-style: solid none solid none;
+    border-color: @theme_base_color;
+    border-width:0;
+    padding:0;
+}
+#LPEListBox row:drop(active){
+    box-shadow:none;
+}
+#LPEContainer:drop(active).before row:first-child > box,
+#LPEListBox row:drop(active).before > box{
+    border-width:6px 1px 1px 1px;
+    border-color: @theme_selected_bg_color @borders @borders @borders;
+    box-shadow:none;
+    border-radius:6px 6px 0 0;
+}
+
+#LPEContainer:drop(active).after row:last-child > box,
+#LPEListBox row:drop(active).after > box{
+    border-width:1px 1px 6px 1px;
+    border-color: @borders @borders @theme_selected_bg_color @borders;
+    border-radius:0 0 6px 6px;
+    box-shadow:none;
+}
+
+#LPEEffectItem expander title label {
+    min-height:34px;
+}
+
+#LPEMenu menuitem:not(.menu-category):disabled {
+    color:alpha(@theme_text_color,0.4);
+}
+
+#LPEListBox row > *:disabled * {
+    color:@theme_text_color;
+}
+
+
+#LivePathEffect list row,
+#LPEListBox row.activatable:hover {
+    background-color: transparent;
+}
+
+#LivePathEffect list row .drag-icon,
+#LPEListBox row.activatable .drag-icon:hover {
+    background-color: @theme_base_color;
+    border-width:1px;
+    border-radius:0;
+    margin:0;
+    padding:5px;
+    border-style:solid;
+    border-color:@borders;
+    outline-width:0;
+}
+
+#LivePathEffect list row .drag-icon * {
+    outline:0;
+}
+
+#LPEActionButtons #eventbutton:nth-child(1) button{
+    border-radius:3px 0 0 3px;
+    border-width:1px 0 1px 1px;
+}
+
+#LPEActionButtons #eventbutton:nth-child(2) button{
+    border-radius:0;
+    border-width:1px 0 1px 1px;
+}
+#LPECurrentItem * {
+    border-width:0;
+    border-style:none;
+}
+#LPECurrentItem {
+    margin-top:0;
+}
+#LPECurrentItem image{
+    margin-right:6px;
+}
+#LPECurrentItem {
+    margin-top:0;
+}
+#LPEParentBox{
+    margin:10px 4px;
+    padding:0;
 }

@@ -89,6 +89,7 @@
 #include "ui/util.h"
 #include "ui/widget/color-picker.h"
 #include "ui/widget/completion-popup.h"
+#include "ui/widget/custom-tooltip.h"
 #include "ui/widget/filter-effect-chooser.h"
 #include "ui/widget/spinbutton.h"
 
@@ -2756,8 +2757,12 @@ void FilterEffectsDialog::add_effects(Inkscape::UI::Widget::CompletionPopup& pop
     for (auto& effect : effects) {
         // build popup menu
         auto type = effect.type;
-        builder.add_item(effect.label, effect.category, effect.tooltip, effect.icon_name, [=](){ add_filter_primitive(type); });
-
+        auto * menuitem = builder.add_item(effect.label, effect.category, effect.tooltip, effect.icon_name, true, true, [=](){ add_filter_primitive(type); });
+        gint id = (gint)type;
+        menuitem->property_has_tooltip() = true;
+        menuitem->signal_query_tooltip().connect([=](int x, int y, bool kbd, const Glib::RefPtr<Gtk::Tooltip>& tooltipw){
+            return sp_query_custom_tooltip(x, y, kbd, tooltipw, id, effect.tooltip, effect.icon_name);
+        });
         if (builder.new_section()) {
             builder.set_section(g_category_names[effect.category]);
         }

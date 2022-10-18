@@ -188,9 +188,6 @@ LPEMirrorSymmetry::newWidget()
     vbox->pack_start(*hbox, true,true,2);
     hbox->pack_start(*center_vert_button, false, false,2);
     hbox->pack_start(*center_horiz_button, false, false,2);
-    if(Gtk::Widget* widg = defaultParamSet()) {
-        vbox->pack_start(*widg, true, true, 2);
-    }
     return dynamic_cast<Gtk::Widget *>(vbox);
 }
 

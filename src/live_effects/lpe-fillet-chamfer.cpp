@@ -257,9 +257,6 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
 
     vbox->pack_start(*fillet_container, true, true, 2);
     vbox->pack_start(*chamfer_container, true, true, 2);
-    if(Gtk::Widget* widg = defaultParamSet()) {
-        vbox->pack_start(*widg, true, true, 2);
-    }
     return vbox;
 }
 

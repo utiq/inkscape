@@ -21,6 +21,7 @@ enum Columns {
 CompletionPopup::CompletionPopup() :
     _builder(create_builder("completion-box.glade")),
     _search(get_widget<Gtk::SearchEntry>(_builder, "search")),
+    _button(get_widget<Gtk::MenuButton>(_builder, "menu-btn")),
     _completion(get_object<Gtk::EntryCompletion>(_builder, "completion")),
     _popup(get_widget<Gtk::Menu>(_builder, "popup"))
 {
@@ -50,10 +51,15 @@ CompletionPopup::CompletionPopup() :
     }, false);
 
     _search.signal_focus_in_event().connect([=](GdkEventFocus*){
+        _on_focus.emit();
         clear();
         return false;
     });
-
+    _button.signal_button_press_event().connect([=](GdkEventButton*){
+        _button_press.emit();
+        clear();
+        return false; 
+    }, false);
     _search.signal_focus_out_event().connect([=](GdkEventFocus*){
         clear();
         return false;
@@ -89,5 +95,14 @@ Gtk::SearchEntry& CompletionPopup::get_entry() {
 sigc::signal<void (int)>& CompletionPopup::on_match_selected() {
     return _match_selected;
 }
+
+sigc::signal<void ()>& CompletionPopup::on_button_press() {
+    return _button_press;
+}
+
+sigc::signal<bool ()>& CompletionPopup::on_focus() {
+    return _on_focus;
+}
+
 
 }}} // namespaces

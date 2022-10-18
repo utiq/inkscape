@@ -98,7 +98,7 @@ void Parameter::read_from_SVG()
     }
 }
 
-void Parameter::param_higlight(bool highlight, bool select)
+void Parameter::param_higlight(bool highlight)
 {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
     if (desktop) {
@@ -112,11 +112,6 @@ void Parameter::param_higlight(bool highlight, bool select)
         }
         if (highlight) {
             if (lpeitems.size() == 1 && param_effect->is_visible) {
-                if (select && !lpeitems[0]->isHidden()) {
-                    desktop->getSelection()->clear();
-                    desktop->getSelection()->add(lpeitems[0]);
-                    return;
-                }
                 SPCurve c;
                 std::vector<Geom::PathVector> cs; // = param_effect->getCanvasIndicators(lpeitems[0]);
                 Geom::OptRect bbox = lpeitems[0]->documentVisualBounds();
@@ -166,7 +161,7 @@ void Parameter::connect_selection_changed()
             std::vector<SPObject *> satellites = param_get_satellites();
             if (!selection_changed_connection) {
                 selection_changed_connection = new sigc::connection(
-                    selection->connectChanged(sigc::mem_fun(*this, &Parameter::change_selection)));
+                    selection->connectChangedFirst(sigc::mem_fun(*this, &Parameter::change_selection)));
             }
         }
     }
@@ -181,7 +176,7 @@ void Parameter::update_satellites()
         if (lpeitems.size() == 1){
             if (desktop) {
                 DocumentUndo::ScopedInsensitive _no_undo(desktop->getDocument());
-                param_higlight(false, false);
+                param_higlight(false);
                 Inkscape::Selection *selection = desktop->getSelection();
                 if (selection) {
                     std::vector<SPObject *> satellites = param_get_satellites();
@@ -195,18 +190,15 @@ void Parameter::update_satellites()
                             sp_add_class(iter, "UnoptimicedTransforms");
                             // if selection is current ref we highlight original sp_lpe_item to
                             // give visual feedback to the user to know what's the LPE item that generated the selection
-                            if (iter && selection->includes(iter, true)) {
-                                const gchar *classtoparentchar = iter->getAttribute("class");
-                                if (classtoparentchar) {
-                                    Glib::ustring classtoparent = classtoparentchar;
-                                    if (classtoparent.find("lpeselectparent ") != Glib::ustring::npos) {
-                                        param_higlight(true, true);
-                                    } else {
-                                        param_higlight(true, false);
-                                    }
-                                } else {
-                                    param_higlight(true, false);
+                            if (iter && selection->includes(iter, true) && param_effect->getLPEObj()->getId() && lpeitems[0]->getId()) {
+                                auto rootsatellites = cast<SPItem>(iter)->rootsatellites;
+                                Glib::ustring lpeid = Glib::ustring(param_effect->getLPEObj()->getId());
+                                Glib::ustring itemid = Glib::ustring(lpeitems[0]->getId());
+                                std::pair<Glib::ustring, Glib::ustring> rootsatellite = std::make_pair(itemid, lpeid);
+                                if (! (std::find(rootsatellites.begin(), rootsatellites.end(), rootsatellite) != rootsatellites.end()) ) {
+                                    dynamic_cast<SPItem *>(iter)->rootsatellites.push_back(rootsatellite);
                                 }
+                                param_higlight(true);
                                 break;
                             }
                         }
@@ -214,7 +206,7 @@ void Parameter::update_satellites()
                 }
             }
         } else {
-            param_higlight(false, false);
+            param_higlight(false);
         }
     }
 }

@@ -85,7 +85,7 @@ class Parameter {
 
     virtual void param_transform_multiply(Geom::Affine const & /*postmul*/, bool set){};
     virtual std::vector<SPObject *> param_get_satellites();
-    void param_higlight(bool highlight, bool select);
+    void param_higlight(bool highlight);
     sigc::connection *selection_changed_connection = nullptr;
     void change_selection(Inkscape::Selection *selection);
     void update_satellites();

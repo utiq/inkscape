@@ -95,8 +95,11 @@ public:
     PathEffectList getEffectList();
     PathEffectList const getEffectList() const;
 
+    void duplicateCurrentPathEffect();
     void downCurrentPathEffect();
     void upCurrentPathEffect();
+    void movePathEffect(gint origin, gint dest, bool select_moved = false);
+    SPLPEItem * flattenCurrentPathEffect();
     std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> getCurrentLPEReference();
     Inkscape::LivePathEffect::Effect* getCurrentLPE();
     std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> getPrevLPEReference(std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> lperef);
@@ -107,9 +110,8 @@ public:
     Inkscape::LivePathEffect::Effect* getLastLPE();
     bool setCurrentPathEffect(std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> lperef);
     bool setCurrentPathEffect(LivePathEffectObject const * lopeobj);
-
-    void removeCurrentPathEffect(bool keep_paths);
-    void removeAllPathEffects(bool keep_paths, bool recursive = false);
+    SPLPEItem * removeCurrentPathEffect(bool keep_paths);
+    SPLPEItem * removeAllPathEffects(bool keep_paths, bool recursive = false);
     void addPathEffect(std::string value, bool reset);
     void addPathEffect(LivePathEffectObject * new_lpeobj);
     void resetClipPathAndMaskLPE(bool fromrecurse = false);

@@ -392,19 +392,6 @@
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="search">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-      <packing>
-        <property name="left-attach">0</property>
-        <property name="top-attach">1</property>
-      </packing>
-    </child>
-    <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -661,6 +648,19 @@
       </object>
       <packing>
         <property name="left-attach">1</property>
+        <property name="top-attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="search">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+      <packing>
+        <property name="left-attach">0</property>
         <property name="top-attach">1</property>
       </packing>
     </child>

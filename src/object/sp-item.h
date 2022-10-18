@@ -24,6 +24,7 @@
 #include <2geom/forward.h>
 #include <2geom/affine.h>
 #include <2geom/rect.h>
+#include "live_effects/effect-enum.h"
 #include <vector>
 
 #include "sp-object.h"
@@ -175,7 +176,7 @@ public:
     SPMaskReference &getMaskRef();
 
     SPAvoidRef &getAvoidRef();
-
+    std::vector<std::pair <Glib::ustring, Glib::ustring> > rootsatellites;
   private:
     SPClipPathReference *clip_ref;
     SPMaskReference *mask_ref;

@@ -25,7 +25,7 @@ public:
     ColumnMenuBuilder(Gtk::Menu& menu, int columns, Gtk::IconSize icon_size = Gtk::ICON_SIZE_MENU)
         : _menu(menu), _columns(columns), _icon_size(static_cast<int>(icon_size)) {}
 
-    Gtk::MenuItem* add_item(Glib::ustring label, T section, Glib::ustring tooltip, Glib::ustring icon_name, std::function<void ()> callback) {
+    Gtk::MenuItem* add_item(Glib::ustring label, T section, Glib::ustring tooltip, Glib::ustring icon_name, bool sensitive, bool customtooltip, std::function<void ()> callback) {
         _new_section = false;
         _section = nullptr;
         if (!_last_section || *_last_section != section) {
@@ -63,8 +63,12 @@ public:
         grid->insert_column(1);
         grid->attach(*Gtk::make_managed<Gtk::Image>(std::move(icon_name), _icon_size), 0, 0);
         grid->attach(*Gtk::make_managed<Gtk::Label>(std::move(label), Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true), 1, 0);
+        grid->set_sensitive(sensitive);
         item->add(*grid);
-        item->set_tooltip_markup(std::move(tooltip));
+        if (!customtooltip) {
+            item->set_tooltip_markup(std::move(tooltip));
+        }
+        item->set_sensitive(sensitive);
         item->signal_activate().connect(callback);
         item->show_all();
         _menu.attach(*item, _col, _col + 1, _row, _row + 1);

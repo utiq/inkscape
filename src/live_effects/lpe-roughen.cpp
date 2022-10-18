@@ -84,6 +84,7 @@ void LPERoughen::doOnApply(SPLPEItem const *lpeitem)
 {
     Geom::OptRect bbox = lpeitem->bounds(SPItem::GEOMETRIC_BBOX);
     if (bbox) {
+        
         std::vector<Parameter *>::iterator it = param_vector.begin();
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         while (it != param_vector.end()) {
@@ -186,9 +187,6 @@ Gtk::Widget *LPERoughen::newWidget()
             }
         }
         ++it;
-    }
-    if (Gtk::Widget *widg = defaultParamSet()) {
-        vbox->pack_start(*widg, true, true, 2);
     }
     return dynamic_cast<Gtk::Widget *>(vbox);
 }

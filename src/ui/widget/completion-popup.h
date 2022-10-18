@@ -10,6 +10,7 @@
 #include <gtkmm/entrycompletion.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/menu.h>
+#include <gtkmm/menubutton.h>
 #include <gtkmm/searchentry.h>
 #include <sigc++/connection.h>
 #include "labelled.h"
@@ -30,14 +31,19 @@ public:
     void add_to_completion_list(int id, Glib::ustring name, Glib::ustring icon_name, Glib::ustring search_text = Glib::ustring());
 
     sigc::signal<void (int)>& on_match_selected();
+    sigc::signal<void ()>& on_button_press();
+    sigc::signal<bool ()>& on_focus();
 
 private:
     Glib::RefPtr<Gtk::Builder> _builder;
     Glib::RefPtr<Gtk::ListStore> _list;
     Gtk::SearchEntry& _search;
+    Gtk::MenuButton& _button;
     Gtk::Menu& _popup;
     Glib::RefPtr<Gtk::EntryCompletion> _completion;
     sigc::signal<void (int)> _match_selected;
+    sigc::signal<void ()> _button_press;
+    sigc::signal<bool ()> _on_focus;
 };
 
 }}} // namespaces

@@ -2644,7 +2644,13 @@ void InkscapePreferences::initPageBehavior()
     _page_cleanup.add_line( true, "", _cleanup_swatches, "",
                            _("Remove unused swatches when doing a document cleanup")); // tooltip
     this->AddPage(_page_cleanup, _("Cleanup"), iter_behavior, PREFS_PAGE_BEHAVIOR_CLEANUP);
-
+    _page_lpe.add_group_header( _("General"));
+    _lpe_show_experimental.init ( _("Show experimental effects"), "/dialogs/livepatheffect/showexperimental", false); // text label
+    _page_lpe.add_line( true, "", _lpe_show_experimental, "",
+                            _("Show experimental effects")); // tooltip
+    _lpe_show_gallery.init ( _("Show deprecated LPE gallery"), "/dialogs/livepatheffect/showgallery", false); // text label
+    _page_lpe.add_line( true, "", _lpe_show_gallery, "",
+                            _("Show deprecated LPE gallery")); // tooltip
     _page_lpe.add_group_header( _("Tiling"));
     _lpe_copy_mirroricons.init ( _("Add advanced tiling options"), "/live_effects/copy/mirroricons", true); // text label
     _page_lpe.add_line( true, "", _lpe_copy_mirroricons, "",
