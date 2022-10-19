@@ -555,12 +555,16 @@ void StrokeStyle::unitChangedCB()
         widthSpin->set_value(100);
     } else {
         // Remove the non-scaling-stroke effect and the hairline extensions
-        SPCSSAttr *css = sp_repr_css_attr_new();
-        sp_repr_css_unset_property(css, "vector-effect");
-        sp_repr_css_unset_property(css, "-inkscape-stroke");
-        sp_desktop_set_style(desktop, css);
-        sp_repr_css_attr_unref(css);
-        css = nullptr;
+        if (!update) {
+            SPCSSAttr *css = sp_repr_css_attr_new();
+            sp_repr_css_unset_property(css, "vector-effect");
+            sp_repr_css_unset_property(css, "-inkscape-stroke");
+            sp_desktop_set_style(desktop, css);
+            sp_repr_css_attr_unref(css);
+            css = nullptr;
+            DocumentUndo::done(desktop->getDocument(), _("Remove hairline stroke"),
+                INKSCAPE_ICON("dialog-fill-and-stroke"));
+        }
         if (_old_unit->type == Inkscape::Util::UNIT_TYPE_DIMENSIONLESS) {
             // Prevent update of unit (inf-loop) in updateLine
             _old_unit = new_unit;
