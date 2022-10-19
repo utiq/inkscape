@@ -15,9 +15,8 @@
 ### dependencies ###############################################################
 
 source "$(dirname "${BASH_SOURCE[0]}")"/jhb/etc/jhb.conf.sh
-source "$(dirname "${BASH_SOURCE[0]}")"/src/cairosvg.sh
+
 source "$(dirname "${BASH_SOURCE[0]}")"/src/ink.sh
-source "$(dirname "${BASH_SOURCE[0]}")"/src/png2icns.sh
 source "$(dirname "${BASH_SOURCE[0]}")"/src/svg2icns.sh
 
 bash_d_include error
@@ -39,8 +38,8 @@ error_trace_enable
 
 ( # run gtk-mac-bundler
 
-  cp "$SELF_DIR"/inkscape.bundle "$INK_BLD_DIR"
-  cp "$SELF_DIR"/inkscape.plist "$INK_BLD_DIR"
+  cp "$SELF_DIR"/src/inkscape.bundle "$INK_BLD_DIR"
+  cp "$SELF_DIR"/res/inkscape.plist "$INK_BLD_DIR"
 
   cd "$INK_BLD_DIR" || exit 1
   export ARTIFACT_DIR=$ARTIFACT_DIR   # referenced in inkscape.bundle
@@ -91,17 +90,16 @@ sed -i '' \
 
 # update Inkscape version information
 /usr/libexec/PlistBuddy \
-  -c "Set CFBundleShortVersionString '$(ink_get_version) \
-($(ink_get_repo_shorthash))'" \
-  "$INK_APP_CON_DIR"/Info.plist
+  -c "Set CFBundleShortVersionString '$(ink_get_version)'" \
+  "$INK_APP_PLIST"
 /usr/libexec/PlistBuddy \
-  -c "Set CFBundleVersion '$(ink_get_version) ($(ink_get_repo_shorthash))'" \
-  "$INK_APP_CON_DIR"/Info.plist
+  -c "Set CFBundleVersion '$INK_BUILD'" \
+  "$INK_APP_PLIST"
 
 # update minimum system version according to deployment target
 /usr/libexec/PlistBuddy \
   -c "Set LSMinimumSystemVersion $SYS_SDK_VER" \
-  "$INK_APP_CON_DIR"/Info.plist
+  "$INK_APP_PLIST"
 
 # add some metadata to make CI identifiable
 if $CI_GITLAB; then
@@ -113,7 +111,7 @@ if $CI_GITLAB; then
         for (i=1; i<=NF; i++)
         printf "%s", toupper(substr($i,1,1)) tolower(substr($i,2))
       }'
-    ) string $(eval echo \$CI_$var)" "$INK_APP_CON_DIR"/Info.plist
+    ) string $(eval echo \$CI_$var)" "$INK_APP_PLIST"
   done
 fi
 
@@ -125,7 +123,14 @@ svg2icns \
 
 #----------------------------------------------------------- add file type icons
 
-cp "$INK_DIR"/packaging/macos/resources/*.icns "$INK_APP_RES_DIR"
+# In order to simplify renaming the 'resources' folder to 'res', support
+# both locations for now.
+
+if [ -d "$INK_DIR"/packaging/macos/res ]; then
+  cp "$INK_DIR"/packaging/macos/res/*.icns "$INK_APP_RES_DIR"
+else
+  cp "$INK_DIR"/packaging/macos/resources/*.icns "$INK_APP_RES_DIR"
+fi
 
 #------------------------------------------------------- add Python and packages
 
@@ -168,7 +173,7 @@ done
 
 # Our customized version loses all the non-macOS paths and sets a cache
 # directory below '$HOME/Library/Application Support/Inkscape'.
-cp "$SELF_DIR"/fonts.conf "$INK_APP_ETC_DIR"/fonts
+cp "$SELF_DIR"/res/fonts.conf "$INK_APP_ETC_DIR"/fonts
 
 #-------------------------------- use rpath for GObject introspection repository
 

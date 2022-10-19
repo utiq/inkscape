@@ -128,6 +128,7 @@ inkscape:macos:x64:
     - if: '$CI_PROJECT_NAMESPACE == "dehesselle"'
   variables:
     SDKROOT: /opt/sdks/MacOSX10.13.sdk
+    INK_BUILD: $CI_PIPELINE_IID
   before_script:
     # workaround: after_script doesn't run for cancelled/timed out jobs, leaving
     #             non-ephemeral runners in an unclean state
@@ -141,7 +142,7 @@ inkscape:macos:x64:
   artifacts:
     expire_in: 1 year
     paths:
-      - Inkscape.dmg
+      - Inkscape*.dmg
       - toolset_overlay.tar.xz
 
 
@@ -173,7 +174,7 @@ inkscape:macos:x64:gitlab:
   when: manual
   variables:
     CCACHE_DIR: $CI_PROJECT_DIR/ccache
-    SYS_IGNORE_USR_LOCAL: "true"
+    SYS_USRLOCAL_IGNORE: "true"
     SDKROOT: ""
   cache:
     key: "cache-macos"

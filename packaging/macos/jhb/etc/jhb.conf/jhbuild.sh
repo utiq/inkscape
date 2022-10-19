@@ -20,7 +20,7 @@ export JHBUILDRC=$ETC_DIR/jhbuildrc
 export JHBUILDRC_CUSTOM=$JHBUILDRC-custom
 
 JHBUILD_REQUIREMENTS="\
-  certifi==2022.6.15\
+  certifi==2022.9.24\
   meson==0.59.2\
   ninja==1.10.2.3\
 "
@@ -42,7 +42,7 @@ JHBUILD_PYTHON_VER_MAJOR=3
 JHBUILD_PYTHON_VER_MINOR=8
 JHBUILD_PYTHON_VER=$JHBUILD_PYTHON_VER_MAJOR.$JHBUILD_PYTHON_VER_MINOR
 JHBUILD_PYTHON_URL="https://gitlab.com/api/v4/projects/26780227/packages/\
-generic/python_macos/14/python_${JHBUILD_PYTHON_VER/./}_$(uname -m).tar.xz"
+generic/python_macos/15/python_${JHBUILD_PYTHON_VER/./}_$(uname -m).tar.xz"
 JHBUILD_PYTHON_DIR=$OPT_DIR/Python.framework/Versions/$JHBUILD_PYTHON_VER
 JHBUILD_PYTHON_BIN_DIR=$JHBUILD_PYTHON_DIR/bin
 

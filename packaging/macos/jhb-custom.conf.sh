@@ -18,10 +18,8 @@
 
 ### variables ##################################################################
 
-VERSION=0.67
+VERSION=0.68
 VER_DIR_TEMPLATE="\$WRK_DIR/mibap-\$VERSION"
-
-RECOMMENDED_SDK_VER_X86_64=10.13
 
 RELEASE_ARCHIVE=mibap-"$VERSION"_$(uname -m).dmg
 

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 René de Hesselle <dehesselle@web.de>
+# SPDX-FileCopyrightText: 2022 René de Hesselle <dehesselle@web.de>
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -27,54 +27,68 @@ DMGBUILD_PIP="\
   dmgbuild==1.5.2\
   ds-store==1.3.0\
   mac-alias==2.2.0\
-  pyobjc-core==7.3\
-  pyobjc-framework-Cocoa==7.3\
-  pyobjc-framework-Quartz==7.3\
+  pyobjc-core==8.5.1\
+  pyobjc-framework-Cocoa==8.5.1\
+  pyobjc-framework-Quartz==8.5.1\
 "
-
-DMGBUILD_CONFIG="$SRC_DIR"/inkscape_dmg.py
 
 ### functions ##################################################################
 
 function dmgbuild_install
 {
   # shellcheck disable=SC2086 # we need word splitting here
-  jhb run $JHBUILD_PYTHON_PIP install \
-    --prefix $USR_DIR --ignore-installed $DMGBUILD_PIP
+  jhb run $JHBUILD_PYTHON_PIP install --prefix=$USR_DIR wheel $DMGBUILD_PIP
 
   # dmgbuild has issues with detaching, workaround is to increase max retries
-  sed -i '' '$ s/HiDPI)/HiDPI, detach_retries=15)/g' "$USR_DIR"/bin/dmgbuild
+  gsed -i '$ s/HiDPI)/HiDPI, detach_retries=15)/g' "$USR_DIR"/bin/dmgbuild
 }
 
 function dmgbuild_run
 {
-  local dmg_file=$1
+  local config=$1
+  local plist=$2
+  local dmg=$3   # optional; default is <name>_<version>_<build>_<arch>.dmg
+
+  local app_dir
+  app_dir=$(echo "$ARTIFACT_DIR"/*.app)
+
+  if [ -z "$dmg" ]; then
+    local version
+    version=$(/usr/libexec/PlistBuddy \
+       -c "Print :CFBundleShortVersionString" "$plist")
+    local build
+    build=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$plist")
+
+    dmg=$(basename -s .app "$app_dir")_${version}_${build}_$(uname -m).dmg
+  fi
 
   # Copy templated version of the file (it contains placeholders) to source
   # directory. They copy will be modified to contain the actual values.
-  cp "$SELF_DIR"/"$(basename "$DMGBUILD_CONFIG")" "$SRC_DIR"
+  cp "$config" "$SRC_DIR"
+  config=$SRC_DIR/$(basename "$config")
 
   # set application
-  sed -i '' "s|PLACEHOLDERAPPLICATION|$INK_APP_DIR|" "$DMGBUILD_CONFIG"
+  gsed -i "s|PLACEHOLDERAPPLICATION|$app_dir|" "$config"
 
   # set disk image icon (if it exists)
   local icon
-  icon=$SRC_DIR/$(basename -s .py "$DMGBUILD_CONFIG").icns
+  icon=$SRC_DIR/$(basename -s .py "$config").icns
   if [ -f "$icon" ]; then
-    sed -i '' "s|PLACEHOLDERICON|$icon|" "$DMGBUILD_CONFIG"
+    gsed -i "s|PLACEHOLDERICON|$icon|" "$config"
   fi
 
   # set background image (if it exists)
   local background
-  background=$SRC_DIR/$(basename -s .py "$DMGBUILD_CONFIG").png
+  background=$SRC_DIR/$(basename -s .py "$config").png
   if [ -f "$background" ]; then
-    sed -i '' "s|PLACEHOLDERBACKGROUND|$background|" "$DMGBUILD_CONFIG"
+    gsed -i "s|PLACEHOLDERBACKGROUND|$background|" "$config"
   fi
 
   # Create disk image in temporary location and move to target location
   # afterwards. This way we can run multiple times without requiring cleanup.
-  dmgbuild -s "$DMGBUILD_CONFIG" "$(basename -s .app "$INK_APP_DIR")" "$TMP_DIR"/"$(basename "$dmg_file")"
-  mv "$TMP_DIR"/"$(basename "$dmg_file")" "$dmg_file"
+  dmgbuild -s "$config" "$(basename -s .app "$app_dir")" \
+    "$TMP_DIR"/"$(basename "$dmg")"
+  mv "$TMP_DIR"/"$(basename "$dmg")" "$dmg"
 }
 
 ### main #######################################################################

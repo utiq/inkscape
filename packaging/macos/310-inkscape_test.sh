@@ -15,6 +15,7 @@
 ### dependencies ###############################################################
 
 source "$(dirname "${BASH_SOURCE[0]}")"/jhb/etc/jhb.conf.sh
+
 source "$(dirname "${BASH_SOURCE[0]}")"/src/ink.sh
 
 bash_d_include error
@@ -51,5 +52,10 @@ cd "$INK_BLD_DIR" || exit 1
 ninja tests   # build tests
 
 # run tests
-ctest -V
-
+# exclude four tests: https://gitlab.com/inkscape/inbox/-/issues/7304
+ctest -V -E "(\
+export-clone-group-filtered-mp|\
+export-filtered-clones-mp|\
+export-grouped-mp|\
+export-with-filters-multipage\
+)"
