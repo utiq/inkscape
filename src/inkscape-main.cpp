@@ -149,6 +149,18 @@ static void set_macos_app_bundle_env(gchar const *program_dir)
 }
 #endif
 
+#ifdef _WIN32
+// some win32-specific environment adjustments
+static void set_win32_env()
+{
+    // activate "experimental" native DND implementation that uses OLE2
+    // - fixes some docking issues with the new dialog system
+    // - is likely to become the default at some point, see
+    //     https://discourse.gnome.org/t/can-should-we-use-the-experimental-win32-ole2-dnd-implementation/4062
+    Glib::setenv("GDK_WIN32_USE_EXPERIMENTAL_OLE2_DND", "1");
+}
+#endif
+
 /**
  * Convert some legacy 0.92.x command line options to 1.0.x options.
  * @param[in,out] argc The main() argc argument, will be modified
@@ -245,6 +257,9 @@ int main(int argc, char *argv[])
         }
     }
 #elif defined _WIN32
+    // adjust environment
+    set_win32_env();
+
     // temporarily switch console encoding to UTF8 while Inkscape runs
     // as everything else is a mess and it seems to work just fine
     const unsigned int initial_cp = GetConsoleOutputCP();
