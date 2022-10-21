@@ -84,13 +84,6 @@ void resize_widget_children(Gtk::Widget *widget) {
 }
 }
 
-Gdk::RGBA faded_color(const Gdk::RGBA& a, float amount)
-{
-    Gdk::RGBA result = a;
-    result.set_alpha(a.get_alpha() * (1-amount));
-    return result;
-}
-
 Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio) {
     auto lerp = [](double v0, double v1, double t){ return (1.0 - t) * v0 + t * v1; };
     Gdk::RGBA result;

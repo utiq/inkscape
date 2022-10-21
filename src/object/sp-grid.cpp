@@ -25,6 +25,7 @@
 #include "desktop.h"
 #include "document.h"
 #include "grid-snapper.h"
+#include "page-manager.h"
 #include "snapper.h"
 #include "svg/svg-color.h"
 #include "util/units.h"
@@ -77,6 +78,9 @@ void SPGrid::build(SPDocument *doc, Inkscape::XML::Node *repr)
 
     _checkOldGrid(doc, repr);
 
+    _page_selected_connection = document->getPageManager().connectPageSelected([=](void *) { update(nullptr, 0); });
+    _page_modified_connection = document->getPageManager().connectPageModified([=](void *) { update(nullptr, 0); });
+
     doc->addResource("grid", this);
 }
 
@@ -87,6 +91,9 @@ void SPGrid::release()
     }
 
     assert(views.empty());
+
+    _page_selected_connection.disconnect();
+    _page_modified_connection.disconnect();
 
     SPObject::release();
 }
@@ -299,6 +306,10 @@ void SPGrid::modified(unsigned int flags)
 void SPGrid::update(SPCtx *ctx, unsigned int flags)
 {
     auto [origin, spacing] = getEffectiveOriginAndSpacing();
+
+    auto prefs = Inkscape::Preferences::get();
+    if (prefs->getBool("/options/origincorrection/page", true))
+        origin *= document->getPageManager().getSelectedPageAffine();
 
     for (auto &view : views) {
         view->set_visible(_visible && _enabled);

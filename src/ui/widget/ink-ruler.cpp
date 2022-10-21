@@ -84,7 +84,7 @@ Ruler::set_unit(Inkscape::Util::Unit const *unit)
 
 // Set range for ruler, update ticks.
 void
-Ruler::set_range(const double& lower, const double& upper)
+Ruler::set_range(double lower, double upper)
 {
     if (_lower != lower || _upper != upper) {
 
@@ -103,7 +103,7 @@ Ruler::set_range(const double& lower, const double& upper)
 /**
  * Set the location of the currently selected page.
  */
-void Ruler::set_page(const double &lower, const double &upper)
+void Ruler::set_page(double lower, double upper)
 {
     if (_page_lower != lower || _page_upper != upper) {
         _page_lower = lower;
@@ -117,7 +117,7 @@ void Ruler::set_page(const double &lower, const double &upper)
 /**
  * Set the location of the currently selected page.
  */
-void Ruler::set_selection(const double &lower, const double &upper)
+void Ruler::set_selection(double lower, double upper)
 {
     if (_sel_lower != lower || _sel_upper != upper) {
         _sel_lower = lower;
@@ -285,12 +285,21 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
     // Draw bottom/right line of ruler
     paint_line(_foreground, aheight);
 
-    // Draw a shadow which overlaps any previously painted object. We would use a gtk background
-    // image gradient here, but it has some strange artefacts from the style context.
-    paint_line(faded_color(_shadow, 0.50), 1);
-    paint_line(faded_color(_shadow, 0.70), 2);
-    paint_line(faded_color(_shadow, 0.85), 3);
-    paint_line(faded_color(_shadow, 0.95), 4);
+    // Draw a shadow which overlaps any previously painted object.
+    auto paint_shadow = [=](double size_x, double size_y, double width, double height) {
+        auto gr = Cairo::LinearGradient::create(0, 0, size_x, size_y);
+        gr->add_color_stop_rgba(0.0, _shadow.get_red(), _shadow.get_green(), _shadow.get_blue(), _shadow.get_alpha());
+        gr->add_color_stop_rgba(1.0, _shadow.get_red(), _shadow.get_green(), _shadow.get_blue(), 0.0);
+        cr->rectangle(0, 0, width, height);
+        cr->set_source(gr);
+        cr->fill();
+    };
+    int gradient_size = 10;
+    if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
+        paint_shadow(0, gradient_size, allocation.get_width(), gradient_size);
+    } else {
+        paint_shadow(gradient_size, 0, gradient_size, allocation.get_height());
+    }
 
     // Figure out scale. Largest ticks must be far enough apart to fit largest text in vertical ruler.
     // We actually require twice the distance.
@@ -353,9 +362,11 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
         if (i%ruler_metric.subdivide[divide_index] == 0) {
             cr->save();
 
-            int label_value = std::round(i*units_per_tick);
-            if (_label_cache.find(label_value) == _label_cache.end()) {
-                _label_cache.insert({label_value, draw_label(surface_in, label_value)});
+            int label_value = std::round(i * units_per_tick);
+
+            auto &label = _label_cache[label_value];
+            if (!label) {
+                label = draw_label(surface_in, label_value);
             }
 
             // Align text to pixel
@@ -369,7 +380,7 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
             // We don't know the surface height/width, damn you cairo.
             cr->rectangle(x, y, 100, 100);
             cr->clip();
-            cr->set_source(_label_cache[label_value], x, y);
+            cr->set_source(label, x, y);
             cr->paint();
             cr->restore();
         }
@@ -430,7 +441,7 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
 /**
  * Generate the label as it's only small surface for caching.
  */
-Cairo::RefPtr<Cairo::Surface> Ruler::draw_label(Cairo::RefPtr<Cairo::Surface> surface_in, int label_value)
+Cairo::RefPtr<Cairo::Surface> Ruler::draw_label(Cairo::RefPtr<Cairo::Surface> const &surface_in, int label_value)
 {
     bool rotate = _orientation != Gtk::ORIENTATION_HORIZONTAL;
 
@@ -447,10 +458,6 @@ Cairo::RefPtr<Cairo::Surface> Ruler::draw_label(Cairo::RefPtr<Cairo::Surface> su
     auto surface = Cairo::Surface::create(surface_in, Cairo::CONTENT_COLOR_ALPHA, text_width, text_height);
     Cairo::RefPtr<::Cairo::Context> cr = ::Cairo::Context::create(surface);
 
-    //cr->set_source_rgba(1.0, 0.0, 0.0, 0.5);
-    //cr->rectangle(0, 0, text_width, text_height);
-    //cr->fill();
-
     cr->save();
     Gdk::Cairo::set_source_rgba(cr, _foreground);
     if (rotate) {
@@ -460,7 +467,6 @@ Cairo::RefPtr<Cairo::Surface> Ruler::draw_label(Cairo::RefPtr<Cairo::Surface> su
     }
     layout->show_in_cairo_context(cr);
     cr->restore();
-
 
     return surface;
 }

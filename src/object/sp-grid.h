@@ -148,6 +148,9 @@ private:
     GridType _grid_type;
 
     std::unique_ptr<Inkscape::Snapper> _snapper;
+
+    sigc::connection _page_selected_connection;
+    sigc::connection _page_modified_connection;
 };
 
 #endif // SEEN_SP_GRID_H_
