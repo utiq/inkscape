@@ -134,7 +134,7 @@ static void remove_marker_auto_start_reverse(Inkscape::XML::Node *repr,
     if (!value.empty()) {
 
         // Find reference <marker>
-        static Glib::RefPtr<Glib::Regex> regex = Glib::Regex::create("url\\(#([A-z0-9#]*)\\)");
+        static Glib::RefPtr<Glib::Regex> regex = Glib::Regex::create("url\\(#([^\\)]*)\\)");
         Glib::MatchInfo matchInfo;
         regex->match(value, matchInfo);
 
