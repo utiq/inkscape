@@ -17,6 +17,8 @@ ensure_command()
     command -v $1 >/dev/null 2>&1 || { echo >&2 "Required command '$1' not found. Aborting."; exit 1; }
 }
 
+export LANG=C # Needed to force . as the decimal separator
+
 ensure_command "convert"
 ensure_command "compare"
 ensure_command "bc"
@@ -77,7 +79,7 @@ then
 fi
 
 # Check if the difference between the files is within tolerance
-CONDITION="$RELATIVE_ERROR * 100 <= $PERCENTAGE_DIFFERENCE_ALLOWED"
+CONDITION=$(printf "%.12f * 100 <= $PERCENTAGE_DIFFERENCE_ALLOWED" "$RELATIVE_ERROR")
 WITHIN_TOLERANCE=$(echo "${CONDITION}" | bc)
 if [[ $? -ne 0 ]]
 then
@@ -85,7 +87,8 @@ then
     exit 42
 fi
 
-PERCENTAGE_ERROR=$(echo "$RELATIVE_ERROR * 100" | bc)
+PERCENTAGE_ERROR_FORMULA=$(printf "%.4f * 100" "$RELATIVE_ERROR")
+PERCENTAGE_ERROR=$(echo "${PERCENTAGE_ERROR_FORMULA}" | bc)
 if (( $WITHIN_TOLERANCE ))
 then
     # Test passed: print stats and clean up the files.
