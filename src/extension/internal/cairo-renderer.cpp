@@ -150,26 +150,106 @@ static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx, SPPage *pa
 
 static void sp_shape_render_invoke_marker_rendering(SPMarker* marker, Geom::Affine tr, SPStyle* style, CairoRenderContext *ctx, SPItem *origin)
 {
-    bool render = true;
     if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
         if (style->stroke_width.computed > 1e-9) {
             tr = Geom::Scale(style->stroke_width.computed) * tr;
         } else {
-            render = false; // stroke width zero and marker is thus scaled down to zero, skip
+            return; // stroke width zero and marker is thus scaled down to zero, skip
         }
     }
 
-    if (render) {
-        SPItem* marker_item = sp_item_first_item_child(marker);
-        if (marker_item) {
-            tr = (Geom::Affine)marker_item->transform * (Geom::Affine)marker->c2p * tr;
-            Geom::Affine old_tr = marker_item->transform;
-            marker_item->transform = tr;
-            ctx->getRenderer()->renderItem (ctx, marker_item, origin);
-            marker_item->transform = old_tr;
-        }
+    if (auto marker_item = sp_item_first_item_child(marker)) {
+        tr = marker_item->transform * marker->c2p * tr;
+        Geom::Affine old_tr = marker_item->transform;
+        marker_item->transform = tr;
+        ctx->getRenderer()->renderItem (ctx, marker_item, origin);
+        marker_item->transform = old_tr;
     }
 }
+
+/** A helper RAII class to manage the temporary rewriting of styles
+ * needed to support context-fill and context-stroke values for fill
+ * and stroke paints. The destructor restores the old values.
+ */
+class ContextPaintManager
+{
+public:
+    ContextPaintManager(SPStyle *target_style, SPItem *style_origin)
+        : _managed_style{target_style}
+        , _origin{style_origin}
+    {
+        auto const fill_origin = target_style->fill.paintOrigin;
+        if (fill_origin == SP_CSS_PAINT_ORIGIN_CONTEXT_FILL) {
+            _copyPaint(&target_style->fill, _findContextPaint(true));
+        } else if (fill_origin == SP_CSS_PAINT_ORIGIN_CONTEXT_STROKE) {
+            _copyPaint(&target_style->fill, _findContextPaint(false));
+        }
+
+        auto const stroke_origin = target_style->stroke.paintOrigin;
+        if (stroke_origin == SP_CSS_PAINT_ORIGIN_CONTEXT_FILL) {
+            _copyPaint(&target_style->stroke, _findContextPaint(true));
+        } else if (stroke_origin == SP_CSS_PAINT_ORIGIN_CONTEXT_STROKE) {
+            _copyPaint(&target_style->stroke, _findContextPaint(false));
+        }
+    }
+
+    ~ContextPaintManager()
+    {
+        // Restore rewritten paints.
+        if (_rewrote_fill) {
+            _managed_style->fill = _old_fill;
+        }
+        if (_rewrote_stroke) {
+            _managed_style->stroke = _old_stroke;
+        }
+    }
+
+private:
+    /** @brief Find the paint that context-fill or context-stroke is referring to.
+     *
+     * @param is_fill If true, handle context-fill, otherwise context-stroke.
+     * @return The paint relevant to the specified context.
+     */
+    SPIPaint _findContextPaint(bool is_fill) const
+    {
+        if (auto *clone = cast<SPUse>(_origin); clone && clone->child) {
+            // Copy the paint of the child and merge with the parent's. This is similar
+            // to style merge operations performed when unlinking a clone, but here it's
+            // done only for a paint.
+            SPIPaint paint = *clone->child->style->getFillOrStroke(is_fill);
+            paint.merge(clone->style->getFillOrStroke(is_fill));
+            return paint;
+        }
+        return *_origin->style->getFillOrStroke(is_fill);
+    }
+
+    /** Copy paint from origin to destination, saving a copy of the old paint. */
+    template<typename PainT>
+    void _copyPaint(PainT *destination, SPIPaint paint)
+    {
+        // Keep a copy of the old paint
+        if constexpr (std::is_same<PainT, decltype(_old_fill)>::value) {
+            _rewrote_fill = true;
+            _old_fill = *destination;
+        } else if constexpr (std::is_same<PainT, decltype(_old_stroke)>::value) {
+            _rewrote_stroke = true;
+            _old_stroke = *destination;
+        } else {
+            static_assert("ContextPaintManager::_copyPaint() instantiated with neither fill nor stroke type.");
+        }
+
+        PainT new_value;
+        new_value.upcast()->operator=(paint);
+        *destination = new_value;
+    }
+
+    SPStyle *_managed_style;
+    SPItem *_origin;
+    decltype(_managed_style->fill) _old_fill;
+    decltype(_managed_style->stroke) _old_stroke;
+    bool _rewrote_fill = false;
+    bool _rewrote_stroke = false;
+};
 
 static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *origin)
 {
@@ -177,84 +257,27 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
         return;
     }
 
+    Geom::PathVector const &pathv = shape->curve()->get_pathvector();
+    if (pathv.empty()) {
+        return;
+    }
+
     Geom::OptRect pbox = shape->geometricBounds();
-    
     SPStyle* style = shape->style;
-    auto fill_origin = style->fill.paintOrigin;
-    auto stroke_origin = style->stroke.paintOrigin;
-
-    /** An RAII class to temporarily replace a paint server href. */
-    using PaintHref = decltype(style->fill.value.href);
-    class TemporaryReplace
-    {
-    public:
-        TemporaryReplace(PaintHref *where, PaintHref what)
-            : _where{where}
-            , _oldval{*where}
-        {
-            *where = what;
-        }
-        ~TemporaryReplace() { *_where = _oldval; }
-
-    private:
-        PaintHref *const _where;
-        PaintHref const _oldval;
-    };
-    std::unique_ptr<TemporaryReplace> replace_fill, replace_stroke;
+    std::unique_ptr<ContextPaintManager> context_fs_manager;
 
     if (origin) {
         // If the shape is a child of a marker, we must set styles from the origin.
-        SPMarker *marker = nullptr;
         auto parentobj = shape->parent;
         while (parentobj) {
-            marker = dynamic_cast<SPMarker *>(parentobj);
-            if (marker) {
+            if (is<SPMarker>(parentobj)) {
+                // Create a manager to temporarily rewrite any fill/stroke properties
+                // set to context-fill/context-stroke with usable values.
+                context_fs_manager = std::make_unique<ContextPaintManager>(style, origin);
                 break;
             }
             parentobj = parentobj->parent;
         }
-        if (marker) {
-            // Origin will ultimately be either the original object the marker
-            // was added to OR a use tag. See sp_use_render for where this object
-            // comes from when it's a clone.
-            SPStyle *styleorig   = origin->style;
-            bool iscolorfill     = styleorig->fill.isColor() || (styleorig->fill.isPaintserver() && !styleorig->getFillPaintServer()->isValid());
-            bool iscolorstroke   = styleorig->stroke.isColor() || (styleorig->stroke.isPaintserver() && !styleorig->getStrokePaintServer()->isValid());
-            bool fillctxfill     = style->fill.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_FILL;
-            bool fillctxstroke   = style->fill.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_STROKE;
-            bool strokectxfill   = style->stroke.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_FILL;
-            bool strokectxstroke = style->stroke.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_STROKE;
-
-            if (fillctxfill || fillctxstroke) {
-                if (fillctxfill ? iscolorfill : iscolorstroke) {
-                    style->fill.setColor(fillctxfill ? styleorig->fill.value.color : styleorig->stroke.value.color);
-                } else if (fillctxfill ? styleorig->fill.isPaintserver() : styleorig->stroke.isPaintserver()) {
-                    replace_fill = std::make_unique<TemporaryReplace>(&style->fill.value.href,
-                                                                      fillctxfill ? styleorig->fill.value.href
-                                                                                  : styleorig->stroke.value.href);
-                } else {
-                    style->fill.setNone();
-                }
-            }
-            if (strokectxfill || strokectxstroke) {
-                if (strokectxfill ? iscolorfill : iscolorstroke) {
-                    style->stroke.setColor(strokectxfill ? styleorig->fill.value.color : styleorig->stroke.value.color);
-                } else if (strokectxfill ? styleorig->fill.isPaintserver() : styleorig->stroke.isPaintserver()) {
-                    replace_stroke = std::make_unique<TemporaryReplace>(&style->stroke.value.href,
-                                                                        strokectxfill ? styleorig->fill.value.href
-                                                                                      : styleorig->stroke.value.href);
-                } else {
-                    style->stroke.setNone();
-                }
-            }
-            style->fill.paintOrigin = SP_CSS_PAINT_ORIGIN_NORMAL;
-            style->stroke.paintOrigin = SP_CSS_PAINT_ORIGIN_NORMAL;
-        }
-    }
-
-    Geom::PathVector const &pathv = shape->curve()->get_pathvector();
-    if (pathv.empty()) {
-        return;
     }
 
     if (style->paint_order.layer[0] == SP_CSS_PAINT_ORDER_NORMAL ||
@@ -272,6 +295,7 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
         ctx->renderPathVector(pathv, style, pbox, CairoRenderContext::FILL_ONLY);
     }
 
+    // TODO: Factor marker rendering out into a separate function; reduce code duplication.
     // START marker
     for (int i = 0; i < 2; i++) {  // SP_MARKER_LOC and SP_MARKER_LOC_START
         if ( shape->_marker[i] ) {
@@ -377,11 +401,6 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
                style->paint_order.layer[1] == SP_CSS_PAINT_ORDER_MARKER ) {
         ctx->renderPathVector(pathv, style, pbox, CairoRenderContext::FILL_ONLY);
     }
-
-    // Put the style's paint origin back, in case this shape is a marker
-    // which is rendered multple times.
-    style->fill.paintOrigin = fill_origin;
-    style->stroke.paintOrigin = stroke_origin;
 }
 
 static void sp_group_render(SPGroup *group, CairoRenderContext *ctx, SPItem *origin, SPPage *page)
@@ -709,7 +728,7 @@ void CairoRenderer::renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *or
     if (group && style->mix_blend_mode.set && style->mix_blend_mode.value != SP_CSS_BLEND_NORMAL) {
         state->need_layer = true;
         blend = true;
-    } 
+    }
     // Draw item on a temporary surface so a mask, clip-path, or opacity can be applied to it.
     if (state->need_layer) {
         state->merge_opacity = FALSE;
