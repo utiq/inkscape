@@ -758,7 +758,6 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     DrawingSurface intermediate(*carea, device_scale);
     DrawingContext ict(intermediate);
     cairo_set_antialias(ict.raw(), cairo_get_antialias(dc.raw())); // propagate antialias setting
-    ink_cairo_set_dither(intermediate.raw(), _drawing.useDithering());
 
     // This path fails for patterns/hatches when stepping the pattern to handle overflows.
     // The offsets are applied to drawing context (dc) but they are not copied to the
@@ -817,7 +816,6 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
             if (bg_root) {
                 DrawingSurface bg(*carea, device_scale);
                 DrawingContext bgdc(bg);
-                ink_cairo_set_dither(bg.raw(), _drawing.useDithering());
                 bg_root->render(bgdc, rc, *carea, flags | RENDER_FILTER_BACKGROUND, this);
                 _filter->render(this, ict, &bgdc, rc);
                 rendered = true;

@@ -2750,7 +2750,7 @@ void InkscapePreferences::initPageRendering()
 
 #ifdef CAIRO_HAS_DITHER
     _cairo_dithering.init(_("Use dithering"), "/options/dithering/value", true);
-    _page_rendering.add_line(false, "", _cairo_dithering, "",  _("Makes gradients smoother. This can significantly impact the size of generated PNG files. To update the display after changing this option, just zoom out/in."));
+    _page_rendering.add_line(false, "", _cairo_dithering, "",  _("Makes gradients smoother. This can significantly impact the size of generated PNG files."));
 #endif
 
     auto grid = Gtk::make_managed<Gtk::Grid>();

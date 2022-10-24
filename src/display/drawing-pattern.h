@@ -82,7 +82,7 @@ protected:
 
     struct Surface
     {
-        Surface(Geom::IntRect const &rect, int device_scale, bool dither);
+        Surface(Geom::IntRect const &rect, int device_scale);
         Geom::IntRect rect;
         Cairo::RefPtr<Cairo::ImageSurface> surface;
     };

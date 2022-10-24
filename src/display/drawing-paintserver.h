@@ -39,6 +39,9 @@ public:
 
     /// Produce a pattern that can be used for painting with Cairo.
     virtual cairo_pattern_t *create_pattern(cairo_t *ct, Geom::OptRect const &bbox, double opacity) const = 0;
+
+    /// Return whether this paint server could benefit from dithering.
+    virtual bool ditherable() const { return false; }
 };
 
 // Todo: Remove, merging with existing implementation for solid colours.
@@ -71,6 +74,8 @@ protected:
         : spread(spread)
         , units(units)
         , transform(transform) {}
+
+    bool ditherable() const override { return true; }
 
     /// Perform some common initialization steps on the given Cairo pattern.
     void common_setup(cairo_pattern_t *pat, Geom::OptRect const &bbox, double opacity) const;

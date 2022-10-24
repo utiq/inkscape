@@ -329,6 +329,11 @@ void NRStyle::preparePaint(Inkscape::DrawingContext &dc, Inkscape::RenderContext
     }
 }
 
+bool NRStyle::Paint::ditherable() const
+{
+    return type == PAINT_SERVER && server && server->ditherable();
+}
+
 bool NRStyle::prepareFill(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern)
 {
     preparePaint(dc, rc, area, paintbox, pattern, fill, fill_pattern);

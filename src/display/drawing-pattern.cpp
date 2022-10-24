@@ -21,12 +21,11 @@
 
 namespace Inkscape {
 
-DrawingPattern::Surface::Surface(Geom::IntRect const &rect, int device_scale, bool dither)
+DrawingPattern::Surface::Surface(Geom::IntRect const &rect, int device_scale)
     : rect(rect)
     , surface(Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, rect.width() * device_scale, rect.height() * device_scale))
 {
     cairo_surface_set_device_scale(surface->cobj(), device_scale, device_scale);
-    ink_cairo_set_dither(surface->cobj(), dither);
 }
 
 DrawingPattern::DrawingPattern(Drawing &drawing)
@@ -154,7 +153,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect 
         }
 
         // Create a new surface covering the expanded rectangle.
-        auto surface = Surface(expanded, device_scale, _drawing.useDithering());
+        auto surface = Surface(expanded, device_scale);
         auto cr = Cairo::Context::create(surface.surface);
         cr->translate(-surface.rect.left(), -surface.rect.top());
 

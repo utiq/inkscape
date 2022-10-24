@@ -16,20 +16,17 @@
 #include <2geom/path-sink.h>
 #include <2geom/svg-path-parser.h>
 
+#include "dither-lock.h"
 #include "style.h"
 
-#include "cairo-utils.h"
 #include "curve.h"
 #include "drawing.h"
 #include "drawing-context.h"
-#include "drawing-group.h"
 #include "drawing-shape.h"
 #include "control/canvas-item-drawing.h"
 
-#include "helper/geom-curves.h"
 #include "helper/geom.h"
 
-#include "svg/svg.h"
 #include "ui/widget/canvas.h" // Canvas area
 
 namespace Inkscape {
@@ -171,6 +168,7 @@ void DrawingShape::_renderFill(DrawingContext &dc, RenderContext &rc, Geom::IntR
 
     if (has_fill) {
         dc.path(_curve->get_pathvector());
+        auto dl = DitherLock(dc, _nrstyle.fill.ditherable() && _drawing.useDithering());
         _nrstyle.applyFill(dc);
         dc.fillPreserve();
         dc.newPath(); // clear path
@@ -194,6 +192,7 @@ void DrawingShape::_renderStroke(DrawingContext &dc, RenderContext &rc, Geom::In
             dc.restore();
             dc.save();
         }
+        auto dl = DitherLock(dc, _nrstyle.stroke.ditherable() && _drawing.useDithering());
         _nrstyle.applyStroke(dc);
 
         // If the stroke is a hairline, set it to exactly 1px on screen.
@@ -268,6 +267,7 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
                 dc.path(_curve->get_pathvector());
                 // TODO: remove segments outside of bbox when no dashes present
                 if (has_fill) {
+                    auto dl = DitherLock(dc, _nrstyle.fill.ditherable() && _drawing.useDithering());
                     _nrstyle.applyFill(dc);
                     dc.fillPreserve();
                 }
@@ -276,6 +276,7 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
                     dc.save();
                 }
                 if (has_stroke) {
+                    auto dl = DitherLock(dc, _nrstyle.stroke.ditherable() && _drawing.useDithering());
                     _nrstyle.applyStroke(dc);
 
                     // If the draw mode is set to visible hairlines, don't let anything get smaller

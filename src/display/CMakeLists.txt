@@ -62,6 +62,7 @@ set(display_SRC
     cairo-templates.h
     cairo-utils.h
     curve.h
+    dither-lock.h
     drawing-context.h
     drawing-group.h
     drawing-image.h

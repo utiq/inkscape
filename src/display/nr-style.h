@@ -54,6 +54,7 @@ struct NRStyle
         void set(SPColor const &c);
         void set(SPPaintServer *ps);
         void set(SPIPaint const *paint);
+        bool ditherable() const;
     };
 
     struct CairoPatternFreer {void operator()(cairo_pattern_t *p) const {cairo_pattern_destroy(p);}};
