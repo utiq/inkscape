@@ -40,7 +40,9 @@ private:
 
 public:
     ComboBoxEnum(E default_value, const Util::EnumDataConverter<E>& c, const SPAttr a = SPAttr::INVALID, bool sort = true)
-        : AttrWidget(a, (unsigned int)default_value), setProgrammatically(false), _converter(c)
+        : AttrWidget(a, (unsigned int)default_value)
+        , setProgrammatically(false)
+        , _converter(c)
     {
         _sort = sort;
 
@@ -58,8 +60,10 @@ public:
             const Util::EnumData<E>* data = &_converter.data(i);
             row[_columns.data] = data;
             row[_columns.label] = _( _converter.get_label(data->id).c_str() );
+            row[_columns.is_separator] = _converter.get_key(data->id) == "-";
         }
         set_active_by_id(default_value);
+        set_row_separator_func(sigc::mem_fun(*this, &ComboBoxEnum<E>::combo_separator_func));
 
         // Sort the list
         if (sort) {
@@ -88,8 +92,10 @@ public:
             const Util::EnumData<E>* data = &_converter.data(i);
             row[_columns.data] = data;
             row[_columns.label] = _( _converter.get_label(data->id).c_str() );
+            row[_columns.is_separator] = _converter.get_key(data->id) == "-";
         }
         set_active(0);
+        set_row_separator_func(sigc::mem_fun(*this, &ComboBoxEnum<E>::combo_separator_func));
 
         // Sort the list
         if (_sort) {
@@ -162,6 +168,11 @@ public:
         set_active_by_id( _converter.get_id_from_key(key) );
     };
 
+    bool combo_separator_func(const Glib::RefPtr<Gtk::TreeModel>& model,
+                              const Gtk::TreeModel::iterator& iter) {
+        return (*iter)[_columns.is_separator];
+    };
+
     bool setProgrammatically;
 
 private:
@@ -172,10 +183,12 @@ private:
         {
             add(data);
             add(label);
+            add(is_separator);
         }
 
         Gtk::TreeModelColumn<const Util::EnumData<E>*> data;
         Gtk::TreeModelColumn<Glib::ustring> label;
+        Gtk::TreeModelColumn<bool> is_separator;
     };
 
     Columns _columns;

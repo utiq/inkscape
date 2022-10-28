@@ -17,20 +17,27 @@
 
 namespace Inkscape {
 
-const EnumData<SPBlendMode> SPBlendModeData[SP_CSS_BLEND_ENDMODE] = {
+// Blend modes are in six groups according to the types of changes they make to luminosity
+// See: https://typefully.com/DanHollick/blending-modes-KrBa0JP
+// Add 5 to ENDMODE for the five additional separators in the list
+const EnumData<SPBlendMode> SPBlendModeData[SP_CSS_BLEND_ENDMODE+5] = {
     { SP_CSS_BLEND_NORMAL, _("Normal"), "normal" },
-    { SP_CSS_BLEND_MULTIPLY, _("Multiply"), "multiply" },
-    { SP_CSS_BLEND_SCREEN, _("Screen"), "screen" },
+    { SP_CSS_BLEND_ENDMODE, "-", "-" },
     { SP_CSS_BLEND_DARKEN, _("Darken"), "darken" },
-    { SP_CSS_BLEND_LIGHTEN, _("Lighten"), "lighten" },
-    // New in Compositing and Blending Level 1
-    { SP_CSS_BLEND_OVERLAY, _("Overlay"), "overlay" },
-    { SP_CSS_BLEND_COLORDODGE, _("Color Dodge"), "color-dodge" },
+    { SP_CSS_BLEND_MULTIPLY, _("Multiply"), "multiply" },
     { SP_CSS_BLEND_COLORBURN, _("Color Burn"), "color-burn" },
-    { SP_CSS_BLEND_HARDLIGHT, _("Hard Light"), "hard-light" },
+    { SP_CSS_BLEND_ENDMODE, "-", "-" },
+    { SP_CSS_BLEND_LIGHTEN, _("Lighten"), "lighten" },
+    { SP_CSS_BLEND_SCREEN, _("Screen"), "screen" },
+    { SP_CSS_BLEND_COLORDODGE, _("Color Dodge"), "color-dodge" },
+    { SP_CSS_BLEND_ENDMODE, "-", "-" },
+    { SP_CSS_BLEND_OVERLAY, _("Overlay"), "overlay" },
     { SP_CSS_BLEND_SOFTLIGHT, _("Soft Light"), "soft-light" },
+    { SP_CSS_BLEND_HARDLIGHT, _("Hard Light"), "hard-light" },
+    { SP_CSS_BLEND_ENDMODE, "-", "-" },
     { SP_CSS_BLEND_DIFFERENCE, _("Difference"), "difference" },
     { SP_CSS_BLEND_EXCLUSION, _("Exclusion"), "exclusion" },
+    { SP_CSS_BLEND_ENDMODE, "-", "-" },
     { SP_CSS_BLEND_HUE, _("Hue"), "hue" },
     { SP_CSS_BLEND_SATURATION, _("Saturation"), "saturation" },
     { SP_CSS_BLEND_COLOR, _("Color"), "color" },
@@ -164,7 +171,7 @@ SPBlendMode SimpleFilterModifier::get_blend_mode()
 void SimpleFilterModifier::set_blend_mode(const SPBlendMode val, bool notify)
 {
     _notify = notify;
-    _blend.set_active(val);
+    _blend.set_active_by_id(val);
 }
 
 double SimpleFilterModifier::get_blur_value() const
