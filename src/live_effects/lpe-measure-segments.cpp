@@ -1261,6 +1261,9 @@ LPEMeasureSegments::processObjects(LPEAction lpe_action)
                 } else {
                     elemnode->removeAttribute("sodipodi:insensitive");
                     if (!is<SPDefs>(item->parent)) {
+                        Geom::Affine trans = i2anc_affine(sp_lpe_item->parent, sp_lpe_item->document->getRoot());
+                        item->transform *= trans.inverse();
+                        item->doWriteTransform(item->transform);
                         item->moveTo(sp_lpe_item, false);
                     }
                 }
