@@ -780,31 +780,41 @@ ObjectsPanel::ObjectsPanel() :
     // object blend mode and opacity popup
     int top = 0;
     int left = 0;
+    int width = 2;
     for (size_t i = 0; i < Inkscape::SPBlendModeConverter._length; ++i) {
         auto& data = Inkscape::SPBlendModeConverter.data(i);
-        auto check = Gtk::make_managed<Gtk::ModelButton>();
-        check->set_label(data.label);
-        check->property_role().set_value(Gtk::BUTTON_ROLE_RADIO);
-        check->property_inverted().set_value(true);
-        check->property_centered().set_value(false);
-        check->set_halign(Gtk::ALIGN_START);
-        check->signal_clicked().connect([=](){
-            // set blending mode
-            if (set_blend_mode(current_item, data.id)) {
-                for (auto btn : _blend_items) {
-                    btn.second->property_active().set_value(btn.first == data.id);
-                }
-                DocumentUndo::done(getDocument(), "set-blend-mode", _("Change blend mode"));
+        if (Inkscape::SPBlendModeConverter.get_key(data.id) == "-") {
+            if (top >= (Inkscape::SPBlendModeConverter._length + 1) / 2) {
+                ++left;
+                top = 1;
+            } else if (!left) {
+                auto sep = Gtk::make_managed<Gtk::Separator>();
+                sep->show();
+                modes.attach(*sep, left, top, 2, 1);
             }
-        });
-        _blend_items[data.id] = check;
-        _blend_mode_names[data.id] = data.label;
-        check->show();
-        modes.attach(*check, left, top++);
-        if (top >= (Inkscape::SPBlendModeConverter._length + 1) / 2) {
-            ++left;
-            top = 0;
+        } else {
+            auto check = Gtk::make_managed<Gtk::ModelButton>();
+            check->set_label(data.label);
+            check->property_role().set_value(Gtk::BUTTON_ROLE_RADIO);
+            check->property_inverted().set_value(true);
+            check->property_centered().set_value(false);
+            check->set_halign(Gtk::ALIGN_START);
+            check->signal_clicked().connect([=](){
+                // set blending mode
+                if (set_blend_mode(current_item, data.id)) {
+                    for (auto btn : _blend_items) {
+                        btn.second->property_active().set_value(btn.first == data.id);
+                    }
+                    DocumentUndo::done(getDocument(), "set-blend-mode", _("Change blend mode"));
+                }
+            });
+            _blend_items[data.id] = check;
+            _blend_mode_names[data.id] = data.label;
+            check->show();
+            modes.attach(*check, left, top, width, 1);
+            width = 1; // First element takes whole width
         }
+        top++;
     }
 
     // Visible icon
