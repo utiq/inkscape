@@ -2712,7 +2712,7 @@ void ObjectSet::relink()
             desktop()->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("Copy an <b>object</b> to clipboard to relink clones to."));
         return;
     }
-    auto newref = "#" + newid;
+    auto newrefAttribute = "#" + newid;
 
     // Get a copy of current selection.
     bool relinked = false;
@@ -2720,8 +2720,47 @@ void ObjectSet::relink()
     for (auto i=items_.begin();i!=items_.end();++i){
         SPItem *item = *i;
 
-        if (dynamic_cast<SPUse *>(item)) {
-            item->setAttribute("xlink:href", newref);
+        if (SPUse *use = dynamic_cast<SPUse *>(item)) {
+            // Get original referenced item, relink, then get new reference
+            SPItem *ref = use->get_original();
+            use->setAttribute("xlink:href", newrefAttribute);
+            SPItem *newref = use->get_original();
+
+            if (ref && newref) {
+                // Compensate for position of new reference if requested.
+                // Default behavior is to move according to transform, so not
+                // handled explicitly.
+                Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+                int compensation = prefs->getInt("/options/clonecompensation/value", SP_CLONE_COMPENSATION_UNMOVED);
+
+                if (compensation == SP_CLONE_COMPENSATION_UNMOVED || compensation == SP_CLONE_COMPENSATION_PARALLEL) {
+                    auto center = ref->getCenter();
+                    auto newcenter = newref->getCenter();
+                    Geom::Affine translation = Geom::Translate(newcenter - center);
+
+                    // Transform of clone. Necessary to apply the offset
+                    // translation from the reference prior to applying clone-
+                    // specific transformations.
+                    Geom::Affine t = item->transform;
+
+                    // To make the clone appear unmoved, simply invert the
+                    // translation. To make the clone move in parallel, add the
+                    // translation back in, but make sure that the translation
+                    // is applied to a shape that isn't transformed in any other way
+                    Geom::Affine m = t.inverse() * translation.inverse() * t;
+                    if (compensation == SP_CLONE_COMPENSATION_PARALLEL) {
+                        m *= m.withoutTranslation().inverse() * translation * m.withoutTranslation();
+                    }
+
+                    // Compensation must be applied for each clone indivudally
+                    // in case we are re-linking many clones that originally had
+                    // different references.
+                    auto s = ObjectSet(document());
+                    s.add(item);
+                    s.applyAffine(m);
+                }
+            }
+
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             relinked = true;
         }
