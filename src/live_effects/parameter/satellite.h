@@ -44,6 +44,7 @@ public:
     bool isConnected() {return !(!linked_changed_connection);}
     void start_listening(SPObject *to);
     void unlink();
+    bool lookup = false;
     ParamType paramType() const override { return ParamType::SATELLITE; };
 protected:
     void link(Glib::ustring itemid);

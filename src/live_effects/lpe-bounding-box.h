@@ -11,7 +11,7 @@
  */
 
 #include "live_effects/effect.h"
-#include "live_effects/parameter/originalpath.h"
+#include "live_effects/parameter/originalsatellite.h"
 
 namespace Inkscape {
 namespace LivePathEffect {
@@ -25,7 +25,7 @@ public:
     void doEffect (SPCurve * curve) override;
 
 private:
-    OriginalPathParam  linked_path;
+    OriginalSatelliteParam  linked_path;
     BoolParam visual_bounds;
 
 private:

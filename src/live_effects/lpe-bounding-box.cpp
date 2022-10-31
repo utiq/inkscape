@@ -24,6 +24,7 @@ LPEBoundingBox::LPEBoundingBox(LivePathEffectObject *lpeobject) :
     registerParameter(&visual_bounds);
     //perceived_path = true;
     linked_path.setUpdating(true);
+    linked_path.lookup = true;
 }
 
 LPEBoundingBox::~LPEBoundingBox()
@@ -58,17 +59,18 @@ LPEBoundingBox::doBeforeEffect (SPLPEItem const* lpeitem)
 
 void LPEBoundingBox::doEffect (SPCurve * curve)
 {
+    
     if (curve) {
-        if ( linked_path.linksToPath() && linked_path.getObject() ) {
-            SPItem * item = linked_path.getObject();
-            Geom::OptRect bbox = visual_bounds.get_value() ? item->visualBounds() : item->geometricBounds();
+        if ( linked_path.linksToItem() && linked_path.getObject() ) {
+            auto item = cast<SPItem>(linked_path.getObject());
+            auto trans = item->getRelativeTransform(sp_lpe_item);
+            Geom::OptRect bbox = visual_bounds.get_value() ? item->visualBounds(trans) : item->geometricBounds(trans);
             Geom::Path p;
             Geom::PathVector out;
             if (bbox) {
                 p = Geom::Path(*bbox);
                 out.push_back(p);
             }
-
             curve->set_pathvector(out);
         }
     }

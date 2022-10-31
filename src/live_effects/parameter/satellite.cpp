@@ -251,7 +251,16 @@ void SatelliteParam::on_link_button_click()
     if (effectType() == CLONE_ORIGINAL) {
         param_effect->is_load = false;
     }
-    auto itemid = cm->getFirstObjectID();
+    Glib::ustring itemid;
+    if (lookup) {
+        std::vector<Glib::ustring> clones = cm->getElementsOfType(nullptr, "svg:use", 2);
+        if (!clones.empty()) {
+            itemid = clones[0];
+        }
+    }
+    if (itemid.empty()) {
+        itemid = cm->getFirstObjectID();
+    }
     if (itemid.empty()) {
         return;
     }

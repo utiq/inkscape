@@ -8,6 +8,7 @@
 #include "object/sp-lpe-item.h"
 #include "object/sp-shape.h"
 #include "object/sp-text.h"
+#include "object/sp-use.h"
 #include "object/uri-references.h"
 
 // SPDX-License-Identifier: GPL-2.0-or-later
@@ -25,7 +26,7 @@ namespace LivePathEffect {
 
 bool SatelliteReference::_acceptObject(SPObject *const obj) const
 {
-    if (is<SPShape>(obj) || is<SPText>(obj) || is<SPGroup>(obj)) {
+    if (is<SPShape>(obj) || is<SPText>(obj) || is<SPGroup>(obj) || is<SPUse>(obj)) {
         /* Refuse references to lpeobject */
         SPObject *owner = getOwner();
         if (obj == owner) {
