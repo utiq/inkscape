@@ -41,20 +41,44 @@ shift_icons(Gtk::MenuShell* menu)
     bool shifted = false;    
     // Calculate required shift. We need an example!
     // Search for Gtk::MenuItem -> Gtk::Box -> Gtk::Image
+    static auto app = InkscapeApplication::instance();
+    auto &label_to_tooltip_map = app->get_menu_label_to_tooltip_map();
+
     for (auto child : menu->get_children()) {
         auto menuitem = dynamic_cast<Gtk::MenuItem *>(child);
         if (menuitem) { //we need to go here to know we are in RTL maybe we can check in otehr way and simplify
             auto submenu = menuitem->get_submenu();
             if (submenu) {
                 shifted = shift_icons(submenu);
-                if (shifted) {
-                    break;
+            }
+            Gtk::Box *box = nullptr;
+            auto label = menuitem->get_label();
+            if (label.empty()) {
+                box = dynamic_cast<Gtk::Box *>(menuitem->get_child());
+                if (!box) {
+                    continue;
+                }  
+                std::vector<Gtk::Widget *> children = box->get_children();
+                if (children.size() == 2) {
+                    auto label_widget = dynamic_cast<Gtk::Label *>(children[1]);
+                    if (!label_widget) {
+                        label_widget = dynamic_cast<Gtk::Label *>(children[0]);
+                    }
+                    if (label_widget) {
+                        label = label_widget->get_label();
+                    }
                 }
             }
-            auto box = dynamic_cast<Gtk::Box *>(menuitem->get_child());
-            if (!box) {
+            if (label.empty()) {
                 continue;
-            }    
+            } 
+            auto it = label_to_tooltip_map.find(label);
+            if (it != label_to_tooltip_map.end()) {
+                menuitem->set_tooltip_text(it->second);
+            }
+            if (shifted || !box) {
+                continue;
+            }
             width += box->get_spacing() * 1.5; //2 elements 3 halfs to measure
             std::string css_str;
             Glib::RefPtr<Gtk::CssProvider> provider = Gtk::CssProvider::create();
@@ -67,9 +91,7 @@ shift_icons(Gtk::MenuShell* menu)
             }
             provider->load_from_data(css_str);
             shifted = true;
-            break;
         }
-        
     }
     return shifted;
 }
