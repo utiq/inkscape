@@ -236,6 +236,7 @@ test:linux:
   artifacts:
     paths:
       - build/testfiles
+      - build/Testing
     when: on_failure
 
 test:macos:x64:
