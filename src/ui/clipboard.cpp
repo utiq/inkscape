@@ -744,6 +744,7 @@ bool ClipboardManagerImpl::pasteStyle(ObjectSet *set)
         if (copy_computed) {
             SPCSSAttr *style = sp_repr_css_attr(clipnode, "style");
             sp_desktop_set_style(set, set->desktop(), style);
+            pasted = true;
         } else {
             for (auto node : set->xmlNodes()) {
                 pasted = node->copyAttribute("class", clipnode, true) || pasted;
