@@ -123,6 +123,13 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
         AppendItemFromAction(gmenu_section, "app.delete-selection", _("_Delete"), "edit-delete");
         gmenu->append_section(gmenu_section);
 
+        // Show submenu when no item is selected
+        if (!item) {
+            gmenu_section = Gio::Menu::create();
+            AppendItemFromAction(gmenu_section, "win.dialog-open('DocumentProperties')", _("Document Properties..."), "document-properties");
+            gmenu->append_section(gmenu_section);
+        }
+
         if (item) {
 
             // Dialogs
