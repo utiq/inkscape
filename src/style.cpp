@@ -517,17 +517,9 @@ SPStyle::clear() {
     // Release connection to object, created in constructor.
     release_connection.disconnect();
 
-    // href->detach() called in fill->clear()...
     fill_ps_modified_connection.disconnect();
-    if (fill.value.href) {
-        delete fill.value.href;
-        fill.value.href = nullptr;
-    }
     stroke_ps_modified_connection.disconnect();
-    if (stroke.value.href) {
-        delete stroke.value.href;
-        stroke.value.href = nullptr;
-    }
+
     filter_modified_connection.disconnect();
     if (filter.href) {
         delete filter.href;
@@ -538,10 +530,10 @@ SPStyle::clear() {
         filter.href = new SPFilterReference(document);
         filter_changed_connection = filter.href->changedSignal().connect(sigc::bind(sigc::ptr_fun(sp_style_filter_ref_changed), this));
 
-        fill.value.href = new SPPaintServerReference(document);
+        fill.value.href = std::make_shared<SPPaintServerReference>(document);
         fill_ps_changed_connection = fill.value.href->changedSignal().connect(sigc::bind(sigc::ptr_fun(sp_style_fill_paint_server_ref_changed), this));
 
-        stroke.value.href = new SPPaintServerReference(document);
+        stroke.value.href = std::make_shared<SPPaintServerReference>(document);
         stroke_ps_changed_connection = stroke.value.href->changedSignal().connect(sigc::bind(sigc::ptr_fun(sp_style_stroke_paint_server_ref_changed), this));
     }
 
@@ -1256,12 +1248,10 @@ sp_style_set_ipaint_to_uri(SPStyle *style, SPIPaint *paint, const Inkscape::URI 
 
         if (style->object) {
             // Should not happen as href should have been created in SPIPaint. (TODO: Removed code duplication.)
-            paint->value.href = new SPPaintServerReference(style->object);
-
+            paint->value.href = std::make_shared<SPPaintServerReference>(style->object);
         } else if (document) {
             // Used by desktop style (no object to attach to!).
-            paint->value.href = new SPPaintServerReference(document);
-
+            paint->value.href = std::make_shared<SPPaintServerReference>(document);
         } else {
             std::cerr << "sp_style_set_ipaint_to_uri: No valid object or document!" << std::endl;
             return;

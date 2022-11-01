@@ -1486,14 +1486,6 @@ SPIColor::operator==(const SPIBase& rhs) const {
 // find the object for creating an href (this is done through document but should be done
 // directly so document not needed.. FIXME).
 
-SPIPaint::~SPIPaint() {
-    if( value.href ) {
-        clear();
-        delete value.href;
-        value.href = nullptr;
-    }
-}
-
 /**
  * Set SPIPaint object from string.
  *
@@ -1542,9 +1534,9 @@ SPIPaint::read( gchar const *str ) {
                 if (!value.href) {
 
                     if (style->object) {
-                        value.href = new SPPaintServerReference(style->object);
+                        value.href = std::make_shared<SPPaintServerReference>(style->object);
                     } else if (document) {
-                        value.href = new SPPaintServerReference(document);
+                        value.href = std::make_shared<SPPaintServerReference>(document);
                     } else {
                         std::cerr << "SPIPaint::read: No valid object or document!" << std::endl;
                         return;
@@ -1677,18 +1669,10 @@ SPIPaint::reset( bool init ) {
     noneSet = false;
     value.color.set( false );
     tag = nullptr;
-    if (value.href){
-        if (value.href->getObject()) {
-            value.href->detach();
-        }
-    }
-    if( init ) {
-        if (id() == SPAttr::FILL) {
-            // 'black' is default for 'fill'
-            setColor(0.0, 0.0, 0.0);
-        } else if (id() == SPAttr::TEXT_DECORATION_COLOR) {
-            // currentcolor = true;
-        }
+    value.href.reset();
+
+    if (init && id() == SPAttr::FILL) {
+        setColor(0.0, 0.0, 0.0); // 'black' is default for 'fill'
     }
 }
 

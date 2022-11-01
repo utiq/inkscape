@@ -732,16 +732,9 @@ class SPIPaint : public SPIBase
 {
 
 public:
-    SPIPaint()
-        : paintOrigin(SP_CSS_PAINT_ORIGIN_NORMAL),
-          colorSet(false),
-          noneSet(false) {
-        value.href = nullptr;
-        tag = nullptr;
-        clear();
-    }
+    SPIPaint() { clear(); }
 
-    ~SPIPaint() override;  // Clear and delete href.
+    ~SPIPaint() override = default;
     void read( gchar const *str ) override;
     virtual void read( gchar const *str, SPStyle &style, SPDocument *document = nullptr);
     const Glib::ustring get_value() const override;
@@ -805,10 +798,10 @@ public:
     bool colorSet : 1;
     bool noneSet : 1;
     struct {
-         SPPaintServerReference *href;
+         std::shared_ptr<SPPaintServerReference> href;
          SPColor color;
     } value;
-    SPObject* tag;
+    SPObject *tag = nullptr;
 };
 
 
