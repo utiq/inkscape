@@ -112,7 +112,7 @@ LPEFillBetweenMany::transform_multiply_nested(Geom::Affine const &postmul)
         }
         for (auto & iter : linked_paths._vector) {
             SPItem *item;
-            if (iter->ref.isAttached() && (( item = dynamic_cast<SPItem*>(iter->ref.getObject()) )) &&
+            if (iter->ref.isAttached() && (( item = cast<SPItem>(iter->ref.getObject()) )) &&
                 !iter->_pathvector.empty() && iter->visibled) {
                 if (iter->_pathvector.front().closed() && linked_paths._vector.size() > 1) {
                     continue;
@@ -149,7 +149,7 @@ LPEFillBetweenMany::doEffect (SPCurve * curve)
     if (!autoreverse) {
         for (auto & iter : linked_paths._vector) {
             SPItem *item;
-            if (iter->ref.isAttached() && (( item = dynamic_cast<SPItem*>(iter->ref.getObject()) )) &&
+            if (iter->ref.isAttached() && (( item = cast<SPItem>(iter->ref.getObject()) )) &&
                 !iter->_pathvector.empty() && iter->visibled) {
                 Geom::Path linked_path;
                 if (iter->_pathvector.front().closed() && linked_paths._vector.size() > 1) {
@@ -183,7 +183,7 @@ LPEFillBetweenMany::doEffect (SPCurve * curve)
         std::vector<unsigned int> done;
         for (auto & iter : linked_paths._vector) {
             SPItem *item;
-            if (iter->ref.isAttached() && (( item = dynamic_cast<SPItem*>(iter->ref.getObject()) )) &&
+            if (iter->ref.isAttached() && (( item = cast<SPItem>(iter->ref.getObject()) )) &&
                 !iter->_pathvector.empty() && iter->visibled) {
                 Geom::Path linked_path;
                 if (iter->_pathvector.front().closed() && linked_paths._vector.size() > 1) {
@@ -209,7 +209,7 @@ LPEFillBetweenMany::doEffect (SPCurve * curve)
                 PathAndDirectionAndVisible *nearest = nullptr;
                 for (auto & iter2 : linked_paths._vector) {
                     SPItem *item2;
-                    if (iter2->ref.isAttached() && (( item2 = dynamic_cast<SPItem*>(iter2->ref.getObject()) )) &&
+                    if (iter2->ref.isAttached() && (( item2 = cast<SPItem>(iter2->ref.getObject()) )) &&
                         !iter2->_pathvector.empty() && iter2->visibled) {
                         if (item == item2 || std::find(done.begin(), done.end(), counter2) != done.end()) {
                             counter2++;
@@ -257,7 +257,7 @@ LPEFillBetweenMany::doEffect (SPCurve * curve)
                         current = end;
                     }
                     SPItem *itemnear;
-                    if (nearest->ref.isAttached() && (( itemnear = dynamic_cast<SPItem*>(nearest->ref.getObject()) ))) {
+                    if (nearest->ref.isAttached() && (( itemnear = cast<SPItem>(nearest->ref.getObject()) ))) {
                         linked_path *= itemnear->getRelativeTransform(sp_lpe_item);
                     }
                     if (!res_pathv.empty() && join) {

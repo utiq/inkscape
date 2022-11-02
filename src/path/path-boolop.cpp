@@ -143,7 +143,7 @@ double get_threshold(Geom::PathVector const &path, double threshold)
  */
 double get_threshold(SPItem const *item, double threshold)
 {
-    auto shape = dynamic_cast<SPShape const *>(item);
+    auto shape = cast<SPShape>(item);
     if (shape && shape->curve()) {
         return get_threshold(shape->curve()->get_pathvector(), threshold);
     }
@@ -551,7 +551,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         {
             // apply live path effects prior to performing boolean operation
             char const *id = item->getAttribute("id");
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+            auto lpeitem = cast<SPLPEItem>(item);
             if (lpeitem) {
                 SPDocument * document = item->document;
                 lpeitem->removeAllPathEffects(true);
@@ -559,7 +559,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
                 if (elemref && elemref != item) {
                     // If the LPE item is a shape, it is converted to a path 
                     // so we need to reupdate the item
-                    item = dynamic_cast<SPItem *>(elemref);
+                    item = cast<SPItem>(elemref);
                 }
             }
             SPCSSAttr *css = sp_repr_css_attr(reinterpret_cast<SPObject *>(il[0])->getRepr(), "style");

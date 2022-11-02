@@ -224,12 +224,12 @@ LPEOffset::addCanvasIndicators(SPLPEItem const *lpeitem, std::vector<Geom::PathV
 void
 LPEOffset::doBeforeEffect (SPLPEItem const* lpeitem)
 {
-    SPObject *obj = dynamic_cast<SPObject *>(sp_lpe_item);
+    auto obj = sp_lpe_item;
     if (is_load && obj) {
         modified_connection = obj->connectModified(sigc::mem_fun(*this, &LPEOffset::modified));
     }
     original_bbox(lpeitem);
-    SPGroup *group = dynamic_cast<SPGroup *>(sp_lpe_item);
+    auto group = cast<SPGroup>(sp_lpe_item);
     if (group) {
         mix_pathv_all.clear();
     }
@@ -268,7 +268,7 @@ void LPEOffset::doAfterEffect(SPLPEItem const * /*lpeitem*/, SPCurve *curve)
     if (_knot_entity && sp_lpe_item && !liveknot) {
         Geom::PathVector out;
         // we don do this on groups, editing is joining ito so no need to update knot
-        SPShape *shape = dynamic_cast<SPShape *>(sp_lpe_item);
+        auto shape = cast<SPShape>(sp_lpe_item);
         if (shape) {
             out = cast<SPShape>(sp_lpe_item)->curve()->get_pathvector();
             offset_pt = get_nearest_point(out, offset_pt);
@@ -493,7 +493,7 @@ LPEOffset::doEffect_path(Geom::PathVector const & path_in)
     for (auto path : closed_pathv) {
         mix_pathv.push_back(path);
     }
-    SPGroup *group = dynamic_cast<SPGroup *>(sp_lpe_item);
+    auto group = cast<SPGroup>(sp_lpe_item);
     // Calculate the original pathvector used outside this function
     // to calculate the offset
     if (group) {
@@ -671,12 +671,12 @@ Geom::Point KnotHolderEntityOffsetPoint::knot_get() const
     Geom::Point nearest = lpe->offset_pt;
     if (nearest == Geom::Point(Geom::infinity(), Geom::infinity())) {
         Geom::PathVector out;
-        SPGroup *group = dynamic_cast<SPGroup *>(item);
-        SPShape *shape = dynamic_cast<SPShape *>(item);
+        auto group = cast<SPGroup>(item);
+        auto shape = cast<SPShape>(item);
         if (group) {
             std::vector<SPItem *> item_list = group->item_list();
             for (auto child : item_list) {
-                SPShape *subchild = dynamic_cast<SPShape *>(child);
+                auto subchild = cast<SPShape>(child);
                 if (subchild) {
                     Geom::PathVector tmp = subchild->curve()->get_pathvector();
                     out.insert(out.begin(), tmp.begin(), tmp.end());

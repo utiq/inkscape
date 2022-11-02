@@ -206,7 +206,7 @@ static void find_references(SPObject *elem, refmap_type &refmap, bool from_clipb
         //}
     }
     if (!std::strcmp(repr_elem->name(), "inkscape:path-effect")) {
-        LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(elem);
+        auto lpeobj = cast<LivePathEffectObject>(elem);
         if (lpeobj) {
             Inkscape::LivePathEffect::Effect *effect = lpeobj->get_lpe();
             if (effect) {
@@ -400,10 +400,10 @@ static void change_clashing_ids(SPDocument *imported_doc, SPDocument *current_do
              }
         }
 
-        LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(elem);
+        auto lpeobj = cast<LivePathEffectObject>(elem);
         if (lpeobj) {
             SPObject *cd_obj = current_doc->getObjectById(id);
-            LivePathEffectObject *cd_lpeobj = dynamic_cast<LivePathEffectObject *>(cd_obj);
+            auto cd_lpeobj = cast<LivePathEffectObject>(cd_obj);
             if (cd_lpeobj && lpeobj->is_similar(cd_lpeobj)) {
                 fix_clashing_ids = from_clipboard;
             }

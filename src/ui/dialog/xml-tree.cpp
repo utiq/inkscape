@@ -315,7 +315,7 @@ Inkscape::XML::Node *XmlTree::get_dt_select()
  */
 static bool isRealLayer(SPObject const *object)
 {
-    auto group = dynamic_cast<SPGroup const *>(object);
+    auto group = cast<SPGroup>(object);
     return group && group->layerMode() == SPGroup::LAYER;
 }
 

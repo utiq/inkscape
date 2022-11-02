@@ -670,9 +670,8 @@ void TextToolbar::text_outer_set_style(SPCSSAttr *css)
     SPDesktop *desktop = _desktop;
     if(_outer) {
         // Apply css to parent text objects directly.
-        for (auto i : desktop->getSelection()->items()) {
-            SPItem *item = dynamic_cast<SPItem *>(i);
-            if (dynamic_cast<SPText *>(item) || dynamic_cast<SPFlowtext *>(item)) {
+        for (auto item : desktop->getSelection()->items()) {
+            if (is<SPText>(item) || is<SPFlowtext>(item)) {
                 // Scale by inverse of accumulated parent transform
                 SPCSSAttr *css_set = sp_repr_css_attr_new();
                 sp_repr_css_merge(css_set, css);
@@ -978,8 +977,8 @@ TextToolbar::align_mode_changed(int mode)
     Inkscape::Selection *selection = desktop->getSelection();
     auto itemlist= selection->items();
     for (auto i : itemlist) {
-        SPText *text = dynamic_cast<SPText *>(i);
-        // SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
+        auto text = cast<SPText>(i);
+        // auto flowtext = cast<SPFlowtext>(i);
         if (text) {
             SPItem *item = i;
 
@@ -1298,7 +1297,7 @@ TextToolbar::lineheight_value_changed()
         // Special else makes this different from other uses of text_outer_set_style
         text_outer_set_style(css);
     } else {
-        SPItem *parent = dynamic_cast<SPItem *>(*itemlist.begin());
+        auto parent = itemlist.front();
         SPStyle *parent_style = parent->style;
         SPCSSAttr *parent_cssatr = sp_css_attr_from_style(parent_style, SP_STYLE_FLAG_IFSET);
         Glib::ustring parent_lineheight = sp_repr_css_property(parent_cssatr, "line-height", "1.25");
@@ -1310,7 +1309,7 @@ TextToolbar::lineheight_value_changed()
         }
         if (minheight) {
             for (auto i : parent->childList(false)) {
-                SPItem *child = dynamic_cast<SPItem *>(i);
+                auto child = cast<SPItem>(i);
                 if (!child) {
                     continue;
                 }
@@ -1328,8 +1327,8 @@ TextToolbar::lineheight_value_changed()
     itemlist = selection->items();
     bool modmade = false;
     for (auto i : itemlist) {
-        SPText *text = dynamic_cast<SPText *>(i);
-        SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
+        auto text = cast<SPText>(i);
+        auto flowtext = cast<SPFlowtext>(i);
         if (text || flowtext) {
             modmade = true;
             break;
@@ -1345,8 +1344,8 @@ TextToolbar::lineheight_value_changed()
 
         desktop->getDocument()->ensureUpToDate();
         for (auto i : itemlist) {
-            SPText *text = dynamic_cast<SPText *>(i);
-            SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
+            auto text = cast<SPText>(i);
+            auto flowtext = cast<SPFlowtext>(i);
             if (text || flowtext) {
                 (i)->updateRepr();
             }
@@ -1413,8 +1412,8 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
     int count = 0;
 
     for (auto i : itemlist) {
-        SPText *text = dynamic_cast<SPText *>(i);
-        SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
+        auto text = cast<SPText>(i);
+        auto flowtext = cast<SPFlowtext>(i);
         if (text || flowtext) {
             doc_scale = Geom::Affine(i->i2dt_affine()).descrim();
             font_size += i->style->font_size.computed * doc_scale;
@@ -1490,7 +1489,7 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
         _line_height_adj->set_page_increment(1.0);
     }
     // Internal function to set line-height which is spacing mode dependent.
-    SPItem *parent = itemlist.empty() ? nullptr : dynamic_cast<SPItem *>(*itemlist.begin());
+    SPItem *parent = itemlist.empty() ? nullptr : itemlist.front();
     SPStyle *parent_style = nullptr;
     if (parent) {
         parent_style = parent->style;
@@ -1499,7 +1498,7 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
     if (_outer) {
         if (!selection->singleItem() || !parent_style || parent_style->line_height.computed != 0) {
             for (auto i = itemlist.begin(); i != itemlist.end(); ++i) {
-                if (dynamic_cast<SPText *>(*i) || dynamic_cast<SPFlowtext *>(*i)) {
+                if (is<SPText>(*i) || is<SPFlowtext>(*i)) {
                     SPItem *item = *i;
                     // Scale by inverse of accumulated parent transform
                     SPCSSAttr *css_set = sp_repr_css_attr_new();
@@ -1528,7 +1527,7 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
         }
         if (minheight) {
             for (auto i : parent->childList(false)) {
-                SPItem *child = dynamic_cast<SPItem *>(i);
+                auto child = cast<SPItem>(i);
                 if (!child) {
                     continue;
                 }
@@ -1546,8 +1545,8 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
     // Only need to save for undo if a text item has been changed.
     bool modmade = false;
     for (auto i : itemlist) {
-        SPText *text = dynamic_cast<SPText *>(i);
-        SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
+        auto text = cast<SPText>(i);
+        auto flowtext = cast<SPFlowtext>(i);
         if (text || flowtext) {
             modmade = true;
             break;
@@ -1562,8 +1561,8 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
 
         desktop->getDocument()->ensureUpToDate();
         for (auto i : itemlist) {
-            SPText *text = dynamic_cast<SPText *>(i);
-            SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
+            auto text = cast<SPText>(i);
+            auto flowtext = cast<SPFlowtext>(i);
             if (text || flowtext) {
                 (i)->updateRepr();
             }
@@ -1843,8 +1842,8 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
     gboolean isFlow = false;
     std::vector<SPItem *> to_work;
     for (auto i : itemlist) {
-        SPText *text = dynamic_cast<SPText *>(i);
-        SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
+        auto text = cast<SPText>(i);
+        auto flowtext = cast<SPFlowtext>(i);
         if (text || flowtext) {
             to_work.push_back(i);
         }
@@ -1890,7 +1889,7 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
     if (!outside) {
         if (_outer && this->_sub_active_item) {
             std::vector<SPItem *> qactive{ this->_sub_active_item };
-            SPItem *parent = dynamic_cast<SPItem *>(this->_sub_active_item->parent);
+            auto parent = cast<SPItem>(this->_sub_active_item->parent);
             std::vector<SPItem *> qparent{ parent };
             result_numbers =
                 sp_desktop_query_style_from_list(qactive, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
@@ -2282,11 +2281,11 @@ void TextToolbar::prepare_inner()
     if (!layout) {
       return;
     }
-    SPDocument              *doc      = _desktop->getDocument();
-    SPObject                *spobject = dynamic_cast<SPObject   *>(tc->text);
-    SPItem                  *spitem   = dynamic_cast<SPItem     *>(tc->text);
-    SPText                  *text     = dynamic_cast<SPText     *>(tc->text);
-    SPFlowtext              *flowtext = dynamic_cast<SPFlowtext *>(tc->text);
+    auto doc = _desktop->getDocument();
+    auto spobject = tc->text;
+    auto spitem = tc->text;
+    auto text = cast<SPText>(tc->text);
+    auto flowtext = cast<SPFlowtext>(tc->text);
     Inkscape::XML::Document *xml_doc = doc->getReprDoc();
     if (!spobject) {
         return;
@@ -2298,7 +2297,7 @@ void TextToolbar::prepare_inner()
         bool changed = false;
         std::vector<SPObject *> childs = spitem->childList(false);
         for (auto child : childs) {
-            SPString *spstring = dynamic_cast<SPString *>(child);
+            auto spstring = cast<SPString>(child);
             if (spstring) {
                 Glib::ustring content = spstring->string;
                 if (content != "\n") {
@@ -2374,9 +2373,9 @@ void TextToolbar::prepare_inner()
         Inkscape::XML::Node *prevchild = container->getRepr();
         std::vector<SPObject*> childs = container->childList(false);
         for (auto child : childs) {
-            SPString    *spstring  = dynamic_cast<SPString    *>(child);
-            SPFlowtspan *flowtspan = dynamic_cast<SPFlowtspan *>(child);
-            SPTSpan     *tspan     = dynamic_cast<SPTSpan     *>(child);
+            auto spstring = cast<SPString>(child);
+            auto flowtspan = cast<SPFlowtspan>(child);
+            auto tspan = cast<SPTSpan>(child);
             // we need to upper all flowtspans to container level
             // to do this we need to change the element from flowspan to flowpara
             if (flowtspan) {
@@ -2498,7 +2497,7 @@ void TextToolbar::subselection_changed(Inkscape::UI::Tools::TextTool* tc)
                 this->_outer = true;
                 gint counter = 0;
                 for (auto child : tc->text->childList(false)) {
-                    SPItem *item = dynamic_cast<SPItem *>(child);
+                    auto item = cast<SPItem>(child);
                     if (item && counter == startline) {
                         this->_sub_active_item = item;
                         int origin_selection = layout->iteratorToCharIndex(start_selection);

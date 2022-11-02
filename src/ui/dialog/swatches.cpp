@@ -286,7 +286,7 @@ void SwatchesPanel::update_fillstroke_indicators()
         } else if (attr->isColor()) {
             return spcolor_to_rgb(attr->value.color);
         } else if (attr->isPaintserver()) {
-            if (auto grad = dynamic_cast<SPGradient*>(fill ? style.getFillPaintServer() : style.getStrokePaintServer())) {
+            if (auto grad = cast<SPGradient>(fill ? style.getFillPaintServer() : style.getStrokePaintServer())) {
                 if (grad->isSwatch()) {
                     return grad;
                 } else if (grad->ref) {

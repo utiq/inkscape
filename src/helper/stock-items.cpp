@@ -117,7 +117,7 @@ static SPObject* sp_pattern_load_from_svg(gchar const *name, SPDocument *current
     }
     // Try to load from document
     // Get the pattern we want
-    if (auto pattern = dynamic_cast<SPPattern*>(source_doc->getObjectById(name))) {
+    if (auto pattern = cast<SPPattern>(source_doc->getObjectById(name))) {
         return sp_copy_resource(pattern, current_doc);
     }
     return nullptr;

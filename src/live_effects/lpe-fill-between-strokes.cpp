@@ -59,11 +59,10 @@ LPEFillBetweenStrokes::doOnOpen(SPLPEItem const *lpeitem)
         sp_lpe_item = lpeitems[0];
         prevaffine = i2anc_affine(sp_lpe_item, sp_lpe_item->document->getRoot());
     }
-    SPItem * item = nullptr;
-    if (( item = dynamic_cast<SPItem *>(linked_path.getObject()) )) {
+    if (auto item = linked_path.getObject()) {
         item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     }
-    if (( item = dynamic_cast<SPItem *>(second_path.getObject()) )) {
+    if (auto item = second_path.getObject()) {
         item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     }
     return false;
@@ -87,11 +86,10 @@ LPEFillBetweenStrokes::doBeforeEffect (SPLPEItem const* lpeitem)
         linked_path.connect_selection_changed();
         second_path.start_listening(second_path.getObject());
         second_path.connect_selection_changed();
-        SPItem * item = nullptr;
-        if (( item = dynamic_cast<SPItem *>(linked_path.getObject()) )) {
+        if (auto item = linked_path.getObject()) {
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
-        if (( item = dynamic_cast<SPItem *>(second_path.getObject()) )) {
+        if (auto item = second_path.getObject()) {
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }
@@ -113,8 +111,7 @@ LPEFillBetweenStrokes::transform_multiply_nested(Geom::Affine const &postmul)
         if (lpeitems.size() == 1) {
             sp_lpe_item = lpeitems[0];
         }
-        SPItem *item;
-        if (( item = dynamic_cast<SPItem*>(linked_path.getObject()) )) {
+        if (auto item = linked_path.getObject()) {
             if (item->document->isSensitive() && selection && !selection->includes(item, true) && selection->includes(sp_lpe_item, true)) {
                 item->transform *= i2anc_affine(item->parent, item->document->getRoot());
                 item->transform *=  postmul.inverse();
@@ -123,8 +120,7 @@ LPEFillBetweenStrokes::transform_multiply_nested(Geom::Affine const &postmul)
                 item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             }
         }
-        SPItem *item2;
-        if (( item2 = dynamic_cast<SPItem*>(second_path.getObject()) )) {
+        if (auto item2 = second_path.getObject()) {
             if (item2->document->isSensitive() && selection && !selection->includes(item2, true) && selection->includes(sp_lpe_item, true)) {
                 item2->transform *= i2anc_affine(item2->parent, item2->document->getRoot());
                 item2->transform *=  postmul.inverse();

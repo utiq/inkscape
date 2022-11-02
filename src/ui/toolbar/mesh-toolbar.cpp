@@ -72,7 +72,7 @@ std::vector<SPMeshGradient *>  ms_get_dt_selected_gradients(Inkscape::Selection 
             
             if (edit_fill   && style->fill.isPaintserver()) {
                 SPPaintServer *server = item->style->getFillPaintServer();
-                SPMeshGradient *mesh = dynamic_cast<SPMeshGradient *>(server);
+                auto mesh = cast<SPMeshGradient>(server);
                 if (mesh) {
                     ms_selected.push_back(mesh);
                 }
@@ -80,7 +80,7 @@ std::vector<SPMeshGradient *>  ms_get_dt_selected_gradients(Inkscape::Selection 
 
             if (edit_stroke && style->stroke.isPaintserver()) {
                 SPPaintServer *server = item->style->getStrokePaintServer();
-                SPMeshGradient *mesh = dynamic_cast<SPMeshGradient *>(server);
+                auto mesh = cast<SPMeshGradient>(server);
                 if (mesh) {
                     ms_selected.push_back(mesh);
                 }

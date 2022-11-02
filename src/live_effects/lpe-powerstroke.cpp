@@ -212,7 +212,7 @@ void LPEPowerStroke::applyStyle(SPLPEItem *lpeitem)
 void
 LPEPowerStroke::doOnApply(SPLPEItem const* lpeitem)
 {
-    if (auto shape = dynamic_cast<SPShape const *>(lpeitem)) {
+    if (auto shape = cast<SPShape>(lpeitem)) {
         SPLPEItem* item = const_cast<SPLPEItem*>(lpeitem);
         std::vector<Geom::Point> points;
         Geom::PathVector const &pathv = pathv_to_linear_and_cubic_beziers(shape->curve()->get_pathvector());
@@ -254,7 +254,7 @@ LPEPowerStroke::doOnApply(SPLPEItem const* lpeitem)
 void LPEPowerStroke::doOnRemove(SPLPEItem const* lpeitem)
 {
     auto lpeitem_mutable = const_cast<SPLPEItem *>(lpeitem);
-    auto shape = dynamic_cast<SPShape *>(lpeitem_mutable);
+    auto shape = cast<SPShape>(lpeitem_mutable);
 
     if (shape && !keep_paths) {
         lpe_shape_revert_stroke_and_fill(shape, offset_points.median_width() * 2);

@@ -286,7 +286,7 @@ Box3DToolbar::selection_changed(Inkscape::Selection *selection)
     }
 
     SPItem *item = selection->singleItem();
-    SPBox3D *box = dynamic_cast<SPBox3D *>(item);
+    auto box = cast<SPBox3D>(item);
     if (box) {
         // FIXME: Also deal with multiple selected boxes
         Persp3D *persp = box->get_perspective();

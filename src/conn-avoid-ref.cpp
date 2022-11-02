@@ -237,7 +237,7 @@ static std::vector<Geom::Point> approxItemWithPoints(SPItem const *item, const G
 {
     auto item_mutable = const_cast<SPItem *>(item);
 
-    if (auto group = dynamic_cast<SPGroup *>(item_mutable)) {
+    if (auto group = cast<SPGroup>(item_mutable)) {
         std::vector<Geom::Point> poly_points;
         // consider all first-order children
         std::vector<SPItem*> itemlist = group->item_list();
@@ -246,7 +246,7 @@ static std::vector<Geom::Point> approxItemWithPoints(SPItem const *item, const G
             poly_points.insert(poly_points.end(), child_points.begin(), child_points.end());
         }
         return poly_points;
-    } else if (auto shape = dynamic_cast<SPShape *>(item_mutable)) {
+    } else if (auto shape = cast<SPShape>(item_mutable)) {
         shape->set_shape();
         // make sure it has an associated curve
         if (shape->curve()) {
@@ -342,7 +342,7 @@ static inline void get_avoided_items_rec(std::vector<SPItem *> &list, SPObject *
     for (auto& child: from->children) {
         if (is<SPItem>(&child) &&
             !desktop->layerManager().isLayer(cast<SPItem>(&child)) &&
-            !cast<SPItem>(&child)->isLocked() &&
+            !cast_unsafe<SPItem>(&child)->isLocked() &&
             !desktop->itemIsHidden(cast<SPItem>(&child)) &&
             (!initialised || cast<SPItem>(&child)->getAvoidRef().shapeRef)
             )

@@ -114,7 +114,7 @@ query_height(InkscapeApplication* app)
 void
 query_all_recurse (SPObject *o)
 {
-    SPItem *item = dynamic_cast<SPItem*>(o);
+    auto item = cast<SPItem>(o);
     if (item && item->getId()) {
         Geom::OptRect area = item->documentVisualBounds();
         if (area) {

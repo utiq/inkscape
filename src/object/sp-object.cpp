@@ -1300,7 +1300,7 @@ SPObject::unsetTmpSuccessor() {
 * Returns ancestor non layer.
 */
 SPObject const * SPObject::getTopAncestorNonLayer() const {
-    auto group = dynamic_cast<SPGroup *>(parent);
+    auto group = cast<SPGroup>(parent);
     if (group && group->layerMode() != SPGroup::LAYER) {
         return group->getTopAncestorNonLayer();
     } else {

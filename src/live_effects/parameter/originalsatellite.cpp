@@ -78,7 +78,7 @@ Gtk::Widget *OriginalSatelliteParam::param_newWidget()
 void OriginalSatelliteParam::on_select_original_button_click()
 {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    SPItem *original = dynamic_cast<SPItem *>(lperef->getObject());
+    auto original = cast<SPItem>(lperef->getObject());
     if (desktop == nullptr || original == nullptr) {
         return;
     }

@@ -1189,7 +1189,7 @@ Effect::getCurrrentLPEItems() const {
     auto hreflist = getLPEObj()->hrefList;
     for (auto item : hreflist) {
         if (item->document) {
-            SPLPEItem * lpeitem = dynamic_cast<SPLPEItem *>(item);
+            auto lpeitem = cast<SPLPEItem>(item);
             if (lpeitem) {
                 result.push_back(lpeitem);
             }
@@ -1229,7 +1229,7 @@ void Effect::transform_multiply_impl(Geom::Affine const &postmul, SPLPEItem *lpe
 {
     assert("pre: effect is referenced by lpeitem" &&
            std::any_of(lpeobj->hrefList.begin(), lpeobj->hrefList.end(),
-                       [lpeitem](SPObject *obj) { return lpeitem == dynamic_cast<SPLPEItem *>(obj); }));
+                       [lpeitem](SPObject *obj) { return lpeitem == cast<SPLPEItem>(obj); }));
 
     // FIXME Is there a way to eliminate the raw Effect::sp_lpe_item pointer?
     sp_lpe_item = lpeitem;
@@ -1283,7 +1283,7 @@ void Effect::doOnBeforeCommit()
         return;
     }
     if (!sp_lpe_item || !sp_lpe_item->document) {
-        sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+        sp_lpe_item = cast<SPLPEItem>(*getLPEObj()->hrefList.begin());
         if (!sp_lpe_item) {
             _lpe_action = LPE_NONE;
             return;
@@ -1331,7 +1331,7 @@ void Effect::doOnBeforeCommit()
     for (auto &iter : satelltelist) {
         SPObject *elemref;
         if (iter && iter->isAttached() && (elemref = iter->getObject())) {
-            if (auto *item = dynamic_cast<SPItem *>(elemref)) {
+            if (auto *item = cast<SPItem>(elemref)) {
                 Inkscape::XML::Node *elemnode = elemref->getRepr();
                 SPCSSAttr *css;
                 Glib::ustring css_str;
@@ -1350,7 +1350,7 @@ void Effect::doOnBeforeCommit()
                             }
                         } else {
                             elemnode->removeAttribute("sodipodi:insensitive");
-                            SPDefs *defs = dynamic_cast<SPDefs *>(elemref->parent);
+                            auto defs = cast<SPDefs>(elemref->parent);
                             if (!defs && sp_lpe_item) {
                                 item->moveTo(sp_lpe_item, false);
                             }
@@ -1442,7 +1442,7 @@ void Effect::processObjects(LPEAction lpe_action)
         return;
     }
     if (!sp_lpe_item || !sp_lpe_item->document) {
-        sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+        sp_lpe_item = cast<SPLPEItem>(*getLPEObj()->hrefList.begin());
         if (!sp_lpe_item) {
             return;
         }
@@ -1458,8 +1458,8 @@ void Effect::processObjects(LPEAction lpe_action)
     for (auto &iter : satelltelist) {
         SPObject *elemref;
         if (iter && iter->isAttached() && (elemref = iter->getObject())) {
-            if (auto *item = dynamic_cast<SPItem *>(elemref)) {
-                SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+            if (auto *item = cast<SPItem>(elemref)) {
+                auto lpeitem = cast<SPLPEItem>(item);
                 switch (lpe_action) {
                     case LPE_TO_OBJECTS:
                         if (lpeitem && item->isHidden()) {
@@ -1550,7 +1550,7 @@ void Effect::doOnRemove_impl(SPLPEItem const* lpeitem)
         return;
     }
     if (!sp_lpe_item || !sp_lpe_item->document) {
-        sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+        sp_lpe_item = cast<SPLPEItem>(*getLPEObj()->hrefList.begin());
         if (!sp_lpe_item || !sp_lpe_item->document) {
             sp_lpe_item = nullptr;
         }
@@ -1778,7 +1778,7 @@ Effect::addHandles(KnotHolder *knotholder, SPItem *item) {
 
     if (is_load) {
         // needed by fillet and powerstroke LPEs
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+        auto lpeitem = cast<SPLPEItem>(item);
         if (lpeitem) {
             sp_lpe_item_update_patheffect(lpeitem, false, false);
         }

@@ -49,9 +49,9 @@ using Inkscape::ObjectSet;
 
 static void sp_degroup_list_recursive(std::vector<SPItem*> &out, SPItem *item)
 {
-    if (auto group = dynamic_cast<SPGroup*>(item)) {
+    if (auto group = cast<SPGroup>(item)) {
         for (auto &child : group->children) {
-            if (auto childitem = dynamic_cast<SPItem*>(&child)) {
+            if (auto childitem = cast<SPItem>(&child)) {
                 sp_degroup_list_recursive(out, childitem);
             }
         }
@@ -94,7 +94,7 @@ void ObjectSet::combine(bool skip_undo, bool silent)
 
     std::vector<SPItem*> to_paths;
     for (auto item : boost::adaptors::reverse(items_copy)) {
-        if (!dynamic_cast<SPPath*>(item) && !dynamic_cast<SPGroup*>(item)) {
+        if (!is<SPPath>(item) && !is<SPGroup>(item)) {
             to_paths.emplace_back(item);
         }
     }
@@ -125,7 +125,7 @@ void ObjectSet::combine(bool skip_undo, bool silent)
     }
 
     for (auto item : boost::adaptors::reverse(items_copy)) {
-        auto path = dynamic_cast<SPPath*>(item);
+        auto path = cast<SPPath>(item);
         if (!path) {
             continue;
         }
@@ -225,7 +225,7 @@ ObjectSet::breakApart(bool skip_undo, bool overlapping, bool silent)
     std::vector<SPItem*> itemlist(items().begin(), items().end());
     for (auto item : itemlist){
 
-        SPPath *path = dynamic_cast<SPPath *>(item);
+        auto path = cast<SPPath>(item);
         if (!path) {
             continue;
         }
@@ -270,7 +270,7 @@ ObjectSet::breakApart(bool skip_undo, bool overlapping, bool silent)
             // move to the saved position
             parent->addChildAtPos(repr, pos);
             SPLPEItem *lpeitem = nullptr;
-            if (path_effect && (( lpeitem = dynamic_cast<SPLPEItem *>(document->getObjectByRepr(repr)) )) ) {
+            if (path_effect && (( lpeitem = cast<SPLPEItem>(document->getObjectByRepr(repr)) )) ) {
                 lpeitem->forkPathEffectsIfNecessary(1);
             }
             // if it's the first one, restore id
@@ -367,15 +367,15 @@ sp_item_list_to_curves(const std::vector<SPItem*> &items, std::vector<SPItem*>& 
         g_assert(item != nullptr);
         SPDocument *document = item->document;
 
-        SPGroup *group = dynamic_cast<SPGroup *>(item);
+        auto group = cast<SPGroup>(item);
         if ( skip_all_lpeitems &&
-             dynamic_cast<SPLPEItem *>(item) && 
+             cast<SPLPEItem>(item) && 
              !group ) // also convert objects in an SPGroup when skip_all_lpeitems is set.
         { 
             continue;
         }
 
-        if (auto box = dynamic_cast<SPBox3D*>(item)) {
+        if (auto box = cast<SPBox3D>(item)) {
             // convert 3D box to ordinary group of paths; replace the old element in 'selected' with the new group
             Inkscape::XML::Node *repr = box->convert_to_group()->getRepr();
             
@@ -390,7 +390,7 @@ sp_item_list_to_curves(const std::vector<SPItem*> &items, std::vector<SPItem*>& 
         // remember id
         char const *id = item->getRepr()->attribute("id");
         
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+        auto lpeitem = cast<SPLPEItem>(item);
         if (lpeitem && lpeitem->hasPathEffect()) {
             lpeitem->removeAllPathEffects(true);
             SPObject *elemref = document->getObjectById(id);
@@ -399,7 +399,7 @@ sp_item_list_to_curves(const std::vector<SPItem*> &items, std::vector<SPItem*>& 
                 did = true;
                 if (elemref) {
                     //If the LPE item is a shape is converted to a path so we need to reupdate the item
-                    item = dynamic_cast<SPItem *>(elemref);
+                    item = cast<SPItem>(elemref);
                     selected.push_back(item);
                 } else {
                     // item deleted. Possibly because original-d value has no segments
@@ -410,7 +410,7 @@ sp_item_list_to_curves(const std::vector<SPItem*> &items, std::vector<SPItem*>& 
             }
         }
 
-        if (dynamic_cast<SPPath*>(item)) {
+        if (is<SPPath>(item)) {
             // remove connector attributes
             if (item->getAttribute("inkscape:connector-type") != nullptr) {
                 item->removeAttribute("inkscape:connection-start");
@@ -479,7 +479,7 @@ void Inkscape::convert_text_to_curves(SPDocument *doc)
     doc->ensureUpToDate();
 
     for (auto &child : doc->getRoot()->children) {
-        auto item = dynamic_cast<SPItem *>(&child);
+        auto item = cast<SPItem>(&child);
         if (!(is<SPText>(item) ||     //
               is<SPFlowtext>(item) || //
               is<SPGroup>(item))) {
@@ -504,7 +504,7 @@ sp_selected_item_to_curved_repr(SPItem *item, guint32 /*text_grouping_policy*/)
 
     Inkscape::XML::Document *xml_doc = item->getRepr()->document();
 
-    if (dynamic_cast<SPText *>(item) || dynamic_cast<SPFlowtext *>(item)) {
+    if (is<SPText>(item) || is<SPFlowtext>(item)) {
         // Special treatment for text: convert each glyph to separate path, then group the paths
         Inkscape::XML::Node *g_repr = xml_doc->createElement("svg:g");
 
@@ -537,7 +537,7 @@ sp_selected_item_to_curved_repr(SPItem *item, guint32 /*text_grouping_policy*/)
             te_get_layout(item)->getSourceOfCharacter(iter, &pos_obj);
             if (!pos_obj) // no source for glyph, abort
                 break;
-            while (dynamic_cast<SPString const *>(pos_obj) && pos_obj->parent) {
+            while (is<SPString>(pos_obj) && pos_obj->parent) {
                pos_obj = pos_obj->parent;   // SPStrings don't have style
             }
             Glib::ustring style_str = pos_obj->style->writeIfDiff(item->style);
@@ -569,7 +569,7 @@ sp_selected_item_to_curved_repr(SPItem *item, guint32 /*text_grouping_policy*/)
 
     SPCurve curve;
 
-    if (auto shape = dynamic_cast<SPShape *>(item); shape && shape->curveForEdit()) {
+    if (auto shape = cast<SPShape>(item); shape && shape->curveForEdit()) {
         curve = *shape->curveForEdit();
     } else {
         return nullptr;
@@ -619,7 +619,7 @@ ObjectSet::pathReverse()
 
     for (auto i = items().begin(); i != items().end(); ++i){
 
-        SPPath *path = dynamic_cast<SPPath *>(*i);
+        auto path = cast<SPPath>(*i);
         if (!path) {
             continue;
         }

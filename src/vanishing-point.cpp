@@ -253,7 +253,7 @@ std::list<SPBox3D *> VanishingPoint::selectedBoxes(Inkscape::Selection *sel)
     auto itemlist = sel->items();
     for (auto i = itemlist.begin(); i != itemlist.end(); ++i) {
         SPItem *item = *i;
-        SPBox3D *box = dynamic_cast<SPBox3D *>(item);
+        auto box = cast<SPBox3D>(item);
         if (box && this->hasBox(box)) {
             sel_boxes.push_back(box);
         }
@@ -391,7 +391,7 @@ std::set<VanishingPoint *> VPDragger::VPsOfSelectedBoxes()
     auto itemlist = sel->items();
     for (auto i = itemlist.begin(); i != itemlist.end(); ++i) {
         SPItem *item = *i;
-        SPBox3D *box = dynamic_cast<SPBox3D *>(item);
+        auto box = cast<SPBox3D>(item);
         if (box) {
             vp = this->findVPWithBox(box);
             if (vp) {
@@ -554,7 +554,7 @@ void VPDrag::updateDraggers()
     auto itemlist = this->selection->items();
     for (auto i = itemlist.begin(); i != itemlist.end(); ++i) {
         SPItem *item = *i;
-        SPBox3D *box = dynamic_cast<SPBox3D *>(item);
+        auto box = cast<SPBox3D>(item);
         if (box) {
             VanishingPoint vp;
             for (int i = 0; i < 3; ++i) {
@@ -586,7 +586,7 @@ void VPDrag::updateLines()
     auto itemlist = this->selection->items();
     for (auto i = itemlist.begin(); i != itemlist.end(); ++i) {
         SPItem *item = *i;
-        SPBox3D *box = dynamic_cast<SPBox3D *>(item);
+        auto box = cast<SPBox3D>(item);
         if (box) {
             this->drawLinesForFace(box, Proj::X);
             this->drawLinesForFace(box, Proj::Y);

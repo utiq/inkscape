@@ -243,7 +243,7 @@ ObjectWatcher::ObjectWatcher(ObjectsPanel* panel, SPItem* obj, Gtk::TreeRow *row
     node->addObserver(*this);
 
     // Only show children for groups (and their subclasses like SPAnchor or SPRoot)
-    if (!dynamic_cast<SPGroup const*>(obj)) {
+    if (!is<SPGroup>(obj)) {
         return;
     }
 
@@ -275,7 +275,7 @@ void ObjectWatcher::initRowInfo()
  */
 void ObjectWatcher::updateRowInfo()
 {
-    if (auto item = dynamic_cast<SPItem *>(panel->getObject(node))) {
+    if (auto item = cast<SPItem>(panel->getObject(node))) {
         assert(row_ref);
         assert(row_ref.get_path());
 
@@ -322,7 +322,7 @@ void ObjectWatcher::updateRowInfo()
  * Propagate changes to the highlight color to all children.
  */
 void ObjectWatcher::updateRowHighlight() {
-    if (auto item = dynamic_cast<SPItem *>(panel->getObject(node))) {
+    if (auto item = cast<SPItem>(panel->getObject(node))) {
         auto row = *panel->_store->get_iter(row_ref.get_path());
         auto new_color = item->highlight_color();
         if (new_color != row[panel->_model->_colIconColor]) {
@@ -417,7 +417,7 @@ void ObjectWatcher::setSelectedBitChildren(SelectionState mask, bool enabled)
  */
 void ObjectWatcher::rememberExtendedItems()
 {
-    if (auto item = dynamic_cast<SPItem *>(panel->getObject(node))) {
+    if (auto item = cast<SPItem>(panel->getObject(node))) {
         if (item->isExpanded())
             panel->_tree.expand_row(row_ref.get_path(), false);
     }
@@ -497,7 +497,7 @@ void ObjectWatcher::addChildren(SPItem *obj, bool dummy)
     assert(child_watchers.empty());
 
     for (auto &child : obj->children) {
-        if (auto item = dynamic_cast<SPItem *>(&child)) {
+        if (auto item = cast<SPItem>(&child)) {
             if (addChild(item, dummy) && dummy) {
                 // one dummy child is enough to make the group expandable
                 break;
@@ -521,7 +521,7 @@ void ObjectWatcher::moveChild(Node &child, Node *sibling)
 
     // sibling might not be an SPItem and thus not be represented in the
     // TreeView. Find the closest SPItem and use that for the reordering.
-    while (sibling && !dynamic_cast<SPItem const *>(panel->getObject(sibling))) {
+    while (sibling && !is<SPItem>(panel->getObject(sibling))) {
         sibling = sibling->prev();
     }
 
@@ -573,7 +573,7 @@ void ObjectWatcher::notifyChildAdded( Node &node, Node &child, Node *prev )
 {
     assert(this->node == &node);
     // Ignore XML nodes which are not displayable items
-    if (auto item = dynamic_cast<SPItem *>(panel->getObject(&child))) {
+    if (auto item = cast<SPItem>(panel->getObject(&child))) {
         addChild(item);
         moveChild(child, prev);
     }
@@ -1052,7 +1052,7 @@ bool ObjectsPanel::showChildInTree(SPItem *item) {
 
     // Filter by object type, the layers dialog here.
     if (prefs->getBool("/dialogs/objects/layers_only", false)) {
-        auto group = dynamic_cast<SPGroup *>(item);
+        auto group = cast<SPGroup>(item);
         if (!group || group->layerMode() != SPGroup::LAYER) {
             show_child = false;
         }
@@ -1080,7 +1080,7 @@ bool ObjectsPanel::showChildInTree(SPItem *item) {
     for (auto child_obj : item->childList(false)) {
         if (show_child)
             break;
-        if (auto child = dynamic_cast<SPItem *>(child_obj)) {
+        if (auto child = cast<SPItem>(child_obj)) {
             show_child = showChildInTree(child);
         }
     }
@@ -1120,7 +1120,7 @@ void ObjectsPanel::selectionChanged(Selection *selected)
         if (auto watcher = unpackToObject(item)) {
             if (auto child_watcher = watcher->findChild(item->getRepr())) {
                 // Expand layers themselves, but do not expand groups.
-                auto group = dynamic_cast<SPGroup *>(item);
+                auto group = cast<SPGroup>(item);
                 auto focus_watcher = (group && group->isLayer()) ? child_watcher : watcher;
                 child_watcher->setSelectedBit(SELECTED_OBJECT, true);
                 _tree.expand_to_path(focus_watcher->getTreePath());
@@ -1474,7 +1474,7 @@ void ObjectsPanel::_generateTranslucentItems(SPItem *parent)
         return;
     if (parent->isAncestorOf(_solid_item)) {
         for (auto &child: parent->children) {
-            if (auto item = dynamic_cast<SPItem *>(&child)) {
+            if (auto item = cast<SPItem>(&child)) {
                 _generateTranslucentItems(item);
             }
         }
@@ -1610,7 +1610,7 @@ Node *ObjectsPanel::getRepr(Gtk::TreeModel::Row const &row) const
 SPItem *ObjectsPanel::getItem(Gtk::TreeModel::Row const &row) const
 {
     auto const this_const = const_cast<ObjectsPanel *>(this);
-    return dynamic_cast<SPItem *>(this_const->getObject(getRepr(row)));
+    return cast<SPItem>(this_const->getObject(getRepr(row)));
 }
 
 /**
@@ -1691,7 +1691,7 @@ bool ObjectsPanel::on_drag_motion(const Glib::RefPtr<Gdk::DragContext> &context,
         }
 
         // only groups can have children
-        if (drop_into && !dynamic_cast<SPGroup const *>(item)) {
+        if (drop_into && !is<SPGroup>(item)) {
             goto finally;
         }
 
@@ -1806,7 +1806,7 @@ bool ObjectsPanel::selectCursorItem(unsigned int state)
         toggleLocked(state, row);
     } else if (column == _name_column) {
         auto item = getItem(row);
-        auto group = dynamic_cast<SPGroup *>(item);
+        auto group = cast<SPGroup>(item);
         _scroll_lock = true; // Clicking to select shouldn't scroll the treeview.
         if (state & GDK_SHIFT_MASK && !selection->isEmpty()) {
             // Select everything between this row and the last selected item

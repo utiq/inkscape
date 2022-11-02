@@ -95,7 +95,7 @@ LPEFilletChamfer::LPEFilletChamfer(LivePathEffectObject *lpeobject)
 void LPEFilletChamfer::doOnApply(SPLPEItem const *lpeItem)
 {
     SPLPEItem *splpeitem = const_cast<SPLPEItem *>(lpeItem);
-    SPShape *shape = dynamic_cast<SPShape *>(splpeitem);
+    auto shape = cast<SPShape>(splpeitem);
     if (shape) {
         Geom::PathVector const pathv = pathv_to_linear_and_cubic_beziers(shape->curve()->get_pathvector());
         NodeSatellites nodesatellites;

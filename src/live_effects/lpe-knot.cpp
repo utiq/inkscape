@@ -555,14 +555,14 @@ static void
 collectPathsAndWidths (SPLPEItem const *lpeitem, Geom::PathVector &paths, std::vector<double> &stroke_widths){
     auto lpeitem_mutable = const_cast<SPLPEItem *>(lpeitem);
 
-    if (auto group = dynamic_cast<SPGroup *>(lpeitem_mutable)) {
+    if (auto group = cast<SPGroup>(lpeitem_mutable)) {
         std::vector<SPItem*> item_list = group->item_list();
         for (auto subitem : item_list) {
             if (is<SPLPEItem>(subitem)) {
                 collectPathsAndWidths(cast<SPLPEItem>(subitem), paths, stroke_widths);
             }
         }
-    } else if (auto shape = dynamic_cast<SPShape const *>(lpeitem)) {
+    } else if (auto shape = cast<SPShape>(lpeitem)) {
         SPCurve const *c = shape->curve();
         if (c) {
             Geom::PathVector subpaths = pathv_to_linear_and_cubic_beziers(c->get_pathvector());

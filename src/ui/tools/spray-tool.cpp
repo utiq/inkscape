@@ -873,13 +873,12 @@ static bool sp_spray_recursive(SPDesktop *desktop,
     {
         // convert 3D boxes to ordinary groups before spraying their shapes
         // TODO: ideally the original object is preserved.
-        SPBox3D *box = dynamic_cast<SPBox3D *>(item);
-        if (box) {
-            desktop->getSelection()->remove(dynamic_cast<SPObject *>(item));
+        if (auto box = cast<SPBox3D>(item)) {
+            desktop->getSelection()->remove(item);
             set->remove(item);
             item = box->convert_to_group();
             set->add(item);
-            desktop->getSelection()->add(dynamic_cast<SPObject *>(item));
+            desktop->getSelection()->add(item);
         }
     }
 
@@ -955,7 +954,7 @@ static bool sp_spray_recursive(SPDesktop *desktop,
                 }
                 parent->appendChild(copy);
                 SPObject *new_obj = doc->getObjectByRepr(copy);
-                item_copied = dynamic_cast<SPItem *>(new_obj);   // Conversion object->item
+                item_copied = cast<SPItem>(new_obj);   // Conversion object->item
                 sp_spray_scale_rel(center,desktop, item_copied, Geom::Scale(_scale));
                 sp_spray_scale_rel(center,desktop, item_copied, Geom::Scale(scale));
                 sp_spray_rotate_rel(center,desktop,item_copied, Geom::Rotate(angle));
@@ -989,7 +988,7 @@ static bool sp_spray_recursive(SPDesktop *desktop,
                     }
                     parent->appendChild(copy);
                     SPObject *new_obj = doc->getObjectByRepr(copy);
-                    SPItem *item_copied = dynamic_cast<SPItem *>(new_obj);
+                    auto item_copied = cast<SPItem>(new_obj);
 
                     // Move around the cursor
                     Geom::Point move = (Geom::Point(cos(tilt)*cos(dp)*dr/(1-ratio)+sin(tilt)*sin(dp)*dr/(1+ratio), -sin(tilt)*cos(dp)*dr/(1-ratio)+cos(tilt)*sin(dp)*dr/(1+ratio)))+(p-a->midpoint());
@@ -1006,7 +1005,7 @@ static bool sp_spray_recursive(SPDesktop *desktop,
                     object_set_tmp.clear();
                     object_set_tmp.add(item_copied);
                     object_set_tmp.removeLPESRecursive(true);
-                    if (dynamic_cast<SPUse*>(object_set_tmp.objects().front())) {
+                    if (is<SPUse>(object_set_tmp.objects().front())) {
                         object_set_tmp.unlinkRecursive(true);
                     }
                     if (single_path_output) { // Previous result
@@ -1095,7 +1094,7 @@ static bool sp_spray_recursive(SPDesktop *desktop,
 
                 SPObject *clone_object = doc->getObjectByRepr(clone);
                 // Conversion object->item
-                item_copied = dynamic_cast<SPItem *>(clone_object);
+                item_copied = cast<SPItem>(clone_object);
                 sp_spray_scale_rel(center, desktop, item_copied, Geom::Scale(_scale, _scale));
                 sp_spray_scale_rel(center, desktop, item_copied, Geom::Scale(scale, scale));
                 sp_spray_rotate_rel(center, desktop, item_copied, Geom::Rotate(angle));

@@ -1748,7 +1748,7 @@ bool OdfOutput::writeTree(Writer &couts, Writer &souts,
         couts.writeString("</draw:path>\n\n");
     };
 
-    if (auto shape = dynamic_cast<SPShape const *>(item)) {
+    if (auto shape = cast<SPShape>(item)) {
         if (shape->curve()) {
             process_curve(*shape->curve());
         }

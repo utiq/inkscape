@@ -238,7 +238,7 @@ static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, Freeha
             SPObject *elemref = nullptr;
             if ((elemref = document->getObjectById("power_stroke_preview"))) {
                 elemref->getRepr()->removeAttribute("style");
-                SPItem *successor = dynamic_cast<SPItem *>(elemref);
+                auto successor = cast<SPItem>(elemref);
                 sp_desktop_apply_style_tool(desktop, successor->getRepr(),
                                             Glib::ustring("/tools/freehand/pencil").data(), false);
                 spdc_apply_style(successor);
@@ -246,7 +246,7 @@ static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, Freeha
                 item->deleteObject(false);
                 item->setSuccessor(successor);
                 sp_object_unref(item);
-                item = dynamic_cast<SPItem *>(successor);
+                item = successor;
                 dc->selection->set(item);
                 item->setLocked(false);
                 dc->white_item = item;
@@ -275,7 +275,7 @@ static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, Freeha
 static void spdc_apply_bend_shape(gchar const *svgd, FreehandBase *dc, SPItem *item)
 {
     using namespace Inkscape::LivePathEffect;
-    SPUse *use = dynamic_cast<SPUse *>(item);
+    auto use = cast<SPUse>(item);
     if ( use ) {
         return;
     }
@@ -287,7 +287,7 @@ static void spdc_apply_bend_shape(gchar const *svgd, FreehandBase *dc, SPItem *i
     if (!is<SPLPEItem>(item)) {
         return;
     }
-    if(!cast<SPLPEItem>(item)->hasPathEffectOfType(BEND_PATH)){
+    if(!cast_unsafe<SPLPEItem>(item)->hasPathEffectOfType(BEND_PATH)){
         Effect::createAndApply(BEND_PATH, document, item);
     }
     Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
@@ -387,7 +387,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
         if (prefs->getInt(dc->getPrefsPath() + "/freehand-mode", 0) == 2) {
             Effect::createAndApply(BSPLINE, dc->getDesktop()->getDocument(), item);
         }
-        if (auto sp_shape = dynamic_cast<SPShape *>(item)) {
+        if (auto sp_shape = cast<SPShape>(item)) {
             curve = sp_shape->curve();
         }
         SPCSSAttr *css_item = sp_css_attr_from_object(item, SP_STYLE_FLAG_ALWAYS);
@@ -491,7 +491,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
                 gchar const *svgd = item->getRepr()->attribute("d");
                 if(bend_item && (is<SPShape>(bend_item) || is<SPGroup>(bend_item))){
                     // If item is a SPRect, convert it to path first:
-                    if ( dynamic_cast<SPRect *>(bend_item) ) {
+                    if (is<SPRect>(bend_item) ) {
                         if (desktop) {
                             Inkscape::Selection *sel = desktop->getSelection();
                             if ( sel && !sel->isEmpty() ) {
@@ -850,7 +850,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
         }
         if (!dc->white_item) {
             // Attach repr
-            SPItem *item = dynamic_cast<SPItem *>(layer->appendChildRepr(repr));
+            auto item = cast<SPItem>(layer->appendChildRepr(repr));
             dc->white_item = item;
             //Bend needs the transforms applied after, Other effects best before
             spdc_check_for_and_apply_waiting_LPE(dc, item, c.get(), true);
@@ -866,7 +866,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
                 dc->selection->set(repr);
             }
         }
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(dc->white_item);
+        auto lpeitem = cast<SPLPEItem>(dc->white_item);
         if (lpeitem && lpeitem->hasPathEffectRecursive()) {
             sp_lpe_item_update_patheffect(lpeitem, true, false);
         }

@@ -52,8 +52,8 @@
 bool
 item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& stroke, bool bbox_only = false)
 {
-    const SPShape *shape = dynamic_cast<const SPShape*>(item);
-    const SPText  *text  = dynamic_cast<const SPText*>(item);
+    auto shape = cast<SPShape>(item);
+    auto text = cast<SPText>(item);
 
     if (!shape && !text) {
         return false;
@@ -195,7 +195,7 @@ void item_to_outline_add_marker_child( SPItem const *item, Geom::Affine marker_t
     if (is<SPGroup>(item)) {
         // recurse through all childs:
         for (auto& o: item->children) {
-            if (auto childitem = dynamic_cast<SPItem const *>(&o)) {
+            if (auto childitem = cast<SPItem>(&o)) {
                 item_to_outline_add_marker_child(childitem, tr, pathv_in);
             }
         }
@@ -262,7 +262,7 @@ Geom::PathVector* item_to_outline(SPItem const *item, bool exclude_markers)
         return ret_pathv;
     }
 
-    const SPShape *shape = dynamic_cast<const SPShape *>(item);
+    auto shape = cast<SPShape>(item);
     if (shape && shape->hasMarkers()) {
 
         SPStyle *style = shape->style;
@@ -398,23 +398,21 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
         if (elemref && elemref != item) {
             // If the LPE item is a shape, it is converted to a path 
             // so we need to reupdate the item
-            item = dynamic_cast<SPItem *>(elemref);
+            item = cast<SPItem>(elemref);
         }
-        auto flat_item = dynamic_cast<SPLPEItem *>(elemref);
+        auto flat_item = cast<SPLPEItem>(elemref);
         if (!flat_item || !flat_item->hasPathEffect()) {
             flatten = true;
         }
     }
     // convert text/3dbox to path
-    if (dynamic_cast<SPText *>(item)
-        || dynamic_cast<SPFlowtext *>(item)
-        || dynamic_cast<SPBox3D *>(item)) {
+    if (is<SPText>(item) || is<SPFlowtext>(item) || is<SPBox3D>(item)) {
         if (legacy) {
             return nullptr;
         }
 
         Inkscape::ObjectSet original_objects {doc}; // doc or desktop shouldn't be necessary
-        original_objects.add(dynamic_cast<SPObject *>(item));
+        original_objects.add(item);
         original_objects.toCurves(true);
         SPItem * new_item = original_objects.singleItem();
         if (new_item && new_item != item) {
@@ -426,7 +424,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
         }
     }
     // if group, recurse
-    SPGroup *group = dynamic_cast<SPGroup *>(item);
+    auto group = cast<SPGroup>(item);
     if (group) {
         if (legacy) {
             return nullptr;
@@ -446,7 +444,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
         }
     }
 
-    SPShape* shape = dynamic_cast<SPShape *>(item);
+    auto shape = cast<SPShape>(item);
     if (!shape) {
         return nullptr;
     }

@@ -119,7 +119,7 @@ void Parameter::param_higlight(bool highlight)
                 if (param_effect->helperLineSatellites) {
                     std::vector<SPObject *> satellites = param_get_satellites();
                     for (auto iter : satellites) {
-                        SPItem *satelliteitem = dynamic_cast<SPItem *>(iter);
+                        auto satelliteitem = cast<SPItem>(iter);
                         if (satelliteitem) {
                             bbox.unionWith(lpeitems[0]->documentVisualBounds());
                         }
@@ -196,7 +196,7 @@ void Parameter::update_satellites()
                                 Glib::ustring itemid = Glib::ustring(lpeitems[0]->getId());
                                 std::pair<Glib::ustring, Glib::ustring> rootsatellite = std::make_pair(itemid, lpeid);
                                 if (! (std::find(rootsatellites.begin(), rootsatellites.end(), rootsatellite) != rootsatellites.end()) ) {
-                                    dynamic_cast<SPItem *>(iter)->rootsatellites.push_back(rootsatellite);
+                                    cast<SPItem>(iter)->rootsatellites.push_back(rootsatellite);
                                 }
                                 param_higlight(true);
                                 break;

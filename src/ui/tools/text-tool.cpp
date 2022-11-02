@@ -874,7 +874,7 @@ bool TextTool::root_handler(GdkEvent* event) {
                                     this->nascent_object = false; // we don't need it anymore, having created a real <text>
                                 }
 
-                                SPText* text_element = dynamic_cast<SPText*>(text);
+                                auto text_element = cast<SPText>(text);
                                 if (text_element && (text_element->has_shape_inside() || text_element->has_inline_size())) {
                                     // Handle new line like any other character.
                                     this->text_sel_start = this->text_sel_end = sp_te_insert(this->text, this->text_sel_start, "\n");
@@ -1275,13 +1275,13 @@ bool sp_text_paste_inline(ToolBase *ec)
         if (!clip_text.empty()) {
 
             bool is_svg2 = false;
-            SPText *textitem = dynamic_cast<SPText *>(tc->text);
+            auto textitem = cast<SPText>(tc->text);
             if (textitem) {
                 is_svg2 = textitem->has_shape_inside() /*|| textitem->has_inline_size()*/; // Do now since hiding messes this up.
                 textitem->hide_shape_inside();
             }
 
-            SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(tc->text);
+            auto flowtext = cast<SPFlowtext>(tc->text);
             if (flowtext) {
                 flowtext->fix_overflow_flowregion(false);
             }
@@ -1527,7 +1527,7 @@ bool TextTool::_styleSet(SPCSSAttr const *css)
     // change which requires rewriting the 'x' and 'y' attributes of the tpsans for Inkscape
     // multi-line text (with sodipodi:role="line"). We need to rewrite the repr after this is
     // done. rebuldLayout() will be called a second time unnecessarily.
-    SPText* sptext = dynamic_cast<SPText*>(text);
+    auto sptext = cast<SPText>(text);
     if (sptext) {
         sptext->rebuildLayout();
         sptext->updateRepr();
@@ -1682,7 +1682,7 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
 
             tc->message_context->setF(Inkscape::NORMAL_MESSAGE, edit_message_flowed, nChars, trunc);
 
-        } else if (auto text = dynamic_cast<SPText *>(tc->text)) {
+        } else if (auto text = cast<SPText>(tc->text)) {
             if (text->style->shape_inside.set) {
                 for (auto const *href : text->style->shape_inside.hrefs) {
                     shapes.push_back(href->getObject());
@@ -1698,7 +1698,7 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
                 tc->message_context->setF(Inkscape::NORMAL_MESSAGE, edit_message_flowed, nChars, trunc);
             } else {
                 for (SPObject &child : tc->text->children) {
-                    if (auto textpath = dynamic_cast<SPTextPath *>(&child)) {
+                    if (auto textpath = cast<SPTextPath>(&child)) {
                         shapes.push_back(sp_textpath_get_path_item(textpath));
                     }
                 }
@@ -1708,7 +1708,7 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
 
         SPCurve curve;
         for (auto const *shape_item : shapes) {
-            if (auto shape = dynamic_cast<SPShape const *>(shape_item)) {
+            if (auto shape = cast<SPShape>(shape_item)) {
                 if (shape->curve()) {
                     curve.append(shape->curve()->transformed(shape->transform));
                 }

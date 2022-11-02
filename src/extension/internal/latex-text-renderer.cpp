@@ -69,7 +69,7 @@ latex_render_document_text_to_file( SPDocument *doc, gchar const *filename,
     bool pageBoundingBox = true;
     if (exportId && strcmp(exportId, "")) {
         // we want to export the given item only
-        base = dynamic_cast<SPItem *>(doc->getObjectById(exportId));
+        base = cast<SPItem>(doc->getObjectById(exportId));
         if (!base) {
             throw Inkscape::Extension::Output::export_id_not_found(exportId);
         }
@@ -238,7 +238,7 @@ void LaTeXTextRenderer::sp_group_render(SPGroup *group)
 {
 	std::vector<SPObject*> l = (group->childList(false));
     for(auto x : l){
-        SPItem *item = dynamic_cast<SPItem*>(x);
+        auto item = cast<SPItem>(x);
         if (item) {
             renderItem(item);
         }
@@ -255,7 +255,7 @@ void LaTeXTextRenderer::sp_use_render(SPUse *use)
         translated = true;
     }
 
-    SPItem *childItem = dynamic_cast<SPItem *>(use->child);
+    auto childItem = use->child;
     if (childItem) {
         renderItem(childItem);
     }
@@ -451,7 +451,7 @@ Flowing in rectangle is possible, not in arb shape.
     SPStyle *style = flowtext->style;
 
     SPItem *frame_item = flowtext->get_frame(nullptr);
-    SPRect *frame = dynamic_cast<SPRect *>(frame_item);
+    auto frame = cast<SPRect>(frame_item);
     if (!frame_item || !frame) {
         g_warning("LaTeX export: non-rectangular flowed text shapes are not supported, skipping text.");
         return; // don't know how to handle non-rect frames yet. is quite uncommon for latex users i think
@@ -604,23 +604,23 @@ LaTeXTextRenderer::sp_item_invoke_render(SPItem *item)
         return;
     }
 
-    SPRoot *root = dynamic_cast<SPRoot *>(item);
+    auto root = cast<SPRoot>(item);
     if (root) {
         return sp_root_render(root);
     }
-    SPGroup *group = dynamic_cast<SPGroup *>(item);
+    auto group = cast<SPGroup>(item);
     if (group) {
         return sp_group_render(group);
     }
-    SPUse *use = dynamic_cast<SPUse *>(item);
+    auto use = cast<SPUse>(item);
     if (use) {
         return sp_use_render(use);
     }
-    SPText *text = dynamic_cast<SPText *>(item);
+    auto text = cast<SPText>(item);
     if (text) {
         return sp_text_render(text);
     }
-    SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(item);
+    auto flowtext = cast<SPFlowtext>(item);
     if (flowtext) {
         return sp_flowtext_render(flowtext);
     }

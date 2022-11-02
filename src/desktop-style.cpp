@@ -553,7 +553,7 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
             SPPaintServer *server_res = isfill ? style_res->getFillPaintServer() : style_res->getStrokePaintServer();
             SPPaintServer *server = isfill ? style->getFillPaintServer() : style->getStrokePaintServer();
 
-            SPLinearGradient *linear_res = cast<SPLinearGradient>(server_res);
+            auto linear_res = cast<SPLinearGradient>(server_res);
             SPRadialGradient *radial_res = linear_res ? nullptr : cast<SPRadialGradient>(server_res);
             SPPattern *pattern_res = (linear_res || radial_res) ? nullptr : cast<SPPattern>(server_res);
             SPHatch *hatch_res =

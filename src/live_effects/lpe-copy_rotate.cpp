@@ -169,7 +169,7 @@ LPECopyRotate::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
             size_t pos = 0;
             for (auto lpereference : lpesatellites.data()) {
                 if (lpereference && lpereference->isAttached()) {
-                    SPItem *copies = dynamic_cast<SPItem *>(lpereference->getObject());
+                    auto copies = cast<SPItem>(lpereference->getObject());
                     if (copies) {
                         if (pos > num_copies - 2) {
                             copies->setHidden(true);
@@ -314,7 +314,7 @@ LPECopyRotate::createPathBase(SPObject *elemref) {
     }
     Inkscape::XML::Document *xml_doc = document->getReprDoc();
     Inkscape::XML::Node *prev = elemref->getRepr();
-    SPGroup *group = dynamic_cast<SPGroup *>(elemref);
+    auto group = cast<SPGroup>(elemref);
     if (group) {
         Inkscape::XML::Node *container = xml_doc->createElement("svg:g");
         container->setAttribute("transform", prev->attribute("transform"));

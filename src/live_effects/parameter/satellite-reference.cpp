@@ -32,7 +32,7 @@ bool SatelliteReference::_acceptObject(SPObject *const obj) const
         if (obj == owner) {
             return false;
         }
-        if (!dynamic_cast<LivePathEffectObject *>(owner)) {
+        if (!is<LivePathEffectObject>(owner)) {
             return false;
         }
         return URIReference::_acceptObject(obj);

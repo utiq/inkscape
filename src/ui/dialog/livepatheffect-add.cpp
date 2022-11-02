@@ -941,13 +941,13 @@ void LivePathEffectAdd::show(SPDesktop *desktop)
     if (sel && !sel->isEmpty()) {
         SPItem *item = sel->singleItem();
         if (item) {
-            SPUse *use = dynamic_cast<SPUse *>(item);
+            auto use = cast<SPUse>(item);
             if (use) {
                 item = use->get_original();
             }
-            SPShape *shape = dynamic_cast<SPShape *>(item);
-            SPPath *path = dynamic_cast<SPPath *>(item);
-            SPGroup *group = dynamic_cast<SPGroup *>(item);
+            auto shape = cast<SPShape>(item);
+            auto path = cast<SPPath>(item);
+            auto group = cast<SPGroup>(item);
             dial._has_clip = (item->getClipObject() != nullptr);
             dial._has_mask = (item->getMaskObject() != nullptr);
             dial._item_type = "";

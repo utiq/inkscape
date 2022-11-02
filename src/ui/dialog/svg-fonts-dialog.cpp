@@ -492,7 +492,7 @@ SPItem* get_or_create_layer_for_glyph(SPDesktop* desktop, const Glib::ustring& f
     layers.renameLayer(layer, name.c_str(), false);
 
     DocumentUndo::done(desktop->getDocument(), _("Add layer"), "");
-    return dynamic_cast<SPItem*>(layer);
+    return cast<SPItem>(layer);
 }
 
 void SvgFontsDialog::create_glyphs_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
@@ -621,7 +621,7 @@ void SvgFontsDialog::update_fonts(bool document_replaced)
         // list of fonts is the same, but attributes may have changed
         auto it = fonts.begin();
         for (auto&& node : children) {
-            if (auto font = dynamic_cast<SPFont*>(*it++)) {
+            if (auto font = cast<SPFont>(*it++)) {
                 node[_columns.label] = get_font_label(font);
             }
         }
@@ -779,7 +779,7 @@ SPGuide* get_guide(SPDocument& doc, const Glib::ustring& id) {
     if (!object) return nullptr;
 
     // get guide line
-    if (auto guide = dynamic_cast<SPGuide*>(object)) {
+    if (auto guide = cast<SPGuide>(object)) {
         return guide;
     }
     // remove colliding object
@@ -1296,7 +1296,7 @@ Inkscape::XML::Node* create_path_from_glyph(const SPGlyph& glyph) {
     Geom::PathVector pathv = sp_svg_read_pathv(glyph.getAttribute("d"));
     auto path = glyph.document->getReprDoc()->createElement("svg:path");
     // auto path = new SPPath();
-    auto font = dynamic_cast<SPFont*>(glyph.parent);
+    auto font = cast<SPFont>(glyph.parent);
     auto units_per_em = get_font_units_per_em(font);
     path->setAttribute("d", sp_svg_write_path(flip_coordinate_system(pathv, font, units_per_em)));
     return path;
@@ -1315,7 +1315,7 @@ void SvgFontsDialog::edit_glyph(SPGlyph* glyph) {
     auto name = get_glyph_full_name(*glyph);
     if (name.empty()) return;
     // font's name to match parent layer name
-    auto font_label = get_font_label(dynamic_cast<SPFont*>(glyph->parent));
+    auto font_label = get_font_label(cast<SPFont>(glyph->parent));
     if (font_label.empty()) return;
 
     auto layer = get_or_create_layer_for_glyph(desktop, font_label, name);

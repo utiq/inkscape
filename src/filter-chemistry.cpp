@@ -463,14 +463,13 @@ void remove_filter_legacy_blend(SPObject *item)
         // determine whether filter is simple (blend and/or blur) or complex
         SPFeBlend *blend = nullptr;
         for (auto &primitive_obj:item->style->getFilter()->children) {
-            SPFilterPrimitive *primitive = dynamic_cast<SPFilterPrimitive *>(&primitive_obj);
+            auto primitive = cast<SPFilterPrimitive>(&primitive_obj);
             if (primitive) {
-                if (dynamic_cast<SPFeBlend *>(primitive)) {
-                    blend = dynamic_cast<SPFeBlend *>(primitive);
+                if (is<SPFeBlend>(primitive)) {
+                    blend = cast<SPFeBlend>(primitive);
                     ++blendcount;
                 }
-                SPGaussianBlur *spgausian = dynamic_cast<SPGaussianBlur *>(primitive);
-                if (spgausian) {
+                if (is<SPGaussianBlur>(primitive)) {
                     ++blurcount;
                 }
                 ++total;
@@ -501,15 +500,14 @@ SPBlendMode filter_get_legacy_blend(SPObject *item)
         size_t total = 0;
         // determine whether filter is simple (blend and/or blur) or complex
         for (auto &primitive_obj:item->style->getFilter()->children) {
-            SPFilterPrimitive *primitive = dynamic_cast<SPFilterPrimitive *>(&primitive_obj);
+            auto primitive = cast<SPFilterPrimitive>(&primitive_obj);
             if (primitive) {
-                SPFeBlend *spblend = dynamic_cast<SPFeBlend *>(primitive);
+                auto spblend = cast<SPFeBlend>(primitive);
                 if (spblend) {
                     ++blendcount;
                     blend = spblend->get_blend_mode();
                 }
-                SPGaussianBlur *spgausian = dynamic_cast<SPGaussianBlur *>(primitive);
-                if (spgausian) {
+                if (is<SPGaussianBlur>(primitive)) {
                     ++blurcount;
                 }
                 ++total;

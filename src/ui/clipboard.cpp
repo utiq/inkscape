@@ -353,7 +353,7 @@ void ClipboardManagerImpl::copySymbol(Inkscape::XML::Node* symbol, gchar const* 
     _defs->appendChild(repr);
 
     auto scale = _clipboardSPDoc->getDocumentScale();
-    if (auto group = dynamic_cast<SPGroup *>(_clipboardSPDoc->getObjectByRepr(repr))) {
+    if (auto group = cast<SPGroup>(_clipboardSPDoc->getObjectByRepr(repr))) {
         // Convert scale from source to clipboard user units
         group->scaleChildItemsRec(scale, Geom::Point(0, 0), false);
     }
@@ -386,7 +386,7 @@ void ClipboardManagerImpl::copySymbol(Inkscape::XML::Node* symbol, gchar const* 
     use_repr->setAttribute("style", style);
     _root->appendChild(use_repr);
 
-    if (auto use = dynamic_cast<SPUse *>(_clipboardSPDoc->getObjectByRepr(use_repr))) {
+    if (auto use = cast<SPUse>(_clipboardSPDoc->getObjectByRepr(use_repr))) {
         Geom::Affine affine = source->getDocumentScale();
         use->doWriteTransform(affine, &affine, false);
     }
@@ -491,7 +491,7 @@ bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place, bool on_page
             if (vec2.size() > 1 && item->isHidden()) {
                 desktop->getSelection()->remove(item);
             }
-            SPLPEItem *pasted_lpe_item = dynamic_cast<SPLPEItem *>(item);
+            auto pasted_lpe_item = cast<SPLPEItem>(item);
             if (pasted_lpe_item) {
                 remove_hidder_filter(pasted_lpe_item);
             }
@@ -551,13 +551,13 @@ bool ClipboardManagerImpl::_copyNodes(SPDesktop *desktop, ObjectSet *set)
     Inkscape::GC::release(pathRepr);
 
     // Store the parent transformation, and scaling factor of the copied object
-    if (auto parent = dynamic_cast<SPItem *>(first_path->parent)) {
+    if (auto parent = cast<SPItem>(first_path->parent)) {
           auto transform_str = sp_svg_transform_write(parent->i2doc_affine());
           group->setAttributeOrRemoveIfEmpty("transform", transform_str);
     }
 
     // Set the translation for paste-in-place operation, must be done after repr appends
-    if (auto path_obj = dynamic_cast<SPPath *>(_clipboardSPDoc->getObjectByRepr(pathRepr))) {
+    if (auto path_obj = cast<SPPath>(_clipboardSPDoc->getObjectByRepr(pathRepr))) {
         // we could use pathv.boundsFast here, but that box doesn't include stroke width
         // so we must take the value from the visualBox of the new shape instead.
         auto bbox = *(path_obj->visualBounds()) * source_scale;
@@ -581,7 +581,7 @@ bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, 
         return false;
 
     SPObject *obj = desktop->getSelection()->objects().back();
-    auto target_path = dynamic_cast<SPPath *>(obj);
+    auto target_path = cast<SPPath>(obj);
     if (!target_path)
         return false;
 
@@ -596,14 +596,14 @@ bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, 
         auto group_affine = Geom::Affine();
 
         // Unpack group that may have a transformation inside it.
-        if (auto source_group = dynamic_cast<SPGroup *>(source_obj)) {
+        if (auto source_group = cast<SPGroup>(source_obj)) {
             if (source_group->children.size() == 1) {
                 source_obj = source_group->firstChild();
                 group_affine = source_group->i2doc_affine();
             }
         }
 
-        if (auto source_path = dynamic_cast<SPPath *>(source_obj)) {
+        if (auto source_path = cast<SPPath>(source_obj)) {
             auto source_curve = *source_path->curveForEdit();
             auto target_curve = *target_path->curveForEdit();
 
@@ -893,7 +893,7 @@ Glib::ustring ClipboardManagerImpl::getPathParameter(SPDesktop* desktop)
 
     // unlimited search depth
     auto repr = sp_repr_lookup_name(doc->getReprRoot(), "svg:path", -1);
-    SPItem *item = dynamic_cast<SPItem *>(doc->getObjectByRepr(repr));
+    auto item = cast<SPItem>(doc->getObjectByRepr(repr));
 
     if (!item) {
         _userWarn(desktop, _("Clipboard does not contain a path."));
@@ -1016,11 +1016,11 @@ void ClipboardManagerImpl::_copySelection(ObjectSet *selection)
         if (!page) {
             page = item->document->getPageManager().getPageFor(item, false);
         }
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+        auto lpeitem = cast<SPLPEItem>(item);
         if (lpeitem) {
             for (auto satellite : lpeitem->get_satellites(false, true)) {
                 if (satellite) {
-                    SPItem *item2 = dynamic_cast<SPItem *>(satellite);
+                    auto item2 = cast<SPItem>(satellite);
                     if (item2 && std::find(items.begin(), items.end(), item2) == items.end()) {
                         items.push_back(item2);
                     }
@@ -1065,7 +1065,7 @@ void ClipboardManagerImpl::_copySelection(ObjectSet *selection)
 
     sorted_items.insert(sorted_items.end(),cloned_elements.begin(),cloned_elements.end());
     for(auto sorted_item : sorted_items){
-        SPItem *item = dynamic_cast<SPItem*>(sorted_item);
+        auto item = cast<SPItem>(sorted_item);
         if (item) {
             // Create a group with the parent transform. This group will be ungrouped when pasting
             // und takes care of transform relationships of clones, text-on-path, etc.
@@ -1075,7 +1075,7 @@ void ClipboardManagerImpl::_copySelection(ObjectSet *selection)
                 _root->appendChild(group);
                 Inkscape::GC::release(group);
 
-                if (auto parent = dynamic_cast<SPItem *>(item->parent)) {
+                if (auto parent = cast<SPItem>(item->parent)) {
                     auto transform_str = sp_svg_transform_write(parent->i2doc_affine());
                     group->setAttributeOrRemoveIfEmpty("transform", transform_str);
                 }
@@ -1152,12 +1152,12 @@ void ClipboardManagerImpl::_copyCompleteStyle(SPItem *item, Inkscape::XML::Node 
     sp_repr_css_set(target, css, "style");
     sp_repr_css_attr_unref(css);
 
-    if (dynamic_cast<SPGroup *>(item)) {
+    if (is<SPGroup>(item)) {
         // Recursively go through chldren too
         auto source_child = source->firstChild();
         auto target_child = target->firstChild();
         while (source_child && target_child) {
-            if (auto child_item = dynamic_cast<SPItem *>(item->document->getObjectByRepr(source_child))) {
+            if (auto child_item = cast<SPItem>(item->document->getObjectByRepr(source_child))) {
                 _copyCompleteStyle(child_item, target_child, true);
             }
             source_child = source_child->next();
@@ -1171,7 +1171,7 @@ void ClipboardManagerImpl::_copyCompleteStyle(SPItem *item, Inkscape::XML::Node 
  */
 void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
 {
-    SPUse *use=dynamic_cast<SPUse *>(item);
+    auto use = cast<SPUse>(item);
     if (use && use->get_original()) {
         if(cloned_elements.insert(use->get_original()).second)
             _copyUsedDefs(use->get_original());
@@ -1182,35 +1182,35 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
 
     if (style && (style->fill.isPaintserver())) {
         SPPaintServer *server = item->style->getFillPaintServer();
-        if ( dynamic_cast<SPLinearGradient *>(server) || dynamic_cast<SPRadialGradient *>(server) || dynamic_cast<SPMeshGradient *>(server) ) {
-            _copyGradient(dynamic_cast<SPGradient *>(server));
+        if (is<SPLinearGradient>(server) || is<SPRadialGradient>(server) || is<SPMeshGradient>(server) ) {
+            _copyGradient(cast<SPGradient>(server));
         }
-        SPPattern *pattern = dynamic_cast<SPPattern *>(server);
+        auto pattern = cast<SPPattern>(server);
         if (pattern) {
             _copyPattern(pattern);
         }
-        SPHatch *hatch = dynamic_cast<SPHatch *>(server);
+        auto hatch = cast<SPHatch>(server);
         if (hatch) {
             _copyHatch(hatch);
         }
     }
     if (style && (style->stroke.isPaintserver())) {
         SPPaintServer *server = item->style->getStrokePaintServer();
-        if ( dynamic_cast<SPLinearGradient *>(server) || dynamic_cast<SPRadialGradient *>(server) || dynamic_cast<SPMeshGradient *>(server) ) {
-            _copyGradient(dynamic_cast<SPGradient *>(server));
+        if (is<SPLinearGradient>(server) || is<SPRadialGradient>(server) || is<SPMeshGradient>(server) ) {
+            _copyGradient(cast<SPGradient>(server));
         }
-        SPPattern *pattern = dynamic_cast<SPPattern *>(server);
+        auto pattern = cast<SPPattern>(server);
         if (pattern) {
             _copyPattern(pattern);
         }
-        SPHatch *hatch = dynamic_cast<SPHatch *>(server);
+        auto hatch = cast<SPHatch>(server);
         if (hatch) {
             _copyHatch(hatch);
         }
     }
 
     // For shapes, copy all of the shape's markers
-    SPShape *shape = dynamic_cast<SPShape *>(item);
+    auto shape = cast<SPShape>(item);
     if (shape) {
         for (auto & i : shape->_marker) {
             if (i) {
@@ -1220,7 +1220,7 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
     }
 
     // For 3D boxes, copy perspectives
-    if (SPBox3D *box = dynamic_cast<SPBox3D *>(item)) {
+    if (auto box = cast<SPBox3D>(item)) {
         if (auto perspective = box->get_perspective()) {
             _copyNode(perspective->getRepr(), _doc, _defs);
         }
@@ -1228,8 +1228,8 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
 
     // Copy text paths
     {
-        SPText *text = dynamic_cast<SPText *>(item);
-        SPTextPath *textpath = (text) ? dynamic_cast<SPTextPath *>(text->firstChild()) : nullptr;
+        auto text = cast<SPText>(item);
+        SPTextPath *textpath = text ? cast<SPTextPath>(text->firstChild()) : nullptr;
         if (textpath) {
             _copyTextPath(textpath);
         }
@@ -1255,7 +1255,7 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
         _copyNode(clip->getRepr(), _doc, _defs);
         // recurse
         for (auto &o : clip->children) {
-            if (auto childItem = dynamic_cast<SPItem *>(&o)) {
+            if (auto childItem = cast<SPItem>(&o)) {
                 _copyUsedDefs(childItem);
             }
         }
@@ -1265,7 +1265,7 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
             _copyNode(mask->getRepr(), _doc, _defs);
             // recurse into the mask for its gradients etc.
             for(auto& o: mask->children) {
-                SPItem *childItem = dynamic_cast<SPItem *>(&o);
+                auto childItem = cast<SPItem>(&o);
                 if (childItem) {
                     _copyUsedDefs(childItem);
                 }
@@ -1275,13 +1275,13 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
     // Copy filters
     if (style->getFilter()) {
         SPObject *filter = style->getFilter();
-        if (dynamic_cast<SPFilter *>(filter)) {
+        if (is<SPFilter>(filter)) {
             _copyNode(filter->getRepr(), _doc, _defs);
         }
     }
 
     // For lpe items, copy lpe stack if applicable
-    SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+    auto lpeitem = cast<SPLPEItem>(item);
     if (lpeitem) {
         if (lpeitem->hasPathEffect()) {
             PathEffectList path_effect_list( *lpeitem->path_effect_list);
@@ -1296,7 +1296,7 @@ void ClipboardManagerImpl::_copyUsedDefs(SPItem *item)
 
     // recurse
     for(auto& o: item->children) {
-        SPItem *childItem = dynamic_cast<SPItem *>(&o);
+        auto childItem = cast<SPItem>(&o);
         if (childItem) {
             _copyUsedDefs(childItem);
         }
@@ -1332,7 +1332,7 @@ void ClipboardManagerImpl::_copyPattern(SPPattern *pattern)
 
         // items in the pattern may also use gradients and other patterns, so recurse
         for (auto& child: pattern->children) {
-            SPItem *childItem = dynamic_cast<SPItem *>(&child);
+            auto childItem = cast<SPItem>(&child);
             if (childItem) {
                 _copyUsedDefs(childItem);
             }
@@ -1351,7 +1351,7 @@ void ClipboardManagerImpl::_copyHatch(SPHatch *hatch)
         _copyNode(hatch->getRepr(), _doc, _defs);
 
         for (auto &child : hatch->children) {
-            SPItem *childItem = dynamic_cast<SPItem *>(&child);
+            auto childItem = cast<SPItem>(&child);
             if (childItem) {
                 _copyUsedDefs(childItem);
             }
@@ -1486,7 +1486,7 @@ void ClipboardManagerImpl::_applyPathEffect(SPItem *item, gchar const *effectsta
         return;
     }
 
-    SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+    auto lpeitem = cast<SPLPEItem>(item);
     if (lpeitem && effectstack) {
         std::istringstream iss(effectstack);
         std::string href;
@@ -1496,7 +1496,7 @@ void ClipboardManagerImpl::_applyPathEffect(SPItem *item, gchar const *effectsta
             if (!obj) {
                 return;
             }
-            LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(obj);
+            auto lpeobj = cast<LivePathEffectObject>(obj);
             if (lpeobj) {
                 Inkscape::LivePathEffect::LPESpiro *spiroto = dynamic_cast<Inkscape::LivePathEffect::LPESpiro *>(lpeobj->get_lpe());
                 bool has_spiro = lpeitem->hasPathEffectOfType(Inkscape::LivePathEffect::SPIRO);

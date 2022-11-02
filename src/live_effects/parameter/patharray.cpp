@@ -411,8 +411,8 @@ void PathArrayParam::setPathVector(SPObject *linked_obj, guint /*flags*/, PathAn
         return;
     }
     std::optional<SPCurve> curve;
-    SPText *text = dynamic_cast<SPText *>(linked_obj);
-    if (auto shape = dynamic_cast<SPShape const *>(linked_obj)) {
+    auto text = cast<SPText>(linked_obj);
+    if (auto shape = cast<SPShape>(linked_obj)) {
         auto lpe_item = cast<SPLPEItem>(linked_obj);
         if (_from_original_d) {
             curve = SPCurve::ptr_to_opt(shape->curveForEdit());

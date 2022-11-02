@@ -599,13 +599,13 @@ bool EraserTool::_handleKeypress(const GdkEventKey *key)
 SPItem *EraserTool::_insertAcidIntoDocument(SPDocument *document)
 {
     auto *top_layer = _desktop->layerManager().currentRoot();
-    auto *eraser_item = dynamic_cast<SPItem *>(top_layer->appendChildRepr(repr));
+    auto *eraser_item = cast<SPItem>(top_layer->appendChildRepr(repr));
     Inkscape::GC::release(repr);
     eraser_item->updateRepr();
     Geom::PathVector pathv = accumulated.get_pathvector() * _desktop->dt2doc();
     pathv *= eraser_item->i2doc_affine().inverse();
     repr->setAttribute("d", sp_svg_write_path(pathv));
-    return dynamic_cast<SPItem *>(document->getObjectByRepr(repr));
+    return cast<SPItem>(document->getObjectByRepr(repr));
 }
 
 void EraserTool::_clearCurrent()
@@ -685,14 +685,14 @@ bool EraserTool::_doWork()
 bool EraserTool::_cutErase(EraseTarget target, bool store_survivers)
 {
     // If the item is a clone, we check if the original is cuttable before unlinking it
-    if (SPUse *use = dynamic_cast<SPUse *>(target.item)) {
+    if (auto use = cast<SPUse>(target.item)) {
         auto original = use->trueOriginal();
         if (_uncuttableItemType(original)) {
             if (store_survivers && target.was_selected) {
                 _survivers.push_back(target.item);
             }
             return false;
-        } else if (auto *group = dynamic_cast<SPGroup *>(original)) {
+        } else if (auto *group = cast<SPGroup>(original)) {
             return _probeUnlinkCutClonedGroup(target, use, group, store_survivers);
         }
         // A simple clone of a cuttable item: unlink and erase it.
@@ -725,14 +725,14 @@ bool EraserTool::_probeUnlinkCutClonedGroup(EraseTarget &original_target, SPUse 
     children.reserve(cloned_group->getItemCount());
 
     for (auto *child : cloned_group->childList(false)) {
-        children.emplace_back(dynamic_cast<SPItem *>(child), false);
+        children.emplace_back(cast<SPItem>(child), false);
     }
     auto const filtered_children = _filterCutEraseables(children, true);
 
     // We must now check if any of the eraseable items in the original group, after transforming
     // to the coordinates of the clone, actually intersect the eraser stroke.
     Geom::Affine parent_inverse_transform;
-    if (auto *parent_item = dynamic_cast<SPItem *>(cloned_group->parent)) {
+    if (auto *parent_item = cast<SPItem>(cloned_group->parent)) {
         parent_inverse_transform = parent_item->i2doc_affine().inverse();
     }
     auto const relative_transform = parent_inverse_transform * clone->i2doc_affine();
@@ -749,7 +749,7 @@ bool EraserTool::_probeUnlinkCutClonedGroup(EraseTarget &original_target, SPUse 
         }
     }
     if (found_collision) {
-        auto *unlinked = dynamic_cast<SPGroup *>(clone->unlink());
+        auto *unlinked = cast<SPGroup>(clone->unlink());
         if (!unlinked) {
             return false;
         }
@@ -757,7 +757,7 @@ bool EraserTool::_probeUnlinkCutClonedGroup(EraseTarget &original_target, SPUse 
         unlinked_children.reserve(filtered_children.size());
 
         for (auto *child : unlinked->childList(false)) {
-            unlinked_children.emplace_back(dynamic_cast<SPItem *>(child), false);
+            unlinked_children.emplace_back(cast<SPItem>(child), false);
         }
         auto overlapping = _filterCutEraseables(_filterByCollision(unlinked_children, _acid));
 
@@ -791,7 +791,7 @@ EraserTool::Error EraserTool::_uncuttableItemType(SPItem *item)
 {
     if (!item) {
         return NON_EXISTENT;
-    } else if (dynamic_cast<SPImage *>(item)) {
+    } else if (is<SPImage>(item)) {
         return RASTER_IMAGE;
     } else if (_isStraightSegment(item)) {
         return NO_AREA_PATH;
@@ -977,7 +977,7 @@ void EraserTool::_clipErase(SPItem *item) const
  or consists of several such segments */
 bool EraserTool::_isStraightSegment(SPItem *path)
 {
-    SPPath *as_path = dynamic_cast<SPPath *>(path);
+    auto as_path = cast<SPPath>(path);
     if (!as_path) {
         return false;
     }

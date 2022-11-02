@@ -47,7 +47,7 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
 {
     set_name("ContextMenu");
 
-    SPItem *item = dynamic_cast<SPItem *>(object);
+    auto item = cast<SPItem>(object);
 
     // std::cout << "ContextMenu::ContextMenu: " << (item ? item->getId() : "no item") << std::endl;
     action_group = Gio::SimpleActionGroup::create();
@@ -89,7 +89,7 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
     // AppendItemFromAction(gmenu_section, "doc.redo",      _("Redo"),       "edit-redo");
     // gmenu->append_section(gmenu_section);
 
-    if (auto page = dynamic_cast<SPPage *>(object)) {
+    if (auto page = cast<SPPage>(object)) {
         auto &page_manager = document->getPageManager();
         page_manager.selectPage(page);
 
@@ -139,12 +139,12 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
             }
             AppendItemFromAction(gmenu_dialogs,     "win.dialog-open('ObjectProperties')",          _("_Object Properties..."), "dialog-object-properties"   );
 
-            if (dynamic_cast<SPShape*>(item) || dynamic_cast<SPText*>(item) || dynamic_cast<SPGroup*>(item)) {
+            if (is<SPShape>(item) || is<SPText>(item) || is<SPGroup>(item)) {
                 AppendItemFromAction(gmenu_dialogs, "win.dialog-open('FillStroke')",                _("_Fill and Stroke..."),   "dialog-fill-and-stroke"     );
             }
 
             // Image dialogs (mostly).
-            if (auto image = dynamic_cast<SPImage*>(item)) {
+            if (auto image = cast<SPImage>(item)) {
                 AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('ObjectAttributes')",          _("Image _Properties..."),  "dialog-fill-and-stroke");
                 AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Trace')",                     _("_Trace Bitmap..."),      "bitmap-trace"          );
 
@@ -162,13 +162,13 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
             }
 
             // Text dialogs.
-            if (dynamic_cast<SPText*>(item)) {
+            if (is<SPText>(item)) {
                 AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Text')",                      _("_Text and Font..."),     "dialog-text-and-font"  );
                 AppendItemFromAction(     gmenu_dialogs, "win.dialog-open('Spellcheck')",                _("Check Spellin_g..."),    "tools-check-spelling"  );
             }
             gmenu->append_section(gmenu_dialogs); // We might add to it later...
 
-            if (!dynamic_cast<SPAnchor*>(item)) {
+            if (!is<SPAnchor>(item)) {
                 // Item menu
 
                 // Selection
@@ -187,7 +187,7 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
                 AppendItemFromAction(     gmenu_section, "win.selection-move-to-layer",         _("_Move to Layer..."),     ""                                );
                 AppendItemFromAction(     gmenu_section, "app.selection-link",                  _("Create anchor (hyperlink)"),   ""                          );
                 AppendItemFromAction(     gmenu_section, "app.selection-group",                 _("_Group"),                ""                                );
-                if (dynamic_cast<SPGroup*>(item)) {
+                if (is<SPGroup>(item)) {
                     AppendItemFromAction( gmenu_section, "app.selection-ungroup",               _("_Ungroup"),              ""                                );
                     Glib::ustring label = Glib::ustring::compose(_("Enter group %1"), item->defaultLabel());
                     AppendItemFromAction( gmenu_section, "win.selection-group-enter",           label,                      ""                                );
@@ -196,7 +196,7 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
                         AppendItemFromAction( gmenu_section, "win.layer-from-group",            _("Group to Layer"),        ""                                );
                     }
                 }
-                auto group = dynamic_cast<SPGroup*>(item->parent);
+                auto group = cast<SPGroup>(item->parent);
                 if (group && !group->isLayer()) {
                     AppendItemFromAction( gmenu_section, "win.selection-group-exit",            _("Exit group"),            ""                                );
                     AppendItemFromAction( gmenu_section, "app.selection-ungroup-pop",           _("_Pop selection out of group"), ""                          );

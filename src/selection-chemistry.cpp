@@ -306,7 +306,7 @@ static std::vector<Inkscape::XML::Node *> sp_selection_paste_impl(SPDocument *do
 
     Inkscape::XML::Document *xml_doc = doc->getReprDoc();
 
-    SPItem *parentItem = dynamic_cast<SPItem *>(parent);
+    auto parentItem = cast<SPItem>(parent);
     g_assert(parentItem != nullptr);
 
     std::vector<Inkscape::XML::Node*> copied;
@@ -386,7 +386,7 @@ static void add_ids_recursive(std::vector<const gchar *> &ids, SPObject *obj)
     if (obj) {
         ids.push_back(obj->getId());
 
-        if (dynamic_cast<SPGroup *>(obj)) {
+        if (is<SPGroup>(obj)) {
             for (auto& child: obj->children) {
                 add_ids_recursive(ids, &child);
             }
@@ -424,14 +424,14 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
 
     std::vector<SPItem *> items;
     for(auto old_repr : reprs) {
-        SPItem *item = dynamic_cast<SPItem *>(doc->getObjectByRepr(old_repr));
+        auto item = cast<SPItem>(doc->getObjectByRepr(old_repr));
         if (item) {
             items.push_back(item);
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+            auto lpeitem = cast<SPLPEItem>(item);
             if (lpeitem) {
                 for (auto satellite : lpeitem->get_satellites(false, true, true)) {
                     if (satellite) {
-                        SPItem *item2 = dynamic_cast<SPItem *>(satellite);
+                        auto item2 = cast<SPItem>(satellite);
                         if (item2 && std::find(items.begin(), items.end(), item2) == items.end()) {
                             items.push_back(item2);
                         }
@@ -506,7 +506,7 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
             // is only a make up if at any point we think is better keep selected items reselected on duple
             // please roll back or make some more loops to handle well, keep as it for speed
             // and simplicity
-            SPItem *itm = dynamic_cast<SPItem *>(doc->getObjectByRepr(node));
+            auto itm = cast<SPItem>(doc->getObjectByRepr(node));
             if (!sp_repr_is_def(node) && (!itm || !itm->isHidden())) {
                 newsel.push_back(node);
             }
@@ -520,10 +520,10 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
         for (unsigned int i = 0; i < old_ids.size(); i++) {
             const gchar *id = old_ids[i];
             SPObject *old_clone = doc->getObjectById(id);
-            SPUse *use = dynamic_cast<SPUse *>(old_clone);
-            SPOffset *offset = dynamic_cast<SPOffset *>(old_clone);
-            SPText *text = dynamic_cast<SPText *>(old_clone);
-            SPPath *path = dynamic_cast<SPPath *>(old_clone);
+            auto use = cast<SPUse>(old_clone);
+            auto offset = cast<SPOffset>(old_clone);
+            auto text = cast<SPText>(old_clone);
+            auto path = cast<SPPath>(old_clone);
             if (use) {
                 SPItem *orig = use->get_original();
                 if (!orig) // orphaned
@@ -545,7 +545,7 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
                     }
                 }
             } else if (text) {
-                SPTextPath *textpath = dynamic_cast<SPTextPath *>(text->firstChild());
+                auto textpath = cast<SPTextPath>(text->firstChild());
                 if (!textpath) continue;
                 const gchar *source_href = sp_textpath_get_path_item(textpath)->getId();
                 for (guint j = 0; j < old_ids.size(); j++) {
@@ -573,7 +573,7 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
     for (auto node : copies) {
         if (fork_livepatheffects) {
             SPObject *new_obj = doc->getObjectByRepr(node);
-            SPLPEItem *newLPEObj = dynamic_cast<SPLPEItem *>(new_obj);
+            auto newLPEObj = cast<SPLPEItem>(new_obj);
             if (newLPEObj) {
                 // force always fork
                 newLPEObj->forkPathEffectsIfNecessary(1, true, true);
@@ -621,7 +621,7 @@ void sp_edit_clear_all(Inkscape::Selection *selection)
     SPDocument *doc = desktop->getDocument();
     selection->clear();
 
-    SPGroup *group = dynamic_cast<SPGroup *>(desktop->layerManager().currentLayer());
+    auto group = desktop->layerManager().currentLayer();
     g_return_if_fail(group != nullptr);
     std::vector<SPItem*> items = group->item_list();
 
@@ -645,7 +645,7 @@ void sp_edit_clear_all(Inkscape::Selection *selection)
 static void get_all_items_recursive(std::vector<SPItem*> &list, SPObject *from, SPDesktop *desktop, bool onlyvisible, bool onlysensitive, bool ingroups, std::vector<SPItem*> const &exclude)
 {
     for (auto &child : from->children) {
-        auto item = dynamic_cast<SPItem*>(&child);
+        auto item = cast<SPItem>(&child);
         if (item &&
             !desktop->layerManager().isLayer(item) &&
             (!onlysensitive || !item->isLocked()) &&
@@ -786,7 +786,7 @@ Inkscape::XML::Node* ObjectSet::group(bool is_anchor) {
             Geom::Affine item_t(Geom::identity());
             if (t_str)
                 sp_svg_transform_read(t_str, &item_t);
-            auto parent_item = dynamic_cast<SPItem *>(doc->getObjectByRepr(current->parent()));
+            auto parent_item = cast<SPItem>(doc->getObjectByRepr(current->parent()));
             assert(parent_item);
             item_t *= parent_item->i2doc_affine();
             // FIXME: when moving both clone and original from a transformed group (either by
@@ -839,7 +839,7 @@ void ObjectSet::popFromGroup(){
     std::set<SPObject*> grandparents;
 
     for (auto *obj : items()) {
-        auto parent_group = dynamic_cast<SPGroup *>(obj->parent);
+        auto parent_group = cast<SPGroup>(obj->parent);
         if (!parent_group || !parent_group->parent || SP_IS_LAYER(parent_group)) {
             selection_display_message(desktop(), Inkscape::WARNING_MESSAGE, _("Selection <b>not in a group</b>."));
             return;
@@ -873,7 +873,7 @@ static SPUse *find_clone_to_group(Objects const &objects, std::set<SPGroup *> co
     assert(!groups.count(nullptr));
 
     for (auto *obj : objects) {
-        if (auto *use = dynamic_cast<SPUse *>(obj)) {
+        if (auto *use = cast<SPUse>(obj)) {
             if (auto root = use->root()) {
                 if (groups.count(static_cast<SPGroup *>(root->clone_original))) {
                     return use;
@@ -936,7 +936,7 @@ void ObjectSet::ungroup(bool skip_undo)
     ungroup_impl(this);
     std::vector<SPItem*> selection(items().begin(), items().end());
     for (auto item : selection) {
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+        auto lpeitem = cast<SPLPEItem>(item);
         if (lpeitem) {
             for (auto *lpe : lpeitem->getPathEffects()) {
                 if (lpe) {
@@ -974,7 +974,7 @@ sp_item_list_common_parent_group(const SPItemRange &items)
     }
     SPObject *parent = items.front()->parent;
     // Strictly speaking this CAN happen, if user selects <svg> from Inkscape::XML editor
-    if (!dynamic_cast<SPGroup *>(parent)) {
+    if (!is<SPGroup>(parent)) {
         return nullptr;
     }
     for (auto item=items.begin();item!=items.end();++item) {
@@ -984,7 +984,7 @@ sp_item_list_common_parent_group(const SPItemRange &items)
         }
     }
 
-    return dynamic_cast<SPGroup *>(parent);
+    return cast<SPGroup>(parent);
 }
 
 /** Finds out the minimum common bbox of the selected items. */
@@ -1004,7 +1004,7 @@ enclose_items(std::vector<SPItem*> const &items)
 static SPObject *prev_sibling(SPObject *child)
 {
     SPObject *prev = nullptr;
-    if ( child && dynamic_cast<SPGroup *>(child->parent) ) {
+    if ( child && cast<SPGroup>(child->parent) ) {
         prev = child->getPrev();
     }
     return prev;
@@ -1040,7 +1040,7 @@ void ObjectSet::raise(bool skip_undo){
             // for each selected object, find the next sibling
             for (SPObject *newref = child->getNext(); newref; newref = newref->getNext()) {
                 // if the sibling is an item AND overlaps our selection,
-                SPItem *newItem = dynamic_cast<SPItem *>(newref);
+                auto newItem = cast<SPItem>(newref);
                 if (newItem) {
                     Geom::OptRect newref_bbox = newItem->documentVisualBounds();
                     if ( newref_bbox && selected->intersects(*newref_bbox) ) {
@@ -1114,7 +1114,7 @@ void ObjectSet::lower(bool skip_undo){
             // for each selected object, find the prev sibling
             for (SPObject *newref = prev_sibling(child); newref; newref = prev_sibling(newref)) {
                 // if the sibling is an item AND overlaps our selection,
-                SPItem *newItem = dynamic_cast<SPItem *>(newref);
+                auto newItem = cast<SPItem>(newref);
                 if (newItem) {
                     Geom::OptRect ref_bbox = newItem->documentVisualBounds();
                     if ( ref_bbox && selected->intersects(*ref_bbox) ) {
@@ -1161,9 +1161,9 @@ void ObjectSet::lowerToBottom(bool skip_undo){
         Inkscape::XML::Node *repr = (*l);
         pp = document()->getObjectByRepr(repr->parent());
         minpos = 0;
-        g_assert(dynamic_cast<SPGroup *>(pp));
+        g_assert(is<SPGroup>(pp));
         for (auto& pc: pp->children) {
-            if(dynamic_cast<SPItem *>(&pc)) {
+            if (is<SPItem>(&pc)) {
                 break;
             }
             minpos += 1;
@@ -1279,8 +1279,8 @@ take_style_from_item(SPObject *object)
     if (css == nullptr)
         return nullptr;
 
-    if ((dynamic_cast<SPGroup *>(object) && object->firstChild()) ||
-        (dynamic_cast<SPText *>(object) && object->firstChild() && object->firstChild()->getNext() == nullptr)) {
+    if ((is<SPGroup>(object) && object->firstChild()) ||
+        (is<SPText>(object) && object->firstChild() && !object->firstChild()->getNext())) {
         // if this is a text with exactly one tspan child, merge the style of that tspan as well
         // If this is a group, merge the style of its topmost (last) child with style
         auto list = object->children | boost::adaptors::reversed;
@@ -1299,13 +1299,13 @@ take_style_from_item(SPObject *object)
     // Remove black-listed properties (those that should not be used in a default style)
     css = sp_css_attr_unset_blacklist(css);
 
-    if (!(dynamic_cast<SPText *>(object) || dynamic_cast<SPTSpan *>(object) || dynamic_cast<SPTRef *>(object) || dynamic_cast<SPString *>(object))) {
+    if (!(is<SPText>(object) || is<SPTSpan>(object) || is<SPTRef>(object) || is<SPString>(object))) {
         // do not copy text properties from non-text objects, it's confusing
         css = sp_css_attr_unset_text(css);
     }
 
 
-    SPItem *item = dynamic_cast<SPItem *>(object);
+    auto item = cast<SPItem>(object);
     if (item) {
         // FIXME: also transform gradient/pattern fills, by forking? NO, this must be nondestructive
         double ex = item->i2doc_affine().descrim();
@@ -1350,7 +1350,7 @@ void ObjectSet::pastePathEffect()
 
 static void sp_selection_remove_livepatheffect_impl(SPItem *item)
 {
-    if ( SPLPEItem *lpeitem = dynamic_cast<SPLPEItem*>(item) ) {
+    if ( auto lpeitem = cast<SPLPEItem>(item) ) {
         if ( lpeitem->hasPathEffect() ) {
             lpeitem->removeAllPathEffects(false);
         }
@@ -1433,8 +1433,8 @@ void sp_selection_change_layer_maintain_clones(std::vector<SPItem*> const &items
 {
     for (auto item : items) {
         if (item) {
-            SPItem *oldparent = dynamic_cast<SPItem *>(item->parent);
-            SPItem *newparent = dynamic_cast<SPItem *>(where);
+            auto oldparent = cast<SPItem>(item->parent);
+            auto newparent = cast<SPItem>(where);
             sp_item_group_ungroup_handle_clones(item,
                     (oldparent->i2doc_affine())
                     *((newparent->i2doc_affine()).inverse()));
@@ -1604,11 +1604,11 @@ object_set_contains_original(SPItem *item, ObjectSet *set)
 
     SPItem *item_use = item;
     SPItem *item_use_first = item;
-    SPUse *use = dynamic_cast<SPUse *>(item_use);
+    auto use = cast<SPUse>(item_use);
     while (use && item_use && !contains_original)
     {
         item_use = use->get_original();
-        use = dynamic_cast<SPUse *>(item_use);
+        use = cast<SPUse>(item_use);
         contains_original |= set->includes(item_use);
         if (item_use == item_use_first)
             break;
@@ -1616,7 +1616,7 @@ object_set_contains_original(SPItem *item, ObjectSet *set)
 
     // If it's a tref, check whether the object containing the character
     // data is part of the selection
-    SPTRef *tref = dynamic_cast<SPTRef *>(item);
+    auto tref = cast<SPTRef>(item);
     if (!contains_original && tref) {
         contains_original = set->includes(tref->getObjectReferredTo());
     }
@@ -1700,7 +1700,7 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
     std::vector<SPItem *> ordered_items;
     for (auto l=items_copy.begin();l!=items_copy.end() ;++l) {
         SPItem *item = *l;
-        SPLPEItem *clonelpe = dynamic_cast<SPLPEItem *>(item);
+        auto clonelpe = cast<SPLPEItem>(item);
         if (clonelpe && clonelpe->hasPathEffectOfType(Inkscape::LivePathEffect::CLONE_ORIGINAL)) {
             ordered_items.insert(ordered_items.begin(), item);
         } else {
@@ -1708,7 +1708,7 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
         }
     }
     for (auto item : ordered_items) {
-        if( dynamic_cast<SPRoot *>(item) ) {
+        if (is<SPRoot>(item) ) {
             // An SVG element cannot have a transform. We could change 'x' and 'y' in response
             // to a translation... but leave that for another day.
             if(desktop())
@@ -1724,7 +1724,7 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
         // from shapes that aren't part of the selection, but
         // leave it attached if they are
         if (Inkscape::UI::Tools::cc_item_is_connector(item)) {
-            SPPath *path = dynamic_cast<SPPath *>(item);
+            auto path = cast<SPPath>(item);
             if (path) {
                 SPItem *attItem[2] = {nullptr, nullptr};
                 path->connEndPair.getAttachedItems(attItem);
@@ -1760,9 +1760,9 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
             // apply the inverse of the region's transform to the <use> so that the flow remains
             // the same (even though the output itself gets transformed)
             for (auto& region: item->children) {
-                if (dynamic_cast<SPFlowregion *>(&region) || dynamic_cast<SPFlowregionExclude *>(&region)) {
+                if (is<SPFlowregion>(&region) || is<SPFlowregionExclude>(&region)) {
                     for (auto& itm: region.children) {
-                        SPUse *use = dynamic_cast<SPUse *>(&itm);
+                        auto use = cast<SPUse>(&itm);
                         if ( use ) {
                             use->doWriteTransform(item->transform.inverse(), nullptr, compensate);
                         }
@@ -1780,7 +1780,7 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
             // calculate the matrix we need to apply to the clone to cancel its induced transform from its original
             Geom::Affine parent2dt;
             {
-                SPItem *parentItem = dynamic_cast<SPItem *>(item->parent);
+                auto parentItem = cast<SPItem>(item->parent);
                 if (parentItem) {
                     parent2dt = parentItem->i2dt_affine();
                 } else {
@@ -1797,7 +1797,7 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
                 // find out the clone move, same as in sp_use_move_compensate
                 Geom::Affine parent;
                 {
-                    SPUse *use = dynamic_cast<SPUse *>(item);
+                    auto use = cast<SPUse>(item);
                     if (use) {
                         parent = use->get_parent_transform();
                     } else {
@@ -1811,7 +1811,7 @@ void ObjectSet::applyAffine(Geom::Affine const &affine, bool set_i2d, bool compe
                     item->doWriteTransform(move, &move, compensate);
 
                 } else if (prefs_unmoved) {
-                    //if (dynamic_cast<SPUse *>(sp_use_get_original(dynamic_cast<SPUse *>(item))))
+                    //if (is<SPUse>(sp_use_get_original(cast<SPUse>(item))))
                     //    clone_move = Geom::identity();
                     Geom::Affine move = result * clone_move;
                     item->doWriteTransform(move, &t, compensate);
@@ -2107,8 +2107,8 @@ std::vector<SPItem*> sp_get_same_fill_or_stroke_color(SPItem *sel, std::vector<S
                 SPGradient *sel_gradient, *iter_gradient;
                 SPPattern *sel_pattern, *iter_pattern;
 
-                if ((sel_gradient = dynamic_cast<SPGradient *>(sel_server)) &&
-                    (iter_gradient = dynamic_cast<SPGradient *>(iter_server)) &&
+                if ((sel_gradient = cast<SPGradient>(sel_server)) &&
+                    (iter_gradient = cast<SPGradient>(iter_server)) &&
                     sel_gradient->getVector()->isSwatch() && //
                     iter_gradient->getVector()->isSwatch()) {
                     SPGradient *sel_vector = sel_gradient->getVector();
@@ -2117,8 +2117,8 @@ std::vector<SPItem*> sp_get_same_fill_or_stroke_color(SPItem *sel, std::vector<S
                         match = true;
                     }
 
-                } else if ((sel_pattern = dynamic_cast<SPPattern *>(sel_server)) &&
-                           (iter_pattern = dynamic_cast<SPPattern *>(iter_server))) {
+                } else if ((sel_pattern = cast<SPPattern>(sel_server)) &&
+                           (iter_pattern = cast<SPPattern>(iter_server))) {
                     SPPattern *sel_pat = sel_pattern->rootPattern();
                     SPPattern *iter_pat = iter_pattern->rootPattern();
                     if (sel_pat == iter_pat) {
@@ -2144,35 +2144,35 @@ std::vector<SPItem*> sp_get_same_fill_or_stroke_color(SPItem *sel, std::vector<S
 
 static bool item_type_match (SPItem *i, SPItem *j)
 {
-    if ( dynamic_cast<SPRect *>(i)) {
-        return ( dynamic_cast<SPRect *>(j) );
+    if (is<SPRect>(i)) {
+        return ( is<SPRect>(j) );
 
-    } else if (dynamic_cast<SPGenericEllipse *>(i)) {
-        return (dynamic_cast<SPGenericEllipse *>(j));
+    } else if (is<SPGenericEllipse>(i)) {
+        return (is<SPGenericEllipse>(j));
 
-    } else if (dynamic_cast<SPStar *>(i) || dynamic_cast<SPPolygon *>(i)) {
-        return (dynamic_cast<SPStar *>(j) || dynamic_cast<SPPolygon *>(j)) ;
+    } else if (is<SPStar>(i) || is<SPPolygon>(i)) {
+        return (is<SPStar>(j) || is<SPPolygon>(j)) ;
 
-    } else if (dynamic_cast<SPSpiral *>(i)) {
-        return (dynamic_cast<SPSpiral *>(j));
+    } else if (is<SPSpiral>(i)) {
+        return (is<SPSpiral>(j));
 
-    } else if (dynamic_cast<SPPath *>(i) || dynamic_cast<SPLine *>(i) || dynamic_cast<SPPolyLine *>(i)) {
-        return (dynamic_cast<SPPath *>(j) || dynamic_cast<SPLine *>(j) || dynamic_cast<SPPolyLine *>(j));
+    } else if (is<SPPath>(i) || is<SPLine>(i) || is<SPPolyLine>(i)) {
+        return (is<SPPath>(j) || is<SPLine>(j) || is<SPPolyLine>(j));
 
-    } else if (dynamic_cast<SPText *>(i) || dynamic_cast<SPFlowtext *>(i) || dynamic_cast<SPTSpan *>(i) || dynamic_cast<SPTRef *>(i) || dynamic_cast<SPString *>(i)) {
-        return (dynamic_cast<SPText *>(j) || dynamic_cast<SPFlowtext *>(j) || dynamic_cast<SPTSpan *>(j) || dynamic_cast<SPTRef *>(j) || dynamic_cast<SPString *>(j));
+    } else if (is<SPText>(i) || is<SPFlowtext>(i) || is<SPTSpan>(i) || is<SPTRef>(i)) {
+        return (is<SPText>(j) || is<SPFlowtext>(j) || is<SPTSpan>(j) || is<SPTRef>(j));
 
-    }  else if (dynamic_cast<SPUse *>(i)) {
-        return (dynamic_cast<SPUse *>(j)) ;
+    }  else if (is<SPUse>(i)) {
+        return (is<SPUse>(j)) ;
 
-    } else if (dynamic_cast<SPImage *>(i)) {
-        return (dynamic_cast<SPImage *>(j));
+    } else if (is<SPImage>(i)) {
+        return (is<SPImage>(j));
 
-    } else if (dynamic_cast<SPOffset *>(i) && dynamic_cast<SPOffset *>(i)->sourceHref) {   // Linked offset
-        return (dynamic_cast<SPOffset *>(j) && dynamic_cast<SPOffset *>(j)->sourceHref);
+    } else if (is<SPOffset>(i) && cast_unsafe<SPOffset>(i)->sourceHref) {   // Linked offset
+        return (is<SPOffset>(j) && cast_unsafe<SPOffset>(j)->sourceHref);
 
-    }  else if (dynamic_cast<SPOffset *>(i) && !dynamic_cast<SPOffset *>(i)->sourceHref) { // Dynamic offset
-        return (dynamic_cast<SPOffset *>(j) && !dynamic_cast<SPOffset *>(j)->sourceHref);
+    }  else if (is<SPOffset>(i) && !cast_unsafe<SPOffset>(i)->sourceHref) { // Dynamic offset
+        return is<SPOffset>(j) && !cast_unsafe<SPOffset>(j)->sourceHref;
 
     }
 
@@ -2266,7 +2266,7 @@ std::vector<SPItem*> sp_get_same_style(SPItem *sel, std::vector<SPItem*> &src, S
             }
             match_g = match_g && match;
             if (match_g) {
-                while (iter->cloned) iter=dynamic_cast<SPItem *>(iter->parent);
+                while (iter->cloned) iter=cast<SPItem>(iter->parent);
                 matches.insert(matches.begin(),iter);
             }
         } else {
@@ -2491,7 +2491,7 @@ SPItem *next_item(SPDesktop *desktop, std::vector<SPObject *> &path, SPObject *r
                 found = next_item<D>(desktop, empt, object, only_in_viewport, inlayer, onlyvisible, onlysensitive);
             }
         } else {
-            SPItem *item = dynamic_cast<SPItem *>(object);
+            auto item = cast<SPItem>(object);
             if ( item &&
                  ( !only_in_viewport || desktop->isWithinViewport(item) ) &&
                  ( !onlyvisible || !desktop->itemIsHidden(item)) &&
@@ -2609,7 +2609,7 @@ void sp_selection_next_patheffect_param(SPDesktop * dt)
     Inkscape::Selection *selection = dt->getSelection();
     if ( selection && !selection->isEmpty() ) {
         SPItem *item = selection->singleItem();
-        if ( SPLPEItem *lpeitem = dynamic_cast<SPLPEItem*>(item) ) {
+        if ( auto lpeitem = cast<SPLPEItem>(item) ) {
             if (lpeitem->hasPathEffect()) {
                 lpeitem->editNextParamOncanvas(dt);
             } else {
@@ -2721,7 +2721,7 @@ void ObjectSet::relink()
     for (auto i=items_.begin();i!=items_.end();++i){
         SPItem *item = *i;
 
-        if (SPUse *use = dynamic_cast<SPUse *>(item)) {
+        if (auto use = cast<SPUse>(item)) {
             // Get original referenced item, relink, then get new reference
             SPItem *ref = use->get_original();
             use->setAttribute(Inkscape::getHrefAttribute(*use->getRepr()).first, newrefAttribute);
@@ -2797,23 +2797,26 @@ bool ObjectSet::unlink(const bool skip_undo, const bool silent)
         auto *clip_obj = item->getClipObject();
         auto *mask_obj = item->getMaskObject();
         if (clip_obj) {
-            SPUse *clipuse = dynamic_cast<SPUse *>(clip_obj);
-            if (clipuse) {
+            // The following always-false check was added in 5bfbeb4a.
+            // Cannot tell if necessary since neither commit/MR say what bug it fixes.
+            // Keeping the if (false) explicit to minimize likelihood of regressions
+            // if (is<SPUse>(clip_obj)) {
+            if (false) {
                 tmp_set.unsetMask(true, true, true);
                 unlinked = tmp_set.unlink(true) || unlinked;
                 tmp_set.setMask(true, false, true);
             }
             new_select.push_back(tmp_set.singleItem());
         } else if (mask_obj) {
-            SPUse *maskuse = dynamic_cast<SPUse *>(mask_obj);
-            if (maskuse) {
+            // if (is<SPUse>(mask_obj)) {
+            if (false) {
                 tmp_set.unsetMask(false, true, true);
                 unlinked = tmp_set.unlink(true) || unlinked;
                 tmp_set.setMask(false, false, true);
             }
             new_select.push_back(tmp_set.singleItem());
         } else {
-            if (dynamic_cast<SPText *>(item)) {
+            if (is<SPText>(item)) {
                 SPObject *tspan = sp_tref_convert_to_tspan(item);
 
                 if (tspan) {
@@ -2825,14 +2828,14 @@ bool ObjectSet::unlink(const bool skip_undo, const bool silent)
                 unlinked = true;
             }
 
-            if (!(dynamic_cast<SPUse *>(item) || dynamic_cast<SPTRef *>(item))) {
+            if (!(is<SPUse>(item) || is<SPTRef>(item))) {
                 // keep the non-use item in the new selection
                 new_select.push_back(item);
                 continue;
             }
 
             SPItem *unlink = nullptr;
-            SPUse *use = dynamic_cast<SPUse *>(item);
+            auto use = cast<SPUse>(item);
             if (use) {
                 unlink = use->unlink();
                 // Unable to unlink use (external or invalid href?)
@@ -2841,7 +2844,7 @@ bool ObjectSet::unlink(const bool skip_undo, const bool silent)
                     continue;
                 }
             } else /*if (is<SPTRef>(use))*/ {
-                unlink = dynamic_cast<SPItem *>(sp_tref_convert_to_tspan(item));
+                unlink = cast<SPItem>(sp_tref_convert_to_tspan(item));
                 g_assert(unlink != nullptr);
             }
 
@@ -2913,8 +2916,8 @@ void ObjectSet::removeLPESRecursive(bool keep_paths) {
     std::vector<SPItem *> items_(items().begin(), items().end());
     std::vector<SPItem *> itemsdone_;
     for (auto& it:items_) {
-        SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(it);
-        SPGroup *spgroup = dynamic_cast<SPGroup *>(it);
+        auto splpeitem = cast<SPLPEItem>(it);
+        auto spgroup = cast<SPGroup>(it);
         if (spgroup) {
             std::vector<SPObject*> c = spgroup->childList(false);
             tmp_set.setList(c);
@@ -2926,7 +2929,7 @@ void ObjectSet::removeLPESRecursive(bool keep_paths) {
             char const *id = splpeitem->getAttribute("id");
             SPDocument *document = splpeitem->document;
             splpeitem->removeAllPathEffects(keep_paths);
-            SPItem *upditem = dynamic_cast<SPItem *>(document->getObjectById(id));
+            auto upditem = cast<SPItem>(document->getObjectById(id));
             if (upditem) {
                 itemsdone_.push_back(upditem);
             }
@@ -2954,20 +2957,20 @@ void ObjectSet::cloneOriginal()
     }
 
     SPItem *original = nullptr;
-    SPUse *use = dynamic_cast<SPUse *>(item);
+    auto use = cast<SPUse>(item);
     if (use) {
         original = use->get_original();
     } else {
-        SPOffset *offset = dynamic_cast<SPOffset *>(item);
+        auto offset = cast<SPOffset>(item);
         if (offset && offset->sourceHref) {
             original = sp_offset_get_source(offset);
         } else {
-            SPText *text = dynamic_cast<SPText *>(item);
-            SPTextPath *textpath = (text) ? dynamic_cast<SPTextPath *>(text->firstChild()) : nullptr;
+            auto text = cast<SPText>(item);
+            SPTextPath *textpath = (text) ? cast<SPTextPath>(text->firstChild()) : nullptr;
             if (text && textpath) {
                 original = sp_textpath_get_path_item(textpath);
             } else {
-                SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(item);
+                auto flowtext = cast<SPFlowtext>(item);
                 if (flowtext) {
                     original = flowtext->get_frame(nullptr); // first frame only
                 }
@@ -2987,8 +2990,8 @@ void ObjectSet::cloneOriginal()
         return;
     }
 
-    for (SPObject *o = original; o && !dynamic_cast<SPRoot *>(o); o = o->parent) {
-        if (dynamic_cast<SPDefs *>(o)) {
+    for (SPObject *o = original; o && !is<SPRoot>(o); o = o->parent) {
+        if (is<SPDefs>(o)) {
             if(desktop())
                 desktop()->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("The object you're trying to select is <b>not visible</b> (it is in &lt;defs&gt;)"));
             return;
@@ -3068,9 +3071,9 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool sync, bool skip
         std::string lpe_id_href = std::string("#") + lpe_repr->attribute("id");
         Inkscape::GC::release(lpe_repr);
         Inkscape::XML::Node* clone = nullptr;
-        SPGroup *firstgroup = dynamic_cast<SPGroup *>(firstItem);
-        SPShape *shape = dynamic_cast<SPShape *>(firstItem);
-        SPPath *path = dynamic_cast<SPPath *>(firstItem);
+        auto firstgroup = cast<SPGroup>(firstItem);
+        auto shape = cast<SPShape>(firstItem);
+        auto path = cast<SPPath>(firstItem);
         if (firstgroup) {
             if (!multiple) {
                 clone = firstgroup->getRepr()->duplicate(xml_doc);
@@ -3100,7 +3103,7 @@ void ObjectSet::cloneOriginalPathLPE(bool allow_transforms, bool sync, bool skip
             set(clone);
             Inkscape::GC::release(clone);
             SPObject *clone_obj = document()->getObjectById(clone->attribute("id"));
-            SPLPEItem *clone_lpeitem = dynamic_cast<SPLPEItem *>(clone_obj);
+            auto clone_lpeitem = cast<SPLPEItem>(clone_obj);
             if (clone_lpeitem) {
                 if (sync && !multiple) {
                     lpe_repr->setAttribute("attributes", "style,clip-path,mask");
@@ -3151,7 +3154,7 @@ void ObjectSet::toMarker(bool apply)
 
     Geom::Affine parent_transform;
     {
-        SPItem *parentItem = dynamic_cast<SPItem *>(parent);
+        auto parentItem = cast<SPItem>(parent);
         if (parentItem) {
             parent_transform = parentItem->i2doc_affine();
         } else {
@@ -3200,8 +3203,8 @@ void ObjectSet::toMarker(bool apply)
 }
 
 static void sp_selection_to_guides_recursive(SPItem *item, bool wholegroups) {
-    SPGroup *group = dynamic_cast<SPGroup *>(item);
-    if (group && !dynamic_cast<SPBox3D *>(item) && !wholegroups) {
+    auto group = cast<SPGroup>(item);
+    if (group && !is<SPBox3D>(item) && !wholegroups) {
         std::vector<SPItem*> items=group->item_list();
         for (auto item : items){
             sp_selection_to_guides_recursive(item, wholegroups);
@@ -3290,7 +3293,7 @@ void ObjectSet::toSymbol()
     Geom::Affine transform;
     if( items_.size() == 1 ) {
         SPObject *object = items_[0];
-        the_group = dynamic_cast<SPGroup *>(object);
+        the_group = cast<SPGroup>(object);
         if ( the_group ) {
             single_group = true;
 
@@ -3415,9 +3418,9 @@ void ObjectSet::toSymbol()
 void ObjectSet::unSymbol()
 {
     for (const auto obj: items()) {
-        auto use = dynamic_cast<SPUse*>(obj);
+        auto use = cast<SPUse>(obj);
         if (use) {
-            auto sym = dynamic_cast<SPSymbol*>(use->root());
+            auto sym = cast<SPSymbol>(use->root());
             if (sym) {
                 sym->unSymbol();
             }
@@ -3457,7 +3460,7 @@ void ObjectSet::tile(bool apply)
 
     Geom::Affine parent_transform;
     {
-        SPItem *parentItem = dynamic_cast<SPItem *>(parent);
+        auto parentItem = cast<SPItem>(parent);
         if (parentItem) {
             parent_transform = parentItem->i2doc_affine();
         } else {
@@ -3554,7 +3557,7 @@ void ObjectSet::untile()
 
         SPPaintServer *server = item->style->getFillPaintServer();
 
-        SPPattern *basePat = dynamic_cast<SPPattern *>(server);
+        auto basePat = cast<SPPattern>(server);
         if (!basePat) {
             continue;
         }
@@ -3567,9 +3570,9 @@ void ObjectSet::untile()
         pat_transform *= item->transform;
 
         for (auto& child: pattern->children) {
-            if (dynamic_cast<SPItem *>(&child)) {
+            if (is<SPItem>(&child)) {
                 Inkscape::XML::Node *copy = child.getRepr()->duplicate(xml_doc);
-                SPItem *i = dynamic_cast<SPItem *>(item->parent->appendChildRepr(copy));
+                auto i = cast<SPItem>(item->parent->appendChildRepr(copy));
 
                // FIXME: relink clones to the new canvas objects
                // use SPObject::setid when mental finishes it to steal ids of
@@ -3685,7 +3688,7 @@ void ObjectSet::createBitmapCopy()
         repr->setAttributeSvgDouble("height", bbox->height());
 
         // Calculate the matrix that will be applied to the image so that it exactly overlaps the source objects
-        SPItem *parentItem = dynamic_cast<SPItem *>(parent_object);
+        auto parentItem = cast<SPItem>(parent_object);
         Geom::Affine affine = Geom::Translate(bbox->left(), bbox->top()) * parentItem->i2doc_affine().inverse();
 
         // Write transform
@@ -3908,7 +3911,7 @@ void ObjectSet::setClipGroup()
 
         // apply clip/mask only to newly created group
         apply_to_items.clear();
-        apply_to_items.push_back(dynamic_cast<SPItem*>(doc->getObjectByRepr(group)));
+        apply_to_items.push_back(cast<SPItem>(doc->getObjectByRepr(group)));
 
         items_to_select.push_back((SPItem*)(doc->getObjectByRepr(group)));
 
@@ -3948,7 +3951,7 @@ void ObjectSet::setClipGroup()
 
             // Apply clip/mask to group instead
             apply_mask_to = group;
-            item = dynamic_cast<SPItem*>(doc->getObjectByRepr(group));
+            item = cast<SPItem>(doc->getObjectByRepr(group));
 
             items_to_select.push_back(item);
             Inkscape::GC::release(spnew);
@@ -4032,7 +4035,7 @@ void ObjectSet::unsetMask(const bool apply_clip_path,
 
         i->setAttribute(attributeName, "none");
 
-        SPGroup *group = dynamic_cast<SPGroup *>(i);
+        auto group = cast<SPGroup>(i);
         if (ungroup_masked && group && delete_helper_group) {
                 // if we had previously enclosed masked object in group,
                 // add it to list so we can ungroup it later
@@ -4080,7 +4083,7 @@ void ObjectSet::unsetMask(const bool apply_clip_path,
             // insert into parent, restore pos
             parent->addChild(repr, ref_repr);
 
-            SPItem *mask_item = dynamic_cast<SPItem *>(document()->getObjectByRepr(repr));
+            auto mask_item = cast<SPItem>(document()->getObjectByRepr(repr));
             if (!mask_item) {
                 continue;
             }
@@ -4290,8 +4293,8 @@ void ObjectSet::fillBetweenMany()
  */
 SiblingState
 ObjectSet::getSiblingState(SPItem *item) {
-    auto offset = dynamic_cast<SPOffset *>(item);
-    auto flowtext = dynamic_cast<SPFlowtext *>(item);
+    auto offset = cast<SPOffset>(item);
+    auto flowtext = cast<SPFlowtext>(item);
 
     auto check_item = _sibling_state.find(item);
     if (check_item != _sibling_state.end() && check_item->second > SiblingState::SIBLING_NONE) {
@@ -4305,8 +4308,8 @@ ObjectSet::getSiblingState(SPItem *item) {
         ret = SiblingState::SIBLING_CLONE_ORIGINAL;
 
 	// moving both a text-on-path and its path
-    } else if ((dynamic_cast<SPText *>(item) && item->firstChild() && dynamic_cast<SPTextPath *>(item->firstChild())) &&
-                    includes(sp_textpath_get_path_item(dynamic_cast<SPTextPath *>(item->firstChild())))) {
+    } else if (is<SPText>(item) && is<SPTextPath>(item->firstChild()) &&
+               includes(sp_textpath_get_path_item(cast_unsafe<SPTextPath>(item->firstChild())))) {
         ret = SiblingState::SIBLING_TEXT_PATH;
 
 	// moving both a flowtext and its frame
@@ -4366,14 +4369,14 @@ fit_canvas_to_drawing(SPDesktop *desktop)
 static void itemtree_map(void (*f)(SPItem *, SPDesktop *), SPObject *root, SPDesktop *desktop) {
     // don't operate on layers
     {
-        SPItem *item = dynamic_cast<SPItem *>(root);
+        auto item = cast<SPItem>(root);
         if (item && !desktop->layerManager().isLayer(item)) {
             f(item, desktop);
         }
     }
     for (auto& child: root->children) {
         //don't recurse into locked layers
-        SPItem *item = dynamic_cast<SPItem *>(&child);
+        auto item = cast<SPItem>(&child);
         if (!(item && desktop->layerManager().isLayer(item) && item->isLocked())) {
             itemtree_map(f, &child, desktop);
         }

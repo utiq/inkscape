@@ -130,7 +130,7 @@ void LPETaperStroke::transform_multiply(Geom::Affine const &postmul, bool /*set*
 void LPETaperStroke::doOnApply(SPLPEItem const* lpeitem)
 {
     auto lpeitem_mutable = const_cast<SPLPEItem *>(lpeitem);
-    auto item = dynamic_cast<SPShape *>(lpeitem_mutable);
+    auto item = cast<SPShape>(lpeitem_mutable);
 
     if (!item) {
         printf("WARNING: It only makes sense to apply Taper stroke to paths (not groups).\n");
@@ -159,7 +159,7 @@ void LPETaperStroke::doOnApply(SPLPEItem const* lpeitem)
 void LPETaperStroke::doOnRemove(SPLPEItem const* lpeitem)
 {
     auto lpeitem_mutable = const_cast<SPLPEItem *>(lpeitem);
-    auto shape = dynamic_cast<SPShape *>(lpeitem_mutable);
+    auto shape = cast<SPShape>(lpeitem_mutable);
     if (shape) {
         lpe_shape_revert_stroke_and_fill(shape, line_width);
     }
@@ -491,7 +491,7 @@ void KnotHolderEntityAttachBegin::knot_set(Geom::Point const &p, Geom::Point con
         return;
     }
     
-    if (!cast<SPShape>(lpe->sp_lpe_item)->curve()) {
+    if (!cast_unsafe<SPShape>(lpe->sp_lpe_item)->curve()) {
         // oops
         return;
     }

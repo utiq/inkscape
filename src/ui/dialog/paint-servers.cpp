@@ -209,7 +209,7 @@ void PaintServersDialog::_findPaints(SPObject *in, std::vector<Glib::ustring> &l
     g_return_if_fail(in != nullptr);
 
     // Add paint servers in <defs> section.
-    if (dynamic_cast<SPPaintServer *>(in)) {
+    if (is<SPPaintServer>(in)) {
         if (in->getId()) {
             // Need to check as one can't construct Glib::ustring with nullptr.
             list.push_back(Glib::ustring("url(#") + in->getId() + ")");
@@ -219,7 +219,7 @@ void PaintServersDialog::_findPaints(SPObject *in, std::vector<Glib::ustring> &l
     }
 
     // Add paint servers referenced by shapes.
-    if (dynamic_cast<SPShape *>(in)) {
+    if (is<SPShape>(in)) {
         auto const style = in->style;
         list.push_back(style->fill.get_value());
         list.push_back(style->stroke.get_value());

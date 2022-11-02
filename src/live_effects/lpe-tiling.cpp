@@ -206,7 +206,7 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
             size_t pos = 0;
             for (auto lpereference : lpesatellites.data()) {
                 if (lpereference && lpereference->isAttached()) {
-                    SPItem *copies = dynamic_cast<SPItem *>(lpereference->getObject());
+                    auto copies = cast<SPItem>(lpereference->getObject());
                     if (copies) {
                         if (pos > num_cols * num_rows - 2) {
                             copies->setHidden(true);
@@ -555,7 +555,7 @@ LPETiling::createPathBase(SPObject *elemref) {
     }
     Inkscape::XML::Document *xml_doc = document->getReprDoc();
     Inkscape::XML::Node *prev = elemref->getRepr();
-    SPGroup *group = dynamic_cast<SPGroup *>(elemref);
+    auto group = cast<SPGroup>(elemref);
     if (group) {
         Inkscape::XML::Node *container = xml_doc->createElement("svg:g");
         container->setAttribute("transform", prev->attribute("transform"));
@@ -617,7 +617,7 @@ LPETiling::toItem(size_t i, bool reset, bool &write)
         write = true;
         lpesatellites.link(elemref, i);
     }
-    return dynamic_cast<SPItem *>(elemref);
+    return cast<SPItem>(elemref);
 }
 
 Gtk::RadioButton* create_radio_button(Gtk::RadioButtonGroup& group, const Glib::ustring& tooltip, const Glib::ustring& icon_name) {

@@ -1255,7 +1255,7 @@ CairoRenderContext::_createPatternPainter(SPPaintServer const *const paintserver
 
 cairo_pattern_t*
 CairoRenderContext::_createHatchPainter(SPPaintServer const *const paintserver, Geom::OptRect const &pbox) {
-    SPHatch const *hatch = dynamic_cast<SPHatch const *>(paintserver);
+    SPHatch const *hatch = cast<SPHatch>(paintserver);
     g_assert( hatch );
 
     g_assert(hatch->pitch() > 0);
@@ -1338,7 +1338,7 @@ CairoRenderContext::_createPatternForPaintServer(SPPaintServer const *const pain
 
     auto const paintserver_mutable = const_cast<SPPaintServer *>(paintserver);
 
-    if (auto lg = dynamic_cast<SPLinearGradient *>(paintserver_mutable)) {
+    if (auto lg = cast<SPLinearGradient>(paintserver_mutable)) {
 
             lg->ensureVector(); // when exporting from commandline, vector is not built
 
@@ -1360,7 +1360,7 @@ CairoRenderContext::_createPatternForPaintServer(SPPaintServer const *const pain
                 lg->vector.stops[i].color.get_rgb_floatv(rgb);
                 cairo_pattern_add_color_stop_rgba(pattern, lg->vector.stops[i].offset, rgb[0], rgb[1], rgb[2], lg->vector.stops[i].opacity * alpha);
             }
-    } else if (auto rg = dynamic_cast<SPRadialGradient *>(paintserver_mutable)) {
+    } else if (auto rg = cast<SPRadialGradient>(paintserver_mutable)) {
 
         rg->ensureVector(); // when exporting from commandline, vector is not built
 
@@ -1380,18 +1380,18 @@ CairoRenderContext::_createPatternForPaintServer(SPPaintServer const *const pain
             rg->vector.stops[i].color.get_rgb_floatv(rgb);
             cairo_pattern_add_color_stop_rgba(pattern, rg->vector.stops[i].offset, rgb[0], rgb[1], rgb[2], rg->vector.stops[i].opacity * alpha);
         }
-    } else if (auto mg = dynamic_cast<SPMeshGradient *>(paintserver_mutable)) {
+    } else if (auto mg = cast<SPMeshGradient>(paintserver_mutable)) {
         pattern = mg->create_drawing_paintserver()->create_pattern(_cr, pbox, 1.0);
     } else if (is<SPPattern>(paintserver)) {
         pattern = _createPatternPainter(paintserver, pbox);
-    } else if ( dynamic_cast<SPHatch const *>(paintserver) ) {
+    } else if (is<SPHatch>(paintserver) ) {
         pattern = _createHatchPainter(paintserver, pbox);
     } else {
         return nullptr;
     }
 
     if (pattern && is<SPGradient>(paintserver)) {
-        auto g = dynamic_cast<SPGradient *>(paintserver_mutable);
+        auto g = cast<SPGradient>(paintserver_mutable);
 
         // set extend type
         SPGradientSpread spread = g->fetchSpread();
@@ -1456,7 +1456,7 @@ CairoRenderContext::_setFillStyle(SPStyle const *const style, Geom::OptRect cons
 
         g_assert(is<SPGradient>(SP_STYLE_FILL_SERVER(style))
                  || is<SPPattern>(SP_STYLE_FILL_SERVER(style))
-                 || dynamic_cast<SPHatch *>(SP_STYLE_FILL_SERVER(style)));
+                 || cast<SPHatch>(SP_STYLE_FILL_SERVER(style)));
 
         cairo_pattern_t *pattern = _createPatternForPaintServer(paint_server, pbox, alpha);
         if (pattern) {
@@ -1493,7 +1493,7 @@ CairoRenderContext::_setStrokeStyle(SPStyle const *style, Geom::OptRect const &p
         g_assert( style->stroke.isPaintserver()
                   || is<SPGradient>(SP_STYLE_STROKE_SERVER(style))
                   || is<SPPattern>(SP_STYLE_STROKE_SERVER(style))
-                  || dynamic_cast<SPHatch *>(SP_STYLE_STROKE_SERVER(style)));
+                  || cast<SPHatch>(SP_STYLE_STROKE_SERVER(style)));
 
         cairo_pattern_t *pattern = _createPatternForPaintServer(SP_STYLE_STROKE_SERVER(style), pbox, alpha);
 

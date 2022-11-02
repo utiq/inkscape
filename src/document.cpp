@@ -246,7 +246,7 @@ SPNamedView *SPDocument::getNamedView()
         rroot->addChildAtPos(xml, 0);
         Inkscape::GC::release(xml);
     }
-    return dynamic_cast<SPNamedView *> (getObjectByRepr(xml));
+    return cast<SPNamedView> (getObjectByRepr(xml));
 }
 
 SPDefs *SPDocument::getDefs()
@@ -396,7 +396,7 @@ SPDocument *SPDocument::createDoc(Inkscape::XML::Document *rdoc,
     // Create SPRoot element
     const std::string typeString = NodeTraits::get_type_string(*rroot);
     SPObject* rootObj = SPFactory::createObject(typeString);
-    document->root = dynamic_cast<SPRoot*>(rootObj);
+    document->root = cast<SPRoot>(rootObj);
 
     if (document->root == nullptr) {
     	// Node is not a valid root element
@@ -580,7 +580,7 @@ void SPDocument::fix_lpe_data() {
     std::reverse(l.begin(), l.end());
     for(auto child : l){
         std::vector<SPObject*> l2(child->childList(true));
-        auto *lpeobj = dynamic_cast<LivePathEffectObject *>(child);
+        auto *lpeobj = cast<LivePathEffectObject>(child);
         if (lpeobj) {
             auto lpe = lpeobj->get_lpe();
             if (lpe) {
@@ -596,7 +596,7 @@ void SPDocument::fix_lpe_data() {
             }
         } else { // TODO: get a better wey to uplate clipmask lpe item (eye in athumgaze.svg duplicate)
             for(auto child2 : l2){
-                SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(child2);
+                auto lpeitem = cast<SPLPEItem>(child2);
                 if (lpeitem) {
                     sp_lpe_item_update_patheffect(lpeitem, true, true);
                 }
@@ -1460,7 +1460,7 @@ static std::vector<SPItem*> &find_items_in_area(std::vector<SPItem*> &s,
     g_return_val_if_fail(group, s);
 
     for (auto& o: group->children) {
-        if (SPItem *item = dynamic_cast<SPItem *>(&o)) {
+        if (auto item = cast<SPItem>(&o)) {
             if (!take_insensitive && item->isLocked()) {
                 continue;
             }
@@ -1469,7 +1469,7 @@ static std::vector<SPItem*> &find_items_in_area(std::vector<SPItem*> &s,
                 continue;
             }
 
-            if (SPGroup * childgroup = dynamic_cast<SPGroup *>(item)) {
+            if (auto childgroup = cast<SPGroup>(item)) {
                 bool is_layer = childgroup->effectiveLayerMode(dkey) == SPGroup::LAYER;
                 if (is_layer || (enter_groups)) {
                     s = find_items_in_area(s, childgroup, dkey, area, test, take_hidden, take_insensitive, take_groups, enter_groups);
@@ -1755,7 +1755,7 @@ bool SPDocument::addResource(gchar const *key, SPObject *object)
         [this check should be more generally presend on emit() calls since
         the backtrace is unusable with crashed from this cause]
         */
-        if (object->getId() || dynamic_cast<SPGroup*>(object) || dynamic_cast<SPPage*>(object)) {
+        if (object->getId() || is<SPGroup>(object) || is<SPPage>(object)) {
             resources_changed_signals[q].emit();
         } else {
             pending_resource_changes.emplace(q);
@@ -1970,11 +1970,11 @@ void SPDocument::_importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, 
         SPObject *src = source->getObjectByRepr(def);
 
         // Prevent duplicates of solid swatches by checking if equivalent swatch already exists
-        SPGradient *s_gr = dynamic_cast<SPGradient *>(src);
-        LivePathEffectObject *s_lpeobj = dynamic_cast<LivePathEffectObject *>(src);
+        auto s_gr = cast<SPGradient>(src);
+        auto s_lpeobj = cast<LivePathEffectObject>(src);
         if (src && (s_gr || s_lpeobj)) {
             for (auto& trg: getDefs()->children) {
-                SPGradient *t_gr = dynamic_cast<SPGradient *>(&trg);
+                auto t_gr = cast<SPGradient>(&trg);
                 if (src != &trg && s_gr && t_gr) {
                     if (s_gr->isEquivalent(t_gr)) {
                         // Change object references to the existing equivalent gradient
@@ -1988,7 +1988,7 @@ void SPDocument::_importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, 
                         // do NOT break here, there could be more than 1 duplicate!
                     }
                 }
-                LivePathEffectObject *t_lpeobj = dynamic_cast<LivePathEffectObject *>(&trg);
+                auto t_lpeobj = cast<LivePathEffectObject>(&trg);
                 if (src != &trg && s_lpeobj && t_lpeobj) {
                     if (t_lpeobj->is_similar(s_lpeobj)) {
                         // Change object references to the existing equivalent gradient
@@ -2012,12 +2012,12 @@ void SPDocument::_importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, 
         Glib::ustring defid = def->attribute("id");
         if( defid.find( DuplicateDefString ) != Glib::ustring::npos )continue; // this one already handled
         SPObject *src = source->getObjectByRepr(def);
-        LivePathEffectObject *s_lpeobj = dynamic_cast<LivePathEffectObject *>(src);
-        SPGradient *s_gr = dynamic_cast<SPGradient *>(src);
+        auto s_lpeobj = cast<LivePathEffectObject>(src);
+        auto s_gr = cast<SPGradient>(src);
         if (src && (s_gr || s_lpeobj)) {
             for (Inkscape::XML::Node *laterDef = def->next() ; laterDef ; laterDef = laterDef->next()) {
                 SPObject *trg = source->getObjectByRepr(laterDef);
-                SPGradient *t_gr = dynamic_cast<SPGradient *>(trg);
+                auto t_gr = cast<SPGradient>(trg);
                 if (trg && (src != trg) && s_gr && t_gr) {
                     Glib::ustring newid = trg->getId();
                     if (newid.find(DuplicateDefString) != Glib::ustring::npos)
@@ -2032,7 +2032,7 @@ void SPDocument::_importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, 
                         // do NOT break here, there could be more than 1 duplicate!
                     }
                 }
-                LivePathEffectObject *t_lpeobj = dynamic_cast<LivePathEffectObject *>(trg);
+                auto t_lpeobj = cast<LivePathEffectObject>(trg);
                 if (trg && (src != trg) && s_lpeobj && t_lpeobj) {
                     Glib::ustring newid = trg->getId();
                     if (newid.find(DuplicateDefString) != Glib::ustring::npos)

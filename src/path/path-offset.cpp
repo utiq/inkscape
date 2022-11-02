@@ -110,7 +110,7 @@ void sp_selected_path_create_offset_object(SPDesktop *desktop, int expand, bool 
     Inkscape::Selection *selection = desktop->getSelection();
     SPItem *item = selection->singleItem();
 
-    if (auto shape = dynamic_cast<SPShape const *>(item)) {
+    if (auto shape = cast<SPShape>(item)) {
         if (!shape->curve())
             return;
     } else {
@@ -280,7 +280,7 @@ sp_selected_path_do_offset(SPDesktop *desktop, bool expand, double prefOffset)
     bool did = false;
     std::vector<SPItem*> il(selection->items().begin(), selection->items().end());
     for (auto item : il){
-        if (auto shape = dynamic_cast<SPShape const *>(item)) {
+        if (auto shape = cast<SPShape>(item)) {
             if (!shape->curve())
                 continue;
         } else {

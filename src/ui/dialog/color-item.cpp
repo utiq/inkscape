@@ -317,7 +317,7 @@ void ColorItem::on_rightclick(GdkEventButton *event)
                 int result = objects_query_fillstroke(items, &query, true);
                 if (result == QUERY_STYLE_MULTIPLE_SAME || result == QUERY_STYLE_SINGLE) {
                     if (query.fill.isPaintserver()) {
-                        if (dynamic_cast<SPGradient*>(query.getFillPaintServer()) == grad) {
+                        if (cast<SPGradient>(query.getFillPaintServer()) == grad) {
                             desktop->getContainer()->new_dialog("FillStroke");
                             return;
                         }

@@ -175,7 +175,7 @@ void FillNStroke::performUpdate()
     const int property = kind == FILL ? QUERY_STYLE_PROPERTY_FILL : QUERY_STYLE_PROPERTY_STROKE;
     int result = sp_desktop_query_style(_desktop, &query, property);
     SPIPaint& paint = *query.getFillOrStroke(kind == FILL);
-    auto stop = dynamic_cast<SPStop*>(paint.getTag());
+    auto stop = cast<SPStop>(paint.getTag());
     if (stop) {
        // there's a stop selected, which is part of subselection, now query selection only to find selected gradient
        if (auto selection = _desktop->getSelection()) {

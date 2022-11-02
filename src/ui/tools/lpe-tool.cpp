@@ -387,7 +387,7 @@ lpetool_create_measuring_items(LpeTool *lc, Inkscape::Selection *selection)
 
     auto items= selection->items();
     for (auto i : items) {
-        SPPath *path = dynamic_cast<SPPath *>(i);
+        auto path = cast<SPPath>(i);
         if (path) {
             SPCurve const *curve = path->curve();
             Geom::Piecewise<Geom::D2<Geom::SBasis> > pwd2 = paths_to_pw(curve->get_pathvector());

@@ -1743,7 +1743,7 @@ GrDragger* GrDragger::getMgCorner(){
 
         // The mapping between handles and corners is complex... so find corner by bruit force.
         SPGradient *gradient = getGradient(draggable->item, draggable->fill_or_stroke);
-        SPMeshGradient *mg = dynamic_cast<SPMeshGradient *>(gradient);
+        auto mg = cast<SPMeshGradient>(gradient);
         if (mg) {
             std::vector< std::vector< SPMeshNode* > > nodes = mg->array.nodes;
             for (guint i = 0; i < nodes.size(); ++i) {
@@ -2370,7 +2370,7 @@ void GrDrag::updateDraggers()
 
         if (style && (style->fill.isPaintserver())) {
             SPPaintServer *server = style->getFillPaintServer();
-            if (auto gradient = dynamic_cast<SPGradient *>(server)) {
+            if (auto gradient = cast<SPGradient>(server)) {
                 if (gradient->isSolid() || (gradient->getVector() && gradient->getVector()->isSolid())) {
                     // Suppress "gradientness" of solid paint
                 } else if (is<SPLinearGradient>(server)) {
@@ -2385,7 +2385,7 @@ void GrDrag::updateDraggers()
 
         if (style && (style->stroke.isPaintserver())) {
             SPPaintServer *server = style->getStrokePaintServer();
-            if (auto gradient = dynamic_cast<SPGradient *>(server)) {
+            if (auto gradient = cast<SPGradient>(server)) {
                 if (gradient->isSolid() || (gradient->getVector() && gradient->getVector()->isSolid())) {
                     // Suppress "gradientness" of solid paint
                 } else if (is<SPLinearGradient>(server)) {
@@ -2478,7 +2478,7 @@ void GrDrag::updateLines()
 
         if (style && (style->fill.isPaintserver())) {
             SPPaintServer *server = item->style->getFillPaintServer();
-            if (auto gradient = dynamic_cast<SPGradient *>(server)) {
+            if (auto gradient = cast<SPGradient>(server)) {
                 if (gradient->isSolid() || (gradient->getVector() && gradient->getVector()->isSolid())) {
                     // Suppress "gradientness" of solid paint
                 } else if (is<SPLinearGradient>(server)) {
@@ -2558,7 +2558,7 @@ void GrDrag::updateLines()
 
         if (style && (style->stroke.isPaintserver())) {
             SPPaintServer *server = item->style->getStrokePaintServer();
-            if (auto gradient = dynamic_cast<SPGradient *>(server)) {
+            if (auto gradient = cast<SPGradient>(server)) {
                 if (gradient->isSolid() || (gradient->getVector() && gradient->getVector()->isSolid())) {
                     // Suppress "gradientness" of solid paint
                 } else if (is<SPLinearGradient>(server)) {

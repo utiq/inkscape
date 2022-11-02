@@ -404,7 +404,7 @@ layer_from_group (InkscapeWindow* win)
         return;
     }
 
-    auto group = dynamic_cast<SPGroup*>(items[0]);
+    auto group = cast<SPGroup>(items[0]);
     if (group && group->isLayer()) {
         dt->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("Group already layer."));
         return;
@@ -423,7 +423,7 @@ group_enter (InkscapeWindow* win)
     auto selection = dt->getSelection();
 
     std::vector<SPItem*> items(selection->items().begin(), selection->items().end());
-    if (items.size() == 1 && dynamic_cast<SPGroup*>(items[0])) {
+    if (items.size() == 1 && cast<SPGroup>(items[0])) {
         // Only one item and it is a group!
         dt->layerManager().setCurrentLayer(items[0]);
         selection->clear();
@@ -441,7 +441,7 @@ group_exit (InkscapeWindow* win)
     dt->layerManager().setCurrentLayer(parent);
 
     std::vector<SPItem*> items(selection->items().begin(), selection->items().end());
-    if (items.size() == 1 && dynamic_cast<SPGroup*>(items[0]->parent) ) {
+    if (items.size() == 1 && cast<SPGroup>(items[0]->parent) ) {
         // Only one item selected and the parent is a group!
         selection->set(items[0]->parent);
     } else {

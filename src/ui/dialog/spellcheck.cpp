@@ -240,7 +240,7 @@ void SpellCheck::allTextItems (SPObject *r, std::vector<SPItem *> &l, bool hidde
 
     if (auto desktop = getDesktop()) {
         for (auto& child: r->children) {
-            if (auto item = dynamic_cast<SPItem *>(&child)) {
+            if (auto item = cast<SPItem>(&child)) {
                 if (!child.cloned && !desktop->layerManager().isLayer(item)) {
                     if ((hidden || !desktop->itemIsHidden(item)) && (locked || !item->isLocked())) {
                         if (is<SPText>(item) || is<SPFlowtext>(item))

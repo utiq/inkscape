@@ -318,7 +318,7 @@ KnotHolderEntityWidthPatternAlongPath::knot_set(Geom::Point const &p, Geom::Poin
     LPEPatternAlongPath *lpe = dynamic_cast<LPEPatternAlongPath *> (_effect);
 
     Geom::Point const s = snap_knot_position(p, state);
-    SPShape const *sp_shape = dynamic_cast<SPShape const *>(cast<SPLPEItem>(item));
+    SPShape const *sp_shape = cast<SPShape>(cast<SPLPEItem>(item));
     if (sp_shape && lpe->original_height) {
         if (auto c = sp_shape->curveForEdit()) {
             auto curve_before = *c;
@@ -353,7 +353,7 @@ Geom::Point
 KnotHolderEntityWidthPatternAlongPath::knot_get() const
 {
     LPEPatternAlongPath *lpe = dynamic_cast<LPEPatternAlongPath *> (_effect);
-    if (auto const sp_shape = dynamic_cast<SPShape const *>(cast<SPLPEItem>(item))) {
+    if (auto const sp_shape = cast<SPShape>(cast<SPLPEItem>(item))) {
         if (auto c = sp_shape->curveForEdit()) {
             auto curve_before = *c;
             Geom::Path const *path_in = curve_before.first_path();

@@ -318,7 +318,7 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
     bool did = false;
 
     {
-        SPBox3D *box = dynamic_cast<SPBox3D *>(item);
+        auto box = cast<SPBox3D>(item);
         if (box && !is_transform_mode(mode) && !is_color_mode(mode)) {
             // convert 3D boxes to ordinary groups before tweaking their shapes
             item = box->convert_to_group();
@@ -326,7 +326,7 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
         }
     }
 
-    if (dynamic_cast<SPText *>(item) || dynamic_cast<SPFlowtext *>(item)) {
+    if (is<SPText>(item) || is<SPFlowtext>(item)) {
         std::vector<SPItem*> items;
         items.push_back(item);
         std::vector<SPItem*> selected;
@@ -334,16 +334,16 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
         SPDocument *doc = item->document;
         sp_item_list_to_curves (items, selected, to_select);
         SPObject* newObj = doc->getObjectByRepr(to_select[0]);
-        item = dynamic_cast<SPItem *>(newObj);
+        item = cast<SPItem>(newObj);
         g_assert(item != nullptr);
         selection->add(item);
     }
 
-    if (dynamic_cast<SPGroup *>(item) && !dynamic_cast<SPBox3D *>(item)) {
+    if (is<SPGroup>(item) && !is<SPBox3D>(item)) {
         std::vector<SPItem *> children;
         for (auto& child: item->children) {
-            if (dynamic_cast<SPItem *>(&child)) {
-                children.push_back(dynamic_cast<SPItem *>(&child));
+            if (is<SPItem>(&child)) {
+                children.push_back(cast<SPItem>(&child));
             }
         }
 
@@ -455,13 +455,13 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
                 }
             }
 
-        } else if (dynamic_cast<SPPath *>(item) || dynamic_cast<SPShape *>(item)) {
+        } else if (is<SPPath>(item) || is<SPShape>(item)) {
 
             Inkscape::XML::Node *newrepr = nullptr;
             gint pos = 0;
             Inkscape::XML::Node *parent = nullptr;
             char const *id = nullptr;
-            if (!dynamic_cast<SPPath *>(item)) {
+            if (!is<SPPath>(item)) {
                 newrepr = sp_selected_item_to_curved_repr(item, 0);
                 if (!newrepr) {
                     return false;
@@ -576,7 +576,7 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
                     if (newrepr) {
                         newrepr->setAttribute("d", str);
                     } else {
-                        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+                        auto lpeitem = cast<SPLPEItem>(item);
                         if (lpeitem && lpeitem->hasPathEffectRecursive()) {
                             item->setAttribute("inkscape:original-d", str);
                         } else {
@@ -715,7 +715,7 @@ static void tweak_colors_in_gradient(SPItem *item, Inkscape::PaintTarget fill_or
 {
     SPGradient *gradient = getGradient(item, fill_or_stroke);
 
-    if (!gradient || !dynamic_cast<SPGradient *>(gradient)) {
+    if (!gradient) {
         return;
     }
 
@@ -724,8 +724,8 @@ static void tweak_colors_in_gradient(SPItem *item, Inkscape::PaintTarget fill_or
     p *= (gradient->gradientTransform).inverse();
     // now p is in gradient's original coordinates
 
-    SPLinearGradient *lg = dynamic_cast<SPLinearGradient *>(gradient);
-    SPRadialGradient *rg = dynamic_cast<SPRadialGradient *>(gradient);
+    auto lg = cast<SPLinearGradient>(gradient);
+    auto rg = cast<SPRadialGradient>(gradient);
     if (lg || rg) {
 
         double pos = 0;
@@ -786,7 +786,7 @@ static void tweak_colors_in_gradient(SPItem *item, Inkscape::PaintTarget fill_or
         double offset_h = 0;
         SPObject *child_prev = nullptr;
         for (auto& child: vector->children) {
-            SPStop *stop = dynamic_cast<SPStop *>(&child);
+            auto stop = cast<SPStop>(&child);
             if (!stop) {
                 continue;
             }
@@ -794,7 +794,7 @@ static void tweak_colors_in_gradient(SPItem *item, Inkscape::PaintTarget fill_or
             offset_h = stop->offset;
 
             if (child_prev) {
-                SPStop *prevStop = dynamic_cast<SPStop *>(child_prev);
+                auto prevStop = cast<SPStop>(child_prev);
                 g_assert(prevStop != nullptr);
 
                 if (offset_h - offset_l > r && pos_e >= offset_l && pos_e <= offset_h) {
@@ -835,9 +835,9 @@ static void tweak_colors_in_gradient(SPItem *item, Inkscape::PaintTarget fill_or
         }
     } else {
         // Mesh
-        SPMeshGradient *mg = dynamic_cast<SPMeshGradient *>(gradient);
+        auto mg = cast<SPMeshGradient>(gradient);
         if (mg) {
-            SPMeshGradient *mg_array = dynamic_cast<SPMeshGradient *>(mg->getArray());
+            auto mg_array = cast<SPMeshGradient>(mg->getArray());
             SPMeshNodeArray *array = &(mg_array->array);
             // Every third node is a corner node
             for( unsigned i=0; i < array->nodes.size(); i+=3 ) {
@@ -864,9 +864,9 @@ sp_tweak_color_recursive (guint mode, SPItem *item, SPItem *item_at_point,
 {
     bool did = false;
 
-    if (dynamic_cast<SPGroup *>(item)) {
+    if (is<SPGroup>(item)) {
         for (auto& child: item->children) {
-            SPItem *childItem = dynamic_cast<SPItem *>(&child);
+            auto childItem = cast<SPItem>(&child);
             if (childItem) {
                 if (sp_tweak_color_recursive (mode, childItem, item_at_point,
                         fill_goal, do_fill,
@@ -923,10 +923,10 @@ sp_tweak_color_recursive (guint mode, SPItem *item, SPItem *item_at_point,
             if (style->filter.set && style->getFilter()) {
                 //cycle through filter primitives
                 for (auto& primitive_obj: style->getFilter()->children) {
-                    SPFilterPrimitive *primitive = dynamic_cast<SPFilterPrimitive *>(&primitive_obj);
+                    auto primitive = cast<SPFilterPrimitive>(&primitive_obj);
                     if (primitive) {
                         //if primitive is gaussianblur
-                        SPGaussianBlur * spblur = dynamic_cast<SPGaussianBlur *>(primitive);
+                        auto spblur = cast<SPGaussianBlur>(primitive);
                         if (spblur) {
                             float num = spblur->get_std_deviation().getNumber();
                             blur_now += num * i2dt.descrim(); // sum all blurs in the filter

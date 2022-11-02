@@ -388,7 +388,7 @@ static void sp_group_render(SPGroup *group, CairoRenderContext *ctx, SPItem *ori
 {
     CairoRenderer *renderer = ctx->getRenderer();
     for (auto obj : group->childList(false)) {
-        if (SPItem *item = dynamic_cast<SPItem *>(obj)) {
+        if (auto item = cast<SPItem>(obj)) {
             renderer->renderItem(ctx, item, origin, page);
         }
     }
@@ -470,7 +470,7 @@ static void sp_anchor_render(SPAnchor *a, CairoRenderContext *ctx)
     if (a->href)
         ctx->tagBegin(a->href);
     for(auto x : l){
-        SPItem *item = dynamic_cast<SPItem*>(x);
+        auto item = cast<SPItem>(x);
         if (item) {
             renderer->renderItem(ctx, item);
         }
@@ -610,62 +610,37 @@ static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx, SPPage *pa
 
 static void sp_item_invoke_render(SPItem *item, CairoRenderContext *ctx, SPItem *origin, SPPage *page)
 {
-    SPRoot *root = dynamic_cast<SPRoot *>(item);
-    if (root) {
+    if (auto root = cast<SPRoot>(item)) {
         TRACE(("root\n"));
         sp_root_render(root, ctx);
-    } else {
-        SPSymbol *symbol = dynamic_cast<SPSymbol *>(item);
-        if (symbol) {
-            TRACE(("symbol\n"));
-            sp_symbol_render(symbol, ctx, origin, page);
-        } else {
-            SPAnchor *anchor = dynamic_cast<SPAnchor *>(item);
-            if (anchor) {
-                TRACE(("<a>\n"));
-                sp_anchor_render(anchor, ctx);
-            } else {
-                SPShape *shape = dynamic_cast<SPShape *>(item);
-                if (shape) {
-                    TRACE(("shape\n"));
-                    sp_shape_render(shape, ctx, origin);
-                } else {
-                    SPUse *use = dynamic_cast<SPUse *>(item);
-                    if (use) {
-                        TRACE(("use begin---\n"));
-                        sp_use_render(use, ctx, page);
-                        TRACE(("---use end\n"));
-                    } else {
-                        SPText *text = dynamic_cast<SPText *>(item);
-                        if (text) {
-                            TRACE(("text\n"));
-                            sp_text_render(text, ctx);
-                        } else {
-                            SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(item);
-                            if (flowtext) {
-                                TRACE(("flowtext\n"));
-                                sp_flowtext_render(flowtext, ctx);
-                            } else {
-                                SPImage *image = dynamic_cast<SPImage *>(item);
-                                if (image) {
-                                    TRACE(("image\n"));
-                                    sp_image_render(image, ctx);
-                                } else if (dynamic_cast<SPMarker *>(item)) {
-                                    // Marker contents shouldn't be rendered, even outside of <defs>.
-                                    return;
-                                } else {
-                                    SPGroup *group = dynamic_cast<SPGroup *>(item);
-                                    if (group) {
-                                        TRACE(("<g>\n"));
-                                        sp_group_render(group, ctx, origin, page);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    } else if (auto symbol = cast<SPSymbol>(item)) {
+        TRACE(("symbol\n"));
+        sp_symbol_render(symbol, ctx, origin, page);
+    } else if (auto anchor = cast<SPAnchor>(item)) {
+        TRACE(("<a>\n"));
+        sp_anchor_render(anchor, ctx);
+    } else if (auto shape = cast<SPShape>(item)) {
+        TRACE(("shape\n"));
+        sp_shape_render(shape, ctx, origin);
+    } else if (auto use = cast<SPUse>(item)) {
+        TRACE(("use begin---\n"));
+        sp_use_render(use, ctx, page);
+        TRACE(("---use end\n"));
+    } else if (auto text = cast<SPText>(item)) {
+        TRACE(("text\n"));
+        sp_text_render(text, ctx);
+    } else if (auto flowtext = cast<SPFlowtext>(item)) {
+        TRACE(("flowtext\n"));
+        sp_flowtext_render(flowtext, ctx);
+    } else if (auto image = cast<SPImage>(item)) {
+        TRACE(("image\n"));
+        sp_image_render(image, ctx);
+    } else if (is<SPMarker>(item)) {
+        // Marker contents shouldn't be rendered, even outside of <defs>.
+        return;
+    } else if (auto group = cast<SPGroup>(item)) {
+        TRACE(("<g>\n"));
+        sp_group_render(group, ctx, origin, page);
     }
 }
 
@@ -684,7 +659,7 @@ CairoRenderer::setStateForItem(CairoRenderContext *ctx, SPItem const *item)
     // This is so because we use the image's/(flow)text's transform for positioning
     // instead of explicitly specifying it and letting the renderer do the
     // transformation before rendering the item.
-    if (dynamic_cast<SPText const *>(item) || dynamic_cast<SPFlowtext const *>(item) || dynamic_cast<SPImage const *>(item)) {
+    if (is<SPText>(item) || is<SPFlowtext>(item) || is<SPImage>(item)) {
         state->parent_has_userspace = TRUE;
     }
     TRACE(("setStateForItem opacity: %f\n", state->opacity));
@@ -697,7 +672,7 @@ bool CairoRenderer::_shouldRasterize(CairoRenderContext *ctx, SPItem const *item
     // TODO: might apply to some degree to masks with filtered elements as well;
     //       we need to figure out where in the stack it would be safe to rasterize
     if (ctx->getFilterToBitmap() && !item->isInClipPath()) {
-        if (auto const *clone = dynamic_cast<SPUse const *>(item)) {
+        if (auto const *clone = cast<SPUse>(item)) {
             return clone->anyInChain([](SPItem const *i) { return i && i->isFiltered(); });
         } else {
             return item->isFiltered();
@@ -729,7 +704,7 @@ void CairoRenderer::renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *or
     CairoRenderState *state = ctx->getCurrentState();
     state->need_layer = ( state->mask || state->clip_path || state->opacity != 1.0 );
     SPStyle* style = item->style;
-    SPGroup * group = dynamic_cast<SPGroup *>(item);
+    auto group = cast<SPGroup>(item);
     bool blend = false;
     if (group && style->mix_blend_mode.set && style->mix_blend_mode.value != SP_CSS_BLEND_NORMAL) {
         state->need_layer = true;
@@ -928,7 +903,7 @@ CairoRenderer::renderPage(CairoRenderContext *ctx, SPDocument *doc, SPPage *page
 
         // This process does not return layers, so those affines are added manually.
         for (auto anc : child->ancestorList(true)) {
-            if (auto layer = dynamic_cast<SPItem *>(anc)) {
+            if (auto layer = cast<SPItem>(anc)) {
                 if (layer != child && layer != root) {
                     ctx->transform(layer->transform);
                 }
@@ -969,7 +944,7 @@ CairoRenderer::applyClipPath(CairoRenderContext *ctx, SPClipPath const *cp)
     TRACE(("BEGIN clip\n"));
     SPObject const *co = cp;
     for (auto& child: co->children) {
-        SPItem const *item = dynamic_cast<SPItem const *>(&child);
+        SPItem const *item = cast<SPItem>(&child);
         if (item) {
 
             // combine transform of the item in clippath and the item using clippath:
@@ -1027,7 +1002,7 @@ CairoRenderer::applyMask(CairoRenderContext *ctx, SPMask const *mask)
     TRACE(("BEGIN mask\n"));
     SPObject const *co = mask;
     for (auto& child: co->children) {
-        SPItem const *item = dynamic_cast<SPItem const *>(&child);
+        SPItem const *item = cast<SPItem>(&child);
         if (item) {
             // TODO fix const correctness:
             renderItem(ctx, const_cast<SPItem*>(item));

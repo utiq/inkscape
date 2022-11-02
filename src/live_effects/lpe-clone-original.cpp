@@ -144,8 +144,8 @@ LPECloneOriginal::cloneAttributes(SPObject *origin, SPObject *dest, const gchar 
         return;
     }
     bool root = dest == sp_lpe_item;
-    SPGroup * group_origin = dynamic_cast<SPGroup *>(origin);
-    SPGroup * group_dest = dynamic_cast<SPGroup *>(dest);
+    auto group_origin = cast<SPGroup>(origin);
+    auto group_dest = cast<SPGroup>(dest);
     if (group_origin && group_dest && group_origin->getItemCount() == group_dest->getItemCount()) {
         std::vector< SPObject * > childs = group_origin->childList(true);
         size_t index = 0;
@@ -302,7 +302,7 @@ LPECloneOriginal::doBeforeEffect (SPLPEItem const* lpeitem){
         if (lpeitems.size()) {
             sp_lpe_item = lpeitems[0];
         }
-        SPItem *orig = dynamic_cast<SPItem *>(linkeditem.getObject());
+        auto orig = cast<SPItem>(linkeditem.getObject());
         if(!orig) {
             return;
         }
@@ -369,7 +369,7 @@ void LPECloneOriginal::doOnRemove(SPLPEItem const *lpeitem)
                     if (desktop) {
                         desktop->getSelection()->clone();
                         SPUse *clone;
-                        if (( clone = dynamic_cast<SPUse*>(desktop->getSelection()->singleItem()))) {
+                        if (( clone = cast<SPUse>(desktop->getSelection()->singleItem()))) {
                             gchar *href_str = g_strdup_printf("#%s", owner->getAttribute("id"));
                             clone->setAttribute("xlink:href", href_str);
                             clone->setAttribute("transform", Util::to_cstr(transform_copy));

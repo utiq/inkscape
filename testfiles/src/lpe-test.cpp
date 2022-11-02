@@ -153,13 +153,13 @@ TEST_F(LPETest, Bool_canBeApplyedToNonSiblingPaths)
     SPDocument *doc = SPDocument::createNewDocFromMem(svg.c_str(), svg.size(), true);
     doc->ensureUpToDate();
 
-    auto lpe_item = dynamic_cast<SPLPEItem *>(doc->getObjectById("rect1"));
+    auto lpe_item = cast<SPLPEItem>(doc->getObjectById("rect1"));
     ASSERT_TRUE(lpe_item != nullptr);
 
     auto lpe_bool_op_effect = dynamic_cast<LPEBool *>(lpe_item->getFirstPathEffectOfType(EffectType::BOOL_OP));
     ASSERT_TRUE(lpe_bool_op_effect != nullptr);
 
     auto operand_path = lpe_bool_op_effect->getParameter("operand-path")->param_getSVGValue();
-    auto circle = dynamic_cast<SPGenericEllipse *>(doc->getObjectById(operand_path.substr(1)));
+    auto circle = cast<SPGenericEllipse>(doc->getObjectById(operand_path.substr(1)));
     ASSERT_TRUE(circle != nullptr);
 }

@@ -532,7 +532,7 @@ MarkerComboBox::init_combo()
  */
 void MarkerComboBox::set_current(SPObject *marker)
 {
-    auto sp_marker = dynamic_cast<SPMarker*>(marker);
+    auto sp_marker = cast<SPMarker>(marker);
 
     bool reselect = sp_marker != get_current();
 
@@ -573,7 +573,7 @@ std::string MarkerComboBox::get_active_marker_uri()
         bool stockid = item->stock;
 
         std::string markurn = stockid ? "urn:inkscape:marker:" + item->id : item->id;
-        auto mark = dynamic_cast<SPMarker*>(get_stock_item(markurn.c_str(), stockid));
+        auto mark = cast<SPMarker>(get_stock_item(markurn.c_str(), stockid));
 
         if (mark) {
             Inkscape::XML::Node* repr = mark->getRepr();
@@ -869,7 +869,7 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
         return g_bad_marker;
     }
 
-    if (auto measure = dynamic_cast<SPItem*>(_sandbox->getObjectById("measure-marker"))) {
+    if (auto measure = cast<SPItem>(_sandbox->getObjectById("measure-marker"))) {
         if (auto box = measure->documentVisualBounds()) {
             // check size of the marker applied to a path with stroke of 1px
             auto size = std::max(box->width(), box->height());

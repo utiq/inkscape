@@ -76,14 +76,14 @@ void LayerManager::_setDocument(SPDesktop *, SPDocument *document) {
 
 void LayerManager::_layer_activated(SPObject *layer)
 {
-    if (auto group = dynamic_cast<SPGroup *>(layer)) {
+    if (auto group = cast<SPGroup>(layer)) {
         group->setLayerDisplayMode(_desktop->dkey, SPGroup::LAYER);
     }
 }
 
 void LayerManager::_layer_deactivated(SPObject *layer)
 {
-    if (auto group = dynamic_cast<SPGroup *>(layer)) {
+    if (auto group = cast<SPGroup>(layer)) {
         group->setLayerDisplayMode(_desktop->dkey, SPGroup::GROUP);
     }
 }
@@ -93,7 +93,7 @@ void LayerManager::_layer_deactivated(SPObject *layer)
  */
 SPGroup *LayerManager::currentRoot() const
 {
-    return dynamic_cast<SPGroup *>(_layer_hierarchy->top());
+    return cast<SPGroup>(_layer_hierarchy->top());
 }
 
 /**
@@ -101,7 +101,7 @@ SPGroup *LayerManager::currentRoot() const
  */
 SPGroup *LayerManager::currentLayer() const
 {
-    return dynamic_cast<SPGroup *>(_layer_hierarchy->bottom());
+    return cast<SPGroup>(_layer_hierarchy->bottom());
 }
 
 /**
@@ -237,7 +237,7 @@ void LayerManager::_rebuild() {
             if (root->isAncestorOf(layer)) {
                 needsAdd = true;
                 for (SPObject* curr = layer; curr && (curr != root) && needsAdd; curr = curr->parent) {
-                    if (auto group = dynamic_cast<SPGroup *>(curr)) {
+                    if (auto group = cast<SPGroup>(curr)) {
                         if (group->isLayer()) {
                             // If we have a layer-group as the one or a parent, ensure it is listed as a valid layer.
                             needsAdd &= ( std::find(layers.begin(),layers.end(),curr) != layers.end() );
@@ -295,7 +295,7 @@ static bool is_layer(SPObject &object) {
 
 void LayerManager::_selectedLayerChanged(SPObject *top, SPObject *bottom)
 {
-    if (auto group = dynamic_cast<SPGroup *>(bottom)) {
+    if (auto group = cast<SPGroup>(bottom)) {
         _layer_changed_signal.emit(group);
     }
 }
@@ -549,7 +549,7 @@ SPObject *LayerManager::layerForObject(SPObject *object) {
  */
 bool LayerManager::isLayer(SPObject *object) const
 {
-    if (auto group = dynamic_cast<SPGroup *>(object)) {
+    if (auto group = cast<SPGroup>(object)) {
         return group->effectiveLayerMode(_desktop->dkey) == SPGroup::LAYER;
     }
     return false;
@@ -560,7 +560,7 @@ bool LayerManager::isLayer(SPObject *object) const
  */
 SPGroup *LayerManager::asLayer(SPObject *object)
 {
-    if (auto group = dynamic_cast<SPGroup *>(object)) {
+    if (auto group = cast<SPGroup>(object)) {
         return group->isLayer() ? group : nullptr;
     }
     return nullptr;

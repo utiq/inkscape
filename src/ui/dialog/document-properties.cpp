@@ -1173,7 +1173,7 @@ void DocumentProperties::removeExternalScript(){
     std::vector<SPObject *> current = document->getResourceList( "script" );
     for (auto obj : current) {
         if (obj) {
-            SPScript* script = dynamic_cast<SPScript *>(obj);
+            auto script = cast<SPScript>(obj);
             if (script && (name == script->xlinkhref)) {
 
                 //XML Tree being used directly here while it shouldn't be.
@@ -1328,7 +1328,7 @@ void DocumentProperties::populate_script_lists(){
         _scripts_observer.set(obj->parent);
     }
     for (auto obj : current) {
-        SPScript* script = dynamic_cast<SPScript *>(obj);
+        auto script = cast<SPScript>(obj);
         g_assert(script != nullptr);
         if (script->xlinkhref)
         {

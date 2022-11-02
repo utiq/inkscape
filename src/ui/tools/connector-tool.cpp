@@ -1046,7 +1046,7 @@ void ConnectorTool::_activeShapeAddKnot(SPItem* item, SPItem* subitem)
     knot->owner = item;
 
     if (subitem) {
-        SPUse *use = dynamic_cast<SPUse *>(item);
+        auto use = cast<SPUse>(item);
         g_assert(use != nullptr);
         knot->sub_owner = subitem;
         knot->setShape(Inkscape::CANVAS_ITEM_CTRL_SHAPE_SQUARE);
@@ -1115,7 +1115,7 @@ void ConnectorTool::_setActiveShape(SPItem *item)
             }
         }
         // Special connector points in a symbol
-        if (auto use = dynamic_cast<SPUse *>(item)) {
+        if (auto use = cast<SPUse>(item)) {
             SPItem *orig = use->root();
             //SPItem *orig = use->get_original();
             for (auto& child: orig->children) {
@@ -1242,7 +1242,7 @@ void cc_create_connection_point(ConnectorTool* cc)
 
 static bool cc_item_is_shape(SPItem *item)
 {
-    if (auto path = dynamic_cast<SPPath const *>(item)) {
+    if (auto path = cast<SPPath>(item)) {
         SPCurve const *curve = path->curve();
         if ( curve && !(curve->is_closed()) ) {
             // Open paths are connectors.
@@ -1261,9 +1261,9 @@ static bool cc_item_is_shape(SPItem *item)
 
 bool cc_item_is_connector(SPItem *item)
 {
-    if (is<SPPath>(item)) {
-        bool closed = cast<SPPath>(item)->curveForEdit()->is_closed();
-        if (cast<SPPath>(item)->connEndPair.isAutoRoutingConn() && !closed) {
+    if (auto path = cast<SPPath>(item)) {
+        bool closed = path->curveForEdit()->is_closed();
+        if (path->connEndPair.isAutoRoutingConn() && !closed) {
             // To be considered a connector, an object must be a non-closed
             // path that is marked with a "inkscape:connector-type" attribute.
             return true;

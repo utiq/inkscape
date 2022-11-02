@@ -125,7 +125,7 @@ std::pair<std::vector<SPItem*>, Glib::ustring> getFontReplacedItems(SPDocument *
             family = te_get_layout(item)->getFontFamily(0);
             setFontSpans.insert(family);
         }
-        else if (auto textpath = dynamic_cast<SPTextPath const*>(item)) {
+        else if (auto textpath = cast<SPTextPath>(item)) {
             if (textpath->originalPath) {
                 family = cast<SPText>(item->parent)->layout.getFontFamily(0);
                 setFontSpans.insert(family);

@@ -99,7 +99,7 @@ void Inkscape::AlignmentSnapper::_collectBBoxPoints(bool const &first_point) con
         SPItem *root_item = candidate.item; 
 
         // get the root item in case we have a duplicate at hand
-        SPUse *use = dynamic_cast<SPUse *>(candidate.item);
+        auto use = cast<SPUse>(candidate.item);
         if (use) {
             root_item = use->root();
         }

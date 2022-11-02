@@ -102,7 +102,7 @@ void SatelliteArrayParam::start_listening()
     quit_listening();
     for (auto ref : _vector) {
         if (ref && ref->isAttached()) {
-            SPItem *item = dynamic_cast<SPItem *>(ref->getObject());
+            auto item = cast<SPItem>(ref->getObject());
             if (item) {
                 linked_connections.emplace_back(item->connectRelease(
                     sigc::hide(sigc::mem_fun(*this, &SatelliteArrayParam::updatesignal))));
@@ -303,7 +303,7 @@ void SatelliteArrayParam::on_link_button_click()
     }
     auto hreflist = param_effect->getLPEObj()->hrefList;
     if (hreflist.size()) {
-        SPLPEItem *sp_lpe_item = dynamic_cast<SPLPEItem *>(*hreflist.begin());
+        auto sp_lpe_item = cast<SPLPEItem>(*hreflist.begin());
         if (sp_lpe_item) {
             for (auto itemid : itemsid) {
                 SPObject *added = param_effect->getSPDoc()->getObjectById(itemid);

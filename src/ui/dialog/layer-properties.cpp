@@ -355,8 +355,8 @@ void LayerPropertiesDialog::_addLayer(SPObject* layer, Gtk::TreeModel::Row* pare
         Gtk::TreeModel::Row row = *iter;
         row[_model->_colObject] = child;
         row[_model->_colLabel] = child->label() ? child->label() : child->getId();
-        row[_model->_colVisible] = is<SPItem>(child) ? !cast<SPItem>(child)->isHidden() : false;
-        row[_model->_colLocked] = is<SPItem>(child) ? cast<SPItem>(child)->isLocked() : false;
+        row[_model->_colVisible] = is<SPItem>(child) ? !cast_unsafe<SPItem>(child)->isHidden() : false;
+        row[_model->_colLocked] = is<SPItem>(child) ? cast_unsafe<SPItem>(child)->isLocked() : false;
 
         if (target && child == target) {
             _tree.expand_to_path(_store->get_path(iter));

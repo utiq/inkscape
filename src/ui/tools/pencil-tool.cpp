@@ -705,7 +705,7 @@ void PencilTool::addPowerStrokePencil()
             Inkscape::GC::release(pp);
 
             auto powerpreview = cast<SPShape>(currentLayer()->appendChildRepr(pp));
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(powerpreview);
+            auto lpeitem = powerpreview;
             if (!lpeitem) {
                 return;
             }

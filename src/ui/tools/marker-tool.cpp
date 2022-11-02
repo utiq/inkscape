@@ -80,14 +80,14 @@ void MarkerTool::selection_changed(Inkscape::Selection *selection) {
         SPItem *item = *i;
 
         if(item) {
-            SPShape* shape = dynamic_cast<SPShape*>(item);
+            auto shape = cast<SPShape>(item);
 
             if(shape && shape->hasMarkers() && (editMarkerMode != -1)) {
                 SPObject *obj = shape->_marker[editMarkerMode];
 
                 if(obj) {
 
-                    SPMarker *sp_marker = dynamic_cast<SPMarker *>(obj);
+                    auto sp_marker = cast<SPMarker>(obj);
                     g_assert(sp_marker != nullptr);
 
                     sp_validate_marker(sp_marker, doc);
@@ -111,7 +111,7 @@ void MarkerTool::selection_changed(Inkscape::Selection *selection) {
                     }
 
                     auto si = std::make_unique<ShapeEditor>(_desktop, sr.edit_transform, sr.edit_rotation, editMarkerMode);
-                    si->set_item(dynamic_cast<SPItem *>(sr.object));
+                    si->set_item(cast<SPItem>(sr.object));
 
                     this->_shape_editors.insert({item, std::move(si)});
                     break;                     

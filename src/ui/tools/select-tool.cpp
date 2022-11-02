@@ -205,7 +205,7 @@ sp_select_context_up_one_layer(SPDesktop *desktop)
      */
     if (SPObject *const current_layer = desktop->layerManager().currentLayer()) {
         SPObject *const parent = current_layer->parent;
-        SPGroup *current_group = dynamic_cast<SPGroup *>(current_layer);
+        auto current_group = cast<SPGroup>(current_layer);
         if ( parent
              && ( parent->parent
                   || !( current_group
@@ -439,7 +439,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                 if (!selection->isEmpty()) {
                     SPItem *clicked_item = selection->items().front();
 
-                    if (dynamic_cast<SPGroup *>(clicked_item) && !dynamic_cast<SPBox3D *>(clicked_item)) { // enter group if it's not a 3D box
+                    if (is<SPGroup>(clicked_item) && !is<SPBox3D>(clicked_item)) { // enter group if it's not a 3D box
                         _desktop->layerManager().setCurrentLayer(clicked_item);
                         _desktop->getSelection()->clear();
                         this->dragging = false;
@@ -553,7 +553,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                             group_at_point = _desktop->getGroupAtPoint(Geom::Point(event->button.x, event->button.y));
 
                             {
-                                SPGroup *selGroup = dynamic_cast<SPGroup *>(selection->single());
+                                auto selGroup = cast<SPGroup>(selection->single());
                                 if (selGroup && (selGroup->layerMode() == SPGroup::LAYER)) {
                                     group_at_point = selGroup;
                                 }
@@ -640,7 +640,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                                 selection->toggle(this->item);
                             } else {
                                 SPObject* single = selection->single();
-                                SPGroup *singleGroup = dynamic_cast<SPGroup *>(single);
+                                auto singleGroup = cast<SPGroup>(single);
                                 // without shift, increase state (i.e. toggle scale/rotation handles)
                                 if (selection->includes(this->item)) {
                                     _seltrans->increaseState();
@@ -1038,8 +1038,8 @@ bool SelectTool::root_handler(GdkEvent* event) {
                     if (MOD__CTRL_ONLY(event)) {
                         if (selection->singleItem()) {
                             SPItem *clicked_item = selection->singleItem();
-                            SPGroup *clickedGroup = dynamic_cast<SPGroup *>(clicked_item);
-                            if ( (clickedGroup && (clickedGroup->layerMode() != SPGroup::LAYER)) || dynamic_cast<SPBox3D *>(clicked_item)) { // enter group or a 3D box
+                            auto clickedGroup = cast<SPGroup>(clicked_item);
+                            if ( (clickedGroup && (clickedGroup->layerMode() != SPGroup::LAYER)) || is<SPBox3D>(clicked_item)) { // enter group or a 3D box
                                 _desktop->layerManager().setCurrentLayer(clicked_item);
                                 _desktop->getSelection()->clear();
                             } else {

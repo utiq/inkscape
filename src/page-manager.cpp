@@ -108,7 +108,7 @@ void PageManager::reorderPage(Inkscape::XML::Node *child)
     auto nv = _document->getNamedView();
     pages.clear();
     for (auto &child : nv->children) {
-        if (auto page = dynamic_cast<SPPage *>(&child)) {
+        if (auto page = cast<SPPage>(&child)) {
             pages.push_back(page);
         }
     }
@@ -184,7 +184,7 @@ SPPage *PageManager::newPage(Geom::Rect rect, bool first_page)
     repr->setAttributeSvgDouble("width", rect.width());
     repr->setAttributeSvgDouble("height", rect.height());
     if (auto nv = _document->getNamedView()) {
-        if (auto page = dynamic_cast<SPPage *>(nv->appendChildRepr(repr))) {
+        if (auto page = cast<SPPage>(nv->appendChildRepr(repr))) {
             Inkscape::GC::release(repr);
             return page;
         }
@@ -231,14 +231,14 @@ SPPage *PageManager::newPage(SPPage *page)
 
     for (auto &item : page->getOverlappingItems()) {
         auto new_repr = item->getRepr()->duplicate(xml_root);
-        if (auto new_item = dynamic_cast<SPItem *>(sp_root->appendChildRepr(new_repr))) {
+        if (auto new_item = cast<SPItem>(sp_root->appendChildRepr(new_repr))) {
             Geom::Affine affine = Geom::Affine();
 
             // a. Add the object's original transform back in.
             affine *= item->transform;
 
             // b. apply parent transform (for layers that have been ignored by getOverlappingItems)
-            if (auto parent = dynamic_cast<SPItem *>(item->parent)) {
+            if (auto parent = cast<SPItem>(item->parent)) {
                 affine *= parent->i2doc_affine();
             }
 

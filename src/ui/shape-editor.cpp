@@ -142,7 +142,7 @@ void ShapeEditor::set_item(SPItem *item) {
             // only recreate knotholder if none is present
             this->knotholder = createKnotHolder(item, desktop, _edit_rotation, _edit_marker_mode);
         }
-        SPLPEItem *lpe = dynamic_cast<SPLPEItem *>(item);
+        auto lpe = cast<SPLPEItem>(item);
         if (!(lpe &&
             lpe->getCurrentLPE() &&
             lpe->getCurrentLPE()->isVisible() &&

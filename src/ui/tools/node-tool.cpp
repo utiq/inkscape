@@ -273,7 +273,7 @@ void sp_update_helperpath(SPDesktop *desktop)
     std::vector<SPItem *> vec(selection->items().begin(), selection->items().end());
     std::vector<std::pair<Geom::PathVector, Geom::Affine>> cs;
     for (auto item : vec) {
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+        auto lpeitem = cast<SPLPEItem>(item);
         if (lpeitem && lpeitem->hasPathEffectRecursive()) {
             Inkscape::LivePathEffect::Effect *lpe = lpeitem->getCurrentLPE();
             if (lpe && lpe->isVisible()/* && lpe->showOrigPath()*/) {
@@ -359,7 +359,7 @@ void gather_items(NodeTool *nt, SPItem *base, SPObject *obj, Inkscape::UI::Shape
         }
     } else if (is<SPItem>(obj)) {
         SPObject *object = obj;
-        SPItem *item = dynamic_cast<SPItem *>(obj);
+        auto item = cast<SPItem>(obj);
         ShapeRecord r;
         r.object = object;
         // TODO add support for objectBoundingBox
@@ -396,7 +396,7 @@ void NodeTool::selection_changed(Inkscape::Selection *sel) {
     // needs to be rethought
     for (auto i = this->_shape_editors.begin(); i != this->_shape_editors.end();) {
         ShapeRecord s;
-        s.object = dynamic_cast<SPObject *>(i->first);
+        s.object = i->first;
 
         if (shapes.find(s) == shapes.end()) {
             this->_shape_editors.erase(i++);
@@ -511,7 +511,7 @@ bool NodeTool::root_handler(GdkEvent* event) {
                 this->flashed_item = nullptr;
             }
 
-            auto shape = dynamic_cast<SPShape const *>(over_item);
+            auto shape = cast<SPShape>(over_item);
             if (!shape) {
                 break; // for now, handle only shapes
             }

@@ -114,7 +114,7 @@ void PathParam::reload() {
     start_listening(getObject());
     connect_selection_changed();
     SPItem *item = nullptr;
-    if (( item = dynamic_cast<SPItem *>(getObject()) )) {
+    if (( item = cast<SPItem>(getObject()) )) {
         item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     }
 }
@@ -123,7 +123,7 @@ Geom::Affine
 PathParam::get_relative_affine() {
     Geom::Affine affine = Geom::identity();
     SPItem *item = nullptr;
-    if (( item = dynamic_cast<SPItem *>(getObject()) )) {
+    if (( item = cast<SPItem>(getObject()) )) {
         std::vector<SPLPEItem *> lpeitems = param_effect->getCurrrentLPEItems();
         if (lpeitems.size() == 1) {
             param_effect->sp_lpe_item = lpeitems[0];
@@ -336,7 +336,7 @@ PathParam::param_editOncanvas(SPItem *item, SPDesktop * dt)
     r.role = SHAPE_ROLE_LPE_PARAM;
     r.edit_transform = item->i2dt_affine(); // TODO is it right?
     if (!href) {
-        r.object = dynamic_cast<SPObject *>(param_effect->getLPEObj());
+        r.object = param_effect->getLPEObj();
         r.lpe_key = param_key;
         Geom::PathVector stored_pv =  _pathvector;
         if (_pathvector.empty()) {
@@ -523,7 +523,7 @@ PathParam::linked_modified_callback(SPObject *linked_obj, guint flags)
                  SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
     {
         std::optional<SPCurve> curve;
-        if (auto shape = dynamic_cast<SPShape const *>(linked_obj)) {
+        if (auto shape = cast<SPShape>(linked_obj)) {
             if (_from_original_d) {
                 curve = SPCurve::ptr_to_opt(shape->curveForEdit());
             } else {
@@ -531,7 +531,7 @@ PathParam::linked_modified_callback(SPObject *linked_obj, guint flags)
             }
         }
 
-        SPText *text = dynamic_cast<SPText *>(linked_obj);
+        auto text = cast<SPText>(linked_obj);
         if (text) {
             bool hidden = text->isHidden();
             if (hidden) {

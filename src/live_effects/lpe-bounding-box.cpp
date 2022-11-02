@@ -50,7 +50,7 @@ LPEBoundingBox::doBeforeEffect (SPLPEItem const* lpeitem)
         linked_path.start_listening(linked_path.getObject());
         linked_path.connect_selection_changed();
         SPItem * item = nullptr;
-        if (( item = dynamic_cast<SPItem *>(linked_path.getObject()) )) {
+        if (( item = cast<SPItem>(linked_path.getObject()) )) {
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }

@@ -212,7 +212,7 @@ std::vector<SPObject *> BooleanBuilder::shape_commit(bool all)
             g_warning("Can't generate itemless object in boolean-builder.");
             continue;
         }
-        auto parent = dynamic_cast<SPItem *>(item->parent);
+        auto parent = cast<SPItem>(item->parent);
 
         Inkscape::XML::Node *repr = doc->getReprDoc()->createElement("svg:path");
         repr->setAttribute("d", sp_svg_write_path(subitem->get_pathv() * parent->dt2i_affine()));

@@ -41,7 +41,7 @@ void anchor_open_link(InkscapeApplication* app)
     if (window) {
         auto selection = app->get_active_selection();
         for (auto item : selection->items()) {
-            auto anchor = dynamic_cast<SPAnchor *>(item);
+            auto anchor = cast<SPAnchor>(item);
             if (anchor) {
                 const char* href = anchor->href;
                 if (href) {

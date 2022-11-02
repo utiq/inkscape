@@ -909,7 +909,7 @@ void MeasureTool::setLabelText(Glib::ustring const &value, Geom::Point pos, doub
     rtspan->addChild(rstring, nullptr);
     Inkscape::GC::release(rstring);
     auto layer = _desktop->layerManager().currentLayer();
-    auto text_item = dynamic_cast<SPText*>(layer->appendChildRepr(rtext));
+    auto text_item = cast<SPText>(layer->appendChildRepr(rtext));
     Inkscape::GC::release(rtext);
     text_item->rebuildLayout();
     text_item->updateRepr();
@@ -1115,7 +1115,7 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
             item_x      = Quantity::convert(bbox->left(), "px", unit_name);
             item_y      = Quantity::convert(bbox->top(), "px", unit_name);
 
-            if (auto shape = dynamic_cast<SPShape *>(over)) {
+            if (auto shape = cast<SPShape>(over)) {
                 auto pw = paths_to_pw(shape->curve()->get_pathvector());
                 item_length = Quantity::convert(Geom::length(pw * affine), "px", unit_name);
             }
@@ -1241,7 +1241,7 @@ void MeasureTool::showCanvasItems(bool to_guides, bool to_item, bool to_phantom,
             continue;
         }
         if (all_layers || _desktop->layerManager().layerForObject(item) == current_layer) {
-            if (auto shape = dynamic_cast<SPShape const *>(item)) {
+            if (auto shape = cast<SPShape>(item)) {
                 calculate_intersections(_desktop, item, lineseg, *shape->curve(), intersection_times);
             } else {
                 if (is<SPText>(item) || is<SPFlowtext>(item)) {

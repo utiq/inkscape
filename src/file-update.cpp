@@ -555,12 +555,12 @@ void sp_file_convert_dpi(SPDocument *doc)
 
     // Fix guides and grids and perspective
     for (SPObject *child = root->firstChild(); child; child = child->getNext()) {
-        SPNamedView *nv = dynamic_cast<SPNamedView *>(child);
+        auto nv = cast<SPNamedView>(child);
         if (nv) {
             if (need_fix_guides) {
                 // std::cout << "Fixing guides" << std::endl;
                 for (SPObject *child2 = nv->firstChild(); child2; child2 = child2->getNext()) {
-                    SPGuide *gd = dynamic_cast<SPGuide *>(child2);
+                    auto gd = cast<SPGuide>(child2);
                     if (gd) {
                         gd->moveto(gd->getPoint() / ratio, true);
                     }
@@ -601,10 +601,10 @@ void sp_file_convert_dpi(SPDocument *doc)
             }
         } // If SPNamedView
 
-        SPDefs *defs = dynamic_cast<SPDefs *>(child);
+        auto defs = cast<SPDefs>(child);
         if (defs && need_fix_box3d) {
             for (SPObject *child = defs->firstChild(); child; child = child->getNext()) {
-                Persp3D *persp3d = dynamic_cast<Persp3D *>(child);
+                auto persp3d = cast<Persp3D>(child);
                 if (persp3d) {
                     std::vector<Glib::ustring> tokens;
 
@@ -703,7 +703,7 @@ void sp_file_fix_lpe(SPDocument *doc)
     // need document insensitive to avoid problems on last undo
     DocumentUndo::ScopedInsensitive _no_undo(doc);
     for (auto &obj : doc->getObjectsByElement("path-effect", true)) {
-        LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(obj);
+        auto lpeobj = cast<LivePathEffectObject>(obj);
         if (lpeobj) {
             auto *lpe = lpeobj->get_lpe();
             if (lpe) {

@@ -158,17 +158,17 @@ LPESlice::centerHoriz(){
 
 bool sp_has_path_data(SPItem *item, bool originald) 
 {
-    SPGroup *group = dynamic_cast<SPGroup *>(item);
+    auto group = cast<SPGroup>(item);
     if (group) {
         std::vector<SPObject *> childs = group->childList(true);
         for (auto &child : childs) {
-            SPItem *item = dynamic_cast<SPItem *>(child);
+            auto item = cast<SPItem>(child);
             if (sp_has_path_data(item, originald)) {
                 return true;
             }
         }
     }
-    SPShape *shape = dynamic_cast<SPShape *>(item);
+    auto shape = cast<SPShape>(item);
     if (shape) {
         SPCurve const *c = shape->curve();
         if (c && !c->is_empty()) {
@@ -205,16 +205,16 @@ LPESlice::originalDtoD(SPShape const *shape, SPCurve *curve)
 void
 LPESlice::originalDtoD(SPItem *item)
 {
-    SPGroup *group = dynamic_cast<SPGroup *>(item);
+    auto group = cast<SPGroup>(item);
     if (group) {
         std::vector<SPObject *> childs = group->childList(true);
         for (auto &child : childs) {
-            SPItem *item = dynamic_cast<SPItem *>(child);
+            auto item = cast<SPItem>(child);
             originalDtoD(item);
         }
         return;
     }
-    SPShape *shape = dynamic_cast<SPShape *>(item);
+    auto shape = cast<SPShape>(item);
     if (shape) {
         SPCurve const *c = shape->curveBeforeLPE();
         if (c && !c->is_empty()) {
@@ -267,7 +267,7 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
             for (auto & iter : lpesatellites.data()) {
                 SPObject *elemref;
                 if (iter && iter->isAttached() && (elemref = iter->getObject())) {
-                    if (auto *splpeitem = dynamic_cast<SPLPEItem *>(elemref)) {
+                    if (auto *splpeitem = cast<SPLPEItem>(elemref)) {
                         splpeitem->setHidden(true);
                     }
                 }
@@ -300,7 +300,7 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
         for (auto & iter : lpesatellites.data()) {
             SPObject *elemref;
             if (iter && iter->isAttached() && (elemref = iter->getObject())) {
-                SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(elemref);
+                auto splpeitem = cast<SPLPEItem>(elemref);
                 if (splpeitem || lpeitem->isHidden()) {
                     if (!maindata || lpeitem->isHidden()) {
                         splpeitem->setHidden(true);
@@ -323,8 +323,8 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
             sp_lpe_item_update_patheffect(sp_lpe_item, false, false);
             for (auto const &link : prevslice->lpesatellites.data()) {
                 if (link && link->isAttached()) {
-                    SPGroup *spgrp = dynamic_cast<SPGroup *>(link->getObject());
-                    SPShape *spit = dynamic_cast<SPShape *>(link->getObject());
+                    auto spgrp = cast<SPGroup>(link->getObject());
+                    auto spit = cast<SPShape>(link->getObject());
                     Glib::ustring transform = "";
                     Glib::ustring patheffects = "";
                     Geom::OptRect _gbbox = Geom::OptRect();
@@ -342,8 +342,8 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                     if (spit || spgrp) {
                         for (auto const &link2 : lpesatellites.data()) {
                             if (link2 && link2->isAttached()) {
-                                SPGroup *spgrp2 = dynamic_cast<SPGroup *>(link2->getObject());
-                                SPShape *spit2 = dynamic_cast<SPShape *>(link2->getObject());
+                                auto spgrp2 = cast<SPGroup>(link2->getObject());
+                                auto spit2 = cast<SPShape>(link2->getObject());
                                 if (spit && spit2) {
                                     Geom::OptRect _bbox = spit->curveForEdit()->get_pathvector().boundsFast();
                                     Geom::OptRect _bbox2 = spit2->curveForEdit()->get_pathvector().boundsFast();
@@ -380,7 +380,7 @@ LPESlice::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
     } else {
         for (auto const &itemrf : lpesatellites.data()) {
             if (itemrf && itemrf->isAttached()) {
-                SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(itemrf->getObject());
+                auto splpeitem = cast<SPLPEItem>(itemrf->getObject());
                 if (splpeitem) {
                     splpeitem->setHidden(true);
                     sp_lpe_item_update_patheffect(splpeitem, false, false);
@@ -417,7 +417,7 @@ LPESlice::split(SPItem* item, SPCurve *curve, std::vector<std::pair<Geom::Line, 
         elemref_id += "-";
         Glib::ustring clean_id = item->getId();
         //First check is to allow effects on "satellites"
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+        auto lpeitem = cast<SPLPEItem>(item);
         if (!lpeitem) {
             return splited;
         }
@@ -442,7 +442,7 @@ LPESlice::split(SPItem* item, SPCurve *curve, std::vector<std::pair<Geom::Line, 
             lpesatellites.link(elemref, objindex);
         }
     }
-    SPItem *other = dynamic_cast<SPItem *>(elemref);
+    auto other = cast<SPItem>(elemref);
     if (other) {
         objindex++;
         other->setHidden(false);
@@ -456,8 +456,8 @@ LPESlice::split(SPItem* item, SPCurve *curve, std::vector<std::pair<Geom::Line, 
             }
             splitindex++;
             if (nsplits > splitindex) {
-                SPLPEItem *splpeother = dynamic_cast<SPLPEItem *>(other);
-                SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(item);
+                auto splpeother = cast<SPLPEItem>(other);
+                auto splpeitem = cast<SPLPEItem>(item);
                 if (item == sp_lpe_item || !splpeitem->hasPathEffectOfType(SLICE)) {
                     split(item, curve, slicer, splitindex, creation);
                     if (other == sp_lpe_item || !splpeother->hasPathEffectOfType(SLICE)) {
@@ -498,7 +498,7 @@ LPESlice::createPathBase(SPObject *elemref) {
     }
     Inkscape::XML::Document *xml_doc = getSPDoc()->getReprDoc();
     Inkscape::XML::Node *prev = elemref->getRepr();
-    SPGroup *group = dynamic_cast<SPGroup *>(elemref);
+    auto group = cast<SPGroup>(elemref);
     if (group) {
         Inkscape::XML::Node *container = xml_doc->createElement("svg:g");
         container->setAttribute("transform", prev->attribute("transform"));
@@ -530,7 +530,7 @@ LPESlice::cloneD(SPObject *orig, SPObject *dest, bool is_original)
     if (!document) {
         return;
     }
-    SPItem *originalitem = dynamic_cast<SPItem *>(orig);
+    auto originalitem = cast<SPItem>(orig);
     if ( is<SPGroup>(orig) && is<SPGroup>(dest) && cast<SPGroup>(orig)->getItemCount() == cast<SPGroup>(dest)->getItemCount() ) {
         if (reset) {
             cloneStyle(orig, dest);
@@ -551,8 +551,7 @@ LPESlice::cloneD(SPObject *orig, SPObject *dest, bool is_original)
 
     auto shape = cast<SPShape>(orig);
     auto path = cast<SPPath>(dest);
-    SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(path);
-    if (path && shape && splpeitem) {
+    if (path && shape) {
         SPCurve const *c = shape->curve();
         if (c && !c->is_empty()) {
             auto str = sp_svg_write_path(c->get_pathvector());
@@ -599,7 +598,7 @@ LPESlice::splititem(SPItem* item, SPCurve * curve, std::pair<Geom::Line, size_t>
     Geom::Point s = line_separation.initialPoint();
     Geom::Point e = line_separation.finalPoint();
     Geom::Point center = Geom::middle_point(s, e);
-    SPGroup *group = dynamic_cast<SPGroup *>(item);
+    auto group = cast<SPGroup>(item);
     if (group) {
         Geom::Affine t = group->transform * tpass;
         if (top) {
@@ -607,7 +606,7 @@ LPESlice::splititem(SPItem* item, SPCurve * curve, std::pair<Geom::Line, size_t>
         }
         std::vector<SPObject *> childs = group->childList(true);
         for (auto &child : childs) {
-            SPItem *dest_child = dynamic_cast<SPItem *>(child);
+            auto dest_child = cast<SPItem>(child);
             // groups not need update curve
             splited = splititem(dest_child, nullptr, slicer, toggle, is_original, t, false) ? true : splited;
         }
@@ -616,8 +615,8 @@ LPESlice::splititem(SPItem* item, SPCurve * curve, std::pair<Geom::Line, size_t>
         }
         return splited;
     }
-    SPShape *shape = dynamic_cast<SPShape *>(item);
-    SPPath *path = dynamic_cast<SPPath *>(item);
+    auto shape = cast<SPShape>(item);
+    auto path = cast<SPPath>(item);
     if (shape) {
         SPCurve const *c;
         c = shape->curve();
@@ -626,7 +625,7 @@ LPESlice::splititem(SPItem* item, SPCurve * curve, std::pair<Geom::Line, size_t>
             sp_flatten(original_pathv, GetFillTyp(shape));
             Geom::PathVector path_out;
             Geom::Affine t = shape->transform * tpass;
-            if (!dynamic_cast<SPGroup *>(sp_lpe_item)) {
+            if (!is<SPGroup>(sp_lpe_item)) {
                 t = Geom::identity();
             }
             for (auto & path_it : original_pathv) {
@@ -875,7 +874,7 @@ LPESlice::doOnVisibilityToggled(SPLPEItem const* /*lpeitem*/)
     if (!is_visible) {
         for (auto const &itemrf : lpesatellites.data()) {
             if (itemrf && itemrf->isAttached()) {
-                SPLPEItem *splpeitem = dynamic_cast<SPLPEItem *>(itemrf->getObject());
+                auto splpeitem = cast<SPLPEItem>(itemrf->getObject());
                 if (splpeitem) {
                     splpeitem->setHidden(true);
                     sp_lpe_item_update_patheffect(splpeitem, false, false);

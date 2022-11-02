@@ -315,7 +315,7 @@ void sp_inverse_powermask(Inkscape::Selection *sel) {
         }
         auto selList = sel->items();
         for(auto i = boost::rbegin(selList); i != boost::rend(selList); ++i) {
-            SPLPEItem* lpeitem = dynamic_cast<SPLPEItem*>(*i);
+            auto lpeitem = cast<SPLPEItem>(*i);
             if (lpeitem) {
                 SPMask *mask = lpeitem->getMaskObject();
                 if (mask) {
@@ -338,7 +338,7 @@ void sp_remove_powermask(Inkscape::Selection *sel) {
     if (!sel->isEmpty()) {
         auto selList = sel->items();
         for (auto i = boost::rbegin(selList); i != boost::rend(selList); ++i) {
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(*i);
+            auto lpeitem = cast<SPLPEItem>(*i);
             if (lpeitem) {
                 if (lpeitem->hasPathEffect() && lpeitem->pathEffectsEnabled()) {
                     PathEffectList path_effect_list(*lpeitem->path_effect_list);

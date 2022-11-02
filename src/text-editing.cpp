@@ -408,12 +408,12 @@ Inkscape::Text::Layout::iterator sp_te_insert_line (SPItem *item, Inkscape::Text
     // If this is plain SVG 1.1 text object without a tspan with sodipodi:role="line", we need
     // to wrap it or our custom line breaking code won't work!
     bool need_to_wrap = false;
-    SPText* text_object = dynamic_cast<SPText *>(item);
+    auto text_object = cast<SPText>(item);
     if (text_object && !text_object->has_shape_inside() && !text_object->has_inline_size()) {
 
         need_to_wrap = true;
         for (auto child : item->childList(false)) {
-            auto tspan = dynamic_cast<SPTSpan *>(child);
+            auto tspan = cast<SPTSpan>(child);
             if (tspan && tspan->role == SP_TSPAN_ROLE_LINE) {
                 // Already wrapped
                 need_to_wrap = false;
@@ -1008,7 +1008,7 @@ sp_te_set_repr_text_multiline(SPItem *text, gchar const *str)
         repr->addChild(rstr, nullptr);
         Inkscape::GC::release(rstr);
     } else {
-        SPText* sptext = dynamic_cast<SPText *>(text);
+        auto sptext = cast<SPText>(text);
         if (sptext && (sptext->has_inline_size() || sptext->has_shape_inside())) {
             // Do nothing... we respect newlines (and assume CSS already set to do so).
             Inkscape::XML::Node *rstr = xml_doc->createTextNode(content);
@@ -1654,7 +1654,7 @@ static bool tidy_operator_empty_spans(SPObject **item, bool /*has_text_decoratio
     bool result = false;
     if ( !(*item)->hasChildren()
          && !is_line_break_object(*item)
-         && !(is<SPString>(*item) && !cast<SPString>(*item)->string.empty())
+         && !(is<SPString>(*item) && !cast_unsafe<SPString>(*item)->string.empty())
         ) {
         SPObject *next = (*item)->getNext();
         (*item)->deleteObject();
@@ -2160,7 +2160,7 @@ bool has_visible_text(SPObject const *obj)
 {
     bool hasVisible = false;
 
-    if (is<SPString>(obj) && !cast<SPString>(obj)->string.empty()) {
+    if (is<SPString>(obj) && !cast_unsafe<SPString>(obj)->string.empty()) {
         hasVisible = true; // maybe we should also check that it's not all whitespace?
     } else if (is_part_of_text_subtree(obj)) {
         for (auto& child: obj->children) {

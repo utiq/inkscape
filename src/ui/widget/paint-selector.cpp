@@ -1149,7 +1149,7 @@ SPPattern* PaintSelector::getPattern() {
         pat_obj = doc->getObjectById(patid);
     }
 
-    return dynamic_cast<SPPattern*>(pat_obj);
+    return cast<SPPattern>(pat_obj);
 }
 
 void PaintSelector::set_mode_swatch(PaintSelector::Mode mode)

@@ -42,11 +42,11 @@ GroupBBoxEffect::clip_mask_bbox(SPLPEItem *item, Geom::Affine transform)
     if(mask_path) {
         bbox.unionWith(mask_path->visualBounds(affine));
     }
-    SPGroup * group = dynamic_cast<SPGroup *>(item);
+    auto group = cast<SPGroup>(item);
     if (group) {
         std::vector<SPItem*> item_list = group->item_list();
         for (auto iter : item_list) {
-            SPLPEItem * subitem = dynamic_cast<SPLPEItem *>(iter);
+            auto subitem = cast<SPLPEItem>(iter);
             if (subitem) {
                 bbox.unionWith(clip_mask_bbox(subitem, affine));
             }

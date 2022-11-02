@@ -133,7 +133,7 @@ void SPSymbol::unSymbol()
     // group that only adds a transform to the symbol content).
     if( children.size() == 1 ) {
         SPObject *object = children[0];
-        if ( cast<SPGroup>( object ) ) {
+        if (is<SPGroup>( object ) ) {
             if( object->getAttribute("style") == nullptr ||
                 object->getAttribute("class") == nullptr ) {
 

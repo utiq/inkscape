@@ -174,7 +174,7 @@ void SatelliteParam::start_listening(SPObject *to)
     }
     quit_listening();
     linked_changed_connection = lperef->changedSignal().connect(sigc::mem_fun(*this, &SatelliteParam::linked_changed));
-    SPItem *item = dynamic_cast<SPItem *>(to);
+    auto item = cast<SPItem>(to);
     if (item) {
         linked_released_connection = item->connectRelease(sigc::mem_fun(*this, &SatelliteParam::linked_released));
         linked_modified_connection = item->connectModified(sigc::mem_fun(*this, &SatelliteParam::linked_modified));

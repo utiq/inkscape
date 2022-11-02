@@ -54,7 +54,7 @@ void image_edit(InkscapeApplication *app)
     auto document = selection->document();
 
     for (auto item : selection->items()) {
-        auto image = dynamic_cast<SPImage *>(item);
+        auto image = cast<SPImage>(item);
         if (image) {
 
             Inkscape::XML::Node *node = item->getRepr();
@@ -152,7 +152,7 @@ void image_crop(InkscapeApplication *app)
     Geom::OptRect target;
     SPRect *rect = nullptr;
     for (auto item : selection->items()) {
-        rect = dynamic_cast<SPRect *>(item);
+        rect = cast<SPRect>(item);
         if (rect) {
             target = rect->geometricBounds(rect->i2doc_affine());
             break;
@@ -162,7 +162,7 @@ void image_crop(InkscapeApplication *app)
     // For each selected item, we loop through and attempt to crop the
     // raster image to the geometric bounds of the clipping object.
     for (auto item : selection->items()) {
-        if (auto image = dynamic_cast<SPImage *>(item)) {
+        if (auto image = cast<SPImage>(item)) {
             bytes -= std::strlen(image->href);
             Geom::OptRect area;
             if (target) {

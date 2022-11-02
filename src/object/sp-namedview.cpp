@@ -153,7 +153,7 @@ void SPNamedView::build(SPDocument *document, Inkscape::XML::Node *repr) {
         if (auto page = cast<SPPage>(&child)) {
             document->getPageManager().addPage(page);
         }
-        if (auto grid = dynamic_cast<SPGrid *>(&child)) {
+        if (auto grid = cast<SPGrid>(&child)) {
             grids.emplace_back(grid);
         }
     }
@@ -434,7 +434,7 @@ void SPNamedView::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *r
     if (!no)
         return;
 
-    if (auto grid = dynamic_cast<SPGrid *>(no)) {
+    if (auto grid = cast<SPGrid>(no)) {
         grids.emplace_back(grid);
         for (auto view : views) {
             grid->show(view);

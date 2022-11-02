@@ -92,7 +92,7 @@ LPETransform2Pts::doOnApply(SPLPEItem const* lpeitem)
     point_a = Point(boundingbox_X.min(), boundingbox_Y.middle());
     point_b = Point(boundingbox_X.max(), boundingbox_Y.middle());
     SPLPEItem * splpeitem = const_cast<SPLPEItem *>(lpeitem);
-    SPPath *sp_path = dynamic_cast<SPPath *>(splpeitem);
+    auto sp_path = cast<SPPath>(splpeitem);
     if (sp_path) {
         pathvector = sp_path->curveForEdit()->get_pathvector();
     }
@@ -136,7 +136,7 @@ LPETransform2Pts::doBeforeEffect (SPLPEItem const* lpeitem)
     point_b = Point(boundingbox_X.max(), boundingbox_Y.middle());
 
     SPLPEItem * splpeitem = const_cast<SPLPEItem *>(lpeitem);
-    SPPath *sp_path = dynamic_cast<SPPath *>(splpeitem);
+    auto sp_path = cast<SPPath>(splpeitem);
     if (sp_path) {
         pathvector = sp_path->curveForEdit()->get_pathvector();
     }
@@ -192,7 +192,7 @@ void
 LPETransform2Pts::updateIndex()
 {
     SPLPEItem * splpeitem = const_cast<SPLPEItem *>(sp_lpe_item);
-    SPPath *sp_path = dynamic_cast<SPPath *>(splpeitem);
+    auto sp_path = cast<SPPath>(splpeitem);
     if (sp_path) {
         pathvector = sp_path->curveForEdit()->get_pathvector();
     }

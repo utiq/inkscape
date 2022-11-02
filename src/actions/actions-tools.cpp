@@ -171,26 +171,26 @@ open_tool_preferences(InkscapeWindow *win, Glib::ustring const &tool)
 void
 set_active_tool(InkscapeWindow *win, SPItem *item, Geom::Point const p)
 {
-    if (dynamic_cast<SPRect *>(item)) {
+    if (is<SPRect>(item)) {
         tool_switch("Rect", win);
-    } else if (dynamic_cast<SPGenericEllipse *>(item)) {
+    } else if (is<SPGenericEllipse>(item)) {
         tool_switch("Arc", win);
-    } else if (dynamic_cast<SPStar *>(item)) {
+    } else if (is<SPStar>(item)) {
         tool_switch("Star", win);
-    } else if (dynamic_cast<SPBox3D *>(item)) {
+    } else if (is<SPBox3D>(item)) {
         tool_switch("3DBox", win);
-    } else if (dynamic_cast<SPSpiral *>(item)) {
+    } else if (is<SPSpiral>(item)) {
         tool_switch("Spiral", win);
-    } else if (dynamic_cast<SPMarker *>(item)) {
+    } else if (is<SPMarker>(item)) {
         tool_switch("Marker", win);
-    } else if (dynamic_cast<SPPath *>(item)) {
+    } else if (is<SPPath>(item)) {
         if (Inkscape::UI::Tools::cc_item_is_connector(item)) {
             tool_switch("Connector", win);
         }
         else {
             tool_switch("Node", win);
         }
-    } else if (dynamic_cast<SPText *>(item) || dynamic_cast<SPFlowtext *>(item))  {
+    } else if (is<SPText>(item) || is<SPFlowtext>(item))  {
         tool_switch("Text", win);
         SPDesktop* dt = win->get_desktop();
         if (!dt) {
@@ -198,7 +198,7 @@ set_active_tool(InkscapeWindow *win, SPItem *item, Geom::Point const p)
             return;
         }
         sp_text_context_place_cursor_at (SP_TEXT_CONTEXT(dt->event_context), item, p);
-    } else if (dynamic_cast<SPOffset *>(item))  {
+    } else if (is<SPOffset>(item))  {
         tool_switch("Node", win);
     }
 }

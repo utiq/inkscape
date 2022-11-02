@@ -151,7 +151,7 @@ protected:
         }
         sp_file_fix_lpe(doc);
         doc->ensureUpToDate();
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(doc->getRoot());
+        auto lpeitem = doc->getRoot();
         sp_lpe_item_update_patheffect(lpeitem, true, true);
         // we need to double update because clippaths or mask
         if (doc->getObjectsByElement("clipPath").size() || doc->getObjectsByElement("mask").size()) {

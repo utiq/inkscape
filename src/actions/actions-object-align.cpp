@@ -159,10 +159,9 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
     std::size_t total = std::distance(list.begin(), list.end());
     std::vector<SPItem *> selected;
     std::vector<Inkscape::LivePathEffect::Effect *> bools;
-    for (auto itemlist = list.begin(); itemlist != list.end(); ++itemlist) {
-        SPItem *item = dynamic_cast<SPItem *>(*itemlist);
+    for (auto item : list) {
         if (total == 2) {
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+            auto lpeitem = cast<SPLPEItem>(item);
             if (lpeitem) {
                 for (auto lpe : lpeitem->getPathEffectsOfType(Inkscape::LivePathEffect::EffectType::BOOL_OP)) {
                     if (!g_strcmp0(lpe->getRepr()->attribute("is_visible"), "true")) {
@@ -431,7 +430,7 @@ object_distribute_text(const Glib::VariantBase& value, InkscapeApplication *app)
     Geom::Point b_max = Geom::Point (-HUGE_VAL, -HUGE_VAL);
 
     for (auto item : selection->items()) {
-        if (dynamic_cast<SPText *>(item) || dynamic_cast<SPFlowtext *>(item)) {
+        if (is<SPText>(item) || cast<SPFlowtext>(item)) {
             Inkscape::Text::Layout const *layout = te_get_layout(item);
             std::optional<Geom::Point> pt = layout->baselineAnchorPoint();
             if (pt) {
@@ -541,7 +540,7 @@ object_align_text(const Glib::VariantBase& value, InkscapeApplication *app)
 
     Geom::Point ref_point;
     if (focus) {
-        if (dynamic_cast<SPText *>(focus) || dynamic_cast<SPFlowtext *>(focus)) {
+        if (is<SPText>(focus) || cast<SPFlowtext>(focus)) {
             ref_point = *(te_get_layout(focus)->baselineAnchorPoint())*(focus->i2dt_affine());
         } else {
             ref_point = focus->desktopPreferredBounds()->min();
@@ -551,7 +550,7 @@ object_align_text(const Glib::VariantBase& value, InkscapeApplication *app)
     }
 
     for (auto item : selection->items()) {
-        if (dynamic_cast<SPText *>(item) || dynamic_cast<SPFlowtext *>(item)) {
+        if (is<SPText>(item) || cast<SPFlowtext>(item)) {
             Inkscape::Text::Layout const *layout = te_get_layout(item);
             std::optional<Geom::Point> pt = layout->baselineAnchorPoint();
             if (pt) {

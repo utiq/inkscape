@@ -63,11 +63,10 @@ LPEAttachPath::doBeforeEffect (SPLPEItem const* lpeitem)
         end_path.setUpdating(false);
         end_path.start_listening(end_path.getObject());
         end_path.connect_selection_changed();
-        SPItem * item = nullptr;
-        if (( item = dynamic_cast<SPItem *>(end_path.getObject()) )) {
+        if (auto item = end_path.getObject()) {
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
-        if (( item = dynamic_cast<SPItem *>(start_path.getObject()) )) {
+        if (auto item = start_path.getObject()) {
             item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
         }
     }

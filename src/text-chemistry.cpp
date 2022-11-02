@@ -94,7 +94,7 @@ text_put_on_path()
     // if a flowed text is selected, convert it to a regular text object
     if (is<SPFlowtext>(text)) {
 
-        if (!cast<SPFlowtext>(text)->layout.outputExists()) {
+        if (!cast_unsafe<SPFlowtext>(text)->layout.outputExists()) {
             desktop->getMessageStack()->
                 flash(Inkscape::WARNING_MESSAGE,
                       _("The flowed text(s) must be <b>visible</b> in order to be put on a path."));
@@ -121,7 +121,7 @@ text_put_on_path()
         text = new_item; // point to the new text
     }
 
-    if (auto textitem = dynamic_cast<SPText *>(text)) {
+    if (auto textitem = cast<SPText>(text)) {
         // Replace any new lines (including sodipodi:role="line") by spaces.
         textitem->remove_newlines();
     }
@@ -454,8 +454,8 @@ text_unflow ()
     auto items = selection->items();
     for (auto i : items) {
 
-        SPFlowtext *flowtext = dynamic_cast<SPFlowtext *>(i);
-        SPText *text = dynamic_cast<SPText *>(i);
+        auto flowtext = cast<SPFlowtext>(i);
+        auto text = cast<SPText>(i);
 
         if (flowtext) {
 
@@ -530,7 +530,7 @@ text_unflow ()
                 // We'll also remove temporarily 'sodipodi:role' (which shouldn't be
                 // necessary later).
                 for (auto j : text->childList(false)) {
-                    SPTSpan* tspan = dynamic_cast<SPTSpan *>(j);
+                    auto tspan = cast<SPTSpan>(j);
                     if (tspan) {
                         tspan->getRepr()->removeAttribute("x");
                         tspan->getRepr()->removeAttribute("y");
@@ -588,7 +588,7 @@ flowtext_to_text()
         if (!is<SPFlowtext>(item))
             continue;
 
-        if (!cast<SPFlowtext>(item)->layout.outputExists()) {
+        if (!cast_unsafe<SPFlowtext>(item)->layout.outputExists()) {
             ignored = true;
             continue;
         }

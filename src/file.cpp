@@ -943,7 +943,8 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
 
         // if we are pasting a clone to an already existing object, its
         // transform is relative to the document, not to its original (see ui/clipboard.cpp)
-        SPUse *use = dynamic_cast<SPUse *>(obj_copy);
+        auto spobject = target_document->getObjectByRepr(obj_copy);
+        auto use = cast<SPUse>(spobject);
         if (use) {
             SPItem *original = use->get_original();
             if (original) {
@@ -981,7 +982,7 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
     // Change the selection to the freshly pasted objects
     selection->setReprList(pasted_objects);
     for (auto item : selection->items()) {
-        SPLPEItem *pasted_lpe_item = dynamic_cast<SPLPEItem *>(item);
+        auto pasted_lpe_item = cast<SPLPEItem>(item);
         if (pasted_lpe_item) {
             sp_lpe_item_enable_path_effects(pasted_lpe_item, false);
         }
@@ -1025,7 +1026,7 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
 
         selection->moveRelative(offset);
         for (auto po : pasted_objects) {
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(target_document->getObjectByRepr(po));
+            auto lpeitem = cast<SPLPEItem>(target_document->getObjectByRepr(po));
             if (lpeitem) {
                 sp_lpe_item_enable_path_effects(lpeitem, true);
             }

@@ -129,7 +129,7 @@ void Inkscape::ObjectSnapper::_collectNodes(SnapSourceType const &t,
             //Geom::Affine i2doc(Geom::identity());
             SPItem *root_item = _candidate.item;
 
-            SPUse *use = dynamic_cast<SPUse *>(_candidate.item);
+            auto use = cast<SPUse>(_candidate.item);
             if (use) {
                 root_item = use->root();
             }
@@ -316,7 +316,7 @@ void Inkscape::ObjectSnapper::_collectPaths(Geom::Point /*p*/,
             Geom::Affine i2doc(Geom::identity());
             SPItem *root_item = nullptr;
             /* We might have a clone at hand, so make sure we get the root item */
-            SPUse *use = dynamic_cast<SPUse *>(_candidate.item);
+            auto use = cast<SPUse>(_candidate.item);
             if (use) {
                 i2doc = use->get_root_transform();
                 root_item = use->root();
@@ -331,7 +331,7 @@ void Inkscape::ObjectSnapper::_collectPaths(Geom::Point /*p*/,
             //Add the item's path to snap to
             if (_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PATH, SNAPTARGET_PATH_INTERSECTION, SNAPTARGET_TEXT_BASELINE)) {
                 if (p_is_other || p_is_a_node || (!_snapmanager->snapprefs.getStrictSnapping() && p_is_a_bbox)) {
-                    if (dynamic_cast<SPText *>(root_item) || dynamic_cast<SPFlowtext *>(root_item)) {
+                    if (is<SPText>(root_item) || is<SPFlowtext>(root_item)) {
                         if (_snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_TEXT_BASELINE)) {
                             // Snap to the text baseline
                             Text::Layout const *layout = te_get_layout(static_cast<SPItem *>(root_item));
@@ -346,13 +346,13 @@ void Inkscape::ObjectSnapper::_collectPaths(Geom::Point /*p*/,
                         // the CPU, so we'll only snap to paths having no more than 500 nodes
                         // This also leads to a lag of approx. 500 msec (in my lousy test set-up).
                         bool very_complex_path = false;
-                        SPPath *path = dynamic_cast<SPPath *>(root_item);
+                        auto path = cast<SPPath>(root_item);
                         if (path) {
                             very_complex_path = path->nodesInPath() > 500;
                         }
 
                         if (!very_complex_path && root_item && _snapmanager->snapprefs.isTargetSnappable(SNAPTARGET_PATH, SNAPTARGET_PATH_INTERSECTION)) {
-                            if (auto const shape = dynamic_cast<SPShape *>(root_item)) {
+                            if (auto const shape = cast<SPShape>(root_item)) {
                                 if (auto const curve = shape->curve()) {
                                     auto pv = curve->get_pathvector();
                                     pv *= root_item->i2dt_affine() * _candidate.additional_affine * _snapmanager->getDesktop()->doc2dt(); // (_edit_transform * _i2d_transform);
@@ -642,7 +642,7 @@ void Inkscape::ObjectSnapper::freeSnap(IntermSnapResults &isr,
              */
             SPPath const *path = nullptr;
             if (it != nullptr) {
-                SPPath const *tmpPath = dynamic_cast<SPPath const *>(*it->begin());
+                SPPath const *tmpPath = cast<SPPath>(*it->begin());
                 if ((it->size() == 1) && tmpPath) {
                     path = tmpPath;
                 } // else: *it->begin() might be a SPGroup, e.g. when editing a LPE of text that has been converted to a group of paths
@@ -694,7 +694,7 @@ void Inkscape::ObjectSnapper::constrainedSnap( IntermSnapResults &isr,
              */
             SPPath const *path = nullptr;
             if (it != nullptr) {
-                SPPath const *tmpPath = dynamic_cast<SPPath const *>(*it->begin());
+                SPPath const *tmpPath = cast<SPPath>(*it->begin());
                 if ((it->size() == 1) && tmpPath) {
                     path = tmpPath;
                 } // else: *it->begin() might be a SPGroup, e.g. when editing a LPE of text that has been converted to a group of paths

@@ -500,7 +500,7 @@ LivePathEffectEditor::onSelectionChanged(Inkscape::Selection *sel)
     if ( sel && !sel->isEmpty() ) {
         SPItem *item = sel->singleItem();
         if ( item ) {
-            SPLPEItem *lpeitem = cast<SPLPEItem>(item);
+            auto lpeitem = cast<SPLPEItem>(item);
             use = cast<SPUse>(item);
             if (lpeitem) {
                 lpeitem->update_satellites();
@@ -524,7 +524,7 @@ LivePathEffectEditor::move_list(gint origin, gint dest)
     if ( sel && !sel->isEmpty() ) {
         SPItem *item = sel->singleItem();
         if ( item ) {
-            SPLPEItem *lpeitem = cast<SPLPEItem>(item);
+            auto lpeitem = cast<SPLPEItem>(item);
             if ( lpeitem ) {
                 lpeitem->movePathEffect(origin, dest);
             }
@@ -1075,7 +1075,7 @@ SPLPEItem * LivePathEffectEditor::clonetolpeitem()
 {
     auto selection = getSelection();
     if (selection && !selection->isEmpty() ) {
-        SPUse *use = cast<SPUse>(selection->singleItem());
+        auto use = cast<SPUse>(selection->singleItem());
         if ( use ) {
             DocumentUndo::ScopedInsensitive tmp(getDocument());
             // item is a clone. do not show effectlist dialog.

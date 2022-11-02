@@ -487,7 +487,7 @@ static void insert_text_fallback( Inkscape::XML::Node *repr, const SPDocument *o
                     text->layout.getSourceOfCharacter(it, &source_obj, &span_text_start_iter);
 
                     // Set tspan style
-                    Glib::ustring style_text = (dynamic_cast<SPString *>(source_obj) ? source_obj->parent : source_obj)
+                    Glib::ustring style_text = (is<SPString>(source_obj) ? source_obj->parent : source_obj)
                                                    ->style->writeIfDiff(text->style);
                     if (!style_text.empty()) {
                         span_tspan->setAttributeOrRemoveIfEmpty("style", style_text);
@@ -503,7 +503,7 @@ static void insert_text_fallback( Inkscape::XML::Node *repr, const SPDocument *o
                     }
 
                     // Add text node
-                    SPString *str = dynamic_cast<SPString *>(source_obj);
+                    auto str = cast<SPString>(source_obj);
                     if (str) {
                         Glib::ustring *string = &(str->string); // TODO fixme: dangerous, unsafe premature-optimization
                         SPObject *span_end_obj = nullptr;

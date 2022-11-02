@@ -740,10 +740,10 @@ std::vector< Point >
 getNodes(SPItem * item, Geom::Affine transform, bool onbbox, bool centers, bool bboxonly, double angle_projection)
 {
     std::vector< Point > current_nodes;
-    SPShape    * shape    = dynamic_cast<SPShape     *> (item);
-    SPText     * text     = dynamic_cast<SPText      *> (item);
-    SPGroup    * group    = dynamic_cast<SPGroup     *> (item);
-    SPFlowtext * flowtext = dynamic_cast<SPFlowtext  *> (item);
+    SPShape    * shape    = cast<SPShape> (item);
+    SPText     * text     = cast<SPText> (item);
+    SPGroup    * group    = cast<SPGroup> (item);
+    SPFlowtext * flowtext = cast<SPFlowtext> (item);
     //TODO handle clones/use
 
     if (group) {
@@ -808,7 +808,7 @@ static void extractFirstPoint(Geom::Point & dest, const Glib::ustring & lpobjid,
     id += Glib::ustring::format(idx);
     id += "-";
     id += lpobjid;
-    auto path = dynamic_cast<SPPath *>(document->getObjectById(id));
+    auto path = cast<SPPath>(document->getObjectById(id));
     if (path) {
         SPCurve const *curve = path->curve();
         if (curve) {
@@ -887,7 +887,7 @@ LPEMeasureSegments::doBeforeEffect (SPLPEItem const* lpeitem)
             for (auto & iter : satellites) {
                 SPObject *obj;
                 if (iter && iter->isAttached() && iter->getActive() && (obj = iter->getObject()) && is<SPItem>(obj)) {
-                    SPItem * item = dynamic_cast<SPItem *>(obj);
+                    auto item = cast<SPItem>(obj);
                     if (item) {
                         Geom::Affine affinetransform_sub = i2anc_affine(item, document->getRoot());
                         Geom::Affine transform = affinetransform_sub ;
@@ -943,7 +943,7 @@ LPEMeasureSegments::doBeforeEffect (SPLPEItem const* lpeitem)
     }
 
     //end projection prepare
-    SPShape *shape = dynamic_cast<SPShape *>(splpeitem);
+    auto shape = cast<SPShape>(splpeitem);
     if (shape) {
         //only check constrain viewbox on X
         display_unit = document->getDisplayUnit()->abbr.c_str();
@@ -1242,7 +1242,7 @@ LPEMeasureSegments::processObjects(LPEAction lpe_action)
     if (!document) {
         return;
     }
-    sp_lpe_item = dynamic_cast<SPLPEItem *>(*getLPEObj()->hrefList.begin());
+    sp_lpe_item = cast<SPLPEItem>(*getLPEObj()->hrefList.begin());
     if (!document || !sp_lpe_item) {
         return;
     }
@@ -1251,7 +1251,7 @@ LPEMeasureSegments::processObjects(LPEAction lpe_action)
         SPObject *elemref = nullptr;
         if ((elemref = document->getObjectById(id.c_str()))) {
             Inkscape::XML::Node * elemnode = elemref->getRepr();
-            auto item = dynamic_cast<SPItem *>(elemref);
+            auto item = cast<SPItem>(elemref);
             SPCSSAttr *css;
             Glib::ustring css_str;
             switch (lpe_action){

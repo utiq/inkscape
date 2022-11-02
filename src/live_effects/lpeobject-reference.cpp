@@ -53,7 +53,7 @@ LPEObjectReference::~LPEObjectReference()
 
 bool LPEObjectReference::_acceptObject(SPObject * const obj) const
 {
-    LivePathEffectObject *lpobj = dynamic_cast<LivePathEffectObject *>(obj);
+    auto lpobj = cast<LivePathEffectObject>(obj);
     if (lpobj) {
         return URIReference::_acceptObject(obj);
     } else {
@@ -121,7 +121,7 @@ static void
 lpeobjectreference_href_changed(SPObject */*old_ref*/, SPObject */*ref*/, LPEObjectReference *lpeobjref)
 {
     //lpeobjref->quit_listening();
-    LivePathEffectObject *refobj = dynamic_cast<LivePathEffectObject *>( lpeobjref->getObject() );
+    auto refobj = cast<LivePathEffectObject>( lpeobjref->getObject() );
     if ( refobj ) {
         lpeobjref->start_listening(refobj);
     }

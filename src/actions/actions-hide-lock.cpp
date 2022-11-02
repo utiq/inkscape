@@ -33,7 +33,7 @@ hide_lock_recurse(bool (*f)(SPItem*, bool), SPItem *item, bool hide_or_lock)
     }
 
     for (auto& child : item->children) {
-        auto item = dynamic_cast<SPItem*>(&child);
+        auto item = cast<SPItem>(&child);
         if (item && hide_lock_recurse(f, item, hide_or_lock)) {
             changed = true;
         }

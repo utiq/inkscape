@@ -472,7 +472,7 @@ void SymbolsDialog::insertSymbol() {
 
 void SymbolsDialog::revertSymbol() {
     if (auto document = getDocument()) {
-        if (auto symbol = dynamic_cast<SPSymbol *>(document->getObjectById(getSymbolId(getSelected())))) {
+        if (auto symbol = cast<SPSymbol>(document->getObjectById(getSymbolId(getSelected())))) {
             symbol->unSymbol();
         }
         Inkscape::DocumentUndo::done(document, _("Group from symbol"), "");
@@ -922,17 +922,17 @@ void SymbolsDialog::symbolsInDocRecursive (SPObject *r, std::map<Glib::ustring, 
   if(!r) return;
 
   // Stop multiple counting of same symbol
-  if ( dynamic_cast<SPUse *>(r) ) {
+  if (is<SPUse>(r) ) {
     return;
   }
 
-  if ( dynamic_cast<SPSymbol *>(r)) {
+  if (is<SPSymbol>(r)) {
     Glib::ustring id = r->getAttribute("id");
     gchar * title = r->title();
     if(title) {
-      l[doc_title + title + id] = std::make_pair(doc_title,dynamic_cast<SPSymbol *>(r));
+      l[doc_title + title + id] = std::make_pair(doc_title,cast<SPSymbol>(r));
     } else {
-      l[Glib::ustring(_("notitle_")) + id] = std::make_pair(doc_title,dynamic_cast<SPSymbol *>(r));
+      l[Glib::ustring(_("notitle_")) + id] = std::make_pair(doc_title,cast<SPSymbol>(r));
     }
     g_free(title);
   }
@@ -955,8 +955,8 @@ SymbolsDialog::symbolsInDoc( SPDocument* symbol_document, Glib::ustring doc_titl
 void SymbolsDialog::useInDoc (SPObject *r, std::vector<SPUse*> &l)
 {
 
-  if ( dynamic_cast<SPUse *>(r) ) {
-    l.push_back(dynamic_cast<SPUse *>(r));
+  if (is<SPUse>(r) ) {
+    l.push_back(cast<SPUse>(r));
   }
 
   for (auto& child: r->children) {
@@ -1286,7 +1286,7 @@ SymbolsDialog::drawSymbol(SPObject *symbol)
   // Make sure we have symbol in preview_document
   SPObject *object_temp = preview_document->getObjectById( "the_use" );
 
-  SPItem *item = dynamic_cast<SPItem *>(object_temp);
+  auto item = cast<SPItem>(object_temp);
   g_assert(item != nullptr);
   unsigned psize = SYMBOL_ICON_SIZES[pack_size];
 

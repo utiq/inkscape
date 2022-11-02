@@ -115,8 +115,8 @@ PathManipulator::PathManipulator(MultiPathManipulator &mpm, SPObject *path,
     , _edit_transform(et)
     , _lpe_key(std::move(lpe_key))
 {
-    LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(_path);
-    SPPath *pathshadow = dynamic_cast<SPPath *>(_path);
+    auto lpeobj = cast<LivePathEffectObject>(_path);
+    auto pathshadow = cast<SPPath>(_path);
     if (!lpeobj) {
         _i2d_transform = pathshadow->i2dt_affine();
     } else {
@@ -402,7 +402,7 @@ void PathManipulator::duplicateNodes()
 void PathManipulator::copySelectedPath(Geom::PathBuilder *builder)
 {
     // Ignore LivePathEffect paths
-    if (!_path || dynamic_cast<LivePathEffectObject *>(_path))
+    if (!_path || cast<LivePathEffectObject>(_path))
         return;
     // Rebuild the selected parts of each subpath
     for (auto &subpath : _subpaths) {
@@ -1166,7 +1166,7 @@ void PathManipulator::_externalChange(unsigned type)
         _updateOutline();
         } break;
     case PATH_CHANGE_TRANSFORM: {
-        SPPath *path = dynamic_cast<SPPath *>(_path);
+        auto path = cast<SPPath>(_path);
         if (path) {
             Geom::Affine i2d_change = _d2i_transform;
             _i2d_transform = path->i2dt_affine();
@@ -1283,7 +1283,7 @@ int PathManipulator::_bsplineGetSteps() const {
 
     LivePathEffect::LPEBSpline const *lpe_bsp = nullptr;
 
-    SPLPEItem * path = dynamic_cast<SPLPEItem *>(_path);
+    auto path = cast<SPLPEItem>(_path);
     if (path){
         if(path->hasPathEffect()){
             Inkscape::LivePathEffect::Effect const *this_effect =
@@ -1302,7 +1302,7 @@ int PathManipulator::_bsplineGetSteps() const {
 
 // determines if the trace has bspline effect
 void PathManipulator::_recalculateIsBSpline(){
-    SPPath *path = dynamic_cast<SPPath *>(_path);
+    auto path = cast<SPPath>(_path);
     if (path && path->hasPathEffect()) {
         Inkscape::LivePathEffect::Effect const *this_effect =
             path->getFirstPathEffectOfType(Inkscape::LivePathEffect::BSPLINE);
@@ -1426,7 +1426,7 @@ void PathManipulator::_createGeometryFromControlPoints(bool alert_LPE)
     _spcurve = SPCurve(pathv);
     if (alert_LPE) {
         /// \todo note that _path can be an Inkscape::LivePathEffect::Effect* too, kind of confusing, rework member naming?
-        SPPath *path = dynamic_cast<SPPath *>(_path);
+        auto path = cast<SPPath>(_path);
         if (path && path->hasPathEffect()) {
             Inkscape::LivePathEffect::Effect *this_effect =
                 path->getFirstPathEffectOfType(Inkscape::LivePathEffect::POWERSTROKE);
@@ -1518,8 +1518,8 @@ void PathManipulator::_updateOutline()
 void PathManipulator::_getGeometry()
 {
     using namespace Inkscape::LivePathEffect;
-    LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(_path);
-    SPPath *path = dynamic_cast<SPPath *>(_path);
+    auto lpeobj = cast<LivePathEffectObject>(_path);
+    auto path = cast<SPPath>(_path);
     if (lpeobj) {
         Effect *lpe = lpeobj->get_lpe();
         if (lpe) {
@@ -1539,8 +1539,8 @@ void PathManipulator::_getGeometry()
 void PathManipulator::_setGeometry()
 {
     using namespace Inkscape::LivePathEffect;
-    LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(_path);
-    SPPath *path = dynamic_cast<SPPath *>(_path);
+    auto lpeobj = cast<LivePathEffectObject>(_path);
+    auto path = cast<SPPath>(_path);
     if (lpeobj) {
         // copied from nodepath.cpp
         // NOTE: if we are editing an LPE param, _path is not actually an SPPath, it is
@@ -1572,7 +1572,7 @@ void PathManipulator::_setGeometry()
 /** Figure out in what attribute to store the nodetype string. */
 Glib::ustring PathManipulator::_nodetypesKey()
 {
-    LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(_path);
+    auto lpeobj = cast<LivePathEffectObject>(_path);
     if (!lpeobj) {
         return "sodipodi:nodetypes";
     } else {
@@ -1585,7 +1585,7 @@ Glib::ustring PathManipulator::_nodetypesKey()
 Inkscape::XML::Node *PathManipulator::_getXMLNode()
 {
     //XML Tree being used here directly while it shouldn't be.
-    LivePathEffectObject *lpeobj = dynamic_cast<LivePathEffectObject *>(_path);
+    auto lpeobj = cast<LivePathEffectObject>(_path);
     if (!lpeobj)
         return _path->getRepr();
     //XML Tree being used here directly while it shouldn't be.

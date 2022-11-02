@@ -162,7 +162,7 @@ void LPEBSpline::toWeight()
 
 void LPEBSpline::changeWeight(double weight_ammount)
 {
-    SPPath *path = dynamic_cast<SPPath *>(sp_lpe_item);
+    auto path = cast<SPPath>(sp_lpe_item);
     if (path) {
         auto curve = *path->curveForEdit();
         doBSplineFromWidget(&curve, weight_ammount / 100.0);

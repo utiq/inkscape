@@ -348,7 +348,7 @@ Selection::restoreBackup()
     std::vector<std::string>::iterator it = _selected_ids.begin();
     std::vector<SPItem*> new_selection;
     for (; it!= _selected_ids.end(); ++it){
-        SPItem * item = dynamic_cast<SPItem *>(document->getObjectById(it->c_str()));
+        auto item = cast<SPItem>(document->getObjectById(it->c_str()));
         SPDefs * defs = document->getDefs();
         if (item && !defs->isAncestorOf(item)) {
             new_selection.push_back(item);

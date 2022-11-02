@@ -66,7 +66,7 @@ LPEParallel::~LPEParallel()
 void
 LPEParallel::doOnApply (SPLPEItem const* lpeitem)
 {
-    auto shape = dynamic_cast<SPShape const *>(lpeitem);
+    auto shape = cast<SPShape>(lpeitem);
     if (!shape) {
         g_warning("LPE parallel can only be applied to shapes (not groups).");
         SPLPEItem * item = const_cast<SPLPEItem*>(lpeitem);

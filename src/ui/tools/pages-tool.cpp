@@ -649,7 +649,7 @@ void PagesTool::selectionChanged(SPDocument *doc, SPPage *page)
 
 void PagesTool::pageModified(SPObject *object, guint /*flags*/)
 {
-    if (auto page = dynamic_cast<SPPage *>(object)) {
+    if (auto page = cast<SPPage>(object)) {
         resizeKnotSet(page->getDesktopRect());
         marginKnotSet(page->getDesktopMargin());
     }

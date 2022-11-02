@@ -816,7 +816,7 @@ void SnapManager::displaySnapsource(Inkscape::SnapCandidatePoint const &p) const
 SPGuide const *SnapManager::getGuideToIgnore() const
 {
     for (auto item : _objects_to_ignore) {
-        if (auto guide = dynamic_cast<SPGuide const *>(item)) {
+        if (auto guide = cast<SPGuide>(item)) {
             return guide;
         }
     }
@@ -825,7 +825,7 @@ SPGuide const *SnapManager::getGuideToIgnore() const
 SPPage const *SnapManager::getPageToIgnore() const
 {
     for (auto item : _objects_to_ignore) {
-        if (auto page = dynamic_cast<SPPage const *>(item)) {
+        if (auto page = cast<SPPage>(item)) {
             return page;
         }
     }
@@ -862,7 +862,7 @@ void SnapManager::_findCandidates(SPObject* parent,
     bbox_to_snap_incl.expandBy(object.getSnapperTolerance()); // see?
 
     for (auto& o: parent->children) {
-        SPItem *item = dynamic_cast<SPItem *>(&o);
+        auto item = cast<SPItem>(&o);
         if (item && !(dt->itemIsHidden(item) && !clip_or_mask)) {
             // Fix LPE boolops self-snapping
             bool stop = false;
@@ -871,7 +871,7 @@ void SnapManager::_findCandidates(SPObject* parent,
                 if (filt && filt->getId() && strcmp(filt->getId(), "selectable_hidder_filter") == 0) {
                     stop = true;
                 }
-                SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item);
+                auto lpeitem = cast<SPLPEItem>(item);
                 if (lpeitem && lpeitem->hasPathEffectOfType(Inkscape::LivePathEffect::EffectType::BOOL_OP)) {
                     stop = true;
                 }
@@ -880,7 +880,7 @@ void SnapManager::_findCandidates(SPObject* parent,
                 stop = false;
                 for (auto skipitem : *it) {
                     if (skipitem && skipitem->style) {
-                        SPItem *toskip = dynamic_cast<SPItem *>(const_cast<SPObject *>(skipitem));
+                        auto toskip = cast<SPItem>(const_cast<SPObject *>(skipitem));
                         if (toskip) {
                             SPFilter *filt = toskip->style->getFilter();
                             if (filt && filt->getId() && strcmp(filt->getId(), "selectable_hidder_filter") == 0) {
@@ -888,7 +888,7 @@ void SnapManager::_findCandidates(SPObject* parent,
                                 break;
                             }
 
-                            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(toskip);
+                            auto lpeitem = cast<SPLPEItem>(toskip);
                             if (!stop && lpeitem &&
                                 lpeitem->hasPathEffectOfType(Inkscape::LivePathEffect::EffectType::BOOL_OP)) {
                                 stop = true;
@@ -928,7 +928,7 @@ void SnapManager::_findCandidates(SPObject* parent,
                         }
                     }
 
-                    if (dynamic_cast<SPGroup *>(item)) {
+                    if (is<SPGroup>(item)) {
                         _findCandidates(&o, it, bbox_to_snap, clip_or_mask, additional_affine);
                     } else {
                         Geom::OptRect bbox_of_item;

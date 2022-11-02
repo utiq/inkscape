@@ -1061,7 +1061,7 @@ void  PrintEmf::do_clip_if_present(SPStyle const *style){
 Geom::PathVector PrintEmf::merge_PathVector_with_group(Geom::PathVector const &combined_pathvector, SPItem const *item, const Geom::Affine &transform)
 {
     // sanity test, only a group should be passed in, return empty if something else happens
-    auto group = dynamic_cast<SPGroup const *>(item);
+    auto group = cast<SPGroup>(item);
     if (!group)
         return {};
 
@@ -1085,7 +1085,7 @@ Geom::PathVector PrintEmf::merge_PathVector_with_group(Geom::PathVector const &c
 Geom::PathVector PrintEmf::merge_PathVector_with_shape(Geom::PathVector const &combined_pathvector, SPItem const *item, const Geom::Affine &transform)
 {
     Geom::PathVector new_combined_pathvector;
-    auto shape = dynamic_cast<SPShape const *>(item);
+    auto shape = cast<SPShape>(item);
 
     // sanity test, only a shape should be passed in, return empty if something else happens
     if (!shape)

@@ -118,8 +118,8 @@ void
 get_all_items_recursive(std::vector<SPObject *> &objects, SPObject *object, Glib::ustring &condition)
 {
     for (auto &o : object->childList(false)) {
-        if (dynamic_cast<SPItem *>(o)) {
-            SPGroup *group = dynamic_cast<SPGroup *>(o);
+        if (is<SPItem>(o)) {
+            auto group = cast<SPGroup>(o);
             if (condition == "layers") {
                 if (group && group->layerMode() == SPGroup::LAYER) {
                     objects.emplace_back(o);

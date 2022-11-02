@@ -1878,7 +1878,7 @@ bool CloneTiler::is_a_clone_of(SPObject *tile, SPObject *obj)
 
     auto href = Inkscape::getHrefAttribute(*tile->getRepr()).second;
 
-    if (dynamic_cast<SPUse *>(tile) &&
+    if (is<SPUse>(tile) &&
         href && (!id_href || !strcmp(id_href, href)) &&
         tile->getRepr()->attribute("inkscape:tiled-clone-of") &&
         (!id_href || !strcmp(id_href, tile->getRepr()->attribute("inkscape:tiled-clone-of"))))
@@ -1900,7 +1900,7 @@ void CloneTiler::trace_hide_tiled_clones_recursively(SPObject *from)
         return;
 
     for (auto& o: from->children) {
-        SPItem *item = dynamic_cast<SPItem *>(&o);
+        auto item = cast<SPItem>(&o);
         if (item && is_a_clone_of(&o, nullptr)) {
             item->invoke_hide(trace_visionkey); // FIXME: hide each tiled clone's original too!
         }
@@ -2195,7 +2195,7 @@ void CloneTiler::apply()
     bool   invert_picked = prefs->getBool(prefs_path + "invert_picked");
     double gamma_picked = prefs->getDoubleLimited(prefs_path + "gamma_picked", 0, -10, 10);
 
-    SPItem *item = dynamic_cast<SPItem *>(obj);
+    auto item = cast<SPItem>(obj);
     if (dotrace) {
         trace_setup(getDocument(), 1.0, item);
     }
@@ -2471,7 +2471,7 @@ void CloneTiler::apply()
 
             if (blur > 0.0) {
                 SPObject *clone_object = desktop->getDocument()->getObjectByRepr(clone);
-                SPItem *item = dynamic_cast<SPItem *>(clone_object);
+                auto item = cast<SPItem>(clone_object);
                 double radius = blur * perimeter_original * t.descrim();
                 // this is necessary for all newly added clones to have correct bboxes,
                 // otherwise filters won't work:
@@ -2483,7 +2483,7 @@ void CloneTiler::apply()
 
             if (center_set) {
                 SPObject *clone_object = desktop->getDocument()->getObjectByRepr(clone);
-                SPItem *item = dynamic_cast<SPItem *>(clone_object);
+                auto item = cast<SPItem>(clone_object);
                 if (clone_object && item) {
                     clone_object->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
                     item->setCenter(desktop->doc2dt(new_center));

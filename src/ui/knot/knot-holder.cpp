@@ -162,7 +162,7 @@ KnotHolder::knot_clicked_handler(SPKnot *knot, guint state)
     }
 
     {
-        SPShape *savedShape = dynamic_cast<SPShape *>(saved_item);
+        auto savedShape = cast<SPShape>(saved_item);
         if (savedShape) {
             savedShape->set_shape();
         }
@@ -173,20 +173,20 @@ KnotHolder::knot_clicked_handler(SPKnot *knot, guint state)
     Glib::ustring icon_name;
 
     // TODO extract duplicated blocks;
-    if (dynamic_cast<SPRect *>(saved_item)) {
+    if (is<SPRect>(saved_item)) {
         icon_name = INKSCAPE_ICON("draw-rectangle");
-    } else if (dynamic_cast<SPBox3D *>(saved_item)) {
+    } else if (is<SPBox3D>(saved_item)) {
         icon_name = INKSCAPE_ICON("draw-cuboid");
-    } else if (dynamic_cast<SPGenericEllipse *>(saved_item)) {
+    } else if (is<SPGenericEllipse>(saved_item)) {
         icon_name = INKSCAPE_ICON("draw-ellipse");
-    } else if (dynamic_cast<SPStar *>(saved_item)) {
+    } else if (is<SPStar>(saved_item)) {
         icon_name = INKSCAPE_ICON("draw-polygon-star");
-    } else if (dynamic_cast<SPSpiral *>(saved_item)) {
+    } else if (is<SPSpiral>(saved_item)) {
         icon_name = INKSCAPE_ICON("draw-spiral");
-    } else if (dynamic_cast<SPMarker *>(saved_item)) {
+    } else if (is<SPMarker>(saved_item)) {
         icon_name = INKSCAPE_ICON("tool-pointer");
     } else {
-        SPOffset *offset = dynamic_cast<SPOffset *>(saved_item);
+        auto offset = cast<SPOffset>(saved_item);
         if (offset) {
             if (offset->sourceHref) {
                 icon_name = INKSCAPE_ICON("path-offset-linked");
@@ -269,7 +269,7 @@ KnotHolder::knot_moved_handler(SPKnot *knot, Geom::Point const &p, guint state)
         }
     }
 
-    SPShape *shape = dynamic_cast<SPShape *>(item);
+    auto shape = cast<SPShape>(item);
     if (shape) {
         shape->set_shape();
     }
@@ -318,20 +318,20 @@ KnotHolder::knot_ungrabbed_handler(SPKnot *knot, guint state)
         Glib::ustring icon_name;
 
         // TODO extract duplicated blocks;
-        if (dynamic_cast<SPRect *>(object)) {
+        if (is<SPRect>(object)) {
             icon_name = INKSCAPE_ICON("draw-rectangle");
-        } else if (dynamic_cast<SPBox3D *>(object)) {
+        } else if (is<SPBox3D>(object)) {
             icon_name = INKSCAPE_ICON("draw-cuboid");
-        } else if (dynamic_cast<SPGenericEllipse *>(object)) {
+        } else if (is<SPGenericEllipse>(object)) {
             icon_name = INKSCAPE_ICON("draw-ellipse");
-        } else if (dynamic_cast<SPStar *>(object)) {
+        } else if (is<SPStar>(object)) {
             icon_name = INKSCAPE_ICON("draw-polygon-star");
-        } else if (dynamic_cast<SPSpiral *>(object)) {
+        } else if (is<SPSpiral>(object)) {
             icon_name = INKSCAPE_ICON("draw-spiral");
-        } else if (dynamic_cast<SPMarker *>(object)) {
+        } else if (is<SPMarker>(object)) {
             icon_name = INKSCAPE_ICON("tool-pointer");
         } else {
-            SPOffset *offset = dynamic_cast<SPOffset *>(object);
+            auto offset = cast<SPOffset>(object);
             if (offset) {
                 if (offset->sourceHref) {
                     icon_name = INKSCAPE_ICON("path-offset-linked");
@@ -352,7 +352,7 @@ void KnotHolder::add(KnotHolderEntity *e)
 
 void KnotHolder::add_pattern_knotholder()
 {
-    if (dynamic_cast<SPPattern*>(item->style->getFillPaintServer())) {
+    if (is<SPPattern>(item->style->getFillPaintServer())) {
         auto entity_xy = new PatternKnotHolderEntityXY(true);
         auto entity_angle = new PatternKnotHolderEntityAngle(true);
         auto entity_scale = new PatternKnotHolderEntityScale(true);
@@ -371,7 +371,7 @@ void KnotHolder::add_pattern_knotholder()
         entity.push_back(entity_scale);
     }
 
-    if (dynamic_cast<SPPattern*>(item->style->getStrokePaintServer())) {
+    if (is<SPPattern>(item->style->getStrokePaintServer())) {
         auto entity_xy = new PatternKnotHolderEntityXY(false);
         auto entity_angle = new PatternKnotHolderEntityAngle(false);
         auto entity_scale = new PatternKnotHolderEntityScale(false);
@@ -396,7 +396,7 @@ void KnotHolder::add_pattern_knotholder()
 
 void KnotHolder::add_hatch_knotholder()
 {
-    if ((item->style->fill.isPaintserver()) && dynamic_cast<SPHatch *>(item->style->getFillPaintServer())) {
+    if ((item->style->fill.isPaintserver()) && cast<SPHatch>(item->style->getFillPaintServer())) {
         HatchKnotHolderEntityXY *entity_xy = new HatchKnotHolderEntityXY(true);
         HatchKnotHolderEntityAngle *entity_angle = new HatchKnotHolderEntityAngle(true);
         HatchKnotHolderEntityScale *entity_scale = new HatchKnotHolderEntityScale(true);
@@ -415,7 +415,7 @@ void KnotHolder::add_hatch_knotholder()
         entity.push_back(entity_scale);
     }
 
-    if ((item->style->stroke.isPaintserver()) && dynamic_cast<SPHatch *>(item->style->getStrokePaintServer())) {
+    if ((item->style->stroke.isPaintserver()) && cast<SPHatch>(item->style->getStrokePaintServer())) {
         HatchKnotHolderEntityXY *entity_xy = new HatchKnotHolderEntityXY(false);
         HatchKnotHolderEntityAngle *entity_angle = new HatchKnotHolderEntityAngle(false);
         HatchKnotHolderEntityScale *entity_scale = new HatchKnotHolderEntityScale(false);
@@ -470,7 +470,7 @@ bool KnotHolder::set_item_clickpos(Geom::Point loc)
 void KnotHolder::install_modification_watch() {
     g_assert(item); 
 
-    if (auto pattern = dynamic_cast<SPPattern*>(item->style->getFillPaintServer())) {
+    if (auto pattern = cast<SPPattern>(item->style->getFillPaintServer())) {
         _watch_fill = pattern->connectModified([=](SPObject*, unsigned int){
             update_knots();
         });
@@ -479,7 +479,7 @@ void KnotHolder::install_modification_watch() {
         _watch_fill.disconnect();
     }
 
-    if (auto pattern = dynamic_cast<SPPattern*>(item->style->getStrokePaintServer())) {
+    if (auto pattern = cast<SPPattern>(item->style->getStrokePaintServer())) {
         _watch_stroke = pattern->connectModified([=](SPObject*, unsigned int){
             update_knots();
         });

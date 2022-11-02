@@ -32,7 +32,7 @@ Async::Channel::Dest render_preview(SPDocument *doc, std::shared_ptr<Inkscape::D
     if (auto name = item ? item->getId() : nullptr) {
         // Get item even if it's in another document.
         if (item->document != doc) {
-            item = dynamic_cast<SPItem *>(doc->getObjectById(name));
+            item = cast<SPItem>(doc->getObjectById(name));
         }
     }
 

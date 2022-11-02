@@ -481,7 +481,7 @@ std::vector<Glib::RefPtr<PatternItem>> PatternEditor::update_doc_pattern_list(SP
         else {
             if (!item->pix) {
                 // generate preview for newly added pattern
-                item->pix = _manager.get_image(dynamic_cast<SPPattern*>(document->getObjectById(item->id)), _tile_size, _tile_size, device_scale);
+                item->pix = _manager.get_image(cast<SPPattern>(document->getObjectById(item->id)), _tile_size, _tile_size, device_scale);
             }
             modified = true;
             _cached_items[item->id] = item;
@@ -659,7 +659,7 @@ SPPattern* get_pattern(const PatternItem& item, SPDocument* document) {
     auto doc = item.collection ? item.collection : document;
     if (!doc) return nullptr;
 
-    return dynamic_cast<SPPattern*>(doc->getObjectById(item.id));
+    return cast<SPPattern>(doc->getObjectById(item.id));
 }
 
 void regenerate_tile_images(PatternManager& manager, PatternStore& pat_store, int tile_size, double device_scale, SPDocument* current) {

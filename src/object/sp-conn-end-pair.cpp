@@ -206,8 +206,8 @@ void SPConnEndPair::getAttachedItems(SPItem *h2attItem[2]) const {
         // group no longer has an onscreen representation and can only be
         // selected through the XML editor, it makes sense just to detach
         // connectors from them.
-        if (is<SPGroup>(h2attItem[h])) {
-            if (cast<SPGroup>(h2attItem[h])->getItemCount() == 0) {
+        if (auto group = cast<SPGroup>(h2attItem[h])) {
+            if (group->getItemCount() == 0) {
                 // This group is empty, so detach.
                 sp_conn_end_detach(_path, h);
                 h2attItem[h] = nullptr;

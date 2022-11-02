@@ -2546,16 +2546,16 @@ static void check_single_connection(SPFilterPrimitive* prim, const int result)
             prim->removeAttribute("in");
         }
 
-        if (is<SPFeBlend>(prim)) {
-            if (cast<SPFeBlend>(prim)->get_in2() == result) {
+        if (auto blend = cast<SPFeBlend>(prim)) {
+            if (blend->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
-        } else if (is<SPFeComposite>(prim)) {
-            if (cast<SPFeComposite>(prim)->get_in2() == result) {
+        } else if (auto comp = cast<SPFeComposite>(prim)) {
+            if (comp->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
-        } else if (is<SPFeDisplacementMap>(prim)) {
-            if (cast<SPFeDisplacementMap>(prim)->get_in2() == result) {
+        } else if (auto disp = cast<SPFeDisplacementMap>(prim)) {
+            if (disp->get_in2() == result) {
                 prim->removeAttribute("in2");
             }
         }

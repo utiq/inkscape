@@ -315,7 +315,7 @@ gboolean Inkscape::DocumentUndo::undo(SPDocument *doc)
     doc->seeking = false;
     if (ret) INKSCAPE.external_change();
     if (doc->undo.empty()) {
-        sp_lpe_item_update_patheffect(dynamic_cast<SPLPEItem *>(doc->getRoot()), false, true);
+        sp_lpe_item_update_patheffect(doc->getRoot(), false, true);
     }
     doc->fix_lpe_data();
     return ret;

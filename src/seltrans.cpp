@@ -195,7 +195,7 @@ void
 Inkscape::SelTrans::_clear_stamp() {
     _stamped = false;
     for (auto old_obj :_stamp_cache) {
-        SPLPEItem *oldLPEObj = dynamic_cast<SPLPEItem *>(old_obj);
+        auto oldLPEObj = cast<SPLPEItem>(old_obj);
         if (oldLPEObj) {
             sp_lpe_item_enable_path_effects(oldLPEObj, true);
         }
@@ -404,7 +404,7 @@ void Inkscape::SelTrans::transform(Geom::Affine const &rel_affine, Geom::Point c
 
             Geom::Affine const &prev_transform = _items_affines[i];
             item.set_i2d_affine(prev_transform * affine);
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(item.parent);
+            auto lpeitem = cast<SPLPEItem>(item.parent);
             if (lpeitem && lpeitem->hasPathEffectRecursive()) {
                 sp_lpe_item_update_patheffect(lpeitem, true, false);
             }
@@ -479,7 +479,7 @@ void Inkscape::SelTrans::ungrab()
                 }
             }
             for (unsigned i = 0; i < _items_centers.size(); i++) {
-                SPLPEItem *currentItem = dynamic_cast<SPLPEItem *>(_items[i]);
+                auto currentItem = cast<SPLPEItem>(_items[i]);
                 if (currentItem) {
                     sp_lpe_item_update_patheffect(currentItem, true, true);
                 }
@@ -556,7 +556,7 @@ void Inkscape::SelTrans::stamp(bool clone)
             _stamp_cache = l;
             // we disable LPE while stamping and reenable on ungrab with _stamped bool
             for (auto old_obj : l) {
-                SPLPEItem *oldLPEObj = dynamic_cast<SPLPEItem *>(old_obj);
+                auto oldLPEObj = cast<SPLPEItem>(old_obj);
                 if (oldLPEObj) {
                     sp_lpe_item_enable_path_effects(oldLPEObj, false);
                 }
@@ -568,7 +568,7 @@ void Inkscape::SelTrans::stamp(bool clone)
         // to allow perform the write statement on line:616
         bool lpewritetransforms = true;
         for (auto old_obj : l) {
-            SPLPEItem *oldLPEObj = dynamic_cast<SPLPEItem *>(old_obj);
+            auto oldLPEObj = cast<SPLPEItem>(old_obj);
             if (oldLPEObj) {
                 auto effect = oldLPEObj->getFirstPathEffectOfType(Inkscape::LivePathEffect::CLONE_ORIGINAL);
                 if (effect) {
@@ -632,7 +632,7 @@ void Inkscape::SelTrans::stamp(bool clone)
             if (original_item && copy_item && !clone) {
                 original_item->setTmpSuccessor(copy_item);
             }
-            SPLPEItem *newLPEObj = dynamic_cast<SPLPEItem *>(copy_item);
+            auto newLPEObj = cast<SPLPEItem>(copy_item);
             if (newLPEObj) {
                 // disable LPE bool on dowrite to prevent move of selection original satellite
                 // when unselected (lpe performs a transform function that moves satellite and
@@ -655,7 +655,7 @@ void Inkscape::SelTrans::stamp(bool clone)
             copies.push_back(copy_item);
         }
         for (auto new_obj : copies) {
-            SPLPEItem *newLPEObj = dynamic_cast<SPLPEItem *>(new_obj);
+            auto newLPEObj = cast<SPLPEItem>(new_obj);
             if (newLPEObj && !clone) {
                 sp_lpe_item_enable_path_effects(newLPEObj,true);
                 newLPEObj->forkPathEffectsIfNecessary(1, true, true);
@@ -1031,7 +1031,7 @@ void Inkscape::SelTrans::_selChanged(Inkscape::Selection *selection)
         auto items= selection->items();
         for (auto item : items) {
             SPItem *it = static_cast<SPItem*>(sp_object_ref(item, nullptr));
-            SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(it);
+            auto lpeitem = cast<SPLPEItem>(it);
             if (lpeitem) {
                 sp_lpe_item_update_patheffect(lpeitem, true, true);
             }

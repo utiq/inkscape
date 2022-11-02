@@ -196,9 +196,9 @@ void SelCue::_newTextBaselines()
     auto items = _selection->items();
     for (auto item : items) {
         std::optional<Geom::Point> pt;
-        if (auto text = dynamic_cast<SPText *>(item)) {
+        if (auto text = cast<SPText>(item)) {
             pt = text->getBaselinePoint();
-        } else if (auto flow = dynamic_cast<SPFlowtext *>(item)) {
+        } else if (auto flow = cast<SPFlowtext>(item)) {
             pt = flow->getBaselinePoint();
         }
         if (pt) {

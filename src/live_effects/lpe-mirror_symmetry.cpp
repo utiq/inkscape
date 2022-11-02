@@ -114,7 +114,7 @@ bool LPEMirrorSymmetry::doOnOpen(SPLPEItem const *lpeitem)
     }
     lpesatellites.start_listening();
     lpesatellites.connect_selection_changed();
-    container = dynamic_cast<SPObject *>(lpeitem->parent);
+    container = lpeitem->parent;
     return fixed;
 }
 
@@ -125,7 +125,7 @@ LPEMirrorSymmetry::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
     if (!document) {
         return;
     }
-    container = dynamic_cast<SPObject *>(sp_lpe_item->parent);
+    container = sp_lpe_item->parent;
     
     if (split_items && !discard_orig_path) {
         bool active = !lpesatellites.data().size() || is_load;
@@ -407,7 +407,7 @@ LPEMirrorSymmetry::createPathBase(SPObject *elemref) {
     }
     Inkscape::XML::Document *xml_doc = document->getReprDoc();
     Inkscape::XML::Node *prev = elemref->getRepr();
-    SPGroup *group = dynamic_cast<SPGroup *>(elemref);
+    auto group = cast<SPGroup>(elemref);
     if (group) {
         Inkscape::XML::Node *container = xml_doc->createElement("svg:g");
         container->setAttribute("transform", prev->attribute("transform"));

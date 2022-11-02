@@ -333,14 +333,14 @@ bool SPLPEItem::performOnePathEffect(SPCurve *curve, SPShape *current, Inkscape:
  */
 bool SPLPEItem::optimizeTransforms()
 {
-    if (cast<SPGroup>(this)) {
+    if (is<SPGroup>(this)) {
         return false;
     }
 
-    if (cast<SPSpiral>(this) && !this->transform.isUniformScale()) {
+    if (is<SPSpiral>(this) && !this->transform.isUniformScale()) {
         return false;
     }
-    if (cast<SPStar>(this) && !this->transform.isUniformScale()) {
+    if (is<SPStar>(this) && !this->transform.isUniformScale()) {
         return false;
     }
     auto* mask_path = this->getMaskObject();
@@ -951,11 +951,11 @@ SPLPEItem::update_satellites(bool recursive) {
     if (path_effect_list->empty()) {
         return;
     }
-    SPGroup *grp = dynamic_cast<SPGroup *>(this);
+    auto grp = cast<SPGroup>(this);
     if (recursive && grp) {
         std::vector<SPItem *> item_list = grp->item_list();
         for (auto iter : item_list) {
-            SPLPEItem *subitem = dynamic_cast<SPLPEItem *>(iter);
+            auto subitem = cast<SPLPEItem>(iter);
             if (subitem) {
                 subitem->update_satellites(recursive);
             }
@@ -1099,7 +1099,7 @@ bool SPLPEItem::hasPathEffectRecursive() const
  */
 SPLPEItem const * SPLPEItem::getTopPathEffect() const
 {
-    SPLPEItem * parent_lpe_item = dynamic_cast<SPLPEItem *>(parent);
+    auto parent_lpe_item = cast<SPLPEItem>(parent);
     if (parent_lpe_item && !hasPathEffectRecursive()) {
         return hasPathEffect() ? parent_lpe_item : this;
     } else {
@@ -1607,11 +1607,11 @@ std::vector<SPObject *> SPLPEItem::get_satellites(bool force, bool recursive, bo
 {
     std::vector<SPObject *> satellites;
     if (onchilds) {
-        SPGroup * group = dynamic_cast<SPGroup *>(this);
+        auto group = cast<SPGroup>(this);
         if (group) {
             std::vector<SPItem*> item_list = group->item_list();
             for (auto child:item_list) {
-                auto lpechild = dynamic_cast<SPLPEItem *>(child);
+                auto lpechild = cast<SPLPEItem>(child);
                 if (lpechild) {
                     std::vector<SPObject *> tmp = lpechild->get_satellites(force, recursive);
                     satellites.insert( satellites.end(), tmp.begin(), tmp.end() );
