@@ -88,10 +88,11 @@ CanvasItemCtrl::CanvasItemCtrl(CanvasItemGroup *group, CanvasItemCtrlShape shape
 void CanvasItemCtrl::set_position(Geom::Point const &position)
 {
     // std::cout << "CanvasItemCtrl::set_ctrl: " << _name << ": " << position << std::endl;
-    if (_position != position) {
+    defer([=] {
+        if (_position == position) return;
         _position = position;
         request_update();
-    }
+    });
 }
 
 /**
@@ -365,29 +366,32 @@ void CanvasItemCtrl::_render(CanvasItemBuffer &buf)
 
 void CanvasItemCtrl::set_fill(uint32_t fill)
 {
-    if (_fill != fill) {
+    defer([=] {
+        if (_fill == fill) return;
         _fill = fill;
         _built = false;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItemCtrl::set_stroke(uint32_t stroke)
 {
-    if (_stroke != stroke) {
+    defer([=] {
+        if (_stroke == stroke) return;
         _stroke = stroke;
         _built = false;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItemCtrl::set_shape(CanvasItemCtrlShape shape)
 {
-    if (_shape != shape) {
+    defer([=] {
+        if (_shape == shape) return;
         _shape = shape;
         _built = false;
         request_update(); // Geometry could change
-    }
+    });
 }
 
 void CanvasItemCtrl::set_shape_default()
@@ -448,37 +452,40 @@ void CanvasItemCtrl::set_shape_default()
 
 void CanvasItemCtrl::set_mode(CanvasItemCtrlMode mode)
 {
-    if (_mode != mode) {
+    defer([=] {
+        if (_mode == mode) return;
         _mode = mode;
         _built = false;
         request_update();
-    }
+    });
 }
 
 void CanvasItemCtrl::set_pixbuf(Glib::RefPtr<Gdk::Pixbuf> pixbuf)
 {
-    if (_pixbuf != pixbuf) {
+    defer([=, pixbuf = std::move(pixbuf)] () mutable {
+        if (_pixbuf != pixbuf) return;
         _pixbuf = std::move(pixbuf);
         _width = _pixbuf->get_width();
         _height = _pixbuf->get_height();
         _built = false;
         request_update();
-    }
+    });
 }
 
 // Nominally width == height == size except possibly for pixmaps.
 void CanvasItemCtrl::set_size(int size)
 {
-    if (_pixbuf) {
-        // std::cerr << "CanvasItemCtrl::set_size: Attempting to set size on pixbuf control!" << std::endl;
-        return;
-    }
-    if (_width != size + _extra || _height != size + _extra) {
+    defer([=] {
+        if (_pixbuf) {
+            // std::cerr << "CanvasItemCtrl::set_size: Attempting to set size on pixbuf control!" << std::endl;
+            return;
+        }
+        if (_width == size + _extra && _height == size + _extra) return;
         _width  = size + _extra;
         _height = size + _extra;
         _built = false;
         request_update(); // Geometry change
-    }
+    });
 }
 
 void CanvasItemCtrl::set_size_via_index(int size_index)
@@ -554,18 +561,20 @@ void CanvasItemCtrl::set_size_default()
 
 void CanvasItemCtrl::set_size_extra(int extra)
 {
-    if (_extra != extra && !_pixbuf) { // Don't enlarge pixbuf!
-        _width  += (extra - _extra);
-        _height += (extra - _extra);
+    defer([=] {
+        if (_extra == extra || _pixbuf) return; // Don't enlarge pixbuf!
+        _width  += extra - _extra;
+        _height += extra - _extra;
         _extra = extra;
         _built = false;
         request_update(); // Geometry change
-    }
+    });
 }
 
 void CanvasItemCtrl::set_type(CanvasItemCtrlType type)
 {
-    if (_type != type) {
+    defer([=] {
+        if (_type == type) return;
         _type = type;
 
         // Use _type to set default values.
@@ -573,23 +582,25 @@ void CanvasItemCtrl::set_type(CanvasItemCtrlType type)
         set_size_default();
         _built = false;
         request_update(); // Possible geometry change
-    }
+    });
 }
 
 void CanvasItemCtrl::set_angle(double angle)
 {
-    if (_angle != angle) {
+    defer([=] {
+        if (_angle == angle) return;
         _angle = angle;
         request_update(); // Geometry change
-    }
+    });
 }
 
 void CanvasItemCtrl::set_anchor(SPAnchorType anchor)
 {
-    if (_anchor != anchor) {
+    defer([=] {
+        if (_anchor == anchor) return;
         _anchor = anchor;
         request_update(); // Geometry change
-    }
+    });
 }
 
 // ---------- Protected ----------

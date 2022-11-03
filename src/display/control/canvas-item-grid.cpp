@@ -93,39 +93,57 @@ static std::vector<Geom::Point> intersect_line_rectangle(Geom::Line const &line,
 
 void CanvasItemGrid::set_origin(Geom::Point const &point)
 {
-    _origin = point;
-    request_update();
+    defer([=] {
+        if (_origin == point) return;
+        _origin = point;
+        request_update();
+    });
 }
 
 void CanvasItemGrid::set_major_color(uint32_t color)
 {
-    _major_color = color;
-    request_update();
+    defer([=] {
+        if (_major_color == color) return;
+        _major_color = color;
+        request_update();
+    });
 }
 
 void CanvasItemGrid::set_minor_color(uint32_t color)
 {
-    _minor_color = color;
-    request_update();
+    defer([=] {
+        if (_minor_color == color) return;
+        _minor_color = color;
+        request_update();
+    });
 }
 
 void CanvasItemGrid::set_dotted(bool dotted)
 {
-    _dotted = dotted;
-    request_update();
+    defer([=] {
+        if (_dotted == dotted) return;
+        _dotted = dotted;
+        request_update();
+    });
 }
 
 void CanvasItemGrid::set_spacing(Geom::Point const &point)
 {
-    _spacing = point;
-    request_update();
+    defer([=] {
+        if (_spacing == point) return;
+        _spacing = point;
+        request_update();
+    });
 }
 
 void CanvasItemGrid::set_major_line_interval(int n)
 {
     if (n < 1) return;
-    _major_line_interval = n;
-    request_update();
+    defer([=] {
+        if (_major_line_interval == n) return;
+        _major_line_interval = n;
+        request_update();
+    });
 }
 
 void CanvasItemGrid::set_no_emp_when_zoomed_out(bool noemp)
@@ -338,21 +356,23 @@ void CanvasItemGridAxonom::_update(bool)
 // expects value given to be in degrees
 void CanvasItemGridAxonom::set_angle_x(double deg)
 {
-    angle_deg[X] = std::clamp(deg, 0.0, 89.0); // setting to 90 and values close cause extreme slowdowns
-    angle_rad[X] = Geom::rad_from_deg(angle_deg[X]);
-    tan_angle[X] = std::tan(angle_rad[X]);
-
-    request_update();
+    defer([=] {
+        angle_deg[X] = std::clamp(deg, 0.0, 89.0); // setting to 90 and values close cause extreme slowdowns
+        angle_rad[X] = Geom::rad_from_deg(angle_deg[X]);
+        tan_angle[X] = std::tan(angle_rad[X]);
+        request_update();
+    });
 }
 
 // expects value given to be in degrees
 void CanvasItemGridAxonom::set_angle_z(double deg)
 {
-    angle_deg[Z] = std::clamp(deg, 0.0, 89.0); // setting to 90 and values close cause extreme slowdowns
-    angle_rad[Z] = Geom::rad_from_deg(angle_deg[Z]);
-    tan_angle[Z] = std::tan(angle_rad[Z]);
-
-    request_update();
+    defer([=] {
+        angle_deg[Z] = std::clamp(deg, 0.0, 89.0); // setting to 90 and values close cause extreme slowdowns
+        angle_rad[Z] = Geom::rad_from_deg(angle_deg[Z]);
+        tan_angle[Z] = std::tan(angle_rad[Z]);
+        request_update();
+    });
 }
 
 static void drawline(Inkscape::CanvasItemBuffer &buf, int x0, int y0, int x1, int y1, uint32_t rgba)

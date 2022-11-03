@@ -59,10 +59,11 @@ void CanvasItemBpath::set_bpath(SPCurve const *curve, bool phantom_line)
  */
 void CanvasItemBpath::set_bpath(Geom::PathVector path, bool phantom_line)
 {
-    _path = std::move(path);
-    _phantom_line = phantom_line;
-
-    request_update();
+    defer([=, path = std::move(path)] () mutable {
+        _path = std::move(path);
+        _phantom_line = phantom_line;
+        request_update();
+    });
 }
 
 /**
@@ -70,16 +71,19 @@ void CanvasItemBpath::set_bpath(Geom::PathVector path, bool phantom_line)
  */
 void CanvasItemBpath::set_fill(uint32_t fill, SPWindRule fill_rule)
 {
-    if (_fill != fill || _fill_rule != fill_rule) {
+    defer([=] {
+        if (_fill == fill && _fill_rule == fill_rule) return;
         _fill = fill;
         _fill_rule = fill_rule;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItemBpath::set_dashes(std::vector<double> &&dashes)
 {
-    _dashes = std::move(dashes);
+    defer([=, dashes = std::move(dashes)] () mutable {
+        _dashes = std::move(dashes);
+    });
 }
 
 /**
@@ -87,10 +91,11 @@ void CanvasItemBpath::set_dashes(std::vector<double> &&dashes)
  */
 void CanvasItemBpath::set_stroke_width(double width)
 {
-    if (_stroke_width != width) {
+    defer([=] {
+        if (_stroke_width == width) return;
         _stroke_width = width;
         request_redraw();
-    }
+    });
 }
 
 /**

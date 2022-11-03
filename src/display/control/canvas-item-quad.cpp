@@ -52,12 +52,13 @@ CanvasItemQuad::CanvasItemQuad(CanvasItemGroup *group,
  */
 void CanvasItemQuad::set_coords(Geom::Point const &p0, Geom::Point const &p1, Geom::Point const &p2, Geom::Point const &p3)
 {
-    _p0 = p0;
-    _p1 = p1;
-    _p2 = p2;
-    _p3 = p3;
-
-    request_update();
+    defer([=] {
+        _p0 = p0;
+        _p1 = p1;
+        _p2 = p2;
+        _p3 = p3;
+        request_update();
+    });
 }
 
 /**
@@ -148,10 +149,11 @@ void CanvasItemQuad::_render(Inkscape::CanvasItemBuffer &buf)
 
 void CanvasItemQuad::set_inverted(bool inverted)
 {
-    if (_inverted != inverted) {
+    defer([=] {
+        if (_inverted == inverted) return;
         _inverted = inverted;
         request_redraw();
-    }
+    });
 }
 
 } // namespace Inkscape

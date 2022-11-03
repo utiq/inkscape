@@ -6,6 +6,7 @@
 #define SEEN_CANVAS_ITEM_CONTEXT_H
 
 #include <2geom/affine.h>
+#include "util/funclog.h"
 
 namespace Inkscape {
 
@@ -28,6 +29,14 @@ public:
     Geom::Affine const &affine() const { return _affine; }
     void setAffine(Geom::Affine const &affine) { _affine = affine; }
 
+    // Snapshotting
+    void snapshot();
+    void unsnapshot();
+    bool snapshotted() const { return _snapshotted; }
+
+    template<typename F>
+    void defer(F &&f) { _snapshotted ? _funclog.emplace(std::forward<F>(f)) : f(); }
+
 private:
     // Structure
     UI::Widget::Canvas *_canvas;
@@ -35,6 +44,12 @@ private:
 
     // Geometry
     Geom::Affine _affine;
+
+    // Snapshotting
+    char _cacheline_separator[127];
+
+    bool _snapshotted = false;
+    Util::FuncLog _funclog;
 };
 
 } // namespace Inkscape

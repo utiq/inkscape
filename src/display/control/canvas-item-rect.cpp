@@ -51,8 +51,11 @@ CanvasItemRect::CanvasItemRect(CanvasItemGroup *group, Geom::Rect const &rect)
  */
 void CanvasItemRect::set_rect(Geom::Rect const &rect)
 {
-    _rect = rect;
-    request_update();
+    defer([=] {
+        if (_rect == rect) return;
+        _rect = rect;
+        request_update();
+    });
 }
 
 /**
@@ -187,10 +190,11 @@ void CanvasItemRect::_render(Inkscape::CanvasItemBuffer &buf)
 
 void CanvasItemRect::set_is_page(bool is_page)
 {
-    if (_is_page != is_page) {
+    defer([=] {
+        if (_is_page == is_page) return;
         _is_page = is_page;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItemRect::set_fill(uint32_t fill)
@@ -201,28 +205,31 @@ void CanvasItemRect::set_fill(uint32_t fill)
 
 void CanvasItemRect::set_dashed(bool dashed)
 {
-    if (_dashed != dashed) {
+    defer([=] {
+        if (_dashed == dashed) return;
         _dashed = dashed;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItemRect::set_inverted(bool inverted)
 {
-    if (_inverted != inverted) {
+    defer([=] {
+        if (_inverted == inverted) return;
         _inverted = inverted;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItemRect::set_shadow(uint32_t color, int width)
 {
-    if (_shadow_color != color || _shadow_width != width) {
+    defer([=] {
+        if (_shadow_color == color && _shadow_width == width) return;
         _shadow_color = color;
         _shadow_width = width;
         request_redraw();
         if (_is_page) get_canvas()->set_border(_shadow_width > 0 ? color : 0x0);
-    }
+    });
 }
 
 double CanvasItemRect::get_shadow_size() const

@@ -61,10 +61,11 @@ CanvasItemCurve::CanvasItemCurve(CanvasItemGroup *group,
  */
 void CanvasItemCurve::set_coords(Geom::Point const &p0, Geom::Point const &p1)
 {
-    _name = "CanvasItemCurve:Line";
-    _curve = std::make_unique<Geom::LineSegment>(p0, p1);
-
-    request_update();
+    defer([=] {
+        _name = "CanvasItemCurve:Line";
+        _curve = std::make_unique<Geom::LineSegment>(p0, p1);
+        request_update();
+    });
 }
 
 /**
@@ -72,10 +73,11 @@ void CanvasItemCurve::set_coords(Geom::Point const &p0, Geom::Point const &p1)
  */
 void CanvasItemCurve::set_coords(Geom::Point const &p0, Geom::Point const &p1, Geom::Point const &p2, Geom::Point const &p3)
 {
-    _name = "CanvasItemCurve:CubicBezier";
-    _curve = std::make_unique<Geom::CubicBezier>(p0, p1, p2, p3);
-
-    request_update();
+    defer([=] {
+        _name = "CanvasItemCurve:CubicBezier";
+        _curve = std::make_unique<Geom::CubicBezier>(p0, p1, p2, p3);
+        request_update();
+    });
 }
 
 /**
@@ -83,8 +85,11 @@ void CanvasItemCurve::set_coords(Geom::Point const &p0, Geom::Point const &p1, G
  */
 void CanvasItemCurve::set_width(int width)
 {
-    _width = width;
-    request_update();
+    defer([=] {
+        if (_width == width) return;
+        _width = width;
+        request_update();
+    });
 }
 
 /**
@@ -92,8 +97,11 @@ void CanvasItemCurve::set_width(int width)
  */
 void CanvasItemCurve::set_bg_alpha(float alpha)
 {
-    bg_alpha = alpha;
-    request_update();
+    defer([=] {
+        if (bg_alpha == alpha) return;
+        bg_alpha = alpha;
+        request_update();
+    });
 }
 
 /**

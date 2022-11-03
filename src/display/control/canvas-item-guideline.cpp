@@ -229,15 +229,17 @@ void CanvasItemGuideLine::set_stroke(uint32_t color)
 
 void CanvasItemGuideLine::set_label(Glib::ustring &&label)
 {
-    if (_label != label) {
+    defer([=, label = std::move(label)] () mutable {
+        if (_label == label) return;
         _label = std::move(label);
         request_update();
-    }
+    });
 }
 
 void CanvasItemGuideLine::set_locked(bool locked)
 {
-    if (_locked != locked) {
+    defer([=] {
+        if (_locked == locked) return;
         _locked = locked;
         if (_locked) {
             _origin_ctrl->set_shape(CANVAS_ITEM_CTRL_SHAPE_CROSS);
@@ -248,7 +250,7 @@ void CanvasItemGuideLine::set_locked(bool locked)
             _origin_ctrl->set_stroke(0x00000000); // no stroke
             _origin_ctrl->set_fill(_stroke);      // fill the control with this guide's color
         }
-    }
+    });
 }
 
 //===============================================================================================
@@ -286,13 +288,14 @@ void CanvasItemGuideHandle::set_size_via_index(int index)
     if (size < MINIMUM_SIZE) {
         size = MINIMUM_SIZE;
     }
-    if (_width != size) {
+    defer([=] {
+        if (_width == size) return;
         _width = size;
         _height = size;
         _built = false;
         request_update();
         _my_line->request_update();
-    }
+    });
 }
 
 } // namespace Inkscape

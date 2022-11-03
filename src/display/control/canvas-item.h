@@ -141,6 +141,10 @@ protected:
 
     // Events
     sigc::signal<bool (GdkEvent*)> _event_signal;
+
+    // Snapshotting
+    template<typename F>
+    void defer(F &&f) { _context->defer(std::forward<F>(f)); }
 };
 
 } // namespace Inkscape

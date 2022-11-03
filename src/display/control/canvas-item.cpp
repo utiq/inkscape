@@ -38,27 +38,31 @@ CanvasItem::CanvasItem(CanvasItemGroup *parent)
     , _parent(parent)
 {
     if constexpr (DEBUG_LOGGING) std::cout << "CanvasItem: add " << get_name() << " to " << parent->get_name() << " " << parent->items.size() << std::endl;
-    parent->items.push_back(*this);
-    request_update();
+    defer([=] {
+        parent->items.push_back(*this);
+        request_update();
+    });
 }
 
 void CanvasItem::unlink()
 {
-    // Clear canvas of item.
-    request_redraw();
+    defer([=] {
+        // Clear canvas of item.
+        request_redraw();
 
-    // Remove from parent.
-    if (_parent) {
-        if constexpr (DEBUG_LOGGING) std::cout << "CanvasItem: remove " << get_name() << " from " << _parent->get_name() << " " << _parent->items.size() << std::endl;
-        auto it = _parent->items.iterator_to(*this);
-        assert(it != _parent->items.end());
-        _parent->items.erase(it);
-        _parent->request_update();
-    } else {
-        if constexpr (DEBUG_LOGGING) std::cout << "CanvasItem: destroy root " << get_name() << std::endl;
-    }
+        // Remove from parent.
+        if (_parent) {
+            if constexpr (DEBUG_LOGGING) std::cout << "CanvasItem: remove " << get_name() << " from " << _parent->get_name() << " " << _parent->items.size() << std::endl;
+            auto it = _parent->items.iterator_to(*this);
+            assert(it != _parent->items.end());
+            _parent->items.erase(it);
+            _parent->request_update();
+        } else {
+            if constexpr (DEBUG_LOGGING) std::cout << "CanvasItem: destroy root " << get_name() << std::endl;
+        }
 
-    delete this;
+        delete this;
+    });
 }
 
 CanvasItem::~CanvasItem()
@@ -86,17 +90,19 @@ void CanvasItem::set_z_position(int zpos)
         return;
     }
 
-    _parent->items.erase(_parent->items.iterator_to(*this));
+    defer([=] {
+        _parent->items.erase(_parent->items.iterator_to(*this));
 
-    if (zpos <= 0) {
-        _parent->items.push_front(*this);
-    } else if (zpos >= _parent->items.size() - 1) {
-        _parent->items.push_back(*this);
-    } else {
-        auto it = _parent->items.begin();
-        std::advance(it, zpos);
-        _parent->items.insert(it, *this);
-    }
+        if (zpos <= 0) {
+            _parent->items.push_front(*this);
+        } else if (zpos >= _parent->items.size() - 1) {
+            _parent->items.push_back(*this);
+        } else {
+            auto it = _parent->items.begin();
+            std::advance(it, zpos);
+            _parent->items.insert(it, *this);
+        }
+    });
 }
 
 void CanvasItem::raise_to_top()
@@ -106,8 +112,10 @@ void CanvasItem::raise_to_top()
         return;
     }
 
-    _parent->items.erase(_parent->items.iterator_to(*this));
-    _parent->items.push_back(*this);
+    defer([=] {
+        _parent->items.erase(_parent->items.iterator_to(*this));
+        _parent->items.push_back(*this);
+    });
 }
 
 void CanvasItem::lower_to_bottom()
@@ -117,8 +125,10 @@ void CanvasItem::lower_to_bottom()
         return;
     }
 
-    _parent->items.erase(_parent->items.iterator_to(*this));
-    _parent->items.push_front(*this);
+    defer([=] {
+        _parent->items.erase(_parent->items.iterator_to(*this));
+        _parent->items.push_front(*this);
+    });
 }
 
 // Indicate geometry changed and bounds needs recalculating.
@@ -222,14 +232,16 @@ void CanvasItem::render(CanvasItemBuffer &buf)
 
 void CanvasItem::set_visible(bool visible)
 {
-    if (_visible == visible) return;
-    if (_visible) {
-        request_update();
-        _visible = false;
-    } else {
-        _visible = true;
-        request_update();
-    }
+    defer([=] {
+        if (_visible == visible) return;
+        if (_visible) {
+            request_update();
+            _visible = false;
+        } else {
+            _visible = true;
+            request_update();
+        }
+    });
 }
 
 void CanvasItem::request_redraw()
@@ -242,18 +254,20 @@ void CanvasItem::request_redraw()
 
 void CanvasItem::set_fill(uint32_t fill)
 {
-    if (_fill != fill) {
+    defer([=] {
+        if (_fill == fill) return;
         _fill = fill;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItem::set_stroke(uint32_t stroke)
 {
-    if (_stroke != stroke) {
+    defer([=] {
+        if (_stroke == stroke) return;
         _stroke = stroke;
         request_redraw();
-    }
+    });
 }
 
 void CanvasItem::update_canvas_item_ctrl_sizes(int size_index)

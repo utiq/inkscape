@@ -16,6 +16,19 @@ CanvasItemContext::~CanvasItemContext()
     delete _root;
 }
 
+void CanvasItemContext::snapshot()
+{
+    assert(!_snapshotted);
+    _snapshotted = true;
+}
+
+void CanvasItemContext::unsnapshot()
+{
+    assert(_snapshotted);
+    _snapshotted = false;
+    _funclog();
+}
+
 } // namespace Inkscape
 
 /*
