@@ -138,6 +138,9 @@ static void set_macos_app_bundle_env(gchar const *program_dir)
     // GNOME introspection
     Glib::setenv("GI_TYPELIB_PATH", bundle_resources_lib_dir + "/girepository-1.0");
 
+    // libenchant
+    Glib::setenv("ENCHANT_PREFIX", bundle_resources_dir);
+
     // PATH
     Glib::setenv("PATH", bundle_resources_bin_dir + ":" + Glib::getenv("PATH"));
 
