@@ -46,7 +46,9 @@
 #include "svg/svg-color.h"
 #include "ui/monitor.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/canvas-grid.h"
 #include "util/units.h"
+#include "widgets/desktop-widget.h"
 #include "xml/repr.h"
 
 using Inkscape::DocumentUndo;
@@ -884,7 +886,13 @@ void SPNamedView::updateGuides()
     if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
                 document->getActionGroup()->lookup_action("lock-all-guides"))) {
 
-        saction->change_state(getLockGuides());
+        bool is_locked = getLockGuides();
+        saction->change_state(is_locked);
+
+        for (auto desktop : views) {
+            auto dt_widget = desktop->getDesktopWidget();
+            dt_widget->get_canvas_grid()->GetGuideLock()->set_active(is_locked);
+        }
     }
 
     for (SPGuide *guide : guides) {

@@ -788,11 +788,7 @@ SPDesktopWidget::update_guides_lock()
 
     if (down != lock) {
         nv->toggleLockGuides();
-        if (down) {
-            setMessage (Inkscape::NORMAL_MESSAGE, _("Locked all guides"));
-        } else {
-            setMessage (Inkscape::NORMAL_MESSAGE, _("Unlocked all guides"));
-        }
+        setMessage(Inkscape::NORMAL_MESSAGE, down ? _("Locked all guides") : _("Unlocked all guides"));
     }
 }
 

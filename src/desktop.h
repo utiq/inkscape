@@ -146,6 +146,7 @@ public:
     Inkscape::UI::Widget::Canvas* getCanvas() const { return canvas; }
     Inkscape::MessageStack* getMessageStack() const { return messageStack().get(); }
     SPNamedView* getNamedView() const { return namedview; }
+    SPDesktopWidget *getDesktopWidget() const { return _widget; }
 
     // ------- Canvas Items -------
     Inkscape::UI::Widget::Canvas *canvas;
