@@ -339,7 +339,7 @@ if(WIN32)
   # Python packages for the extensions manager, and clipart importer extensions
   set(packages
       "python-appdirs" "python-msgpack" "python-lockfile" "python-cachecontrol"
-      "python-idna" "python-urllib3" "python-chardet" "python-certifi" "python-requests")
+      "python-idna" "python-urllib3" "python-chardet" "python-certifi" "python-requests" "python-beautifulsoup4")
   foreach(package ${packages})
     list_files_pacman(${package} paths)
     install_list(FILES ${paths}

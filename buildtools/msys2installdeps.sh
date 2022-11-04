@@ -83,9 +83,10 @@ $ARCH-python-coverage \
 $ARCH-python-packaging \
 $ARCH-scour
 
-# install modules needed by extensions manager
+# install modules needed by extensions manager and clipart importer
 eval pacman -S $PACMAN_OPTIONS \
 $ARCH-python-appdirs \
+$ARCH-python-beautifulsoup4 \
 $ARCH-python-msgpack \
 $ARCH-python-lockfile \
 $ARCH-python-cachecontrol \

@@ -93,6 +93,7 @@ apt_bundle \
     python3-distutils \
     python3-packaging \
     python3-appdirs \
+    python3-bs4 \
     python3-gi \
     python3-gi-cairo \
     python3-pil \
