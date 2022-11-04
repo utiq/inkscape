@@ -615,6 +615,9 @@ class AttributeLookupImpl {
 
             m_map[props[i].name] = props[i].code;
         }
+
+        // SVG 2.0 alias for xlink:href
+        m_map["href"] = SPAttr::XLINK_HREF;
     }
 };
 

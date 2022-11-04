@@ -98,6 +98,7 @@
 #include "ui/tools/node-tool.h"
 #include "ui/tools/text-tool.h"
 #include "ui/widget/canvas.h" // is_dragging()
+#include "xml/href-attribute-helper.h"
 #include "xml/rebase-hrefs.h"
 #include "xml/simple-document.h"
 
@@ -2723,7 +2724,7 @@ void ObjectSet::relink()
         if (SPUse *use = dynamic_cast<SPUse *>(item)) {
             // Get original referenced item, relink, then get new reference
             SPItem *ref = use->get_original();
-            use->setAttribute("xlink:href", newrefAttribute);
+            use->setAttribute(Inkscape::getHrefAttribute(*use->getRepr()).first, newrefAttribute);
             SPItem *newref = use->get_original();
 
             if (ref && newref) {

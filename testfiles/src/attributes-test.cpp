@@ -619,6 +619,12 @@ TEST(AttributesTest, NameRoundTrip)
     }
 }
 
+// Equivalent aliases, e.g. with and without namespace
+TEST(AttributesTest, Aliases)
+{
+    EXPECT_EQ(sp_attribute_lookup("href"), SPAttr::XLINK_HREF);
+}
+
 /* Test for any attributes that this test program doesn't know about.
  *
  * If any are found, then:
