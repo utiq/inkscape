@@ -51,6 +51,4 @@ cd "$INK_BLD_DIR" || exit 1
 
 ninja tests   # build tests
 
-# run tests
-ctest -V
-
+ctest -V      # run tests
