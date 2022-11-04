@@ -30,7 +30,8 @@ enum class SPColorScalesMode {
     HSL,
     CMYK,
     HSV,
-    HSLUV
+    HSLUV,
+    OKLAB
 };
 
 template <SPColorScalesMode MODE = SPColorScalesMode::NONE>
@@ -40,8 +41,8 @@ class ColorScales
 public:
     static gchar const *SUBMODE_NAMES[];
 
-    static gfloat getScaled(Glib::RefPtr<Gtk::Adjustment> const &a);
-    static void setScaled(Glib::RefPtr<Gtk::Adjustment> &a, gfloat v, bool constrained = false);
+    static double getScaled(Glib::RefPtr<Gtk::Adjustment> const &a);
+    static void setScaled(Glib::RefPtr<Gtk::Adjustment> &a, double v, bool constrained = false);
 
     ColorScales(SelectedColor &color, bool no_alpha);
     ~ColorScales() override;

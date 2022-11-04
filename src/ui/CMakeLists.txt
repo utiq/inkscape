@@ -222,6 +222,7 @@ set(ui_SRC
 	widget/notebook-page.cpp
 	widget/object-composite-settings.cpp
 	widget/objects-dialog-cells.cpp
+	widget/oklab-color-wheel.cpp
 	widget/optglarea.cpp
 	widget/page-properties.cpp
 	widget/page-size-preview.cpp
@@ -494,6 +495,7 @@ set(ui_SRC
 	widget/notebook-page.h
 	widget/object-composite-settings.h
 	widget/objects-dialog-cells.h
+	widget/oklab-color-wheel.h
 	widget/optglarea.h
 	widget/page-selector.h
 	widget/paint-selector.h

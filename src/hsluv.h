@@ -50,6 +50,12 @@ struct PickerGeometry {
 };
 
 // Functions
+/** Apply sRGB gamma compression to a linear RGB color component. */
+double from_linear(double c);
+
+/** Convert an sRGB color component to linear RGB (de-gamma). */
+double to_linear(double c);
+
 /**
  * Return the bounds of the Luv colors in RGB gamut.
  *

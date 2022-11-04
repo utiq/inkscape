@@ -138,7 +138,7 @@ static double dot_product(const Triplet &t1, const Triplet &t2)
  * @param c Value.
  * @return RGB color component.
  */
-static double from_linear(double c)
+double from_linear(double c)
 {
     if (c <= 0.0031308) {
         return 12.92 * c;
@@ -153,7 +153,7 @@ static double from_linear(double c)
  * @param c Value.
  * @return XYZ color component.
  */
-static double to_linear(double c)
+double to_linear(double c)
 {
     if (c > 0.04045) {
         return std::pow((c + 0.055) / 1.055, 2.4);

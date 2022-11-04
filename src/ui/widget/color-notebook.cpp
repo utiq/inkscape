@@ -66,6 +66,7 @@ ColorNotebook::ColorNotebook(SelectedColor &color, bool no_alpha)
     _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::RGB>, "color-selector-rgb"));
     _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::CMYK>, "color-selector-cmyk"));
     _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::HSLUV>, "color-selector-hsluv"));
+    _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::OKLAB>, "color-selector-okhsl"));
     //_available_pages.push_back(new Page(new ColorWheelSelectorFactory, "color-selector-wheel"));
     _available_pages.push_back(new Page(new ColorICCSelectorFactory, "color-selector-cms"));
 

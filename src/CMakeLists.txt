@@ -52,6 +52,7 @@ set(inkscape_SRC
   mod360.cpp
   object-hierarchy.cpp
   object-snapper.cpp
+  oklab.cpp
   page-manager.cpp
   path-chemistry.cpp
   path-prefix.cpp
@@ -145,6 +146,7 @@ set(inkscape_SRC
   number-opt-number.h
   object-hierarchy.h
   object-snapper.h
+  oklab.h
   page-manager.h
   path-chemistry.h
   path-prefix.h

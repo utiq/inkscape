@@ -22,9 +22,11 @@
 #include "ui/widget/color-slider.h"
 #include "ui/widget/scrollprotected.h"
 #include "ui/icon-loader.h"
+#include "oklab.h"
 #include "preferences.h"
 
 #include "ui/widget/ink-color-wheel.h"
+#include "ui/widget/oklab-color-wheel.h"
 
 static int const CSC_CHANNEL_R     = (1 << 0);
 static int const CSC_CHANNEL_G     = (1 << 1);
@@ -56,7 +58,7 @@ static guchar const *sp_color_scales_hsluv_map(guchar *map,
 
 template <SPColorScalesMode MODE>
 gchar const *ColorScales<MODE>::SUBMODE_NAMES[] = { N_("None"), N_("RGB"), N_("HSL"),
-    N_("CMYK"), N_("HSV"), N_("HSLuv") };
+    N_("CMYK"), N_("HSV"), N_("HSLuv"), N_("OKHSL") };
 
 
 // Preference name for the saved state of toggle-able color wheel
@@ -72,6 +74,9 @@ template <>
 gchar const * const ColorScales<SPColorScalesMode::HSLUV>::_pref_wheel_visibility =
     "/wheel_vis_hsluv";
 
+template <>
+gchar const * const ColorScales<SPColorScalesMode::OKLAB>::_pref_wheel_visibility =
+    "/wheel_vis_okhsl";
 
 template <SPColorScalesMode MODE>
 ColorScales<MODE>::ColorScales(SelectedColor &color, bool no_alpha)
@@ -115,13 +120,16 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
     Gtk::Expander *wheel_frame = nullptr;
 
     if constexpr (
-            MODE == SPColorScalesMode::HSL ||
-            MODE == SPColorScalesMode::HSV ||
-            MODE == SPColorScalesMode::HSLUV)
+            MODE == SPColorScalesMode::HSL   ||
+            MODE == SPColorScalesMode::HSV   ||
+            MODE == SPColorScalesMode::HSLUV ||
+            MODE == SPColorScalesMode::OKLAB)
     {
         /* Create wheel */
         if constexpr (MODE == SPColorScalesMode::HSLUV) {
             _wheel = Gtk::manage(new Inkscape::UI::Widget::ColorWheelHSLuv());
+        } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
+            _wheel = Gtk::make_managed<OKWheel>();
         } else {
             _wheel = Gtk::manage(new Inkscape::UI::Widget::ColorWheelHSL());
         }
@@ -240,9 +248,10 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
     setupMode(no_alpha);
 
     if constexpr (
-            MODE == SPColorScalesMode::HSL ||
-            MODE == SPColorScalesMode::HSV ||
-            MODE == SPColorScalesMode::HSLUV)
+            MODE == SPColorScalesMode::HSL   ||
+            MODE == SPColorScalesMode::HSV   ||
+            MODE == SPColorScalesMode::HSLUV ||
+            MODE == SPColorScalesMode::OKLAB)
     {
         // Restore the visibility of the wheel
         bool visible = Inkscape::Preferences::get()->getBool(_prefs + _pref_wheel_visibility,
@@ -260,10 +269,11 @@ void ColorScales<MODE>::_recalcColor()
     gfloat c[5];
 
     if constexpr (
-            MODE == SPColorScalesMode::RGB ||
-            MODE == SPColorScalesMode::HSL ||
-            MODE == SPColorScalesMode::HSV ||
-            MODE == SPColorScalesMode::HSLUV)
+            MODE == SPColorScalesMode::RGB   ||
+            MODE == SPColorScalesMode::HSL   ||
+            MODE == SPColorScalesMode::HSV   ||
+            MODE == SPColorScalesMode::HSLUV ||
+            MODE == SPColorScalesMode::OKLAB)
     {
         _getRgbaFloatv(c);
         color.set(c[0], c[1], c[2]);
@@ -322,6 +332,22 @@ void ColorScales<MODE>::_updateDisplay(bool update_wheel)
         c[3] = _color.alpha();
         c[4] = 0.0;
         if (update_wheel) { _wheel->setRgb(tmp[0], tmp[1], tmp[2]); }
+    } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
+        color.get_rgb_floatv(tmp);
+        // OKLab color space is more sensitive to numerical errors; use doubles.
+        auto const hsl = Oklab::oklab_to_okhsl(Oklab::rgb_to_oklab({tmp[0], tmp[1], tmp[2]}));
+        _updating = true;
+        for (size_t i : {0, 1, 2}) {
+            setScaled(_a[i], hsl[i]);
+        }
+        setScaled(_a[3], _color.alpha());
+        setScaled(_a[4], 0.0);
+        _updateSliders(CSC_CHANNELS_ALL);
+        _updating = false;
+        if (update_wheel) {
+            _wheel->setRgb(tmp[0], tmp[1], tmp[2]);
+        }
+        return;
     } else {
         g_warning("file %s: line %d: Illegal color selector mode NONE", __FILE__, __LINE__);
     }
@@ -338,17 +364,16 @@ void ColorScales<MODE>::_updateDisplay(bool update_wheel)
 
 /* Helpers for setting color value */
 template <SPColorScalesMode MODE>
-gfloat ColorScales<MODE>::getScaled(Glib::RefPtr<Gtk::Adjustment> const &a)
+double ColorScales<MODE>::getScaled(Glib::RefPtr<Gtk::Adjustment> const &a)
 {
-    gfloat val = a->get_value() / a->get_upper();
-    return val;
+    return a->get_value() / a->get_upper();
 }
 
 template <SPColorScalesMode MODE>
-void ColorScales<MODE>::setScaled(Glib::RefPtr<Gtk::Adjustment> &a, gfloat v, bool constrained)
+void ColorScales<MODE>::setScaled(Glib::RefPtr<Gtk::Adjustment> &a, double v, bool constrained)
 {
     auto upper = a->get_upper();
-    gfloat val = v * upper;
+    double val = v * upper;
     if (constrained) {
         // TODO: do we want preferences for these?
         if (upper == 255) {
@@ -409,6 +434,15 @@ void ColorScales<MODE>::_getRgbaFloatv(gfloat *rgba)
         SPColor::hsluv_to_rgb_floatv(rgba, getScaled(_a[0]), getScaled(_a[1]),
                 getScaled(_a[2]));
         rgba[3] = getScaled(_a[3]);
+    } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
+        auto const tmp = Oklab::oklab_to_rgb(
+            Oklab::okhsl_to_oklab({ getScaled(_a[0]),
+                                    getScaled(_a[1]),
+                                    getScaled(_a[2]) }));
+        for (size_t i : {0, 1, 2}) {
+            rgba[i] = static_cast<float>(tmp[i]);
+        }
+        rgba[3] = getScaled(_a[3]);
     } else {
         g_warning("file %s: line %d: Illegal color selector mode", __FILE__, __LINE__);
     }
@@ -434,6 +468,13 @@ void ColorScales<MODE>::_getCmykaFloatv(gfloat *cmyka)
         SPColor::hsluv_to_rgb_floatv(rgb, getScaled(_a[0]), getScaled(_a[1]),
                 getScaled(_a[2]));
         SPColor::rgb_to_cmyk_floatv(cmyka, rgb[0], rgb[1], rgb[2]);
+        cmyka[4] = getScaled(_a[3]);
+    } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
+        auto const tmp = Oklab::oklab_to_rgb(
+            Oklab::okhsl_to_oklab({ getScaled(_a[0]),
+                                    getScaled(_a[1]),
+                                    getScaled(_a[2]) }));
+        SPColor::rgb_to_cmyk_floatv(cmyka, (float)tmp[0], (float)tmp[1], (float)tmp[2]);
         cmyka[4] = getScaled(_a[3]);
     } else if constexpr (MODE == SPColorScalesMode::CMYK) {
         cmyka[0] = getScaled(_a[0]);
@@ -649,6 +690,40 @@ void ColorScales<MODE>::setupMode(bool no_alpha)
 
         _updateSliders(CSC_CHANNELS_ALL);
         _updating = false;
+    } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
+        _setRangeLimit(100.0);
+
+        _l[0]->set_markup_with_mnemonic(_("_H<sub>OK</sub>:"));
+        _s[0]->set_tooltip_text(_("Hue"));
+        _b[0]->set_tooltip_text(_("Hue"));
+        _a[0]->set_upper(360.0);
+
+        _l[1]->set_markup_with_mnemonic(_("_S<sub>OK</sub>:"));
+        _s[1]->set_tooltip_text(_("Saturation"));
+        _b[1]->set_tooltip_text(_("Saturation"));
+
+        _l[2]->set_markup_with_mnemonic(_("_L<sub>OK</sub>:"));
+        _s[2]->set_tooltip_text(_("Lightness"));
+        _b[2]->set_tooltip_text(_("Lightness"));
+
+        alpha_index = 3;
+        _l[3]->set_markup_with_mnemonic(_("_A:"));
+        _s[3]->set_tooltip_text(_("Alpha (opacity)"));
+        _b[3]->set_tooltip_text(_("Alpha (opacity)"));
+
+        _l[4]->hide();
+        _s[4]->hide();
+        _b[4]->hide();
+        _updating = true;
+
+        auto const tmp = Oklab::oklab_to_okhsl(Oklab::rgb_to_oklab({rgba[0], rgba[1], rgba[2]}));
+        for (size_t i : {0, 1, 2}) {
+            setScaled(_a[i], tmp[i]);
+        }
+        setScaled(_a[3], rgba[3]);
+
+        _updateSliders(CSC_CHANNELS_ALL);
+        _updating = false;
     } else {
         g_warning("file %s: line %d: Illegal color selector mode", __FILE__, __LINE__);
     }
@@ -750,7 +825,7 @@ void ColorScales<MODE>::_updateSliders(guint channels)
     guint32 rgba;
 #endif
 
-    std::array<gfloat, 4> const adj = [this]() -> std::array<gfloat, 4> {
+    std::array<double, 4> const adj = [this]() -> std::array<double, 4> {
         if constexpr (MODE == SPColorScalesMode::CMYK) {
             return { getScaled(_a[0]), getScaled(_a[1]), getScaled(_a[2]), getScaled(_a[3]) };
         } else {
@@ -901,6 +976,25 @@ void ColorScales<MODE>::_updateSliders(guint channels)
                              SP_RGBA32_F_COMPOSE(rgb0[0], rgb0[1], rgb0[2], 0.5),
                              SP_RGBA32_F_COMPOSE(rgb0[0], rgb0[1], rgb0[2], 1.0));
         }
+    } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
+        if (channels != CSC_CHANNEL_H && channels != CSC_CHANNEL_A) {
+            _s[0]->setMap(Oklab::render_hue_scale(adj[1], adj[2], &_sliders_maps[0]));
+        }
+        if ((channels != CSC_CHANNEL_S) && (channels != CSC_CHANNEL_A)) {
+            _s[1]->setMap(Oklab::render_saturation_scale(360.0 * adj[0], adj[2], &_sliders_maps[1]));
+        }
+        if ((channels != CSC_CHANNEL_V) && (channels != CSC_CHANNEL_A)) {
+            _s[2]->setMap(Oklab::render_lightness_scale(360.0 * adj[0], adj[1], &_sliders_maps[2]));
+        }
+        if (channels != CSC_CHANNEL_A) { // Update the alpha gradient.
+            auto const rgb = Oklab::oklab_to_rgb(
+                Oklab::okhsl_to_oklab({ getScaled(_a[0]),
+                                        getScaled(_a[1]),
+                                        getScaled(_a[2]) }));
+            _s[3]->setColors(SP_RGBA32_F_COMPOSE(rgb[0], rgb[1], rgb[2], 0.0),
+                             SP_RGBA32_F_COMPOSE(rgb[0], rgb[1], rgb[2], 0.5),
+                             SP_RGBA32_F_COMPOSE(rgb[0], rgb[1], rgb[2], 1.0));
+        }
     } else {
         g_warning("file %s: line %d: Illegal color selector mode", __FILE__, __LINE__);
     }
@@ -950,6 +1044,7 @@ static void sp_color_interp(guchar *out, gint steps, gfloat *start, gfloat *end)
     }
 }
 
+// TODO: consider turning this into a generator (without memory allocation).
 template <typename T>
 static std::vector<T> range (int const steps, T start, T end)
 {
@@ -1041,6 +1136,8 @@ Glib::ustring ColorScalesFactory<MODE>::modeName() const
         return gettext(ColorScales<>::SUBMODE_NAMES[4]);
     } else if constexpr (MODE == SPColorScalesMode::HSLUV) {
         return gettext(ColorScales<>::SUBMODE_NAMES[5]);
+    } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
+        return gettext(ColorScales<>::SUBMODE_NAMES[6]);
     } else {
         return gettext(ColorScales<>::SUBMODE_NAMES[0]);
     }
@@ -1053,6 +1150,7 @@ template class ColorScales<SPColorScalesMode::HSL>;
 template class ColorScales<SPColorScalesMode::CMYK>;
 template class ColorScales<SPColorScalesMode::HSV>;
 template class ColorScales<SPColorScalesMode::HSLUV>;
+template class ColorScales<SPColorScalesMode::OKLAB>;
 
 template class ColorScalesFactory<SPColorScalesMode::NONE>;
 template class ColorScalesFactory<SPColorScalesMode::RGB>;
@@ -1060,6 +1158,7 @@ template class ColorScalesFactory<SPColorScalesMode::HSL>;
 template class ColorScalesFactory<SPColorScalesMode::CMYK>;
 template class ColorScalesFactory<SPColorScalesMode::HSV>;
 template class ColorScalesFactory<SPColorScalesMode::HSLUV>;
+template class ColorScalesFactory<SPColorScalesMode::OKLAB>;
 
 } // namespace Widget
 } // namespace UI
