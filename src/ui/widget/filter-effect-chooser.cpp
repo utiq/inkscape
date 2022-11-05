@@ -20,7 +20,8 @@ namespace Inkscape {
 // Blend modes are in six groups according to the types of changes they make to luminosity
 // See: https://typefully.com/DanHollick/blending-modes-KrBa0JP
 // Add 5 to ENDMODE for the five additional separators in the list
-const EnumData<SPBlendMode> SPBlendModeData[SP_CSS_BLEND_ENDMODE+5] = {
+const int SP_CSS_BLEND_COUNT = SP_CSS_BLEND_ENDMODE + 5;
+const EnumData<SPBlendMode> SPBlendModeData[SP_CSS_BLEND_COUNT] = {
     { SP_CSS_BLEND_NORMAL, _("Normal"), "normal" },
     { SP_CSS_BLEND_ENDMODE, "-", "-" },
     { SP_CSS_BLEND_DARKEN, _("Darken"), "darken" },
@@ -43,7 +44,7 @@ const EnumData<SPBlendMode> SPBlendModeData[SP_CSS_BLEND_ENDMODE+5] = {
     { SP_CSS_BLEND_COLOR, _("Color"), "color" },
     { SP_CSS_BLEND_LUMINOSITY, _("Luminosity"), "luminosity" }
 };
-const EnumDataConverter<SPBlendMode> SPBlendModeConverter(SPBlendModeData, SP_CSS_BLEND_ENDMODE);
+const EnumDataConverter<SPBlendMode> SPBlendModeConverter(SPBlendModeData, SP_CSS_BLEND_COUNT);
 
 
 namespace UI {

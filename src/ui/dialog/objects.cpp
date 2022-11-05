@@ -786,13 +786,17 @@ ObjectsPanel::ObjectsPanel() :
         if (Inkscape::SPBlendModeConverter.get_key(data.id) == "-") {
             if (top >= (Inkscape::SPBlendModeConverter._length + 1) / 2) {
                 ++left;
-                top = 1;
+                top = 2;
             } else if (!left) {
                 auto sep = Gtk::make_managed<Gtk::Separator>();
                 sep->show();
                 modes.attach(*sep, left, top, 2, 1);
             }
         } else {
+            // Manual correction that indicates this should all be done in glade
+            if (left == 1 && top == 9)
+                top++;
+
             auto check = Gtk::make_managed<Gtk::ModelButton>();
             check->set_label(data.label);
             check->property_role().set_value(Gtk::BUTTON_ROLE_RADIO);
