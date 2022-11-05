@@ -40,6 +40,7 @@
 #include <cerrno>  // History file
 #include <regex>
 #include <numeric>
+#include <unistd.h>
 
 // checking if dithering is supported
 #ifdef  WITH_PATCHED_CAIRO

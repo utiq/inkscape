@@ -10,6 +10,7 @@ if(WIN32)
     ${MINGW_BIN}/LIBEAY32.dll
     ${MINGW_BIN}/SSLEAY32.dll
     ${MINGW_BIN}/imagequant.dll
+    ${MINGW_BIN}/lib2geom.dll
     ${MINGW_BIN}/libLerc.dll
     ${MINGW_BIN}/libaom.dll
     ${MINGW_BIN}/libaspell-[0-9]*.dll
@@ -73,7 +74,7 @@ if(WIN32)
     ${MINGW_BIN}/liblzma-[0-9]*.dll
     ${MINGW_BIN}/libmpdec-[0-9]*.dll
     ${MINGW_BIN}/libncursesw6.dll
-    ${MINGW_BIN}/libnghttp2-[0-9]*.dll
+    ${MINGW_BIN}/libnghttp2*.dll
     ${MINGW_BIN}/libnspr[0-9]*.dll
     ${MINGW_BIN}/libopenblas.dll
     ${MINGW_BIN}/libopenjp2-[0-9]*.dll
@@ -94,6 +95,7 @@ if(WIN32)
     ${MINGW_BIN}/libpsl-[0-9]*.dll
     ${MINGW_BIN}/libquadmath-[0-9]*.dll
     ${MINGW_BIN}/libraqm-[0-9]*.dll
+    ${MINGW_BIN}/libreadline8.dll
     ${MINGW_BIN}/librevenge-0.[0-9]*.dll
     ${MINGW_BIN}/librevenge-stream-0.[0-9]*.dll
     ${MINGW_BIN}/librsvg-2-[0-9]*.dll
@@ -131,9 +133,16 @@ if(WIN32)
   INSTALL(FILES ${MINGW_LIBS} DESTINATION bin)
   # There are differences for 64-Bit and 32-Bit build environments.
   if(HAVE_MINGW64)
-    install(FILES
-      ${MINGW_BIN}/libgcc_s_seh-1.dll
-      DESTINATION bin)
+    if($ENV{MSYSTEM} STREQUAL "CLANGARM64")
+      install(FILES
+        ${MINGW_BIN}/libc++.dll
+        ${MINGW_BIN}/libunwind.dll
+        DESTINATION bin)
+    else()
+      install(FILES
+        ${MINGW_BIN}/libgcc_s_seh-1.dll
+        DESTINATION bin)
+    endif()
   else()
     install(FILES
       ${MINGW_BIN}/libgcc_s_dw2-1.dll
@@ -360,23 +369,24 @@ if(WIN32)
     COMPONENT python)
 
   # gdb
-  install(FILES
-    ${MINGW_BIN}/gdb.exe
-    ${MINGW_BIN}/libreadline8.dll
-    ${MINGW_BIN}/libxxhash.dll
-    DESTINATION bin)
-  install(DIRECTORY
-    ${MINGW_PATH}/share/gdb
-    DESTINATION share
-    PATTERN "*.pyc" EXCLUDE)
-  install(FILES
-    packaging/win32/gdb_create_backtrace.bat
-    DESTINATION bin)
-    
+  if (NOT $ENV{MSYSTEM} STREQUAL "CLANGARM64")
+    install(FILES
+      ${MINGW_BIN}/gdb.exe
+      ${MINGW_BIN}/libxxhash.dll
+      DESTINATION bin)
+    install(DIRECTORY
+      ${MINGW_PATH}/share/gdb
+      DESTINATION share
+      PATTERN "*.pyc" EXCLUDE)
+    install(FILES
+      packaging/win32/gdb_create_backtrace.bat
+      "packaging/win32/Run Inkscape and create debug trace.bat"
+      DESTINATION bin)
+  endif()
+
   # convenience launchers
   install(FILES
     "packaging/win32/Run Inkscape !.bat"
-    "packaging/win32/Run Inkscape and create debug trace.bat"
     "packaging/win32/Run Inkscape with GTK Inspector.bat"
     DESTINATION .)
   
