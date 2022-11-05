@@ -18,6 +18,9 @@ case "$MSYSTEM" in
   MINGW64)
     ARCH=mingw-w64-x86_64
     ;;
+  CLANGARM64)
+    ARCH=mingw-w64-clang-aarch64
+    ;;
   *)
     ARCH={mingw-w64-i686,mingw-w64-x86_64}
     ;;
@@ -102,6 +105,9 @@ for arch in $(eval echo $ARCH); do
     mingw-w64-x86_64)
       #/mingw64/bin/pip3 install --upgrade ${PACKAGES}
       ;;
+    mingw-w64-clang-aarch64)
+      #/clangarm64/bin/pip3 install --upgrade ${PACKAGES}
+      ;;
   esac
 done
 
@@ -119,6 +125,9 @@ case "$MSYSTEM" in
     ;;
   MINGW64)
     hack_libintl mingw64
+    ;;
+  CLANGARM64)
+    hack_libintl clangarm64
     ;;
   *)
     hack_libintl mingw32
