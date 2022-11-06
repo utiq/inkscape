@@ -35,6 +35,7 @@
 #include "object/sp-spiral.h"
 #include "object/sp-star.h"
 #include "object/sp-marker.h"
+#include "object/filters/gaussian-blur.h"
 #include "style.h"
 
 #include "ui/icon-names.h"
@@ -436,18 +437,28 @@ void KnotHolder::add_hatch_knotholder()
 }
 
 void KnotHolder::add_filter_knotholder() {
-    if (!item->style->filter.set || !item->style->getFilter() || item->style->getFilter()->auto_region) {
-        return;
+    if (auto filter = item->style->getFilter()) {
+        if (!filter->auto_region) {
+            auto entity_tl = new FilterKnotHolderEntity(true);
+            auto entity_br = new FilterKnotHolderEntity(false);
+            entity_tl->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT, "Filter:TopLeft",
+                              _("<b>Resize</b> the filter effect region"));
+            entity_br->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT, "Filter:BottomRight",
+                              _("<b>Resize</b> the filter effect region"));
+            entity.push_back(entity_tl);
+            entity.push_back(entity_br);
+        }
     }
 
-    FilterKnotHolderEntity *entity_tl = new FilterKnotHolderEntity(true);
-    FilterKnotHolderEntity *entity_br = new FilterKnotHolderEntity(false);
-    entity_tl->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT, "Filter:TopLeft",
-                      _("<b>Resize</b> the filter effect region"));
-    entity_br->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT, "Filter:BottomRight",
-                      _("<b>Resize</b> the filter effect region"));
-    entity.push_back(entity_tl);
-    entity.push_back(entity_br);
+    // always install blur nodes, they default to disabled.
+    auto entity_x = new BlurKnotHolderEntity(Geom::X);
+    auto entity_y = new BlurKnotHolderEntity(Geom::Y);
+    entity_x->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE, "Filter:BlurX",
+                      _("<b>Resize</b> the blur in the X direction; set to Y with <b>Ctrl</b>; constrain Y with <b>Shift</b>+<b>Ctrl</b>"));
+    entity_y->create(desktop, item, this, Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE, "Filter:BlurY",
+                      _("<b>Resize</b> the blur in the Y direction; set to X with <b>Ctrl</b>; constrain X with <b>Shift</b>+<b>Ctrl</b>"));
+    entity.push_back(entity_x);
+    entity.push_back(entity_y);
 }
 
 /**

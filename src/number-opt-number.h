@@ -52,9 +52,9 @@ public:
         return _set ? _num : -1;
     }
 
-    float getOptNumber() const
+    float getOptNumber(bool or_num = false) const
     {
-        return _optset ? _optnum : -1;
+        return _optset ? _optnum : (or_num ? _num : -1);
     }
 
     void setNumber(float num)
@@ -65,7 +65,7 @@ public:
 
     void setOptNumber(float optnum)
     {
-        _optset = true;
+        _optset = optnum != -1;
         _optnum = optnum;
     }
 

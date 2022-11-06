@@ -18,6 +18,7 @@
 #include "display/nr-filter.h"
 #include "display/nr-filter-gaussian.h"
 #include "svg/svg.h"
+#include "util/numeric/converters.h"
 #include "xml/repr.h"
 
 void SPGaussianBlur::build(SPDocument *document, Inkscape::XML::Node *repr)
@@ -56,6 +57,18 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPGaussianBlur::build_render
     }
 
     return blur;
+}
+
+void SPGaussianBlur::set_deviation(const NumberOptNumber &stdDeviation)
+{
+    double num = stdDeviation.getNumber();
+    std::string arg = Inkscape::Util::format_number(num);
+
+    double optnum = stdDeviation.getOptNumber();
+    if (optnum != num && optnum != -1) {
+        arg += " " + Inkscape::Util::format_number(optnum);
+    }
+    getRepr()->setAttribute("stdDeviation", arg);
 }
 
 /** Calculate the region taken up by gaussian blur

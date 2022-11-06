@@ -25,6 +25,7 @@ public:
     Geom::Rect calculate_region(Geom::Rect const &region) const override;
 
     NumberOptNumber const &get_std_deviation() const { return stdDeviation; }
+    void set_deviation(const NumberOptNumber &stdDeviation);
 
 private:
     NumberOptNumber stdDeviation;

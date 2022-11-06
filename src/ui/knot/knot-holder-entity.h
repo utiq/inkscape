@@ -22,12 +22,15 @@
 
 #include "display/control/canvas-item-enums.h"
 #include "display/control/canvas-item-quad.h"
+#include "display/control/canvas-item-curve.h"
+#include "helper/auto-connection.h"
 
 class SPHatch;
 class SPItem;
 class SPKnot;
 class SPDesktop;
 class SPPattern;
+class SPGaussianBlur;
 class KnotHolder;
 
 namespace Inkscape {
@@ -217,6 +220,25 @@ class FilterKnotHolderEntity : public KnotHolderEntity {
     void knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state) override;
 private:
     bool _topleft; // true for topleft point, false for bottomright
+};
+
+class BlurKnotHolderEntity : public KnotHolderEntity {
+  public:
+    BlurKnotHolderEntity(int direction) : KnotHolderEntity(), _dir(direction) {}
+    void on_created() override;
+    void update_knot() override;
+    Geom::Point knot_get() const override;
+    void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override {};
+    void knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state) override;
+
+  private:
+    SPGaussianBlur *_blur() const;
+    Geom::Point _pos() const;
+
+    int _dir;
+    std::unique_ptr<Inkscape::CanvasItemCurve> _line;
+    Inkscape::auto_connection _watch_filter;
+    Inkscape::auto_connection _watch_blur;
 };
 
 #endif /* !SEEN_KNOT_HOLDER_ENTITY_H */

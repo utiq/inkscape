@@ -1934,47 +1934,6 @@ sp_desktop_query_style(SPDesktop *desktop, SPStyle *style, int property)
     return QUERY_STYLE_NOTHING;
 }
 
-/**
- * Do the same as sp_desktop_query_style for all (defined) style properties, return true if at
- * least one of the properties did not return QUERY_STYLE_NOTHING.
- */
-bool
-sp_desktop_query_style_all (SPDesktop *desktop, SPStyle *query)
-{
-        int result_family = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_FONTFAMILY);
-        int result_fstyle = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_FONTSTYLE);
-        int result_fnumbers = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
-        int result_fill = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_FILL);
-        int result_stroke = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_STROKE);
-        int result_strokewidth = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_STROKEWIDTH);
-        int result_strokemiterlimit = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_STROKEMITERLIMIT);
-        int result_strokecap = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_STROKECAP);
-        int result_strokejoin = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_STROKEJOIN);
-
-        int result_paintorder = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_PAINTORDER);
-
-        int result_opacity = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_MASTEROPACITY);
-        int result_blur = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_BLUR);
-        int result_blend = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_BLEND);
-        int result_isolation = sp_desktop_query_style (desktop, query, QUERY_STYLE_PROPERTY_ISOLATION);
-
-        return (result_family != QUERY_STYLE_NOTHING ||
-                result_fstyle != QUERY_STYLE_NOTHING ||
-                result_fnumbers != QUERY_STYLE_NOTHING ||
-                result_fill != QUERY_STYLE_NOTHING ||
-                result_stroke != QUERY_STYLE_NOTHING ||
-                result_opacity != QUERY_STYLE_NOTHING ||
-                result_strokewidth != QUERY_STYLE_NOTHING ||
-                result_strokemiterlimit != QUERY_STYLE_NOTHING ||
-                result_strokecap != QUERY_STYLE_NOTHING ||
-                result_strokejoin != QUERY_STYLE_NOTHING ||
-                result_paintorder != QUERY_STYLE_NOTHING ||
-                result_blur != QUERY_STYLE_NOTHING ||
-                result_isolation != QUERY_STYLE_NOTHING ||
-                result_blend != QUERY_STYLE_NOTHING);
-}
-
-
 /*
   Local Variables:
   mode:c++

@@ -28,6 +28,7 @@
 #include "object/sp-marker.h"
 #include "object/sp-namedview.h"
 #include "object/sp-pattern.h"
+#include "object/filters/gaussian-blur.h"
 #include "preferences.h"
 #include "snap.h"
 #include "style.h"
@@ -454,7 +455,7 @@ void HatchKnotHolderEntityScale::knot_set(Geom::Point const &p, Geom::Point cons
     item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
 
-/* Filter manipulation */
+/* Filter visible size manipulation */
 void FilterKnotHolderEntity::knot_set(Geom::Point const &p, Geom::Point const &origin, unsigned int state)
 {
     // FIXME: this snapping should be done together with knowing whether control was pressed. If GDK_CONTROL_MASK, then constrained snapping should be used.
@@ -515,6 +516,116 @@ Geom::Point FilterKnotHolderEntity::knot_get() const
     Geom::OptRect r = item->visualBounds();
     if (_topleft) return Geom::Point(r->min());
     else return Geom::Point(r->max());
+}
+
+/* Blur manipulation */
+
+void BlurKnotHolderEntity::on_created()
+{
+    KnotHolderEntity::on_created();
+    // TODO: Move to constructor when desktop is generally available
+
+    _line = std::make_unique<Inkscape::CanvasItemCurve>(desktop->getCanvasControls());
+    _line->set_z_position(0);
+    _line->set_stroke(0x0033cccc);
+    _line->hide();
+
+    // This watcher makes sure that adding or removing a blur results in updated knots.
+    _watch_filter = item->style->signal_filter_changed.connect([=] (auto old_obj, auto obj) {
+        update_knot();
+    }); 
+}
+
+void BlurKnotHolderEntity::update_knot()
+{
+    auto blur = _blur();
+    if (blur) {
+        knot->show();
+        // This watcher makes sure anything outside that modifies the blur changes the knot.
+        _watch_blur = blur->connectModified([=](auto item, int flags) {
+            KnotHolderEntity::update_knot();
+        });
+
+    } else {
+        knot->hide();
+        _watch_blur.disconnect();
+        _line->hide();
+    }
+    KnotHolderEntity::update_knot();
+}
+
+
+
+/* Return the first blur primitive of any applied filter. */
+SPGaussianBlur *BlurKnotHolderEntity::_blur() const
+{
+    if (auto filter = item->style->getFilter()) {
+        for (auto &primitive : filter->children) {
+            if (auto blur = cast<SPGaussianBlur>(&primitive)) {
+                return blur;
+            }
+        }
+    }
+    return nullptr;
+}
+
+Geom::Point BlurKnotHolderEntity::_pos() const
+{
+    auto box = item->bbox(Geom::identity(), SPItem::VISUAL_BBOX);
+    if (_dir == Geom::Y) {
+        return Geom::Point(box->midpoint()[Geom::X], box->top());
+    }
+    return Geom::Point(box->right(), box->midpoint()[Geom::Y]);
+}
+
+Geom::Point BlurKnotHolderEntity::knot_get() const
+{
+    auto blur = _blur();
+    if (!blur)
+        return Geom::Point(0, 0);
+
+    // First let's find where the gradient is
+    auto tr = item->i2dt_affine();
+    auto dev = blur->get_std_deviation();
+
+    // Blur visibility is 2.4 times the deviation in that direction.
+    double x = dev.getNumber();
+    double y = dev.getOptNumber(true);
+
+    auto p0 = _pos();
+    auto p1 = p0 + Geom::Point(x * 2.4, 0);
+    if (_dir == Geom::Y) {
+        p1 = p0 - Geom::Point(0, y * 2.4);
+    }
+    _line->show();
+    _line->set_coords(p0 * tr, p1 * tr);
+
+    return p1;
+}
+void BlurKnotHolderEntity::knot_set(Geom::Point const &p, Geom::Point const &origin, guint state)
+{
+    auto blur = _blur();
+    if (!blur)
+        return;
+
+    NumberOptNumber dev = blur->get_std_deviation();
+    auto dp = Geom::Point(dev.getNumber(), dev.getOptNumber(true));
+    auto val = std::max(0.0, (((p - _pos()) * Geom::Scale(1, -1))[_dir]) / 2.4);
+
+    if (state & GDK_CONTROL_MASK) {
+        if (state & GDK_SHIFT_MASK) {
+            dp[!_dir] *= (val / dp[_dir]);
+        } else {
+            dp[!_dir] = val;
+        }
+    }
+    dp[_dir] = val;
+
+    // When X is set to zero the Opt blur disapears
+    dev.setNumber(std::max(0.001, dp[Geom::X]));
+    dev.setOptNumber(std::max(0.0, dp[Geom::Y]));
+
+    blur->set_deviation(dev);
 }
 
 /*
