@@ -10,6 +10,7 @@ static auto read_special_name(std::string const &name) -> std::optional<int>
         { "SourceGraphic",   Inkscape::Filters::NR_FILTER_SOURCEGRAPHIC },
         { "SourceAlpha",     Inkscape::Filters::NR_FILTER_SOURCEALPHA },
         { "StrokePaint",     Inkscape::Filters::NR_FILTER_STROKEPAINT },
+        { "FillPaint",       Inkscape::Filters::NR_FILTER_FILLPAINT },
         { "BackgroundImage", Inkscape::Filters::NR_FILTER_BACKGROUNDIMAGE },
         { "BackgroundAlpha", Inkscape::Filters::NR_FILTER_BACKGROUNDALPHA }
     };

@@ -2665,7 +2665,6 @@ int FilterEffectsDialog::PrimitiveList::get_inputs_count() const {
 
 void FilterEffectsDialog::PrimitiveList::set_inputs_count(int count) {
     _inputs_count = count;
-    //TODO: force size negotiation, queue alloc doesn't work
     queue_allocate();
     queue_draw();
 }
@@ -2808,7 +2807,6 @@ FilterEffectsDialog::FilterEffectsDialog()
     // Initialize widget hierarchy
     _primitive_box = &get_widget<Gtk::ScrolledWindow>(_builder, "filter");
     _primitive_list.set_enable_search(false);
-    // _primitive_list.set_inputs_count(2); //FPInputConverter._length / 2);
     _primitive_list.show_all();
     _primitive_box->add(_primitive_list);
 
@@ -2901,6 +2899,8 @@ FilterEffectsDialog::FilterEffectsDialog()
     auto set_inputs = [=](bool all){
         int count = all ? FPInputConverter._length : 2;
         _primitive_list.set_inputs_count(count);
+        // full rebuild: this is what it takes to make cell renderer new min width into account to adjust scrollbar
+        _primitive_list.update();
     };
     auto show_all_sources = Inkscape::Preferences::get()->getBool(_prefs + "/dialogs/filters/showAllSources", false);
     show_sources->set_active(show_all_sources);
