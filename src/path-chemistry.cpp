@@ -639,6 +639,8 @@ ObjectSet::pathReverse()
             path->setAttribute("sodipodi:nodetypes", g_strreverse(nodetypes));
             g_free(nodetypes);
         }
+
+        path->update_patheffect(false);
     }
     if(desktop())
         desktop()->clearWaitingCursor();

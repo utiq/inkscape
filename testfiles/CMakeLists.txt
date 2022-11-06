@@ -75,6 +75,7 @@ set(TEST_SOURCES
     object-set-test
     object-style-test
     path-boolop-test
+    path-reverse-lpe-test
     rebase-hrefs-test
     style-elem-test
     style-internal-test
