@@ -220,6 +220,10 @@ void
 export_do(InkscapeApplication *app)
 {
     SPDocument* document = app->get_active_document();
+    if (!document) {
+        std::cerr << "export_do: no documents open!" << std::endl;
+        return;
+    }
     std::string filename;
     if (document->getDocumentFilename()) {
         filename = document->getDocumentFilename();
