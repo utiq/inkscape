@@ -421,13 +421,13 @@ public:
      * @param skip_undo If this is set to true the call to DocumentUndo::done is omitted.
      * @return True if anything was unlinked, otherwise false.
      */
-    bool unlink(const bool skip_undo = false);
+    bool unlink(const bool skip_undo = false, const bool silent = false);
     /**
      * @brief Recursively unlink any clones present in the current selection,
      * including clones which are used to clip other objects, groups of clones etc.
      * @return true if anything was unlinked, otherwise false.
      */
-    bool unlinkRecursive(const bool skip_undo = false, const bool force = false);
+    bool unlinkRecursive(const bool skip_undo = false, const bool force = false, const bool silent = false);
     void removeLPESRecursive(bool keep_paths);
     void relink();
     void cloneOriginal();

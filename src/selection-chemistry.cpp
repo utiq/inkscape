@@ -2776,10 +2776,10 @@ void ObjectSet::relink()
 }
 
 
-bool ObjectSet::unlink(const bool skip_undo)
+bool ObjectSet::unlink(const bool skip_undo, const bool silent)
 {
     if (isEmpty()) {
-        if(desktop())
+        if(desktop() && !silent)
             desktop()->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("Select <b>clones</b> to unlink."));
         return false;
     }
@@ -2856,7 +2856,7 @@ bool ObjectSet::unlink(const bool skip_undo)
         setList(new_select);
     }
     if (!unlinked) {
-        if(desktop())
+        if(desktop() && !silent)
             desktop()->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("<b>No clones to unlink</b> in the selection."));
     }
 
@@ -2866,16 +2866,16 @@ bool ObjectSet::unlink(const bool skip_undo)
     return unlinked;
 }
 
-bool ObjectSet::unlinkRecursive(const bool skip_undo, const bool force) {
+bool ObjectSet::unlinkRecursive(const bool skip_undo, const bool force, const bool silent) {
     if (isEmpty()){
-        if (desktop())
+        if (desktop() && !silent)
             desktop()->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("Select <b>clones</b> to unlink."));
         return false;
     }
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     bool pathoperationsunlink = prefs->getBool("/options/pathoperationsunlink/value", true);
     if (!force && !pathoperationsunlink) {
-        if (desktop() && !pathoperationsunlink) {
+        if (desktop() && !pathoperationsunlink && !silent) {
             desktop()->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("Unable to unlink. Check the setting for 'Unlinking Clones' in your preferences."));
         }
         return false;
@@ -2885,16 +2885,16 @@ bool ObjectSet::unlinkRecursive(const bool skip_undo, const bool force) {
     std::vector<SPItem*> items_(items().begin(), items().end());
     for (auto& it:items_) {
         tmp_set.set(it);
-        unlinked = tmp_set.unlink(true) || unlinked;
+        unlinked = tmp_set.unlink(true, silent) || unlinked;
         it = tmp_set.singleItem();
         if (is<SPGroup>(it)) {
             std::vector<SPObject*> c = it->childList(false);
             tmp_set.setList(c);
-            unlinked = tmp_set.unlinkRecursive(skip_undo, force) || unlinked;
+            unlinked = tmp_set.unlinkRecursive(skip_undo, force, silent) || unlinked;
         }
     }
     if (!unlinked) {
-        if(desktop())
+        if(desktop() && !silent)
             desktop()->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("<b>No clones to unlink</b> in the selection."));
     }
     if (!skip_undo) {

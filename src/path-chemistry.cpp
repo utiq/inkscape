@@ -315,7 +315,7 @@ void ObjectSet::toCurves(bool skip_undo)
         // set "busy" cursor
         desktop()->setWaitingCursor();
     }
-    unlinkRecursive(true);
+    unlinkRecursive(true, false, true);
     std::vector<SPItem*> selected(items().begin(), items().end());
     std::vector<Inkscape::XML::Node*> to_select;
     std::vector<SPItem*> items(selected);
