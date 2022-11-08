@@ -161,8 +161,9 @@ LPECloneOriginal::cloneAttributes(SPObject *origin, SPObject *dest, const gchar 
         return;
     }
     //Attributes
-    SPShape * shape_origin = dynamic_cast<SPShape *>(origin);
-    SPShape * shape_dest   = dynamic_cast<SPShape *>(dest);
+    auto shape_origin = cast<SPShape>(origin);
+    auto shape_dest   = cast<SPShape>(dest);
+    auto path_dest   = cast<SPPath>(dest);
 
     gchar ** attarray = g_strsplit(old_attributes.c_str(), ",", 0);
     gchar ** iter = attarray;
@@ -211,7 +212,11 @@ LPECloneOriginal::cloneAttributes(SPObject *origin, SPObject *dest, const gchar 
                     c->set_pathvector(c_pv);
                     auto str = sp_svg_write_path(c_pv);
                     if (sync){
-                        dest->setAttribute("inkscape:original-d", str);
+                        if (path_dest) {
+                            dest->setAttribute("inkscape:original-d", str);
+                        } else {
+                            dest->setAttribute("d", str);
+                        }
                     }
                     shape_dest->setCurveInsync(std::move(*c));
                     dest->setAttribute("d", str);
@@ -301,17 +306,24 @@ LPECloneOriginal::doBeforeEffect (SPLPEItem const* lpeitem){
         if(!orig) {
             return;
         }
-        SPText  *text_origin = dynamic_cast<SPText *>(orig);
-        SPItem *dest = dynamic_cast<SPItem *>(sp_lpe_item);
+        auto text_origin = cast<SPText>(orig);
+        auto *dest = sp_lpe_item;
+        auto *dest_path = cast<SPPath>(sp_lpe_item);
+        auto *dest_shape = cast<SPShape>(sp_lpe_item);
         const gchar * id = orig->getId();
         bool init = is_load || g_strcmp0(id, linked.c_str()) != 0;
         /* if (sp_lpe_item->getRepr()->attribute("style")) {
             init = false;
         } */
         Glib::ustring attr = "d,";
-        if (text_origin) {
+        if (text_origin && dest_shape) {
             auto curve = text_origin->getNormalizedBpath();
-            dest->setAttribute("inkscape:original-d", sp_svg_write_path(curve.get_pathvector()));
+            if (dest_path) {
+                dest->setAttribute("inkscape:original-d", sp_svg_write_path(curve.get_pathvector()));
+            } else {
+                dest_shape->setCurveInsync(curve);
+                dest_shape->setAttribute("d", sp_svg_write_path(curve.get_pathvector()));
+            }
             attr = "";
         }
         if (g_strcmp0(linked.c_str(), id) && !is_load) {
