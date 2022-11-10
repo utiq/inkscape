@@ -315,13 +315,19 @@ iconview *:hover {
     /* make size relative */
     font-size: smaller;
     color: alpha(@theme_fg_color, 0.6);
+    min-height: 2em;
+}
+
+.bright #InkRuler {
+    /* increase contrast between background and page area */
+    background-color: shade(@theme_bg_color, 0.94);
 }
 
 .bright #InkRuler.shadow {
-    border-color: rgba(0,0,0,0.2);
+    border-color: rgba(0,0,0,0.3);
 }
 .dark #InkRuler.shadow {
-    border-color: rgba(0,0,0,0.2);
+    border-color: rgba(0,0,0,0.5);
 }
 
 .dark #InkRuler.page {
@@ -332,7 +338,7 @@ iconview *:hover {
 }
 #InkRuler.selection {
     border-color: rgba(22, 169, 249, 0.8);
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: transparent;
 }
 
 /* The actual canvas (Inkscape's drawing area). */

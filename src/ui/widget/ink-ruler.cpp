@@ -13,6 +13,8 @@
 
 #include "ink-ruler.h"
 
+#include <gdkmm/rgba.h>
+#include <glibmm/ustring.h>
 #include <iostream>
 #include <cmath>
 
@@ -187,15 +189,12 @@ Ruler::size_request (Gtk::Requisition& requisition) const
     Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
     Gtk::Border border = style_context->get_border(get_state_flags());
 
-    // Get font size
-    Pango::FontDescription font = style_context->get_font(get_state_flags());
-    int font_size = font.get_size();
-    if (!font.get_size_is_absolute()) {
-        font_size /= Pango::SCALE;
-    }
+    // get ruler's size from CSS style
+    GValue minimum_height = G_VALUE_INIT;
+    gtk_style_context_get_property(style_context->gobj(), "min-height", GTK_STATE_FLAG_NORMAL, &minimum_height);
+    auto size = g_value_get_int(&minimum_height);
+    g_value_unset(&minimum_height);
 
-    int size = 10 + (font_size * 2.0); // Room for labels and ticks
- 
     int width = border.get_left() + border.get_right();
     int height = border.get_top() + border.get_bottom();
 
@@ -246,6 +245,10 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
     // Get context
     Cairo::RefPtr<::Cairo::Context> cr = ::Cairo::Context::create(_backing_store);
 
+    // background
+    auto context = get_style_context();
+    context->render_background(cr, 0, 0, awidth, aheight);
+
     // Color in page indication box
     if (double psize = std::abs(_page_upper - _page_lower)) {
         Gdk::Cairo::set_source_rgba(cr, _page_fill);
@@ -287,14 +290,13 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
 
     // Draw a shadow which overlaps any previously painted object.
     auto paint_shadow = [=](double size_x, double size_y, double width, double height) {
-        auto gr = Cairo::LinearGradient::create(0, 0, size_x, size_y);
-        gr->add_color_stop_rgba(0.0, _shadow.get_red(), _shadow.get_green(), _shadow.get_blue(), _shadow.get_alpha());
-        gr->add_color_stop_rgba(1.0, _shadow.get_red(), _shadow.get_green(), _shadow.get_blue(), 0.0);
+        auto trans = change_alpha(_shadow, 0.0);
+        auto gr = create_cubic_gradient(Geom::Rect(0, 0, size_x, size_y), _shadow, trans, Geom::Point(0, 0.5), Geom::Point(0.5, 1));
         cr->rectangle(0, 0, width, height);
         cr->set_source(gr);
         cr->fill();
     };
-    int gradient_size = 10;
+    int gradient_size = 4;
     if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
         paint_shadow(0, gradient_size, allocation.get_width(), gradient_size);
     } else {
@@ -370,11 +372,11 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
             }
 
             // Align text to pixel
-            int x = _border.get_left() + 5;
+            int x = _border.get_left() + 3;
             int y = position + 2.5;
             if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
                 x = position + 2.5;
-                y = _border.get_top() + 5;
+                y = _border.get_top() + 3;
             }
 
             // We don't know the surface height/width, damn you cairo.
@@ -400,23 +402,33 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
     // Draw a selection bar
     if (_sel_lower != _sel_upper) {
 
+        const auto radius = 3.0;
+        const auto delta = _sel_upper - _sel_lower;
+        const auto dxy = delta > 0 ? radius : -radius;
         double sy0 = _sel_lower;
         double sy1 = _sel_upper;
-        double sx0 = aheight / 2;
-        double sx1 = aheight / 2;
+        double sx0 = floor(aheight * 0.7);
+        double sx1 = sx0;
 
         if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
             std::swap(sy0, sx0);
             std::swap(sy1, sx1);
         }
 
-        auto radius = 4.0;
         cr->set_line_width(2.0);
 
-        Gdk::Cairo::set_source_rgba(cr, _select_stroke);
-        cr->move_to(sx0, sy0);
-        cr->line_to(sx1, sy1);
-        cr->stroke();
+        if (fabs(delta) > 2 * radius) {
+            Gdk::Cairo::set_source_rgba(cr, _select_stroke);
+            if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
+                cr->move_to(sx0 + dxy, sy0);
+                cr->line_to(sx1 - dxy, sy1);
+            }
+            else {
+                cr->move_to(sx0, sy0 + dxy);
+                cr->line_to(sx1, sy1 - dxy);
+            }
+            cr->stroke();
+        }
 
         // Markers
         Gdk::Cairo::set_source_rgba(cr, _select_fill);
@@ -575,7 +587,6 @@ Ruler::on_style_updated() {
     _select_fill = get_background_color(style_context);
     _select_stroke = get_context_color(style_context, "border-color");
     style_context->remove_class("selection");
-
     _label_cache.clear();
     _backing_store_valid = false;
     queue_resize();

@@ -64,6 +64,9 @@ void resize_widget_children(Gtk::Widget *widget);
 //  0 -> only a, 1 -> only b, x in 0..1 -> (1 - x)*a + x*b
 Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio);
 
+// Create the same color, but with a different opacity (alpha)
+Gdk::RGBA change_alpha(const Gdk::RGBA& color, double new_alpha);
+
 // Get the background-color style property for a given StyleContext
 Gdk::RGBA get_context_color(const Glib::RefPtr<Gtk::StyleContext> &context,
                             const gchar *property,
@@ -76,6 +79,18 @@ Cairo::RectangleInt geom_to_cairo(const Geom::IntRect &rect);
 Cairo::Matrix geom_to_cairo(const Geom::Affine &affine);
 Geom::IntPoint dimensions(const Cairo::RefPtr<Cairo::ImageSurface> &surface);
 Geom::IntPoint dimensions(const Gdk::Rectangle &allocation);
+
+// create a gradient with multiple steps to approximate profile described by given cubic spline
+Cairo::RefPtr<Cairo::LinearGradient> create_cubic_gradient(
+    Geom::Rect rect,
+    const Gdk::RGBA& from,
+    const Gdk::RGBA& to,
+    Geom::Point ctrl1,
+    Geom::Point ctrl2,
+    Geom::Point p0 = Geom::Point(0, 0),
+    Geom::Point p1 = Geom::Point(1, 1),
+    int steps = 8
+);
 
 #endif
 

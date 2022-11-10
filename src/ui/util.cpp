@@ -12,8 +12,12 @@
 
 #include "util.h"
 
+#include <cairomm/pattern.h>
+#include <cstdint>
 #include <gdkmm/rgba.h>
 #include <gtkmm.h>
+#include <stdexcept>
+#include "point.h"
 
 /**
  * Recursively look through pre-constructed widget parents for a specific named widget.
@@ -138,6 +142,50 @@ Geom::IntPoint dimensions(const Gdk::Rectangle &allocation)
     return Geom::IntPoint(allocation.get_width(), allocation.get_height());
 }
 
+Cairo::RefPtr<Cairo::LinearGradient> create_cubic_gradient(
+    Geom::Rect rect,
+    const Gdk::RGBA& from,
+    const Gdk::RGBA& to,
+    Geom::Point ctrl1,
+    Geom::Point ctrl2,
+    Geom::Point p0,
+    Geom::Point p1,
+    int steps
+) {
+    // validate input points
+    for (auto&& pt : {p0, ctrl1, ctrl2, p1}) {
+        if (pt.x() < 0 || pt.x() > 1 ||
+            pt.y() < 0 || pt.y() > 1) {
+            throw std::invalid_argument("Invalid points for cubic gradient; 0..1 coordinates expected.");
+        }
+    }
+    if (steps < 2 || steps > 999) {
+        throw std::invalid_argument("Invalid number of steps for cubic gradient; 2 to 999 steps expected.");
+    }
+
+    auto g = Cairo::LinearGradient::create(rect.min().x(), rect.min().y(), rect.max().x(), rect.max().y());
+
+    --steps;
+    for (int step = 0; step <= steps; ++step) {
+        auto t = 1.0 * step / steps;
+        auto s = 1.0 - t;
+        auto p = (t * t * t) * p0 + (3 * t * t * s) * ctrl1 + (3 * t * s * s) * ctrl2 + (s * s * s) * p1;
+
+        auto offset = p.x();
+        auto ratio = p.y();
+
+        auto color = mix_colors(from, to, ratio);
+        g->add_color_stop_rgba(offset, color.get_red(), color.get_green(), color.get_blue(), color.get_alpha());
+    }
+
+    return g;
+}
+
+Gdk::RGBA change_alpha(const Gdk::RGBA& color, double new_alpha) {
+    auto copy(color);
+    copy.set_alpha(new_alpha);
+    return copy;
+}
 
 /*
   Local Variables:
