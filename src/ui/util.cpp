@@ -17,7 +17,6 @@
 #include <gdkmm/rgba.h>
 #include <gtkmm.h>
 #include <stdexcept>
-#include "point.h"
 
 /**
  * Recursively look through pre-constructed widget parents for a specific named widget.

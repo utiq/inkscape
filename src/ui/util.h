@@ -18,9 +18,9 @@
 
 #include <gdkmm/rgba.h>
 #include <gtkmm/stylecontext.h>
-
-#include "2geom/rect.h"
-#include "2geom/affine.h"
+#include <2geom/point.h>
+#include <2geom/rect.h>
+#include <2geom/affine.h>
 
 /*
  * Use these errors when building from glade files for graceful
