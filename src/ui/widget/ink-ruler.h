@@ -13,6 +13,7 @@
 
 /* Rewrite of the C Ruler. */
 
+#include "preferences.h"
 #include <gtkmm.h>
 #include <unordered_map>
 
@@ -48,11 +49,14 @@ protected:
     Cairo::RectangleInt marker_rect();
     bool on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) override;
     void on_style_updated() override;
+    void on_prefs_changed();
 
     bool on_motion_notify_event(GdkEventMotion *motion_event) override;
     bool on_button_press_event(GdkEventButton *button_event) override;
 
 private:
+    Inkscape::PrefObserver _watch_prefs;
+
     Gtk::Menu *getContextMenu();
     Cairo::RefPtr<Cairo::Surface> draw_label(Cairo::RefPtr<Cairo::Surface> const &surface_in, int label_value);
 
@@ -71,6 +75,7 @@ private:
     // Selection block
     double _sel_lower = 0.0;
     double _sel_upper = 0.0;
+    double _sel_visible = true;
 
     bool   _backing_store_valid;
 

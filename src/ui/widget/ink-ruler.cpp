@@ -69,7 +69,20 @@ Ruler::Ruler(Gtk::Orientation orientation)
 
     set_no_show_all();
 
+    auto prefs = Inkscape::Preferences::get();
+    _watch_prefs = prefs->createObserver("/options/ruler/show_bbox", sigc::mem_fun(*this, &Ruler::on_prefs_changed));
+    on_prefs_changed();
+
     INKSCAPE.themecontext->getChangeThemeSignal().connect(sigc::mem_fun(*this, &Ruler::on_style_updated));
+}
+
+void Ruler::on_prefs_changed()
+{
+    auto prefs = Inkscape::Preferences::get();
+    _sel_visible = prefs->getBool("/options/ruler/show_bbox", true);
+
+    _backing_store_valid = false;
+    queue_draw();
 }
 
 // Set display unit for ruler.
@@ -400,7 +413,7 @@ Ruler::draw_scale(const::Cairo::RefPtr<::Cairo::Context>& cr_in)
     }
 
     // Draw a selection bar
-    if (_sel_lower != _sel_upper) {
+    if (_sel_lower != _sel_upper && _sel_visible) {
 
         const auto radius = 3.0;
         const auto delta = _sel_upper - _sel_lower;
