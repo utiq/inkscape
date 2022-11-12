@@ -23,6 +23,7 @@ public:
     void doBeforeEffect (SPLPEItem const* lpeitem) override;
     bool doOnOpen(SPLPEItem const *lpeitem) override;
     void doEffect (SPCurve * curve) override;
+    void doOnApply(SPLPEItem const *lpeitem) override;
 
 private:
     OriginalSatelliteParam  linked_path;

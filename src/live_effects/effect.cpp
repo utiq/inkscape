@@ -1595,6 +1595,7 @@ Effect::makeUndoDone(Glib::ustring message) {
         sp_lpe_item_update_patheffect(sp_lpe_item, true, true);
         DocumentUndo::done(getSPDoc(), message.c_str(), INKSCAPE_ICON(LPETypeConverter.get_icon(effectType()).c_str()));
     }
+    setReady();
 }
 
 void Effect::doOnApply_impl(SPLPEItem const* lpeitem)

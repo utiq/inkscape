@@ -43,6 +43,12 @@ LPEBoundingBox::doOnOpen(SPLPEItem const *lpeitem)
 }
 
 void 
+LPEBoundingBox::doOnApply(SPLPEItem const *lpeitem)
+{
+    lpeversion.param_setValue("1.3", true);
+}
+
+void 
 LPEBoundingBox::doBeforeEffect (SPLPEItem const* lpeitem)
 {
     if (is_load) {
@@ -63,8 +69,14 @@ void LPEBoundingBox::doEffect (SPCurve * curve)
     if (curve) {
         if ( linked_path.linksToItem() && linked_path.getObject() ) {
             auto item = cast<SPItem>(linked_path.getObject());
-            auto trans = item->getRelativeTransform(sp_lpe_item);
-            Geom::OptRect bbox = visual_bounds.get_value() ? item->visualBounds(trans) : item->geometricBounds(trans);
+            Glib::ustring version = lpeversion.param_getSVGValue();
+            Geom::OptRect bbox;
+            if (version >= "1.3") {
+                auto trans = item->getRelativeTransform(sp_lpe_item);
+                bbox = visual_bounds.get_value() ? item->visualBounds(trans) : item->geometricBounds(trans);
+            } else {
+                bbox = visual_bounds.get_value() ? item->visualBounds() : item->geometricBounds();
+            }
             Geom::Path p;
             Geom::PathVector out;
             if (bbox) {
