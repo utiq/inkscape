@@ -181,6 +181,61 @@ LivePathEffectEditor::is_appliable(LivePathEffect::EffectType etype, Glib::ustri
     return appliable;
 }
 
+void align(Gtk::Widget* top) {
+    auto box = dynamic_cast<Gtk::Box*>(top);
+    if (!box) return;
+
+    // traverse container, locate n-th child in each row
+    auto for_child_n = [=](int child_index, const std::function<void (Gtk::Widget*)>& action) {
+        for (auto child : box->get_children()) {
+            auto container = dynamic_cast<Gtk::Box*>(child);
+            if (!container) continue;
+
+            const auto& children = container->get_children();
+            if (children.size() > child_index) {
+                action(children[child_index]);
+            }
+        }
+    };
+
+    // column 0 - labels
+    int max_width = 0;
+    for_child_n(0, [&](Gtk::Widget* child){
+        if (auto label = dynamic_cast<Gtk::Label*>(child)) {
+            label->set_xalign(0); // left-align
+            int label_width = 0, dummy = 0;
+            label->get_preferred_width(dummy, label_width);
+            if (label_width > max_width) {
+                max_width = label_width;
+            }
+        }
+    });
+    // align
+    for_child_n(0, [=](Gtk::Widget* child) {
+        if (auto label = dynamic_cast<Gtk::Label*>(child)) {
+            label->set_size_request(max_width);
+        }
+    });
+
+    // column 1 - align spin buttons, if any
+    int button_width = 0;
+    for_child_n(1, [&](Gtk::Widget* child) {
+        if (auto spin = dynamic_cast<Gtk::SpinButton*>(child)) {
+            // arbitrarily selected spinbutton size
+            spin->set_width_chars(7);
+            int dummy = 0;
+            spin->get_preferred_width(dummy, button_width);
+        } 
+    });
+    // set min size for comboboxes, if any
+    int combo_size = button_width > 0 ? button_width : 50; // match with spinbuttons, or just min of 50px
+    for_child_n(1, [=](Gtk::Widget* child) {
+        if (auto combo = dynamic_cast<Gtk::ComboBox*>(child)) {
+            combo->set_size_request(combo_size);
+        }
+    });
+}
+
 void
 LivePathEffectEditor::clearMenu()
 {
@@ -561,6 +616,7 @@ LivePathEffectEditor::showParams(std::pair<Gtk::Expander *, std::shared_ptr<Inks
             }
             expanderdata.first->add(*effectwidget);
             expanderdata.first->show_all_children();
+            align(effectwidget);
             // fixme: add resizing of dialog
             lpe->refresh_widgets = false;
             ensure_size();
@@ -571,6 +627,17 @@ LivePathEffectEditor::showParams(std::pair<Gtk::Expander *, std::shared_ptr<Inks
         current_lperef = std::make_pair(nullptr, nullptr);
     }
     
+    // effectwidget = effect.newWidget();
+    // effectcontrol_frame.set_label(effect.getName());
+    // effectcontrol_vbox.pack_start(*effectwidget, true, true);
+
+    // button_remove.show();
+    // status_label.hide();
+    // effectcontrol_vbox.show_all_children();
+    // align(effectwidget);
+    // effectcontrol_frame.show();
+    // // fixme: add resizing of dialog
+    // effect.refresh_widgets = false;
 }
 
 bool
