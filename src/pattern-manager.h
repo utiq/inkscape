@@ -16,6 +16,7 @@ namespace Inkscape {
 class PatternManager {
 public:
     static PatternManager& get();
+    ~PatternManager() = default;
 
     struct Category : Glib::Object {
         const Glib::ustring name;

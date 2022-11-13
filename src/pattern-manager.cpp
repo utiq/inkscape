@@ -11,6 +11,7 @@
 #include "object/sp-pattern.h"
 #include "object/sp-defs.h"
 #include "object/sp-root.h"
+#include "util/statics.h"
 #include "util/units.h"
 #include "ui/svg-renderer.h"
 
@@ -60,8 +61,9 @@ char const* buffer = R"A(
 }
 
 PatternManager& PatternManager::get() {
-    static PatternManager mgr;
-    return mgr;
+    struct ConstructiblePatternManager : PatternManager {};
+    static auto factory = Inkscape::Util::Static<ConstructiblePatternManager>();
+    return factory.get();
 }
 
 PatternManager::PatternManager() {

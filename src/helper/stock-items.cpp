@@ -18,6 +18,7 @@
 #include <cstring>
 #include <glibmm/fileutils.h>
 
+#include "libnrtype/font-factory.h"
 #include "path-prefix.h"
 
 #include <xml/repr.h>
@@ -32,11 +33,26 @@
 #include "object/sp-pattern.h"
 #include "object/sp-marker.h"
 #include "object/sp-defs.h"
+#include "util/statics.h"
+
+// Stock objects kept in documents with controlled life time
+struct Documents {
+    static Documents& get();
+    std::vector<std::shared_ptr<SPDocument>> documents;
+};
+
+Documents& Documents::get() {
+    // make sure font factory is initialized first, that way Documents will be destructed before it
+    FontFactory::get();
+
+    static auto factory = Inkscape::Util::Static<Documents>();
+    return factory.get();
+}
 
 std::vector<std::shared_ptr<SPDocument>> sp_get_paint_documents(const std::function<bool (SPDocument*)>& filter) {
-    static std::vector<std::shared_ptr<SPDocument>> documents;
+    auto& storage = Documents::get();
 
-    if (documents.empty()) {
+    if (storage.documents.empty()) {
         using namespace Inkscape::IO::Resource;
         auto files = get_filenames(SYSTEM, PAINT, {".svg"});
         auto user = get_filenames(USER, PAINT, {".svg"});
@@ -45,7 +61,7 @@ std::vector<std::shared_ptr<SPDocument>> sp_get_paint_documents(const std::funct
             if (Glib::file_test(file, Glib::FILE_TEST_IS_REGULAR)) {
                 std::shared_ptr<SPDocument> doc(SPDocument::createNewDoc(file.c_str(), false));
                 if (doc) {
-                    documents.push_back(std::move(doc));
+                    storage.documents.push_back(std::move(doc));
                 }
                 else {
                     g_warning("File %s not loaded.", file.c_str());
@@ -55,7 +71,7 @@ std::vector<std::shared_ptr<SPDocument>> sp_get_paint_documents(const std::funct
     }
 
     std::vector<std::shared_ptr<SPDocument>> out;
-    std::copy_if(documents.begin(), documents.end(), std::back_inserter(out), [=](const std::shared_ptr<SPDocument>& doc) {
+    std::copy_if(storage.documents.begin(), storage.documents.end(), std::back_inserter(out), [=](const std::shared_ptr<SPDocument>& doc) {
         return filter(doc.get());
     });
 
