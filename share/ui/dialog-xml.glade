@@ -51,6 +51,7 @@
         <property name="can-focus">False</property>
         <property name="label" translatable="yes">Automatic layout</property>
         <property name="use-underline">True</property>
+        <property name="draw-as-radio">True</property>
       </object>
     </child>
     <child>
@@ -60,6 +61,7 @@
         <property name="label" translatable="yes">Horizontal layout</property>
         <property name="use-underline">True</property>
         <property name="draw-as-radio">True</property>
+        <property name="group">auto-layout</property>
       </object>
     </child>
     <child>
@@ -69,6 +71,7 @@
         <property name="label" translatable="yes">Vertical layout</property>
         <property name="use-underline">True</property>
         <property name="draw-as-radio">True</property>
+        <property name="group">auto-layout</property>
       </object>
     </child>
   </object>
@@ -87,6 +90,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">New element node</property>
             <property name="image">image1</property>
             <property name="relief">none</property>
           </object>
@@ -101,6 +105,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">New text node</property>
             <property name="image">image2</property>
             <property name="relief">none</property>
           </object>
@@ -115,6 +120,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Duplicate node</property>
             <property name="image">image3</property>
             <property name="relief">none</property>
           </object>
@@ -129,6 +135,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Delete node</property>
             <property name="image">image4</property>
             <property name="relief">none</property>
           </object>
@@ -143,6 +150,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Unindent node</property>
             <property name="image">image5</property>
             <property name="relief">none</property>
           </object>
@@ -157,6 +165,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Indent node</property>
             <property name="image">image6</property>
             <property name="relief">none</property>
           </object>
@@ -171,6 +180,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Raise node</property>
             <property name="image">image7</property>
             <property name="relief">none</property>
           </object>
@@ -181,7 +191,8 @@
           </packing>
         </child>
         <child>
-          <object class="GtkMenuButton">
+          <object class="GtkMenuButton" id="layout-btn">
+            <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="focus-on-click">False</property>
             <property name="receives-default">True</property>
@@ -190,12 +201,38 @@
             <property name="popup">menu-popup</property>
             <property name="use-popover">False</property>
             <child>
-              <object class="GtkImage">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="icon-name">horizontal</property>
+                <child>
+                  <object class="GtkImage" id="layout-img">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">horizontal</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">pan-down-symbolic</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
             </child>
+            <style>
+              <class name="menu-btn-tight"/>
+            </style>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -209,6 +246,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Lower node</property>
             <property name="image">image8</property>
             <property name="relief">none</property>
           </object>
@@ -249,7 +287,7 @@
           </object>
           <packing>
             <property name="resize">False</property>
-            <property name="shrink">True</property>
+            <property name="shrink">False</property>
           </packing>
         </child>
         <child>

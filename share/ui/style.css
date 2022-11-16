@@ -258,7 +258,6 @@ iconview *:hover {
     padding: 2px;
 }
 
-#XMLAndAttributesDialog .toggle,
 #SelectorsAndStyleDialog .toggle {
     min-width: 18px;
     padding-left: 6px;
@@ -657,6 +656,11 @@ button.square-button image {
 /* for dialogs with "Apply" button (or equivalent) - larger hit target */
 .wide-apply-button {
     min-width: 150px;
+}
+
+button.menu-btn-tight {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 #DockedDialogNotebook {

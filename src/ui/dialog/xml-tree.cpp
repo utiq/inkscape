@@ -20,9 +20,13 @@
 #include "xml-tree.h"
 
 #include <glibmm/i18n.h>
+#include <glibmm/ustring.h>
 #include <gtkmm/button.h>
 #include <gtkmm/enums.h>
+#include <gtkmm/image.h>
+#include <gtkmm/menubutton.h>
 #include <gtkmm/paned.h>
+#include <gtkmm/radiomenuitem.h>
 #include <gtkmm/scrolledwindow.h>
 #include <memory>
 
@@ -92,7 +96,6 @@ XmlTree::XmlTree()
     fix_inner_scroll(&tree_scroller);
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool dir = prefs->getBool("/dialogs/xml/vertical", true);
 
     /* attributes */
     attributes = new AttrDialog();
@@ -105,7 +108,6 @@ XmlTree::XmlTree()
     attributes->status_box.hide();
     attributes->status_box.set_no_show_all();
     _paned.pack2(*attributes, true, false);
-    paned_set_vertical(_paned, dir);
 
     /* Signal handlers */
     GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(tree));
@@ -134,28 +136,82 @@ XmlTree::XmlTree()
     int min_width = 0, dummy;
     get_preferred_width(min_width, dummy);
 
-    signal_size_allocate().connect([=] (Gtk::Allocation const &alloc) {
+    auto auto_arrange_panels = [=](Gtk::Allocation const &alloc) {
         // skip bogus sizes
         if (alloc.get_width() < 10 || alloc.get_height() < 10) return;
 
         // minimal width times fudge factor to arrive at "narrow" dialog with automatic vertical layout:
         const bool narrow = alloc.get_width() < min_width * 1.5;
         paned_set_vertical(_paned, narrow);
+    };
+
+    auto arrange_panels = [=](DialogLayout layout){
+        switch (layout) {
+            case Auto:
+                auto_arrange_panels(get_allocation());
+                break;
+            case Horizontal:
+                paned_set_vertical(_paned, false);
+                break;
+            case Vertical:
+                paned_set_vertical(_paned, true);
+                break;
+        }
+        // ensure_size();
+    };
+
+    signal_size_allocate().connect([=] (Gtk::Allocation const &alloc) {
+        arrange_panels(_layout);
     });
+
+    auto& popup = get_widget<Gtk::MenuButton>(_builder, "layout-btn");
+    popup.set_has_tooltip();
+    popup.signal_query_tooltip().connect([=](int x, int y, bool kbd, const Glib::RefPtr<Gtk::Tooltip>& tooltip){
+        auto tip = "";
+        switch (_layout) {
+            case Auto: tip = _("Automatic panel layout:\nchanges with dialog size");
+                break;
+            case Horizontal: tip = _("Horizontal panel layout");
+                break;
+            case Vertical: tip = _("Vertical panel layout");
+                break;
+        }
+        tooltip->set_text(tip);
+        return true;
+    });
+
+    auto set_layout = [=](DialogLayout layout){
+        Glib::ustring icon = "layout-auto";
+        if (layout == Horizontal) {
+            icon = "layout-horizontal";
+        }
+        else if (layout == Vertical) {
+            icon = "layout-vertical";
+        }
+        get_widget<Gtk::Image>(_builder, "layout-img").set_from_icon_name(icon + "-symbolic", Gtk::ICON_SIZE_SMALL_TOOLBAR);
+        prefs->setInt("/dialogs/xml/layout", layout);
+        arrange_panels(layout);
+        _layout = layout;
+    };
+
+    auto menu_items = get_widget<Gtk::Menu>(_builder, "menu-popup").get_children();
+
+    DialogLayout layouts[] = {Auto, Horizontal, Vertical};
+    int index = 0;
+    for (auto item : menu_items) {
+        g_assert(index < 3);
+        auto layout = layouts[index++];
+        static_cast<Gtk::RadioMenuItem*>(item)->signal_activate().connect([=](){ set_layout(layout); });
+    }
+
+    _layout = static_cast<DialogLayout>(prefs->getIntLimited("/dialogs/xml/layout", Auto, Auto, Vertical));
+    static_cast<Gtk::RadioMenuItem*>(menu_items.at(_layout))->set_active();
+    set_layout(_layout);
 }
 
 void XmlTree::_resized()
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    prefs->setInt("/dialogs/xml/panedpos", _paned.property_position());
-}
-
-void XmlTree::_toggleDirection(Gtk::RadioButton *vertical)
-{
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool dir = vertical->get_active();
-    prefs->setBool("/dialogs/xml/vertical", dir);
-    paned_set_vertical(_paned, dir);
     prefs->setInt("/dialogs/xml/panedpos", _paned.property_position());
 }
 

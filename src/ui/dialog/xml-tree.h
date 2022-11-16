@@ -142,7 +142,6 @@ private:
     void cmd_indent_node();
     void cmd_unindent_node();
 
-    void _toggleDirection(Gtk::RadioButton *vertical);
     void _resized();
     bool in_dt_coordsys(SPObject const &item);
 
@@ -185,6 +184,8 @@ private:
 
     gulong _selection_changed = 0;
     gulong _tree_move = 0;
+    enum DialogLayout: int { Auto = 0, Horizontal, Vertical };
+    DialogLayout _layout = Auto;
 };
 
 } // namespace Dialog
