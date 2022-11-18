@@ -117,6 +117,11 @@ Glib::RefPtr<Gdk::Pixbuf> sp_get_shape_icon(Glib::ustring shape_type, Gdk::RGBA 
     Gtk::IconInfo iconinfo = icon_theme->lookup_icon("shape-" + shape_type + "-symbolic",
                                                      size * scale, Gtk::ICON_LOOKUP_FORCE_SIZE);
     if (!iconinfo) {
+        // fallback to regular icons
+        iconinfo = icon_theme->lookup_icon(shape_type + "-symbolic", size * scale, Gtk::ICON_LOOKUP_FORCE_SIZE);
+    }
+
+    if (!iconinfo) {
         iconinfo = icon_theme->lookup_icon("shape-unknown-symbolic", size * scale, Gtk::ICON_LOOKUP_FORCE_SIZE);
         // We know this could fail, but it should exist, so persist.
     }

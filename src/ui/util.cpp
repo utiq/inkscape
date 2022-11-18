@@ -16,7 +16,10 @@
 #include <cstdint>
 #include <gdkmm/rgba.h>
 #include <gtkmm.h>
+#include <gtkmm/cellrenderer.h>
+#include <gtkmm/enums.h>
 #include <stdexcept>
+#include <tuple>
 
 /**
  * Recursively look through pre-constructed widget parents for a specific named widget.
@@ -74,8 +77,8 @@ bool is_widget_effectively_visible(Gtk::Widget const *widget) {
     return widget->get_child_visible();
 }
 
-namespace Inkscape {
-namespace UI {
+namespace Inkscape::UI {
+
 void resize_widget_children(Gtk::Widget *widget) {
     if(widget) {
         Gtk::Allocation allocation;
@@ -84,8 +87,27 @@ void resize_widget_children(Gtk::Widget *widget) {
         widget->size_allocate(allocation, baseline);
     }
 }
+
+Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state)
+{
+    auto flags = Gtk::STATE_FLAG_NORMAL;
+
+    for (auto [s, f]: (std::tuple<Gtk::CellRendererState, Gtk::StateFlags>[]) {
+        {Gtk::CELL_RENDERER_SELECTED, Gtk::STATE_FLAG_SELECTED},
+        {Gtk::CELL_RENDERER_PRELIT, Gtk::STATE_FLAG_PRELIGHT},
+        {Gtk::CELL_RENDERER_INSENSITIVE, Gtk::STATE_FLAG_INSENSITIVE},
+        {Gtk::CELL_RENDERER_FOCUSED, Gtk::STATE_FLAG_FOCUSED},
+    })
+    {
+        if (state & s) {
+            flags |= f;
+        }
+    }
+
+    return flags;
 }
-}
+
+} // namespace Inkscape::UI
 
 Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio) {
     auto lerp = [](double v0, double v1, double t){ return (1.0 - t) * v0 + t * v1; };

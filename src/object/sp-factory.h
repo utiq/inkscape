@@ -24,6 +24,7 @@ class Node;
 
 struct SPFactory {
     static SPObject *createObject(std::string const &id);
+    static bool supportsType(std::string const &id);
 };
 
 struct NodeTraits {

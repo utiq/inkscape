@@ -168,9 +168,8 @@ notebook.blink > header > tabs > tab:checked {
     color: inherit;
 }
 
-/* attribute dialog popup size */
-.attrpop textview {
-    font-size: 13px;
+.mono-font {
+    /* note: monospaced font is set by ThemeContext::adjust_global_font_scale() */
 }
 
 /* 
@@ -225,12 +224,12 @@ iconview *:hover {
 }
 
 .menu-category {
-    font-size: small;
+    font-size: smaller;
     font-weight: bold;
 }
 
 .small-heading {
-    font-size: small;
+    font-size: smaller;
     font-weight: bold;
     opacity: 0.5;
 }
@@ -250,7 +249,7 @@ iconview *:hover {
 }
 
 
-/* Selector and XML dialog */
+/* Selector dialog */
 #SelectorsAndStyleDialog button {
     padding: 4px;
     min-height: 16px;
@@ -266,14 +265,12 @@ iconview *:hover {
     padding-bottom: 0;
 }
 
-#XMLAndAttributesDialog .radio.image-button,
 #SelectorsAndStyleDialog .radio.image-button {
     margin: 0;
     padding: 0px;
     border-radius: 2px 0 0 2px;
 }
 
-#XMLAndAttributesDialog .radio.image-button:last-child,
 #SelectorsAndStyleDialog .radio.image-button:last-child {
     border-radius: 0 2px 2px 0;
     border-left-width: 0;
@@ -455,7 +452,7 @@ SPCanvas {
 #Objects .search {
   padding: 2px 4px;
   min-height: 16px;
-  font-size: small;
+  font-size: smaller;
 }
 
 #SimpleFilterModifier #InkSpinScale {
@@ -595,7 +592,7 @@ scale.tight-slider {
 
 /* add .small-marks class to Gtk::Scale to have smaller font used, since markup didn't work there */
 scale.small-marks.marks-after {
-    font-size: small;
+    font-size: smaller;
 }
 
 /* Square toolbar buttons: request square buttons for all toolbars. */
@@ -617,7 +614,7 @@ button.square-button image {
 }
 
 #StyleSwatch label {
-    font-size: small;
+    font-size: smaller;
 }
 
 #DocumentProperties #NotebookPage {
@@ -646,7 +643,7 @@ button.square-button image {
 }
 
 .small-font {
-    font-size: small;
+    font-size: smaller;
 }
 
 .toolbar-separator {

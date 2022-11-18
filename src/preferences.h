@@ -898,6 +898,21 @@ private:
 };
 
 template<>
+class Pref<Glib::ustring> : public PrefBase<Glib::ustring>
+{
+public:
+    Pref(Glib::ustring path, Glib::ustring def = "")
+        : PrefBase(std::move(path), def)
+    {
+        init();
+    }
+private:
+    friend PrefBase;
+    auto read() const { return Preferences::get()->getString(observed_path, def); }
+    auto changed(Preferences::Entry const &e) const { return e.getString(def); }
+};
+
+template<>
 class Pref<void> : public Preferences::Observer
 {
 public:

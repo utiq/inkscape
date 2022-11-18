@@ -24,6 +24,9 @@
 #include <iostream>
 #include <sstream>
 
+#include <2geom/path-sink.h>
+#include <2geom/svg-path-parser.h>
+
 #include "attribute-rel-css.h"
 #include "attribute-rel-svg.h"
 #include "preferences.h"
@@ -328,6 +331,36 @@ bool sp_attribute_check_attribute(Glib::ustring const &element, Glib::ustring co
     }
 
     return is_useful;
+}
+
+bool sp_is_valid_svg_path_d(Glib::ustring const &d)
+{
+    /** A PathSink going straight to /dev/null */
+    class PathBlackHole final : public Geom::PathSink
+    {
+        using Geom::PathSink::feed;
+        void moveTo(Geom::Point const &) final {}
+        void lineTo(Geom::Point const &) final {}
+        void curveTo(Geom::Point const &, Geom::Point const &, Geom::Point const &) final {}
+        void quadTo(Geom::Point const &, Geom::Point const &) final {}
+        void arcTo(Geom::Coord, Geom::Coord, Geom::Coord, bool, bool, Geom::Point const &) final {}
+        void closePath() final {}
+        void flush() final {}
+        void feed(Geom::Curve const &, bool) final {}
+        void feed(Geom::Path const &) final {}
+        void feed(Geom::PathVector const &) final {}
+        void feed(Geom::Rect const &) final {}
+        void feed(Geom::Circle const &) final {}
+        void feed(Geom::Ellipse const &) final {}
+    } dev_null;
+
+    auto validator = Geom::SVGPathParser(dev_null);
+    try {
+        validator.parse(static_cast<std::string>(d));
+    } catch (Geom::SVGPathParseError &) {
+        return false;
+    }
+    return true;
 }
 
 /*

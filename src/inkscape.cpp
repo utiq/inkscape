@@ -214,8 +214,9 @@ Application::Application(bool use_gui) :
         icon_theme->prepend_search_path(get_path_ustring(USER, ICONS));
         themecontext = new Inkscape::UI::ThemeContext();
         themecontext->add_gtk_css(false);
-        auto scale = prefs->getDoubleLimited("/theme/fontscale", 100, 50, 150);
-        themecontext->adjust_global_font_scale(scale / 100.0);
+        auto scale = prefs->getDoubleLimited(UI::ThemeContext::get_font_scale_pref_path(), 100, 50, 150);
+        themecontext->adjustGlobalFontScale(scale / 100.0);
+        Inkscape::UI::ThemeContext::initialize_source_syntax_styles();
         Inkscape::DeviceManager::getManager().loadConfig();
     }
 
@@ -271,6 +272,10 @@ Application::Application(bool use_gui) :
                         wnd->get_style_context()->remove_class("dark");
                     }
                 }
+            }
+            // select default syntax coloring theme, if needed
+            if (auto desktop = active_desktop()) {
+                UI::ThemeContext::select_default_syntax_style(themecontext->isCurrentThemeDark(desktop->getToplevel()));
             }
         });
     }

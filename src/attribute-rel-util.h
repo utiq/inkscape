@@ -1,21 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * TODO: insert short description here
+ * Utility functions related to parsing and validation of XML attributes.
  *//*
- * Authors: see git history
+ * Authors:
+ *   tavmjong
  *
  * Copyright (C) 2016 Authors
+ *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef __SP_ATTRIBUTE_REL_UTIL_H__
-#define __SP_ATTRIBUTE_REL_UTIL_H__
-
-/*
- * attribute-rel-util.h
- *
- *  Created on: Sep 8, 2011
- *      Author: tavmjong
- */
+#ifndef SEEN_ATTRIBUTE_REL_UTIL_H
+#define SEEN_ATTRIBUTE_REL_UTIL_H
 
 #include <glibmm/ustring.h>
 
@@ -91,7 +86,15 @@ void sp_attribute_purge_default_style(SPCSSAttr *css, unsigned int flags);
 bool sp_attribute_check_attribute(Glib::ustring const &element, Glib::ustring const &id, Glib::ustring const &attribute,
                                   bool warn);
 
-#endif /* __SP_ATTRIBUTE_REL_UTIL_H__ */
+/**
+ * @brief Check whether the 'd' attribute on a <path> element parses correctly.
+ *
+ * @param d The value of the 'd' attribute.
+ * @return false if the value causes a parser error, true otherwise.
+ */
+bool sp_is_valid_svg_path_d(Glib::ustring const &d);
+
+#endif // SEEN_ATTRIBUTE_REL_UTIL_H
 
 /*
   Local Variables:

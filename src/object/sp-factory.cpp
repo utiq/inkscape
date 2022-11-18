@@ -114,6 +114,17 @@ public:
         return it->second();
     }
 
+    bool supportsId(std::string const &id) const
+    {
+        return map.find(id) != map.end();
+    }
+
+    static Factory const &get()
+    {
+        static Factory const singleton;
+        return singleton;
+    }
+
 private:
     using Func = SPObject*(*)();
 
@@ -273,8 +284,12 @@ private:
 
 SPObject *SPFactory::createObject(std::string const &id)
 {
-    static Factory const factory;
-    return factory.create(id);
+    return Factory::get().create(id);
+}
+
+bool SPFactory::supportsType(std::string const &id)
+{
+    return Factory::get().supportsId(id);
 }
 
 std::string NodeTraits::get_type_string(Inkscape::XML::Node const &node)

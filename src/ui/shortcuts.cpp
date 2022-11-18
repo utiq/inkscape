@@ -487,8 +487,8 @@ Shortcuts::add_shortcut(Glib::ustring name, const Gtk::AccelKey& shortcut, bool 
 {
     // Remove previous use of shortcut (already removed if new user shortcut).
     if (Glib::ustring old_name = remove_shortcut(shortcut); old_name != "") {
-        std::cerr << "Shortcut::add_shortcut: duplicate shortcut found for: " << shortcut.get_abbrev().raw()
-                  << "  Old: " << old_name.raw() << "  New: " << name.raw() << " !" << std::endl;
+        // std::cerr << "Shortcut::add_shortcut: duplicate shortcut found for: " << shortcut.get_abbrev().raw()
+                //   << "  Old: " << old_name.raw() << "  New: " << name.raw() << " !" << std::endl;
     }
 
     // Add shortcut

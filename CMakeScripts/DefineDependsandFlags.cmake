@@ -283,6 +283,18 @@ if(WITH_GSPELL)
     endif()
 endif()
 
+if(WITH_GSOURCEVIEW)
+    pkg_check_modules(GSOURCEVIEW gtksourceview-4)
+    if("${GSOURCEVIEW_FOUND}")
+        message(STATUS "Using gtksourceview-4")
+        list(APPEND INKSCAPE_INCS_SYS ${GSOURCEVIEW_INCLUDE_DIRS})
+        sanitize_ldflags_for_libs(GSOURCEVIEW_LDFLAGS)
+        list(APPEND INKSCAPE_LIBS ${GSOURCEVIEW_LDFLAGS})
+    else()
+        set(WITH_GSOURCEVIEW OFF)
+    endif()
+endif()
+
 find_package(Boost 1.19.0 REQUIRED COMPONENTS filesystem)
 
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)

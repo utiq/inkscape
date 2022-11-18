@@ -9,7 +9,10 @@
  */
 
 
+#include <gtkmm/cellrenderer.h>
+#include <gtkmm/enums.h>
 #include "color.h"
+#include "ui/util.h"
 #include "ui/widget/shapeicon.h"
 #include "ui/icon-loader.h"
 
@@ -33,8 +36,19 @@ void CellRendererItemIcon::render_vfunc(const Cairo::RefPtr<Cairo::Context>& cr,
                                       const Gdk::Rectangle& cell_area,
                                       Gtk::CellRendererState flags)
 {
+    property_mode() = Gtk::CELL_RENDERER_MODE_ACTIVATABLE;
+
     std::string shape_type = _property_shape_type.get_value();
-    std::string highlight = SPColor(_property_color.get_value()).toString();
+    std::string highlight;
+    auto color = _property_color.get_value();
+    if (color == 0) {
+        auto style_context = widget.get_style_context();
+        Gdk::RGBA fg = style_context->get_color(cell_flags_to_state_flags(flags));
+        highlight = fg.to_string();
+    }
+    else {
+        highlight = SPColor(color).toString();
+    }
     std::string cache_id = shape_type + "-" + highlight;
 
     // if the icon isn't cached, render it to a pixbuf
@@ -98,6 +112,15 @@ void CellRendererItemIcon::get_preferred_width_vfunc(Gtk::Widget& widget, int& m
     nat_w = _size + 4;
 }   
 
+bool CellRendererItemIcon::activate_vfunc(GdkEvent* event,
+                                Gtk::Widget& widget,
+                                const Glib::ustring& path,
+                                const Gdk::Rectangle& background_area,
+                                const Gdk::Rectangle& cell_area,
+                                Gtk::CellRendererState flags) {
+    _signal_activated.emit(path);
+    return true;
+}
 
 } // namespace Widget
 } // namespace UI

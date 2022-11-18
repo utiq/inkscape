@@ -59,6 +59,7 @@ if(WIN32)
     ${MINGW_BIN}/libgspell-1-[0-9]*.dll
     ${MINGW_BIN}/libgtk-3-[0-9]*.dll
     ${MINGW_BIN}/libgtkmm-3.0-[0-9]*.dll
+    ${MINGW_BIN}/libgtksourceview-4-[0-9]*.dll
     ${MINGW_BIN}/libharfbuzz-[0-9]*.dll
     ${MINGW_BIN}/libheif.dll
     ${MINGW_BIN}/libiconv-[0-9]*.dll
@@ -199,6 +200,9 @@ if(WIN32)
 
   install(DIRECTORY ${MINGW_PATH}/share/glib-2.0/schemas
     DESTINATION share/glib-2.0)
+
+  install(DIRECTORY ${MINGW_PATH}/share/gtksourceview-4
+    DESTINATION share)
 
   # fontconfig
   install(DIRECTORY ${MINGW_PATH}/etc/fonts

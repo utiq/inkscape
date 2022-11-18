@@ -13,6 +13,9 @@
 #ifndef INKSCAPE_UI_DIALOG_XML_TREE_H
 #define INKSCAPE_UI_DIALOG_XML_TREE_H
 
+#include <glibmm/ustring.h>
+#include <gtkmm/treeview.h>
+#include <gtkmm/widget.h>
 #include <memory>
 #include <glibmm/refptr.h>
 #include <gtkmm/builder.h>
@@ -29,6 +32,8 @@
 #include "message.h"
 #include "attrdialog.h"
 #include "dialog-base.h"
+#include "preferences.h"
+#include "ui/syntax.h"
 
 class SPObject;
 struct SPXMLViewAttrList;
@@ -51,7 +56,9 @@ class XmlTree : public DialogBase
 {
 public:
     XmlTree();
-    ~XmlTree() override;
+    ~XmlTree() override = default;
+
+    void setSyntaxStyle(Inkscape::UI::Syntax::XMLStyles const &new_style);
 
 private:
     void unsetDocument();
@@ -77,7 +84,7 @@ private:
     /**
      * Select a node in the xml tree
      */
-    void set_tree_select(Inkscape::XML::Node *repr);
+    void set_tree_select(Inkscape::XML::Node *repr, bool edit = false);
 
     /**
      * Set the attribute list to match the selected node in the tree
@@ -146,6 +153,9 @@ private:
     bool in_dt_coordsys(SPObject const &item);
 
     void on_unrealize() override;
+    void rebuildTree();
+    void stopNodeEditing(bool ok, Glib::ustring const &path, Glib::ustring name);
+    void startNodeEditing(Gtk::CellEditable *cell, Glib::ustring const &path);
 
     /**
      * Flag to ensure only one operation is performed at once
@@ -161,6 +171,7 @@ private:
 
     /* XmlTree Widgets */
     SPXMLViewTree *tree = nullptr;
+    Gtk::Widget* _treemm = nullptr;
     AttrDialog *attributes;
     Gtk::Box *_attrbox;
 
@@ -186,6 +197,10 @@ private:
     gulong _tree_move = 0;
     enum DialogLayout: int { Auto = 0, Horizontal, Vertical };
     DialogLayout _layout = Auto;
+    Pref<Glib::ustring> _syntax_theme;
+    Pref<bool> _mono_font;
+    Inkscape::XML::Node* _dummy = nullptr;
+    Inkscape::XML::Node* _node_parent = nullptr;
 };
 
 } // namespace Dialog

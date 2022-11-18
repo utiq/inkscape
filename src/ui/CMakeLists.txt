@@ -16,6 +16,7 @@ set(ui_SRC
 	simple-pref-pusher.cpp
 	shortcuts.cpp
 	svg-renderer.cpp
+	syntax.cpp
 	themes.cpp
 	tool-factory.cpp
 	util.cpp
@@ -280,6 +281,7 @@ set(ui_SRC
 	shape-editor.h
 	simple-pref-pusher.h
 	shortcuts.h
+	syntax.h
 	themes.h
 	tool-factory.h
 	util.h

@@ -71,6 +71,9 @@
 /* enable gtk spelling widget and built-in spellchecker */
 #cmakedefine WITH_GSPELL 1
 
+/* enable gtk syntax coloring text view widget */
+#cmakedefine WITH_GSOURCEVIEW 1
+
 /* Image/Graphics Magick++ support for bitmap effects */
 #cmakedefine WITH_MAGICK 1
 

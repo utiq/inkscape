@@ -55,6 +55,11 @@ public:
         return _property_clipmask.get_proxy();
     }
   
+    typedef sigc::signal<void (Glib::ustring)> type_signal_activated;
+    type_signal_activated signal_activated() {
+        return _signal_activated;
+    }
+
 protected:
     void render_vfunc(const Cairo::RefPtr<Cairo::Context>& cr, 
                       Gtk::Widget& widget,
@@ -69,8 +74,14 @@ protected:
     void get_preferred_width_vfunc(Gtk::Widget& widget, int& min_w, int& nat_w) const override;
     void get_preferred_height_vfunc(Gtk::Widget& widget, int& min_h, int& nat_h) const override;
 
+    bool activate_vfunc(GdkEvent* event,
+                        Gtk::Widget& widget,
+                        const Glib::ustring& path,
+                        const Gdk::Rectangle& background_area,
+                        const Gdk::Rectangle& cell_area,
+                        Gtk::CellRendererState flags) override;
 private:
-  
+    type_signal_activated _signal_activated;
     int _size;
     Glib::Property<std::string> _property_shape_type;
     Glib::Property<unsigned int> _property_color;

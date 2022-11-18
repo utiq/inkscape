@@ -1,3 +1,4 @@
+../share/ui/attribute-edit-component.glade
 ../share/ui/color-palette.glade
 ../share/ui/command-palette-operation.glade
 ../share/ui/completion-box.glade

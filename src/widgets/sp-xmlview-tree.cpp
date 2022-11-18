@@ -13,10 +13,16 @@
 #include "sp-xmlview-tree.h"
 
 #include <cstring>
+#include <glibmm/markup.h>
+#include <glibmm/property.h>
+#include <glibmm/ustring.h>
 #include <gmodule.h>
+#include <gtkmm/cellrenderer.h>
+#include <gtkmm/cellrenderertext.h>
 #include <memory>
 #include <string>
 
+#include "ui/syntax.h"
 #include "xml/node-observer.h"
 #include "xml/node.h"
 
@@ -40,7 +46,7 @@ Inkscape::XML::Node *dragging_repr = nullptr;
 
 } // namespace
 
-enum { STORE_TEXT_COL = 0, STORE_DATA_COL, STORE_N_COLS };
+enum { STORE_TEXT_COL = 0, STORE_DATA_COL, STORE_MARKUP_COL, STORE_N_COLS };
 
 static void sp_xmlview_tree_destroy(GtkWidget * object);
 
@@ -66,6 +72,11 @@ static void remove_dummy_rows(GtkTreeStore *store, GtkTreeIter *iter);
 static void sp_remove_newlines_and_tabs(std::string &val, size_t const maxlen = 200);
 
 namespace {
+
+static auto null_to_empty(char const *str)
+{
+    return str ? str : "";
+}
 
 class ElementNodeObserver final : public Inkscape::XML::NodeObserver
 {
@@ -166,34 +177,36 @@ public:
             return;
         }
 
-        gchar const* node_name = repr->name();
-        gchar const* id_value = repr->attribute("id");
-        gchar const* label_value = repr->attribute("inkscape:label");
-        gchar* display_text;
-
-        if (id_value && label_value) {
-            display_text = g_strdup_printf ("<%s id=\"%s\" inkscape:label=\"%s\">", node_name, id_value, label_value);
-        } else if (id_value) {
-            display_text = g_strdup_printf ("<%s id=\"%s\">", node_name, id_value);
-        } else if (label_value) {
-            display_text = g_strdup_printf ("<%s inkscape:label=\"%s\">", node_name, label_value);
-        } else {
-            display_text = g_strdup_printf ("<%s>", node_name);
+        auto node_name = Glib::ustring(null_to_empty(repr->name()));
+        auto pos = node_name.find("svg:");
+        if (pos != Glib::ustring::npos) {
+            // Do not decorate element names the with default namespace "svg"; it is just visual noise.
+            node_name.erase(pos, 4);
         }
+
+        // Build a plain-text and a markup-enabled representation of the node.
+        auto &formatter = *_nodedata->tree->formatter;
+        auto display_text = Glib::ustring::compose("<%1", node_name);
+        formatter.openTag(node_name.c_str());
+
+        if (auto id_value = repr->attribute("id")) {
+            display_text += Glib::ustring::compose(" id=\"%1\"", id_value);
+            formatter.addAttribute("id", id_value);
+        }
+        if (auto label_value = repr->attribute("inkscape:label")) {
+            display_text += Glib::ustring::compose(" inkscape:label=\"%1\"", label_value);
+            formatter.addAttribute("inkscape:label", label_value);
+        }
+        display_text += ">";
+        auto markup = formatter.finishTag();
 
         GtkTreeIter iter;
-        if (tree_ref_to_iter(_nodedata->tree, &iter,  _nodedata->rowref)) {
-            gtk_tree_store_set (GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, display_text, -1);
+        if (tree_ref_to_iter(_nodedata->tree, &iter, _nodedata->rowref)) {
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, display_text.c_str(), -1);
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_MARKUP_COL, markup.c_str(), -1);
         }
-
-        g_free(display_text);
     }
 };
-
-static auto null_to_empty(char const *str)
-{
-    return str ? str : "";
-}
 
 class TextNodeObserver final : public Inkscape::XML::NodeObserver
 {
@@ -210,13 +223,16 @@ public:
         if (_nodedata->tree->blocked)
             return;
 
-        auto nolinecontent = std::string("\"").append(null_to_empty(new_content.pointer())).append("\"");
-        sp_remove_newlines_and_tabs(nolinecontent);
+        auto text_content = std::string("\"").append(null_to_empty(new_content.pointer())).append("\"");
+        sp_remove_newlines_and_tabs(text_content);
+
+        auto &formatter = *_nodedata->tree->formatter;
+        auto markup = formatter.formatContent(text_content.c_str(), false);
 
         GtkTreeIter iter;
         if (tree_ref_to_iter(_nodedata->tree, &iter, _nodedata->rowref)) {
-            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(),
-                               -1);
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, text_content.c_str(), -1);
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_MARKUP_COL, markup.c_str(), -1);
         }
     }
 };
@@ -235,13 +251,16 @@ public:
         if (_nodedata->tree->blocked)
             return;
 
-        auto nolinecontent = std::string("<!--").append(null_to_empty(new_content.pointer())).append("-->");
-        sp_remove_newlines_and_tabs(nolinecontent);
+        auto comment = std::string("<!--").append(null_to_empty(new_content.pointer())).append("-->");
+        sp_remove_newlines_and_tabs(comment);
+
+        auto &formatter = *_nodedata->tree->formatter;
+        auto markup = formatter.formatComment(comment.c_str(), false);
 
         GtkTreeIter iter;
         if (tree_ref_to_iter(_nodedata->tree, &iter, _nodedata->rowref)) {
-            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(),
-                               -1);
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, comment.c_str(), -1);
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_MARKUP_COL, markup.c_str(), -1);
         }
     }
 };
@@ -260,13 +279,16 @@ public:
         if (_nodedata->tree->blocked)
             return;
 
-        auto nolinecontent = std::string("<?").append(repr.name()).append(" ").append(null_to_empty(new_content.pointer())).append("?>");
-        sp_remove_newlines_and_tabs(nolinecontent);
+        auto processing_instr = std::string("<?").append(repr.name()).append(" ").append(null_to_empty(new_content.pointer())).append("?>");
+        sp_remove_newlines_and_tabs(processing_instr);
+
+        auto &formatter = *_nodedata->tree->formatter;
+        auto markup = formatter.formatProlog(processing_instr.c_str());
 
         GtkTreeIter iter;
         if (tree_ref_to_iter(_nodedata->tree, &iter, _nodedata->rowref)) {
-            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, nolinecontent.c_str(),
-                               -1);
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_TEXT_COL, processing_instr.c_str(), -1);
+            gtk_tree_store_set(GTK_TREE_STORE(_nodedata->tree->store), &iter, STORE_MARKUP_COL, markup.c_str(), -1);
         }
     }
 };
@@ -328,6 +350,33 @@ static gboolean on_test_expand_row( //
     return false;
 }
 
+/** Node name renderer for XML tree.
+ *  It knows to use markup, but falls back to plain text for selected nodes.
+ */
+class NodeRenderer : public Gtk::CellRendererText {
+public:
+    NodeRenderer():
+        Glib::ObjectBase(typeid(CellRendererText)),
+        Gtk::CellRendererText(),
+        _property_plain_text(*this, "plain", "-") {}
+
+    // "text" and "markup" properties from CellRendererText are in use for marked up text;
+    // we need a separate property for plain text (placeholder_text could be hijacked potentially)
+    Glib::Property<Glib::ustring> _property_plain_text;
+
+    void render_vfunc(const Cairo::RefPtr<Cairo::Context>& ctx,
+                      Gtk::Widget& widget,
+                      const Gdk::Rectangle& background_area,
+                      const Gdk::Rectangle& cell_area,
+                      Gtk::CellRendererState flags) override {
+        if (flags & Gtk::CELL_RENDERER_SELECTED) {
+            // use plain text instead of marked up text to render selected nodes, so they are legible
+            property_text() = _property_plain_text.get_value();
+        }
+        Gtk::CellRendererText::render_vfunc(ctx, widget, background_area, cell_area, flags);
+    }
+};
+
 GtkWidget *sp_xmlview_tree_new(Inkscape::XML::Node * repr, void * /*factory*/, void * /*data*/)
 {
     SPXMLViewTree *tree = SP_XMLVIEW_TREE(g_object_new (SP_TYPE_XMLVIEW_TREE, nullptr));
@@ -337,8 +386,14 @@ GtkWidget *sp_xmlview_tree_new(Inkscape::XML::Node * repr, void * /*factory*/, v
     gtk_tree_view_set_enable_search (GTK_TREE_VIEW(tree), TRUE);
     gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW(tree), search_equal_func, nullptr, nullptr);
 
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new ();
-    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes ("", renderer, "text", STORE_TEXT_COL, nullptr);
+    auto r = new NodeRenderer();
+    tree->renderer = r;
+
+    GtkCellRenderer* renderer = r->Gtk::CellRenderer::gobj();
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("", renderer,
+        "markup", STORE_MARKUP_COL, // marked up text for decorated color output
+        "plain", STORE_TEXT_COL,    // plain text for searching and rendering selected nodes
+        nullptr);
     gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
     gtk_cell_renderer_set_padding (renderer, 2, 0);
     gtk_tree_view_column_set_sizing (column, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
@@ -350,6 +405,8 @@ GtkWidget *sp_xmlview_tree_new(Inkscape::XML::Node * repr, void * /*factory*/, v
     g_signal_connect(GTK_TREE_VIEW(tree), "drag-motion",  G_CALLBACK(do_drag_motion), tree);
     g_signal_connect(GTK_TREE_VIEW(tree), "test-expand-row", G_CALLBACK(on_test_expand_row), nullptr);
 
+    tree->formatter = new Inkscape::UI::Syntax::XMLFormatter();
+
     return GTK_WIDGET(tree);
 }
 
@@ -359,7 +416,7 @@ void sp_xmlview_tree_class_init(SPXMLViewTreeClass * klass)
 {
     auto widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->destroy = sp_xmlview_tree_destroy;
-    
+
     // Signal for when a tree drag and drop has completed
     g_signal_new (  "tree_move",
         G_TYPE_FROM_CLASS(klass),
@@ -381,6 +438,11 @@ sp_xmlview_tree_init (SPXMLViewTree * tree)
 void sp_xmlview_tree_destroy(GtkWidget * object)
 {
 	SPXMLViewTree * tree = SP_XMLVIEW_TREE (object);
+
+    delete tree->renderer;
+    tree->renderer = nullptr;
+    delete tree->formatter;
+    tree->formatter = nullptr;
 
 	sp_xmlview_tree_set_repr (tree, nullptr);
 
@@ -788,7 +850,7 @@ sp_xmlview_tree_set_repr (SPXMLViewTree * tree, Inkscape::XML::Node * repr)
     }
     tree->repr = repr;
     if (repr) {
-        tree->store = gtk_tree_store_new(STORE_N_COLS, G_TYPE_STRING, G_TYPE_POINTER);
+        tree->store = gtk_tree_store_new(STORE_N_COLS, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_STRING);
 
         Inkscape::GC::anchor(repr);
         add_node(tree, nullptr, nullptr, repr);

@@ -17,6 +17,7 @@
 #define INKSCAPE_UI_DIALOG_INKSCAPE_PREFERENCES_H
 
 // checking if cairo supports dithering
+#include <gtkmm/sizegroup.h>
 #ifdef  WITH_PATCHED_CAIRO
 #include "3rdparty/cairo/src/cairo.h"
 #else

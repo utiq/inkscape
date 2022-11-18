@@ -17,10 +17,13 @@
 #include <exception>
 
 #include <gdkmm/rgba.h>
+#include <gtkmm/cellrenderer.h>
+#include <gtkmm/enums.h>
 #include <gtkmm/stylecontext.h>
 #include <2geom/point.h>
 #include <2geom/rect.h>
 #include <2geom/affine.h>
+#include <gtkmm/widget.h>
 
 /*
  * Use these errors when building from glade files for graceful
@@ -53,12 +56,20 @@ void reveal_widget(Gtk::Widget *widget, bool show);
 // check if widget in a container is actually visible
 bool is_widget_effectively_visible(Gtk::Widget const *widget);
 
-namespace Inkscape {
-namespace UI {
-// Utility function to ensure correct sizing after adding child widgets
+namespace Inkscape::UI {
+
+/// Utility function to ensure correct sizing after adding child widgets.
 void resize_widget_children(Gtk::Widget *widget);
+
+inline void widget_show(Gtk::Widget &widget, bool show)
+{
+    show ? widget.show() : widget.hide();
 }
-}
+
+/// Translate cell renderer state to style flags.
+Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state);
+
+} // namespace Inkscape::UI
 
 // Mix two RGBA colors using simple linear interpolation:
 //  0 -> only a, 1 -> only b, x in 0..1 -> (1 - x)*a + x*b

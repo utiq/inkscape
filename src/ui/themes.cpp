@@ -16,15 +16,24 @@
 #include "preferences.h"
 #include "io/resource.h"
 #include "svg/svg-color.h"
+#include <cstddef>
 #include <cstring>
 #include <gio/gio.h>
 #include <glibmm.h>
+#include <glibmm/ustring.h>
 #include <gtkmm.h>
 #include <map>
+#include <pangomm/font.h>
+#include <pangomm/fontdescription.h>
 #include <utility>
 #include <vector>
 #include <regex>
 #include "svg/css-ostringstream.h"
+
+#include "config.h"
+#if WITH_GSOURCEVIEW
+#   include <gtksourceview/gtksource.h>
+#endif
 
 namespace Inkscape {
 namespace UI {
@@ -513,7 +522,7 @@ std::vector<guint32> ThemeContext::getHighlightColors(Gtk::Window *window)
     return colors;
 }
 
-void ThemeContext::adjust_global_font_scale(double factor) {
+void ThemeContext::adjustGlobalFontScale(double factor) {
     if (factor < 0.1 || factor > 10) {
         g_warning("Invalid font scaling factor %f in ThemeContext::adjust_global_font_scale", factor);
         return;
@@ -524,11 +533,71 @@ void ThemeContext::adjust_global_font_scale(double factor) {
 
     Inkscape::CSSOStringStream os;
     os.precision(3);
-    os << "widget, menuitem, popover { font-size: " << factor << "rem; }";
+    os << "widget, menuitem, popover { font-size: " << factor << "rem; }\n";
+
+    os << ".mono-font {";
+    auto desc = getMonospacedFont();
+    os << "font-family: " << desc.get_family() << ";";
+    switch (desc.get_style()) {
+        case Pango::STYLE_ITALIC:
+            os << "font-style: italic;";
+            break;
+        case Pango::STYLE_OBLIQUE:
+            os << "font-style: oblique;";
+            break;
+    }
+    os << "font-weight: " << static_cast<int>(desc.get_weight()) << ";";
+    double size = desc.get_size();
+    os << "font-size: " << factor * (desc.get_size_is_absolute() ? size : size / Pango::SCALE) << "px;";
+    os << "}";
+
     _fontsizeprovider->load_from_data(os.str());
 
     // note: priority set to APP - 1 to make sure styles.css take precedence over generic font-size
     Gtk::StyleContext::add_provider_for_screen(screen, _fontsizeprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION - 1);
+}
+
+void ThemeContext::initialize_source_syntax_styles() {
+#if WITH_GSOURCEVIEW
+    auto manager = gtk_source_style_scheme_manager_get_default();
+    // to reset path: gtk_source_style_scheme_manager_set_search_path(manager, nullptr);
+    auto themes = IO::Resource::get_path_string(IO::Resource::SYSTEM, IO::Resource::UIS, "syntax-themes");
+    gtk_source_style_scheme_manager_prepend_search_path(manager, themes.c_str());
+#endif
+}
+
+void ThemeContext::select_default_syntax_style(bool dark_theme)
+{
+#if WITH_GSOURCEVIEW
+    auto prefs = Inkscape::Preferences::get();
+    auto default_theme = prefs->getString("/theme/syntax-color-theme");
+    auto light = "inkscape-light";
+    auto dark = "inkscape-dark";
+    if (default_theme.empty() || default_theme == light || default_theme == dark) {
+        prefs->setString("/theme/syntax-color-theme", dark_theme ? dark : light);
+    }
+#endif
+}
+
+void ThemeContext::saveMonospacedFont(Pango::FontDescription desc)
+{
+    Preferences::get()->setString(get_monospaced_font_pref_path(), desc.to_string());
+}
+
+Pango::FontDescription ThemeContext::getMonospacedFont() const
+{
+    auto font = Preferences::get()->getString(get_monospaced_font_pref_path(), "Monospace 13");
+    return Pango::FontDescription(font);
+}
+
+double ThemeContext::getFontScale() const
+{
+    return Preferences::get()->getDoubleLimited(get_font_scale_pref_path(), 100.0, 10.0, 500.0);
+}
+
+void ThemeContext::saveFontScale(double scale)
+{
+    Preferences::get()->setDouble(get_font_scale_pref_path(), scale);
 }
 
 } // UI

@@ -14,6 +14,11 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <glibmm/ustring.h>
+#include <gtkmm/dialog.h>
+#include <gtkmm/entry.h>
+#include <gtkmm/fontbutton.h>
+#include <gtkmm/fontchooserdialog.h>
 #include <gtkmm/widget.h>
 #ifdef HAVE_CONFIG_H
 # include "config.h"  // only include where actually required!
@@ -88,6 +93,10 @@
 # ifdef _WIN32
 #  include <windows.h>
 # endif
+#endif
+
+#if WITH_GSOURCEVIEW
+#   include <gtksourceview/gtksource.h>
 #endif
 
 namespace Inkscape {
@@ -1692,7 +1701,7 @@ void InkscapePreferences::initPageUI()
     {
         auto font_scale = new Inkscape::UI::Widget::PrefSlider();
         font_scale = Gtk::manage(font_scale);
-        font_scale->init("/theme/fontscale", 50, 150, 5, 5, 100, 0); // 50% to 150%
+        font_scale->init(ThemeContext::get_font_scale_pref_path(), 50, 150, 5, 5, 100, 0); // 50% to 150%
         font_scale->getSlider()->signal_format_value().connect([=](double val) {
             return Glib::ustring::format(std::fixed, std::setprecision(0), val) + "%";
         });
@@ -1715,10 +1724,10 @@ void InkscapePreferences::initPageUI()
         space->add(*reset);
         reset->signal_clicked().connect([=](){
             font_scale->getSlider()->set_value(100);
-            INKSCAPE.themecontext->adjust_global_font_scale(1.0);
+            INKSCAPE.themecontext->adjustGlobalFontScale(1.0);
         });
         apply->signal_clicked().connect([=](){
-            INKSCAPE.themecontext->adjust_global_font_scale(font_scale->getSlider()->get_value() / 100.0);
+            INKSCAPE.themecontext->adjustGlobalFontScale(font_scale->getSlider()->get_value() / 100.0);
         });
         _page_theme.add_line(false, _("_Font scale:"), *font_scale, "", _("Adjust size of UI fonts"), true, space);
     }
@@ -1834,6 +1843,61 @@ void InkscapePreferences::initPageUI()
         _page_theme.add_line(true, "", _shift_icons, "",
                              _("This preference fixes icon positions in menus."), false, reset_icon());
 
+    _page_theme.add_group_header(_("XML dialog"));
+#if WITH_GSOURCEVIEW
+    {
+        auto manager = gtk_source_style_scheme_manager_get_default();
+        auto ids = gtk_source_style_scheme_manager_get_scheme_ids(manager);
+
+        auto syntax = Gtk::make_managed<UI::Widget::PrefCombo>();
+        std::vector<Glib::ustring> labels;
+        std::vector<Glib::ustring> values;
+        for (const char* style = *ids; style; style = *++ids) {
+            if (auto scheme = gtk_source_style_scheme_manager_get_scheme(manager, style)) {
+                auto name = gtk_source_style_scheme_get_name(scheme);
+                labels.emplace_back(name);
+            }
+            else {
+                labels.emplace_back(style);
+            }
+            values.emplace_back(style);
+        }
+        syntax->init("/theme/syntax-color-theme", labels, values, "");
+        _page_theme.add_line(false, _("Color theme:"), *syntax, "", _("Syntax coloring for XML dialog"), false);
+    }
+#endif
+    {
+        auto font_button = Gtk::make_managed<Gtk::Button>("...");
+        font_button->set_halign(Gtk::ALIGN_START);
+        auto font_box = Gtk::make_managed<Gtk::Entry>();
+        font_box->set_editable(false);
+        font_box->set_sensitive(false);
+        auto theme = INKSCAPE.themecontext;
+        font_box->set_text(theme->getMonospacedFont().to_string());
+        font_button->signal_clicked().connect([=](){
+            Gtk::FontChooserDialog dlg;
+            // show fixed-size fonts only
+            dlg.set_filter_func([](const Glib::RefPtr<const Pango::FontFamily>& family, const Glib::RefPtr<const Pango::FontFace>& face) {
+                return family && family->is_monospace();
+            });
+            dlg.set_font_desc(theme->getMonospacedFont());
+            dlg.set_position(Gtk::WIN_POS_MOUSE);
+            dlg.set_modal();
+            if (dlg.run() == Gtk::RESPONSE_OK) {
+                auto desc = dlg.get_font_desc();
+                theme->saveMonospacedFont(desc);
+                theme->adjustGlobalFontScale(theme->getFontScale() / 100);
+                font_box->set_text(desc.to_string());
+            }
+        });
+        _page_theme.add_line(false, _("Monospaced font:"), *font_box, "", _("Select fixed-width font"), true, font_button);
+
+        auto mono_font = Gtk::make_managed<UI::Widget::PrefCheckButton>();
+        mono_font->init( _("Use monospaced font"), "/dialogs/xml/mono-font", false);
+        _page_theme.add_line(false, _("XML tree:"), *mono_font, "", _("Use fixed-width font in XML dialog"), false);
+    }
+
+    //=======================================================================================================
 
     this->AddPage(_page_theme, _("Theming"), iter_ui, PREFS_PAGE_UI_THEME);
     symbolicThemeCheck();
