@@ -82,11 +82,11 @@ bool ZoomTool::root_handler(GdkEvent* event) {
                 ret = true;
             }
 
-            grabCanvasEvents(Gdk::KEY_PRESS_MASK      |
-                             Gdk::KEY_RELEASE_MASK    |
-                             Gdk::BUTTON_PRESS_MASK   |
-                             Gdk::BUTTON_RELEASE_MASK |
-                             Gdk::POINTER_MOTION_MASK );
+            grabCanvasEvents(EventType::KEY_PRESS      |
+                             EventType::KEY_RELEASE    |
+                             EventType::BUTTON_PRESS   |
+                             EventType::BUTTON_RELEASE |
+                             EventType::MOTION);
             break;
         }
 

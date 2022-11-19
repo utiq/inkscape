@@ -33,13 +33,14 @@
 #include "ui/widget/canvas.h" // autoscroll
 
 using Inkscape::DocumentUndo;
+using Inkscape::EventType;
 
-Gdk::EventMask KNOT_EVENT_MASK (
-    Gdk::BUTTON_PRESS_MASK   |
-    Gdk::BUTTON_RELEASE_MASK |
-    Gdk::POINTER_MOTION_MASK |
-    Gdk::KEY_PRESS_MASK      |
-    Gdk::KEY_RELEASE_MASK);
+static constexpr auto KNOT_EVENT_MASK =
+    EventType::BUTTON_PRESS   |
+    EventType::BUTTON_RELEASE |
+    EventType::MOTION |
+    EventType::KEY_PRESS      |
+    EventType::KEY_RELEASE;
 
 const gchar *nograbenv = getenv("INKSCAPE_NO_GRAB");
 static bool nograb = (nograbenv && *nograbenv && (*nograbenv != '0'));

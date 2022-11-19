@@ -12,18 +12,14 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <memory>
 #include <gtkmm.h>
-#include <lcms2.h>
 
 #include <2geom/rect.h>
 #include <2geom/int-rect.h>
 
 #include "display/rendermode.h"
+#include "events/enums.h"
 #include "optglarea.h"
 
 class SPDesktop;
@@ -124,7 +120,7 @@ public:
         _current_canvas_item = item;
     }
     Inkscape::CanvasItem *get_grabbed_canvas_item() const { return _grabbed_canvas_item; }
-    void                  set_grabbed_canvas_item(Inkscape::CanvasItem *item, Gdk::EventMask mask) {
+    void                  set_grabbed_canvas_item(Inkscape::CanvasItem *item, EventMask mask) {
         _grabbed_canvas_item = item;
         _grabbed_event_mask = mask;
     }
@@ -146,7 +142,6 @@ protected:
     // GtkGestureMultiPress
     bool on_button_pressed (GtkGestureMultiPress *controller, int n_press, double x, double y);
     bool on_button_released(GtkGestureMultiPress *controller, int n_press, double x, double y);
-    bool on_button_event   (GdkEventButton*);
 
     // EventControllerMotion
     bool on_motion(GtkEventControllerMotion *controller, double x, double y);
@@ -200,7 +195,7 @@ private:
     Inkscape::CanvasItem *_current_canvas_item;     ///< Item containing cursor, nullptr if none.
     Inkscape::CanvasItem *_current_canvas_item_new; ///< Item to become _current_item, nullptr if none.
     Inkscape::CanvasItem *_grabbed_canvas_item;     ///< Item that holds a pointer grab; nullptr if none.
-    Gdk::EventMask _grabbed_event_mask;
+    EventMask _grabbed_event_mask;
 
     // Drawing
     bool _need_update = true; // Set true so setting CanvasItem bounds are calculated at least once.

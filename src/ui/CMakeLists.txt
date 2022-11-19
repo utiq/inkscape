@@ -479,6 +479,8 @@ set(ui_SRC
 	widget/dash-selector.h
 	widget/entity-entry.h
 	widget/entry.h
+	widget/events/canvas-event.h
+	widget/events/enums.h
 	widget/export-lists.h
 	widget/export-preview.h
 	widget/fill-style.h

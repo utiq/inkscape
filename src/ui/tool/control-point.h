@@ -351,9 +351,6 @@ protected:
 
     static bool _is_drag_cancelled(GdkEventMotion *event);
 
-    /** Events which should be captured when a handle is being dragged. */
-    static Gdk::EventMask const _grab_event_mask;
-
     static bool _drag_initiated;
 
 private:

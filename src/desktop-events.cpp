@@ -58,6 +58,7 @@
 #include "xml/repr.h"
 
 using Inkscape::DocumentUndo;
+using Inkscape::EventType;
 
 static void snoop_extended(GdkEvent* event, SPDesktop *desktop);
 static void init_extended();
@@ -152,9 +153,9 @@ bool sp_dt_guide_event(GdkEvent *event, Inkscape::CanvasItemGuideLine *guide_ite
                 }
 
                 if (drag_type == SP_DRAG_ROTATE || drag_type == SP_DRAG_TRANSLATE) {
-                    guide_item->grab(Gdk::BUTTON_RELEASE_MASK |
-                                     Gdk::BUTTON_PRESS_MASK   |
-                                     Gdk::POINTER_MOTION_MASK);
+                    guide_item->grab(EventType::BUTTON_RELEASE |
+                                     EventType::BUTTON_PRESS   |
+                                     EventType::MOTION);
                 }
                 ret = true;
             }

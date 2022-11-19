@@ -27,6 +27,7 @@
 #include <2geom/point.h>
 
 #include "preferences.h"
+#include "ui/widget/events/enums.h"
 
 class GrDrag;
 class SPDesktop;
@@ -132,11 +133,11 @@ public:
     SPGroup *currentLayer() const;
 
     // Commonly used CanvasItemCatchall grab/ungrab.
-    void grabCanvasEvents(Gdk::EventMask mask =
-                          Gdk::KEY_PRESS_MASK      |
-                          Gdk::BUTTON_RELEASE_MASK |
-                          Gdk::POINTER_MOTION_MASK |
-                          Gdk::BUTTON_PRESS_MASK);
+    void grabCanvasEvents(EventMask mask =
+                          EventType::KEY_PRESS |
+                          EventType::BUTTON_RELEASE |
+                          EventType::MOTION |
+                          EventType::BUTTON_PRESS);
     void ungrabCanvasEvents();
 
     virtual void switching_away(const std::string &new_tool) {}

@@ -42,6 +42,7 @@
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-group.h"
 #include "display/control/snap-indicator.h"
+#include "events/canvas-event.h"
 
 #include "ui/tools/tool-base.h"      // Default cursor
 
@@ -95,13 +96,6 @@ namespace {
 /*
  * Utilities
  */
-
-// GdkEvents can only be safely copied using gdk_event_copy. Since this function allocates, we need the following smart pointer to wrap the result.
-struct GdkEventFreer {void operator()(GdkEvent *ev) const {gdk_event_free(ev);}};
-using GdkEventUniqPtr = std::unique_ptr<GdkEvent, GdkEventFreer>;
-
-// Copies a GdkEvent, returning the result as a smart pointer.
-auto make_unique_copy(GdkEvent const *ev) { return GdkEventUniqPtr(gdk_event_copy(ev)); }
 
 // Convert an integer received from preferences into an Updater enum.
 auto pref_to_updater(int index)
@@ -244,10 +238,10 @@ public:
     void commit_tiles();
 
     // Event handling.
-    bool process_event(const GdkEvent*);
+    bool process_event(CanvasEvent &event);
     CanvasItem *find_item_at(Geom::Point pt);
     bool repick();
-    bool emit_event(const GdkEvent*);
+    bool emit_event(CanvasEvent &event);
     void ensure_geometry_uptodate();
     Inkscape::CanvasItem *pre_scroll_grabbed_item;
 
@@ -447,7 +441,7 @@ void CanvasPrivate::activate()
     q->_current_canvas_item     = nullptr;
     q->_current_canvas_item_new = nullptr;
     q->_grabbed_canvas_item     = nullptr;
-    q->_grabbed_event_mask = (Gdk::EventMask)0;
+    q->_grabbed_event_mask = {};
     pre_scroll_grabbed_item = nullptr;
 
     // Drawing
@@ -850,14 +844,13 @@ void CanvasPrivate::autoscroll_begin(Geom::IntPoint const &to)
         displacement -= dpos;
 
         if (last_mouse) {
-            GdkEventMotion event;
-            memset(&event, 0, sizeof(GdkEventMotion));
-            event.type = GDK_MOTION_NOTIFY;
-            event.x = last_mouse->x();
-            event.y = last_mouse->y();
-            event.state = q->_state;
+            auto gdkevent = GdkEventUniqPtr(gdk_event_new(GDK_MOTION_NOTIFY));
+            gdkevent->motion.x = last_mouse->x();
+            gdkevent->motion.y = last_mouse->y();
+            gdkevent->motion.state = q->_state;
             ensure_geometry_uptodate();
-            emit_event(reinterpret_cast<GdkEvent*>(&event));
+            auto event = MotionEvent(std::move(gdkevent), q->_state);
+            emit_event(event);
         }
 
         if (strain_zero && velocity.length() <= 0.1) {
@@ -895,134 +888,122 @@ void Canvas::enable_autoscroll()
 
 bool Canvas::on_scroll(GtkEventControllerScroll *controller, double dx, double dy)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_SCROLL);
-    return d->process_event(event.get());
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_SCROLL);
+    _state = gdkevent->scroll.state;
+
+    auto event = ScrollEvent(std::move(gdkevent));
+    return d->process_event(event);
 }
 
 bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, double x, double y)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_BUTTON_PRESS);
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_BUTTON_PRESS);
+    _state = gdkevent->button.state;
     d->last_mouse = Geom::IntPoint(x, y);
-    bool result = on_button_event(reinterpret_cast<GdkEventButton*>(event.get()));
-    if (n_press > 1) {
-        auto copy = make_unique_copy(event.get());
-        copy->type = (GdkEventType)(GDK_BUTTON_PRESS + (n_press - 1) % 3);
-        result = on_button_event(reinterpret_cast<GdkEventButton*>(copy.get()));
+
+    // Drag the split view controller.
+    if (_split_mode == Inkscape::SplitMode::SPLIT && _hover_direction != Inkscape::SplitDirection::NONE) {
+        if (n_press == 1) {
+            _split_dragging = true;
+            _split_drag_start = Geom::IntPoint(x, y);
+            return true;
+        } else if (n_press == 2) {
+            _split_direction = _hover_direction;
+            _split_dragging = false;
+            queue_draw();
+            return true;
+        }
     }
+
+    auto event = ButtonPressEvent(std::move(gdkevent), 1);
+    bool result = d->process_event(event);
+
+    if (n_press > 1) {
+        auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+        gdkevent->type = (GdkEventType)(GDK_BUTTON_PRESS + (n_press - 1) % 3);
+        auto event = ButtonPressEvent(std::move(gdkevent), n_press);
+        result = d->process_event(event);
+    }
+
     return result;
 }
 
 bool Canvas::on_button_released(GtkGestureMultiPress *controller, int n_press, double x, double y)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_BUTTON_RELEASE);
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_BUTTON_RELEASE);
+    _state = gdkevent->button.state;
     d->last_mouse = Geom::IntPoint(x, y);
+
+    // Drag the split view controller.
+    if (_split_mode == Inkscape::SplitMode::SPLIT && _split_dragging) {
+        _split_dragging = false;
+
+        // Check if we are near the edge. If so, revert to normal mode.
+        if (x < 5                                 ||
+            y < 5                                 ||
+            x > get_allocation().get_width()  - 5 ||
+            y > get_allocation().get_height() - 5)
+        {
+            // Reset everything.
+            _split_frac = {0.5, 0.5};
+            set_cursor();
+            set_split_mode(Inkscape::SplitMode::NORMAL);
+
+            // Update action (turn into utility function?).
+            auto window = dynamic_cast<Gtk::ApplicationWindow*>(get_toplevel());
+            if (!window) {
+                std::cerr << "Canvas::on_motion_notify_event: window missing!" << std::endl;
+                return true;
+            }
+
+            auto action = window->lookup_action("canvas-split-mode");
+            if (!action) {
+                std::cerr << "Canvas::on_motion_notify_event: action 'canvas-split-mode' missing!" << std::endl;
+                return true;
+            }
+
+            auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
+            if (!saction) {
+                std::cerr << "Canvas::on_motion_notify_event: action 'canvas-split-mode' not SimpleAction!" << std::endl;
+                return true;
+            }
+
+            saction->change_state(static_cast<int>(Inkscape::SplitMode::NORMAL));
+        }
+    }
 
     int button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(controller));
     if (button == 1) {
         d->autoscroll_end();
     }
 
-    return on_button_event(reinterpret_cast<GdkEventButton*>(event.get()));
-}
-
-// Unified handler for press and release events.
-bool Canvas::on_button_event(GdkEventButton *button_event)
-{
-    // Sanity-check event type.
-    switch (button_event->type) {
-        case GDK_BUTTON_PRESS:
-        case GDK_2BUTTON_PRESS:
-        case GDK_3BUTTON_PRESS:
-        case GDK_BUTTON_RELEASE:
-            break; // Good
-        default:
-            std::cerr << "Canvas::on_button_event: illegal event type!" << std::endl;
-            return false;
-    }
-
-    // Drag the split view controller.
-    if (_split_mode == Inkscape::SplitMode::SPLIT) {
-        auto cursor_position = Geom::IntPoint(button_event->x, button_event->y);
-        switch (button_event->type) {
-            case GDK_BUTTON_PRESS:
-                if (_hover_direction != Inkscape::SplitDirection::NONE) {
-                    _split_dragging = true;
-                    _split_drag_start = cursor_position;
-                    return true;
-                }
-                break;
-            case GDK_2BUTTON_PRESS:
-                if (_hover_direction != Inkscape::SplitDirection::NONE) {
-                    _split_direction = _hover_direction;
-                    _split_dragging = false;
-                    queue_draw();
-                    return true;
-                }
-                break;
-            case GDK_BUTTON_RELEASE:
-                if (!_split_dragging) break;
-                _split_dragging = false;
-
-                // Check if we are near the edge. If so, revert to normal mode.
-                if (cursor_position.x() < 5                                 ||
-                    cursor_position.y() < 5                                 ||
-                    cursor_position.x() > get_allocation().get_width()  - 5 ||
-                    cursor_position.y() > get_allocation().get_height() - 5)
-                {
-                    // Reset everything.
-                    _split_frac = {0.5, 0.5};
-                    set_cursor();
-                    set_split_mode(Inkscape::SplitMode::NORMAL);
-
-                    // Update action (turn into utility function?).
-                    auto window = dynamic_cast<Gtk::ApplicationWindow*>(get_toplevel());
-                    if (!window) {
-                        std::cerr << "Canvas::on_motion_notify_event: window missing!" << std::endl;
-                        return true;
-                    }
-
-                    auto action = window->lookup_action("canvas-split-mode");
-                    if (!action) {
-                        std::cerr << "Canvas::on_motion_notify_event: action 'canvas-split-mode' missing!" << std::endl;
-                        return true;
-                    }
-
-                    auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
-                    if (!saction) {
-                        std::cerr << "Canvas::on_motion_notify_event: action 'canvas-split-mode' not SimpleAction!" << std::endl;
-                        return true;
-                    }
-
-                    saction->change_state(static_cast<int>(Inkscape::SplitMode::NORMAL));
-                }
-
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    return d->process_event(reinterpret_cast<GdkEvent*>(button_event));
+    auto event = ButtonReleaseEvent(std::move(gdkevent));
+    return d->process_event(event);
 }
 
 bool Canvas::on_enter(GtkEventControllerMotion *controller, double x, double y)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_ENTER_NOTIFY);
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_ENTER_NOTIFY);
+    _state = gdkevent->crossing.state;
     d->last_mouse = Geom::IntPoint(x, y);
-    return d->process_event(event.get());
+
+    auto event = EnterEvent(std::move(gdkevent), _state);
+    return d->process_event(event);
 }
 
 bool Canvas::on_leave(GtkEventControllerMotion *controller)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_LEAVE_NOTIFY);
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_LEAVE_NOTIFY);
+    _state = gdkevent->crossing.state;
     d->last_mouse = {};
-    return d->process_event(event.get());
+
+    auto event = LeaveEvent(std::move(gdkevent), _state);
+    return d->process_event(event);
 }
 
 bool Canvas::on_focus_in(GtkEventControllerKey *controller)
@@ -1033,32 +1014,36 @@ bool Canvas::on_focus_in(GtkEventControllerKey *controller)
 
 bool Canvas::on_key_pressed(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_KEY_PRESS);
-    return d->process_event(event.get());
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_KEY_PRESS);
+    _state = gdkevent->key.state;
+
+    auto event = KeyPressEvent(std::move(gdkevent));
+    return d->process_event(event);
 }
 
 bool Canvas::on_key_released(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_KEY_RELEASE);
-    return d->process_event(event.get());
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_KEY_RELEASE);
+    _state = gdkevent->key.state;
+
+    auto event = KeyReleaseEvent(std::move(gdkevent));
+    return d->process_event(event);
 }
 
 bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
 {
-    auto event = GdkEventUniqPtr(gtk_get_current_event());
-    assert(event->type == GDK_MOTION_NOTIFY);
-    auto motion_event = reinterpret_cast<GdkEventMotion*>(event.get());
-
-    // Record the last mouse position.
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_MOTION_NOTIFY);
+    _state = gdkevent->motion.state;
     d->last_mouse = Geom::IntPoint(x, y);
 
     // Handle interactions with the split view controller.
     if (_split_mode == Inkscape::SplitMode::XRAY) {
         queue_draw();
     } else if (_split_mode == Inkscape::SplitMode::SPLIT) {
-        auto cursor_position = Geom::IntPoint(motion_event->x, motion_event->y);
+        auto cursor_position = Geom::IntPoint(x, y);
 
         // Move controller.
         if (_split_dragging) {
@@ -1119,11 +1104,12 @@ bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
     }
 
     // Avoid embarrassing neverending autoscroll in case the button-released handler somehow doesn't fire.
-    if (!(motion_event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))) {
+    if (!(_state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))) {
         d->autoscroll_end();
     }
 
-    return d->process_event(event.get());
+    auto event = MotionEvent(std::move(gdkevent), _state);
+    return d->process_event(event);
 }
 
 /**
@@ -1131,7 +1117,7 @@ bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
  * @param event Event to process
  * @return True if event was handled
  */
-bool CanvasPrivate::process_event(const GdkEvent *event)
+bool CanvasPrivate::process_event(CanvasEvent &event)
 {
     framecheck_whole_function(this)
 
@@ -1141,7 +1127,7 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
     }
 
     auto calc_button_mask = [&] () -> int {
-        switch (event->button.button) {
+        switch (static_cast<ButtonEvent const &>(event).button()) {
             case 1:  return GDK_BUTTON1_MASK; break;
             case 2:  return GDK_BUTTON2_MASK; break;
             case 3:  return GDK_BUTTON3_MASK; break;
@@ -1151,12 +1137,9 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
         }
     };
 
-    ensure_geometry_uptodate();
-
     // Do event-specific processing.
-    switch (event->type) {
-        case GDK_SCROLL:
-        {
+    switch (event.type()) {
+        case EventType::SCROLL: {
             // Save the current event-receiving item just before scrolling starts. It will continue to receive scroll events until the mouse is moved.
             if (!pre_scroll_grabbed_item) {
                 pre_scroll_grabbed_item = q->_current_canvas_item;
@@ -1169,33 +1152,26 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
             bool retval = emit_event(event);
 
             // ...then repick.
-            q->_state = event->scroll.state;
             repick();
 
             return retval;
         }
 
-        case GDK_BUTTON_PRESS:
-        case GDK_2BUTTON_PRESS:
-        case GDK_3BUTTON_PRESS:
-        {
+        case EventType::BUTTON_PRESS: {
             pre_scroll_grabbed_item = nullptr;
 
             // Pick the current item as if the button were not pressed...
-            q->_state = event->button.state;
             repick();
 
-            // ...then process the event.
+            // ...then process the event after the button has been pressed.
             q->_state ^= calc_button_mask();
             return emit_event(event);
         }
 
-        case GDK_BUTTON_RELEASE:
-        {
+        case EventType::BUTTON_RELEASE: {
             pre_scroll_grabbed_item = nullptr;
 
             // Process the event as if the button were pressed...
-            q->_state = event->button.state;
             bool retval = emit_event(event);
 
             // ...then repick after the button has been released.
@@ -1205,27 +1181,24 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
             return retval;
         }
 
-        case GDK_ENTER_NOTIFY:
+        case EventType::ENTER:
             pre_scroll_grabbed_item = nullptr;
-            q->_state = event->crossing.state;
             return repick();
 
-        case GDK_LEAVE_NOTIFY:
+        case EventType::LEAVE:
             pre_scroll_grabbed_item = nullptr;
-            q->_state = event->crossing.state;
             // This is needed to remove alignment or distribution snap indicators.
             if (q->_desktop) {
                 q->_desktop->snapindicator->remove_snaptarget();
             }
             return repick();
 
-        case GDK_KEY_PRESS:
-        case GDK_KEY_RELEASE:
+        case EventType::KEY_PRESS:
+        case EventType::KEY_RELEASE:
             return emit_event(event);
 
-        case GDK_MOTION_NOTIFY:
+        case EventType::MOTION:
             pre_scroll_grabbed_item = nullptr;
-            q->_state = event->motion.state;
             repick();
             return emit_event(event);
 
@@ -1318,11 +1291,10 @@ bool CanvasPrivate::repick()
         q->_current_canvas_item != nullptr                     &&
         !q->_left_grabbed_item                                 ) {
 
-        GdkEvent new_event;
-        memset(&new_event, 0, sizeof(GdkEvent));
-        new_event.type = GDK_LEAVE_NOTIFY;
-        new_event.crossing.state = q->_state;
-        retval = emit_event(&new_event);
+        auto gdkevent = GdkEventUniqPtr(gdk_event_new(GDK_LEAVE_NOTIFY));
+        gdkevent->crossing.state = q->_state;
+        auto event = LeaveEvent(std::move(gdkevent), q->_state);
+        retval = emit_event(event);
     }
 
     if (q->_all_enter_events == false) {
@@ -1338,13 +1310,12 @@ bool CanvasPrivate::repick()
     q->_current_canvas_item = q->_current_canvas_item_new;
 
     if (q->_current_canvas_item) {
-        GdkEvent new_event;
-        memset(&new_event, 0, sizeof(GdkEvent));
-        new_event.type = GDK_ENTER_NOTIFY;
-        new_event.crossing.x = last_mouse->x();
-        new_event.crossing.y = last_mouse->y();
-        new_event.crossing.state = q->_state;
-        retval = emit_event(&new_event);
+        auto gdkevent = GdkEventUniqPtr(gdk_event_new(GDK_ENTER_NOTIFY));
+        gdkevent->crossing.x = last_mouse->x();
+        gdkevent->crossing.y = last_mouse->y();
+        gdkevent->crossing.state = q->_state;
+        auto event = EnterEvent(std::move(gdkevent), q->_state);
+        retval = emit_event(event);
     }
 
     return retval;
@@ -1365,47 +1336,13 @@ bool CanvasPrivate::repick()
  * @param event Event to dispatch to the canvas
  * @return Returns true if handled.
  */
-bool CanvasPrivate::emit_event(const GdkEvent *event)
+bool CanvasPrivate::emit_event(CanvasEvent &event)
 {
+    ensure_geometry_uptodate();
+
     // Handle grabbed items.
-    if (q->_grabbed_canvas_item) {
-        auto mask = (Gdk::EventMask)0;
-
-        switch (event->type) {
-            case GDK_ENTER_NOTIFY:
-                mask = Gdk::ENTER_NOTIFY_MASK;
-                break;
-            case GDK_LEAVE_NOTIFY:
-                mask = Gdk::LEAVE_NOTIFY_MASK;
-                break;
-            case GDK_MOTION_NOTIFY:
-                mask = Gdk::POINTER_MOTION_MASK;
-                break;
-            case GDK_BUTTON_PRESS:
-            case GDK_2BUTTON_PRESS:
-            case GDK_3BUTTON_PRESS:
-                mask = Gdk::BUTTON_PRESS_MASK;
-                break;
-            case GDK_BUTTON_RELEASE:
-                mask = Gdk::BUTTON_RELEASE_MASK;
-                break;
-            case GDK_KEY_PRESS:
-                mask = Gdk::KEY_PRESS_MASK;
-                break;
-            case GDK_KEY_RELEASE:
-                mask = Gdk::KEY_RELEASE_MASK;
-                break;
-            case GDK_SCROLL:
-                mask = Gdk::SCROLL_MASK;
-                mask |= Gdk::SMOOTH_SCROLL_MASK;
-                break;
-            default:
-                break;
-        }
-
-        if (!(mask & q->_grabbed_event_mask)) {
-            return false;
-        }
+    if (q->_grabbed_canvas_item && !(event.type() & q->_grabbed_event_mask)) {
+        return false;
     }
 
     // Convert to world coordinates. We have two different cases due to different event structures.
@@ -1418,28 +1355,24 @@ bool CanvasPrivate::emit_event(const GdkEvent *event)
         y = p.y();
     };
 
-    auto event_copy = make_unique_copy(event);
-
-    switch (event->type) {
-        case GDK_ENTER_NOTIFY:
-        case GDK_LEAVE_NOTIFY:
-            conv(event_copy->crossing.x, event_copy->crossing.y);
+    switch (event.type()) {
+        case EventType::ENTER:
+        case EventType::LEAVE:
+            conv(event.original()->crossing.x, event.original()->crossing.y);
             break;
-        case GDK_MOTION_NOTIFY:
-        case GDK_BUTTON_PRESS:
-        case GDK_2BUTTON_PRESS:
-        case GDK_3BUTTON_PRESS:
-        case GDK_BUTTON_RELEASE:
-            conv(event_copy->motion.x, event_copy->motion.y);
+        case EventType::MOTION:
+        case EventType::BUTTON_PRESS:
+        case EventType::BUTTON_RELEASE:
+            conv(event.original()->motion.x, event.original()->motion.y);
             break;
         default:
             break;
     }
 
     // Block undo/redo while anything is dragged.
-    if (event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
+    if (event.type() == EventType::BUTTON_PRESS && static_cast<ButtonEvent const &>(event).button() == 1) {
         q->_is_dragging = true;
-    } else if (event->type == GDK_BUTTON_RELEASE) {
+    } else if (event.type() == EventType::BUTTON_RELEASE) {
         q->_is_dragging = false;
     }
 
@@ -1451,13 +1384,13 @@ bool CanvasPrivate::emit_event(const GdkEvent *event)
             item = q->_grabbed_canvas_item;
         }
 
-        if (pre_scroll_grabbed_item && event->type == GDK_SCROLL) {
+        if (pre_scroll_grabbed_item && event.type() == EventType::SCROLL) {
             item = pre_scroll_grabbed_item;
         }
 
         // Propagate the event up the canvas item hierarchy until handled.
         while (item) {
-            if (item->handle_event(event_copy.get())) return true;
+            if (item->handle_event(event.original())) return true;
             item = item->get_parent();
         }
     }

@@ -31,12 +31,13 @@
 #include <2geom/rect.h>
 #include <sigc++/sigc++.h>
 
-#include <gdkmm/device.h> // Gdk::EventMask
+#include <gdkmm/cursor.h>
 #include <gdk/gdk.h>  // GdkEvent
 
 #include "canvas-item-enums.h"
 #include "canvas-item-buffer.h"
 #include "canvas-item-context.h"
+#include "ui/widget/events/enums.h"
 
 class SPItem;
 
@@ -74,7 +75,7 @@ public:
 
     // Selection
     virtual bool contains(Geom::Point const &p, double tolerance = 0) { return _bounds && _bounds->interiorContains(p); }
-    void grab(Gdk::EventMask event_mask, Glib::RefPtr<Gdk::Cursor> const & = {});
+    void grab(EventMask event_mask, Glib::RefPtr<Gdk::Cursor> const & = {});
     void ungrab();
 
     // Display

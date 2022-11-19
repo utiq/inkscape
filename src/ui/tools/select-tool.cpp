@@ -269,11 +269,11 @@ bool SelectTool::item_handler(SPItem* item, GdkEvent* event) {
                     }
 
                     grabbed = _desktop->getCanvasDrawing();
-                    grabbed->grab(Gdk::KEY_PRESS_MASK      |
-                                  Gdk::KEY_RELEASE_MASK    |
-                                  Gdk::BUTTON_PRESS_MASK   |
-                                  Gdk::BUTTON_RELEASE_MASK |
-                                  Gdk::POINTER_MOTION_MASK );
+                    grabbed->grab(EventType::KEY_PRESS      |
+                                  EventType::KEY_RELEASE    |
+                                  EventType::BUTTON_PRESS   |
+                                  EventType::BUTTON_RELEASE |
+                                  EventType::MOTION);
 
                     ret = TRUE;
                 }
@@ -478,11 +478,11 @@ bool SelectTool::root_handler(GdkEvent* event) {
                 }
 
                 grabbed = _desktop->getCanvasCatchall();
-                grabbed->grab(Gdk::KEY_PRESS_MASK      |
-                              Gdk::KEY_RELEASE_MASK    |
-                              Gdk::BUTTON_PRESS_MASK   |
-                              Gdk::BUTTON_RELEASE_MASK |
-                              Gdk::POINTER_MOTION_MASK );
+                grabbed->grab(EventType::KEY_PRESS      |
+                              EventType::KEY_RELEASE    |
+                              EventType::BUTTON_PRESS   |
+                              EventType::BUTTON_RELEASE |
+                              EventType::MOTION);
 
                 // remember what modifiers were on before button press
                 this->button_press_state = event->button.state;

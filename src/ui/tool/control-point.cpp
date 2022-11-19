@@ -51,13 +51,13 @@ Geom::Point ControlPoint::_drag_event_origin(Geom::infinity(), Geom::infinity())
 
 Geom::Point ControlPoint::_drag_origin(Geom::infinity(), Geom::infinity());
 
-Gdk::EventMask const ControlPoint::_grab_event_mask = (Gdk::BUTTON_PRESS_MASK   |
-                                                       Gdk::BUTTON_RELEASE_MASK |
-                                                       Gdk::POINTER_MOTION_MASK |
-                                                       Gdk::KEY_PRESS_MASK      |
-                                                       Gdk::KEY_RELEASE_MASK    |
-                                                       Gdk::SCROLL_MASK         |
-                                                       Gdk::SMOOTH_SCROLL_MASK  );
+/// Events which should be captured when a handle is being dragged.
+static constexpr auto grab_event_mask = EventType::BUTTON_PRESS   |
+                                        EventType::BUTTON_RELEASE |
+                                        EventType::MOTION         |
+                                        EventType::KEY_PRESS      |
+                                        EventType::KEY_RELEASE    |
+                                        EventType::SCROLL;
 
 bool ControlPoint::_drag_initiated = false;
 bool ControlPoint::_event_grab = false;
@@ -240,7 +240,7 @@ bool ControlPoint::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, G
             pointer_offset = _position - _desktop->w2d(_drag_event_origin);
             _drag_initiated = false;
             // route all events to this handler
-            _canvas_item_ctrl->grab(_grab_event_mask); // cursor is null
+            _canvas_item_ctrl->grab(grab_event_mask); // cursor is null
             _event_grab = true;
             _setState(STATE_CLICKED);
             return true;
@@ -489,7 +489,7 @@ void ControlPoint::transferGrab(ControlPoint *prev_point, GdkEventMotion *event)
 
     grabbed(event);
     prev_point->_canvas_item_ctrl->ungrab();
-    _canvas_item_ctrl->grab(_grab_event_mask); // cursor is null
+    _canvas_item_ctrl->grab(grab_event_mask); // cursor is null
 
     _drag_initiated = true;
 

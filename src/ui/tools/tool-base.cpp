@@ -404,9 +404,9 @@ bool ToolBase::root_handler(GdkEvent *event)
                 }
                 panning = PANNING_SPACE_BUTTON1;
 
-                grabCanvasEvents(Gdk::KEY_RELEASE_MASK    |
-                                 Gdk::BUTTON_RELEASE_MASK |
-                                 Gdk::POINTER_MOTION_MASK );
+                grabCanvasEvents(EventType::KEY_RELEASE    |
+                                 EventType::BUTTON_RELEASE |
+                                 EventType::MOTION);
 
                 ret = true;
             }
@@ -419,10 +419,10 @@ bool ToolBase::root_handler(GdkEvent *event)
 
                 start_angle = current_angle = compute_angle();
 
-                grabCanvasEvents(Gdk::KEY_PRESS_MASK      |
-                                 Gdk::KEY_RELEASE_MASK    |
-                                 Gdk::BUTTON_RELEASE_MASK |
-                                 Gdk::POINTER_MOTION_MASK);
+                grabCanvasEvents(EventType::KEY_PRESS      |
+                                 EventType::KEY_RELEASE    |
+                                 EventType::BUTTON_RELEASE |
+                                 EventType::MOTION);
 
             } else if (event->button.state & GDK_SHIFT_MASK) {
                 zoom_rb = 2;
@@ -433,8 +433,7 @@ bool ToolBase::root_handler(GdkEvent *event)
                 }
                 panning = PANNING_BUTTON2;
 
-                grabCanvasEvents(Gdk::BUTTON_RELEASE_MASK |
-                                 Gdk::POINTER_MOTION_MASK );
+                grabCanvasEvents(EventType::BUTTON_RELEASE | EventType::MOTION);
             }
 
             ret = true;
@@ -448,8 +447,7 @@ bool ToolBase::root_handler(GdkEvent *event)
                 }
                 panning = PANNING_BUTTON3;
 
-                grabCanvasEvents(Gdk::BUTTON_RELEASE_MASK |
-                                 Gdk::POINTER_MOTION_MASK );
+                grabCanvasEvents(EventType::BUTTON_RELEASE | EventType::MOTION);
                 ret = true;
             } else if (!are_buttons_1_and_3_on(event)) {
                 menu_popup(event);
@@ -470,9 +468,9 @@ bool ToolBase::root_handler(GdkEvent *event)
                 yp = event->motion.y;
                 button_w = Geom::Point(event->motion.x, event->motion.y);
 
-                grabCanvasEvents(Gdk::KEY_RELEASE_MASK    |
-                                 Gdk::BUTTON_RELEASE_MASK |
-                                 Gdk::POINTER_MOTION_MASK );
+                grabCanvasEvents(EventType::KEY_RELEASE    |
+                                 EventType::BUTTON_RELEASE |
+                                 EventType::MOTION);
             }
 
             if ((panning == 2 && !(event->motion.state & GDK_BUTTON2_MASK)) ||
@@ -1139,7 +1137,7 @@ bool ToolBase::hasGradientDrag() const
 /**
  * Grab events from the Canvas Catchall. (Common configuration.)
  */
-void ToolBase::grabCanvasEvents(Gdk::EventMask mask)
+void ToolBase::grabCanvasEvents(EventMask mask)
 {
     _desktop->getCanvasCatchall()->grab(mask); // Cursor is null.
 }

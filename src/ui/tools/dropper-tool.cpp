@@ -178,11 +178,11 @@ bool DropperTool::root_handler(GdkEvent* event) {
                 ret = TRUE;
             }
 
-            grabCanvasEvents(Gdk::KEY_PRESS_MASK      |
-                             Gdk::KEY_RELEASE_MASK    |
-                             Gdk::BUTTON_RELEASE_MASK |
-                             Gdk::POINTER_MOTION_MASK |
-                             Gdk::BUTTON_PRESS_MASK   );
+            grabCanvasEvents(EventType::KEY_PRESS      |
+                             EventType::KEY_RELEASE    |
+                             EventType::BUTTON_RELEASE |
+                             EventType::MOTION         |
+                             EventType::BUTTON_PRESS);
             break;
 
 	case GDK_MOTION_NOTIFY:
