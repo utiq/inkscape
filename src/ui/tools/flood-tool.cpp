@@ -772,7 +772,7 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
         // cairo_translate not necessary here - surface origin is at 0,0
 
         bgcolor = document->getPageManager().background_color;
-
+        bgcolor &= 0xffffff00; // make color transparent for 'alpha' flood mode to work
         // bgcolor is 0xrrggbbaa, we need 0xaarrggbb
         dtc = bgcolor >> 8; // keep color transparent; page color doesn't support transparency anymore
 
