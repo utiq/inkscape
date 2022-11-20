@@ -44,7 +44,7 @@ Labelled::Labelled(Glib::ustring const &label, Glib::ustring const &tooltip,
     if (mnemonic) {
         _label->set_mnemonic_widget(*_widget);
     }
-    widget->set_tooltip_text(tooltip);
+    widget->set_tooltip_markup(tooltip);
 }
 
 
