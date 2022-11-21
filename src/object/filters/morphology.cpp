@@ -90,6 +90,30 @@ std::unique_ptr<Inkscape::Filters::FilterPrimitive> SPFeMorphology::build_render
     return morphology;
 }
 
+/**
+ * Calculate the region taken up by a mophoplogy primitive
+ *
+ * @param region The original shape's region or previous primitive's region output.
+ */
+Geom::Rect SPFeMorphology::calculate_region(Geom::Rect const &region) const
+{
+    auto r = region;
+    if (Operator == Inkscape::Filters::MORPHOLOGY_OPERATOR_DILATE) {
+        if (radius.optNumIsSet()) {
+            r.expandBy(radius.getNumber(), radius.getOptNumber());
+        } else {
+            r.expandBy(radius.getNumber());
+        }
+    } else if (Operator == Inkscape::Filters::MORPHOLOGY_OPERATOR_ERODE) {
+        if (radius.optNumIsSet()) {
+            r.expandBy(-1 * radius.getNumber(), -1 * radius.getOptNumber());
+        } else {
+            r.expandBy(-1 * radius.getNumber());
+        }
+    }
+    return r;
+}
+
 /*
   Local Variables:
   mode:c++

@@ -22,6 +22,7 @@ class SPFeMorphology final
 {
 public:
     int tag() const override { return tag_of<decltype(*this)>; }
+    Geom::Rect calculate_region(Geom::Rect const &region) const override;
 
 private:
     Inkscape::Filters::FilterMorphologyOperator Operator = Inkscape::Filters::MORPHOLOGY_OPERATOR_ERODE;
