@@ -380,9 +380,10 @@ static void insert_text_fallback( Inkscape::XML::Node *repr, const SPDocument *o
             }
 
             // We will keep this text node but replace all children.
-	    // Text object must be visible for the text calculatons to work
-	    bool was_hidden = text->isHidden();
-	    text->setHidden(false);
+            // Text object must be visible for the text calculatons to work
+            bool was_hidden = text->isHidden();
+            text->setHidden(false);
+            text->rebuildLayout();
 
             // For text in a shape, We need to unset 'text-anchor' or SVG 1.1 fallback won't work.
             // Note 'text' here refers to original document while 'repr' refers to new document copy.
