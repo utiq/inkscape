@@ -307,10 +307,6 @@ void SPGrid::update(SPCtx *ctx, unsigned int flags)
 {
     auto [origin, spacing] = getEffectiveOriginAndSpacing();
 
-    auto prefs = Inkscape::Preferences::get();
-    if (prefs->getBool("/options/origincorrection/page", true))
-        origin *= document->getPageManager().getSelectedPageAffine();
-
     for (auto &view : views) {
         view->set_visible(_visible && _enabled);
         if (_enabled) {
@@ -392,7 +388,13 @@ static auto ensure_min(Geom::Point const &s)
 std::pair<Geom::Point, Geom::Point> SPGrid::getEffectiveOriginAndSpacing() const
 {
     auto const scale = document->getDocumentScale();
-    return { getOrigin() * scale, ensure_min(getSpacing()) * scale };
+    auto origin = getOrigin() * scale;
+
+    auto prefs = Inkscape::Preferences::get();
+    if (prefs->getBool("/options/origincorrection/page", true))
+        origin *= document->getPageManager().getSelectedPageAffine();
+
+    return { origin, ensure_min(getSpacing()) * scale };
 }
 
 const char *SPGrid::displayName() const
