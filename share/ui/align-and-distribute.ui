@@ -675,6 +675,7 @@
                         <property name="image">image-distribute-horizontal-left</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between left edges</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -691,6 +692,7 @@
                         <property name="image">image-distribute-horizontal-center</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between centers</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -707,6 +709,7 @@
                         <property name="image">image-distribute-horizontal-right</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between right edges</property>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -723,6 +726,7 @@
                         <property name="image">image-distribute-horizontal-gaps</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even horizontal gaps</property>
                       </object>
                       <packing>
                         <property name="left-attach">3</property>
@@ -739,6 +743,7 @@
                         <property name="image">image-distribute-horizontal-baseline</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute text alignment points horizontally</property>
                       </object>
                       <packing>
                         <property name="left-attach">4</property>
@@ -755,6 +760,7 @@
                         <property name="image">image-distribute-vertical-top</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between top edges</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -771,6 +777,7 @@
                         <property name="image">image-distribute-vertical-center</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between centers</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -787,6 +794,7 @@
                         <property name="image">image-distribute-vertical-bottom</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between bottom edges</property>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -803,6 +811,7 @@
                         <property name="image">image-distribute-vertical-gaps</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute vertically with even vertical gaps</property>
                       </object>
                       <packing>
                         <property name="left-attach">3</property>
@@ -819,6 +828,7 @@
                         <property name="image">image-distribute-vertical-baseline</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute text alignment points vertically</property>
                       </object>
                       <packing>
                         <property name="left-attach">4</property>
@@ -874,6 +884,7 @@
                         <property name="image">image-distribute-graph</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Nicely arrange selected connector network</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -890,6 +901,7 @@
                         <property name="image">image-exchange-positions</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - selection order</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -906,6 +918,7 @@
                         <property name="image">image-exchange-positions-zorder</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - stacking order</property>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -922,6 +935,7 @@
                         <property name="image">image-exchange-positions-clockwise</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - rotate around center point</property>
                       </object>
                       <packing>
                         <property name="left-attach">3</property>
@@ -938,6 +952,7 @@
                         <property name="image">image-distribute-randomize</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Randomize centers in both dimensions</property>
                       </object>
                       <packing>
                         <property name="left-attach">4</property>
@@ -954,6 +969,7 @@
                         <property name="image">image-distribute-unclump</property>
                         <property name="relief">none</property>
                         <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Unclump objects: try to equalize edge-to-edge distances</property>
                       </object>
                       <packing>
                         <property name="left-attach">5</property>
@@ -1260,6 +1276,7 @@
                             <property name="image">image-distribute-horizontal-node</property>
                             <property name="relief">none</property>
                             <property name="always-show-image">True</property>
+                            <property name="tooltip-text" translatable="yes">Distribute selected nodes horizontally</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -1275,6 +1292,7 @@
                             <property name="image">image-distribute-vertical-node</property>
                             <property name="relief">none</property>
                             <property name="always-show-image">True</property>
+                            <property name="tooltip-text" translatable="yes">Distribute selected nodes vertically</property>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
