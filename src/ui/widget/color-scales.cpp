@@ -11,15 +11,21 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <glibmm/ustring.h>
 #include <gtkmm/adjustment.h>
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/grid.h>
 #include <glibmm/i18n.h>
 #include <functional>
+#include <memory>
+#include <stdexcept>
+#include <vector>
 
 #include "ui/dialog-events.h"
+#include "ui/selected-color.h"
 #include "ui/widget/color-scales.h"
 #include "ui/widget/color-slider.h"
+#include "ui/widget/color-icc-selector.h"
 #include "ui/widget/scrollprotected.h"
 #include "ui/icon-loader.h"
 #include "oklab.h"
@@ -55,11 +61,78 @@ static guchar const *sp_color_scales_hue_map();
 static guchar const *sp_color_scales_hsluv_map(guchar *map,
         std::function<void(float*, float)> callback);
 
+static const char* color_mode_icons[] = {
+    nullptr,
+    "color-selector-rgb",
+    "color-selector-hsx",
+    "color-selector-cmyk",
+    "color-selector-hsx",
+    "color-selector-hsluv",
+    "color-selector-okhsl",
+    "color-selector-cms",
+    nullptr
+};
+
+const char* color_mode_name[] = {
+    N_("None"), N_("RGB"), N_("HSL"), N_("CMYK"), N_("HSV"), N_("HSLuv"), N_("OKHSL"), N_("CMS"), nullptr
+};
+
+const char* get_color_mode_icon(SPColorScalesMode mode) {
+    auto index = static_cast<size_t>(mode);
+    assert(index > 0 && index < (sizeof(color_mode_icons) / sizeof(color_mode_icons[0])));
+    return color_mode_icons[index];
+}
+
+const char* get_color_mode_label(SPColorScalesMode mode) {
+    auto index = static_cast<size_t>(mode);
+    assert(index > 0 && index < (sizeof(color_mode_name) / sizeof(color_mode_name[0])));
+    return color_mode_name[index];
+}
+
+std::unique_ptr<Inkscape::UI::ColorSelectorFactory> get_factory(SPColorScalesMode mode) {
+    switch (mode) {
+        case SPColorScalesMode::RGB:   return std::make_unique<ColorScalesFactory<SPColorScalesMode::RGB>>();
+        case SPColorScalesMode::HSL:   return std::make_unique<ColorScalesFactory<SPColorScalesMode::HSL>>();
+        case SPColorScalesMode::HSV:   return std::make_unique<ColorScalesFactory<SPColorScalesMode::HSV>>();
+        case SPColorScalesMode::CMYK:  return std::make_unique<ColorScalesFactory<SPColorScalesMode::CMYK>>();
+        case SPColorScalesMode::HSLUV: return std::make_unique<ColorScalesFactory<SPColorScalesMode::HSLUV>>();
+        case SPColorScalesMode::OKLAB: return std::make_unique<ColorScalesFactory<SPColorScalesMode::OKLAB>>();
+        case SPColorScalesMode::CMS:   return std::make_unique<ColorICCSelectorFactory>();
+        default:
+            throw std::invalid_argument("There's no factory for the requested color mode");
+    }
+}
+
+std::vector<ColorPickerDescription> get_color_pickers() {
+    std::vector<ColorPickerDescription> pickers;
+
+    for (auto mode : {
+            SPColorScalesMode::HSL,
+            SPColorScalesMode::HSV,
+            SPColorScalesMode::RGB,
+            SPColorScalesMode::CMYK,
+            SPColorScalesMode::OKLAB,
+            SPColorScalesMode::HSLUV,
+            SPColorScalesMode::CMS
+        }) {
+        auto label = get_color_mode_label(mode);
+
+        pickers.emplace_back(ColorPickerDescription {
+            mode,
+            get_color_mode_icon(mode),
+            label,
+            Glib::ustring::format("/colorselector/", label, "/visible"),
+            get_factory(mode)
+        });
+    }
+
+    return pickers;
+}
+
 
 template <SPColorScalesMode MODE>
 gchar const *ColorScales<MODE>::SUBMODE_NAMES[] = { N_("None"), N_("RGB"), N_("HSL"),
     N_("CMYK"), N_("HSV"), N_("HSLuv"), N_("OKHSL") };
-
 
 // Preference name for the saved state of toggle-able color wheel
 template <>

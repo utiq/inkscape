@@ -14,6 +14,7 @@
 
 #include <gtkmm/box.h>
 #include <array>
+#include <vector>
 
 #include "ui/selected-color.h"
 
@@ -31,7 +32,8 @@ enum class SPColorScalesMode {
     CMYK,
     HSV,
     HSLUV,
-    OKLAB
+    OKLAB,
+    CMS
 };
 
 template <SPColorScalesMode MODE = SPColorScalesMode::NONE>
@@ -95,7 +97,7 @@ protected:
     sigc::connection _color_changed;
     sigc::connection _color_dragged;
 
-private:
+public:
     // By default, disallow copy constructor and assignment operator
     ColorScales(ColorScales const &obj) = delete;
     ColorScales &operator=(ColorScales const &obj) = delete;
@@ -110,6 +112,17 @@ public:
     Gtk::Widget *createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const override;
     Glib::ustring modeName() const override;
 };
+
+struct ColorPickerDescription 
+{
+    SPColorScalesMode mode;
+    const char* icon;
+    const char* label;
+    Glib::ustring visibility_path;
+    std::unique_ptr<Inkscape::UI::ColorSelectorFactory> factory;
+};
+
+std::vector<ColorPickerDescription> get_color_pickers();
 
 } // namespace Widget
 } // namespace UI

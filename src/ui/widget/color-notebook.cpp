@@ -61,14 +61,20 @@ ColorNotebook::ColorNotebook(SelectedColor &color, bool no_alpha)
 {
     set_name("ColorNotebook");
 
-    _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::HSL>, "color-selector-hsx"));
-    _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::HSV>, "color-selector-hsx"));
-    _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::RGB>, "color-selector-rgb"));
-    _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::CMYK>, "color-selector-cmyk"));
-    _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::HSLUV>, "color-selector-hsluv"));
-    _available_pages.push_back(new Page(new ColorScalesFactory<SPColorScalesMode::OKLAB>, "color-selector-okhsl"));
-    //_available_pages.push_back(new Page(new ColorWheelSelectorFactory, "color-selector-wheel"));
-    _available_pages.push_back(new Page(new ColorICCSelectorFactory, "color-selector-cms"));
+    auto prefs = Inkscape::Preferences::get();
+
+    for (auto&& picker : get_color_pickers()) {
+        if (prefs->getBool(picker.visibility_path, true)) {
+            _available_pages.push_back(new Page(std::move(picker.factory), picker.icon));
+        }
+    }
+
+    if (_available_pages.empty()) {
+        g_warning("All color pickers are hidden. Check preferences.");
+        // UI is partially broken if we cannot select any color; add one picker regardless
+        auto pickers = get_color_pickers();
+        _available_pages.push_back(new Page(std::move(pickers.front().factory), pickers.front().icon));
+    }
 
     _initUI(no_alpha);
 
@@ -82,8 +88,8 @@ ColorNotebook::~ColorNotebook()
         _onetimepick.disconnect();
 }
 
-ColorNotebook::Page::Page(Inkscape::UI::ColorSelectorFactory *selector_factory, const char* icon)
-    : selector_factory(selector_factory), icon_name(icon)
+ColorNotebook::Page::Page(std::unique_ptr<Inkscape::UI::ColorSelectorFactory> selector_factory, const char* icon)
+    : selector_factory(std::move(selector_factory)), icon_name(icon)
 {
 }
 
@@ -310,6 +316,13 @@ void ColorNotebook::_updateICCButtons()
 void ColorNotebook::_setCurrentPage(int i, bool sync_combo)
 {
     const auto pages = _book->get_children();
+
+    if (i >= pages.size()) {
+        // page index could be outside the valid range if we manipulate visible color pickers;
+        // default to the first page, so we show something
+        i = 0;
+    }
+
     if (i >= 0 && i < pages.size()) {
         _book->set_visible_child(*pages[i]);
         if (sync_combo) {

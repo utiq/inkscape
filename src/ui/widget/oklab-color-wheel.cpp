@@ -57,7 +57,7 @@ guint32 OKWheel::getRgb() const
     double rgb[3];
     getRgbV(rgb);
     for (auto component : rgb) {
-        result << 8;
+        result <<= 8;
         result |= SP_COLOR_F_TO_U(component);
     }
     return result;

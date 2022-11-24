@@ -13,6 +13,7 @@
 #ifndef SEEN_SP_COLOR_NOTEBOOK_H
 #define SEEN_SP_COLOR_NOTEBOOK_H
 
+#include <memory>
 #ifdef HAVE_CONFIG_H
 # include "config.h"  // only include where actually required!
 #endif
@@ -44,7 +45,7 @@ public:
 
 protected:
     struct Page {
-        Page(Inkscape::UI::ColorSelectorFactory *selector_factory, const char* icon);
+        Page(std::unique_ptr<Inkscape::UI::ColorSelectorFactory> selector_factory, const char* icon);
 
         std::unique_ptr<Inkscape::UI::ColorSelectorFactory> selector_factory;
         Glib::ustring icon_name;
@@ -75,7 +76,7 @@ protected:
     sigc::connection _onetimepick;
     IconComboBox* _combo = nullptr;
 
-private:
+public:
     // By default, disallow copy constructor and assignment operator
     ColorNotebook(const ColorNotebook &obj) = delete;
     ColorNotebook &operator=(const ColorNotebook &obj) = delete;

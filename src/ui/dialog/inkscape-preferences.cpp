@@ -14,9 +14,18 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <gtkmm/widget.h>
 #ifdef HAVE_CONFIG_H
 # include "config.h"  // only include where actually required!
 #endif
+
+#include <gtkmm/box.h>
+#include <gtkmm/enums.h>
+#include <gtkmm/image.h>
+#include <gtkmm/label.h>
+#include <gtkmm/object.h>
+#include <gtkmm/togglebutton.h>
+#include "ui/widget/color-scales.h"
 
 #include "inkscape-preferences.h"
 
@@ -1623,8 +1632,6 @@ void InkscapePreferences::initPageUI()
     _page_ui.add_line(true, _("Handle size"), _mouse_grabsize, "", _("Set the relative size of node handles"), true);
     _narrow_spinbutton.init(_("Use narrow number entry boxes"), "/theme/narrowSpinButton", false);
     _page_ui.add_line(false, "", _narrow_spinbutton, "", _("Make number editing boxes smaller by limiting padding"), false);
-    _compact_colorselector.init(_("Use compact color selector mode switch"), "/colorselector/switcher", true);
-    _page_ui.add_line(false, "", _compact_colorselector, "", _("Use compact combo box for selecting color modes"), false);
 
     _page_ui.add_group_header(_("Status bar"));
     auto sb_style = Gtk::make_managed<UI::Widget::PrefCheckButton>();
@@ -1983,6 +1990,43 @@ void InkscapePreferences::initPageUI()
                             _("Save documents viewport (zoom and panning position). Useful to turn off when sharing version controlled files."));
 
     this->AddPage(_page_windows, _("Windows"), iter_ui, PREFS_PAGE_UI_WINDOWS);
+
+    // Color pickers
+    _compact_colorselector.init(_("Use compact color selector mode switch"), "/colorselector/switcher", true);
+    _page_color_pickers.add_line(false, "", _compact_colorselector, "", _("Use compact combo box for selecting color modes"), false);
+
+    _page_color_pickers.add_group_header(_("Visible color pickers"));
+    {
+        auto container = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
+        auto prefs = Inkscape::Preferences::get();
+        for (auto&& picker : Inkscape::UI::Widget::get_color_pickers()) {
+            auto btn = Gtk::make_managed<Gtk::ToggleButton>();
+            auto box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
+            auto label = Gtk::make_managed<Gtk::Label>(picker.label);
+            label->set_valign(Gtk::ALIGN_CENTER);
+            box->pack_start(*label);
+            box->pack_start(*Gtk::make_managed<Gtk::Image>(picker.icon, Gtk::ICON_SIZE_BUTTON));
+            box->set_spacing(3);
+            auto path = picker.visibility_path;
+            btn->set_active(prefs->getBool(path, true));
+            btn->add(*box);
+            btn->signal_toggled().connect([=]() {
+                prefs->setBool(path, btn->get_active());
+                auto buttons = container->get_children();
+                if (std::find_if(begin(buttons), end(buttons), [](Gtk::Widget* b) { return static_cast<Gtk::ToggleButton*>(b)->get_active(); }) == end(buttons)) {
+                    // all pickers hidden; not a good combination; select first one
+                    static_cast<Gtk::ToggleButton*>(buttons.front())->set_active();
+                }
+            });
+            container->pack_start(*btn);
+        }
+        container->show_all();
+        container->set_spacing(5);
+        _page_color_pickers.add_line(true, "", *container, "", _("Select color pickers"), false, reset_icon());
+    }
+
+    AddPage(_page_color_pickers, _("Color Selector"), iter_ui, PREFS_PAGE_UI_COLOR_PICKERS);
+    // end of Color pickers
 
     // Grids
     _page_grids.add_group_header( _("Line color when zooming out"));

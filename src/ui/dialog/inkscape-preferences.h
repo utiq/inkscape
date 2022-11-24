@@ -81,6 +81,7 @@ enum
     PREFS_PAGE_UI_THEME,
     PREFS_PAGE_UI_TOOLBARS,
     PREFS_PAGE_UI_WINDOWS,
+    PREFS_PAGE_UI_COLOR_PICKERS,
     PREFS_PAGE_UI_GRIDS,
     PREFS_PAGE_COMMAND_PALETTE,
     PREFS_PAGE_UI_KEYBOARD_SHORTCUTS,
@@ -184,6 +185,7 @@ protected:
     UI::Widget::DialogPage _page_windows;
     UI::Widget::DialogPage _page_grids;
     UI::Widget::DialogPage _page_command_palette;
+    UI::Widget::DialogPage _page_color_pickers;
 
     UI::Widget::DialogPage _page_behavior;
     UI::Widget::DialogPage _page_select;
