@@ -104,7 +104,6 @@ if(WIN32)
     ${MINGW_BIN}/libsqlite3-[0-9]*.dll
     ${MINGW_BIN}/libssh2-[0-9]*.dll
     ${MINGW_BIN}/libssl-1_[0-9]*.dll
-    ${MINGW_BIN}/libssp-[0-9]*.dll
     ${MINGW_BIN}/libstdc++-[0-9]*.dll
     ${MINGW_BIN}/libtermcap-[0-9]*.dll
     ${MINGW_BIN}/libthai-[0-9]*.dll
