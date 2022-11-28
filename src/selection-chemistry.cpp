@@ -588,14 +588,14 @@ void ObjectSet::duplicate(bool suppressDone, bool duplicateLayer)
         }
     }
     
-    if(!duplicateLayer)
+    if (!duplicateLayer) {
         setReprList(newsel);
         // we update clip and mask LPE
         document()->fix_lpe_data();
         if ( !suppressDone ) {
             DocumentUndo::done(document(), _("Duplicate"), INKSCAPE_ICON("edit-duplicate"));
         }
-    else{
+    } else {
         if ( !suppressDone ) {
             DocumentUndo::done(document(), _("Duplicate"), INKSCAPE_ICON("edit-duplicate"));
         }
