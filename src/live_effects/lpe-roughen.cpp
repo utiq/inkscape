@@ -27,14 +27,14 @@ namespace Inkscape {
 namespace LivePathEffect {
 
 static const Util::EnumData<DivisionMethod> DivisionMethodData[] = { 
-    { DM_SEGMENTS, N_("By number of segments"), "segments" }, 
-    { DM_SIZE, N_("By max. segment size"), "size" } 
+    { DM_SEGMENTS, N_("Number of segments"), "segments" }, 
+    { DM_SIZE, N_("Segment size"), "size" } 
 };
 static const Util::EnumDataConverter<DivisionMethod> DMConverter(DivisionMethodData, DM_END);
 
 static const Util::EnumData<HandlesMethod> HandlesMethodData[] = {
     { HM_ALONG_NODES, N_("Along nodes"), "along" },
-    { HM_RAND, N_("Rand"), "rand" },
+    { HM_RAND, N_("Random"), "rand" },
     { HM_RETRACT, N_("Retract"), "retract" },
     { HM_SMOOTH, N_("Smooth"), "smooth" } 
 };
@@ -42,35 +42,38 @@ static const Util::EnumDataConverter<HandlesMethod> HMConverter(HandlesMethodDat
 
 LPERoughen::LPERoughen(LivePathEffectObject *lpeobject)
     : Effect(lpeobject)
-    , method(_("Method"), _("Division method"), "method", DMConverter, &wr, this, DM_SIZE)
-    , max_segment_size(_("Max. segment size"), _("Max. segment size"), "max_segment_size", &wr, this, 10)
-    , segments(_("Number of segments"), _("Number of segments"), "segments", &wr, this, 2)
-    , displace_x(_("Max. displacement in X"), _("Max. displacement in X"), "displace_x", &wr, this, 10.)
-    , displace_y(_("Max. displacement in Y"), _("Max. displacement in Y"), "displace_y", &wr, this, 10.)
-    , global_randomize(_("Global randomize"), _("Global randomize"), "global_randomize", &wr, this, 1.)
-    , handles(_("Handles"), _("Handles options"), "handles", HMConverter, &wr, this, HM_ALONG_NODES)
-    , shift_nodes(_("Shift nodes"), _("Shift nodes"), "shift_nodes", &wr, this, true)
+    , method(_("Method"), _("<b>Segment size:</b> add nodes to path evenly; <b>Number of segments:</b> add nodes between existing nodes"), "method", DMConverter, &wr, this, DM_SIZE)
+    , max_segment_size(_("Segment size"), _("Add nodes to path evenly. Choose <b>Segment size</b> method from the dropdown to use this subdivision method"), "max_segment_size", &wr, this, 10)
+    , segments(_("Number of segments"), _("Add nodes betwen existing nodes. Choose <b>Number of segments</b> method from the dropdown to use this subdivision method"), "segments", &wr, this, 2)
+    , displace_x(_("Displace ←→"), _("Maximal displacement in X direction"), "displace_x", &wr, this, 10.)
+    , displace_y(_("Displace ↑↓"), _("Maximal displacement in Y direction"), "displace_y", &wr, this, 10.)
+    , global_randomize(_("Global randomize"), _("Global displacement in all directions"), "global_randomize", &wr, this, 1.)
+    , handles(_("Direction"), _("Options for handle direction"), "handles", HMConverter, &wr, this, HM_ALONG_NODES)
+    , shift_nodes(_("Apply Displacement"), _("Shift nodes"), "shift_nodes", &wr, this, true)
     , fixed_displacement(_("Fixed displacement"), _("Fixed displacement, 1/3 of segment length"), "fixed_displacement",
                          &wr, this, false)
-    , spray_tool_friendly(_("Spray Tool friendly"), _("For use with spray tool in copy mode"), "spray_tool_friendly",
+    , spray_tool_friendly(_("Spray Tool friendly"), _("For use with Spray Tool in copy mode"), "spray_tool_friendly",
                           &wr, this, false)
 {
+    registerParameter(&global_randomize);
+    registerParameter(&displace_x);
+    registerParameter(&displace_y);
     registerParameter(&method);
     registerParameter(&max_segment_size);
     registerParameter(&segments);
-    registerParameter(&displace_x);
-    registerParameter(&displace_y);
-    registerParameter(&global_randomize);
     registerParameter(&handles);
     registerParameter(&shift_nodes);
     registerParameter(&fixed_displacement);
     registerParameter(&spray_tool_friendly);
+    
     displace_x.param_set_range(0., std::numeric_limits<double>::max());
     displace_y.param_set_range(0., std::numeric_limits<double>::max());
     global_randomize.param_set_range(0., std::numeric_limits<double>::max());
+
     max_segment_size.param_set_range(0., std::numeric_limits<double>::max());
     max_segment_size.param_set_increments(1, 1);
     max_segment_size.param_set_digits(3);
+
     segments.param_make_integer();
     segments.param_set_range(1, 9999);
     segments.param_set_increments(1, 1);
@@ -145,31 +148,15 @@ Gtk::Widget *LPERoughen::newWidget()
             Gtk::Widget *widg = dynamic_cast<Gtk::Widget *>(param->param_newWidget());
             if (param->param_key == "method") {
                 Gtk::Label *method_label = Gtk::manage(
-                    new Gtk::Label(Glib::ustring(_("<b>Add nodes</b> Subdivide each segment")), Gtk::ALIGN_START));
+                    new Gtk::Label(Glib::ustring(_("<b>Resolution</b>")), Gtk::ALIGN_START));
                 method_label->set_use_markup(true);
                 vbox->pack_start(*method_label, false, false, 2);
                 vbox->pack_start(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)),
                                  Gtk::PACK_EXPAND_WIDGET);
             }
-            if (param->param_key == "displace_x") {
-                Gtk::Label *displace_x_label = Gtk::manage(
-                    new Gtk::Label(Glib::ustring(_("<b>Jitter nodes</b> Move nodes/handles")), Gtk::ALIGN_START));
-                displace_x_label->set_use_markup(true);
-                vbox->pack_start(*displace_x_label, false, false, 2);
-                vbox->pack_start(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)),
-                                 Gtk::PACK_EXPAND_WIDGET);
-            }
-            if (param->param_key == "global_randomize") {
-                Gtk::Label *global_rand = Gtk::manage(new Gtk::Label(
-                    Glib::ustring(_("<b>Extra roughen</b> Add an extra layer of rough")), Gtk::ALIGN_START));
-                global_rand->set_use_markup(true);
-                vbox->pack_start(*global_rand, false, false, 2);
-                vbox->pack_start(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)),
-                                 Gtk::PACK_EXPAND_WIDGET);
-            }
             if (param->param_key == "handles") {
                 Gtk::Label *options = Gtk::manage(
-                    new Gtk::Label(Glib::ustring(_("<b>Options</b> Modify options to rough")), Gtk::ALIGN_START));
+                    new Gtk::Label(Glib::ustring(_("<b>Options</b>")), Gtk::ALIGN_START));
                 options->set_use_markup(true);
                 vbox->pack_start(*options, false, false, 2);
                 vbox->pack_start(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)),
