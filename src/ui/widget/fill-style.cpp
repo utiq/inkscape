@@ -118,8 +118,10 @@ void FillNStroke::setDesktop(SPDesktop *desktop)
         }
         _desktop = desktop;
         if (desktop && desktop->getSelection()) {
-            // subselChangedConn =
-                // desktop->connectToolSubselectionChanged(sigc::hide(sigc::mem_fun(*this, &FillNStroke::performUpdate)));
+            subselChangedConn = desktop->connect_text_cursor_moved([=](void* sender, Inkscape::UI::Tools::TextTool* tool) {
+                performUpdate();
+            });
+
             eventContextConn = desktop->connectEventContextChanged(sigc::hide(sigc::bind(
                 sigc::mem_fun(*this, &FillNStroke::eventContextCB), (Inkscape::UI::Tools::ToolBase *)nullptr)));
 
