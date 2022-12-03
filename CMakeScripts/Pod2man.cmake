@@ -27,7 +27,7 @@ macro(pod2man PODFILE_FULL RELEASE SECTION CENTER)
     endif()
 
     if(NOT EXISTS ${PODFILE_FULL})
-        message(FATAL ERROR "Could not find pod file ${PODFILE_FULL} to generate man page")
+        message(FATAL_ERROR "Could not find pod file ${PODFILE_FULL} to generate man page")
     endif(NOT EXISTS ${PODFILE_FULL})
 
     if(POD2MAN)
