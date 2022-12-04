@@ -158,7 +158,8 @@ void Filter::effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::Vie
             gchar * lfilter = g_strndup(filter + 5, strlen(filter) - 6);
             Inkscape::XML::Node * filternode = nullptr;
             for (Inkscape::XML::Node * child = defsrepr->firstChild(); child != nullptr; child = child->next()) {
-                if (!strcmp(lfilter, child->attribute("id"))) {
+                const char * child_id = child->attribute("id");
+                if (child_id != nullptr && !strcmp(lfilter, child_id)) {
                     filternode = child;
                     break;
                 }
