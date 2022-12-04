@@ -728,8 +728,10 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                     continue;
                 }
 
-                auto width = keyfile->get_integer(column_group_name, "ColumnWidth");
-                column->set_restored_width(width);
+                if (keyfile->has_key(column_group_name, "ColumnWidth")) {
+                    auto width = keyfile->get_integer(column_group_name, "ColumnWidth");
+                    column->set_restored_width(width);
+                }
 
                 before_canvas ? active_columns->prepend(column) : active_columns->append(column);
             }

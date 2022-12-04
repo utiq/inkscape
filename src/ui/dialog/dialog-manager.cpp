@@ -233,6 +233,15 @@ void DialogManager::load_transient_state(Glib::KeyFile *file)
     }
 }
 
+bool file_exists(const std::string& filepath) {
+#ifdef G_OS_WIN32
+    bool exists = filesystem::exists(filesystem::u8path(filepath));
+#else
+    bool exists = filesystem::exists(filesystem::path(filepath));
+#endif
+    return exists;
+}
+
 // restore state of dialogs; populate docking container and open visible floating dialogs
 void DialogManager::restore_dialogs_state(DialogContainer *docking_container, bool include_floating)
 {
@@ -246,11 +255,7 @@ void DialogManager::restore_dialogs_state(DialogContainer *docking_container, bo
         auto keyfile = std::make_unique<Glib::KeyFile>();
         std::string filename = Glib::build_filename(Inkscape::IO::Resource::profile_path(), dialogs_state);
 
-#ifdef G_OS_WIN32
-        bool exists = filesystem::exists(filesystem::u8path(filename));
-#else
-        bool exists = filesystem::exists(filesystem::path(filename));
-#endif
+        bool exists = file_exists(filename);
 
         if (exists && keyfile->load_from_file(filename)) {
             // restore visible dialogs first; that state is up-to-date
@@ -287,12 +292,18 @@ void DialogManager::dialog_defaults(DialogContainer* docking_container) {
     auto keyfile = std::make_unique<Glib::KeyFile>();
     // default/initial state used when running Inkscape for the first time
     std::string filename = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::UIS, "default-dialog-state.ini");
-    if (filesystem::exists(filename) && keyfile->load_from_file(filename)) {
+
+    bool exists = file_exists(filename);
+
+    if (exists && keyfile->load_from_file(filename)) {
         // populate info about floating dialogs, so when users try opening them,
         // they will pop up in a window, not docked
         load_transient_state(keyfile.get());
         // create docked dialogs only, if any
         docking_container->load_container_state(keyfile.get(), false);
+    }
+    else {
+        g_warning("Cannot load default dialog state %s", filename.c_str());
     }
 }
 
