@@ -620,18 +620,17 @@ void SPUse::href_changed() {
                         v.drawingitem->prependChild(ai);
                     }
                 }
+
+                this->_delete_connection = refobj->connectDelete(
+                    sigc::hide(sigc::mem_fun(*this, &SPUse::delete_self))
+                );
+
+                this->_transformed_connection = refobj->connectTransformed(
+                    sigc::hide(sigc::mem_fun(*this, &SPUse::move_compensate))
+                );
             } else {
                 delete obj;
-                g_warning("Tried to create svg:use from invalid object");
             }
-
-            this->_delete_connection = refobj->connectDelete(
-                sigc::hide(sigc::mem_fun(*this, &SPUse::delete_self))
-            );
-
-            this->_transformed_connection = refobj->connectTransformed(
-                sigc::hide(sigc::mem_fun(*this, &SPUse::move_compensate))
-            );
         }
     }
 }
