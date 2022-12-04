@@ -84,15 +84,11 @@ Export::Export()
 
     // Initialise Single Export and its objects
     builder->get_widget_derived("Single Image", single_image);
-    single_image->initialise(builder);
 
     // Initialise Batch Export and its objects
     builder->get_widget_derived("Batch Export", batch_export);
-    batch_export->initialise(builder);
 
     container->signal_realize().connect([=]() {
-        single_image->setup();
-        batch_export->setup();
         setDefaultNotebookPage();
         notebook_signal = export_notebook->signal_switch_page().connect(sigc::mem_fun(*this, &Export::onNotebookPageSwitch));
     });

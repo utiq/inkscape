@@ -72,26 +72,21 @@ private:
 class BatchExport : public Gtk::Box
 {
 public:
-    BatchExport() {};
-    BatchExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade)
-        : Gtk::Box(cobject){};
+    BatchExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>& builder);
     ~BatchExport() override { _pages_changed_connection.disconnect(); };
 
-private:
-    InkscapeApplication *_app;
-    SPDesktop *_desktop = nullptr;
-    SPDocument *_document = nullptr;
-
-private:
-    bool setupDone = false; // To prevent setup() call add connections again.
-
-public:
     void setApp(InkscapeApplication *app) { _app = app; }
     void setDocument(SPDocument *document);
     void setDesktop(SPDesktop *desktop);
     void selectionChanged(Inkscape::Selection *selection);
     void selectionModified(Inkscape::Selection *selection, guint flags);
     void pagesChanged();
+    void refresh()
+    {
+        refreshItems();
+        loadExportHints();
+    };
+
 
 private:
     enum selection_mode
@@ -101,8 +96,12 @@ private:
         SELECTION_PAGE,
     };
 
-private:
     typedef Inkscape::UI::Widget::ScrollProtected<Gtk::SpinButton> SpinButton;
+
+    InkscapeApplication *_app;
+    SPDesktop *_desktop = nullptr;
+    SPDocument *_document = nullptr;
+    bool setupDone = false; // To prevent setup() call add connections again.
 
     std::map<selection_mode, Gtk::RadioButton *> selection_buttons;
     Gtk::FlowBox *preview_container = nullptr;
@@ -124,12 +123,9 @@ private:
     std::map<selection_mode, Glib::ustring> selection_names;
     selection_mode current_key;
 
-public:
     // initialise variables from builder
     void initialise(const Glib::RefPtr<Gtk::Builder> &builder);
     void setup();
-
-private:
     void setDefaultSelectionMode();
     void onFilenameModified();
     void onAreaTypeToggle(selection_mode key);
@@ -140,14 +136,6 @@ private:
     void refreshItems();
     void loadExportHints();
 
-public:
-    void refresh()
-    {
-        refreshItems();
-        loadExportHints();
-    };
-
-private:
     void setExporting(bool exporting, Glib::ustring const &text = "");
     ExportProgressDialog *create_progress_dialog(Glib::ustring progress_text);
     /**
@@ -168,7 +156,6 @@ private:
      */
     bool onProgressDelete(GdkEventAny *event);
 
-private:
     ExportProgressDialog *prog_dlg = nullptr;
     bool interrupted;
 

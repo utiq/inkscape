@@ -60,11 +60,10 @@ namespace UI {
 namespace Dialog {
 
 
-/**
- * Initialise Builder Objects. Called in Export constructor.
- */
-void SingleExport::initialise(const Glib::RefPtr<Gtk::Builder> &builder)
-{
+SingleExport::SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>& builder)
+        : Gtk::Box(cobject) {
+    prefs = Inkscape::Preferences::get();
+
     builder->get_widget("si_s_document", selection_buttons[SELECTION_DRAWING]);
     selection_names[SELECTION_DRAWING] = "drawing";
     builder->get_widget("si_s_page", selection_buttons[SELECTION_PAGE]);
@@ -127,6 +126,8 @@ void SingleExport::initialise(const Glib::RefPtr<Gtk::Builder> &builder)
     assert(button);
     _bgnd_color_picker = std::make_unique<Inkscape::UI::Widget::ColorPicker>(
         _("Background color"), _("Color used to fill background"), 0xffffff00, true, button);
+
+    setup();
 }
 
 // Inkscape Selection Modified CallBack
@@ -185,7 +186,7 @@ void SingleExport::setup()
         return;
     }
     setupDone = true;
-    prefs = Inkscape::Preferences::get();
+
     si_extension_cb->setup();
 
     setupUnits();
@@ -307,6 +308,8 @@ void SingleExport::refreshArea()
 
 void SingleExport::refreshPage()
 {
+    if (!_document) return;
+
     bool pages = current_key == SELECTION_PAGE;
     si_name_label->set_visible(pages);
     page_prev->set_visible(pages);
@@ -329,7 +332,7 @@ void SingleExport::refreshPage()
 
 void SingleExport::loadExportHints()
 {
-    if (filename_modified) return;
+    if (filename_modified || !_document || !_desktop) return;
 
     Glib::ustring old_filename = si_filename_entry->get_text();
     Glib::ustring filename;
@@ -942,6 +945,7 @@ unsigned int SingleExport::onProgressCallback(float value, void *dlg)
 void SingleExport::refreshPreview()
 {
     if (!_desktop) {
+        preview->resetPixels();
         return;
     }
     if (!si_show_preview->get_active()) {
@@ -979,6 +983,7 @@ void SingleExport::setDocument(SPDocument *document)
 {
     _document = document;
     _page_selected_connection.disconnect();
+    preview->setDocument(document);
     if (document) {
         // when the page selected is changes, update the export area
         _page_selected_connection = document->getPageManager().connectPageSelected([=](SPPage *page) {
@@ -989,10 +994,8 @@ void SingleExport::setDocument(SPDocument *document)
         auto bg_color = get_export_bg_color(document->getNamedView(), 0xffffff00);
         _bgnd_color_picker->setRgba32(bg_color);
 
-        //TODO: we should refresh preview, but sometimes it crashes in UnitMenu::getUnit() if invoked from here
-        // refreshPreview();
+        refreshArea();
     }
-    preview->setDocument(document);
 }
 
 SingleExport::~SingleExport() { _page_selected_connection.disconnect(); }

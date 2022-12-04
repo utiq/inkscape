@@ -41,25 +41,20 @@ namespace Dialog {
 class SingleExport : public Gtk::Box
 {
 public:
-    SingleExport(){};
-    SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade)
-        : Gtk::Box(cobject){};
+    SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade);
     ~SingleExport() override;
 
-private:
-    InkscapeApplication *_app = nullptr;
-    SPDesktop *_desktop = nullptr;
-    SPDocument *_document = nullptr;
-
-private:
-    bool setupDone = false; // To prevent setup() call add connections again.
-
-public:
     void setApp(InkscapeApplication *app) { _app = app; }
     void setDocument(SPDocument *document);
     void setDesktop(SPDesktop *desktop);
     void selectionChanged(Inkscape::Selection *selection);
     void selectionModified(Inkscape::Selection *selection, guint flags);
+    void refresh()
+    {
+        refreshArea();
+        refreshPage();
+        loadExportHints();
+    };
 
 private:
     enum sb_type
@@ -83,7 +78,12 @@ private:
         SELECTION_CUSTOM,
     };
 
-private:
+    InkscapeApplication *_app = nullptr;
+    SPDesktop *_desktop = nullptr;
+    SPDocument *_document = nullptr;
+
+    bool setupDone = false; // To prevent setup() call add connections again.
+
     typedef Inkscape::UI::Widget::ScrollProtected<Gtk::SpinButton> SpinButton;
 
     std::map<sb_type, SpinButton *> spin_buttons;
@@ -117,12 +117,7 @@ private:
     std::map<selection_mode, Glib::ustring> selection_names;
     selection_mode current_key = (selection_mode)0;
 
-public:
-    // initialise variables from builder
-    void initialise(const Glib::RefPtr<Gtk::Builder> &builder);
     void setup();
-
-private:
     void setupUnits();
     void setupExtensionList();
     void setupSpinButtons();
@@ -147,15 +142,6 @@ private:
     void on_inkscape_selection_modified(Inkscape::Selection *selection, guint flags);
     void on_inkscape_selection_changed(Inkscape::Selection *selection);
 
-public:
-    void refresh()
-    {
-        refreshArea();
-        refreshPage();
-        loadExportHints();
-    };
-
-private:
     void refreshArea();
     void refreshPage();
     void loadExportHints();
@@ -166,7 +152,6 @@ private:
     void setArea(double x0, double y0, double x1, double y1);
     void blockSpinConns(bool status);
 
-private:
     void setExporting(bool exporting, Glib::ustring const &text = "");
     ExportProgressDialog *create_progress_dialog(Glib::ustring progress_text);
     /**
@@ -187,11 +172,9 @@ private:
      */
     bool onProgressDelete(GdkEventAny *event);
 
-private:
     ExportProgressDialog *prog_dlg = nullptr;
     bool interrupted;
 
-private:
     // Gtk Signals
     std::vector<sigc::connection> spinButtonConns;
     sigc::connection filenameConn;

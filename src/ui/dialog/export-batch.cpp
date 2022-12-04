@@ -153,8 +153,10 @@ void BatchItem::refresh(bool hide, guint32 bg_color)
 }
 
 
-void BatchExport::initialise(const Glib::RefPtr<Gtk::Builder> &builder)
-{
+BatchExport::BatchExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>& builder)
+    : Gtk::Box(cobject) {
+    prefs = Inkscape::Preferences::get();
+
     builder->get_widget("b_s_selection", selection_buttons[SELECTION_SELECTION]);
     selection_names[SELECTION_SELECTION] = "selection";
     builder->get_widget("b_s_layers", selection_buttons[SELECTION_LAYER]);
@@ -180,6 +182,7 @@ void BatchExport::initialise(const Glib::RefPtr<Gtk::Builder> &builder)
     assert(button);
     _bgnd_color_picker = std::make_unique<Inkscape::UI::Widget::ColorPicker>(
         _("Background color"), _("Color used to fill background"), 0xffffff00, true, button);
+    setup();
 }
 
 void BatchExport::selectionModified(Inkscape::Selection *selection, guint flags)
@@ -241,7 +244,6 @@ void BatchExport::setup()
         return;
     }
     setupDone = true;
-    prefs = Inkscape::Preferences::get();
 
     export_list->setup();
 
@@ -395,6 +397,8 @@ void BatchExport::refreshPreview()
 
 void BatchExport::loadExportHints()
 {
+    if (!_desktop) return;
+
     SPDocument *doc = _desktop->getDocument();
     auto old_filename = filename_entry->get_text();
     if (old_filename.empty()) {
