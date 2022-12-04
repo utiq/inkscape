@@ -28,6 +28,16 @@ template<class W> W& get_widget(const Glib::RefPtr<Gtk::Builder>& builder, const
     return *widget;
 }
 
+template<class W, typename... Args>
+W& get_derived_widget(const Glib::RefPtr<Gtk::Builder>& builder, const char* id, Args&&... args) {
+    W* widget;
+    builder->get_widget_derived(id, widget, std::forward<Args>(args)...);
+    if (!widget) {
+        throw std::runtime_error("Missing widget in a glade resource file");
+    }
+    return *widget;
+}
+
 template<class Ob> Glib::RefPtr<Ob> get_object(Glib::RefPtr<Gtk::Builder>& builder, const char* id) {
     auto object = Glib::RefPtr<Ob>::cast_dynamic(builder->get_object(id));
     if (!object) {

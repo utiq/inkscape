@@ -32,6 +32,7 @@
 
 #include "page-properties.h"
 #include "page-size-preview.h"
+#include "ui/widget/spinbutton.h"
 #include "util/paper.h"
 #include "ui/widget/registry.h"
 #include "ui/widget/color-picker.h"
@@ -59,6 +60,7 @@ const char* g_linked = "entries-linked-symbolic";
 const char* g_unlinked = "entries-unlinked-symbolic";
 
 #define GET(prop, id) prop(get_widget<std::remove_reference_t<decltype(prop)>>(_builder, id))
+#define GETD(prop, id) prop(get_derived_widget<std::remove_reference_t<decltype(prop)>>(_builder, id))
 
 class PagePropertiesBox : public PageProperties {
 public:
@@ -66,18 +68,18 @@ public:
         _builder(create_builder("page-properties.glade")),
         GET(_main_grid, "main-grid"),
         GET(_left_grid, "left-grid"),
-        GET(_page_width, "page-width"),
-        GET(_page_height, "page-height"),
+        GETD(_page_width, "page-width"),
+        GETD(_page_height, "page-height"),
         GET(_portrait, "page-portrait"),
         GET(_landscape, "page-landscape"),
-        GET(_scale_x, "scale-x"),
+        GETD(_scale_x, "scale-x"),
         GET(_doc_units, "user-units"),
         GET(_unsupported_size, "unsupported"),
         GET(_nonuniform_scale, "nonuniform-scale"),
-        GET(_viewbox_x, "viewbox-x"),
-        GET(_viewbox_y, "viewbox-y"),
-        GET(_viewbox_width, "viewbox-width"),
-        GET(_viewbox_height, "viewbox-height"),
+        GETD(_viewbox_x, "viewbox-x"),
+        GETD(_viewbox_y, "viewbox-y"),
+        GETD(_viewbox_width, "viewbox-width"),
+        GETD(_viewbox_height, "viewbox-height"),
         GET(_page_templates_menu, "page-templates-menu"),
         GET(_template_name, "page-template-name"),
         GET(_preview_box, "preview-box"),
@@ -93,6 +95,7 @@ public:
         GET(_linked_viewbox_scale, "linked-scale-img")
     {
 #undef GET
+#undef GETD
 
         _backgnd_color_picker = std::make_unique<ColorPicker>(
             _("Background color"), "", 0xffffff00, true,
@@ -476,18 +479,18 @@ private:
     Glib::RefPtr<Gtk::Builder> _builder;
     Gtk::Grid& _main_grid;
     Gtk::Grid& _left_grid;
-    Gtk::SpinButton& _page_width;
-    Gtk::SpinButton& _page_height;
+    MathSpinButton& _page_width;
+    MathSpinButton& _page_height;
     Gtk::RadioButton& _portrait;
     Gtk::RadioButton& _landscape;
-    Gtk::SpinButton& _scale_x;
+    MathSpinButton& _scale_x;
     Gtk::Label& _unsupported_size;
     Gtk::Label& _nonuniform_scale;
     Gtk::Label& _doc_units;
-    Gtk::SpinButton& _viewbox_x;
-    Gtk::SpinButton& _viewbox_y;
-    Gtk::SpinButton& _viewbox_width;
-    Gtk::SpinButton& _viewbox_height;
+    MathSpinButton& _viewbox_x;
+    MathSpinButton& _viewbox_y;
+    MathSpinButton& _viewbox_width;
+    MathSpinButton& _viewbox_height;
     std::unique_ptr<ColorPicker> _backgnd_color_picker;
     std::unique_ptr<ColorPicker> _border_color_picker;
     std::unique_ptr<ColorPicker> _desk_color_picker;
