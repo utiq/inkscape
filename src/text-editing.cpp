@@ -2134,6 +2134,13 @@ void sp_te_apply_style(SPItem *text, Inkscape::Text::Layout::iterator const &sta
     if(root_style && strstr(root_style,"text-decoration")) has_text_decoration = true;
     while (tidy_xml_tree_recursively(common_ancestor, has_text_decoration)){};
 
+    // update layout right away, so any pending selection change will use valid data;
+    // resolves https://gitlab.com/inkscape/inkscape/-/issues/3954 (use after free),
+    // where recursively_apply_style deletes a child and later text_tag_attributes_at_position
+    // tries to use deleted SPString pointed to by stale text layout;
+    // note: requestDisplayUpdate will update layout too, but only on idle (so too late)
+    te_update_layout_now_recursive(text);
+
     // if we only modified subobjects this won't have been automatically sent
     text->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG);
 }
