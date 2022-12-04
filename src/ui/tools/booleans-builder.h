@@ -16,6 +16,7 @@
 #include <sigc++/connection.h>
 
 #include "booleans-subitems.h"
+#include "helper/auto-connection.h"
 
 class SPDesktop;
 class SPDocument;
@@ -72,7 +73,7 @@ private:
     std::vector<std::vector<WorkItem>> _undo;
     std::vector<std::vector<WorkItem>> _redo;
 
-    sigc::connection desk_modified_connection;
+    auto_connection desk_modified_connection;
 
     void redraw_item(CanvasItemBpath &bpath, bool selected, TaskType task);
 };
