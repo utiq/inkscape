@@ -290,8 +290,9 @@ void PatternEditor::bind_store(Gtk::FlowBox& list, PatternStore& pat) {
         auto box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
         auto image = Gtk::make_managed<Gtk::Image>(item->pix);
         box->pack_start(*image);
+        auto name = Glib::ustring(item->label.c_str());
         if (_show_names.get_active()) {
-            auto label = Gtk::make_managed<Gtk::Label>(Glib::ustring(item->label.c_str()));
+            auto label = Gtk::make_managed<Gtk::Label>(name);
             label->get_style_context()->add_class("small-font");
             // limit label size to tile size
             label->set_ellipsize(Pango::EllipsizeMode::ELLIPSIZE_END);
@@ -299,6 +300,7 @@ void PatternEditor::bind_store(Gtk::FlowBox& list, PatternStore& pat) {
             label->set_size_request(_tile_size);
             box->pack_end(*label);
         }
+        image->set_tooltip_text(name);
         box->show_all();
         auto cbox = Gtk::make_managed<Gtk::FlowBoxChild>();
         cbox->add(*box);

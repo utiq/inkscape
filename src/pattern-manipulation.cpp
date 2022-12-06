@@ -129,7 +129,7 @@ std::string sp_get_pattern_label(SPPattern* pattern) {
 
     Inkscape::XML::Node* repr = pattern->getRepr();
     if (auto label = pattern->getAttribute("inkscape:label")) {
-        return std::string(label);
+        return std::string(gettext(label));
     }
     const char* stock_id = _(repr->attribute("inkscape:stockid"));
     const char* pat_id = stock_id ? stock_id : _(repr->attribute("id"));
