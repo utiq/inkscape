@@ -22,8 +22,8 @@ if(WITH_INTERNAL_CAIRO)
 
     ExternalProject_Add(cairo_ext
         PREFIX cairo
-        GIT_REPOSITORY https://gitlab.freedesktop.org/cairo/cairo.git
-        GIT_TAG 1.17.6
+        GIT_REPOSITORY https://gitlab.com/inkscape/deps/cairo.git
+        GIT_TAG NAMED_12cd2bcbb260f4ed64a72b64bd2fdd593f683bbc
         GIT_SHALLOW TRUE
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cairo
         PATCH_COMMAND git checkout ${CMAKE_CURRENT_SOURCE_DIR}/cairo/src && git apply --unsafe-paths --directory ${CMAKE_CURRENT_SOURCE_DIR}/cairo/ ${CMAKE_SOURCE_DIR}/packaging/cairo.patch
