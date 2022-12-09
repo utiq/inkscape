@@ -246,13 +246,20 @@ Pixbuf *Pixbuf::create_from_data_uri(gchar const *uri_data, double svgdpi)
             GdkPixbuf *buf = gdk_pixbuf_loader_get_pixbuf(loader);
             if (buf) {
                 g_object_ref(buf);
+                bool has_ori = Pixbuf::get_embedded_orientation(buf) != Geom::identity();
                 buf = Pixbuf::apply_embedded_orientation(buf);
                 pixbuf = new Pixbuf(buf);
 
-                GdkPixbufFormat *fmt = gdk_pixbuf_loader_get_format(loader);
-                gchar *fmt_name = gdk_pixbuf_format_get_name(fmt);
-                pixbuf->_setMimeData(decoded, decoded_len, fmt_name);
-                g_free(fmt_name);
+                if (!has_ori) {
+                    // We DO NOT want to store the original data if it contains orientation
+                    // data since many exports that will use the surface do not handle it.
+                    // TODO: Preserve the original meta data from the file by stripping out
+                    // orientation but keeping all other aspects of the raster.
+                    GdkPixbufFormat *fmt = gdk_pixbuf_loader_get_format(loader);
+                    gchar *fmt_name = gdk_pixbuf_format_get_name(fmt);
+                    pixbuf->_setMimeData(decoded, decoded_len, fmt_name);
+                    g_free(fmt_name);
+                }
             } else {
                 g_free(decoded);
             }
@@ -354,6 +361,36 @@ GdkPixbuf *Pixbuf::apply_embedded_orientation(GdkPixbuf *buf)
     return buf;
 }
 
+/**
+ * Gets any available orientation data and returns it as an affine.
+ */
+Geom::Affine Pixbuf::get_embedded_orientation(GdkPixbuf *buf)
+{
+    // See gdk_pixbuf_apply_embedded_orientation in gdk-pixbuf
+    if (auto opt_str = gdk_pixbuf_get_option(buf, "orientation")) {
+        switch ((int)g_ascii_strtoll(opt_str, NULL, 10)) {
+            case 2: // Flip Horz
+                return Geom::Scale(-1, 1);
+            case 3: // +180 Rotate
+                return Geom::Scale(-1, -1);
+            case 4: // Flip Vert
+                return Geom::Scale(1, -1);
+            case 5: // +90 Rotate & Flip Horz
+                return Geom::Rotate(90) * Geom::Scale(-1, 1);
+            case 6: // +90 Rotate
+                return Geom::Rotate(90);
+            case 7: // +90 Rotate * Flip Vert
+                return Geom::Rotate(90) * Geom::Scale(1, -1);
+            case 8: // -90 Rotate
+                return Geom::Rotate(-90);
+            default:
+                break;
+
+        }
+    }
+    return Geom::identity();
+}
+
 Pixbuf *Pixbuf::create_from_buffer(std::string const &buffer, double svgdpi, std::string const &fn)
 {
 #if GLIB_CHECK_VERSION(2,67,3)
@@ -366,6 +403,7 @@ Pixbuf *Pixbuf::create_from_buffer(std::string const &buffer, double svgdpi, std
 
 Pixbuf *Pixbuf::create_from_buffer(gchar *&&data, gsize len, double svgdpi, std::string const &fn)
 {
+    bool has_ori = false;
     Pixbuf *pb = nullptr;
     GError *error = nullptr;
     {
@@ -438,6 +476,7 @@ Pixbuf *Pixbuf::create_from_buffer(gchar *&&data, gsize len, double svgdpi, std:
             if (buf) {
                 // gdk_pixbuf_loader_get_pixbuf returns a borrowed reference
                 g_object_ref(buf);
+                has_ori = Pixbuf::get_embedded_orientation(buf) != Geom::identity();
                 buf = Pixbuf::apply_embedded_orientation(buf);
                 pb = new Pixbuf(buf);
             }
@@ -445,14 +484,16 @@ Pixbuf *Pixbuf::create_from_buffer(gchar *&&data, gsize len, double svgdpi, std:
 
         if (pb) {
             pb->_path = fn;
-            if (!is_svg) {
+            if (is_svg) {
+                pb->_setMimeData((guchar *) data, len, "svg");
+            } else if(!has_ori) {
+                // We DO NOT want to store the original data if it contains orientation
+                // data since many exports that will use the surface do not handle it.
                 GdkPixbufFormat *fmt = gdk_pixbuf_loader_get_format(loader);
                 gchar *fmt_name = gdk_pixbuf_format_get_name(fmt);
                 pb->_setMimeData((guchar *) data, len, fmt_name);
                 g_free(fmt_name);
                 g_object_unref(loader);
-            } else {
-                pb->_setMimeData((guchar *) data, len, "svg");
             }
         } else {
             std::cerr << "Pixbuf::create_from_file: failed to load contents: " << fn << std::endl;
