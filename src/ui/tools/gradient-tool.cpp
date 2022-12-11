@@ -467,7 +467,7 @@ bool GradientTool::root_handler(GdkEvent* event) {
             dragging = true;
 
             Geom::Point button_dt = _desktop->w2d(button_w);
-            if (event->button.state & GDK_SHIFT_MASK) {
+            if (event->button.state & GDK_SHIFT_MASK && !(event->button.state & GDK_CONTROL_MASK)) {
                 Inkscape::Rubberband::get(_desktop)->start(_desktop, button_dt);
             } else {
                 // remember clicked item, disregarding groups, honoring Alt; do nothing with Crtl to
@@ -555,8 +555,9 @@ bool GradientTool::root_handler(GdkEvent* event) {
                 dragging = false;
 
                 // unless clicked with Ctrl (to enable Ctrl+doubleclick).
-                if (event->button.state & GDK_CONTROL_MASK) {
+                if (event->button.state & GDK_CONTROL_MASK && !(event->button.state & GDK_SHIFT_MASK)) {
                     ret = TRUE;
+                    Inkscape::Rubberband::get(_desktop)->stop();
                     break;
                 }
 

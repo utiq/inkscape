@@ -543,7 +543,7 @@ bool MeshTool::root_handler(GdkEvent* event) {
                 }
             }
 
-            if (has_mesh) {
+            if (has_mesh && !(event->button.state & GDK_CONTROL_MASK)) {
                 Inkscape::Rubberband::get(_desktop)->start(_desktop, button_dt);
             }
 
@@ -656,8 +656,9 @@ bool MeshTool::root_handler(GdkEvent* event) {
                 dragging = false;
 
                 // unless clicked with Ctrl (to enable Ctrl+doubleclick).
-                if (event->button.state & GDK_CONTROL_MASK) {
+                if (event->button.state & GDK_CONTROL_MASK && !(event->button.state & GDK_SHIFT_MASK)) {
                     ret = TRUE;
+                    Inkscape::Rubberband::get(_desktop)->stop();
                     break;
                 }
 
@@ -728,7 +729,6 @@ bool MeshTool::root_handler(GdkEvent* event) {
                 this->item_to_select = nullptr;
                 ret = TRUE;
             }
-
             Inkscape::Rubberband::get(_desktop)->stop();
         }
         break;
