@@ -808,7 +808,7 @@ Shortcuts::update_gui_text_recursive(Gtk::Widget* widget)
             Glib::ustring tooltip;
             auto *iapp = InkscapeApplication::instance();
             if (iapp) {
-                tooltip = iapp->get_action_extra_data().get_tooltip_for_action(action);
+                tooltip = iapp->get_action_extra_data().get_tooltip_for_action(action, true, true);
             }
 
             // Add new primary accelerator.
@@ -827,7 +827,7 @@ Shortcuts::update_gui_text_recursive(Gtk::Widget* widget)
             }
 
             // Update tooltip.
-            widget->set_tooltip_text(tooltip);
+            widget->set_tooltip_markup(tooltip);
         }
     }
 

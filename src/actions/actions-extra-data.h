@@ -58,7 +58,8 @@ public:
 
     Glib::ustring get_label_for_action(Glib::ustring const &action_name, bool translated = true);
     Glib::ustring get_section_for_action(Glib::ustring const &action_name);
-    Glib::ustring get_tooltip_for_action(Glib::ustring const &action_name, bool translated = true);
+    Glib::ustring get_tooltip_for_action(Glib::ustring const &action_name, bool translated = true,
+                                         bool expanded = false);
 
 private:
     std::map<Glib::ustring, InkActionExtraDatum> data;
