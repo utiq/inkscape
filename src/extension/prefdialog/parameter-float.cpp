@@ -103,8 +103,7 @@ double ParamFloat::set(double in)
 
 std::string ParamFloat::value_to_string() const
 {
-    static constexpr auto digits10 = std::numeric_limits<double>::digits10; // number of decimal digits that are ensured to be precise
-    return Glib::ustring::format(std::setprecision(digits10), _value);
+    return Glib::ustring::format(std::setprecision(_precision), std::fixed, _value);
 }
 
 void ParamFloat::string_to_value(const std::string &in)
