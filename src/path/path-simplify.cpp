@@ -105,6 +105,9 @@ path_simplify(SPItem *item, float threshold, bool justCoalesce, double size)
     // reapply the transform
     item->doWriteTransform(transform);
 
+    // remove irrelevant old nodetypes attibute
+    item->removeAttribute("sodipodi:nodetypes");
+
     // clean up
     if (orig) delete orig;
 
