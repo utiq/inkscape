@@ -150,54 +150,30 @@ bounds_fast_transformed(Geom::PathVector const & pv, Geom::Affine const & t)
 //    return Geom::bounds_fast(pv * t);
 }
 
-Geom::OptRect
-bounds_exact_transformed(Geom::PathVector const & pv, Geom::Affine const & t)
+Geom::OptRect bounds_exact_transformed(Geom::PathVector const &pv, Geom::Affine const &t)
 {
-    if (pv.empty())
-        return Geom::OptRect();
+    if (pv.empty()) {
+        return {};
+    }
 
-    Geom::Point initial = pv.front().initialPoint() * t;
-    Geom::Rect bbox(initial, initial);        // obtain well defined bbox as starting point to unionWith
+    auto const initial = pv.front().initialPoint() * t;
 
-    for (const auto & it : pv) {
-        bbox.expandTo(it.initialPoint() * t);
+    // Obtain non-empty initial bbox to avoid having to deal with OptRect.
+    auto bbox = Geom::Rect(initial, initial);
 
-        // don't loop including closing segment, since that segment can never increase the bbox
-        for (Geom::Path::const_iterator cit = it.begin(); cit != it.end_open(); ++cit) {
-            Geom::Curve const &c = *cit;
+    for (auto const &path : pv) {
+        bbox.expandTo(path.initialPoint() * t);
 
-            unsigned order = 0;
-            if (Geom::BezierCurve const* b = dynamic_cast<Geom::BezierCurve const*>(&c)) {
-                order = b->order();
-            }
-
-            if (order == 1) { // line segment
-                bbox.expandTo(c.finalPoint() * t);
-
-            // TODO: we can make the case for quadratics faster by degree elevating them to
-            // cubic and then taking the bbox of that.
-
-            } else if (order == 3) { // cubic bezier
-                Geom::CubicBezier const &cubic_bezier = static_cast<Geom::CubicBezier const&>(c);
-                Geom::Point c0 = cubic_bezier[0] * t;
-                Geom::Point c1 = cubic_bezier[1] * t;
-                Geom::Point c2 = cubic_bezier[2] * t;
-                Geom::Point c3 = cubic_bezier[3] * t;
-                cubic_bbox(c0[0], c0[1], c1[0], c1[1], c2[0], c2[1], c3[0], c3[1], bbox);
-            } else {
-                // should handle all not-so-easy curves:
-                Geom::Curve *ctemp = cit->transformed(t);
-                bbox.unionWith( ctemp->boundsExact());
-                delete ctemp;
-            }
+        // Don't loop including closing segment, since that segment can never increase the bbox.
+        for (auto curve = path.begin(); curve != path.end_open(); ++curve) {
+            curve->expandToTransformed(bbox, t);
         }
     }
-    //return Geom::bounds_exact(pv * t);
+
     return bbox;
 }
 
-bool 
-pathv_similar(Geom::PathVector const &apv, Geom::PathVector const &bpv, double precission) 
+bool pathv_similar(Geom::PathVector const &apv, Geom::PathVector const &bpv, double precision)
 {
     if (apv == bpv) {
         return true;
@@ -206,22 +182,11 @@ pathv_similar(Geom::PathVector const &apv, Geom::PathVector const &bpv, double p
     if (totala != bpv.curveCount()) {
         return false;
     }
-    std::vector<Geom::Coord> pos;
     for (size_t i = 0; i < totala; i++) {
-        Geom::Point pointa = apv.pointAt(float(i)+0.2);
-        Geom::Point pointb = bpv.pointAt(float(i)+0.2);
-        Geom::Point pointc = apv.pointAt(float(i)+0.4);
-        Geom::Point pointd = bpv.pointAt(float(i)+0.4);
-        Geom::Point pointe = apv.pointAt(float(i));
-        Geom::Point pointf = bpv.pointAt(float(i));
-        if (!Geom::are_near(pointa[Geom::X], pointb[Geom::X], precission) ||
-            !Geom::are_near(pointa[Geom::Y], pointb[Geom::Y], precission) ||
-            !Geom::are_near(pointc[Geom::X], pointd[Geom::X], precission) ||
-            !Geom::are_near(pointc[Geom::Y], pointd[Geom::Y], precission) ||
-            !Geom::are_near(pointe[Geom::X], pointf[Geom::X], precission) ||
-            !Geom::are_near(pointe[Geom::Y], pointf[Geom::Y], precission)) 
-        {
-            return false;
+        for (auto f : { 0.2, 0.4, 0.0 }) {
+            if (!Geom::are_near(apv.pointAt(i + f), bpv.pointAt(i + f), precision)) {
+                return false;
+            }
         }
     }
     return true;
