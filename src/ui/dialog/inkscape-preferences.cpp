@@ -846,40 +846,46 @@ void InkscapePreferences::AddNewObjectsStyle(DialogPage &p, Glib::ustring const 
     p.add_line( true, "", *button, "",
                 _("Remember the style of the (first) selected object as this tool's style"));
 }
-
+#define get_tool_action(toolname) ("win.tool-switch('" + toolname + "')")
+Glib::ustring get_tool_action_name(Glib::ustring toolname)
+{
+    auto *iapp = InkscapeApplication::instance();
+    if (iapp)
+        return iapp->get_action_extra_data().get_label_for_action(get_tool_action(toolname));
+    return "";
+}
 void InkscapePreferences::initPageTools()
 {
     Gtk::TreeModel::iterator iter_tools = this->AddPage(_page_tools, _("Tools"), PREFS_PAGE_TOOLS);
-    this->AddPage(_page_selector, _("Selector"), iter_tools, PREFS_PAGE_TOOLS_SELECTOR);
-    this->AddPage(_page_node, _("Node"), iter_tools, PREFS_PAGE_TOOLS_NODE);
+    this->AddPage(_page_selector, get_tool_action_name("Select"), iter_tools, PREFS_PAGE_TOOLS_SELECTOR);
+    this->AddPage(_page_node, get_tool_action_name("Node"), iter_tools, PREFS_PAGE_TOOLS_NODE);
 
     // shapes
     Gtk::TreeModel::iterator iter_shapes = this->AddPage(_page_shapes, _("Shapes"), iter_tools, PREFS_PAGE_TOOLS_SHAPES);
-    this->AddPage(_page_rectangle, _("Rectangle"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_RECT);
-    this->AddPage(_page_ellipse, _("Ellipse"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_ELLIPSE);
-    this->AddPage(_page_star, _("Star"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_STAR);
-    this->AddPage(_page_3dbox, _("3D Box"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_3DBOX);
-    this->AddPage(_page_spiral, _("Spiral"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_SPIRAL);
+    this->AddPage(_page_rectangle, get_tool_action_name("Rect"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_RECT);
+    this->AddPage(_page_ellipse, get_tool_action_name("Arc"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_ELLIPSE);
+    this->AddPage(_page_star, get_tool_action_name("Star"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_STAR);
+    this->AddPage(_page_3dbox, get_tool_action_name("3DBox"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_3DBOX);
+    this->AddPage(_page_spiral, get_tool_action_name("Spiral"), iter_shapes, PREFS_PAGE_TOOLS_SHAPES_SPIRAL);
 
-    this->AddPage(_page_pen, _("Pen"), iter_tools, PREFS_PAGE_TOOLS_PEN);
-    this->AddPage(_page_pencil, _("Pencil"), iter_tools, PREFS_PAGE_TOOLS_PENCIL);
-    this->AddPage(_page_calligraphy, _("Calligraphy"), iter_tools, PREFS_PAGE_TOOLS_CALLIGRAPHY);
-    this->AddPage(_page_text, C_("ContextVerb", "Text"), iter_tools, PREFS_PAGE_TOOLS_TEXT);
+    this->AddPage(_page_pen, get_tool_action_name("Pen"), iter_tools, PREFS_PAGE_TOOLS_PEN);
+    this->AddPage(_page_pencil, get_tool_action_name("Pencil"), iter_tools, PREFS_PAGE_TOOLS_PENCIL);
+    this->AddPage(_page_calligraphy, get_tool_action_name("Calligraphic"), iter_tools, PREFS_PAGE_TOOLS_CALLIGRAPHY);
+    this->AddPage(_page_text, get_tool_action_name("Text"), iter_tools, PREFS_PAGE_TOOLS_TEXT);
 
-    this->AddPage(_page_gradient, _("Gradient"), iter_tools, PREFS_PAGE_TOOLS_GRADIENT);
-    this->AddPage(_page_dropper, _("Dropper"), iter_tools, PREFS_PAGE_TOOLS_DROPPER);
-    this->AddPage(_page_paintbucket, _("Paint Bucket"), iter_tools, PREFS_PAGE_TOOLS_PAINTBUCKET);
+    this->AddPage(_page_gradient, get_tool_action_name("Gradient"), iter_tools, PREFS_PAGE_TOOLS_GRADIENT);
+    this->AddPage(_page_dropper, get_tool_action_name("Dropper"), iter_tools, PREFS_PAGE_TOOLS_DROPPER);
+    this->AddPage(_page_paintbucket, get_tool_action_name("PaintBucket"), iter_tools, PREFS_PAGE_TOOLS_PAINTBUCKET);
 
-    this->AddPage(_page_tweak, _("Tweak"), iter_tools, PREFS_PAGE_TOOLS_TWEAK);
-    this->AddPage(_page_spray, _("Spray"), iter_tools, PREFS_PAGE_TOOLS_SPRAY);
-    this->AddPage(_page_eraser, _("Eraser"), iter_tools, PREFS_PAGE_TOOLS_ERASER);
-    this->AddPage(_page_connector, _("Connector"), iter_tools, PREFS_PAGE_TOOLS_CONNECTOR);
+    this->AddPage(_page_tweak, get_tool_action_name("Tweak"), iter_tools, PREFS_PAGE_TOOLS_TWEAK);
+    this->AddPage(_page_spray, get_tool_action_name("Spray"), iter_tools, PREFS_PAGE_TOOLS_SPRAY);
+    this->AddPage(_page_eraser, get_tool_action_name("Eraser"), iter_tools, PREFS_PAGE_TOOLS_ERASER);
+    this->AddPage(_page_connector, get_tool_action_name("Connector"), iter_tools, PREFS_PAGE_TOOLS_CONNECTOR);
 #ifdef WITH_LPETOOL
-    this->AddPage(_page_lpetool, _("LPE Tool"), iter_tools, PREFS_PAGE_TOOLS_LPETOOL);
+    this->AddPage(_page_lpetool, get_tool_action_name("LPETool"), iter_tools, PREFS_PAGE_TOOLS_LPETOOL);
 #endif // WITH_LPETOOL
-    this->AddPage(_page_zoom, _("Zoom"), iter_tools, PREFS_PAGE_TOOLS_ZOOM);
-    this->AddPage(_page_measure, C_("ContextVerb", "Measure"), iter_tools, PREFS_PAGE_TOOLS_MEASURE);
-
+    this->AddPage(_page_measure, get_tool_action_name("Measure"), iter_tools, PREFS_PAGE_TOOLS_MEASURE);
+    this->AddPage(_page_zoom, get_tool_action_name("Zoom"), iter_tools, PREFS_PAGE_TOOLS_ZOOM);
     _page_tools.add_group_header( _("Bounding box to use"));
     _t_bbox_visual.init ( _("Visual bounding box"), "/tools/bounding_box", 0, false, nullptr); // 0 means visual
     _page_tools.add_line( true, "", _t_bbox_visual, "",
@@ -1865,8 +1871,8 @@ void InkscapePreferences::initPageUI()
                 });
                 auto *iapp = InkscapeApplication::instance();
                 if (iapp) {
-                    auto tooltip = iapp->get_action_extra_data().get_tooltip_for_action(
-                        "win.tool-switch('" + action_name + "')", true, true);
+                    auto tooltip =
+                        iapp->get_action_extra_data().get_tooltip_for_action(get_tool_action(action_name), true, true);
                     button->set_tooltip_markup(tooltip);
                 }
             }
