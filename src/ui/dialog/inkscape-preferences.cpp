@@ -1856,12 +1856,19 @@ void InkscapePreferences::initPageUI()
                 gtk_actionable_set_action_name(GTK_ACTIONABLE(widget->gobj()), "");
 
                 button->set_sensitive();
-                auto path = ToolboxFactory::get_tool_visible_buttons_path(sp_get_action_target(button));
+                auto action_name = sp_get_action_target(button);
+                auto path = ToolboxFactory::get_tool_visible_buttons_path(action_name);
                 auto visible = Inkscape::Preferences::get()->getBool(path, true);
                 button->set_active(visible);
                 button->signal_toggled().connect([=](){
                     Inkscape::Preferences::get()->setBool(path, button->get_active());
                 });
+                auto *iapp = InkscapeApplication::instance();
+                if (iapp) {
+                    auto tooltip = iapp->get_action_extra_data().get_tooltip_for_action(
+                        "win.tool-switch('" + action_name + "')", true, true);
+                    button->set_tooltip_markup(tooltip);
+                }
             }
             return false;
         });
