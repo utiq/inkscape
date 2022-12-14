@@ -357,10 +357,9 @@ void LPEFilletChamfer::doBeforeEffect(SPLPEItem const *lpeItem)
                 if (pathresult.size()) {
                     pathresult.setFinal(curve_it->initialPoint());
                 }
-                if (Geom::are_near((*curve_it).initialPoint(), (*curve_it).finalPoint())) {
-                    return;
-                }            
-                pathresult.append(*curve_it);
+                if (!Geom::are_near(curve_it->initialPoint(), curve_it->finalPoint())) {
+                    pathresult.append(*curve_it);
+                }
                 ++curve_it;
             }
             pathresult.close(path_it.closed());
