@@ -40,8 +40,6 @@
 #include "ui/widget/color-icc-selector.h"
 #include "ui/widget/color-notebook.h"
 #include "ui/widget/color-scales.h"
-//#include "ui/widget/color-wheel-selector.h"
-//#include "ui/widget/color-wheel-hsluv-selector.h"
 
 #include "widgets/spw-utilities.h"
 
@@ -60,21 +58,6 @@ ColorNotebook::ColorNotebook(SelectedColor &color, bool no_alpha)
     , _selected_color(color)
 {
     set_name("ColorNotebook");
-
-    auto prefs = Inkscape::Preferences::get();
-
-    for (auto&& picker : get_color_pickers()) {
-        if (prefs->getBool(picker.visibility_path, true)) {
-            _available_pages.push_back(new Page(std::move(picker.factory), picker.icon));
-        }
-    }
-
-    if (_available_pages.empty()) {
-        g_warning("All color pickers are hidden. Check preferences.");
-        // UI is partially broken if we cannot select any color; add one picker regardless
-        auto pickers = get_color_pickers();
-        _available_pages.push_back(new Page(std::move(pickers.front().factory), pickers.front().icon));
-    }
 
     _initUI(no_alpha);
 
@@ -124,8 +107,9 @@ void ColorNotebook::_initUI(bool no_alpha)
     _combo->set_visible();
     _combo->set_tooltip_text(_("Choose style of color selection"));
 
-    for (auto&& page : _available_pages) {
-        _addPage(page, no_alpha);
+    for (auto&& picker : get_color_pickers()) {
+        auto page = Page(std::move(picker.factory), picker.icon);
+        _addPage(page, no_alpha, picker.visibility_path);
     }
 
     _label = Gtk::make_managed<Gtk::Label>();
@@ -157,23 +141,11 @@ void ColorNotebook::_initUI(bool no_alpha)
     _setCurrentPage(prefs->getInt("/colorselector/page", 0), true);
     row++;
 
-    auto switcher_path = Glib::ustring("/colorselector/switcher");
-    auto choose_switch = [=](bool compact) {
-        if (compact) {
-            _switcher->hide();
-            _buttonbox->show();
-        }
-        else {
-            _buttonbox->hide();
-            _switcher->show();
-        }
-    };
-
-    _observer = prefs->createObserver(switcher_path, [=](const Preferences::Entry& new_value) {
-        choose_switch(new_value.getBool());
+    _observer = prefs->createObserver("/colorselector/switcher", [=](const Preferences::Entry& new_value) {
+        _switcher->set_visible(!new_value.getBool());
+        _buttonbox->set_visible(new_value.getBool());
     });
-
-    choose_switch(prefs->getBool(switcher_path));
+    _observer->call();
 
     GtkWidget *rgbabox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
@@ -332,16 +304,22 @@ void ColorNotebook::_setCurrentPage(int i, bool sync_combo)
     }
 }
 
-void ColorNotebook::_addPage(Page &page, bool no_alpha)
+void ColorNotebook::_addPage(Page &page, bool no_alpha, const Glib::ustring vpath)
 {
     if (auto selector_widget = page.selector_factory->createWidget(_selected_color, no_alpha)) {
-        selector_widget->show();
-
         Glib::ustring mode_name = page.selector_factory->modeName();
         _book->add(*selector_widget, mode_name, mode_name);
         int page_num = _book->get_children().size() - 1;
 
         _combo->add_row(page.icon_name, mode_name, page_num);
+
+        auto prefs = Inkscape::Preferences::get();
+        auto obs = prefs->createObserver(vpath, [=](const Preferences::Entry& value) {
+            _combo->set_row_visible(page_num, value.getBool());
+            selector_widget->set_visible(value.getBool());
+        });
+        obs->call();
+        _visibility_observers.emplace_back(std::move(obs));
     }
 }
 

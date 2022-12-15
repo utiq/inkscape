@@ -990,6 +990,11 @@ void Preferences::PreferencesObserver::notify(Preferences::Entry const& new_val)
     _callback(new_val);
 }
 
+void Preferences::PreferencesObserver::call() {
+    auto prefs = Inkscape::Preferences::get();
+    _callback(prefs->getEntry(observed_path));
+}
+
 PrefObserver Preferences::createObserver(Glib::ustring path, std::function<void (const Preferences::Entry&)> callback) {
     return Preferences::PreferencesObserver::create(path, std::move(callback));
 }

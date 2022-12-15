@@ -52,7 +52,7 @@ protected:
     };
 
     void _initUI(bool no_alpha);
-    void _addPage(Page &page, bool no_alpha);
+    void _addPage(Page &page, bool no_alpha, const Glib::ustring vpath);
 
     void _pickColor(ColorRGBA *color);
     static void _onPickerClicked(GtkWidget *widget, ColorNotebook *colorbook);
@@ -72,7 +72,6 @@ protected:
     GtkWidget *_box_outofgamut, *_box_colormanaged, *_box_toomuchink;
     GtkWidget *_btn_picker;
     GtkWidget *_p; /* Color preview */
-    boost::ptr_vector<Page> _available_pages;
     sigc::connection _onetimepick;
     IconComboBox* _combo = nullptr;
 
@@ -82,6 +81,7 @@ public:
     ColorNotebook &operator=(const ColorNotebook &obj) = delete;
 
     PrefObserver _observer;
+    std::vector<PrefObserver> _visibility_observers;
 };
 
 }

@@ -122,6 +122,12 @@ public:
     public:
         static std::unique_ptr<PreferencesObserver> create(Glib::ustring path, std::function<void (const Preferences::Entry& new_value)> callback);
         ~PreferencesObserver() override = default;
+
+        /**
+         * Manually call the observer with the original, unchanged value.
+         * This is useful for initialisation functions.
+         */
+        void call();
     private:
         PreferencesObserver(Glib::ustring path, std::function<void (const Preferences::Entry& new_value)> callback);
         void notify(Preferences::Entry const& new_val) override;

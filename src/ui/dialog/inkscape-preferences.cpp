@@ -2025,7 +2025,7 @@ void InkscapePreferences::initPageUI()
         }
         container->show_all();
         container->set_spacing(5);
-        _page_color_pickers.add_line(true, "", *container, "", _("Select color pickers"), false, reset_icon());
+        _page_color_pickers.add_line(true, "", *container, "", _("Select color pickers"), false);
     }
 
     AddPage(_page_color_pickers, _("Color Selector"), iter_ui, PREFS_PAGE_UI_COLOR_PICKERS);
