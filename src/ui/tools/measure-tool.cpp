@@ -1126,12 +1126,9 @@ void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
     std::stringstream precision_str;
     precision_str.imbue(std::locale::classic());
     double origin = Quantity::convert(14, "px", unit->abbr);
-    Geom::Point rel_position = Geom::Point(origin, origin + fontsize - 2);
-    /*
-       why (fontsize-2)?
-       fonsize -> To keep avoid overlapping while FontSize changes.
-       -2 -> To keep InfoBox as close as possible to cursor pointer and avoid ovelapping at minimum FontSize also.
-    */
+    double yaxis_shift = Quantity::convert(fontsize, "px", unit->abbr);
+    Geom::Point rel_position = Geom::Point(origin, origin + yaxis_shift);
+    /* Keeps infobox just above the cursor */
     Geom::Point pos = _desktop->w2d(cursor);
     double gap = Quantity::convert(7 + fontsize, "px", unit->abbr);
     double yaxisdir = _desktop->yaxisdir();
