@@ -194,6 +194,7 @@ GdkpixbufInput::init()
 
                     "<param name='link' type='optiongroup' gui-text='" N_("Image Import Type:") "' gui-description='" N_("Embed results in stand-alone, larger SVG files. Link references a file outside this SVG document and all files must be moved together.") "' >\n"
                         "<option value='embed' >" N_("Embed") "</option>\n"
+                        // TRANSLATORS: Image is displayed, and stored as a link or embedded
                         "<option value='link' >" N_("Link") "</option>\n"
                     "</param>\n"
 

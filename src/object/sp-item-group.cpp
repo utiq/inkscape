@@ -306,7 +306,7 @@ const char *SPGroup::displayName() const {
             return _("Mask Helper");
         case SPGroup::GROUP:
         default:
-            return _("Group");
+            return C_("Noun", "Group");
     }
 }
 

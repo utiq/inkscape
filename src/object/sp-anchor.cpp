@@ -143,7 +143,7 @@ const char* SPAnchor::typeName() const {
 }
 
 const char* SPAnchor::displayName() const {
-    return _("Link");
+    return C_("Hyperlink|Noun", "Link");
 }
 
 gchar* SPAnchor::description() const {

@@ -51,7 +51,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_dialogs =
     {"win.dialog-open('Preferences')",        N_("Open Preferences"),          "Dialog",  N_("Edit global Inkscape preferences")                                                       },
     {"win.dialog-open('Selectors')",          N_("Open Selectors"),            "Dialog",  N_("View and edit CSS selectors and styles")                                                 },
     {"win.dialog-open('SVGFonts')",           N_("Open SVG Fonts"),            "Dialog",  N_("Edit SVG fonts")                                                                         },
-    {"win.dialog-open('Swatches')",           N_("Open Swatches"),             "Dialog",  N_("Select colors from a swatches palette") /* TRANSLATORS: "Swatches" -> color samples */   },
+    // TRANSLATORS: "Swatches" -> color samples
+    {"win.dialog-open('Swatches')",           N_("Open Swatches"),             "Dialog",  N_("Select colors from a swatches palette")                                                  },
     {"win.dialog-open('Symbols')",            N_("Open Symbols"),              "Dialog",  N_("Select symbol from a symbols palette")                                                   },
     {"win.dialog-open('Text')",               N_("Open Text"),                 "Dialog",  N_("View and select font family, font size and other text properties")                       },
     {"win.dialog-open('Trace')",              N_("Open Trace"),                "Dialog",  N_("Create one or more paths from a bitmap by tracing it")                                   },

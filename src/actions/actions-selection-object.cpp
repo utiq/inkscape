@@ -38,7 +38,7 @@ select_object_group(InkscapeApplication* app)
 {
     Inkscape::Selection *selection = app->get_active_selection();
     selection->group();
-    Inkscape::DocumentUndo::done(selection->document(), _("Group"), INKSCAPE_ICON("object-group"));
+    Inkscape::DocumentUndo::done(selection->document(), C_("Verb", "Group"), INKSCAPE_ICON("object-group"));
 }
 
 void
@@ -148,10 +148,10 @@ page_fit_to_selection(InkscapeApplication *app)
 std::vector<std::vector<Glib::ustring>> raw_data_selection_object =
 {
     // clang-format off
-    { "app.selection-group",                N_("Group"),                                 "Select",   N_("Group selected objects")},
+    { "app.selection-group",                NC_("Verb", "Group"),                        "Select",   N_("Group selected objects")},
     { "app.selection-ungroup",              N_("Ungroup"),                               "Select",   N_("Ungroup selected objects")},
     { "app.selection-ungroup-pop",          N_("Pop Selected Objects out of Group"),     "Select",   N_("Pop selected objects out of group")},
-    { "app.selection-link",                 N_("Link"),                                  "Select",   N_("Add an anchor to selected objects")},
+    { "app.selection-link",                 NC_("Hyperlink|Verb", "Link"),               "Select",   N_("Add an anchor to selected objects")},
 
     { "app.selection-top",                  N_("Raise to Top"),                          "Select",   N_("Raise selection to top")},
     { "app.selection-raise",                N_("Raise"),                                 "Select",   N_("Raise selection one step")},
