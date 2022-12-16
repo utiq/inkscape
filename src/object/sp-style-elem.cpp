@@ -347,7 +347,7 @@ end_font_face_cb(CRDocHandler *a_handler)
 
                         // FIX ME: Need to refresh font list.
                     } else {
-                        g_error("end_font_face_cb: Failed to add: %s", value.c_str());
+                        g_warning("end_font_face_cb: Failed to add: %s", value.c_str());
                     }
                 }
             }
