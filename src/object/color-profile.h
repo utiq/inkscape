@@ -78,6 +78,7 @@ public:
     cmsHTRANSFORM getTransfFromSRGB8();
     cmsHTRANSFORM getTransfGamutCheck();
     bool GamutCheck(SPColor color);
+    int getChannelCount() const;
 
     char* href;
     char* local;

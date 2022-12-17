@@ -436,6 +436,8 @@ gchar const *SPObject::defaultLabel() const {
 void SPObject::setLabel(gchar const *label)
 {
     getRepr()->setAttribute("inkscape:label", label);
+    // Update anything that's watching the object's label
+    _modified_signal.emit(this, SP_OBJECT_MODIFIED_FLAG);
 }
 
 

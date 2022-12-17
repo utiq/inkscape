@@ -53,11 +53,13 @@ protected:
 
     void _initUI(bool no_alpha);
     void _addPage(Page &page, bool no_alpha, const Glib::ustring vpath);
+    void setDocument(SPDocument *document);
 
     void _pickColor(ColorRGBA *color);
     static void _onPickerClicked(GtkWidget *widget, ColorNotebook *colorbook);
-    void _onPageSwitched(int page_num);
     virtual void _onSelectedColorChanged();
+    int getPageIndex(const Glib::ustring &name);
+    int getPageIndex(Gtk::Widget *widget);
 
     void _updateICCButtons();
     void _setCurrentPage(int i, bool sync_combo);
@@ -82,6 +84,11 @@ public:
 
     PrefObserver _observer;
     std::vector<PrefObserver> _visibility_observers;
+
+    SPDocument *_document = nullptr;
+    sigc::connection _doc_replaced_connection;
+    sigc::connection _selection_connection;
+    sigc::connection _icc_changed_connection;
 };
 
 }

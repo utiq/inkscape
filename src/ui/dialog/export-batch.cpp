@@ -687,7 +687,6 @@ void BatchExport::onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev)
         // deleting dialog before exporting is important
         // proper delete function should be made for dialog IMO
         delete dialog;
-        onExport();
     } else {
         delete dialog;
     }

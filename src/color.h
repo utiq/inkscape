@@ -7,14 +7,18 @@
  *   Lauris Kaplinski <lauris@kaplinski.com>
  *   bulia byak <buliabyak@users.sf.net>
  *   Jon A. Cruz <jon@joncruz.org>
+ *   Martin Owens <doctormo@geek-2.com>
  *
- * Copyright (C) 2001-2002 Lauris Kaplinski
+ * Copyright (C) 2001-2023 AUTHORS
  * Copyright (C) 2001 Ximian, Inc.
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
 #include <string>
+
+#include "svg/svg-icc-color.h"
+
 typedef unsigned int guint32; // uint is guaranteed to hold up to 2^32 − 1
 
 /* Useful composition macros */
@@ -36,39 +40,58 @@ typedef unsigned int guint32; // uint is guaranteed to hold up to 2^32 − 1
 
 struct SVGICCColor;
 
+namespace Inkscape {
+    class ColorProfile;
+};
 
 /**
  * An RGB color with optional icc-color part
  */
-struct SPColor {
-    SPColor();
-    SPColor( SPColor const& other );
-    SPColor( float r, float g, float b );
-    SPColor( guint32 value );
-    virtual ~SPColor();
+class SPColor final
+{
+public:
+    SPColor() = default;
+    SPColor(SPColor const &other);
+    SPColor(float r, float g, float b);
+    SPColor(guint32 value);
 
     SPColor& operator= (SPColor const& other);
 
     bool operator == ( SPColor const& other ) const;
     bool operator != ( SPColor const& other ) const { return !(*this == other); };
+    operator bool() const { return is_set(); }
+
     bool isClose( SPColor const& other, float epsilon ) const;
 
-    void set( float r, float g, float b );
-    void set( guint32 value );
+    void set(float r, float g, float b);
+    void set(guint32 value);
+
+    bool hasColorProfile() const;
+    void unsetColorProfile();
+    void setColorProfile(Inkscape::ColorProfile *profile);
+    const std::string &getColorProfile() const { return _icc.colorProfile; }
+
+    bool hasColors() const;
+    void unsetColors();
+    void setColors(std::vector<double> &&values);
+    void setColor(unsigned int index, double value);
+    void copyColors(const SPColor &other);
+    const std::vector<double> &getColors() const { return _icc.colors; }
 
     guint32 toRGBA32( int alpha ) const;
     guint32 toRGBA32( double alpha ) const;
 
     std::string toString() const;
+    bool fromString(const char *str);
 
-    SVGICCColor* icc;
     union {
-        float c[3];
+        float c[3] = { -1, 0, 0 };
     } v;
 
     guint32 get_rgba32_ualpha (guint32 alpha) const;
     guint32 get_rgba32_falpha (float alpha) const;
 
+    bool is_set() const { return v.c[0] > -1; }
     void get_rgb_floatv (float *rgb) const;
     void get_cmyk_floatv (float *cmyk) const;
 
@@ -85,7 +108,9 @@ struct SPColor {
 
     static void rgb_to_hsluv_floatv (float *hsluv, float r, float g, float b);
     static void hsluv_to_rgb_floatv (float *rgb, float h, float s, float l);
-};
 
+private:
+    SVGICCColor _icc;
+};
 
 #endif // SEEN_SP_COLOR_H

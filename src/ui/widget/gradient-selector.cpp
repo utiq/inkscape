@@ -210,11 +210,11 @@ void GradientSelector::onGradientRename(const Glib::ustring &path_string, const 
         if (row) {
             SPObject *obj = row[_columns->data];
             if (obj) {
-                row[_columns->name] = gr_prepare_label(obj);
-                if (!new_text.empty() && new_text != row[_columns->name]) {
-                    rename_id(obj, new_text);
+                if (!new_text.empty() && new_text != gr_prepare_label(obj)) {
+                    obj->setLabel(new_text.c_str());
                     Inkscape::DocumentUndo::done(obj->document, _("Rename gradient"), INKSCAPE_ICON("color-gradient"));
                 }
+                row[_columns->name] = gr_prepare_label(obj);
             }
         }
     }

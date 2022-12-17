@@ -92,6 +92,8 @@ private:
     std::vector<ColorItem*> current_fill;
     std::vector<ColorItem*> current_stroke;
     void update_fillstroke_indicators();
+
+    Inkscape::PrefObserver _pinned_observer;
 };
 
 } // namespace Dialog

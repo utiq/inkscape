@@ -616,6 +616,19 @@ button.square-button image {
     border-left: 3px solid white;
 }
 
+#DialogNotebook #Swatches {
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+#DialogNotebook #Swatches box {
+    margin-bottom: 5px
+}
+
+#DialogNotebook #Swatches box label {
+    padding-left: 7px;
+}
+
 #StyleSwatch label {
     font-size: smaller;
 }

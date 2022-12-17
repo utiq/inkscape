@@ -678,13 +678,13 @@ bool Inkscape::CMSSystem::isPrintColorSpace(ColorProfile const *profile)
 
 gint Inkscape::CMSSystem::getChannelCount(ColorProfile const *profile)
 {
-    gint count = 0;
-    if ( profile ) {
-        count = cmsChannelsOf( asICColorSpaceSig(profile->getColorSpace()) );
-    }
-    return count;
+    return profile ? profile->getChannelCount() : 0;
 }
 
+gint ColorProfile::getChannelCount() const
+{
+    return cmsChannelsOf(asICColorSpaceSig(getColorSpace()));
+}
 
 // the bool return value tells if it's a user's directory or a system location
 // note that this will treat places under $HOME as system directories when they are found via $XDG_DATA_DIRS

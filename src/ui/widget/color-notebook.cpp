@@ -63,17 +63,34 @@ ColorNotebook::ColorNotebook(SelectedColor &color, bool no_alpha)
 
     _selected_color.signal_changed.connect(sigc::mem_fun(*this, &ColorNotebook::_onSelectedColorChanged));
     _selected_color.signal_dragged.connect(sigc::mem_fun(*this, &ColorNotebook::_onSelectedColorChanged));
+
+    auto desktop = SP_ACTIVE_DESKTOP;
+    _doc_replaced_connection = desktop->connectDocumentReplaced(sigc::hide<0>(sigc::mem_fun(*this, &ColorNotebook::setDocument)));
+    setDocument(desktop->getDocument());
 }
 
 ColorNotebook::~ColorNotebook()
 {
     if (_onetimepick)
         _onetimepick.disconnect();
+    _doc_replaced_connection.disconnect();
+    setDocument(nullptr);
 }
 
 ColorNotebook::Page::Page(std::unique_ptr<Inkscape::UI::ColorSelectorFactory> selector_factory, const char* icon)
     : selector_factory(std::move(selector_factory)), icon_name(icon)
 {
+}
+
+void ColorNotebook::setDocument(SPDocument *document)
+{
+    _document = document;
+    _icc_changed_connection.disconnect();
+    if (document) {
+        _icc_changed_connection = document->connectResourcesChanged("iccprofile", [this]() {
+            _selected_color.emitIccChanged();
+        });
+    }
 }
 
 void ColorNotebook::set_label(const Glib::ustring& label) {
@@ -138,7 +155,8 @@ void ColorNotebook::_initUI(bool no_alpha)
 
     // restore the last active page
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    _setCurrentPage(prefs->getInt("/colorselector/page", 0), true);
+    Glib::ustring page_name = prefs->getString("/colorselector/page", "");
+    _setCurrentPage(getPageIndex(page_name), true);
     row++;
 
     _observer = prefs->createObserver("/colorselector/switcher", [=](const Preferences::Entry& new_value) {
@@ -202,6 +220,16 @@ void ColorNotebook::_initUI(bool no_alpha)
     gtk_widget_set_margin_bottom(rgbabox, YPAD);
     attach(*Glib::wrap(rgbabox), 0, row, 2, 1);
 
+    // remember the page we switched to
+    _book->property_visible_child_name().signal_changed().connect([=]() {
+        // We don't want to remember auto cms selection
+        Glib::ustring name = _book->get_visible_child_name();
+        if (get_visible() && !name.empty() && name != "CMS") {
+            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+            prefs->setString("/colorselector/page", name);
+        }
+    });
+
 #ifdef SPCS_PREVIEW
     _p = sp_color_preview_new(0xffffffff);
     gtk_widget_show(_p);
@@ -232,44 +260,40 @@ void ColorNotebook::_pickColor(ColorRGBA *color) {
 
 void ColorNotebook::_onSelectedColorChanged() { _updateICCButtons(); }
 
-void ColorNotebook::_onPageSwitched(int page_num)
-{
-    if (get_visible()) {
-        // remember the page we switched to
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->setInt("/colorselector/page", page_num);
-    }
-}
-
-
-// TODO pass in param so as to avoid the need for SP_ACTIVE_DOCUMENT
 void ColorNotebook::_updateICCButtons()
 {
+    if (!_document) {
+        return;
+    }
+
     SPColor color = _selected_color.color();
     gfloat alpha = _selected_color.alpha();
 
     g_return_if_fail((0.0 <= alpha) && (alpha <= 1.0));
 
     /* update color management icon*/
-    gtk_widget_set_sensitive(_box_colormanaged, color.icc != nullptr);
-
-    /* update out-of-gamut icon */
+    gtk_widget_set_sensitive(_box_colormanaged, color.hasColorProfile());
+    gtk_widget_set_sensitive(_box_toomuchink, false);
     gtk_widget_set_sensitive(_box_outofgamut, false);
-    if (color.icc) {
+
+    if (color.hasColors()) {
+        auto name = color.getColorProfile();
+
+        // Set notebook page to cms if icc profile being used.
+        _setCurrentPage(getPageIndex("CMS"), true);
+
+        /* update out-of-gamut icon */
         Inkscape::ColorProfile *target_profile =
-            SP_ACTIVE_DOCUMENT->getProfileManager().find(color.icc->colorProfile.c_str());
+            _document->getProfileManager().find(name.c_str());
         if (target_profile)
             gtk_widget_set_sensitive(_box_outofgamut, target_profile->GamutCheck(color));
-    }
 
-    /* update too-much-ink icon */
-    gtk_widget_set_sensitive(_box_toomuchink, false);
-    if (color.icc) {
-        Inkscape::ColorProfile *prof = SP_ACTIVE_DOCUMENT->getProfileManager().find(color.icc->colorProfile.c_str());
+        /* update too-much-ink icon */
+        Inkscape::ColorProfile *prof = _document->getProfileManager().find(name.c_str());
         if (prof && CMSSystem::isPrintColorSpace(prof)) {
             gtk_widget_show(GTK_WIDGET(_box_toomuchink));
             double ink_sum = 0;
-            for (double i : color.icc->colors) {
+            for (double i : color.getColors()) {
                 ink_sum += i;
             }
 
@@ -282,7 +306,27 @@ void ColorNotebook::_updateICCButtons()
         else {
             gtk_widget_hide(GTK_WIDGET(_box_toomuchink));
         }
+    } else {
+        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        auto page = prefs->getString("/colorselector/page");
+        _setCurrentPage(getPageIndex(page), true);
     }
+}
+
+int ColorNotebook::getPageIndex(const Glib::ustring &name)
+{
+    return getPageIndex(_book->get_child_by_name(name));
+}
+
+int ColorNotebook::getPageIndex(Gtk::Widget *widget)
+{
+    const auto pages = _book->get_children();
+    for (int i = 0; i < pages.size(); i++) {
+        if (pages[i] == widget) {
+            return i;
+        }
+    }
+    return 0;
 }
 
 void ColorNotebook::_setCurrentPage(int i, bool sync_combo)
@@ -300,7 +344,6 @@ void ColorNotebook::_setCurrentPage(int i, bool sync_combo)
         if (sync_combo) {
             _combo->set_active_by_id(i);
         }
-        _onPageSwitched(i);
     }
 }
 

@@ -61,6 +61,8 @@ public:
     /// Create a color of type RGB
     PaintDef(std::array<unsigned, 3> const &rgb, std::string description);
 
+    std::string get_color_id() const;
+
     std::string const &get_description() const { return description; }
     ColorType get_type() const { return type; }
     std::array<unsigned, 3> const &get_rgb() const { return rgb; }

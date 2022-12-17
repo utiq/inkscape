@@ -110,6 +110,9 @@ private:
     /** Gradient patches */
     unsigned int has_patches : 1;
 
+    /** Pinned in swatches dialog */
+    bool _pinned = false;
+
 public:
     /** Reference (href) */
     SPGradientReference *ref;
@@ -186,6 +189,8 @@ public:
     SPGradientUnits fetchUnits();
 
     void setSwatch(bool swatch = true);
+    void setPinned(bool pinned = true);
+    bool isPinned() const { return _pinned; }
 
     bool isSolid() const;
 

@@ -37,6 +37,9 @@
 
 #include "paintdef.h"
 
+#include <memory>
+#include <algorithm>
+#include <regex>
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
@@ -59,6 +62,26 @@ PaintDef::PaintDef(std::array<unsigned, 3> const &rgb, std::string description)
     , type(RGB)
     , rgb(rgb)
 {
+}
+
+std::string PaintDef::get_color_id() const
+{
+    if (type == NONE)
+        return "none";
+    if (!description.empty() && description[0] != '#') {
+        // Convert description to ascii, strip out symbols, remove duplicate dashes and prefixes
+        auto name = std::regex_replace(description, std::regex("[^[:alnum:]]"), "-");
+        name = std::regex_replace(name, std::regex("-{2,}"), "-");
+        name = std::regex_replace(name, std::regex("(^-|-$)"), "");
+        // Move important numbers from the start where they are invalid xml, to the end.
+        name = std::regex_replace(name, std::regex("^(\\d+)(-?)([^\\d]*)"), "$3$2$1");
+        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+        return name;
+    }
+    auto [r, g, b] = rgb;
+    char buf[12];
+    std::snprintf(buf, 12, "rgb%02x%02x%02x", r, g, b);
+    return std::string(buf);
 }
 
 std::vector<std::string> const &PaintDef::getMIMETypes()

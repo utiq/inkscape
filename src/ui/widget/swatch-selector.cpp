@@ -20,6 +20,7 @@
 
 #include "svg/css-ostringstream.h"
 #include "svg/svg-color.h"
+#include "svg/svg-icc-color.h"
 
 #include "ui/icon-names.h"
 #include "ui/widget/color-notebook.h"
@@ -87,17 +88,7 @@ void SwatchSelector::_changedCb()
 
         SPStop* stop = ngr->getFirstStop();
         if (stop) {
-            SPColor color = _selected_color.color();
-            gfloat alpha = _selected_color.alpha();
-            guint32 rgb = color.toRGBA32( 0x00 );
-
-            // TODO replace with generic shared code that also handles icc-color
-            Inkscape::CSSOStringStream os;
-            gchar c[64];
-            sp_svg_write_color(c, sizeof(c), rgb);
-            os << "stop-color:" << c << ";stop-opacity:" << static_cast<gdouble>(alpha) <<";";
-            stop->setAttribute("style", os.str());
-
+            stop->setColor(_selected_color.color(), _selected_color.alpha());
             DocumentUndo::done(ngr->document, _("Change swatch color"), INKSCAPE_ICON("color-gradient"));
         }
     }
@@ -111,19 +102,13 @@ void SwatchSelector::connectchangedHandler( GCallback handler, void *data )
 
 void SwatchSelector::setVector(SPDocument */*doc*/, SPGradient *vector)
 {
-    //GtkVBox * box = gobj();
     _gsel->setVector((vector) ? vector->document : nullptr, vector);
 
     if ( vector && vector->isSolid() ) {
-        SPStop* stop = vector->getFirstStop();
-
-        guint32 const colorVal = stop->get_rgba32();
         _updating_color = true;
-        _selected_color.setValue(colorVal);
+        SPStop* stop = vector->getFirstStop();
+        _selected_color.setColorAlpha(stop->getColor(), stop->getOpacity(), true);
         _updating_color = false;
-        // gtk_widget_show_all( GTK_WIDGET(_csel) );
-    } else {
-        //gtk_widget_hide( GTK_WIDGET(_csel) );
     }
 
 /*

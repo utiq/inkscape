@@ -48,15 +48,15 @@ public:
 
     void setColorAlpha(SPColor const &color, gfloat alpha, bool emit_signal = true);
     void colorAlpha(SPColor &color, gfloat &alpha) const;
+    void emitIccChanged() { signal_icc_changed.emit(); }
 
     void setHeld(bool held);
-
-    void preserveICC();
 
     sigc::signal<void ()> signal_grabbed;
     sigc::signal<void ()> signal_dragged;
     sigc::signal<void ()> signal_released;
     sigc::signal<void ()> signal_changed;
+    sigc::signal<void ()> signal_icc_changed;
 
 private:
     SPColor _color;

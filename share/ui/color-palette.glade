@@ -71,7 +71,7 @@
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <child>
-      <object class="GtkFlowBox" id="fixed">
+      <object class="GtkFlowBox" id="pinned">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="halign">start</property>
@@ -277,7 +277,7 @@
     <property name="relative-to">btn-menu</property>
     <property name="position">left</property>
     <child>
-      <!-- n-columns=2 n-rows=7 -->
+      <!-- n-columns=2 n-rows=8 -->
       <object class="GtkGrid" id="main-grid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -428,7 +428,7 @@
         </child>
         <child>
           <object class="GtkCheckButton" id="enlarge">
-            <property name="label" translatable="yes">Enlarge fixed colors</property>
+            <property name="label" translatable="yes">Enlarge pinned colors</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -439,6 +439,24 @@
             <property name="left-attach">1</property>
             <property name="top-attach">6</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="show-labels">
+            <property name="label" translatable="yes">Show color labels</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="active">True</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">7</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

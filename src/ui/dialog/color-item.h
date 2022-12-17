@@ -15,7 +15,8 @@
 #include <cairomm/cairomm.h>
 #include <gtkmm/drawingarea.h>
 
-#include "src/widgets/paintdef.h"
+#include "inkscape-preferences.h"
+#include "widgets/paintdef.h"
 
 class SPGradient;
 
@@ -48,6 +49,15 @@ public:
     /// Update the stroke indicator, showing this widget is the stroke of the current selection.
     void set_stroke(bool);
 
+    /// Update whether this item is pinned.
+    bool is_pinned() const;
+    void set_pinned_pref(const std::string &path);
+
+    const Glib::ustring &get_description() const { return description; }
+
+    sigc::signal<void ()>& signal_modified() { return _signal_modified; };
+    sigc::signal<void ()>& signal_pinned() { return _signal_pinned; };
+
 protected:
     bool on_draw(Cairo::RefPtr<Cairo::Context> const&) override;
     void on_size_allocate(Gtk::Allocation&) override;
@@ -79,6 +89,11 @@ private:
 
     // Description of the color, shown in help text.
     Glib::ustring description;
+    Glib::ustring color_id;
+
+    /// The pinned preference path
+    Glib::ustring pinned_pref;
+    bool pinned_default = false;
 
     // The color.
     struct NoneData {};
@@ -96,9 +111,13 @@ private:
     // A cache of the widget contents, if necessary.
     Cairo::RefPtr<Cairo::ImageSurface> cache;
     bool cache_dirty = true;
+    bool was_grad_pinned = false;
 
     // For ensuring that clicks that release outside the widget don't count.
     bool mouse_inside = false;
+
+    sigc::signal<void ()> _signal_modified;
+    sigc::signal<void ()> _signal_pinned;
 };
 
 } // namespace Dialog

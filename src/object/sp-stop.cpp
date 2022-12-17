@@ -151,6 +151,24 @@ gfloat SPStop::getOpacity() const
 }
 
 /**
+ * Sets the stop color and stop opacity in the style attribute.
+ */
+void SPStop::setColor(SPColor color, double opacity)
+{
+    setColorRepr(getRepr(), color, opacity);
+}
+
+/**
+ * Set the color and opacity directly into the given xml repr.
+ */
+void SPStop::setColorRepr(Inkscape::XML::Node *node, SPColor color, double opacity)
+{
+    Inkscape::CSSOStringStream os;
+    os << "stop-color:" << color.toString() << ";stop-opacity:" << opacity <<";";
+    node->setAttribute("style", os.str());
+}
+
+/**
  * Return stop's color as 32bit value.
  */
 guint32 SPStop::get_rgba32() const

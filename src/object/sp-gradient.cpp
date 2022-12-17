@@ -97,6 +97,14 @@ void SPGradient::setSwatch( bool swatch )
     }
 }
 
+void SPGradient::setPinned(bool pinned)
+{
+    if (pinned != isPinned()) {
+        setAttribute("inkscape:pinned", pinned ? "true" : "false");
+        requestModified(SP_OBJECT_MODIFIED_FLAG);
+    }
+}
+
 
 /**
  * return true if this gradient is "equivalent" to that gradient.
@@ -298,6 +306,7 @@ void SPGradient::build(SPDocument *document, Inkscape::XML::Node *repr)
     this->readAttr(SPAttr::SPREADMETHOD);
     this->readAttr(SPAttr::XLINK_HREF);
     this->readAttr(SPAttr::INKSCAPE_SWATCH);
+    this->readAttr(SPAttr::INKSCAPE_PINNED);
 
     // Register ourselves
     document->addResource("gradient", this);
@@ -324,8 +333,6 @@ void SPGradient::release()
         delete this->ref;
         this->ref = nullptr;
     }
-
-    //this->modified_connection.~connection();
 
     SPPaintServer::release();
 }
@@ -403,6 +410,13 @@ void SPGradient::set(SPAttr key, gchar const *value)
             }
             break;
 
+        case SPAttr::INKSCAPE_PINNED:
+        {
+            if (value) {
+                this->_pinned = !strcmp(value, "true");
+            }
+            break;
+        }
         case SPAttr::INKSCAPE_SWATCH:
         {
             bool newVal = (value != nullptr);
@@ -907,8 +921,8 @@ SPGradient::repr_write_vector()
         child->setAttributeCssDouble("offset", stop.offset);
         /* strictly speaking, offset an SVG <number> rather than a CSS one, but exponents make no
          * sense for offset proportions. */
-        os << "stop-color:" << stop.color.toString() << ";stop-opacity:" << stop.opacity;
-        child->setAttribute("style", os.str());
+        auto obj = cast<SPStop>(document->getObjectByRepr(child));
+        obj->setColor(stop.color, stop.opacity);
         /* Order will be reversed here */
         l.push_back(child);
     }

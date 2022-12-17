@@ -43,6 +43,9 @@ public:
     SPColor getColor() const;
     gfloat getOpacity() const;
     guint32 get_rgba32() const;
+    void setColor(SPColor color, double opacity);
+
+    static void setColorRepr(Inkscape::XML::Node *node, SPColor color, double opacity);
 
 protected:
 	void build(SPDocument* doc, Inkscape::XML::Node* repr) override;

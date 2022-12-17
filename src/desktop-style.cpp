@@ -479,20 +479,6 @@ stroke_average_width (const std::vector<SPItem*> &objects)
     return avgwidth / (objects.size() - n_notstroked);
 }
 
-static bool vectorsClose( std::vector<double> const &lhs, std::vector<double> const &rhs )
-{
-    bool isClose = false;
-    if ( lhs.size() == rhs.size() ) {
-        static double epsilon = 1e-6;
-        isClose = true;
-        for ( size_t i = 0; (i < lhs.size()) && isClose; ++i ) {
-            isClose = fabs(lhs[i] - rhs[i]) < epsilon;
-        }
-    }
-    return isClose;
-}
-
-
 /**
  * Write to style_res the average fill or stroke of list of objects, if applicable.
  */
@@ -508,7 +494,7 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
     bool paintImpossible = true;
     paint_res->set = true;
 
-    SVGICCColor* iccColor = nullptr;
+    std::optional<SPColor> iccColor;
 
     bool iccSeen = false;
     gfloat c[4];
@@ -618,20 +604,19 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
                 prev[1] = d[1];
                 prev[2] = d[2];
                 paint_res->setColor(d[0], d[1], d[2]);
-                iccColor = paint->value.color.icc;
-                iccSeen = true;
+                if (paint->value.color.hasColors()) {
+                    iccColor.emplace(paint->value.color);
+                    iccSeen = true;
+                }
             } else {
                 if (same_color && (prev[0] != d[0] || prev[1] != d[1] || prev[2] != d[2])) {
                     same_color = false;
-                    iccColor = nullptr;
+                    iccColor.reset();
                 }
-                if ( iccSeen && iccColor ) {
-                    if ( !paint->value.color.icc
-                         || (iccColor->colorProfile != paint->value.color.icc->colorProfile)
-                         || !vectorsClose(iccColor->colors, paint->value.color.icc->colors) ) {
-                        same_color = false;
-                        iccColor = nullptr;
-                    }
+                if (iccSeen && iccColor && *iccColor != paint->value.color) {
+                    // We can't yet blend together two icc based colors.
+                    same_color = false;
+                    iccColor.reset();
                 }
             }
 
@@ -673,11 +658,8 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
             style_res->stroke_opacity.value = SP_SCALE24_FROM_FLOAT (c[3]);
         }
 
-
-        if ( iccSeen && iccColor ) {
-            // TODO check for existing
-            SVGICCColor* tmp = new SVGICCColor(*iccColor);
-            paint_res->value.color.icc = tmp;
+        if (iccSeen && iccColor) {
+            paint_res->value.color.copyColors(*iccColor);
         }
 
         if (num > 1) {

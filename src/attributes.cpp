@@ -321,6 +321,7 @@ static SPStyleProp const props[] = {
     {SPAttr::GRADIENTTRANSFORM, "gradientTransform"},
     {SPAttr::SPREADMETHOD, "spreadMethod"},
     {SPAttr::INKSCAPE_SWATCH, "inkscape:swatch"},
+    {SPAttr::INKSCAPE_PINNED, "inkscape:pinned"},
     /* SPRadialGradient */
     {SPAttr::FX, "fx"},
     {SPAttr::FY, "fy"},

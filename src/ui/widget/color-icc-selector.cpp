@@ -20,7 +20,6 @@
 #include <glibmm/i18n.h>
 
 #include "colorspace.h"
-#include "document.h"
 #include "inkscape.h"
 #include "profile-manager.h"
 
@@ -262,7 +261,7 @@ class ColorICCSelectorImpl {
     static void _profileSelected(GtkWidget *src, gpointer data);
     static void _fixupHit(GtkWidget *src, gpointer data);
 
-    void _setProfile(SVGICCColor *profile);
+    void _setProfile(const std::string &profile);
     void _switchToProfile(gchar const *name);
     
     void _updateSliders(gint ignore);
@@ -301,7 +300,7 @@ ColorICCSelector::ColorICCSelector(SelectedColor &color, bool no_alpha)
     _impl = new ColorICCSelectorImpl(this, color);
     init(no_alpha);
     color.signal_changed.connect(sigc::mem_fun(*this, &ColorICCSelector::_colorChanged));
-    // color.signal_dragged.connect(sigc::mem_fun(*this, &ColorICCSelector::_colorChanged));
+    color.signal_icc_changed.connect(sigc::mem_fun(*this, &ColorICCSelector::_colorChanged));
 }
 
 ColorICCSelector::~ColorICCSelector()
@@ -374,7 +373,7 @@ void ColorICCSelector::init(bool no_alpha)
 
     GtkTreeIter iter;
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, _("<none>"), 1, _("<none>"), -1);
+    gtk_list_store_set(store, &iter, 0, _("<none>"), 1, "null", -1);
 
     gtk_widget_show(_impl->_profileSel);
     gtk_combo_box_set_active(GTK_COMBO_BOX(_impl->_profileSel), 0);
@@ -526,8 +525,8 @@ void ColorICCSelectorImpl::_switchToProfile(gchar const *name)
     bool dirty = false;
     SPColor tmp(_color.color());
 
-    if (name) {
-        if (tmp.icc && tmp.icc->colorProfile == name) {
+    if (name && std::string(name) != "null") {
+        if (tmp.getColorProfile() == name) {
 #ifdef DEBUG_LCMS
             g_message("Already at name [%s]", name);
 #endif // DEBUG_LCMS
@@ -536,13 +535,7 @@ void ColorICCSelectorImpl::_switchToProfile(gchar const *name)
 #ifdef DEBUG_LCMS
             g_message("Need to switch to profile [%s]", name);
 #endif // DEBUG_LCMS
-            if (tmp.icc) {
-                tmp.icc->colors.clear();
-            }
-            else {
-                tmp.icc = new SVGICCColor();
-            }
-            tmp.icc->colorProfile = name;
+
             if (auto newProf = SP_ACTIVE_DOCUMENT->getProfileManager().find(name)) {
                 cmsHTRANSFORM trans = newProf->getTransfFromSRGB8();
                 if (trans) {
@@ -565,14 +558,16 @@ void ColorICCSelectorImpl::_switchToProfile(gchar const *name)
                     std::vector<colorspace::Component> things =
                         colorspace::getColorSpaceInfo(asICColorSpaceSig(newProf->getColorSpace()));
 
+                    std::vector<double> colors;
                     for (guint i = 0; i < count; i++) {
                         gdouble val =
                             (((gdouble)post[i]) / 65535.0) * (gdouble)((i < things.size()) ? things[i].scale : 1);
 #ifdef DEBUG_LCMS
                         g_message("     scaled %d by %d to be %f", i, ((i < things.size()) ? things[i].scale : 1), val);
 #endif // DEBUG_LCMS
-                        tmp.icc->colors.push_back(val);
+                        colors.push_back(val);
                     }
+
                     cmsHTRANSFORM retrans = newProf->getTransfToSRGB8();
                     if (retrans) {
                         cmsDoTransform(retrans, post, pre, 1);
@@ -580,6 +575,10 @@ void ColorICCSelectorImpl::_switchToProfile(gchar const *name)
                         g_message("  back out [%02x] [%02x] [%02x]", pre[0], pre[1], pre[2]);
 #endif // DEBUG_LCMS
                         tmp.set(SP_RGBA32_U_COMPOSE(pre[0], pre[1], pre[2], 0xff));
+                        tmp.setColorProfile(newProf);
+                        tmp.setColors(std::move(colors));
+                    } else {
+                        g_warning("Couldn't get sRGB from color profile.");
                     }
 
                     dirty = true;
@@ -591,9 +590,8 @@ void ColorICCSelectorImpl::_switchToProfile(gchar const *name)
 #ifdef DEBUG_LCMS
         g_message("NUKE THE ICC");
 #endif // DEBUG_LCMS
-        if (tmp.icc) {
-            delete tmp.icc;
-            tmp.icc = nullptr;
+        if (tmp.hasColorProfile()) {
+            tmp.unsetColorProfile();
             dirty = true;
             _fixupHit(nullptr, this);
         }
@@ -609,8 +607,7 @@ void ColorICCSelectorImpl::_switchToProfile(gchar const *name)
         g_message("+----------------");
         g_message("+   new color is [%s]", tmp.toString().c_str());
 #endif // DEBUG_LCMS
-        _setProfile(tmp.icc);
-        //_adjustmentChanged( _compUI[0]._adj, SP_COLOR_ICC_SELECTOR(_csel) );
+        _setProfile(tmp.getColorProfile());
         _color.setColor(tmp);
 #ifdef DEBUG_LCMS
         g_message("+_________________");
@@ -646,7 +643,7 @@ void ColorICCSelectorImpl::_profilesChanged(std::string const &name)
 
     GtkTreeIter iter;
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, _("<none>"), 1, _("<none>"), -1);
+    gtk_list_store_set(store, &iter, 0, _("<none>"), 1, "null", -1);
 
     gtk_combo_box_set_active(combo, 0);
 
@@ -687,22 +684,17 @@ void ColorICCSelector::on_show()
 void ColorICCSelector::_colorChanged()
 {
     _impl->_updating = TRUE;
-// sp_color_icc_set_color( SP_COLOR_ICC( _icc ), &color );
+    auto color = _impl->_color.color();
+    auto name = color.getColorProfile();
 
 #ifdef DEBUG_LCMS
-    g_message("/^^^^^^^^^  %p::_colorChanged(%08x:%s)", this, _impl->_color.color().toRGBA32(_impl->_color.alpha()),
-              ((_impl->_color.color().icc) ? _impl->_color.color().icc->colorProfile.c_str() : "<null>"));
+    g_message("/^^^^^^^^^  %p::_colorChanged(%08x:%s)", this, color.toRGBA32(_impl->_color.alpha()), name.c_str());
 #endif // DEBUG_LCMS
 
-#ifdef DEBUG_LCMS
-    g_message("FLIPPIES!!!!     %p   '%s'", _impl->_color.color().icc,
-              (_impl->_color.color().icc ? _impl->_color.color().icc->colorProfile.c_str() : "<null>"));
-#endif // DEBUG_LCMS
-
-    _impl->_profilesChanged((_impl->_color.color().icc) ? _impl->_color.color().icc->colorProfile : std::string(""));
+    _impl->_profilesChanged(name);
     ColorScales<>::setScaled(_impl->_adj, _impl->_color.alpha());
 
-    _impl->_setProfile(_impl->_color.color().icc);
+    _impl->_setProfile(name);
     _impl->_fixupNeeded = 0;
     gtk_widget_set_sensitive(_impl->_fixupBtn, FALSE);
 
@@ -710,15 +702,15 @@ void ColorICCSelector::_colorChanged()
         if (_impl->_prof->getTransfToSRGB8()) {
             cmsUInt16Number tmp[4];
             for (guint i = 0; i < _impl->_profChannelCount; i++) {
+                auto colors = color.getColors();
                 gdouble val = 0.0;
-                if (_impl->_color.color().icc->colors.size() > i) {
+                if (colors.size() > i) {
+                    auto scale = static_cast<double>(_impl->_compUI[i]._component.scale);
                     if (_impl->_compUI[i]._component.scale == 256) {
-                        val = (_impl->_color.color().icc->colors[i] + 128.0) /
-                              static_cast<gdouble>(_impl->_compUI[i]._component.scale);
+                        val = (colors[i] + 128.0) / scale;
                     }
                     else {
-                        val = _impl->_color.color().icc->colors[i] /
-                              static_cast<gdouble>(_impl->_compUI[i]._component.scale);
+                        val = colors[i] / scale;
                     }
                 }
                 tmp[i] = val * 0x0ffff;
@@ -728,11 +720,11 @@ void ColorICCSelector::_colorChanged()
             if (trans) {
                 cmsDoTransform(trans, tmp, post, 1);
                 guint32 other = SP_RGBA32_U_COMPOSE(post[0], post[1], post[2], 255);
-                if (other != _impl->_color.color().toRGBA32(255)) {
+                if (other != color.toRGBA32(255)) {
                     _impl->_fixupNeeded = other;
                     gtk_widget_set_sensitive(_impl->_fixupBtn, TRUE);
 #ifdef DEBUG_LCMS
-                    g_message("Color needs to change 0x%06x to 0x%06x", _color.toRGBA32(255) >> 8, other >> 8);
+                    g_message("Color needs to change 0x%06x to 0x%06x", color.toRGBA32(255) >> 8, other >> 8);
 #endif // DEBUG_LCMS
                 }
             }
@@ -747,20 +739,19 @@ void ColorICCSelector::_colorChanged()
 #endif // DEBUG_LCMS
 }
 
-void ColorICCSelectorImpl::_setProfile(SVGICCColor *profile)
+void ColorICCSelectorImpl::_setProfile(const std::string &profile)
 {
 #ifdef DEBUG_LCMS
-    g_message("/^^^^^^^^^  %p::_setProfile(%s)", this, ((profile) ? profile->colorProfile.c_str() : "<null>"));
+    g_message("/^^^^^^^^^  %p::_setProfile(%s)", this, profile.c_str());
 #endif // DEBUG_LCMS
     bool profChanged = false;
-    if (_prof && (!profile || (_profileName != profile->colorProfile))) {
+    if (_prof && _profileName != profile) {
         // Need to clear out the prior one
         profChanged = true;
         _profileName.clear();
         _prof = nullptr;
         _profChannelCount = 0;
-    }
-    else if (profile && !_prof) {
+    } else if (!_prof && !profile.empty()) {
         profChanged = true;
     }
 
@@ -770,10 +761,10 @@ void ColorICCSelectorImpl::_setProfile(SVGICCColor *profile)
         gtk_widget_hide(i._btn);
     }
 
-    if (profile) {
-        _prof = SP_ACTIVE_DOCUMENT->getProfileManager().find(profile->colorProfile.c_str());
+    if (!profile.empty()) {
+        _prof = SP_ACTIVE_DOCUMENT->getProfileManager().find(profile.c_str());
         if (_prof && (asICColorProfileClassSig(_prof->getProfileClass()) != cmsSigNamedColorClass)) {
-            _profChannelCount = cmsChannelsOf(asICColorSpaceSig(_prof->getColorSpace()));
+            _profChannelCount = _prof->getChannelCount();
 
             if (profChanged) {
                 std::vector<colorspace::Component> things =
@@ -792,23 +783,9 @@ void ColorICCSelectorImpl::_setProfile(SVGICCColor *profile)
                     _compUI[i]._slider->setColors(SPColor(0.0, 0.0, 0.0).toRGBA32(0xff),
                                                   SPColor(0.5, 0.5, 0.5).toRGBA32(0xff),
                                                   SPColor(1.0, 1.0, 1.0).toRGBA32(0xff));
-                    /*
-                                        _compUI[i]._adj = GTK_ADJUSTMENT( gtk_adjustment_new( val, 0.0, _fooScales[i],
-                       step, page, page ) );
-                                        g_signal_connect( G_OBJECT( _compUI[i]._adj ), "value_changed", G_CALLBACK(
-                       _adjustmentChanged ), _csel );
-
-                                        sp_color_slider_set_adjustment( SP_COLOR_SLIDER(_compUI[i]._slider),
-                       _compUI[i]._adj );
-                                        gtk_spin_button_set_adjustment( GTK_SPIN_BUTTON(_compUI[i]._btn),
-                       _compUI[i]._adj );
-                                        gtk_spin_button_set_digits( GTK_SPIN_BUTTON(_compUI[i]._btn), digits );
-                    */
                     gtk_widget_show(_compUI[i]._label);
                     _compUI[i]._slider->show();
                     gtk_widget_show(_compUI[i]._btn);
-                    // gtk_adjustment_set_value( _compUI[i]._adj, 0.0 );
-                    // gtk_adjustment_set_value( _compUI[i]._adj, val );
                 }
                 for (size_t i = _profChannelCount; i < _compUI.size(); i++) {
                     gtk_widget_hide(_compUI[i]._label);
@@ -830,21 +807,27 @@ void ColorICCSelectorImpl::_setProfile(SVGICCColor *profile)
 
 void ColorICCSelectorImpl::_updateSliders(gint ignore)
 {
-    if (_color.color().icc) {
+    _slider->set_sensitive(false);
+
+    if (_color.color().hasColorProfile()) {
+        auto colors = _color.color().getColors();
+        if (colors.size() != _profChannelCount) {
+            g_warning("Can't set profile with %d colors to %d channels", (int)colors.size(), _profChannelCount);
+        }
         for (guint i = 0; i < _profChannelCount; i++) {
-            gdouble val = 0.0;
-            if (_color.color().icc->colors.size() > i) {
-                if (_compUI[i]._component.scale == 256) {
-                    val = (_color.color().icc->colors[i] + 128.0) / static_cast<gdouble>(_compUI[i]._component.scale);
-                }
-                else {
-                    val = _color.color().icc->colors[i] / static_cast<gdouble>(_compUI[i]._component.scale);
-                }
+            double val = 0.0;
+            auto scale = static_cast<double>(_compUI[i]._component.scale);
+            if (_compUI[i]._component.scale == 256) {
+                val = (colors[i] + 128.0) / scale;
+            } else {
+                val = colors[i] / scale;
             }
             _compUI[i]._adj->set_value(val);
         }
 
         if (_prof) {
+            _slider->set_sensitive(true);
+
             if (_prof->getTransfToSRGB8()) {
                 for (guint i = 0; i < _profChannelCount; i++) {
                     if (static_cast<gint>(i) != ignore) {
@@ -935,77 +918,51 @@ void ColorICCSelectorImpl::_adjustmentChanged(Glib::RefPtr<Gtk::Adjustment> &adj
             cmsDoTransform(trans, tmp, post, 1);
         }
 
-        SPColor other(SP_RGBA32_U_COMPOSE(post[0], post[1], post[2], 255));
-        other.icc = new SVGICCColor();
-        if (iccSelector->_impl->_color.color().icc) {
-            other.icc->colorProfile = iccSelector->_impl->_color.color().icc->colorProfile;
-        }
-
+        // Set the sRGB version of the color first.
         guint32 prior = iccSelector->_impl->_color.color().toRGBA32(255);
-        guint32 newer = other.toRGBA32(255);
+        guint32 newer = SP_RGBA32_U_COMPOSE(post[0], post[1], post[2], 255);
 
         if (prior != newer) {
 #ifdef DEBUG_LCMS
             g_message("Transformed color from 0x%08x to 0x%08x", prior, newer);
             g_message("      ~~~~ FLIP");
 #endif // DEBUG_LCMS
-            newColor = other;
-            newColor.icc->colors.clear();
-            for (guint i = 0; i < iccSelector->_impl->_profChannelCount; i++) {
-                gdouble val = ColorScales<>::getScaled(iccSelector->_impl->_compUI[i]._adj);
-                val *= iccSelector->_impl->_compUI[i]._component.scale;
-                if (iccSelector->_impl->_compUI[i]._component.scale == 256) {
-                    val -= 128;
+
+            // Be careful to always set() and then setColors() to retain ICC data.
+            newColor.set(newer);
+            if (iccSelector->_impl->_color.color().hasColorProfile()) {
+                std::vector<double> colors;
+                for (guint i = 0; i < iccSelector->_impl->_profChannelCount; i++) {
+                    double val = ColorScales<>::getScaled(iccSelector->_impl->_compUI[i]._adj);
+                    val *= iccSelector->_impl->_compUI[i]._component.scale;
+                    if (iccSelector->_impl->_compUI[i]._component.scale == 256) {
+                        val -= 128;
+                    }
+                    colors.push_back(val);
                 }
-                newColor.icc->colors.push_back(val);
+                newColor.setColors(std::move(colors));
             }
         }
     }
     iccSelector->_impl->_color.setColorAlpha(newColor, scaled);
-    // iccSelector->_updateInternals( newColor, scaled, iccSelector->_impl->_dragging );
     iccSelector->_impl->_updateSliders(match);
 
     iccSelector->_impl->_updating = FALSE;
 #ifdef DEBUG_LCMS
-    g_message("\\_________  %p::_adjustmentChanged()", cs);
+    g_message("\\_________  %p::_adjustmentChanged()", this);
 #endif // DEBUG_LCMS
 }
 
 void ColorICCSelectorImpl::_sliderGrabbed()
 {
-    //    ColorICCSelector* iccSelector = dynamic_cast<ColorICCSelector*>(SP_COLOR_SELECTOR(cs)->base);
-    //     if (!iccSelector->_dragging) {
-    //         iccSelector->_dragging = TRUE;
-    //         iccSelector->_grabbed();
-    //         iccSelector->_updateInternals( iccSelector->_color, ColorScales<>::getScaled( iccSelector->_impl->_adj ),
-    //         iccSelector->_dragging );
-    //     }
 }
 
 void ColorICCSelectorImpl::_sliderReleased()
 {
-    //     ColorICCSelector* iccSelector = dynamic_cast<ColorICCSelector*>(SP_COLOR_SELECTOR(cs)->base);
-    //     if (iccSelector->_dragging) {
-    //         iccSelector->_dragging = FALSE;
-    //         iccSelector->_released();
-    //         iccSelector->_updateInternals( iccSelector->_color, ColorScales<>::getScaled( iccSelector->_adj ),
-    //         iccSelector->_dragging );
-    //     }
 }
 
-#ifdef DEBUG_LCMS
-void ColorICCSelectorImpl::_sliderChanged(SPColorSlider *slider, SPColorICCSelector *cs)
-#else
 void ColorICCSelectorImpl::_sliderChanged()
-#endif // DEBUG_LCMS
 {
-#ifdef DEBUG_LCMS
-    g_message("Changed  %p and %p", slider, cs);
-#endif // DEBUG_LCMS
-    //     ColorICCSelector* iccSelector = dynamic_cast<ColorICCSelector*>(SP_COLOR_SELECTOR(cs)->base);
-
-    //     iccSelector->_updateInternals( iccSelector->_color, ColorScales<>::getScaled( iccSelector->_adj ),
-    //     iccSelector->_dragging );
 }
 
 Gtk::Widget *ColorICCSelectorFactory::createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const

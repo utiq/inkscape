@@ -362,7 +362,6 @@ void ColorScales<MODE>::_recalcColor()
         g_warning("file %s: line %d: Illegal color selector mode NONE", __FILE__, __LINE__);
     }
 
-    _color.preserveICC();
     _color.setColorAlpha(color, alpha);
 }
 
@@ -876,7 +875,6 @@ void ColorScales<MODE>::_wheelChanged()
     _color_dragged.block();
 
     // Color
-    _color.preserveICC();
     _color.setHeld(_wheel->isAdjusting());
     _color.setColor(color);
 

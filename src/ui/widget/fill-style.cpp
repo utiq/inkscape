@@ -442,18 +442,9 @@ void FillNStroke::updateFromPaint(bool switch_style)
                                                                                           : SP_GRADIENT_TYPE_RADIAL);
                 bool createSwatch = (_psel->get_mode() == UI::Widget::PaintSelector::MODE_SWATCH);
 
-                SPCSSAttr *css = nullptr;
-                if (kind == FILL) {
-                    // HACK: reset fill-opacity - that 0.75 is annoying; BUT remove this when we have an opacity slider
-                    // for all tabs
-                    css = sp_repr_css_attr_new();
-                    sp_repr_css_set_property(css, "fill-opacity", "1.0");
-                }
-
                 auto vector = _psel->getGradientVector();
                 if (!vector) {
                     /* No vector in paint selector should mean that we just changed mode */
-
                     SPStyle query(_desktop->doc());
                     int result = objects_query_fillstroke(items, &query, kind == FILL);
                     if (result == QUERY_STYLE_MULTIPLE_SAME) {
@@ -464,24 +455,18 @@ void FillNStroke::updateFromPaint(bool switch_style)
                         } else {
                             common = targPaint.value.color;
                         }
-                        vector = sp_document_default_gradient_vector(document, common, createSwatch);
-                        if (vector && createSwatch) {
-                            vector->setSwatch();
-                        }
+                        vector = sp_document_default_gradient_vector(document, common, 1.0, createSwatch);
                     }
+                    if (vector)
+                        vector->setSwatch(createSwatch);
 
                     for (auto item : items) {
-                        // FIXME: see above
-                        if (kind == FILL) {
-                            sp_repr_css_change_recursive(item->getRepr(), css, "style");
-                        }
-
                         if (!vector) {
                             auto gr = sp_gradient_vector_for_object(
                                 document, _desktop, item,
                                 (kind == FILL) ? Inkscape::FOR_FILL : Inkscape::FOR_STROKE, createSwatch);
-                            if (gr && createSwatch) {
-                                gr->setSwatch();
+                            if (gr) {
+                                gr->setSwatch(createSwatch);
                             }
                             sp_item_set_gradient(item, gr, gradient_type,
                                                  (kind == FILL) ? Inkscape::FOR_FILL : Inkscape::FOR_STROKE);
@@ -495,22 +480,17 @@ void FillNStroke::updateFromPaint(bool switch_style)
                     // this gradient type.
                     vector = sp_gradient_ensure_vector_normalized(vector);
                     for (auto item : items) {
-                        // FIXME: see above
-                        if (kind == FILL) {
-                            sp_repr_css_change_recursive(item->getRepr(), css, "style");
-                        }
-
                         SPGradient *gr = sp_item_set_gradient(
                             item, vector, gradient_type, (kind == FILL) ? Inkscape::FOR_FILL : Inkscape::FOR_STROKE);
                         _psel->pushAttrsToGradient(gr);
                     }
                 }
 
-                if (css) {
-                    sp_repr_css_attr_unref(css);
-                    css = nullptr;
+                for (auto item : items) {
+                    // fill and stroke opacity should never be set on gradients since in our user interface
+                    // these are controlled by the gradient stops themselves.
+                    item->style->clear(kind == FILL ? SPAttr::FILL_OPACITY : SPAttr::STROKE_OPACITY);
                 }
-
                 DocumentUndo::done(document, (kind == FILL) ? _("Set gradient on fill") : _("Set gradient on stroke"), INKSCAPE_ICON("dialog-fill-and-stroke"));
             }
             break;

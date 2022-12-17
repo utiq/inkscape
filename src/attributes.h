@@ -321,6 +321,7 @@ enum class SPAttr {
     GRADIENTTRANSFORM,
     SPREADMETHOD,
     INKSCAPE_SWATCH,
+    INKSCAPE_PINNED,
     /* SPRadialGradient */
     FX,
     FY,

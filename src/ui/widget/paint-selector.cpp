@@ -356,29 +356,15 @@ void PaintSelector::setFillrule(FillRule fillrule)
 void PaintSelector::setColorAlpha(SPColor const &color, float alpha)
 {
     g_return_if_fail((0.0 <= alpha) && (alpha <= 1.0));
-    /*
-        guint32 rgba = 0;
-
-        if ( sp_color_get_colorspace_type(color) == SP_COLORSPACE_TYPE_CMYK )
-        {
-    #ifdef SP_PS_VERBOSE
-            g_print("PaintSelector set CMYKA\n");
-    #endif
-            sp_paint_selector_set_mode(psel, MODE_COLOR_CMYK);
-        }
-        else
-    */
     {
 #ifdef SP_PS_VERBOSE
         g_print("PaintSelector set RGBA\n");
 #endif
         setMode(MODE_SOLID_COLOR);
     }
-
     _updating_color = true;
     _selected_color->setColorAlpha(color, alpha);
     _updating_color = false;
-    // rgba = color.toRGBA32( alpha );
 }
 
 void PaintSelector::setSwatch(SPGradient *vector)

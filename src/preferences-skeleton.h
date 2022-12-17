@@ -208,7 +208,13 @@ static char const preferences_skeleton[] =
       panel_mode="1"
       panel_ratio="100"
       panel_wrap="0"
-      palette="Inkscape default" />
+      palette="Inkscape default">
+      <group id="pinned"
+         none="1"
+         rgb000000="1" black="1"
+         rgb808080="1" gray-50="1"
+         rgbffffff="1" white="1" />
+    </group>
   </group>
 
   <group id="dialogs">
