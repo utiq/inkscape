@@ -1538,7 +1538,7 @@ cr_tknzr_parse_num (CRTknzr * a_this,
                         parsing_dec = TRUE;
                         parsed = FALSE;  /* In CSS, there must be at least
                                             one digit after `.'. */
-                } else if (!parsing_exp && (next_char == 'E' || next_char == 'e')) {
+                } else if (!parsing_exp && (next_char == 'E' || next_char == 'e') && parsed) {
                         guchar next_byte;
                         PEEK_BYTE (a_this, 2, &next_byte)
                         if (next_byte == '+') {
