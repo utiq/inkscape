@@ -28,6 +28,7 @@ class DrawingImage
 {
 public:
     DrawingImage(Drawing &drawing);
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;
 

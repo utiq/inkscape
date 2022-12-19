@@ -606,7 +606,7 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
         if (_stroke_pattern) {
             _stroke_pattern->update(area, child_ctx, flags, reset);
         }
-        if (!dynamic_cast<DrawingGroup*>(this) || (_filter && filters)) {
+        if (!is<DrawingGroup>(this) || (_filter && filters)) {
             _markForRendering();
         }
     }
@@ -975,7 +975,7 @@ DrawingItem *DrawingItem::pick(Geom::Point const &p, double delta, unsigned flag
 
     Geom::Rect expanded = *box;
     expanded.expandBy(delta);
-    auto dglyps = dynamic_cast<DrawingGlyphs *>(this);
+    auto dglyps = cast<DrawingGlyphs>(this);
     if (dglyps && !(flags & PICK_AS_CLIP)) {
         expanded = dglyps->getPickBox();
     }

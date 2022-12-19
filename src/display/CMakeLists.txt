@@ -104,6 +104,7 @@ set(display_SRC
     nr-style.h
     nr-svgfonts.h
     rendermode.h
+    tags.h
 
     control/canvas-temporary-item-list.h
     control/canvas-temporary-item.h

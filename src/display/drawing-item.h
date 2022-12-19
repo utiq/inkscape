@@ -25,6 +25,7 @@
 #include <2geom/affine.h>
 
 #include "style-enums.h"
+#include "tags.h"
 
 namespace Glib { class ustring; }
 class SPStyle;
@@ -100,6 +101,7 @@ public:
     DrawingItem(DrawingItem const &) = delete;
     DrawingItem &operator=(DrawingItem const &) = delete;
     void unlink(); /// Unlink this node and its subtree from the rendering tree and destroy.
+    virtual int tag() const { return tag_of<decltype(*this)>; }
 
     Geom::OptIntRect const &bbox() const { return _bbox; }
     Geom::OptIntRect const &drawbox() const { return _drawbox; }

@@ -34,6 +34,7 @@ class DrawingPattern
 {
 public:
     DrawingPattern(Drawing &drawing);
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /**
      * Set the transformation from pattern to user coordinate systems.

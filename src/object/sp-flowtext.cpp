@@ -118,7 +118,7 @@ void SPFlowtext::update(SPCtx* ctx, unsigned int flags) {
     for (auto &v : views) {
         auto &sa = view_style_attachments[v.key];
         sa.unattachAll();
-        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+        auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
         _clearFlow(g);
         g->setStyle(style);
         // pass the bbox of the flowtext object as paintbox (used for paintserver fills)
@@ -142,7 +142,7 @@ void SPFlowtext::modified(unsigned int flags) {
         for (auto &v : views) {
             auto &sa = view_style_attachments[v.key];
             sa.unattachAll();
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             _clearFlow(g);
             g->setStyle(style);
             layout.show(g, sa, pbox);
@@ -336,7 +336,7 @@ void SPFlowtext::hide(unsigned key)
 
     for (auto &v : views) {
         if (v.key == key) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             _clearFlow(g);
         }
     }

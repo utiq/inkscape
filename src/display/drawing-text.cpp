@@ -72,7 +72,7 @@ void DrawingGlyphs::setStyle(SPStyle const *, SPStyle const *)
 
 unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext const &ctx, unsigned /*flags*/, unsigned /*reset*/)
 {
-    auto ggroup = dynamic_cast<DrawingText*>(_parent);
+    auto ggroup = cast<DrawingText>(_parent);
     if (!ggroup) {
         throw InvalidItemException();
     }
@@ -192,7 +192,7 @@ unsigned DrawingGlyphs::_updateItem(Geom::IntRect const &/*area*/, UpdateContext
 
 DrawingItem *DrawingGlyphs::_pickItem(Geom::Point const &p, double /*delta*/, unsigned flags)
 {
-    auto ggroup = dynamic_cast<DrawingText*>(_parent);
+    auto ggroup = cast<DrawingText>(_parent);
     if (!ggroup) {
         throw InvalidItemException();
     }
@@ -478,7 +478,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::I
         dc.setTolerance(0.5); // low quality, but good enough for outline mode
 
         for (auto & i : _children) {
-            DrawingGlyphs *g = dynamic_cast<DrawingGlyphs *>(&i);
+            auto g = cast<DrawingGlyphs>(&i);
             if (!g) throw InvalidItemException();
 
             Inkscape::DrawingContext::Save save(dc);
@@ -545,7 +545,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::I
             double start_y   = 0.0;
             for (auto & i : _children) {
 
-                DrawingGlyphs *g = dynamic_cast<DrawingGlyphs *>(&i);
+                auto g = cast<DrawingGlyphs>(&i);
                 if (!g) throw InvalidItemException();
 
                 if (!invset) {
@@ -608,7 +608,7 @@ unsigned DrawingText::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::I
 
         // Accumulate the path that represents the glyphs and/or draw SVG glyphs.
         for (auto &i : _children) {
-            DrawingGlyphs *g = dynamic_cast<DrawingGlyphs *>(&i);
+            auto g = cast<DrawingGlyphs>(&i);
             if (!g) throw InvalidItemException();
 
             Inkscape::DrawingContext::Save save(dc);
@@ -733,7 +733,7 @@ void DrawingText::_clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect
     }
 
     for (auto & i : _children) {
-        DrawingGlyphs *g = dynamic_cast<DrawingGlyphs *>(&i);
+        auto g = cast<DrawingGlyphs>(&i);
         if (!g) {
             throw InvalidItemException();
         }

@@ -687,7 +687,7 @@ void SPUse::update(SPCtx *ctx, unsigned flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             context_style = style;
             g->setStyle(style, context_style);
         }
@@ -695,26 +695,23 @@ void SPUse::update(SPCtx *ctx, unsigned flags) {
 
     /* As last step set additional transform of arena group */
     for (auto &v : views) {
-        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+        auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
         auto t = Geom::Translate(x.computed, y.computed);
         g->setChildTransform(t);
     }
 }
 
-void SPUse::modified(unsigned int flags) {
+void SPUse::modified(unsigned flags)
+{
     // std::cout << "SPUse::modified: " << (getId()?getId():"null") << std::endl;
-    if (flags & SP_OBJECT_MODIFIED_FLAG) {
-        flags |= SP_OBJECT_PARENT_MODIFIED_FLAG;
-    }
-
-    flags &= SP_OBJECT_MODIFIED_CASCADE;
+    flags = cascade_flags(flags);
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
-      for (auto &v : views) {
-        auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
-        context_style = style;
-        g->setStyle(style, context_style);
-      }
+        for (auto &v : views) {
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
+            context_style = style;
+            g->setStyle(style, context_style);
+        }
     }
 
     if (child) {

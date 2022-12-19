@@ -430,7 +430,7 @@ void SPImage::modified(unsigned int flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            auto img = dynamic_cast<Inkscape::DrawingImage*>(v.drawingitem.get());
+            auto img = cast<Inkscape::DrawingImage>(v.drawingitem.get());
             img->setStyle(style);
         }
     }
@@ -667,7 +667,7 @@ sp_image_update_arenaitem (SPImage *image, Inkscape::DrawingImage *ai)
 static void sp_image_update_canvas_image(SPImage *image)
 {
     for (auto &v : image->views) {
-        sp_image_update_arenaitem(image, dynamic_cast<Inkscape::DrawingImage*>(v.drawingitem.get()));
+        sp_image_update_arenaitem(image, cast<Inkscape::DrawingImage>(v.drawingitem.get()));
     }
 }
 

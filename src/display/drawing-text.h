@@ -29,6 +29,7 @@ class DrawingGlyphs
 {
 public:
     DrawingGlyphs(Drawing &drawing);
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     void setGlyph(std::shared_ptr<FontInstance> font, int glyph, Geom::Affine const &trans);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override; // Not to be used
@@ -61,6 +62,7 @@ class DrawingText
 {
 public:
     DrawingText(Drawing &drawing);
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     bool addComponent(std::shared_ptr<FontInstance> const &font, int glyph, Geom::Affine const &trans, float width, float ascent, float descent, float phase_length);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;

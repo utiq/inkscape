@@ -172,11 +172,11 @@ void SPGroup::update(SPCtx *ctx, unsigned int flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            auto group = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
-            if( this->parent ) {
-                this->context_style = this->parent->context_style;
+            auto group = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
+            if (parent) {
+                context_style = parent->context_style;
             }
-            group->setStyle(this->style, this->context_style);
+            group->setStyle(style, context_style);
         }
     }
 }
@@ -192,7 +192,7 @@ void SPGroup::modified(guint flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            auto group = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto group = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             group->setStyle(this->style);
         }
     }
@@ -803,8 +803,7 @@ void SPGroup::setLayerDisplayMode(unsigned int dkey, SPGroup::LayerMode mode) {
 void SPGroup::_updateLayerMode(unsigned int display_key) {
     for (auto &v : views) {
         if (!display_key || v.key == display_key) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
-            if (g) {
+            if (auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get())) {
                 g->setPickChildren(effectiveLayerMode(v.key) == SPGroup::LAYER);
             }
         }
@@ -813,10 +812,9 @@ void SPGroup::_updateLayerMode(unsigned int display_key) {
 
 void SPGroup::translateChildItems(Geom::Translate const &tr)
 {
-    if ( hasChildren() ) {
-        for (auto& o: children) {
-            auto item = cast<SPItem>(&o);
-            if ( item ) {
+    if (hasChildren()) {
+        for (auto &o: children) {
+            if (auto item = cast<SPItem>(&o)) {
                 item->move_rel(tr);
             }
         }

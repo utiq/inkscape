@@ -26,6 +26,7 @@ class DrawingShape
 {
 public:
     DrawingShape(Drawing &drawing);
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     void setPath(std::shared_ptr<SPCurve const> curve);
     void setStyle(SPStyle const *style, SPStyle const *context_style = nullptr) override;

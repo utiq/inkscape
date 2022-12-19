@@ -22,6 +22,7 @@ class DrawingGroup
 {
 public:
     DrawingGroup(Drawing &drawing);
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     bool pickChildren() { return _pick_children; }
     void setPickChildren(bool);

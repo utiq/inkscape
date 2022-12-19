@@ -138,7 +138,7 @@ void SPShape::update(SPCtx* ctx, guint flags) {
             this->style->stroke_width.computed = this->style->stroke_width.value * aw;
 
             for (auto &v : views) {
-                auto sh = dynamic_cast<Inkscape::DrawingShape*>(v.drawingitem.get());
+                auto sh = cast<Inkscape::DrawingShape>(v.drawingitem.get());
                 if (hasMarkers()) {
                     context_style = style;
                     sh->setStyle(style, context_style);
@@ -432,7 +432,7 @@ void SPShape::modified(unsigned int flags) {
 
     if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
         for (auto &v : views) {
-            auto sh = dynamic_cast<Inkscape::DrawingShape*>(v.drawingitem.get());
+            auto sh = cast<Inkscape::DrawingShape>(v.drawingitem.get());
             if (hasMarkers()) {
                 this->context_style = this->style;
                 sh->setStyle(this->style, this->context_style);

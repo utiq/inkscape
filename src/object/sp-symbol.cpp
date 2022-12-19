@@ -213,7 +213,7 @@ void SPSymbol::update(SPCtx *ctx, guint flags) {
 
         // As last step set additional transform of drawing group
         for (auto &v : views) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             g->setChildTransform(this->c2p);
         }
     } else {
@@ -248,15 +248,15 @@ Inkscape::XML::Node* SPSymbol::write(Inkscape::XML::Document *xml_doc, Inkscape:
     return repr;
 }
 
-Inkscape::DrawingItem* SPSymbol::show(Inkscape::Drawing &drawing, unsigned int key, unsigned int flags) {
+Inkscape::DrawingItem* SPSymbol::show(Inkscape::Drawing &drawing, unsigned int key, unsigned int flags)
+{
     Inkscape::DrawingItem *ai = nullptr;
 
-    if (this->cloned) {
+    if (cloned) {
         // Cloned <symbol> is actually renderable
         ai = SPGroup::show(drawing, key, flags);
-        auto g = dynamic_cast<Inkscape::DrawingGroup*>(ai);
 
-		if (g) {
+        if (auto g = cast<Inkscape::DrawingGroup>(ai)) {
 			g->setChildTransform(this->c2p);
 		}
     }

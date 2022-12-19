@@ -199,7 +199,7 @@ void SPText::update(SPCtx *ctx, guint flags) {
         for (auto &v : views) {
             auto &sa = view_style_attachments[v.key];
             sa.unattachAll();
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             _clearFlow(g);
             g->setStyle(style, parent->style);
             // pass the bbox of this as paintbox (used for paintserver fills)
@@ -227,7 +227,7 @@ void SPText::modified(guint flags) {
         for (auto &v : views) {
             auto &sa = view_style_attachments[v.key];
             sa.unattachAll();
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             _clearFlow(g);
             g->setStyle(style, parent->style);
             layout.show(g, sa, paintbox);
@@ -324,7 +324,7 @@ void SPText::hide(unsigned key)
     view_style_attachments.erase(key);
     for (auto &v : views) {
         if (v.key == key) {
-            auto g = dynamic_cast<Inkscape::DrawingGroup*>(v.drawingitem.get());
+            auto g = cast<Inkscape::DrawingGroup>(v.drawingitem.get());
             _clearFlow(g);
         }
     }

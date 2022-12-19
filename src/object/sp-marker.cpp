@@ -219,8 +219,8 @@ void SPMarker::update(SPCtx *ctx, guint flags) {
     for (auto &it : views_map) {
         for (auto &item : it.second.items) {
             if (item) {
-                auto g = dynamic_cast<Inkscape::DrawingGroup*>(item.get());
-                g->setChildTransform(this->c2p);
+                auto g = cast<Inkscape::DrawingGroup>(item.get());
+                g->setChildTransform(c2p);
             }
         }
     }
@@ -453,7 +453,7 @@ sp_marker_show_instance ( SPMarker *marker, Inkscape::DrawingItem *parent,
         if (view->items[pos]) {
             /* fixme: Position (Lauris) */
             parent->prependChild(view->items[pos].get());
-            if (auto g = dynamic_cast<Inkscape::DrawingGroup*>(view->items[pos].get())) {
+            if (auto g = cast<Inkscape::DrawingGroup>(view->items[pos].get())) {
                 g->setChildTransform(marker->c2p);
             }
         }
