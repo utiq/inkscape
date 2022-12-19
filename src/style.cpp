@@ -35,7 +35,7 @@
 #include "document.h"
 #include "preferences.h"
 
-#include "3rdparty/libcroco/cr-sel-eng.h"
+#include "3rdparty/libcroco/src/cr-sel-eng.h"
 
 #include "object/sp-paint-server.h"
 #include "object/uri-references.h"

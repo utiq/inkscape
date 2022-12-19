@@ -65,8 +65,8 @@
 
 #include "3rdparty/adaptagrams/libavoid/router.h"
 
-#include "3rdparty/libcroco/cr-sel-eng.h"
-#include "3rdparty/libcroco/cr-selector.h"
+#include "3rdparty/libcroco/src/cr-sel-eng.h"
+#include "3rdparty/libcroco/src/cr-selector.h"
 
 #include "io/dir-util.h"
 #include "layer-manager.h"

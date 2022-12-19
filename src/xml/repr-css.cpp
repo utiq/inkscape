@@ -33,7 +33,7 @@
 
 #include <glibmm/ustring.h>
 
-#include "3rdparty/libcroco/cr-declaration.h"
+#include "3rdparty/libcroco/src/cr-declaration.h"
 
 #include "svg/css-ostringstream.h"
 

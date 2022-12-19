@@ -7,3 +7,6 @@
 [submodule "share/themes"]
 	path = share/themes
 	url = https://gitlab.com/inkscape/themes.git
+[submodule "src/3rdparty/libcroco"]
+	path = src/3rdparty/libcroco
+	url = https://gitlab.com/inkscape/libcroco.git

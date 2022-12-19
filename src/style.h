@@ -26,8 +26,8 @@
 #include <map>
 #include <vector>
 
-#include "3rdparty/libcroco/cr-declaration.h"
-#include "3rdparty/libcroco/cr-prop-list.h"
+#include "3rdparty/libcroco/src/cr-declaration.h"
+#include "3rdparty/libcroco/src/cr-prop-list.h"
 
 enum class SPAttr;
 

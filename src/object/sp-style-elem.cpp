@@ -9,7 +9,7 @@
  */
 #include "sp-style-elem.h"
 
-#include "3rdparty/libcroco/cr-parser.h"
+#include "3rdparty/libcroco/src/cr-parser.h"
 
 #include "attributes.h"
 #include "document.h"

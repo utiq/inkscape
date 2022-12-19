@@ -12,7 +12,7 @@
 
 #include <memory>
 #include <vector>
-#include "3rdparty/libcroco/cr-statement.h"
+#include "3rdparty/libcroco/src/cr-statement.h"
 
 #include "media.h"
 #include "sp-object.h"

@@ -35,7 +35,7 @@
 #include <2geom/affine.h>
 #include <2geom/forward.h>
 
-#include "3rdparty/libcroco/cr-cascade.h"
+#include "3rdparty/libcroco/src/cr-cascade.h"
 
 #include "document-undo.h"
 #include "event.h"
