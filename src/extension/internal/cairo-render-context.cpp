@@ -665,39 +665,22 @@ CairoRenderContext::popLayer(cairo_operator_t composite)
             // create rendering context for mask
             CairoRenderContext *mask_ctx = _renderer->createContext();
 
-            // Fix Me: This is a kludge. PDF and PS output is set to 72 dpi but the
-            // Cairo surface is expecting the mask to be 96 dpi.
-            float surface_width = _width;
-            float surface_height = _height;
-            if( _vector_based_target ) {
-                surface_width *= 4.0/3.0;
-                surface_height *= 4.0/3.0;
-            }
-            if (!mask_ctx->setupSurface( surface_width, surface_height )) {
+            if (!mask_ctx->setupSurface(_width, _height)) {
                 TRACE(("mask: setupSurface failed\n"));
                 _renderer->destroyContext(mask_ctx);
                 return;
             }
-            TRACE(("mask surface: %f x %f at %i dpi\n", surface_width, surface_height, _dpi ));
+            TRACE(("mask surface: %f x %f at %i dpi\n", _width, _height, _dpi));
 
             // Mask should start black, but it is created white.
             cairo_set_source_rgba(mask_ctx->_cr, 0.0, 0.0, 0.0, 1.0);
-            cairo_rectangle(mask_ctx->_cr, 0, 0, surface_width, surface_height);
+            cairo_rectangle(mask_ctx->_cr, 0, 0, _width, _height);
             cairo_fill(mask_ctx->_cr);
-
-            // set rendering mode to normal
             setRenderMode(RENDER_MODE_NORMAL);
 
             // copy the correct CTM to mask context
-            /*
-            if (_state->parent_has_userspace)
-                mask_ctx->setTransform(getParentState()->transform);
-            else
-                mask_ctx->setTransform(_state->transform);
-            */
-            // This is probably not correct... but it seems to do the trick.
-            mask_ctx->setTransform(_state->item_transform);
-
+            mask_ctx->setTransform(_state->parent_has_userspace ? _state->item_transform * getParentState()->transform
+                                                                : _state->transform);
             // render mask contents to mask_ctx
             _renderer->applyMask(mask_ctx, mask);
 
@@ -747,9 +730,20 @@ CairoRenderContext::popLayer(cairo_operator_t composite)
                 // we have to do the clipping after cairo_pop_group_to_source
                 _renderer->applyClipPath(this, clip_path);
             }
-            // apply the mask onto the layer
-            cairo_mask_surface(_cr, mask_image, 0, 0);
-            _renderer->destroyContext(mask_ctx);
+
+            {
+                // Transformations are applied when rendering the mask, so
+                // do not apply them again when applying the mask.
+                cairo_matrix_t old_transform;
+                cairo_get_matrix(_cr, &old_transform);
+                cairo_identity_matrix(_cr);
+
+                // apply the mask onto the layer
+                cairo_mask_surface(_cr, mask_image, 0, 0);
+                _renderer->destroyContext(mask_ctx);
+
+                cairo_set_matrix(_cr, &old_transform);
+            }
         }
     } else {
         // No clip path or mask

@@ -533,7 +533,17 @@ add_cli_test(convert-text-paintorder PARAMETERS --export-type=pdf --export-text-
                                      FUZZYREF_FILENAME export-text-paintorder_expected.png
                                      FUZZ_PERCENTAGE 2)
 
+add_cli_test(export-mask-viewbox PARAMETERS --export-type=pdf
+                                 INPUT_FILENAME  export-mask-viewbox-scale.svg
+                                 OUTPUT_FILENAME export-mask-viewbox-scale.pdf
+                                 FUZZYREF_FILENAME export-mask-viewbox-scale_expected.png
+                                 FUZZ_PERCENTAGE 1)
 
+add_cli_test(export-mask-on-transformed-image PARAMETERS --export-type=pdf
+                                              INPUT_FILENAME    export-mask-on-transformed-image.svg
+                                              OUTPUT_FILENAME   export-mask-on-transformed-image.pdf
+                                              FUZZYREF_FILENAME export-mask-on-transformed-image_expected.png
+                                              FUZZ_PERCENTAGE 1)
 
 # EMF, WMF: No support for exporting filters. Feature request: https://gitlab.com/inkscape/inbox/-/issues/2275
 # add_cli_test(export-with-filters_emf  PARAMETERS --export-type=emf INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.emf REFERENCE_FILENAME export-with-filters_expected.emf)
