@@ -1,7 +1,0 @@
-Libcroco CSS parsing and manipulation library.
-
-This code must be kept in sync with our "upstream" project
-https://gitlab.com/inkscape/libcroco
-
-Any change must first (or in parallel) be submitted to the upstream project
-and ideally be unit tested there, independently of Inkscape.
