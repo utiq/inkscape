@@ -76,7 +76,7 @@ set(CPACK_NSIS_COMPRESSOR "${CPACK_NSIS_COMPRESSOR}\n  !define MUI_COMPONENTSPAG
 
 file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/packaging/nsis/fileassoc.nsh" native_path)
 string(REPLACE "\\" "\\\\" native_path "${native_path}")
-set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "!include ${native_path}")
+set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "!include '${native_path}'")
 set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
   WriteRegStr SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\inkscape.exe' '' '$INSTDIR\\\\bin\\\\inkscape.exe'\n\
   WriteRegStr SHCTX 'SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\inkscape.exe' 'Path' '$INSTDIR\\\\bin'\n\
