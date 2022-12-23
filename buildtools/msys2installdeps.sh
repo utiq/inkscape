@@ -51,7 +51,8 @@ $ARCH-toolchain \
 $ARCH-autotools \
 $ARCH-cmake \
 $ARCH-meson \
-$ARCH-ninja
+$ARCH-ninja \
+$ARCH-ccache
 
 # install Inkscape dependencies (required)
 eval pacman -S $PACMAN_OPTIONS \
