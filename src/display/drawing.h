@@ -99,7 +99,7 @@ private:
 
     RenderMode _rendermode = RenderMode::NORMAL;
     ColorMode _colormode = ColorMode::NORMAL;
-    bool _outlineoverlay;
+    bool _outlineoverlay = false;
     Filters::FilterColorMatrix::ColorMatrixMatrix _grayscale_matrix;
     uint32_t _clip_outline_color;
     uint32_t _mask_outline_color;
@@ -127,14 +127,7 @@ private:
     Util::FuncLog _funclog;
 
     template<typename F>
-    void defer(F &&f)
-    {
-        if (!_snapshotted) {
-            f();
-        } else {
-            _funclog.emplace(std::forward<F>(f));
-        }
-    }
+    void defer(F &&f) { _snapshotted ? _funclog.emplace(std::forward<F>(f)) : f(); }
 
     friend class DrawingItem;
 };

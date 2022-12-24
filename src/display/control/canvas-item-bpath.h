@@ -28,34 +28,31 @@ class SPCurve;
 
 namespace Inkscape {
 
-class CanvasItemGroup; // A canvas control that contains other canvas controls.
-
-class CanvasItemBpath : public CanvasItem {
-
+class CanvasItemBpath final : public CanvasItem
+{
 public:
     CanvasItemBpath(CanvasItemGroup *group);
     CanvasItemBpath(CanvasItemGroup *group, Geom::PathVector path, bool phantom_line = false);
 
     // Geometry
-    void set_bpath (SPCurve *curve, bool phantom_line = false);
-    void set_bpath (Geom::PathVector const &path, bool phantom_line = false);
-    void set_affine_absolute(Geom::Affine const &affine);
+    void set_bpath(SPCurve const *curve, bool phantom_line = false);
+    void set_bpath(Geom::PathVector path, bool phantom_line = false);
 
-    void update(Geom::Affine const &affine) override;
-    double closest_distance_to(Geom::Point const &p); // Maybe not needed
+    double closest_distance_to(Geom::Point const &p) const;
 
     // Selection
     bool contains(Geom::Point const &p, double tolerance = 0) override;
 
-    // Display
-    void render(Inkscape::CanvasItemBuffer *buf) override;
-
     // Properties
-    void set_fill (guint32 rgba, SPWindRule fill_rule);
-    void set_dashes (std::vector<double> dashes) { _dashes = std::move(dashes); }
+    void set_fill(uint32_t rgba, SPWindRule fill_rule);
+    void set_dashes(std::vector<double> &&dashes);
     void set_stroke_width(double width);
 
 protected:
+    ~CanvasItemBpath() override = default;
+
+    void _update(bool propagate) override;
+    void _render(Inkscape::CanvasItemBuffer &buf) override;
 
     // Geometry
     Geom::PathVector _path;

@@ -17,13 +17,9 @@
 
 namespace Inkscape {
 
-CanvasPage::~CanvasPage()
-{
-    for (auto item : canvas_items) {
-        delete item;
-    }
-    canvas_items.clear();
-}
+CanvasPage::CanvasPage() = default;
+
+CanvasPage::~CanvasPage() = default;
 
 /**
  * Add the page canvas to the given canvas item groups (canvas view is implicit)
@@ -33,16 +29,18 @@ void CanvasPage::add(Geom::Rect size, CanvasItemGroup *background_group, CanvasI
     // Foreground 'border'
     if (auto item = new CanvasItemRect(border_group, size)) {
         item->set_name("foreground");
-        canvas_items.push_back(item);
+        item->set_is_page(true);
+        canvas_items.emplace_back(item);
     }
 
     // Background rectangle 'fill'
     if (auto item = new CanvasItemRect(background_group, size)) {
         item->set_name("background");
+        item->set_is_page(true);
         item->set_dashed(false);
         item->set_inverted(false);
         item->set_stroke(0x00000000);
-        canvas_items.push_back(item);
+        canvas_items.emplace_back(item);
     }
 
     if (auto item = new CanvasItemRect(border_group, size)) {
@@ -50,7 +48,7 @@ void CanvasPage::add(Geom::Rect size, CanvasItemGroup *background_group, CanvasI
         item->set_dashed(false);
         item->set_inverted(false);
         item->set_stroke(_margin_color);
-        canvas_items.push_back(item);
+        canvas_items.emplace_back(item);
     }
 
     if (auto item = new CanvasItemRect(border_group, size)) {
@@ -58,12 +56,12 @@ void CanvasPage::add(Geom::Rect size, CanvasItemGroup *background_group, CanvasI
         item->set_dashed(false);
         item->set_inverted(false);
         item->set_stroke(_bleed_color);
-        canvas_items.push_back(item);
+        canvas_items.emplace_back(item);
     }
 
     if (auto label = new CanvasItemText(border_group, Geom::Point(0, 0), "{Page Label}")) {
         label->set_fixed_line(false);
-        canvas_items.push_back(label);
+        canvas_items.emplace_back(label);
     }
 }
 /**
@@ -74,7 +72,6 @@ void CanvasPage::remove(UI::Widget::Canvas *canvas)
     g_assert(canvas != nullptr);
     for (auto it = canvas_items.begin(); it != canvas_items.end();) {
         if (canvas == (*it)->get_canvas()) {
-            delete (*it);
             it = canvas_items.erase(it);
         } else {
             ++it;
@@ -84,14 +81,14 @@ void CanvasPage::remove(UI::Widget::Canvas *canvas)
 
 void CanvasPage::show()
 {
-    for (auto item : canvas_items) {
+    for (auto &item : canvas_items) {
         item->show();
     }
 }
 
 void CanvasPage::hide()
 {
-    for (auto item : canvas_items) {
+    for (auto &item : canvas_items) {
         item->hide();
     }
 }
@@ -121,25 +118,28 @@ void CanvasPage::update(Geom::Rect size, Geom::OptRect margin, Geom::OptRect ble
         border_color = select_color;
     }
 
-    for (auto item : canvas_items) {
-        if (auto rect = dynamic_cast<CanvasItemRect *>(item)) {
+    for (auto &item : canvas_items) {
+        if (auto rect = dynamic_cast<CanvasItemRect *>(item.get())) {
             if (rect->get_name() == "margin") {
                 rect->set_stroke(margin_color);
-                if (rect->set_visible(margin && *margin != size)) {
+                bool vis = margin && *margin != size;
+                rect->set_visible(vis);
+                if (vis) {
                     rect->set_rect(*margin);
                 }
                 continue;
             }
             if (rect->get_name() == "bleed") {
                 rect->set_stroke(bleed_color);
-                if (rect->set_visible(bleed && *bleed != size)) {
+                bool vis = bleed && *bleed != size;
+                rect->set_visible(vis);
+                if (vis) {
                     rect->set_rect(*bleed);
                 }
                 continue;
             }
 
             rect->set_rect(size);
-            rect->set_is_page(true);
 
             bool is_foreground = (rect->get_name() == "foreground");
             // This will put the border on the background OR foreground layer as needed.
@@ -169,8 +169,7 @@ void CanvasPage::update(Geom::Rect size, Geom::OptRect margin, Geom::OptRect ble
                 rect->set_fill(0x0);
                 rect->set_shadow(0x0, 0);
             }
-        }
-        if (auto label = dynamic_cast<CanvasItemText *>(item)) {
+        } else if (auto label = dynamic_cast<CanvasItemText *>(item.get())) {
             _updateTextItem(label, size, txt ? txt : "");
         }
     }
@@ -210,19 +209,15 @@ void CanvasPage::_updateTextItem(CanvasItemText *label, Geom::Rect page, std::st
         }
     }
 
-    label->show();
     label->set_fontsize(fontsize);
     label->set_fill(foreground);
     label->set_background(is_selected ? selected : background);
     label->set_bg_radius(radius);
     label->set_anchor(anchor);
     label->set_coord(coord);
-    label->set_text(txt.c_str());
+    label->set_visible(!txt.empty());
+    label->set_text(std::move(txt));
     label->set_border(4.0);
-
-    if (txt.empty()) {
-        label->hide();
-    }
 }
 
 bool CanvasPage::setOnTop(bool on_top)
@@ -265,8 +260,7 @@ bool CanvasPage::setLabelStyle(const std::string &style)
     return false;
 }
 
-
-};
+} // namespace Inkscape
 
 /*
   Local Variables:

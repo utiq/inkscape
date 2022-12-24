@@ -210,15 +210,15 @@ void MeshTool::select_prev()
  * Returns vector of control curves mouse is over. Returns only first if 'first' is true.
  * event_p is in canvas (world) units.
  */
-std::vector<CanvasItemCurve *> MeshTool::over_curve(Geom::Point event_p, bool first)
+std::vector<GrDrag::ItemCurve*> MeshTool::over_curve(Geom::Point event_p, bool first)
 {
-    //Translate mouse point into proper coord system: needed later.
+    // Translate mouse point into proper coord system: needed later.
     mousepoint_doc = _desktop->w2d(event_p);
-    std::vector<CanvasItemCurve *> selected;
+    std::vector<GrDrag::ItemCurve*> selected;
 
-    for (auto curve : _grdrag->item_curves) {
-        if (curve->contains(event_p, tolerance)) {
-            selected.push_back(&*curve);
+    for (auto &it : _grdrag->item_curves) {
+        if (it.curve->contains(event_p, tolerance)) {
+            selected.emplace_back(&it);
             if (first) {
                 break;
             }
@@ -226,7 +226,6 @@ std::vector<CanvasItemCurve *> MeshTool::over_curve(Geom::Point event_p, bool fi
     }
     return selected;
 }
-
 
 /**
 Split row/column near the mouse point.
@@ -501,11 +500,9 @@ bool MeshTool::root_handler(GdkEvent* event) {
 
             if (!over_curve.empty()) {
                 for (auto it : over_curve) {
-                    SPItem *item = it->get_item();
-                    Inkscape::PaintTarget fill_or_stroke =
-                        it->get_is_fill() ? Inkscape::FOR_FILL : Inkscape::FOR_STROKE;
-                    GrDragger* dragger0 = _grdrag->getDraggerFor(item, POINT_MG_CORNER, it->get_corner0(), fill_or_stroke);
-                    GrDragger* dragger1 = _grdrag->getDraggerFor(item, POINT_MG_CORNER, it->get_corner1(), fill_or_stroke);
+                    Inkscape::PaintTarget fill_or_stroke = it->is_fill ? Inkscape::FOR_FILL : Inkscape::FOR_STROKE;
+                    GrDragger *dragger0 = _grdrag->getDraggerFor(it->item, POINT_MG_CORNER, it->corner0, fill_or_stroke);
+                    GrDragger *dragger1 = _grdrag->getDraggerFor(it->item, POINT_MG_CORNER, it->corner1, fill_or_stroke);
                     bool add    = (event->button.state & GDK_SHIFT_MASK);
                     bool toggle = (event->button.state & GDK_CONTROL_MASK);
                     if ( !add && !toggle ) {
@@ -649,7 +646,7 @@ bool MeshTool::root_handler(GdkEvent* event) {
 
             if ( (event->button.state & GDK_CONTROL_MASK) && (event->button.state & GDK_MOD1_MASK ) ) {
                 if (!over_curve.empty()) {
-                    split_near_point(over_curve[0]->get_item(), this->mousepoint_doc, 0);
+                    split_near_point(over_curve[0]->item, mousepoint_doc, 0);
                     ret = TRUE;
                 }
             } else {

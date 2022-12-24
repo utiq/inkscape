@@ -93,13 +93,13 @@ PenTool::PenTool(SPDesktop *desktop, std::string prefs_path, const std::string &
     // Pen indicators (temporary handles shown when adding a new node).
     auto canvas = desktop->getCanvasControls();
     for (int i = 0; i < 4; i++) {
-        ctrl[i] = new Inkscape::CanvasItemCtrl(canvas, ctrl_types[i]);
+        ctrl[i] = make_canvasitem<CanvasItemCtrl>(canvas, ctrl_types[i]);
         ctrl[i]->set_fill(0x0);
         ctrl[i]->hide();
     }
 
-    cl0 = new Inkscape::CanvasItemCurve(canvas);
-    cl1 = new Inkscape::CanvasItemCurve(canvas);
+    cl0 = make_canvasitem<CanvasItemCurve>(canvas);
+    cl1 = make_canvasitem<CanvasItemCurve>(canvas);
     cl0->hide();
     cl1->hide();
 
@@ -130,16 +130,10 @@ PenTool::~PenTool() {
     }
 
     for (auto &c : ctrl) {
-        delete c;
-        c = nullptr;
+        c.reset();
     }
-
-    if (this->cl0) {
-        delete cl0;
-    }
-    if (this->cl1) {
-        delete cl1;
-    }
+    cl0.reset();
+    cl1.reset();
 
     if (this->waiting_item && this->expecting_clicks_for_LPE > 0) {
         // we received too few clicks to sanely set the parameter path so we remove the LPE from the item
@@ -165,7 +159,7 @@ void PenTool::setPolylineMode() {
 void PenTool::_cancel() {
     this->state = PenTool::STOP;
     this->_resetColors();
-    for (auto c : ctrl) {
+    for (auto &c : ctrl) {
         c->hide();
     }
     cl0->hide();
@@ -787,16 +781,13 @@ void PenTool::_redrawAll() {
     // green
     if (! this->green_bpaths.empty()) {
         // remove old piecewise green canvasitems
-        for (auto path : this->green_bpaths) {
-            delete path;
-        }
         this->green_bpaths.clear();
 
         // one canvas bpath for all of green_curve
         auto canvas_shape = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), copy_pathvector_optional(green_curve), true);
         canvas_shape->set_stroke(green_color);
         canvas_shape->set_fill(0x0, SP_WIND_RULE_NONZERO);
-        this->green_bpaths.push_back(canvas_shape);
+        this->green_bpaths.emplace_back(canvas_shape);
     }
     if (this->green_anchor) {
         this->green_anchor->ctrl->set_position(this->green_anchor->dp);
@@ -807,7 +798,7 @@ void PenTool::_redrawAll() {
     red_curve.curveto(p[1], p[2], p[3]);
     red_bpath->set_bpath(&red_curve, true);
 
-    for (auto c : ctrl) {
+    for (auto &c : ctrl) {
         c->hide();
     }
     // handles
@@ -1185,9 +1176,6 @@ void PenTool::_resetColors() {
     blue_bpath->set_bpath(nullptr);
 
     // Green
-    for (auto path : this->green_bpaths) {
-        delete path;
-    }
     this->green_bpaths.clear();
     this->green_curve->reset();
     this->green_anchor.reset();
@@ -1273,16 +1261,13 @@ void PenTool::_bsplineSpiroColor()
     //transparency recently modified
     if (!this->green_bpaths.empty()) {
         // remove old piecewise green canvasitems
-        for (auto path : this->green_bpaths) {
-            delete path;
-        }
         this->green_bpaths.clear();
 
         // one canvas bpath for all of green_curve
         auto canvas_shape = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), copy_pathvector_optional(green_curve), true);
         canvas_shape->set_stroke(green_color);
         canvas_shape->set_fill(0x0, SP_WIND_RULE_NONZERO);
-        this->green_bpaths.push_back(canvas_shape);
+        green_bpaths.emplace_back(canvas_shape);
     }
 
     this->red_bpath->set_stroke(red_color);
@@ -1513,16 +1498,13 @@ void PenTool::_bsplineSpiroMotion(guint const state){
     }
 
     // remove old piecewise green canvasitems
-    for (auto path: this->green_bpaths) {
-        delete path;
-    }
-    this->green_bpaths.clear();
+    green_bpaths.clear();
 
     // one canvas bpath for all of green_curve
     auto canvas_shape = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), copy_pathvector_optional(green_curve), true);
     canvas_shape->set_stroke(green_color);
     canvas_shape->set_fill(0x0, SP_WIND_RULE_NONZERO);
-    this->green_bpaths.push_back(canvas_shape);
+    green_bpaths.emplace_back(canvas_shape);
 
     this->_bsplineSpiroBuild();
 }
@@ -1676,7 +1658,7 @@ void PenTool::_bsplineSpiroBuild()
 
         blue_curve.reset();
         //We hide the holders that doesn't contribute anything
-        for (auto c : ctrl) {
+        for (auto &c : ctrl) {
             c->hide();
         }
         if (spiro){
@@ -1748,7 +1730,7 @@ void PenTool::_setSubsequentPoint(Geom::Point const p, bool statusbar, guint sta
 void PenTool::_setCtrl(Geom::Point const q, guint const state)
 {
     // use 'q' as 'p' shadows member variable.
-    for (auto c : ctrl) {
+    for (auto &c : ctrl) {
         c->hide();
     }
 
@@ -1826,7 +1808,7 @@ void PenTool::_finishSegment(Geom::Point const q, guint const state) { // use 'q
         auto canvas_shape = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), curve.get_pathvector(), true);
         canvas_shape->set_stroke(green_color);
         canvas_shape->set_fill(0x0, SP_WIND_RULE_NONZERO);
-        this->green_bpaths.push_back(canvas_shape);
+        green_bpaths.emplace_back(canvas_shape);
 
         this->p[0] = this->p[3];
         this->p[1] = this->p[4];
@@ -1877,14 +1859,12 @@ bool PenTool::_undoLastPoint(bool user_undo) {
         if (this->green_curve->get_segment_count() == 1) {
             this->npoints = 5;
             if (!this->green_bpaths.empty()) {
-                delete this->green_bpaths.back();
                 this->green_bpaths.pop_back();
             }
             this->green_curve->reset();
         } else {
             this->green_curve->backspace();
             if (this->green_bpaths.size() > 1) {
-                delete this->green_bpaths.back();
                 this->green_bpaths.pop_back();
             } else if (this->green_bpaths.size() == 1) {
                 green_bpaths.back()->set_bpath(green_curve.get(), true);
@@ -1902,7 +1882,7 @@ bool PenTool::_undoLastPoint(bool user_undo) {
             }
         }
 
-        for (auto c : ctrl) {
+        for (auto &c : ctrl) {
             c->hide();
         }
         cl0->hide();
@@ -1943,7 +1923,7 @@ bool PenTool::_redoLastPoint()
     if (auto const *last_seg = green_curve->last_segment()) {
         Geom::Path freshly_added;
         freshly_added.append(*last_seg);
-        green_bpaths.push_back(new CanvasItemBpath(_desktop->getCanvasSketch(), freshly_added, true));
+        green_bpaths.emplace_back(make_canvasitem<CanvasItemBpath>(_desktop->getCanvasSketch(), freshly_added, true));
     }
     green_bpaths.back()->set_stroke(green_color);
     green_bpaths.back()->set_fill(0x0, SP_WIND_RULE_NONZERO);
@@ -1980,7 +1960,7 @@ void PenTool::_finish(gboolean const closed) {
     this->npoints = 0;
     this->state = PenTool::POINT;
 
-    for (auto c : ctrl) {
+    for (auto &c : ctrl) {
         c->hide();
     }
 

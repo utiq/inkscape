@@ -41,16 +41,11 @@ TextParam::TextParam( const Glib::ustring& label, const Glib::ustring& tip,
     , defvalue(default_value)
 {
     if (SPDesktop *desktop = SP_ACTIVE_DESKTOP) { // FIXME: we shouldn't use this!
-        canvas_text = new Inkscape::CanvasItemText(desktop->getCanvasTemp(), Geom::Point(0, 0), default_value);
+        canvas_text = make_canvasitem<CanvasItemText>(desktop->getCanvasTemp(), Geom::Point(0, 0), default_value);
     }
 }
 
-TextParam::~TextParam()
-{
-    if (canvas_text) {
-        delete canvas_text;
-    }
-}
+TextParam::~TextParam() = default;
 
 void
 TextParam::param_set_default()
@@ -68,10 +63,7 @@ TextParam::param_update_default(const gchar * default_value)
 void
 TextParam::param_hide_canvas_text()
 {
-    if (canvas_text) {
-        delete canvas_text;
-        canvas_text = nullptr;
-    }
+    canvas_text.reset();
 }
 
 void
@@ -156,20 +148,18 @@ TextParam::param_newWidget()
     return return_widg;
 }
 
-void
-TextParam::param_setValue(const Glib::ustring newvalue)
+void TextParam::param_setValue(Glib::ustring newvalue)
 {
     if (value != newvalue) {
         param_effect->refresh_widgets = true;
     }
-    value = newvalue;
+    value = std::move(newvalue);
     if (canvas_text) {
-        canvas_text->set_text(newvalue);
+        canvas_text->set_text(value);
     }
 }
 
 } /* namespace LivePathEffect */
-
 } /* namespace Inkscape */
 
 /*

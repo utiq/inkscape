@@ -16,22 +16,18 @@
 #include <glib.h>
 #include <vector>
 
-#include "canvas-item.h"
+#include "canvas-item-ptr.h"
 
 namespace Inkscape {
-    namespace UI {
-        namespace Widget {
-            class Canvas;
-        };
-    };
+namespace UI::Widget { class Canvas; }
 
-    class CanvasItemGroup;
-    class CanvasItemText;
+class CanvasItemGroup;
+class CanvasItemText;
 
 class CanvasPage
 {
 public:
-    CanvasPage() = default;
+    CanvasPage();
     ~CanvasPage();
 
     void update(Geom::Rect size, Geom::OptRect margin, Geom::OptRect bleed, const char *txt, bool outline = false);
@@ -52,7 +48,7 @@ private:
     // This may make this look like a CanvasItemGroup, but it's not one. This
     // isn't a collection of items, but a set of items in multiple Canvases.
     // Each item can belong in either a foreground or background group.
-    std::vector<Inkscape::CanvasItem *> canvas_items;
+    std::vector<CanvasItemPtr<CanvasItem>> canvas_items;
 
     int _shadow_size = 0;
     bool _border_on_top = true;
@@ -65,7 +61,7 @@ private:
     std::string _label_style = "default";
 };
 
-};
+} // namespace Inkscape
 
 #endif // SEEN_CANVAS_PAGE_H
 

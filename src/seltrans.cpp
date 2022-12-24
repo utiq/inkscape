@@ -127,18 +127,18 @@ Inkscape::SelTrans::SelTrans(SPDesktop *desktop) :
 
     _selection = desktop->getSelection();
 
-    _norm = new CanvasItemCtrl(desktop->getCanvasControls(), Inkscape::CANVAS_ITEM_CTRL_TYPE_CENTER);
+    _norm = make_canvasitem<CanvasItemCtrl>(desktop->getCanvasControls(), Inkscape::CANVAS_ITEM_CTRL_TYPE_CENTER);
     _norm->set_fill(0x0);
     _norm->set_stroke(0xff0000b0);
     _norm->hide();
 
-    _grip = new CanvasItemCtrl(desktop->getCanvasControls(), Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT);
+    _grip = make_canvasitem<CanvasItemCtrl>(desktop->getCanvasControls(), Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT);
     _grip->set_fill(0xffffff7f);
     _grip->set_stroke(0xff0000b0);
     _grip->hide();
 
-    for (auto & i : _l) {
-        i = new Inkscape::CanvasItemCurve(desktop->getCanvasControls());
+    for (auto &i : _l) {
+        i = make_canvasitem<CanvasItemCurve>(desktop->getCanvasControls());
         i->hide();
     }
 
@@ -165,23 +165,15 @@ Inkscape::SelTrans::~SelTrans()
         knot = nullptr;
     }
 
-    if (_norm) {
-        delete _norm;
-    }
-
-    if (_grip) {
-        delete _grip;
-    }
-
-    for (auto & i : _l) {
-        if (i) {
-            delete i;
-        }
+    _norm.reset();
+    _grip.reset();
+    for (auto &i : _l) {
+        i.reset();
     }
 
     _clear_stamp();
 
-    for (auto & _item : _items) {
+    for (auto &_item : _items) {
         sp_object_unref(_item, nullptr);
     }
 

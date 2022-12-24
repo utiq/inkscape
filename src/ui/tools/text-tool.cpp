@@ -92,24 +92,24 @@ TextTool::TextTool(SPDesktop *desktop)
         timeout /= 2;
     }
 
-    cursor = new Inkscape::CanvasItemCurve(desktop->getCanvasControls());
+    cursor = make_canvasitem<CanvasItemCurve>(desktop->getCanvasControls());
     cursor->set_stroke(0x000000ff);
     cursor->hide();
 
     // The rectangle box tightly wrapping text object when selected or under cursor.
-    indicator = new Inkscape::CanvasItemRect(desktop->getCanvasControls());
+    indicator = make_canvasitem<CanvasItemRect>(desktop->getCanvasControls());
     indicator->set_stroke(0x0000ff7f);
     indicator->set_shadow(0xffffff7f, 1);
     indicator->hide();
 
     // The shape that the text is flowing into
-    frame = new Inkscape::CanvasItemBpath(desktop->getCanvasControls());
+    frame = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
     frame->set_fill(0x00 /* zero alpha */, SP_WIND_RULE_NONZERO);
     frame->set_stroke(0x0000ff7f);
     frame->hide();
 
     // A second frame for showing the padding of the above frame
-    padding_frame = new Inkscape::CanvasItemBpath(desktop->getCanvasControls());
+    padding_frame = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
     padding_frame->set_fill(0x00 /* zero alpha */, SP_WIND_RULE_NONZERO);
     padding_frame->set_stroke(0xccccccdf);
     padding_frame->hide();
@@ -195,30 +195,10 @@ TextTool::~TextTool()
         this->timeout = 0;
     }
 
-    if (cursor) {
-        delete cursor;
-        cursor = nullptr;
-    }
-
-    if (this->indicator) {
-        delete indicator;
-        this->indicator = nullptr;
-    }
-
-    if (this->frame) {
-        delete frame;
-        this->frame = nullptr;
-    }
-
-    if (this->padding_frame) {
-        delete padding_frame;
-        this->padding_frame = nullptr;
-    }
-
-    for (auto & text_selection_quad : text_selection_quads) {
-        text_selection_quad->hide();
-        delete text_selection_quad;
-    }
+    cursor.reset();
+    indicator.reset();
+    frame.reset();
+    padding_frame.reset();
     text_selection_quads.clear();
 
     delete this->shape_editor;
@@ -1801,10 +1781,6 @@ static void sp_text_context_update_text_selection(TextTool *tc)
     // the selection update (can't do both atomically, alas)
     if (!tc->getDesktop()) return;
 
-    for (auto & text_selection_quad : tc->text_selection_quads) {
-        text_selection_quad->hide();
-        delete text_selection_quad;
-    }
     tc->text_selection_quads.clear();
 
     std::vector<Geom::Point> quads;
@@ -1814,10 +1790,10 @@ static void sp_text_context_update_text_selection(TextTool *tc)
         auto quad = new CanvasItemQuad(tc->getDesktop()->getCanvasControls(), quads[i], quads[i+1], quads[i+2], quads[i+3]);
         quad->set_fill(0x00777777); // Semi-transparent blue as Cairo cannot do inversion.
         quad->show();
-        tc->text_selection_quads.push_back(quad);
+        tc->text_selection_quads.emplace_back(quad);
     }
 
-    if (tc->shape_editor != nullptr) {
+    if (tc->shape_editor) {
         if (tc->shape_editor->knotholder) {
             tc->shape_editor->knotholder->update_knots();
         }

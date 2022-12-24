@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_CANVAS_ITEM_ENUMS_H
-#define SEEN_CANVAS_ITEM_ENUMS_H
-
 /**
- * Enums for CanvasControlItem's.
+ * @file
+ * Enums for CanvasItems.
  */
-
 /*
  * Author:
  *   Tavmjong Bah
  *
  * Copyright (C) 2020 Tavmjong Bah
  */
+
+#ifndef SEEN_CANVAS_ITEM_ENUMS_H
+#define SEEN_CANVAS_ITEM_ENUMS_H
 
 namespace Inkscape {
 

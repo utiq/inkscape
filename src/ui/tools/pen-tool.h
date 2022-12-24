@@ -10,6 +10,7 @@
 #ifndef SEEN_PEN_CONTEXT_H
 #define SEEN_PEN_CONTEXT_H
 
+#include <array>
 #include <sigc++/sigc++.h>
 
 #include "display/control/canvas-item-enums.h"
@@ -70,13 +71,13 @@ public:
     Inkscape::LivePathEffect::Effect *waiting_LPE = nullptr; // if NULL, waiting_LPE_type in SPDrawContext is taken into account
     SPLPEItem *waiting_item = nullptr;
 
-    Inkscape::CanvasItemCtrl *ctrl[4]; // Origin, Start, Center, End point of path.
-    Inkscape::CanvasItemCtrlType ctrl_types[4] = {
-        Inkscape::CANVAS_ITEM_CTRL_TYPE_NODE_SMOOTH, Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE,
-        Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE, Inkscape::CANVAS_ITEM_CTRL_TYPE_NODE_SMOOTH};
+    CanvasItemPtr<CanvasItemCtrl> ctrl[4]; // Origin, Start, Center, End point of path.
+    static constexpr std::array<CanvasItemCtrlType, 4> ctrl_types = {
+        CANVAS_ITEM_CTRL_TYPE_NODE_SMOOTH, CANVAS_ITEM_CTRL_TYPE_ROTATE,
+        CANVAS_ITEM_CTRL_TYPE_ROTATE, CANVAS_ITEM_CTRL_TYPE_NODE_SMOOTH};
 
-    Inkscape::CanvasItemCurve *cl0 = nullptr;
-    Inkscape::CanvasItemCurve *cl1 = nullptr;
+    CanvasItemPtr<CanvasItemCurve> cl0;
+    CanvasItemPtr<CanvasItemCurve> cl1;
     
     bool events_disabled = false;
 

@@ -31,6 +31,7 @@
 #include "text-editing.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/scrollprotected.h"
+#include "display/control/canvas-item-ptr.h"
 
 #if WITH_GSPELL
 #include <gspell/gspell.h>
@@ -171,7 +172,7 @@ private:
     /**
      * list of canvasitems (currently just rects) that mark misspelled things on canvas
      */
-    std::vector<Inkscape::CanvasItemRect *> _rects;
+    std::vector<CanvasItemPtr<CanvasItemRect>> _rects;
 
     /**
      * list of text objects we have already checked in this session

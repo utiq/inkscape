@@ -107,14 +107,14 @@ CalligraphicTool::CalligraphicTool(SPDesktop *desktop)
     this->cap_rounding = 0.0;
     this->abs_width = false;
 
-    currentshape = new Inkscape::CanvasItemBpath(desktop->getCanvasSketch());
+    currentshape = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
     currentshape->set_stroke(0x0);
     currentshape->set_fill(DDC_RED_RGBA, SP_WIND_RULE_EVENODD);
 
     /* fixme: Cannot we cascade it to root more clearly? */
     currentshape->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), desktop));
 
-    hatch_area = new Inkscape::CanvasItemBpath(desktop->getCanvasControls());
+    hatch_area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
     hatch_area->set_fill(0x0, SP_WIND_RULE_EVENODD);
     hatch_area->set_stroke(0x0000007f);
     hatch_area->set_pickable(false);
@@ -142,13 +142,7 @@ CalligraphicTool::CalligraphicTool(SPDesktop *desktop)
     }
 }
 
-CalligraphicTool::~CalligraphicTool()
-{
-    if (hatch_area) {
-        delete hatch_area;
-        hatch_area = nullptr;
-    }
-}
+CalligraphicTool::~CalligraphicTool() = default;
 
 void CalligraphicTool::set(const Inkscape::Preferences::Entry& val) {
     Glib::ustring path = val.getEntryName();
@@ -403,9 +397,6 @@ void CalligraphicTool::cancel() {
     ungrabCanvasEvents();
 
     /* Remove all temporary line segments */
-    for (auto segment : segments) {
-        delete segment;
-    }
     segments.clear();
 
     /* reset accumulated curve */
@@ -663,7 +654,7 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                     Geom::Affine const sm (Geom::Scale(hatch_dist, hatch_dist) * Geom::Translate(c));
                     path *= sm;
 
-                    hatch_area->set_bpath(path, true);
+                    hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0x7f7f7fff);
                     hatch_area->show();
 
@@ -674,7 +665,7 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                     Geom::Affine const sm (Geom::Scale(this->hatch_spacing, this->hatch_spacing) * Geom::Translate(c));
                     path *= sm;
 
-                    hatch_area->set_bpath(path, true);
+                    hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0x00FF00ff);
                     hatch_area->show();
 
@@ -685,7 +676,7 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                     Geom::Affine const sm (Geom::Scale(this->hatch_spacing, this->hatch_spacing) * Geom::Translate(c));
                     path *= sm;
 
-                    hatch_area->set_bpath(path, true);
+                    hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0xff0000ff);
                     hatch_area->show();
 
@@ -697,7 +688,7 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                         Geom::Affine const sm (Geom::Scale(this->hatch_spacing, this->hatch_spacing) * Geom::Translate(c));
                         path *= sm;
 
-                        hatch_area->set_bpath(path, true);
+                        hatch_area->set_bpath(std::move(path), true);
                         hatch_area->set_stroke(0x7f7f7fff);
                         hatch_area->show();
                     }
@@ -725,9 +716,6 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
             this->apply(motion_dt);
 
             /* Remove all temporary line segments */
-            for (auto segment : segments) {
-                delete segment;
-            }
             segments.clear();
 
             /* Create object */
@@ -1127,7 +1115,7 @@ void CalligraphicTool::fit_and_split(bool release) {
             /* fixme: Cannot we cascade it to root more clearly? */
             cbp->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), _desktop));
 
-            segments.push_back(cbp);
+            segments.emplace_back(cbp);
         }
 
         this->point1[0] = this->point1[this->npoints - 1];

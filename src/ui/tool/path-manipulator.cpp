@@ -127,7 +127,7 @@ PathManipulator::PathManipulator(MultiPathManipulator &mpm, SPObject *path,
 
     _getGeometry();
 
-    _outline = new Inkscape::CanvasItemBpath(_multi_path_manipulator._path_data.outline_group);
+    _outline = make_canvasitem<Inkscape::CanvasItemBpath>(_multi_path_manipulator._path_data.outline_group);
     _outline->hide();
     _outline->set_stroke(outline_color);
     _outline->set_fill(0x0, SP_WIND_RULE_NONZERO);
@@ -148,7 +148,7 @@ PathManipulator::~PathManipulator()
 {
     delete _dragpoint;
     delete _observer;
-    delete _outline;
+    _outline.reset();
     clear();
 }
 

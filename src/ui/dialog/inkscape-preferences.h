@@ -738,7 +738,6 @@ private:
   void get_highlight_colors(guint32 &colorsetbase, guint32 &colorsetsuccess, guint32 &colorsetwarning,
                             guint32 &colorseterror);
 
-  bool on_outline_overlay_changed(GdkEventFocus * /* focus_event */);
   std::map<Glib::ustring, bool> dark_themes;
   bool _init;
   Inkscape::PrefObserver _theme_oberver;

@@ -57,7 +57,7 @@ public:
     void set_drawing(Inkscape::Drawing *drawing);
 
     // Canvas item root
-    CanvasItemGroup *get_canvas_item_root() const { return _canvas_item_root; }
+    CanvasItemGroup *get_canvas_item_root() const;
 
     // Geometry
     void set_pos   (const Geom::IntPoint &pos);
@@ -163,9 +163,6 @@ private:
 
     // Drawing
     Inkscape::Drawing *_drawing = nullptr;
-
-    // Canvas item root
-    CanvasItemGroup *_canvas_item_root = nullptr;
 
     // Geometry
     Geom::IntPoint _pos = {0, 0}; ///< Coordinates of top-left pixel of canvas view within canvas.

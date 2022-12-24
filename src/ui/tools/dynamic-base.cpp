@@ -36,7 +36,6 @@ namespace Tools {
 
 DynamicBase::DynamicBase(SPDesktop *desktop, std::string prefs_path, const std::string &cursor_filename)
     : ToolBase(desktop, prefs_path, cursor_filename)
-    , currentshape(nullptr)
     , point1()
     , point2()
     , npoints(0)
@@ -67,16 +66,7 @@ DynamicBase::DynamicBase(SPDesktop *desktop, std::string prefs_path, const std::
 {
 }
 
-DynamicBase::~DynamicBase() {
-    for (auto segment : segments) {
-        delete segment;
-    }
-    segments.clear();
-
-    if (currentshape) {
-        delete currentshape;
-    }
-}
+DynamicBase::~DynamicBase() = default;
 
 void DynamicBase::set(const Inkscape::Preferences::Entry& value) {
     Glib::ustring path = value.getEntryName();

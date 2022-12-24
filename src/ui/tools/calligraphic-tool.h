@@ -24,6 +24,7 @@
 
 #include <2geom/point.h>
 
+#include "display/control/canvas-item-ptr.h"
 #include "ui/tools/dynamic-base.h"
 
 class SPItem;
@@ -66,7 +67,7 @@ private:
     Geom::Point hatch_last_nearest, hatch_last_pointer;
     std::list<Geom::Point> hatch_vectors;
     bool hatch_escaped;
-    Inkscape::CanvasItemBpath *hatch_area = nullptr;
+    CanvasItemPtr<Inkscape::CanvasItemBpath> hatch_area;
     bool just_started_drawing;
     bool trace_bg;
 

@@ -28,10 +28,8 @@
 #include "helper/geom.h"
 
 #include "display/drawing.h"
-#include "display/cairo-utils.h"
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-group.h"
-#include "display/control/canvas-item-rect.h"
 #include "display/control/snap-indicator.h"
 
 #include "ui/tools/tool-base.h"      // Default cursor
@@ -129,6 +127,9 @@ public:
     void activate();
     void deactivate();
 
+    // CanvasItem tree
+    std::optional<CanvasItemContext> canvasitem_ctx;
+
     // Preferences
     Prefs prefs;
 
@@ -195,7 +196,6 @@ public:
 
     bool outlines_enabled = false;
     int scale_factor = 1; // The device scale the stores are drawn at.
-    Geom::Affine geom_affine; // The affine the geometry was last imbued with.
     PageInfo pi;
 
     bool background_in_stores = false;
@@ -243,7 +243,7 @@ Canvas::Canvas()
     d->updater->reset();
 
     // Preferences
-    d->prefs.grabsize.action = [=] { _canvas_item_root->update_canvas_item_ctrl_sizes(d->prefs.grabsize); };
+    d->prefs.grabsize.action = [=] { d->canvasitem_ctx->root()->update_canvas_item_ctrl_sizes(d->prefs.grabsize); };
     d->prefs.debug_show_unclean.action = [=] { queue_draw(); };
     d->prefs.debug_show_clean.action = [=] { queue_draw(); };
     d->prefs.debug_disable_redraw.action = [=] { d->add_idle(); };
@@ -277,10 +277,8 @@ Canvas::Canvas()
     };
     d->prefs.debug_idle_starvation.action = [=] { d->sample_begin = d->wait_begin = d->wait_accumulated = 0; };
 
-    // Cavas item root
-    _canvas_item_root = new Inkscape::CanvasItemGroup(nullptr);
-    _canvas_item_root->set_name("CanvasItemGroup:Root");
-    _canvas_item_root->set_canvas(this);
+    // Canvas item tree
+    d->canvasitem_ctx.emplace(this);
 
     // Split view.
     _split_direction = Inkscape::SplitDirection::EAST;
@@ -365,7 +363,7 @@ Canvas::~Canvas()
     d->eventprocessor->canvasprivate = nullptr;
 
     // Remove entire CanvasItem tree.
-    delete _canvas_item_root;
+    d->canvasitem_ctx.reset();
 }
 
 void Canvas::set_drawing(Drawing *drawing)
@@ -378,6 +376,11 @@ void Canvas::set_drawing(Drawing *drawing)
         _drawing->setOutlineOverlay(d->outlines_required());
     }
     if (!d->active && get_realized() && drawing) d->activate();
+}
+
+CanvasItemGroup *Canvas::get_canvas_item_root() const
+{
+    return d->canvasitem_ctx->root();
 }
 
 void Canvas::on_realize()
@@ -922,12 +925,6 @@ bool CanvasPrivate::process_bucketed_event(const GdkEvent *event)
 //   canvas_catchall->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
 bool CanvasPrivate::pick_current_item(const GdkEvent *event)
 {
-    // Ensure requested geometry updates are performed first.
-    if (q->_need_update) {
-        q->_canvas_item_root->update(geom_affine);
-        q->_need_update = false;
-    }
-
     int button_down = 0;
     if (!q->_all_enter_events) {
         // Only set true in connector-tool.cpp.
@@ -997,7 +994,7 @@ bool CanvasPrivate::pick_current_item(const GdkEvent *event)
     // Find new item
     q->_current_canvas_item_new = nullptr;
 
-    if (q->_pick_event.type != GDK_LEAVE_NOTIFY && q->_canvas_item_root->is_visible()) {
+    if (q->_pick_event.type != GDK_LEAVE_NOTIFY && canvasitem_ctx->root()->is_visible()) {
         // Leave notify means there is no current item.
         // Find closest item.
         double x = 0.0;
@@ -1028,11 +1025,11 @@ bool CanvasPrivate::pick_current_item(const GdkEvent *event)
         // Convert to world coordinates.
         auto p = Geom::Point(x, y) + q->_pos;
         if (stores.mode() == Stores::Mode::Decoupled) {
-            p *= q->_affine.inverse() * geom_affine;
+            p *= q->_affine.inverse() * canvasitem_ctx->affine();
         }
 
         q->_drawing->getCanvasItemDrawing()->set_pick_outline(outline);
-        q->_current_canvas_item_new = q->_canvas_item_root->pick_item(p);
+        q->_current_canvas_item_new = canvasitem_ctx->root()->pick_item(p);
         // if (q->_current_canvas_item_new) {
         //     std::cout << "  PICKING: FOUND ITEM: " << q->_current_canvas_item_new->get_name() << std::endl;
         // } else {
@@ -1133,7 +1130,7 @@ bool CanvasPrivate::emit_event(const GdkEvent *event)
     auto conv = [&, this] (double &x, double &y) {
         auto p = Geom::Point(x, y) + q->_pos;
         if (stores.mode() == Stores::Mode::Decoupled) {
-            p *= q->_affine.inverse() * geom_affine;
+            p *= q->_affine.inverse() * canvasitem_ctx->affine();
         }
         x = p.x();
         y = p.y();
@@ -1244,7 +1241,7 @@ void Canvas::set_affine(Geom::Affine const &affine)
 
 const Geom::Affine &Canvas::get_geom_affine() const
 {
-    return d->geom_affine;
+    return d->canvasitem_ctx->affine();
 }
 
 void CanvasPrivate::queue_draw_area(const Geom::IntRect &rect)
@@ -1545,7 +1542,7 @@ void Canvas::on_size_allocate(Gtk::Allocation &allocation)
     assert(allocation == get_allocation());
 
     // Necessary as GTK seems to somehow invalidate the current pipeline state upon resize.
-    if (d->active && get_opengl_enabled()) {
+    if (d->active) {
         d->graphics->invalidated_glstate();
     }
 
@@ -1585,7 +1582,7 @@ void Canvas::paint_widget(const Cairo::RefPtr<Cairo::Context> &cr)
         return;
     }
 
-    // canvas_item_print_tree(_canvas_item_root);
+    // _canvas_item_root->canvas_item_print_tree();
 
     // Although hipri_idle is scheduled at a priority higher than draw, and should therefore always be called first if
     // asked, there are times when GTK simply decides to call on_draw anyway. Here we ensure that that call has taken
@@ -1883,7 +1880,7 @@ bool CanvasPrivate::on_idle()
     framecheck_whole_function(this)
 
     assert(active); // Guaranteed since already checked by both callers.
-    assert(q->_canvas_item_root);
+    assert(canvasitem_ctx->root());
 
     // Quit idle process if not supposed to be drawing.
     if (q->_drawing_disabled) {
@@ -1901,7 +1898,7 @@ bool CanvasPrivate::on_idle()
     scale_factor = q->get_scale_factor();
 
     pi.pages.clear();
-    q->_canvas_item_root->visit_page_rects([this] (auto &rect) {
+    canvasitem_ctx->root()->visit_page_rects([this] (auto &rect) {
         pi.pages.emplace_back(rect);
     });
 
@@ -1932,10 +1929,11 @@ bool CanvasPrivate::on_idle()
 
     // Ensure the geometry is up-to-date and in the right place.
     auto const &affine = stores.store().affine;
-    if (q->_need_update || geom_affine != affine) {
-        q->_canvas_item_root->update(affine);
-        geom_affine = affine;
+    bool const affine_changed = canvasitem_ctx->affine() != stores.store().affine;
+    if (q->_need_update || affine_changed) {
         q->_need_update = false;
+        canvasitem_ctx->setAffine(affine);
+        canvasitem_ctx->root()->update(affine_changed);
     }
 
     // If asked to, don't paint anything and instead halt the idle process.
@@ -2090,7 +2088,7 @@ bool CanvasPrivate::on_idle()
 
         // Another high priority to redraw is the grabbed canvas item, if the user has requested block updates.
         if (q->_grabbed_canvas_item && prefs.block_updates) {
-            if (auto grabbed = regularised(q->_grabbed_canvas_item->get_bounds().roundOutwards() & *vis_store)) {
+            if (auto grabbed = regularised(roundedOutwards(q->_grabbed_canvas_item->get_bounds()) & *vis_store)) {
                 process_redraw(*grabbed, updater->clean_region, false, false); // non-interruptible, non-preemptible
                 // Reset timeout to leave the normal amount of time for clearing up artifacts.
                 start_time = g_get_monotonic_time();
@@ -2139,7 +2137,7 @@ void CanvasPrivate::paint_rect(const Geom::IntRect &rect)
     };
 
     Fragment fragment;
-    fragment.affine = geom_affine;
+    fragment.affine = stores.store().affine;
     fragment.rect = rect;
 
     Cairo::RefPtr<Cairo::ImageSurface> surface, outline_surface;
@@ -2159,7 +2157,7 @@ void CanvasPrivate::paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface>
     // Clear background.
     cr->save();
     if (need_background) {
-        Graphics::paint_background(Fragment{ geom_affine, rect }, pi, page, desk, cr);
+        Graphics::paint_background(Fragment{ stores.store().affine, rect }, pi, page, desk, cr);
     } else {
         cr->set_operator(Cairo::OPERATOR_CLEAR);
         cr->paint();
@@ -2167,10 +2165,8 @@ void CanvasPrivate::paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface>
     cr->restore();
 
     // Render drawing on top of background.
-    if (q->_canvas_item_root->is_visible()) {
-        auto buf = Inkscape::CanvasItemBuffer{ rect, scale_factor, cr, outline_pass };
-        q->_canvas_item_root->render(&buf);
-    }
+    auto buf = Inkscape::CanvasItemBuffer{ rect, scale_factor, cr, outline_pass };
+    canvasitem_ctx->root()->render(buf);
 
     // Paint over newly drawn content with a translucent random colour.
     if (prefs.debug_show_redraw) {

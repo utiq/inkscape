@@ -23,6 +23,7 @@
 
 #include "knot-enums.h"
 #include "display/control/canvas-item-enums.h"
+#include "display/control/canvas-item-ptr.h"
 #include "enums.h"
 
 class SPDesktop;
@@ -58,7 +59,7 @@ public:
     int ref_count; // FIXME encapsulation
 
     SPDesktop *desktop  = nullptr;                  /**< Desktop we are on. */
-    Inkscape::CanvasItemCtrl *ctrl = nullptr;       /**< Our CanvasItemCtrl. */
+    CanvasItemPtr<Inkscape::CanvasItemCtrl> ctrl;   /**< Our CanvasItemCtrl. */
     SPItem *owner       = nullptr;                  /**< Optional Owner Item */
     SPItem *sub_owner   = nullptr;                  /**< Optional SubOwner Item */
     unsigned int flags  = SP_KNOT_VISIBLE;
@@ -89,7 +90,6 @@ public:
     unsigned char *image[SP_KNOT_VISIBLE_STATES];
     Glib::RefPtr<Gdk::Cursor> _cursors[SP_KNOT_VISIBLE_STATES];
 
-    void* pixbuf            = nullptr;
     char *tip               = nullptr;
 
     sigc::connection _event_connection;
@@ -114,7 +114,6 @@ public:
     void setShape(Inkscape::CanvasItemCtrlShape s);
     void setAnchor(unsigned int i);
     void setMode(Inkscape::CanvasItemCtrlMode m);
-    void setPixbuf(void* p);
     void setAngle(double i);
 
     void setFill(guint32 normal, guint32 mouseover, guint32 dragging, guint32 selected);
@@ -139,7 +138,7 @@ public:
     void setFlag(unsigned int flag, bool set);
 
     /**
-     * Update knot's pixbuf and set its control state.
+     * Update knot's control state.
      */
     void updateCtrl();
 

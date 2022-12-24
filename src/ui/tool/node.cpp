@@ -183,17 +183,14 @@ Handle::Handle(NodeSharedData const &data, Geom::Point const &initial_pos, Node 
     : ControlPoint(data.desktop, initial_pos, SP_ANCHOR_CENTER,
                    Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE,
                    _handle_colors, data.handle_group)
-    , _handle_line(new Inkscape::CanvasItemCurve(data.handle_line_group))
+    , _handle_line(make_canvasitem<CanvasItemCurve>(data.handle_line_group))
     , _parent(parent)
     , _degenerate(true)
 {
     setVisible(false);
 }
 
-Handle::~Handle()
-{
-    delete _handle_line;
-}
+Handle::~Handle() = default;
 
 void Handle::setVisible(bool v)
 {
@@ -1140,7 +1137,7 @@ bool Node::isEndNode() const
 
 void Node::sink()
 {
-    _canvas_item_ctrl->set_z_position(0);
+    _canvas_item_ctrl->lower_to_bottom();
 }
 
 NodeType Node::parse_nodetype(char x)

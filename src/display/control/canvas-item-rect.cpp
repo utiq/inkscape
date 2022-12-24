@@ -17,10 +17,11 @@
 #include <cairo/cairo.h>
 
 #include "canvas-item-rect.h"
-#include "display/cairo-utils.h"
 
+#include "display/cairo-utils.h"
 #include "color.h"    // SP_RGBA_x_F
-#include "inkscape.h" //
+#include "helper/geom.h"
+#include "inkscape.h"
 #include "ui/util.h"
 #include "ui/widget/canvas.h"
 
@@ -33,7 +34,6 @@ CanvasItemRect::CanvasItemRect(CanvasItemGroup *group)
     : CanvasItem(group)
 {
     _name = "CanvasItemRect:Null";
-    _pickable = false; // For now, nobody gets events from this class!
 }
 
 /**
@@ -44,8 +44,6 @@ CanvasItemRect::CanvasItemRect(CanvasItemGroup *group, Geom::Rect const &rect)
     , _rect(rect)
 {
     _name = "CanvasItemRect";
-    _pickable = false; // For now, nobody gets events from this class!
-    request_update();
 }
 
 /**
@@ -60,25 +58,11 @@ void CanvasItemRect::set_rect(Geom::Rect const &rect)
 /**
  * Run a callback for each rectangle that should be filled and painted in the background.
  */
-void CanvasItemRect::visit_page_rects(std::function<void(const Geom::Rect&)> f) const
+void CanvasItemRect::visit_page_rects(std::function<void(Geom::Rect const &)> const &f) const
 {
-    if (_is_page && _fill != 0) f(_rect);
-}
-
-/**
- * Returns distance between point in canvas units and nearest point in rect (zero if inside rect).
- * Only valid if canvas is not rotated. (A rotated Geom::Rect yields a new axis-aligned Geom::Rect
- * that contains the original rectangle; not a rotated rectangle.)
- */
-double CanvasItemRect::closest_distance_to(Geom::Point const &p)
-{
-    if (_affine.isNonzeroRotation()) {
-        std::cerr << "CanvasItemRect::closest_distance_to: Affine includes rotation!" << std::endl;
+    if (_is_page && _fill != 0) {
+        f(_rect);
     }
-
-    Geom::Rect rect = _rect;
-    rect *= _affine; // Convert from document to canvas coordinates. (TODO Cache this.)
-    return Geom::distance(p, rect);
 }
 
 /**
@@ -91,174 +75,114 @@ bool CanvasItemRect::contains(Geom::Point const &p, double tolerance)
         std::cerr << "CanvasItemRect::contains: Non-zero tolerance not implemented!" << std::endl;
     }
 
-    Geom::Point p0 = _rect.corner(0) * _affine;
-    Geom::Point p1 = _rect.corner(1) * _affine;
-    Geom::Point p2 = _rect.corner(2) * _affine;
-    Geom::Point p3 = _rect.corner(3) * _affine;
-
-    // From 2geom rotated-rect.cpp
-    return
-        Geom::cross(p1 - p0, p - p0) >= 0 &&
-        Geom::cross(p2 - p1, p - p1) >= 0 &&
-        Geom::cross(p3 - p2, p - p2) >= 0 &&
-        Geom::cross(p0 - p3, p - p3) >= 0;
+    return _rect.contains(p * affine().inverse());
 }
 
 /**
  * Update and redraw control rect.
  */
-void CanvasItemRect::update(Geom::Affine const &affine)
+void CanvasItemRect::_update(bool)
 {
-    if (_affine == affine && !_need_update) {
-        // Nothing to do.
-        return;
-    }
-
-    if (_rect.area() == 0) {
+    if (_rect.hasZeroArea()) {
+        _bounds = {};
         return; // Nothing to show
     }
 
     // Queue redraw of old area (erase previous content).
     request_redraw();
 
-    // Get new bounds
-    _affine = affine;
-
     // Enlarge bbox by twice shadow size (to allow for shadow on any side with a 45deg rotation).
     _bounds = _rect;
     // note: add shadow size before applying transformation, since get_shadow_size accounts for scale
-    _bounds.expandBy(2 * get_shadow_size());
-    _bounds *= _affine;
-    _bounds.expandBy(2); // Room for stroke.
+    if (_shadow_width > 0 && !_dashed) {
+        _bounds->expandBy(2 * get_shadow_size());
+    }
+    *_bounds *= affine();
+    _bounds->expandBy(2); // Room for stroke.
 
     // Queue redraw of new area
     request_redraw();
-
-    _need_update = false;
 }
 
 /**
  * Render rect to screen via Cairo.
  */
-void CanvasItemRect::render(Inkscape::CanvasItemBuffer *buf)
+void CanvasItemRect::_render(Inkscape::CanvasItemBuffer &buf)
 {
-    if (!buf) {
-        std::cerr << "CanvasItemRect::Render: No buffer!" << std::endl;
-         return;
-    }
-
-    if (!_bounds.intersects(buf->rect)) {
-        return; // Rectangle not inside buffer rectangle.
-    }
-
-    if (!_visible) {
-        // Hidden
-        return;
-    }
-
-    // Geom::Rect is an axis-aligned rectangle. We need to rotate it if the canvas is rotated!
-
-    // Get canvas rotation (scale is isotropic).
-    double rotation = atan2(_affine[1], _affine[0]);
-
     // Are we axis aligned?
-    double mod_rot = fmod(rotation * M_2_PI, 1);
-    bool axis_aligned = Geom::are_near(mod_rot, 0) || Geom::are_near(mod_rot, 1.0);
+    auto const &aff = affine();
+    bool const axis_aligned = (Geom::are_near(aff[1], 0) && Geom::are_near(aff[2], 0))
+                           || (Geom::are_near(aff[0], 0) && Geom::are_near(aff[3], 0));
 
-    // Get the points we need transformed into window coordinates.
-    Geom::Point rect_transformed[4];
-    for (unsigned int i = 0; i < 4; ++i) {
-        rect_transformed[i] = _rect.corner(i) * _affine;
-    }
-
+    // If so, then snap the rectangle to the pixel grid.
     auto rect = _rect;
-
-    using Geom::X;
-    using Geom::Y;
-
     if (axis_aligned) {
-        auto temp = _rect * _affine;
-        auto min = temp.min();
-        auto max = temp.max();
-        auto pixgrid = Geom::Rect(
-            Geom::Point(floor(min[X]) + 0.5, floor(min[Y]) + 0.5),
-            Geom::Point(floor(max[X]) + 0.5, floor(max[Y]) + 0.5));
-        rect = pixgrid * _affine.inverse();
+        rect = (floor(_rect * aff) + Geom::Point(0.5, 0.5)) * aff.inverse();
     }
 
-    buf->cr->save();
-    buf->cr->translate(-buf->rect.left(), -buf->rect.top());
+    buf.cr->save();
+    buf.cr->translate(-buf.rect.left(), -buf.rect.top());
 
     if (_inverted) {
-        // buf->cr->set_operator(Cairo::OPERATOR_XOR); // Blend mode operators do not have C++ bindings!
-        cairo_set_operator(buf->cr->cobj(), CAIRO_OPERATOR_DIFFERENCE);
+        buf.cr->set_operator(Cairo::OPERATOR_XOR);
     }
 
-    // Draw shadow first. Shadow extends under rectangle to reduce aliasing effects.
-    if (_shadow_width > 0 && !_dashed && !(_is_page && _canvas->get_opengl_enabled())) {
-        // there's only one UI knob to adjust border and shadow color, so instead of using border color
-        // transparency as is, it is boosted by this function, since shadow attenuates it
-        const auto a = (exp(-3 * SP_RGBA32_A_F(_shadow_color)) - 1) / (exp(-3) - 1);
-        buf->cr->save();
+    // Draw shadow first. Shadow extends under rectangle to reduce aliasing effects. Canvas draws page shadows in OpenGL mode.
+    if (_shadow_width > 0 && !_dashed && !(_is_page && get_canvas()->get_opengl_enabled())) {
+        // There's only one UI knob to adjust border and shadow color, so instead of using border color
+        // transparency as is, it is boosted by this function, since shadow attenuates it.
+        auto const alpha = (std::exp(-3 * SP_RGBA32_A_F(_shadow_color)) - 1) / (std::exp(-3) - 1);
 
-        auto affine = _affine;
-        if (auto desktop = _canvas->get_desktop()) {
-            rect *= desktop->doc2dt();
-            affine = desktop->doc2dt() * affine;
+        // Flip shadow upside-down if y-axis is inverted.
+        auto doc2dt = Geom::identity();
+        if (auto desktop = get_canvas()->get_desktop()) {
+            doc2dt = desktop->doc2dt();
         }
-        buf->cr->transform(geom_to_cairo(affine));
-        ink_cairo_draw_drop_shadow(buf->cr, rect, get_shadow_size(), _shadow_color, a);
-        buf->cr->restore();
+
+        buf.cr->save();
+        buf.cr->transform(geom_to_cairo(doc2dt * aff));
+        ink_cairo_draw_drop_shadow(buf.cr, rect * doc2dt, get_shadow_size(), _shadow_color, alpha);
+        buf.cr->restore();
     }
 
-    // Setup rectangle path
-    if (axis_aligned) {
-        // Snap to pixel grid
-        Geom::Rect outline( _rect.min() * _affine, _rect.max() * _affine);
-        buf->cr->rectangle(floor(outline.min()[X])+0.5,
-                           floor(outline.min()[Y])+0.5,
-                           floor(outline.max()[X]) - floor(outline.min()[X]),
-                           floor(outline.max()[Y]) - floor(outline.min()[Y]));
-    } else {
-
-        // Rotated
-        buf->cr->move_to(rect_transformed[0][X], rect_transformed[0][Y] );
-        buf->cr->line_to(rect_transformed[1][X], rect_transformed[1][Y] );
-        buf->cr->line_to(rect_transformed[2][X], rect_transformed[2][Y] );
-        buf->cr->line_to(rect_transformed[3][X], rect_transformed[3][Y] );
-        buf->cr->close_path();
+    // Get the points we need transformed into window coordinates.
+    buf.cr->begin_new_path();
+    for (int i = 0; i < 4; ++i) {
+        auto pt = rect.corner(i) * aff;
+        buf.cr->line_to(pt.x(), pt.y());
     }
+    buf.cr->close_path();
+
+    // Draw border.
     static std::valarray<double> dashes = {4.0, 4.0};
     if (_dashed) {
-        buf->cr->set_dash(dashes, -0.5);
+        buf.cr->set_dash(dashes, -0.5);
     }
-    // Draw border (stroke).
-    buf->cr->set_line_width(1);
+    buf.cr->set_line_width(1);
     // we maybe have painted the background, back to "normal" compositing
-    
-    buf->cr->set_source_rgba(SP_RGBA32_R_F(_stroke), SP_RGBA32_G_F(_stroke),
-                             SP_RGBA32_B_F(_stroke), SP_RGBA32_A_F(_stroke));
-    buf->cr->stroke_preserve();
+    buf.cr->set_source_rgba(SP_RGBA32_R_F(_stroke), SP_RGBA32_G_F(_stroke),
+                            SP_RGBA32_B_F(_stroke), SP_RGBA32_A_F(_stroke));
+    buf.cr->stroke_preserve();
 
     // Highlight the border by drawing it in _shadow_color.
     if (_shadow_width == 1 && _dashed) {
-        buf->cr->set_dash(dashes, 3.5); // Dash offset by dash length.
-        buf->cr->set_source_rgba(SP_RGBA32_R_F(_shadow_color), SP_RGBA32_G_F(_shadow_color),
-                                 SP_RGBA32_B_F(_shadow_color), SP_RGBA32_A_F(_shadow_color));
-        buf->cr->stroke_preserve();
+        buf.cr->set_dash(dashes, 3.5); // Dash offset by dash length.
+        buf.cr->set_source_rgba(SP_RGBA32_R_F(_shadow_color), SP_RGBA32_G_F(_shadow_color),
+                                SP_RGBA32_B_F(_shadow_color), SP_RGBA32_A_F(_shadow_color));
+        buf.cr->stroke_preserve();
     }
 
-    buf->cr->begin_new_path(); // Clear path or get weird artifacts.
+    buf.cr->begin_new_path(); // Clear path or get weird artifacts.
 
     // Uncomment to show bounds
     // Geom::Rect bounds = _bounds;
     // bounds.expandBy(-1);
-    // bounds -= buf->rect.min();
-    // buf->cr->set_source_rgba(1.0, 0.0, _shadow_width / 3.0, 1.0);
-    // buf->cr->rectangle(bounds.min().x(), bounds.min().y(), bounds.width(), bounds.height());
-    // buf->cr->stroke();
+    // bounds -= buf.rect.min();
+    // buf.cr->set_source_rgba(1.0, 0.0, _shadow_width / 3.0, 1.0);
+    // buf.cr->rectangle(bounds.min().x(), bounds.min().y(), bounds.width(), bounds.height());
+    // buf.cr->stroke();
 
-    buf->cr->restore();
+    buf.cr->restore();
 }
 
 void CanvasItemRect::set_is_page(bool is_page)
@@ -269,10 +193,10 @@ void CanvasItemRect::set_is_page(bool is_page)
     }
 }
 
-void CanvasItemRect::set_fill(guint32 color)
+void CanvasItemRect::set_fill(uint32_t fill)
 {
-    if (color != _fill && _is_page) _canvas->set_page(color);
-    CanvasItem::set_fill(color);
+    if (fill != _fill && _is_page) get_canvas()->set_page(fill);
+    CanvasItem::set_fill(fill);
 }
 
 void CanvasItemRect::set_dashed(bool dashed)
@@ -291,29 +215,29 @@ void CanvasItemRect::set_inverted(bool inverted)
     }
 }
 
-void CanvasItemRect::set_shadow(guint32 color, int width)
+void CanvasItemRect::set_shadow(uint32_t color, int width)
 {
     if (_shadow_color != color || _shadow_width != width) {
         _shadow_color = color;
         _shadow_width = width;
         request_redraw();
-        if (_is_page) _canvas->set_border(_shadow_width > 0 ? color : 0x0);
+        if (_is_page) get_canvas()->set_border(_shadow_width > 0 ? color : 0x0);
     }
 }
 
-double CanvasItemRect::get_shadow_size() const {
+double CanvasItemRect::get_shadow_size() const
+{
     // gradient drop shadow needs much more room than solid one, so inflating the size;
     // fudge factor of 6 used to make sizes baked in svg documents work as steps:
     // typical value of 2 will work out to 12 pixels which is a narrow shadow (b/c of exponential fall of)
     auto size = _shadow_width * 6;
     if (size < 0) {
         size = 0;
-    }
-    else if (size > 120) {
+    } else if (size > 120) {
         // arbitrarily selected max size, so Cairo gradient doesn't blow up if document has bogus shadow values
         size = 120;
     }
-    auto scale = get_scale();
+    auto scale = affine().descrim();
 
     // calculate space for gradient shadow; if divided by 'scale' it would be zoom independent (fixed in size);
     // if 'scale' is not used, drop shadow will be getting smaller with document zoom;

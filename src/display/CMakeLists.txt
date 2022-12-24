@@ -46,6 +46,7 @@ set(display_SRC
     control/canvas-item.cpp
     control/canvas-item-bpath.cpp
     control/canvas-item-catchall.cpp
+    control/canvas-item-context.cpp
     control/canvas-item-ctrl.cpp
     control/canvas-item-curve.cpp
     control/canvas-item-drawing.cpp
@@ -112,6 +113,7 @@ set(display_SRC
     control/canvas-item-bpath.h
     control/canvas-item-buffer.h
     control/canvas-item-catchall.h
+    control/canvas-item-context.h
     control/canvas-item-ctrl.h
     control/canvas-item-curve.h
     control/canvas-item-drawing.h
@@ -119,6 +121,7 @@ set(display_SRC
     control/canvas-item-grid.h
     control/canvas-item-group.h
     control/canvas-item-guideline.h
+    control/canvas-item-ptr.h
     control/canvas-item-quad.h
     control/canvas-item-rect.h
     control/canvas-item-text.h

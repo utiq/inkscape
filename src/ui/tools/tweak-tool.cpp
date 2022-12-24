@@ -85,13 +85,12 @@ TweakTool::TweakTool(SPDesktop *desktop)
     , is_drawing(false)
     , is_dilating(false)
     , has_dilated(false)
-    , dilate_area(nullptr)
     , do_h(true)
     , do_s(true)
     , do_l(true)
     , do_o(false)
 {
-    dilate_area = new Inkscape::CanvasItemBpath(desktop->getCanvasSketch());
+    dilate_area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
     dilate_area->set_stroke(0xff9900ff);
     dilate_area->set_fill(0x0, SP_WIND_RULE_EVENODD);
     dilate_area->hide();
@@ -108,7 +107,7 @@ TweakTool::TweakTool(SPDesktop *desktop)
     sp_event_context_read(this, "dos");
     sp_event_context_read(this, "doo");
 
-    this->style_set_connection = desktop->connectSetStyle( // catch style-setting signal in this tool
+    style_set_connection = desktop->connectSetStyle( // catch style-setting signal in this tool
         //sigc::bind(sigc::ptr_fun(&sp_tweak_context_style_set), this)
         sigc::mem_fun(*this, &TweakTool::set_style)
     );
@@ -122,15 +121,9 @@ TweakTool::TweakTool(SPDesktop *desktop)
     }
 }
 
-TweakTool::~TweakTool() {
-    this->enableGrDrag(false);
-    
-    this->style_set_connection.disconnect();
-
-    if (this->dilate_area) {
-        delete this->dilate_area;
-        this->dilate_area = nullptr;
-    }
+TweakTool::~TweakTool()
+{
+    enableGrDrag(false);
 }
 
 static bool is_transform_mode (gint mode)

@@ -24,6 +24,7 @@
 #include "display/control/canvas-item-quad.h"
 #include "display/control/canvas-item-curve.h"
 #include "helper/auto-connection.h"
+#include "display/control/canvas-item-ptr.h"
 
 class SPHatch;
 class SPItem;
@@ -138,7 +139,7 @@ public:
 
 private:
     // Extra visual element to show the pattern editing area
-    std::unique_ptr<Inkscape::CanvasItemQuad> _quad;
+    CanvasItemPtr<Inkscape::CanvasItemQuad> _quad;
 };
 
 class PatternKnotHolderEntityAngle : public PatternKnotHolderEntity {
@@ -236,7 +237,7 @@ class BlurKnotHolderEntity : public KnotHolderEntity {
     Geom::Point _pos() const;
 
     int _dir;
-    std::unique_ptr<Inkscape::CanvasItemCurve> _line;
+    CanvasItemPtr<Inkscape::CanvasItemCurve> _line;
     Inkscape::auto_connection _watch_filter;
     Inkscape::auto_connection _watch_blur;
 };

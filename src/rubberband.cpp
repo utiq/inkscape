@@ -33,15 +33,8 @@ Inkscape::Rubberband::Rubberband(SPDesktop *dt)
 
 void Inkscape::Rubberband::delete_canvas_items()
 {
-    if (_rect) {
-        delete _rect;
-        _rect = nullptr;
-    }
-
-    if (_touchpath) {
-        delete _touchpath;
-        _touchpath = nullptr;
-    }
+    _rect.reset();
+    _touchpath.reset();
 }
 
 Geom::Path Inkscape::Rubberband::getPath() const
@@ -125,8 +118,8 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
 
     switch (_mode) {
         case RUBBERBAND_MODE_RECT:
-            if (_rect == nullptr) {
-                _rect = new Inkscape::CanvasItemRect(_desktop->getCanvasControls());
+            if (!_rect) {
+                _rect = make_canvasitem<CanvasItemRect>(_desktop->getCanvasControls());
                 _rect->set_stroke(_color.value_or(0x808080ff));
                 _rect->set_shadow(0xffffffff, 0); // Not a shadow
                 _rect->set_dashed(false);
@@ -136,8 +129,8 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
             _rect->show();
             break;
         case RUBBERBAND_MODE_TOUCHRECT:
-            if (_rect == nullptr) {
-                _rect = new Inkscape::CanvasItemRect(_desktop->getCanvasControls());
+            if (!_rect) {
+                _rect = make_canvasitem<CanvasItemRect>(_desktop->getCanvasControls());
                 _rect->set_stroke(_color.value_or(0xff0000ff));
                 _rect->set_shadow(0xffffffff, 0); // Not a shadow
                 _rect->set_dashed(false);
@@ -147,8 +140,8 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
             _rect->show();
             break;
         case RUBBERBAND_MODE_TOUCHPATH:
-            if (_touchpath == nullptr) {
-                _touchpath = new Inkscape::CanvasItemBpath(_desktop->getCanvasControls()); // Should be sketch?
+            if (!_touchpath) {
+                _touchpath = make_canvasitem<CanvasItemBpath>(_desktop->getCanvasControls()); // Should be sketch?
                 _touchpath->set_stroke(_color.value_or(0xff0000ff));
                 _touchpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
             }
@@ -207,7 +200,7 @@ Geom::OptRect Inkscape::Rubberband::getRectangle() const
 
 Inkscape::Rubberband *Inkscape::Rubberband::get(SPDesktop *desktop)
 {
-    if (_instance == nullptr) {
+    if (!_instance) {
         _instance = new Inkscape::Rubberband(desktop);
     }
 

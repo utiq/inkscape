@@ -223,14 +223,14 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
     canvas->set_drawing(canvas_drawing->get_drawing()); // Canvas needs access.
 
     Inkscape::DrawingItem *drawing_item = document->getRoot()->invoke_show(
-        *(canvas_drawing->get_drawing()),
+        *canvas_drawing->get_drawing(),
         dkey,
         SP_ITEM_SHOW_DISPLAY);
     if (drawing_item) {
         canvas_drawing->get_drawing()->root()->prependChild(drawing_item);
     }
 
-    temporary_item_list = new Inkscape::Display::TemporaryItemList( this );
+    temporary_item_list = new Inkscape::Display::TemporaryItemList();
     snapindicator = new Inkscape::Display::SnapIndicator ( this );
 
     /* --------- End Canvas Items ----------- */
@@ -295,16 +295,12 @@ void SPDesktop::destroy()
 
     if (canvas_drawing) {
         doc()->getRoot()->invoke_hide(dkey);
-        delete canvas_drawing; // Why is canvas_drawing special?
-        canvas_drawing = nullptr;
     }
 
     _guides_message_context = nullptr;
 }
 
-SPDesktop::~SPDesktop()
-= default;
-
+SPDesktop::~SPDesktop() = default;
 
 //--------------------------------------------------------------------
 /* Public methods */
@@ -335,6 +331,8 @@ SPDesktop::add_temporary_canvasitem (Inkscape::CanvasItem *item, guint lifetime,
 
 /** It is perfectly safe to call this function while the object has already been deleted due to a timeout.
 */
+// Note: This function may free the wrong temporary item if it is called on a freed pointer that
+// has had another TemporaryItem reallocated in its place.
 void
 SPDesktop::remove_temporary_canvasitem (Inkscape::Display::TemporaryItem * tempitem)
 {

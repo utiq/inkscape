@@ -30,7 +30,7 @@ const guint32 FILL_COLOR_MOUSEOVER = 0xff0000ff;
 SPDrawAnchor::SPDrawAnchor(Inkscape::UI::Tools::FreehandBase *dc, std::shared_ptr<SPCurve> curve, bool start, Geom::Point delta)
     : dc(dc), curve(std::move(curve)), start(start), active(FALSE), dp(delta),
       ctrl(
-        new Inkscape::CanvasItemCtrl(
+        make_canvasitem<Inkscape::CanvasItemCtrl>(
           dc->getDesktop()->getCanvasControls(),
           Inkscape::CANVAS_ITEM_CTRL_TYPE_ANCHOR
         )
@@ -42,12 +42,7 @@ SPDrawAnchor::SPDrawAnchor(Inkscape::UI::Tools::FreehandBase *dc, std::shared_pt
     ctrl->set_pickable(false); // We do our own checking. (TODO: Should be fixed!)
 }
 
-SPDrawAnchor::~SPDrawAnchor()
-{
-    if (ctrl) {
-        delete (ctrl);
-    }
-}
+SPDrawAnchor::~SPDrawAnchor() = default;
 
 /**
  * Test if point is near anchor, if so fill anchor on canvas and return

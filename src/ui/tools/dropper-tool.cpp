@@ -53,7 +53,7 @@ namespace Tools {
 DropperTool::DropperTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/dropper", "dropper-pick-fill.svg")
 {
-    area = new Inkscape::CanvasItemBpath(desktop->getCanvasControls());
+    area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
     area->set_stroke(0x0000007f);
     area->set_fill(0x0, SP_WIND_RULE_EVENODD);
     area->hide();
@@ -74,11 +74,6 @@ DropperTool::~DropperTool()
     this->enableGrDrag(false);
 
     ungrabCanvasEvents();
-
-    if (this->area) {
-        delete this->area;
-        this->area = nullptr;
-    }
 }
 
 /**
@@ -217,7 +212,7 @@ bool DropperTool::root_handler(GdkEvent* event) {
                     // Show circle on canvas
                     Geom::PathVector path = Geom::Path(Geom::Circle(0, 0, 1)); // Unit circle centered at origin.
                     path *= sm;
-                    this->area->set_bpath(path);
+                    this->area->set_bpath(std::move(path));
                     this->area->show();
 
                     /* Get buffer */

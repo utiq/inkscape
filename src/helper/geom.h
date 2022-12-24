@@ -64,6 +64,21 @@ inline auto expandedBy(Geom::IntRect rect, int amount)
     return rect;
 }
 
+inline auto expandedBy(Geom::Rect rect, double amount)
+{
+    rect.expandBy(amount);
+    return rect;
+}
+
+inline Geom::OptRect expandedBy(Geom::OptRect const &rect, double amount)
+{
+    if (!rect) {
+        return {};
+    } else {
+        return expandedBy(*rect, amount);
+    }
+}
+
 inline auto distSq(Geom::IntPoint const &pt, Geom::IntRect const &rect)
 {
     auto v = rect.clamp(pt) - pt;
@@ -134,6 +149,29 @@ inline auto max(Geom::Point const &a)
 inline auto regularised(Geom::OptIntRect const &r)
 {
     return r && !r->hasZeroArea() ? r : Geom::OptIntRect();
+}
+
+/// Get the bounding box of a collection of points.
+template <typename... Args>
+auto bounds_of(Geom::Point const &pt, Args const &... args)
+{
+    if constexpr (sizeof...(args) == 0) {
+        return Geom::Rect(pt, pt);
+    } else {
+        auto rect = bounds_of(args...);
+        rect.expandTo(pt);
+        return rect;
+    }
+}
+
+inline auto floor(Geom::Rect const &rect)
+{
+    return Geom::Rect(rect.min().floor(), rect.max().floor());
+}
+
+inline auto roundedOutwards(Geom::OptRect const &rect)
+{
+    return rect ? rect->roundOutwards() : Geom::OptIntRect();
 }
 
 #endif // INKSCAPE_HELPER_GEOM_H

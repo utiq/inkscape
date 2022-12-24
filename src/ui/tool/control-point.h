@@ -21,6 +21,7 @@
 // #include "ui/control-types.h"
 #include "display/control/canvas-item-ctrl.h"
 #include "display/control/canvas-item-enums.h"
+#include "display/control/canvas-item-ptr.h"
 
 #include "enums.h" // TEMP TEMP
 
@@ -315,8 +316,6 @@ protected:
 
     void _setAnchor(SPAnchorType anchor);
 
-    void _setPixbuf(Glib::RefPtr<Gdk::Pixbuf>);
-
     /**
      * Determines if the control point is not visible yet still reacting to events.
      *
@@ -340,7 +339,7 @@ protected:
     virtual bool _hasDragTips() const { return false; }
 
 
-    Inkscape::CanvasItemCtrl * _canvas_item_ctrl = nullptr; ///< Visual representation of the control point.
+    CanvasItemPtr<Inkscape::CanvasItemCtrl> _canvas_item_ctrl; ///< Visual representation of the control point.
 
     ColorSet const &_cset; ///< Colors used to represent the point
 

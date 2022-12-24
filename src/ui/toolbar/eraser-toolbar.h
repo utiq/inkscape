@@ -44,7 +44,6 @@ class SimplePrefPusher;
 
 namespace Tools {
 enum class EraserToolMode;
-extern EraserToolMode const DEFAULT_ERASER_MODE;
 } // namespace Tools
 
 namespace Widget {

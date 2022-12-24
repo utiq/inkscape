@@ -15,6 +15,7 @@
 
 #include "ui/tools/tool-base.h"
 #include "2geom/rect.h"
+#include "display/control/canvas-item-ptr.h"
 
 #define SP_PAGES_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::PagesTool *>((Inkscape::UI::Tools::ToolBase *)obj))
 #define SP_IS_PAGES_CONTEXT(obj) \
@@ -83,8 +84,8 @@ private:
     SPPage *highlight_item = nullptr;
     SPPage *dragging_item = nullptr;
     std::optional<Geom::Rect> on_screen_rect; ///< On-screen rectangle, in desktop coordinates.
-    Inkscape::CanvasItemRect *visual_box = nullptr;
-    Inkscape::CanvasItemGroup *drag_group = nullptr;
+    CanvasItemPtr<CanvasItemRect> visual_box;
+    CanvasItemPtr<CanvasItemGroup> drag_group;
     std::vector<Inkscape::CanvasItemBpath *> drag_shapes;
     std::vector<Inkscape::SnapCandidatePoint> _bbox_points;
 

@@ -25,6 +25,7 @@
 
 #include "display/control/canvas-temporary-item.h"
 #include "display/control/canvas-item-enums.h"
+#include "display/control/canvas-item-ptr.h"
 
 class SPKnot;
 
@@ -78,8 +79,6 @@ public:
     void setMeasureItem(Geom::PathVector pathv, bool is_curve, bool markers, guint32 color, Inkscape::XML::Node *measure_repr);
     void createAngleDisplayCurve(Geom::Point const &center, Geom::Point const &end, Geom::Point const &anchor,
                                  double angle, bool to_phantom,
-                                 std::vector<Inkscape::CanvasItem *> &measure_phantom_items,
-                                 std::vector<Inkscape::CanvasItem *> &measure_tmp_items,
                                  Inkscape::XML::Node *measure_repr = nullptr);
 
 private:
@@ -92,9 +91,9 @@ private:
     Geom::Point end_p;
     Geom::Point last_pos;
 
-    std::vector<Inkscape::CanvasItem *> measure_tmp_items;
-    std::vector<Inkscape::CanvasItem *> measure_phantom_items;
-    std::vector<Inkscape::CanvasItem *> measure_item;
+    std::vector<CanvasItemPtr<CanvasItem>> measure_tmp_items;
+    std::vector<CanvasItemPtr<CanvasItem>> measure_phantom_items;
+    std::vector<CanvasItemPtr<CanvasItem>> measure_item;
 
     double item_width;
     double item_height;

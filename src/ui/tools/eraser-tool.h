@@ -37,7 +37,7 @@ enum class EraserToolMode
     CUT,
     CLIP
 };
-extern EraserToolMode const DEFAULT_ERASER_MODE;
+static inline constexpr auto DEFAULT_ERASER_MODE = EraserToolMode::CUT;
 
 /** Represents an item to erase */
 struct EraseTarget
@@ -65,26 +65,26 @@ private:
     Pref<int> _mode_int;
 
     // static data:
-    inline static guint32 const trace_color_rgba   = 0xff0000ff; // RGBA red
-    inline static SPWindRule const trace_wind_rule = SP_WIND_RULE_EVENODD;
+    static constexpr uint32_t trace_color_rgba  = 0xff0000ff; // RGBA red
+    static constexpr SPWindRule trace_wind_rule = SP_WIND_RULE_EVENODD;
 
-    inline static double const tolerance = 0.1;
+    static constexpr double tolerance = 0.1;
 
-    inline static double const epsilon       = 0.5e-6;
-    inline static double const epsilon_start = 0.5e-2;
-    inline static double const vel_start     = 1e-5;
+    static constexpr double epsilon       = 0.5e-6;
+    static constexpr double epsilon_start = 0.5e-2;
+    static constexpr double vel_start     = 1e-5;
 
-    inline static double const drag_default = 1.0;
-    inline static double const drag_min     = 0.0;
-    inline static double const drag_max     = 1.0;
+    static constexpr double drag_default = 1.0;
+    static constexpr double drag_min     = 0.0;
+    static constexpr double drag_max     = 1.0;
 
-    inline static double const min_pressure     = 0.0;
-    inline static double const max_pressure     = 1.0;
-    inline static double const default_pressure = 1.0;
+    static constexpr double min_pressure     = 0.0;
+    static constexpr double max_pressure     = 1.0;
+    static constexpr double default_pressure = 1.0;
 
-    inline static double const min_tilt     = -1.0;
-    inline static double const max_tilt     = 1.0;
-    inline static double const default_tilt = 0.0;
+    static constexpr double min_tilt     = -1.0;
+    static constexpr double max_tilt     = 1.0;
+    static constexpr double default_tilt = 0.0;
 
 public:
     // public member functions
@@ -93,11 +93,11 @@ public:
     bool root_handler(GdkEvent *event) final;
 
     using Error = std::uint64_t;
-    inline static Error const ALL_GOOD      = 0x0;
-    inline static Error const NON_EXISTENT  = 0x1 << 1;
-    inline static Error const NO_AREA_PATH  = 0x1 << 2;
-    inline static Error const RASTER_IMAGE  = 0x1 << 3;
-    inline static Error const ERROR_GROUP   = 0x1 << 4;
+    static constexpr Error ALL_GOOD     = 0x0;
+    static constexpr Error NON_EXISTENT = 0x1 << 1;
+    static constexpr Error NO_AREA_PATH = 0x1 << 2;
+    static constexpr Error RASTER_IMAGE = 0x1 << 3;
+    static constexpr Error ERROR_GROUP  = 0x1 << 4;
 
 private:
     // private member functions
@@ -124,7 +124,6 @@ private:
     void _handleStrokeStyle(SPItem *item) const;
     SPItem *_insertAcidIntoDocument(SPDocument *document);
     bool _performEraseOperation(std::vector<EraseTarget> const &items_to_erase, bool store_survivers);
-    void _removeTemporarySegments();
     void _reset(Geom::Point p);
     void _setStatusBarMessage(char *message);
     void _updateMode();

@@ -584,10 +584,9 @@ bool GrDrag::dropColor(SPItem */*item*/, gchar const *c, Geom::Point p)
     }
 
     // now see if we're over line and create a new stop
-    for (auto curve : item_curves) {
-        if (curve->is_line() && curve->get_item() && curve->contains(p, 5)) {
-            SPStop *stop = addStopNearPoint(curve->get_item(), p, 5/desktop->current_zoom());
-            if (stop) {
+    for (auto &it : item_curves) {
+        if (it.curve->is_line() && it.item && it.curve->contains(p, 5)) {
+            if (auto stop = addStopNearPoint(it.item, p, 5 / desktop->current_zoom())) {
                 SPCSSAttr *css = sp_repr_css_attr_new();
                 sp_repr_css_set_property( css, "stop-color", stopIsNull ? nullptr : toUse.c_str() );
                 sp_repr_css_set_property( css, "stop-opacity", "1" );
@@ -599,7 +598,6 @@ bool GrDrag::dropColor(SPItem */*item*/, gchar const *c, Geom::Point p)
 
     return false;
 }
-
 
 GrDrag::GrDrag(SPDesktop *desktop) :
     keep_selection(false),
@@ -673,9 +671,6 @@ GrDrag::~GrDrag()
     this->draggers.clear();
     this->selected.clear();
 
-    for (auto curve : item_curves) {
-        delete curve;
-    }
     item_curves.clear();
 }
 
@@ -685,16 +680,13 @@ GrDraggable::GrDraggable(SPItem *item, GrPointType point_type, guint point_i, In
     point_i(point_i),
     fill_or_stroke(fill_or_stroke)
 {
-    //g_object_ref(G_OBJECT(item));
 	sp_object_ref(item);
 }
 
 GrDraggable::~GrDraggable()
 {
-    //g_object_unref (G_OBJECT (this->item));
-	sp_object_unref(this->item);
+    sp_object_unref(item);
 }
-
 
 SPObject *GrDraggable::getServer()
 {
@@ -2043,22 +2035,23 @@ void GrDrag::setDeselected(GrDragger *dragger)
     desktop->emit_gradient_stop_selected(this, nullptr);
 }
 
-
 /**
  * Create a line from p1 to p2 and add it to the curves list. Used for linear and radial gradients.
  */
 void GrDrag::addLine(SPItem *item, Geom::Point p1, Geom::Point p2, Inkscape::PaintTarget fill_or_stroke)
 {
-    auto canvas_item_color = (fill_or_stroke == Inkscape::FOR_FILL) ? Inkscape::CANVAS_ITEM_PRIMARY : Inkscape::CANVAS_ITEM_SECONDARY;
-    auto item_curve = new Inkscape::CanvasItemCurve(desktop->getCanvasControls(), p1, p2);
-    item_curve->set_name("GradientLine");
-    item_curve->set_stroke(canvas_item_color);
-    item_curve->set_is_fill(fill_or_stroke == Inkscape::FOR_FILL);
-    item_curve->set_item(item);
-    item_curves.push_back(item_curve);
+    auto const canvas_item_color = fill_or_stroke == Inkscape::FOR_FILL ? Inkscape::CANVAS_ITEM_PRIMARY : Inkscape::CANVAS_ITEM_SECONDARY;
+
+    auto curve = make_canvasitem<Inkscape::CanvasItemCurve>(desktop->getCanvasControls(), p1, p2);
+    curve->set_name("GradientLine");
+    curve->set_stroke(canvas_item_color);
+
+    auto item_curve = ItemCurve();
+    item_curve.item = item;
+    item_curve.curve = std::move(curve);
+    item_curve.is_fill = fill_or_stroke == Inkscape::FOR_FILL;
+    item_curves.emplace_back(std::move(item_curve));
 }
-
-
 
 /**
  * Create a curve from p0 to p3 and add it to the curves list. Used for mesh sides.
@@ -2080,23 +2073,20 @@ void GrDrag::addCurve(SPItem *item, Geom::Point p0, Geom::Point p1, Geom::Point 
         highlight = true;
     }
 
-    auto canvas_item_color =
-        (fill_or_stroke == Inkscape::FOR_FILL) ? Inkscape::CANVAS_ITEM_PRIMARY : Inkscape::CANVAS_ITEM_SECONDARY;
-    if (highlight) {
-        canvas_item_color =
-            (fill_or_stroke == Inkscape::FOR_FILL) ? Inkscape::CANVAS_ITEM_SECONDARY : Inkscape::CANVAS_ITEM_PRIMARY;
-    }
+    auto const canvas_item_color = (fill_or_stroke == Inkscape::FOR_FILL) ^ highlight ? Inkscape::CANVAS_ITEM_PRIMARY : Inkscape::CANVAS_ITEM_SECONDARY;
 
-    auto item_curve = new Inkscape::CanvasItemCurve(desktop->getCanvasControls(), p0, p1, p2, p3);
-    item_curve->set_name("GradientCurve");
-    item_curve->set_stroke(canvas_item_color);
-    item_curve->set_is_fill(fill_or_stroke == Inkscape::FOR_FILL);
-    item_curve->set_item(item);
-    item_curve->set_corner0(corner0);
-    item_curve->set_corner1(corner1);
-    item_curves.push_back(item_curve);
+    auto curve = make_canvasitem<Inkscape::CanvasItemCurve>(desktop->getCanvasControls(), p0, p1, p2, p3);
+    curve->set_name("GradientCurve");
+    curve->set_stroke(canvas_item_color);
+
+    auto item_curve = ItemCurve();
+    item_curve.item = item;
+    item_curve.curve = std::move(curve);
+    item_curve.is_fill = fill_or_stroke == Inkscape::FOR_FILL;
+    item_curve.corner0 = corner0;
+    item_curve.corner1 = corner1;
+    item_curves.emplace_back(std::move(item_curve));
 }
-
 
 /**
  * If there already exists a dragger within MERGE_DIST of p, add the draggable to it; otherwise create
@@ -2463,9 +2453,6 @@ bool GrDrag::mouseOver()
  */
 void GrDrag::updateLines()
 {
-    for (auto curve : item_curves) {
-        delete curve;
-    }
     item_curves.clear();
 
     g_return_if_fail(this->selection != nullptr);

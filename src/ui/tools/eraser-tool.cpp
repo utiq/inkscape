@@ -80,14 +80,12 @@ namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-extern EraserToolMode const DEFAULT_ERASER_MODE = EraserToolMode::CUT;
-
 EraserTool::EraserTool(SPDesktop *desktop)
     : DynamicBase(desktop, "/tools/eraser", "eraser.svg")
     , _break_apart{"/tools/eraser/break_apart", false}
     , _mode_int{"/tools/eraser/mode", 1} // Cut mode is default
 {
-    currentshape = new Inkscape::CanvasItemBpath(desktop->getCanvasSketch());
+    currentshape = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
     currentshape->set_stroke(0x0);
     currentshape->set_fill(trace_color_rgba, trace_wind_rule);
 
@@ -118,11 +116,7 @@ EraserTool::EraserTool(SPDesktop *desktop)
     enableSelectionCue();
 }
 
-EraserTool::~EraserTool()
-{
-    delete currentshape;
-    currentshape = nullptr;
-}
+EraserTool::~EraserTool() = default;
 
 /**  Reads the current Eraser mode from Preferences and sets `mode` accordingly. */
 void EraserTool::_updateMode()
@@ -353,21 +347,12 @@ void EraserTool::_cancel()
     is_drawing = false;
     ungrabCanvasEvents();
 
-    _removeTemporarySegments();
+    segments.clear();
 
     /* reset accumulated curve */
     accumulated.reset();
     _clearCurrent();
     repr = nullptr;
-}
-
-/** Removes all temporary line segments */
-void EraserTool::_removeTemporarySegments()
-{
-    for (auto segment : segments) {
-        delete segment;
-    }
-    segments.clear();
 }
 
 bool EraserTool::root_handler(GdkEvent* event)
@@ -451,7 +436,7 @@ bool EraserTool::root_handler(GdkEvent* event)
                 dragging = false;
 
                 _apply(motion_dt);
-                _removeTemporarySegments();
+                segments.clear();
 
                 // Create eraser stroke shape
                 _fitAndSplit(true);
@@ -1380,7 +1365,7 @@ void EraserTool::_fitDrawLastPoint()
 
     /* fixme: Cannot we cascade it to root more clearly? */
     cbp->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), _desktop));
-    segments.push_back(cbp);
+    segments.emplace_back(cbp);
 
     if (mode == EraserToolMode::DELETE) {
         cbp->hide();

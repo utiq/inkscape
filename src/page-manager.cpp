@@ -699,9 +699,9 @@ bool PageManager::setDefaultAttributes(Inkscape::CanvasPage *item)
     auto dkcolor = _document->getNamedView()->desk_color;
     bool ret = item->setOnTop(border_on_top);
     // fixed shadow size, not configurable; shadow changes size with zoom
-    ret = item->setShadow(border_show && shadow_show ? 2 : 0) || ret;
-    ret = item->setPageColor(border_show ? border_color : 0x0, bgcolor, dkcolor, margin_color, bleed_color) || ret;
-    ret = item->setLabelStyle(label_style) || ret;
+    ret |= item->setShadow(border_show && shadow_show ? 2 : 0);
+    ret |= item->setPageColor(border_show ? border_color : 0x0, bgcolor, dkcolor, margin_color, bleed_color);
+    ret |= item->setLabelStyle(label_style);
     return ret;
 }
 

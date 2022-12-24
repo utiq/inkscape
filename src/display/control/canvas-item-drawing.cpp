@@ -9,7 +9,7 @@
  *
  * Copyright (C) 2020 Tavmjong Bah
  *
- * Rewrite of _SPCavasArena.
+ * Rewrite of _SPCanvasArena.
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
@@ -23,6 +23,7 @@
 #include "display/drawing-item.h"
 #include "display/drawing-group.h"
 
+#include "helper/geom.h"
 #include "ui/widget/canvas.h"
 #include "ui/modifiers.h"
 
@@ -44,16 +45,6 @@ CanvasItemDrawing::CanvasItemDrawing(CanvasItemGroup *group)
 }
 
 /**
- * Returns distance between point in canvas units and nearest point on drawing.
- */
-double CanvasItemDrawing::closest_distance_to(Geom::Point const &p)
-{
-    double d = Geom::infinity();
-    std::cerr << "CanvasItemDrawing::closest_distance_to: Not implemented!" << std::endl;
-    return d;
-}
-
-/**
  * Returns true if point p (in canvas units) is inside some object in drawing.
  */
 bool CanvasItemDrawing::contains(Geom::Point const &p, double tolerance)
@@ -62,13 +53,11 @@ bool CanvasItemDrawing::contains(Geom::Point const &p, double tolerance)
         std::cerr << "CanvasItemDrawing::contains: Non-zero tolerance not implemented!" << std::endl;
     }
 
-    _drawing->update(Geom::IntRect::infinite(), _ctx.ctm, DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX);
     _picked_item = _drawing->pick(p, _drawing->cursorTolerance(), _sticky * DrawingItem::PICK_STICKY | _pick_outline * DrawingItem::PICK_OUTLINE);
 
     if (_picked_item) {
         // This will trigger a signal that is handled by our event handler. Seems a bit of a
-        // round-a-bout way of doing things but it matches what other pickable canvas-item classes
-        // do.
+        // round-about way of doing things but it matches what other pickable canvas-item classes do.
         return true;
     }
 
@@ -78,33 +67,22 @@ bool CanvasItemDrawing::contains(Geom::Point const &p, double tolerance)
 /**
  * Update and redraw drawing.
  */
-void CanvasItemDrawing::update(Geom::Affine const &affine)
+void CanvasItemDrawing::_update(bool)
 {
-    auto new_affine = affine;
-
-    // Correct for y-axis. This should not be here!!!!
-    if (auto *desktop = _canvas->get_desktop()) {
-        new_affine = desktop->doc2dt() * new_affine;
+    // Undo y-axis flip. This should not be here!!!!
+    auto new_drawing_affine = affine();
+    if (auto desktop = get_canvas()->get_desktop()) {
+        new_drawing_affine = desktop->doc2dt() * new_drawing_affine;
     }
 
-    // if (_affine == new_affine && !_need_update) {
-    //     // Nothing to do.
-    //     return;
-    // }
-
-    _ctx.ctm = new_affine;  // TODO Remove _ctx.ctm... it's exactly the same as _affine!
-
-    unsigned reset = (_affine != new_affine ? DrawingItem::STATE_ALL : 0);
-
-    _affine = new_affine;
-
-    _drawing->update(Geom::IntRect::infinite(), _ctx.ctm, DrawingItem::STATE_ALL, reset);
-
-    Geom::OptIntRect bbox = _drawing->root()->drawbox();
-    if (bbox) {
-        _bounds = *bbox;
-        _bounds.expandBy(1); // Avoid aliasing artifacts.
+    bool affine_changed = _drawing_affine != new_drawing_affine;
+    if (affine_changed) {
+        _drawing_affine = new_drawing_affine;
     }
+
+    _drawing->update(Geom::IntRect::infinite(), _drawing_affine, DrawingItem::STATE_ALL, affine_changed * DrawingItem::STATE_ALL);
+
+    _bounds = expandedBy(_drawing->root()->drawbox(), 1); // Avoid aliasing artifacts
 
     // Todo: This should be managed elsewhere.
     if (_cursor) {
@@ -113,7 +91,7 @@ void CanvasItemDrawing::update(Geom::Affine const &affine)
         if (_active_item != new_drawing_item) {
 
             GdkEventCrossing ec;
-            ec.window = _canvas->get_window()->gobj();
+            ec.window = get_canvas()->get_window()->gobj();
             ec.send_event = true;
             ec.subwindow = ec.window;
             ec.time = GDK_CURRENT_TIME;
@@ -134,26 +112,15 @@ void CanvasItemDrawing::update(Geom::Affine const &affine)
             }
         }
     }
-
-    _need_update = false;
 }
 
 /**
  * Render drawing to screen via Cairo.
  */
-void CanvasItemDrawing::render(Inkscape::CanvasItemBuffer *buf)
+void CanvasItemDrawing::_render(Inkscape::CanvasItemBuffer &buf)
 {
-    if (!buf) {
-        std::cerr << "CanvasItemDrawing::Render: No buffer!" << std::endl;
-        return;
-    }
-
-    if (buf->rect.hasZeroArea()) {
-        return;
-    }
-
-    auto dc = Inkscape::DrawingContext(buf->cr->cobj(), buf->rect.min());
-    _drawing->render(dc, buf->rect, buf->outline_pass * DrawingItem::RENDER_OUTLINE);
+    auto dc = Inkscape::DrawingContext(buf.cr->cobj(), buf.rect.min());
+    _drawing->render(dc, buf.rect, buf.outline_pass * DrawingItem::RENDER_OUTLINE);
 }
 
 /**
@@ -174,8 +141,6 @@ bool CanvasItemDrawing::handle_event(GdkEvent *event)
                 /* TODO ... event -> arena transform? */
                 _c = Geom::Point(event->crossing.x, event->crossing.y);
 
-                /* fixme: Not sure abut this, but seems the right thing (Lauris) */
-                //_drawing->update(Geom::IntRect::infinite(), _ctx, DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX, 0);
                 _active_item = _drawing->pick(_c, _drawing->cursorTolerance(), _sticky * DrawingItem::PICK_STICKY | _pick_outline * DrawingItem::PICK_OUTLINE);
                 retval = _drawing_event_signal.emit(event, _active_item);
             }
@@ -193,9 +158,6 @@ bool CanvasItemDrawing::handle_event(GdkEvent *event)
         {
             /* TODO ... event -> arena transform? */
             _c = Geom::Point(event->motion.x, event->motion.y);
-
-            /* fixme: Not sure abut this, but seems the right thing (Lauris) */
-            //_drawing->update(Geom::IntRect::infinite(), _ctx, DrawingItem::STATE_PICK | DrawingItem::STATE_BBOX);
 
             auto new_drawing_item = _drawing->pick(_c, _drawing->cursorTolerance(), _sticky * DrawingItem::PICK_STICKY | _pick_outline * DrawingItem::PICK_OUTLINE);
             if (_active_item != new_drawing_item) {

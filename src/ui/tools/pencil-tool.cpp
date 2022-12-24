@@ -504,9 +504,6 @@ void PencilTool::_cancel() {
     this->red_curve.reset();
     this->red_bpath->set_bpath(&red_curve);
 
-    for (auto path : this->green_bpaths) {
-        delete path;
-    }
     this->green_bpaths.clear();
     this->green_curve->reset();
     this->green_anchor.reset();
@@ -1163,7 +1160,7 @@ void PencilTool::_fitAndSplit() {
         cshape->set_stroke(green_color);
         cshape->set_fill(0x0, SP_WIND_RULE_NONZERO);
 
-        this->green_bpaths.push_back(cshape);
+        this->green_bpaths.emplace_back(cshape);
 
         this->red_curve_is_valid = false;
     }

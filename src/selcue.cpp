@@ -133,17 +133,16 @@ void SelCue::_newItemBboxes()
         Geom::OptRect const bbox = (prefs_bbox == 0) ? item->desktopVisualBounds() : item->desktopGeometricBounds();
 
         if (bbox) {
-            std::unique_ptr<CanvasItem> canvas_item;
+            CanvasItemPtr<CanvasItem> canvas_item;
 
             if (mode == MARK) {
-                auto ctrl =
-                    std::make_unique<CanvasItemCtrl>(_desktop->getCanvasControls(), CANVAS_ITEM_CTRL_TYPE_SHAPER,
-                                                     Geom::Point(bbox->min().x(), bbox->max().y()));
+                auto ctrl = make_canvasitem<CanvasItemCtrl>(_desktop->getCanvasControls(), CANVAS_ITEM_CTRL_TYPE_SHAPER,
+                                                            Geom::Point(bbox->min().x(), bbox->max().y()));
                 ctrl->set_fill(0x000000ff);
                 ctrl->set_stroke(0x0000000ff);
                 canvas_item = std::move(ctrl);
             } else if (mode == BBOX) {
-                auto rect = std::make_unique<CanvasItemRect>(_desktop->getCanvasControls(), *bbox);
+                auto rect = make_canvasitem<CanvasItemRect>(_desktop->getCanvasControls(), *bbox);
                 rect->set_stroke(0xffffffa0);
                 rect->set_shadow(0x0000c0a0, 1);
                 rect->set_dashed(true);
@@ -153,7 +152,7 @@ void SelCue::_newItemBboxes()
 
             if (canvas_item) {
                 canvas_item->set_pickable(false);
-                canvas_item->set_z_position(0); // Just low enough to not get in the way of other draggable knots.
+                canvas_item->lower_to_bottom(); // Just low enough to not get in the way of other draggable knots.
                 canvas_item->show();
                 _item_bboxes.emplace_back(std::move(canvas_item));
             }
@@ -178,9 +177,8 @@ void SelCue::_newItemLines()
         auto anchor = Geom::Scale(_selection->anchor_x, _selection->anchor_y);
         auto point = bbox->min() + (bbox->dimensions() * anchor);
         for (bool horz : {false, true}) {
-            auto line =
-                std::make_unique<CanvasItemGuideLine>(_desktop->getCanvasGuides(), "", point, Geom::Point(!horz, horz));
-            line->set_z_position(0);
+            auto line = make_canvasitem<CanvasItemGuideLine>(_desktop->getCanvasGuides(), "", point, Geom::Point(!horz, horz));
+            line->lower_to_bottom();
             line->show();
             line->set_stroke(0xddddaa11);
             line->set_inverted(true);
@@ -202,12 +200,11 @@ void SelCue::_newTextBaselines()
             pt = flow->getBaselinePoint();
         }
         if (pt) {
-            auto canvas_item = std::make_unique<CanvasItemCtrl>(
-                _desktop->getCanvasControls(), CANVAS_ITEM_CTRL_SHAPE_SQUARE, (*pt) * item->i2dt_affine());
+            auto canvas_item = make_canvasitem<CanvasItemCtrl>(_desktop->getCanvasControls(), CANVAS_ITEM_CTRL_SHAPE_SQUARE, (*pt) * item->i2dt_affine());
             canvas_item->set_size(5);
             canvas_item->set_stroke(0x000000ff);
             canvas_item->set_fill(0x00000000);
-            canvas_item->set_z_position(0);
+            canvas_item->lower_to_bottom();
             canvas_item->show();
             _text_baselines.emplace_back(std::move(canvas_item));
         }

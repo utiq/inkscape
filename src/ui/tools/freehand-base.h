@@ -23,6 +23,7 @@
 #include "ui/tools/tool-base.h"
 #include "live_effects/effect-enum.h"
 #include "display/curve.h"
+#include "display/control/canvas-item-ptr.h"
 
 class SPCurve;
 class SPCanvasItem;
@@ -55,16 +56,16 @@ protected:
 
 public:
     // Red - Last segment as it's drawn.
-    Inkscape::CanvasItemBpath *red_bpath;
+    CanvasItemPtr<CanvasItemBpath> red_bpath;
     SPCurve red_curve;
     std::optional<Geom::Point> red_curve_get_last_point();
 
     // Blue - New path after LPE as it's drawn.
-    Inkscape::CanvasItemBpath *blue_bpath;
+    CanvasItemPtr<CanvasItemBpath> blue_bpath;
     SPCurve blue_curve;
 
     // Green - New path as it's drawn.
-    std::vector<Inkscape::CanvasItemBpath *> green_bpaths;
+    std::vector<CanvasItemPtr<CanvasItemBpath>> green_bpaths;
     std::shared_ptr<SPCurve> green_curve;
     std::unique_ptr<SPDrawAnchor> green_anchor;
     bool green_closed; // a flag meaning we hit the green anchor, so close the path on itself

@@ -1800,8 +1800,7 @@ SPDesktopWidget::on_ruler_box_button_release_event(GdkEventButton *event, Gtk::W
             ruler_snap_new_guide(desktop, event_dt, normal);
         }
 
-        delete _active_guide;
-        _active_guide = nullptr;
+        _active_guide.reset();
         if ((horiz ? wy : wx) >= 0) {
             Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
             Inkscape::XML::Node *repr = xml_doc->createElement("sodipodi:guide");
@@ -1908,7 +1907,7 @@ SPDesktopWidget::on_ruler_box_button_press_event(GdkEventButton *event, Gtk::Wid
             }
         }
 
-        _active_guide = new Inkscape::CanvasItemGuideLine(desktop->getCanvasGuides(), Glib::ustring(), event_dt, _normal);
+        _active_guide = make_canvasitem<Inkscape::CanvasItemGuideLine>(desktop->getCanvasGuides(), Glib::ustring(), event_dt, _normal);
         _active_guide->set_stroke(desktop->namedview->guidehicolor);
 
         // Ruler grabs all events until button release.

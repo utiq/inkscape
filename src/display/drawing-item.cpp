@@ -97,8 +97,12 @@ DrawingItem::~DrawingItem()
             itemdrawing->set_active(nullptr);
         }
     } else {
-        // Can happen, e.g. in Eraser tool.
-        // std::cerr << "DrawingItem::~DrawingItem: Missing CanvasItemDrawing!" << std::endl;
+        // Typically happens, e.g. for any non-Canvas Drawing.
+    }
+
+    // Remove caching candidate entry.
+    if (_has_cache_iterator) {
+        _drawing._candidate_items.erase(_cache_iterator);
     }
 
     // Remove from the set of cached items and delete cache.
@@ -264,10 +268,6 @@ void DrawingItem::_setCached(bool cached, bool persistent)
     } else {
         _drawing._cached_items.erase(this);
         _cache.reset();
-        if (_has_cache_iterator) {
-            _drawing._candidate_items.erase(_cache_iterator);
-            _has_cache_iterator = false;
-        }
     }
 }
 
@@ -1106,8 +1106,7 @@ void DrawingItem::_markForUpdate(unsigned flags, bool propagate)
             if (drawing().getCanvasItemDrawing()) {
                 drawing().getCanvasItemDrawing()->request_update();
             } else {
-                // Can happen, e.g. Eraser tool.
-                // std::cerr << "DrawingItem::_markForUpdate: Missing CanvasItemDrawing!" << std::endl;
+                // Typically happens, e.g. for any non-Canvas Drawing.
             }
         }
     }

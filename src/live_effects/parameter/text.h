@@ -17,6 +17,7 @@
 #include <glib.h>
 
 #include "live_effects/parameter/parameter.h"
+#include "display/control/canvas-item-ptr.h"
 
 namespace Inkscape {
 
@@ -60,7 +61,7 @@ private:
     double anchor_y;
     Glib::ustring value;
     Glib::ustring defvalue;
-    Inkscape::CanvasItemText *canvas_text = nullptr;
+    CanvasItemPtr<CanvasItemText> canvas_text;
 };
 
 /*

@@ -146,7 +146,6 @@ SprayTool::SprayTool(SPDesktop *desktop)
     , is_drawing(false)
     , is_dilating(false)
     , has_dilated(false)
-    , dilate_area(nullptr)
     , no_overlap(false)
     , picker(false)
     , pick_center(true)
@@ -167,7 +166,7 @@ SprayTool::SprayTool(SPDesktop *desktop)
     , gamma_picked(0)
     , rand_picked(0)
 {
-    dilate_area = new Inkscape::CanvasItemBpath(desktop->getCanvasControls());
+    dilate_area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
     dilate_area->set_stroke(0xff9900ff);
     dilate_area->set_fill(0x0, SP_WIND_RULE_EVENODD);
     dilate_area->hide();
@@ -216,11 +215,6 @@ SprayTool::~SprayTool() {
     _desktop->getSelection()->restoreBackup();
     this->enableGrDrag(false);
     this->style_set_connection.disconnect();
-
-    if (this->dilate_area) {
-        delete this->dilate_area;
-        this->dilate_area = nullptr;
-    }
 }
 
 void SprayTool::update_cursor(bool /*with_shift*/) {

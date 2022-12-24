@@ -41,6 +41,8 @@
 #include <string>
 #include <cstring>
 
+#include <boost/range/adaptor/reversed.hpp>
+
 #include <2geom/transforms.h>
 
 #include "desktop.h"
@@ -48,7 +50,6 @@
 #include "event-log.h"
 #include "file.h"
 #include "id-clash.h"
-#include "inkscape-version.h"
 #include "inkscape.h"
 #include "inkscape-window.h"
 #include "profile-manager.h"
@@ -64,7 +65,6 @@
 
 #include "3rdparty/adaptagrams/libavoid/router.h"
 
-#include "3rdparty/libcroco/cr-parser.h"
 #include "3rdparty/libcroco/cr-sel-eng.h"
 #include "3rdparty/libcroco/cr-selector.h"
 
@@ -1487,40 +1487,33 @@ static std::vector<SPItem*> &find_items_in_area(std::vector<SPItem*> &s,
     return s;
 }
 
-SPItem *SPDocument::getItemFromListAtPointBottom(unsigned int dkey, SPGroup *group, std::vector<SPItem*> const &list,Geom::Point const &p, bool take_insensitive)
+SPItem *SPDocument::getItemFromListAtPointBottom(unsigned dkey, SPGroup *group, std::vector<SPItem*> const &list, Geom::Point const &p, bool take_insensitive)
 {
-    g_return_val_if_fail(group, NULL);
-    SPItem *bottomMost = nullptr;
+    if (!group) {
+        return nullptr;
+    }
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    gdouble delta = prefs->getDouble("/options/cursortolerance/value", 1.0);
+    double const delta = Inkscape::Preferences::get()->getDouble("/options/cursortolerance/value", 1.0);
 
-    for (auto& o: group->children) {
-        if (bottomMost) {
-            break;
-        }
-        if (is<SPItem>(&o)) {
-            auto item = cast<SPItem>(&o);
-            Inkscape::DrawingItem *arenaitem = item->get_arenaitem(dkey);
-
-            if (arenaitem) {
-                arenaitem->drawing().update();
-            }
-
-            if (arenaitem && arenaitem->pick(p, delta, 1) != nullptr
-                && (take_insensitive || item->isVisibleAndUnlocked(dkey))) {
-                if (find(list.begin(), list.end(), item) != list.end()) {
-                    bottomMost = item;
+    for (auto &c: group->children) {
+        if (auto item = cast<SPItem>(&c)) {
+            if (auto di = item->get_arenaitem(dkey)) {
+                if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY) && (take_insensitive || item->isVisibleAndUnlocked(dkey))) {
+                    if (std::find(list.begin(), list.end(), item) != list.end()) {
+                        return item;
+                    }
                 }
             }
 
-            if (!bottomMost && is<SPGroup>(&o)) {
-                // return null if not found:
-                bottomMost = getItemFromListAtPointBottom(dkey, cast<SPGroup>(&o), list, p, take_insensitive);
+            if (auto group = cast<SPGroup>(item)) {
+                if (auto ret = getItemFromListAtPointBottom(dkey, group, list, p, take_insensitive)) {
+                    return ret;
+                }
             }
         }
     }
-    return bottomMost;
+
+    return nullptr;
 }
 
 /**
@@ -1555,27 +1548,24 @@ upwards in z-order and returns what it has found so far (i.e. the found items ar
 guaranteed to be lower than upto). Requires a list of nodes built by build_flat_item_list.
 If items_count > 0, it'll return the topmost (in z-order) items_count items.
  */
-static std::vector<SPItem*> find_items_at_point(std::deque<SPItem*> *nodes, unsigned int dkey,
-                                                 Geom::Point const &p, int items_count=0, SPItem* upto=nullptr)
+static std::vector<SPItem*> find_items_at_point(std::deque<SPItem*> const &nodes, unsigned dkey,
+                                                Geom::Point const &p, int items_count = 0, SPItem *upto = nullptr)
 {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    gdouble delta = prefs->getDouble("/options/cursortolerance/value", 1.0);
+    double const delta = Inkscape::Preferences::get()->getDouble("/options/cursortolerance/value", 1.0);
 
-    SPItem *child;
     std::vector<SPItem*> result;
-    bool seen_upto = (!upto);
-    for (auto node : *nodes) {
-        child = node;
-        if (!seen_upto){
-            if(child == upto)
+
+    bool seen_upto = !upto;
+    for (auto node : nodes) {
+        if (!seen_upto) {
+            if (node == upto) {
                 seen_upto = true;
+            }
             continue;
         }
-        Inkscape::DrawingItem *arenaitem = child->get_arenaitem(dkey);
-        if (arenaitem) {
-            arenaitem->drawing().update();
-            if (arenaitem->pick(p, delta, 1) != nullptr) {
-                result.push_back(child);
+        if (auto di = node->get_arenaitem(dkey)) {
+            if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY)) {
+                result.emplace_back(node);
                 if (--items_count == 0) {
                     break;
                 }
@@ -1586,7 +1576,7 @@ static std::vector<SPItem*> find_items_at_point(std::deque<SPItem*> *nodes, unsi
     return result;
 }
 
-static SPItem *find_item_at_point(std::deque<SPItem*> *nodes, unsigned int dkey, Geom::Point const &p, SPItem* upto=nullptr)
+static SPItem *find_item_at_point(std::deque<SPItem*> const &nodes, unsigned dkey, Geom::Point const &p, SPItem *upto = nullptr)
 {
     auto items = find_items_at_point(nodes, dkey, p, 1, upto);
     if (items.empty()) {
@@ -1596,41 +1586,29 @@ static SPItem *find_item_at_point(std::deque<SPItem*> *nodes, unsigned int dkey,
 }
 
 /**
-Returns the topmost non-layer group from the descendants of group which is at point
-p, or NULL if none. Recurses into layers but not into groups.
+ * Returns the topmost non-layer group from the descendants of group which is at point p,
+ * or null if none. Recurses into layers but not into groups.
  */
-static SPItem *find_group_at_point(unsigned int dkey, SPGroup *group, Geom::Point const &p)
+static SPItem *find_group_at_point(unsigned dkey, SPGroup *group, Geom::Point const &p)
 {
-    SPItem *seen = nullptr;
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    gdouble delta = prefs->getDouble("/options/cursortolerance/value", 1.0);
+    double const delta = Inkscape::Preferences::get()->getDouble("/options/cursortolerance/value", 1.0);
 
-    for (auto& o: group->children) {
-        if (!is<SPItem>(&o)) {
-            continue;
-        }
-        if (is<SPGroup>(&o) && cast<SPGroup>(&o)->effectiveLayerMode(dkey) == SPGroup::LAYER) {
-            SPItem *newseen = find_group_at_point(dkey, cast<SPGroup>(&o), p);
-            if (newseen) {
-                seen = newseen;
-            }
-        }
-        if (is<SPGroup>(&o) && cast<SPGroup>(&o)->effectiveLayerMode(dkey) != SPGroup::LAYER ) {
-            auto child = cast<SPItem>(&o);
-            Inkscape::DrawingItem *arenaitem = child->get_arenaitem(dkey);
-            if (arenaitem) {
-                arenaitem->drawing().update();
-            }
-
-            // seen remembers the last (topmost) of groups pickable at this point
-            if (arenaitem && arenaitem->pick(p, delta, 1) != nullptr) {
-                seen = child;
+    for (auto &c : boost::adaptors::reverse(group->children)) {
+        if (auto group = cast<SPGroup>(&c)) {
+            if (group->effectiveLayerMode(dkey) == SPGroup::LAYER) {
+                if (auto ret = find_group_at_point(dkey, group, p)) {
+                    return ret;
+                }
+            } else if (auto di = group->get_arenaitem(dkey)) {
+                if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY)) {
+                    return group;
+                }
             }
         }
     }
-    return seen;
-}
 
+    return nullptr;
+}
 
 /**
  * Return list of items, contained in box
@@ -1685,7 +1663,7 @@ std::vector<SPItem*> SPDocument::getItemsAtPoints(unsigned const key, std::vecto
     }
     size_t item_counter = 0;
     for(int i = points.size()-1;i>=0; i--) {
-        std::vector<SPItem*> items = find_items_at_point(&_node_cache, key, points[i], topmost_only);
+        std::vector<SPItem*> items = find_items_at_point(_node_cache, key, points[i], topmost_only);
         for (SPItem *item : items) {
             if (item && result.end()==find(result.begin(), result.end(), item))
                 if(all_layers || (desktop && desktop->layerManager().layerForObject(item) == current_layer)){
@@ -1721,7 +1699,7 @@ SPItem *SPDocument::getItemAtPoint( unsigned const key, Geom::Point const &p,
         _node_cache_valid=true;
     }
 
-    SPItem *res = find_item_at_point(&_node_cache, key, p, upto);
+    SPItem *res = find_item_at_point(_node_cache, key, p, upto);
     if(!into_groups)
         _node_cache = bak;
     return res;

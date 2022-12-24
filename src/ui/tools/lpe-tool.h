@@ -55,11 +55,11 @@ public:
     LpeTool(SPDesktop *desktop);
     ~LpeTool() override;
 
-    ShapeEditor* shape_editor = nullptr;
-    Inkscape::CanvasItemRect *canvas_bbox = nullptr;
+    std::unique_ptr<ShapeEditor> shape_editor;
+    CanvasItemPtr<CanvasItemRect> canvas_bbox;
     Inkscape::LivePathEffect::EffectType mode;
 
-    std::map<SPPath *, Inkscape::CanvasItemText*> measuring_items;
+    std::map<SPPath*, CanvasItemPtr<CanvasItemText>> measuring_items;
 
     sigc::connection sel_changed_connection;
     sigc::connection sel_modified_connection;

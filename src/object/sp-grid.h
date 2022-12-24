@@ -18,6 +18,7 @@
 #ifndef SEEN_SP_GRID_H_
 #define SEEN_SP_GRID_H_
 
+#include "display/control/canvas-item-ptr.h"
 #include "object/sp-object.h"
 #include "svg/svg-bool.h"
 #include "svg/svg-length.h"
@@ -110,7 +111,7 @@ public:
 
     std::pair<Geom::Point, Geom::Point> getEffectiveOriginAndSpacing() const;
 
-    std::vector<std::unique_ptr<Inkscape::CanvasItemGrid>> views;
+    std::vector<CanvasItemPtr<Inkscape::CanvasItemGrid>> views;
 
 protected:
     void build(SPDocument *doc, Inkscape::XML::Node *repr) override;

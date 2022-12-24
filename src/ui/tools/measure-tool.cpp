@@ -189,8 +189,6 @@ Geom::Point calcAngleDisplayAnchor(SPDesktop *desktop, double angle, double base
  */
 void MeasureTool::createAngleDisplayCurve(Geom::Point const &center, Geom::Point const &end, Geom::Point const &anchor,
                                           double angle, bool to_phantom,
-                                          std::vector<Inkscape::CanvasItem *> &measure_phantom_items,
-                                          std::vector<Inkscape::CanvasItem *> &measure_tmp_items,
                                           Inkscape::XML::Node *measure_repr)
 {
     // Given that we have a point on the arc's edge and the angle of the arc, we need to get the two endpoints.
@@ -261,7 +259,7 @@ void MeasureTool::createAngleDisplayCurve(Geom::Point const &center, Geom::Point
         auto *curve = new Inkscape::CanvasItemCurve(_desktop->getCanvasTemp(), p1, p2, p3, p4);
         curve->set_name("CanvasItemCurve:MeasureToolCurve");
         curve->set_stroke(Inkscape::CANVAS_ITEM_SECONDARY);
-        curve->set_z_position(0);
+        curve->lower_to_bottom();
         curve->show();
         if(to_phantom){
             curve->set_stroke(0x8888887f);
@@ -339,19 +337,8 @@ MeasureTool::~MeasureTool()
     knot_unref(this->knot_start);
     knot_unref(this->knot_end);
 
-    for (auto & measure_tmp_item : measure_tmp_items) {
-        delete measure_tmp_item;
-    }
     measure_tmp_items.clear();
-
-    for (auto & idx : measure_item) {
-        delete idx;
-    }
     measure_item.clear();
-
-    for (auto & measure_phantom_item : measure_phantom_items) {
-        delete measure_phantom_item;
-    }
     measure_phantom_items.clear();
 }
 
@@ -537,9 +524,6 @@ bool MeasureTool::root_handler(GdkEvent* event)
             }
         } else {
             // Inkscape::Util::Unit const * unit = _desktop->getNamedView()->getDisplayUnit();
-            for (auto & idx : measure_item) {
-                delete idx;
-            }
             measure_item.clear();
 
             ret = TRUE;
@@ -699,14 +683,7 @@ void MeasureTool::toPhantom()
     }
     SPDocument *doc = _desktop->getDocument();
 
-    for (auto & measure_phantom_item : measure_phantom_items) {
-        delete measure_phantom_item;
-    }
     measure_phantom_items.clear();
-
-    for (auto & measure_tmp_item : measure_tmp_items) {
-        delete measure_tmp_item;
-    }
     measure_tmp_items.clear();
 
     showCanvasItems(false, false, true);
@@ -974,9 +951,6 @@ void MeasureTool::reset()
     this->knot_start->hide();
     this->knot_end->hide();
 
-    for (auto & measure_tmp_item : measure_tmp_items) {
-        delete measure_tmp_item;
-    }
     measure_tmp_items.clear();
 }
 
@@ -1000,9 +974,9 @@ void MeasureTool::setMeasureCanvasText(bool is_angle, double precision, double a
 
     if (to_phantom){
         canvas_tooltip->set_background(0x4444447f);
-        measure_phantom_items.push_back(canvas_tooltip);
+        measure_phantom_items.emplace_back(canvas_tooltip);
     } else {
-        measure_tmp_items.push_back(canvas_tooltip);
+        measure_tmp_items.emplace_back(canvas_tooltip);
     }
 
     if (to_item) {
@@ -1021,7 +995,7 @@ void MeasureTool::setMeasureCanvasItem(Geom::Point position, bool to_item, bool 
 
     auto canvas_item = new Inkscape::CanvasItemCtrl(_desktop->getCanvasTemp(), Inkscape::CANVAS_ITEM_CTRL_TYPE_POINT, position);
     canvas_item->set_stroke(color);
-    canvas_item->set_z_position(0);
+    canvas_item->lower_to_bottom();
     canvas_item->set_pickable(false);
     canvas_item->show();
 
@@ -1046,7 +1020,7 @@ void MeasureTool::setMeasureCanvasControlLine(Geom::Point start, Geom::Point end
 
     auto control_line = new Inkscape::CanvasItemCurve(_desktop->getCanvasTemp(), start, end);
     control_line->set_stroke(color);
-    control_line->set_z_position(0);
+    control_line->lower_to_bottom();
     control_line->show();
 
     if (to_phantom) {
@@ -1070,16 +1044,13 @@ void MeasureTool::showItemInfoText(Geom::Point pos, Glib::ustring const &measure
     canvas_tooltip->set_anchor(Geom::Point(0, 0));
     canvas_tooltip->set_fixed_line(true);
     canvas_tooltip->show();
-    measure_item.push_back(canvas_tooltip);
+    measure_item.emplace_back(canvas_tooltip);
 }
 
 void MeasureTool::showInfoBox(Geom::Point cursor, bool into_groups)
 {
     using Inkscape::Util::Quantity;
 
-    for (auto & idx : measure_item) {
-        delete(idx);
-    }
     measure_item.clear();
 
     SPItem *newover = _desktop->getItemAtPoint(cursor, into_groups);
@@ -1188,9 +1159,6 @@ void MeasureTool::showCanvasItems(bool to_guides, bool to_item, bool to_phantom,
     writeMeasurePoint(end_p, false);
 
     //clear previous canvas items, we'll draw new ones
-    for (auto & measure_tmp_item : measure_tmp_items) {
-        delete measure_tmp_item;
-    }
     measure_tmp_items.clear();
 
     //TODO:Calculate the measure area for current length and origin
@@ -1367,7 +1335,7 @@ void MeasureTool::showCanvasItems(bool to_guides, bool to_item, bool to_phantom,
                           * Geom::Affine(Geom::Translate(start_p)));
         }
         setMeasureCanvasControlLine(start_p, anchorEnd, to_item, to_phantom, Inkscape::CANVAS_ITEM_SECONDARY, measure_repr);
-        createAngleDisplayCurve(start_p, end_p, angleDisplayPt, angle, to_phantom, measure_phantom_items, measure_tmp_items, measure_repr);
+        createAngleDisplayCurve(start_p, end_p, angleDisplayPt, angle, to_phantom, measure_repr);
     }
 
     if (intersections.size() > 2) {

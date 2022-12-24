@@ -26,14 +26,15 @@ namespace Inkscape {
 /**
  * Class used when rendering canvas items.
  */
-struct CanvasItemBuffer {
+struct CanvasItemBuffer
+{
     Geom::IntRect rect;
     int device_scale; // For high DPI monitors.
     Cairo::RefPtr<Cairo::Context> cr;
     bool outline_pass;
 };
 
-} // Namespace Inkscape
+} // namespace Inkscape
 
 #endif // SEEN_CANVAS_ITEM_BUFFER_H
 

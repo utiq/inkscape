@@ -88,12 +88,12 @@ PagesTool::PagesTool(SPDesktop *desktop)
     }
 
     if (!visual_box) {
-        visual_box = new Inkscape::CanvasItemRect(desktop->getCanvasControls());
+        visual_box = make_canvasitem<CanvasItemRect>(desktop->getCanvasControls());
         visual_box->set_stroke(0x0000ff7f);
         visual_box->hide();
     }
     if (!drag_group) {
-        drag_group = new Inkscape::CanvasItemGroup(desktop->getCanvasTemp());
+        drag_group = make_canvasitem<CanvasItemGroup>(desktop->getCanvasTemp());
         drag_group->set_name("CanvasItemGroup:PagesDragShapes");
     }
 
@@ -120,10 +120,7 @@ PagesTool::~PagesTool()
 
     _desktop->getSelection()->restoreBackup();
 
-    if (visual_box) {
-        delete visual_box;
-        visual_box = nullptr;
-    }
+    visual_box.reset();
 
     for (auto knot : resize_knots) {
         delete knot;
@@ -131,8 +128,7 @@ PagesTool::~PagesTool()
     resize_knots.clear();
 
     if (drag_group) {
-        delete drag_group;
-        drag_group = nullptr;
+        drag_group.reset();
         drag_shapes.clear(); // Already deleted by group
     }
 
@@ -531,7 +527,7 @@ void PagesTool::addDragShape(SPItem *item, Geom::Affine tr)
  */
 void PagesTool::addDragShape(Geom::PathVector &&pth, Geom::Affine tr)
 {
-    auto shape = new CanvasItemBpath(drag_group, pth * tr, false);
+    auto shape = new CanvasItemBpath(drag_group.get(), pth * tr, false);
     shape->set_stroke(0x00ff007f);
     shape->set_fill(0x00000000, SP_WIND_RULE_EVENODD);
     drag_shapes.push_back(shape);
@@ -543,7 +539,7 @@ void PagesTool::addDragShape(Geom::PathVector &&pth, Geom::Affine tr)
 void PagesTool::clearDragShapes()
 {
     for (auto &shape : drag_shapes) {
-        delete shape;
+        shape->unlink();
     }
     drag_shapes.clear();
 }

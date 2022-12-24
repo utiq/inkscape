@@ -23,55 +23,52 @@ uint32_t constexpr GRID_DEFAULT_MINOR_COLOR = 0x0099e526;
 
 namespace Inkscape {
 
-class CanvasItemGroup; // A canvas control that contains other canvas controls.
-
-class CanvasItemGrid : public CanvasItem {
-
+class CanvasItemGrid : public CanvasItem
+{
 public:
     CanvasItemGrid(CanvasItemGroup *group);
-    CanvasItemGrid(CanvasItemGrid const &) = delete;
-    CanvasItemGrid &operator=(CanvasItemGrid const &) = delete;
-
-    // Geometry
-    void update(Geom::Affine const &affine) override = 0;
 
     // Selection
     bool contains(Geom::Point const &p, double tolerance = 0) override;
 
-    // Display
-    void render(Inkscape::CanvasItemBuffer *buf) override = 0;
-
     // Properties
-    void set_major_color(guint32 color);
-    void set_minor_color(guint32 color);
+    void set_major_color(uint32_t color);
+    void set_minor_color(uint32_t color);
     void set_origin(Geom::Point const &point);
     void set_spacing(Geom::Point const &point);
     void set_dotted(bool b);
-    void set_major_line_interval(guint n);
+    void set_major_line_interval(int n);
+    void set_no_emp_when_zoomed_out(bool noemp);
 
 protected:
-    Pref<bool> _no_emp_when_zoomed_out = Pref<bool>("/options/grids/no_emphasize_when_zoomedout");
+    ~CanvasItemGrid() override = default;
+
     bool _dotted;
 
     Geom::Point _origin;
 
     Geom::Point _spacing; /**< Spacing between elements of the grid */
 
-    guint _major_line_interval;
-    guint32 _major_color;
-    guint32 _minor_color;
+    int _major_line_interval;
+    bool _no_emp_when_zoomed_out;
+    uint32_t _major_color;
+    uint32_t _minor_color;
+
+private:
+    std::unique_ptr<Preferences::PreferencesObserver> _pref_tracker;
 };
 
 /** Canvas Item for rectangular grids */
-class CanvasItemGridXY : public CanvasItemGrid {
+class CanvasItemGridXY final : public CanvasItemGrid
+{
 public:
-    CanvasItemGridXY(Inkscape::CanvasItemGroup *group);
-
-    void update(Geom::Affine const &affine) override;
-    void render(Inkscape::CanvasItemBuffer *buf) override;
+    CanvasItemGridXY(CanvasItemGroup *group);
 
 protected:
     friend class GridSnapperXY;
+
+    void _update(bool propagate) override;
+    void _render(CanvasItemBuffer &buf) override;
 
     bool scaled[2];    /**< Whether the grid is in scaled mode, which can
                             be different in the X or Y direction, hence two
@@ -81,12 +78,10 @@ protected:
 };
 
 /** Canvas Item for axonometric grids */
-class CanvasItemGridAxonom : public CanvasItemGrid {
+class CanvasItemGridAxonom final : public CanvasItemGrid
+{
 public:
-    CanvasItemGridAxonom(Inkscape::CanvasItemGroup *group);
-
-    void update(Geom::Affine const &affine) override;
-    void render(Inkscape::CanvasItemBuffer *buf) override;
+    CanvasItemGridAxonom(CanvasItemGroup *group);
 
     // Properties
     void set_angle_x(double value);
@@ -94,6 +89,9 @@ public:
 
 protected:
     friend class GridSnapperAxonom;
+
+    void _update(bool propagate) override;
+    void _render(CanvasItemBuffer &buf) override;
 
     bool scaled;          /**< Whether the grid is in scaled mode */
 

@@ -16,6 +16,7 @@
 #include <2geom/point.h>
 
 #include "color-rgba.h"
+#include "display/control/canvas-item-ptr.h"
 #include "ui/tools/tool-base.h"
 
 struct SPCanvasItem;
@@ -70,7 +71,7 @@ private:
     bool dragging = false; ///< When true, get average color for region on canvas, instead of a single point
 
     double radius = 0.0;                       ///< Size of region under dragging mode
-    Inkscape::CanvasItemBpath* area = nullptr; ///< Circle depicting region's borders in dragging mode
+    CanvasItemPtr<CanvasItemBpath> area;       ///< Circle depicting region's borders in dragging mode
     Geom::Point centre {0, 0};                 ///< Center of region in dragging mode
 
 };

@@ -72,7 +72,7 @@ LpeTool::LpeTool(SPDesktop *desktop)
     this->sel_changed_connection =
         selection->connectChanged(sigc::bind(sigc::ptr_fun(&sp_lpetool_context_selection_changed), (gpointer)this));
 
-    this->shape_editor = new ShapeEditor(desktop);
+    shape_editor = std::make_unique<ShapeEditor>(desktop);
 
     lpetool_context_switch_mode(this, Inkscape::LivePathEffect::INVALID_LPE);
     lpetool_context_reset_limiting_bbox(this);
@@ -94,16 +94,11 @@ LpeTool::LpeTool(SPDesktop *desktop)
 
 LpeTool::~LpeTool()
 {
-    delete this->shape_editor;
-
-    if (canvas_bbox) {
-        delete canvas_bbox;
-    }
-
-    lpetool_delete_measuring_items(this);
+    shape_editor.reset();
+    canvas_bbox.reset();
     measuring_items.clear();
 
-    this->sel_changed_connection.disconnect();
+    sel_changed_connection.disconnect();
 }
 
 /**
@@ -326,10 +321,7 @@ lpetool_get_limiting_bbox_corners(SPDocument *document, Geom::Point &A, Geom::Po
 void
 lpetool_context_reset_limiting_bbox(LpeTool *lc)
 {
-    if (lc->canvas_bbox) {
-        delete lc->canvas_bbox;
-        lc->canvas_bbox = nullptr;
-    }
+    lc->canvas_bbox.reset();
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     if (!prefs->getBool("/tools/lpetool/show_bbox", true))
@@ -344,7 +336,7 @@ lpetool_context_reset_limiting_bbox(LpeTool *lc)
     B *= doc2dt;
 
     Geom::Rect rect(A, B);
-    lc->canvas_bbox = new Inkscape::CanvasItemRect(lc->getDesktop()->getCanvasControls(), rect);
+    lc->canvas_bbox = make_canvasitem<CanvasItemRect>(lc->getDesktop()->getCanvasControls(), rect);
     lc->canvas_bbox->set_stroke(0x0000ffff);
     lc->canvas_bbox->set_dashed(true);
 }
@@ -375,7 +367,6 @@ lpetool_create_measuring_items(LpeTool *lc, Inkscape::Selection *selection)
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     bool show = prefs->getBool("/tools/lpetool/show_measuring_info",  true);
 
-    Inkscape::CanvasItemText *canvas_text;
     Inkscape::CanvasItemGroup *tmpgrp = lc->getDesktop()->getCanvasTemp();
 
     Inkscape::Util::Unit const * unit = nullptr;
@@ -399,23 +390,19 @@ lpetool_create_measuring_items(LpeTool *lc, Inkscape::Selection *selection)
             arc_length += " ";
             arc_length += unit->abbr;
 
-            canvas_text = new Inkscape::CanvasItemText(tmpgrp, Geom::Point(0,0), arc_length);
-            set_pos_and_anchor(canvas_text, pwd2, 0.5, 10);
+            auto canvas_text = make_canvasitem<CanvasItemText>(tmpgrp, Geom::Point(0,0), arc_length);
+            set_pos_and_anchor(canvas_text.get(), pwd2, 0.5, 10);
             if (!show) {
                 canvas_text->hide();
             }
 
-            (lc->measuring_items)[path] = canvas_text;
+            lc->measuring_items[path] = std::move(canvas_text);
         }
     }
 }
 
-void
-lpetool_delete_measuring_items(LpeTool *lc)
+void lpetool_delete_measuring_items(LpeTool *lc)
 {
-    for (auto& i : lc->measuring_items) {
-        delete i.second;
-    }
     lc->measuring_items.clear();
 }
 
@@ -442,8 +429,8 @@ lpetool_update_measuring_items(LpeTool *lc)
         arc_length += " ";
         arc_length += unit->abbr;
 
-        i.second->set_text(arc_length);
-        set_pos_and_anchor(i.second, pwd2, 0.5, 10);
+        i.second->set_text(std::move(arc_length));
+        set_pos_and_anchor(i.second.get(), pwd2, 0.5, 10);
     }
 }
 

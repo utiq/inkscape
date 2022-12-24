@@ -19,16 +19,15 @@
 # include "config.h"  // only include where actually required!
 #endif
 
+#include <cstddef>
+#include <2geom/point.h>
+#include <sigc++/connection.h>
 #include <gtkmm.h>
 
 #include "message.h"
 #include "preferences.h"
 #include "ui/view/view-widget.h"
-#include "preferences.h"
-
-#include <cstddef>
-#include <sigc++/connection.h>
-#include <2geom/point.h>
+#include "display/control/canvas-item-ptr.h"
 
 // forward declaration
 typedef struct _EgeColorProfTracker EgeColorProfTracker;
@@ -104,7 +103,7 @@ private:
 
     bool update = false;
 
-    Inkscape::CanvasItemGuideLine *_active_guide = nullptr; ///< The guide being handled during a ruler event
+    CanvasItemPtr<Inkscape::CanvasItemGuideLine> _active_guide; ///< The guide being handled during a ruler event
     Geom::Point _normal; ///< Normal to the guide currently being handled during ruler event
     int _xp = 0; ///< x coordinate for start of drag
     int _yp = 0; ///< y coordinate for start of drag

@@ -504,9 +504,6 @@ VPDrag::~VPDrag()
     }
     this->draggers.clear();
 
-    for (auto item_curve : item_curves) {
-        delete item_curve;
-    }
     item_curves.clear();
 }
 
@@ -572,9 +569,6 @@ of a dragger, so that lines are always in sync with the actual perspective
 void VPDrag::updateLines()
 {
     // Delete old lines
-    for (auto curve : item_curves) {
-        delete curve;
-    }
     item_curves.clear();
 
     // do nothing if perspective lines are currently disabled
@@ -746,7 +740,7 @@ void VPDrag::addCurve(Geom::Point const &p1, Geom::Point const &p2, Inkscape::Ca
     auto item_curve = new Inkscape::CanvasItemCurve(SP_ACTIVE_DESKTOP->getCanvasControls(), p1, p2);
     item_curve->set_name("3DBoxCurve");
     item_curve->set_stroke(color);
-    item_curves.push_back(item_curve);
+    item_curves.emplace_back(item_curve);
 }
 
 } // namespace Box3D

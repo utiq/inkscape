@@ -13,10 +13,11 @@
 
 #include <vector>
 #include <optional>
-#include <sigc++/connection.h>
+#include "helper/auto-connection.h"
 
 #include "booleans-subitems.h"
 #include "helper/auto-connection.h"
+#include "display/control/canvas-item-ptr.h"
 
 class SPDesktop;
 class SPDocument;
@@ -28,14 +29,19 @@ class CanvasItemGroup;
 class CanvasItemBpath;
 class ObjectSet;
 
-using VisualItem = std::shared_ptr<CanvasItemBpath>;
-using ItemPair = std::pair<WorkItem, VisualItem>;
+using VisualItem = CanvasItemPtr<CanvasItemBpath>;
+struct ItemPair
+{
+    WorkItem work;
+    VisualItem vis;
+    bool visible;
+};
 
-using TaskType = int;
-enum TaskTypes : TaskType {
-    TASKED_NONE,
-    TASKED_ADD,
-    TASKED_DELETE
+enum class TaskType
+{
+    NONE,
+    ADD,
+    DELETE
 };
 
 class BooleanBuilder
@@ -44,12 +50,11 @@ public:
     BooleanBuilder(ObjectSet *obj);
     ~BooleanBuilder();
 
-    void redraw_items();
     void undo();
     void redo();
 
     std::vector<SPObject *> shape_commit(bool all = false);
-    std::optional<ItemPair> get_item(const Geom::Point &point);
+    ItemPair *get_item(const Geom::Point &point);
     bool task_select(const Geom::Point &point, bool add_task = true);
     bool task_add(const Geom::Point &point);
     void task_cancel();
@@ -58,9 +63,8 @@ public:
     bool highlight(const Geom::Point &point, bool add_task = true);
 
 private:
-
     ObjectSet *_set;
-    std::unique_ptr<CanvasItemGroup> _group;
+    CanvasItemPtr<CanvasItemGroup> _group;
 
     std::vector<WorkItem> _work_items;
     std::vector<ItemPair> _screen_items;
@@ -76,6 +80,7 @@ private:
     auto_connection desk_modified_connection;
 
     void redraw_item(CanvasItemBpath &bpath, bool selected, TaskType task);
+    void redraw_items();
 };
 
 } // namespace Inkscape

@@ -28,12 +28,6 @@ class CanvasItemGroup;
 class CanvasItemCurve;
 
 namespace UI {
-template <typename> class NodeIterator;
-}
-}
-
-namespace Inkscape {
-namespace UI {
 
 class PathManipulator;
 class MultiPathManipulator;
@@ -45,20 +39,6 @@ class SubpathList;
 template <typename> class NodeIterator;
 
 std::ostream &operator<<(std::ostream &, NodeType);
-
-/*
-template <typename T>
-struct ListMember {
-    T *next;
-    T *prev;
-};
-struct SubpathMember : public ListMember<NodeListMember> {
-    Subpath *list;
-};
-struct SubpathListMember : public ListMember<SubpathListMember> {
-    SubpathList *list;
-};
-*/
 
 struct ListNode {
     ListNode *ln_next;
@@ -117,7 +97,7 @@ private:
     inline PathManipulator &_pm() const;
     Node *_parent; // the handle's lifetime does not extend beyond that of the parent node,
     // so a naked pointer is OK and allows setting it during Node's construction
-    CanvasItemCurve *_handle_line;
+    CanvasItemPtr<CanvasItemCurve> _handle_line;
     bool _degenerate; // True if the handle is retracted, i.e. has zero length. This is used often internally so it makes sense to cache this
 
     /**

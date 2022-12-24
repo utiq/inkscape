@@ -76,8 +76,6 @@ FreehandBase::FreehandBase(SPDesktop *desktop, std::string prefs_path, const std
     , blue_color(0x0000ff7f)
     , green_color(0x00ff007f)
     , highlight_color(0x0000007f)
-    , red_bpath(nullptr)
-    , blue_bpath(nullptr)
     , green_closed(false)
     , white_item(nullptr)
     , sa(nullptr)
@@ -96,12 +94,12 @@ FreehandBase::FreehandBase(SPDesktop *desktop, std::string prefs_path, const std
     sel_modified_connection = selection->connectModified([=](Selection *, guint) { onSelectionModified(); });
 
     // Create red bpath
-    this->red_bpath = new Inkscape::CanvasItemBpath(desktop->getCanvasSketch());
+    this->red_bpath = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
     this->red_bpath->set_stroke(this->red_color);
     this->red_bpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
 
     // Create blue bpath
-    this->blue_bpath = new Inkscape::CanvasItemBpath(desktop->getCanvasSketch());
+    this->blue_bpath = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
     this->blue_bpath->set_stroke(this->blue_color);
     this->blue_bpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
 
@@ -693,9 +691,6 @@ void spdc_concat_colors_and_flush(FreehandBase *dc, gboolean forceclosed)
     // Green
     auto c = std::make_shared<SPCurve>();
     std::swap(c, dc->green_curve);
-    for (auto path : dc->green_bpaths) {
-        delete path;
-    }
     dc->green_bpaths.clear();
 
     // Blue
@@ -905,24 +900,15 @@ SPDrawAnchor *spdc_test_inside(FreehandBase *dc, Geom::Point p)
 static void spdc_free_colors(FreehandBase *dc)
 {
     // Red
-    if (dc->red_bpath) {
-        delete dc->red_bpath;
-        dc->red_bpath = nullptr;
-    }
+    dc->red_bpath.reset();
 
     // Blue
-    if (dc->blue_bpath) {
-        delete dc->blue_bpath;
-        dc->blue_bpath = nullptr;
-    }
+    dc->blue_bpath.reset();
     dc->blue_curve.reset();
 
     // Overwrite start anchor curve
     dc->sa_overwrited.reset();
     // Green
-    for (auto path : dc->green_bpaths) {
-        delete path;
-    }
     dc->green_bpaths.clear();
     dc->green_curve.reset();
     dc->green_anchor.reset();

@@ -22,6 +22,7 @@
 
 #include "ui/tools/tool-base.h"
 #include "display/curve.h"
+#include "display/control/canvas-item-ptr.h"
 
 #include <optional>
 
@@ -54,10 +55,10 @@ protected:
     SPCurve accumulated;
 
     /** canvas items for "committed" segments */
-    std::vector<Inkscape::CanvasItemBpath *> segments;
+    std::vector<CanvasItemPtr<CanvasItemBpath>> segments;
 
     /** canvas item for red "leading" segment */
-    Inkscape::CanvasItemBpath *currentshape;
+    CanvasItemPtr<CanvasItemBpath> currentshape;
 
     /** shape of red "leading" segment */
     SPCurve currentcurve;

@@ -14,14 +14,12 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "canvas-item-guideline.h"
-
 #include <2geom/line.h>
 
+#include "canvas-item-guideline.h"
 #include "canvas-item-ctrl.h"
 
 #include "desktop.h" // Canvas orientation so label is orientated correctly.
-
 #include "ui/widget/canvas.h"
 
 namespace Inkscape {
@@ -39,18 +37,16 @@ CanvasItemGuideLine::CanvasItemGuideLine(CanvasItemGroup *group, Glib::ustring l
     _name = "CanvasItemGuideLine:" + _label;
     _pickable = true; // For now, everybody gets events from this class!
 
-    // Required when rotating canvas:
+    // Required when rotating canvas
     _bounds = Geom::Rect(-Geom::infinity(), -Geom::infinity(), Geom::infinity(), Geom::infinity());
 
     // Control to move guide line.
-    _origin_ctrl = std::make_unique<CanvasItemGuideHandle>(group, _origin, this);
+    _origin_ctrl = make_canvasitem<CanvasItemGuideHandle>(group, _origin, this);
     _origin_ctrl->set_name("CanvasItemGuideLine:Ctrl:" + _label);
     _origin_ctrl->set_size_default();
     _origin_ctrl->set_pickable(true); // The handle will also react to dragging
     set_locked(false); // Init _origin_ctrl shape and stroke.
 }
-
-CanvasItemGuideLine::~CanvasItemGuideLine() = default;
 
 /**
  * Sets origin of guide line (place where handle is located).
@@ -86,16 +82,14 @@ void CanvasItemGuideLine::set_inverted(bool inverted)
     }
 }
 
-
 /**
  * Returns distance between point in canvas units and nearest point on guideLine.
  */
 double CanvasItemGuideLine::closest_distance_to(Geom::Point const &p)
 {
     // Maybe store guide as a Geom::Line?
-    Geom::Line guide =
-        Geom::Line::from_origin_and_vector(_origin, Geom::rot90(_normal));
-    guide *= _affine;
+    auto guide = Geom::Line::from_origin_and_vector(_origin, Geom::rot90(_normal));
+    guide *= affine();
     return Geom::distance(p, guide);
 }
 
@@ -122,39 +116,20 @@ CanvasItemGuideHandle* CanvasItemGuideLine::dot() const
 /**
  * Update and redraw control guideLine.
  */
-void CanvasItemGuideLine::update(Geom::Affine const &affine)
+void CanvasItemGuideLine::_update(bool)
 {
-    if (_affine == affine && !_need_update) {
-        // Nothing to do.
-        return;
-    }
-
-    _affine = affine;
-
     // Queue redraw of new area (and old too).
     request_redraw();
-
-    _need_update = false;
 }
 
 /**
  * Render guideLine to screen via Cairo.
  */
-void CanvasItemGuideLine::render(Inkscape::CanvasItemBuffer *buf)
+void CanvasItemGuideLine::_render(Inkscape::CanvasItemBuffer &buf)
 {
-    if (!buf) {
-        std::cerr << "CanvasItemGuideLine::Render: No buffer!" << std::endl;
-        return;
-    }
-
-    if (!_visible) {
-        // Hidden
-        return;
-    }
-
     // Document to canvas
-    Geom::Point const normal = _normal * _affine.withoutTranslation(); // Direction only
-    Geom::Point const origin = _origin * _affine;
+    Geom::Point const normal = _normal * affine().withoutTranslation(); // Direction only
+    Geom::Point const origin = _origin * affine();
 
     /* Need to use floor()+0.5 such that Cairo will draw us lines with a width of a single pixel,
      * without any aliasing. For this we need to position the lines at exactly half pixels, see
@@ -167,9 +142,9 @@ void CanvasItemGuideLine::render(Inkscape::CanvasItemBuffer *buf)
     Geom::Point const aligned_origin = origin.floor() + Geom::Point(0.5, 0.5);
 
     // Set up the Cairo rendering context
-    auto ctx = buf->cr;
+    auto ctx = buf.cr;
     ctx->save();
-    ctx->translate(-buf->rect.left(), -buf->rect.top()); // Canvas to screen
+    ctx->translate(-buf.rect.left(), -buf.rect.top()); // Canvas to screen
     ctx->set_source_rgba(SP_RGBA32_R_F(_stroke), SP_RGBA32_G_F(_stroke),
                          SP_RGBA32_B_F(_stroke), SP_RGBA32_A_F(_stroke));
     ctx->set_line_width(1);
@@ -183,10 +158,7 @@ void CanvasItemGuideLine::render(Inkscape::CanvasItemBuffer *buf)
         ctx->save();
         ctx->translate(aligned_origin.x(), aligned_origin.y());
 
-        SPDesktop *desktop = nullptr;
-        if (_canvas) {
-            desktop = _canvas->get_desktop();
-        }
+        auto desktop = get_canvas()->get_desktop();
         ctx->rotate(atan2(normal.cw()) + M_PI * (desktop && desktop->is_yaxisdown() ? 1 : 0));
         ctx->translate(0, -(_origin_ctrl->radius() + LABEL_SEP)); // Offset by dot radius + 2
         ctx->move_to(0, 0);
@@ -201,13 +173,13 @@ void CanvasItemGuideLine::render(Inkscape::CanvasItemBuffer *buf)
     if (Geom::are_near(normal.y(), 0.0)) {
         // Vertical
         double const position = aligned_origin.x();
-        ctx->move_to(position, buf->rect.top()    + 0.5);
-        ctx->line_to(position, buf->rect.bottom() - 0.5);
+        ctx->move_to(position, buf.rect.top()    + 0.5);
+        ctx->line_to(position, buf.rect.bottom() - 0.5);
     } else if (Geom::are_near(normal.x(), 0.0)) {
         // Horizontal
         double position = aligned_origin.y();
-        ctx->move_to(buf->rect.left()  + 0.5, position);
-        ctx->line_to(buf->rect.right() - 0.5, position);
+        ctx->move_to(buf.rect.left()  + 0.5, position);
+        ctx->line_to(buf.rect.right() - 0.5, position);
     } else {
         // Angled
         Geom::Line line = Geom::Line::from_origin_and_vector(aligned_origin, Geom::rot90(normal));
@@ -215,13 +187,13 @@ void CanvasItemGuideLine::render(Inkscape::CanvasItemBuffer *buf)
         // Find intersections of the line with buf rectangle. There should be zero or two.
         std::vector<Geom::Point> intersections;
         for (unsigned i = 0; i < 4; ++i) {
-            Geom::LineSegment side(buf->rect.corner(i), buf->rect.corner((i+1)%4));
+            Geom::LineSegment side(buf.rect.corner(i), buf.rect.corner((i+1)%4));
             try {
                 Geom::OptCrossing oc = Geom::intersection(line, side);
                 if (oc) {
-                    intersections.push_back(line.pointAt((*oc).ta));
+                    intersections.push_back(line.pointAt(oc->ta));
                 }
-            } catch (Geom::InfiniteSolutions) {
+            } catch (Geom::InfiniteSolutions const &) {
                 // Shouldn't happen as we have already taken care of horizontal/vertical guides.
                 std::cerr << "CanvasItemGuideLine::render: Error: Infinite intersections." << std::endl;
             }
@@ -241,19 +213,13 @@ void CanvasItemGuideLine::render(Inkscape::CanvasItemBuffer *buf)
     ctx->restore();
 }
 
-void CanvasItemGuideLine::hide()
+void CanvasItemGuideLine::set_visible(bool visible)
 {
-    CanvasItem::hide();
-    _origin_ctrl->hide();
+    CanvasItem::set_visible(visible);
+    _origin_ctrl->set_visible(visible);
 }
 
-void CanvasItemGuideLine::show()
-{
-    CanvasItem::show();
-    _origin_ctrl->show();
-}
-
-void CanvasItemGuideLine::set_stroke(guint32 color)
+void CanvasItemGuideLine::set_stroke(uint32_t color)
 {
     // Make sure the fill of the control is the same as the stroke
     // of the guide-line:
@@ -261,10 +227,10 @@ void CanvasItemGuideLine::set_stroke(guint32 color)
     CanvasItem::set_stroke(color);
 }
 
-void CanvasItemGuideLine::set_label(Glib::ustring const & label)
+void CanvasItemGuideLine::set_label(Glib::ustring &&label)
 {
     if (_label != label) {
-        _label = label;
+        _label = std::move(label);
         request_update();
     }
 }

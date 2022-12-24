@@ -150,7 +150,7 @@ private:
     MultiPathManipulator &_multi_path_manipulator;
     SPObject *_path; ///< can be an SPPath or an Inkscape::LivePathEffect::Effect  !!!
     SPCurve _spcurve; // in item coordinates
-    Inkscape::CanvasItemBpath *_outline = nullptr;
+    CanvasItemPtr<Inkscape::CanvasItemBpath> _outline;
     CurveDragPoint *_dragpoint; // an invisible control point hovering over curve
     PathManipulatorObserver *_observer;
     Geom::Affine _d2i_transform; ///< desktop-to-item transform

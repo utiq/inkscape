@@ -156,10 +156,9 @@ bool sp_dt_guide_event(GdkEvent *event, Inkscape::CanvasItemGuideLine *guide_ite
                 }
 
                 if (drag_type == SP_DRAG_ROTATE || drag_type == SP_DRAG_TRANSLATE) {
-                    guide_item->grab((Gdk::BUTTON_RELEASE_MASK      |
-                                      Gdk::BUTTON_PRESS_MASK        |
-                                      Gdk::POINTER_MOTION_MASK      ),
-                                     nullptr);
+                    guide_item->grab(Gdk::BUTTON_RELEASE_MASK |
+                                     Gdk::BUTTON_PRESS_MASK   |
+                                     Gdk::POINTER_MOTION_MASK);
                 }
                 ret = true;
             }

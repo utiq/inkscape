@@ -320,7 +320,8 @@ void Drawing::_loadPrefs()
 
     // Enable caching only for the Canvas's drawing, since only it is persistent.
     if (_canvas_item_drawing) {
-        _cache_budget = (1 << 20) * prefs->getIntLimited("/options/renderingcache/size", 64, 0, 4096);
+        // Preference is stored in MiB; convert to bytes, taking care not to overflow.
+        _cache_budget = (size_t{1} << 20) * prefs->getIntLimited("/options/renderingcache/size", 64, 0, 4096);
     } else {
         _cache_budget = 0;
     }

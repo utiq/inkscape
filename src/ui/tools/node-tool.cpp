@@ -229,13 +229,12 @@ NodeTool::~NodeTool()
     delete this->_multipath;
     delete this->_selected_nodes;
 
-    Inkscape::UI::PathSharedData &data = *this->_path_data;
-    delete data.node_data.node_group;
-    delete data.node_data.handle_group;
-    delete data.node_data.handle_line_group;
-    delete data.outline_group;
-    delete data.dragpoint_group;
-    delete _transform_handle_group;
+    _path_data->node_data.node_group->unlink();
+    _path_data->node_data.handle_group->unlink();
+    _path_data->node_data.handle_line_group->unlink();
+    _path_data->outline_group->unlink();
+    _path_data->dragpoint_group->unlink();
+    _transform_handle_group->unlink();
 }
 
 Inkscape::Rubberband *NodeTool::get_rubberband() const

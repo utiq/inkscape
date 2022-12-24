@@ -1085,7 +1085,7 @@ bool ToolBase::hasGradientDrag() const
  */
 void ToolBase::grabCanvasEvents(Gdk::EventMask mask)
 {
-    _desktop->getCanvasCatchall()->grab(mask, nullptr); // Cursor is null.
+    _desktop->getCanvasCatchall()->grab(mask); // Cursor is null.
 }
 
 /**

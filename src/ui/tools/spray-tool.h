@@ -24,6 +24,7 @@
 #include <2geom/point.h>
 #include "ui/tools/tool-base.h"
 #include "object/object-set.h"
+#include "display/control/canvas-item-ptr.h"
 
 #define SP_SPRAY_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::SprayTool*>((Inkscape::UI::Tools::ToolBase*)obj))
 #define SP_IS_SPRAY_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::SprayTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
@@ -92,7 +93,7 @@ public:
     bool is_dilating;
     bool has_dilated;
     Geom::Point last_push;
-    Inkscape::CanvasItemBpath *dilate_area;
+    CanvasItemPtr<CanvasItemBpath> dilate_area;
     bool no_overlap;
     bool picker;
     bool pick_center;

@@ -197,7 +197,6 @@ SpellCheck::SpellCheck()
 
 SpellCheck::~SpellCheck()
 {
-    clearRects();
     disconnect();
 }
 
@@ -212,10 +211,6 @@ void SpellCheck::documentReplaced()
 
 void SpellCheck::clearRects()
 {
-    for(auto rect : _rects) {
-        rect->hide();
-        delete rect;
-    }
     _rects.clear();
 }
 
@@ -519,7 +514,7 @@ SpellCheck::nextWord()
             auto rect = new Inkscape::CanvasItemRect(desktop->getCanvasSketch(), area);
             rect->set_stroke(0xff0000ff);
             rect->show();
-            _rects.push_back(rect);
+            _rects.emplace_back(rect);
 
             // scroll to make it all visible
             Geom::Point const center = desktop->current_center();
@@ -592,14 +587,9 @@ SpellCheck::nextWord()
     return false;
 }
 
-
-
-void
-SpellCheck::deleteLastRect ()
+void SpellCheck::deleteLastRect()
 {
     if (!_rects.empty()) {
-        _rects.back()->hide();
-        delete _rects.back();
         _rects.pop_back();
     }
 }

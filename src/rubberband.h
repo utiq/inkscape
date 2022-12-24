@@ -17,6 +17,7 @@
 #include <2geom/rect.h>
 #include <optional>
 #include <vector>
+#include "display/control/canvas-item-ptr.h"
 
 /* fixme: do multidocument safe */
 
@@ -69,8 +70,8 @@ private:
     Geom::Point _end;
     Geom::Path _path;
 
-    Inkscape::CanvasItemRect *_rect = nullptr;
-    Inkscape::CanvasItemBpath *_touchpath = nullptr;
+    CanvasItemPtr<CanvasItemRect> _rect;
+    CanvasItemPtr<CanvasItemBpath> _touchpath;
     SPCurve *_touchpath_curve = nullptr;
 
     void delete_canvas_items();

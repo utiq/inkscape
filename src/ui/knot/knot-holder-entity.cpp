@@ -213,7 +213,7 @@ SPPattern *PatternKnotHolderEntity::_pattern() const
 
 bool PatternKnotHolderEntity::knot_missing() const
 {
-    return (_pattern() == nullptr);
+    return !_pattern();
 }
 
 /* Pattern X/Y knot */
@@ -222,8 +222,8 @@ void PatternKnotHolderEntityXY::on_created()
 {
     PatternKnotHolderEntity::on_created();
     // TODO: Move to constructor when desktop is generally available
-    _quad = std::make_unique<Inkscape::CanvasItemQuad>(desktop->getCanvasControls());
-    _quad->set_z_position(0);
+    _quad = make_canvasitem<Inkscape::CanvasItemQuad>(desktop->getCanvasControls());
+    _quad->lower_to_bottom();
     _quad->set_fill(0x00000000);
     _quad->set_stroke(0x808080ff);
     _quad->set_inverted(true);
@@ -525,7 +525,7 @@ void BlurKnotHolderEntity::on_created()
     KnotHolderEntity::on_created();
     // TODO: Move to constructor when desktop is generally available
 
-    _line = std::make_unique<Inkscape::CanvasItemCurve>(desktop->getCanvasControls());
+    _line = make_canvasitem<Inkscape::CanvasItemCurve>(desktop->getCanvasControls());
     _line->set_z_position(0);
     _line->set_stroke(0x0033cccc);
     _line->hide();

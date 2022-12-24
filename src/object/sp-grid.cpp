@@ -20,6 +20,7 @@
 #include "sp-namedview.h"
 
 #include "display/control/canvas-item-grid.h"
+#include "display/control/canvas-item-ptr.h"
 
 #include "attributes.h"
 #include "desktop.h"
@@ -277,11 +278,11 @@ void SPGrid::_checkOldGrid(SPDocument *doc, Inkscape::XML::Node *repr)
     }
 }
 
-static std::unique_ptr<Inkscape::CanvasItemGrid> create_view(GridType grid_type, Inkscape::CanvasItemGroup *canvasgrids)
+static CanvasItemPtr<Inkscape::CanvasItemGrid> create_view(GridType grid_type, Inkscape::CanvasItemGroup *canvasgrids)
 {
     switch (grid_type) {
-        case GridType::RECTANGULAR: return std::make_unique<Inkscape::CanvasItemGridXY>    (canvasgrids); break;
-        case GridType::AXONOMETRIC: return std::make_unique<Inkscape::CanvasItemGridAxonom>(canvasgrids); break;
+        case GridType::RECTANGULAR: return make_canvasitem<Inkscape::CanvasItemGridXY>    (canvasgrids); break;
+        case GridType::AXONOMETRIC: return make_canvasitem<Inkscape::CanvasItemGridAxonom>(canvasgrids); break;
         default: g_assert_not_reached(); return {};
     }
 }

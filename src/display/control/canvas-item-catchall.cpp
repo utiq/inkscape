@@ -16,10 +16,6 @@
 
 #include "canvas-item-catchall.h"
 
-#include "color.h" // SP_RGBA_x_F
-
-#include "ui/widget/canvas.h"
-
 namespace Inkscape {
 
 /**
@@ -34,14 +30,6 @@ CanvasItemCatchall::CanvasItemCatchall(CanvasItemGroup *group)
 }
 
 /**
- * Returns distance between point in canvas units and nearest point on catchall.
- */
-double CanvasItemCatchall::closest_distance_to(Geom::Point const &p)
-{
-    return 0.0; // We're everywhere!
-}
-
-/**
  * Returns true if point p (in canvas units) is within tolerance (canvas units) distance of catchall.
  */
 bool CanvasItemCatchall::contains(Geom::Point const &p, double tolerance)
@@ -52,20 +40,18 @@ bool CanvasItemCatchall::contains(Geom::Point const &p, double tolerance)
 /**
  * Update and redraw control catchall.
  */
-void CanvasItemCatchall::update(Geom::Affine const &affine)
+void CanvasItemCatchall::_update(bool)
 {
     // No geometry to update.
-    _affine = affine;
 }
 
 /**
  * Render catchall to screen via Cairo.
  */
-void CanvasItemCatchall::render(Inkscape::CanvasItemBuffer *buf)
+void CanvasItemCatchall::_render(Inkscape::CanvasItemBuffer &buf)
 {
     // Do nothing! (Needed as CanvasItem is abstract.)
 }
-
 
 } // namespace Inkscape
 

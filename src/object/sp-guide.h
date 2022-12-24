@@ -17,6 +17,7 @@
 #include <2geom/point.h>
 #include <vector>
 
+#include "display/control/canvas-item-ptr.h"
 #include "sp-object.h"
 
 typedef unsigned int guint32;
@@ -86,7 +87,7 @@ protected:
     void set(SPAttr key, const char* value) override;
 
     char* label;
-    std::vector<Inkscape::CanvasItemGuideLine *> views; // See display/control/guideline.h.
+    std::vector<CanvasItemPtr<Inkscape::CanvasItemGuideLine>> views; // See display/control/guideline.h.
     bool locked;
     Geom::Point normal_to_line;
     Geom::Point point_on_line;

@@ -24,36 +24,33 @@
 
 namespace Inkscape {
 
-class CanvasItemGroup; // A canvas control that contains other canvas controls.
-
-class CanvasItemRect : public CanvasItem {
-
+class CanvasItemRect final : public CanvasItem
+{
 public:
     CanvasItemRect(CanvasItemGroup *group);
     CanvasItemRect(CanvasItemGroup *group, Geom::Rect const &rect);
 
     // Geometry
     void set_rect(Geom::Rect const &rect);
-    Geom::Rect get_rect() const {return _rect;}
-    void visit_page_rects(std::function<void(const Geom::Rect&)>) const override;
-
-    void update(Geom::Affine const &affine) override;
-    double closest_distance_to(Geom::Point const &p); // Maybe not needed
+    void visit_page_rects(std::function<void(Geom::Rect const &)> const &) const override;
 
     // Selection
     bool contains(Geom::Point const &p, double tolerance = 0) override;
 
-    // Display
-    void render(Inkscape::CanvasItemBuffer *buf) override;
-
     // Properties
     void set_is_page(bool is_page);
-    void set_fill(guint32 color) override;
+    void set_fill(uint32_t color) override;
     void set_dashed(bool dash = true);
     void set_inverted(bool inverted = false);
     void set_shadow(uint32_t color, int width);
  
 protected:
+    ~CanvasItemRect() override = default;
+
+    void _update(bool propagate) override;
+    void _render(Inkscape::CanvasItemBuffer &buf) override;
+
+    // Geometry
     double get_shadow_size() const;
 
     Geom::Rect _rect;

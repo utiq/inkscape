@@ -247,7 +247,7 @@ SnapIndicator::set_new_snaptarget(Inkscape::SnappedPoint const &p, bool pre_snap
                 box->set_stroke(pre_snap ? 0x7f7f7fff : 0xff0000ff);
                 box->set_dashed(true);
                 box->set_pickable(false); // Is false by default.
-                box->set_z_position(0);
+                box->lower_to_bottom();
                 _snaptarget_bbox = _desktop->add_temporary_canvasitem(box, timeout_val*1000.0);
             }
         }

@@ -23,18 +23,16 @@
 #include "color.h" // SP_RGBA_x_F
 
 #include "ui/util.h"
-#include "ui/widget/canvas.h"
 
 namespace Inkscape {
 
 /**
- * Create an null control text.
+ * Create a null control text.
  */
 CanvasItemText::CanvasItemText(CanvasItemGroup *group)
     : CanvasItem(group)
 {
     _name = "CanvasItemText";
-    _pickable = false; // Text is never pickable.
     _fill = 0x33337fff; // Override CanvasItem default.
 }
 
@@ -48,7 +46,6 @@ CanvasItemText::CanvasItemText(CanvasItemGroup *group, Geom::Point const &p, Gli
     , _scaled(scaled)
 {
     _name = "CanvasItemText";
-    _pickable = false; // Text is never pickable.
     _fill = 0x33337fff; // Override CanvasItem default.
 
     request_update();
@@ -67,21 +64,11 @@ void CanvasItemText::set_coord(Geom::Point const &p)
 /**
  * Set a text position. Position is in document coordinates.
  */
-void CanvasItemText::set_bg_radius(double const &rad)
+void CanvasItemText::set_bg_radius(double rad)
 {
     _bg_rad = rad;
 
     request_update();
-}
-
-/**
- * Returns distance between point in canvas units and nearest point on text.
- */
-double CanvasItemText::closest_distance_to(Geom::Point const &p)
-{
-    double d = Geom::infinity();
-    std::cerr << "CanvasItemText::closest_distance_to: Not implemented!" << std::endl;
-    return d;
 }
 
 /**
@@ -95,21 +82,13 @@ bool CanvasItemText::contains(Geom::Point const &p, double tolerance)
 /**
  * Update and redraw control text.
  */
-void CanvasItemText::update(Geom::Affine const &affine)
+void CanvasItemText::_update(bool)
 {
-    if (_affine == affine && !_need_update) {
-        // Nothing to do.
-        return;
-    }
-
     // Queue redraw of old area (erase previous content).
     request_redraw();
 
-    // Get new bounds
-    _affine = affine;
-
     // Point needs to be scaled manually if not cairo scaling
-    Geom::Point p = _scaled ? _p : _p * _affine;
+    Geom::Point p = _scaled ? _p : _p * affine();
 
     // Measure text size
     _text_box = load_text_extents();
@@ -119,47 +98,35 @@ void CanvasItemText::update(Geom::Affine const &affine)
     double offset_y = -(_anchor_position.y() * _text_box.height());
     offset_x += p.x() + _adjust_offset.x();
     offset_y += p.y() + _adjust_offset.y();
-    _text_box *= Geom::Translate(Geom::Point(int(offset_x), int(offset_y)));
+    _text_box *= Geom::Translate(Geom::Point(offset_x, offset_y).floor());
 
     // Pixel alignment of background. Avoid aliasing artifacts on redraw.
     _text_box = _text_box.roundOutwards();
 
     // Don't apply affine here, to keep text at the same size in screen coords.
     _bounds = _text_box;
-    if (_scaled) {
-        _bounds *= _affine;
-        _bounds = _bounds.roundOutwards();
+    if (_scaled && _bounds) {
+        *_bounds *= affine();
+        _bounds = _bounds->roundOutwards();
     }
 
     // Queue redraw of new area
     request_redraw();
-
-    _need_update = false;
 }
 
 /**
  * Render text to screen via Cairo.
  */
-void CanvasItemText::render(Inkscape::CanvasItemBuffer *buf)
+void CanvasItemText::_render(Inkscape::CanvasItemBuffer &buf)
 {
-    if (!buf) {
-        std::cerr << "CanvasItemText::Render: No buffer!" << std::endl;
-         return;
-    }
-
-    if (!_visible) {
-        // Hidden
-        return;
-    }
-
-    buf->cr->save();
+    buf.cr->save();
 
     // Screen to desktop coords.
-    buf->cr->translate(-buf->rect.left(), -buf->rect.top());
+    buf.cr->translate(-buf.rect.left(), -buf.rect.top());
 
     if (_scaled) {
         // Convert from canvas space to document space
-        buf->cr->transform(geom_to_cairo(_affine));
+        buf.cr->transform(geom_to_cairo(affine()));
     }
 
     double x = _text_box.min().x();
@@ -170,39 +137,39 @@ void CanvasItemText::render(Inkscape::CanvasItemBuffer *buf)
     // Background
     if (_use_background) {
         if (_bg_rad == 0.0) {
-            buf->cr->rectangle(x, y, w, h);
+            buf.cr->rectangle(x, y, w, h);
         } else {
             double radius = _bg_rad * (std::min(w ,h) / 2);
-            buf->cr->arc(x + w - radius, y + radius, radius, -M_PI_2, 0);
-            buf->cr->arc(x + w - radius, y + h - radius, radius, 0, M_PI_2);
-            buf->cr->arc(x + radius, y + h - radius, radius, M_PI_2, M_PI);
-            buf->cr->arc(x + radius, y + radius, radius, M_PI, 3*M_PI_2);
+            buf.cr->arc(x + w - radius, y + radius, radius, -M_PI_2, 0);
+            buf.cr->arc(x + w - radius, y + h - radius, radius, 0, M_PI_2);
+            buf.cr->arc(x + radius, y + h - radius, radius, M_PI_2, M_PI);
+            buf.cr->arc(x + radius, y + radius, radius, M_PI, 3*M_PI_2);
         }
-        buf->cr->set_line_width(2);
-        buf->cr->set_source_rgba(SP_RGBA32_R_F(_background), SP_RGBA32_G_F(_background),
-                                 SP_RGBA32_B_F(_background), SP_RGBA32_A_F(_background));
-        buf->cr->fill();
+        buf.cr->set_line_width(2);
+        buf.cr->set_source_rgba(SP_RGBA32_R_F(_background), SP_RGBA32_G_F(_background),
+                                SP_RGBA32_B_F(_background), SP_RGBA32_A_F(_background));
+        buf.cr->fill();
     }
 
     // Center the text inside the draw background box
     auto bx = x + w / 2.0;
     auto by = y + h / 2.0 + 1;
-    buf->cr->move_to(int(bx - _text_size.x_bearing - _text_size.width/2.0),
-                     int(by - _text_size.y_bearing - _text_extent.height/2.0));
+    buf.cr->move_to(int(bx - _text_size.x_bearing - _text_size.width/2.0),
+                    int(by - _text_size.y_bearing - _text_extent.height/2.0));
 
-    buf->cr->select_font_face(_fontname, Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_NORMAL);
-    buf->cr->set_font_size(_fontsize);
-    buf->cr->text_path(_text);
-    buf->cr->set_source_rgba(SP_RGBA32_R_F(_fill), SP_RGBA32_G_F(_fill),
-                             SP_RGBA32_B_F(_fill), SP_RGBA32_A_F(_fill));
-    buf->cr->fill();
-    buf->cr->restore();
+    buf.cr->select_font_face(_fontname, Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_NORMAL);
+    buf.cr->set_font_size(_fontsize);
+    buf.cr->text_path(_text);
+    buf.cr->set_source_rgba(SP_RGBA32_R_F(_fill), SP_RGBA32_G_F(_fill),
+                            SP_RGBA32_B_F(_fill), SP_RGBA32_A_F(_fill));
+    buf.cr->fill();
+    buf.cr->restore();
 }
 
-void CanvasItemText::set_text(Glib::ustring const &text)
+void CanvasItemText::set_text(Glib::ustring text)
 {
     if (_text != text) {
-        _text = text;
+        _text = std::move(text);
         request_update(); // Might be larger than before!
     }
 }
@@ -227,18 +194,18 @@ Geom::Rect CanvasItemText::load_text_extents()
     context->get_text_extents(_text, _text_size);
 
     if (_fixed_line) {
-        // TRANSLATORS: This is a set of letters to test for font accender and decenders.
+        // TRANSLATORS: This is a set of letters to test for font ascender and descenders.
         context->get_text_extents(_("lg1p$"), _text_extent);
     } else {
         _text_extent = _text_size;
     }
 
     return Geom::Rect::from_xywh(0, 0,
-                                 _text_size.x_advance + (_border * 2), 
-                                 _text_extent.height + (_border * 2));
+                                 _text_size.x_advance + _border * 2,
+                                 _text_extent.height + _border * 2);
 }
 
-void CanvasItemText::set_background(guint32 background)
+void CanvasItemText::set_background(uint32_t background)
 {
     if (_background != background) {
         _background = background;
@@ -254,7 +221,7 @@ void CanvasItemText::set_anchor(Geom::Point const &anchor_pt)
 {
     if (_anchor_position != anchor_pt) {
         _anchor_position = anchor_pt;
-        _canvas->request_update();
+        request_update();
     }
 }
 
@@ -262,7 +229,7 @@ void CanvasItemText::set_adjust(Geom::Point const &adjust_pt)
 {
     if (_adjust_offset != adjust_pt) {
         _adjust_offset = adjust_pt;
-        _canvas->request_update();
+        request_update();
     }
 }
 
@@ -270,7 +237,7 @@ void CanvasItemText::set_fixed_line(bool fixed_line)
 {
     if (_fixed_line != fixed_line) {
         _fixed_line = fixed_line;
-        _canvas->request_update();
+        request_update();
     }
 }
 
@@ -278,7 +245,7 @@ void CanvasItemText::set_border(double border)
 {
     if (_border != border) {
         _border = border;
-        _canvas->request_update();
+        request_update();
     }
 }
 

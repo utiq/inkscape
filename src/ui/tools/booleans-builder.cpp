@@ -33,7 +33,7 @@ BooleanBuilder::BooleanBuilder(ObjectSet *set)
     _work_items = SubItem::build_mosaic(set->items_vector());
 
     auto root = _set->desktop()->getCanvas()->get_canvas_item_root();
-    _group = std::make_unique<Inkscape::CanvasItemGroup>(root);
+    _group = make_canvasitem<CanvasItemGroup>(root);
 
     auto nv = _set->desktop()->getNamedView();
     desk_modified_connection = nv->connectModified([=](SPObject *obj, guint flags) {
@@ -51,8 +51,8 @@ void BooleanBuilder::redraw_item(CanvasItemBpath &bpath, bool selected, TaskType
 {
     int i = (int)task * 2 + (int)selected;
     bpath.set_fill(_dark ? fill_dark[i] : fill_lite[i], SP_WIND_RULE_POSITIVE);
-    bpath.set_stroke(task == TASKED_NONE ? 0x000000dd : 0xffffffff);
-    bpath.set_stroke_width(task == TASKED_NONE ? 1.0 : 3.0);
+    bpath.set_stroke(task == TaskType::NONE ? 0x000000dd : 0xffffffff);
+    bpath.set_stroke_width(task == TaskType::NONE ? 1.0 : 3.0);
 }
 
 /**
@@ -67,22 +67,22 @@ void BooleanBuilder::redraw_items()
 
     for (auto &subitem : _work_items) {
         // Construct BPath from each subitem!
-        auto bpath = std::make_shared<Inkscape::CanvasItemBpath>(_group.get(), subitem->get_pathv(), false);
-        redraw_item(*bpath, subitem->getSelected(), TASKED_NONE);
-        _screen_items.emplace_back(subitem, std::move(bpath));
+        auto bpath = make_canvasitem<Inkscape::CanvasItemBpath>(_group.get(), subitem->get_pathv(), false);
+        redraw_item(*bpath, subitem->getSelected(), TaskType::NONE);
+        _screen_items.push_back({ subitem, std::move(bpath), true });
     }
 
     // Selectively handle the undo actions being enabled / disabled
     enable_undo_actions(_set->document(), _undo.size(), _redo.size());
 }
 
-std::optional<ItemPair> BooleanBuilder::get_item(const Geom::Point &point)
+ItemPair *BooleanBuilder::get_item(const Geom::Point &point)
 {
     for (auto &pair : _screen_items) {
-        if (pair.second->contains(point, 2.0))
-            return pair;
+        if (pair.vis->contains(point, 2.0))
+            return &pair;
     }
-    return {};
+    return nullptr;
 }
 
 /**
@@ -94,11 +94,11 @@ bool BooleanBuilder::highlight(const Geom::Point &point, bool add)
         return true;
 
     bool done = false;
-    for (auto &[work, vis] : _screen_items) {
-        bool hover = !done && vis->contains(point, 2.0);
-        redraw_item(*vis, work->getSelected(), hover ? (add ? TASKED_ADD : TASKED_DELETE) : TASKED_NONE);
+    for (auto &si : _screen_items) {
+        bool hover = !done && si.vis->contains(point, 2.0);
+        redraw_item(*si.vis, si.work->getSelected(), hover ? (add ? TaskType::ADD : TaskType::DELETE) : TaskType::NONE);
         if (hover)
-            vis->raise_to_top();
+            si.vis->raise_to_top();
         done = done || hover;
     }
     return done;
@@ -111,15 +111,15 @@ bool BooleanBuilder::task_select(const Geom::Point &point, bool add_task)
 {
     if (has_task())
         task_cancel();
-    if (auto maybe = get_item(point)) {
+    if (auto si = get_item(point)) {
         _add_task = add_task;
-        auto &[work, vis] = maybe.value();
-        _work_task = std::make_shared<SubItem>(*work);
+        _work_task = std::make_shared<SubItem>(*si->work);
         _work_task->setSelected(true);
-        _screen_task = std::make_shared<Inkscape::CanvasItemBpath>(_group.get(), _work_task->get_pathv(), false);
-        redraw_item(*_screen_task, true, add_task ? TASKED_ADD : TASKED_DELETE);
-        vis->set_visible(false);
-        redraw_item(*vis, false, TASKED_NONE);
+        _screen_task = make_canvasitem<Inkscape::CanvasItemBpath>(_group.get(), _work_task->get_pathv(), false);
+        redraw_item(*_screen_task, true, add_task ? TaskType::ADD : TaskType::DELETE);
+        si->vis->hide();
+        si->visible = false;
+        redraw_item(*si->vis, false, TaskType::NONE);
         return true;
     }
     return false;
@@ -129,12 +129,12 @@ bool BooleanBuilder::task_add(const Geom::Point &point)
 {
     if (!has_task())
         return false;
-    if (auto maybe = get_item(point)) {
-        auto &[work, vis] = maybe.value();
+    if (auto si = get_item(point)) {
         // Invisible items are already processed.
-        if (vis->is_visible()) {
-            vis->set_visible(false);
-            *_work_task += *work;
+        if (si->visible) {
+            si->vis->hide();
+            si->visible = false;
+            *_work_task += *si->work;
             _screen_task->set_bpath(_work_task->get_pathv(), false);
             return true;
         }
@@ -146,8 +146,9 @@ void BooleanBuilder::task_cancel()
 {
     _work_task.reset();
     _screen_task.reset();
-    for (auto &[work, vis] : _screen_items) {
-        vis->set_visible(true);
+    for (auto &si : _screen_items) {
+        si.vis->show();
+        si.visible = true;
     }
 }
 
@@ -162,9 +163,9 @@ void BooleanBuilder::task_commit()
 
     // A. Delete all items from _work_items that aren't visible
     _work_items.clear();
-    for (auto &[work, vis] : _screen_items) {
-        if (vis->is_visible()) {
-            _work_items.emplace_back(work);
+    for (auto &si : _screen_items) {
+        if (si.visible) {
+            _work_items.emplace_back(si.work);
         }
     }
     if (_add_task) {

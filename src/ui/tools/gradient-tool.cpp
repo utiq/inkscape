@@ -175,14 +175,15 @@ void GradientTool::select_prev()
 
 SPItem *GradientTool::is_over_curve(Geom::Point event_p)
 {
-    //Translate mouse point into proper coord system: needed later.
+    // Translate mouse point into proper coord system: needed later.
     mousepoint_doc = _desktop->w2d(event_p);
 
-    for (auto curve : _grdrag->item_curves) {
-        if (curve->contains(event_p, tolerance)) {
-            return curve->get_item();
+    for (auto &it : _grdrag->item_curves) {
+        if (it.curve->contains(event_p, tolerance)) {
+            return it.item;
         }
     }
+
     return nullptr;
 }
 
