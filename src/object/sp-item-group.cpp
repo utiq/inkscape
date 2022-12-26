@@ -1019,6 +1019,9 @@ void SPGroup::update_patheffect(bool write) {
     }
 
     this->resetClipPathAndMaskLPE();
+    // avoid update lpe in each selection
+    // must be set also to non effect items (satellites or parents)
+    lpe_initialized = true;
     if (hasPathEffect() && pathEffectsEnabled()) {
         PathEffectList path_effect_list(*this->path_effect_list);
         for (auto &lperef : path_effect_list) {

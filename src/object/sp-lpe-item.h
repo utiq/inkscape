@@ -92,6 +92,7 @@ public:
     std::vector<SPObject *> get_satellites(bool force = true, bool recursive = false, bool onchilds = false);
     bool isOnClipboard();
     bool hasBrokenPathEffect() const;
+    bool lpe_initialized = false;
     PathEffectList getEffectList();
     PathEffectList const getEffectList() const;
 

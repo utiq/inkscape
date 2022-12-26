@@ -872,6 +872,9 @@ void SPShape::update_patheffect(bool write)
         }
 
         bool success = false;
+        // avoid update lpe in each selection
+        // must be set also to non effect items (satellites or parents)
+        lpe_initialized = true; 
         if (hasPathEffect() && pathEffectsEnabled()) {
             success = this->performPathEffect(&c_lpe, this);
             if (success) {

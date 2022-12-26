@@ -1024,7 +1024,8 @@ void Inkscape::SelTrans::_selChanged(Inkscape::Selection *selection)
         for (auto item : items) {
             SPItem *it = static_cast<SPItem*>(sp_object_ref(item, nullptr));
             auto lpeitem = cast<SPLPEItem>(it);
-            if (lpeitem) {
+            // only update if never do a LPE cycle (document load, revert...) and selection is not a layer
+            if (lpeitem && !lpeitem->lpe_initialized && (!is<SPGroup>(lpeitem) || !lpeitem->getAttribute("inkscape:groupmode"))) {
                 sp_lpe_item_update_patheffect(lpeitem, true, true);
             }
         }
