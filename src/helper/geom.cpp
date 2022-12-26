@@ -226,6 +226,19 @@ pathv_similar(Geom::PathVector const &apv, Geom::PathVector const &bpv, double p
     return true;
 }
 
+size_t
+pathv_real_size(Geom::Path path) 
+{
+    size_t psize = path.size_default();
+    if (path.closed()) {
+        const Geom::Curve &closingline = path.back_closed(); 
+        if (are_near(closingline.initialPoint(), closingline.finalPoint())) {
+        psize = path.size_open();
+        }
+    }
+    return psize;
+}
+
 static void
 geom_line_wind_distance (Geom::Coord x0, Geom::Coord y0, Geom::Coord x1, Geom::Coord y1, Geom::Point const &pt, int *wind, Geom::Coord *best)
 {

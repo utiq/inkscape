@@ -151,28 +151,24 @@ LPEFillBetweenMany::doEffect (SPCurve * curve)
             SPItem *item;
             if (iter->ref.isAttached() && (( item = cast<SPItem>(iter->ref.getObject()) )) &&
                 !iter->_pathvector.empty() && iter->visibled) {
-                Geom::Path linked_path;
-                if (iter->_pathvector.front().closed() && linked_paths._vector.size() > 1) {
-                    continue;
-                }
-                if (iter->reversed) {
-                    linked_path = iter->_pathvector.front().reversed();
-                } else {
-                    linked_path = iter->_pathvector.front();
-                }
-                linked_path *= item->getRelativeTransform(sp_lpe_item);
-                if (!res_pathv.empty() && join) {
-                    if (!are_near(res_pathv.front().finalPoint(), linked_path.initialPoint(), 0.1)) {
-                        res_pathv.front().appendNew<Geom::LineSegment>(linked_path.initialPoint());
+                for (auto linked_path : iter->_pathvector) {
+                    if (iter->reversed) {
+                        linked_path = linked_path.reversed();
+                    }
+                    linked_path *= item->getRelativeTransform(sp_lpe_item);
+                    if (!res_pathv.empty() && join) {
+                        if (!are_near(res_pathv.front().finalPoint(), linked_path.initialPoint(), 0.1)) {
+                            res_pathv.front().appendNew<Geom::LineSegment>(linked_path.initialPoint());
+                        } else {
+                            linked_path.setInitial(res_pathv.front().finalPoint());
+                        }
+                        res_pathv.front().append(linked_path);
                     } else {
-                        linked_path.setInitial(res_pathv.front().finalPoint());
+                        if (close && !join) {
+                            linked_path.close();
+                        }
+                        res_pathv.push_back(linked_path);
                     }
-                    res_pathv.front().append(linked_path);
-                } else {
-                    if (close && !join) {
-                        linked_path.close();
-                    }
-                    res_pathv.push_back(linked_path);
                 }
             }
         }

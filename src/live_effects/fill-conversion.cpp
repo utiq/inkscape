@@ -40,6 +40,9 @@ static SPObject *generate_linked_fill(SPShape *source)
     effectTarget = g_strdup_printf("#%s,0,1", source->getId());
     effectRepr->setAttribute("effect", "fill_between_many");
     effectRepr->setAttribute("method", "bsplinespiro");
+    effectRepr->setAttribute("autoreverse", "false");
+    effectRepr->setAttribute("close", "false");
+    effectRepr->setAttribute("join", "false");
     effectRepr->setAttribute("linkedpaths", effectTarget);
     defs->appendChild(effectRepr);
     Inkscape::GC::release(effectRepr);
