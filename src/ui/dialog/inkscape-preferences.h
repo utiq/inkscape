@@ -432,10 +432,8 @@ protected:
     UI::Widget::PrefSpinButton  _misc_gradientangle;
     UI::Widget::PrefCheckButton _misc_gradient_collect;
     UI::Widget::PrefCheckButton _misc_scripts;
-    UI::Widget::PrefCheckButton _misc_namedicon_delay;
 
     // System page
-    UI::Widget::PrefSpinButton  _misc_latency_skew;
     UI::Widget::PrefSpinButton  _misc_simpl;
     Gtk::Entry                  _sys_user_prefs;
     Gtk::Entry                  _sys_tmp_files;

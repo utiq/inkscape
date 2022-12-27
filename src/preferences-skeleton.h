@@ -350,7 +350,6 @@ static char const preferences_skeleton[] =
            allow_net_access="0"/>
     </group>
     <group id="forkgradientvectors" value="1"/>
-    <group id="iconrender" named_nodelay="0"/>
     <group id="autosave" enable="1" interval="10" path="" max="50"/>
     <group id="grids"
       no_emphasize_when_zoomedout="0">
@@ -503,7 +502,6 @@ static char const preferences_skeleton[] =
     </group>
   </group>
   <group id="debug">
-    <group id="latency" skew="1"/>
   </group>
   <group id="ui"
     language=""/>

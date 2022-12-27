@@ -3602,13 +3602,7 @@ static void appendList(Glib::ustring& tmp, const std::vector<string_type> &listi
 
 void InkscapePreferences::initPageSystem()
 {
-    _misc_latency_skew.init("/debug/latency/skew", 0.5, 2.0, 0.01, 0.10, 1.0, false, false);
-    _page_system.add_line( false, _("Latency _skew:"), _misc_latency_skew, "",
-                           _("Factor by which the event clock is skewed from the actual time (0.9766 on some systems)"), false, reset_icon());
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    _misc_namedicon_delay.init( _("Pre-render named icons"), "/options/iconrender/named_nodelay", false);
-    _page_system.add_line( false, "", _misc_namedicon_delay, "",
-                           _("When on, named icons will be rendered before displaying the ui. This is for working around bugs in GTK+ named icon notification"), true);
 
     _page_system.add_group_header( _("System info"));
 
