@@ -198,6 +198,7 @@ private:
      */
     UI::Widget::Entry   entry_find;
     UI::Widget::Entry   entry_replace;
+    Glib::RefPtr<Gtk::SizeGroup> label_group;
 
     /**
      * Scope and search in widgets

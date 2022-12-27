@@ -16,6 +16,9 @@
 #include <gtkmm/entry.h>
 #include <glibmm/i18n.h>
 #include <glibmm/regex.h>
+#include <gtkmm/enums.h>
+#include <gtkmm/label.h>
+#include <gtkmm/sizegroup.h>
 
 #include "desktop.h"
 #include "document-undo.h"
@@ -126,6 +129,20 @@ Find::Find()
       hboxbutton_row(Gtk::ORIENTATION_HORIZONTAL)
 
 {
+    label_group = Gtk::SizeGroup::create(Gtk::SIZE_GROUP_HORIZONTAL);
+    auto label1 = const_cast<Gtk::Label*>(entry_find.getLabel());
+    label_group->add_widget(*label1);
+    label1->set_xalign(0);
+    auto label2 = const_cast<Gtk::Label*>(entry_replace.getLabel());
+    label_group->add_widget(*label2);
+    label2->set_xalign(0);
+    const int MARGIN = 4;
+    set_margin_start(MARGIN);
+    set_margin_end(MARGIN);
+    entry_find.set_margin_top(MARGIN);
+    entry_replace.set_margin_top(MARGIN);
+    frame_searchin.set_margin_top(MARGIN);
+    frame_scope.set_margin_top(MARGIN);
     button_find.set_use_underline();
     button_find.set_tooltip_text(_("Select all objects matching the selection criteria"));
     button_replace.set_use_underline();
