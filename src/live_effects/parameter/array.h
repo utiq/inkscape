@@ -25,6 +25,12 @@ namespace Inkscape {
 
 namespace LivePathEffect {
 
+namespace TpS {
+// we need a separate namespace to avoid clashes with other LPEs
+class KnotHolderEntityAttachBegin;
+class KnotHolderEntityAttachEnd;
+}
+
 template <typename StorageType>
 class ArrayParam : public Parameter {
 public:
@@ -53,8 +59,12 @@ public:
         _vector.clear();
         gchar ** strarray = g_strsplit(strvalue, "|", 0);
         gchar ** iter = strarray;
+        
         while (*iter != nullptr) {
-            _vector.push_back( readsvg(*iter) );
+            Glib::ustring fixer = *iter;
+            fixer.erase(0, fixer.find_first_not_of(" "));                                                                                               
+            fixer.erase(fixer.find_last_not_of(" ")+1); 
+            _vector.push_back( readsvg(fixer.c_str()) );
             iter++;
         }
         g_strfreev (strarray);
@@ -88,6 +98,8 @@ public:
     }
     ParamType paramType() const override { return ParamType::ARRAY; };
 protected:
+    friend class TpS::KnotHolderEntityAttachBegin;
+    friend class TpS::KnotHolderEntityAttachEnd;
     std::vector<StorageType> _vector;
     size_t _default_size;
 
@@ -106,6 +118,10 @@ protected:
     }
 
     void writesvgData(SVGOStringStream &str, double const &vector_data) const {
+        str << vector_data;
+    }
+
+    void writesvgData(SVGOStringStream &str, Glib::ustring const &vector_data) const {
         str << vector_data;
     }
 

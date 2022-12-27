@@ -1562,6 +1562,18 @@ Geom::Affine SPItem::set_transform(Geom::Affine const &transform) {
     return transform;
 }
 
+bool SPItem::unoptimized() {
+    
+    if (auto classes = getAttribute("class")) {
+        auto classdata = Glib::ustring(classes);
+        size_t pos = classdata.find("UnoptimicedTransforms");
+        if (pos != Glib::ustring::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void SPItem::doWriteTransform(Geom::Affine const &transform, Geom::Affine const *adv, bool compensate)
 {
     // calculate the relative transform, if not given by the adv attribute
@@ -1628,22 +1640,14 @@ void SPItem::doWriteTransform(Geom::Affine const &transform, Geom::Affine const 
     if (lpeitem) {
         lpeitem->notifyTransform(transform);
     }
-    bool unoptimized = false;
-    if (auto classes = getAttribute("class")) {
-        auto classdata = Glib::ustring(classes);
-        size_t pos = classdata.find("UnoptimicedTransforms");
-        if (pos != Glib::ustring::npos) {
-            unoptimized = true;
-        }
-    }
-
+    bool unoptimiced = unoptimized();
     if ( // run the object's set_transform (i.e. embed transform) only if:
         (cast<SPText>(this) && firstChild() && cast<SPTextPath>(firstChild())) ||
              (!preserve && // user did not chose to preserve all transforms
              !getClipObject() && // the object does not have a clippath
              !getMaskObject() && // the object does not have a mask
              !(!transform.isTranslation() && style && style->getFilter()) &&
-             !unoptimized)
+             !unoptimiced)
                 // the object does not have a filter, or the transform is translation (which is supposed to not affect filters)
         )
     {

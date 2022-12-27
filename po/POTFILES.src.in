@@ -200,6 +200,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/live_effects/parameter/bool.cpp
 ../src/live_effects/parameter/colorpicker.cpp
 ../src/live_effects/parameter/enum.h
+../src/live_effects/parameter/enumarray.h
 ../src/live_effects/parameter/fontbutton.cpp
 ../src/live_effects/parameter/nodesatellitesarray.cpp
 ../src/live_effects/parameter/originalpath.cpp
@@ -212,6 +213,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/live_effects/parameter/random.cpp
 ../src/live_effects/parameter/satellite.cpp
 ../src/live_effects/parameter/satellitearray.cpp
+../src/live_effects/parameter/scalararray.cpp
 ../src/live_effects/parameter/text.cpp
 ../src/live_effects/parameter/togglebutton.cpp
 ../src/live_effects/parameter/transformedpoint.cpp

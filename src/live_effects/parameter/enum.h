@@ -40,7 +40,7 @@ public:
         sorted = sort;
     };
 
-    ~EnumParam() override = default;;
+    ~EnumParam() override = default;
     EnumParam(const EnumParam&) = delete;
     EnumParam& operator=(const EnumParam&) = delete;
 

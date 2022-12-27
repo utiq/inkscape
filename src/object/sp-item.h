@@ -209,7 +209,7 @@ public:
     bool isEvaluated() const;
     void setEvaluated(bool visible);
     void resetEvaluated();
-
+    bool unoptimized();
     bool isHidden(unsigned display_key) const;
 
     /**

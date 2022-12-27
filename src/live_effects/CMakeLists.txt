@@ -84,6 +84,7 @@ set(live_effects_SRC
 	parameter/point.cpp
 	parameter/powerstrokepointarray.cpp
 	parameter/random.cpp
+	parameter/scalararray.cpp
 	parameter/nodesatellitesarray.cpp
 	parameter/text.cpp
 	parameter/fontbutton.cpp
@@ -169,6 +170,7 @@ set(live_effects_SRC
 	parameter/colorpicker.h
 	parameter/hidden.h
 	parameter/enum.h
+	parameter/enumarray.h
 	parameter/satellite.h
 	parameter/satellitearray.h
 	parameter/satellite-reference.h
@@ -182,6 +184,7 @@ set(live_effects_SRC
 	parameter/point.h
 	parameter/powerstrokepointarray.h
 	parameter/random.h
+	parameter/scalararray.h
 	parameter/nodesatellitesarray.h
 	parameter/text.h
 	parameter/fontbutton.h

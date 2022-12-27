@@ -35,6 +35,16 @@ ArrayParam<float>::readsvg(const gchar * str)
 }
 
 template <>
+Glib::ustring
+ArrayParam<Glib::ustring>::readsvg(const gchar * str)
+{
+    if (str) {
+        return Glib::ustring(str);
+    }
+    return Glib::ustring("");
+}
+
+template <>
 Geom::Point
 ArrayParam<Geom::Point>::readsvg(const gchar * str)
 {
