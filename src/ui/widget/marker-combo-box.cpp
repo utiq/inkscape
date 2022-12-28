@@ -769,8 +769,6 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
         oldmarker->deleteObject(false);
     }
 
-    SPDocument::install_reference_document scoped(_sandbox.get(), source);
-
     // Create a copy repr of the marker with id="sample"
     Inkscape::XML::Document *xml_doc = _sandbox->getReprDoc();
     Inkscape::XML::Node *mrepr = marker->getRepr()->duplicate(xml_doc);
@@ -856,6 +854,8 @@ MarkerComboBox::create_marker_image(Geom::IntPoint pixel_size, gchar const *mnam
             sp_repr_css_attr_unref(css);
         }
     }
+
+    SPDocument::install_reference_document scoped(_sandbox.get(), source);
 
     _sandbox->getRoot()->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     _sandbox->ensureUpToDate();
