@@ -7,7 +7,6 @@ autotrace.h
 bitmap.c
 bitmap.h
 CMakeLists.txt
-cmdline.h
 color.c
 color.h
 curve.c
