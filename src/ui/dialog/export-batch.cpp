@@ -517,13 +517,19 @@ void BatchExport::onExport()
                 continue;
             }
 
-            Glib::ustring item_filename;
-            Glib::ustring::value_type last_char = filename.at(filename.length() - 1);
-            if (last_char != '/' && last_char != '\\') {
-                item_filename = filename + "_" + id;
-            } else {
-                item_filename = filename + id;
+            Glib::ustring item_filename = filename;
+            if (!filename.empty()) {
+                Glib::ustring::value_type last_char = filename.at(filename.length() - 1);
+                if (last_char != '/' && last_char != '\\') {
+                    item_filename += "_";
+                }
             }
+            if (id.at(0) == '#' && batchItem->getItem() && !batchItem->getItem()->label()) {
+                item_filename += id.substr(1);
+            } else {
+                item_filename += id;
+            }
+
             if (!suffix.empty()) {
                 if (omod->is_raster()) {
                     // Put the dpi in at the user's requested location.
