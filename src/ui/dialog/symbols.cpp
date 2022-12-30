@@ -584,7 +584,7 @@ Glib::ustring SymbolsDialog::getSymbolId(std::optional<Gtk::TreeModel::Path> con
     return (*row)[_columns.symbol_id];
 }
 
-/** Return the title of the document from which the symbol at the given path comes,
+/** Return the (translated) title of the document from which the symbol at the given path comes,
  *  with empty string fallback. */
 Glib::ustring SymbolsDialog::getSymbolDocTitle(std::optional<Gtk::TreeModel::Path> const &path) const
 {
@@ -600,7 +600,7 @@ Glib::ustring SymbolsDialog::documentTitle(SPDocument* symbol_doc) {
     SPRoot * root = symbol_doc->getRoot();
     gchar * title = root->title();
     if (title) {
-      return ellipsize(Glib::ustring(title), 33);
+        return Glib::ustring(title);
     }
     g_free(title);
   }
@@ -1143,14 +1143,6 @@ bool SymbolsDialog::callbackAllSymbols(){
   }
   icon_view->show();
   return true;
-}
-
-Glib::ustring SymbolsDialog::ellipsize(Glib::ustring data, size_t limit) {
-    if (data.length() > limit) {
-      data = data.substr(0, limit-3);
-      return data + "...";
-    }
-    return data;
 }
 
 void SymbolsDialog::addSymbolsInDoc(SPDocument* symbol_document) {

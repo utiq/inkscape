@@ -123,7 +123,6 @@ private:
     bool callbackAllSymbols();
     Glib::ustring get_active_base_text(Glib::ustring title = "selectedcombo");
     void enableWidgets(bool enable);
-    Glib::ustring ellipsize(Glib::ustring data, size_t limit);
     gchar const* styleFromUse( gchar const* id, SPDocument* document);
     Glib::RefPtr<Gdk::Pixbuf> drawSymbol(SPObject *symbol);
     Glib::RefPtr<Gdk::Pixbuf> getOverlay(gint width, gint height);
