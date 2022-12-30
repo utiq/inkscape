@@ -646,50 +646,53 @@ void SimpleNode::cleanOriginal(Node *src, gchar const *key){
         removeChild(i);
     }
 }
+bool string_equal(const gchar *a,const gchar *b) {
+    return g_strcmp0(a, b) == 0;
+}
 
-bool SimpleNode::equal(Node const *other, bool recursive) {
-    if(strcmp(name(),other->name())!= 0){
+bool SimpleNode::equal(Node const *other, bool recursive, bool skip_ids) {
+    if (!other || !string_equal(name(), other->name())) {
         return false;
     }
-    if (!(strcmp("sodipodi:namedview", name()))) {
+    // TODO: discover if is possible remove this
+    if (string_equal("sodipodi:namedview", name())) {
         return true;
     }
-    guint orig_length = 0;
-    guint other_length = 0;
-
-    if(content() && other->content() && strcmp(content(), other->content()) != 0){
+    if (!string_equal(content(), other->content())) {
         return false;
     }
-    for (auto orig_attr : attributeList()) {
-        for (auto other_attr : other->attributeList()) {
-            const gchar * key_orig = g_quark_to_string(orig_attr.key);
-            const gchar * key_other = g_quark_to_string(other_attr.key);
-            if (!strcmp(key_orig, key_other) && 
-                !strcmp(orig_attr.value, other_attr.value)) 
-            {
-                other_length++;
-                break;
-            }
+    const AttributeVector & orig_attrs = attributeList();
+    const AttributeVector & other_attrs = other->attributeList();
+    size_t sizeorig = orig_attrs.size();
+    size_t sizeother = other_attrs.size();
+    if (sizeother != sizeorig) {
+        return false;
+    }
+    for (size_t i = 0; i < sizeorig; i++) {
+        const gchar * key_orig = g_quark_to_string(orig_attrs[i].key);
+        if (skip_ids && string_equal(key_orig, "id")) {
+            continue;
         }
-        orig_length++;
-    }
-    if (orig_length != other_length) {
-        return false;
+        const gchar * key_other = g_quark_to_string(other_attrs[i].key);
+        if (!string_equal(key_orig, key_other) || 
+            !string_equal(orig_attrs[i].value, other_attrs[i].value) != 0) 
+        {
+            return false;
+        }
     }
     if (recursive) {
         //NOTE: for faster the childs need to be in the same order
         Node const *other_child = other->firstChild();
-        for ( Node *child = firstChild();
-              child; 
-              child = child->next())
-        {
-            if (!child->equal(other_child, recursive)) {
+        Node *child = firstChild();
+        while (child && other_child) {
+            if (!child->equal(other_child, recursive, skip_ids)) {
                 return false;
             }
+            child = child->next();
             other_child = other_child->next();
-            if(!other_child) {
-                return false;
-            }
+        }
+        if ((!child && other_child) || (child && !other_child)) {
+            return false;
         }
     }
     return true;
@@ -699,14 +702,17 @@ void SimpleNode::mergeFrom(Node const *src, gchar const *key, bool extension, bo
     g_return_if_fail(src != nullptr);
     g_return_if_fail(key != nullptr);
     g_assert(src != this);
-
+    
+    Node * srcp = const_cast<Node *>(src);
+    if (srcp->equal(this, true)) {
+        return;
+    }
     setContent(src->content());
     if(_parent) {
         setPosition(src->position());
     }
 
     if (clean) {
-        Node * srcp = const_cast<Node *>(src);
         cleanOriginal(srcp, key);
     }
 

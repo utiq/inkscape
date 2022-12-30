@@ -88,7 +88,7 @@ public:
     void setContent(char const *value) override;
 
     void cleanOriginal(Node *src, gchar const *key) override;
-    bool equal(Node const *other, bool recursive) override;
+    bool equal(Node const *other, bool recursive, bool skip_ids = false) override;
     void mergeFrom(Node const *src, char const *key, bool extension = false, bool clean = false) override;
 
     const AttributeVector & attributeList() const override {

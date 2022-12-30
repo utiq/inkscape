@@ -474,7 +474,7 @@ public:
      * @param other The other node to compare
      * @param recursive Recursive mode check
      */
-    virtual bool equal(Node const *other, bool recursive) = 0;
+    virtual bool equal(Node const *other, bool recursive, bool skip_ids = false) = 0;
     /**
      * @brief Merge all children of another node with the current
      *
