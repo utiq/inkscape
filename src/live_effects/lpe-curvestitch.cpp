@@ -60,8 +60,7 @@ LPECurveStitch::LPECurveStitch(LivePathEffectObject *lpeobject) :
     transformed = false;
 }
 
-LPECurveStitch::~LPECurveStitch()
-= default;
+LPECurveStitch::~LPECurveStitch() = default;
 
 bool 
 LPECurveStitch::doOnOpen(SPLPEItem const *lpeitem)

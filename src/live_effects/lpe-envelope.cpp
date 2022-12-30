@@ -32,8 +32,7 @@ LPEEnvelope::LPEEnvelope(LivePathEffectObject *lpeobject) :
     apply_to_clippath_and_mask = true;
 }
 
-LPEEnvelope::~LPEEnvelope()
-= default;
+LPEEnvelope::~LPEEnvelope() = default;
 
 bool 
 LPEEnvelope::doOnOpen(SPLPEItem const *lpeitem)

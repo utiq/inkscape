@@ -64,8 +64,7 @@ LPEPerspectiveEnvelope::LPEPerspectiveEnvelope(LivePathEffectObject *lpeobject) 
     apply_to_clippath_and_mask = true;
 }
 
-LPEPerspectiveEnvelope::~LPEPerspectiveEnvelope()
-= default;
+LPEPerspectiveEnvelope::~LPEPerspectiveEnvelope() = default;
 
 void LPEPerspectiveEnvelope::transform_multiply(Geom::Affine const &postmul, bool /*set*/)
 {

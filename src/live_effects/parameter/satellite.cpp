@@ -41,8 +41,7 @@ SatelliteParam::SatelliteParam(const Glib::ustring &label, const Glib::ustring &
     , last_transform(Geom::identity())
 {}
 
-SatelliteParam::~SatelliteParam()
-{
+SatelliteParam::~SatelliteParam() {
     quit_listening();
 }
 

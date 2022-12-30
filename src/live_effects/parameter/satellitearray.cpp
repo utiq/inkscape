@@ -48,8 +48,7 @@ SatelliteArrayParam::SatelliteArrayParam(const Glib::ustring &label, const Glib:
     }
 }
 
-SatelliteArrayParam::~SatelliteArrayParam()
-{
+SatelliteArrayParam::~SatelliteArrayParam() {
     _vector.clear();
     if (_store.get() && _model) {
         delete _model;

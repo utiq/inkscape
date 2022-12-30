@@ -21,7 +21,6 @@ class OriginalSatelliteParam : public SatelliteParam
 public:
     OriginalSatelliteParam(const Glib::ustring &label, const Glib::ustring &tip, const Glib::ustring &key,
                            Inkscape::UI::Widget::Registry *wr, Effect *effect);
-    ~OriginalSatelliteParam() override;
     Gtk::Widget * param_newWidget() override;
     ParamType paramType() const override { return ParamType::ORIGINAL_SATELLITE; };
 protected:

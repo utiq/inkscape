@@ -33,8 +33,7 @@ LPEFillBetweenStrokes::LPEFillBetweenStrokes(LivePathEffectObject *lpeobject) :
     second_path.setUpdating(true);
 }
 
-LPEFillBetweenStrokes::~LPEFillBetweenStrokes()
-= default;
+LPEFillBetweenStrokes::~LPEFillBetweenStrokes() = default;
 
 void
 LPEFillBetweenStrokes::doOnApply(SPLPEItem const* lpeitem)

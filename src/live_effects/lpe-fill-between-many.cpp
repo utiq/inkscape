@@ -48,8 +48,7 @@ LPEFillBetweenMany::LPEFillBetweenMany(LivePathEffectObject *lpeobject)
     linked_paths.setUpdating(true);
 }
 
-LPEFillBetweenMany::~LPEFillBetweenMany()
-= default;
+LPEFillBetweenMany::~LPEFillBetweenMany() = default;
 
 void
 LPEFillBetweenMany::doOnApply(SPLPEItem const* lpeitem)

@@ -103,8 +103,7 @@ LPEOffset::LPEOffset(LivePathEffectObject *lpeobject) :
     fillrule = fill_nonZero;
 }
 
-LPEOffset::~LPEOffset()
-{
+LPEOffset::~LPEOffset() {
     modified_connection.disconnect();
 };
 

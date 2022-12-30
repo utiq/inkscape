@@ -81,8 +81,7 @@ LPETransform2Pts::LPETransform2Pts(LivePathEffectObject *lpeobject) :
     apply_to_clippath_and_mask = true;
 }
 
-LPETransform2Pts::~LPETransform2Pts()
-= default;
+LPETransform2Pts::~LPETransform2Pts() = default;
 
 void
 LPETransform2Pts::doOnApply(SPLPEItem const* lpeitem)

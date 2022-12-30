@@ -30,8 +30,7 @@ UnitParam::UnitParam( const Glib::ustring& label, const Glib::ustring& tip,
     unit = defunit;
 }
 
-UnitParam::~UnitParam()
-= default;
+UnitParam::~UnitParam() = default;
 
 bool
 UnitParam::param_readSVGValue(const gchar * strvalue)

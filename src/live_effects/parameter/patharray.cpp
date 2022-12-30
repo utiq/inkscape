@@ -75,8 +75,7 @@ PathArrayParam::PathArrayParam(const Glib::ustring &label, const Glib::ustring &
     _allow_only_bspline_spiro = false;
 }
 
-PathArrayParam::~PathArrayParam()
-{
+PathArrayParam::~PathArrayParam() {
     while (!_vector.empty()) {
         PathAndDirectionAndVisible *w = _vector.back();
         unlink(w);

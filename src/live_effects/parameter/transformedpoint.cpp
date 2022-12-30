@@ -35,8 +35,7 @@ TransformedPointParam::TransformedPointParam( const Glib::ustring& label, const 
 {
 }
 
-TransformedPointParam::~TransformedPointParam()
-= default;
+TransformedPointParam::~TransformedPointParam() = default;
 
 void
 TransformedPointParam::param_set_default()

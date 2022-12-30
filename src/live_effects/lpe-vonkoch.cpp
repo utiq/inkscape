@@ -70,8 +70,7 @@ LPEVonKoch::LPEVonKoch(LivePathEffectObject *lpeobject) :
     maxComplexity.param_set_range(0, std::numeric_limits<gint>::max());
 }
 
-LPEVonKoch::~LPEVonKoch()
-= default;
+LPEVonKoch::~LPEVonKoch() = default;
 
 bool 
 LPEVonKoch::doOnOpen(SPLPEItem const *lpeitem)

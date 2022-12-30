@@ -51,8 +51,7 @@ LPEAngleBisector::LPEAngleBisector(LivePathEffectObject *lpeobject) :
     registerParameter( dynamic_cast<Parameter *>(&length_right) );
 }
 
-LPEAngleBisector::~LPEAngleBisector()
-= default;
+LPEAngleBisector::~LPEAngleBisector() = default;
 
 Geom::PathVector
 LPEAngleBisector::doEffect_path (Geom::PathVector const & path_in)

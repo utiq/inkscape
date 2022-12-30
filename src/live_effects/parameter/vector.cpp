@@ -32,8 +32,7 @@ VectorParam::VectorParam( const Glib::ustring& label, const Glib::ustring& tip,
 {
 }
 
-VectorParam::~VectorParam()
-= default;
+VectorParam::~VectorParam() = default;
 
 void
 VectorParam::param_set_default()

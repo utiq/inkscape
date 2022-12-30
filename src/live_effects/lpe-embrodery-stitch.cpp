@@ -83,8 +83,7 @@ LPEEmbroderyStitch::LPEEmbroderyStitch(LivePathEffectObject *lpeobject) :
     jump_if_longer.param_set_range(0.0, 1000000);
 }
 
-LPEEmbroderyStitch::~LPEEmbroderyStitch()
-= default;
+LPEEmbroderyStitch::~LPEEmbroderyStitch() = default;
 
 double LPEEmbroderyStitch::GetPatternInitialStep(int pattern, int line)
 {

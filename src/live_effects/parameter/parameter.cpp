@@ -39,17 +39,18 @@ Parameter::Parameter(Glib::ustring label, Glib::ustring tip, Glib::ustring key, 
 {
 }
 
-Parameter::~Parameter()
-{
+Parameter::~Parameter() {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
     if (desktop && ownerlocator) {
         desktop->remove_temporary_canvasitem(ownerlocator);
+        ownerlocator = nullptr;
     }
     if (selection_changed_connection) {
         selection_changed_connection->disconnect();
         delete selection_changed_connection;
         selection_changed_connection = nullptr;
     }
+    param_effect = nullptr;
 }
 
 void Parameter::param_write_to_repr(const char *svgd)

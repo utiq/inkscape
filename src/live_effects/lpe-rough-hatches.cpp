@@ -283,9 +283,7 @@ LPERoughHatches::LPERoughHatches(LivePathEffectObject *lpeobject) :
     show_orig_path = true;
 }
 
-LPERoughHatches::~LPERoughHatches()
-= default;
-
+LPERoughHatches::~LPERoughHatches() = default;
 
 void LPERoughHatches::doOnApply(SPLPEItem const *lpeitem)
 {

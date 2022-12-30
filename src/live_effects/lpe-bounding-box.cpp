@@ -27,8 +27,7 @@ LPEBoundingBox::LPEBoundingBox(LivePathEffectObject *lpeobject) :
     linked_path.lookup = true;
 }
 
-LPEBoundingBox::~LPEBoundingBox()
-= default;
+LPEBoundingBox::~LPEBoundingBox() = default;
 
 bool 
 LPEBoundingBox::doOnOpen(SPLPEItem const *lpeitem)

@@ -78,8 +78,7 @@ LPEBendPath::LPEBendPath(LivePathEffectObject *lpeobject) :
     concatenate_before_pwd2 = true;
 }
 
-LPEBendPath::~LPEBendPath()
-= default;
+LPEBendPath::~LPEBendPath() = default;
 
 
 bool 

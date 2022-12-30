@@ -71,9 +71,7 @@ LPELattice::LPELattice(LivePathEffectObject *lpeobject) :
     apply_to_clippath_and_mask = true;
 }
 
-LPELattice::~LPELattice()
-= default;
-
+LPELattice::~LPELattice() = default;
 
 Geom::Piecewise<Geom::D2<Geom::SBasis> >
 LPELattice::doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd2_in)

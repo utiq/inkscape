@@ -116,8 +116,7 @@ LPEPatternAlongPath::LPEPatternAlongPath(LivePathEffectObject *lpeobject) :
 
 }
 
-LPEPatternAlongPath::~LPEPatternAlongPath()
-= default;
+LPEPatternAlongPath::~LPEPatternAlongPath() = default;
 
 bool 
 LPEPatternAlongPath::doOnOpen(SPLPEItem const *lpeitem)

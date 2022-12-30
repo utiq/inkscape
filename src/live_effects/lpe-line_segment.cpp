@@ -36,8 +36,7 @@ LPELineSegment::LPELineSegment(LivePathEffectObject *lpeobject) :
     registerParameter(&end_type);
 }
 
-LPELineSegment::~LPELineSegment()
-= default;
+LPELineSegment::~LPELineSegment() = default;
 
 void
 LPELineSegment::doBeforeEffect (SPLPEItem const* lpeitem)

@@ -34,8 +34,7 @@ PointParam::PointParam( const Glib::ustring& label, const Glib::ustring& tip,
     handle_tip = g_strdup(htip);
 }
 
-PointParam::~PointParam()
-{
+PointParam::~PointParam() {
     if (handle_tip)
         g_free(handle_tip);
 }

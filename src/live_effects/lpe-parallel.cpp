@@ -60,8 +60,7 @@ LPEParallel::LPEParallel(LivePathEffectObject *lpeobject) :
     registerParameter(&length_right);
 }
 
-LPEParallel::~LPEParallel()
-= default;
+LPEParallel::~LPEParallel() = default;
 
 void
 LPEParallel::doOnApply (SPLPEItem const* lpeitem)

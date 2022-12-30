@@ -106,8 +106,7 @@ LPEPerpBisector::LPEPerpBisector(LivePathEffectObject *lpeobject) :
     registerParameter(&length_right);
 }
 
-LPEPerpBisector::~LPEPerpBisector()
-= default;
+LPEPerpBisector::~LPEPerpBisector() = default;
 
 void
 LPEPerpBisector::doOnApply (SPLPEItem const*/*lpeitem*/)

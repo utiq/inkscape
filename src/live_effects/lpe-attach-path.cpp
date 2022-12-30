@@ -44,8 +44,7 @@ LPEAttachPath::LPEAttachPath(LivePathEffectObject *lpeobject) :
     end_path.setUpdating(true);
 }
 
-LPEAttachPath::~LPEAttachPath()
-= default;
+LPEAttachPath::~LPEAttachPath() = default;
 
 void LPEAttachPath::resetDefaults(SPItem const * /*item*/)
 {

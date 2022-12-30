@@ -23,7 +23,6 @@ public:
                 const Glib::ustring& key,
                 Inkscape::UI::Widget::Registry* wr,
                 Effect* effect);
-    ~OriginalPathParam() override;
     bool linksToPath() const { return (href != nullptr); }
     SPItem * getObject() const { return ref.getObject(); }
 

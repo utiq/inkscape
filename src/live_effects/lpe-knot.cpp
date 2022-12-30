@@ -390,8 +390,7 @@ LPEKnot::LPEKnot(LivePathEffectObject *lpeobject)
     _provides_knotholder_entities = true;
 }
 
-LPEKnot::~LPEKnot()
-= default;
+LPEKnot::~LPEKnot() = default;
 
 void
 LPEKnot::updateSwitcher(){

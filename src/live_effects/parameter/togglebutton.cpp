@@ -45,8 +45,7 @@ ToggleButtonParam::ToggleButtonParam(const Glib::ustring &label, const Glib::ust
     checkwdg = nullptr;
 }
 
-ToggleButtonParam::~ToggleButtonParam()
-{
+ToggleButtonParam::~ToggleButtonParam() {
     if (_toggled_connection.connected()) {
         _toggled_connection.disconnect();
     }

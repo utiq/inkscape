@@ -77,9 +77,9 @@ PathParam::PathParam( const Glib::ustring& label, const Glib::ustring& tip,
     ref_changed_connection = ref.changedSignal().connect(sigc::mem_fun(*this, &PathParam::ref_changed));
 }
 
-PathParam::~PathParam()
-{
+PathParam::~PathParam() {
     unlink();
+    quit_listening();
 //TODO: Removed to fix a bug https://bugs.launchpad.net/inkscape/+bug/1716926
 //      Maybe we need to resurrect, not know when this code is added, but seems also not working now in a few test I do.
 //      in the future and do a deeper fix in multi-path-manipulator
@@ -458,6 +458,7 @@ PathParam::start_listening(SPObject * to)
     if ( to == nullptr ) {
         return;
     }
+    quit_listening();
     linked_deleted_connection = to->connectDelete(sigc::mem_fun(*this, &PathParam::linked_deleted));
     linked_modified_connection = to->connectModified(sigc::mem_fun(*this, &PathParam::linked_modified));
     if (is<SPItem>(to)) {

@@ -40,8 +40,7 @@ PowerStrokePointArrayParam::PowerStrokePointArrayParam( const Glib::ustring& lab
 {
 }
 
-PowerStrokePointArrayParam::~PowerStrokePointArrayParam()
-= default;
+PowerStrokePointArrayParam::~PowerStrokePointArrayParam() = default;
 
 Gtk::Widget *
 PowerStrokePointArrayParam::param_newWidget()
