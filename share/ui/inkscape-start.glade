@@ -874,8 +874,8 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
                 <property name="margin_right">30</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
-                <property name="label" translatable="yes">&lt;big&gt;&lt;b&gt;The Inkscape project is supported by users like you.&lt;/b&gt; Through our collective time, money and skill, we have made this software for everyone in the world to enjoy free from restrictions and free from costs. &lt;b&gt;
-If you would like to get involved and make the next version of Inkscape even better, please consider joining the Inkscape project today.&lt;/b&gt;&lt;/big&gt;</property>
+                <property name="label" translatable="yes">&lt;b&gt;The Inkscape project is supported by users like you.&lt;/b&gt; Through our collective time, money and skill, we have made this software for everyone in the world to enjoy free from restrictions and free from costs. &lt;b&gt;
+If you would like to get involved and make the next version of Inkscape even better, please consider joining the Inkscape project today.&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
                 <property name="wrap">True</property>
                 <property name="max_width_chars">50</property>
