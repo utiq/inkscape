@@ -26,7 +26,6 @@ CanvasItemCatchall::CanvasItemCatchall(CanvasItemGroup *group)
 {
     _name = "CanvasItemCatchall";
     _pickable = true; // Duh! That's the purpose of this class!
-    _bounds = Geom::Rect(-Geom::infinity(), -Geom::infinity(), Geom::infinity(), Geom::infinity());
 }
 
 /**
@@ -42,7 +41,7 @@ bool CanvasItemCatchall::contains(Geom::Point const &p, double tolerance)
  */
 void CanvasItemCatchall::_update(bool)
 {
-    // No geometry to update.
+    _bounds = Geom::Rect(-Geom::infinity(), -Geom::infinity(), Geom::infinity(), Geom::infinity());
 }
 
 /**

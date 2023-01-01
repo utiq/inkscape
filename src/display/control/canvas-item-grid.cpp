@@ -48,8 +48,6 @@ CanvasItemGrid::CanvasItemGrid(CanvasItemGroup *group)
     , _major_line_interval(5)
     , _dotted(false)
 {
-    _bounds = Geom::Rect(-Geom::infinity(), -Geom::infinity(), Geom::infinity(), Geom::infinity());
-
     _no_emp_when_zoomed_out = Preferences::get()->getBool("/options/grids/no_emphasize_when_zoomedout");
     _pref_tracker = Preferences::PreferencesObserver::create("/options/grids/no_emphasize_when_zoomedout", [this] (auto &entry) {
         set_no_emp_when_zoomed_out(entry.getBool());
@@ -164,6 +162,8 @@ CanvasItemGridXY::CanvasItemGridXY(Inkscape::CanvasItemGroup *group)
 
 void CanvasItemGridXY::_update(bool)
 {
+    _bounds = Geom::Rect(-Geom::infinity(), -Geom::infinity(), Geom::infinity(), Geom::infinity());
+
     // Queue redraw of grid area
     ow = _origin * affine();
     sw[0] = Geom::Point(_spacing[0], 0) * affine().withoutTranslation();
@@ -335,6 +335,8 @@ CanvasItemGridAxonom::CanvasItemGridAxonom(Inkscape::CanvasItemGroup *group)
 
 void CanvasItemGridAxonom::_update(bool)
 {
+    _bounds = Geom::Rect(-Geom::infinity(), -Geom::infinity(), Geom::infinity(), Geom::infinity());
+
     ow = _origin * affine();
     lyw = _spacing.y() * affine().descrim();
 
