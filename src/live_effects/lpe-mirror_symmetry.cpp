@@ -288,8 +288,8 @@ LPEMirrorSymmetry::doBeforeEffect (SPLPEItem const* lpeitem)
             }
             if (!are_near(previous_center, (Geom::Point)center_point, 0.001)) {
                 Geom::Point trans = center_point - Geom::middle_point((Geom::Point)start_point, (Geom::Point)end_point);
-                start_point.param_setValue(start_point * trans, true);
-                end_point.param_setValue(end_point * trans, true);
+                start_point.param_setValue(start_point + trans, true);
+                end_point.param_setValue(end_point + trans, true);
             }
             center_point.param_setValue(Geom::middle_point((Geom::Point)start_point, (Geom::Point)end_point), true);
             previous_center = Geom::middle_point((Geom::Point)start_point, (Geom::Point)end_point);

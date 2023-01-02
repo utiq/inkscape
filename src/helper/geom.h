@@ -101,6 +101,10 @@ inline auto operator*(Geom::IntPoint const &a, Geom::IntPoint const &b)
     return Geom::IntPoint(a.x() * b.x(), a.y() * b.y());
 }
 
+/// Temporary overload to identify breakage in
+/// https://gitlab.com/inkscape/inkscape/-/merge_requests/4963
+inline auto operator*(Geom::Point const &a, Geom::Point const &b) = delete;
+
 inline auto operator/(Geom::Point const &a, Geom::IntPoint const &b)
 {
     return Geom::Point(a.x() / b.x(), a.y() / b.y());
