@@ -213,7 +213,6 @@ set(ui_SRC
 	widget/gradient-with-stops.cpp
 	widget/imagetoggler.cpp
 	widget/ink-color-wheel.cpp
-	widget/ink-flow-box.cpp
 	widget/ink-ruler.cpp
 	widget/ink-spinscale.cpp
 	widget/label-tool-item.cpp
@@ -488,7 +487,6 @@ set(ui_SRC
 	widget/gradient-with-stops.h
 	widget/imagetoggler.h
 	widget/ink-color-wheel.h
-	widget/ink-flow-box.h
 	widget/ink-ruler.h
 	widget/ink-spinscale.h
 	widget/label-tool-item.h
