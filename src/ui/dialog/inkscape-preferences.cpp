@@ -2075,7 +2075,7 @@ void InkscapePreferences::initPageUI()
             box->pack_start(*Gtk::make_managed<Gtk::Image>(picker.icon, Gtk::ICON_SIZE_BUTTON));
             box->set_spacing(3);
             auto path = picker.visibility_path;
-            btn->set_active(prefs->getBool(path, true));
+            btn->set_active(prefs->getBool(path));
             btn->add(*box);
             btn->signal_toggled().connect([=]() {
                 prefs->setBool(path, btn->get_active());
