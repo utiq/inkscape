@@ -796,11 +796,8 @@ void SPNamedView::setShowGrids(bool v)
     bool saved = DocumentUndo::getUndoSensitive(document);
     DocumentUndo::setUndoSensitive(document, false);
 
-    if (v && grids.empty()) {
-        Inkscape::XML::Node *new_node = document->getReprDoc()->createElement("inkscape:grid");
-        this->getRepr()->appendChild(new_node);
-        Inkscape::GC::release(new_node);
-    }
+    if (v && grids.empty())
+        SPGrid::create_new(document, this->getRepr(), GridType::RECTANGULAR);
 
     getRepr()->setAttributeBoolean("showgrid", v);
 

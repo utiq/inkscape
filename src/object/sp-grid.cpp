@@ -35,6 +35,8 @@
 #include <string>
 #include <optional>
 
+using Inkscape::Util::unit_table;
+
 SPGrid::SPGrid()
     : _visible(true)
     , _enabled(true)
@@ -42,15 +44,19 @@ SPGrid::SPGrid()
     , _snap_to_visible_only(true)
     , _legacy(false)
     , _pixel(true)
-    , _major_color(GRID_DEFAULT_MAJOR_COLOR)
-    , _minor_color(GRID_DEFAULT_MINOR_COLOR)
     , _grid_type(GridType::RECTANGULAR)
-    , _major_opacity(0.38)
-    , _minor_opacity(0.15)
-    , _major_line_interval(5)
+{}
+
+void SPGrid::create_new(SPDocument *document, Inkscape::XML::Node *parent, GridType type)
 {
-    _angle_x.unset(SVGAngle::Unit::DEG, 30, 30);
-    _angle_z.unset(SVGAngle::Unit::DEG, 30, 30);
+    Inkscape::XML::Node *new_node = document->getReprDoc()->createElement("inkscape:grid");
+    if (type == GridType::AXONOMETRIC) {
+        new_node->setAttribute("type", "axonomgrid");
+    }
+
+    parent->appendChild(new_node);
+
+    Inkscape::GC::release(new_node);
 }
 
 SPGrid::~SPGrid() = default;
@@ -121,30 +127,34 @@ void SPGrid::set(SPAttr key, const gchar* value)
                 _grid_type = grid_type;
                 _recreateViews();
             }
+            setPrefValues();
             break;
         }
+        case SPAttr::UNITS:
+            _display_unit = unit_table.getUnit(value);
+            break;
         case SPAttr::ORIGINX:
-            _origin_x.readOrUnset(value);
+            _origin_x.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::ORIGINY:
-            _origin_y.readOrUnset(value);
+            _origin_y.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::SPACINGX:
-            _spacing_x.readOrUnset(value, SVGLength::Unit::PX, 1.0, 1.0);
+            _spacing_x.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::SPACINGY:
-            _spacing_y.readOrUnset(value, SVGLength::Unit::PX, 1.0, 1.0);
+            _spacing_y.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::ANGLE_X: // only meaningful for axonomgrid
-            _angle_x.readOrUnset(value, SVGAngle::Unit::DEG, 30, 30);
+            _angle_x.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::ANGLE_Z: // only meaningful for axonomgrid
-            _angle_z.readOrUnset(value, SVGAngle::Unit::DEG, 30, 30);
+            _angle_z.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::COLOR:
@@ -156,32 +166,32 @@ void SPGrid::set(SPAttr key, const gchar* value)
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::VISIBLE:
-            _visible.readOrUnset(value);
+            _visible.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::ENABLED:
-            _enabled.readOrUnset(value);
+            _enabled.read(value);
             if (_snapper) _snapper->setEnabled(_enabled);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::OPACITY:
-            _minor_opacity = sp_ink_read_opacity(value, &_minor_color, GRID_DEFAULT_MINOR_COLOR);
+            sp_ink_read_opacity(value, &_minor_color, GRID_DEFAULT_MINOR_COLOR);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::EMPOPACITY:
-            _major_opacity = sp_ink_read_opacity(value, &_major_color, GRID_DEFAULT_MAJOR_COLOR);
+            sp_ink_read_opacity(value, &_major_color, GRID_DEFAULT_MAJOR_COLOR);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::MAJOR_LINE_INTERVAL:
             _major_line_interval = value ? std::max(std::stoi(value), 1) : 5;
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
-        case SPAttr::DOTTED:
-            _dotted.readOrUnset(value);
+        case SPAttr::DOTTED:    // only meaningful for rectangular grid
+            _dotted.read(value);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
         case SPAttr::SNAP_TO_VISIBLE_ONLY:
-            _snap_to_visible_only.readOrUnset(value);
+            _snap_to_visible_only.read(value);
             if (_snapper) _snapper->setSnapVisibleOnly(_snap_to_visible_only);
             requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
             break;
@@ -276,6 +286,48 @@ void SPGrid::_checkOldGrid(SPDocument *doc, Inkscape::XML::Node *repr)
         repr->removeAttribute("gridempopacity");
         repr->removeAttribute("gridempspacing");
     }
+}
+
+/*
+ * The grid needs to be initialized based on user preferences.
+ * When a grid is created by either DocumentProperties or SPNamedView,
+ * update the attributes to the corresponding grid type.
+ */
+void SPGrid::setPrefValues()
+{
+    auto prefs = Inkscape::Preferences::get();
+
+    std::string prefix;
+    switch (getType()) {
+        case GridType::RECTANGULAR: prefix = "/options/grids/xy"; break;
+        case GridType::AXONOMETRIC: prefix = "/options/grids/axonom"; break;
+        default: g_assert_not_reached(); break;
+    }
+
+    auto unit_pref = prefs->getString(prefix + "/units");
+    setUnit(unit_pref);
+
+    _display_unit = unit_table.getUnit(unit_pref);
+
+    // Origin and Spacing are the only two properties that vary depending on selected units
+    // SPGrid should only store values in "px", convert whatever preferences are set to "px"
+    using Inkscape::Util::Quantity;
+    setOrigin(Geom::Point(
+                Quantity::convert(prefs->getDouble(prefix + "/origin_x"), _display_unit, "px"),
+                Quantity::convert(prefs->getDouble(prefix + "/origin_y"), _display_unit, "px") ) );
+
+    setSpacing(Geom::Point(
+                Quantity::convert(prefs->getDouble(prefix + "/spacing_x"), _display_unit, "px"),
+                Quantity::convert(prefs->getDouble(prefix + "/spacing_y"), _display_unit, "px") ) );
+
+    setMajorColor(prefs->getColor(prefix + "/empcolor", GRID_DEFAULT_MAJOR_COLOR));
+    setMinorColor(prefs->getColor(prefix + "/color", GRID_DEFAULT_MINOR_COLOR));
+    setMajorLineInterval(prefs->getInt(prefix + "/empspacing"));
+
+    // these prefs are bound specifically to one type of grid
+    setDotted(prefs->getBool("/options/grids/xy/dotted"));
+    setAngleX(prefs->getDouble("/options/grids/axonom/angle_x"));
+    setAngleZ(prefs->getDouble("/options/grids/axonom/angle_z"));
 }
 
 static CanvasItemPtr<Inkscape::CanvasItemGrid> create_view(GridType grid_type, Inkscape::CanvasItemGroup *canvasgrids)
@@ -388,14 +440,21 @@ static auto ensure_min(Geom::Point const &s)
 
 std::pair<Geom::Point, Geom::Point> SPGrid::getEffectiveOriginAndSpacing() const
 {
+    auto origin = getOrigin();
+    auto spacing = ensure_min(getSpacing());
+
     auto const scale = document->getDocumentScale();
-    auto origin = getOrigin() * scale;
+    auto units = getUnit()->abbr;
+    if (unit_table.getUnit(units)->type != Inkscape::Util::UNIT_TYPE_LINEAR) {
+        origin *= scale;
+        spacing *= scale;
+    }
 
     auto prefs = Inkscape::Preferences::get();
     if (prefs->getBool("/options/origincorrection/page", true))
         origin *= document->getPageManager().getSelectedPageAffine();
 
-    return { origin, ensure_min(getSpacing()) * scale };
+    return { origin, spacing };
 }
 
 const char *SPGrid::displayName() const
@@ -460,10 +519,10 @@ void SPGrid::setEnabled(bool v)
     requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
 
+// returns values in "px"
 Geom::Point SPGrid::getOrigin() const
 {
-    return Geom::Point(_origin_x ? _origin_x.computed : 0.0,
-                       _origin_y ? _origin_y.computed : 0.0);
+    return Geom::Point(_origin_x.computed, _origin_y.computed);
 }
 
 void SPGrid::setOrigin(Geom::Point const &new_origin)
@@ -482,6 +541,9 @@ void SPGrid::setMajorColor(const guint32 color)
 
     getRepr()->setAttribute("empcolor", color_str);
 
+    double opacity = (color & 0xff) / 255.0; // convert to value between [0.0, 1.0]
+    getRepr()->setAttributeSvgDouble("empopacity", opacity);
+
     requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
 
@@ -490,19 +552,19 @@ void SPGrid::setMinorColor(const guint32 color)
     char color_str[16];
     sp_svg_write_color(color_str, 16, color);
 
+
     getRepr()->setAttribute("color", color_str);
+
+    double opacity = (color & 0xff) / 255.0; // convert to value between [0.0, 1.0]
+    getRepr()->setAttributeSvgDouble("opacity", opacity);
 
     requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
 
+// returns values in "px"
 Geom::Point SPGrid::getSpacing() const
 {
-    // the value for spacing is interpreted differently based on the type of grid
-    // values are copied from XML in previous Inkscape version for rectangular
-    double default_value = (_grid_type == GridType::RECTANGULAR) ? 0.26458333 : 1.0;
-
-    return Geom::Point(_spacing_x ? _spacing_x.computed : default_value,
-                       _spacing_y ? _spacing_y.computed : default_value);
+    return Geom::Point(_spacing_x.computed, _spacing_y.computed);
 }
 
 void SPGrid::setSpacing(const Geom::Point &spacing)
@@ -517,20 +579,6 @@ void SPGrid::setSpacing(const Geom::Point &spacing)
 void SPGrid::setMajorLineInterval(const guint32 interval)
 {
     getRepr()->setAttributeInt("empspacing", interval);
-
-    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-}
-
-void SPGrid::setMinorOpacity(const float opacity)
-{
-    getRepr()->setAttributeSvgDouble("opacity", opacity);
-
-    requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-}
-
-void SPGrid::setMajorOpacity(const float opacity)
-{
-    getRepr()->setAttributeSvgDouble("empopacity", opacity);
 
     requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }
@@ -573,19 +621,16 @@ const char *SPGrid::typeName() const
     }
 }
 
-const Inkscape::Util::Unit *SPGrid::getUnit()
+const Inkscape::Util::Unit *SPGrid::getUnit() const
 {
-    auto prefs = Inkscape::Preferences::get();
-    switch (_grid_type) {
-        case GridType::RECTANGULAR: return Inkscape::Util::unit_table.getUnit(prefs->getString("/options/grids/xy/units"));
-        case GridType::AXONOMETRIC: return Inkscape::Util::unit_table.getUnit(prefs->getString("/options/grids/axonom/units"));
-        default: g_assert_not_reached();
-    }
+    return _display_unit;
 }
 
-void SPGrid::setUnits(const Glib::ustring units)
+void SPGrid::setUnit(const Glib::ustring &units)
 {
-    getRepr()->setAttribute("units", units);
+    if (units.empty()) return;
+
+    getRepr()->setAttribute("units", units.c_str());
 
     requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
 }

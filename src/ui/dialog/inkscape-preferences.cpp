@@ -2142,6 +2142,7 @@ void InkscapePreferences::initPageUI()
     _page_grids.add_line( true, "", _grids_notebook, "", "", false);
     _grids_notebook.append_page(_grids_xy,     N_("Rectangular Grid"));
     _grids_notebook.append_page(_grids_axonom, N_("Axonometric Grid"));
+    // Rectangular SPGrid properties
         _grids_xy_units.init("/options/grids/xy/units");
         _grids_xy.add_line( false, _("Grid units:"), _grids_xy_units, "", "", false);
         _grids_xy_origin_x.init("/options/grids/xy/origin_x", -10000.0, 10000.0, 0.1, 1.0, 0.0, false, false);
@@ -2166,7 +2167,7 @@ void InkscapePreferences::initPageUI()
         _grids_xy_dotted.init( _("Show dots instead of lines"), "/options/grids/xy/dotted", false);
         _grids_xy.add_line( false, "", _grids_xy_dotted, "", _("If set, display dots at gridpoints instead of gridlines"), false);
 
-    // CanvasAxonomGrid properties:
+    // Axonometric SPGrid properties:
         _grids_axonom_units.init("/options/grids/axonom/units");
         _grids_axonom.add_line( false, _("Grid units:"), _grids_axonom_units, "", "", false);
         _grids_axonom_origin_x.init("/options/grids/axonom/origin_x", -10000.0, 10000.0, 0.1, 1.0, 0.0, false, false);

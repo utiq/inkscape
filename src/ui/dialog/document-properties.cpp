@@ -1445,10 +1445,10 @@ Gtk::Widget *DocumentProperties::createRightGridColumn(SPGrid *grid)
     auto doc = getDocument();
 
     auto rumg = Gtk::make_managed<RegisteredUnitMenu>(
-                    _("Grid _units:"), "units", _wr, repr, doc);
+                _("Grid _units:"), "units", _wr, repr, doc);
     auto rsu_ox = Gtk::make_managed<RegisteredScalarUnit>(
-                    _("_Origin X:"), _("X coordinate of grid origin"), "originx",
-                    *rumg, _wr, repr, doc, RSU_x);
+                _("_Origin X:"), _("X coordinate of grid origin"), "originx",
+                *rumg, _wr, repr, doc, RSU_x);
     auto rsu_oy = Gtk::make_managed<RegisteredScalarUnit>(
                 _("O_rigin Y:"), _("Y coordinate of grid origin"), "originy",
                 *rumg, _wr, repr, doc, RSU_y);
@@ -1500,14 +1500,11 @@ Gtk::Widget *DocumentProperties::createRightGridColumn(SPGrid *grid)
 
     rumg->setUnit(grid->getUnit()->abbr);
 
-    // SPGrid stores in px, for converting to user units
-    auto doc_scale = doc->getDocumentScale().vector();
-
     using namespace Inkscape::Util;
-    rsu_ox->setValue( Quantity::convert(grid->getOrigin()[Geom::X], "px", grid->getUnit()) * doc_scale[Geom::X] );
-    rsu_oy->setValue( Quantity::convert(grid->getOrigin()[Geom::Y], "px", grid->getUnit()) * doc_scale[Geom::Y] );
-    rsu_sx->setValue( Quantity::convert(grid->getSpacing()[Geom::X], "px", grid->getUnit()) * doc_scale[Geom::X] );
-    rsu_sy->setValue( Quantity::convert(grid->getSpacing()[Geom::Y], "px", grid->getUnit()) * doc_scale[Geom::Y] );
+    rsu_ox->setValue( Quantity::convert(grid->getOrigin()[Geom::X], "px", grid->getUnit()) );
+    rsu_oy->setValue( Quantity::convert(grid->getOrigin()[Geom::Y], "px", grid->getUnit()) );
+    rsu_sx->setValue( Quantity::convert(grid->getSpacing()[Geom::X], "px", grid->getUnit()) );
+    rsu_sy->setValue( Quantity::convert(grid->getSpacing()[Geom::Y], "px", grid->getUnit()) );
 
     rsu_ax->setValue(grid->getAngleX());
     rsu_az->setValue(grid->getAngleZ());
@@ -1786,25 +1783,25 @@ void DocumentProperties::update()
 
 void DocumentProperties::onNewGrid()
 {
-    if (auto desktop = getDesktop()) {
-        Inkscape::XML::Node *repr = desktop->getNamedView()->getRepr();
-        Glib::ustring typestring = _grids_combo_gridtype.get_active_text();
+    auto desktop = getDesktop();
+    auto document = getDocument();
+    if (!desktop || !document) return;
 
-        if (auto document = getDocument()) {
-            Inkscape::XML::Node *new_node = document->getReprDoc()->createElement("inkscape:grid");
-
-            if (!strcmp(typestring.c_str(), "Axonometric Grid"))
-                new_node->setAttribute("type", "axonomgrid");
-
-            repr->appendChild(new_node);
-            Inkscape::GC::release(new_node);
-
-            // toggle grid showing to ON:
-            // side effect: any pre-existing grids set to invisible will be set to visible
-            desktop->getNamedView()->setShowGrids(true);
-            DocumentUndo::done(document, _("Create new grid"), INKSCAPE_ICON("document-properties"));
-        }
+    auto selected_grid_type = _grids_combo_gridtype.get_active_row_number();
+    GridType grid_type;
+    switch (selected_grid_type) {
+        case 0: grid_type = GridType::RECTANGULAR; break;
+        case 1: grid_type = GridType::AXONOMETRIC; break;
+        default: g_assert_not_reached(); return;
     }
+
+    auto repr = desktop->getNamedView()->getRepr();
+    SPGrid::create_new(document, repr, grid_type);
+
+    // toggle grid showing to ON:
+    // side effect: any pre-existing grids set to invisible will be set to visible
+    desktop->getNamedView()->setShowGrids(true);
+    DocumentUndo::done(document, _("Create new grid"), INKSCAPE_ICON("document-properties"));
 }
 
 

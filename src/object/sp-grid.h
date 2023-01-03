@@ -49,6 +49,10 @@ public:
     ~SPGrid() override;
     int tag() const override { return tag_of<decltype(*this)>; }
 
+    static void create_new(SPDocument *doc, Inkscape::XML::Node *parent, GridType type);
+
+    void setPrefValues();
+
     void show(SPDesktop *desktop);
     void hide(SPDesktop const *desktop);
 
@@ -76,12 +80,6 @@ public:
     Geom::Point getSpacing() const;
     void setSpacing(Geom::Point const &spacing);
 
-    float getMajorOpacity() const { return _major_opacity; }
-    void setMajorOpacity(float f);
-
-    float getMinorOpacity() const { return _minor_opacity; }
-    void setMinorOpacity(float f);
-
     guint32 getMajorLineInterval() const { return _major_line_interval; }
     void setMajorLineInterval(guint32 interval);
 
@@ -98,8 +96,8 @@ public:
     const char *getSVGType() const;
     void setSVGType(const char *svgtype);
 
-    void setUnits(const Glib::ustring units);
-    const Inkscape::Util::Unit *getUnit();
+    void setUnit(const Glib::ustring &units);
+    const Inkscape::Util::Unit *getUnit() const;
 
     bool isPixel() const { return _pixel; }
     bool isLegacy() const { return _legacy; }
@@ -140,15 +138,14 @@ private:
     guint32 _major_color;
     guint32 _minor_color;
 
-    float _major_opacity;
-    float _minor_opacity;
-
     bool _pixel;        // is in user units
     bool _legacy;       // a grid from versions prior to inkscape 0.98
 
     GridType _grid_type;
 
     std::unique_ptr<Inkscape::Snapper> _snapper;
+
+    Inkscape::Util::Unit const *_display_unit;
 
     sigc::connection _page_selected_connection;
     sigc::connection _page_modified_connection;
