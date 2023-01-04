@@ -284,7 +284,7 @@ CairoRendererPdfOutput::init ()
             "</param><spacer size=\"10\" />"
             "<param name=\"bleed\" gui-text=\"" N_("Bleed/margin (mm):") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
             "<param name=\"exportId\" gui-text=\"" N_("Limit export to the object with ID:") "\" type=\"string\"></param>\n"
-            "<output is_exported='true'>\n"
+            "<output is_exported='true' priority='5'>\n"
                 "<extension>.pdf</extension>\n"
                 "<mimetype>application/pdf</mimetype>\n"
                 "<filetypename>Portable Document Format (*.pdf)</filetypename>\n"
