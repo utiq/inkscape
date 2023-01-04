@@ -186,18 +186,47 @@ GtkWidget *ToolboxFactory::createToolToolbox(InkscapeWindow *window)
         std::cerr << "InkscapeWindow: Failed to load tool toolbar!" << std::endl;
     }
 
-    _attachDoubleClickHandlers(builder, window);
+    _attachHandlers(builder, window);
 
     return toolboxNewCommon( GTK_WIDGET(toolbar->gobj()), BAR_TOOL, GTK_POS_LEFT );
 }
 
 /**
- * @brief Attach double click handlers to all tool buttons, so that double-clicking on a tool
- *        in the toolbar opens up that tool's preferences.
+ * @brief Create a context menu for a tool button.
+ * @param tool_name The tool name (parameter to the tool-switch action)
+ * @param win The Inkscape window which will display the preferences dialog.
+ */
+Gtk::Menu *ToolboxFactory::_getContextMenu(Glib::ustring tool_name, InkscapeWindow *win)
+{
+    auto menu = new Gtk::Menu();
+    auto gio_menu = Gio::Menu::create();
+    auto action_group = Gio::SimpleActionGroup::create();
+    menu->insert_action_group("ctx", action_group);
+    action_group->add_action("open-tool-preferences", sigc::bind<Glib::ustring, InkscapeWindow *>(
+                                                          sigc::ptr_fun(&tool_preferences), tool_name, win));
+
+    auto menu_item = Gio::MenuItem::create(_("Open tool preferences"), "ctx.open-tool-preferences");
+
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    if (prefs->getInt("/theme/menuIcons", true)) {
+        auto _icon = Gio::Icon::create("preferences-system");
+        menu_item->set_icon(_icon);
+    }
+
+    gio_menu->append_item(menu_item);
+    menu->bind_model(gio_menu, true);
+    menu->show();
+    return menu;
+}
+
+/**
+ * @brief Attach handlers to all tool buttons, so that double-clicking on a tool
+ *        in the toolbar opens up that tool's preferences, and a right click opens a
+ *        context menu with the same functionality.
  * @param builder The builder that contains a loaded UI structure containing RadioButton's.
  * @param win The Inkscape window which will display the preferences dialog.
  */
-void ToolboxFactory::_attachDoubleClickHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *win)
+void ToolboxFactory::_attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *win)
 {
     for (auto &object : builder->get_objects()) {
         if (auto radio = dynamic_cast<Gtk::RadioButton *>(object.get())) {
@@ -209,11 +238,18 @@ void ToolboxFactory::_attachDoubleClickHandlers(Glib::RefPtr<Gtk::Builder> build
             }
 
             auto tool_name = Glib::ustring((gchar const *)action_target.get_data());
+
+            auto menu = _getContextMenu(tool_name, win);
+            menu->attach_to_widget(*radio);
+
             radio->signal_button_press_event().connect([=](GdkEventButton *ev) -> bool {
                 // Open tool preferences upon double click
                 if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1) {
                     tool_preferences(tool_name, win);
                     return true;
+                }
+                if (ev->button == 3) {
+                    menu->popup_at_pointer(reinterpret_cast<GdkEvent *>(ev));
                 }
                 return false;
             });

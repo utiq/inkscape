@@ -16,6 +16,7 @@
 
 #include <glibmm/ustring.h>
 #include <gtk/gtk.h>
+#include <gtkmm.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/enums.h>
 
@@ -57,7 +58,8 @@ public:
     static Glib::ustring get_tool_visible_buttons_path(const Glib::ustring& button_action_name);
 
 private:
-    static void _attachDoubleClickHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *window);
+    static Gtk::Menu *_getContextMenu(Glib::ustring tool_name, InkscapeWindow *window);
+    static void _attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *window);
 };
 
 
