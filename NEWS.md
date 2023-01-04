@@ -77,16 +77,16 @@ Snapping preferences globalized
 
 Snap settings are no longer saved with the document, but are set globally for all documents in the preferences and in the snap popover dialog. The option for enabling snapping in new documents has been removed, as it no longer makes sense.
 
-The options for snapping perpependicularly and tangentially to paths or guide lines have been moved from the document preferences to the snap popover to make them more discoverable. The other snap options from the document settings dialog were removed. [TODO: check whether this is still true at the time of release] 
+The options for snapping perpendicularly and tangentially to paths or guidelines have been moved from the document preferences to the snap popover to make them more discoverable. The other snap options from the document settings dialog were removed. [TODO: check whether this is still true at the time of release] 
 
 Alignment and Distribution snapping
 During Google Summer of Code 2021, GSOC student Parth Pant worked on adding on-canvas alignment and distribution snapping, with support of the mentors Thomas Holder and Marc Jeanmougin. As a result, three new modes of on-canvas snapping have been added. These new modes make aligning and distributing objects a very easy drag-and-drop operation (MR #3294)..
 
-When on-canvas alignment is active, Inkscape will display horizontal or vertical temporary guide lines that indicate when the selected object can be aligned relative to another object on the canvas. It connects the points of the objects that are in alignment. With distribution snapping, multiple objects close by are taken into account, making it possible to align objects in a grid, with very little effort.
+When on-canvas alignment is active, Inkscape will display horizontal or vertical temporary guidelines that indicate when the selected object can be aligned relative to another object on the canvas. It connects the points of the objects that are in alignment. With distribution snapping, multiple objects close by are taken into account, making it possible to align objects in a grid, with very little effort.
 
-The temporary guide lines only appear while editing / moving objects on the canvas. Once a guide shows up, the movement of the selection is loosely constrained in the direction of the guide.
+The temporary guidelines only appear while editing / moving objects on the canvas. Once a guide shows up, the movement of the selection is loosely constrained in the direction of the guide.
 
-Alignment and Distribution snapping guide lines display the distance(s) between objects as a little label per default. This can be disabled from Edit → Preferences → Snapping: Show snap distance in case of alignment or distribution snap.
+Alignment and Distribution snapping guidelines display the distance(s) between objects as a little label per default. This can be disabled from Edit → Preferences → Snapping: Show snap distance in case of alignment or distribution snap.
 
 The 'Simple' mode of the snapping popover dialog allows you to simply activate or deactivate Alignment snapping. The 'Advanced' mode gives you additional control by allowing you to en-/disable:
 
