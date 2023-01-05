@@ -45,15 +45,18 @@
 #include "path-prefix.h"
 #include "preferences.h"
 #include "selection.h"
+#include "io/dir-util.h"
 #include "ui/desktop/menubar.h"
 #include "ui/dialog-events.h"
 #include "ui/tool/control-point-selection.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
+#include "ui/util.h"
 #include "ui/view/view.h"
 #include "widgets/desktop-widget.h"
 #include "xml/attribute-record.h"
+#include "xml/rebase-hrefs.h"
 #include "xml/node.h"
 
 /* Namespaces */
@@ -574,6 +577,39 @@ void Script::effect(Inkscape::Extension::Effect *module,
     _change_extension(module, desktop->getDocument(), params, module->ignore_stderr);
 }
 
+//uncomment if issues on ref extensions links
+/* void sp_change_hrefs(Inkscape::XML::Node *repr, gchar const *const oldfilename, gchar const *const filename)
+{
+    gchar *new_document_base = nullptr;
+    gchar *new_document_filename = nullptr;
+    gchar *old_document_base = nullptr;
+    gchar *old_document_filename = nullptr;
+    if (filename) {
+
+#ifndef _WIN32
+        new_document_filename = prepend_current_dir_if_relative(filename);
+        old_document_filename = prepend_current_dir_if_relative(oldfilename);
+#else
+        // FIXME: it may be that prepend_current_dir_if_relative works OK on windows too, test!
+        new_document_filename = g_strdup(filename);
+        old_document_filename = g_strdup(oldfilename);
+#endif
+
+        new_document_base = g_path_get_dirname(new_document_filename);
+        old_document_base = g_path_get_dirname(old_document_filename);
+    } else {
+        new_document_base = nullptr;
+        old_document_base = nullptr;
+    }
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    bool use_sodipodi_absref = prefs->getBool("/options/svgoutput/usesodipodiabsref", false);
+    Inkscape::XML::rebase_hrefs(repr, old_document_base, new_document_base, use_sodipodi_absref);
+    g_free(new_document_base);
+    g_free(old_document_base);
+    g_free(new_document_filename);
+    g_free(old_document_filename);
+} */
+
 /**
  * Internally, any modification of an existing document, used by effect and resize_page extensions.
  */
@@ -603,31 +639,22 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocumen
     fileout.toFile(tempfile_out.get_filename());
 
     pump_events();
-
-    SPDocument * mydoc = nullptr;
+    Inkscape::XML::Document *myxmldoc = nullptr;
     if (data_read > 10) {
-        try {
-            mydoc = Inkscape::Extension::open(
-                  Inkscape::Extension::db.get(SP_MODULE_KEY_INPUT_SVG),
-                  tempfile_out.get_filename().c_str());
-        } catch (const Inkscape::Extension::Input::open_failed &e) {
-            g_warning("Extension returned output that could not be parsed: %s", e.what());
-            Gtk::MessageDialog warning(
-                    _("The output from the extension could not be parsed."),
-                    false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_OK, true);
-            warning.set_transient_for( parent_window ? *parent_window : *(INKSCAPE.active_desktop()->getToplevel()) );
-            warning.run();
-        }
+        myxmldoc = sp_repr_read_file(tempfile_out.get_filename().c_str(), SP_SVG_NS_URI);
     } // data_read
 
     pump_events();
 
-    if (mydoc) {
-        mydoc->changeFilenameAndHrefs(doc->getDocumentFilename());
+    if (myxmldoc) {
+        //uncomment if issues on ref extensions links (with previous function)
+        //sp_change_hrefs(myxmldoc, tempfile_out.get_filename().c_str(), doc->getDocumentFilename());
         doc->emitReconstructionStart();
-        copy_doc(doc->getReprRoot(), mydoc->getReprRoot());
+        copy_doc(doc->getReprRoot(), myxmldoc->root());
         doc->emitReconstructionFinish();
-        mydoc->release();
+        myxmldoc->release();
+    } else {
+        Inkscape::UI::gui_warning(_("The output from the extension could not be parsed."), parent_window);
     }
 
     return;
@@ -656,61 +683,11 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocumen
 */
 void Script::copy_doc (Inkscape::XML::Node * oldroot, Inkscape::XML::Node * newroot)
 {
-    if ((oldroot == nullptr) ||(newroot == nullptr))
+    if ((oldroot == nullptr) || (newroot == nullptr))
     {
         g_warning("Error on copy_doc: NULL pointer input.");
         return;
     }
-
-    // For copying attributes in root and in namedview
-    std::vector<gchar const *> attribs;
-
-    // Must explicitly copy root attributes. This must be done first since
-    // copying grid lines calls "SPGuide::set()" which needs to know the
-    // width, height, and viewBox of the root element.
-
-    // Make a list of all attributes of the old root node.
-    for (const auto & iter : oldroot->attributeList()) {
-        attribs.push_back(g_quark_to_string(iter.key));
-    }
-
-    // Delete the attributes of the old root node.
-    for (auto attrib : attribs) {
-        oldroot->removeAttribute(attrib);
-    }
-
-    // Set the new attributes.
-    for (const auto & iter : newroot->attributeList()) {
-        gchar const *name = g_quark_to_string(iter.key);
-        oldroot->setAttribute(name, newroot->attribute(name));
-    }
-
-    // Question: Why is the "sodipodi:namedview" special? Treating it as a normal
-    // element results in crashes.
-    // Seems to be a bug:
-    // http://inkscape.13.x6.nabble.com/Effect-that-modifies-the-document-properties-tt2822126.html
-
-    std::vector<Inkscape::XML::Node *> delete_list;
-
-    // Make list
-    for (Inkscape::XML::Node * child = oldroot->firstChild();
-            child != nullptr;
-            child = child->next()) {
-        if (!strcmp("sodipodi:namedview", child->name())) {
-            for (Inkscape::XML::Node * oldroot_namedview_child = child->firstChild();
-                    oldroot_namedview_child != nullptr;
-                    oldroot_namedview_child = oldroot_namedview_child->next()) {
-                delete_list.push_back(oldroot_namedview_child);
-            }
-            break;
-        }
-    }
-
-    // Unparent (delete)
-    for (auto & i : delete_list) {
-        sp_repr_unparent(i);
-    }
-    attribs.clear();
     oldroot->mergeFrom(newroot, "id", true, true);
 }
 

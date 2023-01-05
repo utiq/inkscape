@@ -11,6 +11,7 @@
  */
 
 #include "util.h"
+#include "inkscape.h"
 
 #include <cairomm/pattern.h>
 #include <cstdint>
@@ -20,6 +21,9 @@
 #include <gtkmm/enums.h>
 #include <stdexcept>
 #include <tuple>
+
+// TODO due to internal breakage in glibmm headers, this must be last:
+#include <glibmm/i18n.h>
 
 /**
  * Recursively look through pre-constructed widget parents for a specific named widget.
@@ -78,6 +82,15 @@ bool is_widget_effectively_visible(Gtk::Widget const *widget) {
 }
 
 namespace Inkscape::UI {
+
+void gui_warning(const std::string &msg, Gtk::Window *parent_window) {
+    g_warning("%s", msg.c_str());
+    if (INKSCAPE.active_desktop()) {
+        Gtk::MessageDialog warning(_(msg.c_str()), false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_OK, true);
+        warning.set_transient_for( parent_window ? *parent_window : *(INKSCAPE.active_desktop()->getToplevel()) );
+        warning.run();
+    }
+}
 
 void resize_widget_children(Gtk::Widget *widget) {
     if(widget) {
