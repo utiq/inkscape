@@ -69,8 +69,8 @@ void DrawingShape::setStyle(SPStyle const *style, SPStyle const *context_style)
         opacity = style->opacity.value;
     }
 
-    defer([=, nrstyle = NRStyle(_style)] () mutable {
-        _nrstyle = std::move(nrstyle);
+    defer([=, nrstyle = NRStyleData(_style)] () mutable {
+        _nrstyle.set(std::move(nrstyle));
         style_vector_effect_stroke = vector_effect_stroke;
         style_stroke_extensions_hairline = stroke_extensions_hairline;
         style_clip_rule = clip_rule;
@@ -83,8 +83,8 @@ void DrawingShape::setChildrenStyle(SPStyle const *context_style)
 {
     DrawingItem::setChildrenStyle(context_style);
 
-    defer([this, nrstyle = NRStyle(_style, _context_style)] () mutable {
-        _nrstyle = std::move(nrstyle);
+    defer([this, nrstyle = NRStyleData(_style, _context_style)] () mutable {
+        _nrstyle.set(std::move(nrstyle));
     });
 }
 
@@ -97,7 +97,7 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
 
     // clear Cairo data to force update
     if (flags & STATE_RENDER) {
-        _nrstyle.update();
+        _nrstyle.invalidate();
     }
 
     auto calc_curve_bbox = [&, this] () -> Geom::OptIntRect {
@@ -113,9 +113,9 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
         float stroke_max = 0.0f;
 
         // Get the normal stroke.
-        if (_drawing.renderMode() != RenderMode::OUTLINE && _nrstyle.stroke.type != NRStyle::PAINT_NONE) {
+        if (_drawing.renderMode() != RenderMode::OUTLINE && _nrstyle.data.stroke.type != NRStyleData::PaintType::NONE) {
             // Expand by stroke width.
-            stroke_max = _nrstyle.stroke_width * 0.5f;
+            stroke_max = _nrstyle.data.stroke_width * 0.5f;
 
             // Scale by view transformation, unless vector effect stroke.
             if (!style_vector_effect_stroke) {
@@ -135,8 +135,8 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
 
         if (stroke_max > 0.0f) {
             // Expand by mitres, if present.
-            if (_nrstyle.line_join == CAIRO_LINE_JOIN_MITER && _nrstyle.miter_limit >= 1.0f) {
-                stroke_max *= _nrstyle.miter_limit;
+            if (_nrstyle.data.line_join == CAIRO_LINE_JOIN_MITER && _nrstyle.data.miter_limit >= 1.0f) {
+                stroke_max *= _nrstyle.data.miter_limit;
             }
 
             // Apply expansion if non-zero.
@@ -159,30 +159,30 @@ unsigned DrawingShape::_updateItem(Geom::IntRect const &area, UpdateContext cons
     return _state | flags;
 }
 
-void DrawingShape::_renderFill(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area)
+void DrawingShape::_renderFill(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) const
 {
     Inkscape::DrawingContext::Save save(dc);
     dc.transform(_ctm);
 
-    bool has_fill = _nrstyle.prepareFill(dc, rc, area, _item_bbox, _fill_pattern);
+    auto has_fill = _nrstyle.prepareFill(dc, rc, area, _item_bbox, _fill_pattern);
 
     if (has_fill) {
         dc.path(_curve->get_pathvector());
-        auto dl = DitherLock(dc, _nrstyle.fill.ditherable() && _drawing.useDithering());
-        _nrstyle.applyFill(dc);
+        auto dl = DitherLock(dc, _nrstyle.data.fill.ditherable() && _drawing.useDithering());
+        _nrstyle.applyFill(dc, has_fill);
         dc.fillPreserve();
         dc.newPath(); // clear path
     }
 }
 
-void DrawingShape::_renderStroke(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags)
+void DrawingShape::_renderStroke(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags) const
 {
     Inkscape::DrawingContext::Save save(dc);
     dc.transform(_ctm);
 
-    bool has_stroke = _nrstyle.prepareStroke(dc, rc, area, _item_bbox, _stroke_pattern);
-    if (!style_stroke_extensions_hairline) {
-        has_stroke &= _nrstyle.stroke_width != 0;
+    auto has_stroke = _nrstyle.prepareStroke(dc, rc, area, _item_bbox, _stroke_pattern);
+    if (!style_stroke_extensions_hairline && _nrstyle.data.stroke_width == 0) {
+        has_stroke.reset();
     }
 
     if (has_stroke) {
@@ -192,8 +192,8 @@ void DrawingShape::_renderStroke(DrawingContext &dc, RenderContext &rc, Geom::In
             dc.restore();
             dc.save();
         }
-        auto dl = DitherLock(dc, _nrstyle.stroke.ditherable() && _drawing.useDithering());
-        _nrstyle.applyStroke(dc);
+        auto dl = DitherLock(dc, _nrstyle.data.stroke.ditherable() && _drawing.useDithering());
+        _nrstyle.applyStroke(dc, has_stroke);
 
         // If the stroke is a hairline, set it to exactly 1px on screen.
         // If visible hairline mode is on, make sure the line is at least 1px.
@@ -201,7 +201,7 @@ void DrawingShape::_renderStroke(DrawingContext &dc, RenderContext &rc, Geom::In
             double dx = 1.0, dy = 0.0;
             dc.device_to_user_distance(dx, dy);
             auto pixel_size = std::hypot(dx, dy);
-            if (style_stroke_extensions_hairline || _nrstyle.stroke_width < pixel_size) {
+            if (style_stroke_extensions_hairline || _nrstyle.data.stroke_width < pixel_size) {
                 dc.setHairline();
             }
         }
@@ -211,7 +211,7 @@ void DrawingShape::_renderStroke(DrawingContext &dc, RenderContext &rc, Geom::In
     }
 }
 
-void DrawingShape::_renderMarkers(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
+void DrawingShape::_renderMarkers(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem const *stop_at) const
 {
     // marker rendering
     for (auto &i : _children) {
@@ -219,7 +219,7 @@ void DrawingShape::_renderMarkers(DrawingContext &dc, RenderContext &rc, Geom::I
     }
 }
 
-unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
+unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem const *stop_at) const
 {
     if (!_curve) return RENDER_OK;
 
@@ -249,7 +249,7 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
         return RENDER_OK;
     }
 
-    if (_nrstyle.paint_order_layer[0] == NRStyle::PAINT_ORDER_NORMAL) {
+    if (_nrstyle.data.paint_order_layer[0] == NRStyleData::PAINT_ORDER_NORMAL) {
         // This is the most common case, special case so we don't call get_pathvector(), etc. twice
 
         {
@@ -260,15 +260,17 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
             // update fill and stroke paints.
             // this cannot be done during nr_arena_shape_update, because we need a Cairo context
             // to render svg:pattern
-            bool has_fill   = _nrstyle.prepareFill(dc, rc, *visible, _item_bbox, _fill_pattern);
-            bool has_stroke = _nrstyle.prepareStroke(dc, rc, *visible, _item_bbox, _stroke_pattern);
-            has_stroke &= (_nrstyle.stroke_width != 0 || _nrstyle.hairline == true);
+            auto has_fill   = _nrstyle.prepareFill(dc, rc, *visible, _item_bbox, _fill_pattern);
+            auto has_stroke = _nrstyle.prepareStroke(dc, rc, *visible, _item_bbox, _stroke_pattern);
+            if (!_nrstyle.data.hairline && _nrstyle.data.stroke_width == 0) {
+                has_stroke.reset();
+            }
             if (has_fill || has_stroke) {
                 dc.path(_curve->get_pathvector());
                 // TODO: remove segments outside of bbox when no dashes present
                 if (has_fill) {
-                    auto dl = DitherLock(dc, _nrstyle.fill.ditherable() && _drawing.useDithering());
-                    _nrstyle.applyFill(dc);
+                    auto dl = DitherLock(dc, _nrstyle.data.fill.ditherable() && _drawing.useDithering());
+                    _nrstyle.applyFill(dc, has_fill);
                     dc.fillPreserve();
                 }
                 if (style_vector_effect_stroke) {
@@ -276,8 +278,8 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
                     dc.save();
                 }
                 if (has_stroke) {
-                    auto dl = DitherLock(dc, _nrstyle.stroke.ditherable() && _drawing.useDithering());
-                    _nrstyle.applyStroke(dc);
+                    auto dl = DitherLock(dc, _nrstyle.data.stroke.ditherable() && _drawing.useDithering());
+                    _nrstyle.applyStroke(dc, has_stroke);
 
                     // If the draw mode is set to visible hairlines, don't let anything get smaller
                     // than half a pixel.
@@ -285,7 +287,7 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
                         double dx = 1.0, dy = 0.0;
                         dc.device_to_user_distance(dx, dy);
                         auto half_pixel_size = std::hypot(dx, dy) * 0.5;
-                        if (_nrstyle.stroke_width < half_pixel_size) {
+                        if (_nrstyle.data.stroke_width < half_pixel_size) {
                             dc.setLineWidth(half_pixel_size);
                         }
                     }
@@ -301,15 +303,15 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
     }
 
     // Handle different paint orders
-    for (auto &i : _nrstyle.paint_order_layer) {
+    for (auto &i : _nrstyle.data.paint_order_layer) {
         switch (i) {
-            case NRStyle::PAINT_ORDER_FILL:
+            case NRStyleData::PAINT_ORDER_FILL:
                 _renderFill(dc, rc, *visible);
                 break;
-            case NRStyle::PAINT_ORDER_STROKE:
+            case NRStyleData::PAINT_ORDER_STROKE:
                 _renderStroke(dc, rc, *visible, flags);
                 break;
-            case NRStyle::PAINT_ORDER_MARKER:
+            case NRStyleData::PAINT_ORDER_MARKER:
                 _renderMarkers(dc, rc, area, flags, stop_at);
                 break;
             default:
@@ -321,7 +323,7 @@ unsigned DrawingShape::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
     return RENDER_OK;
 }
 
-void DrawingShape::_clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &/*area*/)
+void DrawingShape::_clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &/*area*/) const
 {
     if (!_curve) return;
 
@@ -362,21 +364,18 @@ DrawingItem *DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigne
                    // this overrides display mode and stroke style considerations
     } else if (outline) {
         width = 0.5; // in outline mode, everything is stroked with the same 0.5px line width
-    } else if (_nrstyle.stroke.type != NRStyle::PAINT_NONE &&
-               (_nrstyle.stroke.opacity > 1e-3 || _drawing.selectZeroOpacity())) {
+    } else if (_nrstyle.data.stroke.type != NRStyleData::PaintType::NONE && (_nrstyle.data.stroke.opacity > 1e-3 || _drawing.selectZeroOpacity())) {
         // for normal picking calculate the distance corresponding top the stroke width
         // FIXME BUG: this is incorrect for transformed strokes
         float const scale = _ctm.descrim();
-        width = std::max(0.125f, _nrstyle.stroke_width * scale) / 2;
+        width = std::max(0.125f, _nrstyle.data.stroke_width * scale) / 2;
     } else {
         width = 0;
     }
 
     double dist = Geom::infinity();
     int wind = 0;
-
-    bool needfill = pick_as_clip || (_nrstyle.fill.type != NRStyle::PAINT_NONE &&
-                                     (_nrstyle.fill.opacity > 1e-3 || _drawing.selectZeroOpacity()) && !outline);
+    bool needfill = pick_as_clip || (_nrstyle.data.fill.type != NRStyleData::PaintType::NONE && (_nrstyle.data.fill.opacity > 1e-3  || _drawing.selectZeroOpacity()) && !outline);
     bool wind_evenodd = (pick_as_clip ? style_clip_rule : style_fill_rule) == SP_WIND_RULE_EVENODD;
 
     // actual shape picking
@@ -430,11 +429,6 @@ DrawingItem *DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigne
 
     _last_pick = nullptr;
     return nullptr;
-}
-
-bool DrawingShape::_canClip()
-{
-    return true;
 }
 
 } // namespace Inkscape

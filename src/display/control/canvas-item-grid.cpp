@@ -179,7 +179,7 @@ void CanvasItemGridXY::_update(bool)
     request_redraw();
 }
 
-void CanvasItemGridXY::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemGridXY::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     // no_emphasize_when_zoomedout determines color (minor or major) when only major grid lines/dots shown.
     uint32_t empcolor = ((scaled[Geom::X] || scaled[Geom::Y]) && _no_emp_when_zoomed_out) ? _minor_color : _major_color;
@@ -402,7 +402,7 @@ static void vline(Inkscape::CanvasItemBuffer &buf, int x, int ys, int ye, uint32
  * This function calls Cairo to render a line on a particular canvas buffer.
  * Coordinates are interpreted as SCREENcoordinates
  */
-void CanvasItemGridAxonom::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemGridAxonom::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     // Set correct coloring, depending preference (when zoomed out, always major coloring or minor coloring)
     uint32_t empcolor = (scaled && _no_emp_when_zoomed_out) ? _minor_color : _major_color;

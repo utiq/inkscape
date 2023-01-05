@@ -157,6 +157,7 @@ struct RedrawData
     // State
     std::mutex mutex;
     gint64 start_time;
+    int numactive;
     int phase;
     Geom::OptIntRect vis_store;
 
@@ -165,6 +166,7 @@ struct RedrawData
     bool interruptible;
     bool preemptible;
     std::vector<Geom::IntRect> rects;
+    int effective_tile_size;
 
     // Results
     std::mutex tiles_mutex;
@@ -253,10 +255,10 @@ public:
 
     // Async redraw process.
     std::optional<boost::asio::thread_pool> pool;
+    int numthreads;
     int get_numthreads() const;
 
     Synchronizer sync;
-    Glib::Dispatcher commit_tiles_dispatcher;
     RedrawData rd;
     std::atomic<int> abort_flags;
 
@@ -337,6 +339,17 @@ Canvas::Canvas()
             d->activate();
         }
     };
+    d->prefs.numthreads.action = [=] {
+        if (!d->active) return;
+        int const new_numthreads = d->get_numthreads();
+        if (d->numthreads == new_numthreads) return;
+        d->numthreads = new_numthreads;
+        d->deactivate();
+        d->deactivate_graphics();
+        d->pool.emplace(d->numthreads);
+        d->activate_graphics();
+        d->activate();
+    };
 
     // Canvas item tree
     d->canvasitem_ctx.emplace(this);
@@ -352,27 +365,20 @@ Canvas::Canvas()
     set_opengl_enabled(d->prefs.request_opengl);
 
     // Async redraw process.
-    d->pool.emplace(1);
+    d->numthreads = d->get_numthreads();
+    d->pool.emplace(d->numthreads);
 
     d->sync.connectExit([this] { d->after_redraw(); });
-
-    d->commit_tiles_dispatcher.connect([this] {
-        if (get_opengl_enabled()) make_current();
-        d->commit_tiles();
-    });
 }
 
 int CanvasPrivate::get_numthreads() const
 {
-    // Todo: Remove this when rendering is reentrant.
-    return 1;
-
     if (int n = prefs.numthreads; n > 0) {
         // First choice is the value set in preferences.
         return n;
     } else if (int n = std::thread::hardware_concurrency(); n > 0) {
-        // If not set, use the number of processors.
-        return n;
+        // If not set, use the number of processors minus one. (Using all of them causes stuttering.)
+        return n == 1 ? 1 : n - 1;
     } else {
         // If not reported, use a sensible fallback.
         return 4;
@@ -703,16 +709,15 @@ void CanvasPrivate::handle_stores_action(Stores::Action action)
     }
 
     if (action != Stores::Action::None) {
-        auto expanded = stores.store().rect;
-        auto expansion = Geom::IntPoint(expanded.width() / 2, expanded.height() / 2);
-        expanded.expandBy(expansion);
-        q->_drawing->setCacheLimit(expanded);
+        q->_drawing->setCacheLimit(stores.store().rect);
     }
 }
 
 // Commit all in-flight tiles to the stores. Requires a current OpenGL context (for graphics->draw_tile).
 void CanvasPrivate::commit_tiles()
 {
+    framecheck_whole_function(this)
+
     decltype(rd.tiles) tiles;
 
     {
@@ -2062,13 +2067,13 @@ void CanvasPrivate::init_tiler()
     // Launch render threads to process tiles.
     rd.timeoutflag = false;
 
-    #pragma omp parallel for num_threads(rd.numthreads)
-    for (int i = 0; i < rd.numthreads; i++) {
-        render_tile(i);
+    rd.numactive = rd.numthreads;
+
+    for (int i = 0; i < rd.numthreads - 1; i++) {
+        boost::asio::post(*pool, [=] { render_tile(i); });
     }
 
-    rd.rects.clear();
-    sync.signalExit();
+    render_tile(rd.numthreads - 1);
 }
 
 bool CanvasPrivate::init_redraw()
@@ -2114,9 +2119,6 @@ bool CanvasPrivate::init_redraw()
             auto prerender = expandedBy(rd.visible, rd.margin);
             auto prerender_store = (prerender & rd.store.rect).regularized();
             if (prerender_store) {
-                // Before starting, we request that the tiles drawn up to this point are flushed so they don't have to wait
-                // for prerendering to finish. (Note: Some yet-to-be-drawn tiles may be committed too; this is harmless.)
-                commit_tiles_dispatcher.emit();
                 process_redraw(*prerender_store, updater->clean_region);
                 return true;
             } else {
@@ -2154,6 +2156,11 @@ void CanvasPrivate::process_redraw(Geom::IntRect const &bounds, Cairo::RefPtr<Ca
 
     // Put the rectangles into a heap sorted by distance from mouse.
     std::make_heap(rd.rects.begin(), rd.rects.end(), rd.getcmp());
+
+    // Adjust the effective tile size proportional to the painting area.
+    double adjust = (double)cairo_to_geom(region->get_extents()).maxExtent() / rd.visible.maxExtent();
+    adjust = std::clamp(adjust, 0.3, 1.0);
+    rd.effective_tile_size = rd.tile_size * adjust;
 }
 
 // Process rectangles until none left or timed out.
@@ -2211,8 +2218,7 @@ void CanvasPrivate::render_tile(int debug_id)
         };
 
         // If the rectangle needs bisecting, bisect it and put it back on the heap.
-        // Note: In single-thread mode, bisection should be disabled if interruptible is set.
-        if (auto axis = bisect(rect, rd.tile_size)) {
+        if (auto axis = bisect(rect, rd.effective_tile_size)) {
             int mid = rect[*axis].middle();
             auto lo = rect; lo[*axis].setMax(mid); add_rect(lo);
             auto hi = rect; hi[*axis].setMin(mid); add_rect(hi);
@@ -2258,7 +2264,15 @@ void CanvasPrivate::render_tile(int debug_id)
         fc.subtype = 1;
     }
 
+    rd.numactive--;
+    bool const done = rd.numactive == 0;
+
     rd.mutex.unlock();
+
+    if (done) {
+        rd.rects.clear();
+        sync.signalExit();
+    }
 }
 
 bool CanvasPrivate::end_redraw()

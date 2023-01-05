@@ -20,6 +20,7 @@
 #include <2geom/rect.h>
 #include "color.h"
 #include "drawing-paintserver.h"
+#include "initlock.h"
 
 class SPPaintServer;
 class SPStyle;
@@ -29,25 +30,33 @@ namespace Inkscape {
 class DrawingContext;
 class DrawingPattern;
 class RenderContext;
+
+struct CairoPatternFreer { void operator()(cairo_pattern_t *p) const { cairo_pattern_destroy(p); } };
+using CairoPatternUniqPtr = std::unique_ptr<cairo_pattern_t, CairoPatternFreer>;
+inline CairoPatternUniqPtr copy(CairoPatternUniqPtr const &p)
+{
+    if (!p) return {};
+    cairo_pattern_reference(p.get());
+    return CairoPatternUniqPtr(p.get());
 }
 
-struct NRStyle
+struct NRStyleData
 {
-    NRStyle();
-    explicit NRStyle(SPStyle const *style, SPStyle const *context_style = nullptr) { set(style, context_style); }
+    NRStyleData();
+    explicit NRStyleData(SPStyle const *style, SPStyle const *context_style = nullptr);
 
-    enum PaintType
+    enum class PaintType
     {
-        PAINT_NONE,
-        PAINT_COLOR,
-        PAINT_SERVER
+        NONE,
+        COLOR,
+        SERVER
     };
 
     struct Paint
     {
-        PaintType type = PAINT_NONE;
+        PaintType type = PaintType::NONE;
         SPColor color = 0;
-        std::unique_ptr<Inkscape::DrawingPaintServer> server;
+        std::unique_ptr<DrawingPaintServer> server;
         float opacity = 1.0;
 
         void clear();
@@ -57,37 +66,17 @@ struct NRStyle
         bool ditherable() const;
     };
 
-    struct CairoPatternFreer {void operator()(cairo_pattern_t *p) const {cairo_pattern_destroy(p);}};
-    using CairoPatternUniqPtr = std::unique_ptr<cairo_pattern_t, CairoPatternFreer>;
-
-    void set(SPStyle const *style, SPStyle const *context_style = nullptr);
-    void preparePaint(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern, Paint &paint, CairoPatternUniqPtr &cp);
-    bool prepareFill(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
-    bool prepareStroke(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
-    bool prepareTextDecorationFill(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
-    bool prepareTextDecorationStroke(Inkscape::DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, Inkscape::DrawingPattern *pattern);
-    void applyFill(Inkscape::DrawingContext &dc);
-    void applyStroke(Inkscape::DrawingContext &dc);
-    void applyTextDecorationFill(Inkscape::DrawingContext &dc);
-    void applyTextDecorationStroke(Inkscape::DrawingContext &dc);
-    void update();
-
     Paint fill;
     Paint stroke;
     float stroke_width;
     bool hairline;
     float miter_limit;
-    unsigned int n_dash;
+    int n_dash;
     std::vector<double> dash;
     float dash_offset;
     cairo_fill_rule_t fill_rule;
     cairo_line_cap_t line_cap;
     cairo_line_join_t line_join;
-
-    CairoPatternUniqPtr fill_pattern;
-    CairoPatternUniqPtr stroke_pattern;
-    CairoPatternUniqPtr text_decoration_fill_pattern;
-    CairoPatternUniqPtr text_decoration_stroke_pattern;
 
     enum PaintOrderType
     {
@@ -143,6 +132,40 @@ struct NRStyle
 
     int   text_direction;
 };
+
+class NRStyle
+{
+public:
+    void set(NRStyleData &&data);
+    CairoPatternUniqPtr prepareFill(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, DrawingPattern const *pattern) const;
+    CairoPatternUniqPtr prepareStroke(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, DrawingPattern const *pattern) const;
+    CairoPatternUniqPtr prepareTextDecorationFill(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, DrawingPattern const *pattern) const;
+    CairoPatternUniqPtr prepareTextDecorationStroke(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, DrawingPattern const *pattern) const;
+    void applyFill(DrawingContext &dc, CairoPatternUniqPtr const &cp) const;
+    void applyStroke(DrawingContext &dc, CairoPatternUniqPtr const &cp) const;
+    void applyTextDecorationFill(DrawingContext &dc, CairoPatternUniqPtr const &cp) const;
+    void applyTextDecorationStroke(DrawingContext &dc, CairoPatternUniqPtr const &cp) const;
+    void invalidate();
+
+    NRStyleData data;
+
+private:
+    struct CachedPattern
+    {
+        InitLock inited;
+        mutable CairoPatternUniqPtr pattern;
+        void reset() { inited.reset(); pattern.reset(); }
+    };
+
+    CairoPatternUniqPtr preparePaint(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, Geom::OptRect const &paintbox, DrawingPattern const *pattern, NRStyleData::Paint const &paint, CachedPattern const &cp) const;
+
+    CachedPattern fill_pattern;
+    CachedPattern stroke_pattern;
+    CachedPattern text_decoration_fill_pattern;
+    CachedPattern text_decoration_stroke_pattern;
+};
+
+} // namespace Inkscape
 
 #endif // INKSCAPE_DISPLAY_NR_STYLE_H
 

@@ -125,7 +125,7 @@ void CanvasItemGuideLine::_update(bool)
 /**
  * Render guideLine to screen via Cairo.
  */
-void CanvasItemGuideLine::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemGuideLine::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     // Document to canvas
     Geom::Point const normal = _normal * affine().withoutTranslation(); // Direction only
@@ -292,7 +292,7 @@ void CanvasItemGuideHandle::set_size_via_index(int index)
         if (_width == size) return;
         _width = size;
         _height = size;
-        _built = false;
+        _built.reset();
         request_update();
         _my_line->request_update();
     });

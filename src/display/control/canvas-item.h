@@ -78,7 +78,7 @@ public:
     void ungrab();
 
     // Display
-    void render(Inkscape::CanvasItemBuffer &buf);
+    void render(Inkscape::CanvasItemBuffer &buf) const;
     bool is_visible() const { return _visible; }
     virtual void set_visible(bool visible);
     void show() { set_visible(true); }
@@ -129,7 +129,7 @@ protected:
     // Display
     bool _visible = true;
     bool _net_visible = true;
-    virtual void _render(Inkscape::CanvasItemBuffer &buf) = 0;
+    virtual void _render(Inkscape::CanvasItemBuffer &buf) const = 0;
 
     // Selection
     bool _pickable = false; // Most items are just for display and are not pickable!

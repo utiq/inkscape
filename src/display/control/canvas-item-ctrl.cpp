@@ -191,7 +191,7 @@ void CanvasItemCtrl::_update(bool)
 
             if (_angle != angle) {
                 _angle = angle;
-                _built = false;
+                _built.reset();
             }
 
             break;
@@ -202,7 +202,7 @@ void CanvasItemCtrl::_update(bool)
             double const angle = angle_of(affine());
             if (_angle != angle) {
                 _angle = angle;
-                _built = false;
+                _built.reset();
             }
             break;
         }
@@ -264,11 +264,11 @@ static inline uint32_t compose_xor(uint32_t bg, uint32_t fg, uint32_t a)
 /**
  * Render ctrl to screen via Cairo.
  */
-void CanvasItemCtrl::_render(CanvasItemBuffer &buf)
+void CanvasItemCtrl::_render(CanvasItemBuffer &buf) const
 {
-    if (!_built) {
+    _built.init([&, this] {
         build_cache(buf.device_scale);
-    }
+    });
 
     Geom::Point c = _bounds->min() - buf.rect.min();
     int x = c.x(); // Must be pixel aligned.
@@ -375,7 +375,7 @@ void CanvasItemCtrl::set_fill(uint32_t fill)
     defer([=] {
         if (_fill == fill) return;
         _fill = fill;
-        _built = false;
+        _built.reset();
         request_redraw();
     });
 }
@@ -385,7 +385,7 @@ void CanvasItemCtrl::set_stroke(uint32_t stroke)
     defer([=] {
         if (_stroke == stroke) return;
         _stroke = stroke;
-        _built = false;
+        _built.reset();
         request_redraw();
     });
 }
@@ -395,7 +395,7 @@ void CanvasItemCtrl::set_shape(CanvasItemCtrlShape shape)
     defer([=] {
         if (_shape == shape) return;
         _shape = shape;
-        _built = false;
+        _built.reset();
         request_update(); // Geometry could change
     });
 }
@@ -461,7 +461,7 @@ void CanvasItemCtrl::set_mode(CanvasItemCtrlMode mode)
     defer([=] {
         if (_mode == mode) return;
         _mode = mode;
-        _built = false;
+        _built.reset();
         request_update();
     });
 }
@@ -473,7 +473,7 @@ void CanvasItemCtrl::set_pixbuf(Glib::RefPtr<Gdk::Pixbuf> pixbuf)
         _pixbuf = std::move(pixbuf);
         _width = _pixbuf->get_width();
         _height = _pixbuf->get_height();
-        _built = false;
+        _built.reset();
         request_update();
     });
 }
@@ -489,7 +489,7 @@ void CanvasItemCtrl::set_size(int size)
         if (_width == size + _extra && _height == size + _extra) return;
         _width  = size + _extra;
         _height = size + _extra;
-        _built = false;
+        _built.reset();
         request_update(); // Geometry change
     });
 }
@@ -572,7 +572,7 @@ void CanvasItemCtrl::set_size_extra(int extra)
         _width  += extra - _extra;
         _height += extra - _extra;
         _extra = extra;
-        _built = false;
+        _built.reset();
         request_update(); // Geometry change
     });
 }
@@ -586,7 +586,7 @@ void CanvasItemCtrl::set_type(CanvasItemCtrlType type)
         // Use _type to set default values.
         set_shape_default();
         set_size_default();
-        _built = false;
+        _built.reset();
         request_update(); // Possible geometry change
     });
 }
@@ -859,7 +859,7 @@ static void draw_malign(Cairo::RefPtr<Cairo::Context> const &cr, double size)
     cr->close_path();
 }
 
-void CanvasItemCtrl::build_cache(int device_scale)
+void CanvasItemCtrl::build_cache(int device_scale) const
 {
     if (_width < 2 || _height < 2) {
         return; // Nothing to render
@@ -894,7 +894,6 @@ void CanvasItemCtrl::build_cache(int device_scale)
                     }
                 }
             }
-            _built = true;
             break;
 
         case CANVAS_ITEM_CTRL_SHAPE_DIAMOND: {
@@ -919,7 +918,6 @@ void CanvasItemCtrl::build_cache(int device_scale)
                     }
                 }
             }
-            _built = true;
             break;
         }
 
@@ -946,7 +944,6 @@ void CanvasItemCtrl::build_cache(int device_scale)
                     }
                 }
             }
-            _built = true;
             break;
         }
 
@@ -1008,7 +1005,6 @@ void CanvasItemCtrl::build_cache(int device_scale)
                     }
                 }
             }
-            _built = true;
             break;
 
         case CANVAS_ITEM_CTRL_SHAPE_PLUS:
@@ -1023,7 +1019,6 @@ void CanvasItemCtrl::build_cache(int device_scale)
                     }
                 }
             }
-            _built = true;
             break;
 
         case CANVAS_ITEM_CTRL_SHAPE_DARROW: // Double arrow
@@ -1114,7 +1109,6 @@ void CanvasItemCtrl::build_cache(int device_scale)
                     pb++;
                 }
             }
-            _built = true;
             break;
         }
 
@@ -1159,7 +1153,6 @@ void CanvasItemCtrl::build_cache(int device_scale)
                     }
                 }
             }
-            _built = true;
             break;
         }
 

@@ -226,7 +226,7 @@ void Drawing::update(Geom::IntRect const &area, Geom::Affine const &affine, unsi
     }
 }
 
-void Drawing::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, int antialiasing_override)
+void Drawing::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags, int antialiasing_override) const
 {
     int antialias = _root->antialiasing();
     if (antialiasing_override >= 0) {

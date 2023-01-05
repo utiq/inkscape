@@ -52,7 +52,7 @@ protected:
     ~CanvasItemText() override = default;
 
     void _update(bool propagate) override;
-    void _render(Inkscape::CanvasItemBuffer &buf) override;
+    void _render(Inkscape::CanvasItemBuffer &buf) const override;
 
     Geom::Point _p;  // Position of text (not box around text).
     Cairo::TextExtents _text_extent;

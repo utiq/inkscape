@@ -117,7 +117,7 @@ void CanvasItemDrawing::_update(bool)
 /**
  * Render drawing to screen via Cairo.
  */
-void CanvasItemDrawing::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemDrawing::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     auto dc = Inkscape::DrawingContext(buf.cr->cobj(), buf.rect.min());
     _drawing->render(dc, buf.rect, buf.outline_pass * DrawingItem::RENDER_OUTLINE);

@@ -42,6 +42,10 @@ public:
 
     /// Return whether this paint server could benefit from dithering.
     virtual bool ditherable() const { return false; }
+
+    /// Return whether create_pattern() uses its cairo_t argument. Such pattern cannot be cached, but recreated each time.
+    /// Fixme: The only reson this exists is to work around https://gitlab.freedesktop.org/cairo/cairo/-/issues/146.
+    virtual bool uses_cairo_ctx() const { return false; }
 };
 
 // Todo: Remove, merging with existing implementation for solid colours.
@@ -127,6 +131,8 @@ public:
         , stops(std::move(stops)) {}
 
     cairo_pattern_t *create_pattern(cairo_t *ct, Geom::OptRect const &bbox, double opacity) const override;
+
+    bool uses_cairo_ctx() const override { return true; }
 
 private:
     float fx, fy, cx, cy, r, fr;

@@ -151,7 +151,7 @@ void CanvasItemCurve::_update(bool)
 /**
  * Render curve to screen via Cairo.
  */
-void CanvasItemCurve::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemCurve::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     assert(_curve); // Not called if _curve is null, since _bounds would be null.
 

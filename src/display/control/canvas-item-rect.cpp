@@ -110,7 +110,7 @@ void CanvasItemRect::_update(bool)
 /**
  * Render rect to screen via Cairo.
  */
-void CanvasItemRect::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemRect::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     // Are we axis aligned?
     auto const &aff = affine();

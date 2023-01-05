@@ -2784,9 +2784,9 @@ void InkscapePreferences::initPageBehavior()
 
 void InkscapePreferences::initPageRendering()
 {
-    /* threaded blur */ //related comments/widgets/functions should be renamed and option should be moved elsewhere when inkscape is fully multi-threaded
-    _filter_multi_threaded.init("/options/threading/numthreads", 1.0, 32.0, 1.0, 2.0, 4.0, true, false);
-    _page_rendering.add_line( false, _("Number of _Threads:"), _filter_multi_threaded, "", _("Configure number of processors/threads to use when rendering filters"), false);
+    // render threads
+    _filter_multi_threaded.init("/options/threading/numthreads", 0.0, 32.0, 1.0, 2.0, 0.0, true, false);
+    _page_rendering.add_line(false, _("Number of _Threads:"), _filter_multi_threaded, "", _("Configure number of threads to use when rendering. The default value of zero means choose automatically."), false);
 
     // rendering cache
     _rendering_cache_size.init("/options/renderingcache/size", 0.0, 4096.0, 1.0, 32.0, 64.0, true, false);
@@ -2914,7 +2914,7 @@ void InkscapePreferences::initPageRendering()
     //TRANSLATORS: The following are options for fine-tuning rendering, meant to be used by developers, 
     //find more explanations at https://gitlab.com/inkscape/inbox/-/issues/6544#note_886540227
     add_devmode_group_header(_("Low-level tuning options"));
-    _canvas_tile_size.init("/options/rendering/tile_size", 1.0, 10000.0, 1.0, 0.0, 500.0, true, false);
+    _canvas_tile_size.init("/options/rendering/tile_size", 1.0, 10000.0, 1.0, 0.0, 300.0, true, false);
     add_devmode_line(_("Tile size"), _canvas_tile_size, "", _("Halve rendering tile rectangles until their largest dimension is this small"));
     _canvas_render_time_limit.init("/options/rendering/render_time_limit", 1.0, 5000.0, 1.0, 0.0, 80.0, true, false);
     add_devmode_line(_("Render time limit"), _canvas_render_time_limit, C_("millisecond abbreviation", "ms"), _("The maximum time allowed for a rendering time slice"));

@@ -25,6 +25,7 @@
 #include "canvas-item-enums.h"
 
 #include "enums.h" // SP_ANCHOR_X
+#include "display/initlock.h"
 
 namespace Inkscape {
 
@@ -65,16 +66,16 @@ protected:
     ~CanvasItemCtrl() override = default;
 
     void _update(bool propagate) override;
-    void _render(Inkscape::CanvasItemBuffer &buf) override;
+    void _render(Inkscape::CanvasItemBuffer &buf) const override;
 
-    void build_cache(int device_scale);
+    void build_cache(int device_scale) const;
 
     // Geometry
     Geom::Point _position;
 
     // Display
-    std::unique_ptr<uint32_t[]> _cache;
-    bool _built = false;
+    InitLock _built;
+    mutable std::unique_ptr<uint32_t[]> _cache;
 
     // Properties
     CanvasItemCtrlType  _type  = CANVAS_ITEM_CTRL_TYPE_DEFAULT;

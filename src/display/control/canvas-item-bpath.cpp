@@ -156,7 +156,7 @@ void CanvasItemBpath::_update(bool)
 /**
  * Render bpath to screen via Cairo.
  */
-void CanvasItemBpath::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemBpath::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     bool do_fill   = (_fill   & 0xff) != 0; // Not invisible.
     bool do_stroke = (_stroke & 0xff) != 0; // Not invisible.

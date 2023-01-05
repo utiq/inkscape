@@ -36,8 +36,9 @@ public:
     FilterPrimitive();
     virtual ~FilterPrimitive();
 
+    virtual void update() {}
     virtual void render_cairo(FilterSlot &slot) const;
-    virtual void area_enlarge(Geom::IntRect &area, Geom::Affine const &m) const;
+    virtual void area_enlarge(Geom::IntRect &area, Geom::Affine const &m) const {}
 
     /**
      * Sets the input slot number 'slot' to be used as input in rendering

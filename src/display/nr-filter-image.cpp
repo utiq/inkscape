@@ -27,13 +27,21 @@
 namespace Inkscape {
 namespace Filters {
 
-void FilterImage::render_cairo(FilterSlot &slot) const
+void FilterImage::update()
 {
     if (!item) {
         return;
     }
 
     item->update();
+}
+
+void FilterImage::render_cairo(FilterSlot &slot) const
+{
+    if (!item) {
+        return;
+    }
+
     Geom::OptRect area = item->drawbox();
     if (!area) {
         return;

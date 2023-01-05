@@ -59,19 +59,21 @@ unsigned DrawingGroup::_updateItem(Geom::IntRect const &area, UpdateContext cons
     if (_child_transform) {
         child_ctx.ctm = *_child_transform * ctx.ctm;
     }
-    for (auto &i : _children) {
-        i.update(area, child_ctx, flags, reset);
-    }
+
     _bbox = Geom::OptIntRect();
-    for (auto &i : _children) {
-        if (i.visible()) {
-            _bbox.unionWith(outline ? i.bbox() : i.drawbox());
+
+    for (auto &c : _children) {
+        c.update(area, child_ctx, flags, reset);
+        if (c.visible()) {
+            _bbox.unionWith(outline ? c.bbox() : c.drawbox());
         }
+        _update_complexity += c.getUpdateComplexity();
     }
+
     return STATE_ALL;
 }
 
-unsigned DrawingGroup::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
+unsigned DrawingGroup::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem const *stop_at) const
 {
     if (stop_at == nullptr) {
         // normal rendering
@@ -95,7 +97,7 @@ unsigned DrawingGroup::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::
     return RENDER_OK;
 }
 
-void DrawingGroup::_clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area)
+void DrawingGroup::_clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) const
 {
     for (auto &i : _children) {
         i.clip(dc, rc, area);
@@ -111,11 +113,6 @@ DrawingItem *DrawingGroup::_pickItem(Geom::Point const &p, double delta, unsigne
         }
     }
     return nullptr;
-}
-
-bool DrawingGroup::_canClip()
-{
-    return true;
 }
 
 } // namespace Inkscape

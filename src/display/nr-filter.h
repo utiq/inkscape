@@ -30,6 +30,9 @@ namespace Filters {
 class Filter final
 {
 public:
+    /// Update any embedded DrawingItems prior to rendering.
+    void update();
+
     /** Given background state from @a bgdc and an intermediate rendering from the surface
      * backing @a graphic, modify the contents of the surface backing @a graphic to represent
      * the results of filter rendering. @a bgarea and @a area specify bounding boxes

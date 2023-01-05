@@ -40,7 +40,7 @@ protected:
 
     void _update(bool propagate) override;
     void _mark_net_invisible() override;
-    void _render(Inkscape::CanvasItemBuffer &buf) override;
+    void _render(Inkscape::CanvasItemBuffer &buf) const override;
 
     /**
      * Type for linked list storing CanvasItems.

@@ -215,7 +215,7 @@ void CanvasItem::ungrab()
     gtk_grab_remove(GTK_WIDGET(canvas->gobj()));
 }
 
-void CanvasItem::render(CanvasItemBuffer &buf)
+void CanvasItem::render(CanvasItemBuffer &buf) const
 {
     if (_visible && _bounds && _bounds->interiorIntersects(buf.rect)) {
         _render(buf);

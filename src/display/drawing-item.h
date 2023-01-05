@@ -50,6 +50,8 @@ struct UpdateContext
     Geom::Affine ctm;
 };
 
+struct CacheData;
+
 struct CacheRecord : boost::totally_ordered<CacheRecord>
 {
     bool operator<(CacheRecord const &other) const { return score < other.score; }
@@ -87,7 +89,8 @@ public:
         STATE_PICK       = 1 << 2, // can process pick requests
         STATE_RENDER     = 1 << 3, // can be rendered
         STATE_BACKGROUND = 1 << 4, // filter background data is up to date
-        STATE_ALL        = (1 << 5) - 1
+        STATE_ALL        = (1 << 5) - 1,
+        STATE_TOTAL_INV  = 1 << 5, // used as a reset flag only
     };
     enum PickFlags
     {
@@ -109,8 +112,9 @@ public:
     Geom::Affine const &ctm() const { return _ctm; }
     Geom::Affine transform() const { return _transform ? *_transform : Geom::identity(); }
     Drawing &drawing() const { return _drawing; }
-    DrawingItem *parent() const;
-    bool isAncestorOf(DrawingItem *item) const;
+    DrawingItem *parent() const { return _parent; }
+    bool isAncestorOf(DrawingItem const *item) const;
+    int getUpdateComplexity() const { return _update_complexity; }
 
     void appendChild(DrawingItem *item);
     void prependChild(DrawingItem *item);
@@ -143,8 +147,8 @@ public:
     SPItem *getItem() const { return _item; } // SPItem
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), UpdateContext const &ctx = UpdateContext(), unsigned flags = STATE_ALL, unsigned reset = 0);
-    unsigned render(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags = 0, DrawingItem *stop_at = nullptr);
-    void clip(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area);
+    unsigned render(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags = 0, DrawingItem const *stop_at = nullptr) const;
+    void clip(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) const;
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags = 0);
 
     Glib::ustring name() const; // For debugging
@@ -167,20 +171,18 @@ protected:
         RENDER_STOP = 1
     };
     virtual ~DrawingItem(); // Private to prevent deletion of items that are still in use by a snapshot.
-    void _renderOutline(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags);
+    void _renderOutline(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags) const;
     void _markForUpdate(unsigned state, bool propagate);
     void _markForRendering();
     void _invalidateFilterBackground(Geom::IntRect const &area);
     double _cacheScore();
-    Geom::OptIntRect _cacheRect();
+    Geom::OptIntRect _cacheRect() const;
     void _setCached(bool cached, bool persistent = false);
-    virtual unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
-                                 unsigned flags, unsigned reset) { return 0; }
-    virtual unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags,
-                                 DrawingItem *stop_at) { return RENDER_OK; }
-    virtual void _clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) {}
+    virtual unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) { return 0; }
+    virtual unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem const *stop_at) const { return RENDER_OK; }
+    virtual void _clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) const {}
     virtual DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) { return nullptr; }
-    virtual bool _canClip() { return false; }
+    virtual bool _canClip() const { return false; }
     virtual void _dropPatternCache() {}
 
     Drawing &_drawing;
@@ -215,8 +217,8 @@ protected:
     DrawingPattern *_fill_pattern;
     DrawingPattern *_stroke_pattern;
     std::unique_ptr<Inkscape::Filters::Filter> _filter;
-    std::unique_ptr<DrawingCache> _cache;
-    bool _prev_nir = false;
+    std::unique_ptr<CacheData> _cache;
+    int _update_complexity = 0;
 
     CacheList::iterator _cache_iterator;
 
@@ -232,10 +234,8 @@ protected:
                                          ///  (has any ancestor with enable-background: new)
     unsigned _visible : 1;
     unsigned _sensitive : 1; ///< Whether this item responds to events
-    unsigned _cached : 1; ///< Whether the rendering is stored for reuse
     unsigned _cached_persistent : 1; ///< If set, will always be cached regardless of score
     unsigned _has_cache_iterator : 1; ///< If set, _cache_iterator is valid
-    unsigned _propagate : 1; ///< Whether to call update for all children on next update
     unsigned _pick_children : 1; ///< For groups: if true, children are returned from pick(),
                                  ///  otherwise the group is returned
     unsigned _antialias : 2; ///< antialiasing level (NONE/FAST/GOOD(DEFAULT)/BEST)

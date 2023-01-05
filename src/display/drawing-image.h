@@ -42,7 +42,7 @@ protected:
     ~DrawingImage() override = default;
 
     unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
-    unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at) override;
+    unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem const *stop_at) const override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
 
     std::shared_ptr<Inkscape::Pixbuf const> _pixbuf;

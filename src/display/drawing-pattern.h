@@ -13,9 +13,9 @@
 #ifndef INKSCAPE_DISPLAY_DRAWING_PATTERN_H
 #define INKSCAPE_DISPLAY_DRAWING_PATTERN_H
 
+#include <mutex>
 #include <cairomm/surface.h>
 #include "drawing-group.h"
-#include "drawing-surface.h"
 
 using cairo_pattern_t = struct _cairo_pattern;
 
@@ -60,7 +60,7 @@ public:
      *
      * Returns cairo_pattern_t structure that can be set as source surface.
      */
-    cairo_pattern_t *renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale);
+    cairo_pattern_t *renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale) const;
 
 protected:
     ~DrawingPattern() override = default;
@@ -88,8 +88,10 @@ protected:
         Cairo::RefPtr<Cairo::ImageSurface> surface;
     };
 
+    mutable std::mutex mutables;
+
     // Parts of the pattern tile that have been rendered. Read/written on render, cleared on update.
-    std::vector<Surface> surfaces;
+    mutable std::vector<Surface> surfaces;
 };
 
 } // namespace Inkscape

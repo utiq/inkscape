@@ -71,16 +71,14 @@ public:
 protected:
     ~DrawingText() override = default;
 
-    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx,
-                                 unsigned flags, unsigned reset) override;
-    unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags,
-                                 DrawingItem *stop_at) override;
-    void _clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) override;
+    unsigned _updateItem(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset) override;
+    unsigned _renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem const *stop_at) const override;
+    void _clipItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) const override;
     DrawingItem *_pickItem(Geom::Point const &p, double delta, unsigned flags) override;
-    bool _canClip() override;
+    bool _canClip() const override { return true; }
 
-    void decorateItem(DrawingContext &dc, double phase_length, bool under);
-    void decorateStyle(DrawingContext &dc, double vextent, double xphase, Geom::Point const &p1, Geom::Point const &p2, double thickness);
+    void decorateItem(DrawingContext &dc, double phase_length, bool under) const;
+    void decorateStyle(DrawingContext &dc, double vextent, double xphase, Geom::Point const &p1, Geom::Point const &p2, double thickness) const;
     NRStyle _nrstyle;
 
     bool style_vector_effect_stroke : 1;

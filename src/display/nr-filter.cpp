@@ -89,6 +89,13 @@ void Filter::_common_init()
     _primitive_units = SP_FILTER_UNITS_USERSPACEONUSE;
 }
 
+void Filter::update()
+{
+    for (auto &p : primitives) {
+        p->update();
+    }
+}
+
 int Filter::render(Inkscape::DrawingItem const *item, DrawingContext &graphic, DrawingContext *bgdc, RenderContext &rc) const
 {
     // std::cout << "Filter::render() for: " << const_cast<Inkscape::DrawingItem *>(item)->name() << std::endl;

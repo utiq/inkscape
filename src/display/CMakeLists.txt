@@ -75,6 +75,7 @@ set(display_SRC
     drawing-surface.h
     drawing-text.h
     drawing.h
+    initlock.h
     nr-3dutils.h
     nr-filter-blend.h
     nr-filter-colormatrix.h

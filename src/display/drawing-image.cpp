@@ -90,8 +90,6 @@ void DrawingImage::setStyle(SPStyle const *style, SPStyle const *context_style)
 
 unsigned DrawingImage::_updateItem(Geom::IntRect const &, UpdateContext const &, unsigned, unsigned)
 {
-    _markForRendering();
-
     // Calculate bbox
     if (_pixbuf) {
         Geom::Rect r = bounds() * _ctm;
@@ -103,7 +101,7 @@ unsigned DrawingImage::_updateItem(Geom::IntRect const &, UpdateContext const &,
     return STATE_ALL;
 }
 
-unsigned DrawingImage::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &/*area*/, unsigned flags, DrawingItem */*stop_at*/)
+unsigned DrawingImage::_renderItem(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &/*area*/, unsigned flags, DrawingItem const */*stop_at*/) const
 {
     bool const outline = (flags & RENDER_OUTLINE) && !_drawing.imageOutlineMode();
 

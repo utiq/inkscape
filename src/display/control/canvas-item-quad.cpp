@@ -106,7 +106,7 @@ void CanvasItemQuad::_update(bool)
 /**
  * Render quad to screen via Cairo.
  */
-void CanvasItemQuad::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemQuad::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     // Document to canvas
     Geom::Point p0 = _p0 * affine();

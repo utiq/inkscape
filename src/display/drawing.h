@@ -36,14 +36,14 @@ class DrawingContext;
 class Drawing
 {
 public:
-    Drawing(Inkscape::CanvasItemDrawing *drawing = nullptr);
+    Drawing(CanvasItemDrawing *drawing = nullptr);
     Drawing(Drawing const &) = delete;
     Drawing &operator=(Drawing const &) = delete;
     ~Drawing();
 
     void setRoot(DrawingItem *root);
     DrawingItem *root() { return _root; }
-    Inkscape::CanvasItemDrawing *getCanvasItemDrawing() { return _canvas_item_drawing; }
+    CanvasItemDrawing *getCanvasItemDrawing() { return _canvas_item_drawing; }
 
     void setRenderMode(RenderMode);
     void setColorMode(ColorMode);
@@ -79,7 +79,7 @@ public:
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), Geom::Affine const &affine = Geom::identity(),
                 unsigned flags = DrawingItem::STATE_ALL, unsigned reset = 0);
-    void render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, int antialiasing_override = -1);
+    void render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, int antialiasing_override = -1) const;
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags);
 
     void snapshot();
@@ -96,7 +96,7 @@ private:
     void _loadPrefs();
 
     DrawingItem *_root = nullptr;
-    Inkscape::CanvasItemDrawing *_canvas_item_drawing = nullptr;
+    CanvasItemDrawing *_canvas_item_drawing = nullptr;
     std::unique_ptr<Preferences::PreferencesObserver> _pref_tracker;
 
     RenderMode _rendermode = RenderMode::NORMAL;

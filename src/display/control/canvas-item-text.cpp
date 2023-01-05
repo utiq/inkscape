@@ -121,7 +121,7 @@ void CanvasItemText::_update(bool)
 /**
  * Render text to screen via Cairo.
  */
-void CanvasItemText::_render(Inkscape::CanvasItemBuffer &buf)
+void CanvasItemText::_render(Inkscape::CanvasItemBuffer &buf) const
 {
     buf.cr->save();
 

@@ -63,7 +63,7 @@ void DrawingPattern::setOverflow(Geom::Affine const &initial_transform, int step
     });
 }
 
-cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale)
+cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect const &area, float opacity, int device_scale) const
 {
     if (opacity < 1e-3) {
         // Invisible.
@@ -81,15 +81,17 @@ cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect 
     auto const pattern_to_tile = _pattern_to_user ? _pattern_to_user->inverse() * dt : dt;
     auto const screen_to_tile = _ctm.inverse() * pattern_to_tile;
 
-    // Calculate the requested area to draw within tile rasterisation space.
-    auto area_tile = (Geom::Rect(area) * screen_to_tile).roundOutwards();
-    auto const area_orig = area_tile;
-    for (int i = 0; i < 2; i++) {
-        if (area_tile.dimensions()[i] >= _pattern_resolution[i]) {
-            area_tile[i] = {0, _pattern_resolution[i]};
+    // Return a canonical choice of rectangle with the same periodic tiling as rect.
+    auto canonicalised = [&, this] (Geom::IntRect rect) {
+        for (int i = 0; i < 2; i++) {
+            if (rect.dimensions()[i] >= _pattern_resolution[i]) {
+                rect[i] = {0, _pattern_resolution[i]};
+            } else {
+                rect[i] -= Util::rounddown(rect[i].min(), _pattern_resolution[i]);
+            }
         }
-    }
-    area_tile -= rounddown(area_tile.min(), _pattern_resolution);
+        return rect;
+    };
 
     // Return whether the periodic tiling of a contains the periodic tiling of b.
     auto wrapped_contains = [&] (Geom::IntRect const &a, Geom::IntRect const &b) {
@@ -113,17 +115,48 @@ cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect 
         return check(0) && check(1);
     };
 
+    // Calculate the minimum and maximum translates of a that overlap with b.
+    auto overlapping_translates = [&, this] (Geom::IntRect const &a, Geom::IntRect const &b) {
+        Geom::IntPoint min, max;
+        for (int i = 0; i < 2; i++) {
+            min[i] = Util::roundup  (b[i].min() - a[i].max() + 1, _pattern_resolution[i]);
+            max[i] = Util::rounddown(b[i].max() - a[i].min() - 1, _pattern_resolution[i]);
+        }
+        return std::make_pair(min, max);
+    };
+
+    // Paint the periodic tiling of a into b, and remove the painted region from dirty.
+    auto wrapped_paint = [&, this] (Surface const &a, Geom::IntRect &b, Cairo::RefPtr<Cairo::Context> const &cr, Cairo::RefPtr<Cairo::Region> const &dirty) {
+        auto const [min, max] = overlapping_translates(a.rect, b);
+        for (int x = min.x(); x <= max.x(); x += _pattern_resolution.x()) {
+            for (int y = min.y(); y <= max.y(); y += _pattern_resolution.y()) {
+                auto const rect = a.rect + Geom::IntPoint(x, y);
+                dirty->subtract(geom_to_cairo(rect));
+                cr->set_source(a.surface, rect.left(), rect.top());
+                cr->paint();
+            }
+        }
+    };
+
+    // Calculate the requested area to draw within tile rasterisation space.
+    auto const area_orig = (Geom::Rect(area) * screen_to_tile).roundOutwards();
+    auto const area_tile = canonicalised(area_orig);
+
+    // Simplest solution for now to protecting pattern cache is a mutex. This makes all
+    // pattern rendering single-threaded, however patterns are typically not the bottleneck.
+    auto lock = std::lock_guard(mutables);
+
     auto get_surface = [&, this] () -> std::pair<Surface*, Cairo::RefPtr<Cairo::Region>> {
         // If there is a rectangle containing the requested area, just use that.
         for (auto &s : surfaces) {
-            if (wrapped_contains(s.rect, area_orig)) {
+            if (wrapped_contains(s.rect, area_tile)) {
                 return { &s, {} };
             }
         }
 
         // Otherwise, recursively merge the requested area with all overlapping or touching rectangles, and paint the missing part.
         std::vector<Surface> merged;
-        auto expanded = area_orig;
+        auto expanded = area_tile;
 
         while (true) {
             bool modified = false;
@@ -144,13 +177,7 @@ cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect 
         }
 
         // Canonicalise the expanded rectangle. (Stops Cairo's coordinates overflowing and the pattern disappearing.)
-        for (int i = 0; i < 2; i++) {
-            if (expanded.dimensions()[i] >= _pattern_resolution[i]) {
-                expanded[i] = {0, _pattern_resolution[i]};
-            } else {
-                expanded[i] -= Util::rounddown(expanded[i].min(), _pattern_resolution[i]);
-            }
-        }
+        expanded = canonicalised(expanded);
 
         // Create a new surface covering the expanded rectangle.
         auto surface = Surface(expanded, device_scale);
@@ -160,24 +187,8 @@ cairo_pattern_t *DrawingPattern::renderPattern(RenderContext &rc, Geom::IntRect 
         // Paste all the old surfaces into the new surface, tracking the remaining dirty region.
         auto dirty = Cairo::Region::create(geom_to_cairo(expanded));
 
-        auto paint = [&, this] (Cairo::RefPtr<Cairo::ImageSurface> const &surface, Geom::IntRect const &rect) {
-            dirty->subtract(geom_to_cairo(rect));
-            cr->set_source(surface, rect.left(), rect.top());
-            cr->paint();
-        };
-
         for (auto &m : merged) {
-            Geom::IntPoint smin, smax;
-            for (int i = 0; i < 2; i++) {
-                smin[i] = Util::roundup(expanded[i].min() - m.rect[i].max() + 1, _pattern_resolution[i]);
-                smax[i] = Util::rounddown(expanded[i].max() - m.rect[i].min() - 1, _pattern_resolution[i]);
-            }
-
-            for (int x = smin.x(); x <= smax.x(); x += _pattern_resolution.x()) {
-                for (int y = smin.y(); y <= smax.y(); y += _pattern_resolution.y()) {
-                    paint(m.surface, m.rect - Geom::IntPoint(x, y));
-                }
-            }
+            wrapped_paint(m, expanded, cr, dirty);
         }
 
         // Emplace the surface, and return it along with the remaining dirty region.

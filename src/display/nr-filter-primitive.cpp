@@ -25,9 +25,6 @@
 namespace Inkscape {
 namespace Filters {
 
-using Geom::X;
-using Geom::Y;
-
 FilterPrimitive::FilterPrimitive()
 {
     _input = NR_FILTER_SLOT_NOT_SET;
@@ -57,11 +54,6 @@ void FilterPrimitive::render_cairo(FilterSlot &slot) const
     // passthrough
     cairo_surface_t *in = slot.getcairo(_input);
     slot.set(_output, in);
-}
-
-void FilterPrimitive::area_enlarge(Geom::IntRect &/*area*/, Geom::Affine const &/*m*/) const
-{
-    // This doesn't need to do anything by default
 }
 
 void FilterPrimitive::set_input(int slot)

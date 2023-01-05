@@ -33,7 +33,7 @@ public:
     Pref<double> autoscrollspeed          = { "/options/autoscrollspeed/value", 1.0, 0.0, 10.0 };
 
     // Devmode preferences
-    Pref<int>    tile_size                = { "/options/rendering/tile_size", 500, 1, 10000 };
+    Pref<int>    tile_size                = { "/options/rendering/tile_size", 300, 1, 10000 };
     Pref<int>    render_time_limit        = { "/options/rendering/render_time_limit", 80, 1, 5000 };
     Pref<bool>   block_updates            = { "/options/rendering/block_updates", true };
     Pref<int>    pixelstreamer_method     = { "/options/rendering/pixelstreamer_method", 1, 1, 4 };

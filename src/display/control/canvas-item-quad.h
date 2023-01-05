@@ -43,7 +43,7 @@ protected:
     ~CanvasItemQuad() override = default;
 
     void _update(bool propagate) override;
-    void _render(Inkscape::CanvasItemBuffer &buf) override;
+    void _render(Inkscape::CanvasItemBuffer &buf) const override;
 
     Geom::Point _p0;
     Geom::Point _p1;

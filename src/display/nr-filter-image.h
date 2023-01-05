@@ -30,6 +30,7 @@ class FilterSlot;
 class FilterImage : public FilterPrimitive
 {
 public:
+    void update() override;
     void render_cairo(FilterSlot &slot) const override;
     bool can_handle_affine(Geom::Affine const &) const override;
     double complexity(Geom::Affine const &ctm) const override;

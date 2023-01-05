@@ -31,26 +31,31 @@
 
 #include "object/sp-item.h"
 
-static auto constexpr CACHE_SCORE_THRESHOLD = 50000.0; ///< Do not consider objects for caching below this score.
+static constexpr auto CACHE_SCORE_THRESHOLD = 50000.0; ///< Do not consider objects for caching below this score.
 
 namespace Inkscape {
+
+struct CacheData
+{
+    mutable std::mutex mutables;
+    mutable std::optional<DrawingCache> surface;
+};
 
 /**
  * @class DrawingItem
  * SVG drawing item for display.
  *
- * This was previously known as NRArenaItem. It represents the renderable
- * portion of the SVG document. Typically this is created by the SP tree,
- * in particular the show() virtual function.
+ * This class represents the renderable portion of the SVG document. Typically this
+ * is created by the SP tree, in particular the invoke_show() virtual function.
  *
  * @section ObjectLifetime Object lifetime
  * Deleting a DrawingItem will cause all of its children to be deleted as well.
  * This can lead to nasty surprises if you hold references to things
  * which are children of what is being deleted. Therefore, in the SP tree,
  * you always need to delete the item views of children before deleting
- * the view of the parent. Do not call delete on things returned from show()
+ * the view of the parent. Do not call delete on things returned from invoke_show()
  * - this will cause dangling pointers inside the SPItem and lead to a crash.
- * Use the corresponding hide() method.
+ * Use the corresponding invoke_hide() method.
  *
  * Outside of the SP tree, you should not use any references after the root node
  * has been deleted.
@@ -77,13 +82,11 @@ DrawingItem::DrawingItem(Drawing &drawing)
     , _background_accumulate(0)
     , _visible(true)
     , _sensitive(true)
-    , _cached(0)
     , _cached_persistent(0)
     , _has_cache_iterator(0)
-    , _propagate(0)
+    , _propagate_state(0)
     , _pick_children(0)
     , _antialias(2)
-    , _prev_nir(false)
     , _isolation(SP_CSS_ISOLATION_AUTO)
     , _blend_mode(SP_CSS_BLEND_NORMAL)
 {
@@ -115,18 +118,11 @@ DrawingItem::~DrawingItem()
     delete static_cast<DrawingItem*>(_stroke_pattern);
 }
 
-DrawingItem *DrawingItem::parent() const
-{
-    // initially I wanted to return NULL if we are a clip or mask child,
-    // but the previous behavior was just to return the parent regardless of child type
-    return _parent;
-}
-
 /// Returns true if item is among the descendants. Will return false if item == this.
-bool DrawingItem::isAncestorOf(DrawingItem *item) const
+bool DrawingItem::isAncestorOf(DrawingItem const *item) const
 {
-    for (DrawingItem *i = item->_parent; i; i = i->_parent) {
-        if (i == this) return true;
+    for (auto c = item->_parent; c; c = c->_parent) {
+        if (c == this) return true;
     }
     return false;
 }
@@ -258,16 +254,16 @@ void DrawingItem::_setCached(bool cached, bool persistent)
         return;
     }
 
-    if (cached == _cached) {
+    if (cached == (bool)_cache) {
         return;
     }
-    _cached = cached;
 
-    if (_cached) {
+    if (cached) {
+        _cache = std::make_unique<CacheData>();
         _drawing._cached_items.insert(this);
     } else {
-        _drawing._cached_items.erase(this);
         _cache.reset();
+        _drawing._cached_items.erase(this);
     }
 }
 
@@ -450,13 +446,14 @@ void DrawingItem::setFilterRenderer(std::unique_ptr<Filters::Filter> filter)
 void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, unsigned flags, unsigned reset)
 {
     // We don't need to update what is not visible
-    if (!visible()) {
+    if (!_visible) {
         _state = STATE_ALL; // Touch the state for future change to this item
         return;
     }
 
-    bool outline = _drawing.renderMode() == RenderMode::OUTLINE || _drawing.outlineOverlay();
-    bool filters = _drawing.renderMode() != RenderMode::NO_FILTERS;
+    bool const outline = _drawing.renderMode() == RenderMode::OUTLINE || _drawing.outlineOverlay();
+    bool const filters = _drawing.renderMode() != RenderMode::NO_FILTERS;
+    bool const forcecache = _filter && filters;
 
     // Set reset flags according to propagation status
     reset |= _propagate_state;
@@ -510,12 +507,55 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
         child_ctx.ctm[3] = value;
     }
 
-    /* Remember the transformation matrix */
-    Geom::Affine ctm_change = _ctm.inverse() * child_ctx.ctm;
+    // Remember the transformation matrix.
+    Geom::Affine ctm_change;
+    bool affine_changed = false;
+    if (!Geom::are_near(_ctm, child_ctx.ctm)) {
+        ctm_change = _ctm.inverse() * child_ctx.ctm;
+        affine_changed = true;
+    }
     _ctm = child_ctx.ctm;
+
+    bool const totally_invalidated = reset & STATE_TOTAL_INV;
+    if (totally_invalidated) {
+        // Perform work that would have been done by our call to _markForRendering(),
+        // had it not been overshadowed by a totally-invalidating node.
+        if (_cache && _cache->surface) {
+            _cache->surface->markDirty();
+        }
+        _dropPatternCache();
+    }
+
+    // Decide whether this node should be a totally-invalidating node.
+    bool const totally_invalidate = _update_complexity >= 20 && affine_changed;
+    if (totally_invalidate) {
+        reset |= STATE_TOTAL_INV;
+    }
+
+    // Recalculate update complexity; to be recalculated immediately below and by _updateItem().
+    _update_complexity = 1;
+    auto add_complexity_if = [&] (DrawingItem *c) {
+        if (c) {
+            _update_complexity += c->_update_complexity;
+        }
+    };
+    add_complexity_if(_clip);
+    add_complexity_if(_mask);
+    add_complexity_if(_fill_pattern);
+    add_complexity_if(_stroke_pattern);
+
+    // Moved from code that was previously in render().
+    if (forcecache) {
+        _setCached((bool)_cacheRect(), true);
+    }
 
     // update _bbox and call this function for children
     _state = _updateItem(area, child_ctx, flags, reset);
+
+    // update drawingitems contained in filter
+    if (_filter) {
+        _filter->update();
+    }
 
     if (to_update & STATE_BBOX) {
         // compute drawbox
@@ -583,11 +623,11 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
          * after the update the item can have its caching turned off,
          * e.g. because its filter was removed. This way we avoid temporarily
          * using more memory than the cache budget */
-        if (_cache) {
+        if (_cache && _cache->surface) {
             Geom::OptIntRect cl = _cacheRect();
             if (_visible && cl && _has_cache_iterator) { // never create cache for invisible items
                 // this takes care of invalidation on transform
-                _cache->scheduleTransform(*cl, ctm_change);
+                _cache->surface->scheduleTransform(*cl, ctm_change);
             } else {
                 // Destroy cache for this item - outside of canvas or invisible.
                 // The opposite transition (invisible -> visible or object
@@ -606,8 +646,10 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
         if (_stroke_pattern) {
             _stroke_pattern->update(area, child_ctx, flags, reset);
         }
-        if (!is<DrawingGroup>(this) || (_filter && filters)) {
-            _markForRendering();
+        if (!totally_invalidated) {
+            if (!is<DrawingGroup>(this) || (_filter && filters) || totally_invalidate) {
+                _markForRendering();
+            }
         }
     }
 }
@@ -636,11 +678,11 @@ struct MaskLuminanceToAlpha
  *
  * @param flags Rendering options. This deals mainly with cache control.
  */
-unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem *stop_at)
+unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags, DrawingItem const *stop_at) const
 {
-    bool outline = flags & RENDER_OUTLINE;
-    bool render_filters = !(flags & RENDER_NO_FILTERS);
-    bool forcecache = _filter && render_filters;
+    bool const outline = flags & RENDER_OUTLINE;
+    bool const render_filters = !(flags & RENDER_NO_FILTERS);
+    bool const forcecache = _filter && render_filters;
 
     // stop_at is handled in DrawingGroup, but this check is required to handle the case
     // where a filtered item with background-accessing filter has enable-background: new
@@ -676,9 +718,6 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
             iarea = carea;
             _filter->area_enlarge(*iarea, this);
             iarea.intersectWith(_drawbox);
-            _setCached(false, true);
-        } else {
-            _setCached(true, true);
         }
     }
     // carea is the area to paint
@@ -688,19 +727,21 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     }
 
     // Device scale for HiDPI screens (typically 1 or 2)
-    int device_scale = dc.surface()->device_scale();
+    int const device_scale = dc.surface()->device_scale();
 
-    // Render from cache if possible
-    // Bypass in case of pattern, see below.
-    if (_cached && !(flags & RENDER_BYPASS_CACHE)) {
-        if (_cache && _cache->device_scale() != device_scale) {
-            _cache.reset();
-        }
+    std::unique_lock<std::mutex> lock;
 
-        if (_cache) {
-            _cache->prepare();
+    // Render from cache if possible, unless requested not to (hatches).
+    if (_cache && !(flags & RENDER_BYPASS_CACHE)) {
+        lock = std::unique_lock(_cache->mutables);
+
+        if (_cache->surface) {
+            if (_cache->surface->device_scale() != device_scale) {
+                _cache->surface.reset();
+            }
+            _cache->surface->prepare();
             dc.setOperator(ink_css_blend_to_cairo_operator(_blend_mode));
-            _cache->paintFromCache(dc, carea, forcecache);
+            _cache->surface->paintFromCache(dc, carea, forcecache);
             if (!carea) {
                 dc.setSource(0, 0, 0, 0);
                 return RENDER_OK;
@@ -712,7 +753,11 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
             Geom::OptIntRect cl = _cacheRect();
             if (!cl)
                 cl = carea;
-            _cache = std::make_unique<DrawingCache>(*cl, device_scale);
+            _cache->surface.emplace(*cl, device_scale);
+        }
+
+        if (!forcecache) {
+            lock.unlock(); // Only hold the lock for the full duration of rendering for filters.
         }
     } else {
         // if our caching was turned off after the last update, it was already deleted in setCached()
@@ -726,12 +771,8 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
         || _opacity < 0.995                       // 4. it is non-opaque
         || _blend_mode != SP_CSS_BLEND_NORMAL     // 5. it has blend mode
         || _isolation == SP_CSS_ISOLATION_ISOLATE // 6. it is isolated
-        || _child_type == ChildType::ROOT;        // 7. is root, need isolation from background
-    if (_prev_nir && !needs_intermediate_rendering) {
-        _setCached(false, true);
-    }
-    _prev_nir = needs_intermediate_rendering;
-    needs_intermediate_rendering |= !!_cache;     // 8. it is to be cached
+        || _child_type == ChildType::ROOT         // 7. is root, need isolation from background
+        || (bool)_cache;                          // 8. it is to be cached
 
     /* How the rendering is done.
      *
@@ -809,7 +850,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     if (_filter && render_filters) {
         bool rendered = false;
         if (_filter->uses_background() && _background_accumulate) {
-            DrawingItem *bg_root = this;
+            auto bg_root = this;
             for (; bg_root; bg_root = bg_root->_parent) {
                 if (bg_root->_background_new) break;
             }
@@ -841,13 +882,19 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     ict.paint();
 
     // 6. Paint the completed rendering onto the base context (or into cache)
-    if (_cached && _cache) {
-        DrawingContext cachect(*_cache);
+    if (_cache && !(flags & RENDER_BYPASS_CACHE)) {
+        if (!forcecache) {
+            lock.lock(); // Only hold the lock for the full duration of rendering for filters.
+        }
+        assert(lock);
+        assert(_cache->surface);
+
+        auto cachect = DrawingContext(*_cache->surface);
         cachect.rectangle(*carea);
         cachect.setOperator(CAIRO_OPERATOR_SOURCE);
         cachect.setSource(&intermediate);
         cachect.fill();
-        _cache->markClean(*carea);
+        _cache->surface->markClean(*carea);
     }
 
     dc.rectangle(*carea);
@@ -864,11 +911,11 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     return render_result;
 }
 
-void DrawingItem::_renderOutline(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags)
+void DrawingItem::_renderOutline(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags) const
 {
     // intersect with bbox rather than drawbox, as we want to render things outside
     // of the clipping path as well
-    Geom::OptIntRect carea = Geom::intersect(area, _bbox);
+    auto carea = Geom::intersect(area, _bbox);
     if (!carea) return;
 
     // just render everything: item, clip, mask
@@ -898,7 +945,7 @@ void DrawingItem::_renderOutline(DrawingContext &dc, RenderContext &rc, Geom::In
  * the result of this call using the IN operator. See the implementation
  * of render() for details.
  */
-void DrawingItem::clip(DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area)
+void DrawingItem::clip(DrawingContext &dc, Inkscape::RenderContext &rc, Geom::IntRect const &area) const
 {
     // don't bother if the object does not implement clipping (e.g. DrawingImage)
     if (!_canClip()) return;
@@ -1023,8 +1070,6 @@ void DrawingItem::recursivePrintTree(unsigned level) const
  */
 void DrawingItem::_markForRendering()
 {
-    // TODO: this function does too much work when a large subtree is invalidated - fix
-
     bool outline = _drawing.renderMode() == RenderMode::OUTLINE || _drawing.outlineOverlay();
     Geom::OptIntRect dirty = outline ? _bbox : _drawbox;
     if (!dirty) return;
@@ -1032,12 +1077,12 @@ void DrawingItem::_markForRendering()
     // dirty the caches of all parents
     DrawingItem *bkg_root = nullptr;
 
-    for (DrawingItem *i = this; i; i = i->_parent) {
+    for (auto i = this; i; i = i->_parent) {
         if (i != this && i->_filter) {
             i->_filter->area_enlarge(*dirty, i);
         }
-        if (i->_cache) {
-            i->_cache->markDirty(*dirty);
+        if (i->_cache && i->_cache->surface) {
+            i->_cache->surface->markDirty(*dirty);
         }
         i->_dropPatternCache();
         if (i->_background_accumulate) {
@@ -1049,12 +1094,8 @@ void DrawingItem::_markForRendering()
         bkg_root->_invalidateFilterBackground(*dirty);
     }
 
-    if (drawing().getCanvasItemDrawing()) {
-        Geom::Rect area = *dirty;
-        drawing().getCanvasItemDrawing()->get_canvas()->redraw_area(area);
-    } else {
-        // Can happen, e.g. Icon Preview dialog.
-        // std::cerr << "DrawingItem::_markForRendering: Missing CanvasItemDrawing!" << std::endl;
+    if (auto canvasitem = drawing().getCanvasItemDrawing()) {
+        canvasitem->get_canvas()->redraw_area(*dirty);
     }
 }
 
@@ -1062,8 +1103,8 @@ void DrawingItem::_invalidateFilterBackground(Geom::IntRect const &area)
 {
     if (!_drawbox.intersects(area)) return;
 
-    if (_cache && _filter && _filter->uses_background()) {
-        _cache->markDirty(area);
+    if (_cache && _cache->surface && _filter && _filter->uses_background()) {
+        _cache->surface->markDirty(area);
     }
 
     for (auto & i : _children) {
@@ -1153,7 +1194,7 @@ inline void expandByScale(Geom::IntRect &rect, double scale)
     rect.expandBy(rect.width() * fraction, rect.height() * fraction);
 }
 
-Geom::OptIntRect DrawingItem::_cacheRect()
+Geom::OptIntRect DrawingItem::_cacheRect() const
 {
     Geom::OptIntRect r = _drawbox & _drawing.cacheLimit();
     if (_filter && _drawing.cacheLimit() && _drawing.renderMode() != RenderMode::NO_FILTERS && r && r != _drawbox) {

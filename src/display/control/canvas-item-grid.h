@@ -68,7 +68,7 @@ protected:
     friend class GridSnapperXY;
 
     void _update(bool propagate) override;
-    void _render(CanvasItemBuffer &buf) override;
+    void _render(CanvasItemBuffer &buf) const override;
 
     bool scaled[2];    /**< Whether the grid is in scaled mode, which can
                             be different in the X or Y direction, hence two
@@ -91,7 +91,7 @@ protected:
     friend class GridSnapperAxonom;
 
     void _update(bool propagate) override;
-    void _render(CanvasItemBuffer &buf) override;
+    void _render(CanvasItemBuffer &buf) const override;
 
     bool scaled;          /**< Whether the grid is in scaled mode */
 
