@@ -30,6 +30,7 @@
 #include "ui/dialog/dialog-notebook.h"
 #include "ui/dialog/dialog-window.h"
 #include "ui/dialog/document-properties.h"
+#include "ui/dialog/document-resources.h"
 #include "ui/dialog/export.h"
 #include "ui/dialog/fill-and-stroke.h"
 #include "ui/dialog/filter-effects-dialog.h"
@@ -126,6 +127,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
          if (dialog_type == "AlignDistribute")    return std::make_unique<ArrangeDialog>();
     else if (dialog_type == "CloneTiler")         return std::make_unique<CloneTiler>();
     else if (dialog_type == "DocumentProperties") return std::make_unique<DocumentProperties>();
+    else if (dialog_type == "DocumentResources")  return std::make_unique<DocumentResources>();
     else if (dialog_type == "Export")             return std::make_unique<Export>();
     else if (dialog_type == "FillStroke")         return std::make_unique<FillAndStroke>();
     else if (dialog_type == "FilterEffects")      return std::make_unique<FilterEffectsDialog>();

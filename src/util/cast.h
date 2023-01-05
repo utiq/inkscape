@@ -76,7 +76,8 @@ template<typename T, typename S>
 auto cast(S *s)
 {
     if constexpr (std::is_base_of_v<T, S>) {
-        static_assert(!sizeof(T), "cast is unnecessary");
+        // Removed static assert; it complicates template "collect_items"
+        // static_assert(!sizeof(T), "cast is unnecessary");
         return cast_unsafe<T>(s);
     } else if constexpr (std::is_base_of_v<S, T>) {
         return is<T>(s) ? cast_unsafe<T>(s) : nullptr;

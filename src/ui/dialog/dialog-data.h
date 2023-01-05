@@ -40,7 +40,7 @@ char const *const dialog_categories[DialogData::_num_categories] = {
 };
 
 /** Get the data about all existing dialogs. */
-std::map<Glib::ustring, DialogData> const &get_dialog_data();
+std::map<std::string, DialogData> const &get_dialog_data();
 
 /*
   Local Variables:

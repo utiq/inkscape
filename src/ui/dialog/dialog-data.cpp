@@ -17,9 +17,9 @@
  * so we need a place to keep this information.
  */
 
-std::map<Glib::ustring, DialogData> const &get_dialog_data()
+std::map<std::string, DialogData> const &get_dialog_data()
 {
-    static std::map<Glib::ustring, DialogData> dialog_data;
+    static std::map<std::string, DialogData> dialog_data;
 
     // Note the "AttrDialog" is now part of the "XMLDialog" and the "Style" dialog is part of the
     // "Selectors" dialog. Also note that the "AttrDialog" does not correspond to SP_VERB_DIALOG_ATTR!!!
@@ -31,6 +31,7 @@ std::map<Glib::ustring, DialogData> const &get_dialog_data()
     {"AlignDistribute",    {_("_Align and Distribute"), INKSCAPE_ICON("dialog-align-and-distribute"), DialogData::Basic,          ScrollProvider::NOPROVIDE }},
     {"CloneTiler",         {_("Create Tiled Clones"),   INKSCAPE_ICON("dialog-tile-clones"),          DialogData::Basic,          ScrollProvider::NOPROVIDE }},
     {"DocumentProperties", {_("_Document Properties"),  INKSCAPE_ICON("document-properties"),         DialogData::Settings,       ScrollProvider::NOPROVIDE }},
+    {"DocumentResources",  {_("_Document Resources"),   INKSCAPE_ICON("document-resources"),          DialogData::Advanced,       ScrollProvider::NOPROVIDE }},
     {"Export",             {_("_Export"),               INKSCAPE_ICON("document-export"),             DialogData::Basic,          ScrollProvider::PROVIDE   }},
     {"FillStroke",         {_("_Fill and Stroke"),      INKSCAPE_ICON("dialog-fill-and-stroke"),      DialogData::Basic,          ScrollProvider::NOPROVIDE }},
     {"FilterEffects",      {_("Filter _Editor"),        INKSCAPE_ICON("dialog-filters"),              DialogData::Advanced,       ScrollProvider::NOPROVIDE }},

@@ -151,7 +151,6 @@ private:
     std::vector<SPMarker*> get_marker_list(SPDocument* source);
     void add_markers (std::vector<SPMarker *> const& marker_list, SPDocument *source,  gboolean history);
     void remove_markers (gboolean history);
-    std::unique_ptr<SPDocument> ink_markers_preview_doc(const Glib::ustring& group_id);
     Cairo::RefPtr<Cairo::Surface> create_marker_image(Geom::IntPoint pixel_size, gchar const *mname,
         SPDocument *source, Inkscape::Drawing &drawing, unsigned /*visionkey*/, bool checkerboard, bool no_clip, double scale);
     void refresh_after_markers_modified();

@@ -1700,11 +1700,12 @@ void DocumentProperties::update_widgets()
     populate_available_profiles();
 
     //-----------------------------------------------------------meta pages
-    /* update the RDF entities */
+    // update the RDF entities; note that this may modify document, maybe doc-undo should be called?
     if (auto document = getDocument()) {
-        for (auto &it : _rdflist)
-            it->update(document);
-
+        for (auto &it : _rdflist) {
+            bool read_only = false;
+            it->update(document, read_only);
+        }
         _licensor.update(document);
     }
     _wr.setUpdating (false);

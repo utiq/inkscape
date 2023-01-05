@@ -120,10 +120,11 @@ void Licensor::init (Registry& wr)
     show_all_children();
 }
 
-void Licensor::update (SPDocument *doc)
+void Licensor::update(SPDocument *doc)
 {
     /* identify the license info */
-    struct rdf_license_t * license = rdf_get_license (doc);
+    constexpr bool read_only = false;
+    struct rdf_license_t * license = rdf_get_license(doc, read_only);
 
     if (license) {
         int i;
@@ -137,7 +138,7 @@ void Licensor::update (SPDocument *doc)
     }
     
     /* update the URI */
-    _eentry->update (doc);
+    _eentry->update(doc, read_only);
 }
 
 } // namespace Dialog

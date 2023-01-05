@@ -117,6 +117,7 @@ set(ui_SRC
 	dialog/dialog-notebook.cpp
 	dialog/dialog-window.cpp
 	dialog/document-properties.cpp
+	dialog/document-resources.cpp
 	dialog/export.cpp
 	dialog/export-batch.cpp
 	dialog/export-single.cpp

@@ -39,6 +39,8 @@ void CellRendererItemIcon::render_vfunc(const Cairo::RefPtr<Cairo::Context>& cr,
     property_mode() = Gtk::CELL_RENDERER_MODE_ACTIVATABLE;
 
     std::string shape_type = _property_shape_type.get_value();
+    if (shape_type == "-") return; // "-" is an explicit request not to draw any icon
+
     std::string highlight;
     auto color = _property_color.get_value();
     if (color == 0) {

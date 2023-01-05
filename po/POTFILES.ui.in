@@ -3,6 +3,7 @@
 ../share/ui/command-palette-operation.glade
 ../share/ui/completion-box.glade
 ../share/ui/dialog-css.glade
+../share/ui/dialog-document-resources.glade
 ../share/ui/dialog-export.glade
 ../share/ui/dialog-livepatheffect-add.glade
 ../share/ui/dialog-livepatheffect-effect.glade

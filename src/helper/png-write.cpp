@@ -237,7 +237,7 @@ sp_png_write_rgba_striped(SPDocument *doc,
         }
 
 
-        struct rdf_license_t *license =  rdf_get_license(doc);
+        struct rdf_license_t *license =  rdf_get_license(doc, true);
         if (license) {
             if (license->name && license->uri) {
                 gchar* tmp = g_strdup_printf("%s %s", license->name, license->uri);

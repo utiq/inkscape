@@ -81,6 +81,12 @@
         <attribute name='action'>win.document-cleanup</attribute>
         <attribute name='icon'>document-cleanup</attribute>
       </item>
+      <item>
+        <attribute name='label' translatable="yes">Document Resources</attribute>
+        <attribute name='action'>win.dialog-open</attribute>
+        <attribute name='target'>DocumentResources</attribute>
+        <attribute name='icon'>document-resources</attribute>
+      </item>
     </section>
     <section>
       <item>

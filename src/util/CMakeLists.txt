@@ -6,6 +6,7 @@ set(util_SRC
 	funclog.cpp
 	pool.cpp
 	share.cpp
+    object-renderer.cpp
 	paper.cpp
 	preview.cpp
 	statics.cpp
@@ -27,6 +28,7 @@ set(util_SRC
 	forward-pointer-iterator.h
 	funclog.h
 	longest-common-suffix.h
+    object-renderer.h
 	optstr.h
 	pages-skeleton.h
 	paper.h
