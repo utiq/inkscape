@@ -72,12 +72,13 @@ DocumentProperties::DocumentProperties()
     , _page_metadata1(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
     , _page_metadata2(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
     //---------------------------------------------------------------
-    //General guide options
+    // General guide options
     , _rcb_sgui(_("Show _guides"), _("Show or hide guides"), "showguides", _wr)
     , _rcb_lgui(_("Lock all guides"), _("Toggle lock of all guides in the document"), "inkscape:lockguides", _wr)
     , _rcp_gui(_("Guide co_lor:"), _("Guideline color"), _("Color of guidelines"), "guidecolor", "guideopacity", _wr)
-    , _rcp_hgui(_("_Highlight color:"), _("Highlighted guideline color"), _("Color of a guideline when it is under mouse"), "guidehicolor", "guidehiopacity", _wr)
-    , _create_guides_btn(_("Create guides around the page"))
+    , _rcp_hgui(_("_Highlight color:"), _("Highlighted guideline color"),
+                _("Color of a guideline when it is under mouse"), "guidehicolor", "guidehiopacity", _wr)
+    , _create_guides_btn(_("Create guides around the current page"))
     , _delete_guides_btn(_("Delete all guides"))
     //---------------------------------------------------------------
     , _grids_label_crea("", Gtk::ALIGN_START)

@@ -471,8 +471,7 @@ sp_icon_doc_icon( SPDocument *doc, Inkscape::Drawing &drawing,
 
             if ( object->parent == nullptr )
             {
-                dbox = Geom::Rect(Geom::Point(0, 0),
-                                Geom::Point(doc->getWidth().value("px"), doc->getHeight().value("px")));
+                dbox = *(doc->preferredBounds());
             }
 
             /* This is in document coordinates, i.e. pixels */

@@ -140,10 +140,7 @@ unsigned int PrintEmf::begin(Inkscape::Extension::Print *mod, SPDocument *doc)
 
     char *ansi_uri = (char *) utf8_fn;
 
-
     // width and height in px
-    _width  = doc->getWidth().value("px");
-    _height = doc->getHeight().value("px");
     _doc_unit_scale = doc->getDocumentScale()[Geom::X];
 
     // initialize a few global variables
@@ -170,7 +167,7 @@ unsigned int PrintEmf::begin(Inkscape::Extension::Print *mod, SPDocument *doc)
 
     Geom::Rect d;
     if (pageBoundingBox) {
-        d = Geom::Rect::from_xywh(0, 0, _width, _height);
+        d = *(doc->preferredBounds());
     } else {
         SPItem *doc_item = doc->getRoot();
         Geom::OptRect bbox = doc_item->desktopVisualBounds();
@@ -251,7 +248,9 @@ unsigned int PrintEmf::begin(Inkscape::Extension::Print *mod, SPDocument *doc)
             g_error("Fatal programming error in PrintEmf::begin at textcomment_set 1");
         }
 
-        snprintf(buff, sizeof(buff) - 1, "Drawing=%.1fx%.1fpx, %.1fx%.1fmm", _width, _height, Inkscape::Util::Quantity::convert(dwInchesX, "in", "mm"), Inkscape::Util::Quantity::convert(dwInchesY, "in", "mm"));
+        snprintf(buff, sizeof(buff) - 1, "Drawing=%.1fx%.1fpx, %.1fx%.1fmm", doc->preferredBounds()->width(),
+                 doc->preferredBounds()->height(), Inkscape::Util::Quantity::convert(dwInchesX, "in", "mm"),
+                 Inkscape::Util::Quantity::convert(dwInchesY, "in", "mm"));
         rec = textcomment_set(buff);
         if (!rec || emf_append((PU_ENHMETARECORD)rec, et, U_REC_FREE)) {
             g_error("Fatal programming error in PrintEmf::begin at textcomment_set 1");

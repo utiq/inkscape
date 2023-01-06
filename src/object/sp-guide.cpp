@@ -16,30 +16,27 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include "sp-guide.h"
+
 #include <cstring>
-#include <vector>
 #include <glibmm/i18n.h>
+#include <vector>
 
 #include "attributes.h"
-#include "desktop.h"
 #include "desktop-events.h"
+#include "desktop.h"
+#include "display/control/canvas-item-guideline.h"
 #include "document-undo.h"
 #include "inkscape.h"
-
-#include "sp-guide.h"
+#include "object/sp-page.h"
+#include "page-manager.h"
 #include "sp-namedview.h"
 #include "sp-root.h"
-
-#include "display/control/canvas-item-guideline.h"
-
 #include "svg/stringstream.h"
 #include "svg/svg-color.h"
 #include "svg/svg.h"
-
 #include "ui/widget/canvas.h" // Should really be here
-
 #include "util/numeric/converters.h"
-
 #include "xml/repr.h"
 
 using Inkscape::DocumentUndo;
@@ -269,18 +266,15 @@ void sp_guide_create_guides_around_page(SPDocument *doc)
 {
     std::list<std::pair<Geom::Point, Geom::Point> > pts;
 
-    Geom::Point A(0, 0);
-    Geom::Point C(doc->getWidth().value("px"), doc->getHeight().value("px"));
-    Geom::Point B(C[Geom::X], 0);
-    Geom::Point D(0, C[Geom::Y]);
+    Geom::Rect bounds = doc->getPageManager().getSelectedPageRect();
 
-    pts.emplace_back(A, B);
-    pts.emplace_back(B, C);
-    pts.emplace_back(C, D);
-    pts.emplace_back(D, A);
+    pts.emplace_back(bounds.corner(0), bounds.corner(1));
+    pts.emplace_back(bounds.corner(1), bounds.corner(2));
+    pts.emplace_back(bounds.corner(2), bounds.corner(3));
+    pts.emplace_back(bounds.corner(3), bounds.corner(0));
 
     sp_guide_pt_pairs_to_guides(doc, pts);
-    DocumentUndo::done(doc, _("Create Guides Around the Page"),"");
+    DocumentUndo::done(doc, _("Create Guides Around the Current Page"), "");
 }
 
 void sp_guide_delete_all_guides(SPDocument *doc)

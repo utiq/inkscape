@@ -719,7 +719,7 @@ void Inkscape::ObjectSnapper::_clear_paths() const
 
 Geom::PathVector Inkscape::ObjectSnapper::_getBorderPathv() const
 {
-    Geom::Rect const border_rect = Geom::Rect(Geom::Point(0,0), Geom::Point((_snapmanager->getDocument())->getWidth().value("px"),(_snapmanager->getDocument())->getHeight().value("px")));
+    Geom::Rect const border_rect = *(_snapmanager->getDocument()->preferredBounds());
     return _getPathvFromRect(border_rect);
 }
 

@@ -323,7 +323,7 @@
     </section>
     <section>
       <item>
-        <attribute name='label' translatable="yes">Create _Guides Around the Page</attribute>
+        <attribute name='label' translatable="yes">Create _Guides Around the Current Page</attribute>
         <attribute name='action'>doc.create-guides-around-page</attribute>
       </item>
       <item>

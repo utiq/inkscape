@@ -214,10 +214,6 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
     canvas_item_root->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
     canvas_catchall->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
 
-    // Drawing
-    Geom::Rect const d(Geom::Point(0.0, 0.0),
-                       Geom::Point(document->getWidth().value("px"), document->getHeight().value("px")));
-
     canvas_drawing = new Inkscape::CanvasItemDrawing(canvas_group_drawing);
     canvas_drawing->connect_drawing_event(sigc::bind(sigc::ptr_fun(_drawing_handler), this));
     canvas->set_drawing(canvas_drawing->get_drawing()); // Canvas needs access.

@@ -97,8 +97,7 @@ Grid::effect (Inkscape::Extension::Effect *module, Inkscape::UI::View::View *doc
     if (selection->isEmpty()) {
         /* get page size */
         SPDocument * doc = document->doc();
-        bounding_area = Geom::Rect(  Geom::Point(0,0),
-                                     Geom::Point(doc->getWidth().value("px"), doc->getHeight().value("px"))  );
+        bounding_area = *(doc->preferredBounds());
     } else {
         Geom::OptRect bounds = selection->visualBounds();
         if (bounds) {

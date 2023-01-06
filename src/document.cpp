@@ -871,7 +871,7 @@ Geom::Rect SPDocument::getViewBox() const
     if (root->viewBox_set) {
         viewBox = root->viewBox;
     } else {
-        viewBox = Geom::Rect::from_xywh( 0, 0, getWidth().value("px"), getHeight().value("px"));
+        viewBox = *preferredBounds();
     }
     return viewBox;
 }

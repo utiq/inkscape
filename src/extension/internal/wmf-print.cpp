@@ -135,8 +135,6 @@ unsigned int PrintWmf::begin(Inkscape::Extension::Print *mod, SPDocument *doc)
 
     // WMF header the only things that can be set are the page size in inches (w,h) and the dpi
     // width and height in px
-    _width  = doc->getWidth().value("px");
-    _height = doc->getHeight().value("px");
 
     // initialize a few global variables
     hbrush = hpen = 0;
@@ -162,7 +160,7 @@ unsigned int PrintWmf::begin(Inkscape::Extension::Print *mod, SPDocument *doc)
 
     Geom::Rect d;
     if (pageBoundingBox) {
-        d = Geom::Rect::from_xywh(0, 0, _width, _height);
+        d = *(doc->preferredBounds());
     } else {
         SPItem *doc_item = doc->getRoot();
         Geom::OptRect bbox = doc_item->desktopVisualBounds();
