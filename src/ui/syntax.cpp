@@ -316,6 +316,10 @@ public:
         auto lang = gtk_source_language_manager_get_language(manager, language);
         _buffer = gtk_source_buffer_new_with_language(lang);
         auto view = gtk_source_view_new_with_buffer(_buffer);
+        // Increment Glib's internal refcount to prevent the destruction of the
+        // textview by a parent widget (if any); the textview is owned by us!
+        g_object_ref(view);
+
         _textview = std::unique_ptr<Gtk::TextView>(Glib::wrap((GtkTextView*)view));
         if (!_textview) {
             // don't crash when sourceview cannot be created; substitute with a regular one;
