@@ -94,7 +94,6 @@ void LivePathEffectEditor::selectionChanged(Inkscape::Selection * selection)
         return;
     }
     onSelectionChanged(selection);
-    selection_info();
     clearMenu();
 }
 void LivePathEffectEditor::selectionModified(Inkscape::Selection * selection, guint flags)
@@ -102,7 +101,6 @@ void LivePathEffectEditor::selectionModified(Inkscape::Selection * selection, gu
     current_lpeitem = cast<SPLPEItem>(selection->singleItem());
     if (!selection_changed_lock && current_lpeitem && effectlist != current_lpeitem->getEffectList()) {
         onSelectionChanged(selection);
-        selection_info();
     } else if (current_lpeitem && current_lperef.first) {
         showParams(current_lperef, false);
     }
@@ -569,6 +567,7 @@ LivePathEffectEditor::onSelectionChanged(Inkscape::Selection *sel)
     current_lpeitem = nullptr;
     _LPEAddContainer.set_sensitive(use != nullptr);
     clear_lpe_list();
+    selection_info();
 }
 
 void
@@ -833,13 +832,13 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
                             effect_list_reload(current_lpeitem);
                             DocumentUndo::done(getDocument(), _("Down current path effect"), INKSCAPE_ICON("dialog-path-effects"));
                         } else if (pos == 3) {
+                            lpeFlatten(lperef);
+                        } else if (pos == 4) {
                             lpe->setDefaultParameters();
                             effect_list_reload(current_lpeitem);
-                        } else if (pos == 4) {
+                        } else if (pos == 5) {
                             lpe->resetDefaultParameters();
                             effect_list_reload(current_lpeitem);
-                        } else if (pos == 5) {
-                            lpeFlatten(lperef);
                         } else if (pos == 6) {
                             sp_toggle_fav(untranslated_label, LPEtoggleFavorite);
                             _reload_menu = true;
@@ -987,6 +986,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             current_window->set_focus(*LPEExpanderCurrent);
         }
     }
+    selection_info();
     LPEListBox.show_all_children();
     ensure_size();
 }
@@ -1060,6 +1060,7 @@ LivePathEffectEditor::removeEffect(Gtk::Expander * expander) {
     if (reload) {
         current_lpeitem->setCurrentPathEffect(current_lperef_tmp.second);
     }
+    effect_list_reload(current_lpeitem);
     DocumentUndo::done(getDocument(), _("Removed live path effect"), INKSCAPE_ICON("dialog-path-effects"));
     return false;
 }
