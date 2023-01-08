@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-file(GLOB _FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.svg")
+file(GLOB _FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.svg" "sjjb/*.svg")
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/symbols.h
