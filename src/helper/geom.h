@@ -80,46 +80,6 @@ inline Geom::OptRect expandedBy(Geom::OptRect const &rect, double amount)
     }
 }
 
-inline auto distSq(Geom::IntPoint const &pt, Geom::IntRect const &rect)
-{
-    auto v = rect.clamp(pt) - pt;
-    return v.x() * v.x() + v.y() * v.y();
-}
-
-inline Geom::IntPoint operator*(Geom::IntPoint const &a, int b)
-{
-    return Geom::IntPoint(a.x() * b, a.y() * b);
-}
-
-inline Geom::Point operator*(Geom::Point const &a, Geom::IntPoint const &b)
-{
-    return Geom::Point(a.x() * b.x(), a.y() * b.y());
-}
-
-inline auto operator*(Geom::IntPoint const &a, Geom::IntPoint const &b)
-{
-    return Geom::IntPoint(a.x() * b.x(), a.y() * b.y());
-}
-
-/// Temporary overload to identify breakage in
-/// https://gitlab.com/inkscape/inkscape/-/merge_requests/4963
-inline auto operator*(Geom::Point const &a, Geom::Point const &b) = delete;
-
-inline auto operator/(Geom::Point const &a, Geom::IntPoint const &b)
-{
-    return Geom::Point(a.x() / b.x(), a.y() / b.y());
-}
-
-inline auto operator/(Geom::IntPoint const &a, Geom::IntPoint const &b)
-{
-    return Geom::IntPoint(a.x() / b.x(), a.y() / b.y());
-}
-
-inline auto operator/(Geom::Point const &a, Geom::Point const &b)
-{
-    return Geom::Point(a.x() / b.x(), a.y() / b.y());
-}
-
 inline auto operator/(double a, Geom::Point const &b)
 {
     return Geom::Point(a / b.x(), a / b.y());
@@ -148,12 +108,6 @@ inline auto max(Geom::IntPoint const &a)
 inline auto max(Geom::Point const &a)
 {
     return std::max(a.x(), a.y());
-}
-
-/// Regularisation operator for Geom::OptIntRect. Turns zero-area rectangles into empty optionals.
-inline auto regularised(Geom::OptIntRect const &r)
-{
-    return r && !r->hasZeroArea() ? r : Geom::OptIntRect();
 }
 
 /// Get the bounding box of a collection of points.

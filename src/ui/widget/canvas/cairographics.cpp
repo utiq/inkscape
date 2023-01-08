@@ -76,7 +76,7 @@ void CairoGraphics::shift_store(Fragment const &dest)
 
     // Determine the geometry of the shift.
     auto shift = dest.rect.min() - stores.store().rect.min();
-    auto reuse_rect = regularised(dest.rect & cairo_to_geom(stores.store().drawn->get_extents()));
+    auto reuse_rect = (dest.rect & cairo_to_geom(stores.store().drawn->get_extents())).regularized();
     assert(reuse_rect); // Should not be called if there is no overlap.
 
     auto make_surface = [&, this] {

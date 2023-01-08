@@ -50,7 +50,7 @@ auto region_affine_approxinwards(Cairo::RefPtr<Cairo::Region> const &reg, Geom::
 
     // General case.
     auto ext = cairo_to_geom(reg->get_extents());
-    auto rectdst = regularised((Geom::Parallelogram(ext) * affine).bounds().roundOutwards() & bounds);
+    auto rectdst = ((Geom::Parallelogram(ext) * affine).bounds().roundOutwards() & bounds).regularized();
     if (!rectdst) return Cairo::Region::create();
     auto rectsrc = (Geom::Parallelogram(*rectdst) * affine.inverse()).bounds().roundOutwards();
 
@@ -268,7 +268,7 @@ auto Stores::update(Fragment const &view) -> Action
                 // Determine whether the view has moved sufficiently far that we need to shift the store.
                 if (!_store.rect.contains(expandedBy(view.rect, _prefs.prerender))) {
                     // The visible region + prerender margin has reached the edge of the store.
-                    if (!regularised(cairo_to_geom(_store.drawn->get_extents()) & expandedBy(view.rect, _prefs.prerender + _prefs.padding))) {
+                    if (!(cairo_to_geom(_store.drawn->get_extents()) & expandedBy(view.rect, _prefs.prerender + _prefs.padding)).regularized()) {
                         // If the store contains no reusable content at all, recreate it.
                         recreate_store(view);
                         if (_prefs.debug_logging) std::cout << "Recreate store" << std::endl;

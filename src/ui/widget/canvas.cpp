@@ -175,7 +175,7 @@ struct RedrawData
     auto getcmp() const
     {
         return [mouse_loc = mouse_loc] (Geom::IntRect const &a, Geom::IntRect const &b) {
-            return distSq(mouse_loc, a) > distSq(mouse_loc, b);
+            return a.distanceSq(mouse_loc) > b.distanceSq(mouse_loc);
         };
     }
 };
@@ -628,7 +628,7 @@ void CanvasPrivate::launch_redraw()
     rd.debug_show_redraw = prefs.debug_show_redraw;
 
     rd.snapshot_drawn = stores.snapshot().drawn ? stores.snapshot().drawn->copy() : Cairo::RefPtr<Cairo::Region>();
-    rd.grabbed = q->_grabbed_canvas_item && prefs.block_updates ? regularised(roundedOutwards(q->_grabbed_canvas_item->get_bounds()) & rd.visible & rd.store.rect) : Geom::OptIntRect();
+    rd.grabbed = q->_grabbed_canvas_item && prefs.block_updates ? (roundedOutwards(q->_grabbed_canvas_item->get_bounds()) & rd.visible & rd.store.rect).regularized() : Geom::OptIntRect();
 
     abort_flags.store((int)AbortFlags::None, std::memory_order_relaxed);
 
@@ -752,7 +752,7 @@ void CanvasPrivate::commit_tiles()
 
         // Check if repaint is necessary - some rectangles could be entirely off-screen.
         auto screen_rect = Geom::IntRect({0, 0}, q->get_dimensions());
-        if (regularised(repaint_rect & screen_rect)) {
+        if ((repaint_rect & screen_rect).regularized()) {
             // Schedule repaint.
             queue_draw_area(repaint_rect);
         }
@@ -1943,7 +1943,7 @@ void CanvasPrivate::init_tiler()
     // Begin processing redraws.
     rd.start_time = g_get_monotonic_time();
     rd.phase = 0;
-    rd.vis_store = regularised(rd.visible & rd.store.rect);
+    rd.vis_store = (rd.visible & rd.store.rect).regularized();
 
     if (!init_redraw()) {
         sync.signalExit();
@@ -2003,7 +2003,7 @@ bool CanvasPrivate::init_redraw()
             // The lowest priority to redraw is the prerender margin around the visible rectangle.
             // (This is in addition to any opportunistic prerendering that may have already occurred in the above steps.)
             auto prerender = expandedBy(rd.visible, rd.margin);
-            auto prerender_store = regularised(prerender & rd.store.rect);
+            auto prerender_store = (prerender & rd.store.rect).regularized();
             if (prerender_store) {
                 // Before starting, we request that the tiles drawn up to this point are flushed so they don't have to wait
                 // for prerendering to finish. (Note: Some yet-to-be-drawn tiles may be committed too; this is harmless.)
