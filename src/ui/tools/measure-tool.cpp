@@ -342,16 +342,19 @@ MeasureTool::~MeasureTool()
     measure_phantom_items.clear();
 }
 
-Geom::Point MeasureTool::readMeasurePoint(bool is_start) {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    Glib::ustring measure_point = is_start ? "/tools/measure/measure-start" : "/tools/measure/measure-end";
-    return prefs->getPoint(measure_point, Geom::Point(Geom::infinity(),Geom::infinity()));
+static char const *endpoint_to_pref(bool is_start)
+{
+    return is_start ? "/tools/measure/measure-start" : "/tools/measure/measure-end";
 }
 
-void MeasureTool::writeMeasurePoint(Geom::Point point, bool is_start) {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    Glib::ustring measure_point = is_start ? "/tools/measure/measure-start" : "/tools/measure/measure-end";
-    prefs->setPoint(measure_point, point);
+Geom::Point MeasureTool::readMeasurePoint(bool is_start)
+{
+    return Preferences::get()->getPoint(endpoint_to_pref(is_start), Geom::Point(Geom::infinity(), Geom::infinity()));
+}
+
+void MeasureTool::writeMeasurePoint(Geom::Point point, bool is_start)
+{
+    Preferences::get()->setPoint(endpoint_to_pref(is_start), point);
 }
 
 //This function is used to reverse the Measure, I do it in two steps because when

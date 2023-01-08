@@ -133,6 +133,12 @@ void CanvasItemCtrl::_update(bool)
     // Queue redraw of old area (erase previous content).
     request_redraw();
 
+    // Setting the position to (inf, inf) to hide it is a pervasive hack we need to support.
+    if (!_position.isFinite()) {
+        _bounds = {};
+        return;
+    }
+
     // Width and height are always odd.
     assert(_width % 2 == 1);
     assert(_height % 2 == 1);
