@@ -453,6 +453,22 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
         Gtk::StyleContext::add_provider_for_screen(screen, _macstyleprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
 #endif
+    style = get_filename(UIS, "user.css");
+    if (!style.empty()) {
+        if (_userprovider) {
+            Gtk::StyleContext::remove_provider_for_screen(screen, _userprovider);
+        }
+        if (!_userprovider) {
+            _userprovider = Gtk::CssProvider::create();
+        }
+        try {
+            _userprovider->load_from_path(style);
+        } catch (const Gtk::CssProviderError &ex) {
+            g_critical("CSSProviderError::load_from_path(): failed to load '%s'\n(%s)", style.c_str(),
+                       ex.what().c_str());
+        }
+        Gtk::StyleContext::add_provider_for_screen(screen, _userprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    }
 }
 
 /**

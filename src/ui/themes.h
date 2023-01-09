@@ -51,6 +51,7 @@ public:
     Glib::RefPtr<Gtk::CssProvider> getContrastThemeProvider() { return _contrastthemeprovider;}
     Glib::RefPtr<Gtk::CssProvider> getThemeProvider() { return _themeprovider;}
     Glib::RefPtr<Gtk::CssProvider> getStyleProvider() { return _styleprovider;}
+    Glib::RefPtr<Gtk::CssProvider> getUserProvider() { return _userprovider;}
     sigc::signal<void ()> getChangeThemeSignal() { return _signal_change_theme;}
     /// Set application-wide font size adjustment by a factor, where 1 is 100% (no change)
     void adjustGlobalFontScale(double factor);
@@ -81,6 +82,7 @@ private:
     Glib::RefPtr<Gtk::CssProvider> _contrastthemeprovider;
     Glib::RefPtr<Gtk::CssProvider> _colorizeprovider;
     Glib::RefPtr<Gtk::CssProvider> _spinbuttonprovider;
+    Glib::RefPtr<Gtk::CssProvider> _userprovider;
 #if __APPLE__
     Glib::RefPtr<Gtk::CssProvider> _macstyleprovider;
 #endif
