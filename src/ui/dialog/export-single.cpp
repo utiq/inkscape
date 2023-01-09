@@ -47,6 +47,7 @@
 #include "ui/widget/color-picker.h"
 #include "ui/widget/export-lists.h"
 #include "ui/widget/export-preview.h"
+#include "ui/dialog/export-batch.h"
 #include "ui/widget/scrollprotected.h"
 #include "ui/widget/unit-menu.h"
 #ifdef _WIN32
@@ -91,29 +92,18 @@ SingleExport::SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Buil
     builder->get_widget_derived("si_img_width_sb", spin_buttons[SPIN_BMWIDTH]);
     builder->get_widget_derived("si_dpi_sb", spin_buttons[SPIN_DPI]);
 
-    builder->get_widget("page_prev", page_prev);
-    page_prev->signal_clicked().connect([=]() {
-        if (_document && _document->getPageManager().selectPrevPage()) {
-            _document->getPageManager().zoomToSelectedPage(_desktop);
-        }
-    });
+    builder->get_widget("si_pages", pages_list);
+    builder->get_widget("si_pages_box", pages_list_box);
+    builder->get_widget("si_sizes", size_box);
 
-    builder->get_widget("page_next", page_next);
-    page_next->signal_clicked().connect([=]() {
-        if (_document && _document->getPageManager().selectNextPage()) {
-            _document->getPageManager().zoomToSelectedPage(_desktop);
-        }
-    });
-
-    // builder->get_widget("si_show_export_area", show_export_area);
     builder->get_widget_derived("si_units", units);
     builder->get_widget("si_units_row", si_units_row);
-    builder->get_widget("si_area_name", si_name_label);
 
     builder->get_widget("si_hide_all", si_hide_all);
     builder->get_widget("si_show_preview", si_show_preview);
     builder->get_widget("si_default_opts", si_default_opts);
     builder->get_widget_derived("si_preview", preview);
+    builder->get_widget("si_preview_box", preview_box);
 
     builder->get_widget_derived("si_extention", si_extension_cb);
     builder->get_widget("si_filename", si_filename_entry);
@@ -198,7 +188,13 @@ void SingleExport::setup()
     // Refresh values to sync them with defaults.
     refreshArea();
     refreshPage();
+    setPagesMode(false);
     loadExportHints();
+    // Refresh the filename when the user selects a different page
+    pages_list->signal_selected_children_changed().connect([=]() {
+        loadExportHints();
+        refreshArea();
+    });
 
     // Connect Signals Here
     for (auto [key, button] : selection_buttons) {
@@ -292,7 +288,9 @@ void SingleExport::refreshArea()
                     break;
                 }
             case SELECTION_PAGE:
-                bbox = _document->getPageManager().getSelectedPageRect();
+                for (auto page : getSelectedPages()) {
+                    bbox = page->getDesktopRect();
+                }
                 break;
             case SELECTION_CUSTOM:
                 break;
@@ -308,25 +306,61 @@ void SingleExport::refreshArea()
 
 void SingleExport::refreshPage()
 {
-    if (!_document) return;
-
+    bool multi = pages_list->get_selection_mode() == Gtk::SELECTION_MULTIPLE;
     bool pages = current_key == SELECTION_PAGE;
-    si_name_label->set_visible(pages);
-    page_prev->set_visible(pages);
-    page_next->set_visible(pages);
+    pages_list_box->set_visible(pages);
+    preview_box->set_visible(!pages);
+    size_box->set_visible(!(pages && multi));
+}
 
-    auto &page_manager = _document->getPageManager();
-    page_prev->set_sensitive(page_manager.hasPrevPage());
-    page_next->set_sensitive(page_manager.hasNextPage());
+void SingleExport::setPagesMode(bool multi)
+{
+    // Set set the internal mode to NONE to preserve selections while changing
+    pages_list->foreach([=](Gtk::Widget& widget) {
+        if (auto item = dynamic_cast<BatchItem *>(&widget))
+            item->on_mode_changed(Gtk::SELECTION_NONE);
+    });
+    pages_list->set_selection_mode(multi ? Gtk::SELECTION_MULTIPLE : Gtk::SELECTION_SINGLE);
+    // A second call it needed in it's own loop because of how updates happen in the FlowBox
+    pages_list->foreach([=](Gtk::Widget& widget) {
+        if (auto item = dynamic_cast<BatchItem *>(&widget))
+            item->update_selected();
+    });
+    refreshPage();
+}
 
-    if (auto page = page_manager.getSelected()) {
-        if (auto label = page->label()) {
-            si_name_label->set_text(label);
-        } else {
-            si_name_label->set_text(page->getDefaultLabel());
+void SingleExport::selectPage(SPPage *page)
+{
+    pages_list->foreach([=](Gtk::Widget& widget) {
+        if (auto item = dynamic_cast<BatchItem *>(&widget)) {
+            if (item->getPage() == page) {
+                item->set_selected(true);
+            }
         }
-    } else {
-        si_name_label->set_text(_("First Page"));
+    });
+}
+
+std::vector<SPPage *> SingleExport::getSelectedPages()
+{
+    std::vector<SPPage *> pages;
+    pages_list->selected_foreach([&pages](Gtk::FlowBox *box, Gtk::FlowBoxChild *child) {
+        if (auto item = dynamic_cast<BatchItem *>(child))
+            pages.push_back(item->getPage());
+    });
+    return pages;
+}
+
+void SingleExport::onPagesChanged()
+{
+    while (auto widget = pages_list->get_child_at_index(0)) {
+        pages_list->remove(*widget);
+    }
+    if (!_document)
+        return;
+    auto &pm = _document->getPageManager();
+    for (auto page : pm.getPages()) {
+        auto item = Gtk::manage(new BatchItem(page));
+        pages_list->insert(*item, -1);
     }
 }
 
@@ -339,15 +373,18 @@ void SingleExport::loadExportHints()
     Geom::Point dpi;
     switch (current_key) {
         case SELECTION_PAGE:
-            if (auto page = _document->getPageManager().getSelected()) {
-                dpi = page->getExportDpi();
-                filename = page->getExportFilename();
+        {
+            auto pages = getSelectedPages();
+            if (pages.size() == 1) {
+                dpi = pages[0]->getExportDpi();
+                filename = pages[0]->getExportFilename();
                 if (filename.empty()) {
-                    filename = Export::filePathFromId(_document, page->getLabel(), old_filename);
+                    filename = Export::filePathFromId(_document, pages[0]->getLabel(), old_filename);
                 }
                 break;
             }
-            // No page means page is drawing, continue.
+            // No or many pages means output is drawing, continue.
+        }
         case SELECTION_CUSTOM:
         case SELECTION_DRAWING:
         {
@@ -441,10 +478,10 @@ void SingleExport::onAreaTypeToggle(selection_mode key)
     current_key = key;
     prefs->setString("/dialogs/export/exportarea/value", selection_names[current_key]);
 
-    refreshPage();
     refreshArea();
     loadExportHints();
     toggleSpinButtonVisibility();
+    refreshPage();
 }
 
 void SingleExport::toggleSpinButtonVisibility()
@@ -508,15 +545,10 @@ void SingleExport::onFilenameModified()
 
 void SingleExport::onExtensionChanged()
 {
-    filenameConn.block();
-    Glib::ustring filename = si_filename_entry->get_text();
     if (auto ext = si_extension_cb->getExtension()) {
-        si_extension_cb->removeExtension(filename);
-        ext->add_extension(filename);
+        setPagesMode(!ext->is_raster());
+        loadExportHints();
     }
-    si_filename_entry->set_text(filename);
-    si_filename_entry->set_position(filename.length());
-    filenameConn.unblock();
 }
 
 void SingleExport::onExport()
@@ -587,16 +619,15 @@ void SingleExport::onExport()
             }
         }
 
-        SPPage *page;
         if (current_key == SELECTION_PAGE && page_manager.hasPages()) {
-            page = page_manager.getSelected();
+            auto pages = getSelectedPages();
+            exportSuccessful = Export::exportVector(omod, copy_doc.get(), filename, false, items, pages);
         } else {
             // To get the right kind of export, we're going to make a page
             // This allows all the same raster options to work for vectors
-            page = copy_doc->getPageManager().newDocumentPage(area);
+            auto page = copy_doc->getPageManager().newDocumentPage(area);
+            exportSuccessful = Export::exportVector(omod, copy_doc.get(), filename, false, items, page);
         }
-
-        exportSuccessful = Export::exportVector(omod, copy_doc.get(), filename, false, &items, page);
     }
     if (prog_dlg) {
         delete prog_dlg;
@@ -854,6 +885,7 @@ void SingleExport::setDefaultSelectionMode()
     prefs->setString("/dialogs/export/exportarea/value", pref_key_name);
 
     toggleSpinButtonVisibility();
+    refreshPage();
 }
 
 void SingleExport::setExporting(bool exporting, Glib::ustring const &text)
@@ -948,16 +980,26 @@ void SingleExport::refreshPreview()
         preview->resetPixels();
         return;
     }
-    if (!si_show_preview->get_active()) {
-        preview->resetPixels();
-        return;
-    }
 
     std::vector<SPItem *> selected;
     if (si_hide_all->get_active()) {
         // This is because selection items is not a std::vector yet. FIXME.
         selected =
             std::vector<SPItem *>(_desktop->getSelection()->items().begin(), _desktop->getSelection()->items().end());
+    }
+
+    bool show = si_show_preview->get_active();
+    if (!show || current_key == SELECTION_PAGE) {
+        for (auto child : pages_list->get_children()) {
+            if (auto bi = dynamic_cast<BatchItem *>(child)) {
+                std::vector<SPItem *> page_selected = selected; // copy
+                bi->refreshHide(std::move(page_selected));
+                bi->refresh(!show, _bgnd_color_picker->get_current_color());
+            }
+        }
+        // We don't want to update the main preview for pages, it's hidden
+        preview->resetPixels();
+        return;
     }
 
     Unit const *unit = units->getUnit();
@@ -982,15 +1024,13 @@ void SingleExport::setDesktop(SPDesktop *desktop)
 void SingleExport::setDocument(SPDocument *document)
 {
     _document = document;
+    _page_changed_connection.disconnect();
     _page_selected_connection.disconnect();
     preview->setDocument(document);
     if (document) {
-        // when the page selected is changes, update the export area
-        _page_selected_connection = document->getPageManager().connectPageSelected([=](SPPage *page) {
-            refreshPage();
-            refresh();
-        });
-
+        auto &pm = document->getPageManager();
+        _page_changed_connection = pm.connectPagesChanged(sigc::mem_fun(*this, &SingleExport::onPagesChanged));
+        onPagesChanged();
         auto bg_color = get_export_bg_color(document->getNamedView(), 0xffffff00);
         _bgnd_color_picker->setRgba32(bg_color);
 

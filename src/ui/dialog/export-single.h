@@ -20,6 +20,7 @@ class InkscapeApplication;
 class SPDesktop;
 class SPDocument;
 class SPObject;
+class SPPage;
 
 namespace Inkscape {
     class Selection;
@@ -93,7 +94,7 @@ private:
     Gtk::Box *si_units_row = nullptr;
     Gtk::CheckButton *show_export_area = nullptr;
     Inkscape::UI::Widget::UnitMenu *units = nullptr;
-    Gtk::Label *si_name_label = nullptr;
+    Gtk::FlowBox *pages_list = nullptr;
 
     Gtk::CheckButton *si_hide_all = nullptr;
     Gtk::CheckButton *si_show_preview = nullptr;
@@ -105,9 +106,10 @@ private:
     Gtk::Entry *si_filename_entry = nullptr;
     Gtk::Button *si_export = nullptr;
     Gtk::Box *adv_box = nullptr;
+    Gtk::Grid *size_box = nullptr;
     Gtk::ProgressBar *_prog = nullptr;
-    Gtk::Button *page_prev = nullptr;
-    Gtk::Button *page_next = nullptr;
+    Gtk::Widget *pages_list_box = nullptr;
+    Gtk::Widget *preview_box = nullptr;
 
     bool filename_modified = false;
     Glib::ustring original_name;
@@ -168,6 +170,14 @@ private:
     void onProgressCancel();
 
     /**
+     * Page functions
+     */
+    void onPagesChanged();
+    void setPagesMode(bool multi);
+    void selectPage(SPPage *page);
+    std::vector<SPPage *> getSelectedPages();
+
+    /**
      * Callback invoked on closing the progress dialog.
      */
     bool onProgressDelete(GdkEventAny *event);
@@ -183,6 +193,7 @@ private:
     sigc::connection browseConn;
     // Document Signals
     sigc::connection _page_selected_connection;
+    sigc::connection _page_changed_connection;
 
     std::unique_ptr<Inkscape::UI::Widget::ColorPicker> _bgnd_color_picker;
 };

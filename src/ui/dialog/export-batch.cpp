@@ -91,6 +91,13 @@ void BatchItem::init(SPDocument *doc, Glib::ustring label) {
     _selector.set_can_focus(false);
     _selector.set_margin_start(2);
     _selector.set_margin_bottom(2);
+    _selector.set_valign(Gtk::ALIGN_END);
+
+    _option.set_active(false);
+    _option.set_can_focus(false);
+    _option.set_margin_start(2);
+    _option.set_margin_bottom(2);
+    _option.set_valign(Gtk::ALIGN_END);
 
     _preview.set_name("export_preview_batch");
     _preview.setItem(_item);
@@ -111,9 +118,79 @@ void BatchItem::init(SPDocument *doc, Glib::ustring label) {
     this->set_can_focus(false);
     this->set_tooltip_text(label);
 
+    _selector.signal_toggled().connect([=]() {
+        set_selected(_selector.get_active());
+    });
+    _option.signal_toggled().connect([=]() {
+        set_selected(_option.get_active());
+    });
+
     // This initially packs the widgets with a hidden preview.
     refresh(!is_hide, 0);
 }
+
+/**
+ * Syncronise the FlowBox selection to the active widget activity.
+ */
+void BatchItem::set_selected(bool selected)
+{
+    auto box = dynamic_cast<Gtk::FlowBox *>(get_parent());
+    if (box && selected != is_selected()) {
+        if (selected) {
+            box->select_child(*this);
+        } else {
+            box->unselect_child(*this);
+        }
+    }
+}
+
+/**
+ * Syncronise the FlowBox selection to the existing active widget state.
+ */
+void BatchItem::update_selected()
+{
+    if (auto parent = dynamic_cast<Gtk::FlowBox *>(get_parent()))
+        on_mode_changed(parent->get_selection_mode());
+    if (_selector.get_visible()) {
+        set_selected(_selector.get_active());
+    } else if (_option.get_visible()) {
+        set_selected(_option.get_active());
+    }
+}
+
+/**
+ * A change in the selection mode for the flow box.
+ */
+void BatchItem::on_mode_changed(Gtk::SelectionMode mode)
+{
+    _selector.set_visible(mode == Gtk::SELECTION_MULTIPLE);
+    _option.set_visible(mode == Gtk::SELECTION_SINGLE);
+}
+
+/**
+ * Update the connection to the parent FlowBox
+ */
+void BatchItem::on_parent_changed(Gtk::Widget *previous) {
+    auto parent = dynamic_cast<Gtk::FlowBox *>(get_parent());
+    if (!parent)
+        return;
+
+    parent->signal_selected_children_changed().connect([=]() {
+        // Syncronise the active widget state to the Flowbox selection.
+        if (_selector.get_visible()) {
+            _selector.set_active(is_selected());
+        } else if (_option.get_visible()) {
+            _option.set_active(is_selected());
+        }
+    });
+    update_selected();
+
+    if (auto first = dynamic_cast<BatchItem *>(parent->get_child_at_index(0))) {
+        auto group = first->get_radio_group();
+        _option.set_group(group);
+    }
+}
+
 
 void BatchItem::refresh(bool hide, guint32 bg_color)
 {
@@ -129,6 +206,7 @@ void BatchItem::refresh(bool hide, guint32 bg_color)
     if (hide != is_hide) {
         is_hide = hide;
         _grid.remove(_selector);
+        _grid.remove(_option);
         _grid.remove(_label);
         _grid.remove(_preview);
 
@@ -136,15 +214,18 @@ void BatchItem::refresh(bool hide, guint32 bg_color)
             _selector.set_valign(Gtk::Align::ALIGN_BASELINE);
             _label.set_xalign(0.0);
             _grid.attach(_selector, 0, 1, 1, 1);
+            _grid.attach(_option, 0, 1, 1, 1);
             _grid.attach(_label, 1, 1, 1, 1);
         } else {
             _selector.set_valign(Gtk::Align::ALIGN_END);
             _label.set_xalign(0.5);
             _grid.attach(_selector, 0, 1, 1, 1);
+            _grid.attach(_option, 0, 1, 1, 1);
             _grid.attach(_label, 0, 2, 2, 1);
             _grid.attach(_preview, 0, 0, 2, 2);
         }
         show_all_children();
+        update_selected();
     }
 
     if (!hide) {
@@ -354,6 +435,7 @@ void BatchExport::refreshItems()
             // Add new item to the end of list
             current_items[id] = std::make_unique<BatchItem>(item);
             preview_container->insert(*current_items[id], -1);
+            current_items[id]->set_selected(true);
         }
     }
     for (auto &page : pageList) {
@@ -363,6 +445,7 @@ void BatchExport::refreshItems()
             }
             current_items[id] = std::make_unique<BatchItem>(page);
             preview_container->insert(*current_items[id], -1);
+            current_items[id]->set_selected(true);
         }
     }
 
@@ -489,7 +572,7 @@ void BatchExport::onExport()
             count++;
 
             auto &batchItem = i->second;
-            if (!batchItem->isActive()) {
+            if (!batchItem->is_selected()) {
                 continue;
             }
 
@@ -563,7 +646,7 @@ void BatchExport::onExport()
             } else {
                 setExporting(true, Glib::ustring::compose(_("Exporting %1"), filename));
                 auto copy_doc = _document->copy();
-                Export::exportVector(omod, copy_doc.get(), item_filename, true, &show_only, page);
+                Export::exportVector(omod, copy_doc.get(), item_filename, true, show_only, page);
             }
 
             if (prog_dlg) {

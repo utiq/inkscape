@@ -51,10 +51,15 @@ public:
     Glib::ustring getLabel() { return _label_str; }
     SPItem *getItem() { return _item; }
     SPPage *getPage() { return _page; }
-    bool isActive() { return _selector.get_active(); }
     void refresh(bool hide, guint32 bg_color);
     void refreshHide(std::vector<SPItem*> &&list) { _preview.refreshHide(std::move(list)); }
     void setDocument(SPDocument *doc) { _preview.setDocument(doc); }
+
+    auto get_radio_group() { return _option.get_group(); }
+    void on_parent_changed(Gtk::Widget *) override;
+    void on_mode_changed(Gtk::SelectionMode mode);
+    void set_selected(bool selected);
+    void update_selected();
 
 private:
     void init(SPDocument *doc, Glib::ustring label);
@@ -63,6 +68,7 @@ private:
     Gtk::Grid _grid;
     Gtk::Label _label;
     Gtk::CheckButton _selector;
+    Gtk::RadioButton _option;
     ExportPreview _preview;
     SPItem *_item = nullptr;
     SPPage *_page = nullptr;

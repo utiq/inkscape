@@ -308,7 +308,18 @@ bool Export::exportRaster(
 bool Export::exportVector(
         Inkscape::Extension::Output *extension, SPDocument *doc,
         Glib::ustring const &filename,
-        bool overwrite, std::vector<SPItem *> *items, SPPage *page)
+        bool overwrite, const std::vector<SPItem *> &items, SPPage *page)
+{
+    std::vector<SPPage *> pages;
+    if (page)
+        pages.push_back(page);
+    return exportVector(extension, doc, filename, overwrite, items, pages);
+}
+
+bool Export::exportVector(
+        Inkscape::Extension::Output *extension, SPDocument *doc,
+        Glib::ustring const &filename,
+        bool overwrite, const std::vector<SPItem *> &items, const std::vector<SPPage *> &pages)
 {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
     if (!desktop)
@@ -350,35 +361,46 @@ bool Export::exportVector(
     auto copy_doc = doc->copy();
     copy_doc->ensureUpToDate();
 
-    std::vector<SPItem *> objects = *items;
+    std::vector<SPItem *> objects = items;
+    std::set<std::string> obj_ids;
     std::set<std::string> page_ids;
-    if (page) {
+    Geom::OptRect page_rect;
+    for (auto page : pages) {
+        // Save the first page rect, must be done before everything else
+        if (!page_rect)
+            page_rect = page->getDesktopRect();
+
+        page_ids.insert(std::string(page->getId()));
         // If page then our item set is limited to the overlapping items
         auto page_items = page->getOverlappingItems();
 
-        if (items->size() == 0) {
+        if (items.empty()) {
             // Items is page_items, remove all items not in this page.
-            objects = page_items;
+            objects.insert(objects.end(), page_items.begin(), page_items.end());
         } else {
             for (auto &item : page_items) {
-                item->getIds(page_ids);
+                item->getIds(obj_ids);
             }
         }
     }
 
-    // Save the page rect, must be done before disabledPages in case page is from copy doc.
-    Geom::OptRect page_rect = page ? page->getDesktopRect() : Geom::OptRect();
-
-    // We never export multiple pages here, must be done before fitToRect and fitCanvas
-    copy_doc->getPageManager().disablePages();
+    // Delete any pages not specified, delete all pages if none specified
+    auto &pm = copy_doc->getPageManager();
+    std::vector<SPPage *> copy_pages = pm.getPages();
+    for (auto &page : copy_pages) {
+        auto _id = page->getId();
+        if (!_id || page_ids.find(_id) == page_ids.end()) {
+            pm.deletePage(page, false);
+        }
+    }
 
     // Page export ALWAYS restricts, even if nothing would be on the page.
-    if (objects.size() > 0 || page) {
+    if (!objects.empty() || !pages.empty()) {
         std::vector<SPObject *> objects_to_export;
         Inkscape::ObjectSet object_set(copy_doc.get());
         for (auto &object : objects) {
             auto _id = object->getId();
-            if (!_id || (!page_ids.empty() && page_ids.find(_id) == page_ids.end())) {
+            if (!_id || (!obj_ids.empty() && obj_ids.find(_id) == obj_ids.end())) {
                 // This item is off the page so can be ignored for export
                 continue;
             }
@@ -400,10 +422,7 @@ bool Export::exportVector(
 
         copy_doc->getRoot()->cropToObjects(objects_to_export);
 
-        if (page) {
-            // Resize to page here.
-            copy_doc->fitToRect(*page_rect, true);
-        } else {
+        if (pages.empty()) {
             object_set.fitCanvas(true, true);
         }
     }

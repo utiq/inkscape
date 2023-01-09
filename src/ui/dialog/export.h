@@ -118,7 +118,10 @@ public:
   
     static bool exportVector(
         Inkscape::Extension::Output *extension, SPDocument *doc, Glib::ustring const &filename,
-        bool overwrite, std::vector<SPItem *> *items = nullptr, SPPage *page = nullptr);
+        bool overwrite, const std::vector<SPItem *> &items, SPPage *page);
+    static bool exportVector(
+        Inkscape::Extension::Output *extension, SPDocument *doc, Glib::ustring const &filename,
+        bool overwrite, const std::vector<SPItem *> &items, const std::vector<SPPage *> &pages);
 
 };
 
