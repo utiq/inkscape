@@ -121,7 +121,7 @@ endfunction(add_cli_test)
 
 # --version (check if we can run inkscape and the revision is known)
 add_cli_test(version       PARAMETERS --version)
-add_cli_test(version_known PARAMETERS --version FAIL_FOR_OUTPUT unknown)
+add_cli_test(version_known PARAMETERS --version FAIL_FOR_OUTPUT "\\(unknown\\)")
 
 # --system-data-directory / --user-data-directory (unset environment variables to override our override)
 # TODO: Can we make these tests more specific without making too many assumptions?
