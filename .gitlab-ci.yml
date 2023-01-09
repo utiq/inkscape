@@ -129,16 +129,10 @@ inkscape:macos:x64:
   variables:
     SDKROOT: /opt/sdks/MacOSX10.13.sdk
     INK_BUILD: $CI_PIPELINE_IID
-  before_script:
-    # workaround: after_script doesn't run for cancelled/timed out jobs, leaving
-    #             non-ephemeral runners in an unclean state
-    #             https://gitlab.com/gitlab-org/gitlab/-/issues/15603
-    - packaging/macos/uninstall_toolset.sh
-    - packaging/macos/install_toolset.sh
   script:
-    - packaging/macos/build_inkscape.sh
+    - packaging/macos/build.sh
   after_script:
-    - packaging/macos/uninstall_toolset.sh save_overlay
+    - packaging/macos/mibap/uninstall_toolset.sh
   artifacts:
     expire_in: 1 year
     paths:
@@ -153,9 +147,6 @@ inkscape:macos:arm:
   when: manual   # on-demand only as we don't have a 24/7 runner
   variables:
     SDKROOT: /opt/sdks/MacOSX11.3.sdk
-  after_script:
-    - packaging/macos/uninstall_toolset.sh
-
 
 # This job uses GitLab's shared runners for macOS. Please note:
 #   - Its purpose is to verify that our CI works on common platforms. The
@@ -253,16 +244,10 @@ test:macos:x64:
   needs: ["inkscape:macos:x64"]
   variables:
     SDKROOT: /opt/sdks/MacOSX10.13.sdk
-  before_script:
-    # workaround: after_script doesn't run for cancelled/timed out jobs, leaving
-    #             non-ephemeral runners in an unclean state
-    #             https://gitlab.com/gitlab-org/gitlab/-/issues/15603
-    - packaging/macos/uninstall_toolset.sh
-    - packaging/macos/install_toolset.sh restore_overlay
   script:
-    - packaging/macos/310-inkscape_test.sh
+    - packaging/macos/test.sh
   after_script:
-    - packaging/macos/uninstall_toolset.sh save_testfiles
+    - packaging/macos/mibap/uninstall_toolset.sh save_testfiles
   artifacts:
     paths:
       - testfiles.tar.xz

@@ -1,3 +1,4 @@
 # macOS build pipeline
 
-This folder contains the scripts that make up the build pipeline for Inkscape on macOS. The upstream project is [mibap](https://gitlab.com/inkscape/devel/mibap) which contains the complete development history. It also provides a disk image with precompiled dependencies so that Inkscape CI can focus on building the application.
+The macOS build pipeline is developed separately from Inkscape's codebase and can be found here:  
+[https://gitlab.com/inkscape/devel/mibap](https://gitlab.com/inkscape/devel/mibap)
