@@ -228,11 +228,12 @@ void CommandPalette::append_recent_file_operation(const Glib::ustring &path, boo
     Gtk::EventBox *CPOperation;
     Gtk::Box *CPSynapseBox;
 
-    Gtk::Label *CPGroup;
-    Gtk::Label *CPName;
-    Gtk::Label *CPShortcut;
-    Gtk::Button *CPActionFullName;
-    Gtk::Label *CPDescription;
+    Gtk::Label  *CPGroup;
+    Gtk::Label  *CPName;
+    Gtk::Label  *CPShortcut;
+    Gtk::Button *CPActionFullButton;
+    Gtk::Label  *CPActionFullLabel;
+    Gtk::Label  *CPDescription;
 
     // Reading widgets
     operation_builder->get_widget("CPOperation", CPOperation);
@@ -241,7 +242,8 @@ void CommandPalette::append_recent_file_operation(const Glib::ustring &path, boo
     operation_builder->get_widget("CPGroup", CPGroup);
     operation_builder->get_widget("CPName", CPName);
     operation_builder->get_widget("CPShortcut", CPShortcut);
-    operation_builder->get_widget("CPActionFullName", CPActionFullName);
+    operation_builder->get_widget("CPActionFullButton", CPActionFullButton);
+    operation_builder->get_widget("CPActionFullLabel", CPActionFullLabel);
     operation_builder->get_widget("CPDescription", CPDescription);
 
     const auto file = Gio::File::create_for_path(path);
@@ -251,16 +253,16 @@ void CommandPalette::append_recent_file_operation(const Glib::ustring &path, boo
         if (is_import) {
             // Used for Activate row signal of listbox and not
             CPGroup->set_text("import");
-            CPActionFullName->set_label("import"); // For filtering only
+            CPActionFullLabel->set_text("import"); // For filtering only
 
         } else {
             CPGroup->set_text("open");
-            CPActionFullName->set_label("open"); // For filtering only
+            CPActionFullLabel->set_text("open"); // For filtering only
         }
 
         // Hide for recent_file, not required
-        CPActionFullName->set_no_show_all();
-        CPActionFullName->hide();
+        CPActionFullButton->set_no_show_all();
+        CPActionFullButton->hide();
 
         CPName->set_text((is_import ? _("Import") : _("Open")) + (": " + file_name));
         CPName->set_tooltip_text((is_import ? ("Import") : ("Open")) + (": " + file_name)); // Tooltip_text are not translatable
@@ -311,7 +313,8 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
     Gtk::Label *CPName;
     Gtk::Label *CPShortcut;
     Gtk::Label *CPDescription;
-    Gtk::Button *CPActionFullName;
+    Gtk::Button *CPActionFullButton;
+    Gtk::Label *CPActionFullLabel;
 
     // Reading widgets
     operation_builder->get_widget("CPOperation", CPOperation);
@@ -320,7 +323,8 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
     operation_builder->get_widget("CPGroup", CPGroup);
     operation_builder->get_widget("CPName", CPName);
     operation_builder->get_widget("CPShortcut", CPShortcut);
-    operation_builder->get_widget("CPActionFullName", CPActionFullName);
+    operation_builder->get_widget("CPActionFullButton", CPActionFullButton);
+    operation_builder->get_widget("CPActionFullLabel", CPActionFullLabel);
     operation_builder->get_widget("CPDescription", CPDescription);
 
     CPGroup->set_text(action_data.get_section_for_action(Glib::ustring(action_ptr_name.second)));
@@ -340,13 +344,13 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
     }
 
     {
-        CPActionFullName->set_label(action_ptr_name.second);
+        CPActionFullLabel->set_text(action_ptr_name.second);
 
         if (not show_full_action_name) {
-            CPActionFullName->set_no_show_all();
-            CPActionFullName->hide();
+            CPActionFullButton->set_no_show_all();
+            CPActionFullButton->hide();
         } else {
-            CPActionFullName->signal_clicked().connect(
+            CPActionFullButton->signal_clicked().connect(
                 sigc::bind<Glib::ustring>(sigc::mem_fun(*this, &CommandPalette::on_action_fullname_clicked),
                                           action_ptr_name.second),
                 false);
@@ -357,13 +361,17 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
         std::vector<Glib::ustring> accels = gapp->get_accels_for_action(action_ptr_name.second);
         std::stringstream ss;
         for (const auto &accel : accels) {
-            ss << accel << ',';
+            guint key = 0;
+            Gdk::ModifierType mods;
+            Gtk::AccelGroup::parse(accel, key, mods);
+            Glib::ustring label = Gtk::AccelGroup::get_label(key, mods);
+            ss << label << ' ';
         }
         std::string accel_label = ss.str();
 
         if (not accel_label.empty()) {
             accel_label.pop_back();
-            CPShortcut->set_text(accel_label);
+            CPShortcut->set_markup(accel_label);
         } else {
             CPShortcut->set_no_show_all();
             CPShortcut->hide();
@@ -392,12 +400,13 @@ void CommandPalette::on_search()
     if (auto top_row = _CPSuggestions->get_row_at_y(0); top_row) {
         _CPSuggestions->select_row(*top_row); // select top row
     }
+    _CPSuggestionsScroll->get_vadjustment()->set_value(0);
 }
 
 bool CommandPalette::on_filter_full_action_name(Gtk::ListBoxRow *child)
 {
-    if (auto CPActionFullName = get_full_action_name(child);
-        CPActionFullName and _search_text == CPActionFullName->get_label()) {
+    if (auto CPActionFullLabel = get_full_action_name(child);
+        CPActionFullLabel and _search_text == CPActionFullLabel->get_text()) {
         return true;
     }
     return false;
@@ -405,9 +414,9 @@ bool CommandPalette::on_filter_full_action_name(Gtk::ListBoxRow *child)
 
 bool CommandPalette::on_filter_recent_file(Gtk::ListBoxRow *child, bool const is_import)
 {
-    auto CPActionFullName = get_full_action_name(child);
+    auto CPActionFullLabel = get_full_action_name(child);
     if (is_import) {
-        if (CPActionFullName and CPActionFullName->get_label() == "import") {
+        if (CPActionFullLabel and CPActionFullLabel->get_text() == "import") {
             auto [CPName, CPDescription] = get_name_desc(child);
             if (CPDescription && CPDescription->get_text() == _search_text) {
                 return true;
@@ -415,7 +424,7 @@ bool CommandPalette::on_filter_recent_file(Gtk::ListBoxRow *child, bool const is
         }
         return false;
     }
-    if (CPActionFullName and CPActionFullName->get_label() == "open") {
+    if (CPActionFullLabel and CPActionFullLabel->get_text() == "open") {
         auto [CPName, CPDescription] = get_name_desc(child);
         if (CPDescription && CPDescription->get_text() == _search_text) {
             return true;
@@ -652,11 +661,11 @@ bool CommandPalette::ask_action_parameter(const ActionPtrName &action_ptr_name)
  */
 void CommandPalette::remove_color(Gtk::Label *label, const Glib::ustring &subject, bool tooltip)
 {
-    if (tooltip) {
+    /* if (tooltip) {
         label->set_tooltip_text(subject);
     } else if (label->get_use_markup()) {
         label->set_text(subject);
-    }
+    } */
 }
 
 /**
@@ -670,7 +679,8 @@ Glib::ustring make_bold(const Glib::ustring &search)
 
 void CommandPalette::add_color(Gtk::Label *label, const Glib::ustring &search, const Glib::ustring &subject, bool tooltip)
 {
-    Glib::ustring text = "";
+    //is no working on master fill all chars so I comment to speedup
+    /* Glib::ustring text = "";
     Glib::ustring subject_string = subject.lowercase();
     Glib::ustring search_string = search.lowercase();
     int j = 0;
@@ -686,7 +696,7 @@ void CommandPalette::add_color(Gtk::Label *label, const Glib::ustring &search, c
                     j++;
                     break;
                 } else {
-                    text += subject[j];
+                    text += Glib::Markup::escape_text(subject.substr(j, 1));
                 }
                 j++;
             }
@@ -707,7 +717,7 @@ void CommandPalette::add_color(Gtk::Label *label, const Glib::ustring &search, c
             if (search_string_character[subject_string[i]]--) {
                 text += make_bold(Glib::Markup::escape_text(subject.substr(i, 1)));
             } else {
-                text += subject[i];
+                text += Glib::Markup::escape_text(subject.substr(i, 1));
             }
         }
     }
@@ -716,7 +726,7 @@ void CommandPalette::add_color(Gtk::Label *label, const Glib::ustring &search, c
         label->set_tooltip_markup(text);
     } else {
         label->set_markup(text);
-    }
+    } */
 }
 
 /**
@@ -725,7 +735,7 @@ void CommandPalette::add_color(Gtk::Label *label, const Glib::ustring &search, c
  */
 void CommandPalette::add_color_description(Gtk::Label *label, const Glib::ustring &search)
 {
-    Glib::ustring subject = label->get_text();
+   /*  Glib::ustring subject = label->get_text();
 
     Glib::ustring const subject_normalize = subject.lowercase().normalize();
     Glib::ustring const search_normalize = search.lowercase().normalize();
@@ -737,7 +747,7 @@ void CommandPalette::add_color_description(Gtk::Label *label, const Glib::ustrin
               make_bold(Glib::Markup::escape_text(subject.substr(position, search_length))) +
               Glib::Markup::escape_text(subject.substr(position + search_length));
 
-    label->set_markup(subject);
+    label->set_markup(subject); */
 }
 
 /**
@@ -1350,26 +1360,34 @@ std::pair<Gtk::Label *, Gtk::Label *> CommandPalette::get_name_desc(Gtk::ListBox
         auto CPSynapseBox = dynamic_cast<Gtk::Box *>(event_box->get_child());
         if (CPSynapseBox) {
             auto synapse_children = CPSynapseBox->get_children();
-            auto CPName = dynamic_cast<Gtk::Label *>(synapse_children[0]);
-            auto CPDescription = dynamic_cast<Gtk::Label *>(synapse_children[1]);
-
-            return std::pair(CPName, CPDescription);
+            auto CPNameBox = dynamic_cast<Gtk::Box *>(synapse_children[0]);
+            if (CPNameBox) {
+                auto name_children = CPNameBox->get_children();
+                auto CPName = dynamic_cast<Gtk::Label *>(name_children[0]);
+                auto CPDescription = dynamic_cast<Gtk::Label *>(name_children[1]);
+                return std::pair(CPName, CPDescription);
+            }
         }
     }
-
     return std::pair(nullptr, nullptr);
 }
 
-Gtk::Button *CommandPalette::get_full_action_name(Gtk::ListBoxRow *child)
+Gtk::Label *CommandPalette::get_full_action_name(Gtk::ListBoxRow *child)
 {
     auto event_box = dynamic_cast<Gtk::EventBox *>(child->get_child());
     if (event_box) {
         auto CPSynapseBox = dynamic_cast<Gtk::Box *>(event_box->get_child());
         if (CPSynapseBox) {
             auto synapse_children = CPSynapseBox->get_children();
-            auto CPActionFullName = dynamic_cast<Gtk::Button *>(synapse_children[2]);
-
-            return CPActionFullName;
+            auto CPActionFullButton = dynamic_cast<Gtk::Button *>(synapse_children[1]);
+            if (CPActionFullButton) {
+                auto synapse_button = CPActionFullButton->get_children();
+                auto CPSinapseButtonBox = dynamic_cast<Gtk::Box *>(synapse_button[0]);
+                if (CPSinapseButtonBox) {
+                    auto synapse_button_content = CPSinapseButtonBox->get_children();
+                    return dynamic_cast<Gtk::Label *>(synapse_button_content[1]);
+                }
+            }
         }
     }
 
@@ -1386,6 +1404,7 @@ void CommandPalette::load_app_actions()
         generate_action_operation(get_action_ptr_name("app." + action), true);
     }
 }
+
 void CommandPalette::load_win_doc_actions()
 {
     if (auto window = InkscapeApplication::instance()->get_active_window(); window) {

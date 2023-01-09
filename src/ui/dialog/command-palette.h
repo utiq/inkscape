@@ -202,7 +202,7 @@ private: // Signal handlers
     static TypeOfVariant get_action_variant_type(const ActionPtr &action_ptr);
 
     static std::pair<Gtk::Label *, Gtk::Label *> get_name_desc(Gtk::ListBoxRow *child);
-    Gtk::Button *get_full_action_name(Gtk::ListBoxRow *child);
+    Gtk::Label *get_full_action_name(Gtk::ListBoxRow *child);
 
 private: // variables
     // Widgets
