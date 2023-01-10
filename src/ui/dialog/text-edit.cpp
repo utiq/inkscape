@@ -46,9 +46,8 @@
 #include "inkscape.h"
 #include "style.h"
 #include "text-editing.h"
-#include "verbs.h"
 
-#include <libnrtype/FontFactory.h>
+#include <libnrtype/font-factory.h>
 #include <libnrtype/font-instance.h>
 #include <libnrtype/font-lister.h>
 
@@ -59,6 +58,7 @@
 #include "io/resource.h"
 #include "svg/css-ostringstream.h"
 #include "ui/icon-names.h"
+#include "ui/shortcuts.h"
 #include "ui/toolbar/text-toolbar.h"
 #include "ui/widget/font-selector.h"
 
@@ -70,17 +70,19 @@ namespace UI {
 namespace Dialog {
 
 TextEdit::TextEdit()
-    : DialogBase("/dialogs/textandfont", SP_VERB_DIALOG_TEXT),
-      selectChangedConn(),
-      subselChangedConn(),
-      selectModifiedConn(),
-      blocked(false),
+    : DialogBase("/dialogs/textandfont", "Text")
+    , selectChangedConn()
+    , subselChangedConn()
+    , selectModifiedConn()
+    , blocked(false)
       /*
            TRANSLATORS: Test string used in text and font dialog (when no
            * text has been entered) to get a preview of the font.  Choose
            * some representative characters that users of your locale will be
            * interested in.*/
-      samplephrase(_("AaBbCcIiPpQq12369$\342\202\254\302\242?.;/()"))
+    , samplephrase(_("AaBbCcIiPpQq12369$\342\202\254\302\242?.;/()"))
+    , _undo{"doc.undo"}
+    , _redo{"doc.redo"}
 {
 
     std::string gladefile = get_filename_string(Inkscape::IO::Resource::UIS, "dialog-text-edit.glade");
@@ -128,6 +130,7 @@ TextEdit::TextEdit()
     add(*contents);
 
     /* Signal handlers */
+    text_view->signal_key_press_event().connect(sigc::mem_fun(*this, &TextEdit::captureUndo));
     text_buffer->signal_changed().connect(sigc::mem_fun(*this, &TextEdit::onChange));
     setasdefault_button->signal_clicked().connect(sigc::mem_fun(*this, &TextEdit::onSetDefault));
     apply_button->signal_clicked().connect(sigc::mem_fun(*this, &TextEdit::onApply));
@@ -149,17 +152,17 @@ TextEdit::~TextEdit()
     fontFeaturesChangedConn.disconnect();
 }
 
-void TextEdit::onSelectionModified(guint flags )
+bool TextEdit::captureUndo(GdkEventKey *key)
 {
-    gboolean style, content;
+    if (_undo.isTriggeredBy(key) || _redo.isTriggeredBy(key)) {
+        /*
+         * TODO: Handle these events separately after switching to GTKMM4
+         * Fixes: https://gitlab.com/inkscape/inkscape/-/issues/744
+         */
+        return true;
+    }
 
-    style =  ((flags & ( SP_OBJECT_CHILD_MODIFIED_FLAG |
-                    SP_OBJECT_STYLE_MODIFIED_FLAG  )) != 0 );
-
-    content = ((flags & ( SP_OBJECT_CHILD_MODIFIED_FLAG |
-                    SP_TEXT_CONTENT_MODIFIED_FLAG  )) != 0 );
-
-    onReadSelection (style, content);
+    return false;
 }
 
 void TextEdit::onReadSelection ( gboolean dostyle, gboolean /*docontent*/ )
@@ -305,7 +308,7 @@ SPItem *TextEdit::getSelectedTextItem ()
     auto tmp= getDesktop()->getSelection()->items();
 	for(auto i=tmp.begin();i!=tmp.end();++i)
     {
-        if (SP_IS_TEXT(*i) || SP_IS_FLOWTEXT(*i))
+        if (is<SPText>(*i) || is<SPFlowtext>(*i))
             return *i;
     }
 
@@ -323,17 +326,32 @@ unsigned TextEdit::getSelectedTextCount ()
     auto tmp= getDesktop()->getSelection()->items();
 	for(auto i=tmp.begin();i!=tmp.end();++i)
     {
-        if (SP_IS_TEXT(*i) || SP_IS_FLOWTEXT(*i))
+        if (is<SPText>(*i) || is<SPFlowtext>(*i))
             ++items;
     }
 
     return items;
 }
 
-void TextEdit::onSelectionChange()
+void TextEdit::documentReplaced()
 {
-    onReadSelection (TRUE, TRUE);
+    onReadSelection(true, true);
 }
+
+void TextEdit::selectionChanged(Selection *selection)
+{
+    onReadSelection(true, true);
+}
+
+void TextEdit::selectionModified(Selection *selection, guint flags)
+{
+    bool style = ((flags & (SP_OBJECT_CHILD_MODIFIED_FLAG |
+                            SP_OBJECT_STYLE_MODIFIED_FLAG  )) != 0 );
+    bool content = ((flags & (SP_OBJECT_CHILD_MODIFIED_FLAG |
+                              SP_TEXT_CONTENT_MODIFIED_FLAG  )) != 0 );
+    onReadSelection (style, content);
+}
+
 
 void TextEdit::updateObjectText ( SPItem *text )
 {
@@ -404,7 +422,7 @@ void TextEdit::onApply()
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     for(auto i=item_list.begin();i!=item_list.end();++i){
         // apply style to the reprs of all text objects in the selection
-        if (SP_IS_TEXT (*i) || (SP_IS_FLOWTEXT (*i)) ) {
+        if (is<SPText>(*i) || (is<SPFlowtext>(*i)) ) {
             ++items;
         }
     }
@@ -422,10 +440,10 @@ void TextEdit::onApply()
     } else if (items == 1) {
         // exactly one text object; now set its text, too
         SPItem *item = desktop->getSelection()->singleItem();
-        if (SP_IS_TEXT (item) || SP_IS_FLOWTEXT(item)) {
+        if (is<SPText>(item) || is<SPFlowtext>(item)) {
             updateObjectText (item);
             SPStyle *item_style = item->style;
-            if (SP_IS_TEXT(item) && item_style->inline_size.value == 0) {
+            if (is<SPText>(item) && item_style->inline_size.value == 0) {
                 css = sp_css_attr_from_style(item_style, SP_STYLE_FLAG_IFSET);
                 sp_repr_css_unset_property(css, "inline-size");
                 item->changeCSS(css, "style");
@@ -441,8 +459,7 @@ void TextEdit::onApply()
     }
 
     // complete the transaction
-    DocumentUndo::done(desktop->getDocument(), SP_VERB_CONTEXT_TEXT,
-                       _("Set text style"));
+    DocumentUndo::done(desktop->getDocument(), _("Set text style"), INKSCAPE_ICON("draw-text"));
     apply_button->set_sensitive ( false );
 
     sp_repr_css_attr_unref (css);
@@ -458,9 +475,8 @@ void TextEdit::onFontFeatures(Gtk::Widget * widgt, int pos)
     if (pos == 1) {
         Glib::ustring fontspec = font_selector.get_fontspec();
         if (!fontspec.empty()) {
-            font_instance *res = font_factory::Default()->FaceFromFontSpecification(fontspec.c_str());
-            if (res && !res->fulloaded) {
-                res->InitTheFace(true);
+            auto res = FontFactory::get().FaceFromFontSpecification(fontspec.c_str());
+            if (res) {
                 font_features.update_opentype(fontspec);
             }
         }
@@ -492,31 +508,8 @@ void TextEdit::onChange()
 
 void TextEdit::onFontChange(Glib::ustring fontspec)
 {
-    // Is not necesary update open type features this done when user click on font features tab
+    // Is not necessary update open type features this done when user click on font features tab
     onChange();
-}
-
-void TextEdit::update()
-{
-    if (!_app) {
-        std::cerr << "TextEdit::update(): _app is null" << std::endl;
-        return;
-    }
-
-    SPDesktop *desktop = getDesktop();
-
-    selectModifiedConn.disconnect();
-    subselChangedConn.disconnect();
-    selectChangedConn.disconnect();
-
-    {
-        if (desktop && desktop->selection) {
-            selectChangedConn = desktop->selection->connectChanged(sigc::hide(sigc::mem_fun(*this, &TextEdit::onSelectionChange)));
-            subselChangedConn = desktop->connectToolSubselectionChanged(sigc::hide(sigc::mem_fun(*this, &TextEdit::onSelectionChange)));
-            selectModifiedConn = desktop->selection->connectModified(sigc::hide<0>(sigc::mem_fun(*this, &TextEdit::onSelectionModified)));
-            onReadSelection(TRUE, TRUE);
-        }
-    }
 }
 
 } //namespace Dialog

@@ -18,11 +18,14 @@
 #ifndef SEEN_SNAP_H
 #define SEEN_SNAP_H
 
+#include <memory>
 #include <vector>
 
 #include "guide-snapper.h"
 #include "object-snapper.h"
+#include "alignment-snapper.h"
 #include "snap-preferences.h"
+#include "distribution-snapper.h"
 
 
 // Guides
@@ -35,6 +38,7 @@ enum SPGuideDragType { // used both here and in desktop-events.cpp
 
 class SPDocument;
 class SPGuide;
+class SPPage;
 class SPNamedView;
 
 namespace Inkscape {
@@ -82,13 +86,13 @@ public:
         SKEW,
         ROTATE
     };
-
     /**
      * Construct a SnapManager for a SPNamedView.
      *
      * @param v 'Owning' SPNamedView.
      */
-    SnapManager(SPNamedView const *v);
+    SnapManager(SPNamedView const *v, Inkscape::SnapPreferences& preferences);
+    ~SnapManager();
 
     typedef std::list<const Inkscape::Snapper*> SnapperList;
 
@@ -114,9 +118,8 @@ public:
      */
     void setup(SPDesktop const *desktop,
             bool snapindicator = true,
-            SPItem const *item_to_ignore = nullptr,
-            std::vector<Inkscape::SnapCandidatePoint> *unselected_nodes = nullptr,
-            SPGuide *guide_to_ignore = nullptr);
+            SPObject const *item_to_ignore = nullptr,
+            std::vector<Inkscape::SnapCandidatePoint> *unselected_nodes = nullptr);
 
     /**
      * Prepare the snap manager for the actual snapping, which includes building a list of snap targets
@@ -127,25 +130,22 @@ public:
      *
      * @param desktop Reference to the desktop to which this snap manager is attached.
      * @param snapindicator If true then a snap indicator will be displayed automatically (when enabled in the preferences).
-     * @param items_to_ignore These items will not be snapped to, e.g. the items that are currently being dragged. This avoids "self-snapping".
+     * @param objects_to_ignore These items will not be snapped to, e.g. the items that are currently being dragged. This avoids "self-snapping" this includes guides and other non-items.
      * @param unselected_nodes Stationary nodes of the path that is currently being edited in the node tool and
      * that can be snapped too. Nodes not in this list will not be snapped to, to avoid "self-snapping". Of each
      * unselected node both the position (Geom::Point) and the type (Inkscape::SnapTargetType) will be stored.
-     * @param guide_to_ignore Guide that is currently being dragged and should not be snapped to.
      */
     void setup(SPDesktop const *desktop,
                bool snapindicator,
-               std::vector<SPItem const *> &items_to_ignore,
-               std::vector<Inkscape::SnapCandidatePoint> *unselected_nodes = nullptr,
-               SPGuide *guide_to_ignore = nullptr);
+               std::vector<SPObject const *> &objects_to_ignore,
+               std::vector<Inkscape::SnapCandidatePoint> *unselected_nodes = nullptr);
 
     void setupIgnoreSelection(SPDesktop const *desktop,
                               bool snapindicator = true,
-                              std::vector<Inkscape::SnapCandidatePoint> *unselected_nodes = nullptr,
-                              SPGuide *guide_to_ignore = nullptr);
+                              std::vector<Inkscape::SnapCandidatePoint> *unselected_nodes = nullptr);
 
     void unSetup() {_rotation_center_source_items.clear();
-                    _guide_to_ignore = nullptr;
+                    _objects_to_ignore.clear();
                     _desktop = nullptr;
                     _unselected_nodes = nullptr;}
 
@@ -165,7 +165,7 @@ public:
      * Try to snap a point to grids, guides or objects, in two degrees-of-freedom,
      * i.e. snap in any direction on the two dimensional canvas to the nearest
      * snap target. freeSnapReturnByRef() is equal in snapping behavior to
-     * freeSnap(), but the former returns the snapped point trough the referenced
+     * freeSnap(), but the former returns the snapped point through the referenced
      * parameter p. This parameter p initially contains the position of the snap
      * source and will we overwritten by the target position if snapping has occurred.
      * This makes snapping transparent to the calling code. If this is not desired
@@ -241,7 +241,7 @@ public:
      * snap target.
      *
      * constrainedSnapReturnByRef() is equal in snapping behavior to
-     * constrainedSnap(), but the former returns the snapped point trough the referenced
+     * constrainedSnap(), but the former returns the snapped point through the referenced
      * parameter p. This parameter p initially contains the position of the snap
      * source and will be overwritten by the target position if snapping has occurred.
      * This makes snapping transparent to the calling code. If this is not desired
@@ -337,7 +337,9 @@ public:
 
     Inkscape::GuideSnapper guide;      ///< guide snapper
     Inkscape::ObjectSnapper object;    ///< snapper to other objects
-    Inkscape::SnapPreferences snapprefs;
+    Inkscape::AlignmentSnapper alignment; ///< snapper to align with other objects
+    Inkscape::DistributionSnapper distribution;
+    Inkscape::SnapPreferences& snapprefs;
 
     /**
      * Return a list of snappers.
@@ -368,7 +370,8 @@ public:
     SPDesktop const *getDesktop() const {return _desktop;}
     SPNamedView const *getNamedView() const {return _named_view;}
     SPDocument *getDocument() const;
-    SPGuide const *getGuideToIgnore() const {return _guide_to_ignore;}
+    SPGuide const *getGuideToIgnore() const;
+    SPPage const *getPageToIgnore() const;
 
     bool getSnapIndicator() const {return _snapindicator;}
 
@@ -398,9 +401,7 @@ public:
      * Method for snapping sets of points while they are being transformed.
      *
      * Method for snapping sets of points while they are being transformed, when using
-     * for example the selector tool. This method is for internal use only, and should
-     * not have to be called directly. Use freeSnapTransalation(), constrainedSnapScale(),
-     * etc. instead.
+     * for example the selector tool.
      *
      * This is what is being done in this method: transform each point, find out whether
      * a free snap or constrained snap is more appropriate, do the snapping, calculate
@@ -421,13 +422,32 @@ protected:
     SPNamedView const *_named_view;
 
 private:
-    std::vector<SPItem const *> _items_to_ignore; ///< Items that should not be snapped to, for example the items that are currently being dragged. Set using the setup() method
+    std::vector<SPObject const *> _objects_to_ignore; ///< Items that should not be snapped to, for example the items that are currently being dragged. Set using the setup() method
     std::vector<SPItem*> _rotation_center_source_items; // to avoid snapping a rotation center to itself
-    SPGuide *_guide_to_ignore; ///< A guide that should not be snapped to, e.g. the guide that is currently being dragged
     SPDesktop const *_desktop;
     bool _snapindicator; ///< When true, an indicator will be drawn at the position that was being snapped to
     std::vector<Inkscape::SnapCandidatePoint> *_unselected_nodes; ///< Nodes of the path that is currently being edited and which have not been selected and which will therefore be stationary. Only these nodes will be considered for snapping to. Of each unselected node both the position (Geom::Point) and the type (Inkscape::SnapTargetType) will be stored
 
+    /**
+     * Find all items within snapping range.
+     * @param parent Pointer to the document's root, or to a clipped path or mask object.
+     * @param it List of items to ignore.
+     * @param bbox_to_snap Bounding box hulling the whole bunch of points, all from the same selection and having the same transformation.
+     * @param clip_or_mask The parent object being passed is either a clip or mask.
+     */
+    void _findCandidates(SPObject* parent,
+                       std::vector<SPObject const *> const *it,
+                       Geom::Rect const &bbox_to_snap,
+                       bool const _clip_or_mask,
+                       Geom::Affine const additional_affine);
+    bool _findCandidates_already_called;
+
+    std::unique_ptr<std::vector<Inkscape::SnapCandidateItem>> _obj_snapper_candidates;
+    std::unique_ptr<std::vector<Inkscape::SnapCandidateItem>> _align_snapper_candidates;
+
+    friend class Inkscape::ObjectSnapper;
+    friend class Inkscape::AlignmentSnapper;
+    friend class Inkscape::DistributionSnapper;
 };
 
 #endif // !SEEN_SNAP_H

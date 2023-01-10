@@ -108,8 +108,12 @@ Inkscape::XML::Node* SPLine::write(Inkscape::XML::Document *xml_doc, Inkscape::X
     return repr;
 }
 
+const char* SPLine::typeName() const {
+    return "path";
+}
+
 const char* SPLine::displayName() const {
-	return _("Line");
+    return _("Line");
 }
 
 void SPLine::convert_to_guides() const {
@@ -145,10 +149,10 @@ Geom::Affine SPLine::set_transform(Geom::Affine const &transform) {
 }
 
 void SPLine::set_shape() {
-    auto c = std::make_unique<SPCurve>();
+    SPCurve c;
 
-    c->moveto(this->x1.computed, this->y1.computed);
-    c->lineto(this->x2.computed, this->y2.computed);
+    c.moveto(this->x1.computed, this->y1.computed);
+    c.lineto(this->x2.computed, this->y2.computed);
 
     // *_insync does not call update, avoiding infinite recursion when set_shape is called by update
     setCurveInsync(std::move(c));

@@ -15,6 +15,7 @@
 
 #include "libnrtype/font-lister.h"
 #include "libnrtype/font-instance.h"
+#include "libnrtype/font-factory.h"
 
 // For updating from selection
 #include "inkscape.h"
@@ -36,15 +37,30 @@ FontSelector::FontSelector (bool with_size, bool with_variations)
 {
 
     Inkscape::FontLister* font_lister = Inkscape::FontLister::get_instance();
-
+    Glib::RefPtr<Gtk::TreeModel> model = font_lister->get_font_list();
     // Font family
     family_treecolumn.pack_start (family_cell, false);
-    family_treecolumn.set_fixed_width (200);
+    int total = model->children().size();
+    int height = 30;
+    if (total > 1000) {
+        height = 30000/total;
+        g_warning("You have a huge number of font families (%d), "
+                    "and Cairo is limiting the size of widgets you can draw.\n"
+                    "Your preview cell height is capped to %d.",
+                    total, height);
+        // hope we dont need a forced height because now pango line height 
+        // not add data outside parent rendered expanding it so no naturall cells become over 30 height
+        family_cell.set_fixed_size(-1, height);
+    } else {
+#if !PANGO_VERSION_CHECK(1,50,0)
+    family_cell.set_fixed_size(-1, height);
+#endif
+    }
+    family_treecolumn.set_fixed_width (120); // limit minimal width to keep entire dialog narrow; column can still grow
     family_treecolumn.add_attribute (family_cell, "text", 0);
     family_treecolumn.set_cell_data_func (family_cell, &font_lister_cell_data_func);
-
     family_treeview.set_row_separator_func (&font_lister_separator_func);
-    family_treeview.set_model (font_lister->get_font_list());
+    family_treeview.set_model(model);
     family_treeview.set_name ("FontSelector: Family");
     family_treeview.set_headers_visible (false);
     family_treeview.append_column (family_treecolumn);
@@ -79,6 +95,10 @@ FontSelector::FontSelector (bool with_size, bool with_variations)
 
     // Size
     size_combobox.set_name ("FontSelectorSize");
+    if (auto entry = size_combobox.get_entry()) {
+        // limit min size of the entry box to 6 chars, so it doesn't inflate entire dialog!
+        entry->set_width_chars(6);
+    }
     set_sizes();
     size_combobox.set_active_text( "18" );
 
@@ -168,7 +188,7 @@ FontSelector::update_font ()
         path = font_lister->get_row_for_font (family);
     } catch (...) {
         std::cerr << "FontSelector::update_font: Couldn't find row for font-family: "
-                  << family << std::endl;
+                  << family.raw() << std::endl;
         path.clear();
         path.push_back(0);
     }
@@ -389,7 +409,7 @@ FontSelector::on_size_changed() {
         size = std::stod (input);
     }
     catch (std::invalid_argument) {
-        std::cerr << "FontSelector::on_size_changed: Invalid input: " << input << std::endl;
+        std::cerr << "FontSelector::on_size_changed: Invalid input: " << input.raw() << std::endl;
         size = -1;
     }
 
@@ -423,6 +443,11 @@ void
 FontSelector::changed_emit() {
     signal_block = true;
     signal_changed.emit (get_fontspec());
+    if (initial) {
+        initial = false;
+        family_treecolumn.unset_cell_data_func (family_cell);
+        family_treecolumn.set_cell_data_func (family_cell, &font_lister_cell_data_func_markup);
+    }
     signal_block = false;
 }
 

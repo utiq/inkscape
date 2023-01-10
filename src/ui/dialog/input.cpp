@@ -562,14 +562,10 @@ Glib::RefPtr<Gdk::Pixbuf> InputDialogImpl::getPix(PixId id)
     return pix;
 }
 
-
-// Now that we've defined the *Impl class, we can do the method to acquire one.
-InputDialog &InputDialog::getInstance()
+std::unique_ptr<InputDialog> InputDialog::create()
 {
-    InputDialog *dialog = new InputDialogImpl();
-    return *dialog;
+    return std::make_unique<InputDialogImpl>();
 }
-
 
 InputDialogImpl::InputDialogImpl() :
     InputDialog(),
@@ -984,7 +980,7 @@ InputDialogImpl::ConfPanel::ConfPanel() :
     modeCombo.append(getModeToString()[Gdk::MODE_DISABLED]);
     modeCombo.append(getModeToString()[Gdk::MODE_SCREEN]);
     modeCombo.append(getModeToString()[Gdk::MODE_WINDOW]);
-    modeCombo.set_tooltip_text(_("A device can be 'Disabled', its co-ordinates mapped to the whole 'Screen', or to a single (usually focused) 'Window'"));
+    modeCombo.set_tooltip_text(_("A device can be 'Disabled', its coordinates mapped to the whole 'Screen', or to a single (usually focused) 'Window'"));
     modeCombo.signal_changed().connect(sigc::mem_fun(*this, &InputDialogImpl::ConfPanel::onModeChange));
 
     modeBox.pack_start(modeLabel, false, false);
@@ -1660,6 +1656,11 @@ bool InputDialogImpl::eventSnoop(GdkEvent* event)
     Glib::ustring key;
     gint hotButton = -1;
 
+    /* Code for determining which input device caused the event fails with GTK3
+    * because event->device gives a "generic" input device, not the one that
+    * actually caused the event. See snoop_extended in desktop-events.cpp
+    */
+
     switch ( event->type ) {
         case GDK_KEY_PRESS:
         case GDK_KEY_RELEASE:
@@ -1775,11 +1776,9 @@ bool InputDialogImpl::eventSnoop(GdkEvent* event)
     return false;
 }
 
-
 } // end namespace Inkscape
 } // end namespace UI
 } // end namespace Dialog
-
 
 /*
   Local Variables:

@@ -1,26 +1,36 @@
 #!/usr/bin/env bash
+#
+# SPDX-FileCopyrightText: 2021 René de Hesselle <dehesselle@web.de>
+#
 # SPDX-License-Identifier: GPL-2.0-or-later
-# This file is part of the build pipeline for Inkscape on macOS.
 
 ### description ################################################################
 
 # Install a pre-compiled version of our JHBuild-based toolset and all the
 # required dependencies to build Inkscape.
 
-### includes ###################################################################
+### shellcheck #################################################################
 
-# shellcheck disable=SC1090 # can't point to a single source here
-for script in "$(dirname "${BASH_SOURCE[0]}")"/0??-*.sh; do
-  source "$script";
-done
+# Nothing here.
 
-### settings ###################################################################
+### dependencies ###############################################################
 
-# shellcheck disable=SC2034 # this is from ansi_.sh
-ANSI_TERM_ONLY=false   # use ANSI control characters even if not in terminal
+source "$(dirname "${BASH_SOURCE[0]}")"/jhb/etc/jhb.conf.sh \
+  "$(dirname "${BASH_SOURCE[0]}")"/src/jhb-custom.conf.sh
 
-error_trace_enable
+### variables ##################################################################
+
+SELF_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1; pwd)
+
+### functions ##################################################################
+
+# Nothing here.
 
 ### main #######################################################################
 
-toolset_install
+"$SELF_DIR"/jhb/usr/bin/archive install_dmg 3
+
+if [ "$1" = "restore_overlay" ]; then
+  # restore files fronm build stage
+  gtar -C "$VER_DIR" -xpJf "$ARTIFACT_DIR"/toolset_overlay.tar.xz
+fi

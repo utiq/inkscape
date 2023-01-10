@@ -36,6 +36,7 @@
 #include "strneq.h"
 
 #include "object/sp-text.h"
+#include "object/object-set.h"
 
 #include "svg/svg.h"
 #include "svg/svg-color.h"
@@ -293,7 +294,7 @@ SPIScale24::merge( const SPIBase* const parent ) {
         } else {
             // Needed only for 'opacity' and 'stop-opacity' which do not inherit. See comment at bottom of file.
             if (id() != SPAttr::OPACITY && id() != SPAttr::STOP_OPACITY)
-                std::cerr << "SPIScale24::merge: unhandled property: " << name() << std::endl;
+                std::cerr << "SPIScale24::merge: unhandled property: " << name().raw() << std::endl;
             if( !set || (!inherit && value == SP_SCALE24_MAX) ) {
                 value = p->value;
                 set = (value != SP_SCALE24_MAX);
@@ -1302,11 +1303,24 @@ SPIShapes::SPIShapes()
 {
 }
 
+/**
+ * Check if a Shape object exists in the selection
+ * Needed for when user selects multiple objects and
+ * * transforms them all simultaneously
+ * ie. Flowed text and a Rectangle  (See issue 1029)
+ *
+ * \param the ObjectSet to search
+ * \return true if found, else false
+ */
+bool SPIShapes::containsAnyShape(Inkscape::ObjectSet *set) {
+    for (auto ref : hrefs) {
+        if (set->includes(ref->getObject())) {
+            return true;
+        }
+    }
 
-//SPIShapes::~SPIShapes() {
-//    clear(); // Will segfault if called here. Seems to be already cleared.
-//}
-
+    return false;
+}
 
 // Used to add/remove listeners for text wrapped in shapes.
 // Note: this is done differently than for patterns, etc. where presentation attributes can be used.
@@ -1327,7 +1341,7 @@ SPIShapes::read( gchar const *str) {
     // The object/repr this property is connected to..
     SPObject* object = style->object;
     if (!object) {
-        std::cout << "  No object" << std::endl;
+        std::cerr << "  No object" << std::endl;
         return;
     }
 
@@ -1337,7 +1351,7 @@ SPIShapes::read( gchar const *str) {
     std::vector<Glib::ustring> shapes_url = Glib::Regex::split_simple(" ", str);
     for (auto shape_url : shapes_url) {
         if ( shape_url.compare(0,5,"url(#") != 0 || shape_url.compare(shape_url.size()-1,1,")") != 0 ){
-            std::cerr << "SPIShapes::read: Invalid shape value: " << shape_url << std::endl;
+            std::cerr << "SPIShapes::read: Invalid shape value: " << shape_url.raw() << std::endl;
         } else {
             auto uri = extract_uri(shape_url.c_str()); // Do before we erase "url(#"
 
@@ -1472,14 +1486,6 @@ SPIColor::operator==(const SPIBase& rhs) const {
 // find the object for creating an href (this is done through document but should be done
 // directly so document not needed.. FIXME).
 
-SPIPaint::~SPIPaint() {
-    if( value.href ) {
-        clear();
-        delete value.href;
-        value.href = nullptr;
-    }
-}
-
 /**
  * Set SPIPaint object from string.
  *
@@ -1528,9 +1534,9 @@ SPIPaint::read( gchar const *str ) {
                 if (!value.href) {
 
                     if (style->object) {
-                        value.href = new SPPaintServerReference(style->object);
+                        value.href = std::make_shared<SPPaintServerReference>(style->object);
                     } else if (document) {
-                        value.href = new SPPaintServerReference(document);
+                        value.href = std::make_shared<SPPaintServerReference>(document);
                     } else {
                         std::cerr << "SPIPaint::read: No valid object or document!" << std::endl;
                         return;
@@ -1662,18 +1668,11 @@ SPIPaint::reset( bool init ) {
     colorSet = false;
     noneSet = false;
     value.color.set( false );
-    if (value.href){
-        if (value.href->getObject()) {
-            value.href->detach();
-        }
-    }
-    if( init ) {
-        if (id() == SPAttr::FILL) {
-            // 'black' is default for 'fill'
-            setColor(0.0, 0.0, 0.0);
-        } else if (id() == SPAttr::TEXT_DECORATION_COLOR) {
-            // currentcolor = true;
-        }
+    tag = nullptr;
+    value.href.reset();
+
+    if (init && id() == SPAttr::FILL) {
+        setColor(0.0, 0.0, 0.0); // 'black' is default for 'fill'
     }
 }
 

@@ -64,7 +64,7 @@ public:
     void deleteNodes(bool keep_shape = true);
     void joinSegments();
     void deleteSegments();
-    void alignNodes(Geom::Dim2 d);
+    void alignNodes(Geom::Dim2 d, AlignTargetNode target = AlignTargetNode::MID_NODE);
     void distributeNodes(Geom::Dim2 d);
     void reverseSubpaths();
     void move(Geom::Point const &delta);
@@ -78,7 +78,7 @@ public:
     void updateHandles();
     void updatePaths();
     
-    sigc::signal<void> signal_coords_changed; /// Emitted whenever the coordinates
+    sigc::signal<void ()> signal_coords_changed; /// Emitted whenever the coordinates
         /// shown in the status bar need updating
 private:
     typedef std::pair<ShapeRecord, std::shared_ptr<PathManipulator> > MapPair;

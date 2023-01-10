@@ -21,6 +21,7 @@
 #include <gtkmm/dialog.h>
 
 #include "../../implementation/implementation.h"
+#include "svg-builder.h"
 
 #ifdef HAVE_POPPLER_CAIRO
 struct _PopplerDocument;
@@ -43,6 +44,7 @@ namespace Gtk {
   class RadioButton;
   class Box;
   class Label;
+  class Entry;
 }
 
 namespace Inkscape {
@@ -67,7 +69,7 @@ public:
     ~PdfImportDialog() override;
 
     bool showDialog();
-    int getSelectedPage();
+    std::string getSelectedPages();
     bool getImportMethod();
     void getImportSettings(Inkscape::XML::Node *prefs);
 
@@ -77,6 +79,7 @@ private:
     // Signal handlers
     bool _onDraw(const Cairo::RefPtr<Cairo::Context>& cr);
     void _onPageNumberChanged();
+    void _onToggleAllPages();
     void _onToggleCropping();
     void _onPrecisionChanged();
 #ifdef HAVE_POPPLER_CAIRO
@@ -86,7 +89,8 @@ private:
     class Gtk::Button * cancelbutton;
     class Gtk::Button * okbutton;
     class Gtk::Label * _labelSelect;
-    class Inkscape::UI::Widget::SpinButton * _pageNumberSpin;
+    class Gtk::CheckButton *_pageAllPages;
+    class Gtk::Entry *_pageNumbers;
     class Gtk::Label * _labelTotalPages;
     class Gtk::Box * hbox2;
     class Gtk::CheckButton * _cropCheck;
@@ -120,7 +124,7 @@ private:
     class Gtk::Box * hbox1;
 
     std::shared_ptr<PDFDoc> _pdf_doc;   // Document to be imported
-    int _current_page;  // Current selected page
+    std::string _current_pages;  // Current selected pages
     Page *_previewed_page;    // Currently previewed page
     unsigned char *_thumb_data; // Thumbnail image data
     int _thumb_width, _thumb_height;    // Thumbnail size
@@ -140,6 +144,11 @@ public:
     SPDocument *open( Inkscape::Extension::Input *mod,
                                 const gchar *uri ) override;
     static void         init( );
+private:
+    void add_builder_page(
+        std::shared_ptr<PDFDoc> pdf_doc,
+        SvgBuilder *builder, SPDocument *doc,
+        int page_num);
 };
 
 } // namespace Implementation

@@ -31,6 +31,15 @@ public:
     static void init();
 };
 
+struct PDFOptions {
+    using u64 = std::uint64_t;
+    u64 text_to_path      : 1; ///< Convert text to paths?
+    u64 text_to_latex     : 1; ///< Put text in a LaTeX document?
+    u64 rasterize_filters : 1; ///< Rasterize filter effects?
+    u64 drawing_only      : 1; ///< Set page size to drawing + margin instead of document page.
+    u64 stretch_to_fit    : 1; ///< Compensate for Cairo's page size rounding to integers (in pt)?
+};
+
 } } }  /* namespace Inkscape, Extension, Internal */
 
 #endif /* !EXTENSION_INTERNAL_CAIRO_RENDERER_PDF_OUT_H */

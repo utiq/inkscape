@@ -20,6 +20,7 @@
 #include "ui/tool/node.h"
 #include "ui/tool/manipulator.h"
 #include "live_effects/lpe-bspline.h"
+#include "display/curve.h"
 
 struct SPCanvasItem;
 class SPCurve;
@@ -148,8 +149,8 @@ private:
     SubpathList _subpaths;
     MultiPathManipulator &_multi_path_manipulator;
     SPObject *_path; ///< can be an SPPath or an Inkscape::LivePathEffect::Effect  !!!
-    std::unique_ptr<SPCurve> _spcurve; // in item coordinates
-    Inkscape::CanvasItemBpath *_outline = nullptr;
+    SPCurve _spcurve; // in item coordinates
+    CanvasItemPtr<Inkscape::CanvasItemBpath> _outline;
     CurveDragPoint *_dragpoint; // an invisible control point hovering over curve
     PathManipulatorObserver *_observer;
     Geom::Affine _d2i_transform; ///< desktop-to-item transform

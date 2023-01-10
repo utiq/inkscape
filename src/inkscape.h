@@ -14,11 +14,9 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "layer-model.h"
 #include "selection.h"
 #include <glib-object.h>
 #include <glib.h>
-#include <gtkmm/cssprovider.h>
 #include <map>
 #include <sigc++/signal.h>
 #include <vector>
@@ -31,14 +29,13 @@ namespace Inkscape {
 
 class Application;
 namespace UI {
+class ThemeContext;
 namespace Tools {
 
 class ToolBase;
 
 } // namespace Tools
 } // namespace UI
-
-class ActionContext;
 
 namespace XML {
 class Node;
@@ -51,25 +48,8 @@ void inkscape_ref  (Inkscape::Application & in);
 void inkscape_unref(Inkscape::Application & in);
 
 #define INKSCAPE (Inkscape::Application::instance())
-#define SP_ACTIVE_EVENTCONTEXT (INKSCAPE.active_event_context())
 #define SP_ACTIVE_DOCUMENT (INKSCAPE.active_document())
 #define SP_ACTIVE_DESKTOP (INKSCAPE.active_desktop())
-
-class AppSelectionModel {
-    Inkscape::LayerModel _layer_model;
-    Inkscape::Selection *_selection;
-
-public:
-    AppSelectionModel(SPDocument *doc) {
-        _layer_model.setDocument(doc);
-        // TODO: is this really how we should manage the lifetime of the selection?
-        // I just copied this from the initialization of the Selection in SPDesktop.
-        // When and how is it actually released?
-        _selection = Inkscape::GC::release(new Inkscape::Selection(&_layer_model, nullptr));
-    }
-
-    Inkscape::Selection *getSelection() const { return _selection; }
-};
 
 namespace Inkscape {
 
@@ -101,21 +81,12 @@ public:
                       unsigned int skel_size, const gchar *e_notreg, const gchar *e_notxml, 
                       const gchar *e_notsp, const gchar *warn);
 
-    bool load_menus();
-    Inkscape::XML::Node * get_menus();
-    
     Inkscape::UI::Tools::ToolBase * active_event_context();
     SPDocument * active_document();
     SPDesktop * active_desktop();
-    Glib::RefPtr<Gtk::CssProvider> styleprovider;
-    Glib::RefPtr<Gtk::CssProvider> themeprovider;
-    Glib::RefPtr<Gtk::CssProvider> contrastthemeprovider;
-    Glib::RefPtr<Gtk::CssProvider> colorizeprovider;
-    // Use this function to get selection model etc for a document
-    Inkscape::ActionContext action_context_for_document(SPDocument *doc);
-    Inkscape::ActionContext active_action_context();
-    
     bool sole_desktop_for_document(SPDesktop const &desktop);
+
+    Inkscape::UI::ThemeContext *themecontext = nullptr;
     
     // Inkscape desktop stuff
     void add_desktop(SPDesktop * desktop);
@@ -131,20 +102,11 @@ public:
     SPDesktop * prev_desktop ();
     
     void external_change ();
-    void selection_modified (Inkscape::Selection *selection, guint flags);
-    void selection_changed (Inkscape::Selection * selection);
-    void subselection_changed (SPDesktop *desktop);
-    void selection_set (Inkscape::Selection * selection);
-    Glib::ustring get_symbolic_colors();
-    void eventcontext_set (Inkscape::UI::Tools::ToolBase * eventcontext);
     
     // Moved document add/remove functions into public inkscape.h as they are used
     // (rightly or wrongly) by console-mode functions
     void add_document (SPDocument *document);
     bool remove_document (SPDocument *document);
-    
-    // fixme: This has to be rethought
-    void refresh_display ();
     
     // fixme: This also
     void exit ();
@@ -158,30 +120,27 @@ public:
     // signals
     
     // one of selections changed
-    sigc::signal<void, Inkscape::Selection *> signal_selection_changed;
+    sigc::signal<void (Inkscape::Selection *)> signal_selection_changed;
     // one of subselections (text selection, gradient handle, etc) changed
-    sigc::signal<void, SPDesktop *> signal_subselection_changed;
+    sigc::signal<void (SPDesktop *)> signal_subselection_changed;
     // one of selections modified
-    sigc::signal<void, Inkscape::Selection *, guint /*flags*/> signal_selection_modified;
+    sigc::signal<void (Inkscape::Selection *, guint /*flags*/)> signal_selection_modified;
     // one of selections set
-    sigc::signal<void, Inkscape::Selection *> signal_selection_set;
-    // tool switched
-    sigc::signal<void, Inkscape::UI::Tools::ToolBase * /*eventcontext*/> signal_eventcontext_set;
+    sigc::signal<void (Inkscape::Selection *)> signal_selection_set;
     // some desktop got focus
-    sigc::signal<void, SPDesktop *> signal_activate_desktop;
+    sigc::signal<void (SPDesktop *)> signal_activate_desktop;
     // some desktop lost focus
-    sigc::signal<void, SPDesktop *> signal_deactivate_desktop;
-    // user change theme
-    sigc::signal<void> signal_change_theme;
+    sigc::signal<void (SPDesktop *)> signal_deactivate_desktop;
+    
     // these are orphaned signals (nothing emits them and nothing connects to them)
-    sigc::signal<void, SPDocument *> signal_destroy_document;
-    sigc::signal<void, SPColor *, double /*opacity*/> signal_color_set;
+    sigc::signal<void (SPDocument *)> signal_destroy_document;
+    sigc::signal<void (SPColor *, double /*opacity*/)> signal_color_set;
     
     // inkscape is quitting
-    sigc::signal<void> signal_shut_down;
+    sigc::signal<void ()> signal_shut_down;
     // a document was changed by some external means (undo or XML editor); this
     // may not be reflected by a selection change and thus needs a separate signal
-    sigc::signal<void> signal_external_change;
+    sigc::signal<void ()> signal_external_change;
 
     void set_pdf_poppler(bool p) {
         _pdf_poppler = p;
@@ -189,15 +148,12 @@ public:
     bool get_pdf_poppler() {
         return _pdf_poppler;
     }
-    void set_pdf_page(gint page) {
-        _pdf_page = page;
+    void set_pages(const std::string &pages) {
+        _pages = pages;
     }
-    gint get_pdf_page() {
-        return _pdf_page;
+    const std::string &get_pages() const {
+        return _pages;
     }
-
-    void add_gtk_css(bool only_providers);
-    void add_icon_theme();
 
   private:
     static Inkscape::Application * _S_inst;
@@ -209,17 +165,15 @@ public:
     Application& operator=(Application const&); // no assign
     Application* operator&() const; // no pointer access
 
-    Inkscape::XML::Document *_menus = nullptr;
     std::map<SPDocument *, int> _document_set;
-    std::map<SPDocument *, AppSelectionModel *> _selection_models;
     std::vector<SPDesktop *> *_desktops = nullptr;
+    std::string _pages;
 
     unsigned refCount = 1;
     guint _mapalt = GDK_MOD1_MASK;
     guint _trackalt = false;
     static bool _crashIsHappening;
     bool _use_gui = false;
-    gint _pdf_page = 1;
     bool _pdf_poppler = false;
 };
 

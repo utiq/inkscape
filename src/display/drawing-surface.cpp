@@ -11,9 +11,14 @@
  */
 
 //#include <iostream>
+#ifdef  WITH_PATCHED_CAIRO
+#include "3rdparty/cairo/src/cairo.h"
+#endif
+
 #include "display/drawing-surface.h"
 #include "display/drawing-context.h"
 #include "display/cairo-utils.h"
+
 
 namespace Inkscape {
 
@@ -312,6 +317,10 @@ void DrawingCache::paintFromCache(DrawingContext &dc, Geom::OptIntRect &area, bo
     cairo_region_subtract(dirty_region, _clean_region);
 
     if (is_filter && !cairo_region_is_empty(dirty_region)) { // To allow fast panning on high zoom on filters
+        cairo_region_destroy(cache_region);
+        cairo_region_destroy(dirty_region);
+        cairo_region_destroy(_clean_region);
+        _clean_region = cairo_region_create();
         return;
     }
     if (cairo_region_is_empty(dirty_region)) {

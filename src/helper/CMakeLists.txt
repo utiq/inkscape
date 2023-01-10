@@ -10,18 +10,15 @@ set(sp_marshal_SRC
 )
 
 set(helper_SRC
-	action.cpp
-	action-context.cpp
 	geom.cpp
 	geom-nodetype.cpp
 	geom-pathstroke.cpp
-	geom-pathvectorsatellites.cpp
-	geom-satellite.cpp
+	geom-pathvector_nodesatellites.cpp
+	geom-nodesatellite.cpp
 	gettext.cpp
 	pixbuf-ops.cpp
 	png-write.cpp
 	stock-items.cpp
-        verb-action.cpp
 	#units-test.cpp
 
 	# we generate this file and it's .h counter-part
@@ -30,20 +27,17 @@ set(helper_SRC
 
 	# -------
 	# Headers
-	action.h
-	action-context.h
 	geom-curves.h
 	geom-nodetype.h
 	geom-pathstroke.h
-	geom-pathvectorsatellites.h
-	geom-satellite.h
+	geom-pathvector_nodesatellites.h
+	geom-nodesatellite.h
 	geom.h
 	gettext.h
 	mathfns.h
 	pixbuf-ops.h
 	png-write.h
 	stock-items.h
-        verb-action.h
 )
 
 set_source_files_properties(sp_marshal_SRC PROPERTIES GENERATED true)

@@ -20,9 +20,10 @@
 
 #include "inkscape-application.h"
 
-class SPDesktop;
 using Gtk::Label;
 using Gtk::Widget;
+
+class InkscapeWindow;
 
 namespace Inkscape {
 namespace UI {
@@ -36,12 +37,14 @@ class DialogMultipaned;
  *
  * It watches the last active InkscapeWindow and updates its inner dialogs, if any.
  */
-class DialogWindow : public Gtk::ApplicationWindow
+class DialogWindow : public Gtk::Window
 {
 public:
-    DialogWindow(Gtk::Widget *page = nullptr);
+    DialogWindow(InkscapeWindow* window, Gtk::Widget *page = nullptr);
     ~DialogWindow() override;
 
+    void set_inkscape_window(InkscapeWindow *window);
+    InkscapeWindow* get_inkscape_window() { return _inkscape_window; }
     void update_dialogs();
     void update_window_size_to_fit_children();
 
@@ -51,8 +54,9 @@ public:
 private:
     bool on_key_press_event(GdkEventKey* key_event) override;
 
-    InkscapeApplication *_app;
-    DialogContainer *_container;
+    InkscapeApplication *_app = nullptr;
+    InkscapeWindow *_inkscape_window = nullptr; // The Inkscape window that dialog window is attached to, changes when mouse moves into new Inkscape window.
+    DialogContainer *_container = nullptr;
     Glib::ustring _title;
 };
 

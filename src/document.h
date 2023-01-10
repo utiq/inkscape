@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <queue>
 
 #include <boost/ptr_container/ptr_list.hpp>
 
@@ -40,7 +41,6 @@
 #include "event.h"
 #include "gc-anchored.h"
 #include "gc-finalized.h"
-#include "object/sp-namedview.h"
 
 #include "inkgc/gc-managed.h"
 
@@ -74,12 +74,14 @@ class SPItem;
 class SPObject;
 class SPGroup;
 class SPRoot;
+class SPNamedView;
 
 namespace Inkscape {
     class Selection; 
     class UndoStackObserver;
     class EventLog;
     class ProfileManager;
+    class PageManager;
     namespace XML {
         struct Document;
         class Node;
@@ -124,8 +126,12 @@ public:
             SPDocument *parent);
     static SPDocument *createNewDoc(char const *filename, bool keepalive,
             bool make_new = false, SPDocument *parent=nullptr );
-    static SPDocument *createNewDocFromMem(char const*buffer, int length, bool keepalive);
-           SPDocument *createChildDoc(std::string const &filename);
+    static SPDocument *createNewDocFromMem(char const *buffer, int length, bool keepalive,
+                                           Glib::ustring const &filename = "");
+    SPDocument *createChildDoc(std::string const &filename);
+
+    void setPages(bool enabled);
+    void prunePages(const std::string &page_nums, bool invert = false);
 
     // Make a copy, you are responsible for the copy.
     std::unique_ptr<SPDocument> copy() const;
@@ -133,7 +139,7 @@ public:
     // Document status --------------------
     void setVirgin(bool Virgin) { virgin = Virgin; }
     bool getVirgin() { return virgin; }
-    const SPDocument *getOriginalDocument() const { return _original_document.get(); }
+    const SPDocument *getOriginalDocument() const { return _original_document; }
 
     //! Increment reference count by one and return a self-dereferencing pointer.
     std::unique_ptr<SPDocument> doRef();
@@ -154,17 +160,28 @@ public:
     bool addResource(char const *key, SPObject *object);
     bool removeResource(char const *key, SPObject *object);
     std::vector<SPObject *> const getResourceList(char const *key);
+    void process_pending_resource_changes();
 
     void do_change_filename(char const *const filename, bool const rebase);
     void changeFilenameAndHrefs(char const *filename);
     void setXMLDialogSelectedObject(SPObject *activexmltree) { _activexmltree = activexmltree; }
     SPObject *getXMLDialogSelectedObject() { return _activexmltree; }
 
-  private:
+    Inkscape::EventLog *get_event_log() { return _event_log.get(); }
+
+    Inkscape::PageManager& getPageManager() { return *_page_manager; }
+    const Inkscape::PageManager& getPageManager() const { return *_page_manager; }
+
+
+private:
     void _importDefsNode(SPDocument *source, Inkscape::XML::Node *defs, Inkscape::XML::Node *target_defs);
     SPObject *_activexmltree;
 
-  public:
+    std::unique_ptr<Inkscape::PageManager> _page_manager;
+
+    std::queue<GQuark> pending_resource_changes;
+
+public:
     void importDefs(SPDocument *source);
 
     unsigned int vacuumDocument();
@@ -172,8 +189,8 @@ public:
     /******** Getters and Setters **********/
 
     // Document structure -----------------
-    Inkscape::ProfileManager* getProfileManager() const { return profileManager; }
-    Avoid::Router* getRouter() const { return router; }
+    Inkscape::ProfileManager &getProfileManager() const { return *_profileManager; }
+    Avoid::Router* getRouter() const { return _router.get(); }
 
     
     /** Returns our SPRoot */
@@ -197,6 +214,8 @@ public:
     SPDocument *getParent() { return _parent_document; }
     SPDocument const *getParent() const { return _parent_document; }
 
+    Inkscape::Selection *getSelection() { return _selection.get(); }
+
     // Styling
     CRCascade    *getStyleCascade() { return style_cascade; }
 
@@ -215,7 +234,7 @@ public:
 
 
     // Document geometry ------------------------
-    Inkscape::Util::Unit const* getDisplayUnit() const;
+    Inkscape::Util::Unit const* getDisplayUnit();
 
     void setDocumentScale( const double scaleX, const double scaleY );
     void setDocumentScale( const double scale );
@@ -234,23 +253,66 @@ public:
     Geom::Rect getViewBox() const;
 
     Geom::OptRect preferredBounds() const;
+    Geom::OptRect pageBounds();
     void fitToRect(Geom::Rect const &rect, bool with_margins = false);
     void setupViewport(SPItemCtx *ctx);
 
+    // Desktop geometry ------------------------
+    /// Document to desktop coordinate transformation.
+    const Geom::Affine &doc2dt() const;
+    /// Desktop to document coordinate transformation.
+    const Geom::Affine &dt2doc() const
+    {
+        // Note: doc2dt().inverse() happens to be identical to doc2dt()
+        return doc2dt();
+    }
+    /// True if the desktop Y-axis points down, false if it points up.
+    bool is_yaxisdown() const { return yaxisdir() > 0; }
+    /// "1" if the desktop Y-axis points down, "-1" if it points up.
+    double yaxisdir() const { return _doc2dt[3]; }
 
     // Find items -----------------------------
     void bindObjectToId(char const *id, SPObject *object);
-    void enforceObjectIds(); 
-    SPObject *getObjectById(Glib::ustring const &id) const;
+    SPObject *getObjectById(std::string const &id) const;
     SPObject *getObjectById(char const *id) const;
+    SPObject *getObjectByHref(std::string const &href) const;
+    SPObject *getObjectByHref(char const *href) const;
 
     void bindObjectToRepr(Inkscape::XML::Node *repr, SPObject *object);
     SPObject *getObjectByRepr(Inkscape::XML::Node *repr) const;
 
     std::vector<SPObject *> getObjectsByClass(Glib::ustring const &klass) const;
-    std::vector<SPObject *> getObjectsByElement(Glib::ustring const &element) const;
+    std::vector<SPObject *> getObjectsByElement(Glib::ustring const &element, bool custom = false) const;
     std::vector<SPObject *> getObjectsBySelector(Glib::ustring const &selector) const;
 
+    /**
+     * @brief Generate a document-wide unique id.
+     *
+     * Generates an id string not in use by any object in the document.
+     * The generated string is based on the given prefix by appending a number.
+     */
+    std::string generate_unique_id(char const *prefix);
+
+    /**
+     * @brief Set the reference document object.
+     * Use this function to extend functionality of getObjectById() - it will search in reference document.
+     * This is useful when rendering objects that have been copied from this document into a sandbox document.
+     * Setting reference will allow sandbox document to find gradients, or linked objects that may have been
+     * referenced by copied object.
+     * @param document 
+     */
+    void set_reference_document(SPDocument* document);
+    SPDocument* get_reference_document();
+
+    /**
+     * @brief Object used to temporarily set and then automatically clear reference document.
+     */
+    struct install_reference_document {
+        install_reference_document(SPDocument* inject_into, SPDocument* reference);
+        ~install_reference_document();
+    private:
+        SPDocument* _parent;
+    };
 
     // Find items by geometry --------------------
     void build_flat_item_list(unsigned int dkey, SPGroup *group, gboolean into_groups) const;
@@ -258,7 +320,7 @@ public:
     std::vector<SPItem*> getItemsInBox         (unsigned int dkey, Geom::Rect const &box, bool take_hidden = false, bool take_insensitive = false, bool take_groups = true, bool enter_groups = false) const;
     std::vector<SPItem*> getItemsPartiallyInBox(unsigned int dkey, Geom::Rect const &box, bool take_hidden = false, bool take_insensitive = false, bool take_groups = true, bool enter_groups = false) const;
     SPItem *getItemAtPoint(unsigned int key, Geom::Point const &p, bool into_groups, SPItem *upto = nullptr) const;
-    std::vector<SPItem*> getItemsAtPoints(unsigned const key, std::vector<Geom::Point> points, bool all_layers = true, size_t limit = 0) const ;
+    std::vector<SPItem*> getItemsAtPoints(unsigned const key, std::vector<Geom::Point> points, bool all_layers = true, bool topmost_only = true, size_t limit = 0) const;
     SPItem *getGroupAtPoint(unsigned int key,  Geom::Point const &p) const;
 
     /**
@@ -274,7 +336,7 @@ public:
      * perspective in the defs. If no perspective exists, returns NULL.
      */
     Persp3D * getCurrentPersp3D();
-
+    void fix_lpe_data();
     void setCurrentPersp3DImpl(Persp3DImpl * const persp_impl) { current_persp3d_impl = persp_impl; }
     Persp3DImpl * getCurrentPersp3DImpl() { return current_persp3d_impl; }
 
@@ -289,9 +351,9 @@ public:
     // Document undo/redo ----------------------
     unsigned long serial() const { return _serial; }  // Returns document's unique number.
     bool isSeeking() const {return seeking;} // In a transition between two "good" states of document?
+    bool isPartial() const {return partial != nullptr;} // In partianl undo/redo transaction
     void reset_key(void *dummy) { actionkey.clear(); }
     bool isSensitive() const { return sensitive; }
-
 
     // Garbage collecting ----------------------
     void queueForOrphanCollection(SPObject *object);
@@ -301,12 +363,19 @@ public:
     // Actions ---------------------------------
     Glib::RefPtr<Gio::SimpleActionGroup> getActionGroup() { return action_group; }
 
+protected:
+    friend class Inkscape::DocumentUndo;
+    bool isUndoBusy() const { return _undobusy; }
+    void setUndoBusy(bool undobussy) { _undobusy = undobussy; }
+    Glib::ustring getEventDescriptionStacked() const { return _event_description_stacked; }
+    void setEventDescriptionStacked(Glib::ustring event_description_stacked) { _event_description_stacked = event_description_stacked; }
     /************* Data ***************/
 private:
 
     // Document ------------------------------
-    Inkscape::ProfileManager* profileManager;   // Color profile.
-    Avoid::Router *router; // Instance of the connector router
+    std::unique_ptr<Inkscape::ProfileManager> _profileManager;   // Color profile.
+    std::unique_ptr<Avoid::Router> _router; // Instance of the connector router
+    std::unique_ptr<Inkscape::Selection> _selection;
 
     // Document status -----------------------
 
@@ -327,11 +396,16 @@ private:
     boost::ptr_list<SPDocument> _child_documents;
     // Conversely this is a parent document because this is a child.
     SPDocument *_parent_document;
-    // When copying documents, this can refer to it's original
-    std::unique_ptr<SPDocument const> _original_document;
+    // When copying documents, this can refer to its original
+    SPDocument const *_original_document;
+    // Reference document to fall back to when getObjectById cannot find element in '*this' document
+    SPDocument* _ref_document = nullptr;
 
     // Styling
     CRCascade *style_cascade;
+
+    // Desktop geometry
+    mutable Geom::Affine _doc2dt;
 
     // File information ----------------------
     char *document_filename;   ///< A filename, or NULL
@@ -352,6 +426,7 @@ private:
 
     // Document undo/redo ----------------------
     friend Inkscape::DocumentUndo;
+    std::unique_ptr<Inkscape::EventLog> _event_log;
 
     /* Undo/Redo state */
     bool sensitive; /* If we save actions to undo stack */
@@ -359,7 +434,8 @@ private:
     int history_size;
     std::vector<Inkscape::Event *> undo; /* Undo stack of reprs */
     std::vector<Inkscape::Event *> redo; /* Redo stack of reprs */
-
+    bool _undobusy = false;
+    Glib::ustring _event_description_stacked = "";  
     /* Undo listener */
     Inkscape::CompositeUndoStackObserver undoStackObservers;
 
@@ -369,6 +445,7 @@ private:
     bool seeking; // Related to undo/redo/unique id
     unsigned long _serial; // Unique document number (used by undo/redo).
     Glib::ustring actionkey; // Last action key, used to combine actions in undo.
+    unsigned long object_id_counter; // Steadily-incrementing counter used to assign unique ids to objects.
 
     // Garbage collecting ----------------------
 
@@ -379,14 +456,15 @@ private:
 
     /*********** Signals **************/
 
-    typedef sigc::signal<void, SPObject *> IDChangedSignal;
-    typedef sigc::signal<void> ResourcesChangedSignal;
-    typedef sigc::signal<void, unsigned> ModifiedSignal;
-    typedef sigc::signal<void, char const *> FilenameSetSignal;
-    typedef sigc::signal<void, double, double> ResizedSignal;
-    typedef sigc::signal<void> ReconstructionStart;
-    typedef sigc::signal<void> ReconstructionFinish;
-    typedef sigc::signal<void> CommitSignal;
+    typedef sigc::signal<void (SPObject *)> IDChangedSignal;
+    typedef sigc::signal<void ()> ResourcesChangedSignal;
+    typedef sigc::signal<void (unsigned)> ModifiedSignal;
+    typedef sigc::signal<void (char const *)> FilenameSetSignal;
+    typedef sigc::signal<void (double, double)> ResizedSignal;
+    typedef sigc::signal<void ()> ReconstructionStart;
+    typedef sigc::signal<void ()> ReconstructionFinish;
+    typedef sigc::signal<void ()> CommitSignal;
+    typedef sigc::signal<void ()> BeforeCommitSignal; // allow to add actions berfore commit to include in undo
 
     typedef std::map<GQuark, SPDocument::IDChangedSignal> IDChangedSignalMap;
     typedef std::map<GQuark, SPDocument::ResourcesChangedSignal> ResourcesChangedSignalMap;
@@ -396,44 +474,29 @@ private:
 
     SPDocument::ModifiedSignal modified_signal;
     SPDocument::FilenameSetSignal filename_set_signal;
-    SPDocument::ResizedSignal resized_signal;
     SPDocument::ReconstructionStart _reconstruction_start_signal;
     SPDocument::ReconstructionFinish  _reconstruction_finish_signal;
     SPDocument::CommitSignal commit_signal; // Used by friend Inkscape::DocumentUndo
+    SPDocument::BeforeCommitSignal before_commit_signal; // Used by friend Inkscape::DocumentUndo
 
-    bool oldSignalsConnected;
-
-    sigc::connection _selection_changed_connection;
     sigc::connection _desktop_activated_connection;
-    sigc::connection selChangeConnection;
-    sigc::connection desktopActivatedConnection;
 
-    sigc::signal<void> destroySignal;
-
-    mutable Geom::Affine _doc2dt;
+    sigc::signal<void ()> destroySignal;
 
 public:
-    /// Document to desktop coordinate transformation.
-    const Geom::Affine &doc2dt() const;
-    /// Desktop to document coordinate transformation.
-    const Geom::Affine &dt2doc() const
-    {
-        // Note: doc2dt().inverse() happens to be identical to doc2dt()
-        return doc2dt();
-    }
-    /// True if the desktop Y-axis points down, false if it points up.
-    bool is_yaxisdown() const { return yaxisdir() > 0; }
-    /// "1" if the desktop Y-axis points down, "-1" if it points up.
-    double yaxisdir() const { return _doc2dt[3]; }
-
+    /**
+     * @brief Add the observer to the document's undo listener
+     * The caller is in charge of freeing any memory allocated to the observer
+     * @param observer
+     */
     void addUndoObserver(Inkscape::UndoStackObserver& observer);
     void removeUndoObserver(Inkscape::UndoStackObserver& observer);
 
-    sigc::connection connectDestroy(sigc::signal<void>::slot_type slot);
+    sigc::connection connectDestroy(sigc::signal<void ()>::slot_type slot);
     sigc::connection connectModified(ModifiedSignal::slot_type slot);
     sigc::connection connectFilenameSet(FilenameSetSignal::slot_type slot);
-    sigc::connection connectResized(ResizedSignal::slot_type slot);
     sigc::connection connectCommit(CommitSignal::slot_type slot);
+    sigc::connection connectBeforeCommit(BeforeCommitSignal::slot_type slot);
     sigc::connection connectIdChanged(const char *id, IDChangedSignal::slot_type slot);
     sigc::connection connectResourcesChanged(char const *key, SPDocument::ResourcesChangedSignal::slot_type slot);
     sigc::connection connectReconstructionStart(ReconstructionStart::slot_type slot);
@@ -446,14 +509,21 @@ public:
     void _emitModified();  // Used by SPItem
     void emitReconstructionStart();
     void emitReconstructionFinish();
-    void emitResizedSignal(double width, double height);
 };
 
 namespace std {
 template <>
 struct default_delete<SPDocument> {
-    void operator()(SPDocument *ptr) const { Inkscape::GC::release(ptr); }
+    void operator()(SPDocument *ptr) const {
+        Inkscape::GC::release(ptr);
+        if (ptr->_anchored_refcount() == 0) {
+            // Explicit delete required to free SPDocument
+            // see https://gitlab.com/inkscape/inkscape/-/issues/2723
+            delete ptr;
+        }
+    }
 };
+
 }; // namespace std
 
 /*

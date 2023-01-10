@@ -78,8 +78,19 @@ LPEBendPath::LPEBendPath(LivePathEffectObject *lpeobject) :
     concatenate_before_pwd2 = true;
 }
 
-LPEBendPath::~LPEBendPath()
-= default;
+LPEBendPath::~LPEBendPath() = default;
+
+
+bool 
+LPEBendPath::doOnOpen(SPLPEItem const *lpeitem)
+{
+    if (!is_load || is_applied) {
+        return false;
+    }
+    bend_path.reload();
+    return false;
+}
+
 
 void
 LPEBendPath::doBeforeEffect (SPLPEItem const* lpeitem)
@@ -87,6 +98,9 @@ LPEBendPath::doBeforeEffect (SPLPEItem const* lpeitem)
     // get the item bounding box
     original_bbox(lpeitem, false, true);
     original_height = boundingbox_Y.max() - boundingbox_Y.min();
+    if (is_load) {
+        bend_path.reload();
+    }
     if (_knot_entity) {
         if (hide_knot) {
             helper_path.clear();
@@ -99,9 +113,28 @@ LPEBendPath::doBeforeEffect (SPLPEItem const* lpeitem)
 }
 
 void LPEBendPath::transform_multiply(Geom::Affine const &postmul, bool /*set*/)
-{
+{   
+    Inkscape::Selection * selection = nullptr;
+    SPItem *linked = nullptr;
+    if (SP_ACTIVE_DESKTOP) {
+        selection = SP_ACTIVE_DESKTOP->getSelection();
+        linked = cast<SPItem>(bend_path.getObject());
+    }
+    if (linked) {
+        linked->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+        return;
+    }
     if (sp_lpe_item && sp_lpe_item->pathEffectsEnabled() && sp_lpe_item->optimizeTransforms()) {
         bend_path.param_transform_multiply(postmul, false);
+    } else if( //this allow transform user spected way when lpeitem and pathparamenter are both selected
+        sp_lpe_item && 
+        sp_lpe_item->pathEffectsEnabled() &&
+        linked &&
+        (selection->includes(linked))) 
+    {
+        Geom::Affine transformlpeitem = sp_item_transform_repr(sp_lpe_item).inverse() * postmul;
+        sp_lpe_item->transform *= transformlpeitem.inverse();
+        sp_lpe_item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     }
 }
 
@@ -110,10 +143,11 @@ LPEBendPath::doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd
 {
     using namespace Geom;
 
-/* Much credit should go to jfb and mgsloan of lib2geom development for the code below! */
+    /* Much credit should go to jfb and mgsloan of lib2geom development for the code below! */
+    Geom::Affine affine = bend_path.get_relative_affine();
 
     if (bend_path.changed) {
-        uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(bend_path.get_pwd2()),2,.1);
+        uskeleton = arc_length_parametrization(Piecewise<D2<SBasis> >(bend_path.get_pwd2() * affine),2,.1);
         uskeleton = remove_short_cuts(uskeleton,.01);
         n = rot90(derivative(uskeleton));
         n = force_continuity(remove_short_cuts(n,.01));
@@ -157,7 +191,7 @@ void
 LPEBendPath::resetDefaults(SPItem const* item)
 {
     Effect::resetDefaults(item);
-    original_bbox(SP_LPE_ITEM(item), false, true);
+    original_bbox(cast<SPLPEItem>(item), false, true);
 
     Geom::Point start(boundingbox_X.min(), (boundingbox_Y.max()+boundingbox_Y.min())/2);
     Geom::Point end(boundingbox_X.max(), (boundingbox_Y.max()+boundingbox_Y.min())/2);
@@ -222,7 +256,7 @@ KnotHolderEntityWidthBendPath::knot_set(Geom::Point const &p, Geom::Point const&
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     prefs->setDouble("/live_effects/bend_path/width", lpe->prop_scale);
 
-    sp_lpe_item_update_patheffect (SP_LPE_ITEM(item), false, true);
+    sp_lpe_item_update_patheffect (cast<SPLPEItem>(item), false, true);
 }
 
 Geom::Point 

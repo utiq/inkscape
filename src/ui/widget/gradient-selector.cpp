@@ -24,16 +24,13 @@
 #include "id-clash.h"
 #include "inkscape.h"
 #include "preferences.h"
-#include "verbs.h"
 
 #include "object/sp-defs.h"
 #include "style.h"
 
-#include "helper/action.h"
+#include "actions/actions-tools.h" // Invoke gradient tool
 #include "ui/icon-loader.h"
-
 #include "ui/icon-names.h"
-
 #include "ui/widget/gradient-vector-selector.h"
 
 namespace Inkscape {
@@ -88,17 +85,17 @@ GradientSelector::GradientSelector()
     count_column->set_clickable(true);
     count_column->set_resizable(true);
 
-    _treeview->signal_key_press_event().connect(sigc::mem_fun(this, &GradientSelector::onKeyPressEvent), false);
+    _treeview->signal_key_press_event().connect(sigc::mem_fun(*this, &GradientSelector::onKeyPressEvent), false);
 
     _treeview->show();
 
-    icon_column->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::onTreeColorColClick));
-    name_column->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::onTreeNameColClick));
-    count_column->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::onTreeCountColClick));
+    icon_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeColorColClick));
+    name_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeNameColClick));
+    count_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeCountColClick));
 
-    auto tree_select_connection = _treeview->get_selection()->signal_changed().connect(sigc::mem_fun(this, &GradientSelector::onTreeSelection));
+    auto tree_select_connection = _treeview->get_selection()->signal_changed().connect(sigc::mem_fun(*this, &GradientSelector::onTreeSelection));
     _vectors->set_tree_select_connection(tree_select_connection);
-    _text_renderer->signal_edited().connect(sigc::mem_fun(this, &GradientSelector::onGradientRename));
+    _text_renderer->signal_edited().connect(sigc::mem_fun(*this, &GradientSelector::onGradientRename));
 
     _scrolled_window = Gtk::manage(new Gtk::ScrolledWindow());
     _scrolled_window->add(*_treeview);
@@ -122,27 +119,39 @@ GradientSelector::GradientSelector()
     _nonsolid.push_back(_add);
     hb->pack_start(*_add, false, false, 0);
 
-    _add->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::add_vector_clicked));
+    _add->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::add_vector_clicked));
     _add->set_sensitive(false);
     _add->set_relief(Gtk::RELIEF_NONE);
     _add->set_tooltip_text(_("Create a duplicate gradient"));
 
+    _del2 = Gtk::manage(new Gtk::Button());
+    style_button(_del2, INKSCAPE_ICON("list-remove"));
+
+    _nonsolid.push_back(_del2);
+    hb->pack_start(*_del2, false, false, 0);
+    _del2->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::delete_vector_clicked_2));
+    _del2->set_sensitive(false);
+    _del2->set_relief(Gtk::RELIEF_NONE);
+    _del2->set_tooltip_text(_("Delete unused gradient"));
+
+    // The only use of this button is hidden!
     _edit = Gtk::manage(new Gtk::Button());
     style_button(_edit, INKSCAPE_ICON("edit"));
 
     _nonsolid.push_back(_edit);
     hb->pack_start(*_edit, false, false, 0);
-    _edit->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::edit_vector_clicked));
+    _edit->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::edit_vector_clicked));
     _edit->set_sensitive(false);
     _edit->set_relief(Gtk::RELIEF_NONE);
     _edit->set_tooltip_text(_("Edit gradient"));
+    _edit->set_no_show_all();
 
     _del = Gtk::manage(new Gtk::Button());
     style_button(_del, INKSCAPE_ICON("list-remove"));
 
     _swatch_widgets.push_back(_del);
     hb->pack_start(*_del, false, false, 0);
-    _del->signal_clicked().connect(sigc::mem_fun(this, &GradientSelector::delete_vector_clicked));
+    _del->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::delete_vector_clicked));
     _del->set_sensitive(false);
     _del->set_relief(Gtk::RELIEF_NONE);
     _del->set_tooltip_text(_("Delete swatch"));
@@ -204,7 +213,7 @@ void GradientSelector::onGradientRename(const Glib::ustring &path_string, const 
                 row[_columns->name] = gr_prepare_label(obj);
                 if (!new_text.empty() && new_text != row[_columns->name]) {
                     rename_id(obj, new_text);
-                    Inkscape::DocumentUndo::done(obj->document, SP_VERB_CONTEXT_GRADIENT, _("Rename gradient"));
+                    Inkscape::DocumentUndo::done(obj->document, _("Rename gradient"), INKSCAPE_ICON("color-gradient"));
                 }
             }
         }
@@ -348,6 +357,26 @@ void GradientSelector::onTreeSelection()
     if (obj) {
         vector_set(obj);
     }
+
+    check_del_button();
+}
+
+void GradientSelector::check_del_button() {
+    const auto sel = _treeview->get_selection();
+    if (!sel) {
+        return;
+    }
+
+    SPGradient *obj = nullptr;
+    /* Single selection */
+    auto iter = sel->get_selected();
+    if (iter) {
+        Gtk::TreeModel::Row row = *iter;
+        obj = row[_columns->data];
+    }
+    if (_del2) {
+        _del2->set_sensitive(obj && sp_get_gradient_refcount(obj->document, obj) < 2 && _store->children().size() > 1);
+    }
 }
 
 bool GradientSelector::_checkForSelected(const Gtk::TreePath &path, const Gtk::TreeIter &iter, SPGradient *vector)
@@ -375,7 +404,6 @@ void GradientSelector::selectGradientInTree(SPGradient *vector)
 
 void GradientSelector::setVector(SPDocument *doc, SPGradient *vector)
 {
-    g_return_if_fail(!vector || SP_IS_GRADIENT(vector));
     g_return_if_fail(!vector || (vector->document == doc));
 
     if (vector && !vector->hasStops()) {
@@ -416,6 +444,7 @@ void GradientSelector::setVector(SPDocument *doc, SPGradient *vector)
         if (_del) {
             _del->set_sensitive(true);
         }
+        check_del_button();
     } else {
         if (_edit) {
             _edit->set_sensitive(false);
@@ -425,6 +454,9 @@ void GradientSelector::setVector(SPDocument *doc, SPGradient *vector)
         }
         if (_del) {
             _del->set_sensitive(false);
+        }
+        if (_del2) {
+            _del2->set_sensitive(false);
         }
     }
 }
@@ -446,6 +478,37 @@ void GradientSelector::vector_set(SPGradient *gr)
     }
 }
 
+void GradientSelector::delete_vector_clicked_2() {
+    const auto selection = _treeview->get_selection();
+    if (!selection) {
+        return;
+    }
+
+    SPGradient *obj = nullptr;
+    /* Single selection */
+    Gtk::TreeModel::iterator iter = selection->get_selected();
+    if (iter) {
+        Gtk::TreeModel::Row row = *iter;
+        obj = row[_columns->data];
+    }
+
+    if (obj) {
+        if (auto repr = obj->getRepr()) {
+            repr->setAttribute("inkscape:collect", "always");
+
+            auto move = iter;
+            --move;
+            if (!move) {
+                move = iter;
+                ++move;
+            }
+            if (move) {
+                selection->select(move);
+                _treeview->scroll_to_row(_store->get_path(move), 0.5);
+            }
+        }
+    }
+}
 
 void GradientSelector::delete_vector_clicked()
 {
@@ -470,14 +533,8 @@ void GradientSelector::delete_vector_clicked()
 
 void GradientSelector::edit_vector_clicked()
 {
-    // Invoke the gradient tool
-    auto verb = Inkscape::Verb::get(SP_VERB_CONTEXT_GRADIENT);
-    if (verb) {
-        auto action = verb->get_action(Inkscape::ActionContext((Inkscape::UI::View::View *)SP_ACTIVE_DESKTOP));
-        if (action) {
-            sp_action_perform(action, nullptr);
-        }
-    }
+    // Invoke the gradient tool.... never actually called as button is hidden in only use!
+    set_active_tool(SP_ACTIVE_DESKTOP, "Gradient");
 }
 
 void GradientSelector::add_vector_clicked()
@@ -493,10 +550,11 @@ void GradientSelector::add_vector_clicked()
     Inkscape::XML::Node *repr = nullptr;
 
     if (gr) {
+        gr->getRepr()->removeAttribute("inkscape:collect");
         repr = gr->getRepr()->duplicate(xml_doc);
         // Rename the new gradients id to be similar to the cloned gradients
-        Glib::ustring old_id = gr->getId();
-        rename_id(gr, old_id);
+        auto new_id = generate_similar_unique_id(doc, gr->getId());
+        gr->setAttribute("id", new_id.c_str());
         doc->getDefs()->getRepr()->addChild(repr, nullptr);
     } else {
         repr = xml_doc->createElement("svg:linearGradient");
@@ -511,14 +569,30 @@ void GradientSelector::add_vector_clicked()
         repr->appendChild(stop);
         Inkscape::GC::release(stop);
         doc->getDefs()->getRepr()->addChild(repr, nullptr);
-        gr = SP_GRADIENT(doc->getObjectByRepr(repr));
+        gr = cast<SPGradient>(doc->getObjectByRepr(repr));
     }
 
     _vectors->set_gradient(doc, gr);
 
     selectGradientInTree(gr);
 
+    // assign gradient to selection
+    vector_set(gr);
+
     Inkscape::GC::release(repr);
+}
+
+void GradientSelector::show_edit_button(bool show) {
+    if (show) _edit->show(); else _edit->hide();
+}
+
+void GradientSelector::set_name_col_size(int min_width) {
+    auto name_column = _treeview->get_column(1);
+    name_column->set_min_width(min_width);
+}
+
+void GradientSelector::set_gradient_size(int width, int height) {
+    _vectors->set_pixmap_size(width, height);
 }
 
 } // namespace Widget

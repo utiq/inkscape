@@ -39,6 +39,9 @@
 
 #include "xml/repr.h"
 
+namespace Inkscape {
+class ObjectSet;
+};
 
 static const unsigned SP_STYLE_FLAG_ALWAYS (1 << 2);
 static const unsigned SP_STYLE_FLAG_IFSET  (1 << 0);
@@ -653,6 +656,7 @@ public:
 
 public:
     std::vector<SPShapeReference *> hrefs;
+    bool containsAnyShape(Inkscape::ObjectSet *set);
 };
 
 /// Color type internal to SPStyle, FIXME Add string value to store SVG named color.
@@ -728,15 +732,9 @@ class SPIPaint : public SPIBase
 {
 
 public:
-    SPIPaint()
-        : paintOrigin(SP_CSS_PAINT_ORIGIN_NORMAL),
-          colorSet(false),
-          noneSet(false) {
-        value.href = nullptr;
-        clear();
-    }
+    SPIPaint() { clear(); }
 
-    ~SPIPaint() override;  // Clear and delete href.
+    ~SPIPaint() override = default;
     void read( gchar const *str ) override;
     virtual void read( gchar const *str, SPStyle &style, SPDocument *document = nullptr);
     const Glib::ustring get_value() const override;
@@ -791,15 +789,19 @@ public:
 
     void setNone() {noneSet = true; colorSet=false;}
 
+    void setTag(SPObject* tag) { this->tag = tag; }
+    SPObject* getTag() { return tag; }
+
   // To do: make private
 public:
     SPPaintOrigin paintOrigin : 2;
     bool colorSet : 1;
     bool noneSet : 1;
     struct {
-         SPPaintServerReference *href;
+         std::shared_ptr<SPPaintServerReference> href;
          SPColor color;
     } value;
+    SPObject *tag = nullptr;
 };
 
 

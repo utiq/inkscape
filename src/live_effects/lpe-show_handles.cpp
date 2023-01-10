@@ -95,8 +95,7 @@ Geom::PathVector LPEShowHandles::doEffect_path (Geom::PathVector const & path_in
         outline_path.clear();
     }
     if (original_d) {
-        auto shape_curve = SPCurve::copy(current_shape->curveForEdit());
-        if (shape_curve) {
+        if (auto const shape_curve = current_shape->curveForEdit()) {
             Geom::PathVector original_curve = shape_curve->get_pathvector();
             if(original_path) {
                 for (const auto & i : original_curve) {

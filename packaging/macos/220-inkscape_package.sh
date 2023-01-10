@@ -1,156 +1,154 @@
 #!/usr/bin/env bash
+#
+# SPDX-FileCopyrightText: 2021 René de Hesselle <dehesselle@web.de>
+#
 # SPDX-License-Identifier: GPL-2.0-or-later
-# This file is part of the build pipeline for Inkscape on macOS.
 
 ### description ################################################################
 
-# Create the application bundle. This also includes patching library link
-# paths and all other components that we need to make relocatable.
+# Create the application bundle and make everything relocatable.
 
-### includes ###################################################################
+### shellcheck #################################################################
 
-# shellcheck disable=SC1090 # can't point to a single source here
-for script in "$(dirname "${BASH_SOURCE[0]}")"/0??-*.sh; do
-  source "$script";
-done
+# Nothing here.
 
-### settings ###################################################################
+### dependencies ###############################################################
 
-# shellcheck disable=SC2034 # this is from ansi_.sh
-ANSI_TERM_ONLY=false   # use ANSI control characters even if not in terminal
+source "$(dirname "${BASH_SOURCE[0]}")"/jhb/etc/jhb.conf.sh
 
-error_trace_enable
+source "$(dirname "${BASH_SOURCE[0]}")"/src/ink.sh
+source "$(dirname "${BASH_SOURCE[0]}")"/src/svg2icns.sh
+
+bash_d_include error
+bash_d_include lib
+
+### variables ##################################################################
+
+SELF_DIR=$(dirname "$(greadlink -f "$0")")
+
+### functions ##################################################################
+
+# Nothing here.
 
 ### main #######################################################################
+
+error_trace_enable
 
 #----------------------------------------------------- create application bundle
 
 ( # run gtk-mac-bundler
 
-  cp "$SELF_DIR"/inkscape.bundle "$INK_BLD_DIR"
-  cp "$SELF_DIR"/inkscape.plist "$INK_BLD_DIR"
+  cp "$SELF_DIR"/src/inkscape.bundle "$INK_BLD_DIR"
+  cp "$SELF_DIR"/res/inkscape.plist "$INK_BLD_DIR"
 
-  # shellcheck disable=SC2164 # we trap errors to catch bad 'cd'
-  cd "$INK_BLD_DIR"
+  cd "$INK_BLD_DIR" || exit 1
   export ARTIFACT_DIR=$ARTIFACT_DIR   # referenced in inkscape.bundle
-  jhbuild run gtk-mac-bundler inkscape.bundle
+  jhb run gtk-mac-bundler inkscape.bundle
 )
 
-# Rename to get from lowercase to capitalized "i" as the binary was completely
-# lowercase in the 0.9x versions.
-# (Doing it this way works only on case-insensitive filesystems.)
-mv "$INK_APP_DIR" "$INK_APP_DIR".tmp
+# Rename to get from lowercase "i" to capitalized "I" as the app bundle name
+# depends on the main binary (and that was lowercase in 0.9x).
+mv "$INK_APP_DIR" "$INK_APP_DIR".tmp   # requires case-insensitive filesysystem
 mv "$INK_APP_DIR".tmp "$INK_APP_DIR"
 
-# patch library link paths for lib2geom
-lib_change_path \
-  @executable_path/../Resources/lib/lib2geom\\..+dylib \
-  "$INK_APP_LIB_DIR"/inkscape/libinkscape_base.dylib
+#----------------------------------------------------- adjust library link paths
 
-# patch library link path for libboost_filesystem
-lib_change_path \
-  @executable_path/../Resources/lib/libboost_filesystem.dylib \
-  "$INK_APP_LIB_DIR"/inkscape/libinkscape_base.dylib \
+# Add rpath according to our app bundle structure.
+lib_clear_rpath "$INK_APP_EXE_DIR"/inkscape
+lib_add_rpath @executable_path/../Resources/lib "$INK_APP_EXE_DIR"/inkscape
+lib_add_rpath @executable_path/../Resources/lib/inkscape \
   "$INK_APP_EXE_DIR"/inkscape
 
-# patch library link path for libinkscape_base
-lib_change_path \
-  @executable_path/../Resources/lib/inkscape/libinkscape_base.dylib \
-  "$INK_APP_EXE_DIR"/inkscape
-
+# Libraries in INK_APP_LIB_DIR can reference each other directly.
 lib_change_siblings "$INK_APP_LIB_DIR"
 
-( # update version numbers in property list
+# Point GTK modules towards INK_APP_LIB_DIR using @loader_path.
+lib_change_paths @loader_path/../../.. "$INK_APP_LIB_DIR" \
+  "$INK_APP_LIB_DIR"/gtk-3.0/3.0.0/immodules/*.so \
+  "$INK_APP_LIB_DIR"/gtk-3.0/3.0.0/printbackends/*.so
 
-  PLIST=$INK_APP_CON_DIR/Info.plist
-  IV=$(ink_get_version)
-  RV=$(ink_get_repo_shorthash)
+# Point enchant's applespell plugin towards INK_APP_LIB_DIR using @loader_path.
+lib_change_paths @loader_path/.. "$INK_APP_LIB_DIR" \
+  "$INK_APP_LIB_DIR"/enchant-2/enchant_applespell.so
 
-  # update Inkscape version information
-  /usr/libexec/PlistBuddy -c "Set CFBundleShortVersionString '$IV ($RV)'" "$PLIST"
-  /usr/libexec/PlistBuddy -c "Set CFBundleVersion '$IV ($RV)'" "$PLIST"
+# Point Ghostscript towards INK_APP_LIB_DIR using @executable_path.
+lib_change_paths \
+  @executable_path/../lib \
+  "$INK_APP_LIB_DIR" \
+  "$INK_APP_BIN_DIR"/gs
 
-  # update minimum system version according to deployment target
-  /usr/libexec/PlistBuddy -c "Set LSMinimumSystemVersion '$SDK_VER'" "$PLIST"
-)
+#------------------------------------------------------ use rpath in cache files
+
+sed -i '' \
+  's|@executable_path/../Resources/lib|@rpath|g' \
+  "$INK_APP_LIB_DIR"/gtk-3.0/3.0.0/immodules.cache
+sed -i '' \
+  's|@executable_path/../Resources/lib|@rpath|g' \
+  "$INK_APP_LIB_DIR"/gdk-pixbuf-2.0/2.10.0/loaders.cache
+
+#------------------------------------------------------------- modify Info.plist
+
+# update Inkscape version information
+/usr/libexec/PlistBuddy \
+  -c "Set CFBundleShortVersionString '$(ink_get_version)'" \
+  "$INK_APP_PLIST"
+/usr/libexec/PlistBuddy \
+  -c "Set CFBundleVersion '$INK_BUILD'" \
+  "$INK_APP_PLIST"
+
+# update minimum system version according to deployment target
+/usr/libexec/PlistBuddy \
+  -c "Set LSMinimumSystemVersion $SYS_SDK_VER" \
+  "$INK_APP_PLIST"
+
+# add some metadata to make CI identifiable
+if $CI_GITLAB; then
+  for var in PROJECT_NAME PROJECT_URL COMMIT_BRANCH COMMIT_SHA COMMIT_SHORT_SHA\
+             JOB_ID JOB_URL JOB_NAME PIPELINE_ID PIPELINE_URL; do
+    # use awk to create camel case strings (e.g. PROJECT_NAME to ProjectName)
+    /usr/libexec/PlistBuddy -c "Add CI$(\
+      echo $var | awk -F _ '{
+        for (i=1; i<=NF; i++)
+        printf "%s", toupper(substr($i,1,1)) tolower(substr($i,2))
+      }'
+    ) string $(eval echo \$CI_$var)" "$INK_APP_PLIST"
+  done
+fi
 
 #----------------------------------------------------- generate application icon
 
-svg2icns "$INK_DIR"/share/branding/inkscape-mac.svg \
-         "$INK_APP_RES_DIR"/inkscape.icns
+svg2icns \
+  "$INK_DIR"/share/branding/inkscape-mac.svg \
+  "$INK_APP_RES_DIR"/inkscape.icns
 
 #----------------------------------------------------------- add file type icons
 
-cp "$INK_DIR"/packaging/macos/resources/*.icns "$INK_APP_RES_DIR"
+cp "$INK_DIR"/packaging/macos/res/*.icns "$INK_APP_RES_DIR"
 
-#---------------------------------------------------------- add Python.framework
+#------------------------------------------------------- add Python and packages
 
-# extract Python.framework (w/o testfiles)
-mkdir "$INK_APP_FRA_DIR"
-tar -C "$INK_APP_FRA_DIR" \
-  --exclude="Versions/$INK_PYTHON_VER/lib/python$INK_PYTHON_VER/test/"'*' \
-  -xf "$PKG_DIR"/"$(basename "$INK_PYTHON_URL")"
+# Install externally built Python framework.
+ink_install_python
 
-# link it to $INK_APP_BIN_DIR so it'll be in PATH for the app
-mkdir -p "$INK_APP_BIN_DIR"
-# shellcheck disable=SC2086 # it's an integer
-ln -sf ../../Frameworks/Python.framework/Versions/Current/bin/python$INK_PYTHON_VER_MAJOR "$INK_APP_BIN_DIR"
+# Add rpath to find libraries.
+lib_add_rpath @executable_path/../../../../../Resources/lib \
+  "$INK_APP_FRA_DIR"/Python.framework/Versions/Current/bin/\
+python"$INK_PYTHON_VER"
+lib_add_rpath @executable_path/../../../../../../../../Resources/lib \
+  "$INK_APP_FRA_DIR"/Python.framework/Versions/Current/Resources/\
+Python.app/Contents/MacOS/Python
 
-# create '.pth' file inside Framework to include our site-packages directory
-# shellcheck disable=SC2086 # it's an integer
-# TODO: remove "./" ?
-echo "./../../../../../../../Resources/lib/python$INK_PYTHON_VER/site-packages" \
-  > "$INK_APP_FRA_DIR"/Python.framework/Versions/Current/lib/python$INK_PYTHON_VER/site-packages/inkscape.pth
-
-#-------------------------------------------------- install Python package: lxml
-
-ink_pipinstall "$INK_PYTHON_LXML"
-
-lib_change_paths \
-  @loader_path/../../.. \
-  "$INK_APP_LIB_DIR" \
-  "$INK_APP_SITEPKG_DIR"/lxml/etree.cpython-"${INK_PYTHON_VER/./}"-darwin.so \
-  "$INK_APP_SITEPKG_DIR"/lxml/objectify.cpython-"${INK_PYTHON_VER/./}"-darwin.so
-
-#------------------------------------------------- install Python package: NumPy
-
-ink_pipinstall "$INK_PYTHON_NUMPY"
-sed -i '' '1s/.*/#!\/usr\/bin\/env python3/' "$INK_APP_BIN_DIR"/f2py
-sed -i '' '1s/.*/#!\/usr\/bin\/env python3/' "$INK_APP_BIN_DIR"/f2py3
-sed -i '' '1s/.*/#!\/usr\/bin\/env python3/' "$INK_APP_BIN_DIR"/f2py3.8
-
-#--------------------------------------------- install Python package: PyGObject
-
-ink_pipinstall "$INK_PYTHON_PYGOBJECT"
-
-lib_change_paths \
-  @loader_path/../../.. \
-  "$INK_APP_LIB_DIR" \
-  "$INK_APP_SITEPKG_DIR"/gi/_gi.cpython-"${INK_PYTHON_VER/./}"-darwin.so \
-  "$INK_APP_SITEPKG_DIR"/gi/_gi_cairo.cpython-"${INK_PYTHON_VER/./}"-darwin.so
-
-#----------------------------------------------- install Python package: Pycairo
-
-# This package got pulled in by PyGObject.
-# TODO: if this is still true, add it to INK_PYTHON_PYGOBJECT to version-pin
-
-# patch '_cairo'
-lib_change_paths \
-  @loader_path/../../.. \
-  "$INK_APP_LIB_DIR" \
-  "$INK_APP_SITEPKG_DIR"/cairo/_cairo.cpython-"${INK_PYTHON_VER/./}"-darwin.so
-
-#---------------------------------------------- install Python package: pySerial
-
-ink_pipinstall "$INK_PYTHON_PYSERIAL"
-find "$INK_APP_SITEPKG_DIR"/serial -type f -name "*.pyc" -exec rm {} \;
-sed -i '' '1s/.*/#!\/usr\/bin\/env python3/' "$INK_APP_BIN_DIR"/pyserial-miniterm
-sed -i '' '1s/.*/#!\/usr\/bin\/env python3/' "$INK_APP_BIN_DIR"/pyserial-ports
-
-#------------------------------------------------- install Python package: Scour
-
-ink_pipinstall "$INK_PYTHON_SCOUR"
-sed -i '' '1s/.*/#!\/usr\/bin\/env python3/' "$INK_APP_BIN_DIR"/scour
+# Install wheels.
+ink_pipinstall INK_PYTHON_PKG_APPDIRS         # extension manager
+ink_pipinstall INK_PYTHON_PKG_BEAUTIFULSOUP4  # extension manager
+ink_pipinstall INK_PYTHON_PKG_CACHECONTROL    # extension manager
+ink_pipinstall INK_PYTHON_PKG_CSSSELECT
+ink_pipinstall INK_PYTHON_PKG_LXML
+ink_pipinstall INK_PYTHON_PKG_NUMPY
+ink_pipinstall INK_PYTHON_PKG_PILLOW          # export raster extension
+ink_pipinstall INK_PYTHON_PKG_PYGOBJECT
+ink_pipinstall INK_PYTHON_PKG_PYSERIAL
+ink_pipinstall INK_PYTHON_PKG_SCOUR
 
 #----------------------------------------------------- remove Python cache files
 
@@ -160,8 +158,7 @@ rm -rf "$INK_APP_RES_DIR"/share/glib-2.0/codegen/__pycache__
 
 # Mimic the behavior of having all files under 'share' and linking the
 # active ones to 'etc'.
-# shellcheck disable=SC2164 # we trap errors to catch bad 'cd'
-cd "$INK_APP_ETC_DIR"/fonts/conf.d
+cd "$INK_APP_ETC_DIR"/fonts/conf.d || exit 1
 
 for file in ./*.conf; do
   ln -sf ../../../share/fontconfig/conf.avail/"$(basename "$file")" .
@@ -169,19 +166,19 @@ done
 
 # Our customized version loses all the non-macOS paths and sets a cache
 # directory below '$HOME/Library/Application Support/Inkscape'.
-cp "$SELF_DIR"/fonts.conf "$INK_APP_ETC_DIR"/fonts
+cp "$SELF_DIR"/res/fonts.conf "$INK_APP_ETC_DIR"/fonts
 
-#--------------------------------------- create GObject introspection repository
+#-------------------------------- use rpath for GObject introspection repository
 
-mkdir "$INK_APP_LIB_DIR"/girepository-1.0
-
-# remove fully qualified paths from libraries in *.gir files
-for gir in "$VER_DIR"/share/gir-1.0/*.gir; do
-  sed "s/$(sed_escape_str "$LIB_DIR"/)//g" "$gir" > "$SRC_DIR"/"$(basename "$gir")"
+for gir in "$INK_APP_RES_DIR"/share/gir-1.0/*.gir; do
+  sed "s|@executable_path/..|@rpath|g" "$gir" > "$TMP_DIR/$(basename "$gir")"
 done
 
+mv "$TMP_DIR"/*.gir "$INK_APP_RES_DIR"/share/gir-1.0
+
 # compile *.gir into *.typelib files
-for gir in "$SRC_DIR"/*.gir; do
-  jhbuild run g-ir-compiler \
-    -o "$INK_APP_LIB_DIR"/girepository-1.0/"$(basename -s .gir "$gir")".typelib "$gir"
+for gir in "$INK_APP_RES_DIR"/share/gir-1.0/*.gir; do
+  jhb run g-ir-compiler \
+    -o "$INK_APP_LIB_DIR/girepository-1.0/$(basename -s .gir "$gir")".typelib \
+    "$gir"
 done

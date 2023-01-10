@@ -103,6 +103,16 @@ std::string debug_info() {
     return ss.str();
 }
 
+/**
+ * Return build year as 4 digit
+ *
+ * @return Inkscape build year
+ */
+unsigned short int inkscape_build_year()
+{
+    return Inkscape::build_year;
+}
+
 } // namespace Inkscape
 
 

@@ -38,7 +38,7 @@ enum Key : KeyMask {
 
 // Triggers used for collision warnings, two tools are using the same trigger
 enum Triggers : Trigger {
-    NO_CATEGORY, CANVAS, SELECT, MOVE, TRANSFORM,
+    NO_CATEGORY, CANVAS, SELECT, MOVE, TRANSFORM, BOOLEANS,
     // Action taken to trigger this modifier, starts at
     // bit 6 so categories and triggers can be combined.
     CLICK = 32,
@@ -73,11 +73,12 @@ enum class Type {
     MOVE_SNAPPING,        // Disable snapping while moving {DRAG+SHIFT}
     TRANS_CONFINE,        // Confine resize aspect ratio {HANDLE+CTRL}
     TRANS_INCREMENT,      // Scale/Rotate/skew by fixed ratio angles {HANDLE+ALT}
-    TRANS_OFF_CENTER,     // Scale/Rotate/skew from oposite corner {HANDLE+SHIFT}
+    TRANS_OFF_CENTER,     // Scale/Rotate/skew from opposite corner {HANDLE+SHIFT}
     TRANS_SNAPPING,       // Disable snapping while transforming {HANDLE+SHIFT}
-    // TODO: Alignment ommitted because it's UX is not completed
-};
 
+    BOOL_SHIFT,           // Shift the shape builder into its alternative mode.
+    // TODO: Alignment omitted because it's UX is not completed
+};
 
 // Generate a label such as Shift+Ctrl from any KeyMask
 std::string   generate_label(KeyMask mask, std::string sep = "+");
@@ -85,6 +86,8 @@ unsigned long calculate_weight(KeyMask mask);
 
 // Generate a responsivle tooltip set
 void responsive_tooltip(Inkscape::MessageContext *message_context, GdkEvent *event, int num_args, ...);
+
+int add_keyval(int state, int keyval, bool release = false);
 
 /**
  * A class to represent ways functionality is driven by shift modifiers
@@ -96,7 +99,7 @@ private:
     typedef std::map<std::string, Modifier *> Lookup;
     typedef std::map<Trigger, std::string> CategoryNames;
 
-    /** A table of all the created modifers and their ID lookups. */
+    /** A table of all the created modifiers and their ID lookups. */
     static Container _modifiers;
     static Lookup _modifier_lookup;
     static CategoryNames _category_names;
@@ -202,6 +205,7 @@ public:
     static Type which(Trigger trigger, int button_state);
     static std::vector<Modifier *>getList ();
     bool active(int button_state);
+    bool active(int button_state, int keyval, bool release = false);
 
     /**
      * A function to turn an enum index into a modifier object.

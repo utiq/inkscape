@@ -36,12 +36,13 @@ set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME inkscape) # needs to be before any inst
 
 include(GNUInstallDirs) # for the CMAKE_INSTALL_LIBDIR variable
 include(CMakeScripts/ConfigPaths.cmake)
+include(CMakeDependentOption)
 
 set(PROJECT_NAME inkscape)
 
 # see https://gitlab.com/inkscape/inkscape/-/issues/551 for versioning suffixes
 set(INKSCAPE_VERSION_MAJOR  1)
-set(INKSCAPE_VERSION_MINOR  2)
+set(INKSCAPE_VERSION_MINOR  3)
 set(INKSCAPE_VERSION_PATCH  0)
 set(INKSCAPE_VERSION_SUFFIX "-dev")
 
@@ -57,8 +58,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 file(RELATIVE_PATH
     INKSCAPE_INSTALL_LIBDIR_RELATIVE_TO_BINDIR
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/inkscape")
+    "${CMAKE_INSTALL_FULL_BINDIR}"
+    "${CMAKE_INSTALL_FULL_LIBDIR}/inkscape")
 
 if(APPLE)
     SET(CMAKE_MACOSX_RPATH TRUE)
@@ -98,7 +99,7 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING
 # -----------------------------------------------------------------------------
 # Redirect output files
 # -----------------------------------------------------------------------------
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Output directory for runtime binaries")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR} CACHE PATH "Output directory for runtime binaries")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} CACHE PATH "Output directory for shared libraries")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} CACHE PATH "Output directory for static libraries")
 
@@ -106,7 +107,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} C
 # Options
 # -----------------------------------------------------------------------------
 option(WITH_GNU_READLINE "Compile with GNU Readline support (shell mode)" ON)
-option(WITH_DBUS "Compile with support for DBus interface" OFF)
 option(ENABLE_LCMS "Compile with LCMS support" ON)
 option(WITH_SVG2 "Compile with support for new SVG2 features" ON)
 option(WITH_LPETOOL "Compile with LPE Tool" OFF)
@@ -123,15 +123,22 @@ option(WITH_LIBCDR "Compile with support of libcdr for CorelDRAW Diagrams" ON)
 option(WITH_LIBVISIO "Compile with support of libvisio for Microsoft Visio Diagrams" ON)
 option(WITH_LIBWPG "Compile with support of libwpg for WordPerfect Graphics" ON)
 option(WITH_GSPELL "Compile with support of gspell" ON)
+option(WITH_GSOURCEVIEW "Compile with support of gsourceview (text syntax coloring)" ON)
 option(WITH_NLS "Compile with Native Language Support (using gettext)" ON)
 option(WITH_JEMALLOC "Compile with JEMALLOC support" OFF)
 option(WITH_ASAN "Compile with Clang's AddressSanitizer (for debugging purposes)" OFF)
 option(WITH_INTERNAL_2GEOM "Prefer internal copy of lib2geom" OFF)
+cmake_dependent_option(WITH_X11 "Compile with X11 support" ON "UNIX; NOT APPLE" OFF)
 
 option(WITH_FUZZ "Compile for fuzzing purpose (use 'make fuzz' only)" OFF)
 mark_as_advanced(WITH_FUZZ)
 option(WITH_MANPAGE_COMPRESSION "gzips manpages if gzip is available" ON)
 mark_as_advanced(WITH_MANPAGE_COMPRESSION)
+if(UNIX OR "$ENV{MSYSTEM}" STREQUAL "CLANGARM64")
+    option(WITH_INTERNAL_CAIRO "Use a patched version of cairo" OFF)
+else()
+    option(WITH_INTERNAL_CAIRO "Use a patched version of cairo" ON)
+endif()
 
 option(ENABLE_BINRELOC "Enable relocatable binaries" OFF)
 
@@ -275,8 +282,8 @@ message("ENABLE_LCMS:             ${ENABLE_LCMS}")
 message("ENABLE_POPPLER:          ${ENABLE_POPPLER}")
 message("ENABLE_POPPLER_CAIRO:    ${ENABLE_POPPLER_CAIRO}")
 message("WITH_GNU_READLINE:       ${WITH_GNU_READLINE}")
-message("WITH_DBUS:               ${WITH_DBUS}")
 message("WITH_GSPELL:             ${WITH_GSPELL}")
+message("WITH_GSOURCEVIEW:        ${WITH_GSOURCEVIEW}")
 message("WITH_IMAGE_MAGICK:       ${WITH_IMAGE_MAGICK}")
 message("WITH_GRAPHICS_MAGICK:    ${WITH_GRAPHICS_MAGICK}")
 message("WITH_LIBCDR:             ${WITH_LIBCDR}")
@@ -286,6 +293,8 @@ message("WITH_NLS:                ${WITH_NLS}")
 message("WITH_OPENMP:             ${WITH_OPENMP}")
 message("WITH_JEMALLOC:           ${WITH_JEMALLOC}")
 message("WITH_INTERNAL_2GEOM:     ${WITH_INTERNAL_2GEOM}")
+message("WITH_INTERNAL_CAIRO:     ${WITH_INTERNAL_CAIRO}")
+message("WITH_X11:                ${WITH_X11}")
 
 message("WITH_PROFILING:          ${WITH_PROFILING}")
 message("BUILD_TESTING:           ${BUILD_TESTING}")
@@ -295,7 +304,6 @@ message("")
 message("HAVE_MINGW64:            ${HAVE_MINGW64}")
 message("MINGW_PATH:              ${MINGW_PATH}")
 message("MINGW_ARCH:              ${MINGW_ARCH}")
-message("MINGW_ARCH_PATH:         ${MINGW_ARCH_PATH}")
 endif()
 
 message("------------------------------------------------------------------------")

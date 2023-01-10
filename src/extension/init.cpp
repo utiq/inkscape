@@ -17,26 +17,29 @@
 # include "config.h"  // only include where actually required!
 #endif
 
-#ifdef HAVE_POPPLER
-# include "internal/pdfinput/pdf-input.h"
-#endif
-
-#include "path-prefix.h"
-
-#include "inkscape.h"
-
 #include <glibmm/fileutils.h>
 #include <glibmm/i18n.h>
 #include <glibmm/ustring.h>
 
-#include "system.h"
 #include "db.h"
+#include "inkscape.h"
+#include "internal/emf-inout.h"
+#include "internal/emf-print.h"
 #include "internal/svgz.h"
-# include "internal/emf-inout.h"
-# include "internal/emf-print.h"
-# include "internal/wmf-inout.h"
-# include "internal/wmf-print.h"
+#include "internal/template-from-file.h"
+#include "internal/template-other.h"
+#include "internal/template-paper.h"
+#include "internal/template-screen.h"
+#include "internal/template-social.h"
+#include "internal/template-video.h"
+#include "internal/wmf-inout.h"
+#include "internal/wmf-print.h"
+#include "path-prefix.h"
+#include "system.h"
 
+#ifdef HAVE_POPPLER
+#include "internal/pdfinput/pdf-input.h"
+#endif
 #include <cairo.h>
 #ifdef CAIRO_HAS_PDF_SURFACE
 # include "internal/cairo-renderer-pdf-out.h"
@@ -65,9 +68,6 @@
 #include "preferences.h"
 #include "io/sys.h"
 #include "io/resource.h"
-#ifdef WITH_DBUS
-#include "dbus/dbus-init.h"
-#endif
 
 #ifdef WITH_MAGICK
 #include <Magick++.h>
@@ -158,6 +158,13 @@ init()
     Internal::Svg::init();
     Internal::Svgz::init();
 
+    Internal::TemplateFromFile::init();
+    Internal::TemplatePaper::init();
+    Internal::TemplateScreen::init();
+    Internal::TemplateVideo::init();
+    Internal::TemplateSocial::init();
+    Internal::TemplateOther::init();
+
 #ifdef CAIRO_HAS_PDF_SURFACE
     Internal::CairoRendererPdfOutput::init();
 #endif
@@ -191,10 +198,6 @@ init()
     Internal::BlurEdge::init();
     Internal::GimpGrad::init();
     Internal::Grid::init();
-
-#ifdef WITH_DBUS
-    Dbus::init();
-#endif
 
     /* Raster Effects */
 #ifdef WITH_MAGICK

@@ -29847,7 +29847,7 @@ msgstr "Kružni gradijent linije"
 
 #: ../src/ui/widget/selected-style.cpp:216
 msgid "<b>M</b>"
-msgstr "<b>M<b>"
+msgstr "<b>M</b>"
 
 #: ../src/ui/widget/selected-style.cpp:218
 msgid "Mesh gradient fill"
@@ -32997,7 +32997,7 @@ msgstr "<b>Višestruki stilovi</b>"
 
 #: ../src/widgets/paint-selector.cpp:618
 msgid "<b>Paint is undefined</b>"
-msgstr "<b>Boja nije određena<b>"
+msgstr "<b>Boja nije određena</b>"
 
 #: ../src/widgets/paint-selector.cpp:629
 msgid "<b>No paint</b>"

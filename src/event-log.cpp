@@ -9,14 +9,21 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "util/signal-blocker.h"
-
 #include "event-log.h"
+
+
 #include <glibmm/i18n.h>
 
+#include "actions/actions-undo-document.h"
+
 #include "desktop.h"
-#include "inkscape.h"
 #include "document.h"
+#include "inkscape.h"
+#include "inkscape-application.h"
+#include "inkscape-window.h"
+
+#include "ui/desktop/menubar.h"
+#include "util/signal-blocker.h"
 
 namespace
 {
@@ -184,7 +191,7 @@ EventLog::EventLog(SPDocument* document) :
     
     auto &_columns = getColumns();
     curr_row[_columns.description] = _("[Unchanged]");
-    curr_row[_columns.type] = SP_VERB_FILE_NEW;
+    curr_row[_columns.icon_name] = "document-new";
 }
 
 EventLog::~EventLog() {
@@ -296,13 +303,13 @@ EventLog::notifyUndoCommitEvent(Event* log)
 {
     _clearRedo();
 
-    const unsigned int event_type = log->type;
+    auto icon_name = log->icon_name;
 
     Gtk::TreeRow curr_row;
     auto &_columns = getColumns();
 
     // if the new event is of the same type as the previous then create a new branch
-    if ( event_type == (*_curr_event)[_columns.type] ) {
+    if ( icon_name == (*_curr_event)[_columns.icon_name] ) {
         if ( !_curr_event_parent ) {
             _curr_event_parent = _curr_event;
         }
@@ -325,7 +332,7 @@ EventLog::notifyUndoCommitEvent(Event* log)
     _curr_event = _last_event = curr_row;
 
     curr_row[_columns.event] = log;
-    curr_row[_columns.type] = event_type;
+    curr_row[_columns.icon_name] = icon_name;
     curr_row[_columns.description] = log->description;
 
     checkForVirginity();
@@ -363,36 +370,13 @@ void EventLog::removeDialogConnection(Gtk::TreeView *event_list_view, CallbackMa
     _priv->removeDialogConnection(event_list_view, callback_connections);
 }
 
+// Enable/disable undo/redo GUI items.
 void
 EventLog::updateUndoVerbs()
 {
-    if(_document) {
-        auto &_columns = getColumns();
-
-        if(_getUndoEvent()) { 
-            Inkscape::Verb::get(SP_VERB_EDIT_UNDO)->sensitive(_document, true);
-
-            Inkscape::Verb::get(SP_VERB_EDIT_UNDO)->name(_document,
-                      Glib::ustring(_("_Undo")) + ": " +
-                      Glib::ustring((*_getUndoEvent())[_columns.description]));
-        } else {
-            Inkscape::Verb::get(SP_VERB_EDIT_UNDO)->name(_document, _("_Undo"));
-            Inkscape::Verb::get(SP_VERB_EDIT_UNDO)->sensitive(_document, false);
-        }
-
-        if(_getRedoEvent()) {
-            Inkscape::Verb::get(SP_VERB_EDIT_REDO)->sensitive(_document, true);
-            Inkscape::Verb::get(SP_VERB_EDIT_REDO)->name(_document,
-                      Glib::ustring(_("_Redo")) + ": " +
-                      Glib::ustring((*_getRedoEvent())[_columns.description]));
-
-        } else {
-            Inkscape::Verb::get(SP_VERB_EDIT_REDO)->name(_document, _("_Redo"));
-            Inkscape::Verb::get(SP_VERB_EDIT_REDO)->sensitive(_document, false);
-        }
-
+    if (_document) {
+        enable_undo_actions(_document, static_cast<bool>(_getUndoEvent()), static_cast<bool>(_getRedoEvent()));
     }
-
 }
 
 

@@ -15,6 +15,7 @@
 #include <utility>
 
 #include <gtkmm/adjustment.h>
+#include <gtkmm/combobox.h>
 #include <gtkmm/spinbutton.h>
 #include <glibmm/i18n.h>
 
@@ -294,13 +295,13 @@ class ColorICCSelectorImpl {
 
 const gchar *ColorICCSelector::MODE_NAME = N_("CMS");
 
-ColorICCSelector::ColorICCSelector(SelectedColor &color)
+ColorICCSelector::ColorICCSelector(SelectedColor &color, bool no_alpha)
     : _impl(nullptr)
 {
     _impl = new ColorICCSelectorImpl(this, color);
-    init();
-    color.signal_changed.connect(sigc::mem_fun(this, &ColorICCSelector::_colorChanged));
-    // color.signal_dragged.connect(sigc::mem_fun(this, &ColorICCSelector::_colorChanged));
+    init(no_alpha);
+    color.signal_changed.connect(sigc::mem_fun(*this, &ColorICCSelector::_colorChanged));
+    // color.signal_dragged.connect(sigc::mem_fun(*this, &ColorICCSelector::_colorChanged));
 }
 
 ColorICCSelector::~ColorICCSelector()
@@ -339,7 +340,7 @@ ColorICCSelectorImpl::~ColorICCSelectorImpl()
     _label = nullptr;
 }
 
-void ColorICCSelector::init()
+void ColorICCSelector::init(bool no_alpha)
 {
     gint row = 0;
 
@@ -369,7 +370,7 @@ void ColorICCSelector::init()
 
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(_impl->_profileSel), renderer, TRUE);
-    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(_impl->_profileSel), renderer, "text", 0, NULL);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(_impl->_profileSel), renderer, "text", 0, nullptr);
 
     GtkTreeIter iter;
     gtk_list_store_append(store, &iter);
@@ -437,13 +438,13 @@ void ColorICCSelector::init()
 
 
         // Signals
-        _impl->_compUI[i]._adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_compUI[i]._adj));
+        _impl->_compUI[i]._adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_compUI[i]._adj));
 
-        _impl->_compUI[i]._slider->signal_grabbed.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderGrabbed));
+        _impl->_compUI[i]._slider->signal_grabbed.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderGrabbed));
         _impl->_compUI[i]._slider->signal_released.connect(
-            sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderReleased));
+            sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderReleased));
         _impl->_compUI[i]._slider->signal_value_changed.connect(
-            sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderChanged));
+            sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderChanged));
 
         row++;
     }
@@ -478,14 +479,20 @@ void ColorICCSelector::init()
     gtk_label_set_mnemonic_widget(GTK_LABEL(_impl->_label), _impl->_sbtn);
     gtk_widget_show(_impl->_sbtn);
 
+    if (no_alpha) {
+        _impl->_slider->hide();
+        gtk_widget_hide(_impl->_label);
+        gtk_widget_hide(_impl->_sbtn);
+    }
+
     attachToGridOrTable(t, _impl->_sbtn, 2, row, 1, 1, false, true);
 
     // Signals
-    _impl->_adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_adj));
+    _impl->_adj->signal_value_changed().connect(sigc::bind(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_adjustmentChanged), _impl->_adj));
 
-    _impl->_slider->signal_grabbed.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderGrabbed));
-    _impl->_slider->signal_released.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderReleased));
-    _impl->_slider->signal_value_changed.connect(sigc::mem_fun(_impl, &ColorICCSelectorImpl::_sliderChanged));
+    _impl->_slider->signal_grabbed.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderGrabbed));
+    _impl->_slider->signal_released.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderReleased));
+    _impl->_slider->signal_value_changed.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderChanged));
 
     gtk_widget_show(t);
 }
@@ -536,8 +543,7 @@ void ColorICCSelectorImpl::_switchToProfile(gchar const *name)
                 tmp.icc = new SVGICCColor();
             }
             tmp.icc->colorProfile = name;
-            Inkscape::ColorProfile *newProf = SP_ACTIVE_DOCUMENT->getProfileManager()->find(name);
-            if (newProf) {
+            if (auto newProf = SP_ACTIVE_DOCUMENT->getProfileManager().find(name)) {
                 cmsHTRANSFORM trans = newProf->getTransfFromSRGB8();
                 if (trans) {
                     guint32 val = _color.color().toRGBA32(0);
@@ -694,7 +700,7 @@ void ColorICCSelector::_colorChanged()
 #endif // DEBUG_LCMS
 
     _impl->_profilesChanged((_impl->_color.color().icc) ? _impl->_color.color().icc->colorProfile : std::string(""));
-    ColorScales::setScaled(_impl->_adj, _impl->_color.alpha());
+    ColorScales<>::setScaled(_impl->_adj, _impl->_color.alpha());
 
     _impl->_setProfile(_impl->_color.color().icc);
     _impl->_fixupNeeded = 0;
@@ -765,7 +771,7 @@ void ColorICCSelectorImpl::_setProfile(SVGICCColor *profile)
     }
 
     if (profile) {
-        _prof = SP_ACTIVE_DOCUMENT->getProfileManager()->find(profile->colorProfile.c_str());
+        _prof = SP_ACTIVE_DOCUMENT->getProfileManager().find(profile->colorProfile.c_str());
         if (_prof && (asICColorProfileClassSig(_prof->getProfileClass()) != cmsSigNamedColorClass)) {
             _profChannelCount = cmsChannelsOf(asICColorSpaceSig(_prof->getColorSpace()));
 
@@ -845,7 +851,7 @@ void ColorICCSelectorImpl::_updateSliders(gint ignore)
                         cmsUInt16Number *scratch = getScratch();
                         cmsUInt16Number filler[4] = { 0, 0, 0, 0 };
                         for (guint j = 0; j < _profChannelCount; j++) {
-                            filler[j] = 0x0ffff * ColorScales::getScaled(_compUI[j]._adj);
+                            filler[j] = 0x0ffff * ColorScales<>::getScaled(_compUI[j]._adj);
                         }
 
                         cmsUInt16Number *p = scratch;
@@ -898,7 +904,7 @@ void ColorICCSelectorImpl::_adjustmentChanged(Glib::RefPtr<Gtk::Adjustment> &adj
     gint match = -1;
 
     SPColor newColor(iccSelector->_impl->_color.color());
-    gfloat scaled = ColorScales::getScaled(iccSelector->_impl->_adj);
+    gfloat scaled = ColorScales<>::getScaled(iccSelector->_impl->_adj);
     if (iccSelector->_impl->_adj == adjustment) {
 #ifdef DEBUG_LCMS
         g_message("ALPHA");
@@ -920,7 +926,7 @@ void ColorICCSelectorImpl::_adjustmentChanged(Glib::RefPtr<Gtk::Adjustment> &adj
 
         cmsUInt16Number tmp[4];
         for (guint i = 0; i < 4; i++) {
-            tmp[i] = ColorScales::getScaled(iccSelector->_impl->_compUI[i]._adj) * 0x0ffff;
+            tmp[i] = ColorScales<>::getScaled(iccSelector->_impl->_compUI[i]._adj) * 0x0ffff;
         }
         guchar post[4] = { 0, 0, 0, 0 };
 
@@ -946,7 +952,7 @@ void ColorICCSelectorImpl::_adjustmentChanged(Glib::RefPtr<Gtk::Adjustment> &adj
             newColor = other;
             newColor.icc->colors.clear();
             for (guint i = 0; i < iccSelector->_impl->_profChannelCount; i++) {
-                gdouble val = ColorScales::getScaled(iccSelector->_impl->_compUI[i]._adj);
+                gdouble val = ColorScales<>::getScaled(iccSelector->_impl->_compUI[i]._adj);
                 val *= iccSelector->_impl->_compUI[i]._component.scale;
                 if (iccSelector->_impl->_compUI[i]._component.scale == 256) {
                     val -= 128;
@@ -971,7 +977,7 @@ void ColorICCSelectorImpl::_sliderGrabbed()
     //     if (!iccSelector->_dragging) {
     //         iccSelector->_dragging = TRUE;
     //         iccSelector->_grabbed();
-    //         iccSelector->_updateInternals( iccSelector->_color, ColorScales::getScaled( iccSelector->_impl->_adj ),
+    //         iccSelector->_updateInternals( iccSelector->_color, ColorScales<>::getScaled( iccSelector->_impl->_adj ),
     //         iccSelector->_dragging );
     //     }
 }
@@ -982,7 +988,7 @@ void ColorICCSelectorImpl::_sliderReleased()
     //     if (iccSelector->_dragging) {
     //         iccSelector->_dragging = FALSE;
     //         iccSelector->_released();
-    //         iccSelector->_updateInternals( iccSelector->_color, ColorScales::getScaled( iccSelector->_adj ),
+    //         iccSelector->_updateInternals( iccSelector->_color, ColorScales<>::getScaled( iccSelector->_adj ),
     //         iccSelector->_dragging );
     //     }
 }
@@ -998,13 +1004,13 @@ void ColorICCSelectorImpl::_sliderChanged()
 #endif // DEBUG_LCMS
     //     ColorICCSelector* iccSelector = dynamic_cast<ColorICCSelector*>(SP_COLOR_SELECTOR(cs)->base);
 
-    //     iccSelector->_updateInternals( iccSelector->_color, ColorScales::getScaled( iccSelector->_adj ),
+    //     iccSelector->_updateInternals( iccSelector->_color, ColorScales<>::getScaled( iccSelector->_adj ),
     //     iccSelector->_dragging );
 }
 
-Gtk::Widget *ColorICCSelectorFactory::createWidget(Inkscape::UI::SelectedColor &color) const
+Gtk::Widget *ColorICCSelectorFactory::createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const
 {
-    Gtk::Widget *w = Gtk::manage(new ColorICCSelector(color));
+    Gtk::Widget *w = Gtk::manage(new ColorICCSelector(color, no_alpha));
     return w;
 }
 

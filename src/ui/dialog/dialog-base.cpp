@@ -18,15 +18,19 @@
 #include <glibmm/refptr.h>
 #include <gtkmm/cssprovider.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/scrolledwindow.h>
 #include <iostream>
 
+#include "inkscape.h"
 #include "desktop.h"
+#include "ui/dialog/dialog-data.h"
 #include "ui/dialog/dialog-notebook.h"
 #include "ui/dialog-events.h"
 // get_latin_keyval
 #include "ui/tools/tool-base.h"
 #include "widgets/spw-utilities.h"
 #include "ui/widget/canvas.h"
+#include "ui/util.h"
 
 namespace Inkscape {
 namespace UI {
@@ -36,21 +40,25 @@ namespace Dialog {
  * DialogBase constructor.
  *
  * @param prefs_path characteristic path to load/save dialog position.
- * @param verb_num the dialog verb.
+ * @param dialog_type is the "type" string for the dialog.
  */
-DialogBase::DialogBase(gchar const *prefs_path, int verb_num)
+DialogBase::DialogBase(gchar const *prefs_path, Glib::ustring dialog_type)
     : Gtk::Box(Gtk::ORIENTATION_VERTICAL)
+    , desktop(nullptr)
+    , document(nullptr)
+    , selection(nullptr)
     , _name("DialogBase")
     , _prefs_path(prefs_path)
-    , _verb_num(verb_num)
+    , _dialog_type(dialog_type)
     , _app(InkscapeApplication::instance())
 {
-    // Derive a pretty display name for the dialog based on the verbs name.
-    // TODO: This seems fragile. Should verbs have a proper display name?
-    Verb *verb = Verb::get(verb_num);
-    if (verb) {
-        // get translated verb name
-        _name = _(verb->get_name());
+    auto const &dialog_data = get_dialog_data();
+
+    // Derive a pretty display name for the dialog.
+    auto it = dialog_data.find(dialog_type);
+    if (it != dialog_data.end()) {
+
+        _name = it->second.label; // Already translated
 
         // remove ellipsis and mnemonics
         int pos = _name.find("...", 0);
@@ -67,9 +75,34 @@ DialogBase::DialogBase(gchar const *prefs_path, int verb_num)
         }
     }
 
-    set_name(_name); // Essential for dialog functionality
+    set_name(_dialog_type); // Essential for dialog functionality
     property_margin().set_value(1); // Essential for dialog UI
     ensure_size();
+}
+
+DialogBase::~DialogBase() {
+#ifdef _WIN32
+    // this is bad, but it supposedly fixes some resizng problem on Windows
+    ensure_size();
+#endif
+
+    unsetDesktop();
+};
+
+void DialogBase::ensure_size() {
+    if (desktop) {
+        resize_widget_children(desktop->getToplevel());
+    }
+}
+
+void DialogBase::on_map() {
+    // Update asks the dialogs if they need their Gtk widgets updated.
+    update();
+    // Set the desktop on_map, although we might want to be smarter about this.
+    // Note: Inkscape::Application::instance().active_desktop() is used here, as it contains current desktop at
+    // the time of dialog creation. Formerly used _app.get_active_view() did not at application start-up.
+    setDesktop(Inkscape::Application::instance().active_desktop());
+    parent_type::on_map();
 }
 
 bool DialogBase::on_key_press_event(GdkEventKey* key_event) {
@@ -95,7 +128,7 @@ void DialogBase::blink()
         notebook->get_style_context()->add_class("blink");
 
         // Add timer to turn off blink.
-        sigc::slot<bool> slot = sigc::mem_fun(*this, &DialogBase::blink_off);
+        sigc::slot<bool ()> slot = sigc::mem_fun(*this, &DialogBase::blink_off);
         sigc::connection connection = Glib::signal_timeout().connect(slot, 1000); // msec
     }
 }
@@ -142,11 +175,134 @@ bool DialogBase::blink_off()
 }
 
 /**
- * Get the active desktop.
+ * Called when the desktop might have changed for this dialog.
  */
-SPDesktop *DialogBase::getDesktop()
+void DialogBase::setDesktop(SPDesktop *new_desktop)
 {
-    return dynamic_cast<SPDesktop *>(_app->get_active_view());
+    if (desktop == new_desktop) {
+        return;
+    }
+
+    unsetDesktop();
+
+    if (new_desktop) {
+        desktop = new_desktop;
+
+        if (auto sel = desktop->getSelection()) {
+            selection = sel;
+            _select_changed = selection->connectChanged(sigc::mem_fun(*this, &DialogBase::selectionChanged_impl));
+            _select_modified = selection->connectModified(sigc::mem_fun(*this, &DialogBase::selectionModified_impl));
+        }
+
+        _doc_replaced = desktop->connectDocumentReplaced(sigc::hide<0>(sigc::mem_fun(*this, &DialogBase::setDocument)));
+        _desktop_destroyed = desktop->connectDestroy(sigc::mem_fun(*this, &DialogBase::desktopDestroyed));
+        this->setDocument(desktop->getDocument());
+
+        if (desktop->getSelection()) {
+            this->selectionChanged(selection);
+        }
+        set_sensitive(true);
+    }
+
+    desktopReplaced();
+}
+
+//
+void DialogBase::fix_inner_scroll(Gtk::Widget *scrollwindow)
+{
+    auto scrollwin = dynamic_cast<Gtk::ScrolledWindow *>(scrollwindow);
+    auto viewport = dynamic_cast<Gtk::ScrolledWindow *>(scrollwin->get_child());
+    Gtk::Widget *child = nullptr;
+    if (viewport) { //some widgets has viewportother not
+        child = viewport->get_child();
+    } else {
+        child = scrollwin->get_child();
+    }
+    if (child && scrollwin) {
+        Glib::RefPtr<Gtk::Adjustment> adjustment = scrollwin->get_vadjustment();
+        child->signal_scroll_event().connect([=](GdkEventScroll* event) { 
+            auto container = dynamic_cast<Gtk::Container *>(this);
+            if (container) {
+                std::vector<Gtk::Widget*> widgets = container->get_children();
+                if (widgets.size()) {
+                    auto parentscroll = dynamic_cast<Gtk::ScrolledWindow *>(widgets[0]);
+                    if (parentscroll) {
+                        if (event->delta_y > 0 && (adjustment->get_value() + adjustment->get_page_size()) == adjustment->get_upper()) {
+                            parentscroll->event((GdkEvent*)event);
+                            return true;
+                        } else if (event->delta_y < 0 && adjustment->get_value() == adjustment->get_lower()) {
+                            parentscroll->event((GdkEvent*)event);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+}
+
+/**
+ * implementation method that call to main function only when tab is showing
+ */
+void 
+DialogBase::selectionChanged_impl(Inkscape::Selection *selection) {
+    if (_showing) {
+        selectionChanged(selection);
+    }
+}
+
+/**
+ * implementation method that call to main function only when tab is showing
+ */
+void 
+DialogBase::selectionModified_impl(Inkscape::Selection *selection, guint flags) {
+    if (_showing) {
+        selectionModified(selection, flags);
+    }
+}
+
+/**
+ * function called from notebook dialog that performs an update of the dialog and sets the dialog showing state true
+ */
+void 
+DialogBase::setShowing(bool showing) {
+    _showing = showing;
+    selectionChanged(getSelection());
+}
+
+/**
+ * Called to destruct desktops, must not call virtuals
+ */
+void DialogBase::unsetDesktop()
+{
+    desktop = nullptr;
+    document = nullptr;
+    selection = nullptr;
+    _desktop_destroyed.disconnect();
+    _doc_replaced.disconnect();
+    _select_changed.disconnect();
+    _select_modified.disconnect();
+}
+
+void DialogBase::desktopDestroyed(SPDesktop* old_desktop)
+{
+    if (old_desktop == desktop && desktop) {
+        unsetDesktop();
+        desktopReplaced();
+        set_sensitive(false);
+    }
+}
+
+/**
+ * Called when the document might have changed, called from setDesktop too.
+ */
+void DialogBase::setDocument(SPDocument *new_document)
+{
+    if (document != new_document) {
+        document = new_document;
+        documentReplaced();
+    }
 }
 
 } // namespace Dialog

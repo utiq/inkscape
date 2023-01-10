@@ -40,40 +40,30 @@ public:
     GlyphsPanel();
     ~GlyphsPanel() override;
 
-    static GlyphsPanel& getInstance();
-
-    void setDesktop(SPDesktop *desktop);
-    void update() override;
-
-protected:
+    void selectionChanged(Selection *selection) override;
+    void selectionModified(Selection *selection, guint flags) override;
 
 private:
-    GlyphsPanel(GlyphsPanel const &) = delete; // no copy
-    GlyphsPanel &operator=(GlyphsPanel const &) = delete; // no assign
-
     static GlyphColumns *getColumns();
 
     void rebuild();
 
     void glyphActivated(Gtk::TreeModel::Path const & path);
     void glyphSelectionChanged();
-    void selectionModifiedCB(guint flags);
     void readSelection( bool updateStyle, bool updateContent );
     void calcCanInsert();
     void insertText();
 
-    SPDesktop* _desktop = nullptr;
     Glib::RefPtr<Gtk::ListStore> store;
     Gtk::IconView *iconView;
-    Glib::RefPtr<Gtk::Entry> entry;
-    Glib::RefPtr<Gtk::Label> label;
-    Glib::RefPtr<Gtk::Button> insertBtn;
+    std::shared_ptr<Gtk::Entry> entry;
+    std::shared_ptr<Gtk::Label> label;
+    std::shared_ptr<Gtk::Button> insertBtn;
     Gtk::ComboBoxText *scriptCombo;
     Gtk::ComboBoxText *rangeCombo;
     Inkscape::UI::Widget::FontSelector *fontSelector;
 
     std::vector<sigc::connection> instanceConns;
-    std::vector<sigc::connection> desktopConns;
 };
 
 

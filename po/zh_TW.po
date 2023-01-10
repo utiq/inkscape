@@ -29405,7 +29405,7 @@ msgstr "<b>Ctrl</b>：貼齊角度；保持輻射線放射狀"
 #, c-format
 msgid ""
 "<b>Polygon</b>: radius %s, angle %.2f&#176;; with <b>Ctrl</b> to snap angle"
-msgstr "<b>多邊形</b>：半徑 %s，角度 %.2f&#176；按著 <b>Ctrl</b> 可貼齊角度"
+msgstr "<b>多邊形</b>：半徑 %s，角度 %.2f&#176;；按著 <b>Ctrl</b> 可貼齊角度"
 
 #: ../src/ui/tools/star-tool.cpp:389
 #, c-format

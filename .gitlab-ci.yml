@@ -73,7 +73,7 @@ workflow:
 #  Building inkscape  #
 #                     #
 #######################
-# Linux, Appimage, mac. Windows is handled in .appveyor.yml
+# Linux, Appimage, macOS, Windows.
 
 
 inkscape:linux:
@@ -117,29 +117,107 @@ appimage:linux:
       - Inkscape*.AppImage*
 
 
-inkscape:mac:
+inkscape:macos:x64:
   stage: build
   tags:
     - mac
   rules:
     - *do_not_run_for_schedules
+    # Mac runner is restricted to "inkscape" and "dehesselle" namespaces; only generate pipelines for those
     - if: '$CI_PROJECT_NAMESPACE == "inkscape"'
     - if: '$CI_PROJECT_NAMESPACE == "dehesselle"'
   variables:
-    SDKROOT: /opt/sdks/MacOSX10.11.sdk
+    SDKROOT: /opt/sdks/MacOSX10.13.sdk
+    INK_BUILD: $CI_PIPELINE_IID
   before_script:
-    # workaround: after_script doesn't run for cancelled/timed out jobs
+    # workaround: after_script doesn't run for cancelled/timed out jobs, leaving
+    #             non-ephemeral runners in an unclean state
     #             https://gitlab.com/gitlab-org/gitlab/-/issues/15603
     - packaging/macos/uninstall_toolset.sh
     - packaging/macos/install_toolset.sh
   script:
     - packaging/macos/build_inkscape.sh
   after_script:
-    - packaging/macos/uninstall_toolset.sh
+    - packaging/macos/uninstall_toolset.sh save_overlay
   artifacts:
     expire_in: 1 year
     paths:
-      - Inkscape.dmg
+      - Inkscape*.dmg
+      - toolset_overlay.tar.xz
+
+
+inkscape:macos:arm:
+  extends: inkscape:macos:x64
+  tags:
+    - macarm
+  when: manual   # on-demand only as we don't have a 24/7 runner
+  variables:
+    SDKROOT: /opt/sdks/MacOSX11.3.sdk
+  after_script:
+    - packaging/macos/uninstall_toolset.sh
+
+
+# This job uses GitLab's shared runners for macOS. Please note:
+#   - Its purpose is to verify that our CI works on common platforms. The
+#     artifacts produced here are neither used for testing nor official
+#     releases.
+#   - The produced artifact does not provide the same backward compatibility
+#     as the one from 'inkscape:macos'. The minimum supported OS version is
+#     the one from the image being used.
+#   - This job is "on demand only" on purpose as it is very expensive.
+#     https://docs.gitlab.com/ee/ci/pipelines/cicd_minutes.html#cost-factor
+inkscape:macos:x64:gitlab:
+  extends: inkscape:macos:x64
+  tags:
+    - shared-macos-amd64
+  image: macos-10.15-xcode-11
+  when: manual
+  variables:
+    CCACHE_DIR: $CI_PROJECT_DIR/ccache
+    SYS_USRLOCAL_IGNORE: "true"
+    SDKROOT: ""
+  cache:
+    key: "cache-macos"
+    paths:
+      - $CI_PROJECT_DIR/ccache
+
+
+inkscape:windows:x64: &windows_job
+  stage: build
+  tags:
+    - windows
+    - inkscape # differentiates our runner from shared runners
+  rules:
+    - *do_not_run_for_schedules
+    # Windows runner is restricted to "inkscape" and "ede123" namespaces; only generate pipelines for those
+    - if: '$CI_PROJECT_NAMESPACE == "inkscape"'
+    - if: '$CI_PROJECT_NAMESPACE == "ede123"'
+  cache:
+    key: "cache-windows"
+    paths:
+      - build/ccache
+  variables:
+    PACMAN_OPTIONS: "--needed --noconfirm --noprogressbar --overwrite \\*"
+    MSYSTEM: MINGW64
+    # Workaround for failing CI (hopefully temporary)
+    # https://docs.gitlab.com/ee/ci/large_repositories/#git-clean-flags
+    GIT_CLEAN_FLAGS: -ffdx -e "build/dejavu-fonts-ttf-*.tar.bz2"
+  script:
+    - $env:CHERE_INVOKING = 'yes'  # Preserve the current working directory
+    - C:/msys64/usr/bin/bash -lc "buildtools/msys2build_GitLab.sh"
+  artifacts:
+    when: always
+    paths:
+      - build/inkscape*.7z
+      - build/inkscape*.exe
+      - build/inkscape*.msi
+      - build/testfiles.7z
+
+inkscape:windows:x86:
+  <<: *windows_job
+  rules:
+    # trigger 32-bit build via schedule only to save runner time (MSYSTEM overridden via schedule variable)
+    - if: $SCHEDULED_JOB_NAME == "windows_32bit"
 
 
 #tests, always run after building
@@ -158,9 +236,37 @@ test:linux:
   artifacts:
     paths:
       - build/testfiles
+      - build/Testing
     when: on_failure
 
-
+test:macos:x64:
+  stage: test
+  tags:
+    - mac
+  rules:
+    - *do_not_run_for_schedules
+    # Mac runner is restricted to "inkscape" and "dehesselle" namespaces; only generate pipelines for those
+    - if: '$CI_PROJECT_NAMESPACE == "inkscape"'
+    - if: '$CI_PROJECT_NAMESPACE == "dehesselle"'
+  dependencies:
+    - inkscape:macos:x64
+  needs: ["inkscape:macos:x64"]
+  variables:
+    SDKROOT: /opt/sdks/MacOSX10.13.sdk
+  before_script:
+    # workaround: after_script doesn't run for cancelled/timed out jobs, leaving
+    #             non-ephemeral runners in an unclean state
+    #             https://gitlab.com/gitlab-org/gitlab/-/issues/15603
+    - packaging/macos/uninstall_toolset.sh
+    - packaging/macos/install_toolset.sh restore_overlay
+  script:
+    - packaging/macos/310-inkscape_test.sh
+  after_script:
+    - packaging/macos/uninstall_toolset.sh save_testfiles
+  artifacts:
+    paths:
+      - testfiles.tar.xz
+    when: on_failure
 
 ###########################
 #                         #
@@ -201,7 +307,7 @@ codeprotect:
     - *run_for_MR
   script:
     - git fetch $CI_MERGE_REQUEST_PROJECT_URL.git $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
-    - git diff $CI_MERGE_REQUEST_DIFF_BASE_SHA -U0 --no-color src/3rdparty | tee forbidden
+    - git diff $CI_MERGE_REQUEST_DIFF_BASE_SHA -U0 --no-color src/3rdparty/*/ | tee forbidden
     - if [[ -s forbidden ]]; then echo "This commit modifies files that are in an dependency library. Make sure you update upstream first, *then* force the merge in Inkscape."; false; fi
 
 #### All files should have a licence
@@ -226,7 +332,6 @@ translations:
   stage: test
   needs: []
   rules:
-    - *do_not_run_for_schedules
     - *run_otherwise
   script:
     # make sure dependencies for inkscape.pot are up-to-date
@@ -288,6 +393,16 @@ clangtidyfull:linux:
   <<: *ccache_init
   script:
     - bash buildtools/clangtidy-helper.sh
+
+# Look for icon problems
+media-check:
+  stage: test
+  needs: []
+  rules:
+    - *do_not_run_for_schedules
+    - *run_otherwise
+  script:
+    - python3 buildtools/media-check-icons.py
 
 
 ##################################################

@@ -27,6 +27,8 @@
 #include "ui/widget/font-selector.h"
 #include "ui/widget/font-variants.h"
 
+#include "util/action-accel.h"
+
 namespace Gtk {
 class Box;
 class Button;
@@ -38,7 +40,7 @@ class TextView;
 }
 
 class SPItem;
-class font_instance;
+class FontInstance;
 class SPCSSAttr;
 
 namespace Inkscape {
@@ -59,14 +61,11 @@ public:
     TextEdit();
     ~TextEdit() override;
 
-    /**
-     * Helper function which returns a new instance of the dialog.
-     * getInstance is needed by the dialog manager (Inkscape::UI::Dialog::DialogManager).
-     */
-    static TextEdit &getInstance() { return *new TextEdit(); }
+    void documentReplaced() override;
+    void selectionChanged(Selection *selection) override;
+    void selectionModified(Selection *selection, guint flags) override;
 
 protected:
-
     /**
      * Callback for pressing the default button.
      */
@@ -76,8 +75,6 @@ protected:
      * Callback for pressing the apply button.
      */
     void onApply ();
-    void onSelectionChange ();
-    void onSelectionModified (guint flags);
 
     /**
      * Called whenever something 'changes' on canvas.
@@ -88,6 +85,12 @@ protected:
      * @param content Indicates whether the modification of the user includes a style change. Actually refers to the question if we do want to show the content? (Parameter currently not used)
      */
     void onReadSelection (gboolean style, gboolean content);
+
+    /**
+     * This function would disable undo and redo if the text_view widget is in focus
+     * It is to fix the issue: https://gitlab.com/inkscape/inkscape/-/issues/744
+     */
+    bool captureUndo(GdkEventKey *event);
 
     /**
      * Callback invoked when the user modifies the text of the selected text object.
@@ -134,11 +137,6 @@ protected:
     void updateObjectText ( SPItem *text );
     SPCSSAttr *fillTextStyle ();
 
-    /**
-     * Can be invoked for setting the desktop. Currently not used.
-     */
-    void update() override;
-
 private:
 
     /*
@@ -174,9 +172,8 @@ private:
     bool blocked;
     const Glib::ustring samplephrase;
 
-
-    TextEdit(TextEdit const &d) = delete;
-    TextEdit operator=(TextEdit const &d) = delete;
+    // Track undo and redo keyboard shortcuts
+    Util::ActionAccel _undo, _redo;
 };
 
 } //namespace Dialog

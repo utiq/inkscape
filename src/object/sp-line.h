@@ -18,10 +18,11 @@
 #include "svg/svg-length.h"
 #include "sp-shape.h"
 
-class SPLine : public SPShape {
+class SPLine final : public SPShape {
 public:
 	SPLine();
 	~SPLine() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     SVGLength x1;
     SVGLength y1;
@@ -32,6 +33,7 @@ public:
 	Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
 	void set(SPAttr key, char const* value) override;
 
+	const char* typeName() const override;
 	const char* displayName() const override;
 	Geom::Affine set_transform(Geom::Affine const &transform) override;
 	void convert_to_guides() const override;

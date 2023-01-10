@@ -23,7 +23,6 @@
 #include "filter-chemistry.h"
 #include "inkscape.h"
 #include "preferences.h"
-#include "verbs.h"
 
 #include "svg/css-ostringstream.h"
 
@@ -40,16 +39,16 @@ namespace UI {
 namespace Dialog {
 
 FillAndStroke::FillAndStroke()
-    : DialogBase("/dialogs/fillstroke", SP_VERB_DIALOG_FILL_STROKE)
+    : DialogBase("/dialogs/fillstroke", "FillStroke")
     , _page_fill(Gtk::manage(new UI::Widget::NotebookPage(1, 1, true, true)))
     , _page_stroke_paint(Gtk::manage(new UI::Widget::NotebookPage(1, 1, true, true)))
     , _page_stroke_style(Gtk::manage(new UI::Widget::NotebookPage(1, 1, true, true)))
-    , _composite_settings(SP_VERB_DIALOG_FILL_STROKE, "fillstroke",
+    , _composite_settings(INKSCAPE_ICON("dialog-fill-and-stroke"),
+                          "fillstroke",
                           UI::Widget::SimpleFilterModifier::ISOLATION |
                           UI::Widget::SimpleFilterModifier::BLEND |
                           UI::Widget::SimpleFilterModifier::BLUR |
                           UI::Widget::SimpleFilterModifier::OPACITY)
-    , targetDesktop(nullptr)
     , fillWdgt(nullptr)
     , strokeWdgt(nullptr)
 {
@@ -61,7 +60,7 @@ FillAndStroke::FillAndStroke()
     _notebook.append_page(*_page_stroke_style, _createPageTabLabel(_("Stroke st_yle"), INKSCAPE_ICON("object-stroke-style")));
     _notebook.set_vexpand(true);
 
-    _notebook.signal_switch_page().connect(sigc::mem_fun(this, &FillAndStroke::_onSwitchPage));
+    _notebook.signal_switch_page().connect(sigc::mem_fun(*this, &FillAndStroke::_onSwitchPage));
 
     _layoutPageFill();
     _layoutPageStrokePaint();
@@ -76,34 +75,51 @@ FillAndStroke::FillAndStroke()
 
 FillAndStroke::~FillAndStroke()
 {
-    setDesktop(nullptr);
+    // Disconnect signals from composite settings
+    _composite_settings.setSubject(nullptr);
+    fillWdgt->setDesktop(nullptr);
+    strokeWdgt->setDesktop(nullptr);
+    strokeStyleWdgt->setDesktop(nullptr);
+    _subject.setDesktop(nullptr);
 }
 
-void FillAndStroke::update()
+void FillAndStroke::selectionChanged(Selection *selection)
 {
-    if (!_app) {
-        std::cerr << "FillAndStroke::update(): _app is null" << std::endl;
-        return;
+    if (fillWdgt) {
+        fillWdgt->performUpdate();
     }
-
-    setDesktop(getDesktop());
+    if (strokeWdgt) {
+        strokeWdgt->performUpdate();
+    }
+    if (strokeStyleWdgt) {
+        strokeStyleWdgt->selectionChangedCB();
+    }
+}
+void FillAndStroke::selectionModified(Selection *selection, guint flags)
+{
+    if (fillWdgt) {
+        fillWdgt->selectionModifiedCB(flags);
+    }
+    if (strokeWdgt) {
+        strokeWdgt->selectionModifiedCB(flags);
+    }
+    if (strokeStyleWdgt) {
+        strokeStyleWdgt->selectionModifiedCB(flags);
+    }
 }
 
-void FillAndStroke::setDesktop(SPDesktop *desktop)
+void FillAndStroke::desktopReplaced()
 {
-    if (targetDesktop != desktop) {
-        targetDesktop = desktop;
-        if (fillWdgt) {
-            fillWdgt->setDesktop(desktop);
-        }
-        if (strokeWdgt) {
-            strokeWdgt->setDesktop(desktop);
-        }
-        if (strokeStyleWdgt) {
-            strokeStyleWdgt->setDesktop(desktop);
-        }
-        _subject.setDesktop(desktop);
+    if (fillWdgt) {
+        fillWdgt->setDesktop(getDesktop());
     }
+    if (strokeWdgt) {
+        strokeWdgt->setDesktop(getDesktop());
+    }
+    if (strokeStyleWdgt) {
+        strokeStyleWdgt->setDesktop(getDesktop());
+    }
+    _subject.setDesktop(getDesktop());
 }
 
 void FillAndStroke::_onSwitchPage(Gtk::Widget * /*page*/, guint pagenum)

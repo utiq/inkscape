@@ -20,31 +20,31 @@
  */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"  // only include where actually required!
+#include "config.h" // only include where actually required!
 #endif
 
 #include <vector>
-#include "style.h"
-#include "rdf.h"
-#include "verbs.h"
 
-#include "display/control/canvas-grid.h"
+#include "actions/actions-tools.h"
 #include "document-properties.h"
-#include "helper/action.h"
 #include "include/gtkmm_version.h"
 #include "io/sys.h"
+#include "object/color-profile.h"
 #include "object/sp-root.h"
+#include "object/sp-grid.h"
 #include "object/sp-script.h"
+#include "page-manager.h"
+#include "rdf.h"
+#include "style.h"
+#include "svg/svg-color.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/shape-editor.h"
-#include "ui/tools-switch.h"
+#include "ui/widget/alignment-selector.h"
 #include "ui/widget/entity-entry.h"
 #include "ui/widget/notebook-page.h"
-#include "xml/node-event-vector.h"
-
-#include "object/color-profile.h"
+#include "ui/widget/page-properties.h"
 
 namespace Inkscape {
 namespace UI {
@@ -52,23 +52,6 @@ namespace Dialog {
 
 #define SPACE_SIZE_X 15
 #define SPACE_SIZE_Y 10
-
-
-//===================================================
-
-//---------------------------------------------------
-
-static void on_child_added(Inkscape::XML::Node *repr, Inkscape::XML::Node *child, Inkscape::XML::Node *ref, void * data);
-static void on_child_removed(Inkscape::XML::Node *repr, Inkscape::XML::Node *child, Inkscape::XML::Node *ref, void * data);
-static void on_repr_attr_changed (Inkscape::XML::Node *, gchar const *, gchar const *, gchar const *, bool, gpointer);
-
-static Inkscape::XML::NodeEventVector const _repr_events = {
-    on_child_added, // child_added
-    on_child_removed, // child_removed
-    on_repr_attr_changed,
-    nullptr, // content_changed
-    nullptr  // order_changed
-};
 
 static void docprops_style_button(Gtk::Button& btn, char const* iconName)
 {
@@ -78,19 +61,10 @@ static void docprops_style_button(Gtk::Button& btn, char const* iconName)
     btn.set_relief(Gtk::RELIEF_NONE);
 }
 
-DocumentProperties& DocumentProperties::getInstance()
-{
-    DocumentProperties &instance = *new DocumentProperties();
-    instance.init();
-
-    return instance;
-}
-
 DocumentProperties::DocumentProperties()
-    : DialogBase("/dialogs/documentoptions", SP_VERB_DIALOG_DOCPROPERTIES)
-    , _page_page(Gtk::manage(new UI::Widget::NotebookPage(1, 1, true, true)))
+    : DialogBase("/dialogs/documentoptions", "DocumentProperties")
+    , _page_page(Gtk::manage(new UI::Widget::NotebookPage(1, 1, false, true)))
     , _page_guides(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
-    , _page_snap(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
     , _page_cms(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
     , _page_scripting(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
     , _page_external_scripts(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
@@ -98,43 +72,14 @@ DocumentProperties::DocumentProperties()
     , _page_metadata1(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
     , _page_metadata2(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
     //---------------------------------------------------------------
-    , _rcb_antialias(_("Use antialiasing"), _("If unset, no antialiasing will be done on the drawing"), "shape-rendering", _wr, false, nullptr, nullptr, nullptr, "crispEdges")
-    , _rcb_checkerboard(_("Checkerboard background"), _("If set, use a colored checkerboard for the canvas background"), "inkscape:pagecheckerboard", _wr, false)
-    , _rcb_canb(_("Show page _border"), _("If set, rectangular page border is shown"), "showborder", _wr, false)
-    , _rcb_bord(_("Border on _top of drawing"), _("If set, border is always on top of the drawing"), "borderlayer", _wr, false)
-    , _rcb_shad(_("_Show border shadow"), _("If set, page border shows a shadow on its right and lower side"), "inkscape:showpageshadow", _wr, false)
-    , _rcp_bg(_("Back_ground color:"), _("Background color"), _("Color of the canvas background. Note: opacity is ignored except when exporting to bitmap."), "pagecolor", "inkscape:pageopacity", _wr)
-    , _rcp_bord(_("Border _color:"), _("Page border color"), _("Color of the page border"), "bordercolor", "borderopacity", _wr)
-    , _rum_deflt(_("Display _units:"), "inkscape:document-units", _wr)
-    , _page_sizer(_wr)
-    //---------------------------------------------------------------
-    //General snap options
+    // General guide options
     , _rcb_sgui(_("Show _guides"), _("Show or hide guides"), "showguides", _wr)
     , _rcb_lgui(_("Lock all guides"), _("Toggle lock of all guides in the document"), "inkscape:lockguides", _wr)
     , _rcp_gui(_("Guide co_lor:"), _("Guideline color"), _("Color of guidelines"), "guidecolor", "guideopacity", _wr)
-    , _rcp_hgui(_("_Highlight color:"), _("Highlighted guideline color"), _("Color of a guideline when it is under mouse"), "guidehicolor", "guidehiopacity", _wr)
-    , _create_guides_btn(_("Create guides around the page"))
+    , _rcp_hgui(_("_Highlight color:"), _("Highlighted guideline color"),
+                _("Color of a guideline when it is under mouse"), "guidehicolor", "guidehiopacity", _wr)
+    , _create_guides_btn(_("Create guides around the current page"))
     , _delete_guides_btn(_("Delete all guides"))
-    //---------------------------------------------------------------
-    , _rsu_sno(_("Snap _distance"), _("Snap only when _closer than:"), _("Always snap"),
-               _("Snapping distance, in screen pixels, for snapping to objects"), _("Always snap to objects, regardless of their distance"),
-               _("If set, objects only snap to another object when it's within the range specified below"),
-               "objecttolerance", _wr)
-    //Options for snapping to grids
-    , _rsu_sn(_("Snap d_istance"), _("Snap only when c_loser than:"), _("Always snap"),
-              _("Snapping distance, in screen pixels, for snapping to grid"), _("Always snap to grids, regardless of the distance"),
-              _("If set, objects only snap to a grid line when it's within the range specified below"),
-              "gridtolerance", _wr)
-    //Options for snapping to guides
-    , _rsu_gusn(_("Snap dist_ance"), _("Snap only when close_r than:"), _("Always snap"),
-                _("Snapping distance, in screen pixels, for snapping to guides"), _("Always snap to guides, regardless of the distance"),
-                _("If set, objects only snap to a guide when it's within the range specified below"),
-                "guidetolerance", _wr)
-    //---------------------------------------------------------------
-    , _rcb_snclp(_("Snap to clip paths"), _("When snapping to paths, then also try snapping to clip paths"), "inkscape:snap-path-clip", _wr)
-    , _rcb_snmsk(_("Snap to mask paths"), _("When snapping to paths, then also try snapping to mask paths"), "inkscape:snap-path-mask", _wr)
-    , _rcb_perp(_("Snap perpendicularly"), _("When snapping to paths or guides, then also try snapping perpendicularly"), "inkscape:snap-perpendicular", _wr)
-    , _rcb_tang(_("Snap tangentially"), _("When snapping to paths or guides, then also try snapping tangentially"), "inkscape:snap-tangential", _wr)
     //---------------------------------------------------------------
     , _grids_label_crea("", Gtk::ALIGN_START)
     , _grids_button_new(C_("Grid", "_New"), _("Create new grid."))
@@ -143,14 +88,16 @@ DocumentProperties::DocumentProperties()
     , _grids_vbox(Gtk::ORIENTATION_VERTICAL)
     , _grids_hbox_crea(Gtk::ORIENTATION_HORIZONTAL)
     , _grids_space(Gtk::ORIENTATION_HORIZONTAL)
+    // Attach nodeobservers to this document
+    , _namedview_connection(this)
+    , _root_connection(this)
 {
-    set_spacing (4);
+    set_spacing (0);
     pack_start(_notebook, true, true);
 
-    _notebook.append_page(*_page_page,      _("Page"));
+    _notebook.append_page(*_page_page,      _("Display"));
     _notebook.append_page(*_page_guides,    _("Guides"));
     _notebook.append_page(_grids_vbox,      _("Grids"));
-    _notebook.append_page(*_page_snap,      _("Snap"));
     _notebook.append_page(*_page_cms,       _("Color"));
     _notebook.append_page(*_page_scripting, _("Scripting"));
     _notebook.append_page(*_page_metadata1, _("Metadata"));
@@ -160,7 +107,6 @@ DocumentProperties::DocumentProperties()
     build_page();
     build_guides();
     build_gridspage();
-    build_snap();
     build_cms();
     build_scripting();
     build_metadata();
@@ -169,27 +115,14 @@ DocumentProperties::DocumentProperties()
     _grids_button_new.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::onNewGrid));
     _grids_button_remove.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::onRemoveGrid));
 
-    _rum_deflt._changed_connection.block();
-    _rum_deflt.getUnitMenu()->signal_changed().connect(sigc::mem_fun(*this, &DocumentProperties::onDocUnitChange));
-}
-
-void DocumentProperties::init()
-{
     show_all_children();
     _grids_button_remove.hide();
 }
 
 DocumentProperties::~DocumentProperties()
 {
-    for (auto & it : _rdflist)
+    for (auto &it : _rdflist)
         delete it;
-    if (_repr_root) {
-        _document_replaced_connection.disconnect();
-        _repr_root->removeListenerByData(this);
-        _repr_root = nullptr;
-        _repr_namedview->removeListenerByData(this);
-        _repr_namedview = nullptr;
-    }
 }
 
 //========================================================================
@@ -216,10 +149,6 @@ void attach_all(Gtk::Grid &table, Gtk::Widget *const arr[], unsigned const n)
         } else {
             if (arr[i+1]) {
                 Gtk::AttachOptions yoptions = (Gtk::AttachOptions)0;
-                if (dynamic_cast<Inkscape::UI::Widget::PageSizer*>(arr[i+1])) {
-                    // only the PageSizer in Document Properties|Page should be stretched vertically
-                    yoptions = Gtk::FILL|Gtk::EXPAND;
-                }
                 arr[i+1]->set_hexpand();
 
                 if (yoptions & Gtk::EXPAND)
@@ -248,71 +177,267 @@ void attach_all(Gtk::Grid &table, Gtk::Widget *const arr[], unsigned const n)
     }
 }
 
+void set_namedview_bool(SPDesktop* desktop, const Glib::ustring& operation, SPAttr key, bool on) {
+    if (!desktop || !desktop->getDocument()) return;
+
+    desktop->getNamedView()->change_bool_setting(key, on);
+
+    desktop->getDocument()->setModifiedSinceSave();
+    DocumentUndo::done(desktop->getDocument(), operation, "");
+}
+
+void set_color(SPDesktop* desktop, Glib::ustring operation, unsigned int rgba, SPAttr color_key, SPAttr opacity_key = SPAttr::INVALID) {
+    if (!desktop || !desktop->getDocument()) return;
+
+    desktop->getNamedView()->change_color(rgba, color_key, opacity_key);
+
+    desktop->getDocument()->setModifiedSinceSave();
+    DocumentUndo::maybeDone(desktop->getDocument(), ("document-color-" + operation).c_str(), operation, "");
+}
+
+void set_document_dimensions(SPDesktop* desktop, double width, double height, const Inkscape::Util::Unit* unit) {
+    if (!desktop) return;
+
+    Inkscape::Util::Quantity width_quantity  = Inkscape::Util::Quantity(width, unit);
+    Inkscape::Util::Quantity height_quantity = Inkscape::Util::Quantity(height, unit);
+    SPDocument* doc = desktop->getDocument();
+    Inkscape::Util::Quantity const old_height = doc->getHeight();
+    auto rect = Geom::Rect(Geom::Point(0, 0), Geom::Point(width_quantity.value("px"), height_quantity.value("px")));
+    doc->fitToRect(rect, false);
+
+    // The origin for the user is in the lower left corner; this point should remain stationary when
+    // changing the page size. The SVG's origin however is in the upper left corner, so we must compensate for this
+    if (!doc->is_yaxisdown()) {
+        Geom::Translate const vert_offset(Geom::Point(0, (old_height.value("px") - height_quantity.value("px"))));
+        doc->getRoot()->translateChildItems(vert_offset);
+    }
+    // units: this is most likely not needed, units are part of document size attributes
+    // if (unit) {
+        // set_namedview_value(desktop, "", SPAttr::UNITS)
+        // write_str_to_xml(desktop, _("Set document unit"), "unit", unit->abbr.c_str());
+    // }
+    doc->setWidthAndHeight(width_quantity, height_quantity, true);
+
+    DocumentUndo::done(doc, _("Set page size"), "");
+}
+
+void DocumentProperties::set_viewbox_pos(SPDesktop* desktop, double x, double y) {
+    if (!desktop) return;
+
+    auto document = desktop->getDocument();
+    if (!document) return;
+
+    auto box = document->getViewBox();
+    document->setViewBox(Geom::Rect::from_xywh(x, y, box.width(), box.height()));
+    DocumentUndo::done(document, _("Set viewbox position"), "");
+    update_scale_ui(desktop);
+}
+
+void DocumentProperties::set_viewbox_size(SPDesktop* desktop, double width, double height) {
+    if (!desktop) return;
+
+    auto document = desktop->getDocument();
+    if (!document) return;
+
+    auto box = document->getViewBox();
+    document->setViewBox(Geom::Rect::from_xywh(box.min()[Geom::X], box.min()[Geom::Y], width, height));
+    DocumentUndo::done(document, _("Set viewbox size"), "");
+    update_scale_ui(desktop);
+}
+
+// helper function to set document scale; uses magnitude of document width/height only, not computed (pixel) values
+void set_document_scale_helper(SPDocument& document, double scale) {
+    if (scale <= 0) return;
+
+    auto root = document.getRoot();
+    auto box = document.getViewBox();
+    document.setViewBox(Geom::Rect::from_xywh(
+        box.min()[Geom::X], box.min()[Geom::Y],
+        root->width.value / scale, root->height.value / scale)
+    );
+}
+
+void DocumentProperties::set_document_scale(SPDesktop* desktop, double scale) {
+    if (!desktop) return;
+
+    auto document = desktop->getDocument();
+    if (!document) return;
+
+    if (scale > 0) {
+        set_document_scale_helper(*document, scale);
+        update_viewbox_ui(desktop);
+        update_scale_ui(desktop);
+        DocumentUndo::done(document, _("Set page scale"), "");
+    }
+}
+
+// document scale as a ratio of document size and viewbox size
+// as described in Wiki: https://wiki.inkscape.org/wiki/index.php/Units_In_Inkscape
+// for example: <svg width="100mm" height="100mm" viewBox="0 0 100 100"> will report 1:1 scale
+std::optional<Geom::Scale> get_document_scale_helper(SPDocument& doc) {
+    auto root = doc.getRoot();
+    if (root &&
+        root->width._set  && root->width.unit  != SVGLength::PERCENT &&
+        root->height._set && root->height.unit != SVGLength::PERCENT) {
+        if (root->viewBox_set) {
+            // viewbox and document size present
+            auto vw = root->viewBox.width();
+            auto vh = root->viewBox.height();
+            if (vw > 0 && vh > 0) {
+                return Geom::Scale(root->width.value / vw, root->height.value / vh);
+            }
+        } else {
+            // no viewbox, use SVG size in pixels
+            auto w = root->width.computed;
+            auto h = root->height.computed;
+            if (w > 0 && h > 0) {
+                return Geom::Scale(root->width.value / w, root->height.value / h);
+            }
+        }
+    }
+
+    // there is no scale concept applicable in the current state
+    return std::optional<Geom::Scale>();
+}
+
+void DocumentProperties::update_scale_ui(SPDesktop* desktop) {
+    if (!desktop) return;
+
+    auto document = desktop->getDocument();
+    if (!document) return;
+
+    using UI::Widget::PageProperties;
+    if (auto scale = get_document_scale_helper(*document)) {
+        auto sx = (*scale)[Geom::X];
+        auto sy = (*scale)[Geom::Y];
+        double eps = 0.0001; // TODO: tweak this value
+        bool uniform = fabs(sx - sy) < eps;
+        _page->set_dimension(PageProperties::Dimension::Scale, sx, sx); // only report one, only one "scale" is used
+        _page->set_check(PageProperties::Check::NonuniformScale, !uniform);
+        _page->set_check(PageProperties::Check::DisabledScale, false);
+    } else {
+        // no scale
+        _page->set_dimension(PageProperties::Dimension::Scale, 1, 1);
+        _page->set_check(PageProperties::Check::NonuniformScale, false);
+        _page->set_check(PageProperties::Check::DisabledScale, true);
+    }
+}
+
+void DocumentProperties::update_viewbox_ui(SPDesktop* desktop) {
+    if (!desktop) return;
+
+    auto document = desktop->getDocument();
+    if (!document) return;
+
+    using UI::Widget::PageProperties;
+    Geom::Rect viewBox = document->getViewBox();
+    _page->set_dimension(PageProperties::Dimension::ViewboxPosition, viewBox.min()[Geom::X], viewBox.min()[Geom::Y]);
+    _page->set_dimension(PageProperties::Dimension::ViewboxSize, viewBox.width(), viewBox.height());
+}
+
 void DocumentProperties::build_page()
 {
+    using UI::Widget::PageProperties;
+    _page = Gtk::manage(PageProperties::create());
+    _page_page->table().attach(*_page, 0, 0);
     _page_page->show();
 
-    Gtk::Label* label_gen = Gtk::manage (new Gtk::Label);
-    label_gen->set_markup (_("<b>General</b>"));
+    _page->signal_color_changed().connect([=](unsigned int color, PageProperties::Color element){
+        if (_wr.isUpdating() || !_wr.desktop()) return;
 
-    Gtk::Label *label_for = Gtk::manage (new Gtk::Label);
-    label_for->set_markup (_("<b>Page Size</b>"));
+        _wr.setUpdating(true);
+        switch (element) {
+            case PageProperties::Color::Desk:
+                set_color(_wr.desktop(), _("Desk color"), color, SPAttr::INKSCAPE_DESK_COLOR);
+                break;
+            case PageProperties::Color::Background:
+                set_color(_wr.desktop(), _("Background color"), color, SPAttr::PAGECOLOR);
+                break;
+            case PageProperties::Color::Border:
+                set_color(_wr.desktop(), _("Border color"), color, SPAttr::BORDERCOLOR, SPAttr::BORDEROPACITY);
+                break;
+        }
+        _wr.setUpdating(false);
+    });
 
-    Gtk::Label* label_bkg = Gtk::manage (new Gtk::Label);
-    label_bkg->set_markup (_("<b>Background</b>"));
+    _page->signal_dimmension_changed().connect([=](double x, double y, const Inkscape::Util::Unit* unit, PageProperties::Dimension element){
+        if (_wr.isUpdating() || !_wr.desktop()) return;
 
-    Gtk::Label* label_bdr = Gtk::manage (new Gtk::Label);
-    label_bdr->set_markup (_("<b>Border</b>"));
+        _wr.setUpdating(true);
+        switch (element) {
+            case PageProperties::Dimension::PageTemplate:
+            case PageProperties::Dimension::PageSize:
+                set_document_dimensions(_wr.desktop(), x, y, unit);
+                update_viewbox(_wr.desktop());
+                break;
 
-    Gtk::Label* label_dsp = Gtk::manage (new Gtk::Label);
-    label_dsp->set_markup (_("<b>Display</b>"));
+            case PageProperties::Dimension::ViewboxSize:
+                set_viewbox_size(_wr.desktop(), x, y);
+                break;
 
-    _page_sizer.init();
+            case PageProperties::Dimension::ViewboxPosition:
+                set_viewbox_pos(_wr.desktop(), x, y);
+                break;
 
-    _rcb_doc_props_left.set_border_width(4);
-    _rcb_doc_props_left.set_row_spacing(4);
-    _rcb_doc_props_left.set_column_spacing(4);
-    _rcb_doc_props_right.set_border_width(4);
-    _rcb_doc_props_right.set_row_spacing(4);
-    _rcb_doc_props_right.set_column_spacing(4);
+            case PageProperties::Dimension::Scale:
+                set_document_scale(_wr.desktop(), x); // only uniform scale; there's no 'y' in the dialog
+        }
+        _wr.setUpdating(false);
+    });
 
-    Gtk::Widget *const widget_array[] =
-    {
-        label_gen,            nullptr,
-        nullptr,              &_rum_deflt,
-        nullptr,              nullptr,
-        label_for,            nullptr,
-        nullptr,              &_page_sizer,
-        nullptr,              nullptr,
-        &_rcb_doc_props_left, &_rcb_doc_props_right,
-    };
-    attach_all(_page_page->table(), widget_array, G_N_ELEMENTS(widget_array));
+    _page->signal_check_toggled().connect([=](bool checked, PageProperties::Check element){
+        if (_wr.isUpdating() || !_wr.desktop()) return;
 
-    Gtk::Widget *const widget_array_left[] =
-    {
-        label_bkg,            nullptr,
-        nullptr,              &_rcb_checkerboard,
-        nullptr,              &_rcp_bg,
-        label_dsp,            nullptr,
-        nullptr,              &_rcb_antialias,
-    };
-    attach_all(_rcb_doc_props_left, widget_array_left, G_N_ELEMENTS(widget_array_left));
+        _wr.setUpdating(true);
+        switch (element) {
+            case PageProperties::Check::Checkerboard:
+                set_namedview_bool(_wr.desktop(), _("Toggle checkerboard"), SPAttr::INKSCAPE_DESK_CHECKERBOARD, checked);
+                break;
+            case PageProperties::Check::Border:
+                set_namedview_bool(_wr.desktop(), _("Toggle page border"), SPAttr::SHOWBORDER, checked);
+                break;
+            case PageProperties::Check::BorderOnTop:
+                set_namedview_bool(_wr.desktop(), _("Toggle border on top"), SPAttr::BORDERLAYER, checked);
+                break;
+            case PageProperties::Check::Shadow:
+                set_namedview_bool(_wr.desktop(), _("Toggle page shadow"), SPAttr::SHOWPAGESHADOW, checked);
+                break;
+            case PageProperties::Check::AntiAlias:
+                set_namedview_bool(_wr.desktop(), _("Toggle anti-aliasing"), SPAttr::SHAPE_RENDERING, checked);
+                break;
+            case PageProperties::Check::ClipToPage:
+                set_namedview_bool(_wr.desktop(), _("Toggle clipping to page mode"), SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, checked);
+                break;
+            case PageProperties::Check::PageLabelStyle:
+                set_namedview_bool(_wr.desktop(), _("Toggle page label style"), SPAttr::PAGELABELSTYLE, checked);
+        }
+        _wr.setUpdating(false);
+    });
 
-    Gtk::Widget *const widget_array_right[] =
-    {
-        label_bdr,            nullptr,
-        nullptr,              &_rcb_canb,
-        nullptr,              &_rcb_bord,
-        nullptr,              &_rcb_shad,
-        nullptr,              &_rcp_bord,
-    };
-    attach_all(_rcb_doc_props_right, widget_array_right, G_N_ELEMENTS(widget_array_right));
+    _page->signal_unit_changed().connect([=](const Inkscape::Util::Unit* unit, PageProperties::Units element){
+        if (_wr.isUpdating() || !_wr.desktop()) return;
 
-    std::list<Gtk::Widget*> _slaveList;
-    _slaveList.push_back(&_rcb_bord);
-    _slaveList.push_back(&_rcb_shad);
-    _slaveList.push_back(&_rcp_bord);
-    _rcb_canb.setSlaveWidgets(_slaveList);
+        if (element == PageProperties::Units::Display) {
+            // display only units
+            display_unit_change(unit);
+        }
+        else if (element == PageProperties::Units::Document) {
+            // not used, fired with page size
+        }
+    });
+
+    _page->signal_resize_to_fit().connect([=](){
+        if (_wr.isUpdating() || !_wr.desktop()) return;
+
+        if (auto document = getDocument()) {
+            auto &page_manager = document->getPageManager();
+            page_manager.selectPage(0);
+            // fit page to selection or content, if there's no selection
+            page_manager.fitToSelection(_wr.desktop()->getSelection());
+            DocumentUndo::done(document, _("Resize page to fit"), INKSCAPE_ICON("tool-pages"));
+            update_widgets();
+        }
+    });
 }
 
 void DocumentProperties::build_guides()
@@ -322,9 +447,6 @@ void DocumentProperties::build_guides()
     Gtk::Label *label_gui = Gtk::manage (new Gtk::Label);
     label_gui->set_markup (_("<b>Guides</b>"));
 
-    _rum_deflt.set_margin_start(0);
-    _rcp_bg.set_margin_start(0);
-    _rcp_bord.set_margin_start(0);
     _rcp_gui.set_margin_start(0);
     _rcp_hgui.set_margin_start(0);
     _rcp_gui.set_hexpand();
@@ -347,67 +469,9 @@ void DocumentProperties::build_guides()
     attach_all(_page_guides->table(), widget_array, G_N_ELEMENTS(widget_array));
     inner->set_hexpand(false);
 
-    _create_guides_btn.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::create_guides_around_page));
-    _delete_guides_btn.signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::delete_all_guides));
-}
-
-void DocumentProperties::build_snap()
-{
-    _page_snap->show();
-
-    Gtk::Label *label_o = Gtk::manage (new Gtk::Label);
-    label_o->set_markup (_("<b>Snap to objects</b>"));
-    Gtk::Label *label_gr = Gtk::manage (new Gtk::Label);
-    label_gr->set_markup (_("<b>Snap to grids</b>"));
-    Gtk::Label *label_gu = Gtk::manage (new Gtk::Label);
-    label_gu->set_markup (_("<b>Snap to guides</b>"));
-    Gtk::Label *label_m = Gtk::manage (new Gtk::Label);
-    label_m->set_markup (_("<b>Miscellaneous</b>"));
-
-    auto spacer = Gtk::manage(new Gtk::Label());
-
-    Gtk::Widget *const array[] =
-    {
-        label_o,     nullptr,
-        nullptr,     _rsu_sno._vbox,
-        &_rcb_snclp, spacer,
-        nullptr,     &_rcb_snmsk,
-        nullptr,     nullptr,
-        label_gr,    nullptr,
-        nullptr,     _rsu_sn._vbox,
-        nullptr,     nullptr,
-        label_gu,    nullptr,
-        nullptr,     _rsu_gusn._vbox,
-        nullptr,     nullptr,
-        label_m,     nullptr,
-        nullptr,     &_rcb_perp,
-        nullptr,     &_rcb_tang
-    };
-    attach_all(_page_snap->table(), array, G_N_ELEMENTS(array));
- }
-
-void DocumentProperties::create_guides_around_page()
-{
-    SPDesktop *dt = getDesktop();
-    Verb *verb = Verb::get( SP_VERB_EDIT_GUIDES_AROUND_PAGE );
-    if (verb) {
-        SPAction *action = verb->get_action(Inkscape::ActionContext(dt));
-        if (action) {
-            sp_action_perform(action, nullptr);
-        }
-    }
-}
-
-void DocumentProperties::delete_all_guides()
-{
-    SPDesktop *dt = getDesktop();
-    Verb *verb = Verb::get( SP_VERB_EDIT_DELETE_ALL_GUIDES );
-    if (verb) {
-        SPAction *action = verb->get_action(Inkscape::ActionContext(dt));
-        if (action) {
-            sp_action_perform(action, nullptr);
-        }
-    }
+    // Must use C API until GTK4.
+    gtk_actionable_set_action_name(GTK_ACTIONABLE(_create_guides_btn.gobj()), "doc.create-guides-around-page");
+    gtk_actionable_set_action_name(GTK_ACTIONABLE(_delete_guides_btn.gobj()), "doc.delete-all-guides");
 }
 
 /// Populates the available color profiles combo box
@@ -454,7 +518,7 @@ static void sanitizeName( Glib::ustring& str )
             && ((val < 'a') || (val > 'z'))
             && (val != '_')
             && (val != ':')) {
-          str.insert(0, "_");
+            str.insert(0, "_");
         }
         for (Glib::ustring::size_type i = 1; i < str.size(); i++) {
             char val = str.at(i);
@@ -475,29 +539,23 @@ static void sanitizeName( Glib::ustring& str )
 void DocumentProperties::linkSelectedProfile()
 {
     //store this profile in the SVG document (create <color-profile> element in the XML)
-    // TODO remove use of 'active' desktop
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    if (!desktop){
-        g_warning("No active desktop");
-    } else {
+    if (auto document = getDocument()){
         // Find the index of the currently-selected row in the color profiles combobox
         Gtk::TreeModel::iterator iter = _AvailableProfilesList.get_active();
-
-        if (!iter) {
+        if (!iter)
             return;
-        }
 
         // Read the filename and description from the list of available profiles
         Glib::ustring file = (*iter)[_AvailableProfilesListColumns.fileColumn];
         Glib::ustring name = (*iter)[_AvailableProfilesListColumns.nameColumn];
 
-        std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "iccprofile" );
+        std::vector<SPObject *> current = document->getResourceList( "iccprofile" );
         for (auto obj : current) {
             Inkscape::ColorProfile* prof = reinterpret_cast<Inkscape::ColorProfile*>(obj);
             if (!strcmp(prof->href, file.c_str()))
                 return;
         }
-        Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
+        Inkscape::XML::Document *xml_doc = document->getReprDoc();
         Inkscape::XML::Node *cprofRepr = xml_doc->createElement("svg:color-profile");
         gchar* tmp = g_strdup(name.c_str());
         Glib::ustring nameStr = tmp ? tmp : "profile"; // TODO add some auto-numbering to avoid collisions
@@ -514,14 +572,14 @@ void DocumentProperties::linkSelectedProfile()
             xml_doc->root()->addChild(defsRepr, nullptr);
         }
 
-        g_assert(desktop->doc()->getDefs());
+        g_assert(document->getDefs());
         defsRepr->addChild(cprofRepr, nullptr);
 
         // TODO check if this next line was sometimes needed. It being there caused an assertion.
         //Inkscape::GC::release(defsRepr);
 
         // inform the document, so we can undo
-        DocumentUndo::done(desktop->doc(), SP_VERB_EDIT_LINK_COLOR_PROFILE, _("Link Color Profile"));
+        DocumentUndo::done(document, _("Link Color Profile"), "");
 
         populate_linked_profiles_box();
     }
@@ -547,21 +605,23 @@ struct static_caster { To * operator () (From * value) const { return static_cas
 void DocumentProperties::populate_linked_profiles_box()
 {
     _LinkedProfilesListStore->clear();
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "iccprofile" );
-    if (! current.empty()) {
-        _emb_profiles_observer.set((*(current.begin()))->parent);
-    }
+    if (auto document = getDocument()) {
+        std::vector<SPObject *> current = document->getResourceList( "iccprofile" );
+        if (! current.empty()) {
+            _emb_profiles_observer.set((*(current.begin()))->parent);
+        }
 
-    std::set<Inkscape::ColorProfile *> _current;
-    std::transform(current.begin(),
-                   current.end(),
-                   std::inserter(_current, _current.begin()),
-                   static_caster<SPObject, Inkscape::ColorProfile>());
+        std::set<Inkscape::ColorProfile *> _current;
+        std::transform(current.begin(),
+                       current.end(),
+                       std::inserter(_current, _current.begin()),
+                       static_caster<SPObject, Inkscape::ColorProfile>());
 
-    for (auto &profile: _current) {
-        Gtk::TreeModel::Row row = *(_LinkedProfilesListStore->append());
-        row[_LinkedProfilesListColumns.nameColumn] = profile->name;
-//        row[_LinkedProfilesListColumns.previewColumn] = "Color Preview";
+        for (auto &profile: _current) {
+            Gtk::TreeModel::Row row = *(_LinkedProfilesListStore->append());
+            row[_LinkedProfilesListColumns.nameColumn] = profile->name;
+    //        row[_LinkedProfilesListColumns.previewColumn] = "Color Preview";
+        }
     }
 }
 
@@ -586,7 +646,7 @@ void DocumentProperties::linked_profiles_list_button_release(GdkEventButton* eve
     }
 }
 
-void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem)
+void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _EmbProfContextMenu.append(*mi);
@@ -596,7 +656,7 @@ void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<v
 }
 
 
-void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem)
+void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _ExternalScriptsContextMenu.append(*mi);
@@ -605,7 +665,7 @@ void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::s
     _ExternalScriptsContextMenu.accelerate(parent);
 }
 
-void DocumentProperties::embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void> rem)
+void DocumentProperties::embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _EmbeddedScriptsContextMenu.append(*mi);
@@ -634,13 +694,15 @@ void DocumentProperties::removeSelectedProfile(){
             return;
         }
     }
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "iccprofile" );
-    for (auto obj : current) {
-        Inkscape::ColorProfile* prof = reinterpret_cast<Inkscape::ColorProfile*>(obj);
-        if (!name.compare(prof->name)){
-            prof->deleteObject(true, false);
-            DocumentUndo::done(SP_ACTIVE_DOCUMENT, SP_VERB_EDIT_REMOVE_COLOR_PROFILE, _("Remove linked color profile"));
-            break; // removing the color profile likely invalidates part of the traversed list, stop traversing here.
+    if (auto document = getDocument()) {
+        std::vector<SPObject *> current = document->getResourceList( "iccprofile" );
+        for (auto obj : current) {
+            Inkscape::ColorProfile* prof = reinterpret_cast<Inkscape::ColorProfile*>(obj);
+            if (!name.compare(prof->name)){
+                prof->deleteObject(true, false);
+                DocumentUndo::done(document, _("Remove linked color profile"), "");
+                break; // removing the color profile likely invalidates part of the traversed list, stop traversing here.
+            }
         }
     }
 
@@ -735,12 +797,14 @@ void DocumentProperties::build_cms()
     _LinkedProfilesList.signal_button_release_event().connect_notify(sigc::mem_fun(*this, &DocumentProperties::linked_profiles_list_button_release));
     cms_create_popup_menu(_LinkedProfilesList, sigc::mem_fun(*this, &DocumentProperties::removeSelectedProfile));
 
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "defs" );
-    if (!current.empty()) {
-        _emb_profiles_observer.set((*(current.begin()))->parent);
+    if (auto document = getDocument()) {
+        std::vector<SPObject *> current = document->getResourceList( "defs" );
+        if (!current.empty()) {
+            _emb_profiles_observer.set((*(current.begin()))->parent);
+        }
+        _emb_profiles_observer.signal_changed().connect(sigc::mem_fun(*this, &DocumentProperties::populate_linked_profiles_box));
+        onColorProfileSelectRow();
     }
-    _emb_profiles_observer.signal_changed().connect(sigc::mem_fun(*this, &DocumentProperties::populate_linked_profiles_box));
-    onColorProfileSelectRow();
 }
 
 void DocumentProperties::build_scripting()
@@ -914,13 +978,15 @@ void DocumentProperties::build_scripting()
     embedded_create_popup_menu(_EmbeddedScriptsList, sigc::mem_fun(*this, &DocumentProperties::removeEmbeddedScript));
 
 //TODO: review this observers code:
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "script" );
-    if (! current.empty()) {
-        _scripts_observer.set((*(current.begin()))->parent);
+    if (auto document = getDocument()) {
+        std::vector<SPObject *> current = document->getResourceList( "script" );
+        if (! current.empty()) {
+            _scripts_observer.set((*(current.begin()))->parent);
+        }
+        _scripts_observer.signal_changed().connect(sigc::mem_fun(*this, &DocumentProperties::populate_script_lists));
+        onEmbeddedScriptSelectRow();
+        onExternalScriptSelectRow();
     }
-    _scripts_observer.signal_changed().connect(sigc::mem_fun(*this, &DocumentProperties::populate_script_lists));
-    onEmbeddedScriptSelectRow();
-    onExternalScriptSelectRow();
 }
 
 void DocumentProperties::build_metadata()
@@ -941,7 +1007,7 @@ void DocumentProperties::build_metadata()
     for (entity = rdf_work_entities; entity && entity->name; entity++, row++) {
         if ( entity->editable == RDF_EDIT_GENERIC ) {
             EntityEntry *w = EntityEntry::create (entity, _wr);
-            _rdflist.push_back (w);
+            _rdflist.push_back(w);
 
             w->_label.set_halign(Gtk::ALIGN_START);
             w->_label.set_valign(Gtk::ALIGN_CENTER);
@@ -989,11 +1055,9 @@ void DocumentProperties::build_metadata()
 
 void DocumentProperties::addExternalScript(){
 
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    if (!desktop) {
-        g_warning("No active desktop");
+    auto document = getDocument();
+    if (!document)
         return;
-    }
 
     if (_script_entry.get_text().empty() ) {
         // Click Add button with no filename, show a Browse dialog
@@ -1001,8 +1065,7 @@ void DocumentProperties::addExternalScript(){
     }
 
     if (!_script_entry.get_text().empty()) {
-
-        Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
+        Inkscape::XML::Document *xml_doc = document->getReprDoc();
         Inkscape::XML::Node *scriptRepr = xml_doc->createElement("svg:script");
         scriptRepr->setAttributeOrRemoveIfEmpty("xlink:href", _script_entry.get_text());
         _script_entry.set_text("");
@@ -1010,11 +1073,10 @@ void DocumentProperties::addExternalScript(){
         xml_doc->root()->addChild(scriptRepr, nullptr);
 
         // inform the document, so we can undo
-        DocumentUndo::done(desktop->doc(), SP_VERB_EDIT_ADD_EXTERNAL_SCRIPT, _("Add external script..."));
+        DocumentUndo::done(document, _("Add external script..."), "");
 
         populate_script_lists();
     }
-
 }
 
 static Inkscape::UI::Dialog::FileOpenDialog * selectPrefsFileInstance = nullptr;
@@ -1035,15 +1097,14 @@ void  DocumentProperties::browseExternalScript() {
         open_path = "";
 
     //# If no open path, default to our home directory
-    if (open_path.empty())
-    {
+    if (open_path.empty()) {
         open_path = g_get_home_dir();
         open_path.append(G_DIR_SEPARATOR_S);
     }
 
     //# Create a dialog
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    if (!selectPrefsFileInstance) {
+    SPDesktop *desktop = getDesktop();
+    if (desktop && !selectPrefsFileInstance) {
         selectPrefsFileInstance =
               Inkscape::UI::Dialog::FileOpenDialog::create(
                  *desktop->getToplevel(),
@@ -1067,18 +1128,14 @@ void  DocumentProperties::browseExternalScript() {
 }
 
 void DocumentProperties::addEmbeddedScript(){
-    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
-    if (!desktop){
-        g_warning("No active desktop");
-    } else {
-        Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
+    if(auto document = getDocument()) {
+        Inkscape::XML::Document *xml_doc = document->getReprDoc();
         Inkscape::XML::Node *scriptRepr = xml_doc->createElement("svg:script");
 
         xml_doc->root()->addChild(scriptRepr, nullptr);
 
         // inform the document, so we can undo
-        DocumentUndo::done(desktop->doc(), SP_VERB_EDIT_ADD_EMBEDDED_SCRIPT, _("Add embedded script..."));
-
+        DocumentUndo::done(document, _("Add embedded script..."), "");
         populate_script_lists();
     }
 }
@@ -1095,10 +1152,13 @@ void DocumentProperties::removeExternalScript(){
         }
     }
 
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "script" );
+    auto document = getDocument();
+    if (!document)
+        return;
+    std::vector<SPObject *> current = document->getResourceList( "script" );
     for (auto obj : current) {
         if (obj) {
-            SPScript* script = dynamic_cast<SPScript *>(obj);
+            auto script = cast<SPScript>(obj);
             if (script && (name == script->xlinkhref)) {
 
                 //XML Tree being used directly here while it shouldn't be.
@@ -1107,7 +1167,7 @@ void DocumentProperties::removeExternalScript(){
                     sp_repr_unparent(repr);
 
                     // inform the document, so we can undo
-                    DocumentUndo::done(SP_ACTIVE_DOCUMENT, SP_VERB_EDIT_REMOVE_EXTERNAL_SCRIPT, _("Remove external script"));
+                    DocumentUndo::done(document, _("Remove external script"), "");
                 }
             }
         }
@@ -1128,15 +1188,15 @@ void DocumentProperties::removeEmbeddedScript(){
         }
     }
 
-    SPObject* obj = SP_ACTIVE_DOCUMENT->getObjectById(id);
-    if (obj) {
-        //XML Tree being used directly here while it shouldn't be.
-        Inkscape::XML::Node *repr = obj->getRepr();
-        if (repr){
-            sp_repr_unparent(repr);
+    if (auto document = getDocument()) {
+        if (auto obj = document->getObjectById(id)) {
+            //XML Tree being used directly here while it shouldn't be.
+            if (auto repr = obj->getRepr()){
+                sp_repr_unparent(repr);
 
-            // inform the document, so we can undo
-            DocumentUndo::done(SP_ACTIVE_DOCUMENT, SP_VERB_EDIT_REMOVE_EMBEDDED_SCRIPT, _("Remove embedded script"));
+                // inform the document, so we can undo
+                DocumentUndo::done(document, _("Remove embedded script"), "");
+            }
         }
     }
 
@@ -1171,8 +1231,12 @@ void DocumentProperties::changeEmbeddedScript(){
         }
     }
 
+    auto document = getDocument();
+    if (!document)
+        return;
+
     bool voidscript=true;
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "script" );
+    std::vector<SPObject *> current = document->getResourceList( "script" );
     for (auto obj : current) {
         if (id == obj->getId()){
             int count = (int) obj->children.size();
@@ -1210,11 +1274,12 @@ void DocumentProperties::editEmbeddedScript(){
         }
     }
 
-    Inkscape::XML::Document *xml_doc = SP_ACTIVE_DOCUMENT->getReprDoc();
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "script" );
-    for (auto obj : current) {
-        if (id == obj->getId()){
+    auto document = getDocument();
+    if (!document)
+        return;
 
+    for (auto obj : document->getResourceList("script")) {
+        if (id == obj->getId()) {
             //XML Tree being used directly here while it shouldn't be.
             Inkscape::XML::Node *repr = obj->getRepr();
             if (repr){
@@ -1223,12 +1288,12 @@ void DocumentProperties::editEmbeddedScript(){
                 for (auto &child: vec) {
                     child->deleteObject();
                 }
-                obj->appendChildRepr(xml_doc->createTextNode(_EmbeddedContent.get_buffer()->get_text().c_str()));
+                obj->appendChildRepr(document->getReprDoc()->createTextNode(_EmbeddedContent.get_buffer()->get_text().c_str()));
 
                 //TODO repr->set_content(_EmbeddedContent.get_buffer()->get_text());
 
                 // inform the document, so we can undo
-                DocumentUndo::done(SP_ACTIVE_DOCUMENT, SP_VERB_EDIT_EMBEDDED_SCRIPT, _("Edit embedded script"));
+                DocumentUndo::done(document, _("Edit embedded script"), "");
             }
         }
     }
@@ -1237,14 +1302,18 @@ void DocumentProperties::editEmbeddedScript(){
 void DocumentProperties::populate_script_lists(){
     _ExternalScriptsListStore->clear();
     _EmbeddedScriptsListStore->clear();
-    std::vector<SPObject *> current = SP_ACTIVE_DOCUMENT->getResourceList( "script" );
+    auto document = getDocument();
+    if (!document)
+        return;
+
+    std::vector<SPObject *> current = getDocument()->getResourceList( "script" );
     if (!current.empty()) {
         SPObject *obj = *(current.begin());
         g_assert(obj != nullptr);
         _scripts_observer.set(obj->parent);
     }
     for (auto obj : current) {
-        SPScript* script = dynamic_cast<SPScript *>(obj);
+        auto script = cast<SPScript>(obj);
         g_assert(script != nullptr);
         if (script->xlinkhref)
         {
@@ -1260,12 +1329,12 @@ void DocumentProperties::populate_script_lists(){
 }
 
 /**
-* Called for _updating_ the dialog (e.g. when a new grid was manually added in XML)
+* Called for _updating_ the dialog. DO NOT call this a lot. It's expensive!
+* Will need to probably create a GridManager with signals to each Grid attribute
 */
 void DocumentProperties::update_gridspage()
 {
-    SPDesktop *dt = getDesktop();
-    SPNamedView *nv = dt->getNamedView();
+    SPNamedView *nv = getDesktop()->getNamedView();
 
     int prev_page_count = _grids_notebook.get_n_pages();
     int prev_page_pos = _grids_notebook.get_current_page();
@@ -1277,20 +1346,10 @@ void DocumentProperties::update_gridspage()
 
     //add tabs
     for(auto grid : nv->grids) {
-        if (!grid->repr->attribute("id")) continue; // update_gridspage is called again when "id" is added
-        Glib::ustring name(grid->repr->attribute("id"));
-        const char *icon = nullptr;
-        switch (grid->getGridType()) {
-            case GRID_RECTANGULAR:
-                icon = "grid-rectangular";
-                break;
-            case GRID_AXONOMETRIC:
-                icon = "grid-axonometric";
-                break;
-            default:
-                break;
-        }
-        _grids_notebook.append_page(*grid->newWidget(), _createPageTabLabel(name, icon));
+        if (!grid->getRepr()->attribute("id")) continue; // update_gridspage is called again when "id" is added
+        Glib::ustring name(grid->getRepr()->attribute("id"));
+        const char *icon = grid->typeName();
+        _grids_notebook.append_page(*createNewGridWidget(grid), _createPageTabLabel(name, icon));
     }
     _grids_notebook.show_all();
 
@@ -1311,6 +1370,212 @@ void DocumentProperties::update_gridspage()
     }
 }
 
+void *DocumentProperties::notifyGridWidgetsDestroyed(void *data)
+{
+    if (auto prop = reinterpret_cast<DocumentProperties *>(data)) {
+        prop->_grid_rcb_enabled = nullptr;
+        prop->_grid_rcb_snap_visible_only = nullptr;
+        prop->_grid_rcb_visible = nullptr;
+        prop->_grid_rcb_dotted = nullptr;
+        prop->_grid_as_alignment = nullptr;
+    }
+    return nullptr;
+}
+
+Gtk::Widget *DocumentProperties::createNewGridWidget(SPGrid *grid)
+{
+    auto vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    auto namelabel = Gtk::make_managed<Gtk::Label>("", Gtk::ALIGN_CENTER);
+
+    Inkscape::XML::Node *repr = grid->getRepr();
+    auto doc = getDocument();
+
+    namelabel->set_markup(Glib::ustring("<b>") + grid->displayName() + "</b>");
+    vbox->pack_start(*namelabel, false, false);
+
+    _grid_rcb_enabled = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+            _("_Enabled"),
+            _("Makes the grid available for working with on the canvas."),
+            "enabled", _wr, false, repr, doc);
+    // grid_rcb_enabled serves as a canary that tells us that the widgets have been destroyed
+    _grid_rcb_enabled->add_destroy_notify_callback(this, notifyGridWidgetsDestroyed);
+
+    _grid_rcb_snap_visible_only = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+            _("Snap to visible _grid lines only"),
+            _("When zoomed out, not all grid lines will be displayed. Only the visible ones will be snapped to"),
+            "snapvisiblegridlinesonly", _wr, false, repr, doc);
+
+    _grid_rcb_visible = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+            _("_Visible"),
+            _("Determines whether the grid is displayed or not. Objects are still snapped to invisible grids."),
+            "visible", _wr, false, repr, doc);
+
+    _grid_as_alignment = Gtk::make_managed<Inkscape::UI::Widget::AlignmentSelector>();
+    _grid_as_alignment->on_alignmentClicked().connect([this, grid](int align) {
+                auto doc = getDocument();
+                Geom::Point dimensions = doc->getDimensions();
+                dimensions[Geom::X] *= align % 3 * 0.5;
+                dimensions[Geom::Y] *= align / 3 * 0.5;
+                dimensions *= doc->doc2dt();
+                grid->setOrigin(dimensions);
+    });
+
+    auto left = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
+    left->pack_start(*_grid_rcb_enabled, false, false);
+    left->pack_start(*_grid_rcb_visible, false, false);
+    left->pack_start(*_grid_rcb_snap_visible_only, false, false);
+
+    if (grid->getType() == GridType::RECTANGULAR) {
+        _grid_rcb_dotted = Gtk::make_managed<Inkscape::UI::Widget::RegisteredCheckButton>(
+                _("_Show dots instead of lines"), _("If set, displays dots at gridpoints instead of gridlines"),
+                "dotted", _wr, false, repr, doc );
+        left->pack_start(*_grid_rcb_dotted, false, false);
+    }
+
+    left->pack_start(*Gtk::make_managed<Gtk::Label>(_("Align to page:")), false, false);
+    left->pack_start(*_grid_as_alignment, false, false);
+
+    auto right = createRightGridColumn(grid);
+    right->set_hexpand(false);
+
+    auto inner = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
+    inner->pack_start(*left, true, true);
+    inner->pack_start(*right, false, false);
+    vbox->pack_start(*inner, false, false);
+    vbox->set_border_width(4);
+
+    std::list<Gtk::Widget*> slaves;
+    for (auto &item : left->get_children()) {
+        if (item != _grid_rcb_enabled) {
+            slaves.push_back(item);
+        }
+    }
+    slaves.push_back(right);
+    _grid_rcb_enabled->setSlaveWidgets(slaves);
+
+    // set widget values
+    _wr.setUpdating (true);
+    _grid_rcb_enabled->setActive(grid->isEnabled());
+    _grid_rcb_visible->setActive(grid->isVisible());
+
+    if (_grid_rcb_dotted)
+        _grid_rcb_dotted->setActive(grid->isDotted());
+
+    _grid_rcb_snap_visible_only->setActive(grid->getSnapToVisibleOnly());
+    _grid_rcb_enabled->setActive(grid->snapper()->getEnabled());
+    _grid_rcb_snap_visible_only->setActive(grid->snapper()->getSnapVisibleOnly());
+    _wr.setUpdating (false);
+
+    return vbox;
+}
+
+// needs to switch based on grid type, need to find a better way
+Gtk::Widget *DocumentProperties::createRightGridColumn(SPGrid *grid)
+{
+    using namespace Inkscape::UI::Widget;
+    Inkscape::XML::Node *repr = grid->getRepr();
+    auto doc = getDocument();
+
+    auto rumg = Gtk::make_managed<RegisteredUnitMenu>(
+                    _("Grid _units:"), "units", _wr, repr, doc);
+    auto rsu_ox = Gtk::make_managed<RegisteredScalarUnit>(
+                    _("_Origin X:"), _("X coordinate of grid origin"), "originx",
+                    *rumg, _wr, repr, doc, RSU_x);
+    auto rsu_oy = Gtk::make_managed<RegisteredScalarUnit>(
+                _("O_rigin Y:"), _("Y coordinate of grid origin"), "originy",
+                *rumg, _wr, repr, doc, RSU_y);
+    auto rsu_sx = Gtk::make_managed<RegisteredScalarUnit>(
+                _("Spacing _X:"), _("Distance between vertical grid lines"), "spacingx",
+                *rumg, _wr, repr, doc, RSU_x);
+    auto rsu_sy = Gtk::make_managed<RegisteredScalarUnit>(
+                _("Spacing _Y:"), _("Base length of z-axis"), "spacingy",
+                *rumg, _wr, repr, doc, RSU_y);
+    auto rsu_ax = Gtk::make_managed<RegisteredScalar>(
+                _("Angle X:"), _("Angle of x-axis"), "gridanglex", _wr, repr, doc);
+    auto rsu_az = Gtk::make_managed<RegisteredScalar>(
+                _("Angle Z:"), _("Angle of z-axis"), "gridanglez", _wr, repr, doc);
+    auto rcp_gcol = Gtk::make_managed<RegisteredColorPicker>(
+                _("Minor grid line _color:"), _("Minor grid line color"), _("Color of the minor grid lines"),
+                "color", "opacity", _wr, repr, doc);
+    auto rcp_gmcol = Gtk::make_managed<RegisteredColorPicker>(
+                _("Ma_jor grid line color:"), _("Major grid line color"),
+                _("Color of the major (highlighted) grid lines"),
+                "empcolor", "empopacity", _wr, repr, doc);
+    auto rsi = Gtk::make_managed<RegisteredSuffixedInteger>(
+                _("_Major grid line every:"), "", _("lines"), "empspacing", _wr, repr, doc);
+
+    rumg->set_hexpand();
+    rsu_ox->set_hexpand();
+    rsu_oy->set_hexpand();
+    rsu_sx->set_hexpand();
+    rsu_sy->set_hexpand();
+    rsu_ax->set_hexpand();
+    rsu_az->set_hexpand();
+    rcp_gcol->set_hexpand();
+    rcp_gmcol->set_hexpand();
+    rsi->set_hexpand();
+
+    // set widget values
+    _wr.setUpdating (true);
+
+    rsu_ox->setDigits(5);
+    rsu_ox->setIncrements(0.1, 1.0);
+
+    rsu_oy->setDigits(5);
+    rsu_oy->setIncrements(0.1, 1.0);
+
+    rsu_sx->setDigits(5);
+    rsu_sx->setIncrements(0.1, 1.0);
+
+    rsu_sy->setDigits(5);
+    rsu_sy->setIncrements(0.1, 1.0);
+
+    rumg->setUnit(grid->getUnit()->abbr);
+
+    // SPGrid stores in px, for converting to user units
+    auto doc_scale = doc->getDocumentScale().vector();
+
+    using namespace Inkscape::Util;
+    rsu_ox->setValue( Quantity::convert(grid->getOrigin()[Geom::X], "px", grid->getUnit()) * doc_scale[Geom::X] );
+    rsu_oy->setValue( Quantity::convert(grid->getOrigin()[Geom::Y], "px", grid->getUnit()) * doc_scale[Geom::Y] );
+    rsu_sx->setValue( Quantity::convert(grid->getSpacing()[Geom::X], "px", grid->getUnit()) * doc_scale[Geom::X] );
+    rsu_sy->setValue( Quantity::convert(grid->getSpacing()[Geom::Y], "px", grid->getUnit()) * doc_scale[Geom::Y] );
+
+    rsu_ax->setValue(grid->getAngleX());
+    rsu_az->setValue(grid->getAngleZ());
+
+    rcp_gcol->setRgba32 (grid->getMinorColor());
+    rcp_gmcol->setRgba32 (grid->getMajorColor());
+    rsi->setValue (grid->getMajorLineInterval());
+
+    _wr.setUpdating (false);
+
+    rsu_ox->setProgrammatically = false;
+    rsu_oy->setProgrammatically = false;
+
+    auto column = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
+    column->pack_start(*rumg, true, false);
+    column->pack_start(*rsu_ox, true, false);
+    column->pack_start(*rsu_oy, true, false);
+
+    if (grid->getType() == GridType::RECTANGULAR) {
+        column->pack_start(*rsu_sx, true, false);
+    }
+
+    column->pack_start(*rsu_sy, true, false);
+
+    if (grid->getType() == GridType::AXONOMETRIC) {
+        column->pack_start(*rsu_ax, true, false);
+        column->pack_start(*rsu_az, true, false);
+    }
+
+    column->pack_start(*rcp_gcol, true, false);
+    column->pack_start(*rcp_gmcol, true, false);
+    column->pack_start(*rsi, true, false);
+
+    return column;
+}
+
 /**
  * Build grid page of dialog.
  */
@@ -1324,13 +1589,14 @@ void DocumentProperties::build_gridspage()
     _grids_hbox_crea.pack_start(_grids_combo_gridtype, true, true);
     _grids_hbox_crea.pack_start(_grids_button_new, true, true);
 
-    for (gint t = 0; t <= GRID_MAXTYPENR; t++) {
-        _grids_combo_gridtype.append( CanvasGrid::getName( (GridType) t ) );
-    }
-    _grids_combo_gridtype.set_active_text( CanvasGrid::getName(GRID_RECTANGULAR) );
+    _grids_combo_gridtype.append( N_("Rectangular Grid") );
+    _grids_combo_gridtype.append( N_("Axonometric Grid") );
+
+    _grids_combo_gridtype.set_active_text( N_("Rectangular Grid") );
 
     _grids_space.set_size_request (SPACE_SIZE_X, SPACE_SIZE_Y);
 
+    _grids_vbox.set_name("NotebookPage");
     _grids_vbox.set_border_width(4);
     _grids_vbox.set_spacing(4);
     _grids_vbox.pack_start(_grids_label_crea, false, false);
@@ -1341,73 +1607,88 @@ void DocumentProperties::build_gridspage()
     _grids_vbox.pack_start(_grids_button_remove, false, false);
 }
 
+void DocumentProperties::update_viewbox(SPDesktop* desktop) {
+    if (!desktop) return;
 
+    auto* document = desktop->getDocument();
+    if (!document) return;
+
+    using UI::Widget::PageProperties;
+    SPRoot* root = document->getRoot();
+    if (root->viewBox_set) {
+        auto& vb = root->viewBox;
+        _page->set_dimension(PageProperties::Dimension::ViewboxPosition, vb.min()[Geom::X], vb.min()[Geom::Y]);
+        _page->set_dimension(PageProperties::Dimension::ViewboxSize, vb.width(), vb.height());
+    }
+
+    update_scale_ui(desktop);
+}
 
 /**
  * Update dialog widgets from desktop. Also call updateWidget routines of the grids.
  */
 void DocumentProperties::update_widgets()
 {
-    if (_wr.isUpdating()) return;
+    auto desktop = getDesktop();
+    auto document = getDocument();
+    if (_wr.isUpdating() || !document) return;
 
-    SPDesktop *dt = getDesktop();
-    SPNamedView *nv = dt->getNamedView();
+    auto nv = desktop->getNamedView();
+    auto &page_manager = document->getPageManager();
 
-    _wr.setUpdating (true);
-    set_sensitive (true);
+    _wr.setUpdating(true);
 
-    //-----------------------------------------------------------page page
-    _rcb_checkerboard.setActive (nv->pagecheckerboard);
-    _rcp_bg.setRgba32 (nv->pagecolor);
-    _rcb_canb.setActive (nv->showborder);
-    _rcb_bord.setActive (nv->borderlayer == SP_BORDER_LAYER_TOP);
-    _rcp_bord.setRgba32 (nv->bordercolor);
-    _rcb_shad.setActive (nv->showpageshadow);
+    SPRoot *root = document->getRoot();
 
-    SPRoot *root = dt->getDocument()->getRoot();
-    _rcb_antialias.set_xml_target(root->getRepr(), dt->getDocument());
-    _rcb_antialias.setActive(root->style->shape_rendering.computed != SP_CSS_SHAPE_RENDERING_CRISPEDGES);
-
-    if (nv->display_units) {
-        _rum_deflt.setUnit (nv->display_units->abbr);
-    }
-
-    double doc_w = dt->getDocument()->getRoot()->width.value;
-    Glib::ustring doc_w_unit = unit_table.getUnit(dt->getDocument()->getRoot()->width.unit)->abbr;
+    double doc_w = root->width.value;
+    Glib::ustring doc_w_unit = unit_table.getUnit(root->width.unit)->abbr;
+    bool percent = doc_w_unit == "%";
     if (doc_w_unit == "") {
         doc_w_unit = "px";
-    } else if (doc_w_unit == "%" && dt->getDocument()->getRoot()->viewBox_set) {
+    } else if (doc_w_unit == "%" && root->viewBox_set) {
         doc_w_unit = "px";
-        doc_w = dt->getDocument()->getRoot()->viewBox.width();
+        doc_w = root->viewBox.width();
     }
-    double doc_h = dt->getDocument()->getRoot()->height.value;
-    Glib::ustring doc_h_unit = unit_table.getUnit(dt->getDocument()->getRoot()->height.unit)->abbr;
+    double doc_h = root->height.value;
+    Glib::ustring doc_h_unit = unit_table.getUnit(root->height.unit)->abbr;
+    percent = percent || doc_h_unit == "%";
     if (doc_h_unit == "") {
         doc_h_unit = "px";
-    } else if (doc_h_unit == "%" && dt->getDocument()->getRoot()->viewBox_set) {
+    } else if (doc_h_unit == "%" && root->viewBox_set) {
         doc_h_unit = "px";
-        doc_h = dt->getDocument()->getRoot()->viewBox.height();
+        doc_h = root->viewBox.height();
     }
-    _page_sizer.setDim(Inkscape::Util::Quantity(doc_w, doc_w_unit), Inkscape::Util::Quantity(doc_h, doc_h_unit));
-    _page_sizer.updateFitMarginsUI(nv->getRepr());
-    _page_sizer.updateScaleUI();
+    using UI::Widget::PageProperties;
+    // dialog's behavior is not entirely correct when document sizes are expressed in '%', so put up a disclaimer
+    _page->set_check(PageProperties::Check::UnsupportedSize, percent);
+
+    _page->set_dimension(PageProperties::Dimension::PageSize, doc_w, doc_h);
+    _page->set_unit(PageProperties::Units::Document, doc_w_unit);
+
+    update_viewbox_ui(desktop);
+    update_scale_ui(desktop);
+
+    if (nv->display_units) {
+        _page->set_unit(PageProperties::Units::Display, nv->display_units->abbr);
+    }
+    _page->set_check(PageProperties::Check::Checkerboard, nv->desk_checkerboard);
+    _page->set_color(PageProperties::Color::Desk, nv->desk_color);
+    _page->set_color(PageProperties::Color::Background, page_manager.background_color);
+    _page->set_check(PageProperties::Check::Border, page_manager.border_show);
+    _page->set_check(PageProperties::Check::BorderOnTop, page_manager.border_on_top);
+    _page->set_color(PageProperties::Color::Border, page_manager.border_color);
+    _page->set_check(PageProperties::Check::Shadow, page_manager.shadow_show);
+    _page->set_check(PageProperties::Check::PageLabelStyle, page_manager.label_style != "default");
+
+    _page->set_check(PageProperties::Check::AntiAlias, root->style->shape_rendering.computed != SP_CSS_SHAPE_RENDERING_CRISPEDGES);
+    _page->set_check(PageProperties::Check::ClipToPage, nv->clip_to_page);
 
     //-----------------------------------------------------------guide page
 
-    _rcb_sgui.setActive (nv->showguides);
-    _rcb_lgui.setActive (nv->lockguides);
+    _rcb_sgui.setActive (nv->getShowGuides());
+    _rcb_lgui.setActive (nv->getLockGuides());
     _rcp_gui.setRgba32 (nv->guidecolor);
     _rcp_hgui.setRgba32 (nv->guidehicolor);
-
-    //-----------------------------------------------------------snap page
-
-    _rsu_sno.setValue (nv->snap_manager.snapprefs.getObjectTolerance());
-    _rsu_sn.setValue (nv->snap_manager.snapprefs.getGridTolerance());
-    _rsu_gusn.setValue (nv->snap_manager.snapprefs.getGuideTolerance());
-    _rcb_snclp.setActive (nv->snap_manager.snapprefs.isSnapButtonEnabled(Inkscape::SNAPTARGET_PATH_CLIP));
-    _rcb_snmsk.setActive (nv->snap_manager.snapprefs.isSnapButtonEnabled(Inkscape::SNAPTARGET_PATH_MASK));
-    _rcb_perp.setActive (nv->snap_manager.snapprefs.getSnapPerp());
-    _rcb_tang.setActive (nv->snap_manager.snapprefs.getSnapTang());
 
     //-----------------------------------------------------------grids page
 
@@ -1420,12 +1701,12 @@ void DocumentProperties::update_widgets()
 
     //-----------------------------------------------------------meta pages
     /* update the RDF entities */
-    for (auto & it : _rdflist)
-        it->update (SP_ACTIVE_DOCUMENT);
+    if (auto document = getDocument()) {
+        for (auto &it : _rdflist)
+            it->update(document);
 
-    _licensor.update (SP_ACTIVE_DOCUMENT);
-
-
+        _licensor.update(document);
+    }
     _wr.setUpdating (false);
 }
 
@@ -1452,8 +1733,6 @@ void DocumentProperties::on_response (int id)
 {
     if (id == Gtk::RESPONSE_DELETE_EVENT || id == Gtk::RESPONSE_CLOSE)
     {
-        _rcp_bg.closeWindow();
-        _rcp_bord.closeWindow();
         _rcp_gui.closeWindow();
         _rcp_hgui.closeWindow();
     }
@@ -1465,7 +1744,7 @@ void DocumentProperties::on_response (int id)
 void DocumentProperties::load_default_metadata()
 {
     /* Get the data RDF entities data from preferences*/
-    for (auto & it : _rdflist) {
+    for (auto &it : _rdflist) {
         it->load_from_preferences ();
     }
 }
@@ -1473,65 +1752,64 @@ void DocumentProperties::load_default_metadata()
 void DocumentProperties::save_default_metadata()
 {
     /* Save these RDF entities to preferences*/
-    for (auto & it : _rdflist) {
-        it->save_to_preferences (SP_ACTIVE_DOCUMENT);
-   }
+    if (auto document = getDocument()) {
+        for (auto &it : _rdflist) {
+            it->save_to_preferences(document);
+        }
+    }
+}
+
+void DocumentProperties::WatchConnection::connect(Inkscape::XML::Node *node)
+{
+    disconnect();
+    if (!node) return;
+
+    _node = node;
+    _node->addObserver(*this);
+}
+
+void DocumentProperties::WatchConnection::disconnect() {
+    if (_node) {
+        _node->removeObserver(*this);
+        _node = nullptr;
+    }
+}
+
+void DocumentProperties::WatchConnection::notifyChildAdded(XML::Node&, XML::Node&, XML::Node*)
+{
+    _dialog->update_gridspage();
+}
+
+void DocumentProperties::WatchConnection::notifyChildRemoved(XML::Node&, XML::Node&, XML::Node*)
+{
+    _dialog->update_gridspage();
+}
+
+void DocumentProperties::WatchConnection::notifyAttributeChanged(XML::Node&, GQuark, Util::ptr_shared, Util::ptr_shared)
+{
+    _dialog->update_widgets();
+}
+
+void DocumentProperties::documentReplaced()
+{
+    _root_connection.disconnect();
+    _namedview_connection.disconnect();
+
+    if (auto desktop = getDesktop()) {
+        _wr.setDesktop(desktop);
+        _namedview_connection.connect(desktop->getNamedView()->getRepr());
+        if (auto document = desktop->getDocument()) {
+            _root_connection.connect(document->getRoot()->getRepr());
+        }
+        populate_linked_profiles_box();
+        update_widgets();
+    }
 }
 
 void DocumentProperties::update()
 {
-    if (!_app) {
-        std::cerr << "UndoHistory::update(): _app is null" << std::endl;
-        return;
-    }
-
-    SPDesktop *desktop = getDesktop();
-
-    if (_repr_root) {
-        _document_replaced_connection.disconnect();
-        _repr_root->removeListenerByData(this);
-        _repr_root = nullptr;
-        _repr_namedview->removeListenerByData(this);
-        _repr_namedview = nullptr;
-    }
-
-    if (!desktop) {
-        return;
-    }
-
-    _wr.setDesktop(desktop);
-
-    _repr_root = desktop->getNamedView()->getRepr();
-    _repr_root->addListener(&_repr_events, this);
-    _repr_namedview = desktop->getDocument()->getRoot()->getRepr();
-    _repr_namedview->addListener(&_repr_events, this);
-
     update_widgets();
 }
-
-static void on_child_added(Inkscape::XML::Node */*repr*/, Inkscape::XML::Node */*child*/, Inkscape::XML::Node */*ref*/, void *data)
-{
-    if (DocumentProperties *dialog = static_cast<DocumentProperties *>(data))
-        dialog->update_gridspage();
-}
-
-static void on_child_removed(Inkscape::XML::Node */*repr*/, Inkscape::XML::Node */*child*/, Inkscape::XML::Node */*ref*/, void *data)
-{
-    if (DocumentProperties *dialog = static_cast<DocumentProperties *>(data))
-        dialog->update_gridspage();
-}
-
-
-
-/**
- * Called when XML node attribute changed; updates dialog widgets.
- */
-static void on_repr_attr_changed(Inkscape::XML::Node *, gchar const *, gchar const *, gchar const *, bool, gpointer data)
-{
-    if (DocumentProperties *dialog = static_cast<DocumentProperties *>(data))
-        dialog->update_widgets();
-}
-
 
 /*########################################################################
 # BUTTON CLICK HANDLERS    (callbacks)
@@ -1539,15 +1817,25 @@ static void on_repr_attr_changed(Inkscape::XML::Node *, gchar const *, gchar con
 
 void DocumentProperties::onNewGrid()
 {
-    SPDesktop *dt = getDesktop();
-    Inkscape::XML::Node *repr = dt->getNamedView()->getRepr();
-    SPDocument *doc = dt->getDocument();
+    if (auto desktop = getDesktop()) {
+        Inkscape::XML::Node *repr = desktop->getNamedView()->getRepr();
+        Glib::ustring typestring = _grids_combo_gridtype.get_active_text();
 
-    Glib::ustring typestring = _grids_combo_gridtype.get_active_text();
-    CanvasGrid::writeNewGridToRepr(repr, doc, CanvasGrid::getGridTypeFromName(typestring.c_str()));
+        if (auto document = getDocument()) {
+            Inkscape::XML::Node *new_node = document->getReprDoc()->createElement("inkscape:grid");
 
-    // toggle grid showing to ON:
-    dt->showGrids(true);
+            if (!strcmp(typestring.c_str(), "Axonometric Grid"))
+                new_node->setAttribute("type", "axonomgrid");
+
+            repr->appendChild(new_node);
+            Inkscape::GC::release(new_node);
+
+            // toggle grid showing to ON:
+            // side effect: any pre-existing grids set to invisible will be set to visible
+            desktop->getNamedView()->setShowGrids(true);
+            DocumentUndo::done(document, _("Create new grid"), INKSCAPE_ICON("document-properties"));
+        }
+    }
 }
 
 
@@ -1557,28 +1845,28 @@ void DocumentProperties::onRemoveGrid()
     if (pagenum == -1) // no pages
       return;
 
-    SPDesktop *dt = getDesktop();
-    SPNamedView *nv = dt->getNamedView();
-    Inkscape::CanvasGrid * found_grid = nullptr;
+    SPNamedView *nv = getDesktop()->getNamedView();
+    SPGrid *found_grid = nullptr;
     if( pagenum < (gint)nv->grids.size())
         found_grid = nv->grids[pagenum];
 
-    if (found_grid) {
-        // delete the grid that corresponds with the selected tab
-        // when the grid is deleted from SVG, the SPNamedview handler automatically deletes the object, so found_grid becomes an invalid pointer!
-        found_grid->repr->parent()->removeChild(found_grid->repr);
-        DocumentUndo::done(dt->getDocument(), SP_VERB_DIALOG_DOCPROPERTIES, _("Remove grid"));
+    if (auto document = getDocument()) {
+        if (found_grid) {
+            // delete the grid that corresponds with the selected tab
+            // when the grid is deleted from SVG, the SPNamedview handler automatically deletes the object, so found_grid becomes an invalid pointer!
+            found_grid->getRepr()->parent()->removeChild(found_grid->getRepr());
+            DocumentUndo::done(document, _("Remove grid"), INKSCAPE_ICON("document-properties"));
+        }
     }
 }
 
-/** Callback for document unit change. */
 /* This should not effect anything in the SVG tree (other than "inkscape:document-units").
    This should only effect values displayed in the GUI. */
-void DocumentProperties::onDocUnitChange()
+void DocumentProperties::display_unit_change(const Inkscape::Util::Unit* doc_unit)
 {
-    SPDocument *doc = SP_ACTIVE_DOCUMENT;
+    SPDocument *document = getDocument();
     // Don't execute when change is being undone
-    if (!DocumentUndo::getUndoSensitive(doc)) {
+    if (!document || !DocumentUndo::getUndoSensitive(document)) {
         return;
     }
     // Don't execute when initializing widgets
@@ -1586,80 +1874,8 @@ void DocumentProperties::onDocUnitChange()
         return;
     }
 
-
-    Inkscape::XML::Node *repr = getDesktop()->getNamedView()->getRepr();
-    /*Inkscape::Util::Unit const *old_doc_unit = unit_table.getUnit("px");
-    if(repr->attribute("inkscape:document-units")) {
-        old_doc_unit = unit_table.getUnit(repr->attribute("inkscape:document-units"));
-    }*/
-    Inkscape::Util::Unit const *doc_unit = _rum_deflt.getUnit();
-
-    // Set document unit
-    Inkscape::SVGOStringStream os;
-    os << doc_unit->abbr;
-    repr->setAttribute("inkscape:document-units", os.str());
-
-    _page_sizer.updateScaleUI();
-
-    // Disable changing of SVG Units. The intent here is to change the units in the UI, not the units in SVG.
-    // This code should be moved (and fixed) once we have an "SVG Units" setting that sets what units are used in SVG data.
-#if 0
-    // Set viewBox
-    if (doc->getRoot()->viewBox_set) {
-        gdouble scale = Inkscape::Util::Quantity::convert(1, old_doc_unit, doc_unit);
-        doc->setViewBox(doc->getRoot()->viewBox*Geom::Scale(scale));
-    } else {
-        Inkscape::Util::Quantity width = doc->getWidth();
-        Inkscape::Util::Quantity height = doc->getHeight();
-        doc->setViewBox(Geom::Rect::from_xywh(0, 0, width.value(doc_unit), height.value(doc_unit)));
-    }
-
-    // TODO: Fix bug in nodes tool instead of switching away from it
-    if (tools_active(getDesktop()) == TOOLS_NODES) {
-        tools_switch(getDesktop(), TOOLS_SELECT);
-    }
-
-    // Scale and translate objects
-    // set transform options to scale all things with the transform, so all things scale properly after the viewbox change.
-    /// \todo this "low-level" code of changing viewbox/unit should be moved somewhere else
-
-    // save prefs
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool transform_stroke      = prefs->getBool("/options/transform/stroke", true);
-    bool transform_rectcorners = prefs->getBool("/options/transform/rectcorners", true);
-    bool transform_pattern     = prefs->getBool("/options/transform/pattern", true);
-    bool transform_gradient    = prefs->getBool("/options/transform/gradient", true);
-
-    prefs->setBool("/options/transform/stroke", true);
-    prefs->setBool("/options/transform/rectcorners", true);
-    prefs->setBool("/options/transform/pattern", true);
-    prefs->setBool("/options/transform/gradient", true);
-    {
-        ShapeEditor::blockSetItem(true);
-        gdouble viewscale = 1.0;
-        Geom::Rect vb = doc->getRoot()->viewBox;
-        if ( !vb.hasZeroArea() ) {
-            gdouble viewscale_w = doc->getWidth().value("px") / vb.width();
-            gdouble viewscale_h = doc->getHeight().value("px")/ vb.height();
-            viewscale = std::min(viewscale_h, viewscale_w);
-        }
-        gdouble scale = Inkscape::Util::Quantity::convert(1, old_doc_unit, doc_unit);
-        doc->getRoot()->scaleChildItemsRec(Geom::Scale(scale), Geom::Point(-viewscale*doc->getRoot()->viewBox.min()[Geom::X] +
-                                                                            (doc->getWidth().value("px") - viewscale*doc->getRoot()->viewBox.width())/2,
-                                                                            viewscale*doc->getRoot()->viewBox.min()[Geom::Y] +
-                                                                            (doc->getHeight().value("px") + viewscale*doc->getRoot()->viewBox.height())/2),
-                                                                            false);
-        ShapeEditor::blockSetItem(false);
-    }
-    prefs->setBool("/options/transform/stroke",      transform_stroke);
-    prefs->setBool("/options/transform/rectcorners", transform_rectcorners);
-    prefs->setBool("/options/transform/pattern",     transform_pattern);
-    prefs->setBool("/options/transform/gradient",    transform_gradient);
-#endif
-
-    doc->setModifiedSinceSave();
-
-    DocumentUndo::done(doc, SP_VERB_NONE, _("Changed default display unit"));
+    auto action = document->getActionGroup()->lookup_action("set-display-unit");
+    action->activate(doc_unit->abbr);
 }
 
 } // namespace Dialog

@@ -19,10 +19,11 @@ class Path;
 class Shape;
 class flow_dest;
 
-class SPFlowregion : public SPItem {
+class SPFlowregion final : public SPItem {
 public:
 	SPFlowregion();
 	~SPFlowregion() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	std::vector<Shape*>     computed;
 	
@@ -33,13 +34,15 @@ public:
 	void update(SPCtx *ctx, unsigned int flags) override;
 	void modified(guint flags) override;
 	Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
+	const char* typeName() const override;
 	const char* displayName() const override;
 };
 
-class SPFlowregionExclude : public SPItem {
+class SPFlowregionExclude final : public SPItem {
 public:
 	SPFlowregionExclude();
 	~SPFlowregionExclude() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	Shape            *computed;
 	
@@ -50,11 +53,8 @@ public:
 	void update(SPCtx *ctx, unsigned int flags) override;
 	void modified(guint flags) override;
 	Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
+	const char* typeName() const override;
 	const char* displayName() const override;
 };
-
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FLOWREGION, SPFlowregion)
-
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_FLOWREGIONEXCLUDE, SPFlowregionExclude)
 
 #endif

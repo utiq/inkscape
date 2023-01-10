@@ -28,7 +28,6 @@
 #include "ui/tool/event-utils.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
-#include "ui/tools-switch.h"
 #include "ui/widget/canvas.h"
 
 namespace {
@@ -184,17 +183,14 @@ Handle::Handle(NodeSharedData const &data, Geom::Point const &initial_pos, Node 
     : ControlPoint(data.desktop, initial_pos, SP_ANCHOR_CENTER,
                    Inkscape::CANVAS_ITEM_CTRL_TYPE_ROTATE,
                    _handle_colors, data.handle_group)
-    , _handle_line(new Inkscape::CanvasItemCurve(data.handle_line_group))
+    , _handle_line(make_canvasitem<CanvasItemCurve>(data.handle_line_group))
     , _parent(parent)
     , _degenerate(true)
 {
     setVisible(false);
 }
 
-Handle::~Handle()
-{
-    delete _handle_line;
-}
+Handle::~Handle() = default;
 
 void Handle::setVisible(bool v)
 {
@@ -548,7 +544,6 @@ void Handle::dragged(Geom::Point &new_pos, GdkEventMotion *event)
     if(_pm()._isBSpline() && !held_shift(*event) && !held_control(*event)){
         new_pos=_last_drag_origin();
     }
-    move(new_pos); // needed for correct update, even though it's redundant
     _pm().update();
 }
 
@@ -807,7 +802,6 @@ Node *Node::_prev()
 void Node::move(Geom::Point const &new_pos)
 {
     // move handles when the node moves.
-    Geom::Point old_pos = position();
     Geom::Point delta = new_pos - position();
 
     // save the previous nodes strength to apply it again once the node is moved 
@@ -825,14 +819,12 @@ void Node::move(Geom::Point const &new_pos)
         nextNodeWeight = _pm()._bsplineHandlePosition(nextNode->back());
     }
 
-    setPosition(new_pos);
+    // Save original position for post-processing
+    _unfixed_pos = std::optional<Geom::Point>(position());
 
+    setPosition(new_pos);
     _front.setPosition(_front.position() + delta);
     _back.setPosition(_back.position() + delta);
-
-    // if the node has a smooth handle after a line segment, it should be kept collinear
-    // with the segment
-    _fixNeighbors(old_pos, new_pos);
 
     // move the affected handles. First the node ones, later the adjoining ones.
     if(_pm()._isBSpline()){
@@ -845,14 +837,10 @@ void Node::move(Geom::Point const &new_pos)
             nextNode->back()->setPosition(_pm()._bsplineHandleReposition(nextNode->back(), nextNodeWeight));
         }
     }
-    Inkscape::UI::Tools::sp_update_helperpath(_desktop);
 }
 
 void Node::transform(Geom::Affine const &m)
 {
-
-    Geom::Point old_pos = position();
-
     // save the previous nodes strength to apply it again once the node is moved 
     double nodeWeight = NO_POWER;
     double nextNodeWeight = NO_POWER;
@@ -868,13 +856,12 @@ void Node::transform(Geom::Affine const &m)
         nextNodeWeight = _pm()._bsplineHandlePosition(nextNode->back());
     }
 
+    // Save original position for post-processing
+    _unfixed_pos = std::optional<Geom::Point>(position());
+
     setPosition(position() * m);
     _front.setPosition(_front.position() * m);
     _back.setPosition(_back.position() * m);
-
-    /* Affine transforms keep handle invariants for smooth and symmetric nodes,
-     * but smooth nodes at ends of linear segments and auto nodes need special treatment */
-    _fixNeighbors(old_pos, position());
 
     // move the involved handles. First the node ones, later the adjoining ones.
     if(_pm()._isBSpline()){
@@ -897,14 +884,26 @@ Geom::Rect Node::bounds() const
     return b;
 }
 
-void Node::_fixNeighbors(Geom::Point const &old_pos, Geom::Point const &new_pos)
+/**
+ * Affine transforms keep handle invariants for smooth and symmetric nodes,
+ * but smooth nodes at ends of linear segments and auto nodes need special treatment
+ *
+ * Call this function once you have finished called ::move or ::transform on ALL nodes
+ * that are being transformed in that one operation to avoid problematic bugs.
+ */
+void Node::fixNeighbors()
 {
+    if (!_unfixed_pos)
+        return;
+
+    Geom::Point const new_pos = position();
+
     // This method restores handle invariants for neighboring nodes,
     // and invariants that are based on positions of those nodes for this one.
 
     // Fix auto handles
     if (_type == NODE_AUTO) _updateAutoHandles();
-    if (old_pos != new_pos) {
+    if (*_unfixed_pos != new_pos) {
         if (_next() && _next()->_type == NODE_AUTO) _next()->_updateAutoHandles();
         if (_prev() && _prev()->_type == NODE_AUTO) _prev()->_updateAutoHandles();
     }
@@ -931,6 +930,8 @@ void Node::_fixNeighbors(Geom::Point const &old_pos, Geom::Point const &new_pos)
     if (other->_type == NODE_SMOOTH && !other_handle->isDegenerate()) {
         other_handle->setDirection(new_pos, other->position());
     }
+
+    _unfixed_pos.reset();
 }
 
 void Node::_updateAutoHandles()
@@ -1136,7 +1137,7 @@ bool Node::isEndNode() const
 
 void Node::sink()
 {
-    _canvas_item_ctrl->set_z_position(0);
+    _canvas_item_ctrl->lower_to_bottom();
 }
 
 NodeType Node::parse_nodetype(char x)
@@ -1415,7 +1416,7 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
     std::optional<Geom::Point> front_point, back_point;
     Geom::Point origin = _last_drag_origin();
     Geom::Point dummy_cp;
-    if (_front.isDegenerate()) {
+    if (_front.isDegenerate()) { // If there is no handle for the path segment towards the next node, then this segment is straight
         if (_is_line_segment(this, _next())) {
             front_point = _next()->position() - origin;
             if (_next()->selected()) {
@@ -1426,11 +1427,11 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
                 scp_free.addOrigin(dummy_cp);
             }
         }
-    } else {
+    } else { // .. this path segment is curved
         front_point = _front.relativePos();
         scp_free.addVector(*front_point);
     }
-    if (_back.isDegenerate()) {
+    if (_back.isDegenerate()) { // If there is no handle for the path segment towards the previous node, then this segment is straight
         if (_is_line_segment(_prev(), this)) {
             back_point = _prev()->position() - origin;
             if (_prev()->selected()) {
@@ -1441,7 +1442,7 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
                 scp_free.addOrigin(dummy_cp);
             }
         }
-    } else {
+    } else { // .. this path segment is curved
         back_point = _back.relativePos();
         scp_free.addVector(*back_point);
     }
@@ -1451,37 +1452,39 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
         // Therefore tangential or perpendicular snapping will not be considered, and therefore
         // all calls above to scp_free.addVector() and scp_free.addOrigin() can be neglected
         std::vector<Inkscape::Snapper::SnapConstraint> constraints;
-        if (held_alt(*event)) {
-            // with Ctrl+Alt, constrain to handle lines
-            // project the new position onto a handle line that is closer;
-            // also snap to perpendiculars of handle lines
-
+        if (held_alt(*event)) { // with Ctrl+Alt, constrain to handle	 lines
             Inkscape::Preferences *prefs = Inkscape::Preferences::get();
             int snaps = prefs->getIntLimited("/options/rotationsnapsperpi/value", 12, 1, 1000);
             double min_angle = M_PI / snaps;
 
-            std::optional<Geom::Point> fperp_point, bperp_point;
-            if (front_point) {
-                constraints.emplace_back(origin, *front_point);
-                fperp_point = Geom::rot90(*front_point);
+            // If the node is cusp and both handles are retracted (degenerate; straight line segment at both sides of the node), then snap to those line segments
+            if (isDegenerate()) { // Cusp node with both handles retracted
+				if (front_point) {
+					constraints.emplace_back(origin, *front_point);
+				}
+				if (back_point) {
+					constraints.emplace_back(origin, *back_point);
+				}
             }
-            if (back_point) {
-                constraints.emplace_back(origin, *back_point);
-                bperp_point = Geom::rot90(*back_point);
-            }
-            // perpendiculars only snap when they are further than snap increment away
-            // from the second handle constraint
-            if (fperp_point && (!back_point ||
-                (fabs(Geom::angle_between(*fperp_point, *back_point)) > min_angle &&
-                 fabs(Geom::angle_between(*fperp_point, *back_point)) < M_PI - min_angle)))
-            {
-                constraints.emplace_back(origin, *fperp_point);
-            }
-            if (bperp_point && (!front_point ||
-                (fabs(Geom::angle_between(*bperp_point, *front_point)) > min_angle &&
-                 fabs(Geom::angle_between(*bperp_point, *front_point)) < M_PI - min_angle)))
-            {
-                constraints.emplace_back(origin, *bperp_point);
+
+            // For smooth nodes, we will also snap to normals of handle lines. For cusp nodes this would be unintuitive and confusing
+            // Only snap to the normals when they are further than snap increment away from the second handle constraint
+            if (_type != NODE_CUSP) {
+            	std::optional<Geom::Point> fperp_point = Geom::rot90(*front_point);
+            	if (fperp_point && (!back_point ||
+					(fabs(Geom::angle_between(*fperp_point, *back_point)) > min_angle &&
+					 fabs(Geom::angle_between(*fperp_point, *back_point)) < M_PI - min_angle)))
+				{
+					constraints.emplace_back(origin, *fperp_point);
+				}
+
+            	std::optional<Geom::Point> bperp_point = Geom::rot90(*back_point);
+				if (bperp_point && (!front_point ||
+					(fabs(Geom::angle_between(*bperp_point, *front_point)) > min_angle &&
+					 fabs(Geom::angle_between(*bperp_point, *front_point)) < M_PI - min_angle)))
+				{
+					constraints.emplace_back(origin, *bperp_point);
+				}
             }
 
             sp = sm.multipleConstrainedSnaps(Inkscape::SnapCandidatePoint(new_pos, _snapSourceType()), constraints, held_shift(*event));

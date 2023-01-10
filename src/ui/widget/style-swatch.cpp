@@ -18,14 +18,13 @@
 #include <gtkmm/grid.h>
 
 #include "inkscape.h"
-#include "verbs.h"
+#include "style.h"
+
+#include "actions/actions-tools.h"  // Open tool preferences.
 
 #include "object/sp-linear-gradient.h"
 #include "object/sp-pattern.h"
 #include "object/sp-radial-gradient.h"
-#include "style.h"
-
-#include "helper/action.h"
 
 #include "ui/widget/color-preview.h"
 #include "util/units.h"
@@ -109,7 +108,6 @@ void StyleSwatch::ToolObserver::notify(Inkscape::Preferences::Entry const &val)
 StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip)
     : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL),
       _desktop(nullptr),
-      _verb_t(0),
       _css(nullptr),
       _tool_obs(nullptr),
       _style_obs(nullptr),
@@ -118,7 +116,6 @@ StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip)
       _stroke(Gtk::ORIENTATION_HORIZONTAL)
 {
     set_name("StyleSwatch");
-    
     _label[SS_FILL].set_markup(_("Fill:"));
     _label[SS_STROKE].set_markup(_("Stroke:"));
 
@@ -153,8 +150,8 @@ StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip)
     _table->attach(_label[SS_STROKE], 0, 1, 1, 1);
     _table->attach(_place[SS_FILL],   1, 0, 1, 1);
     _table->attach(_stroke,           1, 1, 1, 1);
+    _table->attach(_empty_space,      2, 0, 1, 2);
     _table->attach(_opacity_place,    2, 0, 1, 2);
-
     _swatch.add(*_table);
     pack_start(_swatch, true, true, 0);
 
@@ -170,8 +167,8 @@ StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip)
     }
 }
 
-void StyleSwatch::setClickVerb(sp_verb_t verb_t) {
-    _verb_t = verb_t;
+void StyleSwatch::setToolName(const Glib::ustring& tool_name) {
+    _tool_name = tool_name;
 }
 
 void StyleSwatch::setDesktop(SPDesktop *desktop) {
@@ -181,10 +178,9 @@ void StyleSwatch::setDesktop(SPDesktop *desktop) {
 bool
 StyleSwatch::on_click(GdkEventButton */*event*/)
 {
-    if (this->_desktop && this->_verb_t != SP_VERB_NONE) {
-        Inkscape::Verb *verb = Inkscape::Verb::get(this->_verb_t);
-        SPAction *action = verb->get_action(Inkscape::ActionContext((Inkscape::UI::View::View *) this->_desktop));
-        sp_action_perform (action, nullptr);
+    if (_desktop && !_tool_name.empty()) {
+        auto win = _desktop->getInkscapeWindow();
+        open_tool_preferences(win, _tool_name);
         return true;
     }
     return false;
@@ -270,15 +266,15 @@ void StyleSwatch::setStyle(SPStyle *query)
         if (paint->set && paint->isPaintserver()) {
             SPPaintServer *server = (i == SS_FILL)? SP_STYLE_FILL_SERVER (query) : SP_STYLE_STROKE_SERVER (query);
 
-            if (SP_IS_LINEARGRADIENT (server)) {
+            if (is<SPLinearGradient>(server)) {
                 _value[i].set_markup(_("L Gradient"));
                 place->add(_value[i]);
                 place->set_tooltip_text((i == SS_FILL)? (_("Linear gradient (fill)")) : (_("Linear gradient (stroke)")));
-            } else if (SP_IS_RADIALGRADIENT (server)) {
+            } else if (is<SPRadialGradient>(server)) {
                 _value[i].set_markup(_("R Gradient"));
                 place->add(_value[i]);
                 place->set_tooltip_text((i == SS_FILL)? (_("Radial gradient (fill)")) : (_("Radial gradient (stroke)")));
-            } else if (SP_IS_PATTERN (server)) {
+            } else if (is<SPPattern>(server)) {
                 _value[i].set_markup(_("Pattern"));
                 place->add(_value[i]);
                 place->set_tooltip_text((i == SS_FILL)? (_("Pattern (fill)")) : (_("Pattern (stroke)")));
@@ -313,7 +309,10 @@ void StyleSwatch::setStyle(SPStyle *query)
 // Now query stroke_width
     if (has_stroke) {
         if (query->stroke_extensions.hairline) {
-            _stroke_width.set_markup(_("Hairline"));
+            Glib::ustring swidth = "<small>";
+            swidth += _("Hairline");
+            swidth += "</small>";
+            _stroke_width.set_markup(swidth.c_str());
             auto str = Glib::ustring::compose(_("Stroke width: %1"), _("Hairline"));
             _stroke_width_place.set_tooltip_text(str);
         } else {
@@ -326,7 +325,10 @@ void StyleSwatch::setStyle(SPStyle *query)
 
             {
                 gchar *str = g_strdup_printf(" %.3g", w);
-                _stroke_width.set_markup(str);
+                Glib::ustring swidth = "<small>";
+                swidth += str;
+                swidth += "</small>";
+                _stroke_width.set_markup(swidth.c_str());
                 g_free (str);
             }
             {
@@ -348,7 +350,10 @@ void StyleSwatch::setStyle(SPStyle *query)
         {
             gchar *str;
             str = g_strdup_printf(_("O: %2.0f"), (op*100.0));
-            _opacity_value.set_markup (str);
+            Glib::ustring opacity = "<small>";
+            opacity += str;
+            opacity += "</small>";
+            _opacity_value.set_markup (opacity.c_str());
             g_free (str);
         }
         {

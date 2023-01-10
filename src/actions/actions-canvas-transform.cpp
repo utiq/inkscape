@@ -18,6 +18,9 @@
 #include "inkscape-window.h"
 #include "desktop.h"
 
+#include "object/sp-namedview.h"
+#include "page-manager.h"
+
 #include "ui/tools/freehand-base.h" // SP_DRAW_CONTEXT
 #include "ui/tools/pen-tool.h"
 #include "ui/tools/pencil-tool.h"
@@ -54,7 +57,7 @@ canvas_zoom_helper(SPDesktop* dt, const Geom::Point& midpoint, double zoom_facto
 
         // Zoom around end of unfinished path.
         std::optional<Geom::Point> zoom_to =
-            SP_DRAW_CONTEXT(dt->event_context)->red_curve_get_last_point();
+            dynamic_cast<Inkscape::UI::Tools::FreehandBase*>(dt->event_context)->red_curve_get_last_point();
         if (zoom_to) {
             dt->zoom_relative(*zoom_to, zoom_factor);
             return;
@@ -68,6 +71,7 @@ void
 canvas_transform(InkscapeWindow *win, const int& option)
 {
     SPDesktop* dt = win->get_desktop();
+    SPDocument *doc = dt->getDocument();
 
     // The following might be better done elsewhere:
 
@@ -113,15 +117,15 @@ canvas_transform(InkscapeWindow *win, const int& option)
             break;
 
         case INK_CANVAS_ZOOM_PAGE:
-            dt->zoom_page();
+            doc->getPageManager().zoomToSelectedPage(dt, false);
             break;
 
         case INK_CANVAS_ZOOM_PAGE_WIDTH:
-            dt->zoom_page_width();
+            doc->getPageManager().zoomToSelectedPage(dt, true);
             break;
 
         case INK_CANVAS_ZOOM_CENTER_PAGE:
-            dt->zoom_center_page();
+            doc->getPageManager().centerToSelectedPage(dt);
             break;
 
         case INK_CANVAS_ZOOM_PREV:
@@ -187,7 +191,6 @@ canvas_rotate_lock(InkscapeWindow *win)
     // Save value as a preference
     Inkscape::Preferences *pref = Inkscape::Preferences::get();
     pref->setBool("/options/rotationlock", state);
-    std::cout << "rotate_lock: set to: " << state << std::endl;
 
     SPDesktop* dt = win->get_desktop();
     dt->set_rotation_lock(state);

@@ -39,10 +39,7 @@ public:
     FillAndStroke();
     ~FillAndStroke() override;
 
-    static FillAndStroke &getInstance() { return *new FillAndStroke(); }
-
-    void update() override;
-    void setDesktop(SPDesktop *desktop);
+    void desktopReplaced() override;
 
     void showPageFill();
     void showPageStrokePaint();
@@ -68,10 +65,9 @@ protected:
     void _onSwitchPage(Gtk::Widget *page, guint pagenum);
 
 private:
-    FillAndStroke(FillAndStroke const &d) = delete;
-    FillAndStroke& operator=(FillAndStroke const &d) = delete;
+    void selectionChanged(Selection *selection) override;
+    void selectionModified(Selection *selection, guint flags) override;
 
-    SPDesktop *targetDesktop;
     UI::Widget::FillNStroke *fillWdgt;
     UI::Widget::FillNStroke *strokeWdgt;
     UI::Widget::StrokeStyle *strokeStyleWdgt;

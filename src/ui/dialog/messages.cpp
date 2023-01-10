@@ -13,7 +13,6 @@
  */
 
 #include "messages.h"
-#include "verbs.h"
 
 namespace Inkscape {
 namespace UI {
@@ -41,7 +40,7 @@ void Messages::clear()
  * Constructor
  */
 Messages::Messages()
-    : DialogBase("/dialogs/messages", SP_VERB_DIALOG_DEBUG)
+    : DialogBase("/dialogs/messages", "Messages")
     , buttonClear(_("_Clear"), _("Clear log messages"))
     , checkCapture(_("Capture log messages"), _("Capture log messages"))
     , buttonBox(Gtk::ORIENTATION_HORIZONTAL)
@@ -71,7 +70,7 @@ Messages::Messages()
     pack_start(buttonBox, Gtk::PACK_SHRINK);
 
     // sick of this thing shrinking too much
-    set_size_request(400, 300);
+    set_size_request(400, -1);
 
     show_all_children();
 

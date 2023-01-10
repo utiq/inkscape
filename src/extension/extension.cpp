@@ -17,17 +17,12 @@
  */
 
 #include "extension.h"
-#include "implementation/implementation.h"
-#include "implementation/script.h"
-#include "implementation/xslt.h"
 
-#include <glibmm/fileutils.h>
-#include <glibmm/miscutils.h>
-
-#include <glib/gstdio.h>
 #include <glib/gprintf.h>
-
+#include <glib/gstdio.h>
+#include <glibmm/fileutils.h>
 #include <glibmm/i18n.h>
+#include <glibmm/miscutils.h>
 #include <gtkmm/box.h>
 #include <gtkmm/frame.h>
 #include <gtkmm/grid.h>
@@ -35,17 +30,17 @@
 
 #include "db.h"
 #include "dependency.h"
+#include "implementation/implementation.h"
+#include "implementation/script.h"
+#include "implementation/xslt.h"
 #include "inkscape.h"
-#include "timer.h"
-
 #include "io/resource.h"
 #include "io/sys.h"
-
 #include "prefdialog/parameter.h"
+#include "prefdialog/prefdialog.h"
 #include "prefdialog/widget.h"
-
+#include "timer.h"
 #include "xml/repr.h"
-
 
 namespace Inkscape {
 namespace Extension {
@@ -240,7 +235,6 @@ Extension::set_state (state_t in_state)
 
                 break;
             case STATE_UNLOADED:
-                // std::cout << "Unloading: " << name << std::endl;
                 imp->unload(this);
                 _state = STATE_UNLOADED;
 
@@ -389,7 +383,7 @@ Extension::get_name () const
     implementation, but we are guaranteed to have a benign one.
 
     \warning It is important to note that there is no 'activate' function.
-    Running this function is irreversable.
+    Running this function is irreversible.
 */
 void
 Extension::deactivate ()
@@ -682,6 +676,19 @@ Extension::get_param_bool(const gchar *name) const
 }
 
 /**
+ * \return   The value of the param or the alternate if the param doesn't exist.
+ * \brief    Like get_param_bool but with a default on param_not_exist error.
+ */
+bool Extension::get_param_bool(const gchar *name, bool alt) const
+{
+    try {
+        return get_param_bool(name);
+    } catch (Extension::param_not_exist) {
+        return alt;
+    }
+}
+
+/**
     \return   The integer value for the parameter specified
     \brief    Gets a parameter identified by name with the integer placed in value.
     \param    name   The name of the parameter to get
@@ -697,18 +704,45 @@ Extension::get_param_int(const gchar *name) const
 }
 
 /**
-    \return   The float value for the parameter specified
-    \brief    Gets a parameter identified by name with the float in value.
+ * \return   The value of the param or the alternate if the param doesn't exist.
+ * \brief    Like get_param_int but with a default on param_not_exist error.
+ */
+int Extension::get_param_int(const gchar *name, int alt) const
+{
+    try {
+        return get_param_int(name);
+    } catch (Extension::param_not_exist) {
+        return alt;
+    }
+}
+
+
+/**
+    \return   The double value for the float parameter specified
+    \brief    Gets a float parameter identified by name with the double placed in value.
     \param    name   The name of the parameter to get
 
     Look up in the parameters list, const then execute the function on that found parameter.
 */
-float
+double
 Extension::get_param_float(const gchar *name) const
 {
     const InxParameter *param;
     param = get_param(name);
     return param->get_float();
+}
+
+/**
+ * \return   The value of the param or the alternate if the param doesn't exist.
+ * \brief    Like get_param_float but with a default on param_not_exist error.
+ */
+double Extension::get_param_float(const gchar *name, double alt) const
+{
+    try {
+        return get_param_float(name);
+    } catch (Extension::param_not_exist) {
+        return alt;
+    }
 }
 
 /**
@@ -727,6 +761,19 @@ Extension::get_param_string(const gchar *name) const
 }
 
 /**
+ * \return   The value of the param or the alternate if the param doesn't exist.
+ * \brief    Like get_param_string but with a default on param_not_exist error.
+ */
+const char *Extension::get_param_string(const gchar *name, const char *alt) const
+{
+    try {
+        return get_param_string(name);
+    } catch (Extension::param_not_exist) {
+        return alt;
+    }
+}
+
+/**
     \return   The string value for the parameter specified
     \brief    Gets a parameter identified by name with the string placed in value.
     \param    name   The name of the parameter to get
@@ -739,6 +786,19 @@ Extension::get_param_optiongroup(const gchar *name) const
     const InxParameter *param;
     param = get_param(name);
     return param->get_optiongroup();
+}
+
+/**
+ * \return   The value of the param or the alternate if the param doesn't exist.
+ * \brief    Like get_param_optiongroup but with a default on param_not_exist error.
+ */
+const char *Extension::get_param_optiongroup(const gchar *name, const char *alt) const
+{
+    try {
+        return get_param_optiongroup(name);
+    } catch (Extension::param_not_exist) {
+        return alt;
+    }
 }
 
 /**
@@ -804,14 +864,14 @@ Extension::set_param_int(const gchar *name, const int value)
 
 /**
     \return   The passed in value
-    \brief    Sets a parameter identified by name with the float in the parameter value.
+    \brief    Sets a parameter identified by name with the double in the parameter value.
     \param    name   The name of the parameter to set
     \param    value  The value to set the parameter to
 
     Look up in the parameters list, const then execute the function on that found parameter.
 */
-float
-Extension::set_param_float(const gchar *name, const float value)
+double
+Extension::set_param_float(const gchar *name, const double value)
 {
     InxParameter *param;
     param = get_param(name);
@@ -866,6 +926,20 @@ Extension::set_param_color(const gchar *name, const guint32 color)
     return param->set_color(color);
 }
 
+/**
+    \brief    Parses the given string value and sets a parameter identified by name.
+    \param    name   The name of the parameter to set
+    \param    value  The value to set the parameter to
+ */
+void Extension::set_param_any(const gchar *name, std::string value)
+{
+    get_param(name)->set(value);
+}
+
+void Extension::set_param_hidden(const gchar *name, bool hidden)
+{
+    get_param(name)->set_hidden(hidden);
+}
 
 /** \brief A function to open the error log file. */
 void
@@ -937,7 +1011,7 @@ public:
     If there are no visible parameters, this function just returns NULL.
 */
 Gtk::Widget *
-Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<void> *changeSignal)
+Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<void ()> *changeSignal)
 {
     if (!_gui || widget_visible_count() == 0) {
         return nullptr;
@@ -1028,6 +1102,32 @@ unsigned int Extension::widget_visible_count ( )
         }
     }
     return _visible_count;
+}
+
+/**
+ * Create a dialog for preference for this extension
+ *
+ * @param keep - Should the dialog be kept around for multiple uses?
+ *
+ * @return True if preferences have been shown, False is canceled or kept.
+ */
+bool Extension::prefs()
+{
+    if (!loaded())
+        set_state(Extension::STATE_LOADED);
+    if (!loaded())
+        return false;
+
+    if (auto controls = autogui(nullptr, nullptr)) {
+        auto dialog = new PrefDialog(get_name(), controls);
+        int response = dialog->run();
+        dialog->hide();
+        delete dialog;
+        return (response == Gtk::RESPONSE_OK);
+    }
+
+    // No controls, no prefs
+    return true;
 }
 
 }  /* namespace Extension */

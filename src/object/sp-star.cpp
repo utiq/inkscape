@@ -220,6 +220,11 @@ void SPStar::update(SPCtx *ctx, guint flags) {
     SPShape::update(ctx, flags);
 }
 
+const char* SPStar::typeName() const {
+    if (this->flatsided == false)
+        return "star";
+    return "polygon";
+}
 
 const char* SPStar::displayName() const {
     if (this->flatsided == false)
@@ -348,20 +353,11 @@ void SPStar::set_shape() {
     // perhaps we should convert all our shapes into LPEs without source path
     // and with knotholders for parameters, then this situation will be handled automatically
     // by disabling the entire stack (including the shape LPE)
-    if (hasBrokenPathEffect()) {
-        g_warning ("The star shape has unknown LPE on it! Convert to path to make it editable preserving the appearance; editing it as star will remove the bad LPE");
-
-        if (this->getRepr()->attribute("d")) {
-            // unconditionally read the curve from d, if any, to preserve appearance
-            Geom::PathVector pv = sp_svg_read_pathv(this->getRepr()->attribute("d"));
-            setCurveInsync(std::make_unique<SPCurve>(pv));
-            setCurveBeforeLPE(curve());
-        }
-
+    if (checkBrokenPathEffect()) {
         return;
     }
 
-    auto c = std::make_unique<SPCurve>();
+    SPCurve c;
 
     bool not_rounded = (fabs (this->rounded) < 1e-4);
 
@@ -369,13 +365,13 @@ void SPStar::set_shape() {
     // other places that call that function (e.g. the knotholder) need the exact point
 
     // draw 1st segment
-    c->moveto(sp_star_get_xy (this, SP_STAR_POINT_KNOT1, 0, true));
+    c.moveto(sp_star_get_xy (this, SP_STAR_POINT_KNOT1, 0, true));
 
     if (this->flatsided == false) {
         if (not_rounded) {
-            c->lineto(sp_star_get_xy (this, SP_STAR_POINT_KNOT2, 0, true));
+            c.lineto(sp_star_get_xy (this, SP_STAR_POINT_KNOT2, 0, true));
         } else {
-            c->curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, 0, NEXT),
+            c.curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, 0, NEXT),
                 sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT2, 0, PREV),
                 sp_star_get_xy (this, SP_STAR_POINT_KNOT2, 0, true));
         }
@@ -384,14 +380,14 @@ void SPStar::set_shape() {
     // draw all middle segments
     for (gint i = 1; i < sides; i++) {
         if (not_rounded) {
-            c->lineto(sp_star_get_xy (this, SP_STAR_POINT_KNOT1, i, true));
+            c.lineto(sp_star_get_xy (this, SP_STAR_POINT_KNOT1, i, true));
         } else {
             if (this->flatsided == false) {
-                c->curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT2, i - 1, NEXT),
+                c.curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT2, i - 1, NEXT),
                         sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, i, PREV),
                         sp_star_get_xy (this, SP_STAR_POINT_KNOT1, i, true));
             } else {
-                c->curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, i - 1, NEXT),
+                c.curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, i - 1, NEXT),
                         sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, i, PREV),
                         sp_star_get_xy (this, SP_STAR_POINT_KNOT1, i, true));
             }
@@ -399,9 +395,9 @@ void SPStar::set_shape() {
 
         if (this->flatsided == false) {
             if (not_rounded) {
-                       c->lineto(sp_star_get_xy (this, SP_STAR_POINT_KNOT2, i, true));
+                       c.lineto(sp_star_get_xy (this, SP_STAR_POINT_KNOT2, i, true));
             } else {
-                c->curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, i, NEXT),
+                c.curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, i, NEXT),
                     sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT2, i, PREV),
                     sp_star_get_xy (this, SP_STAR_POINT_KNOT2, i, true));
             }
@@ -411,42 +407,26 @@ void SPStar::set_shape() {
     // draw last segment
 	if (!not_rounded) {
 		if (this->flatsided == false) {
-			c->curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT2, sides - 1, NEXT),
+            c.curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT2, sides - 1, NEXT),
 				sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, 0, PREV),
 				sp_star_get_xy (this, SP_STAR_POINT_KNOT1, 0, true));
 		} else {
-			c->curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, sides - 1, NEXT),
+            c.curveto(sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, sides - 1, NEXT),
 				sp_star_get_curvepoint (this, SP_STAR_POINT_KNOT1, 0, PREV),
 				sp_star_get_xy (this, SP_STAR_POINT_KNOT1, 0, true));
 		}
 	}
 
-    c->closepath();
+    c.closepath();
 
-    /* Reset the shape's curve to the "original_curve"
-     * This is very important for LPEs to work properly! (the bbox might be recalculated depending on the curve in shape)*/
+    prepareShapeForLPE(&c);
 
-    auto const before = this->curveBeforeLPE();
-    if (before && before->get_pathvector() != c->get_pathvector()) {
-        setCurveBeforeLPE(std::move(c));
-        sp_lpe_item_update_patheffect(this, true, false);
-        return;
-    }
-
-    if (hasPathEffectOnClipOrMaskRecursive(this)) {
-        setCurveBeforeLPE(std::move(c));
-        return;
-    }
-
-    // This happends on undo, fix bug:#1791784
-    setCurveInsync(std::move(c));
 }
 
 void
 sp_star_position_set (SPStar *star, gint sides, Geom::Point center, gdouble r1, gdouble r2, gdouble arg1, gdouble arg2, bool isflat, double rounded, double randomized)
 {
     g_return_if_fail (star != nullptr);
-    g_return_if_fail (SP_IS_STAR (star));
 
     star->flatsided = isflat;
     star->center = center;

@@ -19,12 +19,12 @@
 
 #include "desktop.h"
 #include "sp-item.h"
-#include "sp-string.h" // Provides many other headers with SP_IS_STRING
+#include "sp-string.h" // Provides many other headers with is<SPString>
 #include "text-tag-attributes.h"
+#include "display/curve.h"
 
 #include "libnrtype/Layout-TNG.h"
-
-#include "xml/node-event-vector.h"
+#include "libnrtype/style-attachments.h"
 
 #include <memory>
 
@@ -32,15 +32,17 @@
 #define SP_TEXT_CONTENT_MODIFIED_FLAG SP_OBJECT_USER_MODIFIED_FLAG_A
 #define SP_TEXT_LAYOUT_MODIFIED_FLAG SP_OBJECT_USER_MODIFIED_FLAG_A
 
+class SPShape;
 
 /* SPText */
-class SPText : public SPItem {
+class SPText final : public SPItem {
 public:
 	SPText();
 	~SPText() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     /** Converts the text object to its component curves */
-    std::unique_ptr<SPCurve> getNormalizedBpath() const;
+    SPCurve getNormalizedBpath() const;
 
     /** Completely recalculates the layout. */
     void rebuildLayout();
@@ -48,6 +50,7 @@ public:
     //semiprivate:  (need to be accessed by the C-style functions still)
     TextTagAttributes attributes;
     Inkscape::Text::Layout layout;
+    std::unordered_map<unsigned, Inkscape::Text::StyleAttachments> view_style_attachments;
 
     /** when the object is transformed it's nicer to change the font size
     and coordinates when we can, rather than just applying a matrix
@@ -59,8 +62,8 @@ public:
     static void _adjustFontsizeRecursive(SPItem *item, double ex, bool is_root = true);
     /**
     This two functions are useful because layout calculations need text visible for example
-    Calculating a invisible char position object or pasting text with paragraps that overflow
-    shape defined. I have doubts abot trransform into a toggle function*/
+    Calculating a invisible char position object or pasting text with paragraphs that overflow
+    shape defined. I have doubts about transform into a toggle function*/
     void show_shape_inside();
     void hide_shape_inside();
 
@@ -71,6 +74,10 @@ public:
 
     /** Union all exclusion shapes. */
     Shape* getExclusionShape() const;
+    /** Add a single inclusion shape with padding */
+    Shape* getInclusionShape(SPShape *shape, bool padding = false) const;
+
+    std::optional<Geom::Point> getBaselinePoint() const;
 
 private:
 
@@ -104,6 +111,7 @@ private:
 
     Geom::OptRect bbox(Geom::Affine const &transform, SPItem::BBoxType type) const override;
     void print(SPPrintContext *ctx) override;
+    const char* typeName() const override;
     const char* displayName() const override;
     char* description() const override;
     Inkscape::DrawingItem* show(Inkscape::Drawing &drawing, unsigned int key, unsigned int flags) override;
@@ -128,9 +136,6 @@ private:
 
 SPItem *create_text_with_inline_size (SPDesktop *desktop, Geom::Point p0, Geom::Point p1);
 SPItem *create_text_with_rectangle   (SPDesktop *desktop, Geom::Point p0, Geom::Point p1);
-
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_TEXT, SPText)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_TEXT, SPText)
 
 #endif
 

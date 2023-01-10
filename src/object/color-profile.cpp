@@ -36,6 +36,7 @@
 #include <lcms2.h>
 
 #include "xml/repr.h"
+#include "xml/href-attribute-helper.h"
 #include "color.h"
 #include "color-profile.h"
 #include "cms-system.h"
@@ -411,7 +412,7 @@ Inkscape::XML::Node* ColorProfile::write(Inkscape::XML::Document *xml_doc, Inksc
     }
 
     if ( (flags & SP_OBJECT_WRITE_ALL) || this->href ) {
-        repr->setAttribute( "xlink:href", this->href );
+        Inkscape::setHrefAttribute(*repr, this->href );
     }
 
     if ( (flags & SP_OBJECT_WRITE_ALL) || this->local ) {
@@ -490,7 +491,7 @@ static ColorProfile *bruteFind(SPDocument *document, gchar const *name)
 {
     std::vector<SPObject *> current = document->getResourceList("iccprofile");
     for (auto *obj : current) {
-        if (auto prof = dynamic_cast<ColorProfile*>(obj)) {
+        if (auto prof = cast<ColorProfile>(obj)) {
             if ( prof->name && (strcmp(prof->name, name) == 0) ) {
                 return prof;
             }
@@ -695,7 +696,7 @@ std::set<ColorProfile::FilePlusHome> ColorProfile::getBaseProfileDirs() {
     std::set<ColorProfile::FilePlusHome> sources;
 
     // first try user's local dir
-    gchar* path = g_build_filename(g_get_user_data_dir(), "color", "icc", NULL);
+    gchar* path = g_build_filename(g_get_user_data_dir(), "color", "icc", nullptr);
     sources.insert(FilePlusHome(path, true));
     g_free(path);
 
@@ -703,11 +704,11 @@ std::set<ColorProfile::FilePlusHome> ColorProfile::getBaseProfileDirs() {
     // (see https://github.com/hughsie/colord/blob/fe10f76536bb27614ced04e0ff944dc6fb4625c0/lib/colord/cd-icc-store.c#L590)
 
     // user store
-    path = g_build_filename(g_get_user_data_dir(), "icc", NULL);
+    path = g_build_filename(g_get_user_data_dir(), "icc", nullptr);
     sources.insert(FilePlusHome(path, true));
     g_free(path);
 
-    path = g_build_filename(g_get_home_dir(), ".color", "icc", NULL);
+    path = g_build_filename(g_get_home_dir(), ".color", "icc", nullptr);
     sources.insert(FilePlusHome(path, true));
     g_free(path);
 
@@ -717,7 +718,7 @@ std::set<ColorProfile::FilePlusHome> ColorProfile::getBaseProfileDirs() {
 
     const gchar* const * dataDirs = g_get_system_data_dirs();
     for ( int i = 0; dataDirs[i]; i++ ) {
-        gchar* path = g_build_filename(dataDirs[i], "color", "icc", NULL);
+        gchar* path = g_build_filename(dataDirs[i], "color", "icc", nullptr);
         sources.insert(FilePlusHome(path, false));
         g_free(path);
     }
@@ -727,7 +728,7 @@ std::set<ColorProfile::FilePlusHome> ColorProfile::getBaseProfileDirs() {
         sources.insert(FilePlusHome("/System/Library/ColorSync/Profiles", false));
         sources.insert(FilePlusHome("/Library/ColorSync/Profiles", false));
 
-        gchar *path = g_build_filename(g_get_home_dir(), "Library", "ColorSync", "Profiles", NULL);
+        gchar *path = g_build_filename(g_get_home_dir(), "Library", "ColorSync", "Profiles", nullptr);
         sources.insert(FilePlusHome(path, true));
         g_free(path);
     }

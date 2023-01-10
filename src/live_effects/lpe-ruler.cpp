@@ -65,8 +65,7 @@ LPERuler::LPERuler(LivePathEffectObject *lpeobject) :
     offset.param_set_increments(1.0, 10.0);
 }
 
-LPERuler::~LPERuler()
-= default;
+LPERuler::~LPERuler() = default;
 
 Geom::Point LPERuler::n_major;
 Geom::Point LPERuler::n_minor;

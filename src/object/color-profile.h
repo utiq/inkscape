@@ -41,10 +41,11 @@ class ColorProfileImpl;
 /**
  * Color Profile.
  */
-class ColorProfile : public SPObject {
+class ColorProfile final : public SPObject {
 public:
     ColorProfile();
     ~ColorProfile() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     bool operator<(ColorProfile const &other) const;
 
@@ -96,8 +97,6 @@ protected:
 };
 
 } // namespace Inkscape
-
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(IS_COLORPROFILE, Inkscape::ColorProfile)
 
 #endif // !SEEN_COLOR_PROFILE_H
 

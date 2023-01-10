@@ -41,8 +41,19 @@ class MyDropZone
     , public Gtk::EventBox
 {
 public:
-    MyDropZone(Gtk::Orientation orientation, int size);
-    ~MyDropZone() override = default;
+    MyDropZone(Gtk::Orientation orientation);
+    ~MyDropZone() override;
+
+    static void add_highlight_instances();
+    static void remove_highlight_instances();
+
+private:
+    void set_size(int size);
+    bool _active = false;
+    void add_highlight();
+    void remove_highlight();
+
+    static std::list<MyDropZone *> _instances_list;
 };
 
 /* ============  HANDLE   ============ */
@@ -59,10 +70,24 @@ public:
     ~MyHandle() override = default;
 
     bool on_enter_notify_event(GdkEventCrossing *crossing_event) override;
+    void set_dragging(bool dragging);
 private:
+    bool on_leave_notify_event(GdkEventCrossing* crossing_event) override;
+    bool on_button_press_event(GdkEventButton* button_event) override;
+    bool on_button_release_event(GdkEventButton *event) override;
+    bool on_motion_notify_event(GdkEventMotion* motion_event) override;
+    void toggle_multipaned();
+    void update_click_indicator(double x, double y);
+    void show_click_indicator(bool show);
+    bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override;
+    Cairo::Rectangle get_active_click_zone();
     int _cross_size;
     Gtk::Widget *_child;
     void resize_handler(Gtk::Allocation &allocation);
+    bool is_click_resize_active() const;
+    bool _click = false;
+    bool _click_indicator = false;
+    bool _dragging = false;
 };
 
 /* ============ MULTIPANE ============ */
@@ -91,14 +116,16 @@ public:
     bool has_empty_widget() { return (bool)_empty_widget; }
 
     // Signals
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> signal_prepend_drag_data();
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> signal_append_drag_data();
-    sigc::signal<void> signal_now_empty();
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> signal_prepend_drag_data();
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> signal_append_drag_data();
+    sigc::signal<void ()> signal_now_empty();
 
     // UI functions
     void set_dropzone_sizes(int start, int end);
-    void toggle_multipaned_children();
+    void toggle_multipaned_children(bool show);
+    void children_toggled();
     void ensure_multipaned_children();
+    void set_restored_width(int width);
 
 protected:
     // Overrides
@@ -116,16 +143,21 @@ protected:
     void on_remove(Gtk::Widget *child) override;
 
     // Signals
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> _signal_prepend_drag_data;
-    sigc::signal<void, const Glib::RefPtr<Gdk::DragContext>> _signal_append_drag_data;
-    sigc::signal<void> _signal_now_empty;
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> _signal_prepend_drag_data;
+    sigc::signal<void (const Glib::RefPtr<Gdk::DragContext>)> _signal_append_drag_data;
+    sigc::signal<void ()> _signal_now_empty;
 
 private:
     // We must manage children ourselves.
     std::vector<Gtk::Widget *> children;
 
     // Values used when dragging handle.
-    int handle = -1; // Child number of active handle
+    int _handle = -1; // Child number of active handle
+    int _drag_handle = -1;
+    Gtk::Widget* _resizing_widget1 = nullptr;
+    Gtk::Widget* _resizing_widget2 = nullptr;
+    Gtk::Widget* _hide_widget1 = nullptr;
+    Gtk::Widget* _hide_widget2 = nullptr;
     Gtk::Allocation start_allocation1;
     Gtk::Allocation start_allocationh;
     Gtk::Allocation start_allocation2;
@@ -150,7 +182,7 @@ private:
     void add_empty_widget();
     void remove_empty_widget();
     std::vector<sigc::connection> _connections;
-    bool hide_multipaned;
+    int _natural_width = 0;
 };
 
 } // namespace Dialog

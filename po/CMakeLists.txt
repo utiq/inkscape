@@ -18,7 +18,11 @@ endforeach(language)
 
 # update inkscape.pot
 set(_potFile ${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_PROJECT_NAME}.pot)
+set(_potFiles_src ${CMAKE_CURRENT_BINARY_DIR}/POTFILES.src)
 set(xgettext_options -cTRANSLATORS -j --keyword=_ --keyword=N_ --keyword=Q_:1g --keyword=C_:1c,2 --keyword=NC_:1c,2 --msgid-bugs-address=inkscape-translator@lists.inkscape.org --from-code=UTF-8 -ktranslatable -o ${_potFile})
+
+# configure the POTFILES.src file from POTFILES.src.in
+configure_file(POTFILES.src.in ${_potFiles_src})
 
 # Due to a bug in old xgettext versions, we cannot use '--its='.
 # Instead, we use GETTEXTDATADIR=. to refer to the po/its/*.its files.
@@ -32,7 +36,7 @@ add_custom_target(inkscape_pot BYPRODUCTS ${_potFile}
     COMMAND rm -f ${_potFile} && touch ${_potFile}
 
     # extract strings from source files into inkscape.pot
-    COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} -C -f POTFILES.src.in
+    COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} -C -f ${_potFiles_src}
     COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} -L Glade -f POTFILES.ui.in
     COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} -L Python -f POTFILES.py.in
     # the following uses po/its/inx.{loc, its}
@@ -40,7 +44,7 @@ add_custom_target(inkscape_pot BYPRODUCTS ${_potFile}
     COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} -L AppData ../org.inkscape.Inkscape.appdata.xml.in
     COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} -L Desktop ../org.inkscape.Inkscape.desktop.template
     # the following uses po/its/menus.{loc, its}
-    COMMAND ${its_workaround} ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} ../share/ui/menus.xml
+    COMMAND ${its_workaround} ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} ../share/ui/menus.ui
     # the following uses po/its/units.{loc, its}
     COMMAND ${its_workaround} ${GETTEXT_XGETTEXT_EXECUTABLE} ${xgettext_options} ../share/ui/units.xml
 
@@ -49,6 +53,7 @@ add_custom_target(inkscape_pot BYPRODUCTS ${_potFile}
 )
 
 add_dependencies(inkscape_pot filters_svg_h)
+add_dependencies(inkscape_pot markers_svg_h)
 add_dependencies(inkscape_pot palettes_h)
 add_dependencies(inkscape_pot patterns_svg_h)
 add_dependencies(inkscape_pot symbols_h)

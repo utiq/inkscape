@@ -3,40 +3,37 @@
 # This file is distributed under the same license as the INKSCAPE package.
 #
 # Translators:
-# 99MaNoOo <too-sient@hotmail.com>, 2012
-# Ahmad Ghabeia أحمد  غربية <ahmad@gharbeia.org>, 2014
-# Banxoo <banxoo+launchpad@gmail.com>, 2009
-# fahad.alsaidi <fahad.alsaidi@gmail.com>, 2015
-# fahad.alsaidi <fahad.alsaidi@gmail.com>, 2015
-# Mohammed.H <mohammed.ayman132@gmail.com>, 2012
-# Mosaab Alzoubi <moceap@hotmail.com>, 2014-2015
-# Muhammad Azmi Al Hashemi <m.azmie89@gmail.com>, 2012
-# Mustafa <mostapha98@yahoo.com>, 2013
-# Mustafa <mostapha98@yahoo.com>, 2013
-# صفا الفليج <safaalfulaij@hotmail.com>, 2012
-# tareefm <tareef.m@gmail.com>, 2012
-# صفا الفليج <safaalfulaij@hotmail.com>, 2012
-# tareefm <tareef.m@gmail.com>, 2012
-# Abdelhak Sidi Ali Mebarek <abdelhakcpm@gmail.com>,2019
+# 99MaNoOo <too-sient@hotmail.com>, 2012.
+# Ahmad Ghabeia أحمد  غربية <ahmad@gharbeia.org>, 2014.
+# Banxoo <banxoo+launchpad@gmail.com>, 2009.
+# fahad.alsaidi <fahad.alsaidi@gmail.com>, 2015.
+# Mohammed.H <mohammed.ayman132@gmail.com>, 2012.
+# Mosaab Alzoubi <moceap@hotmail.com>, 2014-2015.
+# Muhammad Azmi Al Hashemi <m.azmie89@gmail.com>, 2012.
+# Mustafa <mostapha98@yahoo.com>, 2013.
+# صفا الفليج <safaalfulaij@hotmail.com>, 2012.
+# tareefm <tareef.m@gmail.com>, 2012.
+# Abdelhak Sidi Ali Mebarek <abdelhakcpm@gmail.com>,2019.
+# zer0-x <zer0-x.7ty50@aleeas.com>, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Arabic Inkscape\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
 "POT-Creation-Date: 2019-10-09 15:17+0200\n"
-"PO-Revision-Date: 2015-02-05 21:43+0000\n"
-"Last-Translator: Mosaab Alzoubi <moceap@hotmail.com>\n"
-"Language-Team: Arabic (http://www.transifex.com/projects/p/arabic-inkscape/"
-"language/ar/)\n"
+"PO-Revision-Date: 2022-05-21 13:03+0300\n"
+"Last-Translator: zer0-x <zer0-x.7ty50@aleeas.com>\n"
+"Language-Team: Arabic\n"
 "Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 &&"
+" n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+"X-Generator: Lokalize 22.04.0\n"
 
 #: ../share/filters/filters.svg.h:2
 msgid "Smart Jelly"
-msgstr "هلام ذكي"
+msgstr "هُلام ذكي"
 
 #: ../share/filters/filters.svg.h:3 ../share/filters/filters.svg.h:7
 #: ../share/filters/filters.svg.h:15 ../share/filters/filters.svg.h:31
@@ -53,15 +50,15 @@ msgstr "هلام ذكي"
 #: ../src/extension/internal/filter/bevels.h:145
 #: ../src/extension/internal/filter/bevels.h:229
 msgid "Bevels"
-msgstr "زاوية مائلة"
+msgstr "الحواف"
 
 #: ../share/filters/filters.svg.h:4
 msgid "Same as Matte jelly but with more controls"
-msgstr "كما في الهلام الباهت وبتحكم أكبر"
+msgstr "كما في الهُلام غير اللَّامِع، لكن مع مزيد مِنَ التَّحكُم"
 
 #: ../share/filters/filters.svg.h:6
 msgid "Metal Casting"
-msgstr "صبّ معدني"
+msgstr "صبّ مَعدَني"
 
 #: ../share/filters/filters.svg.h:8
 msgid "Smooth drop-like bevel with metallic finish"
@@ -79,15 +76,15 @@ msgstr "طيف"
 #: ../src/extension/internal/filter/blurs.h:268
 #: ../src/extension/internal/filter/blurs.h:352
 msgid "Blurs"
-msgstr "غشاوة"
+msgstr "تغبيش"
 
 #: ../share/filters/filters.svg.h:12
 msgid "Edges are partly feathered out"
-msgstr "الأطراف منعّمة جزئيًا"
+msgstr "الأطراف مُنعَّمة جزئيًا"
 
 #: ../share/filters/filters.svg.h:14
 msgid "Jigsaw Piece"
-msgstr "قطعة أحجية الصور"
+msgstr "قِطعة أُحجية صُوَريَّة"
 
 #: ../share/filters/filters.svg.h:16
 msgid "Low, sharp bevel"
@@ -95,7 +92,7 @@ msgstr "حافة حادة، خفيفة"
 
 #: ../share/filters/filters.svg.h:18
 msgid "Rubber Stamp"
-msgstr "علامة ممحيّة"
+msgstr "ختم مطاطي"
 
 #: ../share/filters/filters.svg.h:19 ../share/filters/filters.svg.h:43
 #: ../share/filters/filters.svg.h:47 ../share/filters/filters.svg.h:51
@@ -116,7 +113,7 @@ msgstr "علامة ممحيّة"
 #: ../share/filters/filters.svg.h:723
 #: ../src/extension/internal/filter/overlays.h:81
 msgid "Overlays"
-msgstr "طبقات"
+msgstr "طبقة زُخرفية"
 
 #: ../share/filters/filters.svg.h:20
 msgid "Random whiteouts inside"
@@ -124,7 +121,7 @@ msgstr "تبييض عشوائي داخلي"
 
 #: ../share/filters/filters.svg.h:22
 msgid "Ink Bleed"
-msgstr "سيلان الحبر"
+msgstr "سيلان حبر"
 
 #: ../share/filters/filters.svg.h:23 ../share/filters/filters.svg.h:27
 #: ../share/filters/filters.svg.h:115 ../share/filters/filters.svg.h:431
@@ -133,7 +130,7 @@ msgstr "نتوﺀات"
 
 #: ../share/filters/filters.svg.h:24
 msgid "Inky splotches underneath the object"
-msgstr "لطخات حبر تحت الكائن"
+msgstr "بقع حبر تحت الكائن"
 
 #: ../share/filters/filters.svg.h:26
 msgid "Fire"
@@ -141,7 +138,7 @@ msgstr "نار"
 
 #: ../share/filters/filters.svg.h:28
 msgid "Edges of object are on fire"
-msgstr "حواف الكائن مشتعلة"
+msgstr "أطراف الكائن مشتعلة نارًا"
 
 #: ../share/filters/filters.svg.h:30
 msgid "Bloom"
@@ -149,15 +146,15 @@ msgstr "لامعة"
 
 #: ../share/filters/filters.svg.h:32
 msgid "Soft, cushion-like bevel with matte highlights"
-msgstr "ناعم، زاوية على شاكلة وسادة مع تلوين باهت"
+msgstr "حواف ناعم على شاكلة وسادة مع إبرازات غير لَامِعة"
 
 #: ../share/filters/filters.svg.h:34
 msgid "Ridged Border"
-msgstr "حدود مهضّبة"
+msgstr "حدّ مُرتفع"
 
 #: ../share/filters/filters.svg.h:36
 msgid "Ridged border with inner bevel"
-msgstr "حدود مهضّبة مع زوايا داخلية"
+msgstr "حدّ مُرتفع مع حواف داخلية"
 
 #: ../share/filters/filters.svg.h:38
 msgid "Ripple"
@@ -175,7 +172,7 @@ msgstr "تشويه"
 
 #: ../share/filters/filters.svg.h:40
 msgid "Horizontal rippling of edges"
-msgstr "تموّجات أفقية للحواف"
+msgstr "تموّجات أُفقية للأطراف"
 
 #: ../share/filters/filters.svg.h:42
 msgid "Speckle"
@@ -183,23 +180,23 @@ msgstr "ترقيط"
 
 #: ../share/filters/filters.svg.h:44
 msgid "Fill object with sparse translucent specks"
-msgstr "املأ الكائن ببقع شفافة متناثرة"
+msgstr "تعبئة الكائن ببقع شفافة متناثرة"
 
 #: ../share/filters/filters.svg.h:46
 msgid "Oil Slick"
-msgstr "بقعة زيتية"
+msgstr "بُقعَة زيتيَّة"
 
 #: ../share/filters/filters.svg.h:48
 msgid "Rainbow-colored semitransparent oily splotches"
-msgstr "بقعة زيتية نصف شفافة بلون قوس القزح"
+msgstr "بُقعة زيتيَّة شِبه شفافة بألوان الطيف"
 
 #: ../share/filters/filters.svg.h:50
 msgid "Frost"
-msgstr "جليد"
+msgstr "صَقيع"
 
 #: ../share/filters/filters.svg.h:52
 msgid "Flake-like white splotches"
-msgstr "بقع بيضاء على شكل رقاقات الثلج"
+msgstr "بُقع بيضاء تُشبِه رقاقات الجليد"
 
 #: ../share/filters/filters.svg.h:54
 msgid "Leopard Fur"
@@ -217,7 +214,7 @@ msgstr "مواد"
 
 #: ../share/filters/filters.svg.h:56
 msgid "Leopard spots (loses object's own color)"
-msgstr "بقع النمر المرقط (يفقد الكائن لونه الأصلي)"
+msgstr "بُقع النمر (يفقد الكائن لونه الأصلي)"
 
 #: ../share/filters/filters.svg.h:58
 msgid "Zebra"
@@ -225,7 +222,7 @@ msgstr "حمار وحشي"
 
 #: ../share/filters/filters.svg.h:60
 msgid "Irregular vertical dark stripes (loses object's own color)"
-msgstr "شرائط عمودية غير متناظمة (تُخسر لون الكائن)"
+msgstr "خطوط داكنة عمودية غير منتظمة (يفقد الكائن لونه الأصلي)"
 
 #: ../share/filters/filters.svg.h:62
 msgid "Clouds"
@@ -233,12 +230,12 @@ msgstr "غيوم"
 
 #: ../share/filters/filters.svg.h:64
 msgid "Airy, fluffy, sparse white clouds"
-msgstr "هوائي، زغبي، غيوم بيضاء متفرقة"
+msgstr "غيوم بيضاء زغبيَّة،خفيفة ومُتفرقة"
 
 #: ../share/filters/filters.svg.h:66
 #: ../src/extension/internal/bitmap/sharpen.cpp:39
 msgid "Sharpen"
-msgstr "إشحذ"
+msgstr "شحذ"
 
 #: ../share/filters/filters.svg.h:67 ../share/filters/filters.svg.h:71
 #: ../share/filters/filters.svg.h:87 ../share/filters/filters.svg.h:295
@@ -249,20 +246,19 @@ msgstr "مؤثرات الصورة"
 
 #: ../share/filters/filters.svg.h:68
 msgid "Sharpen edges and boundaries within the object, force=0.15"
-msgstr "اشحذ الحواف والحدود ضمن الكائن، القوّة=0.15"
+msgstr "شَحذ الأطراف والحدود داخل الكائن (جعلها أكثر حِدَّة)، القُوَّة=0.15"
 
 #: ../share/filters/filters.svg.h:70
 msgid "Sharpen More"
-msgstr "شحذ إضافي"
+msgstr "شَحذ أكثر"
 
 #: ../share/filters/filters.svg.h:72
 msgid "Sharpen edges and boundaries within the object, force=0.3"
-msgstr "شحذ الأطراف والحدود ضمن الكائن، القوّة=0.3"
+msgstr "شَحذ الأطراف والحدود داخل الكائن (جعلها أكثر حِدَّة)، القُوَّة=0.3"
 
 #: ../share/filters/filters.svg.h:74
-#, fuzzy
 msgid "Oil Painting"
-msgstr "لوحة زيتية"
+msgstr "طلاء زيتي"
 
 #: ../share/filters/filters.svg.h:75 ../share/filters/filters.svg.h:79
 #: ../share/filters/filters.svg.h:83 ../share/filters/filters.svg.h:447
@@ -282,36 +278,36 @@ msgstr "لوحة زيتية"
 #: ../src/extension/internal/filter/paint.h:878
 #: ../src/extension/internal/filter/paint.h:982
 msgid "Image Paint and Draw"
-msgstr "طلاء الصورة ورسمها"
+msgstr "طِلاء الصُّوَر ورَسمها"
 
 #: ../share/filters/filters.svg.h:76
 msgid "Simulate oil painting style"
-msgstr "محاكاة أسلوب اللوحات الزيتية"
+msgstr "محاكاة أسلوب اللوحات الزيتي"
 
 #: ../share/filters/filters.svg.h:78
 #: ../src/ui/dialog/inkscape-preferences.cpp:444
 msgid "Pencil"
-msgstr "قلم الرصاص"
+msgstr "قلم رصاص"
 
 #: ../share/filters/filters.svg.h:80
 msgid "Detect color edges and retrace them in grayscale"
-msgstr "كشف الحدود الملوّنة وإعادة رسمها بالرمادي"
+msgstr "كَشف الأطراف المُلَوَّنة وإعادة رسمها بالتدرج الرمادي"
 
 #: ../share/filters/filters.svg.h:82
 msgid "Blueprint"
-msgstr "مخطط أزرق"
+msgstr "مُخطَّط أزرق"
 
 #: ../share/filters/filters.svg.h:84
 msgid "Detect color edges and retrace them in blue"
-msgstr "كشف الحدود الملوّنة وإعادة رسمها بالأزرق"
+msgstr "كَشف الأطراف المُلَوَّنة وإعادة رسمها بالأزرق"
 
 #: ../share/filters/filters.svg.h:86
 msgid "Age"
-msgstr "العمر"
+msgstr "القِدَم"
 
 #: ../share/filters/filters.svg.h:88
 msgid "Imitate aged photograph"
-msgstr "محاكاة الصور القديمة"
+msgstr "مُحاكاة الصور القديمة"
 
 #: ../share/filters/filters.svg.h:90
 msgid "Organic"
@@ -328,19 +324,19 @@ msgstr "عضوي"
 #: ../share/filters/filters.svg.h:439 ../share/filters/filters.svg.h:467
 #: ../share/filters/filters.svg.h:491 ../share/filters/filters.svg.h:531
 msgid "Textures"
-msgstr "نسج"
+msgstr "مَلمَس / بُنية / تَركيب"
 
 #: ../share/filters/filters.svg.h:92
 msgid "Bulging, knotty, slick 3D surface"
-msgstr "نتوﺀات، معقّد، سطح ثالثي الأبعاد مصقول"
+msgstr "سطح ثلاثي الأبعاد أملس، لامع، مُنتفخ ومُعقد"
 
 #: ../share/filters/filters.svg.h:94
 msgid "Barbed Wire"
-msgstr "شريط شائك"
+msgstr "سلك شائك"
 
 #: ../share/filters/filters.svg.h:96
 msgid "Gray bevelled wires with drop shadows"
-msgstr "شريط شائك رمادي مع التظليل"
+msgstr "سلك شائك رمادي مع ظل منسدل"
 
 #: ../share/filters/filters.svg.h:98
 msgid "Swiss Cheese"
@@ -348,7 +344,7 @@ msgstr "جبنة سويسرية"
 
 #: ../share/filters/filters.svg.h:100
 msgid "Random inner-bevel holes"
-msgstr "ثقوب عشوائية داخل الحواف"
+msgstr "ثقوب حواف داخلية عشوائية"
 
 #: ../share/filters/filters.svg.h:102
 msgid "Blue Cheese"
@@ -356,7 +352,7 @@ msgstr "جبنة زرقاﺀ"
 
 #: ../share/filters/filters.svg.h:104
 msgid "Marble-like bluish speckles"
-msgstr "لطخات رخامية مائلة للأزرق"
+msgstr "رُقَطَات مُزرقَّة ذات نمط رُخامي"
 
 #: ../share/filters/filters.svg.h:106
 msgid "Button"
@@ -364,22 +360,22 @@ msgstr "زر"
 
 #: ../share/filters/filters.svg.h:108
 msgid "Soft bevel, slightly depressed middle"
-msgstr "زاوية ناعمة، منخفضة قليلا عند الوسط"
+msgstr "حواف ناعمة مع داخلية منخفضة قليلاً"
 
 #: ../share/filters/filters.svg.h:110
 msgid "Inset"
-msgstr "مجموعة داخلية"
+msgstr "إقحام"
 
 #: ../share/filters/filters.svg.h:111 ../share/filters/filters.svg.h:267
 #: ../share/filters/filters.svg.h:343 ../share/filters/filters.svg.h:435
 #: ../share/filters/filters.svg.h:811
 #: ../src/extension/internal/filter/shadows.h:82
 msgid "Shadows and Glows"
-msgstr "ظلال وتوّهج"
+msgstr "الظِّلالُ وَالتَّوهُّجات"
 
 #: ../share/filters/filters.svg.h:112
 msgid "Shadowy outer bevel"
-msgstr "زاوية خارجية مظللة"
+msgstr "حواف خارجية مُظَلَّلة"
 
 #: ../share/filters/filters.svg.h:114
 msgid "Dripping"
@@ -387,35 +383,35 @@ msgstr "تقطير"
 
 #: ../share/filters/filters.svg.h:116
 msgid "Random paint streaks downwards"
-msgstr "طلاﺀ عشوائي يتجه نزولا"
+msgstr "خطوط طلاء عشوائية لأسفل"
 
 #: ../share/filters/filters.svg.h:118
 msgid "Jam Spread"
-msgstr "نشر تشويش"
+msgstr "دَهن المَّربى"
 
 #: ../share/filters/filters.svg.h:120
 msgid "Glossy clumpy jam spread"
-msgstr "مجموعة لامعة من التشويش المنتشر"
+msgstr "انتشار مُربَّى مُتكتِّل ولامِع"
 
 #: ../share/filters/filters.svg.h:122
 msgid "Pixel Smear"
-msgstr "طمس البكسل"
+msgstr "تشويه البكسل"
 
 #: ../share/filters/filters.svg.h:124
 msgid "Van Gogh painting effect for bitmaps"
-msgstr "تأثير الرسم على طراز لوحات فان غوغ للصور"
+msgstr "تأثير لوحات فان غوغ للصور النُقطيَّة"
 
 #: ../share/filters/filters.svg.h:126
 msgid "Cracked Glass"
-msgstr "زجاج مشقق"
+msgstr "زجاج مُتصَدِّع"
 
 #: ../share/filters/filters.svg.h:128
 msgid "Under a cracked glass"
-msgstr "تحت زجاج مشقق"
+msgstr "تحت زجاج مُتصَدِّع"
 
 #: ../share/filters/filters.svg.h:130
 msgid "Bubbly Bumps"
-msgstr "فقاعات فوارة"
+msgstr "نُتوء فُقاعي"
 
 #: ../share/filters/filters.svg.h:131 ../share/filters/filters.svg.h:307
 #: ../share/filters/filters.svg.h:311 ../share/filters/filters.svg.h:347
@@ -434,26 +430,26 @@ msgstr "فقاعات فوارة"
 #: ../src/extension/internal/filter/bumps.h:143
 #: ../src/extension/internal/filter/bumps.h:363
 msgid "Bumps"
-msgstr "نتوﺀ"
+msgstr "نتوءات"
 
 #: ../share/filters/filters.svg.h:132
 msgid "Flexible bubbles effect with some displacement"
-msgstr "تأثير فقاعي مع بعض الإزاحة"
+msgstr "تأثير فقاعي مرن مع بعض الإزاحة"
 
 #: ../share/filters/filters.svg.h:134
 msgid "Glowing Bubble"
-msgstr "فقاعات متوهّجة"
+msgstr "فقاعة متوهِّجة"
 
 #: ../share/filters/filters.svg.h:135 ../share/filters/filters.svg.h:155
 #: ../share/filters/filters.svg.h:159 ../share/filters/filters.svg.h:203
 #: ../share/filters/filters.svg.h:207 ../share/filters/filters.svg.h:215
 #: ../share/filters/filters.svg.h:223
 msgid "Ridges"
-msgstr "هضاب"
+msgstr "مُرتفعات"
 
 #: ../share/filters/filters.svg.h:136
 msgid "Bubble effect with refraction and glow"
-msgstr "تأثير فقاعات مع توّهج وانكسار ضوئي"
+msgstr "تأثير الفقاعات مع الانكسار الضوئي والتوهج"
 
 #: ../share/filters/filters.svg.h:138
 msgid "Neon"
@@ -461,15 +457,15 @@ msgstr "نيون"
 
 #: ../share/filters/filters.svg.h:140
 msgid "Neon light effect"
-msgstr "تأثير ضوء النيون"
+msgstr "تأثير أضواء النيون"
 
 #: ../share/filters/filters.svg.h:142
 msgid "Molten Metal"
-msgstr "معدن ذائب"
+msgstr "معدن مُنصَهِر"
 
 #: ../share/filters/filters.svg.h:144
 msgid "Melting parts of object together, with a glossy bevel and a glow"
-msgstr "أجزاﺀ ذائبة من الكائن مع زوايا لامعة وتوّهج"
+msgstr "إذابة أجزاء من الجسم معًا مع حواف لامعة ومتوهجة"
 
 #: ../share/filters/filters.svg.h:146
 msgid "Pressed Steel"
@@ -477,31 +473,31 @@ msgstr "فولاذ مضغوط"
 
 #: ../share/filters/filters.svg.h:148
 msgid "Pressed metal with a rolled edge"
-msgstr "فولاذ مضغوط مع أطراف مبرومة"
+msgstr "معدن مضغوط مع حواف ملفوفة"
 
 #: ../share/filters/filters.svg.h:150
 msgid "Matte Bevel"
-msgstr "حافة باهتة"
+msgstr "حافة غير لَامِعة"
 
 #: ../share/filters/filters.svg.h:152
 msgid "Soft, pastel-colored, blurry bevel"
-msgstr "ناعم، مع تلوين شمعي، لزاوية مغبشة"
+msgstr "حافة ناعمة، مُغَبَّشَة، بألوان شمعية (ألوان باستيل)"
 
 #: ../share/filters/filters.svg.h:154
 msgid "Thin Membrane"
-msgstr "غشاﺀ رقيق"
+msgstr "غشاﺀ رفيع"
 
 #: ../share/filters/filters.svg.h:156
 msgid "Thin like a soap membrane"
-msgstr "غشاﺀ رقيق كسطح فقاعة الصابون"
+msgstr "رفيع كسطح غشاﺀ فقاعة الصابون"
 
 #: ../share/filters/filters.svg.h:158
 msgid "Matte Ridge"
-msgstr "هضاب ناعمة"
+msgstr "مُرتَفَع غير لَامِع"
 
 #: ../share/filters/filters.svg.h:160
 msgid "Soft pastel ridge"
-msgstr "هضاب ناعمة بتلوين شمعي"
+msgstr "مُرتَفَع ناعم شمعي (باستيلي)"
 
 #: ../share/filters/filters.svg.h:162
 msgid "Glowing Metal"
@@ -509,102 +505,104 @@ msgstr "معدن متوّهج"
 
 #: ../share/filters/filters.svg.h:164
 msgid "Glowing metal texture"
-msgstr "نسيج معدني متوهّج"
+msgstr "بُنيةُ مَعدنٍ ومتوهِّج"
 
 #: ../share/filters/filters.svg.h:166
 msgid "Leaves"
-msgstr "أوراق"
+msgstr "أوراق شجر"
 
 #: ../share/filters/filters.svg.h:167 ../share/filters/filters.svg.h:235
 #: ../share/filters/filters.svg.h:271 ../share/filters/filters.svg.h:639
 #: ../share/extensions/pathscatter.inx:3
 msgid "Scatter"
-msgstr "تفريق ونثر"
+msgstr "بعثرة ونشر"
 
 #: ../share/filters/filters.svg.h:168
 msgid "Leaves on the ground in Fall, or living foliage"
-msgstr "أوراق الشجر على الأرض في الخريف"
+msgstr "أوراق شجر على الأرض في الخريف أو أوراق الشجر الحية"
 
 #: ../share/filters/filters.svg.h:170
 #: ../src/extension/internal/filter/paint.h:340
 msgid "Translucent"
-msgstr "نصف شفاف"
+msgstr "شبه شفاف"
 
 #: ../share/filters/filters.svg.h:172
 msgid "Illuminated translucent plastic or glass effect"
-msgstr "بلاستيك أو زجاج نصف شفاف مضيﺀ"
+msgstr "تأثير بلاستيكي أو زجاجي شبه شفاف ومُضاء"
 
 #: ../share/filters/filters.svg.h:174
 msgid "Iridescent Beeswax"
-msgstr "شمع كالقزحية"
+msgstr "شمع النحل البرّاق"
 
 #: ../share/filters/filters.svg.h:176
 msgid "Waxy texture which keeps its iridescence through color fill change"
-msgstr "نسيج شمعي يبقي على النّمط القزحي عند تعبئة الألوان"
+msgstr ""
+"بُنيةٌ شمعية تُحافظ على بريق ألوانها الطيفيةَّ عند تغيير لون التعبئة (تأثير"
+" شبيه بظاهرة التداخل في الأغشية الرقيقة)"
 
 #: ../share/filters/filters.svg.h:178
 msgid "Eroded Metal"
-msgstr "معدن مهترئ"
+msgstr "مَعدن مُتَآكِل"
 
 #: ../share/filters/filters.svg.h:180
 msgid "Eroded metal texture with ridges, grooves, holes and bumps"
-msgstr "نسيج معدن مهترئ مع نتوءات وتصدّعات وثقوب"
+msgstr "بُنيةُ مَعدنٍ مُتَآكِلٍ مع نُتوءات، أخاديد، ثُقوبٍ واِنتفاخات"
 
 #: ../share/filters/filters.svg.h:182
 msgid "Cracked Lava"
-msgstr "حمم بركانية متصدّعة"
+msgstr "حِمَمَ بُركانيَّة مُتَصدِّعَة"
 
 #: ../share/filters/filters.svg.h:184
 msgid "A volcanic texture, a little like leather"
-msgstr "نسيج بركاني، يشبه قليلا الجلد المصقول"
+msgstr "بُنيةٌ بركانية تُشبهُ الجلد المدبوغ إلى حدٍ ما"
 
 #: ../share/filters/filters.svg.h:186
 msgid "Bark"
-msgstr "اللحاء"
+msgstr "لِحاء"
 
 #: ../share/filters/filters.svg.h:188
 msgid "Bark texture, vertical; use with deep colors"
-msgstr "نسيج لحاء الأشجار، عمودي مع استعمال ألوان قاتمة"
+msgstr "بُنيةُ لِحاء الأشجار، عموديَّة; اِستخدمها مع الألوان الغامقة/العميقة"
 
 #: ../share/filters/filters.svg.h:190
 msgid "Lizard Skin"
-msgstr "جلد السحالي"
+msgstr "جِلدُ السِّحليَّة"
 
 #: ../share/filters/filters.svg.h:192
 msgid "Stylized reptile skin texture"
-msgstr "نسيج على طراز جلد الزواحف"
+msgstr "بُنيةُ جِلدِ الزَّواحِف"
 
 #: ../share/filters/filters.svg.h:194
 msgid "Stone Wall"
-msgstr "جدار حجري"
+msgstr "حائط حجري"
 
 #: ../share/filters/filters.svg.h:196
 msgid "Stone wall texture to use with not too saturated colors"
-msgstr "نسيج جداري حجري مع ألوان غير مشبعة كثيرًا"
+msgstr "بُنيةُ حائطٍ حجريٍ للاِستخدام مع ألوانٍ غير مُشبَّعةٍ كثيرًا"
 
 #: ../share/filters/filters.svg.h:198
 msgid "Silk Carpet"
-msgstr "سجّاد حريريّ"
+msgstr "سجّاد حرير"
 
 #: ../share/filters/filters.svg.h:200
 msgid "Silk carpet texture, horizontal stripes"
-msgstr "نسيج سجّاد حريريّ، شرائط أفقية"
+msgstr "بُنيةُ سجَّادٍ مصنوعٍ مِنَ الحرير، خطوط أُفقية"
 
 #: ../share/filters/filters.svg.h:202
 msgid "Refractive Gel A"
-msgstr "هلام منكسر - أ"
+msgstr "هُلام الانكسار -أ"
 
 #: ../share/filters/filters.svg.h:204
 msgid "Gel effect with light refraction"
-msgstr "هلام مع تأثير انكسار ضوئي خفيف"
+msgstr "تأثير الهُلام مع انكسار الضوء"
 
 #: ../share/filters/filters.svg.h:206
 msgid "Refractive Gel B"
-msgstr "هلام منكسر - ب"
+msgstr "هُلام الانكسار -ب"
 
 #: ../share/filters/filters.svg.h:208
 msgid "Gel effect with strong refraction"
-msgstr "هلام مع تأثير انكسار ضوئي قويّ"
+msgstr "تأثير الهُلام مع انكسار قوي"
 
 #: ../share/filters/filters.svg.h:210
 msgid "Metallized Paint"
@@ -613,31 +611,31 @@ msgstr "طلاء معدني"
 #: ../share/filters/filters.svg.h:212
 msgid ""
 "Metallized effect with a soft lighting, slightly translucent at the edges"
-msgstr "تأثير معدني مع إضاءة خفيفة، شفّافة قليلًا عند الأطراف"
+msgstr "تأثير معدني مع إضاءة ناعمة، شفّاف قليلاً عند الأطراف"
 
 #: ../share/filters/filters.svg.h:214
 msgid "Dragee"
-msgstr "لؤلؤي"
+msgstr "لُؤلُؤي"
 
 #: ../share/filters/filters.svg.h:216
 msgid "Gel Ridge with a pearlescent look"
-msgstr "هلام مهضّب مع مظهر لؤلؤي"
+msgstr "مُرتفع هُلامي مع مَظهر لؤلؤي"
 
 #: ../share/filters/filters.svg.h:218
 msgid "Raised Border"
-msgstr "حدود مرتفعة"
+msgstr "حدٌّ مُرتَفِع"
 
 #: ../share/filters/filters.svg.h:220
 msgid "Strongly raised border around a flat surface"
-msgstr "حدود مرفوعة كثيرًا حول الأسطح المنبسطة"
+msgstr "حدّ مُرتَفِع بِقوَّة حول سطح مستوِ"
 
 #: ../share/filters/filters.svg.h:222
 msgid "Metallized Ridge"
-msgstr "هضاب معدنية"
+msgstr "مُرتَفَع معدنيّ"
 
 #: ../share/filters/filters.svg.h:224
 msgid "Gel Ridge metallized at its top"
-msgstr "هلام مهضّب معدني عند القمة"
+msgstr "مُرتَفَع هُلامي مَعدني عند القمة"
 
 #: ../share/filters/filters.svg.h:226
 msgid "Fat Oil"
@@ -645,7 +643,7 @@ msgstr "زيت سميك"
 
 #: ../share/filters/filters.svg.h:228
 msgid "Fat oil with some adjustable turbulence"
-msgstr "زيت سميك مع اضطرابات يمكن ضبطها"
+msgstr "زيت دهني سميك مع بعض الاضطرابات القابلة للتعديل"
 
 #: ../share/filters/filters.svg.h:230
 msgid "Black Hole"
@@ -657,7 +655,7 @@ msgstr "ثقب أسود"
 #: ../src/extension/internal/filter/morphology.h:77
 #: ../src/extension/internal/filter/morphology.h:204 ../src/filter-enums.cpp:33
 msgid "Morphology"
-msgstr "تحويل الأشكال"
+msgstr "التَّشكيل"
 
 #: ../share/filters/filters.svg.h:232
 msgid "Creates a black light inside and outside"
@@ -669,7 +667,7 @@ msgstr "مكعبات"
 
 #: ../share/filters/filters.svg.h:236
 msgid "Scattered cubes; adjust the Morphology primitive to vary size"
-msgstr "مكّعبات متناثرة؛ ضبط الشكل البنيوي لتعديل الحجم"
+msgstr "مُكَعَّبات مُتَفرِّقة؛ اضبط التَّشكيل الأولي لتعديل الحجم"
 
 #: ../share/filters/filters.svg.h:238
 msgid "Peel Off"
@@ -677,47 +675,47 @@ msgstr "تقشير"
 
 #: ../share/filters/filters.svg.h:240
 msgid "Peeling painting on a wall"
-msgstr "تقشير الطلاء عن الجدار"
+msgstr "تقشير الطلاء من على الحائط"
 
 #: ../share/filters/filters.svg.h:242
 msgid "Gold Splatter"
-msgstr "تذهيب"
+msgstr "رَشّ الذَّهب"
 
 #: ../share/filters/filters.svg.h:244
 msgid "Splattered cast metal, with golden highlights"
-msgstr "رشّ معدني، مع لمعة ذهبية"
+msgstr "معدن مصبوب ومُتناثر مع بُرُوز ذهبي"
 
 #: ../share/filters/filters.svg.h:246
 msgid "Gold Paste"
-msgstr "معجون ذهبي"
+msgstr "معجون ذهب"
 
 #: ../share/filters/filters.svg.h:248
 msgid "Fat pasted cast metal, with golden highlights"
-msgstr "معجون معدني سميك، مع لمعة ذهبية"
+msgstr "معجون معدني سميك مع بُرُوز ذهبي"
 
 #: ../share/filters/filters.svg.h:250
 msgid "Crumpled Plastic"
-msgstr "بلاستيك مجّعد"
+msgstr "بلاستيك مُجعَّد"
 
 #: ../share/filters/filters.svg.h:252
 msgid "Crumpled matte plastic, with melted edge"
-msgstr "بلاستيك مجّعد باهت، مع حواف ذائبة"
+msgstr "بلاستيك مُجعَّد وغير لامع مع حواف ذائبة"
 
 #: ../share/filters/filters.svg.h:254
 msgid "Enamel Jewelry"
-msgstr "مجوهرات مزخرفة"
+msgstr "مُجوهَرات مينا"
 
 #: ../share/filters/filters.svg.h:256
 msgid "Slightly cracked enameled texture"
-msgstr "نسيج مزخرف مشقق قليلًا"
+msgstr "بُنية طلاء المينا مُتشقِّقَة بشكل طفيف"
 
 #: ../share/filters/filters.svg.h:258
 msgid "Rough Paper"
-msgstr "ورق خشن"
+msgstr "وَرَق خشِن"
 
 #: ../share/filters/filters.svg.h:260
 msgid "Aquarelle paper effect which can be used for pictures as for objects"
-msgstr "ورق خشن للتلوين المائي، يمكن استعمال هذا التأثير للصور والكائنات"
+msgstr "تأثير ورقي للتلوين المائي، يُمكن اِستخدامه للصور والكائنات"
 
 #: ../share/filters/filters.svg.h:262
 msgid "Rough and Glossy"
@@ -726,23 +724,23 @@ msgstr "خشن ولامع"
 #: ../share/filters/filters.svg.h:264
 msgid ""
 "Crumpled glossy paper effect which can be used for pictures as for objects"
-msgstr "ورق لامع مجّعد يمكن استعماله للكائنات والصور"
+msgstr "تأثير ورق لامع ومُجعَّد، يُمكِن اِستخدامه للصور والكائنات"
 
 #: ../share/filters/filters.svg.h:266
 msgid "In and Out"
-msgstr "داخل وخارج"
+msgstr "داخلي وخارجي"
 
 #: ../share/filters/filters.svg.h:268
 msgid "Inner colorized shadow, outer black shadow"
-msgstr "ظلّ داخلي ملوّن، وخارجي أسود"
+msgstr "ظلّ داخلي مُلوَّن وظلّ أسود خارجي"
 
 #: ../share/filters/filters.svg.h:270
 msgid "Air Spray"
-msgstr "تلوين بالرذاذ"
+msgstr "رَذَاذ هَوائي"
 
 #: ../share/filters/filters.svg.h:272
 msgid "Convert to small scattered particles with some thickness"
-msgstr "تحويل إلى جسيمات صغيرة مبعثرة مع بعض السماكة"
+msgstr "التحويل إلى جزيئات صغيرة ومُتناثرة مع بعض السُّمك"
 
 #: ../share/filters/filters.svg.h:274
 msgid "Warm Inside"
@@ -750,7 +748,7 @@ msgstr "دافئ بالداخل"
 
 #: ../share/filters/filters.svg.h:276
 msgid "Blurred colorized contour, filled inside"
-msgstr "مخطط ملوّن مموّه، معبّأ داخليًا"
+msgstr "مُحيط الشكل مُلوَّن ومُغَبَّش، الشكل مُعَبَّأ داخليًا"
 
 #: ../share/filters/filters.svg.h:278
 msgid "Cool Outside"
@@ -758,7 +756,7 @@ msgstr "بارد بالخارج"
 
 #: ../share/filters/filters.svg.h:280
 msgid "Blurred colorized contour, empty inside"
-msgstr "مخطط ملوّن مموّه، فارغ داخليًا"
+msgstr "مُحيط الشكل مُلوَّن ومُغَبَّش، الشكل فارغ داخليًا"
 
 #: ../share/filters/filters.svg.h:282
 msgid "Electronic Microscopy"
@@ -767,206 +765,210 @@ msgstr "مجهر إلكتروني"
 #: ../share/filters/filters.svg.h:284
 msgid ""
 "Bevel, crude light, discoloration and glow like in electronic microscopy"
-msgstr "حافة، ضوﺀ خام، بدون ألوان ومتوهّج كما عند استعمال مجهر إلكتروني"
+msgstr ""
+"حَواف، ضوء خام، تغيُّر الألوان وتوَهُّج كما هو الحال عند استعمال مجهر إلكتروني"
 
 #: ../share/filters/filters.svg.h:286
 msgid "Tartan"
-msgstr "قماش صوفي"
+msgstr "طرطان (قماش صوفي)"
 
 #: ../share/filters/filters.svg.h:288
 msgid "Checkered tartan pattern"
-msgstr "قماش صوفي مرقّع"
+msgstr "نَمَط مُرَبعات قِماش الطرطان (قماش صوفي اِسكتلندي)"
 
 #: ../share/filters/filters.svg.h:290
 msgid "Shaken Liquid"
-msgstr "سائل مُرجّ"
+msgstr "سائل مُضطَرِب"
 
 #: ../share/filters/filters.svg.h:292
 msgid "Colorizable filling with flow inside like transparency"
-msgstr "طلاء مخلوط للتّعبئة داخليًا كما الشّفافية"
+msgstr "تعبئة قابلة للتلوين مع تَدَفُّق داخلي شبيه بالشفافية"
 
 #: ../share/filters/filters.svg.h:294
 msgid "Soft Focus Lens"
-msgstr "بؤرة ناعمة"
+msgstr "عدسة تركيز ناعمة"
 
 #: ../share/filters/filters.svg.h:296
 msgid "Glowing image content without blurring it"
-msgstr "توّهج محتوى الصورة دون تمويهها"
+msgstr "توَهُّج مُحتوى الصورة دون تغبيشَها"
 
 #: ../share/filters/filters.svg.h:298
 msgid "Stained Glass"
-msgstr "زجاج ملوّن"
+msgstr "زُجاج مُعَشَّق"
 
 #: ../share/filters/filters.svg.h:300
 msgid "Illuminated stained glass effect"
-msgstr "إضاءة الزجاج الملوّن"
+msgstr "تأثير زُجاج مُعَشَّق مُستضيء"
 
 #: ../share/filters/filters.svg.h:302
 msgid "Dark Glass"
-msgstr "زجاج غامق"
+msgstr "زُجاج مُعتِم"
 
 #: ../share/filters/filters.svg.h:304
 msgid "Illuminated glass effect with light coming from beneath"
-msgstr "زجاج مع الضوء القادم عبره"
+msgstr "تأثير زُجاج مُستضيء مع ضوء قادِم من الأسفل"
 
 #: ../share/filters/filters.svg.h:306
 msgid "HSL Bumps Alpha"
-msgstr "نتوءات HSL ألفا"
+msgstr "نُتوءات (HSL) ألفا"
 
 #: ../share/filters/filters.svg.h:308
 msgid "Same as HSL Bumps but with transparent highlights"
-msgstr "مثل نتوءات HSL لكن مع لمحات شفافية"
+msgstr "مثل نتوءات صبغة-إشباع-الإضاءة (HSL) لكن مع بُرُوز شفّاف"
 
 #: ../share/filters/filters.svg.h:310
 msgid "Bubbly Bumps Alpha"
-msgstr "نتوءات فقاعات ألفا"
+msgstr "نُتوء فُقاعي ألفا"
 
 #: ../share/filters/filters.svg.h:312
 msgid "Same as Bubbly Bumps but with transparent highlights"
-msgstr "مثل نتوءات الفقاعات لكن مع تظليل شفاف"
+msgstr "مثل النُتوءات لبفُقاعيَّة لكن مع بُرُوز شفّاف"
 
 #: ../share/filters/filters.svg.h:314 ../share/filters/filters.svg.h:362
 msgid "Torn Edges"
-msgstr "حواف ممزقة"
+msgstr "أطراف مُمَزَّقة"
 
 #: ../share/filters/filters.svg.h:316 ../share/filters/filters.svg.h:364
 msgid ""
 "Displace the outside of shapes and pictures without altering their content"
-msgstr "إزاحة خارج الأشكال دون المساس بالمحتوى"
+msgstr "إزاحة الأشكال والصور من الخارج دون تغيير محتواها"
 
 #: ../share/filters/filters.svg.h:318
 msgid "Roughen Inside"
-msgstr "زيادة الخشونة الداخلية"
+msgstr "خشن من الداخل"
 
 #: ../share/filters/filters.svg.h:320
 msgid "Roughen all inside shapes"
-msgstr "زيادة خشونة كل الأشكال الداخلية"
+msgstr "تخشين جميع الأشكال الداخلية"
 
 #: ../share/filters/filters.svg.h:322
 msgid "Evanescent"
-msgstr "تبخّر"
+msgstr "زائل"
 
 #: ../share/filters/filters.svg.h:324
 msgid ""
 "Blur the contents of objects, preserving the outline and adding progressive "
 "transparency at edges"
 msgstr ""
-"تمويه محتوى الكائنات، مع المحافظة على المخطط وإضافة شفافية متنامية عند "
-"الأطراف"
+"تغبيش مُحتوى الكائنات مع الحفاظ على التخطيط الخارجي وإضافة تَدَرُّج"
+"الشفافية عند الأطراف"
 
 #: ../share/filters/filters.svg.h:326
 msgid "Chalk and Sponge"
-msgstr "طباشير وإسفنج"
+msgstr "طباشير واِسفنج"
 
 #: ../share/filters/filters.svg.h:328
 msgid "Low turbulence gives sponge look and high turbulence chalk"
-msgstr "الاضطراب الخفيف يوحي بالإسفنج، أمّا القويّ فيوحي بالطبشور"
+msgstr "يعطي الاضطراب المنخفض مظهرًا إسفنجيًا والاضطراب الشديد طباشيرًا"
 
 #: ../share/filters/filters.svg.h:330
 msgid "People"
-msgstr "حشد"
+msgstr "حشد من الناس"
 
 #: ../share/filters/filters.svg.h:332
 msgid "Colorized blotches, like a crowd of people"
-msgstr "لطخات ملوّنة كحشد من الأشخاص"
+msgstr "بُقع مُلوَّنة تُشبه حشد من الناس"
 
 #: ../share/filters/filters.svg.h:334
 msgid "Scotland"
-msgstr "اسكتلندا"
+msgstr "إسكتلندا"
 
 #: ../share/filters/filters.svg.h:336
 msgid "Colorized mountain tops out of the fog"
-msgstr "جبال ملوّنة تعلو فوق الضباب"
+msgstr "قِمَمَ الجبال المُلوَّنة تعلو فوق الضباب"
 
 #: ../share/filters/filters.svg.h:338
 msgid "Garden of Delights"
-msgstr "حديقة البهجة"
+msgstr "حديقة المباهج"
 
 #: ../share/filters/filters.svg.h:340
 msgid ""
 "Phantasmagorical turbulent wisps, like Hieronymus Bosch's Garden of Delights"
-msgstr "حفنة اضطراب خيالي، كما في حديقة البهجة لهييرونيموس بوخ"
+msgstr ""
+"خَصلات دُخانيَّة مُضطربة وخياليَّة، كما في لوحة حديقة المباهج لِهيرونيموس بوس"
 
 #: ../share/filters/filters.svg.h:342
 msgid "Cutout Glow"
-msgstr "انقطاع التوّهج"
+msgstr "توهُّج مُقتَطَع الخارِج"
 
 #: ../share/filters/filters.svg.h:344
 msgid "In and out glow with a possible offset and colorizable flood"
-msgstr "توّهج داخلي وخارجي مع إزاحة ممكنة وسيل ملوّن"
+msgstr "توهُّج داخلي وخارجي مع إزاحة مُحتَمَلَة قابل للتلوين"
 
 #: ../share/filters/filters.svg.h:346
 msgid "Dark Emboss"
-msgstr "نتوء قاتم"
+msgstr "نَقش مُعتِم"
 
 #: ../share/filters/filters.svg.h:348
 msgid "Emboss effect : 3D relief where white is replaced by black"
-msgstr "تأثير النتوء: إيحاء ثلاثي الأبعاد حيث يستبدل الأبيض بالأسود"
+msgstr ""
+"تأثير النَّقش: نَقش بارِز ثُلاثي الأبعاد حيث يُستَبدَل الأبيض باللون الأسود"
 
 #: ../share/filters/filters.svg.h:350
 msgid "Bubbly Bumps Matte"
-msgstr "نتوءات الفقاعات الباهتة"
+msgstr "نُتوء فُقاعي غير لَامِع"
 
 #: ../share/filters/filters.svg.h:352
 msgid "Same as Bubbly Bumps but with a diffuse light instead of a specular one"
-msgstr "مثل نتوءات الفقاعات لكن مع ضوء منتشر بدلًا من آخر لامع"
+msgstr "مِثل النُّتوء الفُقاعي لكن مع ضوء مُتَشَتِّت بدلاً من ضوء برَّاق"
 
 #: ../share/filters/filters.svg.h:354
 msgid "Blotting Paper"
-msgstr "ورق مبقع"
+msgstr "وَرَق نَشَّاف"
 
 #: ../share/filters/filters.svg.h:356
 msgid "Inkblot on blotting paper"
-msgstr "لطخات حبر على ورق مبقع"
+msgstr "بُقعة حِبر على وَرَق مُنَشِّف"
 
 #: ../share/filters/filters.svg.h:358
 msgid "Wax Print"
-msgstr "رسم شمعي"
+msgstr "طباعة شمعيَّة"
 
 #: ../share/filters/filters.svg.h:360
 msgid "Wax print on tissue texture"
-msgstr "بصمة شمعية على نسيج قماشي"
+msgstr "طباعة شمعيَّة على نسيج قماشي"
 
 #: ../share/filters/filters.svg.h:366
 msgid "Watercolor"
-msgstr "ألوان مائية"
+msgstr "ألوان مائيَّة"
 
 #: ../share/filters/filters.svg.h:368
 msgid "Cloudy watercolor effect"
-msgstr "تأثير الألوان المائية"
+msgstr "تأثير سحابي بالألوان المائيَّة"
 
 #: ../share/filters/filters.svg.h:370
 msgid "Felt"
-msgstr "فلت"
+msgstr "لُبَّاد"
 
 #: ../share/filters/filters.svg.h:372
 msgid ""
 "Felt like texture with color turbulence and slightly darker at the edges"
-msgstr "نسيج كالفلت مع ألوان مضطربة وداكنة قليلًا عند الأطراف"
+msgstr ""
+"بُنية شبيهة بنسيج قماش اللُّبَّاد مع ألوان مضطربة وداكنة قليلًا عند الأطراف"
 
 #: ../share/filters/filters.svg.h:374
 msgid "Ink Paint"
-msgstr "صباغة حبرية"
+msgstr "طلاء الحبر"
 
 #: ../share/filters/filters.svg.h:376
 msgid "Ink paint on paper with some turbulent color shift"
-msgstr "صباغ حبري على ورق مع بعض الاضطراب في الألوان"
+msgstr "طلاء حبري على ورقة مع تغيُّر مضطرب في الألوان"
 
 #: ../share/filters/filters.svg.h:378
 msgid "Tinted Rainbow"
-msgstr "طيف ملون"
+msgstr "ألوان الطيف"
 
 #: ../share/filters/filters.svg.h:380
 msgid "Smooth rainbow colors melted along the edges and colorizable"
-msgstr "قوس قزح ناعم مع ألوان ذائبة على طول الأطراف، ويمكن تلوينه"
+msgstr "ألوان الطيف الناعمة ذائبة على طول الأطراف، قابِلَة للتلوين"
 
 #: ../share/filters/filters.svg.h:382
 msgid "Melted Rainbow"
-msgstr "طيف مذاب"
+msgstr "طيف ذائب"
 
 #: ../share/filters/filters.svg.h:384
 msgid "Smooth rainbow colors slightly melted along the edges"
-msgstr "قوس قزح ناعم الألوان، مع ذوبان على طول الأطراف"
+msgstr "ألوان الطيف الناعمة ذابت قليلاً على طول الأطراف"
 
 #: ../share/filters/filters.svg.h:386
 msgid "Flex Metal"
@@ -974,23 +976,23 @@ msgstr "معدن مرن"
 
 #: ../share/filters/filters.svg.h:388
 msgid "Bright, polished uneven metal casting, colorizable"
-msgstr "معدن فاتح، مصقول، قابل للتّلوين"
+msgstr "معدن مصبوب، مصقول، غير مستوي، ساطع وقابل للتلوين"
 
 #: ../share/filters/filters.svg.h:390
 msgid "Wavy Tartan"
-msgstr "صوف متموج"
+msgstr "طرطان مُتَمَوِّج"
 
 #: ../share/filters/filters.svg.h:392
 msgid "Tartan pattern with a wavy displacement and bevel around the edges"
-msgstr "القماش الصّوفي مع تموّج وميول عند الأطراف"
+msgstr "نمط قِماش الطرطان مع إزاحة مُتَمَوِّجَة وميل حول الأطراف"
 
 #: ../share/filters/filters.svg.h:394
 msgid "3D Marble"
-msgstr "رخام ثلاثي الأبعاد"
+msgstr "رُخام ثلاثي الأبعاد"
 
 #: ../share/filters/filters.svg.h:396
 msgid "3D warped marble texture"
-msgstr "نسيج الرخام ثلاثي الأبعاد"
+msgstr "بُنية رُخاميَّة مُشوَّهة وثُلاثيَّة الأبعاد"
 
 #: ../share/filters/filters.svg.h:398
 msgid "3D Wood"
@@ -998,23 +1000,23 @@ msgstr "خشب ثلاثي الأبعاد"
 
 #: ../share/filters/filters.svg.h:400
 msgid "3D warped, fibered wood texture"
-msgstr "نسيج خشبي ليفي ثلاثي الأبعاد"
+msgstr "بُنية خشبيَّة ليفيَّة مُشوَّهة وثُلاثيَّة الأبعاد"
 
 #: ../share/filters/filters.svg.h:402
 msgid "3D Mother of Pearl"
-msgstr "أم اللؤلؤ ثلاثية الأبعاد"
+msgstr "صَدَفَة ثُلاثيَّة الأبعاد"
 
 #: ../share/filters/filters.svg.h:404
 msgid "3D warped, iridescent pearly shell texture"
-msgstr "نسيج صدف اللؤلؤ ثلاثي الأبعاد"
+msgstr "بُنية الصَدَفَ المُشَوَّه البراقة ثُلاثية الأبعاد"
 
 #: ../share/filters/filters.svg.h:406
 msgid "Tiger Fur"
-msgstr "فرو النّمر"
+msgstr "فرو النَّمِر"
 
 #: ../share/filters/filters.svg.h:408
 msgid "Tiger fur pattern with folds and bevel around the edges"
-msgstr "فرو النمر مع طيّات حول الأطراف"
+msgstr "نمط فرو النَّمِر مع طيَّات ومَيَلان حول الأطراف"
 
 #: ../share/filters/filters.svg.h:410
 msgid "Black Light"
@@ -1089,23 +1091,23 @@ msgstr "لون"
 
 #: ../share/filters/filters.svg.h:412
 msgid "Light areas turn to black"
-msgstr "تغيير المناطق المنارة إلى السّواد"
+msgstr "تحويل المناطق المضيئة إلى اللون الأسود"
 
 #: ../share/filters/filters.svg.h:414
 msgid "Film Grain"
-msgstr "حبوب فلم"
+msgstr "حُبيبات الفلم"
 
 #: ../share/filters/filters.svg.h:416
 msgid "Adds a small scale graininess"
-msgstr "إضافة مقياس قليل من التحبب"
+msgstr "إضافة حُبيبات صغيرة الحجم"
 
 #: ../share/filters/filters.svg.h:418
 msgid "Plaster Color"
-msgstr "لون جبسي"
+msgstr "لون الجبس"
 
 #: ../share/filters/filters.svg.h:420
 msgid "Colored plaster emboss effect"
-msgstr "تأثير زخارف جبسية ملونة"
+msgstr "تأثير زخارف الجبس الملوَّنة"
 
 #: ../share/filters/filters.svg.h:422
 msgid "Velvet Bumps"
@@ -1113,11 +1115,11 @@ msgstr "نتوءات مخملية"
 
 #: ../share/filters/filters.svg.h:424
 msgid "Gives Smooth Bumps velvet like"
-msgstr "يحاكي النتوءات المخملية الناعمة"
+msgstr "مُحاكاة للنتوءات المخملية الناعمة"
 
 #: ../share/filters/filters.svg.h:426
 msgid "Comics Cream"
-msgstr "رسومات ساخرة كريمية"
+msgstr "قشدة الرُسُومات الهزليَّة"
 
 #: ../share/filters/filters.svg.h:427 ../share/filters/filters.svg.h:727
 #: ../share/filters/filters.svg.h:731 ../share/filters/filters.svg.h:735
@@ -1129,97 +1131,98 @@ msgstr "رسومات ساخرة كريمية"
 #: ../share/filters/filters.svg.h:779 ../share/filters/filters.svg.h:783
 #: ../share/filters/filters.svg.h:787 ../share/filters/filters.svg.h:791
 #: ../share/filters/filters.svg.h:795
-#, fuzzy
 msgid "Non-Realistic 3D Shaders"
-msgstr "تظليل وهمي ثلاثي الأبعاد"
+msgstr "تظليل ثلاثي الأبعاد غير واقعي"
 
 #: ../share/filters/filters.svg.h:428
 msgid "Comics shader with creamy waves transparency"
-msgstr "مظلّل الرّسومات السّاخرة مع تموجات شفّافة كريمية"
+msgstr "تظليل الرسومات الهزليَّة مع موجات شفافة قشديَّة"
 
 #: ../share/filters/filters.svg.h:430
 msgid "Chewing Gum"
-msgstr "عِلكة"
+msgstr "عِلكة مَضغ"
 
 #: ../share/filters/filters.svg.h:432
 msgid ""
 "Creates colorizable blotches which smoothly flow over the edges of the lines "
 "at their crossings"
-msgstr "يُنشِئ بقع قابلة للتّلوين طافية بنعومة على حدود الخطوط عند التقاطعات"
+msgstr ""
+"ينشئ بقعًا قابلة للتلوين تتدفق بسلاسة على أطراف الخطوط"
+"عند تقاطعهم"
 
 #: ../share/filters/filters.svg.h:434
-#, fuzzy
 msgid "Dark and Glow"
-msgstr "مظلم و متوهّج"
+msgstr "ظلام وتوهُّج"
 
 #: ../share/filters/filters.svg.h:436
 msgid "Darkens the edge with an inner blur and adds a flexible glow"
-msgstr "يغمّق الحدود مع ضبابية داخلية و يضيف توهج مرن"
+msgstr "يُغَمِّق الحافة بتغبيش داخلي ويُضيف توهجًا مرنًا"
 
 #: ../share/filters/filters.svg.h:438
 msgid "Warped Rainbow"
-msgstr "طيف مُلتوٍ"
+msgstr "طيف مُشوَّه"
 
 #: ../share/filters/filters.svg.h:440
 msgid "Smooth rainbow colors warped along the edges and colorizable"
-msgstr "ألوان قوس قزح ناعمة تلتف مع الحدود وقابلة للتلوين"
+msgstr "ألوان الطيف الناعمة مشوَّهَة على طول الأطراف وقابلة للتلوين"
 
 #: ../share/filters/filters.svg.h:442
 msgid "Rough and Dilate"
-msgstr "خشن و ممتد"
+msgstr "خَشِن ومُمتَد"
 
 #: ../share/filters/filters.svg.h:444
 msgid "Create a turbulent contour around"
-msgstr "يُنشِئ تظليلًا عاصفًا حول الشّكل"
+msgstr "إنشاء مُحيط مُضطرب حوله"
 
 #: ../share/filters/filters.svg.h:446
 msgid "Old Postcard"
-msgstr "طابع قديم"
+msgstr "طابع بريدي قديم"
 
 #: ../share/filters/filters.svg.h:448
 msgid "Slightly posterize and draw edges like on old printed postcards"
-msgstr "إعادة رسم الحواف و كأنها طابع قديم"
+msgstr ""
+"التلصيق ورسم الأطراف قليلاً كما هو الحال في الطوابع البريدية المطبوعة القديمة"
 
 #: ../share/filters/filters.svg.h:450
 msgid "Dots Transparency"
-msgstr "شفافية نقطيّة"
+msgstr "شفافيَّة نُقطيَّة"
 
 #: ../share/filters/filters.svg.h:452
 msgid "Gives a pointillist HSL sensitive transparency"
-msgstr ""
+msgstr "يُعطي تنقيط شفافيَّة صبغة-إشباع-الإضاءة الحساسة (HSL)"
 
 #: ../share/filters/filters.svg.h:454
 msgid "Canvas Transparency"
-msgstr "شفافية الرّقعة"
+msgstr "شفافية لوحة قماشيَّة"
 
 #: ../share/filters/filters.svg.h:456
 msgid "Gives a canvas like HSL sensitive transparency."
-msgstr ""
+msgstr "يعُطي لوحة قماشيَّة تُشبِه شفافيَّة صبغة-إشباع-الإضاءة الحساسة (HSL)."
 
 #: ../share/filters/filters.svg.h:458
 msgid "Smear Transparency"
-msgstr "شفافية مشوّشة"
+msgstr "شفافيَّة مُشوَّشة"
 
 #: ../share/filters/filters.svg.h:460
 msgid ""
 "Paint objects with a transparent turbulence which turns around color edges"
-msgstr "رسم الكائنات بشفافية مضطربة مع تحويل لون الأطراف"
+msgstr "طلاء الكائنات باضطراب شفَّاف يدور حول أطراف اللون"
 
 #: ../share/filters/filters.svg.h:462
 msgid "Thick Paint"
-msgstr "رسم سميك"
+msgstr "طلاء سميك"
 
 #: ../share/filters/filters.svg.h:464
 msgid "Thick painting effect with turbulence"
-msgstr "تأثير الرّسم السّميك المضطرب"
+msgstr "تأثير الطلاء السميك مع الاضطراب"
 
 #: ../share/filters/filters.svg.h:466
 msgid "Burst"
-msgstr "غشاوة"
+msgstr "انفجار"
 
 #: ../share/filters/filters.svg.h:468
 msgid "Burst balloon texture crumpled and with holes"
-msgstr "نسيج البالون المغشّى بالحفر"
+msgstr "بُنية بالون منفجر، مُجعَّد وفيه ثقوب"
 
 #: ../share/filters/filters.svg.h:470
 msgid "Embossed Leather"
@@ -1230,110 +1233,119 @@ msgid ""
 "Combine a HSL edges detection bump with a leathery or woody and colorizable "
 "texture"
 msgstr ""
+"الجمع بين نتوء اكتشاف أطراف صبغة-إشباع-الإضاءة (HSL) مع نتوء جلدي أو خشبي"
+" وقابل للتلوين"
+"بُنية"
 
 #: ../share/filters/filters.svg.h:474
 msgid "Carnaval"
-msgstr "كارنفال"
+msgstr "مهرجان"
 
 #: ../share/filters/filters.svg.h:476
+#, fuzzy
 msgid "White splotches evocating carnaval masks"
-msgstr ""
+msgstr "بُقع بيضاء تستحضر أقنعة المهرجان"
 
 #: ../share/filters/filters.svg.h:478
+#, fuzzy
 msgid "Plastify"
-msgstr "تحويل إلى شكل بلاستيك"
+msgstr "تحويل إلى بلاستيك"
 
 #: ../share/filters/filters.svg.h:480
 msgid ""
 "HSL edges detection bump with a wavy reflective surface effect and variable "
 "crumple"
 msgstr ""
+"نتوء اكتشاف أطراف صبغة-إشباع-الإضاءة (HSL) مع تأثير ومتغير سطح عاكس مُتَمَوِّج"
+"تَجَعُّد"
 
 #: ../share/filters/filters.svg.h:482
 msgid "Plaster"
-msgstr "لاصق"
+msgstr "لَاصِق"
 
 #: ../share/filters/filters.svg.h:484
 msgid ""
 "Combine a HSL edges detection bump with a matte and crumpled surface effect"
 msgstr ""
+"الجمع بين نتوء اكتشاف أطراف صبغة-إشباع-الإضاءة (HSL) مع تأثير سطح غير لامع"
+" ومُجعَّد"
 
 #: ../share/filters/filters.svg.h:486
 msgid "Rough Transparency"
-msgstr "شفافية خشنة"
+msgstr "شفافيَّة خشنة"
 
 #: ../share/filters/filters.svg.h:488
 msgid "Adds a turbulent transparency which displaces pixels at the same time"
-msgstr "يضيف شفافية مضطربة و التي تعيد تموضع البكسلات"
+msgstr "يضيف شفافية مضطربة تُزيح وحدات البكسل في نفس الوقت"
 
 #: ../share/filters/filters.svg.h:490
 msgid "Gouache"
-msgstr "غواش"
+msgstr "جواش"
 
 #: ../share/filters/filters.svg.h:492
 msgid "Partly opaque water color effect with bleed"
-msgstr "مؤثّر ألوان مائية نازفة"
+msgstr "تأثير لون مائي كامِد مع نزيف"
 
 #: ../share/filters/filters.svg.h:494
 msgid "Alpha Engraving"
-msgstr "انجذاب ألفا"
+msgstr "نَقش ألفا"
 
 #: ../share/filters/filters.svg.h:496
 msgid "Gives a transparent engraving effect with rough line and filling"
-msgstr "يعطي تأثير الشّفافية المنجذبة مع خط و تعبئة خشنين"
+msgstr "يعطي تأثير نقش شفاف مع خط خشن وتعبئة"
 
 #: ../share/filters/filters.svg.h:498
 msgid "Alpha Draw Liquid"
-msgstr "سائل مرسوم ألفا"
+msgstr "سائل رسم ألفا"
 
 #: ../share/filters/filters.svg.h:500
 msgid "Gives a transparent fluid drawing effect with rough line and filling"
-msgstr "يعطي تأثير السّائل الشّفاف بتعبئة و خط خشنين"
+msgstr "يعطي تأثير مائع رسم شفاف مع خط خشن وتعبئة"
 
 #: ../share/filters/filters.svg.h:502
 msgid "Liquid Drawing"
-msgstr "الرّسم المائي"
+msgstr "الرَّسم السائل"
 
 #: ../share/filters/filters.svg.h:504
 msgid "Gives a fluid and wavy expressionist drawing effect to images"
-msgstr "يعطي الصّور التّأثير المائي و المتموج الموحي برسم الخبراء"
+msgstr "يُعطي للصور تأثير رسم تعبيري انسيابي ومُتَمَوِّج"
 
 #: ../share/filters/filters.svg.h:506
 msgid "Marbled Ink"
-msgstr "حبر رخامي"
+msgstr "حِبر رُخامي"
 
 #: ../share/filters/filters.svg.h:508
 msgid "Marbled transparency effect which conforms to image detected edges"
-msgstr ""
+msgstr "تأثير شفافيَّة رُخاميَّة تتوافق مع الأطراف المُكتشفة في الصورة"
 
 #: ../share/filters/filters.svg.h:510
 msgid "Thick Acrylic"
-msgstr "اكريليك عريض"
+msgstr "أكريليك سميك"
 
 #: ../share/filters/filters.svg.h:512
 msgid "Thick acrylic paint texture with high texture depth"
-msgstr ""
+msgstr "بُنية طلاء أكريليك سميك عالية العمق"
 
 #: ../share/filters/filters.svg.h:514
 msgid "Alpha Engraving B"
-msgstr "انجذاب ألفا - ب"
+msgstr "نقش ألفا -ب"
 
 #: ../share/filters/filters.svg.h:516
 msgid ""
 "Gives a controllable roughness engraving effect to bitmaps and materials"
-msgstr "يعطي تأثير الانجذاب المتحكم بخشونته لكل من العناصر و النّقاط"
+msgstr "يعطي للصور النُقطيَّة والمواد تأثير نقش ذو خشونة يمكن التحكم به"
 
 #: ../share/filters/filters.svg.h:518
 msgid "Lapping"
-msgstr "التفاف"
+msgstr "اِلتِفاف"
 
 #: ../share/filters/filters.svg.h:520
 msgid "Something like a water noise"
-msgstr "شيء كضجيج الماء"
+msgstr "شيء مثل تداخل ضجيج الماء"
 
 #: ../share/filters/filters.svg.h:522
 msgid "Monochrome Transparency"
-msgstr "شفافية ذات لون أحادي"
+msgstr "شفافيَّة أُحادية اللون"
 
 #: ../share/filters/filters.svg.h:523 ../share/filters/filters.svg.h:527
 #: ../share/filters/filters.svg.h:647 ../share/filters/filters.svg.h:651
@@ -1344,110 +1356,111 @@ msgstr "شفافية ذات لون أحادي"
 #: ../src/extension/internal/filter/transparency.h:289
 #: ../src/extension/internal/filter/transparency.h:351
 msgid "Fill and Transparency"
-msgstr "ملء وشفافية"
+msgstr "تعبئة وشفافيَّة"
 
 #: ../share/filters/filters.svg.h:524
 msgid "Convert to a colorizable transparent positive or negative"
-msgstr "تحويل إلى شفّاف قابل للتلوين الإيجابي أو السلبي"
+msgstr "التحويل إلى شفافيَّة قابلة للتلوين إيجابية أو سلبية"
 
 #: ../share/filters/filters.svg.h:526
 msgid "Saturation Map"
-msgstr "خريطة تشبع الألوان"
+msgstr "خريطة تشبُّع اللون"
 
 #: ../share/filters/filters.svg.h:528
 msgid ""
 "Creates an approximative semi-transparent and colorizable image of the "
 "saturation levels"
-msgstr ""
+msgstr "يُنشئ صورة تقريبيَّة شبه شفافة وقابلة للتلوين لِمُستويات التَّشبع"
 
 #: ../share/filters/filters.svg.h:530
 msgid "Riddled"
-msgstr "مُمزق"
+msgstr "غامض"
 
 #: ../share/filters/filters.svg.h:532
 msgid "Riddle the surface and add bump to images"
-msgstr ""
+msgstr "جعل السطح غامض وإضافة نتوء إلى الصور"
 
 #: ../share/filters/filters.svg.h:534
 msgid "Wrinkled Varnish"
-msgstr "صبعة متجعدة"
+msgstr "ورنيش مُتجعِّد"
 
 #: ../share/filters/filters.svg.h:536
 msgid "Thick glossy and translucent paint texture with high depth"
-msgstr ""
+msgstr "بُنية طلاء سميك، لامع وشفاف بعمق عالٍ"
 
 #: ../share/filters/filters.svg.h:538
 msgid "Canvas Bumps"
-msgstr ""
+msgstr "نُتوءات لَوحة قماشيَّة"
 
 #: ../share/filters/filters.svg.h:540
 msgid "Canvas texture with an HSL sensitive height map"
-msgstr ""
+msgstr "بُنية لَوحة قماشيَّة مع خريطة ارتفاع حساسة لِصبغة-إشباع-الإضاءة (HSL)"
 
 #: ../share/filters/filters.svg.h:542
 msgid "Canvas Bumps Matte"
-msgstr ""
+msgstr "نُتوءات لَوحة قماشيَّة غير لامعة"
 
 #: ../share/filters/filters.svg.h:544
 msgid "Same as Canvas Bumps but with a diffuse light instead of a specular one"
-msgstr ""
+msgstr "مثل نُتوءات اللَّوحة القماشيَّة ولكن مع ضوء متشتت بدلاً من برَّاق"
 
 #: ../share/filters/filters.svg.h:546
 msgid "Canvas Bumps Alpha"
-msgstr ""
+msgstr "نُتوءات لَوحة قماشيَّة ألفا"
 
 #: ../share/filters/filters.svg.h:548
 msgid "Same as Canvas Bumps but with transparent highlights"
-msgstr ""
+msgstr "مثل نُتوءات اللَّوحة القماشيَّة ولكن مع إبرازات شفافة"
 
 #: ../share/filters/filters.svg.h:550
+#, fuzzy
 msgid "Bright Metal"
 msgstr "معدن ساطع"
 
 #: ../share/filters/filters.svg.h:552
 msgid "Bright metallic effect for any color"
-msgstr "تأثير معدني لامع لأي لون"
+msgstr "تأثير معدني ساطع لأي لون"
 
 #: ../share/filters/filters.svg.h:554
 msgid "Deep Colors Plastic"
-msgstr "ألوان بلاستيك غامقة"
+msgstr "بلاستيك ذو ألوان غامقة"
 
 #: ../share/filters/filters.svg.h:556
 msgid "Transparent plastic with deep colors"
-msgstr "بلاستيك شفّاف ذات ألوان غامقة"
+msgstr "بلاستيك شفاف بألوان غامقة/عميقة"
 
 #: ../share/filters/filters.svg.h:558
 msgid "Melted Jelly Matte"
-msgstr ""
+msgstr "هُلام ذائب غير لامع"
 
 #: ../share/filters/filters.svg.h:560
 msgid "Matte bevel with blurred edges"
-msgstr ""
+msgstr "حواف غير لامعة مع أطراف مغبَّشة"
 
 #: ../share/filters/filters.svg.h:562
 msgid "Melted Jelly"
-msgstr "جيلي مذاب"
+msgstr "هُلام ذائب"
 
 #: ../share/filters/filters.svg.h:564
 msgid "Glossy bevel with blurred edges"
-msgstr ""
+msgstr "حافة لامعة مع أطراف مغبَّشة"
 
 #: ../share/filters/filters.svg.h:566
 msgid "Combined Lighting"
-msgstr "أضواء مدمجة"
+msgstr "إضاءة مُتضامنة"
 
 #: ../share/filters/filters.svg.h:568
 #: ../src/extension/internal/filter/bevels.h:232
 msgid "Basic specular bevel to use for building textures"
-msgstr "زاوية البريق الأساسية للإستعمال عند إنشاﺀ الكساﺀات"
+msgstr "حافَّة برَّاقة أوليَّة لاِستخدامها في بناء البُنيات"
 
 #: ../share/filters/filters.svg.h:570
 msgid "Tinfoil"
-msgstr "ورق الألمونيوم"
+msgstr "ورق ألومنيوم"
 
 #: ../share/filters/filters.svg.h:572
 msgid "Metallic foil effect combining two lighting types and variable crumple"
-msgstr ""
+msgstr "تأثير ورق معدني يجمع بين نوعين من الإضاءة والتَّجعُّد المُتغيِّر"
 
 #: ../share/filters/filters.svg.h:574
 msgid "Soft Colors"
@@ -1455,15 +1468,15 @@ msgstr "ألوان ناعمة"
 
 #: ../share/filters/filters.svg.h:576
 msgid "Adds a colorizable edges glow inside objects and pictures"
-msgstr ""
+msgstr "يُضِيفُ توهجًا للأطراف القابلة للتلوين داخل الكائنات والصور"
 
 #: ../share/filters/filters.svg.h:578
 msgid "Relief Print"
-msgstr ""
+msgstr "الطباعة البارزة"
 
 #: ../share/filters/filters.svg.h:580
 msgid "Bumps effect with a bevel, color flood and complex lighting"
-msgstr ""
+msgstr "تأثير نُتوءات مع حافَّة، فيضان اللون وإضاءة مُعقدة"
 
 #: ../share/filters/filters.svg.h:582
 msgid "Growing Cells"
@@ -1471,130 +1484,131 @@ msgstr "خلايا نامية"
 
 #: ../share/filters/filters.svg.h:584
 msgid "Random rounded living cells like fill"
-msgstr ""
+msgstr "خلايا حية مُدوَّرة وعشوائية تُشبه التعبئة"
 
 #: ../share/filters/filters.svg.h:586
 msgid "Fluorescence"
-msgstr "إستشعاع"
+msgstr "الفلوريَّة"
 
 #: ../share/filters/filters.svg.h:588
 msgid "Oversaturate colors which can be fluorescent in real world"
 msgstr ""
+"الألوان المشبّعة بشكل مُبالغ فيه، التي يُمكن أن تكون فلوريَّة في العالم"
+" الحقيقي"
 
 #: ../share/filters/filters.svg.h:590
 msgid "Pixellize"
-msgstr "بكسِل"
+msgstr "بَكْسَلَة"
 
 #: ../share/filters/filters.svg.h:591
-#, fuzzy
 msgid "Pixel Tools"
-msgstr "أدوات البكسلة"
+msgstr "أدوات البِكسِل"
 
 #: ../share/filters/filters.svg.h:592
 msgid "Reduce or remove antialiasing around shapes"
-msgstr "إنقاص أو إزالة التنعيم حول الأشكال"
+msgstr "تقليل أو إزالة مكافحة التعرُّج حول الأشكال"
 
 #: ../share/filters/filters.svg.h:594
 msgid "Basic Diffuse Bump"
-msgstr ""
+msgstr "نُتوء مُشَتَتَ أولي"
 
 #: ../share/filters/filters.svg.h:596
 msgid "Matte emboss effect"
-msgstr ""
+msgstr "تأثير زخرفة غير لامعة"
 
 #: ../share/filters/filters.svg.h:598
 msgid "Basic Specular Bump"
-msgstr ""
+msgstr "نُتوء براق أولي"
 
 #: ../share/filters/filters.svg.h:600
 msgid "Specular emboss effect"
-msgstr ""
+msgstr "تأثير زخرفة براقة"
 
 #: ../share/filters/filters.svg.h:602
 msgid "Basic Two Lights Bump"
-msgstr ""
+msgstr "نُتوء مِصبَاحين أولي"
 
 #: ../share/filters/filters.svg.h:604
 msgid "Two types of lighting emboss effect"
-msgstr ""
+msgstr "نوعان من تأثير الزخرفة الضوئية"
 
 #: ../share/filters/filters.svg.h:606
 msgid "Linen Canvas"
-msgstr "قماش كتاني"
+msgstr "لَوحة قِماشيَّة من الكتان"
 
 #: ../share/filters/filters.svg.h:608 ../share/filters/filters.svg.h:616
 msgid "Painting canvas emboss effect"
-msgstr ""
+msgstr "تأثير زخارف لَوحة قِماشيَّة"
 
 #: ../share/filters/filters.svg.h:610
 msgid "Plasticine"
-msgstr ""
+msgstr "بلاستيسين"
 
 #: ../share/filters/filters.svg.h:612
 msgid "Matte modeling paste emboss effect"
-msgstr ""
+msgstr "تأثير نقش نماذج المعجون غير اللَّامعة"
 
 #: ../share/filters/filters.svg.h:614
 msgid "Rough Canvas Painting"
-msgstr ""
+msgstr "لوحة قماشية خشنة"
 
 #: ../share/filters/filters.svg.h:618
 msgid "Paper Bump"
-msgstr ""
+msgstr "نتوءات الورق"
 
 #: ../share/filters/filters.svg.h:620
 msgid "Paper like emboss effect"
-msgstr ""
+msgstr "تأثير نقش مثل تأثير الورق"
 
 #: ../share/filters/filters.svg.h:622
 msgid "Jelly Bump"
-msgstr ""
+msgstr "نتوء هُلامي"
 
 #: ../share/filters/filters.svg.h:624
 msgid "Convert pictures to thick jelly"
-msgstr ""
+msgstr "تحويل الصور إلى هُلام سميك"
 
 #: ../share/filters/filters.svg.h:626
 msgid "Blend Opposites"
-msgstr ""
+msgstr "مزيج الأضداد"
 
 #: ../share/filters/filters.svg.h:628
 msgid "Blend an image with its hue opposite"
-msgstr ""
+msgstr "مزج صورة مع عكس درجة لونها"
 
 #: ../share/filters/filters.svg.h:630
 msgid "Hue to White"
-msgstr "تحويل درجة لون نحو الأبيض"
+msgstr "درجة اللون إلى الأبيض"
 
 #: ../share/filters/filters.svg.h:632
 msgid "Fades hue progressively to white"
-msgstr "تلاشي درجة لون نحو الأبيض تدريجيا"
+msgstr "إضمحلال درجة اللون تدريجيًّا إلى اللون الأبيض"
 
 #: ../share/filters/filters.svg.h:634
 #: ../src/extension/internal/bitmap/swirl.cpp:38
 msgid "Swirl"
-msgstr "دوّامة"
+msgstr "دوَّامة"
 
 #: ../share/filters/filters.svg.h:636
 msgid ""
 "Paint objects with a transparent turbulence which wraps around color edges"
-msgstr ""
+msgstr "طلاء الكائنات بالاضطراب الشفاف الذي يلتف حول أطراف اللون"
 
 #: ../share/filters/filters.svg.h:638
 msgid "Pointillism"
-msgstr ""
+msgstr "تنقيط"
 
 #: ../share/filters/filters.svg.h:640
 msgid "Gives a turbulent pointillist HSL sensitive transparency"
-msgstr ""
+msgstr "يعطي تنقيط مضطرب ذو شفافية حساسة لِصبغة-إشباع-الإضاءة (HSL)"
 
 #: ../share/filters/filters.svg.h:642
 msgid "Silhouette Marbled"
-msgstr ""
+msgstr "صورة ظليَّة رخاميَّة"
 
 #: ../share/filters/filters.svg.h:644
 msgid "Basic noise transparency texture"
-msgstr "كساﺀ مع شفافية مشوّشة أساسيا"
+msgstr "بُنية شفافة أوليَّة للضجيج"
 
 #: ../share/filters/filters.svg.h:646
 msgid "Fill Background"
@@ -1606,7 +1620,7 @@ msgstr "إضافة خلفية غير شفافة قابلة للتلوين"
 
 #: ../share/filters/filters.svg.h:650
 msgid "Flatten Transparency"
-msgstr "شفافية مسطحة"
+msgstr "تسطيح الشفافية"
 
 #: ../share/filters/filters.svg.h:652
 msgid "Adds a white opaque background"
@@ -1614,119 +1628,120 @@ msgstr "إضافة خلفية بيضاء غير شفافة"
 
 #: ../share/filters/filters.svg.h:654
 msgid "Blur Double"
-msgstr "مضاعفة التغبيش"
+msgstr "تغبيش مزدوج"
 
 #: ../share/filters/filters.svg.h:656
 msgid ""
 "Overlays two copies with different blur amounts and modifiable blend and "
 "composite"
-msgstr ""
+msgstr "تراكب نسختين بمقادير تغبيش مختلفة مع مزج وتركيب قابلين للتعديل"
 
 #: ../share/filters/filters.svg.h:658
 msgid "Image Drawing Basic"
-msgstr "الرّسم الصّوري الأساسي"
+msgstr "رسم صوري أولي"
 
 #: ../share/filters/filters.svg.h:660
 msgid "Enhance and redraw color edges in 1 bit black and white"
-msgstr "حسّن و أعد رسم الحواف اللّونية في بت واحد أبيض و أسود"
+msgstr "تحسين وإعادة رسم حواف الألوان باللون الأسود والأبيض 1 بت"
 
 #: ../share/filters/filters.svg.h:662
 msgid "Poster Draw"
-msgstr "رسم الملصقات"
+msgstr "رسم الملصق"
 
 #: ../share/filters/filters.svg.h:664
 msgid "Enhance and redraw edges around posterized areas"
-msgstr "حسّن و أعد رسم الحواف حول المساحات الإعلانية"
+msgstr "تحسين وإعادة رسم حواف المساحات المتتالية"
 
 #: ../share/filters/filters.svg.h:666
 msgid "Cross Noise Poster"
-msgstr ""
+msgstr "مُلصَق عابر للضجيج"
 
 #: ../share/filters/filters.svg.h:668
 msgid "Overlay with a small scale screen like noise"
-msgstr ""
+msgstr "تراكب مع الضجيج مثل شاشة صغيرة الحجم"
 
 #: ../share/filters/filters.svg.h:670
 msgid "Cross Noise Poster B"
-msgstr ""
+msgstr "ملصق عابر للضجيج -ب"
 
 #: ../share/filters/filters.svg.h:672
 msgid "Adds a small scale screen like noise locally"
-msgstr ""
+msgstr "يضيف ضجيج محلي مثل شاشة صغيرة الحجم"
 
 #: ../share/filters/filters.svg.h:674
 msgid "Poster Color Fun"
-msgstr ""
+msgstr "متعة لون المُلصق"
 
 #: ../share/filters/filters.svg.h:678
 msgid "Poster Rough"
-msgstr ""
+msgstr "خشونة المُلصق"
 
 #: ../share/filters/filters.svg.h:680
 msgid "Adds roughness to one of the two channels of the Poster paint filter"
-msgstr ""
+msgstr "يضيف خشونة إلى إحدى قناتي مُرشح طلاء الملصق"
 
 #: ../share/filters/filters.svg.h:682
 msgid "Alpha Monochrome Cracked"
-msgstr ""
+msgstr "تصدع أُحادي اللون ألفا"
 
 #: ../share/filters/filters.svg.h:684 ../share/filters/filters.svg.h:688
 #: ../share/filters/filters.svg.h:692 ../share/filters/filters.svg.h:704
 #: ../share/filters/filters.svg.h:708 ../share/filters/filters.svg.h:712
 msgid "Basic noise fill texture; adjust color in Flood"
-msgstr "نسيج معبّأ بالتّشويش الأساسي؛ عدّل ألوان الطّوفان"
+msgstr "بُنية تعبئة أوليَّة للضجيج؛ ضبط اللون في الفيضان"
 
 #: ../share/filters/filters.svg.h:686
 msgid "Alpha Turbulent"
-msgstr ""
+msgstr "اضطراب ألفا"
 
 #: ../share/filters/filters.svg.h:690
 msgid "Colorize Turbulent"
-msgstr ""
+msgstr "اضطراب مُلوَّن"
 
 #: ../share/filters/filters.svg.h:694
 msgid "Cross Noise B"
-msgstr ""
+msgstr "عابر الضجيج -ب"
 
 #: ../share/filters/filters.svg.h:696
 msgid "Adds a small scale crossy graininess"
-msgstr ""
+msgstr "يضيف حبيبات متقاطعة صغيرة الحجم"
 
 #: ../share/filters/filters.svg.h:698
 msgid "Cross Noise"
-msgstr ""
+msgstr "عابر الضجيج"
 
 #: ../share/filters/filters.svg.h:700
 msgid "Adds a small scale screen like graininess"
-msgstr ""
+msgstr "يضيف الحبيبات مثل شاشة صغيرة الحجم"
 
 #: ../share/filters/filters.svg.h:702
+#, fuzzy
 msgid "Duotone Turbulent"
-msgstr ""
+msgstr "دووتون مضطرب"
 
 #: ../share/filters/filters.svg.h:706
 msgid "Light Eraser Cracked"
-msgstr ""
+msgstr "ممحاة الضوء المتصدعة"
 
 #: ../share/filters/filters.svg.h:710
 msgid "Poster Turbulent"
-msgstr ""
+msgstr "اضطراب مُلصق"
 
 #: ../share/filters/filters.svg.h:714
 msgid "Tartan Smart"
-msgstr ""
+msgstr "طرطان ذكي"
 
 #: ../share/filters/filters.svg.h:716
 msgid "Highly configurable checkered tartan pattern"
-msgstr ""
+msgstr "نمط الطرطان ذو المربعات قابل للتهيئة بشكل كبير"
 
 #: ../share/filters/filters.svg.h:718
 msgid "Light Contour"
-msgstr ""
+msgstr "كفاف خفيف"
 
 #: ../share/filters/filters.svg.h:720
 msgid "Uses vertical specular light to draw lines"
-msgstr "يستخدم ضوء رأسي برّاق لرسم الخطوط"
+msgstr "يستخدم ضوء براق عمودي لرسم خطوط"
 
 #: ../share/filters/filters.svg.h:722
 msgid "Liquid"
@@ -1734,7 +1749,7 @@ msgstr "سائل"
 
 #: ../share/filters/filters.svg.h:724
 msgid "Colorizable filling with liquid transparency"
-msgstr "تعبئة ملوّنة بشفافية السّائل"
+msgstr "تعبئة قابلة للتلوين مع شفافية السائل"
 
 #: ../share/filters/filters.svg.h:726
 msgid "Aluminium"
@@ -1742,47 +1757,48 @@ msgstr "ألومنيوم"
 
 #: ../share/filters/filters.svg.h:728
 msgid "Aluminium effect with sharp brushed reflections"
-msgstr ""
+msgstr "تأثير الألومنيوم مع انعكاسات مصقولة حادة"
 
 #: ../share/filters/filters.svg.h:730
 msgid "Comics"
-msgstr "رسوم مصوّرة"
+msgstr "رسوم هزلية"
 
 #: ../share/filters/filters.svg.h:732
 msgid "Comics cartoon drawing effect"
-msgstr "تأثير الرّسم السّاخر"
+msgstr "تأثير الرسم الهزلي الكارتوني"
 
 #: ../share/filters/filters.svg.h:734
 msgid "Comics Draft"
-msgstr ""
+msgstr "مسودة رسوم هزلية"
 
 #: ../share/filters/filters.svg.h:736 ../share/filters/filters.svg.h:768
 msgid "Draft painted cartoon shading with a glassy look"
-msgstr "خرطوش لرسم كرتوني مع ملمح زجاجي"
+msgstr "مسودة تظليل كارتون مطلية بمظهر زجاجي"
 
 #: ../share/filters/filters.svg.h:738
 msgid "Comics Fading"
-msgstr ""
+msgstr "بُهُوت الرسوم الهزلية"
 
 #: ../share/filters/filters.svg.h:740
 msgid "Cartoon paint style with some fading at the edges"
-msgstr "تلوين على طراز رسوم الكرتون مع تلاشي عند الأطراف"
+msgstr "أسلوب الطلاء الكرتوني مع بعض التلاشي عند الحواف"
 
 #: ../share/filters/filters.svg.h:742
 msgid "Brushed Metal"
-msgstr ""
+msgstr "معدن مصقول"
 
 #: ../share/filters/filters.svg.h:744
 msgid "Satiny metal surface effect"
-msgstr ""
+msgstr "تأثير سطح معدني ناعم وبراق"
 
 #: ../share/filters/filters.svg.h:746
+#, fuzzy
 msgid "Opaline"
-msgstr ""
+msgstr "خط أوبا"
 
 #: ../share/filters/filters.svg.h:748
 msgid "Contouring version of smooth shader"
-msgstr "نسخة مخططة من تأثير التنعيم"
+msgstr "نُسخة الكفاف من التظليل السلس"
 
 #: ../share/filters/filters.svg.h:750
 msgid "Chrome"
@@ -1790,11 +1806,11 @@ msgstr "كروم"
 
 #: ../share/filters/filters.svg.h:752
 msgid "Bright chrome effect"
-msgstr "ثأثير الكروم الساطع"
+msgstr "تأثير الكروم الساطع"
 
 #: ../share/filters/filters.svg.h:754
 msgid "Deep Chrome"
-msgstr ""
+msgstr "كروم غامق"
 
 #: ../share/filters/filters.svg.h:756
 msgid "Dark chrome effect"
@@ -1802,11 +1818,11 @@ msgstr "تأثير الكروم الداكن"
 
 #: ../share/filters/filters.svg.h:758
 msgid "Emboss Shader"
-msgstr ""
+msgstr "نقش ظلي"
 
 #: ../share/filters/filters.svg.h:760
 msgid "Combination of satiny and emboss effect"
-msgstr ""
+msgstr "مزيج من النعومة البراقة وتأثير النقش"
 
 #: ../share/filters/filters.svg.h:762
 msgid "Sharp Metal"
@@ -1814,15 +1830,15 @@ msgstr "معدن حاد"
 
 #: ../share/filters/filters.svg.h:764
 msgid "Chrome effect with darkened edges"
-msgstr "تأثير كروم مع حافّات مظلمة"
+msgstr "تأثير الكروم مع أطراف داكنة"
 
 #: ../share/filters/filters.svg.h:766
 msgid "Brush Draw"
-msgstr "فرشاة الرسم"
+msgstr "رسم فرشاة"
 
 #: ../share/filters/filters.svg.h:770
 msgid "Chrome Emboss"
-msgstr "نقش على الكروم"
+msgstr "نقش الكروم"
 
 #: ../share/filters/filters.svg.h:772
 msgid "Embossed chrome effect"
@@ -1830,11 +1846,11 @@ msgstr "تأثير كروم منقوش"
 
 #: ../share/filters/filters.svg.h:774
 msgid "Contour Emboss"
-msgstr ""
+msgstr "نقش الكفاف"
 
 #: ../share/filters/filters.svg.h:776
 msgid "Satiny and embossed contour effect"
-msgstr ""
+msgstr "تأير كفاف ناعم براق ومنقوش"
 
 #: ../share/filters/filters.svg.h:778
 msgid "Sharp Deco"
@@ -1842,79 +1858,79 @@ msgstr "ديكو حاد"
 
 #: ../share/filters/filters.svg.h:780
 msgid "Unrealistic reflections with sharp edges"
-msgstr ""
+msgstr "انعكاسات غير واقعية بأطراف حادة"
 
 #: ../share/filters/filters.svg.h:782
 msgid "Deep Metal"
-msgstr "لون معدني عميق"
+msgstr "معدن غامق"
 
 #: ../share/filters/filters.svg.h:784
 msgid "Deep and dark metal shading"
-msgstr ""
+msgstr "تظليل معدني عميق وداكن"
 
 #: ../share/filters/filters.svg.h:786
 msgid "Aluminium Emboss"
-msgstr "نقش على الألومنيوم"
+msgstr "نقش الألومنيوم"
 
 #: ../share/filters/filters.svg.h:788
 msgid "Satiny aluminium effect with embossing"
-msgstr ""
+msgstr "تأثير الألمنيوم الناعم واللامع مع النقش"
 
 #: ../share/filters/filters.svg.h:790
 msgid "Refractive Glass"
-msgstr "عدسة عاكسة"
+msgstr "زجاج عاكس"
 
 #: ../share/filters/filters.svg.h:792
 msgid "Double reflection through glass with some refraction"
-msgstr ""
+msgstr "انعكاس مزدوج من خلال الزجاج مع بعض الانكسار"
 
 #: ../share/filters/filters.svg.h:794
 msgid "Frosted Glass"
-msgstr "زجاج مثلّج"
+msgstr "زجاج بلوري"
 
 #: ../share/filters/filters.svg.h:796
 msgid "Satiny glass effect"
-msgstr "تأثير الزجاج الصقيل"
+msgstr "تأثير الزجاج الناعم والامع"
 
 #: ../share/filters/filters.svg.h:798
 msgid "Bump Engraving"
-msgstr ""
+msgstr "نتوء الطباعة بالنقش"
 
 #: ../share/filters/filters.svg.h:800
 msgid "Carving emboss effect"
-msgstr ""
+msgstr "تأثير المنحوتات"
 
 #: ../share/filters/filters.svg.h:802
 msgid "Chromolitho Alternate"
-msgstr ""
+msgstr "بديل الطباعة الحجرية الملونة"
 
 #: ../share/filters/filters.svg.h:804
 msgid "Old chromolithographic effect"
-msgstr ""
+msgstr "تأثير الطباعة الحجرية الملونة القديمة"
 
 #: ../share/filters/filters.svg.h:806
 msgid "Convoluted Bump"
-msgstr ""
+msgstr "نتوء ملفوف"
 
 #: ../share/filters/filters.svg.h:808
 msgid "Convoluted emboss effect"
-msgstr ""
+msgstr "تأثير النقش الملفوف"
 
 #: ../share/filters/filters.svg.h:810
 msgid "Emergence"
-msgstr ""
+msgstr "بُزوغ"
 
 #: ../share/filters/filters.svg.h:812
 msgid "Cut out, add inner shadow and colorize some parts of an image"
-msgstr ""
+msgstr "قص خارج، إضافة ظل داخلي وتلوين بعض أجزاء الصورة"
 
 #: ../share/filters/filters.svg.h:814
 msgid "Litho"
-msgstr ""
+msgstr "طباعة حجرية"
 
 #: ../share/filters/filters.svg.h:816
 msgid "Create a two colors lithographic effect"
-msgstr ""
+msgstr "إنشاء تأثير الطباعة الحجرية (الليثوغرافيا) بلونين"
 
 #: ../share/filters/filters.svg.h:818
 msgid "Paint Channels"
@@ -1922,57 +1938,55 @@ msgstr "قنوات الطلاء"
 
 #: ../share/filters/filters.svg.h:820
 msgid "Colorize separately the three color channels"
-msgstr "تلوين قنوات اللون الثلاث على حدة"
+msgstr "تلوين قنوات الألوان الثلاثة بشكل منفصل"
 
 #: ../share/filters/filters.svg.h:822
 msgid "Posterized Light Eraser"
-msgstr ""
+msgstr "ممحاة ضوء مُتتالي"
 
 #: ../share/filters/filters.svg.h:824
 msgid "Create a semi transparent posterized image"
-msgstr ""
+msgstr "إنشاء صورة مُتتالية شبه شفافة"
 
 #: ../share/filters/filters.svg.h:826
 msgid "Trichrome"
-msgstr "ثلاثي الألوان"
+msgstr "ثلاثة ألوان"
 
 #: ../share/filters/filters.svg.h:828
 msgid "Like Duochrome but with three colors"
-msgstr ""
+msgstr "يشبه ثنائي اللون ولكن بثلاثة ألوان"
 
 #: ../share/filters/filters.svg.h:830
 msgid "Simulate CMY"
-msgstr "محاكاة CMY"
+msgstr "مُحاكاة (CMY)"
 
 #: ../share/filters/filters.svg.h:832
 msgid "Render Cyan, Magenta and Yellow channels with a colorizable background"
-msgstr "جسّد القنوات السّماوية و الأرجوانية و الصّفراء في خلفية قابلة للتّلوين"
+msgstr "تصوير قنوات الازرق سماوي، الأرجواني والأصفر بخلفية قابلة للتلوين"
 
 #: ../share/filters/filters.svg.h:834
-#, fuzzy
 msgid "Contouring Table"
-msgstr "إنشاﺀ مسار جديد"
+msgstr "جدول الكفاف"
 
 #: ../share/filters/filters.svg.h:836
 msgid "Blurred multiple contours for objects"
-msgstr ""
+msgstr "ملامح متعددة مغبشة للكائنات"
 
 #: ../share/filters/filters.svg.h:838
 msgid "Posterized Blur"
-msgstr ""
+msgstr "تغبيش متتالي"
 
 #: ../share/filters/filters.svg.h:840
 msgid "Converts blurred contour to posterized steps"
-msgstr ""
+msgstr "يحول الكفاف المغبش إلى خطوات مُتتالية"
 
 #: ../share/filters/filters.svg.h:842
-#, fuzzy
 msgid "Contouring Discrete"
-msgstr "إكمال المسار المختار"
+msgstr "الكفاف المنفصل"
 
 #: ../share/filters/filters.svg.h:844
 msgid "Sharp multiple contour for objects"
-msgstr ""
+msgstr "كفاف مُتعدد حاد للكائنات"
 
 #: ../share/palettes/palettes.h:2
 msgctxt "Palette"
@@ -2059,17 +2073,17 @@ msgstr "أبيض"
 #: ../share/palettes/palettes.h:16
 msgctxt "Palette"
 msgid "Maroon (#800000)"
-msgstr "بنّي (#800000)"
+msgstr "كستنائي (800000#)"
 
 #: ../share/palettes/palettes.h:17
 msgctxt "Palette"
 msgid "Red (#FF0000)"
-msgstr "أحمر (#FF0000)"
+msgstr "أحمر (FF0000#)"
 
 #: ../share/palettes/palettes.h:18
 msgctxt "Palette"
 msgid "Olive (#808000)"
-msgstr "زيتوني (#808000)"
+msgstr "زيتوني (808000#)"
 
 #: ../share/palettes/palettes.h:19
 msgctxt "Palette"
@@ -2079,27 +2093,27 @@ msgstr "أصفر (#FFFF00)"
 #: ../share/palettes/palettes.h:20
 msgctxt "Palette"
 msgid "Green (#008000)"
-msgstr "أخضر (#008000)"
+msgstr "أخضر (008000#)"
 
 #: ../share/palettes/palettes.h:21
 msgctxt "Palette"
 msgid "Lime (#00FF00)"
-msgstr "ليموني (#00FF00)"
+msgstr "ليمي (#00FF00)"
 
 #: ../share/palettes/palettes.h:22
 msgctxt "Palette"
 msgid "Teal (#008080)"
-msgstr "أزرق مخضر (#008080)"
+msgstr "حذفي (008080#)"
 
 #: ../share/palettes/palettes.h:23
 msgctxt "Palette"
 msgid "Aqua (#00FFFF)"
-msgstr "أزرق مائي (#00FFFF)"
+msgstr "مائي (#00FFFF)"
 
 #: ../share/palettes/palettes.h:24
 msgctxt "Palette"
 msgid "Navy (#000080)"
-msgstr "الأزرق الداكن (#000080)"
+msgstr "كُحلي (000080#)"
 
 #: ../share/palettes/palettes.h:25
 msgctxt "Palette"
@@ -2109,27 +2123,27 @@ msgstr "أزرق (#0000FF)"
 #: ../share/palettes/palettes.h:26
 msgctxt "Palette"
 msgid "Purple (#800080)"
-msgstr "أرجواني (#800080)"
+msgstr "أُرجواني (#800080)"
 
 #: ../share/palettes/palettes.h:27
 msgctxt "Palette"
 msgid "Fuchsia (#FF00FF)"
-msgstr "أرجواني محمرّ (#FF00FF)"
+msgstr "فوشي (#FF00FF)"
 
 #: ../share/palettes/palettes.h:28
 msgctxt "Palette"
 msgid "black (#000000)"
-msgstr "أسود (#000000)"
+msgstr "أسود (000000#)"
 
 #: ../share/palettes/palettes.h:29
 msgctxt "Palette"
 msgid "dimgray (#696969)"
-msgstr "رمادي فاتح (#696969)"
+msgstr "رمادي خافت (696969#)"
 
 #: ../share/palettes/palettes.h:30
 msgctxt "Palette"
 msgid "gray (#808080)"
-msgstr "رمادي (#808080)"
+msgstr "رمادي (808080#)"
 
 #: ../share/palettes/palettes.h:31
 msgctxt "Palette"
@@ -2144,7 +2158,7 @@ msgstr "فضّي (#C0C0C0)"
 #: ../share/palettes/palettes.h:33
 msgctxt "Palette"
 msgid "lightgray (#D3D3D3)"
-msgstr "رمادي فاتح (#D3D3D3)"
+msgstr "رمادي خفيف (#D3D3D3)"
 
 #: ../share/palettes/palettes.h:34
 msgctxt "Palette"
@@ -2164,7 +2178,7 @@ msgstr "أبيض (#FFFFFF)"
 #: ../share/palettes/palettes.h:37
 msgctxt "Palette"
 msgid "rosybrown (#BC8F8F)"
-msgstr "زهري بني (#BC8F8F)"
+msgstr "بنِّي زهري (#BC8F8F)"
 
 #: ../share/palettes/palettes.h:38
 msgctxt "Palette"
@@ -2174,7 +2188,7 @@ msgstr "أحمر هندي (#CD5C5C)"
 #: ../share/palettes/palettes.h:39
 msgctxt "Palette"
 msgid "brown (#A52A2A)"
-msgstr "بنيّ (#A52A2A)"
+msgstr "بنِّي (#A52A2A)"
 
 #: ../share/palettes/palettes.h:40
 msgctxt "Palette"
@@ -2189,7 +2203,7 @@ msgstr "مرجاني فاتح (#F08080)"
 #: ../share/palettes/palettes.h:42
 msgctxt "Palette"
 msgid "maroon (#800000)"
-msgstr "كستنائي (#800000)"
+msgstr "كستنائي (800000#)"
 
 #: ../share/palettes/palettes.h:43
 msgctxt "Palette"
@@ -2234,7 +2248,7 @@ msgstr "مرجاني (#FF7F50)"
 #: ../share/palettes/palettes.h:51
 msgctxt "Palette"
 msgid "orangered (#FF4500)"
-msgstr "برتقالي محمَر (#FF4500)"
+msgstr "برتقالي مُحمَر (#FF4500)"
 
 #: ../share/palettes/palettes.h:52
 msgctxt "Palette"
@@ -2244,7 +2258,7 @@ msgstr "سلموني فاتح (#FFA07A)"
 #: ../share/palettes/palettes.h:53
 msgctxt "Palette"
 msgid "sienna (#A0522D)"
-msgstr "بني مصفر (#A0522D)"
+msgstr "تُرْبي (#A0522D)"
 
 #: ../share/palettes/palettes.h:54
 msgctxt "Palette"
@@ -2254,7 +2268,7 @@ msgstr "صدفي (#FFF5EE)"
 #: ../share/palettes/palettes.h:55
 msgctxt "Palette"
 msgid "chocolate (#D2691E)"
-msgstr "شكولاطة (#D2691E)"
+msgstr "شوكولاتي (#D2691E)"
 
 #: ../share/palettes/palettes.h:56
 msgctxt "Palette"
@@ -2279,12 +2293,12 @@ msgstr "بيرو (#CD853F)"
 #: ../share/palettes/palettes.h:60
 msgctxt "Palette"
 msgid "linen (#FAF0E6)"
-msgstr "كتاني (#FAF0E6)"
+msgstr "كتانيّ (#FAF0E6)"
 
 #: ../share/palettes/palettes.h:61
 msgctxt "Palette"
 msgid "bisque (#FFE4C4)"
-msgstr "حساء (#FFE4C4)"
+msgstr "حسائي (#FFE4C4)"
 
 #: ../share/palettes/palettes.h:62
 msgctxt "Palette"
@@ -2294,32 +2308,32 @@ msgstr "برتقالي غامق (#FF8C00)"
 #: ../share/palettes/palettes.h:63
 msgctxt "Palette"
 msgid "burlywood (#DEB887)"
-msgstr "خشبي لامع (#DEB887)"
+msgstr "خشبي قوي (#DEB887)"
 
 #: ../share/palettes/palettes.h:64
 msgctxt "Palette"
 msgid "tan (#D2B48C)"
-msgstr "أسمر (#D2B48C)"
+msgstr "حنطي (#D2B48C)"
 
 #: ../share/palettes/palettes.h:65
 msgctxt "Palette"
 msgid "antiquewhite (#FAEBD7)"
-msgstr "أبيض أثري (#FAEBD7)"
+msgstr "أبيض عتيق (#FAEBD7)"
 
 #: ../share/palettes/palettes.h:66
 msgctxt "Palette"
 msgid "navajowhite (#FFDEAD)"
-msgstr "نافاجو أبيض (#FFDEAD)"
+msgstr "أبيض نافاجو (#FFDEAD)"
 
 #: ../share/palettes/palettes.h:67
 msgctxt "Palette"
 msgid "blanchedalmond (#FFEBCD)"
-msgstr "لوزي مقشر (#FFEBCD)"
+msgstr "زيتوني مُبَيّض (#FFEBCD)"
 
 #: ../share/palettes/palettes.h:68
 msgctxt "Palette"
 msgid "papayawhip (#FFEFD5)"
-msgstr "بباي مخفوق (#FFEFD5)"
+msgstr "مخفوقيّ البابايا (#FFEFD5)"
 
 #: ../share/palettes/palettes.h:69
 msgctxt "Palette"
@@ -2329,7 +2343,7 @@ msgstr "جلدي (#FFE4B5)"
 #: ../share/palettes/palettes.h:70
 msgctxt "Palette"
 msgid "orange (#FFA500)"
-msgstr "بنفسجي (#FFA500)"
+msgstr "برتقالي (#FFA500)"
 
 #: ../share/palettes/palettes.h:71
 msgctxt "Palette"
@@ -2339,27 +2353,27 @@ msgstr "قمحي (#F5DEB3)"
 #: ../share/palettes/palettes.h:72
 msgctxt "Palette"
 msgid "oldlace (#FDF5E6)"
-msgstr "دانتيل قديم (#FDF5E6)"
+msgstr "دانتيليّ قديم (#FDF5E6)"
 
 #: ../share/palettes/palettes.h:73
 msgctxt "Palette"
 msgid "floralwhite (#FFFAF0)"
-msgstr "أبيض زهري (#FFFAF0)"
+msgstr "أبيض زُهوريّ (#FFFAF0)"
 
 #: ../share/palettes/palettes.h:74
 msgctxt "Palette"
 msgid "darkgoldenrod (#B8860B)"
-msgstr "عصا الذهب غامض (#B8860B)"
+msgstr "عصوي الذهب الداكن (#B8860B)"
 
 #: ../share/palettes/palettes.h:75
 msgctxt "Palette"
 msgid "goldenrod (#DAA520)"
-msgstr "عصا الذهب (#DAA520)"
+msgstr "عصوي الذهب (#DAA520)"
 
 #: ../share/palettes/palettes.h:76
 msgctxt "Palette"
 msgid "cornsilk (#FFF8DC)"
-msgstr "ذرة حريري (#FFF8DC)"
+msgstr "حرير الذرة (#FFF8DC)"
 
 #: ../share/palettes/palettes.h:77
 msgctxt "Palette"
@@ -2369,37 +2383,37 @@ msgstr "ذهبي (#FFD700)"
 #: ../share/palettes/palettes.h:78
 msgctxt "Palette"
 msgid "khaki (#F0E68C)"
-msgstr "خاكي (#F0E68C)"
+msgstr "خاكيّ (#F0E68C)"
 
 #: ../share/palettes/palettes.h:79
 msgctxt "Palette"
 msgid "lemonchiffon (#FFFACD)"
-msgstr "ليموني شيفوني (#FFFACD)"
+msgstr "شيفوني ليموني (#FFFACD)"
 
 #: ../share/palettes/palettes.h:80
 msgctxt "Palette"
 msgid "palegoldenrod (#EEE8AA)"
-msgstr "عصا الذهب باهت (#EEE8AA)"
+msgstr "عصوي الذهب الشاحب (#EEE8AA)"
 
 #: ../share/palettes/palettes.h:81
 msgctxt "Palette"
 msgid "darkkhaki (#BDB76B)"
-msgstr "ترابي داكن (#BDB76B)"
+msgstr "خاكي داكن (#BDB76B)"
 
 #: ../share/palettes/palettes.h:82
 msgctxt "Palette"
 msgid "beige (#F5F5DC)"
-msgstr "بنيّ فاتح (#F5F5DC)"
+msgstr "ّصوفيّ (#F5F5DC)"
 
 #: ../share/palettes/palettes.h:83
 msgctxt "Palette"
 msgid "lightgoldenrodyellow (#FAFAD2)"
-msgstr "أصفر عصا الذهب فاتح (#FAFAD2)"
+msgstr "أصفر عصوي خفيف (#FAFAD2)"
 
 #: ../share/palettes/palettes.h:84
 msgctxt "Palette"
 msgid "olive (#808000)"
-msgstr "زيتوني (#808000)"
+msgstr "زيتوني (808000#)"
 
 #: ../share/palettes/palettes.h:85
 msgctxt "Palette"
@@ -2409,7 +2423,7 @@ msgstr "أصفر (#FFFF00)"
 #: ../share/palettes/palettes.h:86
 msgctxt "Palette"
 msgid "lightyellow (#FFFFE0)"
-msgstr "أصفر فاتح (#FFFFE0)"
+msgstr "أصفر خفيف (#FFFFE0)"
 
 #: ../share/palettes/palettes.h:87
 msgctxt "Palette"
@@ -2419,52 +2433,52 @@ msgstr "عاجي (#FFFFF0)"
 #: ../share/palettes/palettes.h:88
 msgctxt "Palette"
 msgid "olivedrab (#6B8E23)"
-msgstr "زيتوني شاحب (#6B8E23)"
+msgstr "زيتوني باهِت (#6B8E23)"
 
 #: ../share/palettes/palettes.h:89
 msgctxt "Palette"
 msgid "yellowgreen (#9ACD32)"
-msgstr "أصفر مخضر (#9ACD32)"
+msgstr "أخضر مُصفر (#9ACD32)"
 
 #: ../share/palettes/palettes.h:90
 msgctxt "Palette"
 msgid "darkolivegreen (#556B2F)"
-msgstr "اخضر زيتوني غامق (#556B2F)"
+msgstr "أخضر زيتوني داكن (#556B2F)"
 
 #: ../share/palettes/palettes.h:91
 msgctxt "Palette"
 msgid "greenyellow (#ADFF2F)"
-msgstr "أصفر مخضرّ (#ADFF2F)"
+msgstr "أصفر مُخضر (#ADFF2F)"
 
 #: ../share/palettes/palettes.h:92
 msgctxt "Palette"
 msgid "chartreuse (#7FFF00)"
-msgstr "أخضر مصفر (#7FFF00)"
+msgstr "كرتوزي (#7FFF00)"
 
 #: ../share/palettes/palettes.h:93
 msgctxt "Palette"
 msgid "lawngreen (#7CFC00)"
-msgstr "أخضر عشبي (#7CFC00)"
+msgstr "أخضر عُشبي (#7CFC00)"
 
 #: ../share/palettes/palettes.h:94
 msgctxt "Palette"
 msgid "darkseagreen (#8FBC8F)"
-msgstr "أخضر بحري غامق (#8FBC8F)"
+msgstr "أخضر بحري داكن (#8FBC8F)"
 
 #: ../share/palettes/palettes.h:95
 msgctxt "Palette"
 msgid "forestgreen (#228B22)"
-msgstr "اخضر غابي (#228B22)"
+msgstr "أخضر الغابة (#228B22)"
 
 #: ../share/palettes/palettes.h:96
 msgctxt "Palette"
 msgid "limegreen (#32CD32)"
-msgstr "أخضر ليموني (#32CD32)"
+msgstr "أخضر ليميّ (#32CD32)"
 
 #: ../share/palettes/palettes.h:97
 msgctxt "Palette"
 msgid "lightgreen (#90EE90)"
-msgstr "أخضر فاتح (#90EE90)"
+msgstr "أخضر خفيف (#90EE90)"
 
 #: ../share/palettes/palettes.h:98
 msgctxt "Palette"
@@ -2474,32 +2488,32 @@ msgstr "أخضر شاحب (#98FB98)"
 #: ../share/palettes/palettes.h:99
 msgctxt "Palette"
 msgid "darkgreen (#006400)"
-msgstr "أخضر غامق (#006400)"
+msgstr "أخضر داكن (#006400)"
 
 #: ../share/palettes/palettes.h:100
 msgctxt "Palette"
 msgid "green (#008000)"
-msgstr "أخضر (#008000)"
+msgstr "أخضر (008000#)"
 
 #: ../share/palettes/palettes.h:101
 msgctxt "Palette"
 msgid "lime (#00FF00)"
-msgstr "ليموني (#00FF00)"
+msgstr "أخضر ليمي (#00FF00)"
 
 #: ../share/palettes/palettes.h:102
 msgctxt "Palette"
 msgid "honeydew (#F0FFF0)"
-msgstr "شمام كوز العسل (#F0FFF0)"
+msgstr "كوزيّ العسل (#F0FFF0)"
 
 #: ../share/palettes/palettes.h:103
 msgctxt "Palette"
 msgid "seagreen (#2E8B57)"
-msgstr "أخضر بحري (#2E8B57)"
+msgstr "أخضر البحر (#2E8B57)"
 
 #: ../share/palettes/palettes.h:104
 msgctxt "Palette"
 msgid "mediumseagreen (#3CB371)"
-msgstr "أخضر بحري معتدل (#3CB371)"
+msgstr "أخضر بحري متوسط (#3CB371)"
 
 #: ../share/palettes/palettes.h:105
 msgctxt "Palette"
@@ -2509,7 +2523,7 @@ msgstr "أخضر ربيعي (#00FF7F)"
 #: ../share/palettes/palettes.h:106
 msgctxt "Palette"
 msgid "mintcream (#F5FFFA)"
-msgstr "كريمة النعناع (#F5FFFA)"
+msgstr "قشدي نعناعي (#F5FFFA)"
 
 #: ../share/palettes/palettes.h:107
 msgctxt "Palette"
@@ -2519,152 +2533,152 @@ msgstr "أخضر ربيعي متوسط (#00FA9A)"
 #: ../share/palettes/palettes.h:108
 msgctxt "Palette"
 msgid "mediumaquamarine (#66CDAA)"
-msgstr "زبرجد متوسط (#66CDAA)"
+msgstr "زبرجدي متوسط (#66CDAA)"
 
 #: ../share/palettes/palettes.h:109
 msgctxt "Palette"
 msgid "aquamarine (#7FFFD4)"
-msgstr "زبرجد (#7FFFD4)"
+msgstr "زبرجدي (#7FFFD4)"
 
 #: ../share/palettes/palettes.h:110
 msgctxt "Palette"
 msgid "turquoise (#40E0D0)"
-msgstr "فيروز (#40E0D0)"
+msgstr "فَيْرُوزُي (#40E0D0)"
 
 #: ../share/palettes/palettes.h:111
 msgctxt "Palette"
 msgid "lightseagreen (#20B2AA)"
-msgstr "أخضر بحر فاتح (#20B2AA)"
+msgstr "أخضر بحري خفيف (#20B2AA)"
 
 #: ../share/palettes/palettes.h:112
 msgctxt "Palette"
 msgid "mediumturquoise (#48D1CC)"
-msgstr "فيروز متوسط (#48D1CC)"
+msgstr "فيروزي متوسط (#48D1CC)"
 
 #: ../share/palettes/palettes.h:113
 msgctxt "Palette"
 msgid "darkslategray (#2F4F4F)"
-msgstr ""
+msgstr "رمادي أردوازي داكن (#2F4F4F)"
 
 #: ../share/palettes/palettes.h:114
 msgctxt "Palette"
 msgid "paleturquoise (#AFEEEE)"
-msgstr "فيروز باهت (#AFEEEE)"
+msgstr "فيروزي شاحب (#AFEEEE)"
 
 #: ../share/palettes/palettes.h:115
 msgctxt "Palette"
 msgid "teal (#008080)"
-msgstr "أزرق مخضَر (#008080)"
+msgstr "حذفي (#008080)"
 
 #: ../share/palettes/palettes.h:116
 msgctxt "Palette"
 msgid "darkcyan (#008B8B)"
-msgstr "سماوي داكن (#008B8B)"
+msgstr "سمائي داكن (#008B8B)"
 
 #: ../share/palettes/palettes.h:117
 msgctxt "Palette"
 msgid "cyan (#00FFFF)"
-msgstr "سماوي  (#00FFFF)"
+msgstr "سمائي (#00FFFF)"
 
 #: ../share/palettes/palettes.h:118
 msgctxt "Palette"
 msgid "lightcyan (#E0FFFF)"
-msgstr "سماوي فاتح  (#E0FFFF)"
+msgstr "سمائي خفيف (#E0FFFF)"
 
 #: ../share/palettes/palettes.h:119
 msgctxt "Palette"
 msgid "azure (#F0FFFF)"
-msgstr "سماوي (#F0FFFF)"
+msgstr "لازوردي (#F0FFFF)"
 
 #: ../share/palettes/palettes.h:120
 msgctxt "Palette"
 msgid "darkturquoise (#00CED1)"
-msgstr "فيروز داكن(#00CED1)"
+msgstr "فيروزي داكن (#00CED1)"
 
 #: ../share/palettes/palettes.h:121
 msgctxt "Palette"
 msgid "cadetblue (#5F9EA0)"
-msgstr "أزرق عسكري (#5F9EA0)"
+msgstr "أزرق كاديتيّ (#5F9EA0)"
 
 #: ../share/palettes/palettes.h:122
 msgctxt "Palette"
 msgid "powderblue (#B0E0E6)"
-msgstr "أزرق حُبيبي (#B0E0E6)"
+msgstr "أزرق المسحوق (#B0E0E6)"
 
 #: ../share/palettes/palettes.h:123
 msgctxt "Palette"
 msgid "lightblue (#ADD8E6)"
-msgstr "أزرق فاتح (#ADD8E6)"
+msgstr "أزرق خفيف (#ADD8E6)"
 
 #: ../share/palettes/palettes.h:124
 msgctxt "Palette"
 msgid "deepskyblue (#00BFFF)"
-msgstr "سماوي عميق (#00BFFF)"
+msgstr "أزرق السماء الداكن (#00BFFF)"
 
 #: ../share/palettes/palettes.h:125
 msgctxt "Palette"
 msgid "skyblue (#87CEEB)"
-msgstr "سماوي (#87CEEB)"
+msgstr "أزرق سماوي (#87CEEB)"
 
 #: ../share/palettes/palettes.h:126
 msgctxt "Palette"
 msgid "lightskyblue (#87CEFA)"
-msgstr "سماوي فاتح (#87CEFA)"
+msgstr "أزرق سماوي خفيف (#87CEFA)"
 
 #: ../share/palettes/palettes.h:127
 msgctxt "Palette"
 msgid "steelblue (#4682B4)"
-msgstr "أزرق حديدي (#4682B4)"
+msgstr "أزرق فولاذي (#4682B4)"
 
 #: ../share/palettes/palettes.h:128
 msgctxt "Palette"
 msgid "aliceblue (#F0F8FF)"
-msgstr ""
+msgstr "أزرق أليس (#F0F8FF)"
 
 #: ../share/palettes/palettes.h:129
 msgctxt "Palette"
 msgid "dodgerblue (#1E90FF)"
-msgstr ""
+msgstr "أزرق فريق دودجر (#1E90FF)"
 
 #: ../share/palettes/palettes.h:130
 msgctxt "Palette"
 msgid "slategray (#708090)"
-msgstr ""
+msgstr "رمادي اردوازي (#708090)"
 
 #: ../share/palettes/palettes.h:131
 msgctxt "Palette"
 msgid "lightslategray (#778899)"
-msgstr ""
+msgstr "رمادي اردوازي خفيف (#778899)"
 
 #: ../share/palettes/palettes.h:132
 msgctxt "Palette"
 msgid "lightsteelblue (#B0C4DE)"
-msgstr ""
+msgstr "أزرق فولاذي خفيف (#B0C4DE)"
 
 #: ../share/palettes/palettes.h:133
 msgctxt "Palette"
 msgid "cornflowerblue (#6495ED)"
-msgstr "أزرق زهرالذّرة (#6495ED)"
+msgstr "أزرق قُنْطريوني (#6495ED)"
 
 #: ../share/palettes/palettes.h:134
 msgctxt "Palette"
 msgid "royalblue (#4169E1)"
-msgstr "أزرق ملكي (#4169E1)"
+msgstr "أزرق مَلَكي (#4169E1)"
 
 #: ../share/palettes/palettes.h:135
 msgctxt "Palette"
 msgid "midnightblue (#191970)"
-msgstr "ليلكي (#191970)"
+msgstr "أزرق منتصف الليل (191970#)"
 
 #: ../share/palettes/palettes.h:136
 msgctxt "Palette"
 msgid "lavender (#E6E6FA)"
-msgstr "خزامي (#E6E6FA)"
+msgstr "خُزاميّ (#E6E6FA)"
 
 #: ../share/palettes/palettes.h:137
 msgctxt "Palette"
 msgid "navy (#000080)"
-msgstr "بحري (#000080)"
+msgstr "أزرق البحرية (000080#)"
 
 #: ../share/palettes/palettes.h:138
 msgctxt "Palette"
@@ -2674,7 +2688,7 @@ msgstr "أزرق داكن (#00008B)"
 #: ../share/palettes/palettes.h:139
 msgctxt "Palette"
 msgid "mediumblue (#0000CD)"
-msgstr "أزرق معتدل (#0000CD)"
+msgstr "أزرق متوسط (#0000CD)"
 
 #: ../share/palettes/palettes.h:140
 msgctxt "Palette"
@@ -2684,32 +2698,32 @@ msgstr "أزرق (#0000FF)"
 #: ../share/palettes/palettes.h:141
 msgctxt "Palette"
 msgid "ghostwhite (#F8F8FF)"
-msgstr "أبيض شبحي (#F8F8FF)"
+msgstr "أبيض الشبح (#F8F8FF)"
 
 #: ../share/palettes/palettes.h:142
 msgctxt "Palette"
 msgid "slateblue (#6A5ACD)"
-msgstr "أزرق اردوازي (#6A5ACD)"
+msgstr "أزرق أردوازي (#6A5ACD)"
 
 #: ../share/palettes/palettes.h:143
 msgctxt "Palette"
 msgid "darkslateblue (#483D8B)"
-msgstr "اردوازي داكن (#483D8B)"
+msgstr "أزرق أردوازي داكن (#483D8B)"
 
 #: ../share/palettes/palettes.h:144
 msgctxt "Palette"
 msgid "mediumslateblue (#7B68EE)"
-msgstr "اردوازي معتدل (#7B68EE)"
+msgstr "أزرق اردوازي متوسط (#7B68EE)"
 
 #: ../share/palettes/palettes.h:145
 msgctxt "Palette"
 msgid "mediumpurple (#9370DB)"
-msgstr "أرجواني معتدل (#9370DB)"
+msgstr "أُرجواني متوسط (#9370DB)"
 
 #: ../share/palettes/palettes.h:146
 msgctxt "Palette"
 msgid "blueviolet (#8A2BE2)"
-msgstr "بنفسجي مزرق (#8A2BE2)"
+msgstr "بنفسجي مُزرق (#8A2BE2)"
 
 #: ../share/palettes/palettes.h:147
 msgctxt "Palette"
@@ -2719,7 +2733,7 @@ msgstr "نيلي (#4B0082)"
 #: ../share/palettes/palettes.h:148
 msgctxt "Palette"
 msgid "darkorchid (#9932CC)"
-msgstr "أوركيدي داكن (#9932CC)"
+msgstr "سحلبي داكن (#9932CC)"
 
 #: ../share/palettes/palettes.h:149
 msgctxt "Palette"
@@ -2729,7 +2743,7 @@ msgstr "بنفسجي داكن (#9400D3)"
 #: ../share/palettes/palettes.h:150
 msgctxt "Palette"
 msgid "mediumorchid (#BA55D3)"
-msgstr "أوركيدي معتدل (#BA55D3)"
+msgstr "سحلبي متوسط (#BA55D3)"
 
 #: ../share/palettes/palettes.h:151
 msgctxt "Palette"
@@ -2739,57 +2753,57 @@ msgstr "شوكي (#D8BFD8)"
 #: ../share/palettes/palettes.h:152
 msgctxt "Palette"
 msgid "plum (#DDA0DD)"
-msgstr "خوخي (#DDA0DD)"
+msgstr "خوخي شاحب (#DDA0DD)"
 
 #: ../share/palettes/palettes.h:153
 msgctxt "Palette"
 msgid "violet (#EE82EE)"
-msgstr "بنفسجي (#EE82EE)"
+msgstr "بنفسجيّ (#EE82EE)"
 
 #: ../share/palettes/palettes.h:154
 msgctxt "Palette"
 msgid "purple (#800080)"
-msgstr "بنفسجي غامق (#800080)"
+msgstr "أُرجواني (800080#)"
 
 #: ../share/palettes/palettes.h:155
 msgctxt "Palette"
 msgid "darkmagenta (#8B008B)"
-msgstr "أرجواني داكن (#8B008B)"
+msgstr "فوشي داكن (#8B008B)"
 
 #: ../share/palettes/palettes.h:156
 msgctxt "Palette"
 msgid "magenta (#FF00FF)"
-msgstr "أرجواني (#FF00FF)"
+msgstr "فوشيّ (#FF00FF)"
 
 #: ../share/palettes/palettes.h:157
 msgctxt "Palette"
 msgid "orchid (#DA70D6)"
-msgstr "أوركيدي (#DA70D6)"
+msgstr "سحلبي (#DA70D6)"
 
 #: ../share/palettes/palettes.h:158
 msgctxt "Palette"
 msgid "mediumvioletred (#C71585)"
-msgstr "بنفسجي معتدل (#C71585)"
+msgstr "بنفسجي مُحمر (#C71585)"
 
 #: ../share/palettes/palettes.h:159
 msgctxt "Palette"
 msgid "deeppink (#FF1493)"
-msgstr "وردي عميق (#FF1493)"
+msgstr "زهري مُتألِّق (#FF1493)"
 
 #: ../share/palettes/palettes.h:160
 msgctxt "Palette"
 msgid "hotpink (#FF69B4)"
-msgstr "وردي حار (#FF69B4)"
+msgstr "زهري ساخِن (#FF69B4)"
 
 #: ../share/palettes/palettes.h:161
 msgctxt "Palette"
 msgid "lavenderblush (#FFF0F5)"
-msgstr "خزامي خجول (#FFF0F5)"
+msgstr "تورديّ خزامي (#FFF0F5)"
 
 #: ../share/palettes/palettes.h:162
 msgctxt "Palette"
 msgid "palevioletred (#DB7093)"
-msgstr "بنفسجي شاحب (#DB7093)"
+msgstr "أحمر بنفسجي شاحب (#DB7093)"
 
 #: ../share/palettes/palettes.h:163
 msgctxt "Palette"
@@ -2799,17 +2813,17 @@ msgstr "قرمزي (#DC143C)"
 #: ../share/palettes/palettes.h:164
 msgctxt "Palette"
 msgid "pink (#FFC0CB)"
-msgstr "وردي (#FFC0CB)"
+msgstr "زهري (#FFC0CB)"
 
 #: ../share/palettes/palettes.h:165
 msgctxt "Palette"
 msgid "lightpink (#FFB6C1)"
-msgstr "وردي فاتح (#FFB6C1)"
+msgstr "زهري خفيف (#FFB6C1)"
 
 #: ../share/palettes/palettes.h:166
 msgctxt "Palette"
 msgid "rebeccapurple (#663399)"
-msgstr "أرجواني رفيق (#663399)"
+msgstr "أُرجواني ريبيكا (663399#)"
 
 #: ../share/palettes/palettes.h:167
 msgctxt "Palette"
@@ -2859,47 +2873,47 @@ msgstr "برتقالي 3"
 #: ../share/palettes/palettes.h:176
 msgctxt "Palette"
 msgid "Sky Blue 1"
-msgstr "أزرق سمائي 1"
+msgstr "أزرق السماء 1"
 
 #: ../share/palettes/palettes.h:177
 msgctxt "Palette"
 msgid "Sky Blue 2"
-msgstr "أزرق سمائي 2"
+msgstr "أزرق السماء 2"
 
 #: ../share/palettes/palettes.h:178
 msgctxt "Palette"
 msgid "Sky Blue 3"
-msgstr "أزرق سمائي 3"
+msgstr "أزرق السماء 3"
 
 #: ../share/palettes/palettes.h:179
 msgctxt "Palette"
 msgid "Plum 1"
-msgstr "ريشة 1"
+msgstr "خوخ 1"
 
 #: ../share/palettes/palettes.h:180
 msgctxt "Palette"
 msgid "Plum 2"
-msgstr "ريشة 2"
+msgstr "خوخ 2"
 
 #: ../share/palettes/palettes.h:181
 msgctxt "Palette"
 msgid "Plum 3"
-msgstr "ريشة 3"
+msgstr "خوخ 3"
 
 #: ../share/palettes/palettes.h:182
 msgctxt "Palette"
 msgid "Chocolate 1"
-msgstr "شكولاطة 1"
+msgstr "شوكولاتة 1"
 
 #: ../share/palettes/palettes.h:183
 msgctxt "Palette"
 msgid "Chocolate 2"
-msgstr "شكولاطة 2"
+msgstr "شوكولاتة 2"
 
 #: ../share/palettes/palettes.h:184
 msgctxt "Palette"
 msgid "Chocolate 3"
-msgstr "شكولاطة 3"
+msgstr "شوكولاتة 3"
 
 #: ../share/palettes/palettes.h:185
 msgctxt "Palette"
@@ -2919,162 +2933,162 @@ msgstr "أحمر قرمزي 3"
 #: ../share/palettes/palettes.h:188
 msgctxt "Palette"
 msgid "Snowy White"
-msgstr "أبيض ثلجي"
+msgstr "ثلجي أبيض"
 
 #: ../share/palettes/palettes.h:189
 msgctxt "Palette"
 msgid "Aluminium 1"
-msgstr "ألمنيوم 1"
+msgstr "ألومنيوم 1"
 
 #: ../share/palettes/palettes.h:190
 msgctxt "Palette"
 msgid "Aluminium 2"
-msgstr "ألمنيوم 2"
+msgstr "ألومنيوم 2"
 
 #: ../share/palettes/palettes.h:191
 msgctxt "Palette"
 msgid "Aluminium 3"
-msgstr "ألمنيوم 3"
+msgstr "ألومنيوم 3"
 
 #: ../share/palettes/palettes.h:192
 msgctxt "Palette"
 msgid "Aluminium 4"
-msgstr "ألمنيوم 4"
+msgstr "ألومنيوم 4"
 
 #: ../share/palettes/palettes.h:193
 msgctxt "Palette"
 msgid "Aluminium 5"
-msgstr "ألمنيوم 5"
+msgstr "ألومنيوم 5"
 
 #: ../share/palettes/palettes.h:194
 msgctxt "Palette"
 msgid "Aluminium 6"
-msgstr "ألمنيوم 6"
+msgstr "ألومنيوم 6"
 
 #: ../share/palettes/palettes.h:195
 msgctxt "Palette"
 msgid "Jet Black"
-msgstr "أسود فحمي"
+msgstr "فحمي أسود"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:1"
-msgstr "شرائط 1:1"
+msgstr "أشرطة 1:1"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:1 white"
-msgstr "شرائط 1:1 بيضاء"
+msgstr "أشرطة 1:1 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:1.5"
-msgstr "شرائط  1:1.5"
+msgstr "أشرطة 1:1.5"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:1.5 white"
-msgstr "شرائط 1:1.5 بيضاء"
+msgstr "أشرطة 1:1.5 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:2"
-msgstr "شرائط 1:2"
+msgstr "أشرطة 1:2"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:2 white"
-msgstr "شرائط 1:2 بيضاء"
+msgstr "أشرطة 1:2 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:3"
-msgstr "شرائط 1:3"
+msgstr "أشرطة 1:3"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:3 white"
-msgstr "شرائط 1:3 بيضاء"
+msgstr "أشرطة 1:3 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:4"
-msgstr "شرائط 1:4"
+msgstr "أشرطة 1:4"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:4 white"
-msgstr "شرائط 1:4 بيضاء"
+msgstr "أشرطة 1:4 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:5"
-msgstr "شرائط 1:5"
+msgstr "أشرطة 1:5"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:5 white"
-msgstr "شرائط 1:5 بيضاء"
+msgstr "أشرطة 1:5 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:8"
-msgstr "شرائط 1:8"
+msgstr "أشرطة 1:8"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:8 white"
-msgstr "شرائط 1:8 بيضاء"
+msgstr "أشرطة 1:8 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:10"
-msgstr "شرائط 1:10 "
+msgstr "أشرطة 1:10"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:10 white"
-msgstr "شرائط 1:10 بيضاء"
+msgstr "أشرطة 1:10 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:16"
-msgstr "شرائط 1:16"
+msgstr "أشرطة 1:16"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:16 white"
-msgstr "شرائط 1:16 بيضاء"
+msgstr "أشرطة 1:16 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:32"
-msgstr "شرائط 1:32"
+msgstr "أشرطة 1:32"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:32 white"
-msgstr "شرائط 1:32 بيضاء"
+msgstr "أشرطة 1:32 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 1:64"
-msgstr "1:64 شرائط"
+msgstr "أشرطة 1:64"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 2:1"
-msgstr "شرائط 2:1"
+msgstr "أشرطة 2:1"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 2:1 white"
-msgstr "شرائط 2:1 بيضاء"
+msgstr "أشرطة 2:1 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 4:1"
-msgstr "شرائط 4:1"
+msgstr "أشرطة 4:1"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Stripes 4:1 white"
-msgstr "شرائط 4:1 بيضاء"
+msgstr "أشرطة 4:1 بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Checkerboard"
-msgstr "رقعة"
+msgstr "رُقعة شطرنج"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Checkerboard white"
-msgstr "رقعة بيضاء"
+msgstr "رُقعة شطرنج بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Packed circles"
-msgstr ""
+msgstr "دوائر مرصوصة"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Polka dots, small"
-msgstr "نقاط بولكا، ضغيرة"
+msgstr "نقاط بولكا، صغيرة"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Polka dots, small white"
-msgstr "نقاط بولكا، صغيرة بيضاء"
+msgstr "نقاط بولكا، صغيرة وبيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Polka dots, medium"
@@ -3094,11 +3108,11 @@ msgstr "نقاط بولكا، كبيرة بيضاء"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Wavy"
-msgstr "متموّج"
+msgstr "تَمَوُّج"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Wavy white"
-msgstr "متموّج أبيض"
+msgstr "تَمَوُّج أبيض"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Camouflage"
@@ -3106,24 +3120,24 @@ msgstr "تمويه"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Ermine"
-msgstr "أرمينية"
+msgstr "قاقوم"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Sand (bitmap)"
-msgstr "رمل (صورة)"
+msgstr "رِمال (صورة نُقطيَّة)"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Cloth (bitmap)"
-msgstr "ثياب (صورة)"
+msgstr "قماش (صورة نُقطيَّة)"
 
 #: ../share/paint/patterns.svg.h:1
 msgid "Old paint (bitmap)"
-msgstr "لوحة قديمة (صورة)"
+msgstr "طِلاء قديم (صورة نُقطيَّة)"
 
 #: ../share/symbols/symbols.h:2
 msgctxt "Symbol"
 msgid "AIGA Symbol Signs"
-msgstr ""
+msgstr "لافتات رُمُوز AIGA"
 
 #: ../share/symbols/symbols.h:3 ../share/symbols/symbols.h:4
 #: ../share/symbols/symbols.h:281 ../share/symbols/symbols.h:282
@@ -3144,98 +3158,98 @@ msgstr "تحويل العملات"
 #: ../share/symbols/symbols.h:9 ../share/symbols/symbols.h:10
 msgctxt "Symbol"
 msgid "Currency Exchange - Euro"
-msgstr "تحويل العملات - أورو"
+msgstr "تحويل العملات - يورو"
 
 #: ../share/symbols/symbols.h:11 ../share/symbols/symbols.h:12
 msgctxt "Symbol"
 msgid "Cashier"
-msgstr "مصرف"
+msgstr "أمين الصندوق"
 
 #: ../share/symbols/symbols.h:13 ../share/symbols/symbols.h:14
 #: ../share/symbols/symbols.h:213 ../share/symbols/symbols.h:214
 msgctxt "Symbol"
 msgid "First Aid"
-msgstr "مساعدة أولية"
+msgstr "الإسعافات الأولية"
 
 #: ../share/symbols/symbols.h:15 ../share/symbols/symbols.h:16
 msgctxt "Symbol"
 msgid "Lost and Found"
-msgstr "مفقودات"
+msgstr "فُقِدَت وَوجِدَت"
 
 #: ../share/symbols/symbols.h:17 ../share/symbols/symbols.h:18
 msgctxt "Symbol"
 msgid "Coat Check"
-msgstr "مشجب"
+msgstr "حجرة المعاطف"
 
 #: ../share/symbols/symbols.h:19 ../share/symbols/symbols.h:20
 msgctxt "Symbol"
 msgid "Baggage Lockers"
-msgstr ""
+msgstr "خزائن الأمتعة"
 
 #: ../share/symbols/symbols.h:21 ../share/symbols/symbols.h:22
 msgctxt "Symbol"
 msgid "Escalator"
-msgstr "مِصعد"
+msgstr "درج متحرك"
 
 #: ../share/symbols/symbols.h:23 ../share/symbols/symbols.h:24
 msgctxt "Symbol"
 msgid "Escalator Down"
-msgstr "نزول المصعد"
+msgstr "درج متحرك لأسفل"
 
 #: ../share/symbols/symbols.h:25 ../share/symbols/symbols.h:26
 msgctxt "Symbol"
 msgid "Escalator Up"
-msgstr "صعود مصعد"
+msgstr "درج متحرك لأعلى"
 
 #: ../share/symbols/symbols.h:27 ../share/symbols/symbols.h:28
 msgctxt "Symbol"
 msgid "Stairs"
-msgstr "سلّم"
+msgstr "درج"
 
 #: ../share/symbols/symbols.h:29 ../share/symbols/symbols.h:30
 msgctxt "Symbol"
 msgid "Stairs Down"
-msgstr "نزول السلّم"
+msgstr "الدرج لأسفل"
 
 #: ../share/symbols/symbols.h:31 ../share/symbols/symbols.h:32
 msgctxt "Symbol"
 msgid "Stairs Up"
-msgstr "صعود السلّم"
+msgstr "الدرج لأعلى"
 
 #: ../share/symbols/symbols.h:33 ../share/symbols/symbols.h:34
 msgctxt "Symbol"
 msgid "Elevator"
-msgstr "مصعد"
+msgstr "مِصعد"
 
 #: ../share/symbols/symbols.h:35 ../share/symbols/symbols.h:36
 msgctxt "Symbol"
 msgid "Toilets - Men"
-msgstr "مرحاض - رجال"
+msgstr "مراحيض  - رجال"
 
 #: ../share/symbols/symbols.h:37 ../share/symbols/symbols.h:38
 msgctxt "Symbol"
 msgid "Toilets - Women"
-msgstr "مرحاض - نساء"
+msgstr "مراحيض  - نساء"
 
 #: ../share/symbols/symbols.h:39 ../share/symbols/symbols.h:40
 msgctxt "Symbol"
 msgid "Toilets"
-msgstr "مرحاض"
+msgstr "مراحيض"
 
 #: ../share/symbols/symbols.h:41 ../share/symbols/symbols.h:42
 msgctxt "Symbol"
 msgid "Nursery"
-msgstr "حضانة"
+msgstr "دار حضانة"
 
 #: ../share/symbols/symbols.h:43 ../share/symbols/symbols.h:44
 msgctxt "Symbol"
 msgid "Drinking Fountain"
-msgstr "مكان شُرب"
+msgstr "نافورة شرب"
 
 #: ../share/symbols/symbols.h:45 ../share/symbols/symbols.h:46
 msgctxt "Symbol"
 msgid "Waiting Room"
-msgstr "غرفة الانتظار"
+msgstr "غرفة انتظار"
 
 #: ../share/symbols/symbols.h:47 ../share/symbols/symbols.h:48
 #: ../share/symbols/symbols.h:231 ../share/symbols/symbols.h:232
@@ -3246,22 +3260,22 @@ msgstr "معلومة"
 #: ../share/symbols/symbols.h:49 ../share/symbols/symbols.h:50
 msgctxt "Symbol"
 msgid "Hotel Information"
-msgstr "معلومات الفندق"
+msgstr "معلومات فندق"
 
 #: ../share/symbols/symbols.h:51 ../share/symbols/symbols.h:52
 msgctxt "Symbol"
 msgid "Air Transportation"
-msgstr "نقل جوي"
+msgstr "المواصلات الجويَّة"
 
 #: ../share/symbols/symbols.h:53 ../share/symbols/symbols.h:54
 msgctxt "Symbol"
 msgid "Heliport"
-msgstr "محطّ هليكوبتر"
+msgstr "مهبط للطائرات العمودية"
 
 #: ../share/symbols/symbols.h:55 ../share/symbols/symbols.h:56
 msgctxt "Symbol"
 msgid "Taxi"
-msgstr "سيارة أجرة"
+msgstr "سيارة أُجرة"
 
 #: ../share/symbols/symbols.h:57 ../share/symbols/symbols.h:58
 msgctxt "Symbol"
@@ -3271,22 +3285,22 @@ msgstr "حافلة"
 #: ../share/symbols/symbols.h:59 ../share/symbols/symbols.h:60
 msgctxt "Symbol"
 msgid "Ground Transportation"
-msgstr "نقل برّي"
+msgstr "المواصلات البريَّة"
 
 #: ../share/symbols/symbols.h:61 ../share/symbols/symbols.h:62
 msgctxt "Symbol"
 msgid "Rail Transportation"
-msgstr "نقل عبر السكك الحديدية"
+msgstr "المواصلات عبر السكك الحديدية"
 
 #: ../share/symbols/symbols.h:63 ../share/symbols/symbols.h:64
 msgctxt "Symbol"
 msgid "Water Transportation"
-msgstr "نقل بحري"
+msgstr "المواصلات البحريَّة"
 
 #: ../share/symbols/symbols.h:65 ../share/symbols/symbols.h:66
 msgctxt "Symbol"
 msgid "Car Rental"
-msgstr "كراء السيارات"
+msgstr "تأجير سيارات"
 
 #: ../share/symbols/symbols.h:67 ../share/symbols/symbols.h:68
 msgctxt "Symbol"
@@ -3311,12 +3325,12 @@ msgstr "متاجر"
 #: ../share/symbols/symbols.h:75 ../share/symbols/symbols.h:76
 msgctxt "Symbol"
 msgid "Barber Shop - Beauty Salon"
-msgstr ""
+msgstr "صالون حلاقة - صالون تجميل"
 
 #: ../share/symbols/symbols.h:77 ../share/symbols/symbols.h:78
 msgctxt "Symbol"
 msgid "Barber Shop"
-msgstr ""
+msgstr "صالون حلاقة"
 
 #: ../share/symbols/symbols.h:79 ../share/symbols/symbols.h:80
 msgctxt "Symbol"
@@ -3326,47 +3340,47 @@ msgstr "صالون تجميل"
 #: ../share/symbols/symbols.h:81 ../share/symbols/symbols.h:82
 msgctxt "Symbol"
 msgid "Ticket Purchase"
-msgstr "شراء التذاكر"
+msgstr "شراء تذكرة"
 
 #: ../share/symbols/symbols.h:83 ../share/symbols/symbols.h:84
 msgctxt "Symbol"
 msgid "Baggage Check In"
-msgstr ""
+msgstr "فحص الأمتعة"
 
 #: ../share/symbols/symbols.h:85 ../share/symbols/symbols.h:86
 msgctxt "Symbol"
 msgid "Baggage Claim"
-msgstr ""
+msgstr "استلام الأمتعة"
 
 #: ../share/symbols/symbols.h:87 ../share/symbols/symbols.h:88
 msgctxt "Symbol"
 msgid "Customs"
-msgstr "مخصص"
+msgstr "الجمارك"
 
 #: ../share/symbols/symbols.h:89 ../share/symbols/symbols.h:90
 msgctxt "Symbol"
 msgid "Immigration"
-msgstr "هجرة"
+msgstr "الهجرة"
 
 #: ../share/symbols/symbols.h:91 ../share/symbols/symbols.h:92
 msgctxt "Symbol"
 msgid "Departing Flights"
-msgstr ""
+msgstr "الرحلات المُغادرة"
 
 #: ../share/symbols/symbols.h:93 ../share/symbols/symbols.h:94
 msgctxt "Symbol"
 msgid "Arriving Flights"
-msgstr ""
+msgstr "الرحلات القادمة"
 
 #: ../share/symbols/symbols.h:95 ../share/symbols/symbols.h:96
 msgctxt "Symbol"
 msgid "Smoking"
-msgstr "تدخين"
+msgstr "التدخين"
 
 #: ../share/symbols/symbols.h:97 ../share/symbols/symbols.h:98
 msgctxt "Symbol"
 msgid "No Smoking"
-msgstr "لا للتدخين"
+msgstr "يُمنع التدخين"
 
 #: ../share/symbols/symbols.h:99 ../share/symbols/symbols.h:100
 #: ../share/symbols/symbols.h:245 ../share/symbols/symbols.h:246
@@ -3377,92 +3391,92 @@ msgstr "موقف"
 #: ../share/symbols/symbols.h:101 ../share/symbols/symbols.h:102
 msgctxt "Symbol"
 msgid "No Parking"
-msgstr "ممنوع التوقّف"
+msgstr "يُمنع الوقوف"
 
 #: ../share/symbols/symbols.h:103 ../share/symbols/symbols.h:104
 msgctxt "Symbol"
 msgid "No Dogs"
-msgstr "لا للكلاب"
+msgstr "يُمنع اصطحاب الكلاب"
 
 #: ../share/symbols/symbols.h:105 ../share/symbols/symbols.h:106
 msgctxt "Symbol"
 msgid "No Entry"
-msgstr "ممنوع الدخول"
+msgstr "يُمنع الدخول"
 
 #: ../share/symbols/symbols.h:107 ../share/symbols/symbols.h:108
 msgctxt "Symbol"
 msgid "Exit"
-msgstr "خروج"
+msgstr "مخرج"
 
 #: ../share/symbols/symbols.h:109 ../share/symbols/symbols.h:110
 msgctxt "Symbol"
 msgid "Fire Extinguisher"
-msgstr "مطفأة الحريق"
+msgstr "مطفأة حريق"
 
 #: ../share/symbols/symbols.h:111 ../share/symbols/symbols.h:112
 msgctxt "Symbol"
 msgid "Right Arrow"
-msgstr "سهم إلى اليمين"
+msgstr "سهم لليمين"
 
 #: ../share/symbols/symbols.h:113 ../share/symbols/symbols.h:114
 msgctxt "Symbol"
 msgid "Forward and Right Arrow"
-msgstr "سهم إلى اليمين العلوي"
+msgstr "سهم لليمين العلوي"
 
 #: ../share/symbols/symbols.h:115 ../share/symbols/symbols.h:116
 msgctxt "Symbol"
 msgid "Up Arrow"
-msgstr "سهم إلى اﻷعلى"
+msgstr "سهم للأعلى"
 
 #: ../share/symbols/symbols.h:117 ../share/symbols/symbols.h:118
 msgctxt "Symbol"
 msgid "Forward and Left Arrow"
-msgstr "سهم إلى اليسار العلوي"
+msgstr "سهم لليسار العلوي"
 
 #: ../share/symbols/symbols.h:119 ../share/symbols/symbols.h:120
 msgctxt "Symbol"
 msgid "Left Arrow"
-msgstr "سهم إلى اليسار"
+msgstr "سهم لليسار"
 
 #: ../share/symbols/symbols.h:121 ../share/symbols/symbols.h:122
 msgctxt "Symbol"
 msgid "Left and Down Arrow"
-msgstr "سهم إلى اليسار السفلي"
+msgstr "سهم لليسار السفلي"
 
 #: ../share/symbols/symbols.h:123 ../share/symbols/symbols.h:124
 msgctxt "Symbol"
 msgid "Down Arrow"
-msgstr "سهم إلى الأسفل"
+msgstr "سهم للأسفل"
 
 #: ../share/symbols/symbols.h:125 ../share/symbols/symbols.h:126
 msgctxt "Symbol"
 msgid "Right and Down Arrow"
-msgstr "سهم إلى اليمين السفلي"
+msgstr "سهم لليمين السفلي"
 
 #: ../share/symbols/symbols.h:127 ../share/symbols/symbols.h:128
 msgctxt "Symbol"
 msgid "NPS Wheelchair Accessible - 1996"
-msgstr ""
+msgstr "NPS تسهيلات الكراسي المتحركة - 1996"
 
 #: ../share/symbols/symbols.h:129 ../share/symbols/symbols.h:130
 msgctxt "Symbol"
 msgid "NPS Wheelchair Accessible"
-msgstr ""
+msgstr "NPS تسهيلات الكراسي المتحركة"
 
 #: ../share/symbols/symbols.h:131 ../share/symbols/symbols.h:132
 msgctxt "Symbol"
 msgid "New Wheelchair Accessible"
-msgstr ""
+msgstr "تسهيلات الكراسي المتحركة الجديدة"
 
 #: ../share/symbols/symbols.h:133
 msgctxt "Symbol"
 msgid "Word Balloons"
-msgstr "بالونات تعبيرية"
+msgstr "بالونات الكلمات"
 
 #: ../share/symbols/symbols.h:134
 msgctxt "Symbol"
 msgid "Thought Balloon"
-msgstr "بالونة تفكير"
+msgstr "بالون الفكر"
 
 #: ../share/symbols/symbols.h:135
 msgctxt "Symbol"
@@ -3472,57 +3486,57 @@ msgstr "كلام الأحلام"
 #: ../share/symbols/symbols.h:136
 msgctxt "Symbol"
 msgid "Rounded Balloon"
-msgstr "بالونة مستديرة اﻷطراف"
+msgstr "بالون مستدير اﻷطراف"
 
 #: ../share/symbols/symbols.h:137
 msgctxt "Symbol"
 msgid "Squared Balloon"
-msgstr "بالونة مربّعة"
+msgstr "بالون مربَّع"
 
 #: ../share/symbols/symbols.h:138
 msgctxt "Symbol"
 msgid "Over the Phone"
-msgstr "على الهاتف"
+msgstr "عَبر الهاتف"
 
 #: ../share/symbols/symbols.h:139
 msgctxt "Symbol"
 msgid "Hip Balloon"
-msgstr "بالونة ذات سنام"
+msgstr "بالون ذو نتوء"
 
 #: ../share/symbols/symbols.h:140
 msgctxt "Symbol"
 msgid "Circle Balloon"
-msgstr "بالونة دائرية"
+msgstr "بالون دائري"
 
 #: ../share/symbols/symbols.h:141
 msgctxt "Symbol"
 msgid "Exclaim Balloon"
-msgstr "بالونة صُراخ"
+msgstr "بالون صُراخ"
 
 #: ../share/symbols/symbols.h:142
 msgctxt "Symbol"
 msgid "Flow Chart Shapes"
-msgstr "أشكال بيانية"
+msgstr "أشكال المُخطط التدفقي"
 
 #: ../share/symbols/symbols.h:143
 msgctxt "Symbol"
 msgid "Process"
-msgstr "عملية"
+msgstr "عمليَّة"
 
 #: ../share/symbols/symbols.h:144
 msgctxt "Symbol"
 msgid "Input/Output"
-msgstr "مدخل/مخرج"
+msgstr "مُدخلات/مُخرجات"
 
 #: ../share/symbols/symbols.h:145
 msgctxt "Symbol"
 msgid "Document"
-msgstr "مستند"
+msgstr "مُستَنَد"
 
 #: ../share/symbols/symbols.h:146
 msgctxt "Symbol"
 msgid "Manual Operation"
-msgstr "عملية يدوية"
+msgstr "عمليّة يدويَّة"
 
 #: ../share/symbols/symbols.h:147
 msgctxt "Symbol"
@@ -3537,22 +3551,22 @@ msgstr "دمج"
 #: ../share/symbols/symbols.h:149
 msgctxt "Symbol"
 msgid "Decision"
-msgstr "تقرير"
+msgstr "قرار"
 
 #: ../share/symbols/symbols.h:150
 msgctxt "Symbol"
 msgid "Magnetic Tape"
-msgstr "شريط مغناطيسي"
+msgstr "شريط مُمَغنَط"
 
 #: ../share/symbols/symbols.h:151
 msgctxt "Symbol"
 msgid "Display"
-msgstr "عرض"
+msgstr "العَرض"
 
 #: ../share/symbols/symbols.h:152
 msgctxt "Symbol"
 msgid "Auxiliary Operation"
-msgstr ""
+msgstr "عملية مُساعدة"
 
 #: ../share/symbols/symbols.h:153
 msgctxt "Symbol"
@@ -3567,97 +3581,97 @@ msgstr "استخراج"
 #: ../share/symbols/symbols.h:155
 msgctxt "Symbol"
 msgid "Terminal/Interrupt"
-msgstr ""
+msgstr "نقطة اتصال/مُقاطعة"
 
 #: ../share/symbols/symbols.h:156
 msgctxt "Symbol"
 msgid "Punched Card"
-msgstr ""
+msgstr "بطاقة مُثَقَّبة"
 
 #: ../share/symbols/symbols.h:157
 msgctxt "Symbol"
 msgid "Punch Tape"
-msgstr ""
+msgstr "شريط مُثَقَّب"
 
 #: ../share/symbols/symbols.h:158
 msgctxt "Symbol"
 msgid "Online Storage"
-msgstr ""
+msgstr "مخزن على الانترنت"
 
 #: ../share/symbols/symbols.h:159
 msgctxt "Symbol"
 msgid "Keying"
-msgstr ""
+msgstr "كِتابَة"
 
 #: ../share/symbols/symbols.h:160
 msgctxt "Symbol"
 msgid "Sort"
-msgstr "الترتيب"
+msgstr "فَرز"
 
 #: ../share/symbols/symbols.h:161
 msgctxt "Symbol"
 msgid "Connector"
-msgstr "موصّل"
+msgstr "وصلة"
 
 #: ../share/symbols/symbols.h:162
 msgctxt "Symbol"
 msgid "Off-Page Connector"
-msgstr ""
+msgstr "وصلة خارج الصفحة"
 
 #: ../share/symbols/symbols.h:163
 msgctxt "Symbol"
 msgid "Transmittal Tape"
-msgstr ""
+msgstr "شريط إحالة"
 
 #: ../share/symbols/symbols.h:164
 msgctxt "Symbol"
 msgid "Communication Link"
-msgstr "خط اتصال"
+msgstr "وصلة اتصال"
 
 #: ../share/symbols/symbols.h:165
 msgctxt "Symbol"
 msgid "Collate"
-msgstr ""
+msgstr "ترتيب"
 
 #: ../share/symbols/symbols.h:166
 msgctxt "Symbol"
 msgid "Comment/Annotation"
-msgstr "تعليق / تلميح"
+msgstr "تعليق/حاشية"
 
 #: ../share/symbols/symbols.h:167
 msgctxt "Symbol"
 msgid "Core"
-msgstr "جسم"
+msgstr "نواة"
 
 #: ../share/symbols/symbols.h:168
 msgctxt "Symbol"
 msgid "Predefined Process"
-msgstr ""
+msgstr "عمليَّة مُحددة مسبقًا"
 
 #: ../share/symbols/symbols.h:169
 msgctxt "Symbol"
 msgid "Magnetic Disk (Database)"
-msgstr "ديسك مغتاطيسي (قاعدة البيانات)"
+msgstr "قرص مغناطيسي (قاعدة بيانات)"
 
 #: ../share/symbols/symbols.h:170
 msgctxt "Symbol"
 msgid "Magnetic Drum (Direct Access)"
-msgstr ""
+msgstr "أسطوانة مغناطيسية (وصول مباشر)"
 
 #: ../share/symbols/symbols.h:171
 msgctxt "Symbol"
 msgid "Offline Storage"
-msgstr ""
+msgstr "تخزين دون اتصال"
 
 #: ../share/symbols/symbols.h:172
 msgctxt "Symbol"
 msgid "Logical Or"
-msgstr "\"أو\" منطقي"
+msgstr "\"أو\" المنطقيَّة"
 
 #: ../share/symbols/symbols.h:173
 msgctxt "Symbol"
 msgid "Logical And"
-msgstr "\"و\" منطقي"
+msgstr "\"و\" المنطقيَّة"
 
 #: ../share/symbols/symbols.h:174
 msgctxt "Symbol"
@@ -3667,72 +3681,72 @@ msgstr "تأخير"
 #: ../share/symbols/symbols.h:175
 msgctxt "Symbol"
 msgid "Loop Limit Begin"
-msgstr ""
+msgstr "بدء حَدّ الحلقة"
 
 #: ../share/symbols/symbols.h:176
 msgctxt "Symbol"
 msgid "Loop Limit End"
-msgstr ""
+msgstr "نهاية حَدّ الحلقة"
 
 #: ../share/symbols/symbols.h:177
 msgctxt "Symbol"
 msgid "Logic Symbols"
-msgstr "رموز منطقية"
+msgstr "رُمُوز منطقيَّة"
 
 #: ../share/symbols/symbols.h:178
 msgctxt "Symbol"
 msgid "Xnor Gate"
-msgstr "بوابة Xnor"
+msgstr "بوابة الاختيار الحصري السالبة (Xnor)"
 
 #: ../share/symbols/symbols.h:179
 msgctxt "Symbol"
 msgid "Xor Gate"
-msgstr "بوابة Xor"
+msgstr "بوابة الفصل الإقصائي (Xor)"
 
 #: ../share/symbols/symbols.h:180
 msgctxt "Symbol"
 msgid "Nor Gate"
-msgstr "بوابة Nor"
+msgstr "بوابة الاختيار السالبة (Nor)"
 
 #: ../share/symbols/symbols.h:181
 msgctxt "Symbol"
 msgid "Or Gate"
-msgstr "بوابة Or"
+msgstr "بوابة اختيار"
 
 #: ../share/symbols/symbols.h:182
 msgctxt "Symbol"
 msgid "Nand Gate"
-msgstr "بوابة Nand"
+msgstr "بوابة الاقتران السالبة (Nand)"
 
 #: ../share/symbols/symbols.h:183
 msgctxt "Symbol"
 msgid "And Gate"
-msgstr "بوابة And"
+msgstr "بوابة اقتران"
 
 #: ../share/symbols/symbols.h:184
 msgctxt "Symbol"
 msgid "Buffer"
-msgstr ""
+msgstr "مخزن مؤقت رقمي"
 
 #: ../share/symbols/symbols.h:185
 msgctxt "Symbol"
 msgid "Not Gate"
-msgstr "بوابة Not"
+msgstr "عاكس منطقي"
 
 #: ../share/symbols/symbols.h:186
 msgctxt "Symbol"
 msgid "Buffer Small"
-msgstr ""
+msgstr "مخزن مؤقت رقمي صغير"
 
 #: ../share/symbols/symbols.h:187
 msgctxt "Symbol"
 msgid "Not Gate Small"
-msgstr "بوابة Not صغيرة"
+msgstr "عاكس منطقي صغير"
 
 #: ../share/symbols/symbols.h:188
 msgctxt "Symbol"
 msgid "United States National Park Service Map Symbols"
-msgstr "رموز خارطة خدمات متنزه الولايات المتحدة الوطني"
+msgstr "رُمُوز خدمات خريطة المتنزهات القومية بالولايات المتحدة"
 
 #: ../share/symbols/symbols.h:189 ../share/symbols/symbols.h:190
 msgctxt "Symbol"
@@ -3742,22 +3756,22 @@ msgstr "مطار"
 #: ../share/symbols/symbols.h:191 ../share/symbols/symbols.h:192
 msgctxt "Symbol"
 msgid "Amphitheatre"
-msgstr "مدرّج مسرح"
+msgstr "مُدَرَّج"
 
 #: ../share/symbols/symbols.h:193 ../share/symbols/symbols.h:194
 msgctxt "Symbol"
 msgid "Bicycle Trail"
-msgstr "طريق دراجة"
+msgstr "درب دراجات"
 
 #: ../share/symbols/symbols.h:195 ../share/symbols/symbols.h:196
 msgctxt "Symbol"
 msgid "Boat Launch"
-msgstr ""
+msgstr "إطلاق زورق"
 
 #: ../share/symbols/symbols.h:197 ../share/symbols/symbols.h:198
 msgctxt "Symbol"
 msgid "Boat Tour"
-msgstr ""
+msgstr "جولة بالزورق"
 
 #: ../share/symbols/symbols.h:199 ../share/symbols/symbols.h:200
 msgctxt "Symbol"
@@ -3767,52 +3781,52 @@ msgstr "محطة حافلات"
 #: ../share/symbols/symbols.h:201 ../share/symbols/symbols.h:202
 msgctxt "Symbol"
 msgid "Campfire"
-msgstr "نار مخيّم"
+msgstr "نار مُخيَّم"
 
 #: ../share/symbols/symbols.h:203 ../share/symbols/symbols.h:204
 msgctxt "Symbol"
 msgid "Campground"
-msgstr ""
+msgstr "أرض مُخيَّم"
 
 #: ../share/symbols/symbols.h:205 ../share/symbols/symbols.h:206
 msgctxt "Symbol"
 msgid "CanoeAccess"
-msgstr ""
+msgstr "وصول زورق"
 
 #: ../share/symbols/symbols.h:207 ../share/symbols/symbols.h:208
 msgctxt "Symbol"
 msgid "Crosscountry Ski Trail"
-msgstr ""
+msgstr "درب تزلج عبر الضاحية"
 
 #: ../share/symbols/symbols.h:209 ../share/symbols/symbols.h:210
 msgctxt "Symbol"
 msgid "Downhill Skiing"
-msgstr ""
+msgstr "التزلج على المنحدرات"
 
 #: ../share/symbols/symbols.h:211 ../share/symbols/symbols.h:212
 msgctxt "Symbol"
 msgid "Drinking Water"
-msgstr ""
+msgstr "ماء للشرب"
 
 #: ../share/symbols/symbols.h:215 ../share/symbols/symbols.h:216
 msgctxt "Symbol"
 msgid "Fishing"
-msgstr "صيد"
+msgstr "صيد السمك"
 
 #: ../share/symbols/symbols.h:217 ../share/symbols/symbols.h:218
 msgctxt "Symbol"
 msgid "Food Service"
-msgstr ""
+msgstr "خدمة الطعام"
 
 #: ../share/symbols/symbols.h:219 ../share/symbols/symbols.h:220
 msgctxt "Symbol"
 msgid "Four Wheel Drive Road"
-msgstr ""
+msgstr "طريق دفع رُباعي"
 
 #: ../share/symbols/symbols.h:221 ../share/symbols/symbols.h:222
 msgctxt "Symbol"
 msgid "Gas Station"
-msgstr "محطة غاز"
+msgstr "محطة وقود"
 
 #: ../share/symbols/symbols.h:223 ../share/symbols/symbols.h:224
 msgctxt "Symbol"
@@ -3832,32 +3846,32 @@ msgstr "مستشفى"
 #: ../share/symbols/symbols.h:229 ../share/symbols/symbols.h:230
 msgctxt "Symbol"
 msgid "Ice Skating"
-msgstr "تزحلق على الجليد"
+msgstr "التزلج على الجليد"
 
 #: ../share/symbols/symbols.h:233 ../share/symbols/symbols.h:234
 msgctxt "Symbol"
 msgid "Litter Receptacle"
-msgstr ""
+msgstr "وعاء قُمامة"
 
 #: ../share/symbols/symbols.h:235 ../share/symbols/symbols.h:236
 msgctxt "Symbol"
 msgid "Lodging"
-msgstr ""
+msgstr "مسكن"
 
 #: ../share/symbols/symbols.h:237 ../share/symbols/symbols.h:238
 msgctxt "Symbol"
 msgid "Marina"
-msgstr "بحّار"
+msgstr "مرسى بحري"
 
 #: ../share/symbols/symbols.h:239 ../share/symbols/symbols.h:240
 msgctxt "Symbol"
 msgid "Motorbike Trail"
-msgstr ""
+msgstr "درب دراجات نارية"
 
 #: ../share/symbols/symbols.h:241 ../share/symbols/symbols.h:242
 msgctxt "Symbol"
 msgid "Radiator Water"
-msgstr ""
+msgstr "ماء المشعاع (الرديتر)"
 
 #: ../share/symbols/symbols.h:243 ../share/symbols/symbols.h:244
 msgctxt "Symbol"
@@ -3867,72 +3881,72 @@ msgstr "إعادة التدوير"
 #: ../share/symbols/symbols.h:247 ../share/symbols/symbols.h:248
 msgctxt "Symbol"
 msgid "Pets On Leash"
-msgstr "كلاب مربوطة"
+msgstr "الحوانات الأليفة مربوطة"
 
 #: ../share/symbols/symbols.h:249 ../share/symbols/symbols.h:250
 msgctxt "Symbol"
 msgid "Picnic Area"
-msgstr ""
+msgstr "منطقة منتزه"
 
 #: ../share/symbols/symbols.h:251 ../share/symbols/symbols.h:252
 msgctxt "Symbol"
 msgid "Post Office"
-msgstr "محطة بريد"
+msgstr "مكتب بريد"
 
 #: ../share/symbols/symbols.h:253 ../share/symbols/symbols.h:254
 msgctxt "Symbol"
 msgid "Ranger Station"
-msgstr "نقطة حراسة"
+msgstr "محطة حارس غابة"
 
 #: ../share/symbols/symbols.h:255 ../share/symbols/symbols.h:256
 msgctxt "Symbol"
 msgid "RV Campground"
-msgstr "شاحنة تخييم"
+msgstr "موقف المركبات الترفيهيَّة"
 
 #: ../share/symbols/symbols.h:257 ../share/symbols/symbols.h:258
 msgctxt "Symbol"
 msgid "Restrooms"
-msgstr "مرحاض"
+msgstr "دورات المياه"
 
 #: ../share/symbols/symbols.h:259 ../share/symbols/symbols.h:260
 msgctxt "Symbol"
 msgid "Sailing"
-msgstr "إبحار"
+msgstr "ركوب السفن الشراعية"
 
 #: ../share/symbols/symbols.h:261 ../share/symbols/symbols.h:262
 msgctxt "Symbol"
 msgid "Sanitary Disposal Station"
-msgstr ""
+msgstr "محطة صرف صحي"
 
 #: ../share/symbols/symbols.h:263 ../share/symbols/symbols.h:264
 msgctxt "Symbol"
 msgid "Scuba Diving"
-msgstr ""
+msgstr "الغوص"
 
 #: ../share/symbols/symbols.h:265 ../share/symbols/symbols.h:266
 msgctxt "Symbol"
 msgid "Self Guided Trail"
-msgstr ""
+msgstr "درب إرشاد ذاتي"
 
 #: ../share/symbols/symbols.h:267 ../share/symbols/symbols.h:268
 msgctxt "Symbol"
 msgid "Shelter"
-msgstr ""
+msgstr "ملجأ"
 
 #: ../share/symbols/symbols.h:269 ../share/symbols/symbols.h:270
 msgctxt "Symbol"
 msgid "Showers"
-msgstr "حمّام"
+msgstr "حمامات"
 
 #: ../share/symbols/symbols.h:271 ../share/symbols/symbols.h:272
 msgctxt "Symbol"
 msgid "Sledding"
-msgstr ""
+msgstr "تزلُّج"
 
 #: ../share/symbols/symbols.h:273 ../share/symbols/symbols.h:274
 msgctxt "Symbol"
 msgid "SnowmobileTrail"
-msgstr ""
+msgstr "درب تزلُّج"
 
 #: ../share/symbols/symbols.h:275 ../share/symbols/symbols.h:276
 msgctxt "Symbol"
@@ -3942,7 +3956,7 @@ msgstr "إسطبل"
 #: ../share/symbols/symbols.h:277 ../share/symbols/symbols.h:278
 msgctxt "Symbol"
 msgid "Store"
-msgstr "مخزن"
+msgstr "متجر"
 
 #: ../share/symbols/symbols.h:279 ../share/symbols/symbols.h:280
 msgctxt "Symbol"
@@ -3952,78 +3966,79 @@ msgstr "سباحة"
 #: ../share/symbols/symbols.h:283 ../share/symbols/symbols.h:284
 msgctxt "Symbol"
 msgid "Emergency Telephone"
-msgstr "هاتف الطوارئ"
+msgstr "هاتف طوارئ"
 
 #: ../share/symbols/symbols.h:285 ../share/symbols/symbols.h:286
 msgctxt "Symbol"
 msgid "Trailhead"
-msgstr ""
+msgstr "بداية درب"
 
 #: ../share/symbols/symbols.h:287 ../share/symbols/symbols.h:288
 msgctxt "Symbol"
 msgid "Wheelchair Accessible"
-msgstr ""
+msgstr "تسهيلات الكراسي المتحركة"
 
 #: ../share/symbols/symbols.h:289 ../share/symbols/symbols.h:290
 msgctxt "Symbol"
 msgid "Wind Surfing"
-msgstr "ركوب الأمواج"
+msgstr "ركوب القوارب الشراعية"
 
 #: ../share/symbols/symbols.h:291
 msgctxt "Symbol"
 msgid "Blank"
-msgstr "فارغ"
+msgstr "فارِغة"
 
 #: ../share/templates/templates.h:1
 msgid "A4 leaflet 3-fold Roll"
-msgstr ""
+msgstr "نشرة A4 ثلاث طيات"
 
 #: ../share/templates/templates.h:1
 msgid ""
 "An A4 page 3-fold Roll template with guides, print marks, and marked leaflet "
 "pages. Inner and outer page contents go into their respective Layers."
 msgstr ""
+"قالب صفحة A4 بثلاث طيات مع أدلة، علامات طباعة وصفحات النشرة المُعَلَّمَة."
+"محتويات الصفحة الداخلية والخارجية تذهب إلى الطبقات الخاصة بهما."
 
 #: ../share/templates/templates.h:1
 msgid "A4 leaflet 3-fold"
-msgstr ""
+msgstr "نشرة A4 ثلاث طيات"
 
 #: ../share/templates/templates.h:1
-#, fuzzy
 msgid "CD Label 120mmx120mm "
-msgstr "ملصق قرص مضغوط 120ممx120مم"
+msgstr "مُلصق قُرص مضغوط 120مم في 120مم"
 
 #: ../share/templates/templates.h:1
 msgid "Simple CD Label template with disc's pattern."
-msgstr "نملصق قرص مضغوط بسيط مع نموذج القرص"
+msgstr "قالب بسيط لتسمية القُرص المضغوط مع نموج للقُرص."
 
 #: ../share/templates/templates.h:1
 msgid "CD label 120x120 disc disk"
-msgstr ""
+msgstr "مُلصق 120في120  CD قُرص أُسطوانة ق.م"
 
 #: ../share/templates/templates.h:1
 msgid "LaTeX Beamer"
-msgstr ""
+msgstr "مشعاع لاتخ (LaTeX Beamer)"
 
 #: ../share/templates/templates.h:1
 msgid "LaTeX beamer template with helping grid."
-msgstr ""
+msgstr "قالب مشعاع LaTeX مع شبكة مُساعدة."
 
 #: ../share/templates/templates.h:1
 msgid "LaTex LaTeX latex grid beamer"
-msgstr ""
+msgstr "لاتخ LaTeX LaTex latex شبكة مشعاع"
 
 #: ../share/templates/templates.h:1
 msgid "Typography Canvas"
-msgstr ""
+msgstr "لوحة فن صياغة الحروف"
 
 #: ../share/templates/templates.h:1
 msgid "Empty typography canvas with helping guidelines."
-msgstr ""
+msgstr "لوحة فن صياغة الحروف فارغة مع خطوط أدلة مُساعِدة."
 
 #: ../share/templates/templates.h:1
 msgid "guidelines typography canvas"
-msgstr ""
+msgstr "خطوط أدلة صياغة الحروف لوحة"
 
 #: ../share/templates/templates.h:1
 msgid "No Layers"
@@ -4035,7 +4050,7 @@ msgstr "ورقة فارغة بدون طبقات"
 
 #: ../share/templates/templates.h:1
 msgid "no layers empty"
-msgstr "لا توجد طبقات فارغة"
+msgstr "لا طبقات فارغة"
 
 #: ../src/context-fns.cpp:45 ../src/context-fns.cpp:74
 msgid "<b>Current layer is hidden</b>. Unhide it to be able to draw on it."
@@ -4043,116 +4058,114 @@ msgstr "<b>الطبقة الحالية مخفية</b>. أظهرها لتتمكن
 
 #: ../src/context-fns.cpp:51 ../src/context-fns.cpp:80
 msgid "<b>Current layer is locked</b>. Unlock it to be able to draw on it."
-msgstr "<b>الطبقة الحالية مقفلة</b>. افتحها لتتمكن من الرسم عليها."
+msgstr "<b>الطبقة الحالية مُقفلة</b>. ألغ قفلها لتتمكن من الرسم عليها."
 
 #: ../src/desktop-events.cpp:311
 msgid "Move guide"
-msgstr "نقل المعلَم"
+msgstr "تحريك الدليل"
 
 #: ../src/desktop-events.cpp:321 ../src/desktop-events.cpp:377
 #: ../src/ui/dialog/guides.cpp:145
 msgid "Delete guide"
-msgstr "إزالة معلَم"
+msgstr "حذف الدليل"
 
 #: ../src/desktop-events.cpp:357
 #, c-format
 msgid "<b>Guideline</b>: %s"
-msgstr "<b>خطوط الدليل</b>: %s"
+msgstr "<b>خط الدليل</b>: %s"
 
 #: ../src/desktop.cpp:839
-#, fuzzy
 msgid "No previous transform."
-msgstr "لا تكبير سابق"
+msgstr "لا يوجد تحويل سابق."
 
 #: ../src/desktop.cpp:862
-#, fuzzy
 msgid "No next transform."
-msgstr "لا تكبير تالي"
+msgstr "لا يوجد تحويل تالٍ."
 
 #: ../src/display/canvas-axonomgrid.cpp:265 ../src/display/canvas-grid.cpp:655
 msgid "Grid _units:"
-msgstr "و_حدات قياس الشبكة:"
+msgstr "_وحدات الشبكة:"
 
 #: ../src/display/canvas-axonomgrid.cpp:267 ../src/display/canvas-grid.cpp:657
 msgid "_Origin X:"
-msgstr "ن_قطة المبدأ س"
+msgstr "ال_أصل س:"
 
 #: ../src/display/canvas-axonomgrid.cpp:267 ../src/display/canvas-grid.cpp:657
 #: ../src/ui/dialog/inkscape-preferences.cpp:1335
 #: ../src/ui/dialog/inkscape-preferences.cpp:1360
 msgid "X coordinate of grid origin"
-msgstr "إحداثية-س بالبنسبة لنقطة المبدأ للشبكة"
+msgstr "إحداثيات-س لأصل الشبكة"
 
 #: ../src/display/canvas-axonomgrid.cpp:270 ../src/display/canvas-grid.cpp:660
 msgid "O_rigin Y:"
-msgstr "نق_طة المبدأ ص"
+msgstr "الأ_صل ص:"
 
 #: ../src/display/canvas-axonomgrid.cpp:270 ../src/display/canvas-grid.cpp:660
 #: ../src/ui/dialog/inkscape-preferences.cpp:1336
 #: ../src/ui/dialog/inkscape-preferences.cpp:1361
 msgid "Y coordinate of grid origin"
-msgstr "إحداثية-ص بالبنسبة لنقطة المبدأ للشبكة"
+msgstr "إحداثيات-ص لأصل الشبكة"
 
 #: ../src/display/canvas-axonomgrid.cpp:273 ../src/display/canvas-grid.cpp:666
 msgid "Spacing _Y:"
-msgstr "تباعد _ص:"
+msgstr "تباعُد _ص:"
 
 #: ../src/display/canvas-axonomgrid.cpp:273
 #: ../src/ui/dialog/inkscape-preferences.cpp:1364
 msgid "Base length of z-axis"
-msgstr "الطول الأساسي للمحور ز"
+msgstr "طول قاعدة المحور-ع"
 
 #: ../src/display/canvas-axonomgrid.cpp:276
 #: ../src/ui/dialog/inkscape-preferences.cpp:1367
 #: ../src/ui/toolbar/box3d-toolbar.cpp:77
 msgid "Angle X:"
-msgstr "زاوية س:"
+msgstr "الزاوية س:"
 
 #: ../src/display/canvas-axonomgrid.cpp:276
 #: ../src/ui/dialog/inkscape-preferences.cpp:1367
 msgid "Angle of x-axis"
-msgstr "زاوية المحور س"
+msgstr "زاوية المحور-س"
 
 #: ../src/display/canvas-axonomgrid.cpp:278
 #: ../src/ui/dialog/inkscape-preferences.cpp:1368
 #: ../src/ui/toolbar/box3d-toolbar.cpp:140
 msgid "Angle Z:"
-msgstr "زاوية ز:"
+msgstr "الزاوية ع:"
 
 #: ../src/display/canvas-axonomgrid.cpp:278
 #: ../src/ui/dialog/inkscape-preferences.cpp:1368
 msgid "Angle of z-axis"
-msgstr "زاوية المحور ز"
+msgstr "زاوية المحور-ع"
 
 #: ../src/display/canvas-axonomgrid.cpp:281 ../src/display/canvas-grid.cpp:670
 msgid "Minor grid line _color:"
-msgstr ""
+msgstr "_لون خط الشبكة الثانويَّة:"
 
 #: ../src/display/canvas-axonomgrid.cpp:281 ../src/display/canvas-grid.cpp:670
 #: ../src/ui/dialog/inkscape-preferences.cpp:1319
 msgid "Minor grid line color"
-msgstr ""
+msgstr "لون خط الشبكة الثانويَّة"
 
 #: ../src/display/canvas-axonomgrid.cpp:281 ../src/display/canvas-grid.cpp:670
 msgid "Color of the minor grid lines"
-msgstr ""
+msgstr "لون خطوط الشبكة الثانويَّة"
 
 #: ../src/display/canvas-axonomgrid.cpp:284 ../src/display/canvas-grid.cpp:674
 msgid "Ma_jor grid line color:"
-msgstr "لون الخطوط الأ_ساسية للشبكة:"
+msgstr "لون خط الشبكة ال_أساسيَّة:"
 
 #: ../src/display/canvas-axonomgrid.cpp:284 ../src/display/canvas-grid.cpp:674
 #: ../src/ui/dialog/inkscape-preferences.cpp:1321
 msgid "Major grid line color"
-msgstr "لون الخطوط الأساسية للشبكة"
+msgstr "لون خط الشبكة الأساسيَّة"
 
 #: ../src/display/canvas-axonomgrid.cpp:285 ../src/display/canvas-grid.cpp:675
 msgid "Color of the major (highlighted) grid lines"
-msgstr "لون الخطوط (البارزة) الأساسية للشبكة"
+msgstr "لون خطوط الشبكة الأساسيَّة (البارزة)"
 
 #: ../src/display/canvas-axonomgrid.cpp:289 ../src/display/canvas-grid.cpp:679
 msgid "_Major grid line every:"
-msgstr "خطوط الشبكة الرئي_سية كل:"
+msgstr "_خط شبكة أساسي لِكُل:"
 
 #: ../src/display/canvas-axonomgrid.cpp:289 ../src/display/canvas-grid.cpp:679
 msgid "lines"
@@ -4164,63 +4177,65 @@ msgstr "شبكة مستطيلة"
 
 #: ../src/display/canvas-grid.cpp:57
 msgid "Axonometric grid"
-msgstr "شبكة أكسونوميترية"
+msgstr "شبكة محورية"
 
 #: ../src/display/canvas-grid.cpp:239
 msgid "Create new grid"
-msgstr "إنشاﺀ شبكة جديدة"
+msgstr "إنشاء شبكة جديدة"
 
 #: ../src/display/canvas-grid.cpp:305
 msgid "_Enabled"
-msgstr "م_شغّلة"
+msgstr "_مُفعَّلة"
 
 #
 # File: ../src/display/canvas-grid.cpp, line: 306
 #: ../src/display/canvas-grid.cpp:306
 msgid "Makes the grid available for working with on the canvas."
-msgstr ""
+msgstr "جعل الشبكة مُتاحة للعمل معها على اللوحة."
 
 #: ../src/display/canvas-grid.cpp:310
 msgid "Snap to visible _grid lines only"
-msgstr "جذب إلى خطوط الشبكة الظاهرة فقط"
+msgstr "الانطباق على خطوط ال_شبكة المرئيَّة فقط"
 
 #: ../src/display/canvas-grid.cpp:311
 msgid ""
 "When zoomed out, not all grid lines will be displayed. Only the visible ones "
 "will be snapped to"
 msgstr ""
+"عند التصغير، لن يتم عرض جميع خطوط الشبكة. سيتم الانطباق فقط للمرئيّ منها"
 
 #: ../src/display/canvas-grid.cpp:315
 msgid "_Visible"
-msgstr "_مرئي"
+msgstr "م_رئيّ"
 
 #: ../src/display/canvas-grid.cpp:316
 msgid ""
 "Determines whether the grid is displayed or not. Objects are still snapped "
 "to invisible grids."
-msgstr "تحديد إذا كانت الشبكة مرئية أو لا. الكائنات ستظ لّتُجذب للشبكات المخفية."
+msgstr ""
+"تحديد ما إذا كانت الشبكة معروضة أم لا. الكائنات ستظل تنطبق على الشبكة غير"
+" المرئيَّة."
 
 #: ../src/display/canvas-grid.cpp:329
 msgid "_Show dots instead of lines"
-msgstr "إ_ظهار نقاط بدل الخطوط"
+msgstr "إظهار _نُقاط بدلاً من الخطوط"
 
 #: ../src/display/canvas-grid.cpp:329
 msgid "If set, displays dots at gridpoints instead of gridlines"
-msgstr "عند الاختيار، سيظهر نقاط عن التقاطعات في الشبكة بدل الخطوط"
+msgstr "في حالة التعيين، تُعرض النُقاط عند نُقاط الشبكة بدلاً من خطوط الشبكة"
 
 #: ../src/display/canvas-grid.cpp:335
-#, fuzzy
 msgid "Align to page:"
-msgstr "تراصف الأطراف العليا"
+msgstr "مُحاذاة للصفحة:"
 
 #: ../src/display/canvas-grid.cpp:663
 msgid "Spacing _X:"
-msgstr "تباعد _س:"
+msgstr "تباعُد _س:"
 
 #: ../src/display/canvas-grid.cpp:663
 #: ../src/ui/dialog/inkscape-preferences.cpp:1341
 msgid "Distance between vertical grid lines"
-msgstr "المسافة بين الخطوط العامودية للشبكة"
+msgstr "المسافة بين الخطوط العمودية للشبكة"
 
 #: ../src/display/canvas-grid.cpp:666
 #: ../src/ui/dialog/inkscape-preferences.cpp:1342
@@ -4231,7 +4246,7 @@ msgstr "المسافة بين الخطوط الأفقية للشبكة"
 #: ../src/display/snap-indicator.cpp:73 ../src/display/snap-indicator.cpp:76
 #: ../src/display/snap-indicator.cpp:181 ../src/display/snap-indicator.cpp:184
 msgid "UNDEFINED"
-msgstr "غير معرّف"
+msgstr "غير مُعرَّف"
 
 #: ../src/display/snap-indicator.cpp:80
 msgid "grid line"
@@ -4239,39 +4254,39 @@ msgstr "خط الشبكة"
 
 #: ../src/display/snap-indicator.cpp:83
 msgid "grid intersection"
-msgstr "تقاطع الشبكة"
+msgstr "تقاطُع الشبكة"
 
 #: ../src/display/snap-indicator.cpp:86
 msgid "grid line (perpendicular)"
-msgstr "خط الشبكة (متعامد)"
+msgstr "خط الشبكة (عمودي)"
 
 #: ../src/display/snap-indicator.cpp:89
 msgid "guide"
-msgstr "مرشد"
+msgstr "دليل"
 
 #: ../src/display/snap-indicator.cpp:92
 msgid "guide intersection"
-msgstr "تقاطع المرشد"
+msgstr "تقاطُع دليل"
 
 #: ../src/display/snap-indicator.cpp:95
 msgid "guide origin"
-msgstr "مبدأ المعلَم"
+msgstr "أصل الدليل"
 
 #: ../src/display/snap-indicator.cpp:98
 msgid "guide (perpendicular)"
-msgstr "المعلَم (متعامد)"
+msgstr "دليل (عمودي)"
 
 #: ../src/display/snap-indicator.cpp:101
 msgid "grid-guide intersection"
-msgstr "تقاطع الشبكة والمُرشد"
+msgstr "تقاطُع دليل-شبكة"
 
 #: ../src/display/snap-indicator.cpp:104
 msgid "cusp node"
-msgstr "نقطة إلتقاﺀ"
+msgstr "عُقدة عطفة"
 
 #: ../src/display/snap-indicator.cpp:107
 msgid "smooth node"
-msgstr "عقدة ناعمة"
+msgstr "عُقدة ناعمة"
 
 #: ../src/display/snap-indicator.cpp:110
 msgid "path"
@@ -4279,7 +4294,7 @@ msgstr "مسار"
 
 #: ../src/display/snap-indicator.cpp:113
 msgid "path (perpendicular)"
-msgstr "مسار (متعامد)"
+msgstr "مسار (عمودي)"
 
 #: ../src/display/snap-indicator.cpp:116
 msgid "path (tangential)"
@@ -4287,39 +4302,39 @@ msgstr "مسار (مماسي)"
 
 #: ../src/display/snap-indicator.cpp:119
 msgid "path intersection"
-msgstr "تقاطع المسار"
+msgstr "تقاطع مسار"
 
 #: ../src/display/snap-indicator.cpp:122
 msgid "guide-path intersection"
-msgstr "تقاطع مسار المعلَم"
+msgstr "تقاطع مسار-دليل"
 
 #: ../src/display/snap-indicator.cpp:125
 msgid "clip-path"
-msgstr "مسار القص"
+msgstr "مسار-قص"
 
 #: ../src/display/snap-indicator.cpp:128
 msgid "mask-path"
-msgstr "مسار القناع"
+msgstr "مسار-قناع"
 
 #: ../src/display/snap-indicator.cpp:131
 msgid "bounding box corner"
-msgstr "زاوية علبة الإحاطة"
+msgstr "رُكن صندوق الإحاطة"
 
 #: ../src/display/snap-indicator.cpp:134
 msgid "bounding box side"
-msgstr "جهة علبة الإحاطة"
+msgstr "طرف صندوق الإحاطة"
 
 #: ../src/display/snap-indicator.cpp:137
 msgid "page border"
-msgstr "حدود الصفحة"
+msgstr "حُدود الصفحة"
 
 #: ../src/display/snap-indicator.cpp:140
 msgid "line midpoint"
-msgstr "نقطة الخط الوسطية"
+msgstr "نقطة مُنتصف الخط"
 
 #: ../src/display/snap-indicator.cpp:143
 msgid "object midpoint"
-msgstr "نقطة الكائن الوسطية"
+msgstr "نقطة منتصف الكائن"
 
 #: ../src/display/snap-indicator.cpp:146
 msgid "object rotation center"
@@ -4327,23 +4342,23 @@ msgstr "مركز دوران الكائن"
 
 #: ../src/display/snap-indicator.cpp:149
 msgid "bounding box side midpoint"
-msgstr "منتصف جهة علبة الإحاطة"
+msgstr "نقطة منتصف ركن صندوق الإحاطة"
 
 #: ../src/display/snap-indicator.cpp:152
 msgid "bounding box midpoint"
-msgstr "وسط علبة الإحاطة"
+msgstr "نقطة منتصف صندوق الإحاطة"
 
 #: ../src/display/snap-indicator.cpp:155
 msgid "page corner"
-msgstr "زاوية الصفحة"
+msgstr "رُكن الصفحة"
 
 #: ../src/display/snap-indicator.cpp:158
 msgid "quadrant point"
-msgstr "نقطة القوس"
+msgstr "نقطة ربع دائرة"
 
 #: ../src/display/snap-indicator.cpp:162
 msgid "corner"
-msgstr "زاوية"
+msgstr "رُكن"
 
 #: ../src/display/snap-indicator.cpp:165
 msgid "text anchor"
@@ -4351,11 +4366,11 @@ msgstr "مرساة النص"
 
 #: ../src/display/snap-indicator.cpp:168
 msgid "text baseline"
-msgstr "خط النص الأساسي"
+msgstr "خط الأساس للنص"
 
 #: ../src/display/snap-indicator.cpp:171
 msgid "constrained angle"
-msgstr "زاوية مقيّدة"
+msgstr "زاوية مقيَّدة"
 
 #: ../src/display/snap-indicator.cpp:174
 msgid "constraint"
@@ -4363,31 +4378,31 @@ msgstr "قيد"
 
 #: ../src/display/snap-indicator.cpp:188
 msgid "Bounding box corner"
-msgstr "زاوية علبة الإحاطة"
+msgstr "رُكن صندوق الإحاطة"
 
 #: ../src/display/snap-indicator.cpp:191
 msgid "Bounding box midpoint"
-msgstr "وسط علبة الإحاطة"
+msgstr "نقطة منتصف صندوق الإحاطة"
 
 #: ../src/display/snap-indicator.cpp:194
 msgid "Bounding box side midpoint"
-msgstr "نقطة الوسط لجهة علبة الإحاطة"
+msgstr "نقطة منتصف طرف صندوق الإحاطة"
 
 #: ../src/display/snap-indicator.cpp:197 ../src/ui/tool/node.cpp:1636
 msgid "Smooth node"
-msgstr "عقدة ناعمة"
+msgstr "عُقدة ناعمة"
 
 #: ../src/display/snap-indicator.cpp:200
 msgid "Cusp node"
-msgstr "عقدة نقطة الإلتقاﺀ"
+msgstr "عُقدة عطفة"
 
 #: ../src/display/snap-indicator.cpp:203
 msgid "Line midpoint"
-msgstr "منتصف الخط"
+msgstr "نقطة مُنتصف الخط"
 
 #: ../src/display/snap-indicator.cpp:206
 msgid "Object midpoint"
-msgstr "منتصف الكائن"
+msgstr "نقطة منتصف الكائن"
 
 #: ../src/display/snap-indicator.cpp:209
 msgid "Object rotation center"
@@ -4399,27 +4414,27 @@ msgstr "مقبض"
 
 #: ../src/display/snap-indicator.cpp:216
 msgid "Path intersection"
-msgstr "تقاطع المسار"
+msgstr "تقاطع مسار"
 
 #: ../src/display/snap-indicator.cpp:219
 msgid "Guide"
-msgstr "معلَم"
+msgstr "دليل"
 
 #: ../src/display/snap-indicator.cpp:222
 msgid "Guide origin"
-msgstr "مركز المعلَم"
+msgstr "أصل الدليل"
 
 #: ../src/display/snap-indicator.cpp:225
 msgid "Convex hull corner"
-msgstr "زاوية الغلاف المحدّب"
+msgstr "رُكن غلاف مُحدَّب"
 
 #: ../src/display/snap-indicator.cpp:228
 msgid "Quadrant point"
-msgstr "نقطة القوس (الربع دائري)"
+msgstr "نقطة ربع دائرة"
 
 #: ../src/display/snap-indicator.cpp:232
 msgid "Corner"
-msgstr "زاوية"
+msgstr "رُكن"
 
 #: ../src/display/snap-indicator.cpp:235
 msgid "Text anchor"
@@ -4427,7 +4442,7 @@ msgstr "مرساة النص"
 
 #: ../src/display/snap-indicator.cpp:238
 msgid "Multiple of grid spacing"
-msgstr ""
+msgstr "مُضاعفات تباعد الشبكة"
 
 #: ../src/display/snap-indicator.cpp:287
 msgid " to "
@@ -4436,61 +4451,57 @@ msgstr " إلى "
 #: ../src/document.cpp:551
 #, c-format
 msgid "New document %d"
-msgstr "ملفّ جديد %d"
+msgstr "مستند جديد %d"
 
 #: ../src/document.cpp:556
 #, c-format
 msgid "Memory document %d"
-msgstr "ذاكرة المستند %d"
+msgstr "مستند ذاكرة %d"
 
 #: ../src/document.cpp:585
 msgid "Memory document %1"
-msgstr "ذاكرة المستند %1"
+msgstr "مستند ذاكرة %1"
 
 #: ../src/document.cpp:914
 #, c-format
 msgid "Unnamed document %d"
-msgstr "ملف بدون اسم %d"
+msgstr "مستند غير مسمى %d"
 
 #: ../src/event-log.cpp:180
 msgid "[Unchanged]"
-msgstr "[لم يعدّل]"
+msgstr "[لم يعدَّل]"
 
 #: ../src/event-log.cpp:366 ../src/event-log.cpp:369 ../src/verbs.cpp:2551
 msgid "_Undo"
-msgstr "ت_راجَع"
+msgstr "ترا_جُع"
 
 #: ../src/event-log.cpp:376 ../src/event-log.cpp:380 ../src/verbs.cpp:2552
 msgid "_Redo"
-msgstr "أ_عِد"
+msgstr "إ_عادة"
 
 #: ../src/extension/dependency.cpp:250
-#, fuzzy
 msgid "Dependency"
-msgstr "تبعية:"
+msgstr "الاعتماد"
 
 #: ../src/extension/dependency.cpp:251
-#, fuzzy
 msgid "type"
-msgstr "   نوع:"
+msgstr "النوع"
 
 #: ../src/extension/dependency.cpp:252
-#, fuzzy
 msgid "location"
-msgstr "مكان س"
+msgstr "الموقع"
 
 #: ../src/extension/dependency.cpp:253
-#, fuzzy
 msgid "string"
-msgstr "   سلسلة:"
+msgstr "النص"
 
 #: ../src/extension/dependency.cpp:256
 msgid "  description: "
-msgstr "   وصف:"
+msgstr "  الوصف: "
 
 #: ../src/extension/effect.h:70 ../src/verbs.cpp:2319
 msgid "Extensions"
-msgstr "إضافات"
+msgstr "مُلحقات"
 
 #: ../src/extension/error-file.cpp:50
 msgid ""
@@ -4501,77 +4512,82 @@ msgid ""
 "normally but those extensions will be unavailable.  For details to "
 "troubleshoot this problem, please refer to the error log located at: "
 msgstr ""
+"ا<span weight=\"bold\" size=\"larger\">فشل تحميل مُلحق واحدة أو أكثر</span>\n"
+"\n"
+"تمَّ تخطي المُلحقات الفاشلة. سيستمر إنكسكيب في العمل بشكل طبيعي ولكن هذه"
+" المُلحقات لن تكون متاحة. للحصول على تفاصيل لاستكشاف هذه المشكلة وإصلاحها،"
+" يرجى الرجوع إلى سجل الأخطاء الموجود على:"
 
 #: ../src/extension/error-file.cpp:60
 msgid "Show dialog on startup"
-msgstr "عرض النافذة عند البداية"
+msgstr "عرض النافذة الجانبيَّة عند بدء التشغيل"
 
 #: ../src/extension/execution-env.cpp:120
 #, c-format
 msgid "'%s' working, please wait..."
-msgstr "'%s' يعمل، الرجاﺀ الإنتظار..."
+msgstr "إنَّ '%s' يعمل، يُرجى الانتظار..."
 
 #: ../src/extension/extension.cpp:278
 msgid ""
 "  This is caused by an improper .inx file for this extension.  An improper ."
 "inx file could have been caused by a faulty installation of Inkscape."
 msgstr ""
+"هذا يحدث بسبب ملف .inx غير صحيح لهذا الملحق. إنَّ ملف .inx غير الصالح قد يكون"
+" سببه تثبيت خاطيء لإنكسكيب."
 
 #: ../src/extension/extension.cpp:288
 msgid "the extension is designed for Windows only."
-msgstr "هذه الملحقة مصممة لـ: ويندوز فقط."
+msgstr "المُلحق مُصَمَم لِنظام ويندوز فقط."
 
 #: ../src/extension/extension.cpp:293
 msgid "the XML description of it got lost."
-msgstr "الوصف XML فقِد."
+msgstr "وصف XML الخاص به مفقود."
 
 #: ../src/extension/extension.cpp:297
 msgid "no implementation was defined for the extension."
-msgstr ""
+msgstr "لم يتم تعريف تطبيق للمُلحق."
 
 #: ../src/extension/extension.cpp:303
 msgid "a dependency was not met."
-msgstr "عدم تأمين التبعية"
+msgstr "الاعتمادات لم تتحقق."
 
 #: ../src/extension/extension.cpp:326
-#, fuzzy
 msgid "Extension \"%1\" failed to load because %2"
-msgstr "\" فشل التحميل بسبب"
+msgstr "لقد فشل تحميل المُلحق \"%1\" بسبب %2"
 
 #: ../src/extension/extension.cpp:695
 #, c-format
 msgid "Could not create extension error log file '%s'"
-msgstr ""
+msgstr "تعذَّرَ إنشاء ملف سجل أخطاء المُلحق '%s'"
 
 #: ../src/extension/extension.cpp:799
 #: ../share/extensions/webslicer_create_rect.inx:7
 msgid "Name:"
-msgstr "اسم:"
+msgstr "الاسم:"
 
 #: ../src/extension/extension.cpp:800
 msgid "ID:"
-msgstr "هوية:"
+msgstr "المُعرِّف:"
 
 #: ../src/extension/extension.cpp:801
 msgid "State:"
-msgstr "حالة:"
+msgstr "الحالة:"
 
 #: ../src/extension/extension.cpp:801
 msgid "Loaded"
-msgstr "محمّل"
+msgstr "مُحمَّل"
 
 #: ../src/extension/extension.cpp:801
 msgid "Unloaded"
-msgstr "غير محمّل"
+msgstr "غير مُحمَّل"
 
 #: ../src/extension/extension.cpp:801
 msgid "Deactivated"
-msgstr "غير مشغّل"
+msgstr "مُعطَّل"
 
 #: ../src/extension/implementation/script.cpp:702
-#, fuzzy
 msgid "The output from the extension could not be parsed."
-msgstr "لا يمكن قراءة ملف التفضيلات %s."
+msgstr "تعذَّر تحليل مُخرجات المُلحق."
 
 #: ../src/extension/implementation/script.cpp:1023
 msgid ""
@@ -4579,6 +4595,9 @@ msgid ""
 "did not return an error, but this may indicate the results will not be as "
 "expected."
 msgstr ""
+"لقد تلقى إنكسكيب بيانات إضافية من نص التعليمات البرمجيَّة. النص"
+"لم يُرجع خطأ، لكن هذا قد يُشير إلى أنَّ النتائج لن تكون كما هي"
+"مُتوقعة."
 
 #: ../src/extension/internal/bitmap/adaptiveThreshold.cpp:40
 msgid "Adaptive Threshold"
@@ -4597,7 +4616,7 @@ msgstr "عتبة تكييفية"
 #: ../src/ui/toolbar/tweak-toolbar.cpp:59 ../src/ui/widget/page-sizer.cpp:59
 #: ../share/extensions/foldablebox.inx:6
 msgid "Width:"
-msgstr "العرض:"
+msgstr "العَرض:"
 
 #: ../src/extension/internal/bitmap/adaptiveThreshold.cpp:43
 #: ../src/extension/internal/bitmap/raise.cpp:44
@@ -4606,14 +4625,14 @@ msgstr "العرض:"
 #: ../src/ui/dialog/object-attributes.cpp:68 ../src/ui/widget/page-sizer.cpp:60
 #: ../share/extensions/foldablebox.inx:7
 msgid "Height:"
-msgstr "إرتفاع:"
+msgstr "الاِرتفاع:"
 
 #: ../src/extension/internal/bitmap/adaptiveThreshold.cpp:44
 #: ../src/live_effects/lpe-offset.cpp:78
 #: ../src/ui/toolbar/measure-toolbar.cpp:223
 #: ../share/extensions/printing_marks.inx:28
 msgid "Offset:"
-msgstr ":إزاحة"
+msgstr "الإزاحة:"
 
 #: ../src/extension/internal/bitmap/adaptiveThreshold.cpp:48
 #: ../src/extension/internal/bitmap/addNoise.cpp:59
@@ -4651,11 +4670,11 @@ msgstr ":إزاحة"
 #: ../src/extension/internal/bitmap/unsharpmask.cpp:51
 #: ../src/extension/internal/bitmap/wave.cpp:46
 msgid "Raster"
-msgstr "الخطوط الأفقية"
+msgstr "النقطية"
 
 #: ../src/extension/internal/bitmap/adaptiveThreshold.cpp:50
 msgid "Apply adaptive thresholding to selected bitmap(s)"
-msgstr "تفعيل العتبة التكييفية في الصور المختارة"
+msgstr "تطبيق عتبة تكيفية على الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:46
 msgid "Add Noise"
@@ -4677,35 +4696,35 @@ msgstr "إضافة ضجيج"
 #: ../share/extensions/jessyInk_transitions.inx:19
 #: ../share/extensions/webslicer_create_rect.inx:27
 msgid "Type:"
-msgstr "نوع:"
+msgstr "النوع:"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:49
 msgid "Uniform Noise"
-msgstr "تشويش منتظم"
+msgstr "ضجيج منتظم"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:50
 msgid "Gaussian Noise"
-msgstr "تشويش غُوص"
+msgstr "الضجيج الطبيعي"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:51
 msgid "Multiplicative Gaussian Noise"
-msgstr ""
+msgstr "الضجيج الطبيعي المضاعف"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:52
 msgid "Impulse Noise"
-msgstr ""
+msgstr "ضجيج الاندفاع"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:53
 msgid "Laplacian Noise"
-msgstr "تشويش لابلاس"
+msgstr "ضجيج لابلاس"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:54
 msgid "Poisson Noise"
-msgstr "تشوية بواسون"
+msgstr "ضجيج بواسون"
 
 #: ../src/extension/internal/bitmap/addNoise.cpp:61
 msgid "Add random noise to selected bitmap(s)"
-msgstr "إضافة ضوضاء عشوائية للصور النقطية المختارة"
+msgstr "إضافة ضجيج عشوائي إلى الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/blur.cpp:39
 #: ../src/extension/internal/filter/blurs.h:55
@@ -4738,11 +4757,11 @@ msgstr "سيجما:"
 
 #: ../src/extension/internal/bitmap/blur.cpp:48
 msgid "Blur selected bitmap(s)"
-msgstr "تغبيش الصور(ة) المختارة"
+msgstr "تغبيش الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/channel.cpp:49
 msgid "Channel"
-msgstr "قناة"
+msgstr "القناة"
 
 #: ../src/extension/internal/bitmap/channel.cpp:51
 msgid "Layer:"
@@ -4766,12 +4785,12 @@ msgstr "قناة الأزرق"
 #: ../src/extension/internal/bitmap/channel.cpp:55
 #: ../src/extension/internal/bitmap/levelChannel.cpp:59
 msgid "Cyan Channel"
-msgstr "قناة الأخضر المزرق"
+msgstr "قناة المائي"
 
 #: ../src/extension/internal/bitmap/channel.cpp:56
 #: ../src/extension/internal/bitmap/levelChannel.cpp:60
 msgid "Magenta Channel"
-msgstr "قناة الأرجواني"
+msgstr "قناة الفوشي"
 
 #: ../src/extension/internal/bitmap/channel.cpp:57
 #: ../src/extension/internal/bitmap/levelChannel.cpp:61
@@ -4791,11 +4810,11 @@ msgstr "قناة الشفافية"
 #: ../src/extension/internal/bitmap/channel.cpp:60
 #: ../src/extension/internal/bitmap/levelChannel.cpp:64
 msgid "Matte Channel"
-msgstr "قناة البهاتة"
+msgstr "قناة مُطفأ اللمعة"
 
 #: ../src/extension/internal/bitmap/channel.cpp:67
 msgid "Extract specific channel from image"
-msgstr "استخراج قناة مخصّصة من الصورة"
+msgstr "استخراج قناة مُحددة من الصورة"
 
 #: ../src/extension/internal/bitmap/charcoal.cpp:39
 msgid "Charcoal"
@@ -4803,7 +4822,7 @@ msgstr "فحم"
 
 #: ../src/extension/internal/bitmap/charcoal.cpp:48
 msgid "Apply charcoal stylization to selected bitmap(s)"
-msgstr ""
+msgstr "تطبيق أسلوب الفحم على الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/colorize.cpp:51
 #: ../src/extension/internal/filter/color.h:394
@@ -4812,31 +4831,33 @@ msgstr "تلوين"
 
 #: ../src/extension/internal/bitmap/colorize.cpp:59
 msgid "Colorize selected bitmap(s) with specified color, using given opacity"
-msgstr "تلوين الصور(ة) النقطية المختارة بلون مخصّص، باستعمال عتامة معطاة"
+msgstr ""
+"تلوين الصور(ة) النُقطيَّة المُحَدَّدة بلونٍ مُحَدَّد، باستعمالِ شفافيةٍ"
+" معيَّنة"
 
 #: ../src/extension/internal/bitmap/contrast.cpp:41
 #: ../src/extension/internal/filter/color.h:1191
 #: ../share/extensions/nicechart.inx:71
 msgid "Contrast"
-msgstr "التباين"
+msgstr "التَّبايُن"
 
 #: ../src/extension/internal/bitmap/contrast.cpp:43
 msgid "Adjust:"
-msgstr "التعديل:"
+msgstr "الضَبط:"
 
 #: ../src/extension/internal/bitmap/contrast.cpp:49
 msgid "Increase or decrease contrast in bitmap(s)"
-msgstr "زيادة أو خفض التباين في الصور(ة) النقطية"
+msgstr "زيادة أو تقليل التَّبايُن في الصور(ة) النُقطيَّة"
 
 #: ../src/extension/internal/bitmap/crop.cpp:68
 #: ../src/extension/internal/filter/bumps.h:87
 #: ../src/extension/internal/filter/bumps.h:316
 msgid "Crop"
-msgstr "قص"
+msgstr "اِقتصاص"
 
 #: ../src/extension/internal/bitmap/crop.cpp:70
 msgid "Top (px):"
-msgstr "أعلى (بكسل)"
+msgstr "الأعلى (بكسل):"
 
 #: ../src/extension/internal/bitmap/crop.cpp:71
 msgid "Bottom (px):"
@@ -4852,46 +4873,48 @@ msgstr "اليمين (بكسل):"
 
 #: ../src/extension/internal/bitmap/crop.cpp:79
 msgid "Crop selected bitmap(s)"
-msgstr "اقتصاص الصور(ة) النقطية المختارة"
+msgstr "اِقتصاص الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/cycleColormap.cpp:38
 msgid "Cycle Colormap"
-msgstr ""
+msgstr "َدَورَةُ خَريطةِ الألوان"
 
 #: ../src/extension/internal/bitmap/cycleColormap.cpp:40
 #: ../src/extension/internal/bitmap/spread.cpp:40
 #: ../src/extension/internal/bitmap/unsharpmask.cpp:46
 #: ../src/ui/toolbar/spray-toolbar.cpp:145
 msgid "Amount:"
-msgstr "المقدار:"
+msgstr "المِقدار:"
 
 #: ../src/extension/internal/bitmap/cycleColormap.cpp:46
 msgid "Cycle colormap(s) of selected bitmap(s)"
-msgstr ""
+msgstr "تَدويرُ خرائِطِ الألوانِ للصور(ةِ) النُقطيَّةِ المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/despeckle.cpp:37
 msgid "Despeckle"
-msgstr "إزالة الضجيج"
+msgstr "تَقليلُ الرُّقَط"
 
 #: ../src/extension/internal/bitmap/despeckle.cpp:44
 msgid "Reduce speckle noise of selected bitmap(s)"
-msgstr ""
+msgstr "تقليل ضجيج الرُّقَط للصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/edge.cpp:38
 msgid "Edge"
-msgstr "طرف"
+msgstr "حُدُود"
 
 #: ../src/extension/internal/bitmap/edge.cpp:46
 msgid "Highlight edges of selected bitmap(s)"
-msgstr ""
+msgstr "إبراز حُدُود الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/emboss.cpp:39
 msgid "Emboss"
-msgstr "نتوﺀ"
+msgstr "نَقش"
 
 #: ../src/extension/internal/bitmap/emboss.cpp:48
 msgid "Emboss selected bitmap(s); highlight edges with 3D effect"
 msgstr ""
+"نَقش الصور(ة) النُقطيَّة المُحَدَّدَة؛ عَبر إبراز الحواف بتأثير ثُلاثيّ"
+" الأبعاد"
 
 #: ../src/extension/internal/bitmap/enhance.cpp:36
 msgid "Enhance"
@@ -4899,71 +4922,77 @@ msgstr "تحسين"
 
 #: ../src/extension/internal/bitmap/enhance.cpp:43
 msgid "Enhance selected bitmap(s); minimize noise"
-msgstr ""
+msgstr "تحسين الصور(ة) النُقطيَّة المُحَدَّدَة؛ عَبر تقليل الضجيج"
 
 #: ../src/extension/internal/bitmap/equalize.cpp:36
 msgid "Equalize"
-msgstr "مساواة"
+msgstr "مُعادَلَة"
 
 #: ../src/extension/internal/bitmap/equalize.cpp:43
 msgid "Equalize selected bitmap(s); histogram equalization"
 msgstr ""
+"مُعادَلَة الصور(ة) النُقطيَّة المُحَدَّدَة؛ عَبر مُعادَلَة المدرج التكراري"
 
 #: ../src/extension/internal/bitmap/gaussianBlur.cpp:39
 #: ../src/filter-enums.cpp:30
 msgid "Gaussian Blur"
-msgstr ""
+msgstr "التَّغبيش الغاوسي"
 
 #: ../src/extension/internal/bitmap/gaussianBlur.cpp:41
 #: ../src/extension/internal/bitmap/implode.cpp:40
 #: ../src/extension/internal/bitmap/solarize.cpp:42
 msgid "Factor:"
-msgstr "المعامل:"
+msgstr "المُعامِل:"
 
 #: ../src/extension/internal/bitmap/gaussianBlur.cpp:48
 msgid "Gaussian blur selected bitmap(s)"
-msgstr ""
+msgstr "تطبيق التَّغبيش الغاوسي عَلَى الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/implode.cpp:38
 msgid "Implode"
-msgstr "إنطواﺀ"
+msgstr "اِنفِجار داخِلي"
 
 #: ../src/extension/internal/bitmap/implode.cpp:46
 msgid "Implode selected bitmap(s)"
-msgstr ""
+msgstr "تفجير الصور(ة) النُقطيَّة المُحَدَّدَة داخليًا"
 
 #: ../src/extension/internal/bitmap/level.cpp:42
+#, fuzzy
 #: ../src/extension/internal/filter/color.h:819
 #: ../src/extension/internal/filter/image.h:57
 #: ../src/extension/internal/filter/morphology.h:67
 #: ../src/extension/internal/filter/paint.h:346
 msgid "Level"
-msgstr "مستوى"
+msgstr "تَسوية"
 
 #: ../src/extension/internal/bitmap/level.cpp:44
 #: ../src/extension/internal/bitmap/levelChannel.cpp:66
 msgid "Black Point:"
-msgstr "نقطة سوداﺀ:"
+msgstr "النُّقطة السوداﺀ:"
 
 #: ../src/extension/internal/bitmap/level.cpp:45
 #: ../src/extension/internal/bitmap/levelChannel.cpp:67
 msgid "White Point:"
-msgstr "نقطة بيضاﺀ:"
+msgstr "النُّقطة البيضاﺀ:"
 
 #: ../src/extension/internal/bitmap/level.cpp:46
 #: ../src/extension/internal/bitmap/levelChannel.cpp:68
 msgid "Gamma Correction:"
-msgstr "تصحيح غاما:"
+msgstr "تصحيح جاما:"
 
 #: ../src/extension/internal/bitmap/level.cpp:52
+#, fuzzy
 msgid ""
 "Level selected bitmap(s) by scaling values falling between the given ranges "
 "to the full color range"
 msgstr ""
+"تَسوية الصور(ة) النُقطيَّة المُحَدَّدَة عن طريق تحجيم القيم الواقعة بين "
+"النطاقات المُحَدَّدَة إلى نطاق الألوان الكامل"
 
 #: ../src/extension/internal/bitmap/levelChannel.cpp:53
+#, fuzzy
 msgid "Level (with Channel)"
-msgstr "مستوى (مع قناة)"
+msgstr "تَسوِيَة (مع قناة)"
 
 #: ../src/extension/internal/bitmap/levelChannel.cpp:55
 #: ../src/extension/internal/filter/color.h:713
@@ -4975,36 +5004,41 @@ msgid ""
 "Level the specified channel of selected bitmap(s) by scaling values falling "
 "between the given ranges to the full color range"
 msgstr ""
+"تَسوِيَة القناة المُحَدَّدَة للصور(ة) النُقطيَّة المُحَدَّدَة عن طريق تحجيم"
+" القيم الواقعة بين "
+"النطاقات المُحَدَّدَة إلى نطاق الألوان الكامل"
 
 #: ../src/extension/internal/bitmap/medianFilter.cpp:38
+#, fuzzy
 msgid "Median"
 msgstr "متوسط"
 
 #: ../src/extension/internal/bitmap/medianFilter.cpp:46
+#, fuzzy
 msgid ""
 "Replace each pixel component with the median color in a circular neighborhood"
-msgstr ""
+msgstr "استبدال كل مُكَوِّن من وحدات البكسل باللون المتوسط ​​في محيط دائري"
 
 #: ../src/extension/internal/bitmap/modulate.cpp:41
 msgid "HSB Adjust"
-msgstr ""
+msgstr "ضبط HSB"
 
 #: ../src/extension/internal/bitmap/modulate.cpp:43
 msgid "Hue:"
-msgstr "درجة اللون:"
+msgstr "درجة الطيف:"
 
 #: ../src/extension/internal/bitmap/modulate.cpp:44
 msgid "Saturation:"
-msgstr "التشبع:"
+msgstr "التشبُّع:"
 
 #: ../src/extension/internal/bitmap/modulate.cpp:45
 msgid "Brightness:"
-msgstr "السطوع:"
+msgstr "السُطُوع:"
 
 #: ../src/extension/internal/bitmap/modulate.cpp:51
 msgid ""
 "Adjust the amount of hue, saturation, and brightness in selected bitmap(s)"
-msgstr "ضبط مقدار حدّة الألوان، وتدّرجها، وسطوعها في الصور(ة) المختارة"
+msgstr "ضبط مقدار درجة الطيف، التشبع، والسطوع في الصور(ة) المُختارَة"
 
 #: ../src/extension/internal/bitmap/negate.cpp:37
 msgid "Negate"
@@ -5012,7 +5046,7 @@ msgstr "عكس"
 
 #: ../src/extension/internal/bitmap/negate.cpp:44
 msgid "Negate (take inverse) selected bitmap(s)"
-msgstr ""
+msgstr "عكس (أخذ المعكوس) للصور(ة) النقطية المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/normalize.cpp:37
 msgid "Normalize"
@@ -5023,49 +5057,52 @@ msgid ""
 "Normalize selected bitmap(s), expanding color range to the full possible "
 "range of color"
 msgstr ""
+"تطبيع الصور(ة) النقطية المحددة، وتوسيع نطاق الألوان إلى أقصى حد ممكن من"
+" الألوان"
 
 #: ../src/extension/internal/bitmap/oilPaint.cpp:38
 msgid "Oil Paint"
-msgstr "لوحة زيتية"
+msgstr "طِلاء زيتي"
 
 #: ../src/extension/internal/bitmap/oilPaint.cpp:46
 msgid "Stylize selected bitmap(s) so that they appear to be painted with oils"
-msgstr ""
+msgstr "تمييز الصور النقطية المحددة بحيث تظهر كأنها مطلية بالزيوت"
 
 #: ../src/extension/internal/bitmap/opacity.cpp:39
+#, fuzzy
 #: ../src/extension/internal/filter/blurs.h:334
 #: ../src/extension/internal/filter/transparency.h:280
 #: ../src/ui/dialog/clonetiler.cpp:818 ../src/ui/dialog/clonetiler.cpp:950
 #: ../share/extensions/interp_att_g.inx:15
 msgid "Opacity"
-msgstr "شفافية"
+msgstr "شفافيَّة"
 
 #: ../src/extension/internal/bitmap/opacity.cpp:41
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2795
 #: ../src/ui/toolbar/dropper-toolbar.cpp:67
 msgid "Opacity:"
-msgstr "الشفافية:"
+msgstr "الشفافيَّة:"
 
 #: ../src/extension/internal/bitmap/opacity.cpp:47
 msgid "Modify opacity channel(s) of selected bitmap(s)"
-msgstr ""
+msgstr "تعديل قناة أو قنوات الشفافيَّة للصور(ة) النقطية المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/raise.cpp:41
 msgid "Raise"
-msgstr "ارفع"
+msgstr "رَفع"
 
 #: ../src/extension/internal/bitmap/raise.cpp:45
 msgid "Raised"
-msgstr "مرفوعة"
+msgstr "مَرفوع"
 
 #: ../src/extension/internal/bitmap/raise.cpp:51
 msgid ""
 "Alter lightness the edges of selected bitmap(s) to create a raised appearance"
-msgstr ""
+msgstr "تغيير الإضاءة على حواف الصور(ة) النقطية المُحَدَّدَة لإنشاء مظهر بارز"
 
 #: ../src/extension/internal/bitmap/reduceNoise.cpp:41
 msgid "Reduce Noise"
-msgstr "حفض الضجيج"
+msgstr "خَفض الضجيج"
 
 #. TRANSLATORS: Paint order determines the order the 'fill', 'stroke', and 'markers are painted.
 #: ../src/extension/internal/bitmap/reduceNoise.cpp:43
@@ -5081,15 +5118,18 @@ msgstr "الترتيب:"
 msgid ""
 "Reduce noise in selected bitmap(s) using a noise peak elimination filter"
 msgstr ""
+"تقليل الضجيج في الصور(ة) النقطية المُحَدَّدَة باستخدام مُرَشِّح إزالة ذَروَة"
+" الضجيج"
 
 #: ../src/extension/internal/bitmap/sample.cpp:40
 msgid "Resample"
-msgstr ""
+msgstr "إعادة أخذ العينات"
 
 #: ../src/extension/internal/bitmap/sample.cpp:49
 msgid ""
 "Alter the resolution of selected image by resizing it to the given pixel size"
 msgstr ""
+"تغيير دِقة الصورة المُحَدَّدَة عن طريق تغيير حجمها إلى الحجم المُعطى بالبكسل"
 
 #: ../src/extension/internal/bitmap/shade.cpp:41
 msgid "Shade"
@@ -5098,24 +5138,25 @@ msgstr "تظليل"
 #: ../src/extension/internal/bitmap/shade.cpp:43
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1178
 msgid "Azimuth:"
-msgstr ""
+msgstr "زاوية اَلسُّمُوت:"
 
 #: ../src/extension/internal/bitmap/shade.cpp:44
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1179
 msgid "Elevation:"
-msgstr "الإرتفاع:"
+msgstr "الارتفاع:"
 
 #: ../src/extension/internal/bitmap/shade.cpp:45
 msgid "Colored Shading"
-msgstr "تظليل ملوّن"
+msgstr "تظليل ملوَّن"
 
 #: ../src/extension/internal/bitmap/shade.cpp:51
+#, fuzzy
 msgid "Shade selected bitmap(s) simulating distant light source"
-msgstr ""
+msgstr "تظليل الصور(ة) النُقطيَّة المُحَدَّدَة بِمُحاكاة مصدر الضوء البعيد"
 
 #: ../src/extension/internal/bitmap/sharpen.cpp:48
 msgid "Sharpen selected bitmap(s)"
-msgstr ""
+msgstr "شَحذ الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/solarize.cpp:40
 #: ../src/extension/internal/filter/color.h:1654
@@ -5126,16 +5167,19 @@ msgstr "تشميس"
 #: ../src/extension/internal/bitmap/solarize.cpp:48
 msgid "Solarize selected bitmap(s), like overexposing photographic film"
 msgstr ""
+"تشميس الصور(ة) النُقطيَّة المُحَدَّدَة، مثل تعريض فيلم تصوير فوتوغرافي بشكل"
+" مُفرِط"
 
 #: ../src/extension/internal/bitmap/spread.cpp:38
 msgid "Dither"
-msgstr "إرتجاف"
+msgstr "تَردُّد"
 
 #: ../src/extension/internal/bitmap/spread.cpp:46
 msgid ""
 "Randomly scatter pixels in selected bitmap(s), within the given radius of "
 "the original position"
 msgstr ""
+"نثر بكسلات عشوائية في الصور(ة) النُقطيَّة المُحَدَّدَة، ضمن نصف قطر مُعيَّن"
 
 #: ../src/extension/internal/bitmap/swirl.cpp:40
 msgid "Degrees:"
@@ -5143,7 +5187,7 @@ msgstr "الدرجات:"
 
 #: ../src/extension/internal/bitmap/swirl.cpp:46
 msgid "Swirl selected bitmap(s) around center point"
-msgstr ""
+msgstr "تدوير الصور(ة) النُقطيَّة المُحَدَّدَة حول نقطة مركزيَّة"
 
 #. TRANSLATORS: see http://docs.gimp.org/en/gimp-tool-threshold.html
 #: ../src/extension/internal/bitmap/threshold.cpp:39
@@ -5158,15 +5202,17 @@ msgstr "العتبة:"
 
 #: ../src/extension/internal/bitmap/threshold.cpp:47
 msgid "Threshold selected bitmap(s)"
-msgstr ""
+msgstr "تطبيق مستوى العتبة على الصور(ة) النُقطيَّة المُحَدَّدَة"
 
 #: ../src/extension/internal/bitmap/unsharpmask.cpp:42
 msgid "Unsharp Mask"
-msgstr ""
+msgstr "مُرشِّح تعزيز الترددات العاليَة"
 
 #: ../src/extension/internal/bitmap/unsharpmask.cpp:53
 msgid "Sharpen selected bitmap(s) using unsharp mask algorithms"
 msgstr ""
+"شحذ الصور(ة) النُقطيَّة المُحَدَّدَة باستخدام خوارزميات مُرشِّح تعزيز"
+" الترددات العاليَة"
 
 #: ../src/extension/internal/bitmap/wave.cpp:39
 msgid "Wave"
@@ -5174,19 +5220,19 @@ msgstr "موجة"
 
 #: ../src/extension/internal/bitmap/wave.cpp:41
 msgid "Amplitude:"
-msgstr "السعة:"
+msgstr "السعة الموجيَّة:"
 
 #: ../src/extension/internal/bitmap/wave.cpp:42
 msgid "Wavelength:"
-msgstr "طول الموجة:"
+msgstr "الطول الموجي:"
 
 #: ../src/extension/internal/bitmap/wave.cpp:48
 msgid "Alter selected bitmap(s) along sine wave"
-msgstr ""
+msgstr "تعديل الصور(ة) النُقطيَّة المُحَدَّدَة بطول الموجة الجيبيَّة"
 
 #: ../src/extension/internal/bluredge.cpp:130
 msgid "Inset/Outset Halo"
-msgstr ""
+msgstr "دخول/خروج هالة ضوئية"
 
 #: ../src/extension/internal/bluredge.cpp:132
 msgid "Width in px of the halo"
@@ -5198,7 +5244,7 @@ msgstr "عدد الخطوات:"
 
 #: ../src/extension/internal/bluredge.cpp:133
 msgid "Number of inset/outset copies of the object to make"
-msgstr ""
+msgstr "عدد النُسَخ الداخلة/الخارجة للكائن المطلوب إجراؤها"
 
 #: ../src/extension/internal/bluredge.cpp:137
 #: ../share/extensions/extrude.inx:13
@@ -5208,7 +5254,7 @@ msgstr ""
 #: ../share/extensions/pathscatter.inx:34
 #: ../share/extensions/voronoi2svg.inx:34
 msgid "Generate from Path"
-msgstr "إنشاﺀ من المسار"
+msgstr "توليد من المسار"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:326
 #: ../share/extensions/ps_input.inx:12
@@ -5218,84 +5264,81 @@ msgstr "PostScript"
 #: ../src/extension/internal/cairo-ps-out.cpp:328
 #: ../src/extension/internal/cairo-ps-out.cpp:370
 msgid "Restrict to PS level:"
-msgstr ""
+msgstr "التقييد بِمُستوى PS:"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:329
 #: ../src/extension/internal/cairo-ps-out.cpp:371
 msgid "PostScript level 3"
-msgstr ""
+msgstr "المستوى الثالث من PostScript"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:330
 #: ../src/extension/internal/cairo-ps-out.cpp:372
 msgid "PostScript level 2"
-msgstr ""
+msgstr "المستوى الثاني من PostScript"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:332
 #: ../src/extension/internal/cairo-ps-out.cpp:374
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:251
-#, fuzzy
 msgid "Text output options:"
-msgstr "اتجاه النص"
+msgstr "خيارات إخراج النص:"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:333
 #: ../src/extension/internal/cairo-ps-out.cpp:375
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:252
-#, fuzzy
 msgid "Embed fonts"
-msgstr "حرّر خطوط SVG"
+msgstr "تضمين الخُطوط"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:334
 #: ../src/extension/internal/cairo-ps-out.cpp:376
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:253
-#, fuzzy
 msgid "Convert text to paths"
-msgstr "تحويل النصوص إلى مسارات"
+msgstr "تحويل النُصوص إلى مَسارات"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:335
 #: ../src/extension/internal/cairo-ps-out.cpp:377
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:254
 msgid "Omit text in PDF and create LaTeX file"
-msgstr "حذف النصوص من الPDF و  خلق ملف LaTeX"
+msgstr "إسقاط النص من الـPDF وإنشاء مِلف LaTeX"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:337
 #: ../src/extension/internal/cairo-ps-out.cpp:379
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:256
 msgid "Rasterize filter effects"
-msgstr ""
+msgstr "تنقيط تأثيرات المُرَشّح"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:338
 #: ../src/extension/internal/cairo-ps-out.cpp:380
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:257
 msgid "Resolution for rasterization (dpi):"
-msgstr ""
+msgstr "دِقَّة التنقيط (نقطة لِكُل بوصة):"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:339
 #: ../src/extension/internal/cairo-ps-out.cpp:381
 msgid "Output page size"
-msgstr "حجم الصفحة المنتوجة"
+msgstr "حجم الصفحة المُخرَجَة"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:340
 #: ../src/extension/internal/cairo-ps-out.cpp:382
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:259
 msgid "Use document's page size"
-msgstr "استعمل حجم صفحة المستند"
+msgstr "استخدم حجم صفحة المُستند"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:341
 #: ../src/extension/internal/cairo-ps-out.cpp:383
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:260
 msgid "Use exported object's size"
-msgstr "استعمل حجم الكائن المُصدّر"
+msgstr "استخدام حجم الكائن المُصدَّر"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:343
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:262
 msgid "Bleed/margin (mm):"
-msgstr ""
+msgstr "النزيف/الهامِش (مم):"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:344
 #: ../src/extension/internal/cairo-ps-out.cpp:386
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:263
 msgid "Limit export to the object with ID:"
-msgstr "تقييد الاستخراج للكائنات ذات الهوية:"
+msgstr "تقييد التصدير إلى الكائِن بالمُعرِّف(ID):"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:348
 #: ../share/extensions/ps_input.inx:11
@@ -5304,59 +5347,59 @@ msgstr "PostScript (*.ps)"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:349
 msgid "PostScript File"
-msgstr "ملف PostScript"
+msgstr "مِلف PostScript"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:368
 #: ../share/extensions/eps_input.inx:13
 msgid "Encapsulated PostScript"
-msgstr ""
+msgstr "Encapsulated PostScript"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:385
 msgid "Bleed/margin (mm)"
-msgstr ""
+msgstr "النزيف/الهامِش (مم)"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:390
 #: ../share/extensions/eps_input.inx:12
 msgid "Encapsulated PostScript (*.eps)"
-msgstr ""
+msgstr "Encapsulated PostScript (*.eps)"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:391
 msgid "Encapsulated PostScript File"
-msgstr ""
+msgstr "مِلف Encapsulated PostScript"
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:245
 msgid "Restrict to PDF version:"
-msgstr ""
+msgstr "التقييد بإصدار PDF:"
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:247
 msgid "PDF 1.5"
-msgstr ""
+msgstr "PDF 1.5"
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:249
 msgid "PDF 1.4"
-msgstr ""
+msgstr "PDF 1.4"
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:258
 msgid "Output page size:"
-msgstr "حجم صفحة الإنتاج:"
+msgstr "حجم الصفحة المُخرَجَة"
 
 #: ../src/extension/internal/cdr-input.cpp:113
 #: ../src/extension/internal/vsd-input.cpp:113
 msgid "Page Selector"
-msgstr "منتقي الصفحة"
+msgstr "مُنتَقي الصفحة"
 
 #: ../src/extension/internal/cdr-input.cpp:128
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:107
 #: ../src/extension/internal/vsd-input.cpp:128
 msgid "Select page:"
-msgstr "اختيار الصفحة:"
+msgstr "اِختَر الصفحة:"
 
 #: ../src/extension/internal/cdr-input.cpp:147
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:120
 #: ../src/extension/internal/vsd-input.cpp:147
 #, c-format
 msgid "out of %i"
-msgstr "من أصل %i"
+msgstr "مِن أصل %i"
 
 #: ../src/extension/internal/cdr-input.cpp:155
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:105
@@ -5373,7 +5416,7 @@ msgstr "من أصل %i"
 #: ../src/widgets/desktop-widget.cpp:1162
 #: ../src/widgets/desktop-widget.cpp:1209
 msgid "_Cancel"
-msgstr "أ_لغِ"
+msgstr "إل_غاء"
 
 #: ../src/extension/internal/cdr-input.cpp:156
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:106
@@ -5381,141 +5424,142 @@ msgstr "أ_لغِ"
 #: ../src/extension/prefdialog/prefdialog.cpp:73
 #: ../src/ui/dialog/guides.cpp:177
 msgid "_OK"
-msgstr ""
+msgstr "_حسنًا"
 
 #: ../src/extension/internal/cdr-input.cpp:227
+#, fuzzy
 #: ../src/extension/internal/vsd-input.cpp:227
 #: ../src/ui/dialog/svg-preview.cpp:301
 msgid "No preview"
-msgstr "لا عرض مسبق"
+msgstr "لا مُعايَنَة"
 
 #: ../src/extension/internal/cdr-input.cpp:326
 msgid "Corel DRAW Input"
-msgstr "إدخال كوريل درو"
+msgstr "إدخال Corel DRAW"
 
 #: ../src/extension/internal/cdr-input.cpp:331
 msgid "Corel DRAW 7-X4 files (*.cdr)"
-msgstr "ملفات كوريل درو 7-X4 (*.cdr)"
+msgstr "Corel DRAW 7-X4 files (*.cdr)"
 
 #: ../src/extension/internal/cdr-input.cpp:332
 msgid "Open files saved in Corel DRAW 7-X4"
-msgstr "افتح ملفات كوريل درو 7-X4"
+msgstr "فتح مِلفات محفوظة بصيغة Corel DRAW 7-X4"
 
 #: ../src/extension/internal/cdr-input.cpp:339
 msgid "Corel DRAW templates input"
-msgstr "إدخال قوالب كوريل درو"
+msgstr "إدخال قوالب Corel DRAW"
 
 #: ../src/extension/internal/cdr-input.cpp:344
 msgid "Corel DRAW 7-13 template files (*.cdt)"
-msgstr "ملفات قوالب كوريل درو 7-13 (*.cdt)"
+msgstr "Corel DRAW 7-13 template files (*.cdt)"
 
 #: ../src/extension/internal/cdr-input.cpp:345
 msgid "Open files saved in Corel DRAW 7-13"
-msgstr "افتح ملفات كوريل درو 7-13"
+msgstr "فتح مِلفات محفوظة بصيغة Corel DRAW 7-13"
 
 #: ../src/extension/internal/cdr-input.cpp:352
 msgid "Corel DRAW Compressed Exchange files input"
-msgstr "إدخال ملفات التحويل المضغوط من كوريل درو"
+msgstr "إدخال ملفات التبادل المضغوطة لـCorel DRAW"
 
 #: ../src/extension/internal/cdr-input.cpp:357
 msgid "Corel DRAW Compressed Exchange files (*.ccx)"
-msgstr "ملفات التحويل المضغوط من كوريل درو (*.ccx)"
+msgstr "Corel DRAW Compressed Exchange files (*.ccx)"
 
 #: ../src/extension/internal/cdr-input.cpp:358
 msgid "Open compressed exchange files saved in Corel DRAW"
-msgstr "افتح ملفات التّحويل المضغوط من كوريل درو"
+msgstr "فتح ملفات التبادل المضغوطة المحفوظة بصيغة Corel DRAW"
 
 #: ../src/extension/internal/cdr-input.cpp:365
 msgid "Corel DRAW Presentation Exchange files input"
-msgstr "إدخال ملفات التحويل التّقديمي من كوريل درو"
+msgstr "إدخال ملفات التبادل التقديميَّة Corel DRAW"
 
 #: ../src/extension/internal/cdr-input.cpp:370
 msgid "Corel DRAW Presentation Exchange files (*.cmx)"
-msgstr "ملفات التحويل التّقديمي من كوريل درو (*.cmx)"
+msgstr "Corel DRAW Presentation Exchange files (*.cmx)"
 
 #: ../src/extension/internal/cdr-input.cpp:371
 msgid "Open presentation exchange files saved in Corel DRAW"
-msgstr "افتح ملفات التّحويل التّقديمي من كوريل درو"
+msgstr "فتح ملفات التبادل التقديميَّة المحفوظة بصيغة Corel DRAW"
 
 #: ../src/extension/internal/emf-inout.cpp:3634
 msgid "EMF Input"
-msgstr ""
+msgstr "إدخال EMF"
 
 #: ../src/extension/internal/emf-inout.cpp:3639
 msgid "Enhanced Metafiles (*.emf)"
-msgstr ""
+msgstr "Enhanced Metafiles (*.emf)"
 
 #: ../src/extension/internal/emf-inout.cpp:3640
 msgid "Enhanced Metafiles"
-msgstr ""
+msgstr "Enhanced Metafiles"
 
 #: ../src/extension/internal/emf-inout.cpp:3648
 msgid "EMF Output"
-msgstr ""
+msgstr "مُخرجات EMF"
 
 #: ../src/extension/internal/emf-inout.cpp:3650
 #: ../src/extension/internal/wmf-inout.cpp:3229
 msgid "Convert texts to paths"
-msgstr "تحويل النصوص إلى مسارات"
+msgstr "تحويل النُصوص إلى مسارات"
 
 #: ../src/extension/internal/emf-inout.cpp:3651
 #: ../src/extension/internal/wmf-inout.cpp:3230
 msgid "Map Unicode to Symbol font"
-msgstr ""
+msgstr "تعيين الترميز الموحد إلى خط Symbol"
 
 #: ../src/extension/internal/emf-inout.cpp:3652
 #: ../src/extension/internal/wmf-inout.cpp:3231
 msgid "Map Unicode to Wingdings"
-msgstr ""
+msgstr "تعيين الترميز الموحد إلى Wingdings"
 
 #: ../src/extension/internal/emf-inout.cpp:3653
 #: ../src/extension/internal/wmf-inout.cpp:3232
 msgid "Map Unicode to Zapf Dingbats"
-msgstr ""
+msgstr "تعيين الترميز الموحد إلى Zapf Dingbats"
 
 #: ../src/extension/internal/emf-inout.cpp:3654
 #: ../src/extension/internal/wmf-inout.cpp:3233
 msgid "Use MS Unicode PUA (0xF020-0xF0FF) for converted characters"
-msgstr ""
+msgstr "استخدام MS Unicode PUA (0xF020-0xF0FF) للأحرف المُحَوَّلَة"
 
 #: ../src/extension/internal/emf-inout.cpp:3655
 #: ../src/extension/internal/wmf-inout.cpp:3234
 msgid "Compensate for PPT font bug"
-msgstr ""
+msgstr "التعويض عن خلل خط PPT"
 
 #: ../src/extension/internal/emf-inout.cpp:3656
 #: ../src/extension/internal/wmf-inout.cpp:3235
 msgid "Convert dashed/dotted lines to single lines"
-msgstr ""
+msgstr "تحويل الخطوط المتقطعة/المنقطة إلى خطوط مفردة"
 
 #: ../src/extension/internal/emf-inout.cpp:3657
 #: ../src/extension/internal/wmf-inout.cpp:3236
 msgid "Convert gradients to colored polygon series"
-msgstr "تحويل التدرّجات إلى سلسلة مضلّعات ملونة"
+msgstr "تحويل التدرجات إلى سلسلة مُضلَّعات ملونة"
 
 #: ../src/extension/internal/emf-inout.cpp:3658
 msgid "Use native rectangular linear gradients"
-msgstr ""
+msgstr "استخدام التدرجات الخطية المستطيلة الأصلية"
 
 #: ../src/extension/internal/emf-inout.cpp:3659
 msgid "Map all fill patterns to standard EMF hatches"
-msgstr ""
+msgstr "تعيين جميع أنماط التعبئة إلى فتحات EMF القياسية"
 
 #: ../src/extension/internal/emf-inout.cpp:3660
 msgid "Ignore image rotations"
-msgstr "تجاهل دوران الصورة"
+msgstr "تجاهُل دَوَران الصورة"
 
 #: ../src/extension/internal/emf-inout.cpp:3664
 msgid "Enhanced Metafile (*.emf)"
-msgstr ""
+msgstr "Enhanced Metafile (*.emf)"
 
 #: ../src/extension/internal/emf-inout.cpp:3665
 msgid "Enhanced Metafile"
-msgstr ""
+msgstr "Enhanced Metafile"
 
 #: ../src/extension/internal/filter/bevels.h:54
 msgid "Diffuse Light"
-msgstr ""
+msgstr "نَشر الضوء"
 
 #: ../src/extension/internal/filter/bevels.h:56
 #: ../src/extension/internal/filter/bevels.h:136
@@ -5529,13 +5573,13 @@ msgstr "النعومة"
 #: ../src/extension/internal/filter/bevels.h:138
 #: ../src/extension/internal/filter/bevels.h:222
 msgid "Elevation (°)"
-msgstr ""
+msgstr "الارتفاع (°)"
 
 #: ../src/extension/internal/filter/bevels.h:58
 #: ../src/extension/internal/filter/bevels.h:139
 #: ../src/extension/internal/filter/bevels.h:223
 msgid "Azimuth (°)"
-msgstr ""
+msgstr "زاوية اَلسُّمُوت (°)"
 
 #: ../src/extension/internal/filter/bevels.h:59
 #: ../src/extension/internal/filter/bevels.h:140
@@ -5598,15 +5642,15 @@ msgstr "لون الإضاءة"
 #: ../src/extension/internal/filter/transparency.h:350
 #: ../src/ui/dialog/inkscape-preferences.cpp:2414
 msgid "Filters"
-msgstr "مرشّحات"
+msgstr "مُرشِّحات"
 
 #: ../src/extension/internal/filter/bevels.h:67
 msgid "Basic diffuse bevel to use for building textures"
-msgstr "زاوية النشر الأساسي للإستعمال عند إنشاﺀ الكساﺀات"
+msgstr "حافة انتشار أوليَّة لاستخدامها في بناء البُنيات"
 
 #: ../src/extension/internal/filter/bevels.h:134
 msgid "Matte Jelly"
-msgstr ""
+msgstr "هُلام غير لَّامِع"
 
 #: ../src/extension/internal/filter/bevels.h:137
 #: ../src/extension/internal/filter/bevels.h:221
@@ -5617,37 +5661,37 @@ msgstr "السطوع"
 
 #: ../src/extension/internal/filter/bevels.h:148
 msgid "Bulging, matte jelly covering"
-msgstr "إنتفاخ، غطاﺀ هلامي باهت"
+msgstr "انتفاخ ، غِطاء هُلامي غير لَّامِع"
 
 #: ../src/extension/internal/filter/bevels.h:218
 msgid "Specular Light"
-msgstr ""
+msgstr "ضوء براق"
 
 #: ../src/extension/internal/filter/blurs.h:57
 #: ../src/extension/internal/filter/blurs.h:190
 #: ../src/extension/internal/filter/blurs.h:330
 #: ../src/extension/internal/filter/distort.h:74
 msgid "Horizontal blur"
-msgstr "تغبيش أفقي"
+msgstr "تغبيش أُفقي"
 
 #: ../src/extension/internal/filter/blurs.h:58
 #: ../src/extension/internal/filter/blurs.h:191
 #: ../src/extension/internal/filter/blurs.h:331
 #: ../src/extension/internal/filter/distort.h:75
 msgid "Vertical blur"
-msgstr "تغبيش عمودي"
+msgstr "تغبيش رأسي"
 
 #: ../src/extension/internal/filter/blurs.h:59
 msgid "Blur content only"
-msgstr "تغبيش المحتوى فقط"
+msgstr "تغبيش المُحتوى فقط"
 
 #: ../src/extension/internal/filter/blurs.h:67
 msgid "Simple vertical and horizontal blur effect"
-msgstr "تأثير بسيط للتغبيش الأفقي والعمودي"
+msgstr "تأثير تغبيش رأسي وأفقي بسيط"
 
 #: ../src/extension/internal/filter/blurs.h:126
 msgid "Clean Edges"
-msgstr "نظّف الحواف"
+msgstr "حواف نظيفة"
 
 #: ../src/extension/internal/filter/blurs.h:128
 #: ../src/extension/internal/filter/blurs.h:263
@@ -5655,21 +5699,23 @@ msgstr "نظّف الحواف"
 #: ../src/extension/internal/filter/paint.h:337
 #: ../src/extension/internal/filter/paint.h:342
 msgid "Strength"
-msgstr ""
+msgstr "شِدَّة"
 
 #: ../src/extension/internal/filter/blurs.h:136
 msgid ""
 "Removes or decreases glows and jaggeries around objects edges after applying "
 "some filters"
 msgstr ""
+"إزالة أو تقليل التوهجات والتعرجات حول حواف الكائنات بعد التطبيق بعض المرشحات"
 
 #: ../src/extension/internal/filter/blurs.h:186
+#, fuzzy
 msgid "Cross Blur"
 msgstr "تغبيش متقاطع"
 
 #: ../src/extension/internal/filter/blurs.h:189
 msgid "Fading"
-msgstr "تلاشي"
+msgstr "تَلاشي"
 
 #: ../src/extension/internal/filter/blurs.h:192
 #: ../src/extension/internal/filter/textures.h:75
@@ -5691,7 +5737,7 @@ msgstr "المزج:"
 #: ../src/extension/internal/filter/transparency.h:64
 #: ../src/filter-enums.cpp:56
 msgid "Darken"
-msgstr "ظلّم"
+msgstr "تغميق"
 
 #: ../src/extension/internal/filter/blurs.h:194
 #: ../src/extension/internal/filter/blurs.h:341
@@ -5728,7 +5774,7 @@ msgstr "شاشة"
 #: ../src/extension/internal/filter/transparency.h:61
 #: ../src/filter-enums.cpp:54
 msgid "Multiply"
-msgstr "مضاعفة"
+msgstr "مُضاعفة"
 
 #: ../src/extension/internal/filter/blurs.h:196
 #: ../src/extension/internal/filter/blurs.h:343
@@ -5744,11 +5790,11 @@ msgstr "مضاعفة"
 #: ../src/extension/internal/filter/transparency.h:65
 #: ../src/filter-enums.cpp:57
 msgid "Lighten"
-msgstr "فتّح"
+msgstr "تفتيح"
 
 #: ../src/extension/internal/filter/blurs.h:205
 msgid "Combine vertical and horizontal blur"
-msgstr "الجمع بين التغبيش الأفقي والعمودي"
+msgstr "الاجمع بين التغبيش الرأسي والأفقي"
 
 #: ../src/extension/internal/filter/blurs.h:261
 msgid "Feather"
@@ -5756,11 +5802,11 @@ msgstr "تغبيش الأطراف"
 
 #: ../src/extension/internal/filter/blurs.h:271
 msgid "Blurred mask on the edge without altering the contents"
-msgstr "قناع مغبّش على الحدود دون المساس بالمحتوى"
+msgstr "قناع مُغبَّش على الحُدود دون المساس بالمحتوى"
 
 #: ../src/extension/internal/filter/blurs.h:326
 msgid "Out of Focus"
-msgstr ""
+msgstr "خارج التركيز"
 
 #: ../src/extension/internal/filter/blurs.h:332
 #: ../src/extension/internal/filter/distort.h:76
@@ -5769,7 +5815,7 @@ msgstr ""
 #: ../src/extension/internal/filter/paint.h:343
 #: ../src/extension/internal/filter/paint.h:347
 msgid "Dilatation"
-msgstr ""
+msgstr "تمدُّد"
 
 #: ../src/extension/internal/filter/blurs.h:333
 #: ../src/extension/internal/filter/distort.h:77
@@ -5781,19 +5827,19 @@ msgstr ""
 #: ../src/extension/internal/filter/transparency.h:209
 #: ../src/extension/internal/filter/transparency.h:283
 msgid "Erosion"
-msgstr ""
+msgstr "تعرِيَة"
 
 #: ../src/extension/internal/filter/blurs.h:337
 #: ../src/extension/internal/filter/color.h:1282
 #: ../src/extension/internal/filter/color.h:1394
 #: ../src/ui/dialog/document-properties.cpp:108
 msgid "Background color"
-msgstr "لون الخلفية"
+msgstr "لون الخلفيَّة"
 
 #: ../src/extension/internal/filter/blurs.h:338
 #: ../src/extension/internal/filter/bumps.h:130
 msgid "Blend type:"
-msgstr "نوع الخليط:"
+msgstr "نوع المَزيج:"
 
 #: ../src/extension/internal/filter/blurs.h:339
 #: ../src/extension/internal/filter/bumps.h:131
@@ -5820,11 +5866,11 @@ msgstr "طبيعي"
 
 #: ../src/extension/internal/filter/blurs.h:345
 msgid "Blend to background"
-msgstr "دمج إلى الخلفية"
+msgstr "المَزج إلى الخلفية"
 
 #: ../src/extension/internal/filter/blurs.h:355
 msgid "Blur eroded by white or transparency"
-msgstr ""
+msgstr "ضبابية تآكُل بسبب الأبيض أو الشفافية"
 
 #: ../src/extension/internal/filter/bumps.h:81
 msgid "Bump"
@@ -5838,7 +5884,7 @@ msgstr "تبسيط الصورة"
 #: ../src/extension/internal/filter/bumps.h:86
 #: ../src/extension/internal/filter/bumps.h:315
 msgid "Bump simplification"
-msgstr ""
+msgstr "تبسيط النتوء"
 
 #: ../src/extension/internal/filter/bumps.h:88
 #: ../src/extension/internal/filter/bumps.h:317
@@ -5892,18 +5938,18 @@ msgstr "نوع الإضاءة:"
 
 #: ../src/extension/internal/filter/bumps.h:96
 msgid "Specular"
-msgstr ""
+msgstr "براقة"
 
 #: ../src/extension/internal/filter/bumps.h:97
 msgid "Diffuse"
-msgstr "انتشار"
+msgstr "مُنتَشِرة"
 
 #: ../src/extension/internal/filter/bumps.h:99
 #: ../src/extension/internal/filter/bumps.h:330
 #: ../src/ui/tools/measure-tool.cpp:1227 ../src/ui/widget/page-sizer.cpp:60
 #: ../share/extensions/interp_att_g.inx:10
 msgid "Height"
-msgstr "إرتفاع"
+msgstr "ارتفاع"
 
 #: ../src/extension/internal/filter/bumps.h:100
 #: ../src/extension/internal/filter/bumps.h:331
@@ -7608,7 +7654,8 @@ msgstr "دقة المعيار التقريبي للتدرج"
 msgid ""
 "<b>Note</b>: setting the precision too high may result in a large SVG file "
 "and slow performance."
-msgstr "<b>ملاحظة</b>: إستعمال دقّة عالية يمكن أن يضّخم حجم الملف ويبطئ الجهاز."
+msgstr ""
+"<b>ملاحظة</b>: إستعمال دقّة عالية يمكن أن يضّخم حجم الملف ويبطئ الجهاز."
 
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:144
 msgid "Poppler/Cairo import"
@@ -7925,13 +7972,12 @@ msgstr "إلغاﺀ"
 #: ../src/ui/dialog/knot-properties.cpp:41 ../src/ui/dialog/text-edit.cpp:70
 #: ../src/verbs.cpp:2544
 msgid "_Close"
-msgstr "أ_غلِق"
+msgstr "إغلا_ق"
 
 #: ../src/extension/prefdialog/prefdialog.cpp:73
 #: ../src/ui/dialog/text-edit.cpp:71 ../src/ui/dialog/transformation.cpp:156
-#, fuzzy
 msgid "_Apply"
-msgstr "طبّق على:"
+msgstr "_تطبيق"
 
 #: ../src/extension/prefdialog/prefdialog.cpp:230
 msgid "Live preview"
@@ -7946,9 +7992,8 @@ msgid "Format autodetect failed. The file is being opened as SVG."
 msgstr "فشل الوسيلة الآلية لإكتشاف النوع. سيتم فتح الملف كSVG."
 
 #: ../src/file-update.cpp:380
-#, fuzzy
 msgid "Convert legacy Inkscape file"
-msgstr "_حوّل إلى نصّ"
+msgstr "تحويل ملف إنكسكيب قديم"
 
 #: ../src/file-update.cpp:386
 msgid ""
@@ -8012,6 +8057,23 @@ msgid ""
 "More information about this change are available in the <a href='https://"
 "inkscape.org/en/learn/faq#dpi_change'>Inkscape FAQ</a></small>"
 msgstr ""
+"<small>لقد حدَّثنا إنكسكيب ليتبع معيار CSS البالغ 96 نقطة لكل بوصة لتوافق"
+" أفضل مع المتصفحات؛"
+"لقد اعتدنا على استخدام 90 نقطة لكل بوصة."
+"للعرض على الشاشة  سوف يُحوَّل العمل الفني الرقمي إلى 96 نقطة لكل بوصة دون"
+" تغيير الحجم ويجب ألا يتأثر العمل."
+"سيكون الحجم المادي المحدد للعمل الفني المرسوم عند 90 نقطة لكل البوصة صغير"
+" جدًا إذا تم تحويله إلى 96 نقطة لكل بوصة دون أي تحجيم. هناك طريقتان للتحجيم:\n"
+"<b>تحجيم المستند بأكمله:</b> الطريقة الأقل عرضة للخطأ، هي تحافظ على مظهر"
+" العمل الفني بما في ذلك المرشحات وموضع الأقنعة، إلخ. \n"
+"قد لا يكون حجم العمل الفني بالنسبة لحجم المستند دقيق.\n"
+"\n"
+"<b>تحجيم العناصر بشكل فردي في العمل الفني:</b> هذه الطريقة أقل موثوقية ويمكن"
+" أن تؤدي إلى تغيير المظهر، لكنها أفضل للإخراج المادي الذي يعتمد على أحجام"
+" ومواضع دقيقة (على سبيل المثال للطباعة ثلاثية الأبعاد.) \n"
+"\n"
+"مزيد من المعلومات حول هذا التغيير متوفرة في <a href='https://"
+"inkscape.org/ar/learn/faq#dpi_change'>الأسئلة الشائعة لإنكسكيب</a></small>"
 
 #: ../src/file-update.cpp:446
 #, fuzzy
@@ -8441,8 +8503,10 @@ msgstr[0] ""
 msgstr[1] ""
 "نقطة التدرّج مشتركة بين <b>تدرّج واحد%d</b>; اسحب مع <b>Shift</b> للفصل"
 msgstr[2] "نقطة التدرّج مشتركة بين <b>تدرجان%d</b>; اسحب مع <b>Shift</b> للفصل"
-msgstr[3] "نقطة التدرّج مشتركة بين <b>%d</b> تدرّجات; اسحب مع <b>Shift</b> للفصل"
-msgstr[4] "نقطة التدرّج مشتركة بين <b>%d</b> تدرّجًا; اسحب مع <b>Shift</b> للفصل"
+msgstr[3] ""
+"نقطة التدرّج مشتركة بين <b>%d</b> تدرّجات; اسحب مع <b>Shift</b> للفصل"
+msgstr[4] ""
+"نقطة التدرّج مشتركة بين <b>%d</b> تدرّجًا; اسحب مع <b>Shift</b> للفصل"
 msgstr[5] "نقطة التدرّج مشتركة بين <b>%d</b> تدرّج; اسحب مع <b>Shift</b> للفصل"
 
 #: ../src/gradient-drag.cpp:2767
@@ -8921,7 +8985,8 @@ msgstr "واجه إنكسكيب مشكلة داخيلة وسيتمّ اغلاق�
 msgid ""
 "Automatic backups of unsaved documents were done to the following "
 "locations:\n"
-msgstr "التحفيظ التلقائي الإحتياطي للملّفات غير المحفوظة قد تمّفي هذه الأماكن:\n"
+msgstr ""
+"التحفيظ التلقائي الإحتياطي للملّفات غير المحفوظة قد تمّفي هذه الأماكن:\n"
 
 #: ../src/inkscape.cpp:809
 msgid "Automatic backup of the following documents failed:\n"
@@ -16482,7 +16547,8 @@ msgstr "جذب دائما إلى خطوط الإرشاد، بغضّ النظر �
 msgid ""
 "If set, objects only snap to a guide when it's within the range specified "
 "below"
-msgstr "عند الاختيار، الكائنات تُجذب إلى معلَم عندما تكون في المدى المحدد أدناه"
+msgstr ""
+"عند الاختيار، الكائنات تُجذب إلى معلَم عندما تكون في المدى المحدد أدناه"
 
 #: ../src/ui/dialog/document-properties.cpp:136
 msgid "Snap to clip paths"
@@ -17163,7 +17229,8 @@ msgid ""
 "light source and the point to which it is pointing at) and the spot light "
 "cone. No light is projected outside this cone."
 msgstr ""
-"هذه الزاوية بين محاور الضوﺀ الموّجه (يعني المحور بين مصدر الضوﺀ والنقطةالموّجه "
+"هذه الزاوية بين محاور الضوﺀ الموّجه (يعني المحور بين مصدر الضوﺀ"
+" والنقطةالموّجه "
 "إليها) ومخروط الضوﺀ الموّجه. لا صدور للضوﺀ من خارج هذا المخروط"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1257
@@ -17460,7 +17527,8 @@ msgstr ""
 msgid ""
 "This value amplifies the heights of the bump map defined by the input alpha "
 "channel"
-msgstr "هذه القيمة تقوّي إرتفاع خريطة النتوﺀ المعرّفة من قناةألفا للصورة المعطاة"
+msgstr ""
+"هذه القيمة تقوّي إرتفاع خريطة النتوﺀ المعرّفة من قناةألفا للصورة المعطاة"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2784
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2823
@@ -17594,8 +17662,10 @@ msgid ""
 "color of each rendered pixel. This allows for effects like turning object to "
 "grayscale, modifying color saturation and changing color hue."
 msgstr ""
-"يُطبّق المرشّح <b>feColorMatrix</b> مبدئيًا على تحوّل المصفوفة إلى لون كل بكسل "
-"مُجسّد. و يسمح هذا للتّأثيرات كتحوّل العناصر إلى الرّمادية، تعديل اللّون و التّشبّع "
+"يُطبّق المرشّح <b>feColorMatrix</b> مبدئيًا على تحوّل المصفوفة إلى لون كل"
+" بكسل "
+"مُجسّد. و يسمح هذا للتّأثيرات كتحوّل العناصر إلى الرّمادية، تعديل اللّون و"
+" التّشبّع "
 "و التّدرج اللّوني."
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2871
@@ -24935,7 +25005,7 @@ msgstr ""
 #, c-format
 msgctxt "Transform handle tip"
 msgid "Scale by %.2f%% x %.2f%%"
-msgstr "التحجيم بـ %.2f%% x %.2f%%"
+msgstr "التحجيم بـ %.2f%% × %.2f%%"
 
 #: ../src/ui/tool/transform-handle-set.cpp:456
 #, c-format
@@ -25664,7 +25734,8 @@ msgid ""
 "(spreadMethod=\"repeat\"), or repeat the gradient in alternating opposite "
 "directions (spreadMethod=\"reflect\")"
 msgstr ""
-"سواء تمّ الملء بلونٍ مستوٍ ينتهي وراء شعاع الانحدار (نمط الانتشار=\"سادة\")، أو "
+"سواء تمّ الملء بلونٍ مستوٍ ينتهي وراء شعاع الانحدار (نمط الانتشار=\"سادة\")،"
+" أو "
 "تكرّر الانحدار في نفس الجهة (نمط الانتشار=\"تكرار\")، أو تكرر الانحدار بالجهة "
 "المعاكسة (نمط الانتشار=\"عكسي\")"
 
@@ -27678,7 +27749,8 @@ msgid ""
 "<b>Drag</b> or <b>double click</b> to create a gradient on selected objects, "
 "<b>drag handles</b> to adjust gradients."
 msgstr ""
-"<b>اسحب</b> أو <b>أنقر مزدوجًا</b> لإنشاء تدرّج على الكائنات المحددة، <b>مقابض "
+"<b>اسحب</b> أو <b>أنقر مزدوجًا</b> لإنشاء تدرّج على الكائنات المحددة، <b"
+">مقابض "
 "السحب</b> لضبط التدرَجات."
 
 #: ../src/ui/tools-switch.cpp:103
@@ -40080,7 +40152,8 @@ msgstr "رمز QR"
 
 #: ../share/extensions/render_barcode_qrcode.inx:6
 msgid "See http://www.denso-wave.com/qrcode/index-e.html for details"
-msgstr "اُنظر http://www.denso-wave.com/qrcode/index-e.html للمزيد من المعلومات"
+msgstr ""
+"اُنظر http://www.denso-wave.com/qrcode/index-e.html للمزيد من المعلومات"
 
 #: ../share/extensions/render_barcode_qrcode.inx:21
 msgid ""

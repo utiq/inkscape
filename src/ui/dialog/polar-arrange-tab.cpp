@@ -18,13 +18,13 @@
 #include "document.h"
 #include "inkscape.h"
 #include "preferences.h"
-#include "verbs.h"
 
 #include "object/sp-ellipse.h"
 #include "object/sp-item-transform.h"
 
 #include "ui/dialog/polar-arrange-tab.h"
 #include "ui/dialog/tile.h"
+#include "ui/icon-names.h"
 
 
 namespace Inkscape {
@@ -130,6 +130,10 @@ PolarArrangeTab::PolarArrangeTab(ArrangeDialog *parent_)
 	radiusY.set_sensitive(false);
 
 	set_border_width(4);
+
+    parametersTable.show_all();
+    parametersTable.set_no_show_all();
+    parametersTable.hide();
 }
 
 /**
@@ -280,11 +284,11 @@ void PolarArrangeTab::arrange()
 		{
 				if(!arrangeOnFirstEllipse)
 			{
-				if(SP_IS_GENERICELLIPSE(item))
-					referenceEllipse = SP_GENERICELLIPSE(item);
+				if(is<SPGenericEllipse>(item))
+					referenceEllipse = cast<SPGenericEllipse>(item);
 			} else {
-				if(SP_IS_GENERICELLIPSE(item) && referenceEllipse == nullptr)
-					referenceEllipse = SP_GENERICELLIPSE(item);
+				if(is<SPGenericEllipse>(item) && referenceEllipse == nullptr)
+					referenceEllipse = cast<SPGenericEllipse>(item);
 			}
 		}
 		++count;
@@ -359,8 +363,7 @@ void PolarArrangeTab::arrange()
 		}
 	}
 
-    DocumentUndo::done(parent->getDesktop()->getDocument(), SP_VERB_SELECTION_ARRANGE,
-                       _("Arrange on ellipse"));
+        DocumentUndo::done(parent->getDesktop()->getDocument(), _("Arrange on ellipse"), INKSCAPE_ICON("dialog-align-and-distribute"));
 }
 
 void PolarArrangeTab::updateSelection()

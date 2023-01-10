@@ -26,8 +26,7 @@
 #include <set>
 #include <memory>
 #include "dialog-manager.h"
-
-class SPDesktop;
+#include "desktop.h"
 
 namespace Inkscape {
 namespace UI {
@@ -47,7 +46,7 @@ class DialogContainer : public Gtk::Box
     using parent_type = Gtk::Box;
 
 public:
-    DialogContainer();
+    DialogContainer(InkscapeWindow* inkscape_window);
     ~DialogContainer() override;
 
     // Columns-related functions
@@ -55,16 +54,18 @@ public:
     DialogMultipaned *create_column();
 
     // Dialog-related functions
-    void new_dialog(unsigned int code);
-    void new_dialog(unsigned int code, DialogNotebook *notebook);
-    DialogWindow* new_floating_dialog(unsigned int code);
+    void new_dialog(const Glib::ustring& dialog_type);
+
+    DialogWindow* new_floating_dialog(const Glib::ustring& dialog_type);
     bool has_dialog_of_type(DialogBase *dialog);
-    DialogBase *get_dialog(unsigned int code);
+    DialogBase *get_dialog(const Glib::ustring& dialog_type);
     void link_dialog(DialogBase *dialog);
     void unlink_dialog(DialogBase *dialog);
-    const std::multimap<int, DialogBase *> *get_dialogs() { return &dialogs; };
+    const std::multimap<Glib::ustring, DialogBase *> *get_dialogs() { return &dialogs; };
     void toggle_dialogs();
     void update_dialogs(); // Update all linked dialogs
+    void set_inkscape_window(InkscapeWindow *inkscape_window);
+    InkscapeWindow* get_inkscape_window() { return _inkscape_window; }
 
     // State saving functionality
     std::unique_ptr<Glib::KeyFile> save_container_state();
@@ -78,7 +79,8 @@ public:
     void load_container_state(Glib::KeyFile& state, const std::string& window_id);
 
 private:
-    DialogMultipaned *columns;                    // The main widget inside which other children are kept.
+    InkscapeWindow *_inkscape_window = nullptr;   // Every container is attached to an InkscapeWindow.
+    DialogMultipaned *columns = nullptr;          // The main widget inside which other children are kept.
     std::vector<Gtk::TargetEntry> target_entries; // What kind of object can be dropped.
 
     /**
@@ -88,24 +90,26 @@ private:
      * window. (More explicitly, use one group name for all notebooks or
      * use a unique group name for each document window with related
      * floating docks.) For the moment we choose the former which
-     * requires a multimap here as we use the dialog verb code as a key.
+     * requires a multimap here as we use the dialog type as a key.
      */
-    std::multimap<int, DialogBase *> dialogs;
+    std::multimap<Glib::ustring, DialogBase *>dialogs;
 
-    DialogBase *dialog_factory(unsigned int code);
-    Gtk::Widget *create_notebook_tab(Glib::ustring label, Glib::ustring image, Gtk::AccelKey shortcut);
-    DialogWindow* create_new_floating_dialog(unsigned int code, bool blink);
+    void new_dialog(const Glib::ustring& dialog_type, DialogNotebook* notebook);
+    std::unique_ptr<DialogBase> dialog_factory(Glib::ustring const &dialog_type);
+    Gtk::Widget *create_notebook_tab(Glib::ustring label, Glib::ustring image, const Glib::ustring shortcut);
+    DialogWindow* create_new_floating_dialog(const Glib::ustring& dialog_type, bool blink);
 
     // Signal connections
     std::vector<sigc::connection> connections;
 
     // Handlers
-    void on_unmap() override;
+    void on_unrealize() override;
     DialogNotebook *prepare_drop(const Glib::RefPtr<Gdk::DragContext> context);
     void prepend_drop(const Glib::RefPtr<Gdk::DragContext> context, DialogMultipaned *column);
     void append_drop(const Glib::RefPtr<Gdk::DragContext> context, DialogMultipaned *column);
     void column_empty(DialogMultipaned *column);
-    DialogBase* find_existing_dialog(unsigned int code);
+    DialogBase* find_existing_dialog(const Glib::ustring& dialog_type);
+    static bool recreate_dialogs_from_state(InkscapeWindow* inkscape_window, const Glib::KeyFile* keyfile);
 };
 
 } // namespace Dialog

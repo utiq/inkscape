@@ -16,10 +16,11 @@
 
 #include "sp-item-group.h"
 
-class SPAnchor : public SPGroup {
+class SPAnchor final : public SPGroup {
 public:
 	SPAnchor();
 	~SPAnchor() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
 	char *href;
 	char *type;
@@ -32,11 +33,10 @@ public:
         virtual void updatePageAnchor();
 	Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
 
-    const char* displayName() const override;
+        const char* typeName() const override;
+        const char* displayName() const override;
 	char* description() const override;
 	int event(SPEvent *event) override;
 };
-
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_ANCHOR, SPAnchor)
 
 #endif

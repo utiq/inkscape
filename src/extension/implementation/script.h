@@ -41,11 +41,10 @@ public:
     void unload(Inkscape::Extension::Extension *module) override;
     bool check(Inkscape::Extension::Extension *module) override;
 
-    ImplementationDocumentCache * newDocCache(Inkscape::Extension::Extension * ext, Inkscape::UI::View::View * view) override;
+    SPDocument *new_from_template(Inkscape::Extension::Template *module) override;
+    void resize_to_template(Inkscape::Extension::Template *tmod, SPDocument *doc, SPPage *page) override;
 
-    Gtk::Widget *prefs_input(Inkscape::Extension::Input *module, gchar const *filename) override;
     SPDocument *open(Inkscape::Extension::Input *module, gchar const *filename) override;
-    Gtk::Widget *prefs_output(Inkscape::Extension::Output *module) override;
     void save(Inkscape::Extension::Output *module, SPDocument *doc, gchar const *filename) override;
     void export_raster(Inkscape::Extension::Output *module,
             const SPDocument *doc, std::string const &png_file, gchar const *filename) override;
@@ -56,6 +55,8 @@ private:
     bool _canceled;
     Glib::Pid _pid;
     Glib::RefPtr<Glib::MainLoop> _main_loop;
+
+    void _change_extension(Inkscape::Extension::Extension *mod, SPDocument *doc, std::list<std::string> &params, bool ignore_stderr);
 
     /**
      * The command that has been derived from
@@ -105,7 +106,8 @@ private:
     int execute (const std::list<std::string> &in_command,
                  const std::list<std::string> &in_params,
                  const Glib::ustring &filein,
-                 file_listener &fileout);
+                 file_listener &fileout,
+                 bool ignore_stderr = false);
 
     void pump_events();
 

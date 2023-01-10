@@ -4,6 +4,7 @@
 # -----------------------------------------------------------------------------
 
 set(inkscape_SRC
+  alignment-snapper.cpp
   attribute-rel-css.cpp
   attribute-rel-svg.cpp
   attribute-rel-util.cpp
@@ -11,6 +12,7 @@ set(inkscape_SRC
   attributes.cpp
   auto-save.cpp
   axis-manip.cpp
+  hsluv.cpp
   color.cpp
   composite-undo-stack-observer.cpp
   conditions.cpp
@@ -21,6 +23,7 @@ set(inkscape_SRC
   desktop-style.cpp
   desktop.cpp
   device-manager.cpp
+  distribution-snapper.cpp
   document-subset.cpp
   document-undo.cpp
   document.cpp
@@ -35,15 +38,12 @@ set(inkscape_SRC
   gc-finalized.cpp
   gradient-chemistry.cpp
   gradient-drag.cpp
-  graphlayout.cpp
   guide-snapper.cpp
-  help.cpp
+  grid-snapper.cpp
   id-clash.cpp
   inkscape.cpp
   inkscape-version-info.cpp
-  layer-fns.cpp
   layer-manager.cpp
-  layer-model.cpp
   line-geometry.cpp
   line-snapper.cpp
   media.cpp
@@ -52,6 +52,8 @@ set(inkscape_SRC
   mod360.cpp
   object-hierarchy.cpp
   object-snapper.cpp
+  oklab.cpp
+  page-manager.cpp
   path-chemistry.cpp
   path-prefix.cpp
   perspective-line.cpp
@@ -61,7 +63,6 @@ set(inkscape_SRC
   proj_pt.cpp
   pure-transform.cpp
   rdf.cpp
-  removeoverlap.cpp
   rubberband.cpp
   selcue.cpp
   selection-chemistry.cpp
@@ -80,14 +81,13 @@ set(inkscape_SRC
   text-chemistry.cpp
   text-editing.cpp
   transf_mat_3x4.cpp
-  unclump.cpp
   unicoderange.cpp
   vanishing-point.cpp
-  verbs.cpp
   version.cpp
 
   # -------
   # Headers
+  alignment-snapper.h
   attribute-rel-css.h
   attribute-rel-svg.h
   attribute-rel-util.h
@@ -100,6 +100,7 @@ set(inkscape_SRC
   cms-system.h
   color-profile-cms-fns.h
   color-rgba.h
+  hsluv.h
   color.h
   colorspace.h
   composite-undo-stack-observer.h
@@ -111,6 +112,7 @@ set(inkscape_SRC
   desktop-style.h
   desktop.h
   device-manager.h
+  distribution-snapper.h
   document-subset.h
   document-undo.h
   document.h
@@ -127,21 +129,16 @@ set(inkscape_SRC
   gc-finalized.h
   gradient-chemistry.h
   gradient-drag.h
-  graphlayout.h
   guide-snapper.h
-  help.h
-  helper-fns.h
+  grid-snapper.h
   id-clash.h
   inkscape-version.h
   inkscape-version-info.h
   inkscape.h
-  layer-fns.h
   layer-manager.h
-  layer-model.h
   line-geometry.h
   line-snapper.h
   media.h
-  menus-skeleton.h
   message-context.h
   message-stack.h
   message.h
@@ -149,8 +146,14 @@ set(inkscape_SRC
   number-opt-number.h
   object-hierarchy.h
   object-snapper.h
+  oklab.h
+  page-manager.h
   path-chemistry.h
   path-prefix.h
+  pattern-manager.cpp
+  pattern-manager.h
+  pattern-manipulation.cpp
+  pattern-manipulation.h
   perspective-line.h
   preferences-skeleton.h
   preferences.h
@@ -159,7 +162,6 @@ set(inkscape_SRC
   proj_pt.h
   pure-transform.h
   rdf.h
-  removeoverlap.h
   rubberband.h
   selcue.h
   selection-chemistry.h
@@ -185,11 +187,9 @@ set(inkscape_SRC
   text-editing.h
   text-tag-attributes.h
   transf_mat_3x4.h
-  unclump.h
   undo-stack-observer.h
   unicoderange.h
   vanishing-point.h
-  verbs.h
   version.h
 
   # TEMP  Need to detangle inkscape-view from ui/interface.cpp
@@ -198,38 +198,89 @@ set(inkscape_SRC
 
   inkscape-application.h
   inkscape-application.cpp
+  actions/actions-effect-data.h
+  actions/actions-effect-data.cpp
   actions/actions-extra-data.h
   actions/actions-extra-data.cpp
+  actions/actions-hint-data.h
+  actions/actions-hint-data.cpp
 
+  actions/actions-base.h
+  actions/actions-base.cpp
   actions/actions-canvas-mode.h
   actions/actions-canvas-mode.cpp
   actions/actions-canvas-snapping.h
   actions/actions-canvas-snapping.cpp
   actions/actions-canvas-transform.h
   actions/actions-canvas-transform.cpp
-  actions/actions-base.h
-  actions/actions-base.cpp
+  actions/actions-dialogs.cpp
+  actions/actions-dialogs.h
+  actions/actions-edit-document.h
+  actions/actions-edit-document.cpp
+  actions/actions-edit-window.h
+  actions/actions-edit-window.cpp
+  actions/actions-edit.h
+  actions/actions-edit.cpp
+  actions/actions-effect.h
+  actions/actions-effect.cpp
+  actions/actions-element-a.h
+  actions/actions-element-a.cpp
+  actions/actions-element-image.h
+  actions/actions-element-image.cpp
+  actions/actions-file-window.h
+  actions/actions-file-window.cpp
   actions/actions-file.h
   actions/actions-file.cpp
   actions/actions-helper.h
   actions/actions-helper.cpp
+  actions/actions-help-url.h
+  actions/actions-help-url.cpp
+  actions/actions-hide-lock.h
+  actions/actions-hide-lock.cpp
+  actions/actions-layer.h
+  actions/actions-layer.cpp
+  actions/actions-node-align.h
+  actions/actions-node-align.cpp
   actions/actions-object.h
   actions/actions-object.cpp
   actions/actions-object-align.h
   actions/actions-object-align.cpp
   actions/actions-output.h
   actions/actions-output.cpp
+  actions/actions-paths.h
+  actions/actions-paths.cpp
+  actions/actions-selection-object.h
+  actions/actions-selection-object.cpp
+  actions/actions-selection-window.h
+  actions/actions-selection-window.cpp
   actions/actions-selection.h
   actions/actions-selection.cpp
+  actions/actions-text.h
+  actions/actions-text.cpp
+  actions/actions-tools.h
+  actions/actions-tools.cpp
+  actions/actions-tutorial.h
+  actions/actions-tutorial.cpp
   actions/actions-transform.h
   actions/actions-transform.cpp
+  actions/actions-undo-document.h
+  actions/actions-undo-document.cpp
+  actions/actions-view-mode.h
+  actions/actions-view-mode.cpp
+  actions/actions-view-window.h
+  actions/actions-view-window.cpp
   actions/actions-window.h
   actions/actions-window.cpp
+  actions/actions-pages.h
+  actions/actions-pages.cpp
 
   inkview-application.h
   inkview-application.cpp
   inkview-window.h
   inkview-window.cpp
+
+  manipulation/copy-resource.h
+  manipulation/copy-resource.cpp
 )
   
 # -----------------------------------------------------------------------------
@@ -260,6 +311,8 @@ list(APPEND inkscape_SRC
 # All folders for internal inkscape
 # these call add_inkscape_source
 add_subdirectory(actions)
+add_subdirectory(async)
+add_subdirectory(color)
 add_subdirectory(debug)
 add_subdirectory(display)
 add_subdirectory(extension)
@@ -342,10 +395,8 @@ endif()
 set(INKSCAPE_TARGET_LIBS
         # order from automake
         #sp_LIB
-        #nrtype_LIB
         #inkscape_LIB
         #sp_LIB # annoying, we need both!
-        nrtype_LIB # annoying, we need both!
         croco_LIB
         avoid_LIB
         cola_LIB
@@ -368,8 +419,8 @@ else()
     set_target_properties(inkscape_base PROPERTIES INSTALL_RPATH "@loader_path/..")
 endif()
 
-if(WITH_DBUS)
-    add_dependencies(inkscape_base inkscape_dbus)
+if(WITH_INTERNAL_CAIRO)
+add_dependencies(inkscape_base cairo_ext)
 endif()
 
 target_link_libraries(inkscape_base PUBLIC Boost::filesystem)

@@ -13,6 +13,7 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <gtkmm/cellrenderertext.h>
 
 namespace Inkscape::XML {
 class Node;
@@ -29,13 +30,16 @@ class Node;
 
 struct SPXMLViewTree;
 struct SPXMLViewTreeClass;
+namespace Inkscape::UI::Syntax { class XMLFormatter; }
 
 struct SPXMLViewTree
 {
-	GtkTreeView tree;
-	GtkTreeStore *store;
-	Inkscape::XML::Node * repr;
-	gint blocked;
+    GtkTreeView tree;
+    GtkTreeStore *store;
+    Inkscape::XML::Node * repr;
+    gint blocked;
+    Gtk::CellRendererText* renderer;
+    Inkscape::UI::Syntax::XMLFormatter* formatter;
 };
 
 struct SPXMLViewTreeClass

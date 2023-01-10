@@ -2,7 +2,7 @@
 /*
  * Gio::Actions for toggling snapping preferences. Tied to a particular document.
  *
- * As preferences are stored per document, changes should be propogated to any window with same document.
+ * As preferences are stored per document, changes should be propagated to any window with same document.
  *
  * Copyright (C) 2019 Tavmjong Bah
  *
@@ -14,11 +14,17 @@
 #define INK_ACTIONS_CANVAS_SNAPPING_H
 
 class SPDocument;
+namespace Inkscape {
+    class SnapPreferences;
+}
 
-void add_actions_canvas_snapping(SPDocument* document);
-void set_actions_canvas_snapping(SPDocument* document);
+void add_actions_canvas_snapping(Gio::ActionMap* map);
 
 std::vector<std::vector<Glib::ustring>> get_extra_data_canvas_snapping();
+
+Inkscape::SnapPreferences& get_snapping_preferences();
+
+void transition_to_simple_snapping();
 
 #endif // INK_ACTIONS_CANVAS_SNAPPING_H
 

@@ -71,6 +71,8 @@ static SPStyleProp const props[] = {
     {SPAttr::GRIDTOLERANCE, "gridtolerance"},
     {SPAttr::GUIDETOLERANCE, "guidetolerance"},
     {SPAttr::OBJECTTOLERANCE, "objecttolerance"},
+    {SPAttr::ALIGNMENTTOLERANCE, "alignmenttolerance"},
+    {SPAttr::DISTRIBUTIONTOLERANCE, "distributiontolerance"},
     {SPAttr::GUIDECOLOR, "guidecolor"},
     {SPAttr::GUIDEOPACITY, "guideopacity"},
     {SPAttr::GUIDEHICOLOR, "guidehicolor"},
@@ -81,11 +83,11 @@ static SPStyleProp const props[] = {
     {SPAttr::BORDERCOLOR, "bordercolor"},
     {SPAttr::BORDEROPACITY, "borderopacity"},
     {SPAttr::PAGECOLOR, "pagecolor"},
+    {SPAttr::PAGELABELSTYLE, "labelstyle"},
     {SPAttr::FIT_MARGIN_TOP, "fit-margin-top"},
     {SPAttr::FIT_MARGIN_LEFT, "fit-margin-left"},
     {SPAttr::FIT_MARGIN_RIGHT, "fit-margin-right"},
     {SPAttr::FIT_MARGIN_BOTTOM, "fit-margin-bottom"},
-    {SPAttr::INKSCAPE_PAGECHECKERBOARD, "inkscape:pagecheckerboard"},
     {SPAttr::INKSCAPE_PAGEOPACITY, "inkscape:pageopacity"},
     {SPAttr::INKSCAPE_PAGESHADOW, "inkscape:pageshadow"},
     {SPAttr::INKSCAPE_ZOOM, "inkscape:zoom"},
@@ -97,30 +99,33 @@ static SPStyleProp const props[] = {
     {SPAttr::INKSCAPE_WINDOW_X, "inkscape:window-x"},
     {SPAttr::INKSCAPE_WINDOW_Y, "inkscape:window-y"},
     {SPAttr::INKSCAPE_WINDOW_MAXIMIZED, "inkscape:window-maximized"},
-    {SPAttr::INKSCAPE_SNAP_GLOBAL, "inkscape:snap-global"},
-    {SPAttr::INKSCAPE_SNAP_PERP, "inkscape:snap-perpendicular"},
-    {SPAttr::INKSCAPE_SNAP_TANG, "inkscape:snap-tangential"},
-    {SPAttr::INKSCAPE_SNAP_BBOX, "inkscape:snap-bbox"},
-    {SPAttr::INKSCAPE_SNAP_NODE, "inkscape:snap-nodes"},
-    {SPAttr::INKSCAPE_SNAP_OTHERS, "inkscape:snap-others"},
-    {SPAttr::INKSCAPE_SNAP_FROM_GUIDE, "inkscape:snap-from-guide"},
-    {SPAttr::INKSCAPE_SNAP_ROTATION_CENTER, "inkscape:snap-center"},
-    {SPAttr::INKSCAPE_SNAP_GRID, "inkscape:snap-grids"},
-    {SPAttr::INKSCAPE_SNAP_GUIDE, "inkscape:snap-to-guides"},
-    {SPAttr::INKSCAPE_SNAP_NODE_SMOOTH, "inkscape:snap-smooth-nodes"},
-    {SPAttr::INKSCAPE_SNAP_LINE_MIDPOINT, "inkscape:snap-midpoints"},
-    {SPAttr::INKSCAPE_SNAP_OBJECT_MIDPOINT, "inkscape:snap-object-midpoints"},
-    {SPAttr::INKSCAPE_SNAP_TEXT_BASELINE, "inkscape:snap-text-baseline"},
-    {SPAttr::INKSCAPE_SNAP_BBOX_EDGE_MIDPOINT, "inkscape:snap-bbox-edge-midpoints"},
-    {SPAttr::INKSCAPE_SNAP_BBOX_MIDPOINT, "inkscape:snap-bbox-midpoints"},
-    {SPAttr::INKSCAPE_SNAP_PATH_INTERSECTION, "inkscape:snap-intersection-paths"},
-    {SPAttr::INKSCAPE_SNAP_PATH, "inkscape:object-paths"},
-    {SPAttr::INKSCAPE_SNAP_PATH_CLIP, "inkscape:snap-path-clip"},
-    {SPAttr::INKSCAPE_SNAP_PATH_MASK, "inkscape:snap-path-mask"},
-    {SPAttr::INKSCAPE_SNAP_NODE_CUSP, "inkscape:object-nodes"},
-    {SPAttr::INKSCAPE_SNAP_BBOX_EDGE, "inkscape:bbox-paths"},
-    {SPAttr::INKSCAPE_SNAP_BBOX_CORNER, "inkscape:bbox-nodes"},
-    {SPAttr::INKSCAPE_SNAP_PAGE_BORDER, "inkscape:snap-page"},
+    // {SPAttr::INKSCAPE_SNAP_GLOBAL, "inkscape:snap-global"},
+    // {SPAttr::INKSCAPE_SNAP_DISTRIBUTION, "inkscape:snap-distribution"},
+    // {SPAttr::INKSCAPE_SNAP_ALIGNMENT, "inkscape:snap-alignment"},
+    // {SPAttr::INKSCAPE_SNAP_ALIGNMENT_SELF, "inkscape:snap-alignment-self"},
+    // {SPAttr::INKSCAPE_SNAP_PERP, "inkscape:snap-perpendicular"},
+    // {SPAttr::INKSCAPE_SNAP_TANG, "inkscape:snap-tangential"},
+    // {SPAttr::INKSCAPE_SNAP_BBOX, "inkscape:snap-bbox"},
+    // {SPAttr::INKSCAPE_SNAP_NODE, "inkscape:snap-nodes"},
+    // {SPAttr::INKSCAPE_SNAP_OTHERS, "inkscape:snap-others"},
+    // {SPAttr::INKSCAPE_SNAP_FROM_GUIDE, "inkscape:snap-from-guide"},
+    // {SPAttr::INKSCAPE_SNAP_ROTATION_CENTER, "inkscape:snap-center"},
+    // {SPAttr::INKSCAPE_SNAP_GRID, "inkscape:snap-grids"},
+    // {SPAttr::INKSCAPE_SNAP_GUIDE, "inkscape:snap-to-guides"},
+    // {SPAttr::INKSCAPE_SNAP_NODE_SMOOTH, "inkscape:snap-smooth-nodes"},
+    // {SPAttr::INKSCAPE_SNAP_LINE_MIDPOINT, "inkscape:snap-midpoints"},
+    // {SPAttr::INKSCAPE_SNAP_OBJECT_MIDPOINT, "inkscape:snap-object-midpoints"},
+    // {SPAttr::INKSCAPE_SNAP_TEXT_BASELINE, "inkscape:snap-text-baseline"},
+    // {SPAttr::INKSCAPE_SNAP_BBOX_EDGE_MIDPOINT, "inkscape:snap-bbox-edge-midpoints"},
+    // {SPAttr::INKSCAPE_SNAP_BBOX_MIDPOINT, "inkscape:snap-bbox-midpoints"},
+    // {SPAttr::INKSCAPE_SNAP_PATH_INTERSECTION, "inkscape:snap-intersection-paths"},
+    // {SPAttr::INKSCAPE_SNAP_PATH, "inkscape:object-paths"},
+    // {SPAttr::INKSCAPE_SNAP_PATH_CLIP, "inkscape:snap-path-clip"},
+    // {SPAttr::INKSCAPE_SNAP_PATH_MASK, "inkscape:snap-path-mask"},
+    // {SPAttr::INKSCAPE_SNAP_NODE_CUSP, "inkscape:object-nodes"},
+    // {SPAttr::INKSCAPE_SNAP_BBOX_EDGE, "inkscape:bbox-paths"},
+    // {SPAttr::INKSCAPE_SNAP_BBOX_CORNER, "inkscape:bbox-nodes"},
+    // {SPAttr::INKSCAPE_SNAP_PAGE_BORDER, "inkscape:snap-page"},
     {SPAttr::INKSCAPE_CURRENT_LAYER, "inkscape:current-layer"},
     {SPAttr::INKSCAPE_DOCUMENT_UNITS, "inkscape:document-units"},  // This setting sets the Display units, *not* the units used in SVG
     {SPAttr::INKSCAPE_LOCKGUIDES, "inkscape:lockguides"},
@@ -134,6 +139,24 @@ static SPStyleProp const props[] = {
     {SPAttr::POSITION, "position"},
     {SPAttr::INKSCAPE_COLOR, "inkscape:color"},
     {SPAttr::INKSCAPE_LOCKED, "inkscape:locked"},
+    /* SPPage */
+    {SPAttr::PAGE_MARGIN, "margin"},
+    {SPAttr::PAGE_BLEED, "bleed"},
+    {SPAttr::PAGE_SIZE, "page-size"},
+    /* SPGrid */
+    {SPAttr::ORIGINX, "originx"},
+    {SPAttr::ORIGINY, "originy"},
+    {SPAttr::SPACINGX, "spacingx"},
+    {SPAttr::SPACINGY, "spacingy"},
+    {SPAttr::ANGLE_X, "gridanglex"},
+    {SPAttr::ANGLE_Z, "gridanglez"},
+    {SPAttr::VISIBLE, "visible"},
+    {SPAttr::ENABLED, "enabled"},
+    {SPAttr::EMPOPACITY, "empopacity"},
+    {SPAttr::EMPCOLOR, "empcolor"},
+    {SPAttr::MAJOR_LINE_INTERVAL, "empspacing"},
+    {SPAttr::DOTTED, "dotted"},
+    {SPAttr::SNAP_TO_VISIBLE_ONLY, "snapvisiblegridlinesonly"},
     /* SPImage */
     {SPAttr::X, "x"},
     {SPAttr::Y, "y"},
@@ -422,7 +445,7 @@ static SPStyleProp const props[] = {
     {SPAttr::TEXT_EXCLUDE,"inkscape:excludeShape"},
     {SPAttr::LAYOUT_OPTIONS,"inkscape:layoutOptions"},
 
-    /* CSS & SVG Properites */
+    /* CSS & SVG Properties */
 
     /* SVG 2 Attributes promoted to properties */
     {SPAttr::D, "d"},
@@ -560,6 +583,12 @@ static SPStyleProp const props[] = {
     /* LivePathEffect */
     {SPAttr::PATH_EFFECT, "effect"},
 
+    // canvas blackout color
+    {SPAttr::INKSCAPE_DESK_COLOR, "inkscape:deskcolor"},
+    {SPAttr::INKSCAPE_DESK_OPACITY, "inkscape:deskopacity"},
+    {SPAttr::INKSCAPE_DESK_CHECKERBOARD, "inkscape:pagecheckerboard"}, // old attr
+    // rendering mode
+    {SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, "inkscape:clip-to-page"},
 };
 
 #define n_attrs (sizeof(props) / sizeof(props[0]))
@@ -586,6 +615,9 @@ class AttributeLookupImpl {
 
             m_map[props[i].name] = props[i].code;
         }
+
+        // SVG 2.0 alias for xlink:href
+        m_map["href"] = SPAttr::XLINK_HREF;
     }
 };
 

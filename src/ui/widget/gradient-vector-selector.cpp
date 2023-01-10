@@ -35,7 +35,6 @@
 #include "layer-manager.h"
 #include "include/macros.h"
 #include "selection-chemistry.h"
-#include "verbs.h"
 
 #include "io/resource.h"
 
@@ -56,7 +55,6 @@
 
 #include "xml/repr.h"
 
-using Inkscape::DocumentUndo;
 using Inkscape::UI::SelectedColor;
 
 void gr_get_usage_counts(SPDocument *doc, std::map<SPGradient *, gint> *mapUsageCount );
@@ -106,7 +104,6 @@ void GradientVectorSelector::set_gradient(SPDocument *doc, SPGradient *gr)
     static gboolean suppress = FALSE;
 
     g_return_if_fail(!gr || (doc != nullptr));
-    g_return_if_fail(!gr || SP_IS_GRADIENT(gr));
     g_return_if_fail(!gr || (gr->document == doc));
     g_return_if_fail(!gr || gr->hasStops());
 
@@ -124,11 +121,11 @@ void GradientVectorSelector::set_gradient(SPDocument *doc, SPGradient *gr)
 
         // Connect signals
         if (doc) {
-            _defs_release_connection = doc->getDefs()->connectRelease(sigc::mem_fun(this, &GradientVectorSelector::defs_release));
-            _defs_modified_connection = doc->getDefs()->connectModified(sigc::mem_fun(this, &GradientVectorSelector::defs_modified));
+            _defs_release_connection = doc->getDefs()->connectRelease(sigc::mem_fun(*this, &GradientVectorSelector::defs_release));
+            _defs_modified_connection = doc->getDefs()->connectModified(sigc::mem_fun(*this, &GradientVectorSelector::defs_modified));
         }
         if (gr) {
-            _gradient_release_connection = gr->connectRelease(sigc::mem_fun(this, &GradientVectorSelector::gradient_release));
+            _gradient_release_connection = gr->connectRelease(sigc::mem_fun(*this, &GradientVectorSelector::gradient_release));
         }
         _doc = doc;
         _gr = gr;
@@ -197,9 +194,9 @@ GradientVectorSelector::rebuild_gui_full()
     if (_gr) {
         auto gradients = _gr->document->getResourceList("gradient");
         for (auto gradient : gradients) {
-            SPGradient* grad = SP_GRADIENT(gradient);
+            auto grad = cast<SPGradient>(gradient);
             if ( grad->hasStops() && (grad->isSwatch() == _swatched) ) {
-                gl.push_back(SP_GRADIENT(gradient));
+                gl.push_back(cast<SPGradient>(gradient));
             }
         }
     }
@@ -223,7 +220,7 @@ GradientVectorSelector::rebuild_gui_full()
     } else {
         for (auto gr:gl) {
             unsigned long hhssll = sp_gradient_to_hhssll(gr);
-            GdkPixbuf *pixb = sp_gradient_to_pixbuf (gr, 64, 18);
+            GdkPixbuf *pixb = sp_gradient_to_pixbuf (gr, _pix_width, _pix_height);
             Glib::ustring label = gr_prepare_label(gr);
 
             Gtk::TreeModel::Row row = *(_store->append());
@@ -243,6 +240,11 @@ GradientVectorSelector::setSwatched()
 {
     _swatched = true;
     rebuild_gui_full();
+}
+
+void GradientVectorSelector::set_pixmap_size(int width, int height) {
+    _pix_width = width;
+    _pix_height = height;
 }
 
 } // namespace Widget
@@ -289,37 +291,6 @@ unsigned long sp_gradient_to_hhssll(SPGradient *gr)
     return ((int)(hsl[0]*100 * 10000)) + ((int)(hsl[1]*100 * 100)) + ((int)(hsl[2]*100 * 1));
 }
 
-static void get_all_doc_items(std::vector<SPItem*> &list, SPObject *from)
-{
-    for (auto& child: from->children) {
-        if (SP_IS_ITEM(&child)) {
-            list.push_back(SP_ITEM(&child));
-        }
-        get_all_doc_items(list, &child);
-    }
-}
-
-/*
- * Return a SPItem's gradient
- */
-static SPGradient * gr_item_get_gradient(SPItem *item, gboolean fillorstroke)
-{
-    SPIPaint *item_paint = item->style->getFillOrStroke(fillorstroke);
-    if (item_paint->isPaintserver()) {
-
-        SPPaintServer *item_server = (fillorstroke) ?
-                item->style->getFillPaintServer() : item->style->getStrokePaintServer();
-
-        if (SP_IS_LINEARGRADIENT(item_server) || SP_IS_RADIALGRADIENT(item_server) ||
-                (SP_IS_GRADIENT(item_server) && SP_GRADIENT(item_server)->getVector()->isSwatch()))  {
-
-            return SP_GRADIENT(item_server)->getVector();
-        }
-    }
-
-    return nullptr;
-}
-
 /*
  * Map each gradient to its usage count for both fill and stroke styles
  */
@@ -328,18 +299,15 @@ void gr_get_usage_counts(SPDocument *doc, std::map<SPGradient *, gint> *mapUsage
     if (!doc)
         return;
 
-    std::vector<SPItem *> all_list;
-    get_all_doc_items(all_list, doc->getRoot());
-
-    for (auto item:all_list) {
+    for (auto item : sp_get_all_document_items(doc)) {
         if (!item->getId())
             continue;
         SPGradient *gr = nullptr;
-        gr = gr_item_get_gradient(item, true); // fill
+        gr = sp_item_get_gradient(item, true); // fill
         if (gr) {
             mapUsageCount->count(gr) > 0 ? (*mapUsageCount)[gr] += 1 : (*mapUsageCount)[gr] = 1;
         }
-        gr = gr_item_get_gradient(item, false); // stroke
+        gr = sp_item_get_gradient(item, false); // stroke
         if (gr) {
             mapUsageCount->count(gr) > 0 ? (*mapUsageCount)[gr] += 1 : (*mapUsageCount)[gr] = 1;
         }

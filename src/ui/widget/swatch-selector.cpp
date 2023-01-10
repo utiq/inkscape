@@ -15,13 +15,13 @@
 #include "document-undo.h"
 #include "document.h"
 #include "gradient-chemistry.h"
-#include "verbs.h"
 
 #include "object/sp-stop.h"
 
 #include "svg/css-ostringstream.h"
 #include "svg/svg-color.h"
 
+#include "ui/icon-names.h"
 #include "ui/widget/color-notebook.h"
 #include "ui/widget/gradient-selector.h"
 
@@ -45,15 +45,16 @@ SwatchSelector::SwatchSelector() :
 
     pack_start(*_gsel);
 
-    Gtk::Widget *color_selector = Gtk::manage(new ColorNotebook(_selected_color));
+    auto color_selector = Gtk::manage(new ColorNotebook(_selected_color));
+    color_selector->set_label(_("Swatch color"));
     color_selector->show();
     pack_start(*color_selector);
 
-    //_selected_color.signal_grabbed.connect(sigc::mem_fun(this, &SwatchSelector::_grabbedCb));
-    _selected_color.signal_dragged.connect(sigc::mem_fun(this, &SwatchSelector::_changedCb));
-    _selected_color.signal_released.connect(sigc::mem_fun(this, &SwatchSelector::_changedCb));
+    //_selected_color.signal_grabbed.connect(sigc::mem_fun(*this, &SwatchSelector::_grabbedCb));
+    _selected_color.signal_dragged.connect(sigc::mem_fun(*this, &SwatchSelector::_changedCb));
+    _selected_color.signal_released.connect(sigc::mem_fun(*this, &SwatchSelector::_changedCb));
     // signal_changed doesn't get called if updating shape with colour.
-    _selected_color.signal_changed.connect(sigc::mem_fun(this, &SwatchSelector::_changedCb));
+    _selected_color.signal_changed.connect(sigc::mem_fun(*this, &SwatchSelector::_changedCb));
 }
 
 SwatchSelector::~SwatchSelector()
@@ -97,8 +98,7 @@ void SwatchSelector::_changedCb()
             os << "stop-color:" << c << ";stop-opacity:" << static_cast<gdouble>(alpha) <<";";
             stop->setAttribute("style", os.str());
 
-            DocumentUndo::done(ngr->document, SP_VERB_CONTEXT_GRADIENT,
-                               _("Change swatch color"));
+            DocumentUndo::done(ngr->document, _("Change swatch color"), INKSCAPE_ICON("color-gradient"));
         }
     }
 }

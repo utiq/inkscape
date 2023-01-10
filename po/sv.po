@@ -15,15 +15,15 @@ msgstr ""
 "Project-Id-Version: inkscape\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
 "POT-Creation-Date: 2019-10-09 15:17+0200\n"
-"PO-Revision-Date: 2019-04-21 20:51+0100\n"
-"Last-Translator: Christoffer Holmstedt <christoffer.holmstedt@gmail.com>\n"
+"PO-Revision-Date: 2022-09-07 01:04+0200\n"
+"Last-Translator: Oscar Gustafssib <oscar,gustafsson@gmail.com>\n"
 "Language-Team: Svenska <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 3.1\n"
 
 #: ../share/filters/filters.svg.h:2
 #, fuzzy
@@ -206,7 +206,7 @@ msgstr "Frost"
 
 #: ../share/filters/filters.svg.h:52
 msgid "Flake-like white splotches"
-msgstr "flingliknande vit fläckar"
+msgstr "Flingliknande vit fläckar"
 
 #: ../share/filters/filters.svg.h:54
 #, fuzzy
@@ -241,7 +241,7 @@ msgstr "Moln"
 
 #: ../share/filters/filters.svg.h:64
 msgid "Airy, fluffy, sparse white clouds"
-msgstr "Luftiga, fluffliga, glesa vita mold "
+msgstr "Luftiga, fluffiga, glesa vita moln"
 
 #: ../share/filters/filters.svg.h:66
 #: ../src/extension/internal/bitmap/sharpen.cpp:39
@@ -1187,7 +1187,6 @@ msgid "Light areas turn to black"
 msgstr "Ljusa områden blir svarta"
 
 #: ../share/filters/filters.svg.h:414
-#, fuzzy
 msgid "Film Grain"
 msgstr "Kornig film"
 
@@ -1239,7 +1238,6 @@ msgid "Comics shader with creamy waves transparency"
 msgstr "Serier shader med krämig vågor genomskinlighet"
 
 #: ../share/filters/filters.svg.h:430
-#, fuzzy
 msgid "Chewing Gum"
 msgstr "Tuggummi"
 
@@ -1278,7 +1276,6 @@ msgid "Create a turbulent contour around"
 msgstr "Skapa en turbulent kontur runt"
 
 #: ../share/filters/filters.svg.h:446
-#, fuzzy
 msgid "Old Postcard"
 msgstr "Gammalt vykort"
 
@@ -1321,7 +1318,7 @@ msgstr "Tjock färg"
 
 #: ../share/filters/filters.svg.h:464
 msgid "Thick painting effect with turbulence"
-msgstr "Tjock målnings effekt med turbulens "
+msgstr "Tjock målningseffekt med turbulens"
 
 # TODO
 #: ../share/filters/filters.svg.h:466
@@ -2346,32 +2343,32 @@ msgstr "Rosa (#FF00FF)"
 #: ../share/palettes/palettes.h:28
 msgctxt "Palette"
 msgid "black (#000000)"
-msgstr "Svart (#000000)"
+msgstr "svart (#000000)"
 
 #: ../share/palettes/palettes.h:29
 msgctxt "Palette"
 msgid "dimgray (#696969)"
-msgstr "Dimgrå (#696969)"
+msgstr "dimgrå (#696969)"
 
 #: ../share/palettes/palettes.h:30
 msgctxt "Palette"
 msgid "gray (#808080)"
-msgstr "Grå (#808080)"
+msgstr "grå (#808080)"
 
 #: ../share/palettes/palettes.h:31
 msgctxt "Palette"
 msgid "darkgray (#A9A9A9)"
-msgstr "Mörkgrå (#A9A9A9)"
+msgstr "mörkgrå (#A9A9A9)"
 
 #: ../share/palettes/palettes.h:32
 msgctxt "Palette"
 msgid "silver (#C0C0C0)"
-msgstr "Silver (#C0C0C0)"
+msgstr "silver (#C0C0C0)"
 
 #: ../share/palettes/palettes.h:33
 msgctxt "Palette"
 msgid "lightgray (#D3D3D3)"
-msgstr "Ljusgrå (#D3D3D3)"
+msgstr "ljusgrå (#D3D3D3)"
 
 #: ../share/palettes/palettes.h:34
 msgctxt "Palette"
@@ -2381,12 +2378,12 @@ msgstr "Gainsboro (#DCDCDC)"
 #: ../share/palettes/palettes.h:35
 msgctxt "Palette"
 msgid "whitesmoke (#F5F5F5)"
-msgstr "Rökvit (#F5F5F5)"
+msgstr "rökvit (#F5F5F5)"
 
 #: ../share/palettes/palettes.h:36
 msgctxt "Palette"
 msgid "white (#FFFFFF)"
-msgstr "Vit (#FFFFFF)"
+msgstr "vit (#FFFFFF)"
 
 #: ../share/palettes/palettes.h:37
 msgctxt "Palette"
@@ -3910,7 +3907,7 @@ msgstr "Kommentera/anteckning"
 #: ../share/symbols/symbols.h:167
 msgctxt "Symbol"
 msgid "Core"
-msgstr "kärna"
+msgstr "Kärna"
 
 #: ../share/symbols/symbols.h:168
 msgctxt "Symbol"
@@ -4450,7 +4447,7 @@ msgstr "Färgen på stödlinjerna"
 
 #: ../src/display/canvas-axonomgrid.cpp:284 ../src/display/canvas-grid.cpp:674
 msgid "Ma_jor grid line color:"
-msgstr "Färg på _huvudhjälplinjer"
+msgstr "Färg på _huvudhjälplinjer:"
 
 #: ../src/display/canvas-axonomgrid.cpp:284 ../src/display/canvas-grid.cpp:674
 #: ../src/ui/dialog/inkscape-preferences.cpp:1321
@@ -4870,7 +4867,7 @@ msgstr ""
 
 #: ../src/extension/extension.cpp:293
 msgid "the XML description of it got lost."
-msgstr "XML-beskrivning för det förlorades."
+msgstr "XML-beskrivningen för det förlorades."
 
 #: ../src/extension/extension.cpp:297
 msgid "no implementation was defined for the extension."
@@ -9177,8 +9174,8 @@ msgstr "Ta bort gradientstopp"
 #: ../src/gradient-drag.cpp:1461
 #, c-format
 msgid ""
-"%s %d for: %s%s; drag with <b>Ctrl</b> to snap offset; click with <b>Ctrl"
-"+Alt</b> to delete stop"
+"%s %d for: %s%s; drag with <b>Ctrl</b> to snap offset; click with "
+"<b>Ctrl+Alt</b> to delete stop"
 msgstr ""
 "%s %d för: %s%s; dra med <b>Ctrl</b> för att snäppa offset; klicka med "
 "<b>Ctrl+Alt</b> för att ta bort stopp"
@@ -14305,9 +14302,9 @@ msgstr "Ändra punktparameter"
 #: ../src/live_effects/parameter/powerstrokepointarray.cpp:268
 #: ../src/live_effects/parameter/powerstrokepointarray.cpp:285
 msgid ""
-"<b>Stroke width control point</b>: drag to alter the stroke width. <b>Ctrl"
-"+click</b> adds a control point, <b>Ctrl+Alt+click</b> deletes it, <b>Shift"
-"+click</b> launches width dialog."
+"<b>Stroke width control point</b>: drag to alter the stroke width. "
+"<b>Ctrl+click</b> adds a control point, <b>Ctrl+Alt+click</b> deletes it, "
+"<b>Shift+click</b> launches width dialog."
 msgstr ""
 
 #: ../src/live_effects/parameter/random.cpp:156
@@ -14727,9 +14724,8 @@ msgid "Symbol"
 msgstr "Symbol"
 
 #: ../src/object/sp-use.cpp:236
-#, fuzzy
 msgid "Clone"
-msgstr "Klonad"
+msgstr "Klon"
 
 #: ../src/object/sp-use.cpp:244 ../src/object/sp-use.cpp:246
 #: ../src/object/sp-use.cpp:248
@@ -14749,9 +14745,9 @@ msgid "..."
 msgstr "..."
 
 #: ../src/object/sp-use.cpp:266
-#, fuzzy, c-format
+#, c-format
 msgid "of: %s"
-msgstr "Fel"
+msgstr "av: %s"
 
 #: ../src/path-chemistry.cpp:68
 msgid "Select <b>object(s)</b> to combine."
@@ -14808,7 +14804,6 @@ msgid "<b>No objects</b> to convert to path in the selection."
 msgstr "<b>Inga objekt</b> att konvertera till slingor i markeringen."
 
 #: ../src/path-chemistry.cpp:594
-#, fuzzy
 msgid "Select <b>path(s)</b> to reverse."
 msgstr "Markera <b>slingor</b> att vända."
 
@@ -14821,7 +14816,6 @@ msgid "Reverse path"
 msgstr "Vänd slinga"
 
 #: ../src/path-chemistry.cpp:643
-#, fuzzy
 msgid "<b>No paths</b> to reverse in the selection."
 msgstr "<b>Inga slingor</b> att vända i markeringen."
 
@@ -14892,9 +14886,8 @@ msgid "The file %s is not a valid Inkscape preferences file."
 msgstr "Filen %s är inte en giltig Inkscape-inställningsfil."
 
 #: ../src/preferences.cpp:276
-#, fuzzy
 msgid "Preferences file was deleted."
-msgstr "Inställningsfilen %s kunde ej läsas."
+msgstr "Inställningsfilen raderades."
 
 #: ../src/preferences.cpp:277
 #, fuzzy
@@ -14950,9 +14943,8 @@ msgid "A name given to the resource"
 msgstr ""
 
 #: ../src/rdf.cpp:241
-#, fuzzy
 msgid "Date:"
-msgstr "Rita text"
+msgstr "Datum:"
 
 #: ../src/rdf.cpp:242
 msgid ""
@@ -14961,7 +14953,6 @@ msgid ""
 msgstr ""
 
 #: ../src/rdf.cpp:244 ../share/extensions/webslicer_create_rect.inx:8
-#, fuzzy
 msgid "Format:"
 msgstr "Format:"
 
@@ -14974,9 +14965,8 @@ msgid "The nature or genre of the resource"
 msgstr ""
 
 #: ../src/rdf.cpp:251
-#, fuzzy
 msgid "Creator:"
-msgstr "Skapa"
+msgstr "Skapare:"
 
 #: ../src/rdf.cpp:252
 #, fuzzy
@@ -14995,9 +14985,8 @@ msgid "Information about rights held in and over the resource"
 msgstr ""
 
 #: ../src/rdf.cpp:257
-#, fuzzy
 msgid "Publisher:"
-msgstr "Utgivare"
+msgstr "Utgivare:"
 
 #: ../src/rdf.cpp:258
 #, fuzzy
@@ -15038,9 +15027,8 @@ msgid "A language of the resource"
 msgstr ""
 
 #: ../src/rdf.cpp:273
-#, fuzzy
 msgid "Keywords:"
-msgstr "Nyckelord"
+msgstr "Nyckelord:"
 
 #: ../src/rdf.cpp:274
 #, fuzzy
@@ -15084,9 +15072,8 @@ msgstr ""
 
 #. TRANSLATORS: URL to a page that defines the license for the document
 #: ../src/rdf.cpp:292
-#, fuzzy
 msgid "URI:"
-msgstr "URI"
+msgstr "URI:"
 
 #. TRANSLATORS: this is where you put a URL to a page that defines the license
 #: ../src/rdf.cpp:294
@@ -15096,9 +15083,8 @@ msgstr "URI till detta dokuments licensdefinition"
 
 #. TRANSLATORS: fragment of XML representing the license of the document
 #: ../src/rdf.cpp:298
-#, fuzzy
 msgid "Fragment:"
-msgstr "Fragment"
+msgstr "Fragment:"
 
 #: ../src/rdf.cpp:299
 #, fuzzy
@@ -15106,7 +15092,6 @@ msgid "XML fragment for the RDF 'License' section"
 msgstr "XML-fragment för RDF 'License'-avdelning."
 
 #: ../src/selection-chemistry.cpp:390
-#, fuzzy
 msgid "Delete text"
 msgstr "Radera text"
 
@@ -15129,7 +15114,6 @@ msgid "%s copy"
 msgstr "%s-kopia"
 
 #: ../src/selection-chemistry.cpp:593
-#, fuzzy
 msgid "Delete all"
 msgstr "Radera alla"
 
@@ -15254,19 +15238,17 @@ msgstr "Klistra in"
 
 #: ../src/selection-chemistry.cpp:1303
 msgid "Paste style"
-msgstr "Klista in stil"
+msgstr "Klistra in stil"
 
 #: ../src/selection-chemistry.cpp:1312
-#, fuzzy
 msgid "Paste live path effect"
-msgstr "Flytta slingeffekt upp"
+msgstr "Klistra in slingeffekt"
 
 #: ../src/selection-chemistry.cpp:1332
 msgid "Select <b>object(s)</b> to remove live path effects from."
 msgstr "Markera <b>objekt</b> att ta bort slingeffekter från."
 
 #: ../src/selection-chemistry.cpp:1345
-#, fuzzy
 msgid "Remove live path effect"
 msgstr "Ta bort slingeffekt"
 
@@ -15277,7 +15259,6 @@ msgstr "Markera <b>objekt</b> att ta bort filter från."
 
 #: ../src/selection-chemistry.cpp:1364
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1681
-#, fuzzy
 msgid "Remove filter"
 msgstr "Ta bort filter"
 
@@ -15423,14 +15404,12 @@ msgid "<b>No clones to unlink</b> in the selection."
 msgstr "<b>Inga kloner att avlänka</b> i markeringen."
 
 #: ../src/selection-chemistry.cpp:2776
-#, fuzzy
 msgid "Unlink clone"
 msgstr "Avlänka klon"
 
 #: ../src/selection-chemistry.cpp:2806
-#, fuzzy
 msgid "Unlink clone recursively"
-msgstr "Avlänka klon"
+msgstr "Avlänka klon rekursivt"
 
 #: ../src/selection-chemistry.cpp:2816
 msgid ""
@@ -15600,7 +15579,6 @@ msgid "Fit Page to Selection or Drawing"
 msgstr "Passa sida till markering eller hela ritningen"
 
 #: ../src/selection-describer.cpp:119
-#, fuzzy
 msgid "root"
 msgstr "rot"
 
@@ -15760,12 +15738,10 @@ msgid "Set center"
 msgstr "Sätt mittpunkt"
 
 #: ../src/seltrans.cpp:589
-#, fuzzy
 msgid "Stamp"
 msgstr "Stämpel"
 
 #: ../src/seltrans.cpp:745
-#, fuzzy
 msgid "Reset center"
 msgstr "Återställ mittpunkt"
 
@@ -15815,7 +15791,6 @@ msgid "Inkscape shortcuts (*.xml)"
 msgstr "Inkscape SVG (*.svg)"
 
 #: ../src/shortcuts.cpp:459
-#, fuzzy
 msgid "Select a file to import"
 msgstr "Välj fil att importera"
 
@@ -15953,7 +15928,6 @@ msgstr ""
 "till slinga först."
 
 #: ../src/text-chemistry.cpp:110
-#, fuzzy
 msgid "The flowed text(s) must be <b>visible</b> in order to be put on a path."
 msgstr ""
 "Den flytande texten måste vara <b>synlig</b> för att kunna placeras på en "
@@ -15976,12 +15950,10 @@ msgid "Remove text from path"
 msgstr "Ta bort text från slinga"
 
 #: ../src/text-chemistry.cpp:255 ../src/text-chemistry.cpp:275
-#, fuzzy
 msgid "Select <b>text(s)</b> to remove kerns from."
-msgstr "Markera <b>text</b> att ta bort kerning från."
+msgstr "Markera <b>text(er)</b> att ta bort kerning från."
 
 #: ../src/text-chemistry.cpp:278
-#, fuzzy
 msgid "Remove manual kerns"
 msgstr "Ta bort manuell kerning"
 
@@ -16096,39 +16068,32 @@ msgid "Nothing on the clipboard."
 msgstr "Inget i urklipp."
 
 #: ../src/ui/clipboard.cpp:442
-#, fuzzy
 msgid "Select <b>object(s)</b> to paste style to."
 msgstr "Markera <b>objekt</b> att klistra in stil på."
 
 #: ../src/ui/clipboard.cpp:453 ../src/ui/clipboard.cpp:470
-#, fuzzy
 msgid "No style on the clipboard."
 msgstr "Ingen stil i urklipp."
 
 #: ../src/ui/clipboard.cpp:496
-#, fuzzy
 msgid "Select <b>object(s)</b> to paste size to."
 msgstr "Markera <b>objekt</b> att klistra in storlek på."
 
 #: ../src/ui/clipboard.cpp:504
-#, fuzzy
 msgid "No size on the clipboard."
 msgstr "Ingen storlek i urklipp."
 
 #: ../src/ui/clipboard.cpp:561
-#, fuzzy
 msgid "Select <b>object(s)</b> to paste live path effect to."
 msgstr "Markera <b>objekt</b> att klistra in slingeffekter på."
 
 #: ../src/ui/clipboard.cpp:587
-#, fuzzy
 msgid "No effect on the clipboard."
 msgstr "Inga slingeffekter i urklipp."
 
 #: ../src/ui/clipboard.cpp:606 ../src/ui/clipboard.cpp:653
-#, fuzzy
 msgid "Clipboard does not contain a path."
-msgstr "Urklipp inehåller ej en slinga."
+msgstr "Urklipp innehåller ej en slinga."
 
 #: ../src/ui/clipboard.cpp:701
 #, fuzzy
@@ -16136,14 +16101,12 @@ msgid "Clipboard does not contain any."
 msgstr "Urklipp inehåller ej en slinga."
 
 #: ../src/ui/contextmenu.cpp:65
-#, fuzzy
 msgid "Go to parent"
 msgstr "Gå till förälder"
 
 #: ../src/ui/contextmenu.cpp:106
-#, fuzzy
 msgid "Hide Selected Objects"
-msgstr "Duplicera markerade objekt"
+msgstr "Göm markerade objekt"
 
 #: ../src/ui/contextmenu.cpp:114
 #, fuzzy
@@ -16151,9 +16114,8 @@ msgid "Unhide Objects Below"
 msgstr "Visa objekt"
 
 #: ../src/ui/contextmenu.cpp:122
-#, fuzzy
 msgid "Lock Selected Objects"
-msgstr "Gruppera markerade objekt"
+msgstr "Lås markerade objekt"
 
 #: ../src/ui/contextmenu.cpp:130
 #, fuzzy
@@ -16162,14 +16124,12 @@ msgstr "Lås upp objekt"
 
 #. TRANSLATORS: #%1 is the id of the group e.g. <g id="#g7">, not a number.
 #: ../src/ui/contextmenu.cpp:154
-#, fuzzy
 msgid "Enter group #%1"
-msgstr "Gå in i gruppen #%s"
+msgstr "Gå in i gruppen #%1"
 
 #: ../src/ui/contextmenu.cpp:168
-#, fuzzy
 msgid "_Pop selection out of group"
-msgstr "Behandla markering som grupp:"
+msgstr "Bryt ut markering från grupp"
 
 #: ../src/ui/contextmenu.cpp:354 ../src/verbs.cpp:3095
 msgid "_Object Properties..."
@@ -16201,22 +16161,18 @@ msgid "Stroke Style"
 msgstr "Linjestil"
 
 #: ../src/ui/contextmenu.cpp:412
-#, fuzzy
 msgid "Object Type"
 msgstr "Objekttyp"
 
 #: ../src/ui/contextmenu.cpp:419
-#, fuzzy
 msgid "_Move to Layer..."
-msgstr "Sänk lager"
+msgstr "_Flytta till lager..."
 
 #: ../src/ui/contextmenu.cpp:429
-#, fuzzy
 msgid "Create _Link"
 msgstr "Skapa länk"
 
 #: ../src/ui/contextmenu.cpp:452
-#, fuzzy
 msgid "Set Mask"
 msgstr "Sätt mask"
 
@@ -16253,7 +16209,6 @@ msgid "_Ungroup"
 msgstr "_Avgruppera"
 
 #: ../src/ui/contextmenu.cpp:639
-#, fuzzy
 msgid "Link _Properties..."
 msgstr "Länkegenskaper"
 
@@ -16266,17 +16221,14 @@ msgid "_Remove Link"
 msgstr "Ta bort länk"
 
 #: ../src/ui/contextmenu.cpp:682
-#, fuzzy
 msgid "Remove link"
 msgstr "Ta bort länk"
 
 #: ../src/ui/contextmenu.cpp:692
-#, fuzzy
 msgid "Image _Properties..."
 msgstr "Bildegenskaper"
 
 #: ../src/ui/contextmenu.cpp:698
-#, fuzzy
 msgid "Edit Externally..."
 msgstr "Redigera externt..."
 
@@ -16286,16 +16238,14 @@ msgid "_Trace Bitmap..."
 msgstr "Kalkera bitmappsbild..."
 
 #: ../src/ui/contextmenu.cpp:717
-#, fuzzy
 msgctxt "Context menu"
 msgid "Embed Image"
-msgstr "Infoga bilder"
+msgstr "Infoga bild"
 
 #: ../src/ui/contextmenu.cpp:728
-#, fuzzy
 msgctxt "Context menu"
 msgid "Extract Image..."
-msgstr "Extrahera bild"
+msgstr "Extrahera bild..."
 
 #: ../src/ui/contextmenu.cpp:883 ../src/ui/contextmenu.cpp:903
 #: ../src/verbs.cpp:3048
@@ -16348,20 +16298,20 @@ msgid "Open _Recent"
 msgstr "Öppna senaste"
 
 #: ../src/ui/dialog/aboutbox.cpp:88
-#, fuzzy
 msgid "Inkscape website"
-msgstr "Inkscape: Grundläggande"
+msgstr "Inkscapes webbsajt"
 
 #: ../src/ui/dialog/aboutbox.cpp:90
 msgid "© 2019 Inkscape Developers"
 msgstr ""
 
 #: ../src/ui/dialog/aboutbox.cpp:91
-#, fuzzy
 msgid ""
 "Open Source Scalable Vector Graphics Editor\n"
 "Draw Freely."
-msgstr "Skapa och redigera SVG-bilder"
+msgstr ""
+"Skapa och redigera SVG-bilder\n"
+"Rita fritt."
 
 #. TRANSLATORS: This is the filename of the `About Inkscape' picture in
 #. the `screens' directory.  Thus the translation of "about.svg" should be
@@ -16409,10 +16359,9 @@ msgstr "Minsta horisontellt gap (i antal bildpunkter) mellan begränsningsytor"
 
 #. TRANSLATORS: "H:" stands for horizontal gap
 #: ../src/ui/dialog/align-and-distribute.cpp:475
-#, fuzzy
 msgctxt "Gap"
 msgid "_H:"
-msgstr "_N"
+msgstr "_H:"
 
 #: ../src/ui/dialog/align-and-distribute.cpp:483
 msgid "Minimum vertical gap (in px units) between bounding boxes"
@@ -16673,14 +16622,12 @@ msgid "Middle of selection"
 msgstr "Markeringens bredd"
 
 #: ../src/ui/dialog/align-and-distribute.cpp:1082
-#, fuzzy
 msgid "Min value"
-msgstr "Kerning-värde:"
+msgstr "Minsta värde"
 
 #: ../src/ui/dialog/align-and-distribute.cpp:1083
-#, fuzzy
 msgid "Max value"
-msgstr "Rensa värden"
+msgstr "Största värde"
 
 #: ../src/ui/dialog/align-and-distribute.cpp:1093
 #, fuzzy
@@ -16694,17 +16641,14 @@ msgid "Enable on-canvas alignment handles."
 msgstr ""
 
 #: ../src/ui/dialog/attrdialog.cpp:92
-#, fuzzy
 msgid "Add a new attribute"
-msgstr "Ändra attribut"
+msgstr "Lägg till nytt attribut"
 
 #: ../src/ui/dialog/attrdialog.cpp:105
-#, fuzzy
 msgid "Attribute Name"
 msgstr "Attributnamn"
 
 #: ../src/ui/dialog/attrdialog.cpp:130
-#, fuzzy
 msgid "Attribute Value"
 msgstr "Attributvärde"
 
@@ -16718,7 +16662,6 @@ msgid "Shift+Return new line"
 msgstr ""
 
 #: ../src/ui/dialog/attrdialog.cpp:358
-#, fuzzy
 msgid "<b>Click</b> attribute to edit."
 msgstr "<b>Klicka</b> attribut att redigera."
 
@@ -16736,25 +16679,21 @@ msgid "Delete attribute"
 msgstr "Radera attribut"
 
 #: ../src/ui/dialog/attrdialog.cpp:597
-#, fuzzy
 msgid "Rename attribute"
-msgstr "Sätt attribut"
+msgstr "Byt namn på attribut"
 
 #: ../src/ui/dialog/attrdialog.cpp:653
-#, fuzzy
 msgid "Change attribute value"
-msgstr "Ändra attribut"
+msgstr "Ändra värde på attribut"
 
 #: ../src/ui/dialog/calligraphic-profile-rename.cpp:31
 #: ../src/ui/dialog/calligraphic-profile-rename.cpp:118
-#, fuzzy
 msgid "Edit profile"
-msgstr "Enhetsprofil:"
+msgstr "Ändra profil"
 
 #: ../src/ui/dialog/calligraphic-profile-rename.cpp:39
-#, fuzzy
 msgid "Profile name:"
-msgstr "Profil_namn:"
+msgstr "Profilnamn:"
 
 #: ../src/ui/dialog/calligraphic-profile-rename.cpp:55
 #: ../src/ui/dialog/guides.cpp:179 ../src/verbs.cpp:2581
@@ -16769,9 +16708,8 @@ msgid "_Save"
 msgstr "_Spara"
 
 #: ../src/ui/dialog/calligraphic-profile-rename.cpp:114
-#, fuzzy
 msgid "Add profile"
-msgstr "Lägg till filter"
+msgstr "Lägg till profil"
 
 #: ../src/ui/dialog/clonetiler.cpp:98
 msgid "_Symmetry"
@@ -17499,8 +17437,8 @@ msgstr "<small>Slumpa:</small>"
 msgid ""
 "Color: <b>%s</b>; <b>Click</b> to set fill, <b>Shift+click</b> to set stroke"
 msgstr ""
-"Färgkod: <b>%s</b>; <b>Klicka</b> för att använda som fyllnadsfärg, <b>Skift"
-"+klick</b> för att använda som linjefärg"
+"Färgkod: <b>%s</b>; <b>Klicka</b> för att använda som fyllnadsfärg, "
+"<b>Skift+klick</b> för att använda som linjefärg"
 
 #: ../src/ui/dialog/color-item.cpp:473
 msgid "Change color definition"
@@ -17531,7 +17469,6 @@ msgid "Set fill color from swatch"
 msgstr "Sätt fyllningsfärg från färgpalett"
 
 #: ../src/ui/dialog/debug.cpp:66
-#, fuzzy
 msgid "Messages"
 msgstr "Meddelanden"
 
@@ -17566,9 +17503,8 @@ msgid "<b>License</b>"
 msgstr "<b>Licens</b>"
 
 #: ../src/ui/dialog/document-properties.cpp:103
-#, fuzzy
 msgid "Use antialiasing"
-msgstr "Antialias"
+msgstr "Använd antialiasing"
 
 #: ../src/ui/dialog/document-properties.cpp:103
 #, fuzzy
@@ -17611,7 +17547,6 @@ msgid "If set, page border shows a shadow on its right and lower side"
 msgstr "Om satt visas en skugga på ramens högra och nedre sida"
 
 #: ../src/ui/dialog/document-properties.cpp:108
-#, fuzzy
 msgid "Back_ground color:"
 msgstr "Bakgrundsfärg:"
 
@@ -17923,12 +17858,11 @@ msgstr "<b>Tillgängliga färgprofiler:</b>"
 #: ../src/ui/dialog/document-properties.cpp:679
 #, fuzzy
 msgid "Link Profile"
-msgstr "Länka Profil"
+msgstr "Länka profil"
 
 #: ../src/ui/dialog/document-properties.cpp:682
-#, fuzzy
 msgid "Unlink Profile"
-msgstr "Länka Profil"
+msgstr "Avlänka profil"
 
 #: ../src/ui/dialog/document-properties.cpp:741
 #, fuzzy
@@ -17936,14 +17870,12 @@ msgid "Profile Name"
 msgstr "Profil_namn"
 
 #: ../src/ui/dialog/document-properties.cpp:776
-#, fuzzy
 msgid "External scripts"
-msgstr "Lägg till externt skript..."
+msgstr "Externa skript"
 
 #: ../src/ui/dialog/document-properties.cpp:777
-#, fuzzy
 msgid "Embedded scripts"
-msgstr "Ta bort skript"
+msgstr "Inbyggda skript"
 
 #: ../src/ui/dialog/document-properties.cpp:782
 #, fuzzy
@@ -17965,24 +17897,20 @@ msgid "Filename"
 msgstr "Filnamn"
 
 #: ../src/ui/dialog/document-properties.cpp:840
-#, fuzzy
 msgid "<b>Embedded script files:</b>"
-msgstr "<b>Externa skriptfiler:</b>"
+msgstr "<b>Interna skriptfiler:</b>"
 
 #: ../src/ui/dialog/document-properties.cpp:842
-#, fuzzy
 msgid "New"
 msgstr "Ny"
 
 #: ../src/ui/dialog/document-properties.cpp:884
-#, fuzzy
 msgid "Script id"
-msgstr "Skript: "
+msgstr "Skript-id"
 
 #: ../src/ui/dialog/document-properties.cpp:890
-#, fuzzy
 msgid "<b>Content:</b>"
-msgstr "<b>Exponent:</b>"
+msgstr "<b>Innehåll:</b>"
 
 #: ../src/ui/dialog/document-properties.cpp:984
 msgid "_Save as default"
@@ -17993,46 +17921,38 @@ msgid "Save this metadata as the default metadata"
 msgstr ""
 
 #: ../src/ui/dialog/document-properties.cpp:986
-#, fuzzy
 msgid "Use _default"
-msgstr "Systemets standard"
+msgstr "Använd _standard"
 
 #: ../src/ui/dialog/document-properties.cpp:987
 msgid "Use the previously saved default metadata here"
 msgstr ""
 
 #: ../src/ui/dialog/document-properties.cpp:1041
-#, fuzzy
 msgid "Add external script..."
 msgstr "Lägg till externt skript..."
 
 #: ../src/ui/dialog/document-properties.cpp:1080
-#, fuzzy
 msgid "Select a script to load"
-msgstr "Objekt är inte en slinga eller figur"
+msgstr "Välj ett skript att ladda"
 
 #: ../src/ui/dialog/document-properties.cpp:1108
-#, fuzzy
 msgid "Add embedded script..."
-msgstr "Lägg till externt skript..."
+msgstr "Lägg till internt skript..."
 
 #: ../src/ui/dialog/document-properties.cpp:1139
-#, fuzzy
 msgid "Remove external script"
 msgstr "Ta bort externt skript"
 
 #: ../src/ui/dialog/document-properties.cpp:1168
-#, fuzzy
 msgid "Remove embedded script"
-msgstr "Ta bort skript"
+msgstr "Ta bort internt skript"
 
 #: ../src/ui/dialog/document-properties.cpp:1262
-#, fuzzy
 msgid "Edit embedded script"
-msgstr "Ta bort skript"
+msgstr "Ändra internt skript"
 
 #: ../src/ui/dialog/document-properties.cpp:1358
-#, fuzzy
 msgid "<b>Creation</b>"
 msgstr "<b>Skapa</b>"
 
@@ -18041,7 +17961,6 @@ msgid "<b>Defined grids</b>"
 msgstr "<b>Definierade rutnät</b>"
 
 #: ../src/ui/dialog/document-properties.cpp:1606
-#, fuzzy
 msgid "Remove grid"
 msgstr "Ta bort rutnät"
 
@@ -18086,21 +18005,18 @@ msgid "Use interlacing"
 msgstr "Antialias"
 
 #: ../src/ui/dialog/export.cpp:142
-#, fuzzy
 msgid "Bit depth"
-msgstr "Djup"
+msgstr "Bitdjup"
 
 #: ../src/ui/dialog/export.cpp:144
-#, fuzzy
 msgid "Compression"
-msgstr "Precision"
+msgstr "Komprimering"
 
 #: ../src/ui/dialog/export.cpp:146
 msgid "pHYs dpi"
 msgstr "pHYs dpi"
 
 #: ../src/ui/dialog/export.cpp:151
-#, fuzzy
 msgid "Hide all except selected"
 msgstr "Dölj alla utom markerade"
 
@@ -18205,9 +18121,8 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/export.cpp:492
-#, fuzzy
 msgid "bitmap"
-msgstr "Bitmapp"
+msgstr "bitmapp"
 
 #: ../src/ui/dialog/export.cpp:596
 #, fuzzy, c-format
@@ -18221,9 +18136,8 @@ msgid "Export in progress"
 msgstr "Exporterar"
 
 #: ../src/ui/dialog/export.cpp:1000
-#, fuzzy
 msgid "No items selected."
-msgstr "Inget filter valt"
+msgstr "Inget objekt valt."
 
 #: ../src/ui/dialog/export.cpp:1004 ../src/ui/dialog/export.cpp:1006
 #, fuzzy
@@ -18285,9 +18199,8 @@ msgid "Drawing exported to <b>%s</b>."
 msgstr "Redigerar parameter <b>%s</b>."
 
 #: ../src/ui/dialog/export.cpp:1173
-#, fuzzy
 msgid "Export aborted."
-msgstr "Exporterar"
+msgstr "Exporten avbruten."
 
 #: ../src/ui/dialog/extension-editor.cpp:74
 msgid "Information"
@@ -18306,9 +18219,8 @@ msgid "Export as SVG 1.1 per settings in Preference Dialog."
 msgstr ""
 
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:252
-#, fuzzy
 msgid "_Open"
-msgstr "_Öppna..."
+msgstr "_Öppna"
 
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:272
 #: ../src/ui/dialog/filedialogimpl-gtkmm.cpp:284
@@ -18418,9 +18330,8 @@ msgid "This SVG filter effect is not yet implemented in Inkscape."
 msgstr "Denna SVG-filtereffekt är inte ännu implementerad i Inkscape."
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1024
-#, fuzzy
 msgid "Slope"
-msgstr "Skala"
+msgstr "Lutning"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1025
 #, fuzzy
@@ -18428,14 +18339,12 @@ msgid "Intercept"
 msgstr "Gränssnitt"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1028
-#, fuzzy
 msgid "Amplitude"
 msgstr "Amplitud"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1029
-#, fuzzy
 msgid "Exponent"
-msgstr "Exponent:"
+msgstr "Exponent"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1125
 #, fuzzy
@@ -18443,7 +18352,6 @@ msgid "New transfer function type"
 msgstr "Alla typer"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1160
-#, fuzzy
 msgid "Light Source:"
 msgstr "Ljuskälla:"
 
@@ -18457,9 +18365,8 @@ msgstr "Riktningsvinkel för ljuskällan i YZ-planet, i grader"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1182
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1185
-#, fuzzy
 msgid "Location:"
-msgstr "Position"
+msgstr "Position:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1182
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1185
@@ -18494,9 +18401,8 @@ msgid "Exponent value controlling the focus for the light source"
 msgstr "Exponentvärde som kontrollerar fokus för ljuskällan"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1191
-#, fuzzy
 msgid "Cone Angle:"
-msgstr "Konvinkel"
+msgstr "Konvinkel:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1191
 msgid ""
@@ -18506,7 +18412,6 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1257
-#, fuzzy
 msgid "New light source"
 msgstr "Ny ljuskälla"
 
@@ -18526,7 +18431,6 @@ msgid "_Filter"
 msgstr "_Filter"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1373
-#, fuzzy
 msgid "R_ename"
 msgstr "Byt namn"
 
@@ -18636,19 +18540,16 @@ msgstr "R:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2759
 #: ../src/ui/widget/color-icc-selector.cpp:167
-#, fuzzy
 msgid "G:"
-msgstr "_G"
+msgstr "G:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2760
-#, fuzzy
 msgid "B:"
-msgstr "_B"
+msgstr "B:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2761
-#, fuzzy
 msgid "A:"
-msgstr "_A"
+msgstr "A:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2764
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2804
@@ -18686,12 +18587,10 @@ msgid "Size:"
 msgstr "Storlek:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2771
-#, fuzzy
 msgid "width of the convolve matrix"
 msgstr "bredd på faltningsmatrisen"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2771
-#, fuzzy
 msgid "height of the convolve matrix"
 msgstr "höjd på faltningsmatrisen"
 
@@ -18754,7 +18653,6 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2778
-#, fuzzy
 msgid "Edge Mode:"
 msgstr "Kantläge:"
 
@@ -18788,7 +18686,6 @@ msgstr "Ställ in färg på ljuskälla"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2783
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2822
-#, fuzzy
 msgid "Surface Scale:"
 msgstr "Ytskala:"
 
@@ -18801,7 +18698,6 @@ msgstr ""
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2784
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2823
-#, fuzzy
 msgid "Constant:"
 msgstr "Konstant:"
 
@@ -18900,11 +18796,11 @@ msgstr ""
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2834
 msgid "Base Frequency:"
-msgstr "Bas frekvens:"
+msgstr "Basfrekvens:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2835
 msgid "Octaves:"
-msgstr ""
+msgstr "Oktaver:"
 
 #: ../src/ui/dialog/filter-effects-dialog.cpp:2836
 msgid "Seed:"
@@ -19479,11 +19375,11 @@ msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:63 ../src/ui/dialog/glyphs.cpp:318
 msgid "Coptic"
-msgstr ""
+msgstr "Koptiska"
 
 #: ../src/ui/dialog/glyphs.cpp:64 ../src/ui/dialog/glyphs.cpp:237
 msgid "Cyrillic"
-msgstr ""
+msgstr "Kyrilliska"
 
 #: ../src/ui/dialog/glyphs.cpp:65
 msgid "Deseret"
@@ -19579,7 +19475,7 @@ msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:88 ../src/ui/dialog/glyphs.cpp:268
 msgid "Runic"
-msgstr ""
+msgstr "Runor"
 
 #: ../src/ui/dialog/glyphs.cpp:89 ../src/ui/dialog/glyphs.cpp:256
 msgid "Sinhala"
@@ -19606,7 +19502,6 @@ msgid "Thai"
 msgstr "Thai"
 
 #: ../src/ui/dialog/glyphs.cpp:95 ../src/ui/dialog/glyphs.cpp:259
-#, fuzzy
 msgid "Tibetan"
 msgstr "Tibetanska"
 
@@ -19635,7 +19530,6 @@ msgid "Tagbanwa"
 msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:102
-#, fuzzy
 msgid "Braille"
 msgstr "Blindskrift"
 
@@ -19696,7 +19590,6 @@ msgid "Kharoshthi"
 msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:117
-#, fuzzy
 msgid "unassigned"
 msgstr "otilldelad"
 
@@ -20117,18 +20010,16 @@ msgid "Number Forms"
 msgstr "Nummer formulär"
 
 #: ../src/ui/dialog/glyphs.cpp:298
-#, fuzzy
 msgid "Arrows"
 msgstr "Pilar"
 
 #: ../src/ui/dialog/glyphs.cpp:299
 msgid "Mathematical Operators"
-msgstr "Matematiska Operatorer"
+msgstr "Matematiska operatorer"
 
 #: ../src/ui/dialog/glyphs.cpp:300
-#, fuzzy
 msgid "Miscellaneous Technical"
-msgstr "Diverse Tekniska"
+msgstr "Diverse tekniska"
 
 #: ../src/ui/dialog/glyphs.cpp:301
 msgid "Control Pictures"
@@ -20143,7 +20034,6 @@ msgid "Enclosed Alphanumerics"
 msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:304
-#, fuzzy
 msgid "Box Drawing"
 msgstr "Lådritning"
 
@@ -20156,9 +20046,8 @@ msgid "Geometric Shapes"
 msgstr "Geometriska figurer"
 
 #: ../src/ui/dialog/glyphs.cpp:307
-#, fuzzy
 msgid "Miscellaneous Symbols"
-msgstr "Övriga Tecken"
+msgstr "Övriga tecken"
 
 #: ../src/ui/dialog/glyphs.cpp:308
 msgid "Dingbats"
@@ -20380,9 +20269,8 @@ msgid "Specials"
 msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:381
-#, fuzzy
 msgid "Miscellaneous Symbols and Pictographs"
-msgstr "Blandade Symboler och Pilar"
+msgstr "Blandade symboler och pilar"
 
 #: ../src/ui/dialog/glyphs.cpp:382
 #, fuzzy
@@ -20417,16 +20305,14 @@ msgid "Supplemental Symbols and Pictographs"
 msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:389
-#, fuzzy
 msgid "Chess Symbols"
-msgstr "Övriga Tecken"
+msgstr "Schacksymboler"
 
 #: ../src/ui/dialog/glyphs.cpp:390
 msgid "Symbols and Pictographs Extended-A"
 msgstr ""
 
 #: ../src/ui/dialog/glyphs.cpp:452
-#, fuzzy
 msgid "Script: "
 msgstr "Skript: "
 
@@ -20435,12 +20321,10 @@ msgid "Range: "
 msgstr "Räckvidd:"
 
 #: ../src/ui/dialog/glyphs.cpp:545
-#, fuzzy
 msgid "Append"
 msgstr "Lägg till"
 
 #: ../src/ui/dialog/glyphs.cpp:653
-#, fuzzy
 msgid "Append text"
 msgstr "Lägg till text"
 
@@ -20458,9 +20342,8 @@ msgid "X:"
 msgstr "X:"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:565
-#, fuzzy
 msgid "Horizontal spacing between columns."
-msgstr "Horisontellt mellanrum mellan kolumner (i bildpunkter)"
+msgstr "Horisontellt avstånd mellan kolumner."
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:566
 #: ../src/ui/dialog/object-attributes.cpp:58
@@ -20471,12 +20354,10 @@ msgid "Y:"
 msgstr "Y:"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:566
-#, fuzzy
 msgid "Vertical spacing between rows."
-msgstr "Vertikalt mellanrum mellan rader (i bildpunkter)"
+msgstr "Vertikalt avstånd mellan rader."
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:608
-#, fuzzy
 msgid "_Rows:"
 msgstr "Rader:"
 
@@ -20485,7 +20366,6 @@ msgid "Number of rows"
 msgstr "Antal rader"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:622
-#, fuzzy
 msgid "Equal _height"
 msgstr "Samma höjd"
 
@@ -20494,7 +20374,6 @@ msgid "If not set, each row has the height of the tallest object in it"
 msgstr "Ifall ej satt har varje rad höjden av det högsta objektet i raden"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:650
-#, fuzzy
 msgid "_Columns:"
 msgstr "Kolumner:"
 
@@ -20503,9 +20382,8 @@ msgid "Number of columns"
 msgstr "Antal kolumner"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:664
-#, fuzzy
 msgid "Equal _width"
-msgstr "Samma bredd "
+msgstr "Samma bredd"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:674
 msgid "If not set, each column has the width of the widest object in it"
@@ -20513,27 +20391,22 @@ msgstr ""
 "Ifall ej satt har varje kolumn bredden av det bredaste objektet i kolumnen"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:686
-#, fuzzy
 msgid "Alignment:"
-msgstr "Justering"
+msgstr "Justering:"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:696
-#, fuzzy
 msgid "_Fit into selection box"
 msgstr "Passa in i den markerade rutan"
 
 #: ../src/ui/dialog/grid-arrange-tab.cpp:703
-#, fuzzy
 msgid "_Set spacing:"
 msgstr "Ställ in avstånd:"
 
 #: ../src/ui/dialog/guides.cpp:45
-#, fuzzy
 msgid "Lo_cked"
 msgstr "Låst"
 
 #: ../src/ui/dialog/guides.cpp:46
-#, fuzzy
 msgid "Rela_tive change"
 msgstr "Relativ ändring"
 
@@ -20548,9 +20421,8 @@ msgid "_Y:"
 msgstr "_Y:"
 
 #: ../src/ui/dialog/guides.cpp:49 ../src/ui/dialog/object-properties.cpp:57
-#, fuzzy
 msgid "_Label:"
-msgstr "_Etikett"
+msgstr "_Etikett:"
 
 #: ../src/ui/dialog/guides.cpp:49
 msgid "Optionally give this guideline a name"
@@ -20589,7 +20461,7 @@ msgid "Guideline ID: %s"
 msgstr "Hjälplinje-ID: %s"
 
 #: ../src/ui/dialog/guides.cpp:314
-#, fuzzy, c-format
+#, c-format
 msgid "Current: %s"
 msgstr "Aktuell: %s"
 
@@ -20599,7 +20471,6 @@ msgid "%d x %d"
 msgstr "%d x %d"
 
 #: ../src/ui/dialog/icon-preview.cpp:162
-#, fuzzy
 msgid "Magnified:"
 msgstr "Förstorad:"
 
@@ -20649,7 +20520,6 @@ msgstr ""
 "begränsningslådan"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:216
-#, fuzzy
 msgid "Ctrl+click _dot size:"
 msgstr "Ctrl+klick punkstorlek:"
 
@@ -20717,7 +20587,6 @@ msgid "Take from selection"
 msgstr "Ta från markering"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:311
-#, fuzzy
 msgid "This tool's style of new objects"
 msgstr "Detta verktygs stil för nya objekt"
 
@@ -20727,7 +20596,6 @@ msgstr ""
 "Kom ihåg stilen av det (först) markerade objekt som detta verktygs stil"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:323
-#, fuzzy
 msgid "Tools"
 msgstr "Verktyg"
 
@@ -20843,16 +20711,14 @@ msgid "No per-object selection indication"
 msgstr "Inga markeringstecken per objekt"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:364
-#, fuzzy
 msgid "Mark"
-msgstr "_Markera"
+msgstr "Markera"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:366
 msgid "Each selected object has a diamond mark in the top left corner"
 msgstr "Varje markerat objekt har en diamantmarkör i övre vänstra hörnet"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:367
-#, fuzzy
 msgid "Box"
 msgstr "Låda"
 
@@ -20865,7 +20731,6 @@ msgid "Node"
 msgstr "Nod"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:375
-#, fuzzy
 msgid "Path outline"
 msgstr "Slingkontur"
 
@@ -20874,12 +20739,10 @@ msgid "Path outline color"
 msgstr "Färg på slingkontur"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:377
-#, fuzzy
 msgid "Selects the color used for showing the path outline"
 msgstr "Välj färgen som används för att visa slingans kontur"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:378
-#, fuzzy
 msgid "Always show outline"
 msgstr "Visa alltid kontur"
 
@@ -21148,7 +21011,6 @@ msgstr "Färghink"
 #: ../src/ui/dialog/inkscape-preferences.cpp:515
 #: ../src/widgets/gradient-selector.cpp:133
 #: ../src/widgets/gradient-selector.cpp:279
-#, fuzzy
 msgid "Gradient"
 msgstr "Gradient"
 
@@ -21273,9 +21135,8 @@ msgid "Bengali (bn)"
 msgstr "Bengali (bn)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:927
-#, fuzzy
 msgid "Bengali/Bangladesh (bn_BD)"
-msgstr "Bengali (bn)"
+msgstr "Bengali/Bangladesh (bn_BD)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:927
 #, fuzzy
@@ -21447,9 +21308,8 @@ msgid "Korean (ko)"
 msgstr "Koreanska (ko)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:938
-#, fuzzy
 msgid "Latvian (lv)"
-msgstr "Litauiska (lt)"
+msgstr "Lettiska (lv)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:938
 msgid "Lithuanian (lt)"
@@ -21525,7 +21385,7 @@ msgstr "Ryska (ru)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:944
 msgid "Sanskrit (sa)"
-msgstr ""
+msgstr "Sanskrit (sa)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:944
 #, fuzzy
@@ -22390,7 +22250,6 @@ msgid "Numbers"
 msgstr "Nummer"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1488
-#, fuzzy
 msgid "_Numeric precision:"
 msgstr "Numerisk precision:"
 
@@ -22404,13 +22263,12 @@ msgid "Minimum _exponent:"
 msgstr "Minimumexponent:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1491
-#, fuzzy
 msgid ""
 "The smallest number written to SVG is 10 to the power of this exponent; "
 "anything smaller is written as zero"
 msgstr ""
 "Det minsta värdet som skrivs till SVG är 10 upphöjt till denna exponent; "
-"allting under skrivs som noll."
+"allting under skrivs som noll"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1496
 msgid "Improper Attributes Actions"
@@ -22576,17 +22434,14 @@ msgstr "Bitmappseditor:"
 
 #. TRANSLATORS: see http://www.newsandtech.com/issues/2004/03-04/pt/03-04_rendering.htm
 #: ../src/ui/dialog/inkscape-preferences.cpp:1558
-#, fuzzy
 msgid "Perceptual"
 msgstr "Perceptuell"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1558
-#, fuzzy
 msgid "Relative Colorimetric"
 msgstr "Relativ kolorimetri"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1558
-#, fuzzy
 msgid "Absolute Colorimetric"
 msgstr "Absolut kolorimetri"
 
@@ -22649,7 +22504,6 @@ msgid "Simulates output of target device"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1600
-#, fuzzy
 msgid "Mark out of gamut colors"
 msgstr "Markera färger utanför färgomfång"
 
@@ -22668,7 +22522,6 @@ msgid "Selects the color used for out of gamut warning"
 msgstr "Välj färgen som används för att visa utanför-färgomfång-varningen"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1612
-#, fuzzy
 msgid "Device profile:"
 msgstr "Enhetsprofil:"
 
@@ -22695,7 +22548,6 @@ msgid "Enables black point compensation"
 msgstr "Aktiverar svartpunktskompensation"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1623
-#, fuzzy
 msgid "Preserve black"
 msgstr "Bevara svart"
 
@@ -22710,12 +22562,10 @@ msgstr "Bevara K-kanalen i CMYK -> CMYK transformationer"
 #: ../src/ui/dialog/inkscape-preferences.cpp:1646
 #: ../src/ui/widget/color-icc-selector.cpp:381
 #: ../src/ui/widget/color-icc-selector.cpp:678
-#, fuzzy
 msgid "<none>"
 msgstr "<ingen>"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1691
-#, fuzzy
 msgid "Color management"
 msgstr "Färghantering"
 
@@ -22810,7 +22660,6 @@ msgid "Open Clip Art"
 msgstr "Öppen båge"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1737
-#, fuzzy
 msgid "Behavior"
 msgstr "Beteende"
 
@@ -22970,9 +22819,8 @@ msgid "Move patterns (in fill or stroke) along with the objects"
 msgstr "Flytta mönster (i fyllning eller linje) tillsammans med objekten"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1795
-#, fuzzy
 msgid "Store transformation"
-msgstr "Lagra transformation:"
+msgstr "Lagra transformation"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1797
 msgid ""
@@ -23000,9 +22848,8 @@ msgid "When changing stroke width, scale dash array"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1806
-#, fuzzy
 msgid "Dashes"
-msgstr "Streck:"
+msgstr "Streck"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1810
 #, fuzzy
@@ -23033,7 +22880,6 @@ msgstr ""
 "bildpunkter)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1817
-#, fuzzy
 msgid "_Acceleration:"
 msgstr "Acceleration:"
 
@@ -23050,7 +22896,6 @@ msgid "Autoscrolling"
 msgstr "Automatisk panorering"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1821
-#, fuzzy
 msgid "_Speed:"
 msgstr "Hastighet:"
 
@@ -23063,7 +22908,6 @@ msgstr ""
 "stänga av automatisk panorering)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1824
-#, fuzzy
 msgid "_Threshold:"
 msgstr "Tröskelvärde:"
 
@@ -23121,9 +22965,8 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1841
-#, fuzzy
 msgid "Snap indicator"
-msgstr "Aktivera indikator för fästpunkter"
+msgstr "Indikator för fästpunkter"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1843
 msgid "Enable snap indicator"
@@ -23157,7 +23000,6 @@ msgid ""
 msgstr "Försök endast fästa noden som initialt är närmast muspekaren"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1860
-#, fuzzy
 msgid "_Weight factor:"
 msgstr "Viktfaktor:"
 
@@ -23340,14 +23182,12 @@ msgid "Move according to transform"
 msgstr "Flyttade beroende på transform"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1915
-#, fuzzy
 msgid "Are unlinked"
-msgstr "Avlänkade"
+msgstr "Är avlänkade"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1917
-#, fuzzy
 msgid "Are deleted"
-msgstr "Raderade"
+msgstr "Är raderade"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1920
 #, fuzzy
@@ -23610,9 +23450,8 @@ msgid "Lowest quality (fastest)"
 msgstr "Lägst kvalité (snabbast)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2031
-#, fuzzy
 msgid "Gaussian blur quality for display"
-msgstr "Kvalité på gaussisk oskärpa vid visning:"
+msgstr "Kvalité på gaussisk oskärpa vid visning"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2033
 #: ../src/ui/dialog/inkscape-preferences.cpp:2057
@@ -23644,20 +23483,17 @@ msgid "Lowest quality (considerable artifacts), but display is fastest"
 msgstr "Lägst kvalité (många artefakter), men visningen är snabbast"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2055
-#, fuzzy
 msgid "Filter effects quality for display"
-msgstr "Kvalité på filtereffekter vid visning:"
+msgstr "Kvalité på filtereffekter vid visning"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2067
 #: ../src/ui/dialog/print.cpp:107
-#, fuzzy
 msgid "Rendering"
 msgstr "Rendering"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2073 ../src/verbs.cpp:159
-#, fuzzy
 msgid "Edit"
-msgstr "_Redigera"
+msgstr "Redigera"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2074
 #, fuzzy
@@ -23669,7 +23505,6 @@ msgid "Automatically reload linked images when file is changed on disk"
 msgstr "Läs automatiskt in länkade bilder när filen ändras på disk"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2078
-#, fuzzy
 msgid "_Bitmap editor:"
 msgstr "Bitmappseditor:"
 
@@ -23729,9 +23564,8 @@ msgid "Bitmap import/open mode:"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2107
-#, fuzzy
 msgid "Include"
-msgstr "Inkludera dolda"
+msgstr "Inkludera"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2110
 msgid "SVG import mode:"
@@ -23790,9 +23624,8 @@ msgstr "Genväg fil:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2151
 #: ../src/ui/dialog/template-load-tab.cpp:44
-#, fuzzy
 msgid "Search:"
-msgstr "Sök"
+msgstr "Sök:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2163
 msgid "Shortcut"
@@ -23861,10 +23694,9 @@ msgid "Misc"
 msgstr "Övrigt"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2493
-#, fuzzy
 msgctxt "Spellchecker language"
 msgid "None"
-msgstr "Ingen"
+msgstr "Inget"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2503
 msgid "Set the main spell check language"
@@ -23946,9 +23778,8 @@ msgid "System info"
 msgstr "Systeminformation"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2547
-#, fuzzy
 msgid "Reset Preferences"
-msgstr "Textinställningar"
+msgstr "Återställ inställningar"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2550
 #, fuzzy
@@ -24163,7 +23994,6 @@ msgid "Locations of icon themes"
 msgstr "Upplösning:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2644
-#, fuzzy
 msgid "System"
 msgstr "System"
 
@@ -24174,13 +24004,11 @@ msgid "Disabled"
 msgstr "_Aktiverad"
 
 #: ../src/ui/dialog/input.cpp:348
-#, fuzzy
 msgctxt "Input device"
 msgid "Screen"
 msgstr "Skärm"
 
 #: ../src/ui/dialog/input.cpp:349 ../src/ui/dialog/input.cpp:370
-#, fuzzy
 msgid "Window"
 msgstr "Fönster"
 
@@ -24198,9 +24026,8 @@ msgid "Configuration"
 msgstr "Konfiguration"
 
 #: ../src/ui/dialog/input.cpp:647
-#, fuzzy
 msgid "Hardware"
-msgstr "Taggtråd"
+msgstr "Hårdvara"
 
 #: ../src/ui/dialog/input.cpp:660
 msgid "Link:"
@@ -24533,9 +24360,8 @@ msgid "Deactivate path effect"
 msgstr "Avaktivera slingeffekt"
 
 #: ../src/ui/dialog/lpe-fillet-chamfer-properties.cpp:43
-#, fuzzy
 msgid "Radius (pixels):"
-msgstr "Radie / bildpunkter"
+msgstr "Radie (bildpunkter)"
 
 #: ../src/ui/dialog/lpe-fillet-chamfer-properties.cpp:54
 #, fuzzy
@@ -24676,9 +24502,8 @@ msgid "_ID:"
 msgstr "_ID: "
 
 #: ../src/ui/dialog/object-properties.cpp:58
-#, fuzzy
 msgid "_Title:"
-msgstr "_Titel"
+msgstr "_Titel:"
 
 #: ../src/ui/dialog/object-properties.cpp:59
 msgid "_DPI SVG:"
@@ -24819,22 +24644,18 @@ msgid "no-id"
 msgstr "Nej-id"
 
 #: ../src/ui/dialog/objects.cpp:874
-#, fuzzy
 msgid "Unhide objects"
 msgstr "Visa objekt"
 
 #: ../src/ui/dialog/objects.cpp:874
-#, fuzzy
 msgid "Hide objects"
 msgstr "Dölj objekt"
 
 #: ../src/ui/dialog/objects.cpp:894
-#, fuzzy
 msgid "Lock objects"
 msgstr "Lås objekt"
 
 #: ../src/ui/dialog/objects.cpp:894
-#, fuzzy
 msgid "Unlock objects"
 msgstr "Lås upp objekt"
 
@@ -24940,14 +24761,12 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/objects.cpp:1795
-#, fuzzy
 msgid "Add layer..."
 msgstr "Lägg till lager..."
 
 #: ../src/ui/dialog/objects.cpp:1802
-#, fuzzy
 msgid "Remove object"
-msgstr "Ta bort typsnitt"
+msgstr "Ta bort objekt"
 
 #: ../src/ui/dialog/objects.cpp:1810
 #, fuzzy
@@ -25196,24 +25015,20 @@ msgid "Save Document as Template"
 msgstr "Spara dokument med nytt namn"
 
 #: ../src/ui/dialog/save-template-dialog.cpp:23
-#, fuzzy
 msgid "Name: "
-msgstr "Namn:"
+msgstr "Namn: "
 
 #: ../src/ui/dialog/save-template-dialog.cpp:24
-#, fuzzy
 msgid "Author: "
-msgstr "_Upphovsmän"
+msgstr "Upphovsperson: "
 
 #: ../src/ui/dialog/save-template-dialog.cpp:25
-#, fuzzy
 msgid "Description: "
-msgstr "Beskrivning"
+msgstr "Beskrivning: "
 
 #: ../src/ui/dialog/save-template-dialog.cpp:26
-#, fuzzy
 msgid "Keywords: "
-msgstr "Nyckelord"
+msgstr "Nyckelord: "
 
 #: ../src/ui/dialog/save-template-dialog.cpp:27
 #, fuzzy
@@ -25254,6 +25069,7 @@ msgid "_Ignore"
 msgstr "_Ignorera"
 
 #: ../src/ui/dialog/spellcheck.cpp:102
+#, fuzzy
 msgid "A_dd"
 msgstr "A_dd"
 
@@ -25266,26 +25082,22 @@ msgid "_Stop"
 msgstr "_Sluta"
 
 #: ../src/ui/dialog/spellcheck.cpp:106
-#, fuzzy
 msgid "_Start"
 msgstr "_ Starta"
 
 #: ../src/ui/dialog/spellcheck.cpp:138
-#, fuzzy
 msgid "Suggestions:"
 msgstr "Förslag:"
 
 #: ../src/ui/dialog/spellcheck.cpp:147
-#, fuzzy
 msgid "Accept the chosen suggestion"
-msgstr "Acceptera valda förslag?"
+msgstr "Acceptera valt förslag"
 
 #: ../src/ui/dialog/spellcheck.cpp:148
 msgid "Ignore this word only once"
 msgstr "Ignorera detta ord endast en gång"
 
 #: ../src/ui/dialog/spellcheck.cpp:149
-#, fuzzy
 msgid "Ignore this word in this session"
 msgstr "Ignorera detta ord i detta pass"
 
@@ -25305,12 +25117,10 @@ msgid "Preferences"
 msgstr "Inställningar för pennan"
 
 #: ../src/ui/dialog/spellcheck.cpp:167
-#, fuzzy
 msgid "Stop the check"
-msgstr "Avsluta kontrollen"
+msgstr "Avsluta stavningskontrollen"
 
 #: ../src/ui/dialog/spellcheck.cpp:168
-#, fuzzy
 msgid "Start the check"
 msgstr "Starta stavningskontrollen"
 
@@ -25325,12 +25135,11 @@ msgid "<b>Finished</b>, nothing suspicious found"
 msgstr "<b>Klar</b>, ingenting suspekt hittades"
 
 #: ../src/ui/dialog/spellcheck.cpp:535
-#, fuzzy, c-format
+#, c-format
 msgid "Not in dictionary: <b>%s</b>"
-msgstr "Ej i ordboken: (%s): <b>%s</b>"
+msgstr "Ej i ordboken: <b>%s</b>"
 
 #: ../src/ui/dialog/spellcheck.cpp:665
-#, fuzzy
 msgid "<i>Checking...</i>"
 msgstr "<i>Kontrollerar...</i>"
 
@@ -25617,7 +25426,6 @@ msgid "Kerning Value:"
 msgstr "Kerning-värde:"
 
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:973
-#, fuzzy
 msgid "Set font family"
 msgstr "Ange typsnittsfamilj"
 
@@ -25626,17 +25434,14 @@ msgid "font"
 msgstr "typsnitt"
 
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:996
-#, fuzzy
 msgid "Add font"
 msgstr "Lägg till typsnitt"
 
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:1018
-#, fuzzy
 msgid "_Fonts"
 msgstr "_Typsnitt"
 
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:1026
-#, fuzzy
 msgid "_Global Settings"
 msgstr "Globala inställningar"
 
@@ -25645,25 +25450,21 @@ msgid "_Glyphs"
 msgstr "Tecken"
 
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:1028
-#, fuzzy
 msgid "_Kerning"
 msgstr "Kerning"
 
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:1035
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:1036
-#, fuzzy
 msgid "Sample Text"
 msgstr "Exempeltext"
 
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:1040
-#, fuzzy
 msgid "Preview Text:"
 msgstr "Förhandsvisningstext:"
 
 #: ../src/ui/dialog/svg-preview.cpp:383
-#, fuzzy
 msgid "Too large for preview"
-msgstr "för stor för förhandsvisning"
+msgstr "För stor för förhandsvisning"
 
 #: ../src/ui/dialog/swatches.cpp:210 ../src/ui/tools/gradient-tool.cpp:359
 #: ../src/ui/tools/gradient-tool.cpp:446 ../src/widgets/gradient-vector.cpp:746
@@ -25693,85 +25494,71 @@ msgid "List"
 msgstr "Lista"
 
 #: ../src/ui/dialog/swatches.cpp:722
-#, fuzzy
 msgctxt "Swatches"
 msgid "Size"
 msgstr "Storlek"
 
 #: ../src/ui/dialog/swatches.cpp:726
-#, fuzzy
 msgctxt "Swatches height"
 msgid "Tiny"
-msgstr "pytteliten"
+msgstr "Pytteliten"
 
 #: ../src/ui/dialog/swatches.cpp:727
-#, fuzzy
 msgctxt "Swatches height"
 msgid "Small"
 msgstr "Liten"
 
 #: ../src/ui/dialog/swatches.cpp:728
-#, fuzzy
 msgctxt "Swatches height"
 msgid "Medium"
 msgstr "Mellan"
 
 #: ../src/ui/dialog/swatches.cpp:729
-#, fuzzy
 msgctxt "Swatches height"
 msgid "Large"
 msgstr "Stor"
 
 #: ../src/ui/dialog/swatches.cpp:730
-#, fuzzy
 msgctxt "Swatches height"
 msgid "Huge"
-msgstr "Nyans"
+msgstr "Jättestor"
 
 #: ../src/ui/dialog/swatches.cpp:752
-#, fuzzy
 msgctxt "Swatches"
 msgid "Width"
 msgstr "Bredd"
 
 #: ../src/ui/dialog/swatches.cpp:756
-#, fuzzy
 msgctxt "Swatches width"
 msgid "Narrower"
-msgstr "smalare"
+msgstr "Smalare"
 
 #: ../src/ui/dialog/swatches.cpp:757
-#, fuzzy
 msgctxt "Swatches width"
 msgid "Narrow"
-msgstr "smal"
+msgstr "Smal"
 
 #: ../src/ui/dialog/swatches.cpp:758
-#, fuzzy
 msgctxt "Swatches width"
 msgid "Medium"
 msgstr "Mellan"
 
 #: ../src/ui/dialog/swatches.cpp:759
-#, fuzzy
 msgctxt "Swatches width"
 msgid "Wide"
 msgstr "Bred"
 
 #: ../src/ui/dialog/swatches.cpp:760
-#, fuzzy
 msgctxt "Swatches width"
 msgid "Wider"
-msgstr "Bred"
+msgstr "Bredare"
 
 #: ../src/ui/dialog/swatches.cpp:790
-#, fuzzy
 msgctxt "Swatches"
 msgid "Border"
-msgstr "Ordning"
+msgstr "Kant"
 
 #: ../src/ui/dialog/swatches.cpp:794
-#, fuzzy
 msgctxt "Swatches border"
 msgid "None"
 msgstr "Ingen"
@@ -25782,7 +25569,6 @@ msgid "Solid"
 msgstr "Fast"
 
 #: ../src/ui/dialog/swatches.cpp:796
-#, fuzzy
 msgctxt "Swatches border"
 msgid "Wide"
 msgstr "Bred"
@@ -25837,9 +25623,8 @@ msgid "Make symbols bigger by zooming in."
 msgstr "Gör symboler större genom att zooma in."
 
 #: ../src/ui/dialog/symbols.cpp:436 ../src/ui/dialog/symbols.cpp:1052
-#, fuzzy
 msgid "Searching..."
-msgstr "Sök i"
+msgstr "Söker..."
 
 #: ../src/ui/dialog/symbols.cpp:436 ../src/ui/dialog/symbols.cpp:1059
 #: ../src/ui/dialog/symbols.cpp:1124
@@ -25906,12 +25691,10 @@ msgid "no template selected"
 msgstr "Inget filter valt"
 
 #: ../src/ui/dialog/template-widget.cpp:125
-#, fuzzy
 msgid "Author"
-msgstr "_Upphovsmän"
+msgstr "Upphovsperson"
 
 #: ../src/ui/dialog/template-widget.cpp:131
-#, fuzzy
 msgid "Keywords"
 msgstr "Nyckelord"
 
@@ -25934,7 +25717,6 @@ msgstr "Ange som standard"
 #. * some representative characters that users of your locale will be
 #. * interested in.
 #: ../src/ui/dialog/text-edit.cpp:83
-#, fuzzy
 msgid "AaBbCcIiPpQq12369$€¢?.;/()"
 msgstr "AaBbCcIiPpQqÅåÄäÖö12368.;/()"
 
@@ -26006,9 +25788,8 @@ msgstr "Bättre kvalité (långsammare)"
 
 #: ../src/ui/dialog/transformation.cpp:64
 #: ../src/ui/dialog/transformation.cpp:74
-#, fuzzy
 msgid "_Horizontal:"
-msgstr "_Horisontell"
+msgstr "_Horisontell:"
 
 #: ../src/ui/dialog/transformation.cpp:64
 msgid "Horizontal displacement (relative) or position (absolute)"
@@ -26016,9 +25797,8 @@ msgstr "Horisontell förskjutning (relativt) eller position (absolut)"
 
 #: ../src/ui/dialog/transformation.cpp:66
 #: ../src/ui/dialog/transformation.cpp:76
-#, fuzzy
 msgid "_Vertical:"
-msgstr "_Vertikal"
+msgstr "_Vertikal:"
 
 #: ../src/ui/dialog/transformation.cpp:66
 msgid "Vertical displacement (relative) or position (absolute)"
@@ -26033,9 +25813,8 @@ msgid "Vertical size (absolute or percentage of current)"
 msgstr "Vertikal storlek (absolut eller procent av nuvarande)"
 
 #: ../src/ui/dialog/transformation.cpp:72
-#, fuzzy
 msgid "A_ngle:"
-msgstr "V_inkel"
+msgstr "V_inkel:"
 
 #: ../src/ui/dialog/transformation.cpp:72
 #: ../src/ui/dialog/transformation.cpp:1030
@@ -26535,8 +26314,8 @@ msgid ""
 "insert node, click to select (more: Shift, Ctrl+Alt)"
 msgstr ""
 "<b>Rakt segment</b>: dra för att konvertera till ett Bezier-segment, "
-"dubbelklicka för att infoga nod, klicka för att markera (mer: Skift, Ctrl"
-"+Alt)"
+"dubbelklicka för att infoga nod, klicka för att markera (mer: Skift, "
+"Ctrl+Alt)"
 
 #: ../src/ui/tool/curve-drag-point.cpp:213
 msgctxt "Path segment tip"
@@ -26578,19 +26357,16 @@ msgid "Add extremum nodes"
 msgstr "Lägg till noder"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:363
-#, fuzzy
 msgid "Duplicate nodes"
-msgstr "Duplicera nod"
+msgstr "Duplicera noder"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:426
 #: ../src/ui/toolbar/node-toolbar.cpp:156
-#, fuzzy
 msgid "Join nodes"
 msgstr "Sammanfoga noder"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:433
 #: ../src/ui/toolbar/node-toolbar.cpp:164
-#, fuzzy
 msgid "Break nodes"
 msgstr "Bryt isär noder"
 
@@ -26603,12 +26379,10 @@ msgid "Move nodes"
 msgstr "Flytta noder"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:789
-#, fuzzy
 msgid "Move nodes horizontally"
 msgstr "Flytta noder horisontellt"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:793
-#, fuzzy
 msgid "Move nodes vertically"
 msgstr "Flytta noder vertikalt"
 
@@ -26619,7 +26393,6 @@ msgstr "Rotera noder"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:804
 #: ../src/ui/tool/multi-path-manipulator.cpp:810
-#, fuzzy
 msgid "Scale nodes uniformly"
 msgstr "Skala noder likformigt"
 
@@ -26628,12 +26401,10 @@ msgid "Scale nodes"
 msgstr "Skala noder"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:814
-#, fuzzy
 msgid "Scale nodes horizontally"
 msgstr "Skala noder horisontellt"
 
 #: ../src/ui/tool/multi-path-manipulator.cpp:818
-#, fuzzy
 msgid "Scale nodes vertically"
 msgstr "Skala noder vertikalt"
 
@@ -26767,10 +26538,10 @@ msgstr "mer: Ctrl, Alt"
 
 #: ../src/ui/tool/node.cpp:617 ../src/ui/tool/node.cpp:627
 #: ../src/ui/tool/node.cpp:645
-#, fuzzy, c-format
+#, c-format
 msgctxt "Path handle tip"
 msgid "<b>%s</b>: "
-msgstr "<b>L</b>"
+msgstr "<b>%s</b>: "
 
 #: ../src/ui/tool/node.cpp:636
 #, fuzzy, c-format
@@ -27569,9 +27340,8 @@ msgid "Clip from objects"
 msgstr "Klipp ut från objekt"
 
 #: ../src/ui/toolbar/eraser-toolbar.cpp:98
-#, fuzzy
 msgid "(no width)"
-msgstr "Pennans bredd"
+msgstr "(ingen bredd)"
 
 #: ../src/ui/toolbar/eraser-toolbar.cpp:103
 #, fuzzy
@@ -27673,9 +27443,8 @@ msgid "Reverse the direction of the gradient"
 msgstr "Byt riktning på gradient"
 
 #: ../src/ui/toolbar/gradient-toolbar.cpp:450
-#, fuzzy
 msgid "Repeat: "
-msgstr "Upprepa:"
+msgstr "Upprepa: "
 
 #: ../src/ui/toolbar/gradient-toolbar.cpp:453
 msgctxt "Gradient repeat type"
@@ -27812,9 +27581,8 @@ msgid "The font size to be used in the measurement labels"
 msgstr ""
 
 #: ../src/ui/toolbar/measure-toolbar.cpp:92 ../share/extensions/measure.inx:52
-#, fuzzy
 msgid "Precision:"
-msgstr "Precision"
+msgstr "Precision:"
 
 #: ../src/ui/toolbar/measure-toolbar.cpp:93
 msgid "Decimal precision of measure"
@@ -28383,7 +28151,6 @@ msgid "Shape:"
 msgstr "Form:"
 
 #: ../src/ui/toolbar/pencil-toolbar.cpp:385
-#, fuzzy
 msgctxt "Freehand shape"
 msgid "None"
 msgstr "Ingen"
@@ -28843,12 +28610,10 @@ msgid "Delete sprayed items from selection"
 msgstr "Hämta kurvor från markering..."
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:115
-#, fuzzy
 msgid "(narrow spray)"
 msgstr "(smal stråle)"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:115
-#, fuzzy
 msgid "(broad spray)"
 msgstr "(bred stråle)"
 
@@ -28872,16 +28637,14 @@ msgid "(high population)"
 msgstr "(hög population)"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:146
-#, fuzzy
 msgid "Adjusts the number of items sprayed per click"
-msgstr "Justera antalet objekt som målas per click."
+msgstr "Justera antalet objekt som målas per klick"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:158
-#, fuzzy
 msgid ""
 "Use the pressure of the input device to alter the amount of sprayed objects"
 msgstr ""
-"Använd trycket på inmatningsenheten för att påverka mängden målade objekt."
+"Använd trycket på inmatningsenheten för att påverka mängden målade objekt"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:169
 msgid "(high rotation variation)"
@@ -28892,33 +28655,31 @@ msgid "Rotation:"
 msgstr "Rotation:"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:175
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "Variation of the rotation of the sprayed objects; 0% for the same rotation "
 "than the original object"
 msgstr ""
-"Variationen för rotationen hos de målade objekten. 0% för att ha samma "
-"rotation som orginalobjektet."
+"Variationen för rotationen hos de målade objekten; 0% för att ha samma "
+"rotation som orginalobjektet"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:185
-#, fuzzy
 msgid "(high scale variation)"
 msgstr "(hög skalvariation)"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:189
-#, fuzzy
 msgctxt "Spray tool"
 msgid "Scale:"
 msgstr "Skala:"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:191
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "Variation in the scale of the sprayed objects; 0% for the same scale than "
 "the original object"
 msgstr ""
-"Variation i skala hos de målade objekten. 0% för att få samma skala som "
-"orginalobjektet."
+"Variation i skala hos de målade objekten; 0% för att få samma skala som "
+"orginalobjektet"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:203
 #, fuzzy
@@ -28926,17 +28687,14 @@ msgid "Use the pressure of the input device to alter the scale of new items"
 msgstr "Använd trycket på inmatningsenheten för att påverka bredden på pennan"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:213
-#, fuzzy
 msgid "(minimum scatter)"
 msgstr "(minimal utspridning)"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:213
-#, fuzzy
 msgid "(maximum scatter)"
 msgstr "(maximal utspridning)"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:217
-#, fuzzy
 msgctxt "Spray tool"
 msgid "Scatter:"
 msgstr "Sprid ut:"
@@ -28952,7 +28710,6 @@ msgid "(maximum mean)"
 msgstr "(maximal median)"
 
 #: ../src/ui/toolbar/spray-toolbar.cpp:233
-#, fuzzy
 msgid "Focus:"
 msgstr "Fokus:"
 
@@ -29063,9 +28820,8 @@ msgid "Number of corners of a polygon or star"
 msgstr "Antal hörn i en polygon eller stjärna"
 
 #: ../src/ui/toolbar/star-toolbar.cpp:120
-#, fuzzy
 msgid "thin-ray star"
-msgstr "tunnspetsad tjärna"
+msgstr "tunnspetsad stjärna"
 
 #: ../src/ui/toolbar/star-toolbar.cpp:120
 msgid "pentagram"
@@ -29193,7 +28949,6 @@ msgid "Star: Change randomization"
 msgstr "Stjärna: Ändra slumpmässighet"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:242
-#, fuzzy
 msgid "Font Family"
 msgstr "Typsnittsfamilj"
 
@@ -29231,27 +28986,23 @@ msgid "Font Size"
 msgstr "Typsnittsstorlek"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:338
-#, fuzzy
 msgid "Smaller spacing"
 msgstr "Kortare avstånd"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:338
 #: ../src/ui/toolbar/text-toolbar.cpp:437
 #: ../src/ui/toolbar/text-toolbar.cpp:455
-#, fuzzy
 msgctxt "Text tool"
 msgid "Normal"
 msgstr "Normal"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:338
-#, fuzzy
 msgid "Larger spacing"
 msgstr "Större avstånd"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:345
-#, fuzzy
 msgid "Spacing between baselines"
-msgstr "Avstånd mellan rader (skalat med typstorlek)"
+msgstr "Avstånd mellan rader"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:372
 #: ../src/ui/toolbar/text-toolbar.cpp:373
@@ -29260,7 +29011,6 @@ msgstr "Vänsterjustera"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:378
 #: ../src/ui/toolbar/text-toolbar.cpp:379
-#, fuzzy
 msgid "Align center"
 msgstr "Centrera"
 
@@ -29279,12 +29029,10 @@ msgid "Justify (only flowed text)"
 msgstr "Justera (endast flytande text)"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:396
-#, fuzzy
 msgid "Alignment"
 msgstr "Justering"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:397
-#, fuzzy
 msgid "Text alignment"
 msgstr "Textjustering"
 
@@ -29301,13 +29049,11 @@ msgstr "Växla subscript"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:437
 #: ../src/ui/toolbar/text-toolbar.cpp:455
-#, fuzzy
 msgid "Negative spacing"
 msgstr "Negativt avstånd"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:437
 #: ../src/ui/toolbar/text-toolbar.cpp:455
-#, fuzzy
 msgid "Positive spacing"
 msgstr "Positivt avstånd"
 
@@ -29316,47 +29062,38 @@ msgid "Letter:"
 msgstr "Brev:"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:442
-#, fuzzy
 msgid "Spacing between letters (px)"
 msgstr "Avstånd mellan bokstäver (px)"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:459
-#, fuzzy
 msgid "Word:"
 msgstr "Ord:"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:460
-#, fuzzy
 msgid "Spacing between words (px)"
 msgstr "Avstånd mellan ord (px)"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:476
-#, fuzzy
 msgid "Kern:"
 msgstr "Kern:"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:478
-#, fuzzy
 msgid "Horizontal kerning (px)"
 msgstr "Horisontell kerning (px)"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:492
-#, fuzzy
 msgid "Vert:"
 msgstr "Vertikalt:"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:493
-#, fuzzy
 msgid "Vertical kerning (px)"
 msgstr "Vertikal kerning"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:507
-#, fuzzy
 msgid "Rot:"
-msgstr "Roll:"
+msgstr "Rot:"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:508
-#, fuzzy
 msgid "Character rotation (degrees)"
 msgstr "Teckenrotation (grader)"
 
@@ -29414,7 +29151,6 @@ msgid "Sideways glyph orientation"
 msgstr "Följ slingans riktning"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:586
-#, fuzzy
 msgid "Text orientation"
 msgstr "Textorientering"
 
@@ -30068,25 +29804,21 @@ msgid "Visible Colors"
 msgstr "Synliga färger"
 
 #: ../src/ui/tools/flood-tool.cpp:101
-#, fuzzy
 msgctxt "Flood autogap"
 msgid "None"
 msgstr "Ingen"
 
 #: ../src/ui/tools/flood-tool.cpp:102
-#, fuzzy
 msgctxt "Flood autogap"
 msgid "Small"
 msgstr "Liten"
 
 #: ../src/ui/tools/flood-tool.cpp:103
-#, fuzzy
 msgctxt "Flood autogap"
 msgid "Medium"
 msgstr "Mellan"
 
 #: ../src/ui/tools/flood-tool.cpp:104
-#, fuzzy
 msgctxt "Flood autogap"
 msgid "Large"
 msgstr "Stor"
@@ -30463,8 +30195,8 @@ msgstr ""
 #: ../src/ui/tools/pen-tool.cpp:636
 #, fuzzy
 msgid ""
-"<b>Click</b> or <b>click and drag</b> to close and finish the path. Shift"
-"+Click make a cusp node"
+"<b>Click</b> or <b>click and drag</b> to close and finish the path. "
+"Shift+Click make a cusp node"
 msgstr ""
 "<b>Klicka</b> eller <b>klicka och dra</b> för att stänga och avsluta slingan."
 
@@ -30787,7 +30519,7 @@ msgstr ""
 
 #: ../src/ui/tools/star-tool.cpp:423
 msgid "Create star"
-msgstr "Rita stjärna"
+msgstr "Skapa stjärna"
 
 #: ../src/ui/tools/text-tool.cpp:373
 msgid "Create text"
@@ -30798,9 +30530,8 @@ msgid "Non-printable character"
 msgstr "Icke skrivbart tecken"
 
 #: ../src/ui/tools/text-tool.cpp:413
-#, fuzzy
 msgid "Insert Unicode character"
-msgstr "_Infoga Unicode-styrtecken"
+msgstr "_Infoga Unicodetecken"
 
 #: ../src/ui/tools/text-tool.cpp:448
 #, fuzzy, c-format
@@ -30856,22 +30587,20 @@ msgstr ""
 
 # TODO
 #: ../src/ui/tools/text-tool.cpp:842
-#, fuzzy
 msgid "No-break space"
-msgstr "Icke-brytande mellanrum"
+msgstr "Hårt mellanslag"
 
 #: ../src/ui/tools/text-tool.cpp:843
-#, fuzzy
 msgid "Insert no-break space"
-msgstr "Lägg till icke-brytande mellanrum"
+msgstr "Lägg till hårt mellanslag"
 
 #: ../src/ui/tools/text-tool.cpp:879
 msgid "Make bold"
-msgstr "Gör Fet"
+msgstr "Gör fet"
 
 #: ../src/ui/tools/text-tool.cpp:896
 msgid "Make italic"
-msgstr "Gör Kursiv"
+msgstr "Gör kursiv"
 
 #: ../src/ui/tools/text-tool.cpp:934
 msgid "New line"
@@ -30911,22 +30640,18 @@ msgid "Rotate clockwise"
 msgstr "Rotera medurs"
 
 #: ../src/ui/tools/text-tool.cpp:1212
-#, fuzzy
 msgid "Contract line spacing"
 msgstr "Minska radavstånd"
 
 #: ../src/ui/tools/text-tool.cpp:1218
-#, fuzzy
 msgid "Contract letter spacing"
 msgstr "Minska teckenmellanrum"
 
 #: ../src/ui/tools/text-tool.cpp:1235
-#, fuzzy
 msgid "Expand line spacing"
 msgstr "Öka radavstånd"
 
 #: ../src/ui/tools/text-tool.cpp:1241
-#, fuzzy
 msgid "Expand letter spacing"
 msgstr "Öka teckenmellanrum"
 
@@ -31126,61 +30851,52 @@ msgstr "Hexadecimalt RGBA-värde för färgen"
 
 #: ../src/ui/widget/color-icc-selector.cpp:163
 #: ../src/ui/widget/color-scales.cpp:365
-#, fuzzy
 msgid "_R:"
-msgstr "_R"
+msgstr "_R:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:164
 #: ../src/ui/widget/color-scales.cpp:368
-#, fuzzy
 msgid "_G:"
-msgstr "_G"
+msgstr "_G:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:165
 #: ../src/ui/widget/color-scales.cpp:371
-#, fuzzy
 msgid "_B:"
-msgstr "_B"
+msgstr "_B:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:167
 #: ../share/extensions/nicechart.inx:70
-#, fuzzy
 msgid "Gray"
 msgstr "Grått"
 
 #: ../src/ui/widget/color-icc-selector.cpp:169
 #: ../src/ui/widget/color-icc-selector.cpp:173
 #: ../src/ui/widget/color-scales.cpp:392 ../src/ui/widget/color-scales.cpp:428
-#, fuzzy
 msgid "_H:"
-msgstr "_N"
+msgstr "_H:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:170
 #: ../src/ui/widget/color-icc-selector.cpp:175
 #: ../src/ui/widget/color-scales.cpp:397 ../src/ui/widget/color-scales.cpp:433
-#, fuzzy
 msgid "_S:"
-msgstr "_M"
+msgstr "_S:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:174
 #: ../src/ui/widget/color-scales.cpp:401
-#, fuzzy
 msgid "_L:"
-msgstr "_I"
+msgstr "_L:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:177
 #: ../src/ui/widget/color-icc-selector.cpp:182
 #: ../src/ui/widget/color-scales.cpp:463
-#, fuzzy
 msgid "_C:"
-msgstr "_C"
+msgstr "_C:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:178
 #: ../src/ui/widget/color-icc-selector.cpp:183
 #: ../src/ui/widget/color-scales.cpp:466
-#, fuzzy
 msgid "_M:"
-msgstr "_M"
+msgstr "_M:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:179
 #: ../src/ui/widget/color-icc-selector.cpp:184
@@ -31190,16 +30906,14 @@ msgstr "_Y:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:180
 #: ../src/ui/widget/color-scales.cpp:472
-#, fuzzy
 msgid "_K:"
-msgstr "_K"
+msgstr "_K:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:297
 msgid "CMS"
 msgstr "CMS"
 
 #: ../src/ui/widget/color-icc-selector.cpp:362
-#, fuzzy
 msgid "Fix"
 msgstr "Fixa"
 
@@ -31211,9 +30925,8 @@ msgstr ""
 #: ../src/ui/widget/color-scales.cpp:374 ../src/ui/widget/color-scales.cpp:405
 #: ../src/ui/widget/color-scales.cpp:441 ../src/ui/widget/color-scales.cpp:475
 #: ../src/ui/widget/color-wheel-selector.cpp:68
-#, fuzzy
 msgid "_A:"
-msgstr "_A"
+msgstr "_A:"
 
 #: ../src/ui/widget/color-icc-selector.cpp:490
 #: ../src/ui/widget/color-icc-selector.cpp:501
@@ -31223,7 +30936,6 @@ msgstr "_A"
 #: ../src/ui/widget/color-scales.cpp:476 ../src/ui/widget/color-scales.cpp:477
 #: ../src/ui/widget/color-wheel-selector.cpp:85
 #: ../src/ui/widget/color-wheel-selector.cpp:101
-#, fuzzy
 msgid "Alpha (opacity)"
 msgstr "Alfa (opacitet)"
 
@@ -31233,12 +30945,10 @@ msgid "Color Managed"
 msgstr "Färghanterad"
 
 #: ../src/ui/widget/color-notebook.cpp:161
-#, fuzzy
 msgid "Out of gamut!"
-msgstr "Utanför färgomfång"
+msgstr "Utanför färgomfång!"
 
 #: ../src/ui/widget/color-notebook.cpp:168
-#, fuzzy
 msgid "Too much ink!"
 msgstr "För mycket bläck!"
 
@@ -31279,9 +30989,8 @@ msgid "Pattern offset"
 msgstr "Förskjutning av mönster"
 
 #: ../src/ui/widget/filter-effect-chooser.cpp:26
-#, fuzzy
 msgid "Blur (%)"
-msgstr "Oskärpa"
+msgstr "Oskärpa (%)"
 
 #: ../src/ui/widget/filter-effect-chooser.cpp:27
 #: ../src/ui/widget/selected-style.cpp:1066
@@ -31314,10 +31023,9 @@ msgid "Ligatures"
 msgstr "Ligaturer"
 
 #: ../src/ui/widget/font-variants.cpp:155
-#, fuzzy
 msgctxt "Font feature"
 msgid "Common"
-msgstr "gemensam"
+msgstr "Gemensam"
 
 #: ../src/ui/widget/font-variants.cpp:156
 #, fuzzy
@@ -31345,7 +31053,6 @@ msgstr "Position"
 
 #: ../src/ui/widget/font-variants.cpp:161
 #: ../src/ui/widget/font-variants.cpp:166
-#, fuzzy
 msgctxt "Font feature"
 msgid "Normal"
 msgstr "Normal"
@@ -31365,7 +31072,7 @@ msgstr "Växla Superscript"
 #: ../src/ui/widget/font-variants.cpp:165
 msgctxt "Font feature"
 msgid "Capitals"
-msgstr ""
+msgstr "Stora bokstäver"
 
 #: ../src/ui/widget/font-variants.cpp:167
 #, fuzzy
@@ -31506,16 +31213,14 @@ msgid "JIS04"
 msgstr "JIS04"
 
 #: ../src/ui/widget/font-variants.cpp:193
-#, fuzzy
 msgctxt "Font feature"
 msgid "Simplified"
-msgstr "Förenkla"
+msgstr "Förenklad"
 
 #: ../src/ui/widget/font-variants.cpp:194
-#, fuzzy
 msgctxt "Font feature"
 msgid "Traditional"
-msgstr "Övergång"
+msgstr "Traditionell"
 
 #: ../src/ui/widget/font-variants.cpp:196
 #, fuzzy
@@ -31713,7 +31418,6 @@ msgid "Current layer"
 msgstr "Aktuellt lager"
 
 #: ../src/ui/widget/layer-selector.cpp:569
-#, fuzzy
 msgid "(root)"
 msgstr "(rot)"
 
@@ -31856,9 +31560,8 @@ msgstr "Skala om sidans innehåll..."
 
 #: ../src/ui/widget/page-sizer.cpp:204
 #: ../share/extensions/guides_creator.inx:23
-#, fuzzy
 msgid "Margins"
-msgstr "ArtBox"
+msgstr "Marginaler"
 
 #: ../src/ui/widget/page-sizer.cpp:231
 #, fuzzy
@@ -38141,8 +37844,8 @@ msgid ""
 "Outlines start from \"1/2 D\" up to \"Area width\" total width with \"D\" "
 "steps where D is taken from the nearest tool definition (\"Tool diameter\" "
 "value).\n"
-"Only one offset will be created if the \"Area width\" is equal to \"1/2 D"
-"\".\n"
+"Only one offset will be created if the \"Area width\" is equal to \"1/2 "
+"D\".\n"
 "            "
 msgstr ""
 
@@ -40901,14 +40604,12 @@ msgid "Jitter nodes"
 msgstr "Sprid noder"
 
 #: ../share/extensions/jitternodes.inx:8
-#, fuzzy
 msgid "Maximum displacement in X (px):"
-msgstr "Maximal förskjutning i X, bildpunkter"
+msgstr "Maximal förskjutning i X (bildpunkter):"
 
 #: ../share/extensions/jitternodes.inx:9
-#, fuzzy
 msgid "Maximum displacement in Y (px):"
-msgstr "Maximal förskjutning i Y, bildpunkter"
+msgstr "Maximal förskjutning i Y (bildpunkter):"
 
 #: ../share/extensions/jitternodes.inx:11
 #, fuzzy
@@ -41181,14 +40882,12 @@ msgid "Lorem ipsum"
 msgstr "Lorem ipsum"
 
 #: ../share/extensions/lorem_ipsum.inx:8
-#, fuzzy
 msgid "Number of paragraphs:"
-msgstr "Antal stycken"
+msgstr "Antal stycken:"
 
 #: ../share/extensions/lorem_ipsum.inx:9
-#, fuzzy
 msgid "Sentences per paragraph:"
-msgstr "Meningar per stycke"
+msgstr "Meningar per stycke:"
 
 #: ../share/extensions/lorem_ipsum.inx:10
 #, fuzzy
@@ -41238,26 +40937,22 @@ msgid "Invert fill and stroke colors"
 msgstr "Sött linjefärg"
 
 #: ../share/extensions/markers_strokepaint.inx:14
-#, fuzzy
 msgid "Assign alpha"
-msgstr "Tilldela opacitet"
+msgstr "Sätt opacitet"
 
 #: ../share/extensions/markers_strokepaint.inx:19
-#, fuzzy
 msgid "Assign fill color"
 msgstr "Sätt fyllningsfärg"
 
 #: ../share/extensions/markers_strokepaint.inx:23
-#, fuzzy
 msgid "Assign stroke color"
-msgstr "Sött linjefärg"
+msgstr "Sätt linjefärg"
 
 #: ../share/extensions/measure.inx:3
 msgid "Measure Path"
 msgstr "Mät slinga"
 
 #: ../share/extensions/measure.inx:6
-#, fuzzy
 msgid "Measurement Type:"
 msgstr "Måttyp:"
 
@@ -42093,11 +41788,11 @@ msgstr ""
 
 #: ../share/extensions/param_curves.inx:35
 msgid "X-Function:"
-msgstr "x-Funktion"
+msgstr "x-funktion:"
 
 #: ../share/extensions/param_curves.inx:36
 msgid "Y-Function:"
-msgstr "x-Funktion"
+msgstr "y-funktion:"
 
 #: ../share/extensions/path_mesh_m2p.inx:3
 #, fuzzy
@@ -50138,8 +49833,8 @@ msgstr ""
 #~ msgstr "Invertera nyans"
 
 #~ msgid ""
-#~ "<b>Ctrl</b>: toggle node type, snap handle angle, move hor/vert; <b>Ctrl"
-#~ "+Alt</b>: move along handles"
+#~ "<b>Ctrl</b>: toggle node type, snap handle angle, move hor/vert; "
+#~ "<b>Ctrl+Alt</b>: move along handles"
 #~ msgstr ""
 #~ "<b>Ctrl</b>: växla nodtyp, fäst handtagsvinkel, flytta horisontellt/"
 #~ "vertikalt; <b>Ctrl+Alt</b>: flytta längs handtag"

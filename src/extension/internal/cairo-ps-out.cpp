@@ -23,6 +23,7 @@
 #include "cairo-render-context.h"
 #include "cairo-renderer.h"
 #include "latex-text-renderer.h"
+#include "path-chemistry.h"
 #include <print.h>
 #include "extension/system.h"
 #include "extension/print.h"
@@ -62,8 +63,16 @@ bool CairoEpsOutput::check (Inkscape::Extension::Extension * /*module*/)
 
 static bool
 ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int level, bool texttopath, bool omittext,
-                          bool filtertobitmap, int resolution, const gchar * const exportId, bool exportDrawing, bool exportCanvas, float bleedmargin_px, bool eps = false)
+                          bool filtertobitmap, int resolution, const gchar * const exportId, bool exportDrawing, bool exportCanvas, double bleedmargin_px, bool eps = false)
 {
+    if (texttopath) {
+        assert(!omittext);
+        // Cairo's text-to-path method has numerical precision and font matching
+        // issues (https://gitlab.com/inkscape/inkscape/-/issues/1979).
+        // We get better results by using Inkscape's Object-to-Path method.
+        Inkscape::convert_text_to_curves(doc);
+    }
+
     doc->ensureUpToDate();
 
     SPRoot *root = doc->getRoot();
@@ -72,7 +81,7 @@ ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int l
     bool pageBoundingBox = TRUE;
     if (exportId && strcmp(exportId, "")) {
         // we want to export the given item only
-        base = SP_ITEM(doc->getObjectById(exportId));
+        base = cast<SPItem>(doc->getObjectById(exportId));
         if (!base) {
             throw Inkscape::Extension::Output::export_id_not_found(exportId);
         }
@@ -107,8 +116,9 @@ ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int l
         /* Render document */
         ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
         if (ret) {
-            renderer->renderItem(ctx, root);
-            ret = ctx->finish();
+            /* Render multiple pages */
+            ret = renderer->renderPages(ctx, doc, false);
+            ctx->finish();
         }
     }
 
@@ -175,7 +185,7 @@ CairoPsOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, gchar con
 
     bool new_areaDrawing  = !new_areaPage;
 
-    float bleedmargin_px = 0.;
+    double bleedmargin_px = 0.;
     try {
         bleedmargin_px = mod->get_param_float("bleed");
     } catch(...) {}
@@ -264,7 +274,7 @@ CairoEpsOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, gchar co
 
     bool new_areaDrawing  = !new_areaPage;
 
-    float bleedmargin_px = 0.;
+    double bleedmargin_px = 0.;
     try {
         bleedmargin_px = mod->get_param_float("bleed");
     } catch(...) {}

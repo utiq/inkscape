@@ -47,10 +47,11 @@ public:
     CloneTiler();
     ~CloneTiler() override;
 
-    static CloneTiler &getInstance() { return *new CloneTiler(); }
     void show_page_trace();
+
 protected:
-    enum PickType {
+    enum PickType
+    {
         PICK_COLOR,
         PICK_OPACITY,
         PICK_R,
@@ -146,9 +147,6 @@ protected:
 
 
 private:
-    CloneTiler(CloneTiler const &d) = delete;
-    CloneTiler& operator=(CloneTiler const &d) = delete;
-
     UI::Widget::CheckButtonInternal *_b;
     UI::Widget::CheckButtonInternal *_cb_keep_bbox;
     Gtk::Notebook *nb = nullptr;
@@ -161,8 +159,6 @@ private:
 
     sigc::connection selectChangedConn;
     sigc::connection externChangedConn;
-    sigc::connection subselChangedConn;
-    sigc::connection selectModifiedConn;
     sigc::connection color_changed_connection;
     sigc::connection unitChangedConn;
 
@@ -170,8 +166,8 @@ private:
     Gtk::Box *_buttons_on_tiles;
     Gtk::Box *_dotrace;
     Gtk::Label *_status;
-    Gtk::Box *_rowscols;
-    Gtk::Box *_widthheight;
+    std::vector<Gtk::Widget*> _rowscols;
+    std::vector<Gtk::Widget*> _widthheight;
 };
 
 enum {

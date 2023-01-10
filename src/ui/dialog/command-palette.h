@@ -12,6 +12,9 @@
 #ifndef INKSCAPE_DIALOG_COMMAND_PALETTE_H
 #define INKSCAPE_DIALOG_COMMAND_PALETTE_H
 
+#include <utility>
+#include <vector>
+
 #include <giomm/action.h>
 #include <giomm/application.h>
 #include <glibmm/refptr.h>
@@ -28,12 +31,9 @@
 #include <gtkmm/searchbar.h>
 #include <gtkmm/searchentry.h>
 #include <gtkmm/viewport.h>
-#include <utility>
-#include <vector>
 
 #include "inkscape.h"
 #include "ui/dialog/align-and-distribute.h"
-#include "verbs.h"
 
 namespace Inkscape {
 namespace UI {
@@ -48,6 +48,7 @@ enum class TypeOfVariant
     INT,
     DOUBLE,
     STRING,
+    TUPLE_DD
 };
 
 enum class CPMode
@@ -201,7 +202,7 @@ private: // Signal handlers
     static TypeOfVariant get_action_variant_type(const ActionPtr &action_ptr);
 
     static std::pair<Gtk::Label *, Gtk::Label *> get_name_desc(Gtk::ListBoxRow *child);
-    Gtk::Button *get_full_action_name(Gtk::ListBoxRow *child);
+    Gtk::Label *get_full_action_name(Gtk::ListBoxRow *child);
 
 private: // variables
     // Widgets
@@ -231,7 +232,7 @@ private: // variables
     // History
     CPHistoryXML _history_xml;
     /**
-     * Remember the mode we are in helps in unecessary signal disconnection and reconnection
+     * Remember the mode we are in helps in unnecessary signal disconnection and reconnection
      * Used by set_mode()
      */
     CPMode _mode = CPMode::SHELL;
@@ -239,7 +240,7 @@ private: // variables
     // set_mode() switches between mode hence checks if it already in the target mode.
     // Constructed value is sometimes SEARCH being the first Item for now
     // set_mode() never attaches the on search listener then
-    // This initialising value can be any thing ohter than the initial required mode
+    // This initialising value can be any thing other than the initial required mode
     // Example currently it's open in search mode
 
     /**

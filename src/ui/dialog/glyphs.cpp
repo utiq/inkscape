@@ -25,27 +25,21 @@
 #include "document.h" // for SPDocumentUndo::done()
 #include "selection.h"
 #include "text-editing.h"
-#include "verbs.h"
 
 #include "libnrtype/font-instance.h"
 #include "libnrtype/font-lister.h"
+#include "libnrtype/font-factory.h"
 
 #include "object/sp-flowtext.h"
 #include "object/sp-text.h"
 
+#include "ui/icon-names.h"
 #include "ui/widget/font-selector.h"
 #include "ui/widget/scrollprotected.h"
 
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
-
-
-GlyphsPanel &GlyphsPanel::getInstance()
-{
-    return *new GlyphsPanel();
-}
-
 
 static std::map<GUnicodeScript, Glib::ustring> & getScriptToName()
 {
@@ -421,10 +415,9 @@ GlyphColumns *GlyphsPanel::getColumns()
  * Constructor
  */
 GlyphsPanel::GlyphsPanel()
-    : DialogBase("/dialogs/glyphs", SP_VERB_DIALOG_GLYPHS)
+    : DialogBase("/dialogs/glyphs", "Glyphs")
     , store(Gtk::ListStore::create(*getColumns()))
     , instanceConns()
-    , desktopConns()
 {
     set_orientation(Gtk::ORIENTATION_VERTICAL);
     auto table = new Gtk::Grid();
@@ -528,7 +521,7 @@ GlyphsPanel::GlyphsPanel()
 
     Gtk::Box *box = new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
 
-    entry = Glib::RefPtr<Gtk::Entry>(new Gtk::Entry());
+    entry = std::make_shared<Gtk::Entry>();
     conn = entry->signal_changed().connect(sigc::mem_fun(*this, &GlyphsPanel::calcCanInsert));
     instanceConns.push_back(conn);
     entry->set_width_chars(18);
@@ -537,13 +530,13 @@ GlyphsPanel::GlyphsPanel()
     Gtk::Label *pad = new Gtk::Label("    ");
     box->pack_start(*Gtk::manage(pad), Gtk::PACK_SHRINK);
 
-    label = Glib::RefPtr<Gtk::Label>(new Gtk::Label("      "));
+    label = std::make_shared<Gtk::Label>("      ");
     box->pack_start(*label.get(), Gtk::PACK_SHRINK);
 
     pad = new Gtk::Label("");
     box->pack_start(*Gtk::manage(pad), Gtk::PACK_EXPAND_WIDGET);
 
-    insertBtn = Glib::RefPtr<Gtk::Button>(new Gtk::Button(_("Append")));
+    insertBtn = std::make_shared<Gtk::Button>(_("Append"));
     conn = insertBtn->signal_clicked().connect(sigc::mem_fun(*this, &GlyphsPanel::insertText));
     instanceConns.push_back(conn);
     insertBtn->set_can_default();
@@ -563,52 +556,38 @@ GlyphsPanel::GlyphsPanel()
 
 GlyphsPanel::~GlyphsPanel()
 {
-    setDesktop(nullptr);
     for (auto & instanceConn : instanceConns) {
         instanceConn.disconnect();
     }
     instanceConns.clear();
 }
 
-void GlyphsPanel::setDesktop(SPDesktop *desktop)
+void GlyphsPanel::selectionChanged(Selection *selection)
 {
-    if ( desktop != _desktop ) {
-        for (auto & desktopConn : desktopConns) {
-            desktopConn.disconnect();
-        }
-        desktopConns.clear();
-
-        _desktop = desktop;
-
-        if (desktop && desktop->selection) {
-            sigc::connection conn = desktop->selection->connectChanged(sigc::hide(sigc::bind(sigc::mem_fun(*this, &GlyphsPanel::readSelection), true, true)));
-            desktopConns.push_back(conn);
-
-            // Text selection within selected items has changed:
-            conn = desktop->connectToolSubselectionChanged(sigc::hide(sigc::bind(sigc::mem_fun(*this, &GlyphsPanel::readSelection), true, false)));
-            desktopConns.push_back(conn);
-
-            // Must check flags, so can't call performUpdate() directly.
-            conn = desktop->selection->connectModified(sigc::hide<0>(sigc::mem_fun(*this, &GlyphsPanel::selectionModifiedCB)));
-            desktopConns.push_back(conn);
-
-            readSelection(true, true);
-        }
-    }
+    readSelection(true, true);
 }
-
-void GlyphsPanel::update()
+void GlyphsPanel::selectionModified(Selection *selection, guint flags)
 {
-    setDesktop(getDesktop());
+    bool style = ((flags & ( SP_OBJECT_CHILD_MODIFIED_FLAG |
+                             SP_OBJECT_STYLE_MODIFIED_FLAG  )) != 0 );
+
+    bool content = ((flags & ( SP_OBJECT_CHILD_MODIFIED_FLAG |
+                               SP_TEXT_CONTENT_MODIFIED_FLAG  )) != 0 );
+
+    readSelection(style, content);
 }
 
 // Append selected glyphs to selected text
 void GlyphsPanel::insertText()
 {
+    auto selection = getSelection();
+    if (!selection)
+        return;
+
     SPItem *textItem = nullptr;
-    auto itemlist= _desktop->selection->items();
+    auto itemlist = selection->items();
         for(auto i=itemlist.begin(); itemlist.end() != i; ++i) {
-            if (SP_IS_TEXT(*i) || SP_IS_FLOWTEXT(*i)) {
+            if (is<SPText>(*i) || is<SPFlowtext>(*i)) {
             textItem = *i;
             break;
         }
@@ -633,7 +612,7 @@ void GlyphsPanel::insertText()
             Glib::ustring combined = sp_te_get_string_multiline(textItem);
             combined += glyphs;
             sp_te_set_repr_text_multiline(textItem, combined.c_str());
-            DocumentUndo::done(_desktop->doc(), SP_VERB_CONTEXT_TEXT, _("Append text"));
+            DocumentUndo::done(getDocument(), _("Append text"), INKSCAPE_ICON("draw-text"));
         }
     }
 }
@@ -680,23 +659,16 @@ void GlyphsPanel::glyphSelectionChanged()
     calcCanInsert();
 }
 
-void GlyphsPanel::selectionModifiedCB(guint flags)
-{
-    bool style = ((flags & ( SP_OBJECT_CHILD_MODIFIED_FLAG |
-                             SP_OBJECT_STYLE_MODIFIED_FLAG  )) != 0 );
-
-    bool content = ((flags & ( SP_OBJECT_CHILD_MODIFIED_FLAG |
-                               SP_TEXT_CONTENT_MODIFIED_FLAG  )) != 0 );
-
-    readSelection(style, content);
-}
-
 void GlyphsPanel::calcCanInsert()
 {
+    auto selection = getSelection();
+    if (!selection)
+        return;
+
     int items = 0;
-    auto itemlist = _desktop->selection->items();
+    auto itemlist = selection->items();
     for(auto i=itemlist.begin(); itemlist.end() != i; ++i) {
-        if (SP_IS_TEXT(*i) || SP_IS_FLOWTEXT(*i)) {
+        if (is<SPText>(*i) || is<SPFlowtext>(*i)) {
             ++items;
         }
     }
@@ -732,9 +704,9 @@ void GlyphsPanel::rebuild()
 {
     Glib::ustring fontspec = fontSelector->get_fontspec();
 
-    font_instance* font = nullptr;
-    if( !fontspec.empty() ) {
-        font = font_factory::Default()->FaceFromFontSpecification( fontspec.c_str() );
+    std::shared_ptr<FontInstance> font;
+    if (!fontspec.empty()) {
+        font = FontFactory::get().FaceFromFontSpecification(fontspec.c_str());
     }
 
     if (font) {

@@ -17,7 +17,12 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include "snap-enums.h"
 #include "snapped-point.h"
+#include "display/control/canvas-item-curve.h"
+
+#include <glib.h>
+#include <glibmm/i18n.h>
 
 class SPDesktop;
 
@@ -45,6 +50,9 @@ protected:
     TemporaryItem *_snaptarget_tooltip;
     TemporaryItem *_snaptarget_bbox;
     TemporaryItem *_snapsource;
+
+    std::list<TemporaryItem *> _alignment_snap_indicators;
+    std::list<TemporaryItem *> _distribution_snap_indicators;
     std::list<TemporaryItem *> _debugging_points;
     bool _snaptarget_is_presnap;
     SPDesktop *_desktop;
@@ -52,6 +60,12 @@ protected:
 private:
     SnapIndicator(const SnapIndicator&) = delete;
     SnapIndicator& operator=(const SnapIndicator&) = delete;
+
+    void make_distribution_indicators(SnappedPoint const &p, double fontsize, double scale);
+    void make_alignment_indicator(Geom::Point const &p1, Geom::Point const &p2, guint32 color, double fontsize, double scale);
+    guint32 get_guide_color(SnapTargetType t);
+    Inkscape::CanvasItemCurve* make_stub_line_h(Geom::Point const &p);
+    Inkscape::CanvasItemCurve* make_stub_line_v(Geom::Point const &p);
 };
 
 } //namespace Display

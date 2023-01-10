@@ -16,6 +16,16 @@
 #ifndef INKSCAPE_UI_DIALOG_INKSCAPE_PREFERENCES_H
 #define INKSCAPE_UI_DIALOG_INKSCAPE_PREFERENCES_H
 
+// checking if cairo supports dithering
+#include <gtkmm/sizegroup.h>
+#ifdef  WITH_PATCHED_CAIRO
+#include "3rdparty/cairo/src/cairo.h"
+#else
+#include <cairo.h>
+#endif
+
+
+
 #include <gtkmm/treerowreference.h>
 #include <iostream>
 #include <iterator>
@@ -43,7 +53,8 @@
 // UPDATE THIS IF YOU'RE ADDING PREFS PAGES.
 // Otherwise the commands that open the dialog with the new page will fail.
 
-enum {
+enum
+{
     PREFS_PAGE_TOOLS,
     PREFS_PAGE_TOOLS_SELECTOR,
     PREFS_PAGE_TOOLS_NODE,
@@ -69,21 +80,24 @@ enum {
     PREFS_PAGE_TOOLS_LPETOOL,
     PREFS_PAGE_UI,
     PREFS_PAGE_UI_THEME,
+    PREFS_PAGE_UI_TOOLBARS,
     PREFS_PAGE_UI_WINDOWS,
+    PREFS_PAGE_UI_COLOR_PICKERS,
     PREFS_PAGE_UI_GRIDS,
     PREFS_PAGE_COMMAND_PALETTE,
     PREFS_PAGE_UI_KEYBOARD_SHORTCUTS,
     PREFS_PAGE_BEHAVIOR,
     PREFS_PAGE_BEHAVIOR_SELECTING,
     PREFS_PAGE_BEHAVIOR_TRANSFORMS,
-    PREFS_PAGE_BEHAVIOR_DASHES,
     PREFS_PAGE_BEHAVIOR_SCROLLING,
     PREFS_PAGE_BEHAVIOR_SNAPPING,
     PREFS_PAGE_BEHAVIOR_STEPS,
     PREFS_PAGE_BEHAVIOR_CLONES,
     PREFS_PAGE_BEHAVIOR_MASKS,
     PREFS_PAGE_BEHAVIOR_MARKERS,
+    PREFS_PAGE_BEHAVIOR_CLIPBOARD,
     PREFS_PAGE_BEHAVIOR_CLEANUP,
+    PREFS_PAGE_BEHAVIOR_LPE,
     PREFS_PAGE_IO,
     PREFS_PAGE_IO_MOUSE,
     PREFS_PAGE_IO_SVGOUTPUT,
@@ -109,9 +123,10 @@ namespace Dialog {
 class InkscapePreferences : public DialogBase
 {
 public:
+    InkscapePreferences();
     ~InkscapePreferences() override;
 
-    static InkscapePreferences &getInstance() { return *new InkscapePreferences(); }
+    void showPage(); // Show page indicated by "/dialogs/preferences/page".
 
 protected:
     Gtk::Frame _page_frame;
@@ -125,6 +140,7 @@ protected:
     std::vector<Gtk::Widget *> _search_results;
     Glib::RefPtr<Glib::Regex> _rx;
     int _num_results = 0;
+    bool _show_all = false;
 
     //Pagelist model columns:
     class PageListModelColumns : public Gtk::TreeModel::ColumnRecord
@@ -166,21 +182,24 @@ protected:
     UI::Widget::DialogPage _page_ui;
     UI::Widget::DialogPage _page_notfound;
     UI::Widget::DialogPage _page_theme;
+    UI::Widget::DialogPage _page_toolbars;
     UI::Widget::DialogPage _page_windows;
     UI::Widget::DialogPage _page_grids;
     UI::Widget::DialogPage _page_command_palette;
+    UI::Widget::DialogPage _page_color_pickers;
 
     UI::Widget::DialogPage _page_behavior;
     UI::Widget::DialogPage _page_select;
     UI::Widget::DialogPage _page_transforms;
-    UI::Widget::DialogPage _page_dashes;
     UI::Widget::DialogPage _page_scrolling;
     UI::Widget::DialogPage _page_snapping;
     UI::Widget::DialogPage _page_steps;
     UI::Widget::DialogPage _page_clones;
     UI::Widget::DialogPage _page_mask;
     UI::Widget::DialogPage _page_markers;
+    UI::Widget::DialogPage _page_clipboard;
     UI::Widget::DialogPage _page_cleanup;
+    UI::Widget::DialogPage _page_lpe;
 
     UI::Widget::DialogPage _page_io;
     UI::Widget::DialogPage _page_mouse;
@@ -215,6 +234,7 @@ protected:
     UI::Widget::PrefCheckButton _snap_indicator;
     UI::Widget::PrefCheckButton _snap_closest_only;
     UI::Widget::PrefCheckButton _snap_mouse_pointer;
+    UI::Widget::PrefCheckButton _snap_indicator_distance;
 
     UI::Widget::PrefCombo       _steps_rot_snap;
     UI::Widget::PrefCheckButton _steps_rot_relative;
@@ -257,6 +277,8 @@ protected:
     UI::Widget::PrefCombo _icon_theme;
     UI::Widget::PrefCheckButton _dark_theme;
     UI::Widget::PrefSlider _contrast_theme;
+    UI::Widget::PrefCheckButton _narrow_spinbutton;
+    UI::Widget::PrefCheckButton _compact_colorselector;
     UI::Widget::PrefCheckButton _symbolic_icons;
     UI::Widget::PrefCheckButton _symbolic_base_colors;
     UI::Widget::PrefCheckButton _symbolic_highlight_colors;
@@ -269,6 +291,7 @@ protected:
     UI::Widget::PrefCombo _misc_small_secondary;
     UI::Widget::PrefCombo _misc_small_tools;
     UI::Widget::PrefCombo _menu_icons;
+    UI::Widget::PrefCheckButton _shift_icons;
 
     UI::Widget::PrefRadioButton _win_dockable;
     UI::Widget::PrefRadioButton _win_floating;
@@ -281,6 +304,7 @@ protected:
     UI::Widget::PrefRadioButton _win_ontop_normal;
     UI::Widget::PrefRadioButton _win_ontop_agressive;
     UI::Widget::PrefRadioButton _win_dialogs_labels_auto;
+    UI::Widget::PrefRadioButton _win_dialogs_labels_active;
     UI::Widget::PrefRadioButton _win_dialogs_labels_off;
     UI::Widget::PrefRadioButton _win_save_geom_off;
     UI::Widget::PrefRadioButton _win_save_geom;
@@ -306,11 +330,18 @@ protected:
 
     UI::Widget::PrefCheckButton _mask_mask_on_top;
     UI::Widget::PrefCheckButton _mask_mask_remove;
+    UI::Widget::PrefCheckButton _mask_mask_on_ungroup;
     UI::Widget::PrefRadioButton _mask_grouping_none;
     UI::Widget::PrefRadioButton _mask_grouping_separate;
     UI::Widget::PrefRadioButton _mask_grouping_all;
     UI::Widget::PrefCheckButton _mask_ungrouping;
 
+    UI::Widget::PrefSpinButton  _filter_multi_threaded;
+    UI::Widget::PrefSpinButton  _rendering_cache_size;
+    UI::Widget::PrefSpinButton  _rendering_xray_radius;
+    UI::Widget::PrefSpinButton  _rendering_outline_overlay_opacity;
+    UI::Widget::PrefCombo       _canvas_update_strategy;
+    UI::Widget::PrefCheckButton _canvas_request_opengl;
     UI::Widget::PrefRadioButton _blur_quality_best;
     UI::Widget::PrefRadioButton _blur_quality_better;
     UI::Widget::PrefRadioButton _blur_quality_normal;
@@ -321,25 +352,40 @@ protected:
     UI::Widget::PrefRadioButton _filter_quality_normal;
     UI::Widget::PrefRadioButton _filter_quality_worse;
     UI::Widget::PrefRadioButton _filter_quality_worst;
-    UI::Widget::PrefCheckButton _show_filters_info_box;
-    UI::Widget::PrefCombo       _dockbar_style;
-    UI::Widget::PrefCombo       _switcher_style;
-    UI::Widget::PrefCheckButton _rendering_image_outline;
-    UI::Widget::PrefSpinButton  _rendering_cache_size;
-    UI::Widget::PrefSpinButton  _rendering_tile_multiplier;
-    UI::Widget::PrefSpinButton  _rendering_xray_radius;
-    UI::Widget::PrefSpinButton  _rendering_outline_overlay_opacity;
-    UI::Widget::PrefCombo       _rendering_redraw_priority;
-    UI::Widget::PrefSpinButton  _filter_multi_threaded;
+#ifdef CAIRO_HAS_DITHER
+    UI::Widget::PrefCheckButton _cairo_dithering;
+#endif
+
+    UI::Widget::PrefCheckButton _canvas_developer_mode_enabled;
+    UI::Widget::PrefSpinButton  _canvas_tile_size;
+    UI::Widget::PrefSpinButton  _canvas_render_time_limit;
+    UI::Widget::PrefCheckButton _canvas_block_updates;
+    UI::Widget::PrefCombo       _canvas_pixelstreamer_method;
+    UI::Widget::PrefSpinButton  _canvas_padding;
+    UI::Widget::PrefSpinButton  _canvas_prerender;
+    UI::Widget::PrefSpinButton  _canvas_preempt;
+    UI::Widget::PrefSpinButton  _canvas_coarsener_min_size;
+    UI::Widget::PrefSpinButton  _canvas_coarsener_glue_size;
+    UI::Widget::PrefSpinButton  _canvas_coarsener_min_fullness;
+    UI::Widget::PrefCheckButton _canvas_debug_framecheck;
+    UI::Widget::PrefCheckButton _canvas_debug_logging;
+    UI::Widget::PrefCheckButton _canvas_debug_delay_redraw;
+    UI::Widget::PrefSpinButton  _canvas_debug_delay_redraw_time;
+    UI::Widget::PrefCheckButton _canvas_debug_show_redraw;
+    UI::Widget::PrefCheckButton _canvas_debug_show_unclean;
+    UI::Widget::PrefCheckButton _canvas_debug_show_snapshot;
+    UI::Widget::PrefCheckButton _canvas_debug_show_clean;
+    UI::Widget::PrefCheckButton _canvas_debug_disable_redraw;
+    UI::Widget::PrefCheckButton _canvas_debug_sticky_decoupled;
+    UI::Widget::PrefCheckButton _canvas_debug_animate;
 
     UI::Widget::PrefCheckButton _trans_scale_stroke;
     UI::Widget::PrefCheckButton _trans_scale_corner;
     UI::Widget::PrefCheckButton _trans_gradient;
     UI::Widget::PrefCheckButton _trans_pattern;
+    UI::Widget::PrefCheckButton _trans_dash_scale;
     UI::Widget::PrefRadioButton _trans_optimized;
     UI::Widget::PrefRadioButton _trans_preserved;
-
-    UI::Widget::PrefCheckButton _dash_scale;
 
     UI::Widget::PrefRadioButton _sel_all;
     UI::Widget::PrefRadioButton _sel_current;
@@ -347,6 +393,7 @@ protected:
     UI::Widget::PrefCheckButton _sel_hidden;
     UI::Widget::PrefCheckButton _sel_locked;
     UI::Widget::PrefCheckButton _sel_inlayer_same;
+    UI::Widget::PrefCheckButton _sel_touch_topmost_only;
     UI::Widget::PrefCheckButton _sel_layer_deselects;
     UI::Widget::PrefCheckButton _sel_cycle;
 
@@ -354,11 +401,19 @@ protected:
     UI::Widget::PrefCheckButton _markers_color_custom;
     UI::Widget::PrefCheckButton _markers_color_update;
 
+    UI::Widget::PrefRadioButton _clipboard_style_computed;
+    UI::Widget::PrefRadioButton _clipboard_style_verbatim;
+
     UI::Widget::PrefCheckButton _cleanup_swatches;
+
+    UI::Widget::PrefCheckButton _lpe_copy_mirroricons;
+    UI::Widget::PrefCheckButton _lpe_show_experimental;
+    UI::Widget::PrefCheckButton _lpe_show_gallery;
 
     UI::Widget::PrefSpinButton  _importexport_export_res;
     UI::Widget::PrefSpinButton  _importexport_import_res;
     UI::Widget::PrefCheckButton _importexport_import_res_override;
+    UI::Widget::PrefCheckButton _rendering_image_outline;
     UI::Widget::PrefSlider      _snap_delay;
     UI::Widget::PrefSlider      _snap_weight;
     UI::Widget::PrefSlider      _snap_persistence;
@@ -372,13 +427,13 @@ protected:
 
     UI::Widget::PrefCheckButton _misc_comment;
     UI::Widget::PrefCheckButton _misc_default_metadata;
+    UI::Widget::PrefCheckButton _export_all_extensions;
     UI::Widget::PrefCheckButton _misc_forkvectors;
     UI::Widget::PrefSpinButton  _misc_gradientangle;
+    UI::Widget::PrefCheckButton _misc_gradient_collect;
     UI::Widget::PrefCheckButton _misc_scripts;
-    UI::Widget::PrefCheckButton _misc_namedicon_delay;
 
     // System page
-    UI::Widget::PrefSpinButton  _misc_latency_skew;
     UI::Widget::PrefSpinButton  _misc_simpl;
     Gtk::Entry                  _sys_user_prefs;
     Gtk::Entry                  _sys_tmp_files;
@@ -406,12 +461,15 @@ protected:
     UI::Widget::PrefCombo       _ui_languages;
     UI::Widget::PrefCheckButton _ui_colorsliders_top;
     UI::Widget::PrefSpinButton  _misc_recent;
+    UI::Widget::PrefCheckButton _ui_rulersel;
     UI::Widget::PrefCheckButton _ui_realworldzoom;
+    UI::Widget::PrefCheckButton _ui_pageorigin;
     UI::Widget::PrefCheckButton _ui_partialdynamic;
     UI::Widget::ZoomCorrRulerSlider _ui_zoom_correction;
     UI::Widget::PrefCheckButton _ui_yaxisdown;
     UI::Widget::PrefCheckButton _ui_rotationlock;
     UI::Widget::PrefCheckButton _ui_cursorscaling;
+    UI::Widget::PrefCheckButton _ui_cursor_shadow;
 
     //Spellcheck
     UI::Widget::PrefCombo       _spell_language;
@@ -601,7 +659,7 @@ protected:
     Gtk::TreeModel::iterator AddPage(UI::Widget::DialogPage& p, Glib::ustring title, Gtk::TreeModel::iterator parent, int id);
     Gtk::TreePath get_next_result(Gtk::TreeIter& iter, bool check_children = true);
     Gtk::TreePath get_prev_result(Gtk::TreeIter& iter, bool iterate = true);
-    bool PresentPage(const Gtk::TreeModel::iterator& iter);
+    bool matchPage(const Gtk::TreeModel::iterator& iter);
 
     static void AddSelcueCheckbox(UI::Widget::DialogPage& p, Glib::ustring const &prefs_path, bool def_value);
     static void AddGradientCheckbox(UI::Widget::DialogPage& p, Glib::ustring const &prefs_path, bool def_value);
@@ -641,8 +699,6 @@ protected:
     void initPageI18n(); // Do we still need it?
     void initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui);
 
-    void _presentPages();
-
     /*
      * Functions for the Keyboard shortcut editor panel
      */
@@ -663,7 +719,9 @@ protected:
 
 private:
   Gtk::TreeModel::iterator searchRows(char const* srch, Gtk::TreeModel::iterator& iter, Gtk::TreeModel::Children list_model_childern);
-  void themeChange();
+  void themeChange(bool contrastslider = false);
+  void comboThemeChange();
+  void contrastThemeChange();
   void preferDarkThemeChange();
   bool contrastChange(GdkEventButton* button_event);
   void symbolicThemeCheck();
@@ -675,12 +733,9 @@ private:
   void get_highlight_colors(guint32 &colorsetbase, guint32 &colorsetsuccess, guint32 &colorsetwarning,
                             guint32 &colorseterror);
 
-  bool on_outline_overlay_changed(GdkEventFocus * /* focus_event */);
   std::map<Glib::ustring, bool> dark_themes;
-  InkscapePreferences();
-  InkscapePreferences(InkscapePreferences const &d);
-  InkscapePreferences operator=(InkscapePreferences const &d);
   bool _init;
+  Inkscape::PrefObserver _theme_oberver;
 };
 
 } // namespace Dialog

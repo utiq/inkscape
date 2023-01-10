@@ -26,7 +26,7 @@
 #include "desktop.h"
 #include "document.h"
 #include "inkscape.h"
-#include "verbs.h"
+#include "page-manager.h"
 
 #include "display/cairo-utils.h"
 #include "display/drawing.h"
@@ -51,16 +51,6 @@ sp_icon_doc_icon( SPDocument *doc, Inkscape::Drawing &drawing,
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
-
-
-IconPreviewPanel &IconPreviewPanel::getInstance()
-{
-    IconPreviewPanel *instance = new IconPreviewPanel();
-
-    instance->refreshPreview();
-
-    return *instance;
-}
 
 //#########################################################################
 //## E V E N T S
@@ -87,10 +77,9 @@ void IconPreviewPanel::on_button_clicked(int which)
  * Constructor
  */
 IconPreviewPanel::IconPreviewPanel()
-    : DialogBase("/dialogs/iconpreview", SP_VERB_VIEW_ICON_PREVIEW)
-    , desktop(nullptr)
-    , document(nullptr)
+    : DialogBase("/dialogs/iconpreview", "IconPreview")
     , drawing(nullptr)
+    , drawing_doc(nullptr)
     , visionkey(0)
     , timer(nullptr)
     , renderTimer(nullptr)
@@ -242,10 +231,13 @@ IconPreviewPanel::IconPreviewPanel()
     pack_start(iconBox, Gtk::PACK_SHRINK);
 
     show_all_children();
+
+    refreshPreview();
 }
 
 IconPreviewPanel::~IconPreviewPanel()
 {
+    removeDrawing();
     if (timer) {
         timer->stop();
         delete timer;
@@ -280,53 +272,42 @@ static Glib::ustring getTimestr()
 }
 #endif // ICON_VERBOSE
 
-void IconPreviewPanel::update()
+void IconPreviewPanel::selectionModified(Selection *selection, guint flags)
 {
-    if (!_app) {
-        std::cerr << "IconPreviewPanel::update(): _app is null" << std::endl;
-        return;
+    if (getDesktop() && Inkscape::Preferences::get()->getBool("/iconpreview/autoRefresh", true)) {
+        queueRefresh();
     }
-
-    SPDesktop *desktop = getDesktop();
-
-    if (desktop) {
-        this->desktop = desktop;
-
-        if (this->desktop->selection && Inkscape::Preferences::get()->getBool("/iconpreview/autoRefresh", true)) {
-            queueRefresh();
-        }
-    }
-
-    SPDocument *document = _app->get_active_document();
-    setDocument(document);
 }
 
-void IconPreviewPanel::setDocument( SPDocument *document )
+void IconPreviewPanel::documentReplaced()
 {
-    if (this->document != document) {
-        docModConn.disconnect();
-        if (drawing) {
-            this->document->getRoot()->invoke_hide(visionkey);
-            delete drawing;
-            drawing = nullptr;
-        }
-        this->document = document;
-        if (this->document) {
-            drawing = new Inkscape::Drawing();
-            visionkey = SPItem::display_key_new(1);
-            drawing->setRoot(this->document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY));
-
-            if ( Inkscape::Preferences::get()->getBool("/iconpreview/autoRefresh", true) ) {
-                docModConn = this->document->connectModified(sigc::hide(sigc::mem_fun(this, &IconPreviewPanel::queueRefresh)));
-            }
-            queueRefresh();
-        }
+    removeDrawing();
+    drawing_doc = getDocument();
+    if (drawing_doc) {
+        drawing = new Inkscape::Drawing();
+        visionkey = SPItem::display_key_new(1);
+        drawing->setRoot(drawing_doc->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY));
+        docDesConn = drawing_doc->connectDestroy([=]() { removeDrawing(); });
+        queueRefresh();
     }
+}
+
+/// Safely delete the Inkscape::Drawing and references to it.
+void IconPreviewPanel::removeDrawing()
+{
+    docDesConn.disconnect();
+    if (!drawing) {
+        return;
+    }
+    drawing_doc->getRoot()->invoke_hide(visionkey);
+    delete drawing;
+    drawing = nullptr;
+    drawing_doc = nullptr;
 }
 
 void IconPreviewPanel::refreshPreview()
 {
-    SPDesktop *desktop = getDesktop();
+    auto document = getDocument();
     if (!timer) {
         timer = new Glib::Timer();
     }
@@ -336,7 +317,7 @@ void IconPreviewPanel::refreshPreview()
 #endif //ICON_VERBOSE
         // Do not refresh too quickly
         queueRefresh();
-    } else if ( desktop && desktop->doc() ) {
+    } else if (document) {
 #if ICON_VERBOSE
         g_message( "%s Refreshing preview.", getTimestr().c_str() );
 #endif // ICON_VERBOSE
@@ -344,18 +325,12 @@ void IconPreviewPanel::refreshPreview()
         SPObject *target = nullptr;
         if ( selectionButton && selectionButton->get_active() )
         {
-            target = (hold && !targetId.empty()) ? desktop->doc()->getObjectById( targetId.c_str() ) : nullptr;
+            target = (hold && !targetId.empty()) ? document->getObjectById( targetId.c_str() ) : nullptr;
             if ( !target ) {
                 targetId.clear();
-                Inkscape::Selection * sel = desktop->getSelection();
-                if ( sel ) {
-                    //g_message("found a selection to play with");
-
-                	auto items = sel->items();
-                    for(auto i=items.begin();!target && i!=items.end();++i){
-                        SPItem* item = *i;
-                        gchar const *id = item->getId();
-                        if ( id ) {
+                if (auto selection = getSelection()) {
+                    for (auto item : selection->items()) {
+                        if (gchar const *id = item->getId()) {
                             targetId = id;
                             target = item;
                         }
@@ -363,9 +338,9 @@ void IconPreviewPanel::refreshPreview()
                 }
             }
         } else {
-            target = desktop->currentRoot();
+            target = getDesktop()->getDocument()->getRoot();
         }
-        if ( target ) {
+        if (target) {
             renderPreview(target);
         }
 #if ICON_VERBOSE
@@ -405,7 +380,7 @@ void IconPreviewPanel::queueRefresh()
         if (!timer) {
             timer = new Glib::Timer();
         }
-        Glib::signal_idle().connect( sigc::mem_fun(this, &IconPreviewPanel::refreshCB), Glib::PRIORITY_DEFAULT_IDLE );
+        Glib::signal_idle().connect( sigc::mem_fun(*this, &IconPreviewPanel::refreshCB), Glib::PRIORITY_DEFAULT_IDLE );
     }
 }
 
@@ -489,15 +464,14 @@ sp_icon_doc_icon( SPDocument *doc, Inkscape::Drawing &drawing,
 
     if (doc) {
         SPObject *object = doc->getObjectById(name);
-        if (object && SP_IS_ITEM(object)) {
-            SPItem *item = SP_ITEM(object);
+        if (object && is<SPItem>(object)) {
+            auto item = cast<SPItem>(object);
             // Find bbox in document
             Geom::OptRect dbox = item->documentVisualBounds();
 
             if ( object->parent == nullptr )
             {
-                dbox = Geom::Rect(Geom::Point(0, 0),
-                                Geom::Point(doc->getWidth().value("px"), doc->getHeight().value("px")));
+                dbox = *(doc->preferredBounds());
             }
 
             /* This is in document coordinates, i.e. pixels */
@@ -575,14 +549,10 @@ sp_icon_doc_icon( SPDocument *doc, Inkscape::Drawing &drawing,
                     CAIRO_FORMAT_ARGB32, psize, psize, stride);
                 Inkscape::DrawingContext dc(s, ua.min());
 
-                SPNamedView *nv = sp_document_namedview(doc, nullptr);
-                float bg_r = SP_RGBA32_R_F(nv->pagecolor);
-                float bg_g = SP_RGBA32_G_F(nv->pagecolor);
-                float bg_b = SP_RGBA32_B_F(nv->pagecolor);
-                float bg_a = SP_RGBA32_A_F(nv->pagecolor);
+                auto bg = doc->getPageManager().getDefaultBackgroundColor();
 
                 cairo_t *cr = cairo_create(s);
-                cairo_set_source_rgba(cr, bg_r, bg_g, bg_b, bg_a);
+                cairo_set_source_rgba(cr, bg[0], bg[1], bg[2], bg[3]);
                 cairo_rectangle(cr, 0, 0, psize, psize);
                 cairo_fill(cr);
                 cairo_save(cr);

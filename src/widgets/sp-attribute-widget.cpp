@@ -22,7 +22,6 @@
 #include "include/macros.h"
 #include "document.h"
 #include "document-undo.h"
-#include "verbs.h"
 
 #include "include/gtkmm_version.h"
 
@@ -137,7 +136,6 @@ void SPAttributeTable::set_object(SPObject *object,
                             std::vector<Glib::ustring> &attributes,
                             GtkWidget* parent)
 {
-    g_return_if_fail (!object || SP_IS_OBJECT (object));
     g_return_if_fail (!object || !labels.empty() || !attributes.empty());
     g_return_if_fail (labels.size() == attributes.size());
 
@@ -196,7 +194,6 @@ void SPAttributeTable::set_object(SPObject *object,
 
 void SPAttributeTable::change_object(SPObject *object)
 {
-    g_return_if_fail (!object || SP_IS_OBJECT (object));
     if (_object)
     {
         modified_connection.disconnect();
@@ -272,8 +269,7 @@ static void sp_attribute_table_entry_changed ( Gtk::Entry *editable,
                 Glib::ustring text = e->get_text ();
                 if (spat->_object) {
                     spat->_object->getRepr()->setAttribute(attributes[i], text);
-                    DocumentUndo::done(spat->_object->document, SP_VERB_NONE,
-                                       _("Set attribute"));
+                    DocumentUndo::done(spat->_object->document, _("Set attribute"), "");
                 }
                 spat->blocked = false;
                 return;

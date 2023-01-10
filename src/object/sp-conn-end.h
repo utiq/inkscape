@@ -60,7 +60,6 @@ void sp_conn_reroute_path_immediate(SPPath *const path);
 void sp_conn_redraw_path(SPPath *const path);
 void sp_conn_end_detach(SPObject *const owner, unsigned const handle_ix);
 
-
 #endif /* !SEEN_SP_CONN_END */
 
 /*

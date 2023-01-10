@@ -37,9 +37,10 @@ public:
 
     static void clearRedo(SPDocument *document);
 
-    static void done(SPDocument *document, unsigned int event_type, Glib::ustring const &event_description);
+    /* undo_icon is only used in History dialog. */
+    static void done(SPDocument *document, Glib::ustring const &event_description, Glib::ustring const &undo_icon);
 
-    static void maybeDone(SPDocument *document, const gchar *keyconst, unsigned int event_type, Glib::ustring const &event_description);
+    static void maybeDone(SPDocument *document, const gchar *keyconst, Glib::ustring const &event_description, Glib::ustring const &undo_icon, bool ended = false);
 
 private:
     static void finish_incomplete_transaction(SPDocument &document);
@@ -60,8 +61,9 @@ public:
      *
      * \verbatim
         {
-            DocumentUndo::ScopedInsensitive tmp(document);
+            DocumentUndo::ScopedInsensitive tmp(document, doit);
             ... do stuff ...
+            // when doit is true we go to ScopedInsensitive mode else keep current sensitive mode
             // "tmp" goes out of scope here and automatically restores undo-sensitivity
         } \endverbatim
      */
@@ -70,11 +72,11 @@ public:
         bool m_saved;
 
       public:
-        ScopedInsensitive(SPDocument *doc)
+        ScopedInsensitive(SPDocument *doc, bool doit = true)
             : m_doc(doc)
         {
             m_saved = getUndoSensitive(doc);
-            setUndoSensitive(doc, false);
+            setUndoSensitive(doc, doit ? false : m_saved);
         }
         ~ScopedInsensitive() { setUndoSensitive(m_doc, m_saved); }
     };

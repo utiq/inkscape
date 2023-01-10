@@ -17,6 +17,7 @@
 
 #include <2geom/point.h>
 #include <2geom/rect.h>
+#include <2geom/pathvector.h>
 #include <cstdio>
 #include <utility>
 
@@ -38,7 +39,8 @@ public:
         _target_type(target),
         _source_num(source_num),
         _target_bbox(std::move(bbox)),
-        _dist()
+        _dist(),
+        _alignment(false)
     {
     };
 
@@ -47,7 +49,8 @@ public:
         _source_type(source),
         _target_type(target),
         _target_bbox(Geom::OptRect()),
-        _dist()
+        _dist(),
+        _alignment(true)
     {
         _source_num = -1;
     }
@@ -58,7 +61,8 @@ public:
         _target_type(Inkscape::SNAPTARGET_UNDEFINED),
         _source_num(-1),
         _target_bbox(Geom::OptRect()),
-        _dist()
+        _dist(),
+        _alignment(true)
     {
     };
 
@@ -80,6 +84,7 @@ public:
     bool operator <(const SnapCandidatePoint &other) const { return _dist < other._dist; } // Needed for sorting the SnapCandidatePoints
     inline Geom::OptRect const getTargetBBox() const {return _target_bbox;}
 
+    inline bool considerForAlignment() const {return _alignment;}
 private:
     // Coordinates of the point
     Geom::Point _point;
@@ -108,6 +113,9 @@ private:
 
     // For finding the snap candidate closest to the mouse pointer
     Geom::Coord _dist;
+
+    // Consider this point for alignment snapping
+    bool _alignment;
 };
 
 class SnapCandidateItem
@@ -132,11 +140,10 @@ class SnapCandidatePath
 {
 
 public:
-    SnapCandidatePath(Geom::PathVector* path, SnapTargetType target, Geom::OptRect bbox, bool edited = false)
-        : path_vector(path), target_type(target), target_bbox(std::move(bbox)), currently_being_edited(edited) {};
-    ~SnapCandidatePath() = default;;
+    SnapCandidatePath(Geom::PathVector path, SnapTargetType target, Geom::OptRect bbox, bool edited = false)
+        : path_vector(std::move(path)), target_type(target), target_bbox(std::move(bbox)), currently_being_edited(edited) {};
 
-    Geom::PathVector* path_vector;
+    Geom::PathVector path_vector;
     SnapTargetType target_type;
     Geom::OptRect target_bbox;
     bool currently_being_edited; // true for the path that's currently being edited in the node tool (if any)

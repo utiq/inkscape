@@ -38,13 +38,13 @@ class InkscapeWindow : public Gtk::ApplicationWindow {
 
 public:
     InkscapeWindow(SPDocument* document);
+    ~InkscapeWindow() override;
 
     SPDocument*      get_document()       { return _document; }
     SPDesktop*       get_desktop()        { return _desktop; }
     SPDesktopWidget* get_desktop_widget() { return _desktop_widget; }
 
     void change_document(SPDocument* document);
-    void on_selection_changed();
 
 private:
     InkscapeApplication *_app = nullptr;
@@ -54,14 +54,16 @@ private:
     SPDesktopWidget*     _desktop_widget;
 
     Gtk::Box*      _mainbox;
-    Gtk::MenuBar*  _menubar;
 
     void setup_view();
 
     // Callbacks
+public:
     bool on_key_press_event(GdkEventKey* event) override;
+private:
     bool on_focus_in_event(GdkEventFocus* event) override;
     bool on_delete_event(GdkEventAny* event) override;
+    bool on_configure_event(GdkEventConfigure *event) override;
 
     // Helpers
     void update_dialogs();

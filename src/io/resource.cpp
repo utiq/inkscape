@@ -59,6 +59,7 @@ gchar *_get_path(Domain domain, Type type, char const *filename)
 
     char const *name = nullptr;
     char const *sysdir = nullptr;
+    char const *envor = nullptr;
 
     switch (domain) {
         case CREATE: {
@@ -81,7 +82,7 @@ gchar *_get_path(Domain domain, Type type, char const *filename)
                 case ATTRIBUTES: name = "attributes"; break;
                 case DOCS: name = "doc"; break;
                 case EXAMPLES: name = "examples"; break;
-                case EXTENSIONS: name = "extensions"; break;
+                case EXTENSIONS: name = "extensions"; envor = "INKSCAPE_EXTENSIONS_DIR"; break;
                 case FILTERS: name = "filters"; break;
                 case FONTS: name = "fonts"; break;
                 case ICONS: name = "icons"; break;
@@ -100,6 +101,13 @@ gchar *_get_path(Domain domain, Type type, char const *filename)
                          return nullptr;
             }
         } break;
+    }
+    // Look for an over-ride in the local environment
+    if (envor && domain == USER) {
+        std::string env_dir = Glib::getenv(envor);
+        if (!env_dir.empty()) {
+            return g_build_filename(env_dir.c_str(), filename, nullptr);
+        }
     }
 
     if (!name) {
@@ -151,7 +159,7 @@ std::string get_path_string(Domain domain, Type type, char const *filename)
  *  filename  - The filename to get, i.e. preferences.xml
  *  localized - Prefer a localized version of the file, i.e. default.de.svg instead of default.svg.
  *              (will use gettext to determine the preferred language of the user)
- *  silent    - do not warn if file doesnt exist
+ *  silent    - do not warn if file doesn't exist
  * 
  */
 Glib::ustring get_filename(Type type, char const *filename, bool localized, bool silent)
@@ -445,14 +453,14 @@ char const *profile_path()
             }
 
             if (prefdir) {
-                const char *prefdir_profile = g_build_filename(prefdir, INKSCAPE_PROFILE_DIR, NULL);
+                const char *prefdir_profile = g_build_filename(prefdir, INKSCAPE_PROFILE_DIR, nullptr);
                 g_free((void *)prefdir);
                 prefdir = prefdir_profile;
             }
         }
 #endif
         if (!prefdir) {
-            prefdir = g_build_filename(g_get_user_config_dir(), INKSCAPE_PROFILE_DIR, NULL);
+            prefdir = g_build_filename(g_get_user_config_dir(), INKSCAPE_PROFILE_DIR, nullptr);
             // In case the XDG user config dir of the moment does not yet exist...
             int mode = S_IRWXU;
 #ifdef S_IRGRP
@@ -471,7 +479,7 @@ char const *profile_path()
                 gchar const *userDirs[] = { "keys", "templates", "icons", "extensions", "ui",
                                             "symbols", "paint", "themes", "palettes", nullptr };
                 for (gchar const** name = userDirs; *name; ++name) {
-                    gchar *dir = g_build_filename(prefdir, *name, NULL);
+                    gchar *dir = g_build_filename(prefdir, *name, nullptr);
                     g_mkdir_with_parents(dir, mode);
                     g_free(dir);
                 }
@@ -495,7 +503,7 @@ char *homedir_path(const char *filename)
     static const gchar *homedir = nullptr;
     homedir = g_get_home_dir();
 
-    return g_build_filename(homedir, filename, NULL);
+    return g_build_filename(homedir, filename, nullptr);
 }
 
 }

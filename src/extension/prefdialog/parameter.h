@@ -47,7 +47,7 @@ public:
     int get_int() const;
 
     /** Wrapper to cast to the object and use it's function. */
-    float get_float() const;
+    double get_float() const;
 
     /** Wrapper to cast to the object and use it's function. */
     const char *get_string() const;
@@ -66,7 +66,7 @@ public:
     int set_int(int  in);
 
     /** Wrapper to cast to the object and use it's function. */
-    float set_float(float in);
+    double set_float(double in);
 
     /** Wrapper to cast to the object and use it's function. */
     const char *set_string(const char *in);
@@ -105,6 +105,17 @@ public:
      *           as InxParameter is not supposed to be abstract.
      */
     virtual std::string value_to_string() const;
+
+    /** Sets the current value of the parameter from a string
+     *
+     * \internal Must be implemented by all derived classes.
+     */
+    virtual void string_to_value(const std::string &in);
+
+    /**
+     * Calls string_to_value and then saves the result in the prefs.
+     */
+    virtual const std::string &set(const std::string &in);
 
     /** Recommended spacing between the widgets making up a single Parameter (e.g. label and input) (in px) */
     const static int GUI_PARAM_WIDGETS_SPACING = 4;

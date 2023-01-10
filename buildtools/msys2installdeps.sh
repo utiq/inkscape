@@ -6,7 +6,7 @@
 #    - run "msys2.exe" in MSYS2's installation folder
 #
 # MSYS2 and installed libraries can be updated later by executing
-#   pacman -Syu --ignore=mingw-w64-*-imagemagick
+#   pacman -Syu
 # in an MSYS shell
 # -------------------------------------------------------------------------------
 
@@ -17,6 +17,9 @@ case "$MSYSTEM" in
     ;;
   MINGW64)
     ARCH=mingw-w64-x86_64
+    ;;
+  CLANGARM64)
+    ARCH=mingw-w64-clang-aarch64
     ;;
   *)
     ARCH={mingw-w64-i686,mingw-w64-x86_64}
@@ -34,10 +37,11 @@ pacman -Sy
 # install basic development system, compiler toolchain and build tools
 eval pacman -S $PACMAN_OPTIONS \
 git \
-intltool \
 base-devel \
 $ARCH-toolchain \
+$ARCH-autotools \
 $ARCH-cmake \
+$ARCH-meson \
 $ARCH-ninja
 
 # install Inkscape dependencies (required)
@@ -48,6 +52,7 @@ $ARCH-gsl \
 $ARCH-libxslt \
 $ARCH-boost \
 $ARCH-gtk3 \
+$ARCH-gtk-doc \
 $ARCH-gtkmm3 \
 $ARCH-libsoup
 
@@ -60,22 +65,10 @@ $ARCH-libvisio \
 $ARCH-libwpg \
 $ARCH-aspell \
 $ARCH-aspell-en \
-$ARCH-gspell
-
-# install ImageMagick (as Inkscape requires old version ImageMagick 6 we have to specify it explicitly)
-# to prevent future updates:
-#     add the line
-#        "IgnorePkg = mingw-w64-*-imagemagick"
-#     to
-#        "C:\msys64\etc\pacman.conf"
-#     or (always!) run pacman with the additional command line switch
-#        --ignore=mingw-w64-*-imagemagick
-for arch in $(eval echo $ARCH); do
-  wget -nv https://gitlab.com/ede123/bintray/-/raw/master/${arch}-imagemagick-6.9.10.69-1-any.pkg.tar.xz \
-    && pacman -U $PACMAN_OPTIONS ${arch}-imagemagick-6.9.10.69-1-any.pkg.tar.xz \
-    && rm  ${arch}-imagemagick-6.9.10.69-1-any.pkg.tar.xz
-done
-
+$ARCH-gspell \
+$ARCH-gtksourceview4 \
+$ARCH-graphicsmagick \
+$ARCH-libjxl
 
 # install Python and modules used by Inkscape
 eval pacman -S $PACMAN_OPTIONS \
@@ -83,16 +76,19 @@ $ARCH-python \
 $ARCH-python-pip \
 $ARCH-python-lxml \
 $ARCH-python-numpy \
+$ARCH-python-cssselect \
 $ARCH-python-pillow \
 $ARCH-python-six \
 $ARCH-python-gobject \
 $ARCH-python-pyserial \
 $ARCH-python-coverage \
+$ARCH-python-packaging \
 $ARCH-scour
 
-# install modules needed by extensions manager
+# install modules needed by extensions manager and clipart importer
 eval pacman -S $PACMAN_OPTIONS \
 $ARCH-python-appdirs \
+$ARCH-python-beautifulsoup4 \
 $ARCH-python-msgpack \
 $ARCH-python-lockfile \
 $ARCH-python-cachecontrol \
@@ -112,5 +108,32 @@ for arch in $(eval echo $ARCH); do
     mingw-w64-x86_64)
       #/mingw64/bin/pip3 install --upgrade ${PACKAGES}
       ;;
+    mingw-w64-clang-aarch64)
+      #/clangarm64/bin/pip3 install --upgrade ${PACKAGES}
+      ;;
   esac
 done
+
+
+# gettext hack - to remove once gettext has the match
+function hack_libintl(){
+f=/$1/include/libintl.h
+sed -i '/^extern int sprintf/a #ifdef __cplusplus\nnamespace std { using ::libintl_sprintf; }\n#endif' $f
+cat $f
+}
+
+case "$MSYSTEM" in
+  MINGW32)
+    hack_libintl mingw32
+    ;;
+  MINGW64)
+    hack_libintl mingw64
+    ;;
+  CLANGARM64)
+    hack_libintl clangarm64
+    ;;
+  *)
+    hack_libintl mingw32
+    hack_libintl mingw64
+    ;;
+esac

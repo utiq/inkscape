@@ -42,26 +42,26 @@ class FillNStroke : public Gtk::Box {
     guint          _drag_id   = 0;
     bool           _update    = false;
 
-    sigc::connection selectChangedConn;
     sigc::connection subselChangedConn;
-    sigc::connection selectModifiedConn;
     sigc::connection eventContextConn;
+    sigc::connection stop_selected_connection;
 
-    void paintModeChangeCB(UI::Widget::PaintSelector::Mode mode);
+    void paintModeChangeCB(UI::Widget::PaintSelector::Mode mode, bool switch_style);
     void paintChangedCB();
     static gboolean dragDelayCB(gpointer data);
 
-    void selectionModifiedCB(guint flags);
+    
     void eventContextCB(SPDesktop *desktop, Inkscape::UI::Tools::ToolBase *eventcontext);
 
     void dragFromPaint();
-    void updateFromPaint();
-
-    void performUpdate();
+    void updateFromPaint(bool switch_style = false);
 
   public:
     FillNStroke(FillOrStroke k);
     ~FillNStroke() override;
+    
+    void selectionModifiedCB(guint flags);
+    void performUpdate();
 
     void setFillrule(PaintSelector::FillRule mode);
     void setDesktop(SPDesktop *desktop);

@@ -18,52 +18,48 @@
  * su_v
  */
 #include <clocale>
+#include <gtkmm.h>
 #include <string>
 #include <vector>
 
-#include <gtkmm.h>
-
 #include "desktop.h"
+#include "display/control/canvas-item-grid.h"
 #include "document-undo.h"
 #include "document.h"
-#include "file.h"
-#include "inkscape.h"
-#include "message-stack.h"
-#include "message.h"
-#include "preferences.h"
-#include "print.h"
-#include "proj_pt.h"
-#include "selection-chemistry.h"
-#include "text-editing.h"
-#include "verbs.h"
-
-#include "display/control/canvas-grid.h"
-
-#include "extension/effect.h"
 #include "extension/db.h"
+#include "extension/effect.h"
 #include "extension/input.h"
 #include "extension/output.h"
 #include "extension/system.h"
-
+#include "file.h"
+#include "inkscape.h"
 #include "io/dir-util.h"
 #include "io/sys.h"
-
+#include "live_effects/effect.h"
+#include "live_effects/lpeobject.h"
+#include "message-stack.h"
+#include "message.h"
+#include "object/filters/composite.h"
 #include "object/persp3d.h"
 #include "object/sp-defs.h"
 #include "object/sp-flowdiv.h"
 #include "object/sp-flowtext.h"
 #include "object/sp-guide.h"
+#include "object/sp-grid.h"
 #include "object/sp-item.h"
 #include "object/sp-namedview.h"
 #include "object/sp-object.h"
 #include "object/sp-root.h"
 #include "object/sp-text.h"
 #include "object/sp-tspan.h"
+#include "preferences.h"
+#include "print.h"
+#include "proj_pt.h"
+#include "selection-chemistry.h"
 #include "style.h"
-
+#include "text-editing.h"
 #include "ui/shape-editor.h"
 
- 
 using Inkscape::DocumentUndo;
 
 int sp_file_convert_dpi_method_commandline = -1; // Unset
@@ -78,9 +74,9 @@ bool is_line(SPObject *i)
 
 void fix_blank_line(SPObject *o)
 {
-    if (SP_IS_TEXT(o))
+    if (is<SPText>(o))
         ((SPText *)o)->rebuildLayout();
-    else if (SP_IS_FLOWTEXT(o))
+    else if (is<SPFlowtext>(o))
         ((SPFlowtext *)o)->rebuildLayout();
 
     SPIFontSize fontsize = o->style->font_size;
@@ -89,10 +85,10 @@ void fix_blank_line(SPObject *o)
     bool beginning = true;
     for (std::vector<SPObject *>::const_iterator ci = cl.begin(); ci != cl.end(); ++ci) {
         SPObject *i = *ci;
-        if ((SP_IS_TSPAN(i) && is_line(i)) || SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i)) {
+        if ((is<SPTSpan>(i) && is_line(i)) || is<SPFlowpara>(i) || is<SPFlowdiv>(i)) {
             if (sp_text_get_length((SPItem *)i) <= 1) { // empty line
                 Inkscape::Text::Layout::iterator pos = te_get_layout((SPItem*)(o))->charIndexToIterator(
-                        ((SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i))?0:((ci==cl.begin())?0:1)) + sp_text_get_length_upto(o,i) );
+                        ((is<SPFlowpara>(i) || is<SPFlowdiv>(i))?0:((ci==cl.begin())?0:1)) + sp_text_get_length_upto(o,i) );
                 sp_te_insert((SPItem *)o, pos, "\u00a0"); //"\u00a0"
                 gchar *l = g_strdup_printf("%f", lineheight.value);
                 gchar *f = g_strdup_printf("%f", fontsize.value);
@@ -118,7 +114,7 @@ void fix_line_spacing(SPObject *o)
     bool inner = false;
     std::vector<SPObject *> cl = o->childList(false);
     for (auto i : cl) {
-        if ((SP_IS_TSPAN(i) && is_line(i)) || SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i)) {
+        if ((is<SPTSpan>(i) && is_line(i)) || is<SPFlowpara>(i) || is<SPFlowdiv>(i)) {
             // if no line-height attribute, set it
             gchar *l = g_strdup_printf("%f", lineheight.value);
             i->style->line_height.readIfUnset(l);
@@ -127,7 +123,7 @@ void fix_line_spacing(SPObject *o)
         inner = true;
     }
     if (inner) {
-        if (SP_IS_TEXT(o)) {
+        if (is<SPText>(o)) {
             o->style->line_height.read("0.00%");
         } else {
             o->style->line_height.read("0.01%");
@@ -159,7 +155,7 @@ void fix_font_size(SPObject *o)
     std::vector<SPObject *> cl = o->childList(false);
     for (auto i : cl) {
         fix_font_size(i);
-        if ((SP_IS_TSPAN(i) && is_line(i)) || SP_IS_FLOWPARA(i) || SP_IS_FLOWDIV(i)) {
+        if ((is<SPTSpan>(i) && is_line(i)) || is<SPFlowpara>(i) || is<SPFlowdiv>(i)) {
             inner = true;
             gchar *s = g_strdup_printf("%f", fontsize.value);
             if (fontsize.set)
@@ -167,7 +163,7 @@ void fix_font_size(SPObject *o)
             g_free(s);
         }
     }
-    if (inner && (SP_IS_TEXT(o) || SP_IS_FLOWTEXT(o)))
+    if (inner && (is<SPText>(o) || is<SPFlowtext>(o)))
         o->style->font_size.clear();
 }
 
@@ -185,7 +181,7 @@ void fix_osb(SPObject *i)
 // helper function
 void sp_file_text_run_recursive(void (*f)(SPObject *), SPObject *o)
 {
-    if (SP_IS_TEXT(o) || SP_IS_FLOWTEXT(o))
+    if (is<SPText>(o) || is<SPFlowtext>(o))
         f(o);
     else {
         std::vector<SPObject *> cl = o->childList(false);
@@ -237,7 +233,7 @@ void _fix_pre_v1_empty_lines(SPObject *o)
     bool begin = true;
     std::string cur_y = "";
     for (auto ci : cl) {
-        if (!SP_IS_TSPAN(ci))
+        if (!is<SPTSpan>(ci))
             continue;
         if (!is_line(ci))
             continue;
@@ -282,13 +278,13 @@ bool sp_file_save_backup( Glib::ustring uri ) {
 
     FILE *filein  = Inkscape::IO::fopen_utf8name(uri.c_str(), "rb");
     if (!filein) {
-        std::cerr << "sp_file_save_backup: failed to open: " << uri << std::endl;
+        std::cerr << "sp_file_save_backup: failed to open: " << uri.raw() << std::endl;
         return false;
     }
 
     FILE *fileout = Inkscape::IO::fopen_utf8name(out.c_str(), "wb");
     if (!fileout) {
-        std::cerr << "sp_file_save_backup: failed to open: " << out << std::endl;
+        std::cerr << "sp_file_save_backup: failed to open: " << out.raw() << std::endl;
         fclose( filein );
         return false;
     }
@@ -301,7 +297,7 @@ bool sp_file_save_backup( Glib::ustring uri ) {
 
     bool return_value = true;
     if (ferror(fileout)) {
-        std::cerr << "sp_file_save_backup: error when writing to: " << out << std::endl;
+        std::cerr << "sp_file_save_backup: error when writing to: " << out.raw() << std::endl;
         return_value = false;
     }
 
@@ -559,12 +555,12 @@ void sp_file_convert_dpi(SPDocument *doc)
 
     // Fix guides and grids and perspective
     for (SPObject *child = root->firstChild(); child; child = child->getNext()) {
-        SPNamedView *nv = dynamic_cast<SPNamedView *>(child);
+        auto nv = cast<SPNamedView>(child);
         if (nv) {
             if (need_fix_guides) {
                 // std::cout << "Fixing guides" << std::endl;
                 for (SPObject *child2 = nv->firstChild(); child2; child2 = child2->getNext()) {
-                    SPGuide *gd = dynamic_cast<SPGuide *>(child2);
+                    auto gd = cast<SPGuide>(child2);
                     if (gd) {
                         gd->moveto(gd->getPoint() / ratio, true);
                     }
@@ -572,37 +568,32 @@ void sp_file_convert_dpi(SPDocument *doc)
             }
 
             for (auto grid : nv->grids) {
-                Inkscape::CanvasXYGrid *xy = dynamic_cast<Inkscape::CanvasXYGrid *>(grid);
-                if (xy) {
-                    // std::cout << "A grid: " << xy->getSVGName() << std::endl;
-                    // std::cout << "  Origin: " << xy->origin
-                    //           << "  Spacing: " << xy->spacing << std::endl;
-                    // std::cout << (xy->isLegacy()?"  Legacy":"  Not Legacy") << std::endl;
+                if (grid->getType() == GridType::RECTANGULAR) {
                     Geom::Scale scale = doc->getDocumentScale();
-                    if (xy->isLegacy()) {
-                        if (xy->isPixel()) {
+                    if (grid->isLegacy()) {
+                        if (grid->isPixel()) {
                             if (need_fix_grid_mm) {
-                                xy->Scale(Geom::Scale(1, 1)); // See note below
+                                grid->scale(Geom::Scale(1, 1)); // See note below
                             } else {
                                 scale *= Geom::Scale(ratio, ratio);
-                                xy->Scale(scale.inverse()); /* *** */
+                                grid->scale(scale.inverse()); /* *** */
                             }
                         } else {
                             if (need_fix_grid_mm) {
-                                xy->Scale(Geom::Scale(ratio, ratio));
+                                grid->scale(Geom::Scale(ratio, ratio));
                             } else {
-                                xy->Scale(scale.inverse()); /* *** */
+                                grid->scale(scale.inverse()); /* *** */
                             }
                         }
                     } else {
                         if (need_fix_guides) {
                             if (did_scaling) {
-                                xy->Scale(Geom::Scale(ratio, ratio).inverse());
+                                grid->scale(Geom::Scale(ratio, ratio).inverse());
                             } else {
                                 // HACK: Scaling the document does not seem to cause
                                 // grids defined in document units to be updated.
                                 // This forces an update.
-                                xy->Scale(Geom::Scale(1, 1));
+                                grid->scale(Geom::Scale(1, 1));
                             }
                         }
                     }
@@ -610,10 +601,10 @@ void sp_file_convert_dpi(SPDocument *doc)
             }
         } // If SPNamedView
 
-        SPDefs *defs = dynamic_cast<SPDefs *>(child);
+        auto defs = cast<SPDefs>(child);
         if (defs && need_fix_box3d) {
             for (SPObject *child = defs->firstChild(); child; child = child->getNext()) {
-                Persp3D *persp3d = dynamic_cast<Persp3D *>(child);
+                auto persp3d = cast<Persp3D>(child);
                 if (persp3d) {
                     std::vector<Glib::ustring> tokens;
 
@@ -643,10 +634,84 @@ void sp_file_convert_dpi(SPDocument *doc)
     } // Look for SPNamedView and SPDefs loop
 
     // desktop->getDocument()->ensureUpToDate();  // Does not update box3d!
-    DocumentUndo::done(doc, SP_VERB_NONE, _("Update Document"));
+    DocumentUndo::done(doc, _("Update Document"), "");
 }
 
 
+// pre-1.1:
+// Do not use canvas API-specific feComposite operators, they do *not* apply to SVG.
+// https://github.com/w3c/csswg-drafts/issues/5267
+void fix_feComposite(SPObject *i){
+    if (!is<SPFeComposite>(i)) return;
+    auto oper = i->getAttribute("operator");
+    if (!g_strcmp0(oper, "clear")) {
+        i->setAttribute("operator", "arithmetic");
+        i->setAttribute("k1", "0");
+        i->setAttribute("k2", "0");
+        i->setAttribute("k3", "0");
+        i->setAttribute("k4", "0");
+    } else if (!g_strcmp0(oper, "copy")) {
+        i->setAttribute("operator", "arithmetic");
+        i->setAttribute("k1", "0");
+        i->setAttribute("k2", "1");
+        i->setAttribute("k3", "0");
+        i->setAttribute("k4", "0");
+    } else if (!g_strcmp0(oper, "destination")) {
+        i->setAttribute("operator", "arithmetic");
+        i->setAttribute("k1", "0");
+        i->setAttribute("k2", "0");
+        i->setAttribute("k3", "1");
+        i->setAttribute("k4", "0");
+    } else if (!g_strcmp0(oper, "destination-over")) {
+        auto in1 = i->getAttribute("in");
+        auto in2 = i->getAttribute("in2");
+        i->setAttribute("in", in2);
+        i->setAttribute("in2", in1);
+        i->setAttribute("operator", "over");
+    } else if (!g_strcmp0(oper, "destination-in")) {
+        auto in1 = i->getAttribute("in");
+        auto in2 = i->getAttribute("in2");
+        i->setAttribute("in", in2);
+        i->setAttribute("in2", in1);
+        i->setAttribute("operator", "in");
+    } else if (!g_strcmp0(oper, "destination-out")) {
+        auto in1 = i->getAttribute("in");
+        auto in2 = i->getAttribute("in2");
+        i->setAttribute("in", in2);
+        i->setAttribute("in2", in1);
+        i->setAttribute("operator", "out");
+    } else if (!g_strcmp0(oper, "destination-atop")) {
+        auto in1 = i->getAttribute("in");
+        auto in2 = i->getAttribute("in2");
+        i->setAttribute("in", in2);
+        i->setAttribute("in2", in1);
+        i->setAttribute("operator", "atop");
+    } // else do nothing, we're good
+    i->updateRepr();
+}
+
+void sp_file_fix_feComposite(SPObject *o)
+{
+    fix_feComposite(o);
+    std::vector<SPObject *> cl = o->childList(false);
+    for (auto ci : cl)
+        sp_file_fix_feComposite(ci);
+}
+
+void sp_file_fix_lpe(SPDocument *doc)
+{
+    // need document insensitive to avoid problems on last undo
+    DocumentUndo::ScopedInsensitive _no_undo(doc);
+    for (auto &obj : doc->getObjectsByElement("path-effect", true)) {
+        auto lpeobj = cast<LivePathEffectObject>(obj);
+        if (lpeobj) {
+            auto *lpe = lpeobj->get_lpe();
+            if (lpe) {
+                lpe->doOnOpen_impl();
+            }
+        }
+    }
+}
 
 /*
   Local Variables:

@@ -4,6 +4,7 @@ gtest/
 build
 share/inkscape
 share/*/*.h
+src/3rdparty/cairo
 
 inkscape_devel_*.snap
 inkscape_devel_source.tar.bz2
@@ -17,6 +18,7 @@ inkscape_devel_source.tar.bz2
 *.kdev4
 .uuid
 .clangd/
+.cache
 compile_commands.json
 
 # Snap packaging specific rules
@@ -50,3 +52,4 @@ src/helper/sp-marshal.*
 
 # Ctags
 tags
+.DS_Store

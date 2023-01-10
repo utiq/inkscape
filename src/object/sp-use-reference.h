@@ -14,10 +14,9 @@
 
 #include "sp-item.h"
 #include "uri-references.h"
+#include "display/curve.h"
 
 #include <memory>
-
-class SPCurve;
 
 namespace Inkscape {
 namespace XML {
@@ -42,7 +41,7 @@ protected:
 
 class SPUsePath : public SPUseReference {
 public:
-    std::unique_ptr<SPCurve> originalPath{nullptr};
+    std::optional<SPCurve> originalPath;
     bool sourceDirty{false};
 
     SPObject            *owner;

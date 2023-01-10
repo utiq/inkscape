@@ -177,12 +177,12 @@ Inkscape::XML::Node* SPOffset::write(Inkscape::XML::Document *xml_doc, Inkscape:
 
 
     // Make sure the offset has curve
-    if (_curve == nullptr) {
-        this->set_shape();
+    if (!_curve) {
+        set_shape();
     }
 
     // write that curve to "d"
-    repr->setAttribute("d", sp_svg_write_path(this->_curve->get_pathvector()));
+    repr->setAttribute("d", sp_svg_write_path(_curve->get_pathvector()));
 
     SPShape::write(xml_doc, repr, flags | SP_SHAPE_WRITE_PATH);
 
@@ -350,8 +350,7 @@ void SPOffset::set_shape() {
         const char *res_d = this->getRepr()->attribute("inkscape:original");
 
         if ( res_d ) {
-            Geom::PathVector pv = sp_svg_read_pathv(res_d);
-            setCurveInsync(std::make_unique<SPCurve>(pv));
+            setCurveInsync(SPCurve(sp_svg_read_pathv(res_d)));
             setCurveBeforeLPE(curve());
         }
 
@@ -420,7 +419,7 @@ void SPOffset::set_shape() {
 
         //  if (o_width >= 1.0)
         //  {
-        //    orig->Coalesce (0.1);  // small treshhold, since we only want to get rid of small segments
+        //    orig->Coalesce (0.1);  // small threshold, since we only want to get rid of small segments
         // the curve should already be computed by the Outline() function
         //   orig->ConvertEvenLines (1.0);
         //   orig->Simplify (0.5);
@@ -653,8 +652,7 @@ void SPOffset::set_shape() {
 
         delete orig;
 
-        Geom::PathVector pv = sp_svg_read_pathv(res_d);
-        setCurveInsync(std::make_unique<SPCurve>(pv));
+        setCurveInsync(SPCurve(sp_svg_read_pathv(res_d)));
         setCurveBeforeLPE(curve());
 
         free (res_d);
@@ -691,8 +689,6 @@ vectors_are_clockwise (Geom::Point A, Geom::Point B, Geom::Point C)
     using Geom::rot90;
     double ab_s = dot(A, rot90(B));
     double ab_c = dot(A, B);
-    double bc_s = dot(B, rot90(C));
-    double bc_c = dot(B, C);
     double ca_s = dot(C, rot90(A));
     double ca_c = dot(C, A);
 
@@ -708,20 +704,6 @@ vectors_are_clockwise (Geom::Point A, Geom::Point B, Geom::Point C)
 
     if (ab_s < 0) {
         ab_a = 2 * M_PI - ab_a;
-    }
-
-    double bc_a = acos (bc_c);
-
-    if (bc_c <= -1.0) {
-        bc_a = M_PI;
-    }
-
-    if (bc_c >= 1.0) {
-        bc_a = 0;
-    }
-
-    if (bc_s < 0) {
-        bc_a = 2 * M_PI - bc_a;
     }
 
     double ca_a = acos (ca_c);
@@ -976,7 +958,7 @@ static void sp_offset_start_listening(SPOffset *offset,SPObject* to)
     offset->sourceRepr = to->getRepr();
 
     offset->_delete_connection = to->connectDelete(sigc::bind(sigc::ptr_fun(&sp_offset_delete_self), offset));
-    offset->_transformed_connection = SP_ITEM(to)->connectTransformed(sigc::bind(sigc::ptr_fun(&sp_offset_move_compensate), offset));
+    offset->_transformed_connection = cast<SPItem>(to)->connectTransformed(sigc::bind(sigc::ptr_fun(&sp_offset_move_compensate), offset));
     offset->_modified_connection = to->connectModified(sigc::bind<2>(sigc::ptr_fun(&sp_offset_source_modified), offset));
 }
 
@@ -1073,7 +1055,7 @@ sp_offset_delete_self(SPObject */*deleted*/, SPOffset *offset)
 static void
 sp_offset_source_modified (SPObject */*iSource*/, guint flags, SPItem *item)
 {
-    SPOffset *offset = SP_OFFSET(item);
+    auto offset = cast<SPOffset>(item);
     offset->sourceDirty=true;
 
     if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG)) {
@@ -1098,23 +1080,22 @@ refresh_offset_source(SPOffset* offset)
     	return;
     }
 
-    SPItem  *item  = SP_ITEM (refobj);
-    std::unique_ptr<SPCurve> curve;
+    auto item = cast<SPItem>(refobj);
+    SPCurve curve;
 
-    if (auto shape = dynamic_cast<SPShape const *>(item)) {
-        curve = SPCurve::copy(shape->curve());
-    } else if (auto text = dynamic_cast<SPText const *>(item)) {
+    if (auto shape = cast<SPShape>(item)) {
+        if (!shape->curve()) {
+            return;
+        }
+        curve = *shape->curve();
+    } else if (auto text = cast<SPText>(item)) {
         curve = text->getNormalizedBpath();
     } else {
         return;
     }
 
-    if (curve == nullptr) {
-        return;
-    }
-
     Path *orig = new Path;
-    orig->LoadPathVector(curve->get_pathvector());
+    orig->LoadPathVector(curve.get_pathvector());
 
     if (!item->transform.isIdentity()) {
         gchar const *t_attr = item->getRepr()->attribute("transform");
@@ -1174,20 +1155,14 @@ refresh_offset_source(SPOffset* offset)
     }
 }
 
-SPItem *
-sp_offset_get_source (SPOffset *offset)
+SPItem *sp_offset_get_source(SPOffset *offset)
 {
     if (offset && offset->sourceRef) {
-        SPItem *refobj = offset->sourceRef->getObject();
-
-        if (SP_IS_ITEM (refobj)) {
-            return (SPItem *) refobj;
-        }
+        return offset->sourceRef->getObject();
     }
 
     return nullptr;
 }
-
 
 /*
   Local Variables:

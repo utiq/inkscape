@@ -23,6 +23,10 @@ C<inkscape [opcije] [datoteka_1 datoteka_2 …]>
 opcije:
 
     -?, --help
+        --help-all
+        --help-gapplication
+        --help-gtk
+
     -V, --version
         --debug-info
         --system-data-directory
@@ -48,17 +52,19 @@ opcije:
     -h, --export-height=VISINA
         --export-margin=MARGINA
 
-    -i, --export-id=ID-OBJEKTA[;ID-OBJEKTA]*
+    -i, --export-id=OBJECT-ID[;OBJECT-ID]*
     -j, --export-id-only
     -l, --export-plain-svg
-        --export-ps-level=RAZINA
-        --export-pdf-version=VERZIJA
+        --export-png-color-mode=COLORMODE
+        --export-png-use-dithering=BOOLEAN
+        --export-ps-level=LEVEL
+        --export-pdf-version=VERSION
     -T, --export-text-to-path
         --export-latex
         --export-ignore-filters
     -t, --export-use-hints
-    -b, --export-background=BOJA
-    -y, --export-background-opacity=VRIJEDNOST
+    -b, --export-background=COLOR
+    -y, --export-background-opacity=VALUE
 
     -I, --query-id=ID-OBJEKTA[,ID-OBJEKTA]*
     -S, --query-all
@@ -68,13 +74,13 @@ opcije:
     -H, --query-height
 
         --vacuum-defs
-        --select=ID-OBJEKTA[,ID-OBJEKTA]*
-        --actions=RADNJA(:ARGUMETN)[;RADNJA(:ARGUMENT)]*
+        --select=OBJECT-ID[,OBJECT-ID]*
+        --actions=ACTION(:ARG)[;ACTION(:ARG)]*
         --action-list
-        --verb=NAREDBA[;NAREDBA]*
-        --verb-list
 
     -g, --with-gui
+        --display=DISPLAY
+        --app-id-tag=TAG
         --batch-process
         --shell
 
@@ -115,6 +121,18 @@ uvjetima ovog standarda.
 =item B<-?>, B<--help>
 
 Prikazuje poruku pomoći.
+
+=item B<--help-all>
+
+Shows all help options.
+
+=item B<--help-gapplication>
+
+Shows the GApplication options.
+
+=item B<--help-gtk>
+
+Shows the GTK+ options.
 
 =item B<-V>, B<--version>
 
@@ -240,20 +258,18 @@ može koristiti zajedno s L<--export-use-hints>.
 
 =item B<-a> I<x0:y0:x1:y1>, B<--export-area>=I<x0:y0:x1:y1>
 
-Za izvoz u PNG format, postavi SVG-korisničku mjernu jedinicu za izvozno
-područje (u Inkscape SVG-datotekama se uobičajeno koriste bezimene
-jedinice). Standardno se izvozi cijela stranica dokumenta. Točka (0,0) se
-nalazi u dojnjem lijevom uglu.
+In PNG export, set the exported area of the document, specified in px (1/96
+in). The default is to export the entire document page. The point (0,0) is
+the lower-left corner.
 
 =item B<--export-area-snap>
 
-Za izvoz u PNG format privuci izvezeno područje na najbližu višu cjelobrojnu
-vrijednost SVG korisničkih jedinica (px). Ako koristiš zadanu rezoluciju za
-izvoz od 96 DPI, i ako tvoje grafike koriste privlačenje piksela kako bi se
-umanjila primjena zaglađivanja, ovaj prekidač dozvoljava zadržavanje tog
-poravnanja piksela, čak i ako izvoziš granični okvir nekog objekta
-(L<--export-id> ili L<--export-area-drawing>), koji sam po sebi ne koristi
-poravnanje piksela.
+For PNG export, snap the export area outwards to the nearest integer px
+values. If you are using the default export resolution of 96 dpi and your
+graphics are pixel-snapped to minimize antialiasing, this switch allows you
+to preserve this alignment even if you are exporting some object's bounding
+box (with L<--export-id> or L<--export-area-drawing>) which is itself not
+pixel-aligned.
 
 =item B<-d> I<DPI>, B<--export-dpi>=I<DPI>
 
@@ -308,6 +324,16 @@ format, ovo je zadano, tako da ova opcija nema utjecaja.
 Izvezi dokumente u obični SVG format, bez sodipodi: ili inkscape: znakovnih
 mjesta i bez RDF metapodataka. Koristi L<--export-filename> za određivanje
 datoteke.
+
+=item B<--export-png-color-mode>=I<COLORMODE>
+
+Sets the color mode (bit depth and color type) for exported bitmaps
+(Gray_1/Gray_2/Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16)
+
+=item B<--export-png-use-dithering>=I<false|true>
+
+Forces dithering or disables it (the Inkscape build must support dithering
+for this).
 
 =item B<--export-ps-level>=I<RAZINA>
 
@@ -458,29 +484,21 @@ izvoz iz jedne datoteke.
 
 Ispisuje popis svih dostupnih radnji.
 
-=item B<--verb>=I<NAREDBA[;NAREDBA]*>
-
-Naredba L<--verb> izvršit će određenu radnju ili popis radnji, kao da su
-odarane pomoću izbornika ili gumba. Dijaloški okviri će se pojaviti, ukoliko
-su dio naredbe. Za stvaranje popisa dodstupnih ID-ova naredbi, koristi
-opciju naredbenog retka L<--verb-list>.
-
-Naredba L<--verb> zahtijeva grafičko sučelje.
-
-Zajedno s L <--select> pruža neke osnovne skripte za Inkscape u naredbenom
-retku. Obje mogu po potrebi dobiti više argumenata u naredbenom retku i
-izvršavaju se redom u svakom dokumentu.
-
-=item B<--verb-list>
-
-Prikazuje sve naredbe koje su dostupne u Inkscapeu, njihovim ID oznakama. ID
-oznake se mogu koristiti za određivanje mapiranja tipkovnice ili
-izbornika. Može se koristiti i s opcijom L<--verb> u naredbenom retku.
-
 =item B<-g>, B<--with-gui>
 
 Pokušaj koristiti grafičko sučelje(GUI) (na Unix sustavu koristi X server,
 čak i ako $DISPLAY nije postavljen).
+
+=item B<--display>=I<DISPLAY>
+
+Sets the X display to use for the Inkscape window.
+
+=item B<--app-id-tag>=I<TAG>
+
+Creates a unique instance of Inkscape with the application ID
+'org.inkscape.Inkscape.TAG'. This is useful to separate the Inkscape
+instances when running different Inkscape versions or using different
+preferences files concurrently.
 
 =item B<--batch-process>
 
@@ -515,13 +533,23 @@ Datoteka za osnovnu konfiguraciju se nalazi u
 Inkscapeu mogu promijeniti (uglavnom u dijaloškom sučelju za Inkscape
 postavke). U pod-direktoriju se mogu spremiti i vlastite:
 
-B<$HOME>/.config/inkscape/extensions/ – efekti proširenja.
+B<$HOME>/.config/inkscape/extensions/ - extensions.
 
-B<$HOME>/.config/inkscape/icons/ – ikone.
+B<$HOME>/.config/inkscape/fonts/ - fonts.
+
+B<$HOME>/.config/inkscape/icons/ - icon sets.
 
 B<$HOME>/.config/inkscape/keys/ – mapiranja tipkovnice.
 
+B<$HOME>/.config/inkscape/paint/ - patterns and hatches.
+
+B<$HOME>/.config/inkscape/palettes/ - palettes.
+
+B<$HOME>/.config/inkscape/symbols/ - symbol files.
+
 B<$HOME>/.config/inkscape/templates/ – predlošci za nove datoteke.
+
+B<$HOME>/.config/inkscape/ui/ - user interface files.
 
 =head1 DIJAGNOZE
 
@@ -588,18 +616,18 @@ Upitaj širinu objekta s oznakom id="text1555":
 Dupliciraj objekte s oznakama id="path1555" i id="rect835", rotiraj
 duplikate za 90 stupnjeva, spremi SVG i zatvori program:
 
-    inkscape --select=path1555,rect835 --verb="EditDuplicate;ObjectRotate90;FileSave;FileQuit" datoteka.svg
+    inkscape --select=path1555,rect835 --actions="duplicate;object-rotate-90-cw" --export-overwrite filename.svg
 
 Odaberi sve objekte s oznakom elipse, rotiraj ih za 30 stupnjeva, spremi SVG
 i zatvori program:
 
-    inkscape --actions="select-by-element:ellipse;transform-rotate:30;FileSave;FileClose" --batch-process filename.svg
+    inkscape --actions="select-by-element:ellipse;transform-rotate:30" --export-overwrite filename.svg
 
 Izvezi objekt s ID oznakom „MojTrokut” s polu-transparetnom ljubičastom
 pozadinom u datoteku trokut_ljubičasti.png i s crvenom pozadinom u datoteku
 trokut_crveni.png.
 
-    inkscape --actions="export-id:MojTrokut; export-id-only; export-background:purple; export-background-opacity:0.5;export-filename:trokut_ljubičasti.png; export-do; export-background:red; export-background-opacity:1; export-filename:trokut_crveni.png" datoteka.svg
+    inkscape --actions="export-id:MyTriangle; export-id-only; export-background:purple; export-background-opacity:0.5;export-filename:triangle_purple.png; export-do; export-background:red; export-background-opacity:1; export-filename:triangle_red.png; export-do" filename.svg
 
 Čitaj SVG datoteku iz standardnog ulaza (stdin) i izvezi je u PDF format:
 
@@ -775,10 +803,10 @@ ${INKSCAPE_AUTHORS}
 
 =head1 AUTORSKA PRAVA I LICENCA
 
-B<Copyright (C)> 1999. – 2020. Nositelji autorskih prava su autori.
+B<Copyright (C)> 1999-2022 by Authors.
 
-B<Inkscape> je slobodan softver. Redistribucija i/ili promjena programa je
-moguća pod uslovima, zadanima općom javnom licencom verzije 3 ili novijom.
+B<Inkscape> is free software; you can redistribute it and/or modify it under
+the terms of the GPL version 2 or later.
 
 
 

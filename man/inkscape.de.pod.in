@@ -24,6 +24,10 @@ C<inkscape [Optionen] [Dateiname1 Dateiname2 ...]>
 Optionen:
 
     -?, --help
+        --help-all
+        --help-gapplication
+        --help-gtk
+
     -V, --version
         --debug-info
         --system-data-directory
@@ -52,6 +56,8 @@ Optionen:
     -i, --export-id=OBJEKT-ID[;OBJEKT-ID]*
     -j, --export-id-only
     -l, --export-plain-svg
+        --export-png-color-mode=FARBMODUS
+        --export-png-use-dithering=WAHRHEITSWERT
         --export-ps-level=LEVEL
         --export-pdf-version=VERSION
     -T, --export-text-to-path
@@ -59,6 +65,7 @@ Optionen:
         --export-ignore-filters
     -t, --export-use-hints
     -b, --export-background=FARBE
+    -y, --export-background-opacity=VALUE
 
     -I, --query-id=OBJEKT-ID[,OBJEKT-ID]*
     -S, --query-all
@@ -71,10 +78,10 @@ Optionen:
         --select=OBJEKT-ID[,OBJEKT-ID]*
         --actions=AKTION(:ARG)[;AKTION(:ARG)]*
         --action-list
-        --verb=VERB[;VERB]*
-        --verb-list
 
     -g, --with-gui
+        --display=DISPLAY
+        --app-id-tag=TAG
         --batch-process
         --shell
 
@@ -119,6 +126,18 @@ genauesten den entsprechenden Standard einhält.
 =item B<-?>, B<--help>
 
 Hilfe anzeigen
+
+=item B<--help-all>
+
+Alle Hilfeoptionen anzeigen
+
+=item B<--help-gapplication>
+
+Zeigt die GApplication-Optionen an
+
+=item B<--help-gtk>
+
+Zeigt die GTK+-Optionen an
 
 =item B<-V>, B<--version>
 
@@ -253,21 +272,19 @@ Kombination mit L<--export-use-hints> verwendet werden.
 
 =item B<-a> I<x0:y0:x1:y1>, B<--export-area>=I<x0:y0:x1:y1>
 
-Geben Sie den Exportbereich beim PNG-Export in SVG-Nutzer-Einheiten an
-(anonyme Längeneinheit, die üblicherweise in Inkscape-SVG-Dateien verwendet
-wird). Standardmäßig wird die gesamte Dokumentseite exportiert. Der Punkt
-(0,0) liegt in der unteren linken Ecke.
+Geben Sie den Exportbereich beim PNG-Export in px (1/96 Zoll)
+an. Standardmäßig wird die gesamte Dokumentseite exportiert. Der Punkt (0,0)
+liegt in der unteren linken Ecke.
 
 =item B<--export-area-snap>
 
 Beim PNG-Export vergrößert sich hierdurch der Exportbereich auf den
-nächsten, ganzzahligen Wert für die SVG-Nutzer-Einheit (px). Wenn die
-Standard-Export-Auflösung von 96 dpi verwendet wird und die Grafik zur
-Minimierung von Antialiasing am Pixel-Raster eingerastet ist, erlaubt diese
-Option die Erhaltung dieser Ausrichtung, selbst wenn der Exportbereich von
-der Begrenzung eines Objektes gebildet wird (mit L<--export-id> oder
-L<--export-area-drawing>), das selbst nicht am Pixel-Raster ausgerichtet
-ist.
+nächsten, ganzzahligen px-Wert. Wenn die Standard-Export-Auflösung von 96
+dpi verwendet wird und die Grafik zur Minimierung von Antialiasing am
+Pixel-Raster eingerastet ist, erlaubt diese Option die Erhaltung dieser
+Ausrichtung, selbst wenn der Exportbereich von der Begrenzung eines Objektes
+gebildet wird (mit L<--export-id> oder L<--export-area-drawing>), das selbst
+nicht am Pixel-Raster ausgerichtet ist.
 
 =item B<-d> I<DPI>, B<--export-dpi>=I<DPI>
 
@@ -323,6 +340,16 @@ und bewirkt daher nichts.
 Exportiert das/die Dokument(e) als normales SVG ohne jegliche sodipodi:-
 oder inkscape:-Namensräume und ohne RDF-Metadaten. Um den Dateinamen
 anzugeben wird die Option L<--export-filename> benutzt.
+
+=item B<--export-png-color-mode>=I<FARBMODUS>
+
+Bestimmt den Farbmodus (Bittiefe und Farbtyp) für exportierte Rastergrafiken
+(Gray_1/Gray_2/Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16)
+
+=item B<--export-png-use-dithering>=I<false|true>
+
+Erzwingt Dithering oder deaktiviert es (der Inkscape-Build muss hierfür
+Dithering auch unterstützen)
 
 =item B<--export-ps-level>=I<LEVEL>
 
@@ -482,31 +509,21 @@ werden. Dies ermöglicht mehrfache Exporte aus einer einzelnen Datei.
 
 Zeigt alle zur Verfügung stehenden Aktionen an.
 
-=item B<--verb>=I<VERB[;VERB]*>
-
-Der Befehl L<--verb> führt ein bestimmtes Verb oder eine Liste von Verben
-genauso aus, wie wenn sie aus einem Menü heraus oder mit einer Schaltfläche
-aufgerufen worden wären. Dialoge öffnen sich, wenn dies Teil der Funktion
-des Verbs ist. Der Kommandozeilenbefehl L<--verb-list> zeigt eine Liste
-aller verfügbaren Verb-IDs an.
-
-Die Option L<--verb> benötigt eine grafische Benutzeroberfläche (GUI)
-
-Erlaubt zusammen mit L<--select> die Erstellung einfacher Skripte für
-Inkscape auf der Kommandozeile. Beide erlauben beliebig viele Argumente, die
-entsprechend ihrer Reihenfolge für jedes Dokument abgearbeitet werden.
-
-=item B<--verb-list>
-
-Zeigt alle in Inkscape zur Verfügung stehenden Verben nach ID geordnet
-an.Diese ID kann beim Erstellen von Tastenzuordnungstabellen oder Menüs
-verwendet werden. Sie kann auch im Zusammenhang mit der Option L<--verb> auf
-der Kommandozeile verwendet werden.
-
 =item B<-g>, B<--with-gui>
 
 Versucht, die grafische Oberfläche zu verwenden (unter Unix wird der
 X-Server benutzt, selbst wenn $DISPLAY nicht gesetzt ist).
+
+=item B<--export-ps-level>=I<LEVEL>
+
+Bestimmt, welches X-Display für das Inkscape-Fenster verwendet werden soll
+
+=item B<--app-id-tag>=I<TAG>
+
+Erzeugt eine Inkscape-Instanz mit der Anwendungs-ID
+'org.inkscape.Inkscape.TAG'. Dies kann genutzt werden, um Inkscape-Instanzen
+mit unterschiedlichen Versionen oder unterschiedlichen Einstellungsdateien
+gleichzeitig laufen zu lassen.
 
 =item B<--batch-process>
 
@@ -549,11 +566,21 @@ Dateien abgelegt werden, und zwar für:
 
 B<$HOME>/.config/inkscape/extensions/ - Erweiterungen.
 
+B<$HOME>/.config/inkscape/fonts/ - Schriftarten.
+
 B<$HOME>/.config/inkscape/icons/ - Icons.
 
 B<$HOME>/.config/inkscape/keys/ - Tastenzuordnungs-Dateien.
 
+B<$HOME>/.config/inkscape/paint/ - Muster und Schraffuren.
+
+B<$HOME>/.config/inkscape/palettes/ - Farbpaletten.
+
+B<$HOME>/.config/inkscape/symbols/ - Symboldateien.
+
 B<$HOME>/.config/inkscape/templates/ - Vorlagen für neue Dateien.
+
+B<$HOME>/.config/inkscape/ui/ - Dateien für die Benutzeroberfläche.
 
 =head1 FEHLERSUCHE
 
@@ -622,18 +649,18 @@ Fragt die Breite des Objektes mit id="text1555" ab:
 Dupliziert die Objekte mit id="path1555" und id="rect835", dreht die
 Duplikate um 90 Grad, speichert die SVG-Datei und beendet sich:
 
-    inkscape --select=path1555,rect835 --verb="EditDuplicate;ObjectRotate90;FileSave;FileQuit" dateiname.svg
+    inkscape --select=path1555,rect835 --actions="duplicate;object-rotate-90-cw" --export-overwrite dateiname.svg
 
 Wählt alle Objekte des Typs Ellipse, dreht sie um 30 Grad, speichert die
 Datei und beendet sich.
 
-    inkscape --actions="select-by-element:ellipse;transform-rotate:30;FileSave;FileClose" --batch-process dateiname.svg
+    inkscape --actions="select-by-element:ellipse;transform-rotate:30" --export-overwrite dateiname.svg
 
 Exportiert das Objekt mit der ID 'MeinDreieck' mit einem halbtransparenten
 lilafarbenen Hintergrund in die Datei 'dreieck_lila.png' und mit einem roten
 Hintergrund in die Datei 'dreieck_rot.png'.
 
-    inkscape --actions="export-id:MeinDreieck; export-id-only; export-background:purple; export-background-opacity:0.5;export-filename:dreieck_lila.png; export-do; export-background:red; export-background-opacity:1; export-filename:dreieck_rot.png" dateiname.svg
+    inkscape --actions="export-id:MeinDreieck; export-id-only; export-background:purple; export-background-opacity:0.5;export-filename:dreieck_lila.png; export-do; export-background:red; export-background-opacity:1; export-filename:tdreieck_rot.png; export-do" dateiname.svg
 
 Eine SVG-Datei von der Standardeingabe (stdin) lesen und ins PDF-Format
 exportieren.
@@ -823,10 +850,10 @@ ${INKSCAPE_AUTHORS}
 
 =head1 URHEBERRECHT UND LIZENZ
 
-B<Copyright (C)> 1999-2020 liegt bei den Autoren.
+B<Copyright (C)> 1999-2022 liegt bei den Autoren.
 
 B<Inkscape> ist freie Software. Sie dürfen es zu den Bedingungen der GPL in
-Version 3 oder höher weiterverbreiten und / oder verändern.
+Version 2 oder höher weiterverbreiten und / oder verändern.
 
 
 

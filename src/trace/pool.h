@@ -17,7 +17,7 @@
 
  - user operations on a pool of objects of type T are:
    - T *draw() : obtain a unused slot to store an object T
-   - void drop(T *) : realease a slot
+   - void drop(T *) : release a slot
 
 -- implementation:
 
@@ -44,76 +44,74 @@
    unused slots starting at <next>)
 
  - insertions and deletions in this list are done at the root <next>.
-   if <next> points to NULL (no slots are availlable) when a draw()
+   if <next> points to NULL (no slots are available) when a draw()
    operation is performed a new block is allocated, and the unused slots
    list is filled with the allocated slots.
 
  - memory is freed only at pool's deletion.
-
 */
+#ifndef INKSCAPE_TRACE_POOL_H
+#define INKSCAPE_TRACE_POOL_H
 
 #include <cstdlib>
+#include <exception>
+#include <algorithm>
 
 template <typename T>
-class pool {
-
- public:
-
-  pool()
-  {
-      cblock = 0;
-      size = sizeof(T) > sizeof(void *) ? sizeof(T) : sizeof(void *);
-      next = nullptr;
-      for (auto & k : block) {
-          k = nullptr;
-      }
-  }
-
-  ~pool()
-  {
-      for (int k = 0; k < cblock; k++) {
-        free(block[k]);
-      }
-  }
-
-  T *draw()
-  {
-    if (!next) addblock();
-    void *p = next;
-    next = *(void **)p;
-    return (T *) p;
-  }
-
-  void drop(T *p)
-  {
-    *(void **)p = next;
-    next = (void *) p;
-  }
-
- private:
-
-  int size;
-  int cblock;
-  void *block[64]; //enough to store unlimited number of objects, if 64 is changed: see constructor too
-  void *next;
-
-  void addblock()
+class Pool
+{
+public:
+    Pool()
     {
-      int i = cblock++;
-      int blocksize = 1 << (6 + (i/2));
-      //printf("pool allocating block: %d (size:%d)...", i, blocksize);//debug
-      block[i] = (void *)malloc(blocksize * size);
-      if (!block[i]) throw std::bad_alloc();
-      char *p = (char *)block[i];
-      for (int k = 0; k < blocksize - 1; k++)
-	{
-	  *(void**)p = (void *)(p + size);
-	  p += size;
-	}
-      *(void **)p = next;
-      next = block[i];
-      //printf("done\n");//debug
+        cblock = 0;
+        size = std::max(sizeof(T), sizeof(void *));
+        next = nullptr;
+        for (auto &k : block) {
+            k = nullptr;
+        }
     }
 
+    ~Pool()
+    {
+        for (int k = 0; k < cblock; k++) {
+            std::free(block[k]);
+        }
+    }
+
+    T *draw()
+    {
+        if (!next) addblock();
+        void *p = next;
+        next = *(void **)p;
+        return (T *)p;
+    }
+
+    void drop(T *p)
+    {
+        *(void **)p = next;
+        next = (void *)p;
+    }
+
+private:
+    int size;
+    int cblock;
+    void *block[64]; // enough to store unlimited number of objects, if 64 is changed: see constructor too
+    void *next;
+
+    void addblock()
+    {
+        int i = cblock++;
+        int blocksize = 1 << (6 + (i / 2));
+        block[i] = (void *)std::malloc(blocksize * size);
+        if (!block[i]) throw std::bad_alloc();
+        char *p = (char *)block[i];
+        for (int k = 0; k < blocksize - 1; k++) {
+            *(void**)p = (void *)(p + size);
+            p += size;
+        }
+        *(void **)p = next;
+        next = block[i];
+    }
 };
 
+#endif // INKSCAPE_TRACE_POOL_H

@@ -27,39 +27,32 @@
 #include <glibmm/i18n.h>
 #include <glibmm/miscutils.h>
 #include <glibmm/convert.h>
-#include <regex>
 
 #include "desktop.h"
 #include "device-manager.h"
 #include "document.h"
 #include "inkscape.h"
+#include "inkscape-application.h"
+#include "inkscape-window.h"
 #include "message-stack.h"
 #include "path-prefix.h"
 
 #include "debug/simple-event.h"
 #include "debug/event-tracker.h"
 
-#include "extension/db.h"
-#include "extension/init.h"
-#include "extension/system.h"
-
-#include "helper/action-context.h"
-
 #include "io/resource.h"
-#include "io/fix-broken-links.h"
 #include "io/sys.h"
 
-#include "libnrtype/FontFactory.h"
+#include "libnrtype/font-factory.h"
 
+#include "object/sp-item-group.h"
 #include "object/sp-root.h"
 
-#include "svg/svg-color.h"
-
+#include "ui/themes.h"
 #include "ui/dialog/debug.h"
+#include "ui/dialog/dialog-manager.h"
+#include "ui/dialog/dialog-window.h"
 #include "ui/tools/tool-base.h"
-
-/* Backbones of configuration xml data */
-#include "menus-skeleton.h"
 
 #include <fstream>
 
@@ -76,8 +69,6 @@ static void (* ill_handler)  (int) = SIG_DFL;
 #ifndef _WIN32
 static void (* bus_handler)  (int) = SIG_DFL;
 #endif
-
-#define MENUS_FILE "menus.xml"
 
 #define SP_INDENT 8
 
@@ -221,9 +212,11 @@ Application::Application(bool use_gui) :
         auto icon_theme = Gtk::IconTheme::get_default();
         icon_theme->prepend_search_path(get_path_ustring(SYSTEM, ICONS));
         icon_theme->prepend_search_path(get_path_ustring(USER, ICONS));
-        add_gtk_css(false);
-        /* Load the preferences and menus */
-        load_menus();
+        themecontext = new Inkscape::UI::ThemeContext();
+        themecontext->add_gtk_css(false);
+        auto scale = prefs->getDoubleLimited(UI::ThemeContext::get_font_scale_pref_path(), 100, 50, 150);
+        themecontext->adjustGlobalFontScale(scale / 100.0);
+        Inkscape::UI::ThemeContext::initialize_source_syntax_styles();
         Inkscape::DeviceManager::getManager().loadConfig();
     }
 
@@ -232,6 +225,13 @@ Application::Application(bool use_gui) :
     if(!ui_language.empty())
     {
         setenv("LANGUAGE", ui_language, true);
+#ifdef _WIN32
+        // locale may be set to C with some Windows Region Formats (like English(Europe)).
+        // forcing the LANGUAGE variable to be ignored
+        // see :guess_category_value:gettext-runtime/intl/dcigettext.c,
+        // and :gl_locale_name_from_win32_LANGID:gettext-runtime/gnulib-lib/localename.c
+        setenv("LANG", ui_language, true);
+#endif
     }
 
     /* DebugDialog redirection.  On Linux, default to OFF, on Win32, default to ON.
@@ -254,25 +254,46 @@ Application::Application(bool use_gui) :
         /* Check for global remapping of Alt key */
         mapalt(guint(prefs->getInt("/options/mapalt/value", 0)));
         trackalt(guint(prefs->getInt("/options/trackalt/value", 0)));
+
+        /* update highlight colors when theme changes */
+        themecontext->getChangeThemeSignal().connect([=](){
+            if (auto desktop = active_desktop()) {
+                set_default_highlight_colors(themecontext->getHighlightColors(desktop->getToplevel()));
+            }
+            // sync "dark" class between app window and floating dialog windows to ensure that
+            // CSS providers relying on it apply in dialog windows too
+            if (auto inkscape_window = InkscapeApplication::instance()->get_active_window()) {
+                auto dark = inkscape_window->get_style_context()->has_class("dark");
+                for (auto wnd : Inkscape::UI::Dialog::DialogManager::singleton().get_all_floating_dialog_windows()) {
+                    if (dark) {
+                        wnd->get_style_context()->add_class("dark");
+                    }
+                    else {
+                        wnd->get_style_context()->remove_class("dark");
+                    }
+                }
+            }
+            // select default syntax coloring theme, if needed
+            if (auto desktop = active_desktop()) {
+                UI::ThemeContext::select_default_syntax_style(themecontext->isCurrentThemeDark(desktop->getToplevel()));
+            }
+        });
     }
 
-    /* Initialize the extensions */
-    Inkscape::Extension::init();
-
     /* Initialize font factory */
-    font_factory *factory = font_factory::Default();
+    auto &factory = FontFactory::get();
     if (prefs->getBool("/options/font/use_fontsdir_system", true)) {
         char const *fontsdir = get_path(SYSTEM, FONTS);
-        factory->AddFontsDir(fontsdir);
+        factory.AddFontsDir(fontsdir);
     }
     if (prefs->getBool("/options/font/use_fontsdir_user", true)) {
         char const *fontsdir = get_path(USER, FONTS);
-        factory->AddFontsDir(fontsdir);
+        factory.AddFontsDir(fontsdir);
     }
     Glib::ustring fontdirs_pref = prefs->getString("/options/font/custom_fontdirs");
     std::vector<Glib::ustring> fontdirs = Glib::Regex::split_simple("\\|", fontdirs_pref);
     for (auto &fontdir : fontdirs) {
-        factory->AddFontsDir(fontdir.c_str());
+        factory.AddFontsDir(fontdir.c_str());
     }
 }
 
@@ -284,285 +305,10 @@ Application::~Application()
 
     Inkscape::Preferences::unload();
 
-    if (_menus) {
-        Inkscape::GC::release(_menus);
-        _menus = nullptr;
-    }
-
     _S_inst = nullptr; // this will probably break things
 
     refCount = 0;
     // gtk_main_quit ();
-}
-
-
-Glib::ustring Application::get_symbolic_colors()
-{
-    Glib::ustring css_str;
-    gchar colornamed[64];
-    gchar colornamedsuccess[64];
-    gchar colornamedwarning[64];
-    gchar colornamederror[64];
-    gchar colornamed_inverse[64];
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    Glib::ustring themeiconname = prefs->getString("/theme/iconTheme", prefs->getString("/theme/defaultIconTheme", ""));
-    guint32 colorsetbase = 0x2E3436ff;
-    guint32 colorsetbase_inverse;
-    guint32 colorsetsuccess = 0x4AD589ff;
-    guint32 colorsetwarning = 0xF57900ff;
-    guint32 colorseterror = 0xCC0000ff;
-    colorsetbase = prefs->getUInt("/theme/" + themeiconname + "/symbolicBaseColor", colorsetbase);
-    colorsetsuccess = prefs->getUInt("/theme/" + themeiconname + "/symbolicSuccessColor", colorsetsuccess);
-    colorsetwarning = prefs->getUInt("/theme/" + themeiconname + "/symbolicWarningColor", colorsetwarning);
-    colorseterror = prefs->getUInt("/theme/" + themeiconname + "/symbolicErrorColor", colorseterror);
-    sp_svg_write_color(colornamed, sizeof(colornamed), colorsetbase);
-    sp_svg_write_color(colornamedsuccess, sizeof(colornamedsuccess), colorsetsuccess);
-    sp_svg_write_color(colornamedwarning, sizeof(colornamedwarning), colorsetwarning);
-    sp_svg_write_color(colornamederror, sizeof(colornamederror), colorseterror);
-    colorsetbase_inverse = colorsetbase ^ 0xffffff00;
-    sp_svg_write_color(colornamed_inverse, sizeof(colornamed_inverse), colorsetbase_inverse);
-    css_str += "@define-color warning_color " + Glib::ustring(colornamedwarning) + ";\n";
-    css_str += "@define-color error_color " + Glib::ustring(colornamederror) + ";\n";
-    css_str += "@define-color success_color " + Glib::ustring(colornamedsuccess) + ";\n";
-    /* ":not(.rawstyle) > image" works only on images in first level of widget container
-    if in the future we use a complex widget with more levels and we dont want to tweak the color
-    here, retaining default we can add more lines like ":not(.rawstyle) > > image" 
-    if we not override the color we use defautt theme colors*/
-    bool overridebasecolor = !prefs->getBool("/theme/symbolicDefaultBaseColors", true);
-    if (overridebasecolor) {
-        css_str += "#InkRuler,";
-        css_str += ":not(.rawstyle) > image";
-        css_str += "{color:";
-        css_str += colornamed;
-        css_str += ";}";
-    }
-    css_str += ".dark .forcebright :not(.rawstyle) > image,";
-    css_str += ".dark .forcebright image:not(.rawstyle),";
-    css_str += ".bright .forcedark :not(.rawstyle) > image,";
-    css_str += ".bright .forcedark image:not(.rawstyle),";
-    css_str += ".dark :not(.rawstyle) > image.forcebright,";
-    css_str += ".dark image.forcebright:not(.rawstyle),";
-    css_str += ".bright :not(.rawstyle) > image.forcedark,";
-    css_str += ".bright image.forcedark:not(.rawstyle),";
-    css_str += ".inverse :not(.rawstyle) > image,";
-    css_str += ".inverse image:not(.rawstyle)";
-    css_str += "{color:";
-    if (overridebasecolor) {
-        css_str += colornamed_inverse;
-    } else {
-        // we override base color in this special cases using inverse color
-        css_str += "@theme_bg_color";
-    }
-    css_str += ";}";
-    return css_str;
-}
-
-std::string sp_get_contrasted_color(std::string const &cssstring, std::string const &define, std::string const &define_b,
-                                    double contrast)
-{
-    std::smatch m;
-    std::regex e("@define-color " + define + " ([^;]*)");
-    std::regex_search(cssstring, m, e);
-    std::smatch n;
-    std::regex f("@define-color " + define_b + " ([^;]*)");
-    std::regex_search(cssstring, n, f);
-    std::string out = "";
-    if (m.size() >= 1 && n.size() >= 1) {
-        out = "@define-color " + define + " mix(" + m[1].str() + ", " + n[1].str() + ", " + Glib::ustring::format(contrast) + ");\n";
-    }
-    return out;
-}
-
-std::string sp_tweak_background_colors(std::string cssstring, double crossfade)
-{
-    static std::regex re_no_affect("(inherit|unset|initial|none|url)");
-    static std::regex re_background_color("background-color( ){0,3}:(.*?);");
-    static std::regex re_background_image("background-image( ){0,3}:(.*?\\)) *?;");
-    std::string sub = "";
-    std::smatch m;
-    std::regex_search(cssstring, m, re_no_affect);
-    if (m.size() == 0) {
-        if (cssstring.find("background-color") != std::string::npos) {
-            sub = "background-color:shade($2," + Glib::ustring::format(crossfade) + ");";
-            cssstring = std::regex_replace(cssstring, re_background_color, sub);
-        } else if (cssstring.find("background-image") != std::string::npos) {
-            if (crossfade > 1) {
-                crossfade = std::clamp((int)((2 - crossfade) * 80), 0, 100);
-                sub = "background-image:cross-fade(" + Glib::ustring::format(crossfade) + "% image($2), image(@theme_bg_color));";
-            } else {
-                crossfade = std::clamp((int)((1 - crossfade) * 80), 0 , 100);
-                sub = "background-image:cross-fade(" + Glib::ustring::format(crossfade) + "% image(@theme_bg_color), image($2));";
-            }
-            cssstring = std::regex_replace(cssstring, re_background_image, sub);
-        }
-    } else {
-        cssstring = "";
-    }
-    return cssstring;
-}
-
-static void
-show_parsing_error(const Glib::RefPtr<const Gtk::CssSection>& section, const Glib::Error& error)
-{
-#ifndef NDEBUG
-  g_warning("There is a warning parsing theme CSS:: %s", error.what().c_str());
-#endif
-}
-
-/**
- * \brief Add our CSS style sheets
- * @param only_providers: Apply only the providers part, from inkscape preferences::theme change, no need to reaply
- */
-void Application::add_gtk_css(bool only_providers)
-{
-    using namespace Inkscape::IO::Resource;
-    // Add style sheet (GTK3)
-    auto const screen = Gdk::Screen::get_default();
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    gchar *gtkThemeName = nullptr;
-    gchar *gtkIconThemeName = nullptr;
-    Glib::ustring themeiconname;
-    gboolean gtkApplicationPreferDarkTheme;
-    GtkSettings *settings = gtk_settings_get_default();
-    if (settings && !only_providers) {
-        g_object_get(settings, "gtk-icon-theme-name", &gtkIconThemeName, NULL);
-        g_object_get(settings, "gtk-theme-name", &gtkThemeName, NULL);
-        g_object_get(settings, "gtk-application-prefer-dark-theme", &gtkApplicationPreferDarkTheme, NULL);
-        prefs->setBool("/theme/defaultPreferDarkTheme", gtkApplicationPreferDarkTheme);
-        prefs->setString("/theme/defaultGtkTheme", Glib::ustring(gtkThemeName));
-        prefs->setString("/theme/defaultIconTheme", Glib::ustring(gtkIconThemeName));
-        Glib::ustring gtkthemename = prefs->getString("/theme/gtkTheme");
-        if (gtkthemename != "") {
-            g_object_set(settings, "gtk-theme-name", gtkthemename.c_str(), NULL);
-        } else {
-            Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
-            Glib::RefPtr<Gdk::Screen>  screen = display->get_default_screen();
-            Glib::RefPtr<Gtk::IconTheme> icon_theme = Gtk::IconTheme::get_for_screen(screen);
-            Gtk::IconInfo iconinfo = icon_theme->lookup_icon("tool-pointer", 22, Gtk::ICON_LOOKUP_FORCE_SIZE);
-            prefs->setBool("/theme/symbolicIcons", iconinfo.is_symbolic());
-        }
-        bool preferdarktheme = prefs->getBool("/theme/preferDarkTheme", false);
-        g_object_set(settings, "gtk-application-prefer-dark-theme", preferdarktheme, NULL);
-        themeiconname = prefs->getString("/theme/iconTheme");
-        // legacy cleanup
-        if (themeiconname == prefs->getString("/theme/defaultIconTheme")) {
-            prefs->setString("/theme/iconTheme", "");
-        } else if (themeiconname != "") {
-            g_object_set(settings, "gtk-icon-theme-name", themeiconname.c_str(), NULL);
-        }
-    }
-
-    g_free(gtkThemeName);
-    g_free(gtkIconThemeName);
-
-    int themecontrast = prefs->getInt("/theme/contrast", 10);
-    if (!contrastthemeprovider) {
-        contrastthemeprovider = Gtk::CssProvider::create();
-        // We can uncoment this line to remove warnings and errors on the theme
-        contrastthemeprovider->signal_parsing_error().connect(sigc::ptr_fun(show_parsing_error));
-    }
-    // we use contast only if is setup (!= 10)
-    if (themecontrast < 10) {
-        Glib::ustring css_contrast = "";
-        double contrast = (10 - themecontrast) / 40.0;
-        double shade = 1 - contrast;
-        const gchar *variant = nullptr;
-        if (prefs->getBool("/theme/preferDarkTheme", false)) {
-            variant = "dark";
-        }
-        if (prefs->getBool("/theme/darkTheme", false)) {
-            contrast *= 2.5;
-            shade = 1 + contrast;
-        }
-        Glib::ustring current_theme = prefs->getString("/theme/gtkTheme", prefs->getString("/theme/defaultGtkTheme", ""));
-        GtkCssProvider *currentthemeprovider =
-            gtk_css_provider_get_named(current_theme.c_str(), variant);
-        std::string cssstring = gtk_css_provider_to_string(currentthemeprovider);
-        if (contrast) {
-            std::string cssdefined = ""; 
-            std::string appenddefined = ""; 
-            std::string colorsdefined = "";
-            // we do this way to fix issue Inkscape#2345
-            // windows seem crash if text length > 2000;
-            std::istringstream f(cssstring);
-            std::string line;    
-            while (std::getline(f, line)) {
-                if (line.find("@define-color") != std::string::npos) {
-                    colorsdefined += line;
-                    colorsdefined += "\n";
-                }
-                // here we ignore most of class to parse because is in additive mode
-                // so stiles not applyed are set on previous context style
-                if (line.find(";") != std::string::npos &&
-                    line.find("background-image") == std::string::npos &&
-                    line.find("background-color") == std::string::npos)
-                {
-                    continue;
-                }
-                cssdefined += sp_tweak_background_colors(line, shade);
-                cssdefined += "\n";
-            }
-            appenddefined  = sp_get_contrasted_color(colorsdefined, "theme_bg_color", "theme_fg_color", contrast);
-            appenddefined += sp_get_contrasted_color(colorsdefined, "theme_base_color", "theme_text_color", contrast);
-            appenddefined += sp_get_contrasted_color(colorsdefined, "theme_selected_bg_color", "theme_selected_fg_color", contrast);
-            cssstring = cssdefined + appenddefined;
-        }
-        if (!cssstring.empty()) {
-            // Use c format allow parse with errors or warnings
-            gtk_css_provider_load_from_data (contrastthemeprovider->gobj(), cssstring.c_str(), -1, nullptr);
-            Gtk::StyleContext::add_provider_for_screen(screen, contrastthemeprovider, GTK_STYLE_PROVIDER_PRIORITY_SETTINGS);
-        }
-    } else if (contrastthemeprovider) {
-        Gtk::StyleContext::remove_provider_for_screen(screen, contrastthemeprovider);
-    }
-    Glib::ustring style = get_filename(UIS, "style.css");
-    if (!style.empty()) {
-        if (styleprovider) {
-            Gtk::StyleContext::remove_provider_for_screen(screen, styleprovider);
-        }
-        if (!styleprovider) {
-            styleprovider = Gtk::CssProvider::create();
-        }
-        try {
-            styleprovider->load_from_path(style);
-        } catch (const Gtk::CssProviderError &ex) {
-            g_critical("CSSProviderError::load_from_path(): failed to load '%s'\n(%s)", style.c_str(),
-                       ex.what().c_str());
-        }
-        Gtk::StyleContext::add_provider_for_screen(screen, styleprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
-    Glib::ustring gtkthemename = prefs->getString("/theme/gtkTheme", prefs->getString("/theme/defaultGtkTheme", ""));
-    gtkthemename += ".css";
-    style = get_filename(UIS, gtkthemename.c_str(), false, true);
-    if (!style.empty()) {
-        if (themeprovider) {
-            Gtk::StyleContext::remove_provider_for_screen(screen, themeprovider);
-        }
-        if (!themeprovider) {
-            themeprovider = Gtk::CssProvider::create();
-        }
-        try {
-            themeprovider->load_from_path(style);
-        } catch (const Gtk::CssProviderError &ex) {
-            g_critical("CSSProviderError::load_from_path(): failed to load '%s'\n(%s)", style.c_str(),
-                       ex.what().c_str());
-        }
-        Gtk::StyleContext::add_provider_for_screen(screen, themeprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
-
-    if (!colorizeprovider) {
-        colorizeprovider = Gtk::CssProvider::create();
-    }
-    Glib::ustring css_str = "";
-    if (prefs->getBool("/theme/symbolicIcons", false)) {
-        css_str = get_symbolic_colors();
-    }
-    try {
-        colorizeprovider->load_from_data(css_str);
-    } catch (const Gtk::CssProviderError &ex) {
-        g_critical("CSSProviderError::load_from_data(): failed to load '%s'\n(%s)", css_str.c_str(), ex.what().c_str());
-    }
-    Gtk::StyleContext::add_provider_for_screen(screen, colorizeprovider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
 /** Sets the keyboard modifier to map to Alt.
@@ -675,7 +421,7 @@ Application::crash_handler (int /*signum*/)
             FILE *file = nullptr;
             for(auto & location : locations) {
                 if (!location) continue; // It seems to be okay, but just in case
-                gchar * filename = g_build_filename(location, c, NULL);
+                gchar * filename = g_build_filename(location, c, nullptr);
                 Inkscape::IO::dump_fopen_call(filename, "E");
                 file = Inkscape::IO::fopen_utf8name(filename, "w");
                 if (file) {
@@ -788,77 +534,6 @@ Application::crash_handler (int /*signum*/)
     /* on exit, allow restored signal handler to take over and crash us */
 }
 
-/**
- *  Menus management
- *
- */
-bool Application::load_menus()
-{
-    using namespace Inkscape::IO::Resource;
-    Glib::ustring filename = get_filename(UIS, MENUS_FILE);
-
-    _menus = sp_repr_read_file(filename.c_str(), nullptr);
-    if ( !_menus ) {
-        _menus = sp_repr_read_mem(menus_skeleton, MENUS_SKELETON_SIZE, nullptr);
-    }
-    return (_menus != nullptr);
-}
-
-
-void
-Application::selection_modified (Inkscape::Selection *selection, guint flags)
-{
-    g_return_if_fail (selection != nullptr);
-
-    if (DESKTOP_IS_ACTIVE (selection->desktop())) {
-        signal_selection_modified.emit(selection, flags);
-    }
-}
-
-
-void
-Application::selection_changed (Inkscape::Selection * selection)
-{
-    g_return_if_fail (selection != nullptr);
-
-    if (DESKTOP_IS_ACTIVE (selection->desktop())) {
-        signal_selection_changed.emit(selection);
-    }
-}
-
-void
-Application::subselection_changed (SPDesktop *desktop)
-{
-    g_return_if_fail (desktop != nullptr);
-
-    if (DESKTOP_IS_ACTIVE (desktop)) {
-        signal_subselection_changed.emit(desktop);
-    }
-}
-
-
-void
-Application::selection_set (Inkscape::Selection * selection)
-{
-    g_return_if_fail (selection != nullptr);
-
-    if (DESKTOP_IS_ACTIVE (selection->desktop())) {
-        signal_selection_set.emit(selection);
-        signal_selection_changed.emit(selection);
-    }
-}
-
-
-void
-Application::eventcontext_set (Inkscape::UI::Tools::ToolBase * eventcontext)
-{
-    g_return_if_fail (eventcontext != nullptr);
-
-    if (DESKTOP_IS_ACTIVE (eventcontext->getDesktop())) {
-        signal_eventcontext_set.emit(eventcontext);
-    }
-}
-
 
 void
 Application::add_desktop (SPDesktop * desktop)
@@ -875,7 +550,6 @@ Application::add_desktop (SPDesktop * desktop)
     _desktops->insert(_desktops->begin(), desktop);
 
     signal_activate_desktop.emit(desktop);
-    signal_eventcontext_set.emit(desktop->getEventContext());
     signal_selection_set.emit(desktop->getSelection());
     signal_selection_changed.emit(desktop->getSelection());
 }
@@ -900,16 +574,13 @@ Application::remove_desktop (SPDesktop * desktop)
             _desktops->insert(_desktops->begin(), new_desktop);
 
             signal_activate_desktop.emit(new_desktop);
-            signal_eventcontext_set.emit(new_desktop->getEventContext());
             signal_selection_set.emit(new_desktop->getSelection());
             signal_selection_changed.emit(new_desktop->getSelection());
         } else {
-            signal_eventcontext_set.emit(nullptr);
             if (desktop->getSelection())
                 desktop->getSelection()->clear();
         }
     }
-    desktop->setEventContext("");
 
     _desktops->erase(std::find(_desktops->begin(), _desktops->end(), desktop));
 
@@ -946,7 +617,6 @@ Application::activate_desktop (SPDesktop * desktop)
     _desktops->insert (_desktops->begin(), desktop);
 
     signal_activate_desktop.emit(desktop);
-    signal_eventcontext_set.emit(desktop->getEventContext());
     signal_selection_set(desktop->getSelection());
     signal_selection_changed(desktop->getSelection());
 }
@@ -1085,16 +755,6 @@ Application::add_document (SPDocument *document)
                 iter.second ++;
             }
        }
-    } else {
-        // insert succeeded, this document is new.
-
-        // Create a selection model tied to the document for running without a GUI.
-        // We create the model even if there is a GUI as there might not be a window
-        // tied to the document (which would have its own selection model) as in the
-        // case where a verb requires a GUI where it's not really needed (conversion
-        // of verbs to actions will eliminate this need).
-        g_assert(_selection_models.find(document) == _selection_models.end());
-        _selection_models[document] = new AppSelectionModel(document);
     }
 }
 
@@ -1114,12 +774,6 @@ Application::remove_document (SPDocument *document)
             if (iter->second < 1) {
                 // this was the last one, remove the pair from list
                 _document_set.erase (iter);
-
-                // also remove the selection model
-                std::map<SPDocument *, AppSelectionModel *>::iterator sel_iter = _selection_models.find(document);
-                if (sel_iter != _selection_models.end()) {
-                    _selection_models.erase(sel_iter);
-                }
 
                 return true;
             } else {
@@ -1170,65 +824,9 @@ Application::sole_desktop_for_document(SPDesktop const &desktop) {
     return true;
 }
 
-Inkscape::UI::Tools::ToolBase *
-Application::active_event_context ()
-{
-    if (SP_ACTIVE_DESKTOP) {
-        return SP_ACTIVE_DESKTOP->getEventContext();
-    }
-
-    return nullptr;
-}
-
-Inkscape::ActionContext
-Application::active_action_context()
-{
-    if (SP_ACTIVE_DESKTOP) {
-        return Inkscape::ActionContext(SP_ACTIVE_DESKTOP);
-    }
-
-    SPDocument *doc = active_document();
-    if (!doc) {
-        return Inkscape::ActionContext();
-    }
-
-    return action_context_for_document(doc);
-}
-
-Inkscape::ActionContext
-Application::action_context_for_document(SPDocument *doc)
-{
-    // If there are desktops, check them first to see if the document is bound to one of them
-    if (_desktops != nullptr) {
-        for (auto desktop : *_desktops) {
-            if (desktop->doc() == doc) {
-                return Inkscape::ActionContext(desktop);
-            }
-        }
-    }
-
-    // Document is not associated with any desktops - maybe we're in command-line mode
-    std::map<SPDocument *, AppSelectionModel *>::iterator sel_iter = _selection_models.find(doc);
-    if (sel_iter == _selection_models.end()) {
-        std::cout << "Application::action_context_for_document: no selection model" << std::endl;
-        return Inkscape::ActionContext();
-    }
-    return Inkscape::ActionContext(sel_iter->second->getSelection());
-}
-
-
 /*#####################
 # HELPERS
 #####################*/
-
-void
-Application::refresh_display ()
-{
-    for (auto & _desktop : *_desktops) {
-        _desktop->requestRedraw();
-    }
-}
-
 
 /**
  *  Handler for Inkscape's Exit verb.  This emits the shutdown signal,
@@ -1242,17 +840,6 @@ Application::exit ()
 
     Inkscape::Preferences::unload();
     //gtk_main_quit ();
-}
-
-
-
-
-Inkscape::XML::Node *
-Application::get_menus()
-{
-    Inkscape::XML::Node *repr = _menus->root();
-    g_assert (!(strcmp (repr->name(), "inkscape")));
-    return repr->firstChild();
 }
 
 void

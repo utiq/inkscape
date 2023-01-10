@@ -11,10 +11,14 @@
  */
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include "helper/geom.h"
 #include "helper/geom-curves.h"
 #include <2geom/curves.h>
 #include <2geom/sbasis-to-bezier.h>
+#include <2geom/path-intersection.h>
+#include <2geom/convex-hull.h>
 
 using Geom::X;
 using Geom::Y;
@@ -191,7 +195,49 @@ bounds_exact_transformed(Geom::PathVector const & pv, Geom::Affine const & t)
     return bbox;
 }
 
+bool 
+pathv_similar(Geom::PathVector const &apv, Geom::PathVector const &bpv, double precission) 
+{
+    if (apv == bpv) {
+        return true;
+    }
+    size_t totala = apv.curveCount();
+    if (totala != bpv.curveCount()) {
+        return false;
+    }
+    std::vector<Geom::Coord> pos;
+    for (size_t i = 0; i < totala; i++) {
+        Geom::Point pointa = apv.pointAt(float(i)+0.2);
+        Geom::Point pointb = bpv.pointAt(float(i)+0.2);
+        Geom::Point pointc = apv.pointAt(float(i)+0.4);
+        Geom::Point pointd = bpv.pointAt(float(i)+0.4);
+        Geom::Point pointe = apv.pointAt(float(i));
+        Geom::Point pointf = bpv.pointAt(float(i));
+        if (!Geom::are_near(pointa[Geom::X], pointb[Geom::X], precission) ||
+            !Geom::are_near(pointa[Geom::Y], pointb[Geom::Y], precission) ||
+            !Geom::are_near(pointc[Geom::X], pointd[Geom::X], precission) ||
+            !Geom::are_near(pointc[Geom::Y], pointd[Geom::Y], precission) ||
+            !Geom::are_near(pointe[Geom::X], pointf[Geom::X], precission) ||
+            !Geom::are_near(pointe[Geom::Y], pointf[Geom::Y], precission)) 
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
+size_t
+pathv_real_size(Geom::Path path) 
+{
+    size_t psize = path.size_default();
+    if (path.closed()) {
+        const Geom::Curve &closingline = path.back_closed(); 
+        if (are_near(closingline.initialPoint(), closingline.finalPoint())) {
+        psize = path.size_open();
+        }
+    }
+    return psize;
+}
 
 static void
 geom_line_wind_distance (Geom::Coord x0, Geom::Coord y0, Geom::Coord x1, Geom::Coord y1, Geom::Point const &pt, int *wind, Geom::Coord *best)
@@ -401,6 +447,21 @@ geom_curve_bbox_wind_distance(Geom::Curve const & c, Geom::Affine const &m,
     }
 }
 
+bool 
+pointInTriangle(Geom::Point const &p, Geom::Point const &p1, Geom::Point const &p2, Geom::Point const &p3)
+{
+    //http://totologic.blogspot.com.es/2014/01/accurate-point-in-triangle-test.html
+    using Geom::X;
+    using Geom::Y;
+    double denominator = (p1[X]*(p2[Y] - p3[Y]) + p1[Y]*(p3[X] - p2[X]) + p2[X]*p3[Y] - p2[Y]*p3[X]);
+    double t1 = (p[X]*(p3[Y] - p1[Y]) + p[Y]*(p1[X] - p3[X]) - p1[X]*p3[Y] + p1[Y]*p3[X]) / denominator;
+    double t2 = (p[X]*(p2[Y] - p1[Y]) + p[Y]*(p1[X] - p2[X]) - p1[X]*p2[Y] + p1[Y]*p2[X]) / -denominator;
+    double s = t1 + t2;
+
+    return 0 <= t1 && t1 <= 1 && 0 <= t2 && t2 <= 1 && s <= 1;
+}
+
+
 /* Calculates...
    and returns ... in *wind and the distance to ... in *dist.
    Returns bounding box in *bbox if bbox!=NULL.
@@ -449,6 +510,44 @@ pathv_matrix_point_bbox_wind_distance (Geom::PathVector const & pathv, Geom::Aff
 }
 
 //#################################################################################
+
+/**
+ * An exact check for whether the two pathvectors intersect or overlap, including the case of
+ * a line crossing through a solid shape.
+ */
+bool pathvs_have_nonempty_overlap(Geom::PathVector const &a, Geom::PathVector const &b)
+{
+    // Fast negative check using bounds.
+    auto intersected_bounds = a.boundsFast() & b.boundsFast();
+    if (!intersected_bounds) {
+        return false;
+    }
+
+    // Slightly slower positive check using vertex containment.
+    for (auto &node : b.nodes()) {
+        if (a.winding(node)) {
+            return true;
+        }
+    }
+   for (auto &node : a.nodes()) {
+        if (b.winding(node)) {
+            return true;
+        }
+    }
+
+    // The winding method may not detect nodeless Bézier arcs in one pathvector glancing
+    // the edge of the other pathvector. We must deal with this possibility by also checking for
+    // intersections of boundaries.
+    auto crossings = Geom::SimpleCrosser().crossings(a, b);
+    if (crossings.empty()) {
+        return false;
+    }
+    auto is_empty = [](Geom::Crossings const &xings) -> bool { return xings.empty(); };
+    if (!std::all_of(crossings.begin(), crossings.end(), is_empty)) { // An intersection has been found
+        return true;
+    }
+    return false;
+}
 
 /*
  * Converts all segments in all paths to Geom::LineSegment or Geom::HLineSegment or
@@ -599,10 +698,10 @@ pathv_to_cubicbezier( Geom::PathVector const &pathv)
 }
 
 //Study move to 2Geom
-size_t 
+size_t
 count_pathvector_nodes(Geom::PathVector const &pathv) {
     size_t tot = 0;
-    for (auto subpath : pathv) {
+    for (auto const &subpath : pathv) {
         tot += count_path_nodes(subpath);
     }
     return tot;
@@ -874,11 +973,86 @@ recursive_bezier4(const double x1, const double y1,
         recursive_bezier4(x1234, y1234, x234, y234, x34, y34, x4, y4, m_points, level + 1); 
 }
 
-void 
-swap(Geom::Point &A, Geom::Point &B){
-    Geom::Point tmp = A;
-    A = B;
-    B = tmp;
+/**
+ * Returns whether an affine transformation is approximately a dihedral transformation, i.e.
+ * it maps the axis-aligned unit square centred at the origin to itself.
+ */
+bool approx_dihedral(Geom::Affine const &affine, double eps)
+{
+    // Ensure translation is zero.
+    if (std::abs(affine[4]) > eps || std::abs(affine[5]) > eps) return false;
+
+    // Ensure matrix has integer components.
+    std::array<int, 4> arr;
+    for (int i = 0; i < 4; i++) {
+        arr[i] = std::round(affine[i]);
+        if (std::abs(affine[i] - arr[i]) > eps) return false;
+        arr[i] = std::abs(arr[i]);
+    }
+
+    // Ensure rounded matrix is correct.
+    return arr == std::array {1, 0, 0, 1 } || arr == std::array{ 0, 1, 1, 0 };
+}
+
+/**
+ * Computes the rotation which puts a set of points in a position where they can be wrapped in the
+ * smallest possible axis-aligned rectangle, and returns it along with the rectangle.
+ */
+std::pair<Geom::Affine, Geom::Rect> min_bounding_box(std::vector<Geom::Point> const &pts)
+{
+    // Compute the convex hull.
+    auto const hull = Geom::ConvexHull(pts);
+
+    // Move the point i along until it maximises distance in the direction n.
+    auto advance = [&] (int &i, Geom::Point const &n) {
+        auto ih = Geom::dot(hull[i], n);
+        while (true) {
+            int j = (i + 1) % hull.size();
+            auto jh = Geom::dot(hull[j], n);
+            if (ih >= jh) break;
+            i = j;
+            ih = jh;
+        }
+    };
+
+    double mina = std::numeric_limits<double>::max();
+    std::pair<Geom::Affine, Geom::Rect> result;
+
+    // Run rotating callipers.
+    int j, k, l;
+    for (int i = 0; i < hull.size(); i++) {
+        // Get the current segment.
+        auto &p1 = hull[i];
+        auto &p2 = hull[(i + 1) % hull.size()];
+        auto v = (p2 - p1).normalized();
+        auto n = Geom::Point(-v.y(), v.x());
+
+        if (i == 0) {
+            // Initialise the points.
+            j = 0; advance(j,  v);
+            k = j; advance(k,  n);
+            l = k; advance(l, -v);
+        } else {
+            // Advance the points.
+            advance(j,  v);
+            advance(k,  n);
+            advance(l, -v);
+        }
+
+        // Compute the dimensions of the unconstrained rectangle.
+        auto w = Geom::dot(hull[j] - hull[l], v);
+        auto h = Geom::dot(hull[k] - hull[i], n);
+        auto a = w * h;
+
+        // Track the minimum.
+        if (a < mina) {
+            mina = a;
+            result = std::make_pair(Geom::Affine(v.x(), -v.y(), v.y(), v.x(), 0.0, 0.0),
+                                    Geom::Rect::from_xywh(Geom::dot(hull[l], v), Geom::dot(hull[i], n), w, h));
+        }
+    }
+
+    return result;
 }
 
 /*

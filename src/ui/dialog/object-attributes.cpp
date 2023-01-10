@@ -15,7 +15,6 @@
 
 #include "desktop.h"
 #include "inkscape.h"
-#include "verbs.h"
 
 #include "object/sp-anchor.h"
 #include "object/sp-image.h"
@@ -23,6 +22,7 @@
 #include "ui/dialog/object-attributes.h"
 
 #include "widgets/sp-attribute-widget.h"
+#include "xml/href-attribute-helper.h"
 
 namespace Inkscape {
 namespace UI {
@@ -69,22 +69,12 @@ static const SPAttrDesc image_nohref_desc[] = {
 };
 
 ObjectAttributes::ObjectAttributes()
-    : DialogBase("/dialogs/objectattr/", SP_VERB_DIALOG_ATTR)
+    : DialogBase("/dialogs/objectattr/", "ObjectAttributes")
     , blocked(false)
     , CurrentItem(nullptr)
     , attrTable(Gtk::manage(new SPAttributeTable()))
-    , selectChangedConn()
-    , subselChangedConn()
-    , selectModifiedConn()
 {
     attrTable->show();
-}
-
-ObjectAttributes::~ObjectAttributes ()
-{
-    selectModifiedConn.disconnect();
-    subselChangedConn.disconnect();
-    selectChangedConn.disconnect();
 }
 
 void ObjectAttributes::widget_setup ()
@@ -113,15 +103,15 @@ void ObjectAttributes::widget_setup ()
     const SPAttrDesc *desc;
 
 //    if (type == SP_TYPE_ANCHOR)
-    if (SP_IS_ANCHOR(item))
+    if (is<SPAnchor>(item))
     {
         desc = anchor_desc;
     }
 //    else if (type == SP_TYPE_IMAGE)
-    else if (SP_IS_IMAGE(item))
+    else if (is<SPImage>(item))
     {
         Inkscape::XML::Node *ir = obj->getRepr();
-        const gchar *href = ir->attribute("xlink:href");
+        const gchar *href = Inkscape::getHrefAttribute(*ir).second;
         if ( (!href) || ((strncmp(href, "data:", 5) == 0)) )
         {
             desc = image_nohref_desc;
@@ -162,38 +152,12 @@ void ObjectAttributes::widget_setup ()
     blocked = false;
 }
 
-void ObjectAttributes::update()
+void ObjectAttributes::selectionChanged(Selection *selection)
 {
-    if (!_app) {
-        std::cerr << "ObjectAttributes::update(): _app is null" << std::endl;
-        return;
-    }
-
-    SPDesktop *desktop = getDesktop();
-
-    if (!desktop) {
-        return;
-    }
-
-    {
-        {
-            selectModifiedConn.disconnect();
-            subselChangedConn.disconnect();
-            selectChangedConn.disconnect();
-        }
-
-        if (desktop && desktop->selection) {
-            selectChangedConn = desktop->selection->connectChanged(sigc::hide(sigc::mem_fun(*this, &ObjectAttributes::widget_setup)));
-            subselChangedConn = desktop->connectToolSubselectionChanged(sigc::hide(sigc::mem_fun(*this, &ObjectAttributes::widget_setup)));
-
-            // Must check flags, so can't call widget_setup() directly.
-            selectModifiedConn = desktop->selection->connectModified(sigc::hide<0>(sigc::mem_fun(*this, &ObjectAttributes::selectionModifiedCB)));
-        }
-        widget_setup();
-    }
+    widget_setup();
 }
 
-void ObjectAttributes::selectionModifiedCB( guint flags )
+void ObjectAttributes::selectionModified(Selection *selection, guint flags)
 {
     if (flags & ( SP_OBJECT_MODIFIED_FLAG |
                    SP_OBJECT_PARENT_MODIFIED_FLAG |

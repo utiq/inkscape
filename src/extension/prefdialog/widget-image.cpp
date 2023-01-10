@@ -63,7 +63,7 @@ WidgetImage::WidgetImage(Inkscape::XML::Node *xml, Inkscape::Extension::Extensio
 }
 
 /** \brief  Create a label for the description */
-Gtk::Widget *WidgetImage::get_widget(sigc::signal<void> * /*changeSignal*/)
+Gtk::Widget *WidgetImage::get_widget(sigc::signal<void ()> * /*changeSignal*/)
 {
     if (_hidden || _image_path.empty()) {
         return nullptr;

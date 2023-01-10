@@ -6,8 +6,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "live_effects/parameter/path.h"
-#include "live_effects/lpeobject.h"
+#include "path.h"
 
 #include <glibmm/i18n.h>
 #include <glibmm/utility.h>
@@ -15,45 +14,42 @@
 #include <gtkmm/button.h>
 #include <gtkmm/label.h>
 
-#include "bad-uri-exception.h"
-#include "ui/widget/point.h"
 
-#include "live_effects/effect.h"
-#include "svg/svg.h"
 #include <2geom/svg-path-parser.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/pathvector.h>
 #include <2geom/d2.h>
+
+#include "bad-uri-exception.h"
 
 #include "desktop.h"
 #include "document-undo.h"
 #include "document.h"
 #include "inkscape.h"
 #include "message-stack.h"
-#include "selection-chemistry.h"
-#include "ui/icon-loader.h"
-#include "verbs.h"
-#include "xml/repr.h"
-// needed for on-canvas editing:
-#include "ui/tools-switch.h"
-#include "ui/shape-editor.h"
-
 #include "selection.h"
-// clipboard support
-#include "ui/clipboard.h"
-// required for linking to other paths
+#include "selection-chemistry.h"
 
+#include "actions/actions-tools.h"
+#include "display/curve.h"
+#include "live_effects/effect.h"
+#include "live_effects/lpeobject.h"
 #include "object/uri.h"
 #include "object/sp-shape.h"
+#include "object/sp-item.h"
 #include "object/sp-text.h"
+#include "svg/svg.h"
 
-#include "display/curve.h"
-
+#include "ui/clipboard.h" // clipboard support
+#include "ui/icon-loader.h"
+#include "ui/icon-names.h"
+#include "ui/shape-editor.h" // needed for on-canvas editing:
 #include "ui/tools/node-tool.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/shape-record.h"
+#include "ui/widget/point.h"
 
-#include "ui/icon-names.h"
+#include "xml/repr.h"
 
 namespace Inkscape {
 
@@ -81,11 +77,11 @@ PathParam::PathParam( const Glib::ustring& label, const Glib::ustring& tip,
     ref_changed_connection = ref.changedSignal().connect(sigc::mem_fun(*this, &PathParam::ref_changed));
 }
 
-PathParam::~PathParam()
-{
-    remove_link();
+PathParam::~PathParam() {
+    unlink();
+    quit_listening();
 //TODO: Removed to fix a bug https://bugs.launchpad.net/inkscape/+bug/1716926
-//      Maybe wee need to resurrect, not know when this code is added, but seems also not working now in a few test I do.
+//      Maybe we need to resurrect, not know when this code is added, but seems also not working now in a few test I do.
 //      in the future and do a deeper fix in multi-path-manipulator
 //    using namespace Inkscape::UI;
 //    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
@@ -106,11 +102,35 @@ PathParam::~PathParam()
     if (desktop) {
         if (dynamic_cast<Inkscape::UI::Tools::NodeTool* >(desktop->event_context)) {
             // Why is this switching tools twice? Probably to reinitialize Node Tool.
-            tools_switch(desktop, TOOLS_SELECT);
-            tools_switch(desktop, TOOLS_NODES);
+            set_active_tool(desktop, "Select");
+            set_active_tool(desktop, "Node");
         }
     }
     g_free(defvalue);
+}
+
+void PathParam::reload() {
+    setUpdating(false);
+    start_listening(getObject());
+    connect_selection_changed();
+    SPItem *item = nullptr;
+    if (( item = cast<SPItem>(getObject()) )) {
+        item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
+    }
+}
+
+Geom::Affine 
+PathParam::get_relative_affine() {
+    Geom::Affine affine = Geom::identity();
+    SPItem *item = nullptr;
+    if (( item = cast<SPItem>(getObject()) )) {
+        std::vector<SPLPEItem *> lpeitems = param_effect->getCurrrentLPEItems();
+        if (lpeitems.size() == 1) {
+            param_effect->sp_lpe_item = lpeitems[0];
+        }
+        affine = item->getRelativeTransform(param_effect->sp_lpe_item);
+    }
+    return affine;
 }
 
 Geom::PathVector const &
@@ -138,18 +158,49 @@ PathParam::param_set_and_write_default()
     param_write_to_repr(defvalue);
 }
 
+std::vector<SPObject *> PathParam::param_get_satellites()
+{
+    
+    std::vector<SPObject *> objs;
+    if (ref.isAttached()) {
+        // we reload connexions in case are lost for example item recreation on ungroup
+        if (!linked_transformed_connection) {
+            write_to_SVG();
+        }
+
+        SPObject * linked_obj = ref.getObject();
+        if (linked_obj) {
+            objs.push_back(linked_obj);
+        }
+    }
+    return objs;
+}
+
 bool
 PathParam::param_readSVGValue(const gchar * strvalue)
 {
     if (strvalue) {
         _pathvector.clear();
-        remove_link();
+        unlink();
         must_recalculate_pwd2 = true;
 
+        
         if (strvalue[0] == '#') {
+            bool write = false;
+            SPObject * old_ref = param_effect->getSPDoc()->getObjectByHref(strvalue);
+            Glib::ustring id_tmp;
+            if (old_ref) {
+                SPObject * tmpsuccessor = old_ref->_tmpsuccessor;
+                // study add setListener() in LPE that generate items from 0
+                if (tmpsuccessor && tmpsuccessor->getId()) {
+                    id_tmp = tmpsuccessor->getId();
+                    id_tmp.insert(id_tmp.begin(), '#');
+                    write = true;
+                }
+            }
             if (href)
                 g_free(href);
-            href = g_strdup(strvalue);
+            href = g_strdup(id_tmp.empty() ? strvalue : id_tmp.c_str());
 
             // Now do the attaching, which emits the changed signal.
             try {
@@ -163,6 +214,10 @@ PathParam::param_readSVGValue(const gchar * strvalue)
                 g_warning("%s", e.what());
                 ref.detach();
                 _pathvector = sp_svg_read_pathv(defvalue);
+            }
+            if (write) {
+                auto full = param_getSVGValue();
+                param_write_to_repr(full.c_str());
             }
         } else {
             _pathvector = sp_svg_read_pathv(strvalue);
@@ -266,13 +321,12 @@ void
 PathParam::param_editOncanvas(SPItem *item, SPDesktop * dt)
 {
     SPDocument *document = dt->getDocument();
-    bool saved = DocumentUndo::getUndoSensitive(document);
-    DocumentUndo::setUndoSensitive(document, false);
+    DocumentUndo::ScopedInsensitive _no_undo(document);
     using namespace Inkscape::UI;
 
     Inkscape::UI::Tools::NodeTool *nt = dynamic_cast<Inkscape::UI::Tools::NodeTool*>(dt->event_context);
     if (!nt) {
-        tools_switch(dt, TOOLS_NODES);
+        set_active_tool(dt, "Node");
         nt = dynamic_cast<Inkscape::UI::Tools::NodeTool*>(dt->event_context);
     }
 
@@ -282,7 +336,7 @@ PathParam::param_editOncanvas(SPItem *item, SPDesktop * dt)
     r.role = SHAPE_ROLE_LPE_PARAM;
     r.edit_transform = item->i2dt_affine(); // TODO is it right?
     if (!href) {
-        r.object = dynamic_cast<SPObject *>(param_effect->getLPEObj());
+        r.object = param_effect->getLPEObj();
         r.lpe_key = param_key;
         Geom::PathVector stored_pv =  _pathvector;
         if (_pathvector.empty()) {
@@ -295,7 +349,6 @@ PathParam::param_editOncanvas(SPItem *item, SPDesktop * dt)
     }
     shapes.insert(r);
     nt->_multipath->setItems(shapes);
-    DocumentUndo::setUndoSensitive(document, saved);
 }
 
 void
@@ -328,10 +381,14 @@ PathParam::param_transform_multiply(Geom::Affine const& postmul, bool /*set*/)
 void
 PathParam::set_new_value (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & newpath, bool write_to_svg)
 {
-    remove_link();
+    unlink();
+    
     _pathvector = Geom::path_from_piecewise(newpath, LPE_CONVERSION_TOLERANCE);
 
     if (write_to_svg) {
+        if (param_effect->isOnClipboard()) {
+            return;
+        }
         param_write_to_repr(sp_svg_write_path(_pathvector).c_str());
 
         // After the whole "writing to svg avalanche of function calling": force value upon pwd2 and don't recalculate.
@@ -359,7 +416,7 @@ PathParam::set_new_value (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & newpa
 void
 PathParam::set_new_value (Geom::PathVector const &newpath, bool write_to_svg)
 {
-    remove_link();
+    unlink();
     if (newpath.empty()) {
         param_set_and_write_default();
         return;
@@ -401,10 +458,11 @@ PathParam::start_listening(SPObject * to)
     if ( to == nullptr ) {
         return;
     }
-    linked_delete_connection = to->connectDelete(sigc::mem_fun(*this, &PathParam::linked_delete));
+    quit_listening();
+    linked_deleted_connection = to->connectDelete(sigc::mem_fun(*this, &PathParam::linked_deleted));
     linked_modified_connection = to->connectModified(sigc::mem_fun(*this, &PathParam::linked_modified));
-    if (SP_IS_ITEM(to)) {
-        linked_transformed_connection = SP_ITEM(to)->connectTransformed(sigc::mem_fun(*this, &PathParam::linked_transformed));
+    if (is<SPItem>(to)) {
+        linked_transformed_connection = cast<SPItem>(to)->connectTransformed(sigc::mem_fun(*this, &PathParam::linked_transformed));
     }
     linked_modified(to, SP_OBJECT_MODIFIED_FLAG); // simulate linked_modified signal, so that path data is updated
 }
@@ -413,7 +471,7 @@ void
 PathParam::quit_listening()
 {
     linked_modified_connection.disconnect();
-    linked_delete_connection.disconnect();
+    linked_deleted_connection.disconnect();
     linked_transformed_connection.disconnect();
 }
 
@@ -426,8 +484,7 @@ PathParam::ref_changed(SPObject */*old_ref*/, SPObject *new_ref)
     }
 }
 
-void
-PathParam::remove_link()
+void PathParam::unlink()
 {
     if (href) {
         ref.detach();
@@ -436,65 +493,75 @@ PathParam::remove_link()
     }
 }
 
+// Why release signal is not fired sometimes and need delete one?
 void
-PathParam::linked_delete(SPObject */*deleted*/)
+PathParam::linked_deleted(SPObject *deleted)
 {
+    Geom::PathVector pv = _pathvector;
     quit_listening();
-    remove_link();
-    set_new_value (_pathvector, true);
+    set_new_value (pv, true);
 }
 
 void PathParam::linked_modified(SPObject *linked_obj, guint flags)
 {
-    linked_modified_callback(linked_obj, flags);
+    if ((!param_effect->is_load || ownerlocator || (!SP_ACTIVE_DESKTOP && param_effect->isReady())) &&
+        flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
+                 SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
+    {
+        linked_modified_callback(linked_obj, flags);
+    }
 }
 
 void PathParam::linked_transformed(Geom::Affine const *rel_transf, SPItem *moved_item)
 {
-    linked_transformed_callback(rel_transf, moved_item);
+    linked_modified_callback(moved_item, SP_OBJECT_MODIFIED_FLAG);
 }
 
 void
-PathParam::linked_modified_callback(SPObject *linked_obj, guint /*flags*/)
+PathParam::linked_modified_callback(SPObject *linked_obj, guint flags)
 {
-    std::unique_ptr<SPCurve> curve;
-    if (auto shape = dynamic_cast<SPShape const *>(linked_obj)) {
-        if (_from_original_d) {
-            curve = SPCurve::copy(shape->curveForEdit());
-        } else {
-            curve = SPCurve::copy(shape->curve());
-        }
-    }
-
-    SPText *text = dynamic_cast<SPText *>(linked_obj);
-    if (text) {
-        bool hidden = text->isHidden();
-        if (hidden) {
-            if (_pathvector.empty()) {
-                text->setHidden(false);
-                curve = text->getNormalizedBpath();
-                text->setHidden(true);
+    if (!_updating && flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
+                 SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
+    {
+        std::optional<SPCurve> curve;
+        if (auto shape = cast<SPShape>(linked_obj)) {
+            if (_from_original_d) {
+                curve = SPCurve::ptr_to_opt(shape->curveForEdit());
             } else {
-                if (curve == nullptr) {
-                    curve.reset(new SPCurve());
-                }
-                curve->set_pathvector(_pathvector);
+                curve = SPCurve::ptr_to_opt(shape->curve());
             }
-        } else {
-            curve = text->getNormalizedBpath();
         }
-    }
 
-    if (curve == nullptr) {
-        // curve invalid, set default value
-        _pathvector = sp_svg_read_pathv(defvalue);
-    } else {
-        _pathvector = curve->get_pathvector();
-    }
+        auto text = cast<SPText>(linked_obj);
+        if (text) {
+            bool hidden = text->isHidden();
+            if (hidden) {
+                if (_pathvector.empty()) {
+                    text->setHidden(false);
+                    curve = text->getNormalizedBpath();
+                    text->setHidden(true);
+                } else {
+                    if (!curve) {
+                        curve.emplace();
+                    }
+                    curve->set_pathvector(_pathvector);
+                }
+            } else {
+                curve = text->getNormalizedBpath();
+            }
+        }
 
-    must_recalculate_pwd2 = true;
-    emit_changed();
-    param_effect->getLPEObj()->requestModified(SP_OBJECT_MODIFIED_FLAG);
+        if (!curve) {
+            // curve invalid, set default value
+            _pathvector = sp_svg_read_pathv(defvalue);
+        } else {
+            _pathvector = curve->get_pathvector();
+        }
+
+        must_recalculate_pwd2 = true;
+        emit_changed();
+        param_effect->getLPEObj()->requestModified(SP_OBJECT_MODIFIED_FLAG);
+    }
 }
 
 void
@@ -518,7 +585,7 @@ PathParam::paste_param_path(const char *svgd)
     // only recognize a non-null, non-empty string
     if (svgd && *svgd) {
         // remove possible link to path
-        remove_link();
+        unlink();
         SPItem * item = SP_ACTIVE_DESKTOP->getSelection()->singleItem();
         std::string svgd_new;
         if (item != nullptr) {
@@ -539,8 +606,7 @@ PathParam::on_paste_button_click()
     Inkscape::UI::ClipboardManager *cm = Inkscape::UI::ClipboardManager::get();
     Glib::ustring svgd = cm->getPathParameter(SP_ACTIVE_DESKTOP);
     paste_param_path(svgd.data());
-    DocumentUndo::done(param_effect->getSPDoc(), SP_VERB_DIALOG_LIVE_PATH_EFFECT,
-                       _("Paste path parameter"));
+    param_effect->makeUndoDone(_("Paste path parameter"));
 }
 
 void
@@ -566,10 +632,8 @@ PathParam::linkitem(Glib::ustring pathid)
         // TODO:
         // check if id really exists in document, or only in clipboard document: if only in clipboard then invalid
         // check if linking to object to which LPE is applied (maybe delegated to PathReference
-
         param_write_to_repr(pathid.c_str());
-        DocumentUndo::done(param_effect->getSPDoc(), SP_VERB_DIALOG_LIVE_PATH_EFFECT,
-                           _("Link path parameter to path"));
+        param_effect->makeUndoDone(_("Link path parameter to path"));
     }
 }
 

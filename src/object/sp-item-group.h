@@ -28,10 +28,12 @@ class SPGroup : public SPLPEItem {
 public:
 	SPGroup();
 	~SPGroup() override;
+    int tag() const override { return tag_of<decltype(*this)>; }
 
     enum LayerMode { GROUP, LAYER, MASK_HELPER };
 
-    bool _expanded;
+    bool isLayer() const { return _layer_mode == LAYER; }
+
     bool _insert_bottom;
     LayerMode _layer_mode;
     std::map<unsigned int, LayerMode> _display_modes;
@@ -39,9 +41,6 @@ public:
     LayerMode layerMode() const { return _layer_mode; }
     void setLayerMode(LayerMode mode);
 
-    bool expanded() const { return _expanded; }
-    void setExpanded(bool isexpanded);
-    
     bool insertBottom() const { return _insert_bottom; }
     void setInsertBottom(bool insertbottom);
 
@@ -60,6 +59,8 @@ public:
 
     int getItemCount() const;
     virtual void _showChildren (Inkscape::Drawing &drawing, Inkscape::DrawingItem *ai, unsigned int key, unsigned int flags);
+
+    std::vector<SPItem*> item_list();
 
 private:
     void _updateLayerMode(unsigned int display_key=0);
@@ -80,6 +81,7 @@ public:
 
     Geom::OptRect bbox(Geom::Affine const &transform, SPItem::BBoxType bboxtype) const override;
     void print(SPPrintContext *ctx) override;
+    const char* typeName() const override;
     const char* displayName() const override;
     char *description() const override;
     Inkscape::DrawingItem *show (Inkscape::Drawing &drawing, unsigned int key, unsigned int flags) override;
@@ -88,33 +90,37 @@ public:
     void snappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inkscape::SnapPreferences const *snapprefs) const override;
 
     void update_patheffect(bool write) override;
-};
 
+    guint32 highlight_color() const override;
+
+    /**
+     * Return the result of recursively ungrouping all groups in \a items.
+     */
+    static std::vector<SPItem*> get_expanded(std::vector<SPItem*> const &items);
+};
 
 /**
  * finds clones of a child of the group going out of the group; and inverse the group transform on its clones
  * Also called when moving objects between different layers
  * @param group current group
  * @param parent original parent
+ * @param clone_original lpe clone handle ungroup
  * @param g transform
  */
 void sp_item_group_ungroup_handle_clones(SPItem *parent, Geom::Affine const g);
 
-void sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children, bool do_done = true);
-
-
-std::vector<SPItem*> sp_item_group_item_list (SPGroup *group);
+void sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children);
 
 SPObject *sp_item_group_get_child_by_name (SPGroup *group, SPObject *ref, const char *name);
 
-MAKE_SP_OBJECT_DOWNCAST_FUNCTIONS(SP_GROUP, SPGroup)
-MAKE_SP_OBJECT_TYPECHECK_FUNCTIONS(SP_IS_GROUP, SPGroup)
 
 inline bool SP_IS_LAYER(SPObject const *obj)
 {
-    auto group = dynamic_cast<SPGroup const *>(obj);
+    auto group = cast<SPGroup>(obj);
     return group && group->layerMode() == SPGroup::LAYER;
 }
+
+void set_default_highlight_colors(std::vector<guint32> colors);
 
 #endif
 

@@ -5,7 +5,34 @@
  * Copyright (C) 2018 Tavmjong Bah
  *
  * The contents of this file may be used under the GNU General Public License Version 2 or later.
+ */
+
+/* Application flow:
+ *   main() -> InkscapeApplication::singleton().gio_app()->run(argc, argv);
  *
+ *     InkscapeApplication::InkscapeApplication
+ *       Initialized: GC, Debug, Gettext, Autosave, Actions, Commandline
+ *     InkscapeApplication::on_handle_local_options
+ *       InkscapeApplication::parse_actions
+ *
+ *     -- Switch to main instance if new Inkscape instance is merged with existing instance. --
+ *        New instances are merged with existing instance unless app_id is changed, see below.
+ *
+ *     InkscapeApplication::on_startup                   | Only called for main instance
+ *
+ *     InkscapeApplication::on_activate (no file specified) OR InkscapeApplication::on_open (file specified)
+ *       InkscapeApplication::process_document           | Will use command-line actions from main instance!
+ *
+ *       InkscapeApplication::create_window (document)
+ *         Inkscape::Shortcuts
+ *
+ *     InkscapeApplication::create_window (file)         |
+ *       InkscapeApplication::create_window (document)   | Open/Close document
+ *     InkscapeApplication::destroy_window               |
+ *
+ *     InkscapeApplication::on_quit
+ *       InkscapeApplication::destroy_all
+ *       InkscapeApplication::destroy_window
  */
 
 #include <iostream>
@@ -13,6 +40,14 @@
 #include <cerrno>  // History file
 #include <regex>
 #include <numeric>
+#include <unistd.h>
+
+// checking if dithering is supported
+#ifdef  WITH_PATCHED_CAIRO
+#include "3rdparty/cairo/src/cairo.h"
+#else
+#include <cairo.h>
+#endif
 
 #include <glibmm/i18n.h>  // Internationalization
 
@@ -21,49 +56,60 @@
 #endif
 
 #include "inkscape-application.h"
+#include "inkscape-version-info.h"
 #include "inkscape-window.h"
 
 #include "auto-save.h"              // Auto-save
 #include "desktop.h"                // Access to window
 #include "file.h"                   // sp_file_convert_dpi
 #include "inkscape.h"               // Inkscape::Application
+#include "path-prefix.h"            // Data directory
 
 #include "include/glibmm_version.h"
 
 #include "inkgc/gc-core.h"          // Garbage Collecting init
 #include "debug/logger.h"           // INKSCAPE_DEBUG_LOG support
 
+#include "extension/init.h"
+
 #include "io/file.h"                // File open (command line).
 #include "io/resource.h"            // TEMPLATE
-#include "io/fix-broken-links.h"  // Fix up references.
+#include "io/fix-broken-links.h"    // Fix up references.
 
 #include "object/sp-root.h"         // Inkscape version.
 
-#include "ui/interface.h"           // sp_ui_error_dialog
-#include "ui/dialog/startup.h"
+#include "ui/interface.h"                 // sp_ui_error_dialog
+#include "ui/desktop/document-check.h"    // Check for data loss on closing document window.
+#include "ui/desktop/menubar.h"
+#include "ui/dialog/dialog-manager.h"     // Save state
 #include "ui/dialog/font-substitution.h"  // Warn user about font substitution.
+#include "ui/dialog/startup.h"
 #include "ui/shortcuts.h"           // Shortcuts... init
-#include "widgets/desktop-widget.h" // Close without saving dialog
-#include "ui/dialog/dialog-manager.h" // save state
 
 #include "util/units.h"           // Redimension window
+#include "util/statics.h"
 
-#include "actions/actions-base.h"         // Actions
-#include "actions/actions-file.h"         // Actions
-#include "actions/actions-object.h"       // Actions
-#include "actions/actions-object-align.h" // Actions
-#include "actions/actions-output.h"       // Actions
-#include "actions/actions-selection.h"    // Actions
-#include "actions/actions-transform.h"    // Actions
-#include "actions/actions-window.h"       // Actions
+#include "actions/actions-base.h"                   // Actions
+#include "actions/actions-file.h"                   // Actions
+#include "actions/actions-edit.h"                   // Actions
+#include "actions/actions-effect.h"                 // Actions
+#include "actions/actions-element-a.h"              // Actions
+#include "actions/actions-element-image.h"          // Actions
+#include "actions/actions-hide-lock.h"              // Actions
+#include "actions/actions-object.h"                 // Actions
+#include "actions/actions-object-align.h"           // Actions
+#include "actions/actions-output.h"                 // Actions
+#include "actions/actions-paths.h"                  // Actions
+#include "actions/actions-selection-object.h"       // Actions
+#include "actions/actions-selection.h"              // Actions
+#include "actions/actions-transform.h"              // Actions
+#include "actions/actions-text.h"                   // Actions
+#include "actions/actions-window.h"                 // Actions
 
-#ifdef GDK_WINDOWING_QUARTZ
-#include <gtkosxapplication.h>
-#endif
+// With GUI
+#include "actions/actions-tutorial.h"               // Actions
 
-#ifdef WITH_DBUS
-# include "extension/dbus/dbus-init.h"
-#endif
+#include "widgets/desktop-widget.h" // Access dialog container.
 
 #ifdef ENABLE_NLS
 // Native Language Support - shouldn't this always be used?
@@ -105,8 +151,13 @@ InkscapeApplication::document_add(SPDocument* document)
 SPDocument*
 InkscapeApplication::document_new(const std::string &Template)
 {
+    auto my_template = Template;
+    if (my_template.empty()) {
+        my_template = Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::TEMPLATES, "default.svg", true);
+    }
+
     // Open file
-    SPDocument *document = ink_file_new(Template);
+    SPDocument *document = ink_file_new(my_template);
     if (document) {
         document_add(document);
 
@@ -133,9 +184,15 @@ InkscapeApplication::document_open(const Glib::RefPtr<Gio::File>& file, bool *ca
     if (document) {
         document->setVirgin(false); // Prevents replacing document in same window during file open.
 
+        // Add/promote recent file; when we call add_item and file is on a recent list already,
+        // then apparently only "modified" time changes.
+        if (auto recentmanager = Gtk::RecentManager::get_default()) {
+            recentmanager->add_item(file->get_uri());
+        }
+
         document_add (document);
     } else if (cancelled == nullptr || !(*cancelled)) {
-        std::cerr << "InkscapeApplication::document_open: Failed to open: " << file->get_parse_name() << std::endl;
+        std::cerr << "InkscapeApplication::document_open: Failed to open: " << file->get_parse_name().raw() << std::endl;
     }
 
     return document;
@@ -175,7 +232,6 @@ InkscapeApplication::document_swap(InkscapeWindow* window, SPDocument* document)
     SPDesktop* desktop = window->get_desktop();
     SPDocument* old_document = window->get_document();
     desktop->change_document(document);
-    document->emitResizedSignal(document->getWidth().value("px"), document->getHeight().value("px"));
 
     // We need to move window from the old document to the new document.
 
@@ -207,11 +263,9 @@ InkscapeApplication::document_swap(InkscapeWindow* window, SPDocument* document)
     INKSCAPE.add_document(document);
     INKSCAPE.remove_document(old_document);
 
-    // ActionContext should be removed once verbs are gone but we use it for now.
-    Inkscape::ActionContext context = INKSCAPE.action_context_for_document(document);
     _active_document  = document;
-    _active_selection = context.getSelection();
-    _active_view      = context.getView();
+    _active_selection = desktop->getSelection();
+    _active_view      = desktop;
     _active_window    = window;
     return true;
 }
@@ -255,6 +309,8 @@ InkscapeApplication::document_revert(SPDocument* document)
 
             if (reverted) {
                 desktop->zoom_absolute(c, zoom, false);
+                /** Update LPE and Fix legacy LPE system **/
+                sp_file_fix_lpe(desktop->getDocument());
             } else {
                 std::cerr << "InkscapeApplication::revert_document: Revert failed!" << std::endl;
             }
@@ -287,6 +343,8 @@ InkscapeApplication::document_close(SPDocument* document)
             std::cerr << "InkscapeApplication::close_document: Document not registered with application." << std::endl;
         }
 
+        Inkscape::GC::release(document);
+        assert(document->_anchored_refcount() == 0);
         delete document;
 
     } else {
@@ -312,7 +370,7 @@ InkscapeApplication::document_window_count(SPDocument* document)
     return count;
 }
 
-/** Fix up a document if necessary (Only fixes that require GUI).
+/** Fix up a document if necessary (Only fixes that require GUI). MOVE TO ANOTHER FILE!
  */
 void
 InkscapeApplication::document_fix(InkscapeWindow* window)
@@ -337,12 +395,13 @@ InkscapeApplication::document_fix(InkscapeWindow* window)
         if ( sp_version_inside_range( document->getRoot()->version.inkscape, 0, 1, 0, 92 ) ) {
             sp_file_convert_dpi(document);
         }
+        /** Update LPE and Fix legacy LPE system **/
+        sp_file_fix_lpe(document);
 
         // Check for font substitutions, requires text to have been rendered.
-        Inkscape::UI::Dialog::FontSubstitution::getInstance().checkFontSubstitutions(document);
+        Inkscape::UI::Dialog::checkFontSubstitutions(document);
     }
 }
-
 
 /** Get a list of open documents (from document map).
  */
@@ -376,12 +435,10 @@ InkscapeApplication::window_open(SPDocument* document)
     // To be removed (add once per window)!
     INKSCAPE.add_document(document);
 
-    // ActionContext should be removed once verbs are gone but we use it for now.
-    Inkscape::ActionContext context = INKSCAPE.action_context_for_document(document);
-    _active_selection = context.getSelection();
-    _active_view      = context.getView();
-    _active_document  = document;
     _active_window    = window;
+    _active_view      = window->get_desktop();
+    _active_selection = window->get_desktop()->getSelection();
+    _active_document  = document;
 
     auto it = _documents.find(document);
     if (it != _documents.end()) {
@@ -424,7 +481,7 @@ InkscapeApplication::window_close(InkscapeWindow* window)
                     if (get_number_of_windows() == 1) {
                         // persist layout of docked and floating dialogs before deleting the last window
                         Inkscape::UI::Dialog::DialogManager::singleton().save_dialogs_state(
-                           window->get_desktop_widget()->getContainer());
+                           window->get_desktop_widget()->getDialogContainer());
                     }
                     it->second.erase(it2);
                     delete window; // Results in call to SPDesktop::destroy()
@@ -495,14 +552,6 @@ InkscapeApplication::dump()
 
 static InkscapeApplication *_instance = nullptr;
 
-InkscapeApplication &InkscapeApplication::singleton()
-{
-    if (!_instance) {
-        _instance = new InkscapeApplication();
-    }
-    return *_instance;
-}
-
 InkscapeApplication *InkscapeApplication::instance()
 {
     return _instance;
@@ -531,26 +580,37 @@ InkscapeApplication::_start_main_option_section(const Glib::ustring& section_nam
     }
 }
 
-// Note: We tried using Gio::APPLICATION_CAN_OVERRIDE_APP_ID instead of
-// Gio::APPLICATION_NON_UNIQUE. The advantages of this is that copy/paste between windows would be
-// more reliable and that we wouldn't have multiple Inkscape instance writing to the preferences
-// file at the same time (if started as separate processes). This caused problems with batch
-// processing files and with extensions as they rely on having multiple instances of Inkscape
-// running independently. In principle one can use --gapplication-app-id to run a new instance of
-// Inkscape but this with our current structure fails with the error message:
-// "g_application_set_application_id: assertion '!application->priv->is_registered' failed".
-// It also require generating new id's for each separate Inkscape instance required.
-
 InkscapeApplication::InkscapeApplication()
 {
+    if (_instance) {
+        std::cerr << "Multiple instances of InkscapeApplication" << std::endl;
+        std::terminate();
+    }
+    _instance = this;
+
     using T = Gio::Application;
 
-    auto app_id = "org.inkscape.Inkscape";
+    auto app_id = Glib::ustring("org.inkscape.Inkscape");
     auto flags = Gio::APPLICATION_HANDLES_OPEN | // Use default file opening.
-                 Gio::APPLICATION_NON_UNIQUE;
+                 Gio::APPLICATION_CAN_OVERRIDE_APP_ID;
+    auto non_unique = false;
+
+    // Allow an independent instance of Inkscape to run. Will have matching DBus name and paths
+    // (e.g org.inkscape.Inkscape.tag, /org/inkscape/Inkscape/tag/window/1).
+    // If this flag isn't set, any new instance of Inkscape will be merged with the already running
+    // instance of Inkscape before on_open() or on_activate() is called.
+    if (Glib::getenv("INKSCAPE_APP_ID_TAG") != "") {
+        flags |= Gio::APPLICATION_CAN_OVERRIDE_APP_ID;
+        app_id += "." + Glib::getenv("INKSCAPE_APP_ID_TAG");
+        if (!Gio::Application::id_is_valid(app_id)) {
+            std::cerr << "InkscapeApplication: invalid application id: " << app_id.raw() << std::endl;
+            std::cerr << "  tag must be ASCII and not start with a number." << std::endl;
+        }
+        non_unique = true;
+    }
 
     if (gtk_init_check(nullptr, nullptr)) {
-        g_set_prgname(app_id);
+        g_set_prgname(app_id.c_str());
         _gio_application = Gtk::Application::create(app_id, flags);
     } else {
         _gio_application = Gio::Application::create(app_id, flags);
@@ -559,6 +619,7 @@ InkscapeApplication::InkscapeApplication()
 
     auto *gapp = gio_app();
 
+    gapp->signal_startup().connect([this]() { this->on_startup(); });
     gapp->signal_activate().connect([this]() { this->on_activate(); });
     gapp->signal_open().connect(sigc::mem_fun(*this, &InkscapeApplication::on_open));
 
@@ -584,15 +645,23 @@ InkscapeApplication::InkscapeApplication()
     // Glib::set_application_name(N_("Inkscape - A Vector Drawing Program"));  // After gettext() init.
 
     // ======================== Actions =========================
-    add_actions_base(this);         // actions that are GUI independent
-    add_actions_file(this);         // actions for file handling
-    add_actions_object(this);       // actions for object manipulation
-    add_actions_object_align(this); // actions for object alignment
-    add_actions_output(this);       // actions for file export
-    add_actions_selection(this);    // actions for object selection
-    add_actions_transform(this);    // actions for transforming selected objects
-    add_actions_window(this);       // actions for windows
-
+    add_actions_base(this);                 // actions that are GUI independent
+    add_actions_edit(this);                 // actions for editing
+    add_actions_effect(this);               // actions for Filters and Extensions
+    add_actions_element_a(this);            // actions for the SVG a (anchor) element
+    add_actions_element_image(this);        // actions for the SVG image element
+    add_actions_file(this);                 // actions for file handling
+    add_actions_hide_lock(this);            // actions for hiding/locking items.
+    add_actions_object(this);               // actions for object manipulation
+    add_actions_object_align(this);         // actions for object alignment
+    add_actions_output(this);               // actions for file export
+    add_actions_selection(this);            // actions for object selection
+    add_actions_path(this);                 // actions for Paths
+    add_actions_selection_object(this);     // actions for selected objects
+    add_actions_text(this);                 // actions for Text
+    add_actions_tutorial(this);             // actions for opening tutorials (with GUI only)
+    add_actions_transform(this);            // actions for transforming selected objects
+    add_actions_window(this);               // actions for windows
 
     // ====================== Command Line ======================
 
@@ -618,11 +687,12 @@ InkscapeApplication::InkscapeApplication()
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "debug-info",             '\0', N_("Print debugging information"),                                                        "");
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "system-data-directory",  '\0', N_("Print system data directory"),                                             "");
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "user-data-directory",    '\0', N_("Print user data directory"),                                               "");
+    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "app-id-tag",             '\0', N_("Create a unique instance of Inkscape with the application ID 'org.inkscape.Inkscape.TAG'"), "");
 
     // Open/Import
     _start_main_option_section(_("File import"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "pipe",                    'p', N_("Read input file from standard input (stdin)"),                             "");
-    gapp->add_main_option_entry(T::OPTION_TYPE_INT,      "pdf-page",               '\0', N_("PDF page number to import"),                                       N_("PAGE"));
+    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "pages",                   'n', N_("Page numbers to import from multi-page document, i.e. PDF"), N_("PAGE[,PAGE]"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "pdf-poppler",            '\0', N_("Use poppler when importing via commandline"),                              "");
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "convert-dpi-method",     '\0', N_("Method used to convert pre-0.92 document dpi, if needed: [none|scale-viewbox|scale-document]"), N_("METHOD"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "no-convert-text-baseline-spacing", '\0', N_("Do not fix pre-0.92 document's text baseline spacing on opening"), "");
@@ -647,6 +717,7 @@ InkscapeApplication::InkscapeApplication()
 
     // Export - Options
     _start_main_option_section(_("Export options"));
+    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "export-page",           '\0', N_("Page number to export"), N_("all|n[,a-b]"));
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "export-id",              'i', N_("ID(s) of object(s) to export"),                   N_("OBJECT-ID[;OBJECT-ID]*")); // BSP
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "export-id-only",         'j', N_("Hide all objects except object with ID selected by export-id"),             ""); // BSx
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "export-plain-svg",       'l', N_("Remove Inkscape-specific SVG attributes/properties"),                       ""); // xSx
@@ -660,6 +731,7 @@ InkscapeApplication::InkscapeApplication()
     // FIXME: Opacity should really be a DOUBLE, but an upstream bug means 0.0 is detected as NULL
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "export-background-opacity", 'y', N_("Background opacity for exported bitmaps (0.0 to 1.0, or 1 to 255)"), N_("VALUE")); // Bxx
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "export-png-color-mode", '\0', N_("Color mode (bit depth and color type) for exported bitmaps (Gray_1/Gray_2/Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16)"), N_("COLOR-MODE")); // Bxx
+    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,      "export-png-use-dithering", '\0', N_("Force dithering or disables it"), "false|true"); // Bxx
 
     // Query - Geometry
     _start_main_option_section(_("Query object/document geometry"));
@@ -680,70 +752,29 @@ InkscapeApplication::InkscapeApplication()
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "actions",                'a', N_("List of actions (with optional arguments) to execute"),     N_("ACTION(:ARG)[;ACTION(:ARG)]*"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "action-list",           '\0', N_("List all available actions"),                                               "");
 
-    // Verbs
-    _start_main_option_section();
-    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "verb",                  '\0', N_("List of verbs to execute"),                                 N_("VERB[;VERB]*"));
-    gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "verb-list",             '\0', N_("List all available verbs"),                                                 "");
-
     // Interface
     _start_main_option_section(_("Interface"));
-    gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "with-gui",               'g', N_("With graphical user interface (required by some actions/verbs)"),           "");
-    gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "batch-process",         '\0', N_("Close GUI after executing all actions/verbs"),"");
+    gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "with-gui",               'g', N_("With graphical user interface (required by some actions)"),                 "");
+    gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "batch-process",         '\0', N_("Close GUI after executing all actions"),                                    "");
     _start_main_option_section();
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "shell",                 '\0', N_("Start Inkscape in interactive shell mode"),                                 "");
 
-#ifdef WITH_DBUS
-    _start_main_option_section(_("D-Bus"));
-    gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "dbus-listen",           '\0', N_("Enter a listening loop for D-Bus messages in console mode"),                "");
-    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "dbus-name",             '\0', N_("Specify the D-Bus name; default is 'org.inkscape'"),            N_("BUS-NAME"));
-#endif // WITH_DBUS
     // clang-format on
 
     gapp->signal_handle_local_options().connect(sigc::mem_fun(*this, &InkscapeApplication::on_handle_local_options));
 
-    // This is normally called for us... but after the "handle_local_options" signal is emitted. If
-    // we want to rely on actions for handling options, we need to call it here. This appears to
-    // have no unwanted side-effect. It will also trigger the call to on_startup().
-    gapp->register_application();
+    if (_with_gui && !non_unique) { // Will fail to register if not unique.
+        // On macOS, this enables:
+        //   - DnD via dock icon
+        //   - system menu "Quit"
+        gtk_app()->property_register_session() = true;
+    }
 }
 
-#ifdef GDK_WINDOWING_QUARTZ
-static gboolean osx_openfile_callback(GtkosxApplication *, gchar const *, InkscapeApplication *);
-static gboolean osx_quit_callback(GtkosxApplication *, InkscapeApplication *);
-#endif
-
-void
-InkscapeApplication::on_startup2()
+InkscapeApplication::~InkscapeApplication()
 {
-    // This should be completely rewritten.
-    Inkscape::Application::create(_with_gui);
-
-    if (!_with_gui) {
-        return;
-    }
-
-    auto *gapp = gio_app();
-
-    // ======================= Actions (GUI) ======================
-    gapp->add_action("new",    sigc::mem_fun(*this, &InkscapeApplication::on_new   ));
-    gapp->add_action("quit",   sigc::mem_fun(*this, &InkscapeApplication::on_quit  ));
-
-    // ========================= GUI Init =========================
-    Gtk::Window::set_default_icon_name("org.inkscape.Inkscape");
-
-    // Shortcuts
-    // For verbs, shortcuts need to be setup before GUI elements are created! After verbs are gone,
-    // this can be removed. Initialization will then happen on first call to Shortcuts::getInstance()
-    // in Inkscape::Window constructor which will allow verification that actions exist
-    // before shortcuts are added.
-    // Shortcuts for actions can be set before the actions are created.
-    Inkscape::Shortcuts::getInstance().init();
-
-#ifdef GDK_WINDOWING_QUARTZ
-    GtkosxApplication *osxapp = gtkosx_application_get();
-    g_signal_connect(G_OBJECT(osxapp), "NSApplicationOpenFile", G_CALLBACK(osx_openfile_callback), this);
-    g_signal_connect(G_OBJECT(osxapp), "NSApplicationBlockTermination", G_CALLBACK(osx_quit_callback), this);
-#endif
+    _instance = nullptr;
+    Inkscape::Util::StaticsBin::get().destroy();
 }
 
 /** Create a window given a document. This is used internally in InkscapeApplication.
@@ -769,9 +800,6 @@ InkscapeApplication::create_window(SPDocument *document, bool replace)
                 document_close (old_document);
             }
         }
-
-        document->emitResizedSignal(document->getWidth().value("px"), document->getHeight().value("px"));
-
     } else {
         window = window_open (document);
     }
@@ -798,6 +826,7 @@ InkscapeApplication::create_window(const Glib::RefPtr<Gio::File>& file)
     bool cancelled = false;
 
     if (file) {
+        startup_close();
         document = document_open(file, &cancelled);
         if (document) {
             // Remember document so much that we'll add it to recent documents
@@ -808,10 +837,10 @@ InkscapeApplication::create_window(const Glib::RefPtr<Gio::File>& file)
             bool replace = old_document && old_document->getVirgin();
 
             window = create_window (document, replace);
-
+            document_fix(window);
         } else if (!cancelled) {
             std::cerr << "ConcreteInkscapeApplication<T>::create_window: Failed to load: "
-                      << file->get_parse_name() << std::endl;
+                      << file->get_parse_name().raw() << std::endl;
 
             gchar *text = g_strdup_printf(_("Failed to load the requested file %s"), file->get_parse_name().c_str());
             sp_ui_error_dialog(text);
@@ -819,36 +848,24 @@ InkscapeApplication::create_window(const Glib::RefPtr<Gio::File>& file)
         }
 
     } else {
-        std::string Template =
-            Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::TEMPLATES, "default.svg", true);
-        document = document_new (Template);
+        document = document_new ();
         if (document) {
             window = window_open (document);
         } else {
-            std::cerr << "ConcreteInkscapeApplication<T>::create_window: Failed to open default template! " << Template << std::endl;
+            std::cerr << "ConcreteInkscapeApplication<T>::create_window: Failed to open default document!" << std::endl;
         }
     }
 
     _active_document = document;
     _active_window   = window;
-
-#ifdef WITH_DBUS
-    if (window) {
-        SPDesktop* desktop = window->get_desktop();
-        if (desktop) {
-            Inkscape::Extension::Dbus::dbus_init_desktop_interface(desktop);
-        } else {
-            std::cerr << "ConcreteInkscapeApplication<T>::create_window: Failed to create desktop!" << std::endl;
-        }
-    }
-#endif
 }
 
-/** Destroy a window. Aborts if document needs saving.
+/** Destroy a window and close the document it contains. Aborts if document needs saving.
+ *  Replaces document and keeps window open if last window and keep_alive is true.
  *  Returns true if window destroyed.
  */
 bool
-InkscapeApplication::destroy_window(InkscapeWindow* window)
+InkscapeApplication::destroy_window(InkscapeWindow* window, bool keep_alive)
 {
     if (!gtk_app()) {
         g_assert_not_reached();
@@ -857,29 +874,45 @@ InkscapeApplication::destroy_window(InkscapeWindow* window)
 
     SPDocument* document = window->get_document();
 
-    // Remove document if no windows left.
-    if (document) {
-        auto it = _documents.find(document);
-        if (it != _documents.end()) {
+    if (!document) {
+        std::cerr << "InkscapeApplication::destroy_window: window has no document!" << std::endl;
+        return false;
+    }
 
-            // If only one window for document:
-            if (it->second.size() == 1) {
-                // Check if document needs saving.
-                bool abort = window->get_desktop_widget()->shutdown();
-                if (abort) {
-                    return false;
+    // Remove document if no window with document is left.
+    auto it = _documents.find(document);
+    if (it != _documents.end()) {
+
+        // If only one window for document:
+        if (it->second.size() == 1) {
+            // Check if document needs saving.
+            bool abort = document_check_for_data_loss(window);
+            if (abort) {
+                return false;
+            }
+        }
+
+        if (get_number_of_windows() == 1 && keep_alive) {
+            // Last window, replace with new document.
+            auto new_document = document_new();
+            document_swap(window, new_document);
+        } else {
+            window_close(window);
+            if (get_number_of_windows() == 0) {
+                // No Inkscape windows left, remove dialog windows.
+                for (auto const &window : gtk_app()->get_windows()) {
+                    window->close();
                 }
             }
-
-            window_close(window);
-
-            if (it->second.size() == 0) {
-                document_close (document);
-            }
-
-        } else {
-            std::cerr << "ConcreteInkscapeApplication<Gtk::Application>::destroy_window: Could not find document!" << std::endl;
         }
+
+        if (it->second.size() == 0) {
+            // No window contains document so let's close it.
+            document_close (document);
+        }
+
+    } else {
+        std::cerr << "ConcreteInkscapeApplication<Gtk::Application>::destroy_window: Could not find document!" << std::endl;
     }
 
     // Debug
@@ -889,21 +922,24 @@ InkscapeApplication::destroy_window(InkscapeWindow* window)
     return true;
 }
 
-void
+bool
 InkscapeApplication::destroy_all()
 {
     if (!gtk_app()) {
         g_assert_not_reached();
-        return;
+        return false;
     }
 
     while (_documents.size() != 0) {
         auto it = _documents.begin();
         if (!it->second.empty()) {
             auto it2 = it->second.begin();
-            if (!destroy_window (*it2)) return; // If destroy aborted, we need to stop exit.
+            if (!destroy_window (*it2)) {
+                return false; // If destroy aborted, we need to stop exit.
+            }
         }
     }
+    return true;
 }
 
 /** Common processing for documents
@@ -918,15 +954,15 @@ InkscapeApplication::process_document(SPDocument* document, std::string output_p
     bool replace = _use_pipe || _batch_process;
 
     // Open window if needed (reuse window if we are doing one file at a time inorder to save overhead).
+    _active_document  = document;
     if (_with_gui) {
         _active_window = create_window(document, replace);
+        _active_view = _active_window->get_desktop();
+    } else {
+        _active_window = nullptr;
+        _active_view = nullptr;
+        _active_selection = document->getSelection();
     }
-
-    // ActionContext should be removed once verbs are gone but we use it for now.
-    Inkscape::ActionContext context = INKSCAPE.action_context_for_document(document);
-    _active_document  = document;
-    _active_selection = context.getSelection();
-    _active_view      = context.getView();
 
     document->ensureUpToDate(); // Or queries don't work!
 
@@ -941,7 +977,9 @@ InkscapeApplication::process_document(SPDocument* document, std::string output_p
     if (_use_shell) {
         shell();
     }
-
+    if (_with_gui && _active_window) {
+        document_fix(_active_window);
+    }
     // Only if --export-filename, --export-type --export-overwrite, or --export-use-hints are used.
     if (_auto_export) {
         // Save... can't use action yet.
@@ -949,13 +987,44 @@ InkscapeApplication::process_document(SPDocument* document, std::string output_p
     }
 }
 
+/*
+ * Called on first Inkscape instance creation. Not called if a new Inkscape instance is merged
+ * with an existing instance.
+ */
+void
+InkscapeApplication::on_startup()
+{
+    // Deprecated...
+    Inkscape::Application::create(_with_gui);
+
+    // Extensions
+    Inkscape::Extension::init();
+
+    // Command line execution. Must be after Extensions are initialized.
+    parse_actions(_command_line_actions_input, _command_line_actions);
+
+    if (!_with_gui) {
+        return;
+    }
+
+    auto *gapp = gio_app();
+
+    // ======================= Actions (GUI) ======================
+    gapp->add_action("new",    sigc::mem_fun(*this, &InkscapeApplication::on_new   ));
+    gapp->add_action("quit",   sigc::mem_fun(*this, &InkscapeApplication::on_quit  ));
+
+    // ========================= GUI Init =========================
+    Gtk::Window::set_default_icon_name("org.inkscape.Inkscape");
+
+    // build_menu(); // Builds and adds menu to app. Used by all Inkscape windows. This can be done
+                     // before all actions defined. * For the moment done by each window so we can add
+                     // window action info to menu_label_to_tooltip map.
+}
 
 // Open document window with default document or pipe. Either this or on_open() is called.
 void
 InkscapeApplication::on_activate()
 {
-    on_startup2();
-
     std::string output;
 
     // Create new document, either from pipe or from template.
@@ -970,29 +1039,49 @@ InkscapeApplication::on_activate()
         document = document_open (s);
         output = "-";
 
-    } else if(prefs->getBool("/options/boot/enabled", true) && !_use_command_line_argument) {
+    } else if(prefs->getBool("/options/boot/enabled", true)
+               && !_use_command_line_argument
+               && (gtk_app() && gtk_app()->get_windows().empty())) {
 
         Inkscape::UI::Dialog::StartScreen start_screen;
 
-        // int status =
+        // add start window to gtk_app to ensure proper closing on quit
+        gtk_app()->add_window(start_screen);
+
         start_screen.run();
         document = start_screen.get_document();
-
     } else {
 
         // Create a blank document from template
-        std::string Template =
-            Inkscape::IO::Resource::get_filename(Inkscape::IO::Resource::TEMPLATES, "default.svg", true);
-        document = document_new (Template);
+        document = document_new();
     }
+    startup_close();
 
     if (!document) {
-        std::cerr << "ConcreteInksacpeApplication::on_activate: failed to created document!" << std::endl;
+        std::cerr << "ConcreteInkscapeApplication::on_activate: failed to create document!" << std::endl;
         return;
     }
 
     // Process document (command line actions, shell, create window)
     process_document (document, output);
+
+    if (_batch_process) {
+        // If with_gui, we've reused a window for each file. We must quit to destroy it.
+        gio_app()->quit();
+    }
+}
+
+void
+InkscapeApplication::startup_close()
+{
+    if (auto app = gtk_app()) {
+        // Close any open start screens preventing double opens
+        for (auto win : app->get_windows()) {
+            if (auto start = dynamic_cast<Inkscape::UI::Dialog::StartScreen *>(win)) {
+                start->close();
+            }
+        }
+    }
 }
 
 // Open document window for each file. Either this or on_activate() is called.
@@ -1000,11 +1089,10 @@ InkscapeApplication::on_activate()
 void
 InkscapeApplication::on_open(const Gio::Application::type_vec_files& files, const Glib::ustring& hint)
 {
-    on_startup2();
     if(_pdf_poppler)
         INKSCAPE.set_pdf_poppler(_pdf_poppler);
-    if(_pdf_page)
-        INKSCAPE.set_pdf_page(_pdf_page);
+    if(!_pages.empty())
+        INKSCAPE.set_pages(_pages);
 
     if (files.size() > 1 && !_file_export.export_filename.empty()) {
         std::cerr << "ConcreteInkscapeApplication<Gtk::Application>::on_open: "
@@ -1015,6 +1103,7 @@ InkscapeApplication::on_open(const Gio::Application::type_vec_files& files, cons
         return;
     }
 
+    startup_close();
     for (auto file : files) {
 
         // Open file
@@ -1049,6 +1138,9 @@ InkscapeApplication::parse_actions(const Glib::ustring& input, action_vector_t& 
         if (tokens2.size() > 0) {
             action = tokens2[0];
         }
+        if (action.find_first_not_of(" \f\n\r\t\v") == std::string::npos) {
+            continue;
+        }
         if (tokens2.size() > 1) {
             value = tokens2[1];
         }
@@ -1080,7 +1172,26 @@ InkscapeApplication::parse_actions(const Glib::ustring& input, action_vector_t& 
                 } else if (type.get_string() == "s") {
                     action_vector.push_back(
                         std::make_pair( action, Glib::Variant<Glib::ustring>::create(value) ));
-                } else {
+                 } else if (type.get_string() == "(dd)") {
+                    std::vector<Glib::ustring> tokens3 = Glib::Regex::split_simple(",", value);
+                    if (tokens3.size() != 2) {
+                        std::cerr << "InkscapeApplication::parse_actions: " << action << " requires two comma separated numbers" << std::endl;
+                        continue;
+                    }
+
+                    double d0 = 0;
+                    double d1 = 0;
+                    try {
+                        d0 = std::stod(tokens3[0]);
+                        d1 = std::stod(tokens3[1]);
+                    } catch (...) {
+                        std::cerr << "InkscapeApplication::parse_actions: " << action << " requires two comma separated numbers" << std::endl;
+                        continue;
+                    }
+
+                    action_vector.push_back(
+                        std::make_pair( action, Glib::Variant<std::tuple<double, double>>::create(std::tuple<double, double>(d0, d1))));
+               } else {
                     std::cerr << "InkscapeApplication::parse_actions: unhandled action value: "
                               << action << ": " << type.get_string() << std::endl;
                 }
@@ -1089,11 +1200,7 @@ InkscapeApplication::parse_actions(const Glib::ustring& input, action_vector_t& 
                 action_vector.push_back( std::make_pair( action, Glib::VariantBase() ) );
             }
         } else {
-            // Assume a verb
-            // std::cerr << "InkscapeApplication::parse_actions: '"
-            //           << action << "' is not a valid action! Assuming verb!" << std::endl;
-            action_vector.push_back(
-                std::make_pair("verb", Glib::Variant<Glib::ustring>::create(action)));
+            std::cerr << "InkscapeApplication::parse_actions: could not find action for: " << action << std::endl;
         }
     }
 }
@@ -1160,9 +1267,9 @@ InkscapeApplication::shell()
     std::cout << "Inkscape interactive shell mode. Type 'action-list' to list all actions. "
               << "Type 'quit' to quit." << std::endl;
     std::cout << " Input of the form:" << std::endl;
-    std::cout << " action1:arg1; action2:arg2; verb1; verb2; ..." << std::endl;
+    std::cout << " action1:arg1; action2:arg2; ..." << std::endl;
     if (!_with_gui) {
-        std::cout << "Only verbs that don't require a desktop may be used." << std::endl;
+        std::cout << "Only actions that don't require a desktop may be used." << std::endl;
     }
 
 #ifdef WITH_GNU_READLINE
@@ -1255,57 +1362,68 @@ InkscapeApplication::shell()
 int
 InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDict>& options)
 {
+    auto prefs = Inkscape::Preferences::get();
     if (!options) {
         std::cerr << "InkscapeApplication::on_handle_local_options: options is null!" << std::endl;
         return -1; // Keep going
     }
 
-    auto *gapp = gio_app();
+    // ===================== APP ID ====================
+    if (options->contains("app-id-tag")) {
+        Glib::ustring id_tag;
+        options->lookup_value("app-id-tag", id_tag);
+        Glib::ustring app_id = "org.inkscape.Inkscape." + id_tag;
+        if (Gio::Application::id_is_valid(app_id)) {
+            _gio_application->set_id(app_id);
+        } else {
+            std::cerr << "InkscapeApplication: invalid application id: " << app_id.raw() << std::endl;
+            std::cerr << "  tag must be ASCII and not start with a number." << std::endl;
+        }
+    }
 
     // ===================== QUERY =====================
     // These are processed first as they result in immediate program termination.
+    // Note: we cannot use actions here as the app has not been registered yet (registering earlier
+    // causes problems with changing the app id).
     if (options->contains("version")) {
-        gapp->activate_action("inkscape-version");
+        std::cout << Inkscape::inkscape_version() << std::endl;
         return EXIT_SUCCESS;
     }
     
     if (options->contains("debug-info")) {
-        gapp->activate_action("debug-info");
+        std::cout << Inkscape::debug_info() << std::endl;
         return EXIT_SUCCESS;
     }
 
     if (options->contains("system-data-directory")) {
-        gapp->activate_action("system-data-directory");
+        std::cout << Glib::build_filename(get_inkscape_datadir(), "inkscape") << std::endl;
         return EXIT_SUCCESS;
     }
 
     if (options->contains("user-data-directory")) {
-        gapp->activate_action("user-data-directory");
+        std::cout << Inkscape::IO::Resource::profile_path("") << std::endl;
         return EXIT_SUCCESS;
     }
 
-    if (options->contains("verb-list")) {
-        gapp->activate_action("verb-list");
-        return EXIT_SUCCESS;
-    }
-
-    if (options->contains("action-list")) {
-        gapp->activate_action("action-list");
-        return EXIT_SUCCESS;
-    }
+    // Can't do this until after app is registered!
+    // if (options->contains("action-list")) {
+    //     print_action_list();
+    //     return EXIT_SUCCESS;
+    // }
 
     // For options without arguments.
     auto base = Glib::VariantBase();
 
     // ================== GUI and Shell ================
 
-    // Use of most commmand line options turns off use of gui unless explicitly requested!
+    // Use of most command line options turns off use of gui unless explicitly requested!
     // Listed in order that they appear in constructor.
     if (options->contains("pipe")                  ||
 
         options->contains("export-filename")       ||
         options->contains("export-overwrite")      ||
         options->contains("export-type")           ||
+        options->contains("export-page")           ||
 
         options->contains("export-area-page")      ||
         options->contains("export-area-drawing")   ||
@@ -1339,8 +1457,8 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
 
         options->contains("vacuum-defs")           ||
         options->contains("select")                ||
+        options->contains("action-list")           ||
         options->contains("actions")               ||
-        options->contains("verb")                  ||
         options->contains("shell")
         ) {
         _with_gui = false;
@@ -1349,13 +1467,14 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     if (options->contains("with-gui")        ||
         options->contains("batch-process")
         ) {
-        _with_gui = true; // Override turning GUI off
+        _with_gui = bool(gtk_app()); // Override turning GUI off
+        if (!_with_gui)
+            std::cerr << "No GUI available, some actions may fail" << std::endl;
     }
 
     if (options->contains("batch-process"))  _batch_process = true;
     if (options->contains("shell"))          _use_shell = true;
     if (options->contains("pipe"))           _use_pipe  = true;
-
 
     // Enable auto-export
     if (options->contains("export-filename")  ||
@@ -1366,25 +1485,37 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         _auto_export = true;
     }
 
+    // If we are running in command-line mode (without gui) and we haven't explicitly changed the app_id,
+    // change it here so that this instance of Inkscape is not merged with an existing instance (otherwise
+    // unwanted windows will pop up and the command-line arguments will be ignored).
+    if (_with_gui == false &&
+        !options->contains("app-id-tag")) {
+        Glib::ustring app_id = "org.inkscape.Inkscape.p" + std::to_string(getpid());
+        _gio_application->set_id(app_id);
+    }
+
     // ==================== ACTIONS ====================
     // Actions as an argument string: e.g.: --actions="query-id:rect1;query-x".
     // Actions will be processed in order that they are given in argument.
     Glib::ustring actions;
     if (options->contains("actions")) {
-        options->lookup_value("actions", actions);
-        parse_actions(actions, _command_line_actions);
+        options->lookup_value("actions", _command_line_actions_input);
+        // Parsing done after extensions initialized.
     }
 
+    // This must be done after the app has been registered!
+    if (options->contains("action-list")) {
+        _command_line_actions.push_back(std::make_pair("action-list", base));
+    }
 
     // ================= OPEN/IMPORT ===================
 
+    if (options->contains("pages")) {
+        options->lookup_value("pages", _pages);
+    }
+
     if (options->contains("pdf-poppler")) {
         _pdf_poppler = true;
-    }
-    if (options->contains("pdf-page")) {   // Maybe useful for other file types?
-        int page = 0;
-        options->lookup_value("pdf-page", page);
-        _pdf_page = page;
     }
 
     if (options->contains("convert-dpi-method")) {
@@ -1420,8 +1551,6 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
 
     // =================== PROCESS =====================
 
-    // Note: this won't work with --verb="FileSave,FileClose" unless some additional verb changes the file. FIXME
-    // One can use --verb="FileVacuum,FileSave,FileClose".
     if (options->contains("vacuum-defs"))  _command_line_actions.push_back(std::make_pair("vacuum-defs", base));
 
     if (options->contains("select")) {
@@ -1432,16 +1561,6 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
                 std::make_pair("select", Glib::Variant<Glib::ustring>::create(select)));
         }
     }
-
-    if (options->contains("verb")) {
-        Glib::ustring verb;
-        options->lookup_value("verb", verb);
-        if (!verb.empty()) {
-            _command_line_actions.push_back(
-                std::make_pair("verb", Glib::Variant<Glib::ustring>::create(verb)));
-        }
-    }
-
 
     // ==================== EXPORT =====================
     if (options->contains("export-filename")) {
@@ -1457,6 +1576,10 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     }
 
     if (options->contains("export-overwrite"))    _file_export.export_overwrite    = true;
+
+    if (options->contains("export-page")) {
+        options->lookup_value("export-page", _file_export.export_page);
+    }
 
     // Export - Geometry
     if (options->contains("export-area")) {
@@ -1521,19 +1644,17 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         options->lookup_value("export-png-color-mode", _file_export.export_png_color_mode);
     }
 
-
-    // ==================== D-BUS ======================
-
-#ifdef WITH_DBUS
-    // Before initializing extensions, we must set the DBus bus name if required
-    if (options->contains("dbus-listen")) {
-        std::string dbus_name;
-        options->lookup_value("dbus-name", dbus_name);
-        if (!dbus_name.empty()) {
-            Inkscape::Extension::Dbus::dbus_set_bus_name(dbus_name.c_str());
-        }
-    }
+    if (options->contains("export-png-use-dithering")) {
+#ifndef CAIRO_HAS_DITHER
+        std::cerr << "Your cairo version does not support dithering! Option will be ignored." << std::endl;
 #endif
+        Glib::ustring val;
+        options->lookup_value("export-png-use-dithering", val);
+        if (val == "true") _file_export.export_png_use_dithering = true;
+        else if (val == "false") _file_export.export_png_use_dithering = false;
+        else std::cerr << "invalid value for export-png-use-dithering. Ignoring." << std::endl;
+    } else _file_export.export_png_use_dithering = prefs->getBool("/options/dithering/value", true);
+
 
     GVariantDict *options_copy = options->gobj_copy();
     GVariant *options_var = g_variant_dict_end(options_copy);
@@ -1557,6 +1678,23 @@ InkscapeApplication::on_new()
 void
 InkscapeApplication::on_quit()
 {
+    if (gtk_app()) {
+        if (!destroy_all()) return; // Quit aborted.
+        // For mac, ensure closing the gtk_app windows
+        for (auto window : gtk_app()->get_windows()) {
+            window->close();
+        }
+    }
+
+    gio_app()->quit();
+}
+
+/*
+ * Quit without checking for data loss.
+ */
+void
+InkscapeApplication::on_quit_immediate()
+{
     gio_app()->quit();
 }
 
@@ -1573,30 +1711,6 @@ InkscapeApplication::print_action_list()
                   << ":  " << _action_extra_data.get_tooltip_for_action(fullname) << std::endl;
     }
 }
-
-//   ======================== macOS =============================
-
-#ifdef GDK_WINDOWING_QUARTZ
-/**
- * On macOS, handle dropping files on Inkscape.app icon and "Open With" file association.
- */
-static gboolean osx_openfile_callback(GtkosxApplication *osxapp, gchar const *path, InkscapeApplication *app)
-{
-    auto ptr = Gio::File::create_for_path(path);
-    g_return_val_if_fail(ptr, false);
-    app->create_window(ptr);
-    return true;
-}
-
-/**
- * Handle macOS terminating the application
- */
-static gboolean osx_quit_callback(GtkosxApplication *, InkscapeApplication *app)
-{
-    app->destroy_all();
-    return true;
-}
-#endif
 
 /**
  * Return number of open Inkscape Windows (irrespective of number of documents)

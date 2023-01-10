@@ -103,15 +103,38 @@ LPEOffset::LPEOffset(LivePathEffectObject *lpeobject) :
     fillrule = fill_nonZero;
 }
 
-LPEOffset::~LPEOffset()
-{
+LPEOffset::~LPEOffset() {
     modified_connection.disconnect();
 };
+
+bool LPEOffset::doOnOpen(SPLPEItem const *lpeitem)
+{
+    bool fixed = false;
+    if (!is_load || is_applied) {
+        return fixed;
+    }
+    legacytest_livarotonly = false;
+    Glib::ustring version = lpeversion.param_getSVGValue();
+    if (version < "1.2") {
+        if (!SP_ACTIVE_DESKTOP) {
+            legacytest_livarotonly = true;
+        }
+        lpeversion.param_setValue("1.2", true);
+        fixed = true;
+    }
+    return fixed;
+}
+
+void
+LPEOffset::doOnApply(SPLPEItem const* lpeitem)
+{
+    lpeversion.param_setValue("1.2", true);
+}
 
 void
 LPEOffset::modified(SPObject *obj, guint flags)
 {
-    if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
+    if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG && sp_lpe_item) {
         // Get the used fillrule
         SPCSSAttr *css;
         const gchar *val;
@@ -126,29 +149,6 @@ LPEOffset::modified(SPObject *obj, guint flags)
             sp_lpe_item_update_patheffect (sp_lpe_item, true, true);
         }
     }
-}
-
-static void
-sp_flatten(Geom::PathVector &pathvector, FillRuleFlatten fillkind)
-{
-    Path *orig = new Path;
-    orig->LoadPathVector(pathvector);
-    Shape *theShape = new Shape;
-    Shape *theRes = new Shape;
-    orig->ConvertWithBackData (1.0);
-    orig->Fill (theShape, 0);
-    theRes->ConvertToShape (theShape, FillRule(fillkind));
-    Path *originaux[1];
-    originaux[0] = orig;
-    Path *res = new Path;
-    theRes->ConvertToForme (res, 1, originaux, true);
-
-    delete theShape;
-    delete theRes;
-    char *res_d = res->svg_dump_path ();
-    delete res;
-    delete orig;
-    pathvector  = sp_svg_read_pathv(res_d);
 }
 
 Geom::Point get_nearest_point(Geom::PathVector pathv, Geom::Point point)
@@ -223,18 +223,21 @@ LPEOffset::addCanvasIndicators(SPLPEItem const *lpeitem, std::vector<Geom::PathV
 void
 LPEOffset::doBeforeEffect (SPLPEItem const* lpeitem)
 {
-    SPObject *obj = dynamic_cast<SPObject *>(sp_lpe_item);
+    auto obj = sp_lpe_item;
     if (is_load && obj) {
         modified_connection = obj->connectModified(sigc::mem_fun(*this, &LPEOffset::modified));
     }
     original_bbox(lpeitem);
-    SPGroup *group = dynamic_cast<SPGroup *>(sp_lpe_item);
+    auto group = cast<SPGroup>(sp_lpe_item);
     if (group) {
         mix_pathv_all.clear();
     }
     this->scale = lpeitem->i2doc_affine().descrim();
     if (!is_load && prev_unit != unit.get_abbreviation()) {
+        offset.param_set_undo(false);
         offset.param_set_value(Inkscape::Util::Quantity::convert(offset, prev_unit, unit.get_abbreviation()));
+    } else {
+        offset.param_set_undo(true);
     }
     prev_unit = unit.get_abbreviation();
 }
@@ -264,20 +267,19 @@ void LPEOffset::doAfterEffect(SPLPEItem const * /*lpeitem*/, SPCurve *curve)
     if (_knot_entity && sp_lpe_item && !liveknot) {
         Geom::PathVector out;
         // we don do this on groups, editing is joining ito so no need to update knot
-        SPShape *shape = dynamic_cast<SPShape *>(sp_lpe_item);
+        auto shape = cast<SPShape>(sp_lpe_item);
         if (shape) {
-            out = SP_SHAPE(sp_lpe_item)->curve()->get_pathvector();
+            out = cast<SPShape>(sp_lpe_item)->curve()->get_pathvector();
             offset_pt = get_nearest_point(out, offset_pt);
             _knot_entity->knot_get();
         }
     }
-    is_load = false;
 }
 
 // TODO: find a way to not remove wanted self intersections
-// previouly are some failed attemps
+// previously are some failed attempts
 
-/* // Taked from Knot LPE duple code
+/* // Taken from Knot LPE duple code
 static Geom::Path::size_type size_nondegenerate(Geom::Path const &path)
 {
     Geom::Path::size_type retval = path.size_default();
@@ -309,10 +311,10 @@ gint get_nearest_corner(Geom::OptRect bbox, Geom::Point point)
 
 // This way not work with good selfintersections on consecutive curves
 // and when there is nodes nearest to points
-// I try diferent methods to cleanup without luky
+// I try different methods to cleanup without luky
 // if anyone is interested there is a way to explore
 // if in original path the section into the 2 nearest point dont have
-// self intersections we can supose this is a intersection to remove
+// self intersections we can suppose this is a intersection to remove
 // it works very well but in good selfintersections work only in one offset direction
 bool consecutiveCurves(Geom::Path pathin, Geom::Point p) {
     Geom::Coord mindist = std::numeric_limits<Geom::Coord>::max();
@@ -394,7 +396,7 @@ Geom::Path removeIntersects(Geom::Path pathin, Geom::Path pathorig, size_t skipc
 Geom::Path removeIntersects(Geom::Path pathin)
 {
     // I have a pending ping to moazin for 1.2 to fix open paths offeset self intesections (Jabiertxof)
-    // For 1.1 I comment the code because simply slow a lot or crash sometimes and never work realy well
+    // For 1.1 I comment the code because simply slow a lot or crash sometimes and never work really well
     /* Geom::Path out;
     Geom::Crossings crossings = Geom::self_crossings(pathin);
     static size_t maxiter = 0;
@@ -490,7 +492,7 @@ LPEOffset::doEffect_path(Geom::PathVector const & path_in)
     for (auto path : closed_pathv) {
         mix_pathv.push_back(path);
     }
-    SPGroup *group = dynamic_cast<SPGroup *>(sp_lpe_item);
+    auto group = cast<SPGroup>(sp_lpe_item);
     // Calculate the original pathvector used outside this function
     // to calculate the offset
     if (group) {
@@ -562,8 +564,12 @@ LPEOffset::doEffect_path(Geom::PathVector const & path_in)
         }
     } else if (to_offset < 0) {
         for (auto &i : mix_pathv_workon) {
+            double gap = 0.01;
+            if (legacytest_livarotonly) {
+                gap = 0;
+            }
             Geom::Path tmp =
-                half_outline(i.reversed(), std::abs(to_offset),
+                half_outline(i.reversed(), std::abs(to_offset + gap),
                              (attempt_force_join ? std::numeric_limits<double>::max() : miter_limit), join, tolerance);
             // not remember why i instead tmp, afete 1.1 release we can switch to tmp to tests
             if (i.closed()) {
@@ -598,8 +604,8 @@ LPEOffset::doEffect_path(Geom::PathVector const & path_in)
             sp_flatten(outline, fill_nonZero);
             double size = Geom::L2(Geom::bounds_fast(ret_closed)->dimensions());
             size /= sp_lpe_item->i2doc_affine().descrim();
-            ret_closed = sp_pathvector_boolop(outline, ret_closed, bool_op_diff, fill_nonZero, fill_nonZero);
-            if (!liveknot) {
+            ret_closed = sp_pathvector_boolop(outline, ret_closed, bool_op_diff, fill_nonZero, fill_nonZero, legacytest_livarotonly);
+            if (!liveknot && legacytest_livarotonly) {
                 ret_closed = sp_simplify_pathvector(ret_closed, 0.0003 * size);
             }
         }
@@ -623,18 +629,18 @@ void LPEOffset::addKnotHolderEntities(KnotHolder *knotholder, SPItem *item)
 }
 
 namespace OfS {
+
 void KnotHolderEntityOffsetPoint::knot_set(Geom::Point const &p, Geom::Point const& /*origin*/, guint state)
 {
     using namespace Geom;
     LPEOffset* lpe = dynamic_cast<LPEOffset *>(_effect);
-    lpe->refresh_widgets = true;
     Geom::Point s = snap_knot_position(p, state);
     double offset = lpe->sp_get_offset(s);
     lpe->offset_pt = s;
     if (lpe->update_on_knot_move) {
         lpe->liveknot = true;
         lpe->offset.param_set_value(offset);
-        sp_lpe_item_update_patheffect (SP_LPE_ITEM(item), false, false);
+        sp_lpe_item_update_patheffect (cast<SPLPEItem>(item), false, false);
     } else {
         lpe->liveknot = false;
     }
@@ -649,7 +655,7 @@ void KnotHolderEntityOffsetPoint::knot_ungrabbed(Geom::Point const &p, Geom::Poi
     Geom::Point s = lpe->offset_pt;
     double offset = lpe->sp_get_offset(s);
     lpe->offset.param_set_value(offset);
-    sp_lpe_item_update_patheffect(SP_LPE_ITEM(item), false, false);
+    lpe->makeUndoDone(_("Move handle"));
 }
 
 Geom::Point KnotHolderEntityOffsetPoint::knot_get() const
@@ -664,12 +670,12 @@ Geom::Point KnotHolderEntityOffsetPoint::knot_get() const
     Geom::Point nearest = lpe->offset_pt;
     if (nearest == Geom::Point(Geom::infinity(), Geom::infinity())) {
         Geom::PathVector out;
-        SPGroup *group = dynamic_cast<SPGroup *>(item);
-        SPShape *shape = dynamic_cast<SPShape *>(item);
+        auto group = cast<SPGroup>(item);
+        auto shape = cast<SPShape>(item);
         if (group) {
-            std::vector<SPItem *> item_list = sp_item_group_item_list(group);
+            std::vector<SPItem *> item_list = group->item_list();
             for (auto child : item_list) {
-                SPShape *subchild = dynamic_cast<SPShape *>(child);
+                auto subchild = cast<SPShape>(child);
                 if (subchild) {
                     Geom::PathVector tmp = subchild->curve()->get_pathvector();
                     out.insert(out.begin(), tmp.begin(), tmp.end());

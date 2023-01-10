@@ -51,13 +51,11 @@
 #include "inkscape.h"
 #include "object/sp-root.h"
 #include "pdf-parser.h"
-#include "svg-builder.h"
 #include "ui/dialog-events.h"
 #include "ui/widget/frame.h"
 #include "ui/widget/spinbutton.h"
+#include "util/parse-int-range.h"
 #include "util/units.h"
-
-
 
 namespace {
 
@@ -103,15 +101,20 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     okbutton     = Gtk::manage(new Gtk::Button(_("_OK"),     true));
     _labelSelect = Gtk::manage(new class Gtk::Label(_("Select page:")));
 
+    // All Pages
+    _pageAllPages = Gtk::manage(new class Gtk::CheckButton(_("All")));
+
     // Page number
-    auto _pageNumberSpin_adj = Gtk::Adjustment::create(1, 1, _pdf_doc->getNumPages(), 1, 10, 0);
-    _pageNumberSpin = Gtk::manage(new Inkscape::UI::Widget::SpinButton(_pageNumberSpin_adj, 1, 1));
+    _pageNumbers = Gtk::manage(new Gtk::Entry());
+    _pageNumbers->set_text("all");
+    _pageNumbers->set_sensitive(false);
     _labelTotalPages = Gtk::manage(new class Gtk::Label());
     hbox2 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
+
     // Disable the page selector when there's only one page
     int num_pages = _pdf_doc->getCatalog()->getNumPages();
     if ( num_pages == 1 ) {
-        _pageNumberSpin->set_sensitive(false);
+        _pageAllPages->set_sensitive(false);
     } else {
         // Display total number of pages
         gchar *label_text = g_strdup_printf(_("out of %i"), num_pages);
@@ -201,17 +204,18 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     _labelSelect->set_line_wrap(false);
     _labelSelect->set_use_markup(false);
     _labelSelect->set_selectable(false);
-    _pageNumberSpin->set_can_focus();
-    _pageNumberSpin->set_update_policy(Gtk::UPDATE_ALWAYS);
-    _pageNumberSpin->set_numeric(true);
-    _pageNumberSpin->set_digits(0);
-    _pageNumberSpin->set_wrap(false);
+    _pageAllPages->set_can_focus();
+    _pageAllPages->set_relief(Gtk::RELIEF_NORMAL);
+    _pageAllPages->set_mode(true);
+    _pageAllPages->set_active(true);
+    _pageNumbers->set_can_focus();
     _labelTotalPages->set_justify(Gtk::JUSTIFY_LEFT);
     _labelTotalPages->set_line_wrap(false);
     _labelTotalPages->set_use_markup(false);
     _labelTotalPages->set_selectable(false);
+    hbox2->pack_start(*_pageAllPages, Gtk::PACK_SHRINK, 4);
     hbox2->pack_start(*_labelSelect, Gtk::PACK_SHRINK, 4);
-    hbox2->pack_start(*_pageNumberSpin, Gtk::PACK_SHRINK, 4);
+    hbox2->pack_start(*_pageNumbers, Gtk::PACK_SHRINK, 4);
     hbox2->pack_start(*_labelTotalPages, Gtk::PACK_SHRINK, 4);
     _cropCheck->set_can_focus();
     _cropCheck->set_relief(Gtk::RELIEF_NORMAL);
@@ -313,7 +317,8 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     
     // Connect signals
     _previewArea->signal_draw().connect(sigc::mem_fun(*this, &PdfImportDialog::_onDraw));
-    _pageNumberSpin_adj->signal_value_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPageNumberChanged));
+    _pageAllPages->signal_toggled().connect(sigc::mem_fun(*this, &PdfImportDialog::_onToggleAllPages));
+    _pageNumbers->signal_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPageNumberChanged));
     _cropCheck->signal_toggled().connect(sigc::mem_fun(*this, &PdfImportDialog::_onToggleCropping));
     _fallbackPrecisionSlider_adj->signal_value_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPrecisionChanged));
 #ifdef HAVE_POPPLER_CAIRO
@@ -346,9 +351,8 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
 
     // Init preview
     _thumb_data = nullptr;
-    _pageNumberSpin_adj->set_value(1.0);
-    _current_page = 1;
-    _setPreviewPage(_current_page);
+    _current_pages = "all";
+    _setPreviewPage(1);
 
     set_default (*okbutton);
     set_focus (*okbutton);
@@ -379,8 +383,11 @@ bool PdfImportDialog::showDialog() {
     }
 }
 
-int PdfImportDialog::getSelectedPage() {
-    return _current_page;
+std::string PdfImportDialog::getSelectedPages() {
+    if (_pageNumbers->get_sensitive()) {
+        return _current_pages;
+    }
+    return "all";
 }
 
 bool PdfImportDialog::getImportMethod() {
@@ -396,7 +403,7 @@ bool PdfImportDialog::getImportMethod() {
  *        for determining the behaviour desired by the user
  */
 void PdfImportDialog::getImportSettings(Inkscape::XML::Node *prefs) {
-    prefs->setAttributeSvgDouble("selectedPage", (double)_current_page);
+    prefs->setAttribute("selectedPages", _current_pages);
     if (_cropCheck->get_active()) {
         Glib::ustring current_choice = _cropTypeCombo->get_active_text();
         int num_crop_choices = sizeof(crop_setting_choices) / sizeof(crop_setting_choices[0]);
@@ -452,14 +459,38 @@ void PdfImportDialog::_onPrecisionChanged() {
     _labelPrecisionComment->set_label(precision_comments[comment_idx]);
 }
 
+void PdfImportDialog::_onToggleAllPages() {
+    _pageNumbers->set_sensitive(!_pageAllPages->get_active());
+
+    if (_pageAllPages->get_active()) {
+        _setPreviewPage(1);
+        _current_pages = "all";
+    } else {
+        if (_current_pages == "all") {
+            std::ostringstream example;
+            example << "1-" << _pdf_doc->getCatalog()->getNumPages();
+            _current_pages = example.str();
+        }
+    }
+    _pageNumbers->set_text(_current_pages);
+    _onPageNumberChanged();
+}
+
 void PdfImportDialog::_onToggleCropping() {
     _cropTypeCombo->set_sensitive(_cropCheck->get_active());
 }
 
 void PdfImportDialog::_onPageNumberChanged() {
-    int page = _pageNumberSpin->get_value_as_int();
-    _current_page = CLAMP(page, 1, _pdf_doc->getCatalog()->getNumPages());
-    _setPreviewPage(_current_page);
+    _current_pages = _pageNumbers->get_text();
+    auto nums = parseIntRange(_current_pages, 1, _pdf_doc->getCatalog()->getNumPages());
+    // Constrain to just one page when in cario mode.
+    if (_importViaPoppler->get_active() && nums.size() > 1) {
+        _pageNumbers->set_text(std::to_string(*nums.begin()));
+        return;
+    }
+    if (!nums.empty()) {
+        _setPreviewPage(*nums.begin());
+    }
 }
 
 #ifdef HAVE_POPPLER_CAIRO
@@ -469,11 +500,16 @@ void PdfImportDialog::_onToggleImport() {
         _localFontsCheck->set_sensitive(false);
         _embedImagesCheck->set_sensitive(false);
         hbox6->set_sensitive(false);
+        _pageAllPages->set_sensitive(false);
+        _pageAllPages->set_active(false);
+        _onPageNumberChanged();
     } else {
         hbox3->set_sensitive();
         _localFontsCheck->set_sensitive();
         _embedImagesCheck->set_sensitive();
         hbox6->set_sensitive();
+        _pageAllPages->set_sensitive(true);
+        _pageAllPages->set_active(true);
     }
 }
 #endif
@@ -667,8 +703,7 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
 
     // poppler does not use glib g_open. So on win32 we must use unicode call. code was copied from
     // glib gstdio.c
-    GooString *filename_goo = new GooString(uri);
-    pdf_doc = std::make_shared<PDFDoc>(filename_goo, nullptr, nullptr, nullptr);   // TODO: Could ask for password
+    pdf_doc = _POPPLER_MAKE_SHARED_PDFDOC(uri); // TODO: Could ask for password
 
     if (!pdf_doc->isOk()) {
         int error = pdf_doc->getErrorCode();
@@ -709,19 +744,25 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
     }
 
     // Get options
-    int page_num = 1;
+    std::string page_nums = "1";
     bool is_importvia_poppler = false;
     if (dlg) {
-        page_num = dlg->getSelectedPage();
+        page_nums = dlg->getSelectedPages();
 #ifdef HAVE_POPPLER_CAIRO
         is_importvia_poppler = dlg->getImportMethod();
         // printf("PDF import via %s.\n", is_importvia_poppler ? "poppler" : "native");
 #endif
     } else {
-        page_num = INKSCAPE.get_pdf_page();
+        page_nums = INKSCAPE.get_pages();
 #ifdef HAVE_POPPLER_CAIRO
         is_importvia_poppler = INKSCAPE.get_pdf_poppler();
 #endif
+    }
+    // Both poppler and poppler+cairo can get page num info from poppler.
+    auto pages = parseIntRange(page_nums, 1, pdf_doc->getCatalog()->getNumPages());
+    if (pages.empty()) {
+        g_warning("No pages selected, getting first page only.");
+        pages.insert(1);
     }
 
     // Create Inkscape document from file
@@ -729,18 +770,6 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
     bool saved = false;
     if(!is_importvia_poppler)
     {
-        // native importer
-
-        // Check page exists
-        Catalog *catalog = pdf_doc->getCatalog();
-        int const num_pages = catalog->getNumPages();
-        sanitize_page_number(page_num, num_pages);
-        Page *page = catalog->getPage(page_num);
-        if (!page) {
-            std::cerr << "PDFInput::open: error opening page " << page_num << std::endl;
-            return nullptr;
-        }
-
         // Create document
         doc = SPDocument::createNewDoc(nullptr, true, true);
         saved = DocumentUndo::getUndoSensitive(doc);
@@ -754,71 +783,19 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
         }
         SvgBuilder *builder = new SvgBuilder(doc, docname, pdf_doc->getXRef());
 
+
         // Get preferences
         Inkscape::XML::Node *prefs = builder->getPreferences();
         if (dlg)
             dlg->getImportSettings(prefs);
 
-        // Apply crop settings
-        _POPPLER_CONST PDFRectangle *clipToBox = nullptr;
-        double crop_setting = -1.0;
-        prefs->getAttributeDouble("cropTo", &crop_setting);
-
-        if ( crop_setting >= 0.0 ) {    // Do page clipping
-            int crop_choice = (int)crop_setting;
-            switch (crop_choice) {
-                case 0: // Media box
-                    clipToBox = page->getMediaBox();
-                    break;
-                case 1: // Crop box
-                    clipToBox = page->getCropBox();
-                    break;
-                case 2: // Bleed box
-                    clipToBox = page->getBleedBox();
-                    break;
-                case 3: // Trim box
-                    clipToBox = page->getTrimBox();
-                    break;
-                case 4: // Art box
-                    clipToBox = page->getArtBox();
-                    break;
-                default:
-                    break;
-            }
+        for (auto p : pages) {
+            // Increment the page building here.
+            builder->pushPage();
+            // And then add each of the pages
+            add_builder_page(pdf_doc, builder, doc, p);
         }
 
-        // Create parser  (extension/internal/pdfinput/pdf-parser.h)
-        PdfParser *pdf_parser = new PdfParser(pdf_doc->getXRef(), builder, page_num-1, page->getRotate(),
-                                              page->getResourceDict(), page->getCropBox(), clipToBox);
-
-        // Set up approximation precision for parser. Used for converting Mesh Gradients into tiles.
-        double color_delta = 2.0;
-        prefs->getAttributeDouble("approximationPrecision", &color_delta);
-        if ( color_delta <= 0.0 ) {
-            color_delta = 1.0 / 2.0;
-        } else {
-            color_delta = 1.0 / color_delta;
-        }
-        for ( int i = 1 ; i <= pdfNumShadingTypes ; i++ ) {
-            pdf_parser->setApproximationPrecision(i, color_delta, 6);
-        }
-
-        // Parse the document structure
-#if defined(POPPLER_NEW_OBJECT_API)
-        Object obj = page->getContents();
-#else
-        Object obj;
-        page->getContents(&obj);
-#endif
-        if (!obj.isNull()) {
-            pdf_parser->parse(&obj);
-        }
-
-        // Cleanup
-#if !defined(POPPLER_NEW_OBJECT_API)
-        obj.free();
-#endif
-        delete pdf_parser;
         delete builder;
         g_free(docname);
     }
@@ -837,26 +814,24 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
         /// @todo handle password
         /// @todo check if win32 unicode needs special attention
         PopplerDocument* document = poppler_document_new_from_file(full_uri.c_str(), NULL, &error);
-        PopplerPage* page = nullptr;
 
         if(error != NULL) {
-            std::cerr << "PDFInput::open: error opening document: " << full_uri << std::endl;
+            std::cerr << "PDFInput::open: error opening document: " << full_uri.raw() << std::endl;
             g_error_free (error);
+            return nullptr;
         }
 
-        if (document) {
-            int const num_pages = poppler_document_get_n_pages(document);
-            sanitize_page_number(page_num, num_pages);
-            page = poppler_document_get_page(document, page_num - 1);
-        }
-
-        if (page) {
+        int page_num = *pages.begin();
+        if (PopplerPage* page = poppler_document_get_page(document, page_num - 1)) {
             double width, height;
             poppler_page_get_size(page, &width, &height);
 
             Glib::ustring output;
             cairo_surface_t* surface = cairo_svg_surface_create_for_stream(Inkscape::Extension::Internal::_write_ustring_cb,
                                                                            &output, width, height);
+
+            // Reset back to PT for cairo 1.17.6 and above which sets to UNIT_USER
+            cairo_svg_surface_set_document_unit(surface, CAIRO_SVG_UNIT_PT);
 
             // This magical function results in more fine-grain fallbacks. In particular, a mesh
             // gradient won't necessarily result in the whole PDF being rasterized. Of course, SVG
@@ -873,17 +848,12 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
             cairo_surface_destroy(surface);
 
             doc = SPDocument::createNewDocFromMem(output.c_str(), output.length(), TRUE);
-        } else if (document) {
-            std::cerr << "PDFInput::open: error opening page " << page_num << " of document: " << full_uri << std::endl;
-        }
 
-        // Cleanup
-        if (document) {
-            g_object_unref(G_OBJECT(document));
-            if (page) {
-                g_object_unref(G_OBJECT(page));
-            }
+            g_object_unref(G_OBJECT(page));
+        } else if (document) {
+            std::cerr << "PDFInput::open: error opening page " << page_num << " of document: " << full_uri.raw() << std::endl;
         }
+        g_object_unref(G_OBJECT(document));
 
         if (!doc) {
             return nullptr;
@@ -903,6 +873,86 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
     DocumentUndo::setUndoSensitive(doc, saved);
 
     return doc;
+}
+
+/**
+ * Parses the selected page object of the given PDF document using PdfParser.
+ */
+void
+PdfInput::add_builder_page(std::shared_ptr<PDFDoc>pdf_doc, SvgBuilder *builder, SPDocument *doc, int page_num)
+{
+    // native importer
+    Catalog *catalog = pdf_doc->getCatalog();
+
+    int const num_pages = catalog->getNumPages();
+    Inkscape::XML::Node *prefs = builder->getPreferences();
+
+    // Check page exists
+    sanitize_page_number(page_num, num_pages);
+    Page *page = catalog->getPage(page_num);
+    if (!page) {
+        std::cerr << "PDFInput::open: error opening page " << page_num << std::endl;
+        return;
+    }
+
+    // Apply crop settings
+    _POPPLER_CONST PDFRectangle *clipToBox = nullptr;
+    double crop_setting = prefs->getAttributeDouble("cropTo", -1.0);
+
+    if (crop_setting >= 0.0) {    // Do page clipping
+        int crop_choice = (int)crop_setting;
+        switch (crop_choice) {
+            case 0: // Media box
+                clipToBox = page->getMediaBox();
+                break;
+            case 1: // Crop box
+                clipToBox = page->getCropBox();
+                break;
+            case 2: // Bleed box
+                clipToBox = page->getBleedBox();
+                break;
+            case 3: // Trim box
+                clipToBox = page->getTrimBox();
+                break;
+            case 4: // Art box
+                clipToBox = page->getArtBox();
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Create parser  (extension/internal/pdfinput/pdf-parser.h)
+    PdfParser *pdf_parser = new PdfParser(pdf_doc->getXRef(), builder, page_num-1, page->getRotate(),
+                                          page->getResourceDict(), page->getCropBox(), clipToBox);
+
+    // Set up approximation precision for parser. Used for converting Mesh Gradients into tiles.
+    double color_delta = prefs->getAttributeDouble("approximationPrecision", 2.0);
+    if ( color_delta <= 0.0 ) {
+        color_delta = 1.0 / 2.0;
+    } else {
+        color_delta = 1.0 / color_delta;
+    }
+    for ( int i = 1 ; i <= pdfNumShadingTypes ; i++ ) {
+        pdf_parser->setApproximationPrecision(i, color_delta, 6);
+    }
+
+    // Parse the document structure
+#if defined(POPPLER_NEW_OBJECT_API)
+    Object obj = page->getContents();
+#else
+    Object obj;
+    page->getContents(&obj);
+#endif
+    if (!obj.isNull()) {
+        pdf_parser->parse(&obj);
+    }
+
+    // Cleanup
+#if !defined(POPPLER_NEW_OBJECT_API)
+    obj.free();
+#endif
+    delete pdf_parser;
 }
 
 #include "../clear-n_.h"

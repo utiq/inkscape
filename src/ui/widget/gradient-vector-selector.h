@@ -46,7 +46,7 @@ class GradientVectorSelector : public Gtk::Box {
     sigc::connection _defs_modified_connection;
     sigc::connection _tree_select_connection;
 
-    sigc::signal<void, SPGradient *> _signal_vector_set;
+    sigc::signal<void (SPGradient *)> _signal_vector_set;
 
     void gradient_release(SPObject *obj);
     void defs_release(SPObject *defs);
@@ -59,6 +59,8 @@ class GradientVectorSelector : public Gtk::Box {
 
     void setSwatched();
     void set_gradient(SPDocument *doc, SPGradient *gr);
+    // width and height of gradient preview pixmap
+    void set_pixmap_size(int width, int height);
 
     inline decltype(_columns) get_columns()  const { return _columns; }
     inline decltype(_doc)     get_document() const { return _doc; }
@@ -68,6 +70,10 @@ class GradientVectorSelector : public Gtk::Box {
     inline decltype(_signal_vector_set) signal_vector_set() const { return _signal_vector_set; }
 
     inline void set_tree_select_connection(sigc::connection &connection) { _tree_select_connection = connection; }
+
+private:
+    int _pix_width = 64;
+    int _pix_height = 18;
 };
 
 } // namespace Widget

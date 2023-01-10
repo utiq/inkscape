@@ -24,6 +24,7 @@
 #include "pdf-parser.h"
 
 #include "document.h"
+#include "object/sp-namedview.h"
 #include "png.h"
 
 #include "xml/document.h"
@@ -37,6 +38,7 @@
 #include "util/units.h"
 #include "display/nr-filter-utils.h"
 #include "libnrtype/font-instance.h"
+#include "libnrtype/font-factory.h"
 #include "object/sp-defs.h"
 
 #include "Function.h"
@@ -84,7 +86,6 @@ SvgBuilder::SvgBuilder(SPDocument *document, gchar *docname, XRef *xref)
     _xref = xref;
     _xml_doc = _doc->getReprDoc();
     _container = _root = _doc->getReprRoot();
-    _root->setAttribute("xml:space", "preserve");
     _init();
 
     // Set default preference settings
@@ -108,7 +109,6 @@ SvgBuilder::~SvgBuilder() = default;
 
 void SvgBuilder::_init() {
     _font_style = nullptr;
-    _current_font = nullptr;
     _font_specification = nullptr;
     _font_scaling = 1;
     _need_font_update = true;
@@ -120,7 +120,7 @@ void SvgBuilder::_init() {
 
     // Fill _availableFontNames (Bug LP #179589) (code cfr. FontLister)
     std::vector<PangoFontFamily *> families;
-    font_factory::Default()->GetUIFamilies(families);
+    FontFactory::get().GetUIFamilies(families);
     for (auto & familie : families) {
         _availableFontNames.emplace_back(pango_font_family_get_name(familie));
     }
@@ -136,11 +136,41 @@ void SvgBuilder::_init() {
     _ttm_is_set = false;
 }
 
+/**
+ * We're creating a multi-page document, push page number.
+ */
+void SvgBuilder::pushPage() {
+    // Move page over by the last page width
+    if (_page && this->_width) {
+        int gap = 20;
+        _page_left += this->_width + gap;
+        // TODO: A more interesting page layout could be implemented here.
+    }
+    _page_num += 1;
+    _page_offset = true;
+
+    if (_page) {
+        Inkscape::GC::release(_page);
+    }
+    _page = _xml_doc->createElement("inkscape:page");
+    _page->setAttributeSvgDouble("x", _page_left);
+    _page->setAttributeSvgDouble("y", _page_top);
+    auto _nv = _doc->getNamedView()->getRepr();
+    _nv->appendChild(_page);
+}
+
 void SvgBuilder::setDocumentSize(double width, double height) {
-    _root->setAttributeSvgDouble("width", width);
-    _root->setAttributeSvgDouble("height", height);
     this->_width = width;
     this->_height = height;
+
+    if (_page_num < 2) {
+        _root->setAttributeSvgDouble("width", width);
+        _root->setAttributeSvgDouble("height", height);
+    }
+    if (_page) {
+        _page->setAttributeSvgDouble("width", width);
+        _page->setAttributeSvgDouble("height", height);
+    }
 }
 
 /**
@@ -204,12 +234,18 @@ Inkscape::XML::Node *SvgBuilder::pushGroup() {
     // Set as a layer if this is a top-level group
     if ( _container->parent() == _root && _is_top_level ) {
         static int layer_count = 1;
-        if ( layer_count > 1 ) {
+        if (_page_num) {
+            gchar *layer_name = g_strdup_printf("Page %d", _page_num);
+            setAsLayer(layer_name);
+            g_free(layer_name);
+        } else if ( layer_count > 1 ) {
             gchar *layer_name = g_strdup_printf("%s%d", _docname, layer_count);
             setAsLayer(layer_name);
             g_free(layer_name);
+            layer_count++;
         } else {
             setAsLayer(_docname);
+            layer_count++;
         }
     }
     if (_container->parent()->attribute("inkscape:groupmode") != nullptr) {
@@ -251,9 +287,7 @@ static gchar *svgConvertGfxRGB(GfxRGB *color) {
     return svgConvertRGBToText(r, g, b);
 }
 
-static void svgSetTransform(Inkscape::XML::Node *node, double c0, double c1,
-                            double c2, double c3, double c4, double c5) {
-    Geom::Affine matrix(c0, c1, c2, c3, c4, c5);
+static void svgSetTransform(Inkscape::XML::Node *node, Geom::Affine matrix) {
     node->setAttributeOrRemoveIfEmpty("transform", sp_svg_transform_write(matrix));
 }
 
@@ -355,10 +389,17 @@ void SvgBuilder::_setStrokeStyle(SPCSSAttr *css, GfxState *state) {
     sp_repr_css_set_property(css, "stroke-miterlimit", os_ml.str().c_str());
 
     // Line dash
-    double *dash_pattern;
     int dash_length;
     double dash_start;
+#if POPPLER_CHECK_VERSION(22, 9, 0)
+    const double *dash_pattern;
+    const std::vector<double> &dash = state->getLineDash(&dash_start);
+    dash_pattern = dash.data();
+    dash_length = dash.size();
+#else
+    double *dash_pattern;
     state->getLineDash(&dash_pattern, &dash_length, &dash_start);
+#endif
     if ( dash_length > 0 ) {
         Inkscape::CSSOStringStream os_array;
         for ( int i = 0 ; i < dash_length ; i++ ) {
@@ -580,6 +621,15 @@ bool SvgBuilder::getTransform(double *transform) {
  */
 void SvgBuilder::setTransform(double c0, double c1, double c2, double c3,
                               double c4, double c5) {
+
+    auto matrix = Geom::Affine(c0, c1, c2, c3, c4, c5);
+
+    // Add page transformation only once (see scaledCTM in pdf-parser.cpp)
+    if ( _container->parent() == _root && _is_top_level && _page_offset) {
+        matrix = matrix * Geom::Translate(_page_left, _page_top);
+        _page_offset = false;
+    }
+
     // do not remember the group which is a layer
     if ((_container->attribute("inkscape:groupmode") == nullptr) && !_ttm_is_set) {
         _ttm[0] = c0;
@@ -596,7 +646,7 @@ void SvgBuilder::setTransform(double c0, double c1, double c2, double c3,
         pushGroup();
     }
     TRACE(("setTransform: %f %f %f %f %f %f\n", c0, c1, c2, c3, c4, c5));
-    svgSetTransform(_container, c0, c1, c2, c3, c4, c5);
+    svgSetTransform(_container, matrix);
 }
 
 void SvgBuilder::setTransform(double const *transform) {
@@ -1021,11 +1071,8 @@ void SvgBuilder::updateFont(GfxState *state) {
     _need_font_update = false;
     updateTextMatrix(state);    // Ensure that we have a text matrix built
 
-    if (_font_style) {
-        //sp_repr_css_attr_unref(_font_style);
-    }
     _font_style = sp_repr_css_attr_new();
-    GfxFont *font = state->getFont();
+    auto font = state->getFont();
     // Store original name
     if (font->getName()) {
         _font_specification = font->getName()->getCString();
@@ -1057,8 +1104,7 @@ void SvgBuilder::updateFont(GfxState *state) {
     if (font->getFamily()) { // if font family is explicitly given use it.
         sp_repr_css_set_property(_font_style, "font-family", font->getFamily()->getCString());
     } else { 
-        int attr_value = 1;
-        _preferences->getAttributeInt("localFonts", &attr_value);
+        int attr_value = _preferences->getAttributeInt("localFonts", 1);
         if (attr_value != 0) {
             // Find the font that best matches the stripped down (orig)name (Bug LP #179589).
             sp_repr_css_set_property(_font_style, "font-family", _BestMatchingFont(font_family).c_str());
@@ -1171,7 +1217,6 @@ void SvgBuilder::updateFont(GfxState *state) {
         sp_repr_css_set_property(_font_style, "writing-mode", "tb");
     }
 
-    _current_font = font;
     _invalidated_style = true;
 }
 
@@ -1245,6 +1290,10 @@ void SvgBuilder::_flushText() {
     }
 
     Inkscape::XML::Node *text_node = _xml_doc->createElement("svg:text");
+
+    // we preserve spaces in the text objects we create, this applies to any descendant
+    text_node->setAttribute("xml:space", "preserve");
+
     // Set text matrix
     Geom::Affine text_transform(_text_matrix);
     text_transform[4] = first_glyph.position[0];
@@ -1316,7 +1365,7 @@ void SvgBuilder::_flushText() {
                 ///////
                 // Create a font specification string and save the attribute in the style
                 PangoFontDescription *descr = pango_font_description_from_string(glyph.font_specification);
-                Glib::ustring properFontSpec = font_factory::Default()->ConstructFontSpecification(descr);
+                Glib::ustring properFontSpec = FontFactory::get().ConstructFontSpecification(descr);
                 pango_font_description_free(descr);
                 sp_repr_css_set_property(glyph.style, "-inkscape-font-specification", properFontSpec.c_str());
 
@@ -1354,9 +1403,22 @@ void SvgBuilder::_flushText() {
         last_delta_pos = delta_pos;
 
         // Append the character to the text buffer
-	if ( !glyph.code.empty() ) {
+        if ( !glyph.code.empty() ) {
             text_buffer.append(1, glyph.code[0]);
-	}
+        }
+
+        /* Append any utf8 conversion doublets and request a new tspan.
+         *
+         * This is a fix for the unusual situation in some PDF files that use
+         * certain fonts where two ascii letters have been bolted together into
+         * one Unicode position and our conversion to UTF8 produces extra glyphs
+         * which if we don't add will be missing and if we add without ending the
+         * tspan will cause the rest of the glyph-positions to be off by one.
+         */
+        for (int j = 1; j < glyph.code.size(); j++) {
+            text_buffer.append(1, glyph.code[j]);
+            new_tspan = true;
+        }
 
         glyphs_in_a_row++;
         ++i;
@@ -1521,8 +1583,7 @@ Inkscape::XML::Node *SvgBuilder::_createImage(Stream *str, int width, int height
         return nullptr;
     }
     // Decide whether we should embed this image
-    int attr_value = 1;
-    _preferences->getAttributeInt("embedImages", &attr_value);
+    int attr_value = _preferences->getAttributeInt("embedImages", 1);
     bool embed_image = ( attr_value != 0 );
     // Set read/write functions
     std::vector<guchar> png_buffer;
@@ -1681,8 +1742,7 @@ Inkscape::XML::Node *SvgBuilder::_createImage(Stream *str, int width, int height
     image_node->setAttribute("preserveAspectRatio", "none");
 
     // Set transformation
-
-        svgSetTransform(image_node, 1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
+    svgSetTransform(image_node, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
 
     // Create href
     if (embed_image) {
@@ -1757,7 +1817,7 @@ void SvgBuilder::addImageMask(GfxState *state, Stream *str, int width, int heigh
     rect->setAttributeSvgDouble("y", 0.0);
     rect->setAttributeSvgDouble("width", 1.0);
     rect->setAttributeSvgDouble("height", 1.0);
-    svgSetTransform(rect, 1.0, 0.0, 0.0, -1.0, 0.0, 1.0);
+    svgSetTransform(rect, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
     // Get current fill style and set it on the rectangle
     SPCSSAttr *css = sp_repr_css_attr_new();
     _setFillStyle(css, state, false);

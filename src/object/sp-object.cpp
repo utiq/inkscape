@@ -19,19 +19,22 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <limits>
+#include <glibmm.h>
 
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "helper/sp-marshal.h"
-#include "xml/node-event-vector.h"
 #include "attributes.h"
 #include "attribute-rel-util.h"
 #include "color-profile.h"
 #include "document.h"
+#include "io/fix-broken-links.h"
 #include "preferences.h"
 #include "style.h"
 #include "live_effects/lpeobject.h"
 #include "sp-factory.h"
+#include "sp-font.h"
 #include "sp-paint-server.h"
 #include "sp-root.h"
 #include "sp-style-elem.h"
@@ -39,9 +42,11 @@
 #include "streq.h"
 #include "strneq.h"
 #include "xml/node-fns.h"
+#include "xml/href-attribute-helper.h"
 #include "debug/event-tracker.h"
 #include "debug/simple-event.h"
 #include "debug/demangle.h"
+#include "svg/css-ostringstream.h"
 #include "util/format.h"
 #include "util/longest-common-suffix.h"
 
@@ -61,15 +66,7 @@
 
 // Define to enable indented tracing of SPObject.
 //#define OBJECT_TRACE
-unsigned SPObject::indent_level = 0;
-
-Inkscape::XML::NodeEventVector object_event_vector = {
-    SPObject::repr_child_added,
-    SPObject::repr_child_removed,
-    SPObject::repr_attr_changed,
-    SPObject::repr_content_changed,
-    SPObject::repr_order_changed
-};
+static unsigned indent_level = 0;
 
 /**
  * A friend class used to set internal members on SPObject so as to not expose settors in SPObject's public API
@@ -112,15 +109,11 @@ public:
  * Constructor, sets all attributes to default values.
  */
 SPObject::SPObject()
-    : cloned(0), clone_original(nullptr), uflags(0), mflags(0), hrefcount(0), _total_hrefcount(0),
-      document(nullptr), parent(nullptr), id(nullptr), repr(nullptr), refCount(1), hrefList(std::list<SPObject*>()),
-      _successor(nullptr), _collection_policy(SPObject::COLLECT_WITH_PARENT),
-      _label(nullptr), _default_label(nullptr)
+    : cloned{0}
+    , uflags{0}
+    , mflags{0}
 {
-    debug("id=%p, typename=%s",this, g_type_name_from_instance((GTypeInstance*)this));
-
-    //used XML Tree here.
-    this->getRepr(); // TODO check why this call is made
+    debug("id=%p, typename=%s", this, g_type_name_from_instance((GTypeInstance *)this));
 
     SPObjectImpl::setIdNull(this);
 
@@ -128,45 +121,33 @@ SPObject::SPObject()
     // vg, g, defs, desc, title, symbol, use, image, switch, path, rect, circle, ellipse, line, polyline,
     // polygon, text, tspan, tref, textPath, altGlyph, glyphRef, marker, linearGradient, radialGradient,
     // stop, pattern, clipPath, mask, filter, feImage, a, font, glyph, missing-glyph, foreignObject
-    this->style = new SPStyle( nullptr, this ); // Is it necessary to call with "this"?
-    this->context_style = nullptr;
+    style = new SPStyle(nullptr, this);
+    context_style = nullptr;
 }
 
 /**
  * Destructor, frees the used memory and unreferences a potential successor of the object.
  */
-SPObject::~SPObject() {
+SPObject::~SPObject()
+{
     g_free(this->_label);
     g_free(this->_default_label);
-
-    this->_label = nullptr;
-    this->_default_label = nullptr;
 
     if (this->_successor) {
         sp_object_unref(this->_successor, nullptr);
         this->_successor = nullptr;
     }
+    if (this->_tmpsuccessor) {
+        sp_object_unref(this->_tmpsuccessor, nullptr);
+        this->_tmpsuccessor = nullptr;
+    }
     if (parent) {
         parent->children.erase(parent->children.iterator_to(*this));
     }
 
-    if( style == nullptr ) {
-        // style pointer could be NULL if unreffed too many times.
-        // Conjecture: style pointer is never NULL.
-        std::cerr << "SPObject::~SPObject(): style pointer is NULL" << std::endl;
-    } else if( style->refCount() > 1 ) {
-        // Conjecture: style pointer should be unreffed by other classes before reaching here.
-        // Conjecture is false for SPTSpan where ref is held by InputStreamTextSource.
-        // As an additional note:
-        //   The outer tspan of a nested tspan will result in a ref count of five: one for the
-        //   TSpan itself, one for the InputStreamTextSource instance before the inner tspan and
-        //   one for the one after, along with one for each corresponding DrawingText instance.
-        // std::cerr << "SPObject::~SPObject(): someone else still holding ref to style" << std::endl;
-        //
-        sp_style_unref( this->style );
-    } else {
-        delete this->style;
-    }
+    delete style;
+    this->document = nullptr;
+    this->repr = nullptr;
 }
 
 // CPPIFY: make pure virtual
@@ -218,10 +199,22 @@ public:
     {}
 };
 
-}
+} // namespace
 
 gchar const* SPObject::getId() const {
     return id;
+}
+
+/**
+ * Accumulate this id and all it's descendants ids
+ */
+void SPObject::getIds(std::set<std::string> &ret) const {
+    if (id) {
+        ret.insert(std::string(id));
+    }
+    for (auto &child : children) {
+        child.getIds(ret);
+    }
 }
 
 /**
@@ -246,8 +239,6 @@ Inkscape::XML::Node const* SPObject::getRepr() const{
 SPObject *sp_object_ref(SPObject *object, SPObject *owner)
 {
     g_return_val_if_fail(object != nullptr, NULL);
-    g_return_val_if_fail(SP_IS_OBJECT(object), NULL);
-    g_return_val_if_fail(!owner || SP_IS_OBJECT(owner), NULL);
 
     Inkscape::Debug::EventTracker<RefEvent> tracker(object);
 
@@ -259,8 +250,6 @@ SPObject *sp_object_ref(SPObject *object, SPObject *owner)
 SPObject *sp_object_unref(SPObject *object, SPObject *owner)
 {
     g_return_val_if_fail(object != nullptr, NULL);
-    g_return_val_if_fail(SP_IS_OBJECT(object), NULL);
-    g_return_val_if_fail(!owner || SP_IS_OBJECT(owner), NULL);
 
     Inkscape::Debug::EventTracker<UnrefEvent> tracker(object);
 
@@ -289,9 +278,9 @@ void SPObject::hrefObject(SPObject* owner)
 
 void SPObject::unhrefObject(SPObject* owner)
 {
-    g_return_if_fail(hrefcount > 0);
-
     if (!owner || !owner->cloned) {
+        g_return_if_fail(hrefcount > 0);
+
         hrefcount--;
         _updateTotalHRefCount(-1);
     }
@@ -378,7 +367,6 @@ bool sp_object_compare_position_bool(SPObject const *first, SPObject const *seco
     return sp_object_compare_position(first,second)<0;
 }
 
-
 SPObject *SPObject::appendChildRepr(Inkscape::XML::Node *repr) {
     if ( !cloned ) {
         getRepr()->appendChild(repr);
@@ -410,6 +398,18 @@ std::vector<SPObject*> SPObject::childList(bool add_ref, Action) {
         l.push_back(&child);
     }
     return l;
+}
+
+std::vector<SPObject*> SPObject::ancestorList(bool root_to_tip)
+{
+    std::vector<SPObject *> ancestors;
+    for (SPObject::ParentIterator iter=parent ; iter ; ++iter) {
+        ancestors.push_back(iter);
+    }
+    if (root_to_tip) {
+        std::reverse(ancestors.begin(), ancestors.end());
+    }
+    return ancestors;
 }
 
 gchar const *SPObject::label() const {
@@ -444,15 +444,17 @@ void SPObject::requestOrphanCollection() {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     // do not remove style or script elements (Bug #276244)
-    if (dynamic_cast<SPStyleElem *>(this)) {
+    if (is<SPStyleElem>(this)) {
         // leave it
-    } else if (dynamic_cast<SPScript *>(this)) {
+    } else if (is<SPScript>(this)) {
         // leave it
-    } else if ((! prefs->getBool("/options/cleanupswatches/value", false)) && SP_IS_PAINT_SERVER(this) && static_cast<SPPaintServer*>(this)->isSwatch() ) {
+    } else if (is<SPFont>(this)) {
         // leave it
-    } else if (IS_COLORPROFILE(this)) {
+    } else if (!prefs->getBool("/options/cleanupswatches/value", false) && is<SPPaintServer>(this) && static_cast<SPPaintServer*>(this)->isSwatch()) {
         // leave it
-    } else if (dynamic_cast<LivePathEffectObject *>(this)) {
+    } else if (is<Inkscape::ColorProfile>(this)) {
+        // leave it
+    } else if (is<LivePathEffectObject>(this)) {
         document->queueForOrphanCollection(this);
     } else {
         document->queueForOrphanCollection(this);
@@ -481,8 +483,8 @@ void SPObject::_sendDeleteSignalRecursive() {
 void SPObject::deleteObject(bool propagate, bool propagate_descendants)
 {
     sp_object_ref(this, nullptr);
-    if ( SP_IS_LPE_ITEM(this) && SP_LPE_ITEM(this)->hasPathEffect()) {
-        SP_LPE_ITEM(this)->removeAllPathEffects(false);
+    if (is<SPLPEItem>(this)) {
+        cast<SPLPEItem>(this)->removeAllPathEffects(false, propagate_descendants);
     }
     if (propagate) {
         _delete_signal.emit(this);
@@ -504,18 +506,62 @@ void SPObject::deleteObject(bool propagate, bool propagate_descendants)
 
 void SPObject::cropToObject(SPObject *except)
 {
-    std::vector<SPObject*> toDelete;
-    for (auto& child: children) {
-        if (SP_IS_ITEM(&child)) {
+    std::vector<SPObject *> toDelete;
+    for (auto &child : children) {
+        if (is<SPItem>(&child)) {
             if (child.isAncestorOf(except)) {
                 child.cropToObject(except);
-            } else if(&child != except) {
+            } else if (&child != except) {
                 sp_object_ref(&child, nullptr);
                 toDelete.push_back(&child);
             }
         }
     }
-    for (auto & i : toDelete) {
+    for (auto &i : toDelete) {
+        i->deleteObject(true, true);
+        sp_object_unref(i, nullptr);
+    }
+}
+
+/**
+ * Removes objects which are not related to given list of objects.
+ *
+ * Use Case: Group[MyRect1 , MyRect2] , MyRect3
+ * List Provided: MyRect1, MyRect3
+ * Output doc: Group[MyRect1], MyRect3
+ * List Provided: MyRect1, Group
+ * Output doc: Group[MyRect1, MyRect2] (notice MyRect2 is not deleted as it is related to Group)
+ */
+void SPObject::cropToObjects(std::vector<SPObject *> except_objects)
+{
+    if (except_objects.empty()) {
+        return;
+    }
+    std::vector<SPObject *> toDelete;
+    for (auto &child : children) {
+        if (is<SPItem>(&child)) {
+            std::vector<SPObject *> except_in_child;
+            bool child_delete_flag = true;
+            for (auto except : except_objects) {
+                if (&child == except) {
+                    child_delete_flag = false;
+                    except_in_child.clear();
+                    break;
+                }
+                if (child.isAncestorOf(except)) {
+                    except_in_child.push_back(except);
+                    child_delete_flag = false;
+                }
+            }
+            if (child_delete_flag) {
+                sp_object_ref(&child, nullptr);
+                toDelete.push_back(&child);
+            } else {
+                child.cropToObjects(except_in_child);
+            }
+        }
+    }
+    for (auto &i : toDelete) {
         i->deleteObject(true, true);
         sp_object_unref(i, nullptr);
     }
@@ -523,11 +569,7 @@ void SPObject::cropToObject(SPObject *except)
 
 void SPObject::attach(SPObject *object, SPObject *prev)
 {
-    //g_return_if_fail(parent != NULL);
-    //g_return_if_fail(SP_IS_OBJECT(parent));
     g_return_if_fail(object != nullptr);
-    g_return_if_fail(SP_IS_OBJECT(object));
-    g_return_if_fail(!prev || SP_IS_OBJECT(prev));
     g_return_if_fail(!prev || prev->parent == this);
     g_return_if_fail(!object->parent);
 
@@ -562,10 +604,7 @@ void SPObject::reorder(SPObject* obj, SPObject* prev) {
 
 void SPObject::detach(SPObject *object)
 {
-    //g_return_if_fail(parent != NULL);
-    //g_return_if_fail(SP_IS_OBJECT(parent));
     g_return_if_fail(object != nullptr);
-    g_return_if_fail(SP_IS_OBJECT(object));
     g_return_if_fail(object->parent == this);
 
     children.erase(children.iterator_to(*object));
@@ -600,7 +639,7 @@ SPObject *SPObject::get_child_by_repr(Inkscape::XML::Node *repr)
  * until it finds a child SPObject node.
  *
  * @param obj Parent object
- * @param ref Refernece node, may be NULL
+ * @param ref Reference node, may be NULL
  * @return Child, or NULL if not found
  */
 static SPObject *get_closest_child_by_repr(SPObject &obj, Inkscape::XML::Node *ref)
@@ -674,6 +713,10 @@ void SPObject::order_changed(Inkscape::XML::Node *child, Inkscape::XML::Node * /
     ochild->_position_changed_signal.emit(ochild);
 }
 
+void SPObject::tag_name_changed(gchar const* oldname, gchar const* newname) {
+    g_warning("XML Element renamed from %s to %s!", oldname, newname);
+}
+
 void SPObject::build(SPDocument *document, Inkscape::XML::Node *repr) {
 
 #ifdef OBJECT_TRACE
@@ -729,8 +772,6 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
 #endif
     debug("id=%p, typename=%s", this, g_type_name_from_instance((GTypeInstance*)this));
 
-    //g_assert(object != NULL);
-    //g_assert(SP_IS_OBJECT(object));
     g_assert(document != nullptr);
     g_assert(repr != nullptr);
 
@@ -757,18 +798,13 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
             /* If we are not cloned, and not seeking, force unique id */
             gchar const *id = this->repr->attribute("id");
             if (!document->isSeeking()) {
-                {
-                    gchar *realid = sp_object_get_unique_id(this, id);
-                    g_assert(realid != nullptr);
-
-                    this->document->bindObjectToId(realid, this);
-                    SPObjectImpl::setId(this, realid);
-                    g_free(realid);
-                }
+                auto realid = generate_unique_id(id);
+                this->document->bindObjectToId(realid.c_str(), this);
+                SPObjectImpl::setId(this, realid.c_str());
 
                 /* Redefine ID, if required */
-                if ((id == nullptr) || (std::strcmp(id, this->getId()) != 0)) {
-                    this->repr->setAttribute("id", this->getId());
+                if (!id || std::strcmp(id, getId()) != 0) {
+                    this->repr->setAttribute("id", getId());
                 }
             } else if (id) {
                 // bind if id, but no conflict -- otherwise, we can expect
@@ -783,9 +819,10 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
         g_assert(this->getId() == nullptr);
     }
 
+    this->document->process_pending_resource_changes();
 
     /* Signalling (should be connected AFTER processing derived methods */
-    sp_repr_add_listener(repr, &object_event_vector, this);
+    repr->addObserver(*this);
 
 #ifdef OBJECT_TRACE
     objectTrace( "SPObject::invoke_build", false );
@@ -794,8 +831,7 @@ void SPObject::invoke_build(SPDocument *document, Inkscape::XML::Node *repr, uns
 
 int SPObject::getIntAttribute(char const *key, int def)
 {
-    getRepr()->getAttributeInt(key, &def);
-    return def;
+    return getRepr()->getAttributeInt(key, def);
 }
 
 unsigned SPObject::getPosition(){
@@ -835,8 +871,9 @@ void SPObject::addChild(Inkscape::XML::Node *child, Inkscape::XML::Node * prev)
 void SPObject::releaseReferences() {
     g_assert(this->document);
     g_assert(this->repr);
+    g_assert(cloned || repr->_anchored_refcount() > 0);
 
-    sp_repr_remove_listener_by_data(this->repr, this);
+    repr->removeObserver(*this);
 
     this->_release_signal.emit(this);
 
@@ -862,15 +899,9 @@ void SPObject::releaseReferences() {
         g_assert(!this->id);
     }
 
-    // style belongs to SPObject, we should not need to unref here.
-    // if (this->style) {
-    //     this->style = sp_style_unref(this->style);
-    // }
-
     this->document = nullptr;
     this->repr = nullptr;
 }
-
 
 SPObject *SPObject::getPrev()
 {
@@ -890,32 +921,35 @@ SPObject* SPObject::getNext()
     return next;
 }
 
-void SPObject::repr_child_added(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node *child, Inkscape::XML::Node *ref, gpointer data)
+void SPObject::notifyChildAdded(Inkscape::XML::Node &node, Inkscape::XML::Node &child, Inkscape::XML::Node *ref)
 {
-    auto object = static_cast<SPObject *>(data);
-
-    object->child_added(child, ref);
+    child_added(&child, ref);
 }
 
-void SPObject::repr_child_removed(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node *child, Inkscape::XML::Node * /*ref*/, gpointer data)
+void SPObject::notifyChildRemoved(Inkscape::XML::Node &, Inkscape::XML::Node &child, Inkscape::XML::Node *)
 {
-    auto object = static_cast<SPObject *>(data);
-
-    object->remove_child(child);
+    remove_child(&child);
 }
 
-void SPObject::repr_order_changed(Inkscape::XML::Node * /*repr*/, Inkscape::XML::Node *child, Inkscape::XML::Node *old, Inkscape::XML::Node *newer, gpointer data)
+void SPObject::notifyChildOrderChanged(Inkscape::XML::Node &, Inkscape::XML::Node &child, Inkscape::XML::Node *old_prev,
+                                       Inkscape::XML::Node *new_prev)
 {
-    auto object = static_cast<SPObject *>(data);
+    order_changed(&child, old_prev, new_prev);
+}
 
-    object->order_changed(child, old, newer);
+void SPObject::notifyElementNameChanged(Inkscape::XML::Node &node, GQuark old_name, GQuark new_name)
+{
+    auto const oldname = g_quark_to_string(old_name);
+    auto const newname = g_quark_to_string(new_name);
+
+    tag_name_changed(oldname, newname);
 }
 
 void SPObject::set(SPAttr key, gchar const* value) {
 
 #ifdef OBJECT_TRACE
     std::stringstream temp;
-    temp << "SPObject::set: " << key  << " " << (value?value:"null");
+    temp << "SPObject::set: " << sp_attribute_name(key)  << " " << (value?value:"null");
     objectTrace( temp.str() );
 #endif
 
@@ -942,9 +976,8 @@ void SPObject::set(SPAttr key, gchar const* value) {
                     if (!document->isSeeking()) {
                         sp_object_ref(conflict, nullptr);
                         // give the conflicting object a new ID
-                        gchar *new_conflict_id = sp_object_get_unique_id(conflict, nullptr);
+                        auto new_conflict_id = conflict->generate_unique_id();
                         conflict->setAttribute("id", new_conflict_id);
-                        g_free(new_conflict_id);
                         sp_object_unref(conflict, nullptr);
                     } else {
                         new_id = nullptr;
@@ -1029,14 +1062,17 @@ void SPObject::set(SPAttr key, gchar const* value) {
 
 void SPObject::setKeyValue(SPAttr key, gchar const *value)
 {
-    //g_assert(object != NULL);
-    //g_assert(SP_IS_OBJECT(object));
-
     this->set(key, value);
 }
 
 void SPObject::readAttr(SPAttr keyid)
 {
+    if (keyid == SPAttr::XLINK_HREF) {
+        auto value = Inkscape::getHrefAttribute(*getRepr()).second;
+        setKeyValue(keyid, value);
+        return;
+    }
+
     char const *key = sp_attribute_name(keyid);
 
     assert(key != nullptr);
@@ -1049,8 +1085,6 @@ void SPObject::readAttr(SPAttr keyid)
 
 void SPObject::readAttr(gchar const *key)
 {
-    //g_assert(object != NULL);
-    //g_assert(SP_IS_OBJECT(object));
     g_assert(key != nullptr);
 
     //XML Tree being used here.
@@ -1065,24 +1099,20 @@ void SPObject::readAttr(gchar const *key)
     }
 }
 
-void SPObject::repr_attr_changed(Inkscape::XML::Node * /*repr*/, gchar const *key, gchar const * /*oldval*/, gchar const * /*newval*/, bool is_interactive, gpointer data)
+void SPObject::notifyAttributeChanged(Inkscape::XML::Node &, GQuark key_, Util::ptr_shared, Util::ptr_shared)
 {
-    auto object = static_cast<SPObject *>(data);
+    auto const key = g_quark_to_string(key_);
+    readAttr(key);
 
-    object->readAttr(key);
-
-    // manual changes to extension attributes require the normal
-    // attributes, which depend on them, to be updated immediately
-    if (is_interactive) {
-        object->updateRepr(0);
+    auto lpeitem = cast<SPLPEItem>(this);
+    if (lpeitem && lpeitem->document->isSeeking()) {
+        lpeitem->modified(SP_OBJECT_MODIFIED_FLAG);
     }
 }
 
-void SPObject::repr_content_changed(Inkscape::XML::Node * /*repr*/, gchar const * /*oldcontent*/, gchar const * /*newcontent*/, gpointer data)
+void SPObject::notifyContentChanged(Inkscape::XML::Node &, Util::ptr_shared, Util::ptr_shared)
 {
-    auto object = static_cast<SPObject *>(data);
-
-    object->read_content();
+    read_content();
 }
 
 /**
@@ -1180,6 +1210,80 @@ Inkscape::XML::Node* SPObject::write(Inkscape::XML::Document *doc, Inkscape::XML
     return repr;
 }
 
+/**
+* Indicates that another object supercedes this one.
+* Used by duple and stamp to keep references of LPE
+*/
+void 
+SPObject::setTmpSuccessor(SPObject *tmpsuccessor) {
+    assert(tmpsuccessor != NULL);
+    assert(_tmpsuccessor == NULL);
+    assert(tmpsuccessor->_tmpsuccessor == NULL);
+    sp_object_ref(tmpsuccessor, nullptr);
+    _tmpsuccessor = tmpsuccessor;
+    if (repr) {
+        char const *linked_fill_id = getAttribute("inkscape:linked-fill");
+        if (linked_fill_id && document) {
+            SPObject *lfill = document->getObjectById(linked_fill_id);
+            if (lfill && lfill->_tmpsuccessor) {
+                lfill->_tmpsuccessor->setAttribute("inkscape:linked-fill",lfill->_tmpsuccessor->getId());
+            }
+        }
+
+        if (children.size() == _tmpsuccessor->children.size()) {
+            for (auto &obj : children) {
+                auto tmpsuccessorchild = _tmpsuccessor->nthChild(obj.getPosition());
+                if (tmpsuccessorchild && !obj._tmpsuccessor) {
+                    obj.setTmpSuccessor(tmpsuccessorchild);
+                }
+            }
+        }
+    }
+}
+
+/**
+* Fix temporary successors in duple stamp.
+*/
+void 
+SPObject::fixTmpSuccessors() {
+    for (auto &obj : children) {
+        obj.fixTmpSuccessors();
+    }
+    if (_tmpsuccessor) {
+        char const *linked_fill_id = getAttribute("inkscape:linked-fill");
+        if (linked_fill_id && document) {
+            SPObject *lfill = document->getObjectById(linked_fill_id);
+            if (lfill && lfill->_tmpsuccessor) {
+                _tmpsuccessor->setAttribute("inkscape:linked-fill", lfill->_tmpsuccessor->getId());
+            }
+        }
+    }
+}
+
+void 
+SPObject::unsetTmpSuccessor() {
+    for (auto &object : children) {
+        object.unsetTmpSuccessor();
+    }
+    if (_tmpsuccessor) {
+        sp_object_unref(_tmpsuccessor, nullptr);
+        _tmpsuccessor = nullptr;
+    }
+}
+
+/**
+* Returns ancestor non layer.
+*/
+SPObject const * SPObject::getTopAncestorNonLayer() const {
+    auto group = cast<SPGroup>(parent);
+    if (group && group->layerMode() != SPGroup::LAYER) {
+        return group->getTopAncestorNonLayer();
+    } else {
+        return this;
+    }
+};
+
+
 Inkscape::XML::Node * SPObject::updateRepr(unsigned int flags)
 {
 #ifdef OBJECT_TRACE
@@ -1249,7 +1353,7 @@ void SPObject::requestDisplayUpdate(unsigned int flags)
     // expect no nested update calls
     if (document->update_in_progress) {
         // observed with LPE on <rect>
-        g_print("WARNING: Requested update while update in progress, counter = %d\n", document->update_in_progress);
+        g_warning("WARNING: Requested update while update in progress, counter = %d", document->update_in_progress);
     }
 #endif
 
@@ -1315,11 +1419,13 @@ void SPObject::updateDisplay(SPCtx *ctx, unsigned int flags)
      * done immediately. I think this is correct (Lauris).
      */
     if (style) {
+        style->block_filter_bbox_updates = true;
         if ((flags & SP_OBJECT_STYLESHEET_MODIFIED_FLAG)) {
             style->readFromObject(this);
         } else if (parent && (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) && (flags & SP_OBJECT_PARENT_MODIFIED_FLAG)) {
             style->cascade( this->parent->style );
         }
+        style->block_filter_bbox_updates = false;
     }
 
     try
@@ -1407,26 +1513,18 @@ void SPObject::emitModified(unsigned int flags)
 #endif
 }
 
-gchar const *SPObject::getTagName(SPException *ex) const
+gchar const *SPObject::getTagName() const
 {
     g_assert(repr != nullptr);
-    /* If exception is not clear, return */
-    if (!SP_EXCEPTION_IS_OK(ex)) {
-        return nullptr;
-    }
 
     /// \todo fixme: Exception if object is NULL? */
     //XML Tree being used here.
     return getRepr()->name();
 }
 
-gchar const *SPObject::getAttribute(gchar const *key, SPException *ex) const
+gchar const *SPObject::getAttribute(gchar const *key) const
 {
     g_assert(this->repr != nullptr);
-    /* If exception is not clear, return */
-    if (!SP_EXCEPTION_IS_OK(ex)) {
-        return nullptr;
-    }
 
     /// \todo fixme: Exception if object is NULL? */
     //XML Tree being used here.
@@ -1434,23 +1532,23 @@ gchar const *SPObject::getAttribute(gchar const *key, SPException *ex) const
 }
 
 void SPObject::setAttribute(Inkscape::Util::const_char_ptr key,
-                            Inkscape::Util::const_char_ptr value, SPException *ex)
+                            Inkscape::Util::const_char_ptr value)
 {
     g_assert(this->repr != nullptr);
-    /* If exception is not clear, return */
-    g_return_if_fail(SP_EXCEPTION_IS_OK(ex));
 
     /// \todo fixme: Exception if object is NULL? */
     //XML Tree being used here.
     getRepr()->setAttribute(key, value);
 }
 
+void SPObject::setAttributeDouble(Inkscape::Util::const_char_ptr key, double value) {
+    Inkscape::CSSOStringStream os;
+    os << value;
+    setAttribute(key, os.str());
+}
 
-void SPObject::removeAttribute(gchar const *key, SPException *ex)
+void SPObject::removeAttribute(gchar const *key)
 {
-    /* If exception is not clear, return */
-    g_return_if_fail(SP_EXCEPTION_IS_OK(ex));
-
     /// \todo fixme: Exception if object is NULL? */
     //XML Tree being used here.
     getRepr()->removeAttribute(key);
@@ -1459,53 +1557,37 @@ void SPObject::removeAttribute(gchar const *key, SPException *ex)
 bool SPObject::storeAsDouble( gchar const *key, double *val ) const
 {
     g_assert(this->getRepr()!= nullptr);
-    return ((Inkscape::XML::Node *)(this->getRepr()))->getAttributeDouble(key, val);
+    double nan = std::numeric_limits<double>::quiet_NaN();
+    double temp_val = ((Inkscape::XML::Node *)(this->getRepr()))->getAttributeDouble(key, nan);
+    if (std::isnan(temp_val)) {
+        return false;
+    }
+    *val = temp_val;
+    return true;
 }
 
-/** Helper */
-gchar *
-sp_object_get_unique_id(SPObject    *object,
-                        gchar const *id)
+std::string SPObject::generate_unique_id(char const *default_id) const
 {
-    static unsigned long count = 0;
-
-    g_assert(SP_IS_OBJECT(object));
-
-    count++;
+    if (default_id && !document->getObjectById(default_id)) {
+        return default_id;
+    }
 
     //XML Tree being used here.
-    gchar const *name = object->getRepr()->name();
-    g_assert(name != nullptr);
+    auto name = repr->name();
+    g_assert(name);
 
-    gchar const *local = std::strchr(name, ':');
-    if (local) {
+    if (auto local = std::strchr(name, ':')) {
         name = local + 1;
     }
 
-    if (id != nullptr) {
-        if (object->document->getObjectById(id) == nullptr) {
-            return g_strdup(id);
-        }
-    }
-
-    size_t const name_len = std::strlen(name);
-    size_t const buflen = name_len + (sizeof(count) * 10 / 4) + 1;
-    gchar *const buf = (gchar *) g_malloc(buflen);
-    std::memcpy(buf, name, name_len);
-    gchar *const count_buf = buf + name_len;
-    size_t const count_buflen = buflen - name_len;
-    do {
-        ++count;
-        g_snprintf(count_buf, count_buflen, "%lu", count);
-    } while ( object->document->getObjectById(buf) != nullptr );
-    return buf;
+    return document->generate_unique_id(name);
 }
 
 void SPObject::_requireSVGVersion(Inkscape::Version version) {
     for ( SPObject::ParentIterator iter=this ; iter ; ++iter ) {
         SPObject *object = iter;
-        if (SP_IS_ROOT(object)) {
-            SPRoot *root = SP_ROOT(object);
+        if (is<SPRoot>(object)) {
+            auto root = cast<SPRoot>(object);
             if ( root->version.svg < version ) {
                 root->version.svg = version;
             }
@@ -1657,6 +1739,42 @@ Glib::ustring SPObject::textualContent() const
         }
     }
     return text;
+}
+
+Glib::ustring SPObject::getExportFilename() const
+{
+    if (auto filename = repr->attribute("inkscape:export-filename")) {
+        return Glib::ustring(filename);
+    }
+    return "";
+}
+
+void SPObject::setExportFilename(Glib::ustring filename)
+{
+    // Is this svg has been saved before.
+    const char *doc_filename = document->getDocumentFilename();
+    std::string base = Glib::path_get_dirname(doc_filename ? doc_filename : filename);
+
+    filename = Inkscape::convertPathToRelative(filename, base);
+    repr->setAttributeOrRemoveIfEmpty("inkscape:export-filename", filename.c_str());
+}
+
+Geom::Point SPObject::getExportDpi() const
+{
+    return Geom::Point(
+        repr->getAttributeDouble("inkscape:export-xdpi", 0.0),
+        repr->getAttributeDouble("inkscape:export-ydpi", 0.0));
+}
+
+void SPObject::setExportDpi(Geom::Point dpi)
+{
+    if (!dpi.x() || !dpi.y()) {
+        repr->removeAttribute("inkscape:export-xdpi");
+        repr->removeAttribute("inkscape:export-ydpi");
+    } else {
+        repr->setAttributeSvgDouble("inkscape:export-xdpi", dpi.x());
+        repr->setAttributeSvgDouble("inkscape:export-ydpi", dpi.y());
+    }
 }
 
 // For debugging: Print SP tree structure.

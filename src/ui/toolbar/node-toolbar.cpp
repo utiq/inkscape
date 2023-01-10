@@ -38,11 +38,10 @@
 #include "document-undo.h"
 #include "inkscape.h"
 #include "selection-chemistry.h"
-#include "verbs.h"
-
-#include "helper/action.h"
 
 #include "object/sp-namedview.h"
+
+#include "page-manager.h"
 
 #include "ui/icon-names.h"
 #include "ui/simple-pref-pusher.h"
@@ -242,15 +241,21 @@ NodeToolbar::NodeToolbar(SPDesktop *desktop)
 
     add(* Gtk::manage(new Gtk::SeparatorToolItem()));
 
-    auto context = Inkscape::ActionContext(_desktop);
-
     {
-        auto object_to_path_item = SPAction::create_toolbutton_for_verb(SP_VERB_OBJECT_TO_CURVE, context);
+        auto object_to_path_item = Gtk::manage(new Gtk::ToolButton(_("_Object to Path")));
+        object_to_path_item->set_tooltip_text(_("Convert selected object to path"));
+        object_to_path_item->set_icon_name(INKSCAPE_ICON("object-to-path"));
+        // Must use C API until GTK4.
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(object_to_path_item->gobj()), "app.object-to-path");
         add(*object_to_path_item);
     }
 
     {
-        auto stroke_to_path_item = SPAction::create_toolbutton_for_verb(SP_VERB_SELECTION_OUTLINE, context);
+        auto stroke_to_path_item = Gtk::manage(new Gtk::ToolButton(_("_Stroke to Path")));
+        stroke_to_path_item->set_tooltip_text(_("Convert selected object's stroke to paths"));
+        stroke_to_path_item->set_icon_name(INKSCAPE_ICON("stroke-to-path"));
+        // Must use C API until GTK4.
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(stroke_to_path_item->gobj()), "app.object-stroke-to-path");
         add(*stroke_to_path_item);
     }
 
@@ -317,7 +322,11 @@ NodeToolbar::NodeToolbar(SPDesktop *desktop)
     }
 
     {
-        _nodes_lpeedit_item = SPAction::create_toolbutton_for_verb(SP_VERB_EDIT_NEXT_PATHEFFECT_PARAMETER, context);
+        _nodes_lpeedit_item = Gtk::manage(new Gtk::ToolButton(N_("Next path effect parameter")));
+        _nodes_lpeedit_item->set_tooltip_text(N_("Show next editable path effect parameter"));
+        _nodes_lpeedit_item->set_icon_name(INKSCAPE_ICON("path-effect-parameter-next"));
+        // Must use C API until GTK4.
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(_nodes_lpeedit_item->gobj()), "win.path-effect-parameter-next");
         add(*_nodes_lpeedit_item);
     }
 
@@ -396,6 +405,14 @@ NodeToolbar::value_changed(Geom::Dim2 d)
     if (nt && !nt->_selected_nodes->empty()) {
         double val = Quantity::convert(adj->get_value(), unit, "px");
         double oldval = nt->_selected_nodes->pointwiseBounds()->midpoint()[d];
+
+        // Adjust the coordinate to the current page, if needed
+        auto &pm = _desktop->getDocument()->getPageManager();
+        if (prefs->getBool("/options/origincorrection/page", true)) {
+            auto page = pm.getSelectedPageRect();
+            oldval -= page.corner(0)[d];
+        }
+
         Geom::Point delta(0,0);
         delta[d] = val - oldval;
         nt->_multipath->move(delta);
@@ -408,8 +425,8 @@ void
 NodeToolbar::sel_changed(Inkscape::Selection *selection)
 {
     SPItem *item = selection->singleItem();
-    if (item && SP_IS_LPE_ITEM(item)) {
-       if (SP_LPE_ITEM(item)->hasPathEffect()) {
+    if (item && is<SPLPEItem>(item)) {
+       if (cast_unsafe<SPLPEItem>(item)->hasPathEffect()) {
            _nodes_lpeedit_item->set_sensitive(true);
        } else {
            _nodes_lpeedit_item->set_sensitive(false);
@@ -426,7 +443,9 @@ NodeToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
         // watch selection
         c_selection_changed = desktop->getSelection()->connectChanged(sigc::mem_fun(*this, &NodeToolbar::sel_changed));
         c_selection_modified = desktop->getSelection()->connectModified(sigc::mem_fun(*this, &NodeToolbar::sel_modified));
-        c_subselection_changed = desktop->connectToolSubselectionChanged(sigc::mem_fun(*this, &NodeToolbar::coord_changed));
+        c_subselection_changed = desktop->connect_control_point_selected([=](void* sender, Inkscape::UI::ControlPointSelection* selection) {
+            coord_changed(selection);
+        });
 
         sel_changed(desktop->getSelection());
     } else {
@@ -447,7 +466,7 @@ NodeToolbar::sel_modified(Inkscape::Selection *selection, guint /*flags*/)
 
 /* is called when the node selection is modified */
 void
-NodeToolbar::coord_changed(gpointer /*shape_editor*/)
+NodeToolbar::coord_changed(Inkscape::UI::ControlPointSelection* selected_nodes) // gpointer /*shape_editor*/)
 {
     // quit if run by the attr_changed listener
     if (_freeze) {
@@ -463,8 +482,7 @@ NodeToolbar::coord_changed(gpointer /*shape_editor*/)
     Unit const *unit = _tracker->getActiveUnit();
     g_return_if_fail(unit != nullptr);
 
-    NodeTool *nt = get_node_tool();
-    if (!nt || !(nt->_selected_nodes) ||nt->_selected_nodes->empty()) {
+    if (!selected_nodes || selected_nodes->empty()) {
         // no path selected
         _nodes_x_item->set_sensitive(false);
         _nodes_y_item->set_sensitive(false);
@@ -473,7 +491,14 @@ NodeToolbar::coord_changed(gpointer /*shape_editor*/)
         _nodes_y_item->set_sensitive(true);
         Geom::Coord oldx = Quantity::convert(_nodes_x_adj->get_value(), unit, "px");
         Geom::Coord oldy = Quantity::convert(_nodes_y_adj->get_value(), unit, "px");
-        Geom::Point mid = nt->_selected_nodes->pointwiseBounds()->midpoint();
+        Geom::Point mid = selected_nodes->pointwiseBounds()->midpoint();
+
+        // Adjust shown coordinate according to the selected page
+        auto prefs = Inkscape::Preferences::get();
+        if (prefs->getBool("/options/origincorrection/page", true)) {
+            auto &pm = _desktop->getDocument()->getPageManager();
+            mid *= pm.getSelectedPageAffine().inverse();
+        }
 
         if (oldx != mid[Geom::X]) {
             _nodes_x_adj->set_value(Quantity::convert(mid[Geom::X], "px", unit));
