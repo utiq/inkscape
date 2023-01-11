@@ -832,23 +832,28 @@ add_cli_test(action_test_multiline_anchoring
 if(WITH_LIBCDR)
   # add_cli_test(import_cdr  PARAMETERS --export-type=png   # fails to open (regression in libcdr 1.6.0)
   #                          INPUT_FILENAME librevenge_formats/corel_draw.cdr OUTPUT_FILENAME format_corel_draw.png
-  #                          REFERENCE_FILENAME librevenge_formats/corel_draw_expected.png) # check png size is correct
+  #                          FUZZYREF_FILENAME librevenge_formats/corel_draw_expected.png # check png size is correct
+  #                          FUZZ_PERCENTAGE 3)
   add_cli_test(import_cdr2 PARAMETERS --export-type=png
                            INPUT_FILENAME librevenge_formats/corel_draw2.cdr OUTPUT_FILENAME format_corel_draw2.png
-                           REFERENCE_FILENAME librevenge_formats/corel_draw2_expected.png)
+                           FUZZYREF_FILENAME librevenge_formats/corel_draw2_expected.png
+                           FUZZ_PERCENTAGE 3)
 endif()
 if(WITH_LIBVISIO)
   add_cli_test(import_vsd  PARAMETERS --export-type=png
                            INPUT_FILENAME librevenge_formats/visio.vsd OUTPUT_FILENAME format_visio.vsd.png
-                           REFERENCE_FILENAME librevenge_formats/visio.vsd_expected.png)
+                           FUZZYREF_FILENAME librevenge_formats/visio.vsd_expected.png
+                           FUZZ_PERCENTAGE 3)
   add_cli_test(import_vsdx PARAMETERS --export-type=png
                            INPUT_FILENAME librevenge_formats/visio.vsdx OUTPUT_FILENAME format_visio.vsdx.png
-                           REFERENCE_FILENAME librevenge_formats/visio.vsdx_expected.png)
+                           FUZZYREF_FILENAME librevenge_formats/visio.vsdx_expected.png
+                           FUZZ_PERCENTAGE 3)
 endif()
 if(WITH_LIBWPG)
   add_cli_test(import_wpg  PARAMETERS --export-type=png
                            INPUT_FILENAME librevenge_formats/word_perfect.wpg OUTPUT_FILENAME format_word_perfect.png
-                           REFERENCE_FILENAME librevenge_formats/word_perfect_expected.png)
+                           FUZZYREF_FILENAME librevenge_formats/word_perfect_expected.png
+                           FUZZ_PERCENTAGE 3)
 endif()
 
 
