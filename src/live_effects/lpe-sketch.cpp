@@ -198,7 +198,9 @@ LPESketch::doEffect_pwd2 (Geom::Piecewise<Geom::D2<Geom::SBasis> > const & pwd2_
     using namespace Geom;
     //If the input path is empty, do nothing.
     //Note: this happens when duplicating a 3d box... dunno why.
-    if (pwd2_in.size()==0) return pwd2_in;
+    if (pwd2_in.empty() || (pwd2_in.size() == 1 && pwd2_in[0].isConstant())) {
+        return pwd2_in;
+    }
 
     Piecewise<D2<SBasis> > output;
 

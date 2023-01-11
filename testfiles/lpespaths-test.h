@@ -33,7 +33,8 @@ using namespace Inkscape;
  * 1.2 started MR, I can't finish without too much work than a cmake advanced user
  */
 
-class LPESPathsTest : public ::testing::Test {
+class LPESPathsTest : public ::testing::Test
+{
 protected:
     void SetUp() override
     {
@@ -55,65 +56,84 @@ protected:
         svg += ".svg";
     }
 
-    void pathCompare(const gchar *a, const gchar *b, Glib::ustring id, double precission = 0.001)
+    void pathCompare(char const *a, char const *b, Glib::ustring const &id, double precision = 0.001)
     {
-        failed.push_back(id);
+        bool success = false;
+        pathCompareInternal(a, b, precision, success);
+        if (!success) {
+            #define DIAG(x) "  " << #x << ":\n    " << x << std::endl
+            std::cout << "More information about the failure:\n" << DIAG(svg) << DIAG(id) << DIAG(a) << DIAG(b);
+            failed.emplace_back(id);
+        }
+    }
+
+    void pathCompareInternal(char const *a, char const *b, double precision, bool &success)
+    {
+        bool a_empty = a[0] == '\0';
+        bool b_empty = b[0] == '\0';
+        if (a_empty || b_empty) {
+            if (a_empty && b_empty) {
+                success = true;
+                return;
+            } else {
+                FAIL() << "Mismatching emptiness of paths";
+            }
+        }
+
         Geom::PathVector apv = sp_svg_read_pathv(a);
         Geom::PathVector bpv = sp_svg_read_pathv(b);
         if (apv.empty()) {
-            std::cout << "[ WARN     ] Coulden't parse or empty original 'd' " << id << ":" << a << std::endl;
-            failed.pop_back();
-            return;
+            FAIL() << "Couldn't parse original 'd'";
         }
         if (bpv.empty()) {
-            std::cout << "[ WARN     ] Coulden't parse or empty 'd' " << id << ":" << b << std::endl;
-            failed.pop_back();
-            return;
+            FAIL() << "Couldn't parse 'd'";
         }
+
         size_t totala = apv.curveCount();
         size_t totalb = bpv.curveCount();
-        ASSERT_TRUE(totala == totalb);
-        std::vector<Geom::Coord> pos;
+        ASSERT_EQ(totala, totalb);
+
         // find initial
         size_t initial = 0;
         for (size_t i = 0; i < totala; i++) {
             Geom::Point pointa = apv.pointAt(0.0);
-            Geom::Point pointb = bpv.pointAt(float(i));
-            if (Geom::are_near(pointa[Geom::X], pointb[Geom::X], precission) &&
-                Geom::are_near(pointa[Geom::Y], pointb[Geom::Y], precission)) 
-            {
+            Geom::Point pointb = bpv.pointAt(i);
+            if (Geom::are_near(pointa, pointb, precision)) {
                 initial = i;
                 break;
             }
         }
+
         if (initial != 0 && initial == totala) {
-            std::cout << "[ WARN     ] Curve reversed. We not block here. We reverse the path and test node positions on reverse" << std::endl;
+            std::cout << "[ WARN     ] Curve reversed. We do not block here. We reverse the path and test node positions on reverse" << std::endl;
             bpv.reverse();
         } else if (initial != 0) {
-            std::cout << "[ WARN     ] Different starting node. We not block here. We gap the origin to " << initial << " de " << totala << " and test with the pathvector reindexed" << std::endl;
+            std::cout << "[ WARN     ] Different starting node. We do not block here. We gap the origin to " << initial << " de " << totala << " and test with the pathvector reindexed" << std::endl;
         }
-        for (size_t i = 0; i < apv.curveCount(); i++) {
+
+        for (size_t i = 0; i < totala; i++) {
             if (initial >= totala) {
                 initial = 0;
             }
-            Geom::Point pointa = apv.pointAt(float(i)+0.2);
-            Geom::Point pointb = bpv.pointAt(float(initial)+0.2);
-            Geom::Point pointc = apv.pointAt(float(i)+0.4);
-            Geom::Point pointd = bpv.pointAt(float(initial)+0.4);
-            Geom::Point pointe = apv.pointAt(float(i));
-            Geom::Point pointf = bpv.pointAt(float(initial));
-            ASSERT_NEAR(pointa[Geom::X], pointb[Geom::X], precission);
-            ASSERT_NEAR(pointa[Geom::Y], pointb[Geom::Y], precission);
-            ASSERT_NEAR(pointc[Geom::X], pointd[Geom::X], precission);
-            ASSERT_NEAR(pointc[Geom::Y], pointd[Geom::Y], precission);
-            ASSERT_NEAR(pointe[Geom::X], pointf[Geom::X], precission);
-            ASSERT_NEAR(pointe[Geom::Y], pointf[Geom::Y], precission);
+            Geom::Point pointa = apv.pointAt(i + 0.2);
+            Geom::Point pointb = bpv.pointAt(initial + 0.2);
+            Geom::Point pointc = apv.pointAt(i + 0.4);
+            Geom::Point pointd = bpv.pointAt(initial + 0.4);
+            Geom::Point pointe = apv.pointAt(i);
+            Geom::Point pointf = bpv.pointAt(initial);
+            ASSERT_NEAR(pointa[Geom::X], pointb[Geom::X], precision);
+            ASSERT_NEAR(pointa[Geom::Y], pointb[Geom::Y], precision);
+            ASSERT_NEAR(pointc[Geom::X], pointd[Geom::X], precision);
+            ASSERT_NEAR(pointc[Geom::Y], pointd[Geom::Y], precision);
+            ASSERT_NEAR(pointe[Geom::X], pointf[Geom::X], precision);
+            ASSERT_NEAR(pointe[Geom::Y], pointf[Geom::Y], precision);
             initial++;
         }
-        failed.pop_back();
+
+        success = true;
     }
 
-    void TearDown( ) override
+    void TearDown() override
     { 
         Glib::ustring ids = "";
         for (auto fail : failed) {
@@ -131,11 +151,10 @@ protected:
     // root svg from global and override with per shape "inkscape:test-threshold"
     void testDoc(std::string file) 
     {
-        double precission = 0.001;
-        SPDocument *doc = nullptr;
-        doc = SPDocument::createNewDoc(file.c_str(), false);
+        double precision = 0.001;
+        auto doc = SPDocument::createNewDoc(file.c_str(), false);
         ASSERT_TRUE(doc != nullptr);
-        SPLPEItem *lpeitem = dynamic_cast<SPLPEItem *>(doc->getRoot());
+        SPLPEItem *lpeitem = doc->getRoot();
         std::vector<SPObject *> objs;
         std::vector<Glib::ustring> ids;
         std::vector<Glib::ustring> lpes;
@@ -175,14 +194,14 @@ protected:
         // to bypass onload
         sp_lpe_item_update_patheffect(lpeitem, true, true, true);
         if (lpeitem->getAttribute("inkscape:test-threshold")) {
-            precission = Util::read_number(lpeitem->getAttribute("inkscape:test-threshold"));
+            precision = Util::read_number(lpeitem->getAttribute("inkscape:test-threshold"));
         }
         size_t index = 0;
         for (auto id : ids) {
             SPObject *obj = doc->getObjectById(id);
             if (obj) {
                 if (obj->getAttribute("inkscape:test-threshold")) {
-                    precission = Util::read_number(obj->getAttribute("inkscape:test-threshold"));
+                    precision = Util::read_number(obj->getAttribute("inkscape:test-threshold"));
                 }
                 if (!obj->getAttribute("inkscape:test-ignore")) {
                     Glib::ustring idandlayer = "";
@@ -190,7 +209,7 @@ protected:
                     idandlayer += "("; // top layers has the LPE name tested in in id
                     idandlayer += lpes[index];
                     idandlayer += ")";
-                    pathCompare(ds[index].c_str(), obj->getAttribute("d"), idandlayer , precission);
+                    pathCompare(ds[index].c_str(), obj->getAttribute("d"), idandlayer , precision);
                 } else {
                     std::cout << "[ WARN     ] Item with id:" << obj->getAttribute("id") << " ignored by inkscape:test-ignore" << std::endl;
                 }
