@@ -349,7 +349,7 @@ DrawingItem *DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigne
     bool outline = flags & PICK_OUTLINE;
     bool pick_as_clip = flags & PICK_AS_CLIP;
 
-    if (SP_SCALE24_TO_FLOAT(style_opacity) == 0 && !outline && !pick_as_clip) {
+    if (SP_SCALE24_TO_FLOAT(style_opacity) == 0 && !outline && !pick_as_clip && !_drawing.selectZeroOpacity()) {
         // fully transparent, no pick unless outline mode
         return nullptr;
     }
@@ -362,7 +362,8 @@ DrawingItem *DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigne
                    // this overrides display mode and stroke style considerations
     } else if (outline) {
         width = 0.5; // in outline mode, everything is stroked with the same 0.5px line width
-    } else if (_nrstyle.stroke.type != NRStyle::PAINT_NONE && _nrstyle.stroke.opacity > 1e-3) {
+    } else if (_nrstyle.stroke.type != NRStyle::PAINT_NONE &&
+               (_nrstyle.stroke.opacity > 1e-3 || _drawing.selectZeroOpacity())) {
         // for normal picking calculate the distance corresponding top the stroke width
         // FIXME BUG: this is incorrect for transformed strokes
         float const scale = _ctm.descrim();
@@ -373,7 +374,9 @@ DrawingItem *DrawingShape::_pickItem(Geom::Point const &p, double delta, unsigne
 
     double dist = Geom::infinity();
     int wind = 0;
-    bool needfill = pick_as_clip || (_nrstyle.fill.type != NRStyle::PAINT_NONE && _nrstyle.fill.opacity > 1e-3 && !outline);
+
+    bool needfill = pick_as_clip || (_nrstyle.fill.type != NRStyle::PAINT_NONE &&
+                                     (_nrstyle.fill.opacity > 1e-3 || _drawing.selectZeroOpacity()) && !outline);
     bool wind_evenodd = (pick_as_clip ? style_clip_rule : style_fill_rule) == SP_WIND_RULE_EVENODD;
 
     // actual shape picking

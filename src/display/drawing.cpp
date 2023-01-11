@@ -317,6 +317,7 @@ void Drawing::_loadPrefs()
     _blur_quality        = prefs->getInt       ("/options/blurquality/value",            0);
     _use_dithering       = prefs->getBool      ("/options/dithering/value",              true);
     _cursor_tolerance    = prefs->getDouble    ("/options/cursortolerance/value",        1.0);
+    _select_zero_opacity = prefs->getBool      ("/options/selection/zeroopacity",        false);
 
     // Enable caching only for the Canvas's drawing, since only it is persistent.
     if (_canvas_item_drawing) {
@@ -342,6 +343,7 @@ void Drawing::_loadPrefs()
         actions.emplace("/options/blurquality/value",            [this] (auto &entry) { setBlurQuality(entry.getInt(0)); });
         actions.emplace("/options/dithering/value",              [this] (auto &entry) { setDithering(entry.getBool(true)); });
         actions.emplace("/options/cursortolerance/value",        [this] (auto &entry) { setCursorTolerance(entry.getDouble(1.0)); });
+        actions.emplace("/options/selection/zeroopacity",        [this] (auto &entry) { setSelectZeroOpacity(entry.getBool(false)); });
         actions.emplace("/options/renderingcache/size",          [this] (auto &entry) { setCacheBudget((1 << 20) * entry.getIntLimited(64, 0, 4096)); });
         actions.emplace("/options/threading/numthreads",         [this] (auto &entry) { set_num_filter_threads(entry.getIntLimited(default_numthreads(), 1, 256)); });
 

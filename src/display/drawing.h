@@ -57,6 +57,7 @@ public:
     void setBlurQuality(int);
     void setDithering(bool);
     void setCursorTolerance(double tol) { _cursor_tolerance = tol; }
+    void setSelectZeroOpacity(bool select_zero_opacity) { _select_zero_opacity = select_zero_opacity; }
     void setCacheBudget(size_t bytes);
     void setCacheLimit(Geom::OptIntRect const &rect);
     void setClip(std::optional<Geom::PathVector> &&clip);
@@ -73,6 +74,7 @@ public:
     int blurQuality() const { return _blur_quality; }
     bool useDithering() const { return _use_dithering; }
     double cursorTolerance() const { return _cursor_tolerance; }
+    bool selectZeroOpacity() const { return _select_zero_opacity; }
     Geom::OptIntRect const &cacheLimit() const { return _cache_limit; }
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), Geom::Affine const &affine = Geom::identity(),
@@ -112,6 +114,7 @@ private:
     size_t _cache_budget; ///< Maximum allowed size of cache.
     Geom::OptIntRect _cache_limit;
     std::optional<Geom::PathVector> _clip;
+    bool _select_zero_opacity;
 
     std::set<DrawingItem*> _cached_items; // modified by DrawingItem::_setCached()
     CacheList _candidate_items;           // keep this list always sorted with std::greater

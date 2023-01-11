@@ -396,6 +396,7 @@ protected:
     UI::Widget::PrefCheckButton _sel_touch_topmost_only;
     UI::Widget::PrefCheckButton _sel_layer_deselects;
     UI::Widget::PrefCheckButton _sel_cycle;
+    UI::Widget::PrefCheckButton _sel_zero_opacity;
 
     UI::Widget::PrefCheckButton _markers_color_stock;
     UI::Widget::PrefCheckButton _markers_color_custom;
