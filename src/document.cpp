@@ -536,6 +536,86 @@ std::unique_ptr<SPDocument> SPDocument::copy() const
     return std::unique_ptr<SPDocument>(doc);
 }
 
+/*
+    Rebase the document with de a new XMLDoc.
+    passing the same file is like revert but keep history
+*/
+void SPDocument::rebase(const gchar * file, bool keep_namedview)
+{
+    if (file == nullptr)
+    {
+        g_warning("Error on rebase_doc: no file.");
+        return;
+    }
+    Inkscape::XML::Document *new_xmldoc = sp_repr_read_file(file, SP_SVG_NS_URI);
+
+    if (new_xmldoc) {
+        rebase(new_xmldoc, keep_namedview);
+    } else {
+        g_warning("Error on rebase_doc: The file could not be parsed.");
+    }
+}
+
+/*
+    Rebase the document with de a new XMLDoc.
+    \brief  A function to replace all the elements in a document
+            by those from a new XML::Document.
+            document and repinserts them into an emptied old document.
+    \param  new_xmldoc  The root node to inject into.
+
+    This function first deletes all the root attributes in the old document followed
+    by copying all the root attributes from the new document to the old document.    
+
+    Then, it copies all the element in the new XML::Document into the root of document.
+    keep a diferent approach for namedview to not erase it and merge new value
+*/
+void SPDocument::rebase(Inkscape::XML::Document * new_xmldoc, bool keep_namedview)
+{
+    if (new_xmldoc == nullptr)
+    {
+        g_warning("Error on rebase_doc: NULL pointer input.");
+        return;
+    }
+    emitReconstructionStart();
+    Inkscape::XML::Document * origin_xmldoc = getReprDoc();
+    Inkscape::XML::Node *namedview = nullptr;
+    for ( Inkscape::XML::Node *child = origin_xmldoc->root()->lastChild() ; child != nullptr ;)
+    {
+        Inkscape::XML::Node *prevchild = child->prev();
+        if (!g_strcmp0(child->name(),"sodipodi:namedview") && keep_namedview) {
+            namedview = child;
+        } else {
+            origin_xmldoc->root()->removeChild(child);
+        }
+        child = prevchild;
+    }
+    for ( Inkscape::XML::Node *child = new_xmldoc->root()->firstChild() ; child != nullptr ; child = child->next() )
+    {
+        if (!g_strcmp0(child->name(),"sodipodi:namedview") && keep_namedview) {
+            namedview->mergeFrom(child, "id", true, true);
+        } else {
+            Inkscape::XML::Node *new_child = child->duplicate(origin_xmldoc);
+            origin_xmldoc->root()->appendChild(new_child);
+            Inkscape::GC::release(new_child);
+        }
+    }
+    emitReconstructionFinish();
+    new_xmldoc->release();
+}
+
+/*
+    Rebase the document from data in disk
+*/
+void SPDocument::rebase(bool keep_namedview)
+{
+    if (document_filename == nullptr)
+    {
+        g_warning("Error on rebase_doc: NULL file");
+        return;
+    }
+    rebase(document_filename, keep_namedview);
+}
+
 /**
  * Fetches a document and attaches it to the current document as a child href
  */

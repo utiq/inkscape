@@ -135,7 +135,12 @@ public:
 
     // Make a copy, you are responsible for the copy.
     std::unique_ptr<SPDocument> copy() const;
-
+    // Substitute doc root
+    void rebase(Inkscape::XML::Document * new_xmldoc, bool keep_namedview = true);
+    // Substitute doc root with a file
+    void rebase(const gchar * file, bool keep_namedview = true);
+    // Substitute doc root with file in disk
+    void rebase(bool keep_namedview = true);
     // Document status --------------------
     void setVirgin(bool Virgin) { virgin = Virgin; }
     bool getVirgin() { return virgin; }

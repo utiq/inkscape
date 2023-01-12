@@ -69,6 +69,16 @@ file_new(const Glib::VariantBase& value, InkscapeApplication *app)
     document->ensureUpToDate();
 }
 
+void
+file_rebase(const Glib::VariantBase& value, InkscapeApplication *app)
+{
+    Glib::Variant<bool> s = Glib::VariantBase::cast_dynamic<Glib::Variant<bool> >(value);
+    SPDocument *document = app->get_active_document();
+    document->rebase(s.get());
+
+    document->ensureUpToDate();
+}
+
 // Need to create a document_revert that doesn't depend on windows.
 // void
 // file_revert(InkscapeApplication *app)
@@ -94,7 +104,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_file =
     {"app.file-open",              N_("File Open"),                "File",       N_("Open file")                                         },
     {"app.file-new",               N_("File New"),                 "File",       N_("Open new document using template")                  },
     {"app.file-close",             N_("File Close"),               "File",       N_("Close active document")                             },
-    {"app.file-open-window",       N_("File Open Window"),         "File",       N_("Open file window")                                  }
+    {"app.file-open-window",       N_("File Open Window"),         "File",       N_("Open file window")                                  },
+    {"app.file-rebase",            N_("File Rebase"),              "File",       N_("Rebase current document from disk")                 }
     // clang-format on
 };
 
@@ -103,7 +114,8 @@ std::vector<std::vector<Glib::ustring>> hint_data_file =
     // clang-format off
     {"app.file-open",               N_("Enter file name")},
     {"app.file-new",                N_("Enter file name")},
-    {"app.file-open-window",        N_("Enter file name")}
+    {"app.file-open-window",        N_("Enter file name")},
+    {"app.file-rebase-from-saved",  N_("Namedview; Update=1, Replace=0")}
     // clang-format on
 };
 
@@ -125,6 +137,7 @@ add_actions_file(InkscapeApplication* app)
     gapp->add_action_with_parameter( "file-new",                  String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&file_new),                app));
     gapp->add_action_with_parameter( "file-open-window",          String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&file_open_with_window),   app));
     gapp->add_action(                "file-close",                        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&file_close),              app));
+    gapp->add_action_with_parameter( "file-rebase",               Bool,   sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&file_rebase),             app));
     // clang-format on
 #else
             std::cerr << "add_actions: Some actions require Glibmm 2.52, compiled with: " << glib_major_version << "." << glib_minor_version << std::endl;

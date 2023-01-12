@@ -57,7 +57,6 @@
 #include "widgets/desktop-widget.h"
 #include "xml/attribute-record.h"
 #include "xml/rebase-hrefs.h"
-#include "xml/node.h"
 
 /* Namespaces */
 namespace Inkscape {
@@ -639,56 +638,22 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocumen
     fileout.toFile(tempfile_out.get_filename());
 
     pump_events();
-    Inkscape::XML::Document *myxmldoc = nullptr;
+    Inkscape::XML::Document *new_xmldoc = nullptr;
     if (data_read > 10) {
-        myxmldoc = sp_repr_read_file(tempfile_out.get_filename().c_str(), SP_SVG_NS_URI);
+        new_xmldoc = sp_repr_read_file(tempfile_out.get_filename().c_str(), SP_SVG_NS_URI);
     } // data_read
 
     pump_events();
 
-    if (myxmldoc) {
+    if (new_xmldoc) {
         //uncomment if issues on ref extensions links (with previous function)
-        //sp_change_hrefs(myxmldoc, tempfile_out.get_filename().c_str(), doc->getDocumentFilename());
-        doc->emitReconstructionStart();
-        copy_doc(doc->getReprRoot(), myxmldoc->root());
-        doc->emitReconstructionFinish();
-        myxmldoc->release();
+        //sp_change_hrefs(new_xmldoc, tempfile_out.get_filename().c_str(), doc->getDocumentFilename());
+        doc->rebase(new_xmldoc);
     } else {
         Inkscape::UI::gui_warning(_("The output from the extension could not be parsed."), parent_window);
     }
 
     return;
-}
-
-
-
-/**
-    \brief  A function to replace all the elements in an old document
-            by those from a new document.
-            document and repinserts them into an emptied old document.
-    \param  oldroot  The root node of the old (destination) document.
-    \param  newroot  The root node of the new (source) document.
-
-    This function first deletes all the root attributes in the old document followed
-    by copying all the root attributes from the new document to the old document.
-
-    It then deletes all the elements in the old document by
-    making two passes, the first to create a list of the old elements and
-    the second to actually delete them. This two pass approach removes issues
-    with the list being changed while parsing through it... lots of nasty bugs.
-
-    Then, it copies all the element in the new document into the old document.
-
-    Finally, it copies the attributes in namedview.
-*/
-void Script::copy_doc (Inkscape::XML::Node * oldroot, Inkscape::XML::Node * newroot)
-{
-    if ((oldroot == nullptr) || (newroot == nullptr))
-    {
-        g_warning("Error on copy_doc: NULL pointer input.");
-        return;
-    }
-    oldroot->mergeFrom(newroot, "id", true, true);
 }
 
 /**  \brief  This function checks the stderr file, and if it has data,

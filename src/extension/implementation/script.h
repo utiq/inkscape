@@ -15,6 +15,7 @@
 #define INKSCAPE_EXTENSION_IMPEMENTATION_SCRIPT_H_SEEN
 
 #include "implementation.h"
+#include "xml/node.h"
 #include <gtkmm/enums.h>
 #include <gtkmm/window.h>
 #include <glibmm/main.h>
@@ -79,7 +80,6 @@ private:
       */
     Gtk::Window *parent_window;
 
-    void copy_doc(Inkscape::XML::Node * olddoc, Inkscape::XML::Node * newdoc);
     void checkStderr (Glib::ustring const& filename, Gtk::MessageType type, Glib::ustring const& message);
 
     class file_listener {
