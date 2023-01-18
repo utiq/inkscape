@@ -1,46 +1,85 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+ensure_command()
+{
+    command -v $1 >/dev/null 2>&1 || { echo >&2 "Required command '$1' not found. Aborting."; exit 1; }
+}
+
+export LANG=C # Needed to force . as the decimal separator
+
+ensure_command "compare"
+ensure_command "bc"
+
 if [ "$#" -lt 2 ]; then
-    echo "pass the path of the inkscape executable as parameter then the name of the test" $#
+    echo "Pass the path of the inkscape executable as parameter then the name of the test" $#
     exit 1
 fi
 
-command -v compare >/dev/null 2>&1 || { echo >&2 "I require ImageMagick's 'compare' but it's not installed.  Aborting."; exit 1; }
+INKSCAPE_EXE="$1"
+TEST="$2"
+FUZZ="$3"
+EXIT_STATUS=0
+EXPECTED="$(dirname "$TEST")/expected_rendering/$(basename "$TEST")"
+TESTNAME="$(basename "$TEST")"
 
-INKSCAPE_EXE=$1
-exit_status=0
-test=$2
-EXPECTED=$(dirname $test)"/expected_rendering/"$(basename $test)
-testname=$(basename $test)
-
-
-    ${INKSCAPE_EXE} --export-png-use-dithering false --export-filename=${testname}.png -d 96 ${test}.svg #2>/dev/null >/dev/null
-    compare -metric AE ${testname}.png ${EXPECTED}.png ${testname}-compare.png 2> ${testname}-result.txt
-    test1=`cat ${testname}-result.txt`
-    echo $test1
-    if [ "$test1" = 0 ]; then
-        echo ${testname} "PASSED"
-        rm ${testname}.png ${testname}-compare.png
-    else
-        echo ${testname} "FAILED"
-        exit_status=1
-    fi
-
-if [ -f "${EXPECTED}-large.png" ]; then
-    ${INKSCAPE_EXE} --export-png-use-dithering false --export-filename=${testname}-large.png -d 384 ${test}.svg #2>/dev/null >/dev/null
-    compare -metric AE ${testname}-large.png ${EXPECTED}-large.png ${testname}-compare-large.png 2> ${testname}-result.txt
-    test2=`cat ${testname}-result.txt`
-    if [ "$test2" = 0 ]; then
-        echo ${testname}-large "PASSED"
-        rm ${testname}-large.png ${testname}-compare-large.png
-    else
-        echo ${testname}-large "FAILED"
-        exit_status=1
-    fi
+if [ "$FUZZ" = "" ]; then
+    METRIC="AE"
 else
-    echo ${testname}-large "SKIPPED"
+    METRIC="RMSE"
 fi
 
-rm ${testname}-result.txt
-exit $exit_status
+perform_test()
+{
+    local SUFFIX="$1"
+    local DPI="$2"
+    ${INKSCAPE_EXE} --export-png-use-dithering false --export-filename="${TESTNAME}${SUFFIX}.png" -d "$DPI" "${TEST}.svg"
+
+    COMPARE_RESULT="$(compare -metric "$METRIC" "${TESTNAME}${SUFFIX}.png" "${EXPECTED}${SUFFIX}.png" "${TESTNAME}-compare${SUFFIX}.png" 2>&1)"
+
+    if [ "$FUZZ" = "" ]; then
+        if [ "$COMPARE_RESULT" = 0 ]; then
+            echo "${TESTNAME}${SUFFIX}" "PASSED; absolute difference is exactly zero."
+            rm "${TESTNAME}${SUFFIX}.png" "${TESTNAME}-compare${SUFFIX}.png"
+        else
+            echo "${TESTNAME} FAILED; absolute difference ${COMPARE_RESULT} is greater than zero."
+            EXIT_STATUS=1
+        fi
+    else
+        RELATIVE_ERROR=${COMPARE_RESULT#*(}
+        RELATIVE_ERROR=${RELATIVE_ERROR%)*}
+        if [ "$RELATIVE_ERROR" = "" ]; then
+            echo "${TESTNAME} FAILED; could not parse relative error '${COMPARE_RESULT}'."
+            EXIT_STATUS=1
+            return
+        fi
+
+        CONDITION=$(printf "%.12f * 100 <= $FUZZ" "$RELATIVE_ERROR")
+        WITHIN_TOLERANCE=$(echo "${CONDITION}" | bc)
+        if [[ $? -ne 0 ]]; then
+            echo "${TESTNAME} FAILED; An error occurred running 'bc'."
+            EXIT_STATUS=1
+            return
+        fi
+
+        PERCENTAGE_ERROR_FORMULA=$(printf "%.4f * 100" "$RELATIVE_ERROR")
+        PERCENTAGE_ERROR=$(echo "${PERCENTAGE_ERROR_FORMULA}" | bc)
+        if (( $WITHIN_TOLERANCE )); then
+            echo "${TESTNAME}${SUFFIX}" "PASSED; error of ${PERCENTAGE_ERROR}% is within ${FUZZ}% tolerance."
+            rm "${TESTNAME}${SUFFIX}.png" "${TESTNAME}-compare${SUFFIX}.png"
+        else
+            echo "${TESTNAME} FAILED; error of ${PERCENTAGE_ERROR}% exceeds ${FUZZ}% tolerance."
+            EXIT_STATUS=1
+        fi
+    fi
+}
+
+perform_test "" 96
+
+if [ -f "${EXPECTED}-large.png" ]; then
+    perform_test "-large" 384
+else
+    echo "${TESTNAME}-large" "SKIPPED"
+fi
+
+exit $EXIT_STATUS
