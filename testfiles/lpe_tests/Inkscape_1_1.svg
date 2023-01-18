@@ -3108,7 +3108,7 @@
        unit="mm"
        orientation="parallel"
        coloropacity="#000000ff"
-       fontbutton="Sans 10"
+       fontbutton="DejaVu Sans 10"
        precision="2"
        fix_overlaps="0"
        position="5"
@@ -3147,7 +3147,7 @@
        unit="mm"
        orientation="parallel"
        coloropacity="#000000ff"
-       fontbutton="Sans 10"
+       fontbutton="DejaVu Sans 10"
        precision="2"
        fix_overlaps="0"
        position="5"
@@ -3220,7 +3220,7 @@
        unit="px"
        orientation="parallel"
        coloropacity="#000000ff"
-       fontbutton="Sans 10"
+       fontbutton="DejaVu Sans 10"
        precision="2"
        fix_overlaps="0"
        position="8"
@@ -17799,7 +17799,7 @@
      sodipodi:insensitive="true"
      x="-294.69778"
      y="533.07844"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3099">406.59px</tspan></text>
   <path
@@ -17830,7 +17830,7 @@
      sodipodi:insensitive="true"
      x="-294.64955"
      y="554.19881"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3105">391.66px</tspan></text>
   <path
@@ -17861,7 +17861,7 @@
      sodipodi:insensitive="true"
      x="-277.32453"
      y="564.96977"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3111">15.43px</tspan></text>
   <path
@@ -17892,7 +17892,7 @@
      sodipodi:insensitive="true"
      x="-278.5062"
      y="565.68094"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3117">11.45px</tspan></text>
   <path
@@ -17923,7 +17923,7 @@
      sodipodi:insensitive="true"
      x="-278.57683"
      y="567.66011"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3123">63.35px</tspan></text>
   <path
@@ -17954,7 +17954,7 @@
      sodipodi:insensitive="true"
      x="-278.54324"
      y="570.48702"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3129">43.49px</tspan></text>
   <path
@@ -17985,7 +17985,7 @@
      sodipodi:insensitive="true"
      x="-278.45797"
      y="572.67367"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3135">39.15px</tspan></text>
   <path
@@ -18016,7 +18016,7 @@
      sodipodi:insensitive="true"
      x="-294.64783"
      y="586.94997"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3141">500.42px</tspan></text>
   <path
@@ -18047,7 +18047,7 @@
      sodipodi:insensitive="true"
      x="-278.51309"
      y="606.84715"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"><tspan
        sodipodi:role="line"
        id="tspan3147">251.60px</tspan></text>
   <path
@@ -18078,7 +18078,7 @@
      sodipodi:insensitive="true"
      x="-10.54792"
      y="558.51405"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
      transform="rotate(-57.388647,-2.3348072,558.51405)"><tspan
        sodipodi:role="line"
        id="tspan3159">64.83mm</tspan></text>
@@ -18110,7 +18110,7 @@
      sodipodi:insensitive="true"
      x="7.8199686"
      y="625.2885"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
      transform="rotate(49.783511,17.084697,625.2885)"><tspan
        sodipodi:role="line"
        id="tspan3165">135.54mm</tspan></text>
@@ -18142,7 +18142,7 @@
      sodipodi:insensitive="true"
      x="34.278306"
      y="611.47344"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
      transform="rotate(80.111459,43.543035,611.47344)"><tspan
        sodipodi:role="line"
        id="tspan3171">134.83mm</tspan></text>
@@ -18174,7 +18174,7 @@
      sodipodi:insensitive="true"
      x="14.125865"
      y="545.6775"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
      transform="rotate(40.674881,22.327781,545.6775)"><tspan
        sodipodi:role="line"
        id="tspan3177">38.79mm</tspan></text>
@@ -18206,7 +18206,7 @@
      sodipodi:insensitive="true"
      x="-728.41368"
      y="536.1495"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
      transform="rotate(26.744075,-720.19712,536.1495)"><tspan
        sodipodi:role="line"
        id="tspan3183">89.13mm</tspan></text>
@@ -18238,7 +18238,7 @@
      sodipodi:insensitive="true"
      x="-687.25489"
      y="513.95807"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
      transform="rotate(-86.096241,-679.02972,513.95807)"><tspan
        sodipodi:role="line"
        id="tspan3189">98.65mm</tspan></text>
@@ -18270,7 +18270,7 @@
      sodipodi:insensitive="true"
      x="-709.48831"
      y="497.09428"
-     style="font-family:Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
+     style="font-family:DejaVu Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#000000;fill-opacity:1;font-size:3.52778px"
      transform="rotate(-41.373479,-701.29673,497.09428)"><tspan
        sodipodi:role="line"
        id="tspan3195">77.40mm</tspan></text>
