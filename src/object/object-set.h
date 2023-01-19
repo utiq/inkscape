@@ -463,7 +463,7 @@ public:
     //in path-chemistry.cpp
     void combine(bool skip_undo = false, bool silent = false);
     void breakApart(bool skip_undo = false, bool overlapping = true, bool silent = false);
-    void toCurves(bool skip_undo = false);
+    void toCurves(bool skip_undo = false, bool clonesjustunlink = false);
     void toLPEItems();
     void pathReverse();
 

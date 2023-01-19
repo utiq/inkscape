@@ -301,7 +301,7 @@ ObjectSet::breakApart(bool skip_undo, bool overlapping, bool silent)
     }
 }
 
-void ObjectSet::toCurves(bool skip_undo)
+void ObjectSet::toCurves(bool skip_undo, bool clonesjustunlink)
 {
     if (isEmpty()) {
         if (desktop())
@@ -315,13 +315,17 @@ void ObjectSet::toCurves(bool skip_undo)
         // set "busy" cursor
         desktop()->setWaitingCursor();
     }
-    unlinkRecursive(true, false, true);
+    if (!clonesjustunlink) {
+        unlinkRecursive(true, false, true);
+    }
     std::vector<SPItem*> selected(items().begin(), items().end());
     std::vector<Inkscape::XML::Node*> to_select;
     std::vector<SPItem*> items(selected);
 
     did = sp_item_list_to_curves(items, selected, to_select);
-
+    if (clonesjustunlink) {
+        unlinkRecursive(true, false, true);
+    }
     if (did) {
         setReprList(to_select);
         addList(selected);

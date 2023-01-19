@@ -91,6 +91,8 @@ public:
     std::vector<Inkscape::LivePathEffect::Effect const *> getPathEffects() const;
     std::vector<SPObject *> get_satellites(bool force = true, bool recursive = false, bool onchilds = false);
     bool isOnClipboard();
+    bool isOnSymbol() const;
+    bool onsymbol = false;
     bool hasBrokenPathEffect() const;
     bool lpe_initialized = false;
     PathEffectList getEffectList();

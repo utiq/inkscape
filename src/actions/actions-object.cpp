@@ -254,8 +254,7 @@ object_to_path(InkscapeApplication *app)
     // We should not have to do this!
     auto document  = app->get_active_document();
     selection->setDocument(document);
-
-    selection->toCurves();  // TODO: Rename toPaths()
+    selection->toCurves(false, Inkscape::Preferences::get()->getBool("/options/clonestocurvesjustunlink/value", true));
 }
 
 

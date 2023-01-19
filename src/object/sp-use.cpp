@@ -738,7 +738,7 @@ SPItem *SPUse::unlink() {
 
     // Track the ultimate source of a chain of uses.
     SPItem *orig = this->root();
-
+    SPItem *origtrue = this->trueOriginal();
     if (!orig) {
         return nullptr;
     }
@@ -751,29 +751,44 @@ SPItem *SPUse::unlink() {
     if (auto symbol = cast<SPSymbol>(orig)) {
         // make a group, copy children
         copy = xml_doc->createElement("svg:g");
+        copy->setAttribute("display","none");
 
         for (Inkscape::XML::Node *child = orig->getRepr()->firstChild() ; child != nullptr; child = child->next()) {
-                Inkscape::XML::Node *newchild = child->duplicate(xml_doc);
-                copy->appendChild(newchild);
+            Inkscape::XML::Node *newchild = child->duplicate(xml_doc);
+            copy->appendChild(newchild);
         }
 
         // viewBox transformation
         t = symbol->c2p * t;
     } else { // just copy
         copy = orig->getRepr()->duplicate(xml_doc);
+        copy->setAttribute("display","none");
     }
-
     // Add the duplicate repr just after the existing one.
     parent->addChild(copy, repr);
 
     // Retrieve the SPItem of the resulting repr.
     SPObject *unlinked = document->getObjectByRepr(copy);
-
+    if (origtrue) {
+        if (unlinked) {
+            origtrue->setTmpSuccessor(unlinked);
+        }
+        auto newLPEObj = cast<SPLPEItem>(unlinked);
+        if (newLPEObj) {
+            // force always fork
+            newLPEObj->forkPathEffectsIfNecessary(1, true, true);
+            sp_lpe_item_update_patheffect(newLPEObj, false, true, true);
+        }
+        origtrue->fixTmpSuccessors();
+        origtrue->unsetTmpSuccessor();
+    }
+    
     // Merge style from the use.
     unlinked->style->merge( this->style );
     unlinked->style->cascade( unlinked->parent->style );
     unlinked->updateRepr();
-
+    unlinked->removeAttribute("display");
+    
     // Hold onto our SPObject and repr for now.
     sp_object_ref(this);
     Inkscape::GC::anchor(repr);
@@ -806,6 +821,7 @@ SPItem *SPUse::unlink() {
         // Advertise ourselves as not moving.
         item->doWriteTransform(t, &nomove);
     }
+    document->fix_lpe_data();
 
     return item;
 }

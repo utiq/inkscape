@@ -2696,7 +2696,9 @@ void InkscapePreferences::initPageBehavior()
     _clone_to_curves.init ( _("Path operations unlink clones"), "/options/pathoperationsunlink/value", true);
     _page_clones.add_line(true, "", _clone_to_curves, "",
                         _("The following path operations will unlink clones: Stroke to path, Object to path, Boolean operations, Combine, Break apart"));
-
+    _clone_ignore_to_curves.init ( _("Convert to paths just unlinks clones (keep LPE, and shapes)"), "/options/clonestocurvesjustunlink/value", true);
+    _page_clones.add_line(true, "", _clone_ignore_to_curves, "",
+                        _("The following path operations just unlink clones on convert to paths action (keep LPE, and shapes)"));
     //TRANSLATORS: Heading for the Inkscape Preferences "Clones" Page
     this->AddPage(_page_clones, _("Clones"), iter_behavior, PREFS_PAGE_BEHAVIOR_CLONES);
 

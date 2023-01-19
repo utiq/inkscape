@@ -44,6 +44,7 @@
 #include "sp-path.h"
 #include "sp-rect.h"
 #include "sp-root.h"
+#include "sp-symbol.h"
 #include "svg/svg.h"
 #include "ui/shape-editor.h"
 #include "uri.h"
@@ -83,7 +84,7 @@ SPLPEItem::~SPLPEItem() = default;
 
 void SPLPEItem::build(SPDocument *document, Inkscape::XML::Node *repr) {
     this->readAttr(SPAttr::INKSCAPE_PATH_EFFECT);
-
+    onsymbol = isOnSymbol();
     SPItem::build(document, repr);
 }
 
@@ -218,6 +219,10 @@ bool SPLPEItem::isOnClipboard()
     return clipnode != nullptr;
 }
 
+bool SPLPEItem::isOnSymbol() const {
+    auto p = cast<SPLPEItem>(parent);
+    return (p && p->onsymbol) || is<SPSymbol>(this);
+}
 /**
  * returns true when LPE was successful.
  */
@@ -1749,7 +1754,7 @@ void sp_lpe_item_enable_path_effects(SPLPEItem *lpeitem, bool enable)
 // Are the path effects enabled on this item ?
 bool SPLPEItem::pathEffectsEnabled() const
 {
-    return path_effects_enabled > 0;
+    return !onsymbol && path_effects_enabled > 0;
 }
 
 /*
