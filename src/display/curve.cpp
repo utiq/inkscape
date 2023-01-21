@@ -218,7 +218,11 @@ void SPCurve::curveto(double x0, double y0, double x1, double y1, double x2, dou
  */
 void SPCurve::closepath()
 {
-    _pathv.back().close(true);
+    if (_pathv.empty()) {
+        g_message("%s - path is empty", __PRETTY_FUNCTION__);
+    } else {
+        _pathv.back().close(true);
+    }
 }
 
 /** Like SPCurve::closepath() but sets the end point of the last subpath
