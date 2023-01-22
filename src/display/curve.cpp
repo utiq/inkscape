@@ -18,7 +18,8 @@
 #include <2geom/sbasis-geometric.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/point.h>
-#include <helper/geom.h>
+#include "helper/geom.h"
+#include "helper/geom-pathstroke.h"
 
 /**
  * Routines for SPCurve and for its Geom::PathVector
@@ -85,20 +86,10 @@ std::vector<SPCurve> SPCurve::split_non_overlapping() const
 {
     std::vector<SPCurve> result;
 
-    for (auto const &path_it : _pathv) {
-        Geom::PathVector newpathv;
-        newpathv.push_back(path_it);
+    auto curves = Inkscape::split_non_intersecting_paths(Geom::PathVector(_pathv));
 
-        for (auto &existing : result) {
-            if (pathvs_have_nonempty_overlap(existing._pathv, newpathv)) {
-                existing.append(newpathv, false);
-                goto nested_continue;
-            }
-        }
-
-        result.emplace_back(std::move(newpathv));
-
-        nested_continue:;
+    for (auto &curve : curves) {
+        result.emplace_back(std::move(curve));
     }
 
     return result;
