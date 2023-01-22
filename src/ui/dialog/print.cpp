@@ -38,6 +38,12 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
+Glib::RefPtr<Gtk::PrintSettings> &get_printer_settings()
+{
+    static Glib::RefPtr<Gtk::PrintSettings> printer_settings;
+    return printer_settings;
+}
+
 Print::Print(SPDocument *doc, SPItem *base) :
     _doc (doc),
     _base (base)
@@ -267,14 +273,14 @@ void Print::begin_print(const Glib::RefPtr<Gtk::PrintContext>&)
 Gtk::PrintOperationResult Print::run(Gtk::PrintOperationAction, Gtk::Window &parent_window)
 {
     // Remember to restore the previous print settings
-    _printop->set_print_settings(printer_settings._gtk_print_settings);
+    _printop->set_print_settings(get_printer_settings());
 
     try {
         Gtk::PrintOperationResult res = _printop->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG, parent_window);
 
         // Save printer settings (but only on success)
         if (res == Gtk::PRINT_OPERATION_RESULT_APPLY) {
-            printer_settings._gtk_print_settings = _printop->get_print_settings();
+            get_printer_settings() = _printop->get_print_settings();
         }
 
         return res;
