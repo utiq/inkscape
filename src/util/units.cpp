@@ -253,8 +253,7 @@ Unit UnitTable::_empty_unit;
 UnitTable::UnitTable()
 {
     using namespace Inkscape::IO::Resource;
-    auto filename = get_path_string(SYSTEM, UIS, "units.xml");
-    load(filename);
+    load(get_filename(UIS, "units.xml", false, true));
 }
 
 UnitTable::~UnitTable()
