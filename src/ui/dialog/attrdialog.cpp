@@ -248,8 +248,10 @@ AttrDialog::~AttrDialog()
 {
     _current_text_edit = nullptr;
     _popover->hide();
-}
 
+    // remove itself from the list of node observers
+    setRepr(nullptr);
+}
 
 static int fmt_number(_GMatchInfo const *match, _GString *ret, void *prec)
 {
