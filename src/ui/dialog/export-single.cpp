@@ -275,6 +275,7 @@ void SingleExport::refreshArea()
 {
     if (_document) {
         Geom::OptRect bbox;
+        auto sel = getSelectedPages();
 
         switch (current_key) {
             case SELECTION_SELECTION:
@@ -288,8 +289,11 @@ void SingleExport::refreshArea()
                     break;
                 }
             case SELECTION_PAGE:
-                for (auto page : getSelectedPages()) {
-                    bbox = page->getDesktopRect();
+                // If the page is set in the multi-selection use that.
+                if (sel.size() == 1) {
+                    bbox = sel[0]->getDesktopRect();
+                } else {
+                    bbox = _document->getPageManager().getSelectedPageRect();
                 }
                 break;
             case SELECTION_CUSTOM:
@@ -306,11 +310,15 @@ void SingleExport::refreshArea()
 
 void SingleExport::refreshPage()
 {
+    if (!_document)
+        return;
+
     bool multi = pages_list->get_selection_mode() == Gtk::SELECTION_MULTIPLE;
-    bool pages = current_key == SELECTION_PAGE;
-    pages_list_box->set_visible(pages);
-    preview_box->set_visible(!pages);
-    size_box->set_visible(!(pages && multi));
+    auto &pm = _document->getPageManager();
+    bool has_pages = current_key == SELECTION_PAGE && pm.getPageCount() > 1;
+    pages_list_box->set_visible(has_pages);
+    preview_box->set_visible(!has_pages);
+    size_box->set_visible(!has_pages || !multi);
 }
 
 void SingleExport::setPagesMode(bool multi)
@@ -358,10 +366,29 @@ void SingleExport::onPagesChanged()
     if (!_document)
         return;
     auto &pm = _document->getPageManager();
-    for (auto page : pm.getPages()) {
-        auto item = Gtk::manage(new BatchItem(page));
-        pages_list->insert(*item, -1);
+    if (pm.getPageCount() > 1) {
+        for (auto page : pm.getPages()) {
+            auto item = Gtk::manage(new BatchItem(page));
+            pages_list->insert(*item, -1);
+        }
     }
+    refreshPage();
+    if (auto ext = si_extension_cb->getExtension()) {
+        setPagesMode(!ext->is_raster());
+    }
+}
+
+void SingleExport::onPagesModified(SPPage *page)
+{
+    refreshArea();
+    refreshPreview();
+}
+
+void SingleExport::onPagesSelected(SPPage *page) {
+    if (pages_list->get_selection_mode() != Gtk::SELECTION_MULTIPLE) {
+        selectPage(page);
+    }
+    refreshArea();
 }
 
 void SingleExport::loadExportHints()
@@ -619,7 +646,7 @@ void SingleExport::onExport()
             }
         }
 
-        if (current_key == SELECTION_PAGE && page_manager.hasPages()) {
+        if (current_key == SELECTION_PAGE && page_manager.getPageCount() > 1) {
             auto pages = getSelectedPages();
             exportSuccessful = Export::exportVector(omod, copy_doc.get(), filename, false, items, pages);
         } else {
@@ -990,16 +1017,20 @@ void SingleExport::refreshPreview()
 
     bool show = si_show_preview->get_active();
     if (!show || current_key == SELECTION_PAGE) {
+        bool have_pages = false;
         for (auto child : pages_list->get_children()) {
             if (auto bi = dynamic_cast<BatchItem *>(child)) {
                 std::vector<SPItem *> page_selected = selected; // copy
                 bi->refreshHide(std::move(page_selected));
                 bi->refresh(!show, _bgnd_color_picker->get_current_color());
+                have_pages = true;
             }
         }
-        // We don't want to update the main preview for pages, it's hidden
-        preview->resetPixels();
-        return;
+        if (have_pages) {
+            // We don't want to update the main preview for pages, it's hidden
+            preview->resetPixels();
+            return;
+        }
     }
 
     Unit const *unit = units->getUnit();
@@ -1029,11 +1060,13 @@ void SingleExport::setDocument(SPDocument *document)
     preview->setDocument(document);
     if (document) {
         auto &pm = document->getPageManager();
+        _page_selected_connection = pm.connectPageSelected(sigc::mem_fun(*this, &SingleExport::onPagesSelected));
+        _page_modified_connection = pm.connectPageModified(sigc::mem_fun(*this, &SingleExport::onPagesModified));
         _page_changed_connection = pm.connectPagesChanged(sigc::mem_fun(*this, &SingleExport::onPagesChanged));
-        onPagesChanged();
         auto bg_color = get_export_bg_color(document->getNamedView(), 0xffffff00);
         _bgnd_color_picker->setRgba32(bg_color);
 
+        onPagesChanged();
         refreshArea();
     }
 }

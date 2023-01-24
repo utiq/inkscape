@@ -317,7 +317,7 @@ bool Export::exportVector(
 }
 
 bool Export::exportVector(
-        Inkscape::Extension::Output *extension, SPDocument *doc,
+        Inkscape::Extension::Output *extension, SPDocument *copy_doc,
         Glib::ustring const &filename,
         bool overwrite, const std::vector<SPItem *> &items, const std::vector<SPPage *> &pages)
 {
@@ -337,7 +337,7 @@ bool Export::exportVector(
         return false;
     }
 
-    std::string path = absolutizePath(doc, Glib::filename_from_utf8(filename));
+    std::string path = absolutizePath(copy_doc, Glib::filename_from_utf8(filename));
     Glib::ustring dirname = Glib::path_get_dirname(path);
     Glib::ustring safeFile = Inkscape::IO::sanitizeString(path.c_str());
     Glib::ustring safeDir = Inkscape::IO::sanitizeString(dirname.c_str());
@@ -357,8 +357,6 @@ bool Export::exportVector(
     if (!overwrite && !sp_ui_overwrite_file(path.c_str())) {
         return false;
     }
-    doc->ensureUpToDate();
-    auto copy_doc = doc->copy();
     copy_doc->ensureUpToDate();
 
     std::vector<SPItem *> objects = items;
@@ -370,7 +368,9 @@ bool Export::exportVector(
         if (!page_rect)
             page_rect = page->getDesktopRect();
 
-        page_ids.insert(std::string(page->getId()));
+        if (auto _id = page->getId()) {
+            page_ids.insert(std::string(_id));
+        }
         // If page then our item set is limited to the overlapping items
         auto page_items = page->getOverlappingItems();
 
@@ -387,9 +387,10 @@ bool Export::exportVector(
     // Delete any pages not specified, delete all pages if none specified
     auto &pm = copy_doc->getPageManager();
     std::vector<SPPage *> copy_pages = pm.getPages();
+    // We refuse to delete anything if everything would be deleted.
     for (auto &page : copy_pages) {
         auto _id = page->getId();
-        if (!_id || page_ids.find(_id) == page_ids.end()) {
+        if (_id && page_ids.find(_id) == page_ids.end()) {
             pm.deletePage(page, false);
         }
     }
@@ -397,7 +398,7 @@ bool Export::exportVector(
     // Page export ALWAYS restricts, even if nothing would be on the page.
     if (!objects.empty() || !pages.empty()) {
         std::vector<SPObject *> objects_to_export;
-        Inkscape::ObjectSet object_set(copy_doc.get());
+        Inkscape::ObjectSet object_set(copy_doc);
         for (auto &object : objects) {
             auto _id = object->getId();
             if (!_id || (!obj_ids.empty() && obj_ids.find(_id) == obj_ids.end())) {
@@ -431,7 +432,7 @@ bool Export::exportVector(
     copy_doc->vacuumDocument();
 
     try {
-        extension->save(copy_doc.get(), path.c_str());
+        extension->save(copy_doc, path.c_str());
     } catch (Inkscape::Extension::Output::save_failed &e) {
         Glib::ustring safeFile = Inkscape::IO::sanitizeString(path.c_str());
         Glib::ustring error = g_strdup_printf(_("Could not export to filename <b>%s</b>.\n"), safeFile.c_str());

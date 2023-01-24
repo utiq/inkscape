@@ -173,6 +173,8 @@ private:
      * Page functions
      */
     void onPagesChanged();
+    void onPagesModified(SPPage *page);
+    void onPagesSelected(SPPage *page);
     void setPagesMode(bool multi);
     void selectPage(SPPage *page);
     std::vector<SPPage *> getSelectedPages();
@@ -193,6 +195,7 @@ private:
     sigc::connection browseConn;
     // Document Signals
     sigc::connection _page_selected_connection;
+    sigc::connection _page_modified_connection;
     sigc::connection _page_changed_connection;
 
     std::unique_ptr<Inkscape::UI::Widget::ColorPicker> _bgnd_color_picker;
