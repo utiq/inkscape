@@ -21,6 +21,7 @@
 #include <string>
 #include <valarray>
 #include <vector>
+#include <array>
 
 #include <2geom/transforms.h>
 

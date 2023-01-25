@@ -24,6 +24,7 @@
 #include "extension/db.h"
 #include "extension/output.h"
 #include "file.h"
+#include "helper/auto-connection.h"
 #include "helper/png-write.h"
 #include "inkscape-window.h"
 #include "inkscape.h"
@@ -175,7 +176,7 @@ void BatchItem::on_parent_changed(Gtk::Widget *previous) {
     if (!parent)
         return;
 
-    parent->signal_selected_children_changed().connect([=]() {
+    _selection_widget_changed_conn = parent->signal_selected_children_changed().connect([=]() {
         // Syncronise the active widget state to the Flowbox selection.
         if (_selector.get_visible()) {
             _selector.set_active(is_selected());
@@ -274,7 +275,7 @@ void BatchExport::selectionModified(Inkscape::Selection *selection, guint flags)
     if (!(flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_PARENT_MODIFIED_FLAG | SP_OBJECT_CHILD_MODIFIED_FLAG))) {
         return;
     }
-    refreshItems();
+    queueRefreshItems();
 }
 
 void BatchExport::selectionChanged(Inkscape::Selection *selection)
@@ -298,8 +299,7 @@ void BatchExport::selectionChanged(Inkscape::Selection *selection)
             return;
         }
     }
-    refreshItems();
-    loadExportHints();
+    queueRefresh();
 }
 
 void BatchExport::pagesChanged()
@@ -314,8 +314,7 @@ void BatchExport::pagesChanged()
         selection_buttons[SELECTION_LAYER]->set_active();
     }
 
-    refreshItems();
-    loadExportHints();
+    queueRefresh();
 }
 
 // Setup Single Export.Called by export on realize
@@ -330,18 +329,16 @@ void BatchExport::setup()
 
     // set them before connecting to signals
     setDefaultSelectionMode();
-    loadExportHints();
-
-    refreshItems();
+    queueRefresh();
 
     // Connect Signals
     for (auto [key, button] : selection_buttons) {
         button->signal_toggled().connect(sigc::bind(sigc::mem_fun(*this, &BatchExport::onAreaTypeToggle), key));
     }
     show_preview->signal_toggled().connect(sigc::mem_fun(*this, &BatchExport::refreshPreview));
-    filenameConn = filename_entry->signal_changed().connect(sigc::mem_fun(*this, &BatchExport::onFilenameModified));
-    exportConn = export_btn->signal_clicked().connect(sigc::mem_fun(*this, &BatchExport::onExport));
-    browseConn = filename_entry->signal_icon_release().connect(sigc::mem_fun(*this, &BatchExport::onBrowse));
+    filename_conn = filename_entry->signal_changed().connect(sigc::mem_fun(*this, &BatchExport::onFilenameModified));
+    export_conn = export_btn->signal_clicked().connect(sigc::mem_fun(*this, &BatchExport::onExport));
+    browse_conn = filename_entry->signal_icon_release().connect(sigc::mem_fun(*this, &BatchExport::onBrowse));
     hide_all->signal_toggled().connect(sigc::mem_fun(*this, &BatchExport::refreshPreview));
     _bgnd_color_picker->connectChanged([=](guint32 color){
         if (_desktop) {
@@ -510,8 +507,7 @@ void BatchExport::onAreaTypeToggle(selection_mode key)
     current_key = key;
     prefs->setString("/dialogs/export/batchexportarea/value", selection_names[current_key]);
 
-    refreshItems();
-    loadExportHints();
+    queueRefresh();
 }
 
 void BatchExport::onFilenameModified()
@@ -665,7 +661,7 @@ void BatchExport::onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev)
         return;
     }
     Gtk::Window *window = _app->get_active_window();
-    browseConn.block();
+    browse_conn.block();
     Glib::ustring filename = Glib::filename_from_utf8(filename_entry->get_text());
 
     if (filename.empty()) {
@@ -690,7 +686,7 @@ void BatchExport::onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev)
     } else {
         delete dialog;
     }
-    browseConn.unblock();
+    browse_conn.unblock();
 }
 
 void BatchExport::setDefaultSelectionMode()
@@ -835,9 +831,34 @@ void BatchExport::setDocument(SPDocument *document)
         _bgnd_color_picker->setRgba32(bg_color);
         refreshPreview();
     }
+
     for (auto &[key, val] : current_items) {
         val->setDocument(document);
     }
+}
+
+void BatchExport::queueRefreshItems()
+{
+    if (refresh_items_conn) {
+        return;
+    }
+    // Asynchronously refresh the preview
+    refresh_items_conn = Glib::signal_idle().connect([this] {
+        refreshItems();
+        return false;
+    }, Glib::PRIORITY_HIGH);
+}
+
+void BatchExport::queueRefresh()
+{
+    if (refresh_conn) {
+        return;
+    }
+    refresh_conn = Glib::signal_idle().connect([this] {
+        refreshItems();
+        loadExportHints();
+        return false;
+    }, Glib::PRIORITY_HIGH);
 }
 
 } // namespace Dialog

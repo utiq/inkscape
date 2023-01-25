@@ -16,6 +16,7 @@
 
 #include <gtkmm.h>
 
+#include "helper/auto-connection.h"
 #include "ui/widget/export-preview.h"
 #include "ui/widget/scrollprotected.h"
 
@@ -73,13 +74,15 @@ private:
     SPItem *_item = nullptr;
     SPPage *_page = nullptr;
     bool is_hide = false;
+
+    auto_connection _selection_widget_changed_conn;
 };
 
 class BatchExport : public Gtk::Box
 {
 public:
     BatchExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder>& builder);
-    ~BatchExport() override { _pages_changed_connection.disconnect(); };
+    ~BatchExport() override = default;
 
     void setApp(InkscapeApplication *app) { _app = app; }
     void setDocument(SPDocument *document);
@@ -87,12 +90,8 @@ public:
     void selectionChanged(Inkscape::Selection *selection);
     void selectionModified(Inkscape::Selection *selection, guint flags);
     void pagesChanged();
-    void refresh()
-    {
-        refreshItems();
-        loadExportHints();
-    };
-
+    void queueRefreshItems();
+    void queueRefresh();
 
 private:
     enum selection_mode
@@ -166,13 +165,13 @@ private:
     bool interrupted;
 
     // Gtk Signals
-    sigc::connection filenameConn;
-    sigc::connection exportConn;
-    sigc::connection browseConn;
-    sigc::connection selectionModifiedConn;
-    sigc::connection selectionChangedConn;
+    auto_connection filename_conn;
+    auto_connection export_conn;
+    auto_connection browse_conn;
+    auto_connection refresh_conn;
+    auto_connection refresh_items_conn;
     // SVG Signals
-    sigc::connection _pages_changed_connection;
+    auto_connection _pages_changed_connection;
 
     std::unique_ptr<Inkscape::UI::Widget::ColorPicker> _bgnd_color_picker;
 };
