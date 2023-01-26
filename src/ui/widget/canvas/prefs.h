@@ -28,6 +28,10 @@ public:
     Pref<void>   displayprofile           = { "/options/displayprofile" };
     Pref<void>   softproof                = { "/options/softproof" };
 
+    // Auto-scrolling
+    Pref<int>    autoscrolldistance       = { "/options/autoscrolldistance/value", 0, -1000, 10000 };
+    Pref<double> autoscrollspeed          = { "/options/autoscrollspeed/value", 1.0, 0.0, 10.0 };
+
     // Devmode preferences
     Pref<int>    tile_size                = { "/options/rendering/tile_size", 500, 1, 10000 };
     Pref<int>    render_time_limit        = { "/options/rendering/render_time_limit", 80, 1, 5000 };

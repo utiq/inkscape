@@ -1611,9 +1611,9 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
                 Geom::Point const center = desktop->current_center();
                 if (Geom::L2(d0 - center) > Geom::L2(d1 - center))
                     // unlike mouse moves, here we must scroll all the way at first shot, so we override the autoscrollspeed
-                    desktop->scroll_to_point(d0, 1.0);
+                    desktop->scroll_to_point(d0);
                 else
-                    desktop->scroll_to_point(d1, 1.0);
+                    desktop->scroll_to_point(d1);
             }
         }
 

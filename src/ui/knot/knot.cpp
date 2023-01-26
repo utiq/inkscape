@@ -30,7 +30,7 @@
 #include "display/control/canvas-item-ctrl.h"
 #include "ui/tools/tool-base.h"
 #include "ui/tools/node-tool.h"
-#include "ui/widget/canvas.h"
+#include "ui/widget/canvas.h" // autoscroll
 
 using Inkscape::DocumentUndo;
 
@@ -244,7 +244,8 @@ bool SPKnot::eventHandler(GdkEvent *event)
             // motion notify coordinates as given (no snapping back to origin)
             within_tolerance = false;
 
-            if (gdk_event_get_axis (event, GDK_AXIS_PRESSURE, &pressure)) {
+            // Note: Synthesized events don't have a device.
+            if (event->motion.device && gdk_event_get_axis(event, GDK_AXIS_PRESSURE, &pressure)) {
                 pressure = CLAMP (pressure, 0, 1);
             } else {
                 pressure = 0.5;
@@ -337,7 +338,7 @@ void sp_knot_handler_request_position(GdkEvent *event, SPKnot *knot) {
     Geom::Point p = motion_dt - knot->grabbed_rel_pos;
 
     knot->requestPosition(p, event->motion.state);
-    knot->desktop->scroll_to_point (motion_dt);
+    knot->desktop->getCanvas()->enable_autoscroll();
     knot->desktop->set_coordinate_status(knot->pos); // display the coordinate of knot, not cursor - they may be different!
 
     if (event->motion.state & GDK_BUTTON1_MASK) {

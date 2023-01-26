@@ -48,13 +48,9 @@
 #include "object/box3d.h"
 #include "style.h"
 
-#include "ui/cursor-utils.h"
 #include "ui/modifiers.h"
-
 #include "ui/tools/select-tool.h"
-
 #include "ui/widget/canvas.h"
-
 
 using Inkscape::DocumentUndo;
 using Inkscape::Modifiers::Modifier;
@@ -590,7 +586,7 @@ bool SelectTool::root_handler(GdkEvent* event) {
                             _seltrans->moveTo(p, event->button.state);
                         }
 
-                        _desktop->scroll_to_point(p);
+                        _desktop->getCanvas()->enable_autoscroll();
                         gobble_motion_events(GDK_BUTTON1_MASK);
                         ret = TRUE;
                     } else {
@@ -626,7 +622,6 @@ bool SelectTool::root_handler(GdkEvent* event) {
 
             if ((event->button.button == 1) && (this->grabbed)) {
                 if (this->dragging) {
-
                     if (this->moved) {
                         // item has been moved
                         _seltrans->ungrab();
@@ -658,8 +653,6 @@ bool SelectTool::root_handler(GdkEvent* event) {
                     }
 
                     this->dragging = FALSE;
-
-                    auto window = _desktop->getCanvas()->get_window();
 
                     if (!_alt_on) {
                         if (_force_dragging) {

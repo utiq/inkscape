@@ -967,37 +967,29 @@ SPDesktop::scroll_relative_in_svg_coords (double dx, double dy)
     scroll_relative(Geom::Point(dx*scale, dy*scale));
 }
 
-
 /**
  * Scroll screen so as to keep point 'p' visible in window.
- * (Used, for example, when a node is being dragged.)
+ * (Used, for example, during spellcheck.)
  * 'p': The point in desktop coordinates.
- * 'autoscrollspeed': The scroll speed (or zero to use preferences' value).
  */
-bool
-SPDesktop::scroll_to_point (Geom::Point const &p, gdouble autoscrollspeed)
+// Todo: Eliminate second argument and return value.
+bool SPDesktop::scroll_to_point(Geom::Point const &p, double)
 {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto prefs = Inkscape::Preferences::get();
 
     // autoscrolldistance is in screen pixels.
-    gdouble autoscrolldistance = (gdouble) prefs->getIntLimited("/options/autoscrolldistance/value", 0, -1000, 10000);
+    double const autoscrolldistance = prefs->getIntLimited("/options/autoscrolldistance/value", 0, -1000, 10000);
 
-    Geom::Rect w = canvas->get_area_world(); // Window in screen coordinates.
+    auto w = Geom::Rect(canvas->get_area_world()); // Window in screen coordinates.
     w.expandBy(-autoscrolldistance);  // Shrink window
 
-    Geom::Point c = d2w(p);  // Point 'p' in screen coordinates.
+    auto const c = d2w(p);  // Point 'p' in screen coordinates.
     if (!w.contains(c)) {
-
-        Geom::Point c2 = w.clamp(c); // Constrain c to window.
-
-        if (autoscrollspeed == 0)
-            autoscrollspeed = prefs->getDoubleLimited("/options/autoscrollspeed/value", 1, 0, 10);
-
-        if (autoscrollspeed != 0)
-            scroll_relative (autoscrollspeed * (c2 - c) );
-
+        auto const c2 = w.clamp(c); // Constrain c to window.
+        scroll_relative(c2 - c);
         return true;
     }
+
     return false;
 }
 

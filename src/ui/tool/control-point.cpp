@@ -26,7 +26,7 @@
 #include "ui/tool/control-point.h"
 #include "ui/tool/event-utils.h"
 #include "ui/tool/transform-handle-set.h"
-
+#include "ui/widget/canvas.h" // autoscroll
 
 namespace Inkscape {
 namespace UI {
@@ -278,7 +278,7 @@ bool ControlPoint::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, G
                 move(new_pos);
                 _updateDragTip(&event->motion); // update dragging tip after moving to new position
 
-                _desktop->scroll_to_point(new_pos);
+                _desktop->getCanvas()->enable_autoscroll();
                 _desktop->set_coordinate_status(_position);
                 event_context->snap_delay_handler(nullptr, this, &event->motion,
                                                   Inkscape::UI::Tools::DelayedSnapEvent::CONTROL_POINT_HANDLER);

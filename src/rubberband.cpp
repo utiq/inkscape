@@ -21,7 +21,7 @@
 #include "display/control/canvas-item-bpath.h"
 #include "display/control/canvas-item-rect.h"
 
-#include "ui/widget/canvas.h" // Forced redraws
+#include "ui/widget/canvas.h" // autoscroll
 
 Inkscape::Rubberband *Inkscape::Rubberband::_instance = nullptr;
 
@@ -96,7 +96,7 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
 
     _end = p;
     _moved = true;
-    _desktop->scroll_to_point(p);
+    _desktop->getCanvas()->enable_autoscroll();
     _touchpath_curve->lineto(p);
 
     Geom::Point next = _desktop->d2w(p);

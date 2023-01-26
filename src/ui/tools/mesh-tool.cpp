@@ -196,14 +196,14 @@ void MeshTool::select_next()
 {
     g_assert(_grdrag);
     GrDragger *d = _grdrag->select_next();
-    _desktop->scroll_to_point(d->point, 1.0);
+    _desktop->scroll_to_point(d->point);
 }
 
 void MeshTool::select_prev()
 {
     g_assert(_grdrag);
     GrDragger *d = _grdrag->select_prev();
-    _desktop->scroll_to_point(d->point, 1.0);
+    _desktop->scroll_to_point(d->point);
 }
 
 /**

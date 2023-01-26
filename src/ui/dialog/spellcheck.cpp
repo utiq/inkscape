@@ -527,7 +527,7 @@ SpellCheck::nextWord()
                     scrollto = area.corner(corner);
                 }
             }
-            desktop->scroll_to_point (scrollto, 1.0);
+            desktop->scroll_to_point(scrollto);
         }
 
         // select text; if in Text tool, position cursor to the beginning of word

@@ -130,6 +130,8 @@ public:
     void set_drawing_disabled(bool disable); // Disable during path ops, etc.
     void set_all_enter_events(bool on) { _all_enter_events = on; }
 
+    void enable_autoscroll();
+
 protected:
     void get_preferred_width_vfunc (int &minimum_width,  int &natural_width ) const override;
     void get_preferred_height_vfunc(int &minimum_height, int &natural_height) const override;

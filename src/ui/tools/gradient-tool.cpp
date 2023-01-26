@@ -163,14 +163,14 @@ void GradientTool::select_next()
 {
     g_assert(_grdrag);
     GrDragger *d = _grdrag->select_next();
-    _desktop->scroll_to_point(d->point, 1.0);
+    _desktop->scroll_to_point(d->point);
 }
 
 void GradientTool::select_prev()
 {
     g_assert(_grdrag);
     GrDragger *d = _grdrag->select_prev();
-    _desktop->scroll_to_point(d->point, 1.0);
+    _desktop->scroll_to_point(d->point);
 }
 
 SPItem *GradientTool::is_over_curve(Geom::Point event_p)

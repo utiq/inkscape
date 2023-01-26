@@ -273,6 +273,14 @@ public:
 
     // For tracking the last known mouse position. (The function Gdk::Window::get_device_position cannot be used because of slow X11 round-trips. Remove this workaround when X11 dies.)
     std::optional<Geom::IntPoint> last_mouse;
+
+    // Auto-scrolling.
+    std::optional<guint> tick_callback;
+    std::optional<gint64> last_time;
+    Geom::IntPoint strain;
+    Geom::Point displacement, velocity;
+    void autoscroll_begin(Geom::IntPoint const &to);
+    void autoscroll_end();
 };
 
 /*
@@ -760,6 +768,106 @@ void CanvasPrivate::commit_tiles()
 }
 
 /*
+ * Auto-scrolling
+ */
+
+static Geom::Point cap_length(Geom::Point const &pt, double max)
+{
+    auto const r = pt.length();
+    return r <= max ? pt : pt * max / r;
+}
+
+static double profile(double r)
+{
+    constexpr double max_speed = 30.0;
+    constexpr double max_distance = 25.0;
+    return std::clamp(Geom::sqr(r / max_distance) * max_speed, 1.0, max_speed);
+}
+
+static Geom::Point apply_profile(Geom::Point const &pt)
+{
+    auto const r = pt.length();
+    if (r <= Geom::EPSILON) return {};
+    return pt * profile(r) / r;
+}
+
+void CanvasPrivate::autoscroll_begin(Geom::IntPoint const &to)
+{
+    if (!q->_desktop) {
+        return;
+    }
+
+    auto const rect = expandedBy(Geom::IntRect({}, q->get_dimensions()), -(int)prefs.autoscrolldistance);
+    strain = to - rect.clamp(to);
+
+    if (strain == Geom::IntPoint(0, 0) || tick_callback) {
+        return;
+    }
+
+    tick_callback = q->add_tick_callback([this] (Glib::RefPtr<Gdk::FrameClock> const &clock) {
+        auto timings = clock->get_current_timings();
+        auto const t = timings->get_frame_time();
+        double dt;
+        if (last_time) {
+            dt = t - *last_time;
+        } else {
+            dt = timings->get_refresh_interval();
+        }
+        last_time = t;
+        dt *= 60.0 / 1e6 * prefs.autoscrollspeed;
+
+        bool const strain_zero = strain == Geom::IntPoint(0, 0);
+
+        if (strain.x() * velocity.x() < 0) velocity.x() = 0;
+        if (strain.y() * velocity.y() < 0) velocity.y() = 0;
+        auto const tgtvel = apply_profile(strain);
+        auto const max_accel = strain_zero ? 3 : 2;
+        velocity += cap_length(tgtvel - velocity, max_accel * dt);
+        displacement += velocity * dt;
+        auto const dpos = displacement.round();
+        q->_desktop->scroll_relative(-dpos);
+        displacement -= dpos;
+
+        if (last_mouse) {
+            GdkEventMotion event;
+            memset(&event, 0, sizeof(GdkEventMotion));
+            event.type = GDK_MOTION_NOTIFY;
+            event.x = last_mouse->x();
+            event.y = last_mouse->y();
+            event.state = q->_state;
+            emit_event(reinterpret_cast<GdkEvent*>(&event));
+        }
+
+        if (strain_zero && velocity.length() <= 0.1) {
+            tick_callback = {};
+            last_time = {};
+            displacement = velocity = {};
+            return false;
+        }
+
+        q->queue_draw();
+
+        return true;
+    });
+}
+
+void CanvasPrivate::autoscroll_end()
+{
+    strain = {};
+}
+
+// Allow auto-scrolling to take place if the mouse reaches the edge.
+// The effect wears off when the mouse is next released.
+void Canvas::enable_autoscroll()
+{
+    if (d->last_mouse) {
+        d->autoscroll_begin(*d->last_mouse);
+    } else {
+        d->autoscroll_end();
+    }
+}
+
+/*
  * Event handling
  */
 
@@ -775,6 +883,10 @@ bool Canvas::on_button_press_event(GdkEventButton *button_event)
 
 bool Canvas::on_button_release_event(GdkEventButton *button_event)
 {
+    if (button_event->button == 1) {
+        d->autoscroll_end();
+    }
+
     return on_button_event(button_event);
 }
 
@@ -959,6 +1071,11 @@ bool Canvas::on_motion_notify_event(GdkEventMotion *motion_event)
             // We're hovering, don't pick or emit event.
             return true;
         }
+    }
+
+    // Avoid embarrassing neverending autoscroll in case the button-released handler somehow doesn't fire.
+    if (!(motion_event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))) {
+        d->autoscroll_end();
     }
 
     return d->process_event(reinterpret_cast<GdkEvent*>(motion_event));
@@ -1490,10 +1607,6 @@ void Canvas::set_pos(Geom::IntPoint const &pos)
 
     _pos = pos;
 
-    if (auto grid = dynamic_cast<Inkscape::UI::Widget::CanvasGrid*>(get_parent())) {
-        grid->UpdateRulers();
-    }
-
     d->schedule_redraw();
     queue_draw();
 }
@@ -1508,10 +1621,6 @@ void Canvas::set_affine(Geom::Affine const &affine)
     }
 
     _affine = affine;
-
-    if (auto grid = dynamic_cast<Inkscape::UI::Widget::CanvasGrid*>(get_parent())) {
-        grid->UpdateRulers();
-    }
 
     d->schedule_redraw();
     queue_draw();
