@@ -460,7 +460,7 @@ Inkscape::XML::Node* SPTextPath::write(Inkscape::XML::Document *xml_doc, Inkscap
 }
 
 
-SPItem *sp_textpath_get_path_item(SPTextPath *tp)
+SPItem *sp_textpath_get_path_item(SPTextPath const *tp)
 {
     if (tp && tp->sourcePath) {
         return tp->sourcePath->getObject();

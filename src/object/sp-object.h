@@ -252,6 +252,11 @@ public:
     }
 
     /**
+     * True if object is linked to us
+     */
+    virtual void getLinked(std::vector<SPObject *> &objects) const;
+
+    /**
      * True if object is non-NULL and this is some in/direct parent of object.
      */
     bool isAncestorOf(SPObject const *object) const;
@@ -480,6 +485,16 @@ public:
      */
     void cropToObject(SPObject *except);
     void cropToObjects(std::vector<SPObject *> except_objects);
+
+    /**
+     * Get all child objects except for any in the list.
+     */
+    void getObjectsExcept(std::vector<SPObject *> &objects, const std::vector<SPObject *> &except);
+
+    /**
+     * Grows the input list with any and all linked items.
+     */
+    void getLinkedObjects(std::vector<SPObject *> &objects) const;
 
     /**
      * Connects a slot to be called when an object is deleted.

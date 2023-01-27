@@ -1173,6 +1173,14 @@ Inkscape::XML::Node* SPText::get_first_rectangle()
     return nullptr;
 }
 
+void SPText::getLinked(std::vector<SPObject *> &objects) const
+{
+    for (auto item : get_all_shape_dependencies()) {
+        objects.push_back(item);
+    }
+    SPObject::getLinked(objects);
+}
+
 /**
  * Get the first shape reference which affects the position and layout of
  * this text item. This can be either a shape-inside or a textPath referenced
@@ -1180,15 +1188,23 @@ Inkscape::XML::Node* SPText::get_first_rectangle()
  */
 SPItem *SPText::get_first_shape_dependency()
 {
+    for (auto item : get_all_shape_dependencies()) {
+        return item;
+    }
+    return nullptr;
+}
+
+const std::vector<SPItem *> SPText::get_all_shape_dependencies() const
+{
+    std::vector<SPItem *> ret;
     if (style->shape_inside.set) {
         for (auto *href : style->shape_inside.hrefs) {
-            return href->getObject();
+            ret.push_back(href->getObject());
         }
     } else if (auto textpath = cast<SPTextPath>(firstChild())) {
-        return sp_textpath_get_path_item(textpath);
+        ret.push_back(sp_textpath_get_path_item(textpath));
     }
-
-    return nullptr;
+    return ret;
 }
 
 SPItem *create_text_with_inline_size (SPDesktop *desktop, Geom::Point p0, Geom::Point p1)

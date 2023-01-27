@@ -118,6 +118,7 @@ private:
     void hide(unsigned int key) override;
     void snappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inkscape::SnapPreferences const *snapprefs) const override;
     Geom::Affine set_transform(Geom::Affine const &transform) override;
+    void getLinked(std::vector<SPObject *> &objects) const override;
 
     // For 'inline-size', need to also remove any 'x' and 'y' added by SVG 1.1 fallback.
     void remove_svg11_fallback();
@@ -131,6 +132,7 @@ private:
     Geom::OptRect get_frame();                        // Gets inline-size or shape-inside frame.
     Inkscape::XML::Node* get_first_rectangle();       // Gets first shape-inside rectangle (if it exists).
     SPItem *get_first_shape_dependency();
+    const std::vector<SPItem *> get_all_shape_dependencies() const;
     void remove_newlines();                           // Removes newlines in text.
 };
 

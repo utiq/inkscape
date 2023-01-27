@@ -307,7 +307,15 @@ void SPObject::_updateTotalHRefCount(int increment) {
     }
 }
 
-bool SPObject::isAncestorOf(SPObject const *object) const {
+void SPObject::getLinked(std::vector<SPObject *> &objects) const
+{
+    for (auto linked : hrefList) {
+        objects.push_back(linked);
+    }
+}
+
+bool SPObject::isAncestorOf(SPObject const *object) const
+{
     g_return_val_if_fail(object != nullptr, false);
     object = object->parent;
     while (object) {
@@ -540,32 +548,49 @@ void SPObject::cropToObjects(std::vector<SPObject *> except_objects)
         return;
     }
     std::vector<SPObject *> toDelete;
+
+    // Make sure we have all related objects so we don't delete
+    // things which will later cause a crash.
+    getLinkedObjects(except_objects);
+
+    // Collect a list of objects we expect to delete.
+    getObjectsExcept(toDelete, except_objects);
+
+    for (auto &i : toDelete) {
+        i->deleteObject(true, true);
+    }
+}
+
+void SPObject::getObjectsExcept(std::vector<SPObject *> &objects, const std::vector<SPObject *> &excepts)
+{
     for (auto &child : children) {
         if (is<SPItem>(&child)) {
-            std::vector<SPObject *> except_in_child;
-            bool child_delete_flag = true;
-            for (auto except : except_objects) {
+            int child_flag = 1;
+            for (auto except : excepts) {
                 if (&child == except) {
-                    child_delete_flag = false;
-                    except_in_child.clear();
+                    child_flag = 0;
                     break;
                 }
                 if (child.isAncestorOf(except)) {
-                    except_in_child.push_back(except);
-                    child_delete_flag = false;
+                    child_flag = 2;
                 }
             }
-            if (child_delete_flag) {
-                sp_object_ref(&child, nullptr);
-                toDelete.push_back(&child);
-            } else {
-                child.cropToObjects(except_in_child);
+            if (child_flag == 1) {
+                objects.push_back(&child);
+            } else if (child_flag == 2) {
+                child.getObjectsExcept(objects, excepts);
             }
         }
     }
-    for (auto &i : toDelete) {
-        i->deleteObject(true, true);
-        sp_object_unref(i, nullptr);
+}
+
+void SPObject::getLinkedObjects(std::vector<SPObject *> &objects) const
+{
+    getLinked(objects);
+    for (auto &child : children) {
+        if (is<SPItem>(&child)) {
+            child.getLinkedObjects(objects);
+        }
     }
 }
 
