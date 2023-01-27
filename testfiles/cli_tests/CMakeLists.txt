@@ -610,6 +610,8 @@ add_cli_test(action-list   PARAMETERS --action-list PASS_FOR_OUTPUT "file-new")
 # action-list: test = action-list
 add_cli_test(actions-action-list           PARAMETERS --actions=action-list PASS_FOR_OUTPUT "file-new")
 
+# actions-file=FILENAME
+
 # convert-dpi-method
 # debug-info
 add_cli_test(actions-debug-info            PARAMETERS --actions=debug-info PASS_FOR_OUTPUT "OS version:")

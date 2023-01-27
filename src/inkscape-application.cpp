@@ -36,6 +36,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <cerrno>  // History file
 #include <regex>
@@ -751,6 +752,7 @@ InkscapeApplication::InkscapeApplication()
     _start_main_option_section();
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "actions",                'a', N_("List of actions (with optional arguments) to execute"),     N_("ACTION(:ARG)[;ACTION(:ARG)]*"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "action-list",           '\0', N_("List all available actions"),                                               "");
+    gapp->add_main_option_entry(T::OPTION_TYPE_FILENAME, "actions-file",          '\0', N_("Use a file to input actions list"),                             N_("FILENAME"));
 
     // Interface
     _start_main_option_section(_("Interface"));
@@ -1498,7 +1500,16 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     // Actions as an argument string: e.g.: --actions="query-id:rect1;query-x".
     // Actions will be processed in order that they are given in argument.
     Glib::ustring actions;
-    if (options->contains("actions")) {
+    if (options->contains("actions-file")) {
+        std::string fileactions;
+        options->lookup_value("actions-file", fileactions);
+        if (!fileactions.empty()) {
+            std::ifstream in(fileactions);
+            std::stringstream buffer;
+            buffer << in.rdbuf();
+            _command_line_actions.push_back(std::make_pair("actions", Glib::Variant<Glib::ustring>::create(buffer.str())));
+        }
+    } else if (options->contains("actions")) {
         options->lookup_value("actions", _command_line_actions_input);
         // Parsing done after extensions initialized.
     }
