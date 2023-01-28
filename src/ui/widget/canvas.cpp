@@ -1882,7 +1882,7 @@ void Canvas::paint_widget(Cairo::RefPtr<Cairo::Context> const &cr)
         return;
     }
 
-    // _canvas_item_root->canvas_item_print_tree();
+    if constexpr (false) d->canvasitem_ctx->root()->canvas_item_print_tree();
 
     // Although launch_redraw() is scheduled at a priority higher than draw, and should therefore always be called first if
     // asked, there are times when GTK simply decides to call on_draw anyway. Since launch_redraw() is required to have been

@@ -195,11 +195,7 @@ Handle::~Handle() = default;
 void Handle::setVisible(bool v)
 {
     ControlPoint::setVisible(v);
-    if (v) {
-        _handle_line->show();
-    } else {
-        _handle_line->hide();
-    }
+    _handle_line->set_visible(v);
 }
 
 void Handle::move(Geom::Point const &new_pos)

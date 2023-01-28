@@ -230,6 +230,21 @@ void CanvasItem::render(CanvasItemBuffer &buf)
     }
 }
 
+/*
+ * The main invariant of the invisibility system is
+ *
+ *     x needs update and is visible  ==>  parent(x) needs update or is invisible
+ *
+ * When x belongs to the visible subtree, meaning it and all its parents are visible,
+ * this condition reduces to
+ *
+ *     x needs update  ==>  parent(x) needs update
+ *
+ * Thus within the visible subtree, the subset of nodes that need updating forms a subtree.
+ *
+ * In the update() function, we only walk this latter subtree.
+ */
+
 void CanvasItem::set_visible(bool visible)
 {
     defer([=] {
@@ -239,6 +254,7 @@ void CanvasItem::set_visible(bool visible)
             _visible = false;
         } else {
             _visible = true;
+            _need_update = false;
             request_update();
         }
     });
