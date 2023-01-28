@@ -95,6 +95,7 @@ private:
 
     inline PathManipulator &_pm();
     inline PathManipulator &_pm() const;
+    void _update_bspline_handles();
     Node *_parent; // the handle's lifetime does not extend beyond that of the parent node,
     // so a naked pointer is OK and allows setting it during Node's construction
     CanvasItemPtr<CanvasItemCurve> _handle_line;

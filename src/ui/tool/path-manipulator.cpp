@@ -52,7 +52,6 @@ enum PathChange {
 };
 
 } // anonymous namespace
-const double HANDLE_CUBIC_GAP = 0.001;
 const double NO_POWER = 0.0;
 const double DEFAULT_START_POWER = 1.0/3.0;
 
@@ -139,9 +138,9 @@ PathManipulator::PathManipulator(MultiPathManipulator &mpm, SPObject *path,
     _desktop->signal_zoom_changed.connect(
         sigc::hide( sigc::mem_fun(*this, &PathManipulator::_updateOutlineOnZoomChange)));
 
-    _createControlPointsFromGeometry();
     //Define if the path is BSpline on construction
     _recalculateIsBSpline();
+    _createControlPointsFromGeometry();
 }
 
 PathManipulator::~PathManipulator()
@@ -1069,7 +1068,6 @@ NodeList::iterator PathManipulator::subdivideSegment(NodeList::iterator first, d
                 line_inside_nodes.lineto(second->position());
                 sbasis_inside_nodes = line_inside_nodes.first_segment()->toSBasis();
                 Geom::Point next = sbasis_inside_nodes.valueAt(DEFAULT_START_POWER);
-                next = Geom::Point(next[Geom::X] + HANDLE_CUBIC_GAP,next[Geom::Y] + HANDLE_CUBIC_GAP);
                 line_inside_nodes.reset();
                 n->front()->setPosition(next);
             }else{
@@ -1080,7 +1078,6 @@ NodeList::iterator PathManipulator::subdivideSegment(NodeList::iterator first, d
                 line_inside_nodes.lineto(first->position());
                 sbasis_inside_nodes = line_inside_nodes.first_segment()->toSBasis();
                 Geom::Point previous = sbasis_inside_nodes.valueAt(DEFAULT_START_POWER);
-                previous = Geom::Point(previous[Geom::X] + HANDLE_CUBIC_GAP,previous[Geom::Y] + HANDLE_CUBIC_GAP);
                 n->back()->setPosition(previous);
             }else{
                 n->back()->setPosition(seg1[2]);
@@ -1191,7 +1188,12 @@ void PathManipulator::_createControlPointsFromGeometry()
 
     // sanitize pathvector and store it in SPCurve,
     // so that _updateDragPoint doesn't crash on paths with naked movetos
-    Geom::PathVector pathv = pathv_to_linear_and_cubic_beziers(_spcurve.get_pathvector());
+    Geom::PathVector pathv;
+    if (_is_bspline) {
+        pathv = pathv_to_cubicbezier(_spcurve.get_pathvector(), false);
+    } else {
+        pathv = pathv_to_linear_and_cubic_beziers(_spcurve.get_pathvector());
+    }
     for (Geom::PathVector::iterator i = pathv.begin(); i != pathv.end(); ) {
         // NOTE: this utilizes the fact that Geom::PathVector is an std::vector.
         // When we erase an element, the next one slides into position,
@@ -1332,7 +1334,7 @@ double PathManipulator::_bsplineHandlePosition(Handle *h, bool check_other)
         line_inside_nodes.moveto(n->position());
         line_inside_nodes.lineto(next_node->position());
         if(!are_near(h->position(), n->position())){
-            pos = Geom::nearest_time(Geom::Point(h->position()[X] - HANDLE_CUBIC_GAP, h->position()[Y] - HANDLE_CUBIC_GAP), *line_inside_nodes.first_segment());
+            pos = Geom::nearest_time(h->position(), *line_inside_nodes.first_segment());
         }
     }
     if (pos == NO_POWER && check_other){
@@ -1363,8 +1365,7 @@ Geom::Point PathManipulator::_bsplineHandleReposition(Handle *h,double pos){
         line_inside_nodes.lineto(next_node->position());
         sbasis_inside_nodes = line_inside_nodes.first_segment()->toSBasis();
         ret = sbasis_inside_nodes.valueAt(pos);
-        ret = Geom::Point(ret[X] + HANDLE_CUBIC_GAP, ret[Y] + HANDLE_CUBIC_GAP);
-    }else{
+    } else{
         if(pos == NO_POWER){
             ret = n->position();
         }

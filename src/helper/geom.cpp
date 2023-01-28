@@ -652,10 +652,9 @@ pathv_to_linear( Geom::PathVector const &pathv, double /*maxdisp*/)
  * The straight curve part is needed as is for the effect to work appropriately
  */
 Geom::PathVector
-pathv_to_cubicbezier( Geom::PathVector const &pathv)
+pathv_to_cubicbezier( Geom::PathVector const &pathv, bool nolines)
 {
     Geom::PathVector output;
-    double cubicGap = 0.01;
     for (const auto & pit : pathv) {
         if (pit.empty()) {
             continue;
@@ -677,9 +676,14 @@ pathv_to_cubicbezier( Geom::PathVector const &pathv)
             pitCubic.close(true);
         }
         for (Geom::Path::iterator cit = pitCubic.begin(); cit != pitCubic.end_open(); ++cit) {
-            if (is_straight_curve(*cit)) {
-                Geom::CubicBezier b(cit->initialPoint(), cit->pointAt(0.3334) + Geom::Point(cubicGap,cubicGap), cit->finalPoint(), cit->finalPoint());
+            Geom::BezierCurve const *curve = dynamic_cast<Geom::BezierCurve const *>(&*cit);
+            // is_straight curves dont work for bspline
+            if (nolines && is_straight_curve(*cit)) {
+                Geom::CubicBezier b(cit->initialPoint(), cit->pointAt(0.3334), cit->finalPoint(), cit->finalPoint());
                 output.back().append(b);
+            } else if (Geom::are_near((*curve)[0],(*curve)[1]) && Geom::are_near((*curve)[2],(*curve)[3])){
+                Geom::LineSegment ls(cit->initialPoint(), cit->finalPoint());
+                output.back().append(ls);
             } else {
                 Geom::BezierCurve const *curve = dynamic_cast<Geom::BezierCurve const *>(&*cit);
                 if (curve && curve->order() == 3) {

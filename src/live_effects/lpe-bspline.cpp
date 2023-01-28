@@ -21,7 +21,6 @@
 namespace Inkscape {
 namespace LivePathEffect {
 
-const double HANDLE_CUBIC_GAP = 0.001;
 const double NO_POWER = 0.0;
 const double DEFAULT_START_POWER = 1.0/3.0;
 const double DEFAULT_END_POWER = 2.0/3.0;
@@ -34,6 +33,7 @@ LPEBSpline::LPEBSpline(LivePathEffectObject *lpeobject)
       apply_no_weight(_("Apply changes if weight = 0%"), _("Apply changes if weight = 0%"), "apply_no_weight", &wr, this, true),
       apply_with_weight(_("Apply changes if weight > 0%"), _("Apply changes if weight > 0%"), "apply_with_weight", &wr, this, true),
       only_selected(_("Change only selected nodes"), _("Change only selected nodes"), "only_selected", &wr, this, false),
+      uniform(_("Uniform BSpline"), _("Uniform bspline"), "uniform", &wr, this, false),
       weight(_("Change weight %:"), _("Change weight percent of the effect"), "weight", &wr, this, DEFAULT_START_POWER * 100)
 {
     registerParameter(&weight);
@@ -42,6 +42,7 @@ LPEBSpline::LPEBSpline(LivePathEffectObject *lpeobject)
     registerParameter(&apply_no_weight);
     registerParameter(&apply_with_weight);
     registerParameter(&only_selected);
+    registerParameter(&uniform);
 
     weight.param_set_range(NO_POWER, 100.0);
     weight.param_set_increments(0.1, 0.1);
@@ -73,6 +74,7 @@ void LPEBSpline::doOnApply(SPLPEItem const* lpeitem)
         SPLPEItem * item = const_cast<SPLPEItem*>(lpeitem);
         item->removeCurrentPathEffect(false);
     }
+    lpeversion.param_setValue("1.3", true);
 }
 
 void
@@ -172,27 +174,70 @@ void LPEBSpline::changeWeight(double weight_ammount)
 
 void LPEBSpline::doEffect(SPCurve *curve)
 {
-    sp_bspline_do_effect(*curve, helper_size, hp);
+    sp_bspline_do_effect(*curve, helper_size, hp, uniform);
 }
 
-void sp_bspline_do_effect(SPCurve &curve, double helper_size, Geom::PathVector &hp)
+void sp_bspline_do_effect(SPCurve &curve, double helper_size, Geom::PathVector &hp, bool uniform)
 {
     if (curve.get_segment_count() < 1) {
         return;
     }
-    Geom::PathVector const original_pathv = curve.get_pathvector();
+    Geom::PathVector original_pathv = curve.get_pathvector();
     curve.reset();
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    for (const auto & path_it : original_pathv) {
+    for (auto & path_it : original_pathv) {
         if (path_it.empty()) {
             continue;
         }
         if (!prefs->getBool("/tools/nodes/show_outline", true)){
             hp.push_back(path_it);
         }
-        Geom::Path::const_iterator curve_it1 = path_it.begin();
-        Geom::Path::const_iterator curve_it2 = ++(path_it.begin());
-        Geom::Path::const_iterator curve_endit = path_it.end_default();
+        Geom::CubicBezier const *cubic = nullptr;
+        // BSplines has special tratment for start/end on uniform cubic bsplines
+        // we need to change power from 1/3 to 1/2 and apply the factor of current power
+        if (uniform && !path_it.closed() && path_it.size_open() > 1) {
+            cubic = dynamic_cast<Geom::CubicBezier const *>(&path_it.front());
+            if (cubic) {
+                double factor = Geom::nearest_time((*cubic)[2], path_it.front()) / DEFAULT_END_POWER;
+                Geom::Path newp((*cubic)[0]);
+                newp.appendNew<Geom::CubicBezier>((*cubic)[0], path_it.front().pointAt(0.5 + (factor - 1)), (*cubic)[3]);
+                path_it.erase(path_it.begin());
+                cubic = dynamic_cast<Geom::CubicBezier const *>(&path_it.front());
+                if (cubic) {
+                    double factor = Geom::nearest_time((*cubic)[2], path_it.front()) / DEFAULT_END_POWER;
+                    Geom::Path newp2((*cubic)[0]);
+                    newp2.appendNew<Geom::CubicBezier>((*cubic)[1], path_it.front().pointAt(0.5 + (factor - 1)), (*cubic)[3]);
+                    path_it.erase(path_it.begin());
+                    newp.setFinal(newp2.back_open().initialPoint());
+                    newp.append(newp2);
+                }
+                path_it.setInitial(newp.back_open().finalPoint());
+                newp.append(path_it);
+                path_it = newp;
+            }
+            cubic = dynamic_cast<Geom::CubicBezier const *>(&path_it.back_open());
+            if (cubic && path_it.size_open() > 2) {
+                double factor = (Geom::nearest_time((*cubic)[1], path_it.back_open()) * 0.5) / DEFAULT_START_POWER;
+                Geom::Path newp((*cubic)[0]);
+                newp.appendNew<Geom::CubicBezier>(path_it.back_open().pointAt(factor), (*cubic)[3], (*cubic)[3]);
+                path_it.erase_last();
+                cubic = dynamic_cast<Geom::CubicBezier const *>(&path_it.back_open());
+                if (cubic && path_it.size_open() > 3) {
+                    double factor = (Geom::nearest_time((*cubic)[1], path_it.back_open()) * 0.5) / DEFAULT_START_POWER;
+                    Geom::Path newp2((*cubic)[0]);
+                    newp2.appendNew<Geom::CubicBezier>(path_it.back_open().pointAt(factor), (*cubic)[2], (*cubic)[3]);
+                    path_it.erase_last();
+                    newp2.setFinal(newp.back_open().initialPoint());
+                    newp2.append(newp);
+                    newp = newp2;
+                }
+                path_it.setFinal(newp.front().initialPoint());
+                path_it.append(newp);
+            }
+        }
+        Geom::Path::iterator curve_it1 = path_it.begin();
+        Geom::Path::iterator curve_it2 = ++(path_it.begin());
+        Geom::Path::iterator curve_endit = path_it.end_default();
         SPCurve curve_n;
         Geom::Point previousNode(0, 0);
         Geom::Point node(0, 0);
@@ -202,7 +247,6 @@ void sp_bspline_do_effect(SPCurve &curve, double helper_size, Geom::PathVector &
         Geom::D2<Geom::SBasis> sbasis_in;
         Geom::D2<Geom::SBasis> sbasis_out;
         Geom::D2<Geom::SBasis> sbasis_helper;
-        Geom::CubicBezier const *cubic = nullptr;
         curve_n.moveto(curve_it1->initialPoint());
         if (path_it.closed()) {
           const Geom::Curve &closingline = path_it.back_closed(); 
@@ -223,12 +267,15 @@ void sp_bspline_do_effect(SPCurve &curve, double helper_size, Geom::PathVector &
             cubic = dynamic_cast<Geom::CubicBezier const *>(&*curve_it1);
             if (cubic) {
                 sbasis_in = in.first_segment()->toSBasis();
-                if(are_near((*cubic)[1],(*cubic)[0]) && !are_near((*cubic)[2],(*cubic)[3])) {
+                if (are_near((*cubic)[1],(*cubic)[0]) && !are_near((*cubic)[2],(*cubic)[3])) {
                     point_at1 = sbasis_in.valueAt(DEFAULT_START_POWER);
                 } else {
                     point_at1 = sbasis_in.valueAt(Geom::nearest_time((*cubic)[1], *in.first_segment()));
                 }
-                if(are_near((*cubic)[2],(*cubic)[3]) && !are_near((*cubic)[1],(*cubic)[0])) {
+                if (uniform && curve_n.is_unset()) {
+                    point_at1 = curve_it1->initialPoint();
+                }
+                if (are_near((*cubic)[2],(*cubic)[3]) && !are_near((*cubic)[1],(*cubic)[0])) {
                     point_at2 = sbasis_in.valueAt(DEFAULT_END_POWER);
                 } else {
                     point_at2 = sbasis_in.valueAt(Geom::nearest_time((*cubic)[2], *in.first_segment()));
@@ -237,14 +284,14 @@ void sp_bspline_do_effect(SPCurve &curve, double helper_size, Geom::PathVector &
                 point_at1 = in.first_segment()->initialPoint();
                 point_at2 = in.first_segment()->finalPoint();
             }
-            if ( curve_it2 != curve_endit ) {
+            if (curve_it2 != curve_endit) {
                 SPCurve out;
                 out.moveto(curve_it2->initialPoint());
                 out.lineto(curve_it2->finalPoint());
                 cubic = dynamic_cast<Geom::CubicBezier const *>(&*curve_it2);
                 if (cubic) {
                     sbasis_out = out.first_segment()->toSBasis();
-                    if(are_near((*cubic)[1],(*cubic)[0]) && !are_near((*cubic)[2],(*cubic)[3])) {
+                    if (are_near((*cubic)[1],(*cubic)[0]) && !are_near((*cubic)[2],(*cubic)[3])) {
                         next_point_at1 = sbasis_in.valueAt(DEFAULT_START_POWER);
                     } else {
                         next_point_at1 = sbasis_out.valueAt(Geom::nearest_time((*cubic)[1], *out.first_segment()));
@@ -281,7 +328,11 @@ void sp_bspline_do_effect(SPCurve &curve, double helper_size, Geom::PathVector &
                 curve_n.curveto(point_at1, point_at2, node);
                 curve_n.move_endpoints(node, node);
             } else if ( curve_it2 == curve_endit) {
-                curve_n.curveto(point_at1, point_at2, curve_it1->finalPoint());
+                if (uniform) {
+                    curve_n.curveto(point_at1, curve_it1->finalPoint(), curve_it1->finalPoint());
+                } else {
+                    curve_n.curveto(point_at1, point_at2, curve_it1->finalPoint());
+                }
                 curve_n.move_endpoints(path_it.begin()->initialPoint(), curve_it1->finalPoint());
             } else {
                 SPCurve line_helper;
@@ -378,10 +429,6 @@ void LPEBSpline::doBSplineFromWidget(SPCurve *curve, double weight_ammount)
                 {
                     if (isNodePointSelected(point_at0) || !only_selected) {
                         point_at1 = sbasis_in.valueAt(weight_ammount);
-                        if (weight_ammount != NO_POWER) {
-                            point_at1 =
-                                Geom::Point(point_at1[X] + HANDLE_CUBIC_GAP, point_at1[Y] + HANDLE_CUBIC_GAP);
-                        }
                     } else {
                         point_at1 = (*cubic)[1];
                     }
@@ -396,7 +443,7 @@ void LPEBSpline::doBSplineFromWidget(SPCurve *curve, double weight_ammount)
                         point_at2 = sbasis_in.valueAt(1 - weight_ammount);
                         if (weight_ammount != NO_POWER) {
                             point_at2 =
-                                Geom::Point(point_at2[X] + HANDLE_CUBIC_GAP, point_at2[Y] + HANDLE_CUBIC_GAP);
+                                Geom::Point(point_at2[X], point_at2[Y]);
                         }
                     } else {
                         point_at2 = (*cubic)[2];
@@ -411,15 +458,11 @@ void LPEBSpline::doBSplineFromWidget(SPCurve *curve, double weight_ammount)
                 {
                     if (isNodePointSelected(point_at0) || !only_selected) {
                         point_at1 = sbasis_in.valueAt(weight_ammount);
-                        point_at1 =
-                            Geom::Point(point_at1[X] + HANDLE_CUBIC_GAP, point_at1[Y] + HANDLE_CUBIC_GAP);
                     } else {
                         point_at1 = in.first_segment()->initialPoint();
                     }
                     if (isNodePointSelected(point_at3) || !only_selected) {
                         point_at2 = sbasis_in.valueAt(1 - weight_ammount);
-                        point_at2 =
-                            Geom::Point(point_at2[X] + HANDLE_CUBIC_GAP, point_at2[Y] + HANDLE_CUBIC_GAP);
                     } else {
                         point_at2 = in.first_segment()->finalPoint();
                     }

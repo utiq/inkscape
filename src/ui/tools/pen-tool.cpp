@@ -81,7 +81,6 @@ namespace Tools {
 
 static Geom::Point pen_drag_origin_w(0, 0);
 static bool pen_within_tolerance = false;
-const double HANDLE_CUBIC_GAP = 0.001;
 
 PenTool::PenTool(SPDesktop *desktop, std::string prefs_path, const std::string &cursor_filename)
     : FreehandBase(desktop, prefs_path, cursor_filename)
@@ -631,9 +630,9 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
             break;
     }
     // calls the function "bspline_spiro_motion" when the mouse starts or stops moving
-    if(this->bspline){
+    if (this->bspline) {
         this->_bsplineSpiroMotion(mevent.state);
-    }else{
+    } else {
         if ( Geom::LInfty( event_w - pen_drag_origin_w ) > (tolerance/2) || mevent.time == 0) {
             this->_bsplineSpiroMotion(mevent.state);
             pen_drag_origin_w = event_w;
@@ -838,7 +837,7 @@ void PenTool::_redrawAll() {
 
     // simply redraw the spiro. because its a redrawing, we don't call the global function,
     // but we call the redrawing at the ending.
-     this->_bsplineSpiroBuild();
+    this->_bsplineSpiroBuild();
 }
 
 void PenTool::_lastpointMove(gdouble x, gdouble y) {
@@ -1287,13 +1286,10 @@ void PenTool::_bsplineSpiro(bool shift)
 void PenTool::_bsplineSpiroOn()
 {
     if(!this->red_curve.is_unset()){
-        using Geom::X;
-        using Geom::Y;
         this->npoints = 5;
         this->p[0] = *this->red_curve.first_point();
         this->p[3] = this->red_curve.first_segment()->finalPoint();
         this->p[2] = this->p[3] + (1./3)*(this->p[0] - this->p[3]);
-        this->p[2] = Geom::Point(this->p[2][X] + HANDLE_CUBIC_GAP,this->p[2][Y] + HANDLE_CUBIC_GAP);
     }
 }
 
@@ -1361,17 +1357,16 @@ void PenTool::_bsplineSpiroStartAnchorOn()
     Geom::Point point_a = this->sa_overwrited->last_segment()->initialPoint();
     Geom::Point point_d = *this->sa_overwrited->last_point();
     Geom::Point point_c = point_d + (1./3)*(point_a - point_d);
-    point_c = Geom::Point(point_c[X] + HANDLE_CUBIC_GAP, point_c[Y] + HANDLE_CUBIC_GAP);
-    if(cubic){
+    if (cubic) {
         last_segment->moveto(point_a);
         last_segment->curveto((*cubic)[1],point_c,point_d);
-    }else{
+    } else {
         last_segment->moveto(point_a);
         last_segment->curveto(point_a,point_c,point_d);
     }
-    if( this->sa_overwrited->get_segment_count() == 1){
+    if ( this->sa_overwrited->get_segment_count() == 1){
         this->sa_overwrited = std::move(last_segment);
-    }else{
+    } else {
         //we eliminate the last segment
         this->sa_overwrited->backspace();
         //and we add it again with the recreation
@@ -1408,11 +1403,9 @@ void PenTool::_bsplineSpiroMotion(guint const state){
     this->npoints = 5;
     SPCurve tmp_curve;
     this->p[2] = this->p[3] + (1./3)*(this->p[0] - this->p[3]);
-    this->p[2] = Geom::Point(this->p[2][X] + HANDLE_CUBIC_GAP,this->p[2][Y] + HANDLE_CUBIC_GAP);
     if (this->green_curve->is_unset() && !this->sa) {
         this->p[1] = this->p[0] + (1./3)*(this->p[3] - this->p[0]);
-        this->p[1] = Geom::Point(this->p[1][X] + HANDLE_CUBIC_GAP, this->p[1][Y] + HANDLE_CUBIC_GAP);
-        if(shift){
+        if (shift) {
             this->p[2] = this->p[3];
         }
     } else if (!this->green_curve->is_unset()){
@@ -1462,9 +1455,7 @@ void PenTool::_bsplineSpiroMotion(guint const state){
                 weight_power.lineto(*red_curve.last_point());
                 auto SBasisweight_power = weight_power.first_segment()->toSBasis();
                 this->p[1] = SBasisweight_power.valueAt(0.33334);
-                if(!Geom::are_near(this->p[1],this->p[0])){
-                    this->p[1] = Geom::Point(this->p[1][X] + HANDLE_CUBIC_GAP,this->p[1][Y] + HANDLE_CUBIC_GAP);
-                } else {
+                if (Geom::are_near(this->p[1],this->p[0])) {
                     this->p[1] = this->p[0];
                 }
                 if (shift) {
@@ -1515,7 +1506,6 @@ void PenTool::_bsplineSpiroEndAnchorOn()
     using Geom::X;
     using Geom::Y;
     this->p[2] = this->p[3] + (1./3)*(this->p[0] - this->p[3]);
-    this->p[2] = Geom::Point(this->p[2][X] + HANDLE_CUBIC_GAP,this->p[2][Y] + HANDLE_CUBIC_GAP);
     SPCurve tmp_curve;
     SPCurve last_segment;
     Geom::Point point_c(0,0);
@@ -1532,20 +1522,19 @@ void PenTool::_bsplineSpiroEndAnchorOn()
     Geom::CubicBezier const * cubic = dynamic_cast<Geom::CubicBezier const*>(tmp_curve.last_segment());
     if(this->bspline){
         point_c = *tmp_curve.last_point() + (1./3)*(tmp_curve.last_segment()->initialPoint() - *tmp_curve.last_point());
-        point_c = Geom::Point(point_c[X] + HANDLE_CUBIC_GAP, point_c[Y] + HANDLE_CUBIC_GAP);
-    }else{
+    } else {
         point_c = this->p[3] + this->p[3] - this->p[2];
     }
-    if(cubic){
+    if (cubic) {
         last_segment.moveto((*cubic)[0]);
         last_segment.curveto((*cubic)[1],point_c,(*cubic)[3]);
-    }else{
+    } else {
         last_segment.moveto(tmp_curve.last_segment()->initialPoint());
         last_segment.lineto(*tmp_curve.last_point());
     }
-    if( tmp_curve.get_segment_count() == 1){
+    if ( tmp_curve.get_segment_count() == 1){
         tmp_curve  = std::move(last_segment);
-    }else{
+    } else {
         //we eliminate the last segment
         tmp_curve.backspace();
         //and we add it again with the recreation
@@ -1577,16 +1566,16 @@ void PenTool::_bsplineSpiroEndAnchorOff()
         return;
     }
     Geom::CubicBezier const * cubic = dynamic_cast<Geom::CubicBezier const*>(tmp_curve.last_segment());
-    if(cubic){
+    if (cubic) {
         last_segment.moveto((*cubic)[0]);
         last_segment.curveto((*cubic)[1],(*cubic)[3],(*cubic)[3]);
-    }else{
+    } else {
         last_segment.moveto(tmp_curve.last_segment()->initialPoint());
         last_segment.lineto(*tmp_curve.last_point());
     }
-    if( tmp_curve.get_segment_count() == 1){
+    if ( tmp_curve.get_segment_count() == 1){
         tmp_curve  = std::move(last_segment);
-    }else{
+    } else{
         //we eliminate the last segment
         tmp_curve.backspace();
         //and we add it again with the recreation
@@ -1646,8 +1635,14 @@ void PenTool::_bsplineSpiroBuild()
         //Effect *spr = static_cast<Effect*> ( new LPEbspline(lpeobj) );
         //spr->doEffect(curve);
         if (bspline) {
+            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
             Geom::PathVector hp;
-            LivePathEffect::sp_bspline_do_effect(curve, 0, hp);
+            bool uniform = false;
+            Glib::ustring pref_path = "/live_effects/bspline/uniform";
+            if (prefs->getEntry(pref_path).isValid()) {
+                uniform = prefs->getString(pref_path) == "true";
+            }
+            LivePathEffect::sp_bspline_do_effect(curve, 0, hp, uniform); 
         } else {
             LivePathEffect::sp_spiro_do_effect(curve);
         }

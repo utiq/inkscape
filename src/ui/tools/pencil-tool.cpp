@@ -70,7 +70,6 @@ static Geom::Point pencil_drag_origin_w(0, 0);
 static bool pencil_within_tolerance = false;
 
 static bool in_svg_plane(Geom::Point const &p) { return Geom::LInfty(p) < 1e18; }
-const double HANDLE_CUBIC_GAP = 0.01;
 
 PencilTool::PencilTool(SPDesktop *desktop)
     : FreehandBase(desktop, "/tools/freehand/pencil", "pencil.svg")
@@ -951,9 +950,7 @@ void PencilTool::_interpolate() {
             // if we are in BSpline we modify the trace to create adhoc nodes 
             if (mode == 2) {
                 Geom::Point point_at1 = b[4 * c + 0] + (1./3) * (b[4 * c + 3] - b[4 * c + 0]);
-                point_at1 = Geom::Point(point_at1[X] + HANDLE_CUBIC_GAP, point_at1[Y] + HANDLE_CUBIC_GAP);
                 Geom::Point point_at2 = b[4 * c + 3] + (1./3) * (b[4 * c + 0] - b[4 * c + 3]);
-                point_at2 = Geom::Point(point_at2[X] + HANDLE_CUBIC_GAP, point_at2[Y] + HANDLE_CUBIC_GAP);
                 this->green_curve->curveto(point_at1,point_at2,b[4*c+3]);
             } else {
                 if (!tablet_enabled || c != n_segs - 1) {
@@ -1114,9 +1111,7 @@ void PencilTool::_fitAndSplit() {
         guint mode = prefs->getInt("/tools/freehand/pencil/freehand-mode", 0);
         if(mode == 2){
             Geom::Point point_at1 = b[0] + (1./3)*(b[3] - b[0]);
-            point_at1 = Geom::Point(point_at1[X] + HANDLE_CUBIC_GAP, point_at1[Y] + HANDLE_CUBIC_GAP);
             Geom::Point point_at2 = b[3] + (1./3)*(b[0] - b[3]);
-            point_at2 = Geom::Point(point_at2[X] + HANDLE_CUBIC_GAP, point_at2[Y] + HANDLE_CUBIC_GAP);
             this->red_curve.curveto(point_at1,point_at2,b[3]);
         }else{
             this->red_curve.curveto(b[1], b[2], b[3]);

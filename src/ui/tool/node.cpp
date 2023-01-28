@@ -198,6 +198,16 @@ void Handle::setVisible(bool v)
     _handle_line->set_visible(v);
 }
 
+void Handle::_update_bspline_handles() {
+    // move the handle and its opposite the same proportion
+    if (_pm()._isBSpline()){
+        setPosition(_pm()._bsplineHandleReposition(this, false));
+        double bspline_weight = _pm()._bsplineHandlePosition(this, false);
+        other()->setPosition(_pm()._bsplineHandleReposition(other(), bspline_weight));
+        _pm().update();
+    }
+}
+
 void Handle::move(Geom::Point const &new_pos)
 {
     Handle *other = this->other();
@@ -205,8 +215,6 @@ void Handle::move(Geom::Point const &new_pos)
     Node *node_away = _parent->nodeAwayFrom(this); // node in the opposite direction
     Handle *towards = node_towards ? node_towards->handleAwayFrom(_parent) : nullptr;
     Handle *towards_second = node_towards ? node_towards->handleToward(_parent) : nullptr;
-    double bspline_weight = 0.0;
-
     if (Geom::are_near(new_pos, _parent->position())) {
         // The handle becomes degenerate.
         // Adjust node type as necessary.
@@ -238,11 +246,7 @@ void Handle::move(Geom::Point const &new_pos)
         setPosition(new_pos);
 
         // move the handle and its opposite the same proportion
-        if(_pm()._isBSpline()){
-            setPosition(_pm()._bsplineHandleReposition(this, false));
-            bspline_weight = _pm()._bsplineHandlePosition(this, false);
-            this->other()->setPosition(_pm()._bsplineHandleReposition(this->other(), bspline_weight));
-        }
+        _update_bspline_handles();
         return;
     }
 
@@ -262,11 +266,7 @@ void Handle::move(Geom::Point const &new_pos)
         setRelativePos(new_delta);
 
         // move the handle and its opposite the same proportion
-        if(_pm()._isBSpline()){ 
-            setPosition(_pm()._bsplineHandleReposition(this, false));
-            bspline_weight = _pm()._bsplineHandlePosition(this, false);
-            this->other()->setPosition(_pm()._bsplineHandleReposition(this->other(), bspline_weight));
-        }
+        _update_bspline_handles();
         
         return;
     }
@@ -289,11 +289,7 @@ void Handle::move(Geom::Point const &new_pos)
     setPosition(new_pos);
 
     // move the handle and its opposite the same proportion
-    if(_pm()._isBSpline()){
-        setPosition(_pm()._bsplineHandleReposition(this, false));
-        bspline_weight = _pm()._bsplineHandlePosition(this, false);
-        this->other()->setPosition(_pm()._bsplineHandleReposition(this->other(), bspline_weight));
-    }
+    _update_bspline_handles();
     Inkscape::UI::Tools::sp_update_helperpath(_desktop);
 }
 
@@ -564,7 +560,7 @@ void Handle::ungrabbed(GdkEventButton *event)
         _parent->ungrabbed(event);
     }
     _drag_out = false;
-
+    Inkscape::UI::Tools::sp_update_helperpath(_desktop);
     _pm()._handleUngrabbed();
 }
 
@@ -670,14 +666,21 @@ Glib::ustring Handle::_getTip(unsigned state) const
             }
             else if (isBSpline) {
                 more = C_("Path handle tip",
-                          "Ctrl");
+                          "Shift, Ctrl");
             }
             else {
                 more = C_("Path handle tip",
                           "Ctrl, Alt");
             }
-
-            if (_parent->type() == NODE_CUSP) {
+            if (isBSpline) {
+                double power = _pm()._bsplineHandlePosition(h);
+                s = format_tip(C_("Path handle tip",
+                                  "<b>BSpline node handle</b> (%.3g power): "
+                                  "Shift-drag to move, "
+                                  "double-click to reset. "
+                                  "(more: %s)"),
+                               power, more);
+            } else if (_parent->type() == NODE_CUSP) {
                 s = format_tip(C_("Path handle tip",
                                   "<b>%s</b>: "
                                   "drag to shape the path"  ", "
@@ -711,15 +714,6 @@ Glib::ustring Handle::_getTip(unsigned state) const
                                   "drag to shape the path" ". "
                                   "(more: %s)"),
                                handletype, more);
-            }
-            else if (isBSpline) {
-                double power = _pm()._bsplineHandlePosition(h);
-                s = format_tip(C_("Path handle tip",
-                                  "<b>BSpline node handle</b> (%.3g power): "
-                                  "Shift-drag to move, "
-                                  "double-click to reset. "
-                                  "(more: %s)"),
-                               power, more);
             }
             else {
                 s = C_("Path handle tip",
@@ -833,6 +827,7 @@ void Node::move(Geom::Point const &new_pos)
             nextNode->back()->setPosition(_pm()._bsplineHandleReposition(nextNode->back(), nextNodeWeight));
         }
     }
+    Inkscape::UI::Tools::sp_update_helperpath(_desktop);
 }
 
 void Node::transform(Geom::Affine const &m)
