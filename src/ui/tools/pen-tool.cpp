@@ -850,21 +850,27 @@ void PenTool::_lastpointMove(gdouble x, gdouble y) {
         return;
 
     y *= -_desktop->yaxisdir();
+    auto delta = Geom::Point(x,y);
+
+    auto prefs = Inkscape::Preferences::get();
+    bool const rotated = prefs->getBool("/options/moverotated/value", true);
+    if (rotated) {
+        delta *= Geom::Rotate(-_desktop->current_rotation());
+    }
 
     // green
     if (!this->green_curve->is_unset()) {
-        this->green_curve->last_point_additive_move( Geom::Point(x,y) );
+        this->green_curve->last_point_additive_move(delta);
     } else {
         // start anchor too
         if (this->green_anchor) {
-            this->green_anchor->dp += Geom::Point(x, y);
+            this->green_anchor->dp += delta;
         }
     }
 
     // red
-
-    this->p[0] += Geom::Point(x, y);
-    this->p[1] += Geom::Point(x, y);
+    this->p[0] += delta;
+    this->p[1] += delta;
     this->_redrawAll();
 }
 

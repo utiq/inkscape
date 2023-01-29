@@ -516,6 +516,9 @@ public:
     void scale(double);
     void move(double dx, double dy);
     void moveScreen(double dx, double dy);
+    void move(double dx, double dy, bool rotated);
+    void move(double dx, double dy, bool rotated, bool screen);
+    void moveScreen(double dx, double dy, bool rotated);
     
     // various
     bool fitCanvas(bool with_margins, bool skip_undo = false);

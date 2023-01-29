@@ -2400,13 +2400,35 @@ void ObjectSet::move(double dx, double dy)
     }
 }
 
+void ObjectSet::move(double dx, double dy, bool rotated)
+{
+    if (rotated) {
+        double const rotation = desktop()->current_rotation();
+        double const rdx = std::cos(rotation) * dx + std::sin(rotation) * dy;
+        double const rdy = -std::sin(rotation) * dx + std::cos(rotation) * dy;
+
+        move(rdx, rdy);
+    } else {
+        move(dx, dy);
+    }
+}
+
+void ObjectSet::move(double dx, double dy, bool rotated, bool screen)
+{
+    if (screen) {
+        moveScreen(dx, dy, rotated);
+    } else {
+        move(dx, dy, rotated);
+    }
+}
+
 void ObjectSet::moveScreen(double dx, double dy)
 {
     if (isEmpty() || !desktop()) {
         return;
     }
 
-    // same as sp_selection_move but divide deltas by zoom factor
+    // same as ObjectSet::move but divide deltas by zoom factor
     gdouble const zoom = desktop()->current_zoom();
     gdouble const zdx = dx / zoom;
     gdouble const zdy = dy / zoom;
@@ -2422,7 +2444,18 @@ void ObjectSet::moveScreen(double dx, double dy)
     }
 }
 
+void ObjectSet::moveScreen(double dx, double dy, bool rotated)
+{
+    if (rotated) {
+        double const rotation = desktop()->current_rotation();
+        double const rdx = std::cos(rotation) * dx + std::sin(rotation) * dy;
+        double const rdy = -std::sin(rotation) * dx + std::cos(rotation) * dy;
 
+        moveScreen(rdx, rdy);
+    } else {
+        moveScreen(dx, dy);
+    }
+}
 
 struct Forward {
     typedef SPObject *Iterator;

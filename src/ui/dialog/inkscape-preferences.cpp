@@ -2678,9 +2678,16 @@ void InkscapePreferences::initPageBehavior()
     _middle_mouse_zoom.init ( _("Zoom with middle mouse click"), "/options/middlemousezoom/value", true);
     _page_steps.add_line( true, "", _middle_mouse_zoom, "",
                             _("When activated, clicking the middle mouse button (usually the mouse wheel) zooms."));
+
+    _page_steps.add_group_header( _("Canvas rotation"));
+
     _steps_rotate.init ( "/options/rotateincrement/value", 1, 90, 1.0, 5.0, 15, false, false);
     _page_steps.add_line( false, _("_Rotate canvas by:"), _steps_rotate, _("degrees"),
                           _("Rotate canvas clockwise and counter-clockwise by this amount."), false);
+    _move_rotated.init ( _("Arrow keys move object relative to screen"), "/options/moverotated/value", true);
+    _page_steps.add_line( false, "", _move_rotated, "",
+                            _("When on, arrow keys move objects relative to screen. If workspace is rotated the translation doesn't follow its coordinate system but the screen one."));
+
     this->AddPage(_page_steps, _("Steps"), iter_behavior, PREFS_PAGE_BEHAVIOR_STEPS);
 
     // Clones options

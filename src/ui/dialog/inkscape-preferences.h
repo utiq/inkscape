@@ -238,6 +238,7 @@ protected:
     UI::Widget::PrefCheckButton _steps_rot_relative;
     UI::Widget::PrefCheckButton _steps_compass;
     UI::Widget::PrefSpinUnit    _steps_arrow;
+    UI::Widget::PrefCheckButton _move_rotated;
     UI::Widget::PrefSpinUnit    _steps_scale;
     UI::Widget::PrefSpinUnit    _steps_inset;
     UI::Widget::PrefSpinButton  _steps_zoom;

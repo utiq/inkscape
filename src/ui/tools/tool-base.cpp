@@ -311,6 +311,9 @@ bool ToolBase::_keyboardMove(KeyEvent const &event, Geom::Point const &dir)
 {
     if (MOD__CTRL(event)) return false;
     unsigned num = 1 + gobble_key_events(shortcut_key(event), 0);
+
+    auto prefs = Preferences::get();
+
     Geom::Point delta = dir * num;
 
     if (MOD__SHIFT(event)) {
@@ -320,9 +323,13 @@ bool ToolBase::_keyboardMove(KeyEvent const &event, Geom::Point const &dir)
     if (MOD__ALT(event)) {
         delta /= _desktop->current_zoom();
     } else {
-        auto prefs = Preferences::get();
         double nudge = prefs->getDoubleLimited("/options/nudgedistance/value", 2, 0, 1000, "px");
         delta *= nudge;
+    }
+
+    bool const rotated = prefs->getBool("/options/moverotated/value", true);
+    if (rotated) {
+        delta *= Geom::Rotate(-_desktop->current_rotation());
     }
 
     bool moved = false;

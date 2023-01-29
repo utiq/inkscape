@@ -520,14 +520,20 @@ bool ControlPointSelection::_keyboardMove(KeyPressEvent const &event, Geom::Poin
     if (held_control(event)) return false;
     unsigned num = 1 + Tools::gobble_key_events(shortcut_key(event), 0);
 
+    auto prefs = Preferences::get();
+
     Geom::Point delta = dir * num; 
     if (held_shift(event)) delta *= 10;
     if (held_alt(event)) {
         delta /= _desktop->current_zoom();
     } else {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         double nudge = prefs->getDoubleLimited("/options/nudgedistance/value", 2, 0, 1000, "px");
         delta *= nudge;
+    }
+
+    bool const rotated = prefs->getBool("/options/moverotated/value", true);
+    if (rotated) {
+        delta *= Geom::Rotate(-_desktop->current_rotation());
     }
 
     transform(Geom::Translate(delta));

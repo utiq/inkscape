@@ -876,26 +876,25 @@ bool SelectTool::root_handler(CanvasEvent const &canvas_event)
             int const snaps = prefs->getInt("/options/rotationsnapsperpi/value", 12);
             auto const y_dir = _desktop->yaxisdir();
 
+            bool const rotated = prefs->getBool("/options/moverotated/value", true);
+
+            int delta = 1;
+            if (MOD__SHIFT(event)) { // shift
+                delta = 10;
+            }
+            bool screen = true;
+            if (!MOD__ALT(event)) { // no alt
+                delta *= nudge;
+                screen = false;
+            }
+
+            int const mul = 1 + gobble_key_events(keyval, 0);
+
             switch (keyval) {
                 case GDK_KEY_Left: // move selection left
                 case GDK_KEY_KP_Left:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
-                        
-                        if (MOD__ALT(event)) { // alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->moveScreen(mul*-10, 0); // shift
-                            } else {
-                                _desktop->getSelection()->moveScreen(mul*-1, 0); // no shift
-                            }
-                        } else { // no alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->move(mul*-10*nudge, 0); // shift
-                            } else {
-                                _desktop->getSelection()->move(mul*-nudge, 0); // no shift
-                            }
-                        }
-                        
+                        _desktop->getSelection()->move(-delta * mul, 0, rotated, screen);
                         ret = TRUE;
                     }
                     break;
@@ -903,23 +902,7 @@ bool SelectTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_Up: // move selection up
                 case GDK_KEY_KP_Up:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
-                        mul *= -y_dir;
-                        
-                        if (MOD__ALT(event)) { // alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->moveScreen(0, mul*10); // shift
-                            } else {
-                                _desktop->getSelection()->moveScreen(0, mul*1); // no shift
-                            }
-                        } else { // no alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->move(0, mul*10*nudge); // shift
-                            } else {
-                                _desktop->getSelection()->move(0, mul*nudge); // no shift
-                            }
-                        }
-                        
+                        _desktop->getSelection()->move(0, -delta * mul * y_dir, rotated, screen);
                         ret = TRUE;
                     }
                     break;
@@ -927,22 +910,7 @@ bool SelectTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_Right: // move selection right
                 case GDK_KEY_KP_Right:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
-                        
-                        if (MOD__ALT(event)) { // alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->moveScreen(mul*10, 0); // shift
-                            } else {
-                                _desktop->getSelection()->moveScreen(mul*1, 0); // no shift
-                            }
-                        } else { // no alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->move(mul*10*nudge, 0); // shift
-                            } else {
-                                _desktop->getSelection()->move(mul*nudge, 0); // no shift
-                            }
-                        }
-                        
+                        _desktop->getSelection()->move(delta * mul, 0, rotated, screen);
                         ret = TRUE;
                     }
                     break;
@@ -950,23 +918,7 @@ bool SelectTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_Down: // move selection down
                 case GDK_KEY_KP_Down:
                     if (!MOD__CTRL(event)) { // not ctrl
-                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
-                        mul *= -y_dir;
-                        
-                        if (MOD__ALT(event)) { // alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->moveScreen(0, mul*-10); // shift
-                            } else {
-                                _desktop->getSelection()->moveScreen(0, mul*-1); // no shift
-                            }
-                        } else { // no alt
-                            if (MOD__SHIFT(event)) {
-                                _desktop->getSelection()->move(0, mul*-10*nudge); // shift
-                            } else {
-                                _desktop->getSelection()->move(0, mul*-nudge); // no shift
-                            }
-                        }
-                        
+                        _desktop->getSelection()->move(0, delta * mul * y_dir, rotated, screen);
                         ret = TRUE;
                     }
                     break;
@@ -1007,7 +959,6 @@ bool SelectTool::root_handler(CanvasEvent const &canvas_event)
                     
                 case GDK_KEY_bracketleft:
                     if (MOD__ALT(event)) {
-                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         selection->rotateScreen(-mul * y_dir);
                     } else if (MOD__CTRL(event)) {
                         selection->rotate(-90 * y_dir);
@@ -1020,7 +971,6 @@ bool SelectTool::root_handler(CanvasEvent const &canvas_event)
                     
                 case GDK_KEY_bracketright:
                     if (MOD__ALT(event)) {
-                        gint mul = 1 + gobble_key_events(keyval, 0); // with any mask
                         selection->rotateScreen(mul * y_dir);
                     } else if (MOD__CTRL(event)) {
                         selection->rotate(90 * y_dir);
