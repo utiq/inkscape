@@ -143,7 +143,7 @@ item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& st
     origin->LoadPathVector(pathv);
     offset->SetBackData(false);
 
-    if (!style->stroke_dasharray.values.empty()) {
+    if (!style->stroke_dasharray.values.empty() && style->stroke_dasharray.is_valid()) {
         // We have dashes!
         origin->ConvertWithBackData(0.005); // Approximate by polyline
         origin->DashPolylineFromStyle(style, scale, 0);

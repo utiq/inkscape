@@ -898,6 +898,8 @@ public:
 
     bool operator==(const SPIBase& rhs) const override;
 
+    bool is_valid() const;
+
   // To do: make private, change double to SVGLength
 public:
   std::vector<SPILength> values;

@@ -553,7 +553,7 @@ public:
   
   // dash the polyline
   // the result is stored in the polyline, so you lose the original. make a copy before if needed
-  void  DashPolyline(float head,float tail,float body,int nbD,float *dashs,bool stPlain,float stOffset);
+  void  DashPolyline(float head,float tail,float body,int nbD, const float dashs[],bool stPlain,float stOffset);
 
   void  DashPolylineFromStyle(SPStyle *style, float scale, float min_len);
   
@@ -661,7 +661,7 @@ public:
   
   // creation of dashes: take the polyline given by spP (length spL) and dash it according to head, body, etc. put the result in
   // the polyline of this instance
-  void DashSubPath(int spL, int spP, std::vector<path_lineto> const &orig_pts, float head,float tail,float body,int nbD,float *dashs,bool stPlain,float stOffset);
+  void DashSubPath(int spL, int spP, std::vector<path_lineto> const &orig_pts, float head,float tail,float body,int nbD, const float dashs[],bool stPlain,float stOffset);
 
   // Functions used by the conversion.
   // they append points to the polyline

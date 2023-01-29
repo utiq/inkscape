@@ -1503,7 +1503,7 @@ CairoRenderContext::_setStrokeStyle(SPStyle const *style, Geom::OptRect const &p
         }
     }
 
-    if (!style->stroke_dasharray.values.empty())
+    if (!style->stroke_dasharray.values.empty() && style->stroke_dasharray.is_valid())
     {
         size_t ndashes = style->stroke_dasharray.values.size();
         double* dashes =(double*)malloc(ndashes*sizeof(double));

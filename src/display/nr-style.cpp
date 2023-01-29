@@ -184,7 +184,7 @@ NRStyleData::NRStyleData(SPStyle const *style, SPStyle const *context_style)
     miter_limit = style->stroke_miterlimit.value;
 
     n_dash = style->stroke_dasharray.values.size();
-    if (n_dash > 0) {
+    if (n_dash > 0 && style->stroke_dasharray.is_valid()) {
         dash_offset = style->stroke_dashoffset.computed;
         dash.resize(n_dash);
         for (int i = 0; i < n_dash; ++i) {
@@ -383,7 +383,7 @@ void NRStyle::applyStroke(Inkscape::DrawingContext &dc, CairoPatternUniqPtr cons
     dc.setLineCap(data.line_cap);
     dc.setLineJoin(data.line_join);
     dc.setMiterLimit(data.miter_limit);
-    cairo_set_dash(dc.raw(), data.dash.empty() ? nullptr : data.dash.data(), data.n_dash, data.dash_offset); // fixme
+    cairo_set_dash(dc.raw(), data.dash.empty() ? nullptr : data.dash.data(), data.dash.empty() ? 0 : data.n_dash, data.dash_offset); // fixme
 }
 
 void NRStyle::applyTextDecorationStroke(Inkscape::DrawingContext &dc, CairoPatternUniqPtr const &cp) const

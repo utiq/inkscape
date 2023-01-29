@@ -23,6 +23,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <algorithm>
+#include <cmath>
 #include <glibmm/regex.h>
 
 #include "style-internal.h"
@@ -2106,6 +2108,15 @@ SPIDashArray::operator==(const SPIBase& rhs) const {
     return SPIBase::operator==(rhs);
 }
 
+bool SPIDashArray::is_valid() const {
+    // If any value in the list is negative, the <dasharray> value is invalid.
+    // https://svgwg.org/svg2-draft/painting.html#StrokeDashing
+
+    bool invalid = std::any_of(values.begin(), values.end(), [](const SPILength& len){
+        return len.value < 0 || !std::isfinite(len.value);
+    });
+    return !invalid;
+}
 
 // SPIFontSize ----------------------------------------------------------
 
