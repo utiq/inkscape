@@ -24,6 +24,7 @@ install(DIRECTORY extensions DESTINATION ${INKSCAPE_SHARE_INSTALL}
     PATTERN ".git*" EXCLUDE
     PATTERN "tests" EXCLUDE
     PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.sh" EXCLUDE
     PATTERN "print_win32_vector.*" EXCLUDE
     PATTERN "other/inkman" EXCLUDE
     PATTERN "other/*/*/tests" EXCLUDE
@@ -32,8 +33,9 @@ install(DIRECTORY extensions DESTINATION ${INKSCAPE_SHARE_INSTALL}
 )
 
 install(DIRECTORY extensions/other/inkman DESTINATION ${INKSCAPE_SHARE_INSTALL}/extensions/inkman/
-    COMPONENT extension_manager
+    COMPONENT extension-manager
     PATTERN "tests" EXCLUDE
+    PATTERN ".git*" EXCLUDE
     PATTERN "MANIFEST.in" EXCLUDE
     PATTERN "requirements.txt" EXCLUDE
 )

@@ -10,7 +10,7 @@ set(CPACK_PACKAGE_VENDOR "Inkscape")
 set(CPACK_PACKAGE_VERSION_MAJOR ${INKSCAPE_VERSION_MAJOR}) # TODO: Can be set via project(), see CMAKE_PROJECT_VERSION_PATCH
 set(CPACK_PACKAGE_VERSION_MINOR ${INKSCAPE_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${INKSCAPE_VERSION_PATCH})
-set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${INKSCAPE_VERSION_SUFFIX}")
+set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}${INKSCAPE_VERSION_SUFFIX}")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md") # TODO: Where is this used? Do we need a better source?
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open-source vector graphics editor")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://inkscape.org")
@@ -106,13 +106,26 @@ set(CPACK_WIX_PATCH_FILE "${CMAKE_SOURCE_DIR}/packaging/wix/app_registration.xml
 set(CPACK_WIX_EXTRA_SOURCES "${CMAKE_SOURCE_DIR}/packaging/wix/featuretree_nolicense.wxs")
 
 # DEB (Linux .deb bundle)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libaspell15 (>= 0.60.7~20110707), libatkmm-1.6-1v5 (>= 2.24.0), libc6 (>= 2.14), libcairo2 (>= 1.14.0), libcairomm-1.0-1v5 (>= 1.12.0), libcdr-0.1-1, libfontconfig1 (>= 2.12), libfreetype6 (>= 2.2.1), libgc1c2 (>= 1:7.2d), libgcc1 (>= 1:4.0), libgdk-pixbuf2.0-0 (>= 2.22.0), libglib2.0-0 (>= 2.41.1), libglibmm-2.4-1v5 (>= 2.54.0), libgomp1 (>= 4.9), libgsl23, libgslcblas0, libgtk-3-0 (>= 3.21.5), libgtkmm-3.0-1v5 (>= 3.22.0), libgtkspell3-3-0, libharfbuzz0b (>= 1.2.6), libjpeg8 (>= 8c), liblcms2-2 (>= 2.2+git20110628), libmagick++-6.q16-7 (>= 8:6.9.6.8), libpango-1.0-0 (>= 1.37.2), libpangocairo-1.0-0 (>= 1.14.0), libpangoft2-1.0-0 (>= 1.37.2), libpangomm-1.4-1v5 (>= 2.40.0), libpng16-16 (>= 1.6.2-1), libpoppler-glib8 (>= 0.18.0), libpoppler68 (>= 0.57.0), libpotrace0, librevenge-0.0-0, libsigc++-2.0-0v5 (>= 2.8.0), libsoup2.4-1 (>= 2.41.90), libstdc++6 (>= 5.2), libvisio-0.1-1, libwpg-0.3-3, libx11-6, libxml2 (>= 2.7.4), libxslt1.1 (>= 1.1.25), zlib1g (>= 1:1.1.4)")
 set(CPACK_DEBIAN_PACKAGE_SECTION "graphics")
-set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "aspell, imagemagick, libwmf-bin, python3-numpy, python3-lxml, python3-scour, python3-packaging, python3-cssselect, python3-bs4, python3-requests")
-set(CPACK_DEBIAN_PACKAGE_SUGGESTS "dia, pstoedit, scribus")
+set(CPACK_DEBIAN_INKSCAPE_PACKAGE_SUGGESTS "dia, pstoedit, scribus")
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "inkscape") # all package depend on inkscape
+set(CPACK_DEBIAN_INKSCAPE_PACKAGE_DEPENDS "lib2geom${2GEOM_VERSION}")
+set(CPACK_DEBIAN_INKSCAPE_PACKAGE_RECOMMENDS "aspell, imagemagick, libwmf-bin, inkscape-extensions, inkscape-translations, inkscape-themes")
 
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_GROUPING IGNORE)
 
-
+set(CPACK_DEBIAN_INKSCAPE-EXTENSIONS_PACKAGE_DEPENDS "python3-numpy, python3-lxml, python3-scour, python3-packaging, python3-cssselect, python3-bs4, python3-requests")
+set(CPACK_DEBIAN_INKSCAPE-EXTENSIONS_PACKAGE_RECOMMENDS "inkscape-extension-manager")
+set(CPACK_DEBIAN_INKSCAPE-EXTENSION-MANAGER_PACKAGE_DEPENDS "inkscape-extensions, python3-filecache")
+set(CPACK_DEBIAN_LIB2GEOM-DEV_PACKAGE_RECOMMENDS "lib2geom${2GEOM_VERSION}")
+set(CPACK_DEBIAN_LIB2GEOM1.3.0_PACKAGE_NAME "lib2geom${2GEOM_VERSION}")
+set(CPACK_DEBIAN_LIB2GEOM-DEV_PACKAGE_NAME "lib2geom-dev")
+set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_ADD_LDCONFIG_CALL ON)
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS_PRIVATE_DIRS ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 
 ## load cpack module (do this *after* all the CPACK_* variables have been set)
 include(CPack)
@@ -153,7 +166,7 @@ cpack_add_component(extensions
                     DESCRIPTION "Inkscape extensions (including many import and export plugins)"
                     GROUP "group_2_inkscape_data"
                     INSTALL_TYPES full compact)
-cpack_add_component(extension_manager
+cpack_add_component(extension-manager
                     DISPLAY_NAME "Extension Manager"
                     DESCRIPTION "Extension manager allows user to install extensions from the inkscape website"
                     DEPENDS "extensions"
@@ -187,12 +200,29 @@ cpack_add_component_group(
 get_inkscape_languages()
 list(LENGTH INKSCAPE_LANGUAGE_CODES length)
 math(EXPR length "${length} - 1")
-foreach(index RANGE ${length})
-    list(GET INKSCAPE_LANGUAGE_CODES ${index} language_code)
-    list(GET INKSCAPE_LANGUAGE_NAMES ${index} language_name)
-    string(MAKE_C_IDENTIFIER "${language_code}" language_code_escaped)
-    cpack_add_component(translations.${language_code_escaped}
-                        DISPLAY_NAME "${language_name}"
+if(WIN32)
+    foreach(index RANGE ${length})
+        list(GET INKSCAPE_LANGUAGE_CODES ${index} language_code)
+        list(GET INKSCAPE_LANGUAGE_NAMES ${index} language_name)
+        string(MAKE_C_IDENTIFIER "${language_code}" language_code_escaped)
+        cpack_add_component(translations.${language_code_escaped}
+                            DISPLAY_NAME "${language_name}"
+                            GROUP "group_3_translations"
+                            INSTALL_TYPES full)
+    endforeach()
+else()
+    cpack_add_component(translations
+                        DISPLAY_NAME "Translations"
                         GROUP "group_3_translations"
                         INSTALL_TYPES full)
-endforeach()
+endif()
+
+if(WITH_INTERNAL_2GEOM)
+    cpack_add_component(lib2geom-dev
+                        DISPLAY_NAME "lib2geom-dev"
+                        DESCRIPTION "Geometry library - dev files")
+    cpack_add_component(lib2geom${2GEOM_VERSION}
+                        DISPLAY_NAME "lib2geom"
+                        DESCRIPTION "Geometry library"
+                        HIDDEN REQUIRED)
+endif()

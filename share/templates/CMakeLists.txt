@@ -40,10 +40,16 @@ if(ENABLE_NLS)
 
   get_inkscape_languages()
   foreach(language_code ${INKSCAPE_LANGUAGE_CODES})
+    if(WIN32)
+        set(COMP translations.${language_code_escaped})
+    else()
+        set(COMP translations)
+    endif()
+
     string(MAKE_C_IDENTIFIER "${language_code}" language_code_escaped)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/default.${language_code}.svg
       DESTINATION ${INKSCAPE_SHARE_INSTALL}/templates
-      COMPONENT translations.${language_code_escaped}
+      COMPONENT ${COMP}
       OPTIONAL)
   endforeach()
 else()

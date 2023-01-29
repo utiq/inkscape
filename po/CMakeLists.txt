@@ -3,16 +3,21 @@
 # process and install .po files
 file(GLOB LANGUAGES *.po)
 foreach(language ${LANGUAGES})
-	string(REGEX REPLACE "(.+(\\\\|/))+" "" language ${language})
-	string(REGEX REPLACE "\\.po$" "" language ${language})
+    string(REGEX REPLACE "(.+(\\\\|/))+" "" language ${language})
+    string(REGEX REPLACE "\\.po$" "" language ${language})
     string(MAKE_C_IDENTIFIER "${language}" language_code_escaped)
-	set(pofile ${CMAKE_CURRENT_SOURCE_DIR}/${language}.po)
-	set(gmofile ${CMAKE_CURRENT_BINARY_DIR}/${language}.gmo)
-	GETTEXT_PROCESS_PO_FILES(${language} ALL PO_FILES ${pofile})
-	install(FILES ${gmofile}
+    set(pofile ${CMAKE_CURRENT_SOURCE_DIR}/${language}.po)
+    set(gmofile ${CMAKE_CURRENT_BINARY_DIR}/${language}.gmo)
+    GETTEXT_PROCESS_PO_FILES(${language} ALL PO_FILES ${pofile})
+    if(WIN32)
+        set(COMP translations.${language_code_escaped})
+    else()
+        set(COMP translations)
+    endif()
+    install(FILES ${gmofile}
         DESTINATION "${PACKAGE_LOCALE_DIR}/${language}/LC_MESSAGES/"
         RENAME ${CMAKE_PROJECT_NAME}.mo
-        COMPONENT translations.${language_code_escaped})
+        COMPONENT ${COMP})
 endforeach(language)
 
 

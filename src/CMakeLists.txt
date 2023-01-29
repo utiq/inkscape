@@ -411,6 +411,7 @@ set(INKSCAPE_TARGET_LIBS
 
 # Build everything except main and inkview.c in a shared library.
 add_library(inkscape_base ${inkscape_SRC} ${sp_SRC})
+set_target_properties(inkscape_base PROPERTIES SOVERSION "${INKSCAPE_VERSION_MAJOR}.${INKSCAPE_VERSION_MINOR}.${INKSCAPE_VERSION_PATCH}.0")
 
 # added so that locally installed inkscape can find lib2geom if it's not installed systemwide
 if(NOT APPLE)

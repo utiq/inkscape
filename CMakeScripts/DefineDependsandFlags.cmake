@@ -160,7 +160,7 @@ add_definitions(${Intl_DEFINITIONS})
 
 # Check for system-wide version of 2geom and fallback to internal copy if not found
 if(NOT WITH_INTERNAL_2GEOM)
-    pkg_check_modules(2Geom QUIET IMPORTED_TARGET GLOBAL 2geom>=1.1.0)
+    pkg_check_modules(2Geom QUIET IMPORTED_TARGET GLOBAL 2geom>=1.3.0)
     if(2Geom_FOUND)
         add_library(2Geom::2geom ALIAS PkgConfig::2Geom)
     else()
