@@ -16,7 +16,6 @@ if(WIN32)
     ${MINGW_BIN}/libaspell-[0-9]*.dll
     ${MINGW_BIN}/libatk-1.0-[0-9]*.dll
     ${MINGW_BIN}/libatkmm-1.6-[0-9]*.dll
-    ${MINGW_BIN}/libboost_filesystem-mt.dll
     ${MINGW_BIN}/libbrotlicommon.dll
     ${MINGW_BIN}/libbrotlidec.dll
     ${MINGW_BIN}/libbz2-[0-9]*.dll
@@ -25,6 +24,7 @@ if(WIN32)
     ${MINGW_BIN}/libcairomm-1.0-[0-9]*.dll
     ${MINGW_BIN}/libcdr-0.[0-9]*.dll
     ${MINGW_BIN}/libcrypto-1_[0-9]*.dll
+    ${MINGW_BIN}/libcrypto-3*.dll
     ${MINGW_BIN}/libcurl-[0-9]*.dll
     ${MINGW_BIN}/libdatrie-[0-9]*.dll
     ${MINGW_BIN}/libdav1d.dll
@@ -100,11 +100,13 @@ if(WIN32)
     ${MINGW_BIN}/librevenge-0.[0-9]*.dll
     ${MINGW_BIN}/librevenge-stream-0.[0-9]*.dll
     ${MINGW_BIN}/librsvg-2-[0-9]*.dll
+    ${MINGW_BIN}/libsharpyuv-0.dll
     ${MINGW_BIN}/libsigc-2.0-[0-9]*.dll
     ${MINGW_BIN}/libsoup-2.4-[0-9]*.dll
     ${MINGW_BIN}/libsqlite3-[0-9]*.dll
     ${MINGW_BIN}/libssh2-[0-9]*.dll
     ${MINGW_BIN}/libssl-1_[0-9]*.dll
+    ${MINGW_BIN}/libssl-3*.dll
     ${MINGW_BIN}/libstdc++-[0-9]*.dll
     ${MINGW_BIN}/libtermcap-[0-9]*.dll
     ${MINGW_BIN}/libthai-[0-9]*.dll
@@ -159,7 +161,6 @@ if(WIN32)
       PATTERN "filters" EXCLUDE)
     file(GLOB MAGICK_LIBS
       ${MINGW_BIN}/libGraphicsMagick[+-]*.dll
-      ${MINGW_BIN}/libjasper.dll
       ${MINGW_BIN}/libjxl.dll
       ${MINGW_BIN}/libjxl_threads.dll
       ${MINGW_BIN}/libltdl-[0-9]*.dll
