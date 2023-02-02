@@ -90,7 +90,7 @@ void Inkscape::Rubberband::move(Geom::Point const &p)
         return;
 
     if (!_moved) {
-        if (Geom::are_near(_start, p, _tolerance))
+        if (Geom::are_near(_start, p, _tolerance/_desktop->current_zoom()))
             return;
     }
 
