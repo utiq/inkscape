@@ -25,6 +25,9 @@
 #include "filter-chemistry.h"
 #include "inkscape.h"
 #include "selection.h"
+#include "message-context.h"
+#include "message-stack.h"
+
 
 #include "object/box3d-side.h"
 #include "object/filters/blend.h"
@@ -238,7 +241,10 @@ sp_desktop_set_style(Inkscape::ObjectSet *set, SPDesktop *desktop, SPCSSAttr *cs
         auto itemlist = set->items();
         for (auto i = itemlist.begin(); i!= itemlist.end(); ++i) {
             SPItem *item = *i;
-
+            if(item->isLocked()){
+                    desktop->messageStack()->flash(Inkscape::WARNING_MESSAGE, ("<b>Locked</b> object(s) cannot be modified."));
+                }
+            else{
             // If not text, don't apply text attributes (can a group have text attributes? Yes! FIXME)
             if (isTextualItem(item)) {
 
@@ -255,6 +261,7 @@ sp_desktop_set_style(Inkscape::ObjectSet *set, SPDesktop *desktop, SPCSSAttr *cs
                 sp_desktop_apply_css_recursive(item, css_no_text, true);
 
             }
+        }
         }
         sp_repr_css_attr_unref(css_no_text);
     }

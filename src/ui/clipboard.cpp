@@ -709,7 +709,8 @@ void ClipboardManagerImpl::_cleanStyle(SPCSSAttr *style)
  */
 bool ClipboardManagerImpl::pasteStyle(ObjectSet *set)
 {
-    if (set->desktop() == nullptr) {
+    auto dt = set->desktop();
+    if (dt == nullptr) {
         return false;
     }
 
