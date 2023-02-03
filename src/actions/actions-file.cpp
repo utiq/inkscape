@@ -77,6 +77,7 @@ file_rebase(const Glib::VariantBase& value, InkscapeApplication *app)
     document->rebase(s.get());
 
     document->ensureUpToDate();
+    Inkscape::DocumentUndo::done(document, _("File rebase"), "");
 }
 
 // Need to create a document_revert that doesn't depend on windows.
