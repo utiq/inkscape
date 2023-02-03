@@ -16,6 +16,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-view-mode.h"
+#include "actions-helper.h"
 
 #include "inkscape-application.h"
 #include "inkscape-window.h"
@@ -34,13 +35,13 @@ canvas_set_state(InkscapeWindow *win, Glib::ustring action_name, bool state)
     // Get Action
     auto action = win->lookup_action(action_name);
     if (!action) {
-        std::cerr << "canvas_set_state: " << action_name.raw() << " action missing!" << std::endl;
+        show_output(Glib::ustring("canvas_set_state: ") + action_name.raw() + " action missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_set_state: " << action_name.raw() << " not SimpleAction!" << std::endl;
+        show_output(Glib::ustring("canvas_set_state: ") + action_name.raw() + " not SimpleAction!");
         return;
     }
 
@@ -55,13 +56,13 @@ canvas_toggle_state(InkscapeWindow *win, Glib::ustring action_name)
     // Get Action
     auto action = win->lookup_action(action_name);
     if (!action) {
-        std::cerr << "canvas_toggle_state: " << action_name.raw() << " action missing!" << std::endl;
+        show_output(Glib::ustring("canvas_toggle_state: ") + action_name.raw() + " action missing!");
         return false;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_toggle_state: " << action_name.raw() << " not SimpleAction!" << std::endl;
+        show_output(Glib::ustring("canvas_toggle_state: ") + action_name.raw() + " not SimpleAction!");
         return false;
     }
 
@@ -224,7 +225,7 @@ view_set_gui(InkscapeWindow* win)
     SPDesktop* desktop = win->get_desktop();
 
     if (!desktop) {
-        std::cerr << "canvas_set_gui: no desktop!" << std::endl;
+        show_output("canvas_set_gui: no desktop!");
         return;
     }
 
@@ -287,7 +288,7 @@ add_actions_view_mode(InkscapeWindow* win)
     SPDesktop* desktop = win->get_desktop();
 
     if (!desktop) {
-        std::cerr << "add_actions_view_mode: no desktop!" << std::endl;
+        show_output("add_actions_view_mode: no desktop!");
     }
 
     Glib::ustring pref_root = "/window/";
@@ -338,7 +339,7 @@ add_actions_view_mode(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_view_mode: no app!" << std::endl;
+        show_output("add_actions_view_mode: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_view_mode);

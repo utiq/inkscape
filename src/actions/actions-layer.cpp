@@ -17,6 +17,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-layer.h"
+#include "actions-helper.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "desktop.h"
@@ -400,7 +401,7 @@ layer_from_group (InkscapeWindow* win)
 
     std::vector<SPItem*> items(selection->items().begin(), selection->items().end());
     if (items.size() != 1) {
-        std::cerr << "layer_to_group: only one selected item allowed!" << std::endl;
+        show_output("layer_to_group: only one selected item allowed!");
         return;
     }
 
@@ -521,7 +522,7 @@ add_actions_layer(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_layer: no app!" << std::endl;
+        show_output("add_actions_layer: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_layer);

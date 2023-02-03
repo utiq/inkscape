@@ -15,6 +15,7 @@
  *
  */
 
+#include "actions-helper.h"
 #include "actions-object-align.h"
 
 #include <iostream>
@@ -62,13 +63,13 @@ object_align_on_canvas(InkscapeApplication *app)
     auto *gapp = app->gio_app();
     auto action = gapp->lookup_action("object-align-on-canvas");
     if (!action) {
-        std::cerr << "object_align_on_canvas: action missing!" << std::endl;
+        show_output("object_align_on_canvas: action missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "object_align_on_canvas: action not SimpleAction!" << std::endl;
+        show_output("object_align_on_canvas: action not SimpleAction!");
         return;
     }
 
@@ -138,11 +139,11 @@ object_align(const Glib::VariantBase& value, InkscapeApplication *app)
             else if (token == "bottom"  ) { my0 = 0.0; my1 = 1.0; sy0 = 0.0; sy1 = 1.0; }
         } else {
             if      (token == "left"    ) { mx0 = 0.0; mx1 = 1.0; sx0 = 1.0; sx1 = 0.0; }
-            else if (token == "hcenter" ) std::cerr << "'anchor' cannot be used with 'hcenter'" << std::endl;
+            else if (token == "hcenter" ) show_output("'anchor' cannot be used with 'hcenter'");
             else if (token == "right"   ) { mx0 = 1.0; mx1 = 0.0; sx0 = 0.0; sx1 = 1.0; }
 
             else if (token == "top"     ) { my0 = 0.0; my1 = 1.0; sy0 = 1.0; sy1 = 0.0; }
-            else if (token == "vcenter" ) std::cerr << "'anchor' cannot be used with 'vcenter'" << std::endl;
+            else if (token == "vcenter" ) show_output("'anchor' cannot be used with 'vcenter'");
             else if (token == "bottom"  ) { my0 = 1.0; my1 = 0.0; sy0 = 0.0; sy1 = 1.0; }
         }
     }
@@ -716,7 +717,7 @@ object_rearrange(const Glib::VariantBase& value, InkscapeApplication *app)
     else if (token == "randomize" ) { randomize(selection); }
     else if (token == "unclump"   ) { unclump(items); }
     else {
-        std::cerr << "object_rearrange: unhandled argument: " << token.raw() << std::endl;
+        show_output(Glib::ustring("object_rearrange: unhandled argument: ") + token.raw());
      }
     // clang-format on
 
@@ -743,7 +744,7 @@ object_remove_overlaps(const Glib::VariantBase& value, InkscapeApplication *app)
 
     // We used tuple so as not to convert from double to string and back again (from Align and Distribute dialog).
     if (value.get_type_string() != "(dd)") {
-        std::cerr << "object_remove_overlaps:  wrong variant type: " << value.get_type_string() << " (should be '(dd)')" << std::endl;
+        show_output(Glib::ustring("object_remove_overlaps:  wrong variant type: ") + Glib::ustring::format(value.get_type_string()) + " (should be '(dd)')");
     }
 
     auto tuple = Glib::VariantBase::cast_dynamic<Glib::Variant<std::tuple<double, double>>>(value);

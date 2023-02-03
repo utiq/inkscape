@@ -600,6 +600,8 @@ add_cli_test(action-list   PARAMETERS --action-list PASS_FOR_OUTPUT "file-new")
 
 # --batch-process
 
+# --active-window
+
 # --shell
 
 

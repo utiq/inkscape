@@ -14,6 +14,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-pages.h"
+#include "actions-helper.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "document-undo.h"
@@ -112,7 +113,7 @@ void add_actions_pages(SPDocument* doc)
     // Note: This will only work for the first ux to load, possible problem.
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_pages: no app!" << std::endl;
+        show_output("add_actions_pages: no app!");
         return;
     }
     app->get_action_extra_data().add_data(doc_page_actions);

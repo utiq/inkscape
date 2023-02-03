@@ -15,6 +15,7 @@
 #include <giomm.h>  // Not <gtkmm.h>! To eventually allow a headless version!
 #include <glibmm/i18n.h>
 
+#include "actions-helper.h"
 #include "actions-canvas-snapping.h"
 #include "actions/actions-extra-data.h"
 #include "inkscape-application.h"
@@ -191,7 +192,7 @@ void set_simple_snap(SimpleSnap option, bool value) {
         vect = &snap_all_the_rest;
         break;
     default:
-        std::cerr << "missing case statement in " << __func__ << std::endl;
+        show_output(Glib::ustring("missing case statement in ") + __func__);
         break;
     }
 
@@ -302,7 +303,7 @@ void add_actions_canvas_snapping(Gio::ActionMap* map) {
     // Check if there is already an application instance (GUI or non-GUI).
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_canvas_snapping: no app!" << std::endl;
+        show_output("add_actions_canvas_snapping: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_canvas_snapping);
@@ -320,13 +321,13 @@ set_actions_canvas_snapping_helper(Gio::ActionMap& map, Glib::ustring action_nam
     // "set" it! We need to cast to Gio::SimpleAction)
     Glib::RefPtr<Gio::Action> action = map.lookup_action(action_name);
     if (!action) {
-        std::cerr << "set_actions_canvas_snapping_helper: action " << action_name.raw() << " missing!" << std::endl;
+        show_output(Glib::ustring("set_actions_canvas_snapping_helper: action ") + action_name.raw() + " missing!");
         return;
     }
 
     auto simple = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!simple) {
-        std::cerr << "set_actions_canvas_snapping_helper: action " << action_name.raw() << " not SimpleAction!" << std::endl;
+        show_output(Glib::ustring("set_actions_canvas_snapping_helper: action ") + action_name.raw() + " not SimpleAction!");
         return;
     }
 

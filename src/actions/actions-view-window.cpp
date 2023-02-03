@@ -13,6 +13,7 @@
  */
 
 #include "actions-view-window.h"
+#include "actions-helper.h"
 
 #include <giomm.h>
 #include <glibmm/i18n.h>
@@ -62,7 +63,7 @@ add_actions_view_window(InkscapeWindow* win)
     // Check if there is already an application instance (GUI or non-GUI).
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_view_window: no app!" << std::endl;
+        show_output("add_actions_view_window: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_view_window);

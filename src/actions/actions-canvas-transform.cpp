@@ -14,6 +14,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-canvas-transform.h"
+#include "actions-helper.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "desktop.h"
@@ -161,7 +162,7 @@ canvas_transform(InkscapeWindow *win, const int& option)
             break;
 
         default:
-            std::cerr << "canvas_zoom: unhandled action value!" << std::endl;
+            show_output("canvas_zoom: unhandled action value!");
     }
 }
 
@@ -173,13 +174,13 @@ canvas_rotate_lock(InkscapeWindow *win)
 {
     auto action = win->lookup_action("canvas-rotate-lock");
     if (!action) {
-        std::cerr << "canvas_rotate_lock: action missing!" << std::endl;
+        show_output("canvas_rotate_lock: action missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_rotate_lock: action not SimpleAction!" << std::endl;
+        show_output("canvas_rotate_lock: action not SimpleAction!");
         return;
     }
 
@@ -236,7 +237,7 @@ add_actions_canvas_transform(InkscapeWindow* win)
     if (dt) {
         dt->set_rotation_lock(rotate_lock);
     } else {
-        std::cerr << "add_actions_canvas_transform: no desktop!" << std::endl;
+        show_output("add_actions_canvas_transform: no desktop!");
     }
 
     // clang-format off
@@ -266,7 +267,7 @@ add_actions_canvas_transform(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_canvas_transform: no app!" << std::endl;
+        show_output("add_actions_canvas_transform: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_canvas_transform);

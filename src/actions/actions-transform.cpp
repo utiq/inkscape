@@ -28,7 +28,7 @@ transform_translate(const Glib::VariantBase& value, InkscapeApplication *app)
 
     std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", s.get());
     if (tokens.size() != 2) {
-        std::cerr << "action:transform_translate: requires two comma separated numbers" << std::endl;
+        show_output("action:transform_translate: requires two comma separated numbers");
         return;
     }
     double dx = 0;
@@ -38,7 +38,7 @@ transform_translate(const Glib::VariantBase& value, InkscapeApplication *app)
         dx = std::stod(tokens[0]);
         dy = std::stod(tokens[1]);
     } catch (...) {
-        std::cerr << "action:transform-move: invalid arguments" << std::endl;
+        show_output("action:transform-move: invalid arguments");
         return;
     }
 

@@ -38,7 +38,7 @@ window_open(InkscapeApplication *app)
             app->window_open(document);
         }
     } else {
-        std::cerr << "window_open(): failed to find document!" << std::endl;
+        show_output("window_open(): failed to find document!");
     }
 }
 

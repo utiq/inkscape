@@ -16,6 +16,7 @@
 
 #include "actions-edit-document.h"
 #include "actions/actions-extra-data.h"
+#include "actions-helper.h"
 #include "inkscape-application.h"
 #include "document.h"
 #include "inkscape.h"
@@ -115,7 +116,7 @@ add_actions_edit_document(SPDocument* document)
     // Check if there is already an application instance (GUI or non-GUI).
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_edit_document: no app!" << std::endl;
+        show_output("add_actions_edit_document: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_edit_document);

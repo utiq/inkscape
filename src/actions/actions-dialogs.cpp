@@ -17,6 +17,7 @@
 #include "config.h"  // #ifdef WITH_GSPELL
 
 #include "actions-dialogs.h"
+#include "actions-helper.h"
 
 #include "inkscape-application.h"
 #include "inkscape-window.h"
@@ -83,13 +84,13 @@ dialog_open(const Glib::VariantBase& value, InkscapeWindow *win)
     auto const &dialog_data = get_dialog_data();
     auto dialog_it = dialog_data.find(dialog);
     if (dialog_it == dialog_data.end()) {
-        std::cerr << "dialog_open: invalid dialog name: " << dialog.raw() << std::endl;
+        show_output(Glib::ustring("dialog_open: invalid dialog name: ") + dialog.raw());
         return;
     }
 
     SPDesktop* dt = win->get_desktop();
     if (!dt) {
-        std::cerr << "dialog_toggle: no desktop!" << std::endl;
+        show_output("dialog_toggle: no desktop!");
         return;
     }
 
@@ -105,20 +106,20 @@ dialog_toggle(InkscapeWindow *win)
 {
     SPDesktop* dt = win->get_desktop();
     if (!dt) {
-        std::cerr << "dialog_toggle: no desktop!" << std::endl;
+        show_output("dialog_toggle: no desktop!");
         return;
     }
 
     // Keep track of state?
     // auto action = win->lookup_action("dialog-toggle");
     // if (!action) {
-    //     std::cerr << "dialog_toggle: action 'dialog-toggle' missing!" << std::endl;
+    //     show_output("dialog_toggle: action 'dialog-toggle' missing!");
     //     return;
     // }
 
     // auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     // if (!saction) {
-    //     std::cerr << "dialog_toogle: action 'dialog_switch' not SimpleAction!" << std::endl;
+    //     show_output("dialog_toogle: action 'dialog_switch' not SimpleAction!");
     //     return;
     // }
 
@@ -140,7 +141,7 @@ add_actions_dialogs(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_dialog: no app!" << std::endl;
+        show_output("add_actions_dialog: no app!");
         return;
     }
 

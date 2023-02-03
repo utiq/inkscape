@@ -28,7 +28,7 @@ file_open(const Glib::VariantBase& value, InkscapeApplication *app)
 
     Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(s.get());
     if (!file->query_exists()) {
-        std::cerr << "file_open: file '" << s.get().raw() << "' does not exist." << std::endl;
+        show_output(Glib::ustring("file_open: file '") + s.get().raw() + "' does not exist.");
         return;
     }
     SPDocument *document = app->document_open(file);
@@ -47,7 +47,7 @@ file_open_with_window(const Glib::VariantBase& value, InkscapeApplication *app)
     Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring> >(value);
     Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(s.get());
     if (!file->query_exists()) {
-        std::cerr << "file_open: file '" << s.get().raw() << "' does not exist." << std::endl;
+        show_output(Glib::ustring("file_open: file '") + s.get().raw() + "' does not exist.");
         return;
     }
     app->create_window(file);
@@ -140,7 +140,7 @@ add_actions_file(InkscapeApplication* app)
     gapp->add_action_with_parameter( "file-rebase",               Bool,   sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&file_rebase),             app));
     // clang-format on
 #else
-            std::cerr << "add_actions: Some actions require Glibmm 2.52, compiled with: " << glib_major_version << "." << glib_minor_version << std::endl;
+            show_output("add_actions: Some actions require Glibmm 2.52, compiled with: " << glib_major_version << "." << glib_minor_version);
 #endif
 
     app->get_action_extra_data().add_data(raw_data_file);

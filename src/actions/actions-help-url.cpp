@@ -15,6 +15,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-help-url.h"
+#include "actions-helper.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "desktop.h"
@@ -146,7 +147,7 @@ add_actions_help_url(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_help_url: no app!" << std::endl;
+        show_output("add_actions_help_url: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_help_url);

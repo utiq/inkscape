@@ -15,6 +15,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-edit-window.h"
+#include "actions-helper.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "desktop.h"
@@ -77,7 +78,7 @@ add_actions_edit_window(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_edit_window: no app!" << std::endl;
+        show_output("add_actions_edit_window: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_edit_window);

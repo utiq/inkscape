@@ -34,13 +34,13 @@ object_set_attribute(const Glib::VariantBase& value, InkscapeApplication *app)
 
     std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", s.get());
     if (tokens.size() != 2) {
-        std::cerr << "action:object_set_attribute: requires 'attribute name, attribute value'" << std::endl;
+        show_output("action:object_set_attribute: requires 'attribute name, attribute value'");
         return;
     }
 
     auto selection = app->get_active_selection();
     if (selection->isEmpty()) {
-        std::cerr << "action:object_set_attribute: selection empty!" << std::endl;
+        show_output("action:object_set_attribute: selection empty!");
         return;
     }
 
@@ -64,13 +64,13 @@ object_set_property(const Glib::VariantBase& value, InkscapeApplication *app)
 
     std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", s.get());
     if (tokens.size() != 2) {
-        std::cerr << "action:object_set_property: requires 'property name, property value'" << std::endl;
+        show_output("action:object_set_property: requires 'property name, property value'");
         return;
     }
 
     auto selection = app->get_active_selection();
     if (selection->isEmpty()) {
-        std::cerr << "action:object_set_property: selection empty!" << std::endl;
+        show_output("action:object_set_property: selection empty!");
         return;
     }
 

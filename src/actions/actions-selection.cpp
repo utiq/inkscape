@@ -49,7 +49,7 @@ select_by_id(Glib::ustring ids, InkscapeApplication* app)
         if (object) {
             selection->add(object);
         } else {
-            std::cerr << "select_by_id: Did not find object with id: " << id.raw() << std::endl;
+            show_output(Glib::ustring("select_by_id: Did not find object with id: ") + id.raw());
         }
     }
 }
@@ -69,7 +69,7 @@ unselect_by_id(Glib::ustring ids, InkscapeApplication* app)
         if (object) {
             selection->remove(object);
         } else {
-            std::cerr << "unselect_by_id: Did not find object with id: " << id.raw() << std::endl;
+            show_output(Glib::ustring("unselect_by_id: Did not find object with id: ") + id.raw());
         }
     }
 }
@@ -165,7 +165,7 @@ select_all(Glib::ustring condition, InkscapeApplication* app)
 {
     if (condition != "" && condition != "layers" && condition != "no-layers" &&
         condition != "groups" && condition != "no-groups" && condition != "all") {
-        std::cerr << "select_all: allowed options are '', 'all', 'layers', 'no-layers', 'groups', and 'no-groups'" << std::endl;
+        show_output( "select_all: allowed options are '', 'all', 'layers', 'no-layers', 'groups', and 'no-groups'" );
         return;
     }
 
@@ -187,7 +187,7 @@ select_invert(Glib::ustring condition, InkscapeApplication* app)
 {
     if (condition != "" && condition != "layers" && condition != "no-layers" &&
         condition != "groups" && condition != "no-groups" && condition != "all") {
-        std::cerr << "select_all: allowed options are '', 'all', 'layers', 'no-layers', 'groups', and 'no-groups'" << std::endl;
+        show_output( "select_all: allowed options are '', 'all', 'layers', 'no-layers', 'groups', and 'no-groups'" );
         return;
     }
 
@@ -228,7 +228,9 @@ select_list(InkscapeApplication* app)
 
     auto items = selection->items();
     for (auto i = items.begin(); i != items.end(); ++i) {
-        std::cout << **i << std::endl;
+        std::stringstream buffer;
+        buffer << **i;
+        show_output(buffer.str(), false);
     }
 }
 

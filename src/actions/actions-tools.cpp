@@ -15,6 +15,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-tools.h"
+#include "actions-helper.h"
 
 #include "inkscape-application.h"
 #include "inkscape-window.h"
@@ -128,13 +129,13 @@ get_active_tool(InkscapeWindow *win)
 
     auto action = win->lookup_action("tool-switch");
     if (!action) {
-        std::cerr << "get_active_tool: action 'tool-switch' missing!" << std::endl;
+        show_output("get_active_tool: action 'tool-switch' missing!");
         return state;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "get_active_tool: action 'tool-switch' not SimpleAction!" << std::endl;
+        show_output("get_active_tool: action 'tool-switch' not SimpleAction!");
         return state;
     }
 
@@ -194,7 +195,7 @@ set_active_tool(InkscapeWindow *win, SPItem *item, Geom::Point const p)
         tool_switch("Text", win);
         SPDesktop* dt = win->get_desktop();
         if (!dt) {
-            std::cerr << "set_active_tool: no desktop!" << std::endl;
+            show_output("set_active_tool: no desktop!");
             return;
         }
         sp_text_context_place_cursor_at (SP_TEXT_CONTEXT(dt->event_context), item, p);
@@ -213,26 +214,26 @@ tool_switch(Glib::ustring const &tool, InkscapeWindow *win)
     // Valid tool?
     auto tool_it = tool_data.find(tool);
     if (tool_it == tool_data.end()) {
-        std::cerr << "tool-switch: invalid tool name: " << tool.raw() << std::endl;
+        show_output(Glib::ustring("tool-switch: invalid tool name: ") + tool.raw());
         return;
     }
 
     // Have desktop?
     SPDesktop* dt = win->get_desktop();
     if (!dt) {
-        std::cerr << "tool_switch: no desktop!" << std::endl;
+        show_output("tool_switch: no desktop!");
         return;
     }
 
     auto action = win->lookup_action("tool-switch");
     if (!action) {
-        std::cerr << "tool-switch: action 'tool-switch' missing!" << std::endl;
+        show_output("tool-switch: action 'tool-switch' missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "tool-switch: action 'tool-switch' not SimpleAction!" << std::endl;
+        show_output("tool-switch: action 'tool-switch' not SimpleAction!");
         return;
     }
 
@@ -265,14 +266,14 @@ tool_preferences(Glib::ustring const &tool, InkscapeWindow *win)
     // Valid tool?
     auto tool_it = tool_data.find(tool);
     if (tool_it == tool_data.end()) {
-        std::cerr << "tool-preferences: invalid tool name: " << tool.raw() << std::endl;
+        show_output(Glib::ustring("tool-preferences: invalid tool name: ") + tool.raw());
         return;
     }
 
     // Have desktop?
     SPDesktop* dt = win->get_desktop();
     if (!dt) {
-        std::cerr << "tool-preferences: no desktop!" << std::endl;
+        show_output("tool-preferences: no desktop!");
         return;
     }
 
@@ -301,19 +302,19 @@ tool_toggle(InkscapeWindow *win)
 {
     SPDesktop* dt = win->get_desktop();
     if (!dt) {
-        std::cerr << "tool_toggle: no desktop!" << std::endl;
+        show_output("tool_toggle: no desktop!");
         return;
     }
 
     auto action = win->lookup_action("tool-switch");
     if (!action) {
-        std::cerr << "tool_toggle: action 'tool_switch' missing!" << std::endl;
+        show_output("tool_toggle: action 'tool_switch' missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "tool_toogle: action 'tool_switch' not SimpleAction!" << std::endl;
+        show_output("tool_toogle: action 'tool_switch' not SimpleAction!");
         return;
     }
 
@@ -404,7 +405,7 @@ add_actions_tools(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_tools: no app!" << std::endl;
+        show_output("add_actions_tools: no app!");
         return;
     }
 

@@ -30,25 +30,35 @@
 void
 print_inkscape_version()
 {
-    std::cout << Inkscape::inkscape_version() << std::endl;
+    show_output(Inkscape::inkscape_version(), false);
+}
+
+void
+active_window_start() {
+    active_window_start_helper();
+}
+
+void
+active_window_end() {
+    active_window_end_helper();
 }
 
 void
 print_debug_info()
 {
-    std::cout << Inkscape::debug_info() << std::endl;
+    show_output(Inkscape::debug_info(), false);
 }
 
 void
 print_system_data_directory()
 {
-    std::cout << Glib::build_filename(get_inkscape_datadir(), "inkscape") << std::endl;
+    show_output(Glib::build_filename(get_inkscape_datadir(), "inkscape"), false);
 }
 
 void
 print_user_data_directory()
 {
-    std::cout << Inkscape::IO::Resource::profile_path("") << std::endl;
+    show_output(Inkscape::IO::Resource::profile_path(""), false);
 }
 
 // Helper function for query_x(), query_y(), query_width(), and query_height().
@@ -67,23 +77,24 @@ query_dimension(InkscapeApplication* app, bool extent, Geom::Dim2 const axis)
 
     bool first = true;
     auto items = selection->items();
+    Glib::ustring out = "";
     for (auto item : items) {
         if (!first) {
-            std::cout << ",";
+            out += ",";
         }
         first = false;
         Geom::OptRect area = item->documentVisualBounds();
         if (area) {
             if (extent) {
-                std::cout << area->dimensions()[axis];
+                out += Glib::ustring::format(area->dimensions()[axis]);
             } else {
-                std::cout << area->min()[axis];
+                out += Glib::ustring::format(area->min()[axis]);
             }
         } else {
-            std::cout << "0";
+            out += "0";
         }
     }
-    std::cout << std::endl;
+    show_output(out, false);
 }
 
 void
@@ -117,16 +128,17 @@ query_all_recurse (SPObject *o)
     auto item = cast<SPItem>(o);
     if (item && item->getId()) {
         Geom::OptRect area = item->documentVisualBounds();
+        Glib::ustring out = "";
         if (area) {
             // clang-format off
-            std::cout << item->getId()               << ","
-                      << area->min()[Geom::X]        << ","
-                      << area->min()[Geom::Y]        << ","
-                      << area->dimensions()[Geom::X] << ","
-                      << area->dimensions()[Geom::Y] << std::endl;
+            out += Glib::ustring(item->getId()) + ",";
+            out += Glib::ustring::format(area->min()[Geom::X]) + ",";
+            out += Glib::ustring::format(area->min()[Geom::Y]) + ",";
+            out += Glib::ustring::format(area->dimensions()[Geom::X]) + ",";
+            out += Glib::ustring::format(area->dimensions()[Geom::Y]);
             // clang-format on
         }
-
+        show_output(out, false);
         for (auto& child: o->children) {
             query_all_recurse (&child);
         }
@@ -138,7 +150,7 @@ query_all(InkscapeApplication* app)
 {
     SPDocument* doc = app->get_active_document();
     if (!doc) {
-        std::cerr << "query_all: no document!" << std::endl;
+        show_output("query_all: no document!");
         return;
     }
 
@@ -164,7 +176,7 @@ convert_dpi_method(Glib::ustring method)
     } else if (method == "scale-document") {
         sp_file_convert_dpi_method_commandline = FILE_DPI_DOCUMENT_SCALED;
     } else {
-        std::cerr << "dpi_convert_method: invalid option" << std::endl;
+        show_output("dpi_convert_method: invalid option");
     }
 }
 
@@ -189,6 +201,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_base =
 {
     // clang-format off
     {"app.inkscape-version",          N_("Inkscape Version"),        "Base",       N_("Print Inkscape version and exit")                   },
+    {"app.active-window-start",       N_("Active W. Call start"),    "Base",       N_("Call active window start")                          },
+    {"app.active-window-end",         N_("Active W. Call end"),      "Base",       N_("Call active window end")                            },
     {"app.debug-info",                N_("Debug Info"),              "Base",       N_("Print debugging information and exit")              },
     {"app.system-data-directory",     N_("System Directory"),        "Base",       N_("Print system data directory and exit")              },
     {"app.user-data-directory",       N_("User Directory"),          "Base",       N_("Print user data directory and exit")                },
@@ -213,10 +227,11 @@ void
 add_actions_base(InkscapeApplication* app)
 {
     auto *gapp = app->gio_app();
-
     // Note: "radio" actions are just an easy way to set type without using templating.
     // clang-format off
     gapp->add_action(               "inkscape-version",                                    sigc::ptr_fun(&print_inkscape_version)                 );
+    gapp->add_action(               "active-window-start",                                 sigc::ptr_fun(&active_window_start)                    );
+    gapp->add_action(               "active-window-end",                                   sigc::ptr_fun(&active_window_end)                      );
     gapp->add_action(               "debug-info",                                          sigc::ptr_fun(&print_debug_info)                       );
     gapp->add_action(               "system-data-directory",                               sigc::ptr_fun(&print_system_data_directory)            );
     gapp->add_action(               "user-data-directory",                                 sigc::ptr_fun(&print_user_data_directory)              );

@@ -17,6 +17,7 @@
 #include "ui/view/view.h"
 
 #include "actions-canvas-mode.h"
+#include "actions-helper.h"
 
 #include "inkscape-application.h"
 #include "inkscape-window.h"
@@ -56,19 +57,19 @@ void
 canvas_display_mode(int value, InkscapeWindow *win)
 {
     if (value < 0 || value >= (int)Inkscape::RenderMode::size) {
-        std::cerr << "canvas_display_mode: value out of bound! : " << value << std::endl;
+        show_output(Glib::ustring("canvas_display_mode: value out of bound! : ") + Glib::ustring::format(value));
         return;
     }
 
     auto action = win->lookup_action("canvas-display-mode");
     if (!action) {
-        std::cerr << "canvas_display_mode: action 'canvas-display-mode' missing!" << std::endl;
+        show_output("canvas_display_mode: action 'canvas-display-mode' missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_display_mode: action 'canvas-display-mode' not SimpleAction!" << std::endl;
+        show_output("canvas_display_mode: action 'canvas-display-mode' not SimpleAction!");
         return;
     }
 
@@ -83,13 +84,13 @@ canvas_display_mode_cycle(InkscapeWindow *win)
 {
     auto action = win->lookup_action("canvas-display-mode");
     if (!action) {
-        std::cerr << "canvas_display_mode_cycle: action 'canvas-display-mode' missing!" << std::endl;
+        show_output("canvas_display_mode_cycle: action 'canvas-display-mode' missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_display_mode_cycle: action 'canvas-display-mode' not SimpleAction!" << std::endl;
+        show_output("canvas_display_mode_cycle: action 'canvas-display-mode' not SimpleAction!");
         return;
     }
 
@@ -111,13 +112,13 @@ canvas_display_mode_toggle(InkscapeWindow *win)
 {
     auto action = win->lookup_action("canvas-display-mode");
     if (!action) {
-        std::cerr << "canvas_display_mode_toggle: action 'canvas-display-mode' missing!" << std::endl;
+        show_output("canvas_display_mode_toggle: action 'canvas-display-mode' missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_display_mode_toogle: action 'canvas-display-mode' not SimpleAction!" << std::endl;
+        show_output("canvas_display_mode_toogle: action 'canvas-display-mode' not SimpleAction!");
         return;
     }
 
@@ -144,19 +145,19 @@ void
 canvas_split_mode(int value, InkscapeWindow *win)
 {
     if (value < 0 || value >= (int)Inkscape::SplitMode::size) {
-        std::cerr << "canvas_split_mode: value out of bound! : " << value << std::endl;
+        show_output("canvas_split_mode: value out of bound! : " + Glib::ustring::format(value));
         return;
     }
 
     auto action = win->lookup_action("canvas-split-mode");
     if (!action) {
-        std::cerr << "canvas_split_mode: action 'canvas-split-mode' missing!" << std::endl;
+        show_output("canvas_split_mode: action 'canvas-split-mode' missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_split_mode: action 'canvas-split-mode' not SimpleAction!" << std::endl;
+        show_output("canvas_split_mode: action 'canvas-split-mode' not SimpleAction!");
         return;
     }
 
@@ -201,13 +202,13 @@ canvas_color_mode_toggle(InkscapeWindow *win)
 {
     auto action = win->lookup_action("canvas-color-mode");
     if (!action) {
-        std::cerr << "canvas_color_mode_toggle: action missing!" << std::endl;
+        show_output("canvas_color_mode_toggle: action missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_color_mode_toggle: action not SimpleAction!" << std::endl;
+        show_output("canvas_color_mode_toggle: action not SimpleAction!");
         return;
     }
 
@@ -235,13 +236,13 @@ canvas_color_manage_toggle(InkscapeWindow *win)
 {
     auto action = win->lookup_action("canvas-color-manage");
     if (!action) {
-        std::cerr << "canvas_color_manage_toggle: action missing!" << std::endl;
+        show_output("canvas_color_manage_toggle: action missing!");
         return;
     }
 
     auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
     if (!saction) {
-        std::cerr << "canvas_color_manage_toggle: action not SimpleAction!" << std::endl;
+        show_output("canvas_color_manage_toggle: action not SimpleAction!");
         return;
     }
 
@@ -297,7 +298,7 @@ add_actions_canvas_mode(InkscapeWindow* win)
         canvas->set_render_mode(Inkscape::RenderMode(display_mode));
         canvas->set_cms_active(color_manage);
     } else {
-        std::cerr << "add_actions_canvas_mode: no desktop!" << std::endl;
+        show_output("add_actions_canvas_mode: no desktop!");
     }
 
     // clang-format off
@@ -311,7 +312,7 @@ add_actions_canvas_mode(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_canvas_mode: no app!" << std::endl;
+        show_output("add_actions_canvas_mode: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_canvas_mode);

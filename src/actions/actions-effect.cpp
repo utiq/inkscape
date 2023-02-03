@@ -76,7 +76,7 @@ add_actions_effect(InkscapeApplication* app)
     // clang-format on
 
     if (!app) {
-        std::cerr << "add_actions_edit: no app!" << std::endl;
+        show_output("add_actions_edit: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_effect);

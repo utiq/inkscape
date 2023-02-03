@@ -221,7 +221,7 @@ export_do(InkscapeApplication *app)
 {
     SPDocument* document = app->get_active_document();
     if (!document) {
-        std::cerr << "export_do: no documents open!" << std::endl;
+        show_output("export_do: no documents open!");
         return;
     }
     std::string filename;
@@ -347,7 +347,7 @@ add_actions_output(InkscapeApplication* app)
     gapp->add_action(                "export-do",                        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&export_do),           app));
     // clang-format on
 #else
-    std::cerr << "add_actions: Some actions require Glibmm 2.52, compiled with: " << glib_major_version << "." << glib_minor_version << std::endl;
+    show_output("add_actions: Some actions require Glibmm 2.52, compiled with: " << glib_major_version << "." << glib_minor_version);
 #endif
 
     app->get_action_extra_data().add_data(raw_data_output);

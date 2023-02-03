@@ -15,6 +15,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-undo-document.h"
+#include "actions-helper.h"
 
 #include "document.h"
 #include "document-undo.h"
@@ -80,7 +81,7 @@ enable_undo_actions(SPDocument* document, bool undo, bool redo)
     // auto undo_saction = dynamic_cast<Gio::SimpleAction*>(undo_action);
     // auto redo_saction = dynamic_cast<Gio::SimpleAction*>(redo_action);
     if (!undo_saction || !redo_saction) {
-        std::cerr << "UndoActions: can't find undo or redo action!" << std::endl;
+        show_output("UndoActions: can't find undo or redo action!");
         return;
     }
     // Enable/disable menu items.
@@ -108,7 +109,7 @@ add_actions_undo_document(SPDocument* document)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        std::cerr << "add_actions_undo: no app!" << std::endl;
+        show_output("add_actions_undo: no app!");
         return;
     }
     app->get_action_extra_data().add_data(raw_data_undo_document);

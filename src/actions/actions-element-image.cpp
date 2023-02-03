@@ -9,6 +9,7 @@
  */
 
 #include "actions-element-image.h"
+#include "actions-helper.h"
 
 #include <iostream>
 
@@ -60,12 +61,12 @@ void image_edit(InkscapeApplication *app)
             Inkscape::XML::Node *node = item->getRepr();
             const gchar *href = Inkscape::getHrefAttribute(*node).second;
             if (!href) {
-                std::cerr << "image_edit: no xlink:href" << std::endl;
+                show_output("image_edit: no xlink:href");
                 continue;
             }
 
             if (strncmp (href, "data", 4) == 0) {
-                std::cerr << "image_edit: cannot edit embedded image" << std::endl;
+                show_output("image_edit: cannot edit embedded image");
                 continue;
             }
 
@@ -120,7 +121,7 @@ void image_edit(InkscapeApplication *app)
                     dialog.set_secondary_text(message2);
                     dialog.run();
                 } else {
-                    std::cerr << "image_edit: " << message.raw() << std::endl;
+                    show_output(Glib::ustring("image_edit: ") + message.raw());
                 }
                 g_error_free(error);
                 error = nullptr;

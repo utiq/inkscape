@@ -42,6 +42,8 @@
 #include <regex>
 #include <numeric>
 #include <unistd.h>
+#include <chrono>
+#include <thread>
 
 // checking if dithering is supported
 #ifdef  WITH_PATCHED_CAIRO
@@ -122,7 +124,7 @@
 #include <readline/history.h>
 #endif
 
-#include "io/resource.h"
+
 using Inkscape::IO::Resource::UIS;
 
 // This is a bit confusing as there are two ways to handle command line arguments and files
@@ -760,7 +762,7 @@ InkscapeApplication::InkscapeApplication()
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "batch-process",         '\0', N_("Close GUI after executing all actions"),                                    "");
     _start_main_option_section();
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "shell",                 '\0', N_("Start Inkscape in interactive shell mode"),                                 "");
-
+    gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "active-window",          'q', N_("Use active window from commandline"),                                       "");
     // clang-format on
 
     gapp->signal_handle_local_options().connect(sigc::mem_fun(*this, &InkscapeApplication::on_handle_local_options));
@@ -1391,7 +1393,7 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         std::cout << Inkscape::inkscape_version() << std::endl;
         return EXIT_SUCCESS;
     }
-    
+
     if (options->contains("debug-info")) {
         std::cout << Inkscape::debug_info() << std::endl;
         return EXIT_SUCCESS;
@@ -1461,6 +1463,7 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         options->contains("select")                ||
         options->contains("action-list")           ||
         options->contains("actions")               ||
+        options->contains("actions-file")          ||
         options->contains("shell")
         ) {
         _with_gui = false;
@@ -1490,7 +1493,9 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     // If we are running in command-line mode (without gui) and we haven't explicitly changed the app_id,
     // change it here so that this instance of Inkscape is not merged with an existing instance (otherwise
     // unwanted windows will pop up and the command-line arguments will be ignored).
+    bool use_active_window = options->contains("active-window");
     if (_with_gui == false &&
+        use_active_window == false &&
         !options->contains("app-id-tag")) {
         Glib::ustring app_id = "org.inkscape.Inkscape.p" + std::to_string(getpid());
         _gio_application->set_id(app_id);
@@ -1504,14 +1509,14 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         std::string fileactions;
         options->lookup_value("actions-file", fileactions);
         if (!fileactions.empty()) {
-            std::ifstream in(fileactions);
-            std::stringstream buffer;
-            buffer << in.rdbuf();
-            _command_line_actions.push_back(std::make_pair("actions", Glib::Variant<Glib::ustring>::create(buffer.str())));
+            std::ifstream awo(fileactions);
+            if (awo) {
+                std::string content((std::istreambuf_iterator<char>(awo)), (std::istreambuf_iterator<char>()));
+                _command_line_actions_input = content + ";";
+            }
         }
     } else if (options->contains("actions")) {
         options->lookup_value("actions", _command_line_actions_input);
-        // Parsing done after extensions initialized.
     }
 
     // This must be done after the app has been registered!
@@ -1665,8 +1670,65 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         else if (val == "false") _file_export.export_png_use_dithering = false;
         else std::cerr << "invalid value for export-png-use-dithering. Ignoring." << std::endl;
     } else _file_export.export_png_use_dithering = prefs->getBool("/options/dithering/value", true);
-
-
+    if (use_active_window) {
+        _gio_application->register_application();
+        if (!_gio_application->get_default()->is_remote()) {
+#ifdef __APPLE__
+            std::cerr << "Active window is not available in MAC" << std::endl;
+#else
+            std::cerr << "No active desktop to run" << std::endl;
+#endif
+            return EXIT_SUCCESS;
+        }
+        _command_line_actions.insert(_command_line_actions.begin(), std::make_pair("active-window-start", base));
+        _command_line_actions_input = _command_line_actions_input + ";active-window-end";
+        parse_actions(_command_line_actions_input, _command_line_actions);
+        for (auto action: _command_line_actions) {
+            _gio_application->activate_action(action.first, action.second);
+        }
+        // code can be improved using pipes and better in asyc mode as @pbs suggest in the MR but II do not know about.
+        // I try to close all file open before use.
+        std::string tmpfile = Glib::build_filename(Glib::get_tmp_dir(), "active_desktop_commands.xml");
+        size_t counter = 0;
+        while (counter < 300 && !Glib::file_test(tmpfile, Glib::FILE_TEST_EXISTS)) { // 30 seconds exit
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            counter++;
+        }
+        if (Glib::file_test(tmpfile, Glib::FILE_TEST_EXISTS)) {
+            std::ifstream awo(tmpfile);
+            if (awo) {
+                std::string content((std::istreambuf_iterator<char>(awo)), (std::istreambuf_iterator<char>()));
+                awo.close();
+                auto doc = sp_repr_read_mem(content.c_str(), strlen(content.c_str()), nullptr);
+                if (doc) {
+                    bool noout = true;
+                    for (Inkscape::XML::Node *child = doc->root()->firstChild(); child != nullptr; child = child->next()) {
+                        const gchar *res = child->firstChild()->content();
+                        if (res) {
+                            if (!g_strcmp0(child->name(), "cerr")) {
+                                std::cerr << res << std::endl;
+                            } else {
+                                std::cout << res << std::endl;
+                            }
+                            noout = false;
+                        }
+                    }
+                    if (noout) {
+                        std::cout << "no output" << std::endl;
+                    }
+                    Inkscape::GC::release(doc);
+                } else {
+                    std::cout << "couldn't process response. Wrong data" << std::endl;
+                }
+            } else {
+                std::cout << "couldn't process response. couldn't read" << std::endl;
+            }
+            unlink(tmpfile.c_str());
+        } else {
+            std::cerr << "couldn't process response. File not found" << std::endl;
+        }
+        return EXIT_SUCCESS;
+    }
     GVariantDict *options_copy = options->gobj_copy();
     GVariant *options_var = g_variant_dict_end(options_copy);
     if (g_variant_get_size(options_var) != 0) {
