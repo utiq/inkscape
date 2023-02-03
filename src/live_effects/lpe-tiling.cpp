@@ -160,7 +160,6 @@ LPETiling::LPETiling(LivePathEffectObject *lpeobject) :
     prev_num_rows = num_rows;
     _knotholder = nullptr;
     reset = link_styles;
-    prev_unit = unit.get_abbreviation();
 }
 
 LPETiling::~LPETiling() = default;
@@ -714,6 +713,7 @@ Gtk::Widget * LPETiling::newWidget()
             Glib::ustring *tip = param->param_getTooltip();
             if (widg) {
                 if (param->param_key == "unit") {
+                    prev_unit = unit.get_abbreviation();
                     auto widgcombo = dynamic_cast<Inkscape::UI::Widget::RegisteredUnitMenu*>(widg);
                     delete widgcombo->get_children()[0];
                     combo = dynamic_cast<Gtk::Widget*>(widgcombo);
