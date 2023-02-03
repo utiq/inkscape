@@ -13889,7 +13889,7 @@ msgstr "Seleccione <b>varios objetos</b> para agrupar."
 #: ../src/selection-chemistry.cpp:812
 msgctxt "Verb"
 msgid "Group"
-msgstr "Agrupar"
+msgstr "Grupo"
 
 #: ../src/selection-chemistry.cpp:828
 msgid "<b>No objects selected</b> to pop out of group."
