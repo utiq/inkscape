@@ -45,9 +45,15 @@ void SPSymbol::build(SPDocument *document, Inkscape::XML::Node *repr) {
     this->readAttr(SPAttr::PRESERVEASPECTRATIO);
 
     SPGroup::build(document, repr);
+
+    document->addResource("symbol", this);
 }
 
 void SPSymbol::release() {
+    if (document) {
+        document->removeResource("symbol", this);
+    }
+
 	SPGroup::release();
 }
 

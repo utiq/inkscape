@@ -722,20 +722,14 @@ combobox.flat-combobox button {
     min-height: 50px;
 }
 
-.dark .symbolsoverlay iconview > * {
-    background-color:transparent;
-}
-
-.dark .symbolsoverlay iconview {
-    background-color:transparent;
-}
-
-.dark .symbolsoverlay > scrolledwindow {
-    background-color:@theme_fg_color;
+.dark .symbolsoverlay iconview:not(:selected) {
+    background-color: #f0f0f0; /* bright background color for typically black symbols */
+    /* background-color: @theme_fg_color; - this doesn't work for some themes (like MonoThemeDark) */
+    color:@theme_bg_color; /* symbol text labels */
 }
 
 .dark .symbolsoverlay {
-    color:@theme_bg_color;
+    color: @theme_bg_color; /* this is for overlay widget's children */
 }
 
 /* LPE Dialog add */

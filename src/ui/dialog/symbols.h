@@ -8,6 +8,7 @@
  * Copyright (C) 2012 Tavmjong Bah
  *               2013 Martin Owens
  *               2017 Jabiertxo Arraiza
+ *               2023 Mike Kowalski
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
@@ -15,13 +16,31 @@
 #ifndef INKSCAPE_UI_DIALOG_SYMBOLS_H
 #define INKSCAPE_UI_DIALOG_SYMBOLS_H
 
+#include <cstddef>
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
 #include <gtkmm.h>
+#include <gtkmm/builder.h>
+#include <gtkmm/cellrendererpixbuf.h>
+#include <gtkmm/checkbutton.h>
+#include <gtkmm/iconview.h>
+#include <gtkmm/label.h>
+#include <gtkmm/menubutton.h>
+#include <gtkmm/treeiter.h>
+#include <gtkmm/treemodel.h>
+#include <gtkmm/treemodelcolumn.h>
+#include <sigc++/connection.h>
+#include <string>
 #include <vector>
+#include <boost/compute/detail/lru_cache.hpp>
 
+#include "desktop.h"
 #include "display/drawing.h"
+#include "document.h"
 #include "helper/auto-connection.h"
-#include "include/gtkmm_version.h"
+#include "selection.h"
 #include "ui/dialog/dialog-base.h"
+#include "ui/operation-blocker.h"
 
 class SPObject;
 class SPSymbol;
@@ -30,24 +49,6 @@ class SPUse;
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
-
-struct SymbolColumns : public Gtk::TreeModel::ColumnRecord
-{
-    Gtk::TreeModelColumn<Glib::ustring>             symbol_id;
-    Gtk::TreeModelColumn<Glib::ustring>             symbol_title;
-    Gtk::TreeModelColumn<Glib::ustring>             symbol_doc_title;
-    Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf>> symbol_image;
-    Gtk::TreeModelColumn<Geom::Point>               doc_dimensions;
-
-    SymbolColumns()
-    {
-        add(symbol_id);
-        add(symbol_title);
-        add(symbol_doc_title);
-        add(symbol_image);
-        add(doc_dimensions);
-    }
-};
 
 /**
  * A dialog that displays selectable symbols and allows users to drag or paste
@@ -69,7 +70,6 @@ struct SymbolColumns : public Gtk::TreeModel::ColumnRecord
  * make those symbols available for all future documents.
  */
 
-const int SYMBOL_ICON_SIZES[] = {16, 24, 32, 48, 64};
 
 class SymbolsDialog : public DialogBase
 {
@@ -80,78 +80,63 @@ public:
 private:
     void documentReplaced() override;
     void selectionChanged(Inkscape::Selection *selection) override;
-
-    Glib::ustring CURRENTDOC;
-    Glib::ustring ALLDOCS;
-    SymbolColumns const _columns;
-
-    void packless();
-    void packmore();
-    void zoomin();
-    void zoomout();
+    void on_unrealize() override;
     void rebuild();
+    void rebuild(Gtk::TreeIter current);
     void insertSymbol();
     void revertSymbol();
-    void defsModified(SPObject *object, guint flags);
-    SPDocument* selectedSymbols();
     void iconChanged();
-    void sendToClipboard(Gtk::TreeModel::Path const &symbol_path, Geom::Rect const &bbox);
-    std::optional<Gtk::TreeModel::Path> getSelected() const;
-    Glib::ustring getSymbolId(std::optional<Gtk::TreeModel::Path> const &path) const;
-    Glib::ustring getSymbolDocTitle(std::optional<Gtk::TreeModel::Path> const &path) const;
-    Geom::Point getSymbolDimensions(std::optional<Gtk::TreeModel::Path> const &path) const;
+    void sendToClipboard(const Gtk::TreeIter& symbol_iter, Geom::Rect const &bbox);
+    Glib::ustring getSymbolId(const std::optional<Gtk::TreeIter>& it) const;
+    Geom::Point getSymbolDimensions(const std::optional<Gtk::TreeIter>& it) const;
+    SPDocument* get_symbol_document(const std::optional<Gtk::TreeIter>& it) const;
     void iconDragDataGet(const Glib::RefPtr<Gdk::DragContext>& context, Gtk::SelectionData& selection_data, guint info, guint time);
     void onDragStart();
-    void getSymbolsTitle();
-    Glib::ustring documentTitle(SPDocument* doc);
-    std::pair<std::string, SPDocument*> getSymbolsSet(std::string title);
-    void addSymbol(SPSymbol *symbol, Glib::ustring doc_title);
+    void addSymbol(SPSymbol* symbol, Glib::ustring doc_title, SPDocument* document);
     SPDocument* symbolsPreviewDoc();
-    void symbolsInDocRecursive (SPObject *r, std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > &l, Glib::ustring doc_title);
-    std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > symbolsInDoc( SPDocument* document, Glib::ustring doc_title);
     void useInDoc(SPObject *r, std::vector<SPUse*> &l);
     std::vector<SPUse*> useInDoc( SPDocument* document);
-    void beforeSearch(GdkEventKey* evt);
-    void unsensitive(GdkEventKey* evt);
-    void searchsymbols();
     void addSymbols();
-    void addSymbolsInDoc(SPDocument* document);
     void showOverlay();
     void hideOverlay();
-    void clearSearch();
-    bool callbackSymbols();
-    bool callbackAllSymbols();
-    Glib::ustring get_active_base_text(Glib::ustring title = "selectedcombo");
-    void enableWidgets(bool enable);
     gchar const* styleFromUse( gchar const* id, SPDocument* document);
-    Glib::RefPtr<Gdk::Pixbuf> drawSymbol(SPObject *symbol);
+    Cairo::RefPtr<Cairo::Surface> drawSymbol(SPSymbol *symbol);
+    Cairo::RefPtr<Cairo::Surface> draw_symbol(SPSymbol* symbol);
     Glib::RefPtr<Gdk::Pixbuf> getOverlay(gint width, gint height);
-    /* Keep track of all symbol template documents */
-    std::map<Glib::ustring, std::pair<Glib::ustring, SPSymbol*> > l;
+    void set_info();
+    void set_info(const Glib::ustring& text);
+    std::optional<Gtk::TreeIter> get_current_set() const;
+    Glib::ustring get_current_set_id() const;
+    std::optional<Gtk::TreeModel::Path> get_selected_symbol_path() const;
+    std::optional<Gtk::TreeIter> get_selected_symbol() const;
+    void load_all_symbols();
+    void update_tool_buttons();
+    size_t total_symbols() const;
+    size_t visible_symbols() const;
+    void get_cell_data_func(Gtk::CellRenderer* cell_renderer, Gtk::TreeModel::Row row, bool visible);
+    void refresh_on_idle(int delay = 100);
+
+    auto_connection _idle_search;
+    Glib::RefPtr<Gtk::Builder> _builder;
+    Gtk::Scale& _zoom;
     // Index into sizes which is selected
     int pack_size;
     // Scale factor
     int scale_factor;
-    bool sensitive;
+    bool sensitive = false;
+    OperationBlocker _update;
     double previous_height;
     double previous_width;
     Geom::Point _last_mousedown; ///< Last button press position in the icon view coordinates.
-    bool all_docs_processed;
-    bool icons_found;
-    size_t number_docs;
-    size_t number_symbols;
-    size_t counter_symbols;
-    Glib::RefPtr<Gtk::ListStore> store;
-    Glib::ustring search_str;
-    Gtk::ComboBoxText* symbol_set;
-    Gtk::SearchEntry* search;
+    Glib::RefPtr<Gtk::ListStore> _store;
+    Gtk::MenuButton& _symbols_popup;
+    Gtk::SearchEntry& _set_search;
+    Gtk::IconView& _symbol_sets_view;
+    Gtk::Label& _cur_set_name;
+    Gtk::SearchEntry& _search;
     Gtk::IconView* icon_view;
     Gtk::Button* add_symbol;
     Gtk::Button* remove_symbol;
-    Gtk::Button* zoom_in;
-    Gtk::Button* zoom_out;
-    Gtk::Button* more;
-    Gtk::Button* fewer;
     Gtk::Box* tools;
     Gtk::Overlay* overlay;
     Gtk::Image* overlay_icon;
@@ -159,25 +144,39 @@ private:
     Gtk::Label* overlay_title;
     Gtk::Label* overlay_desc;
     Gtk::ScrolledWindow *scroller;
-    Gtk::ToggleButton* fit_symbol;
-    Gtk::IconSize iconsize;
+    Gtk::CheckButton* fit_symbol;
+    Gtk::CellRendererPixbuf _renderer;
+    Gtk::CellRendererPixbuf _renderer2;
+    SPDocument* preview_document = nullptr; /* Document to render single symbol */
+    Glib::RefPtr<Gtk::ListStore> _symbol_sets;
+    struct Store {
+        Glib::RefPtr<Gtk::ListStore> _store;
+        Glib::RefPtr<Gtk::TreeModelFilter> _filtered;
+        Glib::RefPtr<Gtk::TreeModelSort> _sorted;
 
-    SPDocument* preview_document; /* Document to render single symbol */
-
-    sigc::connection idleconn;
+        Gtk::TreeIter path_to_child_iter(Gtk::TreeModel::Path path) const {
+            if (_sorted) path = _sorted->convert_path_to_child_path(path);
+            if (_filtered) path = _filtered->convert_path_to_child_path(path);
+            return _store->get_iter(path);
+        }
+        void refilter() {
+            if (_filtered) _filtered->refilter();
+        }
+    } _symbols, _sets;
 
     /* For rendering the template drawing */
     unsigned key;
     Inkscape::Drawing renderDrawing;
-
     std::vector<sigc::connection> gtk_connections;
-    Inkscape::auto_connection defs_modified;
+    auto_connection _defs_modified;
+    auto_connection _doc_resource_changed;
+    auto_connection _idle_refresh;
+    boost::compute::detail::lru_cache<std::string, Cairo::RefPtr<Cairo::Surface>> _image_cache;
 };
 
 } //namespace Dialogs
 } //namespace UI
 } //namespace Inkscape
-
 
 #endif // INKSCAPE_UI_DIALOG_SYMBOLS_H
 
