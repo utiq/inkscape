@@ -2001,14 +2001,14 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
         row[columns.col_sensitive] = isFlow;
 
         int activeButton = 0;
-        if (query.text_align.computed  == SP_CSS_TEXT_ALIGN_JUSTIFY)
-        {
+        if (query.text_align.computed == SP_CSS_TEXT_ALIGN_START || query.text_align.computed == SP_CSS_TEXT_ALIGN_LEFT) {
+            activeButton = 0;
+        } else if (query.text_align.computed == SP_CSS_TEXT_ALIGN_CENTER) {
+            activeButton = 1;
+        } else if (query.text_align.computed == SP_CSS_TEXT_ALIGN_END || query.text_align.computed == SP_CSS_TEXT_ALIGN_RIGHT) {
+            activeButton = 2;
+        } else if (query.text_align.computed == SP_CSS_TEXT_ALIGN_JUSTIFY) {
             activeButton = 3;
-        } else {
-            // This should take 'direction' into account
-            if (query.text_anchor.computed == SP_CSS_TEXT_ANCHOR_START)  activeButton = 0;
-            if (query.text_anchor.computed == SP_CSS_TEXT_ANCHOR_MIDDLE) activeButton = 1;
-            if (query.text_anchor.computed == SP_CSS_TEXT_ANCHOR_END)    activeButton = 2;
         }
         _align_item->set_active( activeButton );
 
