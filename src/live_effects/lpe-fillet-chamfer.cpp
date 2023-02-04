@@ -69,10 +69,10 @@ LPEFilletChamfer::LPEFilletChamfer(LivePathEffectObject *lpeobject)
         getLPEObj()->setAttribute("nodesatellites_param", satellites_param);
     };
     registerParameter(&nodesatellites_param);
+    registerParameter(&radius);
     registerParameter(&unit);
     registerParameter(&method);
     registerParameter(&mode);
-    registerParameter(&radius);
     registerParameter(&chamfer_steps);
     registerParameter(&flexible);
     registerParameter(&use_knot_distance);
@@ -186,7 +186,7 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
 
     vbox->set_border_width(5);
     vbox->set_homogeneous(false);
-    vbox->set_spacing(2);
+    vbox->set_spacing(0);
     std::vector<Parameter *>::iterator it = param_vector.begin();
     while (it != param_vector.end()) {
         if ((*it)->widget_is_visible) {
@@ -232,6 +232,8 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
         }
         ++it;
     }
+    
+ // Fillet and chanffer containers
 
     Gtk::Box *fillet_container = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
     Gtk::Button *fillet =  Gtk::manage(new Gtk::Button(Glib::ustring(_("Fillet"))));
