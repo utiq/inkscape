@@ -639,6 +639,9 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocumen
 
     file_listener fileout;
     int data_read = execute(command, params, tempfile_in.get_filename(), fileout, ignore_stderr);
+    if (data_read == 0) {
+        return;
+    }
     fileout.toFile(tempfile_out.get_filename());
 
     pump_events();
@@ -839,11 +842,6 @@ int Script::execute (const std::list<std::string> &in_command,
     }
 
     Glib::ustring stdout_data = fileout.string();
-    if (stdout_data.length() == 0) {
-        return 0;
-    }
-
-    // std::cout << "Finishing Execution." << std::endl;
     return stdout_data.length();
 }
 

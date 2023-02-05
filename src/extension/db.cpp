@@ -90,19 +90,20 @@ struct ModuleOutputCmp {
 void
 DB::register_ext (Extension *module)
 {
-	g_return_if_fail(module != nullptr);
-	g_return_if_fail(module->get_id() != nullptr);
+    g_return_if_fail(module != nullptr);
+    g_return_if_fail(module->get_id() != nullptr);
 
-	// only add to list if it's a never-before-seen module
-        bool add_to_list = 
-               ( moduledict.find(module->get_id()) == moduledict.end());
-        
-	//printf("Registering: '%s' '%s' add:%d\n", module->get_id(), module->get_name(), add_to_list);
-	moduledict[module->get_id()] = module;
+    //printf("Registering: '%s' '%s' add:%d\n", module->get_id(), module->get_name(), add_to_list);
 
-	if (add_to_list) {
-	  modulelist.push_back( module );
-	}
+    // only add to list if it's a never-before-seen module
+    auto iter = moduledict.find(module->get_id());
+    if (iter != moduledict.end()) {
+        Extension *previous = iter->second;
+        unregister_ext(previous);
+        delete previous;
+    }
+    moduledict[module->get_id()] = module;
+    modulelist.push_back( module );
 }
 
 /**
@@ -112,14 +113,17 @@ DB::register_ext (Extension *module)
 void
 DB::unregister_ext (Extension * module)
 {
-	g_return_if_fail(module != nullptr);
-	g_return_if_fail(module->get_id() != nullptr);
+    g_return_if_fail(module != nullptr);
+    g_return_if_fail(module->get_id() != nullptr);
 
-	// printf("Extension DB: removing %s\n", module->get_id());
-	moduledict.erase(moduledict.find(module->get_id()));
-	// only remove if it's not there any more
-	if ( moduledict.find(module->get_id()) != moduledict.end())
-		modulelist.remove(module);
+    // printf("Extension DB: removing %s\n", module->get_id());
+
+    // only remove if it's not there any more
+    auto iter = moduledict.find(module->get_id());
+    if (iter != moduledict.end() && module == iter->second) {
+        moduledict.erase(iter);
+	modulelist.remove(module);
+    }
 }
 
 /**
