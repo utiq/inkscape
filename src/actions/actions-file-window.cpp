@@ -124,7 +124,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_dialog_window =
     {"win.document-save-template",      N_("Save Template"),        "Window-File",     N_("Save a copy of the document as template")},
     {"win.document-import",             N_("Import"),               "Window-File",     N_("Import a bitmap or SVG image into this document")},
     {"win.document-print",              N_("Print"),                "Window-File",     N_("Print document")},
-    {"win.document-cleanup",            N_("Clean Up Document"),    "Window-File",     N_("Remove unused definitions (such as gradients or clipping paths) from the <defs> of the document")},
+    {"win.document-cleanup",            N_("Clean Up Document"),    "Window-File",     N_("Remove unused definitions (such as gradients or clipping paths) from the document")},
     {"win.document-close",              N_("Close"),                "Window-File",     N_("Close window (unless last window)")},
     // clang-format on
 };

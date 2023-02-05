@@ -385,14 +385,15 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
     icon_view->set_cell_data_func(_renderer, [=](const Gtk::TreeModel::const_iterator& it){
         Gdk::Rectangle rect;
         Gtk::TreeModel::Path path(it);
-        bool exists = icon_view->get_cell_rect(path, rect);
-        auto height = icon_view->get_allocated_height();
-        bool visible = !(rect.get_x() < 0 && rect.get_y() < 0);
-        // cell rect coordinates are not affected by scrolling
-        if (visible && (rect.get_y() + rect.get_height() < 0 || rect.get_y() > 0 + height)) {
-            visible = false;
+        if (icon_view->get_cell_rect(path, rect)) {
+            auto height = icon_view->get_allocated_height();
+            bool visible = !(rect.get_x() < 0 && rect.get_y() < 0);
+            // cell rect coordinates are not affected by scrolling
+            if (visible && (rect.get_y() + rect.get_height() < 0 || rect.get_y() > 0 + height)) {
+                visible = false;
+            }
+            get_cell_data_func(&_renderer, *it, visible);
         }
-        get_cell_data_func(&_renderer, *it, visible);
     });
 
     // Toggle scale to fit on/off

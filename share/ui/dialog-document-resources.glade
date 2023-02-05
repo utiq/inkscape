@@ -36,7 +36,7 @@
       <!-- column-name icon -->
       <column type="gchararray"/>
       <!-- column-name count -->
-      <column type="guint64"/>
+      <column type="gulong"/>
     </columns>
     <data>
       <row>
