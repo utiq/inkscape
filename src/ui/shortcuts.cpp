@@ -497,6 +497,7 @@ Shortcuts::add_shortcut(Glib::ustring name, const Gtk::AccelKey& shortcut, bool 
     }
 
     // Add shortcut
+if (user) g_message("add scut: %s - '%s'", name.c_str(), shortcut.get_abbrev().c_str());
 
     // To see if action exists, We need to compare action names without values...
     Glib::ustring action_name_new;
@@ -509,8 +510,15 @@ Shortcuts::add_shortcut(Glib::ustring name, const Gtk::AccelKey& shortcut, bool 
         Gio::SimpleAction::parse_detailed_name_variant(action, action_name_old, value_old);
 
         if (action_name_new == action_name_old) {
-            // Action exists, add shortcut to list of shortcuts.
-            std::vector<Glib::ustring> accels = app->get_accels_for_action(name);
+            std::vector<Glib::ustring> accels;
+            // Action exists, add shortcut to list of shortcuts, if it's not a user shortcut.
+            // If it is a user-defined shortcut, then it replaces any defaults that might have been present.
+            // That's what we show in the UI when we define shortcuts (only new one) and that's also
+            // the only way to let user "overwrite" default shortcut, as there's no removal possible.
+            if (!user) {
+                accels = app->get_accels_for_action(name);
+            }
+if (user) g_message("append scut: %s - %s", name.c_str(), accels.empty() ? "--" : accels[0].c_str());
             accels.push_back(shortcut.get_abbrev());
             app->set_accels_for_action(name, accels);
             action_user_set[name] = user;
