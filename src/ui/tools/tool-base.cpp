@@ -1431,11 +1431,15 @@ guint get_latin_keyval(GdkEventKey const *event, guint *consumed_modifiers /*= n
     if (consumed_modifiers) {
         *consumed_modifiers = modifiers;
     }
+#ifndef __APPLE__
+    // on macOS <option> key inserts special characters and below condition fires all the time
     if (keyval != event->keyval) {
         std::cerr << "get_latin_keyval: OH OH OH keyval did change! "
                   << "  keyval: " << keyval << " (" << (char)keyval << ")"
                   << "  event->keyval: " << event->keyval << "(" << (char)event->keyval << ")" << std::endl;
     }
+#endif
+
     return keyval;
 }
 

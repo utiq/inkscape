@@ -252,6 +252,15 @@ InkscapeWindow::on_key_press_event(GdkEventKey* event)
         }
     }
 
+    // Try to find action to call; calling it here makes it higher priority than dialog mnemonics;
+    // this is needed because GTK tries to activate widgets with matching mnemonics first,
+    // even if they are invisible (!) and/or disabled. That cripples some Alt+key shortcuts when
+    // we open and dock some dialogs, whether they are visible or not.
+    // On macOS situation is even worse, as dialogs can steal many common <option>+key shortcuts.
+    if (Inkscape::Shortcuts::getInstance().invoke_action(event)) {
+        return true;
+    }
+
     if (Gtk::Window::on_key_press_event(event)) {
         return true;
     }
