@@ -27,6 +27,8 @@
 #include "path-prefix.h"
 #include "io/sys.h"
 #include "io/resource.h"
+#include "inkscape-application.h"
+#include "preferences.h"
 
 using Inkscape::IO::file_test;
 
@@ -44,7 +46,7 @@ static void get_foldernames_from_path(std::vector<Glib::ustring> &folders, std::
 
 gchar *_get_path(Domain domain, Type type, char const *filename)
 {
-    if (domain == USER) {
+    if (domain == USER || domain == SHARED) {
         switch (type) {
         case ATTRIBUTES:
         case EXAMPLES:
@@ -77,6 +79,7 @@ gchar *_get_path(Domain domain, Type type, char const *filename)
 
         case SYSTEM:
             sysdir = "inkscape";
+        case SHARED:
         case USER: {
             switch (type) {
                 case ATTRIBUTES: name = "attributes"; break;
@@ -116,8 +119,16 @@ gchar *_get_path(Domain domain, Type type, char const *filename)
 
     if (sysdir) {
         return g_build_filename(get_inkscape_datadir(), sysdir, name, filename, nullptr);
+    } else if (domain == SHARED) {
+        if (shared_path().empty()) {
+            return nullptr;
+        }
+        return g_build_filename(shared_path().c_str(), name, filename, nullptr);
     } else {
-        return g_build_filename(profile_path(), name, filename, nullptr);
+        if (profile_path().empty()) {
+            return nullptr;
+        }
+        return g_build_filename(profile_path().c_str(), name, filename, nullptr);
     }
 }
 
@@ -126,6 +137,9 @@ gchar *_get_path(Domain domain, Type type, char const *filename)
 Util::ptr_shared get_path(Domain domain, Type type, char const *filename)
 {
     char *path = _get_path(domain, type, filename);
+    if (!path) {
+        return Util::ptr_shared();
+    }
     Util::ptr_shared result=Util::share_string(path);
     g_free(path);
     return result;
@@ -172,6 +186,7 @@ std::string get_filename_string(Type type, char const *filename, bool localized,
     std::string result;
 
     char *user_filename = nullptr;
+    char *shared_filename = nullptr;
     char *sys_filename = nullptr;
     char *user_filename_localized = nullptr;
     char *sys_filename_localized = nullptr;
@@ -189,6 +204,7 @@ std::string get_filename_string(Type type, char const *filename, bool localized,
         sys_filename_localized = _get_path(SYSTEM, type, localized_filename.c_str());
     }
     user_filename = _get_path(USER, type, filename);
+    shared_filename = _get_path(SHARED, type, filename);
     sys_filename = _get_path(SYSTEM, type, filename);
 
     // impose the following load order:
@@ -199,6 +215,9 @@ std::string get_filename_string(Type type, char const *filename, bool localized,
     } else if (file_test(user_filename, G_FILE_TEST_EXISTS)) {
         result = user_filename;
         g_info("Found resource file '%s' in profile directory:\n\t%s", filename, result.c_str());
+    } else if (file_test(shared_filename, G_FILE_TEST_EXISTS)) {
+        result = shared_filename;
+        g_info("Found resource file '%s' in profile directory:\n\t%s", filename, result.c_str());
     } else if (localized && file_test(sys_filename_localized, G_FILE_TEST_EXISTS)) {
         result = sys_filename_localized;
         g_info("Found localized version of resource file '%s' in system directory:\n\t%s", filename, result.c_str());
@@ -207,15 +226,16 @@ std::string get_filename_string(Type type, char const *filename, bool localized,
         g_info("Found resource file '%s' in system directory:\n\t%s", filename, result.c_str());
     } else if (!silent) {
         if (localized) {
-            g_warning("Failed to find resource file '%s'. Looked in:\n\t%s\n\t%s\n\t%s\n\t%s",
-                      filename, user_filename_localized, user_filename, sys_filename_localized, sys_filename);
+            g_warning("Failed to find resource file '%s'. Looked in:\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s",
+                      filename, user_filename_localized, user_filename, shared_filename, sys_filename_localized, sys_filename);
         } else {
-            g_warning("Failed to find resource file '%s'. Looked in:\n\t%s\n\t%s",
-                      filename, user_filename, sys_filename);
+            g_warning("Failed to find resource file '%s'. Looked in:\n\t%s\n\t%s\n\t%s",
+                      filename, user_filename, shared_filename, sys_filename);
         }
     }
 
     g_free(user_filename);
+    g_free(shared_filename);
     g_free(sys_filename);
     g_free(user_filename_localized);
     g_free(sys_filename_localized);
@@ -268,6 +288,7 @@ std::vector<Glib::ustring> get_filenames(Type type, std::vector<const char *> co
 {
     std::vector<Glib::ustring> ret;
     get_filenames_from_path(ret, get_path_string(USER, type), extensions, exclusions);
+    get_filenames_from_path(ret, get_path_string(SHARED, type), extensions, exclusions);
     get_filenames_from_path(ret, get_path_string(SYSTEM, type), extensions, exclusions);
     get_filenames_from_path(ret, get_path_string(CREATE, type), extensions, exclusions);
     return ret;
@@ -298,6 +319,7 @@ std::vector<Glib::ustring> get_foldernames(Type type, std::vector<const char *> 
 {
     std::vector<Glib::ustring> ret;
     get_foldernames_from_path(ret, get_path_ustring(USER, type), exclusions);
+    get_foldernames_from_path(ret, get_path_ustring(SHARED, type), exclusions);
     get_foldernames_from_path(ret, get_path_ustring(SYSTEM, type), exclusions);
     get_foldernames_from_path(ret, get_path_ustring(CREATE, type), exclusions);
     return ret;
@@ -407,27 +429,27 @@ void get_foldernames_from_path(std::vector<Glib::ustring> &folders, std::string 
  * file should be located. This also indicates where all other inkscape
  * shared files may optionally exist.
  */
-char *profile_path(const char *filename)
+std::string profile_path(const char *filename)
 {
-    return g_build_filename(profile_path(), filename, nullptr);
+    if (profile_path().empty()) {
+        return std::string("");
+    }
+    return Glib::build_filename(profile_path(), filename);
 }
 
-char const *profile_path()
+std::string profile_path()
 {
-    static const gchar *prefdir = nullptr;
+    
+    static std::string prefdir = "";
 
-    if (!prefdir) {
+    if (prefdir.empty()) {
         // Check if profile directory is overridden using environment variable
-        gchar const *userenv = g_getenv("INKSCAPE_PROFILE_DIR");
-        if (userenv) {
-            prefdir = g_strdup(userenv);
-        }
-
+        prefdir = Glib::getenv("INKSCAPE_PROFILE_DIR");
 #ifdef _WIN32
         // prefer c:\Documents and Settings\UserName\Application Data\ to c:\Documents and Settings\userName\;
         // TODO: CSIDL_APPDATA is C:\Users\UserName\AppData\Roaming these days
         //       should we migrate to AppData\Local? Then we can simply use the portable g_get_user_config_dir()
-        if (!prefdir) {
+        if (prefdir.empty()) {
             ITEMIDLIST *pidl = 0;
             if ( SHGetFolderLocation( NULL, CSIDL_APPDATA, NULL, 0, &pidl ) == S_OK ) {
                 gchar * utf8Path = NULL;
@@ -452,15 +474,13 @@ char const *profile_path()
                 }
             }
 
-            if (prefdir) {
-                const char *prefdir_profile = g_build_filename(prefdir, INKSCAPE_PROFILE_DIR, nullptr);
-                g_free((void *)prefdir);
-                prefdir = prefdir_profile;
+            if (!prefdir.empty()) {
+                prefdir = Glib::build_filename(prefdir, INKSCAPE_PROFILE_DIR);
             }
         }
 #endif
-        if (!prefdir) {
-            prefdir = g_build_filename(g_get_user_config_dir(), INKSCAPE_PROFILE_DIR, nullptr);
+        if (prefdir.empty()) {
+            prefdir =  Glib::build_filename(g_get_user_config_dir(), INKSCAPE_PROFILE_DIR);
             // In case the XDG user config dir of the moment does not yet exist...
             int mode = S_IRWXU;
 #ifdef S_IRGRP
@@ -472,14 +492,14 @@ char const *profile_path()
 #ifdef S_IXOTH
             mode |= S_IXOTH;
 #endif
-            if ( g_mkdir_with_parents(prefdir, mode) == -1 ) {
+            if (g_mkdir_with_parents(prefdir.c_str(), mode) == -1 ) {
                 int problem = errno;
                 g_warning("Unable to create profile directory (%s) (%d)", g_strerror(problem), problem);
             } else {
                 gchar const *userDirs[] = { "keys", "templates", "icons", "extensions", "ui",
                                             "symbols", "paint", "themes", "palettes", nullptr };
                 for (gchar const** name = userDirs; *name; ++name) {
-                    gchar *dir = g_build_filename(prefdir, *name, nullptr);
+                    gchar *dir = g_build_filename(prefdir.c_str(), *name, nullptr);
                     g_mkdir_with_parents(dir, mode);
                     g_free(dir);
                 }
@@ -489,21 +509,35 @@ char const *profile_path()
     return prefdir;
 }
 
+std::string shared_path(const char *filename)
+{
+    return shared_path().empty() ? shared_path() : Glib::build_filename(shared_path(), filename);
+}
+
+std::string shared_path()
+{
+    if (InkscapeApplication::instance()) {
+        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        std::string shared_dir = prefs->getString("/options/resources/sharedpath");
+        if (!shared_dir.empty() && Glib::file_test(shared_dir, Glib::FILE_TEST_IS_DIR)) {
+            return shared_dir;
+        }
+    }
+    return std::string("");
+}
+
 /*
  * We return the profile_path because that is where most documentation
  * days log files will be generated in inkscape 0.92
  */
-char *log_path(const char *filename)
+std::string log_path(const char *filename)
 {
     return profile_path(filename);
 }
 
-char *homedir_path(const char *filename)
+std::string homedir_path()
 {
-    static const gchar *homedir = nullptr;
-    homedir = g_get_home_dir();
-
-    return g_build_filename(homedir, filename, nullptr);
+    return g_get_home_dir();
 }
 
 }

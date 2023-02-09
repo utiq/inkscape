@@ -560,7 +560,7 @@ void Extension::set_environment(const SPDocument *doc) {
     Glib::unsetenv("INKEX_GETTEXT_DIRECTORY");
 
     // This is needed so extensions can interact with the user's profile, keep settings etc.
-    Glib::setenv("INKSCAPE_PROFILE_DIR", std::string(Inkscape::IO::Resource::profile_path()));
+    Glib::setenv("INKSCAPE_PROFILE_DIR", Inkscape::IO::Resource::profile_path());
 
     // This is needed so files can be saved relative to their document location (see image-extract)
     if (doc) {
@@ -945,12 +945,11 @@ void Extension::set_param_hidden(const gchar *name, bool hidden)
 void
 Extension::error_file_open ()
 {
-    gchar *ext_error_file = Inkscape::IO::Resource::log_path(EXTENSION_ERROR_LOG_FILENAME);
-    error_file = Inkscape::IO::fopen_utf8name(ext_error_file, "w+");
+    auto ext_error_file = Inkscape::IO::Resource::log_path(EXTENSION_ERROR_LOG_FILENAME);
+    error_file = Inkscape::IO::fopen_utf8name(ext_error_file.c_str(), "w+");
     if (!error_file) {
-        g_warning(_("Could not create extension error log file '%s'"), ext_error_file);
+        g_warning(_("Could not create extension error log file '%s'"), ext_error_file.c_str());
     }
-    g_free(ext_error_file);
 };
 
 /** \brief A function to close the error log file. */

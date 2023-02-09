@@ -482,7 +482,7 @@ std::string Export::filePathFromId(SPDocument *doc, Glib::ustring id, const Glib
     }
 
     if (directory.empty()) {
-        directory = Inkscape::IO::Resource::homedir_path(nullptr);
+        directory = Inkscape::IO::Resource::homedir_path();
     }
 
     return Glib::build_filename(directory, Glib::filename_from_utf8(id));

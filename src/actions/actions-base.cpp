@@ -58,7 +58,7 @@ print_system_data_directory()
 void
 print_user_data_directory()
 {
-    show_output(Inkscape::IO::Resource::profile_path(""), false);
+    show_output(Inkscape::IO::Resource::profile_path(), false);
 }
 
 // Helper function for query_x(), query_y(), query_width(), and query_height().

@@ -1408,7 +1408,7 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     }
 
     if (options->contains("user-data-directory")) {
-        std::cout << Inkscape::IO::Resource::profile_path("") << std::endl;
+        std::cout << Inkscape::IO::Resource::profile_path() << std::endl;
         return EXIT_SUCCESS;
     }
 

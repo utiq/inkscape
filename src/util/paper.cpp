@@ -29,15 +29,14 @@ const std::vector<PaperSize>& PaperSize::getPageSizes()
     static std::vector<PaperSize> ret;
     if (!ret.empty())
         return ret;
-    
-    char *path = Inkscape::IO::Resource::profile_path("pages.csv");
-    if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
-        if (!g_file_set_contents(path, pages_skeleton, -1, nullptr)) {
+    auto path = Inkscape::IO::Resource::profile_path("pages.csv");
+    if (!g_file_test(path.c_str(), G_FILE_TEST_EXISTS)) {
+        if (!g_file_set_contents(path.c_str(), pages_skeleton, -1, nullptr)) {
             g_warning("%s", _("Failed to create the page file."));
         }
     }   
     gchar *content = nullptr;
-    if (g_file_get_contents(path, &content, nullptr, nullptr)) {
+    if (g_file_get_contents(path.c_str(), &content, nullptr, nullptr)) {
         gchar **lines = g_strsplit_set(content, "\n", 0); 
     
         for (int i = 0; lines && lines[i]; ++i) {
@@ -56,7 +55,6 @@ const std::vector<PaperSize>& PaperSize::getPageSizes()
         g_strfreev(lines); 
         g_free(content);
     }   
-    g_free(path);
     return ret;
 }   
 

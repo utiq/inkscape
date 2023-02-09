@@ -113,9 +113,14 @@ Shortcuts::init() {
         std::cerr << "Shortcut::Shortcut: Failed to read file inkscape.xml; giving up!" << std::endl;
     }
 
- 
+    // ------------ Open Shared shortcut file -------------
+    Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(get_path_string(SHARED, KEYS, "default.xml"));
+    // Test if file exists before attempting to read to avoid generating warning message.
+    if (file->query_exists()) {
+        read(file, true);
+    }
     // ------------ Open User shortcut file -------------
-    Glib::RefPtr<Gio::File> file = Gio::File::create_for_path(get_path_string(USER, KEYS, "default.xml"));
+    file = Gio::File::create_for_path(get_path_string(USER, KEYS, "default.xml"));
     // Test if file exists before attempting to read to avoid generating warning message.
     if (file->query_exists()) {
         read(file, true);
@@ -711,8 +716,11 @@ Shortcuts::get_file_names()
     // Make a list of all key files from System and User.  Glib::ustring should be std::string!
     std::vector<Glib::ustring> filenames = get_filenames(SYSTEM, KEYS, {".xml"});
     // Exclude default.xml as it only contains user modifications.
+    std::vector<Glib::ustring> filenames_shared = get_filenames(SHARED, KEYS, {".xml"}, {"default.xml"});
+    // Exclude default.xml as it only contains user modifications.
     std::vector<Glib::ustring> filenames_user = get_filenames(USER, KEYS, {".xml"}, {"default.xml"});
     filenames.insert(filenames.end(), filenames_user.begin(), filenames_user.end());
+    filenames.insert(filenames.end(), filenames_shared.begin(), filenames_shared.end());
 
     // Check file exists and extract out label if it does.
     std::vector<std::pair<Glib::ustring, Glib::ustring>> names_and_paths;

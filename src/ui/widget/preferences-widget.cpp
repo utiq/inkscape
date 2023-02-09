@@ -1027,6 +1027,15 @@ void PrefEntry::on_changed()
     }
 }
 
+void PrefEntryFile::on_changed()
+{
+    if (this->get_visible()) //only take action if user changed value
+    {
+        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        prefs->setString(_prefs_path, Glib::filename_to_utf8(this->get_text()));
+    }
+}
+
 void PrefMultiEntry::init(Glib::ustring const &prefs_path, int height)
 {
     // TODO: Figure out if there's a way to specify height in lines instead of px

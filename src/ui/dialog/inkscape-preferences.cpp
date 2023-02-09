@@ -3610,7 +3610,12 @@ static void appendList(Glib::ustring& tmp, const std::vector<string_type> &listi
 void InkscapePreferences::initPageSystem()
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-
+    _sys_shared_path.init("/options/resources/sharedpath", true);
+    auto box = new Gtk::Box();
+    box->pack_start(_sys_shared_path);
+    box->set_size_request(300, -1);
+    _page_system.add_line( false, _("Resources shared path:"), *box, "",
+                            _("Optional shared folder to load resources, you need to create inside any Inkscape resource folder you want to use (extensions,fonts,icons,keys,paint,palletes,symbols,templates,themes,ui"), false, reset_icon());
     _page_system.add_group_header( _("System info"));
 
     _sys_user_prefs.set_text(prefs->getPrefsFilename());
@@ -3620,8 +3625,8 @@ void InkscapePreferences::initPageSystem()
 
     _page_system.add_line(true, _("User preferences:"), _sys_user_prefs, "",
                           _("Location of the user’s preferences file"), true, reset_prefs);
-
-    _sys_user_config.init((char const *)Inkscape::IO::Resource::profile_path(""), _("Open preferences folder"));
+    auto profilefolder = Inkscape::IO::Resource::profile_path();
+    _sys_user_config.init(profilefolder.c_str(), _("Open preferences folder"));
     _page_system.add_line(true, _("User config:"), _sys_user_config, "", _("Location of users configuration"), true);
 
     auto extensions_folder = IO::Resource::get_path_string(IO::Resource::USER, IO::Resource::EXTENSIONS);

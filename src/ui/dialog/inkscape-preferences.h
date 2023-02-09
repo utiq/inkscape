@@ -452,12 +452,13 @@ protected:
     UI::Widget::PrefOpenFolder _sys_user_symbols_dir;
     UI::Widget::PrefOpenFolder _sys_user_paint_servers_dir;
     UI::Widget::PrefMultiEntry _sys_fontdirs_custom;
-    Gtk::Entry                  _sys_user_cache;
-    Gtk::Entry                  _sys_data;
-    Gtk::TextView               _sys_icon;
-    Gtk::ScrolledWindow         _sys_icon_scroll;
-    Gtk::TextView               _sys_systemdata;
-    Gtk::ScrolledWindow         _sys_systemdata_scroll;
+    UI::Widget::PrefEntryFile  _sys_shared_path;
+    Gtk::Entry                 _sys_user_cache;
+    Gtk::Entry                 _sys_data;
+    Gtk::TextView              _sys_icon;
+    Gtk::ScrolledWindow        _sys_icon_scroll;
+    Gtk::TextView              _sys_systemdata;
+    Gtk::ScrolledWindow        _sys_systemdata_scroll;
 
     // UI page
     UI::Widget::PrefCombo       _ui_languages;

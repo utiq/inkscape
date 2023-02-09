@@ -184,6 +184,16 @@ Application::Application(bool use_gui) :
     using namespace Inkscape::IO::Resource;
     /* fixme: load application defaults */
 
+    // we need a app runing to know shared path
+    auto extensiondir_shared = get_path_string(SHARED, EXTENSIONS);
+    if (!extensiondir_shared.empty()) {
+        std::string pythonpath = extensiondir_shared;
+        auto pythonpath_old = Glib::getenv("PYTHONPATH");
+        if (!pythonpath_old.empty()) {
+            pythonpath += G_SEARCHPATH_SEPARATOR + pythonpath_old;
+        }
+        Glib::setenv("PYTHONPATH", pythonpath);
+    }
     segv_handler = signal (SIGSEGV, Application::crash_handler);
     abrt_handler = signal (SIGABRT, Application::crash_handler);
     fpe_handler  = signal (SIGFPE,  Application::crash_handler);
@@ -211,6 +221,7 @@ Application::Application(bool use_gui) :
         using namespace Inkscape::IO::Resource;
         auto icon_theme = Gtk::IconTheme::get_default();
         icon_theme->prepend_search_path(get_path_ustring(SYSTEM, ICONS));
+        icon_theme->prepend_search_path(get_path_ustring(SHARED, ICONS));
         icon_theme->prepend_search_path(get_path_ustring(USER, ICONS));
         themecontext = new Inkscape::UI::ThemeContext();
         themecontext->add_gtk_css(false);
@@ -286,7 +297,12 @@ Application::Application(bool use_gui) :
         char const *fontsdir = get_path(SYSTEM, FONTS);
         factory.AddFontsDir(fontsdir);
     }
+    // we keep user font dir for simplicity
     if (prefs->getBool("/options/font/use_fontsdir_user", true)) {
+        char const *fontsdirshared = get_path(SHARED, FONTS);
+        if (fontsdirshared) {
+            factory.AddFontsDir(fontsdirshared);
+        }
         char const *fontsdir = get_path(USER, FONTS);
         factory.AddFontsDir(fontsdir);
     }

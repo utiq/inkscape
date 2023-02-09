@@ -227,6 +227,11 @@ protected:
     void on_changed() override;
 };
 
+class PrefEntryFile : public PrefEntry
+{
+    void on_changed() override;
+};
+
 class PrefMultiEntry : public Gtk::ScrolledWindow
 {
 public:

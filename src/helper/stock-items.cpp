@@ -55,8 +55,10 @@ std::vector<std::shared_ptr<SPDocument>> sp_get_paint_documents(const std::funct
     if (storage.documents.empty()) {
         using namespace Inkscape::IO::Resource;
         auto files = get_filenames(SYSTEM, PAINT, {".svg"});
-        auto user = get_filenames(USER, PAINT, {".svg"});
+        auto share = get_filenames(SHARED, PAINT, {".svg"});
+        auto user  = get_filenames(USER,   PAINT, {".svg"});
         files.insert(files.end(), user.begin(), user.end());
+        files.insert(files.end(), share.begin(), share.end());
         for (auto&& file : files) {
             if (Glib::file_test(file, Glib::FILE_TEST_IS_REGULAR)) {
                 std::shared_ptr<SPDocument> doc(SPDocument::createNewDoc(file.c_str(), false));

@@ -9,7 +9,7 @@ class SPObject;
 /**
  * @brief 
  * Copy source resource form one document into another destination document.
- * Resouces are elements inside "def" element (gradients, markers, etc).
+ * Resources are elements inside "def" element (gradients, markers, etc).
  * Also copy any href-ed objects or styles referencing other objects (like gradients).
  * In this sense it is a deep copy.
  * 

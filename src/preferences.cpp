@@ -68,9 +68,7 @@ private:
 
 Preferences::Preferences()
 {
-    char *path = Inkscape::IO::Resource::profile_path(PREFERENCES_FILE_NAME);
-    _prefs_filename = path;
-    g_free(path);
+    _prefs_filename = Inkscape::IO::Resource::profile_path(PREFERENCES_FILE_NAME);
 
     _loadDefaults();
     _load();
@@ -117,25 +115,25 @@ void Preferences::_load()
 
     // 1. Does the file exist?
     if (!g_file_test(_prefs_filename.c_str(), G_FILE_TEST_EXISTS)) {
-        char *_prefs_dir = Inkscape::IO::Resource::profile_path(nullptr);
+        auto _prefs_dir = Inkscape::IO::Resource::profile_path();
         // No - we need to create one.
         // Does the profile directory exist?
-        if (!g_file_test(_prefs_dir, G_FILE_TEST_EXISTS)) {
+        if (!g_file_test(_prefs_dir.c_str(), G_FILE_TEST_EXISTS)) {
             // No - create the profile directory
-            if (g_mkdir_with_parents(_prefs_dir, 0755)) {
+            if (g_mkdir_with_parents(_prefs_dir.c_str(), 0755)) {
                 // the creation failed
                 //_reportError(Glib::ustring::compose(_("Cannot create profile directory %1."),
                 //    Glib::filename_to_utf8(_prefs_dir)), not_saved);
-                gchar *msg = g_strdup_printf(_("Cannot create profile directory %s."), _prefs_dir);
+                gchar *msg = g_strdup_printf(_("Cannot create profile directory %s."), _prefs_dir.c_str());
                 _reportError(msg, not_saved);
                 g_free(msg);
                 return;
             }
-        } else if (!g_file_test(_prefs_dir, G_FILE_TEST_IS_DIR)) {
+        } else if (!g_file_test(_prefs_dir.c_str(), G_FILE_TEST_IS_DIR)) {
             // The profile dir is not actually a directory
             //_reportError(Glib::ustring::compose(_("%1 is not a valid directory."),
             //    Glib::filename_to_utf8(_prefs_dir)), not_saved);
-            gchar *msg = g_strdup_printf(_("%s is not a valid directory."), _prefs_dir);
+            gchar *msg = g_strdup_printf(_("%s is not a valid directory."), _prefs_dir.c_str());
             _reportError(msg, not_saved);
             g_free(msg);
             return;
@@ -144,10 +142,9 @@ void Preferences::_load()
         char const *user_dirs[] = {"extensions", "fonts", "icons", "keys", "palettes", "templates", nullptr};
         for (int i=0; user_dirs[i]; ++i) {
             // XXX Why are we doing this here? shouldn't this be an IO load item?
-            char *dir = Inkscape::IO::Resource::profile_path(user_dirs[i]);
-            if (!g_file_test(dir, G_FILE_TEST_EXISTS))
-                g_mkdir(dir, 0755);
-            g_free(dir);
+            auto dir = Inkscape::IO::Resource::profile_path(user_dirs[i]);
+            if (!g_file_test(dir.c_str(), G_FILE_TEST_EXISTS))
+                g_mkdir(dir.c_str(), 0755);
         }
         // The profile dir exists and is valid.
         if (!g_file_set_contents(_prefs_filename.c_str(), preferences_skeleton, PREFERENCES_SKELETON_SIZE, nullptr)) {
