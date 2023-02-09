@@ -49,6 +49,21 @@ class NameIdCols: public Gtk::TreeModel::ColumnRecord {
         Gtk::TreeModelColumn<Glib::ustring> col_id;
 };
 
+class RecentCols: public Gtk::TreeModel::ColumnRecord {
+    public:
+        // These types must match those for the model in the .glade file
+        RecentCols() {
+            this->add(this->col_name);
+            this->add(this->col_id);
+            this->add(this->col_dt);
+            this->add(this->col_crash);
+        }
+        Gtk::TreeModelColumn<Glib::ustring> col_name;
+        Gtk::TreeModelColumn<Glib::ustring> col_id;
+        Gtk::TreeModelColumn<gint64> col_dt;
+        Gtk::TreeModelColumn<bool> col_crash;
+};
+
 class CanvasCols: public Gtk::TreeModel::ColumnRecord {
     public:
         // These types must match those for the model in the .glade file
@@ -306,11 +321,13 @@ StartScreen::notebook_switch(Gtk::Widget *tab, guint page_num)
 void
 StartScreen::enlist_recent_files()
 {
-    NameIdCols cols;
+    RecentCols cols;
     if (!recent_treeview) return;
     // We're not sure why we have to ask C for the TreeStore object
     auto store = Glib::wrap(GTK_LIST_STORE(gtk_tree_view_get_model(recent_treeview->gobj())));
     store->clear();
+    // Now sort the result by visited time
+    store->set_sort_column(cols.col_dt, Gtk::SORT_DESCENDING);
 
     // Open [other]
     Gtk::TreeModel::Row first_row = *(store->append());
@@ -333,9 +350,12 @@ StartScreen::enlist_recent_files()
                 Gtk::TreeModel::Row row = *(store->append());
                 row[cols.col_name] = item->get_display_name();
                 row[cols.col_id] = item->get_uri();
+                row[cols.col_dt] = item->get_modified();
+                row[cols.col_crash] = item->has_group("Crash");
             }
         }
     }
+
 }
 
 /**
@@ -380,7 +400,7 @@ StartScreen::new_document()
 void
 StartScreen::load_document()
 {
-    NameIdCols cols;
+    RecentCols cols;
     auto prefs = Inkscape::Preferences::get();
     auto app = InkscapeApplication::instance();
 

@@ -1077,9 +1077,9 @@ void SPDocument::do_change_filename(gchar const *const filename, bool const reba
         new_document_base = g_path_get_dirname(new_document_filename);
         new_document_name = g_path_get_basename(new_document_filename);
     } else {
-        new_document_filename = g_strdup_printf(_("Unnamed document %d"), ++doc_count);
+        new_document_name = g_strdup_printf(_("Unnamed document %d"), ++doc_count);
         new_document_base = nullptr;
-        new_document_name = g_strdup(this->document_filename);
+        new_document_filename = nullptr;
     }
 
     // Update saveable repr attributes.

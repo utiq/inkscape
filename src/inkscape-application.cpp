@@ -190,7 +190,27 @@ InkscapeApplication::document_open(const Glib::RefPtr<Gio::File>& file, bool *ca
         // Add/promote recent file; when we call add_item and file is on a recent list already,
         // then apparently only "modified" time changes.
         if (auto recentmanager = Gtk::RecentManager::get_default()) {
-            recentmanager->add_item(file->get_uri());
+            auto uri = file->get_uri();
+            auto path = file->get_path();
+            // Opening crash files, we can link them back using the recent files manager
+            // to get the original context for the file.
+            bool is_crash = false;
+            try {
+                auto orig = recentmanager->lookup_item(uri);
+                if ((is_crash = orig->has_group("Crash"))) {
+                    document->setModifiedSinceSave(true);
+                    // Crash files store the original name in the display name field.
+                    auto old_path = Inkscape::IO::find_original_file(path, orig->get_display_name());
+                    document->setDocumentFilename(old_path.empty() ? nullptr : old_path.c_str());
+                    // We don't want other programs to gain access to this crash file
+                    recentmanager->remove_item(uri);
+                }
+            } catch(Glib::Error) {
+                // Nothing to do since lookup failed.
+            }
+            if (!is_crash) {
+                recentmanager->add_item(uri);
+            }
         }
 
         document_add (document);

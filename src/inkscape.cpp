@@ -454,6 +454,21 @@ Application::crash_handler (int /*signum*/)
                 sp_repr_save_stream (repr->document(), file, SP_SVG_NS_URI);
                 savednames.push_back(g_strdup (c));
                 fclose (file);
+
+                // Attempt to add the emergency save to the recent files, so users can find it on restart
+                auto recentmanager = Gtk::RecentManager::get_default();
+                if (recentmanager && Glib::path_is_absolute(c)) {
+                    Glib::ustring uri = Glib::filename_to_uri(c);
+                    recentmanager->add_item(uri, {
+                        docname,                 // Name
+                        "Emergency Saved Image", // Description
+                        "image/svg+xml",         // Mime type
+                        "org.inkscape.Inkscape", // App name
+                        "",                      // Execute
+                        {"Crash"},               // Groups
+                        true,                    // Private
+                    });
+                }
             } else {
                 failednames.push_back((doc->getDocumentName()) ? g_strdup(doc->getDocumentName()) : g_strdup (_("Untitled document")));
             }

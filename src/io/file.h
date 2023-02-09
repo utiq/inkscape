@@ -44,6 +44,8 @@ class TempFilename {
         int _tempfd;
 };
 
+Glib::ustring find_original_file(Glib::ustring filepath, Glib::ustring name);
+
 }}
 
 // To do:

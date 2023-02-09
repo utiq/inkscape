@@ -161,6 +161,23 @@ TempFilename::~TempFilename()
     unlink(_filename.c_str());
 }
 
+/**
+ * Takes an absolute file path and returns a second file at the same
+ * directory location, if and only if the filename exists and is a file.
+ *
+ * Returns the empty string if the new file is not found.
+ */
+Glib::ustring find_original_file(Glib::ustring filepath, Glib::ustring name)
+{
+    auto path = Glib::path_get_dirname(filepath);
+    auto filename = Glib::build_filename(path, name);
+
+    if (Glib::file_test(filename, Glib::FILE_TEST_IS_REGULAR)) {
+        return filename;
+    }
+    return ""; 
+}
+
 }}
 
 /*

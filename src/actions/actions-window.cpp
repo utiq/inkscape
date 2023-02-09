@@ -42,7 +42,7 @@ window_open(InkscapeApplication *app)
     }
 }
 
-void 
+void
 window_query_geometry(InkscapeApplication *app)
 {
     auto window = app->get_active_window();
@@ -106,10 +106,11 @@ std::vector<std::vector<Glib::ustring>> hint_data_window =
 std::vector<std::vector<Glib::ustring>> raw_data_window =
 {
     // clang-format off
-    {"app.window-open",            N_("Window Open"),            "Window",     N_("Open a window for the active document; GUI only")       },
+    {"app.window-open",           N_("Window Open"),     "Window",     N_("Open a window for the active document; GUI only")       },
     {"app.window-close",           N_("Window Close"),           "Window",     N_("Close the active window, does not check for data loss") },
     {"app.window-query-geometry",  N_("Window Query Geometry"),  "Window",     N_("Query active window geometry") },
     {"app.window-set-geometry",    N_("Window Set Geometry"),    "Window",     N_("Set active window geometry (X, Y, Width, Height)") },
+    {"app.window-crash",           N_("Force Crash"),            "Window",     N_("Force Inkscape to crash, useful for testing.") },
     // clang-format on
 };
 
@@ -119,10 +120,13 @@ add_actions_window(InkscapeApplication* app)
     auto *gapp = app->gio_app();
     Glib::VariantType String(Glib::VARIANT_TYPE_STRING);
     // clang-format off
-    gapp->add_action(                "window-open",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_open),                 app));
-    gapp->add_action(                "window-close",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_close),                app));
+    gapp->add_action(                "window-open",  sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_open),         app));
+    gapp->add_action(                "window-close", sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_close),        app));
     gapp->add_action(                "window-query-geometry",  sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_query_geometry),       app));
     gapp->add_action_with_parameter( "window-set-geometry",    String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_set_geometry), app));
+    gapp->add_action("window-crash", [=](){
+        abort();
+    });
     // clang-format on
 
     app->get_action_extra_data().add_data(raw_data_window);
