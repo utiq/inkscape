@@ -43,6 +43,16 @@ std::string inkscape_version() {
 }
 
 /**
+ * Return Inkscape repository revision string
+ *
+ * @return code revision string
+ */
+std::string inkscape_revision()
+{
+    return std::string("revision_" + std::string(Inkscape::revision_string));
+}
+
+/**
  * Return OS version string
  *
  * Returns the OS version string including OS name.

@@ -16,6 +16,7 @@
 namespace Inkscape {
 
     std::string inkscape_version();
+    std::string inkscape_revision();
     std::string os_version();
     std::string debug_info();
 

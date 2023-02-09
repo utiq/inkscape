@@ -630,6 +630,19 @@ InkscapeApplication::InkscapeApplication()
             std::cerr << "  tag must be ASCII and not start with a number." << std::endl;
         }
         non_unique = true;
+    } else {
+        // Version protection attempts to refuse to merge with inkscape version
+        // that have a different build/revision hash. This is important for testing.
+        auto test_app = Gio::Application::create(app_id, flags);
+        test_app->register_application();
+        if (test_app->get_default()->is_remote()) {
+            bool enabled;
+            Glib::VariantBase hint;
+            if (!test_app->query_action(Inkscape::inkscape_revision(), enabled, hint)) {
+                Gio::Application::unset_default();
+                app_id += "." + Inkscape::inkscape_revision();
+            }
+        }
     }
 
     if (gtk_init_check(nullptr, nullptr)) {

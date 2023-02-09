@@ -252,6 +252,9 @@ add_actions_base(InkscapeApplication* app)
     gapp->add_action(               "query-all",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&query_all),                 app)        );
     // clang-format on
 
+    // Revision string is going to be added to the actions interface so it can be queried for existance by GApplication
+    gapp->add_action(Inkscape::inkscape_revision(), [=]() { g_warning("Don't call this action"); });
+
     app->get_action_extra_data().add_data(raw_data_base);
 }
 
