@@ -697,6 +697,7 @@ InkscapeApplication::InkscapeApplication()
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "pipe",                    'p', N_("Read input file from standard input (stdin)"),                             "");
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "pages",                   'n', N_("Page numbers to import from multi-page document, i.e. PDF"), N_("PAGE[,PAGE]"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "pdf-poppler",            '\0', N_("Use poppler when importing via commandline"),                              "");
+    gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "pdf-font-strategy",      '\0', N_("How fonts are parsed in the internal PDF importer [draw-missing|draw-all|delete-missing|delete-all|substitute|keep]"), N_("STRATEGY")); // xSP
     gapp->add_main_option_entry(T::OPTION_TYPE_STRING,   "convert-dpi-method",     '\0', N_("Method used to convert pre-0.92 document dpi, if needed: [none|scale-viewbox|scale-document]"), N_("METHOD"));
     gapp->add_main_option_entry(T::OPTION_TYPE_BOOL,     "no-convert-text-baseline-spacing", '\0', N_("Do not fix pre-0.92 document's text baseline spacing on opening"), "");
 
@@ -1097,6 +1098,8 @@ InkscapeApplication::on_open(const Gio::Application::type_vec_files& files, cons
         INKSCAPE.set_pdf_poppler(_pdf_poppler);
     if(!_pages.empty())
         INKSCAPE.set_pages(_pages);
+
+    INKSCAPE.set_pdf_font_strategy((int)_pdf_font_strategy);
 
     if (files.size() > 1 && !_file_export.export_filename.empty()) {
         std::cerr << "ConcreteInkscapeApplication<Gtk::Application>::on_open: "
@@ -1532,6 +1535,27 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
 
     if (options->contains("pdf-poppler")) {
         _pdf_poppler = true;
+    }
+
+    if (options->contains("pdf-font-strategy")) {
+        Glib::ustring strategy;
+        options->lookup_value("pdf-font-strategy", strategy);
+        _pdf_font_strategy = FontStrategy::RENDER_MISSING;
+        if (strategy == "delete-all") {
+            _pdf_font_strategy = FontStrategy::DELETE_ALL;
+        }
+        if (strategy == "delete-missing") {
+            _pdf_font_strategy = FontStrategy::DELETE_MISSING;
+        }
+        if (strategy == "draw-all") {
+            _pdf_font_strategy = FontStrategy::RENDER_ALL;
+        }
+        if (strategy == "keep") {
+            _pdf_font_strategy = FontStrategy::KEEP_MISSING;
+        }
+        if (strategy == "substitute") {
+            _pdf_font_strategy = FontStrategy::SUBSTITUTE_MISSING;
+        }
     }
 
     if (options->contains("convert-dpi-method")) {

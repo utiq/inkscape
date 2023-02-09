@@ -828,6 +828,29 @@ add_cli_test(action_test_multiline_anchoring
                         EXPECTED_FILES multiline-anchoring_out.svg
                         TEST_SCRIPT match_regex_fail.sh multiline-anchoring_out.svg "(x=\"[3-9][0-9]{2}\")|(x=\"[12][0-9]{3}\")|(y=\"[0-9]{2}\")|(y=\"1[0-9]{2}\")")
 
+
+###########################
+### pdf input support   ###
+###########################
+
+function(add_pdfinput_test name pages)
+
+    add_cli_test(pdfinput-${name}
+        INPUT_FILENAME pdfinput/${name}.pdf
+        PARAMETERS --pages=${pages} --pdf-font-strategy=draw-all --actions=export-filename:${name}.svg$<SEMICOLON>export-do
+        TEST_SCRIPT compare.sh ${name}.svg "${CMAKE_CURRENT_SOURCE_DIR}/testcases/pdfinput/${name}_expected.svg")
+
+endfunction(add_pdfinput_test)
+
+# CMS testing disabled because CI builder doesn't support LCMS yet.
+# add_pdfinput_test(cms 1)
+add_pdfinput_test(font-spacing 1)
+add_pdfinput_test(font-style 1)
+add_pdfinput_test(gradients 1)
+add_pdfinput_test(latex 1)
+add_pdfinput_test(transparency-groups 1)
+add_pdfinput_test(multi-page-sample all)
+
 ###########################
 ### file format support ###
 ###########################

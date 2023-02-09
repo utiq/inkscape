@@ -56,9 +56,12 @@ set(extension_SRC
 	internal/filter/filter-file.cpp
 	internal/filter/filter.cpp
 
+	internal/pdfinput/pdf-utils.cpp
 	internal/pdfinput/pdf-input.cpp
 	internal/pdfinput/pdf-parser.cpp
 	internal/pdfinput/svg-builder.cpp
+	internal/pdfinput/poppler-utils.cpp
+	internal/pdfinput/poppler-cairo-font-engine.cpp
 
 	prefdialog/prefdialog.cpp
 	prefdialog/parameter.cpp
@@ -130,9 +133,13 @@ set(extension_SRC
 	internal/metafile-inout.h
 	internal/metafile-print.h
 	internal/odf.h
+	internal/pdfinput/enums.h
+	internal/pdfinput/pdf-utils.h
 	internal/pdfinput/pdf-input.h
 	internal/pdfinput/pdf-parser.h
 	internal/pdfinput/svg-builder.h
+	internal/pdfinput/poppler-utils.h
+	internal/pdfinput/poppler-cairo-font-engine.h
 	internal/png-output.h
 	internal/pov-out.h
 	internal/svg.h

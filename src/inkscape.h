@@ -148,6 +148,12 @@ public:
     bool get_pdf_poppler() {
         return _pdf_poppler;
     }
+    void set_pdf_font_strategy(int mode) {
+        _pdf_font_strategy = mode;
+    }
+    int get_pdf_font_strategy() {
+        return _pdf_font_strategy;
+    }
     void set_pages(const std::string &pages) {
         _pages = pages;
     }
@@ -175,6 +181,7 @@ public:
     static bool _crashIsHappening;
     bool _use_gui = false;
     bool _pdf_poppler = false;
+    int _pdf_font_strategy = 0;
 };
 
 } // namespace Inkscape

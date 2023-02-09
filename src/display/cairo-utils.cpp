@@ -11,31 +11,29 @@
 
 #include "display/cairo-utils.h"
 
-#include <atomic>
-#include <stdexcept>
-
-#include <glib/gstdio.h>
-#include <glibmm/fileutils.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
-
-#include <2geom/pathvector.h>
-#include <2geom/curves.h>
 #include <2geom/affine.h>
-#include <2geom/point.h>
+#include <2geom/curves.h>
+#include <2geom/path-sink.h>
 #include <2geom/path.h>
-#include <2geom/transforms.h>
+#include <2geom/pathvector.h>
+#include <2geom/point.h>
 #include <2geom/sbasis-to-bezier.h>
-
+#include <2geom/transforms.h>
+#include <atomic>
 #include <boost/algorithm/string.hpp>
 #include <boost/operators.hpp>
 #include <boost/optional/optional.hpp>
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <glib/gstdio.h>
+#include <glibmm/fileutils.h>
+#include <stdexcept>
 
-#include "color.h"
 #include "cairo-templates.h"
+#include "color.h"
 #include "document.h"
+#include "helper/pixbuf-ops.h"
 #include "preferences.h"
 #include "util/units.h"
-#include "helper/pixbuf-ops.h"
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 17, 6)
 #define CAIRO_HAS_HAIRLINE
@@ -906,6 +904,59 @@ feed_pathvector_to_cairo (cairo_t *ct, Geom::PathVector const &pathv)
     for(const auto & it : pathv) {
         feed_path_to_cairo(ct, it);
     }
+}
+
+/*
+ * Pulls out the last cairo path context and reconstitutes it
+ * into a local geom path vector for inkscape use.
+ *
+ * @param ct - The cairo context
+ *
+ * @returns an optioal Geom::PathVector object
+ */
+std::optional<Geom::PathVector> extract_pathvector_from_cairo(cairo_t *ct)
+{
+    cairo_path_t *path = cairo_copy_path(ct);
+    if (!path)
+        return std::nullopt;
+
+    Geom::PathBuilder res;
+    auto end = &path->data[path->num_data];
+    for (auto p = &path->data[0]; p < end; p += p->header.length) {
+        switch (p->header.type) {
+            case CAIRO_PATH_MOVE_TO:
+                if (p->header.length != 2)
+                    return std::nullopt;
+                res.moveTo(Geom::Point(p[1].point.x, p[1].point.y));
+                break;
+
+            case CAIRO_PATH_LINE_TO:
+                if (p->header.length != 2)
+                    return std::nullopt;
+                res.lineTo(Geom::Point(p[1].point.x, p[1].point.y));
+                break;
+
+            case CAIRO_PATH_CURVE_TO:
+                if (p->header.length != 4)
+                    return std::nullopt;
+                res.curveTo(Geom::Point(p[1].point.x, p[1].point.y), Geom::Point(p[2].point.x, p[2].point.y),
+                            Geom::Point(p[3].point.x, p[3].point.y));
+                break;
+
+            case CAIRO_PATH_CLOSE_PATH:
+                if (p->header.length != 1)
+                    return std::nullopt;
+                res.closePath();
+                break;
+            default:
+                return std::nullopt;
+        }
+    }
+
+    res.flush();
+    return res.peek();
+finish:
+    cairo_path_destroy(path);
 }
 
 static std::atomic<int> num_filter_threads = 4;

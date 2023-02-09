@@ -46,6 +46,20 @@ template<class Ob> Glib::RefPtr<Ob> get_object(Glib::RefPtr<Gtk::Builder>& build
     return object;
 }
 
+/**
+ * This version of get_object is needed for Gtk::CellRenderer objects which can not be
+ * put into Glib::RefPtr by the compiler, but are somehow passed to us as RefPtrs anyway.
+ */
+template <class Ob>
+Ob &get_object_raw(Glib::RefPtr<Gtk::Builder> &builder, const char *id)
+{
+    auto object = dynamic_cast<Ob *>(builder->get_object(id).get());
+    if (!object) {
+        throw std::runtime_error("Missing object in a glade resource file");
+    }
+    return *object;
+}
+
 // load glade file from share/ui folder and return builder; throws on errors
 Glib::RefPtr<Gtk::Builder> create_builder(const char* filename);
 

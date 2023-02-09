@@ -161,6 +161,8 @@ unpremul_alpha(const guint32 color, const guint32 alpha)
 void feed_pathvector_to_cairo (cairo_t *ct, Geom::PathVector const &pathv, Geom::Affine trans, Geom::OptRect area, bool optimize_stroke, double stroke_width);
 void feed_pathvector_to_cairo (cairo_t *ct, Geom::PathVector const &pathv);
 
+std::optional<Geom::PathVector> extract_pathvector_from_cairo(cairo_t *ct);
+
 #define EXTRACT_ARGB32(px,a,r,g,b) \
     guint32 a, r, g, b; \
     a = ((px) & 0xff000000) >> 24; \

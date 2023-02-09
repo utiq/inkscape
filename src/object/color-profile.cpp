@@ -61,7 +61,6 @@ namespace
 cmsHPROFILE getSystemProfileHandle();
 cmsHPROFILE getProofProfileHandle();
 void loadProfiles();
-Glib::ustring getNameFromProfile(cmsHPROFILE profile);
 }
 
 #ifdef DEBUG_LCMS
@@ -604,11 +603,11 @@ private:
     cmsProfileClassSignature _profileClass;
 };
 
-ProfileInfo::ProfileInfo( cmsHPROFILE prof, Glib::ustring  path ) :
-    _path(std::move( path )),
-    _name( getNameFromProfile(prof) ),
-    _profileSpace( cmsGetColorSpace( prof ) ),
-    _profileClass( cmsGetDeviceClass( prof ) )
+ProfileInfo::ProfileInfo(cmsHPROFILE prof, Glib::ustring path)
+    : _path(std::move(path))
+    , _name(ColorProfile::getNameFromProfile(prof))
+    , _profileSpace(cmsGetColorSpace(prof))
+    , _profileClass(cmsGetDeviceClass(prof))
 {
 }
 
@@ -828,10 +827,7 @@ void errorHandlerCB(cmsContext /*contextID*/, cmsUInt32Number errorCode, char co
     //g_message("lcms: Error %d; %s", errorCode, errorText);
 }
 
-namespace
-{
-
-Glib::ustring getNameFromProfile(cmsHPROFILE profile)
+Glib::ustring ColorProfile::getNameFromProfile(cmsHPROFILE profile)
 {
     Glib::ustring nameStr;
     if ( profile ) {
@@ -853,6 +849,41 @@ Glib::ustring getNameFromProfile(cmsHPROFILE profile)
     }
     return nameStr;
 }
+
+/**
+ * Cleans up name to remove disallowed characters.
+ * Some discussion at http://markmail.org/message/bhfvdfptt25kgtmj
+ * Allowed ASCII first characters:  ':', 'A'-'Z', '_', 'a'-'z'
+ * Allowed ASCII remaining chars add: '-', '.', '0'-'9',
+ *
+ * @param str the string to clean up.
+ */
+void ColorProfile::sanitizeName(std::string &str)
+{
+    if (str.size() > 0) {
+        char val = str.at(0);
+        if (((val < 'A') || (val > 'Z')) && ((val < 'a') || (val > 'z')) && (val != '_') && (val != ':')) {
+            str.insert(0, "_");
+        }
+        for (int i = 1; i < str.size(); i++) {
+            char val = str.at(i);
+            if (((val < 'A') || (val > 'Z')) && ((val < 'a') || (val > 'z')) && ((val < '0') || (val > '9')) &&
+                (val != '_') && (val != ':') && (val != '-') && (val != '.')) {
+                if (str.at(i - 1) == '-') {
+                    str.erase(i, 1);
+                    i--;
+                } else {
+                    str.replace(i, 1, "-");
+                }
+            }
+        }
+        if (str.at(str.size() - 1) == '-') {
+            str.pop_back();
+        }
+    }
+}
+
+namespace {
 
 /**
  * This function loads or refreshes data in knownProfiles.

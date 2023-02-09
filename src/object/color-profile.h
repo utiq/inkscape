@@ -49,6 +49,9 @@ public:
 
     bool operator<(ColorProfile const &other) const;
 
+    static Glib::ustring getNameFromProfile(cmsHPROFILE profile);
+    static void sanitizeName(std::string &str);
+
     friend cmsHPROFILE colorprofile_get_handle( SPDocument*, unsigned int*, char const* );
     friend class CMSSystem;
 

@@ -953,7 +953,7 @@ Svg::open (Inkscape::Extension::Input *mod, const gchar *uri)
 
     // Page selection is achieved by removing any page not in the found list, the exports
     // Can later figure out how they'd like to process the remaining pages.
-    if (!page_nums.empty()) {
+    if (doc && !page_nums.empty()) {
         doc->prunePages(page_nums, true);
     }
 

@@ -369,6 +369,22 @@ static bool ustringPairSort(std::pair<PangoFontFamily*, Glib::ustring> const& fi
     return first.second < second.second;
 }
 
+/**
+ * Returns a list of all font names available in this font config
+ */
+std::vector<std::string> FontFactory::GetAllFontNames()
+{
+    std::vector<std::string> ret;
+    PangoFontFamily **families = nullptr;
+    int numFamilies = 0;
+    pango_font_map_list_families(fontServer, &families, &numFamilies);
+    // When pango version is newer, this can become a c++11 loop
+    for (int currentFamily = 0; currentFamily < numFamilies; ++currentFamily) {
+        ret.emplace_back(pango_font_family_get_name(families[currentFamily]));
+    }
+    return ret;
+}
+
 void FontFactory::GetUIFamilies(std::vector<PangoFontFamily*> &out)
 {
     // Gather the family names as listed by Pango
@@ -400,6 +416,14 @@ void FontFactory::GetUIFamilies(std::vector<PangoFontFamily*> &out)
     for (auto &i : sorted) {
         out.push_back(i.first);
     }
+}
+
+/*
+ * Returns true if the font family is in the local font server map.
+ */
+bool FontFactory::hasFontFamily(const std::string &family)
+{
+    return getSubstituteFontName(family) == family;
 }
 
 GList *FontFactory::GetUIStyles(PangoFontFamily *in)

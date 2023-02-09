@@ -19,12 +19,15 @@
 #include "pdf-input.h"
 
 #ifdef HAVE_POPPLER
-#include <poppler/goo/GooString.h>
+#include <poppler/Catalog.h>
 #include <poppler/ErrorCodes.h>
+#include <poppler/FontInfo.h>
+#include <poppler/GfxFont.h>
 #include <poppler/GlobalParams.h>
+#include <poppler/OptionalContent.h>
 #include <poppler/PDFDoc.h>
 #include <poppler/Page.h>
-#include <poppler/Catalog.h>
+#include <poppler/goo/GooString.h>
 
 #ifdef HAVE_POPPLER_CAIRO
 #include <poppler/glib/poppler.h>
@@ -51,11 +54,14 @@
 #include "inkscape.h"
 #include "object/sp-root.h"
 #include "pdf-parser.h"
+#include "ui/builder-utils.h"
 #include "ui/dialog-events.h"
 #include "ui/widget/frame.h"
 #include "ui/widget/spinbutton.h"
 #include "util/parse-int-range.h"
 #include "util/units.h"
+
+using namespace Inkscape::UI;
 
 namespace {
 
@@ -75,234 +81,62 @@ namespace Inkscape {
 namespace Extension {
 namespace Internal {
 
+class FontModelColumns : public Gtk::TreeModel::ColumnRecord
+{
+public:
+    FontModelColumns()
+    {
+        add(id);
+        add(family);
+        add(style);
+        add(weight);
+        add(stretch);
+        add(proc_label);
+        add(proc_id);
+        add(icon);
+        add(em);
+    }
+    ~FontModelColumns() override = default;
+    Gtk::TreeModelColumn<int> id;
+    Gtk::TreeModelColumn<Glib::ustring> family;
+    Gtk::TreeModelColumn<Glib::ustring> style;
+    Gtk::TreeModelColumn<Glib::ustring> weight;
+    Gtk::TreeModelColumn<Glib::ustring> stretch;
+    Gtk::TreeModelColumn<Glib::ustring> proc_label;
+    Gtk::TreeModelColumn<int> proc_id;
+    Gtk::TreeModelColumn<Glib::ustring> icon;
+    Gtk::TreeModelColumn<bool> em;
+};
+
 /**
  * \brief The PDF import dialog
  * FIXME: Probably this should be placed into src/ui/dialog
  */
 
-static const gchar * crop_setting_choices[] = {
-	//TRANSLATORS: The following are document crop settings for PDF import
-	// more info: http://www.acrobatusers.com/tech_corners/javascript_corner/tips/2006/page_bounds/
-    N_("media box"),
-    N_("crop box"),
-    N_("trim box"),
-    N_("bleed box"),
-    N_("art box")
-};
-
-PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri*/)
+PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar * /*uri*/)
     : _pdf_doc(std::move(doc))
+    , _builder(UI::create_builder("extension-pdfinput.glade"))
+    , _page_numbers(UI::get_widget<Gtk::Entry>(_builder, "page-numbers"))
+    , _preview_area(UI::get_widget<Gtk::DrawingArea>(_builder, "preview-area"))
+    , _embed_images(UI::get_widget<Gtk::CheckButton>(_builder, "embed-images"))
+    , _mesh_slider(UI::get_widget<Gtk::Scale>(_builder, "mesh-slider"))
+    , _mesh_label(UI::get_widget<Gtk::Label>(_builder, "mesh-label"))
+    , _next_page(UI::get_widget<Gtk::Button>(_builder, "next-page"))
+    , _prev_page(UI::get_widget<Gtk::Button>(_builder, "prev-page"))
+    , _current_page(UI::get_widget<Gtk::Label>(_builder, "current-page"))
+    , _font_model(UI::get_object<Gtk::ListStore>(_builder, "font-list"))
+    , _font_col(new FontModelColumns())
 {
     assert(_pdf_doc);
-#ifdef HAVE_POPPLER_CAIRO
-    _poppler_doc = NULL;
-#endif // HAVE_POPPLER_CAIRO
-    cancelbutton = Gtk::manage(new Gtk::Button(_("_Cancel"), true));
-    okbutton     = Gtk::manage(new Gtk::Button(_("_OK"),     true));
-    _labelSelect = Gtk::manage(new class Gtk::Label(_("Select page:")));
 
-    // All Pages
-    _pageAllPages = Gtk::manage(new class Gtk::CheckButton(_("All")));
+    _setFonts(getPdfFonts(_pdf_doc));
 
-    // Page number
-    _pageNumbers = Gtk::manage(new Gtk::Entry());
-    _pageNumbers->set_text("all");
-    _pageNumbers->set_sensitive(false);
-    _labelTotalPages = Gtk::manage(new class Gtk::Label());
-    hbox2 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
-
-    // Disable the page selector when there's only one page
-    int num_pages = _pdf_doc->getCatalog()->getNumPages();
-    if ( num_pages == 1 ) {
-        _pageAllPages->set_sensitive(false);
-    } else {
-        // Display total number of pages
-        gchar *label_text = g_strdup_printf(_("out of %i"), num_pages);
-        _labelTotalPages->set_label(label_text);
-        g_free(label_text);
-    }
-
-    // Crop settings
-    _cropCheck = Gtk::manage(new class Gtk::CheckButton(_("Clip to:")));
-    _cropTypeCombo = Gtk::manage(new class Gtk::ComboBoxText());
-    int num_crop_choices = sizeof(crop_setting_choices) / sizeof(crop_setting_choices[0]);
-    for ( int i = 0 ; i < num_crop_choices ; i++ ) {
-        _cropTypeCombo->append(_(crop_setting_choices[i]));
-    }
-    _cropTypeCombo->set_active_text(_(crop_setting_choices[0]));
-    _cropTypeCombo->set_sensitive(false);
-
-    hbox3 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 4));
-    vbox2 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_VERTICAL, 4));
-    _pageSettingsFrame = Gtk::manage(new class Inkscape::UI::Widget::Frame(_("Page settings")));
-    _labelPrecision = Gtk::manage(new class Gtk::Label(_("Precision of approximating gradient meshes:")));
-    _labelPrecisionWarning = Gtk::manage(new class Gtk::Label(_("<b>Note</b>: setting the precision too high may result in a large SVG file and slow performance.")));
-    _labelPrecisionWarning->set_max_width_chars(50);
-
-#ifdef HAVE_POPPLER_CAIRO
-    Gtk::RadioButton::Group group;
-    _importViaPoppler  = Gtk::manage(new class Gtk::RadioButton(group,_("Poppler/Cairo import")));
-    _labelViaPoppler = Gtk::manage(new class Gtk::Label(_("Import via external library. Text consists of groups containing cloned glyphs where each glyph is a path. Images are stored internally. Meshes cause entire document to be rendered as a raster image.")));
-    _labelViaPoppler->set_max_width_chars(50);
-    _importViaInternal = Gtk::manage(new class Gtk::RadioButton(group,_("Internal import")));
-    _labelViaInternal = Gtk::manage(new class Gtk::Label(_("Import via internal (Poppler derived) library. Text is stored as text but white space is missing. Meshes are converted to tiles, the number depends on the precision set below.")));
-    _labelViaInternal->set_max_width_chars(50);
-#endif
-
-    _fallbackPrecisionSlider_adj = Gtk::Adjustment::create(2, 1, 256, 1, 10, 10);
-    _fallbackPrecisionSlider = Gtk::manage(new class Gtk::Scale(_fallbackPrecisionSlider_adj));
-    _fallbackPrecisionSlider->set_value(2.0);
-    _labelPrecisionComment = Gtk::manage(new class Gtk::Label(_("rough")));
-    hbox6 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 4));
-
-    // Text options
-    // _labelText = Gtk::manage(new class Gtk::Label(_("Text handling:")));
-    // _textHandlingCombo = Gtk::manage(new class Gtk::ComboBoxText());
-    // _textHandlingCombo->append(_("Import text as text"));
-    // _textHandlingCombo->set_active_text(_("Import text as text"));
-    // hbox5 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 4));
-
-    // Font option
-    _localFontsCheck = Gtk::manage(new class Gtk::CheckButton(_("Replace PDF fonts by closest-named installed fonts")));
-
-    _embedImagesCheck = Gtk::manage(new class Gtk::CheckButton(_("Embed images")));
-    vbox3 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_VERTICAL, 4));
-    _importSettingsFrame = Gtk::manage(new class Inkscape::UI::Widget::Frame(_("Import settings")));
-    vbox1 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_VERTICAL, 4));
-    _previewArea = Gtk::manage(new class Gtk::DrawingArea());
-    hbox1 = Gtk::manage(new class Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 4));
-    cancelbutton->set_can_focus();
-    cancelbutton->set_can_default();
-    cancelbutton->set_relief(Gtk::RELIEF_NORMAL);
-    okbutton->set_can_focus();
-    okbutton->set_can_default();
-    okbutton->set_relief(Gtk::RELIEF_NORMAL);
-
-    _labelSelect->set_xalign(0.5);
-    _labelSelect->set_yalign(0.5);
-    _labelTotalPages->set_xalign(0.5);
-    _labelTotalPages->set_yalign(0.5);
-    _labelPrecision->set_xalign(0.0);
-    _labelPrecision->set_yalign(0.5);
-    _labelPrecisionWarning->set_xalign(0.0);
-    _labelPrecisionWarning->set_yalign(0.5);
-    _labelPrecisionComment->set_xalign(0.5);
-    _labelPrecisionComment->set_yalign(0.5);
-
-    _labelSelect->set_margin_start(4);
-    _labelSelect->set_margin_end(4);
-    _labelTotalPages->set_margin_start(4);
-    _labelTotalPages->set_margin_end(4);
-    _labelPrecision->set_margin_start(4);
-    _labelPrecision->set_margin_end(4);
-    _labelPrecisionWarning->set_margin_start(4);
-    _labelPrecisionWarning->set_margin_end(4);
-    _labelPrecisionComment->set_margin_start(4);
-    _labelPrecisionComment->set_margin_end(4);
-
-    _labelSelect->set_justify(Gtk::JUSTIFY_LEFT);
-    _labelSelect->set_line_wrap(false);
-    _labelSelect->set_use_markup(false);
-    _labelSelect->set_selectable(false);
-    _pageAllPages->set_can_focus();
-    _pageAllPages->set_relief(Gtk::RELIEF_NORMAL);
-    _pageAllPages->set_mode(true);
-    _pageAllPages->set_active(true);
-    _pageNumbers->set_can_focus();
-    _labelTotalPages->set_justify(Gtk::JUSTIFY_LEFT);
-    _labelTotalPages->set_line_wrap(false);
-    _labelTotalPages->set_use_markup(false);
-    _labelTotalPages->set_selectable(false);
-    hbox2->pack_start(*_pageAllPages, Gtk::PACK_SHRINK, 4);
-    hbox2->pack_start(*_labelSelect, Gtk::PACK_SHRINK, 4);
-    hbox2->pack_start(*_pageNumbers, Gtk::PACK_SHRINK, 4);
-    hbox2->pack_start(*_labelTotalPages, Gtk::PACK_SHRINK, 4);
-    _cropCheck->set_can_focus();
-    _cropCheck->set_relief(Gtk::RELIEF_NORMAL);
-    _cropCheck->set_mode(true);
-    _cropCheck->set_active(false);
-    _cropTypeCombo->set_border_width(1);
-    hbox3->pack_start(*_cropCheck, Gtk::PACK_SHRINK, 4);
-    hbox3->pack_start(*_cropTypeCombo, Gtk::PACK_SHRINK, 0);
-    vbox2->pack_start(*hbox2);
-    vbox2->pack_start(*hbox3);
-    _pageSettingsFrame->add(*vbox2);
-    _pageSettingsFrame->set_border_width(4);
-    _labelPrecision->set_justify(Gtk::JUSTIFY_LEFT);
-    _labelPrecision->set_line_wrap(true);
-    _labelPrecision->set_use_markup(false);
-    _labelPrecision->set_selectable(false);
-    _labelPrecisionWarning->set_justify(Gtk::JUSTIFY_LEFT);
-    _labelPrecisionWarning->set_line_wrap(true);
-    _labelPrecisionWarning->set_use_markup(true);
-    _labelPrecisionWarning->set_selectable(false);
-
-#ifdef HAVE_POPPLER_CAIRO
-    _importViaPoppler->set_can_focus();
-    _importViaPoppler->set_relief(Gtk::RELIEF_NORMAL);
-    _importViaPoppler->set_mode(true);
-    _importViaPoppler->set_active(false);
-    _importViaInternal->set_can_focus();
-    _importViaInternal->set_relief(Gtk::RELIEF_NORMAL);
-    _importViaInternal->set_mode(true);
-    _importViaInternal->set_active(true);
-    _labelViaPoppler->set_line_wrap(true);
-    _labelViaInternal->set_line_wrap(true);
-    _labelViaPoppler->set_xalign(0);
-    _labelViaInternal->set_xalign(0);
-#endif
-
-    _fallbackPrecisionSlider->set_size_request(180,-1);
-    _fallbackPrecisionSlider->set_can_focus();
-    _fallbackPrecisionSlider->set_inverted(false);
-    _fallbackPrecisionSlider->set_digits(1);
-    _fallbackPrecisionSlider->set_draw_value(true);
-    _fallbackPrecisionSlider->set_value_pos(Gtk::POS_TOP);
-    _labelPrecisionComment->set_size_request(90,-1);
-    _labelPrecisionComment->set_justify(Gtk::JUSTIFY_LEFT);
-    _labelPrecisionComment->set_line_wrap(false);
-    _labelPrecisionComment->set_use_markup(false);
-    _labelPrecisionComment->set_selectable(false);
-    hbox6->pack_start(*_fallbackPrecisionSlider, Gtk::PACK_SHRINK, 4);
-    hbox6->pack_start(*_labelPrecisionComment, Gtk::PACK_SHRINK, 0);
-    // _labelText->set_alignment(0.5,0.5);
-    // _labelText->set_padding(4,0);
-    // _labelText->set_justify(Gtk::JUSTIFY_LEFT);
-    // _labelText->set_line_wrap(false);
-    // _labelText->set_use_markup(false);
-    // _labelText->set_selectable(false);
-    // hbox5->pack_start(*_labelText, Gtk::PACK_SHRINK, 0);
-    // hbox5->pack_start(*_textHandlingCombo, Gtk::PACK_SHRINK, 0);
-    _localFontsCheck->set_can_focus();
-    _localFontsCheck->set_relief(Gtk::RELIEF_NORMAL);
-    _localFontsCheck->set_mode(true);
-    _localFontsCheck->set_active(true);
-    _embedImagesCheck->set_can_focus();
-    _embedImagesCheck->set_relief(Gtk::RELIEF_NORMAL);
-    _embedImagesCheck->set_mode(true);
-    _embedImagesCheck->set_active(true);
-#ifdef HAVE_POPPLER_CAIRO
-    vbox3->pack_start(*_importViaPoppler,  Gtk::PACK_SHRINK, 0);
-    vbox3->pack_start(*_labelViaPoppler,  Gtk::PACK_SHRINK, 0);
-    vbox3->pack_start(*_importViaInternal, Gtk::PACK_SHRINK, 0);
-    vbox3->pack_start(*_labelViaInternal, Gtk::PACK_SHRINK, 0);
-#endif    
-    vbox3->pack_start(*_localFontsCheck, Gtk::PACK_SHRINK, 0);
-    vbox3->pack_start(*_embedImagesCheck, Gtk::PACK_SHRINK, 0);
-    vbox3->pack_start(*_labelPrecision, Gtk::PACK_SHRINK, 0);
-    vbox3->pack_start(*hbox6, Gtk::PACK_SHRINK, 0);
-    vbox3->pack_start(*_labelPrecisionWarning, Gtk::PACK_SHRINK, 0);
-    // vbox3->pack_start(*hbox5, Gtk::PACK_SHRINK, 4);
-    _importSettingsFrame->add(*vbox3);
-    _importSettingsFrame->set_border_width(4);
-    vbox1->pack_start(*_pageSettingsFrame, Gtk::PACK_SHRINK, 0);
-    vbox1->pack_start(*_importSettingsFrame, Gtk::PACK_SHRINK, 0);
-    hbox1->pack_start(*vbox1);
-    hbox1->pack_start(*_previewArea, Gtk::PACK_SHRINK, 4);
+    auto okbutton = Gtk::manage(new Gtk::Button(_("_OK"), true));
 
     get_content_area()->set_homogeneous(false);
     get_content_area()->set_spacing(0);
-    get_content_area()->pack_start(*hbox1);
+
+    get_content_area()->pack_start(UI::get_widget<Gtk::Box>(_builder, "content"));
 
     this->set_title(_("PDF Import Settings"));
     this->set_modal(true);
@@ -310,25 +144,28 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     this->property_window_position().set_value(Gtk::WIN_POS_NONE);
     this->set_resizable(true);
     this->property_destroy_with_parent().set_value(false);
-    this->add_action_widget(*cancelbutton, -6);
+
+    this->add_action_widget(*Gtk::manage(new Gtk::Button(_("_Cancel"), true)), -6);
     this->add_action_widget(*okbutton, -5);
 
     this->show_all();
-    
-    // Connect signals
-    _previewArea->signal_draw().connect(sigc::mem_fun(*this, &PdfImportDialog::_onDraw));
-    _pageAllPages->signal_toggled().connect(sigc::mem_fun(*this, &PdfImportDialog::_onToggleAllPages));
-    _pageNumbers->signal_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPageNumberChanged));
-    _cropCheck->signal_toggled().connect(sigc::mem_fun(*this, &PdfImportDialog::_onToggleCropping));
-    _fallbackPrecisionSlider_adj->signal_value_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPrecisionChanged));
-#ifdef HAVE_POPPLER_CAIRO
-    _importViaPoppler->signal_toggled().connect(sigc::mem_fun(*this, &PdfImportDialog::_onToggleImport));
-#endif
 
     _render_thumb = false;
+
+    // Connect signals
+    _next_page.signal_clicked().connect([=] { _setPreviewPage(_preview_page + 1); });
+    _prev_page.signal_clicked().connect([=] { _setPreviewPage(_preview_page - 1); });
+    _preview_area.signal_draw().connect(sigc::mem_fun(*this, &PdfImportDialog::_onDraw));
+    _page_numbers.signal_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_onPageNumberChanged));
+    _mesh_slider.get_adjustment()->signal_value_changed().connect(
+        sigc::mem_fun(*this, &PdfImportDialog::_onPrecisionChanged));
+
 #ifdef HAVE_POPPLER_CAIRO
-    _cairo_surface = NULL;
     _render_thumb = true;
+
+    // Disable the page selector when there's only one page
+    _total_pages = _pdf_doc->getCatalog()->getNumPages();
+    _page_numbers.set_sensitive(_total_pages > 1);
 
     // Create PopplerDocument
     std::string filename = _pdf_doc->getFileName()->getCString();
@@ -340,9 +177,6 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     if (!full_uri.empty()) {
         _poppler_doc = poppler_document_new_from_file(full_uri.c_str(), NULL, NULL);
     }
-
-    // Set sensitivity of some widgets based on selected import type.
-    _onToggleImport();
 #endif
 
     // Set default preview size
@@ -354,8 +188,22 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar */*uri
     _current_pages = "all";
     _setPreviewPage(1);
 
-    set_default (*okbutton);
-    set_focus (*okbutton);
+    okbutton->set_can_focus();
+    okbutton->set_can_default();
+    set_default(*okbutton);
+    set_focus(*okbutton);
+
+    auto &font_strat = UI::get_object_raw<Gtk::CellRendererCombo>(_builder, "cell-strat");
+    font_strat.signal_changed().connect([=](const Glib::ustring &path, const Gtk::TreeModel::iterator &source) {
+        if (auto target = _font_model->get_iter(path)) {
+            (*target)[_font_col->proc_id] = int((*source)[_font_col->id]);
+            (*target)[_font_col->proc_label] = Glib::ustring((*source)[_font_col->family]);
+        }
+    });
+
+    auto &font_render = UI::get_widget<Gtk::ComboBox>(_builder, "font-rendering");
+    font_render.signal_changed().connect(sigc::mem_fun(*this, &PdfImportDialog::_fontRenderChanged));
+    _fontRenderChanged();
 }
 
 PdfImportDialog::~PdfImportDialog() {
@@ -384,18 +232,16 @@ bool PdfImportDialog::showDialog() {
 }
 
 std::string PdfImportDialog::getSelectedPages() {
-    if (_pageNumbers->get_sensitive()) {
+    if (_page_numbers.get_sensitive()) {
         return _current_pages;
     }
     return "all";
 }
 
-bool PdfImportDialog::getImportMethod() {
-#ifdef HAVE_POPPLER_CAIRO
-    return _importViaPoppler->get_active();
-#else
-    return false;
-#endif
+PdfImportType PdfImportDialog::getImportMethod()
+{
+    auto &import_type = UI::get_widget<Gtk::Notebook>(_builder, "import-type");
+    return (PdfImportType)import_type.get_current_page();
 }
 
 /**
@@ -404,37 +250,12 @@ bool PdfImportDialog::getImportMethod() {
  */
 void PdfImportDialog::getImportSettings(Inkscape::XML::Node *prefs) {
     prefs->setAttribute("selectedPages", _current_pages);
-    if (_cropCheck->get_active()) {
-        Glib::ustring current_choice = _cropTypeCombo->get_active_text();
-        int num_crop_choices = sizeof(crop_setting_choices) / sizeof(crop_setting_choices[0]);
-        int i = 0;
-        for ( ; i < num_crop_choices ; i++ ) {
-            if ( current_choice == _(crop_setting_choices[i]) ) {
-                break;
-            }
-        }
-        prefs->setAttributeSvgDouble("cropTo", (double)i);
-    } else {
-        prefs->setAttributeSvgDouble("cropTo", -1.0);
-    }
-    prefs->setAttributeSvgDouble("approximationPrecision", _fallbackPrecisionSlider->get_value());
-    if (_localFontsCheck->get_active()) {
-        prefs->setAttribute("localFonts", "1");
-    } else {
-        prefs->setAttribute("localFonts", "0");
-    }
-    if (_embedImagesCheck->get_active()) {
-        prefs->setAttribute("embedImages", "1");
-    } else {
-        prefs->setAttribute("embedImages", "0");
-    }
-#ifdef HAVE_POPPLER_CAIRO
-    if (_importViaPoppler->get_active()) {
-        prefs->setAttribute("importviapoppler", "1");
-    } else {
-        prefs->setAttribute("importviapoppler", "0");
-    }
-#endif
+
+    auto &clip_to = UI::get_widget<Gtk::ComboBox>(_builder, "clip-to");
+
+    prefs->setAttribute("cropTo", clip_to.get_active_id());
+    prefs->setAttributeSvgDouble("approximationPrecision", _mesh_slider.get_value());
+    prefs->setAttributeBoolean("embedImages", _embed_images.get_active());
 }
 
 /**
@@ -442,78 +263,110 @@ void PdfImportDialog::getImportSettings(Inkscape::XML::Node *prefs) {
  * Evenly divides the interval of possible values between the available labels.
  */
 void PdfImportDialog::_onPrecisionChanged() {
+    static Glib::ustring labels[] = {
+        Glib::ustring(C_("PDF input precision", "rough")), Glib::ustring(C_("PDF input precision", "medium")),
+        Glib::ustring(C_("PDF input precision", "fine")), Glib::ustring(C_("PDF input precision", "very fine"))};
 
-    static Glib::ustring precision_comments[] = {
-        Glib::ustring(C_("PDF input precision", "rough")),
-        Glib::ustring(C_("PDF input precision", "medium")),
-        Glib::ustring(C_("PDF input precision", "fine")),
-        Glib::ustring(C_("PDF input precision", "very fine"))
-    };
-
-    double min = _fallbackPrecisionSlider_adj->get_lower();
-    double max = _fallbackPrecisionSlider_adj->get_upper();
-    int num_intervals = sizeof(precision_comments) / sizeof(precision_comments[0]);
-    double interval_len = ( max - min ) / (double)num_intervals;
-    double value = _fallbackPrecisionSlider_adj->get_value();
-    int comment_idx = (int)floor( ( value - min ) / interval_len );
-    _labelPrecisionComment->set_label(precision_comments[comment_idx]);
+    auto adj = _mesh_slider.get_adjustment();
+    double min = adj->get_lower();
+    double value = adj->get_value() - min;
+    double max = adj->get_upper() - min;
+    double interval_len = max / (double)(sizeof(labels) / sizeof(labels[0]));
+    int comment_idx = (int)floor(value / interval_len);
+    _mesh_label.set_label(labels[comment_idx]);
 }
 
-void PdfImportDialog::_onToggleAllPages() {
-    _pageNumbers->set_sensitive(!_pageAllPages->get_active());
-
-    if (_pageAllPages->get_active()) {
-        _setPreviewPage(1);
-        _current_pages = "all";
-    } else {
-        if (_current_pages == "all") {
-            std::ostringstream example;
-            example << "1-" << _pdf_doc->getCatalog()->getNumPages();
-            _current_pages = example.str();
-        }
-    }
-    _pageNumbers->set_text(_current_pages);
-    _onPageNumberChanged();
-}
-
-void PdfImportDialog::_onToggleCropping() {
-    _cropTypeCombo->set_sensitive(_cropCheck->get_active());
-}
-
-void PdfImportDialog::_onPageNumberChanged() {
-    _current_pages = _pageNumbers->get_text();
-    auto nums = parseIntRange(_current_pages, 1, _pdf_doc->getCatalog()->getNumPages());
-    // Constrain to just one page when in cario mode.
-    if (_importViaPoppler->get_active() && nums.size() > 1) {
-        _pageNumbers->set_text(std::to_string(*nums.begin()));
-        return;
-    }
+void PdfImportDialog::_onPageNumberChanged()
+{
+    _current_pages = _page_numbers.get_text();
+    auto nums = parseIntRange(_current_pages, 1, _total_pages);
     if (!nums.empty()) {
         _setPreviewPage(*nums.begin());
     }
 }
 
-#ifdef HAVE_POPPLER_CAIRO
-void PdfImportDialog::_onToggleImport() {
-    if( _importViaPoppler->get_active() ) {
-        hbox3->set_sensitive(false);
-        _localFontsCheck->set_sensitive(false);
-        _embedImagesCheck->set_sensitive(false);
-        hbox6->set_sensitive(false);
-        _pageAllPages->set_sensitive(false);
-        _pageAllPages->set_active(false);
-        _onPageNumberChanged();
-    } else {
-        hbox3->set_sensitive();
-        _localFontsCheck->set_sensitive();
-        _embedImagesCheck->set_sensitive();
-        hbox6->set_sensitive();
-        _pageAllPages->set_sensitive(true);
-        _pageAllPages->set_active(true);
+/**
+ * Set a full list of all fonts in use for the whole PDF document.
+ */
+void PdfImportDialog::_setFonts(const FontList &fonts)
+{
+    _font_model->clear();
+    _font_list = fonts;
+
+    // Find all fonts on this one page
+    /*std::set<int> found;
+    FontInfoScanner page_scanner(_pdf_doc.get(), page-1);
+    for (const FontInfo *font : page_scanner.scan(page)) {
+        found.insert(font->getRef().num);
+        delete font;
+    }*/
+
+    // Now add all fonts and mark the ones from this page
+    for (auto pair : *fonts) {
+        auto font = pair.first;
+        auto &data = pair.second;
+        auto row = *_font_model->append();
+
+        row[_font_col->id] = font->getID()->num;
+        row[_font_col->em] = false;
+        row[_font_col->family] = data.family;
+        row[_font_col->style] = data.style;
+        row[_font_col->weight] = data.weight;
+        row[_font_col->stretch] = data.stretch;
+        // row[_font_col->pages] = data.pages;
+
+        if (font->isCIDFont()) {
+            row[_font_col->icon] = Glib::ustring("text-convert-to-regular");
+        } else {
+            row[_font_col->icon] = Glib::ustring(data.found ? "on" : "off-outline");
+        }
     }
 }
-#endif
 
+void PdfImportDialog::_fontRenderChanged()
+{
+    auto &font_render = UI::get_widget<Gtk::ComboBox>(_builder, "font-rendering");
+    FontStrategy choice = (FontStrategy)std::stoi(font_render.get_active_id().c_str());
+    setFontStrategies(SvgBuilder::autoFontStrategies(choice, _font_list));
+}
+
+/**
+ * Saves each decided font strategy to the Svg Builder object.
+ */
+FontStrategies PdfImportDialog::getFontStrategies()
+{
+    FontStrategies fs;
+    for (auto child : _font_model->children()) {
+        auto value = (FontFallback) int(child[_font_col->proc_id]);
+        fs[child[_font_col->id]] = value;
+    }
+    return fs;
+}
+
+/**
+ * Update the font strats.
+ */
+void PdfImportDialog::setFontStrategies(const FontStrategies &fs)
+{
+    for (auto child : _font_model->children()) {
+        auto value = fs.at(child[_font_col->id]);
+        child[_font_col->proc_id] = (int)value;
+        switch (value) {
+            case FontFallback::AS_SHAPES:
+                child[_font_col->proc_label] = _("Draw to Shapes");
+                break;
+            case FontFallback::AS_TEXT:
+                child[_font_col->proc_label] = _("Keep Original Font Name");
+                break;
+            case FontFallback::AS_SUB:
+                child[_font_col->proc_label] = _("Use Substitute Font");
+                break;
+            case FontFallback::DELETE_TEXT:
+                child[_font_col->proc_label] = _("Delete Text");
+                break;
+        }
+    }
+}
 
 #ifdef HAVE_POPPLER_CAIRO
 /**
@@ -607,9 +460,24 @@ bool PdfImportDialog::_onDraw(const Cairo::RefPtr<Cairo::Context>& cr) {
  * \brief Renders the given page's thumbnail using Cairo
  */
 void PdfImportDialog::_setPreviewPage(int page) {
-
     _previewed_page = _pdf_doc->getCatalog()->getPage(page);
     g_return_if_fail(_previewed_page);
+
+    // Update the UI to select a different page
+    _preview_page = page;
+    _next_page.set_sensitive(page < _total_pages);
+    _prev_page.set_sensitive(page > 1);
+    std::ostringstream example;
+    example << page << " / " << _total_pages;
+    _current_page.set_label(example.str());
+
+    // Update the font list with per-page highlighting
+    // XXX Update this psuedo code with real code
+    /*for (auto iter : _font_model->children()) {
+        std::unorderd_list<int> *pages = row[_font_col->pages];
+        row[_font_col->em] = bool(page in pages);
+    }*/
+
     // Try to get a thumbnail from the PDF if possible
     if (!_render_thumb) {
         if (_thumb_data) {
@@ -621,8 +489,8 @@ void PdfImportDialog::_setPreviewPage(int page) {
             return;
         }
         // Redraw preview area
-        _previewArea->set_size_request(_thumb_width, _thumb_height + 20);
-        _previewArea->queue_draw();
+        _preview_area.set_size_request(_thumb_width, _thumb_height + 20);
+        _preview_area.queue_draw();
         return;
     }
 #ifdef HAVE_POPPLER_CAIRO
@@ -666,8 +534,8 @@ void PdfImportDialog::_setPreviewPage(int page) {
     // Clean up
     cairo_destroy(cr);
     // Redraw preview area
-    _previewArea->set_size_request(_preview_width, _preview_height);
-    _previewArea->queue_draw();
+    _preview_area.set_size_request(_preview_width, _preview_height);
+    _preview_area.queue_draw();
 #endif
 }
 
@@ -745,17 +613,18 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
 
     // Get options
     std::string page_nums = "1";
-    bool is_importvia_poppler = false;
+    PdfImportType import_method = PdfImportType::PDF_IMPORT_INTERNAL;
+    FontStrategies font_strats;
     if (dlg) {
         page_nums = dlg->getSelectedPages();
-#ifdef HAVE_POPPLER_CAIRO
-        is_importvia_poppler = dlg->getImportMethod();
-        // printf("PDF import via %s.\n", is_importvia_poppler ? "poppler" : "native");
-#endif
+        import_method = dlg->getImportMethod();
+        font_strats = dlg->getFontStrategies();
     } else {
         page_nums = INKSCAPE.get_pages();
+        auto strat = (FontStrategy)INKSCAPE.get_pdf_font_strategy();
+        font_strats = SvgBuilder::autoFontStrategies(strat, getPdfFonts(pdf_doc));
 #ifdef HAVE_POPPLER_CAIRO
-        is_importvia_poppler = INKSCAPE.get_pdf_poppler();
+        import_method = (PdfImportType)INKSCAPE.get_pdf_poppler();
 #endif
     }
     // Both poppler and poppler+cairo can get page num info from poppler.
@@ -768,8 +637,7 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
     // Create Inkscape document from file
     SPDocument *doc = nullptr;
     bool saved = false;
-    if(!is_importvia_poppler)
-    {
+    if (import_method == PdfImportType::PDF_IMPORT_INTERNAL) {
         // Create document
         doc = SPDocument::createNewDoc(nullptr, true, true);
         saved = DocumentUndo::getUndoSensitive(doc);
@@ -782,7 +650,7 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
             *dot = 0;
         }
         SvgBuilder *builder = new SvgBuilder(doc, docname, pdf_doc->getXRef());
-
+        builder->setFontStrategies(font_strats);
 
         // Get preferences
         Inkscape::XML::Node *prefs = builder->getPreferences();
@@ -790,18 +658,14 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
             dlg->getImportSettings(prefs);
 
         for (auto p : pages) {
-            // Increment the page building here.
-            builder->pushPage();
             // And then add each of the pages
             add_builder_page(pdf_doc, builder, doc, p);
         }
 
         delete builder;
         g_free(docname);
-    }
-    else
-    {
 #ifdef HAVE_POPPLER_CAIRO
+    } else if (import_method == PdfImportType::PDF_IMPORT_CAIRO) {
         // the poppler import
 
         std::string full_path = uri;
@@ -881,14 +745,11 @@ PdfInput::open(::Inkscape::Extension::Input * /*mod*/, const gchar * uri) {
 void
 PdfInput::add_builder_page(std::shared_ptr<PDFDoc>pdf_doc, SvgBuilder *builder, SPDocument *doc, int page_num)
 {
-    // native importer
-    Catalog *catalog = pdf_doc->getCatalog();
-
-    int const num_pages = catalog->getNumPages();
     Inkscape::XML::Node *prefs = builder->getPreferences();
 
     // Check page exists
-    sanitize_page_number(page_num, num_pages);
+    Catalog *catalog = pdf_doc->getCatalog();
+    sanitize_page_number(page_num, catalog->getNumPages());
     Page *page = catalog->getPage(page_num);
     if (!page) {
         std::cerr << "PDFInput::open: error opening page " << page_num << std::endl;
@@ -897,34 +758,29 @@ PdfInput::add_builder_page(std::shared_ptr<PDFDoc>pdf_doc, SvgBuilder *builder, 
 
     // Apply crop settings
     _POPPLER_CONST PDFRectangle *clipToBox = nullptr;
-    double crop_setting = prefs->getAttributeDouble("cropTo", -1.0);
 
-    if (crop_setting >= 0.0) {    // Do page clipping
-        int crop_choice = (int)crop_setting;
-        switch (crop_choice) {
-            case 0: // Media box
-                clipToBox = page->getMediaBox();
-                break;
-            case 1: // Crop box
-                clipToBox = page->getCropBox();
-                break;
-            case 2: // Bleed box
-                clipToBox = page->getBleedBox();
-                break;
-            case 3: // Trim box
-                clipToBox = page->getTrimBox();
-                break;
-            case 4: // Art box
-                clipToBox = page->getArtBox();
-                break;
-            default:
-                break;
-        }
+    switch (prefs->getAttributeInt("cropTo", -1)) {
+        case 0: // Media box
+            clipToBox = page->getMediaBox();
+            break;
+        case 1: // Crop box
+            clipToBox = page->getCropBox();
+            break;
+        case 2: // Trim box
+            clipToBox = page->getTrimBox();
+            break;
+        case 3: // Bleed box
+            clipToBox = page->getBleedBox();
+            break;
+        case 4: // Art box
+            clipToBox = page->getArtBox();
+            break;
+        default:
+            break;
     }
 
     // Create parser  (extension/internal/pdfinput/pdf-parser.h)
-    PdfParser *pdf_parser = new PdfParser(pdf_doc->getXRef(), builder, page_num-1, page->getRotate(),
-                                          page->getResourceDict(), page->getCropBox(), clipToBox);
+    PdfParser *pdf_parser = new PdfParser(pdf_doc, builder, page, clipToBox);
 
     // Set up approximation precision for parser. Used for converting Mesh Gradients into tiles.
     double color_delta = prefs->getAttributeDouble("approximationPrecision", 2.0);

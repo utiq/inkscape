@@ -63,9 +63,12 @@ public:
     Glib::ustring ConstructFontSpecification(PangoFontDescription *font);
     Glib::ustring ConstructFontSpecification(FontInstance *font);
 
+    std::vector<std::string> GetAllFontNames();
+
     /// Returns strings to be used in the UI for family and face (or "style" as the column is labeled)
     Glib::ustring GetUIFamilyString(PangoFontDescription const *fontDescr);
     Glib::ustring GetUIStyleString(PangoFontDescription const *fontDescr);
+    bool hasFontFamily(const std::string &family);
 
     // Helpfully inserts all font families into the provided vector
     void GetUIFamilies(std::vector<PangoFontFamily*> &out);

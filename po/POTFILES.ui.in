@@ -16,6 +16,7 @@
 ../share/ui/dialog-trace.glade
 ../share/ui/dialog-xml.glade
 ../share/ui/display-popup.glade
+../share/ui/extension-pdfinput.glade
 ../share/ui/gradient-edit.glade
 ../share/ui/inkscape-about.glade
 ../share/ui/inkscape-start.glade

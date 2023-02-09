@@ -19,35 +19,39 @@
 #include <string> 
 
 #ifdef HAVE_POPPLER
+#define USE_CMS
 
-#include "svg-builder.h"
-#include "pdf-parser.h"
-
+#include "Function.h"
+#include "GfxFont.h"
+#include "GfxState.h"
+#include "GlobalParams.h"
+#include "Page.h"
+#include "Stream.h"
+#include "UnicodeMap.h"
+#include "color.h"
+#include "display/cairo-utils.h"
+#include "display/nr-filter-utils.h"
 #include "document.h"
+#include "libnrtype/font-factory.h"
+#include "libnrtype/font-instance.h"
+#include "object/color-profile.h"
+#include "object/sp-defs.h"
+#include "object/sp-item-group.h"
 #include "object/sp-namedview.h"
+#include "pdf-parser.h"
+#include "pdf-utils.h"
 #include "png.h"
-
+#include "poppler-cairo-font-engine.h"
+#include "profile-manager.h"
+#include "svg-builder.h"
+#include "svg/css-ostringstream.h"
+#include "svg/path-string.h"
+#include "svg/svg-color.h"
+#include "svg/svg.h"
+#include "util/units.h"
 #include "xml/document.h"
 #include "xml/node.h"
 #include "xml/repr.h"
-#include "svg/svg.h"
-#include "svg/path-string.h"
-#include "svg/css-ostringstream.h"
-#include "svg/svg-color.h"
-#include "color.h"
-#include "util/units.h"
-#include "display/nr-filter-utils.h"
-#include "libnrtype/font-instance.h"
-#include "libnrtype/font-factory.h"
-#include "object/sp-defs.h"
-
-#include "Function.h"
-#include "GfxState.h"
-#include "GfxFont.h"
-#include "Stream.h"
-#include "Page.h"
-#include "UnicodeMap.h"
-#include "GlobalParams.h"
 
 namespace Inkscape {
 namespace Extension {
@@ -58,20 +62,6 @@ namespace Internal {
 
 #define TRACE(_args) IFTRACE(g_print _args)
 
-/**
- * \struct SvgTransparencyGroup
- * \brief Holds information about a PDF transparency group
- */
-struct SvgTransparencyGroup {
-    double bbox[6]; // TODO should this be 4?
-    Inkscape::XML::Node *container;
-
-    bool isolated;
-    bool knockout;
-    bool for_softmask;
-
-    SvgTransparencyGroup *next;
-};
 
 /**
  * \class SvgBuilder
@@ -91,7 +81,6 @@ SvgBuilder::SvgBuilder(SPDocument *document, gchar *docname, XRef *xref)
     // Set default preference settings
     _preferences = _xml_doc->createElement("svgbuilder:prefs");
     _preferences->setAttribute("embedImages", "1");
-    _preferences->setAttribute("localFonts", "1");
 }
 
 SvgBuilder::SvgBuilder(SvgBuilder *parent, Inkscape::XML::Node *root) {
@@ -105,41 +94,31 @@ SvgBuilder::SvgBuilder(SvgBuilder *parent, Inkscape::XML::Node *root) {
     _init();
 }
 
-SvgBuilder::~SvgBuilder() = default;
+SvgBuilder::~SvgBuilder()
+{
+    if (_clip_history) {
+        delete _clip_history;
+        _clip_history = nullptr;
+    }
+}
 
 void SvgBuilder::_init() {
+    _clip_history = new ClipHistoryEntry();
     _font_style = nullptr;
     _font_specification = nullptr;
-    _font_scaling = 1;
-    _need_font_update = true;
     _in_text_object = false;
     _invalidated_style = true;
-    _current_state = nullptr;
     _width = 0;
     _height = 0;
 
-    // Fill _availableFontNames (Bug LP #179589) (code cfr. FontLister)
-    std::vector<PangoFontFamily *> families;
-    FontFactory::get().GetUIFamilies(families);
-    for (auto & familie : families) {
-        _availableFontNames.emplace_back(pango_font_family_get_name(familie));
-    }
-
-    _transp_group_stack = nullptr;
-    SvgGraphicsState initial_state;
-    initial_state.softmask = nullptr;
-    initial_state.group_depth = 0;
-    _state_stack.push_back(initial_state);
     _node_stack.push_back(_container);
-
-    _ttm[0] = 1; _ttm[1] = 0; _ttm[2] = 0; _ttm[3] = 1; _ttm[4] = 0; _ttm[5] = 0;
-    _ttm_is_set = false;
 }
 
 /**
  * We're creating a multi-page document, push page number.
  */
-void SvgBuilder::pushPage() {
+void SvgBuilder::pushPage(const std::string &label, GfxState *state)
+{
     // Move page over by the last page width
     if (_page && this->_width) {
         int gap = 20;
@@ -155,8 +134,26 @@ void SvgBuilder::pushPage() {
     _page = _xml_doc->createElement("inkscape:page");
     _page->setAttributeSvgDouble("x", _page_left);
     _page->setAttributeSvgDouble("y", _page_top);
+    // Page affine is applied to all objects which are "placed" onto this page
+    // But the left/top locations are px/pt scaled, so we use the pdf_doc base state
+    // to pull the location back.
+    _page_affine = Geom::Translate(_page_left, _page_top);
+
+    if (!label.empty()) {
+        _page->setAttribute("inkscape:label", label);
+    }
     auto _nv = _doc->getNamedView()->getRepr();
     _nv->appendChild(_page);
+
+    // No OptionalContentGroups means no layers, so make a default layer for this page.
+    if (_ocgs.empty()) {
+        // Reset to root
+        while (_container != _root) {
+            _popGroup();
+        }
+        _pushGroup();
+        setAsLayer(label.c_str(), true);
+    }
 }
 
 void SvgBuilder::setDocumentSize(double width, double height) {
@@ -174,12 +171,75 @@ void SvgBuilder::setDocumentSize(double width, double height) {
 }
 
 /**
+ * Crop to this bounding box, do this before setMargins() but after setDocumentSize
+ */
+void SvgBuilder::cropPage(const Geom::Rect &bbox)
+{
+    if (_container == _root) {
+        // We're not going to crop when there's PDF Layers
+        return;
+    }
+    auto box = bbox * _page_affine;
+    Inkscape::CSSOStringStream val;
+    val << "M" << box.left() << " " << box.top()
+        << "H" << box.right() << "V" << box.bottom()
+        << "H" << box.left() << "Z";
+    auto clip_path = _createClip(val.str(), Geom::identity(), false);
+    gchar *urltext = g_strdup_printf("url(#%s)", clip_path->attribute("id"));
+    _container->setAttribute("clip-path", urltext);
+    g_free(urltext);
+}
+
+/**
+ * Calculate the page margin size based on the pdf settings.
+ */
+void SvgBuilder::setMargins(const Geom::Rect &page, const Geom::Rect &margins, const Geom::Rect &bleed)
+{
+    if (page.width() != _width || page.height() != _height) {
+        // We need to re-set the page size and change the page_affine.
+        _page_affine *= Geom::Translate(-page.left(), -page.top());
+        setDocumentSize(page.width(), page.height());
+    }
+    if (page != margins) {
+        if (!_page) {
+            g_warning("Can not store PDF margins in bare document.");
+            return;
+        }
+        // Calculate the margins from the pdf art box.
+        Inkscape::CSSOStringStream val;
+        val << margins.top() - page.top() << " "
+            << page.right() - margins.right() << " "
+            << page.bottom() - margins.bottom() << " "
+            << margins.left() - page.left();
+        _page->setAttribute("margin", val.str());
+    }
+    if (page != bleed) {
+        if (!_page) {
+            g_warning("Can not store PDF bleed in bare document.");
+            return;
+        }
+        Inkscape::CSSOStringStream val;
+        val << page.top() - bleed.top() << " "
+            << bleed.right() - page.right() << " "
+            << bleed.bottom() - page.bottom() << " "
+            << page.left() - bleed.left();
+        _page->setAttribute("bleed", val.str());
+    }
+}
+
+/**
  * \brief Sets groupmode of the current container to 'layer' and sets its label if given
  */
-void SvgBuilder::setAsLayer(char *layer_name) {
+void SvgBuilder::setAsLayer(const char *layer_name, bool visible)
+{
     _container->setAttribute("inkscape:groupmode", "layer");
     if (layer_name) {
         _container->setAttribute("inkscape:label", layer_name);
+    }
+    if (!visible) {
+        SPCSSAttr *css = sp_repr_css_attr_new();
+        sp_repr_css_set_property(css, "display", "none");
+        sp_repr_css_change(_container, css, "style");
     }
 }
 
@@ -190,82 +250,104 @@ void SvgBuilder::setGroupOpacity(double opacity) {
     _container->setAttributeSvgDouble("opacity", CLAMP(opacity, 0.0, 1.0));
 }
 
-void SvgBuilder::saveState() {
-    SvgGraphicsState new_state;
-    new_state.group_depth = 0;
-    new_state.softmask = _state_stack.back().softmask;
-    _state_stack.push_back(new_state);
-    pushGroup();
+void SvgBuilder::saveState(GfxState *state)
+{
+    _clip_history = _clip_history->save();
 }
 
-void SvgBuilder::restoreState() {
-    while( _state_stack.back().group_depth > 0 ) {
-        popGroup();
+void SvgBuilder::restoreState(GfxState *state) {
+    _clip_history = _clip_history->restore();
+
+    if (!_mask_groups.empty()) {
+        GfxState *mask_state = _mask_groups.back();
+        if (state == mask_state) {
+            popGroup(state);
+            _mask_groups.pop_back();
+        }
     }
-    _state_stack.pop_back();
 }
 
-Inkscape::XML::Node *SvgBuilder::pushNode(const char *name) {
-    Inkscape::XML::Node *node = _xml_doc->createElement(name);
+Inkscape::XML::Node *SvgBuilder::_pushContainer(const char *name)
+{
+    return _pushContainer(_xml_doc->createElement(name));
+}
+
+Inkscape::XML::Node *SvgBuilder::_pushContainer(Inkscape::XML::Node *node)
+{
     _node_stack.push_back(node);
     _container = node;
+    // Clear the clip history
+    _clip_history = _clip_history->save(true);
     return node;
 }
 
-Inkscape::XML::Node *SvgBuilder::popNode() {
+Inkscape::XML::Node *SvgBuilder::_popContainer()
+{
     Inkscape::XML::Node *node = nullptr;
     if ( _node_stack.size() > 1 ) {
         node = _node_stack.back();
         _node_stack.pop_back();
         _container = _node_stack.back();    // Re-set container
+        _clip_history = _clip_history->restore();
     } else {
-        TRACE(("popNode() called when stack is empty\n"));
+        TRACE(("_popContainer() called when stack is empty\n"));
         node = _root;
     }
     return node;
 }
 
-Inkscape::XML::Node *SvgBuilder::pushGroup() {
-    Inkscape::XML::Node *saved_container = _container;
-    Inkscape::XML::Node *node = pushNode("svg:g");
-    saved_container->appendChild(node);
-    Inkscape::GC::release(node);
-    _state_stack.back().group_depth++;
-    // Set as a layer if this is a top-level group
-    if ( _container->parent() == _root && _is_top_level ) {
-        static int layer_count = 1;
-        if (_page_num) {
-            gchar *layer_name = g_strdup_printf("Page %d", _page_num);
-            setAsLayer(layer_name);
-            g_free(layer_name);
-        } else if ( layer_count > 1 ) {
-            gchar *layer_name = g_strdup_printf("%s%d", _docname, layer_count);
-            setAsLayer(layer_name);
-            g_free(layer_name);
-            layer_count++;
-        } else {
-            setAsLayer(_docname);
-            layer_count++;
+/**
+ * Create an svg element and append it to the current container object.
+ */
+Inkscape::XML::Node *SvgBuilder::_addToContainer(const char *name)
+{
+    Inkscape::XML::Node *node = _xml_doc->createElement(name);
+    _addToContainer(node);
+    return node;
+}
+
+/**
+ * Append the given xml element to the current container object, clipping and masking as needed.
+ *
+ * if release is true (default), the XML node will be GC released too.
+ */
+void SvgBuilder::_addToContainer(Inkscape::XML::Node *node, bool release)
+{
+    _container->appendChild(node);
+    if (release) {
+        Inkscape::GC::release(node);
+    }
+}
+
+void SvgBuilder::_setClipPath(Inkscape::XML::Node *node)
+{
+    if (_clip_history->hasClipPath()) {
+        auto tr = Geom::identity();
+        if (auto attr = node->attribute("transform")) {
+            sp_svg_transform_read(attr, &tr);
+        }
+        if (auto clip_path = _getClip(tr)) {
+            gchar *urltext = g_strdup_printf("url(#%s)", clip_path->attribute("id"));
+            node->setAttribute("clip-path", urltext);
+            g_free(urltext);
         }
     }
-    if (_container->parent()->attribute("inkscape:groupmode") != nullptr) {
-        _ttm[0] = _ttm[3] = 1.0;    // clear ttm if parent is a layer
-        _ttm[1] = _ttm[2] = _ttm[4] = _ttm[5] = 0.0;
-        _ttm_is_set = false;
-    }
+}
+
+Inkscape::XML::Node *SvgBuilder::_pushGroup()
+{
+    Inkscape::XML::Node *saved_container = _container;
+    Inkscape::XML::Node *node = _pushContainer("svg:g");
+    saved_container->appendChild(node);
+    Inkscape::GC::release(node);
     return _container;
 }
 
-Inkscape::XML::Node *SvgBuilder::popGroup() {
-    if (_container != _root) {  // Pop if the current container isn't root
-        popNode();
-        _state_stack.back().group_depth--;
+Inkscape::XML::Node *SvgBuilder::_popGroup()
+{
+    if (_container != _root) { // Pop if the current container isn't root
+        _popContainer();
     }
-
-    return _container;
-}
-
-Inkscape::XML::Node *SvgBuilder::getContainer() {
     return _container;
 }
 
@@ -280,14 +362,54 @@ static gchar *svgConvertRGBToText(double r, double g, double b) {
     return (gchar *)&tmp;
 }
 
-static gchar *svgConvertGfxRGB(GfxRGB *color) {
+static std::string svgConvertGfxRGB(GfxRGB *color)
+{
     double r = (double)color->r / 65535.0;
     double g = (double)color->g / 65535.0;
     double b = (double)color->b / 65535.0;
     return svgConvertRGBToText(r, g, b);
 }
 
+std::string SvgBuilder::convertGfxColor(const GfxColor *color, GfxColorSpace *space)
+{
+    std::string icc = "";
+    switch (space->getMode()) {
+        case csDeviceGray:
+        case csDeviceRGB:
+        case csDeviceCMYK:
+            icc = _icc_profile;
+            break;
+        case csICCBased:
+#if POPPLER_CHECK_VERSION(0, 90, 0)
+            auto icc_space = dynamic_cast<GfxICCBasedColorSpace *>(space);
+            icc = _getColorProfile(icc_space->getProfile().get());
+#else
+            g_warning("ICC profile ignored; libpoppler >= 0.90.0 required.");
+#endif
+            break;
+    }
+
+    GfxRGB rgb;
+    space->getRGB(color, &rgb);
+    auto rgb_color = svgConvertGfxRGB(&rgb);
+
+    if (!icc.empty()) {
+        Inkscape::CSSOStringStream icc_color;
+        icc_color << rgb_color << " icc-color(" << icc;
+        for (int i = 0; i < space->getNComps(); ++i) {
+            icc_color << ", " << colToDbl((*color).c[i]);
+        }
+        icc_color << ");";
+        return icc_color.str();
+    }
+
+    return rgb_color;
+}
+
 static void svgSetTransform(Inkscape::XML::Node *node, Geom::Affine matrix) {
+    if (node->attribute("clip-path")) {
+        g_error("Adding transform AFTER clipping path.");
+    }
     node->setAttributeOrRemoveIfEmpty("transform", sp_svg_transform_write(matrix));
 }
 
@@ -328,16 +450,15 @@ static gchar *svgInterpretPath(_POPPLER_CONST_83 GfxPath *path) {
  */
 void SvgBuilder::_setStrokeStyle(SPCSSAttr *css, GfxState *state) {
     // Stroke color/pattern
-    if ( state->getStrokeColorSpace()->getMode() == csPattern ) {
+    auto space = state->getStrokeColorSpace();
+    if (space->getMode() == csPattern) {
         gchar *urltext = _createPattern(state->getStrokePattern(), state, true);
         sp_repr_css_set_property(css, "stroke", urltext);
         if (urltext) {
             g_free(urltext);
         }
     } else {
-        GfxRGB stroke_color;
-        state->getStrokeRGB(&stroke_color);
-        sp_repr_css_set_property(css, "stroke", svgConvertGfxRGB(&stroke_color));
+        sp_repr_css_set_property(css, "stroke", convertGfxColor(state->getStrokeColor(), space).c_str());
     }
 
     // Opacity
@@ -348,13 +469,8 @@ void SvgBuilder::_setStrokeStyle(SPCSSAttr *css, GfxState *state) {
     // Line width
     Inkscape::CSSOStringStream os_width;
     double lw = state->getLineWidth();
-    if (lw > 0.0) {
-        os_width << lw;
-    } else {
-        // emit a stroke which is 1px in toplevel user units
-        double pxw = Inkscape::Util::Quantity::convert(1.0, "pt", "px");
-        os_width << 1.0 / state->transformWidth(pxw);
-    }
+    // emit a stroke which is 1px in toplevel user units
+    os_width << (lw > 0.0 ? lw : 1.0);
     sp_repr_css_set_property(css, "stroke-width", os_width.str().c_str());
 
     // Line cap
@@ -426,16 +542,15 @@ void SvgBuilder::_setStrokeStyle(SPCSSAttr *css, GfxState *state) {
 void SvgBuilder::_setFillStyle(SPCSSAttr *css, GfxState *state, bool even_odd) {
 
     // Fill color/pattern
-    if ( state->getFillColorSpace()->getMode() == csPattern ) {
+    auto space = state->getFillColorSpace();
+    if (space->getMode() == csPattern) {
         gchar *urltext = _createPattern(state->getFillPattern(), state);
         sp_repr_css_set_property(css, "fill", urltext);
         if (urltext) {
             g_free(urltext);
         }
     } else {
-        GfxRGB fill_color;
-        state->getFillRGB(&fill_color);
-        sp_repr_css_set_property(css, "fill", svgConvertGfxRGB(&fill_color));
+        sp_repr_css_set_property(css, "fill", convertGfxColor(state->getFillColor(), space).c_str());
     }
 
     // Opacity
@@ -463,6 +578,12 @@ void SvgBuilder::_setBlendMode(Inkscape::XML::Node *node, GfxState *state)
     node->setAttributeOrRemoveIfEmpty("style", value);
     sp_repr_css_attr_unref(css);
 }
+
+void SvgBuilder::_setTransform(Inkscape::XML::Node *node, GfxState *state, Geom::Affine extra)
+{
+    svgSetTransform(node, extra * stateToAffine(state) * _page_affine);
+}
+
 /**
  * \brief Sets style properties from poppler's GfxState data structure
  * \return SPCSSAttr with all the relevant properties set
@@ -485,6 +606,54 @@ SPCSSAttr *SvgBuilder::_setStyle(GfxState *state, bool fill, bool stroke, bool e
 }
 
 /**
+ * Returns the CSSAttr of the previously added path if it's exactly
+ * the same path AND is missing the fill or stroke that is now being painted.
+ */
+bool SvgBuilder::shouldMergePath(bool is_fill, const std::string &path)
+{
+    auto prev = _container->lastChild();
+    if (!prev)
+        return false;
+
+    auto prev_d = prev->attribute("d");
+    if (!prev_d)
+        return false;
+
+    if (path != prev_d && path != std::string(prev_d) + " Z")
+        return false;
+
+    auto prev_css = sp_repr_css_attr(prev, "style");
+    std::string prev_val = sp_repr_css_property(prev_css, is_fill ? "fill" : "stroke", "");
+    // Very specific check excludes paths created elsewhere who's fill/stroke was unset.
+    return prev_val == "none";
+}
+
+/**
+ * Set the fill XOR stroke of the previously added path, if that path
+ * is missing the given attribute AND the path is exactly the same.
+ *
+ * This effectively merges the two objects and is an 'interpretation' step.
+ */
+bool SvgBuilder::mergePath(GfxState *state, bool is_fill, const std::string &path, bool even_odd)
+{
+    if (shouldMergePath(is_fill, path)) {
+        auto prev = _container->lastChild();
+        SPCSSAttr *css = sp_repr_css_attr_new();
+        if (is_fill) {
+            _setFillStyle(css, state, even_odd);
+            // Fill after stroke indicates a different paint order.
+            sp_repr_css_set_property(css, "paint-order", "stroke fill markers");
+        } else {
+            _setStrokeStyle(css, state);
+        }
+        sp_repr_css_change(prev, css, "style");
+        sp_repr_css_attr_unref(css);
+        return true;
+    }
+    return false;
+}
+
+/**
  * \brief Emits the current path in poppler's GfxState data structure
  * Can be used to do filling and stroking at once.
  *
@@ -493,8 +662,14 @@ SPCSSAttr *SvgBuilder::_setStyle(GfxState *state, bool fill, bool stroke, bool e
  * \param even_odd whether the even-odd rule should be used when filling the path
  */
 void SvgBuilder::addPath(GfxState *state, bool fill, bool stroke, bool even_odd) {
-    Inkscape::XML::Node *path = _xml_doc->createElement("svg:path");
     gchar *pathtext = svgInterpretPath(state->getPath());
+
+    if (pathtext && fill != stroke && mergePath(state, fill, pathtext, even_odd)) {
+        g_free(pathtext);
+        return;
+    }
+
+    Inkscape::XML::Node *path = _addToContainer("svg:path");
     path->setAttribute("d", pathtext);
     g_free(pathtext);
 
@@ -503,25 +678,33 @@ void SvgBuilder::addPath(GfxState *state, bool fill, bool stroke, bool even_odd)
     sp_repr_css_change(path, css, "style");
     sp_repr_css_attr_unref(css);
     _setBlendMode(path, state);
-    _container->appendChild(path);
-    Inkscape::GC::release(path);
+    _setTransform(path, state);
+    _setClipPath(path);
+}
+
+void SvgBuilder::addClippedFill(GfxShading *shading, const Geom::Affine shading_tr)
+{
+    if (_clip_history->getClipPath()) {
+        addShadedFill(shading, shading_tr, _clip_history->getClipPath(), _clip_history->getAffine(),
+                      _clip_history->getClipType() == clipEO);
+    }
 }
 
 /**
  * \brief Emits the current path in poppler's GfxState data structure
  * The path is set to be filled with the given shading.
  */
-void SvgBuilder::addShadedFill(GfxShading *shading, double *matrix, GfxPath *path,
-                               bool even_odd) {
-
-    Inkscape::XML::Node *path_node = _xml_doc->createElement("svg:path");
+void SvgBuilder::addShadedFill(GfxShading *shading, const Geom::Affine shading_tr, GfxPath *path, const Geom::Affine tr,
+                               bool even_odd)
+{
+    auto prev = _container->lastChild();
     gchar *pathtext = svgInterpretPath(path);
-    path_node->setAttribute("d", pathtext);
-    g_free(pathtext);
 
-    // Set style
+    // Create a new gradient object before comitting to creating a path for it
+    // And package it into a css bundle which can be applied
     SPCSSAttr *css = sp_repr_css_attr_new();
-    gchar *id = _createGradient(shading, matrix, true);
+    // We remove the shape's affine to adjust the gradient back into place
+    gchar *id = _createGradient(shading, shading_tr * tr.inverse(), true);
     if (id) {
         gchar *urltext = g_strdup_printf ("url(#%s)", id);
         sp_repr_css_set_property(css, "fill", urltext);
@@ -529,40 +712,33 @@ void SvgBuilder::addShadedFill(GfxShading *shading, double *matrix, GfxPath *pat
         g_free(id);
     } else {
         sp_repr_css_attr_unref(css);
-        Inkscape::GC::release(path_node);
         return;
     }
     if (even_odd) {
         sp_repr_css_set_property(css, "fill-rule", "evenodd");
     }
+    // Merge the style with the previous shape
+    if (shouldMergePath(true, pathtext)) {
+        // POSSIBLE: The gradientTransform might now incorrect if the
+        // state of the transformation was different between the two paths.
+        sp_repr_css_change(prev, css, "style");
+        g_free(pathtext);
+        return;
+    }
+
+    Inkscape::XML::Node *path_node = _addToContainer("svg:path");
+    path_node->setAttribute("d", pathtext);
+    g_free(pathtext);
+
+    // Don't add transforms to mask children.
+    if (std::string("svg:mask") != _container->name()) {
+        svgSetTransform(path_node, tr * _page_affine);
+    }
+
+    // Set the gradient into this new path.
     sp_repr_css_set_property(css, "stroke", "none");
     sp_repr_css_change(path_node, css, "style");
     sp_repr_css_attr_unref(css);
-
-    _container->appendChild(path_node);
-    Inkscape::GC::release(path_node);
-
-    // Remove the clipping path emitted before the 'sh' operator
-    int up_walk = 0;
-    Inkscape::XML::Node *node = _container->parent();
-    while( node && node->childCount() == 1 && up_walk < 3 ) {
-        gchar const *clip_path_url = node->attribute("clip-path");
-        if (clip_path_url) {
-            // Obtain clipping path's id from the URL
-            gchar clip_path_id[32];
-            strncpy(clip_path_id, clip_path_url + 5, strlen(clip_path_url) - 6);
-	    clip_path_id[sizeof (clip_path_id) - 1] = '\0';
-            SPObject *clip_obj = _doc->getObjectById(clip_path_id);
-            if (clip_obj) {
-                clip_obj->deleteObject();
-                node->removeAttribute("clip-path");
-                TRACE(("removed clipping path: %s\n", clip_path_id));
-            }
-            break;
-        }
-        node = node->parent();
-        up_walk++;
-    }
 }
 
 /**
@@ -570,88 +746,137 @@ void SvgBuilder::addShadedFill(GfxShading *shading, double *matrix, GfxPath *pat
  * \param state poppler's data structure
  * \param even_odd whether the even-odd rule should be applied
  */
-void SvgBuilder::clip(GfxState *state, bool even_odd) {
-    pushGroup();
-    setClipPath(state, even_odd);
+void SvgBuilder::setClip(GfxState *state, GfxClipType clip)
+{
+    if (clip == clipNormal) {
+        _clip_history->setClip(state, clipNormal);
+    } else {
+        _clip_history->setClip(state, clipEO);
+    }
 }
 
-void SvgBuilder::setClipPath(GfxState *state, bool even_odd) {
-    // Create the clipPath repr
+/**
+ * Return the active clip as a new xml node.
+ */
+Inkscape::XML::Node *SvgBuilder::_getClip(const Geom::Affine &node_tr)
+{
+    if (_clip_history->hasClipPath()) {
+        std::string clip_d = svgInterpretPath(_clip_history->getClipPath());
+
+        // Remove the node's transformation from the clip definition
+        Geom::Affine tr = _clip_history->getAffine() * _page_affine * node_tr.inverse();
+
+        return _createClip(clip_d, tr, _clip_history->evenOdd());
+    }
+    return nullptr;
+}
+
+Inkscape::XML::Node *SvgBuilder::_createClip(const std::string &d, const Geom::Affine tr, bool even_odd)
+{
     Inkscape::XML::Node *clip_path = _xml_doc->createElement("svg:clipPath");
     clip_path->setAttribute("clipPathUnits", "userSpaceOnUse");
+
     // Create the path
     Inkscape::XML::Node *path = _xml_doc->createElement("svg:path");
-    gchar *pathtext = svgInterpretPath(state->getPath());
-    path->setAttribute("d", pathtext);
-    g_free(pathtext);
+    path->setAttribute("d", d);
+    svgSetTransform(path, tr);
+
     if (even_odd) {
         path->setAttribute("clip-rule", "evenodd");
     }
     clip_path->appendChild(path);
     Inkscape::GC::release(path);
+
     // Append clipPath to defs and get id
     _doc->getDefs()->getRepr()->appendChild(clip_path);
-    gchar *urltext = g_strdup_printf ("url(#%s)", clip_path->attribute("id"));
     Inkscape::GC::release(clip_path);
-    _container->setAttribute("clip-path", urltext);
-    g_free(urltext);
+    return clip_path;
 }
 
-/**
- * \brief Fills the given array with the current container's transform, if set
- * \param transform array of doubles to be filled
- * \return true on success; false on invalid transformation
- */
-bool SvgBuilder::getTransform(double *transform) {
-    Geom::Affine svd;
-    gchar const *tr = _container->attribute("transform");
-    bool valid = sp_svg_transform_read(tr, &svd);
-    if (valid) {
-        for ( int i = 0 ; i < 6 ; i++ ) {
-            transform[i] = svd[i];
+void SvgBuilder::beginMarkedContent(const char *name, const char *group)
+{
+    if (name && group && std::string(name) == "OC") {
+        auto layer_id = std::string("layer-") + group;
+        if (auto existing = _doc->getObjectById(layer_id)) {
+            if (existing->getRepr()->parent() == _container) {
+                _container = existing->getRepr();
+                _node_stack.push_back(_container);
+            } else {
+                g_warning("Layer content jumped around!");
+            }
+        } else {
+            auto node = _pushGroup();
+            node->setAttribute("id", layer_id);
+            if (_ocgs.find(group) != _ocgs.end()) {
+                auto pair = _ocgs[group];
+                setAsLayer(pair.first.c_str(), pair.second);
+            }
         }
-        return true;
     } else {
-        return false;
+        _pushGroup();
     }
+}
+
+void SvgBuilder::addOptionalGroup(const char *oc, const char *label, bool visible)
+{
+    _ocgs[oc] = {label, visible};
+}
+
+void SvgBuilder::endMarkedContent()
+{
+    _popGroup();
+}
+
+void SvgBuilder::addColorProfile(unsigned char *profBuf, int length)
+{
+    cmsHPROFILE hp = cmsOpenProfileFromMem(profBuf, length);
+    if (!hp) {
+        g_warning("Failed to read ICCBased color space profile from PDF file.");
+        return;
+    }
+    _icc_profile = _getColorProfile(hp);
 }
 
 /**
- * \brief Sets the transformation matrix of the current container
+ * Return the color profile name if it's already been added
  */
-void SvgBuilder::setTransform(double c0, double c1, double c2, double c3,
-                              double c4, double c5) {
+std::string SvgBuilder::_getColorProfile(cmsHPROFILE hp)
+{
+    if (!hp)
+        return "";
 
-    auto matrix = Geom::Affine(c0, c1, c2, c3, c4, c5);
+    // Cached name of this profile by reference
+    if (_icc_profiles.find(hp) != _icc_profiles.end())
+        return _icc_profiles[hp];
 
-    // Add page transformation only once (see scaledCTM in pdf-parser.cpp)
-    if ( _container->parent() == _root && _is_top_level && _page_offset) {
-        matrix = matrix * Geom::Translate(_page_left, _page_top);
-        _page_offset = false;
-    }
+    std::string name = Inkscape::ColorProfile::getNameFromProfile(hp);
+    Inkscape::ColorProfile::sanitizeName(name);
 
-    // do not remember the group which is a layer
-    if ((_container->attribute("inkscape:groupmode") == nullptr) && !_ttm_is_set) {
-        _ttm[0] = c0;
-        _ttm[1] = c1;
-        _ttm[2] = c2;
-        _ttm[3] = c3;
-        _ttm[4] = c4;
-        _ttm[5] = c5;
-        _ttm_is_set = true;
-    }
+    // Find the named profile in the document (if already added)
+    if (_doc->getProfileManager().find(name.c_str()))
+        return name;
 
-    // Avoid transforming a group with an already set clip-path
-    if ( _container->attribute("clip-path") != nullptr ) {
-        pushGroup();
-    }
-    TRACE(("setTransform: %f %f %f %f %f %f\n", c0, c1, c2, c3, c4, c5));
-    svgSetTransform(_container, matrix);
-}
+    // Add the profile, we've never seen it before.
+    cmsUInt32Number len = 0;
+    cmsSaveProfileToMem(hp, nullptr, &len);
+    auto buf = (unsigned char *)malloc(len * sizeof(unsigned char));
+    cmsSaveProfileToMem(hp, buf, &len);
 
-void SvgBuilder::setTransform(double const *transform) {
-    setTransform(transform[0], transform[1], transform[2], transform[3],
-                 transform[4], transform[5]);
+    Inkscape::XML::Node *icc_node = _xml_doc->createElement("svg:color-profile");
+    std::string label = Inkscape::ColorProfile::getNameFromProfile(hp);
+    icc_node->setAttribute("inkscape:label", label);
+    icc_node->setAttribute("name", name);
+
+    auto *base64String = g_base64_encode(buf, len);
+    auto icc_data = std::string("data:application/vnd.iccprofile;base64,") + base64String;
+    g_free(base64String);
+    icc_node->setAttributeOrRemoveIfEmpty("xlink:href", icc_data);
+    _doc->getDefs()->getRepr()->appendChild(icc_node);
+    Inkscape::GC::release(icc_node);
+
+    free(buf);
+    _icc_profiles[hp] = name;
+    return name;
 }
 
 /**
@@ -687,32 +912,15 @@ gchar *SvgBuilder::_createPattern(GfxPattern *pattern, GfxState *state, bool is_
     if ( pattern != nullptr ) {
         if ( pattern->getType() == 2 ) {  // Shading pattern
             GfxShadingPattern *shading_pattern = static_cast<GfxShadingPattern *>(pattern);
-            const double *ptm;
-            double m[6] = {1, 0, 0, 1, 0, 0};
-            double det;
-
             // construct a (pattern space) -> (current space) transform matrix
-
-            ptm = shading_pattern->getMatrix();
-            det = _ttm[0] * _ttm[3] - _ttm[1] * _ttm[2];
-            if (det) {
-                double ittm[6];	// invert ttm
-                ittm[0] =  _ttm[3] / det;
-                ittm[1] = -_ttm[1] / det;
-                ittm[2] = -_ttm[2] / det;
-                ittm[3] =  _ttm[0] / det;
-                ittm[4] = (_ttm[2] * _ttm[5] - _ttm[3] * _ttm[4]) / det;
-                ittm[5] = (_ttm[1] * _ttm[4] - _ttm[0] * _ttm[5]) / det;
-                m[0] = ptm[0] * ittm[0] + ptm[1] * ittm[2];
-                m[1] = ptm[0] * ittm[1] + ptm[1] * ittm[3];
-                m[2] = ptm[2] * ittm[0] + ptm[3] * ittm[2];
-                m[3] = ptm[2] * ittm[1] + ptm[3] * ittm[3];
-                m[4] = ptm[4] * ittm[0] + ptm[5] * ittm[2] + ittm[4];
-                m[5] = ptm[4] * ittm[1] + ptm[5] * ittm[3] + ittm[5];
-            }
-            id = _createGradient(shading_pattern->getShading(),
-                                 m,
-                                 !is_stroke);
+            auto flip = Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, _height);
+            auto pt = Geom::Scale(Inkscape::Util::Quantity::convert(1.0, "pt", "px"));
+            auto grad_affine = ctmToAffine(shading_pattern->getMatrix());
+            auto obj_affine = stateToAffine(state);
+            // SVG applies the object's affine on top of the gradient's affine,
+            // So we must remove the object affine to move it back into place.
+            auto affine = (grad_affine * pt * flip) * obj_affine.inverse();
+            id = _createGradient(shading_pattern->getShading(), affine, !is_stroke);
         } else if ( pattern->getType() == 1 ) {   // Tiling pattern
             id = _createTilingPattern(static_cast<GfxTilingPattern*>(pattern), state, is_stroke);
         }
@@ -734,26 +942,7 @@ gchar *SvgBuilder::_createTilingPattern(GfxTilingPattern *tiling_pattern,
 
     Inkscape::XML::Node *pattern_node = _xml_doc->createElement("svg:pattern");
     // Set pattern transform matrix
-    const double *p2u = tiling_pattern->getMatrix();
-    double m[6] = {1, 0, 0, 1, 0, 0};
-    double det;
-    det = _ttm[0] * _ttm[3] - _ttm[1] * _ttm[2];    // see LP Bug 1168908
-    if (det) {
-        double ittm[6];	// invert ttm
-        ittm[0] =  _ttm[3] / det;
-        ittm[1] = -_ttm[1] / det;
-        ittm[2] = -_ttm[2] / det;
-        ittm[3] =  _ttm[0] / det;
-        ittm[4] = (_ttm[2] * _ttm[5] - _ttm[3] * _ttm[4]) / det;
-        ittm[5] = (_ttm[1] * _ttm[4] - _ttm[0] * _ttm[5]) / det;
-        m[0] = p2u[0] * ittm[0] + p2u[1] * ittm[2];
-        m[1] = p2u[0] * ittm[1] + p2u[1] * ittm[3];
-        m[2] = p2u[2] * ittm[0] + p2u[3] * ittm[2];
-        m[3] = p2u[2] * ittm[1] + p2u[3] * ittm[3];
-        m[4] = p2u[4] * ittm[0] + p2u[5] * ittm[2] + ittm[4];
-        m[5] = p2u[4] * ittm[1] + p2u[5] * ittm[3] + ittm[5];
-    }
-    Geom::Affine pat_matrix(m[0], m[1], m[2], m[3], m[4], m[5]);
+    auto pat_matrix = ctmToAffine(tiling_pattern->getMatrix());
     pattern_node->setAttributeOrRemoveIfEmpty("patternTransform", sp_svg_transform_write(pat_matrix));
     pattern_node->setAttribute("patternUnits", "userSpaceOnUse");
     // Set pattern tiling
@@ -809,7 +998,8 @@ gchar *SvgBuilder::_createTilingPattern(GfxTilingPattern *tiling_pattern,
  * \param for_shading true if we're creating this for a shading operator; false otherwise
  * \return id of the created object
  */
-gchar *SvgBuilder::_createGradient(GfxShading *shading, double *matrix, bool for_shading) {
+gchar *SvgBuilder::_createGradient(GfxShading *shading, const Geom::Affine pat_matrix, bool for_shading)
+{
     Inkscape::XML::Node *gradient;
     _POPPLER_CONST Function *func;
     int num_funcs;
@@ -848,13 +1038,7 @@ gchar *SvgBuilder::_createGradient(GfxShading *shading, double *matrix, bool for
     }
     gradient->setAttribute("gradientUnits", "userSpaceOnUse");
     // If needed, flip the gradient transform around the y axis
-    if (matrix) {
-        Geom::Affine pat_matrix(matrix[0], matrix[1], matrix[2], matrix[3],
-                              matrix[4], matrix[5]);
-        if ( !for_shading && _is_top_level ) {
-            Geom::Affine flip(1.0, 0.0, 0.0, -1.0, 0.0, Inkscape::Util::Quantity::convert(_height, "px", "pt"));
-            pat_matrix *= flip;
-        }
+    if (pat_matrix != Geom::identity()) {
         gradient->setAttributeOrRemoveIfEmpty("gradientTransform", sp_svg_transform_write(pat_matrix));
     }
 
@@ -867,8 +1051,7 @@ gchar *SvgBuilder::_createGradient(GfxShading *shading, double *matrix, bool for
         return nullptr;
     }
 
-    Inkscape::XML::Node *defs = _doc->getDefs()->getRepr();
-    defs->appendChild(gradient);
+    _doc->getDefs()->getRepr()->appendChild(gradient);
     gchar *id = g_strdup(gradient->attribute("id"));
     Inkscape::GC::release(gradient);
 
@@ -879,23 +1062,26 @@ gchar *SvgBuilder::_createGradient(GfxShading *shading, double *matrix, bool for
 /**
  * \brief Adds a stop with the given properties to the gradient's representation
  */
-void SvgBuilder::_addStopToGradient(Inkscape::XML::Node *gradient, double offset,
-                                    GfxRGB *color, double opacity) {
+void SvgBuilder::_addStopToGradient(Inkscape::XML::Node *gradient, double offset, GfxColor *color, GfxColorSpace *space,
+                                    double opacity)
+{
     Inkscape::XML::Node *stop = _xml_doc->createElement("svg:stop");
     SPCSSAttr *css = sp_repr_css_attr_new();
     Inkscape::CSSOStringStream os_opacity;
-    gchar *color_text = nullptr;
-    if ( _transp_group_stack != nullptr && _transp_group_stack->for_softmask ) {
-        double gray = (double)color->r / 65535.0;
+    std::string color_text = "#ffffff";
+    if (space->getMode() == csDeviceGray) {
+        // This is a transparency mask.
+        GfxRGB rgb;
+        space->getRGB(color, &rgb);
+        double gray = (double)rgb.r / 65535.0;
         gray = CLAMP(gray, 0.0, 1.0);
         os_opacity << gray;
-        color_text = (char*) "#ffffff";
     } else {
         os_opacity << opacity;
-        color_text = svgConvertGfxRGB(color);
+        color_text = convertGfxColor(color, space);
     }
     sp_repr_css_set_property(css, "stop-opacity", os_opacity.str().c_str());
-    sp_repr_css_set_property(css, "stop-color", color_text);
+    sp_repr_css_set_property(css, "stop-color", color_text.c_str());
 
     sp_repr_css_change(stop, css, "style");
     sp_repr_css_attr_unref(css);
@@ -905,19 +1091,15 @@ void SvgBuilder::_addStopToGradient(Inkscape::XML::Node *gradient, double offset
     Inkscape::GC::release(stop);
 }
 
-static bool svgGetShadingColorRGB(GfxShading *shading, double offset, GfxRGB *result) {
-    GfxColorSpace *color_space = shading->getColorSpace();
-    GfxColor temp;
+static bool svgGetShadingColor(GfxShading *shading, double offset, GfxColor *result)
+{
     if ( shading->getType() == 2 ) {  // Axial shading
-        (static_cast<GfxAxialShading*>(shading))->getColor(offset, &temp);
+        (static_cast<GfxAxialShading *>(shading))->getColor(offset, result);
     } else if ( shading->getType() == 3 ) { // Radial shading
-        (static_cast<GfxRadialShading*>(shading))->getColor(offset, &temp);
+        (static_cast<GfxRadialShading *>(shading))->getColor(offset, result);
     } else {
         return false;
     }
-    // Convert it to RGB
-    color_space->getRGB(&temp, result);
-
     return true;
 }
 
@@ -925,14 +1107,14 @@ static bool svgGetShadingColorRGB(GfxShading *shading, double offset, GfxRGB *re
 bool SvgBuilder::_addGradientStops(Inkscape::XML::Node *gradient, GfxShading *shading,
                                    _POPPLER_CONST Function *func) {
     int type = func->getType();
+    auto space = shading->getColorSpace();
     if ( type == 0 || type == 2 ) {  // Sampled or exponential function
-        GfxRGB stop1, stop2;
-        if ( !svgGetShadingColorRGB(shading, 0.0, &stop1) ||
-             !svgGetShadingColorRGB(shading, 1.0, &stop2) ) {
+        GfxColor stop1, stop2;
+        if (!svgGetShadingColor(shading, 0.0, &stop1) || !svgGetShadingColor(shading, 1.0, &stop2)) {
             return false;
         } else {
-            _addStopToGradient(gradient, 0.0, &stop1, 1.0);
-            _addStopToGradient(gradient, 1.0, &stop2, 1.0);
+            _addStopToGradient(gradient, 0.0, &stop1, space, 1.0);
+            _addStopToGradient(gradient, 1.0, &stop2, space, 1.0);
         }
     } else if ( type == 3 ) { // Stitching
         auto stitchingFunc = static_cast<_POPPLER_CONST StitchingFunction*>(func);
@@ -941,24 +1123,24 @@ bool SvgBuilder::_addGradientStops(Inkscape::XML::Node *gradient, GfxShading *sh
         int num_funcs = stitchingFunc->getNumFuncs();
 
         // Add stops from all the stitched functions
-        GfxRGB prev_color, color;
-        svgGetShadingColorRGB(shading, bounds[0], &prev_color);
-        _addStopToGradient(gradient, bounds[0], &prev_color, 1.0);
+        GfxColor prev_color, color;
+        svgGetShadingColor(shading, bounds[0], &prev_color);
+        _addStopToGradient(gradient, bounds[0], &prev_color, space, 1.0);
         for ( int i = 0 ; i < num_funcs ; i++ ) {
-            svgGetShadingColorRGB(shading, bounds[i + 1], &color);
+            svgGetShadingColor(shading, bounds[i + 1], &color);
             // Add stops
             if (stitchingFunc->getFunc(i)->getType() == 2) {    // process exponential fxn
                 double expE = (static_cast<_POPPLER_CONST ExponentialFunction*>(stitchingFunc->getFunc(i)))->getE();
                 if (expE > 1.0) {
                     expE = (bounds[i + 1] - bounds[i])/expE;    // approximate exponential as a single straight line at x=1
                     if (encode[2*i] == 0) {    // normal sequence
-                        _addStopToGradient(gradient, bounds[i + 1] - expE, &prev_color, 1.0);
+                        _addStopToGradient(gradient, bounds[i + 1] - expE, &prev_color, space, 1.0);
                     } else {                   // reflected sequence
-                        _addStopToGradient(gradient, bounds[i] + expE, &color, 1.0);
+                        _addStopToGradient(gradient, bounds[i] + expE, &color, space, 1.0);
                     }
                 }
             }
-            _addStopToGradient(gradient, bounds[i + 1], &color, 1.0);
+            _addStopToGradient(gradient, bounds[i + 1], &color, space, 1.0);
             prev_color = color;
         }
     } else { // Unsupported function type
@@ -975,240 +1157,70 @@ bool SvgBuilder::_addGradientStops(Inkscape::XML::Node *gradient, GfxShading *sh
 void SvgBuilder::updateStyle(GfxState *state) {
     if (_in_text_object) {
         _invalidated_style = true;
-        _current_state = state;
     }
 }
-
-/*
-    MatchingChars
-    Count for how many characters s1 matches sp taking into account 
-    that a space in sp may be removed or replaced by some other tokens
-    specified in the code. (Bug LP #179589)
-*/
-static size_t MatchingChars(std::string s1, std::string sp)
-{
-    size_t is = 0;
-    size_t ip = 0;
-
-    while(is < s1.length() && ip < sp.length()) {
-        if (s1[is] == sp[ip]) {
-            is++; ip++;
-        } else if (sp[ip] == ' ') {
-            ip++;
-            if (s1[is] == '_') { // Valid matches to spaces in sp.
-                is++;
-            }
-        } else {
-            break;
-        }
-    }
-    return ip;
-}
-
-/*
-    SvgBuilder::_BestMatchingFont
-    Scan the available fonts to find the font name that best matches PDFname.
-    (Bug LP #179589)
-*/
-std::string SvgBuilder::_BestMatchingFont(std::string PDFname)
-{
-    double bestMatch = 0;
-    std::string bestFontname = "Arial";
-    
-    for (auto fontname : _availableFontNames) {
-        // At least the first word of the font name should match.
-        size_t minMatch = fontname.find(" ");
-        if (minMatch == std::string::npos) {
-           minMatch = fontname.length();
-        }
-        
-        size_t Match = MatchingChars(PDFname, fontname);
-        if (Match >= minMatch) {
-            double relMatch = (float)Match / (fontname.length() + PDFname.length());
-            if (relMatch > bestMatch) {
-                bestMatch = relMatch;
-                bestFontname = fontname;
-            }
-        }
-    }
-
-    if (bestMatch == 0)
-        return PDFname;
-    else
-        return bestFontname;
-}
-
-/**
- * This array holds info about translating font weight names to more or less CSS equivalents
- */
-static char *font_weight_translator[][2] = {
-    // clang-format off
-    {(char*) "bold",        (char*) "bold"},
-    {(char*) "light",       (char*) "300"},
-    {(char*) "black",       (char*) "900"},
-    {(char*) "heavy",       (char*) "900"},
-    {(char*) "ultrabold",   (char*) "800"},
-    {(char*) "extrabold",   (char*) "800"},
-    {(char*) "demibold",    (char*) "600"},
-    {(char*) "semibold",    (char*) "600"},
-    {(char*) "medium",      (char*) "500"},
-    {(char*) "book",        (char*) "normal"},
-    {(char*) "regular",     (char*) "normal"},
-    {(char*) "roman",       (char*) "normal"},
-    {(char*) "normal",      (char*) "normal"},
-    {(char*) "ultralight",  (char*) "200"},
-    {(char*) "extralight",  (char*) "200"},
-    {(char*) "thin",        (char*) "100"}
-    // clang-format on
-};
 
 /**
  * \brief Updates _font_style according to the font set in parameter state
  */
-void SvgBuilder::updateFont(GfxState *state) {
-
+void SvgBuilder::updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_font)
+{
     TRACE(("updateFont()\n"));
-    _need_font_update = false;
     updateTextMatrix(state);    // Ensure that we have a text matrix built
 
-    _font_style = sp_repr_css_attr_new();
     auto font = state->getFont();
-    // Store original name
-    if (font->getName()) {
-        _font_specification = font->getName()->getCString();
-    } else {
-        _font_specification = "Arial";
+    auto font_id = font->getID()->num;
+
+    auto new_font_size = state->getFontSize();
+    if (font->getType() == fontType3) {
+        const double *font_matrix = font->getFontMatrix();
+        if (font_matrix[0] != 0.0) {
+            new_font_size *= font_matrix[3] / font_matrix[0];
+        }
+    }
+    if (new_font_size != _css_font_size) {
+        _css_font_size = new_font_size;
+        _invalidated_style = true;
     }
 
-    // Prune the font name to get the correct font family name
-    // In a PDF font names can look like this: IONIPB+MetaPlusBold-Italic
-    char *font_family = nullptr;
-    char *font_style = nullptr;
-    char *font_style_lowercase = nullptr;
-    const char *plus_sign = strstr(_font_specification, "+");
-    if (plus_sign) {
-        font_family = g_strdup(plus_sign + 1);
-        _font_specification = plus_sign + 1;
-    } else {
-        font_family = g_strdup(_font_specification);
+    auto font_strategy = FontFallback::AS_TEXT;
+    if (_font_strategies.find(font_id) != _font_strategies.end()) {
+        font_strategy = _font_strategies[font_id];
     }
-    char *style_delim = nullptr;
-    if ( ( style_delim = g_strrstr(font_family, "-") ) ||
-         ( style_delim = g_strrstr(font_family, ",") ) ) {
-        font_style = style_delim + 1;
-        font_style_lowercase = g_ascii_strdown(font_style, -1);
-        style_delim[0] = 0;
+
+    if (font_strategy == FontFallback::DELETE_TEXT) {
+        _font_style = nullptr;
+        _cairo_font = nullptr;
+        return;
     }
+    if (font_strategy == FontFallback::AS_SHAPES) {
+        _font_style = nullptr;
+        if (_cairo_font != cairo_font) {
+            _invalidated_style = true;
+        }
+        _cairo_font = cairo_font;
+        return;
+    }
+
+    auto font_data = FontData(font);
+    _font_specification = font_data.getSpecification().c_str();
 
     // Font family
+    _cairo_font = nullptr;
+    _font_style = sp_repr_css_attr_new();
     if (font->getFamily()) { // if font family is explicitly given use it.
         sp_repr_css_set_property(_font_style, "font-family", font->getFamily()->getCString());
-    } else { 
-        int attr_value = _preferences->getAttributeInt("localFonts", 1);
-        if (attr_value != 0) {
-            // Find the font that best matches the stripped down (orig)name (Bug LP #179589).
-            sp_repr_css_set_property(_font_style, "font-family", _BestMatchingFont(font_family).c_str());
-        } else {
-            sp_repr_css_set_property(_font_style, "font-family", font_family);
-        }
-    }
-
-    // Font style
-    if (font->isItalic()) {
-        sp_repr_css_set_property(_font_style, "font-style", "italic");
-    } else if (font_style) {
-        if ( strstr(font_style_lowercase, "italic") ||
-             strstr(font_style_lowercase, "slanted") ) {
-            sp_repr_css_set_property(_font_style, "font-style", "italic");
-        } else if (strstr(font_style_lowercase, "oblique")) {
-            sp_repr_css_set_property(_font_style, "font-style", "oblique");
-        }
-    }
-
-    // Font variant -- default 'normal' value
-    sp_repr_css_set_property(_font_style, "font-variant", "normal");
-
-    // Font weight
-    GfxFont::Weight font_weight = font->getWeight();
-    char *css_font_weight = nullptr;
-    if ( font_weight != GfxFont::WeightNotDefined ) {
-        if ( font_weight == GfxFont::W400 ) {
-            css_font_weight = (char*) "normal";
-        } else if ( font_weight == GfxFont::W700 ) {
-            css_font_weight = (char*) "bold";
-        } else {
-            gchar weight_num[4] = "100";
-            weight_num[0] = (gchar)( '1' + (font_weight - GfxFont::W100) );
-            sp_repr_css_set_property(_font_style, "font-weight", (gchar *)&weight_num);
-        }
-    } else if (font_style) {
-        // Apply the font weight translations
-        int num_translations = sizeof(font_weight_translator) / ( 2 * sizeof(char *) );
-        for ( int i = 0 ; i < num_translations ; i++ ) {
-            if (strstr(font_style_lowercase, font_weight_translator[i][0])) {
-                css_font_weight = font_weight_translator[i][1];
-            }
-        }
+    } else if (font_strategy == FontFallback::AS_SUB && !font_data.found) {
+        sp_repr_css_set_property(_font_style, "font-family", font_data.getSubstitute().c_str());
     } else {
-        css_font_weight = (char*) "normal";
-    }
-    if (css_font_weight) {
-        sp_repr_css_set_property(_font_style, "font-weight", css_font_weight);
-    }
-    g_free(font_family);
-    if (font_style_lowercase) {
-        g_free(font_style_lowercase);
+        sp_repr_css_set_property(_font_style, "font-family", font_data.family.c_str());
     }
 
-    // Font stretch
-    GfxFont::Stretch font_stretch = font->getStretch();
-    gchar *stretch_value = nullptr;
-    switch (font_stretch) {
-        case GfxFont::UltraCondensed:
-            stretch_value = (char*) "ultra-condensed";
-            break;
-        case GfxFont::ExtraCondensed:
-            stretch_value = (char*) "extra-condensed";
-            break;
-        case GfxFont::Condensed:
-            stretch_value = (char*) "condensed";
-            break;
-        case GfxFont::SemiCondensed:
-            stretch_value = (char*) "semi-condensed";
-            break;
-        case GfxFont::Normal:
-            stretch_value = (char*) "normal";
-            break;
-        case GfxFont::SemiExpanded:
-            stretch_value = (char*) "semi-expanded";
-            break;
-        case GfxFont::Expanded:
-            stretch_value = (char*) "expanded";
-            break;
-        case GfxFont::ExtraExpanded:
-            stretch_value = (char*) "extra-expanded";
-            break;
-        case GfxFont::UltraExpanded:
-            stretch_value = (char*) "ultra-expanded";
-            break;
-        default:
-            break;
-    }
-    if ( stretch_value != nullptr ) {
-        sp_repr_css_set_property(_font_style, "font-stretch", stretch_value);
-    }
-
-    // Font size
-    Inkscape::CSSOStringStream os_font_size;
-    double css_font_size = _font_scaling * state->getFontSize();
-    if ( font->getType() == fontType3 ) {
-        const double *font_matrix = font->getFontMatrix();
-        if ( font_matrix[0] != 0.0 ) {
-            css_font_size *= font_matrix[3] / font_matrix[0];
-        }
-    }
-    os_font_size << css_font_size;
-    sp_repr_css_set_property(_font_style, "font-size", os_font_size.str().c_str());
+    // Set the font data
+    sp_repr_css_set_property(_font_style, "font-style", font_data.style.c_str());
+    sp_repr_css_set_property(_font_style, "font-weight", font_data.weight.c_str());
+    sp_repr_css_set_property(_font_style, "font-stretch", font_data.stretch.c_str());
+    sp_repr_css_set_property(_font_style, "font-variant", "normal");
 
     // Writing mode
     if ( font->getWMode() == 0 ) {
@@ -1216,8 +1228,6 @@ void SvgBuilder::updateFont(GfxState *state) {
     } else {
         sp_repr_css_set_property(_font_style, "writing-mode", "tb");
     }
-
-    _invalidated_style = true;
 }
 
 /**
@@ -1236,45 +1246,31 @@ void SvgBuilder::updateTextShift(GfxState *state, double shift) {
  * \brief Updates current text position
  */
 void SvgBuilder::updateTextPosition(double tx, double ty) {
-    Geom::Point new_position(tx, ty);
-    _text_position = new_position;
+    _text_position = Geom::Point(tx, ty);
 }
 
 /**
  * \brief Flushes the buffered characters
  */
 void SvgBuilder::updateTextMatrix(GfxState *state) {
-    _flushText();
-    // Update text matrix
-    const double *text_matrix = state->getTextMat();
-    double w_scale = sqrt( text_matrix[0] * text_matrix[0] + text_matrix[2] * text_matrix[2] );
-    double h_scale = sqrt( text_matrix[1] * text_matrix[1] + text_matrix[3] * text_matrix[3] );
-    double max_scale;
-    if ( w_scale > h_scale ) {
-        max_scale = w_scale;
-    } else {
-        max_scale = h_scale;
+    // Update text matrix, it contains an extra flip which we must undo.
+    auto new_matrix = Geom::Scale(1, -1) * ctmToAffine(state->getTextMat());
+    // TODO: Detect if the text matrix is actually just a rotational kern
+    // this can help stich back together texts where letters are rotated
+    if (new_matrix != _text_matrix) {
+        _flushText(state);
+        _text_matrix = new_matrix;
     }
-    // Calculate new text matrix
-    Geom::Affine new_text_matrix(text_matrix[0] * state->getHorizScaling(),
-                               text_matrix[1] * state->getHorizScaling(),
-                               -text_matrix[2], -text_matrix[3],
-                               0.0, 0.0);
-
-    if ( fabs( max_scale - 1.0 ) > EPSILON ) {
-        // Cancel out scaling by font size in text matrix
-        for ( int i = 0 ; i < 4 ; i++ ) {
-            new_text_matrix[i] /= max_scale;
-        }
-    }
-    _text_matrix = new_text_matrix;
-    _font_scaling = max_scale;
 }
 
 /**
  * \brief Writes the buffered characters to the SVG document
+ *
+ * This is a dual path function that can produce either a text element
+ * or a group of path elements depending on the font handling mode.
  */
-void SvgBuilder::_flushText() {
+void SvgBuilder::_flushText(GfxState *state)
+{
     // Ignore empty strings
     if ( _glyphs.empty()) {
         _glyphs.clear();
@@ -1289,16 +1285,32 @@ void SvgBuilder::_flushText() {
         return;
     }
 
-    Inkscape::XML::Node *text_node = _xml_doc->createElement("svg:text");
+    // If cairo, then no text node is needed.
+    Inkscape::XML::Node *text_group = nullptr;
+    Inkscape::XML::Node *text_node = nullptr;
+    cairo_glyph_t *cairo_glyphs = nullptr;
+    unsigned int cairo_glyph_count = 0;
 
-    // we preserve spaces in the text objects we create, this applies to any descendant
-    text_node->setAttribute("xml:space", "preserve");
+    if (_cairo_font) {
+        // Where _cairo_font is being checked, you will find the cairo draw to path
+        // pathway in this code. Where you see tspan and text node manipulation that
+        // is the svg text pathway.
+        cairo_glyphs = (cairo_glyph_t *)gmallocn(_glyphs.size(), sizeof(cairo_glyph_t));
+    } else {
+        // we preserve spaces in the text objects we create, this applies to any descendant
+        text_node = _addToContainer("svg:text");
+        text_node->setAttribute("xml:space", "preserve");
+    }
 
-    // Set text matrix
-    Geom::Affine text_transform(_text_matrix);
-    text_transform[4] = first_glyph.position[0];
-    text_transform[5] = first_glyph.position[1];
-    text_node->setAttributeOrRemoveIfEmpty("transform", sp_svg_transform_write(text_transform));
+    // Strip out text size from text_matrix and remove from text_transform
+    double text_scale = _text_matrix.expansionX();
+    Geom::Affine tr = stateToAffine(state);
+    Geom::Affine text_transform = _text_matrix * tr * Geom::Scale(text_scale).inverse();
+    // The glyph position must be moved by the document scale without flipping
+    // the text object itself. This is why the text affine is applied to the
+    // translation point and not simply used in the text element directly.
+    auto pos = first_glyph.position * tr;
+    text_transform.setTranslation(pos);
 
     bool new_tspan = true;
     bool same_coords[2] = {true, true};
@@ -1318,24 +1330,24 @@ void SvgBuilder::_flushText() {
             new_tspan = true;
         } else if ( i != _glyphs.begin() ) {
             const SvgGlyph& prev_glyph = (*prev_iterator);
-            if ( !( ( glyph.dy == 0.0 && prev_glyph.dy == 0.0 &&
-                     glyph.text_position[1] == prev_glyph.text_position[1] ) ||
-                    ( glyph.dx == 0.0 && prev_glyph.dx == 0.0 &&
-                     glyph.text_position[0] == prev_glyph.text_position[0] ) ) ) {
+            if (!((glyph.delta[Geom::Y] == 0.0 && prev_glyph.delta[Geom::Y] == 0.0 &&
+                   glyph.text_position[1] == prev_glyph.text_position[1]) ||
+                  (glyph.delta[Geom::X] == 0.0 && prev_glyph.delta[Geom::X] == 0.0 &&
+                   glyph.text_position[0] == prev_glyph.text_position[0]))) {
                 new_tspan = true;
             }
         }
 
         // Create tspan node if needed
-        if ( new_tspan || i == _glyphs.end() ) {
+        if (!_cairo_font && text_node && (new_tspan || i == _glyphs.end())) {
             if (tspan_node) {
                 // Set the x and y coordinate arrays
-                if ( same_coords[0] ) {
+                if (same_coords[0]) {
                     tspan_node->setAttributeSvgDouble("x", last_delta_pos[0]);
                 } else {
                     tspan_node->setAttributeOrRemoveIfEmpty("x", x_coords);
                 }
-                if ( same_coords[1] ) {
+                if (same_coords[1]) {
                     tspan_node->setAttributeSvgDouble("y", last_delta_pos[1]);
                 } else {
                     tspan_node->setAttributeOrRemoveIfEmpty("y", y_coords);
@@ -1362,16 +1374,11 @@ void SvgBuilder::_flushText() {
             } else {
                 tspan_node = _xml_doc->createElement("svg:tspan");
                 
-                ///////
-                // Create a font specification string and save the attribute in the style
-                PangoFontDescription *descr = pango_font_description_from_string(glyph.font_specification);
-                Glib::ustring properFontSpec = FontFactory::get().ConstructFontSpecification(descr);
-                pango_font_description_free(descr);
-                sp_repr_css_set_property(glyph.style, "-inkscape-font-specification", properFontSpec.c_str());
-
                 // Set style and unref SPCSSAttr if it won't be needed anymore
                 // assume all <tspan> nodes in a <text> node share the same style
-                sp_repr_css_change(text_node, glyph.style, "style");
+                double text_size = text_scale * glyph.text_size;
+                sp_repr_css_set_property_double(glyph.style, "font-size", text_size);
+                sp_repr_css_change(tspan_node, glyph.style, "style");
                 if ( glyph.style_changed && i != _glyphs.begin() ) {    // Free previous style
                     sp_repr_css_attr_unref((*prev_iterator).style);
                 }
@@ -1390,10 +1397,10 @@ void SvgBuilder::_flushText() {
             }
         }
         // Append the coordinates to their respective strings
-        Geom::Point delta_pos( glyph.text_position - first_glyph.text_position );
+        Geom::Point delta_pos(glyph.text_position - first_glyph.text_position);
         delta_pos[1] += glyph.rise;
         delta_pos[1] *= -1.0;   // flip it
-        delta_pos *= _font_scaling;
+        delta_pos *= Geom::Scale(text_scale);
         Inkscape::CSSOStringStream os_x;
         os_x << delta_pos[0];
         x_coords.append(os_x.str());
@@ -1402,41 +1409,129 @@ void SvgBuilder::_flushText() {
         y_coords.append(os_y.str());
         last_delta_pos = delta_pos;
 
-        // Append the character to the text buffer
-        if ( !glyph.code.empty() ) {
-            text_buffer.append(1, glyph.code[0]);
-        }
+        if (_cairo_font) {
+            bool is_last_glyph = i + 1 == _glyphs.end();
 
-        /* Append any utf8 conversion doublets and request a new tspan.
-         *
-         * This is a fix for the unusual situation in some PDF files that use
-         * certain fonts where two ascii letters have been bolted together into
-         * one Unicode position and our conversion to UTF8 produces extra glyphs
-         * which if we don't add will be missing and if we add without ending the
-         * tspan will cause the rest of the glyph-positions to be off by one.
-         */
-        for (int j = 1; j < glyph.code.size(); j++) {
-            text_buffer.append(1, glyph.code[j]);
-            new_tspan = true;
+            // Push the data into the cairo glyph list for later rendering.
+            cairo_glyphs[cairo_glyph_count].index = glyph.cairo_index;
+            cairo_glyphs[cairo_glyph_count].x = delta_pos[Geom::X];
+            cairo_glyphs[cairo_glyph_count].y = delta_pos[Geom::Y];
+            cairo_glyph_count++;
+
+            bool style_will_change = is_last_glyph ? true : (i+1)->style_changed;
+            if (style_will_change) {
+                if (style_will_change && !is_last_glyph && !text_group) {
+                    // We create a group, so each style can be contained within the resulting path.
+                    text_group = _pushGroup();
+                }
+
+                // Render and set the style for this drawn text.
+                double text_size = text_scale * glyph.text_size;
+                text_node = _renderText(glyph.cairo_font, text_size, text_transform, cairo_glyphs, cairo_glyph_count);
+                sp_repr_css_change(text_node, glyph.style, "style");
+
+                // Free up the used glyph stack.
+                gfree(cairo_glyphs);
+                cairo_glyphs = nullptr;
+                cairo_glyph_count = 0;
+
+                if (is_last_glyph) {
+                    // Stop drawing text now, we have cleaned up.
+                    break;
+                } else {
+                    // Allocate enough glyph space for the next span.
+                    cairo_glyphs = (cairo_glyph_t *)gmallocn(_glyphs.size(), sizeof(cairo_glyph_t));
+                }
+            }
+        } else {
+            // Append the character to the text buffer
+            if (!glyph.code.empty()) {
+                text_buffer.append(1, glyph.code[0]);
+            }
+
+            /* Append any utf8 conversion doublets and request a new tspan.
+             *
+             * This is a fix for the unusual situation in some PDF files that use
+             * certain fonts where two ascii letters have been bolted together into
+             * one Unicode position and our conversion to UTF8 produces extra glyphs
+             * which if we don't add will be missing and if we add without ending the
+             * tspan will cause the rest of the glyph-positions to be off by one.
+             */
+            for (int j = 1; j < glyph.code.size(); j++) {
+                text_buffer.append(1, glyph.code[j]);
+                new_tspan = true;
+            }
         }
 
         glyphs_in_a_row++;
         ++i;
     }
-    _container->appendChild(text_node);
-    Inkscape::GC::release(text_node);
+    if (text_group) {
+        // Pop the group so the clip and transform can be applied to it.
+        text_node = text_group;
+        _popGroup();
+    }
+
+    // Set the text matrix which sits under the page's position
+    _setBlendMode(text_node, state);
+    svgSetTransform(text_node, text_transform * _page_affine);
+    _setClipPath(text_node);
 
     _glyphs.clear();
 }
 
-void SvgBuilder::beginString(GfxState *state) {
-    if (_need_font_update) {
-        updateFont(state);
+/**
+ * Renders the text as a path object using cairo and returns the node object.
+ *
+ * cairo_font   - The font that cairo can use to convert text to path.
+ * font_size    - The size of the text when drawing the path.
+ * transform    - The matrix which will place the text on the page, this is critical
+ *                to allow cairo to render all the required parts of the text.
+ * cairo_glyphs - A pointer to a list of glyphs to render.
+ * count        - A count of the number of glyphs to render.
+ */
+Inkscape::XML::Node *SvgBuilder::_renderText(std::shared_ptr<CairoFont> cairo_font, double font_size,
+                                             const Geom::Affine &transform,
+                                             cairo_glyph_t *cairo_glyphs, unsigned int count)
+{
+    if (!cairo_glyphs || !cairo_font)
+        return nullptr;
+
+    // The surface isn't actually used, no rendering in cairo takes place.
+    cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, _width, _height);
+    cairo_t *cairo = cairo_create(surface);
+    cairo_set_font_face(cairo, cairo_font->getFontFace());
+    cairo_set_font_size(cairo, font_size);
+    ink_cairo_transform(cairo, transform);
+    cairo_glyph_path(cairo, cairo_glyphs, count);
+    auto pathv = extract_pathvector_from_cairo(cairo);
+    cairo_destroy(cairo);
+    cairo_surface_destroy(surface);
+
+    // Failing to render text.
+    if (!pathv) {
+        g_warning("Failed to render PDF text!");
+        return nullptr;
     }
+
+    Inkscape::XML::Node *path = _addToContainer("svg:path");
+    path->setAttribute("d", sp_svg_write_path(*pathv));
+    return path;
+}
+
+/**
+ * Begin and end string is the inner most text processing step
+ * which tells us we're about to have a certain number of chars.
+ */
+void SvgBuilder::beginString(GfxState *state, int len)
+{
     IFTRACE(double *m = state->getTextMat());
     TRACE(("tm: %f %f %f %f %f %f\n",m[0], m[1],m[2], m[3], m[4], m[5]));
     IFTRACE(m = state->getCTM());
     TRACE(("ctm: %f %f %f %f %f %f\n",m[0], m[1],m[2], m[3], m[4], m[5]));
+}
+void SvgBuilder::endString(GfxState *state)
+{
 }
 
 /**
@@ -1444,16 +1539,19 @@ void SvgBuilder::beginString(GfxState *state) {
  * Takes care of converting it to UTF-8 and generates a new style repr if style
  * has changed since the last call.
  */
-void SvgBuilder::addChar(GfxState *state, double x, double y,
-                         double dx, double dy,
-                         double originX, double originY,
-                         CharCode /*code*/, int /*nBytes*/, Unicode const *u, int uLen) {
-
+void SvgBuilder::addChar(GfxState *state, double x, double y, double dx, double dy, double originX, double originY,
+                         CharCode code, int /*nBytes*/, Unicode const *u, int uLen)
+{
     // Skip control characters, found in LaTeX generated PDFs
     // https://gitlab.com/inkscape/inkscape/-/issues/1369
     if (uLen > 0 && u[0] < 0x80 && g_ascii_iscntrl(u[0]) && !g_ascii_isspace(u[0])) {
         g_warning("Skipping ASCII control character %u", u[0]);
         _text_position += Geom::Point(dx, dy);
+        return;
+    }
+
+    if (!_font_style && !_cairo_font) {
+        // Deleted text.
         return;
     }
 
@@ -1474,12 +1572,15 @@ void SvgBuilder::addChar(GfxState *state, double x, double y,
 
     SvgGlyph new_glyph;
     new_glyph.is_space = is_space;
+    new_glyph.delta = Geom::Point(dx, dy);
     new_glyph.position = Geom::Point( x - originX, y - originY );
     new_glyph.text_position = _text_position;
-    new_glyph.dx = dx;
-    new_glyph.dy = dy;
-    Geom::Point delta(dx, dy);
-    _text_position += delta;
+    new_glyph.text_size = _css_font_size;
+    if (_cairo_font) {
+        new_glyph.cairo_font = _cairo_font;
+        new_glyph.cairo_index = _cairo_font->getGlyph(code, u, uLen);
+    }
+    _text_position += new_glyph.delta;
 
     // Convert the character to UTF-8 since that's our SVG document's encoding
     {
@@ -1506,23 +1607,17 @@ void SvgBuilder::addChar(GfxState *state, double x, double y,
         bool has_fill = !( render_mode & 1 );
         bool has_stroke = ( render_mode & 3 ) == 1 || ( render_mode & 3 ) == 2;
         new_glyph.style = _setStyle(state, has_fill, has_stroke);
-        // Find a way to handle blend modes on text
-        /* GfxBlendMode blendmode = state->getBlendMode();
-        if (blendmode) {
-            sp_repr_css_set_property(new_glyph.style, "mix-blend-mode", enum_blend_mode[blendmode].key);
-        } */
         new_glyph.render_mode = render_mode;
-        sp_repr_css_merge(new_glyph.style, _font_style); // Merge with font style
+        if (_font_style) {
+            // Merge with font style
+            sp_repr_css_merge(new_glyph.style, _font_style);
+        }
         _invalidated_style = false;
     } else {
         new_glyph.style_changed = false;
         // Point to previous glyph's style information
         const SvgGlyph& prev_glyph = _glyphs.back();
         new_glyph.style = prev_glyph.style;
-        /* GfxBlendMode blendmode = state->getBlendMode();
-        if (blendmode) {
-            sp_repr_css_set_property(new_glyph.style, "mix-blend-mode", enum_blend_mode[blendmode].key);
-        } */
         new_glyph.render_mode = prev_glyph.render_mode;
     }
     new_glyph.font_specification = _font_specification;
@@ -1531,19 +1626,20 @@ void SvgBuilder::addChar(GfxState *state, double x, double y,
     _glyphs.push_back(new_glyph);
 }
 
-void SvgBuilder::endString(GfxState * /*state*/) {
-}
-
+/**
+ * These text object functions are the outer most calls for begining and
+ * ending text. No text functions should be called outside of these two calls
+ */
 void SvgBuilder::beginTextObject(GfxState *state) {
     _in_text_object = true;
     _invalidated_style = true;  // Force copying of current state
-    _current_state = state;
 }
 
-void SvgBuilder::endTextObject(GfxState * /*state*/) {
-    _flushText();
+void SvgBuilder::endTextObject(GfxState *state)
+{
     // TODO: clip if render_mode >= 4
     _in_text_object = false;
+    _flushText(state);
 }
 
 /**
@@ -1583,8 +1679,8 @@ Inkscape::XML::Node *SvgBuilder::_createImage(Stream *str, int width, int height
         return nullptr;
     }
     // Decide whether we should embed this image
-    int attr_value = _preferences->getAttributeInt("embedImages", 1);
-    bool embed_image = ( attr_value != 0 );
+    bool embed_image = _preferences->getAttributeBoolean("embedImages", true);
+
     // Set read/write functions
     std::vector<guchar> png_buffer;
     FILE *fp = nullptr;
@@ -1741,9 +1837,6 @@ Inkscape::XML::Node *SvgBuilder::_createImage(Stream *str, int width, int height
     // PS/PDF images are placed via a transformation matrix, no preserveAspectRatio used
     image_node->setAttribute("preserveAspectRatio", "none");
 
-    // Set transformation
-    svgSetTransform(image_node, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
-
     // Create href
     if (embed_image) {
         // Append format specification to the URI
@@ -1779,32 +1872,24 @@ Inkscape::XML::Node *SvgBuilder::_createMask(double width, double height) {
         return _doc->getDefs()->getRepr()->lastChild();
     } else {    // Work around for renderer bug when mask isn't defined in pattern
         static int mask_count = 0;
-        Inkscape::XML::Node *defs = _root->firstChild();
-        if ( !( defs && !strcmp(defs->name(), "svg:defs") ) ) {
-            // Create <defs> node
-            defs = _xml_doc->createElement("svg:defs");
-            _root->addChild(defs, nullptr);
-            Inkscape::GC::release(defs);
-            defs = _root->firstChild();
-        }
         gchar *mask_id = g_strdup_printf("_mask%d", mask_count++);
         mask_node->setAttribute("id", mask_id);
         g_free(mask_id);
-        defs->appendChild(mask_node);
+        _doc->getDefs()->getRepr()->appendChild(mask_node);
         Inkscape::GC::release(mask_node);
-        return defs->lastChild();
+        return mask_node;
     }
 }
 
 void SvgBuilder::addImage(GfxState *state, Stream *str, int width, int height, GfxImageColorMap *color_map,
                           bool interpolate, int *mask_colors)
 {
-
     Inkscape::XML::Node *image_node = _createImage(str, width, height, color_map, interpolate, mask_colors);
     if (image_node) {
         _setBlendMode(image_node, state);
-        _container->appendChild(image_node);
-        Inkscape::GC::release(image_node);
+        _setTransform(image_node, state, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
+        _addToContainer(image_node);
+        _setClipPath(image_node);
     }
 }
 
@@ -1812,18 +1897,20 @@ void SvgBuilder::addImageMask(GfxState *state, Stream *str, int width, int heigh
                               bool invert, bool interpolate) {
 
     // Create a rectangle
-    Inkscape::XML::Node *rect = _xml_doc->createElement("svg:rect");
+    Inkscape::XML::Node *rect = _addToContainer("svg:rect");
     rect->setAttributeSvgDouble("x", 0.0);
     rect->setAttributeSvgDouble("y", 0.0);
     rect->setAttributeSvgDouble("width", 1.0);
     rect->setAttributeSvgDouble("height", 1.0);
-    svgSetTransform(rect, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
+
     // Get current fill style and set it on the rectangle
     SPCSSAttr *css = sp_repr_css_attr_new();
     _setFillStyle(css, state, false);
     sp_repr_css_change(rect, css, "style");
     sp_repr_css_attr_unref(css);
     _setBlendMode(rect, state);
+    _setTransform(rect, state, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
+    _setClipPath(rect);
 
     // Scaling 1x1 surfaces might not work so skip setting a mask with this size
     if ( width > 1 || height > 1 ) {
@@ -1841,17 +1928,12 @@ void SvgBuilder::addImageMask(GfxState *state, Stream *str, int width, int heigh
             g_free(mask_url);
         }
     }
-
-    // Add the rectangle to the container
-    _container->appendChild(rect);
-    Inkscape::GC::release(rect);
 }
 
 void SvgBuilder::addMaskedImage(GfxState *state, Stream *str, int width, int height, GfxImageColorMap *color_map,
                                 bool interpolate, Stream *mask_str, int mask_width, int mask_height, bool invert_mask,
                                 bool mask_interpolate)
 {
-
     Inkscape::XML::Node *mask_image_node = _createImage(mask_str, mask_width, mask_height,
                                           nullptr, mask_interpolate, nullptr, true, invert_mask);
     Inkscape::XML::Node *image_node = _createImage(str, width, height, color_map, interpolate, nullptr);
@@ -1868,14 +1950,15 @@ void SvgBuilder::addMaskedImage(GfxState *state, Stream *str, int width, int hei
         gchar *mask_url = g_strdup_printf("url(#%s)", mask_node->attribute("id"));
         image_node->setAttribute("mask", mask_url);
         g_free(mask_url);
-        _container->appendChild(image_node);
+        _setBlendMode(image_node, state);
+        _setTransform(image_node, state, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
+        _addToContainer(image_node);
+        _setClipPath(image_node);
+    } else if (image_node) {
+        Inkscape::GC::release(image_node);
     }
     if (mask_image_node) {
         Inkscape::GC::release(mask_image_node);
-    }
-    if (image_node) {
-        _setBlendMode(image_node, state);
-        Inkscape::GC::release(image_node);
     }
 }
 
@@ -1883,7 +1966,6 @@ void SvgBuilder::addSoftMaskedImage(GfxState *state, Stream *str, int width, int
                                     bool interpolate, Stream *mask_str, int mask_width, int mask_height,
                                     GfxImageColorMap *mask_color_map, bool mask_interpolate)
 {
-
     Inkscape::XML::Node *mask_image_node = _createImage(mask_str, mask_width, mask_height,
                                                         mask_color_map, mask_interpolate, nullptr, true);
     Inkscape::XML::Node *image_node = _createImage(str, width, height, color_map, interpolate, nullptr);
@@ -1897,90 +1979,117 @@ void SvgBuilder::addSoftMaskedImage(GfxState *state, Stream *str, int width, int
         gchar *mask_url = g_strdup_printf("url(#%s)", mask_node->attribute("id"));
         image_node->setAttribute("mask", mask_url);
         g_free(mask_url);
-        _container->appendChild(image_node);
+        _addToContainer(image_node);
+        _setBlendMode(image_node, state);
+        _setTransform(image_node, state, Geom::Affine(1.0, 0.0, 0.0, -1.0, 0.0, 1.0));
+        _setClipPath(image_node);
+    } else if (image_node) {
+        Inkscape::GC::release(image_node);
     }
     if (mask_image_node) {
         Inkscape::GC::release(mask_image_node);
-    }
-    if (image_node) {
-        _setBlendMode(image_node, state);
-        Inkscape::GC::release(image_node);
     }
 }
 
 /**
  * \brief Starts building a new transparency group
  */
-void SvgBuilder::pushTransparencyGroup(GfxState * /*state*/, double *bbox,
-                                       GfxColorSpace * /*blending_color_space*/,
-                                       bool isolated, bool knockout,
-                                       bool for_softmask) {
+void SvgBuilder::startGroup(GfxState *state, double *bbox, GfxColorSpace * /*blending_color_space*/, bool isolated,
+                           bool knockout, bool for_softmask)
+{
+    // Push group node, but don't attach to previous container yet
+    _pushContainer("svg:g");
 
-    // Push node stack
-    pushNode("svg:g");
-
-    // Setup new transparency group
-    SvgTransparencyGroup *transpGroup = new SvgTransparencyGroup;
-    for (size_t i = 0; i < 4; i++) {
-        transpGroup->bbox[i] = bbox[i];        
+    if (for_softmask) {
+        _mask_groups.push_back(state);
+        // Create a container for the mask
+        _pushContainer(_createMask(1.0, 1.0));
     }
-    transpGroup->isolated = isolated;
-    transpGroup->knockout = knockout;
-    transpGroup->for_softmask = for_softmask;
-    transpGroup->container = _container;
 
-    // Push onto the stack
-    transpGroup->next = _transp_group_stack;
-    _transp_group_stack = transpGroup;
+    // TODO: In the future we could use state to insert transforms
+    // and then remove the inverse from the items added into the children
+    // to reduce the transformational duplication.
 }
 
-void SvgBuilder::popTransparencyGroup(GfxState * /*state*/) {
+void SvgBuilder::finishGroup(GfxState *state, bool for_softmask)
+{
+    if (for_softmask) {
+        // Create mask
+        auto mask_node = _popContainer();
+        gchar *mask_url = g_strdup_printf("url(#%s)", mask_node->attribute("id"));
+        _container->setAttribute("mask", mask_url);
+        g_free(mask_url);
+    } else {
+        popGroup(state);
+    }
+}
+
+void SvgBuilder::popGroup(GfxState *state)
+{
     // Restore node stack
-    popNode();
-}
+    auto parent = _popContainer();
 
-/**
- * \brief Places the current transparency group into the current container
- */
-void SvgBuilder::paintTransparencyGroup(GfxState * /*state*/, double * /*bbox*/) {
-    SvgTransparencyGroup *transpGroup = _transp_group_stack;
-    _container->appendChild(transpGroup->container);
-    Inkscape::GC::release(transpGroup->container);
-    // Pop the stack
-    _transp_group_stack = transpGroup->next;
-    delete transpGroup;
-}
+    if (parent->childCount() == 1 && !parent->attribute("transform") && !_clip_history->hasClipPath()) {
+        // Merge this opacity and remove unnecessary group
+        auto child = parent->firstChild();
 
-/**
- * \brief Creates a mask using the current transparency group as its content
- */
-void SvgBuilder::setSoftMask(GfxState * /*state*/, double * /*bbox*/, bool /*alpha*/,
-                             Function * /*transfer_func*/, GfxColor * /*backdrop_color*/) {
+        // Do not merge masked or clipped groups, to avoid clobering
+        if (!child->attribute("mask") && !child->attribute("clip-path")) {
+            auto orig = child->getAttributeDouble("opacity", 1.0);
+            auto grp = parent->getAttributeDouble("opacity", 1.0);
+            child->setAttributeSvgDouble("opacity", orig * grp);
 
-    // Create mask
-    Inkscape::XML::Node *mask_node = _createMask(1.0, 1.0);
-    // Add the softmask content to it
-    SvgTransparencyGroup *transpGroup = _transp_group_stack;
-    mask_node->appendChild(transpGroup->container);
-    Inkscape::GC::release(transpGroup->container);
-    // Apply the mask
-    _state_stack.back().softmask = mask_node;
-    pushGroup();
-    gchar *mask_url = g_strdup_printf("url(#%s)", mask_node->attribute("id"));
-    _container->setAttribute("mask", mask_url);
-    g_free(mask_url);
-    // Pop the stack
-    _transp_group_stack = transpGroup->next;
-    delete transpGroup;
-}
+            if (auto mask = parent->attribute("mask")) {
+                child->setAttribute("mask", mask);
+            }
+            if (auto clip = parent->attribute("clip-path")) {
+                child->setAttribute("clip-path", clip);
+            }
 
-void SvgBuilder::clearSoftMask(GfxState * /*state*/) {
-    if (_state_stack.back().softmask) {
-        _state_stack.back().softmask = nullptr;
-        popGroup();
+            // This duplicate child will get applied in the place of the group
+            parent->removeChild(child);
+            Inkscape::GC::anchor(child);
+            parent = child;
+        }
     }
+
+    // Add the parent to the last container
+    _addToContainer(parent);
+    _setClipPath(parent);
 }
 
+/**
+ * Decide what to do for each font in the font list, with the given strategy.
+ */
+FontStrategies SvgBuilder::autoFontStrategies(FontStrategy s, FontList fonts)
+{
+    FontStrategies ret;
+    for (auto font : *fonts.get()) {
+        int id = font.first->getID()->num;
+        bool found = font.second.found;
+        switch (s) {
+            case FontStrategy::RENDER_ALL:
+                ret[id] = FontFallback::AS_SHAPES;
+                break;
+            case FontStrategy::DELETE_ALL:
+                ret[id] = FontFallback::DELETE_TEXT;
+                break;
+            case FontStrategy::RENDER_MISSING:
+                ret[id] = found ? FontFallback::AS_TEXT : FontFallback::AS_SHAPES;
+                break;
+            case FontStrategy::SUBSTITUTE_MISSING:
+                ret[id] = found ? FontFallback::AS_TEXT : FontFallback::AS_SUB;
+                break;
+            case FontStrategy::KEEP_MISSING:
+                ret[id] = FontFallback::AS_TEXT;
+                break;
+            case FontStrategy::DELETE_MISSING:
+                ret[id] = found ? FontFallback::AS_TEXT : FontFallback::DELETE_TEXT;
+                break;
+        }
+    }
+    return ret;
+}
 } } } /* namespace Inkscape, Extension, Internal */
 
 #endif /* HAVE_POPPLER */
