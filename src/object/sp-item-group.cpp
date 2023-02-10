@@ -748,7 +748,7 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
         clip->deleteObject(true, false);
     }
     prefs->setBool("/options/maskobject/topmost", topmost);
-    prefs->setBool("/options/maskobject/grouping", grouping);
+    prefs->setInt("/options/maskobject/grouping", grouping);
     prefs->setBool("/options/onungroup", false);
 }
 
