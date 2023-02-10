@@ -100,6 +100,8 @@ inkscape:linux:
 
 
 appimage:linux:
+  image: registry.gitlab.com/inkscape/inkscape-ci-docker/ubuntu-2004
+  # appimage creator script does not support recent OS (yet)
   stage: build
   rules:
     - *do_not_run_for_schedules
