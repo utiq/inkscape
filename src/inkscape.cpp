@@ -54,6 +54,8 @@
 #include "ui/dialog/dialog-window.h"
 #include "ui/tools/tool-base.h"
 
+#include "util/units.h"
+
 #include <fstream>
 
 // Inkscape::Application static members
@@ -183,6 +185,16 @@ Application::Application(bool use_gui) :
 {
     using namespace Inkscape::IO::Resource;
     /* fixme: load application defaults */
+
+    /* If we're running from inside a macOS application bundle, we haven't
+     * loaded the units.xml file from a user data location yet (see
+     * UnitTable::UnitTable()). This has been deferred to this point so
+     * the environment has been set up for macOS (especially XDG variables).
+     */
+    if (g_str_has_suffix(get_program_dir(), "Contents/MacOS")) {
+        using namespace Inkscape::IO::Resource;
+        Util::unit_table.load(get_filename(UIS, "units.xml", false, true));
+    }
 
     // we need a app runing to know shared path
     auto extensiondir_shared = get_path_string(SHARED, EXTENSIONS);
