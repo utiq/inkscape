@@ -45,14 +45,20 @@ public:
     /**
      * Request a drawing surface of the given dimensions. If nogl is true, no GL commands will be issued,
      * but the request may fail. An effort is made to keep such failures to a minimum.
+     *
+     * The surface must be returned to the PixelStreamer by calling finish(), in order to deallocate
+     * GL resourecs.
      */
     virtual Cairo::RefPtr<Cairo::ImageSurface> request(Geom::IntPoint const &dimensions, bool nogl = false) = 0;
 
     /**
      * Give back a drawing surface produced by request(), uploading the contents to the currently bound texture.
      * The texture must be at least as big as the surface.
+     *
+     * If junk is true, then the surface will be junked instead, meaning nothing will be done with the contents,
+     * and its GL resources will simply be deallocated.
      */
-    virtual void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) = 0;
+    virtual void finish(Cairo::RefPtr<Cairo::ImageSurface> surface, bool junk = false) = 0;
 };
 
 } // namespace Widget

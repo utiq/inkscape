@@ -125,6 +125,12 @@ cairo_surface_t *FilterSlot::getcairo(int slot_nr)
         cairo_surface_destroy(empty);
         s = _slots.find(slot_nr);
     }
+
+    if (s->second && cairo_surface_status(s->second) == CAIRO_STATUS_NO_MEMORY) {
+        // Simulate Cairomm behaviour by throwing std::bad_alloc.
+        throw std::bad_alloc();
+    }
+
     return s->second;
 }
 

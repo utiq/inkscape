@@ -640,6 +640,12 @@ void GLGraphics::draw_tile(Fragment const &fragment, Cairo::RefPtr<Cairo::ImageS
     }
 }
 
+void GLGraphics::junk_tile_surface(Cairo::RefPtr<Cairo::ImageSurface> surface)
+{
+    auto g = std::lock_guard(ps_mutex);
+    pixelstreamer->finish(std::move(surface), true);
+}
+
 void GLGraphics::setup_widget_pipeline(Fragment const &view)
 {
     state = State::Widget;

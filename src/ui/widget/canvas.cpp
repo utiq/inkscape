@@ -269,6 +269,7 @@ public:
     void render_tile(int debug_id);
     void paint_rect(Geom::IntRect const &rect);
     void paint_single_buffer(const Cairo::RefPtr<Cairo::ImageSurface> &surface, const Geom::IntRect &rect, bool need_background, bool outline_pass);
+    void paint_error_buffer(const Cairo::RefPtr<Cairo::ImageSurface> &surface);
 
     // Trivial overload of GtkWidget function.
     void queue_draw_area(Geom::IntRect const &rect);
@@ -2319,7 +2320,21 @@ void CanvasPrivate::paint_rect(Geom::IntRect const &rect)
             });
         }
 
-        paint_single_buffer(surface, rect, need_background, outline_pass);
+        try {
+
+            paint_single_buffer(surface, rect, need_background, outline_pass);
+
+        } catch (std::bad_alloc const &) {
+            // Note: std::bad_alloc actually indicates a Cairo error that occurs regularly at high zoom, and we must handle it.
+            // See https://gitlab.com/inkscape/inkscape/-/issues/3975
+            sync.runInMain([&] {
+                std::cerr << "Rendering failure. You probably need to zoom out!" << std::endl;
+                if (q->get_opengl_enabled()) q->make_current();
+                graphics->junk_tile_surface(std::move(surface));
+                surface = graphics->request_tile_surface(rect, false);
+                paint_error_buffer(surface);
+            });
+        }
 
         return surface;
     };
@@ -2368,6 +2383,15 @@ void CanvasPrivate::paint_single_buffer(Cairo::RefPtr<Cairo::ImageSurface> const
         cr->set_operator(Cairo::OPERATOR_OVER);
         cr->paint();
     }
+}
+
+void CanvasPrivate::paint_error_buffer(Cairo::RefPtr<Cairo::ImageSurface> const &surface)
+{
+    // Paint something into surface to represent an "error" state for that tile.
+    // Currently just paints solid black.
+    auto cr = Cairo::Context::create(surface);
+    cr->set_source_rgb(0, 0, 0);
+    cr->paint();
 }
 
 } // namespace Inkscape::UI::Widget

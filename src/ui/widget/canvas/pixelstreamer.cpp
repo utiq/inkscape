@@ -173,7 +173,7 @@ public:
         return surface;
     }
 
-    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
+    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface, bool junk) override
     {
         // Extract the mapping handle from the surface's user data.
         auto mapping = (int)(uintptr_t)cairo_surface_get_user_data(surface->cobj(), &key);
@@ -193,8 +193,10 @@ public:
         b.refs--;
 
         // Upload to the texture from the mapped subregion.
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, (void*)(uintptr_t)m.off);
+        if (!junk) {
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, (void*)(uintptr_t)m.off);
+        }
 
         // If the buffer is due for recycling, issue a sync command so that we can recycle it when it's ready. (Handle transition 2 --> 4.)
         if (m.buf != current_buffer && b.refs == 0) {
@@ -340,7 +342,7 @@ public:
         return surface;
     }
 
-    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
+    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface, bool junk) override
     {
         auto mapping = (int)(uintptr_t)cairo_surface_get_user_data(surface->cobj(), &key);
         surface.clear();
@@ -353,8 +355,10 @@ public:
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 
         // Upload the buffer to the texture.
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
+        if (!junk) {
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
+        }
 
         // Mark the mapping slot as unused.
         m.used = false;
@@ -438,15 +442,17 @@ public:
         return surface;
     }
 
-    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface) override
+    void finish(Cairo::RefPtr<Cairo::ImageSurface> surface, bool junk) override
     {
         auto mapping = (int)(uintptr_t)cairo_surface_get_user_data(surface->cobj(), &key);
         surface.clear();
 
         auto &m = mappings[mapping];
 
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, &m.data[0]);
+        if (!junk) {
+            glPixelStorei(GL_UNPACK_ROW_LENGTH, m.stride / 4);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m.width, m.height, GL_BGRA, GL_UNSIGNED_BYTE, &m.data[0]);
+        }
 
         m.used = false;
         m.data.clear();

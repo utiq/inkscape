@@ -54,8 +54,15 @@ public:
     virtual void invalidated_glstate() = 0; ///< Tells the Graphics to no longer rely on any OpenGL state it had set up.
 
     // Tile drawing.
+    /// Return a surface for drawing on. If nogl is true, no GL commands are issued, as is a requirement off-main-thread. All such surfaces must be
+    /// returned by passing them either to draw_tile() or junk_tile_surface().
     virtual Cairo::RefPtr<Cairo::ImageSurface> request_tile_surface(Geom::IntRect const &rect, bool nogl) = 0;
+    /// Commit the contents of a surface previously issued by request_tile_surface() to the canvas. In outline mode, a second surface must be passed
+    /// containing the outline content, otherwise it should be null.
     virtual void draw_tile(Fragment const &fragment, Cairo::RefPtr<Cairo::ImageSurface> surface, Cairo::RefPtr<Cairo::ImageSurface> outline_surface) = 0;
+    /// Get rid of a surface previously issued by request_tile_surface() without committing it to the canvas. Usually useful only to dispose of
+    /// surfaces which have gone into an error state while rendering, which is irreversible, and therefore we can't do anything useful with them.
+    virtual void junk_tile_surface(Cairo::RefPtr<Cairo::ImageSurface> surface) = 0;
 
     // Widget painting.
     struct PaintArgs
