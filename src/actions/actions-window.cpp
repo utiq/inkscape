@@ -42,17 +42,74 @@ window_open(InkscapeApplication *app)
     }
 }
 
+void 
+window_query_geometry(InkscapeApplication *app)
+{
+    auto window = app->get_active_window();
+    if (window) {
+        SPDesktop *desktop = window->get_desktop();
+        if (desktop) {
+            gint x, y, w, h = 0;
+            desktop->getWindowGeometry(x, y, w, h);
+            show_output(Glib::ustring("x:") + Glib::ustring::format(x), false);
+            show_output(Glib::ustring("y:") + Glib::ustring::format(y), false);
+            show_output(Glib::ustring("w:") + Glib::ustring::format(w), false); 
+            show_output(Glib::ustring("h:") + Glib::ustring::format(h), false);
+        }
+    } else {
+        show_output("this action needs active window, probably you need to add --active-window / -q");
+    }
+}
+
+void 
+window_set_geometry(const Glib::VariantBase& value, InkscapeApplication *app)
+{
+    Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring> >(value);
+
+    std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", s.get());
+    if (tokens.size() != 4) {
+        show_output("action:set geometry: requires 'x, y, width, height'");
+        return;
+    }
+    auto window = app->get_active_window();
+    if (window) {
+        SPDesktop *desktop = window->get_desktop();
+        if (desktop) {
+            if (desktop->is_maximized()) {
+                gtk_window_unmaximize(desktop->getToplevel()->gobj());
+            }
+            gint x = std::stoi(tokens[0]);
+            gint y = std::stoi(tokens[1]);
+            gint w = std::stoi(tokens[2]);
+            gint h = std::stoi(tokens[3]);
+            desktop->setWindowSize (w, h);
+            desktop->setWindowPosition(Geom::Point(x,y));
+        }
+    } else {
+        show_output("this action needs active window, probably you need to add --active-window / -q");
+    }
+}
+
 void
 window_close(InkscapeApplication *app)
 {
     app->window_close_active();
 }
 
+std::vector<std::vector<Glib::ustring>> hint_data_window =
+{
+    // clang-format off
+    {"app.window-set-geometry",         N_("Enter comma-separated string for x, y, width, height")  }
+    // clang-format on
+};
+
 std::vector<std::vector<Glib::ustring>> raw_data_window =
 {
     // clang-format off
-    {"app.window-open",           N_("Window Open"),     "Window",     N_("Open a window for the active document; GUI only")       },
-    {"app.window-close",          N_("Window Close"),    "Window",     N_("Close the active window, does not check for data loss") }
+    {"app.window-open",            N_("Window Open"),            "Window",     N_("Open a window for the active document; GUI only")       },
+    {"app.window-close",           N_("Window Close"),           "Window",     N_("Close the active window, does not check for data loss") },
+    {"app.window-query-geometry",  N_("Window Query Geometry"),  "Window",     N_("Query active window geometry") },
+    {"app.window-set-geometry",    N_("Window Set Geometry"),    "Window",     N_("Set active window geometry (X, Y, Width, Height)") },
     // clang-format on
 };
 
@@ -60,13 +117,16 @@ void
 add_actions_window(InkscapeApplication* app)
 {
     auto *gapp = app->gio_app();
-
+    Glib::VariantType String(Glib::VARIANT_TYPE_STRING);
     // clang-format off
-    gapp->add_action(                "window-open",  sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_open),         app));
-    gapp->add_action(                "window-close", sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_close),        app));
+    gapp->add_action(                "window-open",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_open),                 app));
+    gapp->add_action(                "window-close",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_close),                app));
+    gapp->add_action(                "window-query-geometry",  sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_query_geometry),       app));
+    gapp->add_action_with_parameter( "window-set-geometry",    String, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&window_set_geometry), app));
     // clang-format on
 
     app->get_action_extra_data().add_data(raw_data_window);
+    app->get_action_hint_data().add_data(hint_data_window);
 }
 
 
