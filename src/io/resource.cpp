@@ -480,7 +480,7 @@ std::string profile_path()
         }
 #endif
         if (prefdir.empty()) {
-            prefdir =  Glib::build_filename(g_get_user_config_dir(), INKSCAPE_PROFILE_DIR);
+            prefdir =  Glib::build_filename(get_user_config_dir(), INKSCAPE_PROFILE_DIR);
             // In case the XDG user config dir of the moment does not yet exist...
             int mode = S_IRWXU;
 #ifdef S_IRGRP

@@ -88,69 +88,7 @@ static void set_themes_env()
     Glib::setenv("XDG_DATA_DIRS", xdg_data_dirs + G_SEARCHPATH_SEPARATOR_S + inkscape_datadir);
 }
 
-#ifdef __APPLE__
-static void set_macos_app_bundle_env(gchar const *program_dir)
-{
-    // use bundle identifier
-    // https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/MacOSXDirectories/MacOSXDirectories.html
-    auto app_support_dir = Glib::getenv("HOME") + "/Library/Application Support/org.inkscape.Inkscape";
 
-    auto bundle_resources_dir       = Glib::path_get_dirname(get_inkscape_datadir());
-    auto bundle_resources_etc_dir   = bundle_resources_dir + "/etc";
-    auto bundle_resources_bin_dir   = bundle_resources_dir + "/bin";
-    auto bundle_resources_lib_dir   = bundle_resources_dir + "/lib";
-    auto bundle_resources_share_dir = bundle_resources_dir + "/share";
-
-    // failsafe: Check if the expected content is really there, using GIO modules
-    // as an indicator.
-    // This is also helpful to developers as it enables the possibility to
-    //      1. cmake -DCMAKE_INSTALL_PREFIX=Inkscape.app/Contents/Resources
-    //      2. move binary to Inkscape.app/Contents/MacOS and set rpath
-    //      3. copy Info.plist
-    // to ease up on testing and get correct application behavior (like dock icon).
-    if (!Glib::file_test(bundle_resources_lib_dir + "/gio/modules", Glib::FILE_TEST_EXISTS)) {
-        // doesn't look like a standalone bundle
-        return;
-    }
-
-    // XDG
-    // https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-    Glib::setenv("XDG_DATA_HOME",   app_support_dir + "/share");
-    Glib::setenv("XDG_DATA_DIRS",   bundle_resources_share_dir);
-    Glib::setenv("XDG_CONFIG_HOME", app_support_dir + "/config");
-    Glib::setenv("XDG_CONFIG_DIRS", bundle_resources_etc_dir + "/xdg");
-    Glib::setenv("XDG_CACHE_HOME",  app_support_dir + "/cache");
-
-    // GTK
-    // https://developer.gnome.org/gtk3/stable/gtk-running.html
-    Glib::setenv("GTK_EXE_PREFIX",  bundle_resources_dir);
-    Glib::setenv("GTK_DATA_PREFIX", bundle_resources_dir);
-
-    // GDK
-    Glib::setenv("GDK_PIXBUF_MODULE_FILE", bundle_resources_lib_dir + "/gdk-pixbuf-2.0/2.10.0/loaders.cache");
-
-    // fontconfig
-    Glib::setenv("FONTCONFIG_PATH", bundle_resources_etc_dir + "/fonts");
-
-    // GIO
-    Glib::setenv("GIO_MODULE_DIR", bundle_resources_lib_dir + "/gio/modules");
-
-    // GNOME introspection
-    Glib::setenv("GI_TYPELIB_PATH", bundle_resources_lib_dir + "/girepository-1.0");
-
-    // libenchant
-    Glib::setenv("ENCHANT_PREFIX", bundle_resources_dir);
-
-    // PATH
-    Glib::setenv("PATH", bundle_resources_bin_dir + ":" + Glib::getenv("PATH"));
-
-    // DYLD_LIBRARY_PATH
-    // This is required to make Python GTK bindings work as they use dlopen()
-    // to load libraries.
-    Glib::setenv("DYLD_LIBRARY_PATH", bundle_resources_lib_dir + ":"
-            + bundle_resources_lib_dir + "/gdk-pixbuf-2.0/2.10.0/loaders");
-}
-#endif
 
 #ifdef _WIN32
 // some win32-specific environment adjustments
@@ -248,15 +186,6 @@ int main(int argc, char *argv[])
                 argv[new_argc] = nullptr; // glib expects null-terminated array
                 argc = new_argc;
             }
-
-            // Step 2
-            // In the past, a launch script/wrapper was used to setup necessary environment
-            // variables to facilitate relocatability for the application bundle. Starting
-            // with Catalina, this approach is no longer feasible due to new security checks
-            // that get misdirected by using a launcher. The launcher needs to go and the
-            // binary needs to setup the environment itself.
-
-            set_macos_app_bundle_env(program_dir);
         }
     }
 #elif defined _WIN32
@@ -271,6 +200,7 @@ int main(int argc, char *argv[])
     _setmode(_fileno(stdout), _O_BINARY); // binary mode seems required for this to work properly
 #endif
 
+    set_xdg_env();
     set_themes_env();
     set_extensions_env();
 
