@@ -177,7 +177,8 @@ protected:
     void parse_actions(const Glib::ustring& input, action_vector_t& action_vector);
 
     void on_about();
-    void shell();
+    void redirect_output();
+    void shell(bool active_window = false);
 
     void _start_main_option_section(const Glib::ustring& section_name = "");
 };

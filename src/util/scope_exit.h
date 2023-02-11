@@ -7,6 +7,7 @@
 #define INKSCAPE_UTIL_SCOPE_EXIT_H
 
 #include <type_traits>
+#include <utility>
 
 // Todo: (C++23?) Replace with now-standardised version.
 template <typename F>

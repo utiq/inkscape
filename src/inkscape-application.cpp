@@ -91,6 +91,7 @@
 
 #include "util/units.h"           // Redimension window
 #include "util/statics.h"
+#include "util/scope_exit.h"
 
 #include "actions/actions-base.h"                   // Actions
 #include "actions/actions-file.h"                   // Actions
@@ -1302,13 +1303,13 @@ void readline_init()
 
 // Once we don't need to create a window just to process verbs!
 void
-InkscapeApplication::shell()
+InkscapeApplication::shell(bool active_window)
 {
     std::cout << "Inkscape interactive shell mode. Type 'action-list' to list all actions. "
               << "Type 'quit' to quit." << std::endl;
     std::cout << " Input of the form:" << std::endl;
     std::cout << " action1:arg1; action2:arg2; ..." << std::endl;
-    if (!_with_gui) {
+    if (!_with_gui && !active_window) {
         std::cout << "Only actions that don't require a desktop may be used." << std::endl;
     }
 
@@ -1364,15 +1365,21 @@ InkscapeApplication::shell()
         }
 
         action_vector_t action_vector;
+        if (active_window) {
+            input = "active-window-start;" + input + ";active-window-end";
+        }
         parse_actions(input, action_vector);
         for (auto action: action_vector) {
             _gio_application->activate_action( action.first, action.second );
         }
-
-        // This would allow displaying the results of actions on the fly... but it needs to be well
-        // vetted first.
-        Glib::RefPtr<Glib::MainContext> context = Glib::MainContext::get_default();
-        while (context->iteration(false)) {};
+        if (active_window) {
+            redirect_output();
+        } else {
+            // This would allow displaying the results of actions on the fly... but it needs to be well
+            // vetted first.
+            auto context = Glib::MainContext::get_default();
+            while (context->iteration(false)) {};
+        }
     }
 
 #ifdef WITH_GNU_READLINE
@@ -1388,6 +1395,62 @@ InkscapeApplication::shell()
     }
 }
 
+// Todo: Code can be improved by using proper IPC rather than temporary file polling.
+void InkscapeApplication::redirect_output()
+{
+    auto const tmpfile = Glib::build_filename(Glib::get_tmp_dir(), "active_desktop_commands.xml");
+
+    for (int counter = 0; ; counter++) {
+        if (Glib::file_test(tmpfile, Glib::FILE_TEST_EXISTS)) {
+            break;
+        } else if (counter >= 300) { // 30 seconds exit
+            std::cerr << "couldn't process response. File not found" << std::endl;
+            return;
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+
+    auto tmpfile_delete_guard = scope_exit([&] {
+        unlink(tmpfile.c_str());
+    });
+
+    auto awo = std::ifstream(tmpfile);
+    if (!awo) {
+        std::cout << "couldn't process response. Couldn't read" << std::endl;
+        return;
+    }
+
+    auto const content = std::string(std::istreambuf_iterator<char>(awo), std::istreambuf_iterator<char>());
+    awo.close();
+
+    auto doc = sp_repr_read_mem(content.c_str(), strlen(content.c_str()), nullptr);
+    if (!doc) {
+        std::cout << "couldn't process response. Wrong data" << std::endl;
+        return;
+    }
+
+    auto doc_delete_guard = scope_exit([&] {
+        Inkscape::GC::release(doc);
+    });
+
+    bool noout = true;
+    for (auto child = doc->root()->firstChild(); child; child = child->next()) {
+        auto res = child->firstChild()->content();
+        if (res) {
+            if (!g_strcmp0(child->name(), "cerr")) {
+                std::cerr << res << std::endl;
+            } else {
+                std::cout << res << std::endl;
+            }
+            noout = false;
+        }
+    }
+
+    if (noout) {
+        std::cout << "no output" << std::endl;
+    }
+}
 
 // ========================= Callbacks ==========================
 
@@ -1737,52 +1800,16 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
 #endif
             return EXIT_SUCCESS;
         }
-        _command_line_actions.insert(_command_line_actions.begin(), std::make_pair("active-window-start", base));
-        _command_line_actions_input = _command_line_actions_input + ";active-window-end";
-        parse_actions(_command_line_actions_input, _command_line_actions);
-        for (auto action: _command_line_actions) {
-            _gio_application->activate_action(action.first, action.second);
-        }
-        // code can be improved using pipes and better in asyc mode as @pbs suggest in the MR but II do not know about.
-        // I try to close all file open before use.
-        std::string tmpfile = Glib::build_filename(Glib::get_tmp_dir(), "active_desktop_commands.xml");
-        size_t counter = 0;
-        while (counter < 300 && !Glib::file_test(tmpfile, Glib::FILE_TEST_EXISTS)) { // 30 seconds exit
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            counter++;
-        }
-        if (Glib::file_test(tmpfile, Glib::FILE_TEST_EXISTS)) {
-            std::ifstream awo(tmpfile);
-            if (awo) {
-                std::string content((std::istreambuf_iterator<char>(awo)), (std::istreambuf_iterator<char>()));
-                awo.close();
-                auto doc = sp_repr_read_mem(content.c_str(), strlen(content.c_str()), nullptr);
-                if (doc) {
-                    bool noout = true;
-                    for (Inkscape::XML::Node *child = doc->root()->firstChild(); child != nullptr; child = child->next()) {
-                        const gchar *res = child->firstChild()->content();
-                        if (res) {
-                            if (!g_strcmp0(child->name(), "cerr")) {
-                                std::cerr << res << std::endl;
-                            } else {
-                                std::cout << res << std::endl;
-                            }
-                            noout = false;
-                        }
-                    }
-                    if (noout) {
-                        std::cout << "no output" << std::endl;
-                    }
-                    Inkscape::GC::release(doc);
-                } else {
-                    std::cout << "couldn't process response. Wrong data" << std::endl;
-                }
-            } else {
-                std::cout << "couldn't process response. couldn't read" << std::endl;
-            }
-            unlink(tmpfile.c_str());
+        if (_use_shell) {
+            shell(true);
         } else {
-            std::cerr << "couldn't process response. File not found" << std::endl;
+            _command_line_actions.emplace(_command_line_actions.begin(), "active-window-start", base);
+            _command_line_actions_input = _command_line_actions_input + ";active-window-end";
+            parse_actions(_command_line_actions_input, _command_line_actions);
+            for (auto const &[name, param] : _command_line_actions) {
+                _gio_application->activate_action(name, param);
+            }
+            redirect_output();
         }
         return EXIT_SUCCESS;
     }
