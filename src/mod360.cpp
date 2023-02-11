@@ -10,6 +10,7 @@
 #include <glib.h>
 #include <cmath>
 
+#include "2geom/angle.h"
 #include "mod360.h"
 
 /** Returns \a x wrapped around to between 0 and less than 360,
@@ -37,6 +38,14 @@ double mod360symm(double const x)
     double m = mod360(x);
     
     return m < 180.0 ? m : m - 360.0;   
+}
+
+double radians_to_degree_mod360(double rad) {
+    return Geom::Angle::from_radians(rad).degrees();
+}
+
+double degree_to_radians_mod2pi(double degrees) {
+    return Geom::Angle::from_degrees(degrees).radians();
 }
 
 /*

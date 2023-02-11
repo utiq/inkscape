@@ -10,11 +10,13 @@
  */
 
 #include "livepatheffect-editor.h"
+#include "live_effects/effect-enum.h"
 #include "livepatheffect-add.h"
 #include "live_effects/effect.h"
 #include "live_effects/lpeobject-reference.h"
 #include "live_effects/lpeobject.h"
 
+#include "object/sp-lpe-item.h"
 #include "svg/svg.h"
 #include "ui/icon-names.h"
 #include "ui/icon-loader.h"
@@ -35,6 +37,59 @@
 
 namespace Inkscape {
 namespace UI {
+
+
+bool sp_can_apply_lpeffect(SPLPEItem* item, LivePathEffect::EffectType etype) {
+    if (!item) return false;
+
+    auto shape = cast<SPShape>(item);
+    auto path = cast<SPPath>(item);
+    auto group = cast<SPGroup>(item);
+    Glib::ustring item_type;
+    if (group) {
+        item_type = "group";
+    } else if (path) {
+        item_type = "path";
+    } else if (shape) {
+        item_type = "shape";
+    }
+    bool has_clip = item->getClipObject() != nullptr;
+    bool has_mask = item->getMaskObject() != nullptr;
+    bool applicable = true;
+// g_message("apply? %p, type: %s, clp: %d, msk: %d", item, item_type.c_str(), has_clip, has_mask);
+    if (!has_clip && etype == LivePathEffect::POWERCLIP) {
+        applicable = false;
+    }
+    if (!has_mask && etype == LivePathEffect::POWERMASK) {
+        applicable = false;
+    }
+    if (item_type == "group" && !Inkscape::LivePathEffect::LPETypeConverter.get_on_group(etype)) {
+        applicable = false;
+    } else if (item_type == "shape" && !Inkscape::LivePathEffect::LPETypeConverter.get_on_shape(etype)) {
+        applicable = false;
+    } else if (item_type == "path" && !Inkscape::LivePathEffect::LPETypeConverter.get_on_path(etype)) {
+        applicable = false;
+    }
+    return applicable;
+}
+
+void sp_apply_lpeffect(SPDesktop* desktop, SPLPEItem* item, LivePathEffect::EffectType etype) {
+    if (!sp_can_apply_lpeffect(item, etype)) return;
+
+    Glib::ustring key = Inkscape::LivePathEffect::LPETypeConverter.get_key(etype);
+    LivePathEffect::Effect::createAndApply(key.c_str(), item->document, item);
+    item->getCurrentLPE()->refresh_widgets = true;
+    DocumentUndo::done(item->document, _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
+
+    if (desktop) {
+        // this is rotten - UI LPE knots refresh
+        // force selection change
+        desktop->getSelection()->clear();
+        desktop->getSelection()->add(item);
+        Inkscape::UI::Tools::sp_update_helperpath(desktop);
+    }
+}
+
 namespace Dialog {
 
 /*####################

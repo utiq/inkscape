@@ -9,10 +9,13 @@
 
 #include "object-renderer.h"
 #include <cairo.h>
+#include <cairomm/enums.h>
+#include <cairomm/pattern.h>
 #include <cairomm/surface.h>
 #include <gdkmm/rgba.h>
 #include <glibmm/ustring.h>
 #include <optional>
+#include "color.h"
 #include "display/cairo-utils.h"
 #include "document.h"
 #include "gradient-chemistry.h"
@@ -398,8 +401,7 @@ Cairo::RefPtr<Cairo::Surface> create_marker_image(
         return g_bad_marker;
     }
 
-    // auto context = get_style_context();
-    Gdk::RGBA fg = marker_color;// context->get_color(get_state_flags());
+    Gdk::RGBA fg = marker_color;
     auto fgcolor = rgba_to_css_color(fg);
     fg.set_red(1 - fg.get_red());
     fg.set_green(1 - fg.get_green());
@@ -548,12 +550,54 @@ Cairo::RefPtr<Cairo::Surface> add_background_to_image(Cairo::RefPtr<Cairo::Surfa
     return surface;
 }
 
+Cairo::RefPtr<Cairo::Surface> draw_frame(Cairo::RefPtr<Cairo::Surface> image, double image_alpha, uint32_t frame_rgba, double thickness, std::optional<uint32_t> checkerboard_color, int device_scale) {
+    if (!image) return image;
+
+    auto w = cairo_image_surface_get_width(image->cobj());
+    auto h = cairo_image_surface_get_height(image->cobj());
+    auto width =  w / device_scale + 2 * thickness;
+    auto height = h / device_scale + 2 * thickness;
+
+    auto surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, width * device_scale, height * device_scale);
+    cairo_surface_set_device_scale(surface->cobj(), device_scale, device_scale);
+    auto ctx = Cairo::Context::create(surface);
+
+    if (checkerboard_color) {
+        Cairo::RefPtr<Cairo::Pattern> pattern(new Cairo::Pattern(ink_cairo_pattern_create_checkerboard(*checkerboard_color)));
+        ctx->save();
+        ctx->set_operator(Cairo::OPERATOR_SOURCE);
+        ctx->set_source(pattern);
+        ctx->rectangle(thickness, thickness, width - 2*thickness, height - 2*thickness);
+        ctx->fill();
+        ctx->restore();
+    }
+
+    ctx->rectangle(thickness / 2, thickness / 2, width - thickness, height - thickness);
+
+    if (thickness > 0) {
+        ctx->set_source_rgba(SP_RGBA32_R_F(frame_rgba), SP_RGBA32_G_F(frame_rgba), SP_RGBA32_B_F(frame_rgba), SP_RGBA32_A_F(frame_rgba));
+        ctx->set_line_width(thickness);
+        ctx->stroke();
+    }
+
+    ctx->set_source(image, thickness, thickness);
+    ctx->paint_with_alpha(image_alpha);
+
+    return surface;
+}
+
+
 object_renderer:: object_renderer() {
 }
 
 Cairo::RefPtr<Cairo::Surface> object_renderer::render(SPObject& object, double width, double height, double device_scale, object_renderer::options opt) {
 
     Cairo::RefPtr<Cairo::Surface> surface;
+    if (opt._draw_frame) {
+        width -= 2 * opt._stroke;
+        height -= 2 * opt._stroke;
+    }
+    if (width <= 0 || height <= 0) return surface;
 
     if (is<SPSymbol>(&object)) {
         if (!_symbol_document) {
@@ -594,6 +638,11 @@ Cairo::RefPtr<Cairo::Surface> object_renderer::render(SPObject& object, double w
 
     if (opt._add_background) {
         surface = add_background_to_image(surface, opt._background, opt._margin, opt._radius, device_scale);
+    }
+
+    // extra decorators: frame, opacity change, checkerboard background
+    if (opt._draw_frame || opt._image_opacity != 1 || opt._checkerboard.has_value()) {
+        surface = draw_frame(surface, opt._image_opacity, opt._frame_rgba, opt._stroke, opt._checkerboard, device_scale);
     }
 
     return surface;

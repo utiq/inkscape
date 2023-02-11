@@ -48,6 +48,8 @@
 #include "display/cairo-utils.h"
 #include "document.h"
 #include "extension/system.h"
+#include "helper/choose-file.h"
+#include "helper/save-image.h"
 #include "inkscape.h"
 #include "object/sp-filter.h"
 #include "object/filters/sp-filter-primitive.h"
@@ -180,49 +182,9 @@ bool is_resource_present(const std::string& id, const details::Statistics& stats
     return get_resource_count(id, stats) > 0;
 }
 
-void save_image(const std::string& fname, const Inkscape::Pixbuf* pixbuf) {
-    if (fname.empty() || !pixbuf) return;
-
-    Inkscape::Pixbuf image(*pixbuf);
-    auto pix = image.getPixbufRaw(true);
-    GError* error = nullptr;
-    gdk_pixbuf_save(pix, fname.c_str(), "png", &error, nullptr);
-    if (error) {
-        g_warning("Image saving error: %s", error->message);
-        g_error_free(error);
-    }
-}
-
 std::string choose_file(Glib::ustring title, Gtk::Window* parent, Glib::ustring mime_type, Glib::ustring file_name) {
-    if (!parent) return {};
-
     static std::string current_folder;
-    if (current_folder.empty()) {
-        current_folder = Glib::get_home_dir();
-    }
-
-    Gtk::FileChooserDialog dlg(*parent, title, Gtk::FILE_CHOOSER_ACTION_SAVE);
-    constexpr int save_id = Gtk::RESPONSE_OK;
-    dlg.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
-    dlg.add_button(_("Save"), save_id);
-    dlg.set_default_response(save_id);
-    auto filter = Gtk::FileFilter::create();
-    filter->add_mime_type(mime_type);
-    dlg.set_filter(filter);
-    dlg.set_current_folder(current_folder);
-    dlg.set_current_name(file_name);
-    dlg.set_do_overwrite_confirmation();
-    dlg.set_modal();
-
-    auto id = dlg.run();
-    if (id != save_id) return {};
-
-    auto fname = dlg.get_filename();
-    if (fname.empty()) return {};
-
-    current_folder = dlg.get_current_folder();
-
-    return fname;
+    return Inkscape::choose_file_save(title, parent, mime_type, file_name, current_folder);
 }
 
 void save_gimp_palette(std::string fname, const std::vector<int>& colors, const char* name) {
@@ -257,41 +219,6 @@ void extract_colors(Gtk::Window* parent, const std::vector<int>& colors, const c
 
     // export palette
     save_gimp_palette(fname, colors, name);
-}
-
-void extract_image(Gtk::Window* parent, SPImage* image) {
-    if (!image || !parent) return;
-
-    auto fname = choose_file(_("Extract Image"), parent, "image/png", "image.png");
-
-    // static std::string current_folder;
-    // if (current_folder.empty()) {
-    //     current_folder = Glib::get_home_dir();
-    // }
-
-    // Gtk::FileChooserDialog dlg(*parent, _("Extract Image"), Gtk::FILE_CHOOSER_ACTION_SAVE);
-    // constexpr int save_id = Gtk::RESPONSE_OK;
-    // dlg.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
-    // dlg.add_button(_("Save"), save_id);
-    // dlg.set_default_response(save_id);
-    // auto filter = Gtk::FileFilter::create();
-    // filter->add_mime_type("image/png");
-    // dlg.set_filter(filter);
-    // dlg.set_current_folder(current_folder);
-    // dlg.set_current_name("image.png");
-    // dlg.set_do_overwrite_confirmation();
-    // dlg.set_modal();
-
-    // auto id = dlg.run();
-    // if (id != save_id) return;
-
-    // auto fname = dlg.get_filename();
-    if (fname.empty()) return;
-
-    // current_folder = dlg.get_current_folder();
-
-    // save image
-    save_image(fname, image->pixbuf.get());
 }
 
 void delete_object(SPObject* object, Inkscape::Selection* selection) {

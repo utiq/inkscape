@@ -49,6 +49,7 @@ public:
     char *color_profile;
 
     std::shared_ptr<Inkscape::Pixbuf const> pixbuf;
+    bool missing = true;
 
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;
     void release() override;

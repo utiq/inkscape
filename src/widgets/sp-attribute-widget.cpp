@@ -63,7 +63,7 @@ static void sp_attribute_table_object_modified (SPObject *object, guint flags, S
 static void sp_attribute_table_object_release (SPObject */*object*/, SPAttributeTable *spat);
 
 #define XPAD 4
-#define YPAD 0
+#define YPAD 2
 
 
 SPAttributeTable::SPAttributeTable () : 
@@ -162,11 +162,10 @@ void SPAttributeTable::set_object(SPObject *object,
             ll->show();
             ll->set_halign(Gtk::ALIGN_START);
             ll->set_valign(Gtk::ALIGN_CENTER);
-            ll->set_vexpand();
-            ll->set_margin_start(XPAD);
+            ll->set_vexpand(false);
             ll->set_margin_end(XPAD);
-            ll->set_margin_top(XPAD);
-            ll->set_margin_bottom(XPAD);
+            ll->set_margin_top(YPAD);
+            ll->set_margin_bottom(YPAD);
             table->attach(*ll, 0, i, 1, 1);
 
             Gtk::Entry *ee = new Gtk::Entry();
@@ -174,11 +173,10 @@ void SPAttributeTable::set_object(SPObject *object,
             const gchar *val = object->getRepr()->attribute(attributes[i].c_str());
             ee->set_text (val ? val : (const gchar *) "");
             ee->set_hexpand();
-            ee->set_vexpand();
+            ee->set_vexpand(false);
             ee->set_margin_start(XPAD);
-            ee->set_margin_end(XPAD);
-            ee->set_margin_top(XPAD);
-            ee->set_margin_bottom(XPAD);
+            ee->set_margin_top(YPAD);
+            ee->set_margin_bottom(YPAD);
             table->attach(*ee, 1, i, 1, 1);
 
             _entries.push_back(ee);

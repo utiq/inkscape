@@ -7,6 +7,7 @@
 #include <gdkmm/rgba.h>
 #include <glibmm/ustring.h>
 #include <memory>
+#include <optional>
 #include "display/drawing.h"
 #include "object/sp-object.h"
 #include "document.h"
@@ -32,6 +33,23 @@ public:
             _radius = corner_radius;
             return *this;
         }
+        // use checkerboard pattern for drawing background
+        options& checkerboard(uint32_t color) {
+            _checkerboard = color;
+            return *this;
+        }
+        // option to add an outline to rendered image
+        options& frame(uint32_t rgba, double thickness = 1) {
+            _stroke = thickness;
+            _draw_frame = true;
+            _frame_rgba = rgba;
+            return *this;
+        }
+        // option to reduce opacity of rendered image
+        options& image_opacity(double alpha) {
+            _image_opacity = alpha;
+            return *this;
+        }
         // for symbols only: take style from <use> element
         options& symbol_style_from_use(bool from_use_element = true) {
             _symbol_style_from_use = from_use_element;
@@ -46,6 +64,11 @@ public:
         double _margin = 0;
         double _radius = 0;
         bool _symbol_style_from_use = false;
+        bool _draw_frame = false;
+        double _stroke = 0;
+        uint32_t _frame_rgba = 0;
+        double _image_opacity = 1;
+        std::optional<uint32_t> _checkerboard;
     };
 
     Cairo::RefPtr<Cairo::Surface> render(SPObject& object, double width, double height, double device_scale, options options = {});

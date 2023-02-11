@@ -139,8 +139,10 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/filter-enums.cpp
 ../src/gradient-chemistry.cpp
 ../src/gradient-drag.cpp
+../src/helper/choose-file.cpp
 ../src/helper/gettext.cpp
 ../src/helper/gettext.h
+../src/helper/save-image.cpp
 ../src/inkscape-application.cpp
 ../src/inkscape.cpp
 ../src/inkview-application.cpp
@@ -403,6 +405,7 @@ ${CMAKE_BINARY_DIR}/share/templates/templates.h
 ../src/ui/widget/gradient-editor.cpp
 ../src/ui/widget/gradient-selector.cpp
 ../src/ui/widget/gradient-vector-selector.cpp
+../src/ui/widget/image-properties.cpp
 ../src/ui/widget/layer-selector.cpp
 ../src/ui/widget/licensor.cpp
 ../src/ui/widget/marker-combo-box.cpp

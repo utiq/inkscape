@@ -310,7 +310,6 @@ void SPImage::apply_profile(Inkscape::Pixbuf *pixbuf) {
 }
 
 void SPImage::update(SPCtx *ctx, unsigned int flags) {
-
     SPItem::update(ctx, flags);
 
     if (flags & SP_IMAGE_HREF_MODIFIED_FLAG) {
@@ -326,10 +325,14 @@ void SPImage::update(SPCtx *ctx, unsigned int flags) {
                            getRepr()->attribute("sodipodi:absref"),
                            document->getDocumentBase(), svgdpi);
             if (!pb) {
+                missing = true;
                 // Passing in our previous size allows us to preserve the image's expected size.
                 auto broken_width = width._set ? width.computed : 640;
                 auto broken_height = height._set ? height.computed : 640;
                 pb = getBrokenImage(broken_width, broken_height);
+            }
+            else {
+                missing = false;
             }
 
             if (pb) {

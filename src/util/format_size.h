@@ -11,56 +11,14 @@
 #define SEEN_INKSCAPE_UTIL_FORMAT_SIZE_H
 
 #include <glibmm/main.h>
+#include <glibmm/ustring.h>
 
 namespace Inkscape {
 namespace Util {
 
-inline Glib::ustring format_size(std::size_t value) {
-    if (!value) {
-        return Glib::ustring("0");
-    }
+Glib::ustring format_size(std::size_t value);
 
-    typedef std::vector<char> Digits;
-    typedef std::vector<Digits *> Groups;
-
-    Groups groups;
-
-    Digits *digits;
-
-    while (value) {
-        unsigned places=3;
-        digits = new Digits();
-        digits->reserve(places);
-
-        while ( value && places ) {
-            digits->push_back('0' + (char)( value % 10 ));
-            value /= 10;
-            --places;
-        }
-
-        groups.push_back(digits);
-    }
-
-    Glib::ustring temp;
-
-    while (true) {
-        digits = groups.back();
-        while (!digits->empty()) {
-            temp.append(1, digits->back());
-            digits->pop_back();
-        }
-        delete digits;
-
-        groups.pop_back();
-        if (groups.empty()) {
-            break;
-        }
-
-        temp.append(",");
-    }
-
-    return temp;
-}
+Glib::ustring format_file_size(std::size_t value);
 
 }}
 #endif

@@ -43,7 +43,7 @@ namespace Widget {
 class StyleSwatch : public Gtk::Box
 {
 public:
-    StyleSwatch (SPCSSAttr *attr, gchar const *main_tip);
+    StyleSwatch (SPCSSAttr *attr, gchar const *main_tip, Gtk::Orientation orient = Gtk::ORIENTATION_VERTICAL);
 
     ~StyleSwatch() override;
 

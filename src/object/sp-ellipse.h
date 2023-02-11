@@ -89,6 +89,8 @@ public:
     double getVisibleRy() const;
     void setVisibleRy(double ry);
 
+    bool is_whole() const { return !_isSlice(); }
+
 protected:
     /**
      * @brief Determines whether the shape is a part of an ellipse.

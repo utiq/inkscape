@@ -4,6 +4,7 @@ set(util_SRC
 	action-accel.cpp
     document-fonts.cpp
 	expression-evaluator.cpp
+	format_size.cpp
 	funclog.cpp
 	pool.cpp
     font-collections.cpp

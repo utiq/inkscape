@@ -10,6 +10,7 @@ set(sp_marshal_SRC
 )
 
 set(helper_SRC
+	choose-file.cpp
 	geom.cpp
 	geom-nodetype.cpp
 	geom-pathstroke.cpp
@@ -18,6 +19,7 @@ set(helper_SRC
 	gettext.cpp
 	pixbuf-ops.cpp
 	png-write.cpp
+	save-image.cpp
 	stock-items.cpp
 	#units-test.cpp
 
@@ -27,6 +29,7 @@ set(helper_SRC
 
 	# -------
 	# Headers
+	choose-file.h
 	geom-curves.h
 	geom-nodetype.h
 	geom-pathstroke.h
@@ -37,6 +40,7 @@ set(helper_SRC
 	mathfns.h
 	pixbuf-ops.h
 	png-write.h
+    save-image.h
 	sigc-track-obj.h
 	stock-items.h
 )

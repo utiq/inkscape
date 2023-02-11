@@ -221,6 +221,16 @@ Gdk::RGBA change_alpha(const Gdk::RGBA& color, double new_alpha) {
     return copy;
 }
 
+uint32_t conv_gdk_color_to_rgba(const Gdk::RGBA& color, double replace_alpha) {
+    auto alpha = replace_alpha >= 0 ? replace_alpha : color.get_alpha();
+    auto rgba =
+            uint32_t(0xff * color.get_red()) << 24 |
+            uint32_t(0xff * color.get_green()) << 16 |
+            uint32_t(0xff * color.get_blue()) << 8 |
+            uint32_t(0xff * alpha);
+    return rgba;
+}
+
 /*
   Local Variables:
   mode:c++

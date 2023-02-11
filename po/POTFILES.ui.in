@@ -20,9 +20,11 @@
 ../share/ui/display-popup.glade
 ../share/ui/extension-pdfinput.glade
 ../share/ui/gradient-edit.glade
+../share/ui/image-properties.glade
 ../share/ui/inkscape-about.glade
 ../share/ui/inkscape-start.glade
 ../share/ui/marker-popup.glade
+../share/ui/object-attributes.glade
 ../share/ui/page-properties.glade
 ../share/ui/pattern-edit.glade
 ../share/ui/align-and-distribute.ui

@@ -15,6 +15,7 @@
 #include "style-swatch.h"
 
 #include <glibmm/i18n.h>
+#include <gtkmm/enums.h>
 #include <gtkmm/grid.h>
 
 #include "inkscape.h"
@@ -105,7 +106,7 @@ void StyleSwatch::ToolObserver::notify(Inkscape::Preferences::Entry const &val)
     prefs->addObserver(*_style_swatch._style_obs);
 }
 
-StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip)
+StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip, Gtk::Orientation orient)
     : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL),
       _desktop(nullptr),
       _css(nullptr),
@@ -146,16 +147,34 @@ StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip)
     
     _opacity_place.add(_opacity_value);
 
-    _table->attach(_label[SS_FILL],   0, 0, 1, 1);
-    _table->attach(_label[SS_STROKE], 0, 1, 1, 1);
-    _table->attach(_place[SS_FILL],   1, 0, 1, 1);
-    _table->attach(_stroke,           1, 1, 1, 1);
-    _table->attach(_empty_space,      2, 0, 1, 2);
-    _table->attach(_opacity_place,    2, 0, 1, 2);
-    _swatch.add(*_table);
-    pack_start(_swatch, true, true, 0);
+    if (orient == Gtk::ORIENTATION_VERTICAL) {
+        _table->attach(_label[SS_FILL],   0, 0, 1, 1);
+        _table->attach(_label[SS_STROKE], 0, 1, 1, 1);
+        _table->attach(_place[SS_FILL],   1, 0, 1, 1);
+        _table->attach(_stroke,           1, 1, 1, 1);
+        _table->attach(_empty_space,      2, 0, 1, 2);
+        _table->attach(_opacity_place,    2, 0, 1, 2);
+        _swatch.add(*_table);
+        pack_start(_swatch, true, true, 0);
 
-    set_size_request (STYLE_SWATCH_WIDTH, -1);
+        set_size_request (STYLE_SWATCH_WIDTH, -1);
+    }
+    else {
+        _table->set_column_spacing(4);
+        _table->attach(_label[SS_FILL],   0, 0, 1, 1);
+        _table->attach(_place[SS_FILL],   1, 0, 1, 1);
+        _label[SS_STROKE].set_margin_start(6);
+        _table->attach(_label[SS_STROKE], 2, 0, 1, 1);
+        _table->attach(_stroke,           3, 0, 1, 1);
+        _opacity_place.set_margin_start(6);
+        _table->attach(_opacity_place,    4, 0, 1, 1);
+        _swatch.add(*_table);
+        pack_start(_swatch, true, true, 0);
+
+        int patch_w = 6 * 6;
+        _place[SS_FILL].set_size_request(patch_w, -1);
+        _place[SS_STROKE].set_size_request(patch_w, -1);
+    }
 
     setStyle (css);
 

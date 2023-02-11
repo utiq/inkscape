@@ -529,6 +529,11 @@ button.link:hover image {
     padding: 5px 3px;
 }
 
+.small-button {
+    /* small button in-line with spinbuttons, made small not to inflate height of spinbutton */
+    padding: 1px 3px;
+}
+
 .link-edit-button {
     padding: 5px 3px;
     min-width: 0.5em;
