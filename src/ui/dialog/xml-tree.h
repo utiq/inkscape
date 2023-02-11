@@ -77,11 +77,6 @@ private:
     gboolean xml_tree_node_mutable(GtkTreeIter *node);
 
     /**
-     * Callback to close the add dialog on Escape key
-     */
-    static gboolean quit_on_esc (GtkWidget *w, GdkEventKey *event, GObject */*tbl*/);
-
-    /**
      * Select a node in the xml tree
      */
     void set_tree_select(Inkscape::XML::Node *repr, bool edit = false);

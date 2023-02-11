@@ -162,7 +162,6 @@ private:
     sigc::connection color_changed_connection;
     sigc::connection unitChangedConn;
 
-    // Variables that used to be set using GObject
     Gtk::Box *_buttons_on_tiles;
     Gtk::Box *_dotrace;
     Gtk::Label *_status;

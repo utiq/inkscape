@@ -96,35 +96,22 @@ void ObjectAttributes::widget_setup ()
 
     blocked = true;
 
-    // CPPIFY
     SPObject *obj = item; //to get the selected item
-//    GObjectClass *klass = G_OBJECT_GET_CLASS(obj); //to deduce the object's type
-//    GType type = G_TYPE_FROM_CLASS(klass);
     const SPAttrDesc *desc;
 
-//    if (type == SP_TYPE_ANCHOR)
-    if (is<SPAnchor>(item))
-    {
+    if (is<SPAnchor>(item)) {
         desc = anchor_desc;
-    }
-//    else if (type == SP_TYPE_IMAGE)
-    else if (is<SPImage>(item))
-    {
+    } else if (is<SPImage>(item)) {
         Inkscape::XML::Node *ir = obj->getRepr();
         const gchar *href = Inkscape::getHrefAttribute(*ir).second;
-        if ( (!href) || ((strncmp(href, "data:", 5) == 0)) )
-        {
+        if (!href || std::strncmp(href, "data:", 5) == 0) {
             desc = image_nohref_desc;
-        }
-        else
-        {
+        } else {
             desc = image_desc;
         }
-    }
-    else
-    {
+    } else {
         blocked = false;
-        set_sensitive (false);
+        set_sensitive(false);
         return;
     }
 

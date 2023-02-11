@@ -669,20 +669,6 @@ void XmlTree::on_document_uri_set(gchar const * /*uri*/, SPDocument * /*document
 */
 }
 
-gboolean XmlTree::quit_on_esc (GtkWidget *w, GdkEventKey *event, GObject */*tbl*/)
-{
-    switch (Inkscape::UI::Tools::get_latin_keyval (event)) {
-        case GDK_KEY_Escape: // defocus
-            gtk_widget_destroy(w);
-            return TRUE;
-        case GDK_KEY_Return: // create
-        case GDK_KEY_KP_Enter:
-            gtk_widget_destroy(w);
-            return TRUE;
-    }
-    return FALSE;
-}
-
 void XmlTree::cmd_new_element_node()
 {
     auto document = getDocument();
