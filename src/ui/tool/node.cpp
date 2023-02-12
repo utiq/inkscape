@@ -1843,16 +1843,16 @@ void NodeList::clear()
         }
         nodes.emplace_back(rm, in);
     }
-    for (size_t i = 0, e = nodes.size(); i != e; ++i) {
-        to_clear[nodes[i].second]->erase(nodes[i].first, false);
+    for (auto const &node : nodes) {
+        to_clear[node.second]->erase(node.first, false);
     }
     std::vector<std::vector<SelectableControlPoint *> > emission;
     for (long i = 0, e = to_clear.size(); i != e; ++i) {
         emission.emplace_back();
-        for (size_t j = 0, f = nodes.size(); j != f; ++j) {
-            if (nodes[j].second != i)
+        for (auto const &node : nodes) {
+            if (node.second != i)
                 break;
-            emission[i].push_back(nodes[j].first);
+            emission[i].push_back(node.first);
         }
     }
 
