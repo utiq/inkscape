@@ -41,6 +41,7 @@
 #include "object/sp-namedview.h"
 #include "object/sp-root.h"
 #include "object/sp-page.h"
+#include "object/weakptr.h"
 #include "preferences.h"
 #include "selection-chemistry.h"
 #include "ui/dialog-events.h"
@@ -386,12 +387,21 @@ bool Export::exportVector(
 
     // Delete any pages not specified, delete all pages if none specified
     auto &pm = copy_doc->getPageManager();
-    std::vector<SPPage *> copy_pages = pm.getPages();
+
+    // Make weak pointers to pages, since deletePage() can delete more than just the requested page.
+    std::vector<SPWeakPtr<SPPage>> copy_pages;
+    copy_pages.reserve(pm.getPageCount());
+    for (auto *page : pm.getPages()) {
+        copy_pages.emplace_back(page);
+    }
+
     // We refuse to delete anything if everything would be deleted.
     for (auto &page : copy_pages) {
-        auto _id = page->getId();
-        if (_id && page_ids.find(_id) == page_ids.end()) {
-            pm.deletePage(page, false);
+        if (page) {
+            auto _id = page->getId();
+            if (_id && page_ids.find(_id) == page_ids.end()) {
+                pm.deletePage(page.get(), false);
+            }
         }
     }
 
