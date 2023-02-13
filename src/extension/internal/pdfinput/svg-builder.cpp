@@ -1428,7 +1428,9 @@ void SvgBuilder::_flushText(GfxState *state)
                 // Render and set the style for this drawn text.
                 double text_size = text_scale * glyph.text_size;
                 text_node = _renderText(glyph.cairo_font, text_size, text_transform, cairo_glyphs, cairo_glyph_count);
-                sp_repr_css_change(text_node, glyph.style, "style");
+                if (text_node) {
+                    sp_repr_css_change(text_node, glyph.style, "style");
+                }
 
                 // Free up the used glyph stack.
                 gfree(cairo_glyphs);
