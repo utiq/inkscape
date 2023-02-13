@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkBox" id="LPEContainer">
     <property name="name">LPEContainer</property>
+    <property name="width-request">250</property>
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="hexpand">True</property>

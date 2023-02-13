@@ -179,7 +179,7 @@ LivePathEffectEditor::LivePathEffectEditor()
     Gtk::EventBox &LPEGallery = get_widget<Gtk::EventBox>(_builder, "LPEGallery");
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     Glib::RefPtr<Gtk::EntryCompletion> LPECompletionList = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("LPECompletionList"));
-    
+
     if(prefs->getBool("/dialogs/livepatheffect/showgallery", false)) {
         LPEGallery.signal_button_release_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
         LPEGallery.show();
