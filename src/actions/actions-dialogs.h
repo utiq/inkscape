@@ -11,12 +11,12 @@
 #ifndef INK_ACTIONS_DIALOGS_H
 #define INK_ACTIONS_DIALOGS_H
 
-#include <glibmm.h>
-
+class InkscapeApplication;
 class InkscapeWindow;
 
 // Standard function to add actions.
-void add_actions_dialogs(InkscapeWindow* win);
+void add_actions_dialogs(InkscapeApplication *app);
+void add_actions_dialogs(InkscapeWindow *win);
 
 #endif // INK_ACTIONS_DIALOGS_H
 

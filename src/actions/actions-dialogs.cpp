@@ -24,12 +24,11 @@
 
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-data.h"
-#include "ui/icon-names.h"
 
 // Note the "AttrDialog" is now part of the "XMLDialog" and the "Style" dialog is part of the "Selectors" dialog.
 // Also note that the "AttrDialog" does not correspond to SP_VERB_DIALOG_ATTR!!!!! (That would be the "ObjectAttributes" dialog.)
 
-std::vector<std::vector<Glib::ustring>> raw_data_dialogs =
+static const std::vector<std::vector<Glib::ustring>> raw_data_dialogs =
 {
     // clang-format off
     {"win.dialog-open('AlignDistribute')",    N_("Open Align and Distribute"), "Dialog",  N_("Align and distribute objects")                                                           },
@@ -129,10 +128,18 @@ dialog_toggle(InkscapeWindow *win)
     container->toggle_dialogs();
 }
 
-void
-add_actions_dialogs(InkscapeWindow* win)
+void add_actions_dialogs(InkscapeApplication *app)
 {
-    Glib::VariantType String(Glib::VARIANT_TYPE_STRING);
+    // macOS automatically uses app.preferences in the application menu
+    auto gapp = app->gio_app();
+    gapp->add_action("preferences", [app] { dialog_open(Glib::Variant<Glib::ustring>::create("Preferences"), app->get_active_window()); });
+
+    app->get_action_extra_data().add_data(raw_data_dialogs);
+}
+
+void add_actions_dialogs(InkscapeWindow *win)
+{
+    auto String = Glib::VARIANT_TYPE_STRING;
 
     // clang-format off
     win->add_action_with_parameter( "dialog-open",  String, sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&dialog_open),   win));
@@ -141,13 +148,9 @@ add_actions_dialogs(InkscapeWindow* win)
 
     auto app = InkscapeApplication::instance();
     if (!app) {
-        show_output("add_actions_dialog: no app!");
+        show_output("add_actions_dialogs: no app!");
         return;
     }
-
-    // macOS automatically uses app.preferences in the application menu
-    auto gapp = app->gio_app();
-    gapp->add_action("preferences", sigc::track_obj([=] { dialog_open(Glib::Variant<Glib::ustring>::create("Preferences"), win); }, *win));
 
     app->get_action_extra_data().add_data(raw_data_dialogs);
 }

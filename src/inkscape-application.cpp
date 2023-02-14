@@ -94,11 +94,12 @@
 #include "util/scope_exit.h"
 
 #include "actions/actions-base.h"                   // Actions
-#include "actions/actions-file.h"                   // Actions
+#include "actions/actions-dialogs.h"                // Actions
 #include "actions/actions-edit.h"                   // Actions
 #include "actions/actions-effect.h"                 // Actions
 #include "actions/actions-element-a.h"              // Actions
 #include "actions/actions-element-image.h"          // Actions
+#include "actions/actions-file.h"                   // Actions
 #include "actions/actions-hide-lock.h"              // Actions
 #include "actions/actions-object.h"                 // Actions
 #include "actions/actions-object-align.h"           // Actions
@@ -684,6 +685,7 @@ InkscapeApplication::InkscapeApplication()
     // ======================== Actions =========================
     add_actions_base(this);                 // actions that are GUI independent
     add_actions_edit(this);                 // actions for editing
+    add_actions_dialogs(this);              // actions to open dialogs
     add_actions_effect(this);               // actions for Filters and Extensions
     add_actions_element_a(this);            // actions for the SVG a (anchor) element
     add_actions_element_image(this);        // actions for the SVG image element
