@@ -86,11 +86,6 @@ bool CanvasItemRect::contains(Geom::Point const &p, double tolerance)
  */
 void CanvasItemRect::_update(bool)
 {
-    if (_rect.hasZeroArea()) {
-        _bounds = {};
-        return; // Nothing to show
-    }
-
     // Queue redraw of old area (erase previous content).
     request_redraw();
 
@@ -127,7 +122,7 @@ void CanvasItemRect::_render(Inkscape::CanvasItemBuffer &buf) const
     buf.cr->translate(-buf.rect.left(), -buf.rect.top());
 
     if (_inverted) {
-        buf.cr->set_operator(Cairo::OPERATOR_XOR);
+        cairo_set_operator(buf.cr->cobj(), CAIRO_OPERATOR_DIFFERENCE);
     }
 
     // Draw shadow first. Shadow extends under rectangle to reduce aliasing effects. Canvas draws page shadows in OpenGL mode.
