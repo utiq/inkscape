@@ -337,7 +337,7 @@ void CairoGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo
 
     auto draw_overlay = [&, this] {
         // Get whitewash opacity.
-        double outline_overlay_opacity = 1.0 - prefs.outline_overlay_opacity / 100.0;
+        double outline_overlay_opacity = prefs.outline_overlay_opacity / 100.0;
 
         // Partially obscure drawing by painting semi-transparent white, then paint outline content.
         // Note: Unfortunately this also paints over the background, but this is unavoidable.

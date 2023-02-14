@@ -764,7 +764,7 @@ void GLGraphics::paint_widget(Fragment const &view, PaintArgs const &a, Cairo::R
         glUniform1i(prog.loc("tex"), drawmode == DrawMode::Outline ? 2 : 0);
         if (drawmode == DrawMode::Combine) {
             glUniform1i(prog.loc("tex_outline"), 2);
-            glUniform1f(prog.loc("opacity"), 1.0 - prefs.outline_overlay_opacity / 100.0);
+            glUniform1f(prog.loc("opacity"), prefs.outline_overlay_opacity / 100.0);
         }
 
         if (stores.mode() == Stores::Mode::Normal) {

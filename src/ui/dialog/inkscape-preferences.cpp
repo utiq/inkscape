@@ -2831,8 +2831,8 @@ void InkscapePreferences::initPageRendering()
     _page_rendering.add_line( false, _("X-ray radius:"), _rendering_xray_radius, "", _("Radius of the circular area around the mouse cursor in X-ray mode"), false);
 
     // rendering outline overlay opacity
-    _rendering_outline_overlay_opacity.init("/options/rendering/outline-overlay-opacity", 1.0, 100.0, 1.0, 5.0, 50.0, true, false);
-    _page_rendering.add_line( false, _("Outline overlay opacity:"), _rendering_outline_overlay_opacity, _("%"), _("Opacity of the color in outline overlay view mode"), false);
+    _rendering_outline_overlay_opacity.init("/options/rendering/outline-overlay-opacity", 0.0, 100.0, 1.0, 5.0, 50.0, true, false);
+    _page_rendering.add_line( false, _("Outline overlay opacity:"), _rendering_outline_overlay_opacity, _("%"), _("Opacity of the overlay in outline overlay view mode"), false);
 
     // update strategy
     {

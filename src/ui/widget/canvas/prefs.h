@@ -17,7 +17,7 @@ public:
 
     // Main preferences
     Pref<int>    xray_radius              = { "/options/rendering/xray-radius", 100, 1, 1500 };
-    Pref<int>    outline_overlay_opacity  = { "/options/rendering/outline-overlay-opacity", 50, 1, 100 };
+    Pref<int>    outline_overlay_opacity  = { "/options/rendering/outline-overlay-opacity", 50, 0, 100 };
     Pref<int>    update_strategy          = { "/options/rendering/update_strategy", 3, 1, 3 };
     Pref<bool>   request_opengl           = { "/options/rendering/request_opengl" };
     Pref<int>    grabsize                 = { "/options/grabsize/value", 3, 1, 15 };
