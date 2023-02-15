@@ -298,7 +298,7 @@ tool_preferences(Glib::ustring const &tool, InkscapeWindow *win)
  * Toggle between "Selector" and last used tool.
  */
 void
-tool_toggle(InkscapeWindow *win)
+tool_toggle(Glib::ustring const &tool, InkscapeWindow *win)
 {
     SPDesktop* dt = win->get_desktop();
     if (!dt) {
@@ -320,16 +320,16 @@ tool_toggle(InkscapeWindow *win)
 
     static Glib::ustring old_tool = "Select";
 
-    Glib::ustring tool;
-    saction->get_state(tool);
-    if (tool == "Select") {
-        tool = old_tool;
+    Glib::ustring current_tool;
+    saction->get_state(current_tool);
+    if (current_tool == tool) {
+        current_tool = old_tool;
     } else {
-        old_tool = tool;
-        tool = "Select";
+        old_tool = current_tool;
+        current_tool = tool;
     }
 
-    tool_switch(tool, win);
+    tool_switch(current_tool, win);
 }
 
 Glib::ustring get_active_tool(SPDesktop *desktop)
@@ -390,7 +390,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_tools =
     {"win.tool-switch('Measure')",      N_("Measure Tool"),       "Tool Switch",   N_("Measure objects")                               },
     {"win.tool-switch('Pages')",        N_("Pages Tool"),         "Tool Switch",   N_("Create and edit document pages")                },
 
-    {"win.tool-toggle",                 N_("Toggle Tool"),        "Tool Switch",   N_("Toggle between Select tool and last used tool") },
+    {"win.tool-toggle('Select')",       N_("Toggle Select"),      "Tool Switch",   N_("Toggle between Select tool and last used tool") },
+    {"win.tool-toggle('Dropper')",      N_("Toggle Dropper"),     "Tool Switch",   N_("Toggle between Dropper tool and last used tool")},
     // clang-format on
 };
 
@@ -400,7 +401,7 @@ add_actions_tools(InkscapeWindow* win)
 {
     // clang-format off
     win->add_action_radio_string ( "tool-switch",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&tool_switch),  win), "Select");
-    win->add_action(               "tool-toggle",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&tool_toggle),  win)          );
+    win->add_action_radio_string ( "tool-toggle",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&tool_toggle),  win), "Select");
     // clang-format on
 
     auto app = InkscapeApplication::instance();
