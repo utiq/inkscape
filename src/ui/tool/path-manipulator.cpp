@@ -15,10 +15,12 @@
 #include <2geom/path-sink.h>
 
 #include <utility>
+#include <vector>
 
 #include "display/curve.h"
 #include "display/control/canvas-item-bpath.h"
 
+#include "forward.h"
 #include "helper/geom.h"
 
 #include "live_effects/lpeobject.h"
@@ -29,6 +31,7 @@
 #include "live_effects/parameter/path.h"
 
 #include "object/sp-path.h"
+#include "point.h"
 #include "style.h"
 
 #include "ui/icon-names.h"
@@ -36,9 +39,10 @@
 #include "ui/tool/curve-drag-point.h"
 #include "ui/tool/event-utils.h"
 #include "ui/tool/multi-path-manipulator.h"
+#include "ui/tool/node-types.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
-
+#include "path/splinefit/bezier-fit.h"
 #include "xml/node-observer.h"
 
 namespace Inkscape {
@@ -666,6 +670,16 @@ void PathManipulator::deleteNodes(bool keep_shape)
     }
 }
 
+double get_angle(const Geom::Point& p0, const Geom::Point& p1, const Geom::Point& p2) {
+    auto d1 = p1 - p0;
+    auto d2 = p1 - p2;
+    if (d1.isZero() || d2.isZero()) return M_PI;
+
+    auto a1 = atan2(d1);
+    auto a2 = atan2(d2);
+    return a1 - a2;
+}
+
 /**
  * Delete nodes between the two iterators.
  * The given range can cross the beginning of the subpath in closed subpaths.
@@ -682,35 +696,71 @@ unsigned PathManipulator::_deleteStretch(NodeList::iterator start, NodeList::ite
 
     unsigned del_len = 0;
     for (NodeList::iterator i = start; i != end; i = i.next()) {
+// std::cout << "to del " << i->position().x() << ',' << i->position().y() << std::endl;
         ++del_len;
     }
     if (del_len == 0) return 0;
 
+    if (keep_shape && start.prev() && end) {
+        int i = 1;
+        for (NodeList::iterator cur = start; cur != end; cur = cur.next()) {
+// g_message("pt %d: %f, %f", i, cur->position().x(), cur->position().y());
+            auto back =  cur->back() ->isDegenerate() ? cur.prev()->position() : cur->back() ->position();
+            auto front = cur->front()->isDegenerate() ? cur.next()->position() : cur->front()->position();
+            auto angle = get_angle(back, cur->position(), front);
+            auto a = fmod(fabs(angle), 2*M_PI);
+            auto diff = fabs(a - M_PI);
+            bool flat = diff < M_PI / 4; // flat if *somewhat* close to 180 degrees (+-45deg)
+            if (!flat && Geom::distance(back, front) > 1) {
+                // detected a cusp, so we'll try to remove nodes and insert line segment, rather than fitting a curve
+                keep_shape = false;
+                break;
+            }
+        }
+    }
+
     // set surrounding node types to cusp if:
-    // 1. keep_shape is on, or
+    // 1. keep_shape is off, or
     // 2. we are deleting at the end or beginning of an open path
-    if ((keep_shape || !end) && start.prev()) start.prev()->setType(NODE_CUSP, false);
-    if ((keep_shape || !start.prev()) && end) end->setType(NODE_CUSP, false);
+    if ((!keep_shape || !end) && start.prev()) start.prev()->setType(NODE_CUSP, false);
+    if ((!keep_shape || !start.prev()) && end) end->setType(NODE_CUSP, false);
 
     if (keep_shape && start.prev() && end) {
         unsigned num_samples = (del_len + 1) * samples_per_segment + 1;
-        Geom::Point *bezier_data = new Geom::Point[num_samples];
+        std::vector<InputPoint> input;
         Geom::Point result[4];
+        Geom::LineSegment s;
         unsigned seg = 0;
 
         for (NodeList::iterator cur = start.prev(); cur != end; cur = cur.next()) {
-            Geom::CubicBezier bc(*cur, *cur->front(), *cur.next(), *cur.next()->back());
+            // Geom::CubicBezier bc(*cur, *cur->front(), *cur.next(), *cur.next()->back());
+            Geom::CubicBezier bc(*cur, *cur->front(), *cur.next()->back(), *cur.next());
             for (unsigned s = 0; s < samples_per_segment; ++s) {
-                bezier_data[seg * samples_per_segment + s] = bc.pointAt(t_step * s);
+                auto t = t_step * s;
+                input.emplace_back(InputPoint(bc.pointAt(t), t));
             }
             ++seg;
         }
         // Fill last point
-        bezier_data[num_samples - 1] = end->position();
+        // bezier_data[num_samples - 1] = end->position();
+        // last point + its slope
+        input.emplace_back(InputPoint(end->position(), Geom::Point(), end->back()->position(), 1.0));
+        // if (end->type() == NODE_CUSP) input.back().type = InputPoint::cusp;
+
+        // get slope for the first point
+        input.front() = InputPoint(start.prev()->position(), start.prev()->front()->position(), Geom::Point(), 0.0);
+
         // Compute replacement bezier curve
         // TODO the fitting algorithm sucks - rewrite it to be awesome
-        bezier_fit_cubic(result, bezier_data, num_samples, 0.5);
-        delete[] bezier_data;
+        // bezier_fit_cubic(result, bezier_data, num_samples, 0.5);
+// std::cout << "- start prev:  " << start.prev()->position().x() << ',' << start.prev()->position().y() << std::endl;
+// std::cout << "- start front: " << start.prev()->front()->position().x() << ',' << start.prev()->front()->position().y() << std::endl;
+// std::cout << "end pos:   " << end->position().x() << ',' << end->position().y() << std::endl;
+// std::cout << "end back pos:   " << end->back()->position().x() << ',' << end->back()->position().y() << std::endl;
+
+        bezier_fit(result, input);
+
+        // delete[] bezier_data;
 
         start.prev()->front()->setPosition(result[1]);
         end->back()->setPosition(result[2]);
@@ -725,7 +775,7 @@ unsigned PathManipulator::_deleteStretch(NodeList::iterator start, NodeList::ite
         start = next;
     }
     // if we are removing, we readjust the handlers
-    if(_isBSpline()){
+    if (!keep_shape && _isBSpline()){
         if(start.prev()){
             double bspline_weight = _bsplineHandlePosition(start.prev()->back(), false);
             start.prev()->front()->setPosition(_bsplineHandleReposition(start.prev()->front(), bspline_weight));
