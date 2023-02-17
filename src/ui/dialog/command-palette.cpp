@@ -107,10 +107,10 @@ CommandPalette::CommandPalette()
     _CPBase->set_halign(Gtk::ALIGN_CENTER);
     _CPBase->set_valign(Gtk::ALIGN_START);
 
-    _CPFilter->signal_key_press_event().connect(sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_escape),
-                                                false);
-    _CPSuggestions->signal_key_press_event().connect(sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_escape), false);
-    _CPHistory->signal_key_press_event().connect(sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_escape), false);
+    auto esc_func = sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_escape);
+    _CPFilter->signal_key_press_event().connect(esc_func, false);
+    _CPSuggestions->signal_key_release_event().connect(esc_func, false);
+    _CPHistory->signal_key_press_event().connect(esc_func, false);
     set_mode(CPMode::SEARCH);
 
     _CPSuggestions->set_activate_on_single_click();
@@ -371,7 +371,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
 
         if (not accel_label.empty()) {
             accel_label.pop_back();
-            CPShortcut->set_markup(accel_label);
+            CPShortcut->set_text(accel_label);
         } else {
             CPShortcut->set_no_show_all();
             CPShortcut->hide();
