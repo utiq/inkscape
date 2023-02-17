@@ -267,7 +267,7 @@ PatternEditor::PatternEditor(const char* prefs, Inkscape::PatternManager& manage
     });
 
     // current pattern category
-    _combo_set.set_active(Inkscape::Preferences::get()->getIntLimited(_prefs + "/currentSet", 1, 0, std::max(cat_count - 1, 0)));
+    _combo_set.set_active(Inkscape::Preferences::get()->getIntLimited(_prefs + "/currentSet", 0, 0, std::max(cat_count - 1, 0)));
 
     update_scale_link();
     pack_start(_main_grid);

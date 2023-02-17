@@ -316,6 +316,7 @@ bool PagesTool::root_handler(GdkEvent *event)
                     // a weird bug which stops it from working well.
                     // drag_group->update(tr * drag_group->get_parent()->get_affine());
                     addDragShapes(dragging_item, tr);
+                    _desktop->getCanvas()->enable_autoscroll();
                 } else if (on_screen_rect) {
                     // Continue to drag new box
                     point_dt = getSnappedResizePoint(point_dt, event->motion.state, drag_origin_dt);
