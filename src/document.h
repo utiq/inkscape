@@ -119,6 +119,7 @@ public:
     SPDocument(SPDocument const &) = delete; // no copy
     void operator=(SPDocument const &) = delete; // no assign
 
+    static gint get_new_doc_number();
 
     // Document creation ------------------
     static SPDocument *createDoc(Inkscape::XML::Document *rdoc, char const *filename,

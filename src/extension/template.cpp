@@ -18,6 +18,7 @@
 #include "io/resource.h"
 #include "xml/attribute-record.h"
 #include "xml/repr.h"
+#include "document.h"
 
 using namespace Inkscape::IO::Resource;
 using Inkscape::Util::unit_table;
@@ -272,6 +273,8 @@ SPDocument *Template::new_from_template()
     }
 
     SPDocument *const doc = imp->new_from_template(this);
+    DocumentUndo::clearUndo(doc);
+    doc->setModifiedSinceSave(false);
     return doc;
 }
 

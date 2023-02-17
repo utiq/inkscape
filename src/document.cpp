@@ -228,6 +228,10 @@ SPDocument::~SPDocument() {
     collectOrphans();
 }
 
+gint SPDocument::get_new_doc_number() {
+    return ++doc_count;
+}
+
 Inkscape::XML::Node *SPDocument::getReprNamedView()
 {
     return sp_repr_lookup_name (rroot, "sodipodi:namedview");

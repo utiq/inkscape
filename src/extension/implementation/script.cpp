@@ -299,7 +299,11 @@ SPDocument *Script::new_from_template(Inkscape::Extension::Template *module)
         file_listener fileout;
         execute(command, params, in_file->get_path(), fileout);
         auto svg = fileout.string();
-        return SPDocument::createNewDocFromMem(svg.c_str(), svg.length(), false);
+        auto rdoc = sp_repr_read_mem(svg.c_str(), svg.length(), SP_SVG_NS_URI);
+        if (rdoc) {
+            auto name = g_strdup_printf(_("New document %d"), SPDocument::get_new_doc_number());
+            return SPDocument::createDoc(rdoc, nullptr, nullptr, name, false, nullptr);
+        }
     }
 
     return nullptr;

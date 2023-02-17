@@ -76,10 +76,6 @@ SPDocument *TemplateBase::new_from_template(Inkscape::Extension::Template *tmod)
     doc->setWidthAndHeight(width, height, true);
     nv->setAttribute("inkscape:document-units", unit->abbr);
     doc->setDocumentScale(1.0);
-
-    // Clear any problmatic parts of the new template
-    DocumentUndo::clearUndo(doc);
-    doc->setModifiedSinceSave(false);
     return doc;
 }
 
