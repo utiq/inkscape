@@ -178,7 +178,8 @@ void PrefCheckButton::init(Glib::ustring const &label, Glib::ustring const &pref
 {
     _prefs_path = prefs_path;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    this->set_label(label);
+    if (!label.empty())
+        this->set_label(label);
     this->set_active( prefs->getBool(_prefs_path, default_value) );
 }
 

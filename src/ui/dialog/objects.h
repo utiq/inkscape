@@ -27,6 +27,7 @@
 
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/color-picker.h"
+#include "ui/widget/preferences-widget.h"
 
 #include "selection.h"
 #include "style-enums.h"
@@ -34,6 +35,7 @@
 #include "helper/auto-connection.h"
 
 using Inkscape::XML::Node;
+using namespace Inkscape::UI::Widget;
 
 class SPObject;
 class SPGroup;
@@ -128,13 +130,11 @@ private:
     Gtk::ScrolledWindow _scroller;
     Gtk::Menu _popupMenu;
     Gtk::Box _page;
-    Gtk::ToggleButton _object_mode;
     Inkscape::auto_connection _tree_style;
     Inkscape::UI::Widget::ColorPicker _color_picker;
     Gtk::TreeRow _clicked_item_row;
 
     Gtk::Button *_addBarButton(char const* iconName, char const* tooltip, char const *action_name);
-    void _objects_toggle();
 
     bool blendModePopup(GdkEventButton* event, Gtk::TreeModel::Row row);
     bool toggleVisible(unsigned int state, Gtk::TreeModel::Row row);
@@ -166,7 +166,8 @@ private:
     SPItem *_solid_item;
     std::list<SPItem *> _translucent_items;
     int _msg_id;
-    Glib::RefPtr<Gtk::Builder> _menu_builder;
+    Glib::RefPtr<Gtk::Builder> _builder;
+    Gtk::Popover& _settings_menu;
     Gtk::Popover& _object_menu;
     Gtk::Scale& _opacity_slider;
     std::map<SPBlendMode, Gtk::ModelButton*> _blend_items;
@@ -174,6 +175,8 @@ private:
     Inkscape::UI::Widget::ImageToggler* _item_state_toggler;
     // Special column dragging mode
     Gtk::TreeViewColumn* _drag_column = nullptr;
+    PrefCheckButton& _setting_layers;
+    PrefCheckButton& _setting_track;
     bool _drag_flip;
 };
 

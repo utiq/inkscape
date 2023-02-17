@@ -663,17 +663,20 @@ ObjectWatcher* ObjectsPanel::getWatcher(Node *node)
 /**
  * Constructor
  */
-ObjectsPanel::ObjectsPanel() :
-    DialogBase("/dialogs/objects", "Objects"),
-    root_watcher(nullptr),
-    _model(new ModelColumns()),
-    _layer(nullptr),
-    _is_editing(false),
-    _page(Gtk::ORIENTATION_VERTICAL),
-    _color_picker(_("Highlight color"), "", 0, true),
-    _menu_builder(create_builder("widget-blendmode-popup.glade")),
-    _object_menu(get_widget<Gtk::Popover>(_menu_builder, "popover")),
-    _opacity_slider(get_widget<Gtk::Scale>(_menu_builder, "opacity-slider"))
+ObjectsPanel::ObjectsPanel()
+    : DialogBase("/dialogs/objects", "Objects")
+    , root_watcher(nullptr)
+    , _model(new ModelColumns())
+    , _layer(nullptr)
+    , _is_editing(false)
+    , _page(Gtk::ORIENTATION_VERTICAL)
+    , _color_picker(_("Highlight color"), "", 0, true)
+    , _builder(create_builder("dialog-objects.glade"))
+    , _settings_menu(get_widget<Gtk::Popover>(_builder, "settings-menu"))
+    , _object_menu(get_widget<Gtk::Popover>(_builder, "object-menu"))
+    , _opacity_slider(get_widget<Gtk::Scale>(_builder, "opacity-slider"))
+    , _setting_layers(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-layers", "/dialogs/objects/layers_only", false))
+    , _setting_track(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-track", "/dialogs/objects/expand_to_layer", true))
 {
     _store = Gtk::TreeStore::create(*_model);
     _color_picker.hide();
@@ -756,7 +759,7 @@ ObjectsPanel::ObjectsPanel() :
 
     _object_menu.set_relative_to(_tree);
     _object_menu.signal_closed().connect([=](){ _item_state_toggler->set_active(false); _tree.queue_draw(); });
-    auto& modes = get_widget<Gtk::Grid>(_menu_builder, "modes");
+    auto& modes = get_widget<Gtk::Grid>(_builder, "modes");
     _opacity_slider.signal_format_value().connect([](double val){
         return Util::format_number(val, 1) + "%";
     });
@@ -946,20 +949,18 @@ ObjectsPanel::ObjectsPanel() :
     _page.pack_end(_scroller, Gtk::PACK_EXPAND_WIDGET);
     pack_start(_page, Gtk::PACK_EXPAND_WIDGET);
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto settings_btn = Gtk::manage(new Gtk::MenuButton());
     {
-        auto child = Glib::wrap(sp_get_icon_image("layer-duplicate", GTK_ICON_SIZE_SMALL_TOOLBAR));
+        auto child = Glib::wrap(sp_get_icon_image("gear", GTK_ICON_SIZE_SMALL_TOOLBAR));
         child->show();
-        _object_mode.add(*child);
-        _object_mode.set_relief(Gtk::RELIEF_NONE);
+        settings_btn->add(*child);
     }
-    _object_mode.set_tooltip_text(_("Switch to layers only view."));
-    _object_mode.property_active() = prefs->getBool("/dialogs/objects/layers_only", false);
-    _object_mode.property_active().signal_changed().connect(sigc::mem_fun(*this, &ObjectsPanel::_objects_toggle));
+    settings_btn->set_relief(Gtk::RELIEF_NONE);
+    settings_btn->set_tooltip_text(_("Objects and Layers Settings"));
+    settings_btn->set_popover(_settings_menu);
 
-    _buttonsPrimary.pack_start(_object_mode, Gtk::PACK_SHRINK);
     _buttonsPrimary.pack_start(*_addBarButton(INKSCAPE_ICON("layer-new"), _("Add layer..."), "win.layer-new"), Gtk::PACK_SHRINK);
-
+    _buttonsSecondary.pack_end(*settings_btn, Gtk::PACK_SHRINK);
     _buttonsSecondary.pack_end(*_addBarButton(INKSCAPE_ICON("edit-delete"), _("Remove object"), "app.delete-selection"), Gtk::PACK_SHRINK);
     _buttonsSecondary.pack_end(*_addBarButton(INKSCAPE_ICON("go-down"), _("Move Down"), "app.selection-stack-down"), Gtk::PACK_SHRINK);
     _buttonsSecondary.pack_end(*_addBarButton(INKSCAPE_ICON("go-up"), _("Move Up"), "app.selection-stack-up"), Gtk::PACK_SHRINK);
@@ -979,6 +980,7 @@ ObjectsPanel::ObjectsPanel() :
         }
     });
     // Clear and update entire tree (do not use this in changed/modified signals)
+    auto prefs = Inkscape::Preferences::get();
     _watch_object_mode = prefs->createObserver("/dialogs/objects/layers_only", [=]() { setRootWatcher(); });
 
     update();
@@ -999,12 +1001,6 @@ ObjectsPanel::~ObjectsPanel()
         delete _model;
         _model = nullptr;
     }
-}
-
-void ObjectsPanel::_objects_toggle()
-{
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    prefs->setBool("/dialogs/objects/layers_only", _object_mode.get_active());
 }
 
 void ObjectsPanel::desktopReplaced()
@@ -1110,6 +1106,7 @@ ObjectWatcher *ObjectsPanel::unpackToObject(SPObject *item)
 
 void ObjectsPanel::selectionChanged(Selection *selected)
 {
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     root_watcher->setSelectedBitRecursive(SELECTED_OBJECT, false);
     bool keep_current_item = false;
 
@@ -1123,9 +1120,12 @@ void ObjectsPanel::selectionChanged(Selection *selected)
                 auto group = cast<SPGroup>(item);
                 auto focus_watcher = (group && group->isLayer()) ? child_watcher : watcher;
                 child_watcher->setSelectedBit(SELECTED_OBJECT, true);
-                _tree.expand_to_path(focus_watcher->getTreePath());
-                if (!_scroll_lock) {
-                    _tree.scroll_to_row(child_watcher->getTreePath(), 0.5);
+
+                if (prefs->getBool("/dialogs/objects/expand_to_layer", true)) {
+                    _tree.expand_to_path(focus_watcher->getTreePath());
+                    if (!_scroll_lock) {
+                        _tree.scroll_to_row(child_watcher->getTreePath(), 0.5);
+                    }
                 }
             }
         }

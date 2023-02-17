@@ -9,6 +9,7 @@
 ../share/ui/dialog-livepatheffect-effect.glade
 ../share/ui/dialog-livepatheffect-item.glade
 ../share/ui/dialog-livepatheffect.glade
+../share/ui/dialog-objects.glade
 ../share/ui/dialog-paint-servers.glade
 ../share/ui/dialog-save-template.glade
 ../share/ui/dialog-symbols.glade
@@ -23,7 +24,6 @@
 ../share/ui/marker-popup.glade
 ../share/ui/page-properties.glade
 ../share/ui/pattern-edit.glade
-../share/ui/widget-blendmode-popup.glade
 ../share/ui/align-and-distribute.ui
 ../share/ui/menus.ui
 ../share/ui/toolbar-booleans.ui

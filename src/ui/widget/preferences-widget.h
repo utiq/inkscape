@@ -49,6 +49,13 @@ class PrefCheckButton : public Gtk::CheckButton
 public:
     void init(Glib::ustring const &label, Glib::ustring const &prefs_path,
               bool default_value);
+    // Allow use with the GtkBuilder get_derived_widget
+    PrefCheckButton(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade, Glib::ustring pref, bool def)
+        : Gtk::CheckButton(cobject)
+    {
+        init("", pref, def);
+    }
+    PrefCheckButton() : Gtk::CheckButton() {};
     sigc::signal<void (bool)> changed_signal;
 protected:
     Glib::ustring _prefs_path;
