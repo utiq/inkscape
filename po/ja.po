@@ -21,8 +21,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: inkscape\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2023-02-05 15:29+0900\n"
-"PO-Revision-Date: 2023-02-05 16:25+0900\n"
+"POT-Creation-Date: 2023-02-18 17:23+0900\n"
+"PO-Revision-Date: 2023-02-18 17:26+0900\n"
 "Last-Translator: Yuka Kachi\n"
 "Language-Team: Japanese <inkscape-translator@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -6786,19 +6786,19 @@ msgstr "回転を固定"
 msgid "Lock canvas rotation"
 msgstr "キャンバスの回転をロック"
 
-#: ../src/actions/actions-dialogs.cpp:35
+#: ../src/actions/actions-dialogs.cpp:34
 msgid "Open Align and Distribute"
 msgstr "整列と配置を開く"
 
-#: ../src/actions/actions-dialogs.cpp:35
+#: ../src/actions/actions-dialogs.cpp:34
 msgid "Align and distribute objects"
 msgstr "オブジェクトを整列および配置"
 
-#: ../src/actions/actions-dialogs.cpp:36
+#: ../src/actions/actions-dialogs.cpp:35
 msgid "Open Clone Tiler"
 msgstr "タイルクローンを開く"
 
-#: ../src/actions/actions-dialogs.cpp:36
+#: ../src/actions/actions-dialogs.cpp:35
 msgid ""
 "Create multiple clones of selected object, arranging them into a pattern or "
 "scattering"
@@ -6806,27 +6806,27 @@ msgstr ""
 "選択オブジェクトの多数のクローンを作成し、パターンに従ってまたは飛散するよう"
 "に配置します"
 
-#: ../src/actions/actions-dialogs.cpp:37
+#: ../src/actions/actions-dialogs.cpp:36
 msgid "Open Document Properties"
 msgstr "ドキュメントのプロパティを開く"
 
-#: ../src/actions/actions-dialogs.cpp:37
+#: ../src/actions/actions-dialogs.cpp:36
 msgid "Edit properties of this document (to be saved with the document)"
 msgstr "このドキュメントのプロパティを編集 (ドキュメントとともに保存されます)"
 
-#: ../src/actions/actions-dialogs.cpp:38
+#: ../src/actions/actions-dialogs.cpp:37
 msgid "Open Export"
 msgstr "エクスポートダイアログを開く"
 
-#: ../src/actions/actions-dialogs.cpp:38
+#: ../src/actions/actions-dialogs.cpp:37
 msgid "Export this document or a selection as a PNG image"
 msgstr "このドキュメントまたは選択オブジェクトを PNG 画像として出力"
 
-#: ../src/actions/actions-dialogs.cpp:39
+#: ../src/actions/actions-dialogs.cpp:38
 msgid "Open Fill and Stroke"
 msgstr "フィル/ストロークを開く"
 
-#: ../src/actions/actions-dialogs.cpp:39
+#: ../src/actions/actions-dialogs.cpp:38
 msgid ""
 "Edit objects' colors, gradients, arrowheads, and other fill and stroke "
 "properties..."
@@ -6834,205 +6834,205 @@ msgstr ""
 "オブジェクトの色、グラデーション、ストローク幅、矢印、フィルやストロークなど"
 "の編集…"
 
-#: ../src/actions/actions-dialogs.cpp:40
+#: ../src/actions/actions-dialogs.cpp:39
 msgid "Open Filter Effects"
 msgstr "フィルターエフェクトを開く"
 
-#: ../src/actions/actions-dialogs.cpp:40
+#: ../src/actions/actions-dialogs.cpp:39
 msgid "Manage, edit, and apply SVG filters"
 msgstr "SVG フィルターの管理、編集、および適用を行います"
 
-#: ../src/actions/actions-dialogs.cpp:41
+#: ../src/actions/actions-dialogs.cpp:40
 msgid "Open Find"
 msgstr "検索ダイアログを開く"
 
-#: ../src/actions/actions-dialogs.cpp:41
+#: ../src/actions/actions-dialogs.cpp:40
 msgid "Find objects in document"
 msgstr "ドキュメント内からオブジェクトを検索します"
 
-#: ../src/actions/actions-dialogs.cpp:42
+#: ../src/actions/actions-dialogs.cpp:41
 msgid "Open Glyphs"
 msgstr "Unicode 文字選択パレット"
 
-#: ../src/actions/actions-dialogs.cpp:42
+#: ../src/actions/actions-dialogs.cpp:41
 msgid "Select Unicode characters from a palette"
 msgstr "パレットから Unicode 文字を選択"
 
-#: ../src/actions/actions-dialogs.cpp:43
+#: ../src/actions/actions-dialogs.cpp:42
 msgid "Open Icon Preview"
 msgstr "アイコンプレビューを開く"
 
-#: ../src/actions/actions-dialogs.cpp:43
+#: ../src/actions/actions-dialogs.cpp:42
 msgid "Preview Icon"
 msgstr "アイコンのプレビューを表示します"
 
-#: ../src/actions/actions-dialogs.cpp:44
+#: ../src/actions/actions-dialogs.cpp:43
 msgid "Open Input"
 msgstr "入力を開く"
 
-#: ../src/actions/actions-dialogs.cpp:44
+#: ../src/actions/actions-dialogs.cpp:43
 msgid "Configure extended input devices, such as a graphics tablet"
 msgstr "タブレットなどの拡張入力デバイスを設定します"
 
-#: ../src/actions/actions-dialogs.cpp:45
+#: ../src/actions/actions-dialogs.cpp:44
 msgid "Open Live Path Effect"
 msgstr "パスエフェクトを開く"
 
-#: ../src/actions/actions-dialogs.cpp:45
+#: ../src/actions/actions-dialogs.cpp:44
 msgid "Manage, edit, and apply path effects"
 msgstr "パスエフェクトの管理、編集、および適用を行います"
 
-#: ../src/actions/actions-dialogs.cpp:46
+#: ../src/actions/actions-dialogs.cpp:45
 msgid "Open Memory"
 msgstr "メモリー使用量"
 
-#: ../src/actions/actions-dialogs.cpp:46
+#: ../src/actions/actions-dialogs.cpp:45
 msgid "View memory use"
 msgstr "メモリー使用量を表示"
 
-#: ../src/actions/actions-dialogs.cpp:47
+#: ../src/actions/actions-dialogs.cpp:46
 msgid "Open Messages"
 msgstr "デバッグメッセージ"
 
-#: ../src/actions/actions-dialogs.cpp:47
+#: ../src/actions/actions-dialogs.cpp:46
 msgid "View debug messages"
 msgstr "デバッグメッセージを表示します"
 
-#: ../src/actions/actions-dialogs.cpp:48
+#: ../src/actions/actions-dialogs.cpp:47
 msgid "Open Object Attributes"
 msgstr "オブジェクトの属性を開く"
 
-#: ../src/actions/actions-dialogs.cpp:48
+#: ../src/actions/actions-dialogs.cpp:47
 msgid "Edit the object attributes (context dependent)..."
 msgstr "オブジェクトの属性を編集 (コンテキスト依存)..."
 
-#: ../src/actions/actions-dialogs.cpp:49
+#: ../src/actions/actions-dialogs.cpp:48
 msgid "Open Object Properties"
 msgstr "オブジェクトのプロパティを開く"
 
-#: ../src/actions/actions-dialogs.cpp:49
+#: ../src/actions/actions-dialogs.cpp:48
 msgid "Edit the ID, locked and visible status, and other object properties"
 msgstr "ID、ロックと表示の状態、その他のオブジェクトのプロパティを編集します"
 
-#: ../src/actions/actions-dialogs.cpp:50
+#: ../src/actions/actions-dialogs.cpp:49
 msgid "Open Objects"
 msgstr "オブジェクトダイアログを開く"
 
-#: ../src/actions/actions-dialogs.cpp:50
+#: ../src/actions/actions-dialogs.cpp:49
 msgid "View Objects"
 msgstr "オブジェクトを表示します"
 
-#: ../src/actions/actions-dialogs.cpp:51
+#: ../src/actions/actions-dialogs.cpp:50
 msgid "Open Paint Servers"
 msgstr "ペイントサーバーを開く"
 
-#: ../src/actions/actions-dialogs.cpp:51
+#: ../src/actions/actions-dialogs.cpp:50
 msgid "Select paint server from a collection"
 msgstr "コレクションからペイントサーバーを選択します"
 
-#: ../src/actions/actions-dialogs.cpp:52 ../src/actions/actions-dialogs.cpp:63
+#: ../src/actions/actions-dialogs.cpp:51 ../src/actions/actions-dialogs.cpp:62
 msgid "Open Preferences"
 msgstr "環境設定を開く"
 
-#: ../src/actions/actions-dialogs.cpp:52 ../src/actions/actions-dialogs.cpp:63
+#: ../src/actions/actions-dialogs.cpp:51 ../src/actions/actions-dialogs.cpp:62
 msgid "Edit global Inkscape preferences"
 msgstr "Inkscape 全般の設定を編集"
 
-#: ../src/actions/actions-dialogs.cpp:53
+#: ../src/actions/actions-dialogs.cpp:52
 msgid "Open Selectors"
 msgstr "セレクターダイアログ"
 
-#: ../src/actions/actions-dialogs.cpp:53
+#: ../src/actions/actions-dialogs.cpp:52
 msgid "View and edit CSS selectors and styles"
 msgstr "CSSセレクターとスタイルを表示/編集"
 
-#: ../src/actions/actions-dialogs.cpp:54
+#: ../src/actions/actions-dialogs.cpp:53
 msgid "Open SVG Fonts"
 msgstr "SVG フォントを開く"
 
-#: ../src/actions/actions-dialogs.cpp:54
+#: ../src/actions/actions-dialogs.cpp:53
 msgid "Edit SVG fonts"
 msgstr "SVG フォントを編集します"
 
 #. TRANSLATORS: "Swatches" -> color samples
-#: ../src/actions/actions-dialogs.cpp:56
+#: ../src/actions/actions-dialogs.cpp:55
 msgid "Open Swatches"
 msgstr "スウォッチを開く"
 
-#: ../src/actions/actions-dialogs.cpp:56
+#: ../src/actions/actions-dialogs.cpp:55
 msgid "Select colors from a swatches palette"
 msgstr "スウォッチパレットから色を選択します"
 
-#: ../src/actions/actions-dialogs.cpp:57
+#: ../src/actions/actions-dialogs.cpp:56
 msgid "Open Symbols"
 msgstr "シンボルパレット"
 
-#: ../src/actions/actions-dialogs.cpp:57
+#: ../src/actions/actions-dialogs.cpp:56
 msgid "Select symbol from a symbols palette"
 msgstr "シンボルパレットからシンボルを選択します"
 
-#: ../src/actions/actions-dialogs.cpp:58
+#: ../src/actions/actions-dialogs.cpp:57
 msgid "Open Text"
 msgstr "テキストダイアログを開く"
 
-#: ../src/actions/actions-dialogs.cpp:58
+#: ../src/actions/actions-dialogs.cpp:57
 msgid "View and select font family, font size and other text properties"
 msgstr ""
 "フォントファミリ、フォントサイズ、その他テキストのプロパティの表示と選択"
 
-#: ../src/actions/actions-dialogs.cpp:59
+#: ../src/actions/actions-dialogs.cpp:58
 msgid "Open Trace"
 msgstr "トレースダイアログを開く"
 
-#: ../src/actions/actions-dialogs.cpp:59
+#: ../src/actions/actions-dialogs.cpp:58
 msgid "Create one or more paths from a bitmap by tracing it"
 msgstr "ビットマップから1以上のパスをトレースによって作成します"
 
-#: ../src/actions/actions-dialogs.cpp:60
+#: ../src/actions/actions-dialogs.cpp:59
 msgid "Open Transform"
 msgstr "変形ダイアログを開く"
 
-#: ../src/actions/actions-dialogs.cpp:60
+#: ../src/actions/actions-dialogs.cpp:59
 msgid "Precisely control objects' transformations"
 msgstr "オブジェクトの変形を厳密にコントロールします"
 
-#: ../src/actions/actions-dialogs.cpp:61
+#: ../src/actions/actions-dialogs.cpp:60
 msgid "Open Undo History"
 msgstr "作業履歴を開く"
 
-#: ../src/actions/actions-dialogs.cpp:61
+#: ../src/actions/actions-dialogs.cpp:60
 msgid "Undo History"
 msgstr "元に戻す操作の履歴を表示します"
 
-#: ../src/actions/actions-dialogs.cpp:62
+#: ../src/actions/actions-dialogs.cpp:61
 msgid "Open XML Editor"
 msgstr "XML エディタを開く"
 
-#: ../src/actions/actions-dialogs.cpp:62
+#: ../src/actions/actions-dialogs.cpp:61
 msgid "View and edit the XML tree of the document"
 msgstr "ドキュメントの XML ツリーを表示および編集"
 
-#: ../src/actions/actions-dialogs.cpp:65
+#: ../src/actions/actions-dialogs.cpp:64
 msgid "Open Spellcheck"
 msgstr "スペルチェックを開く"
 
-#: ../src/actions/actions-dialogs.cpp:65
+#: ../src/actions/actions-dialogs.cpp:64
 msgid "Check spelling of text in document"
 msgstr "ドキュメント内のテキストのスペルチェックを行います"
 
-#: ../src/actions/actions-dialogs.cpp:68
+#: ../src/actions/actions-dialogs.cpp:67
 msgid "Open Prototype"
 msgstr "プロトタイプを開く"
 
-#: ../src/actions/actions-dialogs.cpp:68
+#: ../src/actions/actions-dialogs.cpp:67
 msgid "Prototype Dialog"
 msgstr "プロトタイプダイアログ"
 
-#: ../src/actions/actions-dialogs.cpp:71
+#: ../src/actions/actions-dialogs.cpp:70
 msgid "Toggle all dialogs"
 msgstr "全ダイアログの表示/非表示"
 
-#: ../src/actions/actions-dialogs.cpp:71
+#: ../src/actions/actions-dialogs.cpp:70
 msgid "Show or hide all dialogs"
 msgstr "開いているすべてのダイアログの表示/非表示を切り替え"
 
@@ -7484,7 +7484,7 @@ msgid "Edit image externally (image must be selected and not embedded)."
 msgstr "画像を外部で編集 (埋め込まれていない画像を選択する必要あり)。"
 
 #: ../src/actions/actions-file-window.cpp:117
-#: ../src/ui/dialog/document-properties.cpp:882
+#: ../src/ui/dialog/document-properties.cpp:850
 #: ../src/ui/dialog/inkscape-preferences.cpp:3016
 msgid "New"
 msgstr "新規"
@@ -7578,10 +7578,10 @@ msgstr "ドキュメントを整理"
 #: ../src/actions/actions-file-window.cpp:127
 msgid ""
 "Remove unused definitions (such as gradients or clipping paths) from the "
-"<defs> of the document"
+"document"
 msgstr ""
-"使用されていない定義 (グラデーションやクリッピングパスなど) をドキュメントの "
-"<defs> から除去します"
+"使用されていない定義 (グラデーションやクリッピングパスなど) をドキュメントか"
+"ら除去します"
 
 #: ../src/actions/actions-file-window.cpp:128
 #: ../src/live_effects/lpe-fill-between-many.cpp:39
@@ -7693,7 +7693,7 @@ msgstr "SVG 2 仕様書"
 #. TRANSLATORS: 'en' is an ISO 639-1 language code.
 #. Replace with language code for your language, i.e. the name of your .po file
 #: ../src/actions/actions-help-url.cpp:130 ../src/file.cpp:863
-#: ../src/io/resource.cpp:181 ../src/io/resource.cpp:186
+#: ../src/io/resource.cpp:196 ../src/io/resource.cpp:201
 msgid "en"
 msgstr "en"
 
@@ -9354,7 +9354,7 @@ msgstr ""
 "ジェクトと同じオブジェクトをすべて選択します"
 
 #: ../src/actions/actions-selection-window.cpp:122
-#: ../src/actions/actions-selection.cpp:249
+#: ../src/actions/actions-selection.cpp:285
 msgid "Invert Selection"
 msgstr "選択範囲を反転"
 
@@ -9363,7 +9363,7 @@ msgid "Invert selection (unselect what is selected and select everything else)"
 msgstr "現在の選択を解除し、その他すべてを選択"
 
 #: ../src/actions/actions-selection-window.cpp:123
-#: ../src/actions/actions-selection.cpp:242
+#: ../src/actions/actions-selection.cpp:278
 msgid "Deselect"
 msgstr "選択解除"
 
@@ -9371,66 +9371,66 @@ msgstr "選択解除"
 msgid "Deselect any selected objects or nodes"
 msgstr "選択オブジェクトまたはノードのすべてを選択解除"
 
-#: ../src/actions/actions-selection.cpp:240
+#: ../src/actions/actions-selection.cpp:276
 msgid "Clear Selection"
 msgstr "選択を解除"
 
-#: ../src/actions/actions-selection.cpp:240
+#: ../src/actions/actions-selection.cpp:276
 msgid "Clear selection"
 msgstr "選択を解除"
 
-#: ../src/actions/actions-selection.cpp:241
+#: ../src/actions/actions-selection.cpp:277
 #: ../src/extension/prefdialog/parameter-path.cpp:218
 #: ../src/inkview-application.cpp:117
 #: ../src/ui/toolbar/gradient-toolbar.cpp:408
 msgid "Select"
 msgstr "選択"
 
-#: ../src/actions/actions-selection.cpp:241
+#: ../src/actions/actions-selection.cpp:277
 msgid "Select by ID (deprecated)"
 msgstr "ID で選択 (非推奨)"
 
-#: ../src/actions/actions-selection.cpp:242
+#: ../src/actions/actions-selection.cpp:278
 msgid "Deselect by ID (deprecated)"
 msgstr "ID で選択解除 (非推奨)"
 
-#: ../src/actions/actions-selection.cpp:243
+#: ../src/actions/actions-selection.cpp:279
 msgid "Select by ID"
 msgstr "ID で選択"
 
-#: ../src/actions/actions-selection.cpp:244
+#: ../src/actions/actions-selection.cpp:280
 msgid "Deselect by ID"
 msgstr "ID で選択解除"
 
-#: ../src/actions/actions-selection.cpp:245
+#: ../src/actions/actions-selection.cpp:281
 msgid "Select by Class"
 msgstr "クラスで選択"
 
-#: ../src/actions/actions-selection.cpp:245
+#: ../src/actions/actions-selection.cpp:281
 msgid "Select by class"
 msgstr "クラスで選択"
 
-#: ../src/actions/actions-selection.cpp:246
+#: ../src/actions/actions-selection.cpp:282
 msgid "Select by Element"
 msgstr "要素で選択"
 
-#: ../src/actions/actions-selection.cpp:246
+#: ../src/actions/actions-selection.cpp:282
 msgid "Select by SVG element (e.g. 'rect')"
 msgstr "SVG 要素で選択 (例: 'rect')"
 
-#: ../src/actions/actions-selection.cpp:247
+#: ../src/actions/actions-selection.cpp:283
 msgid "Select by Selector"
 msgstr "セレクターで選択"
 
-#: ../src/actions/actions-selection.cpp:247
+#: ../src/actions/actions-selection.cpp:283
 msgid "Select by CSS selector"
 msgstr "CSS セレクターで選択"
 
-#: ../src/actions/actions-selection.cpp:248
+#: ../src/actions/actions-selection.cpp:284
 msgid "Select All Objects"
 msgstr "すべてのオブジェクトを選択"
 
-#: ../src/actions/actions-selection.cpp:248
+#: ../src/actions/actions-selection.cpp:284
 msgid ""
 "Select all; options: 'all' (every object including groups), 'layers', 'no-"
 "layers' (top level objects in layers), 'groups' (all groups including "
@@ -9441,7 +9441,7 @@ msgstr ""
 "ヤーを含むすべてのグループ), 'no-groups' (グループとレイヤーを除くすべてのオ"
 "ブジェクト、デフォルト)"
 
-#: ../src/actions/actions-selection.cpp:249
+#: ../src/actions/actions-selection.cpp:285
 msgid ""
 "Invert selection; options: 'all', 'layers', 'no-layers', 'groups', 'no-"
 "groups' (default)"
@@ -9449,13 +9449,37 @@ msgstr ""
 "選択範囲を反転; オプション: 'all', 'layers', 'no-layers', 'groups', 'no-"
 "groups' (デフォルト)"
 
-#: ../src/actions/actions-selection.cpp:250
+#: ../src/actions/actions-selection.cpp:286
 msgid "List Selection"
 msgstr "選択を一覧表示"
 
-#: ../src/actions/actions-selection.cpp:250
+#: ../src/actions/actions-selection.cpp:286
 msgid "Print a list of objects in current selection"
 msgstr "現在の選択範囲のオブジェクトの一覧を表示"
+
+#: ../src/actions/actions-selection.cpp:287
+msgid "Set selection backup"
+msgstr "選択バックアップを設定"
+
+#: ../src/actions/actions-selection.cpp:287
+msgid "Set backup of selection, items and nodes"
+msgstr "選択、アイテム、ノードのバックアップを設定"
+
+#: ../src/actions/actions-selection.cpp:288
+msgid "Restore selection backup"
+msgstr "選択バックアップを復元"
+
+#: ../src/actions/actions-selection.cpp:288
+msgid "Restore backup of selection, items and nodes"
+msgstr "選択、アイテム、ノードのバックアップを復元"
+
+#: ../src/actions/actions-selection.cpp:289
+msgid "Empty selection backup"
+msgstr "選択バックアップを消去"
+
+#: ../src/actions/actions-selection.cpp:289
+msgid "Empty backup of selection, items and nodes"
+msgstr "選択、アイテム、ノードのバックアップを消去"
 
 #: ../src/actions/actions-text.cpp:67
 msgid "Put on Path"
@@ -10250,21 +10274,49 @@ msgstr "次のウィンドウ"
 msgid "Switch to the next document window"
 msgstr "次のドキュメントウィンドウに切り替え"
 
-#: ../src/actions/actions-window.cpp:54
+#: ../src/actions/actions-window.cpp:102
+msgid "Enter comma-separated string for x, y, width, height"
+msgstr "x, y, 幅, 高さにコンマ区切りの文字列を入力"
+
+#: ../src/actions/actions-window.cpp:109
 msgid "Window Open"
 msgstr "ウィンドウを開く"
 
-#: ../src/actions/actions-window.cpp:54
+#: ../src/actions/actions-window.cpp:109
 msgid "Open a window for the active document; GUI only"
 msgstr "現在のドキュメントを新しいウィンドウで開く (GUI のみ)"
 
-#: ../src/actions/actions-window.cpp:55
+#: ../src/actions/actions-window.cpp:110
 msgid "Window Close"
 msgstr "ウィンドウを閉じる"
 
-#: ../src/actions/actions-window.cpp:55
+#: ../src/actions/actions-window.cpp:110
 msgid "Close the active window, does not check for data loss"
 msgstr "データ損失の有無を確認せずに、使用中のウィンドウを閉じる"
+
+#: ../src/actions/actions-window.cpp:111
+msgid "Window Query Geometry"
+msgstr "ウィンドウクエリの座標"
+
+#: ../src/actions/actions-window.cpp:111
+msgid "Query active window geometry"
+msgstr "アクティブなウィンドウ座標のクエリ"
+
+#: ../src/actions/actions-window.cpp:112
+msgid "Window Set Geometry"
+msgstr "ウィンドウセットの座標"
+
+#: ../src/actions/actions-window.cpp:112
+msgid "Set active window geometry (X, Y, Width, Height)"
+msgstr "アクティブウィンドウの座標を設定します (X, Y, 幅, 高さ)"
+
+#: ../src/actions/actions-window.cpp:113
+msgid "Force Crash"
+msgstr "強制クラッシュ"
+
+#: ../src/actions/actions-window.cpp:113
+msgid "Force Inkscape to crash, useful for testing."
+msgstr "Inkscape を強制的にクラッシュさせます。試験時に有用です。"
 
 #: ../src/auto-save.cpp:151
 msgid "Autosave failed! Could not find inkscape extension to save document."
@@ -10300,6 +10352,10 @@ msgstr "ガイドを削除"
 #, c-format
 msgid "<b>Guideline</b>: %s"
 msgstr "<b>ガイドライン</b>: %s"
+
+#: ../src/desktop-style.cpp:247
+msgid "<b>Locked</b> object(s) cannot be modified."
+msgstr "<b>ロックされた</b>オブジェクトは変更できません。"
 
 #: ../src/desktop.cpp:485
 msgid "No previous transform."
@@ -10635,28 +10691,28 @@ msgstr "エクステンション \"%1\" は次の理由により読み込みに�
 msgid "Could not create extension error log file '%s'"
 msgstr "エクステンションのエラーログ '%s' を作成できませんでした"
 
-#: ../src/extension/extension.cpp:1059
+#: ../src/extension/extension.cpp:1058
 #: ../share/extensions/webslicer_create_rect.inx:6
 msgid "Name:"
 msgstr "名前:"
 
-#: ../src/extension/extension.cpp:1060
+#: ../src/extension/extension.cpp:1059
 msgid "ID:"
 msgstr "ID:"
 
-#: ../src/extension/extension.cpp:1061
+#: ../src/extension/extension.cpp:1060
 msgid "State:"
 msgstr "状態:"
 
-#: ../src/extension/extension.cpp:1061
+#: ../src/extension/extension.cpp:1060
 msgid "Loaded"
 msgstr "ロード済み"
 
-#: ../src/extension/extension.cpp:1061
+#: ../src/extension/extension.cpp:1060
 msgid "Unloaded"
 msgstr "未ロード"
 
-#: ../src/extension/extension.cpp:1061
+#: ../src/extension/extension.cpp:1060
 msgid "Deactivated"
 msgstr "非アクティベート"
 
@@ -11473,20 +11529,18 @@ msgid "Page Selector"
 msgstr "ページ選択"
 
 #: ../src/extension/internal/cdr-input.cpp:119
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:102
 #: ../src/extension/internal/vsd-input.cpp:119
 msgid "Select page:"
 msgstr "選択ページ:"
 
 #: ../src/extension/internal/cdr-input.cpp:138
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:120
 #: ../src/extension/internal/vsd-input.cpp:138
 #, c-format
 msgid "out of %i"
 msgstr "ページ / 全 %i ページ中"
 
 #: ../src/extension/internal/cdr-input.cpp:146
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:100
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:148
 #: ../src/extension/internal/vsd-input.cpp:146
 #: ../src/extension/prefdialog/prefdialog.cpp:71
 #: ../src/ui/desktop/document-check.cpp:57
@@ -11503,7 +11557,7 @@ msgid "_Cancel"
 msgstr "キャンセル(_C)"
 
 #: ../src/extension/internal/cdr-input.cpp:147
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:101
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:134
 #: ../src/extension/internal/vsd-input.cpp:147
 #: ../src/extension/prefdialog/prefdialog.cpp:72
 #: ../src/ui/dialog/guides.cpp:197
@@ -11701,7 +11755,7 @@ msgstr "照明の色"
 #: ../src/extension/internal/filter/color.h:1849
 #: ../src/extension/internal/filter/distort.h:97
 #: ../src/extension/internal/filter/distort.h:210
-#: ../src/extension/internal/filter/filter-file.cpp:113
+#: ../src/extension/internal/filter/filter-file.cpp:116
 #: ../src/extension/internal/filter/filter.cpp:211
 #: ../src/extension/internal/filter/image.h:63
 #: ../src/extension/internal/filter/morphology.h:77
@@ -11951,7 +12005,9 @@ msgstr "ブレンド方式:"
 #: ../src/ui/dialog/inkscape-preferences.cpp:1981
 #: ../src/ui/dialog/inkscape-preferences.cpp:2029
 #: ../src/ui/widget/filter-effect-chooser.cpp:25
-#: ../share/ui/display-popup.glade:54 ../share/ui/menus.ui:482
+#: ../share/ui/display-popup.glade:54 ../share/ui/extension-pdfinput.glade:75
+#: ../share/ui/extension-pdfinput.glade:76
+#: ../share/ui/extension-pdfinput.glade:77 ../share/ui/menus.ui:482
 msgid "Normal"
 msgstr "標準"
 
@@ -12865,10 +12921,11 @@ msgid "Small-scale roughening to edges and content"
 msgstr "エッジと中身を小規模なザラザラ仕上げにします"
 
 #: ../src/extension/internal/filter/filter-file.cpp:69
+#: ../src/extension/internal/filter/filter-file.cpp:72
 msgid "Personal"
 msgstr "個人用"
 
-#: ../src/extension/internal/filter/filter-file.cpp:72
+#: ../src/extension/internal/filter/filter-file.cpp:75
 msgid "Bundled"
 msgstr "バンドル"
 
@@ -12881,7 +12938,6 @@ msgid "Detect:"
 msgstr "検出:"
 
 #: ../src/extension/internal/filter/image.h:54
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:105
 #: ../share/extensions/eps_input.inx:12 ../share/extensions/ps_input.inx:11
 msgid "All"
 msgstr "すべて"
@@ -13704,137 +13760,71 @@ msgstr "OpenDocument 図形描画 (*.odg)"
 msgid "OpenDocument drawing file"
 msgstr "OpenDocument 図形描画ファイル"
 
-#. TRANSLATORS: The following are document crop settings for PDF import
-#. more info: http://www.acrobatusers.com/tech_corners/javascript_corner/tips/2006/page_bounds/
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:86
-msgid "media box"
-msgstr "メディアボックス"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:87
-msgid "crop box"
-msgstr "クロップボックス"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:88
-msgid "trim box"
-msgstr "トリムボックス"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:89
-msgid "bleed box"
-msgstr "ブリードボックス"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:90
-msgid "art box"
-msgstr "アートボックス"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:126
-msgid "Clip to:"
-msgstr "クリップ先:"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:137
-msgid "Page settings"
-msgstr "ページ設定"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:138
-msgid "Precision of approximating gradient meshes:"
-msgstr "近似グラデーションメッシュの精度:"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:139
-msgid ""
-"<b>Note</b>: setting the precision too high may result in a large SVG file "
-"and slow performance."
-msgstr ""
-"<b>メモ</b>: 精度を非常に高くすると、SVG ファイルのサイズが大きくなり、性能も"
-"低下します。"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:144
-msgid "Poppler/Cairo import"
-msgstr "Poppler/Cairo をインポート"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:145
-msgid ""
-"Import via external library. Text consists of groups containing cloned "
-"glyphs where each glyph is a path. Images are stored internally. Meshes "
-"cause entire document to be rendered as a raster image."
-msgstr ""
-"外部ライブラリ経由でインポート。テキストはそれぞれのグリフがパスでできている"
-"クローンされたグリフを含むグループでできています。画像は内部に保存します。"
-"メッシュがあるとドキュメント全体をラスター画像としてレンダリングします。"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:147
-msgid "Internal import"
-msgstr "内部インポート"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:148
-msgid ""
-"Import via internal (Poppler derived) library. Text is stored as text but "
-"white space is missing. Meshes are converted to tiles, the number depends on "
-"the precision set below."
-msgstr ""
-"内部 (Poppler 由来の) ライブラリ経由でインポート。テキストはテキストして保存"
-"しますが、空白が消えます。メッシュは下で設定する精度に応じた数のタイルに変換"
-"します。"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:155
-msgid "rough"
-msgstr "低い"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:166
-msgid "Replace PDF fonts by closest-named installed fonts"
-msgstr "名前が最も近いインストールフォントで PDF フォントを置き換える"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:168
-msgid "Embed images"
-msgstr "画像を埋め込む"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:170
-msgid "Import settings"
-msgstr "インポート設定"
-
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:307
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:141
 msgid "PDF Import Settings"
 msgstr "PDF インポート設定"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:447
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:267
 msgctxt "PDF input precision"
 msgid "rough"
 msgstr "粗い"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:448
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:267
 msgctxt "PDF input precision"
 msgid "medium"
 msgstr "普通"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:449
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:268
 msgctxt "PDF input precision"
 msgid "fine"
 msgstr "精細"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:450
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:268
 msgctxt "PDF input precision"
 msgid "very fine"
 msgstr "高精細"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:965
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:356
+#: ../share/ui/extension-pdfinput.glade:136
+msgid "Draw to Shapes"
+msgstr "シェイプに描画"
+
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:359
+#: ../share/ui/extension-pdfinput.glade:144
+msgid "Keep Original Font Name"
+msgstr "オリジナルのフォント名を保持"
+
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:362
+#: ../share/ui/extension-pdfinput.glade:140
+msgid "Use Substitute Font"
+msgstr "代替フォントを使用"
+
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:365
+#: ../share/ui/extension-pdfinput.glade:148
+msgid "Delete Text"
+msgstr "テキストを削除"
+
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:821
 msgid "PDF Input"
 msgstr "PDF入力"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:970
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:826
 msgid "Portable Document Format (*.pdf)"
 msgstr "Portable Document Format (*.pdf)"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:971
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:827
 msgid "Portable Document Format"
 msgstr "Portable Document Format"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:980
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:836
 msgid "AI Input"
 msgstr "AI 入力"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:985
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:841
 msgid "Adobe Illustrator 9.0 and above (*.ai)"
 msgstr "Adobe Illustrator 9.0 以降 (*.ai)"
 
-#: ../src/extension/internal/pdfinput/pdf-input.cpp:986
+#: ../src/extension/internal/pdfinput/pdf-input.cpp:842
 msgid "Open files saved in Adobe Illustrator 9.0 and newer versions"
 msgstr "Adobe Illustrator 9.0 以降で保存されたファイルを開きます"
 
@@ -14044,7 +14034,7 @@ msgid "Custom list of templates for a folder"
 msgstr "フォルダのテンプレートのカスタムリスト"
 
 #: ../src/extension/internal/template-from-file.cpp:98
-#: ../src/ui/dialog/document-properties.cpp:872
+#: ../src/ui/dialog/document-properties.cpp:840
 #: ../share/ui/dialog-export.glade:678 ../share/ui/dialog-export.glade:1016
 msgid "Filename"
 msgstr "ファイル名"
@@ -14495,7 +14485,7 @@ msgstr "ドキュメントを保存しています..."
 msgid "Import Pages"
 msgstr "ページをインポート"
 
-#: ../src/file.cpp:1190 ../src/inkscape-application.cpp:849
+#: ../src/file.cpp:1190 ../src/inkscape-application.cpp:886
 #, c-format
 msgid "Failed to load the requested file %s"
 msgstr "要求されたファイル %s の読み込みに失敗しました"
@@ -14787,61 +14777,61 @@ msgstr "グラデーションの中間点の移動"
 msgid "Delete gradient stop(s)"
 msgstr "グラデーションの色フェーズを削除"
 
-#: ../src/inkscape-application.cpp:390
+#: ../src/inkscape-application.cpp:412
 msgid "Broken links have been changed to point to existing files."
 msgstr "壊れたリンクは実在するファイルへのポイントに変更されました。"
 
 #
 # File: ../src/inkscape-application.cpp, line: 526
-#: ../src/inkscape-application.cpp:677
+#: ../src/inkscape-application.cpp:713
 msgid "file1 [file2 [fileN]]"
 msgstr "ファイル1 [ファイル2 [ファイルN]]"
 
 #
 # File: ../src/inkscape-application.cpp, line: 527
-#: ../src/inkscape-application.cpp:678
+#: ../src/inkscape-application.cpp:714
 msgid "Process (or open) one or more files."
 msgstr "ひとつ以上のファイルを処理します (または開きます)。"
 
-#: ../src/inkscape-application.cpp:679
+#: ../src/inkscape-application.cpp:715
 msgid "Examples:"
 msgstr "例:"
 
 #
 # File: ../src/inkscape-application.cpp, line: 529
-#: ../src/inkscape-application.cpp:680
+#: ../src/inkscape-application.cpp:716
 msgid "Export input SVG (%1) to PDF (%2) format:"
 msgstr "SVG (%1) 入力を PDF (%2) 形式にエクスポート:"
 
 #
 # File: ../src/inkscape-application.cpp, line: 531
-#: ../src/inkscape-application.cpp:682
+#: ../src/inkscape-application.cpp:718
 msgid "Export input files (%1) to PNG format keeping original name (%2):"
 msgstr "入力ファイル (%1) を PNG 形式にもとの名前 (%2) のままエクスポート:"
 
 #
 # File: ../src/inkscape-application.cpp, line: 533
-#: ../src/inkscape-application.cpp:684
+#: ../src/inkscape-application.cpp:720
 msgid "See %1 and %2 for more details."
 msgstr "%1 を参照し、詳しくは %2 を参照してください。"
 
-#: ../src/inkscape-application.cpp:689
+#: ../src/inkscape-application.cpp:725
 msgid "Print Inkscape version"
 msgstr "Inkscape のバージョンを表示"
 
-#: ../src/inkscape-application.cpp:690
+#: ../src/inkscape-application.cpp:726
 msgid "Print debugging information"
 msgstr "デバッグ情報を表示"
 
-#: ../src/inkscape-application.cpp:691
+#: ../src/inkscape-application.cpp:727
 msgid "Print system data directory"
 msgstr "システムデータディレクトリを表示"
 
-#: ../src/inkscape-application.cpp:692
+#: ../src/inkscape-application.cpp:728
 msgid "Print user data directory"
 msgstr "ユーザーディレクトリを表示"
 
-#: ../src/inkscape-application.cpp:693
+#: ../src/inkscape-application.cpp:729
 msgid ""
 "Create a unique instance of Inkscape with the application ID 'org.inkscape."
 "Inkscape.TAG'"
@@ -14849,33 +14839,45 @@ msgstr ""
 "アプリケーション ID 'org.inkscape.Inkscape.TAG' を使用して Inkscape の一意の"
 "インスタンスを作成します。"
 
-#: ../src/inkscape-application.cpp:696
+#: ../src/inkscape-application.cpp:732
 msgid "File import"
 msgstr "ファイルをインポート"
 
 #
 # File: ../src/inkscape-application.cpp, line: 541
-#: ../src/inkscape-application.cpp:697
+#: ../src/inkscape-application.cpp:733
 msgid "Read input file from standard input (stdin)"
 msgstr "入力ファイルを標準入力 (stdin) から読み込む"
 
-#: ../src/inkscape-application.cpp:698
+#: ../src/inkscape-application.cpp:734
 msgid "Page numbers to import from multi-page document, i.e. PDF"
 msgstr "複数ページからなるドキュメント (PDF) からインポートするページ番号"
 
-#: ../src/inkscape-application.cpp:698
+#: ../src/inkscape-application.cpp:734
 msgid "PAGE[,PAGE]"
 msgstr "PAGE[,PAGE]"
 
 #
 # File: ../src/inkscape-application.cpp, line: 495
-#: ../src/inkscape-application.cpp:699
+#: ../src/inkscape-application.cpp:735
 msgid "Use poppler when importing via commandline"
 msgstr "コマンドラインからのインポート時に poppler を使用"
 
+#: ../src/inkscape-application.cpp:736
+msgid ""
+"How fonts are parsed in the internal PDF importer [draw-missing|draw-all|"
+"delete-missing|delete-all|substitute|keep]"
+msgstr ""
+"内部PDFインポーターでのフォントの解析方法 [draw-missing|draw-all|delete-"
+"missing|delete-all|substitute|keep]"
+
+#: ../src/inkscape-application.cpp:736
+msgid "STRATEGY"
+msgstr "方法"
+
 #
 # File: ../src/inkscape-application.cpp, line: 544
-#: ../src/inkscape-application.cpp:700
+#: ../src/inkscape-application.cpp:737
 msgid ""
 "Method used to convert pre-0.92 document dpi, if needed: [none|scale-viewbox|"
 "scale-document]"
@@ -14883,21 +14885,21 @@ msgstr ""
 "必要に応じて 0.92 以前のドキュメント DPI の変換に使用する方式: [none|scale-"
 "viewbox|scale-document]"
 
-#: ../src/inkscape-application.cpp:700
+#: ../src/inkscape-application.cpp:737
 msgid "METHOD"
 msgstr "方法"
 
 #
 # File: ../src/inkscape-application.cpp, line: 545
-#: ../src/inkscape-application.cpp:701
+#: ../src/inkscape-application.cpp:738
 msgid "Do not fix pre-0.92 document's text baseline spacing on opening"
 msgstr "開くときに 0.92 以前のドキュメントのベースライン間隔を修正しない"
 
-#: ../src/inkscape-application.cpp:704
+#: ../src/inkscape-application.cpp:741
 msgid "File export"
 msgstr "ファイルエクスポート"
 
-#: ../src/inkscape-application.cpp:705
+#: ../src/inkscape-application.cpp:742
 msgid ""
 "Output file name (defaults to input filename; file type is guessed from "
 "extension if present; use '-' to write to stdout)"
@@ -14905,11 +14907,11 @@ msgstr ""
 "出力ファイル名 (デフォルトでは入力ファイル名。ファイル形式は拡張子があればそ"
 "れで判断します。標準出力に書き込むには '-' を使用します。)"
 
-#: ../src/inkscape-application.cpp:705 ../src/inkscape-application.cpp:757
+#: ../src/inkscape-application.cpp:742 ../src/inkscape-application.cpp:794
 msgid "FILENAME"
 msgstr "FILENAME"
 
-#: ../src/inkscape-application.cpp:706
+#: ../src/inkscape-application.cpp:743
 msgid ""
 "Overwrite input file (otherwise add '_out' suffix if type doesn't change)"
 msgstr ""
@@ -14917,146 +14919,146 @@ msgstr ""
 "クスに追加)"
 
 #
-#: ../src/inkscape-application.cpp:707
+#: ../src/inkscape-application.cpp:744
 msgid "File type(s) to export: [svg,png,ps,eps,pdf,emf,wmf,xaml]"
 msgstr "エクスポートするファイルタイプ: [svg,png,ps,eps,pdf,emf,wmf,xaml]"
 
-#: ../src/inkscape-application.cpp:707
+#: ../src/inkscape-application.cpp:744
 msgid "TYPE[,TYPE]*"
 msgstr "TYPE[,TYPE]*"
 
-#: ../src/inkscape-application.cpp:708
+#: ../src/inkscape-application.cpp:745
 msgid "Extension ID to use for exporting"
 msgstr "エクスポートに使用するエクステンション ID"
 
-#: ../src/inkscape-application.cpp:708
+#: ../src/inkscape-application.cpp:745
 msgid "EXTENSION-ID"
 msgstr "EXTENSION-ID"
 
-#: ../src/inkscape-application.cpp:711
+#: ../src/inkscape-application.cpp:748
 msgid "Export geometry"
 msgstr "位置情報をエクスポート"
 
-#: ../src/inkscape-application.cpp:712
+#: ../src/inkscape-application.cpp:749
 msgid "Area to export is page"
 msgstr "エクスポートする領域はページ全体"
 
-#: ../src/inkscape-application.cpp:713
+#: ../src/inkscape-application.cpp:750
 msgid "Area to export is whole drawing (ignoring page size)"
 msgstr "エクスポートする領域は描画全体 (ページサイズは無視)"
 
 #
 # File: ../src/inkscape-application.cpp, line: 557
-#: ../src/inkscape-application.cpp:714
+#: ../src/inkscape-application.cpp:751
 msgid "Area to export in SVG user units"
 msgstr "SVG ユーザーの単位でエクスポートする領域"
 
-#: ../src/inkscape-application.cpp:714
+#: ../src/inkscape-application.cpp:751
 msgid "x0:y0:x1:y1"
 msgstr "x0:y0:x1:y1"
 
-#: ../src/inkscape-application.cpp:715
+#: ../src/inkscape-application.cpp:752
 msgid "Snap the bitmap export area outwards to the nearest integer values"
 msgstr "エクスポート領域外のビットマップを一番近い整数値にスナップ"
 
-#: ../src/inkscape-application.cpp:716
+#: ../src/inkscape-application.cpp:753
 msgid "Resolution for bitmaps and rasterized filters; default is 96"
 msgstr "ビットマップおよびフィルターのラスタライズの解像度 (デフォルトは 96)"
 
-#: ../src/inkscape-application.cpp:716 ../src/ui/widget/export-lists.cpp:156
+#: ../src/inkscape-application.cpp:753 ../src/ui/widget/export-lists.cpp:156
 #: ../src/ui/widget/rendering-options.cpp:34
 #: ../share/ui/dialog-export.glade:433 ../share/extensions/layer2png.inx:12
 msgid "DPI"
 msgstr "DPI"
 
-#: ../src/inkscape-application.cpp:717
+#: ../src/inkscape-application.cpp:754
 msgid "Bitmap width in pixels (overrides --export-dpi)"
 msgstr "ビットマップ幅をピクセル値で (--export-dpi を上書き)"
 
-#: ../src/inkscape-application.cpp:717
+#: ../src/inkscape-application.cpp:754
 msgid "WIDTH"
 msgstr "幅"
 
-#: ../src/inkscape-application.cpp:718
+#: ../src/inkscape-application.cpp:755
 msgid "Bitmap height in pixels (overrides --export-dpi)"
 msgstr "ビットマップ高さをピクセル値で (--export-dpi を上書き)"
 
-#: ../src/inkscape-application.cpp:718
+#: ../src/inkscape-application.cpp:755
 msgid "HEIGHT"
 msgstr "高さ"
 
-#: ../src/inkscape-application.cpp:719
+#: ../src/inkscape-application.cpp:756
 msgid "Margin around export area: units of page size for SVG, mm for PS/PDF"
 msgstr ""
 "エクスポート領域の周囲のマージン: SVG ではページサイズの単位、PS/PDF では mm"
 
-#: ../src/inkscape-application.cpp:719
+#: ../src/inkscape-application.cpp:756
 msgid "MARGIN"
 msgstr "MARGIN"
 
-#: ../src/inkscape-application.cpp:722
+#: ../src/inkscape-application.cpp:759
 msgid "Export options"
 msgstr "オプションをエクスポート"
 
-#: ../src/inkscape-application.cpp:723
+#: ../src/inkscape-application.cpp:760
 msgid "Page number to export"
 msgstr "エクスポートするページ番号"
 
-#: ../src/inkscape-application.cpp:723
+#: ../src/inkscape-application.cpp:760
 msgid "all|n[,a-b]"
 msgstr "all|n[,a-b]"
 
-#: ../src/inkscape-application.cpp:724
+#: ../src/inkscape-application.cpp:761
 msgid "ID(s) of object(s) to export"
 msgstr "エクスポートするオブジェクトの ID"
 
-#: ../src/inkscape-application.cpp:724
+#: ../src/inkscape-application.cpp:761
 msgid "OBJECT-ID[;OBJECT-ID]*"
 msgstr "OBJECT-ID[;OBJECT-ID]*"
 
-#: ../src/inkscape-application.cpp:725
+#: ../src/inkscape-application.cpp:762
 msgid "Hide all objects except object with ID selected by export-id"
 msgstr "export-id で選択した ID のオブジェクト以外すべてのオブジェクトを非表示"
 
 #
 # File: ../src/inkscape-application.cpp, line: 568
-#: ../src/inkscape-application.cpp:726
+#: ../src/inkscape-application.cpp:763
 msgid "Remove Inkscape-specific SVG attributes/properties"
 msgstr "Inkscape 独自の属性/プロパティを削除"
 
 #
 # File: ../src/inkscape-application.cpp, line: 569
-#: ../src/inkscape-application.cpp:727
+#: ../src/inkscape-application.cpp:764
 msgid "Postscript level (2 or 3); default is 3"
 msgstr "Postscript レベル (2 または 3)、デフォルトは 3"
 
-#: ../src/inkscape-application.cpp:727
+#: ../src/inkscape-application.cpp:764
 msgid "LEVEL"
 msgstr "LEVEL"
 
-#: ../src/inkscape-application.cpp:728
+#: ../src/inkscape-application.cpp:765
 msgid "PDF version (1.4 or 1.5); default is 1.5"
 msgstr "PDF バージョン (1.4 or 1.5); デフォルトは 1.5"
 
-#: ../src/inkscape-application.cpp:728
+#: ../src/inkscape-application.cpp:765
 msgid "VERSION"
 msgstr "VERSION"
 
-#: ../src/inkscape-application.cpp:729
+#: ../src/inkscape-application.cpp:766
 msgid "Convert text to paths (PS/EPS/PDF/SVG)"
 msgstr "テキストをパスに変換 (PS/EPS/PDF/SVG)"
 
-#: ../src/inkscape-application.cpp:730
+#: ../src/inkscape-application.cpp:767
 msgid "Export text separately to LaTeX file (PS/EPS/PDF)"
 msgstr "テキストを別々のLaTeXファイル (PS/EPS/PDF) にエクスポート"
 
-#: ../src/inkscape-application.cpp:731
+#: ../src/inkscape-application.cpp:768
 msgid "Render objects without filters instead of rasterizing (PS/EPS/PDF)"
 msgstr ""
 "ラスタライズの代わりにフィルターされたオブジェクトをフィルターなしでレンダリ"
 "ング (PS, EPS, PDF)"
 
-#: ../src/inkscape-application.cpp:732
+#: ../src/inkscape-application.cpp:769
 msgid ""
 "Use stored filename and DPI hints when exporting object selected by --export-"
 "id"
@@ -15064,25 +15066,25 @@ msgstr ""
 "--export-id で選択したオブジェクトのエクスポートするとき、保存されているファ"
 "イル名と DPI ヒントを使用"
 
-#: ../src/inkscape-application.cpp:733
+#: ../src/inkscape-application.cpp:770
 msgid "Background color for exported bitmaps (any SVG color string)"
 msgstr ""
 "エクスポートしたビットマップの背景色 (SVG でサポートされるカラー文字列)"
 
-#: ../src/inkscape-application.cpp:733
+#: ../src/inkscape-application.cpp:770
 msgid "COLOR"
 msgstr "色"
 
-#: ../src/inkscape-application.cpp:735
+#: ../src/inkscape-application.cpp:772
 msgid "Background opacity for exported bitmaps (0.0 to 1.0, or 1 to 255)"
 msgstr ""
 "エクスポートしたビットマップの不透明度 (0.0 から 1.0、または 1 から 255)"
 
-#: ../src/inkscape-application.cpp:735
+#: ../src/inkscape-application.cpp:772
 msgid "VALUE"
 msgstr "値"
 
-#: ../src/inkscape-application.cpp:736
+#: ../src/inkscape-application.cpp:773
 msgid ""
 "Color mode (bit depth and color type) for exported bitmaps (Gray_1/Gray_2/"
 "Gray_4/Gray_8/Gray_16/RGB_8/RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16)"
@@ -15091,122 +15093,122 @@ msgstr ""
 "RGB_16/GrayAlpha_8/GrayAlpha_16/RGBA_8/RGBA_16) のカラーモード (bit depth "
 "and color type)"
 
-#: ../src/inkscape-application.cpp:736
+#: ../src/inkscape-application.cpp:773
 msgid "COLOR-MODE"
 msgstr "カラーモード"
 
-#: ../src/inkscape-application.cpp:737
+#: ../src/inkscape-application.cpp:774
 msgid "Force dithering or disables it"
 msgstr "ディザリングを強制、または無効にします"
 
 #
 # File: ../src/inkscape-application.cpp, line: 579
-#: ../src/inkscape-application.cpp:740
+#: ../src/inkscape-application.cpp:777
 msgid "Query object/document geometry"
 msgstr "オブジェクト/ドキュメントの位置情報を問合せ"
 
-#: ../src/inkscape-application.cpp:741
+#: ../src/inkscape-application.cpp:778
 msgid "ID(s) of object(s) to be queried"
 msgstr "問い合わせるオブジェクトの ID"
 
-#: ../src/inkscape-application.cpp:741 ../src/inkscape-application.cpp:751
+#: ../src/inkscape-application.cpp:778 ../src/inkscape-application.cpp:788
 msgid "OBJECT-ID[,OBJECT-ID]*"
 msgstr "OBJECT-ID[,OBJECT-ID]*"
 
-#: ../src/inkscape-application.cpp:742
+#: ../src/inkscape-application.cpp:779
 msgid "Print bounding boxes of all objects"
 msgstr "すべてのオブジェクトの境界枠を表示"
 
-#: ../src/inkscape-application.cpp:743
+#: ../src/inkscape-application.cpp:780
 msgid "X coordinate of drawing or object (if specified by --query-id)"
 msgstr "描画またはオブジェクトの X 座標 (--query-id で指定されている場合)"
 
-#: ../src/inkscape-application.cpp:744
+#: ../src/inkscape-application.cpp:781
 msgid "Y coordinate of drawing or object (if specified by --query-id)"
 msgstr "描画またはオブジェクトの Y 座標 (--query-id で指定されている場合)"
 
-#: ../src/inkscape-application.cpp:745
+#: ../src/inkscape-application.cpp:782
 msgid "Width of drawing or object (if specified by --query-id)"
 msgstr "描画またはオブジェクトの幅 (--query-id で指定されている場合)"
 
-#: ../src/inkscape-application.cpp:746
+#: ../src/inkscape-application.cpp:783
 msgid "Height of drawing or object (if specified by --query-id)"
 msgstr "描画またはオブジェクトの高さ (--query-id で指定されている場合)"
 
 #
 # File: ../src/inkscape-application.cpp, line: 588
-#: ../src/inkscape-application.cpp:749
+#: ../src/inkscape-application.cpp:786
 msgid "Advanced file processing"
 msgstr "高度なファイル処理"
 
-#: ../src/inkscape-application.cpp:750
+#: ../src/inkscape-application.cpp:787
 msgid "Remove unused definitions from the <defs> section(s) of document"
 msgstr "未使用の定義をドキュメントの <defs> セクションから削除"
 
 #
 # File: ../src/inkscape-application.cpp, line: 590
-#: ../src/inkscape-application.cpp:751
+#: ../src/inkscape-application.cpp:788
 msgid "Select objects: comma-separated list of IDs"
 msgstr "オブジェクトを選択: カンマ区切りの ID のリスト"
 
 #
 # File: ../src/inkscape-application.cpp, line: 594
-#: ../src/inkscape-application.cpp:755
+#: ../src/inkscape-application.cpp:792
 msgid "List of actions (with optional arguments) to execute"
 msgstr "実行する操作 (オプション引数も) の一覧"
 
-#: ../src/inkscape-application.cpp:755
+#: ../src/inkscape-application.cpp:792
 msgid "ACTION(:ARG)[;ACTION(:ARG)]*"
 msgstr "ACTION(:ARG)[;ACTION(:ARG)]*"
 
-#: ../src/inkscape-application.cpp:756
+#: ../src/inkscape-application.cpp:793
 msgid "List all available actions"
 msgstr "利用可能な操作をすべて一覧表示"
 
-#: ../src/inkscape-application.cpp:757
+#: ../src/inkscape-application.cpp:794
 msgid "Use a file to input actions list"
 msgstr "アクションリストの入力にファイルを使用"
 
-#: ../src/inkscape-application.cpp:760
+#: ../src/inkscape-application.cpp:797
 #: ../src/ui/dialog/inkscape-preferences.cpp:1517
 msgid "Interface"
 msgstr "インターフェイス"
 
 #
 # File: ../src/inkscape-application.cpp, line: 605
-#: ../src/inkscape-application.cpp:761
+#: ../src/inkscape-application.cpp:798
 msgid "With graphical user interface (required by some actions)"
 msgstr "グラフィカルユーザーインタフェースを使用 (一部操作で必要)"
 
 #
 # File: ../src/inkscape-application.cpp, line: 606
-#: ../src/inkscape-application.cpp:762
+#: ../src/inkscape-application.cpp:799
 msgid "Close GUI after executing all actions"
 msgstr "すべての操作を実行後に GUI を閉じる"
 
-#: ../src/inkscape-application.cpp:764
+#: ../src/inkscape-application.cpp:801
 msgid "Start Inkscape in interactive shell mode"
 msgstr "Inkscape をインタラクティブシェルモードで起動"
 
-#: ../src/inkscape-application.cpp:765
+#: ../src/inkscape-application.cpp:802
 msgid "Use active window from commandline"
 msgstr "アクティブウィンドウをコマンドラインから使用"
 
-#: ../src/inkscape.cpp:442
+#: ../src/inkscape.cpp:485
 msgid "Untitled document"
 msgstr "無題ドキュメント"
 
-#: ../src/inkscape.cpp:471
+#: ../src/inkscape.cpp:514
 msgid "Inkscape encountered an internal error and will close now.\n"
 msgstr "Inkscape で内部エラーが発生しました。直ちに終了します。\n"
 
-#: ../src/inkscape.cpp:472
+#: ../src/inkscape.cpp:515
 msgid ""
 "Automatic backups of unsaved documents were done to the following "
 "locations:\n"
 msgstr "未保存ドキュメントの自動バックアップを次の場所に行いました:\n"
 
-#: ../src/inkscape.cpp:473
+#: ../src/inkscape.cpp:516
 msgid "Automatic backup of the following documents failed:\n"
 msgstr "次のドキュメントの自動バックアップに失敗しました:\n"
 
@@ -15273,7 +15275,7 @@ msgstr "開けるファイルがありません。"
 msgid "Fixup broken links"
 msgstr "壊れたリンクの修正"
 
-#: ../src/libnrtype/font-factory.cpp:602
+#: ../src/libnrtype/font-factory.cpp:626
 msgid "Ignoring font without family that will crash Pango"
 msgstr "Pango をクラッシュさせる、ファミリのないフォントを無視します"
 
@@ -19676,6 +19678,7 @@ msgid "End point"
 msgstr "終点"
 
 #: ../src/live_effects/lpe-transform_2pts.cpp:41
+#: ../share/ui/extension-pdfinput.glade:260
 msgid "Stretch"
 msgstr "伸張"
 
@@ -20006,7 +20009,7 @@ msgstr "単位パラメーターの変更"
 msgid "3D Box"
 msgstr "3D ボックス"
 
-#: ../src/object/color-profile.cpp:851
+#: ../src/object/color-profile.cpp:847
 msgid "(invalid UTF-8 string)"
 msgstr "(不正な UTF-8 文字列)"
 
@@ -20086,13 +20089,13 @@ msgid "(%d character%s)"
 msgid_plural "(%d characters%s)"
 msgstr[0] "(%d 個の文字%s)"
 
-#: ../src/object/sp-grid.cpp:404 ../src/ui/dialog/document-properties.cpp:1592
-#: ../src/ui/dialog/document-properties.cpp:1595
+#: ../src/object/sp-grid.cpp:404 ../src/ui/dialog/document-properties.cpp:1560
+#: ../src/ui/dialog/document-properties.cpp:1563
 #: ../src/ui/dialog/inkscape-preferences.cpp:2109
 msgid "Rectangular Grid"
 msgstr "矩形グリッド"
 
-#: ../src/object/sp-grid.cpp:405 ../src/ui/dialog/document-properties.cpp:1593
+#: ../src/object/sp-grid.cpp:405 ../src/ui/dialog/document-properties.cpp:1561
 #: ../src/ui/dialog/inkscape-preferences.cpp:2110
 msgid "Axonometric Grid"
 msgstr "結晶軸グリッド"
@@ -20566,51 +20569,51 @@ msgstr "汚れ"
 msgid "Tracing"
 msgstr "トレーシング"
 
-#: ../src/preferences.cpp:113
+#: ../src/preferences.cpp:111
 msgid ""
 "Inkscape will run with default settings, and new settings will not be saved. "
 msgstr "Inkscape はデフォルト設定で実行され、新しい設定は保存されません。 "
 
-#: ../src/preferences.cpp:129
+#: ../src/preferences.cpp:127
 #, c-format
 msgid "Cannot create profile directory %s."
 msgstr "プロファイルディレクトリ %s を作成できません。"
 
-#: ../src/preferences.cpp:138
+#: ../src/preferences.cpp:136
 #, c-format
 msgid "%s is not a valid directory."
 msgstr "%s は正しいディレクトリではありません。"
 
-#: ../src/preferences.cpp:157
+#: ../src/preferences.cpp:154
 #, c-format
 msgid "Failed to create the preferences file %s."
 msgstr "設定ファイル %s の作成に失敗しました。"
 
-#: ../src/preferences.cpp:193
+#: ../src/preferences.cpp:190
 #, c-format
 msgid "The preferences file %s is not a regular file."
 msgstr "設定ファイル %s は通常のファイルではありません。"
 
-#: ../src/preferences.cpp:203
+#: ../src/preferences.cpp:200
 #, c-format
 msgid "The preferences file %s could not be read."
 msgstr "設定ファイル %s を読み込めませんでした。"
 
-#: ../src/preferences.cpp:214
+#: ../src/preferences.cpp:211
 #, c-format
 msgid "The preferences file %s is not a valid XML document."
 msgstr "設定ファイル %s は正常な XML ドキュメントではありません。"
 
-#: ../src/preferences.cpp:223
+#: ../src/preferences.cpp:220
 #, c-format
 msgid "The file %s is not a valid Inkscape preferences file."
 msgstr "ファイル %s は正常な Inkscape 設定ファイルではありません。"
 
-#: ../src/preferences.cpp:282
+#: ../src/preferences.cpp:279
 msgid "Preferences file was backed up to"
 msgstr "設定ファイルの保存先"
 
-#: ../src/preferences.cpp:283
+#: ../src/preferences.cpp:280
 msgid "There was an error trying to reset the preferences file."
 msgstr "環境設定ファイルの初期化中にエラーが発生しました。"
 
@@ -21224,7 +21227,7 @@ msgstr "リンクした塗りつぶしオブジェクトをパスの間に作成
 msgid "root"
 msgstr "root"
 
-#: ../src/selection-describer.cpp:121 ../src/ui/dialog/symbols.cpp:1137
+#: ../src/selection-describer.cpp:121 ../src/ui/dialog/symbols.cpp:1138
 #: ../src/widgets/paintdef.cpp:54
 msgid "none"
 msgstr "なし"
@@ -21558,41 +21561,41 @@ msgstr "何もコピーされていません。"
 msgid "Can't paste text outside of the text tool."
 msgstr "テキストツール以外のテキストは貼り付けることができません。"
 
-#: ../src/ui/clipboard.cpp:470 ../src/ui/clipboard.cpp:890
-#: ../src/ui/clipboard.cpp:925 ../src/ui/clipboard.cpp:966
+#: ../src/ui/clipboard.cpp:470 ../src/ui/clipboard.cpp:891
+#: ../src/ui/clipboard.cpp:926 ../src/ui/clipboard.cpp:967
 msgid "Nothing on the clipboard."
 msgstr "クリップボードが空です。"
 
-#: ../src/ui/clipboard.cpp:718
+#: ../src/ui/clipboard.cpp:719
 msgid "Select <b>object(s)</b> to paste style to."
 msgstr "スタイルを貼り付ける対象の<b>オブジェクト</b>を選択してください。"
 
-#: ../src/ui/clipboard.cpp:730 ../src/ui/clipboard.cpp:760
+#: ../src/ui/clipboard.cpp:731 ../src/ui/clipboard.cpp:761
 msgid "No style on the clipboard."
 msgstr "クリップボードにスタイルはありません。"
 
-#: ../src/ui/clipboard.cpp:785
+#: ../src/ui/clipboard.cpp:786
 msgid "Select <b>object(s)</b> to paste size to."
 msgstr "サイズをペーストする対象の<b>オブジェクト</b>を選択してください。"
 
-#: ../src/ui/clipboard.cpp:793
+#: ../src/ui/clipboard.cpp:794
 msgid "No size on the clipboard."
 msgstr "クリップボードにサイズはありません。"
 
-#: ../src/ui/clipboard.cpp:850
+#: ../src/ui/clipboard.cpp:851
 msgid "Select <b>object(s)</b> to paste live path effect to."
 msgstr ""
 "ライブパスエフェクトへ貼り付ける<b>オブジェクト</b>を選択してください。"
 
-#: ../src/ui/clipboard.cpp:877
+#: ../src/ui/clipboard.cpp:878
 msgid "No effect on the clipboard."
 msgstr "クリップボードにエフェクトはありません。"
 
-#: ../src/ui/clipboard.cpp:899 ../src/ui/clipboard.cpp:949
+#: ../src/ui/clipboard.cpp:900 ../src/ui/clipboard.cpp:950
 msgid "Clipboard does not contain a path."
 msgstr "クリップボードにパスは含まれていません。"
 
-#: ../src/ui/clipboard.cpp:996
+#: ../src/ui/clipboard.cpp:997
 msgid "Clipboard does not contain any objects of type \"%1\"."
 msgstr "クリップボードに \"%1\" タイプのオブジェクトは含まれていません。"
 
@@ -22725,7 +22728,7 @@ msgstr "変換"
 
 #: ../src/ui/dialog/command-palette.cpp:267
 #: ../src/ui/widget/preferences-widget.cpp:969
-#: ../share/ui/inkscape-start.glade:1156
+#: ../share/ui/inkscape-start.glade:1058
 msgid "Open"
 msgstr "開く"
 
@@ -23073,13 +23076,13 @@ msgstr "ページラベルスタイルを切り替え"
 msgid "<b>Guides</b>"
 msgstr "<b>ガイド</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:582
+#: ../src/ui/dialog/document-properties.cpp:550
 msgid "Link Color Profile"
 msgstr "リンクカラープロファイル"
 
-#: ../src/ui/dialog/document-properties.cpp:651
-#: ../src/ui/dialog/document-properties.cpp:661
-#: ../src/ui/dialog/document-properties.cpp:670
+#: ../src/ui/dialog/document-properties.cpp:619
+#: ../src/ui/dialog/document-properties.cpp:629
+#: ../src/ui/dialog/document-properties.cpp:638
 #: ../src/ui/dialog/filter-effects-dialog.cpp:1381
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:525
 #: ../src/ui/dialog/svg-fonts-dialog.cpp:535
@@ -23087,123 +23090,123 @@ msgstr "リンクカラープロファイル"
 msgid "_Remove"
 msgstr "削除(_R)"
 
-#: ../src/ui/dialog/document-properties.cpp:703
+#: ../src/ui/dialog/document-properties.cpp:671
 msgid "Remove linked color profile"
 msgstr "リンクカラープロファイルの削除"
 
-#: ../src/ui/dialog/document-properties.cpp:723
+#: ../src/ui/dialog/document-properties.cpp:691
 msgid "<b>Linked Color Profiles:</b>"
 msgstr "<b>リンクされたカラープロファイル</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:725
+#: ../src/ui/dialog/document-properties.cpp:693
 msgid "<b>Available Color Profiles:</b>"
 msgstr "<b>利用可能なカラープロファイル:</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:727
+#: ../src/ui/dialog/document-properties.cpp:695
 msgid "Unlink Profile"
 msgstr "プロファイルのリンクを解除"
 
-#: ../src/ui/dialog/document-properties.cpp:781
+#: ../src/ui/dialog/document-properties.cpp:749
 msgid "Profile Name"
 msgstr "プロファイル名"
 
-#: ../src/ui/dialog/document-properties.cpp:816
+#: ../src/ui/dialog/document-properties.cpp:784
 msgid "External scripts"
 msgstr "外部スクリプト"
 
-#: ../src/ui/dialog/document-properties.cpp:817
+#: ../src/ui/dialog/document-properties.cpp:785
 msgid "Embedded scripts"
 msgstr "埋め込みスクリプト"
 
-#: ../src/ui/dialog/document-properties.cpp:822
+#: ../src/ui/dialog/document-properties.cpp:790
 msgid "<b>External script files:</b>"
 msgstr "<b>外部スクリプトファイル:</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:824
+#: ../src/ui/dialog/document-properties.cpp:792
 msgid "Add the current file name or browse for a file"
 msgstr "現在のファイル名を追加するかファイルを参照します"
 
-#: ../src/ui/dialog/document-properties.cpp:827
-#: ../src/ui/dialog/document-properties.cpp:885
+#: ../src/ui/dialog/document-properties.cpp:795
+#: ../src/ui/dialog/document-properties.cpp:853
 #: ../src/ui/widget/selected-style.cpp:347
 msgid "Remove"
 msgstr "削除"
 
-#: ../src/ui/dialog/document-properties.cpp:880
+#: ../src/ui/dialog/document-properties.cpp:848
 msgid "<b>Embedded script files:</b>"
 msgstr "<b>埋め込みスクリプトファイル:</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:924
+#: ../src/ui/dialog/document-properties.cpp:892
 msgid "Script ID"
 msgstr "スクリプト ID"
 
-#: ../src/ui/dialog/document-properties.cpp:930
+#: ../src/ui/dialog/document-properties.cpp:898
 msgid "<b>Content:</b>"
 msgstr "<b>内容:</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:999
+#: ../src/ui/dialog/document-properties.cpp:967
 msgid "<b>Dublin Core Entities</b>"
 msgstr "<b>ダブリンコア要素</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:1022
+#: ../src/ui/dialog/document-properties.cpp:990
 msgid "_Save as default"
 msgstr "デフォルトとして保存(_S)"
 
-#: ../src/ui/dialog/document-properties.cpp:1023
+#: ../src/ui/dialog/document-properties.cpp:991
 msgid "Save this metadata as the default metadata"
 msgstr "このメタデータをデフォルトメタデータとして保存します"
 
-#: ../src/ui/dialog/document-properties.cpp:1024
+#: ../src/ui/dialog/document-properties.cpp:992
 msgid "Use _default"
 msgstr "デフォルトを使用(_D)"
 
-#: ../src/ui/dialog/document-properties.cpp:1025
+#: ../src/ui/dialog/document-properties.cpp:993
 msgid "Use the previously saved default metadata here"
 msgstr "あらかじめここで保存されたデフォルトメタデータを使用します"
 
-#: ../src/ui/dialog/document-properties.cpp:1042
+#: ../src/ui/dialog/document-properties.cpp:1010
 msgid "<b>License</b>"
 msgstr "<b>ライセンス</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:1076
+#: ../src/ui/dialog/document-properties.cpp:1044
 msgid "Add external script..."
 msgstr "外部スクリプトの追加..."
 
-#: ../src/ui/dialog/document-properties.cpp:1113
+#: ../src/ui/dialog/document-properties.cpp:1081
 msgid "Select a script to load"
 msgstr "読み込むスクリプトを選択してください"
 
-#: ../src/ui/dialog/document-properties.cpp:1138
+#: ../src/ui/dialog/document-properties.cpp:1106
 msgid "Add embedded script..."
 msgstr "埋め込みスクリプトの追加..."
 
-#: ../src/ui/dialog/document-properties.cpp:1170
+#: ../src/ui/dialog/document-properties.cpp:1138
 msgid "Remove external script"
 msgstr "外部スクリプトの削除"
 
-#: ../src/ui/dialog/document-properties.cpp:1198
+#: ../src/ui/dialog/document-properties.cpp:1166
 msgid "Remove embedded script"
 msgstr "埋め込みスクリプトの除去"
 
-#: ../src/ui/dialog/document-properties.cpp:1296
+#: ../src/ui/dialog/document-properties.cpp:1264
 msgid "Edit embedded script"
 msgstr "埋め込みスクリプトの編集"
 
-#: ../src/ui/dialog/document-properties.cpp:1397
+#: ../src/ui/dialog/document-properties.cpp:1365
 msgid "_Enabled"
 msgstr "有効にする(_E)"
 
 #
 # File: ../src/display/canvas-grid.cpp, line: 306
-#: ../src/ui/dialog/document-properties.cpp:1398
+#: ../src/ui/dialog/document-properties.cpp:1366
 msgid "Makes the grid available for working with on the canvas."
 msgstr "グリッドをキャンバス上で使用できるようにします。"
 
-#: ../src/ui/dialog/document-properties.cpp:1404
+#: ../src/ui/dialog/document-properties.cpp:1372
 msgid "Snap to visible _grid lines only"
 msgstr "見えているグリッドラインにのみスナップする(_G)"
 
-#: ../src/ui/dialog/document-properties.cpp:1405
+#: ../src/ui/dialog/document-properties.cpp:1373
 msgid ""
 "When zoomed out, not all grid lines will be displayed. Only the visible ones "
 "will be snapped to"
@@ -23211,11 +23214,11 @@ msgstr ""
 "ズームアウト時、グリッドラインのすべては表示されません。見えているラインにの"
 "みスナップします"
 
-#: ../src/ui/dialog/document-properties.cpp:1409
+#: ../src/ui/dialog/document-properties.cpp:1377
 msgid "_Visible"
 msgstr "表示する(_V)"
 
-#: ../src/ui/dialog/document-properties.cpp:1410
+#: ../src/ui/dialog/document-properties.cpp:1378
 msgid ""
 "Determines whether the grid is displayed or not. Objects are still snapped "
 "to invisible grids."
@@ -23223,130 +23226,130 @@ msgstr ""
 "グリッドを表示するかどうか指定してください。オブジェクトは非表示のグリッドに"
 "もスナップされます。"
 
-#: ../src/ui/dialog/document-properties.cpp:1430
+#: ../src/ui/dialog/document-properties.cpp:1398
 msgid "_Show dots instead of lines"
 msgstr "線の代わりにドットで表示する(_S)"
 
-#: ../src/ui/dialog/document-properties.cpp:1430
+#: ../src/ui/dialog/document-properties.cpp:1398
 msgid "If set, displays dots at gridpoints instead of gridlines"
 msgstr ""
 "有効にすると、グリッドラインの代わりにグリッドポイントにドットが表示されます"
 
-#: ../src/ui/dialog/document-properties.cpp:1435
+#: ../src/ui/dialog/document-properties.cpp:1403
 msgid "Align to page:"
 msgstr "ページに揃える:"
 
-#: ../src/ui/dialog/document-properties.cpp:1480
+#: ../src/ui/dialog/document-properties.cpp:1448
 msgid "Grid _units:"
 msgstr "グリッドの単位(_U):"
 
-#: ../src/ui/dialog/document-properties.cpp:1482
+#: ../src/ui/dialog/document-properties.cpp:1450
 msgid "_Origin X:"
 msgstr "開始位置X(_O):"
 
-#: ../src/ui/dialog/document-properties.cpp:1482
+#: ../src/ui/dialog/document-properties.cpp:1450
 #: ../src/ui/dialog/inkscape-preferences.cpp:2117
 #: ../src/ui/dialog/inkscape-preferences.cpp:2142
 msgid "X coordinate of grid origin"
 msgstr "グリッド開始位置の X 座標"
 
-#: ../src/ui/dialog/document-properties.cpp:1485
+#: ../src/ui/dialog/document-properties.cpp:1453
 msgid "O_rigin Y:"
 msgstr "開始位置Y(_R):"
 
-#: ../src/ui/dialog/document-properties.cpp:1485
+#: ../src/ui/dialog/document-properties.cpp:1453
 #: ../src/ui/dialog/inkscape-preferences.cpp:2118
 #: ../src/ui/dialog/inkscape-preferences.cpp:2143
 msgid "Y coordinate of grid origin"
 msgstr "グリッド開始位置のY座標"
 
-#: ../src/ui/dialog/document-properties.cpp:1488
+#: ../src/ui/dialog/document-properties.cpp:1456
 msgid "Spacing _X:"
 msgstr "X方向の間隔(_X):"
 
-#: ../src/ui/dialog/document-properties.cpp:1488
+#: ../src/ui/dialog/document-properties.cpp:1456
 #: ../src/ui/dialog/inkscape-preferences.cpp:2123
 msgid "Distance between vertical grid lines"
 msgstr "垂直グリッドライン間の距離"
 
-#: ../src/ui/dialog/document-properties.cpp:1491
+#: ../src/ui/dialog/document-properties.cpp:1459
 msgid "Spacing _Y:"
 msgstr "Y方向の間隔(_Y):"
 
-#: ../src/ui/dialog/document-properties.cpp:1491
+#: ../src/ui/dialog/document-properties.cpp:1459
 #: ../src/ui/dialog/inkscape-preferences.cpp:2146
 msgid "Base length of z-axis"
 msgstr "Z 軸の基線長"
 
-#: ../src/ui/dialog/document-properties.cpp:1494
+#: ../src/ui/dialog/document-properties.cpp:1462
 #: ../src/ui/dialog/inkscape-preferences.cpp:2149
 #: ../src/ui/toolbar/box3d-toolbar.cpp:64
 msgid "Angle X:"
 msgstr "X 軸の角度:"
 
-#: ../src/ui/dialog/document-properties.cpp:1494
+#: ../src/ui/dialog/document-properties.cpp:1462
 #: ../src/ui/dialog/inkscape-preferences.cpp:2149
 msgid "Angle of x-axis"
 msgstr "X 軸の角度"
 
-#: ../src/ui/dialog/document-properties.cpp:1496
+#: ../src/ui/dialog/document-properties.cpp:1464
 #: ../src/ui/dialog/inkscape-preferences.cpp:2150
 #: ../src/ui/toolbar/box3d-toolbar.cpp:127
 msgid "Angle Z:"
 msgstr "Z 軸の角度:"
 
-#: ../src/ui/dialog/document-properties.cpp:1496
+#: ../src/ui/dialog/document-properties.cpp:1464
 #: ../src/ui/dialog/inkscape-preferences.cpp:2150
 msgid "Angle of z-axis"
 msgstr "Z 軸の角度"
 
-#: ../src/ui/dialog/document-properties.cpp:1498
+#: ../src/ui/dialog/document-properties.cpp:1466
 msgid "Minor grid line _color:"
 msgstr "マイナーグリッドラインの色(_C):"
 
-#: ../src/ui/dialog/document-properties.cpp:1498
+#: ../src/ui/dialog/document-properties.cpp:1466
 #: ../src/ui/dialog/inkscape-preferences.cpp:2101
 msgid "Minor grid line color"
 msgstr "マイナーグリッドラインの色"
 
-#: ../src/ui/dialog/document-properties.cpp:1498
+#: ../src/ui/dialog/document-properties.cpp:1466
 msgid "Color of the minor grid lines"
 msgstr "マイナーグリッドラインの色"
 
-#: ../src/ui/dialog/document-properties.cpp:1501
+#: ../src/ui/dialog/document-properties.cpp:1469
 msgid "Ma_jor grid line color:"
 msgstr "メジャーグリッドラインの色(_J):"
 
-#: ../src/ui/dialog/document-properties.cpp:1501
+#: ../src/ui/dialog/document-properties.cpp:1469
 #: ../src/ui/dialog/inkscape-preferences.cpp:2103
 msgid "Major grid line color"
 msgstr "メジャーグリッドラインの色"
 
-#: ../src/ui/dialog/document-properties.cpp:1502
+#: ../src/ui/dialog/document-properties.cpp:1470
 msgid "Color of the major (highlighted) grid lines"
 msgstr "メジャー (強調表示) グリッドラインの色"
 
-#: ../src/ui/dialog/document-properties.cpp:1505
+#: ../src/ui/dialog/document-properties.cpp:1473
 msgid "_Major grid line every:"
 msgstr "メジャーグリッドラインの頻度(_M):"
 
-#: ../src/ui/dialog/document-properties.cpp:1505
+#: ../src/ui/dialog/document-properties.cpp:1473
 msgid "lines"
 msgstr "本に 1 本"
 
-#: ../src/ui/dialog/document-properties.cpp:1587
+#: ../src/ui/dialog/document-properties.cpp:1555
 msgid "<b>Creation</b>"
 msgstr "<b>作成</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:1588
+#: ../src/ui/dialog/document-properties.cpp:1556
 msgid "<b>Defined grids</b>"
 msgstr "<b>定義されたグリッド</b>"
 
-#: ../src/ui/dialog/document-properties.cpp:1837
+#: ../src/ui/dialog/document-properties.cpp:1805
 msgid "Create new grid"
 msgstr "グリッドの新規作成"
 
-#: ../src/ui/dialog/document-properties.cpp:1859
+#: ../src/ui/dialog/document-properties.cpp:1827
 msgid "Remove grid"
 msgstr "グリッドの削除"
 
@@ -23413,8 +23416,8 @@ msgid "Patterns"
 msgstr "パターン"
 
 #: ../src/ui/dialog/document-resources.cpp:962
-#: ../src/ui/dialog/symbols.cpp:1134 ../src/ui/dialog/symbols.cpp:1137
-#: ../src/ui/dialog/symbols.cpp:1140
+#: ../src/ui/dialog/symbols.cpp:1135 ../src/ui/dialog/symbols.cpp:1138
+#: ../src/ui/dialog/symbols.cpp:1141
 #: ../share/ui/dialog-document-resources.glade:121
 #: ../share/extensions/render_barcode_qrcode.inx:87
 msgid "Symbols"
@@ -23520,65 +23523,65 @@ msgstr "%1 (%2 x %3) をエクスポートしています"
 msgid "Set Export Options"
 msgstr "エクスポートオプションを設定"
 
-#: ../src/ui/dialog/export.cpp:206
+#: ../src/ui/dialog/export.cpp:207
 msgid "The chosen area to be exported is invalid."
 msgstr "指定されたエクスポート領域は無効です。"
 
-#: ../src/ui/dialog/export.cpp:207
+#: ../src/ui/dialog/export.cpp:208
 msgid "The chosen area to be exported is invalid"
 msgstr "指定されたエクスポート領域は無効です"
 
-#: ../src/ui/dialog/export.cpp:211 ../src/ui/dialog/export.cpp:329
+#: ../src/ui/dialog/export.cpp:212 ../src/ui/dialog/export.cpp:330
 msgid "You have to enter a filename."
 msgstr "ファイル名を入力してください。"
 
-#: ../src/ui/dialog/export.cpp:212 ../src/ui/dialog/export.cpp:330
+#: ../src/ui/dialog/export.cpp:213 ../src/ui/dialog/export.cpp:331
 msgid "You have to enter a filename"
 msgstr "ファイル名を入力してください"
 
-#: ../src/ui/dialog/export.cpp:217
+#: ../src/ui/dialog/export.cpp:218
 msgid "Raster Export Error"
 msgstr "ラスター エクスポート エラー"
 
-#: ../src/ui/dialog/export.cpp:218
+#: ../src/ui/dialog/export.cpp:219
 msgid "Raster export Method is used for NON RASTER EXTENSION"
 msgstr "非ラスターの拡張機能に、ラスター エクスポート方式が使用されています"
 
-#: ../src/ui/dialog/export.cpp:240 ../src/ui/dialog/export.cpp:348
+#: ../src/ui/dialog/export.cpp:241 ../src/ui/dialog/export.cpp:349
 #, c-format
 msgid "Directory <b>%s</b> does not exist or is not a directory.\n"
 msgstr "ディレクトリ %s が存在しないか、ディレクトリではありません。\n"
 
-#: ../src/ui/dialog/export.cpp:276 ../src/ui/dialog/export.cpp:438
+#: ../src/ui/dialog/export.cpp:277 ../src/ui/dialog/export.cpp:448
 #, c-format
 msgid "Could not export to filename <b>%s</b>.\n"
 msgstr "ファイル名 <b>%s</b> にエクスポートできませんでした。\n"
 
-#: ../src/ui/dialog/export.cpp:290
+#: ../src/ui/dialog/export.cpp:291
 msgid "Export aborted."
 msgstr "エクスポートを中止しました。"
 
-#: ../src/ui/dialog/export.cpp:301 ../src/ui/dialog/export.cpp:452
+#: ../src/ui/dialog/export.cpp:302 ../src/ui/dialog/export.cpp:462
 #, c-format
 msgid "Drawing exported to <b>%s</b>."
 msgstr "画像は <b>%s</b> にエクスポートされました。"
 
-#: ../src/ui/dialog/export.cpp:335
+#: ../src/ui/dialog/export.cpp:336
 msgid "Vector Export Error"
 msgstr "ベクター エクスポート エラー"
 
-#: ../src/ui/dialog/export.cpp:336
+#: ../src/ui/dialog/export.cpp:337
 msgid "Vector export Method is used for RASTER EXTENSION"
 msgstr "ラスターの拡張機能にベクターエクスポート方式が使用されています"
 
-#: ../src/ui/dialog/export.cpp:411
+#: ../src/ui/dialog/export.cpp:421
 #, c-format
 msgid "Could not export to filename <b>%s</b>. (missing object)\n"
 msgstr ""
 "ファイル名 <b>%s</b> にエクスポートできませんでした。(オブジェクトが見つかり"
 "ません)\n"
 
-#: ../src/ui/dialog/export.cpp:459 ../src/ui/dialog/export.cpp:498
+#: ../src/ui/dialog/export.cpp:469 ../src/ui/dialog/export.cpp:508
 msgid "bitmap"
 msgstr "ビットマップ"
 
@@ -24710,6 +24713,7 @@ msgid "Font '%1' substituted with '%2'"
 msgstr "フォント '%1' を '%2' に置き換えました。"
 
 #: ../src/ui/dialog/glyphs.cpp:50 ../src/ui/dialog/glyphs.cpp:219
+#: ../share/ui/extension-pdfinput.glade:424
 msgid "all"
 msgstr "すべて"
 
@@ -26274,7 +26278,7 @@ msgid "Additional font directories"
 msgstr "追加のフォントディレクトリ"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1041
-#: ../src/ui/dialog/inkscape-preferences.cpp:3709
+#: ../src/ui/dialog/inkscape-preferences.cpp:3714
 msgid "Load additional fonts from custom locations (one path per line)"
 msgstr "任意に指定した場所 (1 行ごとにパスひとつ) から追加フォントを読み込む"
 
@@ -26895,17 +26899,17 @@ msgid "Change GTK theme:"
 msgstr "GTKテーマ:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1696
-#: ../src/ui/dialog/inkscape-preferences.cpp:3637
+#: ../src/ui/dialog/inkscape-preferences.cpp:3642
 msgid "Open themes folder"
 msgstr "テーマフォルダーを開く"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1697
-#: ../src/ui/dialog/inkscape-preferences.cpp:3638
+#: ../src/ui/dialog/inkscape-preferences.cpp:3643
 msgid "User themes:"
 msgstr "ユーザーテーマ:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1697
-#: ../src/ui/dialog/inkscape-preferences.cpp:3638
+#: ../src/ui/dialog/inkscape-preferences.cpp:3643
 msgid "Location of the user’s themes"
 msgstr "ユーザーテーマの格納場所"
 
@@ -26951,7 +26955,7 @@ msgid "Change icon theme:"
 msgstr "アイコンテーマ:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1785
-#: ../src/ui/dialog/inkscape-preferences.cpp:3641
+#: ../src/ui/dialog/inkscape-preferences.cpp:3646
 msgid "Open icons folder"
 msgstr "アイコンフォルダーを開く"
 
@@ -26960,7 +26964,7 @@ msgid "User icons: "
 msgstr "ユーザーアイコン: "
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1786
-#: ../src/ui/dialog/inkscape-preferences.cpp:3642
+#: ../src/ui/dialog/inkscape-preferences.cpp:3647
 msgid "Location of the user’s icons"
 msgstr "ユーザーアイコンの格納場所"
 
@@ -29433,7 +29437,7 @@ msgid "Export custom keyboard shortcuts to a file"
 msgstr "カスタムキーボードショートカットをファイルにエクスポートします"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3193
-#: ../share/ui/inkscape-start.glade:540
+#: ../share/ui/inkscape-start.glade:427
 msgid "Keyboard"
 msgstr "キーボード"
 
@@ -29468,7 +29472,7 @@ msgstr "ショートカットを再割り当てしますか？"
 msgid "Are you sure you want to reassign this shortcut?"
 msgstr "本当にこのショートカットを再割り当てしますか？"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3489 ../src/ui/shortcuts.cpp:641
+#: ../src/ui/dialog/inkscape-preferences.cpp:3489 ../src/ui/shortcuts.cpp:646
 msgid "Numpad"
 msgstr "テンキー"
 
@@ -29492,191 +29496,205 @@ msgstr "すべて大文字の単語を無視します。たとえば \"IUPAC\" �
 msgid "Spellcheck"
 msgstr "スペルチェック"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3614
+#: ../src/ui/dialog/inkscape-preferences.cpp:3617
+msgid "Resources shared path:"
+msgstr "リソース共有パス:"
+
+#: ../src/ui/dialog/inkscape-preferences.cpp:3618
+msgid ""
+"Optional shared folder to load resources, you need to create inside any "
+"Inkscape resource folder you want to use (extensions,fonts,icons,keys,paint,"
+"palletes,symbols,templates,themes,ui"
+msgstr ""
+"リソースをロードするオプションの共有フォルダ。内部に使用したい Inkscape リ"
+"ソースのフォルダを作成する必要があります (extensions,fonts,icons,keys,paint,"
+"palletes,symbols,templates,themes,ui"
+
+#: ../src/ui/dialog/inkscape-preferences.cpp:3619
 msgid "System info"
 msgstr "システム情報"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3618
+#: ../src/ui/dialog/inkscape-preferences.cpp:3623
 msgid "Reset Preferences"
 msgstr "環境設定を初期化"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3621
+#: ../src/ui/dialog/inkscape-preferences.cpp:3626
 msgid "User preferences:"
 msgstr "ユーザー設定ファイル:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3622
+#: ../src/ui/dialog/inkscape-preferences.cpp:3627
 msgid "Location of the user’s preferences file"
 msgstr "ユーザー設定ファイルの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3624
+#: ../src/ui/dialog/inkscape-preferences.cpp:3629
 msgid "Open preferences folder"
 msgstr "環境設定フォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3625
+#: ../src/ui/dialog/inkscape-preferences.cpp:3630
 msgid "User config:"
 msgstr "ユーザー構成設定:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3625
+#: ../src/ui/dialog/inkscape-preferences.cpp:3630
 msgid "Location of users configuration"
 msgstr "ユーザーの構成設定の格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3629
+#: ../src/ui/dialog/inkscape-preferences.cpp:3634
 msgid "Open extensions folder"
 msgstr "エクステンションフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3630
+#: ../src/ui/dialog/inkscape-preferences.cpp:3635
 msgid "User extensions:"
 msgstr "ユーザーエクステンション:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3631
+#: ../src/ui/dialog/inkscape-preferences.cpp:3636
 msgid "Location of the user’s extensions"
 msgstr "ユーザーエクステンションの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3634
+#: ../src/ui/dialog/inkscape-preferences.cpp:3639
 msgid "Open fonts folder"
 msgstr "フォントフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3635
+#: ../src/ui/dialog/inkscape-preferences.cpp:3640
 msgid "User fonts:"
 msgstr "ユーザーフォント:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3635
+#: ../src/ui/dialog/inkscape-preferences.cpp:3640
 msgid "Location of the user’s fonts"
 msgstr "ユーザーフォントの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3642
+#: ../src/ui/dialog/inkscape-preferences.cpp:3647
 msgid "User icons:"
 msgstr "ユーザーアイコン:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3645
+#: ../src/ui/dialog/inkscape-preferences.cpp:3650
 msgid "Open templates folder"
 msgstr "テンプレートフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3646
+#: ../src/ui/dialog/inkscape-preferences.cpp:3651
 msgid "User templates:"
 msgstr "ユーザーテンプレート:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3647
+#: ../src/ui/dialog/inkscape-preferences.cpp:3652
 msgid "Location of the user’s templates"
 msgstr "ユーザーテンプレートの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3650
+#: ../src/ui/dialog/inkscape-preferences.cpp:3655
 msgid "Open symbols folder"
 msgstr "シンボルフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3652
+#: ../src/ui/dialog/inkscape-preferences.cpp:3657
 msgid "User symbols:"
 msgstr "ユーザーシンボル:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3652
+#: ../src/ui/dialog/inkscape-preferences.cpp:3657
 msgid "Location of the user’s symbols"
 msgstr "ユーザーシンボルの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3656
+#: ../src/ui/dialog/inkscape-preferences.cpp:3661
 msgid "Open paint servers folder"
 msgstr "ペイントサーバーフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3658
+#: ../src/ui/dialog/inkscape-preferences.cpp:3663
 msgid "User paint servers:"
 msgstr "ユーザーペイントサーバー:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3659
+#: ../src/ui/dialog/inkscape-preferences.cpp:3664
 msgid "Location of the user’s paint servers"
 msgstr "ユーザーペイントサーバーの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3662
+#: ../src/ui/dialog/inkscape-preferences.cpp:3667
 msgid "Open palettes folder"
 msgstr "パレットフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3663
+#: ../src/ui/dialog/inkscape-preferences.cpp:3668
 msgid "User palettes:"
 msgstr "ユーザーパレット:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3663
+#: ../src/ui/dialog/inkscape-preferences.cpp:3668
 msgid "Location of the user’s palettes"
 msgstr "ユーザーパレットの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3667
+#: ../src/ui/dialog/inkscape-preferences.cpp:3672
 msgid "Open keyboard shortcuts folder"
 msgstr "キーボードショートカットフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3668
+#: ../src/ui/dialog/inkscape-preferences.cpp:3673
 msgid "User keys:"
 msgstr "ユーザーキー:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3669
+#: ../src/ui/dialog/inkscape-preferences.cpp:3674
 msgid "Location of the user’s keyboard mapping files"
 msgstr "ユーザーキーボードマッピングファイルの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3672
+#: ../src/ui/dialog/inkscape-preferences.cpp:3677
 msgid "Open user interface folder"
 msgstr "ユーザーインタフェースフォルダーを開く"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3673
+#: ../src/ui/dialog/inkscape-preferences.cpp:3678
 msgid "User UI:"
 msgstr "ユーザー UI:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3674
+#: ../src/ui/dialog/inkscape-preferences.cpp:3679
 msgid "Location of the user’s user interface description files"
 msgstr "ユーザーインタフェース定義ファイルの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3678
+#: ../src/ui/dialog/inkscape-preferences.cpp:3683
 msgid "User cache:"
 msgstr "ユーザーキャッシュ:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3678
+#: ../src/ui/dialog/inkscape-preferences.cpp:3683
 msgid "Location of user’s cache"
 msgstr "ユーザーキャッシュの場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3686
+#: ../src/ui/dialog/inkscape-preferences.cpp:3691
 msgid "Temporary files:"
 msgstr "テンポラリファイル:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3686
+#: ../src/ui/dialog/inkscape-preferences.cpp:3691
 msgid "Location of the temporary files used for autosave"
 msgstr "自動保存で使用されるテンポラリファイルの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3690
+#: ../src/ui/dialog/inkscape-preferences.cpp:3695
 msgid "Inkscape data:"
 msgstr "Inkscape データ:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3690
+#: ../src/ui/dialog/inkscape-preferences.cpp:3695
 msgid "Location of Inkscape data"
 msgstr "Inkscape データの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3695
+#: ../src/ui/dialog/inkscape-preferences.cpp:3700
 msgid "Inkscape extensions:"
 msgstr "Inkscape エクステンション:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3695
+#: ../src/ui/dialog/inkscape-preferences.cpp:3700
 msgid "Location of the Inkscape extensions"
 msgstr "Inkscape エクステンションの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3706
+#: ../src/ui/dialog/inkscape-preferences.cpp:3711
 msgid "System data:"
 msgstr "システムデータ:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3706
+#: ../src/ui/dialog/inkscape-preferences.cpp:3711
 msgid "Locations of system data"
 msgstr "システムデータの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3709
+#: ../src/ui/dialog/inkscape-preferences.cpp:3714
 msgid "Custom Font directories"
 msgstr "カスタムフォントディレクトリ"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3721
+#: ../src/ui/dialog/inkscape-preferences.cpp:3726
 msgid "Icon theme:"
 msgstr "アイコンテーマ:"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3721
+#: ../src/ui/dialog/inkscape-preferences.cpp:3726
 msgid "Locations of icon themes"
 msgstr "アイコンテーマの格納場所"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3723
+#: ../src/ui/dialog/inkscape-preferences.cpp:3728
 msgid "System"
 msgstr "システム"
 
-#: ../src/ui/dialog/inkscape-preferences.cpp:3794
+#: ../src/ui/dialog/inkscape-preferences.cpp:3799
 msgid "<span size='large'><b>No Results</b></span>"
 msgstr "<span size='large'><b>検索結果なし</b></span>"
 
@@ -29719,7 +29737,8 @@ msgstr "リンク:"
 #: ../src/ui/dialog/input.cpp:657 ../src/ui/dialog/input.cpp:658
 #: ../src/ui/dialog/input.cpp:1384 ../src/ui/widget/color-scales.cpp:77
 #: ../src/ui/widget/color-scales.cpp:134
-#: ../src/ui/widget/marker-combo-box.cpp:317 ../share/ui/gradient-edit.glade:28
+#: ../src/ui/widget/marker-combo-box.cpp:317
+#: ../share/ui/extension-pdfinput.glade:15 ../share/ui/gradient-edit.glade:28
 #: ../share/ui/menus.ui:522 ../share/extensions/plotter.inx:55
 #: ../share/extensions/raster_output_tiff.inx:9
 msgid "None"
@@ -30538,11 +30557,11 @@ msgstr "<i>チェックしています...</i>"
 msgid "Fix spelling"
 msgstr "スペルの修正"
 
-#: ../src/ui/dialog/startup.cpp:317
+#: ../src/ui/dialog/startup.cpp:334
 msgid "Browse for other files..."
 msgstr "他のファイルを参照..."
 
-#: ../src/ui/dialog/startup.cpp:408
+#: ../src/ui/dialog/startup.cpp:428
 msgid "Open a different file"
 msgstr "別のファイルを開く"
 
@@ -30888,11 +30907,11 @@ msgstr "プレビューするには大きすぎます"
 msgid "All symbol sets"
 msgstr "すべてのシンボルセット"
 
-#: ../src/ui/dialog/symbols.cpp:602 ../src/ui/dialog/symbols.cpp:605
+#: ../src/ui/dialog/symbols.cpp:603 ../src/ui/dialog/symbols.cpp:606
 msgid "No symbols found."
 msgstr "シンボルが見つかりませんでした。"
 
-#: ../src/ui/dialog/symbols.cpp:603
+#: ../src/ui/dialog/symbols.cpp:604
 msgid ""
 "Try a different search term,\n"
 "or switch to a different symbol set."
@@ -30900,7 +30919,7 @@ msgstr ""
 "別の検索語を試すか、\n"
 "別のシンボルセットに切り替えてください。"
 
-#: ../src/ui/dialog/symbols.cpp:606
+#: ../src/ui/dialog/symbols.cpp:607
 msgid ""
 "No symbols in current document.\n"
 "Choose a different symbol set\n"
@@ -30910,11 +30929,11 @@ msgstr ""
 "別のシンボルセットを選択するか\n"
 "新しいシンボルを追加してください。"
 
-#: ../src/ui/dialog/symbols.cpp:678
+#: ../src/ui/dialog/symbols.cpp:679
 msgid "Group from symbol"
 msgstr "シンボルをグループに"
 
-#: ../src/ui/dialog/symbols.cpp:1027 ../src/ui/dialog/symbols.cpp:1046
+#: ../src/ui/dialog/symbols.cpp:1028 ../src/ui/dialog/symbols.cpp:1047
 msgid "Unnamed Symbols"
 msgstr "無名のシンボル"
 
@@ -31154,42 +31173,42 @@ msgctxt "Undo History / XML dialog"
 msgid "Drag XML subtree"
 msgstr "XML サブツリーをドラッグ"
 
-#: ../src/ui/dialog/xml-tree.cpp:766
+#: ../src/ui/dialog/xml-tree.cpp:752
 msgctxt "Undo History / XML dialog"
 msgid "Create new element node"
 msgstr "要素ノードを新規作成"
 
-#: ../src/ui/dialog/xml-tree.cpp:781
+#: ../src/ui/dialog/xml-tree.cpp:767
 msgctxt "Undo History / XML dialog"
 msgid "Create new text node"
 msgstr "テキストノードを新規作成"
 
-#: ../src/ui/dialog/xml-tree.cpp:799
+#: ../src/ui/dialog/xml-tree.cpp:785
 msgctxt "Undo History / XML dialog"
 msgid "Duplicate node"
 msgstr "ノードを複製"
 
-#: ../src/ui/dialog/xml-tree.cpp:830
+#: ../src/ui/dialog/xml-tree.cpp:816
 msgctxt "Undo History / XML dialog"
 msgid "Delete node"
 msgstr "ノードを削除"
 
-#: ../src/ui/dialog/xml-tree.cpp:854
+#: ../src/ui/dialog/xml-tree.cpp:840
 msgctxt "Undo History / XML dialog"
 msgid "Raise node"
 msgstr "ノードを上げる"
 
-#: ../src/ui/dialog/xml-tree.cpp:875
+#: ../src/ui/dialog/xml-tree.cpp:861
 msgctxt "Undo History / XML dialog"
 msgid "Lower node"
 msgstr "ノードを下げる"
 
-#: ../src/ui/dialog/xml-tree.cpp:909
+#: ../src/ui/dialog/xml-tree.cpp:895
 msgctxt "Undo History / XML dialog"
 msgid "Indent node"
 msgstr "ノードをインデント"
 
-#: ../src/ui/dialog/xml-tree.cpp:934
+#: ../src/ui/dialog/xml-tree.cpp:920
 msgctxt "Undo History / XML dialog"
 msgid "Unindent node"
 msgstr "ノードのインデントを除去"
@@ -31479,7 +31498,7 @@ msgstr "装飾キーを使用してシェイプビルダーのモードを変更
 msgid "No Category"
 msgstr "カテゴリーなし"
 
-#: ../src/ui/modifiers.cpp:61 ../share/ui/inkscape-start.glade:525
+#: ../src/ui/modifiers.cpp:61 ../share/ui/inkscape-start.glade:412
 #: ../share/extensions/printing_marks.inx:17
 msgid "Canvas"
 msgstr "キャンバス"
@@ -31666,15 +31685,15 @@ msgstr "テキストの <b>インラインサイズ</b> (行の長さ) を調整
 msgid "Drag to resize the <b>flowed text frame</b>"
 msgstr "ドラッグで<b>流し込みテキストのフレームサイズ</b>を変更します"
 
-#: ../src/ui/shortcuts.cpp:859
+#: ../src/ui/shortcuts.cpp:867
 msgid "Select a file to import"
 msgstr "インポートファイルの選択"
 
-#: ../src/ui/shortcuts.cpp:860 ../src/ui/shortcuts.cpp:896
+#: ../src/ui/shortcuts.cpp:868 ../src/ui/shortcuts.cpp:904
 msgid "Inkscape shortcuts (*.xml)"
 msgstr "Inkscape ショートカット (*.xml)"
 
-#: ../src/ui/shortcuts.cpp:894
+#: ../src/ui/shortcuts.cpp:902
 msgid "Select a filename for export"
 msgstr "エクスポートするファイル名を選択"
 
@@ -36919,6 +36938,7 @@ msgid "O:"
 msgstr "O:"
 
 #: ../src/ui/widget/selected-style.cpp:172
+#: ../share/ui/extension-pdfinput.glade:67
 msgid "N/A"
 msgstr "該当なし"
 
@@ -37417,15 +37437,15 @@ msgstr "O: %2.0f"
 msgid "Opacity: %2.1f %%"
 msgstr "不透明度: %2.1f %%"
 
-#: ../src/ui/widget/swatch-selector.cpp:50
+#: ../src/ui/widget/swatch-selector.cpp:42
 msgid "Swatch color"
 msgstr "スウォッチカラー"
 
-#: ../src/ui/widget/swatch-selector.cpp:92
+#: ../src/ui/widget/swatch-selector.cpp:71
 msgid "Change swatch color"
 msgstr "スウォッチ色の変更"
 
-#: ../src/util/paper.cpp:36
+#: ../src/util/paper.cpp:35
 msgid "Failed to create the page file."
 msgstr "ページファイルの作成に失敗しました。"
 
@@ -38431,6 +38451,159 @@ msgstr ""
 msgid "<b>F</b>"
 msgstr "<b>F</b>"
 
+#: ../share/ui/extension-pdfinput.glade:19
+msgid "Media Box"
+msgstr "メディアボックス"
+
+#: ../share/ui/extension-pdfinput.glade:23
+msgid "Clip Box"
+msgstr "クリップボックス"
+
+#: ../share/ui/extension-pdfinput.glade:27
+msgid "Trim Box"
+msgstr "トリムボックス"
+
+#: ../share/ui/extension-pdfinput.glade:31
+msgid "Bleed Box"
+msgstr "ブリードボックス"
+
+#: ../share/ui/extension-pdfinput.glade:35
+msgid "Art Box"
+msgstr "アートボックス"
+
+#: ../share/ui/extension-pdfinput.glade:63
+#: ../share/ui/extension-pdfinput.glade:74
+msgid "Example"
+msgstr "例"
+
+#: ../share/ui/extension-pdfinput.glade:64
+msgid "Italic"
+msgstr "イタリック"
+
+#: ../share/ui/extension-pdfinput.glade:65
+msgid "Bold"
+msgstr "太字"
+
+#: ../share/ui/extension-pdfinput.glade:66
+msgid "Condensed"
+msgstr "凝縮"
+
+#: ../share/ui/extension-pdfinput.glade:78
+msgid "Thing"
+msgstr "モノ"
+
+#: ../share/ui/extension-pdfinput.glade:95
+msgid "Draw missing fonts"
+msgstr "不足しているフォントを描画"
+
+#: ../share/ui/extension-pdfinput.glade:99
+msgid "Substitite missing fonts"
+msgstr "不足しているフォントを置換"
+
+#: ../share/ui/extension-pdfinput.glade:103
+msgid "Keep missing font names"
+msgstr "不足しているフォント名を保持"
+
+#: ../share/ui/extension-pdfinput.glade:107
+msgid "Delete missing font text"
+msgstr "フォントが不足しているテキストを削除"
+
+#: ../share/ui/extension-pdfinput.glade:111
+msgid "Draw all text"
+msgstr "すべてのテキストを描画"
+
+#: ../share/ui/extension-pdfinput.glade:115
+msgid "Delete all text"
+msgstr "すべてのテキストを削除"
+
+#: ../share/ui/extension-pdfinput.glade:176
+msgid ""
+"<i>Import via internal library. Editable text is reconstructed, pages, "
+"layers and margins are preserved, object fills and strokes are recombined "
+"and gradient meshes are converted to tiles.</i>"
+msgstr ""
+"<i>内部ライブラリ経由でインポートします。編集可能なテキストは再構築され、ペー"
+"ジ、レイヤー、余白は保持され、オブジェクトのフィルとストロークは再結合され、"
+"メッシュグラデーションはタイルに変換されます。</i>"
+
+#: ../share/ui/extension-pdfinput.glade:218
+msgid "Family Name"
+msgstr "ファミリ名"
+
+#: ../share/ui/extension-pdfinput.glade:236
+#: ../share/extensions/interp_att_g.inx:27
+#: ../share/extensions/polyhedron_3d.inx:64
+msgid "Style"
+msgstr "スタイル"
+
+#: ../share/ui/extension-pdfinput.glade:248
+msgid "Weight"
+msgstr "ウェイト"
+
+#: ../share/ui/extension-pdfinput.glade:272
+msgid "Strategy"
+msgstr "方法"
+
+#: ../share/ui/extension-pdfinput.glade:295
+msgid "List of all PDF Fonts"
+msgstr "すべてのPDF フォント一覧"
+
+#: ../share/ui/extension-pdfinput.glade:308
+#: ../share/extensions/image_embed.inx:3
+msgid "Embed Images"
+msgstr "画像の埋め込み"
+
+#: ../share/ui/extension-pdfinput.glade:328
+msgid "Precision of approximating gradient meshes:"
+msgstr "近似グラデーションメッシュの精度:"
+
+#: ../share/ui/extension-pdfinput.glade:359
+msgid "rough"
+msgstr "低い"
+
+#: ../share/ui/extension-pdfinput.glade:394
+msgid "Fonts:"
+msgstr "フォント:"
+
+#: ../share/ui/extension-pdfinput.glade:409
+msgid "Pages:"
+msgstr "ページ"
+
+#: ../share/ui/extension-pdfinput.glade:422
+msgid ""
+"Type in the page range you want to import using the format 1-4 or 1,2,3,4 or "
+"the keyword 'all' to specifiy all pages."
+msgstr ""
+"インポートするページ範囲を指定します。1-4 または 1,2,34 の形式でページ指定す"
+"るか、全ページを指定するには ’すべて’ と入力します。"
+
+#: ../share/ui/extension-pdfinput.glade:438
+msgid "Clip to:"
+msgstr "クリップ先:"
+
+#: ../share/ui/extension-pdfinput.glade:473
+msgid "<b>Internal import</b>"
+msgstr "<b>内部インポート</b>"
+
+#: ../share/ui/extension-pdfinput.glade:491
+msgid ""
+"<i>Import via external library. Text consists of groups containing cloned "
+"glyphs where each glyph is a path. Images are stored internally. Meshes "
+"cause entire document to be rendered as a raster image.</i>"
+msgstr ""
+"<i>外部ライブラリ経由でインポート。テキストは、それぞれのグリフがパスでできて"
+"いるクローンされたグリフを含むグループでできています。画像は内部に保存しま"
+"す。メッシュがあるとドキュメント全体をラスター画像としてレンダリングします。"
+"</i>"
+
+#: ../share/ui/extension-pdfinput.glade:505
+msgid "<b>Cairo import</b>"
+msgstr "<b>Cairo インポート</b>"
+
+#: ../share/ui/extension-pdfinput.glade:577
+msgid "1 / 10"
+msgstr "1 / 10"
+
 #: ../share/ui/gradient-edit.glade:68
 msgid "Gradient:"
 msgstr "グラデーション:"
@@ -38542,7 +38715,7 @@ msgstr "デバッグ情報をコピーしました！"
 msgid "Click to copy debug info to the clipboard"
 msgstr "クリックしてデバッグ情報をクリップボードにコピー"
 
-#: ../share/ui/inkscape-start.glade:57 ../share/ui/inkscape-start.glade:746
+#: ../share/ui/inkscape-start.glade:57 ../share/ui/inkscape-start.glade:633
 msgid "Dark"
 msgstr "ダーク"
 
@@ -38562,43 +38735,33 @@ msgstr "白一色"
 msgid "Inkscape (default)"
 msgstr "Inkscape (デフォルト)"
 
-#: ../share/ui/inkscape-start.glade:171
+#: ../share/ui/inkscape-start.glade:185
 msgid "Colorful"
 msgstr "カラフル"
 
-#: ../share/ui/inkscape-start.glade:185
+#: ../share/ui/inkscape-start.glade:199
 #: ../share/extensions/color_grayscale.inx:3
 #: ../share/extensions/webslicer_create_rect.inx:27
 msgid "Grayscale"
 msgstr "グレースケール"
 
-#: ../share/ui/inkscape-start.glade:199
+#: ../share/ui/inkscape-start.glade:213
 msgid "Classic Symbolic"
 msgstr "クラシック シンボル風"
 
-#: ../share/ui/inkscape-start.glade:213
+#: ../share/ui/inkscape-start.glade:227
 msgid "Compacted (Small Screens)"
 msgstr "コンパクト (スクリーン小)"
 
-#: ../share/ui/inkscape-start.glade:227
+#: ../share/ui/inkscape-start.glade:241
 msgid "System Default"
 msgstr "システムデフォルト"
 
-#: ../share/ui/inkscape-start.glade:241
+#: ../share/ui/inkscape-start.glade:255
 msgid "Classic Inkscape"
 msgstr "クラシック Inkscape"
 
-#. Not automatic, but will be turned into start-welcome-text.svg
-#: ../share/ui/inkscape-start.glade:306
-msgid "Welcome!"
-msgstr "ようこそ！"
-
-#. Not automatic, but will be turned into start-welcome-text.svg
-#: ../share/ui/inkscape-start.glade:312
-msgid "Let's set up a few things..."
-msgstr "いくつか簡単に設定しましょう…"
-
-#: ../share/ui/inkscape-start.glade:451
+#: ../share/ui/inkscape-start.glade:337
 msgid ""
 "<b>Warning:</b> Using a non-standard shortcut keyboard layout could make it "
 "harder to follow tutorials."
@@ -38606,23 +38769,23 @@ msgstr ""
 "<b>警告:</b> 標準以外のキーボードレイアウトでショートカットを使用すると、"
 "チュートリアルの内容が理解しづらくなる可能性があります。"
 
-#: ../share/ui/inkscape-start.glade:510
+#: ../share/ui/inkscape-start.glade:397
 msgid "Appearance"
 msgstr "外観"
 
-#: ../share/ui/inkscape-start.glade:711
+#: ../share/ui/inkscape-start.glade:598
 msgid "Select the default color background for the canvas"
 msgstr "キャンバスのデフォルトの背景色を選択します"
 
-#: ../share/ui/inkscape-start.glade:758
+#: ../share/ui/inkscape-start.glade:645
 msgid "Set to dark theme"
 msgstr "ダークテーマを使用"
 
-#: ../share/ui/inkscape-start.glade:857
+#: ../share/ui/inkscape-start.glade:744
 msgid "Quick Setup"
 msgstr "クイック設定"
 
-#: ../share/ui/inkscape-start.glade:877
+#: ../share/ui/inkscape-start.glade:764
 msgid ""
 "<b>The Inkscape project is supported by users like you.</b> Through our "
 "collective time, money and skill, we have made this software for everyone in "
@@ -38637,7 +38800,7 @@ msgstr ""
 "お考えなら、今日にでも Inksape プロジェクトに参加することを考えてみてくださ"
 "い。</b>"
 
-#: ../share/ui/inkscape-start.glade:939
+#: ../share/ui/inkscape-start.glade:826
 msgid ""
 "Learn how to\n"
 "Contribute Time"
@@ -38645,7 +38808,7 @@ msgstr ""
 "活動に参加する\n"
 "方法を学ぶ"
 
-#: ../share/ui/inkscape-start.glade:997
+#: ../share/ui/inkscape-start.glade:884
 msgid ""
 "Learn how to\n"
 "Fund Inkscape"
@@ -38653,35 +38816,45 @@ msgstr ""
 "資金提供の\n"
 "方法を学ぶ"
 
-#: ../share/ui/inkscape-start.glade:1045
+#: ../share/ui/inkscape-start.glade:932
 msgid "Thanks!"
 msgstr "どうも！"
 
-#: ../share/ui/inkscape-start.glade:1079
+#: ../share/ui/inkscape-start.glade:966
 msgid "Supported by You"
 msgstr "サポートする"
 
-#: ../share/ui/inkscape-start.glade:1114
+#: ../share/ui/inkscape-start.glade:1001
 msgctxt "Welcome dialog"
 msgid "Recent Files"
 msgstr "最近開いたファイル"
 
-#: ../share/ui/inkscape-start.glade:1133
+#: ../share/ui/inkscape-start.glade:1035
 msgctxt "Welcome dialog"
 msgid "Existing Files"
 msgstr "既存のファイル"
 
-#: ../share/ui/inkscape-start.glade:1173
+#: ../share/ui/inkscape-start.glade:1075
 msgid "Show this every time"
 msgstr "毎回表示する"
 
-#: ../share/ui/inkscape-start.glade:1189
+#: ../share/ui/inkscape-start.glade:1091
 msgid "New Document"
 msgstr "新規ドキュメント"
 
-#: ../share/ui/inkscape-start.glade:1220
+#: ../share/ui/inkscape-start.glade:1122
 msgid "Time to Draw"
 msgstr "絵を描く"
+
+#. Not automatic, but will be turned into start-welcome-text.svg
+#: ../share/ui/inkscape-start.glade:1172
+msgid "Welcome!"
+msgstr "ようこそ！"
+
+#. Not automatic, but will be turned into start-welcome-text.svg
+#: ../share/ui/inkscape-start.glade:1178
+msgid "Let's set up a few things..."
+msgstr "いくつか簡単に設定しましょう…"
 
 #: ../share/ui/marker-popup.glade:140 ../share/extensions/layout_nup.inx:14
 #: ../share/extensions/layout_nup.inx:25
@@ -43151,10 +43324,6 @@ msgstr "属性を親グループに適用"
 msgid "Apply attribute to SVG root"
 msgstr "属性をSVGのルートに適用"
 
-#: ../share/extensions/image_embed.inx:3
-msgid "Embed Images"
-msgstr "画像の埋め込み"
-
 #: ../share/extensions/image_embed.inx:5
 #: ../share/extensions/image_embed_selected.inx:5
 msgid "Embed only selected images"
@@ -43342,11 +43511,6 @@ msgstr "適用先:"
 #: ../share/extensions/interp_att_g.inx:26
 msgid "Tag"
 msgstr "タグ"
-
-#: ../share/extensions/interp_att_g.inx:27
-#: ../share/extensions/polyhedron_3d.inx:64
-msgid "Style"
-msgstr "スタイル"
 
 #: ../share/extensions/interp_att_g.inx:28
 msgid "Transformation"
@@ -49217,6 +49381,43 @@ msgstr "半 em"
 msgid "Half of font height"
 msgstr "フォントの高さの半分"
 
+#~ msgid "crop box"
+#~ msgstr "クロップボックス"
+
+#~ msgid "art box"
+#~ msgstr "アートボックス"
+
+#~ msgid "Page settings"
+#~ msgstr "ページ設定"
+
+#~ msgid ""
+#~ "<b>Note</b>: setting the precision too high may result in a large SVG "
+#~ "file and slow performance."
+#~ msgstr ""
+#~ "<b>メモ</b>: 精度を非常に高くすると、SVG ファイルのサイズが大きくなり、性"
+#~ "能も低下します。"
+
+#~ msgid "Poppler/Cairo import"
+#~ msgstr "Poppler/Cairo をインポート"
+
+#~ msgid ""
+#~ "Import via internal (Poppler derived) library. Text is stored as text but "
+#~ "white space is missing. Meshes are converted to tiles, the number depends "
+#~ "on the precision set below."
+#~ msgstr ""
+#~ "内部 (Poppler 由来の) ライブラリ経由でインポート。テキストはテキストして保"
+#~ "存しますが、空白が消えます。メッシュは下で設定する精度に応じた数のタイルに"
+#~ "変換します。"
+
+#~ msgid "Replace PDF fonts by closest-named installed fonts"
+#~ msgstr "名前が最も近いインストールフォントで PDF フォントを置き換える"
+
+#~ msgid "Embed images"
+#~ msgstr "画像を埋め込む"
+
+#~ msgid "Import settings"
+#~ msgstr "インポート設定"
+
 #~ msgid "Press 'Return' to start search."
 #~ msgstr "リターンキーを押して検索を開始してください。"
 
@@ -51161,9 +51362,6 @@ msgstr "フォントの高さの半分"
 
 #~ msgid "_Stack down"
 #~ msgstr "ひとつ下へ(_S)"
-
-#~ msgid "Stack selection one step down"
-#~ msgstr "選択オブジェクトを前面に1段階移動"
 
 #~ msgid "Ungroup selected groups"
 #~ msgstr "選択したグループのグループ解除"
@@ -56840,9 +57038,6 @@ msgstr "フォントの高さの半分"
 
 #~ msgid "Handle to control the distance of the offset from the curve"
 #~ msgstr "曲線からのオフセットの距離を制御するハンドルです"
-
-#~ msgid "<b>Color</b>"
-#~ msgstr "<b>配色</b>"
 
 #~ msgid "Align:"
 #~ msgstr "整列"
