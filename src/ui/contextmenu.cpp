@@ -112,16 +112,7 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
             selection->set(object);
         }
 
-        gmenu_section = Gio::Menu::create();
-        AppendItemFromAction(gmenu_section, "app.cut",       _("Cu_t"),       "edit-cut");
-        AppendItemFromAction(gmenu_section, "app.copy",      _("_Copy"),      "edit-copy");
-        AppendItemFromAction(gmenu_section, "win.paste",     _("_Paste"),     "edit-paste");
-        gmenu->append_section(gmenu_section);
-
-        gmenu_section = Gio::Menu::create();
-        AppendItemFromAction(gmenu_section, "app.duplicate", _("Duplic_ate"), "edit-duplicate");
-        AppendItemFromAction(gmenu_section, "app.delete-selection", _("_Delete"), "edit-delete");
-        gmenu->append_section(gmenu_section);
+        
 
         // Show submenu when no item is selected
         if (!item) {
@@ -130,7 +121,20 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
             gmenu->append_section(gmenu_section);
         }
 
+        // Show submenu when item is selected
         if (item) {
+
+            gmenu_section = Gio::Menu::create();
+            AppendItemFromAction(gmenu_section, "app.cut",       _("Cu_t"),       "edit-cut");
+            AppendItemFromAction(gmenu_section, "app.copy",      _("_Copy"),      "edit-copy");
+            AppendItemFromAction(gmenu_section, "win.paste",     _("_Paste"),     "edit-paste");
+            gmenu->append_section(gmenu_section);
+
+            gmenu_section = Gio::Menu::create();
+            AppendItemFromAction(gmenu_section, "app.duplicate", _("Duplic_ate"), "edit-duplicate");
+            AppendItemFromAction(gmenu_section, "app.clone", _("_Clone"), "edit-clone");
+            AppendItemFromAction(gmenu_section, "app.delete-selection", _("_Delete"), "edit-delete");
+            gmenu->append_section(gmenu_section);
 
             // Dialogs
             auto gmenu_dialogs = Gio::Menu::create();
