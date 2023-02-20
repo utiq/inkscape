@@ -171,6 +171,10 @@ public:
             style_src = SPStyleSrc::STYLE_PROP;
         }
     }
+    void overwrite(const SPIBase* const other) {
+        clear();
+        merge(other);
+    }
 
     virtual void cascade( const SPIBase* const parent ) = 0;
     virtual void merge(   const SPIBase* const parent ) = 0;

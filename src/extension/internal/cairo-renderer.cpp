@@ -148,16 +148,8 @@ static void sp_image_render(SPImage *image, CairoRenderContext *ctx);
 static void sp_symbol_render(SPSymbol *symbol, CairoRenderContext *ctx, SPItem *origin, SPPage *page);
 static void sp_asbitmap_render(SPItem *item, CairoRenderContext *ctx, SPPage *page = nullptr);
 
-static void sp_shape_render_invoke_marker_rendering(SPMarker* marker, Geom::Affine tr, SPStyle* style, CairoRenderContext *ctx, SPItem *origin)
+static void sp_shape_render_invoke_marker_rendering(SPMarker* marker, Geom::Affine tr, CairoRenderContext *ctx, SPItem *origin)
 {
-    if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-        if (style->stroke_width.computed > 1e-9) {
-            tr = Geom::Scale(style->stroke_width.computed) * tr;
-        } else {
-            return; // stroke width zero and marker is thus scaled down to zero, skip
-        }
-    }
-
     if (auto marker_item = sp_item_first_item_child(marker)) {
         tr = marker_item->transform * marker->c2p * tr;
         Geom::Affine old_tr = marker_item->transform;
@@ -300,15 +292,9 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
     for (int i = 0; i < 2; i++) {  // SP_MARKER_LOC and SP_MARKER_LOC_START
         if ( shape->_marker[i] ) {
             SPMarker* marker = shape->_marker[i];
-            Geom::Affine tr;
-            if (marker->orient_mode == MARKER_ORIENT_AUTO) {
-                tr = sp_shape_marker_get_transform_at_start(pathv.begin()->front());
-            } else if (marker->orient_mode == MARKER_ORIENT_AUTO_START_REVERSE) {
-                tr = Geom::Rotate::from_degrees( 180.0 ) * sp_shape_marker_get_transform_at_start(pathv.begin()->front());
-            } else {
-                tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(pathv.begin()->front().pointAt(0));
-            }
-            sp_shape_render_invoke_marker_rendering(marker, tr, style, ctx, origin ? origin : shape);
+            Geom::Affine tr(sp_shape_marker_get_transform_at_start(pathv.begin()->front()));
+            tr = marker->get_marker_transform(tr, style->stroke_width.computed, true);
+            sp_shape_render_invoke_marker_rendering(marker, tr, ctx, origin ? origin : shape);
         }
     }
     // MID marker
@@ -320,13 +306,9 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
             if ( path_it != pathv.begin()
                  && ! ((path_it == (pathv.end()-1)) && (path_it->size_default() == 0)) ) // if this is the last path and it is a moveto-only, there is no mid marker there
             {
-                Geom::Affine tr;
-                if (marker->orient_mode != MARKER_ORIENT_ANGLE) {
-                    tr = sp_shape_marker_get_transform_at_start(path_it->front());
-                } else {
-                    tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(path_it->front().pointAt(0));
-                }
-                sp_shape_render_invoke_marker_rendering(marker, tr, style, ctx, origin ? origin : shape);
+                Geom::Affine tr(sp_shape_marker_get_transform_at_start(path_it->front()));
+                tr = marker->get_marker_transform(tr, style->stroke_width.computed, false);
+                sp_shape_render_invoke_marker_rendering(marker, tr, ctx, origin ? origin : shape);
             }
             // MID position
             if (path_it->size_default() > 1) {
@@ -337,14 +319,9 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
                     /* Put marker between curve_it1 and curve_it2.
                      * Loop to end_default (so including closing segment), because when a path is closed,
                      * there should be a midpoint marker between last segment and closing straight line segment */
-                    Geom::Affine tr;
-                    if (marker->orient_mode != MARKER_ORIENT_ANGLE) {
-                        tr = sp_shape_marker_get_transform(*curve_it1, *curve_it2);
-                    } else {
-                        tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(curve_it1->pointAt(1));
-                    }
-
-                    sp_shape_render_invoke_marker_rendering(marker, tr, style, ctx, origin ? origin : shape);
+                    Geom::Affine tr(sp_shape_marker_get_transform(*curve_it1, *curve_it2));
+                    tr = marker->get_marker_transform(tr, style->stroke_width.computed, false);
+                    sp_shape_render_invoke_marker_rendering(marker, tr, ctx, origin ? origin : shape);
 
                     ++curve_it1;
                     ++curve_it2;
@@ -353,13 +330,9 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
             // END position
             if ( path_it != (pathv.end()-1) && !path_it->empty()) {
                 Geom::Curve const &lastcurve = path_it->back_default();
-                Geom::Affine tr;
-                if (marker->orient_mode != MARKER_ORIENT_ANGLE) {
-                    tr = sp_shape_marker_get_transform_at_end(lastcurve);
-                } else {
-                    tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(lastcurve.pointAt(1));
-                }
-                sp_shape_render_invoke_marker_rendering(marker, tr, style, ctx, origin ? origin : shape);
+                Geom::Affine tr = sp_shape_marker_get_transform_at_end(lastcurve);
+                tr = marker->get_marker_transform(tr, style->stroke_width.computed, false);
+                sp_shape_render_invoke_marker_rendering(marker, tr, ctx, origin ? origin : shape);
             }
         }
     }
@@ -376,15 +349,9 @@ static void sp_shape_render(SPShape *shape, CairoRenderContext *ctx, SPItem *ori
                 index--;
             }
             Geom::Curve const &lastcurve = path_last[index];
-
-            Geom::Affine tr;
-            if (marker->orient_mode != MARKER_ORIENT_ANGLE) {
-                tr = sp_shape_marker_get_transform_at_end(lastcurve);
-            } else {
-                tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(lastcurve.pointAt(1));
-            }
-
-            sp_shape_render_invoke_marker_rendering(marker, tr, style, ctx, origin ? origin : shape);
+            Geom::Affine tr = sp_shape_marker_get_transform_at_end(lastcurve);
+            tr = marker->get_marker_transform(tr, style->stroke_width.computed, false);
+            sp_shape_render_invoke_marker_rendering(marker, tr, ctx, origin ? origin : shape);
         }
     }
 

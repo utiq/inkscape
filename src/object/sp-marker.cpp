@@ -299,6 +299,30 @@ void SPMarker::hide(unsigned int key) {
 	SPGroup::hide(key);
 }
 
+/**
+ * Calculate the transformation for this marker.
+ */
+Geom::Affine SPMarker::get_marker_transform(const Geom::Affine &base, double linewidth, bool start_marker)
+{
+    // Default is MARKER_ORIENT_AUTO
+    Geom::Affine result = base;
+
+    if (this->orient_mode == MARKER_ORIENT_AUTO_START_REVERSE) {
+        if (start_marker) {
+            result = Geom::Rotate::from_degrees( 180.0 ) * base;
+        }
+    } else if (this->orient_mode != MARKER_ORIENT_AUTO) {
+        /* fixme: Orient units (Lauris) */
+        result = Geom::Rotate::from_degrees(this->orient.computed);
+        result *= Geom::Translate(base.translation());
+    }
+
+    if (this->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
+        result = Geom::Scale(linewidth) * result;
+    }
+    return result;
+}
+
 /* 
 - used to validate the marker item before passing it into the shape editor from the marker-tool. 
 - sets any missing properties that are needed before editing starts.
@@ -460,22 +484,9 @@ sp_marker_show_instance ( SPMarker *marker, Inkscape::DrawingItem *parent,
     }
 
     if (view->items[pos]) {
-        Geom::Affine m;
-        if (marker->orient_mode == MARKER_ORIENT_AUTO) {
-            m = base;
-        } else if (marker->orient_mode == MARKER_ORIENT_AUTO_START_REVERSE) {
-            // m = Geom::Rotate::from_degrees( 180.0 ) * base;
-            // Rotating is done at rendering time if necessary
-            m = base;
-        } else {
-            /* fixme: Orient units (Lauris) */
-            m = Geom::Rotate::from_degrees(marker->orient.computed);
-            m *= Geom::Translate(base.translation());
-        }
-        if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-            m = Geom::Scale(linewidth) * m;
-        }
-        view->items[pos]->setTransform(m);
+        // Rotating for reversed-marker option is done at rendering time if necessary
+        // so always pass in start_marker is false.
+        view->items[pos]->setTransform(marker->get_marker_transform(base, linewidth, false));
     }
 
     return view->items[pos].get();

@@ -61,6 +61,8 @@ public:
 	markerOrient orient_mode : 2;
 	SVGAngle orient;
 
+    Geom::Affine get_marker_transform(const Geom::Affine &base, double linewidth, bool for_display = false);
+
 	/* Private views indexed by key that corresponds to a
 	 * particular marker type (start, mid, end) on a particular
 	 * path. SPMarkerView is a wrapper for a vector of pointers to

@@ -344,27 +344,27 @@ Geom::PathVector* item_to_outline(SPItem const *item, bool exclude_markers)
 
 static
 void item_to_paths_add_marker( SPItem *context,
-                               SPObject *marker_object, Geom::Affine marker_transform,
-                               Geom::Scale stroke_scale,
-                               Inkscape::XML::Node *g_repr, Inkscape::XML::Document *xml_doc,
-                               SPDocument * doc, bool legacy)
+                               SPObject *marker_object,
+                               Geom::Affine marker_transform,
+                               double linewidth,
+                               bool start_marker,
+                               Inkscape::XML::Node *g_repr,
+                               bool legacy)
 {
+    auto doc = context->document;
     auto marker = cast<SPMarker>(marker_object);
     SPItem* marker_item = sp_item_first_item_child(marker_object);
     if (!marker_item) {
         return;
     }
 
-    Geom::Affine tr(marker_transform);
 
-    if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-        tr = stroke_scale * tr;
-    }
     // total marker transform
+    auto tr = marker->get_marker_transform(marker_transform, linewidth, start_marker);
     tr = marker_item->transform * marker->c2p * tr;
 
     if (marker_item->getRepr()) {
-        Inkscape::XML::Node *m_repr = marker_item->getRepr()->duplicate(xml_doc);
+        Inkscape::XML::Node *m_repr = marker_item->getRepr()->duplicate(doc->getReprDoc());
         g_repr->addChildAtPos(m_repr, 0);
         SPItem *marker_item = (SPItem *) doc->getObjectByRepr(m_repr);
         marker_item->doWriteTransform(tr);
@@ -465,9 +465,10 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
     SPStyle *style = item->style;
     SPCSSAttr *ncss = sp_css_attr_from_style(style, SP_STYLE_FLAG_ALWAYS);
     SPCSSAttr *ncsf = sp_css_attr_from_style(style, SP_STYLE_FLAG_ALWAYS);
+
     if (context) {
-        SPStyle *context_style = context->style;
-        SPCSSAttr *ctxt_style = sp_css_attr_from_style(context_style, SP_STYLE_FLAG_ALWAYS);
+        SPCSSAttr *ctxt_style = sp_css_attr_from_style(context->style, SP_STYLE_FLAG_ALWAYS);
+
         // TODO: browsers have different behaviours with context on markers
         // we need to revisit in the future for best matching
         // also dont know if opacity is or should be included in context
@@ -512,11 +513,10 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
     } else {
         sp_repr_css_set_property(ncss, "fill-opacity", "1.0");
     }
-
     
     sp_repr_css_set_property(ncsf, "stroke", "none");
+    sp_repr_css_set_property(ncsf, "stroke-width", nullptr);
     sp_repr_css_set_property(ncsf, "stroke-opacity", "1.0");
-    sp_repr_css_set_property(ncss, "stroke-width", nullptr);
     sp_repr_css_set_property(ncsf, "filter", nullptr);
     sp_repr_css_set_property(ncsf, "opacity", nullptr);
     sp_repr_css_unset_property(ncsf, "marker-start");
@@ -565,9 +565,9 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
 
     // The markers -----------------------
     Inkscape::XML::Node *markers = nullptr;
-    Geom::Scale scale(style->stroke_width.computed);
 
     if (shape->hasMarkers()) {
+        auto linewidth = style->stroke_width.computed;
         if (!legacy) {
             markers = xml_doc->createElement("svg:g");
             g_repr->addChildAtPos(markers, pos);
@@ -579,8 +579,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
         for (int i = 0; i < 2; i++) {  // SP_MARKER_LOC and SP_MARKER_LOC_START
             if ( SPObject *marker_obj = shape->_marker[i] ) {
                 Geom::Affine const m (sp_shape_marker_get_transform_at_start(fill_path.front().front()));
-                item_to_paths_add_marker( item, marker_obj, m, scale,
-                                          markers, xml_doc, doc, legacy);
+                item_to_paths_add_marker(item, marker_obj, m, linewidth, true, markers, legacy);
             }
         }
 
@@ -595,8 +594,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
                      ! ((path_it == (fill_path.end()-1)) && (path_it->size_default() == 0)) ) // if this is the last path and it is a moveto-only, there is no mid marker there
                 {
                     Geom::Affine const m (sp_shape_marker_get_transform_at_start(path_it->front()));
-                    item_to_paths_add_marker( item, midmarker_obj, m, scale,
-                                              markers, xml_doc, doc, legacy);
+                    item_to_paths_add_marker(item, midmarker_obj, m, linewidth, false, markers, legacy);
                 }
 
                 // MID position
@@ -609,8 +607,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
                          * there should be a midpoint marker between last segment and closing straight line segment
                          */
                         Geom::Affine const m (sp_shape_marker_get_transform(*curve_it1, *curve_it2));
-                        item_to_paths_add_marker( item, midmarker_obj, m, scale,
-                                                  markers, xml_doc, doc, legacy);
+                        item_to_paths_add_marker(item, midmarker_obj, m, linewidth, false, markers, legacy);
 
                         ++curve_it1;
                         ++curve_it2;
@@ -621,8 +618,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
                 if ( path_it != (fill_path.end()-1) && !path_it->empty()) {
                     Geom::Curve const &lastcurve = path_it->back_default();
                     Geom::Affine const m = sp_shape_marker_get_transform_at_end(lastcurve);
-                    item_to_paths_add_marker( item, midmarker_obj, m, scale,
-                                              markers, xml_doc, doc, legacy);
+                    item_to_paths_add_marker(item, midmarker_obj, m, linewidth, false, markers, legacy);
                 }
             }
         }
@@ -640,8 +636,7 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
                 Geom::Curve const &lastcurve = path_last[index];
 
                 Geom::Affine const m = sp_shape_marker_get_transform_at_end(lastcurve);
-                item_to_paths_add_marker( item, marker_obj, m, scale,
-                                          markers, xml_doc, doc, legacy);
+                item_to_paths_add_marker(item, marker_obj, m, linewidth, false, markers, legacy);
             }
         }
     }
@@ -753,6 +748,10 @@ item_to_paths(SPItem *item, bool legacy, SPItem *context)
         parent->removeChild(g_repr);
         Inkscape::GC::release(g_repr);
         if (fill) {
+            // Copy the style, to preserve context-fill cascade
+            if (context) {
+                item->setAttribute("style", fill->attribute("style"));
+            }
             Inkscape::GC::release(fill);
         }
         return (flatten ? item->getRepr() : nullptr);

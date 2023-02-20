@@ -573,18 +573,7 @@ Geom::OptRect SPShape::either_bbox(Geom::Affine const &transform, SPItem::BBoxTy
 
                     if (marker_item) {
                         Geom::Affine tr(sp_shape_marker_get_transform_at_start(pathv.begin()->front()));
-
-                        if (_marker[i]->orient_mode == MARKER_ORIENT_AUTO_START_REVERSE) {
-                            // Reverse start marker if necessary
-                            tr = Geom::Rotate::from_degrees( 180.0 ) * tr;
-                        } else if (_marker[i]->orient_mode == MARKER_ORIENT_ANGLE) {
-                            Geom::Point transl = tr.translation();
-                            tr = Geom::Rotate::from_degrees(_marker[i]->orient.computed) * Geom::Translate(transl);
-                        }
-
-                        if (_marker[i]->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-                            tr = Geom::Scale(this->style->stroke_width.computed) * tr;
-                        }
+                        tr = _marker[i]->get_marker_transform(tr, this->style->stroke_width.computed, true);
 
                         // total marker transform
                         tr = marker_item->transform * _marker[i]->c2p * tr * transform;
@@ -614,16 +603,7 @@ Geom::OptRect SPShape::either_bbox(Geom::Affine const &transform, SPItem::BBoxTy
                          && ! ((path_it == (pathv.end()-1)) && (path_it->size_default() == 0)) ) // if this is the last path and it is a moveto-only, there is no mid marker there
                     {
                         Geom::Affine tr(sp_shape_marker_get_transform_at_start(path_it->front()));
-
-                        if (marker->orient_mode == MARKER_ORIENT_ANGLE) {
-                            Geom::Point transl = tr.translation();
-                            tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(transl);
-                        }
-
-                        if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-                            tr = Geom::Scale(this->style->stroke_width.computed) * tr;
-                        }
-
+                        tr = marker->get_marker_transform(tr, this->style->stroke_width.computed, false);
                         tr = marker_item->transform * marker->c2p * tr * transform;
                         bbox |= marker_item->visualBounds(tr);
                     }
@@ -644,16 +624,7 @@ Geom::OptRect SPShape::either_bbox(Geom::Affine const &transform, SPItem::BBoxTy
 
                             if (marker_item) {
                                 Geom::Affine tr(sp_shape_marker_get_transform(*curve_it1, *curve_it2));
-
-                                if (marker->orient_mode == MARKER_ORIENT_ANGLE) {
-                                    Geom::Point transl = tr.translation();
-                                    tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(transl);
-                                }
-
-                                if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-                                    tr = Geom::Scale(this->style->stroke_width.computed) * tr;
-                                }
-
+                                tr = marker->get_marker_transform(tr, this->style->stroke_width.computed, false);
                                 tr = marker_item->transform * marker->c2p * tr * transform;
                                 bbox |= marker_item->visualBounds(tr);
                             }
@@ -667,16 +638,7 @@ Geom::OptRect SPShape::either_bbox(Geom::Affine const &transform, SPItem::BBoxTy
                     if ( path_it != (pathv.end()-1) && !path_it->empty()) {
                         Geom::Curve const &lastcurve = path_it->back_default();
                         Geom::Affine tr = sp_shape_marker_get_transform_at_end(lastcurve);
-
-                        if (marker->orient_mode == MARKER_ORIENT_ANGLE) {
-                            Geom::Point transl = tr.translation();
-                            tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(transl);
-                        }
-
-                        if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-                            tr = Geom::Scale(this->style->stroke_width.computed) * tr;
-                        }
-
+                        tr = marker->get_marker_transform(tr, this->style->stroke_width.computed, false);
                         tr = marker_item->transform * marker->c2p * tr * transform;
                         bbox |= marker_item->visualBounds(tr);
                     }
@@ -702,17 +664,7 @@ Geom::OptRect SPShape::either_bbox(Geom::Affine const &transform, SPItem::BBoxTy
                         Geom::Curve const &lastcurve = path_last[index];
 
                         Geom::Affine tr = sp_shape_marker_get_transform_at_end(lastcurve);
-
-                        if (marker->orient_mode == MARKER_ORIENT_ANGLE) {
-                            Geom::Point transl = tr.translation();
-                            tr = Geom::Rotate::from_degrees(marker->orient.computed) * Geom::Translate(transl);
-                        }
-
-                        if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-                            tr = Geom::Scale(this->style->stroke_width.computed) * tr;
-                        }
-
-                        // total marker transform
+                        tr = marker->get_marker_transform(tr, this->style->stroke_width.computed, false);
                         tr = marker_item->transform * marker->c2p * tr * transform;
 
                         // get bbox of the marker with that transform
@@ -728,13 +680,9 @@ Geom::OptRect SPShape::either_bbox(Geom::Affine const &transform, SPItem::BBoxTy
 }
 
 static void
-sp_shape_print_invoke_marker_printing(SPObject *obj, Geom::Affine tr, SPStyle const *style, SPPrintContext *ctx)
+sp_shape_print_invoke_marker_printing(SPObject *obj, Geom::Affine tr, SPPrintContext *ctx)
 {
     auto marker = cast<SPMarker>(obj);
-    if (marker->markerUnits == SP_MARKER_UNITS_STROKEWIDTH) {
-        tr = Geom::Scale(style->stroke_width.computed) * tr;
-    }
-
     SPItem* marker_item = sp_item_first_item_child( marker );
     if (marker_item) {
         tr = marker_item->transform * marker->c2p * tr;
@@ -765,7 +713,24 @@ void SPShape::print(SPPrintContext* ctx) {
     
     Geom::Affine const i2dt(this->i2dt_affine());
 
-    SPStyle* style = this->style;
+    // Copy the style for this printable item
+    SPStyle *style = this->style;
+    SPStyle *new_style = nullptr;
+
+    if (ctx->context_item) {
+        new_style = new SPStyle(document, this);
+        new_style->merge(style);
+        // Set style contexts for print here
+        if (style->fill.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_STROKE)
+            new_style->fill.overwrite(ctx->context_item->style->stroke.upcast());
+        if (style->fill.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_FILL)
+            new_style->fill.overwrite(ctx->context_item->style->fill.upcast());
+        if (style->stroke.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_STROKE)
+            new_style->stroke.overwrite(ctx->context_item->style->stroke.upcast());
+        if (style->stroke.paintOrigin == SP_CSS_PAINT_ORIGIN_CONTEXT_FILL)
+            new_style->stroke.overwrite(ctx->context_item->style->fill.upcast());
+        style = new_style;
+    }
 
     if (!style->fill.isNone()) {
         ctx->fill (pathv, i2dt, style, pbox, dbox, bbox);
@@ -775,25 +740,36 @@ void SPShape::print(SPPrintContext* ctx) {
         ctx->stroke (pathv, i2dt, style, pbox, dbox, bbox);
     }
 
+    auto linewidth = this->style->stroke_width.computed;
+
+    if (new_style) {
+        // Clean up temporary context style copy
+        delete new_style;
+    }
+
     /** \todo make code prettier */
     // START marker
     for (int i = 0; i < 2; i++) {  // SP_MARKER_LOC and SP_MARKER_LOC_START    
-        if ( this->_marker[i] ) {
+        if (auto marker = this->_marker[i]) {
             Geom::Affine tr(sp_shape_marker_get_transform_at_start(pathv.begin()->front()));
-            sp_shape_print_invoke_marker_printing(this->_marker[i], tr, style, ctx);
+            tr = marker->get_marker_transform(tr, linewidth, true);
+            ctx->context_item = this;
+            sp_shape_print_invoke_marker_printing(marker, tr, ctx);
         }
     }
     
     // MID marker
     for (int i = 0; i < 3; i += 2) {  // SP_MARKER_LOC and SP_MARKER_LOC_MID
-        if (this->_marker[i]) {
+        if (auto marker = this->_marker[i]) {
             for(Geom::PathVector::const_iterator path_it = pathv.begin(); path_it != pathv.end(); ++path_it) {
                 // START position
                 if ( path_it != pathv.begin() 
                      && ! ((path_it == (pathv.end()-1)) && (path_it->size_default() == 0)) ) // if this is the last path and it is a moveto-only, there is no mid marker there
                 {
                     Geom::Affine tr(sp_shape_marker_get_transform_at_start(path_it->front()));
-                    sp_shape_print_invoke_marker_printing(this->_marker[i], tr, style, ctx);
+                    tr = marker->get_marker_transform(tr, linewidth, false);
+                    ctx->context_item = this;
+                    sp_shape_print_invoke_marker_printing(marker, tr, ctx);
                 }
                 
                 // MID position
@@ -807,8 +783,10 @@ void SPShape::print(SPPrintContext* ctx) {
                          * Loop to end_default (so including closing segment), because when a path is closed,
                          * there should be a midpoint marker between last segment and closing straight line segment */
                         Geom::Affine tr(sp_shape_marker_get_transform(*curve_it1, *curve_it2));
+                        tr = marker->get_marker_transform(tr, linewidth, false);
 
-                        sp_shape_print_invoke_marker_printing(this->_marker[i], tr, style, ctx);
+                        ctx->context_item = this;
+                        sp_shape_print_invoke_marker_printing(marker, tr, ctx);
 
                         ++curve_it1;
                         ++curve_it2;
@@ -818,7 +796,10 @@ void SPShape::print(SPPrintContext* ctx) {
                 if ( path_it != (pathv.end()-1) && !path_it->empty()) {
                     Geom::Curve const &lastcurve = path_it->back_default();
                     Geom::Affine tr = sp_shape_marker_get_transform_at_end(lastcurve);
-                    sp_shape_print_invoke_marker_printing(this->_marker[i], tr, style, ctx);
+                    tr = marker->get_marker_transform(tr, linewidth, false);
+
+                    ctx->context_item = this;
+                    sp_shape_print_invoke_marker_printing(marker, tr, ctx);
                 }
             }
         }
@@ -837,14 +818,19 @@ void SPShape::print(SPPrintContext* ctx) {
         
         Geom::Curve const &lastcurve = path_last[index];
 
-        Geom::Affine tr = sp_shape_marker_get_transform_at_end(lastcurve);
-
         for (int i = 0; i < 4; i += 3) {  // SP_MARKER_LOC and SP_MARKER_LOC_END
-            if (this->_marker[i]) {
-                sp_shape_print_invoke_marker_printing(this->_marker[i], tr, style, ctx);
+            if (auto marker = this->_marker[i]) {
+                Geom::Affine tr = sp_shape_marker_get_transform_at_end(lastcurve);
+                tr = marker->get_marker_transform(tr, linewidth, false);
+
+                ctx->context_item = this;
+                sp_shape_print_invoke_marker_printing(marker, tr, ctx);
             }
         }
     }
+
+    // Clear any context item used in the above markers.
+    ctx->context_item = nullptr;
 }
 
 std::optional<Geom::PathVector> SPShape::documentExactBounds() const
