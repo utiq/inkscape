@@ -737,7 +737,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
 
         if (_cache->surface) {
             if (_cache->surface->device_scale() != device_scale) {
-                _cache->surface.reset();
+                _cache->surface->markDirty();
             }
             _cache->surface->prepare();
             dc.setOperator(ink_css_blend_to_cairo_operator(_blend_mode));
