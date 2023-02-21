@@ -109,7 +109,11 @@ bool TemplatePreset::setup_prefs(const TemplatePrefs &others)
 
     bool ret = _mod->prefs();
     for (auto pref : _prefs) {
-        _mod->set_param_hidden(pref.first.c_str(), false);
+        try {
+            _mod->set_param_hidden(pref.first.c_str(), false);
+        } catch (Extension::param_not_exist) {
+            // pass
+        }
     }
     return ret;
 }
