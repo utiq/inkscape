@@ -15,6 +15,7 @@
 #include <cmath>
 #include "helper/geom.h"
 #include "helper/geom-curves.h"
+#include <glib.h>
 #include <2geom/curves.h>
 #include <2geom/sbasis-to-bezier.h>
 #include <2geom/path-intersection.h>
@@ -438,11 +439,15 @@ geom_curve_bbox_wind_distance(Geom::Curve const & c, Geom::Affine const &m,
         p0 = p3;
     } else { 
         //this case handles sbasis as well as all other curve types
-        Geom::Path sbasis_path = Geom::cubicbezierpath_from_sbasis(c.toSBasis(), 0.1);
-
-        //recurse to convert the new path resulting from the sbasis to svgd
-        for (const auto & iter : sbasis_path) {
-            geom_curve_bbox_wind_distance(iter, m, pt, bbox, wind, dist, tolerance, viewbox, p0);
+        try {
+            Geom::Path sbasis_path = Geom::cubicbezierpath_from_sbasis(c.toSBasis(), 0.1);
+            //recurse to convert the new path resulting from the sbasis to svgd
+            for (const auto & iter : sbasis_path) {
+                geom_curve_bbox_wind_distance(iter, m, pt, bbox, wind, dist, tolerance, viewbox, p0);
+            }
+        } catch (const Geom::Exception &e) {
+            // Curve isFinite failed.
+            g_warning("Error parsing curve: %s", e.what());
         }
     }
 }
@@ -574,9 +579,15 @@ pathv_to_linear_and_cubic_beziers( Geom::PathVector const &pathv )
                     output.back().append(b);
                 } else {
                     // convert all other curve types to cubicbeziers
-                    Geom::Path cubicbezier_path = Geom::cubicbezierpath_from_sbasis(cit->toSBasis(), 0.1);
-                    cubicbezier_path.close(false);
-                    output.back().append(cubicbezier_path);
+                    try {
+                        Geom::Path cubicbezier_path = Geom::cubicbezierpath_from_sbasis(cit->toSBasis(), 0.1);
+                        cubicbezier_path.close(false);
+                        output.back().append(cubicbezier_path);
+                    } catch (const Geom::Exception &e) {
+                        // Curve isFinite failed.
+                        g_warning("Error parsing curve: %s", e.what());
+                        break;
+                    }
                 }
             }
         }
