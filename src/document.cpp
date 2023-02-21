@@ -419,20 +419,13 @@ SPDocument *SPDocument::createDoc(Inkscape::XML::Document *rdoc,
     auto nv = document->getNamedView();
 
     // Set each of the defaults in new or existing namedview (allows for per-attr overriding)
-    nv->setDefaultAttribute("pagecolor",                 "/template/base/pagecolor", "");
+    nv->setDefaultAttribute("pagecolor",                 "/template/base/pagecolor", "#ffffff");
     nv->setDefaultAttribute("bordercolor",               "/template/base/bordercolor", "");
     nv->setDefaultAttribute("borderopacity",             "/template/base/borderopacity", "");
     nv->setDefaultAttribute("inkscape:showpageshadow",   "/template/base/pageshadow", "2");
     nv->setDefaultAttribute("inkscape:pageopacity",      "/template/base/pageopacity", "0.0");
     nv->setDefaultAttribute("inkscape:pagecheckerboard", "/template/base/pagecheckerboard", "0");
-    if (!nv->getAttribute("inkscape:deskcolor")) {
-        auto page = nv->getAttribute("pagecolor");
-        auto color = "#d1d1d1"; // default gray desk
-        if (page && strcasecmp(page, "#ffffff") != 0) {
-            color = page;
-        }
-        nv->setDefaultAttribute("inkscape:deskcolor",    "/template/base/deskcolor", color);
-    }
+    nv->setDefaultAttribute("inkscape:deskcolor",        "/template/base/deskcolor", "#d1d1d1");
 
     // If no units are set in the document, try and guess them from the width/height
     // XXX Replace these calls with nv->setDocumentUnit(document->root->width.getUnit());

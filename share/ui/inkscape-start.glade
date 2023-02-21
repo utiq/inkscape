@@ -41,6 +41,8 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
       <column type="gchararray"/>
       <!-- column-name shadow -->
       <column type="gboolean"/>
+      <!-- column-name desk -->
+      <column type="gchararray"/>
     </columns>
     <data>
       <row>
@@ -50,7 +52,8 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
         <col id="3">rgba(255, 255, 255, 0)</col>
         <col id="4">False</col>
         <col id="5">#999999</col>
-        <col id="6">False</col>
+        <col id="6">True</col>
+        <col id="7">#d1d1d1</col>
       </row>
       <row>
         <col id="0">dark</col>
@@ -60,6 +63,7 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
         <col id="4">False</col>
         <col id="5">#eeeeee</col>
         <col id="6">False</col>
+        <col id="7">rgb(80, 80, 80)</col>
       </row>
       <row>
         <col id="0">light-check</col>
@@ -69,6 +73,7 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
         <col id="4">True</col>
         <col id="5">#111111</col>
         <col id="6">False</col>
+        <col id="7">#d1d1d1</col>
       </row>
       <row>
         <col id="0">dark-check</col>
@@ -78,6 +83,7 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
         <col id="4">True</col>
         <col id="5">#ffffff</col>
         <col id="6">False</col>
+        <col id="7">rgb(80, 80, 80)</col>
       </row>
       <row>
         <col id="0">light-solid</col>
@@ -87,6 +93,7 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
         <col id="4">False</col>
         <col id="5">#cccccc</col>
         <col id="6">False</col>
+        <col id="7">#d1d1d1</col>
       </row>
     </data>
   </object>

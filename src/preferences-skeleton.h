@@ -24,9 +24,7 @@
  * obsolete versions the user might have. */
 static char const preferences_skeleton[] =
     R"=====(
-<inkscape version="1"
-  xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-  xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+<inkscape version="1">
   <group id="window">
     <group id="menu"        state="1"/>
     <group id="commands"    state="1"/>
@@ -62,9 +60,10 @@ static char const preferences_skeleton[] =
   </group>
 
   <group id="template">
-    <sodipodi:namedview
+    <group
        id="base"
        pagecolor="#ffffff"
+       deskcolor="#d1d1d1"
        pageopacity="0.0"
        pagecheckerboard="0"
        bordercolor="#000000"

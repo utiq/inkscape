@@ -75,6 +75,7 @@ class CanvasCols: public Gtk::TreeModel::ColumnRecord {
             this->add(this->checkered);
             this->add(this->bordercolor);
             this->add(this->shadow);
+            this->add(this->deskcolor);
         }
         Gtk::TreeModelColumn<Glib::ustring> id;
         Gtk::TreeModelColumn<Glib::ustring> name;
@@ -83,6 +84,7 @@ class CanvasCols: public Gtk::TreeModel::ColumnRecord {
         Gtk::TreeModelColumn<bool> checkered;
         Gtk::TreeModelColumn<Glib::ustring> bordercolor;
         Gtk::TreeModelColumn<bool> shadow;
+        Gtk::TreeModelColumn<Glib::ustring> deskcolor;
 };
 
 class ThemeCols: public Gtk::TreeModel::ColumnRecord {
@@ -652,6 +654,9 @@ StartScreen::canvas_changed()
         prefs->setBool("/template/base/pagecheckerboard", row[cols.checkered]);
         prefs->setInt("/template/base/pageshadow", row[cols.shadow] ? 2 : 0);
 
+        Gdk::RGBA gdk_desk = Gdk::RGBA(row[cols.deskcolor]);
+        SPColor sp_desk(gdk_desk.get_red(), gdk_desk.get_green(), gdk_desk.get_blue());
+        prefs->setString("/template/base/deskcolor", sp_desk.toString());
     } catch(int e) {
         g_warning("Couldn't find canvas value.");
     }

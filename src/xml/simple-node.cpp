@@ -654,10 +654,6 @@ bool SimpleNode::equal(Node const *other, bool recursive, bool skip_ids) {
     if (!other || !string_equal(name(), other->name())) {
         return false;
     }
-    // TODO: discover if is possible remove this
-    if (string_equal("sodipodi:namedview", name())) {
-        return true;
-    }
     if (!string_equal(content(), other->content())) {
         return false;
     }
