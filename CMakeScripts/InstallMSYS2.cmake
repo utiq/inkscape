@@ -51,6 +51,7 @@ if(WIN32)
     ${MINGW_BIN}/libglib-2.0-[0-9]*.dll
     ${MINGW_BIN}/libglibmm-2.4-[0-9]*.dll
     ${MINGW_BIN}/libgmodule-2.0-[0-9]*.dll
+    ${MINGW_BIN}/libgmp-[0-9]*.dll
     ${MINGW_BIN}/libgobject-2.0-[0-9]*.dll
     ${MINGW_BIN}/libgomp-[0-9]*.dll
     ${MINGW_BIN}/libgraphite[0-9]*.dll
@@ -74,6 +75,7 @@ if(WIN32)
     ${MINGW_BIN}/liblqr-1-[0-9]*.dll
     ${MINGW_BIN}/liblzma-[0-9]*.dll
     ${MINGW_BIN}/libmpdec-[0-9]*.dll
+    ${MINGW_BIN}/libmpfr-[0-9]*.dll
     ${MINGW_BIN}/libncursesw6.dll
     ${MINGW_BIN}/libnghttp2*.dll
     ${MINGW_BIN}/libnspr[0-9]*.dll
