@@ -983,6 +983,24 @@ void DialogNotebook::remove_close_tab_callback(Gtk::Widget *page)
     }
 }
 
+void DialogNotebook::get_preferred_height_for_width_vfunc(int width, int& minimum_height, int& natural_height) const {
+    Gtk::ScrolledWindow::get_preferred_height_for_width_vfunc(width, minimum_height, natural_height);
+    if (_natural_height > natural_height) {
+        natural_height = _natural_height;
+    }
+}
+
+void DialogNotebook::get_preferred_height_vfunc(int& minimum_height, int& natural_height) const {
+    Gtk::ScrolledWindow::get_preferred_height_vfunc(minimum_height, natural_height);
+    if (_natural_height > natural_height) {
+        natural_height = _natural_height;
+    }
+}
+
+void DialogNotebook::set_requested_height(int height) {
+    _natural_height = height;
+}
+
 } // namespace Dialog
 } // namespace UI
 } // namespace Inkscape

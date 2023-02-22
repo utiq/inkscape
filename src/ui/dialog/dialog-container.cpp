@@ -774,6 +774,21 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                         std::cerr << "load_container_state: invalid dialog type: " << type.raw() << std::endl;
                     }
                 }
+
+                if (notebook) {
+                    Glib::ustring row = "Notebook" + std::to_string(notebook_idx) + "Height";
+                    if (keyfile->has_key(column_group_name, row)) {
+                        auto height = keyfile->get_integer(column_group_name, row);
+                        notebook->set_requested_height(height);
+                    }
+                    Glib::ustring tab = "Notebook" + std::to_string(notebook_idx) + "ActiveTab";
+                    if (keyfile->has_key(column_group_name, tab)) {
+                        if (auto nb = notebook->get_notebook()) {
+                            auto page = keyfile->get_integer(column_group_name, tab);
+                            nb->set_current_page(page);
+                        }
+                    }
+                }
             }
         }
 
@@ -962,6 +977,13 @@ std::unique_ptr<Glib::KeyFile> DialogContainer::save_container_state()
                     // save the dialogs type
                     Glib::ustring key = "Notebook" + std::to_string(notebook_count) + "Dialogs";
                     keyfile->set_string_list(group_name, key, dialogs);
+                    // save height; useful when there are multiple "rows" of docked dialogs
+                    Glib::ustring row = "Notebook" + std::to_string(notebook_count) + "Height";
+                    keyfile->set_integer(group_name, row, dialog_notebook->get_allocated_height());
+                    if (auto notebook = dialog_notebook->get_notebook()) {
+                        Glib::ustring row = "Notebook" + std::to_string(notebook_count) + "ActiveTab";
+                        keyfile->set_integer(group_name, row, notebook->get_current_page());
+                    }
 
                     // increase the notebook count
                     notebook_count++;

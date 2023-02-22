@@ -57,6 +57,7 @@ public:
     void close_notebook_callback();
     DialogWindow* pop_tab_callback();
     Gtk::ScrolledWindow * get_current_scrolledwindow(bool skip_scroll_provider);
+    void set_requested_height(int height);
 private:
     // Widgets
     DialogContainer *_container;
@@ -104,6 +105,9 @@ private:
     void toggle_tab_labels_callback(bool show);
     void add_close_tab_callback(Gtk::Widget *page);
     void remove_close_tab_callback(Gtk::Widget *page);
+    void get_preferred_height_for_width_vfunc(int width, int& minimum_height, int& natural_height) const override;
+    void get_preferred_height_vfunc(int& minimum_height, int& natural_height) const override;
+    int _natural_height = 0;
 };
 
 } // namespace Dialog
