@@ -479,10 +479,11 @@ bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place, bool on_page
     // copy definitions
     prevent_id_clashes(tempdoc.get(), desktop->getDocument(), true);
     sp_import_document(desktop, tempdoc.get(), in_place, on_page);
+
     // _copySelection() has put all items in groups, now ungroup them (preserves transform
     // relationships of clones, text-on-path, etc.)
-    SPDocument *doc = nullptr;
     if (target == "image/x-inkscape-svg") {
+        SPDocument *doc = nullptr;
         desktop->getSelection()->ungroup(true);
         std::vector<SPItem *> vec2(desktop->getSelection()->items().begin(), desktop->getSelection()->items().end());
         for (auto item : vec2) {

@@ -906,7 +906,7 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
     SPPage *to_page = pm.getSelected();
 
     auto *node_after = desktop->getSelection()->topRepr();
-    if (node_after && prefs->getBool("/options/paste/aboveselected", true)) {
+    if (node_after && prefs->getBool("/options/paste/aboveselected", true) && node_after != target_parent) {
         target_parent = node_after->parent();
     } else {
         node_after = target_parent->lastChild();
