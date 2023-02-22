@@ -99,11 +99,13 @@ char const *get_inkscape_datadir()
 }
 
 /**
- * In the past, a launch script/wrapper was used to setup necessary environment
- * variables to facilitate relocatability for the application bundle. Starting
- * with Catalina, this approach is no longer feasible due to new security checks
- * that get misdirected by using a launcher. The launcher needs to go and the
- * binary needs to setup the environment itself.
+ * Sets environment variables for a relocatable application bundle.
+ *
+ * Only does work on the first call, follow-up calls immediately return.
+ *
+ * Only sets environment variables if this actually looks like a relocatable bundle.
+ *
+ * Currently only handles macOS. Windows and Linux (AppImage) use alternative solutions.
  */
 void set_xdg_env()
 {
@@ -142,12 +144,8 @@ void set_xdg_env()
     Glib::setenv("XDG_CONFIG_DIRS", bundle_resources_etc_dir + "/xdg");
     Glib::setenv("XDG_CACHE_HOME",  app_support_dir + "/cache");
 
-    // GTK
-    // https://developer.gnome.org/gtk3/stable/gtk-running.html
-    Glib::setenv("GTK_EXE_PREFIX",  bundle_resources_dir);
-    Glib::setenv("GTK_DATA_PREFIX", bundle_resources_dir);
-
-    // GDK
+    // GdkPixbuf
+    // https://gitlab.gnome.org/GNOME/gdk-pixbuf
     Glib::setenv("GDK_PIXBUF_MODULE_FILE", bundle_resources_lib_dir + "/gdk-pixbuf-2.0/2.10.0/loaders.cache");
 
     // fontconfig
@@ -156,10 +154,11 @@ void set_xdg_env()
     // GIO
     Glib::setenv("GIO_MODULE_DIR", bundle_resources_lib_dir + "/gio/modules");
 
-    // GNOME introspection
+    // GObject Introspection
     Glib::setenv("GI_TYPELIB_PATH", bundle_resources_lib_dir + "/girepository-1.0");
 
-    // libenchant
+    // libenchant (patched)
+    // https://gitlab.com/inkscape/devel/mibap/-/blob/f71d24a/modulesets/gtk-osx-random.modules#L138
     Glib::setenv("ENCHANT_PREFIX", bundle_resources_dir);
 
     // PATH
