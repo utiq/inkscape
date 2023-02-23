@@ -11,34 +11,34 @@
 #
 
 # toolset release to build Inkscape
-VERSION=v0.70
+VERSION=v0.73
 
 # directory convenience handles
 SELF_DIR=$(dirname "${BASH_SOURCE[0]}")
 MIBAP_DIR=$SELF_DIR/mibap
 
-# clone macOS build repository
-git clone \
-  --recurse-submodules \
-  --depth 1 \
-  --branch $VERSION \
-  --single-branch \
-  https://gitlab.com/inkscape/devel/mibap \
-  "$MIBAP_DIR"
+git clone --single-branch https://gitlab.com/inkscape/devel/mibap "$MIBAP_DIR"
 
-# make sure the runner is clean (this doesn't hurt if there's nothing to do)
-"$MIBAP_DIR"/uninstall_toolset.sh
+if git -C "$MIBAP_DIR" checkout "$VERSION"; then
+  git -C "$MIBAP_DIR" submodule update --init --recursive
 
-if [ "$(basename -s .sh "${BASH_SOURCE[0]}")" = "test" ]; then
-  # install build dependencies and Inkscape
-  "$MIBAP_DIR"/install_toolset.sh restore_overlay
-  # run the test suite
-  "$MIBAP_DIR"/310-inkscape_test.sh
+  # make sure the runner is clean (this doesn't hurt if there's nothing to do)
+  "$MIBAP_DIR"/uninstall_toolset.sh
+
+  if [ "$(basename -s .sh "${BASH_SOURCE[0]}")" = "test" ]; then
+    # install build dependencies and Inkscape
+    "$MIBAP_DIR"/install_toolset.sh restore_overlay
+    # run the test suite
+    "$MIBAP_DIR"/310-inkscape_test.sh
+  else
+    # install build dependencies
+    "$MIBAP_DIR"/install_toolset.sh
+    # build Inkscape
+    "$MIBAP_DIR"/build_inkscape.sh
+    # uninstall build dependencies and archive build files
+    "$MIBAP_DIR"/uninstall_toolset.sh save_overlay
+  fi
 else
-  # install build dependencies
-  "$MIBAP_DIR"/install_toolset.sh
-  # build Inkscape
-  "$MIBAP_DIR"/build_inkscape.sh
-  # uninstall build dependencies and archive build files
-  "$MIBAP_DIR"/uninstall_toolset.sh save_overlay
+  echo "error: unknown version $VERSION"
+  exit 1
 fi
