@@ -14,6 +14,7 @@
 #define SEEN_SP_SVG_LENGTH_H
 
 #include <string>
+#include <optional>
 
 /**
  *  SVG length type
@@ -76,7 +77,7 @@ public:
     bool isAbsolute();
 
     std::string write() const;
-    std::string toString(const std::string &unit, unsigned int precision = 0) const;
+    std::string toString(const std::string &unit, std::optional<unsigned int> precision = {}, bool add_unit = true) const;
     double toValue(const std::string &out_unit) const;
     bool fromString(const std::string &input, const std::string &unit);
 

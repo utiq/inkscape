@@ -300,12 +300,18 @@ void SPPage::setMarginSide(int side, const std::string &value, bool confine)
 
 std::string SPPage::getMarginLabel() const
 {
-    return margin.toString(document->getDisplayUnit()->abbr, 2);
+    if (!margin || margin.isZero())
+        return "";
+    auto unit = document->getDisplayUnit()->abbr;
+    return margin.toString(unit, 2);
 }
 
 std::string SPPage::getBleedLabel() const
 {
-    return bleed.toString(document->getDisplayUnit()->abbr, 2);
+    if (!bleed || bleed.isZero())
+        return "";
+    auto unit = document->getDisplayUnit()->abbr;
+    return bleed.toString(unit, 2);
 }
 
 /**

@@ -455,15 +455,19 @@ std::string SVGLength::write() const
  * @param out_unit - The unit to convert the computed px into
  * @returns a string containing the value in the given units
  */
-std::string SVGLength::toString(const std::string &out_unit, unsigned int precision) const
+std::string SVGLength::toString(const std::string &out_unit, std::optional<unsigned int> precision, bool add_unit) const
 {
     if (unit == SVGLength::PERCENT) {
         return write();
     }
-    if (precision)
-        return Inkscape::Util::format_number(toValue(out_unit), precision);
     Inkscape::SVGOStringStream os;
-    os << toValue(out_unit) << out_unit;
+    if (precision) {
+        os << Inkscape::Util::format_number(toValue(out_unit), *precision);
+    } else {
+        os << toValue(out_unit);
+    }
+    if (add_unit)
+        os << out_unit;
     return os.str();
 }
 

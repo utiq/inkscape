@@ -11,6 +11,7 @@
  */
 
 #include <glib.h>
+#include <optional>
 #include "svg/svg-length.h"
 
 enum BoxSide {
@@ -32,9 +33,10 @@ public:
     operator bool() const { return _is_set; }
 
     std::string write() const;
-    std::string toString(const std::string &unit, unsigned int precision = 0) const;
+    std::string toString(const std::string &unit, std::optional<unsigned int> precision = {}, bool add_unit = true) const;
     bool fromString(const std::string &value, const std::string &unit);
     bool fromString(BoxSide side, const std::string &value, const std::string &unit);
+    bool isZero() const;
 
     void set(BoxSide side, double value, bool confine = false);
     void set(double top, double right, double bottom, double left);

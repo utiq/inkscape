@@ -59,7 +59,7 @@ std::string SVGBox::write() const
 /**
  * Write as specific unit for user display
  */
-std::string SVGBox::toString(const std::string &unit, unsigned int precision) const
+std::string SVGBox::toString(const std::string &unit, std::optional<unsigned int> precision, bool add_unit) const
 {
     std::string ret = "";
     bool write = false;
@@ -68,7 +68,7 @@ std::string SVGBox::toString(const std::string &unit, unsigned int precision) co
         SVGLength fallback = _value[FALLBACK(i)];
         if (i == BOX_TOP || (val != fallback) || write) {
             if (unit.size()) {
-                ret = std::string(val.toString(unit, precision)) + " " + ret;
+                ret = std::string(val.toString(unit, precision, add_unit)) + " " + ret;
             } else {
                 ret = std::string(val.write()) + " " + ret;
             }
@@ -118,6 +118,17 @@ bool SVGBox::fromString(BoxSide side, const std::string &value, const std::strin
         return _value[side].fromString(value, unit);
     }
     return _value[side].read(value.c_str());
+}
+
+/**
+ * Returns true if the box is set, but all values are zero
+ */
+bool SVGBox::isZero() const
+{
+    return _value[0] == 0.0
+        && _value[1] == 0.0
+        && _value[2] == 0.0
+        && _value[3] == 0.0;
 }
 
 /**
