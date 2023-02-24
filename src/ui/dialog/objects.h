@@ -99,6 +99,7 @@ protected:
     void setRootWatcher();
 private:
 
+    Glib::RefPtr<Gtk::Builder> _builder;
     Inkscape::PrefObserver _watch_object_mode;
     ObjectWatcher* root_watcher;
     SPItem *current_item = nullptr;
@@ -126,7 +127,7 @@ private:
     Gtk::Box _buttonsRow;
     Gtk::Box _buttonsPrimary;
     Gtk::Box _buttonsSecondary;
-    Gtk::SearchEntry _searchBox;
+    Gtk::SearchEntry& _searchBox;
     Gtk::ScrolledWindow _scroller;
     Gtk::Menu _popupMenu;
     Gtk::Box _page;
@@ -166,7 +167,6 @@ private:
     SPItem *_solid_item;
     std::list<SPItem *> _translucent_items;
     int _msg_id;
-    Glib::RefPtr<Gtk::Builder> _builder;
     Gtk::Popover& _settings_menu;
     Gtk::Popover& _object_menu;
     Gtk::Scale& _opacity_slider;

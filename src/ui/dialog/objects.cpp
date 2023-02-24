@@ -26,6 +26,7 @@
 #include <gtkmm/object.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/scale.h>
+#include <gtkmm/searchentry.h>
 #include <gtkmm/separatormenuitem.h>
 #include <glibmm/main.h>
 #include <glibmm/i18n.h>
@@ -674,6 +675,7 @@ ObjectsPanel::ObjectsPanel()
     , _builder(create_builder("dialog-objects.glade"))
     , _settings_menu(get_widget<Gtk::Popover>(_builder, "settings-menu"))
     , _object_menu(get_widget<Gtk::Popover>(_builder, "object-menu"))
+    , _searchBox(get_widget<Gtk::SearchEntry>(_builder, "search"))
     , _opacity_slider(get_widget<Gtk::Scale>(_builder, "opacity-slider"))
     , _setting_layers(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-layers", "/dialogs/objects/layers_only", false))
     , _setting_track(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-track", "/dialogs/objects/expand_to_layer", true))
@@ -689,9 +691,8 @@ ObjectsPanel::ObjectsPanel()
     _tree.enable_model_drag_dest (Gdk::ACTION_MOVE);
     _tree.set_name("ObjectsTreeView");
 
+    auto& header = get_widget<Gtk::Box>(_builder, "header");
     // Search
-    _searchBox.set_valign(Gtk::ALIGN_FILL);
-    _searchBox.set_margin_end(3);
     _searchBox.signal_activate().connect(sigc::mem_fun(*this, &ObjectsPanel::_searchActivated));
     _searchBox.signal_search_changed().connect(sigc::mem_fun(*this, &ObjectsPanel::_searchChanged));
 
@@ -944,29 +945,9 @@ ObjectsPanel::ObjectsPanel()
         _scroller.set_size_request(sreq.width, minHeight);
     }
 
-    _page.pack_start(_buttonsRow, Gtk::PACK_SHRINK);
-    _page.pack_start(_searchBox, Gtk::PACK_SHRINK);
+    _page.pack_start(header, false, true);
     _page.pack_end(_scroller, Gtk::PACK_EXPAND_WIDGET);
     pack_start(_page, Gtk::PACK_EXPAND_WIDGET);
-
-    auto settings_btn = Gtk::manage(new Gtk::MenuButton());
-    {
-        auto child = Glib::wrap(sp_get_icon_image("gear", GTK_ICON_SIZE_SMALL_TOOLBAR));
-        child->show();
-        settings_btn->add(*child);
-    }
-    settings_btn->set_relief(Gtk::RELIEF_NONE);
-    settings_btn->set_tooltip_text(_("Objects and Layers Settings"));
-    settings_btn->set_popover(_settings_menu);
-
-    _buttonsPrimary.pack_start(*_addBarButton(INKSCAPE_ICON("layer-new"), _("Add layer..."), "win.layer-new"), Gtk::PACK_SHRINK);
-    _buttonsSecondary.pack_end(*settings_btn, Gtk::PACK_SHRINK);
-    _buttonsSecondary.pack_end(*_addBarButton(INKSCAPE_ICON("edit-delete"), _("Remove object"), "app.delete-selection"), Gtk::PACK_SHRINK);
-    _buttonsSecondary.pack_end(*_addBarButton(INKSCAPE_ICON("go-down"), _("Move Down"), "app.selection-stack-down"), Gtk::PACK_SHRINK);
-    _buttonsSecondary.pack_end(*_addBarButton(INKSCAPE_ICON("go-up"), _("Move Up"), "app.selection-stack-up"), Gtk::PACK_SHRINK);
-
-    _buttonsRow.pack_start(_buttonsPrimary, Gtk::PACK_SHRINK);
-    _buttonsRow.pack_end(_buttonsSecondary, Gtk::PACK_SHRINK);
 
     selection_color = get_background_color(_tree.get_style_context(), Gtk::STATE_FLAG_SELECTED);
     _tree_style = _tree.signal_style_updated().connect([=](){
