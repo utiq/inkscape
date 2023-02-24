@@ -29,11 +29,13 @@
 
 /* Incorporated into Inkscape sources; splinefit.c as of 2023-02-15.
 
- * Note: The only changes to this file in Inkscape codebase are includes removal
+ * Note: The only changes to this file in Inkscape codebase are modification of includes
  * and adding this note. Formatting is intact to facilitate future merges.
  */
 
 #include <memory.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include "splinefit.h"
 
 #include <math.h>

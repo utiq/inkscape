@@ -21,6 +21,7 @@
 #include "modifier-tracker.h"
 #include "node-types.h"
 #include "shape-record.h"
+#include "ui/tool/path-manipulator.h"
 
 struct SPCanvasGroup;
 
@@ -61,7 +62,8 @@ public:
     void copySelectedPath(Geom::PathBuilder *builder);
     void joinNodes();
     void breakNodes();
-    void deleteNodes(bool keep_shape = true);
+    void deleteNodes(NodeDeleteMode mode);
+    void deleteNodes(bool keep_shape);
     void joinSegments();
     void deleteSegments();
     void alignNodes(Geom::Dim2 d, AlignTargetNode target = AlignTargetNode::MID_NODE);

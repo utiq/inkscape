@@ -49,6 +49,13 @@ struct PathSharedData {
     Inkscape::CanvasItemGroup *dragpoint_group;
 };
 
+enum class NodeDeleteMode {
+    automatic,    // try to preserve shape if deleted nodes do not form sharp corners
+    inverse_auto, // opposite of what automatic mode would do
+    curve_fit,    // preserve shape
+    line_segment  // do not preserve shape; delete nodes and connect subpaths with a line segment
+};
+
 /**
  * Manipulator that edits a single path using nodes with handles.
  * Currently only cubic bezier and linear segments are supported, but this might change
@@ -81,7 +88,7 @@ public:
     void weldNodes(NodeList::iterator preserve_pos = NodeList::iterator());
     void weldSegments();
     void breakNodes();
-    void deleteNodes(bool keep_shape = true);
+    void deleteNodes(NodeDeleteMode mode);
     void deleteSegments();
     void reverseSubpaths(bool selected_only);
     void setSegmentType(SegmentType);
@@ -121,7 +128,7 @@ private:
     Geom::Point _bsplineHandleReposition(Handle *h, bool check_other = true);
     Geom::Point _bsplineHandleReposition(Handle *h, double pos);
     void _createGeometryFromControlPoints(bool alert_LPE = false);
-    unsigned _deleteStretch(NodeList::iterator first, NodeList::iterator last, bool keep_shape);
+    unsigned _deleteStretch(NodeList::iterator first, NodeList::iterator last, NodeDeleteMode mode);
     std::string _createTypeString();
     void _updateOutline();
     //void _setOutline(Geom::PathVector const &);

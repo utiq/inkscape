@@ -26,6 +26,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "splinerefigure.h"
 
 #include "splinefont.h"

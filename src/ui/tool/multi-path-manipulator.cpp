@@ -434,10 +434,14 @@ void MultiPathManipulator::breakNodes()
     _done(_("Break nodes"), true);
 }
 
-void MultiPathManipulator::deleteNodes(bool keep_shape)
+void MultiPathManipulator::deleteNodes(bool keep_shape) {
+    deleteNodes(keep_shape ? NodeDeleteMode::curve_fit : NodeDeleteMode::line_segment);
+}
+
+void MultiPathManipulator::deleteNodes(NodeDeleteMode mode)
 {
     if (_selection.empty()) return;
-    invokeForAll(&PathManipulator::deleteNodes, keep_shape);
+    invokeForAll(&PathManipulator::deleteNodes, mode);
     _doneWithCleanup(_("Delete nodes"), true);
 }
 
@@ -689,12 +693,13 @@ bool MultiPathManipulator::event(Inkscape::UI::Tools::ToolBase *event_context, G
             } else {
                 Inkscape::Preferences *prefs = Inkscape::Preferences::get();
                 bool del_preserves_shape = prefs->getBool("/tools/nodes/delete_preserves_shape", true);
+                //MK: how can multi-path-manipulator know it is dealing with a bspline if it's checking tool mode???
+                /*
                 // pass keep_shape = true when:
                 // a) del preserves shape, and control is not pressed
                 // b) ctrl+del preserves shape (del_preserves_shape is false), and control is pressed
                 // Hence xor
                 guint mode = prefs->getInt("/tools/freehand/pen/freehand-mode", 0);
-
                 //if the trace is bspline ( mode 2)
                 if(mode==2){
                     //  is this correct ?
@@ -704,8 +709,12 @@ bool MultiPathManipulator::event(Inkscape::UI::Tools::ToolBase *event_context, G
                         deleteNodes(true);
                     }
                 } else {
-                    deleteNodes(del_preserves_shape ^ held_control(event->key));
-                }
+                */
+                auto mode =
+                    held_control(event->key) ?
+                        (del_preserves_shape ? NodeDeleteMode::inverse_auto : NodeDeleteMode::curve_fit) :
+                        (del_preserves_shape ? NodeDeleteMode::automatic : NodeDeleteMode::line_segment);
+                deleteNodes(mode);
 
                 // Delete any selected gradient nodes as well
                 event_context->deleteSelectedDrag(held_control(event->key));

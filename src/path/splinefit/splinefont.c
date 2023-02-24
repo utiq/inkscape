@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "splinefont.h"
-#include "splinefit.h"
 #include <math.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include "splinefont.h"
+#include "splinefit.h"
 
 #define FONTFORGE_CONFIG_USE_DOUBLE 1
 

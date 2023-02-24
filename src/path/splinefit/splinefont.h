@@ -4,8 +4,6 @@
 #define _SEEN_SPLINEFONT_H_
 
 #include <glib.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 typedef double real;
 typedef double bigreal;
@@ -55,7 +53,7 @@ typedef struct splinepoint {
     uint16_t nextcpindex;		/* Truetype point index */
     struct spline *next;
     struct spline *prev;
-    // HintMask *hintmask;
+    /* Inkscape: not used; HintMask *hintmask; */
 	char* name;
 } SplinePoint;
 
@@ -93,7 +91,7 @@ typedef struct spline {
 typedef struct splinepointlist {
     SplinePoint *first, *last;
     struct splinepointlist *next;
-//    spiro_cp *spiros;
+    /* Not used:   spiro_cp *spiros; */
     uint16_t spiro_cnt, spiro_max;
 	/* These could be bit fields, but bytes are easier to access and we */
 	/*  don't need the space (yet) */
@@ -118,7 +116,6 @@ int RealWithin(real a,real b,real fudge);
 BOOL RealNear(real a, real b);
 
 Spline *SplineMake(SplinePoint *from, SplinePoint *to, int order2);
-// extern Spline *SplineMake(SplinePoint *from, SplinePoint *to);
 Spline *SplineMake2(SplinePoint *from, SplinePoint *to);
 Spline *SplineMake3(SplinePoint *from, SplinePoint *to);
 SplinePoint *SplinePointCreate(real x, real y);
