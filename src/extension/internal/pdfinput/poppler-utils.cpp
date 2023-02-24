@@ -494,7 +494,7 @@ std::string FontData::getSubstitute() const
             }
         }
     }
-    return bestFontname.empty() ? "Ariel" : bestFontname;
+    return bestFontname.empty() ? "Arial" : bestFontname;
 }
 
 std::string FontData::getSpecification() const
