@@ -662,7 +662,6 @@ void DialogMultipaned::get_preferred_width_vfunc(int &minimum_width, int &natura
             }
         }
     }
-
     if (_natural_width > natural_width) {
         natural_width = _natural_width;
     }
@@ -764,126 +763,143 @@ void DialogMultipaned::on_size_allocate(Gtk::Allocation &allocation)
         _natural_width = allocation.get_width();
     }
 
-    {
-        std::vector<bool> expandables;              // Is child expandable?
-        std::vector<int> sizes_minimums;            // Difference between allocated space and minimum space.
-        std::vector<int> sizes_naturals;            // Difference between allocated space and natural space.
-        std::vector<int> sizes(children.size(), 0); // The new allocation sizes
-        std::vector<int> sizes_current;             // The current sizes along main axis
-        int left = horizontal ? allocation.get_width() : allocation.get_height();
+    std::vector<bool> expandables;              // Is child expandable?
+    std::vector<int> sizes_minimums;            // Difference between allocated space and minimum space.
+    std::vector<int> sizes_naturals;            // Difference between allocated space and natural space.
+    std::vector<int> sizes_current;             // The current sizes along main axis
+    int left = horizontal ? allocation.get_width() : allocation.get_height();
 
-        int index = 0;
+    int index = 0;
+    bool force_resize = false;  // initially panels are not sized yet, so we will apply their natural sizes
+    int canvas_index = -1;
+    for (auto child : children) {
+        bool visible = child->get_visible();
 
-        int canvas_index = -1;
-        for (auto &child : children) {
-            bool visible;
-
-            Inkscape::UI::Widget::CanvasGrid *canvas = dynamic_cast<Inkscape::UI::Widget::CanvasGrid *>(child);
-            if (canvas) {
-                canvas_index = index;
-            }
-
-            {
-                visible = child->get_visible();
-                expandables.push_back(child->compute_expand(get_orientation()));
-
-                Gtk::Requisition req_minimum;
-                Gtk::Requisition req_natural;
-                child->get_preferred_size(req_minimum, req_natural);
-                if (child == _resizing_widget1 || child == _resizing_widget2) {
-                    // ignore limits for widget being resized interactively and use their current size
-                    req_minimum.width = req_minimum.height = 0;
-                    auto alloc = child->get_allocation();
-                    req_natural.width = alloc.get_width();
-                    req_natural.height = alloc.get_height();
-                }
-
-                sizes_minimums.push_back(visible ? horizontal ? req_minimum.width : req_minimum.height : 0);
-                sizes_naturals.push_back(visible ? horizontal ? req_natural.width : req_natural.height : 0);
-            }
-
-            Gtk::Allocation child_allocation = child->get_allocation();
-            sizes_current.push_back(visible ? horizontal ? child_allocation.get_width() : child_allocation.get_height()
-                                            : 0);
-            index++;
+        if (dynamic_cast<Inkscape::UI::Widget::CanvasGrid*>(child)) {
+            canvas_index = index;
         }
 
-        // Precalculate the minimum, natural and current totals
-        int sum_minimums = std::accumulate(sizes_minimums.begin(), sizes_minimums.end(), 0);
-        int sum_naturals = std::accumulate(sizes_naturals.begin(), sizes_naturals.end(), 0);
-        int sum_current = std::accumulate(sizes_current.begin(), sizes_current.end(), 0);
+        {
+            expandables.push_back(child->compute_expand(get_orientation()));
 
-        if (sum_naturals <= left) {
+            Gtk::Requisition req_minimum;
+            Gtk::Requisition req_natural;
+            child->get_preferred_size(req_minimum, req_natural);
+            if (child == _resizing_widget1 || child == _resizing_widget2) {
+                // ignore limits for widget being resized interactively and use their current size
+                req_minimum.width = req_minimum.height = 0;
+                auto alloc = child->get_allocation();
+                req_natural.width = alloc.get_width();
+                req_natural.height = alloc.get_height();
+            }
+
+            sizes_minimums.push_back(visible ? horizontal ? req_minimum.width : req_minimum.height : 0);
+            sizes_naturals.push_back(visible ? horizontal ? req_natural.width : req_natural.height : 0);
+        }
+
+        Gtk::Allocation child_allocation = child->get_allocation();
+        sizes_current.push_back(visible ? horizontal ? child_allocation.get_width() : child_allocation.get_height()
+                                        : 0);
+        index++;
+
+        if (sizes_current.back() < sizes_minimums.back()) force_resize = true;
+    }
+
+    std::vector<int> sizes = sizes_current; // The new allocation sizes
+
+    const int sum_current = std::accumulate(sizes_current.begin(), sizes_current.end(), 0);
+    {
+        // Precalculate the minimum, natural and current totals
+        const int sum_minimums = std::accumulate(sizes_minimums.begin(), sizes_minimums.end(), 0);
+        const int sum_naturals = std::accumulate(sizes_naturals.begin(), sizes_naturals.end(), 0);
+
+        // initial resize requested?
+        if (force_resize && sum_naturals <= left) {
             sizes = sizes_naturals;
             left -= sum_naturals;
-        } else if (sum_minimums <= left && left < sum_naturals) {
-            sizes = sizes_minimums;
-            left -= sum_minimums;
-        }
-
-        if (canvas_index >= 0) { // give remaining space to canvas element
-            sizes[canvas_index] += left;
-        } else { // or, if in a sub-dialogmultipaned, give it evenly to widgets
-
-            int d = 0;
-            for (int i = 0; i < (int)children.size(); ++i) {
-                if (expandables[i]) {
-                    d++;
-                }
-            }
-
-            if (d > 0) {
-                int idx = 0;
-                for (int i = 0; i < (int)children.size(); ++i) {
-                    if (expandables[i]) {
-                        sizes[i] += (left / d);
-                        if (idx < (left % d))
-                            sizes[i]++;
-                        idx++;
+        } else if (sum_minimums <= left && left < sum_current) {
+            // requested size exeeds available space; try shrinking it by starting from the last element
+            sizes = sizes_current;
+            auto excess = sum_current - left;
+            for (int i = static_cast<int>(sizes.size() - 1); excess > 0 && i >= 0; --i) {
+                auto extra = sizes_current[i] - sizes_minimums[i];
+                if (extra > 0) {
+                    if (extra >= excess) {
+                        // we are done, enough space found
+                        sizes[i] -= excess;
+                        excess = 0;
+                    }
+                    else {
+                        // shrink as far as possible, then continue to the next panel
+                        sizes[i] -= extra;
+                        excess -= extra;
                     }
                 }
             }
-        }
-        left = 0;
 
-        // Check if we actually need to change the sizes on the main axis
-        left = horizontal ? allocation.get_width() : allocation.get_height();
-        if (left == sum_current) {
-            bool valid = true;
-            for (int i = 0; i < (int)children.size(); ++i) {
-                valid = valid && (sizes_minimums[i] <= sizes_current[i]) &&        // is it over the minimums?
-                        (expandables[i] || sizes_current[i] <= sizes_naturals[i]); // but does it want to be expanded?
-                if (!valid)
-                    break;
+            if (excess > 0) {
+                sizes = sizes_minimums;
+                left -= sum_minimums;
             }
-            if (valid)
-                sizes = sizes_current; // The current sizes are good, don't change anything;
-        }
-
-        // Set x and y values of allocations (widths should be correct).
-        int current_x = allocation.get_x();
-        int current_y = allocation.get_y();
-
-        // Allocate
-        for (int i = 0; i < (int)children.size(); ++i) {
-            Gtk::Allocation child_allocation = children[i]->get_allocation();
-            child_allocation.set_x(current_x);
-            child_allocation.set_y(current_y);
-
-            int size = sizes[i];
-
-            if (horizontal) {
-                child_allocation.set_width(size);
-                current_x += size;
-                child_allocation.set_height(allocation.get_height());
-            } else {
-                child_allocation.set_height(size);
-                current_y += size;
-                child_allocation.set_width(allocation.get_width());
+            else {
+                left = 0;
             }
-
-            children[i]->size_allocate(child_allocation);
         }
+        else {
+            left = std::max(0, left - sum_current);
+        }
+    }
+
+    if (canvas_index >= 0) { // give remaining space to canvas element
+        sizes[canvas_index] += left;
+    } else { // or, if in a sub-dialogmultipaned, give it to the last panel
+
+        for (int i = static_cast<int>(children.size()) - 1; i >= 0; --i) {
+            if (expandables[i]) {
+                sizes[i] += left;
+                break;
+            }
+        }
+    }
+
+    // Check if we actually need to change the sizes on the main axis
+    left = horizontal ? allocation.get_width() : allocation.get_height();
+    if (left == sum_current) {
+        bool valid = true;
+        for (size_t i = 0; i < children.size(); ++i) {
+            valid = sizes_minimums[i] <= sizes_current[i] &&        // is it over the minimums?
+                    (expandables[i] || sizes_current[i] <= sizes_naturals[i]); // but does it want to be expanded?
+            if (!valid)
+                break;
+        }
+        if (valid) {
+            sizes = sizes_current; // The current sizes are good, don't change anything;
+        }
+    }
+
+    // Set x and y values of allocations (widths should be correct).
+    int current_x = allocation.get_x();
+    int current_y = allocation.get_y();
+
+    // Allocate
+    for (size_t i = 0; i < children.size(); ++i) {
+        Gtk::Allocation child_allocation = children[i]->get_allocation();
+        child_allocation.set_x(current_x);
+        child_allocation.set_y(current_y);
+
+        int size = sizes[i];
+
+        if (horizontal) {
+            child_allocation.set_width(size);
+            current_x += size;
+            child_allocation.set_height(allocation.get_height());
+        } else {
+            child_allocation.set_height(size);
+            current_y += size;
+            child_allocation.set_width(allocation.get_width());
+        }
+
+        children[i]->size_allocate(child_allocation);
     }
 }
 

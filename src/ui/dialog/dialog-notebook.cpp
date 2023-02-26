@@ -985,15 +985,21 @@ void DialogNotebook::remove_close_tab_callback(Gtk::Widget *page)
 
 void DialogNotebook::get_preferred_height_for_width_vfunc(int width, int& minimum_height, int& natural_height) const {
     Gtk::ScrolledWindow::get_preferred_height_for_width_vfunc(width, minimum_height, natural_height);
-    if (_natural_height > natural_height) {
+    if (_natural_height > 0) {
         natural_height = _natural_height;
+        if (minimum_height > _natural_height) {
+            minimum_height = _natural_height;
+        }
     }
 }
 
 void DialogNotebook::get_preferred_height_vfunc(int& minimum_height, int& natural_height) const {
     Gtk::ScrolledWindow::get_preferred_height_vfunc(minimum_height, natural_height);
-    if (_natural_height > natural_height) {
+    if (_natural_height > 0) {
         natural_height = _natural_height;
+        if (minimum_height > _natural_height) {
+            minimum_height = _natural_height;
+        }
     }
 }
 
