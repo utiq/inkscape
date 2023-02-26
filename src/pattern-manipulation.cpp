@@ -27,7 +27,8 @@ std::vector<SPPattern*> sp_get_pattern_list(SPDocument* source) {
 
     std::vector<SPObject*> patterns = source->getResourceList("pattern");
     for (auto pattern : patterns) {
-        if (cast<SPPattern>(pattern) == cast<SPPattern>(pattern)->rootPattern()) { // only if this is a root pattern
+        auto p = cast<SPPattern>(pattern);
+        if (p && p == p->rootPattern() && p->hasChildren()) { // only if this is a vali root pattern
             list.push_back(cast<SPPattern>(pattern));
         }
     }

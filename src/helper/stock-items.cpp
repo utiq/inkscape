@@ -63,6 +63,7 @@ std::vector<std::shared_ptr<SPDocument>> sp_get_paint_documents(const std::funct
             if (Glib::file_test(file, Glib::FILE_TEST_IS_REGULAR)) {
                 std::shared_ptr<SPDocument> doc(SPDocument::createNewDoc(file.c_str(), false));
                 if (doc) {
+                    doc->ensureUpToDate(); // update, so patterns referencing clippaths render properly
                     storage.documents.push_back(std::move(doc));
                 }
                 else {

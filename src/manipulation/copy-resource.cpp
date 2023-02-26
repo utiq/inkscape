@@ -8,23 +8,28 @@
 #include "style.h"
 #include "xml/repr.h"
 
-
+// Make a copy of referenced: fill and stroke styles, clip paths
 void copy_style_links(const SPObject* source, SPDocument* src_document, SPDocument* dest_document) {
+
     SPCSSAttr* css = sp_css_attr_from_object(const_cast<SPObject*>(source), SP_STYLE_FLAG_ALWAYS);
 
     const char* fill = sp_repr_css_property(css, "fill", "none");
-    if (strncmp(fill, "url(", 4) == 0) {
-        auto link = extract_uri(fill);
-        sp_copy_resource(src_document->getObjectByHref(link), dest_document);
+    if (auto link = try_extract_uri(fill)) {
+        sp_copy_resource(src_document->getObjectByHref(*link), dest_document);
     }
 
     const char* stroke = sp_repr_css_property(css, "stroke", "none");
-    if (strncmp(stroke, "url(", 4) == 0) {
-        auto link = extract_uri(stroke);
-        sp_copy_resource(src_document->getObjectByHref(link), dest_document);
+    if (auto link = try_extract_uri(stroke)) {
+        sp_copy_resource(src_document->getObjectByHref(*link), dest_document);
     }
 
     sp_repr_css_attr_unref(css);
+
+    if (auto clip = source->getAttribute("clip-path")) {
+        if (auto clip_path = try_extract_uri(clip)) {
+            sp_copy_resource(src_document->getObjectByHref(*clip_path), dest_document);
+        }
+    }
 
     for (auto& child : source->children) {
         copy_style_links(&child, src_document, dest_document);
