@@ -26,11 +26,11 @@ namespace Inkscape {
 static constexpr std::array<uint32_t, 6> fill_lite = {0x00000055, 0x0291ffff, 0x8eceffff, 0x0291ffff, 0xf299d6ff, 0xff0db3ff};
 static constexpr std::array<uint32_t, 6> fill_dark = {0xffffff55, 0x0291ffff, 0x8eceffff, 0x0291ffff, 0xf299d6ff, 0xff0db3ff};
 
-BooleanBuilder::BooleanBuilder(ObjectSet *set)
+BooleanBuilder::BooleanBuilder(ObjectSet *set, bool flatten)
     : _set(set)
 {
     // Current state of all the items
-    _work_items = SubItem::build_mosaic(set->items_vector());
+    _work_items = (flatten ? SubItem::build_flatten : SubItem::build_mosaic)(set->items_vector());
 
     auto root = _set->desktop()->getCanvas()->get_canvas_item_root();
     _group = make_canvasitem<CanvasItemGroup>(root);

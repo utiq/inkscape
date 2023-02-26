@@ -1038,6 +1038,12 @@
         <attribute name='icon'>path-fracture</attribute>
         <attribute name='use-icon'>true</attribute>
       </item>
+      <item>
+        <attribute name='label' translatable="yes">_Flatten</attribute>
+        <attribute name='action'>app.path-flatten</attribute>
+        <attribute name='icon'>path-flatten</attribute>
+        <attribute name='use-icon'>true</attribute>
+      </item>
     </section>
     <section>
       <item>

@@ -51,10 +51,12 @@ public:
     SPItem *get_item() const { return _item; }
 
     static WorkItems build_mosaic(std::vector<SPItem*> &&items);
+    static WorkItems build_flatten(std::vector<SPItem*> &&items);
     static WorkItems generate_holes(const WorkItems &items);
 
     bool getSelected() const { return _selected; }
     void setSelected(bool selected) { _selected = selected; }
+
 private:
     Geom::PathVector _paths;
     SPItem *_item;

@@ -108,6 +108,14 @@ select_path_fracture(InkscapeApplication *app)
     Inkscape::DocumentUndo::done(selection->document(), "Fracture", INKSCAPE_ICON("path-fracture"));
 }
 
+void select_path_flatten(InkscapeApplication *app)
+{
+    auto selection = app->get_active_selection();
+    auto boolean_builder = Inkscape::BooleanBuilder(selection, true);
+    selection->setList(boolean_builder.shape_commit(true));
+    Inkscape::DocumentUndo::done(selection->document(), "Flatten", INKSCAPE_ICON("path-flatten"));
+}
+
 void
 fill_between_paths(InkscapeApplication *app)
 {
@@ -212,8 +220,7 @@ shape_builder_mode(int value, InkscapeWindow* win)
     pref->setInt("/tools/booleans/mode", value);
 }
 
-
-std::vector<std::vector<Glib::ustring>> raw_data_path =
+static const std::vector<std::vector<Glib::ustring>> raw_data_path =
 {
     // clang-format offs
     {"app.path-union",               N_("Union"),                "Path",   N_("Create union of selected paths")},
@@ -226,6 +233,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_path =
     {"app.path-break-apart",         N_("Break Apart"),          "Path",   N_("Break selected paths into subpaths")},
     {"app.path-split",               N_("Split Apart"),          "Path",   N_("Split selected paths into non-overlapping sections")},
     {"app.path-fracture",            N_("Fracture"),             "Path",   N_("Fracture a shape into its visible segments.")},
+    {"app.path-flatten",             N_("Flatten"),              "Path",   N_("Flatten a shape into its visible parts.")},
     {"app.path-fill-between-paths",  N_("Fill between paths"),   "Path",   N_("Create a fill object using the selected paths")},
     {"app.path-simplify",            N_("Simplify"),             "Path",   N_("Simplify selected paths (remove extra nodes)")},
 
@@ -242,8 +250,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_path =
     // clang-format on
 };
 
-void
-add_actions_path(InkscapeApplication* app)
+void add_actions_path(InkscapeApplication *app)
 {
     auto *gapp = app->gio_app();
 
@@ -258,6 +265,7 @@ add_actions_path(InkscapeApplication* app)
     gapp->add_action(               "path-break-apart",        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_break_apart),   app));
     gapp->add_action(               "path-split",              sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_split),         app));
     gapp->add_action(               "path-fracture",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_fracture),      app));
+    gapp->add_action(               "path-flatten",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_flatten) ,      app));
     gapp->add_action(               "path-fill-between-paths", sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&fill_between_paths),        app));
     gapp->add_action(               "path-simplify",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_simplify),      app));
     // clang-format on
@@ -266,10 +274,9 @@ add_actions_path(InkscapeApplication* app)
 }
 
 // TODO: Remove desktop dependencies and convert to app actions.
-void
-add_actions_path(InkscapeWindow* win)
+void add_actions_path(InkscapeWindow *win)
 {
-    Glib::VariantType Double(Glib::VARIANT_TYPE_DOUBLE);
+    auto const Double = Glib::VariantType(Glib::VARIANT_TYPE_DOUBLE);
 
     auto prefs = Inkscape::Preferences::get();
     int current_mode = prefs->getInt("/tool/booleans/mode", 0);

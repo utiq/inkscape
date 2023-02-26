@@ -13,6 +13,7 @@
 
 #include "booleans-subitems.h"
 #include "helper/geom-pathstroke.h"
+#include "helper/geom.h"
 
 #include <livarot/LivarotDefs.h>
 #include <numeric>
@@ -62,21 +63,21 @@ static void add_paths(WorkItems &result, Geom::PathVector &&pathv, SPItem *item)
 /**
  * Cut all the WorkItems with the given line and discard the line from the final shape.
  */
-static auto incremental_cut(WorkItems &&subitems, Geom::PathVector &pathv)
+static WorkItems incremental_cut(WorkItems &&subitems, Geom::PathVector const &pathv)
 {
     WorkItems result;
-    result.reserve(subitems.size() + 1);
+    result.reserve(subitems.size());
 
-    for (auto subitem : subitems) {
+    for (auto &subitem : subitems) {
         auto pathv_cut = sp_pathvector_boolop(pathv, subitem->get_pathv(), bool_op_cut, fill_nonZero, fill_nonZero, true);
         if (pathv_cut == subitem->get_pathv()) {
-            result.push_back(subitem);
+            result.emplace_back(std::move(subitem));
             continue;
         }
         // Add_paths will break each part of the cut shape out
-        for (auto path : pathv_cut) {
+        for (auto &path : pathv_cut) {
             if (path.closed()) {
-                add_paths(result, Geom::PathVector(path), subitem->get_item());
+                add_paths(result, std::move(path), subitem->get_item());
             }
         }
     }
@@ -87,7 +88,7 @@ static auto incremental_cut(WorkItems &&subitems, Geom::PathVector &pathv)
  * Create a fracture between two shapes such that their overlaps are their own
  * third shape added to the WorkItems collection.
  */
-static auto incremental_fracture(WorkItems &&subitems, SPItem *item, Geom::PathVector &&pathv)
+static WorkItems incremental_fracture(WorkItems &&subitems, SPItem *item, Geom::PathVector &&pathv)
 {
     WorkItems result;
     result.reserve(subitems.size() + 1);
@@ -111,6 +112,29 @@ static auto incremental_fracture(WorkItems &&subitems, SPItem *item, Geom::PathV
     if (!pathv.empty()) {
         add_paths(result, std::move(pathv), item);
     }
+
+    return result;
+}
+
+/**
+ * Add a pathvector to the collection of items, cutting out any overlaps from the original items.
+ */
+static auto incremental_flatten(WorkItems &&subitems, SPItem *item, Geom::PathVector &&pathv)
+{
+    WorkItems result;
+    result.reserve(subitems.size() + 1);
+
+    for (auto &subitem : subitems) {
+        if (!pathvs_have_nonempty_overlap(subitem->get_pathv(), pathv)) {
+            result.emplace_back(std::move(subitem));
+            continue;
+        }
+
+        auto subitem_uniq = sp_pathvector_boolop(pathv, subitem->get_pathv(), bool_op_diff, fill_nonZero, fill_nonZero, true);
+        add_paths(result, std::move(subitem_uniq), subitem->get_item());
+    }
+
+    add_paths(result, std::move(pathv), item);
 
     return result;
 }
@@ -152,6 +176,31 @@ WorkItems SubItem::build_mosaic(std::vector<SPItem*> &&items)
     return result;
 }
 
+/**
+ * Take a list of items and flatten into a list of SubItems.
+ */
+WorkItems SubItem::build_flatten(std::vector<SPItem*> &&items)
+{
+    std::sort(items.begin(), items.end(), [] (auto a, auto b) {
+        return sp_object_compare_position_bool(a, b);
+    });
+
+    WorkItems result;
+
+    for (auto item : items) {
+        auto pathv = item->combined_pathvector() * item->i2dt_affine();
+        if (pathv.size() == 1 && !pathv[0].closed()) {
+            result = incremental_cut(std::move(result), pathv);
+            result.emplace_back(std::make_shared<SubItem>(std::move(pathv), item));
+            continue;
+        }
+        for (auto &path : pathv) {
+            result = incremental_flatten(std::move(result), item, std::move(path));
+        }
+    }
+
+    return result;
+}
 
 /**
  * Attempt to create shapes which fill-in the holes inside a fractured shape.

@@ -47,7 +47,7 @@ enum class TaskType
 class BooleanBuilder
 {
 public:
-    BooleanBuilder(ObjectSet *obj);
+    BooleanBuilder(ObjectSet *obj, bool flatten = false);
     ~BooleanBuilder();
 
     void undo();
@@ -59,7 +59,7 @@ public:
     bool task_add(const Geom::Point &point);
     void task_cancel();
     void task_commit();
-    bool has_task() { return (bool)_work_task; }
+    bool has_task() const { return (bool)_work_task; }
     bool highlight(const Geom::Point &point, bool add_task = true);
 
 private:
