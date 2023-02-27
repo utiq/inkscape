@@ -119,17 +119,17 @@ appimage:linux:
       - Inkscape*.AppImage*
 
 
-inkscape:macos:x64:
+inkscape:macos:arm:
   stage: build
   tags:
-    - mac
+    - macarm
   rules:
     - *do_not_run_for_schedules
     # Mac runner is restricted to "inkscape" and "dehesselle" namespaces; only generate pipelines for those
     - if: '$CI_PROJECT_NAMESPACE == "inkscape"'
     - if: '$CI_PROJECT_NAMESPACE == "dehesselle"'
   variables:
-    SDKROOT: /opt/sdks/MacOSX10.13.sdk
+    SDKROOT: /opt/sdks/MacOSX11.3.sdk
     INK_BUILD: $CI_PIPELINE_IID
   script:
     - packaging/macos/build.sh
@@ -142,33 +142,16 @@ inkscape:macos:x64:
       - toolset_overlay.tar.xz
 
 
-inkscape:macos:arm:
-  extends: inkscape:macos:x64
-  tags:
-    - macarm
-  when: manual   # on-demand only as we don't have a 24/7 runner
-  variables:
-    SDKROOT: /opt/sdks/MacOSX11.3.sdk
-
-# This job uses GitLab's shared runners for macOS. Please note:
-#   - Its purpose is to verify that our CI works on common platforms. The
-#     artifacts produced here are neither used for testing nor official
-#     releases.
-#   - The produced artifact does not provide the same backward compatibility
-#     as the one from 'inkscape:macos'. The minimum supported OS version is
-#     the one from the image being used.
-#   - This job is "on demand only" on purpose as it is very expensive.
-#     https://docs.gitlab.com/ee/ci/pipelines/cicd_minutes.html#cost-factor
-inkscape:macos:x64:gitlab:
-  extends: inkscape:macos:x64
+inkscape:macos:x64:
+  extends: inkscape:macos:arm
   tags:
     - shared-macos-amd64
-  image: macos-10.15-xcode-11
-  when: manual
+  image: macos-12-xcode-13
   variables:
     CCACHE_DIR: $CI_PROJECT_DIR/ccache
     SYS_USRLOCAL_IGNORE: "true"
     SDKROOT: ""
+    MACOSX_DEPLOYMENT_TARGET: "10.13"
   cache:
     key: "cache-macos"
     paths:
@@ -233,19 +216,11 @@ test:linux:
     when: on_failure
 
 test:macos:x64:
+  extends: inkscape:macos:x64
   stage: test
-  tags:
-    - mac
-  rules:
-    - *do_not_run_for_schedules
-    # Mac runner is restricted to "inkscape" and "dehesselle" namespaces; only generate pipelines for those
-    - if: '$CI_PROJECT_NAMESPACE == "inkscape"'
-    - if: '$CI_PROJECT_NAMESPACE == "dehesselle"'
   dependencies:
     - inkscape:macos:x64
   needs: ["inkscape:macos:x64"]
-  variables:
-    SDKROOT: /opt/sdks/MacOSX10.13.sdk
   script:
     - packaging/macos/test.sh
   after_script:
