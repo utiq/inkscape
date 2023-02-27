@@ -358,11 +358,19 @@ std::vector<SPPage *> SingleExport::getSelectedPages()
     return pages;
 }
 
-void SingleExport::onPagesChanged()
+/**
+ * Clear all page preview widgets and halting any in-progress updates.
+ */
+void SingleExport::clearPagePreviews()
 {
     while (auto widget = pages_list->get_child_at_index(0)) {
         pages_list->remove(*widget);
     }
+}
+
+void SingleExport::onPagesChanged()
+{
+    clearPagePreviews();
     if (!_document)
         return;
     auto &pm = _document->getPageManager();
@@ -1057,6 +1065,7 @@ void SingleExport::setDocument(SPDocument *document)
     _document = document;
     _page_changed_connection.disconnect();
     _page_selected_connection.disconnect();
+    clearPagePreviews();
     preview->setDocument(document);
     if (document) {
         auto &pm = document->getPageManager();

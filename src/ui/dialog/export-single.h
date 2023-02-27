@@ -172,6 +172,7 @@ private:
     /**
      * Page functions
      */
+    void clearPagePreviews();
     void onPagesChanged();
     void onPagesModified(SPPage *page);
     void onPagesSelected(SPPage *page);

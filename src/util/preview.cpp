@@ -29,6 +29,9 @@ namespace Preview {
 Async::Channel::Dest render_preview(SPDocument *doc, std::shared_ptr<Inkscape::Drawing> drawing, uint32_t bg, SPItem *item,
                                     unsigned width_in, unsigned height_in, Geom::OptRect const *dboxIn, std::function<void(Cairo::RefPtr<Cairo::ImageSurface>, int)> &&onfinished)
 {
+    if (!drawing->root())
+        return {};
+
     if (auto name = item ? item->getId() : nullptr) {
         // Get item even if it's in another document.
         if (item->document != doc) {
