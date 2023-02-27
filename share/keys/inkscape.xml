@@ -321,6 +321,9 @@ override) the bindings in the main default.xml.
                                                                &lt;primary&gt;&lt;alt&gt;&lt;shift&gt;slash" />
   <bind gaction="app.path-combine"                       keys="&lt;primary&gt;k" />
   <bind gaction="app.path-break-apart"                   keys="&lt;primary&gt;&lt;shift&gt;k" />
+  <bind gaction="app.path-split-path"                    keys="&lt;primary&gt;&lt;shift&gt;&lt;alt&gt;k" />
+  <bind gaction="app.path-fracture"                      keys="&lt;shift&gt;&lt;alt&gt;f" />
+  <bind gaction="app.path-flatten"                       keys="&lt;shift&gt;f" />
 
   <bind gaction="win.path-inset"                         keys="&lt;primary&gt;parenleft,
                                                                &lt;primary&gt;&lt;shift&gt;parenleft,
