@@ -14,6 +14,7 @@
 
 #include "drag-and-drop.h"
 
+#include <array>
 #include <glibmm/i18n.h>  // Internationalization
 
 #include "desktop-style.h"
@@ -60,23 +61,18 @@ enum ui_drop_target_info {
     APP_X_INK_PASTE
 };
 
-static GtkTargetEntry ui_drop_target_entries [] = {
-    // clang-format off
-    {(gchar *)"text/uri-list",                0, URI_LIST        },
-    {(gchar *)"image/svg+xml",                0, SVG_XML_DATA    },
-    {(gchar *)"image/svg",                    0, SVG_DATA        },
-    {(gchar *)"image/png",                    0, PNG_DATA        },
-    {(gchar *)"image/jpeg",                   0, JPEG_DATA       },
-    {(gchar *)"application/x-oswb-color",     0, APP_OSWB_COLOR  },
-    {(gchar *)"application/x-color",          0, APP_X_COLOR     },
-    {(gchar *)"application/x-inkscape-paste", 0, APP_X_INK_PASTE }
-    // clang-format on
+static const std::array<Gtk::TargetEntry, 8> ui_drop_target_entries = {
+    Gtk::TargetEntry("text/uri-list",                Gtk::TargetFlags(0), URI_LIST       ),
+    Gtk::TargetEntry("image/svg+xml",                Gtk::TargetFlags(0), SVG_XML_DATA   ),
+    Gtk::TargetEntry("image/svg",                    Gtk::TargetFlags(0), SVG_DATA       ),
+    Gtk::TargetEntry("image/png",                    Gtk::TargetFlags(0), PNG_DATA       ),
+    Gtk::TargetEntry("image/jpeg",                   Gtk::TargetFlags(0), JPEG_DATA      ),
+    Gtk::TargetEntry("application/x-oswb-color",     Gtk::TargetFlags(0), APP_OSWB_COLOR ),
+    Gtk::TargetEntry("application/x-color",          Gtk::TargetFlags(0), APP_X_COLOR    ),
+    Gtk::TargetEntry("application/x-inkscape-paste", Gtk::TargetFlags(0), APP_X_INK_PASTE)
 };
 
-static GtkTargetEntry *completeDropTargets = nullptr;
-static int completeDropTargetsCount = 0;
-
-static guint nui_drop_target_entries = G_N_ELEMENTS(ui_drop_target_entries);
+static std::vector<Gtk::TargetEntry> completeDropTargets;
 
 /** Convert screen (x, y) coordinates to desktop coordinates. */
 inline Geom::Point world2desktop(SPDesktop *desktop, int x, int y)
@@ -85,10 +81,8 @@ inline Geom::Point world2desktop(SPDesktop *desktop, int x, int y)
     return (Geom::Point(x, y) + desktop->canvas->get_area_world().min()) * desktop->w2d();
 }
 
-/* Drag and Drop */
-static
-void
-ink_drag_data_received(GtkWidget *widget,
+// Drag and Drop
+static void ink_drag_data_received(GtkWidget *widget,
                          GdkDragContext *drag_context,
                          gint x, gint y,
                          GtkSelectionData *data,
@@ -398,61 +392,30 @@ static void ink_drag_leave( GtkWidget */*widget*/,
 }
 #endif
 
-void
-ink_drag_setup(SPDesktopWidget* dtw)
+void ink_drag_setup(SPDesktopWidget *dtw)
 {
-    if ( completeDropTargets == nullptr || completeDropTargetsCount == 0 )
-    {
-        std::vector<Glib::ustring> types;
-
-        std::vector<Gdk::PixbufFormat> list = Gdk::Pixbuf::get_formats();
-        for (auto one:list) {
-            std::vector<Glib::ustring> typesXX = one.get_mime_types();
-            for (auto i:typesXX) {
-                types.push_back(i);
+    if (completeDropTargets.empty()) {
+        for (auto const &entry : ui_drop_target_entries) {
+            completeDropTargets.emplace_back(entry);
+        }
+        for (auto const &fmt : Gdk::Pixbuf::get_formats()) {
+            for (auto &type : fmt.get_mime_types()) {
+                completeDropTargets.emplace_back(std::move(type), Gtk::TargetFlags(0), IMAGE_DATA);
             }
-        }
-        completeDropTargetsCount = nui_drop_target_entries + types.size();
-        completeDropTargets = new GtkTargetEntry[completeDropTargetsCount];
-        for ( int i = 0; i < (int)nui_drop_target_entries; i++ ) {
-            completeDropTargets[i] = ui_drop_target_entries[i];
-        }
-        int pos = nui_drop_target_entries;
-
-        for (auto & type : types) {
-            completeDropTargets[pos].target = g_strdup(type.c_str());
-            completeDropTargets[pos].flags = 0;
-            completeDropTargets[pos].info = IMAGE_DATA;
-            pos++;
         }
     }
 
     auto canvas = dtw->get_canvas();
 
-    gtk_drag_dest_set(GTK_WIDGET(canvas->gobj()),
-                      GTK_DEST_DEFAULT_ALL,
-                      completeDropTargets,
-                      completeDropTargetsCount,
-                      GdkDragAction(GDK_ACTION_COPY | GDK_ACTION_MOVE));
+    canvas->drag_dest_set(completeDropTargets,
+                          Gtk::DestDefaults::DEST_DEFAULT_ALL,
+                          Gdk::DragAction::ACTION_COPY | Gdk::DragAction::ACTION_MOVE);
 
     g_signal_connect(G_OBJECT(canvas->gobj()),
                      "drag_data_received",
                      G_CALLBACK(ink_drag_data_received),
                      dtw);
-
-#if 0
-    g_signal_connect(G_OBJECT(win->gobj()),
-                     "drag_motion",
-                     G_CALLBACK(ink_drag_motion),
-                     NULL);
-
-    g_signal_connect(G_OBJECT(win->gobj()),
-                     "drag_leave",
-                     G_CALLBACK(ink_drag_leave),
-                     NULL);
-#endif
 }
-
 
 /*
   Local Variables:
