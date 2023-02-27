@@ -438,8 +438,6 @@ void SPFlowtext::_buildLayoutInput(SPObject *root, Shape const *exclusion_shape,
         }
     }
     
-    if (is<SPFlowpara>(root) && !root->hasChildren()) return;
-
     if (is<SPFlowdiv>(root) || is<SPFlowpara>(root) || is<SPFlowregionbreak>(root) || is<SPFlowline>(root)) {
         if (!root->hasChildren()) {
             layout.appendText("", root->style, root);

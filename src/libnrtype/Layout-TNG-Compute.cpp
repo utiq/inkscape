@@ -18,6 +18,7 @@
 #include "font-factory.h"
 #include "svg/svg-length.h"
 #include "object/sp-object.h"
+#include "object/sp-flowdiv.h"
 #include "Layout-TNG-Scanline-Maker.h"
 #include <limits>
 #include "livarot/Shape.h"
@@ -1482,10 +1483,16 @@ unsigned Layout::Calculator::_buildSpansForPara(ParagraphInfo *para) const
                 SPObject * object = control_code->source;
                 if (object) {
                     SPStyle * style = object->style;
+                    // This is a workaround for Inkscape 0.92 SVG1.2 flowed text output, it is technically
+                    // incorrect to ignore the style of an empty paragraph, but so many legacy documents
+                    // depend on this functionality that fixing it causes real issues.
+                    if (is<SPFlowpara>(object)) {
+                        style = object->parent->style;
+                    }
                     if (style) {
                         new_span.font_size = style->font_size.computed * _flow.getTextLengthMultiplierDue();
                         auto font = FontFactory::get().FaceFromStyle(style);
-                        new_span.line_height_multiplier = _computeFontLineHeight(object->style);
+                        new_span.line_height_multiplier = _computeFontLineHeight(style);
                         new_span.line_height.set(font.get());
                         new_span.line_height *= new_span.font_size;
                     }
