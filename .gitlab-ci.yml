@@ -133,8 +133,6 @@ inkscape:macos:arm:
     INK_BUILD: $CI_PIPELINE_IID
   script:
     - packaging/macos/build.sh
-  after_script:
-    - packaging/macos/mibap/uninstall_toolset.sh
   artifacts:
     expire_in: 1 year
     paths:
@@ -223,8 +221,6 @@ test:macos:x64:
   needs: ["inkscape:macos:x64"]
   script:
     - packaging/macos/test.sh
-  after_script:
-    - packaging/macos/mibap/uninstall_toolset.sh save_testfiles
   artifacts:
     paths:
       - testfiles.tar.xz

@@ -29,14 +29,22 @@ if git -C "$MIBAP_DIR" checkout "$VERSION"; then
     # install build dependencies and Inkscape
     "$MIBAP_DIR"/install_toolset.sh restore_overlay
     # run the test suite
-    "$MIBAP_DIR"/310-inkscape_test.sh
+    if ! "$MIBAP_DIR"/310-inkscape_test.sh; then
+      # save testfiles only on failure
+      "$MIBAP_DIR"/uninstall_toolset.sh save_testfiles
+      exit 1
+    fi
   else
     # install build dependencies
     "$MIBAP_DIR"/install_toolset.sh
     # build Inkscape
-    "$MIBAP_DIR"/build_inkscape.sh
-    # uninstall build dependencies and archive build files
-    "$MIBAP_DIR"/uninstall_toolset.sh save_overlay
+    if "$MIBAP_DIR"/build_inkscape.sh; then
+      # uninstall build dependencies and archive build files
+      "$MIBAP_DIR"/uninstall_toolset.sh save_overlay
+    else
+      "$MIBAP_DIR"/uninstall_toolset.sh
+      exit 1
+    fi
   fi
 else
   echo "error: unknown version $VERSION"
