@@ -182,6 +182,32 @@ static int get_num_matches(Glib::ustring const &key, Gtk::Widget *widget)
     return matches;
 }
 
+// Shortcuts model =============
+
+class ModelColumns: public Gtk::TreeModel::ColumnRecord {
+public:
+    ModelColumns() {
+        add(name);
+        add(id);
+        add(shortcut);
+        add(description);
+        add(shortcutkey);
+        add(user_set);
+    }
+    ~ModelColumns() override = default;
+
+    Gtk::TreeModelColumn<Glib::ustring> name;
+    Gtk::TreeModelColumn<Glib::ustring> id;
+    Gtk::TreeModelColumn<Glib::ustring> shortcut;
+    Gtk::TreeModelColumn<Glib::ustring> description;
+    Gtk::TreeModelColumn<Gtk::AccelKey> shortcutkey;
+    Gtk::TreeModelColumn<unsigned int> user_set;
+};
+ModelColumns _kb_columns;
+static ModelColumns& onKBGetCols() {
+    return _kb_columns;
+}
+
 /**
  * Add CSS-based highlight-class and pango highlight to a Gtk::Label
  *
@@ -3107,6 +3133,9 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     shortcut_scroller->set_vexpand();
     // -------- Search --------
     _kb_search.init("/options/kbshortcuts/value", true);
+    // clear filter initially to show all shortcuts;
+    // this entry will typically be stale and long forgotten and not what user is looking for
+    _kb_search.set_text({});
     _kb_page_shortcuts.add_line( false, _("Search:"), _kb_search, "", "", true);
     _kb_page_shortcuts.attach(*shortcut_scroller, 0, 3, 2, 1);
 
@@ -3236,6 +3265,13 @@ void InkscapePreferences::onKBExport()
 bool InkscapePreferences::onKBSearchKeyEvent(GdkEventKey * /*event*/)
 {
     _kb_filter->refilter();
+    auto search = _kb_search.get_text();
+    if (search.length() > 2) {
+        _kb_tree.expand_all();
+    }
+    else {
+        _kb_tree.collapse_all();
+    }
     return FALSE;
 }
 
@@ -3303,26 +3339,36 @@ void InkscapePreferences::onKBTreeEdited (const Glib::ustring& path, guint accel
     }
 }
 
-bool InkscapePreferences::onKBSearchFilter(const Gtk::TreeModel::const_iterator& iter)
-{
-    Glib::ustring search = _kb_search.get_text().lowercase();
-    if (search.empty()) {
-        return TRUE;
-    }
-
+static bool is_leaf_visible(const Gtk::TreeModel::const_iterator& iter, const Glib::ustring& search) {
     Glib::ustring name = (*iter)[_kb_columns.name];
     Glib::ustring desc = (*iter)[_kb_columns.description];
     Glib::ustring shortcut = (*iter)[_kb_columns.shortcut];
     Glib::ustring id = (*iter)[_kb_columns.id];
 
-    if (id.empty()) {
-        return TRUE;    // Keep all group nodes visible
+    if (name.lowercase().find(search) != name.npos
+        || shortcut.lowercase().find(search) != name.npos
+        || desc.lowercase().find(search) != name.npos
+        || id.lowercase().find(search) != name.npos) {
+        return true;
     }
 
-    return (name.lowercase().find(search) != name.npos
-            || shortcut.lowercase().find(search) != name.npos
-            || desc.lowercase().find(search) != name.npos
-            || id.lowercase().find(search) != name.npos);
+    for (auto& child : iter->children()) {
+        if (is_leaf_visible(child, search)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool InkscapePreferences::onKBSearchFilter(const Gtk::TreeModel::const_iterator& iter)
+{
+    Glib::ustring search = _kb_search.get_text().lowercase();
+    if (search.empty()) {
+        return true;
+    }
+
+    return is_leaf_visible(iter, search);
 }
 
 void InkscapePreferences::onKBRealize()
@@ -3331,12 +3377,6 @@ void InkscapePreferences::onKBRealize()
         _kb_shortcuts_loaded = true;
         onKBListKeyboardShortcuts();
     }
-}
-
-InkscapePreferences::ModelColumns &InkscapePreferences::onKBGetCols()
-{
-    static InkscapePreferences::ModelColumns cols;
-    return cols;
 }
 
 void InkscapePreferences::onKBShortcutRenderer(Gtk::CellRenderer *renderer, Gtk::TreeIter const &iter) {

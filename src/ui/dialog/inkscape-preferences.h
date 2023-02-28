@@ -577,27 +577,6 @@ protected:
     /*
      * Keyboard shortcut members
      */
-    class ModelColumns: public Gtk::TreeModel::ColumnRecord {
-    public:
-        ModelColumns() {
-            add(name);
-            add(id);
-            add(shortcut);
-            add(description);
-            add(shortcutkey);
-            add(user_set);
-        }
-        ~ModelColumns() override = default;
-
-        Gtk::TreeModelColumn<Glib::ustring> name;
-        Gtk::TreeModelColumn<Glib::ustring> id;
-        Gtk::TreeModelColumn<Glib::ustring> shortcut;
-        Gtk::TreeModelColumn<Glib::ustring> description;
-        Gtk::TreeModelColumn<Gtk::AccelKey> shortcutkey;
-        Gtk::TreeModelColumn<unsigned int> user_set;
-    };
-    ModelColumns _kb_columns;
-    static ModelColumns &onKBGetCols();
     Glib::RefPtr<Gtk::TreeStore> _kb_store;
     Gtk::TreeView _kb_tree;
     Gtk::CellRendererAccel _kb_shortcut_renderer;

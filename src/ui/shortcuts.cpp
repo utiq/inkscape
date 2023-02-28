@@ -497,7 +497,6 @@ Shortcuts::add_shortcut(Glib::ustring name, const Gtk::AccelKey& shortcut, bool 
     }
 
     // Add shortcut
-if (user) g_message("add scut: %s - '%s'", name.c_str(), shortcut.get_abbrev().c_str());
 
     // To see if action exists, We need to compare action names without values...
     Glib::ustring action_name_new;
@@ -518,7 +517,6 @@ if (user) g_message("add scut: %s - '%s'", name.c_str(), shortcut.get_abbrev().c
             if (!user) {
                 accels = app->get_accels_for_action(name);
             }
-if (user) g_message("append scut: %s - %s", name.c_str(), accels.empty() ? "--" : accels[0].c_str());
             accels.push_back(shortcut.get_abbrev());
             app->set_accels_for_action(name, accels);
             action_user_set[name] = user;
