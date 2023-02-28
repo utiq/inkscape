@@ -820,6 +820,8 @@ void BatchExport::setDocument(SPDocument *document)
     if (!_desktop) {
         document = nullptr;
     }
+    if (_document == document)
+        return;
 
     _document = document;
     _pages_changed_connection.disconnect();

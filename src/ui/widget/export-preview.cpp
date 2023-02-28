@@ -14,21 +14,31 @@
 #include "object/sp-item.h"
 #include "object/sp-root.h"
 #include "util/preview.h"
+#include "io/resource.h"
 
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-void ExportPreview::resetPixels()
+void ExportPreview::resetPixels(bool new_size)
 {
     clear();
+    // An icon to use when the preview hasn't loaded yet
+    static Glib::RefPtr<Gdk::Pixbuf> preview_loading;
+    if (!preview_loading || new_size) {
+        using namespace Inkscape::IO::Resource;
+        preview_loading = Gdk::Pixbuf::create_from_file(get_filename(PIXMAPS, "preview_loading.svg"), size, size);
+    }
+    if (preview_loading) {
+        set(preview_loading);
+    }
     show();
 }
 
 void ExportPreview::setSize(int newSize)
 {
     size = newSize;
-    resetPixels();
+    resetPixels(true);
 }
 
 ExportPreview::~ExportPreview()
@@ -59,20 +69,27 @@ void ExportPreview::setDbox(double x0, double x1, double y0, double y1)
 
 void ExportPreview::setDocument(SPDocument *document)
 {
+
     if (drawing) {
         _document->getRoot()->invoke_hide(visionkey);
         drawing.reset();
         _item = nullptr;
     }
     _document = document;
+
     if (_document) {
-        drawing = std::make_shared<Inkscape::Drawing>();
-        visionkey = SPItem::display_key_new(1);
-        if (auto di = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY)) {
-            drawing->setRoot(di);
-        } else {
-            drawing.reset();
-        }
+        // Construct the previews when gtk idle to avoid blocking.
+        _create_drawing_idle = Glib::signal_timeout().connect([=]() {
+            drawing = std::make_shared<Inkscape::Drawing>();
+            visionkey = SPItem::display_key_new(1);
+            if (auto di = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY)) {
+                drawing->setRoot(di);
+            } else {
+                drawing.reset();
+            }
+            renderPreview();
+            return false; // disconnect
+        }, delay_msecs);
     }
 }
 

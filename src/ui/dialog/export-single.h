@@ -194,6 +194,7 @@ private:
     sigc::connection extensionConn;
     sigc::connection exportConn;
     sigc::connection browseConn;
+    sigc::connection _pages_list_changed;
     // Document Signals
     sigc::connection _page_selected_connection;
     sigc::connection _page_modified_connection;

@@ -14,6 +14,7 @@
 #include <2geom/rect.h>
 #include <gtkmm.h>
 #include "display/drawing.h"
+#include "helper/auto-connection.h"
 #include "async/channel.h"
 
 class SPDocument;
@@ -38,7 +39,7 @@ public:
     void setItem(SPItem *item);
     void setDbox(double x0, double x1, double y0, double y1);
     void queueRefresh();
-    void resetPixels();
+    void resetPixels(bool new_size = false);
     void setSize(int newSize);
     void setBackgroundColor(uint32_t bg_color);
 
@@ -60,6 +61,7 @@ private:
     std::vector<SPItem*> _hidden_excluded;
 
     Async::Channel::Dest dest;
+    Inkscape::auto_connection _create_drawing_idle;
 
     void renderPreview();
     void performHide();

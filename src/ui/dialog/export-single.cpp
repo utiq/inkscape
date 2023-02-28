@@ -191,7 +191,7 @@ void SingleExport::setup()
     setPagesMode(false);
     loadExportHints();
     // Refresh the filename when the user selects a different page
-    pages_list->signal_selected_children_changed().connect([=]() {
+    _pages_list_changed = pages_list->signal_selected_children_changed().connect([=]() {
         loadExportHints();
         refreshArea();
     });
@@ -363,9 +363,11 @@ std::vector<SPPage *> SingleExport::getSelectedPages()
  */
 void SingleExport::clearPagePreviews()
 {
+    _pages_list_changed.block();
     while (auto widget = pages_list->get_child_at_index(0)) {
         pages_list->remove(*widget);
     }
+    _pages_list_changed.unblock();
 }
 
 void SingleExport::onPagesChanged()
@@ -373,6 +375,7 @@ void SingleExport::onPagesChanged()
     clearPagePreviews();
     if (!_document)
         return;
+    _pages_list_changed.block();
     auto &pm = _document->getPageManager();
     if (pm.getPageCount() > 1) {
         for (auto page : pm.getPages()) {
@@ -384,6 +387,7 @@ void SingleExport::onPagesChanged()
     if (auto ext = si_extension_cb->getExtension()) {
         setPagesMode(!ext->is_raster());
     }
+    _pages_list_changed.unblock();
 }
 
 void SingleExport::onPagesModified(SPPage *page)
@@ -1062,11 +1066,14 @@ void SingleExport::setDesktop(SPDesktop *desktop)
 
 void SingleExport::setDocument(SPDocument *document)
 {
+    if (_document == document || !_desktop)
+        return;
+
+    preview->setDocument(document);
+
     _document = document;
     _page_changed_connection.disconnect();
     _page_selected_connection.disconnect();
-    clearPagePreviews();
-    preview->setDocument(document);
     if (document) {
         auto &pm = document->getPageManager();
         _page_selected_connection = pm.connectPageSelected(sigc::mem_fun(*this, &SingleExport::onPagesSelected));
@@ -1077,6 +1084,8 @@ void SingleExport::setDocument(SPDocument *document)
 
         onPagesChanged();
         refreshArea();
+    } else {
+        clearPagePreviews();
     }
 }
 
