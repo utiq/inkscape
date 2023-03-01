@@ -82,6 +82,7 @@ public:
 
 	void snappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inkscape::SnapPreferences const *snapprefs) const override;
         const char* displayName() const override;
+  const char* typeName() const override;
 	char* description() const override;
 
 	void set_shape() override;

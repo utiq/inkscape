@@ -325,6 +325,10 @@ const char* SPOffset::displayName() const {
     }
 }
 
+const char* SPOffset::typeName() const {
+    return "offset";
+}
+
 gchar* SPOffset::description() const {
     // TRANSLATORS COMMENT: %s is either "outset" or "inset" depending on sign
     return g_strdup_printf(_("%s by %f pt"), (this->rad >= 0) ?
