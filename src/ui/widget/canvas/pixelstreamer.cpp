@@ -461,35 +461,28 @@ public:
 
 } // namespace
 
-template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Persistent>()   { return std::make_unique<PersistentPixelStreamer>(); }
-template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Asynchronous>() { return std::make_unique<AsynchronousPixelStreamer>(); }
-template<> std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Synchronous>()  { return std::make_unique<SynchronousPixelStreamer>(); }
-
-template<>
-std::unique_ptr<PixelStreamer> PixelStreamer::create<PixelStreamer::Method::Auto>()
+std::unique_ptr<PixelStreamer> PixelStreamer::create_supported(Method method)
 {
     int ver = epoxy_gl_version();
 
-    if (ver >= 30 || epoxy_has_gl_extension("GL_ARB_map_buffer_range")) {
-        if (ver >= 44 || (epoxy_has_gl_extension("GL_ARB_buffer_storage") &&
-                          epoxy_has_gl_extension("GL_ARB_texture_storage") &&
-                          epoxy_has_gl_extension("GL_ARB_SYNC"))) {
-            return create<Method::Persistent>();
+    if (method <= Method::Asynchronous) {
+        if (ver >= 30 || epoxy_has_gl_extension("GL_ARB_map_buffer_range")) {
+            if (method <= Method::Persistent) {
+                if (ver >= 44 || (epoxy_has_gl_extension("GL_ARB_buffer_storage") &&
+                                  epoxy_has_gl_extension("GL_ARB_texture_storage") &&
+                                  epoxy_has_gl_extension("GL_ARB_SYNC")))
+                {
+                    return std::make_unique<PersistentPixelStreamer>();
+                } else if (method != Method::Auto) {
+                    std::cerr << "Persistent PixelStreamer not available" << std::endl;
+                }
+            }
+            return std::make_unique<AsynchronousPixelStreamer>();
+        } else if (method != Method::Auto) {
+            std::cerr << "Asynchronous PixelStreamer not available" << std::endl;
         }
-        return create<Method::Asynchronous>();
     }
-    return create<Method::Synchronous>();
-}
-
-std::unique_ptr<PixelStreamer> PixelStreamer::create(Method method)
-{
-    switch (method) {
-        case Method::Persistent:   return create<Method::Persistent>();
-        case Method::Asynchronous: return create<Method::Asynchronous>();
-        case Method::Synchronous:  return create<Method::Synchronous>();
-        case Method::Auto:         return create<Method::Auto>();
-        default: return nullptr; // Never triggered, but GCC errors out on build without.
-    }
+    return std::make_unique<SynchronousPixelStreamer>();
 }
 
 } // namespace Widget

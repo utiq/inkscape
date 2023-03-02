@@ -26,18 +26,14 @@ public:
     // Method for streaming pixels to the GPU.
     enum class Method
     {
+        Auto,         // Use the best option available at runtime.
         Persistent,   // Persistent buffer mapping. (Best, requires OpenGL 4.4.)
         Asynchronous, // Ordinary buffer mapping. (Almost as good, requires OpenGL 3.0.)
-        Synchronous,  // Synchronous texture uploads. (Worst but still tolerable, requires OpenGL 1.1.)
-        Auto          // Use the best option available at runtime.
+        Synchronous   // Synchronous texture uploads. (Worst but still tolerable, requires OpenGL 1.1.)
     };
 
-    // Create a PixelStreamer using the given method.
-    template <Method method>
-    static std::unique_ptr<PixelStreamer> create();
-
-    // Create a PixelStreamer using a choice of method specified at runtime.
-    static std::unique_ptr<PixelStreamer> create(Method method);
+    // Create a PixelStreamer using a choice of method specified at runtime, falling back if unsupported.
+    static std::unique_ptr<PixelStreamer> create_supported(Method method);
 
     // Return the method in use.
     virtual Method get_method() const = 0;

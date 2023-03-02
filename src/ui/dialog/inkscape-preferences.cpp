@@ -2958,7 +2958,7 @@ void InkscapePreferences::initPageRendering()
         constexpr int values[] = { 1, 2, 3, 4 };
         Glib::ustring const labels[] = { _("Auto"), _("Persistent"), _("Asynchronous"), _("Synchronous") };
         _canvas_pixelstreamer_method.init("/options/rendering/pixelstreamer_method", labels, values, 4, 1);
-        add_devmode_line(_("Pixel streaming method"), _canvas_pixelstreamer_method, "", _("Change the method used for streaming pixel data to the GPU. The default is Auto, which picks the best method available at runtime. As for the other options, higher up is better. Be warned! No attempt is made to stop you from selecting a method that isn't supported! (This is dev mode, afer all.) If you do so, it will be an instant crash."));
+        add_devmode_line(_("Pixel streaming method"), _canvas_pixelstreamer_method, "", _("Change the method used for streaming pixel data to the GPU. The default is Auto, which picks the best method available at runtime. As for the other options, higher up is better."));
     }
     _canvas_padding.init("/options/rendering/padding", 0.0, 1000.0, 1.0, 0.0, 350.0, true, false);
     add_devmode_line(_("Buffer padding"), _canvas_padding, C_("pixel abbreviation", "px"), _("Use buffers bigger than the window by this amount"));

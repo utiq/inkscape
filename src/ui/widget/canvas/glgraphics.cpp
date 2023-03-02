@@ -349,7 +349,7 @@ GLGraphics::GLGraphics(Prefs const &prefs, Stores const &stores, PageInfo const 
     texturecache = TextureCache::create();
 
     // Create the PixelStreamer.
-    pixelstreamer = PixelStreamer::create(pref_to_pixelstreamer(prefs.pixelstreamer_method));
+    pixelstreamer = PixelStreamer::create_supported(pref_to_pixelstreamer(prefs.pixelstreamer_method));
 
     // Set the last known state as unspecified, forcing a pipeline recreation whatever the next operation is.
     state = State::None;
