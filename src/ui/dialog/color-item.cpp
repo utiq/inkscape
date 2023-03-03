@@ -7,6 +7,7 @@
 #include <glibmm/i18n.h>
 #include <gdkmm/general.h>
 
+#include "helper/sigc-track-obj.h"
 #include "inkscape-preferences.h"
 #include "io/resource.h"
 #include "io/sys.h"
@@ -94,11 +95,11 @@ ColorItem::ColorItem(SPGradient *gradient, DialogBase *dialog)
     description = gradient->defaultLabel();
     color_id = gradient->getId();
 
-    gradient->connectRelease(sigc::track_obj([this] (SPObject*) {
+    gradient->connectRelease(SIGC_TRACKING_ADAPTOR([this] (SPObject*) {
         boost::get<GradientData>(data).gradient = nullptr;
     }, *this));
 
-    gradient->connectModified(sigc::track_obj([this] (SPObject *obj, unsigned flags) {
+    gradient->connectModified(SIGC_TRACKING_ADAPTOR([this] (SPObject *obj, unsigned flags) {
         if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
             cache_dirty = true;
             queue_draw();
@@ -303,7 +304,7 @@ void ColorItem::on_rightclick(GdkEventButton *event)
     auto additem = [&, this] (Glib::ustring const &name, sigc::slot<void()> slot) {
         auto item = Gtk::make_managed<Gtk::MenuItem>(name);
         menu->append(*item);
-        item->signal_activate().connect(sigc::track_obj(slot, *this));
+        item->signal_activate().connect(SIGC_TRACKING_ADAPTOR(slot, *this));
     };
 
     // TRANSLATORS: An item in context menu on a colour in the swatches

@@ -37,6 +37,7 @@ set(helper_SRC
 	mathfns.h
 	pixbuf-ops.h
 	png-write.h
+	sigc-track-obj.h
 	stock-items.h
 )
 

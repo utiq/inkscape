@@ -398,11 +398,7 @@ endif(WITH_NLS)
 pkg_check_modules(SIGC++ REQUIRED sigc++-2.0 )
 sanitize_ldflags_for_libs(SIGC++_LDFLAGS)
 list(APPEND INKSCAPE_LIBS ${SIGC++_LDFLAGS})
-list(APPEND INKSCAPE_CXX_FLAGS ${SIGC++_CFLAGS_OTHER})
-if(SIGC++_VERSION VERSION_LESS "2.12")
-    # 2.12 and 3.4 deprecate track_obj which we still use
-    list(APPEND INKSCAPE_CXX_FLAGS "-DSIGCXX_DISABLE_DEPRECATED")
-endif()
+list(APPEND INKSCAPE_CXX_FLAGS ${SIGC++_CFLAGS_OTHER} "-DSIGCXX_DISABLE_DEPRECATED")
 
 pkg_check_modules(EPOXY REQUIRED epoxy )
 sanitize_ldflags_for_libs(EPOXY_LDFLAGS)
