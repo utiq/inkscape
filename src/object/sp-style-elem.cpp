@@ -488,6 +488,8 @@ void SPStyleElem::read_content() {
             // if the style is the first style sheet that we've seen, set the document's
             // first style sheet to this style and create a cascade object with it.
             cr_cascade_set_sheet(cascade, style_sheet, ORIGIN_AUTHOR);
+            // unref style sheet; it's been refed by adding to cascade
+            cr_stylesheet_unref(style_sheet);
         } else {
             // If not the first, then chain up this style_sheet
             cr_stylesheet_append_stylesheet(topsheet, style_sheet);
