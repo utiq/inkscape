@@ -211,6 +211,11 @@ bool Box3dTool::root_handler(GdkEvent* event) {
 
     case GDK_MOTION_NOTIFY:
         if (dragging && ( event->motion.state & GDK_BUTTON1_MASK )) {
+            if (!cur_persp) {
+                // Can happen if perspective is deleted while dragging, e.g. on document closure.
+                ret = true;
+                break;
+            }
             if ( this->within_tolerance
                  && ( abs( (gint) event->motion.x - this->xp ) < this->tolerance )
                  && ( abs( (gint) event->motion.y - this->yp ) < this->tolerance ) ) {
