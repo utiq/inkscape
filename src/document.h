@@ -369,12 +369,6 @@ public:
     // Actions ---------------------------------
     Glib::RefPtr<Gio::SimpleActionGroup> getActionGroup() { return action_group; }
 
-protected:
-    friend class Inkscape::DocumentUndo;
-    bool isUndoBusy() const { return _undobusy; }
-    void setUndoBusy(bool undobussy) { _undobusy = undobussy; }
-    Glib::ustring getEventDescriptionStacked() const { return _event_description_stacked; }
-    void setEventDescriptionStacked(Glib::ustring event_description_stacked) { _event_description_stacked = event_description_stacked; }
     /************* Data ***************/
 private:
 
@@ -440,8 +434,6 @@ private:
     int history_size;
     std::vector<Inkscape::Event *> undo; /* Undo stack of reprs */
     std::vector<Inkscape::Event *> redo; /* Redo stack of reprs */
-    bool _undobusy = false;
-    Glib::ustring _event_description_stacked = "";  
     /* Undo listener */
     Inkscape::CompositeUndoStackObserver undoStackObservers;
 
