@@ -12,14 +12,8 @@
 #include "font-collection-selector.h"
 
 #include "libnrtype/font-lister.h"
-#include "libnrtype/font-instance.h"
 
 // For updating from selection
-#include "inkscape.h"
-#include "desktop.h"
-#include "object/sp-text.h"
-#include "style.h"
-#include "ui/util.h"
 #include "util/document-fonts.h"
 
 namespace Inkscape {
@@ -468,11 +462,11 @@ void FontCollectionSelector::on_edit_button_pressed()
 
 int FontCollectionSelector::deleltion_warning_message_dialog(const Glib::ustring &collection_name)
 {
-        Glib::ustring message = Glib::ustring::compose(_("Are you sure want to delete the \"%1\" font collection\n"),
-                                                       collection_name);
-        Gtk::MessageDialog dialog(message, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true);
-        dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
-        return dialog.run();
+    Glib::ustring message = Glib::ustring::compose(_("Are you sure want to delete the \"%1\" font collection\n"),
+                                                   collection_name);
+    Gtk::MessageDialog dialog(message, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true);
+    dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
+    return dialog.run();
 }
 
 bool FontCollectionSelector::on_key_pressed(GdkEventKey *event)

@@ -121,7 +121,6 @@ protected:
     sigc::signal <void (int)> signal_changed;
 };
 
- 
 } // namespace Widget
 } // namespace UI
 } // namespace Inkscape

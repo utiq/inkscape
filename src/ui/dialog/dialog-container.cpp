@@ -133,7 +133,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "FillStroke")         return std::make_unique<FillAndStroke>();
     else if (dialog_type == "FilterEffects")      return std::make_unique<FilterEffectsDialog>();
     else if (dialog_type == "Find")               return std::make_unique<Find>();
-    else if(dialog_type == "FontCollections")     return std::make_unique<FontCollectionsManager>();
+    else if (dialog_type == "FontCollections")    return std::make_unique<FontCollectionsManager>();
     else if (dialog_type == "Glyphs")             return std::make_unique<GlyphsPanel>();
     else if (dialog_type == "IconPreview")        return std::make_unique<IconPreviewPanel>();
     else if (dialog_type == "Input")              return InputDialog::create();

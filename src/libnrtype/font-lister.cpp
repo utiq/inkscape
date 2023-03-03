@@ -1342,9 +1342,6 @@ void font_lister_cell_data_func2(GtkCellLayout * /*cell_layout*/,
         std::vector<Glib::ustring> tokens = Glib::Regex::split_simple("\\s*,\\s*", family);
         for (auto token : tokens) {
 
-            GtkTreeIter iter;
-            gboolean valid;
-            gboolean onSystem = true;
             bool found = Inkscape::FontLister::get_instance()->font_installed_on_system(token);
 
             if (found) {

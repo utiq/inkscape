@@ -14,11 +14,8 @@
 #ifndef INKSCAPE_UI_DIALOG_FONT_COLLECTIONS_MANAGER_H
 #define INKSCAPE_UI_DIALOG_FONT_COLLECTIONS_MANAGER_H
 
-#include <glibmm/refptr.h>
-
 #include "helper/auto-connection.h"
 #include "ui/dialog/dialog-base.h"
-#include "ui/widget/frame.h"
 #include "ui/widget/font-selector.h"
 #include "ui/widget/font-collection-selector.h"
 
@@ -43,15 +40,8 @@ public:
     enum SelectionStates {SYSTEM_COLLECTION = -1, USER_COLLECTION, USER_COLLECTION_FONT};
 
     FontCollectionsManager();
-    ~FontCollectionsManager() override;
 
-    /**
-     * Helper function which returns a new instance of the dialog.
-     * getInstance is needed by the dialog manager (Inkscape::UI::Dialog::DialogManager).
-     */
-    static FontCollectionsManager &getInstance() { return *new FontCollectionsManager(); }
-    FontCollectionsManager(FontCollectionsManager const &d) = delete;
-    FontCollectionsManager operator=(FontCollectionsManager const &d) = delete;
+private:
     void on_search_entry_changed();
     void on_create_button_pressed();
     void on_edit_button_pressed();
@@ -59,8 +49,6 @@ public:
     void on_reset_button_pressed();
     void change_font_count_label();
     void on_selection_changed(int state);
-
-private:
 
     /*
      * All the dialogs widgets
@@ -82,12 +70,11 @@ private:
 
     // Signals
     auto_connection _font_count_changed_connection;
-
 };
 
-} //namespace Dialog
-} //namespace UI
-} //namespace Inkscape
+} // namespace Dialog
+} // namespace UI
+} // namespace Inkscape
 
 #endif // INKSCAPE_UI_DIALOG_FONT_COLLECTIONS_MANAGER_H
 

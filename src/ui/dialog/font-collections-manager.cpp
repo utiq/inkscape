@@ -11,23 +11,17 @@
 #include "font-collections-manager.h"
 
 #include "io/resource.h"
-
-#include "ui/icon-loader.h"
 #include "ui/icon-names.h"
-#include "ui/widget/iconrenderer.h"
-
 #include "util/font-collections.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <glibmm/i18n.h>
-#include <libnrtype/font-lister.h>
+#include "libnrtype/font-lister.h"
 
 namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-/**
- */
 FontCollectionsManager::FontCollectionsManager()
     : DialogBase("/dialogs/fontcollections", "FontCollections")
 {
@@ -67,7 +61,7 @@ FontCollectionsManager::FontCollectionsManager()
 
     // Set the button images.
     _create_button->set_image_from_icon_name(INKSCAPE_ICON("list-add"));
-    _edit_button->set_image_from_icon_name(INKSCAPE_ICON("edit"));
+    _edit_button->set_image_from_icon_name(INKSCAPE_ICON("document-edit"));
     _delete_button->set_image_from_icon_name(INKSCAPE_ICON("edit-delete"));
 
     // Paned settings.
@@ -86,11 +80,10 @@ FontCollectionsManager::FontCollectionsManager()
     _edit_button->signal_clicked().connect([=](){ on_edit_button_pressed(); });
     _delete_button->signal_clicked().connect([=](){ on_delete_button_pressed(); });
     _reset_button->signal_clicked().connect([=](){ on_reset_button_pressed(); });
-}
 
-FontCollectionsManager::~FontCollectionsManager()
-{
-
+    // Edit and delete are initially insensitive because nothing is selected.
+    _edit_button->set_sensitive(false);
+    _delete_button->set_sensitive(false);
 }
 
 void FontCollectionsManager::on_search_entry_changed()

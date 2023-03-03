@@ -703,7 +703,6 @@ unsigned PathManipulator::_deleteStretch(NodeList::iterator start, NodeList::ite
     bool keep_shape = mode == NodeDeleteMode::automatic || mode == NodeDeleteMode::curve_fit;
 
     if ((mode == NodeDeleteMode::automatic || mode == NodeDeleteMode::inverse_auto) && start.prev() && end) {
-        int i = 1;
         for (NodeList::iterator cur = start; cur != end; cur = cur.next()) {
             auto back =  cur->back() ->isDegenerate() ? cur.prev()->position() : cur->back() ->position();
             auto front = cur->front()->isDegenerate() ? cur.next()->position() : cur->front()->position();
@@ -734,7 +733,6 @@ unsigned PathManipulator::_deleteStretch(NodeList::iterator start, NodeList::ite
     }
 
     if (keep_shape && start.prev() && end) {
-        unsigned num_samples = (del_len + 1) * samples_per_segment + 1;
         std::vector<InputPoint> input;
         Geom::Point result[4];
         Geom::LineSegment s;

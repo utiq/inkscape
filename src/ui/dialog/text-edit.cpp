@@ -45,7 +45,6 @@
 #include "dialog-container.h"
 #include "document-undo.h"
 #include "document.h"
-#include "font-collections-manager.h"
 #include "inkscape.h"
 #include "style.h"
 #include "text-editing.h"
@@ -56,13 +55,10 @@
 
 #include "object/sp-flowtext.h"
 #include "object/sp-text.h"
-#include "object/sp-textpath.h"
 
 #include "io/resource.h"
 #include "svg/css-ostringstream.h"
 #include "ui/icon-names.h"
-#include "ui/shortcuts.h"
-#include "ui/toolbar/text-toolbar.h"
 #include "ui/widget/font-selector.h"
 
 #include "util/units.h"
@@ -73,9 +69,6 @@ namespace Dialog {
 
 TextEdit::TextEdit()
     : DialogBase("/dialogs/textandfont", "Text")
-    , selectChangedConn()
-    , subselChangedConn()
-    , selectModifiedConn()
     , blocked(false)
       /*
            TRANSLATORS: Test string used in text and font dialog (when no
@@ -530,7 +523,7 @@ void TextEdit::display_font_collections()
     }
 
     // Insert row separator.
-    auto sep = Gtk::manage(new Gtk::Separator());
+    auto sep = Gtk::make_managed<Gtk::Separator>();
     sep->set_margin_bottom(2);
     auto sep_row = Gtk::make_managed<Gtk::ListBoxRow>();
     sep_row->set_can_focus(false);
