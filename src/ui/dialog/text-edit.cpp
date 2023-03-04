@@ -166,8 +166,8 @@ TextEdit::TextEdit()
     reset_button->signal_clicked().connect([=](){ on_reset_button_pressed(); });
     collection_editor_button->signal_clicked().connect([=](){ on_fcm_button_clicked(); });
     Inkscape::FontLister::get_instance()->connectUpdate(sigc::mem_fun(*this, &TextEdit::change_font_count_label));
-    font_collections->connect_update([=](){ display_font_collections(); });
-    font_collections->connect_selection_update([=](){ display_font_collections(); });
+    fontCollectionsUpdate = font_collections->connect_update([=]() { display_font_collections(); });
+    fontCollectionsChangedSelection = font_collections->connect_selection_update([=]() { display_font_collections(); });
 
     font_selector.set_name("TextEdit");
     change_font_count_label();

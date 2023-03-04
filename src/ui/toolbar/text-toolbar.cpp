@@ -296,11 +296,11 @@ TextToolbar::TextToolbar(SPDesktop *desktop)
 
         // This signal will keep both the Text and Font dialogue and
         // TextToolbar popovers in sync with each other.
-        font_collections->connect_selection_update([=](){ TextToolbar::display_font_collections(); });
+        font_collections->connect_selection_update([=]() { display_font_collections(); });
 
         // This one will keep the text toolbar Font Collections
         // updated in case of any change in the Font Collections.
-        font_collections->connect_update([=](){ TextToolbar::display_font_collections(); });
+        font_collections->connect_update([=]() { display_font_collections(); });
     }
 
     /* Font family */
@@ -2551,8 +2551,6 @@ Inkscape::XML::Node *TextToolbar::unindent_node(Inkscape::XML::Node *repr, Inksc
 
 void TextToolbar::display_font_collections()
 {
-    // std::cout << "TextEdit::display_font_collections()" << std::endl;
-
     for (auto row : font_collections_list->get_children()) {
         if (row) {
             font_collections_list->remove(*row);

@@ -21,6 +21,8 @@
 
 #include <glibmm/refptr.h>
 
+#include "helper/auto-connection.h"
+
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/frame.h"
 
@@ -190,6 +192,8 @@ private:
     sigc::connection selectModifiedConn;
     sigc::connection fontChangedConn;
     sigc::connection fontFeaturesChangedConn;
+    auto_connection fontCollectionsChangedSelection;
+    auto_connection fontCollectionsUpdate;
 
     // Other
     double selected_fontsize;
