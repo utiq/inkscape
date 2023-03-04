@@ -110,6 +110,8 @@ SingleExport::SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Buil
     builder->get_widget("si_export", si_export);
 
     builder->get_widget("si_progress", _prog);
+    builder->get_widget("si_cancel", cancel_button);
+    builder->get_widget("si_inprogress", progress_box);
 
     Gtk::Button* button = nullptr;
     builder->get_widget("si_backgnd", button); 
@@ -189,6 +191,7 @@ void SingleExport::setup()
     refreshArea();
     refreshPage();
     setPagesMode(false);
+    setExporting(false);
     loadExportHints();
     // Refresh the filename when the user selects a different page
     _pages_list_changed = pages_list->signal_selected_children_changed().connect([=]() {
@@ -205,6 +208,7 @@ void SingleExport::setup()
     exportConn = si_export->signal_clicked().connect(sigc::mem_fun(*this, &SingleExport::onExport));
     filenameConn = si_filename_entry->signal_changed().connect(sigc::mem_fun(*this, &SingleExport::onFilenameModified));
     browseConn = si_filename_entry->signal_icon_release().connect(sigc::mem_fun(*this, &SingleExport::onBrowse));
+    cancelConn = cancel_button->signal_clicked().connect(sigc::mem_fun(*this, &SingleExport::onCancel));
     si_filename_entry->signal_activate().connect(sigc::mem_fun(*this, &SingleExport::onExport));
     si_show_preview->signal_toggled().connect(sigc::mem_fun(*this, &SingleExport::refreshPreview));
     si_hide_all->signal_toggled().connect(sigc::mem_fun(*this, &SingleExport::refreshPreview));
@@ -590,6 +594,12 @@ void SingleExport::onExtensionChanged()
     }
 }
 
+void SingleExport::onCancel()
+{
+    interrupted = true;
+    setExporting(false);
+}
+
 void SingleExport::onExport()
 {
     interrupted = false;
@@ -598,13 +608,13 @@ void SingleExport::onExport()
 
     auto &page_manager = _document->getPageManager();
     auto selection = _desktop->getSelection();
-    si_export->set_sensitive(false);
     bool exportSuccessful = false;
     auto omod = si_extension_cb->getExtension();
     if (!omod) {
-        si_export->set_sensitive(true);
         return;
     }
+
+    setExporting(true, _("Exporting"));
 
     bool selected_only = si_hide_all->get_active();
     Unit const *unit = units->getUnit();
@@ -619,7 +629,7 @@ void SingleExport::onExport()
     bool default_opts = si_default_opts->get_active();
     prefs->setBool("/dialogs/export/defaultopts", default_opts);
     if (!default_opts && !omod->prefs()) {
-        si_export->set_sensitive(true);
+        setExporting(false);
         return; // cancel button
     }
 
@@ -630,18 +640,13 @@ void SingleExport::onExport()
 
         float dpi = spin_buttons[SPIN_DPI]->get_value();
 
-        /* TRANSLATORS: %1 will be the filename, %2 the width, and %3 the height of the image */
-        prog_dlg = create_progress_dialog(Glib::ustring::compose(_("Exporting %1 (%2 x %3)"), filename, width, height));
-        prog_dlg->set_export_panel(this);
         setExporting(true, Glib::ustring::compose(_("Exporting %1 (%2 x %3)"), filename, width, height));
-        prog_dlg->set_current(0);
-        prog_dlg->set_total(0);
 
         std::vector<SPItem *> selected(selection->items().begin(), selection->items().end());
 
         exportSuccessful = Export::exportRaster(
             area, width, height, dpi, _bgnd_color_picker->get_current_color(),
-            filename, false, onProgressCallback, prog_dlg,
+            filename, false, onProgressCallback, this,
             omod, selected_only ? &selected : nullptr);
 
     } else {
@@ -667,10 +672,6 @@ void SingleExport::onExport()
             auto page = copy_doc->getPageManager().newDocumentPage(area);
             exportSuccessful = Export::exportVector(omod, copy_doc.get(), filename, false, items, page);
         }
-    }
-    if (prog_dlg) {
-        delete prog_dlg;
-        prog_dlg = nullptr;
     }
     // Save the export hints back to the svg document
     if (exportSuccessful) {
@@ -930,87 +931,30 @@ void SingleExport::setDefaultSelectionMode()
 void SingleExport::setExporting(bool exporting, Glib::ustring const &text)
 {
     if (exporting) {
+        set_sensitive(false);
+        set_opacity(0.2);
+        progress_box->show();
         _prog->set_text(text);
         _prog->set_fraction(0.0);
-        _prog->set_sensitive(true);
-        si_export->set_sensitive(false);
     } else {
+        set_sensitive(true);
+        set_opacity(1.0);
+        progress_box->hide();
         _prog->set_text("");
         _prog->set_fraction(0.0);
-        _prog->set_sensitive(false);
-        si_export->set_sensitive(true);
     }
-}
-
-ExportProgressDialog *SingleExport::create_progress_dialog(Glib::ustring progress_text)
-{
-    // dont forget to delete it later
-    auto dlg = new ExportProgressDialog(_("Export in progress"), true);
-    dlg->set_transient_for(*(INKSCAPE.active_desktop()->getToplevel()));
-
-    Gtk::ProgressBar *prg = Gtk::manage(new Gtk::ProgressBar());
-    prg->set_text(progress_text);
-    dlg->set_progress(prg);
-    auto CA = dlg->get_content_area();
-    CA->pack_start(*prg, FALSE, FALSE, 4);
-
-    Gtk::Button *btn = dlg->add_button(_("_Cancel"), Gtk::RESPONSE_CANCEL);
-
-    btn->signal_clicked().connect(sigc::mem_fun(*this, &SingleExport::onProgressCancel));
-    dlg->signal_delete_event().connect(sigc::mem_fun(*this, &SingleExport::onProgressDelete));
-
-    dlg->show_all();
-    return dlg;
-}
-
-/// Called when dialog is deleted
-bool SingleExport::onProgressDelete(GdkEventAny * /*event*/)
-{
-    interrupted = true;
-    prog_dlg->set_stopped();
-    return TRUE;
-}
-/// Called when progress is cancelled
-void SingleExport::onProgressCancel()
-{
-    interrupted = true;
-    prog_dlg->set_stopped();
+    Gtk::Main::iteration(false);
 }
 
 // Called for every progress iteration
-unsigned int SingleExport::onProgressCallback(float value, void *dlg)
+unsigned int SingleExport::onProgressCallback(float value, void *data)
 {
-    auto dlg2 = reinterpret_cast<ExportProgressDialog *>(dlg);
-
-    auto self = dynamic_cast<SingleExport *>(dlg2->get_export_panel());
-
-    if (!self || self->interrupted)
-        return FALSE;
-
-    auto current = dlg2->get_current();
-    auto total = dlg2->get_total();
-    if (total > 0) {
-        double completed = current;
-        completed /= static_cast<double>(total);
-
-        value = completed + (value / static_cast<double>(total));
-    }
-
-    auto prg = dlg2->get_progress();
-    prg->set_fraction(value);
-
-    if (self) {
-        self->_prog->set_fraction(value);
-    }
-
-    int evtcount = 0;
-    while ((evtcount < 16) && gdk_events_pending()) {
+    if (auto si = static_cast<SingleExport *>(data)) {
+        si->_prog->set_fraction(value);
         Gtk::Main::iteration(false);
-        evtcount += 1;
+        return !si->interrupted;
     }
-
-    Gtk::Main::iteration(false);
-    return TRUE;
+    return false;
 }
 
 void SingleExport::refreshPreview()

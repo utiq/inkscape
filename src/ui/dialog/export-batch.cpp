@@ -252,12 +252,12 @@ BatchExport::BatchExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
     builder->get_widget("b_hide_all", hide_all);
     builder->get_widget("b_filename", filename_entry);
     builder->get_widget("b_export", export_btn);
-    builder->get_widget("b_progress_bar", _prog);
-    builder->get_widget_derived("b_export_list", export_list);
+    builder->get_widget("b_cancel", cancel_btn);
+    builder->get_widget("b_inprogress", progress_box);
 
-    Inkscape::UI::Widget::ScrollTransfer<Gtk::ScrolledWindow> *temp = nullptr;
-    builder->get_widget_derived("b_pbox_scroll", temp);
-    builder->get_widget_derived("b_scroll", temp);
+    builder->get_widget("b_progress", _prog);
+    builder->get_widget("b_progress_batch", _prog_batch);
+    builder->get_widget_derived("b_export_list", export_list);
 
     Gtk::Button* button = nullptr;
     builder->get_widget("b_backgnd", button); 
@@ -329,6 +329,7 @@ void BatchExport::setup()
 
     // set them before connecting to signals
     setDefaultSelectionMode();
+    setExporting(false);
     queueRefresh();
 
     // Connect Signals
@@ -338,6 +339,7 @@ void BatchExport::setup()
     show_preview->signal_toggled().connect(sigc::mem_fun(*this, &BatchExport::refreshPreview));
     filename_conn = filename_entry->signal_changed().connect(sigc::mem_fun(*this, &BatchExport::onFilenameModified));
     export_conn = export_btn->signal_clicked().connect(sigc::mem_fun(*this, &BatchExport::onExport));
+    cancel_conn = cancel_btn->signal_clicked().connect(sigc::mem_fun(*this, &BatchExport::onCancel));
     browse_conn = filename_entry->signal_icon_release().connect(sigc::mem_fun(*this, &BatchExport::onBrowse));
     hide_all->signal_toggled().connect(sigc::mem_fun(*this, &BatchExport::refreshPreview));
     _bgnd_color_picker->connectChanged([=](guint32 color){
@@ -512,7 +514,12 @@ void BatchExport::onAreaTypeToggle(selection_mode key)
 
 void BatchExport::onFilenameModified()
 {
-    ;
+}
+
+void BatchExport::onCancel()
+{
+    interrupted = true;
+    setExporting(false);
 }
 
 void BatchExport::onExport()
@@ -520,15 +527,15 @@ void BatchExport::onExport()
     interrupted = false;
     if (!_desktop)
         return;
-    export_btn->set_sensitive(false);
 
     // If there are no selected button, simply flash message in status bar
     int num = current_items.size();
     if (current_items.size() == 0) {
         _desktop->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("No items selected."));
-        export_btn->set_sensitive(true);
         return;
     }
+
+    setExporting(true);
 
     // Find and remove any extension from filename so that we can add suffix to it.
     Glib::ustring filename = filename_entry->get_text();
@@ -545,19 +552,16 @@ void BatchExport::onExport()
         dpis.push_back(export_list->get_dpi(i));
     }
 
-    // We are exporting standalone items only for now
-    // std::vector<SPItem *> selected(_desktop->getSelection()->items().begin(),
-    // _desktop->getSelection()->items().end());
     bool hide = hide_all->get_active();
-
     auto sels = _desktop->getSelection()->items();
     std::vector<SPItem *> selected_items(sels.begin(), sels.end());
 
     // Start Exporting Each Item
-    for (int i = 0; i < num_rows; i++) {
-        auto suffix = suffixs[i];
-        auto omod = extensions[i];
-        float dpi = dpis[i];
+    for (int j = 0; j < num_rows && !interrupted; j++) {
+
+        auto suffix = suffixs[j];
+        auto omod = extensions[j];
+        float dpi = dpis[j];
 
         if (!omod || omod->deactivated() || !omod->prefs()) {
             continue;
@@ -622,14 +626,14 @@ void BatchExport::onExport()
                 continue;
             }
 
-            delete prog_dlg;
-            prog_dlg = create_progress_dialog(Glib::ustring::compose(_("Exporting %1 files"), num));
-            prog_dlg->set_export_panel(this);
-            setExporting(true, Glib::ustring::compose(_("Exporting %1 files"), num));
-            prog_dlg->set_current(count);
-            prog_dlg->set_total(num);
+            // Set the progress bar with our updated information
+            double progress = (((double)count / num) + j) / num_rows;
+            _prog_batch->set_fraction(progress);
 
-            onProgressCallback(0.0, prog_dlg);
+            setExporting(true,
+                         Glib::ustring::compose(_("Exporting %1"), item_filename),
+                         Glib::ustring::compose(_("Format %1, Selection %2"), j + 1, count));
+
 
             if (omod->is_raster()) {
                 unsigned long int width = (int)(area.width() * dpi / DPI_BASE + 0.5);
@@ -637,17 +641,10 @@ void BatchExport::onExport()
 
                 Export::exportRaster(
                     area, width, height, dpi, _bgnd_color_picker->get_current_color(),
-                    item_filename, true, onProgressCallback,
-                    prog_dlg, omod, hide ? &show_only : nullptr);
+                    item_filename, true, onProgressCallback, this, omod, hide ? &show_only : nullptr);
             } else {
-                setExporting(true, Glib::ustring::compose(_("Exporting %1"), filename));
                 auto copy_doc = _document->copy();
                 Export::exportVector(omod, copy_doc.get(), item_filename, true, show_only, page);
-            }
-
-            if (prog_dlg) {
-                delete prog_dlg;
-                prog_dlg = nullptr;
             }
         }
     }
@@ -720,91 +717,33 @@ void BatchExport::setDefaultSelectionMode()
     prefs->setString("/dialogs/export/batchexportarea/value", pref_key_name);
 }
 
-void BatchExport::setExporting(bool exporting, Glib::ustring const &text)
+void BatchExport::setExporting(bool exporting, Glib::ustring const &text, Glib::ustring const &text_batch)
 {
     if (exporting) {
+        set_sensitive(false);
+        set_opacity(0.2);
+        progress_box->show();
         _prog->set_text(text);
         _prog->set_fraction(0.0);
-        _prog->set_sensitive(true);
-        export_btn->set_sensitive(false);
+        _prog_batch->set_text(text_batch);
     } else {
+        set_sensitive(true);
+        set_opacity(1.0);
+        progress_box->hide();
         _prog->set_text("");
         _prog->set_fraction(0.0);
-        _prog->set_sensitive(false);
-        export_btn->set_sensitive(true);
+        _prog_batch->set_text("");
     }
 }
 
-ExportProgressDialog *BatchExport::create_progress_dialog(Glib::ustring progress_text)
+unsigned int BatchExport::onProgressCallback(float value, void *data)
 {
-    // dont forget to delete it later
-    auto dlg = new ExportProgressDialog(_("Export in progress"), true);
-    dlg->set_transient_for(*(INKSCAPE.active_desktop()->getToplevel()));
-
-    Gtk::ProgressBar *prg = Gtk::manage(new Gtk::ProgressBar());
-    prg->set_text(progress_text);
-    dlg->set_progress(prg);
-    auto CA = dlg->get_content_area();
-    CA->pack_start(*prg, FALSE, FALSE, 4);
-
-    Gtk::Button *btn = dlg->add_button(_("_Cancel"), Gtk::RESPONSE_CANCEL);
-
-    btn->signal_clicked().connect(sigc::mem_fun(*this, &BatchExport::onProgressCancel));
-    dlg->signal_delete_event().connect(sigc::mem_fun(*this, &BatchExport::onProgressDelete));
-
-    dlg->show_all();
-    return dlg;
-}
-
-/// Called when dialog is deleted
-bool BatchExport::onProgressDelete(GdkEventAny * /*event*/)
-{
-    interrupted = true;
-    prog_dlg->set_stopped();
-    return TRUE;
-}
-
-/// Called when progress is cancelled
-void BatchExport::onProgressCancel()
-{
-    interrupted = true;
-    prog_dlg->set_stopped();
-}
-
-/// Called for every progress iteration
-unsigned int BatchExport::onProgressCallback(float value, void *dlg)
-{
-    auto dlg2 = reinterpret_cast<ExportProgressDialog *>(dlg);
-
-    auto self = dynamic_cast<BatchExport *>(dlg2->get_export_panel());
-
-    if (!self || self->interrupted)
-        return FALSE;
-
-    auto current = dlg2->get_current();
-    auto total = dlg2->get_total();
-    if (total > 0) {
-        double completed = current;
-        completed /= static_cast<double>(total);
-
-        value = completed + (value / static_cast<double>(total));
-    }
-
-    auto prg = dlg2->get_progress();
-    prg->set_fraction(value);
-
-    if (self) {
-        self->_prog->set_fraction(value);
-    }
-
-    int evtcount = 0;
-    while ((evtcount < 16) && gdk_events_pending()) {
+    if (auto bi = static_cast<BatchExport *>(data)) {
+        bi->_prog->set_fraction(value);
         Gtk::Main::iteration(false);
-        evtcount += 1;
+        return !bi->interrupted;
     }
-
-    Gtk::Main::iteration(false);
-    return TRUE;
+    return false;
 }
 
 void BatchExport::setDesktop(SPDesktop *desktop)

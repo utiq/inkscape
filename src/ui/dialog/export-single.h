@@ -37,7 +37,6 @@ namespace UI {
 namespace Dialog {
     class ExportPreview;
     class ExtensionList;
-    class ExportProgressDialog;
 
 class SingleExport : public Gtk::Box
 {
@@ -110,6 +109,8 @@ private:
     Gtk::ProgressBar *_prog = nullptr;
     Gtk::Widget *pages_list_box = nullptr;
     Gtk::Widget *preview_box = nullptr;
+    Gtk::Widget *progress_box = nullptr;
+    Gtk::Button *cancel_button = nullptr;
 
     bool filename_modified = false;
     Glib::ustring original_name;
@@ -140,6 +141,7 @@ private:
     void onFilenameModified();
     void onExtensionChanged();
     void onExport();
+    void onCancel();
     void onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev);
     void on_inkscape_selection_modified(Inkscape::Selection *selection, guint flags);
     void on_inkscape_selection_changed(Inkscape::Selection *selection);
@@ -155,19 +157,12 @@ private:
     void blockSpinConns(bool status);
 
     void setExporting(bool exporting, Glib::ustring const &text = "");
-    ExportProgressDialog *create_progress_dialog(Glib::ustring progress_text);
     /**
      * Callback to be used in for loop to update the progress bar.
      *
      * @param value number between 0 and 1 indicating the fraction of progress (0.17 = 17 % progress)
-     * @param dlg void pointer to the Gtk::Dialog progress dialog
      */
-    static unsigned int onProgressCallback(float value, void *dlg);
-
-    /**
-     * Callback for pressing the cancel button.
-     */
-    void onProgressCancel();
+    static unsigned int onProgressCallback(float value, void *data);
 
     /**
      * Page functions
@@ -180,12 +175,6 @@ private:
     void selectPage(SPPage *page);
     std::vector<SPPage *> getSelectedPages();
 
-    /**
-     * Callback invoked on closing the progress dialog.
-     */
-    bool onProgressDelete(GdkEventAny *event);
-
-    ExportProgressDialog *prog_dlg = nullptr;
     bool interrupted;
 
     // Gtk Signals
@@ -193,6 +182,7 @@ private:
     sigc::connection filenameConn;
     sigc::connection extensionConn;
     sigc::connection exportConn;
+    sigc::connection cancelConn;
     sigc::connection browseConn;
     sigc::connection _pages_list_changed;
     // Document Signals

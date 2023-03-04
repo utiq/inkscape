@@ -77,17 +77,17 @@ Export::Export()
 
     prefs = Inkscape::Preferences::get();
 
-    builder->get_widget("Export Dialog Box", container);
+    builder->get_widget("export-box", container);
     add(*container);
     show_all_children();
 
-    builder->get_widget("Export Notebook", export_notebook);
+    builder->get_widget("export-notebook", export_notebook);
 
     // Initialise Single Export and its objects
-    builder->get_widget_derived("Single Image", single_image);
+    builder->get_widget_derived("single-image", single_image);
 
     // Initialise Batch Export and its objects
-    builder->get_widget_derived("Batch Export", batch_export);
+    builder->get_widget_derived("batch-export", batch_export);
 
     container->signal_realize().connect([=]() {
         setDefaultNotebookPage();
@@ -195,7 +195,7 @@ bool Export::unConflictFilename(SPDocument *doc, Glib::ustring &filename, Glib::
 bool Export::exportRaster(
         Geom::Rect const &area, unsigned long int const &width, unsigned long int const &height,
         float const &dpi, guint32 bg_color, Glib::ustring const &filename, bool overwrite,
-        unsigned (*callback)(float, void *), ExportProgressDialog *&prog_dialog,
+        unsigned (*callback)(float, void *), void *data,
         Inkscape::Extension::Output *extension, std::vector<SPItem *> *items)
 {
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
@@ -266,12 +266,11 @@ bool Export::exportRaster(
 
     ExportResult result = sp_export_png_file(desktop->getDocument(), png_filename.c_str(), area, width, height, pHYs,
                                              pHYs, // previously xdpi, ydpi.
-                                             bg_color, callback, (void *)prog_dialog, true, selected,
+                                             bg_color, callback, data, true, selected,
                                              use_interlacing, color_type, bit_depth, zlib, antialiasing);
 
-    bool failed = result == EXPORT_ERROR || prog_dialog->get_stopped();
-    delete prog_dialog;
-    prog_dialog = nullptr;
+    bool failed = result == EXPORT_ERROR; // || prog_dialog->get_stopped();
+
     if (failed) {
         Glib::ustring safeFile = Inkscape::IO::sanitizeString(path.c_str());
         Glib::ustring error = g_strdup_printf(_("Could not export to filename <b>%s</b>.\n"), safeFile.c_str());

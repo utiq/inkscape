@@ -44,36 +44,6 @@ enum notebook_page
 void set_export_bg_color(SPObject* object, guint32 color);
 guint32 get_export_bg_color(SPObject* object, guint32 default_color);
 
-class ExportProgressDialog : public Gtk::Dialog
-{
-private:
-    Gtk::ProgressBar *_progress = nullptr;
-    Gtk::Widget *_export_panel = nullptr;
-    int _current = 0;
-    int _total = 0; 
-    bool _stopped = false;
-  
-public:
-    ExportProgressDialog(const Glib::ustring &title, bool modal = false)
-        : Gtk::Dialog(title, modal)
-    {}
-      
-    inline void set_export_panel(const decltype(_export_panel) export_panel) { _export_panel = export_panel; }
-    inline decltype(_export_panel) get_export_panel() const { return _export_panel; }
-      
-    inline void set_progress(const decltype(_progress) progress) { _progress = progress; }
-    inline decltype(_progress) get_progress() const { return _progress; }
-      
-    inline void set_current(const int current) { _current = current; }
-    inline int get_current() const { return _current; }
-      
-    inline void set_total(const int total) { _total = total; }
-    inline int get_total() const { return _total; }
-      
-    inline bool get_stopped() const { return _stopped; }
-    inline void set_stopped() { _stopped = true; }
-};
-
 class Export : public DialogBase
 {
 public:
@@ -113,7 +83,7 @@ public:
     static bool exportRaster(
         Geom::Rect const &area, unsigned long int const &width, unsigned long int const &height,
         float const &dpi, guint32 bg_color, Glib::ustring const &filename, bool overwrite,
-        unsigned (*callback)(float, void *), ExportProgressDialog *&prog_dialog,
+        unsigned (*callback)(float, void *), void *data,
         Inkscape::Extension::Output *extension, std::vector<SPItem *> *items = nullptr);
   
     static bool exportVector(

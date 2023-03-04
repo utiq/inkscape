@@ -115,8 +115,11 @@ private:
     Gtk::CheckButton *hide_all = nullptr;
     Gtk::Entry *filename_entry = nullptr;
     Gtk::Button *export_btn = nullptr;
+    Gtk::Button *cancel_btn = nullptr;
     Gtk::ProgressBar *_prog = nullptr;
+    Gtk::ProgressBar *_prog_batch = nullptr;
     ExportList *export_list = nullptr;
+    Gtk::Widget *progress_box = nullptr;
 
     // Store all items to be displayed in flowbox
     std::map<std::string, std::unique_ptr<BatchItem>> current_items;
@@ -135,38 +138,23 @@ private:
     void onFilenameModified();
     void onAreaTypeToggle(selection_mode key);
     void onExport();
+    void onCancel();
     void onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev);
 
     void refreshPreview();
     void refreshItems();
     void loadExportHints();
 
-    void setExporting(bool exporting, Glib::ustring const &text = "");
-    ExportProgressDialog *create_progress_dialog(Glib::ustring progress_text);
-    /**
-     * Callback to be used in for loop to update the progress bar.
-     *
-     * @param value number between 0 and 1 indicating the fraction of progress (0.17 = 17 % progress)
-     * @param dlg void pointer to the Gtk::Dialog progress dialog
-     */
-    static unsigned int onProgressCallback(float value, void *dlg);
+    void setExporting(bool exporting, Glib::ustring const &text = "", Glib::ustring const &test_batch = "");
 
-    /**
-     * Callback for pressing the cancel button.
-     */
-    void onProgressCancel();
+    static unsigned int onProgressCallback(float value, void *);
 
-    /**
-     * Callback invoked on closing the progress dialog.
-     */
-    bool onProgressDelete(GdkEventAny *event);
-
-    ExportProgressDialog *prog_dlg = nullptr;
     bool interrupted;
 
     // Gtk Signals
     auto_connection filename_conn;
     auto_connection export_conn;
+    auto_connection cancel_conn;
     auto_connection browse_conn;
     auto_connection refresh_conn;
     auto_connection refresh_items_conn;
