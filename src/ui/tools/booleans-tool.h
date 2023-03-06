@@ -56,6 +56,8 @@ private:
 
     sigc::connection _sel_modified;
     sigc::connection _sel_changed;
+
+    bool to_commit = false;
 };
 
 } // namespace Tools

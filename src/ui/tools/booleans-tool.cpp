@@ -33,6 +33,7 @@ namespace Tools {
 InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/booleans", "select.svg")
 {
+    to_commit = false;
     change_mode(true);
     update_status();
     if (auto selection = desktop->getSelection()) {
@@ -64,8 +65,11 @@ void InteractiveBooleansTool::change_mode(bool setup)
 void InteractiveBooleansTool::switching_away(const std::string &new_tool)
 {
     if (!new_tool.empty() && boolean_builder && new_tool == "/tools/select" || new_tool == "/tool/nodes") {
-        _desktop->getSelection()->setList(boolean_builder->shape_commit());
-        DocumentUndo::done(_desktop->doc(), "Built Shapes", INKSCAPE_ICON("draw-booleans"));
+        // Only forcefully commit if we have the user's explicit instruction to do so.
+        if (boolean_builder->has_changes() || to_commit) {
+            _desktop->getSelection()->setList(boolean_builder->shape_commit(true));
+            DocumentUndo::done(_desktop->doc(), "Built Shapes", INKSCAPE_ICON("draw-booleans"));
+        }
     }
 }
 
@@ -80,6 +84,7 @@ void InteractiveBooleansTool::set(const Inkscape::Preferences::Entry& val)
 
 void InteractiveBooleansTool::shape_commit()
 {
+    to_commit = true;
     // disconnect so we don't get canceled by accident.
     _sel_modified.disconnect();
     _sel_changed.disconnect();

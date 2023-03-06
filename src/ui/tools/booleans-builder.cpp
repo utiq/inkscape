@@ -187,10 +187,9 @@ std::vector<SPObject *> BooleanBuilder::shape_commit(bool all)
     std::vector<SPObject *> ret;
     auto doc = _set->document();
     auto items = _set->items_vector();
-    bool has_changes = _undo.size();
 
     // Only commit anything if we have changes, return selection.
-    if (!has_changes && !all) {
+    if (!has_changes() && !all) {
         ret.insert(ret.begin(), items.begin(), items.end());
         return ret;
     }

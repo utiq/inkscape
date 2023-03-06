@@ -60,6 +60,7 @@ public:
     void task_cancel();
     void task_commit();
     bool has_task() const { return (bool)_work_task; }
+    bool has_changes() const { return !_undo.empty(); }
     bool highlight(const Geom::Point &point, bool add_task = true);
 
 private:
