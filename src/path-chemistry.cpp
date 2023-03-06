@@ -323,12 +323,12 @@ void ObjectSet::toCurves(bool skip_undo, bool clonesjustunlink)
     std::vector<SPItem*> items(selected);
 
     did = sp_item_list_to_curves(items, selected, to_select);
-    if (clonesjustunlink) {
-        unlinkRecursive(true, false, true);
-    }
     if (did) {
         setReprList(to_select);
         addList(selected);
+    }
+    if (clonesjustunlink) {
+        unlinkRecursive(true, false, true);
     }
 
     if (desktop()) {
