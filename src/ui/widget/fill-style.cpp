@@ -37,8 +37,10 @@
 #include "object/sp-radial-gradient.h"
 #include "object/sp-text.h"
 #include "object/sp-stop.h"
+#include "object/sp-object.h"
 #include "ui/dialog/dialog-base.h"
 #include "style.h"
+#include "object/sp-use.h"
 #include "pattern-manipulation.h"
 #include "ui/icon-names.h"
 
@@ -362,6 +364,16 @@ void FillNStroke::dragFromPaint()
     _update = false;
 }
 
+void unset_recursive(const char *attribute, SPObject* object)
+{
+	object->removeAttribute(attribute);
+
+	for (auto& child: object->children)
+	{
+		if (is<SPUse> (object)) return;
+		unset_recursive(attribute, &child);
+	}
+}
 /**
 This is called (at least) when:
 1  paint selector mode is switched (e.g. flat color -> gradient)
@@ -432,7 +444,7 @@ void FillNStroke::updateFromPaint(bool switch_style)
 
             break;
         }
-
+        
         case UI::Widget::PaintSelector::MODE_GRADIENT_LINEAR:
         case UI::Widget::PaintSelector::MODE_GRADIENT_RADIAL:
         case UI::Widget::PaintSelector::MODE_SWATCH:
@@ -673,9 +685,14 @@ void FillNStroke::updateFromPaint(bool switch_style)
 
         case UI::Widget::PaintSelector::MODE_UNSET:
             if (!items.empty()) {
+                for (auto item: items) {
+                    if (item) {
+                        unset_recursive((kind == FILL) ? "fill" : "stroke", item);
+                    }
+                }
                 SPCSSAttr *css = sp_repr_css_attr_new();
                 if (kind == FILL) {
-                    sp_repr_css_unset_property(css, "fill");
+                    sp_repr_css_unset_property(css, "fill");    
                 } else {
                     sp_repr_css_unset_property(css, "stroke");
                     sp_repr_css_unset_property(css, "stroke-opacity");
