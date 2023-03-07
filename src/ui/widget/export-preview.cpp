@@ -122,19 +122,13 @@ void ExportPreview::performHide()
     }
 }
 
-static bool debug_busyloop()
-{
-    static bool enabled = std::getenv("INKSCAPE_DEBUG_EXPORTDIALOG_BUSYLOOP");
-    return enabled;
-}
-
 void ExportPreview::queueRefresh()
 {
     if (!drawing || refresh_conn.connected() || dest) {
         return;
     }
 
-    refresh_conn = Glib::signal_timeout().connect([this] { renderPreview(); return false; }, debug_busyloop() ? 1 : delay_msecs);
+    refresh_conn = Glib::signal_timeout().connect([this] { renderPreview(); return false; }, delay_msecs);
 }
 
 /*
@@ -161,10 +155,6 @@ void ExportPreview::renderPreview()
         }
         delay_msecs = std::max(100, elapsed_msecs * 3);
         dest.close();
-
-        if (debug_busyloop()) {
-            renderPreview();
-        }
     });
 }
 

@@ -1066,7 +1066,7 @@ void SingleExport::setDesktop(SPDesktop *desktop)
 
 void SingleExport::setDocument(SPDocument *document)
 {
-    if (_document == document || !_desktop)
+    if (_document == document)
         return;
 
     preview->setDocument(document);
