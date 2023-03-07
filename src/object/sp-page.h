@@ -82,6 +82,8 @@ public:
     Geom::Rect getDesktopMargin() const;
     Geom::Rect getDesktopBleed() const;
     Geom::Rect getDocumentRect() const;
+    Geom::Rect getDocumentMargin() const;
+    Geom::Rect getDocumentBleed() const;
     Geom::Rect getSensitiveRect() const;
     void setRect(Geom::Rect rect);
     void setDocumentRect(Geom::Rect rect, bool add_margins = false);

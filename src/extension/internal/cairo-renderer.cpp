@@ -810,31 +810,21 @@ CairoRenderer::setupDocument(CairoRenderContext *ctx, SPDocument *doc, bool page
     setMetadata(ctx, doc);
 
     TRACE(("setupDocument: %f x %f\n", width, height));
-    bool ret = ctx->setupSurface(width, height);
-
-    if (ret) {
-        if (pageBoundingBox) {
-            // translate to set bleed/margin
-            Geom::Affine tp( Geom::Translate( bleedmargin_px, bleedmargin_px ) );
-            ctx->transform(tp);
-        } else {
-            // this transform translates the export drawing to a virtual page (0,0)-(width,height)
-            Geom::Affine tp(Geom::Translate(-d.min()));
-            ctx->transform(tp);
-        }
-    }
-
-    return ret;
+    return ctx->setupSurface(width, height);
 }
 
 /**
  * Handle multiple pages, pushing each out to cairo as needed using renderItem()
  */
 bool
-CairoRenderer::renderPages(CairoRenderContext *ctx, SPDocument *doc, bool stretch_to_fit)
+CairoRenderer::renderPages(CairoRenderContext *ctx, SPDocument *doc, bool stretch_to_fit, double first_bleed)
 {
     auto pages = doc->getPageManager().getPages();
     if (pages.size() == 0) {
+        // translate to set bleed (there is no margin support)
+        Geom::Affine tp(Geom::Translate(first_bleed, first_bleed));
+        ctx->transform(tp);
+
         // Output the page bounding box as already set up in the initial setupDocument.
         renderItem(ctx, doc->getRoot());
         return true;
@@ -858,13 +848,17 @@ bool
 CairoRenderer::renderPage(CairoRenderContext *ctx, SPDocument *doc, SPPage *page, bool stretch_to_fit)
 {
     // Calculate exact page rectangle in PostScript points:
-    auto rect = page->getRect();
     auto scale = doc->getDocumentScale();
     auto const unit_conversion = Geom::Scale(Inkscape::Util::Quantity::convert(1, "px", "pt"));
-    auto exact_rect = rect * scale * unit_conversion;
+
+    auto bleed_rect = page->getDocumentBleed();
+    auto exact_rect = bleed_rect * unit_conversion;
 
     // Round page size up to the nearest integer:
     auto page_rect = exact_rect.roundOutwards();
+
+    // Set up page transformation which pushes objects back into the 0,0 location
+    ctx->transform(Geom::Translate(bleed_rect.corner(0)).inverse());
 
     if (stretch_to_fit) {
         // Calculate distortion from rounding (only really matters for small paper sizes):
@@ -880,9 +874,6 @@ CairoRenderer::renderPage(CairoRenderContext *ctx, SPDocument *doc, SPPage *page
     SPRoot *root = doc->getRoot();
     ctx->transform(root->transform);
     ctx->nextPage(page_rect.width(), page_rect.height(), page->label());
-
-    // Set up page transformation which pushes objects back into the 0,0 location
-    ctx->transform(Geom::Translate(rect.corner(0)).inverse());
 
     for (auto &child : page->getOverlappingItems(false)) {
         ctx->pushState();

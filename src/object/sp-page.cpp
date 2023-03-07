@@ -146,33 +146,43 @@ Geom::Translate SPPage::getDesktopAffine() const
 }
 
 /**
- * Get desktop rect, minus the margin amounts.
+ * Get document rect, minus the margin amounts.
  */
-Geom::Rect SPPage::getDesktopMargin() const
+Geom::Rect SPPage::getDocumentMargin() const
 {
-    auto rect = getDesktopRect();
+    auto rect = getDocumentRect();
     rect.setTop(rect.top() + margin.top().computed);
     rect.setLeft(rect.left() + margin.left().computed);
     rect.setBottom(rect.bottom() - margin.bottom().computed);
     rect.setRight(rect.right() - margin.right().computed);
     if (rect.hasZeroArea())
-        return getDesktopRect(); // Cancel!
+        return getDocumentRect(); // Cancel!
     return rect;
 }
 
-/**
- * Get desktop rect, plus the bleed amounts.
- */
-Geom::Rect SPPage::getDesktopBleed() const
+Geom::Rect SPPage::getDesktopMargin() const
 {
-    auto rect = getDesktopRect();
+    return getDocumentMargin() * document->doc2dt();
+}
+
+/**
+ * Get document rect, plus the bleed amounts.
+ */
+Geom::Rect SPPage::getDocumentBleed() const
+{
+    auto rect = getDocumentRect();
     rect.setTop(rect.top() - bleed.top().computed);
     rect.setLeft(rect.left() - bleed.left().computed);
     rect.setBottom(rect.bottom() + bleed.bottom().computed);
     rect.setRight(rect.right() + bleed.right().computed);
     if (rect.hasZeroArea())
-        return getDesktopRect(); // Cancel!
+        return getDocumentRect(); // Cancel!
     return rect;
+}
+
+Geom::Rect SPPage::getDesktopBleed() const
+{
+    return getDocumentBleed() * document->doc2dt();
 }
 
 /**

@@ -57,7 +57,7 @@ public:
     /** Traverses the object tree and invokes the render methods. */
     void renderItem(CairoRenderContext *ctx, SPItem *item, SPItem *clone = nullptr, SPPage *page = nullptr);
     void renderHatchPath(CairoRenderContext *ctx, SPHatchPath const &hatchPath, unsigned key);
-    bool renderPages(CairoRenderContext *ctx, SPDocument *doc, bool stretch_to_fit);
+    bool renderPages(CairoRenderContext *ctx, SPDocument *doc, bool stretch_to_fit, double bleed);
     bool renderPage(CairoRenderContext *ctx, SPDocument *doc, SPPage *page, bool stretch_to_fit);
 
 private:

@@ -117,7 +117,7 @@ ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int l
         ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
         if (ret) {
             /* Render multiple pages */
-            ret = renderer->renderPages(ctx, doc, false);
+            ret = renderer->renderPages(ctx, doc, false, bleedmargin_px);
             ctx->finish();
         }
     }
@@ -353,7 +353,7 @@ CairoPsOutput::init ()
                 "<option value=\"page\">" N_("Use document's page size") "</option>"
                 "<option value=\"drawing\">" N_("Use exported object's size") "</option>"
             "</param>"
-            "<param name=\"bleed\" gui-text=\"" N_("Bleed/margin (mm):") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
+            "<param name=\"bleed\" gui-text=\"" N_("Single page bleed (mm):") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
             "<param name=\"exportId\" gui-text=\"" N_("Limit export to the object with ID:") "\" type=\"string\"></param>\n"
             "<output>\n"
             "<extension>.ps</extension>\n"

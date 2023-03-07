@@ -113,7 +113,7 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
         ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
         if (ret) {
             /* Render multiple pages */
-            ret = renderer->renderPages(ctx, doc, flags.stretch_to_fit);
+            ret = renderer->renderPages(ctx, doc, flags.stretch_to_fit, bleedmargin_px);
             ctx->finish();
         }
     }
@@ -282,7 +282,7 @@ CairoRendererPdfOutput::init ()
                 "<option value=\"relative\">" N_("Preserve size relative to page") "</option>"
                 "<option value=\"absolute\">" N_("Preserve size in absolute units") "</option>"
             "</param><spacer size=\"10\" />"
-            "<param name=\"bleed\" gui-text=\"" N_("Bleed/margin (mm):") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
+            "<param name=\"bleed\" gui-text=\"" N_("Single Page Bleed (mm):") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
             "<param name=\"exportId\" gui-text=\"" N_("Limit export to the object with ID:") "\" type=\"string\"></param>\n"
             "<output is_exported='true' priority='5'>\n"
                 "<extension>.pdf</extension>\n"
