@@ -65,6 +65,15 @@ public:
     bool setPagePosition(int position, bool swap_page) { return setPageIndex(position - 1, swap_page); }
     bool isBarePage() const;
 
+    // To sort the pages in the set by index/page number
+    struct PageIndexOrder
+    {
+        bool operator()(const SPPage* Page1, const SPPage* Page2) const
+        {
+            return (Page1->getPageIndex() < Page2->getPageIndex());
+        }
+    };
+
     SPPage *getNextPage();
     SPPage *getPreviousPage();
 

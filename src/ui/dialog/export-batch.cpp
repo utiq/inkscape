@@ -354,7 +354,7 @@ void BatchExport::refreshItems()
 
     // Create New List of Items
     std::set<SPItem *> itemsList;
-    std::set<SPPage *> pageList;
+    std::set<SPPage *, SPPage::PageIndexOrder> pageList;
 
     char *num_str = nullptr;
     switch (current_key) {
