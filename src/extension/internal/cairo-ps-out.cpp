@@ -63,7 +63,7 @@ bool CairoEpsOutput::check (Inkscape::Extension::Extension * /*module*/)
 
 static bool
 ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int level, bool texttopath, bool omittext,
-                          bool filtertobitmap, int resolution, const gchar * const exportId, bool exportDrawing, bool exportCanvas, double bleedmargin_px, bool eps = false)
+                          bool filtertobitmap, int resolution, bool eps = false)
 {
     if (texttopath) {
         assert(!omittext);
@@ -76,26 +76,9 @@ ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int l
     doc->ensureUpToDate();
 
     SPRoot *root = doc->getRoot();
-    SPItem *base = nullptr;
-
-    bool pageBoundingBox = TRUE;
-    if (exportId && strcmp(exportId, "")) {
-        // we want to export the given item only
-        base = cast<SPItem>(doc->getObjectById(exportId));
-        if (!base) {
-            throw Inkscape::Extension::Output::export_id_not_found(exportId);
-        }
-        root->cropToObject(base); // TODO: This is inconsistent in CLI (should only happen for --export-id-only)
-        pageBoundingBox = exportCanvas;
-    }
-    else {
-        // we want to export the entire document from root
-        base = root;
-        pageBoundingBox = !exportDrawing;
-    }
-
-    if (!base)
+    if (!root) {
         return false;
+    }
 
     Inkscape::Drawing drawing;
     unsigned dkey = SPItem::display_key_new(1);
@@ -114,10 +97,10 @@ ps_print_document_to_file(SPDocument *doc, gchar const *filename, unsigned int l
     bool ret = ctx->setPsTarget(filename);
     if(ret) {
         /* Render document */
-        ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
+        ret = renderer->setupDocument(ctx, doc, root);
         if (ret) {
             /* Render multiple pages */
-            ret = renderer->renderPages(ctx, doc, false, bleedmargin_px);
+            ret = renderer->renderPages(ctx, doc, false);
             ctx->finish();
         }
     }
@@ -178,32 +161,13 @@ CairoPsOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, gchar con
         new_bitmapResolution = mod->get_param_int("resolution");
     } catch(...) {}
 
-    bool new_areaPage  = true;
-    try {
-        new_areaPage = (strcmp(mod->get_param_optiongroup("area"), "page") == 0);
-    } catch(...) {}
-
-    bool new_areaDrawing  = !new_areaPage;
-
-    double bleedmargin_px = 0.;
-    try {
-        bleedmargin_px = mod->get_param_float("bleed");
-    } catch(...) {}
-
-    const gchar *new_exportId = nullptr;
-    try {
-        new_exportId = mod->get_param_string("exportId");
-    } catch(...) {}
-
     // Create PS
     {
         gchar * final_name;
         final_name = g_strdup_printf("> %s", filename);
         ret = ps_print_document_to_file(doc, final_name, level, new_textToPath,
                                         new_textToLaTeX, new_blurToBitmap,
-                                        new_bitmapResolution, new_exportId,
-                                        new_areaDrawing, new_areaPage,
-                                        bleedmargin_px);
+                                        new_bitmapResolution);
         g_free(final_name);
 
         if (!ret)
@@ -212,7 +176,7 @@ CairoPsOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, gchar con
 
     // Create LaTeX file (if requested)
     if (new_textToLaTeX) {
-        ret = latex_render_document_text_to_file(doc, filename, new_exportId, new_areaDrawing, new_areaPage, 0., false);
+        ret = latex_render_document_text_to_file(doc, filename, false);
 
         if (!ret)
             throw Inkscape::Extension::Output::save_failed();
@@ -267,32 +231,13 @@ CairoEpsOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, gchar co
         new_bitmapResolution = mod->get_param_int("resolution");
     } catch(...) {}
 
-    bool new_areaPage  = true;
-    try {
-        new_areaPage = (strcmp(mod->get_param_optiongroup("area"), "page") == 0);
-    } catch(...) {}
-
-    bool new_areaDrawing  = !new_areaPage;
-
-    double bleedmargin_px = 0.;
-    try {
-        bleedmargin_px = mod->get_param_float("bleed");
-    } catch(...) {}
-
-    const gchar *new_exportId = nullptr;
-    try {
-        new_exportId = mod->get_param_string("exportId");
-    } catch(...) {}
-
     // Create EPS
     {
         gchar * final_name;
         final_name = g_strdup_printf("> %s", filename);
         ret = ps_print_document_to_file(doc, final_name, level, new_textToPath,
                                         new_textToLaTeX, new_blurToBitmap,
-                                        new_bitmapResolution, new_exportId,
-                                        new_areaDrawing, new_areaPage,
-                                        bleedmargin_px, true);
+                                        new_bitmapResolution, true);
         g_free(final_name);
 
         if (!ret)
@@ -301,7 +246,7 @@ CairoEpsOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, gchar co
 
     // Create LaTeX file (if requested)
     if (new_textToLaTeX) {
-        ret = latex_render_document_text_to_file(doc, filename, new_exportId, new_areaDrawing, new_areaPage, 0., false);
+        ret = latex_render_document_text_to_file(doc, filename, false);
 
         if (!ret)
             throw Inkscape::Extension::Output::save_failed();
@@ -349,14 +294,14 @@ CairoPsOutput::init ()
             "</param>\n"
             "<param name=\"blurToBitmap\" gui-text=\"" N_("Rasterize filter effects") "\" type=\"bool\">true</param>\n"
             "<param name=\"resolution\" gui-text=\"" N_("Resolution for rasterization (dpi):") "\" type=\"int\" min=\"1\" max=\"10000\">96</param>\n"
-            "<param name=\"area\" gui-text=\"" N_("Output page size") "\" type=\"optiongroup\" appearance=\"radio\" >\n"
-                "<option value=\"page\">" N_("Use document's page size") "</option>"
-                "<option value=\"drawing\">" N_("Use exported object's size") "</option>"
-            "</param>"
-            "<param name=\"bleed\" gui-text=\"" N_("Single page bleed (mm):") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
-            "<param name=\"exportId\" gui-text=\"" N_("Limit export to the object with ID:") "\" type=\"string\"></param>\n"
+            "<spacer/>"
+            "<hbox indent=\"1\"><image>info-outline</image><spacer/><vbox><spacer/>"
+                "<label>" N_("Use the Export Dialog to set page size and choose objects to export.") "</label>"
+                "<spacer size=\"5\" />"
+                "<label>" N_("Use the toolbar of the Page Tool to set margin and bleed options.") "</label>"
+            "</vbox></hbox>"
             "<output>\n"
-            "<extension>.ps</extension>\n"
+                "<extension>.ps</extension>\n"
                 "<mimetype>image/x-postscript</mimetype>\n"
                 "<filetypename>" N_("PostScript (*.ps)") "</filetypename>\n"
                 "<filetypetooltip>" N_("PostScript File") "</filetypetooltip>\n"
@@ -393,12 +338,12 @@ CairoEpsOutput::init ()
             "</param>\n"
             "<param name=\"blurToBitmap\" gui-text=\"" N_("Rasterize filter effects") "\" type=\"bool\">true</param>\n"
             "<param name=\"resolution\" gui-text=\"" N_("Resolution for rasterization (dpi):") "\" type=\"int\" min=\"1\" max=\"10000\">96</param>\n"
-            "<param name=\"area\" gui-text=\"" N_("Output page size") "\" type=\"optiongroup\" appearance=\"radio\" >\n"
-                "<option value=\"page\">" N_("Use document's page size") "</option>"
-                "<option value=\"drawing\">" N_("Use exported object's size") "</option>"
-            "</param>"
-            "<param name=\"bleed\" gui-text=\"" N_("Bleed/margin (mm)") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
-            "<param name=\"exportId\" gui-text=\"" N_("Limit export to the object with ID:") "\" type=\"string\"></param>\n"
+            "<spacer/>"
+            "<hbox indent=\"1\"><image>info-outline</image><spacer/><vbox><spacer/>"
+                "<label>" N_("Use the Export Dialog to set page size and choose objects to export.") "</label>"
+                "<spacer size=\"5\" />"
+                "<label>" N_("Use the toolbar of the Page Tool to set margin and bleed options.") "</label>"
+            "</vbox></hbox>"
             "<output>\n"
                 "<extension>.eps</extension>\n"
                 "<mimetype>image/x-e-postscript</mimetype>\n"

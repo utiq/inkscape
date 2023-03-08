@@ -37,6 +37,7 @@ public:
 private:
     /** \brief  Path to image file (relative paths are relative to the .inx file location). */
     std::string _image_path;
+    std::string _icon_name;
 
     /** desired width of image when rendered on screen (in px) */
     unsigned int _width = 0;

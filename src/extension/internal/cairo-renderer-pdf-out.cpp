@@ -60,7 +60,7 @@ bool CairoRendererPdfOutput::check(Inkscape::Extension::Extension * /*module*/)
 // TODO: Make this function more generic so that it can do both PostScript and PDF; expose in the headers
 static bool
 pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int level, PDFOptions flags,
-                            int resolution, const gchar * const exportId, double bleedmargin_px)
+                            int resolution)
 {
     if (flags.text_to_path) {
         assert(!flags.text_to_latex);
@@ -73,22 +73,7 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
     doc->ensureUpToDate();
 
     SPRoot *root = doc->getRoot();
-    SPItem *base = nullptr;
-
-    bool pageBoundingBox = !flags.drawing_only;
-    if (exportId && strcmp(exportId, "")) {
-        // we want to export the given item only
-        base = cast<SPItem>(doc->getObjectById(exportId));
-        if (!base) {
-            throw Inkscape::Extension::Output::export_id_not_found(exportId);
-        }
-        root->cropToObject(base); // TODO: This is inconsistent in CLI (should only happen for --export-id-only)
-    } else {
-        // we want to export the entire document from root
-        base = root;
-    }
-
-    if (!base) {
+    if (!root) {
         return false;
     }
     
@@ -110,10 +95,10 @@ pdf_render_document_to_file(SPDocument *doc, gchar const *filename, unsigned int
     bool ret = ctx->setPdfTarget (filename);
     if(ret) {
         /* Render document */
-        ret = renderer->setupDocument(ctx, doc, pageBoundingBox, bleedmargin_px, base);
+        ret = renderer->setupDocument(ctx, doc, root);
         if (ret) {
             /* Render multiple pages */
-            ret = renderer->renderPages(ctx, doc, flags.stretch_to_fit, bleedmargin_px);
+            ret = renderer->renderPages(ctx, doc, flags.stretch_to_fit);
             ctx->finish();
         }
     }
@@ -190,21 +175,6 @@ CairoRendererPdfOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, 
         g_warning("Parameter <resolution> might not exist");
     }
 
-    const gchar *new_exportId = nullptr;
-    try {
-        new_exportId = mod->get_param_string("exportId");
-    }
-    catch(...) {
-        g_warning("Parameter <exportId> might not exist");
-    }
-
-    flags.drawing_only = false;
-    try {
-        flags.drawing_only = (strcmp(ext->get_param_optiongroup("area"), "page") != 0);
-    } catch(...) {
-        g_warning("Parameter <area> might not exist");
-    }
-
     flags.stretch_to_fit = false;
     try {
         flags.stretch_to_fit = (strcmp(ext->get_param_optiongroup("stretch"), "relative") == 0);
@@ -212,20 +182,11 @@ CairoRendererPdfOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, 
         g_warning("Parameter <stretch> might not exist");
     }
 
-    double new_bleedmargin_px = 0.;
-    try {
-        new_bleedmargin_px = Inkscape::Util::Quantity::convert(mod->get_param_float("bleed"), "mm", "px");
-    }
-    catch(...) {
-        g_warning("Parameter <bleed> might not exist");
-    }
-
     // Create PDF file
     {
         gchar * final_name;
         final_name = g_strdup_printf("> %s", filename);
-        ret = pdf_render_document_to_file(doc, final_name, level, flags, new_bitmapResolution, new_exportId,
-                                          new_bleedmargin_px);
+        ret = pdf_render_document_to_file(doc, final_name, level, flags, new_bitmapResolution);
         g_free(final_name);
 
         if (!ret)
@@ -234,8 +195,7 @@ CairoRendererPdfOutput::save(Inkscape::Extension::Output *mod, SPDocument *doc, 
 
     // Create LaTeX file (if requested)
     if (flags.text_to_latex) {
-        ret = latex_render_document_text_to_file(doc, filename, new_exportId, flags.drawing_only,
-                                                 !flags.drawing_only, new_bleedmargin_px, true);
+        ret = latex_render_document_text_to_file(doc, filename, true);
 
         if (!ret)
             throw Inkscape::Extension::Output::save_failed();
@@ -271,19 +231,18 @@ CairoRendererPdfOutput::init ()
             "<param name=\"blurToBitmap\" gui-text=\"" N_("Rasterize filter effects") "\" type=\"bool\">true</param>\n"
             "<param name=\"resolution\" gui-text=\"" N_("Resolution for rasterization (dpi):") "\" type=\"int\" min=\"1\" max=\"10000\">96</param>\n"
             "<spacer size=\"10\" />"
-            "<param name=\"area\" gui-text=\"" N_("Output page size:") "\" type=\"optiongroup\" appearance=\"radio\" >\n"
-                "<option value=\"page\">" N_("Use document's page size") "</option>"
-                "<option value=\"drawing\">" N_("Use exported object's size") "</option>"
-            "</param><spacer size=\"10\" />"
             "<param name=\"stretch\" gui-text=\"" N_("Drawing size:") "\" gui-description=\""
                 N_("Whether the exported objects should maintain their relative sizes (compared to the "
                    "page size) or the absolute size in real-world units.")
                 "\" type=\"optiongroup\" appearance=\"radio\" >\n"
                 "<option value=\"relative\">" N_("Preserve size relative to page") "</option>"
                 "<option value=\"absolute\">" N_("Preserve size in absolute units") "</option>"
-            "</param><spacer size=\"10\" />"
-            "<param name=\"bleed\" gui-text=\"" N_("Single Page Bleed (mm):") "\" type=\"float\" min=\"-10000\" max=\"10000\">0</param>\n"
-            "<param name=\"exportId\" gui-text=\"" N_("Limit export to the object with ID:") "\" type=\"string\"></param>\n"
+            "</param><separator/>"
+            "<hbox indent=\"1\"><image>info-outline</image><spacer/><vbox><spacer/>"
+                "<label>" N_("Use the Export Dialog to set page size and choose objects to export.") "</label>"
+                "<spacer size=\"5\" />"
+                "<label>" N_("Use the toolbar of the Page Tool to set margin and bleed options.") "</label>"
+            "</vbox></hbox>"
             "<output is_exported='true' priority='5'>\n"
                 "<extension>.pdf</extension>\n"
                 "<mimetype>application/pdf</mimetype>\n"

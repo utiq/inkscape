@@ -215,7 +215,7 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
                 if (!export_extension_forced ||
                     (export_extension == Glib::ustring(oext->get_id()).lowercase())) {
                     if (type == "svg") {
-                        do_export_svg(doc, export_filename, *oext);
+                        do_export_vector(doc, export_filename, *oext);
                     } else if (type == "ps") {
                         do_export_ps_pdf(doc, export_filename, "image/x-postscript", *oext);
                     } else if (type == "eps") {
@@ -326,7 +326,7 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_f
         oext = dynamic_cast<Inkscape::Extension::Output *>(
             Inkscape::Extension::db.get("org.inkscape.output.svg.inkscape"));
     }
-    return do_export_svg(doc, export_filename, *oext);
+    return do_export_vector(doc, export_filename, *oext);
 }
 /**
  *  Perform an SVG export
@@ -335,7 +335,7 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_f
  *  \param export_filename Filename for export
  *  \param extension Output extension used for exporting
  */
-int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_filename,
+int InkFileExportCmd::do_export_vector(SPDocument *doc, std::string const &export_filename,
                                     Inkscape::Extension::Output &extension)
 {
     // Start with options that are once per document.
@@ -370,10 +370,11 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_f
         std::string base = export_filename;
         std::string ext = "svg";
         // Strip any possible extension
-        auto extension_pos = export_filename.find_last_of('.');
+        std::string tmp_out = get_filename_out(export_filename, "");
+        auto extension_pos = tmp_out.find_last_of('.');
         if (extension_pos != std::string::npos) {
-            base = export_filename.substr(0, extension_pos);
-            ext = export_filename.substr(extension_pos+1);
+            base = tmp_out.substr(0, extension_pos);
+            ext = tmp_out.substr(extension_pos+1);
         }
 
         auto pages = Inkscape::parseIntRange(export_page);
@@ -387,13 +388,12 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_f
             copy_doc->vacuumDocument();
 
             try {
+                extension.set_gui(false);
                 Inkscape::Extension::save(dynamic_cast<Inkscape::Extension::Extension *>(&extension), copy_doc.get(),
-                                          filename_out.c_str(), false, false,
-                                          export_plain_svg ? Inkscape::Extension::FILE_SAVE_METHOD_SAVE_COPY
-                                                           : Inkscape::Extension::FILE_SAVE_METHOD_INKSCAPE_SVG);
+                                          filename_out.c_str(), false, false, Inkscape::Extension::FILE_SAVE_METHOD_SAVE_COPY);
             } catch (Inkscape::Extension::Output::save_failed const &) {
-                std::cerr << "InkFileExportCmd::do_export_svg: Failed to save " << (export_plain_svg ? "" : "Inkscape")
-                          << " SVG to: " << filename_out << std::endl;
+                std::cerr << "InkFileExportCmd::do_export_vector: Failed to save " << (export_plain_svg ? "" : "Inkscape")
+                          << " file to: " << filename_out << std::endl;
                 return 1;
             }
         }
@@ -419,7 +419,7 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_f
             // "crop" the document to the specified object, cleaning as we go.
             SPObject *obj = doc->getObjectById(object);
             if (obj == nullptr) {
-                std::cerr << "InkFileExportCmd::do_export_svg: Object " << object.raw() << " not found in document, nothing to export." << std::endl;
+                std::cerr << "InkFileExportCmd::do_export_vector: Object " << object.raw() << " not found in document, nothing to export." << std::endl;
                 return 1;
             }
             if (export_id_only) {
@@ -432,15 +432,15 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_f
                 s.fitCanvas((bool)export_margin);
             }
         }
-        g_assert(std::string(extension.get_extension()) == ".svg");
         try {
+            extension.set_gui(false);
             Inkscape::Extension::save(dynamic_cast<Inkscape::Extension::Extension *>(&extension), doc,
                                       filename_out.c_str(), false, false,
                                       export_plain_svg ? Inkscape::Extension::FILE_SAVE_METHOD_SAVE_COPY
                                                        : Inkscape::Extension::FILE_SAVE_METHOD_INKSCAPE_SVG);
         } catch (Inkscape::Extension::Output::save_failed &e) {
-            std::cerr << "InkFileExportCmd::do_export_svg: Failed to save " << (export_plain_svg ? "" : "Inkscape")
-                      << " SVG to: " << filename_out << std::endl;
+            std::cerr << "InkFileExportCmd::do_export_vector: Failed to save " << (export_plain_svg ? "" : "Inkscape")
+                      << " file to: " << filename_out << std::endl;
             return 1;
         }
     }
@@ -847,8 +847,6 @@ int InkFileExportCmd::do_export_ps_pdf(SPDocument *doc, std::string const &filen
         extension.set_param_int("resolution", (int)dpi);
     }
 
-    extension.set_param_float("bleed", export_margin);
-
     // handle --export-pdf-version
     if (mime_type == "application/pdf") {
         bool set_export_pdf_version_fail = true;
@@ -889,68 +887,7 @@ int InkFileExportCmd::do_export_ps_pdf(SPDocument *doc, std::string const &filen
         extension.set_param_optiongroup("PSlevel", (export_ps_level == 3) ? "PS3" : "PS2");
     }
 
-
-    // Export each object in list (or root if empty).  Use ';' so in future it could be possible to selected multiple objects to export together.
-    std::vector<Glib::ustring> objects = Glib::Regex::split_simple("\\s*;\\s*", export_id);
-    if (objects.empty()) {
-        objects.emplace_back(); // So we do loop at least once for root.
-    }
-
-    for (auto object : objects) {
-
-        std::string filename_out = get_filename_out(filename_in, Glib::filename_from_utf8(object));
-        if (filename_out.empty()) {
-            return 1;
-        }
-
-        // Export only object with given id.
-        if (!object.empty()) {
-            SPObject *o = doc->getObjectById(object);
-            if (o == nullptr) {
-                std::cerr << "InkFileExportCmd::do_export_ps_pdf: Object " << object.raw() << " not found in document, nothing to export." << std::endl;
-                return 1;
-            }
-            extension.set_param_string("exportId", object.c_str());
-        } else {
-            extension.set_param_string("exportId", "");
-        }
-
-        // Set export area.
-        if (export_area_page && export_area_drawing) {
-            std::cerr << "You cannot use --export-area-page and --export-area-drawing at the same time; only the former will take effect." << std::endl;;
-            export_area_drawing = false;
-        }
-
-        if (export_area_drawing) {
-            extension.set_param_optiongroup("area", "drawing");
-        }
-
-        if (export_area_page) {
-            if (export_type == "eps") {
-                std::cerr << "EPS cannot have its bounding box extend beyond its content, so if your drawing is smaller than the page, --export-area-page will clip it to drawing." << std::endl;
-            }
-            extension.set_param_optiongroup("area", "page");
-        }
-
-        if (!export_area_drawing && !export_area_page) {
-            // Neither is set.
-            if (export_type == "eps" || !object.empty()) {
-                // Default to drawing for EPS or if object is specified (latter matches behavior for other export types).
-                extension.set_param_optiongroup("area", "drawing");
-            } else {
-                extension.set_param_optiongroup("area", "page");
-            }
-        }
-
-        try {
-            extension.save(doc, filename_out.c_str());
-        } catch(...) {
-            std::cerr << "Failed to save PS/EPS/PDF to: " << filename_out << std::endl;
-            return 1;
-        }
-    }
-
-    return 0;
+    return do_export_vector(doc, filename_in, extension);
 }
 
 /**
@@ -967,6 +904,7 @@ int InkFileExportCmd::do_export_extension(SPDocument *doc, std::string const &fi
     if (extension) {
         extension->set_state(Inkscape::Extension::Extension::STATE_LOADED);
         try {
+            extension->set_gui(false);
             extension->save(doc, filename_out.c_str());
         } catch (Inkscape::Extension::Output::save_failed const &) {
 

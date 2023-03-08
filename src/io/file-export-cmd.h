@@ -35,7 +35,7 @@ private:
     guint32 get_bgcolor(SPDocument *doc);
     std::string get_filename_out(std::string filename_in = "", std::string object_id = "");
     int do_export_svg(SPDocument *doc, std::string const &filename_in);
-    int do_export_svg(SPDocument *doc, std::string const &filename_in, Inkscape::Extension::Output &extension);
+    int do_export_vector(SPDocument *doc, std::string const &filename_in, Inkscape::Extension::Output &extension);
     int do_export_png(SPDocument *doc, std::string const &filename_in);
     int do_export_ps_pdf(SPDocument *doc, std::string const &filename_in, std::string const &mime_type);
     int do_export_ps_pdf(SPDocument *doc, std::string const &filename_in, std::string const &mime_type,

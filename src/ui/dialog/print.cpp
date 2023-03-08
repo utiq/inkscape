@@ -231,7 +231,7 @@ void Print::draw_page(const Glib::RefPtr<Gtk::PrintContext>& context, int page_n
 
         bool ret = ctx->setSurfaceTarget(surface->cobj(), true, &ctm);
         if (ret) {
-            ret = renderer.setupDocument (ctx, _workaround._doc, true, 0.0, nullptr);
+            ret = renderer.setupDocument (ctx, _workaround._doc);
             if (ret) {
                 if (auto page = pm.getPage(page_nr)) {
                     renderer.renderPage(ctx, _workaround._doc, page, false);

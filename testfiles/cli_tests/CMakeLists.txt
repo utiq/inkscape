@@ -193,8 +193,8 @@ add_cli_test(export-area-page_wmf PARAMETERS --export-area-page --export-type=wm
 # TODO: PDF/PS/EPS always behave as if --export-id-only was given, see https://gitlab.com/inkscape/inkscape/-/issues/1173
 add_cli_test(export-area-page_export-id_png PARAMETERS --export-area-page --export-id=MyStar --export-id-only INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page_export-id.png REFERENCE_FILENAME export-area-page_export-id.png)
 add_cli_test(export-area-page_export-id_svg PARAMETERS --export-area-page --export-id=MyStar --export-id-only INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page_export-id.svg REFERENCE_FILENAME export-area-page_export-id.svg)
-add_cli_test(export-area-page_export-id_pdf PARAMETERS --export-area-page --export-id=MyStar                  INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page_export-id.pdf REFERENCE_FILENAME export-area-page_export-id.pdf)
-add_cli_test(export-area-page_export-id_ps  PARAMETERS --export-area-page --export-id=MyStar                  INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page_export-id.ps  REFERENCE_FILENAME export-area-page_export-id.ps)
+add_cli_test(export-area-page_export-id_pdf PARAMETERS --export-area-page --export-id=MyStar --export-id-only INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page_export-id.pdf REFERENCE_FILENAME export-area-page_export-id.pdf)
+add_cli_test(export-area-page_export-id_ps  PARAMETERS --export-area-page --export-id=MyStar --export-id-only INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page_export-id.ps  REFERENCE_FILENAME export-area-page_export-id.ps)
 # EPS: Currently not supported. Feature request: https://gitlab.com/inkscape/inkscape/-/issues/1074
 #add_cli_test(export-area-page_export-id_eps PARAMETERS --export-area-page --export-id=MyStar INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page_export-id.eps REFERENCE_FILENAME export-area-page_export-id.eps)
 # EMF, WMF: Nont supported.
