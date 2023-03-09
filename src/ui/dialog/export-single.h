@@ -35,6 +35,7 @@ namespace UI {
         class ColorPicker;
     }
 namespace Dialog {
+    class PreviewDrawing;
     class ExportPreview;
     class ExtensionList;
 
@@ -81,6 +82,7 @@ private:
     InkscapeApplication *_app = nullptr;
     SPDesktop *_desktop = nullptr;
     SPDocument *_document = nullptr;
+    std::shared_ptr<PreviewDrawing> _preview_drawing;
 
     bool setupDone = false; // To prevent setup() call add connections again.
 

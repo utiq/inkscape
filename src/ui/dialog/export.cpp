@@ -101,8 +101,8 @@ Export::Export()
 // Set current page based on preference/last visited page
 void Export::setDefaultNotebookPage()
 {
-    pages[BATCH_EXPORT] = export_notebook->page_num(*batch_export);
-    pages[SINGLE_IMAGE] = export_notebook->page_num(*single_image);
+    pages[BATCH_EXPORT] = export_notebook->page_num(*batch_export->get_parent());
+    pages[SINGLE_IMAGE] = export_notebook->page_num(*single_image->get_parent());
     export_notebook->set_current_page(pages[SINGLE_IMAGE]);
 }
 

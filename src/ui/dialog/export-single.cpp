@@ -383,7 +383,7 @@ void SingleExport::onPagesChanged()
     auto &pm = _document->getPageManager();
     if (pm.getPageCount() > 1) {
         for (auto page : pm.getPages()) {
-            auto item = Gtk::manage(new BatchItem(page));
+            auto item = Gtk::manage(new BatchItem(page, _preview_drawing));
             pages_list->insert(*item, -1);
         }
     }
@@ -397,7 +397,6 @@ void SingleExport::onPagesChanged()
 void SingleExport::onPagesModified(SPPage *page)
 {
     refreshArea();
-    refreshPreview();
 }
 
 void SingleExport::onPagesSelected(SPPage *page) {
@@ -970,14 +969,13 @@ void SingleExport::refreshPreview()
         selected =
             std::vector<SPItem *>(_desktop->getSelection()->items().begin(), _desktop->getSelection()->items().end());
     }
+    _preview_drawing->set_shown_items(std::move(selected));
 
     bool show = si_show_preview->get_active();
     if (!show || current_key == SELECTION_PAGE) {
         bool have_pages = false;
         for (auto child : pages_list->get_children()) {
             if (auto bi = dynamic_cast<BatchItem *>(child)) {
-                std::vector<SPItem *> page_selected = selected; // copy
-                bi->refreshHide(std::move(page_selected));
                 bi->refresh(!show, _bgnd_color_picker->get_current_color());
                 have_pages = true;
             }
@@ -994,9 +992,8 @@ void SingleExport::refreshPreview()
     float x1 = unit->convert(spin_buttons[SPIN_X1]->get_value(), "px");
     float y0 = unit->convert(spin_buttons[SPIN_Y0]->get_value(), "px");
     float y1 = unit->convert(spin_buttons[SPIN_Y1]->get_value(), "px");
-    preview->setDbox(x0, x1, y0, y1);
+    preview->setBox(Geom::Rect(x0, y0, x1, y1) * _document->dt2doc());
     preview->setBackgroundColor(_bgnd_color_picker->get_current_color());
-    preview->refreshHide(std::move(selected));
     preview->queueRefresh();
 }
 
@@ -1010,10 +1007,8 @@ void SingleExport::setDesktop(SPDesktop *desktop)
 
 void SingleExport::setDocument(SPDocument *document)
 {
-    if (_document == document)
+    if (_document == document || !_desktop)
         return;
-
-    preview->setDocument(document);
 
     _document = document;
     _page_changed_connection.disconnect();
@@ -1025,10 +1020,13 @@ void SingleExport::setDocument(SPDocument *document)
         _page_changed_connection = pm.connectPagesChanged(sigc::mem_fun(*this, &SingleExport::onPagesChanged));
         auto bg_color = get_export_bg_color(document->getNamedView(), 0xffffff00);
         _bgnd_color_picker->setRgba32(bg_color);
+        _preview_drawing = std::make_shared<PreviewDrawing>(document);
+        preview->setDrawing(_preview_drawing);
 
         onPagesChanged();
         refreshArea();
     } else {
+        _preview_drawing.reset();
         clearPagePreviews();
     }
 }

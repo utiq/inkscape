@@ -55,7 +55,7 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
-BatchItem::BatchItem(SPItem *item)
+BatchItem::BatchItem(SPItem *item, std::shared_ptr<PreviewDrawing> drawing)
 {
     _item = item;
 
@@ -67,10 +67,10 @@ BatchItem::BatchItem(SPItem *item)
             id = "no-id";
         }
     }
-    init(_item->document, id);
+    init(id, drawing);
 }
 
-BatchItem::BatchItem(SPPage *page)
+BatchItem::BatchItem(SPPage *page, std::shared_ptr<PreviewDrawing> drawing)
 {
     _page = page;
 
@@ -78,10 +78,11 @@ BatchItem::BatchItem(SPPage *page)
     if (auto id = _page->label()) {
         label = id;
     }
-    init(_page->document, label);
+    init(label, drawing);
 }
 
-void BatchItem::init(SPDocument *doc, Glib::ustring label) {
+void BatchItem::init(Glib::ustring label, std::shared_ptr<PreviewDrawing> drawing) {
+
     _label_str = label;
 
     _grid.set_row_spacing(5);
@@ -102,7 +103,7 @@ void BatchItem::init(SPDocument *doc, Glib::ustring label) {
 
     _preview.set_name("export_preview_batch");
     _preview.setItem(_item);
-    _preview.setDocument(doc);
+    _preview.setDrawing(drawing);
     _preview.setSize(64);
     _preview.set_halign(Gtk::ALIGN_CENTER);
     _preview.set_valign(Gtk::ALIGN_CENTER);
@@ -196,8 +197,7 @@ void BatchItem::on_parent_changed(Gtk::Widget *previous) {
 void BatchItem::refresh(bool hide, guint32 bg_color)
 {
     if (_page) {
-        auto b = _page->getDesktopRect();
-        _preview.setDbox(b.left(), b.right(), b.top(), b.bottom());
+        _preview.setBox(_page->getDocumentRect());
     }
 
     _preview.setBackgroundColor(bg_color);
@@ -357,6 +357,7 @@ void BatchExport::refreshItems()
     // Create New List of Items
     std::set<SPItem *> itemsList;
     std::set<SPPage *, SPPage::PageIndexOrder> pageList;
+    std::set<SPPage *> pageUnsorted;
 
     char *num_str = nullptr;
     switch (current_key) {
@@ -386,6 +387,7 @@ void BatchExport::refreshItems()
         case SELECTION_PAGE: {
             for (auto page : _desktop->getDocument()->getPageManager().getPages()) {
                 pageList.insert(page);
+                pageUnsorted.insert(page);
             }
             num_str = g_strdup_printf(ngettext("%d Page", "%d Pages", pageList.size()), (int)pageList.size());
             break;
@@ -409,8 +411,8 @@ void BatchExport::refreshItems()
             }
         }
         if (SPPage *page = val->getPage()) {
-            auto pageItr = pageList.find(page);
-            if (pageItr == pageList.end() || !(*pageItr)->getId() || (*pageItr)->getId() != key) {
+            auto pageItr = pageUnsorted.find(page);
+            if (pageItr == pageUnsorted.end() || !(*pageItr)->getId() || (*pageItr)->getId() != key) {
                 toRemove.push_back(key);
             }
         }
@@ -432,7 +434,7 @@ void BatchExport::refreshItems()
                 continue;
             }
             // Add new item to the end of list
-            current_items[id] = std::make_unique<BatchItem>(item);
+            current_items[id] = std::make_unique<BatchItem>(item, _preview_drawing);
             preview_container->insert(*current_items[id], -1);
             current_items[id]->set_selected(true);
         }
@@ -442,7 +444,7 @@ void BatchExport::refreshItems()
             if (current_items[id] && current_items[id]->getPage() == page) {
                 continue;
             }
-            current_items[id] = std::make_unique<BatchItem>(page);
+            current_items[id] = std::make_unique<BatchItem>(page, _preview_drawing);
             preview_container->insert(*current_items[id], -1);
             current_items[id]->set_selected(true);
         }
@@ -460,20 +462,26 @@ void BatchExport::refreshPreview()
     bool preview = show_preview->get_active();
     preview_container->set_orientation(preview ? Gtk::ORIENTATION_HORIZONTAL : Gtk::ORIENTATION_VERTICAL);
 
-    for (auto &[key, val] : current_items) {
-        if (preview) {
-            std::vector<SPItem *> selected;
+    if (preview) {
+        std::vector<SPItem *> selected;
+        for (auto &[key, val] : current_items) {
             if (hide) {
+                // Assumption: This will never alternate between these branches in the same
+                // list of current_items. Either it's a selection, layers xor pages.
                 if (auto item = val->getItem()) {
-                    selected = std::vector<SPItem *>({item});
+                    selected.push_back(item);
                 } else if (val->getPage()) {
                     auto sels = _desktop->getSelection()->items();
                     selected = std::vector<SPItem *>(sels.begin(), sels.end());
+                    break;
                 }
             }
-            val->refreshHide(std::move(selected));
         }
-        val->refresh(!preview, _bgnd_color_picker->get_current_color());
+        _preview_drawing->set_shown_items(std::move(selected));
+
+        for (auto &[key, val] : current_items) {
+            val->refresh(!preview, _bgnd_color_picker->get_current_color());
+        }
     }
 }
 
@@ -770,12 +778,12 @@ void BatchExport::setDocument(SPDocument *document)
 
         auto bg_color = get_export_bg_color(document->getNamedView(), 0xffffff00);
         _bgnd_color_picker->setRgba32(bg_color);
-        refreshPreview();
+        _preview_drawing = std::make_shared<PreviewDrawing>(document);
+    } else {
+        _preview_drawing.reset();
     }
 
-    for (auto &[key, val] : current_items) {
-        val->setDocument(document);
-    }
+    refreshItems();
 }
 
 void BatchExport::queueRefreshItems()

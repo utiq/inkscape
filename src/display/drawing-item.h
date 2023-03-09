@@ -148,6 +148,7 @@ public:
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), UpdateContext const &ctx = UpdateContext(), unsigned flags = STATE_ALL, unsigned reset = 0);
     unsigned render(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags = 0, DrawingItem const *stop_at = nullptr) const;
+    unsigned render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0) const;
     void clip(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area) const;
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags = 0);
 

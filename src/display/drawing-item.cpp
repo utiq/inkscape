@@ -911,6 +911,15 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     return render_result;
 }
 
+/**
+ * A stand alone render, ignoring all other objects in the document.
+ */
+unsigned DrawingItem::render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags) const
+{
+    auto rc = RenderContext{ 0xff }; // black outlines
+    return render(dc, rc, area, flags);
+}
+
 void DrawingItem::_renderOutline(DrawingContext &dc, RenderContext &rc, Geom::IntRect const &area, unsigned flags) const
 {
     // intersect with bbox rather than drawbox, as we want to render things outside

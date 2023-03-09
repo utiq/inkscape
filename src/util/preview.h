@@ -52,9 +52,9 @@ namespace Preview {
  *      ownership of the drawing (=> Sync), and snapshotting prevents modification of the data being read by the
  *      background task (=> Send/const).
  */
-Async::Channel::Dest render_preview(SPDocument *doc, std::shared_ptr<Inkscape::Drawing> drawing, uint32_t bg_color, SPItem *item,
-                                    unsigned width_in, unsigned height_in, Geom::OptRect const *dboxIn,
-                                    std::function<void(Cairo::RefPtr<Cairo::ImageSurface> pixbuf, int msecs_elapsed)> &&onfinished);
+Cairo::RefPtr<Cairo::ImageSurface>
+render_preview(SPDocument *doc, std::shared_ptr<Inkscape::Drawing> drawing, uint32_t bg_color, Inkscape::DrawingItem *item,
+                                    unsigned width_in, unsigned height_in, Geom::Rect const &dboxIn);
 
 } // namespace Preview
 } // namespace UI

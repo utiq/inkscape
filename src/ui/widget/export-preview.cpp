@@ -20,6 +20,92 @@ namespace Inkscape {
 namespace UI {
 namespace Dialog {
 
+/**
+ * A preview drawing object is responsible for constructing a drawing and showing it's contents
+ *
+ * On destruction it will gracefully invoke hide itself. You should destroy this object when
+ * you need to change the document object being used for the preview.
+ */
+PreviewDrawing::PreviewDrawing(SPDocument *doc)
+{
+    _document = doc;
+}
+
+PreviewDrawing::~PreviewDrawing()
+{
+    destruct();
+    _document = nullptr;
+}
+
+void PreviewDrawing::destruct()
+{
+    _document->getRoot()->invoke_hide(_visionkey);
+    _drawing.reset();
+    _visionkey = 0;
+}
+
+/**
+ * Construct the drawing, when needed
+ */
+void PreviewDrawing::construct()
+{
+    auto drawing = std::make_shared<Inkscape::Drawing>();
+    _visionkey = SPItem::display_key_new(1);
+    if (auto di = _document->getRoot()->invoke_show(*drawing, _visionkey, SP_ITEM_SHOW_DISPLAY)) {
+        drawing->setRoot(di);
+    } else {
+        drawing.reset();
+    }
+
+    if (!_shown_items.empty()) {
+        _document->getRoot()->invoke_hide_except(_visionkey, _shown_items);
+    }
+    _drawing = drawing;
+}
+
+/**
+  * Render the drawing into a cairo image surface.
+  */
+bool PreviewDrawing::render(ExportPreview *widget, uint32_t bg, SPItem *item, unsigned size, Geom::OptRect const &dbox)
+{
+    if (!_drawing) {
+        if (!_construct_idle.connected()) {
+            _construct_idle = Glib::signal_timeout().connect([=]() {
+                construct();
+                return false;
+            }, 100);
+        }
+        return false;
+    }
+
+    Geom::OptRect bbox = dbox;
+    DrawingItem *di = nullptr;
+
+    if (item) {
+        bbox = item->documentVisualBounds();
+        di = item->get_arenaitem(_visionkey);
+    } else if (!dbox)
+        bbox = _document->getRoot()->documentVisualBounds();
+
+    if (!bbox)
+        return true; // Force quit
+
+    // Use a callback to set the preview rendering;
+    widget->setPreview(UI::Preview::render_preview(_document, _drawing, bg, di, size, size, *bbox));
+    return true;
+}
+
+/**
+ * Limit the preview to just these items.
+ *
+ * You must call refresh after this for the change to take effect.
+ */
+void PreviewDrawing::set_shown_items(std::vector<SPItem*> &&list)
+{
+    _shown_items = std::move(list);
+    destruct();
+}
+
 void ExportPreview::resetPixels(bool new_size)
 {
     clear();
@@ -44,9 +130,6 @@ void ExportPreview::setSize(int newSize)
 ExportPreview::~ExportPreview()
 {
     refresh_conn.disconnect();
-    if (drawing) {
-        _document->getRoot()->invoke_hide(visionkey);
-    }
 }
 
 void ExportPreview::setItem(SPItem *item)
@@ -55,107 +138,45 @@ void ExportPreview::setItem(SPItem *item)
     _dbox = {};
 }
 
-void ExportPreview::setDbox(double x0, double x1, double y0, double y1)
+void ExportPreview::setBox(Geom::Rect const &bbox)
 {
-    if (!_document) {
+    if (bbox.hasZeroArea())
         return;
-    }
-    if (x1 == x0 || y1 == y0) {
-        return;
-    }
+
     _item = nullptr;
-    _dbox = Geom::Rect(x0, y0, x1, y1) * _document->dt2doc();
+    _dbox = bbox;
 }
 
-void ExportPreview::setDocument(SPDocument *document)
+void ExportPreview::setDrawing(std::shared_ptr<PreviewDrawing> drawing)
 {
-
-    if (drawing) {
-        _document->getRoot()->invoke_hide(visionkey);
-        drawing.reset();
-        _item = nullptr;
-    }
-    _document = document;
-
-    if (_document) {
-        // Construct the previews when gtk idle to avoid blocking.
-        _create_drawing_idle = Glib::signal_timeout().connect([=]() {
-            drawing = std::make_shared<Inkscape::Drawing>();
-            visionkey = SPItem::display_key_new(1);
-            if (auto di = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY)) {
-                drawing->setRoot(di);
-            } else {
-                drawing.reset();
-            }
-            renderPreview();
-            return false; // disconnect
-        }, delay_msecs);
-    }
-}
-
-void ExportPreview::refreshHide(std::vector<SPItem*> &&list)
-{
-    _hidden_excluded = std::move(list);
-    _hidden_requested = true;
-}
-
-void ExportPreview::performHide()
-{
-    if (_document) {
-        if (isLastHide) {
-            if (drawing) {
-                _document->getRoot()->invoke_hide(visionkey);
-            }
-            drawing = std::make_shared<Inkscape::Drawing>();
-            visionkey = SPItem::display_key_new(1);
-            if (auto di = _document->getRoot()->invoke_show(*drawing, visionkey, SP_ITEM_SHOW_DISPLAY)) {
-                drawing->setRoot(di);
-            } else {
-                drawing.reset();
-            }
-            isLastHide = false;
-        }
-        if (!_hidden_excluded.empty()) {
-            _document->getRoot()->invoke_hide_except(visionkey, _hidden_excluded);
-            isLastHide = true;
-        }
-    }
-}
-
-void ExportPreview::queueRefresh()
-{
-    if (!drawing || refresh_conn.connected() || dest) {
-        return;
-    }
-
-    refresh_conn = Glib::signal_timeout().connect([this] { renderPreview(); return false; }, delay_msecs);
+    _drawing = drawing;
 }
 
 /*
- * This is the main function which finally renders the preview. Call this after setting document, item and dbox.
+ * This is the main function which finally renders the preview.
  * If dbox is given it will use it.
  * if item is given and not dbox then item is used.
  * If both are not given then we simply do nothing.
  */
-void ExportPreview::renderPreview()
+void ExportPreview::queueRefresh()
 {
-    if (!drawing || dest) {
+    if (!_drawing || _render_idle.connected())
         return;
-    }
 
-    if (_hidden_requested) {
-        performHide();
-        _hidden_requested = false;
-    }
+    _render_idle = Glib::signal_timeout().connect([=]() {
+        return !_drawing->render(this, _bg_color, _item, size, _dbox);
+    }, 100);
+}
 
-    dest = UI::Preview::render_preview(_document, drawing, _bg_color, _item, size, size, _dbox ? &_dbox : nullptr, [this] (Cairo::RefPtr<Cairo::ImageSurface> surface, int elapsed_msecs) {
-        if (surface) {
-            set(Gdk::Pixbuf::create(surface, 0, 0, surface->get_width(), surface->get_height()));
-            show();
-        }
-        delay_msecs = std::max(100, elapsed_msecs * 3);
-        dest.close();
-    });
+/**
+ * Callback when the rendering is complete.
+ */
+void ExportPreview::setPreview(Cairo::RefPtr<Cairo::ImageSurface> surface)
+{
+    if (surface) {
+        set(Gdk::Pixbuf::create(surface, 0, 0, surface->get_width(), surface->get_height()));
+        show();
+    }
 }
 
 void ExportPreview::setBackgroundColor(uint32_t bg_color)

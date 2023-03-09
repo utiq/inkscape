@@ -45,16 +45,15 @@ class ExportList;
 class BatchItem : public Gtk::FlowBoxChild
 {
 public:
-    BatchItem(SPItem *item);
-    BatchItem(SPPage *page);
+    BatchItem(SPItem *item, std::shared_ptr<PreviewDrawing> drawing);
+    BatchItem(SPPage *page, std::shared_ptr<PreviewDrawing> drawing);
     ~BatchItem() override = default;
 
     Glib::ustring getLabel() { return _label_str; }
     SPItem *getItem() { return _item; }
     SPPage *getPage() { return _page; }
     void refresh(bool hide, guint32 bg_color);
-    void refreshHide(std::vector<SPItem*> &&list) { _preview.refreshHide(std::move(list)); }
-    void setDocument(SPDocument *doc) { _preview.setDocument(doc); }
+    void setDrawing(std::shared_ptr<PreviewDrawing> drawing) { _preview.setDrawing(drawing); }
 
     auto get_radio_group() { return _option.get_group(); }
     void on_parent_changed(Gtk::Widget *) override;
@@ -63,7 +62,7 @@ public:
     void update_selected();
 
 private:
-    void init(SPDocument *doc, Glib::ustring label);
+    void init(Glib::ustring label, std::shared_ptr<PreviewDrawing> drawing);
 
     Glib::ustring _label_str;
     Gtk::Grid _grid;
@@ -106,6 +105,7 @@ private:
     InkscapeApplication *_app;
     SPDesktop *_desktop = nullptr;
     SPDocument *_document = nullptr;
+    std::shared_ptr<PreviewDrawing> _preview_drawing;
     bool setupDone = false; // To prevent setup() call add connections again.
 
     std::map<selection_mode, Gtk::RadioButton *> selection_buttons;

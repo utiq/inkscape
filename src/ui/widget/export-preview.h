@@ -26,6 +26,28 @@ class Drawing;
 
 namespace UI {
 namespace Dialog {
+class ExportPreview;
+
+class PreviewDrawing
+{
+public:
+    PreviewDrawing(SPDocument *document);
+    ~PreviewDrawing();
+
+    bool render(ExportPreview *widget, uint32_t bg, SPItem *item, unsigned size, Geom::OptRect const &dboxIn);
+    void set_shown_items(std::vector<SPItem*> &&list = {});
+
+private:
+    void destruct();
+    void construct();
+
+    SPDocument *_document = nullptr;
+    std::shared_ptr<Inkscape::Drawing> _drawing;
+    unsigned _visionkey = 0;
+
+    std::vector<SPItem*> _shown_items;
+    Inkscape::auto_connection _construct_idle;
+};
 
 class ExportPreview final : public Gtk::Image
 {
@@ -34,37 +56,28 @@ public:
     ExportPreview(BaseObjectType *cobj, Glib::RefPtr<Gtk::Builder> const &) : Gtk::Image(cobj) {}
     ~ExportPreview() override;
 
-    void setDocument(SPDocument *document);
-    void refreshHide(std::vector<SPItem*> &&list = {});
+    void setDrawing(std::shared_ptr<PreviewDrawing> drawing);
     void setItem(SPItem *item);
-    void setDbox(double x0, double x1, double y0, double y1);
+    void setBox(Geom::Rect const &bbox);
     void queueRefresh();
     void resetPixels(bool new_size = false);
     void setSize(int newSize);
+    void setPreview(Cairo::RefPtr<Cairo::ImageSurface>);
     void setBackgroundColor(uint32_t bg_color);
+
+    static std::shared_ptr<Inkscape::Drawing> makeDrawing(SPDocument *doc);
 
 private:
     int size = 128; // size of preview image
-    bool isLastHide = false;
     sigc::connection refresh_conn;
-    bool _hidden_requested = false;
 
-    SPDocument *_document = nullptr;
     SPItem *_item = nullptr;
     Geom::OptRect _dbox;
 
-    std::shared_ptr<Drawing> drawing; // drawing implies _document
-    int delay_msecs = 100;
+    std::shared_ptr<PreviewDrawing> _drawing;
     uint32_t _bg_color = 0;
-    unsigned visionkey = 0;
 
-    std::vector<SPItem*> _hidden_excluded;
-
-    Async::Channel::Dest dest;
-    Inkscape::auto_connection _create_drawing_idle;
-
-    void renderPreview();
-    void performHide();
+    Inkscape::auto_connection _render_idle;
 };
 
 } // namespace Dialog
