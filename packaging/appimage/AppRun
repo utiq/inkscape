@@ -17,7 +17,7 @@ fi
 # or to be called with ./Inkscape*.AppImage inkview
 ############################################################################################
 
-if [ ! -z $APPIMAGE ] ; then
+if [ ! -z "$APPIMAGE" ] ; then
   BINARY_NAME=$(basename "$ARGV0")
 else
   BINARY_NAME=$(basename "$0")
