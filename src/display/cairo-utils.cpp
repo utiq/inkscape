@@ -33,6 +33,8 @@
 #include "document.h"
 #include "helper/pixbuf-ops.h"
 #include "preferences.h"
+#include "ui/util.h"
+#include "util/scope_exit.h"
 #include "util/units.h"
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 17, 6)
@@ -689,13 +691,13 @@ void Pixbuf::ensure_pixbuf(GdkPixbuf *pb)
  * If optimize_stroke == false, the view Rect is not used.
  */
 static void
-feed_curve_to_cairo(cairo_t *cr, Geom::Curve const &c, Geom::Affine const & trans, Geom::Rect view, bool optimize_stroke)
+feed_curve_to_cairo(cairo_t *cr, Geom::Curve const &c, Geom::Affine const &trans, Geom::Rect const &view, bool optimize_stroke)
 {
     using Geom::X;
     using Geom::Y;
 
     unsigned order = 0;
-    if (Geom::BezierCurve const* b = dynamic_cast<Geom::BezierCurve const*>(&c)) {
+    if (auto b = dynamic_cast<Geom::BezierCurve const*>(&c)) {
         order = b->order();
     }
 
@@ -718,11 +720,11 @@ feed_curve_to_cairo(cairo_t *cr, Geom::Curve const &c, Geom::Affine const & tran
     break;
     case 2:
     {
-        Geom::QuadraticBezier const *quadratic_bezier = static_cast<Geom::QuadraticBezier const*>(&c);
-        std::vector<Geom::Point> points = quadratic_bezier->controlPoints();
-        points[0] *= trans;
-        points[1] *= trans;
-        points[2] *= trans;
+        auto quadratic_bezier = static_cast<Geom::QuadraticBezier const*>(&c);
+        std::array<Geom::Point, 3> points;
+        for (int i = 0; i < 3; i++) {
+            points[i] = quadratic_bezier->controlPoint(i) * trans;
+        }
         // degree-elevate to cubic Bezier, since Cairo doesn't do quadratic Beziers
         Geom::Point b1 = points[0] + (2./3) * (points[1] - points[0]);
         Geom::Point b2 = b1 + (1./3) * (points[2] - points[0]);
@@ -741,8 +743,11 @@ feed_curve_to_cairo(cairo_t *cr, Geom::Curve const &c, Geom::Affine const & tran
     break;
     case 3:
     {
-        Geom::CubicBezier const *cubic_bezier = static_cast<Geom::CubicBezier const*>(&c);
-        std::vector<Geom::Point> points = cubic_bezier->controlPoints();
+        auto cubic_bezier = static_cast<Geom::CubicBezier const*>(&c);
+        std::array<Geom::Point, 4> points;
+        for (int i = 0; i < 4; i++) {
+            points[i] = cubic_bezier->controlPoint(i);
+        }
         //points[0] *= trans; // don't do this one here for fun: it is only needed for optimized strokes
         points[1] *= trans;
         points[2] *= trans;
@@ -777,13 +782,7 @@ feed_curve_to_cairo(cairo_t *cr, Geom::Curve const &c, Geom::Affine const & tran
                 }
 
                 // Apply the transformation to the current context
-                cairo_matrix_t cm;
-                cm.xx = xform[0];
-                cm.xy = xform[2];
-                cm.x0 = xform[4];
-                cm.yx = xform[1];
-                cm.yy = xform[3];
-                cm.y0 = xform[5];
+                auto cm = geom_to_cairo(xform);
 
                 cairo_save(cr);
                 cairo_transform(cr, &cm);
@@ -920,6 +919,8 @@ std::optional<Geom::PathVector> extract_pathvector_from_cairo(cairo_t *ct)
     if (!path)
         return std::nullopt;
 
+    auto path_freer = scope_exit([&] { cairo_path_destroy(path); });
+
     Geom::PathBuilder res;
     auto end = &path->data[path->num_data];
     for (auto p = &path->data[0]; p < end; p += p->header.length) {
@@ -955,8 +956,6 @@ std::optional<Geom::PathVector> extract_pathvector_from_cairo(cairo_t *ct)
 
     res.flush();
     return res.peek();
-finish:
-    cairo_path_destroy(path);
 }
 
 static std::atomic<int> num_filter_threads = 4;
@@ -1363,123 +1362,83 @@ static guint32 linear_to_srgb( const guint32 c, const guint32 a ) {
     return premul_alpha( c2, a );
 }
 
-struct SurfaceSrgbToLinear {
-
-    guint32 operator()(guint32 in) {
-        EXTRACT_ARGB32(in, a,r,g,b)    ; // Unneeded semi-colon for indenting
-        if( a != 0 ) {
-            r = srgb_to_linear( r, a );
-            g = srgb_to_linear( g, a );
-            b = srgb_to_linear( b, a );
-        }
-        ASSEMBLE_ARGB32(out, a,r,g,b);
-        return out;
+static uint32_t srgb_to_linear_argb32(uint32_t in)
+{
+    EXTRACT_ARGB32(in, a, r, g, b);
+    if (a != 0) {
+        r = srgb_to_linear(r, a);
+        g = srgb_to_linear(g, a);
+        b = srgb_to_linear(b, a);
     }
-private:
-    /* None */
-};
+    ASSEMBLE_ARGB32(out, a, r, g, b);
+    return out;
+}
 
 int ink_cairo_surface_srgb_to_linear(cairo_surface_t *surface)
 {
     cairo_surface_flush(surface);
     int width = cairo_image_surface_get_width(surface);
     int height = cairo_image_surface_get_height(surface);
-    // int stride = cairo_image_surface_get_stride(surface);
-    // unsigned char *data = cairo_image_surface_get_data(surface);
 
-    ink_cairo_surface_filter( surface, surface, SurfaceSrgbToLinear() );
+    ink_cairo_surface_filter(surface, surface, srgb_to_linear_argb32);
 
-    /* TODO convert this to OpenMP somehow */
-    // for (int y = 0; y < height; ++y, data += stride) {
-    //     for (int x = 0; x < width; ++x) {
-    //         guint32 px = *reinterpret_cast<guint32*>(data + 4*x);
-    //         EXTRACT_ARGB32(px, a,r,g,b)    ; // Unneeded semi-colon for indenting
-    //         if( a != 0 ) {
-    //             r = srgb_to_linear( r, a );
-    //             g = srgb_to_linear( g, a );
-    //             b = srgb_to_linear( b, a );
-    //         }
-    //         ASSEMBLE_ARGB32(px2, a,r,g,b);
-    //         *reinterpret_cast<guint32*>(data + 4*x) = px2;
-    //     }
-    // }
     return width * height;
 }
 
-struct SurfaceLinearToSrgb {
-
-    guint32 operator()(guint32 in) {
-        EXTRACT_ARGB32(in, a,r,g,b)    ; // Unneeded semi-colon for indenting
-        if( a != 0 ) {
-            r = linear_to_srgb( r, a );
-            g = linear_to_srgb( g, a );
-            b = linear_to_srgb( b, a );
-        }
-        ASSEMBLE_ARGB32(out, a,r,g,b);
-        return out;
+static uint32_t linear_to_srgb_argb32(uint32_t in)
+{
+    EXTRACT_ARGB32(in, a, r, g, b);
+    if (a != 0) {
+        r = linear_to_srgb(r, a);
+        g = linear_to_srgb(g, a);
+        b = linear_to_srgb(b, a);
     }
-private:
-    /* None */
-};
+    ASSEMBLE_ARGB32(out, a, r, g, b);
+    return out;
+}
 
 SPBlendMode ink_cairo_operator_to_css_blend(cairo_operator_t cairo_operator)
 {
     // All of the blend modes are implemented in Cairo as of 1.10.
     // For a detailed description, see:
     // http://cairographics.org/operators/
-    auto res = SP_CSS_BLEND_NORMAL;
+
     switch (cairo_operator) {
         case CAIRO_OPERATOR_MULTIPLY:
-            res = SP_CSS_BLEND_MULTIPLY;
-            break;
+            return SP_CSS_BLEND_MULTIPLY;
         case CAIRO_OPERATOR_SCREEN:
-            res = SP_CSS_BLEND_SCREEN;
-            break;
+            return SP_CSS_BLEND_SCREEN;
         case CAIRO_OPERATOR_DARKEN:
-            res = SP_CSS_BLEND_DARKEN;
-            break;
+            return SP_CSS_BLEND_DARKEN;
         case CAIRO_OPERATOR_LIGHTEN:
-            res = SP_CSS_BLEND_LIGHTEN;
-            break;
+            return SP_CSS_BLEND_LIGHTEN;
         case CAIRO_OPERATOR_OVERLAY:
-            res = SP_CSS_BLEND_OVERLAY;
-            break;
+            return SP_CSS_BLEND_OVERLAY;
         case CAIRO_OPERATOR_COLOR_DODGE:
-            res = SP_CSS_BLEND_COLORDODGE;
-            break;
+            return SP_CSS_BLEND_COLORDODGE;
         case CAIRO_OPERATOR_COLOR_BURN:
-            res = SP_CSS_BLEND_COLORBURN;
-            break;
+            return SP_CSS_BLEND_COLORBURN;
         case CAIRO_OPERATOR_HARD_LIGHT:
-            res = SP_CSS_BLEND_HARDLIGHT;
-            break;
+            return SP_CSS_BLEND_HARDLIGHT;
         case CAIRO_OPERATOR_SOFT_LIGHT:
-            res = SP_CSS_BLEND_SOFTLIGHT;
-            break;
+            return SP_CSS_BLEND_SOFTLIGHT;
         case CAIRO_OPERATOR_DIFFERENCE:
-            res = SP_CSS_BLEND_DIFFERENCE;
-            break;
+            return SP_CSS_BLEND_DIFFERENCE;
         case CAIRO_OPERATOR_EXCLUSION:
-            res = SP_CSS_BLEND_EXCLUSION;
-            break;
+            return SP_CSS_BLEND_EXCLUSION;
         case CAIRO_OPERATOR_HSL_HUE:
-            res = SP_CSS_BLEND_HUE;
-            break;
+            return SP_CSS_BLEND_HUE;
         case CAIRO_OPERATOR_HSL_SATURATION:
-            res = SP_CSS_BLEND_SATURATION;
-            break;
+            return SP_CSS_BLEND_SATURATION;
         case CAIRO_OPERATOR_HSL_COLOR:
-            res = SP_CSS_BLEND_COLOR;
-            break;
+            return SP_CSS_BLEND_COLOR;
         case CAIRO_OPERATOR_HSL_LUMINOSITY:
-            res = SP_CSS_BLEND_LUMINOSITY;
-            break;
+            return SP_CSS_BLEND_LUMINOSITY;
         case CAIRO_OPERATOR_OVER:
+            return SP_CSS_BLEND_NORMAL;
         default:
-            res = SP_CSS_BLEND_NORMAL;
-            break;
+            return SP_CSS_BLEND_NORMAL;
     }
-    return res;
 }
 
 cairo_operator_t ink_css_blend_to_cairo_operator(SPBlendMode css_blend)
@@ -1488,88 +1447,53 @@ cairo_operator_t ink_css_blend_to_cairo_operator(SPBlendMode css_blend)
     // For a detailed description, see:
     // http://cairographics.org/operators/
 
-    cairo_operator_t res = CAIRO_OPERATOR_OVER;
     switch (css_blend) {
         case SP_CSS_BLEND_MULTIPLY:
-            res = CAIRO_OPERATOR_MULTIPLY;
-            break;
+            return CAIRO_OPERATOR_MULTIPLY;
         case SP_CSS_BLEND_SCREEN:
-            res = CAIRO_OPERATOR_SCREEN;
-            break;
+            return CAIRO_OPERATOR_SCREEN;
         case SP_CSS_BLEND_DARKEN:
-            res = CAIRO_OPERATOR_DARKEN;
-            break;
+            return CAIRO_OPERATOR_DARKEN;
         case SP_CSS_BLEND_LIGHTEN:
-            res = CAIRO_OPERATOR_LIGHTEN;
-            break;
+            return CAIRO_OPERATOR_LIGHTEN;
         case SP_CSS_BLEND_OVERLAY:
-            res = CAIRO_OPERATOR_OVERLAY;
-            break;
+            return CAIRO_OPERATOR_OVERLAY;
         case SP_CSS_BLEND_COLORDODGE:
-            res = CAIRO_OPERATOR_COLOR_DODGE;
-            break;
+            return CAIRO_OPERATOR_COLOR_DODGE;
         case SP_CSS_BLEND_COLORBURN:
-            res = CAIRO_OPERATOR_COLOR_BURN;
-            break;
+            return CAIRO_OPERATOR_COLOR_BURN;
         case SP_CSS_BLEND_HARDLIGHT:
-            res = CAIRO_OPERATOR_HARD_LIGHT;
-            break;
+            return CAIRO_OPERATOR_HARD_LIGHT;
         case SP_CSS_BLEND_SOFTLIGHT:
-            res = CAIRO_OPERATOR_SOFT_LIGHT;
-            break;
+            return CAIRO_OPERATOR_SOFT_LIGHT;
         case SP_CSS_BLEND_DIFFERENCE:
-            res = CAIRO_OPERATOR_DIFFERENCE;
-            break;
+            return CAIRO_OPERATOR_DIFFERENCE;
         case SP_CSS_BLEND_EXCLUSION:
-            res = CAIRO_OPERATOR_EXCLUSION;
-            break;
+            return CAIRO_OPERATOR_EXCLUSION;
         case SP_CSS_BLEND_HUE:
-            res = CAIRO_OPERATOR_HSL_HUE;
-            break;
+            return CAIRO_OPERATOR_HSL_HUE;
         case SP_CSS_BLEND_SATURATION:
-            res = CAIRO_OPERATOR_HSL_SATURATION;
-            break;
+            return CAIRO_OPERATOR_HSL_SATURATION;
         case SP_CSS_BLEND_COLOR:
-            res = CAIRO_OPERATOR_HSL_COLOR;
-            break;
+            return CAIRO_OPERATOR_HSL_COLOR;
         case SP_CSS_BLEND_LUMINOSITY:
-            res = CAIRO_OPERATOR_HSL_LUMINOSITY;
-            break;
+            return CAIRO_OPERATOR_HSL_LUMINOSITY;
         case SP_CSS_BLEND_NORMAL:
-            res = CAIRO_OPERATOR_OVER;
-            break;
+            return CAIRO_OPERATOR_OVER;
         default:
             g_error("Invalid SPBlendMode %d", css_blend);
+            return CAIRO_OPERATOR_OVER;
     }
-    return res;
 }
-
-
 
 int ink_cairo_surface_linear_to_srgb(cairo_surface_t *surface)
 {
     cairo_surface_flush(surface);
     int width = cairo_image_surface_get_width(surface);
     int height = cairo_image_surface_get_height(surface);
-    // int stride = cairo_image_surface_get_stride(surface);
-    // unsigned char *data = cairo_image_surface_get_data(surface);
 
-    ink_cairo_surface_filter( surface, surface, SurfaceLinearToSrgb() );
+    ink_cairo_surface_filter(surface, surface, linear_to_srgb_argb32);
 
-    // /* TODO convert this to OpenMP somehow */
-    // for (int y = 0; y < height; ++y, data += stride) {
-    //     for (int x = 0; x < width; ++x) {
-    //         guint32 px = *reinterpret_cast<guint32*>(data + 4*x);
-    //         EXTRACT_ARGB32(px, a,r,g,b)    ; // Unneeded semi-colon for indenting
-    //         if( a != 0 ) {
-    //             r = linear_to_srgb( r, a );
-    //             g = linear_to_srgb( g, a );
-    //             b = linear_to_srgb( b, a );
-    //         }
-    //         ASSEMBLE_ARGB32(px2, a,r,g,b);
-    //         *reinterpret_cast<guint32*>(data + 4*x) = px2;
-    //     }
-    // }
     return width * height;
 }
 
@@ -1751,31 +1675,36 @@ void ink_cairo_pixbuf_cleanup(guchar * /*pixels*/, void *data)
 
 guint32 argb32_from_pixbuf(guint32 c)
 {
-    guint32 o = 0;
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-    guint32 a = (c & 0xff000000) >> 24;
-#else
-    guint32 a = (c & 0x000000ff);
-#endif
-    if (a != 0) {
-        // extract color components
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-        guint32 r = (c & 0x000000ff);
-        guint32 g = (c & 0x0000ff00) >> 8;
-        guint32 b = (c & 0x00ff0000) >> 16;
-#else
-        guint32 r = (c & 0xff000000) >> 24;
-        guint32 g = (c & 0x00ff0000) >> 16;
-        guint32 b = (c & 0x0000ff00) >> 8;
-#endif
-        // premultiply
-        r = premul_alpha(r, a);
-        b = premul_alpha(b, a);
-        g = premul_alpha(g, a);
-        // combine into output
-        o = (a << 24) | (r << 16) | (g << 8) | (b);
+    uint32_t a;
+    if constexpr (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+        a = (c & 0xff000000) >> 24;
+    } else {
+        a = (c & 0x000000ff);
     }
-    return o;
+
+    if (a == 0) {
+        return 0;
+    }
+
+    // extract color components
+    uint32_t r, g, b;
+    if constexpr (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+        r = (c & 0x000000ff);
+        g = (c & 0x0000ff00) >> 8;
+        b = (c & 0x00ff0000) >> 16;
+    } else {
+        r = (c & 0xff000000) >> 24;
+        g = (c & 0x00ff0000) >> 16;
+        b = (c & 0x0000ff00) >> 8;
+    }
+
+    // premultiply
+    r = premul_alpha(r, a);
+    b = premul_alpha(b, a);
+    g = premul_alpha(g, a);
+
+    // combine into output
+    return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
 /**
@@ -1804,12 +1733,11 @@ guint32 pixbuf_from_argb32(guint32 c, guint32 bgcolor)
     }
 
     // combine into output
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-    guint32 o = (r) | (g << 8) | (b << 16) | (a << 24);
-#else
-    guint32 o = (r << 24) | (g << 16) | (b << 8) | (a);
-#endif
-    return o;
+    if constexpr (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+        return r | (g << 8) | (b << 16) | (a << 24);
+    } else {
+        return (r << 24) | (g << 16) | (b << 8) | a;
+    }
 }
 
 /**
@@ -1890,11 +1818,18 @@ const guchar* pixbuf_to_png(guchar const**rows, guchar* px, int num_rows, int nu
             guint64 pix1 = (*pixel & 0x0000ff00) >> 8;
             guint64 pix0 = (*pixel & 0x000000ff);
 
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-            guint64 a = pix3, b = pix2, g = pix1, r = pix0;
-#else
-            guint64 r = pix3, g = pix2, b = pix1, a = pix0;
-#endif
+            uint64_t a, r, g, b;
+            if constexpr (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+                a = pix3;
+                b = pix2;
+                g = pix1;
+                r = pix0;
+            } else {
+                r = pix3;
+                g = pix2;
+                b = pix1;
+                a = pix0;
+            }
 
             // One of possible rgb to greyscale formulas. This one is called "luminance", "luminosity" or "luma" 
             guint16 gray = (guint16)((guint32)((0.2126*(r<<24) + 0.7152*(g<<24) + 0.0722*(b<<24)))>>16); 
@@ -1925,11 +1860,11 @@ const guchar* pixbuf_to_png(guchar const**rows, guchar* px, int num_rows, int nu
                 }
             } else { // Grayscale
                 if (bit_depth == 16) {
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-                    *(guint16*)ptr = ((gray & 0xff00)>>8) + ((gray & 0x00ff)<<8);
-#else
-                    *(guint16*)ptr = gray;
-#endif
+                    if constexpr (G_BYTE_ORDER == G_LITTLE_ENDIAN) {
+                        *(guint16*)ptr = ((gray & 0xff00)>>8) + ((gray & 0x00ff)<<8);
+                    } else {
+                        *(guint16*)ptr = gray;
+                    }
                     // For 8bit->16bit this mirrors RGB(A), multiplying by
                     // 0x101; if you prefer multiplying by 0x100, remove the
                     // <<8 for little-endian, and remove the unshifted value
@@ -1962,13 +1897,6 @@ const guchar* pixbuf_to_png(guchar const**rows, guchar* px, int num_rows, int nu
     }
     return new_data; 
 }
-
-
-
-
-
-
-
 
 /*
   Local Variables:
