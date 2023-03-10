@@ -1204,6 +1204,14 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
 //   canvas_catchall->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
 bool CanvasPrivate::pick_current_item(const GdkEvent *event)
 {
+    // Ensure requested geometry updates are performed first.
+    if (q->_need_update && !q->_drawing->snapshotted() && !canvasitem_ctx->snapshotted()) {
+        FrameCheck::Event fc;
+        if (prefs.debug_framecheck) fc = FrameCheck::Event("update", 1);
+        q->_need_update = false;
+        canvasitem_ctx->root()->update(false);
+    }
+
     int button_down = 0;
     if (!q->_all_enter_events) {
         // Only set true in connector-tool.cpp.
