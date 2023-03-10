@@ -590,19 +590,7 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkCheckButton" id="si_default_opts">
-                                        <property name="label" translatable="yes">Hide Export Settings</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">False</property>
-                                        <property name="tooltip-text" translatable="yes">Don't pop up the export options and use the previously used or default options.</property>
-                                        <property name="draw-indicator">True</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">2</property>
-                                      </packing>
+                                      <placeholder/>
                                     </child>
                                     <child>
                                       <object class="GtkBox">
@@ -669,16 +657,16 @@
                   </packing>
                 </child>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
+                  <!-- n-columns=3 n-rows=2 -->
                   <object class="GtkGrid" id="si_buttons">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="row-spacing">5</property>
-                    <property name="column-spacing">10</property>
                     <child>
                       <object class="GtkEntry" id="si_filename">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="margin-start">5</property>
                         <property name="hexpand">True</property>
                         <property name="secondary-icon-name">folder-open</property>
                         <property name="secondary-icon-tooltip-text" translatable="yes">Browse export directory</property>
@@ -695,6 +683,7 @@
                         <property name="can-focus">False</property>
                         <property name="tooltip-text" translatable="yes">Select export format</property>
                         <property name="valign">center</property>
+                        <property name="margin-start">5</property>
                         <property name="active">0</property>
                       </object>
                       <packing>
@@ -712,7 +701,21 @@
                       <packing>
                         <property name="left-attach">0</property>
                         <property name="top-attach">1</property>
-                        <property name="width">2</property>
+                        <property name="width">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="si_prefs">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                   </object>

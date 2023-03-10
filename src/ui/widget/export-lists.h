@@ -38,19 +38,28 @@ class ExtensionList : public Inkscape::UI::Widget::ScrollProtected<Gtk::ComboBox
 public:
     ExtensionList();
     ExtensionList(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade);
-    ~ExtensionList() override {};
+    ~ExtensionList() override;
 
-public:
     void setup();
     Glib::ustring getFileExtension();
     void setExtensionFromFilename(Glib::ustring const &filename);
     void removeExtension(Glib::ustring &filename);
     void createList();
+    Gtk::MenuButton *getPrefButton() const { return _pref_button; }
     Inkscape::Extension::Output *getExtension();
 
 private:
+    void init();
+    void on_changed() override;
+
     PrefObserver _watch_pref;
     std::map<std::string, Inkscape::Extension::Output *> ext_to_mod;
+
+    sigc::connection _popover_signal;
+    Glib::RefPtr<Gtk::Builder> _builder;
+    Gtk::MenuButton *_pref_button = nullptr;
+    Gtk::Popover *_pref_popover = nullptr;
+    Gtk::Viewport *_pref_holder = nullptr;
 };
 
 class ExportList : public Gtk::Grid
@@ -83,8 +92,9 @@ private:
     int _num_rows = 0;
     int _suffix_col = 0;
     int _extension_col = 1;
-    int _dpi_col = 2;
-    int _delete_col = 3;
+    int _prefs_col = 2;
+    int _dpi_col = 3;
+    int _delete_col = 4;
 };
 
 } // namespace Dialog

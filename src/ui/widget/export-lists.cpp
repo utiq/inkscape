@@ -41,6 +41,7 @@
 #include "ui/interface.h"
 #include "ui/widget/scrollprotected.h"
 #include "ui/widget/unit-menu.h"
+#include "ui/builder-utils.h"
 
 using Inkscape::Util::unit_table;
 
@@ -50,17 +51,48 @@ namespace Dialog {
 
 ExtensionList::ExtensionList()
 {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    _watch_pref = prefs->createObserver("/dialogs/export/show_all_extensions", [=]() { setup(); });
+    init();
 }
 
 ExtensionList::ExtensionList(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &refGlade)
     : Inkscape::UI::Widget::ScrollProtected<Gtk::ComboBoxText>(cobject, refGlade)
 {
-    // This duplication is silly, but needed because C++ can't
-    // both deligate the constructor, and construct for glade
+    init();
+}
+
+ExtensionList::~ExtensionList()
+{
+    _popover_signal.disconnect();
+}
+
+void ExtensionList::init()
+{
+    _builder = create_builder("dialog-export-prefs.glade");
+    _builder->get_widget("pref_button", _pref_button);
+    _builder->get_widget("pref_popover", _pref_popover);
+    _builder->get_widget("pref_holder", _pref_holder);
+
+    _popover_signal = _pref_popover->signal_show().connect([=]() {
+        _pref_holder->remove();
+        if (auto ext = getExtension()) {
+            if (auto gui = ext->autogui(nullptr, nullptr)) {
+                _pref_holder->add(*gui);
+                _pref_popover->grab_focus();
+            }
+        }
+    });
+
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     _watch_pref = prefs->createObserver("/dialogs/export/show_all_extensions", [=]() { setup(); });
+}
+
+void ExtensionList::on_changed()
+{
+    bool has_prefs = false;
+    if (auto ext = getExtension()) {
+        has_prefs = (ext->widget_visible_count() > 0);
+    }
+    _pref_button->set_sensitive(has_prefs);
 }
 
 void ExtensionList::setup()
@@ -150,7 +182,7 @@ void ExportList::setup()
     suffix_label->show();
 
     Gtk::Label *extension_label = Gtk::manage(new Gtk::Label(_("Format")));
-    this->attach(*extension_label, _extension_col, 0, 1, 1);
+    this->attach(*extension_label, _extension_col, 0, 2, 1);
     extension_label->show();
 
     Gtk::Label *dpi_label = Gtk::manage(new Gtk::Label(_("DPI")));
@@ -194,6 +226,7 @@ void ExportList::append_row()
     extension->setup();
     extension->show();
     this->attach(*extension, _extension_col, current_row, 1, 1);
+    this->attach(*extension->getPrefButton(), _prefs_col, current_row, 1, 1);
 
     // Disable DPI when not using a raster image output
     extension->signal_changed().connect([=]() {
@@ -256,8 +289,9 @@ Glib::ustring ExportList::get_suffix(int row)
 Inkscape::Extension::Output *ExportList::getExtension(int row)
 {
     ExtensionList *extension_cb = dynamic_cast<ExtensionList *>(this->get_child_at(_extension_col, row + 1));
-    return extension_cb ? extension_cb->getExtension() : nullptr;
+    return extension_cb->getExtension();
 }
+
 double ExportList::get_dpi(int row)
 {
     double dpi = default_dpi;

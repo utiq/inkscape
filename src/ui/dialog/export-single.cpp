@@ -101,11 +101,14 @@ SingleExport::SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Buil
 
     builder->get_widget("si_hide_all", si_hide_all);
     builder->get_widget("si_show_preview", si_show_preview);
-    builder->get_widget("si_default_opts", si_default_opts);
     builder->get_widget_derived("si_preview", preview);
     builder->get_widget("si_preview_box", preview_box);
 
     builder->get_widget_derived("si_extention", si_extension_cb);
+    Gtk::Box *pref_button_box = nullptr;
+    builder->get_widget("si_prefs", pref_button_box);
+    pref_button_box->add(*si_extension_cb->getPrefButton());
+
     builder->get_widget("si_filename", si_filename_entry);
     builder->get_widget("si_export", si_export);
 
@@ -115,7 +118,6 @@ SingleExport::SingleExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Buil
 
     Gtk::Button* button = nullptr;
     builder->get_widget("si_backgnd", button); 
-    assert(button);
     _bgnd_color_picker = std::make_unique<Inkscape::UI::Widget::ColorPicker>(
         _("Background color"), _("Color used to fill background"), 0xffffff00, true, button);
 
@@ -218,7 +220,6 @@ void SingleExport::setup()
         }
         refreshPreview();
     });
-    si_default_opts->set_active(prefs->getBool("/dialogs/export/defaultopts", true));
 }
 
 // Setup units combobox
@@ -624,13 +625,6 @@ void SingleExport::onExport()
     float y0 = unit->convert(spin_buttons[SPIN_Y0]->get_value(), "px");
     float y1 = unit->convert(spin_buttons[SPIN_Y1]->get_value(), "px");
     auto area = Geom::Rect(Geom::Point(x0, y0), Geom::Point(x1, y1));
-
-    bool default_opts = si_default_opts->get_active();
-    prefs->setBool("/dialogs/export/defaultopts", default_opts);
-    if (!default_opts && !omod->prefs()) {
-        setExporting(false);
-        return; // cancel button
-    }
 
     if (omod->is_raster()) {
         area *= _desktop->dt2doc();

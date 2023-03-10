@@ -549,29 +549,19 @@ void BatchExport::onExport()
     Glib::ustring filename = filename_entry->get_text();
     export_list->removeExtension(filename);
 
-    // create vector of exports
-    int num_rows = export_list->get_rows();
-    std::vector<Glib::ustring> suffixs;
-    std::vector<Inkscape::Extension::Output *> extensions;
-    std::vector<double> dpis;
-    for (int i = 0; i < num_rows; i++) {
-        suffixs.push_back(export_list->get_suffix(i));
-        extensions.push_back(export_list->getExtension(i));
-        dpis.push_back(export_list->get_dpi(i));
-    }
-
     bool hide = hide_all->get_active();
     auto sels = _desktop->getSelection()->items();
     std::vector<SPItem *> selected_items(sels.begin(), sels.end());
 
     // Start Exporting Each Item
+    int num_rows = export_list->get_rows();
     for (int j = 0; j < num_rows && !interrupted; j++) {
 
-        auto suffix = suffixs[j];
-        auto omod = extensions[j];
-        float dpi = dpis[j];
+        auto suffix = export_list->get_suffix(j);
+        auto ext = export_list->getExtension(j);
+        float dpi = export_list->get_dpi(j);
 
-        if (!omod || omod->deactivated() || !omod->prefs()) {
+        if (!ext || ext->deactivated()) {
             continue;
         }
 
@@ -622,14 +612,14 @@ void BatchExport::onExport()
             }
 
             if (!suffix.empty()) {
-                if (omod->is_raster()) {
+                if (ext->is_raster()) {
                     // Put the dpi in at the user's requested location.
                     suffix = std::regex_replace(suffix.c_str(), std::regex("\\{dpi\\}"), std::to_string((int)dpi));
                 }
                 item_filename = item_filename + "_" + suffix;
             }
 
-            bool found = Export::unConflictFilename(_document, item_filename, omod->get_extension());
+            bool found = Export::unConflictFilename(_document, item_filename, ext->get_extension());
             if (!found) {
                 continue;
             }
@@ -643,16 +633,16 @@ void BatchExport::onExport()
                          Glib::ustring::compose(_("Format %1, Selection %2"), j + 1, count));
 
 
-            if (omod->is_raster()) {
+            if (ext->is_raster()) {
                 unsigned long int width = (int)(area.width() * dpi / DPI_BASE + 0.5);
                 unsigned long int height = (int)(area.height() * dpi / DPI_BASE + 0.5);
 
                 Export::exportRaster(
                     area, width, height, dpi, _bgnd_color_picker->get_current_color(),
-                    item_filename, true, onProgressCallback, this, omod, hide ? &show_only : nullptr);
+                    item_filename, true, onProgressCallback, this, ext, hide ? &show_only : nullptr);
             } else {
                 auto copy_doc = _document->copy();
-                Export::exportVector(omod, copy_doc.get(), item_filename, true, show_only, page);
+                Export::exportVector(ext, copy_doc.get(), item_filename, true, show_only, page);
             }
         }
     }

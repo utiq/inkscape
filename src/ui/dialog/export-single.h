@@ -99,7 +99,6 @@ private:
 
     Gtk::CheckButton *si_hide_all = nullptr;
     Gtk::CheckButton *si_show_preview = nullptr;
-    Gtk::CheckButton *si_default_opts = nullptr;
 
     ExportPreview *preview = nullptr;
 
@@ -186,6 +185,7 @@ private:
     sigc::connection exportConn;
     sigc::connection cancelConn;
     sigc::connection browseConn;
+    sigc::connection prefsConn;
     sigc::connection _pages_list_changed;
     // Document Signals
     sigc::connection _page_selected_connection;
