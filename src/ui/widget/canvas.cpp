@@ -1762,21 +1762,6 @@ void Canvas::canvas_item_destructed(Inkscape::CanvasItem *item)
     }
 }
 
-void Canvas::wait_for_drawing_inactive() const
-{
-    if (d->redraw_active && !d->schedule_redraw_conn.connected()) {
-        gint64 start;
-        if (d->prefs.debug_logging) start = g_get_monotonic_time();
-
-        // Background process is running. Wait for it to stop.
-        d->sync.waitForExit();
-        // Continue the interrupted signal chain, reactivating drawing later on the main loop.
-        d->sync.signalExit();
-
-        if (d->prefs.debug_logging) std::cout << "Waited for inactivity: " << g_get_monotonic_time() - start << " μs" << std::endl;
-    }
-}
-
 std::optional<Geom::PathVector> CanvasPrivate::calc_page_clip() const
 {
     if (!clip_to_page) {

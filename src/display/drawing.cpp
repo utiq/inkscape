@@ -358,7 +358,7 @@ void Drawing::_loadPrefs()
 /*
  * Return average color over area. Used by Calligraphic, Dropper, and Spray tools.
  */
-void Drawing::averageColor(Geom::IntRect const &area, double &R, double &G, double &B, double &A)
+void Drawing::averageColor(Geom::IntRect const &area, double &R, double &G, double &B, double &A) const
 {
     auto surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, area.width(), area.height());
     auto dc = Inkscape::DrawingContext(surface->cobj(), area.min());

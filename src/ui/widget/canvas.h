@@ -114,9 +114,6 @@ public:
     // Callback run on destructor of any canvas item
     void canvas_item_destructed(Inkscape::CanvasItem *item);
 
-    // Wait for background process to become inactive. (Todo: Remove this non-reentrancy workaround when possible.)
-    void wait_for_drawing_inactive() const;
-
     // State
     Inkscape::CanvasItem *get_current_canvas_item() const { return _current_canvas_item; }
     void                  set_current_canvas_item(Inkscape::CanvasItem *item) {

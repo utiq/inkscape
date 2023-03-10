@@ -326,9 +326,6 @@ void CalligraphicTool::brush() {
         Inkscape::CanvasItemDrawing *canvas_item_drawing = _desktop->getCanvasDrawing();
         Inkscape::Drawing *drawing = canvas_item_drawing->get_drawing();
 
-        // Non-reentrancy workaround.
-        _desktop->canvas->wait_for_drawing_inactive();
-
         // Get average color.
         double R, G, B, A;
         drawing->averageColor(area, R, G, B, A);

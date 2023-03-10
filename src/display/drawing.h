@@ -87,7 +87,7 @@ public:
     bool snapshotted() const { return _snapshotted; }
 
     // Convenience
-    void averageColor(Geom::IntRect const &area, double &R, double &G, double &B, double &A);
+    void averageColor(Geom::IntRect const &area, double &R, double &G, double &B, double &A) const;
     void setExact();
 
 private:
