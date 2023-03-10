@@ -38,7 +38,8 @@ enum Key : KeyMask {
 
 // Triggers used for collision warnings, two tools are using the same trigger
 enum Triggers : Trigger {
-    NO_CATEGORY, CANVAS, SELECT, MOVE, TRANSFORM, BOOLEANS,
+    NO_CATEGORY, CANVAS, SELECT, MOVE, TRANSFORM,
+    NODE_TOOL, BOOLEANS_TOOL,
     // Action taken to trigger this modifier, starts at
     // bit 6 so categories and triggers can be combined.
     CLICK = 32,
@@ -77,6 +78,8 @@ enum class Type {
     TRANS_SNAPPING,       // Disable snapping while transforming {HANDLE+SHIFT}
 
     BOOL_SHIFT,           // Shift the shape builder into its alternative mode.
+    NODE_GROW_LINEAR,     // Scroll wheel selection of nodes
+    NODE_GROW_SPATIAL,    // Scroll wheel selection of nodes
     // TODO: Alignment omitted because it's UX is not completed
 };
 

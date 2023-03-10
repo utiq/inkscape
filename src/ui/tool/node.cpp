@@ -29,6 +29,7 @@
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
 #include "ui/widget/canvas.h"
+#include "ui/modifiers.h"
 
 namespace {
 
@@ -1148,10 +1149,12 @@ NodeType Node::parse_nodetype(char x)
 bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event)
 {
     int dir = 0;
+    int state = 0;
 
     switch (event->type)
     {
     case GDK_SCROLL:
+        state = event->scroll.state;
         if (event->scroll.direction == GDK_SCROLL_UP) {
             dir = 1;
         } else if (event->scroll.direction == GDK_SCROLL_DOWN) {
@@ -1161,13 +1164,9 @@ bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent 
         } else {
             break;
         }
-        if (held_control(event->scroll)) {
-            _linearGrow(dir);
-        } else {
-            _selection.spatialGrow(this, dir);
-        }
-        return true;
+        break;
     case GDK_KEY_PRESS:
+        state = event->key.state;
         switch (shortcut_key(event->key))
         {
         case GDK_KEY_Page_Up:
@@ -1176,21 +1175,25 @@ bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent 
         case GDK_KEY_Page_Down:
             dir = -1;
             break;
-        default: goto bail_out;
+        default:
+            break;
         }
-
-        if (held_control(event->key)) {
-            _linearGrow(dir);
-        } else {
-            _selection.spatialGrow(this, dir);
-        }
-        return true;
-
     default:
         break;
     }
-    
-    bail_out:
+
+    using namespace Inkscape::Modifiers;
+    auto linear_grow = Modifier::get(Modifiers::Type::NODE_GROW_LINEAR)->active(state);
+    auto spatial_grow = Modifier::get(Modifiers::Type::NODE_GROW_SPATIAL)->active(state);
+
+    if (dir && (linear_grow || spatial_grow)) {
+        if (linear_grow)
+            _linearGrow(dir);
+        else if (spatial_grow)
+            _selection.spatialGrow(this, dir);
+        return true;
+    }
+
     return ControlPoint::_eventHandler(event_context, event);
 }
 

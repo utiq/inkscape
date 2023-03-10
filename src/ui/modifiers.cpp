@@ -53,7 +53,10 @@ decltype(Modifier::_modifiers) Modifier::_modifiers {
     {Type::TRANS_SNAPPING, new Modifier("trans-snapping", _("No Transform Snapping"), _("Disable snapping when transforming object."), SHIFT, TRANSFORM, DRAG)},
     // Center handle click: seltrans.cpp:734 SHIFT
     // Align handle click: seltrans.cpp:1365 SHIFT
-    {Type::BOOL_SHIFT, new Modifier("bool-shift", _("Quick change"), _("Change shape builder mode via modifier key."), SHIFT, BOOLEANS, DRAG)},
+    {Type::BOOL_SHIFT, new Modifier("bool-shift", _("Quick change"), _("Change shape builder mode via modifier key."), SHIFT, BOOLEANS_TOOL, DRAG)},
+
+    {Type::NODE_GROW_LINEAR, new Modifier("node-grow-linear", _("Linear node selection"), _("Select the next nodes with scroll wheel or keyboard"), CTRL, NODE_TOOL, SCROLL)},
+    {Type::NODE_GROW_SPATIAL, new Modifier("node-grow-spatial", _("Spatial node selection"), _("Select more nodes with scroll wheel or keyboard"), ALWAYS, NODE_TOOL, SCROLL)},
 };
 
 decltype(Modifier::_category_names) Modifier::_category_names {
@@ -62,7 +65,8 @@ decltype(Modifier::_category_names) Modifier::_category_names {
     {SELECT, _("Selection")},
     {MOVE, _("Movement")},
     {TRANSFORM, _("Transformations")},
-    {BOOLEANS, _("Shape Builder")},
+    {NODE_TOOL, _("Node Tool")},
+    {BOOLEANS_TOOL, _("Shape Builder")},
 };
 
 
