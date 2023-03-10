@@ -1104,7 +1104,9 @@ void SPDocument::do_change_filename(gchar const *const filename, bool const reba
     this->document_base = new_document_base;
     this->document_filename = new_document_filename;
 
-    this->filename_set_signal.emit(this->document_filename);
+    // In case of new document the filename is nullptr
+    gchar *new_filename = this->document_filename ? this->document_filename : this->document_name;
+    this->filename_set_signal.emit(new_filename);
 }
 
 /**
