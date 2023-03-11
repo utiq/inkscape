@@ -30,13 +30,14 @@
 void
 object_set_attribute(const Glib::VariantBase& value, InkscapeApplication *app)
 {
-    Glib::Variant<Glib::ustring> s = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring> >(value);
-
-    std::vector<Glib::ustring> tokens = Glib::Regex::split_simple(",", s.get());
-    if (tokens.size() != 2) {
+    auto const argument = Glib::VariantBase::cast_dynamic<Glib::Variant<Glib::ustring>>(value).get();
+    auto const comma_position = argument.find_first_of(',');
+    if (comma_position == 0 || comma_position == Glib::ustring::npos) {
         show_output("action:object_set_attribute: requires 'attribute name, attribute value'");
         return;
     }
+    auto const attribute = argument.substr(0, comma_position);
+    auto const new_value = argument.substr(comma_position + 1);
 
     auto selection = app->get_active_selection();
     if (selection->isEmpty()) {
@@ -48,7 +49,7 @@ object_set_attribute(const Glib::VariantBase& value, InkscapeApplication *app)
     auto items = selection->items();
     for (auto i = items.begin(); i != items.end(); ++i) {
         Inkscape::XML::Node *repr = (*i)->getRepr();
-        repr->setAttribute(tokens[0], tokens[1]);
+        repr->setAttribute(attribute, new_value);
     }
 
     // Needed to update repr (is this the best way?).
