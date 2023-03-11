@@ -37,8 +37,8 @@ RandomParam::RandomParam( const Glib::ustring& label, const Glib::ustring& tip,
 {
     defvalue = default_value;
     value = defvalue;
-    min = -Geom::infinity();
-    max = Geom::infinity();
+    min = -SCALARPARAM_G_MAXDOUBLE;
+    max = SCALARPARAM_G_MAXDOUBLE;
     integer = false;
 
     defseed = default_seed;
@@ -132,8 +132,21 @@ RandomParam::param_set_value(gdouble val, long newseed)
 void
 RandomParam::param_set_range(gdouble min, gdouble max)
 {
-    this->min = min;
-    this->max = max;
+    // if you look at client code, you'll see that many effects
+    // has a tendency to set an upper range of Geom::infinity().
+    // Once again, in gtk2, this is not a problem. But in gtk3,
+    // widgets get allocated the amount of size they ask for,
+    // leading to excessively long widgets.
+    if (min >= -SCALARPARAM_G_MAXDOUBLE) {
+        this->min = min;
+    } else {
+        this->min = -SCALARPARAM_G_MAXDOUBLE;
+    }
+    if (max <= SCALARPARAM_G_MAXDOUBLE) {
+        this->max = max;
+    } else {
+        this->max = SCALARPARAM_G_MAXDOUBLE;
+    }
 }
 
 void
