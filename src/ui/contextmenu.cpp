@@ -112,23 +112,17 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
             selection->set(object);
         }
 
-        
-
-        // Show submenu when no item is selected
         if (!item) {
+            // Even when there's no item, we should still have the Paste action on top
+            // (see https://gitlab.com/inkscape/inkscape/-/issues/4150)
+            gmenu->append_section(create_clipboard_actions(true));
+
             gmenu_section = Gio::Menu::create();
             AppendItemFromAction(gmenu_section, "win.dialog-open('DocumentProperties')", _("Document Properties..."), "document-properties");
             gmenu->append_section(gmenu_section);
-        }
-
-        // Show submenu when item is selected
-        if (item) {
-
-            gmenu_section = Gio::Menu::create();
-            AppendItemFromAction(gmenu_section, "app.cut",       _("Cu_t"),       "edit-cut");
-            AppendItemFromAction(gmenu_section, "app.copy",      _("_Copy"),      "edit-copy");
-            AppendItemFromAction(gmenu_section, "win.paste",     _("_Paste"),     "edit-paste");
-            gmenu->append_section(gmenu_section);
+        } else {
+            // When an item is selected, show all three of Cut, Copy and Paste.
+            gmenu->append_section(create_clipboard_actions());
 
             gmenu_section = Gio::Menu::create();
             AppendItemFromAction(gmenu_section, "app.duplicate", _("Duplic_ate"), "edit-duplicate");
@@ -306,6 +300,23 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
             get_style_context()->add_class("regular");
         }
     }
+}
+
+/** @brief Create a menu section containing the standard editing actions:
+ *         Cut, Copy, Paste.
+ *
+ *  @param paste_only If true, only the Paste action will be included.
+ *  @return A new menu containing the requested actions.
+ */
+Glib::RefPtr<Gio::Menu> ContextMenu::create_clipboard_actions(bool paste_only)
+{
+    auto result = Gio::Menu::create();
+    if (!paste_only) {
+        AppendItemFromAction(result, "app.cut",  _("Cu_t"),  "edit-cut");
+        AppendItemFromAction(result, "app.copy", _("_Copy"), "edit-copy");
+    }
+    AppendItemFromAction(result, "win.paste", _("_Paste"), "edit-paste");
+    return result;
 }
 
 void

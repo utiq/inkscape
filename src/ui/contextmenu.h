@@ -33,8 +33,9 @@ public:
     ~ContextMenu() override = default;
 
 private:
-    void AppendItemFromAction(Glib::RefPtr<Gio::Menu> gmenu, Glib::ustring action, Glib::ustring label, Glib::ustring icon = "");
-
+    static void AppendItemFromAction(Glib::RefPtr<Gio::Menu> gmenu, Glib::ustring action,
+                                     Glib::ustring label, Glib::ustring icon = "");
+    static Glib::RefPtr<Gio::Menu> create_clipboard_actions(bool paste_only = false);
     // Used for unlock and unhide actions
     Glib::RefPtr<Gio::SimpleActionGroup> action_group;
     std::vector<SPItem *> items_under_cursor;
