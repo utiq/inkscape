@@ -5,7 +5,7 @@
 # Przemysław Loesch <p_loesch@poczta.onet.pl>, 2006.
 # Polish Inkscape Translation Team <inkscapeplteam@gmail.com>, 2008 - 2010.
 # Artur Krzysztof Wróblewski <krypalkora1984@gmail.com>, 2010-2019.
-# Grzegorz Szymaszek <gszymaszek@short.pl>, 2020.
+# Grzegorz Szymaszek <gszymaszek@short.pl>, 2020, 2023.
 # Artur Krzysztof Wróblewski <krypalkora1984@gmail.com>, 2021.
 # Rafał Siejakowski <rs@rs-math.net>, 2022.
 #
@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Inkscape 1.1\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
 "POT-Creation-Date: 2022-12-02 20:41+1100\n"
-"PO-Revision-Date: 2022-01-30 16:48-0300\n"
+"PO-Revision-Date: 2023-03-02 22:08+0100\n"
 "Last-Translator: Grzegorz Szymaszek\n"
 "Language-Team: Freelancer\n"
 "Language: pl_PL\n"
@@ -9860,8 +9860,8 @@ msgstr "Zmiana rozdzielczości"
 msgid ""
 "Alter the resolution of selected image by resizing it to the given pixel size"
 msgstr ""
-"Zmienia rozdzielczość zaznaczonego obrazka zmieniając jego wielkość do "
-"zadanych rozmiarów w pikselach."
+"Zmienia rozdzielczość wybranego obrazka dopasowując go do zadanych rozmiarów "
+"w pikselach"
 
 #: ../src/extension/internal/bitmap/shade.cpp:42
 msgid "Shade"
@@ -10039,7 +10039,7 @@ msgstr "Rasteryzaja efektów działania filtrów"
 #: ../src/extension/internal/cairo-ps-out.cpp:395
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:272
 msgid "Resolution for rasterization (dpi):"
-msgstr "Rozdzielczość tworzonej kopii bitmapowej (dpi)"
+msgstr "Rozdzielczość dla rasteryzacji (DPI):"
 
 #: ../src/extension/internal/cairo-ps-out.cpp:352
 #: ../src/extension/internal/cairo-ps-out.cpp:396
@@ -12166,41 +12166,42 @@ msgstr "Pokoloruj wszystko widoczne na monochromatyczny kolor"
 #: ../src/extension/internal/gdkpixbuf-input.cpp:187
 #, c-format
 msgid "%s bitmap image import"
-msgstr "%s Importowanie obrazów bitmapowych"
+msgstr "Importowanie obrazu bitmapowego %s"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:195
 msgid "Image Import Type:"
-msgstr "Typ importu obrazu:"
+msgstr "Sposób importu obrazu:"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:195
 msgid ""
 "Embed results in stand-alone, larger SVG files. Link references a file "
 "outside this SVG document and all files must be moved together."
 msgstr ""
-"Osadza wyniki w oddzielnych dużych plikach SVG. Tworzy odwołanie do pliku na "
-"zewnątrz tego dokumentu SVG i wszystkie pliki muszą być przenoszone razem."
+"Osadzenie powoduje powstanie samodzielnych, ale większych, plików SVG. "
+"Link odnosi się do pliku poza tym dokumentem SVG, wszystkie pliki muszą być "
+"przenoszone razem."
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:196
 #: ../src/ui/dialog/inkscape-preferences.cpp:2904
 #: ../src/ui/dialog/inkscape-preferences.cpp:2911
 msgid "Embed"
-msgstr "Osadź"
+msgstr "Osadzenie"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:200
 msgid "Image DPI:"
-msgstr "DPI obrazu:"
+msgstr "Rozdzielczość obrazu (DPI):"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:200
 msgid ""
 "Take information from file or use default bitmap import resolution as "
 "defined in the preferences."
 msgstr ""
-"Weź informacje z pliku lub Użyj domyślnej rozdzielczości importu bitmapy "
-"zgodnie z definicją w preferencjach."
+"Odczytaj informacje z pliku lub użyj domyślnej rozdzielczości importu bitmapy "
+"zdefiniowanej w preferencjach."
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:201
 msgid "From file"
-msgstr "Z pliku"
+msgstr "Z pliku"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:202
 msgid "Default import resolution"
@@ -12217,32 +12218,32 @@ msgid ""
 "When an image is upscaled, apply smoothing or keep blocky (pixelated). (Will "
 "not work in all browsers.)"
 msgstr ""
-"Gdy obraz jest skalowany, Zastosuj wygładzanie lub Zachowaj bloki (piksele). "
-"(Nie będzie działać we wszystkich przeglądarkach)."
+"Gdy obraz jest powiększany, zastosuj wygładzanie lub pozostaw siatkę pikseli. "
+"(Nie będzie działać we wszystkich przeglądarkach.)"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:206
 #: ../src/extension/internal/svg.h:32
 #: ../src/ui/dialog/inkscape-preferences.cpp:2918
 msgid "None (auto)"
-msgstr "Brak (automatyczny)"
+msgstr "Nieokreślony (automatyczny)"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:207
 #: ../src/extension/internal/svg.h:33
 #: ../src/ui/dialog/inkscape-preferences.cpp:2918
 msgid "Smooth (optimizeQuality)"
-msgstr "Wygłądzanie (optymalizacja Jakości)"
+msgstr "Wygładzanie (optymalizacja jakości)"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:208
 #: ../src/extension/internal/svg.h:34
 #: ../src/ui/dialog/inkscape-preferences.cpp:2918
 msgid "Blocky (optimizeSpeed)"
-msgstr "Blocky (Optymalizacja Szybkości)"
+msgstr "Brak wygładzania (optymalizacja szybkości)"
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:211
 #: ../src/extension/internal/svg.h:36
 msgid "Hide the dialog next time and always apply the same actions."
 msgstr ""
-"Ukryj okno dialogowe następnym razem i zawsze Zastosuj te same działania."
+"Ukryj to okno dialogowe następnym razem i zawsze stosuj te same działania."
 
 #: ../src/extension/internal/gdkpixbuf-input.cpp:211
 #: ../src/extension/internal/svg.h:36
@@ -12569,9 +12570,8 @@ msgid "1 - Best Speed"
 msgstr ""
 
 #: ../src/extension/internal/png-output.cpp:75
-#, fuzzy
 msgid "6 - Default Compression"
-msgstr "Domyślna rozdzielczość importu"
+msgstr "6 - domyślna kompresja"
 
 #: ../src/extension/internal/png-output.cpp:78
 #, fuzzy
@@ -20469,7 +20469,7 @@ msgstr "W zaznaczeniu <b>brak tekstu wpisanego</b> do konwersji"
 
 #: ../src/text-editing.cpp:43
 msgid "You cannot edit <b>cloned character data</b>."
-msgstr "Nie można edytować <b>danych skolonowanego znaku</b>."
+msgstr "Nie można edytować <b>danych sklonowanego znaku</b>."
 
 #: ../src/trace/trace.cpp:76
 msgid "Select only one <b>image</b> to trace"
@@ -20477,7 +20477,7 @@ msgstr "Wybierz dokładnie jeden <b>obrazek</b> do wektoryzacji"
 
 #: ../src/trace/trace.cpp:86
 msgid "Select one image and one or more shapes above it"
-msgstr "Wybierz jeden obrazek i jeden lub więcej kształtów ponad nim"
+msgstr "Wybierz jeden obrazek i co najmniej jeden kształt ponad nim"
 
 #: ../src/trace/trace.cpp:95 ../src/trace/trace.cpp:101
 msgid "Select an <b>image</b> to trace"
@@ -20490,22 +20490,22 @@ msgid ""
 "\n"
 "Continue the procedure (without saving)?"
 msgstr ""
-"Obraz wygląda zbyt duży. Proces może chwilę potrwać i jest mądry, aby "
-"zapisać dokument przed kontynuowaniem.\n"
+"Obraz wygląda na zbyt duży. Proces może zająć chwilę i byłoby dobrze zapisać "
+"Twój dokument przed kontynuowaniem.\n"
 "\n"
 "Czy kontynuować procedurę (bez zapisywania)?"
 
 #: ../src/trace/trace.cpp:342
 msgid "Trace: No active document"
-msgstr "Wektoryzacja: Brak aktywnego dokumentu"
+msgstr "Wektoryzacja: brak aktywnego dokumentu"
 
 #: ../src/trace/trace.cpp:358
 msgid "Trace: Image has no bitmap data"
-msgstr "Wektoryzacja: W obrazie nie ma danych rastrowych"
+msgstr "Wektoryzacja: obraz nie zawiera danych bitmapowych"
 
 #: ../src/trace/trace.cpp:373
 msgid "Trace: Starting trace..."
-msgstr "Wektoryzacja: Rozpocznij wektoryzację…"
+msgstr "Wektoryzacja: rozpoczynanie wektoryzacji…"
 
 #: ../src/trace/trace.cpp:528
 msgid "Trace bitmap"
@@ -20514,7 +20514,7 @@ msgstr "Wektoryzuj bitmapę"
 #: ../src/trace/trace.cpp:530
 #, c-format
 msgid "Trace: Done. %ld nodes created"
-msgstr "Wektoryzacja: Zakończono. Utworzono %ld węzłów."
+msgstr "Wektoryzacja: zakończono. Utworzono %ld węzłów."
 
 #: ../src/ui/clipboard.cpp:283
 msgid "Nothing was copied."
@@ -28401,18 +28401,18 @@ msgstr "_Eksportuj"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2878
 msgid "Default export _resolution:"
-msgstr "Domyślna rozdzielczość eksportu:"
+msgstr "Domyślna _rozdzielczość eksportu:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2878
 #: ../src/ui/dialog/inkscape-preferences.cpp:2882
 #: ../src/ui/dialog/inkscape-preferences.cpp:2926
 msgid "dpi"
-msgstr "dpi"
+msgstr "DPI"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2879
 msgid "Default image resolution (in dots per inch) in the Export dialog"
 msgstr ""
-"Domyślna rozdzielczość obrazu (w punktach na cal) w oknie dialogowym Eksport"
+"Domyślna rozdzielczość obrazu (w punktach na cal) w oknie dialogowym Eksport"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2880
 msgid "Create"
@@ -28420,11 +28420,11 @@ msgstr "Utwórz"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2882
 msgid "Resolution for Create Bitmap _Copy:"
-msgstr "Rozdzielczość tworzonej kopii bitmapy"
+msgstr "Rozdzielczość dla Utwórz _kopię bitmapy:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2883
 msgid "Resolution used by the Create Bitmap Copy command"
-msgstr "Rozdzielczość stosowana przez polecenie Utwórz kopię bitmapy."
+msgstr "Rozdzielczość stosowana przez polecenie Utwórz kopię bitmapy"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2886
 msgid "Ask about linking and scaling when importing bitmap images"
@@ -28492,20 +28492,20 @@ msgstr "Skala obrazu (renderowanie obrazów):"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2926
 msgid "Default _import resolution:"
-msgstr "Domyślna rozdzielczość importu:"
+msgstr "Domyślna rozdzielczość _importu:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2927
 msgid "Default import resolution (in dots per inch) for bitmap and SVG import"
 msgstr ""
-"Domyślna rozdzielczość importu (w punktach na cal) dla bitmapy i importu SVG"
+"Domyślna rozdzielczość importu (w punktach na cal) dla bitmapy i importu SVG"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2928
 msgid "Override file resolution"
-msgstr "Zastępowanie rozdzielczości pliku"
+msgstr "Zastąp rozdzielczość pliku"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2930
 msgid "Use default bitmap resolution in favor of information from file"
-msgstr "Użyj domyślnej rozdzielczości bitmapy na korzyść informacji z pliku"
+msgstr "Używa domyślnej rozdzielczości bitmapy zamiast informacji z pliku"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2934
 msgid "Images in Outline Mode"
@@ -36355,7 +36355,7 @@ msgstr "Opcje bitmapy"
 
 #: ../src/ui/widget/rendering-options.cpp:35
 msgid "Preferred resolution of rendering, in dots per inch."
-msgstr "Preferowana rozdzielczość renderowania (w dpi)"
+msgstr "Preferowana rozdzielczość renderowania, w punktach na cal."
 
 #: ../src/ui/widget/rendering-options.cpp:44
 msgid ""
@@ -37501,7 +37501,7 @@ msgstr "Plamki"
 
 #: ../share/ui/dialog-trace.glade:179 ../share/ui/dialog-trace.glade:760
 msgid "Ignore small spots (speckles) in the bitmap"
-msgstr "Pomija małe plamki (cętki) w bitmapie"
+msgstr "Pomija małe plamki (cętki) w bitmapie"
 
 #: ../share/ui/dialog-trace.glade:191 ../share/ui/dialog-trace.glade:830
 msgid "Smooth corners"
@@ -37514,14 +37514,14 @@ msgstr "Wygładza ostre krawędzie ścieżki wektorowej"
 #: ../share/ui/dialog-trace.glade:237 ../share/ui/dialog-trace.glade:772
 #: ../share/ui/dialog-trace.glade:1227
 msgid "Optimize"
-msgstr "Optymalizuj"
+msgstr "Optymalizacja"
 
 #: ../share/ui/dialog-trace.glade:241 ../share/ui/dialog-trace.glade:776
 #: ../share/ui/dialog-trace.glade:1231
 msgid "Try to optimize paths by joining adjacent Bezier curve segments"
 msgstr ""
-"Nastąpi próba optymalizacji ścieżek poprzez łączenie przylegających do "
-"siebie segmentów krzywej Beziera"
+"Próbuje optymalizować ścieżki poprzez łączenie sąsiednich segmentów krzywych "
+"Beziera"
 
 #: ../share/ui/dialog-trace.glade:282
 msgid "Edge threshold"
@@ -37529,7 +37529,7 @@ msgstr "Próg krawędzi"
 
 #: ../share/ui/dialog-trace.glade:306
 msgid "Filter iterations"
-msgstr "Iteracje filtrów"
+msgstr "Iteracje filtra"
 
 #: ../share/ui/dialog-trace.glade:318
 msgid "Error threshold"
@@ -37537,19 +37537,19 @@ msgstr "Próg błędu"
 
 #: ../share/ui/dialog-trace.glade:327
 msgid "Invert image"
-msgstr "Odwróć obraz (negatyw)"
+msgstr "Odwrócenie obrazu (negatyw)"
 
 #: ../share/ui/dialog-trace.glade:331
 msgid "Invert black and white regions"
-msgstr "Tworzy negatyw zamieniając miejscami białe i czarne obszary"
+msgstr "Odwraca czarne i białe obszary"
 
 #: ../share/ui/dialog-trace.glade:347 ../share/ui/dialog-trace.glade:715
 msgid "Details:"
-msgstr ""
+msgstr "Szczegóły:"
 
 #: ../share/ui/dialog-trace.glade:429
 msgid "Brightness cutoff"
-msgstr "Odcięcia jasności"
+msgstr "Odcięcie jasności"
 
 #: ../share/ui/dialog-trace.glade:430
 msgid "Edge detection"
@@ -37557,7 +37557,7 @@ msgstr "Wykrywanie krawędzi"
 
 #: ../share/ui/dialog-trace.glade:431
 msgid "Color quantization"
-msgstr "Kwanyzacja kolorów"
+msgstr "Kwantyzacja kolorów"
 
 #: ../share/ui/dialog-trace.glade:432
 msgid "Autotrace"
@@ -37565,16 +37565,15 @@ msgstr "Autośledzenie"
 
 #: ../share/ui/dialog-trace.glade:433
 msgid "Centerline tracing (autotrace)"
-msgstr "Śledzenie linii środkowej (Autośledzenie)"
+msgstr "Śledzenie linii środkowej (autośledzenie)"
 
 #: ../share/ui/dialog-trace.glade:447 ../share/ui/dialog-trace.glade:655
-#, fuzzy
 msgid "Detection mode:"
-msgstr "Tryb ikony"
+msgstr "Tryb wykrywania:"
 
 #: ../share/ui/dialog-trace.glade:520 ../share/ui/dialog-trace.glade:745
 msgid "Speckles of up to this many pixels will be suppressed"
-msgstr "Plamki powyżej określonej tutaj ilości pikseli będą tuszowane"
+msgstr "Plamki powyżej tej liczby pikseli będą tuszowane"
 
 #: ../share/ui/dialog-trace.glade:532 ../share/ui/dialog-trace.glade:804
 msgid "Increase this to smooth corners more"
@@ -37585,18 +37584,19 @@ msgid ""
 "Increase this to reduce the number of nodes in the trace by more aggressive "
 "optimization"
 msgstr ""
-"Zwiększ wartość, aby poprzez intensywniejszą optymalizację w tworzonej "
+"Zwiększ wartość, aby poprzez intensywniejszą optymalizację w tworzonej "
 "krzywej wektorowej zredukować liczbę węzłów"
 
 #: ../share/ui/dialog-trace.glade:557 ../share/ui/dialog-trace.glade:860
 msgid "User-assisted trace"
-msgstr ""
+msgstr "Wspomaganie przez użytkownika"
 
 #: ../share/ui/dialog-trace.glade:561 ../share/ui/dialog-trace.glade:864
-#, fuzzy
 msgid ""
 "Cover the area you want to select as the foreground then select both objects"
-msgstr "Oznacza obszar jaki chcesz wybrać jako pierwszy plan"
+msgstr ""
+"Zakryj obszar, który chcesz wykorzystać jako pierwszy plan, następnie wybierz "
+"oba obiekty"
 
 #: ../share/ui/dialog-trace.glade:596
 msgid "Single scan"
@@ -37616,7 +37616,7 @@ msgstr "Autośledzenie (wolniej)"
 
 #: ../share/ui/dialog-trace.glade:643
 msgid "Scans"
-msgstr "Skanuje"
+msgstr "Skany"
 
 #: ../share/ui/dialog-trace.glade:672
 msgid "Apply Gaussian blur to the bitmap before tracing"
@@ -37628,7 +37628,7 @@ msgstr "Usuń tło"
 
 #: ../share/ui/dialog-trace.glade:687
 msgid "Remove bottom (background) layer when done"
-msgstr "Po zakończeniu usuwa dolną (tło) warstwę"
+msgstr "Po zakończeniu usuwa dolną warstwę (tło)"
 
 #: ../share/ui/dialog-trace.glade:701
 msgid "The desired number of scans"
@@ -37636,7 +37636,7 @@ msgstr "Żądana liczba przebiegów skanowania"
 
 #: ../share/ui/dialog-trace.glade:891
 msgid "Stack"
-msgstr "Ułóż w stos"
+msgstr "Ułóż w stos"
 
 #: ../share/ui/dialog-trace.glade:895
 msgid ""
@@ -37647,29 +37647,24 @@ msgstr ""
 "krawędzi (zwykle widoczne są prześwity)"
 
 #: ../share/ui/dialog-trace.glade:981
-#, fuzzy
 msgid "Multicolor"
-msgstr "Jednolity kolor"
+msgstr "Wielokolorowy"
 
 #: ../share/ui/dialog-trace.glade:1010
-#, fuzzy
 msgid "Favors connections that are part of a long curve (multiplier)"
-msgstr "Preferuje połączenia, które są częścią długiej krzywej"
+msgstr "Preferuje połączenia, które są częścią długiej krzywej (mnożnik)"
 
 #: ../share/ui/dialog-trace.glade:1012
-#, fuzzy
 msgid "Curves"
-msgstr "Węzeł w krzywą"
+msgstr "Krzywe"
 
 #: ../share/ui/dialog-trace.glade:1023
-#, fuzzy
 msgid "Avoid single disconnected pixels (weight)"
-msgstr "Unikaj pojedynczych odłączonych pikseli"
+msgstr "Unika pojedynczych odłączonych pikseli (współczynnik)"
 
 #: ../share/ui/dialog-trace.glade:1025
-#, fuzzy
 msgid "Islands"
-msgstr "Wyspy (zakres)"
+msgstr "Wyspy"
 
 #: ../share/ui/dialog-trace.glade:1036 ../share/ui/dialog-trace.glade:1245
 #: ../share/ui/dialog-trace.glade:1258
@@ -37679,7 +37674,7 @@ msgstr "Preferuje połączenia, które są częścią koloru pierwszego planu"
 #: ../share/ui/dialog-trace.glade:1039
 #, fuzzy
 msgid "Sparse pixels:"
-msgstr "Promień (px):"
+msgstr ""
 
 #: ../share/ui/dialog-trace.glade:1051 ../share/ui/dialog-trace.glade:1094
 msgid "The heuristic computed vote will be multiplied by this value"
@@ -37694,11 +37689,8 @@ msgid "The radius of the window analyzed"
 msgstr "Promień analizowanego okna"
 
 #: ../share/ui/dialog-trace.glade:1110
-#, fuzzy
 msgid " Heuristics:"
-msgstr ""
-"\n"
-"Heurystyki\n"
+msgstr " Heurystyki:"
 
 #: ../share/ui/dialog-trace.glade:1177
 msgid "B-splines"
@@ -37706,7 +37698,7 @@ msgstr "B-splajny"
 
 #: ../share/ui/dialog-trace.glade:1181
 msgid "Preserve staircasing artifacts"
-msgstr "Zachowaj artefakty schodowe"
+msgstr "Zachowaj artefakty schodkowania"
 
 #: ../share/ui/dialog-trace.glade:1194
 msgid "Voronoi"
@@ -37714,49 +37706,41 @@ msgstr "Voronoi"
 
 #: ../share/ui/dialog-trace.glade:1198
 msgid "Output composed of straight lines"
-msgstr "Wynik złożony z linii prostych"
+msgstr "Wynik złożony z linii prostych"
 
 #: ../share/ui/dialog-trace.glade:1214
-#, fuzzy
 msgid " Output:"
-msgstr "Zapis w formacie EMF"
+msgstr " Wyjście:"
 
 #: ../share/ui/dialog-trace.glade:1247
-#, fuzzy
 msgid "Multiplier"
-msgstr "Zwielokrotnij"
+msgstr "Mnożnik"
 
 #: ../share/ui/dialog-trace.glade:1260
-#, fuzzy
 msgid "Window radius"
-msgstr "Okna"
+msgstr "Promień okna"
 
 #: ../share/ui/dialog-trace.glade:1302
 msgid "Pixel art"
 msgstr "Sztuka pikselowa"
 
 #: ../share/ui/dialog-trace.glade:1363
-#, fuzzy
 msgid "Live updates"
 msgstr "Aktualizacja na żywo"
 
 #: ../share/ui/dialog-trace.glade:1377
-#, fuzzy
 msgid "Update preview"
-msgstr "Utwórz Podgląd"
+msgstr "Odśwież podgląd"
 
 #: ../share/ui/dialog-trace.glade:1404
-#, fuzzy
 msgid "Preview:"
-msgstr "Podgląd tekstu:"
+msgstr "Podgląd:"
 
 #: ../share/ui/dialog-trace.glade:1434
-#, fuzzy
 msgid "Instructions"
-msgstr "Część wspólna"
+msgstr "Instrukcje"
 
 #: ../share/ui/dialog-trace.glade:1512
-#, fuzzy
 msgid "Abort trace operation"
 msgstr "Przerwij wektoryzację"
 
@@ -40895,7 +40879,7 @@ msgstr "Rozdzielczość 90 DPI na 96"
 
 #: ../share/extensions/dpi90to96.inx:6
 msgid "DPI Switch from 90 to 96"
-msgstr "Zmiana DPI z 90 na 96"
+msgstr "Zmiana rozdzielczości (DPI) z 90 na 96"
 
 #: ../share/extensions/dpi96to90.inx:3
 msgid "DPI 96 to 90"
@@ -40903,7 +40887,7 @@ msgstr "Rozdzielczość 96 DPI na 90"
 
 #: ../share/extensions/dpi96to90.inx:6
 msgid "DPI Switch from 96 to 90"
-msgstr "Zmiana DPI z 96 na 90"
+msgstr "Zmiana rozdzielczości (DPI) z 96 na 90"
 
 #: ../share/extensions/draw_from_triangle.inx:3
 msgid "Draw From Triangle"
@@ -41781,14 +41765,12 @@ msgid "File Resolution:"
 msgstr "Rozdzielczość pliku:"
 
 #: ../share/extensions/gimp_xcf.inx:12
-#, fuzzy
 msgid "XCF file resolution, in DPI."
-msgstr "Rozdzielczość pliku:"
+msgstr "Rozdzielczość pliku XCF, w DPI."
 
 #
 # File: ../share/extensions/gimp_xcf.inx, line: 16
 #: ../share/extensions/gimp_xcf.inx:15
-#, fuzzy
 msgid ""
 "This extension exports the document to Gimp XCF format according to the "
 "following options:\n"
@@ -41797,19 +41779,12 @@ msgid ""
 "concatenated and converted with their first level parent layer into a single "
 "Gimp layer."
 msgstr ""
-"To rozszerzenie eksportuje dokument do formatu GIMP XCF zgodnie z "
-"następującymi opcjami:\n"
-"    * Zapisz przewodniki: Konwersja wszystkich przewodników do przewodników "
-"GIMP.\n"
-"    * Zapisz siatkę: przekształcić pierwszą prostokątną siatkę do siatki "
-"GIMP (Zauważ, że domyślna siatka Inkscape jest bardzo wąska, gdy pokazano w "
-"GIMP).\n"
-"    * Zapisz tło: Dodaj tło dokumentu do każdej przekonwertowanej warstwy.\n"
-"    * Rozdzielczość pliku: XCF rozdzielczość pliku, w DPI.\n"
+"To rozszerzenie eksportuje dokument do formatu XCF GIMP‑a zgodnie "
+"z następującymi opcjami:\n"
 "\n"
-"Każda warstwa pierwszego poziomu jest konwertowana na warstwę GIMP-a. "
-"Warstwy podrzędne są łączone i przekształcane z warstwą nadrzędną pierwszego "
-"poziomu w pojedynczą warstwę GIMP-a."
+"Każda warstwa pierwszego poziomu jest konwertowana na warstwę GIMP‑a. "
+"Warstwy podrzędne są łączone i przekształcane z warstwą nadrzędną pierwszego "
+"poziomu w pojedynczą warstwę GIMP‑a."
 
 #: ../share/extensions/gimp_xcf.inx:23 ../share/extensions/gimp_xcf.inx:24
 msgid "GIMP XCF maintaining layers (*.xcf)"
@@ -42426,7 +42401,7 @@ msgstr ""
 #: ../share/extensions/hpgl_input.inx:8 ../share/extensions/hpgl_output.inx:10
 #: ../share/extensions/plotter.inx:68
 msgid "Resolution X (dpi):"
-msgstr "Rozdzielczość X (dpi):"
+msgstr "Rozdzielczość X (DPI):"
 
 #
 # File: ../share/extensions/hpgl_input.inx, line: 9
@@ -42443,7 +42418,7 @@ msgstr ""
 #: ../share/extensions/hpgl_input.inx:9 ../share/extensions/hpgl_output.inx:11
 #: ../share/extensions/plotter.inx:69
 msgid "Resolution Y (dpi):"
-msgstr "Rozdzielczość Y (dpi):"
+msgstr "Rozdzielczość Y (DPI):"
 
 #
 # File: ../share/extensions/hpgl_input.inx, line: 10
@@ -48810,11 +48785,11 @@ msgid ""
 "raster graphics. Inkscape uses the standardized SVG file format as its main "
 "format, which is supported by many other applications including web browsers."
 msgstr ""
-"Wykorzystuje grafikę wektorową, aby umożliwić ostre wydruki i renderingi w "
-"nieograniczonej rozdzielczości i nie jest związany ze stałą liczbą pikseli, "
-"takich jak grafika rastrowa. Inkscape używa standardowego formatu pliku SVG "
-"jako głównego formatu, który jest obsługiwany przez wiele innych aplikacji, "
-"w tym przeglądarek internetowych."
+"Wykorzystuje grafikę wektorową aby umożliwić wyraźne wydruki i renderowanie "
+"w dowolnej rozdzielczości, nie jest ograniczony stałą liczbą pikseli, tak jak "
+"grafika rastrowa. Inkscape używa ustandaryzowanego formatu plików SVG jako "
+"swojego podstawowego formatu, jest on obsługiwany przez wiele innych "
+"aplikacji, w tym przeglądarki internetowe."
 
 #
 # File: ../org.inkscape.Inkscape.appdata.xml.in, line: 18
@@ -49683,19 +49658,6 @@ msgstr "Połowa wysokości czcionki"
 #~ "trybów mieszania Portera-Duffa (przezroczystości) lub arytmetycznego "
 #~ "trybu opisanego w standardzie SVG. Tryby mieszania Portera-Duffa są "
 #~ "zasadniczo operacjami logicznymi pomiędzy odpowiednimi pikselami obrazków."
-
-#~ msgid ""
-#~ "The <b>feConvolveMatrix</b> lets you specify a Convolution to be applied "
-#~ "on the image. Common effects created using convolution matrices are blur, "
-#~ "sharpening, embossing and edge detection. Note that while gaussian blur "
-#~ "can be created using this filter primitive, the special gaussian blur "
-#~ "primitive is faster and resolution-independent."
-#~ msgstr ""
-#~ "<b>feConvolveMatrix</b> pozwala określić skręcenie stosowane do obrazka. "
-#~ "Wspólnymi efektami utworzonymi przy użyciu macierzy skręcenia są: "
-#~ "rozmycie, wyostrzenie, płaskorzeźba i ujawnianie krawędzi. Przy pomocy "
-#~ "tego filtru może być utworzone rozmycie gaussowskie, ale dedykowany filtr "
-#~ "rozmycia gausowskiego jest szybszy i niezależny od rozdzielczości."
 
 #~ msgid ""
 #~ "The <b>feOffset</b> filter primitive offsets the image by an user-defined "
@@ -51415,9 +51377,6 @@ msgstr "Połowa wysokości czcionki"
 #~ msgid "Theming support and more new customization options"
 #~ msgstr "Obsługa motywów i więcej nowych opcji dostosowywania"
 
-#~ msgid "Better HiDPI (high resolution) screen support"
-#~ msgstr "Lepsza obsługa ekranu HiDPI (wysokiej rozdzielczości)"
-
 #~ msgid "Native support for macOS with a signed and notarized .dmg file"
 #~ msgstr ""
 #~ "Natywna obsługa systemu macOS z podpisanym i poświadczonym plikiem .dmg"
@@ -52008,11 +51967,6 @@ msgstr "Połowa wysokości czcionki"
 
 #~ msgid "Color-Managed View"
 #~ msgstr "Widok zarządzania kolorem"
-
-#~ msgid "Open a window to preview objects at different icon resolutions"
-#~ msgstr ""
-#~ "Otwiera okno z podglądem zaznaczonych obiektów jako ikony w różnych "
-#~ "rozdzielczościach"
 
 #~ msgid "P_references..."
 #~ msgstr "Ustawienia..."
@@ -53768,9 +53722,6 @@ msgstr "Połowa wysokości czcionki"
 #~ msgid "Destination height"
 #~ msgstr "Wysokość miejsca docelowego"
 
-#~ msgid "Resolution (dots per inch)"
-#~ msgstr "Rozdzielczość (w dpi)"
-
 #~ msgctxt "Export dialog"
 #~ msgid "Custom"
 #~ msgstr "Użytkownika"
@@ -55349,10 +55300,6 @@ msgstr "Połowa wysokości czcionki"
 
 #~ msgid "You need to install the UniConvertor software.\n"
 #~ msgstr "Musisz zainstalować program UniConvertor.\n"
-
-#, fuzzy
-#~ msgid "Set Resolution"
-#~ msgstr "Rozdzielczość:"
 
 #, fuzzy
 #~ msgid "Fill Area"
