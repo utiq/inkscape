@@ -852,7 +852,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
         if (_filter->uses_background() && _background_accumulate) {
             auto bg_root = this;
             for (; bg_root; bg_root = bg_root->_parent) {
-                if (bg_root->_background_new) break;
+                if (bg_root->_background_new || bg_root->_filter) break;
             }
             if (bg_root) {
                 DrawingSurface bg(*carea, device_scale);
