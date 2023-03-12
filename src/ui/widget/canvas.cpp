@@ -238,7 +238,7 @@ public:
     bool redraw_active = false;
     bool redraw_requested = false;
     sigc::connection schedule_redraw_conn;
-    void schedule_redraw();
+    void schedule_redraw(int priority = Glib::PRIORITY_DEFAULT);
     void launch_redraw();
     void after_redraw();
     void commit_tiles();
@@ -462,7 +462,8 @@ void CanvasPrivate::activate()
 
     active = true;
 
-    schedule_redraw();
+    // Run the first redraw at high priority to avoid visible black screen at startup.
+    schedule_redraw(Glib::PRIORITY_HIGH);
 }
 
 void CanvasPrivate::deactivate()
@@ -541,7 +542,7 @@ void Canvas::on_unrealize()
  */
 
 // Schedule another redraw iteration to take place, waiting for the current one to finish if necessary.
-void CanvasPrivate::schedule_redraw()
+void CanvasPrivate::schedule_redraw(int priority)
 {
     if (!active) {
         // We can safely discard calls until active, because we will run an iteration on activation later in initialisation.
@@ -566,7 +567,7 @@ void CanvasPrivate::schedule_redraw()
         if (prefs.debug_logging) std::cout << "Redraw start" << std::endl;
         launch_redraw();
         return false;
-    }, Glib::PRIORITY_HIGH);
+    }, priority);
 }
 
 // Update state and launch redraw process in background. Requires a current OpenGL context.
@@ -1888,10 +1889,11 @@ void Canvas::paint_widget(Cairo::RefPtr<Cairo::Context> const &cr)
 
     if constexpr (false) d->canvasitem_ctx->root()->canvas_item_print_tree();
 
-    // Although launch_redraw() is scheduled at a priority higher than draw, and should therefore always be called first if
-    // asked, there are times when GTK simply decides to call on_draw anyway. Since launch_redraw() is required to have been
-    // called at least once to perform vital initalisation, if it has not been called, we have to exit.
+    // On activation, launch_redraw() is scheduled at a priority much higher than draw, so it
+    // should have been called at least one before this point to perform vital initialisation
+    // (needed not to crash). However, we don't want to rely on that, hence the following check.
     if (d->stores.mode() == Stores::Mode::None) {
+        std::cerr << "Canvas::paint_widget: Called while active but uninitialised!" << std::endl;
         return;
     }
 
