@@ -622,7 +622,7 @@ bool ClipboardManagerImpl::_pasteNodes(SPDesktop *desktop, SPDocument *clipdoc, 
             if (!in_place) {
                 // Move the source curve to the mouse pointer, units are px so do before target_trans
                 auto bbox = *(source_path->geometricBounds()) * group_affine;
-                auto to_mouse = Geom::Translate(desktop->point() - bbox.midpoint());
+                auto to_mouse = Geom::Translate((desktop->point() - bbox.midpoint()).round());
                 source_curve.transform(to_mouse);
             } else if (auto clipnode = sp_repr_lookup_name(clipdoc->getReprRoot(), "inkscape:clipboard", 1)) {
                 // Force translation so a foreign path will end up in the right place.

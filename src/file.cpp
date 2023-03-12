@@ -1024,7 +1024,7 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
             offset *= Geom::Translate(to_page->getDesktopRect().min());
         }
 
-        selection->moveRelative(offset);
+        selection->moveRelative(offset.round());
         for (auto po : pasted_objects) {
             auto lpeitem = cast<SPLPEItem>(target_document->getObjectByRepr(po));
             if (lpeitem) {
@@ -1178,7 +1178,7 @@ file_import(SPDocument *in_doc, const Glib::ustring &uri,
                 desktop->getDocument()->ensureUpToDate();
                 Geom::OptRect sel_bbox = selection->visualBounds();
                 if (sel_bbox) {
-                    Geom::Point m( pointer_location - sel_bbox->midpoint() );
+                    Geom::Point m(pointer_location.round() - sel_bbox->midpoint());
                     selection->moveRelative(m, false);
                 }
             }
