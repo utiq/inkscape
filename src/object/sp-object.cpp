@@ -1192,10 +1192,14 @@ Inkscape::XML::Node* SPObject::write(Inkscape::XML::Document *doc, Inkscape::XML
             bool any_written = false;
             auto properties = style->properties();
             for (auto * prop : properties) {
-                if(prop->shall_write(SP_STYLE_FLAG_IFSET | SP_STYLE_FLAG_IFSRC, SPStyleSrc::ATTRIBUTE)) {
+                if (prop->shall_write(SP_STYLE_FLAG_IFSET | SP_STYLE_FLAG_IFSRC, SPStyleSrc::ATTRIBUTE)) {
                     // WARNING: We don't know for sure if the css names are the same as the attribute names
-                    repr->setAttributeOrRemoveIfEmpty(prop->name(), prop->get_value());
-                    any_written = true;
+                    auto val = repr->attribute(prop->name().c_str());
+                    auto new_val = prop->get_value();
+                    if (new_val.empty() && !val || new_val != val) {
+                        repr->setAttributeOrRemoveIfEmpty(prop->name(), new_val);
+                        any_written = true;
+                    }
                 }
             }
             if(any_written) {
