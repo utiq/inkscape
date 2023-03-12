@@ -444,7 +444,7 @@ void AttrDialog::startValueEdit(Gtk::CellEditable *cell, const Glib::ustring &pa
 
     if (attribute == "style") {
         set_current_textedit(_css_edit.get());
-    } else if (attribute == "d") {
+    } else if (attribute == "d" || attribute == "inkscape:original-d") {
         enable_rouding = true;
         set_current_textedit(_svgd_edit.get());
     } else if (attribute == "points") {

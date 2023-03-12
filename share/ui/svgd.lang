@@ -31,12 +31,12 @@
     <define-regex id="coordinate">[+\-]?\%{number}</define-regex>
     <define-regex id="positive-coordinate">\+?\%{number}</define-regex>
     <define-regex id="command-letter">[MLHVCSQTAZ]</define-regex>
-    <define-regex id="invalid">[^\-+\s\r\n,\.MLHVCSQTAZmlhvcsqtaz0-9]</define-regex>
+    <define-regex id="invalid">[^\-+\s\r\n,\.MLHVCSQTAZmlhvcsqtaz0-9Ee]</define-regex>
     <define-regex id="command-end">(?m)(?=\%{command-letter}|\%{invalid})</define-regex>
 
     <!-- Define error contexts -->
     <context id="command-not-allowed" style-ref="error" extend-parent="false" end-parent="true">
-      <match>\%{command-letter}</match>
+      <match>(\%{command-letter}|e)</match>
     </context>
 
     <context id="invalid-char" style-ref="error" extend-parent="false" end-parent="true">
