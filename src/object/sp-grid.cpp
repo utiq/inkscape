@@ -49,12 +49,16 @@ SPGrid::SPGrid()
 
 void SPGrid::create_new(SPDocument *document, Inkscape::XML::Node *parent, GridType type)
 {
-    Inkscape::XML::Node *new_node = document->getReprDoc()->createElement("inkscape:grid");
+    auto new_node = document->getReprDoc()->createElement("inkscape:grid");
     if (type == GridType::AXONOMETRIC) {
         new_node->setAttribute("type", "axonomgrid");
     }
 
     parent->appendChild(new_node);
+
+    auto new_grid = dynamic_cast<SPGrid *>(document->getObjectByRepr(new_node));
+    if (new_grid)
+        new_grid->setPrefValues();
 
     Inkscape::GC::release(new_node);
 }
@@ -125,9 +129,9 @@ void SPGrid::set(SPAttr key, const gchar* value)
             auto const grid_type = readGridType(value).value_or(GridType::RECTANGULAR); // default
             if (grid_type != _grid_type) {
                 _grid_type = grid_type;
+                setPrefValues();
                 _recreateViews();
             }
-            setPrefValues();
             break;
         }
         case SPAttr::UNITS:
