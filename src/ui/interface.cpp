@@ -131,6 +131,7 @@ sp_ui_error_dialog(gchar const *message)
     dlg = gtk_message_dialog_new(nullptr, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
                                  GTK_BUTTONS_CLOSE, "%s", safeMsg);
     sp_transientize(dlg);
+    gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dlg),safeMsg);
     gtk_window_set_resizable(GTK_WINDOW(dlg), FALSE);
     gtk_dialog_run(GTK_DIALOG(dlg));
     gtk_widget_destroy(dlg);
