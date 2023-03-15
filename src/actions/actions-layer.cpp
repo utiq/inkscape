@@ -390,6 +390,7 @@ layer_to_group (InkscapeWindow* win)
 
     layer->setLayerMode(SPGroup::GROUP);
     layer->updateRepr(SP_OBJECT_WRITE_NO_CHILDREN | SP_OBJECT_WRITE_EXT);
+    dt->getSelection()->set(layer);
     Inkscape::DocumentUndo::done(dt->getDocument(), _("Layer to group"), INKSCAPE_ICON("dialog-objects"));
 }
 
@@ -404,16 +405,19 @@ layer_from_group (InkscapeWindow* win)
         show_output("layer_to_group: only one selected item allowed!");
         return;
     }
-
-    auto group = cast<SPGroup>(items[0]);
-    if (group && group->isLayer()) {
-        dt->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("Group already layer."));
-        return;
+    
+    if (auto group = cast<SPGroup>(items[0])) {
+        if (!group->isLayer()) {
+            group->setLayerMode(SPGroup::LAYER);
+            group->updateRepr(SP_OBJECT_WRITE_NO_CHILDREN | SP_OBJECT_WRITE_EXT);
+            selection->set(group);
+            Inkscape::DocumentUndo::done(dt->getDocument(), _("Group to layer"), INKSCAPE_ICON("dialog-objects"));
+        } else {
+            dt->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("Group already layer."));
+        }
+    } else {
+        dt->messageStack()->flash(Inkscape::ERROR_MESSAGE, _("Selection is not a group."));
     }
-
-    group->setLayerMode(SPGroup::LAYER);
-    group->updateRepr(SP_OBJECT_WRITE_NO_CHILDREN | SP_OBJECT_WRITE_EXT);
-    Inkscape::DocumentUndo::done(dt->getDocument(), _("Group to layer"), INKSCAPE_ICON("dialog-objects"));
 }
 
 // Does not change XML.
