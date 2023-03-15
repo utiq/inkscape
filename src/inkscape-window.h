@@ -57,6 +57,8 @@ private:
 
     void setup_view();
 
+    void add_document_actions();
+
     // Callbacks
 public:
     bool on_key_press_event(GdkEventKey* event) override;

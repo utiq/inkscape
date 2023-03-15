@@ -119,7 +119,7 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
     add_actions_page_tools(this);           // Actions specific to pages tool and toolbar
 
     // Add document action group to window and export to DBus.
-    insert_action_group("doc", document->getActionGroup());
+    add_document_actions();
 
     auto connection = _app->gio_app()->get_dbus_connection();
     if (connection) {
@@ -194,8 +194,7 @@ InkscapeWindow::change_document(SPDocument* document)
 
     _document = document;
     _app->set_active_document(_document);
-    remove_action_group("doc");
-    insert_action_group("doc", document->getActionGroup());
+    add_document_actions();
 
     setup_view();
     update_dialogs();
@@ -371,6 +370,27 @@ void InkscapeWindow::update_dialogs()
 
     // Update the docked dialogs in this InkscapeWindow
     _desktop->updateDialogs();
+}
+
+/**
+ * Make document actions accessible from the window
+ */
+void InkscapeWindow::add_document_actions()
+{
+    auto doc_action_group = _document->getActionGroup();
+
+    insert_action_group("doc", doc_action_group);
+
+#ifdef __APPLE__
+    // Workaround for https://gitlab.gnome.org/GNOME/gtk/-/issues/5667
+    // Copy the document ("doc") actions to the window ("win") so that the
+    // application menu on macOS can handle them. The menu only handles the
+    // window actions (in gtk_application_impl_quartz_active_window_changed),
+    // not the ones attached with "insert_action_group".
+    for (auto const &action_name : doc_action_group->list_actions()) {
+        add_action(doc_action_group->lookup_action(action_name));
+    }
+#endif
 }
 
 /*
