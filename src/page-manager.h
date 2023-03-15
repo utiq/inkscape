@@ -82,7 +82,6 @@ public:
     void centerToSelectedPage(SPDesktop *desktop) { centerToPage(desktop, _selected_page); };
 
     SPPage *newPage();
-    SPPage *newPage(SPPage *page);
     SPPage *newPage(double width, double height);
     SPPage *newPage(Geom::Rect rect, bool first_page = false);
     SPPage *newDesktopPage(Geom::Rect rect, bool first_page = false);

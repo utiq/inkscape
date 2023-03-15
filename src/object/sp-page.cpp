@@ -501,17 +501,19 @@ void SPPage::movePage(Geom::Affine translate, bool with_objects)
  * @param translate - The movement to be applied
  * @param objects - a vector of SPItems to move
  */
-void SPPage::moveItems(Geom::Affine translate, std::vector<SPItem *> const &objects)
+void SPPage::moveItems(Geom::Affine translate, std::vector<SPItem *> const &items)
 {
-    for (auto &item : objects) {
+    if (items.empty()) {
+        return;
+    }
+    Inkscape::ObjectSet set(items[0]->document);
+    for (auto &item : items) {
         if (item->isLocked()) {
             continue;
         }
-        if (auto parent_item = cast<SPItem>(item->parent)) {
-            auto move = item->i2dt_affine() * (translate * parent_item->i2doc_affine().inverse());
-            item->doWriteTransform(move, &move, false);
-        }
+        set.add(item);
     }
+    set.applyAffine(translate, true, false, true);
 }
 
 /**

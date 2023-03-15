@@ -1205,13 +1205,37 @@ void file_import_pages(SPDocument *this_doc, SPDocument *that_doc)
 {
     auto &this_pm = this_doc->getPageManager();
     auto &that_pm = that_doc->getPageManager();
+    auto this_root = this_doc->getReprRoot();
+    auto that_root = that_doc->getReprRoot();
 
     // Make sure objects have visualBounds created for import
     that_doc->ensureUpToDate();
+    this_pm.enablePages();
 
+    Geom::Affine tr = Geom::Translate(this_pm.nextPageLocation() * this_doc->getDocumentScale());
     for (auto &that_page : that_pm.getPages()) {
-        this_pm.newPage(that_page);
+        auto this_page = this_pm.newDocumentPage(that_page->getDocumentRect() * tr);
+        // Set the margin, bleed, etc
+        this_page->copyFrom(that_page);
     }
+
+    Inkscape::ObjectSet set(this_doc);
+    for (Inkscape::XML::Node *that_repr = that_root->firstChild(); that_repr; that_repr = that_repr->next()) {
+        // Don't copy metadata, defs, named views and internal clipboard contents to the document
+        if (!strcmp(that_repr->name(), "svg:defs") ||
+            !strcmp(that_repr->name(), "svg:metadata") ||
+            !strcmp(that_repr->name(), "sodipodi:namedview")) {
+            continue;
+        }
+
+        auto this_repr = that_repr->duplicate(this_doc->getReprDoc());
+        this_root->addChild(this_repr, this_root->lastChild());
+        Inkscape::GC::release(this_repr);
+        if (auto this_item = this_doc->getObjectByRepr(this_repr)) {
+            set.add(this_item);
+        }
+    }
+    set.applyAffine(tr, true, false, true);
 }
 
 /**

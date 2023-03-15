@@ -210,52 +210,6 @@ SPPage *PageManager::newDocumentPage(Geom::Rect rect, bool first_page)
 }
 
 /**
- * Create a new page from another page. This can be in it's own document
- * or the same document (cloning) all items are also cloned.
- */
-SPPage *PageManager::newPage(SPPage *page)
-{
-    auto xml_root = _document->getReprDoc();
-    auto sp_root = _document->getRoot();
-
-    // Record the new location of the new page.
-    enablePages();
-    auto new_loc = nextPageLocation();
-    auto new_page = newDocumentPage(page->getDocumentRect(), false);
-
-    // Set the margin, bleed, etc
-    new_page->copyFrom(page);
-
-    Geom::Affine page_move = Geom::Translate((new_loc * _document->getDocumentScale()) - new_page->getDesktopRect().min());
-    Geom::Affine item_move = Geom::Translate(new_loc - new_page->getRect().min());
-
-    for (auto &item : page->getOverlappingItems()) {
-        auto new_repr = item->getRepr()->duplicate(xml_root);
-        if (auto new_item = cast<SPItem>(sp_root->appendChildRepr(new_repr))) {
-            Geom::Affine affine = Geom::Affine();
-
-            // a. Add the object's original transform back in.
-            affine *= item->transform;
-
-            // b. apply parent transform (for layers that have been ignored by getOverlappingItems)
-            if (auto parent = cast<SPItem>(item->parent)) {
-                affine *= parent->i2doc_affine();
-            }
-
-            // c. unit conversion, add in _document->getDocumentScale()
-            affine *= _document->getDocumentScale().inverse();
-
-            // d. apply item_move to offset it.
-            affine *= item_move;
-
-            new_item->doWriteTransform(affine, &affine, false);
-        }
-    }
-    new_page->movePage(page_move, false);
-    return new_page;
-}
-
-/**
  * Delete the given page.
  *
  * @param page - The page to be deleted.
