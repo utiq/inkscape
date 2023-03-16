@@ -365,7 +365,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
             Gdk::ModifierType mods;
             Gtk::AccelGroup::parse(accel, key, mods);
             Glib::ustring label = Gtk::AccelGroup::get_label(key, mods);
-            ss << label << ' ';
+            ss << label.raw() << ' ';
         }
         std::string accel_label = ss.str();
 
