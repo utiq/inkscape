@@ -13,6 +13,7 @@
 #include <glibmm/i18n.h>
 #include <streambuf>
 #include <string>
+#include <limits>
 
 #include "color-rgba.h"
 #include "file.h"
@@ -334,6 +335,7 @@ StartScreen::enlist_recent_files()
     Gtk::TreeModel::Row first_row = *(store->append());
     first_row[cols.col_name] = _("Browse for other files...");
     first_row[cols.col_id] = "";
+    first_row[cols.col_dt] = std::numeric_limits<gint64>::max();
     recent_treeview->get_selection()->select(store->get_path(first_row));
 
     Glib::RefPtr<Gtk::RecentManager> manager = Gtk::RecentManager::get_default();
