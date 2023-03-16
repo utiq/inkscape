@@ -71,15 +71,12 @@ private:
     bool is_appliable(LivePathEffect::EffectType etypen, Glib::ustring item_type, bool has_clip, bool has_mask);
     bool removeEffect(Gtk::Expander * expander);
     void effect_list_reload(SPLPEItem *lpeitem);
-    void resize_handler(Gtk::Allocation &allocation);
     SPLPEItem * clonetolpeitem();
     void selection_info();
-    void resize_labels();
     Inkscape::UI::Widget::CompletionPopup _lpes_popup;
     void map_handler();
     void clearMenu();
     void setMenu();
-    void resize_dialog();
     bool lpeFlatten(std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> lperef);
     Gtk::Box& _LPEContainer;
     Gtk::Box& _LPEAddContainer;
@@ -89,7 +86,6 @@ private:
     PathEffectList effectlist;
     Glib::RefPtr<Gtk::ListStore> _LPEList;
     Glib::RefPtr<Gtk::ListStore> _LPEListFilter;
-    gint _prev_width = 0;
     const LivePathEffect::EnumEffectDataConverter<LivePathEffect::EffectType> &converter;
     Gtk::Widget *effectwidget = nullptr;
     Gtk::Widget *popupwidg = nullptr;
@@ -101,7 +97,6 @@ private:
     bool _has_clip;
     bool _has_mask;
     bool _frezee = false;
-    sigc::connection *resize_connection = nullptr;
 };
 
 } // namespace Dialog

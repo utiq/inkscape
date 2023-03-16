@@ -181,7 +181,7 @@ LivePathEffectEditor::LivePathEffectEditor()
     Glib::RefPtr<Gtk::EntryCompletion> LPECompletionList = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("LPECompletionList"));
     
     if(prefs->getBool("/dialogs/livepatheffect/showgallery", false)) {
-        LPEGallery.signal_button_release_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
+        LPEGallery.signal_button_press_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
         LPEGallery.show();
     }
     _LPEContainer.signal_map().connect(sigc::mem_fun(*this, &LivePathEffectEditor::map_handler) );
@@ -199,11 +199,6 @@ LivePathEffectEditor::LivePathEffectEditor()
 
 LivePathEffectEditor::~LivePathEffectEditor()
 {
-    if (resize_connection) {
-        resize_connection->disconnect();
-        delete resize_connection;
-        resize_connection = nullptr;
-    }
 }
 
 bool separator_func(const Glib::RefPtr<Gtk::TreeModel>& model,
@@ -486,9 +481,6 @@ void
 LivePathEffectEditor::map_handler()
 {
     ensure_size();
-    if (!resize_connection) {
-        resize_connection = new sigc::connection(get_parent()->signal_size_allocate().connect(sigc::mem_fun(*this, &LivePathEffectEditor::resize_handler)));
-    }
 }
 
 void
@@ -790,6 +782,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             Gtk::Box *LPEEffect;
             Gtk::Box *LPEExpanderBox;
             Gtk::Box *LPEActionButtons;
+            Gtk::EventBox *LPEOpenExpander;
             Gtk::Expander *LPEExpander;
             Gtk::Image *LPEIconImage;
             Gtk::EventBox *LPEErase;
@@ -812,6 +805,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             builder->get_widget("LPEExpanderBox", LPEExpanderBox);
             builder->get_widget("LPEEffect", LPEEffect);
             builder->get_widget("LPEExpander", LPEExpander);
+            builder->get_widget("LPEOpenExpander", LPEOpenExpander);
             builder->get_widget("LPEErase", LPEErase);
             builder->get_widget("LPEDrag", LPEDrag);
             builder->get_widget("LPEActionButtons", LPEActionButtons);
@@ -996,9 +990,13 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             LPEEffect->set_name("LPEEffectItem");
             LPENameLabel->set_label((*it)->lpeobject->get_lpe()->getName().c_str());
             LPEExpander->property_expanded().signal_changed().connect(sigc::bind(sigc::mem_fun(*this, &LivePathEffectEditor::expanded_notify),LPEExpander)); 
-            LPEHide->signal_button_release_event().connect(sigc::bind<Inkscape::LivePathEffect::Effect *, Gtk::EventBox *>(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
+            LPEOpenExpander->signal_button_press_event().connect([=](GdkEventButton* const evt){
+               LPEExpander->set_expanded(!LPEExpander->property_expanded());
+               return false;
+            }, false);
+            LPEHide->signal_button_press_event().connect(sigc::bind<Inkscape::LivePathEffect::Effect *, Gtk::EventBox *>(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
             LPEDrag->signal_button_press_event().connect([=](GdkEventButton* const evt){dndx = evt->x; dndy = evt->y; return false; }, false);
-            LPEErase->signal_button_release_event().connect([=](GdkEventButton* const evt){ removeEffect(LPEExpander); return false; }, false);
+            LPEErase->signal_button_press_event().connect([=](GdkEventButton* const evt){ removeEffect(LPEExpander); return false; }, false);
             if (total > 1) {
                 LPEDrag->signal_enter_notify_event().connect([=](GdkEventCrossing*){
                     auto window = get_window();
@@ -1135,42 +1133,8 @@ LivePathEffectEditor::toggleFavInLpe(GdkEventButton * evt, Glib::ustring name, G
 }
 
 
-void
-LivePathEffectEditor::resize_handler(Gtk::Allocation &allocation)
-{
-    if (_prev_width != allocation.get_width()) {
-        _prev_width = allocation.get_width();
-        resize_dialog();
-    }
-}
 
-void
-LivePathEffectEditor::resize_dialog()
-{
-    resize_labels();
-    // this cause a problem resicing dialog
-    // if we surf more hidden widget problems maybe we can move
-    // to expander open.
-    // THe issue fire if not commented is:
-    // https://gitlab.com/inkscape/inkscape/-/merge_requests/4677#note_1130046236
-    //ensure_size();
-}
 
-void
-LivePathEffectEditor::resize_labels()
-{
-    if (_prev_width > 60) {
-        for (auto &w : _LPEExpanders){
-            auto *box = dynamic_cast<Gtk::Box *>(w.first->get_children()[0]);
-            if (!box || box->get_name() != "LPEExpanderBox") {
-                box = dynamic_cast<Gtk::Box *>(w.first->get_children()[1]);
-            }
-            if (box) {
-                box->set_size_request(_prev_width - 60,-1); // remove magic number
-            }
-        }
-    }
-}
 
 /*
  * Clears the effectlist
