@@ -294,7 +294,24 @@ if(WITH_GSOURCEVIEW)
     endif()
 endif()
 
-find_package(Boost 1.19.0 REQUIRED COMPONENTS filesystem)
+# stacktrace print on crash
+if(WIN32)
+    find_package(Boost 1.19.0 REQUIRED COMPONENTS filesystem stacktrace_windbg)
+    list(APPEND INKSCAPE_LIBS "-lole32")
+    list(APPEND INKSCAPE_LIBS "-ldbgeng")
+    add_definitions("-DBOOST_STACKTRACE_USE_WINDBG")
+elseif(APPLE)
+    find_package(Boost 1.19.0 REQUIRED COMPONENTS filesystem stacktrace_basic)
+    list(APPEND INKSCAPE_CXX_FLAGS "-D_GNU_SOURCE")
+else()
+    find_package(Boost 1.19.0 REQUIRED COMPONENTS filesystem stacktrace_backtrace)
+    list(APPEND INKSCAPE_LIBS "-lbacktrace")
+    add_definitions("-DBOOST_STACKTRACE_USE_BACKTRACE")
+endif()
+# enable explicit debug symbols
+set(CMAKE_ENABLE_EXPORTS ON)
+
+
 
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
     list(APPEND INKSCAPE_LIBS "-lstdc++fs")

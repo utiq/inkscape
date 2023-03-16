@@ -17,6 +17,8 @@
 
 #include <unistd.h>
 
+#include <boost/stacktrace.hpp>
+
 #include <map>
 
 #include <glibmm/regex.h>
@@ -33,6 +35,7 @@
 #include "document.h"
 #include "inkscape.h"
 #include "inkscape-application.h"
+#include "inkscape-version-info.h"
 #include "inkscape-window.h"
 #include "message-stack.h"
 #include "path-prefix.h"
@@ -48,7 +51,10 @@
 #include "object/sp-item-group.h"
 #include "object/sp-root.h"
 
+#include "io/resource.h"
+#include "ui/builder-utils.h"
 #include "ui/themes.h"
+#include "ui/dialog-events.h"
 #include "ui/dialog/debug.h"
 #include "ui/dialog/dialog-manager.h"
 #include "ui/dialog/dialog-window.h"
@@ -511,7 +517,7 @@ Application::crash_handler (int /*signum*/)
 
     /* Show nice dialog box */
 
-    char const *istr = _("Inkscape encountered an internal error and will close now.\n");
+    char const *istr = "";
     char const *sstr = _("Automatic backups of unsaved documents were done to the following locations:\n");
     char const *fstr = _("Automatic backup of the following documents failed:\n");
     gint nllen = strlen ("\n");
@@ -559,13 +565,20 @@ Application::crash_handler (int /*signum*/)
     *(b + pos) = '\0';
 
     if ( exists() && instance().use_gui() ) {
-        GtkWidget *msgbox = gtk_message_dialog_new (nullptr, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", b);
-        gtk_dialog_run (GTK_DIALOG (msgbox));
-        gtk_widget_destroy (msgbox);
-    }
-    else
-    {
+        try {
+            auto builder = UI::create_builder("dialog-crash.glade");
+            UI::get_widget<Gtk::Label>(builder, "message").set_label(b);
+            UI::get_object<Gtk::TextBuffer>(builder, "stacktrace")->set_text("<pre>\n" + boost::stacktrace::to_string(boost::stacktrace::stacktrace()) + "</pre>\n<details><summary>System info</summary>\n" + debug_info() + "\n</details>");
+            Gtk::MessageDialog &m = UI::get_widget<Gtk::MessageDialog>(builder, "crash_dialog");
+            sp_transientize(GTK_WIDGET(m.gobj()));
+            m.run();
+        } catch (const Glib::Error &ex) {
+            g_message("Glade file loading failed for crash handler... Anyway, error was: %s", b);
+            std::cerr << boost::stacktrace::stacktrace();
+        }
+    } else {
         g_message( "Error: %s", b );
+        std::cerr << boost::stacktrace::stacktrace();
     }
     g_free (b);
 
