@@ -632,7 +632,7 @@ InkscapeApplication::InkscapeApplication()
             std::cerr << "  tag must be ASCII and not start with a number." << std::endl;
         }
         non_unique = true;
-    } else {
+    } else if (Glib::getenv("SELF_CALL") == "") {
         // Version protection attempts to refuse to merge with inkscape version
         // that have a different build/revision hash. This is important for testing.
         auto test_app = Gio::Application::create(app_id, flags);
