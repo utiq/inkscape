@@ -1783,12 +1783,14 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
     }
 
     if (options->contains("export-png-use-dithering")) {
-#ifndef CAIRO_HAS_DITHER
-        std::cerr << "Your cairo version does not support dithering! Option will be ignored." << std::endl;
-#endif
         Glib::ustring val;
         options->lookup_value("export-png-use-dithering", val);
-        if (val == "true") _file_export.export_png_use_dithering = true;
+        if (val == "true") {
+            _file_export.export_png_use_dithering = true;
+#ifndef CAIRO_HAS_DITHER
+            std::cerr << "Your cairo version does not support dithering! Option will be ignored." << std::endl;
+#endif
+        }
         else if (val == "false") _file_export.export_png_use_dithering = false;
         else std::cerr << "invalid value for export-png-use-dithering. Ignoring." << std::endl;
     } else _file_export.export_png_use_dithering = prefs->getBool("/options/dithering/value", true);
