@@ -966,7 +966,14 @@ int InkFileExportCmd::do_export_extension(SPDocument *doc, std::string const &fi
     std::string filename_out = get_filename_out(filename_in);
     if (extension) {
         extension->set_state(Inkscape::Extension::Extension::STATE_LOADED);
-        extension->save(doc, filename_out.c_str());
+        try {
+            extension->save(doc, filename_out.c_str());
+        } catch (Inkscape::Extension::Output::save_failed const &) {
+
+            std::cerr << __PRETTY_FUNCTION__ << ": Failed to save " << extension->get_id()
+                      << " to: " << filename_out << std::endl;
+            return 1;
+        }
     }
     return 0;
 }

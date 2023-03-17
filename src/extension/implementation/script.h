@@ -80,7 +80,7 @@ private:
       */
     Gtk::Window *parent_window;
 
-    void checkStderr (Glib::ustring const& filename, Gtk::MessageType type, Glib::ustring const& message);
+    void showPopupError (Glib::ustring const& filename, Gtk::MessageType type, Glib::ustring const& message);
 
     class file_listener {
         Glib::ustring _string;

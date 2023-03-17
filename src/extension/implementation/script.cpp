@@ -667,7 +667,7 @@ void Script::_change_extension(Inkscape::Extension::Extension *module, SPDocumen
              shows it in a warning dialog to the user
      \param  filename  Filename of the stderr file
 */
-void Script::checkStderr (const Glib::ustring &data,
+void Script::showPopupError (const Glib::ustring &data,
                            Gtk::MessageType type,
                      const Glib::ustring &message)
 {
@@ -835,10 +835,14 @@ int Script::execute (const std::list<std::string> &in_command,
     }
 
     Glib::ustring stderr_data = fileerr.string();
-    if (stderr_data.length() != 0 && INKSCAPE.use_gui() && !ignore_stderr) {
-        checkStderr(stderr_data, Gtk::MESSAGE_INFO,
+    if (!stderr_data.empty() && !ignore_stderr) {
+        if (INKSCAPE.use_gui()) {
+            showPopupError(stderr_data, Gtk::MESSAGE_INFO,
                                  _("Inkscape has received additional data from the script executed.  "
                                    "The script did not return an error, but this may indicate the results will not be as expected."));
+        } else {
+            std::cerr << "Script Error\n----\n" << stderr_data.c_str() << "\n----\n";
+        }
     }
 
     Glib::ustring stdout_data = fileout.string();
