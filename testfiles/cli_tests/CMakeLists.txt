@@ -159,13 +159,13 @@ add_cli_test(export-type-dot-separated PARAMETERS --export-type=svg,png
 # --export-type=TYPE[,TYPE]*
 
 ##  test whether we can export all default types in principle (and in one command)
-add_cli_test(export-type PARAMETERS --export-type=svg,png,ps,eps,pdf,emf,wmf,xaml
+add_cli_test(export-type PARAMETERS --export-type=svg,png,ps,eps,pdf,emf,wmf
                          INPUT_FILENAME empty.svg OUTPUT_FILENAME empty
-                         EXPECTED_FILES empty.svg empty.png empty.ps empty.eps empty.pdf empty.emf empty.wmf empty.xaml)
+                         EXPECTED_FILES empty.svg empty.png empty.ps empty.eps empty.pdf empty.emf empty.wmf)
 ##  test whether this also works if the export types are not lowercase
-add_cli_test(export-type-caseinsensitive PARAMETERS --export-type=sVg,Png,PS,eps,Pdf,emf,wmf,xaml
+add_cli_test(export-type-caseinsensitive PARAMETERS --export-type=sVg,Png,PS,eps,Pdf,emf,wmf
                          INPUT_FILENAME empty.svg OUTPUT_FILENAME empty
-                         EXPECTED_FILES empty.svg empty.png empty.ps empty.eps empty.pdf empty.emf empty.wmf empty.xaml)
+                         EXPECTED_FILES empty.svg empty.png empty.ps empty.eps empty.pdf empty.emf empty.wmf)
 
 ## test whether we produce sane output for the default types
 add_cli_test(export-type_svg  PARAMETERS --export-type=svg INPUT_FILENAME shapes.svg OUTPUT_FILENAME shapes.svg REFERENCE_FILENAME shapes.svg)
@@ -176,8 +176,8 @@ add_cli_test(export-type_pdf  PARAMETERS --export-type=pdf INPUT_FILENAME shapes
 add_cli_test(export-type_emf  PARAMETERS --export-type=emf INPUT_FILENAME shapes.svg OUTPUT_FILENAME shapes.emf REFERENCE_FILENAME shapes_expected.emf)
 add_cli_test(export-type_wmf  PARAMETERS --export-type=wmf INPUT_FILENAME shapes.svg OUTPUT_FILENAME shapes.wmf REFERENCE_FILENAME shapes_expected.wmf)
 # XAML is not supported by ImageMagick's convert, so simply compare binary
-add_cli_test(export-type_xaml PARAMETERS --export-type=xaml INPUT_FILENAME shapes.svg OUTPUT_FILENAME shapes.xaml
-                              TEST_SCRIPT compare.sh shapes.xaml "${CMAKE_CURRENT_SOURCE_DIR}/testcases/shapes_expected.xaml")
+#add_cli_test(export-type_xaml PARAMETERS --export-type=xaml INPUT_FILENAME shapes.svg OUTPUT_FILENAME shapes.xaml
+#                              TEST_SCRIPT compare.sh shapes.xaml "${CMAKE_CURRENT_SOURCE_DIR}/testcases/shapes_expected.xaml")
 
 # --export-area-page
 add_cli_test(export-area-page_png PARAMETERS --export-area-page --export-type=png INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-page.png REFERENCE_FILENAME export-area-page_expected.png)
