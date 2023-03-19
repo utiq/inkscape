@@ -58,6 +58,7 @@ SPFlowtext::~SPFlowtext() = default;
 void SPFlowtext::release()
 {
     view_style_attachments.clear();
+    SPItem::release();
 }
 
 void SPFlowtext::child_added(Inkscape::XML::Node* child, Inkscape::XML::Node* ref) {
