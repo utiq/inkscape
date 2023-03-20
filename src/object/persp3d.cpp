@@ -80,6 +80,8 @@ void Persp3D::release()
 {
     getRepr()->removeObserver(nodeObserver());
     perspective_impl.reset();
+
+    SPObject::release();
 }
 
 /**

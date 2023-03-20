@@ -43,6 +43,8 @@ void SPFeFuncNode::release()
     }
 
     tableValues.clear();
+
+    SPObject::release();
 }
 
 static Inkscape::Filters::FilterComponentTransferType sp_feComponenttransfer_read_type(char const *value)

@@ -48,6 +48,8 @@ void SPFeDistantLight::release()
     if (document) {
         document->removeResource("fedistantlight", this);
     }
+
+    SPObject::release();
 }
 
 void SPFeDistantLight::set(SPAttr key, char const *value)

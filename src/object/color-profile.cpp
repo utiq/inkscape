@@ -249,6 +249,8 @@ void ColorProfile::release() {
 
     delete this->impl;
     this->impl = nullptr;
+
+    SPObject::release();
 }
 
 void ColorProfileImpl::_clearProfile()

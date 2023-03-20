@@ -65,6 +65,8 @@ void SPFeSpotLight::release() {
     if (document) {
         document->removeResource("fespotlight", this);
     }
+
+    SPObject::release();
 }
 
 void SPFeSpotLight::set(SPAttr key, char const *value)

@@ -52,6 +52,8 @@ void SPFePointLight::release()
     if (document) {
         document->removeResource("fepointlight", this);
     }
+
+    SPObject::release();
 }
 
 
