@@ -596,6 +596,10 @@ void SPDocument::rebase(Inkscape::XML::Document * new_xmldoc, bool keep_namedvie
             Inkscape::GC::release(new_child);
         }
     }
+    // Copy svg root attributes
+    for (const auto & iter : new_xmldoc->root()->attributeList()) {
+        origin_xmldoc->root()->setAttribute(g_quark_to_string(iter.key), iter.value);
+    }
     emitReconstructionFinish();
     new_xmldoc->release();
 }
