@@ -67,8 +67,6 @@ private:
     Inkscape::UI::Widget::TemplateList *templates = nullptr;
 
     SPDocument* _document = nullptr;
-
-    bool _first_open = false;
 };
 
 

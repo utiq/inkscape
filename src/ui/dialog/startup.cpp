@@ -241,8 +241,7 @@ StartScreen::StartScreen()
     // Show the first tab ONLY on the first run for this version
     std::string opt_shown = "/options/boot/shown/ver";
     opt_shown += Inkscape::version_string_without_revision;
-    _first_open = prefs->getBool(opt_shown, false);
-    if(!_first_open) {
+    if (!prefs->getBool(opt_shown, false)) {
         theme_changed();
         tabs->set_current_page(0);
         prefs->setBool(opt_shown, true);
@@ -500,11 +499,6 @@ StartScreen::on_response(int response_id)
     }
     if (response_id == GTK_RESPONSE_CANCEL) {
         templates->reset_selection();
-        if (_first_open) {
-            // Disable the screen if the user cancels on their first run.
-            auto prefs = Inkscape::Preferences::get();
-            prefs->setBool("/options/boot/enabled", false);
-        }
     }
     if (response_id != GTK_RESPONSE_OK && !_document) {
         // Last ditch attempt to generate a new document while exiting.
