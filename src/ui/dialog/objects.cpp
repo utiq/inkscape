@@ -1141,7 +1141,7 @@ void ObjectsPanel::layerChanged(SPObject *layer)
 {
     root_watcher->setSelectedBitRecursive(LAYER_FOCUS_CHILD | LAYER_FOCUSED, false);
 
-    if (!layer) return;
+    if (!layer || !layer->getRepr()) return;
     auto watcher = getWatcher(layer->getRepr());
     if (watcher && watcher != root_watcher) {
         watcher->setSelectedBitChildren(LAYER_FOCUS_CHILD, true);
@@ -1652,8 +1652,10 @@ bool ObjectsPanel::cleanDummyChildren(Gtk::TreeModel::Row const &row)
 {
     if (removeDummyChildren(row)) {
         assert(row);
-        getWatcher(getRepr(row))->addChildren(getItem(row));
-        return true;
+        if (auto watcher = getWatcher(getRepr(row))) {
+            watcher->addChildren(getItem(row));
+            return true;
+        }
     }
     return false;
 }
