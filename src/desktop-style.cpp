@@ -681,7 +681,6 @@ objects_query_fillstroke (const std::vector<SPItem*> &objects, SPStyle *style_re
     if (objects.size() > 1) {
         return QUERY_STYLE_MULTIPLE_SAME;
     } else {
-        style_res->object = objects.front();
         return QUERY_STYLE_SINGLE;
     }
 }
