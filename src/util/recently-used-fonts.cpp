@@ -48,13 +48,9 @@ void RecentlyUsedFonts::init()
     // Clear the previous collections(we may be re-reading).
     clear();
 
-    // Step 1: Fetch the collections directory from the system directory.
-    Glib::ustring system_directory = get_path_string(SYSTEM, FONTCOLLECTIONS, "");
-
     // Generate the name of the file.
-    Glib::ustring file_name = "recently_used_fonts.txt";
-    std::string file_path = get_path_string(SYSTEM, FONTCOLLECTIONS, file_name.c_str());
-    std::string file_dir = get_path_string(SYSTEM, FONTCOLLECTIONS, nullptr);
+    std::string file_path = get_path_string(USER, FONTCOLLECTIONS, RECENTFONTS_FILENAME);
+    std::string file_dir = get_path_string(USER, FONTCOLLECTIONS, nullptr);
 
     static bool create_dir = true;
 
@@ -119,8 +115,7 @@ void RecentlyUsedFonts::write_recently_used_fonts()
     // Step 1: Fetch the collections directory from the system directory.
 
     // Generate the name of the file.
-    Glib::ustring file_name = "recently_used_fonts.txt";
-    std::string file_path = get_path_string(SYSTEM, FONTCOLLECTIONS, file_name.c_str());
+    std::string file_path = get_path_string(USER, FONTCOLLECTIONS, RECENTFONTS_FILENAME);
 
     std::fstream output_file;
     output_file.open(file_path, std::fstream::out);

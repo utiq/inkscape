@@ -39,8 +39,7 @@ FontCollections::FontCollections()
 void FontCollections::init()
 {
     // Step 1: Get the collections directory.
-    Glib::ustring user_directory = get_path_string(USER, FONTCOLLECTIONS, "");
-    Glib::ustring system_directory = get_path_string(SYSTEM, FONTCOLLECTIONS, "");
+    Glib::ustring directory = get_path_string(USER, FONTCOLLECTIONS, "");
 
     // Create the fontcollections directory if not already present.
     // This should be called only once.
@@ -48,11 +47,9 @@ void FontCollections::init()
 
     if(build_dir) {
 #ifdef _WIN32
-        mkdir(user_directory.c_str());
-        mkdir(system_directory.c_str());
+        mkdir(directory.c_str());
 #else
-        mkdir(user_directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        mkdir(system_directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #endif
         build_dir = false;
     }
@@ -61,11 +58,14 @@ void FontCollections::init()
     clear();
 
     // Step 2: Get the names of the files present in this directory.
-    std::vector<const char *> allowed_ext = {"txt"};
+    std::vector<const char *> allowed_user_ext = {"txt"};
+    std::vector<const char *> allowed_system_ext = {"log"};
     std::vector <Glib::ustring> user_files = {};
     std::vector <Glib::ustring> system_files = {};
-    Inkscape::IO::Resource::get_filenames_from_path(user_files, user_directory, allowed_ext,(std::vector<const char *>) {});
-    Inkscape::IO::Resource::get_filenames_from_path(system_files, system_directory, allowed_ext,(std::vector<const char *>) {});
+    Inkscape::IO::Resource::get_filenames_from_path(user_files, directory, allowed_user_ext,
+                                                    (std::vector<const char *>){});
+    Inkscape::IO::Resource::get_filenames_from_path(system_files, directory, allowed_system_ext,
+                                                    (std::vector<const char *>){});
 
     // Step 3: Recursively read the contents of the files,
     // and load the collections into the map.
@@ -122,12 +122,7 @@ void FontCollections::_read(const Glib::ustring& file, bool is_system)
     std::ifstream input_file(file);
 
     // Generate the collection name from the file name.
-    Glib::ustring path;
-    if(is_system) {
-        path = get_path_string(SYSTEM, FONTCOLLECTIONS, "");
-    } else {
-        path = get_path_string(USER, FONTCOLLECTIONS, "");
-    }
+    Glib::ustring path = get_path_string(USER, FONTCOLLECTIONS, "");
 
     Glib::ustring collection_name = file.substr(path.length() + 1, file.length() - path.length() - 5);
     std::string line;
@@ -402,14 +397,16 @@ int FontCollections::get_user_collection_location(const Glib::ustring& collectio
 
 std::string FontCollections::generate_filename_from_collection(const Glib::ustring &collection_name, bool is_system)
 {
-    Glib::ustring file_name = collection_name + ".txt";
+    Glib::ustring file_name;
     std::string collection_file;
 
     if(is_system) {
-        collection_file = get_path_string(SYSTEM, FONTCOLLECTIONS, file_name.c_str());
+        file_name = collection_name + ".log";
     } else {
-        collection_file = get_path_string(USER, FONTCOLLECTIONS, file_name.c_str());
+        file_name = collection_name + ".txt";
     }
+
+    collection_file = get_path_string(USER, FONTCOLLECTIONS, file_name.c_str());
 
     return collection_file;
 }

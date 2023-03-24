@@ -21,6 +21,7 @@
 #include "io/resource.h"
 
 namespace Inkscape {
+inline const char *RECENTFONTS_FILENAME = "recently_used_fonts.log";
 
 class RecentlyUsedFonts {
 
