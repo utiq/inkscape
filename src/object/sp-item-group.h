@@ -80,6 +80,8 @@ public:
     Inkscape::XML::Node* write(Inkscape::XML::Document *xml_doc, Inkscape::XML::Node *repr, unsigned int flags) override;
 
     Geom::OptRect bbox(Geom::Affine const &transform, SPItem::BBoxType bboxtype) const override;
+    Geom::OptRect visualBounds(Geom::Affine const &transform = Geom::identity(), bool wfilter = true,
+                               bool wclip = true, bool wmask = true) const override;
     void print(SPPrintContext *ctx) override;
     const char* typeName() const override;
     const char* displayName() const override;

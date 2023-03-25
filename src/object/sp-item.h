@@ -274,8 +274,8 @@ public:
      * @param wclip use clip data in bbox calculation
      * @param wmask use mask data in bbox calculation
      */
-    Geom::OptRect visualBounds(Geom::Affine const &transform = Geom::identity(), bool wfilter = true, bool wclip = true,
-                               bool wmask = true) const;
+    virtual Geom::OptRect visualBounds(Geom::Affine const &transform = Geom::identity(),
+                                       bool wfilter = true, bool wclip = true, bool wmask = true) const;
 
     Geom::OptRect bounds(BBoxType type, Geom::Affine const &transform = Geom::identity()) const;
 
