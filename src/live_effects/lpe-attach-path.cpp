@@ -48,6 +48,7 @@ LPEAttachPath::~LPEAttachPath() = default;
 
 void LPEAttachPath::resetDefaults(SPItem const * /*item*/)
 {
+    Effect::resetDefaults(nullptr);
     curve_start_previous_origin = start_path_curve_end.getOrigin();
     curve_end_previous_origin = end_path_curve_end.getOrigin();
 }

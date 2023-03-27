@@ -379,11 +379,5 @@ PathVector LPEEmbroderyStitch::doEffect_path(PathVector const &path_in)
     }
 }
 
-void
-LPEEmbroderyStitch::resetDefaults(SPItem const *item)
-{
-    Effect::resetDefaults(item);
-}
-
 } //namespace LivePathEffect
 } /* namespace Inkscape */

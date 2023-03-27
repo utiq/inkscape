@@ -11,10 +11,10 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "live_effects/parameter/enum.h"
 #include "live_effects/effect.h"
-#include "live_effects/parameter/path.h"
 #include "live_effects/parameter/bool.h"
+#include "live_effects/parameter/enum.h"
+#include "live_effects/parameter/path.h"
 
 #include <2geom/sbasis.h>
 #include <2geom/sbasis-geometric.h>
@@ -70,8 +70,8 @@ private:
 
     void on_pattern_pasted();
 
-    LPEBendPath(const LPEBendPath&);
-    LPEBendPath& operator=(const LPEBendPath&);
+    LPEBendPath(const LPEBendPath&) = delete;
+    LPEBendPath& operator=(const LPEBendPath&) = delete;
 };
 
 }; //namespace LivePathEffect
