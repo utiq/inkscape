@@ -504,8 +504,7 @@ PathParam::linked_deleted(SPObject *deleted)
 
 void PathParam::linked_modified(SPObject *linked_obj, guint flags)
 {
-    if ((!param_effect->is_load || ownerlocator || (!SP_ACTIVE_DESKTOP && param_effect->isReady())) &&
-        flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
+    if (flags & (SP_OBJECT_MODIFIED_FLAG | SP_OBJECT_STYLE_MODIFIED_FLAG |
                  SP_OBJECT_CHILD_MODIFIED_FLAG | SP_OBJECT_VIEWPORT_MODIFIED_FLAG)) 
     {
         linked_modified_callback(linked_obj, flags);
@@ -560,7 +559,9 @@ PathParam::linked_modified_callback(SPObject *linked_obj, guint flags)
 
         must_recalculate_pwd2 = true;
         emit_changed();
-        param_effect->getLPEObj()->requestModified(SP_OBJECT_MODIFIED_FLAG);
+        if (!param_effect->is_load || ownerlocator || (!SP_ACTIVE_DESKTOP && param_effect->isReady())) {
+            param_effect->getLPEObj()->requestModified(SP_OBJECT_MODIFIED_FLAG);
+        }
     }
 }
 
