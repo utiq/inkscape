@@ -938,6 +938,7 @@ return( SplineMake3(from,to));
 		}
 	}
 	/* Add the solution of b = 0.01 (approximately 0 but above because of direction). */
+#if 0 /* those solutions lead to subpar approximations */
 	/* This solution is not part of the original algorithm by Raph Levien. */
 	a = (2000*f-6*bunit.y)/(600*aunit.y-3*sab);
 	if ( a >= 0 && a < aMax ) {
@@ -965,7 +966,11 @@ return( SplineMake3(from,to));
 			abSolutions[numberOfSolutions++][1] = bMax;
 		}
 	}
+#endif
 	if ( numberOfSolutions == 0) {
+        /* no solutions found, quit */
+return NULL;
+
 		/* solution with a = aMax and b = bMax*/
 		abSolutions[numberOfSolutions][0] = aMax;
 		abSolutions[numberOfSolutions++][1] = bMax;

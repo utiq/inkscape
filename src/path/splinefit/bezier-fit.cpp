@@ -3,6 +3,8 @@
 #include <iostream>
 #include <vector>
 #include "bezier-fit.h"
+#include "point.h"
+#include <2geom/bezier-utils.h>
 
 extern "C" {
     #include "splinefit.h"
@@ -55,6 +57,16 @@ int bezier_fit(Geom::Point bezier[4], const std::vector<InputPoint>& data) {
     }
 
     Spline* spline = ApproximateSplineFromPointsSlopes(input->first, input->last, fit.data(), fit.size(), order2, mt);
+    bool ok = spline != nullptr;
+
+    if (!spline) {
+        std::vector<Geom::Point> inp;
+        inp.reserve(data.size());
+        for (auto& pt : data) {
+            inp.push_back(pt);
+        }
+        ok = bezier_fit_cubic(bezier, inp.data(), inp.size(), 0.5) > 0;
+    }
 
     if (spline) {
         bezier[0].x() = spline->from->me.x;
@@ -69,8 +81,10 @@ int bezier_fit(Geom::Point bezier[4], const std::vector<InputPoint>& data) {
         bezier[3].x() = spline->to->me.x;
         bezier[3].y() = spline->to->me.y;
     }
+
     SplinePointListFree(input);
     //TODO: verify that all C structs are freed up
     // SplineFree(spline);
-    return spline != nullptr;
+
+    return ok;
 }
