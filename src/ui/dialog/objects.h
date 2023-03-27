@@ -32,7 +32,6 @@
 #include "selection.h"
 #include "style-enums.h"
 #include "color-rgba.h"
-#include "helper/auto-connection.h"
 
 using Inkscape::XML::Node;
 using namespace Inkscape::UI::Widget;
@@ -178,6 +177,9 @@ private:
     PrefCheckButton& _setting_layers;
     PrefCheckButton& _setting_track;
     bool _drag_flip;
+
+    bool _selectionChanged();
+    auto_connection _idle_connection;
 };
 
 

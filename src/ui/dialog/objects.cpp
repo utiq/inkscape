@@ -905,8 +905,8 @@ ObjectsPanel::ObjectsPanel()
     // Before expanding a row, replace the dummy child with the actual children
     _tree.signal_test_expand_row().connect([this](const Gtk::TreeModel::iterator &iter, const Gtk::TreeModel::Path &) {
         if (cleanDummyChildren(*iter)) {
-            if (auto selection = getSelection()) {
-                selectionChanged(selection);
+            if (getSelection()) {
+                _selectionChanged();
             }
         }
         return false;
@@ -1015,7 +1015,7 @@ void ObjectsPanel::setRootWatcher()
         root_watcher = new ObjectWatcher(this, document->getRoot(), nullptr, filtered);
         root_watcher->rememberExtendedItems();
         layerChanged(getDesktop()->layerManager().currentLayer());
-        selectionChanged(getSelection());
+        _selectionChanged();
     }
 }
 
@@ -1085,13 +1085,25 @@ ObjectWatcher *ObjectsPanel::unpackToObject(SPObject *item)
     return watcher;
 }
 
-void ObjectsPanel::selectionChanged(Selection *selected)
+// Same definition as in 'document.cpp'
+#define SP_DOCUMENT_UPDATE_PRIORITY (G_PRIORITY_HIGH_IDLE - 2)
+
+void ObjectsPanel::selectionChanged(Selection *selected /* not used */)
+{
+    if (!_idle_connection.connected()) {
+        auto handler = sigc::mem_fun(*this, &ObjectsPanel::_selectionChanged);
+        int priority = SP_DOCUMENT_UPDATE_PRIORITY + 1;
+        _idle_connection = Glib::signal_idle().connect(handler, priority);
+    }
+}
+
+bool ObjectsPanel::_selectionChanged()
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     root_watcher->setSelectedBitRecursive(SELECTED_OBJECT, false);
     bool keep_current_item = false;
 
-    for (auto item : selected->items()) {
+    for (auto item : getSelection()->items()) {
         keep_current_item |= (item == current_item);
         // Failing to find the watchers here means the object is filtered out
         // of the current object view and can be safely skipped.
@@ -1114,6 +1126,10 @@ void ObjectsPanel::selectionChanged(Selection *selected)
     if (!keep_current_item) {
         current_item = nullptr;
     }
+    _scroll_lock = false;
+
+    // Returning 'false' disconnects idle signal handler
+    return false;
 }
 
 /**
@@ -1724,6 +1740,8 @@ bool ObjectsPanel::on_drag_drop(const Glib::RefPtr<Gdk::DragContext> &context, i
 
 void ObjectsPanel::on_drag_start(const Glib::RefPtr<Gdk::DragContext> &context)
 {
+    _scroll_lock = true;
+
     auto selection = _tree.get_selection();
     selection->set_mode(Gtk::SELECTION_MULTIPLE);
     selection->unselect_all();
@@ -1803,7 +1821,6 @@ bool ObjectsPanel::selectCursorItem(unsigned int state)
             }
             selection->set(item);
         }
-        _scroll_lock = false;
         return true;
     }
     return false;
