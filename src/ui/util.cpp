@@ -21,6 +21,18 @@
 #include <gtkmm/enums.h>
 #include <stdexcept>
 #include <tuple>
+#if (defined (_WIN32) || defined (_WIN64))
+#include <gdk/gdkwin32.h>
+#include <dwmapi.h>
+/* For Windows 10 version 1809, 1903, 1909. */
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_OLD
+#define DWMWA_USE_IMMERSIVE_DARK_MODE_OLD 19
+#endif
+/* For Windows 10 version 2004 and higher, and Windows 11. */
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+#endif
 
 // TODO due to internal breakage in glibmm headers, this must be last:
 #include <glibmm/i18n.h>
@@ -231,6 +243,21 @@ uint32_t conv_gdk_color_to_rgba(const Gdk::RGBA& color, double replace_alpha) {
     return rgba;
 }
 
+void set_dark_tittlebar(Glib::RefPtr<Gdk::Window> win, bool is_dark){
+#if (defined (_WIN32) || defined (_WIN64))
+    if (win->gobj()) {
+        BOOL w32_darkmode = is_dark;
+        HWND hwnd = (HWND)gdk_win32_window_get_handle((GdkWindow*)win->gobj());
+        if (DwmSetWindowAttribute) {
+            DWORD attr = DWMWA_USE_IMMERSIVE_DARK_MODE;
+            if (FAILED(DwmSetWindowAttribute(hwnd, attr, &w32_darkmode, sizeof(w32_darkmode)))) {
+                attr = DWMWA_USE_IMMERSIVE_DARK_MODE_OLD;
+                DwmSetWindowAttribute(hwnd, attr, &w32_darkmode, sizeof(w32_darkmode));
+            }
+        }
+    }
+#endif
+}
 /*
   Local Variables:
   mode:c++

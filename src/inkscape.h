@@ -100,6 +100,7 @@ public:
     unsigned int maximum_dkey();
     SPDesktop * next_desktop ();
     SPDesktop * prev_desktop ();
+    std::vector<SPDesktop *> * get_desktops() { return _desktops; };
     
     void external_change ();
     
@@ -170,7 +171,6 @@ public:
     Application(Application const&); // no copy
     Application& operator=(Application const&); // no assign
     Application* operator&() const; // no pointer access
-
     std::map<SPDocument *, int> _document_set;
     std::vector<SPDesktop *> *_desktops = nullptr;
     std::string _pages;

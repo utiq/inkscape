@@ -13,6 +13,7 @@
  */
 
 #include "themes.h"
+#include "inkscape.h"
 #include "preferences.h"
 #include "io/resource.h"
 #include "svg/svg-color.h"
@@ -29,7 +30,9 @@
 #include <vector>
 #include <regex>
 #include "svg/css-ostringstream.h"
-
+#include "ui/dialog/dialog-manager.h"
+#include "ui/dialog/dialog-window.h"
+#include "ui/util.h"
 #include "config.h"
 #if WITH_GSOURCEVIEW
 #   include <gtksourceview/gtksource.h>
@@ -503,6 +506,54 @@ bool ThemeContext::isCurrentThemeDark(Gtk::Container *window)
         }
     }
     return dark;
+}
+
+void 
+ThemeContext::themechangecallback() {
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    // sync "dark" class between app window and floating dialog windows to ensure that
+    // CSS providers relying on it apply in dialog windows too
+    auto dark = prefs->getBool("/theme/darkTheme", false);
+    std::vector<Gtk::Window *> winds;
+    for (auto wnd : Inkscape::UI::Dialog::DialogManager::singleton().get_all_floating_dialog_windows()) {
+        winds.push_back(dynamic_cast<Gtk::Window *>(wnd));
+    }
+    if (auto desktops = INKSCAPE.get_desktops()) {
+        for (auto & desktop : *desktops) {
+            set_default_highlight_colors(getHighlightColors(desktop->getToplevel()));
+            if (desktop == SP_ACTIVE_DESKTOP) {
+                winds.push_back(dynamic_cast<Gtk::Window *>(desktop->getToplevel()));
+            } else {
+                winds.insert(winds.begin(), dynamic_cast<Gtk::Window *>(desktop->getToplevel()));
+            }
+        }
+    }
+    for (auto wnd : winds) {
+        if (Glib::RefPtr<Gdk::Window> w = wnd->get_window()) {
+            set_dark_tittlebar(w, dark);
+        }
+        if (dark) {
+            wnd->get_style_context()->add_class("dark");
+            wnd->get_style_context()->remove_class("bright");
+        } else {
+            wnd->get_style_context()->add_class("bright");
+            wnd->get_style_context()->remove_class("dark");
+        }
+        if (prefs->getBool("/theme/symbolicIcons", false)) {
+            wnd->get_style_context()->add_class("symbolic");
+            wnd->get_style_context()->remove_class("regular");
+        } else {
+            wnd->get_style_context()->add_class("regular");
+            wnd->get_style_context()->remove_class("symbolic");
+        }
+#if (defined (_WIN32) || defined (_WIN64))
+        wnd->present();
+#endif
+    }
+    // select default syntax coloring theme, if needed
+    if (auto desktop = INKSCAPE.active_desktop()) {
+        select_default_syntax_style(isCurrentThemeDark(desktop->getToplevel()));
+    }
 }
 
 /**

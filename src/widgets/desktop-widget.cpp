@@ -676,31 +676,12 @@ void SPDesktopWidget::on_realize()
     dtw->desktop->set_display_area (d, 10);
 
     dtw->updateNamedview();
-    gchar *gtkThemeName;
-    gboolean gtkApplicationPreferDarkTheme;
-    GtkSettings *settings = gtk_settings_get_default();
     Gtk::Container *window = get_toplevel();
-    if (settings && window) {
-        g_object_get(settings, "gtk-theme-name", &gtkThemeName, nullptr);
-        g_object_get(settings, "gtk-application-prefer-dark-theme", &gtkApplicationPreferDarkTheme, nullptr);
+    if (window) {
         bool dark = INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container *>(window));
-        if (dark) {
-            prefs->setBool("/theme/darkTheme", true);
-            window->get_style_context()->add_class("dark");
-            window->get_style_context()->remove_class("bright");
-        } else {
-            prefs->setBool("/theme/darkTheme", false);
-            window->get_style_context()->add_class("bright");
-            window->get_style_context()->remove_class("dark");
-        }
-        if (prefs->getBool("/theme/symbolicIcons", false)) {
-            window->get_style_context()->add_class("symbolic");
-            window->get_style_context()->remove_class("regular");
-        } else {
-            window->get_style_context()->add_class("regular");
-            window->get_style_context()->remove_class("symbolic");
-        }
+        prefs->setBool("/theme/darkTheme", dark);
         INKSCAPE.themecontext->getChangeThemeSignal().emit();
+        INKSCAPE.themecontext->add_gtk_css(true);
     }
 }
 

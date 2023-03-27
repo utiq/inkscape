@@ -1330,6 +1330,7 @@ void InkscapePreferences::toggleSymbolic()
         _symbolic_highlight_colors.set_sensitive(false);
     }
     INKSCAPE.themecontext->getChangeThemeSignal().emit();
+    INKSCAPE.themecontext->add_gtk_css(true);
 }
 
 bool InkscapePreferences::contrastChange(GdkEventButton *button_event)
@@ -1374,20 +1375,11 @@ void InkscapePreferences::themeChange(bool contrastslider)
         } else {
             _dark_theme.get_parent()->hide();
         }
-
         auto settings = Gtk::Settings::get_default();
         settings->property_gtk_theme_name() = current_theme;
         bool dark = INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container *>(window));
         bool toggled = prefs->getBool("/theme/darkTheme", false) != dark;
-        if (dark) {
-            prefs->setBool("/theme/darkTheme", true);
-            window->get_style_context()->add_class("dark");
-            window->get_style_context()->remove_class("bright");
-        } else {
-            prefs->setBool("/theme/darkTheme", false);
-            window->get_style_context()->add_class("bright");
-            window->get_style_context()->remove_class("dark");
-        }
+        prefs->setBool("/theme/darkTheme", dark);
         INKSCAPE.themecontext->getChangeThemeSignal().emit();
         INKSCAPE.themecontext->add_gtk_css(true, contrastslider);
         resetIconsColors(toggled);
@@ -1401,15 +1393,7 @@ void InkscapePreferences::preferDarkThemeChange()
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         bool dark = INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container *>(window));
         bool toggled = prefs->getBool("/theme/darkTheme", false) != dark;
-        if (dark) {
-            prefs->setBool("/theme/darkTheme", true);
-            window->get_style_context()->add_class("dark");
-            window->get_style_context()->remove_class("bright");
-        } else {
-            prefs->setBool("/theme/darkTheme", false);
-            window->get_style_context()->add_class("bright");
-            window->get_style_context()->remove_class("dark");
-        }
+        prefs->setBool("/theme/darkTheme", dark);
         INKSCAPE.themecontext->getChangeThemeSignal().emit();
         INKSCAPE.themecontext->add_gtk_css(true);
         // we avoid switched base colors

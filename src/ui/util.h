@@ -105,6 +105,7 @@ Cairo::RefPtr<Cairo::LinearGradient> create_cubic_gradient(
     int steps = 8
 );
 
+void set_dark_tittlebar(Glib::RefPtr<Gdk::Window> win, bool is_dark);
 // convert Gdk::RGBA into 32-bit rrggbbaa color, optionally replacing alpha, if specified
 uint32_t conv_gdk_color_to_rgba(const Gdk::RGBA& color, double replace_alpha = -1);
 

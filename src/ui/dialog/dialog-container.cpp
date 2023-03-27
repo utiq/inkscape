@@ -61,6 +61,7 @@
 #include "ui/dialog/undo-history.h"
 #include "ui/dialog/xml-tree.h"
 #include "ui/icon-names.h"
+#include "ui/themes.h"
 #include "ui/widget/canvas-grid.h"
 
 namespace Inkscape {
@@ -462,6 +463,9 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
             dialog_window->update_window_size_to_fit_children();
         }
         dialog_window->show_all();
+        // Set the style and icon theme of the new menu based on the desktop
+        INKSCAPE.themecontext->getChangeThemeSignal().emit();
+        INKSCAPE.themecontext->add_gtk_css(true);
         restored = true;
     }
 
@@ -802,8 +806,11 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
                 dialog_window->update_window_size_to_fit_children();
             }
             dialog_window->show_all();
+            // Set the style and icon theme of the new menu based on the desktop
         }
     }
+    INKSCAPE.themecontext->getChangeThemeSignal().emit();
+    INKSCAPE.themecontext->add_gtk_css(true);
 }
 
 void save_wnd_position(Glib::KeyFile *keyfile, const Glib::ustring &group_name, const window_position_t *position)
@@ -1059,6 +1066,8 @@ DialogNotebook *DialogContainer::prepare_drop(const Glib::RefPtr<Gdk::DragContex
     new_notebook->move_page(*page);
 
     // move_page() takes care of updating dialog lists.
+    INKSCAPE.themecontext->getChangeThemeSignal().emit();
+    INKSCAPE.themecontext->add_gtk_css(true);
     return new_notebook;
 }
 

@@ -53,6 +53,7 @@ public:
     Glib::RefPtr<Gtk::CssProvider> getStyleProvider() { return _styleprovider;}
     Glib::RefPtr<Gtk::CssProvider> getUserProvider() { return _userprovider;}
     sigc::signal<void ()> getChangeThemeSignal() { return _signal_change_theme;}
+    void themechangecallback();
     /// Set application-wide font size adjustment by a factor, where 1 is 100% (no change)
     void adjustGlobalFontScale(double factor);
     /// Get current font scaling factor (50 - 150, percent of "normal" size)

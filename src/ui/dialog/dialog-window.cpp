@@ -62,8 +62,6 @@ DialogWindow::DialogWindow(InkscapeWindow *inkscape_window, Gtk::Widget *page)
 
     // ============ Initialization ===============
     // Setting the window type
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-
     set_type_hint(Gdk::WINDOW_TYPE_HINT_DIALOG);
     set_transient_for(*inkscape_window);
 
@@ -88,30 +86,6 @@ DialogWindow::DialogWindow(InkscapeWindow *inkscape_window, Gtk::Widget *page)
 
     // ============ Theming: icons ==============
 
-
-    // Set the style and icon theme of the new menu based on the desktop
-    if (auto desktop = SP_ACTIVE_DESKTOP) {
-        if (Gtk::Window *window = desktop->getToplevel()) {
-            if (window->get_style_context()->has_class("dark")) {
-                get_style_context()->add_class("dark");
-                get_style_context()->remove_class("bright");
-            } else {
-                get_style_context()->add_class("bright");
-                get_style_context()->remove_class("dark");
-            }
-            if (prefs->getBool("/theme/symbolicIcons", false)) {
-                get_style_context()->add_class("symbolic");
-                get_style_context()->remove_class("regular");
-            } else {
-                get_style_context()->add_class("regular");
-                get_style_context()->remove_class("symbolic");
-            }
-        }
-    }
-    // floating dialog windows don't inherit "dark" theme class
-    if (inkscape_window && inkscape_window->get_style_context()->has_class("dark")) {
-        get_style_context()->add_class("dark");
-    }
 
     // ================ Window ==================
     set_title(_title);

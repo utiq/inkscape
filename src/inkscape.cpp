@@ -59,6 +59,7 @@
 #include "ui/dialog/dialog-manager.h"
 #include "ui/dialog/dialog-window.h"
 #include "ui/tools/tool-base.h"
+#include "ui/util.h"
 
 #include "util/units.h"
 
@@ -286,26 +287,7 @@ Application::Application(bool use_gui) :
 
         /* update highlight colors when theme changes */
         themecontext->getChangeThemeSignal().connect([=](){
-            if (auto desktop = active_desktop()) {
-                set_default_highlight_colors(themecontext->getHighlightColors(desktop->getToplevel()));
-            }
-            // sync "dark" class between app window and floating dialog windows to ensure that
-            // CSS providers relying on it apply in dialog windows too
-            if (auto inkscape_window = InkscapeApplication::instance()->get_active_window()) {
-                auto dark = inkscape_window->get_style_context()->has_class("dark");
-                for (auto wnd : Inkscape::UI::Dialog::DialogManager::singleton().get_all_floating_dialog_windows()) {
-                    if (dark) {
-                        wnd->get_style_context()->add_class("dark");
-                    }
-                    else {
-                        wnd->get_style_context()->remove_class("dark");
-                    }
-                }
-            }
-            // select default syntax coloring theme, if needed
-            if (auto desktop = active_desktop()) {
-                UI::ThemeContext::select_default_syntax_style(themecontext->isCurrentThemeDark(desktop->getToplevel()));
-            }
+            themecontext->themechangecallback();
         });
     }
 
