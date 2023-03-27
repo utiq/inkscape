@@ -1304,6 +1304,7 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
             Geom::Affine r = Geom::identity();
             r = Geom::identity();
             Geom::Scale mirror = Geom::Scale(1,1);
+            bool reverse_pv = false;
             if(mirrorrowsx || mirrorrowsy || mirrorcolsx || mirrorcolsy) {
                 gint mx = 1;
                 gint my = 1;
@@ -1326,6 +1327,7 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
                     }
                 }
                 mirror = Geom::Scale(mx, my);
+                reverse_pv = mx * my == -1;
             }
             if (mirrortrans && interpolate_scalex && i%2 != 0) {
                 fracx = 1-fracx;
@@ -1396,6 +1398,9 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
             r *= Geom::Rotate::from_degrees(rotatein);
             
             Geom::PathVector output_pv = pathv_to_linear_and_cubic_beziers(path_in);
+            if (reverse_pv) {
+                output_pv.reverse();
+            }
             
             output_pv *= Geom::Translate(center).inverse();
             output_pv *= r;
