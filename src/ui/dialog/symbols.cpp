@@ -302,9 +302,6 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
         icon_view->signal_drag_data_get().connect(sigc::mem_fun(*this, &SymbolsDialog::iconDragDataGet)));
     gtk_connections.emplace_back(
         icon_view->signal_selection_changed().connect(sigc::mem_fun(*this, &SymbolsDialog::iconChanged)));
-    gtk_connections.emplace_back(
-        icon_view->signal_drag_begin().connect(
-            [=](Glib::RefPtr<Gdk::DragContext> const &) { onDragStart(); }));
     gtk_connections.emplace_back(icon_view->signal_button_press_event().connect([=](GdkEventButton *ev) -> bool {
         _last_mousedown = {ev->x, ev->y - icon_view->get_vadjustment()->get_value()};
         return false;
@@ -856,54 +853,6 @@ void SymbolsDialog::iconChanged()
         auto const dims = getSymbolDimensions(selected);
         sendToClipboard(*selected, Geom::Rect(-0.5 * dims, 0.5 * dims));
     }
-}
-
-/** Handle the start of a drag on a symbol preview icon. */
-void SymbolsDialog::onDragStart()
-{
-    auto selected = get_selected_symbol_path();
-    auto iter = get_selected_symbol();
-    if (!selected || !iter) {
-        return;
-    }
-
-    // Get the rectangle of the cell where the drag started.
-    Gdk::Rectangle temprect;
-    icon_view->get_cell_rect(*selected, temprect);
-    auto cell_rect = Geom::IntRect::from_xywh({temprect.get_x(), temprect.get_y()},
-                                              {temprect.get_width(), temprect.get_height()});
-
-    // Find the rectangle of the actual symbol preview
-    // (not the same as the cell rectangle, due to fitting and padding).
-    auto const dims = getSymbolDimensions(iter);
-    unsigned preview_size = SYMBOL_ICON_SIZES[pack_size];
-    Geom::Dim2 larger_dim = dims[Geom::X] > dims[Geom::Y] ? Geom::X : Geom::Y;
-    Geom::Dim2 smaller_dim = (Geom::Dim2)(!larger_dim);
-    Geom::Rect preview_rect; ///< The actual rectangle taken up by the bbox of the rendered preview.
-
-    Geom::Interval larger_interval = cell_rect[larger_dim];
-    larger_interval.expandBy(0.5 * (preview_size - larger_interval.extent())); // Trim off the padding.
-    preview_rect[larger_dim] = larger_interval;
-
-    double const proportionally_scaled_smaller = preview_size * dims[smaller_dim] / dims[larger_dim];
-    double const smaller_trim = 0.5 * (cell_rect[smaller_dim].extent() - proportionally_scaled_smaller);
-    Geom::Interval smaller_interval = cell_rect[smaller_dim];
-    smaller_interval.expandBy(-smaller_trim); // Trim off padding and the "letterboxes" for non-square bbox.
-    preview_rect[smaller_dim] = smaller_interval;
-
-    // Map the last mousedown position to [0, 1] x [0, 1] coordinates in the preview rectangle.
-    Geom::Point normalized_position = _last_mousedown - preview_rect.min();
-    normalized_position.x() = std::clamp(normalized_position.x() / preview_rect.width(), 0.0, 1.0);
-    normalized_position.y() /= preview_rect.height();
-    if (auto desktop = getDesktop(); desktop && !desktop->is_yaxisdown()) {
-        normalized_position.y() = 1.0 - normalized_position.y();
-    }
-    normalized_position.y() = std::clamp(normalized_position.y(), 0.0, 1.0);
-
-    // Push the symbol into the private clipboard with the correct bounding box. This box has dimensions
-    // `dims` but is positioned in such a way that the origin point (0, 0) lies at `normalized_position`.
-    auto const box_position = -Geom::Point(normalized_position.x() * dims.x(), normalized_position.y() * dims.y());
-    sendToClipboard(*iter, Geom::Rect::from_xywh(box_position, dims));
 }
 
 #ifdef WITH_LIBVISIO

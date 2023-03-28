@@ -67,6 +67,7 @@
 #include "object/sp-rect.h"
 #include "object/sp-root.h"
 #include "object/sp-shape.h"
+#include "object/sp-symbol.h"
 #include "object/sp-textpath.h"
 #include "object/sp-use.h"
 #include "page-manager.h"
@@ -345,57 +346,62 @@ void ClipboardManagerImpl::copySymbol(Inkscape::XML::Node* symbol, gchar const* 
     // We add "_duplicate" to have a well defined symbol name that
     // bypasses the "prevent_id_classes" routine. We'll get rid of it
     // when we paste.
+    auto original = cast<SPItem>(source->getObjectByRepr(symbol));
+    _copyUsedDefs(original);
     Inkscape::XML::Node *repr = symbol->duplicate(_doc);
     Glib::ustring symbol_name = repr->attribute("id");
 
     symbol_name += "_inkscape_duplicate";
     repr->setAttribute("id", symbol_name);
     _defs->appendChild(repr);
-
-    auto scale = _clipboardSPDoc->getDocumentScale();
-    if (auto group = cast<SPGroup>(_clipboardSPDoc->getObjectByRepr(repr))) {
+    auto nsymbol = cast<SPSymbol>(_clipboardSPDoc->getObjectById(symbol_name));
+    if (nsymbol) {
+        _copyCompleteStyle(original, repr, true);
+        auto scale = _clipboardSPDoc->getDocumentScale();
         // Convert scale from source to clipboard user units
-        group->scaleChildItemsRec(scale, Geom::Point(0, 0), false);
-    }
-
-    auto href = Glib::ustring("#") + symbol->attribute("id");
-    Inkscape::XML::Node *use_repr = _doc->createElement("svg:use");
-    use_repr->setAttribute("xlink:href", href);
-
-    /**
-     * If the symbol has a viewBox but no width or height, then take width and
-     * height from the viewBox and set them on the use element. Otherwise, the
-     * use element will have 100% document width and height!
-     */
-    {
-        auto widthAttr = symbol->attribute("width");
-        auto heightAttr = symbol->attribute("height");
-        auto viewBoxAttr = symbol->attribute("viewBox");
-
-        if (viewBoxAttr && !(heightAttr || widthAttr)) {
-            SPViewBox vb;
-            vb.set_viewBox(viewBoxAttr);
-            if (vb.viewBox_set) {
-                use_repr->setAttributeSvgDouble("width", vb.viewBox.width());
-                use_repr->setAttributeSvgDouble("height", vb.viewBox.height());
+        nsymbol->scaleChildItemsRec(scale, Geom::Point(0, 0), false);
+        if (!nsymbol->title()) {
+            nsymbol->setTitle(nsymbol->label() ? nsymbol->label() : nsymbol->getId());
+        }
+        auto href = Glib::ustring("#") + symbol_name;
+        size_t pos = href.find( "_inkscape_duplicate" );
+        // while ffix rename id we do this hack
+        href.erase( pos );
+        Inkscape::XML::Node *use_repr = _doc->createElement("svg:use");
+        use_repr->setAttribute("xlink:href", href);
+   
+        /**
+        * If the symbol has a viewBox but no width or height, then take width and
+        * height from the viewBox and set them on the use element. Otherwise, the
+        * use element will have 100% document width and height!
+        */
+        {
+            auto widthAttr = symbol->attribute("width");
+            auto heightAttr = symbol->attribute("height");
+            auto viewBoxAttr = symbol->attribute("viewBox");
+            if (viewBoxAttr && !(heightAttr || widthAttr)) {
+                SPViewBox vb;
+                vb.set_viewBox(viewBoxAttr);
+                if (vb.viewBox_set) {
+                    use_repr->setAttributeSvgDouble("width", vb.viewBox.width());
+                    use_repr->setAttributeSvgDouble("height", vb.viewBox.height());
+                }
             }
         }
+        // Set a default style in <use> rather than <symbol> so it can be changed.
+        use_repr->setAttribute("style", style);
+        _root->appendChild(use_repr);
+        // because a extrange reason on append use getObjectsByElement("symbol") return 2 elements, 
+        // it not give errrost by the moment;
+        if (auto use = cast<SPUse>(_clipboardSPDoc->getObjectByRepr(use_repr))) {
+            Geom::Affine affine = source->getDocumentScale();
+            use->doWriteTransform(affine, &affine, false);
+        }
+        // Set min and max offsets based on the bounding rectangle.
+        _clipnode->setAttributePoint("min", bbox.min());
+        _clipnode->setAttributePoint("max", bbox.max());
+        fit_canvas_to_drawing(_clipboardSPDoc.get());
     }
-
-    // Set a default style in <use> rather than <symbol> so it can be changed.
-    use_repr->setAttribute("style", style);
-    _root->appendChild(use_repr);
-
-    if (auto use = cast<SPUse>(_clipboardSPDoc->getObjectByRepr(use_repr))) {
-        Geom::Affine affine = source->getDocumentScale();
-        use->doWriteTransform(affine, &affine, false);
-    }
-
-    // Set min and max offsets based on the bounding rectangle.
-    _clipnode->setAttributePoint("min", bbox.min());
-    _clipnode->setAttributePoint("max", bbox.max());
-
-    fit_canvas_to_drawing(_clipboardSPDoc.get());
     _setClipboardTargets();
 }
 

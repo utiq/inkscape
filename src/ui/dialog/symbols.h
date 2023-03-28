@@ -91,7 +91,6 @@ private:
     Geom::Point getSymbolDimensions(const std::optional<Gtk::TreeIter>& it) const;
     SPDocument* get_symbol_document(const std::optional<Gtk::TreeIter>& it) const;
     void iconDragDataGet(const Glib::RefPtr<Gdk::DragContext>& context, Gtk::SelectionData& selection_data, guint info, guint time);
-    void onDragStart();
     void addSymbol(SPSymbol* symbol, Glib::ustring doc_title, SPDocument* document);
     SPDocument* symbolsPreviewDoc();
     void useInDoc(SPObject *r, std::vector<SPUse*> &l);
