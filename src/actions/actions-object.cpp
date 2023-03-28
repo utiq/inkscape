@@ -25,6 +25,7 @@
 #include "live_effects/lpe-powerclip.h"
 #include "live_effects/lpe-powermask.h"
 #include "ui/icon-names.h"
+#include "object/sp-lpe-item.h"
 
 // No sanity checking is done... should probably add.
 void
@@ -258,6 +259,24 @@ object_to_path(InkscapeApplication *app)
     selection->toCurves(false, Inkscape::Preferences::get()->getBool("/options/clonestocurvesjustunlink/value", true));
 }
 
+void
+object_add_corners_lpe(InkscapeApplication *app) {
+    auto selection = app->get_active_selection();
+
+    // We should not have to do this!
+    auto document  = app->get_active_document();
+    selection->setDocument(document);
+    std::vector<SPItem *> items(selection->items().begin(), selection->items().end());
+    selection->clear();
+    for (auto i : items) {
+        if (auto lpeitem = cast<SPLPEItem>(i)) {
+            Inkscape::LivePathEffect::Effect::createAndApply("fillet_chamfer", document, lpeitem);
+            lpeitem->getCurrentLPE()->refresh_widgets = true;
+            Inkscape::DocumentUndo::done(document, _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
+        }
+        selection->add(i);
+    }
+}
 
 void
 object_stroke_to_path(InkscapeApplication *app)
@@ -280,6 +299,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_object =
 
     {"app.object-unlink-clones",        N_("Unlink Clones"),                    "Object",     N_("Unlink clones and symbols")},
     {"app.object-to-path",              N_("Object To Path"),                   "Object",     N_("Convert shapes to paths")},
+    {"app.object-add-corners-lpe",      N_("Add corners"),                      "Object",     N_("Add corners LPE to path")},
     {"app.object-stroke-to-path",       N_("Stroke to Path"),                   "Object",     N_("Convert strokes to paths")},
 
     {"app.object-set-clip",             N_("Object Clip Set"),                  "Object",     N_("Apply clipping path to selection (using the topmost object as clipping path)")},
@@ -321,6 +341,7 @@ add_actions_object(InkscapeApplication* app)
 
     gapp->add_action(                "object-unlink-clones",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_unlink_clones),          app));
     gapp->add_action(                "object-to-path",                  sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_to_path),                app));
+    gapp->add_action(                "object-add-corners-lpe",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_add_corners_lpe),        app));
     gapp->add_action(                "object-stroke-to-path",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_stroke_to_path),         app));
 
     gapp->add_action(                "object-set-clip",                 sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_clip_set),               app));

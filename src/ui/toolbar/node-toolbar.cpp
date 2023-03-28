@@ -242,6 +242,17 @@ NodeToolbar::NodeToolbar(SPDesktop *desktop)
     add(* Gtk::manage(new Gtk::SeparatorToolItem()));
 
     {
+        auto lpe_corners_item = Gtk::manage(new Gtk::ToolButton(_("_Add corners")));
+        lpe_corners_item->set_tooltip_text(_("Add corners live path effect"));
+        lpe_corners_item->set_icon_name(INKSCAPE_ICON("corners"));
+        // Must use C API until GTK4.
+        gtk_actionable_set_action_name(GTK_ACTIONABLE(lpe_corners_item->gobj()), "app.object-add-corners-lpe");
+        add(*lpe_corners_item);
+    }
+
+    add(* Gtk::manage(new Gtk::SeparatorToolItem()));
+
+    {
         auto object_to_path_item = Gtk::manage(new Gtk::ToolButton(_("_Object to Path")));
         object_to_path_item->set_tooltip_text(_("Convert selected object to path"));
         object_to_path_item->set_icon_name(INKSCAPE_ICON("object-to-path"));
