@@ -595,7 +595,7 @@ LPEPowerStroke::doEffect_path (Geom::PathVector const & path_in)
         Glib::ustring version = lpeversion.param_getSVGValue();
         if (version < "1.3") {
             offset_points.recalculate_controlpoints(pathv[0]);
-            
+
         } else {
             offset_points.recalculate_controlpoints(pathv);
         }

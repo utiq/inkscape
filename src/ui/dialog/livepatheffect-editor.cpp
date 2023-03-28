@@ -229,16 +229,17 @@ LivePathEffectEditor::is_appliable(LivePathEffect::EffectType etype, Glib::ustri
     return appliable;
 }
 
-void align(Gtk::Widget* top) {
+void align(Gtk::Widget* top, gint spinbutton_width_chars) {
     auto box = dynamic_cast<Gtk::Box*>(top);
     if (!box) return;
+    box->set_spacing(2);
 
     // traverse container, locate n-th child in each row
     auto for_child_n = [=](int child_index, const std::function<void (Gtk::Widget*)>& action) {
         for (auto child : box->get_children()) {
             auto container = dynamic_cast<Gtk::Box*>(child);
             if (!container) continue;
-
+            container->set_spacing(2);
             const auto& children = container->get_children();
             if (children.size() > child_index) {
                 action(children[child_index]);
@@ -269,8 +270,8 @@ void align(Gtk::Widget* top) {
     int button_width = 0;
     for_child_n(1, [&](Gtk::Widget* child) {
         if (auto spin = dynamic_cast<Gtk::SpinButton*>(child)) {
-            // arbitrarily selected spinbutton size
-            spin->set_width_chars(7);
+            // selected spinbutton size by each LPE default 7
+            spin->set_width_chars(spinbutton_width_chars);
             int dummy = 0;
             spin->get_preferred_width(dummy, button_width);
         } 
@@ -661,7 +662,7 @@ LivePathEffectEditor::showParams(std::pair<Gtk::Expander *, std::shared_ptr<Inks
             }
             expanderdata.first->add(*effectwidget);
             expanderdata.first->show_all_children();
-            align(effectwidget);
+            align(effectwidget, lpe->spinbutton_width_chars);
             // fixme: add resizing of dialog
             lpe->refresh_widgets = false;
             ensure_size();

@@ -151,6 +151,7 @@ public:
     bool finishiddle = false;
     bool satellitestoclipboard = false;
     bool helperLineSatellites = false;
+    gint spinbutton_width_chars = 7;
     void setLPEAction(LPEAction lpe_action) { _lpe_action = lpe_action; }
     BoolParam is_visible;
     HiddenParam lpeversion;

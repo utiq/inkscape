@@ -130,6 +130,8 @@ class ScalarParam : public Parameter {
     void param_set_range(gdouble min, gdouble max);
     void param_set_digits(unsigned digits);
     void param_set_increments(double step, double page);
+    void param_set_no_leading_zeros();
+    void param_set_width_chars(gint width_chars);
     void addSlider(bool add_slider_widget) { add_slider = add_slider_widget; };
     double param_get_max() { return max; };
     double param_get_min() { return min; };
@@ -149,6 +151,8 @@ class ScalarParam : public Parameter {
     double inc_page;
     bool add_slider;
     bool _set_undo;
+    bool _no_leading_zeros;
+    gint _width_chars;
 };
 
 } // namespace LivePathEffect

@@ -237,6 +237,8 @@ ScalarParam::ScalarParam(const Glib::ustring &label, const Glib::ustring &tip, c
     , inc_page(1)
     , add_slider(false)
     , _set_undo(true)
+    , _no_leading_zeros(false)
+    , _width_chars(-1)
 {
 }
 
@@ -330,6 +332,14 @@ void ScalarParam::param_make_integer(bool yes)
     inc_page = 10;
 }
 
+void ScalarParam::param_set_no_leading_zeros() {
+    _no_leading_zeros = true;
+}
+
+void ScalarParam::param_set_width_chars(gint width_chars) {
+    _width_chars = width_chars;
+}
+
 void ScalarParam::param_set_undo(bool set_undo) { _set_undo = set_undo; }
 
 Gtk::Widget *ScalarParam::param_newWidget()
@@ -337,12 +347,17 @@ Gtk::Widget *ScalarParam::param_newWidget()
     if (widget_is_visible) {
         Inkscape::UI::Widget::RegisteredScalar *rsu = Gtk::manage(new Inkscape::UI::Widget::RegisteredScalar(
             param_label, param_tooltip, param_key, *param_wr, param_effect->getRepr(), param_effect->getSPDoc()));
-
         rsu->setValue(value);
         rsu->setDigits(digits);
         rsu->setIncrements(inc_step, inc_page);
         rsu->setRange(min, max);
         rsu->setProgrammatically = false;
+        if (_no_leading_zeros) {
+            rsu->setNoLeadingZeros();
+        }
+        if (_width_chars > 0) {
+            rsu->setWidthChars(_width_chars);
+        }
         if (add_slider) {
             rsu->addSlider();
         }
