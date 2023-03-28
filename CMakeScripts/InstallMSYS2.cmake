@@ -350,7 +350,7 @@ if(WIN32)
     list_files_pacman(${package} paths)
     install_list(FILES ${paths}
       ROOT ${MINGW_PATH}
-      COMPONENT extension-manager
+      COMPONENT extension_manager
       INCLUDE ${site_packages} # only include content from "site-packages" (we might consider to install everything)
       EXCLUDE ".pyc$"
     )

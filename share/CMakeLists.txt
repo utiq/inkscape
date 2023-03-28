@@ -33,7 +33,7 @@ install(DIRECTORY extensions DESTINATION ${INKSCAPE_SHARE_INSTALL}
 )
 
 install(DIRECTORY extensions/other/inkman DESTINATION ${INKSCAPE_SHARE_INSTALL}/extensions/inkman/
-    COMPONENT extension-manager
+    COMPONENT extension_manager
     PATTERN "tests" EXCLUDE
     PATTERN ".git*" EXCLUDE
     PATTERN "MANIFEST.in" EXCLUDE

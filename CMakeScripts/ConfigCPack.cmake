@@ -166,7 +166,7 @@ cpack_add_component(extensions
                     DESCRIPTION "Inkscape extensions (including many import and export plugins)"
                     GROUP "group_2_inkscape_data"
                     INSTALL_TYPES full compact)
-cpack_add_component(extension-manager
+cpack_add_component(extension_manager
                     DISPLAY_NAME "Extension Manager"
                     DESCRIPTION "Extension manager allows user to install extensions from the inkscape website"
                     DEPENDS "extensions"
@@ -218,7 +218,7 @@ else()
 endif()
 
 if(WITH_INTERNAL_2GEOM)
-    cpack_add_component(lib2geom-dev
+    cpack_add_component(lib2geom_dev
                         DISPLAY_NAME "lib2geom-dev"
                         DESCRIPTION "Geometry library - dev files")
     cpack_add_component(lib2geom${2GEOM_VERSION}
