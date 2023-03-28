@@ -62,6 +62,7 @@ public:
     bool         is_raster() { return raster; };
     bool         is_exported() { return exported; };
     void         add_extension(Glib::ustring &filename);
+    bool         can_save_filename(gchar const *filename);
 };
 
 } }  /* namespace Inkscape, Extension */

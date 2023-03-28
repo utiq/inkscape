@@ -180,6 +180,21 @@ Input::get_extension()
 }
 
 /**
+    \return  True if the filename matches
+    \brief   Match filename to extension that can open it.
+*/
+bool
+Input::can_open_filename(gchar const *filename)
+{
+    gchar *filenamelower = g_utf8_strdown(filename, -1);
+    gchar *extensionlower = g_utf8_strdown(extension, -1);
+    bool result = g_str_has_suffix(filenamelower, extensionlower);
+    g_free(filenamelower);
+    g_free(extensionlower);
+    return result;
+}
+
+/**
     \return  The name of the filetype supported
     \brief   Get the name of the filetype supported
 */
