@@ -123,7 +123,8 @@ private:
 
     // What type of object can be dropped.
     std::vector<Gtk::TargetEntry> target_entries;
-
+    static gboolean set_cell_markup(gpointer);
+    void on_realize_list();
     // For drag and drop.
     void on_drag_start(const Glib::RefPtr<Gdk::DragContext> &context);
     void on_drag_data_get(Glib::RefPtr<Gdk::DragContext> const &context, Gtk::SelectionData &selection_data, guint info, guint time) override;

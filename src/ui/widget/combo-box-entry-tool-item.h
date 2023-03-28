@@ -68,6 +68,7 @@ private:
 
     static void combo_box_changed_cb( GtkComboBox* widget, gpointer data );
     static gboolean combo_box_popup_cb( ComboBoxEntryToolItem* widget, gpointer data );
+    static gboolean set_cell_markup(gpointer data);
     static void entry_activate_cb( GtkEntry *widget,
                                    gpointer  data );
     static gboolean match_selected_cb( GtkEntryCompletion *widget,

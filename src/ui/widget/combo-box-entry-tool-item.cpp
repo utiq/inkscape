@@ -127,11 +127,11 @@ ComboBoxEntryToolItem::ComboBoxEntryToolItem(Glib::ustring name,
           gtk_cell_renderer_set_fixed_size(_cell, -1, height);
 #endif
         }
-        g_signal_connect(G_OBJECT(comboBoxEntry), "popup", G_CALLBACK(combo_box_popup_cb), this);
         gtk_cell_layout_clear( GTK_CELL_LAYOUT( comboBoxEntry ) );
         gtk_cell_layout_pack_start( GTK_CELL_LAYOUT( comboBoxEntry ), _cell, true );
-        gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT( comboBoxEntry ), _cell,
-                GtkCellLayoutDataFunc (_cell_data_func), this, nullptr );
+        gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT(_combobox ), _cell,
+                GtkCellLayoutDataFunc (_cell_data_func), nullptr, nullptr );
+        g_signal_connect(G_OBJECT(comboBoxEntry), "popup", G_CALLBACK(combo_box_popup_cb), this);
     }
 
     // Optionally widen the combobox width... which widens the drop-down list in list mode.
@@ -586,19 +586,19 @@ static gboolean add_more_font_families_idle(gpointer user_data)
 
 gboolean ComboBoxEntryToolItem::combo_box_popup_cb(ComboBoxEntryToolItem *widget, gpointer data)
 {
-    // No need to initialize the font-list again and again.
-    /*
-    static bool first_time = true;
-    if (first_time) {
-        FontLister* fl = FontLister::get_instance();
-        fl->init_font_families(0, FONT_FAMILIES_GROUP_SIZE);
-
-        gdk_threads_add_idle (add_more_font_families_idle, NULL);
-        first_time = false;
-    }
-    */
+    auto action = reinterpret_cast<ComboBoxEntryToolItem *>( data );
+    g_idle_add(ComboBoxEntryToolItem::set_cell_markup, action);
     return true;
 }
+
+gboolean ComboBoxEntryToolItem::set_cell_markup(gpointer data)
+{
+    ComboBoxEntryToolItem *self = static_cast<ComboBoxEntryToolItem *>(data);
+    gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT( self->_combobox ), self->_cell,
+              GtkCellLayoutDataFunc (self->_cell_data_func), self, nullptr );
+    return false;
+}
+
 
 void
 ComboBoxEntryToolItem::entry_activate_cb( GtkEntry *widget,

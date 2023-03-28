@@ -140,12 +140,27 @@ FontSelector::FontSelector (bool with_size, bool with_variations)
     style_treeview.get_selection()->signal_changed().connect(sigc::mem_fun(*this, &FontSelector::on_style_changed));
     size_combobox.signal_changed().connect(sigc::mem_fun(*this, &FontSelector::on_size_changed));
     font_variations.connectChanged(sigc::mem_fun(*this, &FontSelector::on_variations_changed));
-
+    family_treeview.signal_realize().connect(sigc::mem_fun(*this, &FontSelector::on_realize_list));
     show_all_children();
     font_variations_scroll.set_vexpand(false);
 
     // Initialize font family lists. (May already be done.) Should be done on document change.
     font_lister->update_font_list(SP_ACTIVE_DESKTOP->getDocument());
+   
+}
+
+void FontSelector::on_realize_list() {
+    family_treecolumn.set_cell_data_func (family_cell, &font_lister_cell_data_func);
+    g_idle_add(FontSelector::set_cell_markup, this);
+}
+
+gboolean FontSelector::set_cell_markup(gpointer data)
+{
+    FontSelector *self = static_cast<FontSelector *>(data);
+    self->family_treeview.hide();
+    self->family_treecolumn.set_cell_data_func (self->family_cell, &font_lister_cell_data_func_markup);
+    self->family_treeview.show();
+    return false;
 }
 
 void FontSelector::hide_others()
@@ -517,7 +532,8 @@ FontSelector::changed_emit() {
     if (initial) {
         initial = false;
         family_treecolumn.unset_cell_data_func (family_cell);
-        family_treecolumn.set_cell_data_func (family_cell, &font_lister_cell_data_func_markup);
+        family_treecolumn.set_cell_data_func (family_cell, &font_lister_cell_data_func);
+        g_idle_add(FontSelector::set_cell_markup, this);
     }
     signal_block = false;
 }
