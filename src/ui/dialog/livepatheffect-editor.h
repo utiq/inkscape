@@ -67,9 +67,9 @@ private:
     void onAddGallery();
     void expanded_notify(Gtk::Expander *expander);
     void onAdd(Inkscape::LivePathEffect::EffectType etype);
-    bool toggleVisible(GdkEventButton * evt, Inkscape::LivePathEffect::Effect *lpe , Gtk::EventBox *visbutton);
+    void toggleVisible(Inkscape::LivePathEffect::Effect *lpe , Gtk::EventBox *visbutton);
     bool is_appliable(LivePathEffect::EffectType etypen, Glib::ustring item_type, bool has_clip, bool has_mask);
-    bool removeEffect(Gtk::Expander * expander);
+    void removeEffect(Gtk::Expander * expander);
     void effect_list_reload(SPLPEItem *lpeitem);
     SPLPEItem * clonetolpeitem();
     void selection_info();

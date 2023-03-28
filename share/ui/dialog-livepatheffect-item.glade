@@ -182,6 +182,9 @@
                   </object>
                 </child>
               </object>
+              <packing>
+                <property name="index">-1</property>
+              </packing>
             </child>
             <child type="overlay">
               <object class="GtkBox">
@@ -241,6 +244,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="tooltip-text" translatable="yes">Toggle show/hide this Live Path Effect</property>
+                        <property name="visible-window">False</property>
                         <child>
                           <object class="GtkButton">
                             <property name="width-request">30</property>
@@ -268,6 +272,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="tooltip-text" translatable="yes">Remove this Live Path Effect</property>
+                        <property name="visible-window">False</property>
                         <child>
                           <object class="GtkButton">
                             <property name="width-request">30</property>

@@ -181,7 +181,7 @@ LivePathEffectEditor::LivePathEffectEditor()
     Glib::RefPtr<Gtk::EntryCompletion> LPECompletionList = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("LPECompletionList"));
     
     if(prefs->getBool("/dialogs/livepatheffect/showgallery", false)) {
-        LPEGallery.signal_button_press_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
+        LPEGallery.signal_button_release_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
         LPEGallery.show();
     }
     _LPEContainer.signal_map().connect(sigc::mem_fun(*this, &LivePathEffectEditor::map_handler) );
@@ -290,8 +290,8 @@ LivePathEffectEditor::clearMenu()
     _reload_menu = true;
 }
 
-bool 
-LivePathEffectEditor::toggleVisible(GdkEventButton * evt, Inkscape::LivePathEffect::Effect *lpe , Gtk::EventBox *visbutton) {
+void
+LivePathEffectEditor::toggleVisible(Inkscape::LivePathEffect::Effect *lpe , Gtk::EventBox *visbutton) {
     auto *visimage = dynamic_cast<Gtk::Image *>(dynamic_cast<Gtk::Button *>(visbutton->get_children()[0])->get_image());
     bool hide = false;
     if (!g_strcmp0(lpe->getRepr()->attribute("is_visible"),"true")) {
@@ -304,7 +304,6 @@ LivePathEffectEditor::toggleVisible(GdkEventButton * evt, Inkscape::LivePathEffe
     }
     lpe->doOnVisibilityToggled(current_lpeitem);
     DocumentUndo::done(getDocument(), hide ? _("Deactivate path effect") :  _("Activate path effect"), INKSCAPE_ICON("dialog-path-effects"));
-    return false;
 }
 
 static std::map<Inkscape::LivePathEffect::LPECategory, Glib::ustring> g_category_names = {
@@ -994,9 +993,9 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
                LPEExpander->set_expanded(!LPEExpander->property_expanded());
                return false;
             }, false);
-            LPEHide->signal_button_press_event().connect(sigc::bind<Inkscape::LivePathEffect::Effect *, Gtk::EventBox *>(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
+            dynamic_cast<Gtk::Button *>(LPEHide->get_children()[0])->signal_clicked().connect(sigc::bind<Inkscape::LivePathEffect::Effect *, Gtk::EventBox *>(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
             LPEDrag->signal_button_press_event().connect([=](GdkEventButton* const evt){dndx = evt->x; dndy = evt->y; return false; }, false);
-            LPEErase->signal_button_press_event().connect([=](GdkEventButton* const evt){ removeEffect(LPEExpander); return false; }, false);
+            dynamic_cast<Gtk::Button *>(LPEErase->get_children()[0])->signal_clicked().connect([=](){ removeEffect(LPEExpander);});
             if (total > 1) {
                 LPEDrag->signal_enter_notify_event().connect([=](GdkEventCrossing*){
                     auto window = get_window();
@@ -1100,7 +1099,7 @@ LivePathEffectEditor::lpeFlatten(std::shared_ptr<Inkscape::LivePathEffect::LPEOb
     return false;
 }
 
-bool 
+void
 LivePathEffectEditor::removeEffect(Gtk::Expander * expander) {
     bool reload = current_lperef.first != expander;
     auto current_lperef_tmp = current_lperef;
@@ -1115,7 +1114,6 @@ LivePathEffectEditor::removeEffect(Gtk::Expander * expander) {
     }
     effect_list_reload(current_lpeitem);
     DocumentUndo::done(getDocument(), _("Removed live path effect"), INKSCAPE_ICON("dialog-path-effects"));
-    return false;
 }
 
 bool 
