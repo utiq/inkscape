@@ -451,9 +451,13 @@ bool CommandPalette::on_key_press_cpfilter_search_mode(GdkEventKey *evt)
         }
         return true;
     } else if (key == GDK_KEY_Up) {
-        if (not _CPHistory->get_children().empty()) {
+        if (!_CPHistory->get_children().empty()) {
             set_mode(CPMode::HISTORY);
             return true;
+        }
+    } else if (key == GDK_KEY_Down) {
+        if (!_CPSuggestions->get_children().empty()) {
+             _CPSuggestions->unselect_all();
         }
     }
     return false;
