@@ -93,6 +93,7 @@ $ARCH-python-gobject \
 $ARCH-python-pyserial \
 $ARCH-python-coverage \
 $ARCH-python-packaging \
+$ARCH-python-zstandard \
 $ARCH-scour
 
 # install modules needed by extensions manager and clipart importer
