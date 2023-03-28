@@ -1796,6 +1796,30 @@ guint32 argb32_from_rgba(guint32 in)
 
 
 /**
+ * Convert one pixel from ARGB to GdkPixbuf format.
+ *
+ * @param c RGBA color
+ */
+guint32 rgba_from_argb32(guint32 c)
+{
+    guint32 a = (c & 0xff000000) >> 24;
+    guint32 r = (c & 0x00ff0000) >> 16;
+    guint32 g = (c & 0x0000ff00) >> 8;
+    guint32 b = (c & 0x000000ff);
+
+    if (a != 0) {
+        r = unpremul_alpha(r, a);
+        g = unpremul_alpha(g, a);
+        b = unpremul_alpha(b, a);
+    }
+
+    // combine into output
+    guint32 o = (r << 24) | (g << 16) | (b << 8) | (a);
+
+    return o;
+}
+
+/**
  * Converts a pixbuf to a PNG data structure.
  * For 8-but RGBA png, this is like copying.
  *

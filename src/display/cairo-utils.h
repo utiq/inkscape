@@ -141,6 +141,8 @@ const guchar* pixbuf_to_png(guchar const**rows, guchar* px, int nrows, int ncols
 
 /** Convert a pixel in 0xRRGGBBAA format to Cairo ARGB32 format. */
 G_GNUC_CONST guint32 argb32_from_rgba(guint32 in);
+/** Convert a pixel in 0xAARRGGBB format to 0xRRGGBBAA format. */
+G_GNUC_CONST guint32 rgba_from_argb32(guint32 in);
 
 
 G_GNUC_CONST inline guint32

@@ -96,6 +96,7 @@ public:
     void knot_set(Geom::Point const &p, Geom::Point const &origin,
                           guint state) override;
     Geom::Point knot_get() const override;
+    Geom::Point knot_get_gap();    
     void knot_click(guint state) override;
     void knot_ungrabbed(Geom::Point const &p, Geom::Point const &origin, guint state) override;
     void knot_set_offset(NodeSatellite);
@@ -109,6 +110,7 @@ public:
 private:
     NodeSatelliteArrayParam *_pparam;
     size_t _index;
+    bool _updating = false;
 };
 
 } //namespace LivePathEffect

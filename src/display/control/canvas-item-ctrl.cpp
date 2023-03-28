@@ -596,6 +596,7 @@ void CanvasItemCtrl::set_angle(double angle)
     defer([=] {
         if (_angle == angle) return;
         _angle = angle;
+        _built.reset();
         request_update(); // Geometry change
     });
 }
@@ -702,6 +703,39 @@ static void draw_carrow(Cairo::RefPtr<Cairo::Context> const &cr, double size)
     cr->line_to(x7, y7);
     cr->arc_negative(x1, y4, x7-x8, 0, 3.0*M_PI/2.0);
     cr->line_to(x9, y9);
+    cr->close_path();
+}
+
+static void draw_triangle(Cairo::RefPtr<Cairo::Context> const &cr, double size)
+{
+    // Construct an arrowhead (triangle)
+    double s = size/2.0;
+    double wcos = s * cos( M_PI/6 );
+    double hsin = s * sin( M_PI/6 );    
+    // Construct a smaller arrow head for fill.
+    Geom::Point p1f(1, s);
+    Geom::Point p2f(s + wcos - 1, s + hsin);
+    Geom::Point p3f(s + wcos - 1, s - hsin);
+    // Draw arrow
+    cr->move_to(p1f[0], p1f[1]);
+    cr->line_to(p2f[0], p2f[1]);
+    cr->line_to(p3f[0], p3f[1]);
+    cr->close_path();
+}
+
+static void draw_triangle_angled(Cairo::RefPtr<Cairo::Context> const &cr, double size)
+{
+    // Construct an arrowhead (triangle) of half size.
+    double s = size/2.0;
+    double wcos = s * cos( M_PI/9 );
+    double hsin = s * sin( M_PI/9 );
+    Geom::Point p1f(s + 1, s);
+    Geom::Point p2f(s + wcos - 1, s + hsin - 1);
+    Geom::Point p3f(s + wcos - 1, s - (hsin - 1));
+    // Draw arrow
+    cr->move_to(p1f[0], p1f[1]);
+    cr->line_to(p2f[0], p2f[1]);
+    cr->line_to(p3f[0], p3f[1]);
     cr->close_path();
 }
 
@@ -947,52 +981,6 @@ void CanvasItemCtrl::build_cache(int device_scale) const
             break;
         }
 
-        case CANVAS_ITEM_CTRL_SHAPE_TRIANGLE: {
-            Geom::Affine m = Geom::Translate(Geom::Point(-width/2.0,-height/2.0));
-            m *= Geom::Rotate(-_angle);
-            m *= Geom::Translate(Geom::Point(width/2.0, height/2.0));
-
-            // Construct an arrowhead (triangle) of maximum size that won't leak out of rectangle
-            // defined by width and height, assuming width == height.
-            double w2 = width/2.0;
-            double h2 = height/2.0;
-            double w2cos = w2 * cos( M_PI/6 );
-            double h2sin = h2 * sin( M_PI/6 );
-            Geom::Point p1s(0, h2);
-            Geom::Point p2s(w2 + w2cos, h2 + h2sin);
-            Geom::Point p3s(w2 + w2cos, h2 - h2sin);
-
-            // Needed for constructing smaller arrowhead below.
-            double theta = atan2( Geom::Point( p2s - p1s ) );
-
-            p1s *= m;
-            p2s *= m;
-            p3s *= m;
-
-            // Construct a smaller arrow head for fill.
-            Geom::Point p1f(device_scale/sin(theta), h2);
-            Geom::Point p2f(w2 + w2cos, h2 - h2sin + device_scale/cos(theta));
-            Geom::Point p3f(w2 + w2cos, h2 + h2sin - device_scale/cos(theta));
-            p1f *= m;
-            p2f *= m;
-            p3f *= m;
-
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    Geom::Point point = Geom::Point(x+0.5, y+0.5);
-
-                    if (pointInTriangle(point, p1f, p2f, p3f)) {
-                        p[y * width + x] = _fill;
-                    } else if (pointInTriangle(point, p1s, p2s, p3s)) {
-                        p[y * width + x] = _stroke;
-                    } else {
-                        p[y * width + x] = 0;
-                    }
-                }
-            }
-            break;
-        }
-
         case CANVAS_ITEM_CTRL_SHAPE_CROSS:
             // Actually an 'X'.
             for (int y = 0; y < height; y++) {
@@ -1020,14 +1008,15 @@ void CanvasItemCtrl::build_cache(int device_scale) const
                 }
             }
             break;
-
-        case CANVAS_ITEM_CTRL_SHAPE_DARROW: // Double arrow
-        case CANVAS_ITEM_CTRL_SHAPE_SARROW: // Same shape as darrow but rendered rotated 90 degrees.
-        case CANVAS_ITEM_CTRL_SHAPE_CARROW: // Double corner arrow
-        case CANVAS_ITEM_CTRL_SHAPE_PIVOT:  // Fancy "plus"
-        case CANVAS_ITEM_CTRL_SHAPE_SALIGN: // Side align (triangle pointing toward line)
-        case CANVAS_ITEM_CTRL_SHAPE_CALIGN: // Corner align (triangle pointing into "L")
-        case CANVAS_ITEM_CTRL_SHAPE_MALIGN: // Middle align (four triangles poining inward)
+        case CANVAS_ITEM_CTRL_SHAPE_TRIANGLE:        //triangle optionaly rotated
+        case CANVAS_ITEM_CTRL_SHAPE_TRIANGLE_ANGLED: // triangle with pointing to center of  knot and rotated this way
+        case CANVAS_ITEM_CTRL_SHAPE_DARROW:          // Double arrow
+        case CANVAS_ITEM_CTRL_SHAPE_SARROW:          // Same shape as darrow but rendered rotated 90 degrees.
+        case CANVAS_ITEM_CTRL_SHAPE_CARROW:          // Double corner arrow
+        case CANVAS_ITEM_CTRL_SHAPE_PIVOT:           // Fancy "plus"
+        case CANVAS_ITEM_CTRL_SHAPE_SALIGN:          // Side align (triangle pointing toward line)
+        case CANVAS_ITEM_CTRL_SHAPE_CALIGN:          // Corner align (triangle pointing into "L")
+        case CANVAS_ITEM_CTRL_SHAPE_MALIGN:          // Middle align (four triangles poining inward)
         {
             double size = _width; // Use unscaled width.
 
@@ -1041,10 +1030,19 @@ void CanvasItemCtrl::build_cache(int device_scale) const
             cr->translate(-size/2.0, -size/2.0);
 
             // Construct path
+            bool triangles = _shape == CANVAS_ITEM_CTRL_SHAPE_TRIANGLE_ANGLED || _shape == CANVAS_ITEM_CTRL_SHAPE_TRIANGLE;
             switch (_shape) {
                 case CANVAS_ITEM_CTRL_SHAPE_DARROW:
                 case CANVAS_ITEM_CTRL_SHAPE_SARROW:
                     draw_darrow(cr, size);
+                    break;
+
+                case CANVAS_ITEM_CTRL_SHAPE_TRIANGLE:
+                    draw_triangle(cr, size);
+                    break;
+
+                case CANVAS_ITEM_CTRL_SHAPE_TRIANGLE_ANGLED:
+                    draw_triangle_angled(cr, size);
                     break;
 
                 case CANVAS_ITEM_CTRL_SHAPE_CARROW:
@@ -1091,21 +1089,24 @@ void CanvasItemCtrl::build_cache(int device_scale) const
             unsigned char* pxb = work->get_data();
             auto p = _cache.get();
             for (int i = 0; i < device_scale * size; ++i) {
-                auto pb = reinterpret_cast<uint32_t*>(pxb + i*strideb);
+                auto pb = reinterpret_cast<uint32_t*>(pxb + i * strideb);
                 for (int j = 0; j < width; ++j) {
 
-                    uint32_t color = 0x0;
-
-                    // Need to un-premultiply alpha and change order argb -> rgba.
-                    uint32_t alpha = (*pb & 0xff000000) >> 24;
-                    if (alpha == 0x0) {
-                        color = 0x0;
+                    if (triangles) {
+                        *p++ = rgba_from_argb32(*pb);
                     } else {
-                        uint32_t rgb = unpremul_alpha(*pb & 0xffffff, alpha);
-                        color = (rgb << 8) + alpha;
-                    }
+                        uint32_t color = 0x0;
 
-                    *p++ = color;
+                        // Need to un-premultiply alpha and change order argb -> rgba.
+                        uint32_t alpha = (*pb & 0xff000000) >> 24;
+                        if (alpha == 0x0) {
+                            color = 0x0;
+                        } else {
+                            uint32_t rgb = unpremul_alpha(*pb & 0xffffff, alpha);
+                            color = (rgb << 8) + alpha;
+                        }
+                        *p++ = color;
+                    }
                     pb++;
                 }
             }

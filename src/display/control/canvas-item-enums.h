@@ -37,7 +37,8 @@ enum CanvasItemCtrlShape {
     CANVAS_ITEM_CTRL_SHAPE_MALIGN, // Center (middle) alignment.
     CANVAS_ITEM_CTRL_SHAPE_BITMAP,
     CANVAS_ITEM_CTRL_SHAPE_IMAGE,
-    CANVAS_ITEM_CTRL_SHAPE_LINE
+    CANVAS_ITEM_CTRL_SHAPE_LINE,
+    CANVAS_ITEM_CTRL_SHAPE_TRIANGLE_ANGLED,
 };
 
 // Applies to control points.

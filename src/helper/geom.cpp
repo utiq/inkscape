@@ -686,6 +686,42 @@ count_pathvector_nodes(Geom::PathVector const &pathv) {
     }
     return tot;
 }
+
+size_t
+count_pathvector_degenerations(Geom::PathVector const &pathv) {
+    size_t tot = 0;
+    for (auto const &subpath : pathv) {
+        tot += count_path_degenerations(subpath);
+    }
+    return tot;
+}
+
+size_t count_path_degenerations(Geom::Path const &path)
+{
+    size_t tot = 0;
+    Geom::Path::const_iterator curve_it = path.begin();
+    Geom::Path::const_iterator curve_endit = path.end_default();
+    if (path.closed()) {
+        const Geom::Curve &closingline = path.back_closed();
+        // the closing line segment is always of type
+        // Geom::LineSegment.
+        if (are_near(closingline.initialPoint(), closingline.finalPoint())) {
+            // closingline.isDegenerate() did not work, because it only checks for
+            // *exact* zero length, which goes wrong for relative coordinates and
+            // rounding errors...
+            // the closing line segment has zero-length. So stop before that one!
+            curve_endit = path.end_open();
+        }
+    }
+    while (curve_it != curve_endit) {
+        if (curve_it->isDegenerate()) {
+            tot += 1;
+        }
+        ++curve_it;
+    }
+    return tot;
+}
+
 size_t count_path_nodes(Geom::Path const &path)
 {
     size_t tot = path.size_closed();

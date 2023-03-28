@@ -94,6 +94,9 @@ LPEFilletChamfer::LPEFilletChamfer(LivePathEffectObject *lpeobject)
 
 void LPEFilletChamfer::doOnApply(SPLPEItem const *lpeItem)
 {
+    if (_degenerate_hide) {
+        return;
+    }
     SPLPEItem *splpeitem = const_cast<SPLPEItem *>(lpeItem);
     auto shape = cast<SPShape>(splpeitem);
     if (shape) {
@@ -328,6 +331,10 @@ void LPEFilletChamfer::setSelected(PathVectorNodeSatellites *_pathvector_nodesat
 
 void LPEFilletChamfer::doBeforeEffect(SPLPEItem const *lpeItem)
 {
+    if (_degenerate_hide) {
+        nodesatellites_param.setGlobalKnotHide(true);
+        return;
+    }
     if (!pathvector_before_effect.empty()) {
         //fillet chamfer specific calls
         nodesatellites_param.setUseDistance(use_knot_distance);
@@ -356,6 +363,11 @@ void LPEFilletChamfer::doBeforeEffect(SPLPEItem const *lpeItem)
             }
             Geom::Path pathresult(curve_it->initialPoint());
             while (curve_it != curve_endit) {
+                if (Geom::are_near((*curve_it).initialPoint(), (*curve_it).finalPoint())) {
+                    _degenerate_hide = true;
+                    g_warning("Knots hidden if consecutive nodes has the same position.");
+                    return;
+                }
                 if (pathresult.size()) {
                     pathresult.setFinal(curve_it->initialPoint());
                 }
@@ -405,11 +417,7 @@ void LPEFilletChamfer::doBeforeEffect(SPLPEItem const *lpeItem)
             }
         }
 
-        if (_degenerate_hide) {
-            nodesatellites_param.setGlobalKnotHide(true);
-        } else {
-            nodesatellites_param.setGlobalKnotHide(false);
-        }
+        nodesatellites_param.setGlobalKnotHide(false);
         for (size_t i = 0; i < nodesatellites.size(); ++i) {
             for (size_t j = 0; j < nodesatellites[i].size(); ++j) {
                 if (pathvres.size() <= i || j >= count_path_nodes(pathvres[i])) {
@@ -521,7 +529,7 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
                 next_index = 0;
             }
             //append last extreme of paths on open paths
-            if (curve == count_path_nodes(pathv[path]) - 1 && !pathv[path].closed()) { // the path is open and we are at
+            if (curve == count_path_nodes(pathv[path]) - count_path_degenerations(pathv[path]) - 1 && !pathv[path].closed()) { // the path is open and we are at
                                                                                        // end of path
                 if (time0 != 1) { // Previous nodesatellite not at 100% amount
                     Geom::Curve *last_curve = curve_it1->portion(time0, 1);
@@ -533,11 +541,7 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
             }
             Geom::Curve const &curve_it2 = pathv[path][next_index];
             NodeSatellite nodesatellite = nodesatellites[path][next_index];
-            if (Geom::are_near((*curve_it1).initialPoint(), (*curve_it1).finalPoint())) {
-                _degenerate_hide = true;
-                g_warning("Knots hidden if consecutive nodes has the same position.");
-                return path_in;
-            }
+            
             if (!curve) { //curve == 0
                 if (!path_it.closed()) {
                     time0 = 0;
