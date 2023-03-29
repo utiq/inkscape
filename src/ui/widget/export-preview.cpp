@@ -39,7 +39,13 @@ PreviewDrawing::~PreviewDrawing()
 
 void PreviewDrawing::destruct()
 {
-    _document->getRoot()->invoke_hide(_visionkey);
+    if (!_visionkey)
+        return;
+
+    // On exiting the document root might have gone already.
+    if (auto root = _document->getRoot()) {
+        root->invoke_hide(_visionkey);
+    }
     _drawing.reset();
     _visionkey = 0;
 }
@@ -68,9 +74,11 @@ void PreviewDrawing::construct()
   */
 bool PreviewDrawing::render(ExportPreview *widget, uint32_t bg, SPItem *item, unsigned size, Geom::OptRect const &dbox)
 {
-    if (!_drawing) {
+    if (!_drawing || _to_destruct) {
         if (!_construct_idle.connected()) {
             _construct_idle = Glib::signal_timeout().connect([=]() {
+                _to_destruct = false;
+                destruct();
                 construct();
                 return false;
             }, 100);
@@ -103,7 +111,7 @@ bool PreviewDrawing::render(ExportPreview *widget, uint32_t bg, SPItem *item, un
 void PreviewDrawing::set_shown_items(std::vector<SPItem*> &&list)
 {
     _shown_items = std::move(list);
-    destruct();
+    _to_destruct = true;
 }
 
 void ExportPreview::resetPixels(bool new_size)

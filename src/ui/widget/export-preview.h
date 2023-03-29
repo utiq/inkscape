@@ -44,6 +44,7 @@ private:
     SPDocument *_document = nullptr;
     std::shared_ptr<Inkscape::Drawing> _drawing;
     unsigned _visionkey = 0;
+    bool _to_destruct = false;
 
     std::vector<SPItem*> _shown_items;
     Inkscape::auto_connection _construct_idle;
