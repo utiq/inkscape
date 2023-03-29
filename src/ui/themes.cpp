@@ -520,7 +520,6 @@ ThemeContext::themechangecallback() {
     }
     if (auto desktops = INKSCAPE.get_desktops()) {
         for (auto & desktop : *desktops) {
-            set_default_highlight_colors(getHighlightColors(desktop->getToplevel()));
             if (desktop == SP_ACTIVE_DESKTOP) {
                 winds.push_back(dynamic_cast<Gtk::Window *>(desktop->getToplevel()));
             } else {
@@ -550,6 +549,12 @@ ThemeContext::themechangecallback() {
         wnd->present();
 #endif
     }
+
+    // set default highlight colors (dark/light theme-specific)
+    if (!winds.empty()) {
+        set_default_highlight_colors(getHighlightColors(winds.front()));
+    }
+
     // select default syntax coloring theme, if needed
     if (auto desktop = INKSCAPE.active_desktop()) {
         select_default_syntax_style(isCurrentThemeDark(desktop->getToplevel()));
