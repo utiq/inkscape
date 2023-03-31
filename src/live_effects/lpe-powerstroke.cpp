@@ -162,34 +162,39 @@ LPEPowerStroke::LPEPowerStroke(LivePathEffectObject *lpeobject) :
     offset_points(_("Offset points"), _("Offset points"), "offset_points", &wr, this),
     not_jump(_("No jumping handles"), _("Allow to move handles along the path without them automatically attaching to the nearest path segment"), "not_jump", &wr, this, false),
     sort_points(_("Sort points"), _("Sort offset points according to their time value along the curve"), "sort_points", &wr, this, true),
-    interpolator_type(_("Interpolator type:"), _("Determines which kind of interpolator will be used to interpolate between stroke width along the path"), "interpolator_type", InterpolatorTypeConverter, &wr, this, Geom::Interpolate::INTERP_CENTRIPETAL_CATMULLROM),
+    interpolator_type(_("Smoothing type"), _("Determines which kind of interpolator will be used to interpolate between stroke width along the path"), "interpolator_type", InterpolatorTypeConverter, &wr, this, Geom::Interpolate::INTERP_CENTRIPETAL_CATMULLROM),
     interpolator_beta(_("Smoothness:"), _("Sets the smoothness for the CubicBezierJohan interpolator; 0 = linear interpolation, 1 = smooth"), "interpolator_beta", &wr, this, 0.2),
-    scale_width(_("Width factor:"), _("Scale the stroke's width uniformly along the whole path"), "scale_width", &wr, this, 1.0),
+    scale_width(_("Width multiplier"), _("Scale the stroke's width uniformly along the whole path"), "scale_width", &wr, this, 1.0),
     start_linecap_type(_("Start cap:"), _("Determines the shape of the path's start"), "start_linecap_type", LineCapTypeConverter, &wr, this, LINECAP_ZERO_WIDTH),
-    linejoin_type(_("Join:"), _("Determines the shape of the path's corners"), "linejoin_type", LineJoinTypeConverter, &wr, this, LINEJOIN_ROUND),
-    miter_limit(_("Miter limit:"), _("Maximum length of the miter (in units of stroke width)"), "miter_limit", &wr, this, 4.),
-    end_linecap_type(_("End cap:"), _("Determines the shape of the path's end"), "end_linecap_type", LineCapTypeConverter, &wr, this, LINECAP_ZERO_WIDTH)
+    linejoin_type(_("Join"), _("Determines the shape of the path's corners"), "linejoin_type", LineJoinTypeConverter, &wr, this, LINEJOIN_ROUND),
+    miter_limit(_("Miter limit"), _("Maximum length of the miter (in units of stroke width)"), "miter_limit", &wr, this, 4.),
+    end_linecap_type(_("End cap"), _("Determines the shape of the path's end"), "end_linecap_type", LineCapTypeConverter, &wr, this, LINECAP_ZERO_WIDTH),
+    message(_("Add new thickness control point"), _("Important messages"), "message", &wr, this, _("<b>Ctrl + clcik</b> on existing node and move it"))
 {
     show_orig_path = true;
 
     /// @todo offset_points are initialized with empty path, is that bug-save?
 
-    interpolator_beta.addSlider(true);
-    interpolator_beta.param_set_range(0.,1.);
 
-    registerParameter(&offset_points);
-    registerParameter(&not_jump);
-    registerParameter(&sort_points);
+    registerParameter(&scale_width);
     registerParameter(&interpolator_type);
     registerParameter(&interpolator_beta);
     registerParameter(&start_linecap_type);
+    registerParameter(&end_linecap_type);
+    registerParameter(&offset_points);
     registerParameter(&linejoin_type);
     registerParameter(&miter_limit);
-    registerParameter(&scale_width);
-    registerParameter(&end_linecap_type);
-    scale_width.param_set_range(0.0, std::numeric_limits<double>::max());
+    registerParameter(&not_jump);
+    registerParameter(&sort_points);
+    registerParameter(&message);
+
+    interpolator_beta.addSlider(true);
+    interpolator_beta.param_set_range(0.,1.);
+
+    scale_width.addSlider(true);
+    scale_width.param_set_range(0.0, 100);
     scale_width.param_set_increments(0.1, 0.1);
-    scale_width.param_set_digits(4);
+    scale_width.param_set_digits(1);   
     recusion_limit = 0;
     has_recursion = false;
 }

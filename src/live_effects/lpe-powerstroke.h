@@ -18,6 +18,7 @@
 #include "live_effects/parameter/enum.h"
 #include "live_effects/parameter/hidden.h"
 #include "live_effects/parameter/powerstrokepointarray.h"
+#include "live_effects/parameter/message.h"
 
 namespace Inkscape {
 namespace LivePathEffect {
@@ -65,6 +66,7 @@ private:
     bool has_recursion;
     bool adjust_path = false;
     Geom::PathVector path_out_prev;
+    MessageParam message;
 };
 
 } //namespace LivePathEffect
