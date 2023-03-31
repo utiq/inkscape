@@ -169,7 +169,7 @@ LPEPowerStroke::LPEPowerStroke(LivePathEffectObject *lpeobject) :
     linejoin_type(_("Join"), _("Determines the shape of the path's corners"), "linejoin_type", LineJoinTypeConverter, &wr, this, LINEJOIN_ROUND),
     miter_limit(_("Miter limit"), _("Maximum length of the miter (in units of stroke width)"), "miter_limit", &wr, this, 4.),
     end_linecap_type(_("End cap"), _("Determines the shape of the path's end"), "end_linecap_type", LineCapTypeConverter, &wr, this, LINECAP_ZERO_WIDTH),
-    message(_("Add new thickness control point"), _("Important messages"), "message", &wr, this, _("<b>Ctrl + clcik</b> on existing node and move it"))
+    message(_("Add new thickness control point"), _("Important messages"), "message", &wr, this, _("<b>Ctrl + click</b> on existing node and move it"))
 {
     show_orig_path = true;
 
