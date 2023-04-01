@@ -641,10 +641,10 @@ InkscapeApplication::InkscapeApplication()
             bool enabled;
             Glib::VariantBase hint;
             if (!test_app->query_action(Inkscape::inkscape_revision(), enabled, hint)) {
-                Gio::Application::unset_default();
                 app_id += "." + Inkscape::inkscape_revision();
             }
         }
+        Gio::Application::unset_default();
     }
 
     if (gtk_init_check(nullptr, nullptr)) {
