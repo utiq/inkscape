@@ -19,6 +19,7 @@
 #include "helper/geom-nodesatellite.h"
 #include "helper/geom.h"
 #include "object/sp-shape.h"
+#include "object/sp-rect.h"
 #include "ui/knot/knot-holder.h"
 #include "ui/tools/tool-base.h"
 
@@ -99,6 +100,20 @@ void LPEFilletChamfer::doOnApply(SPLPEItem const *lpeItem)
     }
     SPLPEItem *splpeitem = const_cast<SPLPEItem *>(lpeItem);
     auto shape = cast<SPShape>(splpeitem);
+    auto rect = cast<SPRect>(splpeitem);
+    SPDocument *document = getSPDoc();
+    Glib::ustring display_unit = document->getDisplayUnit()->abbr.c_str();
+    if (rect) {
+        double a = rect->getVisibleRx();
+        a = std::max(a, rect->getVisibleRy());
+        rect->setVisibleRx(0);
+        rect->setVisibleRy(0);
+        if (a) {
+            a *= rect->i2doc_affine().inverse().descrim();
+            a = Inkscape::Util::Quantity::convert(a, display_unit.c_str(), unit.get_abbreviation());
+            radius.param_set_value(a);
+        }
+    }
     if (shape) {
         Geom::PathVector const pathv = pathv_to_linear_and_cubic_beziers(shape->curve()->get_pathvector());
         NodeSatellites nodesatellites;
