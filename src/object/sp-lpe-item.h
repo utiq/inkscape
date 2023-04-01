@@ -101,6 +101,7 @@ public:
     void duplicateCurrentPathEffect();
     void downCurrentPathEffect();
     void upCurrentPathEffect();
+    void removePathEffect(Inkscape::LivePathEffect::Effect* lpe, bool keep_paths);
     void movePathEffect(gint origin, gint dest, bool select_moved = false);
     SPLPEItem * flattenCurrentPathEffect();
     std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> getCurrentLPEReference();

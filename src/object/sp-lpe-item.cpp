@@ -876,6 +876,26 @@ SPLPEItem *SPLPEItem::flattenCurrentPathEffect()
     return lpeitem;
 }
 
+void SPLPEItem::removePathEffect(Inkscape::LivePathEffect::Effect *lpe, bool keep_paths)
+{
+    PathEffectList path_effect_list(*this->path_effect_list);
+    bool exist = false;
+    if (!lpe)
+        return;
+    for (auto &lperef : path_effect_list) {
+        if (lperef->lpeobject == lpe->getLPEObj()) {
+            setCurrentPathEffect(lperef);
+            exist = true;
+            break;
+        }
+    }
+    if (exist) {
+        removeCurrentPathEffect(keep_paths);
+    } else {
+        g_warning("LPE dont exist to remove");
+    }
+}
+
 void SPLPEItem::movePathEffect(gint origin, gint dest, bool select_moved)
 {
     PathEffectList new_list = *this->path_effect_list;

@@ -21,7 +21,7 @@
 #include "inkscape.h"             // Inkscape::Application
 #include "selection.h"            // Selection
 #include "path/path-simplify.h"
-
+#include "live_effects/effect.h"
 #include "live_effects/lpe-powerclip.h"
 #include "live_effects/lpe-powermask.h"
 #include "ui/icon-names.h"
@@ -270,9 +270,16 @@ object_add_corners_lpe(InkscapeApplication *app) {
     selection->clear();
     for (auto i : items) {
         if (auto lpeitem = cast<SPLPEItem>(i)) {
-            Inkscape::LivePathEffect::Effect::createAndApply("fillet_chamfer", document, lpeitem);
-            lpeitem->getCurrentLPE()->refresh_widgets = true;
-            Inkscape::DocumentUndo::done(document, _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
+            if (auto lpe = lpeitem->getFirstPathEffectOfType(Inkscape::LivePathEffect::FILLET_CHAMFER)) {
+                lpeitem->removePathEffect(lpe, false);
+                Inkscape::DocumentUndo::done(document, _("Removed path path effect"), INKSCAPE_ICON("dialog-path-effects"));
+            } else {
+                Inkscape::LivePathEffect::Effect::createAndApply("fillet_chamfer", document, lpeitem);
+                Inkscape::DocumentUndo::done(document, _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
+            }
+            if (auto lpe = lpeitem->getCurrentLPE()) {
+                lpe->refresh_widgets = true;
+            }
         }
         selection->add(i);
     }

@@ -211,13 +211,9 @@ std::tuple<bool, double, double> round_values(Gtk::SpinButton& x, Gtk::SpinButto
 const LivePathEffectObject* find_lpeffect(SPLPEItem* item, LivePathEffect::EffectType etype) {
     if (!item) return nullptr;
 
-    for (auto& ptr : *item->path_effect_list) {
-        if (ptr && ptr->lpeobject && ptr->lpeobject->get_lpe() && ptr->lpeobject->get_lpe()->effectType() == etype) {
-            return ptr->lpeobject;
-        }
-    }
-
-    return nullptr;
+    auto lpe = item->getFirstPathEffectOfType(Inkscape::LivePathEffect::FILLET_CHAMFER);
+    if (!lpe) return nullptr;
+    return lpe->getLPEObj();
 }
 
 void remove_lpeffect(SPLPEItem* item, LivePathEffect::EffectType type) {
