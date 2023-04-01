@@ -463,17 +463,12 @@ std::vector<SPItem*> get_layers_to_toggle(SPObject* layer, SPObject* current_roo
         return layers;
     }
 
-    for (SPObject* obj = Inkscape::next_layer(current_root, layer); obj; obj = Inkscape::next_layer(current_root, obj)) {
-        // skip ancestors
-        auto item = cast<SPItem>(obj);
-        if (!obj->isAncestorOf(layer) && item) {
-            layers.push_back(item);
-        }
-    }
-    for (SPObject* obj = Inkscape::previous_layer(current_root, layer); obj; obj = Inkscape::previous_layer(current_root, obj)) {
-        auto item = cast<SPItem>(obj);
-        if (!obj->isAncestorOf(layer) && item) {
-            layers.push_back(item);
+    for (; layer->parent; layer = layer->parent) {
+        for (auto &sibling : layer->parent->children) {
+            auto sibling_group = cast<SPGroup>(&sibling);
+            if (sibling_group && sibling_group != layer && sibling_group->isLayer()) {
+                layers.push_back(sibling_group);
+            }
         }
     }
 
