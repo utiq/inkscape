@@ -1024,16 +1024,6 @@ void SPGroup::update_patheffect(bool write) {
             auto lpe_item = cast<SPLPEItem>(sub_item);
             if (lpe_item) {
                 lpe_item->update_patheffect(write);
-                // update satellites
-                if (!lpe_item->hasPathEffect()) {
-                    if (auto classes = lpe_item->getAttribute("class")) {
-                        auto classdata = Glib::ustring(classes);
-                        size_t pos = classdata.find("UnoptimicedTransforms");
-                        if (pos != Glib::ustring::npos) {
-                            lpe_item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
-                        }
-                    }
-                }
             }
         }
     }

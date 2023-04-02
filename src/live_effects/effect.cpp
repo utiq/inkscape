@@ -1554,21 +1554,7 @@ void Effect::doOnRemove_impl(SPLPEItem const* lpeitem)
             sp_lpe_item = nullptr;
         }
     }
-    std::vector<SPObject *> satellites = effect_get_satellites();
-    if (sp_lpe_item)  {
-        satellites.insert(satellites.begin(), sp_lpe_item);  
-    }
     doOnRemove(sp_lpe_item);
-    for (auto obj:satellites) {
-        if (obj->getAttribute("class")){
-            Glib::ustring newclass = obj->getAttribute("class");
-            size_t pos = newclass.find("UnoptimicedTransforms");
-            if (pos != std::string::npos) {
-                newclass.erase(pos, 21);
-                obj->setAttribute("class",newclass.empty() ? nullptr : newclass.c_str());
-            }
-        }
-    }
 }
 
 /**

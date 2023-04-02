@@ -1562,15 +1562,29 @@ Geom::Affine SPItem::set_transform(Geom::Affine const &transform) {
     return transform;
 }
 
-bool SPItem::unoptimized() {
-    
-    if (auto classes = getAttribute("class")) {
-        auto classdata = Glib::ustring(classes);
-        size_t pos = classdata.find("UnoptimicedTransforms");
-        if (pos != Glib::ustring::npos) {
+/**
+ * Return true if the item is referenced by an LPE.
+ */
+static bool is_satellite_item(SPItem const &item)
+{
+    for (SPObject const *ref : item.hrefList) {
+        if (is<LivePathEffectObject>(ref)) {
             return true;
         }
     }
+    return false;
+}
+
+bool SPItem::unoptimized() {
+    if (auto path_effect = getAttribute("inkscape:path-effect")) {
+        assert(path_effect[0]);
+        return true;
+    }
+
+    if (is_satellite_item(*this)) {
+        return true;
+    }
+
     return false;
 }
 
