@@ -642,6 +642,7 @@ InkscapeApplication::InkscapeApplication()
             Glib::VariantBase hint;
             if (!test_app->query_action(Inkscape::inkscape_revision(), enabled, hint)) {
                 app_id += "." + Inkscape::inkscape_revision();
+                non_unique = true;
             }
         }
         Gio::Application::unset_default();
@@ -1794,6 +1795,7 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
         else if (val == "false") _file_export.export_png_use_dithering = false;
         else std::cerr << "invalid value for export-png-use-dithering. Ignoring." << std::endl;
     } else _file_export.export_png_use_dithering = prefs->getBool("/options/dithering/value", true);
+    
     if (use_active_window) {
         _gio_application->register_application();
         if (!_gio_application->get_default()->is_remote()) {
