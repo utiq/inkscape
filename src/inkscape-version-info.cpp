@@ -11,6 +11,7 @@
  */
 
 
+#include <iostream>
 #include <ostream>
 #include <string>
 
@@ -53,6 +54,24 @@ std::string inkscape_revision()
 }
 
 /**
+ * Wrapper around g_spawn_sync which captures STDOUT and strips trailing whitespace.
+ *
+ * If an error occurs, report it to STDERR and return an empty string.
+ */
+static std::string _run(char const *command)
+{
+    std::string out;
+    try {
+        Glib::spawn_command_line_sync(command, &out);
+    } catch (Glib::Error const &) {
+        std::cerr << "Failed to execute " << command << std::endl;
+    }
+    auto pos = out.find_last_not_of(" \n\r\t");
+    out.resize(pos == std::string::npos ? 0 : pos + 1);
+    return out;
+}
+
+/**
  * Return OS version string
  *
  * Returns the OS version string including OS name.
@@ -65,7 +84,12 @@ std::string inkscape_revision()
 std::string os_version() {
     std::string os_version_string = "(unknown)";
 
-#if GLIB_CHECK_VERSION(2,64,0)
+#ifdef __APPLE__
+    os_version_string = _run("sw_vers -productName") + " " +     //
+                        _run("sw_vers -productVersion") + " (" + //
+                        _run("sw_vers -buildVersion") + ") " +   //
+                        _run("uname -m");
+#elif GLIB_CHECK_VERSION(2, 64, 0)
     char *os_name = g_get_os_info(G_OS_INFO_KEY_NAME);
     char *os_pretty_name = g_get_os_info(G_OS_INFO_KEY_PRETTY_NAME);
     if (os_pretty_name) {
