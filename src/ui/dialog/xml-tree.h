@@ -56,7 +56,7 @@ class XmlTree : public DialogBase
 {
 public:
     XmlTree();
-    ~XmlTree() override = default;
+    ~XmlTree() override;
 
     void setSyntaxStyle(Inkscape::UI::Syntax::XMLStyles const &new_style);
 
@@ -97,23 +97,13 @@ private:
     void set_dt_select(Inkscape::XML::Node *repr);
 
     /**
-      * Callback for a node in the tree being selected
-      */
-    static void on_tree_select_row(GtkTreeSelection *selection, gpointer data);
-    /**
      * Callback for deferring the `on_tree_select_row` response in order to
      * skip invalid intermediate selection states. In particular,
      * `gtk_tree_store_remove` makes an undesired selection that we will
      * immediately revert and don't want to an early response for.
      */
-    static gboolean deferred_on_tree_select_row(gpointer);
-    /// Event source ID for the last scheduled `deferred_on_tree_select_row` event.
-    guint deferred_on_tree_select_row_id = 0;
-
-    /**
-      * Callback when a node is moved in the tree
-      */
-    static void after_tree_move(SPXMLViewTree *tree, gpointer value, gpointer data);
+    Inkscape::auto_connection _tree_select_idle;
+    bool deferred_on_tree_select_row();
 
     /**
       * Enable widgets based on current selections
@@ -129,7 +119,6 @@ private:
     /**
       * Callbacks for changes in desktop selection and current document
       */
-    static void on_document_uri_set(gchar const *uri, SPDocument *document);
     static void _set_status_message(Inkscape::MessageType type, const gchar *message, GtkWidget *dialog);
 
     /**
@@ -147,7 +136,6 @@ private:
     void _resized();
     bool in_dt_coordsys(SPObject const &item);
 
-    void on_unrealize() override;
     void rebuildTree();
     void stopNodeEditing(bool ok, Glib::ustring const &path, Glib::ustring name);
     void startNodeEditing(Gtk::CellEditable *cell, Glib::ustring const &path);
@@ -160,13 +148,11 @@ private:
     /**
      * Signal handlers
      */
-    sigc::connection document_uri_set_connection;
-
     Inkscape::XML::Node *selected_repr = nullptr;
 
     /* XmlTree Widgets */
     SPXMLViewTree *tree = nullptr;
-    Gtk::Widget* _treemm = nullptr;
+    Gtk::TreeView* _treemm = nullptr;
     AttrDialog *attributes;
     Gtk::Box *_attrbox;
 
@@ -188,8 +174,6 @@ private:
     Gtk::Button& raise_node_button;
     Gtk::Button& lower_node_button;
 
-    gulong _selection_changed = 0;
-    gulong _tree_move = 0;
     enum DialogLayout: int { Auto = 0, Horizontal, Vertical };
     DialogLayout _layout = Auto;
     Pref<Glib::ustring> _syntax_theme;

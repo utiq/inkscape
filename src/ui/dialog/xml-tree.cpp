@@ -97,7 +97,7 @@ XmlTree::XmlTree()
     gtk_widget_set_tooltip_text( GTK_WIDGET(tree), _("Drag to reorder nodes") );
 
     Gtk::ScrolledWindow& tree_scroller = get_widget<Gtk::ScrolledWindow>(_builder, "tree-wnd");
-    _treemm = Gtk::manage(Glib::wrap(GTK_WIDGET(tree)));
+    _treemm = Gtk::manage(Glib::wrap(GTK_TREE_VIEW(tree)));
     tree_scroller.add(*Gtk::manage(Glib::wrap(GTK_WIDGET(tree))));
     fix_inner_scroll(&tree_scroller);
 
@@ -116,9 +116,19 @@ XmlTree::XmlTree()
     _paned.pack2(*attributes, true, false);
 
     /* Signal handlers */
-    GtkTreeSelection *selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(tree));
-    _selection_changed = g_signal_connect (G_OBJECT(selection), "changed", G_CALLBACK (on_tree_select_row), this);
-    _tree_move = g_signal_connect_after( G_OBJECT(tree), "tree_move", G_CALLBACK(after_tree_move), this);
+    _treemm->get_selection()->signal_changed().connect([=]() {
+        if (blocked || !getDesktop())
+            return;
+        if (!_tree_select_idle) {
+            // Defer the update after all events have been processed.
+            _tree_select_idle = Glib::signal_idle().connect(sigc::mem_fun(*this, &XmlTree::deferred_on_tree_select_row));
+        }
+    });
+    tree->connectTreeMove([=]() {
+        if (auto doc = getDocument()) {
+            DocumentUndo::done(doc, Q_("Undo History / XML dialog|Drag XML subtree"), INKSCAPE_ICON("dialog-xml-editor"));
+        }
+    });
 
     xml_element_new_button.signal_clicked().connect(sigc::mem_fun(*this, &XmlTree::cmd_new_element_node));
     xml_text_new_button.signal_clicked().connect(sigc::mem_fun(*this, &XmlTree::cmd_new_text_node));
@@ -245,6 +255,11 @@ XmlTree::XmlTree()
     });
 }
 
+XmlTree::~XmlTree()
+{
+    unsetDocument();
+}
+
 void XmlTree::rebuildTree()
 {
     sp_xmlview_tree_set_repr(tree, nullptr);
@@ -259,24 +274,9 @@ void XmlTree::_resized()
     prefs->setInt("/dialogs/xml/panedpos", _paned.property_position());
 }
 
-void XmlTree::on_unrealize() {
-    // disconnect signals, they can fire after 'tree' gets deleted
-    GtkTreeSelection* selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(tree));
-    g_signal_handler_disconnect(G_OBJECT(selection), _selection_changed);
-    g_signal_handler_disconnect(G_OBJECT(tree), _tree_move);
-
-    unsetDocument();
-
-    DialogBase::on_unrealize();
-}
-
 void XmlTree::unsetDocument()
 {
-    document_uri_set_connection.disconnect();
-    if (deferred_on_tree_select_row_id != 0) {
-        g_source_destroy(g_main_context_find_source_by_id(nullptr, deferred_on_tree_select_row_id));
-        deferred_on_tree_select_row_id = 0;
-    }
+    _tree_select_idle.disconnect();
 }
 
 void XmlTree::documentReplaced()
@@ -286,9 +286,6 @@ void XmlTree::documentReplaced()
         // TODO: Why is this a document property?
         document->setXMLDialogSelectedObject(nullptr);
 
-        document_uri_set_connection =
-            document->connectFilenameSet(sigc::bind(sigc::ptr_fun(&on_document_uri_set), document));
-        on_document_uri_set(document->getDocumentFilename(), document);
         set_tree_repr(document->getReprRoot());
     } else {
         set_tree_repr(nullptr);
@@ -455,75 +452,38 @@ void XmlTree::set_dt_select(Inkscape::XML::Node *repr)
     blocked--;
 }
 
-
-void XmlTree::on_tree_select_row(GtkTreeSelection *selection, gpointer data)
+bool XmlTree::deferred_on_tree_select_row()
 {
-    XmlTree *self = static_cast<XmlTree *>(data);
-
-    if (self->blocked || !self->getDesktop()) {
-        return;
-    }
-
-    // Defer the update after all events have been processed. Allows skipping
-    // of invalid intermediate selection states, like the automatic next row
-    // selection after `gtk_tree_store_remove`.
-    if (self->deferred_on_tree_select_row_id == 0) {
-        self->deferred_on_tree_select_row_id = //
-            g_idle_add(XmlTree::deferred_on_tree_select_row, data);
-    }
-}
-
-gboolean XmlTree::deferred_on_tree_select_row(gpointer data)
-{
-    XmlTree *self = static_cast<XmlTree *>(data);
-
-    self->deferred_on_tree_select_row_id = 0;
-
     GtkTreeIter   iter;
     GtkTreeModel *model;
 
-    if (self->selected_repr) {
-        Inkscape::GC::release(self->selected_repr);
-        self->selected_repr = nullptr;
+    if (selected_repr) {
+        Inkscape::GC::release(selected_repr);
+        selected_repr = nullptr;
     }
 
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(self->tree));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter)) {
         // Nothing selected, update widgets
-        self->propagate_tree_select(nullptr);
-        self->set_dt_select(nullptr);
-        self->on_tree_unselect_row_disable();
-        return FALSE;
+        propagate_tree_select(nullptr);
+        set_dt_select(nullptr);
+        on_tree_unselect_row_disable();
+        return false;
     }
 
     Inkscape::XML::Node *repr = sp_xmlview_tree_node_get_repr(model, &iter);
     g_assert(repr != nullptr);
 
 
-    self->selected_repr = repr;
-    Inkscape::GC::anchor(self->selected_repr);
+    selected_repr = repr;
+    Inkscape::GC::anchor(selected_repr);
 
-    self->propagate_tree_select(self->selected_repr);
-
-    self->set_dt_select(self->selected_repr);
-
-    self->on_tree_select_row_enable(&iter);
+    propagate_tree_select(selected_repr);
+    set_dt_select(selected_repr);
+    on_tree_select_row_enable(&iter);
 
     return FALSE;
-}
-
-
-void XmlTree::after_tree_move(SPXMLViewTree * /*tree*/, gpointer value, gpointer data)
-{
-    XmlTree *self = static_cast<XmlTree *>(data);
-    guint val = GPOINTER_TO_UINT(value);
-
-    if (val) {
-        DocumentUndo::done(self->getDocument(), Q_("Undo History / XML dialog|Drag XML subtree"), INKSCAPE_ICON("dialog-xml-editor"));
-    } else {
-        DocumentUndo::cancel(self->getDocument());
-    }
 }
 
 void XmlTree::_set_status_message(Inkscape::MessageType /*type*/, const gchar *message, GtkWidget *widget)
@@ -660,13 +620,6 @@ void XmlTree::onCreateNameChanged()
     Glib::ustring text = name_entry->get_text();
     /* TODO: need to do checking a little more rigorous than this */
     create_button->set_sensitive(!text.empty());
-}
-
-void XmlTree::on_document_uri_set(gchar const * /*uri*/, SPDocument * /*document*/)
-{
-/*
- * Seems to be no way to set the title on a docked dialog
-*/
 }
 
 void XmlTree::cmd_new_element_node()

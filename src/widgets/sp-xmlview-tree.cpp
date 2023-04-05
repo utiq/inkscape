@@ -380,6 +380,7 @@ public:
 GtkWidget *sp_xmlview_tree_new(Inkscape::XML::Node * repr, void * /*factory*/, void * /*data*/)
 {
     SPXMLViewTree *tree = SP_XMLVIEW_TREE(g_object_new (SP_TYPE_XMLVIEW_TREE, nullptr));
+    tree->_tree_move = new sigc::signal<void ()>();
 
     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW(tree), FALSE);
     gtk_tree_view_set_reorderable (GTK_TREE_VIEW(tree), TRUE);
@@ -416,16 +417,6 @@ void sp_xmlview_tree_class_init(SPXMLViewTreeClass * klass)
 {
     auto widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->destroy = sp_xmlview_tree_destroy;
-
-    // Signal for when a tree drag and drop has completed
-    g_signal_new (  "tree_move",
-        G_TYPE_FROM_CLASS(klass),
-        G_SIGNAL_RUN_FIRST,
-        0,
-        nullptr, nullptr,
-        g_cclosure_marshal_VOID__UINT,
-        G_TYPE_NONE, 1,
-        G_TYPE_UINT);
 }
 
 void
@@ -443,6 +434,8 @@ void sp_xmlview_tree_destroy(GtkWidget * object)
     tree->renderer = nullptr;
     delete tree->formatter;
     tree->formatter = nullptr;
+    delete tree->_tree_move;
+    tree->_tree_move = nullptr;
 
 	sp_xmlview_tree_set_repr (tree, nullptr);
 
@@ -615,7 +608,7 @@ void on_drag_end(GtkWidget *, GdkDragContext *, gpointer userdata)
 
     if (!failed) {
         // Signal that a drag and drop has completed successfully
-        g_signal_emit_by_name(G_OBJECT(tree), "tree_move", GUINT_TO_POINTER(1));
+        tree->_tree_move->emit();
     }
 }
 
