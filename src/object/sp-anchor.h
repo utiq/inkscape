@@ -15,6 +15,7 @@
  */
 
 #include "sp-item-group.h"
+#include "uri-references.h"
 
 class SPAnchor final : public SPGroup {
 public:
@@ -37,6 +38,8 @@ public:
         const char* displayName() const override;
 	char* description() const override;
 	int event(SPEvent *event) override;
+
+    std::unique_ptr<Inkscape::URIReference> local_link;
 };
 
 #endif

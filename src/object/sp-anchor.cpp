@@ -106,10 +106,14 @@ void SPAnchor::set(SPAttr key, const gchar* value) {
  */
 void SPAnchor::updatePageAnchor() {
     if (this->type && !strcmp(this->type, "page")) {
+        local_link.reset();
         if (this->href && !this->page) {
              this->page = this->document->createChildDoc(this->href);
         }
-    }    
+    } else if (this->href) {
+        local_link = std::make_unique<Inkscape::URIReference>(this);
+        local_link->try_attach(this->href);
+    }
 }
 
 #define COPY_ATTR(rd,rs,key) (rd)->setAttribute((key), rs->attribute(key));
