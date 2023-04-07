@@ -33,6 +33,7 @@ IGNORE_PATHS = [
     "share",
     "src/3rdparty",
     "testfiles/cli_tests/testcases",
+    "testfiles/data/example-FEXTRA-FCOMMENT.gz",
     "testfiles/rendering_tests/fonts/LICENSES",
 ]
 
