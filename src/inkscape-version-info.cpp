@@ -58,7 +58,7 @@ std::string inkscape_revision()
  *
  * If an error occurs, report it to STDERR and return an empty string.
  */
-static std::string _run(char const *command)
+[[maybe_unused]] static std::string _run(char const *command)
 {
     std::string out;
     try {

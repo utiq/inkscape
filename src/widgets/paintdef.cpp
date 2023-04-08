@@ -39,12 +39,12 @@
 
 #include <memory>
 #include <algorithm>
-#include <regex>
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
 #include <glibmm/i18n.h>
 #include <glibmm/stringutils.h>
+#include <glibmm/regex.h>
 
 static char const *mimeOSWB_COLOR = "application/x-oswb-color";
 static char const *mimeX_COLOR = "application/x-color";
@@ -66,17 +66,22 @@ PaintDef::PaintDef(std::array<unsigned, 3> const &rgb, std::string description)
 
 std::string PaintDef::get_color_id() const
 {
-    if (type == NONE)
+    if (type == NONE) {
         return "none";
+    }
     if (!description.empty() && description[0] != '#') {
+        auto name = Glib::ustring(std::move(description));
         // Convert description to ascii, strip out symbols, remove duplicate dashes and prefixes
-        auto name = std::regex_replace(description, std::regex("[^[:alnum:]]"), "-");
-        name = std::regex_replace(name, std::regex("-{2,}"), "-");
-        name = std::regex_replace(name, std::regex("(^-|-$)"), "");
+        static auto const reg1 = Glib::Regex::create("[^[:alnum:]]");
+        name = reg1->replace(name, 0, "-", static_cast<Glib::RegexMatchFlags>(0));
+        static auto const reg2 = Glib::Regex::create("-{2,}");
+        name = reg2->replace(name, 0, "-", static_cast<Glib::RegexMatchFlags>(0));
+        static auto const reg3 = Glib::Regex::create("(^-|-$)");
+        name = reg3->replace(name, 0, "", static_cast<Glib::RegexMatchFlags>(0));
         // Move important numbers from the start where they are invalid xml, to the end.
-        name = std::regex_replace(name, std::regex("^(\\d+)(-?)([^\\d]*)"), "$3$2$1");
-        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-        return name;
+        static auto const reg4 = Glib::Regex::create("^(\\d+)(-?)([^\\d]*)");
+        name = reg4->replace(name, 0, "\\3\\2\\1", static_cast<Glib::RegexMatchFlags>(0));
+        return name.lowercase();
     }
     auto [r, g, b] = rgb;
     char buf[12];
