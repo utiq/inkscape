@@ -22,6 +22,7 @@
 
 #include "svg/svg-color.h"
 #include "svg/stringstream.h"
+#include "util/safe-printf.h"
 
 #include <glibmm/i18n.h>
 
@@ -396,7 +397,7 @@ RegisteredColorPicker::on_changed (guint32 rgba)
     }
     gchar c[32];
     if (_akey == _ckey + "_opacity_LPE") { //For LPE parameter we want stored with alpha
-        sprintf(c, "#%08x", rgba);
+        safeprintf(c, "#%08x", rgba);
     } else {
         sp_svg_write_color(c, sizeof(c), rgba);
     }

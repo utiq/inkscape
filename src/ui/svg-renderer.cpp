@@ -12,6 +12,7 @@
 
 #include "svg-renderer.h"
 #include "io/file.h"
+#include "util/safe-printf.h"
 #include "xml/repr.h"
 #include "object/sp-root.h"
 #include "display/cairo-utils.h"
@@ -22,7 +23,7 @@ namespace Inkscape {
 
 Glib::ustring rgba_to_css_color(double r, double g, double b) {
     char buffer[16];
-    sprintf(buffer, "#%02x%02x%02x",
+    safeprintf(buffer, "#%02x%02x%02x",
         static_cast<int>(r * 0xff + 0.5),
         static_cast<int>(g * 0xff + 0.5),
         static_cast<int>(b * 0xff + 0.5)
@@ -43,7 +44,7 @@ Glib::ustring rgba_to_css_color(const SPColor& color) {
 Glib::ustring double_to_css_value(double value) {
     char buffer[32];
     // arbitrarily chosen precision
-    sprintf(buffer, "%.4f", value);
+    safeprintf(buffer, "%.4f", value);
     return Glib::ustring(buffer);
 }
 

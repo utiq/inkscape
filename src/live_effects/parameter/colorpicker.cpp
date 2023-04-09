@@ -23,6 +23,7 @@
 
 #include "ui/icon-names.h"
 #include "ui/widget/registered-widget.h"
+#include "util/safe-printf.h"
 
 #include <glibmm/i18n.h>
 
@@ -91,7 +92,7 @@ Glib::ustring
 ColorPickerParam::param_getSVGValue() const
 {
     gchar c[32];
-    sprintf(c, "#%08x", value);
+    safeprintf(c, "#%08x", value);
     return c;
 }
 
@@ -99,7 +100,7 @@ Glib::ustring
 ColorPickerParam::param_getDefaultSVGValue() const
 {
     gchar c[32];
-    sprintf(c, "#%08x", defvalue);
+    safeprintf(c, "#%08x", defvalue);
     return c;
 }
 
