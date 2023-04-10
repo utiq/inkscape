@@ -173,7 +173,8 @@ public:
     bool renderImage(Inkscape::Pixbuf const *pb,
                      Geom::Affine const &image_transform, SPStyle const *style);
     bool renderGlyphtext(PangoFont *font, Geom::Affine const &font_matrix,
-                         std::vector<CairoGlyphInfo> const &glyphtext, SPStyle const *style);
+                         std::vector<CairoGlyphInfo> const &glyphtext, SPStyle const *style,
+                         bool second_pass = false);
 
     /* More general rendering methods will have to be added (like fill, stroke) */
 

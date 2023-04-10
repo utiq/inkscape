@@ -443,97 +443,92 @@ std:: cout << "DEBUG Layout::print in while  ---  "
 void Layout::showGlyphs(CairoRenderContext *ctx) const
 {
     if (_input_stream.empty()) return;
-
-    bool clip_mode = false;//(ctx->getRenderMode() == CairoRenderContext::RENDER_MODE_CLIP);
     std::vector<CairoGlyphInfo> glyphtext;
 
-    for (unsigned glyph_index = 0 ; glyph_index < _glyphs.size() ; ) {
-        if (_characters[_glyphs[glyph_index].in_character].in_glyph == -1) {
-            // invisible glyphs
-            unsigned same_character = _glyphs[glyph_index].in_character;
-            while (_glyphs[glyph_index].in_character == same_character) {
-                glyph_index++;
-                if (glyph_index == _glyphs.size())
-                    return;
+    // The second pass is used to draw fill over stroke in a way that doesn't
+    // cause some glyph chunks to be painted over others.
+    bool second_pass = false;
+
+    for (unsigned pass = 0; pass <= second_pass; pass++) {
+        for (unsigned glyph_index = 0 ; glyph_index < _glyphs.size() ; ) {
+            if (_characters[_glyphs[glyph_index].in_character].in_glyph == -1) {
+                // invisible glyphs
+                unsigned same_character = _glyphs[glyph_index].in_character;
+                while (_glyphs[glyph_index].in_character == same_character) {
+                    glyph_index++;
+                    if (glyph_index == _glyphs.size())
+                        return;
+                }
+                continue;
             }
-            continue;
-        }
-        Span const &span = _spans[_characters[_glyphs[glyph_index].in_character].in_span];
-        InputStreamTextSource const *text_source = static_cast<InputStreamTextSource const *>(_input_stream[span.in_input_stream_item]);
+            Span const &span = _spans[_characters[_glyphs[glyph_index].in_character].in_span];
+            InputStreamTextSource const *text_source = static_cast<InputStreamTextSource const *>(_input_stream[span.in_input_stream_item]);
 
-        Geom::Affine glyph_matrix;
-        _getGlyphTransformMatrix(glyph_index, &glyph_matrix);
-        if (clip_mode) {
-            Geom::PathVector const *pathv = span.font->PathVector(_glyphs[glyph_index].glyph);
-            if (pathv) {
-                Geom::PathVector pathv_trans = (*pathv) * glyph_matrix;
-                SPStyle const *style = text_source->style;
-                ctx->renderPathVector(pathv_trans, style, Geom::OptRect());
+            Geom::Affine glyph_matrix;
+            _getGlyphTransformMatrix(glyph_index, &glyph_matrix);
+
+            Geom::Affine font_matrix = glyph_matrix;
+            font_matrix[4] = 0;
+            font_matrix[5] = 0;
+
+            Glib::ustring::const_iterator span_iter = span.input_stream_first_character;
+            unsigned char_index = _glyphs[glyph_index].in_character;
+            unsigned original_span = _characters[char_index].in_span;
+            while (char_index && _characters[char_index - 1].in_span == original_span) {
+                char_index--;
+                ++span_iter;
             }
-            glyph_index++;
-            continue;
-        }
 
-        Geom::Affine font_matrix = glyph_matrix;
-        font_matrix[4] = 0;
-        font_matrix[5] = 0;
+            // try to output as many characters as possible in one go
+            Glib::ustring span_string;
+            unsigned this_span_index = _characters[_glyphs[glyph_index].in_character].in_span;
+            unsigned int first_index = glyph_index;
+            glyphtext.clear();
+            do {
+                span_string += *span_iter;
+                ++span_iter;
 
-        Glib::ustring::const_iterator span_iter = span.input_stream_first_character;
-        unsigned char_index = _glyphs[glyph_index].in_character;
-        unsigned original_span = _characters[char_index].in_span;
-        while (char_index && _characters[char_index - 1].in_span == original_span) {
-            char_index--;
-            ++span_iter;
-        }
+                unsigned same_character = _glyphs[glyph_index].in_character;
+                while (glyph_index < _glyphs.size() && _glyphs[glyph_index].in_character == same_character) {
+                    if (glyph_index != first_index)
+                        _getGlyphTransformMatrix(glyph_index, &glyph_matrix);
 
-        // try to output as many characters as possible in one go
-        Glib::ustring span_string;
-        unsigned this_span_index = _characters[_glyphs[glyph_index].in_character].in_span;
-        unsigned int first_index = glyph_index;
-        glyphtext.clear();
-        do {
-            span_string += *span_iter;
-            ++span_iter;
+                    CairoGlyphInfo info;
+                    info.index = _glyphs[glyph_index].glyph;
+                    // this is the translation for x,y-offset
+                    info.x = glyph_matrix[4];
+                    info.y = glyph_matrix[5];
 
-            unsigned same_character = _glyphs[glyph_index].in_character;
-            while (glyph_index < _glyphs.size() && _glyphs[glyph_index].in_character == same_character) {
-                if (glyph_index != first_index)
-                    _getGlyphTransformMatrix(glyph_index, &glyph_matrix);
+                    glyphtext.push_back(info);
 
-                CairoGlyphInfo info;
-                info.index = _glyphs[glyph_index].glyph;
-                // this is the translation for x,y-offset
-                info.x = glyph_matrix[4];
-                info.y = glyph_matrix[5];
+                    glyph_index++;
+                }
+            } while (glyph_index < _glyphs.size()
+                     && _path_fitted == nullptr
+                     && (font_matrix * glyph_matrix.inverse()).isIdentity()
+                     && _characters[_glyphs[glyph_index].in_character].in_span == this_span_index);
 
-                glyphtext.push_back(info);
+            // remove vertical flip
+            Geom::Affine flip_matrix;
+            flip_matrix.setIdentity();
+            flip_matrix[3] = -1.0;
+            font_matrix = flip_matrix * font_matrix;
 
-                glyph_index++;
+            SPStyle const *style = text_source->style;
+            float opacity = SP_SCALE24_TO_FLOAT(style->opacity.value);
+
+            if (opacity != 1.0) {
+                ctx->pushState();
+                ctx->setStateForStyle(style);
+                ctx->pushLayer();
             }
-        } while (glyph_index < _glyphs.size()
-                 && _path_fitted == nullptr
-                 && (font_matrix * glyph_matrix.inverse()).isIdentity()
-                 && _characters[_glyphs[glyph_index].in_character].in_span == this_span_index);
-
-        // remove vertical flip
-        Geom::Affine flip_matrix;
-        flip_matrix.setIdentity();
-        flip_matrix[3] = -1.0;
-        font_matrix = flip_matrix * font_matrix;
-
-        SPStyle const *style = text_source->style;
-        float opacity = SP_SCALE24_TO_FLOAT(style->opacity.value);
-
-        if (opacity != 1.0) {
-            ctx->pushState();
-            ctx->setStateForStyle(style);
-            ctx->pushLayer();
-        }
-        if (glyph_index - first_index > 0)
-            ctx->renderGlyphtext(span.font->get_font(), font_matrix, glyphtext, style);
-        if (opacity != 1.0) {
-            ctx->popLayer();
-            ctx->popState();
+            if (glyph_index - first_index > 0) {
+                second_pass |= ctx->renderGlyphtext(span.font->get_font(), font_matrix, glyphtext, style, pass);
+            }
+            if (opacity != 1.0) {
+                ctx->popLayer();
+                ctx->popState();
+            }
         }
     }
 }

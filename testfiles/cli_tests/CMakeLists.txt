@@ -495,6 +495,13 @@ add_cli_test(export-marker-on-clone PARAMETERS --export-type=pdf
                                     RASTER_DPI 100
                                     FUZZYREF_FILENAME export-marker-on-clone_expected.png
                                     FUZZ_PERCENTAGE 1)
+add_cli_test(export-text-paintorder PARAMETERS --export-type=pdf
+                                    INPUT_FILENAME  export-text-paintorder.svg
+                                    OUTPUT_FILENAME export-text-paintorder.pdf
+                                    RASTER_DPI 200
+                                    FUZZYREF_FILENAME export-text-paintorder_expected.png
+                                    FUZZ_PERCENTAGE 2)
+
 
 # EMF, WMF: No support for exporting filters. Feature request: https://gitlab.com/inkscape/inbox/-/issues/2275
 # add_cli_test(export-with-filters_emf  PARAMETERS --export-type=emf INPUT_FILENAME offset.svg OUTPUT_FILENAME export-with-filters.emf REFERENCE_FILENAME export-with-filters_expected.emf)

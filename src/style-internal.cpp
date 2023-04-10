@@ -1803,6 +1803,19 @@ SPIPaintOrder::read( gchar const *str ) {
     }
 }
 
+/**
+ * Return the index of the given paint order.
+ */
+unsigned SPIPaintOrder::get_order(SPPaintOrderLayer paint_order) const
+{
+    for( unsigned i = 0; i < PAINT_ORDER_LAYERS; ++i) {
+        if (layer[i] == paint_order)
+            return i;
+    }
+    // Default/normal (see SPIPaintOrder::read for expected state)
+    return paint_order - 1;
+}
+
 const Glib::ustring SPIPaintOrder::get_value() const
 {
     if (this->inherit) return Glib::ustring("inherit");

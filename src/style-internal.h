@@ -841,6 +841,8 @@ public:
 
     void read( gchar const *str ) override;
     const Glib::ustring get_value() const override;
+    unsigned get_order(SPPaintOrderLayer paint_order) const;
+
     void clear() override {
         SPIBase::clear();
         for( unsigned i = 0; i < PAINT_ORDER_LAYERS; ++i ) {

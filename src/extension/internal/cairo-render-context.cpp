@@ -1825,17 +1825,27 @@ unsigned int CairoRenderContext::_showGlyphs(cairo_t *cr, PangoFont * /*font*/, 
     return num_glyphs - num_invalid_glyphs;
 }
 
+/**
+ * Called by Layout-TNG-Output, this function decides how to apply styles and
+ * write out the final shapes of a set of glyphs to the target.
+ *
+ * font - The PangoFont to use in cairo.
+ * font_matrix - The specific text transform to apply to these glyphs.
+ * glyphtext - A list of glyphs to write or render out.
+ * style - The style from the span or text node in context.
+ * second_pass - True if this is being called in a second pass.
+ *
+ * Returns true if a second pass is required for fill over stroke paint order.
+ */
 bool
 CairoRenderContext::renderGlyphtext(PangoFont *font, Geom::Affine const &font_matrix,
-                                    std::vector<CairoGlyphInfo> const &glyphtext, SPStyle const *style)
+                                    std::vector<CairoGlyphInfo> const &glyphtext, SPStyle const *style,
+                                    bool second_pass)
 {
-
     _prepareRenderText();
     if (_is_omittext)
-        return true;
+        return false;
 
-    // create a cairo_font_face from PangoFont
-    // double size = style->font_size.computed; /// \fixme why is this variable never used?
     gpointer fonthash = (gpointer)font;
     cairo_font_face_t *font_face = nullptr;
     if(font_table.find(fonthash)!=font_table.end())
@@ -1855,9 +1865,6 @@ CairoRenderContext::renderGlyphtext(PangoFont *font, Geom::Affine const &font_ma
     cairo_save(_cr);
     cairo_set_font_face(_cr, font_face);
 
-    //if (fc_pattern && FcPatternGetDouble(fc_pattern, FC_PIXEL_SIZE, 0, &size) != FcResultMatch)
-    //    size = 12.0;
-
     // set the given font matrix
     cairo_matrix_t matrix;
     _initCairoMatrix(&matrix, font_matrix);
@@ -1875,85 +1882,45 @@ CairoRenderContext::renderGlyphtext(PangoFont *font, Geom::Affine const &font_ma
             // just add the glyph paths to the current context
             _showGlyphs(_cr, font, glyphtext, TRUE);
         }
-    } else {
+        return false;
+    }
 
-        bool fill = false;
-        if (style->fill.isColor() || style->fill.isPaintserver()) {
-            fill = true;
-        }
+    if (style->mix_blend_mode.set && style->mix_blend_mode.value) {
+        cairo_set_operator(_cr, ink_css_blend_to_cairo_operator(style->mix_blend_mode.value));
+    }
 
-        bool stroke = false;
-        if (style->stroke.isColor() || style->stroke.isPaintserver()) {
-            stroke = true;
-        }
+    bool fill = style->fill.isColor() || style->fill.isPaintserver();
+    bool stroke = style->stroke.isColor() || style->stroke.isPaintserver();
+    if (!fill && !stroke)
+        return false;
 
-        if (style->mix_blend_mode.set && style->mix_blend_mode.value) {
-            cairo_set_operator(_cr, ink_css_blend_to_cairo_operator(style->mix_blend_mode.value));
-        }
+    // Text never has markers, and no-fill doesn't matter.
+    bool stroke_over_fill = style->paint_order.get_order(SP_CSS_PAINT_ORDER_STROKE)
+                          > style->paint_order.get_order(SP_CSS_PAINT_ORDER_FILL)
+                          || !fill || !stroke;
 
-        // Text never has markers
-        bool stroke_over_fill = true;
-        if ( (style->paint_order.layer[0] == SP_CSS_PAINT_ORDER_STROKE &&
-              style->paint_order.layer[1] == SP_CSS_PAINT_ORDER_FILL)   ||
+    bool fill_pass = fill && stroke_over_fill != second_pass;
+    bool stroke_pass = stroke && !second_pass;
 
-             (style->paint_order.layer[0] == SP_CSS_PAINT_ORDER_STROKE &&
-              style->paint_order.layer[2] == SP_CSS_PAINT_ORDER_FILL)   ||
+    if (fill_pass) {
+        _setFillStyle(style, Geom::OptRect());
+        _showGlyphs(_cr, font, glyphtext, _is_texttopath);
+        if (_is_texttopath)
+            cairo_fill_preserve(_cr);
+    }
 
-             (style->paint_order.layer[1] == SP_CSS_PAINT_ORDER_STROKE &&
-              style->paint_order.layer[2] == SP_CSS_PAINT_ORDER_FILL) ) {
-            stroke_over_fill = false;
-        }
-
-        bool have_path = false;
-        if (fill && stroke_over_fill) {
-            _setFillStyle(style, Geom::OptRect());
-            if (_is_texttopath) {
-                _showGlyphs(_cr, font, glyphtext, true);
-                if (stroke) {
-                    cairo_fill_preserve(_cr);
-                    have_path = true;
-                } else {
-                    cairo_fill(_cr);
-                }
-            } else {
-                _showGlyphs(_cr, font, glyphtext, false);
-            }
-        }
-
-        if (stroke) {
-            _setStrokeStyle(style, Geom::OptRect());
-            if (!have_path) {
-                _showGlyphs(_cr, font, glyphtext, true);
-            }
-            if (fill && _is_texttopath && !stroke_over_fill) {
-                cairo_stroke_preserve(_cr);
-                have_path = true;
-            } else {
-                cairo_stroke(_cr);
-            }
-        }
-
-        if (fill && !stroke_over_fill) {
-            _setFillStyle(style, Geom::OptRect());
-            if (_is_texttopath) {
-                if (!have_path) {
-                    // Could happen if both 'stroke' and 'stroke_over_fill' are false
-                    _showGlyphs(_cr, font, glyphtext, true);
-                }
-                cairo_fill(_cr);
-            } else {
-                _showGlyphs(_cr, font, glyphtext, false);
-            }
-        }
-
+    // Stroke paths are generated for texttopath AND glyph output
+    // because PDF text output doesn't support stroke and fill
+    if (stroke_pass) {
+        // And now we don't have a path to stroke, so make one.
+        if (!_is_texttopath || !fill_pass)
+            _showGlyphs(_cr, font, glyphtext, true);
+        _setStrokeStyle(style, Geom::OptRect());
+        cairo_stroke(_cr);
     }
 
     cairo_restore(_cr);
-
-//    if (font_face)
-//        cairo_font_face_destroy(font_face);
-
-    return true;
+    return !stroke_over_fill && !second_pass;
 }
 
 /* Helper functions */
