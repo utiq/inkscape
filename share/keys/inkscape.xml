@@ -166,7 +166,8 @@ override) the bindings in the main default.xml.
   <bind gaction="win.select-same-fill" />
   <bind gaction="win.select-same-stroke-style" />
   <bind gaction="win.select-same-object-type"            keys="&lt;shift&gt;&lt;alt&gt;a" />
-  <bind gaction="win.select-invert"                      keys="exclam ,&lt;shift&gt;exclam"/>
+  <bind gaction="win.select-invert"                      keys="exclam, &lt;shift&gt;exclam"/>
+  <bind gaction="win.select-invert-all"                  keys="&lt;alt&gt;exclam, &lt;shift&gt;&lt;alt&gt;exclam"/>
   <bind gaction="win.select-none"                        keys="Escape"/>
 
   <!-- View -->

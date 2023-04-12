@@ -101,6 +101,15 @@ select_invert(InkscapeWindow* win)
 }
 
 void
+select_invert_all(InkscapeWindow* win)
+{
+    SPDesktop* dt = win->get_desktop();
+
+    // Invert Selection
+    Inkscape::SelectionHelper::invertAllInAll(dt);
+}
+
+void
 select_none(InkscapeWindow* win)
 {
     SPDesktop* dt = win->get_desktop();
@@ -120,6 +129,7 @@ std::vector<std::vector<Glib::ustring>> raw_selection_dekstop_data =
     {"win.select-same-stroke-style",            N_("Stroke Style"),                 "Select",        N_("Select all objects with the same stroke style (width, dash, markers) as the selected objects")},
     {"win.select-same-object-type",             N_("Object Type"),                  "Select",        N_("Select all objects with the same object type (rect, arc, text, path, bitmap etc) as the selected objects")},
     {"win.select-invert",                       N_("Invert Selection"),             "Select",        N_("Invert selection (unselect what is selected and select everything else)")},
+    {"win.select-invert-all",                   N_("Invert in All Layers"),         "Select",        N_("Invert selection in all visible and unlocked layers")},
     {"win.select-none",                         N_("Deselect"),                     "Select",        N_("Deselect any selected objects or nodes")},
     // DO NOT ADD select-next or select-previous here as their default keys conflict with Gtk's widget navigation.
 
@@ -138,6 +148,7 @@ add_actions_select_window(InkscapeWindow* win)
     win->add_action( "select-same-stroke-style",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_same_stroke_style), win));
     win->add_action( "select-same-object-type",         sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_same_object_type), win));
     win->add_action( "select-invert",                   sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_invert), win));
+    win->add_action( "select-invert-all",               sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_invert_all), win));
     win->add_action( "select-none",                     sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_none), win));
     // clang-format on
 
