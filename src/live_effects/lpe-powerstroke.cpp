@@ -755,10 +755,10 @@ LPEPowerStroke::doEffect_path (Geom::PathVector const & path_in)
         } else {
             // add width data for first and last point on the path
             // depending on cap type, these first and last points have width zero or take the width from the closest width point.
-            ts.insert(ts.begin(), Point( pwd2_in.domain().min(),
-                                        (start_linecap==LINECAP_ZERO_WIDTH) ? 0. : ts.front()[Geom::Y]) );
-            ts.emplace_back( pwd2_in.domain().max(),
-                                (end_linecap==LINECAP_ZERO_WIDTH) ? 0. : ts.back()[Geom::Y] );
+            auto start_y = (start_linecap == LINECAP_ZERO_WIDTH || ts.empty()) ? 0. : ts.front()[Geom::Y];
+            auto end_y = (end_linecap == LINECAP_ZERO_WIDTH || ts.empty()) ? 0. : ts.back()[Geom::Y];
+            ts.insert(ts.begin(), Geom::Point(pwd2_in.domain().min(), start_y));
+            ts.emplace_back(pwd2_in.domain().max(), end_y);
         }
 
         // do the interpolation in a coordinate system that is more alike to the on-canvas knots,
