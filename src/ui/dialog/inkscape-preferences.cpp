@@ -2828,8 +2828,8 @@ void InkscapePreferences::initPageRendering()
     }
 
     // opengl
-    _canvas_request_opengl.init("", "/options/rendering/request_opengl", false);
-    _page_rendering.add_line( false, _("Enable OpenGL:"), _canvas_request_opengl, "", _("Request that the canvas should be painted with OpenGL rather than Cairo. If OpenGL is unsupported, it will fall back to Cairo."), false);
+    _canvas_request_opengl.init(_("Enable OpenGL"), "/options/rendering/request_opengl", false);
+    _page_rendering.add_line(false, "", _canvas_request_opengl, "", _("Request that the canvas should be painted with OpenGL rather than Cairo. If OpenGL is unsupported, it will fall back to Cairo."), false);
 
     // blur quality
     _blur_quality_best.init ( _("Best quality (slowest)"), "/options/blurquality/value",
