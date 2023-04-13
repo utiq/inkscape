@@ -190,8 +190,17 @@ void DialogBase::setDesktop(SPDesktop *new_desktop)
 
         if (auto sel = desktop->getSelection()) {
             selection = sel;
-            _select_changed = selection->connectChanged(sigc::mem_fun(*this, &DialogBase::selectionChanged_impl));
-            _select_modified = selection->connectModified(sigc::mem_fun(*this, &DialogBase::selectionModified_impl));
+            _select_changed = selection->connectChanged([this](Inkscape::Selection *selection) {
+                _changed_while_hidden = !_showing;
+                if (_showing)
+                    selectionChanged(selection);
+            });
+            _select_modified = selection->connectModified([this](Inkscape::Selection *selection, guint flags) {
+                _modified_while_hidden = !_showing;
+                _modified_flags = flags;
+                if (_showing)
+                    selectionModified(selection, flags);
+            });
         }
 
         _doc_replaced = desktop->connectDocumentReplaced(sigc::hide<0>(sigc::mem_fun(*this, &DialogBase::setDocument)));
@@ -199,7 +208,7 @@ void DialogBase::setDesktop(SPDesktop *new_desktop)
         this->setDocument(desktop->getDocument());
 
         if (desktop->getSelection()) {
-            this->selectionChanged(selection);
+            selectionChanged(selection);
         }
         set_sensitive(true);
     }
@@ -243,32 +252,19 @@ void DialogBase::fix_inner_scroll(Gtk::Widget *scrollwindow)
 }
 
 /**
- * implementation method that call to main function only when tab is showing
- */
-void 
-DialogBase::selectionChanged_impl(Inkscape::Selection *selection) {
-    if (_showing) {
-        selectionChanged(selection);
-    }
-}
-
-/**
- * implementation method that call to main function only when tab is showing
- */
-void 
-DialogBase::selectionModified_impl(Inkscape::Selection *selection, guint flags) {
-    if (_showing) {
-        selectionModified(selection, flags);
-    }
-}
-
-/**
  * function called from notebook dialog that performs an update of the dialog and sets the dialog showing state true
  */
 void 
 DialogBase::setShowing(bool showing) {
     _showing = showing;
-    selectionChanged(getSelection());
+    if (showing && _changed_while_hidden) {
+        selectionChanged(getSelection());
+        _changed_while_hidden = false;
+    }
+    if (showing && _modified_while_hidden) {
+        selectionModified(getSelection(), _modified_flags);
+        _modified_while_hidden = false;
+    }
 }
 
 /**

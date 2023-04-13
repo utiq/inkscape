@@ -103,8 +103,6 @@ private:
      */
     virtual void desktopReplaced() {}
     virtual void documentReplaced() {}
-    void selectionChanged_impl(Inkscape::Selection *selection);
-    void selectionModified_impl(Inkscape::Selection *selection, guint flags);
     virtual void selectionChanged(Inkscape::Selection *selection) {};
     virtual void selectionModified(Inkscape::Selection *selection, guint flags) {};
 
@@ -112,6 +110,10 @@ private:
     sigc::connection _doc_replaced;
     sigc::connection _select_changed;
     sigc::connection _select_modified;
+
+    int _modified_flags = 0;
+    bool _modified_while_hidden = false;
+    bool _changed_while_hidden = false;
 
     InkscapeApplication *_app; // Used for state management
     SPDesktop *desktop;
