@@ -13,7 +13,7 @@
 #include "font-collections.h"
 
 #include <fstream>
-#include <iostream>
+// #include <iostream>
 #include <gtkmm.h>
 
 #include "io/resource.h"
@@ -121,35 +121,44 @@ void FontCollections::_read(const Glib::ustring& file, bool is_system)
     // Filestream object to read data from the file.
     std::ifstream input_file(file);
 
-    // Generate the collection name from the file name.
-    Glib::ustring path = get_path_string(USER, FONTCOLLECTIONS, "");
+    // Check if the file is open or not.
+    if (input_file.is_open()) {
+        // Generate the collection name from the file name.
+        Glib::ustring path = get_path_string(USER, FONTCOLLECTIONS, "");
 
-    Glib::ustring collection_name = file.substr(path.length() + 1, file.length() - path.length() - 5);
-    std::string line;
+        Glib::ustring collection_name = file.substr(path.length() + 1, file.length() - path.length() - 5);
+        std::string line;
 
-    // Now read all the fonts stored in this file.
-    std::set <Glib::ustring> fonts;
-    Inkscape::FontLister *font_lister = Inkscape::FontLister::get_instance();
+        // Now read all the fonts stored in this file.
+        std::set<Glib::ustring> fonts;
+        Inkscape::FontLister *font_lister = Inkscape::FontLister::get_instance();
 
-    while(getline(input_file, line)) {
-        // Get rid of unwanted characters from the left and right.
-        line = trim_left_and_right(line);
-        Glib::ustring font = line;
+        while (getline(input_file, line)) {
+            // Get rid of unwanted characters from the left and right.
+            line = trim_left_and_right(line);
+            Glib::ustring font = line;
 
-        // Now check if the font is installed on the system because it is possible
-        // that a previously installed font may not be available now.
-        if(font_lister->font_installed_on_system(font)) {
-            fonts.insert(font);
+            // Now check if the font is installed on the system because it is possible
+            // that a previously installed font may not be available now.
+            if (font_lister->font_installed_on_system(font)) {
+                fonts.insert(font);
+            }
         }
-    }
 
-    FontCollection temp_col(collection_name, fonts, is_system);
+        // Important: Close the file after use!
+        input_file.close();
 
-    // Now insert these fonts into the font collections.
-    if(is_system) {
-        _system_collections.insert(temp_col);
+        // Now insert these fonts into the font collections.
+        FontCollection temp_col(collection_name, fonts, is_system);
+
+        if (is_system) {
+            _system_collections.insert(temp_col);
+        } else {
+            _user_collections.insert(temp_col);
+        }
     } else {
-        _user_collections.insert(temp_col);
+        // Error: Failed to open the file.
+        // std::cout << "Failed to open file: " << file << std::endl;
     }
 }
 
@@ -160,14 +169,20 @@ void FontCollections::write_collection(const Glib::ustring& collection_name, con
     std::fstream output_file;
     output_file.open(collection_file, std::fstream::out);
 
-    // Inser the fonts into the file.
-    for(auto const &font: fonts) {
-        output_file << font << '\n';
-    }
+    // Check if the file opened or not.
+    if (output_file.is_open()) {
+        // Insert the fonts into the file.
+        for (auto const &font : fonts) {
+            output_file << font << '\n';
+        }
 
-    // Very Important: Close the file after use.
-    output_file.close();
-    init();
+        // Very Important: Close the file after use.
+        output_file.close();
+        init();
+    } else {
+        // Error: Failed to open the file.
+        // std::cout << "Failed to open file: " << collection_file << std::endl;
+    }
 }
 
 // System collections.
@@ -191,7 +206,7 @@ void FontCollections::add_system_collections()
 void FontCollections::add_collection(const Glib::ustring& collection_name, bool is_system)
 {
     // Check for empty name.
-    if(collection_name == "") {
+    if (collection_name == "") {
         return;
     }
 
@@ -200,7 +215,7 @@ void FontCollections::add_collection(const Glib::ustring& collection_name, bool 
     col_name_copy = trim_left_and_right(col_name_copy);
     FontCollection temp_col(col_name_copy, is_system);
 
-    if(is_system) {
+    if (is_system) {
         // Add and save this collection as a system collection.
         // No need to save system collections in a file,
         // because system collections are already being managed
@@ -212,7 +227,7 @@ void FontCollections::add_collection(const Glib::ustring& collection_name, bool 
         auto ret_val = _user_collections.insert(temp_col);
 
         // Write the changes only if the collection was inserted.
-        if(ret_val.second == true) {
+        if (ret_val.second == true) {
             // write this collection to a file.
             write_collection(col_name_copy, temp_col.fonts);
         }
@@ -228,9 +243,8 @@ void FontCollections::remove_collection(const Glib::ustring& collection_name)
     FontCollection temp_col(collection_name, false);
     auto it = _user_collections.find(temp_col);
 
-    if(it != _user_collections.end()) {
-
-        // Collection exists, erase it.
+    if (it != _user_collections.end()) {
+        // Collection exists, erase it from user and selected collections.
         _user_collections.erase(it);
 
         Glib::ustring file_name = collection_name + ".txt";
@@ -239,44 +253,78 @@ void FontCollections::remove_collection(const Glib::ustring& collection_name)
 
         // Erase the collection file from the folder.
         remove(collection_file.c_str());
+
+        // Emit the update signal to update the popover list in:
+        // (i) T and F dialog
+        // (ii) Text Toolbar
+        update_signal.emit();
+    } else {
+        return;
     }
 
-    update_signal.emit();
+    // Check if the collection was selected.
+    auto it1 = _selected_collections.find(collection_name);
+
+    if (it1 != _selected_collections.end()) {
+        // Remove it from the selected collections,
+        // and emit the selection update signal.
+        _selected_collections.erase(it1);
+
+        // Update the font list accordingly.
+        Inkscape::FontLister::get_instance()->apply_collections(_selected_collections);
+
+        // Let the world know.
+        selection_update_signal.emit();
+    }
 }
 
 // Only user collections can be renamed.
 void FontCollections::rename_collection(const Glib::ustring& old_name, const Glib::ustring &new_name)
 {
-    if(old_name == new_name) {
+    if (old_name == new_name) {
         return;
     }
 
-    // Step 1: Store the fonts stored under old_name.
+    // 1. Copy the fonts stored under old_name.
     FontCollection old_col(old_name, false);
     std::set <Glib::ustring> fonts = get_fonts(old_name);
 
-    // Step 2: Remove the old collection from the map.
+    // 2. Remove the old collection from the map.
     auto it = _user_collections.find(old_col);
 
     // Only if it exists
-    if(it != _user_collections.end()) {
+    if (it != _user_collections.end()) {
         _user_collections.erase(it);
 
-        // Step 3: Rename the file.
+        // 3. Rename the file.
         Glib::ustring old_file = old_name + ".txt";
         Glib::ustring new_file = new_name + ".txt";
         std::string old_file_path = get_path_string(USER, FONTCOLLECTIONS, old_file.c_str());
         std::string new_file_path = get_path_string(USER, FONTCOLLECTIONS, new_file.c_str());
         rename(old_file_path.c_str(), new_file_path.c_str());
 
-        // Step 4: Insert new_collection into the map.
+        // 4: Insert new_collection into the map.
         FontCollection new_col(new_name, fonts, false);
         _user_collections.insert(new_col);
-    }
-    else {
+
+        // Check if it was selected before renaming or not.
+        auto it1 = _selected_collections.find(old_name);
+
+        if (it1 != _selected_collections.end()) {
+            // Select the renamed collection.
+            _selected_collections.insert(new_name);
+
+            // No need to update the font list,
+            // as the fonts under selection remains the same.
+            // Emit the selection update signal.
+            selection_update_signal.emit();
+        }
+    } else {
         // Otherwise, add it as a new collection.
         add_collection(new_name);
     }
+
+    // Update the popover lists.
     update_signal.emit();
 }
 
@@ -294,7 +342,7 @@ void FontCollections::add_font(const Glib::ustring& collection_name, const Glib:
 {
     // std::cout << "Collection: " << collection_name << ", Font: " << font_name <<std::endl;
 
-    if(font_name == "" || collection_name == "") {
+    if (font_name == "" || collection_name == "") {
         return;
     }
 
@@ -302,30 +350,52 @@ void FontCollections::add_font(const Glib::ustring& collection_name, const Glib:
     FontCollection temp_col(collection_name, false);
     auto node = _user_collections.extract(temp_col);
 
-    if(node && !node.empty()) {
+    if (node && !node.empty()) {
         node.value().insert_font(font_name);
         std::set <Glib::ustring> fonts = node.value().fonts;
         _user_collections.insert(std::move(node));
 
         write_collection(collection_name, fonts);
+
+        // Update the font list if the collection was already selected.
+        auto it = _selected_collections.find(collection_name);
+
+        if (it != _selected_collections.end()) {
+            // No need to send the update signal as the font list will be changed
+            // here only. No other widget is required to take any action.
+            Inkscape::FontLister::get_instance()->apply_collections(_selected_collections);
+        }
     }
 }
 
 // Remove a font.
 void FontCollections::remove_font(const Glib::ustring& collection_name, const Glib::ustring& font_name)
 {
+    if (font_name == "" || collection_name == "") {
+        return;
+    }
+
     // 1. Check if the font is present in the set
     FontCollection temp_col(collection_name, false);
     auto node = _user_collections.extract(temp_col);
 
     // 2. Delete the font if it exists.
-    if(node) {
+    if (node) {
         node.value().fonts.erase(font_name);
         std::set <Glib::ustring> fonts = node.value().fonts;
         _user_collections.insert(std::move(node));
 
         // Save the changes to the collection file.
         write_collection(collection_name, fonts);
+
+        // Update the font list if the collection was already selected.
+        auto it = _selected_collections.find(collection_name);
+
+        if (it != _selected_collections.end()) {
+            // No need to send the update signal as the font list will be changed
+            // here only. No other widget is required to take any action.
+            Inkscape::FontLister::get_instance()->apply_collections(_selected_collections);
+        }
     }
 }
 
@@ -333,19 +403,16 @@ void FontCollections::update_selected_collections(const Glib::ustring& collectio
 {
     auto it = _selected_collections.find(collection_name);
 
-    if(it != _selected_collections.end()) {
-        // This collection is already present in the selected collections.
-        // Remove it from the selected collections.
+    if (it != _selected_collections.end()) {
+        // Collection already present in the selected collections.
+        // Remove it.
         _selected_collections.erase(it);
     } else {
         _selected_collections.insert(collection_name);
     }
 
     // Re-generate the font list.
-    Inkscape::FontLister *font_lister = Inkscape::FontLister::get_instance();
-    // font_selector.unset_model();
-    font_lister->apply_collections(_selected_collections);
-    // font_selector.set_model();
+    Inkscape::FontLister::get_instance()->apply_collections(_selected_collections);
 
     // Emit the selection update signal.
     selection_update_signal.emit();
@@ -422,23 +489,23 @@ int FontCollections::get_collections_count(bool is_system)
 
 bool FontCollections::find_collection(const Glib::ustring& collection_name, bool is_system)
 {
-    FontCollection temp_collection(collection_name, true);
+    FontCollection temp_collection(collection_name, is_system);
 
-    if(is_system) {
+    if (is_system) {
         auto it = _system_collections.find(temp_collection);
 
-        if(it != _system_collections.end()) {
+        if (it != _system_collections.end()) {
             return true;
         }
     } else {
         auto it = _user_collections.find(temp_collection);
 
-        if(it != _user_collections.end()) {
+        if (it != _user_collections.end()) {
             return true;
         }
     }
 
-        return false;
+    return false;
 }
 
 // Get a set of the collections.

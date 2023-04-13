@@ -92,8 +92,6 @@ void FontCollectionsManager::on_search_entry_changed()
     _font_selector.unset_model();
     Inkscape::FontLister *font_lister = Inkscape::FontLister::get_instance();
     font_lister->show_results(search_txt);
-    SPDocument *document = getDesktop()->getDocument();
-    font_lister->add_document_fonts_at_top(document);
     _font_selector.set_model();
     change_font_count_label();
 }

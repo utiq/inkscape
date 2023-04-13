@@ -188,10 +188,13 @@ bool FontLister::find_string_case_insensitive(const std::string& text, const std
 
 void FontLister::show_results(const Glib::ustring& search_text)
 {
-    if(search_text == "") {
+    // Clear currently selected collections.
+    Inkscape::FontCollections::get()->clear_selected_collections();
+
+    if (search_text == "") {
         init_font_families();
         init_default_styles();
-
+        add_document_fonts_at_top(SP_ACTIVE_DOCUMENT);
         return;
     }
 
@@ -201,10 +204,10 @@ void FontLister::show_results(const Glib::ustring& search_text)
 
     // Start iterating over the families.
     // Take advantage of sorted families to speed up the search.
-    for(auto const& key_val: pango_family_map) {
+    for (auto const &key_val : pango_family_map) {
         std::string family_str = key_val.first;
 
-        if(find_string_case_insensitive(family_str, search_text)) {
+        if (find_string_case_insensitive(family_str, search_text)) {
             // count++;
             Gtk::TreeModel::iterator treeModelIter = font_list_store->append();
             (*treeModelIter)[FontList.family] = family_str;
@@ -219,6 +222,7 @@ void FontLister::show_results(const Glib::ustring& search_text)
     }
 
     // selected_fonts_count = count;
+    add_document_fonts_at_top(SP_ACTIVE_DOCUMENT);
     font_list_store->thaw_notify();
     init_default_styles();
 
@@ -233,44 +237,42 @@ void FontLister::apply_collections(std::set <Glib::ustring>& selected_collection
 
     FontCollections *font_collections = Inkscape::FontCollections::get();
 
-    for(auto const& col: selected_collections) {
-        if(col == Inkscape::DOCUMENT_FONTS) {
+    for (auto const &col : selected_collections) {
+        if (col == Inkscape::DOCUMENT_FONTS) {
             DocumentFonts* document_fonts = Inkscape::DocumentFonts::get();
 
-            for(auto font: document_fonts->get_fonts()) {
+            for (auto font : document_fonts->get_fonts()) {
                 fonts.insert(font);
             }
-        } else if(col == Inkscape::RECENTLY_USED_FONTS) {
+        } else if (col == Inkscape::RECENTLY_USED_FONTS) {
             RecentlyUsedFonts *recently_used = Inkscape::RecentlyUsedFonts::get();
 
-            for(auto font: recently_used->get_fonts()) {
+            for (auto font : recently_used->get_fonts()) {
                 fonts.insert(font);
             }
-
         } else {
             std::set <Glib::ustring> temp_set = font_collections->get_fonts(col);
 
-            for(auto const& font: temp_set) {
+            for (auto const &font : temp_set) {
                 fonts.insert(font);
             }
         }
-
     }
 
     // Freeze the font list.
     font_list_store->freeze_notify();
     font_list_store->clear();
 
-    if(fonts.empty()) {
+    if (fonts.empty()) {
         // Re-initialize the font list if
         // initialize_font_list();
         init_font_families();
         init_default_styles();
-
+        add_document_fonts_at_top(SP_ACTIVE_DOCUMENT);
         return;
     }
 
-    for(auto const& f: fonts) {
+    for (auto const &f : fonts) {
         Gtk::TreeModel::iterator treeModelIter = font_list_store->append();
         (*treeModelIter)[FontList.family] = f;
 
@@ -283,6 +285,7 @@ void FontLister::apply_collections(std::set <Glib::ustring>& selected_collection
         (*treeModelIter)[FontList.onSystem] = true;
     }
 
+    add_document_fonts_at_top(SP_ACTIVE_DOCUMENT);
     font_list_store->thaw_notify();
     init_default_styles();
 

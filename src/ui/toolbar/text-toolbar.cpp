@@ -296,11 +296,11 @@ TextToolbar::TextToolbar(SPDesktop *desktop)
 
         // This signal will keep both the Text and Font dialogue and
         // TextToolbar popovers in sync with each other.
-        font_collections->connect_selection_update([=]() { display_font_collections(); });
+        fc_changed_selection = font_collections->connect_selection_update([=]() { display_font_collections(); });
 
         // This one will keep the text toolbar Font Collections
         // updated in case of any change in the Font Collections.
-        font_collections->connect_update([=]() { display_font_collections(); });
+        fc_update = font_collections->connect_update([=]() { display_font_collections(); });
     }
 
     /* Font family */
@@ -2512,15 +2512,6 @@ void TextToolbar::display_font_collections()
         row->show_all();
         font_collections_list->append(*row);
     }
-
-    Inkscape::FontLister* font_lister = Inkscape::FontLister::get_instance();
-    SPDocument *document = _desktop->getDocument();
-
-    if(!document) {
-        return;
-    }
-
-    font_lister->add_document_fonts_at_top(document);
 }
 
 void TextToolbar::on_fcm_button_pressed()

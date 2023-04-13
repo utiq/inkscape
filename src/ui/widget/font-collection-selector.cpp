@@ -331,19 +331,19 @@ void FontCollectionSelector::populate_fonts(const Glib::ustring& collection_name
 
 void FontCollectionSelector::on_delete_icon_clicked(Glib::ustring const &path)
 {
+    FontCollections *collections = Inkscape::FontCollections::get();
     Gtk::TreeModel::iterator iter = store->get_iter(path);
     auto parent = (*iter)->parent();
-    FontCollections *collections = Inkscape::FontCollections::get();
-
     if(!parent) {
         // It is a collection.
-        // Warn the user and then proceed.
-        int response = deleltion_warning_message_dialog((*iter)[FontCollection.name]);
-
-        if (response != Gtk::RESPONSE_YES) {
-            return;
+        // No need to confirm in case of empty collections.
+        if (!collections->get_fonts((*iter)[FontCollection.name]).empty()) {
+            // Warn the user and then proceed.
+            int response = deleltion_warning_message_dialog((*iter)[FontCollection.name]);
+            if (response != Gtk::RESPONSE_YES) {
+                return;
+            }
         }
-
         collections->remove_collection((*iter)[FontCollection.name]);
     }
     else {
@@ -367,11 +367,14 @@ void FontCollectionSelector::on_rename_collection(const Glib::ustring& path, con
 {
     // Fetch the collections.
     FontCollections *collections = Inkscape::FontCollections::get();
+
+    // Check if the same collection is already present.
     bool is_system = collections->find_collection(new_text, true);
+    bool is_user = collections->find_collection(new_text, false);
 
     // Return if the new name is empty.
     // Do not allow user collections to be named as system collections.
-    if(new_text == "" || is_system) {
+    if (new_text == "" || is_system || is_user) {
         return;
     }
 
@@ -462,8 +465,8 @@ void FontCollectionSelector::on_edit_button_pressed()
 
 int FontCollectionSelector::deleltion_warning_message_dialog(const Glib::ustring &collection_name)
 {
-    Glib::ustring message = Glib::ustring::compose(_("Are you sure want to delete the \"%1\" font collection\n"),
-                                                   collection_name);
+    Glib::ustring message =
+        Glib::ustring::compose(_("Are you sure want to delete the \"%1\" font collection?\n"), collection_name);
     Gtk::MessageDialog dialog(message, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true);
     dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
     return dialog.run();
@@ -528,7 +531,6 @@ void FontCollectionSelector::on_drag_data_received(const Glib::RefPtr<Gdk::DragC
     Glib::ustring collection_name = (*iter)[FontCollection.name];
     auto font_name = Inkscape::FontLister::get_instance()->get_dragging_family();
 
-    // Case if the font is dragged in a system collection.
     FontCollections *collections = Inkscape::FontCollections::get();
     std::vector <Glib::ustring> system_collections = collections->get_collections(true);
     auto parent = (*iter)->parent();
@@ -543,6 +545,10 @@ void FontCollectionSelector::on_drag_data_received(const Glib::RefPtr<Gdk::DragC
             return;
         }
     } else {
+        if (treeview->row_expanded(path)) {
+            is_expanded = true;
+        }
+
         bool is_system = collections->find_collection(collection_name, true);
 
         if(is_system) {

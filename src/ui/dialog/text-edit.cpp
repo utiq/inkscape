@@ -547,9 +547,6 @@ void TextEdit::display_font_collections()
         row->show_all();
         collections_list->append(*row);
     }
-    Inkscape::FontLister *font_lister = Inkscape::FontLister::get_instance();
-    SPDocument *document = getDesktop()->getDocument();
-    font_lister->add_document_fonts_at_top(document);
 }
 
 void TextEdit::onFontFeatures(Gtk::Widget * widgt, int pos)
@@ -571,8 +568,6 @@ void TextEdit::on_search_entry_changed()
     font_selector.unset_model();
     Inkscape::FontLister *font_lister = Inkscape::FontLister::get_instance();
     font_lister->show_results(search_txt);
-    SPDocument *document = getDesktop()->getDocument();
-    font_lister->add_document_fonts_at_top(document);
     font_selector.set_model();
 }
 

@@ -107,6 +107,8 @@ private:
     int _cusor_numbers;
     SPStyle _query_cursor;
     double selection_fontsize;
+    auto_connection fc_changed_selection;
+    auto_connection fc_update;
     sigc::connection c_selection_changed;
     sigc::connection c_selection_modified;
     sigc::connection c_selection_modified_select_tool;

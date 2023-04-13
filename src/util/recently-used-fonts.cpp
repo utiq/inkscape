@@ -91,21 +91,29 @@ void RecentlyUsedFonts::read(const Glib::ustring& file_path)
     // Filestream object to read data from the file.
     std::ifstream input_file(file_path);
 
-    // Now read all the fonts stored in this file.
-    std::string line;
-    FontCollections *font_collections = Inkscape::FontCollections::get();
-    Inkscape::FontLister *font_lister= Inkscape::FontLister::get_instance();
+    // Check if the file opened or not.
+    if (input_file.is_open()) {
+        // Now read all the fonts stored in this file.
+        std::string line;
+        FontCollections *font_collections = Inkscape::FontCollections::get();
 
-    while(getline(input_file, line)) {
-        // Get rid of unwanted characters from the left and right.
-        line = font_collections->trim_left_and_right(line);
-        Glib::ustring font = line;
+        while (getline(input_file, line)) {
+            // Get rid of unwanted characters from the left and right.
+            line = font_collections->trim_left_and_right(line);
+            Glib::ustring font = line;
 
-        // Now check if the font is installed on the system because it is possible
-        // that a previously installed font may not be available now.
-        if(font_lister->font_installed_on_system(font)) {
-            _recent_list.push_front(font);
+            // Now check if the font is installed on the system because it is possible
+            // that a previously installed font may not be available now.
+            if (Inkscape::FontLister::get_instance()->font_installed_on_system(font)) {
+                _recent_list.push_front(font);
+            }
         }
+
+        // Important: Close the file after use!
+        input_file.close();
+    } else {
+        // Error: Failed to open the file.
+        // std::cout << "Failed to open file: " << file_path << std::endl;
     }
 }
 
@@ -120,14 +128,19 @@ void RecentlyUsedFonts::write_recently_used_fonts()
     std::fstream output_file;
     output_file.open(file_path, std::fstream::out);
 
-    for(auto it = _recent_list.rbegin(); it !=  _recent_list.rend(); ++it) {
-        // std::cout << ". Writing font:" << (*it) << std::endl;
-        output_file << (*it) << '\n';
-    }
+    // Check if the file opened or not.
+    if (output_file.is_open()) {
+        for (auto it = _recent_list.rbegin(); it != _recent_list.rend(); ++it) {
+            output_file << (*it) << '\n';
+        }
 
-    // Very Important: Close the file after use.
-    output_file.close();
-    init();
+        // Important: Close the file after use.
+        output_file.close();
+        init();
+    } else {
+        // Error: Failed to open the file.
+        // std::cout << "Failed to open file: " << file_path << std::endl;
+    }
 }
 
 void RecentlyUsedFonts::change_max_list_size(const int& max_size)
