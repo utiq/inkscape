@@ -344,7 +344,7 @@ void BatchExport::setup()
     // set them before connecting to signals
     setDefaultSelectionMode();
     setExporting(false);
-    queueRefresh();
+    queueRefresh(true);
 
     // Connect Signals
     for (auto [key, button] : selection_buttons) {
@@ -499,7 +499,7 @@ void BatchExport::refreshPreview()
     }
 }
 
-void BatchExport::loadExportHints()
+void BatchExport::loadExportHints(bool rename_file)
 {
     if (!_desktop) return;
 
@@ -507,7 +507,7 @@ void BatchExport::loadExportHints()
     auto old_filename = filename_entry->get_text();
     if (old_filename.empty()) {
         Glib::ustring filename = doc->getRoot()->getExportFilename();
-        if (filename.empty()) {
+        if (rename_file && filename.empty()) {
             Glib::ustring filename_entry_text = filename_entry->get_text();
             Glib::ustring extension = ".png";
             filename = Export::defaultFilename(doc, original_name, extension);
@@ -803,14 +803,14 @@ void BatchExport::queueRefreshItems()
     }, Glib::PRIORITY_HIGH);
 }
 
-void BatchExport::queueRefresh()
+void BatchExport::queueRefresh(bool rename_file)
 {
     if (refresh_conn) {
         return;
     }
-    refresh_conn = Glib::signal_idle().connect([this] {
+    refresh_conn = Glib::signal_idle().connect([this, rename_file] {
         refreshItems();
-        loadExportHints();
+        loadExportHints(rename_file);
         return false;
     }, Glib::PRIORITY_HIGH);
 }

@@ -92,7 +92,7 @@ public:
     void selectionModified(Inkscape::Selection *selection, guint flags);
     void pagesChanged();
     void queueRefreshItems();
-    void queueRefresh();
+    void queueRefresh(bool rename_file = false);
 
 private:
     enum selection_mode
@@ -145,7 +145,7 @@ private:
 
     void refreshPreview();
     void refreshItems();
-    void loadExportHints();
+    void loadExportHints(bool rename_file);
 
     void setExporting(bool exporting, Glib::ustring const &text = "", Glib::ustring const &test_batch = "");
 
