@@ -1500,11 +1500,14 @@ Gtk::Widget *DocumentProperties::createRightGridColumn(SPGrid *grid)
 
     rumg->setUnit(grid->getUnit()->abbr);
 
-    using namespace Inkscape::Util;
-    rsu_ox->setValue( Quantity::convert(grid->getOrigin()[Geom::X], "px", grid->getUnit()) );
-    rsu_oy->setValue( Quantity::convert(grid->getOrigin()[Geom::Y], "px", grid->getUnit()) );
-    rsu_sx->setValue( Quantity::convert(grid->getSpacing()[Geom::X], "px", grid->getUnit()) );
-    rsu_sy->setValue( Quantity::convert(grid->getSpacing()[Geom::Y], "px", grid->getUnit()) );
+    // Doc to px so unit is conserved in RegisteredScalerUnit
+    auto origin = grid->getOrigin() * doc->getDocumentScale();
+    rsu_ox->setValueKeepUnit(origin[Geom::X], "px");
+    rsu_oy->setValueKeepUnit(origin[Geom::Y], "px");
+
+    auto spacing = grid->getSpacing() * doc->getDocumentScale();
+    rsu_sx->setValueKeepUnit(spacing[Geom::X], "px");
+    rsu_sy->setValueKeepUnit(spacing[Geom::Y], "px");
 
     rsu_ax->setValue(grid->getAngleX());
     rsu_az->setValue(grid->getAngleZ());
