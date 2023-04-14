@@ -204,7 +204,6 @@ void SPNamedView::modified(unsigned int flags)
         }
 
         updateGuides();
-        updateGrids();
     }
     // Add desk color and checkerboard pattern to desk view
     for (auto desktop : views) {
@@ -290,6 +289,7 @@ void SPNamedView::set(SPAttr key, const gchar* value) {
         break;
     case SPAttr::SHOWGRIDS:
         this->grids_visible.readOrUnset(value);
+        updateGrids();
         break;
     case SPAttr::GRIDTOLERANCE:
         this->snap_manager.snapprefs.setGridTolerance(value ? g_ascii_strtod(value, nullptr) : 10000);

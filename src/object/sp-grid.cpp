@@ -61,6 +61,8 @@ void SPGrid::create_new(SPDocument *document, Inkscape::XML::Node *parent, GridT
     if (new_grid)
         new_grid->setPrefValues();
 
+    new_grid->setVisible(true);
+    new_grid->setUnit(document->getDisplayUnit()->abbr);
     Inkscape::GC::release(new_node);
 }
 
