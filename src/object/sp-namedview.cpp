@@ -793,15 +793,14 @@ void SPNamedView::toggleShowGrids()
 
 void SPNamedView::setShowGrids(bool v)
 {
-    bool saved = DocumentUndo::getUndoSensitive(document);
-    DocumentUndo::setUndoSensitive(document, false);
+    {
+        DocumentUndo::ScopedInsensitive ice(document);
 
-    if (v && grids.empty())
-        SPGrid::create_new(document, this->getRepr(), GridType::RECTANGULAR);
+        if (v && grids.empty())
+            SPGrid::create_new(document, this->getRepr(), GridType::RECTANGULAR);
 
-    getRepr()->setAttributeBoolean("showgrid", v);
-
-    DocumentUndo::setUndoSensitive(document, saved);
+        getRepr()->setAttributeBoolean("showgrid", v);
+    }
     requestModified(SP_OBJECT_MODIFIED_FLAG);
 }
 
@@ -866,9 +865,11 @@ void SPNamedView::updateGrids()
 
         saction->change_state(getShowGrids());
     }
-
-    for (auto grid : grids) {
-        grid->setVisible(getShowGrids());
+    {
+        DocumentUndo::ScopedInsensitive ice(document);
+        for (auto grid : grids) {
+            grid->setVisible(getShowGrids());
+        }
     }
 }
 
