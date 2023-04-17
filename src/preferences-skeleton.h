@@ -288,7 +288,6 @@ static char const preferences_skeleton[] =
        gamutcolor="#808080"
        gamutwarn="0"
        bpc="0"
-       preserveblack="0"
        uri="" />
     <group id="savewindowgeometry" value="1"/>
     <group id="defaultoffsetwidth" value="2px"/>

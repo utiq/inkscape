@@ -934,9 +934,6 @@ static bool gamutWarn = false;
 static Gdk::RGBA lastGamutColor("#808080");
 
 static bool lastBPC = false;
-#if defined(cmsFLAGS_PRESERVEBLACK)
-static bool lastPreserveBlack = false;
-#endif // defined(cmsFLAGS_PRESERVEBLACK)
 static int lastIntent = INTENT_PERCEPTUAL;
 static int lastProofIntent = INTENT_PERCEPTUAL;
 static cmsHTRANSFORM transf = nullptr;
@@ -1073,9 +1070,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayTransform()
     int intent = prefs->getIntLimited( "/options/displayprofile/intent", 0, 0, 3 );
     int proofIntent = prefs->getIntLimited( "/options/softproof/intent", 0, 0, 3 );
     bool bpc = prefs->getBool( "/options/softproof/bpc");
-#if defined(cmsFLAGS_PRESERVEBLACK)
-    bool preserveBlack = prefs->getBool( "/options/softproof/preserveblack");
-#endif //defined(cmsFLAGS_PRESERVEBLACK)
     Glib::ustring colorStr = prefs->getString("/options/softproof/gamutcolor");
     Gdk::RGBA gamutColor( colorStr.empty() ? "#808080" : colorStr );
 
@@ -1083,9 +1077,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayTransform()
          || (lastIntent != intent)
          || (lastProofIntent != proofIntent)
          || (bpc != lastBPC)
-#if defined(cmsFLAGS_PRESERVEBLACK)
-         || (preserveBlack != lastPreserveBlack)
-#endif // defined(cmsFLAGS_PRESERVEBLACK)
          || (gamutColor != lastGamutColor)
         ) {
         gamutWarn = warn;
@@ -1093,9 +1084,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayTransform()
         lastIntent = intent;
         lastProofIntent = proofIntent;
         lastBPC = bpc;
-#if defined(cmsFLAGS_PRESERVEBLACK)
-        lastPreserveBlack = preserveBlack;
-#endif // defined(cmsFLAGS_PRESERVEBLACK)
         lastGamutColor = gamutColor;
     }
 
@@ -1123,11 +1111,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayTransform()
             if ( bpc ) {
                 dwFlags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
             }
-#if defined(cmsFLAGS_PRESERVEBLACK)
-            if ( preserveBlack ) {
-                dwFlags |= cmsFLAGS_PRESERVEBLACK;
-            }
-#endif // defined(cmsFLAGS_PRESERVEBLACK)
             transf = cmsCreateProofingTransform( ColorProfileImpl::getSRGBProfile(), TYPE_BGRA_8, hprof, TYPE_BGRA_8, proofProf, intent, proofIntent, dwFlags );
         } else if ( hprof ) {
             transf = cmsCreateTransform( ColorProfileImpl::getSRGBProfile(), TYPE_BGRA_8, hprof, TYPE_BGRA_8, intent, 0 );
@@ -1233,9 +1216,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayPer(std::string const &id)
             int intent = prefs->getIntLimited( "/options/displayprofile/intent", 0, 0, 3 );
             int proofIntent = prefs->getIntLimited( "/options/softproof/intent", 0, 0, 3 );
             bool bpc = prefs->getBool( "/options/softproof/bpc");
-#if defined(cmsFLAGS_PRESERVEBLACK)
-            bool preserveBlack = prefs->getBool( "/options/softproof/preserveblack");
-#endif //defined(cmsFLAGS_PRESERVEBLACK)
             Glib::ustring colorStr = prefs->getString("/options/softproof/gamutcolor");
             Gdk::RGBA gamutColor( colorStr.empty() ? "#808080" : colorStr );
 
@@ -1243,9 +1223,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayPer(std::string const &id)
                     || (lastIntent != intent)
                     || (lastProofIntent != proofIntent)
                     || (bpc != lastBPC)
-#if defined(cmsFLAGS_PRESERVEBLACK)
-                    || (preserveBlack != lastPreserveBlack)
-#endif // defined(cmsFLAGS_PRESERVEBLACK)
                     || (gamutColor != lastGamutColor)
                ) {
                 gamutWarn = warn;
@@ -1253,9 +1230,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayPer(std::string const &id)
                 lastIntent = intent;
                 lastProofIntent = proofIntent;
                 lastBPC = bpc;
-#if defined(cmsFLAGS_PRESERVEBLACK)
-                lastPreserveBlack = preserveBlack;
-#endif // defined(cmsFLAGS_PRESERVEBLACK)
                 lastGamutColor = gamutColor;
             }
 
@@ -1281,11 +1255,6 @@ cmsHTRANSFORM Inkscape::CMSSystem::getDisplayPer(std::string const &id)
                     if ( bpc ) {
                         dwFlags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
                     }
-#if defined(cmsFLAGS_PRESERVEBLACK)
-                    if ( preserveBlack ) {
-                        dwFlags |= cmsFLAGS_PRESERVEBLACK;
-                    }
-#endif // defined(cmsFLAGS_PRESERVEBLACK)
                     item.transf = cmsCreateProofingTransform( ColorProfileImpl::getSRGBProfile(), TYPE_BGRA_8, item.hprof, TYPE_BGRA_8, proofProf, intent, proofIntent, dwFlags );
                 } else if ( item.hprof ) {
                     item.transf = cmsCreateTransform( ColorProfileImpl::getSRGBProfile(), TYPE_BGRA_8, item.hprof, TYPE_BGRA_8, intent, 0 );

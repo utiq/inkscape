@@ -514,7 +514,6 @@ protected:
     Gtk::ComboBoxText   _cms_proof_profile;
     UI::Widget::PrefCombo           _cms_proof_intent;
     UI::Widget::PrefCheckButton     _cms_proof_blackpoint;
-    UI::Widget::PrefCheckButton     _cms_proof_preserveblack;
 
     Gtk::Notebook       _grids_notebook;
     UI::Widget::PrefRadioButton     _grids_no_emphasize_on_zoom;

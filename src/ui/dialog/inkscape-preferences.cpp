@@ -2422,13 +2422,6 @@ void InkscapePreferences::initPageIO()
     _page_cms.add_line( true, "", _cms_proof_blackpoint, "",
                         _("Enables black point compensation"), false);
 
-    _cms_proof_preserveblack.init( _("Preserve black"), "/options/softproof/preserveblack", false);
-
-#if !defined(cmsFLAGS_PRESERVEBLACK)
-    _cms_proof_preserveblack.set_sensitive( false );
-#endif // !defined(cmsFLAGS_PRESERVEBLACK)
-
-
     {
         std::vector<Glib::ustring> names = ::Inkscape::CMSSystem::getDisplayNames();
         Glib::ustring current = prefs->getString( "/options/displayprofile/uri" );
