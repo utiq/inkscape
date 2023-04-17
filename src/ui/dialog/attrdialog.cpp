@@ -730,7 +730,7 @@ bool AttrDialog::onValueKeyPressed(GdkEventKey *event, Gtk::Entry *entry)
     switch (event->keyval) {
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter:
-            if (event->state & GDK_CONTROL_MASK) {
+            if (event->state & GDK_SHIFT_MASK) {
                 int pos = entry->get_position();
                 entry->insert_text("\n", 1, pos);
                 entry->set_position(pos + 1);
