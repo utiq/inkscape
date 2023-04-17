@@ -311,6 +311,11 @@ TextToolbar::TextToolbar(SPDesktop *desktop)
         Glib::RefPtr<Gtk::ListStore> store = fontlister->get_font_list();
         GtkListStore* model = store->gobj();
 
+        // Keep font list up to date with document fonts when refreshed.
+        _fonts_updated_signal = fontlister->connectNewFonts([=](){
+            fontlister->update_font_list(desktop->getDocument());
+        });
+
         _font_family_item =
             Gtk::manage(new UI::Widget::ComboBoxEntryToolItem( "TextFontFamilyAction",
                                                                _("Font Family"),
