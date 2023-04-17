@@ -728,6 +728,15 @@ bool AttrDialog::onValueKeyPressed(GdkEventKey *event, Gtk::Entry *entry)
     g_debug("StyleDialog::_onValueKeyPressed");
     bool ret = false;
     switch (event->keyval) {
+        case GDK_KEY_Return:
+        case GDK_KEY_KP_Enter:
+            if (event->state & GDK_CONTROL_MASK) {
+                int pos = entry->get_position();
+                entry->insert_text("\n", 1, pos);
+                entry->set_position(pos + 1);
+                ret = true;
+            }
+            break;
         case GDK_KEY_Tab:
         case GDK_KEY_KP_Tab:
             entry->editing_done();

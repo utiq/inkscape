@@ -732,6 +732,7 @@ static void repr_quote_write (Writer &out, const gchar * val)
                 case '&': out.writeString( "&amp;" ); break;
                 case '<': out.writeString( "&lt;" ); break;
                 case '>': out.writeString( "&gt;" ); break;
+                case '\n': out.writeString( "&#10;" ); break;
                 default: out.writeChar( *val ); break;
             }
         }
