@@ -355,11 +355,22 @@ override) the bindings in the main default.xml.
   <bind gaction="app.text-convert-to-regular" />
   <bind gaction="app.text-unkern" />
 
+  <!-- Extensions: Mostly these are unbound references to extensions used in other keys -->
+  <bind gaction="org.inkscape.text.uppercase" />
+  <bind gaction="org.inkscape.text.lowercase" />
+  <bind gaction="org.inkscape.text.title_case" />
+  <bind gaction="org.ekips.filter.interp.ekips" />
+  <bind gaction="org.ekips.filter.interp.noprefs" />
+  <bind gaction="org.ekips.filter.perspective.ekips" />
+  <bind gaction="org.ekips.filter.motion.ekips" />
+
   <!-- Effects -->
   <bind gaction="app.last-effect"                        keys="&lt;alt&gt;q" />
   <bind gaction="app.last-effect-pref"                   keys="&lt;shift&gt;&lt;alt&gt;q" />
 
   <!-- Help -->
   <bind gaction="app.about" />
+  <bind gaction="win.help-url-manual" />
+  <bind gaction="win.help-url-keys" />
 
 </keys>

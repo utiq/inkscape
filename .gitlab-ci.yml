@@ -361,6 +361,7 @@ media-check:
     - *run_otherwise
   script:
     - python3 buildtools/media-check-icons.py
+    - python3 buildtools/media-check-keys.py
 
 
 ##################################################
