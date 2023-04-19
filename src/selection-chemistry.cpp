@@ -767,16 +767,28 @@ Inkscape::XML::Node* ObjectSet::group(bool is_anchor) {
     this->clear();
 
     // Remember the position and parent of the topmost object.
-    gint topmost = p.back()->position();
-    Inkscape::XML::Node *topmost_parent = p.back()->parent();
+    Inkscape::XML::Node *topmost = p.back();
+    Inkscape::XML::Node *topmost_parent = topmost->parent();
+
+    // Find the topmost object first
+    for(auto current : p){
+        if (current->parent() == topmost_parent) {
+            if (current->position() > topmost->position()) {
+                topmost = current;
+            }
+        }
+    }
+    // Add as close to the top as we can get it
+    topmost_parent->addChild(group, topmost);
 
     for(auto current : p){
         if (current->parent() == topmost_parent) {
+
             Inkscape::XML::Node *spnew = current->duplicate(xml_doc);
             sp_repr_unparent(current);
             group->appendChild(spnew);
             Inkscape::GC::release(spnew);
-            topmost --; // only reduce count for those items deleted from topmost_parent
+
         } else { // move it to topmost_parent first
             std::vector<Inkscape::XML::Node*> temp_clip;
 
@@ -816,14 +828,6 @@ Inkscape::XML::Node* ObjectSet::group(bool is_anchor) {
             }
         }
     }
-
-    // Add the new group to the topmost members' parent
-    auto sibling = (topmost == 0) ? nullptr : topmost_parent->nthChild(topmost);
-    // Fix problematic adding, many functions depend on a group's order being maintained
-    // But a bad return from nthChild will put objects at the start instead of the end.
-    if (topmost && !sibling)
-        sibling = topmost_parent->lastChild();
-    topmost_parent->addChild(group, sibling);
 
     set(doc->getObjectByRepr(group));
 
