@@ -144,15 +144,15 @@ Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
         if (local_effects_menu && local_effects_menu->attribute("name") && !strcmp(local_effects_menu->attribute("name"), ("Filters"))) {
 
             std::vector<std::vector<Glib::ustring>>raw_data_filter =
-                {{ action_id, get_name(), "Filter", description },
-                 { action_id + ".noprefs", Glib::ustring(get_name()) + " " + _("(No preferences)"), "Filter", description }};
+                {{ action_id, get_name(), "Filters", description },
+                 { action_id + ".noprefs", Glib::ustring(get_name()) + " " + _("(No preferences)"), "Filters (no prefs)", description }};
             app->get_action_extra_data().add_data(raw_data_filter);
 
         } else {
 
             std::vector<std::vector<Glib::ustring>>raw_data_effect =
-                {{ action_id, get_name(), "Effect", description },
-                 { action_id + ".noprefs", Glib::ustring(get_name()) + " " + _("(No preferences)"), "Effect", description }};
+                {{ action_id, get_name(), "Extensions", description },
+                 { action_id + ".noprefs", Glib::ustring(get_name()) + " " + _("(No preferences)"), "Extensions (no prefs)", description }};
             app->get_action_extra_data().add_data(raw_data_effect);
 
             sub_menu_list.push_front("Effects");
