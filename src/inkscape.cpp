@@ -30,6 +30,7 @@
 #include <glibmm/miscutils.h>
 #include <glibmm/convert.h>
 
+#include "cms-system.h"
 #include "desktop.h"
 #include "device-manager.h"
 #include "document.h"
@@ -321,6 +322,7 @@ Application::~Application()
     }
 
     Inkscape::Preferences::unload();
+    Inkscape::CMSSystem::unload();
 
     _S_inst = nullptr; // this will probably break things
 

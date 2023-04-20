@@ -517,7 +517,7 @@ void icc_color_to_sRGB(SVGICCColor const* icc, guchar* r, guchar* g, guchar* b)
             if ( trans ) {
                 std::vector<colorspace::Component> comps = colorspace::getColorSpaceInfo( prof );
 
-                size_t count = Inkscape::CMSSystem::getChannelCount( prof );
+                size_t count = prof->getChannelCount();
                 size_t cap = std::min(count, comps.size());
                 guchar color_in[4];
                 for (size_t i = 0; i < cap; i++) {
@@ -525,8 +525,8 @@ void icc_color_to_sRGB(SVGICCColor const* icc, guchar* r, guchar* g, guchar* b)
                     g_message("input[%d]: %d", (int)i, (int)color_in[i]);
                 }
 
-                Inkscape::CMSSystem::doTransform( trans, color_in, color_out, 1 );
-g_message("transform to sRGB done");
+                Inkscape::CMSSystem::do_transform( trans, color_in, color_out, 1 );
+                g_message("transform to sRGB done");
             }
             *r = color_out[0];
             *g = color_out[1];

@@ -739,19 +739,20 @@ void CanvasPrivate::commit_tiles()
         tiles = std::move(rd.tiles);
     }
 
+    auto cms_system = Inkscape::CMSSystem::get();
     for (auto &tile : tiles) {
         // Todo: Make CMS system thread-safe, then move this to render thread too.
         if (q->_cms_active) {
             auto transf = prefs.from_display
-                        ? Inkscape::CMSSystem::getDisplayPer(q->_cms_key)
-                        : Inkscape::CMSSystem::getDisplayTransform();
+                ? cms_system->get_display_transform_monitor(q->_cms_key)
+                : cms_system->get_display_transform_system();
             if (transf) {
                 tile.surface->flush();
                 auto px = tile.surface->get_data();
                 int stride = tile.surface->get_stride();
                 for (int i = 0; i < tile.surface->get_height(); i++) {
                     auto row = px + i * stride;
-                    Inkscape::CMSSystem::doTransform(transf, row, row, tile.surface->get_width());
+                    Inkscape::CMSSystem::do_transform(transf, row, row, tile.surface->get_width());
                 }
                 tile.surface->mark_dirty();
             }

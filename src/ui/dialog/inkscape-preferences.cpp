@@ -2204,7 +2204,8 @@ static void profileComboChanged( Gtk::ComboBoxText* combo )
     } else {
         Glib::ustring active = combo->get_active_text();
 
-        Glib::ustring path = CMSSystem::getPathForProfile(active);
+        auto cms_system = Inkscape::CMSSystem::get();
+        Glib::ustring path = cms_system->get_path_for_profile(active);
         if ( !path.empty() ) {
             prefs->setString("/options/displayprofile/uri", path);
         }
@@ -2214,7 +2215,8 @@ static void profileComboChanged( Gtk::ComboBoxText* combo )
 static void proofComboChanged( Gtk::ComboBoxText* combo )
 {
     Glib::ustring active = combo->get_active_text();
-    Glib::ustring path = CMSSystem::getPathForProfile(active);
+    auto cms_system = Inkscape::CMSSystem::get();
+    Glib::ustring path = cms_system->get_path_for_profile(active);
 
     if ( !path.empty() ) {
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -2371,10 +2373,9 @@ void InkscapePreferences::initPageIO()
     _page_cms.add_group_header( _("Display adjustment"));
 
     Glib::ustring tmpStr;
-    for (auto &profile: ColorProfile::getBaseProfileDirs()) {
-        gchar* part = g_strdup_printf( "\n%s", profile.filename.c_str() );
-        tmpStr += part;
-        g_free(part);
+    for (auto& path : Inkscape::CMSSystem::get_directory_paths()) {
+        tmpStr += "\n";
+        tmpStr += path.first;
     }
 
     gchar* profileTip = g_strdup_printf(_("The ICC profile to use to calibrate display output.\nSearched directories:%s"), tmpStr.c_str());
@@ -2426,7 +2427,8 @@ void InkscapePreferences::initPageIO()
                         _("Enables black point compensation"), false);
 
     {
-        std::vector<Glib::ustring> names = ::Inkscape::CMSSystem::getDisplayNames();
+        auto cms_system = Inkscape::CMSSystem::get();
+        std::vector<Glib::ustring> names = cms_system->get_display_names();
         Glib::ustring current = prefs->getString( "/options/displayprofile/uri" );
 
         gint index = 0;
@@ -2434,7 +2436,7 @@ void InkscapePreferences::initPageIO()
         index++;
         for (auto & name : names) {
             _cms_display_profile.append( name );
-            Glib::ustring path = CMSSystem::getPathForProfile(name);
+            Glib::ustring path = cms_system->get_path_for_profile(name);
             if ( !path.empty() && path == current ) {
                 _cms_display_profile.set_active(index);
             }
@@ -2444,12 +2446,12 @@ void InkscapePreferences::initPageIO()
             _cms_display_profile.set_active(0);
         }
 
-        names = ::Inkscape::CMSSystem::getSoftproofNames();
+        names = cms_system->get_softproof_names();
         current = prefs->getString("/options/softproof/uri");
         index = 0;
         for (auto & name : names) {
             _cms_proof_profile.append( name );
-            Glib::ustring path = CMSSystem::getPathForProfile(name);
+            Glib::ustring path = cms_system->get_path_for_profile(name);
             if ( !path.empty() && path == current ) {
                 _cms_proof_profile.set_active(index);
             }

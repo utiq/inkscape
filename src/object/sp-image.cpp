@@ -252,12 +252,12 @@ void SPImage::apply_profile(Inkscape::Pixbuf *pixbuf) {
     guchar* px = pixbuf->pixels();
 
     if ( px ) {
-        DEBUG_MESSAGE( lcmsFive, "in <image>'s sp_image_update. About to call colorprofile_get_handle()" );
+        DEBUG_MESSAGE( lcmsFive, "in <image>'s sp_image_update. About to call get_document_profile()");
 
         guint profIntent = Inkscape::RENDERING_INTENT_UNKNOWN;
-        cmsHPROFILE prof = Inkscape::CMSSystem::getHandle( this->document,
-                                                           &profIntent,
-                                                           this->color_profile );
+        cmsHPROFILE prof = Inkscape::CMSSystem::get_document_profile(document,
+                                                                     &profIntent,
+                                                                     color_profile );
         if ( prof ) {
             cmsProfileClassSignature profileClass = cmsGetDeviceClass( prof );
             if ( profileClass != cmsSigNamedColorClass ) {

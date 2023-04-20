@@ -290,7 +290,7 @@ void ColorNotebook::_updateICCButtons()
 
         /* update too-much-ink icon */
         Inkscape::ColorProfile *prof = _document->getProfileManager().find(name.c_str());
-        if (prof && CMSSystem::isPrintColorSpace(prof)) {
+        if (prof && prof->isPrintColorSpace()) {
             gtk_widget_show(GTK_WIDGET(_box_toomuchink));
             double ink_sum = 0;
             for (double i : color.getColors()) {

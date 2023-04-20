@@ -146,7 +146,9 @@ void CMSPrefWatcher::hook(EgeColorProfTracker * /*tracker*/, gint monitor, CMSPr
     guint len = 0;
 
     ege_color_prof_tracker_get_profile_for( monitor, reinterpret_cast<gpointer*>(&buf), &len );
-    Glib::ustring id = Inkscape::CMSSystem::setDisplayPer( buf, len, monitor );
+
+    auto cms_system = Inkscape::CMSSystem::get();
+    Glib::ustring id = cms_system->set_display_transform_monitor(buf, len, monitor);
 }
 
 void CMSPrefWatcher::_setCmsSensitive(bool enabled)
@@ -159,7 +161,7 @@ void CMSPrefWatcher::_setCmsSensitive(bool enabled)
     }
 }
 
-static CMSPrefWatcher* watcher = nullptr;
+static CMSPrefWatcher* cms_pref_watcher = nullptr;
 
 SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     : window (inkscape_window)
@@ -274,6 +276,11 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     _tb_icon_sizes1 = prefs->createObserver(ToolboxFactory::tools_icon_size,    [=]() { set_toolbar_prefs(); });
     _tb_icon_sizes2 = prefs->createObserver(ToolboxFactory::ctrlbars_icon_size, [=]() { apply_ctrlbar_settings(); });
     _tb_visible_buttons = prefs->createObserver(ToolboxFactory::tools_visible_buttons, [=]() { set_visible_buttons(tool_toolbox); });
+
+    if (!cms_pref_watcher) {
+        cms_pref_watcher = new CMSPrefWatcher();
+    }
+    cms_pref_watcher->add(dtw);
 
     // restore preferences
     set_toolbar_prefs();
@@ -449,7 +456,8 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_tracker = ege_color_prof_tracker_new(GTK_WIDGET(_layer_selector->gobj()));
     bool fromDisplay = prefs->getBool( "/options/displayprofile/from_display");
     if ( fromDisplay ) {
-        auto id = Inkscape::CMSSystem::getDisplayId(0);
+        auto cms_system = Inkscape::CMSSystem::get();
+        auto id = cms_system->get_display_id(0);
         dtw->_canvas->set_cms_key(id);
         dtw->cms_adjust_set_sensitive(!id.empty());
     }
@@ -509,8 +517,8 @@ SPDesktopWidget::on_unrealize()
     }
 
     if (dtw->desktop) {
-        if ( watcher ) {
-            watcher->remove(dtw);
+        if (cms_pref_watcher) {
+            cms_pref_watcher->remove(dtw);
         }
 
         for (auto &conn : dtw->_connections) {
@@ -761,7 +769,8 @@ SPDesktopWidget::color_profile_event(EgeColorProfTracker */*tracker*/, SPDesktop
         if (monitor_at_index == monitor) monitorNum = i_monitor;
     }
 
-    Glib::ustring id = Inkscape::CMSSystem::getDisplayId( monitorNum );
+    auto cms_system = Inkscape::CMSSystem::get();
+    Glib::ustring id = cms_system->get_display_id(monitorNum);
     dtw->_canvas->set_cms_key(id);
     dtw->cms_adjust_set_sensitive(!id.empty());
 }

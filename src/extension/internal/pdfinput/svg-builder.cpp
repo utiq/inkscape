@@ -30,6 +30,7 @@
 #include "Page.h"
 #include "Stream.h"
 #include "UnicodeMap.h"
+#include "cms-util.h"
 #include "color.h"
 #include "display/cairo-utils.h"
 #include "display/nr-filter-utils.h"
@@ -37,7 +38,6 @@
 #include "extract-uri.h"
 #include "libnrtype/font-factory.h"
 #include "libnrtype/font-instance.h"
-#include "object/color-profile.h"
 #include "object/sp-defs.h"
 #include "object/sp-item-group.h"
 #include "object/sp-namedview.h"
@@ -901,8 +901,7 @@ std::string SvgBuilder::_getColorProfile(cmsHPROFILE hp)
     if (_icc_profiles.find(hp) != _icc_profiles.end())
         return _icc_profiles[hp];
 
-    std::string name = Inkscape::ColorProfile::getNameFromProfile(hp);
-    Inkscape::ColorProfile::sanitizeName(name);
+    std::string name = get_name_from_profile(hp);
 
     // Find the named profile in the document (if already added)
     if (_doc->getProfileManager().find(name.c_str()))
@@ -915,7 +914,7 @@ std::string SvgBuilder::_getColorProfile(cmsHPROFILE hp)
     cmsSaveProfileToMem(hp, buf, &len);
 
     Inkscape::XML::Node *icc_node = _xml_doc->createElement("svg:color-profile");
-    std::string label = Inkscape::ColorProfile::getNameFromProfile(hp);
+    std::string label = get_name_from_profile(hp);
     icc_node->setAttribute("inkscape:label", label);
     icc_node->setAttribute("name", name);
 

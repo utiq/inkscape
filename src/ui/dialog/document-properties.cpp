@@ -33,6 +33,7 @@
 #include "object/sp-root.h"
 #include "object/sp-grid.h"
 #include "object/sp-script.h"
+#include "cms-system.h"
 #include "page-manager.h"
 #include "rdf.h"
 #include "style.h"
@@ -481,23 +482,24 @@ void DocumentProperties::populate_available_profiles(){
     // Iterate through the list of profiles and add the name to the combo box.
     bool home = true; // initial value doesn't matter, it's just to avoid a compiler warning
     bool first = true;
-    for (auto &profile: ColorProfile::getProfileFilesWithNames()) {
+    auto cms_system = Inkscape::CMSSystem::get();
+    for (auto &info: cms_system->get_system_profile_infos()) {
         Gtk::TreeModel::Row row;
 
         // add a separator between profiles from the user's home directory and system profiles
-        if (!first && profile.isInHome != home)
+        if (!first && info.is_in_home() != home)
         {
           row = *(_AvailableProfilesListStore->append());
           row[_AvailableProfilesListColumns.fileColumn] = "<separator>";
           row[_AvailableProfilesListColumns.nameColumn] = "<separator>";
           row[_AvailableProfilesListColumns.separatorColumn] = true;
         }
-        home = profile.isInHome;
+        home = info.is_in_home();
         first = false;
 
         row = *(_AvailableProfilesListStore->append());
-        row[_AvailableProfilesListColumns.fileColumn] = profile.filename;
-        row[_AvailableProfilesListColumns.nameColumn] = profile.name;
+        row[_AvailableProfilesListColumns.fileColumn] = info.get_path();
+        row[_AvailableProfilesListColumns.nameColumn] = info.get_name();
         row[_AvailableProfilesListColumns.separatorColumn] = false;
     }
 }
@@ -527,7 +529,6 @@ void DocumentProperties::linkSelectedProfile()
         Inkscape::XML::Node *cprofRepr = xml_doc->createElement("svg:color-profile");
         gchar* tmp = g_strdup(name.c_str());
         std::string nameStr = tmp ? tmp : "profile"; // TODO add some auto-numbering to avoid collisions
-        ColorProfile::sanitizeName(nameStr);
         cprofRepr->setAttribute("name", nameStr);
         cprofRepr->setAttribute("xlink:href", Glib::filename_to_uri(Glib::filename_from_utf8(file)));
         cprofRepr->setAttribute("id", file);

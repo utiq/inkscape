@@ -13,6 +13,8 @@ set(inkscape_SRC
   auto-save.cpp
   axis-manip.cpp
   hsluv.cpp
+  cms-system.cpp
+  cms-util.cpp
   color.cpp
   composite-undo-stack-observer.cpp
   conditions.cpp
@@ -98,6 +100,7 @@ set(inkscape_SRC
   bad-uri-exception.h
   cms-color-types.h
   cms-system.h
+  cms-util.h
   color-profile-cms-fns.h
   color-rgba.h
   hsluv.h
