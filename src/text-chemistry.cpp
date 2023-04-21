@@ -522,6 +522,7 @@ text_unflow ()
                 // Remove 'shape-inside' property.
                 SPCSSAttr *css = sp_repr_css_attr(rtext, "style");
                 sp_repr_css_unset_property(css, "shape-inside");
+                sp_repr_css_unset_property(css, "shape-padding");
                 sp_repr_css_change(rtext, css, "style");
                 sp_repr_css_attr_unref(css);
 
