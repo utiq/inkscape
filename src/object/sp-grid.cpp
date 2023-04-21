@@ -129,7 +129,6 @@ void SPGrid::set(SPAttr key, const gchar* value)
             auto const grid_type = readGridType(value).value_or(GridType::RECTANGULAR); // default
             if (grid_type != _grid_type) {
                 _grid_type = grid_type;
-                setPrefValues();
                 _recreateViews();
             }
             break;
@@ -314,15 +313,17 @@ void SPGrid::setPrefValues()
     _display_unit = unit_table.getUnit(unit_pref);
 
     // Origin and Spacing are the only two properties that vary depending on selected units
-    // SPGrid should only store values in "px", convert whatever preferences are set to "px"
+    // SPGrid should only store values in document units, convert whatever preferences are set to "px"
+    // and then scale "px" to the document unit.
     using Inkscape::Util::Quantity;
+    auto scale = document->getDocumentScale().inverse();
     setOrigin(Geom::Point(
                 Quantity::convert(prefs->getDouble(prefix + "/origin_x"), _display_unit, "px"),
-                Quantity::convert(prefs->getDouble(prefix + "/origin_y"), _display_unit, "px") ) );
+                Quantity::convert(prefs->getDouble(prefix + "/origin_y"), _display_unit, "px")) * scale);
 
     setSpacing(Geom::Point(
                 Quantity::convert(prefs->getDouble(prefix + "/spacing_x"), _display_unit, "px"),
-                Quantity::convert(prefs->getDouble(prefix + "/spacing_y"), _display_unit, "px") ) );
+                Quantity::convert(prefs->getDouble(prefix + "/spacing_y"), _display_unit, "px")) * scale);
 
     setMajorColor(prefs->getColor(prefix + "/empcolor", GRID_DEFAULT_MAJOR_COLOR));
     setMinorColor(prefs->getColor(prefix + "/color", GRID_DEFAULT_MINOR_COLOR));
@@ -364,11 +365,12 @@ void SPGrid::update(SPCtx *ctx, unsigned int flags)
 {
     auto [origin, spacing] = getEffectiveOriginAndSpacing();
 
+    auto scale = document->getDocumentScale();
     for (auto &view : views) {
         view->set_visible(_visible && _enabled);
         if (_enabled) {
-            view->set_origin(origin);
-            view->set_spacing(spacing);
+            view->set_origin(origin * scale);
+            view->set_spacing(spacing * scale);
             view->set_major_color(_major_color);
             view->set_minor_color(_minor_color);
             view->set_dotted(_dotted);
