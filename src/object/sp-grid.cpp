@@ -29,6 +29,7 @@
 #include "page-manager.h"
 #include "snapper.h"
 #include "svg/svg-color.h"
+#include "svg/svg-length.h"
 #include "util/units.h"
 
 #include <glibmm/i18n.h>
@@ -45,7 +46,7 @@ SPGrid::SPGrid()
     , _legacy(false)
     , _pixel(true)
     , _grid_type(GridType::RECTANGULAR)
-{}
+{ }
 
 void SPGrid::create_new(SPDocument *document, Inkscape::XML::Node *parent, GridType type)
 {
@@ -288,6 +289,24 @@ void SPGrid::_checkOldGrid(SPDocument *doc, Inkscape::XML::Node *repr)
         repr->removeAttribute("gridopacity");
         repr->removeAttribute("gridempopacity");
         repr->removeAttribute("gridempspacing");
+    }
+    else {
+        // fix v1.2 grids without spacing, units, origin defined
+
+        auto fix = [=](SPAttr attr, const char* value) {
+            auto key = sp_attribute_name(attr);
+            if (!repr->attribute(key)) {
+                repr->setAttribute(key, value);
+                set(attr, value);
+            }
+        };
+        fix(SPAttr::ORIGINX, "0");
+        fix(SPAttr::ORIGINY, "0");
+        fix(SPAttr::SPACINGX, "1");
+        fix(SPAttr::SPACINGY, "1");
+        // check display unit from named view (parent)
+        auto unit = repr->parent() ? repr->parent()->attribute("units") : nullptr;
+        fix(SPAttr::UNITS, unit ? unit : "px");
     }
 }
 
