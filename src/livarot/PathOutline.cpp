@@ -111,7 +111,7 @@ void Path::Outline(Path *dest, double width, JoinType join, ButtType butt, doubl
                     } else if (typ == descr_arcto) {
                         PathDescrArcTo* nData = dynamic_cast<PathDescrArcTo*>(descr_cmd[curD]);
                         nextX = PrevPoint (curD - 1);
-                        rev->ArcTo (nextX, nData->rx,nData->ry,nData->angle,nData->large,nData->clockwise);
+                        rev->ArcTo (nextX, nData->rx,nData->ry,nData->angle,nData->large,!nData->clockwise);
                         curX = nextX;
                         curD--;
                     } else if (typ == descr_bezierto) {
