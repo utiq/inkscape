@@ -42,6 +42,7 @@
 #include "inkscape.h"
 #include "xml/quote.h"
 #include "mod360.h"
+#include "path/path-boolop.h"
 
 #include "sp-title.h"
 #include "sp-desc.h"
@@ -526,24 +527,15 @@ void SPText::_buildLayoutInit()
             // Find inside shape curves
             for (auto *href : style->shape_inside.hrefs) {
                 auto obj = href->getObject();
-                if (Shape *uncross = getInclusionShape(obj)) {
-                    // Subtrack padding shape
-                    auto padding = style->shape_padding.computed;
-                    if (std::fabs(padding) > 1e-12) {
-                        auto pad_shape = getInclusionShape(obj, true);
-                        Shape *copy = new Shape;
-                        copy->Booleen(uncross, pad_shape, padding > 0.0 ? bool_op_diff : bool_op_union);
-                        delete uncross;
-                        uncross = copy;
-                    }
+                if (Shape *textarea_shape = getInclusionShape(obj)) {
                     // Subtract exclusion shape
                     if (exclusion_shape && exclusion_shape->hasEdges()) {
                         Shape *copy = new Shape;
-                        copy->Booleen(uncross, const_cast<Shape*>(exclusion_shape), bool_op_diff);
-                        delete uncross;
-                        uncross = copy;
+                        copy->Booleen(textarea_shape, exclusion_shape, bool_op_diff);
+                        delete textarea_shape;
+                        textarea_shape = copy;
                     }
-                    layout.appendWrapShape(uncross);
+                    layout.appendWrapShape(textarea_shape);
                 } else {
                     std::cerr << "SPText::_buildLayoutInit(): Failed to get curve." << std::endl;
                 }
@@ -786,35 +778,58 @@ Shape* SPText::getExclusionShape() const
     return result.release();
 }
 
-Shape* SPText::getInclusionShape(SPShape *shape, bool padding) const
+Shape* SPText::getInclusionShape(SPShape *shape) const
 {
-    if (!shape || (padding && !style->shape_padding.set))
+    if (!shape) {
         return nullptr;
-
+    }
     if (!shape->curve()) {
         shape->set_shape();
     }
     auto curve = shape->curve();
-    if (!curve)
+    if (!curve) {
         return nullptr;
-
-    Path *temp = new Path;
-    temp->LoadPathVector(curve->get_pathvector(), shape->transform, true);
-    if (padding) {
-        Path *padded = new Path;
-        temp->Outline(padded, style->shape_padding.computed, join_round, butt_straight, 20.0);
-        delete temp;
-        temp = padded;
     }
-    temp->ConvertWithBackData(1.0);  // Convert to polyline
-    Shape* sh = new Shape;
-    temp->Fill( sh, 0 );
-    Shape *uncross = new Shape;
-    uncross->ConvertToShape( sh );
 
-    delete temp;
-    delete sh;
-    return uncross;
+    bool padding = style->shape_padding.set;
+    double padding_amount = 0.0;
+    if (padding) {
+        padding_amount = std::abs(style->shape_padding.computed);
+        if (padding_amount < 1e-12) {
+            padding = false;
+        }
+    }
+
+    auto pathvector = curve->get_pathvector();
+    sp_flatten(pathvector, fill_nonZero);
+
+    auto temp_path = std::make_unique<Path>();
+    temp_path->LoadPathVector(pathvector, shape->transform, true);
+
+    auto const make_nice_shape = [](std::unique_ptr<Path> const &contour) -> Shape * {
+        auto temp = std::make_unique<Shape>();
+        contour->ConvertWithBackData(1.0);
+        contour->Fill(temp.get(), 0);
+        Shape *result = new Shape;
+        result->ConvertToShape(temp.get());
+        return result;
+    };
+
+    Shape *result = nullptr;
+    if (padding) {
+        auto outline = std::make_unique<Path>();
+        temp_path->Outline(outline.get(), style->shape_padding.computed, join_round, butt_straight, 20.0);
+
+        std::unique_ptr<Shape> inclusion_shape{make_nice_shape(temp_path)};
+        std::unique_ptr<Shape> thickened_border{make_nice_shape(outline)};
+
+        result = new Shape;
+        result->Booleen(inclusion_shape.get(), thickened_border.get(), bool_op_diff);
+    } else {
+        result = make_nice_shape(temp_path);
+    }
+
+    return result;
 }
 
 // SVG requires one to use the first x/y value found on a child element if x/y not given on text

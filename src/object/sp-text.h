@@ -75,7 +75,7 @@ public:
     /** Union all exclusion shapes. */
     Shape* getExclusionShape() const;
     /** Add a single inclusion shape with padding */
-    Shape* getInclusionShape(SPShape *shape, bool padding = false) const;
+    Shape* getInclusionShape(SPShape *shape) const;
 
     std::optional<Geom::Point> getBaselinePoint() const;
 
