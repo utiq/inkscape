@@ -515,33 +515,10 @@ void SPText::_buildLayoutInit()
 
         // To do: follow SPItem clip_ref/mask_ref code
         if (style->shape_inside.set ) {
-
             layout.wrap_mode = Inkscape::Text::Layout::WRAP_SHAPE_INSIDE;
-
-            // Find union of all exclusion shapes
-            Shape *exclusion_shape = nullptr;
-            if(style->shape_subtract.set) {
-                exclusion_shape = getExclusionShape();
+            for (auto const *wrap_shape : makeEffectiveShapes()) {
+                layout.appendWrapShape(wrap_shape);
             }
-
-            // Find inside shape curves
-            for (auto *href : style->shape_inside.hrefs) {
-                auto obj = href->getObject();
-                if (Shape *textarea_shape = getInclusionShape(obj)) {
-                    // Subtract exclusion shape
-                    if (exclusion_shape && exclusion_shape->hasEdges()) {
-                        Shape *copy = new Shape;
-                        copy->Booleen(textarea_shape, exclusion_shape, bool_op_diff);
-                        delete textarea_shape;
-                        textarea_shape = copy;
-                    }
-                    layout.appendWrapShape(textarea_shape);
-                } else {
-                    std::cerr << "SPText::_buildLayoutInit(): Failed to get curve." << std::endl;
-                }
-            }
-            delete exclusion_shape;
-
         } else if (has_inline_size()) {
 
             layout.wrap_mode = Inkscape::Text::Layout::WRAP_INLINE_SIZE;
@@ -733,49 +710,50 @@ unsigned SPText::_buildLayoutInput(SPObject *object, Inkscape::Text::Layout::Opt
     return length;
 }
 
-Shape* SPText::getExclusionShape() const
+std::unique_ptr<Shape> SPText::getExclusionShape() const
 {
-    std::unique_ptr<Shape> result(new Shape()); // Union of all exclusion shapes
-    std::unique_ptr<Shape> shape_temp(new Shape());
+    auto result = std::make_unique<Shape>(); // Union of all exclusion shapes
 
     for (auto *href : style->shape_subtract.hrefs) {
         auto shape = href->getObject();
-
-        if ( shape ) {
-            // This code adapted from sp-flowregion.cpp: GetDest()
-            if (!shape->curve()) {
-                shape->set_shape();
-            }
-            SPCurve const *curve = shape->curve();
-
-            if ( curve ) {
-                Path *temp = new Path;
-                Path *margin = new Path;
-                temp->LoadPathVector( curve->get_pathvector(), shape->transform, true );
-
-                if( shape->style->shape_margin.set ) {
-                    temp->OutsideOutline ( margin, -shape->style->shape_margin.computed, join_round, butt_straight, 20.0 );
-                } else {
-                    margin->Copy( temp );
-                }
-
-                margin->Convert( 0.25 );  // Convert to polyline
-                Shape* sh = new Shape;
-                margin->Fill( sh, 0 );
-
-                Shape *uncross = new Shape;
-                uncross->ConvertToShape( sh );
-
-                if (result->hasEdges()) {
-                    shape_temp->Booleen(result.get(), uncross, bool_op_union);
-                    std::swap(result, shape_temp);
-                } else {
-                    result->Copy(uncross);
-                }
-            }
+        if (!shape) {
+            continue;
         }
+        if (!shape->curve()) {
+            shape->set_shape();
+        }
+        SPCurve const *curve = shape->curve();
+        if (!curve) {
+            continue;
+        }
+
+        auto temp = std::make_unique<Path>();
+        temp->LoadPathVector(curve->get_pathvector(), shape->transform, true);
+
+        auto margin = std::make_unique<Path>();
+        if (shape->style->shape_margin.set) {
+            temp->OutsideOutline(margin.get(), -shape->style->shape_margin.computed, join_round, butt_straight, 20.0);
+        } else {
+            margin = std::move(temp);
+        }
+
+        margin->Convert(0.25);  // Convert to polyline
+        auto livarot_shape = std::make_unique<Shape>();
+        margin->Fill(livarot_shape.get(), 0);
+
+        auto uncrossed = std::make_unique<Shape>();
+        uncrossed->ConvertToShape(livarot_shape.get());
+
+        if (result->hasEdges()) {
+            auto shape_temp = std::make_unique<Shape>();
+            shape_temp->Booleen(result.get(), uncrossed.get(), bool_op_union);
+            std::swap(result, shape_temp);
+        } else {
+            result->Copy(uncrossed.get());
+        }
+
     }
-    return result.release();
+    return result;
 }
 
 Shape* SPText::getInclusionShape(SPShape *shape) const
@@ -831,6 +809,36 @@ Shape* SPText::getInclusionShape(SPShape *shape) const
 
     return result;
 }
+
+std::vector<Shape *> SPText::makeEffectiveShapes() const
+{
+    // Find union of all exclusion shapes
+    std::unique_ptr<Shape> exclusion_shape;
+    if (style->shape_subtract.set) {
+        exclusion_shape = getExclusionShape();
+    }
+    bool const has_exclusion = exclusion_shape && exclusion_shape->hasEdges();
+
+    std::vector<Shape *> result;
+    // Find inside shape curves
+    for (auto *href : style->shape_inside.hrefs) {
+        auto obj = href->getObject();
+        if (Shape *textarea_shape = getInclusionShape(obj)) {
+            if (has_exclusion) {
+                // Subtract exclusion shape
+                Shape *copy = new Shape;
+                copy->Booleen(textarea_shape, exclusion_shape.get(), bool_op_diff);
+                delete textarea_shape;
+                textarea_shape = copy;
+            }
+            result.push_back(textarea_shape);
+        } else {
+            std::cerr << __FUNCTION__ <<  ": Failed to get curve." << std::endl;
+        }
+    }
+    return result;
+}
+
 
 // SVG requires one to use the first x/y value found on a child element if x/y not given on text
 // element. TODO: Recurse.

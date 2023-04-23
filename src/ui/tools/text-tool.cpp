@@ -1651,7 +1651,7 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
         }
 
         std::vector<SPItem const *> shapes;
-        Shape *exclusion_shape = nullptr;
+        std::unique_ptr<Shape> exclusion_shape;
         double padding = 0.0;
 
         // Frame around text
@@ -1696,9 +1696,8 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
 
         if (!curve.is_empty()) {
             bool has_padding = std::fabs(padding) > 1e-12;
-            bool has_exlusions = exclusion_shape;
 
-            if (has_padding || has_exlusions) {
+            if (has_padding || exclusion_shape) {
                 // Should only occur for SVG2 autoflowed text
                 // See sp-text.cpp function _buildLayoutInit()
                 Path *temp = new Path;
@@ -1739,7 +1738,7 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
                 // Remove exclusions plus margins from padding frame
                 if (exclusion_shape && exclusion_shape->hasEdges()) {
                     Shape *copy = new Shape;
-                    copy->Booleen(uncross, const_cast<Shape*>(exclusion_shape), bool_op_diff);
+                    copy->Booleen(uncross, exclusion_shape.get(), bool_op_diff);
                     delete uncross;
                     uncross = copy;
                 }
