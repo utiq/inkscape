@@ -290,9 +290,8 @@ void SPGrid::_checkOldGrid(SPDocument *doc, Inkscape::XML::Node *repr)
         repr->removeAttribute("gridempopacity");
         repr->removeAttribute("gridempspacing");
     }
-    else {
+    else if (repr->attribute("id")) {
         // fix v1.2 grids without spacing, units, origin defined
-
         auto fix = [=](SPAttr attr, const char* value) {
             auto key = sp_attribute_name(attr);
             if (!repr->attribute(key)) {
@@ -300,10 +299,22 @@ void SPGrid::_checkOldGrid(SPDocument *doc, Inkscape::XML::Node *repr)
                 set(attr, value);
             }
         };
+
         fix(SPAttr::ORIGINX, "0");
         fix(SPAttr::ORIGINY, "0");
-        fix(SPAttr::SPACINGX, "1");
         fix(SPAttr::SPACINGY, "1");
+        switch (readGridType(repr->attribute("type")).value_or(GridType::RECTANGULAR)) {
+            case GridType::RECTANGULAR:
+                fix(SPAttr::SPACINGX, "1");
+                break;
+            case GridType::AXONOMETRIC:
+                fix(SPAttr::ANGLE_X, "30");
+                fix(SPAttr::ANGLE_Z, "30");
+                break;
+            default:
+                break;
+        }
+
         // check display unit from named view (parent)
         auto unit = repr->parent() ? repr->parent()->attribute("units") : nullptr;
         fix(SPAttr::UNITS, unit ? unit : "px");
@@ -326,7 +337,8 @@ void SPGrid::setPrefValues()
         default: g_assert_not_reached(); break;
     }
 
-    auto unit_pref = prefs->getString(prefix + "/units");
+    auto display_unit = document->getDisplayUnit();
+    auto unit_pref = prefs->getString(prefix + "/units", display_unit->abbr);
     setUnit(unit_pref);
 
     _display_unit = unit_table.getUnit(unit_pref);
@@ -384,12 +396,11 @@ void SPGrid::update(SPCtx *ctx, unsigned int flags)
 {
     auto [origin, spacing] = getEffectiveOriginAndSpacing();
 
-    auto scale = document->getDocumentScale();
     for (auto &view : views) {
         view->set_visible(_visible && _enabled);
         if (_enabled) {
-            view->set_origin(origin * scale);
-            view->set_spacing(spacing * scale);
+            view->set_origin(origin);
+            view->set_spacing(spacing);
             view->set_major_color(_major_color);
             view->set_minor_color(_minor_color);
             view->set_dotted(_dotted);
@@ -469,11 +480,8 @@ std::pair<Geom::Point, Geom::Point> SPGrid::getEffectiveOriginAndSpacing() const
     auto spacing = ensure_min(getSpacing());
 
     auto const scale = document->getDocumentScale();
-    auto units = getUnit()->abbr;
-    if (unit_table.getUnit(units)->type != Inkscape::Util::UNIT_TYPE_LINEAR) {
-        origin *= scale;
-        spacing *= scale;
-    }
+    origin *= scale;
+    spacing *= scale;
 
     auto prefs = Inkscape::Preferences::get();
     if (prefs->getBool("/options/origincorrection/page", true))

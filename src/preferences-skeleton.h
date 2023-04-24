@@ -367,7 +367,6 @@ static char const preferences_skeleton[] =
     <group id="grids"
       no_emphasize_when_zoomedout="0">
       <group id="xy"
-             units="px"
              origin_x="0.0"
              origin_y="0.0"
              spacing_x="1.0"
