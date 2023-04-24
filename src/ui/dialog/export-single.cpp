@@ -188,13 +188,9 @@ void SingleExport::setup()
 
     // set them before connecting to signals
     setDefaultSelectionMode();
-
-    // Refresh values to sync them with defaults.
-    refreshArea();
-    refreshPage();
     setPagesMode(false);
     setExporting(false);
-    loadExportHints();
+
     // Refresh the filename when the user selects a different page
     _pages_list_changed = pages_list->signal_selected_children_changed().connect([=]() {
         loadExportHints();
@@ -668,6 +664,14 @@ void SingleExport::onExport()
     }
     // Save the export hints back to the svg document
     if (exportSuccessful) {
+
+        std::string path = Export::absolutizePath(_document, Glib::filename_from_utf8(filename));
+        auto recentmanager = Gtk::RecentManager::get_default();
+        if (recentmanager && Glib::path_is_absolute(path)) {
+            Glib::ustring uri = Glib::filename_to_uri(path);
+            recentmanager->add_item(uri);
+        }
+
         SPObject *target;
         switch (current_key) {
             case SELECTION_CUSTOM:
@@ -1017,8 +1021,10 @@ void SingleExport::setDocument(SPDocument *document)
         _preview_drawing = std::make_shared<PreviewDrawing>(document);
         preview->setDrawing(_preview_drawing);
 
+        // Refresh values to sync them with defaults.
         onPagesChanged();
         refreshArea();
+        loadExportHints();
     } else {
         _preview_drawing.reset();
         clearPagePreviews();

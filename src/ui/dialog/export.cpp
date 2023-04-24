@@ -291,12 +291,6 @@ bool Export::exportRaster(
         return false;
     }
 
-    auto recentmanager = Gtk::RecentManager::get_default();
-    if (recentmanager && Glib::path_is_absolute(path)) {
-        Glib::ustring uri = Glib::filename_to_uri(path);
-        recentmanager->add_item(uri);
-    }
-
     Glib::ustring safeFile = Inkscape::IO::sanitizeString(path.c_str());
     desktop->messageStack()->flashF(Inkscape::INFORMATION_MESSAGE, _("Drawing exported to <b>%s</b>."),
                                     safeFile.c_str());
@@ -450,12 +444,6 @@ bool Export::exportVector(
         sp_ui_error_dialog(error.c_str());
 
         return false;
-    }
-
-    auto recentmanager = Gtk::RecentManager::get_default();
-    if (recentmanager && Glib::path_is_absolute(path)) {
-        Glib::ustring uri = Glib::filename_to_uri(path);
-        recentmanager->add_item(uri);
     }
 
     desktop->messageStack()->flashF(Inkscape::INFORMATION_MESSAGE, _("Drawing exported to <b>%s</b>."),
