@@ -31,6 +31,7 @@ add_rendering_test(style-parsing)
 
 # -- Text tests --
 ## Many (if not all) of these tests are sensitive to the text rendering stack: FreeType, HarfBuzz, Pango.
+add_rendering_test(text-flow FUZZ 0.5)
 
 # add_rendering_test(test-baseline-shift)
 ## Small differences with code adapted for Pango 1.44.
