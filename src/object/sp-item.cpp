@@ -456,12 +456,15 @@ void SPItem::release()
     // ensureUpToDate() for triggered routing may reference
     // the deleted clip_ref.
     delete avoidRef;
+    avoidRef = nullptr;
 
     // we do NOT disconnect from the changed signal of those before deletion.
     // The destructor will call *_ref_changed with NULL as the new value,
     // which will cause the hide() function to be called.
     delete clip_ref;
+    clip_ref = nullptr;
     delete mask_ref;
+    mask_ref = nullptr;
 
     SPObject::release();
 
