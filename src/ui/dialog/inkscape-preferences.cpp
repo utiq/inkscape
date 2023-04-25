@@ -760,6 +760,20 @@ void InkscapePreferences::AddGradientCheckbox(DialogPage &p, Glib::ustring const
     p.add_line( false, "", *cb, "", _("Whether selected objects display gradient editing controls"));
 }
 
+void InkscapePreferences::AddLayerChangeCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value)
+{
+    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    cb->init ( _("Change layer on selection"), prefs_path + "/changelayer", def_value);
+    p.add_line( false, "", *cb, "", _("Whether changing the selected objects changes the selected layer"));
+}
+
+void InkscapePreferences::AddPageChangeCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value)
+{
+    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    cb->init ( _("Change page on selection"), prefs_path + "/changepage", def_value);
+    p.add_line( false, "", *cb, "", _("Whether changing the selected objects changes the selected page"));
+}
+
 void InkscapePreferences::AddConvertGuidesCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value) {
     PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
     cb->init ( _("Conversion to guides uses edges instead of bounding box"), prefs_path + "/convertguides", def_value);
@@ -939,6 +953,8 @@ void InkscapePreferences::initPageTools()
 
     AddSelcueCheckbox(_page_selector, "/tools/select", false);
     AddGradientCheckbox(_page_selector, "/tools/select", false);
+    AddLayerChangeCheckbox(_page_selector, "/tools/select", true);
+    AddPageChangeCheckbox(_page_selector, "/tools/select", true);
 
     _page_selector.add_group_header( _("When transforming, show"));
     _t_sel_trans_obj.init ( _("Objects"), "/tools/select/show", "content", true, nullptr);
@@ -961,6 +977,8 @@ void InkscapePreferences::initPageTools()
     //Node
     AddSelcueCheckbox(_page_node, "/tools/nodes", true);
     AddGradientCheckbox(_page_node, "/tools/nodes", true);
+    AddLayerChangeCheckbox(_page_node, "/tools/nodes", false);
+
     _page_node.add_group_header( _("Path outline"));
     _t_node_pathoutline_color.init(_("Path outline color"), "/tools/nodes/highlight_color", 0xff0000ff);
     _page_node.add_line( false, "", _t_node_pathoutline_color, "", _("Selects the color used for showing the path outline"), false);

@@ -643,6 +643,8 @@ protected:
 
     static void AddSelcueCheckbox(UI::Widget::DialogPage& p, Glib::ustring const &prefs_path, bool def_value);
     static void AddGradientCheckbox(UI::Widget::DialogPage& p, Glib::ustring const &prefs_path, bool def_value);
+    static void AddLayerChangeCheckbox(UI::Widget::DialogPage &p, Glib::ustring const &prefs_path, bool def_value);
+    static void AddPageChangeCheckbox(UI::Widget::DialogPage &p, Glib::ustring const &prefs_path, bool def_value);
     static void AddConvertGuidesCheckbox(UI::Widget::DialogPage& p, Glib::ustring const &prefs_path, bool def_value);
     static void AddFirstAndLastCheckbox(UI::Widget::DialogPage& p, Glib::ustring const &prefs_path, bool def_value);
     static void AddDotSizeSpinbutton(UI::Widget::DialogPage& p, Glib::ustring const &prefs_path, double def_value);

@@ -109,6 +109,10 @@ ToolBase::ToolBase(SPDesktop *desktop, std::string prefs_path, std::string curso
     // (this is only an additional safety measure against sloppy coding, because each
     // tool should take care of this by itself)
     discard_delayed_snap_event();
+
+    sp_event_context_read(this, "changelayer");
+    sp_event_context_read(this, "changepage");
+
 }
 
 ToolBase::~ToolBase()
@@ -120,8 +124,14 @@ ToolBase::~ToolBase()
 /**
  * Called by our pref_observer if a preference has been changed.
  */
-void ToolBase::set(Inkscape::Preferences::Entry const &/*val*/)
+void ToolBase::set(Inkscape::Preferences::Entry const &value)
 {
+    Glib::ustring entry_name = value.getEntryName();
+    if (entry_name == "changelayer") {
+        _desktop->getSelection()->setChangeLayer(value.getBool(false));
+    } else if (entry_name == "changepage") {
+        _desktop->getSelection()->setChangePage(value.getBool(false));
+    }
 }
 
 SPGroup *ToolBase::currentLayer() const

@@ -132,12 +132,16 @@ void Selection::_emitChanged(bool persist_selection_context/* = false */) {
       */
     if (_document && _desktop) {
         if (auto item = singleItem()) {
-            auto layer = _desktop->layerManager().layerForObject(item);
-            if (layer && layer != _selection_context) {
-                _desktop->layerManager().setCurrentLayer(layer);
+            if (_change_layer) {
+                auto layer = _desktop->layerManager().layerForObject(item);
+                if (layer && layer != _selection_context) {
+                    _desktop->layerManager().setCurrentLayer(layer);
+                }
             }
-            // This could be more complex if we want to be smarter.
-            _document->getPageManager().selectPage(item, false);
+            if (_change_page) {
+                // This could be more complex if we want to be smarter.
+                _document->getPageManager().selectPage(item, false);
+            }
         }
         DocumentUndo::resetKey(_document);
     }
