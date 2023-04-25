@@ -141,6 +141,7 @@ private:
     void on_fcm_button_pressed();
     void on_reset_button_pressed();
     Inkscape::XML::Node *unindent_node(Inkscape::XML::Node *repr, Inkscape::XML::Node *before);
+    bool mergeDefaultStyle(SPCSSAttr *css);
 
   protected:
     TextToolbar(SPDesktop *desktop);

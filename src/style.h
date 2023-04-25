@@ -66,6 +66,7 @@ public:
     void cascade(SPStyle const *parent);
     void merge(  SPStyle const *parent);
     void mergeString(char const *p);
+    void mergeCSS(SPCSSAttr *css);
     void mergeStatement(CRStatement *statement);
     bool operator==(SPStyle const &rhs);
 

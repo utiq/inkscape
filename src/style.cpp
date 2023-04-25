@@ -858,6 +858,13 @@ SPStyle::mergeString( gchar const *const p ) {
     _mergeString( p );
 }
 
+void
+SPStyle::mergeCSS(SPCSSAttr *css) {
+    Glib::ustring css_str;
+    sp_repr_css_write_string(css, css_str);
+    _mergeString(css_str.c_str());
+}
+
 /**
   * Append an existing css statement into this style, used in css editing
   * always appends declarations as STYLE_SHEET properties.

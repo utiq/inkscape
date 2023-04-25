@@ -819,15 +819,9 @@ TextToolbar::fontfamily_value_changed()
         SPCSSAttr *css = sp_repr_css_attr_new ();
         fontlister->fill_css( css );
 
-        SPDesktop   *desktop    = _desktop;
-        if( desktop->getSelection()->isEmpty() ) {
-            // Update default
-            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-            prefs->mergeStyle("/tools/text/style", css);
-        } else {
+        if (mergeDefaultStyle(css)) {
             // If there is a selection, update
-            sp_desktop_set_style (desktop, css, true, true); // Results in selection change called twice.
-            DocumentUndo::done(desktop->getDocument(), _("Text: Change font family"), INKSCAPE_ICON("draw-text"));
+            DocumentUndo::done(_desktop->getDocument(), _("Text: Change font family"), INKSCAPE_ICON("draw-text"));
         }
         sp_repr_css_attr_unref (css);
     }
@@ -897,17 +891,8 @@ TextToolbar::fontsize_value_changed()
         _line_height_adj->set_value(lineheight * factor);
         _freeze = true;
     }
-    // If no selected objects, set default.
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    } else {
-        // Save for undo
-        sp_desktop_set_style (_desktop, css, true, true);
+
+    if (mergeDefaultStyle(css)) {
         DocumentUndo::maybeDone(_desktop->getDocument(), "ttb:size", _("Text: Change font size"), INKSCAPE_ICON("draw-text"));
     }
 
@@ -940,16 +925,7 @@ TextToolbar::fontstyle_value_changed()
         SPDesktop   *desktop    = _desktop;
         sp_desktop_set_style (desktop, css, true, true);
 
-
-        // If no selected objects, set default.
-        SPStyle query(_desktop->getDocument());
-        int result_style =
-            sp_desktop_query_style (desktop, &query, QUERY_STYLE_PROPERTY_FONTSTYLE);
-        if (result_style == QUERY_STYLE_NOTHING) {
-            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-            prefs->mergeStyle("/tools/text/style", css);
-        } else {
-            // Save for undo
+        if (mergeDefaultStyle(css)) {
             DocumentUndo::done(desktop->getDocument(), _("Text: Change font style"), INKSCAPE_ICON("draw-text"));
         }
 
@@ -1162,20 +1138,7 @@ TextToolbar::align_mode_changed(int mode)
         }
     }
 
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
-
-    // If querying returned nothing, update default style.
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    }
-
-    sp_desktop_set_style (desktop, css, true, true);
-    if (result_numbers != QUERY_STYLE_NOTHING)
-    {
+    if (mergeDefaultStyle(css)) {
         DocumentUndo::done(_desktop->getDocument(), _("Text: Change alignment"), INKSCAPE_ICON("draw-text"));
     }
     sp_repr_css_attr_unref (css);
@@ -1216,20 +1179,7 @@ TextToolbar::writing_mode_changed(int mode)
             }
     }
 
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_WRITINGMODES);
-
-    // If querying returned nothing, update default style.
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    }
-
-    sp_desktop_set_style (_desktop, css, true, true);
-    if(result_numbers != QUERY_STYLE_NOTHING)
-    {
+    if (mergeDefaultStyle(css)) {
         DocumentUndo::done(_desktop->getDocument(), _("Text: Change writing mode"), INKSCAPE_ICON("draw-text"));
     }
     sp_repr_css_attr_unref (css);
@@ -1270,20 +1220,7 @@ TextToolbar::orientation_changed(int mode)
         }
     }
 
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_WRITINGMODES);
-
-    // If querying returned nothing, update default style.
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    }
-
-    sp_desktop_set_style (_desktop, css, true, true);
-    if(result_numbers != QUERY_STYLE_NOTHING)
-    {
+    if (mergeDefaultStyle(css)) {
         DocumentUndo::done(_desktop->getDocument(), _("Text: Change orientation"), INKSCAPE_ICON("draw-text"));
     }
     sp_repr_css_attr_unref (css);
@@ -1317,20 +1254,7 @@ TextToolbar::direction_changed(int mode)
         }
     }
 
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_WRITINGMODES);
-
-    // If querying returned nothing, update default style.
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    }
-
-    sp_desktop_set_style (_desktop, css, true, true);
-    if(result_numbers != QUERY_STYLE_NOTHING)
-    {
+    if (mergeDefaultStyle(css)) {
         DocumentUndo::done(_desktop->getDocument(), _("Text: Change direction"), INKSCAPE_ICON("draw-text"));
     }
     sp_repr_css_attr_unref (css);
@@ -1435,18 +1359,32 @@ TextToolbar::lineheight_value_changed()
         DocumentUndo::maybeDone(desktop->getDocument(), "ttb:line-height", _("Text: Change line-height"), INKSCAPE_ICON("draw-text"));
     }
 
-    // If no selected objects, set default.
-    SPStyle query(_desktop->getDocument());
-    int result_numbers = sp_desktop_query_style(desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    }
+    mergeDefaultStyle(css);
 
     sp_repr_css_attr_unref (css);
 
     _freeze = false;
+}
+
+/**
+ * Merge the style into either the tool or the desktop style depending on
+ * which one the user has decided to use in the preferences.
+ *
+ * @returns true if style was set to an object.
+ */
+bool TextToolbar::mergeDefaultStyle(SPCSSAttr *css)
+{
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+
+    // If no selected objects, set default.
+    SPStyle query(_desktop->getDocument());
+    int result_numbers = sp_desktop_query_style(_desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
+    if (result_numbers == QUERY_STYLE_NOTHING) {
+        prefs->mergeStyle("/tools/text/style", css);
+    }
+    // This updates the global style
+    sp_desktop_set_style (_desktop, css, true, true);
+    return result_numbers != QUERY_STYLE_NOTHING;
 }
 
 void
@@ -1652,15 +1590,7 @@ TextToolbar::lineheight_unit_changed(int /* Not Used */)
         DocumentUndo::maybeDone(_desktop->getDocument(), "ttb:line-height", _("Text: Change line-height unit"), INKSCAPE_ICON("draw-text"));
     }
 
-    // If no selected objects, set default.
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    }
+    mergeDefaultStyle(css);
 
     sp_repr_css_attr_unref (css);
 
@@ -1700,16 +1630,7 @@ TextToolbar::wordspacing_value_changed()
     sp_repr_css_set_property (css, "word-spacing", osfs.str().c_str());
     text_outer_set_style(css);
 
-    // If no selected objects, set default.
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    } else {
-        // Save for undo
+    if (mergeDefaultStyle(css)) {
         DocumentUndo::maybeDone(_desktop->getDocument(), "ttb:word-spacing", _("Text: Change word-spacing"), INKSCAPE_ICON("draw-text"));
     }
 
@@ -1735,18 +1656,7 @@ TextToolbar::letterspacing_value_changed()
     sp_repr_css_set_property (css, "letter-spacing", osfs.str().c_str());
     text_outer_set_style(css);
 
-    // If no selected objects, set default.
-    SPStyle query(_desktop->getDocument());
-    int result_numbers =
-        sp_desktop_query_style (_desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
-    if (result_numbers == QUERY_STYLE_NOTHING)
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->mergeStyle("/tools/text/style", css);
-    }
-    else
-    {
-        // Save for undo
+    if (mergeDefaultStyle(css)) {
         DocumentUndo::maybeDone(_desktop->getDocument(), "ttb:letter-spacing", _("Text: Change letter-spacing"), INKSCAPE_ICON("draw-text"));
     }
 
@@ -1984,6 +1894,7 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
                 sp_desktop_query_style(desktop, &query, QUERY_STYLE_PROPERTY_FONTNUMBERS);
     }
     
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     /*
      * If no text in selection (querying returned nothing), read the style from
      * the /tools/text preferences (default style for new texts). Return if
@@ -1993,8 +1904,14 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
         result_style   == QUERY_STYLE_NOTHING ||
         result_numbers == QUERY_STYLE_NOTHING ||
         result_wmode   == QUERY_STYLE_NOTHING ) {
+
         // There are no texts in selection, read from preferences.
-        query.readFromPrefs("/tools/text");
+        if (prefs->getBool("/tools/text/usecurrent")) {
+            query.mergeCSS(sp_desktop_get_style(desktop, true));
+        } else {
+            query.readFromPrefs("/tools/text");
+        }
+
 #ifdef DEBUG_TEXT
         std::cout << "    read style from prefs:" << std::endl;
         sp_print_font( &query );
@@ -2024,7 +1941,6 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
     {
         // Size (average of text selected)
 
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         int unit = prefs->getInt("/options/font/unitType", SP_CSS_UNIT_PT);
         double size = 0;
         if (!size && _cusor_numbers != QUERY_STYLE_NOTHING) {
