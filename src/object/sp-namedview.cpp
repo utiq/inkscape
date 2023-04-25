@@ -236,6 +236,37 @@ void SPNamedView::update(SPCtx *ctx, guint flags)
     }
 }
 
+const Inkscape::Util::Unit* sp_parse_document_units(const char* value) {
+    /* The default display unit if the document doesn't override this: e.g. for files saved as
+        * `plain SVG', or non-inkscape files, or files created by an inkscape 0.40 &
+        * earlier.
+        *
+        * Note that these units are not the same as the units used for the values in SVG!
+        *
+        * We default to `px'.
+        */
+    static Inkscape::Util::Unit const *px = unit_table.getUnit("px");
+    Inkscape::Util::Unit const *new_unit = px;
+
+    if (value) {
+        Inkscape::Util::Unit const *const req_unit = unit_table.getUnit(value);
+        if ( !unit_table.hasUnit(value) ) {
+            g_warning("Unrecognized unit `%s'", value);
+            /* fixme: Document errors should be reported in the status bar or
+                * the like (e.g. as per
+                * http://www.w3.org/TR/SVG11/implnote.html#ErrorProcessing); g_log
+                * should be only for programmer errors. */
+        } else if ( req_unit->isAbsolute() ) {
+            new_unit = req_unit;
+        } else {
+            g_warning("Document units must be absolute like `mm', `pt' or `px', but found `%s'", value);
+            /* fixme: Don't use g_log (see above). */
+        }
+    }
+
+    return new_unit;
+}
+
 void SPNamedView::set(SPAttr key, const gchar* value) {
     // Send page attributes to the page manager.
     if (document->getPageManager().subset(key, value)) {
@@ -344,36 +375,9 @@ void SPNamedView::set(SPAttr key, const gchar* value) {
     case SPAttr::INKSCAPE_CONNECTOR_SPACING:
         this->connector_spacing = value ? g_ascii_strtod(value, nullptr) : defaultConnSpacing;
         break;
-    case SPAttr::INKSCAPE_DOCUMENT_UNITS: {
-        /* The default display unit if the document doesn't override this: e.g. for files saved as
-            * `plain SVG', or non-inkscape files, or files created by an inkscape 0.40 &
-            * earlier.
-            *
-            * Note that these units are not the same as the units used for the values in SVG!
-            *
-            * We default to `px'.
-            */
-        static Inkscape::Util::Unit const *px = unit_table.getUnit("px");
-        Inkscape::Util::Unit const *new_unit = px;
-
-        if (value) {
-            Inkscape::Util::Unit const *const req_unit = unit_table.getUnit(value);
-            if ( !unit_table.hasUnit(value) ) {
-                g_warning("Unrecognized unit `%s'", value);
-                /* fixme: Document errors should be reported in the status bar or
-                    * the like (e.g. as per
-                    * http://www.w3.org/TR/SVG11/implnote.html#ErrorProcessing); g_log
-                    * should be only for programmer errors. */
-            } else if ( req_unit->isAbsolute() ) {
-                new_unit = req_unit;
-            } else {
-                g_warning("Document units must be absolute like `mm', `pt' or `px', but found `%s'", value);
-                /* fixme: Don't use g_log (see above). */
-            }
-        }
-        this->display_units = new_unit;
+    case SPAttr::INKSCAPE_DOCUMENT_UNITS:
+        display_units = sp_parse_document_units(value);
         break;
-    }
     case SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING:
         clip_to_page.readOrUnset(value);
         break;

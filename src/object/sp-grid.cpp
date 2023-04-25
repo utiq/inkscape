@@ -315,8 +315,17 @@ void SPGrid::_checkOldGrid(SPDocument *doc, Inkscape::XML::Node *repr)
                 break;
         }
 
-        // check display unit from named view (parent)
-        auto unit = repr->parent() ? repr->parent()->attribute("units") : nullptr;
+        const char* unit = nullptr;
+        if (auto nv = repr->parent()) {
+            // check display unit from named view (parent)
+            unit = nv->attribute("units");
+            // check document units if there are no display units defined
+            if (!unit) {
+                unit = nv->attribute("inkscape:document-units");
+                auto display_units = sp_parse_document_units(unit);
+                unit = display_units->abbr.c_str();
+            }
+        }
         fix(SPAttr::UNITS, unit ? unit : "px");
     }
 }

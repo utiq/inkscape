@@ -156,6 +156,7 @@ void sp_namedview_zoom_and_view_from_document(SPDesktop *desktop);
 void sp_namedview_document_from_window(SPDesktop *desktop);
 void sp_namedview_update_layers_from_document (SPDesktop *desktop);
 
+const Inkscape::Util::Unit* sp_parse_document_units(const char* unit);
 
 
 #endif /* !INKSCAPE_SP_NAMEDVIEW_H */
