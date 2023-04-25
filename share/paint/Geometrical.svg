@@ -611,56 +611,6 @@
        x="0"
        y="0" />
     <pattern
-       patternUnits="userSpaceOnUse"
-       width="100"
-       height="100.00002"
-       patternTransform="translate(54.999997,174.99999) scale(0.5)"
-       preserveAspectRatio="xMidYMid"
-       style="fill:#000000"
-       id="pattern14-3"
-       inkscape:label="Abstract 5">
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="m 3e-6,10.00001 10,-10 15,15 15,-15 10,10 -15,15 h -20 z"
-         id="path9"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="m 9.999998,100.00002 -9.999997,-10 14.999999,-15 -15,-15 10.000003,-10.00001 14.999995,15.00001 4e-6,19.99999 z"
-         id="path8-91"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="m 3e-6,35.00001 10,-10 15,15 15,-15 10,10 -15,15 h -20 z"
-         id="path10-7"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="m 34.999994,100.00002 -9.999993,-10 14.999999,-15 -15,-15 10.000003,-10.00001 15,15.00001 1e-5,20 z"
-         id="path7-3"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="m 100,90.00001 -9.999997,10 -15,-15 -15,15 -10,-10 15,-15 h 20 z"
-         id="path11-1"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="M 90.000013,0 100,10 85.000003,25 100,40 90.000003,50.00001 75.000013,35 l -10e-6,-19.99999 z"
-         id="path12-8"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="m 100,65.00001 -9.999997,10 -15,-15 -15,15 -10,-10 15,-15 h 20 z"
-         id="path13"
-         sodipodi:nodetypes="cccccccc" />
-      <path
-         style="stroke:none;stroke-width:10;stroke-linecap:butt;stroke-dasharray:none;paint-order:stroke markers fill;stop-color:#000000"
-         d="m 65.000013,0 9.99999,10 -15,15 15,15 -10,10.00001 -15,-15.00001 -10e-6,-20 z"
-         id="path14-93"
-         sodipodi:nodetypes="cccccccc" />
-    </pattern>
-    <pattern
        inkscape:collect="always"
        xlink:href="#pattern18-7"
        preserveAspectRatio="xMidYMid"
