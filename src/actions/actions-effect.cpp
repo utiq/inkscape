@@ -55,6 +55,26 @@ last_effect_pref(InkscapeApplication *app)
     effect->prefs(InkscapeApplication::instance()->get_active_view());
 }
 
+void
+enable_effect_actions(InkscapeApplication* app, bool enabled)
+{
+    auto gapp = app->gio_app();
+    auto le_action = gapp->lookup_action("last-effect");
+    auto lep_action = gapp->lookup_action("last-effect-pref");
+    auto le_saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(le_action);
+    auto lep_saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(lep_action);
+    // GTK4
+    // auto le_saction = dynamic_cast<Gio::SimpleAction*>(le_action);
+    // auto lep_saction = dynamic_cast<Gio::SimpleAction*>(lep_action);
+    if (!le_saction || !lep_saction) {
+        g_warning("Unable to find Extension actions.");
+        return;
+    }
+    // Enable/disable menu items.
+    le_saction->set_enabled(enabled);
+    lep_saction->set_enabled(enabled);
+}
+
 std::vector<std::vector<Glib::ustring>> raw_data_effect =
 {
     // clang-format off

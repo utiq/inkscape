@@ -28,6 +28,7 @@
 
 #include <glibmm/i18n.h>
 
+#include "actions/actions-effect.h"
 #include "inkscape-application.h" // Open recent
 #include "preferences.h"          // Use icons or not
 #include "io/resource.h"          // UI File location
@@ -62,6 +63,7 @@ build_menu()
     } else {
 
         static auto app = InkscapeApplication::instance();
+        enable_effect_actions(app, false);
         std::map<Glib::ustring, Glib::ustring>& label_to_tooltip_map = app->get_menu_label_to_tooltip_map();
         label_to_tooltip_map.clear();
 

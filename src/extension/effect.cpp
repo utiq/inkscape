@@ -21,7 +21,7 @@
 #include "prefdialog/prefdialog.h"
 #include "ui/view/view.h"
 #include "inkscape-application.h"
-
+#include "actions/actions-effect.h"
 
 /* Inkscape::Extension::Effect */
 
@@ -315,6 +315,7 @@ void
 Effect::set_last_effect (Effect * in_effect)
 {
     _last_effect = in_effect;
+    enable_effect_actions(InkscapeApplication::instance(), !!in_effect);
     return;
 }
 
