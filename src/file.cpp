@@ -1219,6 +1219,8 @@ void file_import_pages(SPDocument *this_doc, SPDocument *that_doc)
         this_page->copyFrom(that_page);
     }
 
+    // Unwind the document scales for the imported objects
+    tr = this_doc->getDocumentScale().inverse() * that_doc->getDocumentScale() * tr;
     Inkscape::ObjectSet set(this_doc);
     for (Inkscape::XML::Node *that_repr = that_root->firstChild(); that_repr; that_repr = that_repr->next()) {
         // Don't copy metadata, defs, named views and internal clipboard contents to the document
