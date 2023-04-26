@@ -58,32 +58,48 @@ namespace Dialog {
 BatchItem::BatchItem(SPItem *item, std::shared_ptr<PreviewDrawing> drawing)
 {
     _item = item;
-
-    Glib::ustring id = _item->defaultLabel();
-    if (id.empty()) {
-        if (auto _id = _item->getId()) {
-            id = _id;
-        } else {
-            id = "no-id";
-        }
-    }
-    init(id, drawing);
+    init(drawing);
+    _object_modified_conn = _item->connectModified([=](SPObject *obj, unsigned int flags) {
+        update_label();
+    });
+    update_label();
 }
 
 BatchItem::BatchItem(SPPage *page, std::shared_ptr<PreviewDrawing> drawing)
 {
     _page = page;
-
-    Glib::ustring label = _page->getDefaultLabel();
-    if (auto id = _page->label()) {
-        label = id;
-    }
-    init(label, drawing);
+    init(drawing);
+    _object_modified_conn = _page->connectModified([=](SPObject *obj, unsigned int flags) {
+        update_label();
+    });
+    update_label();
 }
 
-void BatchItem::init(Glib::ustring label, std::shared_ptr<PreviewDrawing> drawing) {
-
+void BatchItem::update_label()
+{
+    Glib::ustring label = "no-name";
+    if (_page) {
+        label = _page->getDefaultLabel();
+        if (auto id = _page->label()) {
+            label = id;
+        }
+    } else if (_item) {
+        label = _item->defaultLabel();
+        if (label.empty()) {
+            if (auto _id = _item->getId()) {
+                label = _id;
+            } else {
+                label = "no-id";
+            }
+        }
+    }
     _label_str = label;
+    _label.set_text(label);
+    set_tooltip_text(label);
+}
+
+void BatchItem::init(std::shared_ptr<PreviewDrawing> drawing) {
+
 
     _grid.set_row_spacing(5);
     _grid.set_column_spacing(5);
@@ -111,14 +127,12 @@ void BatchItem::init(Glib::ustring label, std::shared_ptr<PreviewDrawing> drawin
     _label.set_width_chars(10);
     _label.set_ellipsize(Pango::ELLIPSIZE_END);
     _label.set_halign(Gtk::Align::ALIGN_CENTER);
-    _label.set_text(label);
 
     set_valign(Gtk::Align::ALIGN_START);
     set_halign(Gtk::Align::ALIGN_START);
     add(_grid);
     show();
     this->set_can_focus(false);
-    this->set_tooltip_text(label);
 
     _selector.signal_toggled().connect([=]() {
         set_selected(_selector.get_active());

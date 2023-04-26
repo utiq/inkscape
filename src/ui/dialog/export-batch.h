@@ -62,7 +62,8 @@ public:
     void update_selected();
 
 private:
-    void init(Glib::ustring label, std::shared_ptr<PreviewDrawing> drawing);
+    void init(std::shared_ptr<PreviewDrawing> drawing);
+    void update_label();
 
     Glib::ustring _label_str;
     Gtk::Grid _grid;
@@ -75,6 +76,7 @@ private:
     bool is_hide = false;
 
     auto_connection _selection_widget_changed_conn;
+    auto_connection _object_modified_conn;
 };
 
 class BatchExport : public Gtk::Box
