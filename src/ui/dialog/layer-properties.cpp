@@ -387,7 +387,6 @@ bool LayerPropertiesDialog::_handleKeyEvent(GdkEventKey *event)
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter: {
             _apply();
-            _close();
             return true;
         }
     }
