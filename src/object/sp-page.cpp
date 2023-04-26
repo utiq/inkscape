@@ -214,6 +214,9 @@ void SPPage::setRect(Geom::Rect rect)
     this->width = rect.width();
     this->height = rect.height();
 
+    // always clear size label, toolbar is responsible for putting it back if needed.
+    this->_size_label = "";
+
     // This is needed to update the xml
     this->updateRepr();
 
