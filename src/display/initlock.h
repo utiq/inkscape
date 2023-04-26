@@ -15,7 +15,7 @@ public:
     void init(F &&f) const
     {
         // Make sure the fast path is a single load-acquire - not guaranteed with std::once_flag.
-        if (inited.load(std::memory_order_acquire)) [[likely]] {
+        [[likely]] if (inited.load(std::memory_order_acquire)) {
             return;
         }
 

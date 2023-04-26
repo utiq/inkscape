@@ -1538,7 +1538,7 @@ Geom::PathVector SPItem::combined_pathvector(int depth) const
         Geom::PathVector result;
         for (auto const &c : children) {
             if (auto item = cast<SPItem>(&c)) {
-                auto pathv = item->combined_pathvector(depth - 1);
+                auto pathv = item->combined_pathvector(depth - 1) * item->transform;
                 result.insert(result.end(), pathv.begin(), pathv.end());
             }
         }
@@ -1727,23 +1727,21 @@ void SPItem::set_item_transform(Geom::Affine const &transform_matrix)
 //	this->convert_to_guides();
 //}
 
+Geom::Affine i2anc_affine(SPObject const *object, SPObject const *ancestor)
+{
+    Geom::Affine ret;
 
-Geom::Affine i2anc_affine(SPObject const *object, SPObject const *const ancestor) {
-    Geom::Affine ret(Geom::identity());
-    g_return_val_if_fail(object != nullptr, ret);
-
-    /* stop at first non-renderable ancestor */
-    while ( object != ancestor && cast<SPItem>(object) ) {
-        SPRoot const *root = cast<SPRoot>(object);
-        if (root) {
+    // Stop at first non-renderable ancestor.
+    while (object != ancestor && is<SPItem>(object)) {
+        if (auto root = cast<SPRoot>(object)) {
             ret *= root->c2p;
         } else {
-            SPItem const *item = cast<SPItem>(object);
-            g_assert(item != nullptr);
+            auto item = cast_unsafe<SPItem>(object);
             ret *= item->transform;
         }
         object = object->parent;
     }
+
     return ret;
 }
 
@@ -1765,9 +1763,7 @@ Geom::Affine SPItem::i2doc_affine() const
 
 Geom::Affine SPItem::i2dt_affine() const
 {
-    Geom::Affine ret(i2doc_affine());
-    ret *= document->doc2dt();
-    return ret;
+    return i2doc_affine() * document->doc2dt();
 }
 
 // TODO should be named "set_i2dt_affine"
