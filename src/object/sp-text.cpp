@@ -1196,12 +1196,12 @@ Inkscape::XML::Node* SPText::get_first_rectangle()
     return nullptr;
 }
 
-void SPText::getLinked(std::vector<SPObject *> &objects) const
+void SPText::getLinked(std::vector<SPObject *> &objects, bool ignore_clones) const
 {
     for (auto item : get_all_shape_dependencies()) {
         objects.push_back(item);
     }
-    SPObject::getLinked(objects);
+    SPObject::getLinked(objects, ignore_clones);
 }
 
 /**

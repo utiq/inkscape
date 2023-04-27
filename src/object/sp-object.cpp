@@ -37,6 +37,8 @@
 #include "sp-font.h"
 #include "sp-paint-server.h"
 #include "sp-root.h"
+#include "sp-use.h"
+#include "sp-use-reference.h"
 #include "sp-style-elem.h"
 #include "sp-script.h"
 #include "streq.h"
@@ -307,9 +309,14 @@ void SPObject::_updateTotalHRefCount(int increment) {
     }
 }
 
-void SPObject::getLinked(std::vector<SPObject *> &objects) const
+void SPObject::getLinked(std::vector<SPObject *> &objects, bool ignore_clones) const
 {
     for (auto linked : hrefList) {
+        if (auto link = cast<SPUse>(linked)) {
+            if (ignore_clones && link->ref && link->ref->getObject() == this) {
+                continue;
+            }
+        }
         objects.push_back(linked);
     }
 }
@@ -551,7 +558,7 @@ void SPObject::cropToObjects(std::vector<SPObject *> except_objects)
 
     // Make sure we have all related objects so we don't delete
     // things which will later cause a crash.
-    getLinkedObjects(except_objects);
+    getLinkedObjects(except_objects, true);
 
     // Collect a list of objects we expect to delete.
     getObjectsExcept(toDelete, except_objects);
@@ -584,12 +591,12 @@ void SPObject::getObjectsExcept(std::vector<SPObject *> &objects, const std::vec
     }
 }
 
-void SPObject::getLinkedObjects(std::vector<SPObject *> &objects) const
+void SPObject::getLinkedObjects(std::vector<SPObject *> &objects, bool ignore_clones) const
 {
-    getLinked(objects);
+    getLinked(objects, ignore_clones);
     for (auto &child : children) {
         if (is<SPItem>(&child)) {
-            child.getLinkedObjects(objects);
+            child.getLinkedObjects(objects, ignore_clones);
         }
     }
 }

@@ -254,7 +254,7 @@ public:
     /**
      * True if object is linked to us
      */
-    virtual void getLinked(std::vector<SPObject *> &objects) const;
+    virtual void getLinked(std::vector<SPObject *> &objects, bool ignore_clones) const;
 
     /**
      * True if object is non-NULL and this is some in/direct parent of object.
@@ -493,8 +493,10 @@ public:
 
     /**
      * Grows the input list with any and all linked items.
+     *
+     * @param ignore_clones - Links between objects and their child clones are not counted
      */
-    void getLinkedObjects(std::vector<SPObject *> &objects) const;
+    void getLinkedObjects(std::vector<SPObject *> &objects, bool ignore_clones) const;
 
     /**
      * Connects a slot to be called when an object is deleted.

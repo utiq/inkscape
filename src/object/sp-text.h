@@ -125,7 +125,7 @@ private:
     void hide(unsigned int key) override;
     void snappoints(std::vector<Inkscape::SnapCandidatePoint> &p, Inkscape::SnapPreferences const *snapprefs) const override;
     Geom::Affine set_transform(Geom::Affine const &transform) override;
-    void getLinked(std::vector<SPObject *> &objects) const override;
+    void getLinked(std::vector<SPObject *> &objects, bool ignore_clones) const override;
 
     // For 'inline-size', need to also remove any 'x' and 'y' added by SVG 1.1 fallback.
     void remove_svg11_fallback();
