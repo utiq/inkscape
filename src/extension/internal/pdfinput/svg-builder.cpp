@@ -265,6 +265,10 @@ void SvgBuilder::restoreState(GfxState *state) {
             _mask_groups.pop_back();
         }
     }
+    while (_clip_groups > 0) {
+        popGroup(nullptr);
+        _clip_groups--;
+    }
 }
 
 Inkscape::XML::Node *SvgBuilder::_pushContainer(const char *name)
@@ -748,6 +752,11 @@ void SvgBuilder::addShadedFill(GfxShading *shading, const Geom::Affine shading_t
  */
 void SvgBuilder::setClip(GfxState *state, GfxClipType clip)
 {
+    // When there's already a clip path, we add clipping groups to handle them.
+    if (_clip_history->hasClipPath() && !_clip_history->isCopied()) {
+        _pushContainer("svg:g");
+        _clip_groups++;
+    }
     if (clip == clipNormal) {
         _clip_history->setClip(state, clipNormal);
     } else {

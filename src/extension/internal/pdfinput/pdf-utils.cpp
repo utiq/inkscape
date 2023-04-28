@@ -8,6 +8,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <glib.h>
 #include "pdf-utils.h"
 
 #include "poppler-utils.h"
@@ -34,11 +35,20 @@ ClipHistoryEntry::~ClipHistoryEntry()
 void ClipHistoryEntry::setClip(GfxState *state, GfxClipType clipTypeA)
 {
     const GfxPath *clipPathA = state->getPath();
-    // Free previous clip path
+
     if (clipPath) {
-        delete clipPath;
+        if (copied) {
+            // Free previously copied clip path.
+            delete clipPath;
+        } else {
+            // This indicates a bad use of the ClipHistory API
+            g_error("Clip path is already set!");
+            return;
+        }
     }
+
     cleared = false;
+    copied = false;
     if (clipPathA) {
         affine = stateToAffine(state);
         clipPath = clipPathA->copy();
@@ -53,7 +63,7 @@ void ClipHistoryEntry::setClip(GfxState *state, GfxClipType clipTypeA)
 /**
  * Create a new clip-history, appending it to the stack.
  *
- * If keep is set to false, it will not remember the current clipping path.
+ * If cleared is set to true, it will not remember the current clipping path.
  */
 ClipHistoryEntry *ClipHistoryEntry::save(bool cleared)
 {
@@ -84,11 +94,13 @@ ClipHistoryEntry::ClipHistoryEntry(ClipHistoryEntry *other, bool cleared)
         this->clipPath = other->clipPath->copy();
         this->clipType = other->clipType;
         this->cleared = cleared;
+        this->copied = true;
     } else {
         this->affine = Geom::identity();
         this->clipPath = nullptr;
         this->clipType = clipNormal;
         this->cleared = false;
+        this->copied = false;
     }
     saved = nullptr;
 }

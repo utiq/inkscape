@@ -207,6 +207,7 @@ private:
     Inkscape::XML::Node *_popContainer();
     std::vector<Inkscape::XML::Node *> _node_stack;
     std::vector<GfxState *> _mask_groups;
+    int _clip_groups = 0;
 
     Inkscape::XML::Node *_getClip(const Geom::Affine &node_tr);
     Inkscape::XML::Node *_addToContainer(const char *name);

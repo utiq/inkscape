@@ -29,6 +29,7 @@ public:
     ClipHistoryEntry *restore();
     bool hasSaves() { return saved != nullptr; }
     bool hasClipPath() { return clipPath != nullptr && !cleared; }
+    bool isCopied() { return copied; }
     void setClip(GfxState *state, GfxClipType newClipType = clipNormal);
     GfxPath *getClipPath() { return clipPath; }
     GfxClipType getClipType() { return clipType; }
@@ -42,6 +43,7 @@ private:
     GfxPath *clipPath;                      // used as the path to be filled for an 'sh' operator
     GfxClipType clipType;
     bool cleared = false;
+    bool copied = false;
 
     ClipHistoryEntry(ClipHistoryEntry *other, bool cleared = false);
 };
