@@ -1,12 +1,8 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-ensure_command()
-{
-    command -v $1 >/dev/null 2>&1 || { echo >&2 "Required command '$1' not found. Aborting."; exit 1; }
-}
-
-export LANG=C # Needed to force . as the decimal separator
+MY_LOCATION=$(dirname "$0")
+source "${MY_LOCATION}/../utils/functions.sh"
 
 ensure_command "compare"
 ensure_command "bc"
@@ -35,36 +31,21 @@ perform_test()
     local DPI="$2"
     ${INKSCAPE_EXE} --export-png-use-dithering false --export-filename="${TESTNAME}${SUFFIX}.png" -d "$DPI" "${TEST}.svg"
 
-    COMPARE_RESULT="$(compare -metric "$METRIC" "${TESTNAME}${SUFFIX}.png" "${EXPECTED}${SUFFIX}.png" "${TESTNAME}-compare${SUFFIX}.png" 2>&1)"
+    COMPARE_OUTPUT="$(compare -metric "$METRIC" "${TESTNAME}${SUFFIX}.png" "${EXPECTED}${SUFFIX}.png" "${TESTNAME}-compare${SUFFIX}.png" 2>&1)"
 
     if [ "$FUZZ" = "" ]; then
-        if [ "$COMPARE_RESULT" = 0 ]; then
+        if [ "$COMPARE_OUTPUT" = 0 ]; then
             echo "${TESTNAME}${SUFFIX}" "PASSED; absolute difference is exactly zero."
             rm "${TESTNAME}${SUFFIX}.png" "${TESTNAME}-compare${SUFFIX}.png"
         else
-            echo "${TESTNAME} FAILED; absolute difference ${COMPARE_RESULT} is greater than zero."
+            echo "${TESTNAME} FAILED; absolute difference ${COMPARE_OUTPUT} is greater than zero."
             EXIT_STATUS=1
         fi
     else
-        RELATIVE_ERROR=${COMPARE_RESULT#*(}
-        RELATIVE_ERROR=${RELATIVE_ERROR%)*}
-        if [ "$RELATIVE_ERROR" = "" ]; then
-            echo "${TESTNAME} FAILED; could not parse relative error '${COMPARE_RESULT}'."
-            EXIT_STATUS=1
-            return
-        fi
-
-        CONDITION=$(printf "%.12f * 100 <= $FUZZ" "$RELATIVE_ERROR")
-        WITHIN_TOLERANCE=$(echo "${CONDITION}" | bc)
-        if [[ $? -ne 0 ]]; then
-            echo "${TESTNAME} FAILED; An error occurred running 'bc'."
-            EXIT_STATUS=1
-            return
-        fi
-
-        PERCENTAGE_ERROR_FORMULA=$(printf "%.4f * 100" "$RELATIVE_ERROR")
-        PERCENTAGE_ERROR=$(echo "${PERCENTAGE_ERROR_FORMULA}" | bc)
-        if (( $WITHIN_TOLERANCE )); then
+        RELATIVE_ERROR=$(get_compare_result "$COMPARE_OUTPUT")
+        PERCENTAGE_ERROR=$(fraction_to_percentage "$RELATIVE_ERROR")
+        if (( $(is_relative_error_within_tolerance "$RELATIVE_ERROR" "$FUZZ") ))
+        then
             echo "${TESTNAME}${SUFFIX}" "PASSED; error of ${PERCENTAGE_ERROR}% is within ${FUZZ}% tolerance."
             rm "${TESTNAME}${SUFFIX}.png" "${TESTNAME}-compare${SUFFIX}.png"
         else

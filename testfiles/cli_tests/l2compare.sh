@@ -12,12 +12,8 @@
 # Released under GNU GPL v2+, read the file 'COPYING' for more information.
 #
 
-ensure_command()
-{
-    command -v $1 >/dev/null 2>&1 || { echo >&2 "Required command '$1' not found. Aborting."; exit 1; }
-}
-
-export LANG=C # Needed to force . as the decimal separator
+MY_LOCATION=$(dirname "$0")
+source "${MY_LOCATION}/../utils/functions.sh"
 
 ensure_command "convert"
 ensure_command "compare"
@@ -74,28 +70,12 @@ fi
 cp "${REFERENCE_FILENAME}" "${OUTPUT_FILENAME}-reference.png"
 
 # Compare the two files
-COMPARE_RESULT=$(compare 2>&1 -metric RMSE "${OUTPUT_FILENAME}-output.png" "${OUTPUT_FILENAME}-reference.png" \
+COMPARE_OUTPUT=$(compare 2>&1 -metric RMSE "${OUTPUT_FILENAME}-output.png" "${OUTPUT_FILENAME}-reference.png" \
                  "${OUTPUT_FILENAME}-diff.png")
-COMPARE_RESULT=${COMPARE_RESULT#*(}
-RELATIVE_ERROR=${COMPARE_RESULT%)*}
-if [[ "x$RELATIVE_ERROR" == "x" ]]
-then
-    echo "Warning: Could not parse out the relative RMS error for fuzzy comparison. Skipping comparison test."
-    exit 42
-fi
+RELATIVE_ERROR=$(get_compare_result "$COMPARE_OUTPUT")
+PERCENTAGE_ERROR=$(fraction_to_percentage "$RELATIVE_ERROR")
 
-# Check if the difference between the files is within tolerance
-CONDITION=$(printf "%.12f * 100 <= $PERCENTAGE_DIFFERENCE_ALLOWED" "$RELATIVE_ERROR")
-WITHIN_TOLERANCE=$(echo "${CONDITION}" | bc)
-if [[ $? -ne 0 ]]
-then
-    echo "Warning: An error occurred running 'bc'. The fuzzy comparison test will be skipped."
-    exit 42
-fi
-
-PERCENTAGE_ERROR_FORMULA=$(printf "%.4f * 100" "$RELATIVE_ERROR")
-PERCENTAGE_ERROR=$(echo "${PERCENTAGE_ERROR_FORMULA}" | bc)
-if (( $WITHIN_TOLERANCE ))
+if (( $(is_relative_error_within_tolerance "$RELATIVE_ERROR" "$PERCENTAGE_DIFFERENCE_ALLOWED") ))
 then
     # Test passed: print stats and clean up the files.
     echo "Fuzzy comparison PASSED; error of ${PERCENTAGE_ERROR}% is within ${PERCENTAGE_DIFFERENCE_ALLOWED}% tolerance."
