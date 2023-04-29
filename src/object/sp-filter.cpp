@@ -32,7 +32,6 @@
 #include "filters/sp-filter-primitive.h"
 #include "sp-filter-reference.h"
 #include "uri.h"
-#include "xml/repr.h"
 #include "filters/slot-resolver.h"
 #include "xml/href-attribute-helper.h"
 

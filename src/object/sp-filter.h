@@ -16,12 +16,12 @@
 #include <memory>
 #include <glibmm/ustring.h>
 
+#include "helper/auto-connection.h"
 #include "number-opt-number.h"
 #include "sp-dimensions.h"
 #include "sp-filter-units.h"
 #include "sp-item.h"
 #include "sp-object.h"
-#include "svg/svg-length.h"
 
 namespace Inkscape {
 class Drawing;
@@ -69,7 +69,7 @@ public:
     std::unique_ptr<SPFilterReference> href;
     bool auto_region;
 
-    sigc::connection modified_connection;
+    Inkscape::auto_connection modified_connection;
 
     unsigned getRefCount();
     unsigned _refcount = 0;
