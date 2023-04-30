@@ -471,6 +471,7 @@ sp_lpe_item_create_original_path_recursive(SPLPEItem *lpeitem)
         for (auto iter : clip_path_list) {
             auto clip_data = cast<SPLPEItem>(iter);
             sp_lpe_item_create_original_path_recursive(clip_data);
+            sp_object_unref(iter);
         }
     }
 
@@ -480,6 +481,7 @@ sp_lpe_item_create_original_path_recursive(SPLPEItem *lpeitem)
         for (auto iter : mask_path_list) {
             auto mask_data = cast<SPLPEItem>(iter);
             sp_lpe_item_create_original_path_recursive(mask_data);
+            sp_object_unref(iter);
         }
     }
     if (is<SPGroup>(lpeitem)) {
@@ -519,6 +521,7 @@ sp_lpe_item_cleanup_original_path_recursive(SPLPEItem *lpeitem, bool keep_paths,
             if (clip_data) {
                 sp_lpe_item_cleanup_original_path_recursive(clip_data, keep_paths, lpeitem && !lpeitem->hasPathEffectRecursive(), true);
             }
+            sp_object_unref(iter);
         }
     }
 
@@ -530,6 +533,7 @@ sp_lpe_item_cleanup_original_path_recursive(SPLPEItem *lpeitem, bool keep_paths,
             if (mask_data) {
                 sp_lpe_item_cleanup_original_path_recursive(mask_data, keep_paths, lpeitem && !lpeitem->hasPathEffectRecursive(), true);
             }
+            sp_object_unref(iter);
         }
     }
 
@@ -1178,6 +1182,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
                     sp_lpe_item_create_original_path_recursive(shape);
                 }
             }
+            sp_object_unref(iter);
         }
     }
     SPMask *mask = this->getMaskObject();
@@ -1204,6 +1209,7 @@ SPLPEItem::resetClipPathAndMaskLPE(bool fromrecurse)
                     sp_lpe_item_create_original_path_recursive(shape);
                 }
             }
+            sp_object_unref(iter);
         }
     }
 }
@@ -1219,6 +1225,7 @@ SPLPEItem::applyToClipPath(SPItem* to, Inkscape::LivePathEffect::Effect *lpe)
         std::vector<SPObject*> clip_path_list = clip_path->childList(true);
         for (auto clip_data : clip_path_list) {
             applyToClipPathOrMask(cast<SPItem>(clip_data), to, lpe);
+            sp_object_unref(clip_data);
         }
     }
 }
@@ -1234,6 +1241,7 @@ SPLPEItem::applyToMask(SPItem* to, Inkscape::LivePathEffect::Effect *lpe)
         std::vector<SPObject*> mask_list = mask->childList(true);
         for (auto mask_data : mask_list) {
             applyToClipPathOrMask(cast<SPItem>(mask_data), to, lpe);
+            sp_object_unref(mask_data);
         }
     }
 }

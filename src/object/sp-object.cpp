@@ -718,6 +718,13 @@ void SPObject::child_added(Inkscape::XML::Node *child, Inkscape::XML::Node *ref)
 void SPObject::release() {
     SPObject* object = this;
     debug("id=%p, typename=%s", object, g_type_name_from_instance((GTypeInstance*)object));
+
+    style->filter.clear();
+    style->fill.value.href.reset();
+    style->stroke.value.href.reset();
+    style->shape_inside.clear();
+    style->shape_subtract.clear();
+
     auto tmp = children | boost::adaptors::transformed([](SPObject& obj){return &obj;});
     std::vector<SPObject *> toRelease(tmp.begin(), tmp.end());
 

@@ -1028,6 +1028,7 @@ void Inkscape::SelTrans::_selChanged(Inkscape::Selection *selection)
             if (lpeitem && !lpeitem->lpe_initialized && (!is<SPGroup>(lpeitem) || !lpeitem->getAttribute("inkscape:groupmode"))) {
                 sp_lpe_item_update_patheffect(lpeitem, true, true);
             }
+            sp_object_unref(item);
         }
         _updateHandles();
     }

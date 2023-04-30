@@ -466,23 +466,11 @@ void SPItem::release()
     delete mask_ref;
     mask_ref = nullptr;
 
+    // the first thing SPObject::release() does is destroy the fill/stroke/filter references.
+    // as above, this calls *_ref_changed() which performs the hide().
+    // it is important this happens before the views are cleared.
     SPObject::release();
 
-    auto fill_ps = style->getFillPaintServer();
-    auto stroke_ps = style->getStrokePaintServer();
-    auto filter = style->getFilter();
-    for (auto &v : views) {
-        if (fill_ps) {
-            fill_ps->hide(v.drawingitem->key() + ITEM_KEY_FILL);
-        }
-        if (stroke_ps) {
-            stroke_ps->hide(v.drawingitem->key() + ITEM_KEY_STROKE);
-        }
-        if (filter) {
-            filter->hide(v.drawingitem.get());
-        }
-        v.drawingitem.reset();
-    }
     views.clear();
 }
 

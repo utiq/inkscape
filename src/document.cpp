@@ -660,7 +660,6 @@ void SPDocument::fix_lpe_data() {
     std::vector<SPObject*> l(getDefs()->childList(true));
     std::reverse(l.begin(), l.end());
     for(auto child : l){
-        std::vector<SPObject*> l2(child->childList(true));
         auto *lpeobj = cast<LivePathEffectObject>(child);
         if (lpeobj) {
             auto lpe = lpeobj->get_lpe();
@@ -676,13 +675,16 @@ void SPDocument::fix_lpe_data() {
                 lpe->on_undo = false;
             }
         } else { // TODO: get a better wey to uplate clipmask lpe item (eye in athumgaze.svg duplicate)
+            std::vector<SPObject*> l2(child->childList(true));
             for(auto child2 : l2){
                 auto lpeitem = cast<SPLPEItem>(child2);
                 if (lpeitem) {
                     sp_lpe_item_update_patheffect(lpeitem, true, true);
                 }
+                sp_object_unref(child2);
             }
         }
+        sp_object_unref(child);
     }
 }
 

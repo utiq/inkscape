@@ -1750,6 +1750,10 @@ void Canvas::set_cms_key(std::string key)
  */
 void Canvas::canvas_item_destructed(Inkscape::CanvasItem *item)
 {
+    if (!d->active) {
+        return;
+    }
+
     if (item == _current_canvas_item) {
         _current_canvas_item = nullptr;
     }
