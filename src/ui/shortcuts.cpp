@@ -231,7 +231,7 @@ Shortcuts::read(Glib::RefPtr<Gio::File> file, bool user_set)
         return false;
     }
 
-    XML::Document *document = sp_repr_read_file(file->get_path().c_str(), nullptr);
+    XML::Document *document = sp_repr_read_file(file->get_path().c_str(), nullptr, true);
     if (!document) {
         std::cerr << "Shortcut::read: could not parse file: " << file->get_path() << std::endl;
         return false;
@@ -734,7 +734,7 @@ Shortcuts::get_file_names()
         std::string label = Glib::path_get_basename(filename);
         Glib::ustring filename_relative = sp_relative_path_from_path(filename, std::string(get_path(SYSTEM, KEYS)));
 
-        XML::Document *document = sp_repr_read_file(filename.c_str(), nullptr);
+        XML::Document *document = sp_repr_read_file(filename.c_str(), nullptr, true);
         if (!document) {
             std::cerr << "Shortcut::get_file_names: could not parse file: " << filename.raw() << std::endl;
             continue;

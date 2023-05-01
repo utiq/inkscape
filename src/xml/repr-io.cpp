@@ -178,12 +178,7 @@ xmlDocPtr XmlSource::readXml()
     bool allowNetAccess = prefs->getBool("/options/externalresources/xml/allow_net_access", false);
     if (!allowNetAccess) parse_options |= XML_PARSE_NONET;
 
-    auto doc = xmlReadIO(readCb, closeCb, this, filename, getEncoding(), parse_options);
-    if (doc && doc->properties && xmlXIncludeProcessFlags(doc, XML_PARSE_NOXINCNODE) < 0) {
-        g_warning("XInclude processing failed for %s", filename);
-    }
-
-    return doc;
+    return xmlReadIO(readCb, closeCb, this, filename, getEncoding(), parse_options);
 }
 
 int XmlSource::readCb( void * context, char * buffer, int len )
@@ -268,8 +263,15 @@ int XmlSource::close()
 /**
  * Reads XML from a file, and returns the Document.
  * The default namespace can also be specified, if desired.
+ * XIncude is dangerous to support during use-cases like automated file format conversion, so it is off by default.
+ *
+ * \param filename The actual file to read from.
+ *
+ * \param default_ns Default namespace for the document, can be nullptr.
+ *
+ * \param xinclude Process XInclude directives, which is off by default for security.
  */
-Document *sp_repr_read_file (const gchar * filename, const gchar *default_ns)
+Document *sp_repr_read_file (const gchar * filename, const gchar *default_ns, bool xinclude)
 {
     xmlDocPtr doc = nullptr;
     Document * rdoc = nullptr;
@@ -299,6 +301,9 @@ Document *sp_repr_read_file (const gchar * filename, const gchar *default_ns)
 
     if (src.setFile(filename) == 0) {
         doc = src.readXml();
+        if (xinclude && doc && doc->properties && xmlXIncludeProcessFlags(doc, XML_PARSE_NOXINCNODE) < 0) {
+            g_warning("XInclude processing failed for %s", filename);
+        }
         rdoc = sp_repr_do_read(doc, default_ns);
     }
 

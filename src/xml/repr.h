@@ -52,7 +52,7 @@ Inkscape::XML::Document *sp_repr_document_new(char const *rootname);
 
 /* IO */
 
-Inkscape::XML::Document *sp_repr_read_file(char const *filename, char const *default_ns);
+Inkscape::XML::Document *sp_repr_read_file(char const *filename, char const *default_ns, bool xinclude = false);
 Inkscape::XML::Document *sp_repr_read_mem(char const *buffer, int length, char const *default_ns);
 void sp_repr_write_stream(Inkscape::XML::Node *repr, Inkscape::IO::Writer &out,
                           int indent_level,  bool add_whitespace, Glib::QueryQuark elide_prefix,
