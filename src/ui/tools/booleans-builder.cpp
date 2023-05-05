@@ -18,6 +18,7 @@
 #include "object/object-set.h"
 #include "object/sp-item.h"
 #include "object/sp-namedview.h"
+#include "style.h"
 #include "ui/widget/canvas.h"
 #include "svg/svg.h"
 
@@ -205,9 +206,12 @@ std::vector<SPObject *> BooleanBuilder::shape_commit(bool all)
         if (!subitem->getSelected() && selected)
             continue;
         auto item = subitem->get_item();
+        auto style = subitem->getStyle();
         // For the rare occasion the user generates from a hole (no item)
-        if (!item)
+        if (!item) {
             item = *items.begin();
+            style = item->style;
+        }
         if (!item) {
             g_warning("Can't generate itemless object in boolean-builder.");
             continue;
@@ -216,7 +220,7 @@ std::vector<SPObject *> BooleanBuilder::shape_commit(bool all)
 
         Inkscape::XML::Node *repr = doc->getReprDoc()->createElement("svg:path");
         repr->setAttribute("d", sp_svg_write_path(subitem->get_pathv() * parent->dt2i_affine()));
-        repr->setAttribute("style", item->getRepr()->attribute("style"));
+        repr->setAttribute("style", style->writeIfDiff(parent->style));
         parent->getRepr()->addChild(repr, item->getRepr());
         ret.emplace_back(doc->getObjectByRepr(repr));
     }

@@ -17,6 +17,7 @@
 #include <functional>
 
 class SPItem;
+class SPStyle;
 
 namespace Inkscape {
 
@@ -34,13 +35,14 @@ class SubItem
 {
 public:
 
-    SubItem(Geom::PathVector paths, SPItem *item)
+    SubItem(Geom::PathVector paths, SPItem *item, SPStyle *style)
         : _paths(std::move(paths))
         , _item(item)
+        , _style(style)
     {}
 
     SubItem(const SubItem &copy)
-        : SubItem(copy._paths, copy._item)
+        : SubItem(copy._paths, copy._item, copy._style)
     {}
 
     SubItem &operator+=(const SubItem &other);
@@ -49,10 +51,10 @@ public:
 
     const Geom::PathVector &get_pathv() const { return _paths; }
     SPItem *get_item() const { return _item; }
+    SPStyle *getStyle() const { return _style; }
 
     static WorkItems build_mosaic(std::vector<SPItem*> &&items);
     static WorkItems build_flatten(std::vector<SPItem*> &&items);
-    static WorkItems generate_holes(const WorkItems &items);
 
     bool getSelected() const { return _selected; }
     void setSelected(bool selected) { _selected = selected; }
@@ -60,6 +62,7 @@ public:
 private:
     Geom::PathVector _paths;
     SPItem *_item;
+    SPStyle *_style;
     bool _selected = false;
 };
 

@@ -288,7 +288,10 @@ sp_pathvector_boolop(Geom::PathVector const &pathva, Geom::PathVector const &pat
 
         originaux[1]->ConvertWithBackData(get_threshold(pathvb, 0.1));
 
-        originaux[1]->Fill(theShape, 1,false,false,false); //do not closeIfNeeded
+        if ((originaux[1]->pts.size() == 2) && originaux[1]->pts[0].isMoveTo && !originaux[1]->pts[1].isMoveTo)
+            originaux[1]->Fill(theShape, 1,false,true,false); // see LP Bug 177956
+        else
+            originaux[1]->Fill(theShape, 1,false,false,false); //do not closeIfNeeded
 
         theShapeB->ConvertToShape(theShape, fill_justDont); // fill_justDont doesn't computes winding numbers
 

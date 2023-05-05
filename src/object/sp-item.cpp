@@ -1534,30 +1534,6 @@ bool SPItem::collidesWith(SPItem const &other) const
     return other_shape ? collidesWith(*other_shape) : false;
 }
 
-Geom::PathVector SPItem::combined_pathvector(int depth) const
-{
-    if (is<SPGroup>(this)) {
-        if (depth == 0) return {};
-        Geom::PathVector result;
-        for (auto const &c : children) {
-            if (auto item = cast<SPItem>(&c)) {
-                auto pathv = item->combined_pathvector(depth - 1) * item->transform;
-                result.insert(result.end(), pathv.begin(), pathv.end());
-            }
-        }
-        return result;
-    }
-
-    if (auto shape = cast<SPShape>(this)) {
-        return shape->curve()->get_pathvector();
-    }
-    if (auto text = cast<SPText>(this)) {
-        return text->getNormalizedBpath().get_pathvector();
-    }
-
-    return {};
-}
-
 // CPPIFY:: make pure virtual?
 // Not all SPItems must necessarily have a set transform method!
 Geom::Affine SPItem::set_transform(Geom::Affine const &transform) {
