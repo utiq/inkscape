@@ -37,7 +37,6 @@ parts:
       - build-essential
       - cmake
       - g++
-      - intltool
       - libart-2.0-dev
       - libboost-all-dev
       - libcdr-dev

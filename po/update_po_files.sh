@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run before 'make inkscape_pot' from the copiling 
+# Run before 'make inkscape_pot' from the compiling
 # directory with cmake to generate inkscape.pot file.
 # Updates PO files from the current POT file
 # Please run this program from the po/ directory
@@ -12,7 +12,7 @@ if [ "$?" -eq "0" ]; then
     exit
   fi
 else
-  echo "Could not create POT file (intltool-update not found). Exiting."
+  echo "Could not create POT file (gettext? not found). Exiting."
   exit
 fi
 
