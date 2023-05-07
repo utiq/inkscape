@@ -368,8 +368,9 @@ void SPFilter::update_filter_region(SPItem *item)
  */
 Geom::Rect SPFilter::get_automatic_filter_region(SPItem const *item) const
 {
-    auto v_box = item->visualBounds(Geom::identity(), false); // Ignore filters to prevent recursion
-    auto g_box = item->geometricBounds();
+    // Calling bbox instead of visualBound() avoids re-requesting filter regions
+    Geom::OptRect v_box = item->bbox(Geom::identity(), SPItem::VISUAL_BBOX);
+    Geom::OptRect g_box = item->bbox(Geom::identity(), SPItem::GEOMETRIC_BBOX);
     if (!v_box || !g_box) {
         return Geom::Rect(); // No adjustment for dead box
     }

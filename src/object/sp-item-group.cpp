@@ -277,28 +277,6 @@ Geom::OptRect SPGroup::bbox(Geom::Affine const &transform, SPItem::BBoxType bbox
     return bbox;
 }
 
-/** @brief
- * Get the group's visual bounding box.
- *
- * The visual bounding box includes the stroke and, by default, the filter region.
- *
- * @param wfilter Use filter-expanded region in the bbox calculation?
- * @param wclip Use clip data in bbox calculation?
- * @param wmask Use mask data in bbox calculation?
- */
-Geom::OptRect SPGroup::visualBounds(Geom::Affine const &transform,
-                                    bool wfilter, bool wclip, bool wmask) const
-{
-    Geom::OptRect result;
-    for (auto const &child : children) {
-        if (auto item = cast<SPItem>(&child); item && !item->isHidden()) {
-            auto const child_transform = item->transform * transform;
-            result |= item->visualBounds(child_transform, wfilter, wclip, wmask);
-        }
-    }
-    return result;
-}
-
 void SPGroup::print(SPPrintContext *ctx) {
     for(auto& child: children){
         SPObject *o = &child;
