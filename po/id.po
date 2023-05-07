@@ -8505,11 +8505,11 @@ msgstr "Dokumen telah disimpan."
 
 #: ../src/file.cpp:624
 msgid "drawing"
-msgstr "menggambar"
+msgstr "gambar"
 
 #: ../src/file.cpp:629
 msgid "drawing-%1"
-msgstr "menggambar-%1"
+msgstr "gambar-%1"
 
 #: ../src/file.cpp:646
 msgid "Select file to save a copy to"
