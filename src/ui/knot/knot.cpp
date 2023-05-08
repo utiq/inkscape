@@ -100,6 +100,9 @@ SPKnot::~SPKnot() {
         gdk_seat_ungrab(seat);
     }
 
+    // Make sure the knot is not grabbed, as it's destructing can be deferred causing
+    // issues like https://gitlab.com/inkscape/inkscape/-/issues/4239
+    ctrl->ungrab();
     ctrl.reset();
 
     if (this->tip) {
