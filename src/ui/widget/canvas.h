@@ -95,6 +95,7 @@ public:
     bool world_point_inside_canvas(Geom::Point const &world) const; // desktop-events.cpp
     Geom::Point canvas_to_world(Geom::Point const &window) const;
     Geom::IntRect get_area_world() const;
+    bool canvas_point_in_outline_zone(Geom::Point const &world) const;
 
     // State
     bool is_dragging() const { return _is_dragging; } // selection-chemistry.cpp

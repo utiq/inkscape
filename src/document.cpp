@@ -62,6 +62,8 @@
 #include "actions/actions-pages.h"
 
 #include "display/drawing.h"
+#include "display/control/canvas-item-drawing.h"
+#include "ui/widget/canvas.h"
 
 #include "3rdparty/adaptagrams/libavoid/router.h"
 
@@ -1579,11 +1581,18 @@ SPItem *SPDocument::getItemFromListAtPointBottom(unsigned dkey, SPGroup *group, 
     }
 
     double const delta = Inkscape::Preferences::get()->getDouble("/options/cursortolerance/value", 1.0);
+    std::optional<bool> outline;
 
     for (auto &c: group->children) {
         if (auto item = cast<SPItem>(&c)) {
             if (auto di = item->get_arenaitem(dkey)) {
-                if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY) && (take_insensitive || item->isVisibleAndUnlocked(dkey))) {
+                if (!outline) {
+                    if (auto cid = di->drawing().getCanvasItemDrawing()) {
+                        auto canvas = cid->get_canvas();
+                        outline = canvas->canvas_point_in_outline_zone(p - canvas->get_pos());
+                    }
+                }
+                if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY | outline.value_or(false) * Inkscape::DrawingItem::PICK_OUTLINE) && (take_insensitive || item->isVisibleAndUnlocked(dkey))) {
                     if (std::find(list.begin(), list.end(), item) != list.end()) {
                         return item;
                     }
@@ -1637,6 +1646,7 @@ static std::vector<SPItem*> find_items_at_point(std::deque<SPItem*> const &nodes
                                                 Geom::Point const &p, int items_count = 0, SPItem *upto = nullptr)
 {
     double const delta = Inkscape::Preferences::get()->getDouble("/options/cursortolerance/value", 1.0);
+    std::optional<bool> outline;
 
     std::vector<SPItem*> result;
 
@@ -1649,7 +1659,13 @@ static std::vector<SPItem*> find_items_at_point(std::deque<SPItem*> const &nodes
             continue;
         }
         if (auto di = node->get_arenaitem(dkey)) {
-            if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY)) {
+            if (!outline) {
+                if (auto cid = di->drawing().getCanvasItemDrawing()) {
+                    auto canvas = cid->get_canvas();
+                    outline = canvas->canvas_point_in_outline_zone(p - canvas->get_pos());
+                }
+            }
+            if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY | outline.value_or(false) * Inkscape::DrawingItem::PICK_OUTLINE)) {
                 result.emplace_back(node);
                 if (--items_count == 0) {
                     break;
@@ -1677,6 +1693,7 @@ static SPItem *find_item_at_point(std::deque<SPItem*> const &nodes, unsigned dke
 static SPItem *find_group_at_point(unsigned dkey, SPGroup *group, Geom::Point const &p)
 {
     double const delta = Inkscape::Preferences::get()->getDouble("/options/cursortolerance/value", 1.0);
+    std::optional<bool> outline;
 
     for (auto &c : boost::adaptors::reverse(group->children)) {
         if (auto group = cast<SPGroup>(&c)) {
@@ -1685,7 +1702,13 @@ static SPItem *find_group_at_point(unsigned dkey, SPGroup *group, Geom::Point co
                     return ret;
                 }
             } else if (auto di = group->get_arenaitem(dkey)) {
-                if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY)) {
+                if (!outline) {
+                    if (auto cid = di->drawing().getCanvasItemDrawing()) {
+                        auto canvas = cid->get_canvas();
+                        outline = canvas->canvas_point_in_outline_zone(p - canvas->get_pos());
+                    }
+                }
+                if (di->pick(p, delta, Inkscape::DrawingItem::PICK_STICKY | outline.value_or(false) * Inkscape::DrawingItem::PICK_OUTLINE)) {
                     return group;
                 }
             }

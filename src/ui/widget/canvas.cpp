@@ -1294,19 +1294,8 @@ bool CanvasPrivate::pick_current_item(const GdkEvent *event)
             y = q->_pick_event.motion.y;
         }
 
-        // If in split mode, look at where cursor is to see if one should pick with outline mode.
-        bool outline;
-        if (q->_render_mode == Inkscape::RenderMode::OUTLINE || q->_render_mode == Inkscape::RenderMode::OUTLINE_OVERLAY) {
-            outline = true;
-        } else if (q->_split_mode == Inkscape::SplitMode::SPLIT) {
-            auto split_position = q->_split_frac * q->get_dimensions();
-            outline = (q->_split_direction == Inkscape::SplitDirection::NORTH && y > split_position.y())
-                   || (q->_split_direction == Inkscape::SplitDirection::SOUTH && y < split_position.y())
-                   || (q->_split_direction == Inkscape::SplitDirection::WEST  && x > split_position.x())
-                   || (q->_split_direction == Inkscape::SplitDirection::EAST  && x < split_position.x());
-        } else {
-            outline = false;
-        }
+        // Look at where the cursor is to see if one should pick with outline mode.
+        bool outline = q->canvas_point_in_outline_zone({ x, y });
 
         // Convert to world coordinates.
         auto p = Geom::Point(x, y) + q->_pos;
@@ -1500,6 +1489,28 @@ Geom::Point Canvas::canvas_to_world(Geom::Point const &point) const
 Geom::IntRect Canvas::get_area_world() const
 {
     return Geom::IntRect(_pos, _pos + get_dimensions());
+}
+
+/**
+ * Return whether a point in screen space / canvas coordinates is inside the region
+ * of the canvas where things respond to mouse clicks as if they are in outline mode.
+ */
+bool Canvas::canvas_point_in_outline_zone(Geom::Point const &p) const
+{
+    if (_render_mode == RenderMode::OUTLINE || _render_mode == RenderMode::OUTLINE_OVERLAY) {
+        return true;
+    } else if (_split_mode == SplitMode::SPLIT) {
+        auto split_position = _split_frac * get_dimensions();
+        switch (_split_direction) {
+            case SplitDirection::NORTH: return p.y() > split_position.y();
+            case SplitDirection::SOUTH: return p.y() < split_position.y();
+            case SplitDirection::WEST:  return p.x() > split_position.x();
+            case SplitDirection::EAST:  return p.x() < split_position.x();
+            default: return false;
+        }
+    } else {
+        return false;
+    }
 }
 
 /**
