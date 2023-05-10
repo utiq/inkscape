@@ -37,7 +37,6 @@
 #include "object/sp-text.h"
 #include "style.h"
 
-#include "ui/widget/canvas.h"  // Disable drawing during ops
 #include "ui/icon-names.h"
 
 #include "svg/svg.h"
@@ -216,8 +215,6 @@ ObjectSet::breakApart(bool skip_undo, bool overlapping, bool silent)
         }
         // set "busy" cursor
         desktop()->setWaitingCursor();
-        // disable redrawing during the break-apart operation for remarkable speedup for large paths
-        desktop()->getCanvas()->set_drawing_disabled(true);
     }
 
     bool did = false;
@@ -288,7 +285,6 @@ ObjectSet::breakApart(bool skip_undo, bool overlapping, bool silent)
     }
 
     if (desktop()) {
-        desktop()->getCanvas()->set_drawing_disabled(false);
         desktop()->clearWaitingCursor();
     }
 

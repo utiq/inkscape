@@ -124,7 +124,6 @@ public:
         _grabbed_canvas_item = item;
         _grabbed_event_mask = mask;
     }
-    void set_drawing_disabled(bool disable); // Disable during path ops, etc.
     void set_all_enter_events(bool on) { _all_enter_events = on; }
 
     void enable_autoscroll();
@@ -190,7 +189,6 @@ private:
     Gdk::EventMask _grabbed_event_mask;
 
     // Drawing
-    bool _drawing_disabled = false; ///< Disable drawing during critical operations
     bool _need_update = true; // Set true so setting CanvasItem bounds are calculated at least once.
 
     // Split view

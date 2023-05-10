@@ -36,7 +36,6 @@
 #include "display/curve.h"
 
 #include "ui/icon-names.h"
-#include "ui/widget/canvas.h"  // Disable drawing during op
 
 #include "svg/svg.h"
 
@@ -425,10 +424,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
 {
     if (nullptr != desktop() && !checked) {
         SPDocument *doc = desktop()->getDocument();
-        // don't redraw the canvas during the operation as that can remarkably slow down the progress
-        desktop()->getCanvas()->set_drawing_disabled(true);
         BoolOpErrors returnCode = ObjectSet::pathBoolOp(bop, true, true,icon_name);
-        desktop()->getCanvas()->set_drawing_disabled(false);
 
         switch(returnCode) {
         case ERR_TOO_LESS_PATHS_1:

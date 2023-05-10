@@ -420,7 +420,6 @@ void CanvasPrivate::activate()
     pre_scroll_grabbed_item = nullptr;
 
     // Drawing
-    q->_drawing_disabled = false;
     q->_need_update = true;
 
     // Split view
@@ -1680,14 +1679,6 @@ uint32_t Canvas::get_effective_background() const
 {
     auto arr = checkerboard_darken(rgb_to_array(d->desk), 1.0f - 0.5f * SP_RGBA32_A_U(d->desk) / 255.0f);
     return SP_RGBA32_F_COMPOSE(arr[0], arr[1], arr[2], 1.0);
-}
-
-void Canvas::set_drawing_disabled(bool disable)
-{
-    _drawing_disabled = disable;
-    if (!disable) {
-        d->schedule_redraw();
-    }
 }
 
 void Canvas::set_render_mode(Inkscape::RenderMode mode)
