@@ -31,15 +31,8 @@
 
 #include "display/curve.h"
 
-Path *
-Path_for_pathvector(Geom::PathVector const &epathv)
+Path *Path_for_pathvector(Geom::PathVector const &epathv)
 {
-    /*std::cout << "converting to Livarot path" << std::endl;
-
-    Geom::SVGPathWriter wr;
-    wr.feed(epathv);
-    std::cout << wr.str() << std::endl;*/
-
     Path *dest = new Path;
     dest->LoadPathVector(epathv);
     return dest;

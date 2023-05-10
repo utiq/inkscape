@@ -189,8 +189,7 @@ Shape::ConvertToForme (Path * dest)
 // same as before, but each time we have a contour, try to reassemble the segments on it to make chunks of
 // the original(s) path(s)
 // originals are in the orig array, whose size is nbP
-void
-Shape::ConvertToForme (Path * dest, int nbP, Path * *orig, bool splitWhenForced)
+void Shape::ConvertToForme(Path *dest, int nbP, Path *const *orig, bool splitWhenForced)
 {
   // the function is similar to the other version of ConvertToForme, I'm adding comments
   // where there are significant differences to explain
@@ -340,8 +339,8 @@ Shape::ConvertToForme (Path * dest, int nbP, Path * *orig, bool splitWhenForced)
   MakeEdgeData (false);
   MakeSweepDestData (false);
 }
-void 
-Shape::ConvertToFormeNested (Path * dest, int nbP, Path * *orig, int /*wildPath*/,int &nbNest,int *&nesting,int *&contStart,bool splitWhenForced)
+
+void Shape::ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int /*wildPath*/,int &nbNest,int *&nesting,int *&contStart,bool splitWhenForced)
 {
   nesting=nullptr;
   contStart=nullptr;
@@ -901,7 +900,7 @@ Shape::MakeOffset (Shape * a, double dec, JoinType join, double miter, bool do_p
 // polyline. since it was a DFS, the precParc and suivParc make a nice doubly-linked list of the edges in
 // the contour. the first and last edges of the contour are startBord and curBord
 void
-Shape::AddContour (Path * dest, int nbP, Path * *orig, int startBord, int curBord, bool splitWhenForced)
+Shape::AddContour (Path * dest, int nbP, Path *const *orig, int startBord, int curBord, bool splitWhenForced)
 {
   int bord = startBord; // start at the first edge
   

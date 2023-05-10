@@ -68,7 +68,6 @@ class AlphaLigne;
 class Shape
 {
 public:
-
     /**
      * A structure to store back data for an edge.
      */
@@ -138,7 +137,7 @@ public:
     };
     
     Shape();
-    virtual ~Shape();
+    ~Shape();
 
     void MakeBackData(bool nVal);
     void MakeVoronoiData(bool nVal);
@@ -320,9 +319,9 @@ public:
      * @param orig An array of pointers to Path, one Path object for each path id in the graph.
      * @param splitWhenForced TODO: Figure this out.
      */
-    void ConvertToForme(Path *dest, int nbP, Path **orig, bool splitWhenForced = false);
+    void ConvertToForme(Path *dest, int nbP, Path *const *orig, bool splitWhenForced = false);
     // version trying to recover the nesting of subpaths (ie: holes)
-    void ConvertToFormeNested(Path *dest, int nbP, Path **orig, int wildPath, int &nbNest,
+    void ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int wildPath, int &nbNest,
                               int *&nesting, int *&contStart, bool splitWhenForced = false);
   
     // sweeping a digraph to produce a intersection-free polygon
@@ -1113,7 +1112,7 @@ private:
      * @param curBord The last edge in the contour.
      * @param splitWhenForced  TODO: No idea what it does. We never use ForcedPoints in Inkscape so doesn't matter I think.
      */
-    void AddContour(Path * dest, int nbP, Path **orig, int startBord,
+    void AddContour(Path * dest, int nbP, Path *const *orig, int startBord,
                    int curBord, bool splitWhenForced);
 
     int ReFormeLineTo(int bord, int curBord, Path *dest, Path *orig);

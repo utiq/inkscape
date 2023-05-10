@@ -51,7 +51,7 @@ static Geom::PathVector clean_pathvector(Geom::PathVector &&pathv)
  */
 SubItem &SubItem::operator+=(SubItem const &other)
 {
-    _paths = clean_pathvector(sp_pathvector_boolop(_paths, other._paths, bool_op_union, fill_nonZero, fill_nonZero, true));
+    _paths = clean_pathvector(flattened(sp_pathvector_boolop(_paths, other._paths, bool_op_union, fill_nonZero, fill_nonZero, true), fill_nonZero));
     return *this;
 }
 
@@ -91,70 +91,6 @@ static ExtractPathvectorsResult extract_pathvectors(SPItem *item)
 static FillRule sp_to_livarot(SPWindRule fillrule)
 {
     return fillrule == SP_WIND_RULE_NONZERO ? fill_nonZero : fill_oddEven;
-}
-
-static double diameter(Geom::PathVector const &path)
-{
-    auto rect = path.boundsExact();
-    if (!rect) {
-        return 1;
-    }
-    return std::hypot(rect->width(), rect->height());
-}
-
-// Cut the given pathvector along the lines into several smaller pathvectors.
-static std::vector<Geom::PathVector> improved_cut(Geom::PathVector const &pathv, Geom::PathVector const &lines)
-{
-    Path patha;
-    patha.LoadPathVector(pathv);
-    patha.ConvertWithBackData(diameter(pathv) * 1e-3);
-
-    Path pathb;
-    pathb.LoadPathVector(lines);
-    pathb.ConvertWithBackData(diameter(lines) * 1e-3);
-
-    Shape shapea;
-    {
-        Shape tmp;
-        patha.Fill(&tmp, 0);
-        shapea.ConvertToShape(&tmp);
-    }
-
-    Shape shapeb;
-    {
-        Shape tmp;
-        bool isline = pathb.pts.size() == 2 && pathb.pts[0].isMoveTo && !pathb.pts[1].isMoveTo;
-        pathb.Fill(&tmp, 1, false, isline);
-        shapeb.ConvertToShape(&tmp, fill_justDont);
-    }
-
-    Shape shape;
-    shape.Booleen(&shapeb, &shapea, bool_op_cut, 1);
-
-    Path path;
-    int num_nesting = 0;
-    int *nesting = nullptr;
-    int *conts = nullptr;
-    {
-        path.SetBackData(false);
-        Path *paths[2] = { &patha, &pathb };
-        shape.ConvertToFormeNested(&path, 2, paths, 1, num_nesting, nesting, conts);
-    }
-
-    int num_paths;
-    auto paths = path.SubPathsWithNesting(num_paths, false, num_nesting, nesting, conts);
-
-    std::vector<Geom::PathVector> result;
-
-    for (int i = 0; i < num_paths; i++) {
-        result.emplace_back(paths[i]->MakePathVector());
-    }
-
-    g_free(paths);
-    g_free(conts);
-    g_free(nesting);
-
-    return result;
 }
 
 /**
@@ -202,7 +138,7 @@ WorkItems SubItem::build_mosaic(std::vector<SPItem*> &&items)
     bounds->expandBy(expansion);
 
     auto bounds_pathv = Geom::PathVector(Geom::Path(*bounds));
-    auto pieces = improved_cut(bounds_pathv, lines);
+    auto pieces = pathvector_cut(bounds_pathv, lines);
 
     // Construct the SubItems, attempting to guess the corresponding augmented item for each piece.
     WorkItems result;

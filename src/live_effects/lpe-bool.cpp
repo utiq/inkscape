@@ -693,7 +693,7 @@ void LPEBool::doEffect(SPCurve *curve)
             if (onremove) {
                 path_out = sp_pathvector_boolop(path_a, path_b, to_bool_op(bool_op_ex_diff), fill_a, fill_b, legacytest_livarotonly);
             } else {
-                int error = 0;
+                bool error = false;
                 Geom::PathVector path_tmp = sp_pathvector_boolop(path_a, path_b, to_bool_op(op), fill_a, fill_b, legacytest_livarotonly, true, error);
                 for (auto pathit : path_tmp) {
                     if (pathit.size() != 2 || !error) {
