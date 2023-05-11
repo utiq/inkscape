@@ -21,11 +21,10 @@ namespace Toolbar {
 
 BooleansToolbar::BooleansToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &builder, SPDesktop *desktop)
     : Gtk::Toolbar(cobject)
+    , _builder(builder)
     , _btn_confirm(get_widget<Gtk::ToolButton>(builder, "confirm"))
     , _btn_cancel(get_widget<Gtk::ToolButton>(builder, "cancel"))
 {
-    reference();
-
     _btn_confirm.signal_clicked().connect([=]{
         auto ec = dynamic_cast<Tools::InteractiveBooleansTool *>(desktop->event_context);
         ec->shape_commit();
@@ -34,15 +33,10 @@ BooleansToolbar::BooleansToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk
         auto ec = dynamic_cast<Tools::InteractiveBooleansTool *>(desktop->event_context);
         ec->shape_cancel();
     });
-
-    was_referenced = true;
 }
 
 void BooleansToolbar::on_parent_changed(Gtk::Widget *) {
-    if (was_referenced) {
-        unreference();
-        was_referenced = false;
-    }
+    _builder.reset();
 }
 
 GtkWidget *
@@ -51,7 +45,6 @@ BooleansToolbar::create(SPDesktop *desktop)
     BooleansToolbar *toolbar;
     auto builder = Inkscape::UI::create_builder("toolbar-booleans.ui");
     builder->get_widget_derived("booleans-toolbar", toolbar, desktop);
-    // This widget will be auto-freed by the builder unless you have called reference();
     return GTK_WIDGET(toolbar->gobj());
 }
 

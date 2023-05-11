@@ -625,6 +625,11 @@ DialogContainer *SPDesktopWidget::getDialogContainer()
     return _container;
 }
 
+void SPDesktopWidget::showNotice(Glib::ustring const &msg, unsigned timeout)
+{
+    _canvas_grid->showNotice(msg, timeout);
+}
+
 /**
  * Resize handler, keeps the desktop centered.
  */

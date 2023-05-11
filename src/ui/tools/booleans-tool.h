@@ -37,6 +37,9 @@ public:
     // Undo/redo catching
     bool catch_undo(bool redo) override;
 
+    // Catch empty selections
+    bool is_ready() const override;
+
     // Event functions
     bool root_handler(GdkEvent* event) override;
 

@@ -8,6 +8,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <glibmm/i18n.h>
+
 #include "actions/actions-tools.h" // set_active_tool()
 #include "ui/tools/booleans-tool.h"
 #include "ui/tools/booleans-builder.h"
@@ -73,6 +75,18 @@ void InteractiveBooleansTool::switching_away(const std::string &new_tool)
     }
 }
 
+bool InteractiveBooleansTool::is_ready() const {
+    if (!boolean_builder || !boolean_builder->has_items()) {
+        if (_desktop->getSelection()->isEmpty()) {
+            _desktop->showNotice(_("You must select some objects to use the shape builder tool."), 5000);
+        } else {
+            _desktop->showNotice(_("The shape builder requires regular shapes to be selected."), 5000);
+        }
+        return false;
+    }
+    return true;
+}
+
 void InteractiveBooleansTool::set(const Inkscape::Preferences::Entry& val)
 {
     Glib::ustring path = val.getEntryName();
@@ -99,6 +113,9 @@ void InteractiveBooleansTool::shape_cancel()
 
 bool InteractiveBooleansTool::root_handler(GdkEvent* event)
 {
+    if (!boolean_builder)
+        return false;
+
     bool ret = false;
     bool add = should_add(event->button.state);
     switch (event->type) {

@@ -32,6 +32,7 @@
 #include "ui/dialog/command-palette.h"
 #include "ui/icon-loader.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/canvas-notice.h"
 #include "ui/widget/ink-ruler.h"
 #include "io/resource.h"
 
@@ -56,9 +57,13 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     // Command palette
     _command_palette = std::make_unique<Inkscape::UI::Dialog::CommandPalette>();
 
+    // Notice overlay, note using unique_ptr will cause destruction race conditions
+    _notice = CanvasNotice::create();
+
     // Canvas overlay
     _canvas_overlay.add(*_canvas);
     _canvas_overlay.add_overlay(*_command_palette->get_base_widget());
+    _canvas_overlay.add_overlay(*_notice);
 
     // Horizontal Ruler
     _hruler = std::make_unique<Inkscape::UI::Widget::Ruler>(Gtk::ORIENTATION_HORIZONTAL);
@@ -155,6 +160,7 @@ CanvasGrid::~CanvasGrid()
     _sel_modified_connection.disconnect();
     _sel_changed_connection.disconnect();
     _document = nullptr;
+    _notice = nullptr;
 }
 
 void CanvasGrid::on_realize() {
@@ -340,6 +346,12 @@ void
 CanvasGrid::ToggleCommandPalette()
 {
     _command_palette->toggle();
+}
+
+void
+CanvasGrid::showNotice(Glib::ustring const &msg, unsigned timeout)
+{
+    _notice->show(msg, timeout);
 }
 
 void

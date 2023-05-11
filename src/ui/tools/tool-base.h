@@ -117,6 +117,7 @@ public:
     virtual void menu_popup(GdkEvent *event, SPObject *obj = nullptr);
     virtual bool catch_undo(bool redo = false) { return false; }
     virtual bool can_undo(bool redo = false) { return false; }
+    virtual bool is_ready() const { return true; }
 
     void set_on_buttons(GdkEvent *event);
     bool are_buttons_1_and_3_on() const;

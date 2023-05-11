@@ -370,6 +370,7 @@ public:
     void setToolboxAdjustmentValue (gchar const* id, double val);
     bool isToolboxButtonActive (gchar const *id);
     void updateDialogs();
+    void showNotice(Glib::ustring const &msg, unsigned timeout = 0);
 
     void enableInteraction();
     void disableInteraction();

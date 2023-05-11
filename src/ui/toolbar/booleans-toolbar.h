@@ -24,15 +24,13 @@ namespace Toolbar {
 class BooleansToolbar : public Gtk::Toolbar
 {
 public:
-    BooleansToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &builder, SPDesktop *desktop);
-    ~BooleansToolbar() override {};
-
-    void on_parent_changed(Gtk::Widget *) override;
-
     static GtkWidget *create(SPDesktop *desktop);
 
+    BooleansToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builder> &builder, SPDesktop *desktop);
+
+    void on_parent_changed(Gtk::Widget *) override;
 private:
-    bool was_referenced;
+    Glib::RefPtr<Gtk::Builder> _builder;
 
     Gtk::ToolButton &_btn_confirm;
     Gtk::ToolButton &_btn_cancel;

@@ -185,6 +185,7 @@ public:
     void updateTitle(gchar const *uri);
     bool onFocusInEvent(GdkEventFocus *);
     Inkscape::UI::Dialog::DialogContainer *getDialogContainer();
+    void showNotice(Glib::ustring const &msg, unsigned timeout = 0);
 
     Gtk::MenuBar *menubar() { return _menubar; }
 

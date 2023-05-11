@@ -32,6 +32,7 @@ class CommandPalette;
 namespace Widget {
 
 class Canvas;
+class CanvasNotice;
 class Ruler;
 
 /**
@@ -55,6 +56,8 @@ public:
     void ShowCommandPalette(bool state = true);
     void ToggleCommandPalette();
 
+    void showNotice(Glib::ustring const &msg, unsigned timeout = 0);
+
     Inkscape::UI::Widget::Canvas *GetCanvas() { return _canvas.get(); };
 
     // Hopefully temp.
@@ -75,6 +78,7 @@ private:
     // The widgets
     std::unique_ptr<Inkscape::UI::Widget::Canvas> _canvas;
     std::unique_ptr<Dialog::CommandPalette> _command_palette;
+    CanvasNotice *_notice;
     Gtk::Overlay _canvas_overlay;
     Gtk::Grid _subgrid;
 

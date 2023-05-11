@@ -41,6 +41,7 @@
 #include "message-stack.h"
 
 #include "actions/actions-view-mode.h" // To update View menu
+#include "actions/actions-tools.h" // To change tools
 
 #include "display/drawing.h"
 #include "display/control/canvas-temporary-item-list.h"
@@ -413,6 +414,11 @@ void SPDesktop::setEventContext(const std::string& toolName)
 
     if (!toolName.empty()) {
         event_context = ToolFactory::createObject(this, toolName);
+        // Switch back, though we don't know what the tool was
+        if (!event_context->is_ready()) {
+            set_active_tool(this, "Select");
+            return;
+        }
     }
 
     _event_context_changed_signal.emit(this, event_context);
@@ -1389,6 +1395,12 @@ SPDesktop::setDocument (SPDocument *doc)
     sp_namedview_update_layers_from_document(this);
 
     _document_replaced_signal.emit (this, doc);
+}
+
+void
+SPDesktop::showNotice(Glib::ustring const &msg, unsigned timeout)
+{
+    _widget->showNotice(msg, timeout);
 }
 
 void

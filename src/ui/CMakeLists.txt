@@ -184,6 +184,7 @@ set(ui_SRC
 	widget/canvas/cairographics.cpp
 	widget/canvas/graphics.cpp
 	widget/canvas-grid.cpp
+	widget/canvas-notice.cpp
 	widget/color-entry.cpp
 	widget/color-icc-selector.cpp
 	widget/color-notebook.cpp
@@ -459,6 +460,7 @@ set(ui_SRC
 	widget/canvas/glgraphics.h
 	widget/canvas/cairographics.h
 	widget/canvas-grid.h
+        widget/canvas-notice.h
 	widget/completion-popup.h
 	widget/color-entry.h
 	widget/color-icc-selector.h
