@@ -502,7 +502,7 @@ void SPPage::movePage(Geom::Affine translate, bool with_objects)
     if (translate.isTranslation()) {
         if (with_objects) {
             // Move each item that is overlapping this page too
-            moveItems(translate * document->dt2doc(), getOverlappingItems());
+            moveItems(translate, getOverlappingItems());
         }
         setDesktopRect(getDesktopRect() * translate);
     }
