@@ -165,6 +165,7 @@ gchar const *ColorizableDropShadow::get_filter_text(Inkscape::Extension::Extensi
     }
 
     // clang-format off
+    auto old = std::locale::global(std::locale::classic());
     _filter = g_strdup_printf(
         "<filter xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\" style=\"color-interpolation-filters:sRGB;\" inkscape:label=\"Drop Shadow\">\n"
             "<feFlood result=\"flood\" in=\"SourceGraphic\" flood-opacity=\"%f\" flood-color=\"rgb(%d,%d,%d)\"/>\n"
@@ -181,6 +182,7 @@ gchar const *ColorizableDropShadow::get_filter_text(Inkscape::Extension::Extensi
         comp1op, comp1in1, comp1in2,
         comp2op, comp2in1, comp2in2
     );
+    std::locale::global(old);
     // clang-format on
 
     return _filter;
