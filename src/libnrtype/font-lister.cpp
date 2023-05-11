@@ -738,8 +738,10 @@ std::pair<Glib::ustring, Glib::ustring> FontLister::selection_update()
         //std::cout << "   fontspec from thin air   :" << fontspec << ":" << std::endl;
     }
 
-	// Need to update font family row too
-	font_family_row_update();
+    // Need to update font family row too
+    // Consider the count of document fonts before setting the start point
+    int font_data_size = add_document_fonts_at_top(SP_ACTIVE_DOCUMENT);
+    font_family_row_update(font_data_size);
 
     std::pair<Glib::ustring, Glib::ustring> ui = ui_from_fontspec(fontspec);
     set_font_family(ui.first);

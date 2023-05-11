@@ -785,16 +785,13 @@ TextToolbar::fontfamily_value_changed()
     }
     _freeze = true;
 
-    Inkscape::FontLister *fontlister = Inkscape::FontLister::get_instance();
-    SPDocument *document = _desktop->getDocument();
-    fontlister->add_document_fonts_at_top(document);
-
     Glib::ustring new_family = _font_family_item->get_active_text();
     css_font_family_unquote( new_family ); // Remove quotes around font family names.
 
     // TODO: Think about how to handle handle multiple selections. While
     // the font-family may be the same for all, the styles might be different.
     // See: TextEdit::onApply() for example of looping over selected items.
+    Inkscape::FontLister *fontlister = Inkscape::FontLister::get_instance();
 #ifdef DEBUG_TEXT
     std::cout << "  Old family: " << fontlister->get_font_family() << std::endl;
     std::cout << "  New family: " << new_family << std::endl;
@@ -828,6 +825,9 @@ TextToolbar::fontfamily_value_changed()
 
     // unfreeze
     _freeze = false;
+
+    SPDocument *document = _desktop->getDocument();
+    fontlister->add_document_fonts_at_top(document);
 
 #ifdef DEBUG_TEXT
     std::cout << "sp_text_toolbox_fontfamily_changes: exit"  << std::endl;
