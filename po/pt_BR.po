@@ -8600,7 +8600,7 @@ msgstr "Converter em Caminho"
 
 #: ../src/actions/actions-object.cpp:308
 msgid "Convert shapes to paths"
-msgstr "Converter fromas em caminhos"
+msgstr "Converter formas em caminhos"
 
 #: ../src/actions/actions-object.cpp:309
 msgid "Add corners"
