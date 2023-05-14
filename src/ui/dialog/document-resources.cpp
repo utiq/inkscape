@@ -224,9 +224,15 @@ void extract_colors(Gtk::Window* parent, const std::vector<int>& colors, const c
 void delete_object(SPObject* object, Inkscape::Selection* selection) {
     if (!object || !selection) return;
 
-    if (auto gradient = cast<SPGradient>(object)) {
-        auto document = object->document;
-        // delete action fails for gradients; remove them be deleting their nodep
+    auto document = object->document;
+
+    if (auto pattern = cast<SPPattern>(object)) {
+        // delete action fails for patterns; remove them by deleting their nodes
+        sp_repr_unparent(pattern->getRepr());
+        DocumentUndo::done(document, _("Delete pattern"), INKSCAPE_ICON("document-resources"));
+    }
+    else if (auto gradient = cast<SPGradient>(object)) {
+        // delete action fails for gradients; remove them by deleting their nodes
         sp_repr_unparent(gradient->getRepr());
         DocumentUndo::done(document, _("Delete gradient"), INKSCAPE_ICON("document-resources"));
     }
