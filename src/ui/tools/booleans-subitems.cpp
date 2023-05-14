@@ -15,16 +15,18 @@
 #include <utility>
 #include <random>
 
+#include <boost/range/adaptor/reversed.hpp>
+
 #include "booleans-subitems.h"
 #include "helper/geom-pathstroke.h"
+#include "livarot/LivarotDefs.h"
 #include "livarot/Shape.h"
 #include "object/sp-shape.h"
 #include "object/sp-text.h"
 #include "object/sp-use.h"
-#include "style.h"
-
-#include "livarot/LivarotDefs.h"
+#include "object/sp-image.h"
 #include "path/path-boolop.h"
+#include "style.h"
 
 namespace Inkscape {
 
@@ -58,13 +60,17 @@ using ExtractPathvectorsResult = std::vector<std::pair<Geom::PathVector, SPStyle
 static void extract_pathvectors_recursive(SPItem *item, ExtractPathvectorsResult &result, Geom::Affine const &transform)
 {
     if (is<SPGroup>(item)) {
-        for (auto &child : item->children) {
+        for (auto &child : item->children | boost::adaptors::reversed) {
             if (auto child_item = cast<SPItem>(&child)) {
                 extract_pathvectors_recursive(child_item, result, child_item->transform * transform);
             }
         }
+    } else if (auto img = cast<SPImage>(item)) {
+        result.emplace_back(img->get_curve()->get_pathvector() * transform, item->style);
     } else if (auto shape = cast<SPShape>(item)) {
-        result.emplace_back(shape->curve()->get_pathvector() * transform, item->style);
+        if (auto curve = shape->curve()) {
+            result.emplace_back(curve->get_pathvector() * transform, item->style);
+        }
     } else if (auto text = cast<SPText>(item)) {
         result.emplace_back(text->getNormalizedBpath().get_pathvector() * transform, item->style);
     } else if (auto use = cast<SPUse>(item)) {
@@ -74,6 +80,7 @@ static void extract_pathvectors_recursive(SPItem *item, ExtractPathvectorsResult
     }
 }
 
+// Return all pathvectors found within an item, along with their styles, sorted top-to-bottom.
 static ExtractPathvectorsResult extract_pathvectors(SPItem *item)
 {
     ExtractPathvectorsResult result;
@@ -169,9 +176,6 @@ WorkItems SubItem::build_mosaic(std::vector<SPItem*> &&items)
     for (auto item : items) {
         // Get the correctly-transformed pathvectors, together with their corresponding styles.
         auto extracted = extract_pathvectors(item);
-
-        // Reverse the order, again so that the topmost items come first.
-        std::reverse(extracted.begin(), extracted.end());
 
         // Append to the list of augmented items.
         for (auto &[pathv, style] : extracted) {
@@ -300,9 +304,6 @@ WorkItems SubItem::build_flatten(std::vector<SPItem*> &&items)
     for (auto item : items) {
         // Get the correctly-transformed pathvectors, together with their corresponding styles.
         auto extracted = extract_pathvectors(item);
-
-        // Reverse the order, again so that the topmost items come first.
-        std::reverse(extracted.begin(), extracted.end());
 
         for (auto &[pathv, style] : extracted) {
             // Remove lines.
