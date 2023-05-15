@@ -155,10 +155,10 @@ public:
     void saveState(GfxState *state);
     void restoreState(GfxState *state);
     void updateStyle(GfxState *state);
-    void updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_font);
+    void updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_font, bool flip);
     void updateTextPosition(double tx, double ty);
     void updateTextShift(GfxState *state, double shift);
-    void updateTextMatrix(GfxState *state);
+    void updateTextMatrix(GfxState *state, bool flip);
 
     // Clipping
     void setClip(GfxState *state, GfxClipType clip);

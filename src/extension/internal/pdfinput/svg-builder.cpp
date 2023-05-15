@@ -1163,10 +1163,10 @@ void SvgBuilder::updateStyle(GfxState *state) {
 /**
  * \brief Updates _font_style according to the font set in parameter state
  */
-void SvgBuilder::updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_font)
+void SvgBuilder::updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_font, bool flip)
 {
     TRACE(("updateFont()\n"));
-    updateTextMatrix(state);    // Ensure that we have a text matrix built
+    updateTextMatrix(state, flip);    // Ensure that we have a text matrix built
 
     auto font = state->getFont();
     auto font_id = font->getID()->num;
@@ -1252,9 +1252,9 @@ void SvgBuilder::updateTextPosition(double tx, double ty) {
 /**
  * \brief Flushes the buffered characters
  */
-void SvgBuilder::updateTextMatrix(GfxState *state) {
+void SvgBuilder::updateTextMatrix(GfxState *state, bool flip) {
     // Update text matrix, it contains an extra flip which we must undo.
-    auto new_matrix = Geom::Scale(1, -1) * ctmToAffine(state->getTextMat());
+    auto new_matrix = Geom::Scale(1, flip ? -1 : 1) * ctmToAffine(state->getTextMat());
     // TODO: Detect if the text matrix is actually just a rotational kern
     // this can help stich back together texts where letters are rotated
     if (new_matrix != _text_matrix) {

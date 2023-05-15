@@ -267,7 +267,7 @@ PdfParser::PdfParser(std::shared_ptr<PDFDoc> pdf_doc, Inkscape::Extension::Inter
     : _pdf_doc(pdf_doc)
     , xref(pdf_doc->getXRef())
     , builder(builderA)
-    , subPage(gFalse)
+    , subPage(false)
     , printCommands(false)
     , res(new GfxResources(xref, page->getResourceDict(), nullptr))
     , // start the resource stack
@@ -312,25 +312,17 @@ PdfParser::PdfParser(std::shared_ptr<PDFDoc> pdf_doc, Inkscape::Extension::Inter
     formDepth = 0;
 
     pushOperator("startPage");
-
-    // poppler/CairoOutputDev.cc claims the FT Library needs to be kept around
-    // for a while. It's unclear if this is sure for our case.
-    static FT_Library ft_lib;
-    static std::once_flag ft_lib_once_flag;
-    std::call_once(ft_lib_once_flag, FT_Init_FreeType, &ft_lib);
-
-    _font_engine = std::make_shared<CairoFontEngine>(ft_lib);
 }
 
 PdfParser::PdfParser(XRef *xrefA, Inkscape::Extension::Internal::SvgBuilder *builderA, Dict *resDict,
                      _POPPLER_CONST PDFRectangle *box)
     : xref(xrefA)
     , builder(builderA)
-    , subPage(gTrue)
+    , subPage(true)
     , printCommands(false)
     , res(new GfxResources(xref, resDict, nullptr))
     , // start the resource stack
-    state(new GfxState(72, 72, box, 0, gFalse))
+    state(new GfxState(72, 72, box, 0, false))
     , fontChanged(gFalse)
     , clip(clipNone)
     , ignoreUndef(0)
@@ -2083,7 +2075,7 @@ void PdfParser::opSetWordSpacing(Object args[], int /*numArgs*/)
 void PdfParser::opSetHorizScaling(Object args[], int /*numArgs*/)
 {
   state->setHorizScaling(args[0].getNum());
-  builder->updateTextMatrix(state);
+  builder->updateTextMatrix(state, !subPage);
   fontChanged = gTrue;
 }
 
@@ -2122,7 +2114,7 @@ void PdfParser::opSetTextMatrix(Object args[], int /*numArgs*/)
 		    args[2].getNum(), args[3].getNum(),
 		    args[4].getNum(), args[5].getNum());
   state->textMoveTo(0, 0);
-  builder->updateTextMatrix(state);
+  builder->updateTextMatrix(state, !subPage);
   builder->updateTextPosition(0.0, 0.0);
   fontChanged = gTrue;
 }
@@ -2144,8 +2136,15 @@ void PdfParser::opTextNextLine(Object /*args*/[], int /*numArgs*/)
 void PdfParser::doUpdateFont()
 {
     if (fontChanged) {
-        auto font = _font_engine->getFont(state->getFont(), _pdf_doc.get(), true, xref);
-        builder->updateFont(state, font);
+        // poppler/CairoOutputDev.cc claims the FT Library needs to be kept around
+        // for a while. It's unclear if this is sure for our case.
+        static FT_Library ft_lib;
+        static std::once_flag ft_lib_once_flag;
+        std::call_once(ft_lib_once_flag, FT_Init_FreeType, &ft_lib);
+        static auto font_engine = std::make_shared<CairoFontEngine>(ft_lib);
+
+        auto font = font_engine->getFont(state->getFont(), _pdf_doc.get(), true, xref);
+        builder->updateFont(state, font, !subPage);
         fontChanged = false;
     }
 }

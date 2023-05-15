@@ -155,7 +155,6 @@ public:
 
 private:
     std::shared_ptr<PDFDoc> _pdf_doc;
-    std::shared_ptr<CairoFontEngine> _font_engine;
     XRef *xref;          // the xref table for this PDF file
     SvgBuilder *builder; // SVG generator
     GBool subPage;       // is this a sub-page object?
