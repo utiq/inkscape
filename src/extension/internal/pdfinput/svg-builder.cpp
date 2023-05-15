@@ -32,6 +32,7 @@
 #include "display/cairo-utils.h"
 #include "display/nr-filter-utils.h"
 #include "document.h"
+#include "extract-uri.h"
 #include "libnrtype/font-factory.h"
 #include "libnrtype/font-instance.h"
 #include "object/color-profile.h"
@@ -52,6 +53,7 @@
 #include "xml/document.h"
 #include "xml/node.h"
 #include "xml/repr.h"
+#include "xml/sp-css-attr.h"
 
 namespace Inkscape {
 namespace Extension {
@@ -616,7 +618,7 @@ SPCSSAttr *SvgBuilder::_setStyle(GfxState *state, bool fill, bool stroke, bool e
 bool SvgBuilder::shouldMergePath(bool is_fill, const std::string &path)
 {
     auto prev = _container->lastChild();
-    if (!prev)
+    if (!prev || prev->attribute("mask"))
         return false;
 
     auto prev_d = prev->attribute("d");
@@ -2003,6 +2005,74 @@ void SvgBuilder::addSoftMaskedImage(GfxState *state, Stream *str, int width, int
 }
 
 /**
+ * Find the fill or stroke gradient we previously set on this node.
+ */
+Inkscape::XML::Node *SvgBuilder::_getGradientNode(Inkscape::XML::Node *node, bool is_fill)
+{
+    auto css = sp_repr_css_attr(node, "style");
+    auto uri = extract_uri(css->attribute(is_fill ? "fill" : "stroke"));
+    if (!uri.empty()) {
+        if (auto obj = _doc->getObjectById(uri.c_str() + 1)) {
+            return obj->getRepr();
+        }
+    }
+    return nullptr;
+}
+
+bool SvgBuilder::_attrEqual(Inkscape::XML::Node *a, Inkscape::XML::Node *b, char const *attr)
+{
+    return (!a->attribute(attr) && !b->attribute(attr)) || std::string(a->attribute(attr)) == b->attribute(attr);
+}
+
+/**
+ * Take a constructed mask and decide how to apply it to the target.
+ */
+void SvgBuilder::applyOptionalMask(Inkscape::XML::Node *mask, Inkscape::XML::Node *target)
+{
+    // Merge transparency gradient back into real gradient if possible
+    if (mask->childCount() == 1) {
+        auto source = mask->firstChild();
+        auto source_gr = _getGradientNode(source, true);
+        auto target_gr = _getGradientNode(target, true);
+        // Both objects have a gradient, try and merge them
+        if (source_gr && target_gr && source_gr->childCount() == target_gr->childCount()) {
+            bool same_pos = _attrEqual(source_gr, target_gr, "x1") && _attrEqual(source_gr, target_gr, "x2")
+                         && _attrEqual(source_gr, target_gr, "y1") && _attrEqual(source_gr, target_gr, "y2");
+
+            bool white_mask = false;
+            for (auto source_st = source_gr->firstChild(); source_st != nullptr; source_st = source_st->next()) {
+                auto source_css = sp_repr_css_attr(source_st, "style");
+                white_mask = white_mask or source_css->getAttributeDouble("stop-opacity") != 1.0;
+                if (std::string(source_css->attribute("stop-color")) != "#ffffff") {
+                    white_mask = false;
+                    break;
+                }
+            }
+
+            if (same_pos && white_mask) {
+                // We move the stop-opacity from the source to the target
+                auto target_st = target_gr->firstChild();
+                for (auto source_st = source_gr->firstChild(); source_st != nullptr; source_st = source_st->next()) {
+                    auto target_css = sp_repr_css_attr(target_st, "style");
+                    auto source_css = sp_repr_css_attr(source_st, "style");
+                    sp_repr_css_set_property(target_css, "stop-opacity", source_css->attribute("stop-opacity"));
+                    sp_repr_css_change(target_st, target_css, "style");
+                    target_st = target_st->next();
+                }
+                // Remove mask and gradient xml objects
+                mask->parent()->removeChild(mask);
+                source_gr->parent()->removeChild(source_gr);
+                return;
+            }
+        }
+    }
+    gchar *mask_url = g_strdup_printf("url(#%s)", mask->attribute("id"));
+    target->setAttribute("mask", mask_url);
+    g_free(mask_url);
+}
+
+
+/**
  * \brief Starts building a new transparency group
  */
 void SvgBuilder::startGroup(GfxState *state, double *bbox, GfxColorSpace * /*blending_color_space*/, bool isolated,
@@ -2027,9 +2097,7 @@ void SvgBuilder::finishGroup(GfxState *state, bool for_softmask)
     if (for_softmask) {
         // Create mask
         auto mask_node = _popContainer();
-        gchar *mask_url = g_strdup_printf("url(#%s)", mask_node->attribute("id"));
-        _container->setAttribute("mask", mask_url);
-        g_free(mask_url);
+        applyOptionalMask(mask_node, _container);
     } else {
         popGroup(state);
     }
@@ -2051,7 +2119,10 @@ void SvgBuilder::popGroup(GfxState *state)
             child->setAttributeSvgDouble("opacity", orig * grp);
 
             if (auto mask = parent->attribute("mask")) {
-                child->setAttribute("mask", mask);
+                auto uri = extract_uri(mask).c_str();
+                if (auto obj = _doc->getObjectById(uri + 1)) {
+                    applyOptionalMask(obj->getRepr(), child);
+                }
             }
             if (auto clip = parent->attribute("clip-path")) {
                 child->setAttribute("clip-path", clip);

@@ -130,6 +130,7 @@ public:
                             GfxImageColorMap *color_map, bool interpolate,
                             Stream *mask_str, int mask_width, int mask_height,
                             GfxImageColorMap *mask_color_map, bool mask_interpolate);
+    void applyOptionalMask(Inkscape::XML::Node *mask, Inkscape::XML::Node *target);
 
     // Groups, Transparency group and soft mask handling
     void startGroup(GfxState *state, double *bbox, GfxColorSpace *blending_color_space, bool isolated, bool knockout,
@@ -217,6 +218,9 @@ private:
 
     void _setClipPath(Inkscape::XML::Node *node);
     void _addToContainer(Inkscape::XML::Node *node, bool release = true);
+
+    Inkscape::XML::Node *_getGradientNode(Inkscape::XML::Node *node, bool is_fill);
+    static bool _attrEqual(Inkscape::XML::Node *a, Inkscape::XML::Node *b, char const *attr);
 
     // Colors
     std::string convertGfxColor(const GfxColor *color, GfxColorSpace *space);
