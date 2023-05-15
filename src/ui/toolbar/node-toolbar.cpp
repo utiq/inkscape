@@ -225,7 +225,7 @@ NodeToolbar::NodeToolbar(SPDesktop *desktop)
 
     {
         auto line_item = Gtk::manage(new Gtk::ToolButton(_("Node Line")));
-        line_item->set_tooltip_text(_("Make selected segments lines"));
+        line_item->set_tooltip_text(_("Straighten lines"));
         line_item->set_icon_name(INKSCAPE_ICON("node-segment-line"));
         line_item->signal_clicked().connect(sigc::mem_fun(*this, &NodeToolbar::edit_toline));
         add(*line_item);
@@ -233,7 +233,7 @@ NodeToolbar::NodeToolbar(SPDesktop *desktop)
 
     {
         auto curve_item = Gtk::manage(new Gtk::ToolButton(_("Node Curve")));
-        curve_item->set_tooltip_text(_("Make selected segments curves"));
+        curve_item->set_tooltip_text(_("Add curve handles"));
         curve_item->set_icon_name(INKSCAPE_ICON("node-segment-curve"));
         curve_item->signal_clicked().connect(sigc::mem_fun(*this, &NodeToolbar::edit_tocurve));
         add(*curve_item);
