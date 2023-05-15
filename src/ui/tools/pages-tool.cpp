@@ -147,7 +147,7 @@ void PagesTool::resizeKnotSet(Geom::Rect rect)
 void PagesTool::marginKnotSet(Geom::Rect margin_rect)
 {
     for (int i = 0; i < margin_knots.size(); i++) {
-        margin_knots[i]->moveto(middleOfSide(i, margin_rect));
+        margin_knots[i]->moveto(middleOfSide(i, margin_rect) * _desktop->doc2dt());
         margin_knots[i]->show();
     }
 }
@@ -240,7 +240,7 @@ bool PagesTool::marginKnotMoved(SPKnot *knot, Geom::Point *ppointer, guint state
     pm.enablePages();
 
     if (auto page = pm.getSelected()) {
-        Geom::Point point = *ppointer;
+        Geom::Point point = *ppointer * document->dt2doc();
 
         // Confine knot to edge
         auto confine = Modifiers::Modifier::get(Modifiers::Type::TRANS_CONFINE)->active(state);
@@ -251,12 +251,12 @@ bool PagesTool::marginKnotMoved(SPKnot *knot, Geom::Point *ppointer, guint state
         // Calculate what we're acting on, clamp it depending on the side.
         int side = INDEX_OF(margin_knots, knot);
         auto axis = (side & 1) ? Geom::X : Geom::Y;
-        auto delta = (point - page->getDesktopRect().corner(side))[axis];
+        auto delta = (point - page->getDocumentRect().corner(side))[axis];
         auto value = std::max(0.0, (side + 1) & 2 ? -delta : delta);
 
         // Set to page and back to to knot to inform confinement.
         page->setMarginSide(side, value, confine);
-        knot->setPosition(middleOfSide(side, page->getDesktopMargin()), state);
+        knot->setPosition(middleOfSide(side, page->getDocumentMargin()) * document->doc2dt(), state);
 
         Inkscape::DocumentUndo::maybeDone(document, "page-margin", ("Adjust page margin"), INKSCAPE_ICON("tool-pages"));
     } else {
@@ -648,7 +648,7 @@ void PagesTool::pageModified(SPObject *object, guint /*flags*/)
 {
     if (auto page = cast<SPPage>(object)) {
         resizeKnotSet(page->getDesktopRect());
-        marginKnotSet(page->getDesktopMargin());
+        marginKnotSet(page->getDocumentMargin());
     }
 }
 
