@@ -150,7 +150,7 @@ Geom::PathVector flattened(Geom::PathVector const &pathv, FillRule fill_rule)
     auto shape = make_shape(path, 0, fill_rule);
 
     Path res;
-    shape.ConvertToForme(&res, 1, std::begin({ &path }), true);
+    shape.ConvertToForme(&res, 1, std::begin({ &path }));
 
     return res.MakePathVector();
 }
@@ -178,7 +178,7 @@ std::vector<Geom::PathVector> pathvector_cut(Geom::PathVector const &pathv, Geom
     int num_nesting = 0;
     int *nesting = nullptr;
     int *conts = nullptr;
-    shape.ConvertToFormeNested(&path, 2, std::begin({ &patha, &pathb }), 1, num_nesting, nesting, conts);
+    shape.ConvertToFormeNested(&path, 2, std::begin({ &patha, &pathb }), num_nesting, nesting, conts);
 
     int num_paths;
     auto paths = path.SubPathsWithNesting(num_paths, false, num_nesting, nesting, conts);
@@ -651,10 +651,9 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
 
         // the cut path needs to have the highest pathID in the back data
         // that's how the Booleen() function knows it's an edge of the cut
-        {
-            Path* swap=originaux[0];originaux[0]=originaux[1];originaux[1]=swap;
-            int   swai=origWind[0];origWind[0]=origWind[1];origWind[1]=(fill_typ)swai;
-        }
+        std::swap(originaux[0], originaux[1]);
+        std::swap(origWind[0], origWind[1]);
+
         originaux[0]->ConvertWithBackData(get_threshold(il[0]));
 
         originaux[0]->Fill(theShape, 0);
@@ -681,10 +680,9 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         // the intersections you have found are then fed to ConvertPositionsToMoveTo() which will
         // make new subpath at each one of these positions
         // inversion pour l'opération
-        {
-            Path* swap=originaux[0];originaux[0]=originaux[1];originaux[1]=swap;
-            int   swai=origWind[0];origWind[0]=origWind[1];origWind[1]=(fill_typ)swai;
-        }
+        std::swap(originaux[0], originaux[1]);
+        std::swap(origWind[0], origWind[1]);
+
         originaux[0]->ConvertWithBackData(get_threshold(il[0]));
 
         originaux[0]->Fill(theShapeA, 0,false,false,false); // don't closeIfNeeded
@@ -752,8 +750,6 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
     int     nbNest=0;
     // pour compenser le swap juste avant
     if ( bop == bool_op_slice ) {
-//    theShape->ConvertToForme(res, nbOriginaux, originaux, true);
-//    res->ConvertForcedToMoveTo();
         res->Copy(originaux[0]);
         res->ConvertPositionsToMoveTo(nbToCut, toCut); // cut where you found intersections
         free(toCut);
@@ -763,7 +759,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         // function needs it.
         // this function uses the point_data to get the winding number of each path (ie: is a hole or not)
         // for later reconstruction in objects, you also need to extract which path is parent of holes (nesting info)
-        theShape->ConvertToFormeNested(res, nbOriginaux, &originaux[0], 1, nbNest, nesting, conts);
+        theShape->ConvertToFormeNested(res, nbOriginaux, &originaux[0], nbNest, nesting, conts);
     } else {
         theShape->ConvertToForme(res, nbOriginaux, &originaux[0]);
     }

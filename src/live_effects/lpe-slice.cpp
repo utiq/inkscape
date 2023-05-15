@@ -574,7 +574,7 @@ LPESlice::cloneD(SPObject *orig, SPObject *dest, bool is_original)
     }
 }
 
-static fill_typ GetFillTyp(SPItem *item)
+static FillRule GetFillTyp(SPItem *item)
 {
     SPCSSAttr *css = sp_repr_css_attr(item->getRepr(), "style");
     gchar const *val = sp_repr_css_property(css, "fill-rule", nullptr);
