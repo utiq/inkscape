@@ -317,7 +317,7 @@ Gtk::Widget *LPETransform2Pts::newWidget()
                     entry_widget->set_width_chars(3);
                     vbox->pack_start(*widg, true, true, 2);
                     if (tip) {
-                        widg->set_tooltip_text(*tip);
+                        widg->set_tooltip_markup(*tip);
                     } else {
                         widg->set_tooltip_text("");
                         widg->set_has_tooltip(false);
@@ -328,7 +328,7 @@ Gtk::Widget *LPETransform2Pts::newWidget()
                 if (widg) {
                     button1->pack_start(*widg, true, true, 2);
                     if (tip) {
-                        widg->set_tooltip_text(*tip);
+                        widg->set_tooltip_markup(*tip);
                     } else {
                         widg->set_tooltip_text("");
                         widg->set_has_tooltip(false);
@@ -339,7 +339,7 @@ Gtk::Widget *LPETransform2Pts::newWidget()
                 if (widg) {
                     button2->pack_start(*widg, true, true, 2);
                     if (tip) {
-                        widg->set_tooltip_text(*tip);
+                        widg->set_tooltip_markup(*tip);
                     } else {
                         widg->set_tooltip_text("");
                         widg->set_has_tooltip(false);
@@ -350,7 +350,7 @@ Gtk::Widget *LPETransform2Pts::newWidget()
                 if (widg) {
                     button3->pack_start(*widg, true, true, 2);
                     if (tip) {
-                        widg->set_tooltip_text(*tip);
+                        widg->set_tooltip_markup(*tip);
                     } else {
                         widg->set_tooltip_text("");
                         widg->set_has_tooltip(false);
@@ -359,7 +359,7 @@ Gtk::Widget *LPETransform2Pts::newWidget()
             } else if (widg) {
                 vbox->pack_start(*widg, true, true, 2);
                 if (tip) {
-                    widg->set_tooltip_text(*tip);
+                    widg->set_tooltip_markup(*tip);
                 } else {
                     widg->set_tooltip_text("");
                     widg->set_has_tooltip(false);

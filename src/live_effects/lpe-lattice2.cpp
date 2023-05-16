@@ -254,7 +254,7 @@ LPELattice2::newWidget()
                     vbox_expander->pack_start(*widg, true, true, 2);
                 }
                 if (tip) {
-                    widg->set_tooltip_text(*tip);
+                    widg->set_tooltip_markup(*tip);
                 } else {
                     widg->set_tooltip_text("");
                     widg->set_has_tooltip(false);

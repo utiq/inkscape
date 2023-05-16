@@ -126,7 +126,7 @@ LPESimplify::newWidget()
                 if (widg) {
                     buttons->pack_start(*widg, true, true, 2);
                     if (tip) {
-                        widg->set_tooltip_text(*tip);
+                        widg->set_tooltip_markup(*tip);
                     } else {
                         widg->set_tooltip_text("");
                         widg->set_has_tooltip(false);
@@ -141,7 +141,7 @@ LPESimplify::newWidget()
                     entry_widg->set_width_chars(8);
                     vbox->pack_start(*widg, true, true, 2);
                     if (tip) {
-                        widg->set_tooltip_text(*tip);
+                        widg->set_tooltip_markup(*tip);
                     } else {
                         widg->set_tooltip_text("");
                         widg->set_has_tooltip(false);
