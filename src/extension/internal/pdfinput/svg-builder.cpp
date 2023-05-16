@@ -17,6 +17,8 @@
 #endif
 
 #include <string> 
+#include <locale>
+#include <codecvt>
 
 #ifdef HAVE_POPPLER
 #define USE_CMS
@@ -106,7 +108,7 @@ SvgBuilder::~SvgBuilder()
 
 void SvgBuilder::_init() {
     _clip_history = new ClipHistoryEntry();
-    _font_style = nullptr;
+    _css_font = nullptr;
     _font_specification = nullptr;
     _in_text_object = false;
     _invalidated_style = true;
@@ -136,10 +138,23 @@ void SvgBuilder::pushPage(const std::string &label, GfxState *state)
     _page = _xml_doc->createElement("inkscape:page");
     _page->setAttributeSvgDouble("x", _page_left);
     _page->setAttributeSvgDouble("y", _page_top);
-    // Page affine is applied to all objects which are "placed" onto this page
-    // But the left/top locations are px/pt scaled, so we use the pdf_doc base state
-    // to pull the location back.
-    _page_affine = Geom::Translate(_page_left, _page_top);
+
+    // Page translation is somehow lost in the way we're using poppler and the state management
+    // Applying the state directly doesn't work as many of the flips/rotates are baked in already.
+    // The translation alone must be added back to the page position so items end up in the
+    // right places. If a better method is found, please replace this code.
+    auto st = stateToAffine(state);
+    auto tr = st.translation();
+    if (st[0] < 0 || st[2] < 0) { // Flip or rotate in X
+        tr[Geom::X] = -tr[Geom::X] + state->getPageWidth();
+    }
+    if (st[1] < 0 || st[3] < 0) { // Flip or rotate in Y
+        tr[Geom::Y] = -tr[Geom::Y] + state->getPageHeight();
+    }
+    // Note: This translation is very rare in pdf files, most of the time their initial state doesn't contain
+    // any real translations, just a flip and the because of our GfxState constructor, the pt/px scale.
+    // Please use an example pdf which produces a non-zero translation in order to change this code!
+    _page_affine = Geom::Translate(tr).inverse() * Geom::Translate(_page_left, _page_top);
 
     if (!label.empty()) {
         _page->setAttribute("inkscape:label", label);
@@ -319,7 +334,9 @@ Inkscape::XML::Node *SvgBuilder::_addToContainer(const char *name)
  */
 void SvgBuilder::_addToContainer(Inkscape::XML::Node *node, bool release)
 {
-    _container->appendChild(node);
+    if (!node->parent()) {
+        _container->appendChild(node);
+    }
     if (release) {
         Inkscape::GC::release(node);
     }
@@ -327,7 +344,7 @@ void SvgBuilder::_addToContainer(Inkscape::XML::Node *node, bool release)
 
 void SvgBuilder::_setClipPath(Inkscape::XML::Node *node)
 {
-    if (_clip_history->hasClipPath()) {
+    if (_clip_history->hasClipPath() || _clip_text) {
         auto tr = Geom::identity();
         if (auto attr = node->attribute("transform")) {
             sp_svg_transform_read(attr, &tr);
@@ -670,7 +687,10 @@ bool SvgBuilder::mergePath(GfxState *state, bool is_fill, const std::string &pat
 void SvgBuilder::addPath(GfxState *state, bool fill, bool stroke, bool even_odd) {
     gchar *pathtext = svgInterpretPath(state->getPath());
 
-    if (pathtext && fill != stroke && mergePath(state, fill, pathtext, even_odd)) {
+    if (!pathtext)
+        return;
+
+    if (!strlen(pathtext) || (fill != stroke && mergePath(state, fill, pathtext, even_odd))) {
         g_free(pathtext);
         return;
     }
@@ -752,15 +772,15 @@ void SvgBuilder::addShadedFill(GfxShading *shading, const Geom::Affine shading_t
  * \param state poppler's data structure
  * \param even_odd whether the even-odd rule should be applied
  */
-void SvgBuilder::setClip(GfxState *state, GfxClipType clip)
+void SvgBuilder::setClip(GfxState *state, GfxClipType clip, bool is_bbox)
 {
     // When there's already a clip path, we add clipping groups to handle them.
-    if (_clip_history->hasClipPath() && !_clip_history->isCopied()) {
+    if (!is_bbox && _clip_history->hasClipPath() && !_clip_history->isCopied()) {
         _pushContainer("svg:g");
         _clip_groups++;
     }
     if (clip == clipNormal) {
-        _clip_history->setClip(state, clipNormal);
+        _clip_history->setClip(state, clipNormal, is_bbox);
     } else {
         _clip_history->setClip(state, clipEO);
     }
@@ -771,12 +791,29 @@ void SvgBuilder::setClip(GfxState *state, GfxClipType clip)
  */
 Inkscape::XML::Node *SvgBuilder::_getClip(const Geom::Affine &node_tr)
 {
+    // In SVG the path-clip transforms are compounded, so we have to do extra work to
+    // pull transforms back out of the clipping object and set them. Otherwise this
+    // would all be a lot simpler.
+    if (_clip_text) {
+        auto node = _clip_text;
+
+        auto text_tr = Geom::identity();
+        if (auto attr = node->attribute("transform")) {
+            sp_svg_transform_read(attr, &text_tr);
+            node->removeAttribute("transform");
+        }
+
+        for (auto child = node->firstChild(); child; child = child->next()) {
+            Geom::Affine child_tr = text_tr * _page_affine * node_tr.inverse();
+            svgSetTransform(child, child_tr);
+        }
+
+        _clip_text = nullptr;
+        return node;
+    }
     if (_clip_history->hasClipPath()) {
         std::string clip_d = svgInterpretPath(_clip_history->getClipPath());
-
-        // Remove the node's transformation from the clip definition
         Geom::Affine tr = _clip_history->getAffine() * _page_affine * node_tr.inverse();
-
         return _createClip(clip_d, tr, _clip_history->evenOdd());
     }
     return nullptr;
@@ -813,7 +850,8 @@ void SvgBuilder::beginMarkedContent(const char *name, const char *group)
                 _container = existing->getRepr();
                 _node_stack.push_back(_container);
             } else {
-                g_warning("Layer content jumped around!");
+                g_warning("Unexpected marked content group in PDF!");
+                _pushGroup();
             }
         } else {
             auto node = _pushGroup();
@@ -824,7 +862,10 @@ void SvgBuilder::beginMarkedContent(const char *name, const char *group)
             }
         }
     } else {
-        _pushGroup();
+        auto node = _pushGroup();
+        if (group) {
+            node->setAttribute("id", std::string("group-") + group);
+        }
     }
 }
 
@@ -1132,6 +1173,8 @@ bool SvgBuilder::_addGradientStops(Inkscape::XML::Node *gradient, GfxShading *sh
         const double *bounds = stitchingFunc->getBounds();
         const double *encode = stitchingFunc->getEncode();
         int num_funcs = stitchingFunc->getNumFuncs();
+        // Adjust gradient so it's always between 0.0 - 1.0
+        double max_bound = std::max({1.0, bounds[num_funcs]});
 
         // Add stops from all the stitched functions
         GfxColor prev_color, color;
@@ -1145,13 +1188,15 @@ bool SvgBuilder::_addGradientStops(Inkscape::XML::Node *gradient, GfxShading *sh
                 if (expE > 1.0) {
                     expE = (bounds[i + 1] - bounds[i])/expE;    // approximate exponential as a single straight line at x=1
                     if (encode[2*i] == 0) {    // normal sequence
-                        _addStopToGradient(gradient, bounds[i + 1] - expE, &prev_color, space, 1.0);
+                        auto offset = (bounds[i + 1] - expE) / max_bound;
+                        _addStopToGradient(gradient, offset, &prev_color, space, 1.0);
                     } else {                   // reflected sequence
-                        _addStopToGradient(gradient, bounds[i] + expE, &color, space, 1.0);
+                        auto offset = (bounds[i] + expE) / max_bound;
+                        _addStopToGradient(gradient, offset, &color, space, 1.0);
                     }
                 }
             }
-            _addStopToGradient(gradient, bounds[i + 1], &color, space, 1.0);
+            _addStopToGradient(gradient, bounds[i + 1] / max_bound, &color, space, 1.0);
             prev_color = color;
         }
     } else { // Unsupported function type
@@ -1172,7 +1217,7 @@ void SvgBuilder::updateStyle(GfxState *state) {
 }
 
 /**
- * \brief Updates _font_style according to the font set in parameter state
+ * \brief Updates _css_font according to the font set in parameter state
  */
 void SvgBuilder::updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_font, bool flip)
 {
@@ -1193,6 +1238,12 @@ void SvgBuilder::updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_fo
         _css_font_size = new_font_size;
         _invalidated_style = true;
     }
+    bool was_css_font = (bool)_css_font;
+    // Clean up any previous css font
+    if (_css_font) {
+        sp_repr_css_attr_unref(_css_font);
+        _css_font = nullptr;
+    }
 
     auto font_strategy = FontFallback::AS_TEXT;
     if (_font_strategies.find(font_id) != _font_strategies.end()) {
@@ -1200,44 +1251,44 @@ void SvgBuilder::updateFont(GfxState *state, std::shared_ptr<CairoFont> cairo_fo
     }
 
     if (font_strategy == FontFallback::DELETE_TEXT) {
-        _font_style = nullptr;
+        _invalidated_strategy = true;
         _cairo_font = nullptr;
         return;
     }
     if (font_strategy == FontFallback::AS_SHAPES) {
-        _font_style = nullptr;
-        if (_cairo_font != cairo_font) {
-            _invalidated_style = true;
-        }
+        _invalidated_strategy = _invalidated_strategy || was_css_font;
+        _invalidated_style = (_cairo_font != cairo_font);
         _cairo_font = cairo_font;
         return;
     }
 
     auto font_data = FontData(font);
     _font_specification = font_data.getSpecification().c_str();
+    _invalidated_strategy = (bool)_cairo_font;
+    _invalidated_style = true;
 
     // Font family
     _cairo_font = nullptr;
-    _font_style = sp_repr_css_attr_new();
+    _css_font = sp_repr_css_attr_new();
     if (font->getFamily()) { // if font family is explicitly given use it.
-        sp_repr_css_set_property(_font_style, "font-family", font->getFamily()->getCString());
+        sp_repr_css_set_property(_css_font, "font-family", font->getFamily()->getCString());
     } else if (font_strategy == FontFallback::AS_SUB && !font_data.found) {
-        sp_repr_css_set_property(_font_style, "font-family", font_data.getSubstitute().c_str());
+        sp_repr_css_set_property(_css_font, "font-family", font_data.getSubstitute().c_str());
     } else {
-        sp_repr_css_set_property(_font_style, "font-family", font_data.family.c_str());
+        sp_repr_css_set_property(_css_font, "font-family", font_data.family.c_str());
     }
 
     // Set the font data
-    sp_repr_css_set_property(_font_style, "font-style", font_data.style.c_str());
-    sp_repr_css_set_property(_font_style, "font-weight", font_data.weight.c_str());
-    sp_repr_css_set_property(_font_style, "font-stretch", font_data.stretch.c_str());
-    sp_repr_css_set_property(_font_style, "font-variant", "normal");
+    sp_repr_css_set_property(_css_font, "font-style", font_data.style.c_str());
+    sp_repr_css_set_property(_css_font, "font-weight", font_data.weight.c_str());
+    sp_repr_css_set_property(_css_font, "font-stretch", font_data.stretch.c_str());
+    sp_repr_css_set_property(_css_font, "font-variant", "normal");
 
     // Writing mode
     if ( font->getWMode() == 0 ) {
-        sp_repr_css_set_property(_font_style, "writing-mode", "lr");
+        sp_repr_css_set_property(_css_font, "writing-mode", "lr");
     } else {
-        sp_repr_css_set_property(_font_style, "writing-mode", "tb");
+        sp_repr_css_set_property(_css_font, "writing-mode", "tb");
     }
 }
 
@@ -1282,16 +1333,25 @@ void SvgBuilder::updateTextMatrix(GfxState *state, bool flip) {
  */
 void SvgBuilder::_flushText(GfxState *state)
 {
+    // Set up a clipPath group
+    if (state->getRender() & 4 && !_clip_text_group) {
+        auto defs = _doc->getDefs()->getRepr();
+        _clip_text_group = _pushContainer("svg:clipPath");
+        _clip_text_group->setAttribute("clipPathUnits", "userSpaceOnUse");
+        defs->appendChild(_clip_text_group);
+        Inkscape::GC::release(_clip_text_group);
+    }
+
     // Ignore empty strings
-    if ( _glyphs.empty()) {
+    if (_glyphs.empty()) {
         _glyphs.clear();
         return;
     }
     std::vector<SvgGlyph>::iterator i = _glyphs.begin();
     const SvgGlyph& first_glyph = (*i);
-    int render_mode = first_glyph.render_mode;
+
     // Ignore invisible characters
-    if ( render_mode == 3 ) {
+    if (first_glyph.state->getRender() == 3) {
         _glyphs.clear();
         return;
     }
@@ -1302,12 +1362,7 @@ void SvgBuilder::_flushText(GfxState *state)
     cairo_glyph_t *cairo_glyphs = nullptr;
     unsigned int cairo_glyph_count = 0;
 
-    if (_cairo_font) {
-        // Where _cairo_font is being checked, you will find the cairo draw to path
-        // pathway in this code. Where you see tspan and text node manipulation that
-        // is the svg text pathway.
-        cairo_glyphs = (cairo_glyph_t *)gmallocn(_glyphs.size(), sizeof(cairo_glyph_t));
-    } else {
+    if (!first_glyph.cairo_font) {
         // we preserve spaces in the text objects we create, this applies to any descendant
         text_node = _addToContainer("svg:text");
         text_node->setAttribute("xml:space", "preserve");
@@ -1322,6 +1377,10 @@ void SvgBuilder::_flushText(GfxState *state)
     // translation point and not simply used in the text element directly.
     auto pos = first_glyph.position * tr;
     text_transform.setTranslation(pos);
+    // Cache the text transform when clipping
+    if (_clip_text_group) {
+        svgSetTransform(_clip_text_group, text_transform);
+    }
 
     bool new_tspan = true;
     bool same_coords[2] = {true, true};
@@ -1350,7 +1409,7 @@ void SvgBuilder::_flushText(GfxState *state)
         }
 
         // Create tspan node if needed
-        if (!_cairo_font && text_node && (new_tspan || i == _glyphs.end())) {
+        if (!first_glyph.cairo_font && text_node && (new_tspan || i == _glyphs.end())) {
             if (tspan_node) {
                 // Set the x and y coordinate arrays
                 if (same_coords[0]) {
@@ -1380,7 +1439,7 @@ void SvgBuilder::_flushText(GfxState *state)
                 glyphs_in_a_row = 0;
             }
             if ( i == _glyphs.end() ) {
-                sp_repr_css_attr_unref((*prev_iterator).style);
+                sp_repr_css_attr_unref((*prev_iterator).css_font);
                 break;
             } else {
                 tspan_node = _xml_doc->createElement("svg:tspan");
@@ -1388,10 +1447,10 @@ void SvgBuilder::_flushText(GfxState *state)
                 // Set style and unref SPCSSAttr if it won't be needed anymore
                 // assume all <tspan> nodes in a <text> node share the same style
                 double text_size = text_scale * glyph.text_size;
-                sp_repr_css_set_property_double(glyph.style, "font-size", text_size);
-                sp_repr_css_change(tspan_node, glyph.style, "style");
+                sp_repr_css_set_property_double(glyph.css_font, "font-size", text_size);
+                _setTextStyle(tspan_node, glyph.state, glyph.css_font, text_transform);
                 if ( glyph.style_changed && i != _glyphs.begin() ) {    // Free previous style
-                    sp_repr_css_attr_unref((*prev_iterator).style);
+                    sp_repr_css_attr_unref((*prev_iterator).css_font);
                 }
             }
             new_tspan = false;
@@ -1420,7 +1479,10 @@ void SvgBuilder::_flushText(GfxState *state)
         y_coords.append(os_y.str());
         last_delta_pos = delta_pos;
 
-        if (_cairo_font) {
+        if (first_glyph.cairo_font) {
+            if (!cairo_glyphs) {
+                cairo_glyphs = (cairo_glyph_t *)gmallocn(_glyphs.size(), sizeof(cairo_glyph_t));
+            }
             bool is_last_glyph = i + 1 == _glyphs.end();
 
             // Push the data into the cairo glyph list for later rendering.
@@ -1438,9 +1500,12 @@ void SvgBuilder::_flushText(GfxState *state)
 
                 // Render and set the style for this drawn text.
                 double text_size = text_scale * glyph.text_size;
+
+                // Set to 'text_node' because if the style does NOT change, we won't have a group
+                // but still need to set this text's position and blend modes.
                 text_node = _renderText(glyph.cairo_font, text_size, text_transform, cairo_glyphs, cairo_glyph_count);
                 if (text_node) {
-                    sp_repr_css_change(text_node, glyph.style, "style");
+                    _setTextStyle(text_node, glyph.state, nullptr, text_transform);
                 }
 
                 // Free up the used glyph stack.
@@ -1451,9 +1516,6 @@ void SvgBuilder::_flushText(GfxState *state)
                 if (is_last_glyph) {
                     // Stop drawing text now, we have cleaned up.
                     break;
-                } else {
-                    // Allocate enough glyph space for the next span.
-                    cairo_glyphs = (cairo_glyph_t *)gmallocn(_glyphs.size(), sizeof(cairo_glyph_t));
                 }
             }
         } else {
@@ -1485,12 +1547,41 @@ void SvgBuilder::_flushText(GfxState *state)
         _popGroup();
     }
 
-    // Set the text matrix which sits under the page's position
-    _setBlendMode(text_node, state);
-    svgSetTransform(text_node, text_transform * _page_affine);
-    _setClipPath(text_node);
+    if (text_node) {
+        if (first_glyph.cairo_font) {
+            // Save aria-label for any rendered text blocks
+            text_node->setAttribute("aria-label", _aria_label);
+        }
 
+        // Set the text matrix which sits under the page's position
+        _setBlendMode(text_node, state);
+        svgSetTransform(text_node, text_transform * _page_affine);
+        _setClipPath(text_node);
+    }
+
+    _aria_label = "";
     _glyphs.clear();
+}
+
+/**
+ * Sets the style for the text, rendered or un-rendered, preserving the text_transform for any
+ * gradients or other patterns. These values were promised to us when the font was updated.
+ */
+void SvgBuilder::_setTextStyle(Inkscape::XML::Node *node, GfxState *state, SPCSSAttr *font_style, Geom::Affine ta)
+{
+    int render_mode = state->getRender();
+    bool has_fill = !(render_mode & 1);
+    bool has_stroke = ( render_mode & 3 ) == 1 || ( render_mode & 3 ) == 2;
+
+    state = state->save();
+    state->setCTM(ta[0], ta[1], ta[2], ta[3], ta[4], ta[5]);
+    auto style = _setStyle(state, has_fill, has_stroke);
+    state = state->restore();
+    if (font_style) {
+        sp_repr_css_merge(style, font_style);
+    }
+    sp_repr_css_change(node, style, "style");
+    sp_repr_css_attr_unref(style);
 }
 
 /**
@@ -1507,7 +1598,7 @@ Inkscape::XML::Node *SvgBuilder::_renderText(std::shared_ptr<CairoFont> cairo_fo
                                              const Geom::Affine &transform,
                                              cairo_glyph_t *cairo_glyphs, unsigned int count)
 {
-    if (!cairo_glyphs || !cairo_font)
+    if (!cairo_glyphs || !cairo_font || _aria_label.empty())
         return nullptr;
 
     // The surface isn't actually used, no rendering in cairo takes place.
@@ -1527,8 +1618,12 @@ Inkscape::XML::Node *SvgBuilder::_renderText(std::shared_ptr<CairoFont> cairo_fo
         return nullptr;
     }
 
+    auto textpath = sp_svg_write_path(*pathv);
+    if (textpath.empty())
+        return nullptr;
+
     Inkscape::XML::Node *path = _addToContainer("svg:path");
-    path->setAttribute("d", sp_svg_write_path(*pathv));
+    path->setAttribute("d", textpath);
     return path;
 }
 
@@ -1538,6 +1633,16 @@ Inkscape::XML::Node *SvgBuilder::_renderText(std::shared_ptr<CairoFont> cairo_fo
  */
 void SvgBuilder::beginString(GfxState *state, int len)
 {
+    if (!_glyphs.empty()) {
+        // What to do about unflushed text in the buffer.
+        if (_invalidated_strategy) {
+            _flushText(state);
+            _invalidated_strategy = false;
+        } else {
+            // Add seperator for aria text.
+            _aria_space = true;
+        }
+    }
     IFTRACE(double *m = state->getTextMat());
     TRACE(("tm: %f %f %f %f %f %f\n",m[0], m[1],m[2], m[3], m[4], m[5]));
     IFTRACE(m = state->getCTM());
@@ -1555,6 +1660,19 @@ void SvgBuilder::endString(GfxState *state)
 void SvgBuilder::addChar(GfxState *state, double x, double y, double dx, double dy, double originX, double originY,
                          CharCode code, int /*nBytes*/, Unicode const *u, int uLen)
 {
+    if (_aria_space) {
+        const SvgGlyph& prev_glyph = _glyphs.back();
+        // This helps reconstruct the aria text, though it could be made better
+        if (prev_glyph.position[Geom::Y] != (y - originY)) {
+            _aria_label += "\n";
+        }
+        _aria_space = false;
+    }
+    static std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv1;
+    if (u) {
+        _aria_label += conv1.to_bytes(*u);
+    }
+
     // Skip control characters, found in LaTeX generated PDFs
     // https://gitlab.com/inkscape/inkscape/-/issues/1369
     if (uLen > 0 && u[0] < 0x80 && g_ascii_iscntrl(u[0]) && !g_ascii_isspace(u[0])) {
@@ -1563,7 +1681,7 @@ void SvgBuilder::addChar(GfxState *state, double x, double y, double dx, double 
         return;
     }
 
-    if (!_font_style && !_cairo_font) {
+    if (!_css_font && !_cairo_font) {
         // Deleted text.
         return;
     }
@@ -1589,6 +1707,7 @@ void SvgBuilder::addChar(GfxState *state, double x, double y, double dx, double 
     new_glyph.position = Geom::Point( x - originX, y - originY );
     new_glyph.text_position = _text_position;
     new_glyph.text_size = _css_font_size;
+    new_glyph.state = state;
     if (_cairo_font) {
         new_glyph.cairo_font = _cairo_font;
         new_glyph.cairo_index = _cairo_font->getGlyph(code, u, uLen);
@@ -1614,24 +1733,17 @@ void SvgBuilder::addChar(GfxState *state, double x, double y, double dx, double 
 
     // Copy current style if it has changed since the previous glyph
     if (_invalidated_style || _glyphs.empty()) {
-        new_glyph.style_changed = true;
-        int render_mode = state->getRender();
-        // Set style
-        bool has_fill = !( render_mode & 1 );
-        bool has_stroke = ( render_mode & 3 ) == 1 || ( render_mode & 3 ) == 2;
-        new_glyph.style = _setStyle(state, has_fill, has_stroke);
-        new_glyph.render_mode = render_mode;
-        if (_font_style) {
-            // Merge with font style
-            sp_repr_css_merge(new_glyph.style, _font_style);
-        }
         _invalidated_style = false;
+        new_glyph.style_changed = true;
+        if (_css_font) {
+            new_glyph.css_font = sp_repr_css_attr_new();
+            sp_repr_css_merge(new_glyph.css_font, _css_font);
+        }
     } else {
         new_glyph.style_changed = false;
         // Point to previous glyph's style information
         const SvgGlyph& prev_glyph = _glyphs.back();
-        new_glyph.style = prev_glyph.style;
-        new_glyph.render_mode = prev_glyph.render_mode;
+        new_glyph.css_font = prev_glyph.css_font;
     }
     new_glyph.font_specification = _font_specification;
     new_glyph.rise = state->getRise();
@@ -1650,9 +1762,14 @@ void SvgBuilder::beginTextObject(GfxState *state) {
 
 void SvgBuilder::endTextObject(GfxState *state)
 {
-    // TODO: clip if render_mode >= 4
     _in_text_object = false;
     _flushText(state);
+
+    if (_clip_text_group) {
+        // Use the clip as a real clip path
+        _clip_text = _popContainer();
+        _clip_text_group = nullptr;
+    }
 }
 
 /**
@@ -2107,13 +2224,21 @@ void SvgBuilder::popGroup(GfxState *state)
 {
     // Restore node stack
     auto parent = _popContainer();
+    bool will_clip = _clip_history->hasClipPath() && !_clip_history->isBoundingBox();
 
-    if (parent->childCount() == 1 && !parent->attribute("transform") && !_clip_history->hasClipPath()) {
+    if (parent->childCount() == 1 && !parent->attribute("transform")) {
         // Merge this opacity and remove unnecessary group
         auto child = parent->firstChild();
 
+        if (will_clip && child->attribute("d")) {
+            // Note to future: this means the group contains a single path, this path is likely
+            // a fake bounding box path and the real path is contained within the clipping region
+            // Moving the clipping region out into the path object and deleting the group would
+            // improve output here.
+        }
+
         // Do not merge masked or clipped groups, to avoid clobering
-        if (!child->attribute("mask") && !child->attribute("clip-path")) {
+        if (!will_clip && !child->attribute("mask") && !child->attribute("clip-path")) {
             auto orig = child->getAttributeDouble("opacity", 1.0);
             auto grp = parent->getAttributeDouble("opacity", 1.0);
             child->setAttributeSvgDouble("opacity", orig * grp);

@@ -39,6 +39,7 @@
      inkscape:label="1">
     <g
        id="g2"
+       aria-label="ThisisaL&#10;A&#10;T&#10;E&#10;Xtestflewithaformula:&#10;a"
        transform="matrix(1.3333333,0,0,1.3333333,186.328,181.01467)">
       <path
          id="path2"
@@ -64,6 +65,7 @@
        transform="matrix(1.3333333,0,0,-1.3333333,423.736,177.69333)" />
     <g
        id="g6"
+       aria-label="b&#10;=&#10;R&#10;∞&#10;0&#10;√"
        transform="matrix(1.3333333,0,0,1.3333333,424.28133,185.596)">
       <path
          id="path7"
@@ -97,6 +99,7 @@
        transform="matrix(1.3333333,0,0,-1.3333333,482.19733,171.18133)" />
     <g
        id="g13"
+       aria-label="xdx&#10;1"
        transform="matrix(1.3333333,0,0,1.3333333,482.19733,181.01467)">
       <path
          id="path14"

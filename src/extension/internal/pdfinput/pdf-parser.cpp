@@ -937,34 +937,30 @@ void PdfParser::opSetRenderingIntent(Object /*args*/[], int /*numArgs*/)
  */
 GfxColorSpace *PdfParser::lookupColorSpaceCopy(Object &arg)
 {
-  assert(!arg.isNull());
+    assert(!arg.isNull());
+    GfxColorSpace *colorSpace = nullptr;
 
-  char const *name = arg.isName() ? arg.getName() : nullptr;
-  GfxColorSpace *colorSpace = nullptr;
+    if (char const *name = arg.isName() ? arg.getName() : nullptr) {
+        auto cache_name = std::to_string(formDepth) + "-" + std::string(name);
+        if (colorSpace = colorSpacesCache[cache_name].get()) {
+            return colorSpace->copy();
+        }
 
-  if (name && (colorSpace = colorSpacesCache[name].get())) {
-    return colorSpace->copy();
-  }
+        Object obj = res->lookupColorSpace(name);
+        if (obj.isNull()) {
+            colorSpace = GfxColorSpace::parse(res, &arg, nullptr, state);
+        } else {
+            colorSpace = GfxColorSpace::parse(res, &obj, nullptr, state);
+        }
 
-  Object *argPtr = &arg;
-  Object obj;
-
-  if (name) {
-    _POPPLER_CALL_ARGS(obj, res->lookupColorSpace, name);
-    if (!obj.isNull()) {
-      argPtr = &obj;
+        if (colorSpace && colorSpace->getMode() != csPattern) {
+            colorSpacesCache[cache_name].reset(colorSpace->copy());
+        }
+    } else {
+        // We were passed in an object directly.
+        colorSpace = GfxColorSpace::parse(res, &arg, nullptr, state);
     }
-  }
-
-  colorSpace = GfxColorSpace::parse(res, argPtr, nullptr, state);
-
-  if (name && colorSpace) {
-      if (colorSpace->getMode() != csPattern) {
-          colorSpacesCache[name].reset(colorSpace->copy());
-      }
-  }
-  _POPPLER_FREE(obj);
-  return colorSpace;
+    return colorSpace;
 }
 
 /**
@@ -1602,19 +1598,19 @@ void PdfParser::opShFill(Object args[], int /*numArgs*/)
 
   // do shading type-specific operations
   switch (shading->getType()) {
-  case 1:
+  case 1: // Function-based shading
     doFunctionShFill(static_cast<GfxFunctionShading *>(shading));
     break;
-  case 2:
-  case 3:
+  case 2: // Axial shading
+  case 3: // Radial shading
       builder->addClippedFill(shading, stateToAffine(state));
       break;
-  case 4:
-  case 5:
+  case 4: // Free-form Gouraud-shaded triangle mesh
+  case 5: // Lattice-form Gouraud-shaded triangle mesh
     doGouraudTriangleShFill(static_cast<GfxGouraudTriangleShading *>(shading));
     break;
-  case 6:
-  case 7:
+  case 6: // Coons patch mesh
+  case 7: // Tensor-product patch mesh
     doPatchMeshShFill(static_cast<GfxPatchMeshShading *>(shading));
     break;
   }
@@ -2803,14 +2799,14 @@ void PdfParser::doForm1(Object *str, Dict *resDict, double *matrix, double *bbox
     state->concatCTM(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
 
     // set form bounding box
-    /*state->moveTo(bbox[0], bbox[1]);
+    state->moveTo(bbox[0], bbox[1]);
     state->lineTo(bbox[2], bbox[1]);
     state->lineTo(bbox[2], bbox[3]);
     state->lineTo(bbox[0], bbox[3]);
     state->closePath();
     state->clip();
-    builder->setClip(state, clipNormal);
-    state->clearPath();*/
+    builder->setClip(state, clipNormal, true);
+    state->clearPath();
 
     if (softMask || transpGroup) {
         if (state->getBlendMode() != gfxBlendNormal) {
@@ -2846,7 +2842,6 @@ void PdfParser::doForm1(Object *str, Dict *resDict, double *matrix, double *bbox
 
     // complete any masking
     builder->finishGroup(state, softMask);
-
 }
 
 //------------------------------------------------------------------------
@@ -2964,6 +2959,8 @@ void PdfParser::opEndIgnoreUndef(Object /*args*/[], int /*numArgs*/)
 //------------------------------------------------------------------------
 
 void PdfParser::opBeginMarkedContent(Object args[], int numArgs) {
+    if (formDepth != 0)
+        return;
     if (printCommands) {
         printf("  marked content: %s ", args[0].getName());
         if (numArgs == 2)
@@ -2981,7 +2978,8 @@ void PdfParser::opBeginMarkedContent(Object args[], int numArgs) {
 
 void PdfParser::opEndMarkedContent(Object /*args*/[], int /*numArgs*/)
 {
-    builder->endMarkedContent();
+    if (formDepth == 0)
+        builder->endMarkedContent();
 }
 
 void PdfParser::opMarkPoint(Object args[], int numArgs) {
@@ -3075,7 +3073,7 @@ void PdfParser::loadOptionalContentLayers(Dict *resources)
         if (!val.isDict())
             continue;
         auto dict2 = val.getDict();
-        if (dict2->lookup("Type").isName("OCG")) {
+        if (dict2->lookup("Type").isName("OCG") && ocgs) {
             auto label = dict2->lookup("Name").getString()->getCString();
 
             auto visible = true;
