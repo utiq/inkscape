@@ -80,12 +80,12 @@ struct SvgGlyph {
     bool is_space;
 
     bool style_changed;        // Set to true if style has to be reset
-    SPCSSAttr *style;          // The text style as a CSS structure
+    GfxState *state;           // A promise of the future text style
     double text_size;          // Text size
-    int render_mode;           // Text render mode
-    const char *font_specification;   // Pointer to current font specification
 
-    unsigned int cairo_index; // The index into the selected cairo font
+    const char *font_specification;        // Pointer to current font specification
+    SPCSSAttr *css_font;                   // The font style as a css style
+    unsigned int cairo_index;              // The index into the selected cairo font
     std::shared_ptr<CairoFont> cairo_font; // A pointer to the selected cairo font
 };
 
@@ -162,7 +162,7 @@ public:
     void updateTextMatrix(GfxState *state, bool flip);
 
     // Clipping
-    void setClip(GfxState *state, GfxClipType clip);
+    void setClip(GfxState *state, GfxClipType clip, bool is_bbox = false);
 
     // Layers i.e Optional Groups
     void addOptionalGroup(const char *oc, const char *label, bool visible = true);
@@ -195,10 +195,13 @@ private:
     SPCSSAttr *_setStyle(GfxState *state, bool fill, bool stroke, bool even_odd=false);
     void _setStrokeStyle(SPCSSAttr *css, GfxState *state);
     void _setFillStyle(SPCSSAttr *css, GfxState *state, bool even_odd);
+    void _setTextStyle(Inkscape::XML::Node *node, GfxState *state, SPCSSAttr *font_style, Geom::Affine text_affine);
     void _setBlendMode(Inkscape::XML::Node *node, GfxState *state);
     void _setTransform(Inkscape::XML::Node *node, GfxState *state, Geom::Affine extra = Geom::identity());
     // Write buffered text into doc
     void _flushText(GfxState *state);
+    std::string _aria_label;
+    bool _aria_space = false;
 
     // Handling of node stack
     Inkscape::XML::Node *_pushGroup();
@@ -227,7 +230,9 @@ private:
     std::string _getColorProfile(cmsHPROFILE hp);
 
     // The calculated font style, if not set, the text must be rendered with cairo instead.
-    SPCSSAttr *_font_style = nullptr;
+    FontStrategies _font_strategies;
+    double _css_font_size = 1.0;
+    SPCSSAttr *_css_font;
     const char *_font_specification;
     double _text_size;
     Geom::Affine _text_matrix;
@@ -239,6 +244,7 @@ private:
 
     bool _in_text_object;   // Whether we are inside a text object
     bool _invalidated_style;
+    bool _invalidated_strategy = false;
     bool _for_softmask = false;
 
     bool _is_top_level;  // Whether this SvgBuilder is the top-level one
@@ -260,13 +266,13 @@ private:
     Geom::Affine _page_affine = Geom::identity();
 
     std::map<std::string, std::pair<std::string, bool>> _ocgs;
-    FontStrategies _font_strategies;
-    double _css_font_size = 1.0;
 
     std::string _icc_profile;
     std::map<cmsHPROFILE, std::string> _icc_profiles;
 
     ClipHistoryEntry *_clip_history; // clip path stack
+    Inkscape::XML::Node *_clip_text = nullptr;
+    Inkscape::XML::Node *_clip_text_group = nullptr;
 };
 
 

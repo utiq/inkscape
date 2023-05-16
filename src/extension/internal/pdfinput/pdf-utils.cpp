@@ -21,7 +21,6 @@ ClipHistoryEntry::ClipHistoryEntry(GfxPath *clipPathA, GfxClipType clipTypeA)
     : saved(nullptr)
     , clipPath((clipPathA) ? clipPathA->copy() : nullptr)
     , clipType(clipTypeA)
-    , cleared(false)
 {}
 
 ClipHistoryEntry::~ClipHistoryEntry()
@@ -32,7 +31,7 @@ ClipHistoryEntry::~ClipHistoryEntry()
     }
 }
 
-void ClipHistoryEntry::setClip(GfxState *state, GfxClipType clipTypeA)
+void ClipHistoryEntry::setClip(GfxState *state, GfxClipType clipTypeA, bool bbox)
 {
     const GfxPath *clipPathA = state->getPath();
 
@@ -53,10 +52,12 @@ void ClipHistoryEntry::setClip(GfxState *state, GfxClipType clipTypeA)
         affine = stateToAffine(state);
         clipPath = clipPathA->copy();
         clipType = clipTypeA;
+        is_bbox = bbox;
     } else {
         affine = Geom::identity();
         clipPath = nullptr;
         clipType = clipNormal;
+        is_bbox = false;
     }
 }
 
@@ -95,12 +96,14 @@ ClipHistoryEntry::ClipHistoryEntry(ClipHistoryEntry *other, bool cleared)
         this->clipType = other->clipType;
         this->cleared = cleared;
         this->copied = true;
+        this->is_bbox = other->is_bbox;
     } else {
         this->affine = Geom::identity();
         this->clipPath = nullptr;
         this->clipType = clipNormal;
         this->cleared = false;
         this->copied = false;
+        this->is_bbox = false;
     }
     saved = nullptr;
 }

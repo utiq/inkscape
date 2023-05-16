@@ -30,11 +30,13 @@ public:
     bool hasSaves() { return saved != nullptr; }
     bool hasClipPath() { return clipPath != nullptr && !cleared; }
     bool isCopied() { return copied; }
-    void setClip(GfxState *state, GfxClipType newClipType = clipNormal);
+    bool isBoundingBox() { return is_bbox; }
+    void setClip(GfxState *state, GfxClipType newClipType = clipNormal, bool bbox = false);
     GfxPath *getClipPath() { return clipPath; }
     GfxClipType getClipType() { return clipType; }
     const Geom::Affine &getAffine() { return affine; }
     bool evenOdd() { return clipType != clipNormal; }
+    void clear() { cleared = true; }
 
 private:
     ClipHistoryEntry *saved; // next clip path on stack
@@ -42,6 +44,7 @@ private:
     Geom::Affine affine = Geom::identity(); // Saved affine state of the clipPath
     GfxPath *clipPath;                      // used as the path to be filled for an 'sh' operator
     GfxClipType clipType;
+    bool is_bbox = false;
     bool cleared = false;
     bool copied = false;
 
