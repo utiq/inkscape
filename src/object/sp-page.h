@@ -43,6 +43,7 @@ public:
     void hidePage(Inkscape::UI::Widget::Canvas *canvas) { _canvas_item->remove(canvas); }
     void showPage() { _canvas_item->show(); }
     void hidePage() { _canvas_item->hide(); }
+    void set_guides_visible(bool show);
 
     double getMarginSide(int side);
     const SVGBox &getMargin() const { return margin; }

@@ -93,6 +93,14 @@ void CanvasPage::hide()
     }
 }
 
+void CanvasPage::set_guides_visible(bool show) {
+    for (auto& item: canvas_items) {
+        if (item->get_name() == "margin" || item->get_name() == "bleed") {
+            item->set_visible(show);
+        }
+    }
+}
+
 /**
  * Update the visual representation of a page on screen.
  *

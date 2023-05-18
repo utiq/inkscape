@@ -986,10 +986,14 @@ void SPNamedView::change_bool_setting(SPAttr key, bool value) {
 
 // show/hide guide lines without modifying view; used to quickly and temporarily hide them and restore them
 void SPNamedView::temporarily_show_guides(bool show) {
-    for (auto& child : children) {
-        if (auto guide = cast<SPGuide>(&child)) {
-            show ? guide->showSPGuide() : guide->hideSPGuide();
-        }
+    // hide grid and guides
+    for (auto guide : guides) {
+        show ? guide->showSPGuide() : guide->hideSPGuide();
+    }
+
+    // hide page margin and bleed lines
+    for (auto page : document->getPageManager().getPages()) {
+        page->set_guides_visible(show);
     }
 }
 

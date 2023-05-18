@@ -629,6 +629,10 @@ void SPPage::copyFrom(SPPage *page)
     }
 }
 
+void SPPage::set_guides_visible(bool show) {
+    _canvas_item->set_guides_visible(show);
+}
+
 /*
   Local Variables:
   mode:c++

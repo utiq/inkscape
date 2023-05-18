@@ -35,6 +35,7 @@ public:
     void remove(UI::Widget::Canvas *canvas);
     void show();
     void hide();
+    void set_guides_visible(bool show);
 
     bool setOnTop(bool on_top);
     bool setShadow(int shadow);
