@@ -143,17 +143,10 @@ inkscape:macos:arm:
 inkscape:macos:x64:
   extends: inkscape:macos:arm
   tags:
-    - shared-macos-amd64
-  image: macos-12-xcode-13
+    - mac
   variables:
-    CCACHE_DIR: $CI_PROJECT_DIR/ccache
-    SYS_USRLOCAL_IGNORE: "true"
     SDKROOT: ""
     MACOSX_DEPLOYMENT_TARGET: "10.13"
-  cache:
-    key: "cache-macos"
-    paths:
-      - $CI_PROJECT_DIR/ccache
 
 
 inkscape:windows:x64: &windows_job
