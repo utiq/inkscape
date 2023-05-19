@@ -166,10 +166,9 @@ sp_flatten(Geom::PathVector &pathvector, FillRule fillkind)
 
     delete theShape;
     delete theRes;
-    char *res_d = res->svg_dump_path();
+    pathvector = res->MakePathVector();
     delete res;
     delete orig;
-    pathvector = sp_svg_read_pathv(res_d);
 }
 
 // boolean operations PathVectors A,B -> PathVector result.
@@ -371,23 +370,11 @@ sp_pathvector_boolop(Geom::PathVector const &pathva, Geom::PathVector const &pat
         }
     }
 
-    int*    nesting=nullptr;
-    int*    conts=nullptr;
-    int     nbNest=0;
     // pour compenser le swap juste avant
     if ( bop == bool_op_slice ) {
-//    theShape->ConvertToForme(res, nbOriginaux, originaux, true);
-//    res->ConvertForcedToMoveTo();
         res->Copy(originaux[0]);
         res->ConvertPositionsToMoveTo(nbToCut, toCut); // cut where you found intersections
         free(toCut);
-    } else if ( bop == bool_op_cut ) {
-        // il faut appeler pour desallouer PointData (pas vital, mais bon)
-        // the Booleen() function did not deallocate the point_data array in theShape, because this
-        // function needs it.
-        // this function uses the point_data to get the winding number of each path (ie: is a hole or not)
-        // for later reconstruction in objects, you also need to extract which path is parent of holes (nesting info)
-        theShape->ConvertToFormeNested(res, nbOriginaux, &originaux[0], 1, nbNest, nesting, conts);
     } else {
         theShape->ConvertToForme(res, nbOriginaux, &originaux[0]);
     }
@@ -398,9 +385,7 @@ sp_pathvector_boolop(Geom::PathVector const &pathva, Geom::PathVector const &pat
     delete originaux[0];
     delete originaux[1];
 
-    gchar *result_str = res->svg_dump_path();
-    Geom::PathVector outres =  Geom::parse_svg_path(result_str);
-    g_free(result_str);
+    auto outres = res->MakePathVector();
 
     delete res;
     return outres;
