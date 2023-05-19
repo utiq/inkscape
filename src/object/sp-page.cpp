@@ -335,20 +335,22 @@ std::string SPPage::getBleedLabel() const
  * shouldn't be.
  *
  * @param hidden - Return hidden items (default: true)
+ * @param in_bleed - Use the bleed box instead of the page box
  */
-std::vector<SPItem *> SPPage::getExclusiveItems(bool hidden) const
+std::vector<SPItem *> SPPage::getExclusiveItems(bool hidden, bool in_bleed) const
 {
-    return document->getItemsInBox(0, getDocumentRect(), hidden, true, true, false);
+    return document->getItemsInBox(0, in_bleed ? getDocumentBleed() : getDocumentRect(), hidden, true, true, false);
 }
 
 /**
  * Like ExcludiveItems above but get all the items which are inside or overlapping.
  *
  * @param hidden - Return hidden items (default: true)
+ * @param in_bleed - Use the bleed box instead of the page box
  */
-std::vector<SPItem *> SPPage::getOverlappingItems(bool hidden) const
+std::vector<SPItem *> SPPage::getOverlappingItems(bool hidden, bool in_bleed) const
 {
-    return document->getItemsPartiallyInBox(0, getDocumentRect(), hidden, true, true, false);
+    return document->getItemsPartiallyInBox(0, in_bleed ? getDocumentBleed() : getDocumentRect(), hidden, true, true, false);
 }
 
 /**
