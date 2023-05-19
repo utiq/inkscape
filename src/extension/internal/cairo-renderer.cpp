@@ -890,7 +890,7 @@ CairoRenderer::renderPage(CairoRenderContext *ctx, SPDocument *doc, SPPage *page
     // Set up page transformation which pushes objects back into the 0,0 location
     ctx->transform(Geom::Translate(rect.corner(0)).inverse());
 
-    for (auto &child : page->getOverlappingItems(false)) {
+    for (auto &child : page->getOverlappingItems(false, true)) {
         ctx->pushState();
 
         // This process does not return layers, so those affines are added manually.
