@@ -149,7 +149,7 @@ private:
     void _discardInternalClipboard();
     Inkscape::XML::Node *_createClipNode();
     Geom::Scale _getScale(SPDesktop *desktop, Geom::Point const &min, Geom::Point const &max, Geom::Rect const &obj_rect, bool apply_x, bool apply_y);
-    Glib::ustring _getBestTarget();
+    Glib::ustring _getBestTarget(SPDesktop *desktop = nullptr);
     void _setClipboardTargets();
     void _setClipboardColor(guint32);
     void _userWarn(SPDesktop *, char const *);
@@ -447,7 +447,7 @@ bool ClipboardManagerImpl::paste(SPDesktop *desktop, bool in_place, bool on_page
         return false;
     }
 
-    Glib::ustring target = _getBestTarget();
+    Glib::ustring target = _getBestTarget(desktop);
 
     // Special cases of clipboard content handling go here
     // Note that target priority is determined in _getBestTarget.
@@ -1791,7 +1791,7 @@ Geom::Scale ClipboardManagerImpl::_getScale(SPDesktop *desktop, Geom::Point cons
 /**
  * Find the most suitable clipboard target.
  */
-Glib::ustring ClipboardManagerImpl::_getBestTarget()
+Glib::ustring ClipboardManagerImpl::_getBestTarget(SPDesktop *desktop)
 {
     auto targets = _clipboard->wait_for_targets();
 
@@ -1802,6 +1802,13 @@ Glib::ustring ClipboardManagerImpl::_getBestTarget()
         g_message("Clipboard target: %s", (*x).data());
     g_message("End clipboard targets\n");
     //*/
+
+    // Prioritise text when the text tool is active
+    if (desktop && dynamic_cast<Inkscape::UI::Tools::TextTool *>(desktop->event_context)) {
+        if (_clipboard->wait_is_text_available()) {
+            return CLIPBOARD_TEXT_TARGET;
+        }
+    }
 
     for (auto & _preferred_target : _preferred_targets)
     {
