@@ -332,10 +332,7 @@ sp_pathvector_boolop_slice_intersect(Geom::PathVector const &pathva, Geom::PathV
     delete contour_path;
     delete area_path;
 
-    gchar *result_str = result_path->svg_dump_path();
-    Geom::PathVector outres =  Geom::parse_svg_path(result_str);
-    // CONCEPT TESTING g_warning( "%s", result_str );
-    g_free(result_str);
+    auto outres = result_path->MakePathVector();
     delete result_path;
 
     return outres;
@@ -362,9 +359,7 @@ sp_pathvector_boolop_remove_inner(Geom::PathVector const &pathva, fill_typ fra)
     delete shapeshape;
     delete patha;
 
-    gchar *result_str = resultp->svg_dump_path();
-    Geom::PathVector resultpv =  Geom::parse_svg_path(result_str);
-    g_free(result_str);
+    auto resultpv = resultp->MakePathVector();
 
     delete resultp;
     return resultpv;
