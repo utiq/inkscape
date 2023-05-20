@@ -439,6 +439,19 @@ add_cli_test(export-text-to-path_eps PARAMETERS --export-text-to-path --export-t
                                      INPUT_FILENAME text.svg OUTPUT_FILENAME export-text-to-path.eps
                                      TEST_SCRIPT match_regex_fail.sh "export-text-to-path.eps" "^%%BeginResource: font")
 
+# --export-text-to-path should convert texts in nested groups to paths
+add_cli_test(export-text-to-path-in-group_svg PARAMETERS --export-text-to-path --export-type=svg
+                                              INPUT_FILENAME text_in_group.svg OUTPUT_FILENAME export-text-to-path-in-group.svg
+                                              TEST_SCRIPT match_regex_fail.sh "export-text-to-path-in-group.svg" "<text")
+
+# --export-text-to-path should preserve shapes inside group https://gitlab.com/inkscape/inkscape/-/issues/2649
+add_cli_test(export-text-to-path-in-group-rect_svg PARAMETERS --export-text-to-path --export-type=svg
+                                                   INPUT_FILENAME shapes.svg OUTPUT_FILENAME export-text-to-path-in-group-rect.svg
+                                                   TEST_SCRIPT match_regex.sh "export-text-to-path-in-group-rect.svg" "<rect")
+add_cli_test(export-text-to-path-in-group-ellipse_svg PARAMETERS --export-text-to-path --export-type=svg
+                                                      INPUT_FILENAME shapes.svg OUTPUT_FILENAME export-text-to-path-in-group-ellipse.svg
+                                                      TEST_SCRIPT match_regex.sh "export-text-to-path-in-group-ellipse.svg" "<ellipse")
+
 # Regression test for https://gitlab.com/inkscape/inkscape/-/issues/1364
 add_cli_test(regression-1364         PARAMETERS --select=large,small --actions=path-intersection
                                      INPUT_FILENAME regression-1364.svg
