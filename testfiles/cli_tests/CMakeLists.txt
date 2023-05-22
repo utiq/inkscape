@@ -209,6 +209,12 @@ add_cli_test(export-area-drawing_eps PARAMETERS --export-area-drawing --export-t
 # add_cli_test(export-area-drawing_emf PARAMETERS --export-area-drawing --export-type=emf INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-drawing.emf REFERENCE_FILENAME export-area-drawing_expected.emf)
 # add_cli_test(export-area-drawing_wmf PARAMETERS --export-area-drawing --export-type=wmf INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-drawing.wmf REFERENCE_FILENAME export-area-drawing_expected.wmf)
 
+# --export-area-drawing + --export-area-page should be overriden by --export-area-page
+add_cli_test(export-area-drawing-page_png PARAMETERS --export-area-drawing --export-area-page --export-type=png INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-drawing-page.png REFERENCE_FILENAME export-area-page_expected.png)
+add_cli_test(export-area-drawing-page_svg PARAMETERS --export-area-drawing --export-area-page --export-type=svg INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-drawing-page.svg REFERENCE_FILENAME export-area-page_expected.svg)
+add_cli_test(export-area-drawing-page_pdf PARAMETERS --export-area-drawing --export-area-page --export-type=pdf INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-drawing-page.pdf REFERENCE_FILENAME export-area-page_expected.pdf)
+add_cli_test(export-area-drawing-page_ps  PARAMETERS --export-area-drawing --export-area-page --export-type=ps  INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area-drawing-page.ps  REFERENCE_FILENAME export-area-page_expected.ps)
+
 # --export-area=x0:y0:x1:y1
 add_cli_test(export-area_png PARAMETERS --export-area=150:150:350:300 --export-type=png INPUT_FILENAME areas.svg OUTPUT_FILENAME export-area.png REFERENCE_FILENAME export-area_expected.png)
 # SVG, PDF, PS, EPS, EMF, WMF: Not supported. Feature request: https://gitlab.com/inkscape/inkscape/-/issues/678
@@ -842,6 +848,19 @@ add_cli_test(action_test_multiline_anchoring
                         PARAMETERS --actions=select-by-id:grouped_text$<SEMICOLON>transform-translate:10,0$<SEMICOLON>transform-translate:-10,0$<SEMICOLON>export-filename:multiline-anchoring_out.svg$<SEMICOLON>export-plain-svg$<SEMICOLON>export-do
                         EXPECTED_FILES multiline-anchoring_out.svg
                         TEST_SCRIPT match_regex_fail.sh multiline-anchoring_out.svg "(x=\"[3-9][0-9]{2}\")|(x=\"[12][0-9]{3}\")|(y=\"[0-9]{2}\")|(y=\"1[0-9]{2}\")")
+
+
+# The export area type should be the last set value
+add_cli_test(actions-export-area-drawing-then-page
+             INPUT_FILENAME areas.svg
+             PARAMETERS --actions=export-area-drawing:true$<SEMICOLON>export-area-page:true
+             OUTPUT_FILENAME actions-export-area-drawing-then-page.png
+             REFERENCE_FILENAME export-area-page_expected.png)
+add_cli_test(actions-export-area-page-then-drawing
+             INPUT_FILENAME areas.svg
+             PARAMETERS --actions=export-area-page:true$<SEMICOLON>export-area-drawing:true
+             OUTPUT_FILENAME actions-export-area-page-then-drawing.png
+             REFERENCE_FILENAME export-area-drawing_expected.png)
 
 
 ###########################

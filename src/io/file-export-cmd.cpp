@@ -16,31 +16,31 @@
 #include "file-export-cmd.h"
 
 #include <boost/algorithm/string.hpp>
+#include <iostream>
 #include <png.h> // PNG export
+#include <string>
 
 #include "document.h"
+#include "extension/db.h"
+#include "extension/extension.h"
+#include "extension/init.h"
+#include "extension/output.h"
+#include "extension/system.h"
+#include "helper/png-write.h" // PNG Export
 #include "object/object-set.h"
+#include "object/sp-flowtext.h"
 #include "object/sp-item.h"
+#include "object/sp-namedview.h"
+#include "object/sp-object-group.h"
 #include "object/sp-page.h"
 #include "object/sp-root.h"
 #include "object/sp-text.h"
-#include "object/sp-flowtext.h"
-#include "object/sp-namedview.h"
-#include "object/sp-object-group.h"
 #include "page-manager.h"
-#include "path-chemistry.h" // sp_item_list_to_curves
-#include "text-editing.h" // te_update_layout_now_recursive
+#include "path-chemistry.h"      // sp_item_list_to_curves
 #include "selection-chemistry.h" // fit_canvas_to_drawing
-#include "svg/svg-color.h" // Background color
-#include "helper/png-write.h" // PNG Export
+#include "svg/svg-color.h"       // Background color
+#include "text-editing.h"        // te_update_layout_now_recursive
 #include "util/parse-int-range.h"
-
-#include "extension/extension.h"
-#include "extension/system.h"
-#include "extension/db.h"
-#include "extension/output.h"
-#include "extension/init.h"
-
 
 // Temporary dependency : once all compilers we want to support have support for
 // C++17 std::filesystem (with #include <filesystem> ) then we drop this dep
@@ -56,8 +56,6 @@ namespace filesystem = boost::filesystem;
 
 InkFileExportCmd::InkFileExportCmd()
     : export_overwrite(false)
-    , export_area_drawing(false)
-    , export_area_page(false)
     , export_margin(0)
     , export_area_snap(false)
     , export_use_hints(false)
@@ -119,7 +117,7 @@ InkFileExportCmd::do_export(SPDocument* doc, std::string filename_in)
     if (export_use_hints) {
         // Override type if --export-use-hints is used (hints presume PNG export for now)
         // TODO: There's actually no reason to presume. We could allow to export to any format using hints!
-        if (export_id.empty() && !export_area_drawing) {
+        if (export_id.empty() && export_area_type != ExportAreaType::Drawing) {
             std::cerr << "InkFileExportCmd::do_export: "
                       << "--export-use-hints can only be used with --export-id or --export-area-drawing." << std::endl;
             return;
@@ -356,9 +354,9 @@ int InkFileExportCmd::do_export_vector(SPDocument *doc, std::string const &expor
         }
     }
 
-    if (export_area_drawing) {
+    if (export_area_type == ExportAreaType::Drawing) {
         fit_canvas_to_drawing(doc, export_margin != 0 ? true : false);
-    } else if (export_area_page || export_id.empty()) {
+    } else if (export_area_type == ExportAreaType::Page || export_id.empty()) {
         if (export_margin) {
             doc->ensureUpToDate();
             doc->fitToRect(*(doc->preferredBounds()), export_margin);
@@ -426,7 +424,7 @@ int InkFileExportCmd::do_export_vector(SPDocument *doc, std::string const &expor
                 // If -j then remove all other objects to complete the "crop"
                 doc->getRoot()->cropToObject(obj);
             }
-            if (!(export_area_page || export_area_drawing)) {
+            if (export_area_type != ExportAreaType::Drawing && export_area_type != ExportAreaType::Page) {
                 Inkscape::ObjectSet s(doc);
                 s.set(obj);
                 s.fitCanvas((bool)export_margin);
@@ -623,35 +621,49 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &export_filen
         Geom::Rect area;
         doc->ensureUpToDate();
 
-        // Three choices: 1. Command-line export_area  2. Page area  3. Drawing area
-        if (!export_area.empty()) {
-
-            // Export area command-line
-
-            /* Try to parse area (given in SVG pixels) */
-            gdouble x0,y0,x1,y1;
-            if (sscanf(export_area.c_str(), "%lg:%lg:%lg:%lg", &x0, &y0, &x1, &y1) != 4) {
-                g_warning("Cannot parse export area '%s'; use 'x0:y0:x1:y1'. Nothing exported.", export_area.c_str());
-                return 1; // If it fails once, it will fail for all objects.
-            }
-            area = Geom::Rect(Geom::Interval(x0,x1), Geom::Interval(y0,y1));
-
-        } else if (export_area_page || (!export_area_drawing && object_id.empty())) {
-
-            // Export area page (explicit or if no object is given).
-            Geom::Point origin(doc->getRoot()->x.computed, doc->getRoot()->y.computed);
-            area = Geom::Rect(origin, origin + doc->getDimensions());
-
-        } else {
-
-            // Export area drawing (explicit or if object is given).
-            Geom::OptRect areaMaybe = static_cast<SPItem *>(object)->documentVisualBounds();
-            if (areaMaybe) {
-                area = *areaMaybe;
+        if (export_area_type == ExportAreaType::Unset) {
+            // Default to drawing if has object, otherwise export page
+            if (object_id.empty()) {
+                export_area_type = ExportAreaType::Page;
             } else {
-                std::cerr << "InkFileExport::do_export_png: "
-                          << "Unable to determine a valid bounding box. Skipping." << std::endl;
-                continue;
+                export_area_type = ExportAreaType::Drawing;
+            }
+        }
+        // Three choices: 1. Command-line export_area  2. Page area  3. Drawing area
+        switch (export_area_type) {
+            case ExportAreaType::Unset:
+                std::cerr << "ExportAreaType::not_set should be handled before" << std::endl;
+                return 1;
+            case ExportAreaType::Page: {
+                // Export area page (explicit or if no object is given).
+                Geom::Point origin(doc->getRoot()->x.computed, doc->getRoot()->y.computed);
+                area = Geom::Rect(origin, origin + doc->getDimensions());
+                break;
+            }
+            case ExportAreaType::Area: {
+                // Export area command-line
+
+                /* Try to parse area (given in SVG pixels) */
+                gdouble x0, y0, x1, y1;
+                if (sscanf(export_area.c_str(), "%lg:%lg:%lg:%lg", &x0, &y0, &x1, &y1) != 4) {
+                    g_warning("Cannot parse export area '%s'; use 'x0:y0:x1:y1'. Nothing exported.",
+                              export_area.c_str());
+                    return 1; // If it fails once, it will fail for all objects.
+                }
+                area = Geom::Rect(Geom::Interval(x0, x1), Geom::Interval(y0, y1));
+                break;
+            }
+            case ExportAreaType::Drawing: {
+                // Export area drawing (explicit or if object is given).
+                Geom::OptRect areaMaybe = static_cast<SPItem *>(object)->documentVisualBounds();
+                if (areaMaybe) {
+                    area = *areaMaybe;
+                } else {
+                    std::cerr << "InkFileExport::do_export_png: "
+                              << "Unable to determine a valid bounding box. Skipping." << std::endl;
+                    continue;
+                }
+                break;
             }
         }
 
@@ -914,6 +926,36 @@ int InkFileExportCmd::do_export_extension(SPDocument *doc, std::string const &fi
         }
     }
     return 0;
+}
+
+std::string export_area_type_string(ExportAreaType type)
+{
+    switch (type) {
+        case ExportAreaType::Area:
+            return "--export-area";
+        case ExportAreaType::Page:
+            return "--export-area-page";
+        case ExportAreaType::Drawing:
+            return "--export-area-drawing";
+        default:
+            return "default";
+    }
+}
+
+void InkFileExportCmd::set_export_area_type(ExportAreaType type)
+{
+    if (export_area_type != ExportAreaType::Unset) {
+        std::cerr << "Warning: multiple export area types have been set, overriding "
+                  << export_area_type_string(export_area_type) << " with " << export_area_type_string(type)
+                  << std::endl;
+    }
+    export_area_type = type;
+}
+
+void InkFileExportCmd::set_export_area(const Glib::ustring &area)
+{
+    export_area = area;
+    set_export_area_type(ExportAreaType::Area);
 }
 
 /*

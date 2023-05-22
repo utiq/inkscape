@@ -24,6 +24,14 @@ class Output;
 }
 } // namespace Inkscape
 
+enum class ExportAreaType
+{
+    Unset,
+    Drawing,
+    Page,
+    Area,
+};
+
 class InkFileExportCmd {
 
 public:
@@ -32,6 +40,8 @@ public:
     void do_export(SPDocument* doc, std::string filename_in="");
 
 private:
+    ExportAreaType export_area_type{ExportAreaType::Unset};
+    Glib::ustring export_area{};
     guint32 get_bgcolor(SPDocument *doc);
     std::string get_filename_out(std::string filename_in = "", std::string object_id = "");
     int do_export_svg(SPDocument *doc, std::string const &filename_in);
@@ -54,9 +64,6 @@ public:
     Glib::ustring export_extension;
     bool          export_overwrite;
 
-    Glib::ustring export_area;
-    bool          export_area_drawing;
-    bool          export_area_page;
     int           export_margin;
     bool          export_area_snap;
     int           export_width;
@@ -78,6 +85,8 @@ public:
     Glib::ustring export_png_color_mode;
     bool          export_plain_svg;
     bool          export_png_use_dithering;
+    void set_export_area(const Glib::ustring &area);
+    void set_export_area_type(ExportAreaType type);
 };
 
 #endif // INK_FILE_EXPORT_CMD_H

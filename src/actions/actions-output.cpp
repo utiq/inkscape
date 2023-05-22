@@ -52,24 +52,25 @@ void
 export_area(const Glib::VariantBase& value, InkscapeApplication *app)
 {
     Glib::Variant<std::string> s = Glib::VariantBase::cast_dynamic<Glib::Variant<std::string> >(value);
-    app->file_export()->export_area = s.get();
-    // std::cout << "export-area: " << s.get() << std::endl;
+    app->file_export()->set_export_area(s.get());
 }
 
 void
 export_area_drawing(const Glib::VariantBase& value, InkscapeApplication *app)
 {
     Glib::Variant<bool> b = Glib::VariantBase::cast_dynamic<Glib::Variant<bool> >(value);
-    app->file_export()->export_area_drawing = b.get();
-    // std::cout << "export-area-drawing: " << std::boolalpha << b.get() << std::endl;
+    if (b.get()) {
+        app->file_export()->set_export_area_type(ExportAreaType::Drawing);
+    }
 }
 
 void
 export_area_page(const Glib::VariantBase& value, InkscapeApplication *app)
 {
     Glib::Variant<bool> b = Glib::VariantBase::cast_dynamic<Glib::Variant<bool> >(value);
-    app->file_export()->export_area_page = b.get();
-    // std::cout << "export-area-page: " << std::boolalpha << b.get() << std::endl;
+    if (b.get()) {
+        app->file_export()->set_export_area_type(ExportAreaType::Page);
+    }
 }
 
 void

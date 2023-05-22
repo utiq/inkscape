@@ -1722,11 +1722,17 @@ InkscapeApplication::on_handle_local_options(const Glib::RefPtr<Glib::VariantDic
 
     // Export - Geometry
     if (options->contains("export-area")) {
-        options->lookup_value("export-area",      _file_export.export_area);
+        Glib::ustring area{};
+        options->lookup_value("export-area", area);
+        _file_export.set_export_area(area);
     }
 
-    if (options->contains("export-area-drawing")) _file_export.export_area_drawing = true;
-    if (options->contains("export-area-page"))    _file_export.export_area_page    = true;
+    if (options->contains("export-area-drawing")) {
+        _file_export.set_export_area_type(ExportAreaType::Drawing);
+    }
+    if (options->contains("export-area-page")) {
+        _file_export.set_export_area_type(ExportAreaType::Page);
+    }
 
     if (options->contains("export-margin")) {
         options->lookup_value("export-margin",    _file_export.export_margin);
