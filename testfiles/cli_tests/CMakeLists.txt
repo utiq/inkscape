@@ -636,6 +636,20 @@ add_cli_test(actions-action-list           PARAMETERS --actions=action-list PASS
 # actions-file=FILENAME
 
 # convert-dpi-method
+# NOTE: currently convert-dpi-method must be set before file-open, otherwise it will not take effect
+add_cli_test(action-convert-dpi-method-scale-none
+             PARAMETERS --export-area-page --actions=convert-dpi-method:scale-none$<SEMICOLON>file-open:${CMAKE_CURRENT_SOURCE_DIR}/testcases/shapes_pre_0.92.svg$<SEMICOLON>export-filename:action-convert-dpi-method-scale-none.png$<SEMICOLON>export-do
+             OUTPUT_FILENAME action-convert-dpi-method-scale-none.png
+             REFERENCE_FILENAME shapes_expected.png)
+add_cli_test(action-convert-dpi-method-scale-viewbox
+             PARAMETERS --export-area-page --actions=convert-dpi-method:scale-viewbox$<SEMICOLON>file-open:${CMAKE_CURRENT_SOURCE_DIR}/testcases/shapes_pre_0.92.svg$<SEMICOLON>export-filename:action-convert-dpi-method-scale-viewbox.png$<SEMICOLON>export-do
+             OUTPUT_FILENAME action-convert-dpi-method-scale-viewbox.png
+             REFERENCE_FILENAME shapes_pre_0.92_scaled_expected.png)
+add_cli_test(action-convert-dpi-method-scale-document
+             PARAMETERS --export-area-page --actions=convert-dpi-method:scale-document$<SEMICOLON>file-open:${CMAKE_CURRENT_SOURCE_DIR}/testcases/shapes_pre_0.92.svg$<SEMICOLON>export-filename:action-convert-dpi-method-scale-document.png$<SEMICOLON>export-do
+             OUTPUT_FILENAME action-convert-dpi-method-scale-document.png
+             REFERENCE_FILENAME shapes_pre_0.92_scaled_expected.png)
+
 # debug-info
 add_cli_test(actions-debug-info            PARAMETERS --actions=debug-info PASS_FOR_OUTPUT "OS version:")
 
