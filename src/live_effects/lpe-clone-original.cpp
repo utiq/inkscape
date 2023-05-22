@@ -310,8 +310,8 @@ LPECloneOriginal::doBeforeEffect (SPLPEItem const* lpeitem){
         auto *dest = sp_lpe_item;
         auto *dest_path = cast<SPPath>(sp_lpe_item);
         auto *dest_shape = cast<SPShape>(sp_lpe_item);
-        const gchar * id = orig->getId();
-        bool init = is_load || g_strcmp0(id, linked.c_str()) != 0;
+        const gchar * id = getLPEObj()->getAttribute("linkeditem");
+        bool init = linked == "" || g_strcmp0(id, linked.c_str()) != 0;
         /* if (sp_lpe_item->getRepr()->attribute("style")) {
             init = false;
         } */
