@@ -153,8 +153,11 @@ public:
     static void debug_dict(const Dict *dict, int depth = 0, XRef *xref = nullptr);
     static void debug_object(const Object *obj, int depth = 0, XRef *xref = nullptr);
 
+    std::shared_ptr<CairoFontEngine> getFontEngine();
 private:
     std::shared_ptr<PDFDoc> _pdf_doc;
+    std::shared_ptr<CairoFontEngine> _font_engine;
+
     XRef *xref;          // the xref table for this PDF file
     SvgBuilder *builder; // SVG generator
     GBool subPage;       // is this a sub-page object?
