@@ -2132,17 +2132,25 @@ void PdfParser::opTextNextLine(Object /*args*/[], int /*numArgs*/)
 void PdfParser::doUpdateFont()
 {
     if (fontChanged) {
-        // poppler/CairoOutputDev.cc claims the FT Library needs to be kept around
-        // for a while. It's unclear if this is sure for our case.
-        static FT_Library ft_lib;
-        static std::once_flag ft_lib_once_flag;
-        std::call_once(ft_lib_once_flag, FT_Init_FreeType, &ft_lib);
-        static auto font_engine = std::make_shared<CairoFontEngine>(ft_lib);
-
-        auto font = font_engine->getFont(state->getFont(), _pdf_doc.get(), true, xref);
+        auto font = getFontEngine()->getFont(state->getFont(), _pdf_doc.get(), true, xref);
         builder->updateFont(state, font, !subPage);
         fontChanged = false;
     }
+}
+
+std::shared_ptr<CairoFontEngine> PdfParser::getFontEngine()
+{
+    // poppler/CairoOutputDev.cc claims the FT Library needs to be kept around
+    // for a while. It's unclear if this is sure for our case.
+    static FT_Library ft_lib;
+    static std::once_flag ft_lib_once_flag;
+    std::call_once(ft_lib_once_flag, FT_Init_FreeType, &ft_lib);
+    if (!_font_engine) {
+        // This will make a new font engine per form1, in the future we could
+        // share this between PdfParser instances for the same PDF file.
+        _font_engine = std::make_shared<CairoFontEngine>(ft_lib);
+    }
+    return _font_engine;
 }
 
 // TODO not good that numArgs is ignored but args[] is used:
