@@ -77,7 +77,6 @@ DialogBase::DialogBase(gchar const *prefs_path, Glib::ustring dialog_type)
 
     set_name(_dialog_type); // Essential for dialog functionality
     property_margin().set_value(1); // Essential for dialog UI
-    ensure_size();
 }
 
 DialogBase::~DialogBase() {
@@ -92,6 +91,7 @@ DialogBase::~DialogBase() {
 void DialogBase::ensure_size() {
     if (desktop) {
         resize_widget_children(desktop->getToplevel());
+        resize_widget_children(this);
     }
 }
 
@@ -103,6 +103,7 @@ void DialogBase::on_map() {
     // the time of dialog creation. Formerly used _app.get_active_view() did not at application start-up.
     setDesktop(Inkscape::Application::instance().active_desktop());
     parent_type::on_map();
+    ensure_size();
 }
 
 bool DialogBase::on_key_press_event(GdkEventKey* key_event) {
