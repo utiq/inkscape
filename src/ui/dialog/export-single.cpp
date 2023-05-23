@@ -717,14 +717,23 @@ void SingleExport::onBrowse(Gtk::EntryIconPosition pos, const GdkEventButton *ev
         *window, filename, Inkscape::UI::Dialog::EXPORT_TYPES, _("Select a filename for exporting"), "", "",
         Inkscape::Extension::FILE_SAVE_METHOD_EXPORT);
 
+    // Tell the browse dialog what extension to start with
+    if (auto omod = si_extension_cb->getExtension()) {
+        dialog->setExtension(omod);
+    }
+
     if (dialog->show()) {
         filename = dialog->getFilename();
-        if (auto ext = si_extension_cb->getExtension()) {
-            si_extension_cb->removeExtension(filename);
-            ext->add_extension(filename);
+        // Once complete, we use the extension selected to save the file
+        if (auto ext = dialog->getExtension()) {
+            si_extension_cb->set_active_id(ext->get_id());
+        } else {
+            si_extension_cb->setExtensionFromFilename(filename);
         }
+
         si_filename_entry->set_text(filename);
         si_filename_entry->set_position(filename.length());
+
         // deleting dialog before exporting is important
         delete dialog;
         onExport();
