@@ -34,7 +34,8 @@ class Globals
 
     void load_removecolor()
     {
-        auto path_utf8 = (Glib::ustring)Inkscape::IO::Resource::get_path(Inkscape::IO::Resource::SYSTEM, Inkscape::IO::Resource::PIXMAPS, "remove-color.png");
+        auto path_utf8 = (Glib::ustring)Inkscape::IO::Resource::get_path(Inkscape::IO::Resource::SYSTEM,
+            Inkscape::IO::Resource::UIS, "resources", "remove-color.png");
         auto path = Glib::filename_from_utf8(path_utf8);
         auto pixbuf = Gdk::Pixbuf::create_from_file(path);
         if (!pixbuf) {

@@ -121,7 +121,9 @@ void ExportPreview::resetPixels(bool new_size)
     static Glib::RefPtr<Gdk::Pixbuf> preview_loading;
     if (!preview_loading || new_size) {
         using namespace Inkscape::IO::Resource;
-        preview_loading = Gdk::Pixbuf::create_from_file(get_filename(PIXMAPS, "preview_loading.svg"), size, size);
+        auto path_utf8 = (Glib::ustring)Inkscape::IO::Resource::get_path(SYSTEM, UIS, "resources", "preview-loading.svg");
+        auto path = Glib::filename_from_utf8(path_utf8);
+        preview_loading = Gdk::Pixbuf::create_from_file(path, size, size);
     }
     if (preview_loading) {
         set(preview_loading);

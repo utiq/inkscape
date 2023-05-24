@@ -814,7 +814,7 @@ If you would like to get involved and make the next version of Inkscape even bet
                                 <property name="margin_right">10</property>
                                 <property name="margin-top">10</property>
                                 <property name="margin-bottom">10</property>
-                                <property name="pixbuf">../pixmaps/user.png</property>
+                                <property name="pixbuf">../screens/start-support-time.png</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -872,7 +872,7 @@ Contribute Time</property>
                                 <property name="can_focus">False</property>
                                 <property name="margin-top">10</property>
                                 <property name="margin-bottom">10</property>
-                                <property name="pixbuf">../pixmaps/support.png</property>
+                                <property name="pixbuf">../screens/start-support-money.png</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
