@@ -212,12 +212,12 @@ test:linux:
       - build/Testing
     when: on_failure
 
-test:macos:arm:
-  extends: inkscape:macos:arm
+test:macos:x64:
+  extends: inkscape:macos:x64
   stage: test
   dependencies:
-    - inkscape:macos:arm
-  needs: ["inkscape:macos:arm"]
+    - inkscape:macos:x64
+  needs: ["inkscape:macos:x64"]
   script:
     - packaging/macos/test.sh
   artifacts:
