@@ -2127,9 +2127,8 @@ void SvgBuilder::addSoftMaskedImage(GfxState *state, Stream *str, int width, int
 Inkscape::XML::Node *SvgBuilder::_getGradientNode(Inkscape::XML::Node *node, bool is_fill)
 {
     auto css = sp_repr_css_attr(node, "style");
-    auto uri = extract_uri(css->attribute(is_fill ? "fill" : "stroke"));
-    if (!uri.empty()) {
-        if (auto obj = _doc->getObjectById(uri.c_str() + 1)) {
+    if (auto id = try_extract_uri_id(css->attribute(is_fill ? "fill" : "stroke"))) {
+        if (auto obj = _doc->getObjectById(*id)) {
             return obj->getRepr();
         }
     }
@@ -2243,9 +2242,8 @@ void SvgBuilder::popGroup(GfxState *state)
             auto grp = parent->getAttributeDouble("opacity", 1.0);
             child->setAttributeSvgDouble("opacity", orig * grp);
 
-            if (auto mask = parent->attribute("mask")) {
-                auto uri = extract_uri(mask).c_str();
-                if (auto obj = _doc->getObjectById(uri + 1)) {
+            if (auto mask_id = try_extract_uri_id(parent->attribute("mask"))) {
+                if (auto obj = _doc->getObjectById(*mask_id)) {
                     applyOptionalMask(obj->getRepr(), child);
                 }
             }

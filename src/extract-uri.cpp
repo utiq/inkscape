@@ -105,6 +105,16 @@ std::optional<std::string> try_extract_uri(const char* url) {
     return link.empty() ? std::nullopt : std::make_optional(link);
 }
 
+std::optional<std::string> try_extract_uri_id(const char *url) {
+    if (auto ret = try_extract_uri(url)) {
+        if (!ret->empty() && (*ret)[0] == '#') {
+            ret->erase(0, 1);
+            return ret;
+        }
+    }
+    return std::nullopt;
+}
+
 /*
   Local Variables:
   mode:c++
