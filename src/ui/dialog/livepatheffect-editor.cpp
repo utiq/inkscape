@@ -553,10 +553,7 @@ LivePathEffectEditor::selection_info()
                 }
                 if (lpe) {
                     const Glib::ustring label = _(converter.get_label(lpe->effectType()).c_str());
-                    Glib::ustring labeltext = _("Select ");
-                    labeltext += root.first;
-                    labeltext += _(" with ");
-                    labeltext += label;
+                    Glib::ustring labeltext = Glib::ustring::compose(_("Select %1 with %2 LPE"), root.first, label);
                     auto lpeitem = cast<SPLPEItem>(selected->document->getObjectById(root.first));
                     if (lpeitem && lpeitem->getLPEIndex(lpe) != Glib::ustring::npos) {
                         newrootsatellites.emplace_back(root.first, root.second);
