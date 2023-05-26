@@ -2671,12 +2671,15 @@ void FilterEffectsDialog::PrimitiveList::set_inputs_count(int count) {
 
 enum class EffectCategory { Effect, Compose, Colors, Generation };
 
-static std::map<EffectCategory, Glib::ustring> g_category_names = {
-    { EffectCategory::Effect,     _("Effect") },
-    { EffectCategory::Compose,    _("Compositing") },
-    { EffectCategory::Colors,     _("Color editing") },
-    { EffectCategory::Generation, _("Generating") },
-};
+const Glib::ustring& get_category_name(EffectCategory category) {
+    static const std::map<EffectCategory, Glib::ustring> category_names = {
+        { EffectCategory::Effect,     _("Effect") },
+        { EffectCategory::Compose,    _("Compositing") },
+        { EffectCategory::Colors,     _("Color editing") },
+        { EffectCategory::Generation, _("Generating") },
+    };
+    return category_names.at(category);
+}
 
 struct EffectMetadata {
     EffectCategory category;
@@ -2684,7 +2687,8 @@ struct EffectMetadata {
     Glib::ustring tooltip;
 };
 
-static std::map<Inkscape::Filters::FilterPrimitiveType, EffectMetadata> g_effects = {
+static const std::map<Inkscape::Filters::FilterPrimitiveType, EffectMetadata>& get_effects() {
+    static std::map<Inkscape::Filters::FilterPrimitiveType, EffectMetadata> effects = {
     { NR_FILTER_GAUSSIANBLUR,      { EffectCategory::Effect,     "feGaussianBlur-icon",
         _("Uniformly blurs its input. Commonly used together with Offset to create a drop shadow effect.") }},
     { NR_FILTER_MORPHOLOGY,        { EffectCategory::Effect,     "feMorphology-icon",
@@ -2717,7 +2721,9 @@ static std::map<Inkscape::Filters::FilterPrimitiveType, EffectMetadata> g_effect
         _("Fills the region with graphics from an external file or from another portion of the document.") }},
     { NR_FILTER_TURBULENCE,        { EffectCategory::Generation, "feTurbulence-icon",
         _("Renders Perlin noise, which is useful to generate textures such as clouds, fire, smoke, marble or granite.") }},
-};
+    };
+    return effects;
+}
 
 // populate popup with filter effects and completion list for a search box
 void FilterEffectsDialog::add_effects(Inkscape::UI::Widget::CompletionPopup& popup, bool symbolic) {
@@ -2731,11 +2737,11 @@ void FilterEffectsDialog::add_effects(Inkscape::UI::Widget::CompletionPopup& pop
         Glib::ustring tooltip;
     };
     std::vector<Effect> effects;
-    effects.reserve(g_effects.size());
-    for (auto&& effect : g_effects) {
+    effects.reserve(get_effects().size());
+    for (auto&& effect : get_effects()) {
         effects.push_back({
             effect.first,
-            FPConverter.get_label(effect.first),
+            _(FPConverter.get_label(effect.first).c_str()),
             effect.second.category,
             effect.second.icon_name,
             effect.second.tooltip
@@ -2763,7 +2769,7 @@ void FilterEffectsDialog::add_effects(Inkscape::UI::Widget::CompletionPopup& pop
             return sp_query_custom_tooltip(x, y, kbd, tooltipw, id, effect.tooltip, effect.icon_name);
         });
         if (builder.new_section()) {
-            builder.set_section(g_category_names[effect.category]);
+            builder.set_section(get_category_name(effect.category));
         }
     
         // build completion list
@@ -2828,8 +2834,8 @@ FilterEffectsDialog::FilterEffectsDialog()
         if (auto prim = _primitive_list.get_selected()) {
             if (prim->getRepr()) {
                 auto id = FPConverter.get_id_from_key(prim->getRepr()->name());
-                get_widget<Gtk::Image>(_builder, "effect-icon").set_from_icon_name(g_effects[id].icon_name, Gtk::ICON_SIZE_DND);
-                get_widget<Gtk::TextView>(_builder, "effect-info").get_buffer()->set_text(g_effects[id].tooltip);
+                get_widget<Gtk::Image>(_builder, "effect-icon").set_from_icon_name(get_effects().at(id).icon_name, Gtk::ICON_SIZE_DND);
+                get_widget<Gtk::TextView>(_builder, "effect-info").get_buffer()->set_text(get_effects().at(id).tooltip);
                 get_widget<Gtk::TextView>(_builder, "effect-desc").get_buffer()->set_text("");
             }
         }
