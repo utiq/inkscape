@@ -140,6 +140,7 @@ void SPNamedView::build(SPDocument *document, Inkscape::XML::Node *repr) {
     this->readAttr(SPAttr::INKSCAPE_CONNECTOR_SPACING);
     this->readAttr(SPAttr::INKSCAPE_LOCKGUIDES);
     readAttr(SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING);
+    readAttr(SPAttr::INKSCAPE_ANTIALIAS_RENDERING);
 
     /* Construct guideline and pages list */
     for (auto &child : children) {
@@ -209,6 +210,9 @@ void SPNamedView::modified(unsigned int flags)
     for (auto desktop : views) {
         set_desk_color(desktop);
         set_clip_to_page(desktop, clip_to_page);
+        if (desktop) {
+            desktop->getCanvas()->set_antialiasing_enabled(antialias_rendering);
+        }
     }
 
     for (auto child : this->childList(false)) {
@@ -380,6 +384,9 @@ void SPNamedView::set(SPAttr key, const gchar* value) {
         break;
     case SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING:
         clip_to_page.readOrUnset(value);
+        break;
+    case SPAttr::INKSCAPE_ANTIALIAS_RENDERING:
+        antialias_rendering.readOrUnset(value);
         break;
     /*
     case SPAttr::UNITS: {

@@ -38,6 +38,7 @@
 #include "canvas/graphics.h"
 #include "canvas/synchronizer.h"
 #include "display/drawing.h"
+#include "display/drawing-item.h"
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-group.h"
 #include "display/control/snap-indicator.h"
@@ -110,6 +111,17 @@ auto pref_to_updater(int index)
                                     Updater::Strategy::Multiscale};
     assert(1 <= index && index <= arr.size());
     return arr[index - 1];
+}
+
+std::optional<Antialiasing> get_antialiasing_override(bool enabled)
+{
+    if (enabled) {
+        // Default antialiasing, controlled by SVG elements.
+        return {};
+    } else {
+        // Force antialiasing off.
+        return Antialiasing::None;
+    }
 }
 
 // Represents the raster data and location of an in-flight tile (one that is drawn, but not yet pasted into the stores).
@@ -482,6 +494,7 @@ void Canvas::set_drawing(Drawing *drawing)
         _drawing->setRenderMode(_render_mode == RenderMode::OUTLINE_OVERLAY ? RenderMode::NORMAL : _render_mode);
         _drawing->setColorMode(_color_mode);
         _drawing->setOutlineOverlay(d->outlines_required());
+        _drawing->setAntialiasingOverride(get_antialiasing_override(_antialiasing_enabled));
     }
     if (!d->active && get_realized() && drawing) d->activate();
 }
@@ -1738,6 +1751,14 @@ void Canvas::set_split_mode(Inkscape::SplitMode mode)
             _drawing->setOutlineOverlay(d->outlines_required());
         }
         redraw_all();
+    }
+}
+
+void Canvas::set_antialiasing_enabled(bool enabled)
+{
+    if (enabled != _antialiasing_enabled) {
+        _antialiasing_enabled = enabled;
+        _drawing->setAntialiasingOverride(get_antialiasing_override(_antialiasing_enabled));
     }
 }
 

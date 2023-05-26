@@ -914,6 +914,10 @@ Inkscape::DrawingItem* SPShape::show(Inkscape::Drawing &drawing, unsigned int /*
         this->context_style = this->parent->context_style;
         s->setStyle(this->style, this->context_style);
     }
+
+    // apply 'shape-rendering' presentation attribute
+    Inkscape::propagate_antialias(style->shape_rendering.computed, *s);
+
     return s;
 }
 

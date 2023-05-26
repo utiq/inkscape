@@ -87,7 +87,7 @@ DrawingItem::DrawingItem(Drawing &drawing)
     , _has_cache_iterator(0)
     , _propagate_state(0)
     , _pick_children(0)
-    , _antialias(2)
+    , _antialias(Antialiasing::Good)
     , _isolation(SP_CSS_ISOLATION_AUTO)
     , _blend_mode(SP_CSS_BLEND_NORMAL)
 {
@@ -206,7 +206,7 @@ void DrawingItem::setOpacity(float opacity)
     });
 }
 
-void DrawingItem::setAntialiasing(unsigned antialias)
+void DrawingItem::setAntialiasing(Antialiasing antialias)
 {
     defer([=] {
         if (_antialias == antialias) return;
@@ -797,6 +797,8 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
             && _contains_unisolated_blend    )    // 7. it is the root and needs isolation
         || (bool)_cache;                          // 8. it is to be cached
 
+    auto antialias = rc.antialiasing_override.value_or(_antialias);
+
     /* How the rendering is done.
      *
      * Clipping, masking and opacity are done by rendering them to a surface
@@ -816,6 +818,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
 
     if ((flags & RENDER_FILTER_BACKGROUND) || !needs_intermediate_rendering) {
         dc.setOperator(ink_css_blend_to_cairo_operator(SP_CSS_BLEND_NORMAL));
+        apply_antialias(dc, antialias);
         return _renderItem(dc, rc, *carea, flags & ~RENDER_FILTER_BACKGROUND, stop_at);
     }
 
@@ -867,6 +870,7 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
 
     // 3. Render object itself
     ict.pushGroup();
+    apply_antialias(ict, antialias);
     render_result = _renderItem(ict, rc, *carea, flags, stop_at);
 
     // 4. Apply filter.
@@ -1248,20 +1252,40 @@ Geom::OptIntRect DrawingItem::_cacheRect() const
     return r;
 }
 
-void apply_antialias(DrawingContext &dc, int antialias)
+void apply_antialias(DrawingContext &dc, Antialiasing antialias)
 {
     switch (antialias) {
-        case 0:
+        case Antialiasing::None:
             cairo_set_antialias(dc.raw(), CAIRO_ANTIALIAS_NONE);
             break;
-        case 1:
+        case Antialiasing::Fast:
             cairo_set_antialias(dc.raw(), CAIRO_ANTIALIAS_FAST);
             break;
-        case 2:
+        case Antialiasing::Good:
             cairo_set_antialias(dc.raw(), CAIRO_ANTIALIAS_GOOD);
             break;
-        case 3:
+        case Antialiasing::Best:
             cairo_set_antialias(dc.raw(), CAIRO_ANTIALIAS_BEST);
+            break;
+        default:
+            g_assert_not_reached();
+    }
+}
+
+void propagate_antialias(SPShapeRendering shape_rendering, DrawingItem &item)
+{
+    switch (shape_rendering) {
+        case SP_CSS_SHAPE_RENDERING_AUTO:
+            item.setAntialiasing(Antialiasing::Good);
+            break;
+        case SP_CSS_SHAPE_RENDERING_OPTIMIZESPEED:
+            item.setAntialiasing(Antialiasing::Fast);
+            break;
+        case SP_CSS_SHAPE_RENDERING_CRISPEDGES:
+            item.setAntialiasing(Antialiasing::None);
+            break;
+        case SP_CSS_SHAPE_RENDERING_GEOMETRICPRECISION:
+            item.setAntialiasing(Antialiasing::Best);
             break;
         default:
             g_assert_not_reached();

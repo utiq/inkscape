@@ -403,7 +403,7 @@ void DocumentProperties::build_page()
                 set_namedview_bool(_wr.desktop(), _("Toggle page shadow"), SPAttr::SHOWPAGESHADOW, checked);
                 break;
             case PageProperties::Check::AntiAlias:
-                set_namedview_bool(_wr.desktop(), _("Toggle anti-aliasing"), SPAttr::SHAPE_RENDERING, checked);
+                set_namedview_bool(_wr.desktop(), _("Toggle anti-aliasing"), SPAttr::INKSCAPE_ANTIALIAS_RENDERING, checked);
                 break;
             case PageProperties::Check::ClipToPage:
                 set_namedview_bool(_wr.desktop(), _("Toggle clip to page mode"), SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, checked);
@@ -1647,8 +1647,7 @@ void DocumentProperties::update_widgets()
     _page->set_color(PageProperties::Color::Border, page_manager.border_color);
     _page->set_check(PageProperties::Check::Shadow, page_manager.shadow_show);
     _page->set_check(PageProperties::Check::PageLabelStyle, page_manager.label_style != "default");
-
-    _page->set_check(PageProperties::Check::AntiAlias, root->style->shape_rendering.computed != SP_CSS_SHAPE_RENDERING_CRISPEDGES);
+    _page->set_check(PageProperties::Check::AntiAlias, nv->antialias_rendering);
     _page->set_check(PageProperties::Check::ClipToPage, nv->clip_to_page);
 
     //-----------------------------------------------------------guide page

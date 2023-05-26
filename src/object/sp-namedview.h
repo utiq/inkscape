@@ -52,6 +52,7 @@ public:
     SVGBool lockguides;
     SVGBool grids_visible;
     SVGBool clip_to_page; // if true, clip rendered content to pages' boundaries
+    SVGBool antialias_rendering = true;
     guint32 desk_color;
     SVGBool desk_checkerboard;
 

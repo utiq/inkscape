@@ -738,7 +738,7 @@ void SPItem::update(SPCtx *ctx, unsigned flags)
         if (flags & SP_OBJECT_STYLE_MODIFIED_FLAG) {
             for (auto &v : views) {
                 v.drawingitem->setOpacity(SP_SCALE24_TO_FLOAT(style->opacity.value));
-                v.drawingitem->setAntialiasing(style->shape_rendering.computed == SP_CSS_SHAPE_RENDERING_CRISPEDGES ? 0 : 2);
+                v.drawingitem->setAntialiasing(style->shape_rendering.computed == SP_CSS_SHAPE_RENDERING_CRISPEDGES ? Inkscape::Antialiasing::None : Inkscape::Antialiasing::Good);
                 v.drawingitem->setIsolation(style->isolation.value);
                 v.drawingitem->setBlendMode(style->mix_blend_mode.value);
                 v.drawingitem->setVisible(!isHidden());

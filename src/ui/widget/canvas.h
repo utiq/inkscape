@@ -81,6 +81,7 @@ public:
     Inkscape::ColorMode  get_color_mode()  const { return _color_mode; }
     Inkscape::SplitMode  get_split_mode()  const { return _split_mode; }
     void set_clip_to_page_mode(bool clip);
+    void set_antialiasing_enabled(bool enabled);
 
     // CMS
     void set_cms_key(std::string key);
@@ -169,6 +170,7 @@ private:
     Inkscape::RenderMode _render_mode = Inkscape::RenderMode::NORMAL;
     Inkscape::SplitMode  _split_mode  = Inkscape::SplitMode::NORMAL;
     Inkscape::ColorMode  _color_mode  = Inkscape::ColorMode::NORMAL;
+    bool _antialiasing_enabled = true;
 
     // CMS
     std::string _cms_key;

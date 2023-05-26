@@ -13,6 +13,7 @@
 #ifndef INKSCAPE_DISPLAY_DRAWING_H
 #define INKSCAPE_DISPLAY_DRAWING_H
 
+#include <optional>
 #include <set>
 #include <cstdint>
 #include <vector>
@@ -61,6 +62,7 @@ public:
     void setCacheBudget(size_t bytes);
     void setCacheLimit(Geom::OptIntRect const &rect);
     void setClip(std::optional<Geom::PathVector> &&clip);
+    void setAntialiasingOverride(std::optional<Antialiasing> antialiasing_override);
 
     RenderMode renderMode() const { return _rendermode; }
     ColorMode colorMode() const { return _colormode; }
@@ -79,7 +81,7 @@ public:
 
     void update(Geom::IntRect const &area = Geom::IntRect::infinite(), Geom::Affine const &affine = Geom::identity(),
                 unsigned flags = DrawingItem::STATE_ALL, unsigned reset = 0);
-    void render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0, int antialiasing_override = -1) const;
+    void render(DrawingContext &dc, Geom::IntRect const &area, unsigned flags = 0) const;
     DrawingItem *pick(Geom::Point const &p, double delta, unsigned flags);
 
     void snapshot();
@@ -115,6 +117,7 @@ private:
     Geom::OptIntRect _cache_limit;
     std::optional<Geom::PathVector> _clip;
     bool _select_zero_opacity;
+    std::optional<Antialiasing> _antialiasing_override;
 
     std::set<DrawingItem*> _cached_items; // modified by DrawingItem::_setCached()
     CacheList _candidate_items;           // keep this list always sorted with std::greater

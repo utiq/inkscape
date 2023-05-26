@@ -567,7 +567,7 @@ static SPStyleProp const props[] = {
     {SPAttr::COLOR_INTERPOLATION, "color-interpolation"},
     {SPAttr::COLOR_INTERPOLATION_FILTERS, "color-interpolation-filters"},
     {SPAttr::COLOR_PROFILE, "color-profile"},
-    {SPAttr::COLOR_RENDERING, "color-rendering"},
+    {SPAttr::COLOR_RENDERING, "color-rendering"}, // Obsolete
     {SPAttr::IMAGE_RENDERING, "image-rendering"},
     {SPAttr::SHAPE_RENDERING, "shape-rendering"},
     {SPAttr::TEXT_RENDERING, "text-rendering"},
@@ -590,6 +590,7 @@ static SPStyleProp const props[] = {
     {SPAttr::INKSCAPE_DESK_CHECKERBOARD, "inkscape:pagecheckerboard"}, // old attr
     // rendering mode
     {SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, "inkscape:clip-to-page"},
+    {SPAttr::INKSCAPE_ANTIALIAS_RENDERING, "inkscape:antialias-rendering"},
 };
 
 #define n_attrs (sizeof(props) / sizeof(props[0]))
