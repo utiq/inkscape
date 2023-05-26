@@ -56,7 +56,6 @@ bool sp_can_apply_lpeffect(SPLPEItem* item, LivePathEffect::EffectType etype) {
     bool has_clip = item->getClipObject() != nullptr;
     bool has_mask = item->getMaskObject() != nullptr;
     bool applicable = true;
-// g_message("apply? %p, type: %s, clp: %d, msk: %d", item, item_type.c_str(), has_clip, has_mask);
     if (!has_clip && etype == LivePathEffect::POWERCLIP) {
         applicable = false;
     }
@@ -307,14 +306,17 @@ LivePathEffectEditor::toggleVisible(Inkscape::LivePathEffect::Effect *lpe , Gtk:
     DocumentUndo::done(getDocument(), hide ? _("Deactivate path effect") :  _("Activate path effect"), INKSCAPE_ICON("dialog-path-effects"));
 }
 
-static std::map<Inkscape::LivePathEffect::LPECategory, Glib::ustring> g_category_names = {
-    { Inkscape::LivePathEffect::LPECategory::Favorites,     _("Favorites")    },
-    { Inkscape::LivePathEffect::LPECategory::EditTools,     _("Edit/Tools")   },
-    { Inkscape::LivePathEffect::LPECategory::Distort,       _("Distort")      },
-    { Inkscape::LivePathEffect::LPECategory::Generate,      _("Generate")     },
-    { Inkscape::LivePathEffect::LPECategory::Convert,       _("Convert")      },
-    { Inkscape::LivePathEffect::LPECategory::Experimental,  _("Experimental") },
-};
+const Glib::ustring& get_category_name(Inkscape::LivePathEffect::LPECategory category) {
+    static const std::map<Inkscape::LivePathEffect::LPECategory, Glib::ustring> category_names = {
+        { Inkscape::LivePathEffect::LPECategory::Favorites,     _("Favorites")    },
+        { Inkscape::LivePathEffect::LPECategory::EditTools,     _("Edit/Tools")   },
+        { Inkscape::LivePathEffect::LPECategory::Distort,       _("Distort")      },
+        { Inkscape::LivePathEffect::LPECategory::Generate,      _("Generate")     },
+        { Inkscape::LivePathEffect::LPECategory::Convert,       _("Convert")      },
+        { Inkscape::LivePathEffect::LPECategory::Experimental,  _("Experimental") },
+    };
+    return category_names.at(category);
+}
 
 struct LPEMetadata {
     Inkscape::LivePathEffect::LPECategory category;
@@ -340,7 +342,7 @@ void LivePathEffectEditor::add_lpes(Inkscape::UI::Widget::CompletionPopup& popup
     for (auto&& lpe : g_lpes) {
         lpes.push_back({
             lpe.first,
-            _(converter.get_label(lpe.first).c_str()),
+            g_dpgettext2(0, "path effect", converter.get_label(lpe.first).c_str()),
             lpe.second.category,
             lpe.second.icon_name,
             lpe.second.tooltip,
@@ -372,7 +374,7 @@ void LivePathEffectEditor::add_lpes(Inkscape::UI::Widget::CompletionPopup& popup
             return sp_query_custom_tooltip(x, y, kbd, tooltipw, id, lpe.tooltip, lpe.icon_name);
         });
         if (builder.new_section()) {
-            builder.set_section(g_category_names[lpe.category]);
+            builder.set_section(get_category_name(lpe.category));
         }
     
         // build completion list
