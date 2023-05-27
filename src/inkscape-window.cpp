@@ -73,7 +73,6 @@ static gboolean _resize_children(Gtk::Window *win)
 
 InkscapeWindow::InkscapeWindow(SPDocument* document)
     : _document(document)
-    , _app(nullptr)
 {
     if (!_document) {
         std::cerr << "InkscapeWindow::InkscapeWindow: null document!" << std::endl;

@@ -1975,10 +1975,13 @@ void SPDocument::setModifiedSinceSave(bool modified) {
     this->modified_since_save = modified;
     this->modified_since_autosave = modified;
     if (SP_ACTIVE_DESKTOP) {
-        InkscapeWindow *window = SP_ACTIVE_DESKTOP->getInkscapeWindow();
-        if (window) { // during load, SP_ACTIVE_DESKTOP may be !nullptr, but parent might still be nullptr
-            SPDesktopWidget *dtw = window->get_desktop_widget();
-            dtw->updateTitle( this->getDocumentName() );
+        if (InkscapeWindow *window = SP_ACTIVE_DESKTOP->getInkscapeWindow()) {
+            // During load, SP_ACTIVE_DESKTOP may be != nullptr, but parent might still be nullptr.
+            // Moreover, the desktop widget may still not be fully constructed, in which case
+            // window->get_desktop_widget() will return nullptr.
+            if (auto *dtw = window->get_desktop_widget()) {
+                dtw->updateTitle(getDocumentName());
+            }
         }
     }
 }

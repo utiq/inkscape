@@ -49,11 +49,11 @@ public:
 private:
     InkscapeApplication *_app = nullptr;
 
-    SPDocument*          _document;
-    SPDesktop*           _desktop;
-    SPDesktopWidget*     _desktop_widget;
+    SPDocument*          _document = nullptr;
+    SPDesktop*           _desktop = nullptr;
+    SPDesktopWidget*     _desktop_widget = nullptr;
 
-    Gtk::Box*      _mainbox;
+    Gtk::Box*      _mainbox = nullptr;
 
     void setup_view();
 
