@@ -249,7 +249,7 @@ void PageToolbar::bleedsEdited()
 
     if (auto page = pm.getSelected()) {
         page->setBleed(text);
-        DocumentUndo::maybeDone(_document, "page-bleed", _("Edit Page Bleed"), INKSCAPE_ICON("tool-pages"));
+        DocumentUndo::maybeDone(_document, "page-bleed", _("Edit page bleed"), INKSCAPE_ICON("tool-pages"));
 
         auto bleed = page->getBleed();
         text_page_bleeds->set_text(page->getBleedLabel());
@@ -266,7 +266,7 @@ void PageToolbar::marginsEdited()
 
     if (auto page = pm.getSelected()) {
         page->setMargin(text);
-        DocumentUndo::maybeDone(_document, "page-margin", _("Edit Page Margin"), INKSCAPE_ICON("tool-pages"));
+        DocumentUndo::maybeDone(_document, "page-margin", _("Edit page margin"), INKSCAPE_ICON("tool-pages"));
         setMarginText(page);
     }
 }
@@ -295,7 +295,7 @@ void PageToolbar::marginSideEdited(int side, const Glib::ustring &value)
 
     if (auto page = pm.getSelected()) {
         page->setMarginSide(side, value, false);
-        DocumentUndo::maybeDone(_document, "page-margin", _("Edit Page Margin"), INKSCAPE_ICON("tool-pages"));
+        DocumentUndo::maybeDone(_document, "page-margin", _("Edit page margin"), INKSCAPE_ICON("tool-pages"));
         setMarginText(page);
     }
 }

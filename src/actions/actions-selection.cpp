@@ -248,9 +248,9 @@ std::vector<std::vector<Glib::ustring>> raw_data_selection =
     {"app.select-by-selector",              N_("Select by Selector"),       "Select",   N_("Select by CSS selector")},
     {"app.select-all",                      N_("Select All Objects"),       "Select",   N_("Select all; options: 'all' (every object including groups), 'layers', 'no-layers' (top level objects in layers), 'groups' (all groups including layers), 'no-groups' (all objects other than groups and layers, default)")},
     {"app.select-list",                     N_("List Selection"),           "Select",   N_("Print a list of objects in current selection")},
-    {"app.selection-set-backup",            N_("Set selection backup"),     "Select",   N_("Set backup of selection, items and nodes")},
-    {"app.selection-restore-backup",        N_("Restore selection backup"), "Select",   N_("Restore backup of selection, items and nodes")},
-    {"app.selection-empty-backup",          N_("Empty selection backup"),   "Select",   N_("Empty backup of selection, items and nodes")},
+    {"app.selection-set-backup",            N_("Set selection backup"),     "Select",   N_("Set backup of current selection of objects or nodes")},
+    {"app.selection-restore-backup",        N_("Restore selection backup"), "Select",   N_("Restore backup of stored selection of objects or nodes")},
+    {"app.selection-empty-backup",          N_("Empty selection backup"),   "Select",   N_("Empty stored backup of selection of objects or nodes")},
     // clang-format on
 };
 

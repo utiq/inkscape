@@ -353,16 +353,16 @@ void PdfImportDialog::setFontStrategies(const FontStrategies &fs)
         child[_font_col->proc_id] = (int)value;
         switch (value) {
             case FontFallback::AS_SHAPES:
-                child[_font_col->proc_label] = _("Draw to Shapes");
+                child[_font_col->proc_label] = _("Convert to paths");
                 break;
             case FontFallback::AS_TEXT:
-                child[_font_col->proc_label] = _("Keep Original Font Name");
+                child[_font_col->proc_label] = _("Keep original font name");
                 break;
             case FontFallback::AS_SUB:
-                child[_font_col->proc_label] = _("Use Substitute Font");
+                child[_font_col->proc_label] = _("Replace by closest-named installed font");
                 break;
             case FontFallback::DELETE_TEXT:
-                child[_font_col->proc_label] = _("Delete Text");
+                child[_font_col->proc_label] = _("Delete text");
                 break;
         }
     }

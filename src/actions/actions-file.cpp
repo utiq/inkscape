@@ -77,7 +77,7 @@ file_rebase(const Glib::VariantBase& value, InkscapeApplication *app)
     document->rebase(s.get());
 
     document->ensureUpToDate();
-    Inkscape::DocumentUndo::done(document, _("File rebase"), "");
+    Inkscape::DocumentUndo::done(document, _("Replace file contents"), "");
 }
 
 // Need to create a document_revert that doesn't depend on windows.
@@ -106,7 +106,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_file =
     {"app.file-new",               N_("File New"),                 "File",       N_("Open new document using template")                  },
     {"app.file-close",             N_("File Close"),               "File",       N_("Close active document")                             },
     {"app.file-open-window",       N_("File Open Window"),         "File",       N_("Open file window")                                  },
-    {"app.file-rebase",            N_("File Rebase"),              "File",       N_("Rebase current document from disk")                 }
+    {"app.file-rebase",            N_("File Contents Replace"),              "File",       N_("Replace current document's contents by contents of another file")                 }
     // clang-format on
 };
 

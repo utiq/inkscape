@@ -35,7 +35,7 @@ void TemplateOther::init()
         "<inkscape-extension xmlns=\"" INKSCAPE_EXTENSION_URI "\">"
             "<id>org.inkscape.template.other</id>"
             "<name>" N_("Other Sizes") "</name>"
-            "<description>" N_("General sizes for miscellaneous") "</description>"
+            "<description>" N_("Miscellaneous document formats") "</description>"
             "<category>" N_("Other") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"

@@ -43,7 +43,7 @@ void TemplatePaper::init()
         "<inkscape-extension xmlns=\"" INKSCAPE_EXTENSION_URI "\">"
             "<id>org.inkscape.template.paper</id>"
             "<name>" N_("Paper Sizes") "</name>"
-            "<description>" N_("General sizes for paper") "</description>"
+            "<description>" N_("Standard paper document formats") "</description>"
             "<category>" N_("Print") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>mm</param>"

@@ -33,7 +33,7 @@
       <object class="GtkMenuItem">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="tooltip-text" translatable="yes">Flatten, apply an effect to path</property>
+        <property name="tooltip-text" translatable="yes">Apply this effect, and all effects above this one, to the path. This removes those effects from the stack.</property>
         <property name="label" translatable="yes">Flatten</property>
         <property name="use-underline">True</property>
       </object>
@@ -42,8 +42,8 @@
       <object class="GtkMenuItem" id="LPESetDefault">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="tooltip-text" translatable="yes">Set current status of widgets as default for next apply operation of this kind of LPE</property>
-        <property name="label" translatable="yes">Set as default</property>
+        <property name="tooltip-text" translatable="yes">Use the current values as custom defaults for this LPE</property>
+        <property name="label" translatable="yes">Set custom defaults</property>
         <property name="use-underline">True</property>
       </object>
     </child>
@@ -51,8 +51,8 @@
       <object class="GtkMenuItem" id="LPEResetDefault">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="tooltip-text" translatable="yes">Reset settings of this Life Path Effect to default values</property>
-        <property name="label" translatable="yes">Reset to defaults</property>
+        <property name="tooltip-text" translatable="yes">Reset default settings of this LPE to Inkscape's default values</property>
+        <property name="label" translatable="yes">Forget custom defaults</property>
         <property name="use-underline">True</property>
       </object>
     </child>
@@ -243,7 +243,7 @@
                         <property name="name">eventbutton</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="tooltip-text" translatable="yes">Toggle show/hide this Live Path Effect</property>
+                        <property name="tooltip-text" translatable="yes">Show/hide this Live Path Effect</property>
                         <property name="visible-window">False</property>
                         <child>
                           <object class="GtkButton">

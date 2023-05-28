@@ -95,14 +95,6 @@ std::vector<std::vector<Glib::ustring>> raw_data_node_align =
     // clang-format on
 };
 
-std::vector<std::vector<Glib::ustring>> hint_data_node_align =
-{
-    // clang-format off
-    {"app.node-align-horizontal",      N_("Enter string for alignment anchor, one of: first/last/middle/min/max")},
-    {"app.node-align-vertical",        N_("Enter string for alignment anchor, one of: first/last/middle/min/max")},
-    // clang-format on
-};
-
 // These are window actions as the require the node tool to be active and nodes to be selected.
 void
 add_actions_node_align(InkscapeWindow* win)

@@ -491,7 +491,7 @@ LivePathEffectEditor::selection_info()
     _LPESelectionInfo.hide();
     if (selection && (selected = selection->singleItem()) ) {
         if (is<SPText>(selected) || is<SPFlowtext>(selected)) {
-            _LPESelectionInfo.set_text(_("Texts does not support live path effects"));
+            _LPESelectionInfo.set_text(_("Text objects do not support Live Path Effects"));
             _LPESelectionInfo.show();
             Glib::ustring labeltext = _("Convert text to paths");
             Gtk::Button *selectbutton = Gtk::manage(new Gtk::Button());
@@ -812,7 +812,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             LPEMoveUp->show();
             LPEMoveDown->show();
             LPEDrag->get_children()[0]->show();
-            LPEDrag->set_tooltip_text(_("Reorder this Live Path Effect"));
+            LPEDrag->set_tooltip_text(_("Drag to change position in path effects stack"));
             if (current) {
                 LPEExpanderCurrent = LPEExpander;
             }
@@ -866,17 +866,17 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
                             current_lpeitem->setCurrentPathEffect(lperef);
                             current_lpeitem->duplicateCurrentPathEffect();
                             effect_list_reload(current_lpeitem);
-                            DocumentUndo::done(getDocument(), _("Duplicated current path effect"), INKSCAPE_ICON("dialog-path-effects"));
+                            DocumentUndo::done(getDocument(), _("Duplicate path effect"), INKSCAPE_ICON("dialog-path-effects"));
                         } else if (pos == 1) {
                             current_lpeitem->setCurrentPathEffect(lperef);
                             current_lpeitem->upCurrentPathEffect();
                             effect_list_reload(current_lpeitem);
-                            DocumentUndo::done(getDocument(), _("Up current path effect"), INKSCAPE_ICON("dialog-path-effects"));
+                            DocumentUndo::done(getDocument(), _("Move path effect up"), INKSCAPE_ICON("dialog-path-effects"));
                         } else if (pos == 2) {
                             current_lpeitem->setCurrentPathEffect(lperef);
                             current_lpeitem->downCurrentPathEffect();
                             effect_list_reload(current_lpeitem);
-                            DocumentUndo::done(getDocument(), _("Down current path effect"), INKSCAPE_ICON("dialog-path-effects"));
+                            DocumentUndo::done(getDocument(), _("Move path effect down"), INKSCAPE_ICON("dialog-path-effects"));
                         } else if (pos == 3) {
                             lpeFlatten(lperef);
                         } else if (pos == 4) {
@@ -1093,7 +1093,7 @@ LivePathEffectEditor::lpeFlatten(std::shared_ptr<Inkscape::LivePathEffect::LPEOb
     if (selection && selection->isEmpty() ) {
         selection->add(current_lpeitem);
     }
-    DocumentUndo::done(getDocument(), _("Flatten some live path effects"), INKSCAPE_ICON("dialog-path-effects"));
+    DocumentUndo::done(getDocument(), _("Flatten path effect(s)"), INKSCAPE_ICON("dialog-path-effects"));
     return false;
 }
 
@@ -1111,7 +1111,7 @@ LivePathEffectEditor::removeEffect(Gtk::Expander * expander) {
         current_lpeitem->setCurrentPathEffect(current_lperef_tmp.second);
     }
     effect_list_reload(current_lpeitem);
-    DocumentUndo::done(getDocument(), _("Removed live path effect"), INKSCAPE_ICON("dialog-path-effects"));
+    DocumentUndo::done(getDocument(), _("Remove path effect"), INKSCAPE_ICON("dialog-path-effects"));
 }
 
 bool 

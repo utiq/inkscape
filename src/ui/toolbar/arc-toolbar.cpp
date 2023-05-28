@@ -381,7 +381,7 @@ ArcToolbar::type_changed( int type )
     }
 
     if (modmade) {
-        DocumentUndo::done(_desktop->getDocument(), _("Arc: Changed arc type"), INKSCAPE_ICON("draw-ellipse"));
+        DocumentUndo::done(_desktop->getDocument(), _("Arc: Change arc type"), INKSCAPE_ICON("draw-ellipse"));
     }
 
     _freeze = false;

@@ -26,7 +26,7 @@ void TemplateVideo::init()
         "<inkscape-extension xmlns=\"" INKSCAPE_EXTENSION_URI "\">"
             "<id>org.inkscape.template.video</id>"
             "<name>" N_("Video Sizes") "</name>"
-            "<description>" N_("General sizes for videos") "</description>"
+            "<description>" N_("Document formats using common video resolutions") "</description>"
             "<category>" N_("Video") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"

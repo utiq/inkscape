@@ -1055,8 +1055,8 @@ void InkscapePreferences::initPageTools()
         _page_text.add_line( false, "", *cb, "", _("Use SVG2 auto-flowed text instead of SVG1.2 auto-flowed text. (Recommended)"));
 
         _recently_used_fonts_size.init("/tools/text/recently_used_fonts_size", 0, 100, 1, 10, 10, true, false);
-        _page_text.add_line( false, _("Size of recently used font list:"), _recently_used_fonts_size, "",
-                           _("Default size of the recently used font list"), false);
+        _page_text.add_line( false, _("Fonts in 'Recently used' collection:"), _recently_used_fonts_size, "",
+                           _("Maximum number of fonts in the 'Recently used' font collection"), false);
         _recently_used_fonts_size.changed_signal.connect([](double new_size) {
             Inkscape::RecentlyUsedFonts* recently_used_fonts = Inkscape::RecentlyUsedFonts::get();
             recently_used_fonts->change_max_list_size(new_size); });
@@ -1635,8 +1635,8 @@ void InkscapePreferences::initPageUI()
     _ui_realworldzoom.init( _("Show zoom percentage corrected by factor"), "/options/zoomcorrection/shown", true);
     _page_ui.add_line( false, "", _ui_realworldzoom, "", _("Zoom percentage can be either by the physical units or by pixels."));
 
-    _ui_pageorigin.init( _("Use selected page as position origin"), "/options/origincorrection/page", true);
-    _page_ui.add_line( false, "", _ui_pageorigin, "", _("Rulers and tools will use the page's position instead of the canvas position."));
+    _ui_pageorigin.init( _("Origin always on current page"), "/options/origincorrection/page", true);
+    _page_ui.add_line( false, "", _ui_pageorigin, "", _("Rulers and tools will display position information relative to the current page, instead of the position on the canvas (corresponding to the first page's position)."));
 
     _ui_yaxisdown.init( _("Origin at upper left with y-axis pointing down"), "/options/yaxisdown", true);
     _page_ui.add_line( false, "", _ui_yaxisdown, "",
@@ -1861,7 +1861,7 @@ void InkscapePreferences::initPageUI()
         _page_theme.add_line(true, "", _shift_icons, "",
                              _("This preference fixes icon positions in menus."), false, reset_icon());
 
-    _page_theme.add_group_header(_("XML dialog"));
+    _page_theme.add_group_header(_("XML Editor"));
 #if WITH_GSOURCEVIEW
     {
         auto manager = gtk_source_style_scheme_manager_get_default();
@@ -1881,7 +1881,7 @@ void InkscapePreferences::initPageUI()
             values.emplace_back(style);
         }
         syntax->init("/theme/syntax-color-theme", labels, values, "");
-        _page_theme.add_line(false, _("Color theme:"), *syntax, "", _("Syntax coloring for XML dialog"), false);
+        _page_theme.add_line(false, _("Color theme:"), *syntax, "", _("Syntax coloring for XML Editor"), false);
     }
 #endif
     {
@@ -1912,7 +1912,7 @@ void InkscapePreferences::initPageUI()
 
         auto mono_font = Gtk::make_managed<UI::Widget::PrefCheckButton>();
         mono_font->init( _("Use monospaced font"), "/dialogs/xml/mono-font", false);
-        _page_theme.add_line(false, _("XML tree:"), *mono_font, "", _("Use fixed-width font in XML dialog"), false);
+        _page_theme.add_line(false, _("XML tree:"), *mono_font, "", _("Use fixed-width font in XML Editor"), false);
     }
 
     //=======================================================================================================
@@ -2509,13 +2509,13 @@ void InkscapePreferences::initPageBehavior()
     _sel_layer_deselects.init ( _("Deselect upon layer change"), "/options/selection/layerdeselect", true);
 
     _sel_touch_topmost_only.init ( _("Select the topmost items only when in touch selection mode"), "/options/selection/touchsel_topmost_only", true);
-    _sel_zero_opacity.init(_("Select objects, strokes, and fills with zero opacity"), "/options/selection/zeroopacity", false);
+    _sel_zero_opacity.init(_("Select transparent objects, strokes, and fills"), "/options/selection/zeroopacity", false);
 
     _page_select.add_line( false, "", _sel_layer_deselects, "",
                            _("Uncheck this to be able to keep the current objects selected when the current layer changes"));
     _page_select.add_line(
         false, "", _sel_zero_opacity, "",
-        _("Uncheck to make objects, strokes, and fills with zero opacity unselectable unless in outline mode"));
+        _("Check to make objects, strokes, and fills which are completely transparent selectable even if not in outline mode"));
 
     _page_select.add_line( false, "", _sel_touch_topmost_only, "",
                            _("In touch selection mode, if multiple items overlap at a point, select only the topmost item"));
@@ -2708,9 +2708,9 @@ void InkscapePreferences::initPageBehavior()
     _clone_to_curves.init ( _("Path operations unlink clones"), "/options/pathoperationsunlink/value", true);
     _page_clones.add_line(true, "", _clone_to_curves, "",
                         _("The following path operations will unlink clones: Stroke to path, Object to path, Boolean operations, Combine, Break apart"));
-    _clone_ignore_to_curves.init ( _("Convert to paths just unlinks clones (keep LPE, and shapes)"), "/options/clonestocurvesjustunlink/value", true);
+    _clone_ignore_to_curves.init ( _("'Object to Path' only unlinks (keeps LPEs, shapes)"), "/options/clonestocurvesjustunlink/value", true);
     _page_clones.add_line(true, "", _clone_ignore_to_curves, "",
-                        _("The following path operations just unlink clones on convert to paths action (keep LPE, and shapes)"));
+                        _("'Object to path' only unlinks clones when they are converted to paths, but preserves any LPEs and shapes within the clones."));
     //TRANSLATORS: Heading for the Inkscape Preferences "Clones" Page
     this->AddPage(_page_clones, _("Clones"), iter_behavior, PREFS_PAGE_BEHAVIOR_CLONES);
 
@@ -2718,7 +2718,7 @@ void InkscapePreferences::initPageBehavior()
     _mask_mask_on_top.init ( _("When applying, use the topmost selected object as clippath/mask"), "/options/maskobject/topmost", true);
     _page_mask.add_line(false, "", _mask_mask_on_top, "",
                         _("Uncheck this to use the bottom selected object as the clipping path or mask"));
-    _mask_mask_on_ungroup.init ( _("When ungroup, clip/mask is preserved in children"), "/options/maskobject/maskonungroup", true);
+    _mask_mask_on_ungroup.init ( _("When ungrouping, clips/masks are preserved in children"), "/options/maskobject/maskonungroup", true);
     _page_mask.add_line(false, "", _mask_mask_on_ungroup, "",
                         _("Uncheck this to remove clip/mask on ungroup"));
     _mask_mask_remove.init ( _("Remove clippath/mask object after applying"), "/options/maskobject/remove", true);
@@ -2766,11 +2766,11 @@ void InkscapePreferences::initPageBehavior()
 
     _page_clipboard.add_group_header(_("Copying objects to the clipboard"));
     _page_clipboard.add_line(true, "", _clipboard_style_computed, "",
-                             _("Object style= attribute will be set to the computed style, "
+                             _("The object's 'style' attribute will be set to the computed style, "
                                "preserving the object's appearance as in previous Inkscape versions"));
     _page_clipboard.add_line(
         true, "", _clipboard_style_verbatim, "",
-        _("Object style= and class= values will be copied verbatim and may be removed by 'paste style'"));
+        _("The object's 'style' and 'class' values will be copied verbatim, and will replace those of the target object when using 'Paste style'"));
 
     this->AddPage(_page_clipboard, _("Clipboard"), iter_behavior, PREFS_PAGE_BEHAVIOR_CLIPBOARD);
 
@@ -2786,7 +2786,7 @@ void InkscapePreferences::initPageBehavior()
                             _("Show experimental effects")); // tooltip
     _lpe_show_gallery.init ( _("Show deprecated LPE gallery"), "/dialogs/livepatheffect/showgallery", false); // text label
     _page_lpe.add_line( true, "", _lpe_show_gallery, "",
-                            _("Show deprecated LPE gallery")); // tooltip
+                            _("Adds a button to the LPE dialog that opens the old-style LPE selection dialog")); // tooltip
     _page_lpe.add_group_header( _("Tiling"));
     _lpe_copy_mirroricons.init ( _("Add advanced tiling options"), "/live_effects/copy/mirroricons", true); // text label
     _page_lpe.add_line( true, "", _lpe_copy_mirroricons, "",
@@ -3640,8 +3640,8 @@ void InkscapePreferences::initPageSystem()
     auto box = new Gtk::Box();
     box->pack_start(_sys_shared_path);
     box->set_size_request(300, -1);
-    _page_system.add_line( false, _("Resources shared path:"), *box, "",
-                            _("Optional shared folder to load resources, you need to create inside any Inkscape resource folder you want to use (extensions,fonts,icons,keys,paint,palletes,symbols,templates,themes,ui"), false, reset_icon());
+    _page_system.add_line( false, _("Shared default resources folder:"), *box, "",
+                            _("A folder structured like a user's Inkscape preferences directory. This makes it possible to share a set of resources, such as extensions, fonts, icon sets, keyboard shortcuts, patterns/hatches, palettes, symbols, templates, themes and user interface definition files, between multiple users who have access to that folder (on the same computer or in the network). Requires a restart of Inkscape to work when changed."), false, reset_icon());
     _page_system.add_group_header( _("System info"));
 
     _sys_user_prefs.set_text(prefs->getPrefsFilename());

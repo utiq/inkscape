@@ -266,7 +266,7 @@ TextToolbar::TextToolbar(SPDesktop *desktop)
 
         // To open the Font Collections Manager dialogue.
         auto fcm_btn = Gtk::manage(new Gtk::Button);
-        fcm_btn->set_tooltip_text(_("Open the Font Collections Manager dialogue"));
+        fcm_btn->set_tooltip_text(_("Open the Font Collections Manager dialog"));
         fcm_btn->set_label(_("Open Collections Editor"));
         fcm_btn->set_margin_top(4);
         popover_grid->add(*fcm_btn);
@@ -278,7 +278,7 @@ TextToolbar::TextToolbar(SPDesktop *desktop)
         add(*reset_item);
 
         auto reset_btn = Gtk::manage(new Gtk::Button);
-        reset_btn->set_tooltip_text(_("Reset selected collections"));
+        reset_btn->set_tooltip_text(_("Show all available fonts"));
         reset_btn->set_image_from_icon_name(INKSCAPE_ICON("view-refresh"));
         reset_btn->set_always_show_image(true);
         reset_item->add(*reset_btn);

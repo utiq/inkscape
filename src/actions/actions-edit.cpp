@@ -298,7 +298,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_edit = {
     {"app.paste-width-separately",              N_("Paste Width Separately"),           "Edit",     N_("Scale each selected object horizontally to match the width of the copied object")},
     {"app.paste-height-separately",             N_("Paste Height Separately"),          "Edit",     N_("Scale each selected object vertically to match the height of the copied object")},
     {"app.duplicate",                           N_("Duplicate"),                        "Edit",     N_("Duplicate Selected Objects")},
-    {"app.duplicate-transform",                 N_("Duplicate and Transform"),          "Edit",     N_("Duplicate Selected Objects and reapply last transform")},
+    {"app.duplicate-transform",                 N_("Duplicate and Transform"),          "Edit",     N_("Duplicate selected objects and reapply last transformation")},
     {"app.clone",                               N_("Create Clone"),                     "Edit",     N_("Create a clone (a copy linked to the original) of selected object")},
     {"app.clone-unlink",                        N_("Unlink Clone"),                     "Edit",     N_("Cut the selected clones' links to the originals, turning them into standalone objects")},
     {"app.clone-unlink-recursively",            N_("Unlink Clones recursively"),        "Edit",     N_("Unlink all clones in the selection, even if they are in groups.")},
