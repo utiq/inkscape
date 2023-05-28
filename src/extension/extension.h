@@ -168,7 +168,7 @@ public:
     Inkscape::XML::Node *      get_repr     ();
     gchar *       get_id       () const;
     const gchar * get_name     () const;
-    void          deactivate   ();
+    virtual void  deactivate   ();
     bool          deactivated  ();
     void          printFailure (Glib::ustring reason);
     std::string const &getErrorReason() { return _error_reason; };

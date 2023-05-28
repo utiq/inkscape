@@ -132,8 +132,8 @@ Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
     static auto gapp = InkscapeApplication::instance()->gtk_app();
     if (gapp) {
         // Might be in command line mode without GUI (testing).
-        gapp->add_action( aid, sigc::bind<Effect*>(sigc::ptr_fun(&action_effect), this, true));
-        gapp->add_action( aid + ".noprefs", sigc::bind<Effect*>(sigc::ptr_fun(&action_effect), this, false));
+        action = gapp->add_action( aid, sigc::bind<Effect*>(sigc::ptr_fun(&action_effect), this, true));
+        action_noprefs = gapp->add_action( aid + ".noprefs", sigc::bind<Effect*>(sigc::ptr_fun(&action_effect), this, false));
     }
 
     if (!hidden) {
@@ -233,6 +233,16 @@ Effect::get_menu (Inkscape::XML::Node * pattern, std::list<Glib::ustring>& sub_m
     sub_menu_list.push_back(merge_name);
 
     get_menu(pattern->firstChild(), sub_menu_list);
+}
+
+void
+Effect::deactivate()
+{
+    if (action)
+        action->set_enabled(false);
+    if (action_noprefs)
+        action_noprefs->set_enabled(false);
+    Extension::deactivate();
 }
 
 Effect::~Effect ()

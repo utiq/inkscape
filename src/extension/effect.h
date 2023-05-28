@@ -75,9 +75,14 @@ public:
 
     PrefDialog *get_pref_dialog ();
     void        set_pref_dialog (PrefDialog * prefdialog);
+
+    void deactivate() override;
 private:
     static gchar *   remove_ (gchar * instr);
     static void _sanitizeId(std::string &id);
+
+    Glib::RefPtr<Gio::SimpleAction> action;
+    Glib::RefPtr<Gio::SimpleAction> action_noprefs;
 };
 
 } }  /* namespace Inkscape, Extension */
