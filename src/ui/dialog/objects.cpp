@@ -752,7 +752,8 @@ ObjectsPanel::ObjectsPanel()
             "<span>%1 %2%%\n</span><span>\n</span><span>%3\n<i>%4</i></span>";
         auto label = Glib::ustring::compose(templt,
             _("Opacity:"), Util::format_number(opacity * 100.0, 1),
-            _("Blend mode:"), _blend_mode_names[blend]);
+            _("Blend mode:"), _blend_mode_names[blend]
+        );
         tooltip->set_markup(label);
         _tree.set_tooltip_cell(tooltip, nullptr, _blend_mode_column, _item_state_toggler);
         return true;
@@ -787,6 +788,7 @@ ObjectsPanel::ObjectsPanel()
     int width = 2;
     for (size_t i = 0; i < Inkscape::SPBlendModeConverter._length; ++i) {
         auto& data = Inkscape::SPBlendModeConverter.data(i);
+        auto label = _blend_mode_names[data.id] = g_dpgettext2(nullptr, "BlendMode", data.label.c_str());
         if (Inkscape::SPBlendModeConverter.get_key(data.id) == "-") {
             if (top >= (Inkscape::SPBlendModeConverter._length + 1) / 2) {
                 ++left;
@@ -802,7 +804,7 @@ ObjectsPanel::ObjectsPanel()
                 top++;
 
             auto check = Gtk::make_managed<Gtk::ModelButton>();
-            check->set_label(data.label);
+            check->set_label(label);
             check->property_role().set_value(Gtk::BUTTON_ROLE_RADIO);
             check->property_inverted().set_value(true);
             check->property_centered().set_value(false);
@@ -817,7 +819,7 @@ ObjectsPanel::ObjectsPanel()
                 }
             });
             _blend_items[data.id] = check;
-            _blend_mode_names[data.id] = data.label;
+            _blend_mode_names[data.id] = label;
             check->show();
             modes.attach(*check, left, top, width, 1);
             width = 1; // First element takes whole width
