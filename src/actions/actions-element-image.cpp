@@ -188,11 +188,11 @@ void image_crop(InkscapeApplication *app)
             selector->updateDescriber(selection);
         }
         std::stringstream ss;
-        ss << ngettext(_("<b>%d</b> image cropped"), _("<b>%d</b> images cropped"), done);
+        ss << ngettext("<b>%d</b> image cropped", "<b>%d</b> images cropped", done);
         if (bytes < 0) {
-            ss << ", " << ngettext(_("%s byte removed"), _("%s bytes removed"), abs(bytes));
+            ss << ", " << ngettext("%s byte removed", "%s bytes removed", abs(bytes));
         } else if (bytes > 0) {
-            ss << ", <b>" << ngettext(_("%s byte added!"), _("%s bytes added!"), bytes) << "</b>";
+            ss << ", <b>" << ngettext("%s byte added!", "%s bytes added!", bytes) << "</b>";
         }
         // Do flashing after select tool update.
         msg->flashF(Inkscape::INFORMATION_MESSAGE, ss.str().c_str(), done, Inkscape::Util::format_size(abs(bytes)).c_str());
