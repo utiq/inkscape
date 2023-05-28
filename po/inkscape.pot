@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2023-05-24 11:34+0200\n"
+"POT-Creation-Date: 2023-05-28 16:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3532,26 +3532,6 @@ msgid "Table Cloth"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
-msgid "Sand (bitmap)"
-msgstr ""
-
-#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
-msgid "Cloth (bitmap)"
-msgstr ""
-
-#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
-msgid "Old paint (bitmap)"
-msgstr ""
-
-#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
-msgid "Dirty texture"
-msgstr ""
-
-#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
-msgid "Noise"
-msgstr ""
-
-#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
 msgid "Circle vertical lines halftone shading"
 msgstr ""
 
@@ -3628,7 +3608,7 @@ msgid "Lines shading 2"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
-msgid "Splashing shaidng"
+msgid "Splashing shading"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
@@ -3641,6 +3621,26 @@ msgstr ""
 
 #: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
 msgid "Lines shading big"
+msgstr ""
+
+#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
+msgid "Sand (bitmap)"
+msgstr ""
+
+#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
+msgid "Cloth (bitmap)"
+msgstr ""
+
+#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
+msgid "Old paint (bitmap)"
+msgstr ""
+
+#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
+msgid "Dirty texture"
+msgstr ""
+
+#: /home/mc/inkscape2/build/share/paint/patterns.svg.h:1
+msgid "Noise"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:2
@@ -4460,8 +4460,10 @@ msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:229
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:230
+#: /home/mc/inkscape2/build/share/symbols/symbols.h:657
+#: /home/mc/inkscape2/build/share/symbols/symbols.h:685
 msgctxt "Symbol"
-msgid "Ice Skating"
+msgid "Ice skating"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:233
@@ -4840,8 +4842,9 @@ msgid "Survey point"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:343
+#: /home/mc/inkscape2/build/share/symbols/symbols.h:370
 msgctxt "Symbol"
-msgid "Wheelchair-accessible toilet"
+msgid "Wheelchair-accessible toilets"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:344
@@ -4872,11 +4875,6 @@ msgstr ""
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:375
 msgctxt "Symbol"
 msgid "Waste bin"
-msgstr ""
-
-#: /home/mc/inkscape2/build/share/symbols/symbols.h:370
-msgctxt "Symbol"
-msgid "Wheelchair-accessible toilets"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:376
@@ -5342,6 +5340,8 @@ msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:513
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:534
+#: /home/mc/inkscape2/build/share/symbols/symbols.h:858
+#: /home/mc/inkscape2/build/share/symbols/symbols.h:861
 msgctxt "Symbol"
 msgid "Water tower"
 msgstr ""
@@ -5751,11 +5751,6 @@ msgctxt "Symbol"
 msgid "Horse racing"
 msgstr ""
 
-#: /home/mc/inkscape2/build/share/symbols/symbols.h:657
-msgctxt "Symbol"
-msgid "Ice skating"
-msgstr ""
-
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:658
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:686
 msgctxt "Symbol"
@@ -5838,11 +5833,6 @@ msgstr ""
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:701
 msgctxt "Symbol"
 msgid "Windsurfing"
-msgstr ""
-
-#: /home/mc/inkscape2/build/share/symbols/symbols.h:685
-msgctxt "Symbol"
-msgid "Iceskating"
 msgstr ""
 
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:702
@@ -6292,12 +6282,6 @@ msgctxt "Symbol"
 msgid "Dam"
 msgstr ""
 
-#: /home/mc/inkscape2/build/share/symbols/symbols.h:858
-#: /home/mc/inkscape2/build/share/symbols/symbols.h:861
-msgctxt "Symbol"
-msgid "Tower"
-msgstr ""
-
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:859
 #: /home/mc/inkscape2/build/share/symbols/symbols.h:862
 msgctxt "Symbol"
@@ -6676,11 +6660,14 @@ msgid "Display Mode: Outline Overlay"
 msgstr ""
 
 #: ../src/actions/actions-canvas-mode.cpp:271
-msgid "Show a outline overlay"
+#: ../share/ui/display-popup.glade:86
+msgid ""
+"Show objects as outlines, and the actual drawing below them with reduced "
+"opacity"
 msgstr ""
 
 #: ../src/actions/actions-canvas-mode.cpp:272
-msgid "Display Mode Cycle"
+msgid "Display Mode: Cycle"
 msgstr ""
 
 #: ../src/actions/actions-canvas-mode.cpp:272
@@ -6688,7 +6675,7 @@ msgid "Cycle through display modes"
 msgstr ""
 
 #: ../src/actions/actions-canvas-mode.cpp:273
-msgid "Display Mode Toggle"
+msgid "Display Mode: Toggle"
 msgstr ""
 
 #: ../src/actions/actions-canvas-mode.cpp:273
@@ -6696,7 +6683,7 @@ msgid "Toggle between normal and last non-normal mode"
 msgstr ""
 
 #: ../src/actions/actions-canvas-mode.cpp:274
-msgid "Display Mode Toggle Preview"
+msgid "Display Mode: Toggle Preview"
 msgstr ""
 
 #: ../src/actions/actions-canvas-mode.cpp:274
@@ -7619,7 +7606,7 @@ msgid "Duplicate Selected Objects"
 msgstr ""
 
 #: ../src/actions/actions-edit.cpp:301
-msgid "Duplicate Selected Objects and reapply last transform"
+msgid "Duplicate selected objects and reapply last transformation"
 msgstr ""
 
 #: ../src/actions/actions-edit.cpp:302
@@ -7809,7 +7796,7 @@ msgid "No images cropped!"
 msgstr ""
 
 #: ../src/actions/actions-element-image.cpp:208
-msgid "Image crop to clip"
+msgid "Crop image to clip"
 msgstr ""
 
 #: ../src/actions/actions-element-image.cpp:208
@@ -7932,7 +7919,7 @@ msgid "Close window (unless last window)"
 msgstr ""
 
 #: ../src/actions/actions-file.cpp:80
-msgid "File rebase"
+msgid "Replace file contents"
 msgstr ""
 
 #: ../src/actions/actions-file.cpp:105
@@ -7968,11 +7955,11 @@ msgid "Open file window"
 msgstr ""
 
 #: ../src/actions/actions-file.cpp:109
-msgid "File Rebase"
+msgid "File Contents Replace"
 msgstr ""
 
 #: ../src/actions/actions-file.cpp:109
-msgid "Rebase current document from disk"
+msgid "Replace current document's contents by contents of another file"
 msgstr ""
 
 #: ../src/actions/actions-file.cpp:116 ../src/actions/actions-file.cpp:117
@@ -8441,11 +8428,6 @@ msgstr ""
 msgid "Distribute selected nodes vertically"
 msgstr ""
 
-#: ../src/actions/actions-node-align.cpp:101
-#: ../src/actions/actions-node-align.cpp:102
-msgid "Enter string for alignment anchor, one of: first/last/middle/min/max"
-msgstr ""
-
 #: ../src/actions/actions-object-align.cpp:267
 #: ../src/actions/actions-object-align.cpp:566
 #: ../share/ui/align-and-distribute.ui:638
@@ -8475,7 +8457,8 @@ msgid "Enable on-canvas alignment"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:769
-msgid "Enable on-canvas alignment handles."
+#: ../share/ui/align-and-distribute.ui:337
+msgid "Enable on-canvas alignment handles"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:771
@@ -8494,7 +8477,7 @@ msgid "Align to left edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:773
-msgid "Align selection horizontally to left edge."
+msgid "Align selection horizontally to left edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:774
@@ -8502,7 +8485,7 @@ msgid "Align to horizontal center"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:774
-msgid "Align selection horizontally to the center."
+msgid "Align selection horizontally to the center"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:775
@@ -8510,7 +8493,7 @@ msgid "Align to right edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:775
-msgid "Align selection horizontally to right edge."
+msgid "Align selection horizontally to right edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:776
@@ -8518,7 +8501,7 @@ msgid "Align to top edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:776
-msgid "Align selection vertically to top edge."
+msgid "Align selection vertically to top edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:777
@@ -8526,7 +8509,7 @@ msgid "Align to bottom edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:777
-msgid "Align selection vertically to bottom edge."
+msgid "Align selection vertically to bottom edge"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:778
@@ -8534,7 +8517,7 @@ msgid "Align to vertical center"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:778
-msgid "Align selection vertically to the center."
+msgid "Align selection vertically to the center"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:779
@@ -8542,7 +8525,7 @@ msgid "Align to center"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:779
-msgid "Align selection to the center."
+msgid "Align selection to the center"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:780
@@ -8551,8 +8534,8 @@ msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:780
 msgid ""
-"Align selected text alignment points; usage: [[vertical | horizontal] [last|"
-"first|biggest|smallest|page|drawing|selection]?"
+"Align selected text anchors; usage: [[vertical | horizontal] [last|first|"
+"biggest|smallest|page|drawing|selection]?"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:782
@@ -8644,17 +8627,17 @@ msgid "Distribute text objects"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:792
-msgid "Distribute text alignment points; usage [vertical | horizontal]"
+msgid "Distribute text anchors; usage [vertical | horizontal]"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:793
 #: ../share/ui/align-and-distribute.ui:746
-msgid "Distribute text alignment points horizontally"
+msgid "Distribute text anchors horizontally"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:794
 #: ../share/ui/align-and-distribute.ui:831
-msgid "Distribute text alignment points vertically"
+msgid "Distribute text anchors vertically"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:796
@@ -8725,7 +8708,7 @@ msgstr ""
 #: ../src/actions/actions-object-align.cpp:804
 msgid ""
 "Remove overlaps between objects: requires two comma separated numbers "
-"(horizontal and vertical gaps)."
+"(horizontal and vertical gaps)"
 msgstr ""
 
 #: ../src/actions/actions-object-align.cpp:811
@@ -8784,15 +8767,15 @@ msgid "Flip vertically"
 msgstr ""
 
 #: ../src/actions/actions-object.cpp:275
-msgid "Removed path path effect"
+msgid "Remove Live Path Effect"
 msgstr ""
 
 #: ../src/actions/actions-object.cpp:278
 #: ../src/ui/dialog/livepatheffect-editor.cpp:82
 #: ../src/ui/dialog/livepatheffect-editor.cpp:468
 #: ../src/ui/dialog/livepatheffect-editor.cpp:476
-#: ../src/ui/dialog/livepatheffect-editor.cpp:1231
-#: ../src/ui/dialog/livepatheffect-editor.cpp:1240
+#: ../src/ui/dialog/livepatheffect-editor.cpp:1228
+#: ../src/ui/dialog/livepatheffect-editor.cpp:1237
 msgid "Create and apply path effect"
 msgstr ""
 
@@ -8833,11 +8816,11 @@ msgid "Convert shapes to paths"
 msgstr ""
 
 #: ../src/actions/actions-object.cpp:309
-msgid "Add corners"
+msgid "Add Corners LPE"
 msgstr ""
 
 #: ../src/actions/actions-object.cpp:309
-msgid "Add corners LPE to path"
+msgid "Add Corners Live Path Effect to path"
 msgstr ""
 
 #: ../src/actions/actions-object.cpp:310
@@ -9269,7 +9252,7 @@ msgid "Move Objects with Page"
 msgstr ""
 
 #: ../src/actions/actions-pages.cpp:95
-msgid "Move overlapping objects as the page is moved."
+msgid "Move overlapping objects as the page is moved"
 msgstr ""
 
 #: ../src/actions/actions-pages.cpp:96 ../share/ui/toolbar-page.ui:154
@@ -9289,11 +9272,11 @@ msgid "Move page forwards in the page order"
 msgstr ""
 
 #: ../src/actions/actions-pages.cpp:125
-msgid "Create a new page and center window."
+msgid "Create a new page and center view on it"
 msgstr ""
 
 #: ../src/actions/actions-pages.cpp:126
-msgid "Delete the selected page and center on next page"
+msgid "Delete the selected page and center view on next page"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:226 ../src/path/path-boolop.cpp:60
@@ -9379,7 +9362,7 @@ msgid "Fracture"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:235
-msgid "Fracture a shape into its visible segments."
+msgid "Fracture one or more overlapping objects into all possible segments"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:236
@@ -9388,7 +9371,7 @@ msgid "Flatten"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:236
-msgid "Flatten a shape into its visible parts."
+msgid "Flatten one or more overlapping objects into their visible parts"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:237 ../share/ui/menus.ui:1076
@@ -9478,7 +9461,7 @@ msgid "Shape Builder: Add"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:248
-msgid "Add shapes when clicking and dragging."
+msgid "Add shapes by clicking or clicking and dragging"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:249
@@ -9486,7 +9469,7 @@ msgid "Shape Builder: Delete"
 msgstr ""
 
 #: ../src/actions/actions-paths.cpp:249
-msgid "Delete shapes when clicking and dragging."
+msgid "Remove shapes by clicking or clicking and dragging"
 msgstr ""
 
 #: ../src/actions/actions-selection-object.cpp:41
@@ -9772,7 +9755,7 @@ msgid "Set selection backup"
 msgstr ""
 
 #: ../src/actions/actions-selection.cpp:251
-msgid "Set backup of selection, items and nodes"
+msgid "Set backup of current selection of objects or nodes"
 msgstr ""
 
 #: ../src/actions/actions-selection.cpp:252
@@ -9780,7 +9763,7 @@ msgid "Restore selection backup"
 msgstr ""
 
 #: ../src/actions/actions-selection.cpp:252
-msgid "Restore backup of selection, items and nodes"
+msgid "Restore backup of stored selection of objects or nodes"
 msgstr ""
 
 #: ../src/actions/actions-selection.cpp:253
@@ -9788,7 +9771,7 @@ msgid "Empty selection backup"
 msgstr ""
 
 #: ../src/actions/actions-selection.cpp:253
-msgid "Empty backup of selection, items and nodes"
+msgid "Empty stored backup of selection of objects or nodes"
 msgstr ""
 
 #: ../src/actions/actions-text.cpp:67
@@ -9862,7 +9845,7 @@ msgid "Modify selected path points (nodes) directly."
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:96
-msgid "Construct shapes with the interactive boolean tool."
+msgid "Construct shapes with the interactive Boolean tool."
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:97
@@ -9989,7 +9972,7 @@ msgid "Create and manage pages."
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:362
-msgid "Select Tool"
+msgid "Selector Tool"
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:362
@@ -10009,7 +9992,7 @@ msgid "Shape Builder Tool"
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:364
-msgid "Build shapes with the boolean tools"
+msgid "Build shapes with the Boolean tool"
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:366
@@ -10189,11 +10172,11 @@ msgid "Create and edit document pages"
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:393
-msgid "Toggle Select"
+msgid "Toggle Selector Tool"
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:393
-msgid "Toggle between Select tool and last used tool"
+msgid "Toggle between Selector tool and last used tool"
 msgstr ""
 
 #: ../src/actions/actions-tools.cpp:394
@@ -10205,7 +10188,8 @@ msgid "Toggle between Dropper tool and last used tool"
 msgstr ""
 
 #: ../src/actions/actions-transform.cpp:114
-msgid "Reapply Transform"
+#: ../src/actions/actions-transform.cpp:128
+msgid "Reapply Transforms"
 msgstr ""
 
 #: ../src/actions/actions-transform.cpp:121
@@ -10267,10 +10251,6 @@ msgstr ""
 
 #: ../src/actions/actions-transform.cpp:127
 msgid "Remove any transforms from selected objects"
-msgstr ""
-
-#: ../src/actions/actions-transform.cpp:128
-msgid "Reapply Transforms"
 msgstr ""
 
 #: ../src/actions/actions-transform.cpp:128
@@ -10564,7 +10544,7 @@ msgid "Window Query Geometry"
 msgstr ""
 
 #: ../src/actions/actions-window.cpp:111
-msgid "Query active window geometry"
+msgid "Query the active window's location and size"
 msgstr ""
 
 #: ../src/actions/actions-window.cpp:112
@@ -10572,7 +10552,7 @@ msgid "Window Set Geometry"
 msgstr ""
 
 #: ../src/actions/actions-window.cpp:112
-msgid "Set active window geometry (X, Y, Width, Height)"
+msgid "Set the active window's location and size (x, y, width, height)"
 msgstr ""
 
 #: ../src/actions/actions-window.cpp:113
@@ -11674,14 +11654,16 @@ msgstr ""
 
 #: ../src/extension/internal/cairo-ps-out.cpp:299
 #: ../src/extension/internal/cairo-ps-out.cpp:343
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:242
-msgid "Use the Export Dialog to set page size and choose objects to export."
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:241
+msgid ""
+"When exporting from the Export dialog, you can choose objects to export. "
+"'Save a copy' / 'Save as' will export all pages."
 msgstr ""
 
 #: ../src/extension/internal/cairo-ps-out.cpp:301
 #: ../src/extension/internal/cairo-ps-out.cpp:345
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:244
-msgid "Use the toolbar of the Page Tool to set margin and bleed options."
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:243
+msgid "The page bleed can be set with the Page tool."
 msgstr ""
 
 #: ../src/extension/internal/cairo-ps-out.cpp:306
@@ -11722,21 +11704,23 @@ msgid "PDF 1.4"
 msgstr ""
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:234
-msgid "Drawing size:"
+msgid "Rounding compensation:"
 msgstr ""
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:235
 msgid ""
-"Whether the exported objects should maintain their relative sizes (compared "
-"to the page size) or the absolute size in real-world units."
+"Exporting to PDF rounds the document size to the next whole number in pt "
+"units. Compensation may stretch the drawing slightly (up to 0.35mm for width "
+"and/or height). When not compensating, object sizes will be preserved "
+"strictly, but this can sometimes cause white gaps along the page margins."
+msgstr ""
+
+#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:237
+msgid "Compensate for rounding (recommended)"
 msgstr ""
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:238
-msgid "Preserve size relative to page"
-msgstr ""
-
-#: ../src/extension/internal/cairo-renderer-pdf-out.cpp:239
-msgid "Preserve size in absolute units"
+msgid "Do not compensate"
 msgstr ""
 
 #: ../src/extension/internal/cdr-input.cpp:104
@@ -12219,9 +12203,7 @@ msgstr ""
 #: ../src/ui/dialog/inkscape-preferences.cpp:1999
 #: ../src/ui/dialog/inkscape-preferences.cpp:2047
 #: ../src/ui/widget/filter-effect-chooser.cpp:25
-#: ../share/ui/display-popup.glade:54 ../share/ui/extension-pdfinput.glade:75
-#: ../share/ui/extension-pdfinput.glade:76
-#: ../share/ui/extension-pdfinput.glade:77 ../share/ui/menus.ui:482
+#: ../share/ui/display-popup.glade:54 ../share/ui/menus.ui:482
 msgid "Normal"
 msgstr ""
 
@@ -12902,6 +12884,7 @@ msgid "Hue distribution (°)"
 msgstr ""
 
 #: ../src/extension/internal/filter/color.h:1550
+#: ../src/ui/dialog/document-resources.cpp:888
 #: ../share/ui/dialog-document-resources.glade:55
 #: ../share/ui/dialog-trace.glade:294 ../share/ui/dialog-trace.glade:627
 #: ../share/extensions/svgcalendar.inx:28
@@ -13982,23 +13965,20 @@ msgid "very fine"
 msgstr ""
 
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:356
-#: ../share/ui/extension-pdfinput.glade:136
-msgid "Draw to Shapes"
+msgid "Convert to paths"
 msgstr ""
 
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:359
-#: ../share/ui/extension-pdfinput.glade:144
-msgid "Keep Original Font Name"
+msgid "Keep original font name"
 msgstr ""
 
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:362
-#: ../share/ui/extension-pdfinput.glade:140
-msgid "Use Substitute Font"
+msgid "Replace by closest-named installed font"
 msgstr ""
 
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:365
-#: ../share/ui/extension-pdfinput.glade:148
-msgid "Delete Text"
+#: ../src/ui/tools/text-tool.cpp:215
+msgid "Delete text"
 msgstr ""
 
 #: ../src/extension/internal/pdfinput/pdf-input.cpp:821
@@ -14241,7 +14221,7 @@ msgid "Other Sizes"
 msgstr ""
 
 #: ../src/extension/internal/template-other.cpp:38
-msgid "General sizes for miscellaneous"
+msgid "Miscellaneous document formats"
 msgstr ""
 
 #: ../src/extension/internal/template-other.cpp:39
@@ -14272,7 +14252,7 @@ msgid "Paper Sizes"
 msgstr ""
 
 #: ../src/extension/internal/template-paper.cpp:46
-msgid "General sizes for paper"
+msgid "Standard paper document formats"
 msgstr ""
 
 #: ../src/extension/internal/template-paper.cpp:50
@@ -14303,7 +14283,7 @@ msgid "Screen Sizes"
 msgstr ""
 
 #: ../src/extension/internal/template-screen.cpp:29
-msgid "General sizes for screens"
+msgid "Document formats using common screen resolutions"
 msgstr ""
 
 #: ../src/extension/internal/template-social.cpp:28
@@ -14311,7 +14291,7 @@ msgid "Social Sizes"
 msgstr ""
 
 #: ../src/extension/internal/template-social.cpp:29
-msgid "General sizes for social media"
+msgid "Document formats for social media"
 msgstr ""
 
 #: ../src/extension/internal/template-social.cpp:30
@@ -14323,7 +14303,7 @@ msgid "Video Sizes"
 msgstr ""
 
 #: ../src/extension/internal/template-video.cpp:29
-msgid "General sizes for videos"
+msgid "Document formats using common video resolutions"
 msgstr ""
 
 #: ../src/extension/internal/template-video.cpp:30
@@ -14935,6 +14915,7 @@ msgstr ""
 #: ../src/ui/dialog/save-template-dialog.cpp:46
 #: ../src/ui/dialog/selectorsdialog.cpp:964
 #: ../share/ui/attribute-edit-component.glade:293
+#: ../share/ui/toolbar-booleans.ui:87
 msgid "Cancel"
 msgstr ""
 
@@ -16252,7 +16233,6 @@ msgid "Helper size:"
 msgstr ""
 
 #: ../src/live_effects/lpe-bspline.cpp:32
-#: ../src/live_effects/lpe-simplify.cpp:31
 msgid "Helper size"
 msgstr ""
 
@@ -18431,7 +18411,7 @@ msgid "Growth of distance between hatches."
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:223
-msgid "Smooth: Down ←"
+msgid "Smooth: Bottom ←"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:223
@@ -18441,7 +18421,7 @@ msgid ""
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:224
-msgid "Smooth: Down →"
+msgid "Smooth: Bottom →"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:224
@@ -18471,11 +18451,13 @@ msgid ""
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:227
-msgid "↑↓ Random: Down"
+msgid "↑↓ Random: Bottom"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:227
-msgid "Randomly moves 'bottom' half-turns to produce magnitude variations."
+msgid ""
+"Randomly moves 'bottom' half-turns up and down to produce magnitude "
+"variations."
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:228
@@ -18483,11 +18465,12 @@ msgid "↑↓ Random: Top"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:228
-msgid "Randomly moves 'top' half-turns to produce magnitude variations."
+msgid ""
+"Randomly moves 'top' half-turns up and down to produce magnitude variations."
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:229
-msgid "←→ Random: Down"
+msgid "←→ Random: Bottom"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:229
@@ -18507,11 +18490,11 @@ msgid ""
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:231
-msgid "Rand. Smooth: Down"
+msgid "Rand. Smooth: Bottom"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:231
-msgid "Randomness of 'bottom' half-turns smoothness"
+msgid "Randomness of 'bottom' half-turns' smoothness"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:232
@@ -18519,11 +18502,11 @@ msgid "Rand. Smooth: Top"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:232
-msgid "Randomness of 'top' half-turns smoothness"
+msgid "Randomness of 'top' half-turns' smoothness"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:234
-msgid "Stroke width thickness"
+msgid "Vary stroke width"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:234
@@ -18539,7 +18522,7 @@ msgid "Add a global bending to the hatches (slower)"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:236
-msgid "↓ Thickness"
+msgid "↓ Width"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:236
@@ -18547,7 +18530,7 @@ msgid "Width at 'bottom' half-turns"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:237
-msgid "↑ Thickness"
+msgid "↑ Width"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:237
@@ -18555,19 +18538,19 @@ msgid "Width at 'top' half-turns"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:239
-msgid "← Thickness"
+msgid "← Width"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:239
-msgid "Width from 'top' to 'bottom'"
+msgid "Width of line from 'top' to 'bottom'"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:240
-msgid "→ Thickness"
+msgid "→ Width"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:240
-msgid "Width from 'bottom' to 'top'"
+msgid "Width of line from 'bottom' to 'top'"
 msgstr ""
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:242
@@ -18625,13 +18608,13 @@ msgstr ""
 #: ../src/live_effects/lpe-roughen.cpp:46
 msgid ""
 "Add nodes to path evenly. Choose <b>Segment size</b> method from the "
-"dropdown to use this subdivision method"
+"dropdown to use this subdivision method."
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:47
 msgid ""
-"Add nodes betwen existing nodes. Choose <b>Number of segments</b> method "
-"from the dropdown to use this subdivision method"
+"Add nodes between existing nodes. Choose <b>Number of segments</b> method "
+"from the dropdown to use this subdivision method."
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:48
@@ -18639,7 +18622,7 @@ msgid "Displace ←→"
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:48
-msgid "Maximal displacement in X direction"
+msgid "Maximal displacement in x direction"
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:49
@@ -18647,7 +18630,7 @@ msgid "Displace ↑↓"
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:49
-msgid "Maximal displacement in Y direction"
+msgid "Maximal displacement in y direction"
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:50
@@ -18663,11 +18646,13 @@ msgid "Options for handle direction"
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:52
-msgid "Apply Displacement"
+msgid "Apply displacement"
 msgstr ""
 
-#: ../src/live_effects/lpe-roughen.cpp:52 ../share/extensions/jitternodes.inx:9
-msgid "Shift nodes"
+#: ../src/live_effects/lpe-roughen.cpp:52
+msgid ""
+"Uncheck to use this LPE for just adding nodes, without roughening; useful "
+"for further interactive processing."
 msgstr ""
 
 #: ../src/live_effects/lpe-roughen.cpp:53
@@ -18838,7 +18823,7 @@ msgid ""
 msgstr ""
 
 #: ../src/live_effects/lpe-simplify.cpp:28
-msgid "Drag slider to set how much simplification should happen"
+msgid "Drag slider to set the amount of simplification"
 msgstr ""
 
 #: ../src/live_effects/lpe-simplify.cpp:29
@@ -18846,7 +18831,12 @@ msgid "Max degree difference on handles to perform smoothing"
 msgstr ""
 
 #: ../src/live_effects/lpe-simplify.cpp:31
-msgid "Preview size"
+#: ../src/ui/dialog/inkscape-preferences.cpp:1655
+msgid "Handle size"
+msgstr ""
+
+#: ../src/live_effects/lpe-simplify.cpp:31
+msgid "Size of the handles in the effect visualization (not editable)"
 msgstr ""
 
 #: ../src/live_effects/lpe-simplify.cpp:32
@@ -18854,7 +18844,8 @@ msgid "Paths separately"
 msgstr ""
 
 #: ../src/live_effects/lpe-simplify.cpp:32
-msgid "Simplifying paths (separately)"
+msgid ""
+"When there are multiple paths in the selection, simplify each one separately."
 msgstr ""
 
 #: ../src/live_effects/lpe-simplify.cpp:34
@@ -18878,7 +18869,7 @@ msgid "Average distance each stroke is away from the original path"
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:36
-msgid "Max - Stroke length"
+msgid "Stroke length max."
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:37
@@ -18894,7 +18885,7 @@ msgid "Random variation of stroke length (relative to maximum length)"
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:40
-msgid "Max - Overlap"
+msgid "Overlap max."
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:41
@@ -18920,7 +18911,7 @@ msgid ""
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:46
-msgid "Displacment Size"
+msgid "Displacement size"
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:47
@@ -18928,7 +18919,7 @@ msgid "Maximum tremble magnitude"
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:48
-msgid "Displacment Details"
+msgid "Displacement details"
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:49
@@ -18936,7 +18927,7 @@ msgid "Average number of tremble periods in a stroke"
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:52
-msgid "Add Extra lines"
+msgid "Add extra lines"
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:53
@@ -18950,7 +18941,7 @@ msgid ""
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:56
-msgid "Max - Length"
+msgid "Length max."
 msgstr ""
 
 #: ../src/live_effects/lpe-sketch.cpp:57
@@ -19075,11 +19066,11 @@ msgid "Center"
 msgstr ""
 
 #: ../src/live_effects/lpe-taperstroke.cpp:108
-msgid "Control Sub-path:"
+msgid "Select subpath:"
 msgstr ""
 
 #: ../src/live_effects/lpe-taperstroke.cpp:108
-msgid "This allows you to control which sub-path are you controlling "
+msgid "Select the subpath you want to modify"
 msgstr ""
 
 #: ../src/live_effects/lpe-taperstroke.cpp:109 ../share/extensions/edge3d.inx:8
@@ -20065,11 +20056,6 @@ msgstr ""
 msgid "inset"
 msgstr ""
 
-#: ../src/object/sp-page.cpp:563
-#, c-format
-msgid "%d"
-msgstr ""
-
 #: ../src/object/sp-page.cpp:598
 #, c-format
 msgid "Page %d"
@@ -20265,19 +20251,19 @@ msgstr ""
 msgid "<b>No objects</b> to convert to path in the selection."
 msgstr ""
 
-#: ../src/path-chemistry.cpp:628
+#: ../src/path-chemistry.cpp:634
 msgid "Select <b>path(s)</b> to reverse."
 msgstr ""
 
-#: ../src/path-chemistry.cpp:636
+#: ../src/path-chemistry.cpp:642
 msgid "Reversing paths..."
 msgstr ""
 
-#: ../src/path-chemistry.cpp:670
+#: ../src/path-chemistry.cpp:676
 msgid "Reverse path"
 msgstr ""
 
-#: ../src/path-chemistry.cpp:673
+#: ../src/path-chemistry.cpp:679
 msgid "<b>No paths</b> to reverse in the selection."
 msgstr ""
 
@@ -22550,7 +22536,7 @@ msgid "_Messages"
 msgstr ""
 
 #: ../src/ui/dialog/dialog-data.cpp:46
-msgid "_Object attributes"
+msgid "_Object Attributes"
 msgstr ""
 
 #: ../src/ui/dialog/dialog-data.cpp:47
@@ -22790,7 +22776,7 @@ msgid "Toggle anti-aliasing"
 msgstr ""
 
 #: ../src/ui/dialog/document-properties.cpp:409
-msgid "Toggle clipping to page mode"
+msgid "Toggle clip to page mode"
 msgstr ""
 
 #: ../src/ui/dialog/document-properties.cpp:412
@@ -23091,11 +23077,8 @@ msgid "Document"
 msgstr ""
 
 #: ../src/ui/dialog/document-resources.cpp:879
+msgctxt "Adjective for Metadata status"
 msgid "Present"
-msgstr ""
-
-#: ../src/ui/dialog/document-resources.cpp:888
-msgid "Colors used"
 msgstr ""
 
 #: ../src/ui/dialog/document-resources.cpp:889
@@ -23108,7 +23091,9 @@ msgid "Swatches"
 msgstr ""
 
 #: ../src/ui/dialog/document-resources.cpp:891
-msgid "Fonts used"
+#: ../share/ui/dialog-document-resources.glade:73
+#: ../share/extensions/svgcalendar.inx:37
+msgid "Fonts"
 msgstr ""
 
 #: ../src/ui/dialog/document-resources.cpp:892
@@ -23174,15 +23159,15 @@ msgid "External URIs"
 msgstr ""
 
 #: ../src/ui/dialog/document-resources.cpp:959
-msgid "style "
+msgid "Style "
 msgstr ""
 
 #: ../src/ui/dialog/document-resources.cpp:1166
-msgid "Edited object title."
+msgid "Edit object title"
 msgstr ""
 
-#: ../src/ui/dialog/export-batch.cpp:280 ../src/ui/dialog/export-single.cpp:122
-msgid "Color used to fill background"
+#: ../src/ui/dialog/export-batch.cpp:280
+msgid "Color used to fill the image background"
 msgstr ""
 
 #: ../src/ui/dialog/export-batch.cpp:388
@@ -23220,6 +23205,10 @@ msgstr ""
 
 #: ../src/ui/dialog/export-batch.cpp:681 ../src/ui/dialog/export-single.cpp:717
 msgid "Select a filename for exporting"
+msgstr ""
+
+#: ../src/ui/dialog/export-single.cpp:122
+msgid "Color used to fill background"
 msgstr ""
 
 #: ../src/ui/dialog/export-single.cpp:613
@@ -25861,11 +25850,11 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1058
-msgid "Size of recently used font list:"
+msgid "Fonts in 'Recently used' collection:"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1059
-msgid "Default size of the recently used font list"
+msgid "Maximum number of fonts in the 'Recently used' font collection"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1069
@@ -26365,12 +26354,14 @@ msgid "Zoom percentage can be either by the physical units or by pixels."
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1638
-msgid "Use selected page as position origin"
+msgid "Origin always on current page"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1639
 msgid ""
-"Rulers and tools will use the page's position instead of the canvas position."
+"Rulers and tools will display position information relative to the current "
+"page, instead of the position on the canvas (corresponding to the first "
+"page's position)."
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1641
@@ -26401,10 +26392,6 @@ msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1652
 msgid "User Interface"
-msgstr ""
-
-#: ../src/ui/dialog/inkscape-preferences.cpp:1655
-msgid "Handle size"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1655
@@ -26628,7 +26615,7 @@ msgid "This preference fixes icon positions in menus."
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1864
-msgid "XML dialog"
+msgid "XML Editor"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1884
@@ -26636,7 +26623,7 @@ msgid "Color theme:"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1884
-msgid "Syntax coloring for XML dialog"
+msgid "Syntax coloring for XML Editor"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1911
@@ -26656,7 +26643,7 @@ msgid "XML tree:"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1915
-msgid "Use fixed-width font in XML dialog"
+msgid "Use fixed-width font in XML Editor"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1920
@@ -27594,7 +27581,7 @@ msgid "Select the topmost items only when in touch selection mode"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2512
-msgid "Select objects, strokes, and fills with zero opacity"
+msgid "Select transparent objects, strokes, and fills"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2515
@@ -27605,8 +27592,8 @@ msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2518
 msgid ""
-"Uncheck to make objects, strokes, and fills with zero opacity unselectable "
-"unless in outline mode"
+"Check to make objects, strokes, and fills which are completely transparent "
+"selectable even if not in outline mode"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2521
@@ -28074,13 +28061,13 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2711
-msgid "Convert to paths just unlinks clones (keep LPE, and shapes)"
+msgid "'Object to Path' only unlinks (keeps LPEs, shapes)"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2713
 msgid ""
-"The following path operations just unlink clones on convert to paths action "
-"(keep LPE, and shapes)"
+"'Object to path' only unlinks clones when they are converted to paths, but "
+"preserves any LPEs and shapes within the clones."
 msgstr ""
 
 #. TRANSLATORS: Heading for the Inkscape Preferences "Clones" Page
@@ -28099,7 +28086,7 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2721
-msgid "When ungroup, clip/mask is preserved in children"
+msgid "When ungrouping, clips/masks are preserved in children"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2723
@@ -28185,14 +28172,14 @@ msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2769
 msgid ""
-"Object style= attribute will be set to the computed style, preserving the "
-"object's appearance as in previous Inkscape versions"
+"The object's 'style' attribute will be set to the computed style, preserving "
+"the object's appearance as in previous Inkscape versions"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2773
 msgid ""
-"Object style= and class= values will be copied verbatim and may be removed "
-"by 'paste style'"
+"The object's 'style' and 'class' values will be copied verbatim, and will "
+"replace those of the target object when using 'Paste style'"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2775
@@ -28218,8 +28205,12 @@ msgid "Show experimental effects"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2787
-#: ../src/ui/dialog/inkscape-preferences.cpp:2789
 msgid "Show deprecated LPE gallery"
+msgstr ""
+
+#: ../src/ui/dialog/inkscape-preferences.cpp:2789
+msgid ""
+"Adds a button to the LPE dialog that opens the old-style LPE selection dialog"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2790
@@ -28888,14 +28879,17 @@ msgid "Spellcheck"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3643
-msgid "Resources shared path:"
+msgid "Shared default resources folder:"
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3644
 msgid ""
-"Optional shared folder to load resources, you need to create inside any "
-"Inkscape resource folder you want to use (extensions,fonts,icons,keys,paint,"
-"palletes,symbols,templates,themes,ui"
+"A folder structured like a user's Inkscape preferences directory. This makes "
+"it possible to share a set of resources, such as extensions, fonts, icon "
+"sets, keyboard shortcuts, patterns/hatches, palettes, symbols, templates, "
+"themes and user interface definition files, between multiple users who have "
+"access to that folder (on the same computer or in the network). Requires a "
+"restart of Inkscape to work when changed."
 msgstr ""
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3645
@@ -29284,13 +29278,13 @@ msgid "Nothing found! Please try again with different search terms."
 msgstr ""
 
 #: ../src/ui/dialog/livepatheffect-editor.cpp:139
-#: ../src/ui/dialog/livepatheffect-editor.cpp:902
+#: ../src/ui/dialog/livepatheffect-editor.cpp:899
 #: ../share/ui/dialog-livepatheffect-item.glade:63
 msgid "Set Favorite"
 msgstr ""
 
 #: ../src/ui/dialog/livepatheffect-editor.cpp:142
-#: ../src/ui/dialog/livepatheffect-editor.cpp:900
+#: ../src/ui/dialog/livepatheffect-editor.cpp:897
 msgid "Unset Favorite"
 msgstr ""
 
@@ -29324,54 +29318,48 @@ msgid "Experimental"
 msgstr ""
 
 #: ../src/ui/dialog/livepatheffect-editor.cpp:494
-msgid "Texts does not support live path effects"
+msgid "Text objects do not support Live Path Effects"
 msgstr ""
 
 #: ../src/ui/dialog/livepatheffect-editor.cpp:530
-#: ../src/ui/dialog/livepatheffect-editor.cpp:587
+#: ../src/ui/dialog/livepatheffect-editor.cpp:584
 msgid "Select a path, shape, clone or group"
 msgstr ""
 
 #: ../src/ui/dialog/livepatheffect-editor.cpp:556
-msgid "Select "
+msgid "Select %1 with %2 LPE"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:558
-msgid " with "
-msgstr ""
-
-#: ../src/ui/dialog/livepatheffect-editor.cpp:590
+#: ../src/ui/dialog/livepatheffect-editor.cpp:587
 msgid "Select only one path, shape, clone or group"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:657
+#: ../src/ui/dialog/livepatheffect-editor.cpp:654
 msgid "<small>Without parameters</small>"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:818
-#: ../share/ui/dialog-livepatheffect-item.glade:344
-msgid "Reorder this Live Path Effect"
+#: ../src/ui/dialog/livepatheffect-editor.cpp:815
+msgid "Drag to change position in path effects stack"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:872
-msgid "Duplicated current path effect"
+#: ../src/ui/dialog/livepatheffect-editor.cpp:869
+msgid "Duplicate path effect"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:877
-msgid "Up current path effect"
+#: ../src/ui/dialog/livepatheffect-editor.cpp:874
+msgid "Move path effect up"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:882
-msgid "Down current path effect"
+#: ../src/ui/dialog/livepatheffect-editor.cpp:879
+msgid "Move path effect down"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:1099
-msgid "Flatten some live path effects"
+#: ../src/ui/dialog/livepatheffect-editor.cpp:1096
+msgid "Flatten path effect(s)"
 msgstr ""
 
-#: ../src/ui/dialog/livepatheffect-editor.cpp:1117
-#: ../src/ui/dialog/object-attributes.cpp:223
-msgid "Removed live path effect"
+#: ../src/ui/dialog/livepatheffect-editor.cpp:1114
+msgid "Remove path effect"
 msgstr ""
 
 #: ../src/ui/dialog/lpe-fillet-chamfer-properties.cpp:42
@@ -29500,7 +29488,11 @@ msgid "Item's fill, stroke and opacity"
 msgstr ""
 
 #: ../src/ui/dialog/object-attributes.cpp:134
-msgid "Multiple items selected"
+msgid "Multiple objects selected"
+msgstr ""
+
+#: ../src/ui/dialog/object-attributes.cpp:223
+msgid "Removed live path effect"
 msgstr ""
 
 #: ../src/ui/dialog/object-attributes.cpp:295
@@ -29510,7 +29502,7 @@ msgid "Change object attribute"
 msgstr ""
 
 #: ../src/ui/dialog/object-attributes.cpp:576
-msgid "Changed arc type"
+msgid "Change arc type"
 msgstr ""
 
 #: ../src/ui/dialog/object-properties.cpp:54
@@ -30509,7 +30501,7 @@ msgid "Drag to reorder nodes"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:129
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Drag XML subtree"
 msgstr ""
 
@@ -30528,42 +30520,42 @@ msgid "Vertical panel layout"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:705
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Create new element node"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:720
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Create new text node"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:738
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Duplicate node"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:769
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Delete node"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:793
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Raise node"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:814
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Lower node"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:848
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Indent node"
 msgstr ""
 
 #: ../src/ui/dialog/xml-tree.cpp:873
-msgctxt "Undo History / XML dialog"
+msgctxt "Undo History / XML Editor"
 msgid "Unindent node"
 msgstr ""
 
@@ -30668,14 +30660,16 @@ msgstr ""
 
 #: ../src/ui/knot/knot-holder.cpp:457
 msgid ""
-"<b>Resize</b> the blur in the X direction; set to Y with <b>Ctrl</b>; "
-"constrain Y with <b>Shift</b>+<b>Ctrl</b>"
+"<b>Drag</b> to <b>adjust</b> blur in x direction; <b>Ctrl</b>+<b>Drag</b> "
+"makes x equal to y; <b>Shift</b>+<b>Ctrl</b>+<b>Drag</b> scales blur "
+"proportionately "
 msgstr ""
 
 #: ../src/ui/knot/knot-holder.cpp:459
 msgid ""
-"<b>Resize</b> the blur in the Y direction; set to X with <b>Ctrl</b>; "
-"constrain X with <b>Shift</b>+<b>Ctrl</b>"
+"<b>Drag</b> to <b>adjust</b> blur in y direction; <b>Ctrl</b>+<b>Drag</b> "
+"makes y equal to x; <b>Shift</b>+<b>Ctrl</b>+<b>Drag</b> scales blur "
+"proportionately "
 msgstr ""
 
 #: ../src/ui/knot/knot.cpp:309
@@ -30829,11 +30823,11 @@ msgid "Disable snapping when transforming object."
 msgstr ""
 
 #: ../src/ui/modifiers.cpp:56
-msgid "Quick change"
+msgid "Switch mode"
 msgstr ""
 
 #: ../src/ui/modifiers.cpp:56
-msgid "Change shape builder mode via modifier key."
+msgid "Change shape builder mode temporarily by holding a modifier key."
 msgstr ""
 
 #: ../src/ui/modifiers.cpp:58
@@ -31199,13 +31193,13 @@ msgid "Auto-smooth node handle"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:606
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid "node control handle"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:612
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid ""
 "<b>Shift+Ctrl+Alt</b>: preserve length and snap rotation angle to %g° "
 "increments, and rotate both handles"
@@ -31213,7 +31207,7 @@ msgstr ""
 
 #: ../src/ui/tool/node.cpp:619
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid ""
 "<b>Ctrl+Alt</b>: preserve length and snap rotation angle to %g° increments"
 msgstr ""
@@ -31258,23 +31252,23 @@ msgid "<b>Shift</b>: move handle"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:669
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid "Shift, Ctrl, Alt"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:673
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid "Shift, Ctrl"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:677
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid "Ctrl, Alt"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:682
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid ""
 "<b>BSpline node handle</b> (%.3g power): Shift-drag to move, double-click to "
 "reset. (more: %s)"
@@ -31282,7 +31276,7 @@ msgstr ""
 
 #: ../src/ui/tool/node.cpp:689
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid ""
 "<b>%s</b>: drag to shape the path, hover to lock, Shift+S to make smooth, "
 "Shift+Y to make symmetric. (more: %s)"
@@ -31290,7 +31284,7 @@ msgstr ""
 
 #: ../src/ui/tool/node.cpp:699
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid ""
 "<b>%s</b>: drag to shape the path, hover to lock, Shift+Y to make symmetric. "
 "(more: %s)"
@@ -31298,7 +31292,7 @@ msgstr ""
 
 #: ../src/ui/tool/node.cpp:708
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid ""
 "<b>%s</b>: drag to make smooth, hover to lock, Shift+Y to make symmetric. "
 "(more: %s)"
@@ -31306,18 +31300,18 @@ msgstr ""
 
 #: ../src/ui/tool/node.cpp:717
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid "<b>%s</b>: drag to shape the path. (more: %s)"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:724
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid "<b>unknown node handle</b>"
 msgstr ""
 
 #: ../src/ui/tool/node.cpp:747
 #, c-format
-msgctxt "Path handle tip"
+msgctxt "Status line hint"
 msgid "Move handle by %s, %s; angle %.2f°, length %s"
 msgstr ""
 
@@ -31648,7 +31642,7 @@ msgid "Arc: Change start/end"
 msgstr ""
 
 #: ../src/ui/toolbar/arc-toolbar.cpp:384
-msgid "Arc: Changed arc type"
+msgid "Arc: Change arc type"
 msgstr ""
 
 #: ../src/ui/toolbar/arc-toolbar.cpp:459 ../src/ui/toolbar/arc-toolbar.cpp:473
@@ -32773,12 +32767,12 @@ msgid "Relabel Page"
 msgstr ""
 
 #: ../src/ui/toolbar/page-toolbar.cpp:252
-msgid "Edit Page Bleed"
+msgid "Edit page bleed"
 msgstr ""
 
 #: ../src/ui/toolbar/page-toolbar.cpp:269
 #: ../src/ui/toolbar/page-toolbar.cpp:298
-msgid "Edit Page Margin"
+msgid "Edit page margin"
 msgstr ""
 
 #: ../src/ui/toolbar/page-toolbar.cpp:440
@@ -33628,8 +33622,8 @@ msgstr ""
 msgid "Select Font Collections"
 msgstr ""
 
-#: ../src/ui/toolbar/text-toolbar.cpp:269 ../share/ui/dialog-text-edit.glade:50
-msgid "Open the Font Collections Manager dialogue"
+#: ../src/ui/toolbar/text-toolbar.cpp:269
+msgid "Open the Font Collections Manager dialog"
 msgstr ""
 
 #: ../src/ui/toolbar/text-toolbar.cpp:270 ../share/ui/dialog-text-edit.glade:46
@@ -33637,7 +33631,7 @@ msgid "Open Collections Editor"
 msgstr ""
 
 #: ../src/ui/toolbar/text-toolbar.cpp:281
-msgid "Reset selected collections"
+msgid "Show all available fonts"
 msgstr ""
 
 #: ../src/ui/toolbar/text-toolbar.cpp:316
@@ -34174,11 +34168,11 @@ msgid "Create ellipse"
 msgstr ""
 
 #: ../src/ui/tools/booleans-tool.cpp:81
-msgid "You must select some objects to use the shape builder tool."
+msgid "You must select some objects to use the Shape Builder tool."
 msgstr ""
 
 #: ../src/ui/tools/booleans-tool.cpp:83
-msgid "The shape builder requires regular shapes to be selected."
+msgid "The Shape Builder requires regular shapes to be selected."
 msgstr ""
 
 #: ../src/ui/tools/box3d-tool.cpp:331 ../src/ui/tools/box3d-tool.cpp:337
@@ -34928,10 +34922,6 @@ msgstr ""
 
 #: ../src/ui/tools/star-tool.cpp:392
 msgid "Create star"
-msgstr ""
-
-#: ../src/ui/tools/text-tool.cpp:215
-msgid "Delete text"
 msgstr ""
 
 #: ../src/ui/tools/text-tool.cpp:333
@@ -36142,7 +36132,6 @@ msgid "O:"
 msgstr ""
 
 #: ../src/ui/widget/selected-style.cpp:164
-#: ../share/ui/extension-pdfinput.glade:67
 msgid "N/A"
 msgstr ""
 
@@ -36833,33 +36822,45 @@ msgstr ""
 msgid "Open tool preferences"
 msgstr ""
 
+#. This symbolizes precision of 0 digits after the decimal separator.
 #: ../share/ui/attribute-edit-component.glade:99
+msgctxt "Precision"
 msgid "N"
 msgstr ""
 
+#. This symbolizes precision of 1 digit after the decimal separator. Please adjust to your language's number format (e.g. N,N).
 #: ../share/ui/attribute-edit-component.glade:107
+msgctxt "Precision"
 msgid "N.N"
 msgstr ""
 
+#. This symbolizes precision of 2 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NN).
 #: ../share/ui/attribute-edit-component.glade:115
+msgctxt "Precision"
 msgid "N.NN"
 msgstr ""
 
+#. This symbolizes precision of 3 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NNN).
 #: ../share/ui/attribute-edit-component.glade:123
+msgctxt "Precision"
 msgid "N.NNN"
 msgstr ""
 
+#. This symbolizes precision of 4 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NNNN).
 #: ../share/ui/attribute-edit-component.glade:131
+msgctxt "Precision"
 msgid "N.NNNN"
 msgstr ""
 
+#. This symbolizes precision of 5 digits after the decimal separator. Please adjust to your language's number format (e.g. N,NNNNN).
 #: ../share/ui/attribute-edit-component.glade:139
 #: ../share/ui/attribute-edit-component.glade:221
+msgctxt "Precision"
 msgid "N.NNNNN"
 msgstr ""
 
 #: ../share/ui/attribute-edit-component.glade:194
-msgid "Round selected numbers to N digits"
+msgid "Round selected numbers to n digits"
 msgstr ""
 
 #: ../share/ui/attribute-edit-component.glade:264
@@ -36911,7 +36912,7 @@ msgid "Ctrl+F"
 msgstr ""
 
 #: ../share/ui/completion-box.glade:61
-msgid "add item"
+msgid "Add item"
 msgstr ""
 
 #: ../share/ui/dialog-crash.glade:34
@@ -36932,15 +36933,6 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
-#: ../share/ui/dialog-document-resources.glade:49
-msgid "-"
-msgstr ""
-
-#: ../share/ui/dialog-document-resources.glade:73
-#: ../share/extensions/svgcalendar.inx:37
-msgid "Fonts"
-msgstr ""
-
 #: ../share/ui/dialog-document-resources.glade:109
 #: ../share/extensions/markers_strokepaint.inx:33
 #: ../share/extensions/merge_styles.inx:13
@@ -36952,7 +36944,9 @@ msgid "Edit label"
 msgstr ""
 
 #: ../share/ui/dialog-document-resources.glade:175
-msgid "Select item on canvas or XML dialog"
+msgid ""
+"Select this on canvas (if applicable) or in the XML dialog (e.g. a pattern "
+"in the 'defs' section)"
 msgstr ""
 
 #: ../share/ui/dialog-document-resources.glade:190
@@ -37113,10 +37107,6 @@ msgstr ""
 msgid "LPEName"
 msgstr ""
 
-#: ../share/ui/dialog-livepatheffect-effect.glade:268
-msgid "LPEUntranslatedName"
-msgstr ""
-
 #: ../share/ui/dialog-livepatheffect-item.glade:20
 msgid "Move up"
 msgstr ""
@@ -37126,25 +37116,25 @@ msgid "Move down"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:36
-msgid "Flatten, apply an effect to path"
+msgid ""
+"Apply this effect, and all effects above this one, to the path. This removes "
+"those effects from the stack."
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:45
-msgid ""
-"Set current status of widgets as default for next apply operation of this "
-"kind of LPE"
+msgid "Use the current values as custom defaults for this LPE"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:46
-msgid "Set as default"
+msgid "Set custom defaults"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:54
-msgid "Reset settings of this Life Path Effect to default values"
+msgid "Reset default settings of this LPE to Inkscape's default values"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:55
-msgid "Reset to defaults"
+msgid "Forget custom defaults"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:148
@@ -37152,7 +37142,7 @@ msgid "expander"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:246
-msgid "Toggle show/hide this Live Path Effect"
+msgid "Show/hide this Live Path Effect"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:274
@@ -37161,6 +37151,10 @@ msgstr ""
 
 #: ../share/ui/dialog-livepatheffect-item.glade:311
 msgid "Menu with options related to this Live Path Effect"
+msgstr ""
+
+#: ../share/ui/dialog-livepatheffect-item.glade:344
+msgid "Reorder this Live Path Effect"
 msgstr ""
 
 #: ../share/ui/dialog-livepatheffect.glade:49
@@ -37176,11 +37170,11 @@ msgid "Only show layers"
 msgstr ""
 
 #: ../share/ui/dialog-objects.glade:142
-msgid "Expand to selection"
+msgid "Expand to display selection"
 msgstr ""
 
 #: ../share/ui/dialog-objects.glade:254
-msgid "Objects and layers settings"
+msgid "Layers and Objects dialog settings"
 msgstr ""
 
 #: ../share/ui/dialog-paint-servers.glade:18
@@ -37246,24 +37240,26 @@ msgstr ""
 msgid "Search for symbol set"
 msgstr ""
 
-#: ../share/ui/dialog-symbols.glade:240
-msgid "name of the current symbol set"
-msgstr ""
-
 #: ../share/ui/dialog-symbols.glade:279
 msgid "Search for symbol"
 msgstr ""
 
 #: ../share/ui/dialog-symbols.glade:360
-msgid "Add symbol from the current document"
+msgid "Convert selected object(s) to symbol"
 msgstr ""
 
 #: ../share/ui/dialog-symbols.glade:375
-msgid "Remove symbol from the current document"
+msgid ""
+"Convert selected symbol to object, and all symbols of this type to clones of "
+"this object"
+msgstr ""
+
+#: ../share/ui/dialog-text-edit.glade:50
+msgid "Open the Font Collections Manager dialogue"
 msgstr ""
 
 #: ../share/ui/dialog-text-edit.glade:108
-msgid "Reset the font list and selected collections"
+msgid "Reset filters and show all available fonts"
 msgstr ""
 
 #: ../share/ui/dialog-text-edit.glade:183
@@ -37548,10 +37544,6 @@ msgstr ""
 msgid "Abort trace operation"
 msgstr ""
 
-#: ../share/ui/dialog-trace.glade:1537
-msgid "page0"
-msgstr ""
-
 #: ../share/ui/dialog-xml.glade:52
 msgid "Automatic layout"
 msgstr ""
@@ -37596,10 +37588,6 @@ msgstr ""
 msgid "Display mode:"
 msgstr ""
 
-#: ../share/ui/display-popup.glade:86
-msgid "Show an outline overlay"
-msgstr ""
-
 #: ../share/ui/display-popup.glade:90
 msgid "Outline overlay"
 msgstr ""
@@ -37629,7 +37617,7 @@ msgid "Zoom drawing when window size changes"
 msgstr ""
 
 #: ../share/ui/display-popup.glade:204
-msgid "Press and hold a key to activate quick zoom"
+msgid "Hold this key to activate quick zoom"
 msgstr ""
 
 #: ../share/ui/display-popup.glade:208
@@ -37637,9 +37625,7 @@ msgid "<b>Q</b>"
 msgstr ""
 
 #: ../share/ui/display-popup.glade:225
-msgid ""
-"Press and hold a key to show print preview, hide grid, guide lines and "
-"selection handles"
+msgid "Hold this key for document preview, hiding grids, guides, handles etc."
 msgstr ""
 
 #: ../share/ui/display-popup.glade:229
@@ -37666,27 +37652,6 @@ msgstr ""
 msgid "Art Box"
 msgstr ""
 
-#: ../share/ui/extension-pdfinput.glade:63
-#: ../share/ui/extension-pdfinput.glade:74
-msgid "Example"
-msgstr ""
-
-#: ../share/ui/extension-pdfinput.glade:64
-msgid "Italic"
-msgstr ""
-
-#: ../share/ui/extension-pdfinput.glade:65
-msgid "Bold"
-msgstr ""
-
-#: ../share/ui/extension-pdfinput.glade:66
-msgid "Condensed"
-msgstr ""
-
-#: ../share/ui/extension-pdfinput.glade:78
-msgid "Thing"
-msgstr ""
-
 #: ../share/ui/extension-pdfinput.glade:95
 msgid "Draw missing fonts"
 msgstr ""
@@ -37696,7 +37661,7 @@ msgid "Substitute missing fonts"
 msgstr ""
 
 #: ../share/ui/extension-pdfinput.glade:103
-msgid "Keep missing font names"
+msgid "Keep missing fonts' names"
 msgstr ""
 
 #: ../share/ui/extension-pdfinput.glade:107
@@ -37711,9 +37676,25 @@ msgstr ""
 msgid "Delete all text"
 msgstr ""
 
+#: ../share/ui/extension-pdfinput.glade:136
+msgid "Draw to Shapes"
+msgstr ""
+
+#: ../share/ui/extension-pdfinput.glade:140
+msgid "Use Substitute Font"
+msgstr ""
+
+#: ../share/ui/extension-pdfinput.glade:144
+msgid "Keep Original Font Name"
+msgstr ""
+
+#: ../share/ui/extension-pdfinput.glade:148
+msgid "Delete Text"
+msgstr ""
+
 #: ../share/ui/extension-pdfinput.glade:176
 msgid ""
-"<i>Import via internal library. Editable text is reconstructed, pages, "
+"<i>Import via internal library. Editable text is reconstructed. Pages, "
 "layers and margins are preserved, object fills and strokes are recombined "
 "and gradient meshes are converted to tiles.</i>"
 msgstr ""
@@ -37786,10 +37767,6 @@ msgstr ""
 msgid "<b>Cairo import</b>"
 msgstr ""
 
-#: ../share/ui/extension-pdfinput.glade:577
-msgid "1 / 10"
-msgstr ""
-
 #: ../share/ui/gradient-edit.glade:68
 msgid "Gradient:"
 msgstr ""
@@ -37808,10 +37785,6 @@ msgstr ""
 
 #: ../share/ui/image-properties.glade:31
 msgid "<b>Image</b>"
-msgstr ""
-
-#: ../share/ui/image-properties.glade:68
-msgid "<small>#label</small>"
 msgstr ""
 
 #: ../share/ui/image-properties.glade:89
@@ -37834,11 +37807,11 @@ msgid "Embed image in the document"
 msgstr ""
 
 #: ../share/ui/image-properties.glade:168
-msgid "Extract..."
+msgid "Save copy..."
 msgstr ""
 
 #: ../share/ui/image-properties.glade:172
-msgid "Save image into a file"
+msgid "Save a copy of this image to a file"
 msgstr ""
 
 #: ../share/ui/image-properties.glade:194
@@ -38299,7 +38272,7 @@ msgid "Show the big page labels below the page border."
 msgstr ""
 
 #: ../share/ui/page-properties.glade:942
-msgid "Clip rendered objects to pages' boundaries"
+msgid "Anything that is not on a page will not be displayed"
 msgstr ""
 
 #: ../share/ui/page-properties.glade:954
@@ -38328,10 +38301,6 @@ msgstr ""
 
 #: ../share/ui/pattern-edit.glade:599
 msgid "Gap Y:"
-msgstr ""
-
-#: ../share/ui/pattern-edit.glade:640
-msgid "name"
 msgstr ""
 
 #: ../share/ui/pattern-edit.glade:714
@@ -38374,10 +38343,6 @@ msgstr ""
 
 #: ../share/ui/align-and-distribute.ui:68
 msgid "Selection Area"
-msgstr ""
-
-#: ../share/ui/align-and-distribute.ui:337
-msgid "Enable on-canvas alignment handles"
 msgstr ""
 
 #: ../share/ui/align-and-distribute.ui:353 ../share/extensions/frame.inx:10
@@ -39133,11 +39098,7 @@ msgid "Finish:"
 msgstr ""
 
 #: ../share/ui/toolbar-booleans.ui:74
-msgid "Commit Shape"
-msgstr ""
-
-#: ../share/ui/toolbar-booleans.ui:87
-msgid "Cancel Shape"
+msgid "Accept"
 msgstr ""
 
 #: ../share/ui/toolbar-page.ui:128
@@ -39157,17 +39118,12 @@ msgstr ""
 msgid "Move Objects"
 msgstr ""
 
-#: ../share/ui/toolbar-page.ui:289 ../share/ui/toolbar-page.ui:304
-#: ../share/ui/toolbar-page.ui:340
-msgid "0px"
-msgstr ""
-
 #: ../share/ui/toolbar-page.ui:365
-msgid "i.e. 1.2mm 2mm"
+msgid "e.g. 1.2mm 2mm"
 msgstr ""
 
 #: ../share/ui/toolbar-page.ui:372
-msgid "Page Bleed (Advanced)"
+msgid "Page Bleed"
 msgstr ""
 
 #: ../share/ui/toolbar-snap.ui:20 ../share/ui/toolbar-snap.ui:963
@@ -39299,10 +39255,6 @@ msgstr ""
 
 #: ../share/ui/toolbar-tool-prefs.ui:779
 msgid "CANVAS TOOLS"
-msgstr ""
-
-#: ../share/ui/widget-new-from-template.ui:21
-msgid "Example Item"
 msgstr ""
 
 #: ../share/extensions/barcode/Base.py:49
@@ -42937,6 +42889,10 @@ msgstr ""
 
 #: ../share/extensions/jitternodes.inx:8
 msgid "Maximum displacement in Y (px):"
+msgstr ""
+
+#: ../share/extensions/jitternodes.inx:9
+msgid "Shift nodes"
 msgstr ""
 
 #: ../share/extensions/jitternodes.inx:10
