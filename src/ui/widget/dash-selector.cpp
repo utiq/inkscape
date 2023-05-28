@@ -84,7 +84,8 @@ void DashSelector::prepareImageRenderer( Gtk::TreeModel::const_iterator const &r
     Cairo::RefPtr<Cairo::Surface> surface;
     if (index == 1) {
         // add the custom one as a second option; it'll show up at the top of second column
-        surface = sp_text_to_pixbuf((char *)"Custom");
+        // TRANSLATORS: 'Custom' here means, that user-defined dash pattern is specified in an entry box
+        surface = sp_text_to_pixbuf(_("Custom"));
     }
     else if (index < s_dashes.size()) {
         // add the dash to the combobox

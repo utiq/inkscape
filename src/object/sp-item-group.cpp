@@ -313,7 +313,7 @@ const char *SPGroup::displayName() const {
 gchar *SPGroup::description() const {
     gint len = this->getItemCount();
     return g_strdup_printf(
-        ngettext(_("of <b>%d</b> object"), _("of <b>%d</b> objects"), len), len);
+        ngettext("of <b>%d</b> object", "of <b>%d</b> objects", len), len);
 }
 
 void SPGroup::set(SPAttr key, gchar const* value) {

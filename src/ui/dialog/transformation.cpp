@@ -462,11 +462,11 @@ void Transformation::layoutPageTransform()
     descr->set_line_wrap();
     descr->set_line_wrap_mode(Pango::WRAP_WORD);
     descr->set_text(
-        "<small>"
+        _("<small>"
         "<a href=\"https://www.w3.org/TR/SVG11/coords.html#TransformMatrixDefined\">"
         "2D transformation matrix</a> that combines translation (E,F), scaling (A,D),"
         " rotation (A-D) and shearing (B,C)."
-        "</small>"
+        "</small>")
     );
     descr->set_use_markup();
     _page_transform.table().attach(*descr, 1, 5, 2, 1);
