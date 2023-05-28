@@ -406,7 +406,7 @@ void DocumentProperties::build_page()
                 set_namedview_bool(_wr.desktop(), _("Toggle anti-aliasing"), SPAttr::SHAPE_RENDERING, checked);
                 break;
             case PageProperties::Check::ClipToPage:
-                set_namedview_bool(_wr.desktop(), _("Toggle clipping to page mode"), SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, checked);
+                set_namedview_bool(_wr.desktop(), _("Toggle clip to page mode"), SPAttr::INKSCAPE_CLIP_TO_PAGE_RENDERING, checked);
                 break;
             case PageProperties::Check::PageLabelStyle:
                 set_namedview_bool(_wr.desktop(), _("Toggle page label style"), SPAttr::PAGELABELSTYLE, checked);

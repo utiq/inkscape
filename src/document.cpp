@@ -536,7 +536,7 @@ std::unique_ptr<SPDocument> SPDocument::copy() const
 }
 
 /*
-    Rebase the document with de a new XMLDoc.
+    Rebase the document with a new XMLDoc.
     passing the same file is like revert but keep history
 */
 void SPDocument::rebase(const gchar * file, bool keep_namedview)

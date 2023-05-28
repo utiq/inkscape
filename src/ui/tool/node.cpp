@@ -602,20 +602,20 @@ Glib::ustring Handle::_getTip(unsigned state) const
     Handle *h = const_cast<Handle *>(this);
     bool isBSpline = _pm()._isBSpline();
     bool can_shift_rotate = _parent->type() == NODE_CUSP && !other()->isDegenerate();
-    Glib::ustring s = C_("Path handle tip",
+    Glib::ustring s = C_("Status line hint",
                          "node control handle");   // not expected
 
     if (state_held_alt(state) && !isBSpline) {
         if (state_held_control(state)) {
             if (state_held_shift(state) && can_shift_rotate) {
-                s = format_tip(C_("Path handle tip",
+                s = format_tip(C_("Status line hint",
                     "<b>Shift+Ctrl+Alt</b>: "
                     "preserve length and snap rotation angle to %g° increments, "
                     "and rotate both handles"),
                     snap_increment_degrees());
             }
             else {
-                s = format_tip(C_("Path handle tip",
+                s = format_tip(C_("Status line hint",
                     "<b>Ctrl+Alt</b>: "
                     "preserve length and snap rotation angle to %g° increments"),
                     snap_increment_degrees());
@@ -665,27 +665,27 @@ Glib::ustring Handle::_getTip(unsigned state) const
             char const *more;
 
             if (can_shift_rotate && !isBSpline) {
-                more = C_("Path handle tip",
+                more = C_("Status line hint",
                           "Shift, Ctrl, Alt");
             }
             else if (isBSpline) {
-                more = C_("Path handle tip",
+                more = C_("Status line hint",
                           "Shift, Ctrl");
             }
             else {
-                more = C_("Path handle tip",
+                more = C_("Status line hint",
                           "Ctrl, Alt");
             }
             if (isBSpline) {
                 double power = _pm()._bsplineHandlePosition(h);
-                s = format_tip(C_("Path handle tip",
+                s = format_tip(C_("Status line hint",
                                   "<b>BSpline node handle</b> (%.3g power): "
                                   "Shift-drag to move, "
                                   "double-click to reset. "
                                   "(more: %s)"),
                                power, more);
             } else if (_parent->type() == NODE_CUSP) {
-                s = format_tip(C_("Path handle tip",
+                s = format_tip(C_("Status line hint",
                                   "<b>%s</b>: "
                                   "drag to shape the path"  ", "
                                   "hover to lock"  ", "
@@ -695,7 +695,7 @@ Glib::ustring Handle::_getTip(unsigned state) const
                                handletype, more);
             }
             else if (_parent->type() == NODE_SMOOTH) {
-                s = format_tip(C_("Path handle tip",
+                s = format_tip(C_("Status line hint",
                                   "<b>%s</b>: "
                                   "drag to shape the path"  ", "
                                   "hover to lock"  ", "
@@ -704,7 +704,7 @@ Glib::ustring Handle::_getTip(unsigned state) const
                                handletype, more);
             }
             else if (_parent->type() == NODE_AUTO) {
-                s = format_tip(C_("Path handle tip",
+                s = format_tip(C_("Status line hint",
                                   "<b>%s</b>: "
                                   "drag to make smooth, "
                                   "hover to lock"  ", "
@@ -713,14 +713,14 @@ Glib::ustring Handle::_getTip(unsigned state) const
                                handletype, more);
             }
             else if (_parent->type() == NODE_SYMMETRIC) {
-                s = format_tip(C_("Path handle tip",
+                s = format_tip(C_("Status line hint",
                                   "<b>%s</b>: "
                                   "drag to shape the path" ". "
                                   "(more: %s)"),
                                handletype, more);
             }
             else {
-                s = C_("Path handle tip",
+                s = C_("Status line hint",
                        "<b>unknown node handle</b>");   // not expected
             }
         }
@@ -743,7 +743,7 @@ Glib::ustring Handle::_getDragTip(GdkEventMotion */*event*/) const
     Glib::ustring x = x_q.string(_desktop->namedview->display_units);
     Glib::ustring y = y_q.string(_desktop->namedview->display_units);
     Glib::ustring len = len_q.string(_desktop->namedview->display_units);
-    Glib::ustring ret = format_tip(C_("Path handle tip",
+    Glib::ustring ret = format_tip(C_("Status line hint",
         "Move handle by %s, %s; angle %.2f°, length %s"), x.c_str(), y.c_str(), angle, len.c_str());
     return ret;
 }

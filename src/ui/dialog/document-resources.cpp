@@ -876,7 +876,7 @@ void add_stats(Glib::RefPtr<Gtk::ListStore> info_store, SPDocument* document, co
     std::pair<const char*, std::string> str[] = {
         {_("Document"), document && document->getDocumentFilename() ? document->getDocumentFilename() : "-"},
         {_("License"), license && license->name ? license->name : "-"},
-        {_("Metadata"), stats.metadata > 0 ? _("Present") : "-"},
+        {_("Metadata"), stats.metadata > 0 ? C_("Adjective for Metadata status", "Present") : "-"},
     };
     for (auto& pair : str) {
         auto row = *info_store->append();
@@ -885,10 +885,10 @@ void add_stats(Glib::RefPtr<Gtk::ListStore> info_store, SPDocument* document, co
     }
 
     std::pair<const char*, size_t> kv[] = {
-        {_("Colors used"), stats.colors},
+        {_("Colors"), stats.colors},
         {_("Color profiles"), stats.colorprofiles},
         {_("Swatches"), stats.swatches},
-        {_("Fonts used"), stats.fonts},
+        {_("Fonts"), stats.fonts},
         {_("Gradients"), stats.gradients},
         {_("Mesh gradients"), stats.meshgradients},
         {_("Patterns"), stats.patterns},
@@ -956,7 +956,7 @@ void add_styles(Glib::RefPtr<Gtk::ListStore> info_store, const std::unordered_ma
     int n = 1;
     for (auto& style : vect) {
         auto row = *info_store->append();
-        row[g_info_columns.item] = _("style ") + std::to_string(n++);
+        row[g_info_columns.item] = _("Style ") + std::to_string(n++);
         row[g_info_columns.count] = map.find(style)->second;
         row[g_info_columns.value] = Glib::Markup::escape_text(style);
     }
@@ -1163,7 +1163,7 @@ void DocumentResources::end_editing(const Glib::ustring& path, const Glib::ustri
     row[g_item_columns.label] = label_fmt(new_text.c_str(), id);
 
     if (auto document = object->document) {
-        DocumentUndo::done(document, _("Edited object title."), INKSCAPE_ICON("document-resources"));
+        DocumentUndo::done(document, _("Edit object title"), INKSCAPE_ICON("document-resources"));
     }
 }
 

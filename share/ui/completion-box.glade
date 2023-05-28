@@ -58,7 +58,7 @@
         <property name="primary-icon-name">edit-find-symbolic</property>
         <property name="primary-icon-activatable">False</property>
         <property name="primary-icon-sensitive">False</property>
-        <property name="placeholder-text" translatable="yes">add item</property>
+        <property name="placeholder-text" translatable="yes">Add item</property>
         <property name="completion">completion</property>
       </object>
       <packing>

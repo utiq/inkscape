@@ -277,7 +277,7 @@ BatchExport::BatchExport(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
     builder->get_widget("b_backgnd", button); 
     assert(button);
     _bgnd_color_picker = std::make_unique<Inkscape::UI::Widget::ColorPicker>(
-        _("Background color"), _("Color used to fill background"), 0xffffff00, true, button);
+        _("Background color"), _("Color used to fill the image background"), 0xffffff00, true, button);
     setup();
 }
 

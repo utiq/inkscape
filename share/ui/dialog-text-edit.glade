@@ -105,7 +105,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Reset the font list and selected collections</property>
+                    <property name="tooltip-text" translatable="yes">Reset filters and show all available fonts</property>
                     <property name="margin-start">2</property>
                     <property name="image">reset_image</property>
                     <property name="always-show-image">True</property>

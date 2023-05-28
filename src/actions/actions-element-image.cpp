@@ -205,7 +205,7 @@ void image_crop(InkscapeApplication *app)
 std::vector<std::vector<Glib::ustring>> raw_data_element_image =
 {
     // clang-format off
-    {"app.element-image-crop",          N_("Image crop to clip"),  "Image",    N_("Remove parts of the image outside the applied clipping area.") },
+    {"app.element-image-crop",          N_("Crop image to clip"),  "Image",    N_("Remove parts of the image outside the applied clipping area.") },
     {"app.element-image-edit",          N_("Edit externally"),   "Image",    N_("Edit image externally (image must be selected and not embedded).")    },
     // clang-format on
 };

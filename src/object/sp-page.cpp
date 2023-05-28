@@ -560,7 +560,7 @@ void SPPage::update(SPCtx * /*ctx*/, unsigned int /*flags*/)
     auto lbl = label();
     char *alt = nullptr;
     if (document->getPageManager().showDefaultLabel()) {
-        alt = g_strdup_printf(_("%d"), getPagePosition());
+        alt = g_strdup_printf("%d", getPagePosition());
     }
     _canvas_item->update(getDesktopRect(), getDesktopMargin(), getDesktopBleed(), lbl ? lbl : alt);
     g_free(alt);

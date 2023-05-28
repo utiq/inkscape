@@ -26,7 +26,7 @@ void TemplateSocial::init()
         "<inkscape-extension xmlns=\"" INKSCAPE_EXTENSION_URI "\">"
             "<id>org.inkscape.template.social</id>"
             "<name>" N_("Social Sizes") "</name>"
-            "<description>" N_("General sizes for social media") "</description>"
+            "<description>" N_("Document formats for social media") "</description>"
             "<category>" N_("Social") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"

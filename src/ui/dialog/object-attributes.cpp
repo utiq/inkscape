@@ -131,7 +131,7 @@ void ObjectAttributes::widget_setup() {
             }
         }
         else if (selection->size() > 1) {
-            title = _("Multiple items selected");
+            title = _("Multiple objects selected");
         }
     }
     _obj_title.set_markup("<b>" + Glib::Markup::escape_text(title) + "</b>");
@@ -573,7 +573,7 @@ public:
         _ellipse->setAttribute("sodipodi:open", open ? "true" : nullptr);
         _ellipse->setAttribute("sodipodi:arc-type", arc_type.c_str());
         _ellipse->updateRepr();
-        DocumentUndo::done(_ellipse->document, _("Changed arc type"), INKSCAPE_ICON("draw-ellipse"));
+        DocumentUndo::done(_ellipse->document, _("Change arc type"), INKSCAPE_ICON("draw-ellipse"));
     }
 
 private:

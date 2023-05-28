@@ -272,7 +272,7 @@ object_add_corners_lpe(InkscapeApplication *app) {
         if (auto lpeitem = cast<SPLPEItem>(i)) {
             if (auto lpe = lpeitem->getFirstPathEffectOfType(Inkscape::LivePathEffect::FILLET_CHAMFER)) {
                 lpeitem->removePathEffect(lpe, false);
-                Inkscape::DocumentUndo::done(document, _("Removed path path effect"), INKSCAPE_ICON("dialog-path-effects"));
+                Inkscape::DocumentUndo::done(document, _("Remove Live Path Effect"), INKSCAPE_ICON("dialog-path-effects"));
             } else {
                 Inkscape::LivePathEffect::Effect::createAndApply("fillet_chamfer", document, lpeitem);
                 Inkscape::DocumentUndo::done(document, _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
@@ -306,7 +306,7 @@ std::vector<std::vector<Glib::ustring>> raw_data_object =
 
     {"app.object-unlink-clones",        N_("Unlink Clones"),                    "Object",     N_("Unlink clones and symbols")},
     {"app.object-to-path",              N_("Object To Path"),                   "Object",     N_("Convert shapes to paths")},
-    {"app.object-add-corners-lpe",      N_("Add corners"),                      "Object",     N_("Add corners LPE to path")},
+    {"app.object-add-corners-lpe",      N_("Add Corners LPE"),                  "Object",     N_("Add Corners Live Path Effect to path")},
     {"app.object-stroke-to-path",       N_("Stroke to Path"),                   "Object",     N_("Convert strokes to paths")},
 
     {"app.object-set-clip",             N_("Object Clip Set"),                  "Object",     N_("Apply clipping path to selection (using the topmost object as clipping path)")},

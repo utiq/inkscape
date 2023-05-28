@@ -78,9 +78,9 @@ void InteractiveBooleansTool::switching_away(const std::string &new_tool)
 bool InteractiveBooleansTool::is_ready() const {
     if (!boolean_builder || !boolean_builder->has_items()) {
         if (_desktop->getSelection()->isEmpty()) {
-            _desktop->showNotice(_("You must select some objects to use the shape builder tool."), 5000);
+            _desktop->showNotice(_("You must select some objects to use the Shape Builder tool."), 5000);
         } else {
-            _desktop->showNotice(_("The shape builder requires regular shapes to be selected."), 5000);
+            _desktop->showNotice(_("The Shape Builder requires regular shapes to be selected."), 5000);
         }
         return false;
     }

@@ -26,7 +26,7 @@ void TemplateScreen::init()
         "<inkscape-extension xmlns=\"" INKSCAPE_EXTENSION_URI "\">"
             "<id>org.inkscape.template.digital</id>"
             "<name>" N_("Screen Sizes") "</name>"
-            "<description>" N_("General sizes for screens") "</description>"
+            "<description>" N_("Document formats using common screen resolutions") "</description>"
             "<category>" N_("Screen") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"

@@ -25,11 +25,11 @@ namespace LivePathEffect {
 LPESimplify::LPESimplify(LivePathEffectObject *lpeobject)
     : Effect(lpeobject)
     , steps(_("Repeat"), _("Change number of repeats of simplifying operation. Useful for complex paths that need to be significantly simplified. "), "steps", &wr, this, 1)
-    , threshold(_("Complexity"), _("Drag slider to set how much simplification should happen"), "threshold", &wr, this, 5)
+    , threshold(_("Complexity"), _("Drag slider to set the amount of simplification"), "threshold", &wr, this, 5)
     , smooth_angles(_("Smoothness"), _("Max degree difference on handles to perform smoothing"), "smooth_angles",
                     &wr, this, 360.)
-    , helper_size(_("Preview size"), _("Helper size"), "helper_size", &wr, this, 10)
-    , simplify_individual_paths(_("Paths separately"), _("Simplifying paths (separately)"), "simplify_individual_paths",
+    , helper_size(_("Handle size"), _("Size of the handles in the effect visualization (not editable)"), "helper_size", &wr, this, 10)
+    , simplify_individual_paths(_("Paths separately"), _("When there are multiple paths in the selection, simplify each one separately."), "simplify_individual_paths",
                                 &wr, this, false, "", INKSCAPE_ICON("on-outline"), INKSCAPE_ICON("off-outline"))
     , simplify_just_coalesce(_("Just coalesce"), _("Simplify just coalesce"), "simplify_just_coalesce", &wr, this,
                              false, "", INKSCAPE_ICON("on-outline"), INKSCAPE_ICON("off-outline"))

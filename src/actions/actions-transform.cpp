@@ -111,7 +111,7 @@ void transform_reapply(InkscapeApplication *app)
 {
     auto selection = app->get_active_selection();
     selection->reapplyAffine();
-    Inkscape::DocumentUndo::maybeDone(app->get_active_document(), "reapply-transform", _("Reapply Transform"),
+    Inkscape::DocumentUndo::maybeDone(app->get_active_document(), "reapply-transform", _("Reapply Transforms"),
                                       INKSCAPE_ICON("tool-pointer"));
 }
 

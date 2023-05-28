@@ -265,7 +265,7 @@
           <object class="GtkLabel" id="LPEUntranslatedName">
             <property name="can-focus">False</property>
             <property name="no-show-all">True</property>
-            <property name="label" translatable="yes">LPEUntranslatedName</property>
+            <property name="label" translatable="no">LPEUntranslatedName</property>
             <property name="justify">center</property>
             <property name="wrap">True</property>
             <property name="ellipsize">end</property>

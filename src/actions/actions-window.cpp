@@ -108,8 +108,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_window =
     // clang-format off
     {"app.window-open",           N_("Window Open"),     "Window",     N_("Open a window for the active document; GUI only")       },
     {"app.window-close",           N_("Window Close"),           "Window",     N_("Close the active window, does not check for data loss") },
-    {"app.window-query-geometry",  N_("Window Query Geometry"),  "Window",     N_("Query active window geometry") },
-    {"app.window-set-geometry",    N_("Window Set Geometry"),    "Window",     N_("Set active window geometry (X, Y, Width, Height)") },
+    {"app.window-query-geometry",  N_("Window Query Geometry"),  "Window",     N_("Query the active window's location and size") },
+    {"app.window-set-geometry",    N_("Window Set Geometry"),    "Window",     N_("Set the active window's location and size (x, y, width, height)") },
     {"app.window-crash",           N_("Force Crash"),            "Window",     N_("Force Inkscape to crash, useful for testing.") },
     // clang-format on
 };
