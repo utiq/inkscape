@@ -266,7 +266,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
         int min = ToolboxFactory::min_pixel_size;
         int max = ToolboxFactory::max_pixel_size;
         int s = prefs->getIntLimited(ToolboxFactory::tools_icon_size, min, min, max);
-        ToolboxFactory::set_icon_size(tool_toolbox, s);
+        Inkscape::UI::set_icon_sizes(tool_toolbox, s);
     };
 
     // watch for changes
@@ -466,9 +466,9 @@ void SPDesktopWidget::apply_ctrlbar_settings() {
     int min = ToolboxFactory::min_pixel_size;
     int max = ToolboxFactory::max_pixel_size;
     int size = prefs->getIntLimited(ToolboxFactory::ctrlbars_icon_size, min, min, max);
-    ToolboxFactory::set_icon_size(snap_toolbox, size);
-    ToolboxFactory::set_icon_size(commands_toolbox, size);
-    ToolboxFactory::set_icon_size(aux_toolbox, size);
+    Inkscape::UI::set_icon_sizes(snap_toolbox, size);
+    Inkscape::UI::set_icon_sizes(commands_toolbox, size);
+    Inkscape::UI::set_icon_sizes(aux_toolbox, size);
 }
 
 void SPDesktopWidget::update_statusbar_visibility() {

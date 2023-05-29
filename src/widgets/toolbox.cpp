@@ -36,9 +36,9 @@
 #include "actions/actions-canvas-snapping.h"
 #include "actions/actions-tools.h"
 #include "io/resource.h"
+#include "ui/util.h"
 #include "ui/builder-utils.h"
 #include "ui/widget/style-swatch.h"
-#include "widgets/spw-utilities.h" // sp_traverse_widget_tree()
 #include "widgets/widget-sizes.h"
 
 #include "ui/toolbar/arc-toolbar.h"
@@ -93,16 +93,6 @@ int ToolboxFactory::prefToPixelSize(Glib::ustring const& path) {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     int size = prefs->getIntLimited(path, 16, 16, 48);
     return size;
-}
-
-void ToolboxFactory::set_icon_size(GtkWidget* toolbox, int pixel_size) {
-    sp_traverse_widget_tree(Glib::wrap(toolbox), [=](Gtk::Widget* widget) {
-        if (auto ico = dynamic_cast<Gtk::Image*>(widget)) {
-            ico->set_from_icon_name(ico->get_icon_name(), static_cast<Gtk::IconSize>(Gtk::ICON_SIZE_BUTTON));
-            ico->set_pixel_size(pixel_size);
-        }
-        return false;
-    });
 }
 
 Gtk::IconSize ToolboxFactory::prefToSize_mm(Glib::ustring const &path, int base)
@@ -564,7 +554,7 @@ void setup_aux_toolbox(GtkWidget *toolbox, SPDesktop *desktop)
             }
 
             int pixel_size = ToolboxFactory::prefToPixelSize(ToolboxFactory::ctrlbars_icon_size);
-            ToolboxFactory::set_icon_size(sub_toolbox, pixel_size);
+            Inkscape::UI::set_icon_sizes(sub_toolbox, pixel_size);
             gtk_widget_set_hexpand(sub_toolbox, TRUE);
 
             // Add a swatch widget if swatch tooltip is defined.
