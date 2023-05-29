@@ -46,7 +46,6 @@ public:
     static int prefToPixelSize(Glib::ustring const& path);
     static Gtk::IconSize prefToSize_mm(Glib::ustring const &path, int base = 0);
 
-    static void set_icon_size(GtkWidget* toolbox, int pixel_size);
     ToolboxFactory() = delete;
 
     static constexpr const char* tools_icon_size = "/toolbox/tools/iconsize";

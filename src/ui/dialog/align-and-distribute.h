@@ -22,6 +22,8 @@
 #include <sigc++/connection.h>
 #include <gtkmm.h>
 
+#include "preferences.h"
+
 class SPDesktop;
 
 namespace Inkscape {
@@ -74,7 +76,7 @@ private:
     bool on_align_node_button_press_event(GdkEventButton* button_event, const std::string& align_to);
 
     sigc::connection tool_connection;
-
+    Inkscape::PrefObserver _icon_sizes_changed;
 };
 
 } // namespace Dialog

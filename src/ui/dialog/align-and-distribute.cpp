@@ -27,6 +27,7 @@
 #include "actions/actions-tools.h" // Tool switching.
 #include "io/resource.h"
 #include "ui/dialog/dialog-base.h" // Tool switching.
+#include "ui/util.h"
 
 namespace Inkscape {
 namespace UI {
@@ -179,6 +180,16 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg)
     if (desktop) {
         desktop_changed(desktop);
     }
+
+    auto set_icon_size_prefs = [=]() {
+        int size = prefs->getIntLimited("/toolbox/tools/iconsize", -1, 16, 48);
+        Inkscape::UI::set_icon_sizes(this, size);
+    };
+
+    // For now we are going to track the toolbox icon size, in the future we will have our own
+    // dialog based icon sizes, perhaps done via css instead.
+    _icon_sizes_changed = prefs->createObserver("/toolbox/tools/iconsize", set_icon_size_prefs);
+    set_icon_size_prefs();
 }
 
 void

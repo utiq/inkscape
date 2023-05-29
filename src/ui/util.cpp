@@ -36,6 +36,7 @@
 
 // TODO due to internal breakage in glibmm headers, this must be last:
 #include <glibmm/i18n.h>
+#include "widgets/spw-utilities.h" // sp_traverse_widget_tree()
 
 /**
  * Recursively look through pre-constructed widget parents for a specific named widget.
@@ -94,6 +95,26 @@ bool is_widget_effectively_visible(Gtk::Widget const *widget) {
 }
 
 namespace Inkscape::UI {
+
+/**
+ * Recursively set all the icon sizes inside this parent widget. Any GtkImage will be changed
+ * so only call this on widget stacks where all children have the same expected sizes.
+ *
+ * @param parent - The parent widget to traverse
+ * @param pixel_size - The new pixel size of the images it contains
+ */
+void set_icon_sizes(Gtk::Widget* parent, int pixel_size) {
+    sp_traverse_widget_tree(parent, [=](Gtk::Widget* widget) {
+        if (auto ico = dynamic_cast<Gtk::Image*>(widget)) {
+            ico->set_from_icon_name(ico->get_icon_name(), static_cast<Gtk::IconSize>(Gtk::ICON_SIZE_BUTTON));
+            ico->set_pixel_size(pixel_size);
+        }
+        return false;
+    });
+}
+void set_icon_sizes(GtkWidget* parent, int pixel_size) {
+    set_icon_sizes(Glib::wrap(parent), pixel_size);
+}
 
 void gui_warning(const std::string &msg, Gtk::Window *parent_window) {
     g_warning("%s", msg.c_str());

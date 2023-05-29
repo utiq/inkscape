@@ -58,6 +58,9 @@ bool is_widget_effectively_visible(Gtk::Widget const *widget);
 
 namespace Inkscape::UI {
 
+void set_icon_sizes(Gtk::Widget* parent, int pixel_size);
+void set_icon_sizes(GtkWidget* parent, int pixel_size);
+
 /// Utility function to ensure correct sizing after adding child widgets.
 void resize_widget_children(Gtk::Widget *widget);
 
