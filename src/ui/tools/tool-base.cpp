@@ -1052,9 +1052,9 @@ bool ToolBase::item_handler(SPItem *item, GdkEvent *event)
         } else if (event->button.button == 1 && shape_editor && shape_editor->has_knotholder()) {
             // This allows users to select an arbitary position in a pattern to edit on canvas.
             auto knotholder = shape_editor->knotholder;
-            if (knotholder->getItem() == item) {
-                auto point = _desktop->w2d(Geom::Point(event->button.x, event->button.y));
-                ret = knotholder->set_item_clickpos(point * _desktop->dt2doc());
+            auto point = Geom::Point(event->button.x, event->button.y);
+            if (_desktop->getItemAtPoint(point, true) == knotholder->getItem()) {
+                ret = knotholder->set_item_clickpos(_desktop->w2d(point) * _desktop->dt2doc());
             }
         }
     }
