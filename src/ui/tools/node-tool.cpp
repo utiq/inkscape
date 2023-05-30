@@ -660,9 +660,14 @@ bool NodeTool::item_handler(SPItem *item, GdkEvent *event)
     if (!ret && event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
         for (auto &se : _shape_editors) {
             // This allows users to select an arbitary position in a pattern to edit on canvas.
-            if (auto knotholder = se.second->knotholder; knotholder->getItem() == item) {
-                auto point = _desktop->w2d(Geom::Point(event->button.x, event->button.y));
-                ret = knotholder->set_item_clickpos(point * _desktop->dt2doc());
+            if (auto knotholder = se.second->knotholder) {
+                auto point = Geom::Point(event->button.x, event->button.y);
+
+                // This allows us to dive into groups and find what the real item is
+                if (_desktop->getItemAtPoint(point, true) != knotholder->getItem())
+                    continue;
+
+                ret = knotholder->set_item_clickpos(_desktop->w2d(point) * _desktop->dt2doc());
             }
         }
     }
