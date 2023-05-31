@@ -1,9 +1,9 @@
-${CMAKE_BINARY_DIR}/share/filters/filters.svg.h
-${CMAKE_BINARY_DIR}/share/markers/markers.svg.h
-${CMAKE_BINARY_DIR}/share/palettes/palettes.h
-${CMAKE_BINARY_DIR}/share/paint/patterns.svg.h
-${CMAKE_BINARY_DIR}/share/symbols/symbols.h
-${CMAKE_BINARY_DIR}/share/templates/templates.h
+${_build_dir}/share/filters/filters.svg.h
+${_build_dir}/share/markers/markers.svg.h
+${_build_dir}/share/palettes/palettes.h
+${_build_dir}/share/paint/patterns.svg.h
+${_build_dir}/share/symbols/symbols.h
+${_build_dir}/share/templates/templates.h
 ../src/actions/actions-base.cpp
 ../src/actions/actions-canvas-mode.cpp
 ../src/actions/actions-canvas-snapping.cpp
