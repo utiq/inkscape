@@ -598,13 +598,16 @@ bool NodeTool::root_handler(GdkEvent* event) {
         break;
 
     case GDK_BUTTON_RELEASE:
-        if (rband->is_started() && rband->is_moved()) {
-            select_area(rband->getPath(), &event->button);
-        } else {
-            select_point(&event->button);
+        if (event->button.button == 1) {
+            if (rband->is_started() && rband->is_moved()) {
+                select_area(rband->getPath(), &event->button);
+            } else {
+                select_point(&event->button);
+            }
+            rband->stop();
+            return true;
         }
-        rband->stop();
-        return true;
+        break;
 
     case GDK_2BUTTON_PRESS:
         if ( event->button.button == 1 ) {
