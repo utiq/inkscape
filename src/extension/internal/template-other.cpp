@@ -36,7 +36,7 @@ void TemplateOther::init()
             "<id>org.inkscape.template.other</id>"
             "<name>" N_("Other Sizes") "</name>"
             "<description>" N_("Miscellaneous document formats") "</description>"
-            "<category>" N_("Other") "</category>"
+            "<category>" NC_("TemplateCategory", "Other") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"
             "<param name='size' gui-text='" N_("Size") "' type='float' min='1.0' max='100000.0'>32.0</param>"

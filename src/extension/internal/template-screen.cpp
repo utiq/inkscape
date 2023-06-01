@@ -27,7 +27,7 @@ void TemplateScreen::init()
             "<id>org.inkscape.template.digital</id>"
             "<name>" N_("Screen Sizes") "</name>"
             "<description>" N_("Document formats using common screen resolutions") "</description>"
-            "<category>" N_("Screen") "</category>"
+            "<category>" NC_("TemplateCategory", "Screen") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"
             "<param name='width' gui-text='" N_("Width") "' type='float' min='1.0' max='100000.0'>100.0</param>"
