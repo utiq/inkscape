@@ -51,7 +51,7 @@ private:
 
 ProfileInfo::ProfileInfo(cmsHPROFILE prof, Glib::ustring path)
     : _path(std::move(path))
-    , _name(get_name_from_color_profile(prof))
+    , _name(get_color_profile_name(prof))
     , _profileSpace(cmsGetColorSpace(prof))
     , _profileClass(cmsGetDeviceClass(prof))
 {

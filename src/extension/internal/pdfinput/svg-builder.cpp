@@ -901,7 +901,7 @@ std::string SvgBuilder::_getColorProfile(cmsHPROFILE hp)
     if (_icc_profiles.find(hp) != _icc_profiles.end())
         return _icc_profiles[hp];
 
-    std::string name = get_name_from_color_profile(hp);
+    std::string name = get_color_profile_name(hp);
 
     // Find the named profile in the document (if already added)
     if (_doc->getProfileManager().find(name.c_str()))

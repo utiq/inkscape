@@ -39,7 +39,7 @@ private:
 };
 
 bool is_icc_file(const std::string& filepath);
-std::string get_name_from_color_profile(cmsHPROFILE profile); // Read as ASCII from profile.
+std::string get_color_profile_name(cmsHPROFILE profile); // Read as ASCII from profile.
 
 } // namespace Inkscape
 

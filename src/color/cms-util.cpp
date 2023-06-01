@@ -26,7 +26,7 @@ ICCProfileInfo::ICCProfileInfo(cmsHPROFILE profile, std::string path, bool in_ho
 {
     assert(profile != nullptr);
 
-    _name = get_name_from_color_profile(profile);
+    _name = get_color_profile_name(profile);
     _colorspace = cmsGetColorSpace(profile);
     _profileclass = cmsGetDeviceClass(profile);
 }
@@ -77,7 +77,7 @@ bool is_icc_file(const std::string& filepath) {
 }
 
 
-std::string get_name_from_color_profile(cmsHPROFILE profile) {
+std::string get_color_profile_name(cmsHPROFILE profile) {
 
     std::string name;
 
@@ -89,7 +89,7 @@ std::string get_name_from_color_profile(cmsHPROFILE profile) {
                                                              "en", "US",
                                                              data.data(), data.size());
             if (readLen < data.size()) {
-                std::cerr << "get_name_from_color_profile(): read less than expected!" << std::endl;
+                std::cerr << "get_color_profile_name(): read less than expected!" << std::endl;
                 data.resize(readLen);
             }
 
