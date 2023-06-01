@@ -23,18 +23,19 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiobutton.h>
 
-#include "cms-system.h"
 #include "document.h"
 #include "inkscape.h"
 #include "preferences.h"
 #include "profile-manager.h"
 
+#include "color/cms-system.h"
+
 #include "object/color-profile.h"
-#include "ui/icon-loader.h"
 
 #include "svg/svg-icc-color.h"
 
 #include "ui/dialog-events.h"
+#include "ui/icon-loader.h"
 #include "ui/tools/dropper-tool.h"
 #include "ui/widget/color-entry.h"
 #include "ui/widget/color-icc-selector.h"

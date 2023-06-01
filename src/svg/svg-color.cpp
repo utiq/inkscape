@@ -16,32 +16,30 @@
 # include "config.h"  // only include where actually required!
 #endif
 
+#include "svg-color.h"
+
 #include <cstdlib>
 #include <cstdio> // sprintf
 #include <cstring>
 #include <string>
 #include <cmath>
-#include <glib.h> // g_assert
 #include <cerrno>
-
 #include <map>
+#include <vector>
 
-#include "colorspace.h"
-#include "strneq.h"
-#include "preferences.h"
-#include "svg-color.h"
-#include "svg-icc-color.h"
+#include <glib.h> // g_assert
 
 #include "color.h"
-
-#include <vector>
-#include "object/color-profile.h"
-
+#include "colorspace.h"
 #include "document.h"
 #include "inkscape.h"
+#include "preferences.h"
 #include "profile-manager.h"
+#include "strneq.h"
+#include "svg-icc-color.h"
 
-#include "cms-system.h"
+#include "color/cms-system.h"
+#include "object/color-profile.h"
 
 struct SPSVGColor {
     unsigned long rgb;

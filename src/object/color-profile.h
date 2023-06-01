@@ -18,9 +18,9 @@
 #include <vector>
 
 #include <glibmm/ustring.h>
-#include "cms-color-types.h"
 
 #include "sp-object.h"
+#include "color/cms-color-types.h"
 
 struct SPColor;
 

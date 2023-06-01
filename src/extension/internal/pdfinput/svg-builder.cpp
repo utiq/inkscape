@@ -30,7 +30,7 @@
 #include "Page.h"
 #include "Stream.h"
 #include "UnicodeMap.h"
-#include "cms-util.h"
+#include "color/cms-util.h"
 #include "color.h"
 #include "display/cairo-utils.h"
 #include "display/nr-filter-utils.h"

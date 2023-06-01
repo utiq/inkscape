@@ -40,7 +40,7 @@ ${_build_dir}/share/templates/templates.h
 ../src/actions/actions-view-window.cpp
 ../src/actions/actions-window.cpp
 ../src/auto-save.cpp
-../src/cms-util.cpp
+../src/color/cms-util.cpp
 ../src/context-fns.cpp
 ../src/desktop-events.cpp
 ../src/desktop-style.cpp

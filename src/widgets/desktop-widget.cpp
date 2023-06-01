@@ -28,7 +28,6 @@
 #include <2geom/rect.h>
 
 #include "attributes.h"
-#include "cms-system.h"
 #include "conn-avoid-ref.h"
 #include "desktop-events.h"
 #include "desktop-widget.h"
@@ -40,6 +39,8 @@
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "inkscape-version.h"
+
+#include "color/cms-system.h"
 
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-guideline.h"

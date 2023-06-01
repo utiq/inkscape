@@ -46,7 +46,6 @@
 #include <gtkmm.h>
 
 #include "auto-save.h"
-#include "cms-system.h"
 #include "document.h"
 #include "enums.h"
 #include "inkscape-window.h"
@@ -58,6 +57,8 @@
 #include "selection-chemistry.h"
 #include "selection.h"
 #include "style.h"
+
+#include "color/cms-system.h"
 
 #include "display/control/canvas-item-grid.h"
 #include "display/nr-filter-gaussian.h"

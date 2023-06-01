@@ -11,41 +11,41 @@
 # include "config.h"  // only include where actually required!
 #endif
 
-#include <gdkmm/rgba.h>
+#include "color-profile.h"
 
-#include <glib/gstdio.h>
-#include <fcntl.h>
-#include <glib/gi18n.h>
-
-#include <unistd.h>
 #include <cstring>
 #include <utility>
-#include <io/sys.h>
-#include <io/resource.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <gdkmm/rgba.h>
+#include <glib/gstdio.h>
+#include <glib/gi18n.h>
+#include <glibmm/checksum.h>
+#include <glibmm/convert.h>
 
 #ifdef _WIN32
+#include <icm.h>
 #include <windows.h>
 #endif
 
 #include <lcms2.h>
 
-#include "xml/repr.h"
-#include "xml/href-attribute-helper.h"
-#include "color.h"
-#include "color-profile.h"
-#include "cms-system.h"
-#include "color-profile-cms-fns.h"
 #include "attributes.h"
-#include "inkscape.h"
+#include "color.h"
 #include "document.h"
+#include "inkscape.h"
 #include "preferences.h"
-#include <glibmm/checksum.h>
-#include <glibmm/convert.h>
 #include "uri.h"
 
-#ifdef _WIN32
-#include <icm.h>
-#endif // _WIN32
+#include "color/cms-system.h"
+#include "color/color-profile-cms-fns.h"
+
+#include <io/sys.h>
+#include <io/resource.h>
+
+#include "xml/repr.h"
+#include "xml/href-attribute-helper.h"
 
 using Inkscape::ColorProfile;
 using Inkscape::ColorProfileImpl;

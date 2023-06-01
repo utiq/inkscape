@@ -35,8 +35,8 @@
 #define noDEBUG_LCMS
 
 #include "object/color-profile.h"
-#include "cms-system.h"
-#include "color-profile-cms-fns.h"
+#include "color/cms-system.h"
+#include "color/color-profile-cms-fns.h"
 
 #ifdef DEBUG_LCMS
 #include "preferences.h"

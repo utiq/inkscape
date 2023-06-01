@@ -24,7 +24,6 @@
 #include "canvas-grid.h"
 
 #include "color.h"          // Background color
-#include "cms-system.h"     // Color correction
 #include "desktop.h"
 #include "document.h"
 #include "preferences.h"
@@ -37,6 +36,7 @@
 #include "canvas/stores.h"
 #include "canvas/graphics.h"
 #include "canvas/synchronizer.h"
+#include "color/cms-system.h"     // Color correction
 #include "display/drawing.h"
 #include "display/drawing-item.h"
 #include "display/control/canvas-item-drawing.h"

@@ -25,19 +25,25 @@
 
 #include <vector>
 
-#include "actions/actions-tools.h"
 #include "document-properties.h"
+
+#include "page-manager.h"
+#include "rdf.h"
+#include "style.h"
+
+#include "actions/actions-tools.h"
+
+#include "color/cms-system.h"
+
 #include "include/gtkmm_version.h"
+
 #include "io/sys.h"
+
 #include "object/color-profile.h"
 #include "object/sp-root.h"
 #include "object/sp-grid.h"
 #include "object/sp-script.h"
-#include "cms-system.h"
-#include "page-manager.h"
-#include "rdf.h"
-#include "style.h"
-#include "svg/svg-color.h"
+
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
@@ -46,6 +52,8 @@
 #include "ui/widget/entity-entry.h"
 #include "ui/widget/notebook-page.h"
 #include "ui/widget/page-properties.h"
+
+#include "svg/svg-color.h"
 
 namespace Inkscape {
 namespace UI {

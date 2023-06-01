@@ -30,7 +30,6 @@
 #include <glibmm/miscutils.h>
 #include <glibmm/convert.h>
 
-#include "cms-system.h"
 #include "desktop.h"
 #include "device-manager.h"
 #include "document.h"
@@ -40,6 +39,8 @@
 #include "inkscape-window.h"
 #include "message-stack.h"
 #include "path-prefix.h"
+
+#include "color/cms-system.h"
 
 #include "debug/simple-event.h"
 #include "debug/event-tracker.h"
