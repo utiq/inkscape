@@ -44,7 +44,7 @@ void TemplatePaper::init()
             "<id>org.inkscape.template.paper</id>"
             "<name>" N_("Paper Sizes") "</name>"
             "<description>" N_("Standard paper document formats") "</description>"
-            "<category>" N_("Print") "</category>"
+            "<category>" NC_("TemplateCategory", "Print") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>mm</param>"
             "<param name='min' gui-text='" N_("Shortest Side") "' type='float' min='1.0' max='100000.0'>210.0</param>"

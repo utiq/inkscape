@@ -27,7 +27,7 @@ void TemplateSocial::init()
             "<id>org.inkscape.template.social</id>"
             "<name>" N_("Social Sizes") "</name>"
             "<description>" N_("Document formats for social media") "</description>"
-            "<category>" N_("Social") "</category>"
+            "<category>" NC_("TemplateCategory", "Social") "</category>"
 
             "<param name='unit' gui-text='" N_("Unit") "' type='string'>px</param>"
             "<param name='width' gui-text='" N_("Width") "' type='float' min='1.0' max='100000.0'>100.0</param>"
