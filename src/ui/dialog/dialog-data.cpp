@@ -46,7 +46,7 @@ std::map<std::string, DialogData> const &get_dialog_data()
     {"ObjectAttributes",   {_("_Object Attributes"),    INKSCAPE_ICON("dialog-object-properties"),    DialogData::Settings,       ScrollProvider::NOPROVIDE }},
     {"ObjectProperties",   {_("_Object Properties"),    INKSCAPE_ICON("dialog-object-properties"),    DialogData::Settings,       ScrollProvider::NOPROVIDE }},
     {"Objects",            {_("Layers and Object_s"),   INKSCAPE_ICON("dialog-objects"),              DialogData::Basic,          ScrollProvider::PROVIDE   }},
-    {"PaintServers",       {_("_Paint Servers"),        INKSCAPE_ICON("symbols"),                     DialogData::Advanced,       ScrollProvider::PROVIDE   }},
+    {"PaintServers",       {_("_Paint Servers"),        INKSCAPE_ICON("dialog-paint-server"),         DialogData::Advanced,       ScrollProvider::PROVIDE   }},
     {"Preferences",        {_("P_references"),          INKSCAPE_ICON("preferences-system"),          DialogData::Settings,       ScrollProvider::PROVIDE   }},
     {"Selectors",          {_("_Selectors and CSS"),    INKSCAPE_ICON("dialog-selectors"),            DialogData::Advanced,       ScrollProvider::PROVIDE   }},
     {"SVGFonts",           {_("SVG Font Editor"),       INKSCAPE_ICON("dialog-svg-font"),             DialogData::Advanced,       ScrollProvider::NOPROVIDE }},
