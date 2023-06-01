@@ -495,14 +495,14 @@ void DocumentProperties::populate_available_profiles(){
         Gtk::TreeModel::Row row;
 
         // add a separator between profiles from the user's home directory and system profiles
-        if (!first && info.is_in_home() != home)
+        if (!first && info.in_home() != home)
         {
           row = *(_AvailableProfilesListStore->append());
           row[_AvailableProfilesListColumns.fileColumn] = "<separator>";
           row[_AvailableProfilesListColumns.nameColumn] = "<separator>";
           row[_AvailableProfilesListColumns.separatorColumn] = true;
         }
-        home = info.is_in_home();
+        home = info.in_home();
         first = false;
 
         row = *(_AvailableProfilesListStore->append());

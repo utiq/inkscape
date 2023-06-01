@@ -21,25 +21,25 @@ namespace Inkscape {
 class ICCProfileInfo {
 
 public:
-    ICCProfileInfo(cmsHPROFILE profile, std::string path, bool isInHome);
+    ICCProfileInfo(cmsHPROFILE profile, std::string path, bool in_home);
     ~ICCProfileInfo() = default;
     bool operator<(ICCProfileInfo const &other) const;
     std::string get_path() { return _path; }
     std::string get_name() { return _name; }
     cmsColorSpaceSignature get_colorspace() { return _colorspace; }
     cmsProfileClassSignature get_profileclass() { return _profileclass; }
-    bool is_in_home() { return _is_in_home; }
+    bool in_home() { return _in_home; }
 
 private:
     std::string _path;
     std::string _name;
-    bool _is_in_home;
+    bool _in_home;
     cmsColorSpaceSignature _colorspace;
     cmsProfileClassSignature _profileclass;
 };
 
 bool is_icc_file(const std::string& filepath);
-std::string get_name_from_profile(cmsHPROFILE profile); // Read as ASCII from profile.
+std::string get_name_from_color_profile(cmsHPROFILE profile); // Read as ASCII from profile.
 
 } // namespace Inkscape
 

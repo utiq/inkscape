@@ -20,13 +20,13 @@
 
 namespace Inkscape {
 
-ICCProfileInfo::ICCProfileInfo(cmsHPROFILE profile, std::string path, bool is_in_home)
+ICCProfileInfo::ICCProfileInfo(cmsHPROFILE profile, std::string path, bool in_home)
   : _path(std::move(path))
-  , _is_in_home(is_in_home)
+  , _in_home(in_home)
 {
     assert(profile != nullptr);
 
-    _name = get_name_from_profile(profile);
+    _name = get_name_from_color_profile(profile);
     _colorspace = cmsGetColorSpace(profile);
     _profileclass = cmsGetDeviceClass(profile);
 }
@@ -77,7 +77,7 @@ bool is_icc_file(const std::string& filepath) {
 }
 
 
-std::string get_name_from_profile(cmsHPROFILE profile) {
+std::string get_name_from_color_profile(cmsHPROFILE profile) {
 
     std::string name;
 
@@ -89,7 +89,7 @@ std::string get_name_from_profile(cmsHPROFILE profile) {
                                                              "en", "US",
                                                              data.data(), data.size());
             if (readLen < data.size()) {
-                std::cerr << "get_name_from_profile(): read less than expected!" << std::endl;
+                std::cerr << "get_name_from_color_profile(): read less than expected!" << std::endl;
                 data.resize(readLen);
             }
 

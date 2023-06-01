@@ -901,7 +901,7 @@ std::string SvgBuilder::_getColorProfile(cmsHPROFILE hp)
     if (_icc_profiles.find(hp) != _icc_profiles.end())
         return _icc_profiles[hp];
 
-    std::string name = get_name_from_profile(hp);
+    std::string name = get_name_from_color_profile(hp);
 
     // Find the named profile in the document (if already added)
     if (_doc->getProfileManager().find(name.c_str()))
@@ -914,8 +914,7 @@ std::string SvgBuilder::_getColorProfile(cmsHPROFILE hp)
     cmsSaveProfileToMem(hp, buf, &len);
 
     Inkscape::XML::Node *icc_node = _xml_doc->createElement("svg:color-profile");
-    std::string label = get_name_from_profile(hp);
-    icc_node->setAttribute("inkscape:label", label);
+    icc_node->setAttribute("inkscape:label", name);
     icc_node->setAttribute("name", name);
 
     auto *base64String = g_base64_encode(buf, len);
