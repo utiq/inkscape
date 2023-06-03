@@ -853,9 +853,9 @@ void DocumentProperties::build_scripting()
     _embed_remove_btn.set_tooltip_text(_("Remove"));
     docprops_style_button(_embed_remove_btn, INKSCAPE_ICON("list-remove"));
 
-    _embed_button_box.set_layout (Gtk::BUTTONBOX_START);
     _embed_button_box.add(_embed_new_btn);
     _embed_button_box.add(_embed_remove_btn);
+    _embed_button_box.set_halign(Gtk::ALIGN_END);
 
     row = 0;
 
@@ -992,12 +992,11 @@ void DocumentProperties::build_metadata()
     Gtk::Button *button_load = Gtk::manage (new Gtk::Button(_("Use _default"),true));
     button_load->set_tooltip_text(_("Use the previously saved default metadata here"));
 
-    auto box_buttons = Gtk::manage (new Gtk::ButtonBox);
+    auto box_buttons = Gtk::manage (new Gtk::Box);
 
-    box_buttons->set_layout(Gtk::BUTTONBOX_END);
     box_buttons->set_spacing(4);
-    box_buttons->pack_start(*button_save, true, true, 6);
-    box_buttons->pack_start(*button_load, true, true, 6);
+    box_buttons->pack_end(*button_save, true, true, 6);
+    box_buttons->pack_end(*button_load, true, true, 6);
     _page_metadata1->pack_end(*box_buttons, false, false, 0);
 
     button_save->signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::save_default_metadata));

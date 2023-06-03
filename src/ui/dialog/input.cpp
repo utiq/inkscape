@@ -10,32 +10,20 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include "input.h"
+
 #include <map>
 #include <set>
 #include <list>
+
+#include <glibmm/i18n.h>
+#include <gtkmm.h>
+
 #include "ui/widget/frame.h"
 #include "ui/widget/scrollprotected.h"
 
-#include <glibmm/i18n.h>
-
-#include <gtkmm/buttonbox.h>
-#include <gtkmm/cellrenderercombo.h>
-#include <gtkmm/checkbutton.h>
-#include <gtkmm/comboboxtext.h>
-#include <gtkmm/grid.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/menubar.h>
-#include <gtkmm/notebook.h>
-#include <gtkmm/paned.h>
-#include <gtkmm/progressbar.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/treestore.h>
-#include <gtkmm/eventbox.h>
-
 #include "device-manager.h"
 #include "preferences.h"
-
-#include "input.h"
 
 // clang-format off
 /* XPM */
@@ -968,9 +956,8 @@ InputDialogImpl::ConfPanel::ConfPanel() :
     useExt.set_active(Preferences::get()->getBool("/options/useextinput/value"));
     useExt.signal_toggled().connect(sigc::mem_fun(*this, &InputDialogImpl::ConfPanel::useExtToggled));
 
-    auto buttonBox = Gtk::manage(new Gtk::ButtonBox);
-    buttonBox->set_layout (Gtk::BUTTONBOX_END);
-    //Gtk::Alignment *align = new Gtk::Alignment(Gtk::ALIGN_END, Gtk::ALIGN_START, 0, 0);
+    auto buttonBox = Gtk::manage(new Gtk::Box);
+    buttonBox->set_halign(Gtk::ALIGN_END);
     buttonBox->add(save);
     save.signal_clicked().connect(sigc::mem_fun(*this, &InputDialogImpl::ConfPanel::saveSettings));
 

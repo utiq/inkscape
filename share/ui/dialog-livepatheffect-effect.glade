@@ -154,14 +154,13 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButtonBox" id="LPESelectorButtonBox">
+          <object class="GtkBox" id="LPESelectorButtonBox">
             <property name="name">LPESelectorButtonBox</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">center</property>
             <property name="valign">start</property>
             <property name="baseline-position">top</property>
-            <property name="layout-style">center</property>
             <child>
               <object class="GtkEventBox" id="LPESelectorEffectEventInfo">
                 <property name="name">LPESelectorEffectEventInfo</property>

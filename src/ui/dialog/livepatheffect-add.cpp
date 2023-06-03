@@ -3,6 +3,8 @@
  * @file
  * Dialog for adding a live path effect.
  *
+ * THIS CODE IS FOR THE DEPRECATED LPE GALLERY
+ *
  * Author:
  *
  * Copyright (C) 2012 Authors
@@ -136,7 +138,7 @@ LivePathEffectAdd::LivePathEffectAdd()
     try {
         _builder = Gtk::Builder::create_from_file(gladefile);
     } catch (const Glib::Error &ex) {
-        g_warning("Glade file loading failed for path effect dialog");
+        g_warning("Glade file loading failed for path effect dialog: dialog-livepatheffect-add.glade: %s", ex.what().c_str());
         return;
     }
     _builder->get_widget("LPEDialogSelector", _LPEDialogSelector);
@@ -236,7 +238,7 @@ LivePathEffectAdd::LivePathEffectAdd()
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(LPESelectorEffectEventApply->gobj())));
         LPESelectorEffectEventApply->signal_leave_notify_event().connect(sigc::bind<GtkWidget *>(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseout), GTK_WIDGET(LPESelectorEffectEventApply->gobj())));
-        Gtk::ButtonBox *LPESelectorButtonBox;
+        Gtk::Box *LPESelectorButtonBox;
         builder_effect->get_widget("LPESelectorButtonBox", LPESelectorButtonBox);
         LPESelectorButtonBox->signal_enter_notify_event().connect(sigc::bind<GtkWidget *>(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(LPESelectorEffect->gobj())));
@@ -718,7 +720,7 @@ int LivePathEffectAdd::on_sort(Gtk::FlowBoxChild *child1, Gtk::FlowBoxChild *chi
                     }
                 }
             }
-            Gtk::ButtonBox *lpebuttonbox = dynamic_cast<Gtk::ButtonBox *>(contents[5]);
+            Gtk::Box *lpebuttonbox = dynamic_cast<Gtk::Box *>(contents[5]);
             if (lpebuttonbox) {
                 if (mode == 2) {
                     lpebuttonbox->hide();
@@ -837,7 +839,7 @@ int LivePathEffectAdd::on_sort(Gtk::FlowBoxChild *child1, Gtk::FlowBoxChild *chi
                     }
                 }
             }
-            Gtk::ButtonBox *lpebuttonbox = dynamic_cast<Gtk::ButtonBox *>(contents[5]);
+            Gtk::Box *lpebuttonbox = dynamic_cast<Gtk::Box *>(contents[5]);
             if (lpebuttonbox) {
                 if (mode == 2) {
                     lpebuttonbox->hide();

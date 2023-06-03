@@ -300,10 +300,10 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
                 <property name="can_focus">False</property>
                 <property name="message_type">error</property>
                 <child internal-child="action_area">
-                  <object class="GtkButtonBox">
+                  <object class="GtkBox">
                     <property name="can_focus">False</property>
                     <property name="spacing">6</property>
-                    <property name="layout_style">end</property>
+                    <property name="halign">end</property>
                     <child>
                       <placeholder/>
                     </child>
@@ -695,12 +695,12 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
               </packing>
             </child>
             <child>
-              <object class="GtkButtonBox">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">8</property>
                 <property name="margin_right">8</property>
-                <property name="layout_style">start</property>
+                <property name="halign">start</property>
                 <child>
                   <object class="GtkButton" id="save">
                     <property name="label">gtk-save</property>
@@ -928,12 +928,12 @@ Fund Inkscape</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButtonBox">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">8</property>
                 <property name="margin_right">8</property>
-                <property name="layout_style">start</property>
+                <property name="halign">start</property>
                 <child>
                   <object class="GtkButton" id="thanks">
                     <property name="label" translatable="yes">Thanks!</property>
@@ -1053,13 +1053,13 @@ Fund Inkscape</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButtonBox">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_start">8</property>
                 <property name="margin_end">8</property>
                 <property name="spacing">4</property>
-                <property name="layout_style">start</property>
+                <property name="halign">start</property>
                 <child>
                   <object class="GtkButton" id="load">
                     <property name="label" translatable="yes">Open</property>

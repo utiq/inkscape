@@ -104,7 +104,6 @@ SpellCheck::SpellCheck()
 {
     _prefs = Inkscape::Preferences::get();
 
-    banner_hbox.set_layout(Gtk::BUTTONBOX_START);
     banner_hbox.add(banner_label);
 
     if (_langs.empty()) {
@@ -157,7 +156,8 @@ SpellCheck::SpellCheck()
     stop_button.set_tooltip_text(_("Stop the check"));
     start_button.set_tooltip_text(_("Start the check"));
 
-    actionbutton_hbox.set_layout(Gtk::BUTTONBOX_END);
+    actionbutton_hbox.set_halign(Gtk::ALIGN_END);
+    actionbutton_hbox.set_homogeneous(true);
     actionbutton_hbox.set_spacing(4);
     actionbutton_hbox.add(stop_button);
     actionbutton_hbox.add(start_button);

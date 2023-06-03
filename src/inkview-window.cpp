@@ -211,7 +211,8 @@ static std::string window_markup = R"(
 <interface>
   <object class="GtkWindow" id="ControlWindow">
     <child>
-      <object class="GtkButtonBox">
+      <object class="GtkBox">
+        <property name="homogeneous">True</property>
         <child>
           <object class="GtkButton" id="show-first">
             <property name="visible">True</property>

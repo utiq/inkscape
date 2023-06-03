@@ -20,7 +20,6 @@
 #endif
 
 #include <cstddef>
-#include <gtkmm/buttonbox.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/notebook.h>
@@ -169,7 +168,7 @@ protected:
     Gtk::Button         _external_remove_btn;
     Gtk::Button         _embed_new_btn;
     Gtk::Button         _embed_remove_btn;
-    Gtk::ButtonBox      _embed_button_box;
+    Gtk::Box            _embed_button_box;
 
     class ExternalScriptsColumns : public Gtk::TreeModel::ColumnRecord
         {

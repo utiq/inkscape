@@ -171,8 +171,8 @@ Memory::Memory()
     auto button = Gtk::make_managed<Gtk::Button>(_("Recalculate"));
     button->signal_button_press_event().connect(sigc::mem_fun(*this, &Memory::_apply));
 
-    auto button_box = Gtk::make_managed<Gtk::ButtonBox>();
-    button_box->set_layout(Gtk::BUTTONBOX_END);
+    auto button_box = Gtk::make_managed<Gtk::Box>();
+    button_box->set_halign(Gtk::ALIGN_END);
     button_box->set_spacing(6);
     button_box->set_border_width(4);
     button_box->pack_end(*button);

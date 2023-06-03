@@ -3174,29 +3174,26 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     row++;
 
     // ------ Reset/Import/Export -------
-    auto box_buttons = Gtk::manage(new Gtk::ButtonBox);
+    auto box_buttons = Gtk::manage(new Gtk::Box);
 
-    box_buttons->set_layout(Gtk::BUTTONBOX_END);
     box_buttons->set_spacing(4);
-
     box_buttons->set_hexpand();
     _page_keyshortcuts.attach(*box_buttons, 0, row, 3, 1);
 
     auto kb_reset = Gtk::manage(new Gtk::Button(_("Reset")));
     kb_reset->set_use_underline();
     kb_reset->set_tooltip_text(_("Remove all your customized keyboard shortcuts, and revert to the shortcuts in the shortcut file listed above"));
-    box_buttons->pack_start(*kb_reset, true, true, 6);
-    box_buttons->set_child_secondary(*kb_reset);
-
-    auto kb_import = Gtk::manage(new Gtk::Button(_("Import ...")));
-    kb_import->set_use_underline();
-    kb_import->set_tooltip_text(_("Import custom keyboard shortcuts from a file"));
-    box_buttons->pack_end(*kb_import, true, true, 6);
+    box_buttons->pack_start(*kb_reset, false, true, 6);
 
     auto kb_export = Gtk::manage(new Gtk::Button(_("Export ...")));
     kb_export->set_use_underline();
     kb_export->set_tooltip_text(_("Export custom keyboard shortcuts to a file"));
-    box_buttons->pack_end(*kb_export, true, true, 6);
+    box_buttons->pack_end(*kb_export, false, true, 6);
+
+    auto kb_import = Gtk::manage(new Gtk::Button(_("Import ...")));
+    kb_import->set_use_underline();
+    kb_import->set_tooltip_text(_("Import custom keyboard shortcuts from a file"));
+    box_buttons->pack_end(*kb_import, false, true, 6);
 
     kb_reset->signal_clicked().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBReset) );
     kb_import->signal_clicked().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBImport) );
@@ -3204,6 +3201,11 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     _kb_search.signal_key_release_event().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBSearchKeyEvent) );
     _kb_filelist.signal_changed().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBList) );
     _page_keyshortcuts.signal_realize().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBRealize) );
+
+    _keyboard_sizegroup = Gtk::SizeGroup::create(Gtk::SIZE_GROUP_HORIZONTAL);
+    _keyboard_sizegroup->add_widget(*kb_reset);
+    _keyboard_sizegroup->add_widget(*kb_export);
+    _keyboard_sizegroup->add_widget(*kb_import);
 
     this->AddPage(_page_keyshortcuts, _("Keyboard"), iter_ui, PREFS_PAGE_UI_KEYBOARD_SHORTCUTS);
 

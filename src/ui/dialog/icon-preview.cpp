@@ -19,7 +19,7 @@
 #include <glibmm/timer.h>
 #include <glibmm/main.h>
 
-#include <gtkmm/buttonbox.h>
+#include <gtkmm/box.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/frame.h>
 

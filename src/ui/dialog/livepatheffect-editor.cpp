@@ -180,6 +180,7 @@ LivePathEffectEditor::LivePathEffectEditor()
     Glib::RefPtr<Gtk::EntryCompletion> LPECompletionList = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("LPECompletionList"));
 
     if(prefs->getBool("/dialogs/livepatheffect/showgallery", false)) {
+        // SHOW DEPRECATED LPE GALLERY
         LPEGallery.signal_button_release_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
         LPEGallery.show();
     }
