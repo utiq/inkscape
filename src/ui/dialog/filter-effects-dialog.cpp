@@ -2834,8 +2834,11 @@ FilterEffectsDialog::FilterEffectsDialog()
         if (auto prim = _primitive_list.get_selected()) {
             if (prim->getRepr()) {
                 auto id = FPConverter.get_id_from_key(prim->getRepr()->name());
-                get_widget<Gtk::Image>(_builder, "effect-icon").set_from_icon_name(get_effects().at(id).icon_name, Gtk::ICON_SIZE_DND);
-                get_widget<Gtk::TextView>(_builder, "effect-info").get_buffer()->set_text(get_effects().at(id).tooltip);
+                const auto& effect = get_effects().at(id);
+                get_widget<Gtk::Image>(_builder, "effect-icon").set_from_icon_name(effect.icon_name, Gtk::ICON_SIZE_DND);
+                auto buffer = get_widget<Gtk::TextView>(_builder, "effect-info").get_buffer();
+                buffer->set_text("");
+                buffer->insert_markup(buffer->begin(), effect.tooltip);
                 get_widget<Gtk::TextView>(_builder, "effect-desc").get_buffer()->set_text("");
             }
         }
@@ -3302,7 +3305,7 @@ void FilterEffectsDialog::update_settings_view()
         auto id = FPConverter.get_id_from_key(prim->getRepr()->name());
         _settings->show_and_update(id, prim);
         _empty_settings.hide();
-        _cur_effect_name->set_text(FPConverter.get_label(id));
+        _cur_effect_name->set_text(_(FPConverter.get_label(id).c_str()));
         header.show();
     }
     else {
