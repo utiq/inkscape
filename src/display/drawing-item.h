@@ -115,6 +115,7 @@ public:
     DrawingItem *parent() const { return _parent; }
     bool isAncestorOf(DrawingItem const *item) const;
     int getUpdateComplexity() const { return _update_complexity; }
+    bool unisolatedBlend() const;
 
     void appendChild(DrawingItem *item);
     void prependChild(DrawingItem *item);
@@ -220,6 +221,7 @@ protected:
     std::unique_ptr<Inkscape::Filters::Filter> _filter;
     std::unique_ptr<CacheData> _cache;
     int _update_complexity = 0;
+    bool _contains_unisolated_blend : 1;
 
     CacheList::iterator _cache_iterator;
 
