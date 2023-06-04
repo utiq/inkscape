@@ -67,6 +67,7 @@ DrawingItem::DrawingItem(Drawing &drawing)
     , _key(0)
     , _style(nullptr)
     , _context_style(nullptr)
+    , _contains_unisolated_blend(false)
     , style_vector_effect_size(false)
     , style_vector_effect_rotate(false)
     , style_vector_effect_fixed(false)
@@ -125,6 +126,17 @@ bool DrawingItem::isAncestorOf(DrawingItem const *item) const
         if (c == this) return true;
     }
     return false;
+}
+
+bool DrawingItem::unisolatedBlend() const
+{
+    if (_blend_mode != SP_CSS_BLEND_NORMAL) {
+        return true;
+    } else if (_mask || _filter || _opacity < 0.995 || _isolation == SP_CSS_ISOLATION_ISOLATE) {
+        return false;
+    } else {
+        return _contains_unisolated_blend;
+    }
 }
 
 void DrawingItem::appendChild(DrawingItem *item)
@@ -544,6 +556,9 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
     add_complexity_if(_fill_pattern);
     add_complexity_if(_stroke_pattern);
 
+    // Reset contains_unisolated_blend; to be recalculated by  _updateItem().
+    _contains_unisolated_blend = false;
+
     // Moved from code that was previously in render().
     if (forcecache) {
         _setCached((bool)_cacheRect(), true);
@@ -597,22 +612,29 @@ void DrawingItem::update(Geom::IntRect const &area, UpdateContext const &ctx, un
         }
     }
     if (to_update & STATE_CACHE) {
-        // Update cache score for this item
+        // Remove old cache iterator.
         if (_has_cache_iterator) {
-            // remove old score information
             _drawing._candidate_items.erase(_cache_iterator);
             _has_cache_iterator = false;
         }
+
+        // Determine whether this item is cachable.
+        bool isolated = _mask || _filter || _opacity < 0.995
+            || _blend_mode != SP_CSS_BLEND_NORMAL
+            || _isolation == SP_CSS_ISOLATION_ISOLATE
+            || _child_type == ChildType::ROOT;
+        bool cacheable = !_contains_unisolated_blend || isolated;
+
+        // Determine whether to make this item eligible for caching, by creating a cache iterator.
         double score = _cacheScore();
-        if (score >= CACHE_SCORE_THRESHOLD) {
+        if (score >= CACHE_SCORE_THRESHOLD && cacheable) {
             CacheRecord cr;
             cr.score = score;
             // if _cacheRect() is empty, a negative score will be returned from _cacheScore(),
             // so this will not execute (cache score threshold must be positive)
             cr.cache_size = _cacheRect()->area() * 4;
             cr.item = this;
-            auto it = std::lower_bound(_drawing._candidate_items.begin(), _drawing._candidate_items.end(), cr,
-                                       std::greater<CacheRecord>());
+            auto it = std::lower_bound(_drawing._candidate_items.begin(), _drawing._candidate_items.end(), cr, std::greater<CacheRecord>());
             _cache_iterator = _drawing._candidate_items.insert(it, cr);
             _has_cache_iterator = true;
         }
@@ -771,7 +793,8 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
         || _opacity < 0.995                       // 4. it is non-opaque
         || _blend_mode != SP_CSS_BLEND_NORMAL     // 5. it has blend mode
         || _isolation == SP_CSS_ISOLATION_ISOLATE // 6. it is isolated
-        || _child_type == ChildType::ROOT         // 7. is root, need isolation from background
+        || (   _child_type == ChildType::ROOT
+            && _contains_unisolated_blend    )    // 7. it is the root and needs isolation
         || (bool)_cache;                          // 8. it is to be cached
 
     /* How the rendering is done.
