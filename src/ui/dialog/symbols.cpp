@@ -116,7 +116,7 @@ void scan_all_symbol_sets(std::map<std::string, SymbolSet>& symbol_sets);
 static std::map<std::string, SymbolSet> symbol_sets;
 
 struct SymbolColumns : public Gtk::TreeModel::ColumnRecord {
-    Gtk::TreeModelColumn<Glib::ustring> cache_key;
+    Gtk::TreeModelColumn<std::string> cache_key;
     Gtk::TreeModelColumn<Glib::ustring> symbol_id;
     Gtk::TreeModelColumn<Glib::ustring> symbol_title;
     Gtk::TreeModelColumn<Glib::ustring> symbol_short_title;
@@ -542,7 +542,7 @@ void SymbolsDialog::rebuild(Gtk::TreeIter current) {
     for (auto&& it : symbols) {
         auto& set = it.second;
         for (auto symbol : set.symbols) {
-            addSymbol(symbol, set_id, set.title, set.document);
+            addSymbol(symbol, set.title, set.document);
         }
         n += set.symbols.size();
     }
@@ -1150,7 +1150,7 @@ Cairo::RefPtr<Cairo::Surface> add_background(Cairo::RefPtr<Cairo::Surface> image
     return surface;
 }
 
-void SymbolsDialog::addSymbol(SPSymbol* symbol, Glib::ustring set_id, Glib::ustring doc_title, SPDocument* document)
+void SymbolsDialog::addSymbol(SPSymbol* symbol, Glib::ustring doc_title, SPDocument* document)
 {
     auto id = symbol->getRepr()->attribute("id");
     auto title = symbol->title(); // From title element
@@ -1162,9 +1162,12 @@ void SymbolsDialog::addSymbol(SPSymbol* symbol, Glib::ustring set_id, Glib::ustr
     if (auto rect = symbol->documentVisualBounds()) {
         dimensions = rect->dimensions();
     }
-
+    auto set = symbol->document ? symbol->document->getDocumentFilename() : "null";
+    if (!set) set = "noname";
     Gtk::ListStore::iterator row = _store->append();
-    (*row)[g_columns.cache_key] = set_id + Glib::ustring(id);
+    std::ostringstream key;
+    key << set << '\n' << id;
+    (*row)[g_columns.cache_key] = key.str();
     (*row)[g_columns.symbol_id] = Glib::ustring(id);
     // symbol title and document name - used in a tooltip
     (*row)[g_columns.symbol_title]     = Glib::Markup::escape_text(symbol_title);
@@ -1310,7 +1313,7 @@ SPDocument* SymbolsDialog::symbolsPreviewDoc()
 
 void SymbolsDialog::get_cell_data_func(Gtk::CellRenderer* cell_renderer, Gtk::TreeModel::Row row, bool visible)
 {
-    Glib::ustring cache_key = (row)[g_columns.cache_key];
+    std::string cache_key = (row)[g_columns.cache_key];
     Glib::ustring id = (row)[g_columns.symbol_id];
     Cairo::RefPtr<Cairo::Surface> surface;
 
@@ -1325,7 +1328,7 @@ void SymbolsDialog::get_cell_data_func(Gtk::CellRenderer* cell_renderer, Gtk::Tr
     }
     else {
         // cell is visible, so we need to return correct symbol image and render it if it's missing
-        if (auto image = _image_cache.get(cache_key.raw())) {
+        if (auto image = _image_cache.get(cache_key)) {
             // cache hit
             surface = *image;
         }
@@ -1335,7 +1338,7 @@ void SymbolsDialog::get_cell_data_func(Gtk::CellRenderer* cell_renderer, Gtk::Tr
             if (!doc) doc = getDocument();
             SPSymbol* symbol = doc ? cast<SPSymbol>(doc->getObjectById(id)) : nullptr;
             surface = draw_symbol(symbol);
-            _image_cache.insert(cache_key.raw(), surface);
+            _image_cache.insert(cache_key, surface);
         }
     }
     cell_renderer->set_property("surface", surface);
