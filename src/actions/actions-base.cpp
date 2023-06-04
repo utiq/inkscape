@@ -201,8 +201,8 @@ std::vector<std::vector<Glib::ustring>> raw_data_base =
 {
     // clang-format off
     {"app.inkscape-version",          N_("Inkscape Version"),        "Base",       N_("Print Inkscape version and exit")                   },
-    {"app.active-window-start",       N_("Active W. Call start"),    "Base",       N_("Call active window start")                          },
-    {"app.active-window-end",         N_("Active W. Call end"),      "Base",       N_("Call active window end")                            },
+    {"app.active-window-start",       N_("Active Window: Start Call"), "Base",     N_("Start execution in active window")                          },
+    {"app.active-window-end",         N_("Active Window: End Call"), "Base",       N_("End execution in active window")                            },
     {"app.debug-info",                N_("Debug Info"),              "Base",       N_("Print debugging information and exit")              },
     {"app.system-data-directory",     N_("System Directory"),        "Base",       N_("Print system data directory and exit")              },
     {"app.user-data-directory",       N_("User Directory"),          "Base",       N_("Print user data directory and exit")                },
