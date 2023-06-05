@@ -13,6 +13,7 @@
 
 #include <2geom/bezier-utils.h>
 #include <2geom/path-sink.h>
+#include <2geom/point.h>
 
 #include <utility>
 #include <vector>
@@ -20,7 +21,7 @@
 #include "display/curve.h"
 #include "display/control/canvas-item-bpath.h"
 
-#include "forward.h"
+#include <2geom/forward.h>
 #include "helper/geom.h"
 
 #include "live_effects/lpeobject.h"
@@ -31,7 +32,6 @@
 #include "live_effects/parameter/path.h"
 
 #include "object/sp-path.h"
-#include "point.h"
 #include "style.h"
 
 #include "ui/icon-names.h"

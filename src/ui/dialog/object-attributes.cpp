@@ -10,7 +10,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-
+#include <2geom/rect.h>
 #include <cmath>
 #include <cstddef>
 #include <glibmm/i18n.h>
@@ -41,7 +41,6 @@
 #include "object/sp-rect.h"
 #include "object/sp-star.h"
 #include "object/tags.h"
-#include "rect.h"
 #include "streq.h"
 #include "ui/builder-utils.h"
 #include "ui/dialog/object-attributes.h"
