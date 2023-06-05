@@ -9,6 +9,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <2geom/point.h>
 #include <cairo.h>
 #include <cairomm/refptr.h>
 #include <cairomm/surface.h>
@@ -42,7 +43,6 @@
 #include <pangomm/layout.h>
 #include <string>
 #include <vector>
-#include "point.h"
 #include "preferences.h"
 #include "ui/builder-utils.h"
 #include "ui/dialog/messages.h"
