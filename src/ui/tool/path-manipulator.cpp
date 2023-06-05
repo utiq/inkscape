@@ -1225,6 +1225,11 @@ void PathManipulator::_externalChange(unsigned type)
     }
 }
 
+Geom::Affine PathManipulator::_getTransform() const
+{
+    return _i2d_transform * _edit_transform;
+}
+
 /** Create nodes and handles based on the XML of the edited path. */
 void PathManipulator::_createControlPointsFromGeometry()
 {
@@ -1253,7 +1258,7 @@ void PathManipulator::_createControlPointsFromGeometry()
     }
     _spcurve = SPCurve(pathv);
 
-    pathv *= (_edit_transform * _i2d_transform);
+    pathv *= _getTransform();
 
     // in this loop, we know that there are no zero-segment subpaths
     for (auto & pit : pathv) {
@@ -1450,7 +1455,7 @@ void PathManipulator::_createGeometryFromControlPoints(bool alert_LPE)
         ++spi;
     }
     builder.flush();
-    Geom::PathVector pathv = builder.peek() * (_edit_transform * _i2d_transform).inverse();
+    Geom::PathVector pathv = builder.peek() * _getTransform().inverse();
     for (Geom::PathVector::iterator i = pathv.begin(); i != pathv.end(); ) {
         // NOTE: this utilizes the fact that Geom::PathVector is an std::vector.
         // When we erase an element, the next one slides into position,
@@ -1530,7 +1535,7 @@ void PathManipulator::_updateOutline()
         return;
     }
 
-    auto pv = _spcurve.get_pathvector() * (_edit_transform * _i2d_transform);
+    auto pv = _spcurve.get_pathvector() * _getTransform();
     // This SPCurve thing has to be killed with extreme prejudice
     if (_show_path_direction) {
         // To show the direction, we append additional subpaths which consist of a single
@@ -1771,7 +1776,7 @@ Geom::Coord PathManipulator::_updateDragPoint(Geom::Point const &evp)
 {
     Geom::Coord dist = HUGE_VAL;
 
-    Geom::Affine to_desktop = _edit_transform * _i2d_transform;
+    Geom::Affine to_desktop = _getTransform();
     Geom::PathVector pv = _spcurve.get_pathvector();
     std::optional<Geom::PathVectorTime> pvp =
         pv.nearestTime(_desktop->w2d(evp) * to_desktop.inverse());
@@ -1821,7 +1826,7 @@ double PathManipulator::_getStrokeTolerance()
     double ret = prefs->getIntLimited("/options/dragtolerance/value", 2, 0, 100);
     if (_path && _path->style && !_path->style->stroke.isNone()) {
         ret += _path->style->stroke_width.computed * 0.5
-            * (_edit_transform * _i2d_transform).descrim() // scale to desktop coords
+            * _getTransform().descrim() // scale to desktop coords
             * _desktop->current_zoom(); // == _d2w.descrim() - scale to window coords
     }
     return ret;
