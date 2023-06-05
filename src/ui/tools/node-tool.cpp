@@ -356,14 +356,15 @@ void gather_items(NodeTool *nt, SPItem *base, SPObject *obj, Inkscape::UI::Shape
         for (auto& c: obj->children) {
             gather_items(nt, base, &c, role, s);
         }
-    } else if (is<SPItem>(obj)) {
-        SPObject *object = obj;
-        auto item = cast<SPItem>(obj);
+    } else if (auto item = cast<SPItem>(obj)) {
         ShapeRecord r;
-        r.object = object;
-        // TODO add support for objectBoundingBox
-        r.edit_transform = base ? base->i2doc_affine() : Geom::identity();
+        r.object = obj;
         r.role = role;
+
+        // TODO add support for objectBoundingBox
+        if (role != SHAPE_ROLE_NORMAL && base) {
+            r.edit_transform = base->i2doc_affine();
+        }
 
         if (s.insert(r).second) {
             // this item was encountered the first time

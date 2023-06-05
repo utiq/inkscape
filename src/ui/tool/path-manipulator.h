@@ -136,6 +136,7 @@ private:
     void _setGeometry();
     Glib::ustring _nodetypesKey();
     Inkscape::XML::Node *_getXMLNode();
+    Geom::Affine _getTransform() const;
 
     void _selectionChangedM(std::vector<SelectableControlPoint *> pvec, bool selected);
     void _selectionChanged(SelectableControlPoint * p, bool selected);
