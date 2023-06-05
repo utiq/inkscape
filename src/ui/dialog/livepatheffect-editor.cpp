@@ -987,7 +987,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             }
             // other
             LPEEffect->set_name("LPEEffectItem");
-            LPENameLabel->set_label((*it)->lpeobject->get_lpe()->getName().c_str());
+            LPENameLabel->set_label(_((*it)->lpeobject->get_lpe()->getName().c_str()));
             LPEExpander->property_expanded().signal_changed().connect(sigc::bind(sigc::mem_fun(*this, &LivePathEffectEditor::expanded_notify),LPEExpander)); 
             LPEOpenExpander->signal_button_press_event().connect([=](GdkEventButton* const evt){
                LPEExpander->set_expanded(!LPEExpander->property_expanded());
