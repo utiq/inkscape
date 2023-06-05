@@ -1269,7 +1269,6 @@ LPETiling::doEffect_path_post (Geom::PathVector const & path_in, FillRuleBool fi
     if (!gap_bbox) {
         return path_in;
     }
-    Geom::Point spcenter_base = (*sp_lpe_item->geometricBounds(transformoriginal)).midpoint();
     Geom::Point center = (*gap_bbox).midpoint() * transformoriginal.inverse();
     Geom::PathVector output;
     gint counter = 0;
