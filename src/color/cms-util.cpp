@@ -12,6 +12,7 @@
 #include <iostream> // Debug output
 #include <vector>
 #include <fcntl.h> // File open flags
+#include <unistd.h> // Posix read, close.
 
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
