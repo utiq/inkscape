@@ -222,6 +222,8 @@ Output::save(SPDocument *doc, gchar const *filename, bool detachbase)
     if (loaded()) {
         imp->setDetachBase(detachbase);
         auto new_doc = doc->copy();
+        new_doc->ensureUpToDate();
+        run_processing_actions(new_doc.get());
         imp->save(this, new_doc.get(), filename);
     }
 }

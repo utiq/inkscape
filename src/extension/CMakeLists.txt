@@ -3,6 +3,7 @@
 set(extension_SRC
 	db.cpp
 	dependency.cpp
+        processing-action.cpp
 	effect.cpp
 	execution-env.cpp
 	extension.cpp
@@ -77,6 +78,7 @@ set(extension_SRC
 	# Header
 	db.h
 	dependency.h
+        processing-action.h
 	effect.h
 	execution-env.h
 	extension.h

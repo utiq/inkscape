@@ -60,6 +60,7 @@
 #include "actions/actions-edit-document.h"
 #include "actions/actions-undo-document.h"
 #include "actions/actions-pages.h"
+#include "actions/actions-processing.h"
 
 #include "display/drawing.h"
 #include "display/control/canvas-item-drawing.h"
@@ -166,6 +167,7 @@ SPDocument::SPDocument() :
     action_group = Gio::SimpleActionGroup::create();
     add_actions_edit_document(this);
     add_actions_pages(this);
+    add_actions_processing(this);
     add_actions_undo_document(this);
 
     _page_manager = std::make_unique<Inkscape::PageManager>(this);

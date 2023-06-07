@@ -30,6 +30,7 @@
 
 #include "db.h"
 #include "dependency.h"
+#include "processing-action.h"
 #include "implementation/implementation.h"
 #include "implementation/script.h"
 #include "implementation/xslt.h"
@@ -129,6 +130,8 @@ Extension::Extension(Inkscape::XML::Node *in_repr, Implementation::Implementatio
             if (widget) {
                 _widgets.push_back(widget);
             }
+        } else if (!strcmp(chname, "action")) {
+            _actions.push_back(ProcessingAction(child_repr));
         } else if (!strcmp(chname, "dependency")) {
             _deps.push_back(new Dependency(child_repr, this));
         } else if (!strcmp(chname, "script")) { // TODO: should these be parsed in their respective Implementation?
@@ -1135,6 +1138,19 @@ bool Extension::prefs()
 
     // No controls, no prefs
     return true;
+}
+
+/**
+ * Runs any pre-processing actions and modifies the document
+ */
+void Extension::run_processing_actions(SPDocument *doc)
+{
+    for (auto &process_action : _actions) {
+        // Pass in the extensions internal prefs if needed in the future.
+        if (process_action.is_enabled()) {
+            process_action.run(doc);
+        }
+    }
 }
 
 }  /* namespace Extension */

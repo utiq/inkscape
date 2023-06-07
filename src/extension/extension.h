@@ -104,6 +104,7 @@ namespace Extension {
 
 class ExecutionEnv;
 class Dependency;
+class ProcessingAction;
 class ExpirationTimer;
 class ExpirationTimer;
 class InxParameter;
@@ -138,6 +139,8 @@ private:
     static FILE *error_file;                   /**< This is the place where errors get reported */
     std::string _error_reason;                 /**< Short, textual explanation for the latest error */
     bool _gui;
+
+    std::vector<ProcessingAction> _actions;    /**< Processing actions */
 
 protected:
     Inkscape::XML::Node *repr;                 /**< The XML description of the Extension */
@@ -184,6 +187,8 @@ public:
 
     int get_sort_priority() const { return _priority; }
     void set_sort_priority(int priority) { _priority = priority; }
+
+    virtual void run_processing_actions(SPDocument *doc);
 
     /* Parameter Stuff */
 private:
