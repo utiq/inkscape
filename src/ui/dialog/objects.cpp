@@ -1545,17 +1545,29 @@ bool ObjectsPanel::_handleButtonEvent(GdkEventButton* event)
         // Select items on button release to not confuse drag (unless it's a right-click)
         // Right-click selects too to set up the stage for context menu which frequently relies on current selection!
         if (!_is_editing && (event->type == GDK_BUTTON_RELEASE || context_menu)) {
-            if (context_menu) {
+            if (group && group->layerMode() == SPGroup::LAYER) {
                 // if right-clicking on a layer, make it current for context menu actions to work correctly
-                if (group && group->layerMode() == SPGroup::LAYER && getDesktop()->layerManager().currentLayer() != item) {
+                if (context_menu && getDesktop()->layerManager().currentLayer() != item) {
                     getDesktop()->layerManager().setCurrentLayer(item, true);
                 }
+                // Clicking on layers firstly switches to that layer.
+                else if (selection->includes(item)) {
+                    selection->clear();
+                } else if (_layer != item) {
+                    getDesktop()->layerManager().setCurrentLayer(item, true);
+                } else {
+                    selection->set(item);
+                }
+
+            } else if (!context_menu) {
+                selectCursorItem(event->state);
+            }
+
+            if (context_menu) {
                 ContextMenu *menu = new ContextMenu(getDesktop(), item, true); // true == hide menu item for opening this dialog!
                 menu->attach_to_widget(*this); // So actions work!
                 menu->show();
                 menu->popup_at_pointer(nullptr);
-            } else {
-                selectCursorItem(event->state);
             }
             return true;
         } else {
