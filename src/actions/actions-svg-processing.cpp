@@ -13,7 +13,7 @@
 #include <giomm.h>
 #include <glibmm/i18n.h>
 
-#include "actions-processing.h"
+#include "actions-svg-processing.h"
 #include "actions-helper.h"
 
 #include "xml/attribute-record.h"
@@ -29,31 +29,8 @@
 #include "style.h"
 #include "path-chemistry.h"
 #include "path/path-outline.h"
-
-
-std::vector<std::vector<Glib::ustring>> doc_processing_actions =
-{
-    // clang-format off
-    {"doc.set-svg-version-1",            N_("Set SVG Version to 1.1"),       "Processing", N_("Sets the Document's SVG version to 1.1") },
-    {"doc.set-svg-version-2",            N_("Set SVG Version to 2.0"),       "Processing", N_("Sets the Document's SVG version to 2.0") },
-    {"doc.prune-inkscape-namespaces",    N_("Prune Inkscape Namespaces"),    "Processing", N_("Remove any inkscape specific svg data") },
-    {"doc.prune-proprietary-namespaces", N_("Prune Proprietary Namespaces"), "Processing", N_("Remove any known proprietary svg data") },
-
-    {"doc.reverse-auto-start-markers",   N_("Reverse Auto Start Markers"),   "Processing", N_("Remove auto start positions from markers") },
-    {"doc.remove-marker-context-paint",  N_("Remove Marker Context Paint"),  "Processing", N_("Remove context paints from markers") },
-
-    {"doc.insert-text-fallback",         N_("Insert Text Fallback"),         "Processing", N_("Replace SVG2 text with SVG2 text") },
-    {"doc.insert-mesh-polyfill",         N_("Insert Mesh Polyfill"),         "Processing", N_("Insert javascript for rendering meshes") },
-    {"doc.insert-hatch-polyfill",        N_("Insert Hatch Polyfill"),        "Processing", N_("Insert javascript for rendering hatches") },
-
-    {"doc.all-clones-to-objects",        N_("Unlink All Clones"),            "Processing", N_("Recursively unlink all clones and symbols") },
-    {"doc.all-objects-to-paths",         N_("All Objects to Paths"),         "Processing", N_("Turn all shapes recursively into a path elements") },
-    {"doc.add-strokes-to-paths",         N_("All Strokes to Paths"),         "Processing", N_("Turn all strokes recursively into fill only paths") },
-
-    {"doc.ancillary-bounding-boxes",     N_("Append Bounding Box Info"),     "Processing", N_("Add bounding box information to all shapes") },
-    {"doc.ancillary-path-data",          N_("Append Shape Path Data"),       "Processing", N_("Add shape path information to all shapes") },
-    // clang-format on
-};
+#include "svg/svg-box.h"
+#include "svg/svg.h"
 
 /*
  * Removes all sodipodi and inkscape elements and attributes from an xml tree.
@@ -361,7 +338,7 @@ void remove_marker_context_paint(Inkscape::XML::Node *repr, Inkscape::XML::Node 
  * Notes:
  *   Text must have been layed out. Access via old document.
  */
-static void insert_text_fallback( Inkscape::XML::Node *repr, const SPDocument *original_doc, Inkscape::XML::Node *defs = nullptr )
+void insert_text_fallback(Inkscape::XML::Node *repr, const SPDocument *original_doc, Inkscape::XML::Node *defs)
 {
     if (repr) {
 
@@ -661,6 +638,82 @@ void insert_hatch_polyfill(Inkscape::XML::Node *repr)
     }
 }
 
+/**
+ * Appends a visual box, and an optional geometric box to each SPItem recursively.
+ *
+ * This means groups also end up with boxes and any other item where one can be made.
+ */
+void insert_bounding_boxes(SPItem *item)
+{
+    for (auto& child: item->childList(false)) {
+        if (auto child_item = cast<SPItem>(child)) {
+            insert_bounding_boxes(child_item);
+        }
+    }
+    auto vbox = SVGBox(item->visualBounds(item->i2doc_affine()));
+    item->setAttributeOrRemoveIfEmpty("inkscape:visualbox", vbox.write());
+    auto gbox = SVGBox(item->geometricBounds(item->i2doc_affine()));
+    if (gbox != vbox) {
+        item->setAttributeOrRemoveIfEmpty("inkscape:geometricbox", vbox.write());
+    }
+}
+
+/**
+ * Appends the shape path, if available, to any SPShape recursively.
+ */
+void insert_path_data(SPItem *item)
+{
+    Geom::PathVector fill;
+    Geom::PathVector stroke;
+    if (item_find_paths(item, fill, stroke)) {
+        item->setAttribute("inkscape:d", sp_svg_write_path(fill));
+    } else {
+        for (auto& child: item->childList(false)) {
+            if (auto child_item = cast<SPItem>(child)) {
+                insert_path_data(child_item);
+            }
+        }
+    }
+}
+
+/**
+ * Makes paths more predictable for better processing
+ */
+void normalize_all_paths(Inkscape::XML::Node *node)
+{
+    if (auto attr = node->attribute("d")) {
+        node->setAttribute("d", sp_svg_write_path(sp_svg_read_pathv(attr), true));
+    }
+    for (auto child = node->firstChild(); child; child = child->next() ) {
+        normalize_all_paths(child);
+    }
+}
+
+std::vector<std::vector<Glib::ustring>> doc_processing_actions =
+{
+    // clang-format off
+    {"doc.set-svg-version-1",            N_("Set SVG Version to 1.1"),       "Processing", N_("Sets the Document's SVG version to 1.1") },
+    {"doc.set-svg-version-2",            N_("Set SVG Version to 2.0"),       "Processing", N_("Sets the Document's SVG version to 2.0") },
+    {"doc.prune-inkscape-namespaces",    N_("Prune Inkscape Namespaces"),    "Processing", N_("Remove any inkscape specific svg data") },
+    {"doc.prune-proprietary-namespaces", N_("Prune Proprietary Namespaces"), "Processing", N_("Remove any known proprietary svg data") },
+
+    {"doc.reverse-auto-start-markers",   N_("Reverse Auto Start Markers"),   "Processing", N_("Remove auto start positions from markers") },
+    {"doc.remove-marker-context-paint",  N_("Remove Marker Context Paint"),  "Processing", N_("Remove context paints from markers") },
+
+    {"doc.insert-text-fallback",         N_("Insert Text Fallback"),         "Processing", N_("Replace SVG2 text with SVG1.1 text") },
+    {"doc.insert-mesh-polyfill",         N_("Insert Mesh Polyfill"),         "Processing", N_("Insert javascript for rendering meshes") },
+    {"doc.insert-hatch-polyfill",        N_("Insert Hatch Polyfill"),        "Processing", N_("Insert javascript for rendering hatches") },
+
+    {"doc.all-clones-to-objects",        N_("Unlink All Clones"),            "Processing", N_("Recursively unlink all clones and symbols") },
+    {"doc.all-objects-to-paths",         N_("All Objects to Paths"),         "Processing", N_("Turn all shapes recursively into a path elements") },
+    {"doc.add-strokes-to-paths",         N_("All Strokes to Paths"),         "Processing", N_("Turn all strokes recursively into fill only paths") },
+    {"doc.normalize-all-paths",          N_("Normalize Path Data"),          "Processing", N_("Make all paths absolute and predictable") },
+
+    {"doc.insert-bounding-boxes",        N_("Insert Bounding Box Info"),     "Processing", N_("Add bounding box information to all shapes") },
+    {"doc.insert-path-data",             N_("Insert Shape Path Data"),       "Processing", N_("Add shape path information to all shapes") },
+    // clang-format on
+};
+
 void add_actions_processing(SPDocument* doc)
 {
 
@@ -676,7 +729,7 @@ void add_actions_processing(SPDocument* doc)
         rdoc->setAttribute("version", "1.1");
     });
     group->add_action("prune-inkscape-namespaces",    [doc]() { prune_inkscape_from_node(doc->getReprRoot()); });
-    group->add_action("prune-proprietary-namespaces", [doc]() { prune_inkscape_from_node(doc->getReprRoot()); });
+    group->add_action("prune-proprietary-namespaces", [doc]() { prune_proprietary_from_node(doc->getReprRoot()); });
     group->add_action("reverse-auto-start-markers",   [doc]() {
         // Do marker start for efficiency reasons
         remove_marker_auto_start_reverse(doc->getReprRoot(), doc->getDefs()->getRepr(), "marker-start");
@@ -699,8 +752,9 @@ void add_actions_processing(SPDocument* doc)
     group->add_action("add-strokes-to-paths",         [doc]() {
         item_to_paths(doc->getRoot());
     });
-    //group->add_action("ancillary-bounding-boxes",     [doc]() { ... });
-    //group->add_action("ancillary-path-data",          [doc]() { ... });
+    group->add_action("normalize-all-paths",       [doc]() { normalize_all_paths(doc->getReprRoot()); });
+    group->add_action("insert-bounding-boxes",     [doc]() { insert_bounding_boxes(doc->getRoot()); });
+    group->add_action("insert-path-data",          [doc]() { insert_path_data(doc->getRoot()); });
     // clang-format on
 
     // Note: This will only work for the first ux to load, possible problem.

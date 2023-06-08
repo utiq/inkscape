@@ -30,6 +30,11 @@ namespace XML {
 }
 
 /**
+ * Find the fill and stroke of the given item.
+ */
+bool item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& stroke, bool bbox_only = false);
+
+/**
  * Find an outline that represents an item.
  */
 Geom::PathVector* item_to_outline (SPItem const *item, bool exclude_markers = false);

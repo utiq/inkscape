@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
- * Inkscape::SVG::PathString - builder for SVG path strings
+ * PathString - builder for SVG path strings
  *//*
  * Authors: see git history
  * 
@@ -21,27 +21,43 @@
 static int const minprec = 1;
 static int const maxprec = 16;
 
-int Inkscape::SVG::PathString::numericprecision;
-int Inkscape::SVG::PathString::minimumexponent;
-Inkscape::SVG::PATHSTRING_FORMAT Inkscape::SVG::PathString::format;
+namespace Inkscape {
+namespace SVG {
 
-Inkscape::SVG::PathString::PathString() :
-    force_repeat_commands(!Inkscape::Preferences::get()->getBool("/options/svgoutput/disable_optimizations" ) && Inkscape::Preferences::get()->getBool("/options/svgoutput/forcerepeatcommands"))
+/**
+ * Construct a path string using Inkscape's default preferences
+ */
+PathString::PathString()
 {
+    // Load the pathstring configuration from a standard set of preferences
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    format = (PATHSTRING_FORMAT)prefs->getIntLimited("/options/svgoutput/pathstring_format", 1, 0, PATHSTRING_FORMAT_SIZE - 1 );
-    numericprecision = std::max<int>(minprec,std::min<int>(maxprec, prefs->getInt("/options/svgoutput/numericprecision", 8)));
-    minimumexponent = prefs->getInt("/options/svgoutput/minimumexponent", -8);
+    _format = (PATHSTRING_FORMAT)prefs->getIntLimited("/options/svgoutput/pathstring_format", 1, 0, PATHSTRING_FORMAT_SIZE - 1 );
+    _force_repeat_commands = !prefs->getBool("/options/svgoutput/disable_optimizations" ) && prefs->getBool("/options/svgoutput/forcerepeatcommands");
+    int precision = std::max<int>(minprec,std::min<int>(maxprec, prefs->getInt("/options/svgoutput/numericprecision", 8)));
+    int minexp = prefs->getInt("/options/svgoutput/minimumexponent", -8);
+    _abs_state = State(precision, minexp);
+    _rel_state = State(precision, minexp);
+}
+
+/**
+ * Construct a path string, manually overriding Inkscape's preferences
+ */
+PathString::PathString(PATHSTRING_FORMAT format, int precision, int minexp, bool force_repeat)
+    : _abs_state(precision, minexp)
+    , _rel_state(precision, minexp)
+    , _format(format)
+    , _force_repeat_commands(force_repeat)
+{
 }
 
 // For absolute and relative paths... the entire path is kept in the "tail".
 // For optimized path, at a switch between absolute and relative, add tail to commonbase.
-void Inkscape::SVG::PathString::_appendOp(char abs_op, char rel_op) {
-    bool abs_op_repeated = _abs_state.prevop == abs_op && !force_repeat_commands;
-    bool rel_op_repeated = _rel_state.prevop == rel_op && !force_repeat_commands;
+void PathString::_appendOp(char abs_op, char rel_op) {
+    bool abs_op_repeated = _abs_state.prevop == abs_op && !_force_repeat_commands;
+    bool rel_op_repeated = _rel_state.prevop == rel_op && !_force_repeat_commands;
 
     // For absolute and relative paths... do nothing.
-    switch (format) {
+    switch (_format) {
         case PATHSTRING_ABSOLUTE:
             if ( !abs_op_repeated ) _abs_state.appendOp(abs_op);
             break;
@@ -84,24 +100,24 @@ void Inkscape::SVG::PathString::_appendOp(char abs_op, char rel_op) {
     }
 }
 
-void Inkscape::SVG::PathString::State::append(Geom::Coord v) {
+void PathString::State::append(Geom::Coord v) {
     str += ' ';
-    appendNumber(v);
+    appendNumber(v, _precision, _minexp);
 }
 
-void Inkscape::SVG::PathString::State::append(Geom::Point p) {
+void PathString::State::append(Geom::Point p) {
     str += ' ';
-    appendNumber(p[Geom::X]);
+    appendNumber(p[Geom::X], _precision, _minexp);
     str += ',';
-    appendNumber(p[Geom::Y]);
+    appendNumber(p[Geom::Y], _precision, _minexp);
 }
 
-void Inkscape::SVG::PathString::State::append(Geom::Coord v, Geom::Coord& rv) {
+void PathString::State::append(Geom::Coord v, Geom::Coord& rv) {
     str += ' ';
     appendNumber(v, rv);
 }
 
-void Inkscape::SVG::PathString::State::append(Geom::Point p, Geom::Point &rp) {
+void PathString::State::append(Geom::Point p, Geom::Point &rp) {
     str += ' ';
     appendNumber(p[Geom::X], rp[Geom::X]);
     str += ',';
@@ -114,15 +130,15 @@ void Inkscape::SVG::PathString::State::append(Geom::Point p, Geom::Point &rp) {
 // than the absolute value).
 
 // NOTE: This assumes v and r are already rounded (this includes flushing to zero if they are < 10^minexp)
-void Inkscape::SVG::PathString::State::appendRelativeCoord(Geom::Coord v, Geom::Coord r) {
-    int const minexp = minimumexponent-numericprecision+1;
-    int const digitsEnd = (int)floor(log10(std::min(fabs(v),fabs(r)))) - numericprecision; // Position just beyond the last significant digit of the smallest (in absolute sense) number
+void PathString::State::appendRelativeCoord(Geom::Coord v, Geom::Coord r) {
+    int const minexp = _minexp - _precision + 1;
+    int const digitsEnd = (int)floor(log10(std::min(fabs(v),fabs(r)))) - _precision; // Position just beyond the last significant digit of the smallest (in absolute sense) number
     double const roundeddiff = floor((v-r)*pow(10.,-digitsEnd-1)+.5);
     int const numDigits = (int)floor(log10(fabs(roundeddiff)))+1; // Number of digits in roundeddiff
     if (r == 0) {
-        appendNumber(v, numericprecision, minexp);
+        appendNumber(v, _precision, minexp);
     } else if (v == 0) {
-        appendNumber(-r, numericprecision, minexp);
+        appendNumber(-r, _precision, minexp);
     } else if (numDigits>0) {
         appendNumber(v-r, numDigits, minexp);
     } else {
@@ -131,29 +147,31 @@ void Inkscape::SVG::PathString::State::appendRelativeCoord(Geom::Coord v, Geom::
     }
 }
 
-void Inkscape::SVG::PathString::State::appendRelative(Geom::Point p, Geom::Point r) {
+void PathString::State::appendRelative(Geom::Point p, Geom::Point r) {
     str += ' ';
     appendRelativeCoord(p[Geom::X], r[Geom::X]);
     str += ',';
     appendRelativeCoord(p[Geom::Y], r[Geom::Y]);
 }
 
-void Inkscape::SVG::PathString::State::appendRelative(Geom::Coord v, Geom::Coord r) {
+void PathString::State::appendRelative(Geom::Coord v, Geom::Coord r) {
     str += ' ';
     appendRelativeCoord(v, r);
 }
 
-void Inkscape::SVG::PathString::State::appendNumber(double v, int precision, int minexp) {
+void PathString::State::appendNumber(double v, int precision, int minexp) {
 
     str.append(sp_svg_number_write_de(v, precision, minexp));
 }
 
-void Inkscape::SVG::PathString::State::appendNumber(double v, double &rv, int precision, int minexp) {
+void PathString::State::appendNumber(double v, double &rv) {
     size_t const oldsize = str.size();
-    appendNumber(v, precision, minexp);
+    appendNumber(v, _precision, _minexp);
     char* begin_of_num = const_cast<char*>(str.data()+oldsize); // Slightly evil, I know (but std::string should be storing its data in one big block of memory, so...)
     sp_svg_number_read_d(begin_of_num, &rv);
 }
+
+}}
 
 /*
   Local Variables:

@@ -58,14 +58,14 @@ Geom::PathVector sp_svg_read_pathv(char const * str)
     return pathv;
 }
 
-static void sp_svg_write_curve(Inkscape::SVG::PathString & str, Geom::Curve const * c) {
+static void sp_svg_write_curve(Inkscape::SVG::PathString & str, Geom::Curve const * c, bool normalize = false) {
     // TODO: this code needs to removed and replaced by appropriate path sink
     if(Geom::LineSegment const *line_segment = dynamic_cast<Geom::LineSegment const  *>(c)) {
         // don't serialize stitch segments
         if (!dynamic_cast<Geom::Path::StitchSegment const *>(c)) {
-            if (line_segment->initialPoint()[Geom::X] == line_segment->finalPoint()[Geom::X]) {
+            if (!normalize && line_segment->initialPoint()[Geom::X] == line_segment->finalPoint()[Geom::X]) {
                 str.verticalLineTo( line_segment->finalPoint()[Geom::Y] );
-            } else if (line_segment->initialPoint()[Geom::Y] == line_segment->finalPoint()[Geom::Y]) {
+            } else if (!normalize && line_segment->initialPoint()[Geom::Y] == line_segment->finalPoint()[Geom::Y]) {
                 str.horizontalLineTo( line_segment->finalPoint()[Geom::X] );
             } else {
                 str.lineTo( (*line_segment)[1][0], (*line_segment)[1][1] );
@@ -73,8 +73,17 @@ static void sp_svg_write_curve(Inkscape::SVG::PathString & str, Geom::Curve cons
         }
     }
     else if(Geom::QuadraticBezier const *quadratic_bezier = dynamic_cast<Geom::QuadraticBezier const  *>(c)) {
-        str.quadTo( (*quadratic_bezier)[1][0], (*quadratic_bezier)[1][1],
-                    (*quadratic_bezier)[2][0], (*quadratic_bezier)[2][1] );
+        if (normalize) {
+            // Convert to bezier curve
+            double x1 = 1.0 / 3 * quadratic_bezier->initialPoint()[0] + 2.0 / 3 * (*quadratic_bezier)[1][0];
+            double x2 = 2.0 / 3 * (*quadratic_bezier)[1][0] + 1.0 / 3 * (*quadratic_bezier)[2][0];
+            double y1 = 1.0 / 3 * quadratic_bezier->initialPoint()[1] + 2.0 / 3 * (*quadratic_bezier)[1][1];
+            double y2 = 2.0 / 3 * (*quadratic_bezier)[1][1] + 1.0 / 3 * (*quadratic_bezier)[2][1];
+            str.curveTo(x1, y1, x2, y2, (*quadratic_bezier)[2][0], (*quadratic_bezier)[2][1]);
+        } else {
+            str.quadTo( (*quadratic_bezier)[1][0], (*quadratic_bezier)[1][1],
+                        (*quadratic_bezier)[2][0], (*quadratic_bezier)[2][1] );
+        }
     }
     else if(Geom::CubicBezier const *cubic_bezier = dynamic_cast<Geom::CubicBezier const  *>(c)) {
         str.curveTo( (*cubic_bezier)[1][0], (*cubic_bezier)[1][1],
@@ -92,16 +101,16 @@ static void sp_svg_write_curve(Inkscape::SVG::PathString & str, Geom::Curve cons
 
         //recurse to convert the new path resulting from the sbasis to svgd
         for(const auto & iter : sbasis_path) {
-            sp_svg_write_curve(str, &iter);
+            sp_svg_write_curve(str, &iter, normalize);
         }
     }
 }
 
-static void sp_svg_write_path(Inkscape::SVG::PathString & str, Geom::Path const & p) {
+static void sp_svg_write_path(Inkscape::SVG::PathString & str, Geom::Path const & p, bool normalize = false) {
     str.moveTo( p.initialPoint()[0], p.initialPoint()[1] );
 
     for(Geom::Path::const_iterator cit = p.begin(); cit != p.end_open(); ++cit) {
-        sp_svg_write_curve(str, &(*cit));
+        sp_svg_write_curve(str, &(*cit), normalize);
     }
 
     if (p.closed()) {
@@ -109,11 +118,14 @@ static void sp_svg_write_path(Inkscape::SVG::PathString & str, Geom::Path const 
     }
 }
 
-std::string sp_svg_write_path(Geom::PathVector const &p) {
+std::string sp_svg_write_path(Geom::PathVector const &p, bool normalize) {
     Inkscape::SVG::PathString str;
+    if (normalize) {
+        str = Inkscape::SVG::PathString(Inkscape::SVG::PATHSTRING_ABSOLUTE, 4, -2, true);
+    }
 
     for(const auto & pit : p) {
-        sp_svg_write_path(str, pit);
+        sp_svg_write_path(str, pit, normalize);
     }
 
     return str;

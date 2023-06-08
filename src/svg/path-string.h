@@ -38,6 +38,7 @@ enum PATHSTRING_FORMAT {
 class PathString {
 public:
     PathString();
+    PathString(PATHSTRING_FORMAT format, int precision, int minexp, bool force);
 
     // default copy
     // default assign
@@ -189,7 +190,10 @@ private:
     }
 
     struct State {
-        State() { prevop = 0; switches = 0; }
+        State(int precision = 8, int minexp = -8) {
+            _precision = precision;
+            _minexp = minexp;
+        }
 
         void appendOp(char op) {
             if (prevop != 0) str += ' ';
@@ -220,12 +224,14 @@ private:
         // Note: changing this to Glib::ustring might cause problems in path-string.cpp because it assumes that
         //       size() returns the size of the string in BYTES (and Glib::ustring::resize is terribly slow)
         std::string str;
-        unsigned int switches;
-        char prevop;
+        unsigned int switches = 0;
+        char prevop = 0;
+        int _minexp;
+        int _precision;
 
     private:
-        void appendNumber(double v, int precision=numericprecision, int minexp=minimumexponent);
-        void appendNumber(double v, double &rv, int precision=numericprecision, int minexp=minimumexponent);
+        void appendNumber(double v, int precision, int minexp);
+        void appendNumber(double v, double &rv);
         void appendRelativeCoord(Geom::Coord v, Geom::Coord r);
     } _abs_state, _rel_state; // State with the last operator being an absolute/relative operator
 
@@ -238,15 +244,13 @@ private:
     std::string commonbase;
     std::string final;
     std::string const &tail() const {
-        return ( (format == PATHSTRING_ABSOLUTE) ||
-                 (format == PATHSTRING_OPTIMIZE && _abs_state <= _rel_state ) ?
+        return ( (_format == PATHSTRING_ABSOLUTE) ||
+                 (_format == PATHSTRING_OPTIMIZE && _abs_state <= _rel_state ) ?
                  _abs_state.str : _rel_state.str );
     }
 
-    static PATHSTRING_FORMAT format;
-    bool const force_repeat_commands;
-    static int numericprecision;
-    static int minimumexponent;
+    PATHSTRING_FORMAT _format;
+    bool _force_repeat_commands;
 };
 
 }

@@ -60,7 +60,7 @@
 #include "actions/actions-edit-document.h"
 #include "actions/actions-undo-document.h"
 #include "actions/actions-pages.h"
-#include "actions/actions-processing.h"
+#include "actions/actions-svg-processing.h"
 
 #include "display/drawing.h"
 #include "display/control/canvas-item-drawing.h"

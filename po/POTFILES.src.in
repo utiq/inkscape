@@ -31,6 +31,7 @@ ${_build_dir}/share/templates/templates.h
 ../src/actions/actions-selection-object.cpp
 ../src/actions/actions-selection-window.cpp
 ../src/actions/actions-selection.cpp
+../src/actions/actions-svg-processing.cpp
 ../src/actions/actions-text.cpp
 ../src/actions/actions-tools.cpp
 ../src/actions/actions-transform.cpp

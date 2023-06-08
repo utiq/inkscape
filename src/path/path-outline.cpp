@@ -50,7 +50,7 @@
  * Encapsulates use of livarot.
  */
 bool
-item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& stroke, bool bbox_only = false)
+item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& stroke, bool bbox_only)
 {
     auto shape = cast<SPShape>(item);
     auto text = cast<SPText>(item);

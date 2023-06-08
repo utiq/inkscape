@@ -14,6 +14,7 @@
 #include <optional>
 #include "svg/svg-length.h"
 #include "2geom/transforms.h"
+#include "2geom/rect.h"
 
 enum BoxSide {
     BOX_TOP,
@@ -25,6 +26,7 @@ enum BoxSide {
 class SVGBox {
 public:
     SVGBox();
+    SVGBox(Geom::OptRect box) { set(box); }
 
     bool read(const std::string &value, const Geom::Scale &doc_scale);
     void unset();
@@ -44,6 +46,14 @@ public:
     void set(double top, double horz, double bottom) { set(top, horz, bottom, horz); }
     void set(double vert, double horz)               { set(vert, horz, vert, horz);  }
     void set(double size)                            { set(size, size, size, size);  }
+
+    void set(Geom::Rect box) { set(box.top(), box.right(), box.bottom(), box.left()); }
+    void set(Geom::OptRect box) {
+        unset();
+        if (box) {
+            set(*box);
+        }
+    }
 
     double get(BoxSide side) const { return _value[side].computed; }
     SVGLength top() const { return _value[BOX_TOP]; }

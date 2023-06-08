@@ -14,10 +14,11 @@
 #include <src/extension/db.h>
 #include <src/extension/input.h>
 #include <src/extension/internal/svg.h>
-#include <src/extension/internal/svg.cpp>
 #include <src/inkscape.h>
 #include <src/object/sp-text.h>
 #include <src/object/sp-tspan.h>
+
+#include <src/actions/actions-svg-processing.h>
 
 #include <glib/gstdio.h>
 
@@ -117,7 +118,7 @@ TEST_F(SvgExtensionTest, hiddenSvg2TextIsSaved)
     Inkscape::XML::Document *rdoc = doc->getReprDoc();
     ASSERT_TRUE(rdoc);
 
-    Inkscape::Extension::Internal::insert_text_fallback(rdoc->root(), doc);
+    insert_text_fallback(rdoc->root(), doc);
 
     for(const auto& kv : textMap) {
         auto textElement = doc->getObjectById(kv.first);

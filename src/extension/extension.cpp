@@ -131,7 +131,7 @@ Extension::Extension(Inkscape::XML::Node *in_repr, Implementation::Implementatio
                 _widgets.push_back(widget);
             }
         } else if (!strcmp(chname, "action")) {
-            _actions.push_back(ProcessingAction(child_repr));
+            _actions.emplace_back(child_repr);
         } else if (!strcmp(chname, "dependency")) {
             _deps.push_back(new Dependency(child_repr, this));
         } else if (!strcmp(chname, "script")) { // TODO: should these be parsed in their respective Implementation?

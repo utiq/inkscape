@@ -16,8 +16,7 @@
 #include "document.h"
 #include "preferences.h"
 
-namespace Inkscape {
-namespace Extension {
+namespace Inkscape::Extension {
 
 ProcessingAction::ProcessingAction (Inkscape::XML::Node * in_repr)
 {
@@ -59,7 +58,6 @@ void ProcessingAction::run(SPDocument *doc)
 {
     if (auto action = doc->getActionGroup()->lookup_action(_action_name)) {
         if (action->get_enabled()) {
-            g_warning("RUN ACTION 'doc.%s'", _action_name.c_str());
             // Doc is already bound into this action so does't need to be passed in
             action->activate();
         }
@@ -68,7 +66,7 @@ void ProcessingAction::run(SPDocument *doc)
     }
 }
 
-} }  /* namespace Inkscape, Extension */
+} /* namespace Inkscape::Extension */
 
 /*
   Local Variables:
