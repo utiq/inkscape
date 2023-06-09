@@ -234,6 +234,7 @@ public:
     bool process_event(const GdkEvent*);
     bool pick_current_item(const GdkEvent*);
     bool emit_event(const GdkEvent*);
+    void ensure_geometry_uptodate();
     Inkscape::CanvasItem *pre_scroll_grabbed_item;
 
     // Various state affecting what is drawn.
@@ -840,6 +841,7 @@ void CanvasPrivate::autoscroll_begin(Geom::IntPoint const &to)
             event.x = last_mouse->x();
             event.y = last_mouse->y();
             event.state = q->_state;
+            ensure_geometry_uptodate();
             emit_event(reinterpret_cast<GdkEvent*>(&event));
         }
 
@@ -1107,6 +1109,8 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
         }
     };
 
+    ensure_geometry_uptodate();
+
     // Do event-specific processing.
     switch (event->type) {
         case GDK_SCROLL:
@@ -1204,12 +1208,7 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
 bool CanvasPrivate::pick_current_item(const GdkEvent *event)
 {
     // Ensure requested geometry updates are performed first.
-    if (q->_need_update && !q->_drawing->snapshotted() && !canvasitem_ctx->snapshotted()) {
-        FrameCheck::Event fc;
-        if (prefs.debug_framecheck) fc = FrameCheck::Event("update", 1);
-        q->_need_update = false;
-        canvasitem_ctx->root()->update(false);
-    }
+    ensure_geometry_uptodate();
 
     int button_down = 0;
     if (!q->_all_enter_events) {
@@ -1456,6 +1455,16 @@ bool CanvasPrivate::emit_event(const GdkEvent *event)
     }
 
     return false;
+}
+
+void CanvasPrivate::ensure_geometry_uptodate()
+{
+    if (q->_need_update && !q->_drawing->snapshotted() && !canvasitem_ctx->snapshotted()) {
+        FrameCheck::Event fc;
+        if (prefs.debug_framecheck) fc = FrameCheck::Event("update", 1);
+        q->_need_update = false;
+        canvasitem_ctx->root()->update(false);
+    }
 }
 
 /*
