@@ -636,6 +636,7 @@ bool NodeTool::root_handler(GdkEvent* event) {
                     // which has again forced a restore of the _mmap variable of the MultiPathManipulator (this->_multipath)
                     // Now we can insert the new nodes as if nothing has happened!
                     this->_multipath->insertNode(_desktop->d2w(sp.getPoint()));
+                    return true;
                 }
             }
         }
