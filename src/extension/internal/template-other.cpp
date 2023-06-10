@@ -43,12 +43,12 @@ void TemplateOther::init()
 
             "<template icon='icon_square' unit='px' priority='-10' visibility='icon,search'>"
 
-"<preset name='Icon 16x16' label='16 × 16 px' size='16'/>"
-"<preset name='Icon 32x32' label='32 × 32 px' size='32'/>"
-"<preset name='Icon 48x48' label='48 × 48 px' size='48'/>"
-"<preset name='Icon 120x120' label='120 × 120 px' size='120'/>"
-"<preset name='Icon 180x180' label='180 × 180 px' size='180'/>"
-"<preset name='Icon 512x512' label='512 × 512 px' size='512'/>"
+"<preset name='" N_("Icon 16x16") "' label='16 × 16 px' size='16'/>"
+"<preset name='" N_("Icon 32x32") "' label='32 × 32 px' size='32'/>"
+"<preset name='" N_("Icon 48x48") "' label='48 × 48 px' size='48'/>"
+"<preset name='" N_("Icon 120x120") "' label='120 × 120 px' size='120'/>"
+"<preset name='" N_("Icon 180x180") "' label='180 × 180 px' size='180'/>"
+"<preset name='" N_("Icon 512x512") "' label='512 × 512 px' size='512'/>"
 
             "</template>"
         "</inkscape-extension>"
