@@ -934,7 +934,7 @@ std::string export_area_type_string(ExportAreaType type)
 
 void InkFileExportCmd::set_export_area_type(ExportAreaType type)
 {
-    if (export_area_type != ExportAreaType::Unset) {
+    if ((export_area_type != ExportAreaType::Unset) && (export_area_type != type)) {
         std::cerr << "Warning: multiple export area types have been set, overriding "
                   << export_area_type_string(export_area_type) << " with " << export_area_type_string(type)
                   << std::endl;
