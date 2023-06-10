@@ -25,8 +25,8 @@
 #include <glibmm/convert.h>
 
 #ifdef _WIN32
-#include <icm.h>
 #include <windows.h>
+#include <icm.h>
 #endif
 
 #include <lcms2.h>
