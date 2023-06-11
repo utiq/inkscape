@@ -303,7 +303,7 @@ private:
         }
 
         auto templ = find_page_template(width, height, *unit);
-        _template_name.set_label(templ ? templ->name : _("Custom"));
+        _template_name.set_label(templ && !templ->name.empty() ? _(templ->name.c_str()) : _("Custom"));
 
         if (!pending) {
             _signal_dimmension_changed.emit(width, height, unit, template_selected ? Dimension::PageTemplate : Dimension::PageSize);

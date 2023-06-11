@@ -45,7 +45,7 @@ TemplatePreset::TemplatePreset(Template *mod, const Inkscape::XML::Node *repr, T
             std::string name = g_quark_to_string(iter.key);
             std::string value = std::string(iter.value);
             if (name == "name")
-                _name = value;
+                _name = value.empty() ? "?" : value;
             else if (name == "label")
                 _label = value;
             else if (name == "icon")
@@ -402,6 +402,14 @@ SPDocument *Template::get_template_document() const
         return ink_file_new(file->get_path());
     }
     return nullptr;
+}
+
+std::string TemplatePreset::get_name() const {
+    return _name;
+}
+
+std::string TemplatePreset::get_label() const {
+    return _label;
 }
 
 } // namespace Extension

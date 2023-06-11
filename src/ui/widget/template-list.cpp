@@ -9,7 +9,7 @@
 
 #include "template-list.h"
 
-#include <glibmm/i18n.h>
+#include <glib/gi18n.h>
 
 #include "extension/db.h"
 #include "extension/template.h"
@@ -74,7 +74,7 @@ void TemplateList::init(Inkscape::Extension::TemplateShow mode)
         }
         for (auto preset : tmod->get_presets(mode)) {
             Gtk::TreeModel::Row row = *(_stores[cat]->append());
-            row[cols.name] = preset->get_name();
+            row[cols.name] = _(preset->get_name().c_str());
             row[cols.icon] = icon_to_pixbuf(preset->get_icon_path());
             row[cols.label] = preset->get_label();
             row[cols.key] = preset->get_key();

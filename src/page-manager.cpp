@@ -9,6 +9,7 @@
 
 #include "page-manager.h"
 
+#include <glibmm/i18n.h>
 #include "attributes.h"
 #include "desktop.h"
 #include "display/control/canvas-page.h"
@@ -669,7 +670,7 @@ std::string PageManager::getSizeLabel(SPPage *page)
         box = page->getDesktopRect();
         auto label = page->getSizeLabel();
         if (!label.empty())
-            return label;
+            return _(label.c_str());
     }
     return getSizeLabel(box.width(), box.height());
 }
@@ -685,7 +686,7 @@ std::string PageManager::getSizeLabel(double width, double height)
     using namespace Inkscape::Util;
 
     if (auto preset = Inkscape::Extension::Template::get_any_preset(width, height)) {
-        return preset->get_name();
+        return _(preset->get_name().c_str());
     }
 
     static auto px = Inkscape::Util::unit_table.getUnit("px");

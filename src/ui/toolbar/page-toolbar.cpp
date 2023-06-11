@@ -44,12 +44,12 @@ public:
     // These types must match those for the model in the ui file
     SearchCols()
     {
-        this->add(this->name);
-        this->add(this->label);
-        this->add(this->key);
+        add(name);
+        add(label);
+        add(key);
     }
-    Gtk::TreeModelColumn<Glib::ustring> name;
-    Gtk::TreeModelColumn<Glib::ustring> label;
+    Gtk::TreeModelColumn<Glib::ustring> name;  // translated name
+    Gtk::TreeModelColumn<Glib::ustring> label; // translated label
     Gtk::TreeModelColumn<Glib::ustring> key;
 };
 
@@ -175,18 +175,21 @@ void PageToolbar::populate_sizes()
         if (!tmod->can_resize())
             continue;
         for (auto preset : tmod->get_presets()) {
+            auto label = preset->get_label();
+            if (!label.empty()) label = _(label.c_str());
+
             if (preset->is_visible(Inkscape::Extension::TEMPLATE_SIZE_LIST)) {
                 // Goes into drop down
                 Gtk::TreeModel::Row row = *(sizes_list->append());
-                row[cols.name] = preset->get_name();
-                row[cols.label] = " <small><span fgalpha=\"50%\">" + preset->get_label() + "</span></small>";
+                row[cols.name] = _(preset->get_name().c_str());
+                row[cols.label] = " <small><span fgalpha=\"50%\">" + label + "</span></small>";
                 row[cols.key] = preset->get_key();
             }
             if (preset->is_visible(Inkscape::Extension::TEMPLATE_SIZE_SEARCH)) {
                 // Goes into text search
                 Gtk::TreeModel::Row row = *(sizes_search->append());
-                row[cols.name] = preset->get_name();
-                row[cols.label] = preset->get_label();
+                row[cols.name] = _(preset->get_name().c_str());
+                row[cols.label] = label;
                 row[cols.key] = preset->get_key();
             }
         }
