@@ -178,7 +178,7 @@ std::vector<Geom::PathVector> pathvector_cut(Geom::PathVector const &pathv, Geom
     int num_nesting = 0;
     int *nesting = nullptr;
     int *conts = nullptr;
-    shape.ConvertToFormeNested(&path, 2, std::begin({ &patha, &pathb }), num_nesting, nesting, conts);
+    shape.ConvertToFormeNested(&path, 2, std::begin({ &patha, &pathb }), num_nesting, nesting, conts, true);
 
     int num_paths;
     auto paths = path.SubPathsWithNesting(num_paths, false, num_nesting, nesting, conts);
@@ -283,7 +283,7 @@ Geom::PathVector sp_pathvector_boolop(Geom::PathVector const &pathva, Geom::Path
         Shape shape;
         shape.Booleen(&shapea, &shapeb, bool_op_cut, 1);
 
-        shape.ConvertToForme(&result, 2, std::begin({ &pathb, &patha }));
+        shape.ConvertToForme(&result, 2, std::begin({ &pathb, &patha }), true);
 
     } else if (bop == bool_op_slice) {
         // slice is not really a boolean operation
@@ -751,7 +751,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         // function needs it.
         // this function uses the point_data to get the winding number of each path (ie: is a hole or not)
         // for later reconstruction in objects, you also need to extract which path is parent of holes (nesting info)
-        theShape->ConvertToFormeNested(res, nbOriginaux, &originaux[0], nbNest, nesting, conts);
+        theShape->ConvertToFormeNested(res, nbOriginaux, &originaux[0], nbNest, nesting, conts, true);
     } else {
         theShape->ConvertToForme(res, nbOriginaux, &originaux[0]);
     }

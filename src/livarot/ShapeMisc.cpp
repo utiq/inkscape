@@ -189,7 +189,7 @@ Shape::ConvertToForme (Path * dest)
 // same as before, but each time we have a contour, try to reassemble the segments on it to make chunks of
 // the original(s) path(s)
 // originals are in the orig array, whose size is nbP
-void Shape::ConvertToForme(Path *dest, int nbP, Path *const *orig)
+void Shape::ConvertToForme(Path *dest, int nbP, Path *const *orig, bool never_split)
 {
   // the function is similar to the other version of ConvertToForme, I'm adding comments
   // where there are significant differences to explain
@@ -295,7 +295,7 @@ void Shape::ConvertToForme(Path *dest, int nbP, Path *const *orig)
             else // if not, we now have a contour to add
             {
               swdData[curBord].suivParc = -1;
-              AddContour(dest, nbP, orig, startBord);
+              AddContour(dest, nbP, orig, startBord, never_split);
             }
             //                                              dest->Close();
           }
@@ -317,7 +317,7 @@ void Shape::ConvertToForme(Path *dest, int nbP, Path *const *orig)
             if ( getEdge(curBord).en == curStartPt ) { // if we are going forward and the endpoint of this edge is the actual start point
               //printf("contour %i ",curStartPt);
               swdData[curBord].suivParc = -1; //  why tho? seems useless since we set it right after this block ends
-              AddContour(dest, nbP, orig, startBord); // add the contour
+              AddContour(dest, nbP, orig, startBord, never_split); // add the contour
               startBord=nb; // set startBord to this edge
             }
           }
@@ -340,7 +340,7 @@ void Shape::ConvertToForme(Path *dest, int nbP, Path *const *orig)
   MakeSweepDestData (false);
 }
 
-void Shape::ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int &nbNest, int *&nesting, int *&contStart)
+void Shape::ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int &nbNest, int *&nesting, int *&contStart, bool never_split)
 {
   nesting=nullptr;
   contStart=nullptr;
@@ -488,7 +488,7 @@ void Shape::ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int &nb
                 nesting[nbNest++]=-1; // contient des bouts de coupure -> a part
               }
               swdData[curBord].suivParc = -1;
-              AddContour(dest, nbP, orig, startBord);
+              AddContour(dest, nbP, orig, startBord, never_split);
             }
             //                                              dest->Close();
           }
@@ -529,7 +529,7 @@ void Shape::ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int &nb
                 nesting[nbNest++]=-1; // contient des bouts de coupure -> a part
               }
               swdData[curBord].suivParc = -1;
-              AddContour(dest, nbP, orig, startBord);
+              AddContour(dest, nbP, orig, startBord, never_split);
               startBord=nb;
             }
           }
@@ -897,7 +897,7 @@ Shape::MakeOffset (Shape * a, double dec, JoinType join, double miter, bool do_p
 // we found a contour, now reassemble the edges on it, instead of dumping them in the Path "dest" as a
 // polyline. since it was a DFS, the precParc and suivParc make a nice doubly-linked list of the edges in
 // the contour. the first edge of the contour is start_edge.
-void Shape::AddContour(Path *dest, int num_orig, Path *const *orig, int start_edge)
+void Shape::AddContour(Path *dest, int num_orig, Path *const *orig, int start_edge, bool never_split)
 {
     int edge = start_edge;
 
@@ -929,18 +929,18 @@ void Shape::AddContour(Path *dest, int num_orig, Path *const *orig, int start_ed
         // Handle the path command. This consumes multiple edges, and sets edge to the next edge to process.
         switch (from->descr_cmd[nPiece]->getType()) {
             case descr_lineto:
-                edge = ReFormeLineTo(edge, dest);
+                edge = ReFormeLineTo(edge, dest, never_split);
                 break;
             case descr_arcto:
-                edge = ReFormeArcTo(edge, dest, from);
+                edge = ReFormeArcTo(edge, dest, from, never_split);
                 break;
             case descr_cubicto:
-                edge = ReFormeCubicTo(edge, dest, from);
+                edge = ReFormeCubicTo(edge, dest, from, never_split);
                 break;
             case descr_bezierto: {
                 auto nBData = static_cast<PathDescrBezierTo*>(from->descr_cmd[nPiece]);
                 if (nBData->nb == 0) {
-                    edge = ReFormeLineTo(edge, dest);
+                    edge = ReFormeLineTo(edge, dest, never_split);
                 } else {
                     edge = ReFormeBezierTo(edge, dest, from);
                 }
@@ -964,27 +964,28 @@ void Shape::AddContour(Path *dest, int num_orig, Path *const *orig, int start_ed
         // Insert forced points.
         // Although forced points make no difference to the dumped SVG path, they do have some internal use.
         // For example, some functions like ConvertForcedToMoveTo() pay attention to them.
-        // It's not clear exactly when or why these points are inserted. Nor is it obvious what would cause
-        // oldDegree and totalDegree() to differ.
-        if (getPoint(getEdge(edge).st).totalDegree() > 2) {
-            dest->ForcePoint();
-        } else if (getPoint(getEdge(edge).st).oldDegree > 2 && getPoint(getEdge(edge).st).totalDegree() == 2)  {
-            if (_has_back_data) {
-                int prevEdge = getPoint(getEdge(edge).st).incidentEdge[FIRST];
-                int nextEdge = getPoint(getEdge(edge).st).incidentEdge[LAST];
-                if (getEdge(prevEdge).en != getEdge(edge).st) {
-                    std::swap(prevEdge, nextEdge);
-                }
-                if (ebData[prevEdge].pieceID == ebData[nextEdge].pieceID && ebData[prevEdge].pathID == ebData[nextEdge].pathID) {
-                    if (std::abs(ebData[prevEdge].tEn - ebData[nextEdge].tSt) < 0.05) {
+        // It's not clear exactly when or why these points are inserted, or when oldDegree and totalDegree() differ
+        if (!never_split) {
+            if (getPoint(getEdge(edge).st).totalDegree() > 2) {
+                dest->ForcePoint();
+            } else if (getPoint(getEdge(edge).st).oldDegree > 2 && getPoint(getEdge(edge).st).totalDegree() == 2)  {
+                if (_has_back_data) {
+                    int prevEdge = getPoint(getEdge(edge).st).incidentEdge[FIRST];
+                    int nextEdge = getPoint(getEdge(edge).st).incidentEdge[LAST];
+                    if (getEdge(prevEdge).en != getEdge(edge).st) {
+                        std::swap(prevEdge, nextEdge);
+                    }
+                    if (ebData[prevEdge].pieceID == ebData[nextEdge].pieceID && ebData[prevEdge].pathID == ebData[nextEdge].pathID) {
+                        if (std::abs(ebData[prevEdge].tEn - ebData[nextEdge].tSt) < 0.05) {
+                        } else {
+                            dest->ForcePoint();
+                        }
                     } else {
                         dest->ForcePoint();
                     }
                 } else {
                     dest->ForcePoint();
                 }
-            } else {
-                dest->ForcePoint();
             }
         }
     }
@@ -992,17 +993,16 @@ void Shape::AddContour(Path *dest, int num_orig, Path *const *orig, int start_ed
     dest->Close();
 }
 
-int Shape::ReFormeLineTo(int bord, Path *dest)
+int Shape::ReFormeLineTo(int bord, Path *dest, bool never_split)
 {
   int nPiece = ebData[bord].pieceID;
   int nPath = ebData[bord].pathID;
-  double /*ts=ebData[bord].tSt, */ te = ebData[bord].tEn;
+  double te = ebData[bord].tEn;
   Geom::Point nx = getPoint(getEdge(bord).en).x;
   bord = swdData[bord].suivParc;
   while (bord >= 0)
   {
-    if (getPoint(getEdge(bord).st).totalDegree() > 2
-        || getPoint(getEdge(bord).st).oldDegree > 2)
+    if (!never_split && (getPoint(getEdge(bord).st).totalDegree() > 2 || getPoint(getEdge(bord).st).oldDegree > 2))
     {
       break;
     }
@@ -1025,18 +1025,16 @@ int Shape::ReFormeLineTo(int bord, Path *dest)
   return bord;
 }
 
-int Shape::ReFormeArcTo(int bord, Path *dest, Path *from)
+int Shape::ReFormeArcTo(int bord, Path *dest, Path *from, bool never_split)
 {
   int nPiece = ebData[bord].pieceID;
   int nPath = ebData[bord].pathID;
   double ts = ebData[bord].tSt, te = ebData[bord].tEn;
-  //      double  px=pts[getEdge(bord).st].x,py=pts[getEdge(bord).st].y;
   Geom::Point nx = getPoint(getEdge(bord).en).x;
   bord = swdData[bord].suivParc;
   while (bord >= 0)
   {
-    if (getPoint(getEdge(bord).st).totalDegree() > 2
-        || getPoint(getEdge(bord).st).oldDegree > 2)
+    if (!never_split && (getPoint(getEdge(bord).st).totalDegree() > 2 || getPoint(getEdge(bord).st).oldDegree > 2))
     {
       break;
     }
@@ -1055,6 +1053,7 @@ int Shape::ReFormeArcTo(int bord, Path *dest, Path *from)
     }
     bord = swdData[bord].suivParc;
   }
+
   double sang, eang;
   PathDescrArcTo* nData = dynamic_cast<PathDescrArcTo *>(from->descr_cmd[nPiece]);
   bool nLarge = nData->large;
@@ -1080,29 +1079,13 @@ int Shape::ReFormeArcTo(int bord, Path *dest, Path *from)
     nLarge = true;
   else
     nLarge = false;
-  /*	if ( delta < 0 ) delta=-delta;
-	if ( ndelta < 0 ) ndelta=-ndelta;
-	if ( ( delta < M_PI && ndelta < M_PI ) || ( delta >= M_PI && ndelta >= M_PI ) ) {
-		if ( ts < te ) {
-		} else {
-			nClockwise=!(nClockwise);
-		}
-	} else {
-    //		nLarge=!(nLarge);
-		nLarge=false; // c'est un sous-segment -> l'arc ne peut que etre plus petit
-		if ( ts < te ) {
-		} else {
-			nClockwise=!(nClockwise);
-		}
-	}*/
-  {
-    PathDescrArcTo *nData = dynamic_cast<PathDescrArcTo *>(from->descr_cmd[nPiece]);
-    dest->ArcTo (nx, nData->rx,nData->ry,nData->angle, nLarge, nClockwise);
-  }
+
+  dest->ArcTo (nx, nData->rx,nData->ry,nData->angle, nLarge, nClockwise);
+
   return bord;
 }
 
-int Shape::ReFormeCubicTo(int bord, Path *dest, Path *from)
+int Shape::ReFormeCubicTo(int bord, Path *dest, Path *from, bool never_split)
 {
   int nPiece = ebData[bord].pieceID;
   int nPath = ebData[bord].pathID;
@@ -1111,8 +1094,7 @@ int Shape::ReFormeCubicTo(int bord, Path *dest, Path *from)
   bord = swdData[bord].suivParc;
   while (bord >= 0)
   {
-    if (getPoint(getEdge(bord).st).totalDegree() > 2
-        || getPoint(getEdge(bord).st).oldDegree > 2)
+    if (!never_split && (getPoint(getEdge(bord).st).totalDegree() > 2 || getPoint(getEdge(bord).st).oldDegree > 2))
     {
       break;
     }

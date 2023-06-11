@@ -292,9 +292,9 @@ public:
      * @param nbP Number of paths that were originally fed to the directed graph with Path::Fill.
      * @param orig An array of pointers to Path, one Path object for each path id in the graph.
      */
-    void ConvertToForme(Path *dest, int nbP, Path *const *orig);
+    void ConvertToForme(Path *dest, int nbP, Path *const *orig, bool never_split = false);
     // version trying to recover the nesting of subpaths (ie: holes)
-    void ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int &nbNest, int *&nesting, int *&contStart);
+    void ConvertToFormeNested(Path *dest, int nbP, Path *const *orig, int &nbNest, int *&nesting, int *&contStart, bool never_split = false);
   
     // sweeping a digraph to produce a intersection-free polygon
     // return 0 if everything is ok and a return code otherwise (see LivarotDefs.h)
@@ -1054,15 +1054,16 @@ private:
      * Add a contour.
      *
      * @param dest The pointer to the Path object where we want to add contours.
-     * @param nbP  The total number of path object points in the array orig.
+     * @param num_orig The total number of path object points in the array orig.
      * @param orig A pointer of Path object pointers. These are the original Path objects which were used to fill the directed graph.
-     * @param startBord The first edge in the contour.
+     * @param start_edge The first edge in the contour.
+     * @param never_split Always coalesce pieces that come from the same original path, and don't insert forced points.
      */
-    void AddContour(Path *dest, int nbP, Path *const *orig, int startBord);
+    void AddContour(Path *dest, int num_orig, Path *const *orig, int start_edge, bool never_split = false);
 
-    int ReFormeLineTo(int bord, Path *dest);
-    int ReFormeArcTo(int bord, Path *dest, Path *orig);
-    int ReFormeCubicTo(int bord, Path *dest, Path *orig);
+    int ReFormeLineTo(int bord, Path *dest, bool never_split);
+    int ReFormeArcTo(int bord, Path *dest, Path *orig, bool never_split);
+    int ReFormeCubicTo(int bord, Path *dest, Path *orig, bool never_split);
     int ReFormeBezierTo(int bord, Path *dest, Path *orig);
     void ReFormeBezierChunk(const Geom::Point px, const Geom::Point nx,
                             Path *dest, int inBezier, int nbInterm,
