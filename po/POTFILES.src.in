@@ -251,6 +251,7 @@ ${_build_dir}/share/templates/templates.h
 ../src/object/sp-tref.cpp
 ../src/object/sp-tspan.cpp
 ../src/object/sp-use.cpp
+../src/page-manager.cpp
 ../src/path-chemistry.cpp
 ../src/path/path-boolop.cpp
 ../src/path/path-object-set.cpp
@@ -423,6 +424,7 @@ ${_build_dir}/share/templates/templates.h
 ../src/ui/widget/stroke-style.cpp
 ../src/ui/widget/style-swatch.cpp
 ../src/ui/widget/swatch-selector.cpp
+../src/ui/widget/template-list.cpp
 ../src/util/enums.h
 ../src/util/font-collections.h
 ../src/util/paper.cpp
