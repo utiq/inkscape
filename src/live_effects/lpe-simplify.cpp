@@ -161,7 +161,7 @@ LPESimplify::doEffect(SPCurve *curve)
 {
     Geom::PathVector const original_pathv = pathv_to_linear_and_cubic_beziers(curve->get_pathvector());
     gdouble size  = Geom::L2(bbox->dimensions());
-    auto pathliv = std::unique_ptr<Path>(Path_for_pathvector(original_pathv));
+    auto pathliv = Path_for_pathvector(original_pathv);
     if(simplify_individual_paths) {
         size = Geom::L2(Geom::bounds_fast(original_pathv)->dimensions());
     }

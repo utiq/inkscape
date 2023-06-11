@@ -139,9 +139,8 @@ void sp_selected_path_create_offset_object(SPDesktop *desktop, int expand, bool 
         }
     }
 
-    Path *orig = Path_for_item(item, true, false);
-    if (orig == nullptr)
-    {
+    auto orig = Path_for_item(item, true, false);
+    if (!orig) {
         return;
     }
 
@@ -170,9 +169,8 @@ void sp_selected_path_create_offset_object(SPDesktop *desktop, int expand, bool 
             theRes->ConvertToShape(theShape, fill_nonZero);
         }
 
-        Path *originaux[1];
-        originaux[0] = orig;
-        theRes->ConvertToForme(res, 1, originaux);
+        Path *paths[] = { orig.get() };
+        theRes->ConvertToForme(res, 1, paths);
 
         delete theShape;
         delete theRes;
@@ -190,7 +188,6 @@ void sp_selected_path_create_offset_object(SPDesktop *desktop, int expand, bool 
         selection->clear();
 
         delete res;
-        delete orig;
         return;
     }
 
@@ -258,7 +255,6 @@ void sp_selected_path_create_offset_object(SPDesktop *desktop, int expand, bool 
                         : INKSCAPE_ICON("path-offset-dynamic")));
 
     delete res;
-    delete orig;
 }
 
 /**
@@ -322,8 +318,8 @@ sp_selected_path_do_offset(SPDesktop *desktop, bool expand, double prefOffset)
             o_miter = i_style->stroke_miterlimit.value * o_width;
         }
 
-        Path *orig = Path_for_item(item, false);
-        if (orig == nullptr) {
+        auto orig = Path_for_item(item, false);
+        if (!orig) {
             continue;
         }
 
@@ -440,7 +436,6 @@ sp_selected_path_do_offset(SPDesktop *desktop, bool expand, double prefOffset)
             Inkscape::GC::release(repr);
         }
 
-        delete orig;
         delete res;
     }
 

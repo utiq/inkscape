@@ -283,10 +283,7 @@ Geom::PathVector sp_pathvector_boolop(Geom::PathVector const &pathva, Geom::Path
         Shape shape;
         shape.Booleen(&shapea, &shapeb, bool_op_cut, 1);
 
-        {
-            Path *paths[2] = { &pathb, &patha };
-            shape.ConvertToForme(&result, 2, paths);
-        }
+        shape.ConvertToForme(&result, 2, std::begin({ &pathb, &patha }));
 
     } else if (bop == bool_op_slice) {
         // slice is not really a boolean operation
@@ -363,23 +360,6 @@ Geom::PathVector sp_pathvector_boolop(Geom::PathVector const &pathva, Geom::Path
 static void transformLivarotPath(Path *res, Geom::Affine const &affine)
 {
     res->LoadPathVector(res->MakePathVector() * affine);
-}
-
-/**
- * Calculate the threshold for the given SPItem/SPShape based
- * on its bounding box (see PathVector get_threshold above)
- *
- * @param item - The SPItem to calculate the threshold for.
- */
-static double get_threshold(SPItem const *item)
-{
-    if (auto shape = cast<SPShape>(item)) {
-        if (auto curve = shape->curve()) {
-            return get_threshold(curve->get_pathvector());
-        }
-    }
-
-    return 1;
 }
 
 // helper for printing error messages, regardless of whether we have a GUI or not
@@ -520,6 +500,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
     int nbOriginaux = il.size();
     std::vector<Path *> originaux(nbOriginaux);
     std::vector<FillRule> origWind(nbOriginaux);
+    std::vector<double> origThresh(nbOriginaux);
     int curOrig;
     {
         curOrig = 0;
@@ -527,8 +508,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         {
             // apply live path effects prior to performing boolean operation
             char const *id = item->getAttribute("id");
-            auto lpeitem = cast<SPLPEItem>(item);
-            if (lpeitem) {
+            if (auto lpeitem = cast<SPLPEItem>(item)) {
                 SPDocument * document = item->document;
                 lpeitem->removeAllPathEffects(true);
                 SPObject *elemref = document->getObjectById(id);
@@ -538,8 +518,9 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
                     item = cast<SPItem>(elemref);
                 }
             }
-            SPCSSAttr *css = sp_repr_css_attr(reinterpret_cast<SPObject *>(il[0])->getRepr(), "style");
-            gchar const *val = sp_repr_css_property(css, "fill-rule", nullptr);
+
+            auto css = sp_repr_css_attr(il[0]->getRepr(), "style");
+            auto val = sp_repr_css_property(css, "fill-rule", nullptr);
             if (val && strcmp(val, "nonzero") == 0) {
                 origWind[curOrig]= fill_nonZero;
             } else if (val && strcmp(val, "evenodd") == 0) {
@@ -547,13 +528,21 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
             } else {
                 origWind[curOrig]= fill_nonZero;
             }
+            sp_repr_css_attr_unref(css);
 
-            originaux[curOrig] = Path_for_item(item, true, true);
-            if (originaux[curOrig] == nullptr || originaux[curOrig]->descr_cmd.size() <= 1)
-            {
+            if (auto curve = curve_for_item(item)) {
+                auto pathv = curve->get_pathvector() * item->i2doc_affine();
+                originaux[curOrig] = Path_for_pathvector(pathv).release();
+                origThresh[curOrig] = get_threshold(pathv);
+            } else {
+                originaux[curOrig] = nullptr;
+            }
+
+            if (!originaux[curOrig] || originaux[curOrig]->descr_cmd.size() <= 1) {
                 for (int i = curOrig; i >= 0; i--) delete originaux[i];
                 return DONE_NO_ACTION;
             }
+
             curOrig++;
         }
     }
@@ -562,6 +551,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
     if ( reverseOrderForOp ) {
         std::swap(originaux[0], originaux[1]);
         std::swap(origWind[0], origWind[1]);
+        std::swap(origThresh[0], origThresh[1]);
     }
 
     // and work
@@ -577,7 +567,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
     if ( bop == bool_op_inters || bop == bool_op_union || bop == bool_op_diff || bop == bool_op_symdiff ) {
         // true boolean op
         // get the polygons of each path, with the winding rule specified, and apply the operation iteratively
-        originaux[0]->ConvertWithBackData(get_threshold(il[0]));
+        originaux[0]->ConvertWithBackData(origThresh[0]);
 
         originaux[0]->Fill(theShape, 0);
 
@@ -586,7 +576,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         curOrig = 1;
         for (auto item : il){
             if(item==il[0])continue;
-            originaux[curOrig]->ConvertWithBackData(get_threshold(item));
+            originaux[curOrig]->ConvertWithBackData(origThresh[curOrig]);
 
             originaux[curOrig]->Fill(theShape, curOrig);
 
@@ -653,14 +643,15 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         // that's how the Booleen() function knows it's an edge of the cut
         std::swap(originaux[0], originaux[1]);
         std::swap(origWind[0], origWind[1]);
+        std::swap(origThresh[0], origThresh[1]);
 
-        originaux[0]->ConvertWithBackData(get_threshold(il[0]));
+        originaux[0]->ConvertWithBackData(origThresh[0]);
 
         originaux[0]->Fill(theShape, 0);
 
         theShapeA->ConvertToShape(theShape, origWind[0]);
 
-        originaux[1]->ConvertWithBackData(get_threshold(il[1]));
+        originaux[1]->ConvertWithBackData(origThresh[1]);
 
         if ((originaux[1]->pts.size() == 2) && originaux[1]->pts[0].isMoveTo && !originaux[1]->pts[1].isMoveTo)
             originaux[1]->Fill(theShape, 1,false,true,false); // see LP Bug 177956
@@ -682,12 +673,13 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         // inversion pour l'opération
         std::swap(originaux[0], originaux[1]);
         std::swap(origWind[0], origWind[1]);
+        std::swap(origThresh[0], origThresh[1]);
 
-        originaux[0]->ConvertWithBackData(get_threshold(il[0]));
+        originaux[0]->ConvertWithBackData(origThresh[0]);
 
         originaux[0]->Fill(theShapeA, 0,false,false,false); // don't closeIfNeeded
 
-        originaux[1]->ConvertWithBackData(get_threshold(il[1]));
+        originaux[1]->ConvertWithBackData(origThresh[1]);
 
         originaux[1]->Fill(theShapeA, 1,true,false,false);// don't closeIfNeeded and just dump in the shape, don't reset it
 

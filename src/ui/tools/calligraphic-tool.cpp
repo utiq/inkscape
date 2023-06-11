@@ -96,7 +96,6 @@ CalligraphicTool::CalligraphicTool(SPDesktop *desktop)
     , hatch_spacing(0)
     , hatch_spacing_step(0)
     , hatch_item(nullptr)
-    , hatch_livarot_path(nullptr)
     , hatch_last_nearest(Geom::Point(0, 0))
     , hatch_last_pointer(Geom::Point(0, 0))
     , hatch_escaped(false)
@@ -455,11 +454,9 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                     // One item selected, and it's a path;
                     // let's try to track it as a guide
 
-                    if (selected != this->hatch_item) {
-                        this->hatch_item = selected;
-                        if (this->hatch_livarot_path)
-                            delete this->hatch_livarot_path;
-                        this->hatch_livarot_path = Path_for_item (this->hatch_item, true, true);
+                    if (selected != hatch_item) {
+                        hatch_item = selected;
+                        hatch_livarot_path = Path_for_item(hatch_item, true, true);
                         if (hatch_livarot_path) {
                             hatch_livarot_path->ConvertWithBackData(0.01);
                         }
@@ -470,9 +467,9 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
                     pointer = motion_dt * motion_to_curve;
 
                     // calculate the nearest point on the guide path
-                    std::optional<Path::cut_position> position = get_nearest_position_on_Path(this->hatch_livarot_path, pointer);
+                    std::optional<Path::cut_position> position = get_nearest_position_on_Path(hatch_livarot_path.get(), pointer);
                     if (position) {
-                        nearest = get_point_on_Path(hatch_livarot_path, position->piece, position->t);
+                        nearest = get_point_on_Path(hatch_livarot_path.get(), position->piece, position->t);
 
                         // distance from pointer to nearest
                         hatch_dist = Geom::L2(pointer - nearest);
@@ -737,7 +734,7 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
             this->hatch_last_pointer = Geom::Point(0,0);
             this->hatch_escaped = false;
             this->hatch_item = nullptr;
-            this->hatch_livarot_path = nullptr;
+            this->hatch_livarot_path.reset();
             this->just_started_drawing = false;
 
             if (this->hatch_spacing != 0 && !this->keep_selected) {

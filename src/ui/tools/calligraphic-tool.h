@@ -21,6 +21,7 @@
 
 #include <list>
 #include <string>
+#include <memory>
 
 #include <2geom/point.h>
 
@@ -60,7 +61,7 @@ private:
     double hatch_spacing;
     double hatch_spacing_step;
     SPItem *hatch_item;
-    Path *hatch_livarot_path;
+    std::unique_ptr<Path> hatch_livarot_path;
     std::list<double> hatch_nearest_past;
     std::list<double> hatch_pointer_past;
     std::list<Geom::Point> inertia_vectors;

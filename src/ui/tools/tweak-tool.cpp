@@ -477,8 +477,8 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
                 }
             }
 
-            Path *orig = Path_for_item(item, false);
-            if (orig == nullptr) {
+            auto orig = Path_for_item(item, false);
+            if (!orig) {
                 return false;
             }
 
@@ -589,7 +589,6 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
 
             delete theShape;
             delete theRes;
-            delete orig;
             delete res;
 
             if (did_this) {

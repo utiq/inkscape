@@ -432,7 +432,7 @@ Geom::Path removeIntersects(Geom::Path pathin)
 static Geom::PathVector
 sp_simplify_pathvector(Geom::PathVector original_pathv, double threshold)
 {
-    auto pathliv = std::unique_ptr<Path>(Path_for_pathvector(original_pathv));
+    auto pathliv = Path_for_pathvector(original_pathv);
     pathliv->ConvertEvenLines(threshold);
     pathliv->Simplify(threshold);
     return pathliv->MakePathVector();

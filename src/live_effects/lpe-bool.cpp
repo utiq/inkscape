@@ -161,8 +161,8 @@ sp_pathvector_boolop_slice_intersect(Geom::PathVector const &pathva, Geom::PathV
     // extract the livarot Paths from the source objects
     // also get the winding rule specified in the style
     // Livarot's outline of arcs is broken. So convert the path to linear and cubics only, for which the outline is created correctly.
-    Path *contour_path = Path_for_pathvector(pathv_to_linear_and_cubic_beziers(pathva));
-    Path *area_path = Path_for_pathvector(pathv_to_linear_and_cubic_beziers(pathvb));
+    auto contour_path = Path_for_pathvector(pathv_to_linear_and_cubic_beziers(pathva));
+    auto area_path = Path_for_pathvector(pathv_to_linear_and_cubic_beziers(pathvb));
 
     // Shapes from above paths
     Shape *area_shape = new Shape;
@@ -279,7 +279,7 @@ sp_pathvector_boolop_slice_intersect(Geom::PathVector const &pathva, Geom::PathV
     }
 
     // Copy the original path to result and cut at the intersection points
-    result_path->Copy(contour_path);
+    result_path->Copy(contour_path.get());
     result_path->ConvertPositionsToMoveTo(toCut.size(), toCut.data());   // cut where you found intersections
 
     // Create an array of bools which states which pieces are in
@@ -329,8 +329,6 @@ sp_pathvector_boolop_slice_intersect(Geom::PathVector const &pathva, Geom::PathV
     delete combined_inters;
     delete combined_shape;
     delete area_shape;
-    delete contour_path;
-    delete area_path;
 
     auto outres = result_path->MakePathVector();
     delete result_path;
@@ -343,7 +341,7 @@ Geom::PathVector
 sp_pathvector_boolop_remove_inner(Geom::PathVector const &pathva, FillRule fra)
 {
     Geom::PathVector patht;
-    Path *patha = Path_for_pathvector(pathv_to_linear_and_cubic_beziers(pathva));
+    auto patha = Path_for_pathvector(pathv_to_linear_and_cubic_beziers(pathva));
 
     Shape *shape = new Shape;
     Shape *shapeshape = new Shape;
@@ -353,11 +351,11 @@ sp_pathvector_boolop_remove_inner(Geom::PathVector const &pathva, FillRule fra)
     patha->ConvertWithBackData(0.1);
     patha->Fill(shape, 0);
     shapeshape->ConvertToShape(shape, fra);
-    shapeshape->ConvertToForme(resultp, 1, &patha);
+    Path *paths[] = { patha.get() };
+    shapeshape->ConvertToForme(resultp, 1, paths);
 
     delete shape;
     delete shapeshape;
-    delete patha;
 
     auto resultpv = resultp->MakePathVector();
 
