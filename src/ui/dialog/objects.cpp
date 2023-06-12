@@ -1683,16 +1683,8 @@ bool ObjectsPanel::on_drag_motion(const Glib::RefPtr<Gdk::DragContext> &context,
     if (path) {
         auto item = getItem(*_store->get_iter(path));
 
-        bool const drop_into = pos != Gtk::TREE_VIEW_DROP_BEFORE && //
-                               pos != Gtk::TREE_VIEW_DROP_AFTER;
-
         // don't drop on self
         if (selection->includes(item)) {
-            goto finally;
-        }
-
-        // only groups can have children
-        if (drop_into && !is<SPGroup>(item)) {
             goto finally;
         }
 
@@ -1729,11 +1721,13 @@ bool ObjectsPanel::on_drag_drop(const Glib::RefPtr<Gdk::DragContext> &context, i
     auto selection = getSelection();
     auto document = getDocument();
     if (selection && document) {
-        if (drop_into) {
-            selection->toLayer(document->getObjectByRepr(drop_repr));
+        auto item = document->getObjectByRepr(drop_repr);
+        // We always try to drop the item, even if we end up dropping it after the non-group item
+        if (drop_into && is<SPGroup>(item)) {
+            selection->toLayer(item);
         } else {
             Node *after = (pos == Gtk::TREE_VIEW_DROP_BEFORE) ? drop_repr : drop_repr->prev();
-            selection->toLayer(document->getObjectByRepr(drop_repr->parent()), after);
+            selection->toLayer(item->parent, after);
         }
         DocumentUndo::done(document, _("Move items"), INKSCAPE_ICON("selection-move-to-layer"));
     }
