@@ -149,10 +149,10 @@ CMSSystem::get_directory_paths() {
     }
 
 #ifdef __APPLE__
-    path.push_back(std::pair("/System/Library/ColorSync/Profiles", false));
-    path.push_back(std::pair("/Library/ColorSync/Profiles", false));
+    paths.push_back(std::pair("/System/Library/ColorSync/Profiles", false));
+    paths.push_back(std::pair("/Library/ColorSync/Profiles", false));
 
-    path = Glib::build_filename(Glib::get_user_home_dir(), "Library", "ColorSync", "Profiles");
+    path = Glib::build_filename(Glib::get_home_dir(), "Library", "ColorSync", "Profiles");
     paths.push_back(std::pair(path, true));
 #endif // __APPLE__
 
