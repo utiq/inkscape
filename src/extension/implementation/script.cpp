@@ -17,12 +17,6 @@
 
 #include <glib/gstdio.h>
 #include <glibmm.h>
-#include <glibmm/convert.h>
-#include <glibmm/miscutils.h>
-#include <gtkmm/main.h>
-#include <gtkmm/messagedialog.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/textview.h>
 
 #include "desktop.h"
 #include "extension/db.h"
@@ -69,10 +63,9 @@ namespace Implementation {
     update and look pretty.
 */
 void Script::pump_events () {
-    while ( Gtk::Main::events_pending() ) {
-        Gtk::Main::iteration();
+    auto main_context = Glib::MainContext::get_default();
+    while (main_context->iteration(false)) {
     }
-    return;
 }
 
 

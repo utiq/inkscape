@@ -324,7 +324,6 @@ Application::~Application()
     _S_inst = nullptr; // this will probably break things
 
     refCount = 0;
-    // gtk_main_quit ();
 }
 
 /** Sets the keyboard modifier to map to Alt.
@@ -877,7 +876,6 @@ Application::exit ()
     signal_shut_down.emit();
 
     Inkscape::Preferences::unload();
-    //gtk_main_quit ();
 }
 
 void

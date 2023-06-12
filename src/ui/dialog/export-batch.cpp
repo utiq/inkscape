@@ -752,7 +752,8 @@ unsigned int BatchExport::onProgressCallback(float value, void *data)
 {
     if (auto bi = static_cast<BatchExport *>(data)) {
         bi->_prog->set_fraction(value);
-        Gtk::Main::iteration(false);
+        auto main_context = Glib::MainContext::get_default();
+        main_context->iteration(false);
         return !bi->interrupted;
     }
     return false;

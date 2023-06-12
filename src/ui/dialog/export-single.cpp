@@ -949,7 +949,8 @@ void SingleExport::setExporting(bool exporting, Glib::ustring const &text)
         _prog->set_text("");
         _prog->set_fraction(0.0);
     }
-    Gtk::Main::iteration(false);
+    auto main_context = Glib::MainContext::get_default();
+    main_context->iteration(false);
 }
 
 // Called for every progress iteration
@@ -957,7 +958,8 @@ unsigned int SingleExport::onProgressCallback(float value, void *data)
 {
     if (auto si = static_cast<SingleExport *>(data)) {
         si->_prog->set_fraction(value);
-        Gtk::Main::iteration(false);
+        auto main_context = Glib::MainContext::get_default();
+        main_context->iteration(false);
         return !si->interrupted;
     }
     return false;
