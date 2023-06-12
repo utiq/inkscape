@@ -40,6 +40,7 @@
 #include "document.h"
 #include "filter-chemistry.h"
 #include "inkscape.h"
+#include "inkscape-window.h"
 #include "layer-manager.h"
 #include "message-stack.h"
 
@@ -696,6 +697,20 @@ ObjectsPanel::ObjectsPanel()
     _searchBox.signal_activate().connect(sigc::mem_fun(*this, &ObjectsPanel::_searchActivated));
     _searchBox.signal_search_changed().connect(sigc::mem_fun(*this, &ObjectsPanel::_searchChanged));
 
+    // Buttons
+    auto& _move_up_button = get_widget<Gtk::Button>(_builder, "move-up");
+    auto& _move_down_button = get_widget<Gtk::Button>(_builder, "move-down");
+    auto& _object_delete_button = get_widget<Gtk::Button>(_builder, "remove-object");
+    _move_up_button.signal_clicked().connect([this]() {
+        _activateAction("layer-raise", "selection-stack-up");
+    });
+    _move_down_button.signal_clicked().connect([this]() {
+        _activateAction("layer-lower", "selection-stack-down");
+    });
+    _object_delete_button.signal_clicked().connect([this]() {
+        _activateAction("layer-delete", "delete-selection");
+    });
+
     //Label
     _name_column = Gtk::manage(new Gtk::TreeViewColumn());
     _text_renderer = Gtk::manage(new Gtk::CellRendererText());
@@ -1152,6 +1167,22 @@ void ObjectsPanel::layerChanged(SPObject *layer)
     _layer = layer;
 }
 
+/**
+ * Special context-aware functions - If nothing is selected
+ * or layers-only mode is active, move/delete layers.
+ */
+void ObjectsPanel::_activateAction(const std::string& layerAction, const std::string& selectionAction)
+{
+    auto selection = getSelection();
+    auto *prefs = Inkscape::Preferences::get();
+    if (selection->isEmpty() || prefs->getBool("/dialogs/objects/layers_only", false)) {
+        InkscapeWindow* win = InkscapeApplication::instance()->get_active_window();
+        win->activate_action(layerAction);
+    } else {
+        Glib::RefPtr<Gio::Application> app = Gio::Application::get_default();
+        app->activate_action(selectionAction);
+    }
+}
 
 /**
  * Stylizes a button using the given icon name and tooltip
@@ -1274,7 +1305,6 @@ bool ObjectsPanel::_handleKeyPress(GdkEventKey *event)
     Gtk::TreeViewColumn *column;
     _tree.get_cursor(path, column);
 
-    auto selection = getSelection();
     bool shift = event->state & GDK_SHIFT_MASK;
     Gtk::AccelKey shortcut = Inkscape::Shortcuts::get_from_event(event);
     switch (shortcut.get_key()) {
@@ -1306,34 +1336,34 @@ bool ObjectsPanel::_handleKeyPress(GdkEventKey *event)
         case GDK_KEY_Delete:
         case GDK_KEY_KP_Delete:
         case GDK_KEY_BackSpace:
-            getSelection()->deleteItems();
+            _activateAction("layer-delete", "delete-selection");
             // NOTE: We could select a sibling object here to make deleting many objects easier.
             return true;
         case GDK_KEY_Page_Up:
         case GDK_KEY_KP_Page_Up:
             if (shift) {
-                selection->raiseToTop();
+                _activateAction("layer-top", "selection-top");
                 return true;
             }
             break;
         case GDK_KEY_Page_Down:
         case GDK_KEY_KP_Page_Down:
             if (shift) {
-                selection->lowerToBottom();
+                _activateAction("layer-bottom", "selection-bottom");
                 return true;
             }
             break;
         case GDK_KEY_Up:
         case GDK_KEY_KP_Up:
             if (shift) {
-                selection->stackUp();
+                _activateAction("layer-raise", "selection-stack-up");
                 return true;
             }
             break;
         case GDK_KEY_Down:
         case GDK_KEY_KP_Down:
             if (shift) {
-                selection->stackDown();
+                _activateAction("layer-lower", "selection-stack-down");
                 return true;
             }
             break;

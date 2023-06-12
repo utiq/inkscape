@@ -136,6 +136,8 @@ private:
 
     Gtk::Button *_addBarButton(char const* iconName, char const* tooltip, char const *action_name);
 
+    void _activateAction(const std::string& layerAction, const std::string& selectionAction);
+
     bool blendModePopup(GdkEventButton* event, Gtk::TreeModel::Row row);
     bool toggleVisible(unsigned int state, Gtk::TreeModel::Row row);
     bool toggleLocked(unsigned int state, Gtk::TreeModel::Row row);

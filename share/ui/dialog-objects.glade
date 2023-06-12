@@ -191,7 +191,6 @@
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
-        <property name="action-name">app.selection-stack-up</property>
         <property name="image">image-up</property>
         <property name="relief">none</property>
       </object>
@@ -206,7 +205,6 @@
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
-        <property name="action-name">app.selection-stack-down</property>
         <property name="image">image-down</property>
         <property name="relief">none</property>
       </object>
@@ -221,7 +219,6 @@
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="receives-default">True</property>
-        <property name="action-name">app.delete-selection</property>
         <property name="image">image-remove</property>
         <property name="relief">none</property>
       </object>
