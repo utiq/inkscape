@@ -24,7 +24,7 @@
 #include "object/color-profile.h"
 
 #ifdef _WIN32
-#include <windows.h>  // IS THIS NECESSARY?
+#include <windows.h>
 #include <icm.h>
 #endif
 
@@ -127,20 +127,20 @@ CMSSystem::get_directory_paths() {
 
     // First try user's local directory.
     std::string path = Glib::build_filename(Glib::get_user_data_dir(), "color", "icc");
-    paths.push_back(std::pair(path, true));
+    paths.emplace_back(path, true);
 
     // See https://github.com/hughsie/colord/blob/fe10f76536bb27614ced04e0ff944dc6fb4625c0/lib/colord/cd-icc-store.c#L590
 
     // User store
     path = Glib::build_filename(Glib::get_user_data_dir(), "icc");
-    paths.push_back(std::pair(path, true));
+    paths.emplace_back(path, true);
 
     path = Glib::build_filename(Glib::get_home_dir(), ".color", "icc");
-    paths.push_back(std::pair(path, true));
+    paths.emplace_back(path, true);
 
     // System store
-    paths.push_back(std::pair("/var/lib/color/icc", false));
-    paths.push_back(std::pair("/var/lib/colord/icc", false));
+    paths.emplace_back(std::pair("/var/lib/color/icc", false));
+    paths.emplace_back(std::pair("/var/lib/colord/icc", false));
 
     auto data_directories = Glib::get_system_data_dirs();
     for (auto data_directory : data_directories) {
@@ -309,7 +309,7 @@ std::vector<Glib::ustring> Inkscape::CMSSystem::get_display_names()
     for (auto & profile_info : system_profile_infos) {
         if (profile_info.get_profileclass() == cmsSigDisplayClass &&
             profile_info.get_colorspace() == cmsSigRgbData ) {
-            result.push_back( profile_info.get_name() );
+            result.emplace_back(profile_info.get_name());
         }
     }
     std::sort(result.begin(), result.end());
@@ -323,7 +323,7 @@ std::vector<Glib::ustring> Inkscape::CMSSystem::get_softproof_names()
 
     for (auto & profile_info : system_profile_infos) {
         if (profile_info.get_profileclass() == cmsSigOutputClass) {
-            result.push_back(profile_info.get_name());
+            result.emplace_back(profile_info.get_name());
         }
     }
     std::sort(result.begin(), result.end());

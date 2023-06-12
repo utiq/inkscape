@@ -20,7 +20,6 @@
 
 #include <gdkmm/rgba.h>
 #include <glib/gstdio.h>
-#include <glib/gi18n.h>
 #include <glibmm/checksum.h>
 #include <glibmm/convert.h>
 
