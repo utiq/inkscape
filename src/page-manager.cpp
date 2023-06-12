@@ -515,13 +515,18 @@ void PageManager::centerToPage(SPDesktop *desktop, SPPage *page)
 
 void PageManager::resizePage(double width, double height)
 {
-    if (pages.empty() || _selected_page) {
+    resizePage(_selected_page, width, height);
+}
+
+void PageManager::resizePage(SPPage *page, double width, double height)
+{
+    if (pages.empty() || page) {
         // Resizing the Viewport, means the page gets updated automatically
-        if (pages.empty() || _selected_page->isViewportPage()) {
+        if (pages.empty() || (page && page->isViewportPage())) {
             auto rect = Geom::Rect(Geom::Point(0, 0), Geom::Point(width, height));
             _document->fitToRect(rect, false);
-        } else {
-            _selected_page->setSize(width, height);
+        } else if (page) {
+            page->setSize(width, height);
         }
     }
 }
