@@ -89,6 +89,7 @@ public:
     void deletePage(SPPage *page, bool contents = false);
     void deletePage(bool contents = false);
     void resizePage(double width, double height);
+    void resizePage(SPPage *page, double width, double height);
     void changeOrientation();
     void fitToSelection(ObjectSet *selection, bool add_margins = true);
     void fitToRect(Geom::OptRect box, SPPage *page, bool add_margins = false);
