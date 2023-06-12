@@ -1894,19 +1894,22 @@ void InkscapePreferences::initPageUI()
         auto theme = INKSCAPE.themecontext;
         font_box->set_text(theme->getMonospacedFont().to_string());
         font_button->signal_clicked().connect([=](){
-            Gtk::FontChooserDialog dlg;
+            auto dlg = std::make_unique<Gtk::FontChooserDialog>();
             // show fixed-size fonts only
-            dlg.set_filter_func([](const Glib::RefPtr<const Pango::FontFamily>& family, const Glib::RefPtr<const Pango::FontFace>& face) {
+            dlg->set_filter_func([](const Glib::RefPtr<const Pango::FontFamily>& family, const Glib::RefPtr<const Pango::FontFace>& face) {
                 return family && family->is_monospace();
             });
-            dlg.set_font_desc(theme->getMonospacedFont());
-            dlg.set_position(Gtk::WIN_POS_MOUSE);
-            if (Inkscape::UI::dialog_run(dlg) == Gtk::RESPONSE_OK) {
-                auto desc = dlg.get_font_desc();
-                theme->saveMonospacedFont(desc);
-                theme->adjustGlobalFontScale(theme->getFontScale() / 100);
-                font_box->set_text(desc.to_string());
-            }
+            dlg->set_font_desc(theme->getMonospacedFont());
+            dlg->set_position(Gtk::WIN_POS_MOUSE);
+            dlg->signal_response().connect([=, d = dlg.get()] (int response) {
+                if (response == Gtk::RESPONSE_OK) {
+                    auto desc = d->get_font_desc();
+                    theme->saveMonospacedFont(desc);
+                    theme->adjustGlobalFontScale(theme->getFontScale() / 100);
+                    font_box->set_text(desc.to_string());
+                }
+            });
+            dialog_show_modal_and_selfdestruct(std::move(dlg), get_toplevel());
         });
         _page_theme.add_line(false, _("Monospaced font:"), *font_box, "", _("Select fixed-width font"), true, font_button);
 

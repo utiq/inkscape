@@ -308,11 +308,11 @@ MeshToolbar::MeshToolbar(SPDesktop *desktop)
 
     /* Warning */
     {
-        auto btn = Gtk::manage(new Gtk::ToolButton(_("WARNING: Mesh SVG Syntax Subject to Change")));
+        auto btn = Gtk::make_managed<Gtk::ToolButton>(_("WARNING: Mesh SVG Syntax Subject to Change"));
         btn->set_tooltip_text(_("WARNING: Mesh SVG Syntax Subject to Change"));
         btn->set_icon_name(INKSCAPE_ICON("dialog-warning"));
         add(*btn);
-        btn->signal_clicked().connect(sigc::mem_fun(*this, &MeshToolbar::warning_popup));
+        btn->signal_clicked().connect([this] { warning_popup(); });
         btn->set_sensitive(true);
     }
 
@@ -527,8 +527,7 @@ MeshToolbar::selection_changed(Inkscape::Selection * /* selection */)
     }
 }
 
-void
-MeshToolbar::warning_popup()
+void MeshToolbar::warning_popup()
 {
     char *msg = _("Mesh gradients are part of SVG 2:\n"
                   "* Syntax may change.\n"
@@ -536,9 +535,8 @@ MeshToolbar::warning_popup()
                   "\n"
                   "For web: convert to bitmap (Edit->Make bitmap copy).\n"
                   "For print: export to PDF.");
-    Gtk::MessageDialog dialog(msg, false, Gtk::MESSAGE_WARNING,
-                              Gtk::BUTTONS_OK, true);
-    Inkscape::UI::dialog_run(dialog);
+    auto dialog = std::make_unique<Gtk::MessageDialog>(msg, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_OK, true);
+    dialog_show_modal_and_selfdestruct(std::move(dialog), get_toplevel());
 }
 
 /**

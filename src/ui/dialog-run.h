@@ -15,6 +15,12 @@ namespace Inkscape::UI {
  */
 int dialog_run(Gtk::Dialog &dialog);
 
+/**
+ * Show a dialog modally, destroying it when the user dismisses it.
+ * If toplevel is not null, the dialog is shown as a transient for toplevel.
+ */
+void dialog_show_modal_and_selfdestruct(std::unique_ptr<Gtk::Dialog> dialog, Gtk::Container *toplevel = nullptr);
+
 } // namespace Inkscape::UI
 
 #endif // INKSCAPE_UI_DIALOG_RUN_H

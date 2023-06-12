@@ -35,4 +35,15 @@ int dialog_run(Gtk::Dialog &dialog)
     return *result;
 }
 
+void dialog_show_modal_and_selfdestruct(std::unique_ptr<Gtk::Dialog> dialog, Gtk::Container *toplevel)
+{
+    if (auto window = dynamic_cast<Gtk::Window*>(toplevel)) {
+        dialog->set_transient_for(*window);
+    }
+    dialog->set_modal();
+    dialog->signal_response().connect([d = dialog.get()] (auto) { delete d; });
+    dialog->show();
+    dialog.release(); // deleted by signal_response handler
+}
+
 } // namespace Inkscape::UI
