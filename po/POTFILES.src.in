@@ -225,7 +225,6 @@ ${_build_dir}/share/templates/templates.h
 ../src/live_effects/parameter/unit.cpp
 ../src/live_effects/parameter/vector.cpp
 ../src/object/box3d.cpp
-../src/object/color-profile.cpp
 ../src/object/persp3d.cpp
 ../src/object/sp-anchor.cpp
 ../src/object/sp-ellipse.cpp

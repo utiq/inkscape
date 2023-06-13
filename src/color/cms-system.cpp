@@ -145,15 +145,15 @@ CMSSystem::get_directory_paths() {
     auto data_directories = Glib::get_system_data_dirs();
     for (auto data_directory : data_directories) {
         path = Glib::build_filename(data_directory, "color", "icc");
-        paths.push_back(std::pair(path, false));
+        paths.emplace_back(path, false);
     }
 
 #ifdef __APPLE__
-    paths.push_back(std::pair("/System/Library/ColorSync/Profiles", false));
-    paths.push_back(std::pair("/Library/ColorSync/Profiles", false));
+    paths.emplace_back(std::pair("/System/Library/ColorSync/Profiles", false));
+    paths.emplace_back(std::pair("/Library/ColorSync/Profiles", false));
 
     path = Glib::build_filename(Glib::get_home_dir(), "Library", "ColorSync", "Profiles");
-    paths.push_back(std::pair(path, true));
+    paths.emplace_back(path, true);
 #endif // __APPLE__
 
 #ifdef _WIN32
@@ -166,7 +166,7 @@ CMSSystem::get_directory_paths() {
         if ( !g_utf8_validate(utf8Path, -1, NULL) ) {
             g_warning( "GetColorDirectoryW() resulted in invalid UTF-8" );
         } else {
-            paths.push_back(std::pair(utf8Path, false));
+            paths.emplace_back(std::pair(utf8Path, false));
         }
         g_free( utf8Path );
     }
