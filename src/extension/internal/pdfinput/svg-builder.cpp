@@ -869,7 +869,7 @@ void SvgBuilder::beginMarkedContent(const char *name, const char *group)
     }
 }
 
-void SvgBuilder::addOptionalGroup(const char *oc, const char *label, bool visible)
+void SvgBuilder::addOptionalGroup(const std::string &oc, const std::string &label, bool visible)
 {
     _ocgs[oc] = {label, visible};
 }
