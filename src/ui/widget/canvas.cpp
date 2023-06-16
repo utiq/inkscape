@@ -21,7 +21,6 @@
 #include <2geom/convex-hull.h>
 
 #include "canvas.h"
-#include "canvas-grid.h"
 
 #include "color.h"          // Background color
 #include "desktop.h"
@@ -29,6 +28,7 @@
 #include "preferences.h"
 #include "ui/util.h"
 #include "helper/geom.h"
+#include "util/callback-converter.h"
 
 #include "canvas/prefs.h"
 #include "canvas/fragment.h"
@@ -320,6 +320,24 @@ Canvas::Canvas()
                Gdk::POINTER_MOTION_MASK |
                Gdk::SCROLL_MASK         |
                Gdk::SMOOTH_SCROLL_MASK  );
+
+    scroll_controller = Glib::wrap(gtk_event_controller_scroll_new(Gtk::Widget::gobj(), GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES));
+    g_signal_connect(scroll_controller->gobj(), "scroll", Util::make_g_callback<&Canvas::on_scroll>, this);
+
+    click_gesture = Glib::wrap(gtk_gesture_multi_press_new(Gtk::Widget::gobj()));
+    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click_gesture->gobj()), 0); // all buttons
+    g_signal_connect(click_gesture->gobj(), "pressed", Util::make_g_callback<&Canvas::on_button_pressed>, this);
+    g_signal_connect(click_gesture->gobj(), "released", Util::make_g_callback<&Canvas::on_button_released>, this);
+
+    key_controller = Glib::wrap(gtk_event_controller_key_new(Gtk::Widget::gobj()));
+    g_signal_connect(key_controller->gobj(), "focus-in", Util::make_g_callback<&Canvas::on_focus_in>, this);
+    g_signal_connect(key_controller->gobj(), "key-pressed", Util::make_g_callback<&Canvas::on_key_pressed>, this);
+    g_signal_connect(key_controller->gobj(), "key-released", Util::make_g_callback<&Canvas::on_key_released>, this);
+
+    motion_controller = Glib::wrap(gtk_event_controller_motion_new(Gtk::Widget::gobj()));
+    g_signal_connect(motion_controller->gobj(), "motion", Util::make_g_callback<&Canvas::on_motion>, this);
+    g_signal_connect(motion_controller->gobj(), "enter", Util::make_g_callback<&Canvas::on_enter>, this);
+    g_signal_connect(motion_controller->gobj(), "leave", Util::make_g_callback<&Canvas::on_leave>, this);
 
     // Updater
     d->updater = Updater::create(pref_to_updater(d->prefs.update_strategy));
@@ -880,23 +898,37 @@ void Canvas::enable_autoscroll()
  * Event handling
  */
 
-bool Canvas::on_scroll_event(GdkEventScroll *scroll_event)
+bool Canvas::on_scroll(GtkEventControllerScroll *controller, double dx, double dy)
 {
-    return d->process_event(reinterpret_cast<GdkEvent*>(scroll_event));
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_SCROLL);
+    return d->process_event(event.get());
 }
 
-bool Canvas::on_button_press_event(GdkEventButton *button_event)
+bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, double x, double y)
 {
-    return on_button_event(button_event);
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_BUTTON_PRESS);
+    bool result = on_button_event(reinterpret_cast<GdkEventButton*>(event.get()));
+    if (n_press > 1) {
+        auto copy = make_unique_copy(event.get());
+        copy->type = (GdkEventType)(GDK_BUTTON_PRESS + (n_press - 1) % 3);
+        result = on_button_event(reinterpret_cast<GdkEventButton*>(copy.get()));
+    }
+    return result;
 }
 
-bool Canvas::on_button_release_event(GdkEventButton *button_event)
+bool Canvas::on_button_released(GtkGestureMultiPress *controller, int n_press, double x, double y)
 {
-    if (button_event->button == 1) {
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_BUTTON_RELEASE);
+
+    int button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(controller));
+    if (button == 1) {
         d->autoscroll_end();
     }
 
-    return on_button_event(button_event);
+    return on_button_event(reinterpret_cast<GdkEventButton*>(event.get()));
 }
 
 // Unified handler for press and release events.
@@ -980,41 +1012,47 @@ bool Canvas::on_button_event(GdkEventButton *button_event)
     return d->process_event(reinterpret_cast<GdkEvent*>(button_event));
 }
 
-bool Canvas::on_enter_notify_event(GdkEventCrossing *crossing_event)
+bool Canvas::on_enter(GtkEventControllerMotion *controller, double x, double y)
 {
-    if (crossing_event->window != get_window()->gobj()) {
-        return false;
-    }
-    return d->process_event(reinterpret_cast<GdkEvent*>(crossing_event));
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_ENTER_NOTIFY);
+    return d->process_event(event.get());
 }
 
-bool Canvas::on_leave_notify_event(GdkEventCrossing *crossing_event)
+bool Canvas::on_leave(GtkEventControllerMotion *controller)
 {
-    if (crossing_event->window != get_window()->gobj()) {
-        return false;
-    }
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_LEAVE_NOTIFY);
     d->last_mouse = {};
-    return d->process_event(reinterpret_cast<GdkEvent*>(crossing_event));
+    return d->process_event(event.get());
 }
 
-bool Canvas::on_focus_in_event(GdkEventFocus *focus_event)
+bool Canvas::on_focus_in(GtkEventControllerKey *controller)
 {
     grab_focus();
     return false;
 }
 
-bool Canvas::on_key_press_event(GdkEventKey *key_event)
+bool Canvas::on_key_pressed(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state)
 {
-    return d->process_event(reinterpret_cast<GdkEvent*>(key_event));
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_KEY_PRESS);
+    return d->process_event(event.get());
 }
 
-bool Canvas::on_key_release_event(GdkEventKey *key_event)
+bool Canvas::on_key_released(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state)
 {
-    return d->process_event(reinterpret_cast<GdkEvent*>(key_event));
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_KEY_RELEASE);
+    return d->process_event(event.get());
 }
 
-bool Canvas::on_motion_notify_event(GdkEventMotion *motion_event)
+bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
 {
+    auto event = GdkEventUniqPtr(gtk_get_current_event());
+    assert(event->type == GDK_MOTION_NOTIFY);
+    auto motion_event = reinterpret_cast<GdkEventMotion*>(event.get());
+
     // Record the last mouse position.
     d->last_mouse = Geom::IntPoint(motion_event->x, motion_event->y);
 
@@ -1087,7 +1125,7 @@ bool Canvas::on_motion_notify_event(GdkEventMotion *motion_event)
         d->autoscroll_end();
     }
 
-    return d->process_event(reinterpret_cast<GdkEvent*>(motion_event));
+    return d->process_event(event.get());
 }
 
 // Unified handler for all events.

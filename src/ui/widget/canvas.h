@@ -136,17 +136,27 @@ protected:
     void get_preferred_width_vfunc (int &minimum_width,  int &natural_width ) const override;
     void get_preferred_height_vfunc(int &minimum_height, int &natural_height) const override;
 
-    // Event handlers
-    bool on_scroll_event        (GdkEventScroll*  ) override;
-    bool on_button_event        (GdkEventButton*  );
-    bool on_button_press_event  (GdkEventButton*  ) override;
-    bool on_button_release_event(GdkEventButton*  ) override;
-    bool on_enter_notify_event  (GdkEventCrossing*) override;
-    bool on_leave_notify_event  (GdkEventCrossing*) override;
-    bool on_focus_in_event      (GdkEventFocus*   ) override;
-    bool on_key_press_event     (GdkEventKey*     ) override;
-    bool on_key_release_event   (GdkEventKey*     ) override;
-    bool on_motion_notify_event (GdkEventMotion*  ) override;
+    // Event controllers
+    Glib::RefPtr<Gtk::EventController> scroll_controller, key_controller, motion_controller;
+    Glib::RefPtr<Gtk::Gesture> click_gesture;
+
+    // EventControllerScroll
+    bool on_scroll(GtkEventControllerScroll *controller, double dx, double dy);
+
+    // GtkGestureMultiPress
+    bool on_button_pressed (GtkGestureMultiPress *controller, int n_press, double x, double y);
+    bool on_button_released(GtkGestureMultiPress *controller, int n_press, double x, double y);
+    bool on_button_event   (GdkEventButton*);
+
+    // EventControllerMotion
+    bool on_motion(GtkEventControllerMotion *controller, double x, double y);
+    bool on_enter (GtkEventControllerMotion *controller, double x, double y);
+    bool on_leave (GtkEventControllerMotion *controller);
+
+    // EventControllerKey
+    bool on_focus_in    (GtkEventControllerKey *controller);
+    bool on_key_pressed (GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state);
+    bool on_key_released(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state);
 
     void on_realize() override;
     void on_unrealize() override;
