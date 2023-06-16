@@ -333,8 +333,8 @@ Canvas::Canvas()
     d->prefs.debug_sticky_decoupled.action = [=] { d->schedule_redraw(); };
     d->prefs.debug_animate.action = [=] { queue_draw(); };
     d->prefs.outline_overlay_opacity.action = [=] { queue_draw(); };
-    d->prefs.softproof.action = [=] { redraw_all(); };
-    d->prefs.displayprofile.action = [=] { redraw_all(); };
+    d->prefs.softproof.action = [=] { set_cms_transform(); redraw_all(); };
+    d->prefs.displayprofile.action = [=] { set_cms_transform(); redraw_all(); };
     d->prefs.request_opengl.action = [=] {
         if (get_realized()) {
             d->deactivate();
@@ -371,6 +371,10 @@ Canvas::Canvas()
     // Split view.
     _split_direction = Inkscape::SplitDirection::EAST;
     _split_frac = {0.5, 0.5};
+
+    // CMS  Set initial CMS transform.
+    set_cms_transform();
+    // If we have monitor dependence: signal_map().connect([this]() { this->set_cms_transform(); });
 
     // Recreate stores on HiDPI change.
     property_scale_factor().signal_changed().connect([this] { d->schedule_redraw(); });
@@ -739,23 +743,18 @@ void CanvasPrivate::commit_tiles()
         tiles = std::move(rd.tiles);
     }
 
-    auto cms_system = Inkscape::CMSSystem::get();
     for (auto &tile : tiles) {
+
         // Todo: Make CMS system thread-safe, then move this to render thread too.
-        if (q->_cms_active) {
-            auto transf = prefs.from_display
-                ? cms_system->get_display_transform_monitor(q->_cms_key)
-                : cms_system->get_display_transform_system();
-            if (transf) {
-                tile.surface->flush();
-                auto px = tile.surface->get_data();
-                int stride = tile.surface->get_stride();
-                for (int i = 0; i < tile.surface->get_height(); i++) {
-                    auto row = px + i * stride;
-                    Inkscape::CMSSystem::do_transform(transf, row, row, tile.surface->get_width());
-                }
-                tile.surface->mark_dirty();
+        if (q->_cms_active && q->_cms_transform) {
+            tile.surface->flush();
+            auto px = tile.surface->get_data();
+            int stride = tile.surface->get_stride();
+            for (int i = 0; i < tile.surface->get_height(); i++) {
+                auto row = px + i * stride;
+                Inkscape::CMSSystem::do_transform(q->_cms_transform, row, row, tile.surface->get_width());
             }
+            tile.surface->mark_dirty();
         }
 
         // Paste tile content onto stores.
@@ -1771,13 +1770,6 @@ void Canvas::set_clip_to_page_mode(bool clip)
     }
 }
 
-void Canvas::set_cms_key(std::string key)
-{
-    _cms_key = std::move(key);
-    _cms_active = !_cms_key.empty();
-    redraw_all();
-}
-
 /**
  * Clear current and grabbed items.
  */
@@ -1818,6 +1810,22 @@ std::optional<Geom::PathVector> CanvasPrivate::calc_page_clip() const
         pv.push_back(Geom::Path(rect));
     }
     return pv;
+}
+
+// Set the cms transform
+void Canvas::set_cms_transform()
+{
+    // TO DO: Select per monitor. Note Gtk has a bug where the monitor is not correctly reported on start-up.
+    // auto display = get_display();
+    // auto monitor = display->get_monitor_at_window(get_window());
+    // std::cout << "  " << monitor->get_manufacturer() << ", " << monitor->get_model() << std::endl;
+
+    // gtk4
+    // auto surface = get_surface();
+    // auto the_monitor = display->get_monitor_at_surface(surface);
+
+    auto cms_system = Inkscape::CMSSystem::get();
+    _cms_transform = cms_system->get_cms_transform( /* monitor */ );
 }
 
 // Change cursor

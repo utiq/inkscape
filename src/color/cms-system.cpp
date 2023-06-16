@@ -13,6 +13,8 @@
 
 #include "cms-system.h"
 
+#include <iomanip>
+
 #include <glibmm.h>
 
 #include "cms-util.h"
@@ -32,6 +34,9 @@ using Inkscape::ColorProfile;
 
 namespace Inkscape {
 
+/**
+   Holds information about one ICC profile.
+*/
 class ProfileInfo
 {
 public:
@@ -62,10 +67,32 @@ CMSSystem::CMSSystem() {
     load_profiles();
 
     // Create generic sRGB profile.
-    sRGBProf = cmsCreate_sRGBProfile();
+    sRGB_profile = cmsCreate_sRGBProfile();
 }
 
-// Common operation... we track last transform created so we can delete it later.
+CMSSystem::~CMSSystem() {
+    clear_transform();
+
+    if (current_monitor_profile) {
+        cmsCloseProfile(current_monitor_profile);
+    }
+
+    if (current_proof_profile) {
+        cmsCloseProfile(current_proof_profile);
+    }
+
+    if (sRGB_profile) {
+        cmsCloseProfile(sRGB_profile);
+    }
+}
+
+/*
+  We track last transform created so we can delete it later.
+
+  This is OK since we only have one transform for all montiors/canvases. If we choose to allow the
+  user to assign different profiles to different monitors or have CMS preferences that are not
+  global, we'll need to have either one transform per monitor or one transform per canvas.
+*/
 void
 CMSSystem::clear_transform() {
     if (current_transform) {
@@ -102,6 +129,9 @@ CMSSystem::load_profiles() {
                     for (auto &profile_info : system_profile_infos) {
                         if (profile_info.get_name() == info.get_name() ) {
                             same_name = true;
+                            std::cerr << "CMSSystem::load_profiles: ICC profile with duplicate name: " << profile_info.get_name() << ":" << std::endl;
+                            std::cerr << "   " << profile_info.get_path() << std::endl;
+                            std::cerr << "   " <<         info.get_path() << std::endl;
                             break;
                         }
                     }
@@ -176,105 +206,120 @@ CMSSystem::get_directory_paths() {
 }
 
 
-cmsHPROFILE CMSSystem::get_system_profile()
+// Get the user set monitor profile.
+cmsHPROFILE CMSSystem::get_monitor_profile()
 {
-    static cmsHPROFILE theOne = nullptr;
-    static Glib::ustring lastURI;
+    static Glib::ustring current_monitor_uri;
+    static bool use_user_monitor_profile_old = false;
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    Glib::ustring uri = prefs->getString("/options/displayprofile/uri");
+    bool use_user_monitor_profile = prefs->getBool("/options/displayprofile/use_user_profile", false);
 
-    if ( !uri.empty() ) {
-        if ( uri != lastURI ) {
-            lastURI.clear();
-            if ( theOne ) {
-                cmsCloseProfile( theOne );
+    if (use_user_monitor_profile_old != use_user_monitor_profile) {
+        use_user_monitor_profile_old  = use_user_monitor_profile;
+        current_monitor_profile_changed = true;
+    }
+
+    if (!use_user_monitor_profile) {
+        if (current_monitor_profile) {
+            cmsCloseProfile(current_monitor_profile);
+            current_monitor_profile = nullptr;
+            current_monitor_uri.clear();
+        }
+        return current_monitor_profile;
+    }
+
+    Glib::ustring new_uri = prefs->getString("/options/displayprofile/uri");
+
+    if (!new_uri.empty()) {
+
+        // User defined monitor profile.
+        if (new_uri != current_monitor_uri) {
+
+            // Monitor profile changed
+            current_monitor_profile_changed = true;
+            current_monitor_uri.clear();
+
+            // Delete old profile
+            if (current_monitor_profile) {
+                cmsCloseProfile(current_monitor_profile);
             }
-            clear_transform();
-            theOne = cmsOpenProfileFromFile( uri.data(), "r" );
-            if ( theOne ) {
-                // a display profile must have the proper stuff
-                cmsColorSpaceSignature space = cmsGetColorSpace(theOne);
-                cmsProfileClassSignature profClass = cmsGetDeviceClass(theOne);
 
-                if ( profClass != cmsSigDisplayClass ) {
-                    g_warning("CMSSystem::get_system_profile: Not a display profile: %s\n", lastURI.c_str());
-                    cmsCloseProfile( theOne );
-                    theOne = nullptr;
-                } else if ( space != cmsSigRgbData ) {
-                    g_warning("CMSSystem::get_system_profile: Not an RGB profile: %s\n", lastURI.c_str());
-                    cmsCloseProfile( theOne );
-                    theOne = nullptr;
+            // Open new profile
+            current_monitor_profile = cmsOpenProfileFromFile(new_uri.data(), "r");
+            if (current_monitor_profile) {
+
+                // A display profile must be of the right type.
+                cmsColorSpaceSignature space = cmsGetColorSpace(current_monitor_profile);
+                cmsProfileClassSignature profClass = cmsGetDeviceClass(current_monitor_profile);
+
+                if (profClass != cmsSigDisplayClass) {
+                    std::cerr << "CMSSystem::get_monitor_profile: Not a display (monitor) profile: " << new_uri << std::endl;
+                    cmsCloseProfile(current_monitor_profile);
+                    current_monitor_profile = nullptr;
+                } else if (space != cmsSigRgbData) {
+                    std::cerr << "CMSSystem::get_monitor_profile: Not an RGB profile: " << new_uri << std::endl;
+                    cmsCloseProfile(current_monitor_profile);
+                    current_monitor_profile = nullptr;
                 } else {
-                    lastURI = uri;
+                    current_monitor_uri = new_uri;
                 }
             }
         }
-    } else if ( theOne ) {
-        cmsCloseProfile( theOne );
-        theOne = nullptr;
-        lastURI.clear();
-        clear_transform();
+    } else if (current_monitor_profile) {
+        cmsCloseProfile(current_monitor_profile);
+        current_monitor_profile = nullptr;
+        current_monitor_uri.clear();
+        current_monitor_profile_changed = true;
     }
 
-    return theOne;
+    return current_monitor_profile;
 }
 
 
+// Get the user set proof profile.
 cmsHPROFILE CMSSystem::get_proof_profile()
 {
-    static cmsHPROFILE theOne = nullptr;
-    static Glib::ustring lastURI;
+    static Glib::ustring current_proof_uri;
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool which = prefs->getBool( "/options/softproof/enable");
-    Glib::ustring uri = prefs->getString("/options/softproof/uri");
+    Glib::ustring new_uri = prefs->getString("/options/softproof/uri");
 
-    if ( which && !uri.empty() ) {
-        if ( lastURI != uri ) {
-            lastURI.clear();
-            if ( theOne ) {
-                cmsCloseProfile( theOne );
+    if (!new_uri.empty()) {
+
+        // User defined proof profile.
+        if (new_uri != current_proof_uri) {
+
+            // Proof profile changed
+            current_proof_profile_changed = true;
+            current_proof_uri.clear();
+
+            // Delete old profile
+            if (current_proof_profile) {
+                cmsCloseProfile(current_proof_profile);
             }
-            clear_transform();
-            theOne = cmsOpenProfileFromFile( uri.data(), "r" );
-            if ( theOne ) {
-                // a display profile must have the proper stuff
-                cmsColorSpaceSignature space = cmsGetColorSpace(theOne);
-                cmsProfileClassSignature profClass = cmsGetDeviceClass(theOne);
 
-                (void)space;
-                (void)profClass;
-/*
-                if ( profClass != cmsSigDisplayClass ) {
-                    g_warning("Not a display profile");
-                    cmsCloseProfile( theOne );
-                    theOne = 0;
-                } else if ( space != cmsSigRgbData ) {
-                    g_warning("Not an RGB profile");
-                    cmsCloseProfile( theOne );
-                    theOne = 0;
-                } else {
-*/
-                    lastURI = uri;
-/*
-                }
-*/
+            // Open new profile
+            current_proof_profile = cmsOpenProfileFromFile(new_uri.data(), "r");
+            if (current_proof_profile) {
+
+                // We don't check validity of proof profile!
+                current_proof_uri = new_uri;
             }
         }
-    } else if ( theOne ) {
-        cmsCloseProfile( theOne );
-        theOne = nullptr;
-        lastURI.clear();
-        clear_transform();
+    } else if (current_proof_profile) {
+        cmsCloseProfile(current_proof_profile);
+        current_proof_profile = nullptr;
+        current_proof_uri.clear();
+        current_proof_profile_changed = true;
     }
 
-    return theOne;
+    return current_proof_profile;
 }
 
 
-// Get a color profile handle corresponding to "name" from the document.
-cmsHPROFILE Inkscape::CMSSystem::get_document_profile(SPDocument* document, guint* intent, gchar const* name)
+// Get a color profile handle corresponding to "name" from the document. Also, optionally, get intent.
+cmsHPROFILE CMSSystem::get_document_profile(SPDocument* document, guint* intent, gchar const* name)
 {
     cmsHPROFILE profile_handle = nullptr;
 
@@ -302,7 +347,10 @@ cmsHPROFILE Inkscape::CMSSystem::get_document_profile(SPDocument* document, guin
     return profile_handle;
 }
 
-std::vector<Glib::ustring> Inkscape::CMSSystem::get_display_names()
+
+
+// Returns vector of names to list in Preferences dialog: display (monitor) profiles.
+std::vector<Glib::ustring> CMSSystem::get_monitor_profile_names()
 {
     std::vector<Glib::ustring> result;
 
@@ -317,7 +365,8 @@ std::vector<Glib::ustring> Inkscape::CMSSystem::get_display_names()
     return result;
 }
 
-std::vector<Glib::ustring> Inkscape::CMSSystem::get_softproof_names()
+// Returns vector of names to list in Preferences dialog: proofing profiles.
+std::vector<Glib::ustring> CMSSystem::get_softproof_profile_names()
 {
     std::vector<Glib::ustring> result;
 
@@ -331,7 +380,8 @@ std::vector<Glib::ustring> Inkscape::CMSSystem::get_softproof_names()
     return result;
 }
 
-std::string Inkscape::CMSSystem::get_path_for_profile(Glib::ustring const& name)
+// Returns location of a profile.
+std::string CMSSystem::get_path_for_profile(Glib::ustring const& name)
 {
     std::string result;
 
@@ -345,43 +395,26 @@ std::string Inkscape::CMSSystem::get_path_for_profile(Glib::ustring const& name)
     return result;
 }
 
-// Static, doesn't rely on class
-void Inkscape::CMSSystem::do_transform(cmsHTRANSFORM transform, void *inBuf, void *outBuf, unsigned int size)
+// Static, doesn't rely on class. Simply calls lcms' cmsDoTransform.
+// Called from Canvas and icc_color_to_sRGB in sgv-color.cpp.
+void CMSSystem::do_transform(cmsHTRANSFORM transform, void *inBuf, void *outBuf, unsigned int size)
 {
     cmsDoTransform(transform, inBuf, outBuf, size);
 }
 
-// Only reason this is part of class is to access transform variable.
-cmsHTRANSFORM Inkscape::CMSSystem::get_display_transform_system()
+// Called by Canvas to obtain transform.
+// Currently there is one transform for all monitors.
+// Transform owned by CMSSystem.
+cmsHTRANSFORM CMSSystem::get_cms_transform()
 {
+    bool preferences_changed = false;
+
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool fromDisplay = prefs->getBool( "/options/displayprofile/from_display");
-    if (fromDisplay) {
-        clear_transform();
-        return nullptr;
-    }
-
-    // Fetch these now, as they might clear the transform as a side effect.
-    cmsHPROFILE system_profile = get_system_profile();
-
-    if (!current_transform) {
-        current_transform = set_transform(system_profile, current_transform);
-    }
-
-    return current_transform;
-}
-
-// This function takes a profile and transform, returning a new transform based on preference settings.
-// "transform" is either "current_transform" if called by get_diplay_profile_system() or a
-// transform attached to a monitor if called by get_display_profile_monitor().
-cmsHTRANSFORM Inkscape::CMSSystem::set_transform(cmsHPROFILE profile, cmsHTRANSFORM transform)
-{
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    bool warn = prefs->getBool( "/options/softproof/gamutwarn");
-    int intent = prefs->getIntLimited( "/options/displayprofile/intent", 0, 0, 3 );
-    int proofIntent = prefs->getIntLimited( "/options/softproof/intent", 0, 0, 3 );
-    bool bpc = prefs->getBool( "/options/softproof/bpc");
-    Glib::ustring colorStr = prefs->getString("/options/softproof/gamutcolor");
+    bool warn              = prefs->getBool(       "/options/softproof/gamutwarn");
+    int intent             = prefs->getIntLimited( "/options/displayprofile/intent", 0, 0, 3 );
+    int proofIntent        = prefs->getIntLimited( "/options/softproof/intent",      0, 0, 3 );
+    bool bpc               = prefs->getBool(       "/options/softproof/bpc");
+    Glib::ustring colorStr = prefs->getString(     "/options/softproof/gamutcolor");
     Gdk::RGBA gamutColor( colorStr.empty() ? "#808080" : colorStr );
 
     if ( (gamutWarn       != warn)        ||
@@ -389,20 +422,26 @@ cmsHTRANSFORM Inkscape::CMSSystem::set_transform(cmsHPROFILE profile, cmsHTRANSF
          (lastProofIntent != proofIntent) ||
          (lastBPC         != bpc)         ||
          (lastGamutColor  != gamutColor)  ) {
+
+        preferences_changed = true;
+
         gamutWarn       = warn;
         lastIntent      = intent;
         lastProofIntent = proofIntent;
         lastBPC         = bpc;
         lastGamutColor  = gamutColor;
-        free_transforms();
     }
 
-    // Fetch this now, as they might clear the transform as a side effect.
-    cmsHPROFILE proof_profile = profile ? get_proof_profile() : nullptr;
+    auto monitor_profile = get_monitor_profile();
+    auto proof_profile   = get_proof_profile();
 
-    if (!transform) { // May be nullptr if freed above or never set.
+    bool need_to_update = preferences_changed || current_monitor_profile_changed || current_proof_profile_changed;
 
-        if (profile && proof_profile) {
+    if (need_to_update) {
+
+        clear_transform(); // We're getting a new one, must delete the old one!
+
+        if (proof_profile) {
             cmsUInt32Number dwFlags = cmsFLAGS_SOFTPROOFING;
 
             if (gamutWarn) {
@@ -424,87 +463,15 @@ cmsHTRANSFORM Inkscape::CMSSystem::set_transform(cmsHPROFILE profile, cmsHTRANSF
                 dwFlags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
             }
 
-            transform = cmsCreateProofingTransform( get_sRGB_profile(), TYPE_BGRA_8, profile, TYPE_BGRA_8,
-                                                    proof_profile, intent, proofIntent, dwFlags );
+            current_transform = cmsCreateProofingTransform( sRGB_profile, TYPE_BGRA_8, monitor_profile, TYPE_BGRA_8,
+                                                            proof_profile, intent, proofIntent, dwFlags );
 
-        } else if (profile) {
-            transform = cmsCreateTransform( get_sRGB_profile(), TYPE_BGRA_8, profile, TYPE_BGRA_8, intent, 0 );
+        } else if (monitor_profile) {
+            current_transform = cmsCreateTransform( sRGB_profile, TYPE_BGRA_8, monitor_profile, TYPE_BGRA_8, intent, 0 );
         }
     }
 
-    return transform;
-}
-
-// Free system profile transform and all monitor profile transforms
-void Inkscape::CMSSystem::free_transforms()
-{
-    clear_transform();
-
-    for (auto profile : monitor_profile_infos) {
-        if (profile.transform) {
-            cmsDeleteTransform(profile.transform);
-            profile.transform = nullptr;
-        }
-    }
-}
-
-std::string Inkscape::CMSSystem::get_display_id(int monitor)
-{
-    std::string id;
-
-    if ( monitor >= 0 && monitor < static_cast<int>(monitor_profile_infos.size()) ) {
-        MonitorProfileInfo& item = monitor_profile_infos[monitor];
-        id = item.id;
-    }
-
-    return id;
-}
-
-Glib::ustring Inkscape::CMSSystem::set_display_transform_monitor(gpointer buf, guint bufLen, int monitor)
-{
-    while ( static_cast<int>(monitor_profile_infos.size()) <= monitor ) {
-        MonitorProfileInfo tmp;
-        monitor_profile_infos.push_back(tmp);
-    }
-    MonitorProfileInfo& item = monitor_profile_infos[monitor];
-
-    if (item.profile) {
-        cmsCloseProfile( item.profile );
-        item.profile = nullptr;
-    }
-
-    Glib::ustring id;
-
-    if (buf && bufLen) {
-        gsize len = bufLen; // len is an inout parameter
-        id = Glib::Checksum::compute_checksum(Glib::Checksum::CHECKSUM_MD5,
-            reinterpret_cast<guchar*>(buf), len);
-
-        // Note: if this is not a valid profile, item.hprof will be set to null.
-        item.profile = cmsOpenProfileFromMem(buf, bufLen);
-    }
-    item.id = id;
-
-    return id;
-}
-
-cmsHTRANSFORM CMSSystem::get_display_transform_monitor(std::string const &id)
-{
-    if (id.empty()) {
-        return nullptr;
-    }
-
-    for (auto& info : monitor_profile_infos) {
-        if ( id == info.id ) {
-
-            // Update transform if necessary based on preferences.
-            info.transform = set_transform(info.profile, info.transform);
-            return info.transform;
-        }
-    }
-
-    // Monitor profile not found.
-    return nullptr;
+    return current_transform;
 }
 
 CMSSystem *CMSSystem::_instance = nullptr;

@@ -503,7 +503,7 @@ protected:
     UI::Widget::PrefSpinButton  _save_autosave_max;
 
     Gtk::ComboBoxText   _cms_display_profile;
-    UI::Widget::PrefCheckButton     _cms_from_display;
+    UI::Widget::PrefCheckButton     _cms_from_user;
     UI::Widget::PrefCombo           _cms_intent;
 
     UI::Widget::PrefCheckButton     _cms_softproof;

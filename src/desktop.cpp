@@ -1325,19 +1325,9 @@ void SPDesktop::clearWaitingCursor() {
   }
 }
 
-void SPDesktop::toggleColorProfAdjust()
-{
-    _widget->toggle_color_prof_adj();
-}
-
 void SPDesktop::toggleLockGuides()
 {
     namedview->toggleLockGuides();
-}
-
-bool SPDesktop::colorProfAdjustEnabled()
-{
-    return _widget->get_color_prof_adj_enabled();
 }
 
 //----------------------------------------------------------------------

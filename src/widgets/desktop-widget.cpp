@@ -33,7 +33,6 @@
 #include "desktop-widget.h"
 #include "desktop.h"
 #include "document-undo.h"
-#include "ege-color-prof-tracker.h"
 #include "enums.h"
 #include "file.h"
 #include "inkscape-application.h"
@@ -96,73 +95,6 @@ using Inkscape::Util::unit_table;
 
 //---------------------------------------------------------------------
 /* SPDesktopWidget */
-
-class CMSPrefWatcher {
-public:
-    CMSPrefWatcher() :
-        _dpw(*this),
-        _tracker(ege_color_prof_tracker_new(nullptr))
-    {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        g_signal_connect( G_OBJECT(_tracker), "modified", G_CALLBACK(hook), this );
-        prefs->addObserver(_dpw);
-    }
-    virtual ~CMSPrefWatcher() = default;
-
-    //virtual void notify(PrefValue &);
-    void add( SPDesktopWidget* dtw ) {
-        _widget_list.push_back(dtw);
-    }
-    void remove( SPDesktopWidget* dtw ) {
-        _widget_list.remove(dtw);
-    }
-
-private:
-    static void hook(EgeColorProfTracker *tracker, gint b, CMSPrefWatcher *watcher);
-
-    class DisplayProfileWatcher : public Inkscape::Preferences::Observer {
-    public:
-        DisplayProfileWatcher(CMSPrefWatcher &pw) : Observer("/options/displayprofile"), _pw(pw) {}
-        void notify(Inkscape::Preferences::Entry const &/*val*/) override {
-            Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-            _pw._setCmsSensitive(!prefs->getString("/options/displayprofile/uri").empty());
-        }
-    private:
-        CMSPrefWatcher &_pw;
-    };
-
-    DisplayProfileWatcher _dpw;
-
-    void _setCmsSensitive(bool value);
-
-    std::list<SPDesktopWidget*> _widget_list;
-    EgeColorProfTracker *_tracker;
-
-    friend class DisplayProfileWatcher;
-};
-
-void CMSPrefWatcher::hook(EgeColorProfTracker * /*tracker*/, gint monitor, CMSPrefWatcher * /*watcher*/)
-{
-    unsigned char* buf = nullptr;
-    guint len = 0;
-
-    ege_color_prof_tracker_get_profile_for( monitor, reinterpret_cast<gpointer*>(&buf), &len );
-
-    auto cms_system = Inkscape::CMSSystem::get();
-    Glib::ustring id = cms_system->set_display_transform_monitor(buf, len, monitor);
-}
-
-void CMSPrefWatcher::_setCmsSensitive(bool enabled)
-{
-    for ( auto dtw : _widget_list ) {
-        auto cms_adj = dtw->get_canvas_grid()->GetCmsAdjust();
-        if ( cms_adj->get_sensitive() != enabled ) {
-            dtw->cms_adjust_set_sensitive(enabled);
-        }
-    }
-}
-
-static CMSPrefWatcher* cms_pref_watcher = nullptr;
 
 SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     : window (inkscape_window)
@@ -278,11 +210,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     _tb_icon_sizes2 = prefs->createObserver(ToolboxFactory::ctrlbars_icon_size, [=]() { apply_ctrlbar_settings(); });
     _tb_visible_buttons = prefs->createObserver(ToolboxFactory::tools_visible_buttons, [=]() { set_visible_buttons(tool_toolbox); });
 
-    if (!cms_pref_watcher) {
-        cms_pref_watcher = new CMSPrefWatcher();
-    }
-    cms_pref_watcher->add(dtw);
-
     // restore preferences
     set_toolbar_prefs();
     apply_ctrlbar_settings();
@@ -294,7 +221,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
 
     /* Canvas */
     dtw->_canvas = _canvas_grid->GetCanvas();
-    dtw->_canvas->set_cms_active(prefs->getBool("/options/displayprofile/enable"));
 
     /* Dialog Container */
     _container = Gtk::manage(new DialogContainer(inkscape_window));
@@ -453,17 +379,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
         update_statusbar_visibility();
     });
 
-    // --------------- Color Management ---------------- //
-    dtw->_tracker = ege_color_prof_tracker_new(GTK_WIDGET(_layer_selector->gobj()));
-    bool fromDisplay = prefs->getBool( "/options/displayprofile/from_display");
-    if ( fromDisplay ) {
-        auto cms_system = Inkscape::CMSSystem::get();
-        auto id = cms_system->get_display_id(0);
-        dtw->_canvas->set_cms_key(id);
-        dtw->cms_adjust_set_sensitive(!id.empty());
-    }
-    g_signal_connect( G_OBJECT(dtw->_tracker), "changed", G_CALLBACK(SPDesktopWidget::color_profile_event), dtw );
-
     // ------------------ Finish Up -------------------- //
     dtw->_vbox->show_all();
     dtw->_canvas_grid->ShowCommandPalette(false);
@@ -518,9 +433,6 @@ SPDesktopWidget::on_unrealize()
     }
 
     if (dtw->desktop) {
-        if (cms_pref_watcher) {
-            cms_pref_watcher->remove(dtw);
-        }
 
         for (auto &conn : dtw->_connections) {
             conn.disconnect();
@@ -751,32 +663,6 @@ SPDesktopWidget::event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget *dtw)
 }
 
 void
-SPDesktopWidget::color_profile_event(EgeColorProfTracker */*tracker*/, SPDesktopWidget *dtw)
-{
-    // Handle profile changes
-    GdkWindow *window = dtw->get_window()->gobj();
-
-    // Figure out the ID for the monitor
-    auto display = gdk_display_get_default();
-    auto monitor = gdk_display_get_monitor_at_window(display, window);
-
-    int n_monitors = gdk_display_get_n_monitors(display);
-
-    int monitorNum = -1;
-
-    // Now loop through the set of monitors and figure out whether this monitor matches
-    for (int i_monitor = 0; i_monitor < n_monitors; ++i_monitor) {
-        auto monitor_at_index = gdk_display_get_monitor(display, i_monitor);
-        if (monitor_at_index == monitor) monitorNum = i_monitor;
-    }
-
-    auto cms_system = Inkscape::CMSSystem::get();
-    Glib::ustring id = cms_system->get_display_id(monitorNum);
-    dtw->_canvas->set_cms_key(id);
-    dtw->cms_adjust_set_sensitive(!id.empty());
-}
-
-void
 SPDesktopWidget::update_guides_lock()
 {
     bool down = _canvas_grid->GetGuideLock()->get_active();
@@ -787,30 +673,6 @@ SPDesktopWidget::update_guides_lock()
         nv->toggleLockGuides();
         setMessage(Inkscape::NORMAL_MESSAGE, down ? _("Locked all guides") : _("Unlocked all guides"));
     }
-}
-
-void
-SPDesktopWidget::cms_adjust_toggled()
-{
-    auto _cms_adjust = _canvas_grid->GetCmsAdjust();
-
-    bool down = _cms_adjust->get_active();
-    if ( down != _canvas->get_cms_active() ) {
-        _canvas->set_cms_active(down);
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        prefs->setBool("/options/displayprofile/enable", down);
-        if (down) {
-            setMessage (Inkscape::NORMAL_MESSAGE, _("Color-managed display is <b>enabled</b> in this window"));
-        } else {
-            setMessage (Inkscape::NORMAL_MESSAGE, _("Color-managed display is <b>disabled</b> in this window"));
-        }
-    }
-}
-
-void
-SPDesktopWidget::cms_adjust_set_sensitive(bool enabled)
-{
-    _canvas_grid->GetCmsAdjust()->set_sensitive(enabled);
 }
 
 void
@@ -1613,23 +1475,6 @@ SPDesktopWidget::toggle_scrollbars()
 {
     // TODO: Turn into action and remove this function.
     _canvas_grid->ToggleScrollbars();
-}
-
-bool
-SPDesktopWidget::get_color_prof_adj_enabled() const
-{
-    auto _cms_adjust = _canvas_grid->GetCmsAdjust();
-    return _cms_adjust->get_sensitive() && _cms_adjust->get_active();
-}
-
-void
-SPDesktopWidget::toggle_color_prof_adj()
-{
-    auto _cms_adjust = _canvas_grid->GetCmsAdjust();
-    if (_cms_adjust->get_sensitive()) {
-        bool active = _cms_adjust->get_active();
-        _cms_adjust->set_active(!active);
-    }
 }
 
 static void

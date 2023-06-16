@@ -33,17 +33,6 @@ namespace Inkscape {
 
 class ColorProfile;
 
-class MonitorProfileInfo {
-public:
-    MonitorProfileInfo() {};
-    ~MonitorProfileInfo() = default;
-
-    std::string id;
-    cmsHPROFILE profile = nullptr;
-    cmsHTRANSFORM transform = nullptr;
-};
-
-
 class CMSSystem {
 public:
 
@@ -67,15 +56,11 @@ public:
 
     static std::vector<std::pair<std::string, bool>> get_directory_paths();
     std::vector<ICCProfileInfo>& get_system_profile_infos() { return system_profile_infos; }
-    std::vector<Glib::ustring> get_display_names();
-    std::vector<Glib::ustring> get_softproof_names();
+    std::vector<Glib::ustring> get_monitor_profile_names();
+    std::vector<Glib::ustring> get_softproof_profile_names();
     std::string get_path_for_profile(Glib::ustring const& name);
-    cmsHTRANSFORM get_display_transform_system();
-    cmsHTRANSFORM get_display_transform_monitor(std::string const &id);
-    cmsHPROFILE get_system_profile();
-    cmsHPROFILE get_proof_profile();
+    cmsHTRANSFORM get_cms_transform();
     static cmsHPROFILE get_document_profile(SPDocument* document, guint* intent, gchar const* name);
-    cmsHPROFILE get_sRGB_profile() { return sRGBProf; }
 
     static void do_transform(cmsHTRANSFORM transform, void *inBuf, void *outBuf, unsigned int size);
 
@@ -84,32 +69,32 @@ public:
 
 private:
     CMSSystem();
-    ~CMSSystem() = default;
+    ~CMSSystem();
 
     void load_profiles(); // Should this be public (e.g., if a new ColorProfile is created).
+    cmsHPROFILE get_monitor_profile(); // Get the user set monitor profile.
+    cmsHPROFILE get_proof_profile(); // Get the user set proof profile.
     void clear_transform(); // Clears current_transform.
-    void free_transforms(); // Clears current_transform and clears monitor profile transformss.
-    cmsHTRANSFORM set_transform(cmsHPROFILE profile, cmsHTRANSFORM transform); 
-
 
     static CMSSystem* _instance;
 
-    // List of system profiles
+    // List of ICC profiles on system
     std::vector<ICCProfileInfo> system_profile_infos;
 
-    // List of monitor profiles
-    std::vector<MonitorProfileInfo> monitor_profile_infos;
-
-    // We track last transform settings. If there is a change, we delete old transform and create new one.
+    // We track last transform settings. If there is a change, we delete create new transform.
     bool gamutWarn = false;
     Gdk::RGBA lastGamutColor = Gdk::RGBA("#808080");
     bool lastBPC = false;
     int lastIntent = INTENT_PERCEPTUAL;
     int lastProofIntent = INTENT_PERCEPTUAL;
-    cmsHTRANSFORM current_transform = nullptr;  // So we can delete it later.
+    bool current_monitor_profile_changed = true; // Force at least one update.
+    bool current_proof_profile_changed = true;
 
-    // Genric sRGB profile, find it once on inititialization.
-    cmsHPROFILE sRGBProf = nullptr;
+    // So we can delete them later.
+    cmsHTRANSFORM current_transform     = nullptr;
+    cmsHPROFILE current_monitor_profile = nullptr;
+    cmsHPROFILE current_proof_profile   = nullptr;
+    cmsHPROFILE sRGB_profile            = nullptr;  // Genric sRGB profile, find it once on inititialization.
 };
 
 

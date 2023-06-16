@@ -27,7 +27,6 @@ set(inkscape_SRC
   document-subset.cpp
   document-undo.cpp
   document.cpp
-  ege-color-prof-tracker.cpp
   event-log.cpp
   extract-uri.cpp
   file.cpp
@@ -113,7 +112,6 @@ set(inkscape_SRC
   document-subset.h
   document-undo.h
   document.h
-  ege-color-prof-tracker.h
   enums.h
   event-log.h
   event.h

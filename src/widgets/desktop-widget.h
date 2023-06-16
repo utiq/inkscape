@@ -193,9 +193,6 @@ public:
     void update_guides_lock();
 
     // Canvas Grid Widget
-    void cms_adjust_set_sensitive(bool enabled);
-    bool get_color_prof_adj_enabled() const;
-    void toggle_color_prof_adj();
     void update_zoom();
     void update_rotation();
     void update_rulers();
@@ -237,10 +234,6 @@ private:
     void update_statusbar_visibility();
     void apply_ctrlbar_settings();
 
-public:
-    void cms_adjust_toggled();
-private:
-    static void color_profile_event(EgeColorProfTracker *tracker, SPDesktopWidget *dtw);
     static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom::Point &normal);
     static gint event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget *dtw);
 

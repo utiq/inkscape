@@ -381,9 +381,6 @@ public:
 
     void toggleLockGuides();
 
-    void toggleColorProfAdjust();
-    bool colorProfAdjustEnabled();
-
     void toggleToolbar(gchar const *toolbar_name);
 
     bool is_iconified();

@@ -2380,19 +2380,14 @@ void InkscapePreferences::initPageIO()
     }
 
     gchar* profileTip = g_strdup_printf(_("The ICC profile to use to calibrate display output.\nSearched directories:%s"), tmpStr.c_str());
-    _page_cms.add_line( true, _("Display profile:"), _cms_display_profile, "",
+    _page_cms.add_line( true, _("User monitor profile:"), _cms_display_profile, "",
                         profileTip, false);
     g_free(profileTip);
     profileTip = nullptr;
 
-    _cms_from_display.init( _("Retrieve profile from display"), "/options/displayprofile/from_display", false);
-    _page_cms.add_line( true, "", _cms_from_display, "",
-#ifdef GDK_WINDOWING_X11
-                        _("Retrieve profiles from those attached to displays via XICC"), false);
-#else
-                        _("Retrieve profiles from those attached to displays"), false);
-#endif // GDK_WINDOWING_X11
-
+    _cms_from_user.init( _("Use profile from user"), "/options/displayprofile/use_user_profile", false);
+    _page_cms.add_line( true, "", _cms_from_user, "",
+                        _("Use a user specified ICC profile for monitor color correction. Warning: System wide color correction should be disabled."), false);
 
     _cms_intent.init("/options/displayprofile/intent", intentLabels, intentValues, numIntents, 0);
     _page_cms.add_line( true, _("Display rendering intent:"), _cms_intent, "",
@@ -2429,9 +2424,8 @@ void InkscapePreferences::initPageIO()
 
     {
         auto cms_system = Inkscape::CMSSystem::get();
-        std::vector<Glib::ustring> names = cms_system->get_display_names();
+        std::vector<Glib::ustring> names = cms_system->get_monitor_profile_names();
         Glib::ustring current = prefs->getString( "/options/displayprofile/uri" );
-
         gint index = 0;
         _cms_display_profile.append(_("<none>"));
         index++;
@@ -2447,7 +2441,7 @@ void InkscapePreferences::initPageIO()
             _cms_display_profile.set_active(0);
         }
 
-        names = cms_system->get_softproof_names();
+        names = cms_system->get_softproof_profile_names();
         current = prefs->getString("/options/softproof/uri");
         index = 0;
         for (auto & name : names) {

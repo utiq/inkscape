@@ -18,8 +18,11 @@
 
 #include <memory>
 #include <gtkmm.h>
+#include <lcms2.h>
+
 #include <2geom/rect.h>
 #include <2geom/int-rect.h>
+
 #include "display/rendermode.h"
 #include "optglarea.h"
 
@@ -84,8 +87,6 @@ public:
     void set_antialiasing_enabled(bool enabled);
 
     // CMS
-    void set_cms_key(std::string key);
-    const std::string &get_cms_key() const { return _cms_key; }
     void set_cms_active(bool active) { _cms_active = active; }
     bool get_cms_active() const { return _cms_active; }
 
@@ -173,8 +174,9 @@ private:
     bool _antialiasing_enabled = true;
 
     // CMS
-    std::string _cms_key;
     bool _cms_active = false;
+    cmsHTRANSFORM _cms_transform = nullptr;  ///< The lcms transform to apply to canvas.
+    void set_cms_transform();               ///< Set the lcms transform.
 
     /* Internal state */
 
