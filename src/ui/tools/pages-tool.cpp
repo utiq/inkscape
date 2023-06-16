@@ -360,8 +360,8 @@ bool PagesTool::root_handler(GdkEvent *event)
                     // Move the document's viewport first
                     auto page_items = page_manager.getOverlappingItems(_desktop, dragging_item);
                     auto rect = document->preferredBounds();
-                    auto affine = moveTo(point_dt, snap) * document->dt2doc();
-                    document->fitToRect(*rect * affine, false);
+                    auto affine = moveTo(point_dt, snap);
+                    document->fitToRect(*rect * affine * document->dt2doc(), false);
                     // Now move the page back to where we expect it.
                     if (dragging_item) {
                         dragging_item->movePage(affine, false);
