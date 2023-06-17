@@ -72,8 +72,6 @@ CMSSystem::CMSSystem()
 
 CMSSystem::~CMSSystem()
 {
-    clear_transform();
-
     if (current_monitor_profile) {
         cmsCloseProfile(current_monitor_profile);
     }
@@ -94,13 +92,6 @@ CMSSystem::~CMSSystem()
  * user to assign different profiles to different monitors or have CMS preferences that are not
  * global, we'll need to have either one transform per monitor or one transform per canvas.
  */
-void CMSSystem::clear_transform()
-{
-    if (current_transform) {
-        cmsDeleteTransform(current_transform);
-        current_transform = nullptr;
-    }
-}
 
 // Search for system ICC profile files and add them to list.
 void CMSSystem::load_profiles()
@@ -395,8 +386,8 @@ void CMSSystem::do_transform(cmsHTRANSFORM transform, unsigned char *inBuf, unsi
 
 // Called by Canvas to obtain transform.
 // Currently there is one transform for all monitors.
-// Transform owned by CMSSystem.
-cmsHTRANSFORM CMSSystem::get_cms_transform()
+// Transform immutably shared between CMSSystem and Canvas.
+std::shared_ptr<CMSTransform const> const &CMSSystem::get_cms_transform()
 {
     bool preferences_changed = false;
 
@@ -429,9 +420,6 @@ cmsHTRANSFORM CMSSystem::get_cms_transform()
     bool need_to_update = preferences_changed || current_monitor_profile_changed || current_proof_profile_changed;
 
     if (need_to_update) {
-
-        clear_transform(); // We're getting a new one, must delete the old one!
-
         if (proof_profile) {
             cmsUInt32Number dwFlags = cmsFLAGS_SOFTPROOFING;
 
@@ -454,11 +442,13 @@ cmsHTRANSFORM CMSSystem::get_cms_transform()
                 dwFlags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
             }
 
-            current_transform = cmsCreateProofingTransform(sRGB_profile, TYPE_BGRA_8, monitor_profile, TYPE_BGRA_8,
-                                                           proof_profile, intent, proofIntent, dwFlags);
+            current_transform = CMSTransform::create(
+                cmsCreateProofingTransform(sRGB_profile, TYPE_BGRA_8, monitor_profile, TYPE_BGRA_8,
+                                           proof_profile, intent, proofIntent, dwFlags));
 
         } else if (monitor_profile) {
-            current_transform = cmsCreateTransform(sRGB_profile, TYPE_BGRA_8, monitor_profile, TYPE_BGRA_8, intent, 0);
+            current_transform = CMSTransform::create(
+                cmsCreateTransform(sRGB_profile, TYPE_BGRA_8, monitor_profile, TYPE_BGRA_8, intent, 0));
         }
     }
 

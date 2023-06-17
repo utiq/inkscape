@@ -32,6 +32,7 @@ namespace Inkscape {
 
 class CanvasItem;
 class CanvasItemGroup;
+class CMSTransform;
 class Drawing;
 
 namespace UI {
@@ -175,8 +176,8 @@ private:
 
     // CMS
     bool _cms_active = false;
-    cmsHTRANSFORM _cms_transform = nullptr;  ///< The lcms transform to apply to canvas.
-    void set_cms_transform();               ///< Set the lcms transform.
+    std::shared_ptr<CMSTransform const> _cms_transform; ///< The lcms transform to apply to canvas.
+    void set_cms_transform(); ///< Set the lcms transform.
 
     /* Internal state */
 

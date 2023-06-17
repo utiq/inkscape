@@ -17,6 +17,8 @@
  */
 
 #include <vector>
+#include <memory>
+#include <cassert>
 
 #include <glibmm/ustring.h>
 #include <gdkmm/rgba.h>
@@ -32,6 +34,25 @@ class ProfileInfo;
 namespace Inkscape {
 
 class ColorProfile;
+
+class CMSTransform
+{
+public:
+    explicit CMSTransform(cmsHTRANSFORM handle) : _handle(handle) { assert(_handle); }
+    CMSTransform(CMSTransform const &) = delete;
+    CMSTransform &operator=(CMSTransform const &) = delete;
+    ~CMSTransform() { cmsDeleteTransform(_handle); }
+
+    cmsHTRANSFORM getHandle() const { return _handle; }
+
+    static std::shared_ptr<CMSTransform> create(cmsHTRANSFORM handle)
+    {
+        return handle ? std::make_shared<CMSTransform>(handle) : nullptr;
+    }
+
+private:
+    cmsHTRANSFORM _handle;
+};
 
 class CMSSystem
 {
@@ -58,7 +79,7 @@ public:
     std::vector<Glib::ustring> get_monitor_profile_names() const;
     std::vector<Glib::ustring> get_softproof_profile_names() const;
     std::string get_path_for_profile(Glib::ustring const &name) const;
-    cmsHTRANSFORM get_cms_transform();
+    std::shared_ptr<CMSTransform const> const &get_cms_transform();
     static cmsHPROFILE get_document_profile(SPDocument *document, unsigned *intent, char const *name);
 
     static void do_transform(cmsHTRANSFORM transform, unsigned char *inBuf, unsigned char *outBuf, unsigned size);
@@ -86,8 +107,10 @@ private:
     bool current_monitor_profile_changed = true; // Force at least one update.
     bool current_proof_profile_changed = true;
 
+    // Shared immutably with all canvases.
+    std::shared_ptr<CMSTransform const> current_transform;
+
     // So we can delete them later.
-    cmsHTRANSFORM current_transform     = nullptr;
     cmsHPROFILE current_monitor_profile = nullptr;
     cmsHPROFILE current_proof_profile   = nullptr;
     cmsHPROFILE sRGB_profile            = nullptr;  // Genric sRGB profile, find it once on inititialization.

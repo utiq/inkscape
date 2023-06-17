@@ -150,6 +150,7 @@ struct RedrawData
     bool decoupled_mode;
     Cairo::RefPtr<Cairo::Region> snapshot_drawn;
     Geom::OptIntRect grabbed;
+    std::shared_ptr<CMSTransform const> cms_transform;
 
     // Saved prefs
     int coarsener_min_size;
@@ -661,6 +662,7 @@ void CanvasPrivate::launch_redraw()
 
     rd.snapshot_drawn = stores.snapshot().drawn ? stores.snapshot().drawn->copy() : Cairo::RefPtr<Cairo::Region>();
     rd.grabbed = q->_grabbed_canvas_item && prefs.block_updates ? (roundedOutwards(q->_grabbed_canvas_item->get_bounds()) & rd.visible & rd.store.rect).regularized() : Geom::OptIntRect();
+    rd.cms_transform = q->_cms_active ? q->_cms_transform : nullptr;
 
     abort_flags.store((int)AbortFlags::None, std::memory_order_relaxed);
 
@@ -744,19 +746,6 @@ void CanvasPrivate::commit_tiles()
     }
 
     for (auto &tile : tiles) {
-
-        // Todo: Make CMS system thread-safe, then move this to render thread too.
-        if (q->_cms_active && q->_cms_transform) {
-            tile.surface->flush();
-            auto px = tile.surface->get_data();
-            int stride = tile.surface->get_stride();
-            for (int i = 0; i < tile.surface->get_height(); i++) {
-                auto row = px + i * stride;
-                Inkscape::CMSSystem::do_transform(q->_cms_transform, row, row, tile.surface->get_width());
-            }
-            tile.surface->mark_dirty();
-        }
-
         // Paste tile content onto stores.
         graphics->draw_tile(tile.fragment, std::move(tile.surface), std::move(tile.outline_surface));
 
@@ -2411,6 +2400,18 @@ void CanvasPrivate::paint_single_buffer(Cairo::RefPtr<Cairo::ImageSurface> const
     // Render drawing on top of background.
     auto buf = Inkscape::CanvasItemBuffer{ rect, scale_factor, cr, outline_pass };
     canvasitem_ctx->root()->render(buf);
+
+    // Apply CMS transform.
+    if (rd.cms_transform) {
+        surface->flush();
+        auto px = surface->get_data();
+        int stride = surface->get_stride();
+        for (int i = 0; i < surface->get_height(); i++) {
+                auto row = px + i * stride;
+                Inkscape::CMSSystem::do_transform(rd.cms_transform->getHandle(), row, row, surface->get_width());
+        }
+        surface->mark_dirty();
+    }
 
     // Paint over newly drawn content with a translucent random colour.
     if (rd.debug_show_redraw) {
