@@ -21,19 +21,19 @@
 
 namespace Inkscape {
 
-ICCProfileInfo::ICCProfileInfo(cmsHPROFILE profile, std::string path, bool in_home)
-  : _path(std::move(path))
-  , _in_home(in_home)
+ICCProfileInfo::ICCProfileInfo(cmsHPROFILE profile, std::string &&path, bool in_home)
+    : _path(std::move(path))
+    , _in_home(in_home)
 {
-    assert(profile != nullptr);
+    assert(profile);
 
     _name = get_color_profile_name(profile);
     _colorspace = cmsGetColorSpace(profile);
     _profileclass = cmsGetDeviceClass(profile);
 }
 
-bool is_icc_file(const std::string& filepath) {
-
+bool is_icc_file(std::string const &filepath)
+{
     bool is_icc_file = false;
     GStatBuf st;
     if (g_stat(filepath.c_str(), &st) == 0 && st.st_size > 128) {
@@ -77,9 +77,8 @@ bool is_icc_file(const std::string& filepath) {
     return is_icc_file;
 }
 
-
-std::string get_color_profile_name(cmsHPROFILE profile) {
-
+std::string get_color_profile_name(cmsHPROFILE profile)
+{
     std::string name;
 
     if (profile) {
@@ -109,8 +108,6 @@ std::string get_color_profile_name(cmsHPROFILE profile) {
 
     return name;
 }
-
-
 
 } // namespace Inkscape
 

@@ -8,8 +8,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_CMS_UTIL_H
-#define SEEN_CMS_UTIL_H
+#ifndef INKSCAPE_COLOR_CMS_UTIL_H
+#define INKSCAPE_COLOR_CMS_UTIL_H
 
 #include <string>
 
@@ -18,17 +18,16 @@
 namespace Inkscape {
 
 // Helper class to store info
-class ICCProfileInfo {
-
+class ICCProfileInfo
+{
 public:
-    ICCProfileInfo(cmsHPROFILE profile, std::string path, bool in_home);
-    ~ICCProfileInfo() = default;
+    ICCProfileInfo(cmsHPROFILE profile, std::string &&path, bool in_home);
     bool operator<(ICCProfileInfo const &other) const;
-    std::string get_path() { return _path; }
-    std::string get_name() { return _name; }
-    cmsColorSpaceSignature get_colorspace() { return _colorspace; }
-    cmsProfileClassSignature get_profileclass() { return _profileclass; }
-    bool in_home() { return _in_home; }
+    std::string const &get_path() const { return _path; }
+    std::string const &get_name() const { return _name; }
+    cmsColorSpaceSignature get_colorspace() const { return _colorspace; }
+    cmsProfileClassSignature get_profileclass() const { return _profileclass; }
+    bool in_home() const { return _in_home; }
 
 private:
     std::string _path;
@@ -38,12 +37,12 @@ private:
     cmsProfileClassSignature _profileclass;
 };
 
-bool is_icc_file(const std::string& filepath);
+bool is_icc_file(std::string const &filepath);
 std::string get_color_profile_name(cmsHPROFILE profile); // Read as ASCII from profile.
 
 } // namespace Inkscape
 
-#endif // !SEEN_COLOR_PROFILE_H
+#endif // INKSCAPE_COLOR_CMS_UTIL_H
 
 /*
   Local Variables:

@@ -7,8 +7,8 @@
  * Copyright (C) 2017 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef SEEN_COLOR_PROFILE_FNS_H
-#define SEEN_COLOR_PROFILE_FNS_H
+#ifndef INKSCAPE_COLOR_CMS_SYSTEM_H
+#define INKSCAPE_COLOR_CMS_SYSTEM_H
 
 /** \file 
  * Access to ICC profiles provided by system.
@@ -33,9 +33,9 @@ namespace Inkscape {
 
 class ColorProfile;
 
-class CMSSystem {
+class CMSSystem
+{
 public:
-
     /**
      * Access the singleton CMSSystem object.
      */
@@ -53,19 +53,15 @@ public:
         }
     }
 
-
     static std::vector<std::pair<std::string, bool>> get_directory_paths();
-    std::vector<ICCProfileInfo>& get_system_profile_infos() { return system_profile_infos; }
-    std::vector<Glib::ustring> get_monitor_profile_names();
-    std::vector<Glib::ustring> get_softproof_profile_names();
-    std::string get_path_for_profile(Glib::ustring const& name);
+    std::vector<ICCProfileInfo> const &get_system_profile_infos() const { return system_profile_infos; }
+    std::vector<Glib::ustring> get_monitor_profile_names() const;
+    std::vector<Glib::ustring> get_softproof_profile_names() const;
+    std::string get_path_for_profile(Glib::ustring const &name) const;
     cmsHTRANSFORM get_cms_transform();
-    static cmsHPROFILE get_document_profile(SPDocument* document, guint* intent, gchar const* name);
+    static cmsHPROFILE get_document_profile(SPDocument *document, unsigned *intent, char const *name);
 
-    static void do_transform(cmsHTRANSFORM transform, void *inBuf, void *outBuf, unsigned int size);
-
-    std::string get_display_id(int monitor);
-    Glib::ustring set_display_transform_monitor(void* buf, unsigned int bufLen, int monitor);
+    static void do_transform(cmsHTRANSFORM transform, unsigned char *inBuf, unsigned char *outBuf, unsigned size);
 
 private:
     CMSSystem();
@@ -97,11 +93,9 @@ private:
     cmsHPROFILE sRGB_profile            = nullptr;  // Genric sRGB profile, find it once on inititialization.
 };
 
-
 } // namespace Inkscape
 
-
-#endif // !SEEN_COLOR_PROFILE_FNS_H
+#endif // INKSCAPE_COLOR_CMS_SYSTEM_H
 
 /*
   Local Variables:
