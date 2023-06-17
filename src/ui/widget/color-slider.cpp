@@ -156,18 +156,6 @@ bool ColorSlider::on_button_press_event(GdkEventButton *event)
         bool constrained = event->state & GDK_CONTROL_MASK;
         ColorScales<>::setScaled(_adjustment, value, constrained);
         signal_dragged.emit();
-
-	auto window = _gdk_window->gobj();
-
-	auto seat = gdk_event_get_seat(reinterpret_cast<GdkEvent *>(event));
-	gdk_seat_grab(seat,
-                      window,
-                      GDK_SEAT_CAPABILITY_ALL_POINTING,
-                      FALSE,
-                      nullptr,
-                      reinterpret_cast<GdkEvent *>(event),
-                      nullptr,
-                      nullptr);
     }
 
     return false;
@@ -176,7 +164,6 @@ bool ColorSlider::on_button_press_event(GdkEventButton *event)
 bool ColorSlider::on_button_release_event(GdkEventButton *event)
 {
     if (event->button == 1) {
-        gdk_seat_ungrab(gdk_event_get_seat(reinterpret_cast<GdkEvent *>(event)));
         _dragging = false;
         signal_released.emit();
         if (_value != _oldvalue) {

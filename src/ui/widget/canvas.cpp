@@ -1788,10 +1788,7 @@ void Canvas::canvas_item_destructed(Inkscape::CanvasItem *item)
     }
 
     if (item == _grabbed_canvas_item) {
-        _grabbed_canvas_item = nullptr;
-        auto const display = Gdk::Display::get_default();
-        auto const seat    = display->get_default_seat();
-        seat->ungrab();
+        item->ungrab(); // Calls gtk_grab_remove(canvas).
     }
 
     if (item == d->pre_scroll_grabbed_item) {

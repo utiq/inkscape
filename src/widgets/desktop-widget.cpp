@@ -1628,9 +1628,6 @@ SPDesktopWidget::on_ruler_box_button_release_event(GdkEventButton *event, Gtk::W
     if (_ruler_clicked && event->button == 1) {
         desktop->event_context->discard_delayed_snap_event();
 
-        auto seat = gdk_device_get_seat(event->device);
-        gdk_seat_ungrab(seat);
-
         Geom::Point const event_w(_canvas->canvas_to_world(event_win));
         Geom::Point event_dt(desktop->w2d(event_w));
 
@@ -1748,18 +1745,6 @@ SPDesktopWidget::on_ruler_box_button_press_event(GdkEventButton *event, Gtk::Wid
 
         _active_guide = make_canvasitem<Inkscape::CanvasItemGuideLine>(desktop->getCanvasGuides(), Glib::ustring(), event_dt, _normal);
         _active_guide->set_stroke(desktop->namedview->guidehicolor);
-
-        // Ruler grabs all events until button release.
-        auto window = widget->get_window()->gobj();
-        auto seat = gdk_device_get_seat(event->device);
-        gdk_seat_grab(seat,
-                window,
-                GDK_SEAT_CAPABILITY_ALL_POINTING,
-                FALSE,
-                nullptr,
-                (GdkEvent*)event,
-                nullptr,
-                nullptr);
     }
 
     return false;

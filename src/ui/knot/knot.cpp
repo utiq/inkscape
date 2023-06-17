@@ -91,14 +91,6 @@ SPKnot::SPKnot(SPDesktop *desktop, gchar const *tip, Inkscape::CanvasItemCtrlTyp
 }
 
 SPKnot::~SPKnot() {
-    auto display = gdk_display_get_default();
-    auto seat    = gdk_display_get_default_seat(display);
-    auto device  = gdk_seat_get_pointer(seat);
-
-    if ((this->flags & SP_KNOT_GRABBED) && gdk_display_device_is_grabbed(display, device)) {
-        // This happens e.g. when deleting a node in node tool while dragging it
-        gdk_seat_ungrab(seat);
-    }
 
     // Make sure the knot is not grabbed, as it's destructing can be deferred causing
     // issues like https://gitlab.com/inkscape/inkscape/-/issues/4239
