@@ -172,9 +172,8 @@ inkscape:macos:arm:
     CCACHE_DIR: $CI_PROJECT_DIR/ccache
     CCACHE_MAXSIZE: "2.0G"
     IDW_ARCHIVE: msys64.7z
-    IDW_RELEASE_TAG: r230615.1
+    IDW_RELEASE_TAG: r230618.1
     IDW_RELEASE_URL: https://gitlab.com/api/v4/projects/46863172/packages/generic/windows/$IDW_RELEASE_TAG/$IDW_ARCHIVE
-    PACMAN_OPTIONS: "--needed --noconfirm"
   before_script:
     - wget.exe --quiet --no-check-certificate $IDW_RELEASE_URL
     - 7z x -oC:/ $IDW_ARCHIVE
@@ -196,17 +195,13 @@ inkscape:windows:dist:
   extends: .windows
   parallel:
     matrix:
-      - DIST: [ "7z", "exe" ]
+      - DIST: [ "7z", "exe", "msi" ]
   dependencies:
     - inkscape:windows:build
   needs:
     - inkscape:windows:build
   script:
     - 7z x build.7z
-    - if ($DIST -eq "exe")
-      {
-        C:/msys64/msys2_shell.cmd -defterm -no-start -mingw64 -here -c "pacman -S $PACMAN_OPTIONS mingw-w64-x86_64-nsis"
-      }
     - C:/msys64/msys2_shell.cmd -defterm -no-start -mingw64 -here -c "ninja -C build dist-win-${DIST}"
   artifacts:
     paths:
