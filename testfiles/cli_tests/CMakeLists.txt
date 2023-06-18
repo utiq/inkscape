@@ -911,6 +911,7 @@ add_pdfinput_test(gradients 1)
 add_pdfinput_test(latex 1)
 add_pdfinput_test(transparency-groups 1)
 add_pdfinput_test(rotated-gradients 1)
+add_pdfinput_test(labels-utf16 1)
 add_pdfinput_test(multi-page-sample all)
 
 ###########################
