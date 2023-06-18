@@ -129,9 +129,10 @@ static std::vector<SPItem *> grid_item_sort(Inkscape::ObjectSet *items)
         SPDesktop *desktop = Parent->getDesktop();
         desktop->getDocument()->ensureUpToDate();
         Inkscape::Selection *selection = desktop->getSelection();
-        if (!selection) return;
+        if (!selection || selection->isEmpty()) return;
 
         auto sel_box = selection->documentBounds(SPItem::VISUAL_BBOX);
+        if (sel_box.empty()) return;
         double grid_left = sel_box->min()[Geom::X];
         double grid_top = sel_box->min()[Geom::Y];
 
