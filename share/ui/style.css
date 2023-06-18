@@ -1029,3 +1029,8 @@ padding:3px 3px 10px 3px;
     margin:10px 4px;
     padding:0;
 }
+
+/* min size for an angle slider in gradient editor */
+.angle-slider {
+    min-width: 80px;
+}
