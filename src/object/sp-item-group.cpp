@@ -570,8 +570,9 @@ sp_item_group_ungroup (SPGroup *group, std::vector<SPItem*> &children)
         if (clip_obj) {
             tmp_clip_set.unsetMask(true, false, true);
             tmp_clip_set.remove(group);
-            tmp_clip_set.group();
             clip = tmp_clip_set.singleItem();
+            // TODO: handle multiple children of a <clipPath>. Currently,
+            // ObjectSet::setMask() can only set a single item as clip.
         } 
         if (mask_obj) {
             tmp_mask_set.unsetMask(false, false, true);
