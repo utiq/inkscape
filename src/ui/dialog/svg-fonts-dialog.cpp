@@ -49,6 +49,7 @@ SvgFontDrawingArea::SvgFontDrawingArea():
     _svgfont(nullptr),
     _text()
 {
+    set_name("SVGFontDrawingArea");
 }
 
 void SvgFontDrawingArea::set_svgfont(SvgFont* svgfont){
@@ -797,6 +798,7 @@ Gtk::Box* SvgFontsDialog::global_settings_tab(){
     _font_remove.set_image_from_icon_name("list-remove", Gtk::ICON_SIZE_BUTTON);
     _font_remove.signal_clicked().connect([=](){ remove_selected_font(); });
 
+    global_vbox.set_name("SVGFontsGlobalSettingsTab");
     global_vbox.pack_start(_header_box, false, false);
 
     _font_label          = new Gtk::Label(Glib::ustring("<b>") + _("Font Attributes") + "</b>", Gtk::ALIGN_START, Gtk::ALIGN_CENTER);
@@ -1285,6 +1287,7 @@ void SvgFontsDialog::set_glyphs_view_mode(bool list) {
 
 Gtk::Box* SvgFontsDialog::glyphs_tab() {
 
+    glyphs_vbox.set_name("SVGFontsGlyphsTab");
     glyphs_vbox.set_border_width(4);
     glyphs_vbox.set_spacing(4);
 
@@ -1538,18 +1541,19 @@ Gtk::Box* SvgFontsDialog::kerning_tab(){
 
     // kerning_slider has a big handle. Extra padding added
     Gtk::Box* kerning_amount_hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 8));
-    kerning_vbox.pack_start(*kerning_amount_hbox, false,false);
     kerning_amount_hbox->pack_start(*Gtk::manage(new Gtk::Label(_("Kerning value:"))), false,false);
     kerning_amount_hbox->pack_start(*kerning_slider, true,true);
 
     kerning_preview.set_size(-1, 150 + 20);
     _font_da.set_size(-1, 60 + 20);
 
+    kerning_vbox.set_name("SVGFontsKerningTab");
     kerning_vbox.set_border_width(4);
     kerning_vbox.set_spacing(4);
     kerning_vbox.pack_start(*kerning_selector, false,false);
     kerning_vbox.pack_start(_KerningPairsListScroller, true,true);
     kerning_vbox.pack_start((Gtk::Widget&) kerning_preview, false,false);
+    kerning_vbox.pack_start(*kerning_amount_hbox, false,false);
 
     return &kerning_vbox;
 }
