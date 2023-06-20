@@ -27,6 +27,7 @@
 #include <sigc++/sigc++.h>
 
 #include "helper/auto-connection.h"
+#include "object/sp-grid.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/licensor.h"
 #include "ui/widget/registered-widget.h"
@@ -82,6 +83,10 @@ private:
     RegisteredColorPicker *_rcp_gcol = nullptr;
     RegisteredColorPicker *_rcp_gmcol = nullptr;
     RegisteredSuffixedInteger *_rsi = nullptr;
+    RegisteredScalarUnit* _rsu_gx = nullptr;
+    RegisteredScalarUnit* _rsu_gy = nullptr;
+    RegisteredScalarUnit* _rsu_mx = nullptr;
+    RegisteredScalarUnit* _rsu_my = nullptr;
 
     Inkscape::auto_connection _modified_signal;
 };
@@ -248,11 +253,8 @@ protected:
     Gtk::Notebook   _grids_notebook;
     Gtk::Box        _grids_hbox_crea;
     Gtk::Label      _grids_label_crea;
-    Gtk::Button     _grids_button_new;
     Gtk::Button     _grids_button_remove;
-    Gtk::ComboBoxText _grids_combo_gridtype;
     Gtk::Label      _grids_label_def;
-    Gtk::Box        _grids_space;
     //---------------------------------------------------------------
 
     RDEList _rdflist;
@@ -262,7 +264,7 @@ protected:
 
 private:
     // callback methods for buttons on grids page.
-    void onNewGrid();
+    void onNewGrid(GridType type);
     void onRemoveGrid();
 
     // callback for display unit change

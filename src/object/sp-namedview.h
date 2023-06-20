@@ -112,6 +112,7 @@ public:
     bool getShowGuides();
 
     void updateViewPort();
+    void newGridCreated();
 
     // page background, border, desk colors
     void change_color(unsigned int rgba, SPAttr color_key, SPAttr opacity_key = SPAttr::INVALID);
@@ -135,6 +136,7 @@ private:
     friend class SPDocument;
 
     Inkscape::CanvasPage *_viewport = nullptr;
+    bool _sync_grids = true;
 
 protected:
     void build(SPDocument *document, Inkscape::XML::Node *repr) override;

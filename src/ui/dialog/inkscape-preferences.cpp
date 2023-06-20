@@ -20,6 +20,7 @@
 #include <gtkmm/fontbutton.h>
 #include <gtkmm/fontchooserdialog.h>
 #include <gtkmm/widget.h>
+#include "ui/widget/preferences-widget.h"
 #ifdef HAVE_CONFIG_H
 # include "config.h"  // only include where actually required!
 #endif
@@ -2146,21 +2147,18 @@ void InkscapePreferences::initPageUI()
     _page_grids.add_group_header( _("Default grid settings"));
 
     _page_grids.add_line( true, "", _grids_notebook, "", "", false);
-    _grids_notebook.append_page(_grids_xy,     N_("Rectangular Grid"));
-    _grids_notebook.append_page(_grids_axonom, N_("Axonometric Grid"));
+    _grids_notebook.set_halign(Gtk::ALIGN_START);
+    _grids_notebook.set_hexpand(false);
+    auto& grid_modular = *Gtk::make_managed<UI::Widget::DialogPage>();
+    _grids_notebook.append_page(_grids_xy,     _("Rectangular Grid"));
+    _grids_notebook.append_page(_grids_axonom, _("Axonometric Grid"));
+    _grids_notebook.append_page(grid_modular, _("Modular Grid"));
+    {
     // Rectangular SPGrid properties
         _grids_xy_units.init("/options/grids/xy/units");
         _grids_xy.add_line( false, _("Grid units:"), _grids_xy_units, "", "", false);
-        _grids_xy_origin_x.init("/options/grids/xy/origin_x", -10000.0, 10000.0, 0.1, 1.0, 0.0, false, false);
-        _grids_xy_origin_y.init("/options/grids/xy/origin_y", -10000.0, 10000.0, 0.1, 1.0, 0.0, false, false);
-        _grids_xy_origin_x.set_digits(3);
-        _grids_xy_origin_y.set_digits(3);
         _grids_xy.add_line( false, _("Origin X:"), _grids_xy_origin_x, "", _("X coordinate of grid origin"), false);
         _grids_xy.add_line( false, _("Origin Y:"), _grids_xy_origin_y, "", _("Y coordinate of grid origin"), false);
-        _grids_xy_spacing_x.init("/options/grids/xy/spacing_x", -10000.0, 10000.0, 0.1, 1.0, 1.0, false, false);
-        _grids_xy_spacing_y.init("/options/grids/xy/spacing_y", -10000.0, 10000.0, 0.1, 1.0, 1.0, false, false);
-        _grids_xy_spacing_x.set_digits(3);
-        _grids_xy_spacing_y.set_digits(3);
         _grids_xy.add_line( false, _("Spacing X:"), _grids_xy_spacing_x, "", _("Distance between vertical grid lines"), false);
         _grids_xy.add_line( false, _("Spacing Y:"), _grids_xy_spacing_y, "", _("Distance between horizontal grid lines"), false);
 
@@ -2176,14 +2174,8 @@ void InkscapePreferences::initPageUI()
     // Axonometric SPGrid properties:
         _grids_axonom_units.init("/options/grids/axonom/units");
         _grids_axonom.add_line( false, _("Grid units:"), _grids_axonom_units, "", "", false);
-        _grids_axonom_origin_x.init("/options/grids/axonom/origin_x", -10000.0, 10000.0, 0.1, 1.0, 0.0, false, false);
-        _grids_axonom_origin_y.init("/options/grids/axonom/origin_y", -10000.0, 10000.0, 0.1, 1.0, 0.0, false, false);
-        _grids_axonom_origin_x.set_digits(3);
-        _grids_axonom_origin_y.set_digits(3);
         _grids_axonom.add_line( false, _("Origin X:"), _grids_axonom_origin_x, "", _("X coordinate of grid origin"), false);
         _grids_axonom.add_line( false, _("Origin Y:"), _grids_axonom_origin_y, "", _("Y coordinate of grid origin"), false);
-        _grids_axonom_spacing_y.init("/options/grids/axonom/spacing_y", -10000.0, 10000.0, 0.1, 1.0, 1.0, false, false);
-        _grids_axonom_spacing_y.set_digits(3);
         _grids_axonom.add_line( false, _("Spacing Y:"), _grids_axonom_spacing_y, "", _("Base length of z-axis"), false);
         _grids_axonom_angle_x.init("/options/grids/axonom/angle_x", -360.0, 360.0, 1.0, 10.0, 30.0, false, false);
         _grids_axonom_angle_z.init("/options/grids/axonom/angle_z", -360.0, 360.0, 1.0, 10.0, 30.0, false, false);
@@ -2195,6 +2187,56 @@ void InkscapePreferences::initPageUI()
         _grids_axonom.add_line( false, _("Major grid line color:"), _grids_axonom_empcolor, "", _("Color used for major (highlighted) grid lines"), false);
         _grids_axonom_empspacing.init("/options/grids/axonom/empspacing", 1.0, 1000.0, 1.0, 5.0, 5.0, true, false);
         _grids_axonom.add_line( false, _("Major grid line every:"), _grids_axonom_empspacing, "", "", false);
+    // Modular grid
+        auto units = Gtk::make_managed<UI::Widget::PrefUnit>();
+        units->init("/options/grids/modular/units");
+        auto origin_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto origin_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto block_width = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto block_height = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto gap_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto gap_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto margin_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto margin_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto color_major = Gtk::make_managed<UI::Widget::PrefColorPicker>();
+        auto color_minor = Gtk::make_managed<UI::Widget::PrefColorPicker>();
+        color_minor->init(_("Minor grid line color:"), "/options/grids/modular/color", GRID_DEFAULT_MAJOR_COLOR);
+        color_major->init(_("Major grid line color:"), "/options/grids/modular/empcolor", GRID_DEFAULT_BLOCK_COLOR);
+
+        grid_modular.add_line(false, _("Grid units:"), *units, "", "", false);
+        grid_modular.add_line(false, _("Origin X:"), *origin_x, "", _("X coordinate of grid origin"), false);
+        grid_modular.add_line(false, _("Origin Y:"), *origin_y, "", _("Y coordinate of grid origin"), false);
+        grid_modular.add_line( false, _("Block width:"), *block_width, "", _("Width of grid modules"), false);
+        grid_modular.add_line( false, _("Block height:"), *block_height, "", _("Height of grid modules"), false);
+        grid_modular.add_line(false, _("Gap X:"), *gap_x, "", _("Horizontal distance between blocks"), false);
+        grid_modular.add_line(false, _("Gap Y:"), *gap_y, "", _("Vertical distance between blocks"), false);
+        grid_modular.add_line(false, _("Margin X:"), *margin_x, "", _("Horizontal block margin"), false);
+        grid_modular.add_line(false, _("Margin Y:"), *margin_y, "", _("Vertical block margin"), false);
+        grid_modular.add_line( false, _("Minor grid line color:"), *color_minor, "", _("Color used for block margins"), false);
+        grid_modular.add_line( false, _("Major grid line color:"), *color_major, "", _("Color used for grid blocks"), false);
+
+        for (auto [spin, path] : (std::tuple<PrefSpinButton*, const char*>[]) {
+            {&_grids_xy_origin_x,  "/options/grids/xy/origin_x"},
+            {&_grids_xy_origin_y,  "/options/grids/xy/origin_y"},
+            {&_grids_xy_spacing_x, "/options/grids/xy/spacing_x"},
+            {&_grids_xy_spacing_y, "/options/grids/xy/spacing_y"},
+            {&_grids_axonom_origin_x,  "/options/grids/axonom/origin_x"},
+            {&_grids_axonom_origin_y, " /options/grids/axonom/origin_y"},
+            {&_grids_axonom_spacing_y, "/options/grids/axonom/spacing_y"},
+            {origin_x,     "/options/grids/modular/origin_x"},
+            {origin_y,     "/options/grids/modular/origin_y"},
+            {block_width,  "/options/grids/modular/spacing_x"},
+            {block_height, "/options/grids/modular/spacing_y"},
+            {gap_x,        "/options/grids/modular/gapx"},
+            {gap_y,        "/options/grids/modular/gapy"},
+            {margin_x,     "/options/grids/modular/marginx"},
+            {margin_y,     "/options/grids/modular/marginy"},
+        }) {
+            spin->init(path, -10'000.0, 10'000.0, 0.1, 1.0, 0.0, false, false);
+            spin->set_digits(5);
+            spin->set_width_chars(12);
+        }
+    }
 
     this->AddPage(_page_grids, _("Grids"), iter_ui, PREFS_PAGE_UI_GRIDS);
 

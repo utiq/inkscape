@@ -869,6 +869,14 @@ bool SPNamedView::getLockGuides()
     return false;
 }
 
+void SPNamedView::newGridCreated() {
+    if (grids_visible) return;
+
+    _sync_grids = false;
+    setShowGrids(true);
+    _sync_grids = true;
+}
+
 void SPNamedView::updateGrids()
 {
     if (auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(
@@ -876,7 +884,7 @@ void SPNamedView::updateGrids()
 
         saction->change_state(getShowGrids());
     }
-    {
+    if (_sync_grids) {
         DocumentUndo::ScopedInsensitive ice(document);
         for (auto grid : grids) {
             grid->setVisible(getShowGrids());

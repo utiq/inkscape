@@ -380,6 +380,17 @@ static char const preferences_skeleton[] =
              angle_x="30.0"
              angle_z="30.0"
              empspacing="5"/>
+      <group id="modular"
+             units="mm"
+             origin_x="0.0"
+             origin_y="0.0"
+             spacing_x="40.0"
+             spacing_y="40.0"
+             gapx="10"
+             gapy="10"
+             marginx="0"
+             marginy="0"
+             />
     </group>
     <group id="workarounds"
            colorsontop="0"

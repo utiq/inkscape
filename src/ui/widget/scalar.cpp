@@ -151,6 +151,7 @@ void Scalar::setValue(double value, bool setProg)
         setProgrammatically = true; // callback is supposed to reset back, if it cares
     }
     static_cast<SpinButton*>(_widget)->set_value(value);
+    setProgrammatically = false;
 }
 
 void Scalar::setWidthChars(unsigned chars)
