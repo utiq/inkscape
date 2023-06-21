@@ -20,7 +20,7 @@
       </row>
       <row>
         <col id="0">1</col>
-        <col id="1" translatable="yes">Clip Box</col>
+        <col id="1" translatable="yes">Crop Box</col>
       </row>
       <row>
         <col id="0">2</col>
