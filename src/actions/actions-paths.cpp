@@ -233,7 +233,7 @@ static const std::vector<std::vector<Glib::ustring>> raw_data_path =
     {"app.path-break-apart",         N_("Break Apart"),          "Path",   N_("Break selected paths into subpaths")},
     {"app.path-split",               N_("Split Apart"),          "Path",   N_("Split selected paths into non-overlapping sections")},
     {"app.path-fracture",            N_("Fracture"),             "Path",   N_("Fracture one or more overlapping objects into all possible segments")},
-    {"app.path-flatten",             N_("Flatten"),              "Path",   N_("Flatten one or more overlapping objects into their visible parts")},
+    {"app.path-flatten",             NC_("Path flatten", "Flatten"), "Path", N_("Flatten one or more overlapping objects into their visible parts")},
     {"app.path-fill-between-paths",  N_("Fill between paths"),   "Path",   N_("Create a fill object using the selected paths")},
     {"app.path-simplify",            N_("Simplify"),             "Path",   N_("Simplify selected paths (remove extra nodes)")},
 
