@@ -192,9 +192,7 @@ private:
     /* Internal state */
 
     // Event handling/item picking
-    GdkEvent _pick_event;        ///< Event used to find currently selected item.
-    bool     _in_repick;         ///< For tracking recursion of pick_current_item().
-    bool     _left_grabbed_item; ///< ?
+    bool     _left_grabbed_item; ///< Relied upon by connector tool.
     bool     _all_enter_events;  ///< Keep all enter events. Only set true in connector-tool.cpp.
     bool     _is_dragging;       ///< Used in selection-chemistry to block undo/redo.
     int      _state;             ///< Last known modifier state (SHIFT, CTRL, etc.).

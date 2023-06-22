@@ -91,12 +91,8 @@ bool sp_desktop_root_handler(GdkEvent *event, SPDesktop *desktop)
     return false;
 }
 
-
-
 static Geom::Point drag_origin;
 static SPGuideDragType drag_type = SP_DRAG_NONE;
-//static bool reset_drag_origin = false; // when Ctrl is pressed while dragging, this is used to trigger resetting of the
-//                                       // drag origin to that location so that constrained movement is more intuitive
 
 // Min distance from anchor to initiate rotation, measured in screenpixels
 #define tol 40.0

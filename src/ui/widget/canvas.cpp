@@ -245,7 +245,8 @@ public:
 
     // Event handling.
     bool process_event(const GdkEvent*);
-    bool pick_current_item(const GdkEvent*);
+    CanvasItem *find_item_at(Geom::Point pt);
+    bool repick();
     bool emit_event(const GdkEvent*);
     void ensure_geometry_uptodate();
     Inkscape::CanvasItem *pre_scroll_grabbed_item;
@@ -438,12 +439,6 @@ void CanvasPrivate::activate_graphics()
 // After graphics becomes active, the canvas becomes active when additionally a drawing is set.
 void CanvasPrivate::activate()
 {
-    // Event handling/item picking
-    q->_pick_event.type = GDK_LEAVE_NOTIFY;
-    q->_pick_event.crossing.x = 0;
-    q->_pick_event.crossing.y = 0;
-
-    q->_in_repick         = false;
     q->_left_grabbed_item = false;
     q->_all_enter_events  = false;
     q->_is_dragging       = false;
@@ -909,6 +904,7 @@ bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, do
 {
     auto event = GdkEventUniqPtr(gtk_get_current_event());
     assert(event->type == GDK_BUTTON_PRESS);
+    d->last_mouse = Geom::IntPoint(x, y);
     bool result = on_button_event(reinterpret_cast<GdkEventButton*>(event.get()));
     if (n_press > 1) {
         auto copy = make_unique_copy(event.get());
@@ -922,6 +918,7 @@ bool Canvas::on_button_released(GtkGestureMultiPress *controller, int n_press, d
 {
     auto event = GdkEventUniqPtr(gtk_get_current_event());
     assert(event->type == GDK_BUTTON_RELEASE);
+    d->last_mouse = Geom::IntPoint(x, y);
 
     int button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(controller));
     if (button == 1) {
@@ -1016,6 +1013,7 @@ bool Canvas::on_enter(GtkEventControllerMotion *controller, double x, double y)
 {
     auto event = GdkEventUniqPtr(gtk_get_current_event());
     assert(event->type == GDK_ENTER_NOTIFY);
+    d->last_mouse = Geom::IntPoint(x, y);
     return d->process_event(event.get());
 }
 
@@ -1054,7 +1052,7 @@ bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
     auto motion_event = reinterpret_cast<GdkEventMotion*>(event.get());
 
     // Record the last mouse position.
-    d->last_mouse = Geom::IntPoint(motion_event->x, motion_event->y);
+    d->last_mouse = Geom::IntPoint(x, y);
 
     // Handle interactions with the split view controller.
     if (_split_mode == Inkscape::SplitMode::XRAY) {
@@ -1128,7 +1126,11 @@ bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
     return d->process_event(event.get());
 }
 
-// Unified handler for all events.
+/**
+ * Unified handler for all events.
+ * @param event Event to process
+ * @return True if event was handled
+ */
 bool CanvasPrivate::process_event(const GdkEvent *event)
 {
     framecheck_whole_function(this)
@@ -1168,7 +1170,7 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
 
             // ...then repick.
             q->_state = event->scroll.state;
-            pick_current_item(event);
+            repick();
 
             return retval;
         }
@@ -1181,7 +1183,7 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
 
             // Pick the current item as if the button were not pressed...
             q->_state = event->button.state;
-            pick_current_item(event);
+            repick();
 
             // ...then process the event.
             q->_state ^= calc_button_mask();
@@ -1197,10 +1199,8 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
             bool retval = emit_event(event);
 
             // ...then repick after the button has been released.
-            auto event_copy = make_unique_copy(event);
-            event_copy->button.state ^= calc_button_mask();
-            q->_state = event_copy->button.state;
-            pick_current_item(event_copy.get());
+            q->_state ^= calc_button_mask();
+            repick();
 
             return retval;
         }
@@ -1208,7 +1208,7 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
         case GDK_ENTER_NOTIFY:
             pre_scroll_grabbed_item = nullptr;
             q->_state = event->crossing.state;
-            return pick_current_item(event);
+            return repick();
 
         case GDK_LEAVE_NOTIFY:
             pre_scroll_grabbed_item = nullptr;
@@ -1217,7 +1217,7 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
             if (q->_desktop) {
                 q->_desktop->snapindicator->remove_snaptarget();
             }
-            return pick_current_item(event);
+            return repick();
 
         case GDK_KEY_PRESS:
         case GDK_KEY_RELEASE:
@@ -1226,7 +1226,7 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
         case GDK_MOTION_NOTIFY:
             pre_scroll_grabbed_item = nullptr;
             q->_state = event->motion.state;
-            pick_current_item(event);
+            repick();
             return emit_event(event);
 
         default:
@@ -1234,116 +1234,72 @@ bool CanvasPrivate::process_event(const GdkEvent *event)
     }
 }
 
-// This function is called by 'process_event' to manipulate the state variables relating
-// to the current object under the mouse, for example, to generate enter and leave events.
-//
-// This routine reacts to events from the canvas. Its main purpose is to find the canvas item
-// closest to the cursor where the event occurred and then send the event (sometimes modified) to
-// that item. The event then bubbles up the canvas item tree until an object handles it. If the
-// widget is redrawn, this routine may be called again for the same event.
-//
-// Canvas items register their interest by connecting to the "event" signal.
-// Example in desktop.cpp:
-//   canvas_catchall->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
-bool CanvasPrivate::pick_current_item(const GdkEvent *event)
+/**
+ * Internal helper method to retrieve the canvas item under the given
+ * point, taking into account the current render mode and other
+ * characteristics.
+ *
+ * @param pt The point in window coordinates
+ * @return The canvas item under the point, or nullptr
+ */
+CanvasItem *CanvasPrivate::find_item_at(Geom::Point pt)
+{
+    // Look at where the cursor is to see if one should pick with outline mode.
+    bool outline = q->canvas_point_in_outline_zone(pt);
+
+    // Convert to world coordinates.
+    pt += q->_pos;
+    if (stores.mode() == Stores::Mode::Decoupled) {
+        pt *= q->_affine.inverse() * canvasitem_ctx->affine();
+    }
+
+    q->_drawing->getCanvasItemDrawing()->set_pick_outline(outline);
+    return canvasitem_ctx->root()->pick_item(pt);
+}
+
+/**
+ * This function is called by 'process_event' to manipulate the state variables relating
+ * to the current object under the mouse. Additionally, it will generate enter and leave events
+ * for canvas items if the current item changes.
+ *
+ * This routine reacts to events from the canvas. Its main purpose is to find the canvas item
+ * closest to the cursor where the event occurred and synthesise enter and leave events for the
+ * current and previously selected items.
+ *
+ * The coordinates and state used for picking is set by the various event handlers and used
+ * here. This routine may be called any number of times for the same event. This is useful for
+ * cases in which re-picking is necessary but the cursor position has not changed (e.g. scrolling).
+ *
+ * @return True if the enter or leave event was handled
+ */
+bool CanvasPrivate::repick()
 {
     // Ensure requested geometry updates are performed first.
     ensure_geometry_uptodate();
 
-    int button_down = 0;
+    bool button_down = false;
     if (!q->_all_enter_events) {
         // Only set true in connector-tool.cpp.
 
         // If a button is down, we'll perform enter and leave events on the
-        // current item, but not enter on any other item.  This is more or
+        // current item, but not enter on any other item. This is more or
         // less like X pointer grabbing for canvas items.
         button_down = q->_state & (GDK_BUTTON1_MASK |
                                    GDK_BUTTON2_MASK |
                                    GDK_BUTTON3_MASK |
                                    GDK_BUTTON4_MASK |
                                    GDK_BUTTON5_MASK);
-        if (!button_down) q->_left_grabbed_item = false;
-    }
-
-    // Save the event in the canvas.  This is used to synthesize enter and
-    // leave events in case the current item changes.  It is also used to
-    // re-pick the current item if the current one gets deleted.  Also,
-    // synthesize an enter event.
-    if (event != &q->_pick_event) {
-        if (event->type == GDK_MOTION_NOTIFY || event->type == GDK_SCROLL || event->type == GDK_BUTTON_RELEASE) {
-            // Convert to GDK_ENTER_NOTIFY
-
-            // These fields have the same offsets in all types of events.
-            q->_pick_event.crossing.type       = GDK_ENTER_NOTIFY;
-            q->_pick_event.crossing.window     = event->motion.window;
-            q->_pick_event.crossing.send_event = event->motion.send_event;
-            q->_pick_event.crossing.subwindow  = nullptr;
-            q->_pick_event.crossing.x          = event->motion.x;
-            q->_pick_event.crossing.y          = event->motion.y;
-            q->_pick_event.crossing.mode       = GDK_CROSSING_NORMAL;
-            q->_pick_event.crossing.detail     = GDK_NOTIFY_NONLINEAR;
-            q->_pick_event.crossing.focus      = false;
-
-            // These fields don't have the same offsets in all types of events.
-            switch (event->type)
-            {
-                case GDK_MOTION_NOTIFY:
-                    q->_pick_event.crossing.state  = event->motion.state;
-                    q->_pick_event.crossing.x_root = event->motion.x_root;
-                    q->_pick_event.crossing.y_root = event->motion.y_root;
-                    break;
-                case GDK_SCROLL:
-                    q->_pick_event.crossing.state  = event->scroll.state;
-                    q->_pick_event.crossing.x_root = event->scroll.x_root;
-                    q->_pick_event.crossing.y_root = event->scroll.y_root;
-                    break;
-                case GDK_BUTTON_RELEASE:
-                    q->_pick_event.crossing.state  = event->button.state;
-                    q->_pick_event.crossing.x_root = event->button.x_root;
-                    q->_pick_event.crossing.y_root = event->button.y_root;
-                    break;
-                default:
-                    assert(false);
-            }
-
-        } else {
-            q->_pick_event = *event;
+        if (!button_down) {
+            q->_left_grabbed_item = false;
         }
-    }
-
-    if (q->_in_repick) {
-        // Don't do anything else if this is a recursive call.
-        return false;
     }
 
     // Find new item
     q->_current_canvas_item_new = nullptr;
 
-    if (q->_pick_event.type != GDK_LEAVE_NOTIFY && canvasitem_ctx->root()->is_visible()) {
-        // Leave notify means there is no current item.
-        // Find closest item.
-        double x = 0.0;
-        double y = 0.0;
-
-        if (q->_pick_event.type == GDK_ENTER_NOTIFY) {
-            x = q->_pick_event.crossing.x;
-            y = q->_pick_event.crossing.y;
-        } else {
-            x = q->_pick_event.motion.x;
-            y = q->_pick_event.motion.y;
-        }
-
-        // Look at where the cursor is to see if one should pick with outline mode.
-        bool outline = q->canvas_point_in_outline_zone({ x, y });
-
-        // Convert to world coordinates.
-        auto p = Geom::Point(x, y) + q->_pos;
-        if (stores.mode() == Stores::Mode::Decoupled) {
-            p *= q->_affine.inverse() * canvasitem_ctx->affine();
-        }
-
-        q->_drawing->getCanvasItemDrawing()->set_pick_outline(outline);
-        q->_current_canvas_item_new = canvasitem_ctx->root()->pick_item(p);
+    // An empty last_mouse means there is no new item (i.e. cursor has left the canvas).
+    if (last_mouse && canvasitem_ctx->root()->is_visible()) {
+        q->_current_canvas_item_new = find_item_at(*last_mouse);
         // if (q->_current_canvas_item_new) {
         //     std::cout << "  PICKING: FOUND ITEM: " << q->_current_canvas_item_new->get_name() << std::endl;
         // } else {
@@ -1363,13 +1319,10 @@ bool CanvasPrivate::pick_current_item(const GdkEvent *event)
         !q->_left_grabbed_item                                 ) {
 
         GdkEvent new_event;
-        new_event = q->_pick_event;
+        memset(&new_event, 0, sizeof(GdkEvent));
         new_event.type = GDK_LEAVE_NOTIFY;
-        new_event.crossing.detail = GDK_NOTIFY_ANCESTOR;
-        new_event.crossing.subwindow = nullptr;
-        q->_in_repick = true;
+        new_event.crossing.state = q->_state;
         retval = emit_event(&new_event);
-        q->_in_repick = false;
     }
 
     if (q->_all_enter_events == false) {
@@ -1384,19 +1337,34 @@ bool CanvasPrivate::pick_current_item(const GdkEvent *event)
     q->_left_grabbed_item = false;
     q->_current_canvas_item = q->_current_canvas_item_new;
 
-    if (q->_current_canvas_item != nullptr) {
+    if (q->_current_canvas_item) {
         GdkEvent new_event;
-        new_event = q->_pick_event;
+        memset(&new_event, 0, sizeof(GdkEvent));
         new_event.type = GDK_ENTER_NOTIFY;
-        new_event.crossing.detail = GDK_NOTIFY_ANCESTOR;
-        new_event.crossing.subwindow = nullptr;
+        new_event.crossing.x = last_mouse->x();
+        new_event.crossing.y = last_mouse->y();
+        new_event.crossing.state = q->_state;
         retval = emit_event(&new_event);
     }
 
     return retval;
 }
 
-// Fires an event at the canvas, after a little pre-processing. Returns true if handled.
+/**
+ * Fires an event at the canvas, after a little pre-processing. The event then bubbles up the
+ * CanvasItem tree until an object or tool handles it.
+ *
+ * If the event is not handled, the method returns false and the event is passed back to GTK where
+ * it propagates back up the widget tree in the 'bubble' propagation phase.
+ *
+ * Canvas items register their interest by connecting to the "event" signal.
+ *
+ * Example in desktop.cpp:
+ *     canvas_catchall->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
+ *
+ * @param event Event to dispatch to the canvas
+ * @return Returns true if handled.
+ */
 bool CanvasPrivate::emit_event(const GdkEvent *event)
 {
     // Handle grabbed items.

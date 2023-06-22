@@ -211,7 +211,8 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
     canvas_group_sketch->set_pickable(false);  // Temporary items are not pickable!
     canvas_group_temp->set_pickable(false);    // Temporary items are not pickable!
 
-    // The root should never emit events. The "catchall" should get it! (CHECK)
+    // The root should never emit events. The "catchall" should get it!
+    // But somehow there are still exceptions, e.g. Ctrl+scroll to zoom.
     canvas_item_root->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
     canvas_catchall->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), this));
 
@@ -1159,7 +1160,6 @@ void SPDesktop::setTempHideOverlays(bool hide)
         }
         if (canvas && !canvas->has_focus()) {
             canvas->grab_focus(); // Ensure we receive the key up event
-            canvas->redraw_all();
         }
         _overlays_visible = false;
     } else {
