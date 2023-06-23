@@ -15,6 +15,7 @@
 #include "ui/tools/booleans-builder.h"
 #include "display/control/canvas-item-group.h"
 #include "display/control/canvas-item-drawing.h"
+#include "display/drawing.h"
 
 #include "desktop.h"
 #include "document.h"
@@ -25,6 +26,7 @@
 #include "ui/icon-names.h"
 #include "ui/modifiers.h"
 #include "ui/widget/events/canvas-event.h"
+#include "style.h"
 
 using Inkscape::DocumentUndo;
 using Inkscape::Modifiers::Modifier;
@@ -37,7 +39,6 @@ InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/booleans", "select.svg")
 {
     to_commit = false;
-    change_mode(true);
     update_status();
     if (auto selection = desktop->getSelection()) {
         desktop->setWaitingCursor();
@@ -48,24 +49,57 @@ InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
         _sel_modified = selection->connectModified([=](Selection *sel, int) { shape_cancel(); });
         _sel_changed = selection->connectChanged([=](Selection *sel) { shape_cancel(); });
     }
+    _desktop->doc()->get_event_log()->updateUndoVerbs();
+
+    auto prefs = Inkscape::Preferences::get();
+    set_opacity(prefs->getDouble("/tools/booleans/opacity", 0.5));
+    hide_selected_objects();
 }
 
 InteractiveBooleansTool::~InteractiveBooleansTool()
 {
-    change_mode(false);
+    set_opacity(1.0);
+    hide_selected_objects(false);
+    _desktop->doc()->get_event_log()->updateUndoVerbs();
 }
 
-void InteractiveBooleansTool::change_mode(bool setup)
+/**
+ * Hide all selected items, because they are going to be re-drawn as
+ * a fractured pattern and we don't want them to appear twice.
+ */
+void InteractiveBooleansTool::hide_selected_objects(bool hide)
 {
-    _desktop->doc()->get_event_log()->updateUndoVerbs();
-    _desktop->getCanvasPagesBg()->set_visible(!setup);
-    _desktop->getCanvasPagesFg()->set_visible(!setup);
-    _desktop->getCanvasDrawing()->set_visible(!setup);
+    if (auto selection = _desktop->getSelection()) {
+        for (auto item : selection->items()) {
+            // We don't hide any image or group that contains an image
+            // FUTURE: There is a corner case where regular shapes are inside a group
+            // alongside an image, they should be hidden, but that's much more convoluted.
+            if (hide && boolean_builder && boolean_builder->contains_image(item))
+                continue;
+            if (auto ditem = item->get_arenaitem(_desktop->dkey)) {
+                ditem->setOpacity(hide ? 0.0 : item->style->opacity.value);
+            }
+        }
+    }
+}
+
+/**
+ * Set the variable transparency of the rest of the canvas
+ */
+void InteractiveBooleansTool::set_opacity(double opacity)
+{
+    if (auto drawing = _desktop->getCanvasDrawing()->get_drawing()) {
+        drawing->setOpacity(opacity);
+    }
 }
 
 void InteractiveBooleansTool::switching_away(std::string const &new_tool)
 {
-    if (!new_tool.empty() && boolean_builder && new_tool == "/tools/select" || new_tool == "/tool/nodes") {
+    // We unhide the selected items before comitting to prevent undo from entering
+    // into a state where the drawing item for a group is invisible.
+    hide_selected_objects(false);
+
+    if (boolean_builder && (new_tool == "/tools/select" || new_tool == "/tool/nodes")) {
         // Only forcefully commit if we have the user's explicit instruction to do so.
         if (boolean_builder->has_changes() || to_commit) {
             _desktop->getSelection()->setList(boolean_builder->shape_commit(true));

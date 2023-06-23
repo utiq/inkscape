@@ -91,6 +91,7 @@ public:
     // Convenience
     void averageColor(Geom::IntRect const &area, double &R, double &G, double &B, double &A) const;
     void setExact();
+    void setOpacity(double opacity = 1.0);
 
 private:
     void _pickItemsForCaching();

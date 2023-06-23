@@ -223,6 +223,21 @@ shape_builder_mode(int value, InkscapeWindow* win)
     pref->setInt("/tools/booleans/mode", value);
 }
 
+void
+shape_builder_replace(InkscapeWindow* win)
+{
+    Inkscape::Preferences *pref = Inkscape::Preferences::get();
+    if (auto action = win->lookup_action("shape-builder-replace")) {
+        bool active = false;
+        action->get_state(active);
+        active = !active; // toggle
+        action->change_state(active);
+        pref->setBool("/tools/booleans/replace", active);
+    }
+
+}
+
+
 static const std::vector<std::vector<Glib::ustring>> raw_data_path =
 {
     // clang-format offs
@@ -250,6 +265,8 @@ static const std::vector<std::vector<Glib::ustring>> raw_data_path =
 
     {"win.shape-builder-mode(0)",    N_("Shape Builder: Add"),   "Path",   N_("Add shapes by clicking or clicking and dragging")},
     {"win.shape-builder-mode(1)",    N_("Shape Builder: Delete"),"Path",   N_("Remove shapes by clicking or clicking and dragging")},
+    {"win.shape-builder-replace",    N_("Replace Objects on Commit"), "Path", N_("Remove selected objects when shape builder is completed")},
+
     // clang-format on
 };
 
@@ -283,6 +300,7 @@ void add_actions_path(InkscapeWindow *win)
 
     auto prefs = Inkscape::Preferences::get();
     int current_mode = prefs->getInt("/tool/booleans/mode", 0);
+    bool replace = prefs->getBool("/tool/booleans/replace", true);
 
     // clang-format off
     win->add_action(                "path-inset",                   sigc::bind(sigc::ptr_fun(&select_path_inset),          win));
@@ -293,6 +311,7 @@ void add_actions_path(InkscapeWindow *win)
     win->add_action(                "path-offset-linked",           sigc::bind(sigc::ptr_fun(&select_path_offset_linked),  win));
     win->add_action(                "path-reverse",                 sigc::bind(sigc::ptr_fun(&select_path_reverse),        win));
     win->add_action_radio_integer(  "shape-builder-mode",           sigc::bind(sigc::ptr_fun(&shape_builder_mode),         win), current_mode);
+    win->add_action_bool(           "shape-builder-replace",        sigc::bind(sigc::ptr_fun(&shape_builder_replace),      win), replace);
     // clang-format on
 }
 

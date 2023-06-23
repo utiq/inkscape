@@ -49,10 +49,10 @@ public:
 
     void shape_commit();
     void shape_cancel();
-
+    void set_opacity(double opacity = 1.0);
 private:
     void update_status();
-    void change_mode(bool setup);
+    void hide_selected_objects(bool hide = true);
     bool should_add(unsigned state) const;
 
     bool event_button_press_handler(ButtonPressEvent const &event);

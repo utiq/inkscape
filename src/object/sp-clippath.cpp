@@ -218,6 +218,28 @@ Geom::OptRect SPClipPath::geometricBounds(Geom::Affine const &transform) const
     return bbox;
 }
 
+/**
+ * This gets a compiled path vector from all the objects. Sub-groups are not allowed
+ * in clipping path objects (SVG spec) so we assume we are non-recursive.
+ */
+Geom::PathVector SPClipPath::getPathVector(Geom::Affine const &transform) const
+{
+    Geom::PathVector ret;
+    for (auto &child : children) {
+        if (auto shape = cast<SPShape>(&child)) {
+            if (!shape->curve()) {
+                continue;
+            }
+            for (auto &path : shape->curve()->get_pathvector()) {
+                if (!path.empty()) {
+                    ret.push_back(path * (shape->transform * transform));
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 // Create a mask element (using passed elements), add it to <defs>
 char const *SPClipPath::create(std::vector<Inkscape::XML::Node*> &reprs, SPDocument *document)
 {

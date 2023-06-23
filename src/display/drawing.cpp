@@ -381,6 +381,14 @@ void Drawing::setExact()
     setBlurQuality(BLUR_QUALITY_BEST);
 }
 
+/*
+ * Set the opacity of the drawing root drawing-item
+ */
+void Drawing::setOpacity(double opacity)
+{
+    _root->setOpacity(opacity);
+}
+
 } // namespace Inkscape
 
 /*
