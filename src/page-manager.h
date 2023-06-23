@@ -123,7 +123,7 @@ public:
     guint32 bleed_color = 0xbe310e31;
 
     void movePages(Geom::Affine tr);
-    std::vector<SPItem *> getOverlappingItems(SPDesktop *desktop, SPPage *page);
+    std::vector<SPItem *> getOverlappingItems(SPDesktop *desktop, SPPage *page, bool hidden = true, bool in_bleed = false, bool in_layers = true);
 
 protected:
     friend class Inkscape::UI::Dialog::DocumentProperties;

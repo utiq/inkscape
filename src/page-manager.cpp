@@ -593,13 +593,13 @@ void PageManager::fitToRect(Geom::OptRect rect, SPPage *page, bool add_margins)
 /**
  * Return a list of objects touching this page, or viewbox (of single page document)
  */
-std::vector<SPItem *> PageManager::getOverlappingItems(SPDesktop *desktop, SPPage *page)
+std::vector<SPItem *> PageManager::getOverlappingItems(SPDesktop *desktop, SPPage *page, bool hidden, bool in_bleed, bool in_layers)
 {
     if (page) {
-        return page->getOverlappingItems();
+        return page->getOverlappingItems(hidden, in_bleed, in_layers);
     }
     auto doc_rect = _document->preferredBounds();
-    return _document->getItemsPartiallyInBox(desktop->dkey, *doc_rect, true, true, true, false);
+    return _document->getItemsPartiallyInBox(desktop->dkey, *doc_rect, true, true, true, false, in_layers);
 }
 
 /**

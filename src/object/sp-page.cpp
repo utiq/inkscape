@@ -336,10 +336,11 @@ std::string SPPage::getBleedLabel() const
  *
  * @param hidden - Return hidden items (default: true)
  * @param in_bleed - Use the bleed box instead of the page box
+ * @param in_layers - Should layers be traversed to find items (default: true)
  */
-std::vector<SPItem *> SPPage::getExclusiveItems(bool hidden, bool in_bleed) const
+std::vector<SPItem *> SPPage::getExclusiveItems(bool hidden, bool in_bleed, bool in_layers) const
 {
-    return document->getItemsInBox(0, in_bleed ? getDocumentBleed() : getDocumentRect(), hidden, true, true, false);
+    return document->getItemsInBox(0, in_bleed ? getDocumentBleed() : getDocumentRect(), hidden, true, true, false, in_layers);
 }
 
 /**
@@ -347,10 +348,11 @@ std::vector<SPItem *> SPPage::getExclusiveItems(bool hidden, bool in_bleed) cons
  *
  * @param hidden - Return hidden items (default: true)
  * @param in_bleed - Use the bleed box instead of the page box
+ * @param in_layers - Should layers be traversed to find items (default: true)
  */
-std::vector<SPItem *> SPPage::getOverlappingItems(bool hidden, bool in_bleed) const
+std::vector<SPItem *> SPPage::getOverlappingItems(bool hidden, bool in_bleed, bool in_layers) const
 {
-    return document->getItemsPartiallyInBox(0, in_bleed ? getDocumentBleed() : getDocumentRect(), hidden, true, true, false);
+    return document->getItemsPartiallyInBox(0, in_bleed ? getDocumentBleed() : getDocumentRect(), hidden, true, true, false, in_layers);
 }
 
 /**
