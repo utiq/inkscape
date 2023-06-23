@@ -57,7 +57,9 @@ protected:
 private:
     Inkscape::PrefObserver _watch_prefs;
 
-    Gtk::Menu *getContextMenu();
+    void set_context_menu();
+    Gtk::Popover* _popover = nullptr;
+
     Cairo::RefPtr<Cairo::Surface> draw_label(Cairo::RefPtr<Cairo::Surface> const &surface_in, int label_value);
 
     Gtk::Orientation    _orientation;

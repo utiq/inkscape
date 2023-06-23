@@ -2,7 +2,7 @@
 /*
  * Ruler widget. Indicates horizontal or vertical position of a cursor in a specified widget.
  *
- * Copyright (C) 2019 Tavmjong Bah
+ * Copyright (C) 2019, 2023 Tavmjong Bah
  *               2022 Martin Owens
  *
  * Rewrite of the 'C' ruler code which came originally from Gimp.
@@ -72,6 +72,8 @@ Ruler::Ruler(Gtk::Orientation orientation)
     auto prefs = Inkscape::Preferences::get();
     _watch_prefs = prefs->createObserver("/options/ruler/show_bbox", sigc::mem_fun(*this, &Ruler::on_prefs_changed));
     on_prefs_changed();
+
+    set_context_menu();
 
     INKSCAPE.themecontext->getChangeThemeSignal().connect(sigc::mem_fun(*this, &Ruler::on_style_updated));
 }
@@ -186,9 +188,8 @@ Ruler::on_motion_notify_event(GdkEventMotion *motion_event)
 bool Ruler::on_button_press_event(GdkEventButton *event)
 {
     if (event->button == 3) {
-        auto menu = getContextMenu();
-        menu->popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
-        // Question to Reviewer: Does this leak?
+        _popover->set_pointing_to(Gdk::Rectangle(event->x, event->y, 1, 1));
+        _popover->popup();
         return true;
     }
     return false;
@@ -609,10 +610,8 @@ Ruler::on_style_updated() {
 /**
  * Return a contextmenu for the ruler
  */
-Gtk::Menu *Ruler::getContextMenu()
+void Ruler::set_context_menu()
 {
-    auto gtk_menu = new Gtk::Menu();
-    auto gio_menu = Gio::Menu::create();
     auto unit_menu = Gio::Menu::create();
 
     for (auto &pair : unit_table.units(Inkscape::Util::UNIT_TYPE_LINEAR)) {
@@ -622,11 +621,8 @@ Gtk::Menu *Ruler::getContextMenu()
         unit_menu->append_item(item);
     }
 
-    gio_menu->append_section(unit_menu);
-    gtk_menu->bind_model(gio_menu, true);
-    gtk_menu->attach_to_widget(*this); // Might need canvas here
-    gtk_menu->show();
-    return gtk_menu;
+    _popover = Gtk::make_managed<Gtk::Popover>(*this, unit_menu);
+    _popover->set_modal(true); // set_autohide in Gtk4
 }
 
 } // Namespace Inkscape
