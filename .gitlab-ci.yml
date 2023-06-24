@@ -196,6 +196,11 @@ inkscape:windows:dist:
   parallel:
     matrix:
       - DIST: [ "7z", "exe", "msi" ]
+  rules:
+    - if: $DIST != "7z"
+      when: manual
+      allow_failure: true
+    - *run_otherwise
   dependencies:
     - inkscape:windows:build
   needs:
