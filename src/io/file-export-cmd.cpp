@@ -41,6 +41,7 @@
 #include "svg/svg-color.h"       // Background color
 #include "text-editing.h"        // te_update_layout_now_recursive
 #include "util/parse-int-range.h"
+#include "io/sys.h"
 
 // Temporary dependency : once all compilers we want to support have support for
 // C++17 std::filesystem (with #include <filesystem> ) then we drop this dep
@@ -260,9 +261,11 @@ InkFileExportCmd::get_filename_out(std::string filename_in, std::string object_i
 
     auto const export_type_current_native = Glib::filename_from_utf8(export_type_current);
 
-    // Use filename provided with --export-filename if given (and append proper extension).
+    // Use filename provided with --export-filename if given
     if (!export_filename.empty()) {
-        return export_filename + "." + export_type_current_native;
+        auto ext = Inkscape::IO::get_file_extension(export_filename);
+        auto cmp = "." + export_type_current_native;
+        return export_filename + (ext == cmp ? "" : cmp);
     }
 
     // Check for pipe
@@ -290,24 +293,8 @@ InkFileExportCmd::get_filename_out(std::string filename_in, std::string object_i
         }
         return filename_in.substr(0, extension_pos) + tag + "." + export_type_current_native;
     }
-
-    // We need a valid file name to write to unless we're using PNG export hints.
-    // if (!(export_type == "png" && export_use_hints)) {
-
-    //     // Check for file name.
-    //     if (filename_out.empty()) {
-    //         std::cerr << "InkFileExportCmd::do_export: Could not determine output file name!" << std::endl;
-    //         return (std::string());
-    //     }
-
-    //     // Check if directory exists.
-    //     std::string directory = Glib::path_get_dirname(filename_out);
-    //     if (!Glib::file_test(directory, Glib::FILE_TEST_IS_DIR)) {
-    //         std::cerr << "InkFileExportCmd::do_export: File path includes directory that does not exist! " << directory << std::endl;
-    //         return (std::string());
-    //     }
-    // }
 }
+
 /**
  *  Perform an SVG export
  *
