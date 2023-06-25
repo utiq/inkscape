@@ -894,6 +894,14 @@ add_cli_test(actions-export-area-page-then-drawing
              OUTPUT_FILENAME actions-export-area-page-then-drawing.png
              REFERENCE_FILENAME export-area-drawing_expected.png)
 
+# Sequential export-id-only action should succeed
+# https://gitlab.com/inkscape/inkscape/-/issues/1957
+add_cli_test(actions-sequential-export-id-only_svg 
+             INPUT_FILENAME theta.svg
+             PARAMETERS --actions=export-id-only$<SEMICOLON>export-filename:actions-sequential-export-id-only.svg$<SEMICOLON>export-id:red$<SEMICOLON>export-do$<SEMICOLON>export-filename:actions-sequential-export-id-only.svg$<SEMICOLON>export-id:blue$<SEMICOLON>export-do
+             OUTPUT_FILENAME actions-sequential-export-id-only.svg
+             REFERENCE_FILENAME export-id_export-id-only_expected.svg)
+
 
 ###########################
 ### pdf input support   ###
