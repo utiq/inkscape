@@ -500,6 +500,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &export_filen
     std::vector<Glib::ustring> objects = Glib::Regex::split_simple("\\s*;\\s*", export_id);
 
     std::vector<SPItem*> items;
+    std::vector<Glib::ustring> objects_found;
     for (auto object_id : objects) {
         // Find export object. (Either root or object with specified id.)
         auto object = doc->getObjectById(object_id);
@@ -519,6 +520,7 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &export_filen
         }
 
         items.push_back(cast<SPItem>(object));
+        objects_found.push_back(object_id);
     }
 
     // Export pages instead of objects
@@ -543,10 +545,10 @@ InkFileExportCmd::do_export_png(SPDocument *doc, std::string const &export_filen
     }
 
     if (objects.empty()) {
-        objects.emplace_back(); // So we do loop at least once for root.
+        objects_found.emplace_back(); // So we do loop at least once for root.
     }
 
-    for (auto object_id : objects) {
+    for (auto object_id : objects_found) {
         SPObject *object = doc->getRoot();
         if (!object_id.empty()) {
             object = doc->getObjectById(object_id);

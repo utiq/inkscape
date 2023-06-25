@@ -344,6 +344,11 @@ add_cli_test(export-id_svg PARAMETERS --export-id=red --export-type=svg INPUT_FI
 # add_cli_test(export-id_emf PARAMETERS --export-id=red --export-type=emf INPUT_FILENAME theta.svg OUTPUT_FILENAME export-id.emf REFERENCE_FILENAME export-id_expected.emf )
 # add_cli_test(export-id_wmf PARAMETERS --export-id=red --export-type=wmf INPUT_FILENAME theta.svg OUTPUT_FILENAME export-id.wmf REFERENCE_FILENAME export-id_expected.wmf )
 
+# --export-id with non-existing ID should skip and output no file
+add_cli_test(non-existing-export-id_png PARAMETERS --export-id=not-exist --export-type=png 
+             INPUT_FILENAME theta.svg OUTPUT_FILENAME export-id-not-exist.png 
+             TESTSCRIPT test_no_output_file.sh export-id-not-exist.png)
+
 ## --export-id + --export-area-page = --export-area-page
 ## --export-id + --export-area-drawing = --export-area-drawing
 ## --export-id + --export-area-snap → export-area-snap_export-id
