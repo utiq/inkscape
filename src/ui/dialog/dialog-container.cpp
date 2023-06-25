@@ -85,10 +85,10 @@ DialogContainer::DialogContainer(InkscapeWindow* inkscape_window)
     columns = Gtk::manage(new DialogMultipaned(Gtk::ORIENTATION_HORIZONTAL));
 
     connections.emplace_back(columns->signal_prepend_drag_data().connect(
-        sigc::bind<DialogMultipaned *>(sigc::mem_fun(*this, &DialogContainer::prepend_drop), columns)));
+        sigc::bind(sigc::mem_fun(*this, &DialogContainer::prepend_drop), columns)));
 
     connections.emplace_back(columns->signal_append_drag_data().connect(
-        sigc::bind<DialogMultipaned *>(sigc::mem_fun(*this, &DialogContainer::append_drop), columns)));
+        sigc::bind(sigc::mem_fun(*this, &DialogContainer::append_drop), columns)));
 
     // Setup drop targets.
     target_entries.emplace_back(Gtk::TargetEntry("GTK_NOTEBOOK_TAB"));
@@ -107,13 +107,13 @@ DialogMultipaned *DialogContainer::create_column()
     DialogMultipaned *column = Gtk::manage(new DialogMultipaned(Gtk::ORIENTATION_VERTICAL));
 
     connections.emplace_back(column->signal_prepend_drag_data().connect(
-        sigc::bind<DialogMultipaned *>(sigc::mem_fun(*this, &DialogContainer::prepend_drop), column)));
+        sigc::bind(sigc::mem_fun(*this, &DialogContainer::prepend_drop), column)));
 
     connections.emplace_back(column->signal_append_drag_data().connect(
-        sigc::bind<DialogMultipaned *>(sigc::mem_fun(*this, &DialogContainer::append_drop), column)));
+        sigc::bind(sigc::mem_fun(*this, &DialogContainer::append_drop), column)));
 
     connections.emplace_back(column->signal_now_empty().connect(
-        sigc::bind<DialogMultipaned *>(sigc::mem_fun(*this, &DialogContainer::column_empty), column)));
+        sigc::bind(sigc::mem_fun(*this, &DialogContainer::column_empty), column)));
 
     column->set_target_entries(target_entries);
 

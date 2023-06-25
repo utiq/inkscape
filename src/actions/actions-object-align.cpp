@@ -828,13 +828,13 @@ add_actions_object_align(InkscapeApplication* app)
     bool on_canvas = prefs->getBool("/dialogs/align/oncanvas");
 
     // clang-format off
-    gapp->add_action_bool(           "object-align-on-canvas",             sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_align_on_canvas),  app), on_canvas);
-    gapp->add_action_with_parameter( "object-align",             String,   sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_align),            app));
-    gapp->add_action_with_parameter( "object-align-text",        String,   sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_align_text),       app));
-    gapp->add_action_with_parameter( "object-distribute",        String,   sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_distribute),       app));
-    gapp->add_action_with_parameter( "object-distribute-text",   String,   sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_distribute_text),  app));
-    gapp->add_action_with_parameter( "object-rearrange",         String,   sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_rearrange),        app));
-    gapp->add_action_with_parameter( "object-remove-overlaps",   Tuple_DD, sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_remove_overlaps),  app));
+    gapp->add_action_bool(           "object-align-on-canvas",             sigc::bind(sigc::ptr_fun(&object_align_on_canvas),  app), on_canvas);
+    gapp->add_action_with_parameter( "object-align",             String,   sigc::bind(sigc::ptr_fun(&object_align),            app));
+    gapp->add_action_with_parameter( "object-align-text",        String,   sigc::bind(sigc::ptr_fun(&object_align_text),       app));
+    gapp->add_action_with_parameter( "object-distribute",        String,   sigc::bind(sigc::ptr_fun(&object_distribute),       app));
+    gapp->add_action_with_parameter( "object-distribute-text",   String,   sigc::bind(sigc::ptr_fun(&object_distribute_text),  app));
+    gapp->add_action_with_parameter( "object-rearrange",         String,   sigc::bind(sigc::ptr_fun(&object_rearrange),        app));
+    gapp->add_action_with_parameter( "object-remove-overlaps",   Tuple_DD, sigc::bind(sigc::ptr_fun(&object_remove_overlaps),  app));
     // clang-format on
 
     app->get_action_extra_data().add_data(raw_data_object_align);

@@ -399,7 +399,7 @@ bool GradientSelector::_checkForSelected(const Gtk::TreePath &path, const Gtk::T
 
 void GradientSelector::selectGradientInTree(SPGradient *vector)
 {
-    _store->foreach (sigc::bind<SPGradient *>(sigc::mem_fun(*this, &GradientSelector::_checkForSelected), vector));
+    _store->foreach (sigc::bind(sigc::mem_fun(*this, &GradientSelector::_checkForSelected), vector));
 }
 
 void GradientSelector::setVector(SPDocument *doc, SPGradient *vector)

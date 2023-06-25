@@ -837,10 +837,10 @@ Gtk::Widget * LPETiling::newWidget()
                     container->pack_start(*none, false, false, 1);
                     container->pack_start(*rand, false, false, 1);
                     rand->signal_clicked().connect(sigc::mem_fun(*this, &LPETiling::setScaleRandom));
-                    none->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), false, false));
-                    cols->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), true, false));
-                    rows->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), false, true));
-                    both->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), true, true));
+                    none->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), false, false));
+                    cols->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), true, false));
+                    rows->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), false, true));
+                    both->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setScaleInterpolate), true, true));
                     movestart->pack_start(*widg, false, false, 2);
                     moveend->pack_start(*container, false, false, 2);
                 } else if (param->param_key == "rotate") {
@@ -874,10 +874,10 @@ Gtk::Widget * LPETiling::newWidget()
                     container->pack_start(*none, false, false, 1);
                     container->pack_start(*rand, false, false, 1);
                     rand->signal_clicked().connect(sigc::mem_fun(*this, &LPETiling::setRotateRandom));
-                    none->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), false, false));
-                    cols->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), true, false));
-                    rows->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), false, true));
-                    both->signal_clicked().connect(sigc::bind<bool,bool>(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), true, true));
+                    none->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), false, false));
+                    cols->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), true, false));
+                    rows->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), false, true));
+                    both->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setRotateInterpolate), true, true));
                     moveend->pack_start(*container, false, false, 2);
                  } else if (param->param_key == "gapx") {
                     Gtk::Box *wrapper = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL,0));
@@ -896,8 +896,8 @@ Gtk::Widget * LPETiling::newWidget()
                     }
                     normal->set_tooltip_markup(_("All horizontal gaps have the same width"));
                     randx->set_tooltip_markup(_("Random horizontal gaps (hit <b>Randomize</b> button to shuffle)"));
-                    normal->signal_clicked().connect(sigc::bind<bool>(sigc::mem_fun(*this, &LPETiling::setGapXMode), false));
-                    randx->signal_clicked().connect(sigc::bind<bool>(sigc::mem_fun(*this, &LPETiling::setGapXMode), true));
+                    normal->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setGapXMode), false));
+                    randx->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setGapXMode), true));
                     container->pack_start(*normal, false, false, 1);
                     container->pack_start(*randx, false, false, 1);
                     combo->set_margin_end(0);
@@ -923,8 +923,8 @@ Gtk::Widget * LPETiling::newWidget()
                     }
                     normal->set_tooltip_markup(_("All vertical gaps have the same height"));
                     randy->set_tooltip_markup(_("Random vertical gaps (hit <b>Randomize</b> button to shuffle)"));
-                    normal->signal_clicked().connect(sigc::bind<bool>(sigc::mem_fun(*this, &LPETiling::setGapYMode), false));
-                    randy->signal_clicked().connect(sigc::bind<bool>(sigc::mem_fun(*this, &LPETiling::setGapYMode), true));
+                    normal->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setGapYMode), false));
+                    randy->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setGapYMode), true));
                     container->pack_start(*normal, false, false, 1);
                     container->pack_start(*randy, false, false, 1);
                     widg->set_halign(Gtk::ALIGN_START);
@@ -1001,7 +1001,7 @@ LPETiling::generate_buttons(Gtk::Box *container, Gtk::RadioButton::Group &group,
             button->set_active();
             _updating = false;
         }
-        button->signal_clicked().connect(sigc::bind<gint>(sigc::mem_fun(*this, &LPETiling::setMirroring),position));
+        button->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LPETiling::setMirroring),position));
         gint zero = Glib::ustring("0")[0];
         Glib::ustring tooltip = result[0] == zero ? "" : "rx+";
         tooltip += result[1] == zero ? "" : "ry+";

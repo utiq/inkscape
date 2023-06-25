@@ -119,7 +119,7 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg)
                       << align_button.first << " " << align_button.second << std::endl;
         } else {
             button->signal_button_press_event().connect(
-                sigc::bind<std::string>(sigc::mem_fun(*this, &AlignAndDistribute::on_align_button_press_event), align_button.second), false);
+                sigc::bind(sigc::mem_fun(*this, &AlignAndDistribute::on_align_button_press_event), align_button.second), false);
         }
     }
 
@@ -168,7 +168,7 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg)
                       << align_button.first << " " << align_button.second << std::endl;
         } else {
             button->signal_button_press_event().connect(
-                sigc::bind<std::string>(sigc::mem_fun(*this, &AlignAndDistribute::on_align_node_button_press_event), align_button.second), false);
+                sigc::bind(sigc::mem_fun(*this, &AlignAndDistribute::on_align_node_button_press_event), align_button.second), false);
         }
     }
 

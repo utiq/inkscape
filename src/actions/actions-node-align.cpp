@@ -102,10 +102,10 @@ add_actions_node_align(InkscapeWindow* win)
     Glib::VariantType String(Glib::VARIANT_TYPE_STRING);
 
     // clang-format off
-    win->add_action_with_parameter( "node-align-horizontal",      String, sigc::bind<InkscapeWindow*, Geom::Dim2>(sigc::ptr_fun(&node_align),      win, Geom::X));
-    win->add_action_with_parameter( "node-align-vertical",        String, sigc::bind<InkscapeWindow*, Geom::Dim2>(sigc::ptr_fun(&node_align),      win, Geom::Y));
-    win->add_action(                "node-distribute-horizontal",         sigc::bind<InkscapeWindow*, Geom::Dim2>(sigc::ptr_fun(&node_distribute), win, Geom::X));
-    win->add_action(                "node-distribute-vertical",           sigc::bind<InkscapeWindow*, Geom::Dim2>(sigc::ptr_fun(&node_distribute), win, Geom::Y));
+    win->add_action_with_parameter( "node-align-horizontal",      String, sigc::bind(sigc::ptr_fun(&node_align),      win, Geom::X));
+    win->add_action_with_parameter( "node-align-vertical",        String, sigc::bind(sigc::ptr_fun(&node_align),      win, Geom::Y));
+    win->add_action(                "node-distribute-horizontal",         sigc::bind(sigc::ptr_fun(&node_distribute), win, Geom::X));
+    win->add_action(                "node-distribute-vertical",           sigc::bind(sigc::ptr_fun(&node_distribute), win, Geom::Y));
     // clang-format on
 
     auto app = InkscapeApplication::instance();

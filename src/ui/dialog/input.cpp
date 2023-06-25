@@ -1163,7 +1163,7 @@ void InputDialogImpl::handleDeviceChange(Glib::RefPtr<InputDevice const> device)
 
     for (auto & store : stores) {
         Gtk::TreeModel::iterator deviceIter;
-        store->foreach_iter( sigc::bind<Glib::ustring, Gtk::TreeModel::iterator*>(
+        store->foreach_iter( sigc::bind(
                                  sigc::ptr_fun(&InputDialogImpl::findDevice),
                                  device->getId(),
                                  &deviceIter) );
@@ -1246,7 +1246,7 @@ void InputDialogImpl::updateDeviceLinks(Glib::RefPtr<InputDevice const> device, 
 
 //     g_message("Links!!!! for %p  hits [%s]  with link of [%s]", &device, device->getId().c_str(), device->getLink().c_str());
     Gtk::TreeModel::iterator deviceIter;
-    deviceStore->foreach_iter( sigc::bind<Glib::ustring, Gtk::TreeModel::iterator*>(
+    deviceStore->foreach_iter( sigc::bind(
                              sigc::ptr_fun(&InputDialogImpl::findDevice),
                              device->getId(),
                              &deviceIter) );
@@ -1297,7 +1297,7 @@ void InputDialogImpl::updateDeviceLinks(Glib::RefPtr<InputDevice const> device, 
 
 
                 Gtk::TreeModel::iterator linkIter;
-                deviceStore->foreach_iter( sigc::bind<Glib::ustring, Gtk::TreeModel::iterator*>(
+                deviceStore->foreach_iter( sigc::bind(
                                          sigc::ptr_fun(&InputDialogImpl::findDeviceByLink),
                                          device->getId(),
                                          &linkIter) );

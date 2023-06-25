@@ -90,9 +90,9 @@ add_actions_effect(InkscapeApplication* app)
     auto *gapp = app->gio_app();
 
     // clang-format off
-    gapp->add_action( "edit-remove-filter",     sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&edit_remove_filter), app));
-    gapp->add_action( "last-effect",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&last_effect), app));
-    gapp->add_action( "last-effect-pref",       sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&last_effect_pref), app));
+    gapp->add_action( "edit-remove-filter",     sigc::bind(sigc::ptr_fun(&edit_remove_filter), app));
+    gapp->add_action( "last-effect",            sigc::bind(sigc::ptr_fun(&last_effect), app));
+    gapp->add_action( "last-effect-pref",       sigc::bind(sigc::ptr_fun(&last_effect_pref), app));
     // clang-format on
 
     if (!app) {

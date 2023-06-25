@@ -140,7 +140,7 @@ TextParam::param_newWidget()
     Gtk::Box *text_container = Gtk::manage(new Gtk::Box());
     Gtk::Button *set =  Gtk::manage(new Gtk::Button(Glib::ustring("✔")));
     set->signal_clicked()
-    .connect(sigc::bind<Inkscape::UI::Widget::RegisteredText *>(sigc::mem_fun(*this, &TextParam::setTextParam),rsu));
+    .connect(sigc::bind(sigc::mem_fun(*this, &TextParam::setTextParam),rsu));
     text_container->pack_start(*rsu, false, false, 2);
     text_container->pack_start(*set, false, false, 2);
     Gtk::Widget *return_widg = dynamic_cast<Gtk::Widget *> (text_container);

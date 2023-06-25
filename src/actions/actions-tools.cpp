@@ -400,8 +400,8 @@ void
 add_actions_tools(InkscapeWindow* win)
 {
     // clang-format off
-    win->add_action_radio_string ( "tool-switch",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&tool_switch),  win), "Select");
-    win->add_action_radio_string ( "tool-toggle",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&tool_toggle),  win), "Select");
+    win->add_action_radio_string ( "tool-switch",        sigc::bind(sigc::ptr_fun(&tool_switch),  win), "Select");
+    win->add_action_radio_string ( "tool-toggle",        sigc::bind(sigc::ptr_fun(&tool_toggle),  win), "Select");
     // clang-format on
 
     auto app = InkscapeApplication::instance();

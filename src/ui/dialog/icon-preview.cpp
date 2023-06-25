@@ -179,7 +179,7 @@ IconPreviewPanel::IconPreviewPanel()
 
         buttons[i]->set_tooltip_text(label);
 
-        buttons[i]->signal_clicked().connect( sigc::bind<int>( sigc::mem_fun(*this, &IconPreviewPanel::on_button_clicked), i) );
+        buttons[i]->signal_clicked().connect( sigc::bind( sigc::mem_fun(*this, &IconPreviewPanel::on_button_clicked), i) );
 
         buttons[i]->set_halign(Gtk::ALIGN_CENTER);
         buttons[i]->set_valign(Gtk::ALIGN_CENTER);

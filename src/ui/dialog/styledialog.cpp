@@ -476,7 +476,7 @@ void StyleDialog::readStyleElement()
     Glib::RefPtr<Gtk::TreeStore> store = Gtk::TreeStore::create(_mColumns);
     css_tree->set_model(store);
     css_selector_event_add->signal_button_release_event().connect(
-        sigc::bind<Glib::RefPtr<Gtk::TreeStore>, Gtk::TreeView *, Glib::ustring, gint>(
+        sigc::bind(
             sigc::mem_fun(*this, &StyleDialog::_addRow), store, css_tree, "style_properties", selectorpos));
     Inkscape::UI::Widget::IconRenderer *addRenderer = manage(new Inkscape::UI::Widget::IconRenderer());
     addRenderer->add_icon("edit-delete");
@@ -484,12 +484,12 @@ void StyleDialog::readStyleElement()
     Gtk::TreeViewColumn *col = css_tree->get_column(addCol);
     if (col) {
         addRenderer->signal_activated().connect(
-            sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
+            sigc::bind(sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
     }
     Gtk::CellRendererText *label = Gtk::manage(new Gtk::CellRendererText());
     label->property_placeholder_text() = _("property");
     label->property_editable() = true;
-    label->signal_edited().connect(sigc::bind<Glib::RefPtr<Gtk::TreeStore>, Gtk::TreeView *>(
+    label->signal_edited().connect(sigc::bind(
         sigc::mem_fun(*this, &StyleDialog::_nameEdited), store, css_tree));
     label->signal_editing_started().connect(sigc::mem_fun(*this, &StyleDialog::_startNameEdit));
     addCol = css_tree->append_column(" ", *label) - 1;
@@ -502,9 +502,9 @@ void StyleDialog::readStyleElement()
     value->property_placeholder_text() = _("value");
     value->property_editable() = true;
     value->signal_edited().connect(
-        sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(sigc::mem_fun(*this, &StyleDialog::_valueEdited), store));
+        sigc::bind(sigc::mem_fun(*this, &StyleDialog::_valueEdited), store));
     value->signal_editing_started().connect(
-        sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(sigc::mem_fun(*this, &StyleDialog::_startValueEdit), store));
+        sigc::bind(sigc::mem_fun(*this, &StyleDialog::_startValueEdit), store));
     addCol = css_tree->append_column(" ", *value) - 1;
     col = css_tree->get_column(addCol);
     if (col) {
@@ -662,7 +662,7 @@ void StyleDialog::readStyleElement()
         Gtk::TreeViewColumn *col = css_tree->get_column(addCol);
         if (col) {
             addRenderer->signal_activated().connect(
-                sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
+                sigc::bind(sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
         }
         Gtk::CellRendererToggle *isactive = Gtk::manage(new Gtk::CellRendererToggle());
         isactive->property_activatable() = true;
@@ -671,12 +671,12 @@ void StyleDialog::readStyleElement()
         if (col) {
             col->add_attribute(isactive->property_active(), _mColumns._colActive);
             isactive->signal_toggled().connect(
-                sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(sigc::mem_fun(*this, &StyleDialog::_activeToggled), store));
+                sigc::bind(sigc::mem_fun(*this, &StyleDialog::_activeToggled), store));
         }
         Gtk::CellRendererText *label = Gtk::manage(new Gtk::CellRendererText());
         label->property_placeholder_text() = _("property");
         label->property_editable() = true;
-        label->signal_edited().connect(sigc::bind<Glib::RefPtr<Gtk::TreeStore>, Gtk::TreeView *>(
+        label->signal_edited().connect(sigc::bind(
             sigc::mem_fun(*this, &StyleDialog::_nameEdited), store, css_tree));
         label->signal_editing_started().connect(sigc::mem_fun(*this, &StyleDialog::_startNameEdit));
         addCol = css_tree->append_column(" ", *label) - 1;
@@ -689,9 +689,9 @@ void StyleDialog::readStyleElement()
         value->property_editable() = true;
         value->property_placeholder_text() = _("value");
         value->signal_edited().connect(
-            sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(sigc::mem_fun(*this, &StyleDialog::_valueEdited), store));
+            sigc::bind(sigc::mem_fun(*this, &StyleDialog::_valueEdited), store));
         value->signal_editing_started().connect(
-            sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(sigc::mem_fun(*this, &StyleDialog::_startValueEdit), store));
+            sigc::bind(sigc::mem_fun(*this, &StyleDialog::_startValueEdit), store));
         addCol = css_tree->append_column(" ", *value) - 1;
         col = css_tree->get_column(addCol);
         if (col) {
@@ -719,7 +719,7 @@ void StyleDialog::readStyleElement()
         }
         empty = true;
         css_selector_event_add->signal_button_release_event().connect(
-            sigc::bind<Glib::RefPtr<Gtk::TreeStore>, Gtk::TreeView *, Glib::ustring, gint>(
+            sigc::bind(
                 sigc::mem_fun(*this, &StyleDialog::_addRow), store, css_tree, selector_orig, selectorpos));
         if (obj) {
             for (auto iter : result_props) {
@@ -794,7 +794,7 @@ void StyleDialog::readStyleElement()
     css_tree->get_style_context()->add_class("style_attribute");
     css_tree->set_model(store);
     css_selector_event_add->signal_button_release_event().connect(
-        sigc::bind<Glib::RefPtr<Gtk::TreeStore>, Gtk::TreeView *, Glib::ustring, gint>(
+        sigc::bind(
             sigc::mem_fun(*this, &StyleDialog::_addRow), store, css_tree, "attributes", selectorpos));
     bool hasattributes = false;
     empty = true;
@@ -812,13 +812,13 @@ void StyleDialog::readStyleElement()
                             int addCol = css_tree->append_column(" ", *addRenderer) - 1;
                             Gtk::TreeViewColumn *col = css_tree->get_column(addCol);
                             if (col) {
-                                addRenderer->signal_activated().connect(sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(
+                                addRenderer->signal_activated().connect(sigc::bind(
                                     sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
                             }
                             Gtk::CellRendererText *label = Gtk::manage(new Gtk::CellRendererText());
                             label->property_placeholder_text() = _("property");
                             label->property_editable() = true;
-                            label->signal_edited().connect(sigc::bind<Glib::RefPtr<Gtk::TreeStore>, Gtk::TreeView *>(
+                            label->signal_edited().connect(sigc::bind(
                                 sigc::mem_fun(*this, &StyleDialog::_nameEdited), store, css_tree));
                             label->signal_editing_started().connect(sigc::mem_fun(*this, &StyleDialog::_startNameEdit));
                             addCol = css_tree->append_column(" ", *label) - 1;
@@ -830,9 +830,9 @@ void StyleDialog::readStyleElement()
                             Gtk::CellRendererText *value = Gtk::manage(new Gtk::CellRendererText());
                             value->property_placeholder_text() = _("value");
                             value->property_editable() = true;
-                            value->signal_edited().connect(sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(
+                            value->signal_edited().connect(sigc::bind(
                                 sigc::mem_fun(*this, &StyleDialog::_valueEdited), store));
-                            value->signal_editing_started().connect(sigc::bind<Glib::RefPtr<Gtk::TreeStore>>(
+                            value->signal_editing_started().connect(sigc::bind(
                                 sigc::mem_fun(*this, &StyleDialog::_startValueEdit), store));
 
                             addCol = css_tree->append_column(" ", *value) - 1;

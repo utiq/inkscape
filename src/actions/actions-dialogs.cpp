@@ -144,8 +144,8 @@ void add_actions_dialogs(InkscapeWindow *win)
     auto String = Glib::VARIANT_TYPE_STRING;
 
     // clang-format off
-    win->add_action_with_parameter( "dialog-open",  String, sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&dialog_open),   win));
-    win->add_action(                "dialog-toggle",        sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&dialog_toggle), win));
+    win->add_action_with_parameter( "dialog-open",  String, sigc::bind(sigc::ptr_fun(&dialog_open),   win));
+    win->add_action(                "dialog-toggle",        sigc::bind(sigc::ptr_fun(&dialog_toggle), win));
     // clang-format on
 
     auto app = InkscapeApplication::instance();

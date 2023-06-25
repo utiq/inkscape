@@ -960,10 +960,10 @@ void DialogNotebook::add_close_tab_callback(Gtk::Widget *page)
     auto *close = static_cast<Gtk::Button *>(*children.crbegin());
 
     sigc::connection close_connection = close->signal_clicked().connect(
-            sigc::bind<Gtk::Widget *>(sigc::mem_fun(*this, &DialogNotebook::on_close_button_click_event), page), true);
+            sigc::bind(sigc::mem_fun(*this, &DialogNotebook::on_close_button_click_event), page), true);
 
     sigc::connection tab_connection = tab->signal_button_press_event().connect(
-        sigc::bind<Gtk::Widget *>(sigc::mem_fun(*this, &DialogNotebook::on_tab_click_event), page), true);
+        sigc::bind(sigc::mem_fun(*this, &DialogNotebook::on_tab_click_event), page), true);
 
     _tab_connections.insert(std::pair<Gtk::Widget *, sigc::connection>(page, tab_connection));
     _tab_connections.insert(std::pair<Gtk::Widget *, sigc::connection>(page, close_connection));

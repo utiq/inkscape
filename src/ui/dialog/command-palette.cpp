@@ -351,7 +351,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
             CPActionFullButton->hide();
         } else {
             CPActionFullButton->signal_clicked().connect(
-                sigc::bind<Glib::ustring>(sigc::mem_fun(*this, &CommandPalette::on_action_fullname_clicked),
+                sigc::bind(sigc::mem_fun(*this, &CommandPalette::on_action_fullname_clicked),
                                           action_ptr_name.second),
                 false);
         }
@@ -610,7 +610,7 @@ bool CommandPalette::ask_action_parameter(const ActionPtrName &action_ptr_name)
         set_mode(CPMode::INPUT);
 
         _cpfilter_key_press_connection = _CPFilter->signal_key_press_event().connect(
-            sigc::bind<ActionPtrName>(sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_input_mode),
+            sigc::bind(sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_input_mode),
                                       action_ptr_name),
             false);
 

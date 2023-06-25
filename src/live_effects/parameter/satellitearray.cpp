@@ -243,7 +243,7 @@ void SatelliteArrayParam::on_up_button_click()
             }
         }
         param_effect->makeUndoDone(_("Move item up"));
-        _store->foreach_iter(sigc::bind<int *>(sigc::mem_fun(*this, &SatelliteArrayParam::_selectIndex), &i));
+        _store->foreach_iter(sigc::bind(sigc::mem_fun(*this, &SatelliteArrayParam::_selectIndex), &i));
     }
 }
 
@@ -265,7 +265,7 @@ void SatelliteArrayParam::on_down_button_click()
             }
         }
         param_effect->makeUndoDone(_("Move item down"));
-        _store->foreach_iter(sigc::bind<int *>(sigc::mem_fun(*this, &SatelliteArrayParam::_selectIndex), &i));
+        _store->foreach_iter(sigc::bind(sigc::mem_fun(*this, &SatelliteArrayParam::_selectIndex), &i));
     }
 }
 

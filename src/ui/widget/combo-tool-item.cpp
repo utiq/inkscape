@@ -233,7 +233,7 @@ ComboToolItem::on_create_menu_proxy()
             button->set_tooltip_text( tooltip );
             button->set_sensitive( sensitive );
 
-            button->signal_toggled().connect( sigc::bind<0>(
+            button->signal_toggled().connect( sigc::bind(
               sigc::mem_fun(*this, &ComboToolItem::on_toggled_radiomenu), index++)
                 );
 

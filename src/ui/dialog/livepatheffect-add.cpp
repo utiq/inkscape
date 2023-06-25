@@ -173,15 +173,15 @@ LivePathEffectAdd::LivePathEffectAdd()
         Gtk::EventBox *LPESelectorEffect;
         builder_effect->get_widget("LPESelectorEffect", LPESelectorEffect);
         LPESelectorEffect->signal_button_press_event().connect(
-            sigc::bind<Glib::RefPtr<Gtk::Builder>, const LivePathEffect::EnumEffectData<LivePathEffect::EffectType> *>(
+            sigc::bind(
                 sigc::mem_fun(*this, &LivePathEffectAdd::apply), builder_effect, &converter.data(i)));
         Gtk::EventBox *LPESelectorEffectEventExpander;
         builder_effect->get_widget("LPESelectorEffectEventExpander", LPESelectorEffectEventExpander);
         LPESelectorEffectEventExpander->signal_button_press_event().connect(
-            sigc::bind<Glib::RefPtr<Gtk::Builder>>(sigc::mem_fun(*this, &LivePathEffectAdd::expand), builder_effect));
-        LPESelectorEffectEventExpander->signal_enter_notify_event().connect(sigc::bind<GtkWidget *>(
+            sigc::bind(sigc::mem_fun(*this, &LivePathEffectAdd::expand), builder_effect));
+        LPESelectorEffectEventExpander->signal_enter_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(LPESelectorEffect->gobj())));
-        LPESelectorEffectEventExpander->signal_leave_notify_event().connect(sigc::bind<GtkWidget *>(
+        LPESelectorEffectEventExpander->signal_leave_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseout), GTK_WIDGET(LPESelectorEffect->gobj())));
         Gtk::Label *LPEName;
         builder_effect->get_widget("LPEName", LPEName);
@@ -208,7 +208,7 @@ LivePathEffectAdd::LivePathEffectAdd()
         LPEIcon->set_from_icon_name(converter.get_icon(data->id), Gtk::IconSize(Gtk::ICON_SIZE_DIALOG));
         Gtk::EventBox *LPESelectorEffectEventInfo;
         builder_effect->get_widget("LPESelectorEffectEventInfo", LPESelectorEffectEventInfo);
-        LPESelectorEffectEventInfo->signal_enter_notify_event().connect(sigc::bind<Glib::RefPtr<Gtk::Builder>>(
+        LPESelectorEffectEventInfo->signal_enter_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::pop_description), builder_effect));
         Gtk::EventBox *LPESelectorEffectEventFav;
         builder_effect->get_widget("LPESelectorEffectEventFav", LPESelectorEffectEventFav);
@@ -220,9 +220,9 @@ LivePathEffectAdd::LivePathEffectAdd()
         }
         Gtk::EventBox *LPESelectorEffectEventFavTop;
         builder_effect->get_widget("LPESelectorEffectEventFavTop", LPESelectorEffectEventFavTop);
-        LPESelectorEffectEventFav->signal_button_press_event().connect(sigc::bind<Glib::RefPtr<Gtk::Builder>>(
+        LPESelectorEffectEventFav->signal_button_press_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::fav_toggler), builder_effect));
-        LPESelectorEffectEventFavTop->signal_button_press_event().connect(sigc::bind<Glib::RefPtr<Gtk::Builder>>(
+        LPESelectorEffectEventFavTop->signal_button_press_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::fav_toggler), builder_effect));
         Gtk::Image *favtop = dynamic_cast<Gtk::Image *>(LPESelectorEffectEventFavTop->get_child());
         if (sp_has_fav_dialog(untranslated_label)) {
@@ -233,25 +233,25 @@ LivePathEffectAdd::LivePathEffectAdd()
         Gtk::EventBox *LPESelectorEffectEventApply;
         builder_effect->get_widget("LPESelectorEffectEventApply", LPESelectorEffectEventApply);
         LPESelectorEffectEventApply->signal_button_press_event().connect(
-            sigc::bind<Glib::RefPtr<Gtk::Builder>, const LivePathEffect::EnumEffectData<LivePathEffect::EffectType> *>(
+            sigc::bind(
                 sigc::mem_fun(*this, &LivePathEffectAdd::apply), builder_effect, &converter.data(i)));
-        LPESelectorEffectEventApply->signal_enter_notify_event().connect(sigc::bind<GtkWidget *>(
+        LPESelectorEffectEventApply->signal_enter_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(LPESelectorEffectEventApply->gobj())));
-        LPESelectorEffectEventApply->signal_leave_notify_event().connect(sigc::bind<GtkWidget *>(
+        LPESelectorEffectEventApply->signal_leave_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseout), GTK_WIDGET(LPESelectorEffectEventApply->gobj())));
         Gtk::Box *LPESelectorButtonBox;
         builder_effect->get_widget("LPESelectorButtonBox", LPESelectorButtonBox);
-        LPESelectorButtonBox->signal_enter_notify_event().connect(sigc::bind<GtkWidget *>(
+        LPESelectorButtonBox->signal_enter_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(LPESelectorEffect->gobj())));
-        LPESelectorButtonBox->signal_leave_notify_event().connect(sigc::bind<GtkWidget *>(
+        LPESelectorButtonBox->signal_leave_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseout), GTK_WIDGET(LPESelectorEffect->gobj())));
-        LPESelectorEffect->signal_enter_notify_event().connect(sigc::bind<GtkWidget *>(
+        LPESelectorEffect->signal_enter_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(LPESelectorEffect->gobj())));
-        LPESelectorEffect->signal_leave_notify_event().connect(sigc::bind<GtkWidget *>(
+        LPESelectorEffect->signal_leave_notify_event().connect(sigc::bind(
             sigc::mem_fun(*this, &LivePathEffectAdd::mouseout), GTK_WIDGET(LPESelectorEffect->gobj())));
         _LPESelectorFlowBox->insert(*LPESelectorEffect, i);
         LPESelectorEffect->get_parent()->signal_key_press_event().connect(
-            sigc::bind<Glib::RefPtr<Gtk::Builder>, const LivePathEffect::EnumEffectData<LivePathEffect::EffectType> *>(
+            sigc::bind(
                 sigc::mem_fun(*this, &LivePathEffectAdd::on_press_enter), builder_effect, &converter.data(i)));
         LPESelectorEffect->get_parent()->get_style_context()->add_class(
             ("LPEIndex" + Glib::ustring::format(i)).c_str());
@@ -265,17 +265,17 @@ LivePathEffectAdd::LivePathEffectAdd()
         sigc::bind(sigc::mem_fun(*this, &LivePathEffectAdd::viewChanged), 1));
     _LPESelectorEffectRadioList->signal_clicked().connect(
         sigc::bind(sigc::mem_fun(*this, &LivePathEffectAdd::viewChanged), 2));
-    _LPESelectorEffectEventFavShow->signal_enter_notify_event().connect(sigc::bind<GtkWidget *>(
+    _LPESelectorEffectEventFavShow->signal_enter_notify_event().connect(sigc::bind(
         sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(_LPESelectorEffectEventFavShow->gobj())));
-    _LPESelectorEffectEventFavShow->signal_leave_notify_event().connect(sigc::bind<GtkWidget *>(
+    _LPESelectorEffectEventFavShow->signal_leave_notify_event().connect(sigc::bind(
         sigc::mem_fun(*this, &LivePathEffectAdd::mouseout), GTK_WIDGET(_LPESelectorEffectEventFavShow->gobj())));
     _LPESelectorEffectEventFavShow->signal_button_press_event().connect(
         sigc::mem_fun(*this, &LivePathEffectAdd::show_fav_toggler));
     _LPESelectorEffectInfoEventBox->signal_leave_notify_event().connect(
         sigc::mem_fun(*this, &LivePathEffectAdd::hide_pop_description));
-    _LPESelectorEffectInfoEventBox->signal_enter_notify_event().connect(sigc::bind<GtkWidget *>(
+    _LPESelectorEffectInfoEventBox->signal_enter_notify_event().connect(sigc::bind(
         sigc::mem_fun(*this, &LivePathEffectAdd::mouseover), GTK_WIDGET(_LPESelectorEffectInfoEventBox->gobj())));
-    _LPESelectorEffectInfoEventBox->signal_leave_notify_event().connect(sigc::bind<GtkWidget *>(
+    _LPESelectorEffectInfoEventBox->signal_leave_notify_event().connect(sigc::bind(
         sigc::mem_fun(*this, &LivePathEffectAdd::mouseout), GTK_WIDGET(_LPESelectorEffectInfoEventBox->gobj())));
     _LPEExperimental->property_active().signal_changed().connect(
         sigc::mem_fun(*this, &LivePathEffectAdd::reload_effect_list));

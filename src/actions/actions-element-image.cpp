@@ -215,8 +215,8 @@ add_actions_element_image(InkscapeApplication* app)
     auto *gapp = app->gio_app();
 
     // clang-format off
-    gapp->add_action(                "element-image-crop",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&image_crop),      app));
-    gapp->add_action(                "element-image-edit",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&image_edit),      app));
+    gapp->add_action(                "element-image-crop",          sigc::bind(sigc::ptr_fun(&image_crop),      app));
+    gapp->add_action(                "element-image-edit",          sigc::bind(sigc::ptr_fun(&image_edit),      app));
     // clang-format on
 
     app->get_action_extra_data().add_data(raw_data_element_image);

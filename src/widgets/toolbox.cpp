@@ -192,7 +192,7 @@ Gtk::Menu *ToolboxFactory::_getContextMenu(Glib::ustring tool_name, InkscapeWind
     auto gio_menu = Gio::Menu::create();
     auto action_group = Gio::SimpleActionGroup::create();
     menu->insert_action_group("ctx", action_group);
-    action_group->add_action("open-tool-preferences", sigc::bind<Glib::ustring, InkscapeWindow *>(
+    action_group->add_action("open-tool-preferences", sigc::bind(
                                                           sigc::ptr_fun(&tool_preferences), tool_name, win));
 
     auto menu_item = Gio::MenuItem::create(_("Open tool preferences"), "ctx.open-tool-preferences");

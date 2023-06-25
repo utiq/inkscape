@@ -132,8 +132,8 @@ Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
     static auto gapp = InkscapeApplication::instance()->gtk_app();
     if (gapp) {
         // Might be in command line mode without GUI (testing).
-        action = gapp->add_action( aid, sigc::bind<Effect*>(sigc::ptr_fun(&action_effect), this, true));
-        action_noprefs = gapp->add_action( aid + ".noprefs", sigc::bind<Effect*>(sigc::ptr_fun(&action_effect), this, false));
+        action = gapp->add_action( aid, sigc::bind(sigc::ptr_fun(&action_effect), this, true));
+        action_noprefs = gapp->add_action( aid + ".noprefs", sigc::bind(sigc::ptr_fun(&action_effect), this, false));
     }
 
     if (!hidden) {

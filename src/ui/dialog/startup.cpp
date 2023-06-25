@@ -217,10 +217,10 @@ StartScreen::StartScreen()
     keys->signal_changed().connect(sigc::mem_fun(*this, &StartScreen::keyboard_changed));
     themes->signal_changed().connect(sigc::mem_fun(*this, &StartScreen::theme_changed));
     dark_toggle->property_active().signal_changed().connect(sigc::mem_fun(*this, &StartScreen::theme_changed));
-    save->signal_clicked().connect(sigc::bind<Gtk::Button *>(sigc::mem_fun(*this, &StartScreen::notebook_next), save));
+    save->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &StartScreen::notebook_next), save));
 
     // "Supported by You" tab
-    thanks->signal_clicked().connect(sigc::bind<Gtk::Button *>(sigc::mem_fun(*this, &StartScreen::notebook_next), thanks));
+    thanks->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &StartScreen::notebook_next), thanks));
 
     // "Time to Draw" tab
     recent_treeview->signal_row_activated().connect(sigc::hide(sigc::hide((sigc::mem_fun(*this, &StartScreen::load_document)))));

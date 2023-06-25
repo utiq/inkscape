@@ -967,7 +967,7 @@ void SelectorsDialog::_addSelector()
 
     Gtk::Entry *textEditPtr = manage ( new Gtk::Entry() );
     textEditPtr->signal_activate().connect(
-        sigc::bind<Gtk::Dialog *>(sigc::mem_fun(*this, &SelectorsDialog::_closeDialog), textDialogPtr));
+        sigc::bind(sigc::mem_fun(*this, &SelectorsDialog::_closeDialog), textDialogPtr));
     textDialogPtr->get_content_area()->pack_start(*textEditPtr, Gtk::PACK_SHRINK);
 
     Gtk::Label *textLabelPtr = manage(new Gtk::Label(_("Invalid CSS selector.")));

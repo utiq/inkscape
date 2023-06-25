@@ -255,19 +255,19 @@ void add_actions_path(InkscapeApplication *app)
     auto *gapp = app->gio_app();
 
     // clang-format off
-    gapp->add_action(               "path-union",              sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&object_path_union),         app));
-    gapp->add_action(               "path-difference",         sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_difference),    app));
-    gapp->add_action(               "path-intersection",       sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_intersection),  app));
-    gapp->add_action(               "path-exclusion",          sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_exclusion),     app));
-    gapp->add_action(               "path-division",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_division),      app));
-    gapp->add_action(               "path-cut",                sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_cut),           app));
-    gapp->add_action(               "path-combine",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_combine),       app));
-    gapp->add_action(               "path-break-apart",        sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_break_apart),   app));
-    gapp->add_action(               "path-split",              sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_split),         app));
-    gapp->add_action(               "path-fracture",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_fracture),      app));
-    gapp->add_action(               "path-flatten",            sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_flatten) ,      app));
-    gapp->add_action(               "path-fill-between-paths", sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&fill_between_paths),        app));
-    gapp->add_action(               "path-simplify",           sigc::bind<InkscapeApplication*>(sigc::ptr_fun(&select_path_simplify),      app));
+    gapp->add_action(               "path-union",              sigc::bind(sigc::ptr_fun(&object_path_union),         app));
+    gapp->add_action(               "path-difference",         sigc::bind(sigc::ptr_fun(&select_path_difference),    app));
+    gapp->add_action(               "path-intersection",       sigc::bind(sigc::ptr_fun(&select_path_intersection),  app));
+    gapp->add_action(               "path-exclusion",          sigc::bind(sigc::ptr_fun(&select_path_exclusion),     app));
+    gapp->add_action(               "path-division",           sigc::bind(sigc::ptr_fun(&select_path_division),      app));
+    gapp->add_action(               "path-cut",                sigc::bind(sigc::ptr_fun(&select_path_cut),           app));
+    gapp->add_action(               "path-combine",            sigc::bind(sigc::ptr_fun(&select_path_combine),       app));
+    gapp->add_action(               "path-break-apart",        sigc::bind(sigc::ptr_fun(&select_path_break_apart),   app));
+    gapp->add_action(               "path-split",              sigc::bind(sigc::ptr_fun(&select_path_split),         app));
+    gapp->add_action(               "path-fracture",           sigc::bind(sigc::ptr_fun(&select_path_fracture),      app));
+    gapp->add_action(               "path-flatten",            sigc::bind(sigc::ptr_fun(&select_path_flatten) ,      app));
+    gapp->add_action(               "path-fill-between-paths", sigc::bind(sigc::ptr_fun(&fill_between_paths),        app));
+    gapp->add_action(               "path-simplify",           sigc::bind(sigc::ptr_fun(&select_path_simplify),      app));
     // clang-format on
 
     app->get_action_extra_data().add_data(raw_data_path);
@@ -282,14 +282,14 @@ void add_actions_path(InkscapeWindow *win)
     int current_mode = prefs->getInt("/tool/booleans/mode", 0);
 
     // clang-format off
-    win->add_action(                "path-inset",                   sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_inset),          win));
-    win->add_action(                "path-offset",                  sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_offset),         win));
-    win->add_action_with_parameter( "path-inset-screen",    Double, sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_inset_screen),   win));
-    win->add_action_with_parameter( "path-offset-screen",   Double, sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_offset_screen),  win));
-    win->add_action(                "path-offset-dynamic",          sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_offset_dynamic), win));
-    win->add_action(                "path-offset-linked",           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_offset_linked),  win));
-    win->add_action(                "path-reverse",                 sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&select_path_reverse),        win));
-    win->add_action_radio_integer(  "shape-builder-mode",           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&shape_builder_mode),         win), current_mode);
+    win->add_action(                "path-inset",                   sigc::bind(sigc::ptr_fun(&select_path_inset),          win));
+    win->add_action(                "path-offset",                  sigc::bind(sigc::ptr_fun(&select_path_offset),         win));
+    win->add_action_with_parameter( "path-inset-screen",    Double, sigc::bind(sigc::ptr_fun(&select_path_inset_screen),   win));
+    win->add_action_with_parameter( "path-offset-screen",   Double, sigc::bind(sigc::ptr_fun(&select_path_offset_screen),  win));
+    win->add_action(                "path-offset-dynamic",          sigc::bind(sigc::ptr_fun(&select_path_offset_dynamic), win));
+    win->add_action(                "path-offset-linked",           sigc::bind(sigc::ptr_fun(&select_path_offset_linked),  win));
+    win->add_action(                "path-reverse",                 sigc::bind(sigc::ptr_fun(&select_path_reverse),        win));
+    win->add_action_radio_integer(  "shape-builder-mode",           sigc::bind(sigc::ptr_fun(&shape_builder_mode),         win), current_mode);
     // clang-format on
 }
 

@@ -316,7 +316,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
             mi->add(*(new Gtk::Label(iter->first, Gtk::ALIGN_START)));
             _unit_mis.push_back(mi);
             Inkscape::Util::Unit const *u = unit_table.getUnit(iter->first);
-            mi->signal_activate().connect(sigc::bind<Inkscape::Util::Unit const *>(sigc::mem_fun(*this, &SelectedStyle::on_popup_units), u));
+            mi->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &SelectedStyle::on_popup_units), u));
             _popup_sw.attach(*mi, 0,1, row, row+1);
             row++;
             ++iter;
@@ -328,7 +328,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         for (guint i = 0; i < G_N_ELEMENTS(_sw_presets_str); ++i) {
             Gtk::MenuItem *mi = Gtk::manage(new Gtk::MenuItem());
             mi->add(*(new Gtk::Label(_sw_presets_str[i], Gtk::ALIGN_START)));
-            mi->signal_activate().connect(sigc::bind<int>(sigc::mem_fun(*this, &SelectedStyle::on_popup_preset), i));
+            mi->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &SelectedStyle::on_popup_preset), i));
             _popup_sw.attach(*mi, 0,1, row, row+1);
             row++;
         }

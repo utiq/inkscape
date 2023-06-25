@@ -256,22 +256,22 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
     Gtk::Box *fillet_container = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
     Gtk::Button *fillet =  Gtk::manage(new Gtk::Button(Glib::ustring(_("Fillet"))));
     fillet->signal_clicked().connect(
-        sigc::bind<NodeSatelliteType>(sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), FILLET));
+        sigc::bind(sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), FILLET));
 
     fillet_container->pack_start(*fillet, true, true, 2);
     Gtk::Button *inverse_fillet = Gtk::manage(new Gtk::Button(Glib::ustring(_("Inverse fillet"))));
-    inverse_fillet->signal_clicked().connect(sigc::bind<NodeSatelliteType>(
+    inverse_fillet->signal_clicked().connect(sigc::bind(
         sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), INVERSE_FILLET));
     fillet_container->pack_start(*inverse_fillet, true, true, 2);
 
     Gtk::Box *chamfer_container = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
     Gtk::Button *chamfer = Gtk::manage(new Gtk::Button(Glib::ustring(_("Chamfer"))));
     chamfer->signal_clicked().connect(
-        sigc::bind<NodeSatelliteType>(sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), CHAMFER));
+        sigc::bind(sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), CHAMFER));
 
     chamfer_container->pack_start(*chamfer, true, true, 2);
     Gtk::Button *inverse_chamfer = Gtk::manage(new Gtk::Button(Glib::ustring(_("Inverse chamfer"))));
-    inverse_chamfer->signal_clicked().connect(sigc::bind<NodeSatelliteType>(
+    inverse_chamfer->signal_clicked().connect(sigc::bind(
         sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), INVERSE_CHAMFER));
     chamfer_container->pack_start(*inverse_chamfer, true, true, 2);
 

@@ -302,12 +302,12 @@ add_actions_canvas_mode(InkscapeWindow* win)
     }
 
     // clang-format off
-    win->add_action_radio_integer ("canvas-display-mode",                 sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_display_mode),                win), display_mode);
-    win->add_action(               "canvas-display-mode-cycle",           sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_display_mode_cycle),          win));
-    win->add_action(               "canvas-display-mode-toggle",          sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_display_mode_toggle),         win));
-    win->add_action_radio_integer ("canvas-split-mode",                   sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_split_mode),                  win), (int)Inkscape::SplitMode::NORMAL);
-    win->add_action_bool(          "canvas-color-mode",                   sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_color_mode_toggle),           win));
-    win->add_action_bool(          "canvas-color-manage",                 sigc::bind<InkscapeWindow*>(sigc::ptr_fun(&canvas_color_manage_toggle),         win), color_manage);
+    win->add_action_radio_integer ("canvas-display-mode",                 sigc::bind(sigc::ptr_fun(&canvas_display_mode),                win), display_mode);
+    win->add_action(               "canvas-display-mode-cycle",           sigc::bind(sigc::ptr_fun(&canvas_display_mode_cycle),          win));
+    win->add_action(               "canvas-display-mode-toggle",          sigc::bind(sigc::ptr_fun(&canvas_display_mode_toggle),         win));
+    win->add_action_radio_integer ("canvas-split-mode",                   sigc::bind(sigc::ptr_fun(&canvas_split_mode),                  win), (int)Inkscape::SplitMode::NORMAL);
+    win->add_action_bool(          "canvas-color-mode",                   sigc::bind(sigc::ptr_fun(&canvas_color_mode_toggle),           win));
+    win->add_action_bool(          "canvas-color-manage",                 sigc::bind(sigc::ptr_fun(&canvas_color_manage_toggle),         win), color_manage);
     // clang-format on
 
     auto app = InkscapeApplication::instance();

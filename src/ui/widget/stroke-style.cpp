@@ -446,7 +446,7 @@ StrokeStyle::makeRadioButton(Gtk::RadioButtonGroup &grp,
 
     hb->pack_start(*tb, false, false, 0);
 
-    tb->signal_toggled().connect(sigc::bind<StrokeStyleButton *, StrokeStyle *>(
+    tb->signal_toggled().connect(sigc::bind(
                                      sigc::ptr_fun(&StrokeStyle::buttonToggledCB), tb, this));
 
     return tb;

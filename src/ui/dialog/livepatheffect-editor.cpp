@@ -994,7 +994,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
                LPEExpander->set_expanded(!LPEExpander->property_expanded());
                return false;
             }, false);
-            dynamic_cast<Gtk::Button *>(LPEHide->get_children()[0])->signal_clicked().connect(sigc::bind<Inkscape::LivePathEffect::Effect *, Gtk::EventBox *>(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
+            dynamic_cast<Gtk::Button *>(LPEHide->get_children()[0])->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
             LPEDrag->signal_button_press_event().connect([=](GdkEventButton* const evt){dndx = evt->x; dndy = evt->y; return false; }, false);
             dynamic_cast<Gtk::Button *>(LPEErase->get_children()[0])->signal_clicked().connect([=](){ removeEffect(LPEExpander);});
             if (total > 1) {

@@ -262,7 +262,7 @@ void PathArrayParam::on_up_button_click()
         }
         param_write_to_repr(param_getSVGValue().c_str());
         param_effect->makeUndoDone(_("Move path up"));
-        _store->foreach_iter(sigc::bind<int *>(sigc::mem_fun(*this, &PathArrayParam::_selectIndex), &i));
+        _store->foreach_iter(sigc::bind(sigc::mem_fun(*this, &PathArrayParam::_selectIndex), &i));
     }
 }
 
@@ -286,7 +286,7 @@ void PathArrayParam::on_down_button_click()
         }
         param_write_to_repr(param_getSVGValue().c_str());
         param_effect->makeUndoDone(_("Move path down"));
-        _store->foreach_iter(sigc::bind<int *>(sigc::mem_fun(*this, &PathArrayParam::_selectIndex), &i));
+        _store->foreach_iter(sigc::bind(sigc::mem_fun(*this, &PathArrayParam::_selectIndex), &i));
     }
 }
 
@@ -389,16 +389,16 @@ void PathArrayParam::linked_changed(SPObject * /*old_obj*/, SPObject *new_obj, P
         if (new_obj && is<SPItem>(new_obj)) {
             to->linked_release_connection.disconnect();
             to->linked_release_connection = new_obj->connectRelease(
-                sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::linked_release), to));
+                sigc::bind(sigc::mem_fun(*this, &PathArrayParam::linked_release), to));
             to->linked_modified_connection = new_obj->connectModified(
-                sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::linked_modified), to));
+                sigc::bind(sigc::mem_fun(*this, &PathArrayParam::linked_modified), to));
 
             linked_modified(new_obj, SP_OBJECT_MODIFIED_FLAG, to);
         } else if (to->linked_release_connection.connected()){
             param_effect->getLPEObj()->requestModified(SP_OBJECT_MODIFIED_FLAG);
             if (_store.get()) {
                 _store->foreach_iter(
-                    sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::_updateLink), to));
+                    sigc::bind(sigc::mem_fun(*this, &PathArrayParam::_updateLink), to));
             }
         }
     }  
@@ -474,7 +474,7 @@ void PathArrayParam::linked_modified(SPObject *linked_obj, guint flags, PathAndD
         }
         if (_store.get()) {
             _store->foreach_iter(
-                sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::_updateLink), to));
+                sigc::bind(sigc::mem_fun(*this, &PathArrayParam::_updateLink), to));
         }
     }
 }
@@ -513,7 +513,7 @@ bool PathArrayParam::param_readSVGValue(const gchar *strvalue)
                 //Like this to make backwards compatible, new value added in 0.93
                 w->visibled = *(substrarray+2) == nullptr || (*(substrarray+2))[0] == '1';
                 w->linked_changed_connection = w->ref.changedSignal().connect(
-                    sigc::bind<PathAndDirectionAndVisible *>(sigc::mem_fun(*this, &PathArrayParam::linked_changed), w));
+                    sigc::bind(sigc::mem_fun(*this, &PathArrayParam::linked_changed), w));
                 w->ref.attach(URI(w->href));
 
                 _vector.push_back(w);
