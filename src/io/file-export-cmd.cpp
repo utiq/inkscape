@@ -327,14 +327,14 @@ int InkFileExportCmd::do_export_svg(SPDocument *doc, std::string const &export_f
     return do_export_vector(doc, export_filename, *oext);
 }
 /**
- *  Perform an SVG export
+ *  Perform a vector file export (SVG, PDF, or PS)
  *
  *  \param doc Document to export.
  *  \param export_filename Filename for export
  *  \param extension Output extension used for exporting
  */
 int InkFileExportCmd::do_export_vector(SPDocument *doc, std::string const &export_filename,
-                                    Inkscape::Extension::Output &extension)
+                                       Inkscape::Extension::Output &extension)
 {
     // Start with options that are once per document.
     if (export_text_to_path) {
@@ -405,6 +405,7 @@ int InkFileExportCmd::do_export_vector(SPDocument *doc, std::string const &expor
     }
 
     for (auto object : objects) {
+        auto copy_doc = doc->copy();
 
         std::string filename_out = get_filename_out(export_filename, Glib::filename_from_utf8(object));
         if (filename_out.empty()) {
@@ -412,27 +413,27 @@ int InkFileExportCmd::do_export_vector(SPDocument *doc, std::string const &expor
         }
 
         if(!object.empty()) {
-            doc->ensureUpToDate();
+            copy_doc->ensureUpToDate();
 
             // "crop" the document to the specified object, cleaning as we go.
-            SPObject *obj = doc->getObjectById(object);
+            SPObject *obj = copy_doc->getObjectById(object);
             if (obj == nullptr) {
                 std::cerr << "InkFileExportCmd::do_export_vector: Object " << object.raw() << " not found in document, nothing to export." << std::endl;
                 return 1;
             }
             if (export_id_only) {
                 // If -j then remove all other objects to complete the "crop"
-                doc->getRoot()->cropToObject(obj);
+                copy_doc->getRoot()->cropToObject(obj);
             }
             if (export_area_type != ExportAreaType::Drawing && export_area_type != ExportAreaType::Page) {
-                Inkscape::ObjectSet s(doc);
+                Inkscape::ObjectSet s(copy_doc.get());
                 s.set(obj);
                 s.fitCanvas((bool)export_margin);
             }
         }
         try {
             extension.set_gui(false);
-            Inkscape::Extension::save(dynamic_cast<Inkscape::Extension::Extension *>(&extension), doc,
+            Inkscape::Extension::save(dynamic_cast<Inkscape::Extension::Extension *>(&extension), copy_doc.get(),
                                       filename_out.c_str(), false, false,
                                       export_plain_svg ? Inkscape::Extension::FILE_SAVE_METHOD_SAVE_COPY
                                                        : Inkscape::Extension::FILE_SAVE_METHOD_INKSCAPE_SVG);
