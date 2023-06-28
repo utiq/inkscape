@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Inkscape 1.3\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2023-06-06 18:26+0000\n"
-"PO-Revision-Date: 2023-06-19 14:30+0200\n"
+"POT-Creation-Date: 2023-06-28 11:20+0200\n"
+"PO-Revision-Date: 2023-06-28 15:35+0200\n"
 "Last-Translator: Lucas Vieites <lucas.vieites@gmail.com>\n"
 "Language-Team: Español; Castellano <inkscape-translator@lists.inkscape.org>\n"
 "Language: es\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.3.2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: share\n"
@@ -7284,7 +7284,7 @@ msgstr "Sin selección."
 #, c-format
 msgid "<b>%d</b> image cropped"
 msgid_plural "<b>%d</b> images cropped"
-msgstr[0] "<b>%d</b> imagen recortada."
+msgstr[0] "<b>%d</b> imagen recortada"
 msgstr[1] "<b>%d</b> imágenes recortadas"
 
 #
@@ -8388,7 +8388,7 @@ msgstr "Fijado de recorte de objeto inverso"
 
 #: ../src/actions/actions-object.cpp:313
 msgid "Apply inverse clipping path to selection (Power Clip LPE)"
-msgstr "Aplicar trazado de recorte inverso a selección (Power clip LPE)"
+msgstr "Aplicar trazado de recorte inverso a selección (Power Clip LPE)"
 
 #: ../src/actions/actions-object.cpp:314
 msgid "Object Clip Release"
@@ -9517,8 +9517,8 @@ msgid ""
 "<b>Click</b> or <b>drag around an area</b> to zoom in, <b>Shift+click</b> to zoom "
 "out."
 msgstr ""
-"<b>Haga clic</b> o <b>arrastre alrededor de un área</b> para hacer zoom, <b>Mayús"
-"+clic</b> para alejar."
+"<b>Haga clic</b> o <b>arrastre alrededor de un área</b> para hacer zoom, "
+"<b>Mayús+clic</b> para alejar."
 
 #: ../src/actions/actions-tools.cpp:110
 msgid "<b>Drag</b> to measure the dimensions of objects."
@@ -21276,8 +21276,8 @@ msgstr "Mover el <b>centro</b> a %s, %s"
 #: ../src/seltrans.cpp:1687
 #, c-format
 msgid ""
-"<b>Move</b> by %s, %s; with <b>%s</b> to restrict to horizontal/vertical; with <b>"
-"%s</b> to disable snapping"
+"<b>Move</b> by %s, %s; with <b>%s</b> to restrict to horizontal/vertical; with "
+"<b>%s</b> to disable snapping"
 msgstr ""
 "<b>Mover:</b> %s, %s; con <b>%s</b> para restringir a la horizontal/vertical; con "
 "<b>%s</b> para desactivar el ajuste"
@@ -31064,13 +31064,13 @@ msgstr "Unidades E y F"
 
 #: ../src/ui/dialog/transformation.cpp:465
 msgid ""
-"<small><a href=\"https://www.w3.org/TR/SVG11/coords.html#TransformMatrixDefined"
-"\">2D transformation matrix</a> that combines translation (E,F), scaling (A,D), "
-"rotation (A-D) and shearing (B,C).</small>"
+"<small><a href=\"https://www.w3.org/TR/SVG11/coords."
+"html#TransformMatrixDefined\">2D transformation matrix</a> that combines "
+"translation (E,F), scaling (A,D), rotation (A-D) and shearing (B,C).</small>"
 msgstr ""
-"<small><a href=\"https://www.w3.org/TR/SVG11/coords.html#TransformMatrixDefined"
-"\">Matriz de transformación 2D</a> que combina translación (E,F), escalado (A,D), "
-"rotación (A-D) y distorsión (B,C).</small>"
+"<small><a href=\"https://www.w3.org/TR/SVG11/coords."
+"html#TransformMatrixDefined\">Matriz de transformación 2D</a> que combina "
+"translación (E,F), escalado (A,D), rotación (A-D) y distorsión (B,C).</small>"
 
 #: ../src/ui/dialog/transformation.cpp:853 ../src/ui/dialog/transformation.cpp:864
 #: ../src/ui/dialog/transformation.cpp:881 ../src/ui/dialog/transformation.cpp:901
@@ -31260,8 +31260,8 @@ msgid ""
 "<b>Drag</b> to <b>adjust</b> blur in x direction; <b>Ctrl</b>+<b>Drag</b> makes x "
 "equal to y; <b>Shift</b>+<b>Ctrl</b>+<b>Drag</b> scales blur proportionately "
 msgstr ""
-"<b>Arrastre</b> para <b>ajustar</b> difuminado en dirección x; <b>Ctrl</b>"
-"+<b>Arrastre</b> hace x igual a y; <b>Mayús</b>+<b>Ctrl</b>+<b>Arrastre</b> "
+"<b>Arrastre</b> para <b>ajustar</b> difuminado en dirección x; <b>Ctrl</"
+"b>+<b>Arrastre</b> hace x igual a y; <b>Mayús</b>+<b>Ctrl</b>+<b>Arrastre</b> "
 "escala el difuminado proporcionalmente"
 
 #: ../src/ui/knot/knot-holder.cpp:459
@@ -31269,8 +31269,8 @@ msgid ""
 "<b>Drag</b> to <b>adjust</b> blur in y direction; <b>Ctrl</b>+<b>Drag</b> makes y "
 "equal to x; <b>Shift</b>+<b>Ctrl</b>+<b>Drag</b> scales blur proportionately "
 msgstr ""
-"<b>Arrastre</b> para <b>ajustar</b> difuminado en dirección y; <b>Ctrl</b>"
-"+<b>Arrastre</b> hace x igual a y; <b>Mayús</b>+<b>Ctrl</b>+<b>Arrastre</b> "
+"<b>Arrastre</b> para <b>ajustar</b> difuminado en dirección y; <b>Ctrl</"
+"b>+<b>Arrastre</b> hace x igual a y; <b>Mayús</b>+<b>Ctrl</b>+<b>Arrastre</b> "
 "escala el difuminado proporcionalmente"
 
 #: ../src/ui/knot/knot.cpp:309
@@ -35382,11 +35382,11 @@ msgstr ""
 
 #: ../src/ui/tools/pen-tool.cpp:584
 msgid ""
-"<b>Click</b> or <b>click and drag</b> to continue the path from this point. Shift"
-"+Click make a cusp node"
+"<b>Click</b> or <b>click and drag</b> to continue the path from this point. "
+"Shift+Click make a cusp node"
 msgstr ""
-"<b>Pulse</b> o <b>arrastre</b> para continuar el trayecto desde este punto. Mayús"
-"+clic para crear un nodo cúspide."
+"<b>Pulse</b> o <b>arrastre</b> para continuar el trayecto desde este punto. "
+"Mayús+clic para crear un nodo cúspide."
 
 #: ../src/ui/tools/pen-tool.cpp:1712
 #, c-format
@@ -37777,11 +37777,12 @@ msgstr "Inkscape se ha colgado y se cerrará."
 
 #: ../share/ui/dialog-crash.glade:35
 msgid ""
-"If you can reproduce this crash, please <a href=\"https://inkscape.org/report"
-"\">file a bug</a> and include the backtrace from the area below."
+"If you can reproduce this crash, please <a href=\"https://inkscape.org/"
+"report\">file a bug</a> and include the backtrace from the area below."
 msgstr ""
-"Si se puede reproducir este fallo, <a href=\"https://inkscape.org/report"
-"\">informe del error</a> e incluya la información que se muestra a continuación."
+"Si se puede reproducir este fallo, <a href=\"https://inkscape.org/"
+"report\">informe del error</a> e incluya la información que se muestra a "
+"continuación."
 
 #: ../share/ui/dialog-css.glade:41
 msgid "Selector"
@@ -37825,7 +37826,7 @@ msgstr "Propiedad"
 
 #: ../share/ui/dialog-document-resources.glade:366
 msgid "Count"
-msgstr "Contar"
+msgstr "Recuento"
 
 #: ../share/ui/dialog-export-prefs.glade:26
 msgid "Export Format Options"
@@ -38244,8 +38245,8 @@ msgstr ""
 " * ATENCIÓN:\n"
 "  1) Guarde el trabajo antes de vectorizar\n"
 "  2) Vigile el conteo de píxeles: \"Vectorizar arte píxel\" crea un trayecto para "
-"cada píxel. No se recomienda para imágenes que no son arte píxel (\"Pixel Art"
-"\").\n"
+"cada píxel. No se recomienda para imágenes que no son arte píxel (\"Pixel "
+"Art\").\n"
 "  3) 'Autotrace' es más lento que 'potrace', no se recomienda para imágenes "
 "grandes. Se recomienda preprocesar las imágenes para incrementar el contraste.\n"
 "  4) Si el objetivo es obtener pocos nodos y buena precisión, la mejor opción "
@@ -38863,8 +38864,8 @@ msgid ""
 "<big><b>See the full details about the Inkscape licenses <a href=\"https://"
 "inkscape.org/about/license/\">here</a>!</b></big>"
 msgstr ""
-"<big><b>Vea todos los detalles acerca de las licencias de Inkscape <a href="
-"\"https://inkscape.org/es/about/license/\">aquí</a>.</b></big>"
+"<big><b>Vea todos los detalles acerca de las licencias de Inkscape <a "
+"href=\"https://inkscape.org/es/about/license/\">aquí</a>.</b></big>"
 
 #: ../share/ui/inkscape-about.glade:228
 msgid "License file failed to load."
@@ -40339,7 +40340,7 @@ msgstr ""
 "Se ha detectado un objeto que tiene un conjunto de parámetros de extrusión. La "
 "figura importada podría ser representada incorrectamente."
 
-#: ../share/extensions/dxf_outlines.py:217
+#: ../share/extensions/dxf_outlines.py:214
 msgid ""
 "Failed to import the numpy or numpy.linalg modules. These modules are required by "
 "the ROBO option.Please install them and try again."
@@ -40347,13 +40348,13 @@ msgstr ""
 "No se ha podido cargar el módulo numpy o numpy.linalg. La opción ROBO necesita "
 "estos módulos. Vuelva a intentarlo después de instalarlos."
 
-#: ../share/extensions/dxf_outlines.py:367
+#: ../share/extensions/dxf_outlines.py:364
 msgid "Too many nested groups. Please use the \"Deep Ungroup\" extension first."
 msgstr ""
-"Demasiados grupos anidados. Utilice primero la extensión \"Desagrupación profunda"
-"\"."
+"Demasiados grupos anidados. Utilice primero la extensión \"Desagrupación "
+"profunda\"."
 
-#: ../share/extensions/dxf_outlines.py:382
+#: ../share/extensions/dxf_outlines.py:379
 msgid ""
 "Error: Field 'Layer match name' must be filled when using 'By name match' option"
 msgstr ""
@@ -40449,7 +40450,7 @@ msgid ""
 "extension."
 msgstr ""
 "Advertencia: no se ha podido renderizar el texto.\n"
-"Utilice «Texto > Eliminar todos los interletrajes manuales» antes de usar esta "
+"Utilice “Texto > Eliminar todos los interletrajes manuales” antes de usar esta "
 "extensión."
 
 #: ../share/extensions/hershey.py:2020
@@ -40467,7 +40468,7 @@ msgstr ""
 #: ../share/extensions/hpgl2_input.py:98
 msgid "Unsupported commands encountered. The following commands were ignored:"
 msgstr ""
-"Se han encontrado comandos no soportados.Se han ignorado los siguientes comandos:"
+"Se han encontrado comandos no soportados. Se han ignorado los siguientes comandos:"
 
 #: ../share/extensions/hpgl_output.py:79
 msgid "No convertible objects were found"
@@ -45123,7 +45124,7 @@ msgid ""
 "using the drawing as Image source or Brush."
 msgstr ""
 "Se añadirá un elemento de este tipo a cada dibujo de nivel superior (p.ej. cada "
-"capa sie se ha marcado «Capas como recursos», si no, el dibujo completo) para "
+"capa si se ha marcado «Capas como recursos», si no, el dibujo completo) para "
 "facilitar el uso de la imagen como «fuente de imagen» o «pincel»."
 
 #: ../share/extensions/other/extension-xaml/inkxaml/svg2xaml.inx:25
@@ -45632,8 +45633,9 @@ msgstr ""
 "dxf_import). También puede guardar la forma original. Solo se usará el punto "
 "inicial de cada curva.\n"
 "\n"
-"También puede seleccionar un objeto manualmente, abrir el editor XML (Mayús+Ctrl"
-"+X) y añadir o eliminar la etiqueta XML «dxfpoint» con cualquier valor.\n"
+"También puede seleccionar un objeto manualmente, abrir el editor XML "
+"(Mayús+Ctrl+X) y añadir o eliminar la etiqueta XML «dxfpoint» con cualquier "
+"valor.\n"
 "          "
 
 #: ../share/extensions/other/gcodetools/gcodetools_dxf_points.inx:15
@@ -49329,6 +49331,331 @@ msgstr ""
 msgid "Main application window"
 msgstr "Ventana principal de la aplicación"
 
+#: ../org.inkscape.Inkscape.appdata.xml.in:49
+msgid "Inkscape 1.3"
+msgstr "Inkscape 1.3"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:51
+msgid "Shape builder tool"
+msgstr "Herramienta construcción de formas"
+
+#
+# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
+#: ../org.inkscape.Inkscape.appdata.xml.in:52
+msgid "On-canvas pattern editing"
+msgstr "Edición de patrones en lienzo"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:53
+msgid "Pattern editor"
+msgstr "Editor de patrones"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:54
+msgid "Pages margins and bleed"
+msgstr "Márgenes y sangrado de páginas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:55
+msgid "Document resources dialog"
+msgstr "Diálogo de recursos del documento"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:56
+msgid "Font collections"
+msgstr "Colecciones de fuentes"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:57
+msgid "Syntax highlighting in XML Editor"
+msgstr "Coloreado de sintaxis en el editor XML"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:58
+msgid "LPE dialog user interface redesign"
+msgstr "Rediseño de la interfaz de usuario del diálogo de LPE"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:59
+msgid "Lots of performance improvements and bugfixes"
+msgstr "Muchas mejoras de rendimiento y correcciones de errores"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:66
+msgid "Inkscape 1.2"
+msgstr "Inkscape 1.2"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:68
+msgid "Multiple pages support"
+msgstr "Soporte para múltiples páginas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:69
+msgid "Editable markers and dash patterns"
+msgstr "Marcadores y guiones editables"
+
+#
+# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
+#: ../org.inkscape.Inkscape.appdata.xml.in:70
+msgid "On-canvas alignment and snapping"
+msgstr "Alineación y acople en lienzo"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:71
+msgid "Selectable origin for numerical transforms"
+msgstr "Origen seleccionable para las transformaciones numéricas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:72
+msgid "Single dialog for alignment options"
+msgstr "Diálogo único para las opciones de alineación"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:73
+msgid "Gradient editing in Fill and Stroke dialog"
+msgstr "Edición de degradados en el diálogo Relleno y Borde"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:74
+msgid "Layers and Objects dialog merged"
+msgstr "Fusión diálogo de Capas y Objetos"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:75
+msgid "New UI for Snap settings"
+msgstr "Interfaz nueva para ajustes de Acople"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:76
+msgid "More customization options"
+msgstr "Más opciones de personalización"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:77
+msgid "Various performance improvements and bugfixes"
+msgstr "Varias mejoras de rendimiento y correcciones de errores"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:84
+msgid "Inkscape 1.1"
+msgstr "Inkscape 1.1"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:86
+msgid "Welcome dialog"
+msgstr "Diálogo de bienvenida"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:87
+msgid "Command palette to search for functions"
+msgstr "Paleta de comandos para buscar funciones"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:88
+msgid "Copypaste parts of paths"
+msgstr "Copiar y pegar partes de trayectos"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:89
+msgid "Complete rework of the dialog docking system"
+msgstr "Revisión completa del sistema de acoplamiento de diálogos"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:90
+msgid "New outline overlay mode"
+msgstr "Nuevo modo de superposición de contorno"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:91
+msgid "Search field in Preferences dialog"
+msgstr "Campo de búsqueda en el diálogo de Preferencias"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:92
+msgid "Improved Export PNG dialog"
+msgstr "Mejora del cuadro de diálogo Exportar PNG"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:93
+msgid "Ability to directly export JPG, TIFF, optimized PNG, and WebP"
+msgstr "Posibilidad de exportar directamente JPG, TIFF, PNG optimizado y WebP"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:94
+msgid "Paste now pastes directly above selected object"
+msgstr "Pegar ahora pega directamente encima del objeto seleccionado"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:95
+msgid "Beta Extension Manager"
+msgstr "Gestor de extensiones beta"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:102
+msgid "Inkscape 1.0"
+msgstr "Inkscape 1.0"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:104
+msgid "Theming support and more new customization options"
+msgstr "Soporte para temas y más opciones de personalización"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:105
+msgid "Better HiDPI (high resolution) screen support"
+msgstr "Mejor soporte para pantallas HiDPI (alta resolución)"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:106
+msgid "Native support for macOS with a signed and notarized .dmg file"
+msgstr "Soporte nativo para macOS con un archivo .dmg firmado y notariado"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:107
+msgid "Coordinate origin in top left corner by default"
+msgstr "Origen de coordenadas predeterminado en la esquina superior izquierda"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:108
+msgid "Canvas rotation and mirroring"
+msgstr "Rotación y reflejo del lienzo"
+
+#
+# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
+#: ../org.inkscape.Inkscape.appdata.xml.in:109
+msgid "On-Canvas alignment of objects"
+msgstr "Alineación de objetos en lienzo"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:110
+msgid "Split view and X-Ray modes"
+msgstr "Modos de Vista partida y Rayos X"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:111
+msgid ""
+"PowerPencil for drawing editable, variable width strokes with a pressure "
+"sensitive graphics tablet"
+msgstr ""
+"PowerPencil para dibujar trazos editables, de anchura variable con una tableta "
+"gráfica sensible a presión"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:112
+msgid "New PNG export options"
+msgstr "Opciones de exportación PNG nuevas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:113
+msgid "Integrated centerline tracing for vectorizing line drawings"
+msgstr "Trazado de líneas centrales integradas para vectorizar dibujos de líneas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:114
+msgid "Searchable Symbols dialog"
+msgstr "Diálogo de símbolos buscables"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:115
+msgid "New Live Path Effect (LPE) selection dialog"
+msgstr "Nuevo diálogo de efecto de trayecto vivo (LPE)"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:116
+msgid ""
+"New Corners (Fillet/chamfer) LPE, (lossless) Boolean Operation LPE "
+"(experimental), Offset LPE and Measure Segments LPE (and more!)"
+msgstr ""
+"Nuevos efectos de trayecto vivo (LPE); Esquinas (Filete/Bisel), Operaciones "
+"Booleanas (sin pérdida - experimental), Desplazamiento y Medida (y más…)"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:117
+msgid ""
+"Path operations, deselection of a large number of paths as well as grouping/"
+"ungrouping are much faster now"
+msgstr ""
+"Las operaciones de trayecto, la deselección de una gran cantidad de trayectos, "
+"así como agrupar/desagrupar ahora son mucho más rápidas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:118
+msgid "Much improved text line-height settings"
+msgstr "Mejoras en los ajustes de altura de línea en textos"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:119
+msgid ""
+"Variable fonts support (only if compiled with pango library version &gt;= 1.41.1)"
+msgstr ""
+"Soporte de fuentes variables (solo si se compila con una biblioteca pango versión "
+"1.41.1 o superior)"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:120
+msgid "Browser-compatible flowed text"
+msgstr "Texto fluido compatible con navegadores"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:121
+msgid ""
+"Extensions programming interface updated, with many new options - Note: this "
+"introduces breaking changes, some third-party extensions will have to be updated "
+"to work with Inkscape 1.0"
+msgstr ""
+"Actualización de la interfaz de programación de extensiones, con muchas opciones "
+"nuevas - Nota: esto conlleva cambios rompedores, algunas extensiones de terceros "
+"necesitarán ser actualizadas con Inkscape 1.0"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:122
+msgid "Python 3 support for extensions"
+msgstr "Soporte para Python 3 en extensiones"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:130
+msgid "Bugfix release"
+msgstr "Versió de corrección de erratas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:131
+msgid "More python3 compatibility for extensions"
+msgstr "Más compatibilidad de Python 3 en extensiones"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:138
+#: ../org.inkscape.Inkscape.appdata.xml.in:151
+#: ../org.inkscape.Inkscape.appdata.xml.in:164
+msgid "New 0.92.x bugfix release."
+msgstr "Versión de corrección de erratas 0.92.x"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:140
+msgid "Improvements to the align and distribute tool"
+msgstr "Mejoras en la herramienta Alinear y distribuir"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:141
+msgid "Support for piping standard input and output"
+msgstr "Soporte para el uso de pipes en entrada y salida"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:142
+msgid "The color slider can be constrained to stepped values"
+msgstr "El deslizador de color se puede restringir a pasos predefinidos"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:143
+msgid "Performance improvements"
+msgstr "Mejoras de rendimiento"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:144
+#: ../org.inkscape.Inkscape.appdata.xml.in:157
+msgid "And many more bugfixes"
+msgstr "Y muchas más correcciones de erratas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:153
+msgid "New command-line options to control page size when exporting to SVG"
+msgstr ""
+"Opciones de línea de comandos nuevas para controlar el tama~no de página al "
+"exportar a SVG"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:154
+msgid "Support for left-to-right languages in the text tool"
+msgstr ""
+"Soporte para idiomas de escritura derecha a izquierda en la herramienta de texto"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:155
+msgid "Improvements to the circle/ellipse/arc tool"
+msgstr "Mejoras en la herramienta Círculo/elipses/arco"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:156
+msgid "Support for multi-line text when exporting to PDF+LaTeX"
+msgstr "Soporte para texto multilínea al exportar a PDF+LaTeX"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:166
+msgid "Better importing and exporting"
+msgstr "Mejor importación y exportación"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:167
+msgid "Greater stability when printing on Windows"
+msgstr "Mayor estabilidad al imprimir bajo Windows"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:168
+msgid "Improved fill and stroke HSL color selection"
+msgstr "Mejora en la selección de color HSL en Relleno y borde"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:169
+msgid "Greater stability when reverting and saving files"
+msgstr "Mayor estabilidad al revertir y guardar archivos"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:170
+msgid "An additional handle at the center of shapes"
+msgstr "Un tirador adicional en el centro de las formas"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:171
+msgid "A command line option for updating the file's DPI"
+msgstr "Una opción de línea de comandos para actualizar las PPP del archivo"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:172
+msgid "Improvements to user-defined shortcuts"
+msgstr "Mejoras en atajos definidos por el usuario"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:173
+msgid "Migration to Gitlab to make contribution easier"
+msgstr "Migración a Gitlab para facilitar la contribución"
+
+#: ../org.inkscape.Inkscape.appdata.xml.in:174
+msgid "And many more bugfixes!"
+msgstr "Y muchas más correcciones de erratas"
+
 #: ../org.inkscape.Inkscape.desktop.template:8
 msgid "Create and edit Scalable Vector Graphics images"
 msgstr "Cree y edite Gráficos Vectoriales Escalables (SVG)"
@@ -49511,129 +49838,149 @@ msgstr "medias emes"
 msgid "Half of font height"
 msgstr "La mitad de la altura de la fuente"
 
-msgid "Canvas rotation and mirroring"
-msgstr "Rotación y reflejo del lienzo"
+#~ msgid "01 Stripes 1:1"
+#~ msgstr "01 Rayas 1:1"
 
-#, fuzzy
-#~ msgid "Inkscape 1.3"
-#~ msgstr "Inkscape"
+#~ msgid "02 Stripes 1:1.5"
+#~ msgstr "02 Rayas 1:1.5"
 
-#, fuzzy
-#~ msgid "Pattern editor"
-#~ msgstr "Pegar color"
+#~ msgid "03 Stripes 1:2"
+#~ msgstr "03 Rayas 1:2"
 
-#, fuzzy
-#~ msgid "Pages margins and bleed"
-#~ msgstr "Márgenes"
+#~ msgid "04 Stripes 1:3"
+#~ msgstr "04 Rayas 1:3"
 
-#, fuzzy
-#~ msgid "Document resources dialog"
-#~ msgstr "Propiedades del _documento"
+#~ msgid "05 Stripes 1:4"
+#~ msgstr "05 Rayas 1:4"
 
-#, fuzzy
-#~ msgid "Font collections"
-#~ msgstr "Selector de tipografía"
+#~ msgid "06 Stripes 1:5"
+#~ msgstr "06 Rayas 1:5"
 
-#, fuzzy
-#~ msgid "LPE dialog user interface redesign"
-#~ msgstr "Abrir carpeta de interfaces del usuario"
+#~ msgid "07 Stripes 1:8"
+#~ msgstr "07 Rayas 1:8"
 
-#, fuzzy
-#~ msgid "Inkscape 1.2"
-#~ msgstr "Inkscape"
+#~ msgid "08 Stripes 1:10"
+#~ msgstr "08 Rayas 1:10"
 
-#, fuzzy
-#~ msgid "Multiple pages support"
-#~ msgstr "Varias paradas"
+#~ msgid "09 Stripes 1:16"
+#~ msgstr "09 Rayas 1:16"
+
+#~ msgid "12 Stripes 1:32"
+#~ msgstr "12 Rayas 1:32"
+
+#~ msgid "13 Stripes 1:64"
+#~ msgstr "13 Rayas 1:64"
+
+#~ msgid "20 Stripes 2:1"
+#~ msgstr "20 Rayas 2:1"
+
+#~ msgid "21 Stripes 4:1"
+#~ msgstr "21 Rayas 4:1"
+
+#~ msgid "Ermine"
+#~ msgstr "Armiño"
+
+#~ msgid "Active W. Call start"
+#~ msgstr "Ventana activa: iniciar llamada"
+
+#~ msgid "Call active window end"
+#~ msgstr "Cerrar llamada a ventana activa"
+
+#, c-format
+#~ msgid "<b>%d</b> images cropped"
+#~ msgstr "<b>%d</b> imágenes recortadas"
 
 #
-# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
-#, fuzzy
-#~ msgid "On-canvas alignment and snapping"
-#~ msgstr "Activar tiradores de alineación en-lienzo"
+# File: ../share/extensions/inkex/deprecated.py, line: 148
+#, c-format
+#~ msgid "%s bytes removed"
+#~ msgstr "%s bytes eliminados"
 
-#, fuzzy
-#~ msgid "Gradient editing in Fill and Stroke dialog"
+#, c-format
+#~ msgid "%s bytes added!"
+#~ msgstr "Se han añadido %s bytes."
+
+#, c-format
+#~ msgid "of <b>%d</b> objects"
+#~ msgstr "de <b>%d</b> objetos"
+
+#, c-format
+#~ msgid "%i nodes%s"
+#~ msgstr "%i nodos%s"
+
+#, c-format
+#~ msgid "with %d vertices"
+#~ msgstr "con %d vértices"
+
+#~ msgid "expander"
+#~ msgstr "expansor"
+
+#~ msgid "Convert to Dashes"
+#~ msgstr "Convertir en guiones"
+
+#~ msgid "Edge 3D"
+#~ msgstr "Borde 3D"
+
+#~ msgid "WPF"
+#~ msgstr "WPF"
+
+#~ msgid "Avalonia (>0.10.x)"
+#~ msgstr "Avalonia (>0.10.x)"
+
+#~ msgid "DrawingGroup"
+#~ msgstr "DrawingGroup"
+
+#~ msgid "DrawingImage"
+#~ msgstr "DrawingImage"
+
+#~ msgid "DrawingBrush"
+#~ msgstr "DrawingBrush"
+
+#~ msgid "DynamicResource"
+#~ msgstr "DynamicResource"
+
+#~ msgid "StaticResource"
+#~ msgstr "StaticResource"
+
+#~ msgid "Envelope"
+#~ msgstr "Envoltura"
+
+#~ msgid "Mesh"
+#~ msgstr "Malla"
+
+#~ msgid "Pattern Along Path"
+#~ msgstr "Patrón a lo largo de trayecto"
+
+#~ msgid ""
+#~ "The JPEG file format is good for photos, but it creates artifacts and "
+#~ "distortions in logos and other flat vector images. Your artwork will lose "
+#~ "visual quality and any transparency."
 #~ msgstr ""
-#~ "Desenfoque gaussiano sencillo, igual que el control deslizante en el diálogo "
-#~ "de «Relleno y borde»"
+#~ "El formato JPEG es bueno para fotos, pero crea artefactos y distorsiones en "
+#~ "logtipos y otras imágenes planas vectoriales. Su diseño perderá calidad visual "
+#~ "y transparencia."
 
-#, fuzzy
-#~ msgid "New UI for Snap settings"
-#~ msgstr "Ajustes de importación"
+#~ msgid "You put a lot of talent, time and energy into your work."
+#~ msgstr "Ha puesto mucho talento, tiempo, y energíe en su trabajo."
 
-#, fuzzy
-#~ msgid "More customization options"
-#~ msgstr "Opciones personales de trazo"
+#~ msgid ""
+#~ "Your work deserves better, so you should consider exporting to PNG or WebP "
+#~ "file formats with lossless compression instead."
+#~ msgstr ""
+#~ "Su trabajo merece lo mejor, por lo que deberá considerar exportar en formato "
+#~ "PNF o WebP con compresión sin pérdidas."
 
-#, fuzzy
-#~ msgid "Inkscape 1.1"
-#~ msgstr "Inkscape"
+#~ msgid "Barcode"
+#~ msgstr "Código de barras"
 
-#, fuzzy
-#~ msgid "Copypaste parts of paths"
-#~ msgstr "Hacer más ásperos partes de un trazado"
+#~ msgid "Extract"
+#~ msgstr "Extraer"
 
-#, fuzzy
-#~ msgid "New outline overlay mode"
-#~ msgstr "superposición de contorno"
-
-#, fuzzy
-#~ msgid "Search field in Preferences dialog"
-#~ msgstr "Exportar como SVG 1.1 según los ajustes del diálogo de Preferencias"
-
-#, fuzzy
-#~ msgid "Paste now pastes directly above selected object"
-#~ msgstr "El trazo es la media de los objetos seleccionados"
-
-#, fuzzy
-#~ msgid "Beta Extension Manager"
-#~ msgstr "Ángulo de rotación"
-
-#, fuzzy
-#~ msgid "Inkscape 1.0"
-#~ msgstr "Inkscape"
-
-#
-# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
-#, fuzzy
-#~ msgid "On-Canvas alignment of objects"
-#~ msgstr "Activar tiradores de alineación en-lienzo"
-
-#, fuzzy
-#~ msgid "Split view and X-Ray modes"
-#~ msgstr "Modo de división: Rayos X"
-
-#, fuzzy
-#~ msgid "New PNG export options"
-#~ msgstr "Opciones de exportación"
-
-#, fuzzy
-#~ msgid "New Live Path Effect (LPE) selection dialog"
-#~ msgstr "Efectos de trayecto en vivo (LPE)"
-
-#, fuzzy
-#~ msgid "Browser-compatible flowed text"
-#~ msgstr "Crear texto fluido"
-
-#, fuzzy
-#~ msgid "Python 3 support for extensions"
-#~ msgstr "Extensiones fonéticas"
-
-#, fuzzy
-#~ msgid "Improvements to the circle/ellipse/arc tool"
-#~ msgstr "Círculo/elipses/arco primer seleccionado"
-
-#, fuzzy
-#~ msgid "Improved fill and stroke HSL color selection"
-#~ msgstr "Invertir colores de relleno y trazo"
+#~ msgid "Whirl"
+#~ msgstr "Remolino"
 
 #~ msgid "Stripes 1:1 white"
 #~ msgstr "Rayas 1:1 blanco"
-
-#, fuzzy
-#~ msgid "Stripes 1:1.5"
-#~ msgstr "Rayas 1:1.5"
 
 #~ msgid "Stripes 1:1.5 white"
 #~ msgstr "Rayas 1:1.5 blanco"
@@ -49662,16 +50009,8 @@ msgstr "Rotación y reflejo del lienzo"
 #~ msgid "Stripes 1:32 white"
 #~ msgstr "Rayas 1:32 blanco"
 
-#, fuzzy
-#~ msgid "Stripes 2:1"
-#~ msgstr "Rayas 2:1"
-
 #~ msgid "Stripes 2:1 white"
 #~ msgstr "Rayas 2:1 blanco"
-
-#, fuzzy
-#~ msgid "Stripes 4:1"
-#~ msgstr "Rayas 4:1"
 
 #~ msgid "Stripes 4:1 white"
 #~ msgstr "Rayas 4:1 blanco"
@@ -49690,9 +50029,6 @@ msgstr "Rotación y reflejo del lienzo"
 
 #~ msgid "Wavy white"
 #~ msgstr "Ondulado blanco"
-
-#~ msgid "Ermine"
-#~ msgstr "Armiño"
 
 #~ msgid "Extensions"
 #~ msgstr "Extensiones"
@@ -50044,18 +50380,6 @@ msgstr "Rotación y reflejo del lienzo"
 
 #~ msgid "Link item parameter to item"
 #~ msgstr "Asociar el parámetro del elemento al elemento"
-
-#, c-format
-#~ msgid "of <b>%d</b> objects"
-#~ msgstr "de <b>%d</b> objetos"
-
-#, c-format
-#~ msgid "%i nodes%s"
-#~ msgstr "%i nodos%s"
-
-#, c-format
-#~ msgid "with %d vertices"
-#~ msgstr "con %d vértices"
 
 #~ msgid "Select a <b>symbol</b> to extract objects from."
 #~ msgstr "Seleccione un <b>símbolo</b> del que extraer objetos."
@@ -51978,9 +52302,6 @@ msgstr "Rotación y reflejo del lienzo"
 #~ "parámetros.\n"
 #~ "      "
 
-#~ msgid "Convert to Dashes"
-#~ msgstr "Convertir en guiones"
-
 #
 # File: ../share/extensions/dpi90to96.inx, line: 7
 # File: ../share/extensions/dpi96to90.inx, line: 7
@@ -51998,9 +52319,6 @@ msgstr "Rotación y reflejo del lienzo"
 
 #~ msgid "pc"
 #~ msgstr "pc"
-
-#~ msgid "Edge 3D"
-#~ msgstr "Borde 3D"
 
 #~ msgid "Path to save image:"
 #~ msgstr "Ruta y nombre de archivo para guardar la imagen:"
@@ -52131,9 +52449,6 @@ msgstr "Rotación y reflejo del lienzo"
 #~ msgid "Magnitude:"
 #~ msgstr "Magnitud:"
 
-#~ msgid "Envelope"
-#~ msgstr "Envoltura"
-
 #~ msgid ""
 #~ "This extension replaces the selection's nodes with numbered dots according to "
 #~ "the following options:\n"
@@ -52176,9 +52491,6 @@ msgstr "Rotación y reflejo del lienzo"
 
 #~ msgid "Pre-Process File Save As..."
 #~ msgstr "Guardar archivo pre-proceso como..."
-
-#~ msgid "Barcode"
-#~ msgstr "Código de barras"
 
 #~ msgid "See http://www.denso-wave.com/qrcode/index-e.html for details"
 #~ msgstr "Más información en http://www.denso-wave.com/qrcode/index-e.html"
@@ -52373,9 +52685,6 @@ msgstr "Rotación y reflejo del lienzo"
 #~ msgid "empty video"
 #~ msgstr "vídeo vacío"
 
-#~ msgid "Extract"
-#~ msgstr "Extraer"
-
 #
 # File: ../share/extensions/web_interactive_mockup.inx, line: 22
 #~ msgid "This effect adds interaction in a viewer like a web browser."
@@ -52393,9 +52702,6 @@ msgstr "Rotación y reflejo del lienzo"
 
 #~ msgid "When selecting object the last one is the one we jump to."
 #~ msgstr "Al seleccionar objetos, el último es aquel al que saltamos."
-
-#~ msgid "Whirl"
-#~ msgstr "Remolino"
 
 #~ msgid ""
 #~ "An Open Source vector graphics editor, with capabilities similar to "
@@ -53114,11 +53420,11 @@ msgstr "Rotación y reflejo del lienzo"
 #~ "2. Copie la carpeta «serial» (se encuentra dentro de la carpeta extraída)"
 
 #~ msgid ""
-#~ "   into the following Inkscape folder: C:\\[Program files]\\inkscape\\python"
-#~ "\\Lib\\"
+#~ "   into the following Inkscape folder: C:\\[Program "
+#~ "files]\\inkscape\\python\\Lib\\"
 #~ msgstr ""
-#~ "    a la siguiente carpeta de Inkscape: C:\\[Archivos de programa]\\inkscape"
-#~ "\\python\\Lib\\"
+#~ "    a la siguiente carpeta de Inkscape: C:\\[Archivos de "
+#~ "programa]\\inkscape\\python\\Lib\\"
 
 #~ msgid "3. Close and restart Inkscape."
 #~ msgstr "3. Cierre y reinicie Inkscape."
@@ -54280,8 +54586,8 @@ msgstr "Rotación y reflejo del lienzo"
 #~ ">Guardar como->.ps») y «Archivo->Importar...»."
 
 #~ msgid ""
-#~ "Document has no layers! Add at least one layer using layers panel (Ctrl+Shift"
-#~ "+L)"
+#~ "Document has no layers! Add at least one layer using layers panel "
+#~ "(Ctrl+Shift+L)"
 #~ msgstr ""
 #~ "El documento no tiene capas. Añada por lo menos una capa mediante el panel de "
 #~ "capas (Ctrl+Mayús+L)"
@@ -54314,8 +54620,8 @@ msgstr "Rotación y reflejo del lienzo"
 #~ "pestaña «Herramientas»."
 
 #~ msgid ""
-#~ "Warning: One or more paths do not have 'd' parameter, try to Ungroup (Ctrl"
-#~ "+Shift+G) and Object to Path (Ctrl+Shift+C)!"
+#~ "Warning: One or more paths do not have 'd' parameter, try to Ungroup "
+#~ "(Ctrl+Shift+G) and Object to Path (Ctrl+Shift+C)!"
 #~ msgstr ""
 #~ "Atención: Uno o más trayectos no tienen el parámetro «d», intente desagrupar "
 #~ "(Ctrl+Mayús+G) y hacer «Objeto a trayecto» (Ctrl+Mayús+C)."
@@ -58114,83 +58420,6 @@ msgstr "Rotación y reflejo del lienzo"
 #~ msgctxt "Palette"
 #~ msgid "beaver background"
 #~ msgstr "Eliminar color de fondo"
-
-#, fuzzy, c-format
-#~| msgid "<b>%d</b> paths simplified."
-#~ msgid "<b>%d</b> images cropped"
-#~ msgstr "<b>%d</b> trayectos simplificados."
-
-#
-# File: ../share/extensions/inkex/deprecated.py, line: 148
-#, fuzzy, c-format
-#~| msgid "{} has been removed"
-#~ msgid "%s bytes removed"
-#~ msgstr "{} ha sido eliminado"
-
-#, c-format
-#~ msgid "%s bytes added!"
-#~ msgstr "Se han añadido %s bytes."
-
-#, fuzzy
-#~| msgid "Render"
-#~ msgid "expander"
-#~ msgstr "Generar"
-
-#, fuzzy
-#~| msgid "PDF"
-#~ msgid "WPF"
-#~ msgstr "PDF"
-
-#, fuzzy
-#~| msgid "Drawing"
-#~ msgid "DrawingGroup"
-#~ msgstr "Dibujo"
-
-#, fuzzy
-#~| msgid "Drawing mode"
-#~ msgid "DrawingImage"
-#~ msgstr "Modo de dibujo"
-
-#, fuzzy
-#~| msgid "Drawing"
-#~ msgid "DrawingBrush"
-#~ msgstr "Dibujo"
-
-#, fuzzy
-#~| msgctxt "path effect"
-#~| msgid "Dynamic stroke"
-#~ msgid "DynamicResource"
-#~ msgstr "Trazo dinámico"
-
-#, fuzzy
-#~| msgid "Pattern source:"
-#~ msgid "StaticResource"
-#~ msgstr "Origen del patrón:"
-
-#~ msgid "Mesh"
-#~ msgstr "Malla"
-
-#~ msgid "Pattern Along Path"
-#~ msgstr "Patrón a lo largo de trayecto"
-
-#~ msgid ""
-#~ "The JPEG file format is good for photos, but it creates artifacts and "
-#~ "distortions in logos and other flat vector images. Your artwork will lose "
-#~ "visual quality and any transparency."
-#~ msgstr ""
-#~ "El formato JPEG es bueno para fotos, pero crea artefactos y distorsiones en "
-#~ "logtipos y otras imágenes planas vectoriales. Su diseño perderá calidad visual "
-#~ "y transparencia."
-
-#~ msgid "You put a lot of talent, time and energy into your work."
-#~ msgstr "Ha puesto mucho talento, tiempo, y energíe en su trabajo."
-
-#~ msgid ""
-#~ "Your work deserves better, so you should consider exporting to PNG or WebP "
-#~ "file formats with lossless compression instead."
-#~ msgstr ""
-#~ "Su trabajo merece lo mejor, por lo que deberá considerar exportar en formato "
-#~ "PNF o WebP con compresión sin pérdidas."
 
 #~ msgid "Render thin lines visibly"
 #~ msgstr "Muestra líneas delgadas de forma visible"
