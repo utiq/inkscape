@@ -65,6 +65,7 @@
 #include "ui/tools/box3d-tool.h"
 #include "ui/tools/select-tool.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 
 #include "widgets/desktop-widget.h"
 
@@ -75,7 +76,7 @@
 namespace Inkscape { namespace XML { class Node; }}
 
 // Callback declarations
-static bool _drawing_handler (GdkEvent *event, Inkscape::DrawingItem *item, SPDesktop *desktop);
+static bool _drawing_handler(Inkscape::CanvasEvent const &event, Inkscape::DrawingItem *item, SPDesktop *desktop);
 static void _reconstruction_start(SPDesktop * desktop);
 static void _reconstruction_finish(SPDesktop * desktop);
 
@@ -1411,9 +1412,10 @@ SPDesktop::onDocumentFilenameSet (gchar const* filename)
 /**
  * Calls event handler of current event context.
  */
-static bool
-_drawing_handler (GdkEvent *event, Inkscape::DrawingItem *drawing_item, SPDesktop *desktop)
+static bool _drawing_handler(Inkscape::CanvasEvent const &canvas_event, Inkscape::DrawingItem *drawing_item, SPDesktop *desktop)
 {
+    auto event = canvas_event.original();
+
     if (event->type == GDK_KEY_PRESS && Inkscape::UI::Tools::get_latin_keyval(&event->key) == GDK_KEY_space &&
         desktop->event_context->is_space_panning())
     {

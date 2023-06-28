@@ -31,6 +31,7 @@
 #include "ui/tools/tool-base.h"
 #include "ui/tools/node-tool.h"
 #include "ui/widget/canvas.h" // autoscroll
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 using Inkscape::EventType;
@@ -130,8 +131,10 @@ void SPKnot::selectKnot(bool select)
     setFlag(SP_KNOT_SELECTED, select);
 }
 
-bool SPKnot::eventHandler(GdkEvent *event)
+bool SPKnot::eventHandler(Inkscape::CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
+
     /* Run client universal event handler, if present */
     bool consumed = event_signal.emit(this, event);
     if (consumed) {

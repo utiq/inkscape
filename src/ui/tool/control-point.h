@@ -359,8 +359,6 @@ private:
 
     void operator=(ControlPoint const &other);
 
-    static bool _event_handler(GdkEvent *event, ControlPoint *point);
-
     static void _setMouseover(ControlPoint *, unsigned state);
 
     static void _clearMouseover();

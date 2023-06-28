@@ -27,6 +27,7 @@
 #include "ui/tool/event-utils.h"
 #include "ui/tool/transform-handle-set.h"
 #include "ui/widget/canvas.h" // autoscroll
+#include "ui/widget/events/canvas-event.h"
 
 namespace Inkscape {
 namespace UI {
@@ -114,7 +115,6 @@ ControlPoint::~ControlPoint()
         _clearMouseover();
     }
 
-    //g_signal_handler_disconnect(G_OBJECT(_canvas_item_ctrl), _event_handler_connection);
     _event_handler_connection.disconnect();
     _canvas_item_ctrl->hide();
 }
@@ -122,10 +122,13 @@ ControlPoint::~ControlPoint()
 void ControlPoint::_commonInit()
 {
     _canvas_item_ctrl->set_position(_position);
-    _event_handler_connection =
-        _canvas_item_ctrl->connect_event(sigc::bind(sigc::ptr_fun(_event_handler), this));
-    // _event_handler_connection = g_signal_connect(G_OBJECT(_canvas_item_ctrl), "event",
-    //                                              G_CALLBACK(_event_handler), this);
+    _event_handler_connection = _canvas_item_ctrl->connect_event([this] (CanvasEvent const &event) {
+        // re-routes events into the virtual function   TODO: Refactor this nonsense.
+        if (!_desktop) {
+            return false;
+        }
+        return _eventHandler(_desktop->event_context, event.original());
+    });
 }
 
 void ControlPoint::setPosition(Geom::Point const &pos)
@@ -184,15 +187,6 @@ void ControlPoint::_setControlType(Inkscape::CanvasItemCtrlType type)
 void ControlPoint::_setAnchor(SPAnchorType anchor)
 {
 //     g_object_set(_canvas_item_ctrl, "anchor", anchor, nullptr);
-}
-
-// re-routes events into the virtual function   TODO: Refactor this nonsense.
-bool ControlPoint::_event_handler(GdkEvent *event, ControlPoint *point)
-{
-    if ((point == nullptr) || (point->_desktop == nullptr)) {
-        return false;
-    }
-    return point->_eventHandler(point->_desktop->event_context, event);
 }
 
 // main event callback, which emits all other callbacks.

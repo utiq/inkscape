@@ -52,6 +52,7 @@
 #include "ui/tools/node-tool.h"
 #include "ui/tools/select-tool.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 
 #include "widgets/desktop-widget.h"
 
@@ -65,8 +66,9 @@ static void init_extended();
 
 /* Root canvas item handler */
 
-bool sp_desktop_root_handler(GdkEvent *event, SPDesktop *desktop)
+bool sp_desktop_root_handler(Inkscape::CanvasEvent const &canvas_event, SPDesktop *desktop)
 {
+    auto event = canvas_event.original();
 #ifdef EVENT_DEBUG
     ui_dump_event(reinterpret_cast<GdkEvent *>(event), "sp_desktop_root_handler");
 #endif
@@ -98,7 +100,13 @@ static SPGuideDragType drag_type = SP_DRAG_NONE;
 // Min distance from anchor to initiate rotation, measured in screenpixels
 #define tol 40.0
 
-bool sp_dt_guide_event(GdkEvent *event, Inkscape::CanvasItemGuideLine *guide_item, SPGuide *guide)
+bool sp_dt_guide_event(Inkscape::CanvasEvent const &canvas_event, Inkscape::CanvasItemGuideLine *guide_item, SPGuide *guide)
+{
+    auto event = canvas_event.original();
+    return sp_dt_guide_event_gdkevent(event, guide_item, guide);
+}
+
+bool sp_dt_guide_event_gdkevent(GdkEvent *event, Inkscape::CanvasItemGuideLine *guide_item, SPGuide *guide)
 {
 #ifdef EVENT_DEBUG
     ui_dump_event(reinterpret_cast<GdkEvent *>(event), "sp_dt_guide_event");

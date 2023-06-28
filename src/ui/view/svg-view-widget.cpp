@@ -36,6 +36,7 @@
 #include "object/sp-root.h"
 
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 
 #include "util/units.h"
 
@@ -48,8 +49,10 @@ namespace View {
  */
 // This hasn't worked since at least 0.48. It should result in a cursor change over <a></a> links.
 // There should be a better way of doing this. See note in canvas-arena.cpp.
-static bool _drawing_handler(GdkEvent *event, Inkscape::DrawingItem *drawing_item, SVGViewWidget *svgview)
+static bool _drawing_handler(CanvasEvent const &canvas_event, Inkscape::DrawingItem *drawing_item, SVGViewWidget *svgview)
 {
+    auto event = canvas_event.original();
+
     static gdouble x, y;
     static gboolean active = FALSE;
     SPEvent spev;

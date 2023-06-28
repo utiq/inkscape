@@ -23,6 +23,7 @@
 #include "canvas.h"
 
 #include "color.h"          // Background color
+#include "desktop-events.h"
 #include "desktop.h"
 #include "document.h"
 #include "preferences.h"
@@ -43,6 +44,11 @@
 #include "display/control/canvas-item-group.h"
 #include "display/control/snap-indicator.h"
 #include "events/canvas-event.h"
+
+// Hack: Needed for the workaround that closes the command palette.
+#include "ui/dialog/command-palette.h"
+#include "ui/widget/canvas-grid.h"
+#include "widgets/desktop-widget.h"
 
 #include "ui/tools/tool-base.h"      // Default cursor
 
@@ -903,6 +909,16 @@ bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, do
     _state = gdkevent->button.state;
     d->last_mouse = Geom::IntPoint(x, y);
 
+    grab_focus();
+
+    // Close the command palette if it loses focus; it can't do it itself since signal_focus() appears to be broken.
+    // Todo: (GTK4) Try to get rid of this using GtkEventControllerFocus.
+    _desktop->getDesktopWidget()->get_canvas_grid()->getCommandPalette()->close();
+
+    if (gdkevent->button.button == 3) {
+        _desktop->getCanvasDrawing()->set_sticky(_state & GDK_SHIFT_MASK);
+    }
+
     // Drag the split view controller.
     if (_split_mode == Inkscape::SplitMode::SPLIT && _hover_direction != Inkscape::SplitDirection::NONE) {
         if (n_press == 1) {
@@ -1390,7 +1406,7 @@ bool CanvasPrivate::emit_event(CanvasEvent &event)
 
         // Propagate the event up the canvas item hierarchy until handled.
         while (item) {
-            if (item->handle_event(event.original())) return true;
+            if (item->handle_event(event)) return true;
             item = item->get_parent();
         }
     }

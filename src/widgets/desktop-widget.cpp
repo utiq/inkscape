@@ -627,41 +627,6 @@ void SPDesktopWidget::updateNamedview()
     updateTitle( desktop->doc()->getDocumentName() );
 }
 
-/**
- * Callback to handle desktop widget event.
- */
-gint
-SPDesktopWidget::event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget *dtw)
-{
-    if (event->type == GDK_BUTTON_PRESS) {
-        // defocus any spinbuttons
-        dtw->_canvas->grab_focus();
-    }
-
-    if ((event->type == GDK_BUTTON_PRESS) && (event->button.button == 3)) {
-        if (event->button.state & GDK_SHIFT_MASK) {
-            dtw->desktop->getCanvasDrawing()->set_sticky(true);
-        } else {
-            dtw->desktop->getCanvasDrawing()->set_sticky(false);
-        }
-    }
-
-    {
-        // The key press/release events need to be passed to desktop handler explicitly,
-        // because otherwise the event contexts only receive key events when the mouse cursor
-        // is over the canvas. This redirection is only done for key events and only if there's no
-        // current item on the canvas, because item events and all mouse events are caught
-        // and passed on by the canvas acetate (I think). --bb
-
-        if ((event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE)
-            && !dtw->_canvas->get_current_canvas_item()) {
-            return (gint)sp_desktop_root_handler (event, dtw->desktop);
-        }
-    }
-
-    return FALSE;
-}
-
 void
 SPDesktopWidget::update_guides_lock()
 {

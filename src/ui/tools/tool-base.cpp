@@ -1646,7 +1646,7 @@ void ToolBase::process_delayed_snap_event()
         auto guideline = reinterpret_cast<CanvasItemGuideLine*>(_dse->getItem());
         auto guide     = reinterpret_cast<SPGuide*>            (_dse->getItem2());
         if (guideline && guide) {
-            sp_dt_guide_event(_dse->getEvent(), guideline, guide);
+            sp_dt_guide_event_gdkevent(_dse->getEvent(), guideline, guide);
         }
         break;
     }

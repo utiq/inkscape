@@ -29,9 +29,6 @@
 #include "ui/view/view-widget.h"
 #include "display/control/canvas-item-ptr.h"
 
-// forward declaration
-typedef struct _EgeColorProfTracker EgeColorProfTracker;
-
 class InkscapeWindow;
 struct SPCanvasItem;
 class SPDocument;
@@ -163,8 +160,6 @@ private:
     Inkscape::UI::Widget::PageSelector* _page_selector;
 
 public:
-    EgeColorProfTracker* _tracker;
-
     void setMessage(Inkscape::MessageType type, gchar const *message);
     void viewSetPosition (Geom::Point p);
     void letZoomGrabFocus();
@@ -235,7 +230,6 @@ private:
     void apply_ctrlbar_settings();
 
     static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom::Point &normal);
-    static gint event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget *dtw);
 
 public: // Move to CanvasGrid
     bool on_ruler_box_button_press_event(GdkEventButton *event, Gtk::Widget *widget, bool horiz);

@@ -227,6 +227,85 @@ public:
     GdkScrollDirection direction() const { return _original->scroll.direction; }
 };
 
+namespace canvas_event_detail {
+
+template <typename E>
+E &cast_helper(CanvasEvent &event)
+{
+    return static_cast<E &>(event);
+}
+
+template <typename E>
+E const &cast_helper(CanvasEvent const &event)
+{
+    return static_cast<E const &>(event);
+}
+
+template <typename E>
+E &&cast_helper(CanvasEvent &&event)
+{
+    return static_cast<E &&>(event);
+}
+
+template <typename... Fs>
+struct Overloaded : Fs...
+{
+    using Fs::operator()...;
+};
+
+// Todo: Delete in C++20.
+template <typename... Fs>
+Overloaded(Fs...) -> Overloaded<Fs...>;
+
+} // namespace canvas_event_detail
+
+/**
+ * @brief Perform pattern-matching on a CanvasEvent.
+ *
+ * This function takes an event and a list of function objects,
+ * and passes the event to the function object whose argument
+ * type best matches the dynamic type of the event.
+ *
+ * @arg event The CanvasEvent to inspect.
+ * @arg funcs A list of function objects, each taking a single argument.
+ */
+template <typename E, typename... Fs>
+void inspect_event(E &&event, Fs... funcs)
+{
+    using namespace canvas_event_detail;
+
+    auto overloaded = Overloaded{funcs...};
+
+    switch (event.type()) {
+        case EventType::ENTER:
+            overloaded(cast_helper<EnterEvent>(std::forward<E>(event)));
+            break;
+        case EventType::LEAVE:
+            overloaded(cast_helper<LeaveEvent>(std::forward<E>(event)));
+            break;
+        case EventType::MOTION:
+            overloaded(cast_helper<MotionEvent>(std::forward<E>(event)));
+            break;
+        case EventType::BUTTON_PRESS:
+            overloaded(cast_helper<ButtonPressEvent>(std::forward<E>(event)));
+            break;
+        case EventType::BUTTON_RELEASE:
+            overloaded(cast_helper<ButtonReleaseEvent>(std::forward<E>(event)));
+            break;
+        case EventType::KEY_PRESS:
+            overloaded(cast_helper<KeyPressEvent>(std::forward<E>(event)));
+            break;
+        case EventType::KEY_RELEASE:
+            overloaded(cast_helper<KeyReleaseEvent>(std::forward<E>(event)));
+            break;
+        case EventType::SCROLL:
+            overloaded(cast_helper<ScrollEvent>(std::forward<E>(event)));
+            break;
+        default:
+            break;
+    }
+}
+
 } // namespace Inkscape
 
 #endif // INKSCAPE_UI_WIDGET_EVENTS_CANVAS_EVENT_H

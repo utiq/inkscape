@@ -32,6 +32,7 @@
 #include "ui/dialog/command-palette.h"
 #include "ui/icon-loader.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 #include "ui/widget/canvas-notice.h"
 #include "ui/widget/ink-ruler.h"
 #include "io/resource.h"
@@ -52,7 +53,6 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     _canvas->set_hexpand(true);
     _canvas->set_vexpand(true);
     _canvas->set_can_focus(true);
-    _canvas->signal_event().connect(sigc::mem_fun(*this, &CanvasGrid::SignalEvent)); // TEMP
 
     // Command palette
     _command_palette = std::make_unique<Inkscape::UI::Dialog::CommandPalette>();
@@ -372,29 +372,6 @@ CanvasGrid::on_size_allocate(Gtk::Allocation& allocation)
         _allocation = allocation;
         UpdateRulers();
     }
-}
-
-// This belong in Canvas class
-bool
-CanvasGrid::SignalEvent(GdkEvent *event)
-{
-    if (event->type == GDK_BUTTON_PRESS) {
-        _canvas->grab_focus();
-        _command_palette->close();
-    }
-
-    if (event->type == GDK_BUTTON_PRESS && event->button.button == 3) {
-        _dtw->desktop->getCanvasDrawing()->set_sticky(event->button.state & GDK_SHIFT_MASK);
-    }
-
-    // Pass keyboard events back to the desktop root handler so TextTool can work
-    if ((event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE)
-        && !_canvas->get_current_canvas_item())
-    {
-        return sp_desktop_root_handler(event, _dtw->desktop);
-    }
-    
-    return false;
 }
 
 // TODO Add actions so we can set shortcuts.

@@ -103,7 +103,8 @@
 
 #include "ui/icon-names.h"
 #include "ui/knot/knot.h"
-#include "ui/widget/canvas.h"  // Enter events
+#include "ui/widget/canvas.h"  // Enter events hack
+#include "ui/widget/events/canvas-event.h"
 
 #include "xml/node.h"
 
@@ -927,8 +928,9 @@ void ConnectorTool::_finish()
 }
 
 
-static bool cc_generic_knot_handler(GdkEvent *event, SPKnot *knot)
+static bool cc_generic_knot_handler(CanvasEvent const &canvas_event, SPKnot *knot)
 {
+    auto event = canvas_event.original();
     g_assert (knot != nullptr);
 
     //g_object_ref(knot);
@@ -977,10 +979,9 @@ static bool cc_generic_knot_handler(GdkEvent *event, SPKnot *knot)
     return consumed;
 }
 
-
-static bool endpt_handler(GdkEvent *event, ConnectorTool *cc)
+static bool endpt_handler(CanvasEvent const &canvas_event, ConnectorTool *cc)
 {
-    //g_assert( SP_IS_CONNECTOR_CONTEXT(cc) );
+    auto event = canvas_event.original();
 
     gboolean consumed = FALSE;
 
