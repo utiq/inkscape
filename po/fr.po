@@ -9048,7 +9048,7 @@ msgstr ""
 "Découpe un ou plusieurs objets superposés suivant tous les chemins possibles"
 
 #: ../src/actions/actions-paths.cpp:236
-#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgctxt "Path flatten"
 msgid "Flatten"
 msgstr "Aplanir"
 
@@ -38244,6 +38244,10 @@ msgid ""
 msgstr ""
 "Appliquer cet effet, et les effets plus hauts, au chemin. Ceci les enlèvera de la "
 "pile."
+
+#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgid "Flatten"
+msgstr "Aplanir"
 
 #: ../share/ui/dialog-livepatheffect-item.glade:45
 msgid "Use the current values as custom defaults for this LPE"
