@@ -255,7 +255,7 @@ bool SPKnot::eventHandler(Inkscape::CanvasEvent const &canvas_event)
                 grabbed_signal.emit(this, event->button.state);
             }
 
-            desktop->event_context->snap_delay_handler(nullptr, this, reinterpret_cast<GdkEventMotion*>(event),
+            desktop->event_context->snap_delay_handler(nullptr, this, static_cast<Inkscape::MotionEvent const &>(canvas_event),
                                                        Inkscape::UI::Tools::DelayedSnapEvent::KNOT_HANDLER);
             sp_knot_handler_request_position(event, this);
             moved = true;

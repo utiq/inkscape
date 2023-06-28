@@ -127,7 +127,7 @@ void ControlPoint::_commonInit()
         if (!_desktop) {
             return false;
         }
-        return _eventHandler(_desktop->event_context, event.original());
+        return _eventHandler(_desktop->event_context, event);
     });
 }
 
@@ -190,15 +190,11 @@ void ControlPoint::_setAnchor(SPAnchorType anchor)
 }
 
 // main event callback, which emits all other callbacks.
-bool ControlPoint::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event)
+bool ControlPoint::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
     // NOTE the static variables below are shared for all points!
     // TODO handle clicks and drags from other buttons too
-
-    if (event == nullptr)
-    {
-        return false;
-    }
     
     if (event_context == nullptr)
     {
@@ -274,7 +270,7 @@ bool ControlPoint::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, G
 
                 _desktop->getCanvas()->enable_autoscroll();
                 _desktop->set_coordinate_status(_position);
-                event_context->snap_delay_handler(nullptr, this, &event->motion,
+                event_context->snap_delay_handler(nullptr, this, static_cast<MotionEvent const &>(canvas_event),
                                                   Inkscape::UI::Tools::DelayedSnapEvent::CONTROL_POINT_HANDLER);
             }
             return true;

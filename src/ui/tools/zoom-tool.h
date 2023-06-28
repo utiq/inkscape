@@ -23,15 +23,16 @@ namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-class ZoomTool : public ToolBase {
+class ZoomTool : public ToolBase
+{
 public:
     ZoomTool(SPDesktop *desktop);
     ~ZoomTool() override;
 
-    bool root_handler(GdkEvent *event) override;
+    bool root_handler(CanvasEvent const &event) override;
 
 private:
-    bool escaped;
+    bool escaped = false;
 };
 
 }

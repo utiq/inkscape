@@ -23,16 +23,16 @@ class BooleanBuilder;
 namespace UI {
 namespace Tools {
 
-class InteractiveBooleansTool : public ToolBase {
+class InteractiveBooleansTool : public ToolBase
+{
 public:
-
     InteractiveBooleansTool(SPDesktop *desktop);
     ~InteractiveBooleansTool() override;
 
-    void switching_away(const std::string &new_tool) override;
+    void switching_away(std::string const &new_tool) override;
 
     // Preferences set
-    void set(const Inkscape::Preferences::Entry& val) override;
+    void set(Preferences::Entry const &val) override;
 
     // Undo/redo catching
     bool catch_undo(bool redo) override;
@@ -41,10 +41,11 @@ public:
     bool is_ready() const override;
 
     // Event functions
-    bool root_handler(GdkEvent* event) override;
+    bool root_handler(CanvasEvent const &event) override;
 
     void shape_commit();
     void shape_cancel();
+
 private:
     void update_status();
     void change_mode(bool setup);

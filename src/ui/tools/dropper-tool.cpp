@@ -28,7 +28,6 @@
 #include "style.h"
 #include "page-manager.h"
 
-#include "display/curve.h"
 #include "display/drawing.h"
 #include "display/control/canvas-item-bpath.h"
 #include "display/control/canvas-item-drawing.h"
@@ -43,6 +42,7 @@
 #include "ui/icon-names.h"
 #include "ui/tools/dropper-tool.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 
@@ -108,7 +108,9 @@ guint32 DropperTool::get_color(bool invert, bool non_dropping) {
        (pick == SP_DROPPER_PICK_ACTUAL && setalpha) ? a : 1.0);
 }
 
-bool DropperTool::root_handler(GdkEvent* event) {
+bool DropperTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     int ret = FALSE;
@@ -371,7 +373,7 @@ bool DropperTool::root_handler(GdkEvent* event) {
     window->set_cursor(cursor);
 
     if (!ret) {
-    	ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;

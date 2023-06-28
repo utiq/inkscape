@@ -60,6 +60,7 @@
 
 #include "ui/icon-names.h"
 #include "ui/toolbar/tweak-toolbar.h"
+#include "ui/widget/events/canvas-event.h"
 
 
 using Inkscape::DocumentUndo;
@@ -136,9 +137,9 @@ static bool is_transform_mode (gint mode)
             mode == TWEAK_MODE_MORELESS);
 }
 
-static bool is_color_mode (gint mode)
+static bool is_color_mode(gint mode)
 {
-    return (mode == TWEAK_MODE_COLORPAINT || mode == TWEAK_MODE_COLORJITTER || mode == TWEAK_MODE_BLUR);
+    return mode == TWEAK_MODE_COLORPAINT || mode == TWEAK_MODE_COLORJITTER || mode == TWEAK_MODE_BLUR;
 }
 
 void TweakTool::update_cursor (bool with_shift) {
@@ -1115,7 +1116,9 @@ sp_tweak_switch_mode_temporarily (TweakTool *tc, gint mode, bool with_shift)
     tc->update_cursor(with_shift);
 }
 
-bool TweakTool::root_handler(GdkEvent* event) {
+bool TweakTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     gint ret = FALSE;
 
     switch (event->type) {
@@ -1459,7 +1462,7 @@ bool TweakTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-        ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;

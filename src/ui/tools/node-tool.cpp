@@ -51,6 +51,7 @@
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::Modifiers::Modifier;
 
@@ -424,7 +425,9 @@ void NodeTool::selection_changed(Inkscape::Selection *sel) {
     // _desktop->updateNow();
 }
 
-bool NodeTool::root_handler(GdkEvent* event) {
+bool NodeTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     /* things to handle here:
      * 1. selection of items
      * 2. passing events to manipulators
@@ -651,12 +654,13 @@ bool NodeTool::root_handler(GdkEvent* event) {
     }
     // we really dont want to stop any node operation we want to success all even the time consume it
 
-    return ToolBase::root_handler(event);
+    return ToolBase::root_handler(canvas_event);
 }
 
-bool NodeTool::item_handler(SPItem *item, GdkEvent *event)
+bool NodeTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
 {
-    bool ret = ToolBase::item_handler(item, event);
+    auto event = canvas_event.original();
+    bool ret = ToolBase::item_handler(item, canvas_event);
 
     // Node shape editors are handled differently than shape tools
     if (!ret && event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
@@ -673,6 +677,7 @@ bool NodeTool::item_handler(SPItem *item, GdkEvent *event)
             }
         }
     }
+
     return ret;
 }
 

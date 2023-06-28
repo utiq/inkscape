@@ -341,8 +341,9 @@ static void cc_deselect_handle(SPKnot* knot)
     knot->updateCtrl();
 }
 
-bool ConnectorTool::item_handler(SPItem* item, GdkEvent* event)
+bool ConnectorTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
     bool ret = false;
 
     Geom::Point p(event->button.x, event->button.y);
@@ -396,8 +397,9 @@ bool ConnectorTool::item_handler(SPItem* item, GdkEvent* event)
     return ret;
 }
 
-bool ConnectorTool::root_handler(GdkEvent* event)
+bool ConnectorTool::root_handler(CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
     bool ret = false;
 
     switch (event->type) {
@@ -422,12 +424,11 @@ bool ConnectorTool::root_handler(GdkEvent* event)
     }
 
     if (!ret) {
-        ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;
 }
-
 
 bool ConnectorTool::_handleButtonPress(GdkEventButton const &bevent)
 {
@@ -444,9 +445,8 @@ bool ConnectorTool::_handleButtonPress(GdkEventButton const &bevent)
 
             Geom::Point const event_w(bevent.x, bevent.y);
 
-            this->xp = bevent.x;
-            this->yp = bevent.y;
-            this->within_tolerance = true;
+            xyp = { (int)bevent.x, (int)bevent.y };
+            within_tolerance = true;
 
             Geom::Point const event_dt = _desktop->w2d(event_w);
 
@@ -542,10 +542,10 @@ bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
 
     Geom::Point const event_w(mevent.x, mevent.y);
 
-    if (this->within_tolerance) {
-        this->tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
-        if ( ( abs( (gint) mevent.x - this->xp ) < this->tolerance ) &&
-             ( abs( (gint) mevent.y - this->yp ) < this->tolerance ) ) {
+    if (within_tolerance) {
+        tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
+        if ( ( abs( (gint) mevent.x - this->xyp.x() ) < this->tolerance ) &&
+             ( abs( (gint) mevent.y - this->xyp.y() ) < this->tolerance ) ) {
             return false;   // Do not drag if we're within tolerance from origin.
         }
     }

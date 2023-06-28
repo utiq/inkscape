@@ -18,7 +18,6 @@
 #include <2geom/bezier-utils.h>
 
 #include "desktop.h"
-#include "multi-path-manipulator.h"
 #include "snap.h"
 
 #include "display/control/canvas-item-group.h"
@@ -28,8 +27,8 @@
 #include "ui/tool/event-utils.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
-#include "ui/widget/canvas.h"
 #include "ui/modifiers.h"
+#include "ui/widget/events/canvas-event.h"
 
 namespace {
 
@@ -353,10 +352,11 @@ char const *Handle::handle_type_to_localized_string(NodeType type)
     }
 }
 
-bool Handle::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event)
+bool Handle::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &canvas_event)
 {
-    switch (event->type)
-    {
+    auto event = canvas_event.original();
+
+    switch (event->type) {
     case GDK_KEY_PRESS:
 
         switch (shortcut_key(event->key))
@@ -423,7 +423,7 @@ bool Handle::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEven
         break;
     }
 
-    return ControlPoint::_eventHandler(event_context, event);
+    return ControlPoint::_eventHandler(event_context, canvas_event);
 }
 
 // this function moves the handle and its opposite to the position specified by DEFAULT_START_POWER
@@ -1146,8 +1146,9 @@ NodeType Node::parse_nodetype(char x)
     }
 }
 
-bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event)
+bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
     int dir = 0;
     int state = 0;
 
@@ -1194,7 +1195,7 @@ bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent 
         return true;
     }
 
-    return ControlPoint::_eventHandler(event_context, event);
+    return ControlPoint::_eventHandler(event_context, canvas_event);
 }
 
 void Node::_linearGrow(int dir)

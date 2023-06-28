@@ -44,7 +44,8 @@ namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-class NodeTool : public ToolBase {
+class NodeTool : public ToolBase
+{
 public:
     NodeTool(SPDesktop *desktop);
     ~NodeTool() override;
@@ -57,10 +58,11 @@ public:
     bool edit_clipping_paths = false;
     bool edit_masks = false;
 
-    void set(const Inkscape::Preferences::Entry& val) override;
-    bool root_handler(GdkEvent* event) override;
-    bool item_handler(SPItem *item, GdkEvent *event) override;
+    void set(Preferences::Entry const &val) override;
+    bool root_handler(CanvasEvent const &event) override;
+    bool item_handler(SPItem *item, CanvasEvent const &event) override;
     void deleteSelected();
+
 private:
     Inkscape::Rubberband *get_rubberband() const;
 
@@ -95,13 +97,14 @@ private:
     void update_tip(GdkEvent *event);
     void handleControlUiStyleChange();
 };
+
 void sp_update_helperpath(SPDesktop *desktop);
-}
 
 }
 }
+}
 
-#endif
+#endif // SEEN_UI_TOOL_NODE_TOOL_H
 
 /*
   Local Variables:

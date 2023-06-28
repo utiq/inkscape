@@ -38,6 +38,7 @@
 
 #include "ui/icon-names.h"
 #include "ui/shape-editor.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 
@@ -117,7 +118,9 @@ void SpiralTool::set(const Inkscape::Preferences::Entry& val) {
     }
 }
 
-bool SpiralTool::root_handler(GdkEvent* event) {
+bool SpiralTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     static gboolean dragging;
 
     Inkscape::Selection *selection = _desktop->getSelection();
@@ -146,9 +149,9 @@ bool SpiralTool::root_handler(GdkEvent* event) {
 
         case GDK_MOTION_NOTIFY:
             if (dragging && (event->motion.state & GDK_BUTTON1_MASK)) {
-                if ( this->within_tolerance
-                     && ( abs( (gint) event->motion.x - this->xp ) < this->tolerance )
-                     && ( abs( (gint) event->motion.y - this->yp ) < this->tolerance ) ) {
+                if ( within_tolerance
+                    && ( abs( (gint) event->motion.x - this->xyp.x() ) < this->tolerance )
+                    && ( abs( (gint) event->motion.y - this->xyp.y() ) < this->tolerance ) ) {
                     break; // do not drag if we're within tolerance from origin
                 }
                 // Once the user has moved farther than tolerance from the original location
@@ -180,7 +183,7 @@ bool SpiralTool::root_handler(GdkEvent* event) {
             break;
 
         case GDK_BUTTON_RELEASE:
-            this->xp = this->yp = 0;
+            xyp = {};
             if (event->button.button == 1) {
                 dragging = FALSE;
                 this->discard_delayed_snap_event();
@@ -287,7 +290,7 @@ bool SpiralTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-    	ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;
@@ -383,10 +386,9 @@ void SpiralTool::cancel() {
         spiral->deleteObject();
     }
 
-    this->within_tolerance = false;
-    this->xp = 0;
-    this->yp = 0;
-    this->item_to_select = nullptr;
+    within_tolerance = false;
+    xyp = {};
+    item_to_select = nullptr;
 
     DocumentUndo::cancel(_desktop->getDocument());
 }

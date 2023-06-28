@@ -33,26 +33,28 @@ class Selection;
 namespace UI {
 namespace Tools {
 
-class SpiralTool : public ToolBase {
+class SpiralTool : public ToolBase
+{
 public:
     SpiralTool(SPDesktop *desktop);
     ~SpiralTool() override;
 
-	void set(const Inkscape::Preferences::Entry& val) override;
-	bool root_handler(GdkEvent* event) override;
+    void set(Preferences::Entry const &val) override;
+    bool root_handler(CanvasEvent const &event) override;
+
 private:
     SPWeakPtr<SPSpiral> spiral;
-	Geom::Point center;
-	gdouble revo;
-	gdouble exp;
-	gdouble t0;
+    Geom::Point center;
+    double revo;
+    double exp;
+    double t0;
 
     sigc::connection sel_changed_connection;
 
-	void drag(Geom::Point const &p, guint state);
+    void drag(Geom::Point const &p, unsigned state);
 	void finishItem();
 	void cancel();
-	void selection_changed(Inkscape::Selection *selection);
+    void selection_changed(Selection *selection);
 };
 
 }

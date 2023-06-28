@@ -81,7 +81,7 @@ protected:
 
     Handle(NodeSharedData const &data, Geom::Point const &initial_pos, Node *parent);
     virtual void handle_2button_press();
-    bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event) override;
+    bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &event) override;
     void dragged(Geom::Point &new_pos, GdkEventMotion *event) override;
     bool grabbed(GdkEventMotion *event) override;
     void ungrabbed(GdkEventButton *event) override;
@@ -198,7 +198,7 @@ public:
 
     // temporarily public
     /** Customized event handler to catch scroll events needed for selection grow/shrink. */
-    bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event) override;
+    bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &event) override;
 
     Inkscape::SnapCandidatePoint snapCandidatePoint();
 

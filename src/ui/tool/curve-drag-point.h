@@ -29,19 +29,18 @@ struct PathSharedData;
  * can check if the mouseovered control point is a curve drag point and update the cursor
  * accordingly, without the need to drag in the full PathManipulator header.
  */
-class CurveDragPoint : public ControlPoint {
+class CurveDragPoint : public ControlPoint
+{
 public:
-
     CurveDragPoint(PathManipulator &pm);
     void setSize(double sz) { _setSize(sz); }
     void setTimeValue(double t) { _t = t; }
     double getTimeValue() { return _t; }
     void setIterator(NodeList::iterator i) { first = i; }
     NodeList::iterator getIterator() { return first; }
-    bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event) override;
+    bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &event) override;
 
 protected:
-
     Glib::ustring _getTip(unsigned state) const override;
     void dragged(Geom::Point &, GdkEventMotion *) override;
     bool grabbed(GdkEventMotion *) override;

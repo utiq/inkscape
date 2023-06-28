@@ -66,6 +66,7 @@
 #include "ui/widget/canvas.h"
 #include "ui/widget/canvas-grid.h"
 #include "ui/widget/combo-tool-item.h"
+#include "ui/widget/events/canvas-event.h"
 #include "ui/widget/ink-ruler.h"
 #include "ui/widget/layer-selector.h"
 #include "ui/widget/page-selector.h"
@@ -1531,7 +1532,11 @@ SPDesktopWidget::on_ruler_box_motion_notify_event(GdkEventMotion *event, Gtk::Wi
 {
     auto origin = horiz ? Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_HRULER
                         : Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_VRULER;
-    desktop->event_context->snap_delay_handler(widget->gobj(), this, event, origin);
+
+    // Synthesize the CanvasEvent to use as a delayed snap event.
+    auto event_copy = Inkscape::GdkEventUniqPtr(gdk_event_copy(reinterpret_cast<GdkEvent*>(event)));
+    auto canvas_event = Inkscape::MotionEvent(std::move(event_copy), event->state);
+    desktop->event_context->snap_delay_handler(widget->gobj(), this, canvas_event, origin);
 
     int wx, wy;
 

@@ -56,6 +56,7 @@
 #include "ui/knot/knot.h"
 #include "ui/tools/freehand-base.h"
 #include "ui/widget/canvas.h" // Canvas area
+#include "ui/widget/events/canvas-event.h"
 
 #include "util/units.h"
 
@@ -457,8 +458,9 @@ static void calculate_intersections(SPDesktop *desktop, SPItem *item, Geom::Path
     }
 }
 
-bool MeasureTool::root_handler(GdkEvent* event)
+bool MeasureTool::root_handler(CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
     gint ret = FALSE;
 
     switch (event->type) {
@@ -594,8 +596,9 @@ bool MeasureTool::root_handler(GdkEvent* event)
     default:
         break;
     }
+
     if (!ret) {
-        ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;

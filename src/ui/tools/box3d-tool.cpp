@@ -40,6 +40,7 @@
 #include "ui/icon-names.h"
 #include "ui/shape-editor.h"
 #include "ui/tools/box3d-tool.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 
@@ -127,8 +128,9 @@ static void sp_box3d_context_ensure_persp_in_defs(SPDocument *document)
     }
 }
 
-bool Box3dTool::item_handler(SPItem* item, GdkEvent* event) {
-    gint ret = FALSE;
+bool Box3dTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
 
     switch (event->type) {
     case GDK_BUTTON_PRESS:
@@ -142,16 +144,12 @@ bool Box3dTool::item_handler(SPItem* item, GdkEvent* event) {
         break;
     }
 
-//    if (((ToolBaseClass *) sp_box3d_context_parent_class)->item_handler) {
-//        ret = ((ToolBaseClass *) sp_box3d_context_parent_class)->item_handler(event_context, item, event);
-//    }
-    // CPPIFY: ret is always overwritten...
-    ret = ToolBase::item_handler(item, event);
-
-    return ret;
+    return ToolBase::item_handler(item, canvas_event);
 }
 
-bool Box3dTool::root_handler(GdkEvent* event) {
+bool Box3dTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     static bool dragging;
 
     SPDocument *document = _desktop->getDocument();
@@ -172,9 +170,8 @@ bool Box3dTool::root_handler(GdkEvent* event) {
             Geom::Point button_dt(_desktop->w2d(button_w));
 
             // save drag origin
-            this->xp = (gint) button_w[Geom::X];
-            this->yp = (gint) button_w[Geom::Y];
-            this->within_tolerance = true;
+            xyp = button_w.floor();
+            within_tolerance = true;
 
             // remember clicked box3d, *not* disregarding groups (since a 3D box is a group), honoring Alt
             this->item_to_select = sp_event_context_find_item (_desktop, button_w, event->button.state & GDK_MOD1_MASK, event->button.state & GDK_CONTROL_MASK);
@@ -216,9 +213,9 @@ bool Box3dTool::root_handler(GdkEvent* event) {
                 ret = true;
                 break;
             }
-            if ( this->within_tolerance
-                 && ( abs( (gint) event->motion.x - this->xp ) < this->tolerance )
-                 && ( abs( (gint) event->motion.y - this->yp ) < this->tolerance ) ) {
+            if ( within_tolerance
+                && ( abs( (gint) event->motion.x - this->xyp.x() ) < this->tolerance )
+                && ( abs( (gint) event->motion.y - this->xyp.y() ) < this->tolerance ) ) {
                 break; // do not drag if we're within tolerance from origin
             }
             // Once the user has moved farther than tolerance from the original location
@@ -285,7 +282,7 @@ bool Box3dTool::root_handler(GdkEvent* event) {
         break;
 
     case GDK_BUTTON_RELEASE:
-        this->xp = this->yp = 0;
+        xyp = {};
 
         if (event->button.button == 1) {
             dragging = false;
@@ -448,13 +445,14 @@ bool Box3dTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-        ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;
 }
 
-void Box3dTool::drag(guint /*state*/) {
+void Box3dTool::drag(unsigned)
+{
     if (!this->box3d) {
         if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
             return;

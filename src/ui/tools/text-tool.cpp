@@ -58,8 +58,9 @@
 #include "ui/icon-names.h"
 #include "ui/shape-editor.h"
 #include "ui/widget/canvas.h"
-#include "ui/event-debug.h"
+#include "ui/widget/events/canvas-event.h"
 
+#include "ui/widget/events/debug.h"
 #include "xml/attribute-record.h"
 #include "xml/sp-css-attr.h"
 
@@ -173,6 +174,7 @@ TextTool::TextTool(SPDesktop *desktop)
 TextTool::~TextTool()
 {
     if (_desktop) {
+        #define sp_signal_disconnect_by_data(o,d) g_signal_handlers_disconnect_matched(o, G_SIGNAL_MATCH_DATA, 0, 0, 0, 0, d)
         sp_signal_disconnect_by_data(_desktop->getCanvas()->gobj(), this);
     }
 
@@ -215,7 +217,9 @@ void TextTool::deleteSelected()
     DocumentUndo::done(_desktop->getDocument(), _("Delete text"), INKSCAPE_ICON("draw-text"));
 }
 
-bool TextTool::item_handler(SPItem* item, GdkEvent* event) {
+bool TextTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     SPItem *item_ungrouped;
 
     gint ret = FALSE;
@@ -290,7 +294,7 @@ bool TextTool::item_handler(SPItem* item, GdkEvent* event) {
     }
 
     if (!ret) {
-        ret = ToolBase::item_handler(item, event);
+        ret = ToolBase::item_handler(item, canvas_event);
     }
 
     return ret;
@@ -410,12 +414,13 @@ static void show_curr_uni_char(TextTool *const tc)
     }
 }
 
-bool TextTool::root_handler(GdkEvent* event) {
+bool TextTool::root_handler(CanvasEvent const &canvas_event)
+{
+    if constexpr (DEBUG_EVENTS) {
+        dump_event(canvas_event, "TextTool::root_handler");
+    }
 
-#if EVENT_DEBUG
-    ui_dump_event(reinterpret_cast<GdkEvent *>(event), "TextTool::root_handler");
-#endif
-
+    auto event = canvas_event.original();
     indicator->hide();
 
     sp_text_context_validate_cursor_iterators(this);
@@ -431,8 +436,7 @@ bool TextTool::root_handler(GdkEvent* event) {
                 }
 
                 // save drag origin
-                this->xp = (gint) event->button.x;
-                this->yp = (gint) event->button.y;
+                this->xyp = { (gint) event->button.x, (gint) event->button.y };
                 this->within_tolerance = true;
 
                 Geom::Point const button_pt(event->button.x, event->button.y);
@@ -456,9 +460,9 @@ bool TextTool::root_handler(GdkEvent* event) {
             break;
         case GDK_MOTION_NOTIFY: {
             if (this->creating && (event->motion.state & GDK_BUTTON1_MASK)) {
-                if ( this->within_tolerance
-                     && ( abs( (gint) event->motion.x - this->xp ) < this->tolerance )
-                     && ( abs( (gint) event->motion.y - this->yp ) < this->tolerance ) ) {
+                if (within_tolerance
+                    && ( abs( (gint) event->motion.x - this->xyp.x() ) < this->tolerance )
+                    && ( abs( (gint) event->motion.y - this->xyp.y() ) < this->tolerance ) ) {
                     break; // do not drag if we're within tolerance from origin
                 }
                 // Once the user has moved farther than tolerance from the original location
@@ -1232,7 +1236,7 @@ bool TextTool::root_handler(GdkEvent* event) {
 //    } else {
 //        return FALSE; // return "I did nothing" value so that global shortcuts can be activated
 //    }
-    return ToolBase::root_handler(event);
+    return ToolBase::root_handler(canvas_event);
 
 }
 

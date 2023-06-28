@@ -46,13 +46,14 @@ class CanvasItemBpath;
 namespace UI {
 namespace Tools {
 
-class CalligraphicTool : public DynamicBase {
+class CalligraphicTool : public DynamicBase
+{
 public:
     CalligraphicTool(SPDesktop *desktop);
     ~CalligraphicTool() override;
 
-    void set(const Inkscape::Preferences::Entry &val) override;
-    bool root_handler(GdkEvent *event) override;
+    void set(Preferences::Entry const &val) override;
+    bool root_handler(CanvasEvent const &event) override;
 
 private:
     /** newly created object remain selected */
@@ -68,7 +69,7 @@ private:
     Geom::Point hatch_last_nearest, hatch_last_pointer;
     std::list<Geom::Point> hatch_vectors;
     bool hatch_escaped;
-    CanvasItemPtr<Inkscape::CanvasItemBpath> hatch_area;
+    CanvasItemPtr<CanvasItemBpath> hatch_area;
     bool just_started_drawing;
     bool trace_bg;
 

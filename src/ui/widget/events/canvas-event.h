@@ -18,6 +18,7 @@
 #include <gdk/gdk.h>
 
 #include "enums.h"
+#include "include/macros.h" // For MOD__ modifier testing functions.
 
 namespace Inkscape {
 
@@ -305,6 +306,21 @@ void inspect_event(E &&event, Fs... funcs)
             break;
     }
 }
+
+/*
+ * Legacy modifier-testing functions.
+ *
+ * These functions exist solely to reduce the amount of refactoring noise during the
+ * GdkEvent -> CanvasEvent port by allowing code to stay exactly the same.
+ *
+ * Todo: Port code away from them!
+ */
+inline bool MOD__SHIFT(KeyEvent const &event) { return ::MOD__SHIFT(event.modifiers()); }
+inline bool MOD__CTRL(KeyEvent const &event) { return ::MOD__CTRL(event.modifiers()); }
+inline bool MOD__ALT(KeyEvent const &event) { return ::MOD__ALT(event.modifiers()); }
+inline bool MOD__SHIFT_ONLY(KeyEvent const &event) { return ::MOD__SHIFT_ONLY(event.modifiers()); }
+inline bool MOD__CTRL_ONLY(KeyEvent const &event) { return ::MOD__CTRL_ONLY(event.modifiers()); }
+inline bool MOD__ALT_ONLY(KeyEvent const &event) { return ::MOD__ALT_ONLY(event.modifiers()); }
 
 } // namespace Inkscape
 

@@ -58,6 +58,7 @@
 
 #include "ui/draw-anchor.h"
 #include "ui/tool/event-utils.h"
+#include "ui/widget/events/canvas-event.h"
 
 #include "xml/node.h"
 #include "xml/sp-css-attr.h"
@@ -122,7 +123,10 @@ void PencilTool::_endpointSnap(Geom::Point &p, guint const state) {
 /**
  * Callback for handling all pencil context events.
  */
-bool PencilTool::root_handler(GdkEvent* event) {
+bool PencilTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
+
     bool ret = false;
     this->_extinput(event);
     switch (event->type) {
@@ -149,14 +153,16 @@ bool PencilTool::root_handler(GdkEvent* event) {
         default:
             break;
     }
+
     if (!ret) {
-        ret = FreehandBase::root_handler(event);
+        ret = FreehandBase::root_handler(canvas_event);
     }
 
     return ret;
 }
 
-bool PencilTool::_handleButtonPress(GdkEventButton const &bevent) {
+bool PencilTool::_handleButtonPress(GdkEventButton const &bevent)
+{
     bool ret = false;
     if ( bevent.button == 1) {
         Inkscape::Selection *selection = _desktop->getSelection();

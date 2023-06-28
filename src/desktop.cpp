@@ -1412,11 +1412,10 @@ SPDesktop::onDocumentFilenameSet (gchar const* filename)
 /**
  * Calls event handler of current event context.
  */
-static bool _drawing_handler(Inkscape::CanvasEvent const &canvas_event, Inkscape::DrawingItem *drawing_item, SPDesktop *desktop)
+static bool _drawing_handler(Inkscape::CanvasEvent const &event, Inkscape::DrawingItem *drawing_item, SPDesktop *desktop)
 {
-    auto event = canvas_event.original();
-
-    if (event->type == GDK_KEY_PRESS && Inkscape::UI::Tools::get_latin_keyval(&event->key) == GDK_KEY_space &&
+    if (event.type() == Inkscape::EventType::KEY_PRESS &&
+        Inkscape::UI::Tools::get_latin_keyval(static_cast<Inkscape::KeyPressEvent const &>(event).original()) == GDK_KEY_space &&
         desktop->event_context->is_space_panning())
     {
         return true;
@@ -1429,6 +1428,7 @@ static bool _drawing_handler(Inkscape::CanvasEvent const &canvas_event, Inkscape
             return ec->start_root_handler(event);
         }
     }
+
     return false;
 }
 

@@ -41,18 +41,19 @@ namespace Inkscape {
 namespace UI {
 namespace Tools {
 
-class Box3dTool : public ToolBase {
+class Box3dTool : public ToolBase
+{
 public:
     Box3dTool(SPDesktop *desktop);
     ~Box3dTool() override;
 
     Box3D::VPDrag *_vpdrag;
 
-    bool root_handler(GdkEvent *event) override;
-    bool item_handler(SPItem *item, GdkEvent *event) override;
+    bool root_handler(CanvasEvent const &event) override;
+    bool item_handler(SPItem *item, CanvasEvent const &event) override;
 
 private:
-    SPBox3D* box3d;
+    SPBox3D *box3d;
     Geom::Point center;
 
     /**
@@ -76,9 +77,9 @@ private:
 
     sigc::connection sel_changed_connection;
 
-	void selection_changed(Inkscape::Selection* selection);
+    void selection_changed(Selection *selection);
 
-	void drag(guint state);
+    void drag(unsigned state);
 	void finishItem();
 };
 

@@ -189,7 +189,7 @@ public:
     static Glib::ustring format_tip(char const *format, ...) G_GNUC_PRINTF(1,2);
 
     // temporarily public, until snap delay is refactored a little
-    virtual bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, GdkEvent *event);
+    virtual bool _eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &event);
     SPDesktop *const _desktop; ///< The desktop this control point resides on.
 
     bool doubleClicked() {return _double_clicked;}

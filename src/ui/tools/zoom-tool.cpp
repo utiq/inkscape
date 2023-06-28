@@ -20,6 +20,7 @@
 #include "desktop.h"
 #include "rubberband.h"
 #include "selection-chemistry.h"
+#include "ui/widget/events/canvas-event.h"
 
 #include "include/macros.h"
 
@@ -29,7 +30,6 @@ namespace Tools {
 
 ZoomTool::ZoomTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/zoom", "zoom-in.svg")
-    , escaped(false)
 {
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
@@ -48,7 +48,9 @@ ZoomTool::~ZoomTool()
     ungrabCanvasEvents();
 }
 
-bool ZoomTool::root_handler(GdkEvent* event) {
+bool ZoomTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 	
     tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
@@ -64,8 +66,7 @@ bool ZoomTool::root_handler(GdkEvent* event) {
 
             if (event->button.button == 1) {
                 // save drag origin
-                xp = (gint) event->button.x;
-                yp = (gint) event->button.y;
+                xyp = { (gint) event->button.x, (gint) event->button.y };
                 within_tolerance = true;
 
                 Inkscape::Rubberband::get(_desktop)->start(_desktop, button_dt);
@@ -95,8 +96,8 @@ bool ZoomTool::root_handler(GdkEvent* event) {
                 ret = true;
 
                 if ( within_tolerance
-                     && ( abs( (gint) event->motion.x - xp ) < tolerance )
-                     && ( abs( (gint) event->motion.y - yp ) < tolerance ) ) {
+                    && ( abs( (gint) event->motion.x - xyp.x() ) < tolerance )
+                    && ( abs( (gint) event->motion.y - xyp.y() ) < tolerance ) ) {
                     break; // do not drag if we're within tolerance from origin
                 }
                 // Once the user has moved farther than tolerance from the original location
@@ -135,8 +136,8 @@ bool ZoomTool::root_handler(GdkEvent* event) {
             Inkscape::Rubberband::get(_desktop)->stop();
 
             ungrabCanvasEvents();
-			
-            xp = yp = 0;
+
+            xyp = {};
             escaped = false;
             break;
         }
@@ -148,7 +149,7 @@ bool ZoomTool::root_handler(GdkEvent* event) {
                     }
 
                     Inkscape::Rubberband::get(_desktop)->stop();
-                    xp = yp = 0;
+                    xyp = {};
                     escaped = true;
                     ret = true;
                     break;
@@ -192,7 +193,7 @@ bool ZoomTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-    	ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;

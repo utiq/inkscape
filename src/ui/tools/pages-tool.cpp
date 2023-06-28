@@ -35,6 +35,7 @@
 #include "ui/knot/knot.h"
 #include "ui/modifiers.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::Modifiers::Modifier;
 
@@ -270,8 +271,9 @@ void PagesTool::marginKnotFinished(SPKnot *knot, guint state)
     // Margins are updated in real time.
 }
 
-bool PagesTool::root_handler(GdkEvent *event)
+bool PagesTool::root_handler(CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
     bool ret = false;
     auto &page_manager = _desktop->getDocument()->getPageManager();
 
@@ -428,11 +430,12 @@ bool PagesTool::root_handler(GdkEvent *event)
     }
 
 
-    return ret ? true : ToolBase::root_handler(event);
+    return ret || ToolBase::root_handler(canvas_event);
 }
 
-void PagesTool::menu_popup(GdkEvent *event, SPObject *obj)
+void PagesTool::menu_popup(CanvasEvent const &canvas_event, SPObject *obj)
 {
+    auto event = canvas_event.original();
     auto &page_manager = _desktop->getDocument()->getPageManager();
     SPPage *page = page_manager.getSelected();
     if (event->type != GDK_KEY_PRESS) {
@@ -441,7 +444,7 @@ void PagesTool::menu_popup(GdkEvent *event, SPObject *obj)
         page = pageUnder(drag_origin_dt);
     }
     if (page) {
-        ToolBase::menu_popup(event, page);
+        ToolBase::menu_popup(canvas_event, page);
     }
 }
 

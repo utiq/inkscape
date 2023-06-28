@@ -44,6 +44,7 @@
 #include "ui/draw-anchor.h"
 #include "ui/shortcuts.h"
 #include "ui/tools/pen-tool.h"
+#include "ui/widget/events/canvas-event.h"
 
 // we include the necessary files for BSpline & Spiro
 #include "live_effects/lpeobject.h"
@@ -82,8 +83,8 @@ namespace Tools {
 static Geom::Point pen_drag_origin_w(0, 0);
 static bool pen_within_tolerance = false;
 
-PenTool::PenTool(SPDesktop *desktop, std::string prefs_path, const std::string &cursor_filename)
-    : FreehandBase(desktop, prefs_path, cursor_filename)
+PenTool::PenTool(SPDesktop *desktop, std::string &&prefs_path, std::string &&cursor_filename)
+    : FreehandBase(desktop, std::move(prefs_path), std::move(cursor_filename))
     , _undo{"doc.undo"}
     , _redo{"doc.redo"}
 {
@@ -235,7 +236,9 @@ void PenTool::_endpointSnapHandle(Geom::Point &p, guint const state) {
     }
 }
 
-bool PenTool::item_handler(SPItem* item, GdkEvent* event) {
+bool PenTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     bool ret = false;
 
     switch (event->type) {
@@ -250,7 +253,7 @@ bool PenTool::item_handler(SPItem* item, GdkEvent* event) {
     }
 
     if (!ret) {
-        ret = FreehandBase::item_handler(item, event);
+        ret = FreehandBase::item_handler(item, canvas_event);
     }
 
     return ret;
@@ -259,7 +262,9 @@ bool PenTool::item_handler(SPItem* item, GdkEvent* event) {
 /**
  * Callback to handle all pen events.
  */
-bool PenTool::root_handler(GdkEvent* event) {
+bool PenTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     bool ret = false;
 
     switch (event->type) {
@@ -288,7 +293,7 @@ bool PenTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-        ret = FreehandBase::root_handler(event);
+        ret = FreehandBase::root_handler(canvas_event);
     }
 
     return ret;

@@ -34,7 +34,6 @@ using WorkItems = std::vector<WorkItem>;
 class SubItem
 {
 public:
-
     SubItem(Geom::PathVector paths, SPItem *item, SPStyle *style)
         : _paths(std::move(paths))
         , _item(item)
@@ -45,11 +44,11 @@ public:
         : SubItem(copy._paths, copy._item, copy._style)
     {}
 
-    SubItem &operator+=(const SubItem &other);
+    SubItem &operator+=(SubItem const &other);
 
-    bool contains(const Geom::Point &pt) const;
+    bool contains(Geom::Point const &pt) const;
 
-    const Geom::PathVector &get_pathv() const { return _paths; }
+    Geom::PathVector const &get_pathv() const { return _paths; }
     SPItem *get_item() const { return _item; }
     SPStyle *getStyle() const { return _style; }
 

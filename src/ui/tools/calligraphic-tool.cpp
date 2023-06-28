@@ -68,6 +68,7 @@
 #include "ui/icon-names.h"
 #include "ui/tools/freehand-base.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 
 #include "util/units.h"
 
@@ -403,7 +404,9 @@ void CalligraphicTool::cancel() {
     repr = nullptr;
 }
 
-bool CalligraphicTool::root_handler(GdkEvent* event) {
+bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     gint ret = FALSE;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     Unit const *unit = unit_table.getUnit(prefs->getString("/tools/calligraphic/unit"));
@@ -856,15 +859,11 @@ bool CalligraphicTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-//        if ((SP_EVENT_CONTEXT_CLASS(sp_dyna_draw_context_parent_class))->root_handler) {
-//            ret = (SP_EVENT_CONTEXT_CLASS(sp_dyna_draw_context_parent_class))->root_handler(event_context, event);
-//        }
-    	ret = DynamicBase::root_handler(event);
+        ret = DynamicBase::root_handler(canvas_event);
     }
 
     return ret;
 }
-
 
 void CalligraphicTool::clear_current() {
     /* reset bpath */

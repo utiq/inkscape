@@ -37,6 +37,7 @@
 #include "ui/icon-names.h"
 #include "ui/shape-editor.h"
 #include "ui/tools/rect-tool.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 
@@ -112,8 +113,9 @@ void RectTool::set(const Inkscape::Preferences::Entry& val) {
     }
 }
 
-bool RectTool::item_handler(SPItem* item, GdkEvent* event) {
-    gint ret = FALSE;
+bool RectTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
 
     switch (event->type) {
     case GDK_BUTTON_PRESS:
@@ -126,12 +128,12 @@ bool RectTool::item_handler(SPItem* item, GdkEvent* event) {
         break;
     }
 
-       ret = ToolBase::item_handler(item, event);
-
-    return ret;
+    return ToolBase::item_handler(item, canvas_event);
 }
 
-bool RectTool::root_handler(GdkEvent* event) {
+bool RectTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     static bool dragging;
 
     Inkscape::Selection *selection = _desktop->getSelection();
@@ -148,9 +150,8 @@ bool RectTool::root_handler(GdkEvent* event) {
             Geom::Point const button_w(event->button.x, event->button.y);
 
             // save drag origin
-            this->xp = (gint) button_w[Geom::X];
-            this->yp = (gint) button_w[Geom::Y];
-            this->within_tolerance = true;
+            xyp = button_w.floor();
+            within_tolerance = true;
 
             // remember clicked item, disregarding groups, honoring Alt
             this->item_to_select = sp_event_context_find_item (_desktop, button_w, event->button.state & GDK_MOD1_MASK, TRUE);
@@ -176,9 +177,9 @@ bool RectTool::root_handler(GdkEvent* event) {
         if ( dragging
              && (event->motion.state & GDK_BUTTON1_MASK))
         {
-            if ( this->within_tolerance
-                 && ( abs( (gint) event->motion.x - this->xp ) < this->tolerance )
-                 && ( abs( (gint) event->motion.y - this->yp ) < this->tolerance ) ) {
+            if ( within_tolerance
+                && ( abs( (gint) event->motion.x - xyp.x() ) < this->tolerance )
+                && ( abs( (gint) event->motion.y - xyp.y() ) < this->tolerance ) ) {
                 break; // do not drag if we're within tolerance from origin
             }
             // Once the user has moved farther than tolerance from the original location
@@ -204,7 +205,7 @@ bool RectTool::root_handler(GdkEvent* event) {
         }
         break;
     case GDK_BUTTON_RELEASE:
-        this->xp = this->yp = 0;
+        xyp = {};
         if (event->button.button == 1) {
             dragging = false;
             this->discard_delayed_snap_event();
@@ -317,7 +318,7 @@ bool RectTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-        ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;
@@ -439,8 +440,7 @@ void RectTool::cancel(){
     }
 
     this->within_tolerance = false;
-    this->xp = 0;
-    this->yp = 0;
+    xyp = {};
     this->item_to_select = nullptr;
 
     DocumentUndo::cancel(_desktop->getDocument());

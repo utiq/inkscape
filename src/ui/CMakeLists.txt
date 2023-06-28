@@ -277,7 +277,6 @@ set(ui_SRC
 	dialog-run.h
 	drag-and-drop.h
 	draw-anchor.h
-	event-debug.h
 	filtered-store.h
 	icon-names.h
 	icon-loader.h
@@ -480,6 +479,7 @@ set(ui_SRC
 	widget/entity-entry.h
 	widget/entry.h
 	widget/events/canvas-event.h
+	widget/events/debug.h
 	widget/events/enums.h
 	widget/export-lists.h
 	widget/export-preview.h

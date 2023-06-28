@@ -107,6 +107,7 @@ void SPAttributeTable::clear()
             {
                 try
                 {
+                    #define sp_signal_disconnect_by_data(o,d) g_signal_handlers_disconnect_matched(o, G_SIGNAL_MATCH_DATA, 0, 0, 0, 0, d)
                     sp_signal_disconnect_by_data (w->gobj(), this);
                     delete w;
                 }

@@ -53,7 +53,6 @@
 
 #include "ui/drag-and-drop.h"
 
-#include "ui/event-debug.h"
 #include "ui/shortcuts.h"
 
 #include "widgets/desktop-widget.h"
@@ -227,12 +226,14 @@ InkscapeWindow::setup_view()
     }
 }
 
-bool
-InkscapeWindow::on_key_press_event(GdkEventKey* event)
+bool InkscapeWindow::on_key_press_event(GdkEventKey *event)
 {
-#ifdef EVENT_DEBUG
-    ui_dump_event(reinterpret_cast<GdkEvent *>(event), "\nInkscapeWindow::on_key_press_event");
-#endif
+    if constexpr (false) {
+        std::cout << "InkscapeWindow::on_key_press_event: GDK_KEY_PRESS: " << std::hex
+                  << " hardware: " << event->hardware_keycode
+                  << " state: "    << event->state
+                  << " keyval: "   << event->keyval << std::endl;
+    }
 
     // Key press and release events are normally sent first to Gtk::Window for processing as
     // accelerators and menomics before bubbling up from the "grab" or "focus" widget (unlike other

@@ -62,6 +62,7 @@
 #include "ui/toolbar/spray-toolbar.h"
 #include "ui/tools/spray-tool.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 
@@ -1217,7 +1218,9 @@ static void sp_spray_switch_mode(SprayTool *tc, gint mode, bool with_shift)
     tc->update_cursor(with_shift);
 }
 
-bool SprayTool::root_handler(GdkEvent* event) {
+bool SprayTool::root_handler(CanvasEvent const &canvas_event)
+{
+    auto event = canvas_event.original();
     gint ret = FALSE;
 
     switch (event->type) {
@@ -1502,10 +1505,7 @@ bool SprayTool::root_handler(GdkEvent* event) {
     }
 
     if (!ret) {
-//        if ((SP_EVENT_CONTEXT_CLASS(sp_spray_context_parent_class))->root_handler) {
-//            ret = (SP_EVENT_CONTEXT_CLASS(sp_spray_context_parent_class))->root_handler(event_context, event);
-//        }
-        ret = ToolBase::root_handler(event);
+        ret = ToolBase::root_handler(canvas_event);
     }
 
     return ret;

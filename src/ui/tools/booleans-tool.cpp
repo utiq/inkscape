@@ -24,6 +24,7 @@
 #include "selection.h"
 #include "ui/icon-names.h"
 #include "ui/modifiers.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 using Inkscape::Modifiers::Modifier;
@@ -111,8 +112,9 @@ void InteractiveBooleansTool::shape_cancel()
     set_active_tool(_desktop, "Select");
 }
 
-bool InteractiveBooleansTool::root_handler(GdkEvent* event)
+bool InteractiveBooleansTool::root_handler(CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.original();
     if (!boolean_builder)
         return false;
 
@@ -139,7 +141,7 @@ bool InteractiveBooleansTool::root_handler(GdkEvent* event)
         set_cursor(add ? "cursor-union.svg" : "cursor-delete.svg");
         update_status();
     }
-    return ret || ToolBase::root_handler(event);
+    return ret || ToolBase::root_handler(canvas_event);
 }
 
 /**

@@ -42,8 +42,9 @@ public:
     PagesTool(SPDesktop *desktop);
     ~PagesTool() override;
 
-    bool root_handler(GdkEvent *event) override;
-    void menu_popup(GdkEvent *event, SPObject *obj = nullptr) override;
+    bool root_handler(CanvasEvent const &event) override;
+    void menu_popup(CanvasEvent const &event, SPObject *obj = nullptr) override;
+
 private:
     void selectionChanged(SPDocument *doc, SPPage *page);
     void connectDocument(SPDocument *doc);

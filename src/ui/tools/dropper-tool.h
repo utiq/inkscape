@@ -25,8 +25,8 @@ struct SPCanvasItem;
 #define SP_IS_DROPPER_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::DropperTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
 
 enum {
-      SP_DROPPER_PICK_VISIBLE,
-      SP_DROPPER_PICK_ACTUAL  
+    SP_DROPPER_PICK_VISIBLE,
+    SP_DROPPER_PICK_ACTUAL
 };
 enum {
   DONT_REDRAW_CURSOR,
@@ -41,16 +41,17 @@ class CanvasItemBpath;
 namespace UI {
 namespace Tools {
 
-class DropperTool : public ToolBase {
+class DropperTool : public ToolBase
+{
 public:
     DropperTool(SPDesktop *desktop);
     ~DropperTool() override;
 
-    guint32 get_color(bool invert = false, bool non_dropping = false);
+    uint32_t get_color(bool invert = false, bool non_dropping = false);
     sigc::signal<void (ColorRGBA *)> onetimepick_signal;
 
 protected:
-    bool root_handler(GdkEvent *event) override;
+    bool root_handler(CanvasEvent const &event) override;
 
 private:
     // Stored color.

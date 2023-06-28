@@ -31,7 +31,6 @@ bool sp_desktop_root_handler(Inkscape::CanvasEvent const &event, SPDesktop *desk
 /* Guides */
 
 bool sp_dt_guide_event(Inkscape::CanvasEvent const &event, Inkscape::CanvasItemGuideLine *guide_item, SPGuide *guide);
-bool sp_dt_guide_event_gdkevent(GdkEvent *event, Inkscape::CanvasItemGuideLine *guide_item, SPGuide *guide); // Deprecated
 
 #endif // INKSCAPE_DESKTOP_EVENTS_H
 
