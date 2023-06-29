@@ -13,6 +13,9 @@
 #ifndef INKSCAPE_UI_DIALOG_EXTENSIONS_H
 #define INKSCAPE_UI_DIALOG_EXTENSIONS_H
 
+#include <gtkmm/button.h>
+#include <gtkmm/iconview.h>
+#include <gtkmm/searchentry.h>
 #include "ui/dialog/dialog-base.h"
 
 namespace Inkscape {
@@ -30,7 +33,15 @@ public:
 
 private:
     Glib::RefPtr<Gtk::Builder> _builder;
+    Gtk::IconView& _grid;
+    Gtk::SearchEntry& _search;
+    Gtk::Button& _run;
 
+    Gtk::CellRendererPixbuf _image_renderer;
+    Glib::RefPtr<Gtk::ListStore> _store;
+
+    Gtk::TreeModel::Row selected_item();
+    void update_name();
 };
 
 

@@ -1047,3 +1047,8 @@ popover.popover-menu menu {
 popover.popover-menu menuitem {
     outline-style: none;
 }
+
+/* darker background for extensions gallery due to fixed-color thumbnails (white background + drop shadow) */
+.darker-background {
+    background-image: image(alpha(#000, 0.05));
+}

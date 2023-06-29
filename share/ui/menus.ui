@@ -1202,6 +1202,13 @@
         <attribute name='label' translatable="yes">_Previous Extension Settings...</attribute>
         <attribute name='action'>app.last-effect-pref</attribute>
       </item>
+      <item>
+        <attribute name='label' translatable="yes">_Extensions Gallery...</attribute>
+        <attribute name='action'>app.</attribute>
+        <attribute name='action'>win.dialog-open</attribute>
+        <attribute name='target'>ExtensionsGallery</attribute>
+        <attribute name='icon'>dialog-extensions</attribute>
+      </item>
     </section>
     <section id="effect-menu-effects"/>
     <section>
