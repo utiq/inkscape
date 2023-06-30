@@ -13,12 +13,12 @@
 #include <glibmm/i18n.h>
 #include <glibmm/regex.h>
 
+#include "document.h"
 #include "implementation/implementation.h"
 #include "io/file.h"
 #include "io/resource.h"
 #include "xml/attribute-record.h"
 #include "xml/repr.h"
-#include "document.h"
 
 using namespace Inkscape::IO::Resource;
 using Inkscape::Util::unit_table;
@@ -100,6 +100,8 @@ Glib::ustring TemplatePreset::_get_icon_path(const std::string &name) const
  * Setup the preferences and ask the user to fill in the remaineder.
  *
  * @param others - populate with these prefs on top of internal prefs.
+ *
+ * @return True if preferences have been shown or not using GUI, False is canceled.
  *
  * Can cause a GUI popup.
  */
