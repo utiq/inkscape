@@ -1113,14 +1113,17 @@ unsigned int Extension::widget_visible_count ( )
 }
 
 /**
- * Create a dialog for preference for this extension
+ * Create a dialog for preference for this extension.
+ * Will skip if not using GUI.
  *
- * @param keep - Should the dialog be kept around for multiple uses?
- *
- * @return True if preferences have been shown, False is canceled or kept.
+ * @return True if preferences have been shown or not using GUI, False is canceled.
  */
 bool Extension::prefs()
 {
+    if (!INKSCAPE.use_gui()) {
+        return true;
+    }
+
     if (!loaded())
         set_state(Extension::STATE_LOADED);
     if (!loaded())
