@@ -209,7 +209,7 @@ bool RectTool::root_handler(GdkEvent* event) {
             dragging = false;
             this->discard_delayed_snap_event();
 
-            if (!this->within_tolerance) {
+            if (rect) {
                 // we've been dragging, finish the rect
                 this->finishItem();
             } else if (this->item_to_select) {
