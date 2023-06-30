@@ -46,7 +46,6 @@ namespace Tools {
 
 RectTool::RectTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/shapes/rect", "rect.svg")
-    , rect(nullptr)
     , rx(0)
     , ry(0)
 {
@@ -344,7 +343,7 @@ void RectTool::drag(Geom::Point const pt, guint state) {
         this->rect->updateRepr();
     }
 
-    Geom::Rect const r = Inkscape::snap_rectangular_box(_desktop, this->rect, pt, this->center, state);
+    Geom::Rect const r = Inkscape::snap_rectangular_box(_desktop, rect.get(), pt, this->center, state);
 
     this->rect->setPosition(r.min()[Geom::X], r.min()[Geom::Y], r.dimensions()[Geom::X], r.dimensions()[Geom::Y]);
 
@@ -414,7 +413,7 @@ void RectTool::drag(Geom::Point const pt, guint state) {
 void RectTool::finishItem() {
     this->message_context->clear();
 
-    if (this->rect != nullptr) {
+    if (rect) {
         if (this->rect->width.computed == 0 || this->rect->height.computed == 0) {
             this->cancel(); // Don't allow the creating of zero sized rectangle, for example when the start and and point snap to the snap grid point
             return;
@@ -423,7 +422,7 @@ void RectTool::finishItem() {
         this->rect->updateRepr();
         this->rect->doWriteTransform(this->rect->transform, nullptr, true);
 
-        _desktop->getSelection()->set(this->rect);
+        _desktop->getSelection()->set(rect.get());
 
         DocumentUndo::done(_desktop->getDocument(), _("Create rectangle"), INKSCAPE_ICON("draw-rectangle"));
 
@@ -435,9 +434,8 @@ void RectTool::cancel(){
     _desktop->getSelection()->clear();
     ungrabCanvasEvents();
 
-    if (this->rect != nullptr) {
-        this->rect->deleteObject();
-        this->rect = nullptr;
+    if (rect) {
+        rect->deleteObject();
     }
 
     this->within_tolerance = false;

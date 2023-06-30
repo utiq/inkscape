@@ -47,7 +47,6 @@ namespace Tools {
 
 SpiralTool::SpiralTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/shapes/spiral", "spiral.svg")
-    , spiral(nullptr)
     , revo(3)
     , exp(1)
     , t0(0)
@@ -161,7 +160,7 @@ bool SpiralTool::root_handler(GdkEvent* event) {
                 Geom::Point motion_dt(_desktop->w2d(motion_w));
 
                 SnapManager &m = _desktop->namedview->snap_manager;
-                m.setup(_desktop, true, this->spiral);
+                m.setup(_desktop, true, spiral.get());
                 m.freeSnapReturnByRef(motion_dt, Inkscape::SNAPSOURCE_NODE_HANDLE);
                 m.unSetup();
 
@@ -319,7 +318,7 @@ void SpiralTool::drag(Geom::Point const &p, guint state) {
     }
 
     SnapManager &m = _desktop->namedview->snap_manager;
-    m.setup(_desktop, true, this->spiral);
+    m.setup(_desktop, true, spiral.get());
     Geom::Point pt2g = p;
     m.freeSnapReturnByRef(pt2g, Inkscape::SNAPSOURCE_NODE_HANDLE);
     m.unSetup();
@@ -356,7 +355,7 @@ void SpiralTool::drag(Geom::Point const &p, guint state) {
 void SpiralTool::finishItem() {
     this->message_context->clear();
 
-    if (this->spiral != nullptr) {
+    if (spiral) {
     	if (this->spiral->rad == 0) {
     		this->cancel(); // Don't allow the creating of zero sized spiral, for example when the start and and point snap to the snap grid point
     		return;
@@ -369,7 +368,7 @@ void SpiralTool::finishItem() {
         spiral->doWriteTransform(spiral->transform, nullptr, true);
         spiral->adjust_stroke_width_recursive(expansion);
 
-        _desktop->getSelection()->set(this->spiral);
+        _desktop->getSelection()->set(spiral.get());
         DocumentUndo::done(_desktop->getDocument(), _("Create spiral"), INKSCAPE_ICON("draw-spiral"));
 
         this->spiral = nullptr;
@@ -380,9 +379,8 @@ void SpiralTool::cancel() {
     _desktop->getSelection()->clear();
     ungrabCanvasEvents();
 
-    if (this->spiral != nullptr) {
-    	this->spiral->deleteObject();
-    	this->spiral = nullptr;
+    if (spiral) {
+        spiral->deleteObject();
     }
 
     this->within_tolerance = false;

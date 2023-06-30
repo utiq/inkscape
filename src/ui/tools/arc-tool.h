@@ -22,6 +22,7 @@
 #include <sigc++/connection.h>
 
 #include "ui/tools/tool-base.h"
+#include "object/weakptr.h"
 
 class SPItem;
 class SPGenericEllipse;
@@ -45,7 +46,7 @@ public:
 	bool root_handler(GdkEvent* event) override;
 	bool item_handler(SPItem* item, GdkEvent* event) override;
 private:
-	SPGenericEllipse *arc;
+    SPWeakPtr<SPGenericEllipse> arc;
 
     Geom::Point center;
 

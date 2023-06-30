@@ -50,7 +50,6 @@ namespace Tools {
 
 ArcTool::ArcTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/shapes/arc", "arc.svg")
-    , arc(nullptr)
 {
     Inkscape::Selection *selection = desktop->getSelection();
 
@@ -322,7 +321,7 @@ void ArcTool::drag(Geom::Point pt, guint state) {
     // Third is weirdly wrong, surely incrememnts should do something else.
     auto circle_edge = Modifiers::Modifier::get(Modifiers::Type::TRANS_INCREMENT)->active(state);
 
-    Geom::Rect r = Inkscape::snap_rectangular_box(_desktop, this->arc, pt, this->center, state);
+    Geom::Rect r = Inkscape::snap_rectangular_box(_desktop, arc.get(), pt, this->center, state);
 
     Geom::Point dir = r.dimensions() / 2;
 
@@ -403,7 +402,7 @@ void ArcTool::drag(Geom::Point pt, guint state) {
 void ArcTool::finishItem() {
     this->message_context->clear();
 
-    if (this->arc != nullptr) {
+    if (arc) {
         if (this->arc->rx.computed == 0 || this->arc->ry.computed == 0) {
             this->cancel(); // Don't allow the creating of zero sized arc, for example when the start and and point snap to the snap grid point
             return;
@@ -412,7 +411,7 @@ void ArcTool::finishItem() {
         this->arc->updateRepr();
         this->arc->doWriteTransform(this->arc->transform, nullptr, true);
 
-        _desktop->getSelection()->set(this->arc);
+        _desktop->getSelection()->set(arc.get());
 
         DocumentUndo::done(_desktop->getDocument(), _("Create ellipse"), INKSCAPE_ICON("draw-ellipse"));
 
@@ -424,9 +423,8 @@ void ArcTool::cancel() {
     _desktop->getSelection()->clear();
     ungrabCanvasEvents();
 
-    if (this->arc != nullptr) {
-        this->arc->deleteObject();
-        this->arc = nullptr;
+    if (arc) {
+        arc->deleteObject();
     }
 
     this->within_tolerance = false;

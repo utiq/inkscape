@@ -20,6 +20,7 @@
 #include <sigc++/sigc++.h>
 #include <2geom/point.h>
 #include "ui/tools/tool-base.h"
+#include "object/weakptr.h"
 
 class SPRect;
 
@@ -39,7 +40,7 @@ public:
 	bool root_handler(GdkEvent* event) override;
 	bool item_handler(SPItem* item, GdkEvent* event) override;
 private:
-	SPRect *rect;
+    SPWeakPtr<SPRect> rect;
 	Geom::Point center;
 
   	gdouble rx;	/* roundness radius (x direction) */

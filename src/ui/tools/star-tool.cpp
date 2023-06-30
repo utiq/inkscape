@@ -47,7 +47,6 @@ namespace Tools {
 
 StarTool::StarTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/shapes/star", "star.svg")
-    , star(nullptr)
     , magnitude(5)
     , proportion(0.5)
     , isflatsided(false)
@@ -335,7 +334,7 @@ void StarTool::drag(Geom::Point p, guint state)
     /* Snap corner point with no constraints */
     SnapManager &m = _desktop->namedview->snap_manager;
 
-    m.setup(_desktop, true, this->star);
+    m.setup(_desktop, true, star.get());
     Geom::Point pt2g = p;
     m.freeSnapReturnByRef(pt2g, Inkscape::SNAPSOURCE_NODE_HANDLE);
     m.unSetup();
@@ -354,7 +353,7 @@ void StarTool::drag(Geom::Point p, guint state)
         arg1 = std::round(arg1/snaps_radian) * snaps_radian;
     }
 
-    sp_star_position_set(this->star, this->magnitude, p0, r1, r1 * this->proportion,
+    sp_star_position_set(star.get(), this->magnitude, p0, r1, r1 * this->proportion,
                          arg1, arg1 + M_PI / sides, this->isflatsided, this->rounded, this->randomized);
 
     /* status text */
@@ -370,7 +369,7 @@ void StarTool::drag(Geom::Point p, guint state)
 void StarTool::finishItem() {
     this->message_context->clear();
 
-    if (this->star != nullptr) {
+    if (star) {
         if (this->star->r[1] == 0) {
         	// Don't allow the creating of zero sized arc, for example
         	// when the start and and point snap to the snap grid point
@@ -388,7 +387,7 @@ void StarTool::finishItem() {
         this->star->doWriteTransform(this->star->transform, nullptr, true);
         this->star->adjust_stroke_width_recursive(expansion);
 
-        _desktop->getSelection()->set(this->star);
+        _desktop->getSelection()->set(star.get());
         DocumentUndo::done(_desktop->getDocument(), _("Create star"), INKSCAPE_ICON("draw-polygon-star"));
 
         this->star = nullptr;
@@ -399,9 +398,8 @@ void StarTool::cancel() {
     _desktop->getSelection()->clear();
     ungrabCanvasEvents();
 
-    if (this->star != nullptr) {
-        this->star->deleteObject();
-        this->star = nullptr;
+    if (star) {
+        star->deleteObject();
     }
 
     this->within_tolerance = false;

@@ -19,6 +19,7 @@
 #include <sigc++/sigc++.h>
 #include <2geom/point.h>
 #include "ui/tools/tool-base.h"
+#include "object/weakptr.h"
 
 class SPStar;
 
@@ -38,7 +39,7 @@ public:
     bool root_handler(GdkEvent *event) override;
 
 private:
-    SPStar *star;
+    SPWeakPtr<SPStar> star;
 
     Geom::Point center;
 

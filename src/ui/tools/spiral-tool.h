@@ -19,6 +19,7 @@
 #include <sigc++/connection.h>
 #include <2geom/point.h>
 #include "ui/tools/tool-base.h"
+#include "object/weakptr.h"
 
 #define SP_SPIRAL_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::SpiralTool*>((Inkscape::UI::Tools::ToolBase*)obj))
 #define SP_IS_SPIRAL_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::SpiralTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
@@ -40,7 +41,7 @@ public:
 	void set(const Inkscape::Preferences::Entry& val) override;
 	bool root_handler(GdkEvent* event) override;
 private:
-	SPSpiral * spiral;
+    SPWeakPtr<SPSpiral> spiral;
 	Geom::Point center;
 	gdouble revo;
 	gdouble exp;
