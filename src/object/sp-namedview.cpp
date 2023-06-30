@@ -288,7 +288,7 @@ void SPNamedView::set(SPAttr key, const gchar* value) {
         this->grids_visible.readOrUnset(value);
         break;
     case SPAttr::GRIDTOLERANCE:
-        this->snap_manager.snapprefs.setGridTolerance(value ? g_ascii_strtod(value, nullptr) : 10000);
+        this->snap_manager.snapprefs.setGridTolerance(value ? g_ascii_strtod(value, nullptr) : 10);
         break;
     case SPAttr::GUIDETOLERANCE:
         this->snap_manager.snapprefs.setGuideTolerance(value ? g_ascii_strtod(value, nullptr) : 20);
