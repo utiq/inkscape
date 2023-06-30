@@ -186,7 +186,7 @@ bool SpiralTool::root_handler(GdkEvent* event) {
                 dragging = FALSE;
                 this->discard_delayed_snap_event();
 
-                if (!this->within_tolerance) {
+                if (spiral) {
                     // we've been dragging, finish the spiral
                     this->finishItem();
                 } else if (this->item_to_select) {

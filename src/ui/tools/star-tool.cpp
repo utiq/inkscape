@@ -197,7 +197,7 @@ bool StarTool::root_handler(GdkEvent* event) {
 
             this->discard_delayed_snap_event();
 
-            if (!this->within_tolerance) {
+            if (star) {
                 // we've been dragging, finish the star
                 this->finishItem();
             } else if (this->item_to_select) {

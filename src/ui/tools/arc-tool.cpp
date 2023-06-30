@@ -184,7 +184,7 @@ bool ArcTool::root_handler(GdkEvent* event) {
                 dragging = false;
                 this->discard_delayed_snap_event();
 
-                if (!this->within_tolerance) {
+                if (arc) {
                     // we've been dragging, finish the arc
                     this->finishItem();
                 } else if (this->item_to_select) {
