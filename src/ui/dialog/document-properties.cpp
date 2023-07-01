@@ -109,6 +109,14 @@ DocumentProperties::DocumentProperties()
     _notebook.append_page(*_page_scripting, _("Scripting"));
     _notebook.append_page(*_page_metadata1, _("Metadata"));
     _notebook.append_page(*_page_metadata2, _("License"));
+    _notebook.signal_switch_page().connect([=](Gtk::Widget*, guint page){
+        // we cannot use widget argument, as this notification fires during destruction with all pages passed one by one
+        // page no 3 - cms
+        if (page == 3) {
+            // lazy-load color profiles; it can get prohibitively expensive when hundreds are installed
+            populate_available_profiles();
+        }
+    });
 
     _wr.setUpdating (true);
     build_page();
@@ -481,6 +489,9 @@ void DocumentProperties::build_guides()
 
 /// Populates the available color profiles combo box
 void DocumentProperties::populate_available_profiles(){
+    // scanning can be expensive; avoid if possible
+    if (!_AvailableProfilesListStore->children().empty()) return;
+
     _AvailableProfilesListStore->clear(); // Clear any existing items in the combo box
 
     // Iterate through the list of profiles and add the name to the combo box.
@@ -745,8 +756,6 @@ void DocumentProperties::build_cms()
     _AvailableProfilesList.pack_start(_AvailableProfilesListColumns.nameColumn);
     _AvailableProfilesList.set_row_separator_func(sigc::mem_fun(*this, &DocumentProperties::_AvailableProfilesList_separator));
     _AvailableProfilesList.signal_changed().connect( sigc::mem_fun(*this, &DocumentProperties::linkSelectedProfile) );
-
-    populate_available_profiles();
 
     //# Set up the Linked Profiles combo box
     _LinkedProfilesListStore = Gtk::ListStore::create(_LinkedProfilesListColumns);
@@ -1466,7 +1475,6 @@ void DocumentProperties::update_widgets()
     //------------------------------------------------Color Management page
 
     populate_linked_profiles_box();
-    populate_available_profiles();
 
     //-----------------------------------------------------------meta pages
     // update the RDF entities; note that this may modify document, maybe doc-undo should be called?
