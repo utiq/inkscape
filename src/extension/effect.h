@@ -12,9 +12,11 @@
 #ifndef INKSCAPE_EXTENSION_EFFECT_H__
 #define INKSCAPE_EXTENSION_EFFECT_H__
 
+#include <glibmm/ustring.h>
 #include <list>
 
 #include <glibmm/i18n.h>
+#include <string>
 #include "extension.h"
 #include "inkscape-application.h"
 
@@ -40,7 +42,7 @@ class Effect : public Extension {
     static Effect * _last_effect;
 
     Inkscape::XML::Node *find_menu (Inkscape::XML::Node * menustruct, const gchar *name);
-    void get_menu (Inkscape::XML::Node * pattern, std::list<Glib::ustring>& sub_menu_list);
+    void get_menu(Inkscape::XML::Node * pattern, std::list<Glib::ustring>& sub_menu_list) const;
 
     /** \brief  Menu node created for this effect */
     Inkscape::XML::Node * _menu_node;
@@ -49,7 +51,7 @@ class Effect : public Extension {
     PrefDialog * _prefDialog;
 
 public:
-    Effect(Inkscape::XML::Node *in_repr, Implementation::Implementation *in_imp, std::string *base_directory);
+    Effect(Inkscape::XML::Node *in_repr, Implementation::Implementation *in_imp, std::string *base_directory, std::string* file_name);
     ~Effect  () override;
 
     bool         prefs   (Inkscape::UI::View::View * doc);
@@ -77,12 +79,39 @@ public:
     void        set_pref_dialog (PrefDialog * prefdialog);
 
     void deactivate() override;
+
+    // try to locate SVG thumbnail for this effect and return its path; empty string if not found
+    std::string find_icon_file() const;
+
+    // returns true if this extension presents input dialog before taking effect
+    // or false for immediate action (no UI)
+    bool takes_input() const;
+
+    // returns true if this effect should not be presented in the UI main menu
+    bool hidden_from_menu() const;
+
+    // returns true if this extension is a filter effect
+    bool is_filter_effect() const;
+
+    // get effect's menu tip
+    const Glib::ustring& get_menu_tip() const;
+
+    // get effect's ID sanitized to alphanumeric ASCII charaters
+    std::string get_sanitized_id() const;
+
+    // get local effect menu
+    std::list<Glib::ustring> get_menu_list() const;
+
 private:
+    std::string _file_name; // extension file name, if provided
+    bool _hidden_from_menu = false;
+    bool _filter_effect = false;
+    Glib::ustring _menu_tip;
+    Inkscape::XML::Node* _local_effects_menu = nullptr;
+    std::string _icon_path;
+
     static gchar *   remove_ (gchar * instr);
     static void _sanitizeId(std::string &id);
-
-    Glib::RefPtr<Gio::SimpleAction> action;
-    Glib::RefPtr<Gio::SimpleAction> action_noprefs;
 };
 
 } }  /* namespace Inkscape, Extension */

@@ -12,12 +12,20 @@
 
 
 #include "effect.h"
+#include <glibmm/fileutils.h>
+#include <glibmm/miscutils.h>
+#include <iostream>
+#include <string>
 
+#include "actions/actions-effect-data.h"
 #include "execution-env.h"
 #include "inkscape.h"
+#include "streq.h"
 #include "timer.h"
 
 #include "implementation/implementation.h"
+#include "io/sys.h"
+#include "internal/filter/filter.h"
 #include "prefdialog/prefdialog.h"
 #include "ui/view/view.h"
 #include "inkscape-application.h"
@@ -30,49 +38,16 @@ namespace Extension {
 
 Effect * Effect::_last_effect = nullptr;
 
-/**
- * Adds effect to Gio::Actions
- *
- *  \c effect is Filter or Extension
- *  \c show_prefs is used to show preferences dialog
-*/
-void
-action_effect (Effect* effect, bool show_prefs)
-{
-    auto doc = InkscapeApplication::instance()->get_active_view();
-    if (effect->_workingDialog && show_prefs) {
-        effect->prefs(doc);
-    } else {
-        effect->effect(doc);
-    }
-}
-
-// Modifying string to get submenu id
-std::string
-action_menu_name (std::string menu)
-{
-    transform(menu.begin(), menu.end(), menu.begin(), ::tolower);
-    for (auto &x:menu) {
-        if (x==' ') {
-            x = '-';
-        }
-    }
-    return menu;
-}
-
-Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in_imp, std::string *base_directory)
+Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in_imp, std::string *base_directory, std::string* file_name)
     : Extension(in_repr, in_imp, base_directory)
     , _menu_node(nullptr)
     , _prefDialog(nullptr)
 {
-    Inkscape::XML::Node * local_effects_menu = nullptr;
-
     // can't use document level because it is not defined
     static auto app = InkscapeApplication::instance();
 
     if (!app) {
         // This happens during tests.
-        // std::cerr << "Effect::Effect:: no app!" << std::endl;
         return;
     }
 
@@ -84,94 +59,48 @@ Effect::Effect (Inkscape::XML::Node *in_repr, Implementation::Implementation *in
     if (!strcmp(this->get_id(), "org.inkscape.filter.dropshadow"))
         return;
 
-    bool hidden = false;
+    if (file_name) {
+        _file_name = *file_name;
+    }
 
     no_doc = false;
     no_live_preview = false;
 
-    // Setting initial value of description to name of action incase if there is no description
-    Glib::ustring description  = get_name();
-
     if (repr != nullptr) {
-
         for (Inkscape::XML::Node *child = repr->firstChild(); child != nullptr; child = child->next()) {
-            if (!strcmp(child->name(), INKSCAPE_EXTENSION_NS "effect")) {
-                if (child->attribute("needs-document") && !strcmp(child->attribute("needs-document"), "false")) {
-                    no_doc = true;
-                }
-                if (child->attribute("needs-live-preview") && !strcmp(child->attribute("needs-live-preview"), "false")) {
-                    no_live_preview = true;
-                }
-                if (child->attribute("implements-custom-gui") && !strcmp(child->attribute("implements-custom-gui"), "true")) {
-                    _workingDialog = false;
-                    ignore_stderr = true;
-                }
-                for (Inkscape::XML::Node *effect_child = child->firstChild(); effect_child != nullptr; effect_child = effect_child->next()) {
-                    if (!strcmp(effect_child->name(), INKSCAPE_EXTENSION_NS "effects-menu")) {
-                        // printf("Found local effects menu in %s\n", this->get_name());
-                        local_effects_menu = effect_child->firstChild();
-                        if (effect_child->attribute("hidden") && !strcmp(effect_child->attribute("hidden"), "true")) {
-                            hidden = true;
-                        }
+            // look for "effect"
+            if (strcmp(child->name(), INKSCAPE_EXTENSION_NS "effect")) continue;
+
+            if (child->attribute("needs-document") && !strcmp(child->attribute("needs-document"), "false")) {
+                no_doc = true;
+            }
+            if (child->attribute("needs-live-preview") && !strcmp(child->attribute("needs-live-preview"), "false")) {
+                no_live_preview = true;
+            }
+            if (child->attribute("implements-custom-gui") && !strcmp(child->attribute("implements-custom-gui"), "true")) {
+                _workingDialog = false;
+                ignore_stderr = true;
+            }
+            for (auto effect_child = child->firstChild(); effect_child != nullptr; effect_child = effect_child->next()) {
+                if (!strcmp(effect_child->name(), INKSCAPE_EXTENSION_NS "effects-menu")) {
+                    _local_effects_menu = effect_child->firstChild();
+                    if (effect_child->attribute("hidden") && !strcmp(effect_child->attribute("hidden"), "true")) {
+                        _hidden_from_menu = true;
                     }
-                    if (!strcmp(effect_child->name(), INKSCAPE_EXTENSION_NS "menu-tip") ||
-                            !strcmp(effect_child->name(), INKSCAPE_EXTENSION_NS "_menu-tip")) {
-                        // printf("Found local effects menu in %s\n", this->get_name());
-                        description = effect_child->firstChild()->content();
-                    }
-                } // children of "effect"
-                break; // there can only be one effect
-            } // find "effect"
+                }
+                if (!strcmp(effect_child->name(), INKSCAPE_EXTENSION_NS "menu-tip") ||
+                        !strcmp(effect_child->name(), INKSCAPE_EXTENSION_NS "_menu-tip")) {
+                    _menu_tip = effect_child->firstChild()->content();
+                }
+                if (streq(effect_child->name(), INKSCAPE_EXTENSION_NS "icon")) {
+                    _icon_path = effect_child->firstChild()->content();
+                }
+            } // children of "effect"
+            break; // there can only be one effect
         } // children of "inkscape-extension"
     } // if we have an XML file
 
-    std::string aid = std::string(get_id());
-    _sanitizeId(aid);
-    std::string action_id = "app." + aid;
-
-    static auto gapp = InkscapeApplication::instance()->gtk_app();
-    if (gapp) {
-        // Might be in command line mode without GUI (testing).
-        action = gapp->add_action( aid, sigc::bind(sigc::ptr_fun(&action_effect), this, true));
-        action_noprefs = gapp->add_action( aid + ".noprefs", sigc::bind(sigc::ptr_fun(&action_effect), this, false));
-    }
-
-    if (!hidden) {
-        // Submenu retrieval as a list of strings (to handle nested menus).
-        std::list<Glib::ustring> sub_menu_list;
-        get_menu(local_effects_menu, sub_menu_list);
-
-        if (local_effects_menu && local_effects_menu->attribute("name") && !strcmp(local_effects_menu->attribute("name"), ("Filters"))) {
-
-            std::vector<std::vector<Glib::ustring>>raw_data_filter =
-                {{ action_id, get_name(), "Filters", description },
-                 { action_id + ".noprefs", Glib::ustring(get_name()) + " " + _("(No preferences)"), "Filters (no prefs)", description }};
-            app->get_action_extra_data().add_data(raw_data_filter);
-
-        } else {
-
-            std::vector<std::vector<Glib::ustring>>raw_data_effect =
-                {{ action_id, get_name(), "Extensions", description },
-                 { action_id + ".noprefs", Glib::ustring(get_name()) + " " + _("(No preferences)"), "Extensions (no prefs)", description }};
-            app->get_action_extra_data().add_data(raw_data_effect);
-
-            sub_menu_list.push_front("Effects");
-        }
-        
-        // std::cout << " Effect: name:  " << get_name();
-        // std::cout << "  id: " << aid.c_str();
-        // std::cout << "  menu: ";
-        // for (auto sub_menu : sub_menu_list) {
-        //     std::cout << "|" << sub_menu.raw(); // Must use raw() as somebody has messed up encoding.
-        // }
-        // std::cout << "|" << std::endl;
-
-        // Add submenu to effect data
-        gchar *ellipsized_name = widget_visible_count() ? g_strdup_printf(_("%s..."), get_name()) : nullptr;
-        Glib::ustring menu_name = ellipsized_name ? ellipsized_name : get_name();
-        app->get_action_effect_data().add_data(aid, sub_menu_list, menu_name);
-        g_free(ellipsized_name);
-    }
+    _filter_effect = dynamic_cast<Inkscape::Extension::Internal::Filter::Filter*>(in_imp) != nullptr;
 }
 
 /** Sanitizes the passed id in place. If an invalid character is found in the ID, a warning
@@ -206,8 +135,7 @@ void Effect::_sanitizeId(std::string &id)
 }
 
 
-void
-Effect::get_menu (Inkscape::XML::Node * pattern, std::list<Glib::ustring>& sub_menu_list)
+void Effect::get_menu(Inkscape::XML::Node * pattern, std::list<Glib::ustring>& sub_menu_list) const
 {
     if (!pattern) {
         return;
@@ -238,10 +166,13 @@ Effect::get_menu (Inkscape::XML::Node * pattern, std::list<Glib::ustring>& sub_m
 void
 Effect::deactivate()
 {
+    /* FIXME: https://gitlab.com/inkscape/inkscape/-/issues/4381
+     * Effects don't have actions anymore, so this is not possible:
     if (action)
         action->set_enabled(false);
     if (action_noprefs)
         action_noprefs->set_enabled(false);
+    */
     Extension::deactivate();
 }
 
@@ -368,6 +299,70 @@ Effect::set_pref_dialog (PrefDialog * prefdialog)
 {
     _prefDialog = prefdialog;
     return;
+}
+
+// Try locating effect's thumbnail file using:
+// <icon> path
+// or extension's file name
+// or extension's ID
+std::string Effect::find_icon_file() const {
+    if (!_base_directory.empty()) {
+        // icon path provided?
+        if (!_icon_path.empty()) {
+            auto path = Glib::build_filename(_base_directory, _icon_path);
+            if (Glib::file_test(path, Glib::FILE_TEST_IS_REGULAR)) {
+                return path;
+            }
+        }
+        else {
+            // fallback 1: try the same name as extension file, but with ".svg" instead of ".inx"
+            if (!_file_name.empty()) {
+                auto ext = Inkscape::IO::get_file_extension(_file_name);
+                auto filename = _file_name.substr(0, _file_name.size() - ext.size());
+                auto path = Glib::build_filename(_base_directory, filename + ".svg");
+                if (Glib::file_test(path, Glib::FILE_TEST_IS_REGULAR)) {
+                    return path;
+                }
+            }
+            // fallback 2: look for icon in extension's folder, inside "icons", this time using extension ID as a name
+            std::string id = get_id();
+            auto path = Glib::build_filename(_base_directory, "icons", id + ".svg");
+            if (Glib::file_test(path, Glib::FILE_TEST_IS_REGULAR)) {
+                return path;
+            }
+        }
+    }
+    return std::string();
+}
+
+bool Effect::hidden_from_menu() const {
+    return _hidden_from_menu;
+}
+
+bool Effect::takes_input() const {
+    return widget_visible_count() > 0;
+}
+
+bool Effect::is_filter_effect() const {
+    return _filter_effect;
+}
+
+const Glib::ustring& Effect::get_menu_tip() const {
+    return _menu_tip;
+}
+
+std::string Effect::get_sanitized_id() const {
+    std::string id = get_id();
+    _sanitizeId(id);
+    return id;
+}
+
+std::list<Glib::ustring> Effect::get_menu_list() const {
+    std::list<Glib::ustring> menu;
+    if (_local_effects_menu) {
+        get_menu(_local_effects_menu, menu);
+    }
+    return menu;
 }
 
 } }  /* namespace Inkscape, Extension */

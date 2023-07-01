@@ -1102,7 +1102,7 @@ Extension::get_params_widget()
     return retval;
 }
 
-unsigned int Extension::widget_visible_count ( )
+unsigned int Extension::widget_visible_count() const
 {
     unsigned int _visible_count = 0;
     for (auto widget : _widgets) {

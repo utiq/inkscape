@@ -21,6 +21,7 @@
  */
 
 #include <gtkmm.h>
+#include <vector>
 
 #include "document.h"
 #include "selection.h"
@@ -181,6 +182,10 @@ protected:
     void shell(bool active_window = false);
 
     void _start_main_option_section(const Glib::ustring& section_name = "");
+    
+private:
+    void init_extension_action_data();
+    std::vector<Glib::RefPtr<Gio::SimpleAction>> _effect_actions;
 };
 
 #endif // INKSCAPE_APPLICATION_H

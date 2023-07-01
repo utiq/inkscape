@@ -192,7 +192,7 @@ private:
 public:
     /** \brief  A function to get the number of visible parameters of the extension.
         \return The number of visible parameters. */
-    unsigned int widget_visible_count ( );
+    unsigned int widget_visible_count() const;
 
 public:
     /** An error class for when a parameter is looked for that just
