@@ -458,10 +458,10 @@ static void init_extended()
             auto const devName = dev->get_name();
             auto devSrc = dev->get_source();
             
-            if ( !devName.empty()
-                 && (avoidName != devName)
-                 && (devSrc != Gdk::SOURCE_MOUSE) ) {
-//                 g_message("Adding '%s' as [%d]", devName, devSrc);
+            if ( !devName.empty()           &&
+                 (avoidName != devName)     &&
+                 (devSrc != Gdk::SOURCE_MOUSE) ) {
+                // g_message("Adding '%s' as [%d]", devName, devSrc);
 
                 // Set the initial tool for the device
                 switch ( devSrc ) {
@@ -485,54 +485,76 @@ static void init_extended()
 }
 
 
+// Switch tool based on device that generated event.
+// For example, switch to Calligraphy or Eraser tool when using a Wacom tablet pen.
+// Enabled in "Input" section of preferences dialog.
 void snoop_extended(GdkEvent* event, SPDesktop *desktop)
 {
-    GdkDevice *source_device = gdk_event_get_source_device (event);
     GdkInputSource source = GDK_SOURCE_MOUSE;
     std::string name;
 
-    if (! source_device) return;
     switch ( event->type ) {
         case GDK_MOTION_NOTIFY:
         case GDK_BUTTON_PRESS:
         case GDK_2BUTTON_PRESS:
         case GDK_3BUTTON_PRESS:
         case GDK_BUTTON_RELEASE:
+        case GDK_TOUCH_BEGIN:
+        case GDK_TOUCH_UPDATE:
+        case GDK_TOUCH_END:
+        case GDK_TOUCH_CANCEL:
         case GDK_SCROLL:
         case GDK_PROXIMITY_IN:
         case GDK_PROXIMITY_OUT:
-    // fix to previous code using event->device that did not point to original device that generated the event.
-        source = gdk_device_get_source(source_device);
-        name = gdk_device_get_name(source_device);
-    
-        break;
+
+        {
+            GdkDevice *source_device = gdk_event_get_source_device (event);
+            if (!source_device) {
+                // Not all event structures include a GdkDevice field but the above should!
+                std::cerr << "snoop_extended: missing source device! " << event->type << std::endl;
+                return;
+            }
+
+            // Fix to previous code using event->device that did not point to original device that generated the event.
+            source = gdk_device_get_source(source_device);
+            name = gdk_device_get_name(source_device);
+        }
+            break;
+
+        case GDK_KEY_PRESS:
+        case GDK_KEY_RELEASE:
+            // Device field added to these event structures sometime during Gtk3 era but key events don't interest us.
+            return;
 
         default:
-            ;
+            return;
     }
 
 
     if (!name.empty()) {
-        if ( lastType != source || lastName != name ) {
+        if (lastType != source || lastName != name ) {
             // The device switched. See if it is one we 'count'
-            //g_message("Changed device %s -> %s", lastName.c_str(), name.c_str());
+
+            // std::cout << "Changed device: " << lastName << " -> " << name << std::endl;
             auto it = toolToUse.find(lastName);
             if (it != toolToUse.end()) {
-                // Save the tool currently selected for next time the input
-                // device shows up.
+                // Save the tool currently selected for next time the input device shows up.
                 it->second = get_active_tool(desktop);
             }
 
             it = toolToUse.find(name);
-            if (it != toolToUse.end() ) {
+            if (it != toolToUse.end()) {
                 set_active_tool(desktop, it->second);
             }
 
             lastName = name;
             lastType = source;
         }
+    } else {
+        std::cerr << "snoop_extended: name empty!" << std::endl;
     }
 }
+
 /*
   Local Variables:
   mode:c++
