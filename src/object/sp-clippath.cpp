@@ -239,11 +239,6 @@ char const *SPClipPath::create(std::vector<Inkscape::XML::Node*> &reprs, SPDocum
     return id;
 }
 
-SPClipPath::View::View(DrawingItemPtr<Inkscape::DrawingGroup> drawingitem, Geom::OptRect const &bbox, unsigned key)
-    : drawingitem(std::move(drawingitem))
-    , bbox(bbox)
-    , key(key) {}
-
 bool SPClipPathReference::_acceptObject(SPObject *obj) const
 {
     if (!is<SPClipPath>(obj)) {
