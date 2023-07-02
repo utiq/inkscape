@@ -19,6 +19,7 @@
 
 #include "enums.h"
 #include "include/macros.h" // For MOD__ modifier testing functions.
+#include "ui/tool/event-utils.h" // For held_ modifier testing functions.
 
 namespace Inkscape {
 
@@ -47,6 +48,15 @@ public:
     /// Access the wrapped GdkEvent. Avoid if possible - we want to get rid of this!
     GdkEvent *original() const { return _original.get(); }
 
+    /// Get the modifiers mask immediately before the event.
+    virtual unsigned modifiers() const = 0;
+
+    /// Get the change in the modifiers due to this event.
+    virtual unsigned modifiersChange() const { return 0; }
+
+    /// Get the modifiers mask immediately after the event. (Convenience function.)
+    unsigned modifiersAfter() const { return modifiers() ^ modifiersChange(); }
+
 protected:
     GdkEventUniqPtr _original;
 };
@@ -62,10 +72,22 @@ public:
 
     GdkEventButton *original() const { return reinterpret_cast<GdkEventButton*>(_original.get()); }
 
+    unsigned modifiersChange() const override
+    {
+        switch (_original->button.button) {
+            case 1: return GDK_BUTTON1_MASK;
+            case 2: return GDK_BUTTON2_MASK;
+            case 3: return GDK_BUTTON3_MASK;
+            case 4: return GDK_BUTTON4_MASK;
+            case 5: return GDK_BUTTON5_MASK;
+            default: return 0; // Buttons can range at least to 9 but mask defined only to 5.
+        }
+    }
+
     double eventX() const { return _original->button.x; }
     double eventY() const { return _original->button.y; }
     Geom::Point eventPos() const { return { eventX(), eventY() }; }
-    unsigned modifiers() const { return _original->button.state; }
+    unsigned modifiers() const override { return _original->button.state; }
     unsigned button() const { return _original->button.button; }
 };
 
@@ -73,7 +95,7 @@ public:
  * A mouse button (left/right/middle) is pressed. May also
  * be used for touch interactions.
  */
-class ButtonPressEvent : public ButtonEvent
+class ButtonPressEvent final : public ButtonEvent
 {
 public:
     ButtonPressEvent(GdkEventUniqPtr original, int n_press) : ButtonEvent(std::move(original)), _n_press(n_press) {}
@@ -91,7 +113,7 @@ private:
  * A mouse button (left/right/middle) is released. May also
  * be used for touch interactions.
  */
-class ButtonReleaseEvent : public ButtonEvent
+class ButtonReleaseEvent final : public ButtonEvent
 {
 public:
     ButtonReleaseEvent(GdkEventUniqPtr original) : ButtonEvent(std::move(original)) {}
@@ -110,17 +132,37 @@ public:
 
     GdkEventKey *original() const { return reinterpret_cast<GdkEventKey*>(_original.get()); }
 
+    unsigned modifiersChange() const override
+    {
+        switch (_original->key.keyval) {
+            case GDK_KEY_Shift_L:
+            case GDK_KEY_Shift_R:
+                return GDK_SHIFT_MASK;
+            case GDK_KEY_Control_L:
+            case GDK_KEY_Control_R:
+                return GDK_CONTROL_MASK;
+            case GDK_KEY_Alt_L:
+            case GDK_KEY_Alt_R:
+                return GDK_MOD1_MASK;
+            case GDK_KEY_Meta_L:
+            case GDK_KEY_Meta_R:
+                return GDK_META_MASK;
+            default:
+                return 0;
+        }
+    }
+
     uint8_t group() const { return _original->key.group; }
     uint16_t hardwareKeycode() const { return _original->key.hardware_keycode; }
     uint32_t keyval() const { return _original->key.keyval; }
-    unsigned modifiers() const { return _original->key.state; }
+    unsigned modifiers() const override { return _original->key.state; }
     uint32_t time() const { return _original->key.time; }
 };
 
 /**
  * A key has been pressed.
  */
-class KeyPressEvent : public KeyEvent
+class KeyPressEvent final : public KeyEvent
 {
 public:
     KeyPressEvent(GdkEventUniqPtr original) : KeyEvent(std::move(original)) {}
@@ -132,7 +174,7 @@ public:
 /**
  * A key has been released.
  */
-class KeyReleaseEvent : public KeyEvent
+class KeyReleaseEvent final : public KeyEvent
 {
 public:
     KeyReleaseEvent(GdkEventUniqPtr original) : KeyEvent(std::move(original)) {}
@@ -149,7 +191,7 @@ class PointerEvent : public CanvasEvent
 public:
     PointerEvent(GdkEventUniqPtr original, unsigned state) : CanvasEvent(std::move(original)), _state(state) {}
 
-    unsigned modifiers() const { return _state; }
+    unsigned modifiers() const override { return _state; }
 
 protected:
     unsigned _state;
@@ -159,7 +201,7 @@ protected:
  * Movement of the mouse pointer. May also be used
  * for touch interactions.
  */
-class MotionEvent : public PointerEvent
+class MotionEvent final : public PointerEvent
 {
 public:
     MotionEvent(GdkEventUniqPtr original, unsigned state) : PointerEvent(std::move(original), state) {}
@@ -177,7 +219,7 @@ public:
 /**
  * The pointer has entered a widget or item.
  */
-class EnterEvent : public PointerEvent
+class EnterEvent final : public PointerEvent
 {
 public:
     EnterEvent(GdkEventUniqPtr original, unsigned state) : PointerEvent(std::move(original), state) {}
@@ -197,7 +239,7 @@ public:
  *
  * Note the coordinates will always be (0, 0) for this event.
  */
-class LeaveEvent : public PointerEvent
+class LeaveEvent final : public PointerEvent
 {
 public:
     LeaveEvent(GdkEventUniqPtr original, unsigned state) : PointerEvent(std::move(original), state) {}
@@ -211,7 +253,7 @@ public:
 /**
  * Scroll the item or widget by the provided amount
  */
-class ScrollEvent : public CanvasEvent
+class ScrollEvent final : public CanvasEvent
 {
 public:
     ScrollEvent(GdkEventUniqPtr original) : CanvasEvent(std::move(original)) {}
@@ -221,7 +263,7 @@ public:
 
     GdkEventScroll *original() const { return reinterpret_cast<GdkEventScroll*>(_original.get()); }
 
-    unsigned modifiers() const { return _original->scroll.state; }
+    unsigned modifiers() const override { return _original->scroll.state; }
     double deltaX() const { return _original->scroll.delta_x; }
     double deltaY() const { return _original->scroll.delta_y; }
     Geom::Point delta() const { return { deltaX(), deltaY() }; }
@@ -321,6 +363,25 @@ inline bool MOD__ALT(KeyEvent const &event) { return ::MOD__ALT(event.modifiers(
 inline bool MOD__SHIFT_ONLY(KeyEvent const &event) { return ::MOD__SHIFT_ONLY(event.modifiers()); }
 inline bool MOD__CTRL_ONLY(KeyEvent const &event) { return ::MOD__CTRL_ONLY(event.modifiers()); }
 inline bool MOD__ALT_ONLY(KeyEvent const &event) { return ::MOD__ALT_ONLY(event.modifiers()); }
+
+/*
+ * Different modifier-testing functions.
+ *
+ * Note: These have a bug on MacOS that was fixed for the MOD__ functions.
+ *
+ * Todo: Merge the two sets of modifier-testing functions together.
+ */
+inline bool held_shift(CanvasEvent const &event) { return UI::state_held_shift(event.modifiers()); }
+inline bool held_control(CanvasEvent const &event) { return UI::state_held_control(event.modifiers()); }
+inline bool held_alt(CanvasEvent const &event) { return UI::state_held_alt(event.modifiers()); }
+inline bool held_only_shift(CanvasEvent const &event) { return UI::state_held_only_shift(event.modifiers()); }
+inline bool held_only_control(CanvasEvent const &event) { return UI::state_held_only_control(event.modifiers()); }
+inline bool held_only_alt(CanvasEvent const &event) { return UI::state_held_only_alt(event.modifiers()); }
+inline bool held_any_modifiers(CanvasEvent const &event) { return UI::state_held_any_modifiers(event.modifiers()); }
+inline bool held_no_modifiers(CanvasEvent const &event) { return UI::state_held_no_modifiers(event.modifiers()); }
+
+template <unsigned button>
+inline bool mod_button(CanvasEvent const &event) { return UI::state_held_button<button>(event.modifiers()); }
 
 } // namespace Inkscape
 

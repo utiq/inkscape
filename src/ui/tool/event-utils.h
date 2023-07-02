@@ -18,6 +18,35 @@
 namespace Inkscape {
 namespace UI {
 
+template <typename T>
+inline constexpr bool is_gdkevent = false;
+
+template <> inline constexpr bool is_gdkevent<GdkEvent> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventAny> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventExpose> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventVisibility> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventMotion> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventButton> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventTouch> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventScroll> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventKey> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventCrossing> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventFocus> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventConfigure> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventProperty> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventSelection> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventOwnerChange> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventProximity> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventDND> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventWindowState> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventSetting> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventGrabBroken> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventTouchpadSwipe> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventTouchpadPinch> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventPadButton> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventPadAxis> = true;
+template <> inline constexpr bool is_gdkevent<GdkEventPadGroupMode> = true;
+
 inline bool state_held_shift(unsigned state) {
     return state & GDK_SHIFT_MASK;
 }
@@ -47,64 +76,63 @@ inline bool state_held_button(unsigned state) {
     return (button == 0 || button > 5) ? false : state & (GDK_BUTTON1_MASK << (button-1));
 }
 
-
 /** Checks whether Shift was held when the event was generated. */
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_shift(E const &event) {
     return state_held_shift(event.state);
 }
 
 /** Checks whether Control was held when the event was generated. */
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_control(E const &event) {
     return state_held_control(event.state);
 }
 
 /** Checks whether Alt was held when the event was generated. */
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_alt(E const &event) {
     return state_held_alt(event.state);
 }
 
 /** True if from the set of Ctrl, Shift and Alt only Ctrl was held when the event
  * was generated. */
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_only_control(E const &event) {
     return state_held_only_control(event.state);
 }
 
 /** True if from the set of Ctrl, Shift and Alt only Shift was held when the event
  * was generated. */
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_only_shift(E const &event) {
     return state_held_only_shift(event.state);
 }
 
 /** True if from the set of Ctrl, Shift and Alt only Alt was held when the event
  * was generated. */
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_only_alt(E const &event) {
     return state_held_only_alt(event.state);
 }
 
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_no_modifiers(E const &event) {
     return state_held_no_modifiers(event.state);
 }
 
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_any_modifiers(E const &event) {
     return state_held_any_modifiers(event.state);
 }
 
-template <typename E>
+template <typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline Geom::Point event_point(E const &event) {
     return Geom::Point(event.x, event.y);
 }
 
 /** Use like this:
  * @code if (held_button<2>(event->motion)) { ... @endcode */
-template <unsigned button, typename E>
+template <unsigned button, typename E, std::enable_if_t<is_gdkevent<E>, int> c = 0>
 inline bool held_button(E const &event) {
     return state_held_button<button>(event.state);
 }

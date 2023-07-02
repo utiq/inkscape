@@ -95,8 +95,9 @@ DelayedSnapEvent::DelayedSnapEvent(ToolBase *tool, gpointer item, gpointer item2
     , _item2(item2)
     , _origin(origin)
 {
-    _event = event.clone();
-    static_cast<MotionEvent &>(*_event).original()->time = GDK_CURRENT_TIME;
+    static_assert(std::is_final_v<MotionEvent>); // Or the next line will slice!
+    _event = std::make_unique<MotionEvent>(event);
+    _event->original()->time = GDK_CURRENT_TIME;
 }
 
 ToolBase::ToolBase(SPDesktop *desktop, std::string &&prefs_path, std::string &&cursor_filename, bool uses_snap)
@@ -1182,12 +1183,35 @@ void ToolBase::set_high_motion_precision(bool high_precision)
 
 Geom::Point ToolBase::setup_for_drag_start(GdkEvent *ev)
 {
-    xyp = { (int)ev->button.x, (int)ev->button.y };
-    within_tolerance = true;
-
     auto const p = Geom::Point(ev->button.x, ev->button.y);
-    item_to_select = Inkscape::UI::Tools::sp_event_context_find_item(_desktop, p, ev->button.state & GDK_MOD1_MASK, true);
+    saveDragOrigin(p);
+    item_to_select = UI::Tools::sp_event_context_find_item(_desktop, p, ev->button.state & GDK_MOD1_MASK, true);
     return _desktop->w2d(p);
+}
+
+void ToolBase::saveDragOrigin(Geom::Point const &pos)
+{
+    xyp = pos.floor();
+    within_tolerance = true;
+}
+
+/**
+ * Analyse the current position and return true once it has moved farther than tolerance
+ * from the drag origin (indicating they intend to move the object, not click).
+ */
+bool ToolBase::checkDragMoved(Geom::Point const &pos)
+{
+    if (within_tolerance) {
+        auto const diff = pos.floor() - xyp;
+        if (std::abs(diff.x()) < tolerance && std::abs(diff.y()) < tolerance) {
+            // Do not drag if within tolerance from origin.
+            return false;
+        }
+        // Mark drag as started.
+        within_tolerance = false;
+    }
+    // Always return true once the drag has started.
+    return true;
 }
 
 /**
@@ -1613,7 +1637,7 @@ void ToolBase::process_delayed_snap_event()
         if (knot) {
             bool was_grabbed = knot->is_grabbed();
             knot->setFlag(SP_KNOT_GRABBED, true); // Must be grabbed for Inkscape::SelTrans::handleRequest() to pass
-            sp_knot_handler_request_position(_dse->getEvent().original(), knot);
+            sp_knot_handler_request_position(reinterpret_cast<GdkEvent*>(_dse->getEvent().original()), knot);
             knot->setFlag(SP_KNOT_GRABBED, was_grabbed);
         }
         break;
@@ -1649,7 +1673,7 @@ void ToolBase::process_delayed_snap_event()
         if (item && widget) {
             g_assert(GTK_IS_WIDGET(item));
             bool horiz = _dse->getOrigin() == DelayedSnapEvent::GUIDE_HRULER;
-            SPDesktopWidget::ruler_event(GTK_WIDGET(item), _dse->getEvent().original(), SP_DESKTOP_WIDGET(widget), horiz);
+            SPDesktopWidget::ruler_event(GTK_WIDGET(item), reinterpret_cast<GdkEvent*>(_dse->getEvent().original()), SP_DESKTOP_WIDGET(widget), horiz);
         }
         break;
     }

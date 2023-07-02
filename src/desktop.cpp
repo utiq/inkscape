@@ -784,16 +784,17 @@ void SPDesktop::zoom_quick(bool enable)
 
         // TODO This needs to migrate into the node tool, but currently the design
         // of this method is sufficiently wrong to prevent this.
-        if (!zoomed && INK_IS_NODE_TOOL(event_context)) {
-            Inkscape::UI::Tools::NodeTool *nt = static_cast<Inkscape::UI::Tools::NodeTool*>(event_context);
-            if (!nt->_selected_nodes->empty()) {
-                Geom::Rect nodes = *nt->_selected_nodes->bounds();
-                double area = nodes.area();
-                // do not zoom if a single cusp node is selected aand the bounds
-                // have zero area.
-                if (!Geom::are_near(area, 0)) {
-                    set_display_area(nodes, true);
-                    zoomed = true;
+        if (!zoomed) {
+            if (auto nt = dynamic_cast<Inkscape::UI::Tools::NodeTool*>(event_context)) {
+                if (!nt->_selected_nodes->empty()) {
+                    Geom::Rect nodes = *nt->_selected_nodes->bounds();
+                    double area = nodes.area();
+                    // do not zoom if a single cusp node is selected aand the bounds
+                    // have zero area.
+                    if (!Geom::are_near(area, 0)) {
+                        set_display_area(nodes, true);
+                        zoomed = true;
+                    }
                 }
             }
         }

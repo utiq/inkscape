@@ -53,8 +53,6 @@ InteractiveBooleansTool::InteractiveBooleansTool(SPDesktop *desktop)
 InteractiveBooleansTool::~InteractiveBooleansTool()
 {
     change_mode(false);
-    _sel_modified.disconnect();
-    _sel_changed.disconnect();
 }
 
 void InteractiveBooleansTool::change_mode(bool setup)
@@ -65,7 +63,7 @@ void InteractiveBooleansTool::change_mode(bool setup)
     _desktop->getCanvasDrawing()->set_visible(!setup);
 }
 
-void InteractiveBooleansTool::switching_away(const std::string &new_tool)
+void InteractiveBooleansTool::switching_away(std::string const &new_tool)
 {
     if (!new_tool.empty() && boolean_builder && new_tool == "/tools/select" || new_tool == "/tool/nodes") {
         // Only forcefully commit if we have the user's explicit instruction to do so.
@@ -76,7 +74,8 @@ void InteractiveBooleansTool::switching_away(const std::string &new_tool)
     }
 }
 
-bool InteractiveBooleansTool::is_ready() const {
+bool InteractiveBooleansTool::is_ready() const
+{
     if (!boolean_builder || !boolean_builder->has_items()) {
         if (_desktop->getSelection()->isEmpty()) {
             _desktop->showNotice(_("You must select some objects to use the Shape Builder tool."), 5000);
@@ -88,7 +87,7 @@ bool InteractiveBooleansTool::is_ready() const {
     return true;
 }
 
-void InteractiveBooleansTool::set(const Inkscape::Preferences::Entry& val)
+void InteractiveBooleansTool::set(Preferences::Entry const &val)
 {
     Glib::ustring path = val.getEntryName();
     if (path == "/tools/booleans/mode") {
@@ -112,45 +111,48 @@ void InteractiveBooleansTool::shape_cancel()
     set_active_tool(_desktop, "Select");
 }
 
-bool InteractiveBooleansTool::root_handler(CanvasEvent const &canvas_event)
+bool InteractiveBooleansTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    if (!boolean_builder)
+    if (!boolean_builder) {
         return false;
+    }
 
     bool ret = false;
-    bool add = should_add(event->button.state);
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
+
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
             ret = event_button_press_handler(event);
-            break;
-        case GDK_BUTTON_RELEASE:
+        },
+        [&] (ButtonReleaseEvent const &event) {
             ret = event_button_release_handler(event);
-            break;
-        case GDK_KEY_PRESS:
+        },
+        [&] (KeyPressEvent const &event) {
             ret = event_key_press_handler(event);
-            // no-break;
-        case GDK_KEY_RELEASE:
-            add = should_add(Modifiers::add_keyval(event->key.state, event->key.keyval, event->type == GDK_KEY_RELEASE));
-            break;
-        case GDK_MOTION_NOTIFY:
-            ret = event_motion_handler(event, add);
-            break;
+        },
+        [&] (MotionEvent const &event) {
+            ret = event_motion_handler(event);
+        },
+        [&] (CanvasEvent const &event) {}
+    );
+
+    if (ret) {
+        return true;
     }
-    if (!ret) {
-        set_cursor(add ? "cursor-union.svg" : "cursor-delete.svg");
-        update_status();
-    }
-    return ret || ToolBase::root_handler(canvas_event);
+
+    bool add = should_add(event.modifiersAfter());
+    set_cursor(add ? "cursor-union.svg" : "cursor-delete.svg");
+    update_status();
+
+    return ToolBase::root_handler(event);
 }
 
 /**
  * Returns true if the shape builder should add items,
  * false if shape builder should delete items
  */
-bool InteractiveBooleansTool::should_add(int state) const
+bool InteractiveBooleansTool::should_add(unsigned state) const
 {
-    auto prefs = Inkscape::Preferences::get();
+    auto prefs = Preferences::get();
     bool pref = prefs->getInt("/tools/booleans/mode", 0) != 0;
     auto modifier = Modifier::get(Modifiers::Type::BOOL_SHIFT);
     return pref == modifier->active(state);
@@ -158,7 +160,7 @@ bool InteractiveBooleansTool::should_add(int state) const
 
 void InteractiveBooleansTool::update_status()
 {
-    auto prefs = Inkscape::Preferences::get();
+    auto prefs = Preferences::get();
     bool pref = prefs->getInt("/tools/booleans/mode", 0) == 0;
     auto modifier = Modifier::get(Modifiers::Type::BOOL_SHIFT);
     message_context->setF(Inkscape::IMMEDIATE_MESSAGE,
@@ -167,14 +169,16 @@ void InteractiveBooleansTool::update_status()
         modifier->get_label().c_str());
 }
 
-bool InteractiveBooleansTool::event_button_press_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_button_press_handler(ButtonPressEvent const &event)
 {
-    if (event->button.button == 1) {
-        Geom::Point const button_pt(event->button.x, event->button.y);
-        boolean_builder->task_select(button_pt, should_add(event->button.state));
-        return true;
+    if (event.numPress() != 1) {
+        return false;
+    }
 
-    } else if (event->button.button == 3) {
+    if (event.button() == 1) {
+        boolean_builder->task_select(event.eventPos(), should_add(event.modifiers()));
+        return true;
+    } else if (event.button() == 3) {
         // right click; do not eat it so that right-click menu can appear, but cancel dragging
         boolean_builder->task_cancel();
     }
@@ -182,32 +186,31 @@ bool InteractiveBooleansTool::event_button_press_handler(GdkEvent *event)
     return false;
 }
 
-bool InteractiveBooleansTool::event_motion_handler(GdkEvent *event, bool add)
+bool InteractiveBooleansTool::event_motion_handler(MotionEvent const &event)
 {
-    Geom::Point const motion_pt(event->motion.x, event->motion.y);
+    bool add = should_add(event.modifiers());
 
-    if ((event->motion.state & GDK_BUTTON1_MASK)) {
+    if (event.modifiers() & GDK_BUTTON1_MASK) {
         if (boolean_builder->has_task()) {
-            return boolean_builder->task_add(motion_pt);
+            return boolean_builder->task_add(event.eventPos());
         } else {
-            return boolean_builder->task_select(motion_pt, add);
+            return boolean_builder->task_select(event.eventPos(), add);
         }
     } else {
-        return boolean_builder->highlight(motion_pt, add);
+        return boolean_builder->highlight(event.eventPos(), add);
     }
-
-    return false;
 }
 
-bool InteractiveBooleansTool::event_button_release_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_button_release_handler(ButtonReleaseEvent const &event)
 {
-    if (event->button.button == 1) {
+    if (event.button() == 1) {
         boolean_builder->task_commit();
     }
     return true;
 }
 
-bool InteractiveBooleansTool::catch_undo(bool redo) {
+bool InteractiveBooleansTool::catch_undo(bool redo)
+{
     if (redo) {
         boolean_builder->redo();
     } else {
@@ -216,18 +219,16 @@ bool InteractiveBooleansTool::catch_undo(bool redo) {
     return true;
 }
 
-bool InteractiveBooleansTool::event_key_press_handler(GdkEvent *event)
+bool InteractiveBooleansTool::event_key_press_handler(KeyPressEvent const &event)
 {
-    bool ret = false;
-    switch (get_latin_keyval (&event->key)) {
+    switch (get_latin_keyval(event.original())) {
         case GDK_KEY_Escape:
             if (boolean_builder->has_task()) {
                 boolean_builder->task_cancel();
             } else {
                 shape_cancel();
             }
-            ret = true;
-            break;
+            return true;
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter:
             if (boolean_builder->has_task()) {
@@ -235,21 +236,18 @@ bool InteractiveBooleansTool::event_key_press_handler(GdkEvent *event)
             } else {
                 shape_commit();
             }
-            ret = true;
-            break;
+            return true;
         case GDK_KEY_z:
         case GDK_KEY_Z:
-            if (event->key.state & INK_GDK_PRIMARY_MASK) {
-                ret = catch_undo(event->key.state & GDK_SHIFT_MASK);
+            if (event.modifiers() & INK_GDK_PRIMARY_MASK) {
+                return catch_undo(event.modifiers() & GDK_SHIFT_MASK);
             }
             break;
-
-
         default:
             break;
     }
 
-    return ret;
+    return false;
 }
 
 } // namespace Tools

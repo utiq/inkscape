@@ -10,8 +10,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef INKSCAPE_UI_TOOLS_BOOLEANS_TOOL
-#define INKSCAPE_UI_TOOLS_BOOLEANS_TOOL
+#ifndef INKSCAPE_UI_TOOLS_BOOLEANS_TOOL_H
+#define INKSCAPE_UI_TOOLS_BOOLEANS_TOOL_H
 
 #include "ui/tools/tool-base.h"
 
@@ -19,6 +19,10 @@ class SPDesktop;
 
 namespace Inkscape {
 class BooleanBuilder;
+class ButtonPressEvent;
+class ButtonReleaseEvent;
+class MotionEvent;
+class KeyPressEvent;
 
 namespace UI {
 namespace Tools {
@@ -49,17 +53,17 @@ public:
 private:
     void update_status();
     void change_mode(bool setup);
-    bool should_add(int state) const;
+    bool should_add(unsigned state) const;
 
-    bool event_button_press_handler(GdkEvent* event);
-    bool event_button_release_handler(GdkEvent* event);
-    bool event_motion_handler(GdkEvent* event, bool add);
-    bool event_key_press_handler(GdkEvent* event);
+    bool event_button_press_handler(ButtonPressEvent const &event);
+    bool event_button_release_handler(ButtonReleaseEvent const &event);
+    bool event_motion_handler(MotionEvent const &event);
+    bool event_key_press_handler(KeyPressEvent const &event);
 
     std::unique_ptr<BooleanBuilder> boolean_builder;
 
-    sigc::connection _sel_modified;
-    sigc::connection _sel_changed;
+    auto_connection _sel_modified;
+    auto_connection _sel_changed;
 
     bool to_commit = false;
 };
@@ -68,4 +72,4 @@ private:
 } // namespace UI
 } // namespace Inkscape
 
-#endif // INKSCAPE_UI_TOOLS_BOOLEANS_TOOL
+#endif // INKSCAPE_UI_TOOLS_BOOLEANS_TOOL_H

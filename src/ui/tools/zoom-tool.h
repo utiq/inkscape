@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_ZOOM_CONTEXT_H__
-#define __SP_ZOOM_CONTEXT_H__
+#ifndef INKSCAPE_UI_TOOLS_ZOOM_TOOL_H
+#define INKSCAPE_UI_TOOLS_ZOOM_TOOL_H
 
 /*
  * Handy zooming tool
@@ -16,12 +16,7 @@
 
 #include "ui/tools/tool-base.h"
 
-#define SP_ZOOM_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::ZoomTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_ZOOM_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::ZoomTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
-
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class ZoomTool : public ToolBase
 {
@@ -35,8 +30,6 @@ private:
     bool escaped = false;
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif
+#endif // INKSCAPE_UI_TOOLS_ZOOM_TOOL_H

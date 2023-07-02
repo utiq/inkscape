@@ -9,14 +9,10 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_UI_TOOL_NODE_TOOL_H
-#define SEEN_UI_TOOL_NODE_TOOL_H
+#ifndef INKSCAPE_UI_TOOLS_NODE_TOOL_H
+#define INKSCAPE_UI_TOOLS_NODE_TOOL_H
 
-#include <glib.h>
 #include "ui/tools/tool-base.h"
-
-// we need it to call it from Live Effect
-#include "selection.h"
 
 namespace Inkscape {
     namespace Display {
@@ -32,17 +28,13 @@ namespace Inkscape {
         struct PathSharedData;
     }
 
+    class Selection;
     class Rubberband;
+    class CanvasItemGroup;
+    class ButtonReleaseEvent;
 }
 
-struct SPCanvasGroup;
-
-#define INK_NODE_TOOL(obj) (dynamic_cast<Inkscape::UI::Tools::NodeTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define INK_IS_NODE_TOOL(obj) (dynamic_cast<const Inkscape::UI::Tools::NodeTool*>((const Inkscape::UI::Tools::ToolBase*)obj))
-
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class NodeTool : public ToolBase
 {
@@ -91,20 +83,22 @@ private:
 
     void selection_changed(Inkscape::Selection *sel);
 
-    void select_area(Geom::Path const &path, GdkEventButton *event);
-    void select_point(GdkEventButton *event);
+    void select_area(Geom::Path const &path, ButtonReleaseEvent const &event);
+    void select_point(ButtonReleaseEvent const &event);
     void mouseover_changed(Inkscape::UI::ControlPoint *p);
-    void update_tip(GdkEvent *event);
+    void update_tip(CanvasEvent const &event);
+    void update_tip();
     void handleControlUiStyleChange();
 };
 
 void sp_update_helperpath(SPDesktop *desktop);
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif // SEEN_UI_TOOL_NODE_TOOL_H
+// Todo: Remove
+inline bool INK_IS_NODE_TOOL(Inkscape::UI::Tools::ToolBase const *obj) { return dynamic_cast<Inkscape::UI::Tools::NodeTool const *>(obj); }
+
+#endif // INKSCAPE_UI_TOOLS_NODE_TOOL_H
 
 /*
   Local Variables:

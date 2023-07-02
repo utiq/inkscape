@@ -1143,17 +1143,6 @@ bool CanvasPrivate::process_event(CanvasEvent &event)
         return false;
     }
 
-    auto calc_button_mask = [&] () -> int {
-        switch (static_cast<ButtonEvent const &>(event).button()) {
-            case 1:  return GDK_BUTTON1_MASK; break;
-            case 2:  return GDK_BUTTON2_MASK; break;
-            case 3:  return GDK_BUTTON3_MASK; break;
-            case 4:  return GDK_BUTTON4_MASK; break;
-            case 5:  return GDK_BUTTON5_MASK; break;
-            default: return 0; // Buttons can range at least to 9 but mask defined only to 5.
-        }
-    };
-
     // Do event-specific processing.
     switch (event.type()) {
         case EventType::SCROLL: {
@@ -1181,7 +1170,7 @@ bool CanvasPrivate::process_event(CanvasEvent &event)
             repick();
 
             // ...then process the event after the button has been pressed.
-            q->_state ^= calc_button_mask();
+            q->_state = event.modifiersAfter();
             return emit_event(event);
         }
 
@@ -1192,7 +1181,7 @@ bool CanvasPrivate::process_event(CanvasEvent &event)
             bool retval = emit_event(event);
 
             // ...then repick after the button has been released.
-            q->_state ^= calc_button_mask();
+            q->_state = event.modifiersAfter();
             repick();
 
             return retval;

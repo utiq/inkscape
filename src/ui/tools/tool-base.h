@@ -68,14 +68,14 @@ public:
     ToolBase *getEventContext() const { return _tool; }
     gpointer getItem() const { return _item; }
     gpointer getItem2() const { return _item2; }
-    CanvasEvent const &getEvent() const { return *_event; }
+    MotionEvent const &getEvent() const { return *_event; }
     Origin getOrigin() const { return _origin; }
 
 private:
     ToolBase *_tool;
     gpointer _item;
     gpointer _item2;
-    std::unique_ptr<CanvasEvent> _event;
+    std::unique_ptr<MotionEvent> _event;
     Origin _origin;
 };
 
@@ -140,6 +140,8 @@ protected:
                                       ///< be selected if this is a click not drag
 
     Geom::Point setup_for_drag_start(GdkEvent *ev);
+    void saveDragOrigin(Geom::Point const &pos);
+    bool checkDragMoved(Geom::Point const &pos);
 
     // Commonly used CanvasItemCatchall grab/ungrab.
     void grabCanvasEvents(EventMask mask =

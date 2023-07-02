@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_BOX3D_CONTEXT_H__
-#define __SP_BOX3D_CONTEXT_H__
+#ifndef INKSCAPE_UI_TOOLS_BOX3D_TOOL_H
+#define INKSCAPE_UI_TOOLS_BOX3D_TOOL_H
 
 /*
- * 3D box drawing context
+ * 3D box drawing tool
  *
  * Author:
  *   Lauris Kaplinski <lauris@kaplinski.com>
@@ -17,10 +17,12 @@
  */
 
 #include <cstddef>
+#include <memory>
 
 #include <2geom/point.h>
 #include <sigc++/connection.h>
 
+#include "object/weakptr.h"
 #include "proj_pt.h"
 #include "vanishing-point.h"
 
@@ -28,18 +30,10 @@
 
 class SPItem;
 class SPBox3D;
+namespace Box3D { struct VPDrag; }
+namespace Inkscape { class Selection; }
 
-namespace Box3D {
-    struct VPDrag;
-}
-
-namespace Inkscape {
-    class Selection;
-}
-
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class Box3dTool : public ToolBase
 {
@@ -47,13 +41,13 @@ public:
     Box3dTool(SPDesktop *desktop);
     ~Box3dTool() override;
 
-    Box3D::VPDrag *_vpdrag;
+    std::unique_ptr<Box3D::VPDrag> _vpdrag;
 
     bool root_handler(CanvasEvent const &event) override;
     bool item_handler(SPItem *item, CanvasEvent const &event) override;
 
 private:
-    SPBox3D *box3d;
+    SPWeakPtr<SPBox3D> box3d;
     Geom::Point center;
 
     /**
@@ -72,22 +66,21 @@ private:
     Proj::Pt3 drag_ptB_proj;
     Proj::Pt3 drag_ptC_proj;
 
-    bool ctrl_dragged; /* whether we are ctrl-dragging */
-    bool extruded; /* whether shift-dragging already occurred (i.e. the box is already extruded) */
+    bool ctrl_dragged = false; ///< whether we are ctrl-dragging
+    bool extruded = false; ///< whether shift-dragging already occurred (i.e. the box is already extruded)
+    bool dragging = false;
 
-    sigc::connection sel_changed_connection;
+    auto_connection sel_changed_connection;
 
     void selection_changed(Selection *selection);
 
-    void drag(unsigned state);
+    void drag();
 	void finishItem();
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif /* __SP_BOX3D_CONTEXT_H__ */
+#endif // INKSCAPE_UI_TOOLS_BOX3D_TOOL_H
 
 /*
   Local Variables:

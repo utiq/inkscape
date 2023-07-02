@@ -136,9 +136,8 @@ bool TransformHandle::grabbed(GdkEventMotion *)
     _setState(_state);
 
     // Collect the snap-candidates, one for each selected node. These will be stored in the _snap_points vector.
-    Inkscape::UI::Tools::NodeTool *nt = INK_NODE_TOOL(_th._desktop->event_context);
-    //ControlPointSelection *selection = nt->_selected_nodes.get();
-    ControlPointSelection* selection = nt->_selected_nodes;
+    auto nt = dynamic_cast<Tools::NodeTool*>(_th._desktop->event_context);
+    auto selection = nt->_selected_nodes;
 
     selection->setOriginalPoints();
     selection->getOriginalPoints(_snap_points);
@@ -189,11 +188,10 @@ void TransformHandle::ungrabbed(GdkEventButton *)
     _th.signal_commit.emit(getCommitEvent());
 
     //updates the positions of the nodes
-    Inkscape::UI::Tools::NodeTool *nt = INK_NODE_TOOL(_th._desktop->event_context);
-    ControlPointSelection* selection = nt->_selected_nodes;
+    auto nt = dynamic_cast<Tools::NodeTool*>(_th._desktop->event_context);
+    auto selection = nt->_selected_nodes;
     selection->setOriginalPoints();
 }
-
 
 class ScaleHandle : public TransformHandle {
 public:
