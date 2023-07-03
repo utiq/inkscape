@@ -718,7 +718,6 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
                     <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
-                    <property name="secondary">True</property>
                   </packing>
                 </child>
                 <child>
@@ -950,7 +949,6 @@ Fund Inkscape</property>
                     <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
-                    <property name="secondary">True</property>
                   </packing>
                 </child>
               </object>
@@ -1074,7 +1072,6 @@ Fund Inkscape</property>
                     <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
-                    <property name="secondary">True</property>
                   </packing>
                 </child>
                 <child>
@@ -1105,7 +1102,6 @@ Fund Inkscape</property>
                     <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">2</property>
-                    <property name="secondary">True</property>
                   </packing>
                 </child>
               </object>
