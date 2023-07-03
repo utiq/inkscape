@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: uk\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2023-06-06 18:26+0000\n"
-"PO-Revision-Date: 2023-06-18 15:29+0300\n"
+"POT-Creation-Date: 2023-07-03 13:57+0000\n"
+"PO-Revision-Date: 2023-07-03 19:57+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -2216,6 +2216,7 @@ msgid "Square"
 msgstr "Квадрат"
 
 #: ../build/share/markers/markers.svg.h:17
+#: ../share/extensions/other/templates/template_shape_prefab.inx:13
 msgid "Diamond"
 msgstr "Ромб"
 
@@ -7609,8 +7610,8 @@ msgid ""
 "Remove unused definitions (such as gradients or clipping paths) from the "
 "document"
 msgstr ""
-"Прибрати непотрібні визначення (наприклад, градієнти чи вирізання) з"
-" документа"
+"Прибрати непотрібні визначення (наприклад, градієнти чи вирізання) з "
+"документа"
 
 #: ../src/actions/actions-file-window.cpp:128
 #: ../src/live_effects/lpe-fill-between-many.cpp:39
@@ -8251,8 +8252,8 @@ msgid ""
 "Align selected text anchors; usage: [[vertical | horizontal] [last|first|"
 "biggest|smallest|page|drawing|selection]?"
 msgstr ""
-"Вирівняти позначені прив'язки тексту; користування: [[vertical | "
-"horizontal] [last|first|biggest|smallest|page|drawing|selection]?"
+"Вирівняти позначені прив'язки тексту; користування: [[vertical | horizontal] "
+"[last|first|biggest|smallest|page|drawing|selection]?"
 
 #: ../src/actions/actions-object-align.cpp:782
 msgid "Distribute objects"
@@ -9120,11 +9121,11 @@ msgstr "Руйнування"
 #: ../src/actions/actions-paths.cpp:235
 msgid "Fracture one or more overlapping objects into all possible segments"
 msgstr ""
-"Розрізати один або декілька об'єктів, що перекриваються, на усі можливі"
-" сегменти"
+"Розрізати один або декілька об'єктів, що перекриваються, на усі можливі "
+"сегменти"
 
 #: ../src/actions/actions-paths.cpp:236
-#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgctxt "Path flatten"
 msgid "Flatten"
 msgstr "Спростити"
 
@@ -9531,8 +9532,8 @@ msgstr "Встановити резервне копіювання познач�
 #: ../src/actions/actions-selection.cpp:251
 msgid "Set backup of current selection of objects or nodes"
 msgstr ""
-"Встановити резервне копіювання поточного позначеного набору об'єктів або"
-" вузлівняти позначення з усіх об'єктів чи вузлів"
+"Встановити резервне копіювання поточного позначеного набору об'єктів або "
+"вузлівняти позначення з усіх об'єктів чи вузлів"
 
 #: ../src/actions/actions-selection.cpp:252
 msgid "Restore selection backup"
@@ -10458,8 +10459,8 @@ msgstr "lg1p$"
 
 #: ../src/display/control/snap-indicator.cpp:42
 #: ../src/display/control/snap-indicator.cpp:67
-#: ../src/display/control/snap-indicator.cpp:152
-#: ../src/display/control/snap-indicator.cpp:153
+#: ../src/display/control/snap-indicator.cpp:154
+#: ../src/display/control/snap-indicator.cpp:155
 msgid "UNDEFINED"
 msgstr "НЕ ВИЗНАЧЕНО"
 
@@ -10602,7 +10603,7 @@ msgid "quadrant point"
 msgstr "точка чверті"
 
 #: ../src/display/control/snap-indicator.cpp:83
-#: ../src/display/control/snap-indicator.cpp:99
+#: ../src/display/control/snap-indicator.cpp:101
 msgid "corner"
 msgstr "кут"
 
@@ -10663,30 +10664,38 @@ msgid "page margin center"
 msgstr "центр поля сторінки"
 
 #: ../src/display/control/snap-indicator.cpp:98
+msgid "page bleed border"
+msgstr "межа зарізання сторінки"
+
+#: ../src/display/control/snap-indicator.cpp:99
+msgid "page bleed corner"
+msgstr "кут зарізання сторінки"
+
+#: ../src/display/control/snap-indicator.cpp:100
 msgid "object midpoint"
 msgstr "середня точка об'єкта"
 
-#: ../src/display/control/snap-indicator.cpp:100
+#: ../src/display/control/snap-indicator.cpp:102
 msgid "object rotation center"
 msgstr "центр обертання об'єкта"
 
-#: ../src/display/control/snap-indicator.cpp:101
+#: ../src/display/control/snap-indicator.cpp:103
 msgid "text anchor"
 msgstr "прив'язка тексту"
 
-#: ../src/display/control/snap-indicator.cpp:102
+#: ../src/display/control/snap-indicator.cpp:104
 msgid "text baseline"
 msgstr "базова лінія тексту"
 
-#: ../src/display/control/snap-indicator.cpp:103
+#: ../src/display/control/snap-indicator.cpp:105
 msgid "constrained angle"
 msgstr "фіксований кут"
 
-#: ../src/display/control/snap-indicator.cpp:104
+#: ../src/display/control/snap-indicator.cpp:106
 msgid "constraint"
 msgstr "обмеження"
 
-#: ../src/display/control/snap-indicator.cpp:220
+#: ../src/display/control/snap-indicator.cpp:222
 msgid " to "
 msgstr " у "
 
@@ -11541,9 +11550,9 @@ msgid ""
 "When exporting from the Export dialog, you can choose objects to export. "
 "'Save a copy' / 'Save as' will export all pages."
 msgstr ""
-"Під час експортування за допомогою вікна експортування ви можете вибрати"
-" об'єкти для експортування. Дія «Зберегти копію» / «Зберегти як» призводить"
-" до експортування усіх сторінок."
+"Під час експортування за допомогою вікна експортування ви можете вибрати "
+"об'єкти для експортування. Дія «Зберегти копію» / «Зберегти як» призводить "
+"до експортування усіх сторінок."
 
 #: ../src/extension/internal/cairo-ps-out.cpp:301
 #: ../src/extension/internal/cairo-ps-out.cpp:345
@@ -11600,11 +11609,11 @@ msgid ""
 "and/or height). When not compensating, object sizes will be preserved "
 "strictly, but this can sometimes cause white gaps along the page margins."
 msgstr ""
-"Експортування до PDF округлює розмір документа до найближчого більшого"
-" цілого числа в одиницях пунктів. Компенсація може трошки розтягнути"
-" креслення (до 0,35 мм у довжину і/або висоту). Якщо не виконувати"
-" компенсації, розміри об'єктів буде збережено строго, але це іноді може"
-" призвести до білих прогалин уздовж полів сторінки."
+"Експортування до PDF округлює розмір документа до найближчого більшого "
+"цілого числа в одиницях пунктів. Компенсація може трошки розтягнути "
+"креслення (до 0,35 мм у довжину і/або висоту). Якщо не виконувати "
+"компенсації, розміри об'єктів буде збережено строго, але це іноді може "
+"призвести до білих прогалин уздовж полів сторінки."
 
 #: ../src/extension/internal/cairo-renderer-pdf-out.cpp:237
 msgid "Compensate for rounding (recommended)"
@@ -14131,6 +14140,7 @@ msgid "Miscellaneous document formats"
 msgstr "Формати різноманітних документів"
 
 #: ../src/extension/internal/template-other.cpp:39
+#: ../share/extensions/template_seamless_pattern.inx:7
 msgctxt "TemplateCategory"
 msgid "Other"
 msgstr "Інше"
@@ -14161,6 +14171,8 @@ msgid "Standard paper document formats"
 msgstr "Формати стандартних паперових документів"
 
 #: ../src/extension/internal/template-paper.cpp:47
+#: ../share/extensions/template_business_card.inx:7
+#: ../share/extensions/template_dvd_cover.inx:7
 msgctxt "TemplateCategory"
 msgid "Print"
 msgstr "Поліграфія"
@@ -14994,8 +15006,8 @@ msgstr "Прочитати файл вхідних даних зі станда�
 #: ../src/inkscape-application.cpp:735
 msgid "Page numbers to import from multi-page document, i.e. PDF"
 msgstr ""
-"Номери сторінок, які слід імпортувати з багатосторінкового документа, тобто"
-" PDF"
+"Номери сторінок, які слід імпортувати з багатосторінкового документа, тобто "
+"PDF"
 
 #: ../src/inkscape-application.cpp:735
 msgid "PAGE[,PAGE]"
@@ -15013,9 +15025,8 @@ msgid ""
 "How fonts are parsed in the internal PDF importer [draw-missing|draw-all|"
 "delete-missing|delete-all|substitute|keep]"
 msgstr ""
-"Спосіб обробки шрифтів у вбудованому засобі імпортування PDF"
-" [draw-missing|draw-all|"
-"delete-missing|delete-all|substitute|keep]"
+"Спосіб обробки шрифтів у вбудованому засобі імпортування PDF [draw-missing|"
+"draw-all|delete-missing|delete-all|substitute|keep]"
 
 #: ../src/inkscape-application.cpp:737
 msgid "STRATEGY"
@@ -15814,9 +15825,8 @@ msgid ""
 "Fillet/Chamfer: Adjust the shape of a path's corners, rounding them to a "
 "specified radius, or cutting them off"
 msgstr ""
-"Окрайок/Фаска: скоригувати форму кутів контуру, заокругливши їх до вказаного"
-" радіуса або "
-"обрізавши їх."
+"Окрайок/Фаска: скоригувати форму кутів контуру, заокругливши їх до вказаного "
+"радіуса або обрізавши їх."
 
 #: ../src/live_effects/effect.cpp:570
 msgctxt "path effect"
@@ -15927,9 +15937,8 @@ msgid ""
 "Draw a circle by center and radius, where the first node of the path is the "
 "center, and the last determines its radius"
 msgstr ""
-"Намалювати за центром і радіусом коло, центр якого розміщено у першому"
-" вузлі, з радіусом, який "
-"визначається останнім вузлом"
+"Намалювати за центром і радіусом коло, центр якого розміщено у першому "
+"вузлі, з радіусом, який визначається останнім вузлом"
 
 #: ../src/live_effects/effect.cpp:713
 msgctxt "path effect"
@@ -18825,8 +18834,8 @@ msgid ""
 "Randomly moves 'bottom' half-turns up and down to produce magnitude "
 "variations."
 msgstr ""
-"Випадково пересуває «нижні» напіввигини вгору-вниз для створення варіації"
-" амплітуди."
+"Випадково пересуває «нижні» напіввигини вгору-вниз для створення варіації "
+"амплітуди."
 
 #: ../src/live_effects/lpe-rough-hatches.cpp:228
 msgid "↑↓ Random: Top"
@@ -18978,24 +18987,24 @@ msgid ""
 "<b>Segment size:</b> add nodes to path evenly; <b>Number of segments:</b> "
 "add nodes between existing nodes"
 msgstr ""
-"<b>Розмір сегмента:</b> додати вузли до контуру рівномірно; <b>Кількість"
-" сегментів:</b> додати вузли між наявними вузлами"
+"<b>Розмір сегмента:</b> додати вузли до контуру рівномірно; <b>Кількість "
+"сегментів:</b> додати вузли між наявними вузлами"
 
 #: ../src/live_effects/lpe-roughen.cpp:46
 msgid ""
 "Add nodes to path evenly. Choose <b>Segment size</b> method from the "
 "dropdown to use this subdivision method."
 msgstr ""
-"Додати вузли до контуру рівномірно. Виберіть у спадному списку пункт <b"
-">Розмір сегмента</b>, щоб скористатися цим способом поділу."
+"Додати вузли до контуру рівномірно. Виберіть у спадному списку пункт "
+"<b>Розмір сегмента</b>, щоб скористатися цим способом поділу."
 
 #: ../src/live_effects/lpe-roughen.cpp:47
 msgid ""
 "Add nodes between existing nodes. Choose <b>Number of segments</b> method "
 "from the dropdown to use this subdivision method."
 msgstr ""
-"Додати вузли між наявними вузлами. Виберіть у спадному списку пункт <b"
-">Кількість сегментів</b>, щоб скористатися цим способом поділу."
+"Додати вузли між наявними вузлами. Виберіть у спадному списку пункт "
+"<b>Кількість сегментів</b>, щоб скористатися цим способом поділу."
 
 #: ../src/live_effects/lpe-roughen.cpp:48
 msgid "Displace ←→"
@@ -19034,8 +19043,8 @@ msgid ""
 "Uncheck to use this LPE for just adding nodes, without roughening; useful "
 "for further interactive processing."
 msgstr ""
-"Зніміть позначення, щоб скористатися цим ІЕК лише для додавання вузлів, без"
-" огрублення; корисно для подальшої інтерактивної обробки."
+"Зніміть позначення, щоб скористатися цим ІЕК лише для додавання вузлів, без "
+"огрублення; корисно для подальшої інтерактивної обробки."
 
 #: ../src/live_effects/lpe-roughen.cpp:53
 msgid "Fixed displacement"
@@ -19206,8 +19215,8 @@ msgid ""
 "Change number of repeats of simplifying operation. Useful for complex paths "
 "that need to be significantly simplified. "
 msgstr ""
-"Змінити кількість повторень дії зі спрощення. Корисно для складних контурів,"
-" які потребують значного спрощення."
+"Змінити кількість повторень дії зі спрощення. Корисно для складних контурів, "
+"які потребують значного спрощення."
 
 #: ../src/live_effects/lpe-simplify.cpp:28
 msgid "Drag slider to set the amount of simplification"
@@ -19562,7 +19571,7 @@ msgid "Columns"
 msgstr "Стовпчики"
 
 #: ../src/live_effects/lpe-tiling.cpp:79
-#: ../src/ui/dialog/grid-arrange-tab.cpp:542
+#: ../src/ui/dialog/grid-arrange-tab.cpp:543
 msgid "Number of columns"
 msgstr "Кількість стовпчиків"
 
@@ -19571,7 +19580,7 @@ msgid "Rows"
 msgstr "Рядки"
 
 #: ../src/live_effects/lpe-tiling.cpp:80
-#: ../src/ui/dialog/grid-arrange-tab.cpp:501
+#: ../src/ui/dialog/grid-arrange-tab.cpp:502
 msgid "Number of rows"
 msgstr "Кількість рядків"
 
@@ -20519,7 +20528,7 @@ msgstr "розтягнута"
 msgid "inset"
 msgstr "втягнута"
 
-#: ../src/object/sp-page.cpp:598
+#: ../src/object/sp-page.cpp:602
 #, c-format
 msgid "Page %d"
 msgstr "Сторінка %d"
@@ -21692,8 +21701,8 @@ msgid ""
 "<b>Move</b> by %s, %s; with <b>%s</b> to restrict to horizontal/vertical; "
 "with <b>%s</b> to disable snapping"
 msgstr ""
-"<b>Перемістити</b> на %s, %s. <b>%s</b> — лише по горизонталі/вертикалі, <b>"
-"%s</b> — без прилипання"
+"<b>Перемістити</b> на %s, %s. <b>%s</b> — лише по горизонталі/вертикалі, "
+"<b>%s</b> — без прилипання"
 
 #: ../src/text-chemistry.cpp:79
 msgid "Select <b>a text and a path</b> to put text on path."
@@ -25994,69 +26003,69 @@ msgstr "Додати"
 msgid "Append text"
 msgstr "Додати текст"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:258
+#: ../src/ui/dialog/grid-arrange-tab.cpp:259
 msgid "Arrange in a grid"
 msgstr "Розташування на сітці"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:473
+#: ../src/ui/dialog/grid-arrange-tab.cpp:474
 #: ../src/ui/toolbar/node-toolbar.cpp:280
 #: ../src/ui/widget/registered-widget.cpp:691
 #: ../src/widgets/desktop-widget.cpp:401 ../share/ui/page-properties.glade:310
 msgid "X:"
 msgstr "X:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:473
+#: ../src/ui/dialog/grid-arrange-tab.cpp:474
 msgid "Horizontal spacing between columns."
 msgstr "Горизонтальний інтервал між стовпчиками."
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:474
+#: ../src/ui/dialog/grid-arrange-tab.cpp:475
 #: ../src/ui/toolbar/node-toolbar.cpp:296
 #: ../src/ui/widget/registered-widget.cpp:692
 #: ../src/widgets/desktop-widget.cpp:402 ../share/ui/page-properties.glade:326
 msgid "Y:"
 msgstr "Y:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:474
+#: ../src/ui/dialog/grid-arrange-tab.cpp:475
 msgid "Vertical spacing between rows."
 msgstr "Вертикальний проміжок між рядками."
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:492
+#: ../src/ui/dialog/grid-arrange-tab.cpp:493
 msgid "_Rows:"
 msgstr "_Рядків:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:505
+#: ../src/ui/dialog/grid-arrange-tab.cpp:506
 msgid "Equal _height"
 msgstr "Однакова _висота"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:516
+#: ../src/ui/dialog/grid-arrange-tab.cpp:517
 msgid "If not set, each row has the height of the tallest object in it"
 msgstr ""
 "Якщо не відмічено, висота кожного рядка дорівнює висоті найвищого об'єкта в "
 "ньому"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:533
+#: ../src/ui/dialog/grid-arrange-tab.cpp:534
 msgid "_Columns:"
 msgstr "Ст_овпчиків:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:546
+#: ../src/ui/dialog/grid-arrange-tab.cpp:547
 msgid "Equal _width"
 msgstr "О_днакова ширина"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:556
+#: ../src/ui/dialog/grid-arrange-tab.cpp:557
 msgid "If not set, each column has the width of the widest object in it"
 msgstr ""
 "Якщо не відмічено, ширина кожного стовпчика дорівнює ширині найширшого "
 "об'єкта в ньому"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:568
+#: ../src/ui/dialog/grid-arrange-tab.cpp:569
 msgid "Alignment:"
 msgstr "Вирівнювання:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:578
+#: ../src/ui/dialog/grid-arrange-tab.cpp:579
 msgid "_Fit into selection box"
 msgstr "З_берегти ширину та висоту позначення"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:585
+#: ../src/ui/dialog/grid-arrange-tab.cpp:586
 msgid "_Set spacing:"
 msgstr "Вс_тановити інтервал:"
 
@@ -27102,9 +27111,9 @@ msgid ""
 "page, instead of the position on the canvas (corresponding to the first "
 "page's position)."
 msgstr ""
-"На лінійках та інструментах буде показано дані щодо позиції відносно до"
-" поточної сторінки, а не позицію на полотні (відносно до позиції першої"
-" сторінки)."
+"На лінійках та інструментах буде показано дані щодо позиції відносно до "
+"поточної сторінки, а не позицію на полотні (відносно до позиції першої "
+"сторінки)."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1641
 msgid "Origin at upper left with y-axis pointing down"
@@ -28443,8 +28452,8 @@ msgid ""
 "Check to make objects, strokes, and fills which are completely transparent "
 "selectable even if not in outline mode"
 msgstr ""
-"Позначте, щоб зробити об'єкти, штрихи і заповнення, які є повністю"
-" прозорими, придатними до позначення, навіть у режимі контурів"
+"Позначте, щоб зробити об'єкти, штрихи і заповнення, які є повністю "
+"прозорими, придатними до позначення, навіть у режимі контурів"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2521
 msgid ""
@@ -28983,8 +28992,8 @@ msgid ""
 "'Object to path' only unlinks clones when they are converted to paths, but "
 "preserves any LPEs and shapes within the clones."
 msgstr ""
-"«Об'єкт у контур» лише від'єднує клони при перетворенні їх на контури, але"
-" зберігає усі інтерактивні ефекти контурів та форми у клонах."
+"«Об'єкт у контур» лише від'єднує клони при перетворенні їх на контури, але "
+"зберігає усі інтерактивні ефекти контурів та форми у клонах."
 
 #. TRANSLATORS: Heading for the Inkscape Preferences "Clones" Page
 #: ../src/ui/dialog/inkscape-preferences.cpp:2715
@@ -29100,17 +29109,16 @@ msgid ""
 "The object's 'style' attribute will be set to the computed style, preserving "
 "the object's appearance as in previous Inkscape versions"
 msgstr ""
-"Для атрибута «style» буде встановлено обчислений стиль, що зберігатиме"
-" вигляд об'єкта, як у попередніх версіях Inkscape"
+"Для атрибута «style» буде встановлено обчислений стиль, що зберігатиме "
+"вигляд об'єкта, як у попередніх версіях Inkscape"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2773
 msgid ""
 "The object's 'style' and 'class' values will be copied verbatim, and will "
 "replace those of the target object when using 'Paste style'"
 msgstr ""
-"Значення «style» і «class» буде скопійовано буквально; ними буде замінено"
-" відповідні атрибути об'єкта призначення при використанні дії «Вставити"
-" стиль»"
+"Значення «style» і «class» буде скопійовано буквально; ними буде замінено "
+"відповідні атрибути об'єкта призначення при використанні дії «Вставити стиль»"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2775
 msgid "Clipboard"
@@ -29142,8 +29150,8 @@ msgstr "Показати галерею застарілих ІЕК"
 msgid ""
 "Adds a button to the LPE dialog that opens the old-style LPE selection dialog"
 msgstr ""
-"Додає у вікно інтерактивних ефектів контурів кнопку, яка відкриває вікно"
-" вибору інтерактивного ефекту контурів у старому стилі"
+"Додає у вікно інтерактивних ефектів контурів кнопку, яка відкриває вікно "
+"вибору інтерактивного ефекту контурів у старому стилі"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2790
 msgid "Tiling"
@@ -29176,8 +29184,8 @@ msgid ""
 "Configure number of threads to use when rendering. The default value of zero "
 "means choose automatically."
 msgstr ""
-"Налаштувати кількість потоків, які слід використовувати для "
-"обробки. Типовим є нульове значення, що означає автоматичний вибір."
+"Налаштувати кількість потоків, які слід використовувати для обробки. Типовим "
+"є нульове значення, що означає автоматичний вибір."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2805
 msgid "Rendering _cache size:"
@@ -29246,8 +29254,8 @@ msgid ""
 "Request that the canvas should be painted with OpenGL rather than Cairo. If "
 "OpenGL is unsupported, it will fall back to Cairo."
 msgstr ""
-"Надіслати запит щодо малювання полотна за допомогою OpenGL, а не Cairo. Якщо"
-" підтримки OpenGL не передбачено, буде використано резервний варіант — Cairo."
+"Надіслати запит щодо малювання полотна за допомогою OpenGL, а не Cairo. Якщо "
+"підтримки OpenGL не передбачено, буде використано резервний варіант — Cairo."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2828
 #: ../src/ui/dialog/inkscape-preferences.cpp:2852
@@ -29395,10 +29403,10 @@ msgid ""
 "Auto, which picks the best method available at runtime. As for the other "
 "options, higher up is better."
 msgstr ""
-"Змінити метод, який буде використано для потокового передавання даних"
-" пікселів до графічного процесора. Типовим є автоматичний вибір, при якому"
-" найкращий доступний варіант буде вибрано у динамічному режимі. Як і для"
-" інших параметрів, чим більше є значення, тим кращим є метод."
+"Змінити метод, який буде використано для потокового передавання даних "
+"пікселів до графічного процесора. Типовим є автоматичний вибір, при якому "
+"найкращий доступний варіант буде вибрано у динамічному режимі. Як і для "
+"інших параметрів, чим більше є значення, тим кращим є метод."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2942
 msgid "Buffer padding"
@@ -29431,8 +29439,8 @@ msgstr "Розмір попереднього вивільнення"
 msgid ""
 "Prevent thin tiles at the rendering edge by making them at least this size."
 msgstr ""
-"Запобігати появі надто вузьких плиток на межі обробки, не створюючи плиток"
-" розміру, який є меншим за вказаний."
+"Запобігати появі надто вузьких плиток на межі обробки, не створюючи плиток "
+"розміру, який є меншим за вказаний."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2948
 msgid "Min size for coarsener algorithm"
@@ -29545,8 +29553,8 @@ msgid ""
 "Show the outlines of the rectangles in the region where rendering is "
 "complete in green (only in Cairo mode)"
 msgstr ""
-"Показувати контури прямокутників у ділянці, де обробку завершено, зеленим"
-" (лише у режимі Cairo)"
+"Показувати контури прямокутників у ділянці, де обробку завершено, зеленим "
+"(лише у режимі Cairo)"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2972
 msgid "Disable redraw"
@@ -29892,13 +29900,13 @@ msgid ""
 "access to that folder (on the same computer or in the network). Requires a "
 "restart of Inkscape to work when changed."
 msgstr ""
-"Тека зі структурою, подібною до каталогу налаштувань користувача Inkscape."
-" Уможливлює спільне використання набору ресурсів, зокрема розширень,"
-" шрифтів, наборів піктограм, клавіатурних скорочено, взірців/штрихувань,"
-" палітр, символів, шаблонів, тем та файлів визначень інтерфейсу користувача,"
-" декількома користувачами, які мають доступ до цієї теки (на тому самому"
-" комп'ютері або з мережі). Після внесення змін потребує перезапуску Inkscape"
-" для набуття чинності."
+"Тека зі структурою, подібною до каталогу налаштувань користувача Inkscape. "
+"Уможливлює спільне використання набору ресурсів, зокрема розширень, шрифтів, "
+"наборів піктограм, клавіатурних скорочено, взірців/штрихувань, палітр, "
+"символів, шаблонів, тем та файлів визначень інтерфейсу користувача, "
+"декількома користувачами, які мають доступ до цієї теки (на тому самому "
+"комп'ютері або з мережі). Після внесення змін потребує перезапуску Inkscape "
+"для набуття чинності."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:3645
 msgid "System info"
@@ -30336,8 +30344,8 @@ msgstr "Експериментальний"
 #: ../src/ui/dialog/livepatheffect-editor.cpp:496
 msgid "Text objects do not support Live Path Effects"
 msgstr ""
-"Для текстових об'єктів не передбачено підтримки інтерактивних ефектів"
-" контурів"
+"Для текстових об'єктів не передбачено підтримки інтерактивних ефектів "
+"контурів"
 
 #: ../src/ui/dialog/livepatheffect-editor.cpp:532
 #: ../src/ui/dialog/livepatheffect-editor.cpp:586
@@ -30721,7 +30729,7 @@ msgstr "Перемкнути блокування об'єкта"
 msgid "Rename object"
 msgstr "Перейменувати об'єкт"
 
-#: ../src/ui/dialog/objects.cpp:1738
+#: ../src/ui/dialog/objects.cpp:1732
 msgid "Move items"
 msgstr "Пересунути об'єкти"
 
@@ -31544,9 +31552,9 @@ msgid ""
 "translation (E,F), scaling (A,D), rotation (A-D) and shearing (B,C).</small>"
 msgstr ""
 "<small><a href=\"https://www.w3.org/TR/SVG11/coords."
-"html#TransformMatrixDefined\">Матриця плоского перетворення</a>, яка поєднує"
-" перенесення (E,F), масштабування (A,D), обертання (A-D) і перекошування"
-" (B,C).</small>"
+"html#TransformMatrixDefined\">Матриця плоского перетворення</a>, яка поєднує "
+"перенесення (E,F), масштабування (A,D), обертання (A-D) і перекошування (B,"
+"C).</small>"
 
 #: ../src/ui/dialog/transformation.cpp:853
 #: ../src/ui/dialog/transformation.cpp:864
@@ -31747,9 +31755,9 @@ msgid ""
 "makes x equal to y; <b>Shift</b>+<b>Ctrl</b>+<b>Drag</b> scales blur "
 "proportionately "
 msgstr ""
-"<b>Перетягніть</b> для <b>коригування</b> розмивання у напрямку x; <b>Ctrl<"
-"/b>+<b>перетягування</b> синхронізує x з y; <b>Shift</b>+<b>Ctrl</b>+<b"
-">перетягування</b> масштабує розмивання пропорційно "
+"<b>Перетягніть</b> для <b>коригування</b> розмивання у напрямку x; <b>Ctrl</"
+"b>+<b>перетягування</b> синхронізує x з y; <b>Shift</b>+<b>Ctrl</"
+"b>+<b>перетягування</b> масштабує розмивання пропорційно "
 
 #: ../src/ui/knot/knot-holder.cpp:459
 msgid ""
@@ -31757,9 +31765,9 @@ msgid ""
 "makes y equal to x; <b>Shift</b>+<b>Ctrl</b>+<b>Drag</b> scales blur "
 "proportionately "
 msgstr ""
-"Перетягніть</b> для <b>коригування</b> розмивання у напрямку y; <b>Ctrl</b"
-">+<b>перетягування</b> синхронізує y з x; <b>Shift</b>+<b>Ctrl</b>+<b"
-">перетягування</b> масштабує розмивання пропорційно "
+"Перетягніть</b> для <b>коригування</b> розмивання у напрямку y; <b>Ctrl</"
+"b>+<b>перетягування</b> синхронізує y з x; <b>Shift</b>+<b>Ctrl</"
+"b>+<b>перетягування</b> масштабує розмивання пропорційно "
 
 #: ../src/ui/knot/knot.cpp:309
 msgid "Node or handle drag canceled."
@@ -32483,8 +32491,8 @@ msgid ""
 "<b>Ctrl+Alt</b>: move along handle lines or line segment, click to delete "
 "node"
 msgstr ""
-"<b>Ctrl+Alt</b>: пересунути вздовж вусів або відрізків прямих, клацання"
-" вилучає вузол"
+"<b>Ctrl+Alt</b>: пересунути вздовж вусів або відрізків прямих, клацання "
+"вилучає вузол"
 
 #: ../src/ui/tool/node.cpp:1610
 msgctxt "Path node tip"
@@ -32573,20 +32581,20 @@ msgstr "Масштабувати вус"
 msgid "Rotate handle"
 msgstr "Обертати вус"
 
-#: ../src/ui/tool/path-manipulator.cpp:1660
+#: ../src/ui/tool/path-manipulator.cpp:1665
 #: ../src/ui/toolbar/node-toolbar.cpp:147 ../share/ui/dialog-xml.glade:138
 msgid "Delete node"
 msgstr "Вилучити вузол"
 
-#: ../src/ui/tool/path-manipulator.cpp:1668
+#: ../src/ui/tool/path-manipulator.cpp:1673
 msgid "Cycle node type"
 msgstr "Циклічний перехід типами вузла"
 
-#: ../src/ui/tool/path-manipulator.cpp:1683
+#: ../src/ui/tool/path-manipulator.cpp:1688
 msgid "Drag handle"
 msgstr "Перетягування вуса"
 
-#: ../src/ui/tool/path-manipulator.cpp:1692
+#: ../src/ui/tool/path-manipulator.cpp:1697
 msgid "Retract handle"
 msgstr "Вилучити вус"
 
@@ -33980,37 +33988,37 @@ msgstr ""
 "або виберіть шаблон зі спадного списку."
 
 #: ../src/ui/toolbar/page-toolbar.cpp:135
-#: ../src/ui/toolbar/page-toolbar.cpp:321
+#: ../src/ui/toolbar/page-toolbar.cpp:324
 msgid "Resize Page"
 msgstr "Змінити розміри сторінки"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:238
+#: ../src/ui/toolbar/page-toolbar.cpp:241
 msgid "Relabel Page"
 msgstr "Змінити мітку сторінки"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:252
+#: ../src/ui/toolbar/page-toolbar.cpp:255
 msgid "Edit page bleed"
 msgstr "Редагувати зарізання сторінки"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:269
-#: ../src/ui/toolbar/page-toolbar.cpp:298
+#: ../src/ui/toolbar/page-toolbar.cpp:272
+#: ../src/ui/toolbar/page-toolbar.cpp:301
 msgid "Edit page margin"
 msgstr "Редагувати поле сторінки"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:440
+#: ../src/ui/toolbar/page-toolbar.cpp:443
 msgid "Page label"
 msgstr "Мітка сторінки"
 
 #. TRANSLATORS: "%1" is replaced with the page we are on, and "%2" is the total number of pages.
-#: ../src/ui/toolbar/page-toolbar.cpp:457
+#: ../src/ui/toolbar/page-toolbar.cpp:460
 msgid "%1/%2"
 msgstr "%1 з %2"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:471
+#: ../src/ui/toolbar/page-toolbar.cpp:474
 msgid "Single Page Document"
 msgstr "Односторінковий документ"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:472 ../share/ui/toolbar-page.ui:172
+#: ../src/ui/toolbar/page-toolbar.cpp:475 ../share/ui/toolbar-page.ui:172
 msgid "1/-"
 msgstr "1 з -"
 
@@ -35895,26 +35903,25 @@ msgstr "Розмістити сітку в контурі-обгортці"
 msgid "Create mesh"
 msgstr "Створити сітку"
 
-#: ../src/ui/tools/node-tool.cpp:462
+#: ../src/ui/tools/node-tool.cpp:463
 #, c-format
 msgid ""
 "<b>Draw over</b> lines to select their nodes; release <b>%s</b> to switch to "
 "rubberband selection"
 msgstr ""
-"<b>Малюйте по</b> лініях для позначення їхніх вузлів; відпустіть <b>%s</b>"
-" для "
-"переходу до позначення гумовою ниткою"
+"<b>Малюйте по</b> лініях для позначення їхніх вузлів; відпустіть <b>%s</b> "
+"для переходу до позначення гумовою ниткою"
 
-#: ../src/ui/tools/node-tool.cpp:465
+#: ../src/ui/tools/node-tool.cpp:466
 #, c-format
 msgid ""
 "<b>Drag around</b> nodes to select them; press <b>%s</b> to switch to box "
 "selection"
 msgstr ""
-"<b>Малюйте навколо</b> вузлів для їхнього позначення; натисніть <b>%s</b>"
-" для перемикання на позначення прямокутною рамкою"
+"<b>Малюйте навколо</b> вузлів для їхнього позначення; натисніть <b>%s</b> "
+"для перемикання на позначення прямокутною рамкою"
 
-#: ../src/ui/tools/node-tool.cpp:686
+#: ../src/ui/tools/node-tool.cpp:688
 msgctxt "Node tool tip"
 msgid ""
 "<b>Shift</b>: drag to add nodes to the selection, click to toggle object "
@@ -35923,12 +35930,12 @@ msgstr ""
 "<b>Shift</b>: перетягніть, щоб додати вузли до позначеного, клацніть, щоб "
 "перемкнути режим позначення об'єктів"
 
-#: ../src/ui/tools/node-tool.cpp:690
+#: ../src/ui/tools/node-tool.cpp:692
 msgctxt "Node tool tip"
 msgid "<b>Shift</b>: drag to add nodes to the selection"
 msgstr "<b>Shift</b>: перетягування додає вузли до позначеного фрагмента"
 
-#: ../src/ui/tools/node-tool.cpp:703
+#: ../src/ui/tools/node-tool.cpp:705
 #, c-format
 msgid "<b>%u of %u</b> node selected."
 msgid_plural "<b>%u of %u</b> nodes selected."
@@ -35936,11 +35943,11 @@ msgstr[0] "Позначено <b>%u з %u</b> вузла."
 msgstr[1] "Позначено <b>%u з %u</b> вузлів."
 msgstr[2] "Позначено <b>%u з %u</b> вузлів."
 
-#: ../src/ui/tools/node-tool.cpp:722
+#: ../src/ui/tools/node-tool.cpp:724
 msgid "Angle: %1°."
 msgstr "Кут: %1°."
 
-#: ../src/ui/tools/node-tool.cpp:729
+#: ../src/ui/tools/node-tool.cpp:731
 #, c-format
 msgctxt "Node tool tip"
 msgid "%s Drag to select nodes, click to edit only this object (more: Shift)"
@@ -35948,26 +35955,26 @@ msgstr ""
 "%s Перетягніть, щоб позначити вузли, клацніть, щоб редагувати лише цей "
 "об'єкт (інше: Shift)"
 
-#: ../src/ui/tools/node-tool.cpp:735
+#: ../src/ui/tools/node-tool.cpp:737
 #, c-format
 msgctxt "Node tool tip"
 msgid "%s Drag to select nodes, click clear the selection"
 msgstr ""
 "%s Перетягніть вказівник, щоб позначити вузли, клацніть, щоб зняти позначення"
 
-#: ../src/ui/tools/node-tool.cpp:743
+#: ../src/ui/tools/node-tool.cpp:745
 msgctxt "Node tool tip"
 msgid "Drag to select nodes, click to edit only this object"
 msgstr ""
 "Перетягніть, щоб позначити вузли, клацніть, щоб редагувати лише цей об'єкт"
 
-#: ../src/ui/tools/node-tool.cpp:746
+#: ../src/ui/tools/node-tool.cpp:748
 msgctxt "Node tool tip"
 msgid "Drag to select nodes, click to clear the selection"
 msgstr ""
 "Перетягніть вказівник, щоб позначити вузли, клацніть, щоб зняти позначення"
 
-#: ../src/ui/tools/node-tool.cpp:751
+#: ../src/ui/tools/node-tool.cpp:753
 msgctxt "Node tool tip"
 msgid ""
 "Drag to select objects to edit, click to edit this object (more: Shift)"
@@ -35975,7 +35982,7 @@ msgstr ""
 "Перетягніть, щоб позначити об'єкти редагування, клацніть для редагування "
 "поточного об'єкта (більше: Shift)"
 
-#: ../src/ui/tools/node-tool.cpp:754
+#: ../src/ui/tools/node-tool.cpp:756
 msgctxt "Node tool tip"
 msgid "Drag to select objects to edit"
 msgstr "Перетягніть вказівник для позначення об'єктів редагування"
@@ -36223,8 +36230,8 @@ msgid ""
 "<b>Drag around</b> objects to select them; press <b>%s</b> to switch to "
 "touch selection"
 msgstr ""
-"<b>Малюйте навколо</b> об'єктів для їхнього позначення; натисніть <b>%s</b>"
-" для переходу до позначення дотиком"
+"<b>Малюйте навколо</b> об'єктів для їхнього позначення; натисніть <b>%s</b> "
+"для переходу до позначення дотиком"
 
 #: ../src/ui/tools/select-tool.cpp:1039
 msgid "Selected object is not a group. Cannot enter."
@@ -38477,9 +38484,9 @@ msgid ""
 "If you can reproduce this crash, please <a href=\"https://inkscape.org/"
 "report\">file a bug</a> and include the backtrace from the area below."
 msgstr ""
-"Якщо ви можете відтворити це аварійне завершення роботи, будь ласка, <a"
-" href=\"https://inkscape.org/report\">повідомте про ваду</a> і включіть"
-" зворотне трасування з панелі внизу."
+"Якщо ви можете відтворити це аварійне завершення роботи, будь ласка, <a "
+"href=\"https://inkscape.org/report\">повідомте про ваду</a> і включіть "
+"зворотне трасування з панелі внизу."
 
 #: ../share/ui/dialog-css.glade:41
 msgid "Selector"
@@ -38508,8 +38515,8 @@ msgid ""
 "Select this on canvas (if applicable) or in the XML dialog (e.g. a pattern "
 "in the 'defs' section)"
 msgstr ""
-"Позначте на полотні (якщо застосовне) або у вікні XML (наприклад взірець у"
-" розділі «defs»)"
+"Позначте на полотні (якщо застосовне) або у вікні XML (наприклад взірець у "
+"розділі «defs»)"
 
 #: ../share/ui/dialog-document-resources.glade:190
 msgid "Delete selected item from the document"
@@ -38741,14 +38748,18 @@ msgid ""
 "Apply this effect, and all effects above this one, to the path. This removes "
 "those effects from the stack."
 msgstr ""
-"Застосувати цей ефект, і усі ефекти над ним, до контуру. У результаті ефекти"
-" буде вилучено зі стосу."
+"Застосувати цей ефект, і усі ефекти над ним, до контуру. У результаті ефекти "
+"буде вилучено зі стосу."
+
+#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgid "Flatten"
+msgstr "Спростити"
 
 #: ../share/ui/dialog-livepatheffect-item.glade:45
 msgid "Use the current values as custom defaults for this LPE"
 msgstr ""
-"Скористатися поточними значенням як нетиповими стандартними значеннями для"
-" цього ІЕК"
+"Скористатися поточними значенням як нетиповими стандартними значеннями для "
+"цього ІЕК"
 
 #: ../share/ui/dialog-livepatheffect-item.glade:46
 msgid "Set custom defaults"
@@ -38875,8 +38886,8 @@ msgid ""
 "Convert selected symbol to object, and all symbols of this type to clones of "
 "this object"
 msgstr ""
-"Перетворити позначений символ на об'єкт, а усі символи цього типу на клони"
-" цього об'єкта."
+"Перетворити позначений символ на об'єкт, а усі символи цього типу на клони "
+"цього об'єкта."
 
 #: ../share/ui/dialog-text-edit.glade:50
 msgid "Open the Font Collections Manager dialogue"
@@ -39291,8 +39302,8 @@ msgstr "<b>Q</b>"
 #: ../share/ui/display-popup.glade:225
 msgid "Hold this key for document preview, hiding grids, guides, handles etc."
 msgstr ""
-"Утримуйте натиснутою цю клавішу для попереднього перегляду документів,"
-" приховування сіток, напрямних, вусів тощо"
+"Утримуйте натиснутою цю клавішу для попереднього перегляду документів, "
+"приховування сіток, напрямних, вусів тощо"
 
 #: ../share/ui/display-popup.glade:229
 msgid "<b>F</b>"
@@ -39303,7 +39314,7 @@ msgid "Media Box"
 msgstr "Розмір початкової сторінки"
 
 #: ../share/ui/extension-pdfinput.glade:23
-msgid "Clip Box"
+msgid "Crop Box"
 msgstr "Рамка обрізання"
 
 #: ../share/ui/extension-pdfinput.glade:27
@@ -39364,10 +39375,10 @@ msgid ""
 "layers and margins are preserved, object fills and strokes are recombined "
 "and gradient meshes are converted to tiles.</i>"
 msgstr ""
-"<i>Імпортувати за допомогою вбудованої бібліотеки. Придатний до редагування"
-" текст буде реконструйовано. Сторінки, шари і поля буде збережено,"
-" заповнення об'єктів та штрихи повторно поєднано, а сітки градієнтів буде"
-" перетворено на плитки.</i>"
+"<i>Імпортувати за допомогою вбудованої бібліотеки. Придатний до редагування "
+"текст буде реконструйовано. Сторінки, шари і поля буде збережено, заповнення "
+"об'єктів та штрихи повторно поєднано, а сітки градієнтів буде перетворено на "
+"плитки.</i>"
 
 #: ../share/ui/extension-pdfinput.glade:218
 msgid "Family Name"
@@ -39417,8 +39428,8 @@ msgid ""
 "Type in the page range you want to import using the format 1-4 or 1,2,3,4 or "
 "the keyword 'all' to specifiy all pages."
 msgstr ""
-"Введіть діапазон сторінок, які ви хочете імпортувати, у форматі 1-4, або"
-" 1,2,3,4, або ключове слово «all», якщо хочете вказати усі сторінки."
+"Введіть діапазон сторінок, які ви хочете імпортувати, у форматі 1-4, або "
+"1,2,3,4, або ключове слово «all», якщо хочете вказати усі сторінки."
 
 #: ../share/ui/extension-pdfinput.glade:438
 msgid "Clip to:"
@@ -39434,9 +39445,8 @@ msgid ""
 "glyphs where each glyph is a path. Images are stored internally. Meshes "
 "cause entire document to be rendered as a raster image.</i>"
 msgstr ""
-"<i>Імпортування за допомогою зовнішньої бібліотеки. Текст складається з"
-" груп, "
-"що містять клоновані гліфи, де кожен з гліфів є контуром. Зображення "
+"<i>Імпортування за допомогою зовнішньої бібліотеки. Текст складається з "
+"груп, що містять клоновані гліфи, де кожен з гліфів є контуром. Зображення "
 "зберігаються внутрішнім чином. Сітки призводять до показу усього документа "
 "як растрового зображення.</i>"
 
@@ -39699,10 +39709,10 @@ msgid ""
 "If you would like to get involved and make the next version of Inkscape even "
 "better, please consider joining the Inkscape project today.</b>"
 msgstr ""
-"<b>Підтримку проєкту Inkscape здійснюють такі самі користувачі, як ви.</"
-"b> Інвестуючи наше час, гроші та навички, ми створили це програмне "
-"забезпечення для усіх у світі, хто хоче бути вільним від обмежень та "
-"отримувати програми безкоштовно. <b>\n"
+"<b>Підтримку проєкту Inkscape здійснюють такі самі користувачі, як ви.</b> "
+"Інвестуючи наше час, гроші та навички, ми створили це програмне забезпечення "
+"для усіх у світі, хто хоче бути вільним від обмежень та отримувати програми "
+"безкоштовно. <b>\n"
 "Якщо ви хочете взяти участь у проєкті і зробити наступну версію Inkscape ще "
 "кращою, будь ласка, долучайтеся до проєкту Inkscape вже сьогодні.</b>"
 
@@ -41187,9 +41197,9 @@ msgid ""
 "extension."
 msgstr ""
 "Попередження: не вдалося обробити текст.\n"
-"Будь ласка, скористайтеся пунктом меню «Текст -> Вилучити ручний міжлітерний"
-" інтервал» для вилучення міжлітерного інтервалу до використання цього"
-" розширення."
+"Будь ласка, скористайтеся пунктом меню «Текст -> Вилучити ручний міжлітерний "
+"інтервал» для вилучення міжлітерного інтервалу до використання цього "
+"розширення."
 
 #: ../share/extensions/hershey.py:2020
 msgid ""
@@ -41453,8 +41463,8 @@ msgid ""
 "A parsing error occurred, which means you are likely working with a non-"
 "conformant SVG file. The following errors were found:\n"
 msgstr ""
-"Сталася помилка обробки, що означає, що ви, ймовірно, працюєте із несумісним"
-" зі стандартами файлом SVG. Було виявлено такі помилки:\n"
+"Сталася помилка обробки, що означає, що ви, ймовірно, працюєте із несумісним "
+"зі стандартами файлом SVG. Було виявлено такі помилки:\n"
 
 #: ../share/extensions/inkex/elements/_parser.py:108
 msgid "{}. Line {}, column {}"
@@ -41729,12 +41739,12 @@ msgid ""
 "\n"
 "Consider moving them to a layer or disabling this option."
 msgstr ""
-"Вами увімкнено «Шари як ресурси», але існують візуальні елементи, які не є"
-" частиною шару і містяться у кореневому елементі безпосередньо. Ці елементи"
-" буде пропущено при експортуванні. \n"
+"Вами увімкнено «Шари як ресурси», але існують візуальні елементи, які не є "
+"частиною шару і містяться у кореневому елементі безпосередньо. Ці елементи "
+"буде пропущено при експортуванні. \n"
 "\n"
-"Вам варто пересунути згадані елементи до шару або зняти позначення з"
-" відповідного пункту."
+"Вам варто пересунути згадані елементи до шару або зняти позначення з "
+"відповідного пункту."
 
 #: ../share/extensions/output_scour.py:15
 msgid ""
@@ -42896,8 +42906,8 @@ msgid ""
 "Some tools do not support curves in DXF files. Enabling this will export "
 "curves as series of straight line segments."
 msgstr ""
-"У деяких інструментах не передбачено підтримки кривих у файлах DXF. Вмикання"
-" призведе до експортування кривих як послідовності відрізків."
+"У деяких інструментах не передбачено підтримки кривих у файлах DXF. Вмикання "
+"призведе до експортування кривих як послідовності відрізків."
 
 #: ../share/extensions/dxf_outlines.inx:13
 msgid "Use Document unit as base unit"
@@ -42912,8 +42922,8 @@ msgid ""
 "Only takes effect if the previous parameter is disabled. 1 user unit in the "
 "SVG file will correspond to 1 (selected unit) in the DXF file."
 msgstr ""
-"Працює, лише якщо було вимкнено попередній параметр. 1 одиниця користувача у"
-" файлі SVG відповідатиме 1 (вибраній одиниці виміру) у файлі DXF."
+"Працює, лише якщо було вимкнено попередній параметр. 1 одиниця користувача у "
+"файлі SVG відповідатиме 1 (вибраній одиниці виміру) у файлі DXF."
 
 #: ../share/extensions/dxf_outlines.inx:15
 msgid "px (unitless)"
@@ -44028,8 +44038,8 @@ msgid ""
 "The number of steps (plotter units) the plotter moves if it moves by 1 inch "
 "(Default: 1016.0)"
 msgstr ""
-"Кількість кроків різця (в одиницях різака) при зміщенні на один дюйм (типове"
-" значення — 1016.0)"
+"Кількість кроків різця (в одиницях різака) при зміщенні на один дюйм (типове "
+"значення — 1016.0)"
 
 #: ../share/extensions/hpgl_input.inx:8
 msgid "Width (in):"
@@ -44057,9 +44067,9 @@ msgid ""
 "dependent pen size for anisotropic scaling, and pattern lengths may be "
 "incorrect"
 msgstr ""
-"Вимикання може бути корисним для діагностики виконання команд IP/IR/SC, але"
-" призводить до залежності розмірів пера від напрямку для анізотропного"
-" масштабування, а довжини візерунків можуть стати помилковими"
+"Вимикання може бути корисним для діагностики виконання команд IP/IR/SC, але "
+"призводить до залежності розмірів пера від напрямку для анізотропного "
+"масштабування, а довжини візерунків можуть стати помилковими"
 
 #: ../share/extensions/hpgl_input.inx:12
 msgid "Break apart subpaths"
@@ -45895,11 +45905,11 @@ msgid ""
 "animated. Canvas is more suitable for complex drawings where individual "
 "elements should be animated, or user controls be added into."
 msgstr ""
-"У DrawingGroup передбачено підтримку менш складних можливостей SVG, але,"
-" загалом, забезпечено кращу швидкодію, що робить її зручною для словників"
-" піктограм. Анімації примітивів не передбачено. Полотна придатніші для"
-" складних креслень, де має бути анімовано окремі елементи, або на які має"
-" бути додано засоби керування користувачем."
+"У DrawingGroup передбачено підтримку менш складних можливостей SVG, але, "
+"загалом, забезпечено кращу швидкодію, що робить її зручною для словників "
+"піктограм. Анімації примітивів не передбачено. Полотна придатніші для "
+"складних креслень, де має бути анімовано окремі елементи, або на які має "
+"бути додано засоби керування користувачем."
 
 #: ../share/extensions/other/extension-xaml/inkxaml/svg2xaml.inx:17
 msgid "Referencing type:"
@@ -45911,10 +45921,10 @@ msgid ""
 "layer if 'Layers as Resources' is enabled, the entire drawing otherwise) to "
 "facilitate using the drawing as Image source or Brush."
 msgstr ""
-"Елемент цього типу буде додано для кожного креслення верхнього рівня (тобто"
-" кожного шару, якщо увімкнено «Шари як ресурси», і усього креслення, якщо не"
-" увімкнено) для полегшення використання креслення як джерела зображення або"
-" пензля."
+"Елемент цього типу буде додано для кожного креслення верхнього рівня (тобто "
+"кожного шару, якщо увімкнено «Шари як ресурси», і усього креслення, якщо не "
+"увімкнено) для полегшення використання креслення як джерела зображення або "
+"пензля."
 
 #: ../share/extensions/other/extension-xaml/inkxaml/svg2xaml.inx:25
 msgid ""
@@ -45922,10 +45932,10 @@ msgid ""
 "Span elements for WPF Canvas mode. Texts are always converted to path in "
 "DrawingGroup mode or when targeting Avalonia."
 msgstr ""
-"Для більшої частини текстів передбачено можливість експортування у форматі"
-" (придатних до редагування) елементів TextBlock / Span для режиму полотна"
-" WPF. Тексти завжди буде перетворено на контури у режимі DrawingGroup або"
-" визначенням призначення Avalonia."
+"Для більшої частини текстів передбачено можливість експортування у форматі "
+"(придатних до редагування) елементів TextBlock / Span для режиму полотна "
+"WPF. Тексти завжди буде перетворено на контури у режимі DrawingGroup або "
+"визначенням призначення Avalonia."
 
 #: ../share/extensions/other/extension-xaml/inkxaml/svg2xaml.inx:30
 msgid "Export layers as separate top-level resources"
@@ -45937,10 +45947,10 @@ msgid ""
 "(independent of visibility) will be a separate DrawingGroup (DrawingImage) / "
 "Canvas (wrapped in a ViewBox). The layer name will be used as x:Key."
 msgstr ""
-"Цим пунктом можна скористатися для експортування готових до використання"
-" бібліотек піктограм. Кожен шар (незалежно від видимості) буде окремим"
-" елементом DrawingGroup (DrawingImage) / "
-"Canvas (загорнутим у ViewBox). Для назви шару буде використано рядок x:Key."
+"Цим пунктом можна скористатися для експортування готових до використання "
+"бібліотек піктограм. Кожен шар (незалежно від видимості) буде окремим "
+"елементом DrawingGroup (DrawingImage) / Canvas (загорнутим у ViewBox). Для "
+"назви шару буде використано рядок x:Key."
 
 #: ../share/extensions/other/extension-xaml/inkxaml/svg2xaml.inx:31
 msgid "Treat solid swatches as"
@@ -46904,9 +46914,78 @@ msgstr ""
 msgid "Shape Builder Prefab"
 msgstr "Шаблон Побудовника форм"
 
+#: ../share/extensions/other/templates/template_shape_prefab.inx:7
+msgctxt "TemplateCategory"
+msgid "Shape Builder"
+msgstr "Побудовник форм"
+
 #: ../share/extensions/other/templates/template_shape_prefab.inx:9
 msgid "Template:"
 msgstr "Шаблон:"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:12
+msgid "Trellis"
+msgstr "Сітка"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:14
+msgid "Cross"
+msgstr "Перехрестя"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:15
+msgid "Very Cross"
+msgstr "Цент перехрестя"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:16
+msgid "Target"
+msgstr "Ціль"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:17
+msgid "Hive"
+msgstr "Рій"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:18
+msgid "Double Vision"
+msgstr "Подвійне бачення"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:19
+msgid "Celtic Flower"
+msgstr "Кельтська квітка"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:20
+msgid "Celtic Knot"
+msgstr "Кельтський вузол"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:21
+msgid "Kitchen Tile"
+msgstr "Кухонна плитка"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:22
+msgid "Rose"
+msgstr "Троянда"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:23
+msgid "Lily"
+msgstr "Лілея"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:24
+msgid "Crown"
+msgstr "Корона"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:25
+msgid "Diamond Target"
+msgstr "Ромбічна ціль"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:26
+msgid "TV Test Pattern"
+msgstr "Візерунок тестування ТБ"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:27
+msgid "Explosion"
+msgstr "Вибух"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:28
+msgid "Droplet"
+msgstr "Крапля"
 
 #: ../share/extensions/output_scour.inx:3
 msgid "Optimized SVG Output"
@@ -48838,8 +48917,8 @@ msgstr ""
 "\n"
 "За допомогою цього розширення можна змінити порядок об'єктів за віссю z на\n"
 "основі їхнього розташування на полотні або поточного порядку за віссю z.\n"
-"Це розширення змінює порядок усіх позначених об'єктів. Група вважаються"
-" єдиним об'єктом.\n"
+"Це розширення змінює порядок усіх позначених об'єктів. Група вважаються "
+"єдиним об'єктом.\n"
 "Якщо елементи групи позначено разом із зовнішніми об'єктами,\n"
 "елементи групи буде видобуто і розташовано разом із іншими\n"
 "об'єктами, порядок яких змінено (елементи різних шарів буде об'єднано\n"
@@ -49275,6 +49354,7 @@ msgstr ""
 "Кожен шар у окремому файлі svg, файли зібрано у спільний архів (файл tar)"
 
 #: ../share/extensions/template_business_card.inx:3
+#: ../share/extensions/template_business_card.inx:23
 msgid "Business Card"
 msgstr "Візитівка"
 
@@ -49322,7 +49402,12 @@ msgstr "3,5 дюйми ⨯ 2 дюйми (США, Канада)"
 msgid "2in x 2in (US Square)"
 msgstr "2 дюйми ⨯ 2 дюйми (квадратна США)"
 
+#: ../share/extensions/template_business_card.inx:23
+msgid "Various Countries"
+msgstr "Різноманітні країни"
+
 #: ../share/extensions/template_dvd_cover.inx:3
+#: ../share/extensions/template_dvd_cover.inx:19
 msgid "DVD Cover"
 msgstr "Обкладинка DVD"
 
@@ -49350,7 +49435,12 @@ msgstr "Супертонка (5 мм)"
 msgid "DVD cover bleed (mm):"
 msgstr "Обрізка обкладинки DVD (у мм):"
 
+#: ../share/extensions/template_dvd_cover.inx:19
+msgid "Various Sizes"
+msgstr "Різні розміри"
+
 #: ../share/extensions/template_seamless_pattern.inx:3
+#: ../share/extensions/template_seamless_pattern.inx:13
 msgid "Seamless Pattern"
 msgstr "Безшовний візерунок"
 
@@ -49361,6 +49451,10 @@ msgstr "Нетипова ширина (у пк):"
 #: ../share/extensions/template_seamless_pattern.inx:10
 msgid "Custom Height (px):"
 msgstr "Нетипова висота (у пк):"
+
+#: ../share/extensions/template_seamless_pattern.inx:13
+msgid "Tiled Canvas"
+msgstr "Мозаїчне полотно"
 
 #: ../share/extensions/text_braille.inx:3
 msgid "Convert to Braille"
@@ -52054,9 +52148,6 @@ msgstr "Половина висоти шрифту"
 #~ msgid "_Grow on screen"
 #~ msgstr "З_більшити на екрані"
 
-#~ msgid "_Double size"
-#~ msgstr "Подв_ійний розмір"
-
 #~ msgid "Double the size of selected objects"
 #~ msgstr "Збільшити удвічі розмір позначених об'єктів"
 
@@ -52202,10 +52293,6 @@ msgstr "Половина висоти шрифту"
 #~ msgctxt "ContextVerb"
 #~ msgid "Zoom"
 #~ msgstr "Масштаб"
-
-#~ msgctxt "ContextVerb"
-#~ msgid "Dropper"
-#~ msgstr "Піпетка"
 
 #~ msgctxt "ContextVerb"
 #~ msgid "Connector"
