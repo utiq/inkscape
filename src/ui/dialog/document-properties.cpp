@@ -1357,10 +1357,10 @@ void DocumentProperties::build_gridspage()
     _grids_hbox_crea.pack_start(_grids_combo_gridtype, true, true);
     _grids_hbox_crea.pack_start(_grids_button_new, true, true);
 
-    _grids_combo_gridtype.append( N_("Rectangular Grid") );
-    _grids_combo_gridtype.append( N_("Axonometric Grid") );
+    _grids_combo_gridtype.append( _("Rectangular Grid") );
+    _grids_combo_gridtype.append( _("Axonometric Grid") );
 
-    _grids_combo_gridtype.set_active_text( N_("Rectangular Grid") );
+    _grids_combo_gridtype.set_active_text( _("Rectangular Grid") );
 
     _grids_space.set_size_request (SPACE_SIZE_X, SPACE_SIZE_Y);
 
