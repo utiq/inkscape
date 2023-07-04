@@ -1845,8 +1845,9 @@ void Canvas::get_preferred_height_vfunc(int &minimum_height, int &natural_height
 
 void Canvas::on_size_allocate(Gtk::Allocation &allocation)
 {
+    auto const old_dimensions = get_dimensions();
     parent_type::on_size_allocate(allocation);
-    assert(allocation == get_allocation());
+    auto const new_dimensions = get_dimensions();
 
     // Necessary as GTK seems to somehow invalidate the current pipeline state upon resize.
     if (d->active) {
@@ -1855,6 +1856,24 @@ void Canvas::on_size_allocate(Gtk::Allocation &allocation)
 
     // Trigger the size update to be applied to the stores before the next redraw of the window.
     d->schedule_redraw();
+
+    // Keep canvas centered and optionally zoomed in.
+    if (_desktop && new_dimensions != old_dimensions) {
+        auto const midpoint = _desktop->w2d(_pos + Geom::Point(old_dimensions) * 0.5);
+        double zoom = _desktop->current_zoom();
+
+        auto prefs = Preferences::get();
+        if (prefs->getBool("/options/stickyzoom/value", false)) {
+            // Calculate adjusted zoom.
+            auto const old_minextent = min(old_dimensions);
+            auto const new_minextent = min(new_dimensions);
+            if (old_minextent != 0) {
+                zoom *= (double)new_minextent / old_minextent;
+            }
+        }
+
+        _desktop->zoom_absolute(midpoint, zoom, false);
+    }
 }
 
 Glib::RefPtr<Gdk::GLContext> Canvas::create_context()

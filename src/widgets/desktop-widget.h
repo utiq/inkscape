@@ -86,7 +86,6 @@ public:
 
     Gio::ActionMap* get_action_map();
 
-    void on_size_allocate(Gtk::Allocation &) override;
     void on_realize() override;
     void on_unrealize() override;
 
@@ -212,6 +211,7 @@ public:
     void toggle_command_palette();
     void toggle_rulers();
     void sticky_zoom_toggled();
+    void sticky_zoom_updated();
 
     Gtk::Widget *get_tool_toolbox() const { return Glib::wrap(tool_toolbox); }
 private:
@@ -223,6 +223,7 @@ private:
     Inkscape::PrefObserver _tb_icon_sizes1;
     Inkscape::PrefObserver _tb_icon_sizes2;
     Inkscape::PrefObserver _tb_visible_buttons;
+    Inkscape::PrefObserver _ds_sticky_zoom;
 
     void namedviewModified(SPObject *obj, guint flags);
     int zoom_input(double *new_val);

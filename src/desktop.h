@@ -311,6 +311,7 @@ public:
 
     void zoom_drawing();
     void zoom_selection();
+    void schedule_zoom_from_document();
 
     double current_zoom() const { return _current_affine.getZoom(); }
     Geom::Point current_center() const;
@@ -538,8 +539,8 @@ private:
 
     sigc::connection _reconstruction_start_connection;
     sigc::connection _reconstruction_finish_connection;
+    sigc::connection _schedule_zoom_from_document_connection;
 
-    void onResized (double, double) override;
     void onStatusMessage (Inkscape::MessageType type, gchar const *message) override;
     void onDocumentFilenameSet(gchar const* filename) override;
 };
