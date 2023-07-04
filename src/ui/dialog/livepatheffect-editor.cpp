@@ -198,6 +198,7 @@ LivePathEffectEditor::LivePathEffectEditor()
 
 LivePathEffectEditor::~LivePathEffectEditor()
 {
+    sp_clear_custom_tooltip();
 }
 
 bool separator_func(const Glib::RefPtr<Gtk::TreeModel>& model,
@@ -287,6 +288,7 @@ void align(Gtk::Widget* top, gint spinbutton_width_chars) {
 void
 LivePathEffectEditor::clearMenu()
 {
+    sp_clear_custom_tooltip();
     _reload_menu = true;
 }
 
