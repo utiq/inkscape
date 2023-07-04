@@ -157,8 +157,8 @@ struct SymbolSetsColumns : public Gtk::TreeModel::ColumnRecord {
 
 const Glib::ustring CURRENT_DOC_ID = "{?cur-doc?}";
 const Glib::ustring ALL_SETS_ID = "{?all-sets?}";
-const Glib::ustring CURRENT_DOC = _("Current document");
-const Glib::ustring ALL_SETS = _("All symbol sets");
+const char *CURRENT_DOC = N_("Current document");
+const char *ALL_SETS = N_("All symbol sets");
 
 SymbolsDialog::SymbolsDialog(const char* prefsPath)
     : DialogBase(prefsPath, "Symbols"),
@@ -213,10 +213,10 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
 
     auto row = _symbol_sets->append();
     (*row)[g_set_columns.set_id] = CURRENT_DOC_ID;
-    (*row)[g_set_columns.translated_title] = CURRENT_DOC;
+    (*row)[g_set_columns.translated_title] = _(CURRENT_DOC);
     row = _symbol_sets->append();
     (*row)[g_set_columns.set_id] = ALL_SETS_ID;
-    (*row)[g_set_columns.translated_title] = ALL_SETS + '\n'; // extra vertial space (separator of sorts)
+    (*row)[g_set_columns.translated_title] = _(ALL_SETS);
 
     _set_search.signal_search_changed().connect([=](){
         auto scoped(_update.block());
