@@ -80,8 +80,9 @@ public:
 
     void deactivate() override;
 
-    // try to locate SVG thumbnail for this effect and return its path; empty string if not found
-    std::string find_icon_file() const;
+    // try to locate SVG thumbnail for this effect and return its path; empty string if not found;
+    // use "default_dir" for effects created from memory, as they don't know their location
+    std::string find_icon_file(const std::string& default_dir) const;
 
     // returns true if this extension presents input dialog before taking effect
     // or false for immediate action (no UI)

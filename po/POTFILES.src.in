@@ -289,6 +289,7 @@ ${_build_dir}/share/templates/templates.h
 ../src/ui/dialog/export-batch.cpp
 ../src/ui/dialog/export-single.cpp
 ../src/ui/dialog/export.cpp
+../src/ui/dialog/extensions-gallery.cpp
 ../src/ui/dialog/filedialogimpl-gtkmm.cpp
 ../src/ui/dialog/filedialogimpl-win32.cpp
 ../src/ui/dialog/fill-and-stroke.cpp

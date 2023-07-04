@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
-   width="70"
-   height="60"
-   viewBox="0 0 70 60"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
    version="1.1"
    id="svg1"
-   sodipodi:docname="math.triangle.svg"
-   inkscape:version="1.4-dev (de72ba3c18, 2023-06-27, custom)"
+   inkscape:version="1.4-dev (e8380d9036, 2023-07-04, custom)"
+   sodipodi:docname="panel-left-symbolic.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -20,10 +22,11 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="45.254834"
      showgrid="true"
-     inkscape:zoom="5.9592525"
-     inkscape:cx="57.221942"
-     inkscape:cy="20.807979"
+     inkscape:cx="4.6624853"
+     inkscape:cy="7.0047766"
      inkscape:current-layer="layer1">
     <inkscape:grid
        id="grid1"
@@ -45,13 +48,19 @@
   <defs
      id="defs1" />
   <g
-     inkscape:label="math.triangle"
+     inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="opacity:0.15;fill:#000000;fill-rule:evenodd;stroke-width:0.999995;stroke-linecap:round;stroke-miterlimit:3.3"
+       id="rect2"
+       width="4"
+       height="11"
+       x="1"
+       y="2" />
     <path
-       style="fill:#f0f0f0;stroke:#000000;stroke-width:2"
-       inkscape:label="Triangle"
-       d="M 4.727224,40 H 63.650889 L 19.458142,14.33154 Z"
-       id="path1" />
+       id="rect1"
+       style="fill-rule:evenodd;stroke-linecap:round;stroke-miterlimit:3.3"
+       d="M 1.5 1 C 0.67765106 1 0 1.677651 0 2.5 L 0 12.5 C 0 13.322349 0.67765106 14 1.5 14 L 14.5 14 C 15.322349 14 16 13.322349 16 12.5 L 16 2.5 C 16 1.677651 15.322349 1 14.5 1 L 1.5 1 z M 1.5 2 L 5 2 L 5 13 L 1.5 13 C 1.2143512 13 1 12.785649 1 12.5 L 1 2.5 C 1 2.2143512 1.2143512 2 1.5 2 z M 6 2 L 14.5 2 C 14.785649 2 15 2.2143512 15 2.5 L 15 12.5 C 15 12.785649 14.785649 13 14.5 13 L 6 13 L 6 2 z " />
   </g>
 </svg>

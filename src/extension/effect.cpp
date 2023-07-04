@@ -304,11 +304,13 @@ Effect::set_pref_dialog (PrefDialog * prefdialog)
 // <icon> path
 // or extension's file name
 // or extension's ID
-std::string Effect::find_icon_file() const {
-    if (!_base_directory.empty()) {
+std::string Effect::find_icon_file(const std::string& default_dir) const {
+    auto& dir = _base_directory.empty() ? default_dir : _base_directory;
+
+    if (!dir.empty()) {
         // icon path provided?
         if (!_icon_path.empty()) {
-            auto path = Glib::build_filename(_base_directory, _icon_path);
+            auto path = Glib::build_filename(dir, _icon_path);
             if (Glib::file_test(path, Glib::FILE_TEST_IS_REGULAR)) {
                 return path;
             }
@@ -318,19 +320,20 @@ std::string Effect::find_icon_file() const {
             if (!_file_name.empty()) {
                 auto ext = Inkscape::IO::get_file_extension(_file_name);
                 auto filename = _file_name.substr(0, _file_name.size() - ext.size());
-                auto path = Glib::build_filename(_base_directory, filename + ".svg");
+                auto path = Glib::build_filename(dir, filename + ".svg");
                 if (Glib::file_test(path, Glib::FILE_TEST_IS_REGULAR)) {
                     return path;
                 }
             }
             // fallback 2: look for icon in extension's folder, inside "icons", this time using extension ID as a name
             std::string id = get_id();
-            auto path = Glib::build_filename(_base_directory, "icons", id + ".svg");
+            auto path = Glib::build_filename(dir, "icons", id + ".svg");
             if (Glib::file_test(path, Glib::FILE_TEST_IS_REGULAR)) {
                 return path;
             }
         }
     }
+
     return std::string();
 }
 

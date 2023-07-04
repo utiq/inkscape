@@ -7,6 +7,3 @@ install(FILES ${_RESOURCES} DESTINATION ${INKSCAPE_SHARE_INSTALL}/ui/resources)
 
 file(GLOB _SYNTAX_THEMES "syntax-themes/*.xml")
 install(FILES ${_SYNTAX_THEMES} DESTINATION ${INKSCAPE_SHARE_INSTALL}/ui/syntax-themes)
-
-file(GLOB _RESOURCES "effect-icons/*.svg")
-install(FILES ${_RESOURCES} DESTINATION ${INKSCAPE_SHARE_INSTALL}/ui/effect-icons)
