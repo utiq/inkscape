@@ -8,6 +8,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <glibmm/miscutils.h>
+
 #include "document.h"
 #include "extension/prefdialog/parameter.h"
 #include "io/file.h"
