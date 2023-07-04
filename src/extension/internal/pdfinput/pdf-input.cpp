@@ -44,7 +44,6 @@
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/drawingarea.h>
 #include <gtkmm/frame.h>
-#include <gtkmm/radiobutton.h>
 #include <gtkmm/scale.h>
 #include <utility>
 
