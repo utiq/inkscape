@@ -13,8 +13,8 @@
 
 #include <exception>
 #include <giomm/file.h>
-#include <glibmm.h>
-#include <glibmm/fileutils.h>
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
 #include <map>
 #include <string>
 
