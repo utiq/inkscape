@@ -223,6 +223,9 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     /* Canvas */
     dtw->_canvas = _canvas_grid->GetCanvas();
 
+    _ds_sticky_zoom = prefs->createObserver("/options/stickyzoom/value", [=]() { sticky_zoom_updated(); });
+    sticky_zoom_updated();
+
     /* Dialog Container */
     _container = Gtk::manage(new DialogContainer(inkscape_window));
     _columns = _container->get_columns();
@@ -551,40 +554,6 @@ DialogContainer *SPDesktopWidget::getDialogContainer()
 void SPDesktopWidget::showNotice(Glib::ustring const &msg, unsigned timeout)
 {
     _canvas_grid->showNotice(msg, timeout);
-}
-
-/**
- * Resize handler, keeps the desktop centered.
- */
-void SPDesktopWidget::on_size_allocate(Gtk::Allocation &allocation)
-{
-    // This function is called a lot during mouse move events without
-    // resizing the widget. Desktop position/zoom must not be updated
-    // for these trivial invocations.
-    if (allocation == get_allocation()) {
-        parent_type::on_size_allocate(allocation);
-        return;
-    }
-
-    Geom::Rect const d_canvas = _canvas->get_area_world();
-
-    parent_type::on_size_allocate(allocation);
-
-    if (d_canvas.hasZeroArea()) {
-        return;
-    }
-
-    Geom::Point const midpoint_dt = desktop->w2d(d_canvas.midpoint());
-    double zoom = desktop->current_zoom();
-
-    if (_canvas_grid->GetStickyZoom()->get_active()) {
-        /* Calculate adjusted zoom */
-        double oldshortside = d_canvas.minExtent();
-        double newshortside = _canvas->get_area_world().minExtent();
-        zoom *= newshortside / oldshortside;
-    }
-
-    desktop->zoom_absolute(midpoint_dt, zoom, false);
 }
 
 /**
@@ -1320,6 +1289,12 @@ SPDesktopWidget::sticky_zoom_toggled()
     prefs->setBool("/options/stickyzoom/value", _canvas_grid->GetStickyZoom()->get_active());
 }
 
+void
+SPDesktopWidget::sticky_zoom_updated()
+{
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    _canvas_grid->GetStickyZoom()->set_active(prefs->getBool("/options/stickyzoom/value", false));
+}
 
 void
 SPDesktopWidget::update_zoom()

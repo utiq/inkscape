@@ -217,7 +217,7 @@ InkscapeWindow::setup_view()
     //       the window, but a call to hide() causes Inkscape to just exit since the migration to Gtk::Application
     show();
     
-    sp_namedview_zoom_and_view_from_document(_desktop);
+    _desktop->schedule_zoom_from_document();
     sp_namedview_update_layers_from_document(_desktop);
 
     SPNamedView *nv = _desktop->namedview;

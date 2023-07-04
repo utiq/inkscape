@@ -595,7 +595,8 @@ void sp_namedview_window_from_document(SPDesktop *desktop)
             win->fullscreen();
         }
     } else if ((window_geometry == PREFS_WINDOW_GEOMETRY_FILE && nv->window_maximized) ||
-               (new_document && (default_size == PREFS_WINDOW_SIZE_MAXIMIZED))) {
+               ((new_document || window_geometry == PREFS_WINDOW_GEOMETRY_NONE) &&
+                default_size == PREFS_WINDOW_SIZE_MAXIMIZED)) {
         win->maximize();
     } else {
         const int MIN_WINDOW_SIZE = 600;

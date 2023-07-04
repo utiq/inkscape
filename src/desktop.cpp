@@ -286,6 +286,7 @@ void SPDesktop::destroy()
 
     _reconstruction_start_connection.disconnect();
     _reconstruction_finish_connection.disconnect();
+    _schedule_zoom_from_document_connection.disconnect();
 
     if (zoomgesture) {
         g_signal_handlers_disconnect_by_data(zoomgesture, this);
@@ -740,6 +741,26 @@ SPDesktop::zoom_selection()
     }
 
     set_display_area(*d, 10);
+}
+
+/**
+ * Schedule the zoom/view settings from the document to be applied to the desktop
+ * at the latest possible moment before the the canvas is next drawn.
+ *
+ * By doing things this way, we ensure that all necessary size updates have been
+ * applied to the canvas, and our calculated zoom/view settings will be correct.
+ */
+void SPDesktop::schedule_zoom_from_document()
+{
+    if (_schedule_zoom_from_document_connection) {
+        return;
+    }
+
+    _schedule_zoom_from_document_connection = canvas->signal_draw().connect([this] (Cairo::RefPtr<Cairo::Context> const &) {
+        sp_namedview_zoom_and_view_from_document(this);
+        _schedule_zoom_from_document_connection.disconnect(); // one-shot
+        return false; // don't block draw
+    }, false); // run before draw
 }
 
 Geom::Point SPDesktop::current_center() const {
@@ -1333,12 +1354,6 @@ void SPDesktop::toggleLockGuides()
 
 //----------------------------------------------------------------------
 // Callback implementations. The virtual ones are connected by the view.
-
-void
-SPDesktop::onResized (double /*x*/, double /*y*/)
-{
-   // Nothing called here
-}
 
 /**
  * Associate document with desktop.
