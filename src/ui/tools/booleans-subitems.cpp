@@ -51,7 +51,9 @@ static Geom::PathVector clean_pathvector(Geom::PathVector &&pathv)
  */
 SubItem &SubItem::operator+=(SubItem const &other)
 {
-    _paths = clean_pathvector(sp_pathvector_boolop(_paths, other._paths, bool_op_union, fill_nonZero, fill_nonZero, true));
+    _paths = sp_pathvector_boolop(_paths, other._paths, bool_op_union, fill_nonZero, fill_nonZero, true);
+    sp_flatten(_paths, fill_nonZero);
+    _paths = clean_pathvector(std::move(_paths));
     return *this;
 }
 
