@@ -2221,7 +2221,7 @@ void InkscapePreferences::initPageUI()
             {&_grids_xy_spacing_x, "/options/grids/xy/spacing_x"},
             {&_grids_xy_spacing_y, "/options/grids/xy/spacing_y"},
             {&_grids_axonom_origin_x,  "/options/grids/axonom/origin_x"},
-            {&_grids_axonom_origin_y, " /options/grids/axonom/origin_y"},
+            {&_grids_axonom_origin_y,  "/options/grids/axonom/origin_y"},
             {&_grids_axonom_spacing_y, "/options/grids/axonom/spacing_y"},
             {origin_x,     "/options/grids/modular/origin_x"},
             {origin_y,     "/options/grids/modular/origin_y"},
