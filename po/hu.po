@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: hu\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2023-06-06 18:26+0000\n"
-"PO-Revision-Date: 2023-06-26 00:50+0000\n"
+"POT-Creation-Date: 2023-07-04 21:25+0000\n"
+"PO-Revision-Date: 2013-07-05 17:58+0000\n"
 "Last-Translator: Gyuris Gellért <jobel@ujevangelizacio.hu>, 2023\n"
 "Language-Team: Hungarian (https://app.transifex.com/fsf-hu/teams/77907/hu/)\n"
 "Language: hu\n"
@@ -2188,6 +2188,7 @@ msgid "Square"
 msgstr "Négyzet"
 
 #: ../build/share/markers/markers.svg.h:17
+#: ../share/extensions/other/templates/template_shape_prefab.inx:13
 msgid "Diamond"
 msgstr "Gyémánt"
 
@@ -3967,7 +3968,7 @@ msgstr "Kilépés"
 #: ../build/share/symbols/symbols.h:109 ../build/share/symbols/symbols.h:110
 msgctxt "Symbol"
 msgid "Fire Extinguisher"
-msgstr "Tűzoltó"
+msgstr "Tűzoltó készülék"
 
 #: ../build/share/symbols/symbols.h:111 ../build/share/symbols/symbols.h:112
 msgctxt "Symbol"
@@ -4117,7 +4118,7 @@ msgstr "Mágneslemez"
 #: ../build/share/symbols/symbols.h:151
 msgctxt "Symbol"
 msgid "Display"
-msgstr "Képernyő"
+msgstr "Megjelenítés"
 
 #: ../build/share/symbols/symbols.h:152
 msgctxt "Symbol"
@@ -9089,7 +9090,7 @@ msgid "Fracture one or more overlapping objects into all possible segments"
 msgstr "Egy vagy több átfedő objektum széttörése az összes lehetséges részre"
 
 #: ../src/actions/actions-paths.cpp:236
-#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgctxt "Path flatten"
 msgid "Flatten"
 msgstr "Összepréselés"
 
@@ -10437,8 +10438,8 @@ msgstr "lg1p$"
 
 #: ../src/display/control/snap-indicator.cpp:42
 #: ../src/display/control/snap-indicator.cpp:67
-#: ../src/display/control/snap-indicator.cpp:152
-#: ../src/display/control/snap-indicator.cpp:153
+#: ../src/display/control/snap-indicator.cpp:154
+#: ../src/display/control/snap-indicator.cpp:155
 msgid "UNDEFINED"
 msgstr "DEFINIÁLATLAN"
 
@@ -10581,7 +10582,7 @@ msgid "quadrant point"
 msgstr "negyedelőpont"
 
 #: ../src/display/control/snap-indicator.cpp:83
-#: ../src/display/control/snap-indicator.cpp:99
+#: ../src/display/control/snap-indicator.cpp:101
 msgid "corner"
 msgstr "sarok"
 
@@ -10642,30 +10643,38 @@ msgid "page margin center"
 msgstr "oldalmargó közepe"
 
 #: ../src/display/control/snap-indicator.cpp:98
+msgid "page bleed border"
+msgstr "oldalkifutó szegélye"
+
+#: ../src/display/control/snap-indicator.cpp:99
+msgid "page bleed corner"
+msgstr "oldalkifutó sarka"
+
+#: ../src/display/control/snap-indicator.cpp:100
 msgid "object midpoint"
 msgstr "objektumközéppont"
 
-#: ../src/display/control/snap-indicator.cpp:100
+#: ../src/display/control/snap-indicator.cpp:102
 msgid "object rotation center"
 msgstr "objektum forgatási középpontja"
 
-#: ../src/display/control/snap-indicator.cpp:101
+#: ../src/display/control/snap-indicator.cpp:103
 msgid "text anchor"
 msgstr "szöveghorgony"
 
-#: ../src/display/control/snap-indicator.cpp:102
+#: ../src/display/control/snap-indicator.cpp:104
 msgid "text baseline"
 msgstr "szövegalapvonal"
 
-#: ../src/display/control/snap-indicator.cpp:103
+#: ../src/display/control/snap-indicator.cpp:105
 msgid "constrained angle"
 msgstr "korlátozott szög"
 
-#: ../src/display/control/snap-indicator.cpp:104
+#: ../src/display/control/snap-indicator.cpp:106
 msgid "constraint"
 msgstr "korlátozás"
 
-#: ../src/display/control/snap-indicator.cpp:220
+#: ../src/display/control/snap-indicator.cpp:222
 msgid " to "
 msgstr " ehhez: "
 
@@ -14100,6 +14109,7 @@ msgid "Miscellaneous document formats"
 msgstr "Különböző dokumentumformátumok"
 
 #: ../src/extension/internal/template-other.cpp:39
+#: ../share/extensions/template_seamless_pattern.inx:7
 msgctxt "TemplateCategory"
 msgid "Other"
 msgstr "Egyéb"
@@ -14121,6 +14131,30 @@ msgstr "Mértékegység"
 msgid "Size"
 msgstr "Méret"
 
+#: ../src/extension/internal/template-other.cpp:46
+msgid "Icon 16x16"
+msgstr "Ikon 16×16"
+
+#: ../src/extension/internal/template-other.cpp:47
+msgid "Icon 32x32"
+msgstr "Ikon 32×32"
+
+#: ../src/extension/internal/template-other.cpp:48
+msgid "Icon 48x48"
+msgstr "Ikon 48×48"
+
+#: ../src/extension/internal/template-other.cpp:49
+msgid "Icon 120x120"
+msgstr "Ikon 120×120"
+
+#: ../src/extension/internal/template-other.cpp:50
+msgid "Icon 180x180"
+msgstr "Ikon 180×180"
+
+#: ../src/extension/internal/template-other.cpp:51
+msgid "Icon 512x512"
+msgstr "Ikon 512×512"
+
 #: ../src/extension/internal/template-paper.cpp:45
 msgid "Paper Sizes"
 msgstr "Papírméretek"
@@ -14130,6 +14164,8 @@ msgid "Standard paper document formats"
 msgstr "Szabványos papíralapú dokumentumformátumok"
 
 #: ../src/extension/internal/template-paper.cpp:47
+#: ../share/extensions/template_business_card.inx:7
+#: ../share/extensions/template_dvd_cover.inx:7
 msgctxt "TemplateCategory"
 msgid "Print"
 msgstr "Nyomtatás"
@@ -14157,6 +14193,247 @@ msgstr "Álló"
 msgid "Landscape"
 msgstr "Fekvő"
 
+#: ../src/extension/internal/template-paper.cpp:58
+msgid "A4 (Portrait)"
+msgstr "A4 (álló)"
+
+#: ../src/extension/internal/template-paper.cpp:59
+msgid "A4 (Landscape)"
+msgstr "A4 (fekvő)"
+
+#: ../src/extension/internal/template-paper.cpp:60
+msgid "US Letter (Portrait)"
+msgstr "US Letter (álló)"
+
+#: ../src/extension/internal/template-paper.cpp:61
+msgid "US Letter (Landscape)"
+msgstr "US Letter (fekvő)"
+
+#: ../src/extension/internal/template-paper.cpp:62
+msgid "A0"
+msgstr "A0"
+
+#: ../src/extension/internal/template-paper.cpp:63
+msgid "A1"
+msgstr "A1"
+
+#: ../src/extension/internal/template-paper.cpp:64
+msgid "A2"
+msgstr "A2"
+
+#: ../src/extension/internal/template-paper.cpp:65
+msgid "A3"
+msgstr "A3"
+
+#: ../src/extension/internal/template-paper.cpp:66
+#: ../share/ui/page-properties.glade:468
+msgid "A4"
+msgstr "A4"
+
+#: ../src/extension/internal/template-paper.cpp:67
+msgid "A5"
+msgstr "A5"
+
+#: ../src/extension/internal/template-paper.cpp:68
+msgid "A6"
+msgstr "A6"
+
+#: ../src/extension/internal/template-paper.cpp:69
+msgid "A7"
+msgstr "A7"
+
+#: ../src/extension/internal/template-paper.cpp:70
+msgid "A8"
+msgstr "A8"
+
+#: ../src/extension/internal/template-paper.cpp:71
+msgid "A9"
+msgstr "A9"
+
+#: ../src/extension/internal/template-paper.cpp:72
+msgid "A10"
+msgstr "A10"
+
+#: ../src/extension/internal/template-paper.cpp:73
+msgid "B0"
+msgstr "B0"
+
+#: ../src/extension/internal/template-paper.cpp:74
+msgid "B1"
+msgstr "B1"
+
+#: ../src/extension/internal/template-paper.cpp:75
+msgid "B2"
+msgstr "B2"
+
+#: ../src/extension/internal/template-paper.cpp:76
+msgid "B3"
+msgstr "B3"
+
+#: ../src/extension/internal/template-paper.cpp:77
+msgid "B4"
+msgstr "B4"
+
+#: ../src/extension/internal/template-paper.cpp:78
+msgid "B5"
+msgstr "B5"
+
+#: ../src/extension/internal/template-paper.cpp:79
+msgid "B6"
+msgstr "B6"
+
+#: ../src/extension/internal/template-paper.cpp:80
+msgid "B7"
+msgstr "B7"
+
+#: ../src/extension/internal/template-paper.cpp:81
+msgid "B8"
+msgstr "B8"
+
+#: ../src/extension/internal/template-paper.cpp:82
+msgid "B9"
+msgstr "B9"
+
+#: ../src/extension/internal/template-paper.cpp:83
+msgid "B10"
+msgstr "B10"
+
+#: ../src/extension/internal/template-paper.cpp:84
+msgid "C0"
+msgstr "C0"
+
+#: ../src/extension/internal/template-paper.cpp:85
+msgid "C1"
+msgstr "C1"
+
+#: ../src/extension/internal/template-paper.cpp:86
+msgid "C2"
+msgstr "C2"
+
+#: ../src/extension/internal/template-paper.cpp:87
+msgid "C3"
+msgstr "C3"
+
+#: ../src/extension/internal/template-paper.cpp:88
+msgid "C4"
+msgstr "C4"
+
+#: ../src/extension/internal/template-paper.cpp:89
+msgid "C5"
+msgstr "C5"
+
+#: ../src/extension/internal/template-paper.cpp:90
+msgid "C6"
+msgstr "C6"
+
+#: ../src/extension/internal/template-paper.cpp:91
+msgid "C7"
+msgstr "C7"
+
+#: ../src/extension/internal/template-paper.cpp:92
+msgid "C8"
+msgstr "C8"
+
+#: ../src/extension/internal/template-paper.cpp:93
+msgid "C9"
+msgstr "C9"
+
+#: ../src/extension/internal/template-paper.cpp:94
+msgid "C10"
+msgstr "C10"
+
+#: ../src/extension/internal/template-paper.cpp:95
+msgid "D1"
+msgstr "D1"
+
+#: ../src/extension/internal/template-paper.cpp:96
+msgid "D2"
+msgstr "D2"
+
+#: ../src/extension/internal/template-paper.cpp:97
+msgid "D3"
+msgstr "D3"
+
+#: ../src/extension/internal/template-paper.cpp:98
+msgid "D4"
+msgstr "D4"
+
+#: ../src/extension/internal/template-paper.cpp:99
+msgid "D5"
+msgstr "D5"
+
+#: ../src/extension/internal/template-paper.cpp:100
+msgid "D6"
+msgstr "D6"
+
+#: ../src/extension/internal/template-paper.cpp:101
+msgid "D7"
+msgstr "D7"
+
+#: ../src/extension/internal/template-paper.cpp:102
+msgid "E3"
+msgstr "E3"
+
+#: ../src/extension/internal/template-paper.cpp:103
+msgid "E4"
+msgstr "E4"
+
+#: ../src/extension/internal/template-paper.cpp:104
+msgid "E5"
+msgstr "E5"
+
+#: ../src/extension/internal/template-paper.cpp:105
+msgid "E6"
+msgstr "E6"
+
+#: ../src/extension/internal/template-paper.cpp:106
+msgid "Ledger/Tabloid"
+msgstr "Ledger/Tabloid"
+
+#: ../src/extension/internal/template-paper.cpp:107
+msgid "US Executive"
+msgstr "US Executive"
+
+#: ../src/extension/internal/template-paper.cpp:108
+msgid "US Legal"
+msgstr "US Legal"
+
+#: ../src/extension/internal/template-paper.cpp:109
+msgid "US Letter"
+msgstr "US Letter"
+
+#: ../src/extension/internal/template-paper.cpp:110
+msgid "DL Envelope"
+msgstr "DL boríték"
+
+#: ../src/extension/internal/template-paper.cpp:111
+msgid "US #10 Envelope"
+msgstr "US #10 boríték"
+
+#: ../src/extension/internal/template-paper.cpp:112
+msgid "Arch A"
+msgstr "Arch A"
+
+#: ../src/extension/internal/template-paper.cpp:113
+msgid "Arch B"
+msgstr "Arch B"
+
+#: ../src/extension/internal/template-paper.cpp:114
+msgid "Arch C"
+msgstr "Arch C"
+
+#: ../src/extension/internal/template-paper.cpp:115
+msgid "Arch D"
+msgstr "Arch D"
+
+#: ../src/extension/internal/template-paper.cpp:116
+msgid "Arch E"
+msgstr "Arch E"
+
+#: ../src/extension/internal/template-paper.cpp:117
+msgid "Arch E1"
+msgstr "Arch E1"
+
 #: ../src/extension/internal/template-screen.cpp:28
 msgid "Screen Sizes"
 msgstr "Képernyőméretek"
@@ -14169,6 +14446,46 @@ msgstr "Általános képernyőfelbontást használó dokumentumformátumok"
 msgctxt "TemplateCategory"
 msgid "Screen"
 msgstr "Képernyő"
+
+#: ../src/extension/internal/template-screen.cpp:38
+msgid "Desktop 1080p"
+msgstr "Képernyő 1080p"
+
+#: ../src/extension/internal/template-screen.cpp:39
+msgid "Desktop 2K"
+msgstr "Képernyő 2K"
+
+#: ../src/extension/internal/template-screen.cpp:40
+msgid "Desktop 4K"
+msgstr "Képernyő 4K"
+
+#: ../src/extension/internal/template-screen.cpp:41
+msgid "Desktop 720p"
+msgstr "Képernyő 720p"
+
+#: ../src/extension/internal/template-screen.cpp:42
+msgid "Desktop SD"
+msgstr "Képernyő SD"
+
+#: ../src/extension/internal/template-screen.cpp:43
+msgid "iPhone 5"
+msgstr "iPhone 5"
+
+#: ../src/extension/internal/template-screen.cpp:44
+msgid "iPhone X"
+msgstr "iPhone X"
+
+#: ../src/extension/internal/template-screen.cpp:45
+msgid "Mobile-smallest"
+msgstr "Mobil, legkisebb"
+
+#: ../src/extension/internal/template-screen.cpp:46
+msgid "iPad Pro"
+msgstr "iPad Pro"
+
+#: ../src/extension/internal/template-screen.cpp:47
+msgid "Tablet-smallest"
+msgstr "Táblagép, legkisebb"
 
 #: ../src/extension/internal/template-social.cpp:28
 msgid "Social Sizes"
@@ -14183,6 +14500,98 @@ msgctxt "TemplateCategory"
 msgid "Social"
 msgstr "Közösségi"
 
+#: ../src/extension/internal/template-social.cpp:38
+msgid "Facebook cover photo"
+msgstr "Facebook borítókép"
+
+#: ../src/extension/internal/template-social.cpp:39
+msgid "Facebook event image"
+msgstr "Facebook eseménykép"
+
+#: ../src/extension/internal/template-social.cpp:40
+msgid "Facebook image post"
+msgstr "Facebook képbejegyzés"
+
+#: ../src/extension/internal/template-social.cpp:41
+msgid "Facebook link image"
+msgstr "Facebook képhivatkozás"
+
+#: ../src/extension/internal/template-social.cpp:42
+msgid "Facebook profile picture"
+msgstr "Facebook profilkép"
+
+#: ../src/extension/internal/template-social.cpp:43
+msgid "Facebook video"
+msgstr "Facebook videó"
+
+#: ../src/extension/internal/template-social.cpp:44
+msgid "Instagram landscape"
+msgstr "Instagram fekvő"
+
+#: ../src/extension/internal/template-social.cpp:45
+msgid "Instagram portrait"
+msgstr "Instagram álló"
+
+#: ../src/extension/internal/template-social.cpp:46
+msgid "Instagram square"
+msgstr "Instagram négyzetes"
+
+#: ../src/extension/internal/template-social.cpp:47
+msgid "LinkedIn business banner image"
+msgstr "LinkedIn üzleti reklámcsík"
+
+#: ../src/extension/internal/template-social.cpp:48
+msgid "LinkedIn company logo"
+msgstr "LinkedIn vállalati logó"
+
+#: ../src/extension/internal/template-social.cpp:49
+msgid "LinkedIn cover photo"
+msgstr "LinkedIn borítókép"
+
+#: ../src/extension/internal/template-social.cpp:50
+msgid "LinkedIn dynamic ad"
+msgstr "LinkedIn dinamikus hirdetés"
+
+#: ../src/extension/internal/template-social.cpp:51
+msgid "LinkedIn hero image"
+msgstr "LinkedIn hőskép"
+
+#: ../src/extension/internal/template-social.cpp:52
+msgid "LinkedIn sponsored content image"
+msgstr "LinkedIn szponzorált tartalom-kép"
+
+#: ../src/extension/internal/template-social.cpp:53
+msgid "Snapchat advertisement"
+msgstr "Snapchat hirdetés"
+
+#: ../src/extension/internal/template-social.cpp:54
+msgid "Twitter card image"
+msgstr "Twitter kártyakép"
+
+#: ../src/extension/internal/template-social.cpp:55
+msgid "Twitter header"
+msgstr "Twitter fejléc"
+
+#: ../src/extension/internal/template-social.cpp:56
+msgid "Twitter post image"
+msgstr "Twitter bejegyzéskép"
+
+#: ../src/extension/internal/template-social.cpp:57
+msgid "Twitter profile picture"
+msgstr "Twitter profilkép"
+
+#: ../src/extension/internal/template-social.cpp:58
+msgid "Twitter video landscape"
+msgstr "Twitter videó, fekvő"
+
+#: ../src/extension/internal/template-social.cpp:59
+msgid "Twitter video portrait"
+msgstr "Twitter videó, álló"
+
+#: ../src/extension/internal/template-social.cpp:60
+msgid "Twitter video square"
+msgstr "Twitter videó, négyzetes"
+
 #: ../src/extension/internal/template-video.cpp:28
 msgid "Video Sizes"
 msgstr "Videóméretek"
@@ -14195,6 +14604,46 @@ msgstr "Általános videófelbontást használó dokumentumformátumok"
 msgctxt "TemplateCategory"
 msgid "Video"
 msgstr "Videó"
+
+#: ../src/extension/internal/template-video.cpp:38
+msgid "Video SD PAL"
+msgstr "Videó SD PAL"
+
+#: ../src/extension/internal/template-video.cpp:39
+msgid "Video SD Widescreen / PAL"
+msgstr "Videó SD széles képernyő/PAL"
+
+#: ../src/extension/internal/template-video.cpp:40
+msgid "Video SD NTSC"
+msgstr "Videó SD NTSC"
+
+#: ../src/extension/internal/template-video.cpp:41
+msgid "Video SD Widescreen NTSC"
+msgstr "Videó SD széles képernyő/NTSC"
+
+#: ../src/extension/internal/template-video.cpp:42
+msgid "Video HD 720p"
+msgstr "Videó HD 720p"
+
+#: ../src/extension/internal/template-video.cpp:43
+msgid "Video HD 1080p"
+msgstr "Videó HD 1080p"
+
+#: ../src/extension/internal/template-video.cpp:44
+msgid "Video DCI 2k (Full Frame)"
+msgstr "Videó DCI 2k (teljes képkocka)"
+
+#: ../src/extension/internal/template-video.cpp:45
+msgid "Video UHD 4k"
+msgstr "Videó UHD 4k"
+
+#: ../src/extension/internal/template-video.cpp:46
+msgid "Video DCI 4k (Full Frame)"
+msgstr "Videó DCI 4k (teljes képkocka)"
+
+#: ../src/extension/internal/template-video.cpp:47
+msgid "Video UHD 8k"
+msgstr "Videó UHD 8k"
 
 #: ../src/extension/internal/vsd-input.cpp:317
 msgid "VSD Input"
@@ -19450,7 +19899,7 @@ msgid "Columns"
 msgstr "Oszlopok"
 
 #: ../src/live_effects/lpe-tiling.cpp:79
-#: ../src/ui/dialog/grid-arrange-tab.cpp:542
+#: ../src/ui/dialog/grid-arrange-tab.cpp:543
 msgid "Number of columns"
 msgstr "Az oszlopok száma"
 
@@ -19459,7 +19908,7 @@ msgid "Rows"
 msgstr "Sorok"
 
 #: ../src/live_effects/lpe-tiling.cpp:80
-#: ../src/ui/dialog/grid-arrange-tab.cpp:501
+#: ../src/ui/dialog/grid-arrange-tab.cpp:502
 msgid "Number of rows"
 msgstr "A sorok száma"
 
@@ -20406,7 +20855,7 @@ msgstr "nyújtva"
 msgid "inset"
 msgstr "zsugorítva"
 
-#: ../src/object/sp-page.cpp:598
+#: ../src/object/sp-page.cpp:602
 #, c-format
 msgid "Page %d"
 msgstr "%d. oldal"
@@ -25887,69 +26336,69 @@ msgstr "Hozzáfűzés"
 msgid "Append text"
 msgstr "Szöveg hozzáfűzése"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:258
+#: ../src/ui/dialog/grid-arrange-tab.cpp:259
 msgid "Arrange in a grid"
 msgstr "Rácsra való igazítás"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:473
+#: ../src/ui/dialog/grid-arrange-tab.cpp:474
 #: ../src/ui/toolbar/node-toolbar.cpp:280
 #: ../src/ui/widget/registered-widget.cpp:691
 #: ../src/widgets/desktop-widget.cpp:401 ../share/ui/page-properties.glade:310
 msgid "X:"
 msgstr "X:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:473
+#: ../src/ui/dialog/grid-arrange-tab.cpp:474
 msgid "Horizontal spacing between columns."
 msgstr "Vízszintes helykihagyás az oszlopok közt."
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:474
+#: ../src/ui/dialog/grid-arrange-tab.cpp:475
 #: ../src/ui/toolbar/node-toolbar.cpp:296
 #: ../src/ui/widget/registered-widget.cpp:692
 #: ../src/widgets/desktop-widget.cpp:402 ../share/ui/page-properties.glade:326
 msgid "Y:"
 msgstr "Y:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:474
+#: ../src/ui/dialog/grid-arrange-tab.cpp:475
 msgid "Vertical spacing between rows."
 msgstr "Függőleges helykihagyás a sorok közt."
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:492
+#: ../src/ui/dialog/grid-arrange-tab.cpp:493
 msgid "_Rows:"
 msgstr "_Sorok:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:505
+#: ../src/ui/dialog/grid-arrange-tab.cpp:506
 msgid "Equal _height"
 msgstr "Azonos _magasság"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:516
+#: ../src/ui/dialog/grid-arrange-tab.cpp:517
 msgid "If not set, each row has the height of the tallest object in it"
 msgstr ""
 "Ha nincs bejelölve, akkor minden sor magassága a benne levő legmagasabb "
 "objektuméval lesz egyenlő"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:533
+#: ../src/ui/dialog/grid-arrange-tab.cpp:534
 msgid "_Columns:"
 msgstr "_Oszlopok:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:546
+#: ../src/ui/dialog/grid-arrange-tab.cpp:547
 msgid "Equal _width"
 msgstr "Azonos _szélesség"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:556
+#: ../src/ui/dialog/grid-arrange-tab.cpp:557
 msgid "If not set, each column has the width of the widest object in it"
 msgstr ""
 "Ha nincs bejelölve, akkor minden oszlop szélessége a benne levő legszélesebb "
 "objektuméval lesz egyenlő"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:568
+#: ../src/ui/dialog/grid-arrange-tab.cpp:569
 msgid "Alignment:"
 msgstr "Igazítás:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:578
+#: ../src/ui/dialog/grid-arrange-tab.cpp:579
 msgid "_Fit into selection box"
 msgstr "_Férjen bele a kijelölési téglalapba"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:585
+#: ../src/ui/dialog/grid-arrange-tab.cpp:586
 msgid "_Set spacing:"
 msgstr "_Helykihagyás beállítása:"
 
@@ -30655,7 +31104,7 @@ msgstr "Elem zárolásának átváltása"
 msgid "Rename object"
 msgstr "Objektum átnevezése"
 
-#: ../src/ui/dialog/objects.cpp:1738
+#: ../src/ui/dialog/objects.cpp:1732
 msgid "Move items"
 msgstr "Elemek mozgatása"
 
@@ -32516,20 +32965,20 @@ msgstr "Méretezési fogantyú"
 msgid "Rotate handle"
 msgstr "Forgatási fogantyú"
 
-#: ../src/ui/tool/path-manipulator.cpp:1660
+#: ../src/ui/tool/path-manipulator.cpp:1665
 #: ../src/ui/toolbar/node-toolbar.cpp:147 ../share/ui/dialog-xml.glade:138
 msgid "Delete node"
 msgstr "Csomópont törlése"
 
-#: ../src/ui/tool/path-manipulator.cpp:1668
+#: ../src/ui/tool/path-manipulator.cpp:1673
 msgid "Cycle node type"
 msgstr "Csomópont-típus forgatása"
 
-#: ../src/ui/tool/path-manipulator.cpp:1683
+#: ../src/ui/tool/path-manipulator.cpp:1688
 msgid "Drag handle"
 msgstr "Húzó fogantyú"
 
-#: ../src/ui/tool/path-manipulator.cpp:1692
+#: ../src/ui/tool/path-manipulator.cpp:1697
 msgid "Retract handle"
 msgstr "Fogantyú behúzása"
 
@@ -33914,37 +34363,37 @@ msgstr ""
 "vagy válasszon egy előre beállított értéket a legördülő menüből."
 
 #: ../src/ui/toolbar/page-toolbar.cpp:135
-#: ../src/ui/toolbar/page-toolbar.cpp:321
+#: ../src/ui/toolbar/page-toolbar.cpp:324
 msgid "Resize Page"
 msgstr "Oldal átméretezése"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:238
+#: ../src/ui/toolbar/page-toolbar.cpp:241
 msgid "Relabel Page"
 msgstr "Oldal átcímkézése "
 
-#: ../src/ui/toolbar/page-toolbar.cpp:252
+#: ../src/ui/toolbar/page-toolbar.cpp:255
 msgid "Edit page bleed"
 msgstr "Oldalkifutó szerkesztése"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:269
-#: ../src/ui/toolbar/page-toolbar.cpp:298
+#: ../src/ui/toolbar/page-toolbar.cpp:272
+#: ../src/ui/toolbar/page-toolbar.cpp:301
 msgid "Edit page margin"
 msgstr "Oldalmargó szerkesztése"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:440
+#: ../src/ui/toolbar/page-toolbar.cpp:443
 msgid "Page label"
 msgstr "Oldal címkéje"
 
 #. TRANSLATORS: "%1" is replaced with the page we are on, and "%2" is the total number of pages.
-#: ../src/ui/toolbar/page-toolbar.cpp:457
+#: ../src/ui/toolbar/page-toolbar.cpp:460
 msgid "%1/%2"
 msgstr "%1/%2"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:471
+#: ../src/ui/toolbar/page-toolbar.cpp:474
 msgid "Single Page Document"
 msgstr "Egyoldalas dokumentum"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:472 ../share/ui/toolbar-page.ui:172
+#: ../src/ui/toolbar/page-toolbar.cpp:475 ../share/ui/toolbar-page.ui:172
 msgid "1/-"
 msgstr "1/-"
 
@@ -35830,7 +36279,7 @@ msgstr "Háló illesztése a határoló téglalapba"
 msgid "Create mesh"
 msgstr "Háló létrehozása"
 
-#: ../src/ui/tools/node-tool.cpp:462
+#: ../src/ui/tools/node-tool.cpp:463
 #, c-format
 msgid ""
 "<b>Draw over</b> lines to select their nodes; release <b>%s</b> to switch to "
@@ -35839,7 +36288,7 @@ msgstr ""
 "Vonalak csomópontjainak kijelölése: <b>rájuk való rajzolással</b>. Váltás "
 "területkijelölésre: <b>%s</b> felengedése."
 
-#: ../src/ui/tools/node-tool.cpp:465
+#: ../src/ui/tools/node-tool.cpp:466
 #, c-format
 msgid ""
 "<b>Drag around</b> nodes to select them; press <b>%s</b> to switch to box "
@@ -35848,7 +36297,7 @@ msgstr ""
 "Csomópontok kijelölése: <b>húzással való körülrajzolással</b>. Váltás "
 "téglalapos kijelölésre: <b>%s</b>."
 
-#: ../src/ui/tools/node-tool.cpp:686
+#: ../src/ui/tools/node-tool.cpp:688
 msgctxt "Node tool tip"
 msgid ""
 "<b>Shift</b>: drag to add nodes to the selection, click to toggle object "
@@ -35857,23 +36306,23 @@ msgstr ""
 "<b>Shift</b>. Csomópontok felvétele a kijelölésbe: húzással. "
 "Objektumkijelölés átváltása: kattintással."
 
-#: ../src/ui/tools/node-tool.cpp:690
+#: ../src/ui/tools/node-tool.cpp:692
 msgctxt "Node tool tip"
 msgid "<b>Shift</b>: drag to add nodes to the selection"
 msgstr "<b>Shift</b>. Csomópontok felvétele a kijelölésbe: húzással."
 
-#: ../src/ui/tools/node-tool.cpp:703
+#: ../src/ui/tools/node-tool.cpp:705
 #, c-format
 msgid "<b>%u of %u</b> node selected."
 msgid_plural "<b>%u of %u</b> nodes selected."
 msgstr[0] "<b>%u/%u</b> csomópont kijelölve."
 msgstr[1] "<b>%u/%u</b> csomópont kijelölve."
 
-#: ../src/ui/tools/node-tool.cpp:722
+#: ../src/ui/tools/node-tool.cpp:724
 msgid "Angle: %1°."
 msgstr "Szög: %1°."
 
-#: ../src/ui/tools/node-tool.cpp:729
+#: ../src/ui/tools/node-tool.cpp:731
 #, c-format
 msgctxt "Node tool tip"
 msgid "%s Drag to select nodes, click to edit only this object (more: Shift)"
@@ -35881,32 +36330,32 @@ msgstr ""
 "%s Csomópontok kijelölése: húzással. Csak ezen objektum szerkesztése: "
 "kattintással. (Továbbiak: Shift.)"
 
-#: ../src/ui/tools/node-tool.cpp:735
+#: ../src/ui/tools/node-tool.cpp:737
 #, c-format
 msgctxt "Node tool tip"
 msgid "%s Drag to select nodes, click clear the selection"
 msgstr "%s Csomópontok kijelölése: húzással. Kijelölés törlése: kattintással."
 
-#: ../src/ui/tools/node-tool.cpp:743
+#: ../src/ui/tools/node-tool.cpp:745
 msgctxt "Node tool tip"
 msgid "Drag to select nodes, click to edit only this object"
 msgstr ""
 "Csomópontok kijelölése: húzással. Csak ezen objektum szerkesztése: "
 "kattintással."
 
-#: ../src/ui/tools/node-tool.cpp:746
+#: ../src/ui/tools/node-tool.cpp:748
 msgctxt "Node tool tip"
 msgid "Drag to select nodes, click to clear the selection"
 msgstr "Csomópontok kijelölése: húzással. Kijelölés törlése: kattintással."
 
-#: ../src/ui/tools/node-tool.cpp:751
+#: ../src/ui/tools/node-tool.cpp:753
 msgctxt "Node tool tip"
 msgid "Drag to select objects to edit, click to edit this object (more: Shift)"
 msgstr ""
 "Szerkesztendő objektumok kijelölése: húzással. Ezen objektum szerkesztése: "
 "kattintással. (Továbbiak: Shift.)"
 
-#: ../src/ui/tools/node-tool.cpp:754
+#: ../src/ui/tools/node-tool.cpp:756
 msgctxt "Node tool tip"
 msgid "Drag to select objects to edit"
 msgstr "Szerkesztendő objektumok kijelölése: húzással."
@@ -38688,6 +39137,10 @@ msgstr ""
 "Ezen effektus és az összes efeletti effektust alkalmazása az útvonalra. Ez "
 "eltávolítja azokat az effektusokat a veremből."
 
+#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgid "Flatten"
+msgstr "Összepréselés"
+
 #: ../share/ui/dialog-livepatheffect-item.glade:45
 msgid "Use the current values as custom defaults for this LPE"
 msgstr ""
@@ -39247,8 +39700,8 @@ msgid "Media Box"
 msgstr "Adathordozó (media) téglalap"
 
 #: ../share/ui/extension-pdfinput.glade:23
-msgid "Clip Box"
-msgstr "Vágási (clip) téglalap"
+msgid "Crop Box"
+msgstr "Vágási (crop) téglalap"
 
 #: ../share/ui/extension-pdfinput.glade:27
 msgid "Trim Box"
@@ -39825,10 +40278,6 @@ msgstr ""
 #: ../share/ui/page-properties.glade:457
 msgid "Predefined paper sizes to choose from"
 msgstr "Választható előre definiált papírméretek"
-
-#: ../share/ui/page-properties.glade:468
-msgid "A4"
-msgstr "A4"
 
 #: ../share/ui/page-properties.glade:484
 msgid "Document's units used to specify document size only"
@@ -46789,9 +47238,78 @@ msgstr ""
 msgid "Shape Builder Prefab"
 msgstr "Előregyártott alakképző"
 
+#: ../share/extensions/other/templates/template_shape_prefab.inx:7
+msgctxt "TemplateCategory"
+msgid "Shape Builder"
+msgstr "Alakképző"
+
 #: ../share/extensions/other/templates/template_shape_prefab.inx:9
 msgid "Template:"
 msgstr "Sablon:"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:12
+msgid "Trellis"
+msgstr "Rács"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:14
+msgid "Cross"
+msgstr "Kereszt"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:15
+msgid "Very Cross"
+msgstr "Igazi kereszt"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:16
+msgid "Target"
+msgstr "Célpont"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:17
+msgid "Hive"
+msgstr "Kaptár"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:18
+msgid "Double Vision"
+msgstr "Kettős látás"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:19
+msgid "Celtic Flower"
+msgstr "Kelta virág"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:20
+msgid "Celtic Knot"
+msgstr "Kelta csomó"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:21
+msgid "Kitchen Tile"
+msgstr "Konyhai csempe"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:22
+msgid "Rose"
+msgstr "Rózsa"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:23
+msgid "Lily"
+msgstr "Liliom"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:24
+msgid "Crown"
+msgstr "Korona"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:25
+msgid "Diamond Target"
+msgstr "Gyémánt célpont"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:26
+msgid "TV Test Pattern"
+msgstr "TV tesztminta"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:27
+msgid "Explosion"
+msgstr "Robbanás"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:28
+msgid "Droplet"
+msgstr "Cseppecske"
 
 #: ../share/extensions/output_scour.inx:3
 msgid "Optimized SVG Output"
@@ -49115,6 +49633,7 @@ msgstr ""
 "fájlba"
 
 #: ../share/extensions/template_business_card.inx:3
+#: ../share/extensions/template_business_card.inx:23
 msgid "Business Card"
 msgstr "Névjegykártya"
 
@@ -49162,7 +49681,12 @@ msgstr "3.5 hüvelyk × 2 hüvelyk (Egyesült Államok/Kanada)"
 msgid "2in x 2in (US Square)"
 msgstr "2 hüvelyk × 2 hüvelyk (Egyesült Államokbeli négyzet)"
 
+#: ../share/extensions/template_business_card.inx:23
+msgid "Various Countries"
+msgstr "Különböző országok"
+
 #: ../share/extensions/template_dvd_cover.inx:3
+#: ../share/extensions/template_dvd_cover.inx:19
 msgid "DVD Cover"
 msgstr "DVD-borító"
 
@@ -49190,7 +49714,12 @@ msgstr "Nagyon vékony (5 mm)"
 msgid "DVD cover bleed (mm):"
 msgstr "DVD-borító kifutója (mm):"
 
+#: ../share/extensions/template_dvd_cover.inx:19
+msgid "Various Sizes"
+msgstr "Különböző méretek"
+
 #: ../share/extensions/template_seamless_pattern.inx:3
+#: ../share/extensions/template_seamless_pattern.inx:13
 msgid "Seamless Pattern"
 msgstr "Folytonos minta"
 
@@ -49201,6 +49730,10 @@ msgstr "Egyéni szélesség (px):"
 #: ../share/extensions/template_seamless_pattern.inx:10
 msgid "Custom Height (px):"
 msgstr "Egyéni magasság (px):"
+
+#: ../share/extensions/template_seamless_pattern.inx:13
+msgid "Tiled Canvas"
+msgstr "Csempézett vászon"
 
 #: ../share/extensions/text_braille.inx:3
 msgid "Convert to Braille"
