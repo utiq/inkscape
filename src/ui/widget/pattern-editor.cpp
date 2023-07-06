@@ -406,10 +406,12 @@ void PatternEditor::set_selected(SPPattern* pattern) {
     if (pattern && pattern != link_pattern) {
         _current_pattern.id = pattern->getId();
         _current_pattern.link_id = link_pattern->getId();
+        _current_pattern.offset = link_pattern->getTransform().translation();
     }
     else {
         _current_pattern.id.clear();
         _current_pattern.link_id.clear();
+        _current_pattern.offset = {};
     }
 
     auto item = create_pattern_item(_manager, link_pattern, 0, 0);
@@ -630,12 +632,7 @@ Geom::Affine PatternEditor::get_selected_transform() {
 
     matrix *= Geom::Scale(_scale_x.get_value(), _scale_y.get_value());
     matrix *= Geom::Rotate(_angle_btn.get_value() / 180.0 * M_PI);
-    auto pat = get_active();
-    if (pat.first) {
-        //TODO: this is imperfect; calculate better offset, if possible
-        // this translation is kept so there's no sudden jump when editing pattern attributes
-        matrix.setTranslation(pat.first->transform.translation());
-    }
+    matrix.setTranslation(_current_pattern.offset);
     return matrix;
 }
 
