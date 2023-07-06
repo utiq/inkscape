@@ -1016,6 +1016,8 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
             // get offset from mouse pointer to bbox center, snap to grid if enabled
             Geom::Point mouse_offset = desktop->point() - sel_bbox->midpoint();
             offset = m.multipleOfGridPitch(mouse_offset - offset, sel_bbox->midpoint() + offset) + offset;
+            // Integer align for mouse pasting
+            offset = offset.round();
             m.unSetup();
         } else if (on_page && from_page && to_page) {
             // Moving to the same location on a different page requires us to remove the original page translation
@@ -1024,7 +1026,7 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
             offset *= Geom::Translate(to_page->getDesktopRect().min());
         }
 
-        selection->moveRelative(offset.round());
+        selection->moveRelative(offset);
         for (auto po : pasted_objects) {
             auto lpeitem = cast<SPLPEItem>(target_document->getObjectByRepr(po));
             if (lpeitem) {
