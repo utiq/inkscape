@@ -19,9 +19,7 @@
    SPObject, that reacts to modification.
 */
 
-#include <glib.h>
 #include <glibmm/ustring.h>
-#include <gtk/gtk.h>
 #include <functional>
 
 namespace Gtk {
@@ -33,9 +31,6 @@ namespace Gtk {
 
 Gtk::Label * spw_label(Gtk::Grid *table, gchar const *label_text, int col, int row, Gtk::Widget *target);
 Gtk::Box * spw_hbox(Gtk::Grid *table, int width, int col, int row);
-
-gpointer sp_search_by_data_recursive(GtkWidget *w, gpointer data);
-GtkWidget *sp_search_by_value_recursive(GtkWidget *w, gchar *key, gchar *value);
 
 Gtk::Widget * sp_search_by_name_recursive(Gtk::Widget          *parent,
                                           const Glib::ustring&  name);

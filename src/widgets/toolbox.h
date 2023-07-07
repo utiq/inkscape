@@ -34,14 +34,11 @@ namespace UI {
 class ToolboxFactory
 {
 public:
-    static void setToolboxDesktop(GtkWidget *toolbox, SPDesktop *desktop);
     static void setOrientation(GtkWidget* toolbox, GtkOrientation orientation);
-    static void showAuxToolbox(GtkWidget* toolbox);
 
-    static GtkWidget *createToolToolbox(InkscapeWindow *window);
-    static GtkWidget *createAuxToolbox();
-    static GtkWidget *createCommandsToolbox();
-    static GtkWidget *createSnapToolbox();
+    static Gtk::Widget *createToolToolbox(InkscapeWindow *window);
+    static GtkWidget   *createCommandsToolbox();
+    static GtkWidget   *createSnapToolbox();
 
     static int prefToPixelSize(Glib::ustring const& path);
     static Gtk::IconSize prefToSize_mm(Glib::ustring const &path, int base = 0);

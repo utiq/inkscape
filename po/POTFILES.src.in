@@ -362,6 +362,7 @@ ${_build_dir}/share/templates/templates.h
 ../src/ui/toolbar/spray-toolbar.cpp
 ../src/ui/toolbar/star-toolbar.cpp
 ../src/ui/toolbar/text-toolbar.cpp
+../src/ui/toolbar/toolbars.cpp
 ../src/ui/toolbar/tweak-toolbar.cpp
 ../src/ui/tools/arc-tool.cpp
 ../src/ui/tools/booleans-tool.cpp

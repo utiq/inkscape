@@ -39,11 +39,16 @@ class SPObject;
 namespace Inkscape {
   class CanvasItemGuideLine;
 namespace UI {
+
 namespace Dialog {
 class DialogContainer;
 class DialogMultipaned;
 class SwatchesPanel;
 } // namespace Dialog
+
+namespace Toolbar {
+  class  Toolbars;
+} // namespace Toolbars
 
 namespace Widget {
   class Button;
@@ -55,6 +60,7 @@ namespace Widget {
   class SpinButton;
   class Ruler;
 } // namespace Widget
+
 } // namespace UI
 } // namespace Inkscape
 
@@ -205,12 +211,12 @@ public:
     void sticky_zoom_toggled();
     void sticky_zoom_updated();
 
-    Gtk::Widget *get_tool_toolbox() const { return Glib::wrap(tool_toolbox); }
+    Gtk::Widget *get_tool_toolbox() const { return tool_toolbox; }
 private:
-    GtkWidget *tool_toolbox;
-    GtkWidget *aux_toolbox;
-    GtkWidget *commands_toolbox;
-    GtkWidget *snap_toolbox;
+    Gtk::Widget *tool_toolbox;
+    Inkscape::UI::Toolbar::Toolbars *tool_toolbars;
+    GtkWidget   *commands_toolbox;
+    GtkWidget   *snap_toolbox;
     Inkscape::PrefObserver _tb_snap_pos;
     Inkscape::PrefObserver _tb_icon_sizes1;
     Inkscape::PrefObserver _tb_icon_sizes2;

@@ -60,6 +60,7 @@
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-multipaned.h"
 #include "ui/dialog/dialog-window.h"
+#include "ui/toolbar/toolbars.h"
 #include "ui/tools/box3d-tool.h"
 #include "ui/tools/text-tool.h"
 #include "ui/util.h"
@@ -134,19 +135,22 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_vbox->pack_end(*dtw->_top_toolbars, false, true);
 
     /* Toolboxes */
-    dtw->aux_toolbox = ToolboxFactory::createAuxToolbox();
-
     dtw->snap_toolbox = ToolboxFactory::createSnapToolbox();
 
     dtw->commands_toolbox = ToolboxFactory::createCommandsToolbox();
     auto cmd = Glib::wrap(dtw->commands_toolbox);
     dtw->_top_toolbars->attach(*cmd, 0, 0);
 
-    dtw->_top_toolbars->attach(*Glib::wrap(dtw->aux_toolbox), 0, 1);
+    dtw->tool_toolbars = Gtk::make_managed<Inkscape::UI::Toolbar::Toolbars>();
+    dtw->_top_toolbars->attach(*dtw->tool_toolbars, 0, 1);
 
     dtw->tool_toolbox = ToolboxFactory::createToolToolbox(inkscape_window);
-    ToolboxFactory::setOrientation( dtw->tool_toolbox, GTK_ORIENTATION_VERTICAL );
-    dtw->_tbbox->pack1(*Glib::wrap(dtw->tool_toolbox), false, true);
+    if (!dtw->tool_toolbox) {
+        std::cerr << "desktop-widget: failed to create Tool Toolbox!" << std::endl;
+    }
+
+    dtw->_tbbox->pack1(*dtw->tool_toolbox, false, true);
+    dtw->tool_toolbox->unreference(); // Had to reference so it wouldn't be deleted.
 
     _tb_snap_pos = prefs->createObserver("/toolbox/simplesnap", sigc::mem_fun(*this, &SPDesktopWidget::repack_snaptoolbar));
     repack_snaptoolbar();
@@ -203,18 +207,18 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
         int min = ToolboxFactory::min_pixel_size;
         int max = ToolboxFactory::max_pixel_size;
         int s = prefs->getIntLimited(ToolboxFactory::tools_icon_size, min, min, max);
-        Inkscape::UI::set_icon_sizes(tool_toolbox, s);
+        Inkscape::UI::set_icon_sizes(tool_toolbox->gobj(), s);
     };
 
     // watch for changes
     _tb_icon_sizes1 = prefs->createObserver(ToolboxFactory::tools_icon_size,    [=]() { set_toolbar_prefs(); });
     _tb_icon_sizes2 = prefs->createObserver(ToolboxFactory::ctrlbars_icon_size, [=]() { apply_ctrlbar_settings(); });
-    _tb_visible_buttons = prefs->createObserver(ToolboxFactory::tools_visible_buttons, [=]() { set_visible_buttons(tool_toolbox); });
+    _tb_visible_buttons = prefs->createObserver(ToolboxFactory::tools_visible_buttons, [=]() { set_visible_buttons(tool_toolbox->gobj()); });
 
     // restore preferences
     set_toolbar_prefs();
     apply_ctrlbar_settings();
-    set_visible_buttons(tool_toolbox);
+    set_visible_buttons(tool_toolbox->gobj());
 
     /* Canvas Grid (canvas, rulers, scrollbars, etc.) */
     // desktop widgets owns it
@@ -397,7 +401,7 @@ void SPDesktopWidget::apply_ctrlbar_settings() {
     int size = prefs->getIntLimited(ToolboxFactory::ctrlbars_icon_size, min, min, max);
     Inkscape::UI::set_icon_sizes(snap_toolbox, size);
     Inkscape::UI::set_icon_sizes(commands_toolbox, size);
-    Inkscape::UI::set_icon_sizes(aux_toolbox, size);
+    Inkscape::UI::set_icon_sizes(tool_toolbars, size);
 }
 
 void SPDesktopWidget::update_statusbar_visibility() {
@@ -815,17 +819,15 @@ void SPDesktopWidget::layoutWidgets()
     }
 
     if (!prefs->getBool(pref_root + "toppanel/state", true)) {
-        gtk_widget_hide (dtw->aux_toolbox);
+        dtw->tool_toolbars->hide();
     } else {
-        // we cannot just show_all because that will show all tools' panels;
-        // this is a function from toolbox.cpp that shows only the current tool's panel
-        ToolboxFactory::showAuxToolbox(dtw->aux_toolbox);
+        dtw->tool_toolbars->show(); // Not show_all()!
     }
 
     if (!prefs->getBool(pref_root + "toolbox/state", true)) {
-        gtk_widget_hide (dtw->tool_toolbox);
+        dtw->tool_toolbox->hide();
     } else {
-        gtk_widget_show_all (dtw->tool_toolbox);
+        dtw->tool_toolbox->show_all();
     }
 
     if (!prefs->getBool(pref_root + "statusbar/state", true)) {
@@ -853,7 +855,7 @@ void SPDesktopWidget::layoutWidgets()
     widescreen = prefs->getInt(pref_root + "task/taskset", widescreen ? 2 : 0) == 2; // legacy
     widescreen = prefs->getBool(pref_root + "interface_mode", widescreen);
 
-    auto commands_toolbox_cpp = dynamic_cast<Gtk::Bin *>(Glib::wrap(commands_toolbox));
+    auto commands_toolbox_cpp = dynamic_cast<Gtk::Box *>(Glib::wrap(commands_toolbox));
     if (commands_toolbox_cpp) {
 
         // Unlink command toolbar.
@@ -879,14 +881,13 @@ void SPDesktopWidget::layoutWidgets()
         }
         commands_toolbox_cpp->unreference();
 
-        auto box = dynamic_cast<Gtk::Box *>(commands_toolbox_cpp->get_child());
-        if (box) {
-            box->set_orientation(orientation);
-            for (auto child : box->get_children()) {
-                if (auto toolbar = dynamic_cast<Gtk::Toolbar *>(child)) {
-                    gtk_orientable_set_orientation(GTK_ORIENTABLE(toolbar->gobj()), orientation_c);
-                    //toolbar->set_orientation(orientation); // Missing in C++ interface!
-                }
+        commands_toolbox_cpp->set_orientation(orientation);
+        for (auto child : commands_toolbox_cpp->get_children()) {
+            if (auto toolbar = dynamic_cast<Gtk::Toolbar *>(child)) {
+                gtk_orientable_set_orientation(GTK_ORIENTABLE(toolbar->gobj()), orientation_c);
+                //toolbar->set_orientation(orientation); // Missing in C++ interface!
+            } else {
+                std::cerr << "SPDesktopWidget::layoutWidgets(): Wrong widget type!" << std::endl;
             }
         }
     } else {
@@ -906,7 +907,7 @@ SPDesktopWidget::get_toolbar_by_name(const Glib::ustring& name)
 {
     // The name is actually attached to the GtkGrid that contains
     // the toolbar, so we need to get the grid first
-    auto widget = sp_search_by_name_recursive(Glib::wrap(aux_toolbox), name);
+    auto widget = sp_search_by_name_recursive(tool_toolbars, name);
     auto grid = dynamic_cast<Gtk::Grid*>(widget);
 
     if (!grid) return nullptr;
@@ -920,16 +921,9 @@ SPDesktopWidget::get_toolbar_by_name(const Glib::ustring& name)
 void
 SPDesktopWidget::setToolboxFocusTo (const gchar* label)
 {
-    // First try looking for a named widget
-    auto hb = sp_search_by_name_recursive(Glib::wrap(aux_toolbox), label);
-
-    // Fallback to looking for a named data member (deprecated)
-    if (!hb) {
-        hb = Glib::wrap(GTK_WIDGET(sp_search_by_data_recursive(aux_toolbox, (gpointer) label)));
-    }
-
-    if (hb)
-    {
+    // Look for a named widget
+    auto hb = sp_search_by_name_recursive(tool_toolbars, label);
+    if (hb) {
         hb->grab_focus();
     }
 }
@@ -937,22 +931,16 @@ SPDesktopWidget::setToolboxFocusTo (const gchar* label)
 void
 SPDesktopWidget::setToolboxAdjustmentValue (gchar const *id, double value)
 {
-    // First try looking for a named widget
-    auto hb = sp_search_by_name_recursive(Glib::wrap(aux_toolbox), id);
-
-    // Fallback to looking for a named data member (deprecated)
-    if (!hb) {
-        hb = Glib::wrap(GTK_WIDGET(sp_search_by_data_recursive(aux_toolbox, (gpointer)id)));
-    }
-
+    // Look for a named widget
+    auto hb = sp_search_by_name_recursive(tool_toolbars, id);
     if (hb) {
         auto sb = dynamic_cast<Inkscape::UI::Widget::SpinButtonToolItem *>(hb);
         auto a = sb->get_adjustment();
 
         if(a) a->set_value(value);
+    } else {
+        g_warning ("Could not find GtkAdjustment for %s\n", id);
     }
-
-    else g_warning ("Could not find GtkAdjustment for %s\n", id);
 }
 
 
@@ -960,7 +948,7 @@ bool
 SPDesktopWidget::isToolboxButtonActive (const gchar* id)
 {
     bool isActive = false;
-    auto thing = sp_search_by_name_recursive(Glib::wrap(aux_toolbox), id);
+    auto thing = sp_search_by_name_recursive(tool_toolbars, id);
 
     // The toolbutton could be a few different types so try casting to
     // each of them.
@@ -1018,7 +1006,8 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
     _page_selector = Gtk::manage(new Inkscape::UI::Widget::PageSelector(desktop));
     _statusbar->pack_end(*_page_selector, false, false);
 
-    ToolboxFactory::setToolboxDesktop(dtw->aux_toolbox, dtw->desktop);
+    // tool_toolbars is an empty Gtk::Box at this point, fill it.
+    dtw->tool_toolbars->create_toolbars(dtw->desktop);
 
     dtw->layoutWidgets();
 
@@ -1032,7 +1021,7 @@ void SPDesktopWidget::repack_snaptoolbar()
 {
     Inkscape::Preferences* prefs = Inkscape::Preferences::get();
     bool is_perm = prefs->getInt("/toolbox/simplesnap", 1) == 2;
-    auto& aux = *Glib::wrap(aux_toolbox);
+    auto& aux = *tool_toolbars;
     auto& snap = *Glib::wrap(snap_toolbox);
 
     // Only remove from the parent if the status has changed
@@ -1090,7 +1079,7 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
         _canvas_grid->GetHRuler()->set_tooltip_text(gettext(nv->display_units->name_plural.c_str()));
         _canvas_grid->UpdateRulers();
 
-        /* This loops through all the grandchildren of aux toolbox,
+        /* This loops through all the grandchildren of tool toolbars,
          * and for each that it finds, it performs an sp_search_by_name_recursive(),
          * looking for widgets named "unit-tracker" (this is used by
          * all toolboxes to refer to the unit selector). The default document units
@@ -1098,33 +1087,31 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
          *
          * This should solve: https://bugs.launchpad.net/inkscape/+bug/362995
          */
-        if (GTK_IS_CONTAINER(aux_toolbox)) {
-            std::vector<Gtk::Widget*> ch = Glib::wrap(GTK_CONTAINER(aux_toolbox))->get_children();
-            for (auto i:ch) {
-                if (auto container = dynamic_cast<Gtk::Container *>(i)) {
-                    std::vector<Gtk::Widget*> grch = container->get_children();
-                    for (auto j:grch) {
+        std::vector<Gtk::Widget*> ch = tool_toolbars->get_children();
+        for (auto i:ch) {
+            if (auto container = dynamic_cast<Gtk::Container *>(i)) {
+                std::vector<Gtk::Widget*> grch = container->get_children();
+                for (auto j:grch) {
 
-                        if (!GTK_IS_WIDGET(j->gobj())) // wasn't a widget
-                            continue;
+                    if (!GTK_IS_WIDGET(j->gobj())) // wasn't a widget
+                        continue;
 
-                        // Don't apply to text toolbar. We want to be able to
-                        // use different units for text. (Bug 1562217)
-                        const Glib::ustring name = j->get_name();
-                        if ( name == "TextToolbar" || name == "MeasureToolbar" || name == "CalligraphicToolbar" )
-                            continue;
+                    // Don't apply to text toolbar. We want to be able to
+                    // use different units for text. (Bug 1562217)
+                    const Glib::ustring name = j->get_name();
+                    if ( name == "TextToolbar" || name == "MeasureToolbar" || name == "CalligraphicToolbar" )
+                        continue;
 
-                        auto tracker = dynamic_cast<Inkscape::UI::Widget::ComboToolItem*>(sp_search_by_name_recursive(j, "unit-tracker"));
+                    auto tracker = dynamic_cast<Inkscape::UI::Widget::ComboToolItem*>(sp_search_by_name_recursive(j, "unit-tracker"));
 
-                        if (tracker) { // it's null when inkscape is first opened
-                            if (auto ptr = static_cast<UnitTracker*>(tracker->get_data(Glib::Quark("unit-tracker")))) {
-                                ptr->setActiveUnit(nv->display_units);
-                            }
+                    if (tracker) { // it's null when inkscape is first opened
+                        if (auto ptr = static_cast<UnitTracker*>(tracker->get_data(Glib::Quark("unit-tracker")))) {
+                            ptr->setActiveUnit(nv->display_units);
                         }
-                    } // grandchildren
-                } // if child is a container
-            } // children
-        } // if aux_toolbox is a container
+                    }
+                } // grandchildren
+            } // if child is a container
+        } // children
     }
 }
 

@@ -68,6 +68,7 @@ set(ui_SRC
 	toolbar/star-toolbar.cpp
 	toolbar/text-toolbar.cpp
 	toolbar/toolbar.cpp
+	toolbar/toolbars.cpp
 	toolbar/tweak-toolbar.cpp
 	toolbar/zoom-toolbar.cpp
 
@@ -408,6 +409,7 @@ set(ui_SRC
 	toolbar/star-toolbar.h
 	toolbar/text-toolbar.h
 	toolbar/toolbar.h
+	toolbar/toolbars.h
 	toolbar/tweak-toolbar.h
 	toolbar/zoom-toolbar.h
 
