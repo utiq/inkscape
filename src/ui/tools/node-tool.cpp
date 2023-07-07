@@ -492,12 +492,7 @@ bool NodeTool::root_handler(GdkEvent* event) {
         // create pathflash outline
 
         if (prefs->getBool("/tools/nodes/pathflash_enabled")) {
-            // We want to reset flashed item to can highligh again previous one
-            if (!over_item && this->flashed_item) {
-                this->flashed_item = nullptr;
-                break;
-            }
-            if (!over_item || over_item == this->flashed_item) {
+            if (over_item == this->flashed_item) {
                 break;
             }
 
