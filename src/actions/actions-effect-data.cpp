@@ -54,9 +54,6 @@ void InkActionEffectData::add_data(
     std::list<Glib::ustring> effect_submenu,
     Glib::ustring const &effect_name)
 {
-    // remove "Filters" from sub menu hierarchy
-    if (is_filter) effect_submenu.pop_front();
-
     auto el = datum{effect_id, effect_submenu, effect_name, is_filter};
     data.insert(std::upper_bound(data.begin(), data.end(), el), el);
 }

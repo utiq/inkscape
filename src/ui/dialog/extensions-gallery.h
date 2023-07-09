@@ -19,21 +19,17 @@
 #include <gtkmm/searchentry.h>
 #include <gtkmm/treemodelfilter.h>
 #include <gtkmm/treeview.h>
+#include <boost/compute/detail/lru_cache.hpp>
 #include "helper/auto-connection.h"
 #include "ui/dialog/dialog-base.h"
 
-namespace Inkscape {
-// class Selection;
-namespace UI {
-namespace Dialog {
-
-/**
- */
+namespace Inkscape::UI::Dialog {
 
 class ExtensionsGallery : public DialogBase
 {
 public:
-    ExtensionsGallery();
+    enum Type { Filters, Effects };
+    ExtensionsGallery(Type type);
 
 private:
     Glib::RefPtr<Gtk::Builder> _builder;
@@ -50,16 +46,19 @@ private:
     auto_connection _selection_change;
     Glib::RefPtr<Gtk::TreeSelection> _page_selection;
     Glib::ustring _current_category;
+    int _thumb_size_index = 0;
+    Type _type;
+    boost::compute::detail::lru_cache<std::string, Cairo::RefPtr<Cairo::Surface>> _image_cache;
+    Cairo::RefPtr<Cairo::ImageSurface> _blank_image;
 
     Gtk::TreeModel::Row selected_item();
     void update_name();
     void show_category(const Glib::ustring& id);
     void refilter();
+    void rebuild();
+    void get_cell_data_func(Gtk::CellRenderer* cell_renderer, Gtk::TreeModel::Row row, bool visible);
 };
 
-
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace
 
 #endif // INKSCAPE_UI_DIALOG_EXTENSIONS_H

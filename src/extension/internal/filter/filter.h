@@ -34,7 +34,7 @@ protected:
 
 private:
 	Inkscape::XML::Document * get_filter (Inkscape::Extension::Extension * ext);
-	void merge_filters (Inkscape::XML::Node * to, Inkscape::XML::Node * from, Inkscape::XML::Document * doc, gchar const * srcGraphic = nullptr, gchar const * srcGraphicAlpha = nullptr);
+    bool apply_filter(Inkscape::Extension::Effect* module, SPItem* item) override;
 
 public:
 	Filter();

@@ -36,6 +36,7 @@ std::map<std::string, DialogData> const &get_dialog_data()
     {"ExtensionsGallery",  {_("_Extensions Gallery"),   INKSCAPE_ICON("dialog-extensions"),           DialogData::Basic,          ScrollProvider::NOPROVIDE }},
     {"FillStroke",         {_("_Fill and Stroke"),      INKSCAPE_ICON("dialog-fill-and-stroke"),      DialogData::Basic,          ScrollProvider::NOPROVIDE }},
     {"FilterEffects",      {_("Filter _Editor"),        INKSCAPE_ICON("dialog-filters"),              DialogData::Advanced,       ScrollProvider::NOPROVIDE }},
+    {"FilterGallery",      {_("Filter Gallery"),        INKSCAPE_ICON("color-filters"),               DialogData::Advanced,       ScrollProvider::NOPROVIDE }},
     {"Find",               {_("_Find/Replace"),         INKSCAPE_ICON("edit-find"),                   DialogData::Basic,          ScrollProvider::NOPROVIDE }},
     {"FontCollections",    {_("_Font Collections"),     INKSCAPE_ICON("font_collections"),            DialogData::Advanced,       ScrollProvider::NOPROVIDE }},
     {"Glyphs",             {_("_Unicode Characters"),   INKSCAPE_ICON("accessories-character-map"),   DialogData::Basic,          ScrollProvider::NOPROVIDE }},

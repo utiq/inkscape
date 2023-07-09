@@ -103,6 +103,9 @@ public:
     // get local effect menu
     std::list<Glib::ustring> get_menu_list() const;
 
+    // apply filter effect to 'item'
+    bool apply_filter(SPItem* item);
+
 private:
     std::string _file_name; // extension file name, if provided
     bool _hidden_from_menu = false;

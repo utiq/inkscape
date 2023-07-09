@@ -1942,7 +1942,6 @@ void InkscapeApplication::init_extension_action_data() {
 
         // Submenu retrieval as a list of strings (to handle nested menus).
         auto sub_menu_list = effect->get_menu_list();
-        // get_menu(local_effects_menu, sub_menu_list);
 
         // Setting initial value of description to name of action in case there is no description
         auto description = effect->get_menu_tip();

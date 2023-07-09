@@ -1176,14 +1176,23 @@
 
   <submenu id="filter-menu">
     <attribute name='label'  translatable="yes">Filter_s</attribute>
-    <section id="filter-menu-filters"/>
     <section>
+      <item>
+        <attribute name='label' translatable="yes">Filter _Gallery...</attribute>
+        <attribute name='action'>app.</attribute>
+        <attribute name='action'>win.dialog-open</attribute>
+        <attribute name='target'>FilterGallery</attribute>
+        <attribute name='icon'>dialog-filters</attribute>
+      </item>
       <item>
         <attribute name='label' translatable="yes">Filter _Editor...</attribute>
         <attribute name='action'>win.dialog-open</attribute>
         <attribute name='target'>FilterEffects</attribute>
         <attribute name='icon'>dialog-filters</attribute>
       </item>
+    </section>
+    <section id="filter-menu-filters"/>
+    <section>
       <item>
         <attribute name='label' translatable="yes">_Remove Filters</attribute>
         <attribute name='action'>app.edit-remove-filter</attribute>

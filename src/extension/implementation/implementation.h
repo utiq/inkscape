@@ -27,6 +27,7 @@ class SPDesktop;
 class SPDocument;
 class SPPage;
 class SPStyle;
+class SPItem;
 
 namespace Inkscape {
 
@@ -126,6 +127,7 @@ public:
     virtual void effect(Inkscape::Extension::Effect * /*module*/,
                         SPDesktop * /*desktop*/,
                         ImplementationDocumentCache * /*docCache*/) {}
+    virtual bool apply_filter(Inkscape::Extension::Effect* module, SPItem* item) { return false; }
 
     // ----- Print functions -----
     virtual unsigned setup(Inkscape::Extension::Print * /*module*/) { return 0; }

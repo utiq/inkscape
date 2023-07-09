@@ -363,8 +363,15 @@ std::list<Glib::ustring> Effect::get_menu_list() const {
     std::list<Glib::ustring> menu;
     if (_local_effects_menu) {
         get_menu(_local_effects_menu, menu);
+
+        // remove "Filters" from sub menu hierarchy to keep it the same as extension effects
+        if (_filter_effect) menu.pop_front();
     }
     return menu;
+}
+
+bool Effect::apply_filter(SPItem* item) {
+    return get_imp()->apply_filter(this, item);
 }
 
 } }  /* namespace Inkscape, Extension */

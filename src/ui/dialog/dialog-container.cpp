@@ -131,9 +131,10 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "DocumentProperties") return std::make_unique<DocumentProperties>();
     else if (dialog_type == "DocumentResources")  return std::make_unique<DocumentResources>();
     else if (dialog_type == "Export")             return std::make_unique<Export>();
-    else if (dialog_type == "ExtensionsGallery")  return std::make_unique<ExtensionsGallery>();
+    else if (dialog_type == "ExtensionsGallery")  return std::make_unique<ExtensionsGallery>(ExtensionsGallery::Effects);
     else if (dialog_type == "FillStroke")         return std::make_unique<FillAndStroke>();
     else if (dialog_type == "FilterEffects")      return std::make_unique<FilterEffectsDialog>();
+    else if (dialog_type == "FilterGallery")      return std::make_unique<ExtensionsGallery>(ExtensionsGallery::Filters);
     else if (dialog_type == "Find")               return std::make_unique<Find>();
     else if (dialog_type == "FontCollections")    return std::make_unique<FontCollectionsManager>();
     else if (dialog_type == "Glyphs")             return std::make_unique<GlyphsPanel>();
