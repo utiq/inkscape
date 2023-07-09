@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+
 /** \file
  * Gtk <themes> helper code.
  */
+
 /*
  * Authors:
  *   Jabiertxof
@@ -11,6 +13,7 @@
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
+
 #ifndef UI_THEMES_H_SEEN
 #define UI_THEMES_H_SEEN
 
@@ -28,21 +31,16 @@
 namespace Inkscape {
 namespace UI {
 
-/**
- * A simple mediator class that sets the state of a Gtk::ToggleToolButton when
- * a preference is changed.  Unlike the PrefPusher class, this does not provide
- * the reverse process, so you still need to write your own handler for the
- * "toggled" signal on the ToggleToolButton.
- */
-typedef std::map<Glib::ustring, bool> gtkThemeList;
 class ThemeContext
 {
 public:
-    ThemeContext();
+    ThemeContext() = default;
     ~ThemeContext() = default;
+
     // Name of theme -> has dark theme
     typedef std::map<Glib::ustring, bool> gtkThemeList;
     void inkscape_fill_gtk(const gchar *path, gtkThemeList &themes);
+
     std::map<Glib::ustring, bool> get_available_themes();
     void add_gtk_css(bool only_providers, bool cached = false);
     void add_icon_theme();
@@ -70,7 +68,8 @@ public:
     // True if current theme (applied one) is dark
     bool isCurrentThemeDark(Gtk::Container *window);
 
-static std::vector<guint32> getHighlightColors(Gtk::Window *window);
+    // Get CSS foreground colors resulting from classes ".highlight-color-[1-8]"
+    static std::vector<guint32> getHighlightColors(Gtk::Window *window);
 
     static void initialize_source_syntax_styles();
     static void select_default_syntax_style(bool dark_theme);
@@ -91,8 +90,9 @@ private:
     Glib::RefPtr<Gtk::CssProvider> _fontsizeprovider = Gtk::CssProvider::create();
 };
 
-}
-}
+} // namespace UI
+} // namespace Inkscape
+
 #endif /* !UI_THEMES_H_SEEN */
 
 /*

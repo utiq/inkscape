@@ -168,6 +168,18 @@ Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio) {
     return result;
 }
 
+double get_luminance(Gdk::RGBA const &rgba)
+{
+    return 0.299 * rgba.get_red  ()
+         + 0.587 * rgba.get_green()
+         + 0.114 * rgba.get_blue ();
+}
+
+Gdk::RGBA get_foreground_color(Glib::RefPtr<Gtk::StyleContext const> const &context)
+{
+    return context->get_color(context->get_state());
+}
+
 Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
                                Gtk::StateFlags state) {
     return get_context_color(context, GTK_STYLE_PROPERTY_BACKGROUND_COLOR, state);
@@ -181,6 +193,14 @@ Gdk::RGBA get_context_color(const Glib::RefPtr<Gtk::StyleContext> &context,
                           static_cast<GtkStateFlags>(state),
                           property, &c, nullptr);
     return Glib::wrap(c);
+}
+
+guint32 to_guint32(Gdk::RGBA const &rgba)
+{
+        return guint32(0xff * rgba.get_red  ()) << 24 |
+               guint32(0xff * rgba.get_green()) << 16 |
+               guint32(0xff * rgba.get_blue ()) <<  8 |
+               guint32(0xff * rgba.get_alpha());
 }
 
 // 2Geom <-> Cairo

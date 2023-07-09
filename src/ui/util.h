@@ -83,12 +83,20 @@ Gdk::RGBA mix_colors(const Gdk::RGBA& a, const Gdk::RGBA& b, float ratio);
 // Create the same color, but with a different opacity (alpha)
 Gdk::RGBA change_alpha(const Gdk::RGBA& color, double new_alpha);
 
+// Calculate luminance of an RGBA color from its RGB, in range 0 to 1 inclusive.
+double get_luminance(const Gdk::RGBA &color);
+
+// Get the foreground / CSS color for a StyleContext based on its current state.
+Gdk::RGBA get_foreground_color(Glib::RefPtr<Gtk::StyleContext const> const &context);
+
 // Get the background-color style property for a given StyleContext
 Gdk::RGBA get_context_color(const Glib::RefPtr<Gtk::StyleContext> &context,
                             const gchar *property,
                             Gtk::StateFlags state = static_cast<Gtk::StateFlags>(0));
 Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
                                Gtk::StateFlags state = static_cast<Gtk::StateFlags>(0));
+
+guint32 to_guint32(Gdk::RGBA const &rgba);
 
 Geom::IntRect cairo_to_geom(const Cairo::RectangleInt &rect);
 Cairo::RectangleInt geom_to_cairo(const Geom::IntRect &rect);

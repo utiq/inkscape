@@ -583,7 +583,7 @@ Ruler::on_style_updated() {
 
     // Cache all our colors to speed up rendering.
     _border = style_context->get_border();
-    _foreground = get_context_color(style_context, "color");
+    _foreground = get_foreground_color(style_context);
     _font = style_context->get_font();
     _font_size = _font.get_size();
     if (!_font.get_size_is_absolute())
