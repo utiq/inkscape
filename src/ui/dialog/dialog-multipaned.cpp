@@ -779,27 +779,38 @@ void DialogMultipaned::on_size_allocate(Gtk::Allocation &allocation)
             canvas_index = index;
         }
 
-        {
-            expandables.push_back(child->compute_expand(get_orientation()));
+        expandables.push_back(child->compute_expand(get_orientation()));
 
-            Gtk::Requisition req_minimum;
-            Gtk::Requisition req_natural;
-            child->get_preferred_size(req_minimum, req_natural);
-            if (child == _resizing_widget1 || child == _resizing_widget2) {
-                // ignore limits for widget being resized interactively and use their current size
-                req_minimum.width = req_minimum.height = 0;
-                auto alloc = child->get_allocation();
-                req_natural.width = alloc.get_width();
-                req_natural.height = alloc.get_height();
-            }
-
-            sizes_minimums.push_back(visible ? horizontal ? req_minimum.width : req_minimum.height : 0);
-            sizes_naturals.push_back(visible ? horizontal ? req_natural.width : req_natural.height : 0);
+        Gtk::Requisition req_minimum;
+        Gtk::Requisition req_natural;
+        child->get_preferred_size(req_minimum, req_natural);
+        if (child == _resizing_widget1 || child == _resizing_widget2) {
+            // ignore limits for widget being resized interactively and use their current size
+            req_minimum.width = req_minimum.height = 0;
+            auto alloc = child->get_allocation();
+            req_natural.width = alloc.get_width();
+            req_natural.height = alloc.get_height();
         }
 
+        sizes_minimums.push_back(visible ? horizontal ? req_minimum.width : req_minimum.height : 0);
+        sizes_naturals.push_back(visible ? horizontal ? req_natural.width : req_natural.height : 0);
+
         Gtk::Allocation child_allocation = child->get_allocation();
-        sizes_current.push_back(visible ? horizontal ? child_allocation.get_width() : child_allocation.get_height()
-                                        : 0);
+        int size = 0;
+        if (visible) {
+            if (dynamic_cast<MyHandle*>(child)) {
+                // resizing handles should never be smaller than their min size:
+                size = horizontal ? req_minimum.width : req_minimum.height;
+            }
+            else {
+                // all other widgets can get smaller than their min size
+                size = horizontal ? child_allocation.get_width() : child_allocation.get_height();
+                auto min = horizontal ? req_minimum.width : req_minimum.height;
+                // enforce some minimum size, so newly inserted panels don't collapse to nothing
+                if (size < min) size = std::min(20, min); // arbitrarily chosen 20px
+            }
+        }
+        sizes_current.push_back(size);
         index++;
 
         if (sizes_current.back() < sizes_minimums.back()) force_resize = true;
