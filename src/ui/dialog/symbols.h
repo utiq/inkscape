@@ -19,7 +19,6 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <sigc++/connection.h>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
 #include <gtkmm.h>
@@ -81,7 +80,6 @@ public:
 private:
     void documentReplaced() override;
     void selectionChanged(Inkscape::Selection *selection) override;
-    void on_unrealize() override;
     void rebuild();
     void rebuild(Gtk::TreeIter current);
     void insertSymbol();
@@ -169,7 +167,6 @@ private:
     /* For rendering the template drawing */
     unsigned key;
     Inkscape::Drawing renderDrawing;
-    std::vector<sigc::connection> gtk_connections;
     auto_connection _defs_modified;
     auto_connection _doc_resource_changed;
     auto_connection _idle_refresh;
