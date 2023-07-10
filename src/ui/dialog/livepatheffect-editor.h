@@ -67,13 +67,12 @@ private:
     void selectionChanged(Inkscape::Selection *selection) override;
     void selectionModified(Inkscape::Selection *selection, guint flags) override;
     void onSelectionChanged(Inkscape::Selection *selection);
-    bool openGallery(GdkEventButton *evt);
     bool toggleFavInLpe(GdkEventButton * evt, Glib::ustring name, Gtk::Button *favbutton);
     bool closeExpander(GdkEventButton * evt);
     void onAddGallery();
     void expanded_notify(Gtk::Expander *expander);
     void onAdd(Inkscape::LivePathEffect::EffectType etype);
-    void toggleVisible(Inkscape::LivePathEffect::Effect *lpe , Gtk::EventBox *visbutton);
+    void toggleVisible(Inkscape::LivePathEffect::Effect *lpe, Gtk::Button *visbutton);
     bool is_appliable(LivePathEffect::EffectType etypen, Glib::ustring item_type, bool has_clip, bool has_mask);
     void removeEffect(Gtk::Expander * expander);
     void effect_list_reload(SPLPEItem *lpeitem);
