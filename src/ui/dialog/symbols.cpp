@@ -9,21 +9,27 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <cassert>
+#include <cmath>
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <locale>
+#include <regex>
+#include <sstream>
 #include <2geom/point.h>
 #include <cairo.h>
 #include <cairomm/refptr.h>
 #include <cairomm/surface.h>
-#include <cassert>
-#include <cmath>
-#include <cstddef>
+#include <glibmm/i18n.h>
+#include <glibmm/main.h>
+#include <glibmm/markup.h>
+#include <glibmm/priorities.h>
+#include <glibmm/regex.h>
+#include <glibmm/stringutils.h>
 #include <gdkmm/pixbuf.h>
 #include <gdkmm/rgba.h>
-#include <glibmm/main.h>
-#include <glibmm/priorities.h>
-#include <glibmm/refptr.h>
-#include <glibmm/ustring.h>
 #include <gtkmm/box.h>
-#include <gtkmm/cellrendererpixbuf.h>
 #include <gtkmm/cellrenderertext.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/comboboxtext.h>
@@ -36,47 +42,32 @@
 #include <gtkmm/scale.h>
 #include <gtkmm/searchentry.h>
 #include <gtkmm/treeiter.h>
-#include <gtkmm/treemodel.h>
 #include <gtkmm/treemodelfilter.h>
+#include <gtkmm/treemodel.h>
 #include <gtkmm/treemodelsort.h>
 #include <gtkmm/treepath.h>
 #include <pangomm/layout.h>
-#include <string>
-#include <vector>
-#include "preferences.h"
-#include "ui/builder-utils.h"
-#include "ui/dialog/messages.h"
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"  // only include where actually required!
 #endif
 
 #include "symbols.h"
-
-#include <iostream>
-#include <algorithm>
-#include <locale>
-#include <sstream>
-#include <fstream>
-#include <regex>
-#include <glibmm/i18n.h>
-#include <glibmm/markup.h>
-#include <glibmm/regex.h>
-#include <glibmm/stringutils.h>
-
-#include "document.h"
-#include "inkscape.h"
-#include "path-prefix.h"
-#include "selection.h"
 #include "display/cairo-utils.h"
 #include "include/gtkmm_version.h"
+#include "inkscape.h"
 #include "io/resource.h"
 #include "io/sys.h"
 #include "object/sp-defs.h"
 #include "object/sp-root.h"
 #include "object/sp-symbol.h"
 #include "object/sp-use.h"
+#include "path-prefix.h"
+#include "preferences.h"
+#include "ui/builder-utils.h"
 #include "ui/cache/svg_preview_cache.h"
 #include "ui/clipboard.h"
+#include "ui/dialog/messages.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/widget/scrollprotected.h"
@@ -240,10 +231,6 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
         return false;
     };
 
-//     _symbol_sets_view.signal_item_activated().connect([=](const Gtk::TreeModel::Path& path){
-//         select_set(path);
-//         get_widget<Gtk::Popover>(_builder, "set-popover").hide();
-//     });
     _symbol_sets_view.signal_selection_changed().connect([=](){
         if (select_set({})) {
             get_widget<Gtk::Popover>(_builder, "set-popover").hide();
@@ -299,6 +286,7 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
 
     std::vector<Gtk::TargetEntry> targets;
     targets.emplace_back("application/x-inkscape-paste");
+
     icon_view->enable_model_drag_source(targets, Gdk::BUTTON1_MASK, Gdk::ACTION_COPY);
     gtk_connections.emplace_back(
         icon_view->signal_drag_data_get().connect(sigc::mem_fun(*this, &SymbolsDialog::iconDragDataGet)));
@@ -316,7 +304,7 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
   // in the dialog code so think is safer call inside
   fix_inner_scroll(scroller);
 
-    _builder->get_widget("overlay", overlay);
+  _builder->get_widget("overlay", overlay);
 
   /*************************Overlays******************************/
   // No results
@@ -1216,80 +1204,77 @@ Cairo::RefPtr<Cairo::Surface> SymbolsDialog::draw_symbol(SPSymbol* symbol) {
 Cairo::RefPtr<Cairo::Surface> SymbolsDialog::drawSymbol(SPSymbol *symbol)
 {
     if (!symbol) return Cairo::RefPtr<Cairo::Surface>();
-  // Create a copy repr of the symbol with id="the_symbol"
-  Inkscape::XML::Node *repr = symbol->getRepr()->duplicate(preview_document->getReprDoc());
-  repr->setAttribute("id", "the_symbol");
 
-  // First look for default style stored in <symbol>
-  gchar const* style = repr->attribute("inkscape:symbol-style");
-  if(!style) {
-    // If no default style in <symbol>, look in documents.
-    if(symbol->document == getDocument()) {
-      gchar const *id = symbol->getRepr()->attribute("id");
-      style = styleFromUse( id, symbol->document );
-    } else {
-      style = symbol->document->getReprRoot()->attribute("style");
+    // Create a copy repr of the symbol with id="the_symbol"
+    Inkscape::XML::Node *repr = symbol->getRepr()->duplicate(preview_document->getReprDoc());
+    repr->setAttribute("id", "the_symbol");
+  
+    // First look for default style stored in <symbol>
+    gchar const* style = repr->attribute("inkscape:symbol-style");
+    if (!style) {
+        // If no default style in <symbol>, look in documents.
+        if (symbol->document == getDocument()) {
+            gchar const *id = symbol->getRepr()->attribute("id");
+            style = styleFromUse( id, symbol->document );
+        } else {
+            style = symbol->document->getReprRoot()->attribute("style");
+        }
     }
-  }
-
-  // This is for display in Symbols dialog only
-  if( style ) repr->setAttribute( "style", style );
-
-  SPDocument::install_reference_document scoped(preview_document, symbol->document);
-  preview_document->getDefs()->getRepr()->appendChild(repr);
-  Inkscape::GC::release(repr);
-
-  // Uncomment this to get the preview_document documents saved (useful for debugging)
-  // FILE *fp = fopen (g_strconcat(id, ".svg", NULL), "w");
-  // sp_repr_save_stream(preview_document->getReprDoc(), fp);
-  // fclose (fp);
-
-  // Make sure preview_document is up-to-date.
-  preview_document->ensureUpToDate();
-
-  // Make sure we have symbol in preview_document
-  SPObject *object_temp = preview_document->getObjectById( "the_use" );
-
-  auto item = cast<SPItem>(object_temp);
-  g_assert(item != nullptr);
-  unsigned psize = SYMBOL_ICON_SIZES[pack_size];
-
-  cairo_surface_t* surface = 0;
-  // We could use cache here, but it doesn't really work with the structure
-  // of this user interface and we've already cached the pixbuf in the gtklist
-
-  // Find object's bbox in document.
-  // Note symbols can have own viewport... ignore for now.
-  //Geom::OptRect dbox = item->geometricBounds();
-  Geom::OptRect dbox = item->documentVisualBounds();
-
-  if (dbox) {
-    /* Scale symbols to fit */
-    double scale = 1.0;
-    double width  = dbox->width();
-    double height = dbox->height();
-
-    if( width == 0.0 ) width = 1.0;
-    if( height == 0.0 ) height = 1.0;
-
-    if (fit_symbol->get_active()) {
-      scale = psize / ceil(std::max(width, height));
-    }
-    else {
-      scale = pow(2.0, scale_factor / 4.0) * psize / 32.0;
-    }
-
+  
+    // This is for display in Symbols dialog only
+    if (style) repr->setAttribute( "style", style );
+  
+    SPDocument::install_reference_document scoped(preview_document, symbol->document);
+    preview_document->getDefs()->getRepr()->appendChild(repr);
+    Inkscape::GC::release(repr);
+  
+    // Uncomment this to get the preview_document documents saved (useful for debugging)
+    // FILE *fp = fopen (g_strconcat(id, ".svg", NULL), "w");
+    // sp_repr_save_stream(preview_document->getReprDoc(), fp);
+    // fclose (fp);
+  
+    // Make sure preview_document is up-to-date.
+    preview_document->ensureUpToDate();
+  
+    // Make sure we have symbol in preview_document
+    SPObject *object_temp = preview_document->getObjectById( "the_use" );
+  
+    auto item = cast<SPItem>(object_temp);
+    g_assert(item != nullptr);
+    unsigned psize = SYMBOL_ICON_SIZES[pack_size];
+  
+    cairo_surface_t* surface = 0;
+    // We could use cache here, but it doesn't really work with the structure
+    // of this user interface and we've already cached the pixbuf in the gtklist
+  
+    // Find object's bbox in document.
+    // Note symbols can have own viewport... ignore for now.
+    Geom::OptRect dbox = item->documentVisualBounds();
+  
+    if (dbox) {
+        /* Scale symbols to fit */
+        double scale = 1.0;
+        double width  = dbox->width();
+        double height = dbox->height();
+  
+        if (width  == 0.0) width  = 1.0;
+        if (height == 0.0) height = 1.0;
+  
+        if (fit_symbol->get_active()) {
+            scale = psize / ceil(std::max(width, height));
+        } else {
+            scale = pow(2.0, scale_factor / 4.0) * psize / 32.0;
+        }
+  
         int device_scale = get_scale_factor();
-
-    surface = render_surface(renderDrawing, scale, *dbox, Geom::IntPoint(psize, psize), device_scale, nullptr, true);
-
-    if (surface) {
-        cairo_surface_set_device_scale(surface, device_scale, device_scale);
+        surface = render_surface(renderDrawing, scale, *dbox, Geom::IntPoint(psize, psize), device_scale, nullptr, true);
+        if (surface) {
+            cairo_surface_set_device_scale(surface, device_scale, device_scale);
+        }
     }
-  }
-
-  preview_document->getObjectByRepr(repr)->deleteObject(false);
-
+  
+    preview_document->getObjectByRepr(repr)->deleteObject(false);
+  
     return Cairo::RefPtr<Cairo::Surface>(new Cairo::Surface(surface, true));
 }
 

@@ -17,21 +17,17 @@
 #define INKSCAPE_UI_DIALOG_SYMBOLS_H
 
 #include <cstddef>
+#include <string>
+#include <vector>
+#include <sigc++/connection.h>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
 #include <gtkmm.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/cellrendererpixbuf.h>
-#include <gtkmm/checkbutton.h>
-#include <gtkmm/iconview.h>
-#include <gtkmm/label.h>
-#include <gtkmm/menubutton.h>
 #include <gtkmm/treeiter.h>
 #include <gtkmm/treemodel.h>
 #include <gtkmm/treemodelcolumn.h>
-#include <sigc++/connection.h>
-#include <string>
-#include <vector>
 #include <boost/compute/detail/lru_cache.hpp>
 
 #include "desktop.h"
@@ -41,6 +37,13 @@
 #include "selection.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/operation-blocker.h"
+
+namespace Gtk {
+class CheckButton;
+class IconView;
+class Label;
+class MenuButton;
+}
 
 class SPObject;
 class SPSymbol;
@@ -69,8 +72,6 @@ namespace Dialog {
  * new symbols documents to be constructed and if saved in the prefs folder will
  * make those symbols available for all future documents.
  */
-
-
 class SymbolsDialog : public DialogBase
 {
 public:
@@ -147,8 +148,9 @@ private:
     Gtk::CheckButton* fit_symbol;
     Gtk::CellRendererPixbuf _renderer;
     Gtk::CellRendererPixbuf _renderer2;
-    SPDocument* preview_document = nullptr; /* Document to render single symbol */
+    SPDocument *preview_document = nullptr; /* Document to render single symbol */
     Glib::RefPtr<Gtk::ListStore> _symbol_sets;
+
     struct Store {
         Glib::RefPtr<Gtk::ListStore> _store;
         Glib::RefPtr<Gtk::TreeModelFilter> _filtered;
