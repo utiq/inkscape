@@ -126,7 +126,6 @@ private:
     OperationBlocker _update;
     double previous_height;
     double previous_width;
-    Geom::Point _last_mousedown; ///< Last button press position in the icon view coordinates.
     Glib::RefPtr<Gtk::ListStore> _store;
     Gtk::MenuButton& _symbols_popup;
     Gtk::SearchEntry& _set_search;

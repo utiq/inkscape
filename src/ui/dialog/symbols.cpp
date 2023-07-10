@@ -290,10 +290,6 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
     icon_view->enable_model_drag_source(targets, Gdk::BUTTON1_MASK, Gdk::ACTION_COPY);
     icon_view->signal_drag_data_get().connect(sigc::mem_fun(*this, &SymbolsDialog::iconDragDataGet));
     icon_view->signal_selection_changed().connect(sigc::mem_fun(*this, &SymbolsDialog::iconChanged));
-    icon_view->signal_button_press_event().connect([=](GdkEventButton *ev) -> bool {
-        _last_mousedown = {ev->x, ev->y - icon_view->get_vadjustment()->get_value()};
-        return false;
-    }, false);
 
     _builder->get_widget("scroller", scroller);
 
