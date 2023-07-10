@@ -679,12 +679,6 @@ LivePathEffectEditor::showParams(std::pair<Gtk::Expander *, std::shared_ptr<Inks
     }
 }
 
-bool
-LivePathEffectEditor::closeExpander(GdkEventButton * evt) {
-    current_lperef.first->set_expanded(false);
-    return false;
-}
-
 /*
  * First clears the effectlist_store, then appends all effects from the effectlist.
  */
@@ -1114,24 +1108,6 @@ LivePathEffectEditor::removeEffect(Gtk::Expander * expander) {
     effect_list_reload(current_lpeitem);
     DocumentUndo::done(getDocument(), _("Remove path effect"), INKSCAPE_ICON("dialog-path-effects"));
 }
-
-bool 
-LivePathEffectEditor::toggleFavInLpe(GdkEventButton * evt, Glib::ustring name, Gtk::Button *favbutton) {
-    auto *favimage = dynamic_cast<Gtk::Image *>(favbutton->get_image());
-    if (favimage->get_icon_name() == "draw-star") {
-        favbutton->set_image_from_icon_name("draw-star-outline", Gtk::IconSize(Gtk::ICON_SIZE_SMALL_TOOLBAR));
-        sp_remove_fav(name);
-    } else {
-        favbutton->set_image_from_icon_name("draw-star", Gtk::IconSize(Gtk::ICON_SIZE_SMALL_TOOLBAR));
-        sp_add_fav(name);
-    }
-    clearMenu();
-    return false;
-}
-
-
-
-
 
 /*
  * Clears the effectlist

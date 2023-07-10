@@ -55,20 +55,12 @@ public:
     gint dndx = 0;
     gint dndy = 0;
 
-protected:
-    bool apply(GdkEventButton *evt, Glib::RefPtr<Gtk::Builder> builder_effect,
-               const LivePathEffect::EnumEffectData<LivePathEffect::EffectType> *to_add);
-    void reload_effect_list();
-    void onButtonEvent(GdkEventButton* evt);
-
 private:
     void add_lpes(Inkscape::UI::Widget::CompletionPopup& popup, bool symbolic);
     void clear_lpe_list();
     void selectionChanged(Inkscape::Selection *selection) override;
     void selectionModified(Inkscape::Selection *selection, guint flags) override;
     void onSelectionChanged(Inkscape::Selection *selection);
-    bool toggleFavInLpe(GdkEventButton * evt, Glib::ustring name, Gtk::Button *favbutton);
-    bool closeExpander(GdkEventButton * evt);
     void onAddGallery();
     void expanded_notify(Gtk::Expander *expander);
     void onAdd(Inkscape::LivePathEffect::EffectType etype);
