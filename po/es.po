@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Inkscape 1.3\n"
 "Report-Msgid-Bugs-To: inkscape-translator@lists.inkscape.org\n"
-"POT-Creation-Date: 2023-06-28 11:20+0200\n"
-"PO-Revision-Date: 2023-06-28 15:35+0200\n"
+"POT-Creation-Date: 2023-07-04 21:25+0000\n"
+"PO-Revision-Date: 2023-07-06 18:20+0200\n"
 "Last-Translator: Lucas Vieites <lucas.vieites@gmail.com>\n"
 "Language-Team: Español; Castellano <inkscape-translator@lists.inkscape.org>\n"
 "Language: es\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.3.2\n"
+"X-Generator: Poedit 3.3.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: share\n"
@@ -2052,6 +2052,7 @@ msgid "Square"
 msgstr "Cuadrado"
 
 #: ../build/share/markers/markers.svg.h:17
+#: ../share/extensions/other/templates/template_shape_prefab.inx:13
 msgid "Diamond"
 msgstr "Rombo"
 
@@ -3497,7 +3498,7 @@ msgstr "Sombreado de líneas verticales"
 
 #: ../build/share/paint/patterns.svg.h:1
 msgid "Lines half circle shading "
-msgstr "Sombreado de semicírculos"
+msgstr "Sombreado de semicírculos "
 
 #: ../build/share/paint/patterns.svg.h:1
 msgid "Triangles shading 5"
@@ -7556,7 +7557,7 @@ msgstr "Desbloqueados los elementos seleccionados y sus descendentes."
 
 #: ../src/actions/actions-hide-lock.cpp:163
 msgid "Hid selected items."
-msgstr "Ocultados los objetos seleccionados"
+msgstr "Ocultados los objetos seleccionados."
 
 #: ../src/actions/actions-hide-lock.cpp:163
 msgid "Unhid selected items."
@@ -8911,7 +8912,7 @@ msgid "Fracture one or more overlapping objects into all possible segments"
 msgstr "Fractura uno o más objetos solapados en todos los segmentos posibles"
 
 #: ../src/actions/actions-paths.cpp:236
-#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgctxt "Path flatten"
 msgid "Flatten"
 msgstr "Aplanar"
 
@@ -9409,7 +9410,7 @@ msgstr "Modifica puntos de trayecto seleccionados (nodos) directamente."
 
 #: ../src/actions/actions-tools.cpp:96
 msgid "Construct shapes with the interactive Boolean tool."
-msgstr "Construir formas con la herramienta interactiva booleana"
+msgstr "Construir formas con la herramienta interactiva booleana."
 
 #: ../src/actions/actions-tools.cpp:97
 msgid ""
@@ -10229,8 +10230,8 @@ msgstr "lg1p$"
 
 #: ../src/display/control/snap-indicator.cpp:42
 #: ../src/display/control/snap-indicator.cpp:67
-#: ../src/display/control/snap-indicator.cpp:152
-#: ../src/display/control/snap-indicator.cpp:153
+#: ../src/display/control/snap-indicator.cpp:154
+#: ../src/display/control/snap-indicator.cpp:155
 msgid "UNDEFINED"
 msgstr "UNDEFINED"
 
@@ -10373,7 +10374,7 @@ msgid "quadrant point"
 msgstr "punto de cuadrante"
 
 #: ../src/display/control/snap-indicator.cpp:83
-#: ../src/display/control/snap-indicator.cpp:99
+#: ../src/display/control/snap-indicator.cpp:101
 msgid "corner"
 msgstr "esquina"
 
@@ -10435,30 +10436,38 @@ msgid "page margin center"
 msgstr "centro del margen de página"
 
 #: ../src/display/control/snap-indicator.cpp:98
+msgid "page bleed border"
+msgstr "borde de sangrado de página"
+
+#: ../src/display/control/snap-indicator.cpp:99
+msgid "page bleed corner"
+msgstr "esquina de sangrado de página"
+
+#: ../src/display/control/snap-indicator.cpp:100
 msgid "object midpoint"
 msgstr "punto medio de objetos"
 
-#: ../src/display/control/snap-indicator.cpp:100
+#: ../src/display/control/snap-indicator.cpp:102
 msgid "object rotation center"
 msgstr "centro de rotación del objeto"
 
-#: ../src/display/control/snap-indicator.cpp:101
+#: ../src/display/control/snap-indicator.cpp:103
 msgid "text anchor"
 msgstr "ancla de texto"
 
-#: ../src/display/control/snap-indicator.cpp:102
+#: ../src/display/control/snap-indicator.cpp:104
 msgid "text baseline"
 msgstr "línea base de texto"
 
-#: ../src/display/control/snap-indicator.cpp:103
+#: ../src/display/control/snap-indicator.cpp:105
 msgid "constrained angle"
 msgstr "ángulo constreñido"
 
-#: ../src/display/control/snap-indicator.cpp:104
+#: ../src/display/control/snap-indicator.cpp:106
 msgid "constraint"
 msgstr "restricción"
 
-#: ../src/display/control/snap-indicator.cpp:220
+#: ../src/display/control/snap-indicator.cpp:222
 msgid " to "
 msgstr " a "
 
@@ -10507,7 +10516,7 @@ msgstr "  descripción: "
 
 #: ../src/extension/effect.cpp:148 ../src/extension/effect.cpp:155
 msgid "(No preferences)"
-msgstr " (Sin preferencias)"
+msgstr "(Sin preferencias)"
 
 #: ../src/extension/effect.cpp:170
 #, c-format
@@ -13844,6 +13853,7 @@ msgid "Miscellaneous document formats"
 msgstr "Formatos de documento variados"
 
 #: ../src/extension/internal/template-other.cpp:39
+#: ../share/extensions/template_seamless_pattern.inx:7
 msgctxt "TemplateCategory"
 msgid "Other"
 msgstr "Otros"
@@ -13865,6 +13875,30 @@ msgstr "Unidad"
 msgid "Size"
 msgstr "Tamaño"
 
+#: ../src/extension/internal/template-other.cpp:46
+msgid "Icon 16x16"
+msgstr "Icono 16x16"
+
+#: ../src/extension/internal/template-other.cpp:47
+msgid "Icon 32x32"
+msgstr "Icono 32x32"
+
+#: ../src/extension/internal/template-other.cpp:48
+msgid "Icon 48x48"
+msgstr "Icono 48x48"
+
+#: ../src/extension/internal/template-other.cpp:49
+msgid "Icon 120x120"
+msgstr "Icono 120x120"
+
+#: ../src/extension/internal/template-other.cpp:50
+msgid "Icon 180x180"
+msgstr "Icono 180x180"
+
+#: ../src/extension/internal/template-other.cpp:51
+msgid "Icon 512x512"
+msgstr "Icono 512x512"
+
 #: ../src/extension/internal/template-paper.cpp:45
 msgid "Paper Sizes"
 msgstr "Tamaños de papel"
@@ -13874,6 +13908,8 @@ msgid "Standard paper document formats"
 msgstr "Formatos de documentos de papel estándar"
 
 #: ../src/extension/internal/template-paper.cpp:47
+#: ../share/extensions/template_business_card.inx:7
+#: ../share/extensions/template_dvd_cover.inx:7
 msgctxt "TemplateCategory"
 msgid "Print"
 msgstr "Impresión"
@@ -13901,6 +13937,247 @@ msgstr "Vertical"
 msgid "Landscape"
 msgstr "Horizontal"
 
+#: ../src/extension/internal/template-paper.cpp:58
+msgid "A4 (Portrait)"
+msgstr "A4 (vertical)"
+
+#: ../src/extension/internal/template-paper.cpp:59
+msgid "A4 (Landscape)"
+msgstr "A4 (Apaisado)"
+
+#: ../src/extension/internal/template-paper.cpp:60
+msgid "US Letter (Portrait)"
+msgstr "Carta de EE.UU. (Retrato)"
+
+#: ../src/extension/internal/template-paper.cpp:61
+msgid "US Letter (Landscape)"
+msgstr "Carta EEUU (apaisada)"
+
+#: ../src/extension/internal/template-paper.cpp:62
+msgid "A0"
+msgstr "A0"
+
+#: ../src/extension/internal/template-paper.cpp:63
+msgid "A1"
+msgstr "A1"
+
+#: ../src/extension/internal/template-paper.cpp:64
+msgid "A2"
+msgstr "A2"
+
+#: ../src/extension/internal/template-paper.cpp:65
+msgid "A3"
+msgstr "A3"
+
+#: ../src/extension/internal/template-paper.cpp:66
+#: ../share/ui/page-properties.glade:468
+msgid "A4"
+msgstr "A4"
+
+#: ../src/extension/internal/template-paper.cpp:67
+msgid "A5"
+msgstr "A5"
+
+#: ../src/extension/internal/template-paper.cpp:68
+msgid "A6"
+msgstr "A6"
+
+#: ../src/extension/internal/template-paper.cpp:69
+msgid "A7"
+msgstr "A7"
+
+#: ../src/extension/internal/template-paper.cpp:70
+msgid "A8"
+msgstr "A8"
+
+#: ../src/extension/internal/template-paper.cpp:71
+msgid "A9"
+msgstr "A9"
+
+#: ../src/extension/internal/template-paper.cpp:72
+msgid "A10"
+msgstr "A10"
+
+#: ../src/extension/internal/template-paper.cpp:73
+msgid "B0"
+msgstr "B0"
+
+#: ../src/extension/internal/template-paper.cpp:74
+msgid "B1"
+msgstr "B1"
+
+#: ../src/extension/internal/template-paper.cpp:75
+msgid "B2"
+msgstr "B2"
+
+#: ../src/extension/internal/template-paper.cpp:76
+msgid "B3"
+msgstr "B3"
+
+#: ../src/extension/internal/template-paper.cpp:77
+msgid "B4"
+msgstr "B4"
+
+#: ../src/extension/internal/template-paper.cpp:78
+msgid "B5"
+msgstr "B5"
+
+#: ../src/extension/internal/template-paper.cpp:79
+msgid "B6"
+msgstr "B6"
+
+#: ../src/extension/internal/template-paper.cpp:80
+msgid "B7"
+msgstr "B7"
+
+#: ../src/extension/internal/template-paper.cpp:81
+msgid "B8"
+msgstr "B8"
+
+#: ../src/extension/internal/template-paper.cpp:82
+msgid "B9"
+msgstr "B9"
+
+#: ../src/extension/internal/template-paper.cpp:83
+msgid "B10"
+msgstr "B10"
+
+#: ../src/extension/internal/template-paper.cpp:84
+msgid "C0"
+msgstr "C0"
+
+#: ../src/extension/internal/template-paper.cpp:85
+msgid "C1"
+msgstr "C1"
+
+#: ../src/extension/internal/template-paper.cpp:86
+msgid "C2"
+msgstr "C2"
+
+#: ../src/extension/internal/template-paper.cpp:87
+msgid "C3"
+msgstr "C3"
+
+#: ../src/extension/internal/template-paper.cpp:88
+msgid "C4"
+msgstr "C4"
+
+#: ../src/extension/internal/template-paper.cpp:89
+msgid "C5"
+msgstr "C5"
+
+#: ../src/extension/internal/template-paper.cpp:90
+msgid "C6"
+msgstr "C6"
+
+#: ../src/extension/internal/template-paper.cpp:91
+msgid "C7"
+msgstr "C7"
+
+#: ../src/extension/internal/template-paper.cpp:92
+msgid "C8"
+msgstr "C8"
+
+#: ../src/extension/internal/template-paper.cpp:93
+msgid "C9"
+msgstr "C9"
+
+#: ../src/extension/internal/template-paper.cpp:94
+msgid "C10"
+msgstr "C10"
+
+#: ../src/extension/internal/template-paper.cpp:95
+msgid "D1"
+msgstr "D1"
+
+#: ../src/extension/internal/template-paper.cpp:96
+msgid "D2"
+msgstr "D2"
+
+#: ../src/extension/internal/template-paper.cpp:97
+msgid "D3"
+msgstr "D3"
+
+#: ../src/extension/internal/template-paper.cpp:98
+msgid "D4"
+msgstr "D4"
+
+#: ../src/extension/internal/template-paper.cpp:99
+msgid "D5"
+msgstr "D5"
+
+#: ../src/extension/internal/template-paper.cpp:100
+msgid "D6"
+msgstr "D6"
+
+#: ../src/extension/internal/template-paper.cpp:101
+msgid "D7"
+msgstr "D7"
+
+#: ../src/extension/internal/template-paper.cpp:102
+msgid "E3"
+msgstr "E3"
+
+#: ../src/extension/internal/template-paper.cpp:103
+msgid "E4"
+msgstr "E4"
+
+#: ../src/extension/internal/template-paper.cpp:104
+msgid "E5"
+msgstr "E5"
+
+#: ../src/extension/internal/template-paper.cpp:105
+msgid "E6"
+msgstr "E6"
+
+#: ../src/extension/internal/template-paper.cpp:106
+msgid "Ledger/Tabloid"
+msgstr "Ledger/Tabloide"
+
+#: ../src/extension/internal/template-paper.cpp:107
+msgid "US Executive"
+msgstr "Ejecutivo EEUU"
+
+#: ../src/extension/internal/template-paper.cpp:108
+msgid "US Legal"
+msgstr "Legal US"
+
+#: ../src/extension/internal/template-paper.cpp:109
+msgid "US Letter"
+msgstr "Carta EEUU"
+
+#: ../src/extension/internal/template-paper.cpp:110
+msgid "DL Envelope"
+msgstr "Sobre DL"
+
+#: ../src/extension/internal/template-paper.cpp:111
+msgid "US #10 Envelope"
+msgstr "Sobre núm. 10 EEUU"
+
+#: ../src/extension/internal/template-paper.cpp:112
+msgid "Arch A"
+msgstr "Arch A"
+
+#: ../src/extension/internal/template-paper.cpp:113
+msgid "Arch B"
+msgstr "Arch B"
+
+#: ../src/extension/internal/template-paper.cpp:114
+msgid "Arch C"
+msgstr "Arch C"
+
+#: ../src/extension/internal/template-paper.cpp:115
+msgid "Arch D"
+msgstr "Arch D"
+
+#: ../src/extension/internal/template-paper.cpp:116
+msgid "Arch E"
+msgstr "Arch E"
+
+#: ../src/extension/internal/template-paper.cpp:117
+msgid "Arch E1"
+msgstr "Arch E1"
+
 #: ../src/extension/internal/template-screen.cpp:28
 msgid "Screen Sizes"
 msgstr "Tamaños de pantalla"
@@ -13913,6 +14190,46 @@ msgstr "Formatos de documento para las resoluciones de pantalla más comunes"
 msgctxt "TemplateCategory"
 msgid "Screen"
 msgstr "Pantalla"
+
+#: ../src/extension/internal/template-screen.cpp:38
+msgid "Desktop 1080p"
+msgstr "Escritorio 1080p"
+
+#: ../src/extension/internal/template-screen.cpp:39
+msgid "Desktop 2K"
+msgstr "Escritorio 2K"
+
+#: ../src/extension/internal/template-screen.cpp:40
+msgid "Desktop 4K"
+msgstr "Escritorio 4K"
+
+#: ../src/extension/internal/template-screen.cpp:41
+msgid "Desktop 720p"
+msgstr "Escritorio 720p"
+
+#: ../src/extension/internal/template-screen.cpp:42
+msgid "Desktop SD"
+msgstr "Escritorio SD"
+
+#: ../src/extension/internal/template-screen.cpp:43
+msgid "iPhone 5"
+msgstr "iPhone 5"
+
+#: ../src/extension/internal/template-screen.cpp:44
+msgid "iPhone X"
+msgstr "iPhone X"
+
+#: ../src/extension/internal/template-screen.cpp:45
+msgid "Mobile-smallest"
+msgstr "Móvil-más pequeño"
+
+#: ../src/extension/internal/template-screen.cpp:46
+msgid "iPad Pro"
+msgstr "iPad Pro"
+
+#: ../src/extension/internal/template-screen.cpp:47
+msgid "Tablet-smallest"
+msgstr "Tableta-más pequeña"
 
 #: ../src/extension/internal/template-social.cpp:28
 msgid "Social Sizes"
@@ -13927,6 +14244,98 @@ msgctxt "TemplateCategory"
 msgid "Social"
 msgstr "Medios sociales"
 
+#: ../src/extension/internal/template-social.cpp:38
+msgid "Facebook cover photo"
+msgstr "Facebook - Foto de portada de"
+
+#: ../src/extension/internal/template-social.cpp:39
+msgid "Facebook event image"
+msgstr "Facebook - Imagen para evento"
+
+#: ../src/extension/internal/template-social.cpp:40
+msgid "Facebook image post"
+msgstr "Facebook - Imagen para publicación"
+
+#: ../src/extension/internal/template-social.cpp:41
+msgid "Facebook link image"
+msgstr "Facebook - Imagen de enlace"
+
+#: ../src/extension/internal/template-social.cpp:42
+msgid "Facebook profile picture"
+msgstr "Facebook - Foto de perfil"
+
+#: ../src/extension/internal/template-social.cpp:43
+msgid "Facebook video"
+msgstr "Facebook - Vídeo"
+
+#: ../src/extension/internal/template-social.cpp:44
+msgid "Instagram landscape"
+msgstr "Instagram - Paisaje"
+
+#: ../src/extension/internal/template-social.cpp:45
+msgid "Instagram portrait"
+msgstr "Instagram - Retrato"
+
+#: ../src/extension/internal/template-social.cpp:46
+msgid "Instagram square"
+msgstr "Instagram - Cuadrado"
+
+#: ../src/extension/internal/template-social.cpp:47
+msgid "LinkedIn business banner image"
+msgstr "LinkedIn - Imagen de empresa"
+
+#: ../src/extension/internal/template-social.cpp:48
+msgid "LinkedIn company logo"
+msgstr "LinkedIn - Logotipo de empresa"
+
+#: ../src/extension/internal/template-social.cpp:49
+msgid "LinkedIn cover photo"
+msgstr "LinkedIn - Foto de portada"
+
+#: ../src/extension/internal/template-social.cpp:50
+msgid "LinkedIn dynamic ad"
+msgstr "LinkedIn - Anuncio dinámico"
+
+#: ../src/extension/internal/template-social.cpp:51
+msgid "LinkedIn hero image"
+msgstr "LinkedIn - Imagen de héroe"
+
+#: ../src/extension/internal/template-social.cpp:52
+msgid "LinkedIn sponsored content image"
+msgstr "LinkedIn - Imagen de contenido patrocinado"
+
+#: ../src/extension/internal/template-social.cpp:53
+msgid "Snapchat advertisement"
+msgstr "Snapchat - Anuncio"
+
+#: ../src/extension/internal/template-social.cpp:54
+msgid "Twitter card image"
+msgstr "Twitter - imagen de carta"
+
+#: ../src/extension/internal/template-social.cpp:55
+msgid "Twitter header"
+msgstr "Twitter - Cabecera"
+
+#: ../src/extension/internal/template-social.cpp:56
+msgid "Twitter post image"
+msgstr "Twitter - Imagen de publicación"
+
+#: ../src/extension/internal/template-social.cpp:57
+msgid "Twitter profile picture"
+msgstr "Twitter - Foto de perfil"
+
+#: ../src/extension/internal/template-social.cpp:58
+msgid "Twitter video landscape"
+msgstr "Twitter - Vídeo en paisaje"
+
+#: ../src/extension/internal/template-social.cpp:59
+msgid "Twitter video portrait"
+msgstr "Twitter - Vídeo retrato"
+
+#: ../src/extension/internal/template-social.cpp:60
+msgid "Twitter video square"
+msgstr "Twitter - Vídeo cuadrado"
+
 #: ../src/extension/internal/template-video.cpp:28
 msgid "Video Sizes"
 msgstr "Tamaños de vídeo"
@@ -13939,6 +14348,46 @@ msgstr "Formatos de documento para las resoluciones de vídeo más comunes"
 msgctxt "TemplateCategory"
 msgid "Video"
 msgstr "Vídeo"
+
+#: ../src/extension/internal/template-video.cpp:38
+msgid "Video SD PAL"
+msgstr "Vídeo SD/PAL"
+
+#: ../src/extension/internal/template-video.cpp:39
+msgid "Video SD Widescreen / PAL"
+msgstr "Vídeo SD-ancho/PAL"
+
+#: ../src/extension/internal/template-video.cpp:40
+msgid "Video SD NTSC"
+msgstr "Vídeo SD / NTSC"
+
+#: ../src/extension/internal/template-video.cpp:41
+msgid "Video SD Widescreen NTSC"
+msgstr "Vídeo SD-ancho/NTSC"
+
+#: ../src/extension/internal/template-video.cpp:42
+msgid "Video HD 720p"
+msgstr "Vídeo HD 720p"
+
+#: ../src/extension/internal/template-video.cpp:43
+msgid "Video HD 1080p"
+msgstr "Vídeo HD 1080p"
+
+#: ../src/extension/internal/template-video.cpp:44
+msgid "Video DCI 2k (Full Frame)"
+msgstr "Vídeo DCI 2k (Marco completo)"
+
+#: ../src/extension/internal/template-video.cpp:45
+msgid "Video UHD 4k"
+msgstr "Vídeo UHD 4k"
+
+#: ../src/extension/internal/template-video.cpp:46
+msgid "Video DCI 4k (Full Frame)"
+msgstr "Vídeo DCI 4k (Marco completo)"
+
+#: ../src/extension/internal/template-video.cpp:47
+msgid "Video UHD 8k"
+msgstr "Vídeo UHD 8k"
 
 #: ../src/extension/internal/vsd-input.cpp:317
 msgid "VSD Input"
@@ -15484,7 +15933,7 @@ msgstr ""
 #: ../src/live_effects/effect.cpp:556
 msgctxt "path effect"
 msgid "Corners"
-msgstr "Esquinas:"
+msgstr "Esquinas"
 
 #: ../src/live_effects/effect.cpp:559
 msgid ""
@@ -18174,7 +18623,7 @@ msgstr "Ordenar los puntos de desvío según su valor temporal a lo largo de la 
 
 #: ../src/live_effects/lpe-powerstroke.cpp:165
 msgid "Smoothing type"
-msgstr "Tipo de suavizado:"
+msgstr "Tipo de suavizado"
 
 #: ../src/live_effects/lpe-powerstroke.cpp:166 ../share/extensions/fractalize.inx:6
 msgid "Smoothness:"
@@ -18834,7 +19283,7 @@ msgid ""
 "need to be significantly simplified. "
 msgstr ""
 "Cambia número de repeticiones para la operación de simplificado. Útil para "
-"trayectos complejos que necesitan mucha simplificación."
+"trayectos complejos que necesitan mucha simplificación. "
 
 #: ../src/live_effects/lpe-simplify.cpp:28
 msgid "Drag slider to set the amount of simplification"
@@ -19188,7 +19637,7 @@ msgstr ""
 msgid "Columns"
 msgstr "Columnas"
 
-#: ../src/live_effects/lpe-tiling.cpp:79 ../src/ui/dialog/grid-arrange-tab.cpp:542
+#: ../src/live_effects/lpe-tiling.cpp:79 ../src/ui/dialog/grid-arrange-tab.cpp:543
 msgid "Number of columns"
 msgstr "Número de columnas"
 
@@ -19196,7 +19645,7 @@ msgstr "Número de columnas"
 msgid "Rows"
 msgstr "Filas"
 
-#: ../src/live_effects/lpe-tiling.cpp:80 ../src/ui/dialog/grid-arrange-tab.cpp:501
+#: ../src/live_effects/lpe-tiling.cpp:80 ../src/ui/dialog/grid-arrange-tab.cpp:502
 msgid "Number of rows"
 msgstr "Número de filas"
 
@@ -20118,7 +20567,7 @@ msgstr "ampliar"
 msgid "inset"
 msgstr "reducir"
 
-#: ../src/object/sp-page.cpp:598
+#: ../src/object/sp-page.cpp:602
 #, c-format
 msgid "Page %d"
 msgstr "Página %d"
@@ -21330,7 +21779,7 @@ msgstr "Forma se sustracción del texto fluido"
 
 #: ../src/text-chemistry.cpp:303
 msgid "Subtraction not available for SVG 1.2 Flowed text."
-msgstr "La sustracción no está disponible en Texto fluido de SVG 1.2"
+msgstr "La sustracción no está disponible en Texto fluido de SVG 1.2."
 
 #: ../src/text-chemistry.cpp:323
 msgid "Select <b>a text</b> and one or more <b>paths or shapes</b> to flow text."
@@ -25584,39 +26033,39 @@ msgstr "Agregar"
 msgid "Append text"
 msgstr "Agregar texto"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:258
+#: ../src/ui/dialog/grid-arrange-tab.cpp:259
 msgid "Arrange in a grid"
 msgstr "Ordenar en una rejilla"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:473 ../src/ui/toolbar/node-toolbar.cpp:280
+#: ../src/ui/dialog/grid-arrange-tab.cpp:474 ../src/ui/toolbar/node-toolbar.cpp:280
 #: ../src/ui/widget/registered-widget.cpp:691 ../src/widgets/desktop-widget.cpp:401
 #: ../share/ui/page-properties.glade:310
 msgid "X:"
 msgstr "X:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:473
+#: ../src/ui/dialog/grid-arrange-tab.cpp:474
 msgid "Horizontal spacing between columns."
 msgstr "Espacio horizontal entre columnas."
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:474 ../src/ui/toolbar/node-toolbar.cpp:296
+#: ../src/ui/dialog/grid-arrange-tab.cpp:475 ../src/ui/toolbar/node-toolbar.cpp:296
 #: ../src/ui/widget/registered-widget.cpp:692 ../src/widgets/desktop-widget.cpp:402
 #: ../share/ui/page-properties.glade:326
 msgid "Y:"
 msgstr "Y:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:474
+#: ../src/ui/dialog/grid-arrange-tab.cpp:475
 msgid "Vertical spacing between rows."
 msgstr "Espaciado vertical entre líneas."
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:492
+#: ../src/ui/dialog/grid-arrange-tab.cpp:493
 msgid "_Rows:"
 msgstr "_Filas:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:505
+#: ../src/ui/dialog/grid-arrange-tab.cpp:506
 msgid "Equal _height"
 msgstr "_Altura igual"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:516
+#: ../src/ui/dialog/grid-arrange-tab.cpp:517
 msgid "If not set, each row has the height of the tallest object in it"
 msgstr "Si no se indica, cada fila tendrá la altura del objeto más alto"
 
@@ -25624,27 +26073,27 @@ msgstr "Si no se indica, cada fila tendrá la altura del objeto más alto"
 #  gtk_label_set_markup (GTK_LABEL(l), _("<b>Average:</b>"));
 #  FIXME: implement averaging of all parameters for multiple selected
 #  gtk_label_set_markup (GTK_LABEL(l), _("<b>Average:</b>"));
-#: ../src/ui/dialog/grid-arrange-tab.cpp:533
+#: ../src/ui/dialog/grid-arrange-tab.cpp:534
 msgid "_Columns:"
 msgstr "_Columnas:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:546
+#: ../src/ui/dialog/grid-arrange-tab.cpp:547
 msgid "Equal _width"
 msgstr "An_chura igual"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:556
+#: ../src/ui/dialog/grid-arrange-tab.cpp:557
 msgid "If not set, each column has the width of the widest object in it"
 msgstr "Si no se indica, cada fila tendrá la anchura del objeto más ancho"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:568
+#: ../src/ui/dialog/grid-arrange-tab.cpp:569
 msgid "Alignment:"
 msgstr "Alineación:"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:578
+#: ../src/ui/dialog/grid-arrange-tab.cpp:579
 msgid "_Fit into selection box"
 msgstr "_Encajar en la caja de selección"
 
-#: ../src/ui/dialog/grid-arrange-tab.cpp:585
+#: ../src/ui/dialog/grid-arrange-tab.cpp:586
 msgid "_Set spacing:"
 msgstr "Fijar e_spaciado:"
 
@@ -26156,7 +26605,7 @@ msgstr "Fuentes en la colección «Utilizadas recientemente»:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1059
 msgid "Maximum number of fonts in the 'Recently used' font collection"
-msgstr "Cantidad máxima de fuentes en la colección «Utilizadas recientemente»:"
+msgstr "Cantidad máxima de fuentes en la colección «Utilizadas recientemente»"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1069
 msgid "Font directories"
@@ -26789,7 +27238,7 @@ msgid ""
 "fractional scaling is enabled."
 msgstr ""
 "Al desmarcar se desactiva el escalado del cursor. El escalado de cursor puede "
-"fallar cuando se activa el escalado fraccional. "
+"fallar cuando se activa el escalado fraccional."
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1676
 msgid "Show drop shadow"
@@ -26984,7 +27433,7 @@ msgstr "Usar tipografía monoespacio"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1915
 msgid "XML tree:"
-msgstr "Árbol XML"
+msgstr "Árbol XML:"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:1915
 msgid "Use fixed-width font in XML Editor"
@@ -27161,7 +27610,7 @@ msgstr "Usar diálogos de abrir/guardar estilo Windows"
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2034
 msgid "Use GTK open and save dialogs "
-msgstr "Usar diálogos de abrir/guardar estilo GTK"
+msgstr "Usar diálogos de abrir/guardar estilo GTK "
 
 #: ../src/ui/dialog/inkscape-preferences.cpp:2036
 msgid "Dialogs settings"
@@ -27725,7 +28174,7 @@ msgstr "Añade opciones de apoyo para renderizadores no-SVG 2."
 # File: ../src/ui/dialog/inkscape-preferences.cpp, line: 1558
 #: ../src/ui/dialog/inkscape-preferences.cpp:2346
 msgid "Adds a JavaScript polyfill for rendering meshes in web browsers."
-msgstr "Añade un polirelleno JavaScript para generar mallas en navegadores web"
+msgstr "Añade un polirelleno JavaScript para generar mallas en navegadores web."
 
 #
 # File: ../src/ui/dialog/inkscape-preferences.cpp, line: 1559
@@ -30000,11 +30449,11 @@ msgstr "Listo."
 
 #: ../src/ui/dialog/messages.cpp:169
 msgid "Log capture started."
-msgstr "Iniciada la captura de registro"
+msgstr "Iniciada la captura de registro."
 
 #: ../src/ui/dialog/messages.cpp:198
 msgid "Log capture stopped."
-msgstr "Detenida la captrua de registro"
+msgstr "Detenida la captura de registro."
 
 #: ../src/ui/dialog/new-from-template.cpp:29
 msgid "Create from template"
@@ -30254,7 +30703,7 @@ msgstr "Conmutar bloqueo de elementos"
 msgid "Rename object"
 msgstr "Renombrar objeto"
 
-#: ../src/ui/dialog/objects.cpp:1738
+#: ../src/ui/dialog/objects.cpp:1732
 msgid "Move items"
 msgstr "Mover elementos"
 
@@ -31262,7 +31711,7 @@ msgid ""
 msgstr ""
 "<b>Arrastre</b> para <b>ajustar</b> difuminado en dirección x; <b>Ctrl</"
 "b>+<b>Arrastre</b> hace x igual a y; <b>Mayús</b>+<b>Ctrl</b>+<b>Arrastre</b> "
-"escala el difuminado proporcionalmente"
+"escala el difuminado proporcionalmente "
 
 #: ../src/ui/knot/knot-holder.cpp:459
 msgid ""
@@ -31271,7 +31720,7 @@ msgid ""
 msgstr ""
 "<b>Arrastre</b> para <b>ajustar</b> difuminado en dirección y; <b>Ctrl</"
 "b>+<b>Arrastre</b> hace x igual a y; <b>Mayús</b>+<b>Ctrl</b>+<b>Arrastre</b> "
-"escala el difuminado proporcionalmente"
+"escala el difuminado proporcionalmente "
 
 #: ../src/ui/knot/knot.cpp:309
 msgid "Node or handle drag canceled."
@@ -32076,20 +32525,20 @@ msgstr "Tirador de escala"
 msgid "Rotate handle"
 msgstr "Tirador de rotación"
 
-#: ../src/ui/tool/path-manipulator.cpp:1660 ../src/ui/toolbar/node-toolbar.cpp:147
+#: ../src/ui/tool/path-manipulator.cpp:1665 ../src/ui/toolbar/node-toolbar.cpp:147
 #: ../share/ui/dialog-xml.glade:138
 msgid "Delete node"
 msgstr "Borrar nodo"
 
-#: ../src/ui/tool/path-manipulator.cpp:1668
+#: ../src/ui/tool/path-manipulator.cpp:1673
 msgid "Cycle node type"
 msgstr "Ciclar tipo de nodo"
 
-#: ../src/ui/tool/path-manipulator.cpp:1683
+#: ../src/ui/tool/path-manipulator.cpp:1688
 msgid "Drag handle"
 msgstr "Tirador de arrastre"
 
-#: ../src/ui/tool/path-manipulator.cpp:1692
+#: ../src/ui/tool/path-manipulator.cpp:1697
 msgid "Retract handle"
 msgstr "Retraer tirador"
 
@@ -33076,7 +33525,7 @@ msgstr "Calcular longitud máx."
 
 #: ../src/ui/toolbar/measure-toolbar.cpp:362
 msgid "Show all crossings."
-msgstr "Mostrar todos los cruces"
+msgstr "Mostrar todos los cruces."
 
 #: ../src/ui/toolbar/measure-toolbar.cpp:364
 msgid "Show visible crossings."
@@ -33223,7 +33672,7 @@ msgstr ""
 "* No se puede garantizar su implementación en navegadores web.\n"
 "\n"
 "Para web: convierta a mapa de bits (Edición->Crear copia en mapa de bits).\n"
-"Para impresión: exporte a PDF"
+"Para impresión: exporte a PDF."
 
 #: ../src/ui/toolbar/mesh-toolbar.cpp:563
 msgid "Set mesh type"
@@ -33426,36 +33875,36 @@ msgstr ""
 "Introduzca anchura y altura de una página. (p.ej.: 15x10cm, 10in X 100in)\n"
 "o seleccione un tamaño de la lista."
 
-#: ../src/ui/toolbar/page-toolbar.cpp:135 ../src/ui/toolbar/page-toolbar.cpp:321
+#: ../src/ui/toolbar/page-toolbar.cpp:135 ../src/ui/toolbar/page-toolbar.cpp:324
 msgid "Resize Page"
 msgstr "Redimensionar página"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:238
+#: ../src/ui/toolbar/page-toolbar.cpp:241
 msgid "Relabel Page"
 msgstr "Renombrar página"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:252
+#: ../src/ui/toolbar/page-toolbar.cpp:255
 msgid "Edit page bleed"
 msgstr "Editar sangrado de página"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:269 ../src/ui/toolbar/page-toolbar.cpp:298
+#: ../src/ui/toolbar/page-toolbar.cpp:272 ../src/ui/toolbar/page-toolbar.cpp:301
 msgid "Edit page margin"
 msgstr "Editar margen de página"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:440
+#: ../src/ui/toolbar/page-toolbar.cpp:443
 msgid "Page label"
 msgstr "Nombre de página"
 
 #. TRANSLATORS: "%1" is replaced with the page we are on, and "%2" is the total number of pages.
-#: ../src/ui/toolbar/page-toolbar.cpp:457
+#: ../src/ui/toolbar/page-toolbar.cpp:460
 msgid "%1/%2"
 msgstr "%1/%2"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:471
+#: ../src/ui/toolbar/page-toolbar.cpp:474
 msgid "Single Page Document"
 msgstr "Documento de una sola página"
 
-#: ../src/ui/toolbar/page-toolbar.cpp:472 ../share/ui/toolbar-page.ui:172
+#: ../src/ui/toolbar/page-toolbar.cpp:475 ../share/ui/toolbar-page.ui:172
 msgid "1/-"
 msgstr "1/-"
 
@@ -33617,7 +34066,7 @@ msgstr "Forma de los trayectos nuevos dibujados por esta herramienta"
 
 #: ../src/ui/toolbar/pencil-toolbar.cpp:438
 msgid "Scale of the width of the power stroke shape."
-msgstr "Escala de la anchura de la forma de power stroke"
+msgstr "Escala de la anchura de la forma de power stroke."
 
 #: ../src/ui/toolbar/pencil-toolbar.cpp:488
 msgctxt "Cap"
@@ -34189,7 +34638,7 @@ msgstr "polígono normal"
 
 #: ../src/ui/toolbar/star-toolbar.cpp:119 ../share/ui/object-attributes.glade:629
 msgid "Spoke ratio:"
-msgstr "longitud del radio:"
+msgstr "Proporción del radio:"
 
 #. TRANSLATORS: Tip radius of a star is the distance from the center to the farthest handle.
 #. Base radius is the same for the closest handle.
@@ -34332,7 +34781,7 @@ msgstr "Estilo tipográfico"
 #: ../src/ui/toolbar/text-toolbar.cpp:386 ../src/ui/toolbar/text-toolbar.cpp:1960
 #: ../src/ui/widget/font-selector.cpp:33 ../src/ui/widget/font-selector.cpp:241
 msgid "Font size"
-msgstr "Tamaño de tipografía:"
+msgstr "Tamaño de tipografía"
 
 #: ../src/ui/toolbar/text-toolbar.cpp:390
 msgid "Font Size"
@@ -34898,7 +35347,7 @@ msgstr "Crear un conector nuevo"
 
 #: ../src/ui/tools/connector-tool.cpp:704
 msgid "Connector endpoint drag cancelled."
-msgstr "Se ha cancelado el arrastre del punto final del conector"
+msgstr "Se ha cancelado el arrastre del punto final del conector."
 
 #: ../src/ui/tools/connector-tool.cpp:750
 msgid "Reroute connector"
@@ -35260,7 +35709,7 @@ msgstr "Encajar malla dentro de la caja de contorno"
 msgid "Create mesh"
 msgstr "Crear malla"
 
-#: ../src/ui/tools/node-tool.cpp:462
+#: ../src/ui/tools/node-tool.cpp:463
 #, c-format
 msgid ""
 "<b>Draw over</b> lines to select their nodes; release <b>%s</b> to switch to "
@@ -35269,7 +35718,7 @@ msgstr ""
 "<b>Trace por encima</b> de las líneas para seleccionar sus nodos; suelte <b>%s</"
 "b> para cambiar a selección elástica"
 
-#: ../src/ui/tools/node-tool.cpp:465
+#: ../src/ui/tools/node-tool.cpp:466
 #, c-format
 msgid ""
 "<b>Drag around</b> nodes to select them; press <b>%s</b> to switch to box "
@@ -35278,7 +35727,7 @@ msgstr ""
 "<b>Arrastre alrededor</b> de los nodos para seleccionarlos; pulse <b>%s</b> para "
 "cambiar a selección de caja"
 
-#: ../src/ui/tools/node-tool.cpp:686
+#: ../src/ui/tools/node-tool.cpp:688
 msgctxt "Node tool tip"
 msgid ""
 "<b>Shift</b>: drag to add nodes to the selection, click to toggle object selection"
@@ -35286,23 +35735,23 @@ msgstr ""
 "<b>Mayús</b>: arrastre para añadir nodos a la selección, pulse para intercambiar "
 "la selección del objeto"
 
-#: ../src/ui/tools/node-tool.cpp:690
+#: ../src/ui/tools/node-tool.cpp:692
 msgctxt "Node tool tip"
 msgid "<b>Shift</b>: drag to add nodes to the selection"
 msgstr "<b>Mayús</b>: arrastre para añadir nodos a la selección"
 
-#: ../src/ui/tools/node-tool.cpp:703
+#: ../src/ui/tools/node-tool.cpp:705
 #, c-format
 msgid "<b>%u of %u</b> node selected."
 msgid_plural "<b>%u of %u</b> nodes selected."
 msgstr[0] "<b>%u of %u</b> nodo seleccionado."
 msgstr[1] "<b>%u of %u</b> nodos seleccionados."
 
-#: ../src/ui/tools/node-tool.cpp:722
+#: ../src/ui/tools/node-tool.cpp:724
 msgid "Angle: %1°."
 msgstr "Ángulo: %1°."
 
-#: ../src/ui/tools/node-tool.cpp:729
+#: ../src/ui/tools/node-tool.cpp:731
 #, c-format
 msgctxt "Node tool tip"
 msgid "%s Drag to select nodes, click to edit only this object (more: Shift)"
@@ -35310,30 +35759,30 @@ msgstr ""
 "%s Arrastre para seleccionar nodos, pulse para editar solo este objeto (más: "
 "Mayús)"
 
-#: ../src/ui/tools/node-tool.cpp:735
+#: ../src/ui/tools/node-tool.cpp:737
 #, c-format
 msgctxt "Node tool tip"
 msgid "%s Drag to select nodes, click clear the selection"
 msgstr "%s Arrastre para seleccionar nodos, pulse para limpiar la selección"
 
-#: ../src/ui/tools/node-tool.cpp:743
+#: ../src/ui/tools/node-tool.cpp:745
 msgctxt "Node tool tip"
 msgid "Drag to select nodes, click to edit only this object"
 msgstr "Arrastre para seleccionar nodos, pulse para editar solo este objeto"
 
-#: ../src/ui/tools/node-tool.cpp:746
+#: ../src/ui/tools/node-tool.cpp:748
 msgctxt "Node tool tip"
 msgid "Drag to select nodes, click to clear the selection"
 msgstr "Arrastre para seleccionar nodos, pulse para limpiar la selección"
 
-#: ../src/ui/tools/node-tool.cpp:751
+#: ../src/ui/tools/node-tool.cpp:753
 msgctxt "Node tool tip"
 msgid "Drag to select objects to edit, click to edit this object (more: Shift)"
 msgstr ""
 "Arrastre para seleccionar objeto para edición, pulse para editar este objeto "
 "(más: Mayús)"
 
-#: ../src/ui/tools/node-tool.cpp:754
+#: ../src/ui/tools/node-tool.cpp:756
 msgctxt "Node tool tip"
 msgid "Drag to select objects to edit"
 msgstr "Arrastre para seleccionar objeto para edición"
@@ -36541,7 +36990,7 @@ msgstr "Formas contextuales. Activo por defecto. Tabla OpenType: 'calt'"
 
 #: ../src/ui/widget/font-variants.cpp:278
 msgid "Normal position."
-msgstr "Posiciones normales"
+msgstr "Posición normal."
 
 #: ../src/ui/widget/font-variants.cpp:279
 msgid "Subscript. OpenType table: 'subs'"
@@ -36653,11 +37102,11 @@ msgstr "Formas JIS2004. Tabla OpenType: 'jp04'."
 
 #: ../src/ui/widget/font-variants.cpp:431
 msgid "Simplified forms. OpenType table: 'smpl'."
-msgstr "Formas simplificadas. Tabla OpenType: 'smpl'"
+msgstr "Formas simplificadas. Tabla OpenType: 'smpl'."
 
 #: ../src/ui/widget/font-variants.cpp:432
 msgid "Traditional forms. OpenType table: 'trad'."
-msgstr "Formas tradicionales. Tabla OpenType: 'trad'"
+msgstr "Formas tradicionales. Tabla OpenType: 'trad'."
 
 #: ../src/ui/widget/font-variants.cpp:433
 msgid "Default width."
@@ -36673,7 +37122,7 @@ msgstr "Variantes de ancho proporcional. Tabla OpenType: 'pwid'."
 
 #: ../src/ui/widget/font-variants.cpp:436
 msgid "Ruby variants. OpenType table: 'ruby'."
-msgstr "Variantes Ruby. Tabla OpenType: 'ruby'"
+msgstr "Variantes Ruby. Tabla OpenType: 'ruby'."
 
 #: ../src/ui/widget/font-variants.cpp:486
 msgid "Feature settings in CSS form (e.g. \"wxyz\" or \"wxyz\" 3)."
@@ -36740,7 +37189,7 @@ msgstr "Incrustar imagen"
 
 #: ../src/ui/widget/image-properties.cpp:209
 msgid "Embedded"
-msgstr "incrustada"
+msgstr "Incrustada"
 
 #: ../src/ui/widget/image-properties.cpp:213
 msgid "Linked"
@@ -36817,7 +37266,7 @@ msgstr "Mover a la siguiente página"
 
 #: ../src/ui/widget/page-selector.cpp:47
 msgid "Current page"
-msgstr "Página actual."
+msgstr "Página actual"
 
 #: ../src/ui/widget/paint-selector.cpp:161
 msgid "No paint"
@@ -36941,7 +37390,7 @@ msgstr "Opciones de mapa de bits"
 
 #: ../src/ui/widget/rendering-options.cpp:35
 msgid "Preferred resolution of rendering, in dots per inch."
-msgstr "Resolución preferida de renderizado en puntos por pulgada"
+msgstr "Resolución preferida de renderizado en puntos por pulgada."
 
 #: ../src/ui/widget/rendering-options.cpp:44
 msgid ""
@@ -37482,7 +37931,7 @@ msgstr "Fuentes del documento"
 
 #: ../src/util/paper.cpp:35
 msgid "Failed to create the page file."
-msgstr "no se ha podido crear el archivo de página."
+msgstr "No se ha podido crear el archivo de página."
 
 #: ../src/vanishing-point.cpp:125
 msgid "Split vanishing points"
@@ -37576,7 +38025,7 @@ msgstr "sin filtros"
 
 #: ../src/widgets/desktop-widget.cpp:591
 msgid "enhance thin lines"
-msgstr "Realzar líneas delgadas"
+msgstr "realzar líneas delgadas"
 
 #: ../src/widgets/desktop-widget.cpp:593
 msgid "outline overlay"
@@ -37759,7 +38208,7 @@ msgstr "Clic para copiar"
 
 #: ../share/ui/command-palette-operation.glade:99
 msgid "Label "
-msgstr "Etiqueta"
+msgstr "Etiqueta "
 
 #
 # File: ../src/ui/tool/node.cpp, line: 611
@@ -38042,6 +38491,10 @@ msgid ""
 msgstr ""
 "Aplicar este efecto, y todos los efectos encima de este, al trayecto. Esto "
 "elimina esos efectos de la pila."
+
+#: ../share/ui/dialog-livepatheffect-item.glade:37
+msgid "Flatten"
+msgstr "Aplanar"
 
 #: ../share/ui/dialog-livepatheffect-item.glade:45
 msgid "Use the current values as custom defaults for this LPE"
@@ -38590,7 +39043,7 @@ msgid "Media Box"
 msgstr "Caja de medios"
 
 #: ../share/ui/extension-pdfinput.glade:23
-msgid "Clip Box"
+msgid "Crop Box"
 msgstr "Caja de recorte"
 
 #: ../share/ui/extension-pdfinput.glade:27
@@ -38892,11 +39345,11 @@ msgstr "Clic para copiar el número de versión al portapapeles"
 
 #: ../share/ui/inkscape-about.glade:353
 msgid "Version Copied!"
-msgstr "Versión copiada"
+msgstr "Se ha copiado la versión."
 
 #: ../share/ui/inkscape-about.glade:372
 msgid "Debug Info Copied!"
-msgstr "La información de depuración ha sido copiada."
+msgstr "Se ha copiado la información de depuración."
 
 #: ../share/ui/inkscape-about.glade:393
 msgid "Click to copy debug info to the clipboard"
@@ -39008,7 +39461,7 @@ msgstr "¡Gracias!"
 
 #: ../share/ui/inkscape-start.glade:973
 msgid "Supported by You"
-msgstr "Con tu respaldo."
+msgstr "Con vuestro respaldo"
 
 #: ../share/ui/inkscape-start.glade:1008
 msgctxt "Welcome dialog"
@@ -39148,7 +39601,8 @@ msgstr "Ajustar a contenido:"
 #: ../share/ui/page-properties.glade:244
 msgid ""
 "Fit the page to the current selection or the drawing if there's no selection."
-msgstr "Ajusta el lienzo al tamaño de la selección o del dibujo si no hay selección"
+msgstr ""
+"Ajusta el lienzo al tamaño de la selección o del dibujo si no hay selección."
 
 #: ../share/ui/page-properties.glade:292
 msgid ""
@@ -39161,10 +39615,6 @@ msgstr ""
 #: ../share/ui/page-properties.glade:457
 msgid "Predefined paper sizes to choose from"
 msgstr "Tamaños de papel predefinidos de los que elegir"
-
-#: ../share/ui/page-properties.glade:468
-msgid "A4"
-msgstr "A4"
 
 #: ../share/ui/page-properties.glade:484
 msgid "Document's units used to specify document size only"
@@ -39284,7 +39734,7 @@ msgstr "Hueco Y:"
 
 #: ../share/ui/pattern-edit.glade:714
 msgid "Color: "
-msgstr "Color:"
+msgstr "Color: "
 
 #: ../share/ui/pattern-edit.glade:727
 msgid "Apply color to the current pattern"
@@ -39466,7 +39916,7 @@ msgstr "_Exportar..."
 
 #: ../share/ui/menus.ui:73
 msgid "_Print..."
-msgstr "_Imprimir"
+msgstr "_Imprimir..."
 
 #: ../share/ui/menus.ui:80
 msgid "Clean _Up Document"
@@ -40118,7 +40568,7 @@ msgstr "Bordes"
 
 #: ../share/ui/toolbar-snap.ui:67 ../share/ui/toolbar-snap.ui:1282
 msgid "Corners"
-msgstr "Esquinas:"
+msgstr "Esquinas"
 
 #: ../share/ui/toolbar-snap.ui:82 ../share/ui/toolbar-snap.ui:1297
 msgid "Edge midpoints"
@@ -40255,7 +40705,7 @@ msgstr "Ha fallado la suma de control (checksum), omita para una nueva suma"
 
 #: ../share/extensions/barcode/Code25i.py:47
 msgid "CODE25 can only encode numbers."
-msgstr "CODE25 solamente puede codificar números"
+msgstr "CODE25 solamente puede codificar números."
 
 #: ../share/extensions/barcode/Upce.py:70 ../share/extensions/barcode/Upce.py:96
 msgid "Invalid UPC Number"
@@ -40340,7 +40790,7 @@ msgstr ""
 "Se ha detectado un objeto que tiene un conjunto de parámetros de extrusión. La "
 "figura importada podría ser representada incorrectamente."
 
-#: ../share/extensions/dxf_outlines.py:214
+#: ../share/extensions/dxf_outlines.py:217
 msgid ""
 "Failed to import the numpy or numpy.linalg modules. These modules are required by "
 "the ROBO option.Please install them and try again."
@@ -40348,13 +40798,13 @@ msgstr ""
 "No se ha podido cargar el módulo numpy o numpy.linalg. La opción ROBO necesita "
 "estos módulos. Vuelva a intentarlo después de instalarlos."
 
-#: ../share/extensions/dxf_outlines.py:364
+#: ../share/extensions/dxf_outlines.py:367
 msgid "Too many nested groups. Please use the \"Deep Ungroup\" extension first."
 msgstr ""
 "Demasiados grupos anidados. Utilice primero la extensión \"Desagrupación "
 "profunda\"."
 
-#: ../share/extensions/dxf_outlines.py:379
+#: ../share/extensions/dxf_outlines.py:382
 msgid ""
 "Error: Field 'Layer match name' must be filled when using 'By name match' option"
 msgstr ""
@@ -40376,7 +40826,7 @@ msgstr "Seleccione al menos un objeto."
 #: ../share/extensions/funcplot.py:64
 msgid "x-interval cannot be zero. Please modify 'Start X value' or 'End X value'"
 msgstr ""
-"El intervalo-x no puede ser cero. Modifique «Valor inicio X» o «Valor fin X»"
+"El intervalo-x no puede ser cero. Modifique «Valor inicio X» o «Valor fin X»."
 
 #: ../share/extensions/funcplot.py:81
 msgid ""
@@ -40384,7 +40834,7 @@ msgid ""
 "of rectangle's bottom'"
 msgstr ""
 "El intervalo-y no puede ser cero. Modifique «Valor de Y superior» o «valor de Y "
-"inferior»"
+"inferior»."
 
 #: ../share/extensions/funcplot.py:112
 msgid "Invalid function specification"
@@ -40527,7 +40977,7 @@ msgstr "Imagen extraída a: {}"
 
 #: ../share/extensions/ink2canvas_lib/svg.py:313
 msgid "TextPath elements are not supported"
-msgstr "Loe elementos TextPath no están soportados."
+msgstr "Los elementos TextPath no están soportados."
 
 #: ../share/extensions/inkex/bezier.py:457
 msgid "Area is zero, cannot calculate Center of Mass"
@@ -40658,13 +41108,13 @@ msgstr "{} ahora es 'Effect.run()'. Ha cambiado el argumento 'output'."
 # File: ../share/extensions/inkex/deprecated.py, line: 184
 #: ../share/extensions/inkex/deprecated/deprecatedeffect.py:224
 msgid "self.args[-1] is now self.options.input_file."
-msgstr "«self.args[-1]» ahora es «self.options.input_file»"
+msgstr "«self.args[-1]» ahora es «self.options.input_file»."
 
 #
 # File: ../share/extensions/inkex/deprecated.py, line: 189
 #: ../share/extensions/inkex/deprecated/deprecatedeffect.py:229
 msgid "self.svg_file is now self.options.input_file."
-msgstr "«self.svg_file» ahora es «self.options.input_file»"
+msgstr "«self.svg_file» ahora es «self.options.input_file»."
 
 #: ../share/extensions/inkex/deprecated/deprecatedeffect.py:245
 msgid ""
@@ -40991,7 +41441,7 @@ msgstr "No se ha indicado nombre de archivo."
 
 #: ../share/extensions/nicechart.py:256
 msgid "Unknown input type"
-msgstr "Tipo de entrada desconocido."
+msgstr "Tipo de entrada desconocido"
 
 #: ../share/extensions/nicechart.py:304
 msgid "No data to render into a chart."
@@ -41041,7 +41491,7 @@ msgid ""
 "Try using Object->Ungroup."
 msgstr ""
 "El segundo objeto seleccionado es un grupo, no un trayecto.\n"
-"Intente utilizar la opción «Objeto -> Desagrupar»"
+"Intente utilizar la opción «Objeto -> Desagrupar»."
 
 #: ../share/extensions/path_envelope.py:55 ../share/extensions/perspective.py:98
 msgid ""
@@ -41049,7 +41499,7 @@ msgid ""
 "Try using the procedure Path->Object to Path."
 msgstr ""
 "El segundo objeto seleccionado no es un trayecto.\n"
-"Intente utilizar la opción «Trayecto -> Objeto a trayecto»"
+"Intente utilizar la opción «Trayecto -> Objeto a trayecto»."
 
 #: ../share/extensions/path_envelope.py:62 ../share/extensions/perspective.py:105
 msgid ""
@@ -41057,7 +41507,7 @@ msgid ""
 "Try using the procedure Path->Object to Path."
 msgstr ""
 "El primer objeto seleccionado no es ni trayecto ni grupo.\n"
-"Intente utilizar la opción «Trayecto -> Objeto a trayecto»"
+"Intente utilizar la opción «Trayecto -> Objeto a trayecto»."
 
 #: ../share/extensions/path_envelope.py:72
 msgid "Second selected path is too short. Must be four or more nodes."
@@ -41303,7 +41753,7 @@ msgstr "Especificaciones de triángulo inválidas."
 
 #: ../share/extensions/voronoi_diagram.py:163
 msgid "Please select objects!"
-msgstr "Seleccione objetos"
+msgstr "Seleccione objetos."
 
 #: ../share/extensions/web_interactive_mockup.py:37
 msgid ""
@@ -41315,12 +41765,12 @@ msgstr ""
 
 #: ../share/extensions/web_set_att.py:54 ../share/extensions/web_transmit_att.py:42
 msgid "You must select at least two elements."
-msgstr "Debe seleccionar al menos dos elementos"
+msgstr "Debe seleccionar al menos dos elementos."
 
 #: ../share/extensions/webslicer_create_group.py:41
 msgid "You must to select some \"Slicer rectangles\" or other \"Layout groups\"."
 msgstr ""
-"Debe seleccionar algunos «Rectángulos de recorte» u otros «Grupos de disposición»"
+"Debe seleccionar algunos «Rectángulos de recorte» u otros «Grupos de disposición»."
 
 #: ../share/extensions/webslicer_create_group.py:50
 #, python-brace-format
@@ -41519,7 +41969,8 @@ msgid ""
 msgstr ""
 "\n"
 "Ajusta matiz, saturación y luminosidad en la representación HSL del color de los "
-"objetos seleccionados."
+"objetos seleccionados.\n"
+"      "
 
 #: ../share/extensions/color_lesshue.inx:3
 msgid "Less Hue"
@@ -41825,7 +42276,8 @@ msgstr ""
 "Puede indicar el radio de un círculo alrededor de un punto usando una fórmula, "
 "que también puede contener las longitudes de los lados, ángulos, etc. Así mismo "
 "puede trazar las conjugadas isogonal e isotómica del punto. Tenga en cuenta que "
-"esto puede causar un error de «división entre cero» para ciertos puntos."
+"esto puede causar un error de «división entre cero» para ciertos puntos.\n"
+"      "
 
 #: ../share/extensions/convert2dashes.inx:3
 msgid "Convert Dashes to Path"
@@ -42044,7 +42496,7 @@ msgstr "Método de escalado:"
 
 #: ../share/extensions/dxf_input.inx:8
 msgid "Manual scale"
-msgstr "Escala manual:"
+msgstr "Escala manual"
 
 #: ../share/extensions/dxf_input.inx:9
 msgid "Automatic scaling to size A4"
@@ -43039,7 +43491,7 @@ msgstr "Nombre de la imagen (sin extensión):"
 
 #: ../share/extensions/guillotine.inx:10
 msgid "Ignore these settings and use export hints"
-msgstr "¿Ignorar estos ajustes y usar pistas de exportación?"
+msgstr "Ignorar estos ajustes y usar pistas de exportación"
 
 #: ../share/extensions/handles.inx:3
 msgid "Draw Handles"
@@ -43631,7 +44083,7 @@ msgstr ""
 #: ../share/extensions/image_extract.inx:9
 #: ../share/extensions/image_extract_selected.inx:10
 msgid "Link extracted images"
-msgstr "Enlazar imágenes extraídas:"
+msgstr "Enlazar imágenes extraídas"
 
 #: ../share/extensions/image_extract.inx:9
 #: ../share/extensions/image_extract_selected.inx:10
@@ -43690,7 +44142,7 @@ msgstr "Solo blanco y negro:"
 
 #: ../share/extensions/inset_shadow.inx:9
 msgid "Blur stdDeviation:"
-msgstr "Desviación estándar del desenfoque"
+msgstr "Desviación estándar del desenfoque:"
 
 #: ../share/extensions/inset_shadow.inx:10
 msgid "Blur width:"
@@ -45920,7 +46372,8 @@ msgstr ""
 "Créditos: Nick Drobchenko, Vladimir Kalyaev, John Brooker, Henry Nicolas, Chris "
 "Lusby Taylor.\n"
 "\n"
-"Gcodetools ver. 1.7"
+"Gcodetools ver. 1.7\n"
+"      "
 
 #: ../share/extensions/other/gcodetools/gcodetools_prepare_path_for_plasma.inx:4
 msgid "Prepare Path for Plasma"
@@ -46093,9 +46546,78 @@ msgstr ""
 msgid "Shape Builder Prefab"
 msgstr "Constructor de formas prefabricadas"
 
+#: ../share/extensions/other/templates/template_shape_prefab.inx:7
+msgctxt "TemplateCategory"
+msgid "Shape Builder"
+msgstr "Constructor de formas"
+
 #: ../share/extensions/other/templates/template_shape_prefab.inx:9
 msgid "Template:"
 msgstr "Plantilla:"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:12
+msgid "Trellis"
+msgstr "Enrejado"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:14
+msgid "Cross"
+msgstr "Cruz"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:15
+msgid "Very Cross"
+msgstr "Mucha cruz"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:16
+msgid "Target"
+msgstr "Diana"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:17
+msgid "Hive"
+msgstr "Panal"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:18
+msgid "Double Vision"
+msgstr "Visión doble"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:19
+msgid "Celtic Flower"
+msgstr "Flor celta"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:20
+msgid "Celtic Knot"
+msgstr "Nudo celta"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:21
+msgid "Kitchen Tile"
+msgstr "Baldosa de cocina"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:22
+msgid "Rose"
+msgstr "Rosa"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:23
+msgid "Lily"
+msgstr "Lirio"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:24
+msgid "Crown"
+msgstr "Corona"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:25
+msgid "Diamond Target"
+msgstr "Diana de rombos"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:26
+msgid "TV Test Pattern"
+msgstr "Patrón de prueba TV"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:27
+msgid "Explosion"
+msgstr "Explosión"
+
+#: ../share/extensions/other/templates/template_shape_prefab.inx:28
+msgid "Droplet"
+msgstr "Gotita"
 
 #: ../share/extensions/output_scour.inx:3
 msgid "Optimized SVG Output"
@@ -46798,7 +47320,7 @@ msgstr "Sangrar:"
 
 #: ../share/extensions/perfectboundcover.inx:29
 msgid "Note: Bond Weight # calculations are a best-guess estimate."
-msgstr "Nota: Los cálculos del peso del papel son estimados"
+msgstr "Atención: Los cálculos del peso del papel son estimados."
 
 #: ../share/extensions/pixelsnap.inx:3
 msgid "PixelSnap"
@@ -47501,7 +48023,7 @@ msgstr "PNG optimizado (*.png)"
 
 #: ../share/extensions/raster_output_png.inx:32
 msgid "Optimize PNG output for file size."
-msgstr "Optimizar salida SVG para tamaño de archivo"
+msgstr "Optimizar salida SVG para tamaño de archivo."
 
 #: ../share/extensions/raster_output_tiff.inx:3
 msgid "Export to TIFF"
@@ -47562,7 +48084,7 @@ msgstr "Sin pérdida:"
 
 #: ../share/extensions/raster_output_webp.inx:11
 msgid "Do not use lossy compression."
-msgstr "No usar compresión con pérdida"
+msgstr "No usar compresión con pérdida."
 
 #: ../share/extensions/raster_output_webp.inx:15
 msgid "Quality between 1 and 100"
@@ -47618,7 +48140,7 @@ msgstr "Tipo de código:"
 
 #: ../share/extensions/render_barcode.inx:19
 msgid "Barcode Data:"
-msgstr "Datos del código"
+msgstr "Datos del código de barras:"
 
 #: ../share/extensions/render_barcode.inx:20
 msgid "Bar Height:"
@@ -47709,7 +48231,7 @@ msgstr "Array de bytes"
 
 #: ../share/extensions/render_barcode_qrcode.inx:57
 msgid "Only numbers"
-msgstr "Solo números:"
+msgstr "Solo números"
 
 #: ../share/extensions/render_barcode_qrcode.inx:66
 msgid "Invert QR code:"
@@ -48383,6 +48905,7 @@ msgid ""
 msgstr "Cada capa separada en su propio archivo SVG y aglomerados en un archivo tar"
 
 #: ../share/extensions/template_business_card.inx:3
+#: ../share/extensions/template_business_card.inx:23
 msgid "Business Card"
 msgstr "Tarjeta de visita"
 
@@ -48430,9 +48953,14 @@ msgstr "3.5in x 2in (EEUU, Canadá)"
 msgid "2in x 2in (US Square)"
 msgstr "2in x 2in (Cuadrado EEUU)"
 
+#: ../share/extensions/template_business_card.inx:23
+msgid "Various Countries"
+msgstr "Varios países"
+
 #: ../share/extensions/template_dvd_cover.inx:3
+#: ../share/extensions/template_dvd_cover.inx:19
 msgid "DVD Cover"
-msgstr "Cubierta de DVD "
+msgstr "Cubierta de DVD"
 
 #: ../share/extensions/template_dvd_cover.inx:9
 msgid "DVD spine width:"
@@ -48458,7 +48986,12 @@ msgstr "Ultra delgada (5mm)"
 msgid "DVD cover bleed (mm):"
 msgstr "Margen cubierta DVD (mm):"
 
+#: ../share/extensions/template_dvd_cover.inx:19
+msgid "Various Sizes"
+msgstr "Varios tamaños"
+
 #: ../share/extensions/template_seamless_pattern.inx:3
+#: ../share/extensions/template_seamless_pattern.inx:13
 msgid "Seamless Pattern"
 msgstr "Patrón continuo"
 
@@ -48469,6 +49002,10 @@ msgstr "Anchura personalizada (px):"
 #: ../share/extensions/template_seamless_pattern.inx:10
 msgid "Custom Height (px):"
 msgstr "Altura personalizada (px):"
+
+#: ../share/extensions/template_seamless_pattern.inx:13
+msgid "Tiled Canvas"
+msgstr "Lienzo de azulejos"
 
 #: ../share/extensions/text_braille.inx:3
 msgid "Convert to Braille"
@@ -49331,331 +49868,6 @@ msgstr ""
 msgid "Main application window"
 msgstr "Ventana principal de la aplicación"
 
-#: ../org.inkscape.Inkscape.appdata.xml.in:49
-msgid "Inkscape 1.3"
-msgstr "Inkscape 1.3"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:51
-msgid "Shape builder tool"
-msgstr "Herramienta construcción de formas"
-
-#
-# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
-#: ../org.inkscape.Inkscape.appdata.xml.in:52
-msgid "On-canvas pattern editing"
-msgstr "Edición de patrones en lienzo"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:53
-msgid "Pattern editor"
-msgstr "Editor de patrones"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:54
-msgid "Pages margins and bleed"
-msgstr "Márgenes y sangrado de páginas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:55
-msgid "Document resources dialog"
-msgstr "Diálogo de recursos del documento"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:56
-msgid "Font collections"
-msgstr "Colecciones de fuentes"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:57
-msgid "Syntax highlighting in XML Editor"
-msgstr "Coloreado de sintaxis en el editor XML"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:58
-msgid "LPE dialog user interface redesign"
-msgstr "Rediseño de la interfaz de usuario del diálogo de LPE"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:59
-msgid "Lots of performance improvements and bugfixes"
-msgstr "Muchas mejoras de rendimiento y correcciones de errores"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:66
-msgid "Inkscape 1.2"
-msgstr "Inkscape 1.2"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:68
-msgid "Multiple pages support"
-msgstr "Soporte para múltiples páginas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:69
-msgid "Editable markers and dash patterns"
-msgstr "Marcadores y guiones editables"
-
-#
-# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
-#: ../org.inkscape.Inkscape.appdata.xml.in:70
-msgid "On-canvas alignment and snapping"
-msgstr "Alineación y acople en lienzo"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:71
-msgid "Selectable origin for numerical transforms"
-msgstr "Origen seleccionable para las transformaciones numéricas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:72
-msgid "Single dialog for alignment options"
-msgstr "Diálogo único para las opciones de alineación"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:73
-msgid "Gradient editing in Fill and Stroke dialog"
-msgstr "Edición de degradados en el diálogo Relleno y Borde"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:74
-msgid "Layers and Objects dialog merged"
-msgstr "Fusión diálogo de Capas y Objetos"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:75
-msgid "New UI for Snap settings"
-msgstr "Interfaz nueva para ajustes de Acople"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:76
-msgid "More customization options"
-msgstr "Más opciones de personalización"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:77
-msgid "Various performance improvements and bugfixes"
-msgstr "Varias mejoras de rendimiento y correcciones de errores"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:84
-msgid "Inkscape 1.1"
-msgstr "Inkscape 1.1"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:86
-msgid "Welcome dialog"
-msgstr "Diálogo de bienvenida"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:87
-msgid "Command palette to search for functions"
-msgstr "Paleta de comandos para buscar funciones"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:88
-msgid "Copypaste parts of paths"
-msgstr "Copiar y pegar partes de trayectos"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:89
-msgid "Complete rework of the dialog docking system"
-msgstr "Revisión completa del sistema de acoplamiento de diálogos"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:90
-msgid "New outline overlay mode"
-msgstr "Nuevo modo de superposición de contorno"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:91
-msgid "Search field in Preferences dialog"
-msgstr "Campo de búsqueda en el diálogo de Preferencias"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:92
-msgid "Improved Export PNG dialog"
-msgstr "Mejora del cuadro de diálogo Exportar PNG"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:93
-msgid "Ability to directly export JPG, TIFF, optimized PNG, and WebP"
-msgstr "Posibilidad de exportar directamente JPG, TIFF, PNG optimizado y WebP"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:94
-msgid "Paste now pastes directly above selected object"
-msgstr "Pegar ahora pega directamente encima del objeto seleccionado"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:95
-msgid "Beta Extension Manager"
-msgstr "Gestor de extensiones beta"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:102
-msgid "Inkscape 1.0"
-msgstr "Inkscape 1.0"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:104
-msgid "Theming support and more new customization options"
-msgstr "Soporte para temas y más opciones de personalización"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:105
-msgid "Better HiDPI (high resolution) screen support"
-msgstr "Mejor soporte para pantallas HiDPI (alta resolución)"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:106
-msgid "Native support for macOS with a signed and notarized .dmg file"
-msgstr "Soporte nativo para macOS con un archivo .dmg firmado y notariado"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:107
-msgid "Coordinate origin in top left corner by default"
-msgstr "Origen de coordenadas predeterminado en la esquina superior izquierda"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:108
-msgid "Canvas rotation and mirroring"
-msgstr "Rotación y reflejo del lienzo"
-
-#
-# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
-#: ../org.inkscape.Inkscape.appdata.xml.in:109
-msgid "On-Canvas alignment of objects"
-msgstr "Alineación de objetos en lienzo"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:110
-msgid "Split view and X-Ray modes"
-msgstr "Modos de Vista partida y Rayos X"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:111
-msgid ""
-"PowerPencil for drawing editable, variable width strokes with a pressure "
-"sensitive graphics tablet"
-msgstr ""
-"PowerPencil para dibujar trazos editables, de anchura variable con una tableta "
-"gráfica sensible a presión"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:112
-msgid "New PNG export options"
-msgstr "Opciones de exportación PNG nuevas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:113
-msgid "Integrated centerline tracing for vectorizing line drawings"
-msgstr "Trazado de líneas centrales integradas para vectorizar dibujos de líneas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:114
-msgid "Searchable Symbols dialog"
-msgstr "Diálogo de símbolos buscables"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:115
-msgid "New Live Path Effect (LPE) selection dialog"
-msgstr "Nuevo diálogo de efecto de trayecto vivo (LPE)"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:116
-msgid ""
-"New Corners (Fillet/chamfer) LPE, (lossless) Boolean Operation LPE "
-"(experimental), Offset LPE and Measure Segments LPE (and more!)"
-msgstr ""
-"Nuevos efectos de trayecto vivo (LPE); Esquinas (Filete/Bisel), Operaciones "
-"Booleanas (sin pérdida - experimental), Desplazamiento y Medida (y más…)"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:117
-msgid ""
-"Path operations, deselection of a large number of paths as well as grouping/"
-"ungrouping are much faster now"
-msgstr ""
-"Las operaciones de trayecto, la deselección de una gran cantidad de trayectos, "
-"así como agrupar/desagrupar ahora son mucho más rápidas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:118
-msgid "Much improved text line-height settings"
-msgstr "Mejoras en los ajustes de altura de línea en textos"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:119
-msgid ""
-"Variable fonts support (only if compiled with pango library version &gt;= 1.41.1)"
-msgstr ""
-"Soporte de fuentes variables (solo si se compila con una biblioteca pango versión "
-"1.41.1 o superior)"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:120
-msgid "Browser-compatible flowed text"
-msgstr "Texto fluido compatible con navegadores"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:121
-msgid ""
-"Extensions programming interface updated, with many new options - Note: this "
-"introduces breaking changes, some third-party extensions will have to be updated "
-"to work with Inkscape 1.0"
-msgstr ""
-"Actualización de la interfaz de programación de extensiones, con muchas opciones "
-"nuevas - Nota: esto conlleva cambios rompedores, algunas extensiones de terceros "
-"necesitarán ser actualizadas con Inkscape 1.0"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:122
-msgid "Python 3 support for extensions"
-msgstr "Soporte para Python 3 en extensiones"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:130
-msgid "Bugfix release"
-msgstr "Versió de corrección de erratas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:131
-msgid "More python3 compatibility for extensions"
-msgstr "Más compatibilidad de Python 3 en extensiones"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:138
-#: ../org.inkscape.Inkscape.appdata.xml.in:151
-#: ../org.inkscape.Inkscape.appdata.xml.in:164
-msgid "New 0.92.x bugfix release."
-msgstr "Versión de corrección de erratas 0.92.x"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:140
-msgid "Improvements to the align and distribute tool"
-msgstr "Mejoras en la herramienta Alinear y distribuir"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:141
-msgid "Support for piping standard input and output"
-msgstr "Soporte para el uso de pipes en entrada y salida"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:142
-msgid "The color slider can be constrained to stepped values"
-msgstr "El deslizador de color se puede restringir a pasos predefinidos"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:143
-msgid "Performance improvements"
-msgstr "Mejoras de rendimiento"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:144
-#: ../org.inkscape.Inkscape.appdata.xml.in:157
-msgid "And many more bugfixes"
-msgstr "Y muchas más correcciones de erratas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:153
-msgid "New command-line options to control page size when exporting to SVG"
-msgstr ""
-"Opciones de línea de comandos nuevas para controlar el tama~no de página al "
-"exportar a SVG"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:154
-msgid "Support for left-to-right languages in the text tool"
-msgstr ""
-"Soporte para idiomas de escritura derecha a izquierda en la herramienta de texto"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:155
-msgid "Improvements to the circle/ellipse/arc tool"
-msgstr "Mejoras en la herramienta Círculo/elipses/arco"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:156
-msgid "Support for multi-line text when exporting to PDF+LaTeX"
-msgstr "Soporte para texto multilínea al exportar a PDF+LaTeX"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:166
-msgid "Better importing and exporting"
-msgstr "Mejor importación y exportación"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:167
-msgid "Greater stability when printing on Windows"
-msgstr "Mayor estabilidad al imprimir bajo Windows"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:168
-msgid "Improved fill and stroke HSL color selection"
-msgstr "Mejora en la selección de color HSL en Relleno y borde"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:169
-msgid "Greater stability when reverting and saving files"
-msgstr "Mayor estabilidad al revertir y guardar archivos"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:170
-msgid "An additional handle at the center of shapes"
-msgstr "Un tirador adicional en el centro de las formas"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:171
-msgid "A command line option for updating the file's DPI"
-msgstr "Una opción de línea de comandos para actualizar las PPP del archivo"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:172
-msgid "Improvements to user-defined shortcuts"
-msgstr "Mejoras en atajos definidos por el usuario"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:173
-msgid "Migration to Gitlab to make contribution easier"
-msgstr "Migración a Gitlab para facilitar la contribución"
-
-#: ../org.inkscape.Inkscape.appdata.xml.in:174
-msgid "And many more bugfixes!"
-msgstr "Y muchas más correcciones de erratas"
-
 #: ../org.inkscape.Inkscape.desktop.template:8
 msgid "Create and edit Scalable Vector Graphics images"
 msgstr "Cree y edite Gráficos Vectoriales Escalables (SVG)"
@@ -49696,7 +49908,7 @@ msgstr "puntos"
 
 #: ../share/ui/units.xml:22
 msgid "PostScript points (72/inch)"
-msgstr "puntos Postscript (72/pulgada)"
+msgstr "Puntos Postscript (72/pulgada)"
 
 #
 # File: ../share/ui/units.xml, line: 25
@@ -49738,7 +49950,7 @@ msgstr "milímetros"
 
 #: ../share/ui/units.xml:43
 msgid "Millimeters (25.4 mm/in)"
-msgstr "milímetros (25,4 mm/pulgada)"
+msgstr "Milímetros (25,4 mm/pulgada)"
 
 #: ../share/ui/units.xml:46
 msgid "centimeter"
@@ -49837,6 +50049,257 @@ msgstr "medias emes"
 #: ../share/ui/units.xml:99
 msgid "Half of font height"
 msgstr "La mitad de la altura de la fuente"
+
+#~ msgid "Inkscape 1.3"
+#~ msgstr "Inkscape 1.3"
+
+#~ msgid "Shape builder tool"
+#~ msgstr "Herramienta construcción de formas"
+
+#
+# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
+#~ msgid "On-canvas pattern editing"
+#~ msgstr "Edición de patrones en lienzo"
+
+#~ msgid "Pattern editor"
+#~ msgstr "Editor de patrones"
+
+#~ msgid "Pages margins and bleed"
+#~ msgstr "Márgenes y sangrado de páginas"
+
+#~ msgid "Document resources dialog"
+#~ msgstr "Diálogo de recursos del documento"
+
+#~ msgid "Font collections"
+#~ msgstr "Colecciones de fuentes"
+
+#~ msgid "Syntax highlighting in XML Editor"
+#~ msgstr "Coloreado de sintaxis en el editor XML"
+
+#~ msgid "LPE dialog user interface redesign"
+#~ msgstr "Rediseño de la interfaz de usuario del diálogo de LPE"
+
+#~ msgid "Lots of performance improvements and bugfixes"
+#~ msgstr "Muchas mejoras de rendimiento y correcciones de errores"
+
+#~ msgid "Inkscape 1.2"
+#~ msgstr "Inkscape 1.2"
+
+#~ msgid "Multiple pages support"
+#~ msgstr "Soporte para múltiples páginas"
+
+#~ msgid "Editable markers and dash patterns"
+#~ msgstr "Marcadores y guiones editables"
+
+#
+# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
+#~ msgid "On-canvas alignment and snapping"
+#~ msgstr "Alineación y acople en lienzo"
+
+#~ msgid "Selectable origin for numerical transforms"
+#~ msgstr "Origen seleccionable para las transformaciones numéricas"
+
+#~ msgid "Single dialog for alignment options"
+#~ msgstr "Diálogo único para las opciones de alineación"
+
+#~ msgid "Gradient editing in Fill and Stroke dialog"
+#~ msgstr "Edición de degradados en el diálogo Relleno y Borde"
+
+#~ msgid "Layers and Objects dialog merged"
+#~ msgstr "Fusión diálogo de Capas y Objetos"
+
+#~ msgid "New UI for Snap settings"
+#~ msgstr "Interfaz nueva para ajustes de Acople"
+
+#~ msgid "More customization options"
+#~ msgstr "Más opciones de personalización"
+
+#~ msgid "Various performance improvements and bugfixes"
+#~ msgstr "Varias mejoras de rendimiento y correcciones de errores"
+
+#~ msgid "Inkscape 1.1"
+#~ msgstr "Inkscape 1.1"
+
+#~ msgid "Welcome dialog"
+#~ msgstr "Diálogo de bienvenida"
+
+#~ msgid "Command palette to search for functions"
+#~ msgstr "Paleta de comandos para buscar funciones"
+
+#~ msgid "Copypaste parts of paths"
+#~ msgstr "Copiar y pegar partes de trayectos"
+
+#~ msgid "Complete rework of the dialog docking system"
+#~ msgstr "Revisión completa del sistema de acoplamiento de diálogos"
+
+#~ msgid "New outline overlay mode"
+#~ msgstr "Nuevo modo de superposición de contorno"
+
+#~ msgid "Search field in Preferences dialog"
+#~ msgstr "Campo de búsqueda en el diálogo de Preferencias"
+
+#~ msgid "Improved Export PNG dialog"
+#~ msgstr "Mejora del cuadro de diálogo Exportar PNG"
+
+#~ msgid "Ability to directly export JPG, TIFF, optimized PNG, and WebP"
+#~ msgstr "Posibilidad de exportar directamente JPG, TIFF, PNG optimizado y WebP"
+
+#~ msgid "Paste now pastes directly above selected object"
+#~ msgstr "Pegar ahora pega directamente encima del objeto seleccionado"
+
+#~ msgid "Beta Extension Manager"
+#~ msgstr "Gestor de extensiones beta"
+
+#~ msgid "Inkscape 1.0"
+#~ msgstr "Inkscape 1.0"
+
+#~ msgid "Theming support and more new customization options"
+#~ msgstr "Soporte para temas y más opciones de personalización"
+
+#~ msgid "Better HiDPI (high resolution) screen support"
+#~ msgstr "Mejor soporte para pantallas HiDPI (alta resolución)"
+
+#~ msgid "Native support for macOS with a signed and notarized .dmg file"
+#~ msgstr "Soporte nativo para macOS con un archivo .dmg firmado y notariado"
+
+#~ msgid "Coordinate origin in top left corner by default"
+#~ msgstr "Origen de coordenadas predeterminado en la esquina superior izquierda"
+
+#~ msgid "Canvas rotation and mirroring"
+#~ msgstr "Rotación y reflejo del lienzo"
+
+#
+# File: ../src/ui/dialog/align-and-distribute.cpp, line: 1107
+#~ msgid "On-Canvas alignment of objects"
+#~ msgstr "Alineación de objetos en lienzo"
+
+#~ msgid "Split view and X-Ray modes"
+#~ msgstr "Modos de Vista partida y Rayos X"
+
+#~ msgid ""
+#~ "PowerPencil for drawing editable, variable width strokes with a pressure "
+#~ "sensitive graphics tablet"
+#~ msgstr ""
+#~ "PowerPencil para dibujar trazos editables, de anchura variable con una tableta "
+#~ "gráfica sensible a presión"
+
+#~ msgid "New PNG export options"
+#~ msgstr "Opciones de exportación PNG nuevas"
+
+#~ msgid "Integrated centerline tracing for vectorizing line drawings"
+#~ msgstr "Trazado de líneas centrales integradas para vectorizar dibujos de líneas"
+
+#~ msgid "Searchable Symbols dialog"
+#~ msgstr "Diálogo de símbolos buscables"
+
+#~ msgid "New Live Path Effect (LPE) selection dialog"
+#~ msgstr "Nuevo diálogo de efecto de trayecto vivo (LPE)"
+
+#~ msgid ""
+#~ "New Corners (Fillet/chamfer) LPE, (lossless) Boolean Operation LPE "
+#~ "(experimental), Offset LPE and Measure Segments LPE (and more!)"
+#~ msgstr ""
+#~ "Nuevos efectos de trayecto vivo (LPE); Esquinas (Filete/Bisel), Operaciones "
+#~ "Booleanas (sin pérdida - experimental), Desplazamiento y Medida (y más…)"
+
+#~ msgid ""
+#~ "Path operations, deselection of a large number of paths as well as grouping/"
+#~ "ungrouping are much faster now"
+#~ msgstr ""
+#~ "Las operaciones de trayecto, la deselección de una gran cantidad de trayectos, "
+#~ "así como agrupar/desagrupar ahora son mucho más rápidas"
+
+#~ msgid "Much improved text line-height settings"
+#~ msgstr "Mejoras en los ajustes de altura de línea en textos"
+
+#~ msgid ""
+#~ "Variable fonts support (only if compiled with pango library version &gt;= "
+#~ "1.41.1)"
+#~ msgstr ""
+#~ "Soporte de fuentes variables (solo si se compila con una biblioteca pango "
+#~ "versión 1.41.1 o superior)"
+
+#~ msgid "Browser-compatible flowed text"
+#~ msgstr "Texto fluido compatible con navegadores"
+
+#~ msgid ""
+#~ "Extensions programming interface updated, with many new options - Note: this "
+#~ "introduces breaking changes, some third-party extensions will have to be "
+#~ "updated to work with Inkscape 1.0"
+#~ msgstr ""
+#~ "Actualización de la interfaz de programación de extensiones, con muchas "
+#~ "opciones nuevas - Nota: esto conlleva cambios rompedores, algunas extensiones "
+#~ "de terceros necesitarán ser actualizadas con Inkscape 1.0"
+
+#~ msgid "Python 3 support for extensions"
+#~ msgstr "Soporte para Python 3 en extensiones"
+
+#~ msgid "Bugfix release"
+#~ msgstr "Versió de corrección de erratas"
+
+#~ msgid "More python3 compatibility for extensions"
+#~ msgstr "Más compatibilidad de Python 3 en extensiones"
+
+#~ msgid "New 0.92.x bugfix release."
+#~ msgstr "Versión de corrección de erratas 0.92.x"
+
+#~ msgid "Improvements to the align and distribute tool"
+#~ msgstr "Mejoras en la herramienta Alinear y distribuir"
+
+#~ msgid "Support for piping standard input and output"
+#~ msgstr "Soporte para el uso de pipes en entrada y salida"
+
+#~ msgid "The color slider can be constrained to stepped values"
+#~ msgstr "El deslizador de color se puede restringir a pasos predefinidos"
+
+#~ msgid "Performance improvements"
+#~ msgstr "Mejoras de rendimiento"
+
+#~ msgid "And many more bugfixes"
+#~ msgstr "Y muchas más correcciones de erratas"
+
+#~ msgid "New command-line options to control page size when exporting to SVG"
+#~ msgstr ""
+#~ "Opciones de línea de comandos nuevas para controlar el tama~no de página al "
+#~ "exportar a SVG"
+
+#~ msgid "Support for left-to-right languages in the text tool"
+#~ msgstr ""
+#~ "Soporte para idiomas de escritura derecha a izquierda en la herramienta de "
+#~ "texto"
+
+#~ msgid "Improvements to the circle/ellipse/arc tool"
+#~ msgstr "Mejoras en la herramienta Círculo/elipses/arco"
+
+#~ msgid "Support for multi-line text when exporting to PDF+LaTeX"
+#~ msgstr "Soporte para texto multilínea al exportar a PDF+LaTeX"
+
+#~ msgid "Better importing and exporting"
+#~ msgstr "Mejor importación y exportación"
+
+#~ msgid "Greater stability when printing on Windows"
+#~ msgstr "Mayor estabilidad al imprimir bajo Windows"
+
+#~ msgid "Improved fill and stroke HSL color selection"
+#~ msgstr "Mejora en la selección de color HSL en Relleno y borde"
+
+#~ msgid "Greater stability when reverting and saving files"
+#~ msgstr "Mayor estabilidad al revertir y guardar archivos"
+
+#~ msgid "An additional handle at the center of shapes"
+#~ msgstr "Un tirador adicional en el centro de las formas"
+
+#~ msgid "A command line option for updating the file's DPI"
+#~ msgstr "Una opción de línea de comandos para actualizar las PPP del archivo"
+
+#~ msgid "Improvements to user-defined shortcuts"
+#~ msgstr "Mejoras en atajos definidos por el usuario"
+
+#~ msgid "Migration to Gitlab to make contribution easier"
+#~ msgstr "Migración a Gitlab para facilitar la contribución"
+
+#~ msgid "And many more bugfixes!"
+#~ msgstr "Y muchas más correcciones de erratas"
 
 #~ msgid "01 Stripes 1:1"
 #~ msgstr "01 Rayas 1:1"
@@ -51689,9 +52152,6 @@ msgstr "La mitad de la altura de la fuente"
 #~ msgid "_Grow on screen"
 #~ msgstr "A_grandar en pantalla"
 
-#~ msgid "_Double size"
-#~ msgstr "_Duplicar tamaño"
-
 #~ msgid "Double the size of selected objects"
 #~ msgstr "Duplicar el tamaño de los objetos seleccionados"
 
@@ -51827,10 +52287,6 @@ msgstr "La mitad de la altura de la fuente"
 #~ msgctxt "ContextVerb"
 #~ msgid "Zoom"
 #~ msgstr "Zoom"
-
-#~ msgctxt "ContextVerb"
-#~ msgid "Dropper"
-#~ msgstr "Cuentagotas"
 
 #~ msgctxt "ContextVerb"
 #~ msgid "Connector"
@@ -52640,9 +53096,6 @@ msgstr "La mitad de la altura de la fuente"
 
 #~ msgid "Page orientation:"
 #~ msgstr "Orientación de página:"
-
-#~ msgid "Vertical (Portrait)"
-#~ msgstr "Vertical (Retrato):"
 
 #~ msgid "Horizontal (Landscape)"
 #~ msgstr "Horizontal (Paisaje)"
@@ -53608,10 +54061,6 @@ msgstr "La mitad de la altura de la fuente"
 
 #~ msgid "1/9"
 #~ msgstr "1/9"
-
-#, fuzzy
-#~ msgid "10"
-#~ msgstr "1/10"
 
 #, fuzzy
 #~ msgid "110"
@@ -55512,9 +55961,6 @@ msgstr "La mitad de la altura de la fuente"
 #~ "está a 0, todos están desbloqueados; -1 indica inconsistencia entre los "
 #~ "elementos"
 
-#~ msgid "Switcher Style"
-#~ msgstr "Estilo del intercambiador"
-
 #~ msgid "Switcher buttons style"
 #~ msgstr "Estilo de los botones del intercambiador"
 
@@ -56171,10 +56617,6 @@ msgstr "La mitad de la altura de la fuente"
 #, fuzzy
 #~ msgid "A4 Landscape Page"
 #~ msgstr "A0 (Apaisado)"
-
-#, fuzzy
-#~ msgid "Letter Landscape"
-#~ msgstr "Carta EEUU (apaisada)"
 
 #~ msgid "No Borders"
 #~ msgstr "Sin bordes"
@@ -58592,50 +59034,11 @@ msgstr "La mitad de la altura de la fuente"
 #~ msgid "About Screen"
 #~ msgstr "Pantalla «acerca de»"
 
-#~ msgid "Icon 120x120"
-#~ msgstr "Icono 120x120"
-
-#~ msgid "Icon 16x16"
-#~ msgstr "Icono 16x16"
-
-#~ msgid "Icon 180x180"
-#~ msgstr "Icono 180x180"
-
-#~ msgid "Icon 32x32"
-#~ msgstr "Icono 32x32"
-
-#~ msgid "Icon 48x48"
-#~ msgstr "Icono 48x48"
-
-#~ msgid "Icon 512x512"
-#~ msgstr "Icono 512x512"
-
-#~ msgid "US Letter"
-#~ msgstr "Carta EEUU"
-
-#~ msgid "A0"
-#~ msgstr "A0"
-
-#~ msgid "A1"
-#~ msgstr "A1"
-
-#~ msgid "A1 (Landscape)"
-#~ msgstr "A1 (Apaisado)"
-
-#~ msgid "A2"
-#~ msgstr "A2"
-
 #~ msgid "A2 (Landscape)"
 #~ msgstr "A2 (Apaisado)"
 
-#~ msgid "A3"
-#~ msgstr "A3"
-
 #~ msgid "A3 (Landscape)"
 #~ msgstr "A3 (Apaisado)"
-
-#~ msgid "A5"
-#~ msgstr "A5"
 
 #~ msgid "A5 (Landscape)"
 #~ msgstr "A5 (Apaisado)"
@@ -58661,143 +59064,11 @@ msgstr "La mitad de la altura de la fuente"
 #~ msgid "Business Card US (Portrait)"
 #~ msgstr "Tarjeta de visita EEUU (vertical)"
 
-#~ msgid "DL Envelope"
-#~ msgstr "Sobre DL"
-
-#~ msgid "Ledger/Tabloid"
-#~ msgstr "Ledger/Tabloide"
-
-#~ msgid "US #10 Envelope"
-#~ msgstr "Sobre núm. 10 EEUU"
-
-#~ msgid "US Executive"
-#~ msgstr "Ejecutivo EEUU"
-
 #~ msgid "US Executive (Landscape)"
 #~ msgstr "Ejecutivo EEUU (apaisado)"
 
-#~ msgid "US Legal"
-#~ msgstr "Legal US"
-
 #~ msgid "US Legal (Landscape)"
 #~ msgstr "Legal US (apaisado)"
-
-#~ msgid "Desktop 4K"
-#~ msgstr "Escritorio 4K"
-
-#~ msgid "Desktop 720p"
-#~ msgstr "Escritorio 720p"
-
-#~ msgid "Desktop SD"
-#~ msgstr "Escritorio SD"
-
-#~ msgid "iPhone 5"
-#~ msgstr "iPhone 5"
-
-#~ msgid "iPhone X"
-#~ msgstr "iPhone X"
-
-#~ msgid "Mobile-smallest"
-#~ msgstr "Móvil-más pequeño"
-
-#~ msgid "iPad Pro"
-#~ msgstr "iPad Pro"
-
-#~ msgid "Tablet-smallest"
-#~ msgstr "Tableta-más pequeña"
-
-#~ msgid "Facebook cover photo"
-#~ msgstr "Facebook - Foto de portada de"
-
-#~ msgid "Facebook event image"
-#~ msgstr "Facebook - Imagen para evento"
-
-#~ msgid "Facebook image post"
-#~ msgstr "Facebook - Imagen para publicación"
-
-#~ msgid "Facebook link image"
-#~ msgstr "Facebook - Imagen de enlace"
-
-#~ msgid "Facebook profile picture"
-#~ msgstr "Facebook - Foto de perfil"
-
-#~ msgid "Facebook video"
-#~ msgstr "Facebook - Vídeo"
-
-#~ msgid "Instagram landscape"
-#~ msgstr "Instagram - Paisaje"
-
-#~ msgid "Instagram portrait"
-#~ msgstr "Instagram - Retrato"
-
-#~ msgid "Instagram square"
-#~ msgstr "Instagram - Cuadrado"
-
-#~ msgid "LinkedIn business banner image"
-#~ msgstr "LinkedIn - Imagen de empresa"
-
-#~ msgid "LinkedIn company logo"
-#~ msgstr "LinkedIn - Logotipo de empresa"
-
-#~ msgid "LinkedIn cover photo"
-#~ msgstr "LinkedIn - Foto de portada"
-
-#~ msgid "LinkedIn dynamic ad"
-#~ msgstr "LinkedIn - Anuncio dinámico"
-
-#~ msgid "LinkedIn hero image"
-#~ msgstr "LinkedIn - Imagen de héroe"
-
-#~ msgid "LinkedIn sponsored content image"
-#~ msgstr "LinkedIn - Imagen de contenido patrocinado"
-
-#~ msgid "Snapchat advertisement"
-#~ msgstr "Snapchat - Anuncio"
-
-#~ msgid "Twitter card image"
-#~ msgstr "Twitter - imagen de carta"
-
-#~ msgid "Twitter header"
-#~ msgstr "Twitter - Cabecera"
-
-#~ msgid "Twitter post image"
-#~ msgstr "Twitter - Imagen de publicación"
-
-#~ msgid "Twitter profile picture"
-#~ msgstr "Twitter - Foto de perfil"
-
-#~ msgid "Twitter video landscape"
-#~ msgstr "Twitter - Vídeo en paisaje"
-
-#~ msgid "Twitter video portrait"
-#~ msgstr "Twitter - Vídeo retrato"
-
-#~ msgid "Twitter video square"
-#~ msgstr "Twitter - Vídeo cuadrado"
-
-#~ msgid "Video DCI 2k (Full Frame)"
-#~ msgstr "Vídeo DCI 2k (Marco completo)"
-
-#~ msgid "Video DCI 4k (Full Frame)"
-#~ msgstr "Vídeo DCI 4k (Marco completo)"
-
-#~ msgid "Video SD / NTSC"
-#~ msgstr "Vídeo SD / NTSC"
-
-#~ msgid "Video SD / PAL"
-#~ msgstr "Vídeo SD/PAL"
-
-#~ msgid "Video SD-Widescreen / NTSC"
-#~ msgstr "Vídeo SD-ancho/NTSC"
-
-#~ msgid "Video SD-Widescreen / PAL"
-#~ msgstr "Vídeo SD-ancho/PAL"
-
-#~ msgid "Video UHD 4k"
-#~ msgstr "Vídeo UHD 4k"
-
-#~ msgid "Video UHD 8k"
-#~ msgstr "Vídeo UHD 8k"
 
 #~ msgctxt "Document format category"
 #~ msgid "Print"
