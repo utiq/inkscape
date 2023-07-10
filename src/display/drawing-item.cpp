@@ -786,15 +786,16 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     }
 
     // determine whether this shape needs intermediate rendering.
-    bool needs_intermediate_rendering =
+    bool const greyscale = _drawing.colorMode() == ColorMode::GRAYSCALE && !(flags & RENDER_OUTLINE);
+    bool const isolate_root = _contains_unisolated_blend || greyscale;
+    bool const needs_intermediate_rendering =
            _clip                                  // 1. it has a clipping path
         || _mask                                  // 2. it has a mask
         || (_filter && render_filters)            // 3. it has a filter
         || _opacity < 0.995                       // 4. it is non-opaque
         || _blend_mode != SP_CSS_BLEND_NORMAL     // 5. it has blend mode
         || _isolation == SP_CSS_ISOLATION_ISOLATE // 6. it is isolated
-        || (   _child_type == ChildType::ROOT
-            && _contains_unisolated_blend    )    // 7. it is the root and needs isolation
+        || (_child_type == ChildType::ROOT && isolate_root) // 7. it is the root and needs isolation
         || (bool)_cache;                          // 8. it is to be cached
 
     auto antialias = rc.antialiasing_override.value_or(_antialias);
@@ -898,7 +899,6 @@ unsigned DrawingItem::render(DrawingContext &dc, RenderContext &rc, Geom::IntRec
     }
 
     // 4b. Apply greyscale rendering mode, if root node.
-    bool const greyscale = _drawing.colorMode() == ColorMode::GRAYSCALE && !(flags & RENDER_OUTLINE);
     if (greyscale && _child_type == ChildType::ROOT) {
         ink_cairo_surface_filter(ict.rawTarget(), ict.rawTarget(), _drawing.grayscaleMatrix());
     }
