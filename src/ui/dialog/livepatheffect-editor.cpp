@@ -9,35 +9,34 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "livepatheffect-editor.h"
-#include "live_effects/effect-enum.h"
-#include "livepatheffect-add.h"
-#include "live_effects/effect.h"
-#include "live_effects/lpeobject-reference.h"
-#include "live_effects/lpeobject.h"
-
-#include "object/sp-lpe-item.h"
-#include "svg/svg.h"
-#include "ui/icon-names.h"
-#include "ui/icon-loader.h"
-#include "ui/builder-utils.h"
-#include "io/resource.h"
-#include "object/sp-use.h"
-#include "object/sp-shape.h"
-#include "object/sp-path.h"
-#include "object/sp-flowtext.h"
-#include "object/sp-tspan.h"
-#include "object/sp-item-group.h"
-#include "object/sp-text.h"
-#include "ui/tools/node-tool.h"
-#include "ui/widget/custom-tooltip.h"
-#include "util/optstr.h"
 #include <cstddef>
 #include <glibmm/i18n.h>
 
+#include "livepatheffect-editor.h"
+#include "livepatheffect-add.h"
+#include "live_effects/effect.h"
+#include "live_effects/effect-enum.h"
+#include "live_effects/lpeobject.h"
+#include "live_effects/lpeobject-reference.h"
+#include "io/resource.h"
+#include "object/sp-flowtext.h"
+#include "object/sp-item-group.h"
+#include "object/sp-lpe-item.h"
+#include "object/sp-path.h"
+#include "object/sp-shape.h"
+#include "object/sp-text.h"
+#include "object/sp-tspan.h"
+#include "object/sp-use.h"
+#include "svg/svg.h"
+#include "ui/builder-utils.h"
+#include "ui/icon-loader.h"
+#include "ui/icon-names.h"
+#include "ui/tools/node-tool.h"
+#include "ui/widget/custom-tooltip.h"
+#include "util/optstr.h"
+
 namespace Inkscape {
 namespace UI {
-
 
 bool sp_can_apply_lpeffect(SPLPEItem* item, LivePathEffect::EffectType etype) {
     if (!item) return false;
@@ -184,16 +183,20 @@ LivePathEffectEditor::LivePathEffectEditor()
         LPEGallery.signal_button_release_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
         LPEGallery.show();
     }
+
     _LPEContainer.signal_map().connect(sigc::mem_fun(*this, &LivePathEffectEditor::map_handler) );
     _LPEContainer.signal_button_press_event().connect([=](GdkEventButton* const evt){dnd = false; /*hack to fix dnd freze expander*/ return false; }, false);
+
     setMenu();
     add(_LPEContainer);
     selection_info();
+
     _lpes_popup.get_entry().set_placeholder_text(_("Add Live Path Effect"));
     _lpes_popup.on_match_selected().connect([=](int id){ onAdd((LivePathEffect::EffectType)id); });
     _lpes_popup.on_button_press().connect([=](){ setMenu(); });
     _lpes_popup.on_focus().connect([=](){ setMenu(); return true; });
     _LPEAddContainer.pack_start(_lpes_popup);
+
     show_all();
 }
 
@@ -988,6 +991,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
                     return true;
                 }, true);
             }
+
             // other
             LPEEffect->set_name("LPEEffectItem");
             LPENameLabel->set_label(g_dpgettext2(nullptr, "path effect", (*it)->lpeobject->get_lpe()->getName().c_str()));
@@ -999,6 +1003,7 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             dynamic_cast<Gtk::Button *>(LPEHide->get_children()[0])->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
             LPEDrag->signal_button_press_event().connect([=](GdkEventButton* const evt){dndx = evt->x; dndy = evt->y; return false; }, false);
             dynamic_cast<Gtk::Button *>(LPEErase->get_children()[0])->signal_clicked().connect([=](){ removeEffect(LPEExpander);});
+
             if (total > 1) {
                 LPEDrag->signal_enter_notify_event().connect([=](GdkEventCrossing*){
                     auto window = get_window();
@@ -1015,32 +1020,35 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
                     return false;
                 }, false);
             }
+
             if (lpe->hasDefaultParameters()) {
                 LPEResetDefault->show();
                 LPESetDefault->hide();
-            
             } else {
                 LPEResetDefault->hide();
                 LPESetDefault->show();
             }
         }
     }
+
     if (counter == 0 && LPEDrag) {
         LPEDrag->get_children()[0]->hide();
         LPEDrag->set_tooltip_text("");
     }
+
     if (LPEMoveUpExtrem) {
         LPEMoveUpExtrem->hide();
         LPEMoveDownExtrem->hide();
     }
+
     if (LPEExpanderCurrent) {
         _LPESelectionInfo.hide();
         LPEExpanderCurrent->set_expanded(true);
-        Gtk::Window *current_window = dynamic_cast<Gtk::Window *>(LPEExpanderCurrent->get_toplevel());
-        if (current_window) {
+        if (auto const current_window = dynamic_cast<Gtk::Window *>(LPEExpanderCurrent->get_toplevel())) {
             current_window->set_focus(*LPEExpanderCurrent);
         }
     }
+
     selection_info();
     LPEListBox.show_all_children();
     ensure_size();

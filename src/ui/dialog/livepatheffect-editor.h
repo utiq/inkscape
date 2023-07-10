@@ -31,10 +31,13 @@ public:
     // No default constructor, noncopyable, nonassignable
     LivePathEffectEditor();
     ~LivePathEffectEditor() override;
+
     LivePathEffectEditor(LivePathEffectEditor const &d) = delete;
     LivePathEffectEditor operator=(LivePathEffectEditor const &d) = delete;
+
     static LivePathEffectEditor &getInstance() { return *new LivePathEffectEditor(); }
     void move_list(gint origin, gint dest);
+
     std::vector<std::pair<Gtk::Expander *, std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> > > _LPEExpanders;
     void showParams(std::pair<Gtk::Expander *, std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> > expanderdata, bool changed);
     bool updating = false;
@@ -43,12 +46,15 @@ public:
     static const LivePathEffect::EnumEffectData<LivePathEffect::EffectType> *getActiveData();
     bool selection_changed_lock = false;
     bool dnd = false;
+
 private:
     Glib::RefPtr<Gtk::Builder> _builder;
+
 public:
     Gtk::ListBox& LPEListBox;
     gint dndx = 0;
     gint dndy = 0;
+
 protected:
     bool apply(GdkEventButton *evt, Glib::RefPtr<Gtk::Builder> builder_effect,
                const LivePathEffect::EnumEffectData<LivePathEffect::EffectType> *to_add);
@@ -71,13 +77,18 @@ private:
     bool is_appliable(LivePathEffect::EffectType etypen, Glib::ustring item_type, bool has_clip, bool has_mask);
     void removeEffect(Gtk::Expander * expander);
     void effect_list_reload(SPLPEItem *lpeitem);
+
     SPLPEItem * clonetolpeitem();
+
     void selection_info();
+
     Inkscape::UI::Widget::CompletionPopup _lpes_popup;
+
     void map_handler();
     void clearMenu();
     void setMenu();
     bool lpeFlatten(std::shared_ptr<Inkscape::LivePathEffect::LPEObjectReference> lperef);
+
     Gtk::Box& _LPEContainer;
     Gtk::Box& _LPEAddContainer;
     Gtk::Label&_LPESelectionInfo;
