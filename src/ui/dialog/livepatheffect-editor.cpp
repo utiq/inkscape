@@ -10,6 +10,8 @@
  */
 
 #include <cstddef>
+#include <algorithm>
+#include <tuple>
 #include <glibmm/i18n.h>
 
 #include "livepatheffect-editor.h"
@@ -355,12 +357,8 @@ void LivePathEffectEditor::add_lpes(Inkscape::UI::Widget::CompletionPopup& popup
             lpe.second.sensitive
         });
     }
-    std::sort(begin(lpes), end(lpes), [=](auto&& a, auto&& b) {
-        if (a.category != b.category) {
-            return a.category < b.category;
-        }
-        return a.label < b.label;
-    });
+    auto const tie = [](LPE const &lpe){ return std::tie(lpe.category, lpe.label); };
+    std::sort(lpes.begin(), lpes.end(), [=](auto &l, auto &r){ return tie(l) < tie(r); });
 
     popup.clear_completion_list();
 
