@@ -13,6 +13,8 @@
 
 #include "dialog-notebook.h"
 
+#include <optional>
+#include <tuple>
 #include <vector>
 #include <glibmm/i18n.h>
 #include <gtkmm/eventbox.h>
@@ -753,6 +755,40 @@ void DialogNotebook::on_close_button_click_event(Gtk::Widget *page)
 
 // ================== Helpers ===================
 
+/// Get the icon, label, and close button from a tab "cover" i.e. EventBox.
+static std::optional<std::tuple<Gtk::Image *, Gtk::Label *, Gtk::Button *>>
+get_cover_box_children(Gtk::Widget * const tab_label)
+{
+    if (!tab_label) {
+        return std::nullopt;
+    }
+
+    auto const cover = dynamic_cast<Gtk::EventBox *>(tab_label);
+    if (!cover) {
+        return std::nullopt;
+    }
+
+    auto const box = dynamic_cast<Gtk::Box *>(cover->get_child());
+    if (!box) {
+        return std::nullopt;
+    }
+
+    auto const children = box->get_children();
+    if (children.size() < 2) {
+        return std::nullopt;
+    }
+
+    auto const icon  = dynamic_cast<Gtk::Image *>(children[0]);
+    auto const label = dynamic_cast<Gtk::Label *>(children[1]);
+
+    Gtk::Button *close = nullptr;
+    if (children.size() >= 3) {
+        close = dynamic_cast<Gtk::Button *>(children[children.size() - 1]);
+    }
+
+    return std::tuple{icon, label, close};
+}
+
 /**
  * Reload tab menu
  */
@@ -776,18 +812,8 @@ void DialogNotebook::reload_tab_menu()
         }
 
         for_each_child(_notebook, [=](Gtk::Widget &page){
-            auto const cover = dynamic_cast<Gtk::EventBox *>(_notebook.get_tab_label(page));
-            if (!cover) {
-                return ForEachChildResult::_continue;
-            }
-
-            Gtk::Box *box = dynamic_cast<Gtk::Box *>(cover->get_child());
-            if (!box) {
-                return ForEachChildResult::_continue;
-            }
-
-            auto childs = box->get_children();
-            if (childs.size() < 2) {
+            auto const children = get_cover_box_children(_notebook.get_tab_label(page));
+            if (!children) {
                 return ForEachChildResult::_continue;
             }
 
@@ -799,10 +825,10 @@ void DialogNotebook::reload_tab_menu()
             auto const menuitem = new Gtk::MenuItem{}; // ugh but we must delete
             menuitem->add(*boxmenu);
 
-            Gtk::Label *label = dynamic_cast<Gtk::Label *>(childs[1]);
+            auto const &[icon, label, close] = *children;
+
             Gtk::Label *labelto = Gtk::manage(new Gtk::Label(label->get_text()));
-            
-            Gtk::Image *icon = dynamic_cast<Gtk::Image *>(childs[0]);
+
             if (icon) {
                 int min_width, nat_width;
                 icon->get_preferred_width(min_width, nat_width);
@@ -839,18 +865,12 @@ void DialogNotebook::toggle_tab_labels_callback(bool show)
     _label_visible = show;
 
     for_each_child(_notebook, [=](Gtk::Widget &page){
-        auto const cover = dynamic_cast<Gtk::EventBox *>(_notebook.get_tab_label(page));
-        if (!cover) {
+        auto const children = get_cover_box_children(_notebook.get_tab_label(page));
+        if (!children) {
             return ForEachChildResult::_continue;
         }
 
-        Gtk::Box *box = dynamic_cast<Gtk::Box *>(cover->get_child());
-        if (!box) {
-            return ForEachChildResult::_continue;
-        }
-
-        Gtk::Label *label = dynamic_cast<Gtk::Label *>(box->get_children()[1]);
-        Gtk::Button *close = dynamic_cast<Gtk::Button *>(*box->get_children().rbegin());
+        auto const &[icon, label, close] = *children;
         int n = _notebook.get_current_page();
         if (close && label) {
             if (&page != _notebook.get_nth_page(n)) {
@@ -907,16 +927,14 @@ void DialogNotebook::on_page_switch(Gtk::Widget *curr_page, guint)
             return ForEachChildResult::_continue;
         }
 
-        auto const cover = dynamic_cast<Gtk::EventBox *>(_notebook.get_tab_label(page));
-        if (!cover) {
+        auto const children = get_cover_box_children(_notebook.get_tab_label(page));
+        if (!children) {
             return ForEachChildResult::_continue;
         }
 
-        if (cover == dynamic_cast<Gtk::EventBox *>(_notebook.get_tab_label(*curr_page))) {
-            Gtk::Box *box = dynamic_cast<Gtk::Box *>(cover->get_child());
-            Gtk::Label *label = dynamic_cast<Gtk::Label *>(box->get_children()[1]);
-            Gtk::Button *close = dynamic_cast<Gtk::Button *>(*box->get_children().rbegin());
+        auto const &[icon, label, close] = *children;
 
+        if (&page == curr_page) {
             if (label) {
                 if (tabstatus == TabsStatus::NONE) {
                     label->hide();
@@ -936,13 +954,6 @@ void DialogNotebook::on_page_switch(Gtk::Widget *curr_page, guint)
             return ForEachChildResult::_continue;
         }
 
-        Gtk::Box *box = dynamic_cast<Gtk::Box *>(cover->get_child());
-        if (!box) {
-            return ForEachChildResult::_continue;
-        }
-
-        Gtk::Label *label = dynamic_cast<Gtk::Label *>(box->get_children()[1]);
-        Gtk::Button *close = dynamic_cast<Gtk::Button *>(*box->get_children().rbegin());
         close->hide();
         label->hide();
 
@@ -980,10 +991,8 @@ void DialogNotebook::change_page(size_t pagenum)
 void DialogNotebook::add_close_tab_callback(Gtk::Widget *page)
 {
     Gtk::Widget *tab = _notebook.get_tab_label(*page);
-    auto *eventbox = static_cast<Gtk::EventBox *>(tab);
-    auto *box = static_cast<Gtk::Box *>(*eventbox->get_children().begin());
-    auto children = box->get_children(); 
-    auto *close = static_cast<Gtk::Button *>(*children.crbegin());
+    auto const children = get_cover_box_children(tab);
+    auto const &[icon, label, close] = children.value();
 
     sigc::connection close_connection = close->signal_clicked().connect(
             sigc::bind(sigc::mem_fun(*this, &DialogNotebook::on_close_button_click_event), page), true);
