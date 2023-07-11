@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "completion-popup.h"
 #include <cassert>
-#include <glibmm/ustring.h>
 #include <gtkmm/entrycompletion.h>
+#include <gtkmm/menu.h>
+#include <gtkmm/menubutton.h>
 #include <gtkmm/searchentry.h>
+
+#include "completion-popup.h"
 #include "ui/builder-utils.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 enum Columns {
     ColID = 0,
@@ -104,5 +104,4 @@ sigc::signal<bool ()>& CompletionPopup::on_focus() {
     return _on_focus;
 }
 
-
-}}} // namespaces
+} // namespace Inkscape::UI::Widget

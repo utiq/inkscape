@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-
 #ifndef INKSCAPE_UI_WIDGET_COMPLETION_POPUP_H
 #define INKSCAPE_UI_WIDGET_COMPLETION_POPUP_H
 
+#include <sigc++/signal.h>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
+#include <gtkmm/box.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/entrycompletion.h>
 #include <gtkmm/liststore.h>
-#include <gtkmm/menu.h>
-#include <gtkmm/menubutton.h>
-#include <gtkmm/searchentry.h>
-#include <sigc++/connection.h>
-#include "labelled.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Gtk {
+class Menu;
+class MenuButton;
+class SearchEntry;
+} // namespace Gtk
+
+namespace Inkscape::UI::Widget {
 
 class CompletionPopup : public Gtk::Box {
 public:
@@ -46,6 +46,6 @@ private:
     sigc::signal<bool ()> _on_focus;
 };
 
-}}} // namespaces
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_COMPLETION_POPUP_H
