@@ -265,28 +265,31 @@ DialogNotebook::provide_scroll(Gtk::Widget &page) {
     return false;
 }
 
+Gtk::ScrolledWindow *
+DialogNotebook::get_scrolledwindow(Gtk::Widget &page, bool const skip_scroll_provider)
+{
+    auto container = dynamic_cast<Gtk::Container *>(&page);
+    if (container) {
+        std::vector<Gtk::Widget *> widgs = container->get_children();
+        if (widgs.size()) {
+            auto scrolledwindow = dynamic_cast<Gtk::ScrolledWindow *>(widgs[0]);
+            if (scrolledwindow) {
+                return scrolledwindow;
+            }
+        }
+    }
+    return nullptr;
+}
+
 /**
  * Set provide scroll
  */
 Gtk::ScrolledWindow *
 DialogNotebook::get_current_scrolledwindow(bool skip_scroll_provider) {
-
     gint pagenum = _notebook.get_current_page();
-    Gtk::Widget *page = _notebook.get_nth_page(pagenum);
+    auto const page = _notebook.get_nth_page(pagenum);
     if (page) {
-        if (skip_scroll_provider && provide_scroll(*page)) {
-            return nullptr;
-        }
-        auto container = dynamic_cast<Gtk::Container *>(page);
-        if (container) {
-            std::vector<Gtk::Widget *> widgs = container->get_children();
-            if (widgs.size()) {
-                auto scrolledwindow = dynamic_cast<Gtk::ScrolledWindow *>(widgs[0]);
-                if (scrolledwindow) {
-                    return scrolledwindow;
-                }
-            }
-        }
+        return get_scrolledwindow(*page, skip_scroll_provider);
     }
     return nullptr;
 }
@@ -610,30 +613,25 @@ void DialogNotebook::on_size_allocate_scroll(Gtk::Allocation &a)
     //  set or unset scrollbars to completely hide a notebook
     // because we have a "blocking" scroll per tab we need to loop to aboid
     // other page stop out scroll
-    for (auto const &page : _notebook.get_children()) {
-        auto *container = dynamic_cast<Gtk::Container *>(page);
-        if (container && !provide_scroll(*page)) {
-            std::vector<Gtk::Widget *> widgs = container->get_children();
-            if (widgs.size()) {
-                auto scrolledwindow = dynamic_cast<Gtk::ScrolledWindow *>(widgs[0]);
-                if (scrolledwindow) {
-                    double height = scrolledwindow->get_allocation().get_height();
-                    if (height > 1) {
-                        Gtk::PolicyType policy = scrolledwindow->property_vscrollbar_policy().get_value();
-                        if (height >= MIN_HEIGHT && policy != Gtk::POLICY_AUTOMATIC) {
-                            scrolledwindow->property_vscrollbar_policy().set_value(Gtk::POLICY_AUTOMATIC);
-                        } else if(height < MIN_HEIGHT && policy != Gtk::POLICY_EXTERNAL) {
-                            scrolledwindow->property_vscrollbar_policy().set_value(Gtk::POLICY_EXTERNAL);
-                        } else {
-                            // we don't need to update; break
-                            break;
-                        }
-                    }
+    for_each_child(_notebook, [=](Gtk::Widget &page){
+        auto const scrolledwindow = get_scrolledwindow(page, true);
+        if (scrolledwindow) {
+            double height = scrolledwindow->get_allocation().get_height();
+            if (height > 1) {
+                Gtk::PolicyType policy = scrolledwindow->property_vscrollbar_policy().get_value();
+                if (height >= MIN_HEIGHT && policy != Gtk::POLICY_AUTOMATIC) {
+                    scrolledwindow->property_vscrollbar_policy().set_value(Gtk::POLICY_AUTOMATIC);
+                } else if(height < MIN_HEIGHT && policy != Gtk::POLICY_EXTERNAL) {
+                    scrolledwindow->property_vscrollbar_policy().set_value(Gtk::POLICY_EXTERNAL);
+                } else {
+                    // we don't need to update; break
+                    return ForEachChildResult::_break;
                 }
             }
         }
-    }
 
+        return ForEachChildResult::_continue;
+    });
 
     set_allocation(a);
     // only update notebook tabs on horizontal changes
@@ -647,7 +645,6 @@ void DialogNotebook::on_size_allocate_scroll(Gtk::Allocation &a)
  */
 void DialogNotebook::on_size_allocate_notebook(Gtk::Allocation &a)
 {
-    
     // we unset scrollable when FULL mode on to prevent overflow with 
     // container at full size that makes an unmaximized desktop freeze 
     _notebook.set_scrollable(false);

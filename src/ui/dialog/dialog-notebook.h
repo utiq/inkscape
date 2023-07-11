@@ -56,6 +56,7 @@ public:
     void close_tab_callback();
     void close_notebook_callback();
     DialogWindow* pop_tab_callback();
+    Gtk::ScrolledWindow * get_scrolledwindow(Gtk::Widget &page, bool skip_scroll_provider);
     Gtk::ScrolledWindow * get_current_scrolledwindow(bool skip_scroll_provider);
     void set_requested_height(int height);
 private:
