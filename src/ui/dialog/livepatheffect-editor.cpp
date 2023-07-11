@@ -162,6 +162,8 @@ void LivePathEffectEditor::selectionModified(Inkscape::Selection * selection, gu
     clearMenu();
 }
 
+static auto constexpr showgallery_path = "/dialogs/livepatheffect/showgallery";
+
 /**
  * Constructor
  */
@@ -174,16 +176,17 @@ LivePathEffectEditor::LivePathEffectEditor()
     _LPEParentBox(get_widget<Gtk::ListBox>(_builder, "LPEParentBox")),
     _LPECurrentItem(get_widget<Gtk::Box>(_builder, "LPECurrentItem")),
     _LPESelectionInfo(get_widget<Gtk::Label>(_builder, "LPESelectionInfo")),
+    _LPEGallery(get_widget<Gtk::Button>(_builder, "LPEGallery")),
+    _showgallery_observer(Preferences::PreferencesObserver::create(
+        showgallery_path, sigc::mem_fun(*this, &LivePathEffectEditor::on_showgallery_notify))),
     converter(Inkscape::LivePathEffect::LPETypeConverter)
 {
-    auto &LPEGallery = get_widget<Gtk::Button>(_builder, "LPEGallery");
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     Glib::RefPtr<Gtk::EntryCompletion> LPECompletionList = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("LPECompletionList"));
 
-    if(prefs->getBool("/dialogs/livepatheffect/showgallery", false)) {
+    _LPEGallery.signal_clicked().connect(sigc::mem_fun(*this, &LivePathEffectEditor::onAddGallery));
+    if (Preferences::get()->getBool(showgallery_path, false)) {
         // SHOW DEPRECATED LPE GALLERY
-        LPEGallery.signal_clicked().connect(sigc::mem_fun(*this, &LivePathEffectEditor::onAddGallery));
-        LPEGallery.set_visible(true);
+        _LPEGallery.set_visible(true);
     }
 
     _LPEContainer.signal_map().connect(sigc::mem_fun(*this, &LivePathEffectEditor::map_handler) );
@@ -1207,6 +1210,11 @@ void LivePathEffectEditor::onAddGallery()
         current_lpeitem->getCurrentLPE()->refresh_widgets = true;
         DocumentUndo::done(getDocument(), _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
     }
+}
+
+void LivePathEffectEditor::on_showgallery_notify(Preferences::Entry const &new_val)
+{
+    _LPEGallery.set_visible(new_val.getBool());
 }
 
 } // namespace Dialog
