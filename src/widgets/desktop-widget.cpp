@@ -60,6 +60,7 @@
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-multipaned.h"
 #include "ui/dialog/dialog-window.h"
+#include "ui/toolbar/snap-toolbar.h"
 #include "ui/toolbar/toolbars.h"
 #include "ui/tools/box3d-tool.h"
 #include "ui/tools/text-tool.h"
@@ -135,8 +136,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_vbox->pack_end(*dtw->_top_toolbars, false, true);
 
     /* Toolboxes */
-    dtw->snap_toolbox = ToolboxFactory::createSnapToolbox();
-
     dtw->commands_toolbox = ToolboxFactory::createCommandsToolbox();
     auto cmd = Glib::wrap(dtw->commands_toolbox);
     dtw->_top_toolbars->attach(*cmd, 0, 0);
@@ -151,6 +150,9 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
 
     dtw->_tbbox->pack1(*dtw->tool_toolbox, false, true);
     dtw->tool_toolbox->unreference(); // Had to reference so it wouldn't be deleted.
+
+    dtw->snap_toolbar = Gtk::make_managed<Inkscape::UI::Toolbar::SnapToolbar>();
+    dtw->_hbox->pack_end(*dtw->snap_toolbar); // May moved later.
 
     _tb_snap_pos = prefs->createObserver("/toolbox/simplesnap", sigc::mem_fun(*this, &SPDesktopWidget::repack_snaptoolbar));
     repack_snaptoolbar();
@@ -392,6 +394,8 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_canvas_grid->ShowCommandPalette(false);
 
     dtw->_canvas->grab_focus();
+
+    dtw->snap_toolbar->mode_update(); // Hide/show parts.
 }
 
 void SPDesktopWidget::apply_ctrlbar_settings() {
@@ -399,7 +403,7 @@ void SPDesktopWidget::apply_ctrlbar_settings() {
     int min = ToolboxFactory::min_pixel_size;
     int max = ToolboxFactory::max_pixel_size;
     int size = prefs->getIntLimited(ToolboxFactory::ctrlbars_icon_size, min, min, max);
-    Inkscape::UI::set_icon_sizes(snap_toolbox, size);
+    Inkscape::UI::set_icon_sizes(snap_toolbar, size);
     Inkscape::UI::set_icon_sizes(commands_toolbox, size);
     Inkscape::UI::set_icon_sizes(tool_toolbars, size);
 }
@@ -813,9 +817,9 @@ void SPDesktopWidget::layoutWidgets()
     }
 
     if (!prefs->getBool(pref_root + "snaptoolbox/state", true)) {
-        gtk_widget_hide (dtw->snap_toolbox);
+        dtw->snap_toolbar->hide();
     } else {
-        gtk_widget_show_all (dtw->snap_toolbox);
+        dtw->snap_toolbar->show(); // Not show_all()!
     }
 
     if (!prefs->getBool(pref_root + "toppanel/state", true)) {
@@ -852,7 +856,6 @@ void SPDesktopWidget::layoutWidgets()
     double const width  = monitor_geometry.get_width();
     double const height = monitor_geometry.get_height();
     bool widescreen = (height > 0 && width/height > 1.65);
-    widescreen = prefs->getInt(pref_root + "task/taskset", widescreen ? 2 : 0) == 2; // legacy
     widescreen = prefs->getBool(pref_root + "interface_mode", widescreen);
 
     auto commands_toolbox_cpp = dynamic_cast<Gtk::Box *>(Glib::wrap(commands_toolbox));
@@ -897,6 +900,7 @@ void SPDesktopWidget::layoutWidgets()
     // Temporary for Gtk3: Gtk toolbar resets icon sizes, so reapply them.
     // TODO: remove this call in Gtk4 after Gtk::Toolbar is eliminated.
     apply_ctrlbar_settings();
+
     repack_snaptoolbar();
 
     Inkscape::UI::resize_widget_children(_top_toolbars);
@@ -1016,13 +1020,14 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
 
 /**
  * Choose where to pack the snap toolbar.
+ * Hiding/unhiding is done in the SnapToolbar widget.
  */
 void SPDesktopWidget::repack_snaptoolbar()
 {
     Inkscape::Preferences* prefs = Inkscape::Preferences::get();
     bool is_perm = prefs->getInt("/toolbox/simplesnap", 1) == 2;
     auto& aux = *tool_toolbars;
-    auto& snap = *Glib::wrap(snap_toolbox);
+    auto& snap = *snap_toolbar;
 
     // Only remove from the parent if the status has changed
     auto parent = snap.get_parent();
@@ -1033,10 +1038,8 @@ void SPDesktopWidget::repack_snaptoolbar()
     // Only repack if there's no parent widget now.
     if (!snap.get_parent()) {
         if (is_perm) {
-            ToolboxFactory::setOrientation(snap_toolbox, GTK_ORIENTATION_VERTICAL);
             _hbox->pack_end(snap, false, true);
         } else {
-            ToolboxFactory::setOrientation(snap_toolbox, GTK_ORIENTATION_HORIZONTAL);
             _top_toolbars->attach(snap, 1, 0, 1, 2);
         }
     }

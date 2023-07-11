@@ -96,7 +96,6 @@ namespace Inkscape::UI::Toolbar {
 Toolbars::Toolbars()
     : Gtk::Box(Gtk::ORIENTATION_VERTICAL)
 {
-    std::cout << "Toolbars::Toolbars" << std::endl;
     set_name("Tool-Toolbars");
 }
 

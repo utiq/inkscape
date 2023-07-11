@@ -34,14 +34,8 @@ namespace UI {
 class ToolboxFactory
 {
 public:
-    static void setOrientation(GtkWidget* toolbox, GtkOrientation orientation);
-
     static Gtk::Widget *createToolToolbox(InkscapeWindow *window);
     static GtkWidget   *createCommandsToolbox();
-    static GtkWidget   *createSnapToolbox();
-
-    static int prefToPixelSize(Glib::ustring const& path);
-    static Gtk::IconSize prefToSize_mm(Glib::ustring const &path, int base = 0);
 
     ToolboxFactory() = delete;
 

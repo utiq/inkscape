@@ -48,6 +48,7 @@ class SwatchesPanel;
 
 namespace Toolbar {
   class  Toolbars;
+  class  SnapToolbar;
 } // namespace Toolbars
 
 namespace Widget {
@@ -113,13 +114,13 @@ private:
     // The root vbox of the window layout.
     Gtk::Box *_vbox;
 
-    Gtk::Paned *_tbbox;
-    Gtk::Box *_hbox;
+    Gtk::Paned *_tbbox = nullptr;
+    Gtk::Box *_hbox = nullptr;
     Inkscape::UI::Dialog::DialogContainer *_container = nullptr;
-    Inkscape::UI::Dialog::DialogMultipaned *_columns;
-    Gtk::Grid* _top_toolbars;
+    Inkscape::UI::Dialog::DialogMultipaned *_columns = nullptr;
+    Gtk::Grid* _top_toolbars = nullptr;
 
-    Gtk::Box     *_statusbar;
+    Gtk::Box     *_statusbar = nullptr;
 
     Inkscape::UI::Dialog::SwatchesPanel *_panels;
 
@@ -212,11 +213,13 @@ public:
     void sticky_zoom_updated();
 
     Gtk::Widget *get_tool_toolbox() const { return tool_toolbox; }
+    Gtk::Widget *get_hbox() const { return _hbox; }
+
 private:
     Gtk::Widget *tool_toolbox;
     Inkscape::UI::Toolbar::Toolbars *tool_toolbars;
     GtkWidget   *commands_toolbox;
-    GtkWidget   *snap_toolbox;
+    Inkscape::UI::Toolbar::SnapToolbar   *snap_toolbar;
     Inkscape::PrefObserver _tb_snap_pos;
     Inkscape::PrefObserver _tb_icon_sizes1;
     Inkscape::PrefObserver _tb_icon_sizes2;
