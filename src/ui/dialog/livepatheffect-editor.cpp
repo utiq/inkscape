@@ -399,6 +399,9 @@ LivePathEffectEditor::setMenu()
     if (!_reload_menu) {
         return;
     }
+
+    _reload_menu = false;
+
     auto shape = cast<SPShape>(current_lpeitem);
     auto path = cast<SPPath>(current_lpeitem);
     auto group = cast<SPGroup>(current_lpeitem);
@@ -875,7 +878,6 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
                             _reload_menu = true;
                             _item_type = ""; // here we force reload even with the same tipe item selected
                         }
-
                     });
                     if (pos == 6) {
                         if (sp_has_fav(untranslated_label)) {
@@ -1035,7 +1037,6 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
 }
 
 void LivePathEffectEditor::expanded_notify(Gtk::Expander *expander) {
-
     if (updating) {
         return;
     }
