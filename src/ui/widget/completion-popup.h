@@ -44,6 +44,8 @@ private:
     sigc::signal<void (int)> _match_selected;
     sigc::signal<void ()> _button_press;
     sigc::signal<bool ()> _on_focus;
+
+    void clear();
 };
 
 } // namespace Inkscape::UI::Widget

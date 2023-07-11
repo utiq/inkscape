@@ -39,10 +39,7 @@ CompletionPopup::CompletionPopup() :
         return str.lowercase().find(text.lowercase()) != Glib::ustring::npos;
     });
 
-    // clear search box without triggering completion popup menu
-    auto clear = [=]() { _search.get_buffer()->set_text(Glib::ustring()); };
-
-    _completion->signal_match_selected().connect([=](const Gtk::TreeModel::iterator& it){
+    _completion->signal_match_selected().connect([this](const Gtk::TreeModel::iterator& it){
         int id;
         it->get_value(ColID, id);
         _match_selected.emit(id);
@@ -50,22 +47,22 @@ CompletionPopup::CompletionPopup() :
         return true;
     }, false);
 
-    _search.signal_focus_in_event().connect([=](GdkEventFocus*){
-        _on_focus.emit();
+    _search.property_is_focus().signal_changed().connect([&]{
+        if (_search.is_focus()) {
+            _on_focus.emit();
+        }
         clear();
-        return false;
-    });
-    _button.signal_button_press_event().connect([=](GdkEventButton*){
-        _button_press.emit();
-        clear();
-        return false; 
-    }, false);
-    _search.signal_focus_out_event().connect([=](GdkEventFocus*){
-        clear();
-        return false;
     });
 
-    _search.signal_stop_search().connect([=](){
+    _button.signal_toggled().connect([&]{
+        if (!_button.get_active()) {
+            return;
+        }
+        _button_press.emit();
+        clear();
+    }, false);
+
+    _search.signal_stop_search().connect([this](){
         clear();
     });
 
@@ -102,6 +99,11 @@ sigc::signal<void ()>& CompletionPopup::on_button_press() {
 
 sigc::signal<bool ()>& CompletionPopup::on_focus() {
     return _on_focus;
+}
+
+/// Clear search box without triggering completion popup menu
+void CompletionPopup::clear() {
+    _search.get_buffer()->set_text(Glib::ustring());
 }
 
 } // namespace Inkscape::UI::Widget
