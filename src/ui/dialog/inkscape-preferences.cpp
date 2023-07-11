@@ -77,6 +77,8 @@
 #include "ui/interface.h"
 #include "ui/shortcuts.h"
 #include "ui/modifiers.h"
+#include "ui/toolbar/toolbar-constants.h"
+#include "ui/toolbar/tool-toolbar.h"
 #include "ui/util.h"
 #include "ui/widget/style-swatch.h"
 #include "ui/widget/canvas.h"
@@ -87,7 +89,6 @@
 #include "util/recently-used-fonts.h"
 
 #include "widgets/desktop-widget.h"
-#include "widgets/toolbox.h"
 #include "widgets/spw-utilities.h"
 
 #include <gtkmm/accelgroup.h>
@@ -1958,7 +1959,7 @@ void InkscapePreferences::initPageUI()
 
                 button->set_sensitive();
                 auto action_name = sp_get_action_target(button);
-                auto path = ToolboxFactory::get_tool_visible_buttons_path(action_name);
+                auto path = Inkscape::UI::Toolbar::ToolToolbar::get_tool_visible_button_path(action_name);
                 auto visible = Inkscape::Preferences::get()->getBool(path, true);
                 button->set_active(visible);
                 button->signal_toggled().connect([=](){
@@ -1976,13 +1977,13 @@ void InkscapePreferences::initPageUI()
         _page_toolbars.add_line(false, "", *toolbox, "", _("Select visible tool buttons"), true);
 
         struct tbar_info {const char* label; const char* prefs;} toolbars[] = {
-            {_("Toolbox icon size:"),     ToolboxFactory::tools_icon_size},
-            {_("Control bar icon size:"), ToolboxFactory::ctrlbars_icon_size},
+            {_("Toolbox icon size:"),     Inkscape::UI::Toolbar::tools_icon_size},
+            {_("Control bar icon size:"), Inkscape::UI::Toolbar::ctrlbars_icon_size},
         };
         for (auto&& tbox : toolbars) {
             auto slider = Gtk::manage(new UI::Widget::PrefSlider(false));
-            const int min = ToolboxFactory::min_pixel_size;
-            const int max = ToolboxFactory::max_pixel_size;
+            const int min = Inkscape::UI::Toolbar::min_pixel_size;
+            const int max = Inkscape::UI::Toolbar::max_pixel_size;
             slider->init(tbox.prefs, min, max, 1, 4, min, 0);
             slider->getSlider()->signal_format_value().connect([](double val){
                 return Glib::ustring::format(std::fixed, std::setprecision(0), val * 100.0 / min) + "%";

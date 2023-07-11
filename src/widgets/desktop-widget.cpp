@@ -60,7 +60,10 @@
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-multipaned.h"
 #include "ui/dialog/dialog-window.h"
+#include "ui/toolbar/toolbar-constants.h"
+#include "ui/toolbar/command-toolbar.h"
 #include "ui/toolbar/snap-toolbar.h"
+#include "ui/toolbar/tool-toolbar.h"
 #include "ui/toolbar/toolbars.h"
 #include "ui/tools/box3d-tool.h"
 #include "ui/tools/text-tool.h"
@@ -81,7 +84,6 @@
 
 // We're in the "widgets" directory, so no need to explicitly prefix these:
 #include "spw-utilities.h"
-#include "toolbox.h"
 #include "widget-sizes.h"
 
 #include "ui/widget/color-palette.h"
@@ -92,7 +94,6 @@ using Inkscape::UI::Dialog::DialogContainer;
 using Inkscape::UI::Dialog::DialogMultipaned;
 using Inkscape::UI::Dialog::DialogWindow;
 using Inkscape::UI::Widget::UnitTracker;
-using Inkscape::UI::ToolboxFactory;
 using Inkscape::Util::unit_table;
 
 
@@ -136,20 +137,14 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_vbox->pack_end(*dtw->_top_toolbars, false, true);
 
     /* Toolboxes */
-    dtw->commands_toolbox = ToolboxFactory::createCommandsToolbox();
-    auto cmd = Glib::wrap(dtw->commands_toolbox);
-    dtw->_top_toolbars->attach(*cmd, 0, 0);
+    dtw->command_toolbar = Gtk::make_managed<Inkscape::UI::Toolbar::CommandToolbar>();
+    dtw->_top_toolbars->attach(*command_toolbar, 0, 0);
 
     dtw->tool_toolbars = Gtk::make_managed<Inkscape::UI::Toolbar::Toolbars>();
     dtw->_top_toolbars->attach(*dtw->tool_toolbars, 0, 1);
 
-    dtw->tool_toolbox = ToolboxFactory::createToolToolbox(inkscape_window);
-    if (!dtw->tool_toolbox) {
-        std::cerr << "desktop-widget: failed to create Tool Toolbox!" << std::endl;
-    }
-
+    dtw->tool_toolbox = Gtk::make_managed<Inkscape::UI::Toolbar::ToolToolbar>(inkscape_window);
     dtw->_tbbox->pack1(*dtw->tool_toolbox, false, true);
-    dtw->tool_toolbox->unreference(); // Had to reference so it wouldn't be deleted.
 
     dtw->snap_toolbar = Gtk::make_managed<Inkscape::UI::Toolbar::SnapToolbar>();
     dtw->_hbox->pack_end(*dtw->snap_toolbar); // May moved later.
@@ -162,65 +157,20 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
         _tbbox->set_position(tbox_width.getIntLimited(32, 8, 500));
     }
 
-    auto set_visible_buttons = [=](GtkWidget* tb) {
-        int buttons_before_separator = 0;
-        Gtk::Widget* last_sep = nullptr;
-        Gtk::FlowBox* last_box = nullptr;
-        sp_traverse_widget_tree(Glib::wrap(tb), [&](Gtk::Widget* widget) {
-            if (auto flowbox = dynamic_cast<Gtk::FlowBox*>(widget)) {
-                flowbox->show();
-                flowbox->set_no_show_all();
-                flowbox->set_max_children_per_line(1);
-                last_box = flowbox;
-            }
-            else if (auto btn = dynamic_cast<Gtk::Button*>(widget)) {
-                auto name = sp_get_action_target(widget);
-                auto show = prefs->getBool(ToolboxFactory::get_tool_visible_buttons_path(name), true);
-                auto parent = btn->get_parent();
-                if (show) {
-                    parent->show();
-                    ++buttons_before_separator;
-                    // keep the max_children up to date improves display.
-                    last_box->set_max_children_per_line(buttons_before_separator);
-                    last_sep = nullptr;
-                }
-                else {
-                    parent->hide();
-                }
-            }
-            else if (auto sep = dynamic_cast<Gtk::Separator*>(widget)) {
-                if (buttons_before_separator <= 0) {
-                    sep->hide();
-                }
-                else {
-                    sep->show();
-                    buttons_before_separator = 0;
-                    last_sep = sep;
-                }
-            }
-            return false;
-        });
-        if (last_sep) {
-            // hide trailing separator
-            last_sep->hide();
-        }
-    };
     auto set_toolbar_prefs = [=]() {
-        int min = ToolboxFactory::min_pixel_size;
-        int max = ToolboxFactory::max_pixel_size;
-        int s = prefs->getIntLimited(ToolboxFactory::tools_icon_size, min, min, max);
+        int min = Inkscape::UI::Toolbar::min_pixel_size;
+        int max = Inkscape::UI::Toolbar::max_pixel_size;
+        int s = prefs->getIntLimited(Inkscape::UI::Toolbar::tools_icon_size, min, min, max);
         Inkscape::UI::set_icon_sizes(tool_toolbox->gobj(), s);
     };
 
     // watch for changes
-    _tb_icon_sizes1 = prefs->createObserver(ToolboxFactory::tools_icon_size,    [=]() { set_toolbar_prefs(); });
-    _tb_icon_sizes2 = prefs->createObserver(ToolboxFactory::ctrlbars_icon_size, [=]() { apply_ctrlbar_settings(); });
-    _tb_visible_buttons = prefs->createObserver(ToolboxFactory::tools_visible_buttons, [=]() { set_visible_buttons(tool_toolbox->gobj()); });
+    _tb_icon_sizes1 = prefs->createObserver(Inkscape::UI::Toolbar::tools_icon_size,    [=]() { set_toolbar_prefs(); });
+    _tb_icon_sizes2 = prefs->createObserver(Inkscape::UI::Toolbar::ctrlbars_icon_size, [=]() { apply_ctrlbar_settings(); });
 
     // restore preferences
     set_toolbar_prefs();
     apply_ctrlbar_settings();
-    set_visible_buttons(tool_toolbox->gobj());
 
     /* Canvas Grid (canvas, rulers, scrollbars, etc.) */
     // desktop widgets owns it
@@ -400,11 +350,11 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
 
 void SPDesktopWidget::apply_ctrlbar_settings() {
     Inkscape::Preferences* prefs = Inkscape::Preferences::get();
-    int min = ToolboxFactory::min_pixel_size;
-    int max = ToolboxFactory::max_pixel_size;
-    int size = prefs->getIntLimited(ToolboxFactory::ctrlbars_icon_size, min, min, max);
+    int min = Inkscape::UI::Toolbar::min_pixel_size;
+    int max = Inkscape::UI::Toolbar::max_pixel_size;
+    int size = prefs->getIntLimited(Inkscape::UI::Toolbar::ctrlbars_icon_size, min, min, max);
     Inkscape::UI::set_icon_sizes(snap_toolbar, size);
-    Inkscape::UI::set_icon_sizes(commands_toolbox, size);
+    Inkscape::UI::set_icon_sizes(command_toolbar, size);
     Inkscape::UI::set_icon_sizes(tool_toolbars, size);
 }
 
@@ -811,9 +761,9 @@ void SPDesktopWidget::layoutWidgets()
     }
 
     if (!prefs->getBool(pref_root + "commands/state", true)) {
-        gtk_widget_hide (dtw->commands_toolbox);
+        dtw->command_toolbar->hide();
     } else {
-        gtk_widget_show_all (dtw->commands_toolbox);
+        dtw->command_toolbar->show_all();
     }
 
     if (!prefs->getBool(pref_root + "snaptoolbox/state", true)) {
@@ -858,44 +808,29 @@ void SPDesktopWidget::layoutWidgets()
     bool widescreen = (height > 0 && width/height > 1.65);
     widescreen = prefs->getBool(pref_root + "interface_mode", widescreen);
 
-    auto commands_toolbox_cpp = dynamic_cast<Gtk::Box *>(Glib::wrap(commands_toolbox));
-    if (commands_toolbox_cpp) {
+    // Unlink command toolbar.
+    command_toolbar->reference(); // So toolbox is not deleted.
+    auto parent = command_toolbar->get_parent();
+    parent->remove(*command_toolbar);
 
-        // Unlink command toolbar.
-        commands_toolbox_cpp->reference(); // So toolbox is not deleted.
-        auto parent = commands_toolbox_cpp->get_parent();
-        parent->remove(*commands_toolbox_cpp);
-
-        auto orientation = Gtk::ORIENTATION_HORIZONTAL;
-        auto orientation_c = GTK_ORIENTATION_HORIZONTAL;
-        // Link command toolbar back.
-        if (!widescreen) {
-            _top_toolbars->attach(*commands_toolbox_cpp, 0, 0); // Always first
-            gtk_box_set_child_packing(_vbox->gobj(), commands_toolbox, false, true, 0, GTK_PACK_START); // expand, fill, padding, pack_type
-            orientation = Gtk::ORIENTATION_HORIZONTAL;
-            orientation_c = GTK_ORIENTATION_HORIZONTAL;
-            commands_toolbox_cpp->set_hexpand(true);
-        } else {
-            _hbox->add(*commands_toolbox_cpp);
-            gtk_box_set_child_packing(_hbox->gobj(), commands_toolbox, false, true, 0, GTK_PACK_START); // expand, fill, padding, pack_type
-            orientation = Gtk::ORIENTATION_VERTICAL;
-            orientation_c = GTK_ORIENTATION_VERTICAL;
-            commands_toolbox_cpp->set_hexpand(false);
-        }
-        commands_toolbox_cpp->unreference();
-
-        commands_toolbox_cpp->set_orientation(orientation);
-        for (auto child : commands_toolbox_cpp->get_children()) {
-            if (auto toolbar = dynamic_cast<Gtk::Toolbar *>(child)) {
-                gtk_orientable_set_orientation(GTK_ORIENTABLE(toolbar->gobj()), orientation_c);
-                //toolbar->set_orientation(orientation); // Missing in C++ interface!
-            } else {
-                std::cerr << "SPDesktopWidget::layoutWidgets(): Wrong widget type!" << std::endl;
-            }
-        }
+    // Link command toolbar back.
+    auto orientation_c = GTK_ORIENTATION_HORIZONTAL;
+    if (!widescreen) {
+        _top_toolbars->attach(*command_toolbar, 0, 0); // Always first in Grid
+        command_toolbar->set_hexpand(true);
+        orientation_c = GTK_ORIENTATION_HORIZONTAL;
     } else {
-        std::cerr << "SPDesktopWidget::layoutWidgets(): Wrong widget type for command toolbar!" << std::endl;
+        _hbox->add(*command_toolbar);
+        orientation_c = GTK_ORIENTATION_VERTICAL;
+        command_toolbar->set_hexpand(false);
     }
+    // Toolbar is actually child:
+    command_toolbar->foreach([=](Gtk::Widget& widget) {
+        if (auto toolbar = dynamic_cast<Gtk::Toolbar *>(&widget)) {
+            gtk_orientable_set_orientation(GTK_ORIENTABLE(toolbar->gobj()), orientation_c); // Missing in C++interface!
+        }
+    });
+    command_toolbar->unreference();
 
     // Temporary for Gtk3: Gtk toolbar resets icon sizes, so reapply them.
     // TODO: remove this call in Gtk4 after Gtk::Toolbar is eliminated.
@@ -1049,7 +984,7 @@ void SPDesktopWidget::repack_snaptoolbar()
         snap.set_valign(Gtk::ALIGN_START);
     } else {
         // This ensures that the Snap toolbox is on the top and only takes the needed space.
-        if (_top_toolbars->get_children().size() == 3 && gtk_widget_get_visible(commands_toolbox)) {
+        if (_top_toolbars->get_children().size() == 3 && command_toolbar->get_visible()) {
             _top_toolbars->child_property_width(aux) = 2;
             _top_toolbars->child_property_height(snap) =  1;
             snap.set_valign(Gtk::ALIGN_START);

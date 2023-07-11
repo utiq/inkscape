@@ -48,6 +48,7 @@ class SwatchesPanel;
 
 namespace Toolbar {
   class  Toolbars;
+  class  CommandToolbar;
   class  SnapToolbar;
 } // namespace Toolbars
 
@@ -218,8 +219,8 @@ public:
 private:
     Gtk::Widget *tool_toolbox;
     Inkscape::UI::Toolbar::Toolbars *tool_toolbars;
-    GtkWidget   *commands_toolbox;
-    Inkscape::UI::Toolbar::SnapToolbar   *snap_toolbar;
+    Inkscape::UI::Toolbar::CommandToolbar *command_toolbar;
+    Inkscape::UI::Toolbar::SnapToolbar *snap_toolbar;
     Inkscape::PrefObserver _tb_snap_pos;
     Inkscape::PrefObserver _tb_icon_sizes1;
     Inkscape::PrefObserver _tb_icon_sizes2;
