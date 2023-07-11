@@ -17,71 +17,64 @@
  */
 
 #include <cmath>
-#include <gdkmm/pixbufanimation.h>
-#include <gdkmm/rgba.h>
+#include <map>
+#include <set>
+#include <string>
+#include <sstream>
+#include <utility>
+#include <vector>
+#include <glibmm/convert.h>
+#include <glibmm/i18n.h>
+#include <glibmm/main.h>
 #include <glibmm/refptr.h>
+#include <glibmm/stringutils.h>
 #include <glibmm/ustring.h>
-#include <gtkmm/box.h>
+#include <gdkmm/display.h>
+#include <gdkmm/general.h>
+// #include <gdkmm/pixbufanimation.h>
+#include <gdkmm/rgba.h>
+#include <gdkmm/seat.h>
 #include <gtkmm/button.h>
+#include <gtkmm/checkbutton.h>
 #include <gtkmm/enums.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/image.h>
-#include <gtkmm/imagemenuitem.h>
-
-#include <gdkmm/display.h>
-#include <gdkmm/general.h>
-#include <gdkmm/seat.h>
-
-#include <gtkmm/checkbutton.h>
-#include <gtkmm/colorbutton.h>
-#include <gtkmm/eventbox.h>
 #include <gtkmm/label.h>
 #include <gtkmm/menuitem.h>
 #include <gtkmm/paned.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/sizegroup.h>
-
-#include <glibmm/i18n.h>
-#include <glibmm/stringutils.h>
-#include <glibmm/main.h>
-#include <glibmm/convert.h>
-
 #include <gtkmm/textview.h>
-#include <gtkmm/treeview.h>
 #include <gtkmm/treeviewcolumn.h>
+#include <gtkmm/treeview.h>
 #include <gtkmm/widget.h>
 #include <pangomm/layout.h>
-#include <utility>
-#include <vector>
 
+#include "filter-effects-dialog.h"
 #include "desktop.h"
 #include "display/nr-filter-types.h"
-#include "document-undo.h"
 #include "document.h"
+#include "document-undo.h"
 #include "filter-chemistry.h"
-#include "filter-effects-dialog.h"
 #include "filter-enums.h"
-#include "inkscape.h"
-#include "layer-manager.h"
-#include "selection-chemistry.h"
-#include "style.h"
-
 #include "include/gtkmm_version.h"
-
+#include "inkscape.h"
+#include "io/sys.h"
+#include "layer-manager.h"
 #include "object/filters/blend.h"
 #include "object/filters/colormatrix.h"
-#include "object/filters/componenttransfer.h"
 #include "object/filters/componenttransfer-funcnode.h"
+#include "object/filters/componenttransfer.h"
 #include "object/filters/convolvematrix.h"
 #include "object/filters/distantlight.h"
 #include "object/filters/merge.h"
 #include "object/filters/mergenode.h"
 #include "object/filters/pointlight.h"
 #include "object/filters/spotlight.h"
-
+#include "selection-chemistry.h"
+#include "style.h"
 #include "svg/svg-color.h"
-
 #include "ui/builder-utils.h"
 #include "ui/column-menu-builder.h"
 #include "ui/dialog/filedialog.h"
@@ -92,9 +85,7 @@
 #include "ui/widget/custom-tooltip.h"
 #include "ui/widget/filter-effect-chooser.h"
 #include "ui/widget/spinbutton.h"
-
-#include "io/sys.h"
-
+#include "ui/widget/spin-scale.h"
 
 using namespace Inkscape::Filters;
 
@@ -199,30 +190,17 @@ public:
     }
 };
 
-template< typename T> class ComboWithTooltip : public Gtk::EventBox
+template <typename T> class ComboWithTooltip
+    : public ComboBoxEnum<T>
 {
 public:
-    ComboWithTooltip<T>(T default_value, const Util::EnumDataConverter<T>& c, const SPAttr a = SPAttr::INVALID, char* tip_text = nullptr)
+    ComboWithTooltip<T>(T default_value, const Util::EnumDataConverter<T>& c,
+                        const SPAttr a = SPAttr::INVALID,
+                        Glib::ustring const& tip_text = {})
+        : ComboBoxEnum<T>(default_value, c, a, false)
     {
-        if (tip_text) {
-            set_tooltip_text(tip_text);
-        }
-        combo = new ComboBoxEnum<T>(default_value, c, a, false);
-        add(*combo);
-        show_all();
+        this->set_tooltip_text(tip_text);
     }
-
-    ~ComboWithTooltip() override
-    {
-        delete combo;
-    }
-
-    ComboBoxEnum<T>* get_attrwidget()
-    {
-        return combo;
-    }
-private:
-    ComboBoxEnum<T>* combo;
 };
 
 // Contains an arbitrary number of spin buttons that use separate attributes
@@ -230,7 +208,10 @@ class MultiSpinButton : public Gtk::Box
 {
 public:
     MultiSpinButton(double lower, double upper, double step_inc,
-                    double climb_rate, int digits, std::vector<SPAttr> attrs, std::vector<double> default_values, std::vector<char*> tip_text)
+                    double climb_rate, int digits,
+                    std::vector<SPAttr> const &attrs,
+                    std::vector<double> const &default_values,
+                    std::vector<char *> const &tip_text)
     : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL)
     {
         g_assert(attrs.size()==default_values.size());
@@ -238,22 +219,18 @@ public:
         set_spacing(4);
         for(unsigned i = 0; i < attrs.size(); ++i) {
             unsigned index = attrs.size() - 1 - i;
-            _spins.push_back(new SpinButtonAttr(lower, upper, step_inc, climb_rate, digits, attrs[index], default_values[index], tip_text[index]));
+            _spins.push_back(Gtk::make_managed<SpinButtonAttr>(lower, upper, step_inc, climb_rate, digits,
+                                                               attrs[index], default_values[index], tip_text[index]));
             pack_end(*_spins.back(), true, true);
             _spins.back()->set_width_chars(3); // allow spin buttons to shrink to save space
         }
-    }
-
-    ~MultiSpinButton() override
-    {
-        for(auto & _spin : _spins)
-            delete _spin;
     }
 
     std::vector<SpinButtonAttr*>& get_spinbuttons()
     {
         return _spins;
     }
+
 private:
     std::vector<SpinButtonAttr*> _spins;
 };
@@ -793,20 +770,11 @@ public:
         _size_group = Gtk::SizeGroup::create(Gtk::SIZE_GROUP_HORIZONTAL);
 
         for(int i = 0; i < _max_types; ++i) {
-            _groups[i] = new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 3);
+            _groups[i] = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 3);
             b.set_spacing(4);
             b.pack_start(*_groups[i], Gtk::PACK_SHRINK);
         }
         //_current_type = 0;  If set to 0 then update_and_show() fails to update properly.
-    }
-
-    ~Settings()
-    {
-        for(int i = 0; i < _max_types; ++i) {
-            delete _groups[i];
-            for(auto & j : _attrwidgets[i])
-                delete j;
-        }
     }
 
     void show_current_only() {
@@ -852,7 +820,7 @@ public:
 
     void add_no_params()
     {
-        Gtk::Label* lbl = Gtk::manage(new Gtk::Label(_("This SVG filter effect does not require any parameters.")));
+        auto const lbl = Gtk::make_managed<Gtk::Label>(_("This SVG filter effect does not require any parameters."));
         lbl->set_line_wrap();
         lbl->set_line_wrap_mode(Pango::WRAP_WORD);
         add_widget(lbl, "");
@@ -868,7 +836,7 @@ public:
     CheckButtonAttr* add_checkbutton(bool def, const SPAttr attr, const Glib::ustring& label,
                                      const Glib::ustring& tv, const Glib::ustring& fv, char* tip_text = nullptr)
     {
-        CheckButtonAttr* cb = new CheckButtonAttr(def, label, tv, fv, attr, tip_text);
+        auto const cb = Gtk::make_managed<CheckButtonAttr>(def, label, tv, fv, attr, tip_text);
         add_widget(cb, "");
         add_attr_widget(cb);
         return cb;
@@ -877,7 +845,7 @@ public:
     // ColorButton
     ColorButton* add_color(unsigned int def, const SPAttr attr, const Glib::ustring& label, char* tip_text = nullptr)
     {
-        ColorButton* col = new ColorButton(def, attr, tip_text);
+        auto const col = Gtk::make_managed<ColorButton>(def, attr, tip_text);
         add_widget(col, label);
         add_attr_widget(col);
         return col;
@@ -886,7 +854,7 @@ public:
     // Matrix
     MatrixAttr* add_matrix(const SPAttr attr, const Glib::ustring& label, char* tip_text)
     {
-        MatrixAttr* conv = new MatrixAttr(attr, tip_text);
+        auto const conv = Gtk::make_managed<MatrixAttr>(attr, tip_text);
         add_widget(conv, label);
         add_attr_widget(conv);
         return conv;
@@ -895,7 +863,7 @@ public:
     // ColorMatrixValues
     ColorMatrixValues* add_colormatrixvalues(const Glib::ustring& label)
     {
-        ColorMatrixValues* cmv = new ColorMatrixValues();
+        auto const cmv = Gtk::make_managed<ColorMatrixValues>();
         add_widget(cmv, label);
         add_attr_widget(cmv);
         return cmv;
@@ -908,7 +876,7 @@ public:
         Glib::ustring tip_text2;
         if (tip_text)
             tip_text2 = tip_text;
-        SpinScale* spinslider = new SpinScale("", def, lo, hi, step_inc, page_inc, digits, attr, tip_text2);
+        auto const spinslider = Gtk::make_managed<SpinScale>("", def, lo, hi, step_inc, page_inc, digits, attr, tip_text2);
         add_widget(spinslider, label);
         add_attr_widget(spinslider);
         return spinslider;
@@ -921,7 +889,7 @@ public:
                                      const Glib::ustring tip_text1 = "",
                                      const Glib::ustring tip_text2 = "")
     {
-        DualSpinScale* dss = new DualSpinScale("", "", lo, lo, hi, step_inc, climb, digits, attr, tip_text1, tip_text2);
+        auto const dss = Gtk::make_managed<DualSpinScale>("", "", lo, lo, hi, step_inc, climb, digits, attr, tip_text1, tip_text2);
         add_widget(dss, label);
         add_attr_widget(dss);
         return dss;
@@ -932,7 +900,7 @@ public:
                                        const double lo, const double hi, const double step_inc,
                                        const double climb, const int digits, char* tip = nullptr)
     {
-        SpinButtonAttr* sb = new SpinButtonAttr(lo, hi, step_inc, climb, digits, attr, defalt_value, tip);
+        auto const sb = Gtk::make_managed<SpinButtonAttr>(lo, hi, step_inc, climb, digits, attr, defalt_value, tip);
         add_widget(sb, label);
         add_attr_widget(sb);
         return sb;
@@ -943,7 +911,7 @@ public:
                                        const double lo, const double hi, const double step_inc,
                                        const double climb, const int digits, char* tip1 = nullptr, char* tip2 = nullptr)
     {
-        DualSpinButton* dsb = new DualSpinButton(defalt_value, lo, hi, step_inc, climb, digits, attr, tip1, tip2);
+        auto const dsb = Gtk::make_managed<DualSpinButton>(defalt_value, lo, hi, step_inc, climb, digits, attr, tip1, tip2);
         add_widget(dsb, label);
         add_attr_widget(dsb);
         return dsb;
@@ -966,12 +934,13 @@ public:
         tips.push_back(tip1);
         tips.push_back(tip2);
 
-        MultiSpinButton* msb = new MultiSpinButton(lo, hi, step_inc, climb, digits, attrs, default_values, tips);
+        auto const msb = Gtk::make_managed<MultiSpinButton>(lo, hi, step_inc, climb, digits, attrs, default_values, tips);
         add_widget(msb, label);
         for(auto & i : msb->get_spinbuttons())
             add_attr_widget(i);
         return msb;
     }
+
     MultiSpinButton* add_multispinbutton(double def1, double def2, double def3, const SPAttr attr1, const SPAttr attr2,
                                          const SPAttr attr3, const Glib::ustring& label, const double lo,
                                          const double hi, const double step_inc, const double climb, const int digits, char* tip1 = nullptr, char* tip2 = nullptr, char* tip3 = nullptr)
@@ -991,7 +960,7 @@ public:
         tips.push_back(tip2);
         tips.push_back(tip3);
 
-        MultiSpinButton* msb = new MultiSpinButton(lo, hi, step_inc, climb, digits, attrs, default_values, tips);
+        auto const msb = Gtk::make_managed<MultiSpinButton>(lo, hi, step_inc, climb, digits, attrs, default_values, tips);
         add_widget(msb, label);
         for(auto & i : msb->get_spinbuttons())
             add_attr_widget(i);
@@ -1001,21 +970,22 @@ public:
     // FileOrElementChooser
     FileOrElementChooser* add_fileorelement(const SPAttr attr, const Glib::ustring& label)
     {
-        FileOrElementChooser* foech = new FileOrElementChooser(_dialog, attr);
+        auto const foech = Gtk::make_managed<FileOrElementChooser>(_dialog, attr);
         add_widget(foech, label);
         add_attr_widget(foech);
         return foech;
     }
 
     // ComboBoxEnum
-    template<typename T> ComboBoxEnum<T>* add_combo(T default_value, const SPAttr attr,
-                                  const Glib::ustring& label,
-                                  const Util::EnumDataConverter<T>& conv, char* tip_text = nullptr)
+    template <typename T> ComboWithTooltip<T>* add_combo(T default_value, const SPAttr attr,
+                                                         const Glib::ustring& label,
+                                                         const Util::EnumDataConverter<T>& conv,
+                                                         const Glib::ustring& tip_text = {})
     {
-        ComboWithTooltip<T>* combo = new ComboWithTooltip<T>(default_value, conv, attr, tip_text);
+        auto const combo = Gtk::make_managed<ComboWithTooltip<T>>(default_value, conv, attr, tip_text);
         add_widget(combo, label);
-        add_attr_widget(combo->get_attrwidget());
-        return combo->get_attrwidget();
+        add_attr_widget(combo);
+        return combo;
     }
 
     // Entry
@@ -1023,29 +993,33 @@ public:
                          const Glib::ustring& label,
                          char* tip_text = nullptr)
     {
-        EntryAttr* entry = new EntryAttr(attr, tip_text);
+        auto const entry = Gtk::make_managed<EntryAttr>(attr, tip_text);
         add_widget(entry, label);
         add_attr_widget(entry);
         return entry;
     }
 
     Glib::RefPtr<Gtk::SizeGroup> _size_group;
+
 private:
     void add_attr_widget(AttrWidget* a)
     {
         _attrwidgets[_current_type].push_back(a);
         a->signal_attr_changed().connect(sigc::bind(_set_attr_slot, a));
+        // add_widget() takes a managed widget, so dtor will delete & disconnect
     }
 
     /* Adds a new settings widget using the specified label. The label will be formatted with a colon
        and all widgets within the setting group are aligned automatically. */
     void add_widget(Gtk::Widget* w, const Glib::ustring& label)
     {
-        Gtk::Box *hb = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+        g_assert(w->is_managed_());
+
+        auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
         hb->set_spacing(6);
 
         if (label != "") {
-            Gtk::Label *lbl = Gtk::manage(new Gtk::Label(label));
+            auto const lbl = Gtk::make_managed<Gtk::Label>(label);
             lbl->set_xalign(0.0);
             hb->pack_start(*lbl, Gtk::PACK_SHRINK);
             _size_group->add_widget(*lbl);
@@ -1212,17 +1186,19 @@ public:
 };
 
 // Settings for the three light source objects
-class FilterEffectsDialog::LightSourceControl : public AttrWidget
+class FilterEffectsDialog::LightSourceControl
+    : public AttrWidget
+    , public Gtk::Box
 {
 public:
     LightSourceControl(FilterEffectsDialog& d)
         : AttrWidget(SPAttr::INVALID),
+          Gtk::Box(Gtk::ORIENTATION_VERTICAL),
           _dialog(d),
-          _settings(d, _box, sigc::mem_fun(_dialog, &FilterEffectsDialog::set_child_attr_direct), LIGHT_ENDSOURCE),
+          _settings(d, *this, sigc::mem_fun(_dialog, &FilterEffectsDialog::set_child_attr_direct), LIGHT_ENDSOURCE),
           _light_label(_("Light Source:")),
           _light_source(LightSourceConverter),
           _locked(false),
-          _box(Gtk::ORIENTATION_VERTICAL),
           _light_box(Gtk::ORIENTATION_HORIZONTAL)
     {
         _light_label.set_xalign(0.0);
@@ -1232,8 +1208,8 @@ public:
         _light_box.show_all();
         _light_box.set_spacing(6);
 
-        _box.add(_light_box);
-        _box.reorder_child(_light_box, 0);
+        add(_light_box);
+        reorder_child(_light_box, 0);
         _light_source.signal_changed().connect(sigc::mem_fun(*this, &LightSourceControl::on_source_changed));
 
         // FIXME: these range values are complete crap
@@ -1257,15 +1233,12 @@ public:
         _settings.type(-1); // Force update_and_show() to show/hide windows correctly
     }
 
-    Gtk::Box& get_box()
-    {
-        return _box;
-    }
 protected:
     Glib::ustring get_as_attribute() const override
     {
         return "";
     }
+
     void set_from_attribute(SPObject* o) override
     {
         if(_locked)
@@ -1288,6 +1261,7 @@ protected:
 
         _locked = false;
     }
+
 private:
     void on_source_changed()
     {
@@ -1327,7 +1301,7 @@ private:
 
     void update()
     {
-        _box.show();
+        show();
 
         SPFilterPrimitive* prim = _dialog._primitive_list.get_selected();
         if (prim && prim->firstChild()) {
@@ -1339,7 +1313,6 @@ private:
     }
 
     FilterEffectsDialog& _dialog;
-    Gtk::Box _box;
     Settings _settings;
     Gtk::Box _light_box;
     Gtk::Label _light_label;
@@ -1350,7 +1323,7 @@ private:
     // ComponentTransferValues
 FilterEffectsDialog::ComponentTransferValues* FilterEffectsDialog::Settings::add_componenttransfervalues(const Glib::ustring& label, SPFeFuncNode::Channel channel)
     {
-        ComponentTransferValues* ct = new ComponentTransferValues(_dialog, channel);
+        auto const ct = Gtk::make_managed<ComponentTransferValues>(_dialog, channel);
         add_widget(ct, label);
         add_attr_widget(ct);
         ct->set_margin_top(4);
@@ -1361,9 +1334,9 @@ FilterEffectsDialog::ComponentTransferValues* FilterEffectsDialog::Settings::add
 
 FilterEffectsDialog::LightSourceControl* FilterEffectsDialog::Settings::add_lightsource()
 {
-    LightSourceControl* ls = new LightSourceControl(_dialog);
+    auto const ls = Gtk::make_managed<LightSourceControl>(_dialog);
     add_attr_widget(ls);
-    add_widget(&ls->get_box(), "");
+    add_widget(ls, "");
     return ls;
 }
 
@@ -1371,14 +1344,14 @@ static Gtk::Menu * create_popup_menu(Gtk::Widget& parent,
                                      sigc::slot<void ()> dup,
                                      sigc::slot<void ()> rem)
 {
-    auto menu = Gtk::manage(new Gtk::Menu);
+    auto const menu = Gtk::make_managed<Gtk::Menu>();
 
-    Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Duplicate"),true));
+    auto mi = Gtk::make_managed<Gtk::MenuItem>(_("_Duplicate"), true);
     mi->signal_activate().connect(dup);
     mi->show();
     menu->append(*mi);
 
-    mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
+    mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
     menu->append(*mi);
     mi->signal_activate().connect(rem);
     mi->show();
@@ -1398,7 +1371,7 @@ FilterEffectsDialog::FilterModifier::FilterModifier(FilterEffectsDialog& d, Glib
          _del(get_widget<Gtk::Button>(_builder, "btn-del")),
          _select(get_widget<Gtk::Button>(_builder, "btn-select")),
          _menu(get_widget<Gtk::Menu>(_builder, "filters-ctx-menu")),
-         _observer(new Inkscape::XML::SignalObserver)
+         _observer(std::make_unique<Inkscape::XML::SignalObserver>())
 {
     _filters_model = Gtk::ListStore::create(_columns);
     _list.set_model(_filters_model);
@@ -1825,7 +1798,7 @@ void FilterEffectsDialog::CellRendererConnection::get_preferred_height_for_width
 FilterEffectsDialog::PrimitiveList::PrimitiveList(FilterEffectsDialog& d)
     : _dialog(d),
       _in_drag(0),
-      _observer(new Inkscape::XML::SignalObserver)
+      _observer(std::make_unique<Inkscape::XML::SignalObserver>())
 {
     _inputs_count = FPInputConverter._length;
 
@@ -2805,10 +2778,13 @@ FilterEffectsDialog::FilterEffectsDialog()
     , _settings_effect(Gtk::ORIENTATION_VERTICAL)
     , _settings_filter(Gtk::ORIENTATION_VERTICAL)
 {
-    _settings = new Settings(*this, _settings_effect, [=](auto a){ set_attr_direct(a); }, NR_FILTER_ENDPRIMITIVETYPE);
+    _settings = std::make_unique<Settings>(*this, _settings_effect,
+                                           [=](auto a){ set_attr_direct(a); },
+                                           NR_FILTER_ENDPRIMITIVETYPE);
     _cur_effect_name = &get_widget<Gtk::Label>(_builder, "cur-effect");
     _settings->_size_group->add_widget(*_cur_effect_name);
-    _filter_general_settings = new Settings(*this, _settings_filter, [=](auto a){ set_filternode_attr(a); }, 1);
+    _filter_general_settings = std::make_unique<Settings>(*this, _settings_filter,
+                                                          [=](auto a){ set_filternode_attr(a); }, 1);
 
     // Initialize widget hierarchy
     _primitive_box = &get_widget<Gtk::ScrolledWindow>(_builder, "filter");
@@ -2985,11 +2961,7 @@ FilterEffectsDialog::FilterEffectsDialog()
     update_settings_view();
 }
 
-FilterEffectsDialog::~FilterEffectsDialog()
-{
-    delete _settings;
-    delete _filter_general_settings;
-}
+FilterEffectsDialog::~FilterEffectsDialog() = default;
 
 void FilterEffectsDialog::documentReplaced()
 {
