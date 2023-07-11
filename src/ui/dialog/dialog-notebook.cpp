@@ -315,7 +315,7 @@ void DialogNotebook::add_page(Gtk::Widget &page, Gtk::Widget &tab, Glib::ustring
         for (auto widg : widgs) {
             bool expand = container->child_property_expand(*widg);
             bool fill = container->child_property_fill(*widg);
-            guint padding = container->child_property_expand(*widg);
+            auto const padding = container->child_property_padding(*widg);
             Gtk::PackType pack_type = container->child_property_pack_type(*widg);
             container->remove(*widg);
             if (pack_type == Gtk::PACK_START) {
