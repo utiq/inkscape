@@ -552,18 +552,18 @@ void PageManager::fitToSelection(ObjectSet *selection, bool add_margins)
         // This means there aren't any pages, so revert to the default assumption
         // that the viewport is resized around ALL objects.
         if (!_selected_page) {
-            fitToRect(_document->getRoot()->documentVisualBounds(), _selected_page, add_margins);
+            fitToRect(_document->getRoot()->documentPreferredBounds(), _selected_page, add_margins);
         } else {
             // This allows the pages to be resized around the items related to the page only.
             auto contents = ObjectSet();
             contents.setList(getOverlappingItems(desktop, _selected_page));
             if (contents.isEmpty()) {
-                fitToRect(_document->getRoot()->documentVisualBounds(), _selected_page, add_margins);
+                fitToRect(_document->getRoot()->documentPreferredBounds(), _selected_page, add_margins);
             } else {
                 fitToSelection(&contents, add_margins);
             }
         }
-    } else if (auto rect = selection->documentBounds(SPItem::VISUAL_BBOX)) {
+    } else if (auto rect = selection->preferredBounds()) {
         fitToRect(rect, _selected_page, add_margins);
     }
 }
