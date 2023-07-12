@@ -147,7 +147,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_tbbox->pack1(*dtw->tool_toolbox, false, true);
 
     dtw->snap_toolbar = Gtk::make_managed<Inkscape::UI::Toolbar::SnapToolbar>();
-    dtw->_hbox->pack_end(*dtw->snap_toolbar); // May moved later.
+    dtw->_hbox->pack_end(*dtw->snap_toolbar, false, true); // May moved later.
 
     _tb_snap_pos = prefs->createObserver("/toolbox/simplesnap", sigc::mem_fun(*this, &SPDesktopWidget::repack_snaptoolbar));
     repack_snaptoolbar();

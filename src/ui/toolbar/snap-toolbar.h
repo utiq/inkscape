@@ -43,6 +43,7 @@ private:
     Gtk::Box*    snap_toolbar = nullptr;
     Gtk::Button* btn_simple = nullptr;
     Gtk::Button* btn_advanced = nullptr;
+    Gtk::ScrolledWindow* scroll_permanent = nullptr;
     Gtk::Box*    box_permanent = nullptr;
 };
 

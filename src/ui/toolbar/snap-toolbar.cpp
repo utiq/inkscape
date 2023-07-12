@@ -47,13 +47,13 @@ SnapToolbar::SnapToolbar()
 
     Gtk::LinkButton* link_simple = nullptr;
     Gtk::LinkButton* link_advanced = nullptr;
-    builder->get_widget("btn-simple",     btn_simple);
-    builder->get_widget("btn-advanced",   btn_advanced);
-    builder->get_widget("link-simple",    link_simple);
-    builder->get_widget("link-advanced",  link_advanced);
-    builder->get_widget("box-permanent",  box_permanent);
-
-    if (btn_simple  && btn_advanced  && link_simple && link_advanced && box_permanent) {
+    builder->get_widget("btn-simple",       btn_simple);
+    builder->get_widget("btn-advanced",     btn_advanced);
+    builder->get_widget("link-simple",      link_simple);
+    builder->get_widget("link-advanced",    link_advanced);
+    builder->get_widget("box-permanent",    box_permanent);
+    builder->get_widget("scroll-permanent", scroll_permanent);
+    if (btn_simple  && btn_advanced  && link_simple && link_advanced && scroll_permanent && box_permanent) {
 
         // Watch snap bar preferences;
         Inkscape::Preferences* prefs = Inkscape::Preferences::get();
@@ -91,7 +91,7 @@ void SnapToolbar::mode_update() {
 
     btn_simple->hide();
     btn_advanced->hide();
-    box_permanent->hide();
+    scroll_permanent->hide();
 
     // Show/hide
     switch (mode) {
@@ -107,8 +107,8 @@ void SnapToolbar::mode_update() {
             snap_toolbar->set_orientation(Gtk::ORIENTATION_HORIZONTAL);
             break;
         case PERMANENT:
-            box_permanent->show();
-            set_orientation(Gtk::ORIENTATION_VERTICAL);
+            scroll_permanent->show();
+            box_permanent->set_orientation(Gtk::ORIENTATION_VERTICAL);
             snap_toolbar->set_orientation(Gtk::ORIENTATION_VERTICAL);
             break;
         default:

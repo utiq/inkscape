@@ -45,7 +45,7 @@ ToolToolbar::ToolToolbar(InkscapeWindow *window)
 
     attachHandlers(builder, window);
 
-    pack_start(*tool_toolbar, false, false);
+    pack_start(*tool_toolbar, true, true);
 
     // Hide/show buttons based on preferences.
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
