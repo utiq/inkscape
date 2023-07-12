@@ -11,6 +11,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+// N.B. This is deprecated, hidden by default, and will not be migrated to GTK4.
+
 #include "livepatheffect-add.h"
 
 #include <cmath>

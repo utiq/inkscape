@@ -162,8 +162,6 @@ void LivePathEffectEditor::selectionModified(Inkscape::Selection * selection, gu
     clearMenu();
 }
 
-static auto constexpr showgallery_path = "/dialogs/livepatheffect/showgallery";
-
 /**
  * Constructor
  */
@@ -178,16 +176,11 @@ LivePathEffectEditor::LivePathEffectEditor()
     _LPESelectionInfo(get_widget<Gtk::Label>(_builder, "LPESelectionInfo")),
     _LPEGallery(get_widget<Gtk::Button>(_builder, "LPEGallery")),
     _showgallery_observer(Preferences::PreferencesObserver::create(
-        showgallery_path, sigc::mem_fun(*this, &LivePathEffectEditor::on_showgallery_notify))),
+        "/dialogs/livepatheffect/showgallery", sigc::mem_fun(*this, &LivePathEffectEditor::on_showgallery_notify))),
     converter(Inkscape::LivePathEffect::LPETypeConverter)
 {
-    Glib::RefPtr<Gtk::EntryCompletion> LPECompletionList = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("LPECompletionList"));
-
     _LPEGallery.signal_clicked().connect(sigc::mem_fun(*this, &LivePathEffectEditor::onAddGallery));
-    if (Preferences::get()->getBool(showgallery_path, false)) {
-        // SHOW DEPRECATED LPE GALLERY
-        _LPEGallery.set_visible(true);
-    }
+    _showgallery_observer->call(); // Set initial visibility per Preference (widget is :no-show-all)
 
     _LPEContainer.signal_map().connect(sigc::mem_fun(*this, &LivePathEffectEditor::map_handler) );
     _LPEContainer.signal_button_press_event().connect([=](GdkEventButton* const evt){dnd = false; /*hack to fix dnd freze expander*/ return false; }, false);
