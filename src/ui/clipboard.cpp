@@ -23,6 +23,9 @@
 
 #include <2geom/transforms.h>
 #include <2geom/path-sink.h>
+#include <iostream>
+#include <string>
+#include <boost/bimap.hpp>
 
 // TODO: reduce header bloat if possible
 
@@ -1609,6 +1612,33 @@ std::unique_ptr<SPDocument> ClipboardManagerImpl::_retrieveClipboard(Glib::ustri
     return std::unique_ptr<SPDocument>(tempdoc);
 }
 
+#ifdef __APPLE__
+
+// MIME types: image/x-inkscape-svg, image/png, image/svg+xml, image/x-inkscape-svg-compressed, image/svg+xml-compressed, application/pdf, image/svg+xml, application/x-zip, application/tar, image/dxf, image/dxf, image/x-e-postscript, image/x-emf, text/xml+fxg, text/plain, image/hpgl, text/html, image/jpeg, application/x-zip, text/x-tex, text/xml+xaml, text/x-povray-script, image/x-postscript, text/x-povray-script, image/sif, image/tiff, image/webp, image/x-wmf,
+
+template <typename L, typename R>
+boost::bimap<L, R> make_bimap(std::initializer_list<typename boost::bimap<L, R>::value_type> list) {
+    return boost::bimap<L, R>(list.begin(), list.end());
+}
+
+// MIME type to Universal Type Identifiers
+static auto mime_uti = make_bimap<std::string, std::string>({
+    {"image/x-inkscape-svg", "org.inkscape.svg"},
+    {"image/svg+xml",        "public.svg-image"},
+    {"image/png",            "public.png"},
+    {"image/webp",           "public.webp"},
+    {"image/tiff",           "public.tiff"},
+    {"image/jpeg",           "public.jpeg"},
+    {"image/x-e-postscript", "com.adobe.encapsulated-postscript"},
+    {"image/x-postscript",   "com.adobe.postscript"},
+    // {"text/plain",           "public.plain-text"}, - GIMP color palette
+    {"text/html",            "public.html"},
+    {"application/pdf",      "com.adobe.pdf"},
+    {"application/tar",      "public.tar-archive"},
+    {"application/x-zip",    "public.zip-archive"},
+});
+
+#endif
 
 /**
  * Callback called when some other application requests data from Inkscape.
@@ -1631,6 +1661,14 @@ void ClipboardManagerImpl::_onGet(Gtk::SelectionData &sel, guint /*info*/)
     if (target == CLIPBOARD_TEXT_TARGET) {
         target = "image/x-inkscape-svg";
     }
+
+#ifdef __APPLE__
+    // translate UTI back to MIME
+    auto mime = mime_uti.right.find(target);
+    if (mime != mime_uti.right.end()) {
+        target = mime->get_left();
+    }
+#endif
 
     // FIXME: Temporary hack until we add support for memory output.
     // Save to a temporary file, read it back and then set the clipboard contents
@@ -1864,6 +1902,12 @@ void ClipboardManagerImpl::_setClipboardTargets()
     for (Inkscape::Extension::DB::OutputList::const_iterator out = outlist.begin() ; out != outlist.end() ; ++out) {
         if ( !(*out)->deactivated() ) {
             Glib::ustring mime = (*out)->get_mimetype();
+#ifdef __APPLE__
+            auto uti = mime_uti.left.find(mime);
+            if (uti != mime_uti.left.end()) {
+                target_list.emplace_back(uti->get_right());
+            }
+#endif
             if (mime != CLIPBOARD_TEXT_TARGET) {
                 if ( !plaintextSet && (mime.find("svg") == Glib::ustring::npos) ) {
                     target_list.emplace_back(CLIPBOARD_TEXT_TARGET);
