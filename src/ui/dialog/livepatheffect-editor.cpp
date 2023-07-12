@@ -173,16 +173,16 @@ LivePathEffectEditor::LivePathEffectEditor()
     _LPEParentBox(get_widget<Gtk::ListBox>(_builder, "LPEParentBox")),
     _LPECurrentItem(get_widget<Gtk::Box>(_builder, "LPECurrentItem")),
     _LPESelectionInfo(get_widget<Gtk::Label>(_builder, "LPESelectionInfo")),
+    _LPEGallery(get_widget<Gtk::Button>(_builder, "LPEGallery")),
+    _showgallery_observer(Preferences::PreferencesObserver::create(
+        "/dialogs/livepatheffect/showgallery", sigc::mem_fun(*this, &LivePathEffectEditor::on_showgallery_notify))),
     converter(Inkscape::LivePathEffect::LPETypeConverter)
 {
-    Gtk::EventBox &LPEGallery = get_widget<Gtk::EventBox>(_builder, "LPEGallery");
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    _LPEGallery.signal_clicked().connect(sigc::mem_fun(*this, &LivePathEffectEditor::onAddGallery));
+    _showgallery_observer->call(); // Set initial visibility per Preference (widget is :no-show-all)
+
     Glib::RefPtr<Gtk::EntryCompletion> LPECompletionList = Glib::RefPtr<Gtk::EntryCompletion>::cast_dynamic(_builder->get_object("LPECompletionList"));
 
-    if(prefs->getBool("/dialogs/livepatheffect/showgallery", false)) {
-        LPEGallery.signal_button_release_event().connect(sigc::mem_fun(*this, &LivePathEffectEditor::openGallery));
-        LPEGallery.show();
-    }
     _LPEContainer.signal_map().connect(sigc::mem_fun(*this, &LivePathEffectEditor::map_handler) );
     _LPEContainer.signal_button_press_event().connect([=](GdkEventButton* const evt){dnd = false; /*hack to fix dnd freze expander*/ return false; }, false);
     setMenu();
@@ -1151,11 +1151,6 @@ LivePathEffectEditor::clear_lpe_list()
     }
 }
 
-bool LivePathEffectEditor::openGallery(GdkEventButton *evt) {
-    onAddGallery();
-    return false;
-}
-
 SPLPEItem * LivePathEffectEditor::clonetolpeitem()
 {
     auto selection = getSelection();
@@ -1238,6 +1233,11 @@ void LivePathEffectEditor::onAddGallery()
         current_lpeitem->getCurrentLPE()->refresh_widgets = true;
         DocumentUndo::done(getDocument(), _("Create and apply path effect"), INKSCAPE_ICON("dialog-path-effects"));
     }
+}
+
+void LivePathEffectEditor::on_showgallery_notify(Preferences::Entry const &new_val)
+{
+    _LPEGallery.set_visible(new_val.getBool());
 }
 
 } // namespace Dialog

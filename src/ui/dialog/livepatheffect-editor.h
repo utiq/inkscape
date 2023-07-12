@@ -12,11 +12,17 @@
 #ifndef LIVEPATHEFFECTEDITOR_H
 #define LIVEPATHEFFECTEDITOR_H
 
+#include <memory>
+#include <gtkmm/builder.h>
 #include "live_effects/effect-enum.h"
+#include "preferences.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/completion-popup.h"
 #include "ui/column-menu-builder.h"
-#include <gtkmm/builder.h>
+
+namespace Gtk {
+class Button;
+}
 
 namespace Inkscape {
 namespace UI {
@@ -61,7 +67,6 @@ private:
     void selectionChanged(Inkscape::Selection *selection) override;
     void selectionModified(Inkscape::Selection *selection, guint flags) override;
     void onSelectionChanged(Inkscape::Selection *selection);
-    bool openGallery(GdkEventButton *evt);
     bool toggleFavInLpe(GdkEventButton * evt, Glib::ustring name, Gtk::Button *favbutton);
     bool closeExpander(GdkEventButton * evt);
     void onAddGallery();
@@ -71,6 +76,7 @@ private:
     bool is_appliable(LivePathEffect::EffectType etypen, Glib::ustring item_type, bool has_clip, bool has_mask);
     void removeEffect(Gtk::Expander * expander);
     void effect_list_reload(SPLPEItem *lpeitem);
+
     SPLPEItem * clonetolpeitem();
     void selection_info();
     Inkscape::UI::Widget::CompletionPopup _lpes_popup;
@@ -97,6 +103,10 @@ private:
     bool _has_clip;
     bool _has_mask;
     bool _frezee = false;
+
+    Gtk::Button &_LPEGallery;
+    std::unique_ptr<Preferences::PreferencesObserver> const _showgallery_observer;
+    void on_showgallery_notify(Preferences::Entry const &new_val);
 };
 
 } // namespace Dialog
