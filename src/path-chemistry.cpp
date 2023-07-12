@@ -547,7 +547,12 @@ sp_selected_item_to_curved_repr(SPItem *item, guint32 /*text_grouping_policy*/)
             // Create a new path for each span to group glyphs into
             // which preserves styles such as paint-order
             if (!prev_parent || prev_parent != pos_obj) {
-                curves.emplace_back(curve.get_pathvector(), pos_obj->style);
+                // Record the style for the dying tspan tree (see sp_style_merge_from_dying_parent in style.cpp)
+                auto style = pos_obj->style;
+                for (auto sp = pos_obj->parent; sp && sp != item; sp = sp->parent) {
+                    style->merge(sp->style);
+                }
+                curves.emplace_back(curve.get_pathvector(), style);
             } else {
                 for (auto &path : curve.get_pathvector()) {
                     curves.back().first.push_back(path);

@@ -87,7 +87,7 @@ item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& st
         return false;
     }
 
-    if (item->style->stroke.isNone()) {
+    if (item->style->stroke.isNone() || item->style->stroke_width.computed <= Geom::EPSILON) {
         // No stroke, no chocolate!
         return true;
     }
@@ -102,10 +102,6 @@ item_find_paths(const SPItem *item, Geom::PathVector& fill, Geom::PathVector& st
     SPStyle *style = item->style;
 
     double stroke_width = style->stroke_width.computed;
-    if (stroke_width < Geom::EPSILON) {
-        // https://bugs.launchpad.net/inkscape/+bug/1244861
-        stroke_width = Geom::EPSILON;
-    }
     double miter = style->stroke_miterlimit.value * stroke_width;
 
     JoinType join;
