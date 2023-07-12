@@ -313,10 +313,10 @@ void DialogNotebook::add_page(Gtk::Widget &page, Gtk::Widget &tab, Glib::ustring
         wrapperbox->set_vexpand(true);
         std::vector<Gtk::Widget *> widgs = container->get_children();
         for (auto widg : widgs) {
-            bool expand = container->child_property_expand(*widg);
-            bool fill = container->child_property_fill(*widg);
-            auto const padding = container->child_property_padding(*widg);
-            Gtk::PackType pack_type = container->child_property_pack_type(*widg);
+            auto const expand = container->child_property_expand(*widg).get_value();
+            auto const fill = container->child_property_fill(*widg).get_value();
+            auto const padding = container->child_property_padding(*widg).get_value();
+            auto const pack_type = container->child_property_pack_type(*widg).get_value();
             container->remove(*widg);
             if (pack_type == Gtk::PACK_START) {
                 wrapperbox->pack_start(*widg, expand, fill, padding);
