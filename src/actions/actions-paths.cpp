@@ -14,6 +14,7 @@
 #include <glibmm/i18n.h>
 
 #include "actions-paths.h"
+#include "actions-tools.h"
 #include "document-undo.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
@@ -187,6 +188,7 @@ select_path_offset_dynamic(InkscapeWindow* win)
     dt->getSelection()->removeLPESRecursive(true);
     dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_create_offset_object_zero(dt);
+    set_active_tool(dt, "Node");
 }
 
 void
@@ -198,6 +200,7 @@ select_path_offset_linked(InkscapeWindow* win)
     dt->getSelection()->removeLPESRecursive(true);
     dt->getSelection()->unlinkRecursive(true);
     sp_selected_path_create_updating_offset_object_zero(dt);
+    set_active_tool(dt, "Node");
 }
 
 void
