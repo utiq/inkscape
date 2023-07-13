@@ -1052,3 +1052,13 @@ popover.popover-menu menuitem {
 .darker-background {
     background-image: image(alpha(#000, 0.05));
 }
+
+/* Add margins to tool toolbar: a) separators, so they don't touch buttons b) buttons, so they don't touch sides */
+#tool-toolbar separator {
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+#tool-toolbar button {
+    margin-left: 1px;
+    margin-right: 1px;
+}
