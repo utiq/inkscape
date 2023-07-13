@@ -819,7 +819,7 @@ void DialogNotebook::reload_tab_menu()
 
             // Create a box to hold icon and label as Gtk::MenuItem derives from GtkBin and can
             // only hold one child
-            Gtk::Box *boxmenu = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+            auto const boxmenu = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 8);
             boxmenu->set_halign(Gtk::ALIGN_START);
 
             auto const menuitem = new Gtk::MenuItem{}; // ugh but we must delete
