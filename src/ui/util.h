@@ -15,14 +15,16 @@
 
 #include <cstddef> // size_t
 #include <exception>
+#include <type_traits>
 
-#include <gdkmm/rgba.h>
-#include <gtkmm/cellrenderer.h>
-#include <gtkmm/enums.h>
-#include <gtkmm/stylecontext.h>
+#include <2geom/affine.h>
 #include <2geom/point.h>
 #include <2geom/rect.h>
-#include <2geom/affine.h>
+#include <gdkmm/rgba.h>
+#include <gtkmm/cellrenderer.h>
+#include <gtkmm/container.h>
+#include <gtkmm/enums.h>
+#include <gtkmm/stylecontext.h>
 #include <gtkmm/widget.h>
 
 /*
@@ -73,6 +75,23 @@ inline void widget_show(Gtk::Widget &widget, bool show)
 
 /// Translate cell renderer state to style flags.
 Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state);
+
+/// Whether for_each_child() will continue or stop after calling Func per child.
+enum class ForEachChildResult {_continue, _break};
+
+/// Call Func with a reference to each child of parent, until it returns _break.
+/// See also src/widgets/spw-utilities: sp_traverse_widget_tree().
+template <typename Func>
+void for_each_child(Gtk::Container &parent, Func &&func)
+{
+    static_assert(std::is_invocable_r_v<ForEachChildResult, Func, Gtk::Widget &>);
+    for (auto const child: parent.get_children()) {
+        auto const result = func(*child);
+        if (result == ForEachChildResult::_break) {
+            return;
+        }
+    }
+}
 
 } // namespace Inkscape::UI
 
