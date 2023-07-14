@@ -1645,9 +1645,17 @@ void ClipboardManagerImpl::_onGet(Gtk::SelectionData &sel, guint /*info*/)
     INKSCAPE.use_gui(false);
 
     try {
-        // TODO: In the future we may want to detect raster image types such as jpeg
-        // and use export_raster to get the right output for some programs.
-        if (target == "image/png")
+        Inkscape::Extension::DB::OutputList outlist;
+        Inkscape::Extension::db.get_output_list(outlist);
+        Inkscape::Extension::DB::OutputList::const_iterator out = outlist.begin();
+        for ( ; out != outlist.end() && target != (*out)->get_mimetype() ; ++out) {
+        }
+        if (!(*out)->loaded()) {
+            // Need to load the extension.
+            (*out)->set_state(Inkscape::Extension::Extension::STATE_LOADED);
+        }
+
+        if ((*out)->is_raster())
         {
             gdouble dpi = Inkscape::Util::Quantity::convert(1, "in", "px");
             guint32 bgcolor = 0x00000000;
@@ -1668,22 +1676,15 @@ void ClipboardManagerImpl::_onGet(Gtk::SelectionData &sel, guint /*info*/)
                 bgcolor |= SP_COLOR_F_TO_U(opacity);
             }
             std::vector<SPItem*> x;
-            sp_export_png_file(_clipboardSPDoc.get(), filename, area, width, height, dpi, dpi, bgcolor, nullptr,
+            gchar *raster_file = g_build_filename( g_get_user_cache_dir(), "inkscape-clipboard-export-raster", nullptr );
+            sp_export_png_file(_clipboardSPDoc.get(), raster_file, area, width, height, dpi, dpi, bgcolor, nullptr,
                                nullptr, true, x);
+            (*out)->export_raster(_clipboardSPDoc.get(), raster_file, filename, true);
+            unlink(raster_file);
+            g_free(raster_file);
         }
         else
         {
-            Inkscape::Extension::DB::OutputList outlist;
-            Inkscape::Extension::db.get_output_list(outlist);
-            Inkscape::Extension::DB::OutputList::const_iterator out = outlist.begin();
-            for ( ; out != outlist.end() && target != (*out)->get_mimetype() ; ++out) {
-
-            };
-            if (!(*out)->loaded()) {
-                // Need to load the extension.
-                (*out)->set_state(Inkscape::Extension::Extension::STATE_LOADED);
-            }
-
             (*out)->save(_clipboardSPDoc.get(), filename, true);
         }
         g_file_get_contents(filename, &data, &len, nullptr);
