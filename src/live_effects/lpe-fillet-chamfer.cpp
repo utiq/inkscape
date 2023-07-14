@@ -554,8 +554,8 @@ LPEFilletChamfer::doEffect_path(Geom::PathVector const &path_in)
                 ++curve_it1;
                 continue;
             }
-            Geom::Curve const &curve_it2 = pathv[path][next_index];
-            NodeSatellite nodesatellite = nodesatellites[path][next_index];
+            Geom::Curve const &curve_it2 = pathv.at(path).at(next_index);
+            NodeSatellite nodesatellite = nodesatellites.at(path).at(next_index);
             
             if (!curve) { //curve == 0
                 if (!path_it.closed()) {
