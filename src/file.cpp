@@ -977,7 +977,7 @@ void sp_import_document(SPDesktop *desktop, SPDocument *clipdoc, bool in_place, 
     Inkscape::Selection *selection = desktop->getSelection();
     selection->setReprList(pasted_objects_not);
 
-    selection->deleteItems();
+    selection->deleteItems(true);
 
     // Change the selection to the freshly pasted objects
     selection->setReprList(pasted_objects);
