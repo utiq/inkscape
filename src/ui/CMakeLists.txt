@@ -37,7 +37,6 @@ set(ui_SRC
 	tool/control-point-selection.cpp
 	tool/control-point.cpp
 	tool/curve-drag-point.cpp
-	tool/event-utils.cpp
 	tool/modifier-tracker.cpp
 	tool/multi-path-manipulator.cpp
 	tool/node.cpp
@@ -380,7 +379,6 @@ set(ui_SRC
 	tool/control-point-selection.h
 	tool/control-point.h
 	tool/curve-drag-point.h
-	tool/event-utils.h
 	tool/manipulator.h
 	tool/modifier-tracker.h
 	tool/multi-path-manipulator.h

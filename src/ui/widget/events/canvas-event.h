@@ -19,7 +19,6 @@
 
 #include "enums.h"
 #include "include/macros.h" // For MOD__ modifier testing functions.
-#include "ui/tool/event-utils.h" // For held_ modifier testing functions.
 
 namespace Inkscape {
 
@@ -371,17 +370,44 @@ inline bool MOD__ALT_ONLY(KeyEvent const &event) { return ::MOD__ALT_ONLY(event.
  *
  * Todo: Merge the two sets of modifier-testing functions together.
  */
-inline bool held_shift(CanvasEvent const &event) { return UI::state_held_shift(event.modifiers()); }
-inline bool held_control(CanvasEvent const &event) { return UI::state_held_control(event.modifiers()); }
-inline bool held_alt(CanvasEvent const &event) { return UI::state_held_alt(event.modifiers()); }
-inline bool held_only_shift(CanvasEvent const &event) { return UI::state_held_only_shift(event.modifiers()); }
-inline bool held_only_control(CanvasEvent const &event) { return UI::state_held_only_control(event.modifiers()); }
-inline bool held_only_alt(CanvasEvent const &event) { return UI::state_held_only_alt(event.modifiers()); }
-inline bool held_any_modifiers(CanvasEvent const &event) { return UI::state_held_any_modifiers(event.modifiers()); }
-inline bool held_no_modifiers(CanvasEvent const &event) { return UI::state_held_no_modifiers(event.modifiers()); }
+inline bool state_held_shift(unsigned state) { return state & GDK_SHIFT_MASK; }
+inline bool state_held_control(unsigned state) { return state & GDK_CONTROL_MASK; }
+inline bool state_held_alt(unsigned state) { return state & GDK_MOD1_MASK; }
+inline bool state_held_only_shift(unsigned state) { return (state & GDK_SHIFT_MASK) && !(state & (GDK_CONTROL_MASK | GDK_MOD1_MASK)); }
+inline bool state_held_only_control(unsigned state) { return (state & GDK_CONTROL_MASK) && !(state & (GDK_SHIFT_MASK | GDK_MOD1_MASK)); }
+inline bool state_held_only_alt(unsigned state) { return (state & GDK_MOD1_MASK) && !(state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)); }
+inline bool state_held_any_modifiers(unsigned state) { return state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK); }
+inline bool state_held_no_modifiers(unsigned state) { return !state_held_any_modifiers(state); }
 
 template <unsigned button>
-inline bool mod_button(CanvasEvent const &event) { return UI::state_held_button<button>(event.modifiers()); }
+inline bool state_held_button(unsigned state) { return (1 <= button || button <= 5) && (state & (GDK_BUTTON1_MASK << (button - 1))); }
+
+inline bool held_shift(CanvasEvent const &event) { return state_held_shift(event.modifiers()); }
+inline bool held_control(CanvasEvent const &event) { return state_held_control(event.modifiers()); }
+inline bool held_alt(CanvasEvent const &event) { return state_held_alt(event.modifiers()); }
+inline bool held_only_shift(CanvasEvent const &event) { return state_held_only_shift(event.modifiers()); }
+inline bool held_only_control(CanvasEvent const &event) { return state_held_only_control(event.modifiers()); }
+inline bool held_only_alt(CanvasEvent const &event) { return state_held_only_alt(event.modifiers()); }
+inline bool held_any_modifiers(CanvasEvent const &event) { return state_held_any_modifiers(event.modifiers()); }
+inline bool held_no_modifiers(CanvasEvent const &event) { return state_held_no_modifiers(event.modifiers()); }
+
+template <unsigned button>
+inline bool held_button(CanvasEvent const &event) { return state_held_button<button>(event.modifiers()); }
+
+/*
+ * Shortcut key handling
+ */
+inline unsigned shortcut_key(KeyEvent const &event)
+{
+    unsigned shortcut_key = 0;
+    gdk_keymap_translate_keyboard_state(
+        gdk_keymap_get_for_display(gdk_display_get_default()),
+        event.hardwareKeycode(),
+        static_cast<GdkModifierType>(event.modifiers()),
+        0, // group
+        &shortcut_key, nullptr, nullptr, nullptr);
+    return shortcut_key;
+}
 
 } // namespace Inkscape
 

@@ -53,7 +53,6 @@
 #include "ui/shortcuts.h"
 
 #include "ui/tool/control-point.h"
-#include "ui/tool/event-utils.h"
 #include "ui/tools/calligraphic-tool.h"
 #include "ui/tools/dropper-tool.h"
 #include "ui/tools/node-tool.h"
@@ -315,7 +314,7 @@ static double accelerate_scroll(KeyEvent const &event, double acceleration)
 bool ToolBase::_keyboardMove(KeyEvent const &event, Geom::Point const &dir)
 {
     if (MOD__CTRL(event)) return false;
-    unsigned num = 1 + gobble_key_events(shortcut_key(*event.original()), 0);
+    unsigned num = 1 + gobble_key_events(shortcut_key(event), 0);
     Geom::Point delta = dir * num;
 
     if (MOD__SHIFT(event)) {
@@ -325,7 +324,7 @@ bool ToolBase::_keyboardMove(KeyEvent const &event, Geom::Point const &dir)
     if (MOD__ALT(event)) {
         delta /= _desktop->current_zoom();
     } else {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        auto prefs = Preferences::get();
         double nudge = prefs->getDoubleLimited("/options/nudgedistance/value", 2, 0, 1000, "px");
         delta *= nudge;
     }

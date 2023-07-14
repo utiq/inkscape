@@ -25,9 +25,7 @@
 #include "helper/geom.h"
 
 #include "live_effects/lpeobject.h"
-#include "live_effects/lpeobject-reference.h"
 #include "live_effects/lpe-powerstroke.h"
-#include "live_effects/lpe-slice.h"
 #include "live_effects/lpe-bspline.h"
 #include "live_effects/parameter/path.h"
 
@@ -37,11 +35,11 @@
 #include "ui/icon-names.h"
 #include "ui/tool/control-point-selection.h"
 #include "ui/tool/curve-drag-point.h"
-#include "ui/tool/event-utils.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/node-types.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
+#include "ui/widget/events/canvas-event.h"
 #include "path/splinefit/bezier-fit.h"
 #include "xml/node-observer.h"
 
@@ -156,18 +154,19 @@ PathManipulator::~PathManipulator()
 }
 
 /** Handle motion events to update the position of the curve drag point. */
-bool PathManipulator::event(Inkscape::UI::Tools::ToolBase * /*event_context*/, GdkEvent *event)
+bool PathManipulator::event(Tools::ToolBase *, CanvasEvent const &event)
 {
-    if (empty()) return false;
-
-    switch (event->type)
-    {
-    case GDK_MOTION_NOTIFY:
-        _updateDragPoint(event_point(event->motion));
-        break;
-    default:
-        break;
+    if (empty()) {
+        return false;
     }
+
+    inspect_event(event,
+        [&] (MotionEvent const &event) {
+            _updateDragPoint(event.eventPos());
+        },
+        [&] (CanvasEvent const &event) {}
+    );
+
     return false;
 }
 
@@ -364,7 +363,7 @@ void PathManipulator::duplicateNodes()
         for (NodeList::iterator j = _subpath->begin(); j != _subpath->end(); ++j) {
             if (j->selected()) {
                 NodeList::iterator k = j.next();
-                Node *n = new Node(_multi_path_manipulator._path_data.node_data, *j);
+                Node *n = new Node(_multi_path_manipulator._path_data.node_data, j->position());
 
                 if (k) {
                     // Move the new node to the bottom of the Z-order. This way you can drag all
@@ -373,7 +372,7 @@ void PathManipulator::duplicateNodes()
                     n->sink();
                 }
 
-                n->front()->setPosition(*j->front());
+                n->front()->setPosition(j->front()->position());
                 j->front()->retract();
                 j->setType(NODE_CUSP, false);
                 _subpath->insert(k, n);
@@ -476,11 +475,11 @@ void PathManipulator::weldNodes(NodeList::iterator preserve_pos)
             unsigned num_points = 0;
             bool use_pos = false;
             Geom::Point back_pos, front_pos;
-            back_pos = *sel_beg->back();
+            back_pos = sel_beg->back()->position();
 
             for (sel_end = sel_beg; sel_end && sel_end->selected(); sel_end = sel_end.next()) {
                 ++num_points;
-                front_pos = *sel_end->front();
+                front_pos = sel_end->front()->position();
                 if (pos_valid && sel_end == preserve_pos) use_pos = true;
             }
             if (num_points > 1) {
@@ -739,7 +738,7 @@ unsigned PathManipulator::_deleteStretch(NodeList::iterator start, NodeList::ite
         unsigned seg = 0;
 
         for (NodeList::iterator cur = start.prev(); cur != end; cur = cur.next()) {
-            Geom::CubicBezier bc(*cur, *cur->front(), *cur.next()->back(), *cur.next());
+            auto bc = Geom::CubicBezier(cur->position(), cur->front()->position(), cur.next()->back()->position(), cur.next()->position());
             for (unsigned s = 0; s < samples_per_segment; ++s) {
                 auto t = t_step * s;
                 input.emplace_back(InputPoint(bc.pointAt(t), t));
@@ -889,8 +888,8 @@ void PathManipulator::setSegmentType(SegmentType type)
             case SEGMENT_STRAIGHT:
                 if (j->front()->isDegenerate() && k->back()->isDegenerate())
                     break;
-                j->front()->move(*j);
-                k->back()->move(*k);
+                j->front()->move(j->position());
+                k->back()->move(k->position());
                 break;
             case SEGMENT_CUBIC_BEZIER:
                 if (!j->front()->isDegenerate() || !k->back()->isDegenerate())
@@ -1157,7 +1156,7 @@ NodeList::iterator PathManipulator::extremeNode(NodeList::iterator origin, bool 
             } else {
                 if (!search_unselected) continue;
             }
-            double dist = Geom::distance(*j, *origin);
+            double dist = Geom::distance(j->position(), origin->position());
             bool cond = closest ? (dist < extr_dist) : (dist > extr_dist);
             if (cond) {
                 match = j;
@@ -1640,10 +1639,10 @@ Inkscape::XML::Node *PathManipulator::_getXMLNode()
     return lpeobj->getRepr();
 }
 
-bool PathManipulator::_nodeClicked(Node *n, GdkEventButton *event)
+bool PathManipulator::_nodeClicked(Node *n, ButtonReleaseEvent const &event)
 {
-    if (event->button != 1) return false;
-    if (held_alt(*event) && held_control(*event)) {
+    if (event.button() != 1) return false;
+    if (held_alt(event) && held_control(event)) {
         // Ctrl+Alt+click: delete nodes
         hideDragPoint();
         NodeList::iterator iter = NodeList::get_iterator(n);
@@ -1665,7 +1664,7 @@ bool PathManipulator::_nodeClicked(Node *n, GdkEventButton *event)
         _multi_path_manipulator._doneWithCleanup(_("Delete node"));
 
         return true;
-    } else if (held_control(*event)) {
+    } else if (held_control(event)) {
         // Ctrl+click: cycle between node types
         if (!n->isEndNode()) {
             n->setType(static_cast<NodeType>((n->type() + 1) % NODE_LAST_REAL_TYPE));
@@ -1688,10 +1687,10 @@ void PathManipulator::_handleUngrabbed()
     _commit(_("Drag handle"));
 }
 
-bool PathManipulator::_handleClicked(Handle *h, GdkEventButton *event)
+bool PathManipulator::_handleClicked(Handle *h, ButtonReleaseEvent const &event)
 {
     // retracting by Ctrl+click
-    if (event->button == 1 && held_control(*event)) {
+    if (event.button() == 1 && held_control(event)) {
         h->move(h->parent()->position());
         update();
         _commit(_("Retract handle"));

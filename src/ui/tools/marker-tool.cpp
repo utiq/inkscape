@@ -23,7 +23,6 @@
 #include "object/sp-marker.h"
 
 #include "ui/shape-editor.h"
-#include "ui/tool/event-utils.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/marker-tool.h"

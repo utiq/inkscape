@@ -18,13 +18,13 @@
 #include <2geom/bezier-utils.h>
 
 #include "desktop.h"
+#include "object/sp-namedview.h"
 #include "snap.h"
 
 #include "display/control/canvas-item-group.h"
 #include "display/control/canvas-item-curve.h"
 
 #include "ui/tool/control-point-selection.h"
-#include "ui/tool/event-utils.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
 #include "ui/modifiers.h"
@@ -237,10 +237,10 @@ void Handle::move(Geom::Point const &new_pos)
         // and there are smooth nodes at its ends, make their handles collinear with the segment.
         if (towards && towards_second->isDegenerate()) {
             if (node_towards->type() == NODE_SMOOTH) {
-                towards->setDirection(*_parent, *node_towards);
+                towards->setDirection(_parent->position(), node_towards->position());
             }
             if (_parent->type() == NODE_SMOOTH) {
-                other->setDirection(*node_towards, *_parent);
+                other->setDirection(node_towards->position(), _parent->position());
             }
         }
         setPosition(new_pos);
@@ -278,7 +278,7 @@ void Handle::move(Geom::Point const &new_pos)
     case NODE_SMOOTH: {
         // for smooth nodes, we need to rotate the opposite handle
         // so that it's collinear with the dragged one, while conserving length.
-        other->setDirection(new_pos, *_parent);
+        other->setDirection(new_pos, _parent->position());
         } break;
     case NODE_SYMMETRIC:
         // for symmetric nodes, place the other handle on the opposite side
@@ -352,23 +352,20 @@ char const *Handle::handle_type_to_localized_string(NodeType type)
     }
 }
 
-bool Handle::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &canvas_event)
+bool Handle::_eventHandler(Tools::ToolBase *event_context, CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
+    bool ret = false;
 
-    switch (event->type) {
-    case GDK_KEY_PRESS:
-
-        switch (shortcut_key(event->key))
-        {
+    inspect_event(event,
+    [&] (KeyPressEvent const &event) {
+        switch (shortcut_key(event)) {
         case GDK_KEY_s:
         case GDK_KEY_S:
-
             /* if Shift+S is pressed while hovering over a cusp node handle,
                hold the handle in place; otherwise, process normally.
                this handle is guaranteed not to be degenerate. */
 
-            if (held_only_shift(event->key) && _parent->_type == NODE_CUSP) {
+            if (held_only_shift(event) && _parent->_type == NODE_CUSP) {
 
                 // make opposite handle collinear,
                 // but preserve length, unless degenerate
@@ -384,7 +381,7 @@ bool Handle::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasE
                 // update undo history
                 _parent->_pm()._commit(_("Change node type"));
 
-                return true;
+                ret = true;
             }
             break;
 
@@ -395,9 +392,9 @@ bool Handle::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasE
                hold the handle in place; otherwise, process normally.
                this handle is guaranteed not to be degenerate. */
 
-            if (held_only_shift(event->key) && (_parent->_type == NODE_CUSP ||
-                                                _parent->_type == NODE_SMOOTH ||
-                                                _parent->_type == NODE_AUTO)) {
+            if (held_only_shift(event) && (_parent->_type == NODE_CUSP ||
+                                           _parent->_type == NODE_SMOOTH ||
+                                           _parent->_type == NODE_AUTO)) {
 
                 // make opposite handle collinear, and of equal length
                 other()->setRelativePos(-relativePos());
@@ -409,21 +406,29 @@ bool Handle::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasE
                 // update undo history
                 _parent->_pm()._commit(_("Change node type"));
 
-                return true;
+                ret = true;
             }
             break;
-        }
-        break;
 
-    case GDK_2BUTTON_PRESS:
+        default:
+            break;
+        }
+    },
+
+    [&] (ButtonPressEvent const &event) {
+        if (event.numPress() != 2) {
+            return;
+        }
 
         // double-click event to set the handles of a node
         // to the position specified by DEFAULT_START_POWER
         handle_2button_press();
-        break;
-    }
+    },
 
-    return ControlPoint::_eventHandler(event_context, canvas_event);
+    [&] (CanvasEvent const &event) {}
+    );
+
+    return ControlPoint::_eventHandler(event_context, event);
 }
 
 // this function moves the handle and its opposite to the position specified by DEFAULT_START_POWER
@@ -435,7 +440,7 @@ void Handle::handle_2button_press(){
     }
 }
 
-bool Handle::grabbed(GdkEventMotion *)
+bool Handle::grabbed(MotionEvent const &)
 {
     _saved_other_pos = other()->position();
     _saved_length = _drag_out ? 0 : length();
@@ -443,22 +448,22 @@ bool Handle::grabbed(GdkEventMotion *)
     return false;
 }
 
-void Handle::dragged(Geom::Point &new_pos, GdkEventMotion *event)
+void Handle::dragged(Geom::Point &new_pos, MotionEvent const &event)
 {
     Geom::Point parent_pos = _parent->position();
     Geom::Point origin = _last_drag_origin();
     SnapManager &sm = _desktop->namedview->snap_manager;
-    bool snap = held_shift(*event) ? false : sm.someSnapperMightSnap();
+    bool snap = held_shift(event) ? false : sm.someSnapperMightSnap();
     std::optional<Inkscape::Snapper::SnapConstraint> ctrl_constraint;
 
     // with Alt, preserve length of the handle
-    if (held_alt(*event)) {
+    if (held_alt(event)) {
         new_pos = parent_pos + Geom::unit_vector(new_pos - parent_pos) * _saved_length;
         snap = false;
     }
     // with Ctrl, constrain to M_PI/rotationsnapsperpi increments from vertical
     // and the original position.
-    if (held_control(*event)) {
+    if (held_control(event)) {
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
         int snaps = 2 * prefs->getIntLimited("/options/rotationsnapsperpi/value", 12, 1, 1000);
 
@@ -527,7 +532,7 @@ void Handle::dragged(Geom::Point &new_pos, GdkEventMotion *event)
 
     // with Shift, if the node is cusp, rotate the other handle as well
     if (_parent->type() == NODE_CUSP && !_drag_out) {
-        if (held_shift(*event)) {
+        if (held_shift(event)) {
             Geom::Point other_relpos = _saved_other_pos - parent_pos;
             other_relpos *= Geom::Rotate(Geom::angle_between(origin - parent_pos, new_pos - parent_pos));
             other()->setRelativePos(other_relpos);
@@ -537,22 +542,22 @@ void Handle::dragged(Geom::Point &new_pos, GdkEventMotion *event)
         }
     }
     // if it is BSpline, but SHIFT or CONTROL are not pressed, fix it in the original position
-    if(_pm()._isBSpline() && !held_shift(*event) && !held_control(*event)){
+    if(_pm()._isBSpline() && !held_shift(event) && !held_control(event)){
         new_pos=_last_drag_origin();
     }
     _pm().update();
 }
 
-void Handle::ungrabbed(GdkEventButton *event)
+void Handle::ungrabbed(ButtonReleaseEvent const *event)
 {
     // hide the handle if it's less than dragtolerance away from the node
     // however, never do this for cancelled drag / broken grab
     // TODO is this actually a good idea?
     if (event) {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        auto prefs = Preferences::get();
         int drag_tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
 
-        Geom::Point dist = _desktop->d2w(_parent->position()) - _desktop->d2w(position());
+        auto const dist = _desktop->d2w(_parent->position()) - _desktop->d2w(position());
         if (dist.length() <= drag_tolerance) {
             move(_parent->position());
         }
@@ -564,11 +569,11 @@ void Handle::ungrabbed(GdkEventButton *event)
         _parent->ungrabbed(event);
     }
     _drag_out = false;
-    Inkscape::UI::Tools::sp_update_helperpath(_desktop);
+    Tools::sp_update_helperpath(_desktop);
     _pm()._handleUngrabbed();
 }
 
-bool Handle::clicked(GdkEventButton *event)
+bool Handle::clicked(ButtonReleaseEvent const &event)
 {
     _pm()._handleClicked(this, event);
     return true;
@@ -729,7 +734,7 @@ Glib::ustring Handle::_getTip(unsigned state) const
     return (s);
 }
 
-Glib::ustring Handle::_getDragTip(GdkEventMotion */*event*/) const
+Glib::ustring Handle::_getDragTip(MotionEvent const &/*event*/) const
 {
     Geom::Point dist = position() - _last_drag_origin();
     // report angle in mathematical convention
@@ -1023,16 +1028,16 @@ void Node::setType(NodeType type, bool update_handles)
                 // if the front handle is degenerate and next path segment is a line, make back collinear;
                 // otherwise, pull out the other handle to 1/3 of distance to prev.
                 if (next_line) {
-                    _back.setDirection(*_next(), *this);
+                    _back.setDirection(_next()->position(), position());
                 } else if (_prev()) {
-                    Geom::Point dir = direction(_back, *this);
+                    Geom::Point dir = direction(_back.position(), position());
                     _front.setRelativePos(Geom::distance(_prev()->position(), position()) / 3 * dir);
                 }
             } else if (_back.isDegenerate()) {
                 if (prev_line) {
-                    _front.setDirection(*_prev(), *this);
+                    _front.setDirection(_prev()->position(), position());
                 } else if (_next()) {
-                    Geom::Point dir = direction(_front, *this);
+                    Geom::Point dir = direction(_front.position(), position());
                     _back.setRelativePos(Geom::distance(_next()->position(), position()) / 3 * dir);
                 }
             } else {
@@ -1040,8 +1045,8 @@ void Node::setType(NodeType type, bool update_handles)
                    first make back collinear with the vector front ---> back,
                    then make front collinear with back ---> node.
                    (not back ---> front, because back's position was changed in the first call) */
-                _back.setDirection(_front, _back);
-                _front.setDirection(_back, *this);
+                _back.setDirection(_front.position(), _back.position());
+                _front.setDirection(_back.position(), position());
             }
             } break;
         case NODE_SYMMETRIC:
@@ -1061,7 +1066,7 @@ void Node::setType(NodeType type, bool update_handles)
                 // Both handles are extended. Compute average length, use direction from
                 // back handle to front handle. This also works correctly for degenerates
                 double len = (_front.length() + _back.length()) / 2;
-                Geom::Point dir = direction(_back, _front);
+                Geom::Point dir = direction(_back.position(), _front.position());
                 _front.setRelativePos(dir * len);
                 _back.setRelativePos(-dir * len);
             }
@@ -1146,30 +1151,25 @@ NodeType Node::parse_nodetype(char x)
     }
 }
 
-bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEvent const &canvas_event)
+bool Node::_eventHandler(Tools::ToolBase *event_context, CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
     int dir = 0;
     int state = 0;
 
-    switch (event->type)
-    {
-    case GDK_SCROLL:
-        state = event->scroll.state;
-        if (event->scroll.direction == GDK_SCROLL_UP) {
+    inspect_event(event,
+    [&] (ScrollEvent const &event) {
+        state = event.modifiers();
+        if (event.direction() == GDK_SCROLL_UP) {
             dir = 1;
-        } else if (event->scroll.direction == GDK_SCROLL_DOWN) {
+        } else if (event.direction() == GDK_SCROLL_DOWN) {
             dir = -1;
-        } else if (event->scroll.direction == GDK_SCROLL_SMOOTH) {
-            dir = event->scroll.delta_y > 0 ? -1 : 1;
-        } else {
-            break;
+        } else if (event.direction() == GDK_SCROLL_SMOOTH) {
+            dir = event.deltaY() > 0 ? -1 : 1;
         }
-        break;
-    case GDK_KEY_PRESS:
-        state = event->key.state;
-        switch (shortcut_key(event->key))
-        {
+    },
+    [&] (KeyPressEvent const &event) {
+        state = event.modifiers();
+        switch (shortcut_key(event)) {
         case GDK_KEY_Page_Up:
             dir = 1;
             break;
@@ -1179,23 +1179,24 @@ bool Node::_eventHandler(Inkscape::UI::Tools::ToolBase *event_context, CanvasEve
         default:
             break;
         }
-    default:
-        break;
-    }
+    },
+    [&] (CanvasEvent const &event) {}
+    );
 
     using namespace Inkscape::Modifiers;
     auto linear_grow = Modifier::get(Modifiers::Type::NODE_GROW_LINEAR)->active(state);
     auto spatial_grow = Modifier::get(Modifiers::Type::NODE_GROW_SPATIAL)->active(state);
 
     if (dir && (linear_grow || spatial_grow)) {
-        if (linear_grow)
+        if (linear_grow) {
             _linearGrow(dir);
-        else if (spatial_grow)
+        } else if (spatial_grow) {
             _selection.spatialGrow(this, dir);
+        }
         return true;
     }
 
-    return ControlPoint::_eventHandler(event_context, canvas_event);
+    return ControlPoint::_eventHandler(event_context, event);
 }
 
 void Node::_linearGrow(int dir)
@@ -1222,7 +1223,7 @@ void Node::_linearGrow(int dir)
         // find first unselected nodes on both sides
         while (fwd && fwd->selected()) {
             NodeList::iterator n = fwd.next();
-            distance_front += Geom::bezier_length(*fwd, fwd->_front, n->_back, *n);
+            distance_front += Geom::bezier_length(fwd->position(), fwd->_front.position(), n->_back.position(), n->position());
             fwd = n;
             if (fwd == this_iter)
                 // there is no unselected node in this cyclic subpath
@@ -1233,7 +1234,7 @@ void Node::_linearGrow(int dir)
         // so we are guaranteed to stop.
         while (rev && rev->selected()) {
             NodeList::iterator p = rev.prev();
-            distance_back += Geom::bezier_length(*rev, rev->_back, p->_front, *p);
+            distance_back += Geom::bezier_length(rev->position(), rev->_back.position(), p->_front.position(), p->position());
             rev = p;
         }
 
@@ -1264,7 +1265,7 @@ void Node::_linearGrow(int dir)
                     last_distance_front = distance_front;
                 }
                 NodeList::iterator n = fwd.next();
-                if (n) distance_front += Geom::bezier_length(*fwd, fwd->_front, n->_back, *n);
+                if (n) distance_front += Geom::bezier_length(fwd->position(), fwd->_front.position(), n->_back.position(), n->position());
                 fwd = n;
             } else if (rev && (!fwd || distance_front > distance_back)) {
                 if (rev->selected()) {
@@ -1272,7 +1273,7 @@ void Node::_linearGrow(int dir)
                     last_distance_back = distance_back;
                 }
                 NodeList::iterator p = rev.prev();
-                if (p) distance_back += Geom::bezier_length(*rev, rev->_back, p->_front, *p);
+                if (p) distance_back += Geom::bezier_length(rev->position(), rev->_back.position(), p->_front.position(), p->position());
                 rev = p;
             }
             // Check whether we walked the entire cyclic subpath.
@@ -1282,8 +1283,8 @@ void Node::_linearGrow(int dir)
             if (fwd && fwd == rev) {
                 if (!fwd->selected()) break;
                 NodeList::iterator fwdp = fwd.prev(), revn = rev.next();
-                double df = distance_front + Geom::bezier_length(*fwdp, fwdp->_front, fwd->_back, *fwd);
-                double db = distance_back + Geom::bezier_length(*revn, revn->_back, rev->_front, *rev);
+                double df = distance_front + Geom::bezier_length(fwdp->position(), fwdp->_front.position(), fwd->_back.position(), fwd->position());
+                double db = distance_back + Geom::bezier_length(revn->position(), revn->_back.position(), rev->_front.position(), rev->position());
                 if (df > db) {
                     last_fwd = fwd;
                     last_distance_front = df;
@@ -1327,18 +1328,18 @@ void Node::_setState(State state)
     SelectableControlPoint::_setState(state);
 }
 
-bool Node::grabbed(GdkEventMotion *event)
+bool Node::grabbed(MotionEvent const &event)
 {
     if (SelectableControlPoint::grabbed(event)) {
         return true;
     }
 
     // Dragging out handles with Shift + drag on a node.
-    if (!held_shift(*event)) {
+    if (!held_shift(event)) {
         return false;
     }
 
-    Geom::Point evp = event_point(*event);
+    Geom::Point evp = event.eventPos();
     Geom::Point rel_evp = evp - _last_click_event_point();
 
     // This should work even if dragtolerance is zero and evp coincides with node position.
@@ -1371,17 +1372,17 @@ bool Node::grabbed(GdkEventMotion *event)
     return true;
 }
 
-void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
+void Node::dragged(Geom::Point &new_pos, MotionEvent const &event)
 {
     // For a note on how snapping is implemented in Inkscape, see snap.h.
-    SnapManager &sm = _desktop->namedview->snap_manager;
+    auto &sm = _desktop->namedview->snap_manager;
     // even if we won't really snap, we might still call the one of the
     // constrainedSnap() methods to enforce the constraints, so we need
     // to setup the snapmanager anyway; this is also required for someSnapperMightSnap()
     sm.setup(_desktop);
 
     // do not snap when Shift is pressed
-    bool snap = !held_shift(*event) && sm.someSnapperMightSnap();
+    bool snap = !held_shift(event) && sm.someSnapperMightSnap();
 
     Inkscape::SnappedPoint sp;
     std::vector<Inkscape::SnapCandidatePoint> unselected;
@@ -1394,13 +1395,10 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
          * TODO Snapping to unselected segments of selected paths doesn't work yet. */
 
         // Build the list of unselected nodes.
-        typedef ControlPointSelection::Set Set;
-        Set &nodes = _selection.allPoints();
-        for (auto node : nodes) {
+        for (auto node : _selection.allPoints()) {
             if (!node->selected()) {
-                Node *n = static_cast<Node*>(node);
-                Inkscape::SnapCandidatePoint p(n->position(), n->_snapSourceType(), n->_snapTargetType());
-                unselected.push_back(p);
+                auto n = static_cast<Node*>(node);
+                unselected.emplace_back(n->position(), n->_snapSourceType(), n->_snapTargetType());
             }
         }
         sm.unSetup();
@@ -1446,12 +1444,12 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
         scp_free.addVector(*back_direction);
     }
 
-    if (held_control(*event)) {
+    if (held_control(event)) {
         // We're about to consider a constrained snap, which is already limited to 1D
         // Therefore tangential or perpendicular snapping will not be considered, and therefore
         // all calls above to scp_free.addVector() and scp_free.addOrigin() can be neglected
         std::vector<Inkscape::Snapper::SnapConstraint> constraints;
-        if (held_alt(*event)) { // with Ctrl+Alt, constrain to handle lines
+        if (held_alt(event)) { // with Ctrl+Alt, constrain to handle lines
             Inkscape::Preferences *prefs = Inkscape::Preferences::get();
             int snaps = prefs->getIntLimited("/options/rotationsnapsperpi/value", 12, 1, 1000);
             double min_angle = M_PI / snaps;
@@ -1484,12 +1482,12 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
                 }
             }
 
-            sp = sm.multipleConstrainedSnaps(Inkscape::SnapCandidatePoint(new_pos, _snapSourceType()), constraints, held_shift(*event));
+            sp = sm.multipleConstrainedSnaps(Inkscape::SnapCandidatePoint(new_pos, _snapSourceType()), constraints, held_shift(event));
         } else {
             // with Ctrl and no Alt: constrain to axes
             constraints.emplace_back(origin, Geom::Point(1, 0));
             constraints.emplace_back(origin, Geom::Point(0, 1));
-            sp = sm.multipleConstrainedSnaps(Inkscape::SnapCandidatePoint(new_pos, _snapSourceType()), constraints, held_shift(*event));
+            sp = sm.multipleConstrainedSnaps(Inkscape::SnapCandidatePoint(new_pos, _snapSourceType()), constraints, held_shift(event));
         }
         new_pos = sp.getPoint();
     } else if (snap) {
@@ -1502,10 +1500,11 @@ void Node::dragged(Geom::Point &new_pos, GdkEventMotion *event)
     SelectableControlPoint::dragged(new_pos, event);
 }
 
-bool Node::clicked(GdkEventButton *event)
+bool Node::clicked(ButtonReleaseEvent const &event)
 {
-    if(_pm()._nodeClicked(this, event))
+    if(_pm()._nodeClicked(this, event)) {
         return true;
+    }
     return SelectableControlPoint::clicked(event);
 }
 
@@ -1515,6 +1514,7 @@ Inkscape::SnapSourceType Node::_snapSourceType() const
         return SNAPSOURCE_NODE_SMOOTH;
     return SNAPSOURCE_NODE_CUSP;
 }
+
 Inkscape::SnapTargetType Node::_snapTargetType() const
 {
     if (_type == NODE_SMOOTH || _type == NODE_AUTO)
@@ -1668,7 +1668,7 @@ Glib::ustring Node::_getTip(unsigned state) const
     return (s);
 }
 
-Glib::ustring Node::_getDragTip(GdkEventMotion */*event*/) const
+Glib::ustring Node::_getDragTip(MotionEvent const &/*event*/) const
 {
     Geom::Point dist = position() - _last_drag_origin();
     
@@ -1711,7 +1711,6 @@ bool Node::_is_line_segment(Node *first, Node *second)
 
 NodeList::NodeList(SubpathList &splist)
     : _list(splist)
-    , _closed(false)
 {
     this->ln_list = this;
     this->ln_next = this;
@@ -1723,24 +1722,19 @@ NodeList::~NodeList()
     clear();
 }
 
-bool NodeList::empty()
+bool NodeList::empty() const
 {
     return ln_next == this;
 }
 
-NodeList::size_type NodeList::size()
+NodeList::size_type NodeList::size() const
 {
     size_type sz = 0;
     for (ListNode *ln = ln_next; ln != this; ln = ln->ln_next) ++sz;
     return sz;
 }
 
-bool NodeList::closed()
-{
-    return _closed;
-}
-
-bool NodeList::degenerate()
+bool NodeList::degenerate() const
 {
     return closed() ? empty() : ++begin() == end();
 }

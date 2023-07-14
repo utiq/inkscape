@@ -57,7 +57,6 @@
 #include "svg/svg.h"
 
 #include "ui/draw-anchor.h"
-#include "ui/tool/event-utils.h"
 #include "ui/widget/events/canvas-event.h"
 
 #include "xml/node.h"
@@ -526,7 +525,7 @@ bool PencilTool::_handleKeyPress(GdkEventKey const &event) {
         case GDK_KEY_KP_Up:
         case GDK_KEY_KP_Down:
             // Prevent the zoom field from activation.
-            if (!Inkscape::UI::held_only_control(event)) {
+            if (!state_held_only_control(event.state)) {
                 ret = true;
             }
             break;
@@ -541,7 +540,7 @@ bool PencilTool::_handleKeyPress(GdkEventKey const &event) {
             break;
         case GDK_KEY_z:
         case GDK_KEY_Z:
-            if (Inkscape::UI::held_only_control(event) && this->_npoints != 0) {
+            if (state_held_only_control(event.state) && this->_npoints != 0) {
                 // if drawing, cancel, otherwise pass it up for undo
                 if (this->_state != SP_PENCIL_CONTEXT_IDLE) {
                     this->_cancel();
@@ -551,7 +550,7 @@ bool PencilTool::_handleKeyPress(GdkEventKey const &event) {
             break;
         case GDK_KEY_g:
         case GDK_KEY_G:
-            if (Inkscape::UI::held_only_shift(event)) {
+            if (state_held_only_shift(event.state)) {
                 _desktop->getSelection()->toGuides();
                 ret = true;
             }

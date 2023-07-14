@@ -42,7 +42,6 @@
 #include "ui/shape-editor.h" // temporary!
 #include "ui/tool/control-point-selection.h"
 #include "ui/tool/curve-drag-point.h"
-#include "ui/tool/event-utils.h"
 #include "ui/tool/multi-path-manipulator.h"
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
@@ -419,7 +418,7 @@ bool NodeTool::root_handler(CanvasEvent const &event)
     auto rband = get_rubberband();
 
     if (!rband->is_started()) {
-        if (_multipath->event(this, event.original()) || _selected_nodes->event(this, event.original())) {
+        if (_multipath->event(this, event) || _selected_nodes->event(this, event)) {
             return true;
         }
     }
