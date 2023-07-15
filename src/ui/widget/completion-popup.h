@@ -10,9 +10,9 @@
 #include <gtkmm/builder.h>
 #include <gtkmm/entrycompletion.h>
 #include <gtkmm/liststore.h>
+#include "ui/widget/popover-menu.h"
 
 namespace Gtk {
-class Menu;
 class MenuButton;
 class SearchEntry;
 } // namespace Gtk
@@ -23,7 +23,7 @@ class CompletionPopup : public Gtk::Box {
 public:
     CompletionPopup();
 
-    Gtk::Menu& get_menu();
+    PopoverMenu& get_menu();
     Gtk::SearchEntry& get_entry();
     Glib::RefPtr<Gtk::ListStore> get_list();
 
@@ -39,7 +39,7 @@ private:
     Glib::RefPtr<Gtk::ListStore> _list;
     Gtk::SearchEntry& _search;
     Gtk::MenuButton& _button;
-    Gtk::Menu& _popup;
+    PopoverMenu _popover_menu;
     Glib::RefPtr<Gtk::EntryCompletion> _completion;
     sigc::signal<void (int)> _match_selected;
     sigc::signal<void ()> _button_press;

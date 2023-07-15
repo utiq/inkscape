@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
 /** @file
  * @brief A wrapper for Gtk::Notebook.
- *
+ */
+/*
  * Authors: see git history
  *   Tavmjong Bah
  *
@@ -15,16 +15,17 @@
 
 #include <optional>
 #include <tuple>
-#include <vector>
 #include <glibmm/i18n.h>
+#include <gtkmm/button.h>
 #include <gtkmm/eventbox.h>
+#include <gtkmm/menubutton.h>
 #include <gtkmm/scrollbar.h>
-#include <gtkmm/separatormenuitem.h>
-#include <gtkmm/menu.h>
+#include <gtkmm/separator.h>
 
 #include "enums.h"
 #include "inkscape.h"
 #include "inkscape-window.h"
+#include "ui/column-menu-builder.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/dialog/dialog-data.h"
 #include "ui/dialog/dialog-container.h"
@@ -32,10 +33,9 @@
 #include "ui/dialog/dialog-window.h"
 #include "ui/icon-loader.h"
 #include "ui/util.h"
+#include "ui/widget/popover-menu-item.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 std::list<DialogNotebook *> DialogNotebook::_instances;
 
@@ -73,34 +73,29 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
     _notebook.set_group_name("InkscapeDialogGroup");
     _notebook.set_scrollable(true);
 
-    Gtk::MenuItem *new_menu_item = nullptr;
+    UI::Widget::PopoverMenuItem *new_menu_item = nullptr;
 
     int row = 0;
     // Close tab
-    new_menu_item = Gtk::manage(new Gtk::MenuItem(_("Close Current Tab")));
+    new_menu_item = Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("Close Current Tab"));
     _conn.emplace_back(
         new_menu_item->signal_activate().connect(sigc::mem_fun(*this, &DialogNotebook::close_tab_callback)));
     _menu.attach(*new_menu_item, 0, 2, row, row + 1);
     row++;
 
     // Close notebook
-    new_menu_item = Gtk::manage(new Gtk::MenuItem(_("Close Panel")));
+    new_menu_item = Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("Close Panel"));
     _conn.emplace_back(
         new_menu_item->signal_activate().connect(sigc::mem_fun(*this, &DialogNotebook::close_notebook_callback)));
     _menu.attach(*new_menu_item, 0, 2, row, row + 1);
     row++;
 
     // Move to new window
-    new_menu_item = Gtk::manage(new Gtk::MenuItem(_("Move Tab to New Window")));
+    new_menu_item = Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("Move Tab to New Window"));
     _conn.emplace_back(
         new_menu_item->signal_activate().connect([=]() { pop_tab_callback(); }));
     _menu.attach(*new_menu_item, 0, 2, row, row + 1);
     row++;
-
-    // Separator menu item
-    // new_menu_item = Gtk::manage(new Gtk::SeparatorMenuItem());
-    // _menu.attach(*new_menu_item, 0, 2, row, row + 1);
-    // row++;
 
     struct Dialog {
         Glib::ustring key;
@@ -140,60 +135,33 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
         return a.order < b.order;
     });
 
-    int col = 0;
-    DialogData::Category category = DialogData::Other;
-    for (auto&& data : all_dialogs) {
-        if (data.category != category) {
-            if (col > 0) row++;
-
-            auto separator = Gtk::make_managed<Gtk::SeparatorMenuItem>();
-            _menu.attach(*separator, 0, 2, row, row + 1);
-            row++;
-
-            category = data.category;
-            auto sep = Gtk::make_managed<Gtk::MenuItem>();
-            sep->set_label(Glib::ustring(gettext(dialog_categories[category])).uppercase());
-            sep->get_style_context()->add_class("menu-category");
-            sep->set_sensitive(false);
-            _menu.attach(*sep, 0, 2, row, row + 1);
-            col = 0;
-            row++;
-        }
-        auto key = data.key;
-        auto dlg = Gtk::make_managed<Gtk::MenuItem>();
-        auto *grid = Gtk::make_managed<Gtk::Grid>();
-        grid->set_row_spacing(10);
-        grid->set_column_spacing(8);
-        grid->insert_row(0);
-        grid->insert_column(0);
-        grid->insert_column(1);
-        grid->attach(*Gtk::make_managed<Gtk::Image>(data.icon_name, Gtk::ICON_SIZE_MENU),0,0);
-        grid->attach(*Gtk::make_managed<Gtk::Label>(data.label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true),1,0);
-        dlg->add(*grid);
-        dlg->signal_activate().connect([=](){
+    auto builder = ColumnMenuBuilder<DialogData::Category>{_menu, 2, Gtk::ICON_SIZE_MENU,
+                                                           row, Gtk::ALIGN_START};
+    for (auto const &data : all_dialogs) {
+        auto callback = [key = data.key]{
             // get desktop's container, it may be different than current '_container'!
             if (auto desktop = SP_ACTIVE_DESKTOP) {
                 if (auto container = desktop->getContainer()) {
                     container->new_dialog(key);
                 }
             }
-        });
-        _menu.attach(*dlg, col, col + 1, row, row + 1);
-        col++;
-        if (col > 1) {
-            col = 0;
-            row++;
+        };
+        builder.add_item(data.label, data.category, {}, data.icon_name, true, false,
+                         std::move(callback));
+        if (builder.new_section()) {
+            builder.set_section(gettext(dialog_categories[data.category]));
         }
     }
+
     if (prefs->getBool("/theme/symbolicIcons", true)) {
         _menu.get_style_context()->add_class("symbolic");
     }
 
     _menu.show_all_children();
 
-    Gtk::Button* menubtn = Gtk::manage(new Gtk::Button());
+    auto const menubtn = Gtk::make_managed<Gtk::MenuButton>();
     menubtn->set_image_from_icon_name("go-down-symbolic");
-    menubtn->signal_clicked().connect([=](){ _menu.popup_at_widget(menubtn, Gdk::GRAVITY_SOUTH, Gdk::GRAVITY_NORTH, nullptr); });
+    menubtn->set_popover(_menu);
     _notebook.set_action_widget(menubtn, Gtk::PACK_END);
     menubtn->show();
     menubtn->set_relief(Gtk::RELIEF_NORMAL);
@@ -334,7 +302,7 @@ void DialogNotebook::add_page(Gtk::Widget &page, Gtk::Widget &tab, Glib::ustring
                 wrapperbox->pack_end  (child, expand, fill, padding);
             }
 
-            return ForEachChildResult::_continue;
+            return ForEachResult::_continue;
         });
 
         wrapper->add(*wrapperbox);
@@ -637,12 +605,12 @@ void DialogNotebook::on_size_allocate_scroll(Gtk::Allocation &a)
                         scrolledwindow->property_vscrollbar_policy().set_value(Gtk::POLICY_EXTERNAL);
                     } else {
                         // we don't need to update; break
-                        return ForEachChildResult::_break;
+                        return ForEachResult::_break;
                     }
                 }
             }
         }
-        return ForEachChildResult::_continue;
+        return ForEachResult::_continue;
     });
 
     set_allocation(a);
@@ -682,7 +650,7 @@ void DialogNotebook::on_size_allocate_notebook(Gtk::Allocation &a)
     for_each_child(_notebook, [=](Gtk::Widget &page){
         auto const cover = dynamic_cast<Gtk::EventBox *>(_notebook.get_tab_label(page));
         if (cover) cover->show_all();
-        return ForEachChildResult::_continue;
+        return ForEachResult::_continue;
     });
     _notebook.get_preferred_width(total_width, nat_width); // get full notebook allocation (all open)
 
@@ -729,18 +697,23 @@ void DialogNotebook::on_size_allocate_notebook(Gtk::Allocation &a)
 }
 
 /**
- * Signal handler to close a tab when middle-clicking.
+ * Signal handler to close a tab on middle-click or to open menu on right-click.
  */
 bool DialogNotebook::on_tab_click_event(GdkEventButton *event, Gtk::Widget *page)
 {
     if (event->type == GDK_BUTTON_PRESS) {
+        if (_menutabs.get_visible()) {
+            _menutabs.popdown();
+            return false;
+        }
+
         if (event->button == 2) { // Close tab
             _selected_page = page;
             close_tab_callback();
         } else if (event->button == 3) { // Show menu
             _selected_page = page;
             reload_tab_menu();
-            _menutabs.popup_at_pointer((GdkEvent *)event);
+            _menutabs.popup_at(*_notebook.get_tab_label(*page));
         }
     }
 
@@ -799,11 +772,11 @@ void DialogNotebook::reload_tab_menu()
         for_each(_connmenu.begin(), _connmenu.end(), [&](auto c) { c.disconnect(); });
         _connmenu.clear();
 
-        for_each_child(_menutabs, [=](Gtk::Widget &child){
-            _menutabs.remove(child);
-            delete &child; // We allocated with new, so OK
-            return ForEachChildResult::_continue;
-        });
+        // In GTK4 we'll need to remove before delete (via unique_ptr). Do so now too.
+        for (auto const &item: _menutabs_items) {
+            _menutabs.remove(*item);
+        }
+        _menutabs_items.clear();
 
         auto prefs = Inkscape::Preferences::get();
         bool symbolic = false;
@@ -814,48 +787,45 @@ void DialogNotebook::reload_tab_menu()
         for_each_child(_notebook, [=](Gtk::Widget &page){
             auto const children = get_cover_box_children(_notebook.get_tab_label(page));
             if (!children) {
-                return ForEachChildResult::_continue;
+                return ForEachResult::_continue;
             }
 
-            // Create a box to hold icon and label as Gtk::MenuItem derives from GtkBin and can
-            // only hold one child
             auto const boxmenu = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 8);
             boxmenu->set_halign(Gtk::ALIGN_START);
 
-            auto const menuitem = new Gtk::MenuItem{}; // ugh but we must delete
+            auto const &menuitem = _menutabs_items.emplace_back(std::make_unique<UI::Widget::PopoverMenuItem>());
             menuitem->add(*boxmenu);
 
             auto const &[icon, label, close] = *children;
 
-            Gtk::Label *labelto = Gtk::manage(new Gtk::Label(label->get_text()));
-
             if (icon) {
-                int min_width, nat_width;
-                icon->get_preferred_width(min_width, nat_width);
-                _icon_width = min_width;
                 auto name = icon->get_icon_name();
                 if (!name.empty()) {
                     if (symbolic && name.find("-symbolic") == Glib::ustring::npos) {
                         name += Glib::ustring("-symbolic");
                     }
                     Gtk::Image *iconend  = sp_get_icon_image(name, Gtk::ICON_SIZE_MENU);
-                    boxmenu->pack_start(*iconend, false, false, 0);
+                    boxmenu->add(*iconend);
                 }
             }
 
-            boxmenu->pack_start(*labelto, true,  true,  0);
+            Gtk::Label *labelto = Gtk::manage(new Gtk::Label(label->get_text()));
+            labelto->set_hexpand(true);
+            boxmenu->add(*labelto);
+
             size_t const pagenum = _notebook.page_num(page);
             _connmenu.emplace_back(
                 menuitem->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &DialogNotebook::change_page),pagenum)));
             
             _menutabs.append(*menuitem);
 
-            return ForEachChildResult::_continue;
+            return ForEachResult::_continue;
         });
     }
 
     _menutabs.show_all();
 }
+
 /**
  * Callback to toggle all tab labels to the selected state.
  * @param show: whether you want the labels to show or not
@@ -867,7 +837,7 @@ void DialogNotebook::toggle_tab_labels_callback(bool show)
     for_each_child(_notebook, [=](Gtk::Widget &page){
         auto const children = get_cover_box_children(_notebook.get_tab_label(page));
         if (!children) {
-            return ForEachChildResult::_continue;
+            return ForEachResult::_continue;
         }
 
         auto const &[icon, label, close] = *children;
@@ -889,7 +859,7 @@ void DialogNotebook::toggle_tab_labels_callback(bool show)
             }
         }
 
-        return ForEachChildResult::_continue;
+        return ForEachResult::_continue;
     });
 
     _labels_set_off = _labels_off;
@@ -924,12 +894,12 @@ void DialogNotebook::on_page_switch(Gtk::Widget *curr_page, guint)
         }
 
         if (_label_visible) {
-            return ForEachChildResult::_continue;
+            return ForEachResult::_continue;
         }
 
         auto const children = get_cover_box_children(_notebook.get_tab_label(page));
         if (!children) {
-            return ForEachChildResult::_continue;
+            return ForEachResult::_continue;
         }
 
         auto const &[icon, label, close] = *children;
@@ -951,13 +921,13 @@ void DialogNotebook::on_page_switch(Gtk::Widget *curr_page, guint)
                 }
             }
 
-            return ForEachChildResult::_continue;
+            return ForEachResult::_continue;
         }
 
         close->hide();
         label->hide();
 
-        return ForEachChildResult::_continue;
+        return ForEachResult::_continue;
     });
 
     if (_prev_alloc_width) {
@@ -1042,9 +1012,7 @@ void DialogNotebook::set_requested_height(int height) {
     _natural_height = height;
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

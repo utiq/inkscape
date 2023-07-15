@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <cassert>
-#include <gtkmm/entrycompletion.h>
-#include <gtkmm/menu.h>
 #include <gtkmm/menubutton.h>
 #include <gtkmm/searchentry.h>
 
@@ -22,9 +20,11 @@ CompletionPopup::CompletionPopup() :
     _builder(create_builder("completion-box.glade")),
     _search(get_widget<Gtk::SearchEntry>(_builder, "search")),
     _button(get_widget<Gtk::MenuButton>(_builder, "menu-btn")),
-    _completion(get_object<Gtk::EntryCompletion>(_builder, "completion")),
-    _popup(get_widget<Gtk::Menu>(_builder, "popup"))
+    _completion(get_object<Gtk::EntryCompletion>(_builder, "completion"))
 {
+    _popover_menu.show_all_children();
+    _button.set_popover(_popover_menu);
+
     _list = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(_builder->get_object("list"));
     assert(_list);
 
@@ -81,8 +81,8 @@ void CompletionPopup::add_to_completion_list(int id, Glib::ustring name, Glib::u
     row.set_value(ColSearch, search_text.empty() ? name : search_text);
 }
 
-Gtk::Menu& CompletionPopup::get_menu() {
-    return _popup;
+PopoverMenu& CompletionPopup::get_menu() {
+    return _popover_menu;
 }
 
 Gtk::SearchEntry& CompletionPopup::get_entry() {

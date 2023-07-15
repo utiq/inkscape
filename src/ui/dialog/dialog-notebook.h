@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
-#ifndef INKSCAPE_UI_DIALOG_NOTEBOOK_H
-#define INKSCAPE_UI_DIALOG_NOTEBOOK_H
-
 /** @file
  * @brief A wrapper for Gtk::Notebook.
- *
+ */
+ /*
  * Authors: see git history
  *   Tavmjong Bah
  *
@@ -14,15 +11,26 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_UI_DIALOG_NOTEBOOK_H
+#define INKSCAPE_UI_DIALOG_NOTEBOOK_H
+
+#include <memory>
+#include <vector>
 #include <gdkmm/dragcontext.h>
-#include <gtkmm/menu.h>
+#include <gtkmm/box.h>
+#include <gtkmm/grid.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiomenuitem.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/widget.h>
+#include "ui/widget/popover-menu.h"
 
-namespace Inkscape {
-namespace UI {
+namespace Inkscape::UI {
+
+namespace Widget {
+class PopoverMenuItem;
+} // namespace Widget
+
 namespace Dialog {
 
 enum class TabsStatus {
@@ -59,11 +67,13 @@ public:
     Gtk::ScrolledWindow * get_scrolledwindow(Gtk::Widget &page);
     Gtk::ScrolledWindow * get_current_scrolledwindow(bool skip_scroll_provider);
     void set_requested_height(int height);
+
 private:
     // Widgets
     DialogContainer *_container;
-    Gtk::Menu _menu;
-    Gtk::Menu _menutabs;
+    UI::Widget::PopoverMenu _menu;
+    UI::Widget::PopoverMenu _menutabs;
+    std::vector<std::unique_ptr<UI::Widget::PopoverMenuItem>> _menutabs_items;
     Gtk::Notebook _notebook;
 
     // State variables
@@ -76,7 +86,6 @@ private:
     gint _prev_alloc_width = 0;
     gint _none_tab_width = 0;
     gint _single_tab_width = 0;
-    gint _icon_width = 0;
     TabsStatus tabstatus = TabsStatus::NONE;
     TabsStatus prev_tabstatus = TabsStatus::NONE;
     Gtk::Widget *_selected_page;
@@ -112,8 +121,8 @@ private:
 };
 
 } // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+
+} // namespace Inkscape::UI
 
 #endif // INKSCAPE_UI_DIALOG_NOTEBOOK_H
 

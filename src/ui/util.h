@@ -76,18 +76,33 @@ inline void widget_show(Gtk::Widget &widget, bool show)
 /// Translate cell renderer state to style flags.
 Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state);
 
-/// Whether for_each_child() will continue or stop after calling Func per child.
-enum class ForEachChildResult {_continue, _break};
+/// Whether for_each_*() will continue or stop after calling Func per child.
+enum class ForEachResult {_continue, _break};
 
 /// Call Func with a reference to each child of parent, until it returns _break.
+/// Accessing children changes between GTK3 & GTK4, so best consolidate it here.
 /// See also src/widgets/spw-utilities: sp_traverse_widget_tree().
 template <typename Func>
 void for_each_child(Gtk::Container &parent, Func &&func)
 {
-    static_assert(std::is_invocable_r_v<ForEachChildResult, Func, Gtk::Widget &>);
+    static_assert(std::is_invocable_r_v<ForEachResult, Func, Gtk::Widget &>);
     for (auto const child: parent.get_children()) {
         auto const result = func(*child);
-        if (result == ForEachChildResult::_break) {
+        if (result == ForEachResult::_break) {
+            return;
+        }
+    }
+}
+
+/// Call Func with a reference to successive parents, until Func returns _break.
+template <typename Func>
+void for_each_parent(Gtk::Widget &widget, Func &&func)
+{
+    static_assert(std::is_invocable_r_v<ForEachResult, Func, Gtk::Widget &>);
+    auto parent = widget.get_parent();
+    for (; parent != nullptr; parent = parent->get_parent()) {
+        auto const result = func(*parent);
+        if (result == ForEachResult::_break) {
             return;
         }
     }

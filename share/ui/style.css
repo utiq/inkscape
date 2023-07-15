@@ -1034,3 +1034,16 @@ padding:3px 3px 10px 3px;
 .angle-slider {
     min-width: 80px;
 }
+
+/* Inkscape::UI::Widget::PopoverMenu */
+/* Make it look basically like GtkMenu; see comments @ original merge request */
+popover.popover-menu {
+    padding: 0;
+}
+popover.popover-menu menu {
+    background: none;
+    border: none;
+}
+popover.popover-menu menuitem {
+    outline-style: none;
+}

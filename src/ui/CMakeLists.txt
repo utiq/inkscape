@@ -201,6 +201,7 @@ set(ui_SRC
 	widget/color-slider.cpp
 	widget/combo-box-entry-tool-item.cpp
 	widget/combo-tool-item.cpp
+	widget/css-name-class-init.cpp
 	widget/custom-tooltip.cpp
 	widget/dash-selector.cpp
 	widget/entity-entry.cpp
@@ -241,6 +242,8 @@ set(ui_SRC
 	widget/paint-selector.cpp
 	widget/pattern-editor.cpp
 	widget/point.cpp
+	widget/popover-menu.cpp
+	widget/popover-menu-item.cpp
 	widget/preferences-widget.cpp
 	widget/random.cpp
 	widget/registered-widget.cpp
@@ -483,6 +486,7 @@ set(ui_SRC
 	widget/combo-enums.h
 	widget/combo-box-entry-tool-item.h
 	widget/combo-tool-item.h
+	widget/css-name-class-init.h
 	widget/custom-tooltip.h
 	widget/dash-selector.h
 	widget/entity-entry.h
@@ -525,6 +529,8 @@ set(ui_SRC
 	widget/paint-selector.h
 	widget/pattern-editor.h
 	widget/point.h
+	widget/popover-menu.h
+	widget/popover-menu-item.h
 	widget/preferences-widget.h
 	widget/random.h
 	widget/registered-enums.h
