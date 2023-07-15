@@ -39,7 +39,6 @@ std::map<std::string, DialogData> const &get_dialog_data()
     {"FontCollections",    {_("_Font Collections"),     INKSCAPE_ICON("font_collections"),            DialogData::Advanced,       ScrollProvider::NOPROVIDE }},
     {"Glyphs",             {_("_Unicode Characters"),   INKSCAPE_ICON("accessories-character-map"),   DialogData::Basic,          ScrollProvider::NOPROVIDE }},
     {"IconPreview",        {_("Icon Preview"),          INKSCAPE_ICON("dialog-icon-preview"),         DialogData::Basic,          ScrollProvider::NOPROVIDE }},
-    {"Input",              {_("_Input Devices"),        INKSCAPE_ICON("dialog-input-devices"),        DialogData::Settings,       ScrollProvider::NOPROVIDE }},
     {"LivePathEffect",     {_("Path E_ffects"),         INKSCAPE_ICON("dialog-path-effects"),         DialogData::Advanced,       ScrollProvider::NOPROVIDE }},
     {"Memory",             {_("About _Memory"),         INKSCAPE_ICON("dialog-memory"),               DialogData::Diagnostics,    ScrollProvider::PROVIDE   }},
     {"Messages",           {_("_Messages"),             INKSCAPE_ICON("dialog-messages"),             DialogData::Diagnostics,    ScrollProvider::NOPROVIDE }},

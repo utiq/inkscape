@@ -31,7 +31,6 @@
 #include <glibmm/convert.h>
 
 #include "desktop.h"
-#include "device-manager.h"
 #include "document.h"
 #include "inkscape.h"
 #include "inkscape-application.h"
@@ -250,7 +249,6 @@ Application::Application(bool use_gui) :
         auto scale = prefs->getDoubleLimited(UI::ThemeContext::get_font_scale_pref_path(), 100, 50, 150);
         themecontext->adjustGlobalFontScale(scale / 100.0);
         Inkscape::UI::ThemeContext::initialize_source_syntax_styles();
-        Inkscape::DeviceManager::getManager().loadConfig();
     }
 
     /* set language for user interface according setting in preferences */

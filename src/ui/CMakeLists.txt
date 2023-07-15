@@ -141,7 +141,6 @@ set(ui_SRC
 	dialog/guides.cpp
 	dialog/icon-preview.cpp
 	dialog/inkscape-preferences.cpp
-	dialog/input.cpp
 	dialog/knot-properties.cpp
 	dialog/layer-properties.cpp
 	dialog/livepatheffect-add.cpp
@@ -337,7 +336,6 @@ set(ui_SRC
 	dialog/guides.h
 	dialog/icon-preview.h
 	dialog/inkscape-preferences.h
-	dialog/input.h
 	dialog/knot-properties.h
 	dialog/layer-properties.h
 	dialog/livepatheffect-add.h

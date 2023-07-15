@@ -32,7 +32,6 @@
 #include "color.h"
 #include "desktop-events.h"
 #include "desktop-style.h"
-#include "device-manager.h"
 #include "document-undo.h"
 #include "event-log.h"
 #include "inkscape-window.h"
@@ -135,8 +134,6 @@ SPDesktop::init (SPNamedView *nv, Inkscape::UI::Widget::Canvas *acanvas, SPDeskt
     canvas = acanvas;
     _widget = widget;
 
-    // Temporary workaround for link order issues:
-    Inkscape::DeviceManager::getManager().getDevices();
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     _guides_message_context = std::unique_ptr<Inkscape::MessageContext>(new Inkscape::MessageContext(messageStack()));
