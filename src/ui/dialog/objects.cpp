@@ -1479,8 +1479,9 @@ void ObjectsPanel::_handleTransparentHover(bool enabled)
 
     // Reset all the items in the list.
     for (auto &item : _translucent_items) {
-        Inkscape::DrawingItem *arenaitem = item->get_arenaitem(desktop->dkey);
-        arenaitem->setOpacity(SP_SCALE24_TO_FLOAT(item->style->opacity.value));
+        if (auto arenaitem = item->get_arenaitem(desktop->dkey)) {
+            arenaitem->setOpacity(SP_SCALE24_TO_FLOAT(item->style->opacity.value));
+        }
     }
     _translucent_items.clear();
 
