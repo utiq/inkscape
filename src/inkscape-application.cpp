@@ -293,7 +293,7 @@ InkscapeApplication::document_swap(InkscapeWindow* window, SPDocument* document)
 
     _active_document  = document;
     _active_selection = desktop->getSelection();
-    _active_view      = desktop;
+    _active_desktop   = desktop;
     _active_window    = window;
     return true;
 }
@@ -464,7 +464,7 @@ InkscapeApplication::window_open(SPDocument* document)
     INKSCAPE.add_document(document);
 
     _active_window    = window;
-    _active_view      = window->get_desktop();
+    _active_desktop   = window->get_desktop();
     _active_selection = window->get_desktop()->getSelection();
     _active_document  = document;
 
@@ -498,7 +498,7 @@ InkscapeApplication::window_close(InkscapeWindow* window)
 
             // Leave active document alone (maybe should find new active window and reset variables).
             _active_selection = nullptr;
-            _active_view      = nullptr;
+            _active_desktop   = nullptr;
             _active_window    = nullptr;
 
             // Remove window from document map.
@@ -1002,10 +1002,10 @@ InkscapeApplication::process_document(SPDocument* document, std::string output_p
     _active_document  = document;
     if (_with_gui) {
         _active_window = create_window(document, replace);
-        _active_view = _active_window->get_desktop();
+        _active_desktop = _active_window->get_desktop();
     } else {
         _active_window = nullptr;
-        _active_view = nullptr;
+        _active_desktop = nullptr;
         _active_selection = document->getSelection();
     }
 
@@ -1905,11 +1905,11 @@ int InkscapeApplication::get_number_of_windows() const {
  *  \c show_prefs is used to show preferences dialog
 */
 void action_effect(Inkscape::Extension::Effect* effect, bool show_prefs) {
-    auto doc = InkscapeApplication::instance()->get_active_view();
+    auto desktop = InkscapeApplication::instance()->get_active_desktop();
     if (effect->_workingDialog && show_prefs) {
-        effect->prefs(doc);
+        effect->prefs(desktop);
     } else {
-        effect->effect(doc);
+        effect->effect(desktop);
     }
 }
 

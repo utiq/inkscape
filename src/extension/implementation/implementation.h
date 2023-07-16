@@ -23,17 +23,12 @@ namespace Gtk {
     class Widget;
 }
 
+class SPDesktop;
 class SPDocument;
 class SPPage;
 class SPStyle;
 
 namespace Inkscape {
-
-namespace UI {
-namespace View {
-class View;
-}
-}
 
 namespace XML {
     class Node;
@@ -61,12 +56,12 @@ class ImplementationDocumentCache {
     /**
          * The document that this instance is working on.
          */
-    Inkscape::UI::View::View * _view;
+    SPDesktop * _desktop;
 public:
-    explicit ImplementationDocumentCache (Inkscape::UI::View::View * view) { _view = view;};
+    explicit ImplementationDocumentCache (SPDesktop * desktop) { _desktop = desktop;};
 
     virtual ~ImplementationDocumentCache ( ) { return; };
-    Inkscape::UI::View::View const * view ( ) { return _view; };
+    SPDesktop const * desktop() { return _desktop; }
 };
 
 /**
@@ -95,7 +90,7 @@ public:
      * @return A new document cache that is valid as long as the document
      *         is not changed.
      */
-    virtual ImplementationDocumentCache * newDocCache (Inkscape::Extension::Extension * /*ext*/, Inkscape::UI::View::View * /*doc*/) { return nullptr; }
+    virtual ImplementationDocumentCache * newDocCache (Inkscape::Extension::Extension * /*ext*/, SPDesktop * /*desktop*/) { return nullptr; }
 
     /** Verify any dependencies. */
     virtual bool check(Inkscape::Extension::Extension * /*module*/) { return true; }
@@ -125,11 +120,11 @@ public:
     // ----- Effect functions -----
     /** Find out information about the file. */
     virtual Gtk::Widget * prefs_effect(Inkscape::Extension::Effect *module,
-                                       Inkscape::UI::View::View *view,
+                                       SPDesktop *desktop,
                                        sigc::signal<void ()> *changeSignal,
                                        ImplementationDocumentCache *docCache);
     virtual void effect(Inkscape::Extension::Effect * /*module*/,
-                        Inkscape::UI::View::View * /*document*/,
+                        SPDesktop * /*desktop*/,
                         ImplementationDocumentCache * /*docCache*/) {}
 
     // ----- Print functions -----

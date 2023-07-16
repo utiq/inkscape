@@ -36,7 +36,7 @@ file_open(const Glib::VariantBase& value, InkscapeApplication *app)
 
     app->set_active_document(document);
     app->set_active_selection(document->getSelection());
-    app->set_active_view(nullptr);
+    app->set_active_desktop(nullptr);
 
     document->ensureUpToDate();
 }
@@ -64,7 +64,7 @@ file_new(const Glib::VariantBase& value, InkscapeApplication *app)
 
     app->set_active_document(document);
     app->set_active_selection(document->getSelection());
-    app->set_active_view(nullptr); // No desktop (yet).
+    app->set_active_desktop(nullptr); // No desktop (yet).
 
     document->ensureUpToDate();
 }
@@ -96,7 +96,7 @@ file_close(InkscapeApplication *app)
 
     app->set_active_document(nullptr);
     app->set_active_selection(nullptr);
-    app->set_active_view(nullptr);
+    app->set_active_desktop(nullptr);
 }
 
 std::vector<std::vector<Glib::ustring>> raw_data_file =

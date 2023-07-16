@@ -39,7 +39,7 @@ last_effect(InkscapeApplication *app)
     }
 
     // Last Effect
-    effect->effect(InkscapeApplication::instance()->get_active_view());
+    effect->effect(InkscapeApplication::instance()->get_active_desktop());
 }
 
 void
@@ -52,7 +52,7 @@ last_effect_pref(InkscapeApplication *app)
     }
 
     // Last Effect Pref
-    effect->prefs(InkscapeApplication::instance()->get_active_view());
+    effect->prefs(InkscapeApplication::instance()->get_active_desktop());
 }
 
 void

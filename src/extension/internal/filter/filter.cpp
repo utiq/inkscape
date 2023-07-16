@@ -50,8 +50,8 @@ bool Filter::load(Inkscape::Extension::Extension * /*module*/)
     return true;
 }
 
-Inkscape::Extension::Implementation::ImplementationDocumentCache *Filter::newDocCache(Inkscape::Extension::Extension * /*ext*/,
-										      Inkscape::UI::View::View * /*doc*/)
+Inkscape::Extension::Implementation::ImplementationDocumentCache *
+Filter::newDocCache(Inkscape::Extension::Extension * /*ext*/, SPDesktop * /*desktop*/)
 {
     return nullptr;
 }
@@ -112,7 +112,7 @@ Filter::merge_filters( Inkscape::XML::Node * to, Inkscape::XML::Node * from,
 #define FILTER_SRC_GRAPHIC       "fbSourceGraphic"
 #define FILTER_SRC_GRAPHIC_ALPHA "fbSourceGraphicAlpha"
 
-void Filter::effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::View *document,
+void Filter::effect(Inkscape::Extension::Effect *module, SPDesktop *desktop,
                     Inkscape::Extension::Implementation::ImplementationDocumentCache * /*docCache*/)
 {
     Inkscape::XML::Document *filterdoc = get_filter(module);
@@ -120,14 +120,13 @@ void Filter::effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::Vie
         return; // could not parse the XML source of the filter; typically parser will stderr a warning
     }
 
-    //printf("Calling filter effect\n");
-    Inkscape::Selection * selection = static_cast<SPDesktop *>(document)->getSelection();
+    Inkscape::Selection * selection = desktop->getSelection();
 
     // TODO need to properly refcount the items, at least
     std::vector<SPItem*> items(selection->items().begin(), selection->items().end());
 
-    Inkscape::XML::Document * xmldoc = document->doc()->getReprDoc();
-    Inkscape::XML::Node * defsrepr = document->doc()->getDefs()->getRepr();
+    Inkscape::XML::Document * xmldoc = desktop->doc()->getReprDoc();
+    Inkscape::XML::Node * defsrepr = desktop->doc()->getDefs()->getRepr();
 
     for(auto spitem : items) {
         Inkscape::XML::Node *node = spitem->getRepr();
@@ -140,7 +139,7 @@ void Filter::effect(Inkscape::Extension::Effect *module, Inkscape::UI::View::Vie
             Inkscape::XML::Node * newfilterroot = xmldoc->createElement("svg:filter");
             merge_filters(newfilterroot, filterdoc->root(), xmldoc);
             defsrepr->appendChild(newfilterroot);
-            document->doc()->resources_changed_signals[g_quark_from_string("filter")].emit();
+            desktop->doc()->resources_changed_signals[g_quark_from_string("filter")].emit();
 
             Glib::ustring url = "url(#"; url += newfilterroot->attribute("id"); url += ")";
 

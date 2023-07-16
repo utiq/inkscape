@@ -426,7 +426,7 @@ SPDesktopWidget::on_unrealize()
         INKSCAPE.remove_desktop(dtw->desktop); // clears selection and event_context
         dtw->modified_connection.disconnect();
         dtw->desktop->destroy();
-        Inkscape::GC::release (dtw->desktop);
+        delete dtw->desktop;
         dtw->desktop = nullptr;
     }
 
@@ -920,7 +920,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
     dtw->_dt2r = 1. / namedview->display_units->factor;
 
     // This section seems backwards!
-    dtw->desktop = new SPDesktop();
+    dtw->desktop = new SPDesktop(); // An SPDesktop is a View::View
     dtw->desktop->init (namedview, dtw->_canvas, this);
     dtw->_canvas->set_desktop(desktop);
     INKSCAPE.add_desktop (dtw->desktop);
@@ -933,8 +933,6 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
 
     /* Once desktop is set, we can update rulers */
     dtw->_canvas_grid->UpdateRulers();
-
-    dtw->setView(dtw->desktop);
 
     /* Listen on namedview modification */
     dtw->modified_connection = namedview->connectModified(sigc::mem_fun(*dtw, &SPDesktopWidget::namedviewModified));

@@ -27,7 +27,6 @@
 #include "io/sys.h"
 #include "internal/filter/filter.h"
 #include "prefdialog/prefdialog.h"
-#include "ui/view/view.h"
 #include "inkscape-application.h"
 #include "actions/actions-effect.h"
 
@@ -190,7 +189,7 @@ Effect::~Effect ()
 }
 
 bool
-Effect::prefs (Inkscape::UI::View::View * doc)
+Effect::prefs (SPDesktop * desktop)
 {
     if (_prefDialog != nullptr) {
         _prefDialog->raise();
@@ -198,7 +197,7 @@ Effect::prefs (Inkscape::UI::View::View * doc)
     }
 
     if (!widget_visible_count()) {
-        effect(doc);
+        effect(desktop);
         return true;
     }
 
@@ -215,7 +214,7 @@ Effect::prefs (Inkscape::UI::View::View * doc)
 
 /**
     \brief  The function that 'does' the effect itself
-    \param  doc  The Inkscape::UI::View::View to do the effect on
+    \param  desktop  The desktop containing the document to do the effect on
 
     This function first insures that the extension is loaded, and if not,
     loads it.  It then calls the implementation to do the actual work.  It
@@ -224,13 +223,13 @@ Effect::prefs (Inkscape::UI::View::View * doc)
     stack.
 */
 void
-Effect::effect (Inkscape::UI::View::View * doc)
+Effect::effect (SPDesktop * desktop)
 {
     //printf("Execute effect\n");
     if (!loaded())
         set_state(Extension::STATE_LOADED);
     if (!loaded()) return;
-    ExecutionEnv executionEnv(this, doc, nullptr, _workingDialog, true);
+    ExecutionEnv executionEnv(this, desktop, nullptr, _workingDialog, true);
     execution_env = &executionEnv;
     timer->lock();
     executionEnv.run();

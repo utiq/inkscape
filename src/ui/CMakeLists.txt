@@ -269,8 +269,6 @@ set(ui_SRC
 	widget/unit-tracker.cpp
 
 	view/svg-view-widget.cpp
-	view/view.cpp
-	view/view-widget.cpp
 
 
 	# -------
@@ -558,8 +556,6 @@ set(ui_SRC
 	widget/unit-tracker.h
 
 	view/svg-view-widget.h
-	view/view.h
-	view/view-widget.h
 )
 
 if(WIN32)

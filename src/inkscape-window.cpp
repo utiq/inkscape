@@ -297,7 +297,7 @@ InkscapeWindow::on_focus_in_event(GdkEventFocus* event)
     if (_app) {
         _app->set_active_window(this);
         _app->set_active_document(_document);
-        _app->set_active_view(_desktop);
+        _app->set_active_desktop(_desktop);
         _app->set_active_selection(_desktop->getSelection());
         _app->windows_update(_document);
         update_dialogs();

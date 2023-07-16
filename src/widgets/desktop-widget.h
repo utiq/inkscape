@@ -26,7 +26,6 @@
 
 #include "message.h"
 #include "preferences.h"
-#include "ui/view/view-widget.h"
 #include "display/control/canvas-item-ptr.h"
 
 class InkscapeWindow;
@@ -77,8 +76,8 @@ void sp_desktop_widget_update_vruler (SPDesktopWidget *dtw);
 void sp_desktop_widget_update_scrollbars (SPDesktopWidget *dtw, double scale);
 
 /// A GtkEventBox on an SPDesktop.
-class SPDesktopWidget : public SPViewWidget {
-    using parent_type = SPViewWidget;
+class SPDesktopWidget : public Gtk::EventBox {
+  using parent_type = Gtk::EventBox;
 
     SPDesktopWidget(InkscapeWindow *inkscape_window);
 

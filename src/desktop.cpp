@@ -125,6 +125,31 @@ SPDesktop::SPDesktop()
     // is accessed before it is initialized
     _layer_manager = std::make_unique<Inkscape::LayerManager>(this);
     _selection = std::make_unique<Inkscape::Selection>(this);
+
+    // Formerly in View::View VVVVVVVVVVVVVVVVVVV
+    _message_stack = std::make_shared<Inkscape::MessageStack>();
+    _tips_message_context = std::make_unique<Inkscape::MessageContext>(_message_stack);
+
+    _message_changed_connection = _message_stack->connectChanged([this] (Inkscape::MessageType type, const gchar *message) {
+        onStatusMessage(type, message);
+    });
+
+}
+
+SPDesktop::~SPDesktop()
+{
+    // Formerly in View::View VVVVVVVVVVVVVVVVVVV
+    _message_changed_connection.disconnect();
+
+    _tips_message_context = nullptr;
+
+    _message_stack = nullptr;
+
+    if (document) {
+        _document_uri_set_connection.disconnect();
+        INKSCAPE.remove_document(document);
+        document = nullptr;
+    }
 }
 
 void
@@ -297,7 +322,6 @@ void SPDesktop::destroy()
     _guides_message_context = nullptr;
 }
 
-SPDesktop::~SPDesktop() = default;
 
 //--------------------------------------------------------------------
 /* Public methods */
@@ -1394,7 +1418,20 @@ SPDesktop::setDocument (SPDocument *doc)
     }
 
     // set new document before firing signal, so handlers can see new value if they query desktop
-    View::setDocument(doc);
+    // View::setDocument(doc);
+    // Formerly in View::View VVVVVVVVVVVVVVVVVVV
+    if (document) {
+        _document_uri_set_connection.disconnect();
+        INKSCAPE.remove_document(document);
+    }
+    INKSCAPE.add_document(doc);
+    document = doc;
+
+    _document_uri_set_connection = document->connectFilenameSet([this] (const gchar *filename) {
+        onDocumentFilenameSet(filename);
+    });
+    _document_filename_set_signal.emit(document->getDocumentFilename());
+    // End Fomerly in View::View ^^^^^^^^^^^^^^^
 
     sp_namedview_update_layers_from_document(this);
 

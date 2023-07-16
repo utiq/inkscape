@@ -48,7 +48,6 @@
 #include "ui/tool/path-manipulator.h"
 #include "ui/tools/node-tool.h"
 #include "ui/util.h"
-#include "ui/view/view.h"
 #include "widgets/desktop-widget.h"
 #include "xml/attribute-record.h"
 #include "xml/rebase-hrefs.h"
@@ -528,16 +527,15 @@ void Script::export_raster(Inkscape::Extension::Output *module,
     point both should be full, and the second one is loaded.
 */
 void Script::effect(Inkscape::Extension::Effect *module,
-               Inkscape::UI::View::View *doc,
+               SPDesktop *desktop,
                ImplementationDocumentCache * docCache)
 {
-    if (doc == nullptr)
+    if (desktop == nullptr)
     {
-        g_warning("Script::effect: View not defined");
+        g_warning("Script::effect: Desktop not defined");
         return;
     }
 
-    SPDesktop *desktop = reinterpret_cast<SPDesktop *>(doc);
     sp_namedview_document_from_window(desktop);
 
     if (module->no_doc) {
