@@ -35,6 +35,7 @@
 #include "ui/tool/control-point-selection.h"
 #include "layer-manager.h"
 #include "page-manager.h"
+#include "object/sp-page.h"
 #include "object/sp-path.h"
 #include "object/sp-defs.h"
 #include "object/sp-shape.h"
@@ -107,11 +108,23 @@ void Selection::_emitModified(guint flags)
         if (it->empty()) it = _modified_signals.erase(it); else ++it;
     }
 
-    if (_desktop) {
-        if (auto item = singleItem()) {
-            // If the selected items have been moved to a new page...
-            _desktop->getDocument()->getPageManager().selectPage(item, false);
+    if (!_desktop || isEmpty()) {
+        return;
+    }
+
+    auto &pm = _desktop->getDocument()->getPageManager();
+
+    // If the selected items have been moved to a new page...
+    if (auto item = singleItem()) {
+        pm.selectPage(item, false);
+    } else {
+        SPPage *page = pm.getPageFor(firstItem(), true);
+        for (auto this_item : this->items()) {
+            if (page != pm.getPageFor(this_item, true)) {
+                return;
+            }
         }
+        pm.selectPage(page);
     }
 }
 
