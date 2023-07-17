@@ -912,12 +912,14 @@ bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, do
 
     grab_focus();
 
-    // Close the command palette if it loses focus; it can't do it itself since signal_focus() appears to be broken.
-    // Todo: (GTK4) Try to get rid of this using GtkEventControllerFocus.
-    _desktop->getDesktopWidget()->get_canvas_grid()->getCommandPalette()->close();
+    if (_desktop) {
+        // Close the command palette if it loses focus; it can't do it itself since signal_focus() appears to be broken.
+        // Todo: (GTK4) Try to get rid of this using GtkEventControllerFocus.
+        _desktop->getDesktopWidget()->get_canvas_grid()->getCommandPalette()->close();
+    }
 
     if (gdkevent->button.button == 3) {
-        _desktop->getCanvasDrawing()->set_sticky(_state & GDK_SHIFT_MASK);
+        _drawing->getCanvasItemDrawing()->set_sticky(_state & GDK_SHIFT_MASK);
     }
 
     // Drag the split view controller.

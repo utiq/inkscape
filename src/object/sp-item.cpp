@@ -1669,16 +1669,6 @@ void SPItem::doWriteTransform(Geom::Affine const &transform, Geom::Affine const 
     _transformed_signal.emit(&advertized_transform, this);
 }
 
-// CPPIFY: see below, do not make pure?
-gint SPItem::event(SPEvent* /*event*/) {
-    return FALSE;
-}
-
-gint SPItem::emitEvent(SPEvent &event)
-{
-    return this->event(&event);
-}
-
 void SPItem::set_item_transform(Geom::Affine const &transform_matrix)
 {
     if (!Geom::are_near(transform_matrix, transform, 1e-18)) {
