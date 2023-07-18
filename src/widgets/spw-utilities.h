@@ -35,7 +35,7 @@ Gtk::Box * spw_hbox(Gtk::Grid *table, int width, int col, int row);
 Gtk::Widget * sp_search_by_name_recursive(Gtk::Widget          *parent,
                                           const Glib::ustring&  name);
 
-/// See also src/ui/util.h: for_each_child().
+///See ui/util:for_each_child(), a generalisation of this and used as its basis.
 Gtk::Widget* sp_traverse_widget_tree(Gtk::Widget* widget, const std::function<bool (Gtk::Widget*)>& eval);
 
 Gtk::Widget* sp_find_focusable_widget(Gtk::Widget* widget);

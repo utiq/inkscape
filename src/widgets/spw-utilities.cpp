@@ -18,9 +18,9 @@
 #include <gtkmm/label.h>
 #include <gtkmm/grid.h>
 
-#include "selection.h"
-
 #include "spw-utilities.h"
+#include "selection.h"
+#include "ui/util.h"
 
 /**
  * Creates a label widget with the given text, at the given col, row
@@ -77,29 +77,8 @@ Gtk::Box * spw_hbox(Gtk::Grid * table, int width, int col, int row)
 Gtk::Widget *
 sp_search_by_name_recursive(Gtk::Widget *parent, const Glib::ustring& name)
 {
-    auto parent_bin = dynamic_cast<Gtk::Bin *>(parent);
-    auto parent_container = dynamic_cast<Gtk::Container *>(parent);
-
-    if (parent && parent->get_name() == name) {
-        return parent;
-    }
-    else if (parent_bin) {
-        auto child = parent_bin->get_child();
-        return sp_search_by_name_recursive(child, name);
-    }
-    else if (parent_container) {
-        auto children = parent_container->get_children();
-
-        for (auto child : children) {
-            auto tmp = sp_search_by_name_recursive(child, name);
-
-            if (tmp) {
-                return tmp;
-            }
-        }
-    }
-
-    return nullptr;
+    return sp_traverse_widget_tree(parent, [&](Gtk::Widget* widget)
+                                           { return widget->get_name() == name; });
 }
 
 /**
@@ -112,6 +91,8 @@ sp_search_by_name_recursive(Gtk::Widget *parent, const Glib::ustring& name)
  *
  * \return The widget for which 'eval' returned true, or nullptr otherwise.
  * Note: it could be a starting widget too.
+ *
+ * See ui/util:for_each_child(), a generalisation of this and used as its basis.
  */
 Gtk::Widget* sp_traverse_widget_tree(Gtk::Widget* widget, const std::function<bool (Gtk::Widget*)>& eval) {
     if (!widget) return nullptr;
@@ -122,12 +103,16 @@ Gtk::Widget* sp_traverse_widget_tree(Gtk::Widget* widget, const std::function<bo
         return sp_traverse_widget_tree(bin->get_child(), eval);
     }
     else if (auto container = dynamic_cast<Gtk::Container*>(widget)) {
-        auto&& children = container->get_children();
-        for (auto child : children) {
-            if (auto found = sp_traverse_widget_tree(child, eval)) {
-                return found;
+        using namespace Inkscape::UI;
+        Gtk::Widget *result = nullptr;
+        for_each_child(*container, [&](Gtk::Widget &child){
+            if (auto const found = sp_traverse_widget_tree(&child, eval)) {
+                result = found;
+                return ForEachResult::_break;
             }
-        }
+            return ForEachResult::_continue;
+        });
+        return result;
     }
 
     return nullptr;
