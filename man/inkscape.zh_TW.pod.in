@@ -81,8 +81,10 @@ C<inkscape [選項] [檔名_1 檔名_2 ...]>
         --select=OBJECT-ID[,OBJECT-ID]*
         --actions=ACTION(:ARG)[;ACTION(:ARG)]*
         --action-list
+        --actions-file=FILENAME
 
     -g, --with-gui
+    -q, --active-window
         --display=DISPLAY
         --app-id-tag=TAG
         --batch-process
@@ -260,8 +262,10 @@ L<--export-area-page> 覆蓋這項數值。
 
 =item B<-j>, B<--export-id-only>
 
-只會把 L<--export-id> 給定 ID 的物件匯出成 PNG 或普通 SVG。其餘全部會被隱藏且不會顯示在匯出圖片中，即使這些物件和
-匯出的物件重疊。 沒有 L<--export-id> 會忽略這個選項。對匯出 PDF 來說，這是預設值，所以這選項不會有任何效果。
+For PNG, PS, EPS, PDF and plain SVG export, only export the object whose id
+is given in L<--export-id>. All other objects are hidden and won't show in
+export even if they overlay the exported object.  Without L<--export-id>,
+this option is ignored.
 
 =item B<-l>, B<--export-plain-svg>
 
@@ -383,9 +387,20 @@ L<--batch-process> 會處理結束後會自動關閉 GUI。另外全部的匯出
 
 印出可用動作的清單。
 
+=item B<--actions-file>=I<FILENAME>
+
+Execute all actions listed in the file. The file contents must be formatted
+using the syntax of L<--actions>. This option overrides the L<--actions>
+argument when both are given.
+
 =item B<-g>, B<--with-gui>
 
 試著使用圖形介面 (在 Unix 系統，即使沒有設定 $DISPLAY 也會使用 X server)。
+
+=item B<-q>, B<--active-window>
+
+Instead of launching a new Inkscape process, this will run the command in
+the most recently focused Inkscape document.
 
 =item B<--display>=I<DISPLAY>
 
@@ -394,7 +409,7 @@ Sets the X display to use for the Inkscape window.
 =item B<--app-id-tag>=I<TAG>
 
 Creates a unique instance of Inkscape with the application ID
-'org.inkscape.Inkscape.TAG'. This is useful to separate the Inkscape
+'org.inkscape.Inkscape.TAG'.  This is useful to separate the Inkscape
 instances when running different Inkscape versions or using different
 preferences files concurrently.
 
@@ -410,6 +425,9 @@ Inkscape 執行命令列任務 (比如匯出或轉換) 腳本的速度更快、�
 
 在殼層 (shell) 模式 Inkscape 會預期輸入一連串動作 (或動詞)。這些操作會逐行執行，表示模擬按 Enter
 鍵的典型行為。可以將全部動作彙整到同一行 (但不一定是必須這樣)。
+
+This option can be combined with the L<--active-window> parameter, to
+execute the shell commands in an already opened Inkscape document.
 
 下面範例會開啟檔案並匯出為兩種不同格式，然後開啟其他檔案並匯出單一物件:
 
@@ -537,16 +555,6 @@ B<$PREFIX>/share/inkscape)。
 
 訪問此網址取得更多資訊 L<http://wiki.inkscape.org/wiki/index.php/Environment_variables>
 
-=head1 主題
-
-可從目錄 B<$HOME>/.inkscape/icons/
-載入不同的圖示組來替代預設的B<$PREFIX>/share/inkscape/icons/icons.svg 檔案。 圖示按照名稱載入 (例如
-I<fill_none.svg>)，如果沒有找到符合名稱的圖示，那麼就會從 I<icons.svg> 載入。
-如果圖示不從這些位置載入，就會退回使用預設的系統位置。
-
-藉由 SVG ID 和比對圖示名稱從 SVG 檔中搜尋並載入需要的圖示。(例如，要從一個檔案載入 "fill_none" 圖示， 外框邊界會尋找 SVG
-ID "fill_none" 將其作為圖示，不管是來自 I<fill_none.svg> 或 I<icons.svg>。)
-
 =head1 其他資訊
 
 搜尋 B<Inkscape> 資訊的最佳地點是在 L<https://www.inkscape.org/>。
@@ -632,7 +640,7 @@ ${INKSCAPE_AUTHORS}
 
 =head1 著作權和許可證
 
-B<Copyright (C)> 1999-2022 by Authors.
+B<Copyright (C)> 1999-2023 by Authors.
 
 B<Inkscape> is free software; you can redistribute it and/or modify it under
 the terms of the GPL version 2 or later.

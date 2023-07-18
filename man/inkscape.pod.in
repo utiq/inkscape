@@ -72,8 +72,10 @@ options:
         --select=OBJECT-ID[,OBJECT-ID]*
         --actions=ACTION(:ARG)[;ACTION(:ARG)]*
         --action-list
+        --actions-file=FILENAME
 
     -g, --with-gui
+    -q, --active-window
         --display=DISPLAY
         --app-id-tag=TAG
         --batch-process
@@ -297,11 +299,10 @@ be named this way: [input_filename]_[ID].[export_type]
 
 =item B<-j>, B<--export-id-only>
 
-For PNG and plain SVG, only export the object whose id is given in
+For PNG, PS, EPS, PDF and plain SVG export, only export the object whose id is given in
 L<--export-id>. All other objects are hidden and won't show in export
 even if they overlay the exported object.  Without L<--export-id>, this
-option is ignored. For PDF export, this is the default, so this option
-has no effect.
+option is ignored.
 
 =item B<-l>, B<--export-plain-svg>
 
@@ -460,10 +461,19 @@ multiple exports on a single file.
 
 Prints a list of all available actions.
 
+=item B<--actions-file>=I<FILENAME>
+
+Execute all actions listed in the file. The file contents must be formatted using the 
+syntax of L<--actions>. This option overrides the L<--actions> argument when both are given.
+
 =item B<-g>, B<--with-gui>
 
 Try to use the GUI (on Unix, use the X server even if $DISPLAY is not
 set).
+
+=item B<-q>, B<--active-window>
+
+Instead of launching a new Inkscape process, this will run the command in the most recently focused Inkscape document.
 
 =item B<--display>=I<DISPLAY>
 
@@ -471,7 +481,9 @@ Sets the X display to use for the Inkscape window.
 
 =item B<--app-id-tag>=I<TAG>
 
-Creates a unique instance of Inkscape with the application ID 'org.inkscape.Inkscape.TAG'. This is useful to separate the Inkscape instances when running different Inkscape versions or using different preferences files concurrently.
+Creates a unique instance of Inkscape with the application ID 'org.inkscape.Inkscape.TAG'. 
+This is useful to separate the Inkscape instances when running different Inkscape versions 
+or using different preferences files concurrently.
 
 =item B<--batch-process>
 
@@ -490,6 +502,9 @@ perform command line tasks (such as export or conversions).
 In shell mode Inkscape expects a sequence of actions (or verbs) as input.
 They will be processed line by line, that means typically when pressing enter.
 It is possible (but not necessary) to put all actions on a single line.
+
+This option can be combined with the L<--active-window> parameter, to execute the 
+shell commands in an already opened Inkscape document.
 
 The following example opens a file and exports it into two different formats,
 then opens another file and exports a single object:
@@ -634,20 +649,6 @@ Set a custom location for the translation catalog.
 For more details see also
 L<http://wiki.inkscape.org/wiki/index.php/Environment_variables>
 
-=head1 THEMES
-
-To load different icons sets instead of the default
-B<$PREFIX>/share/inkscape/icons/icons.svg file, the directory
-B<$HOME>/.config/inkscape/icons/ is used.  Icons are loaded by name
-(e.g. I<fill_none.svg>), or if not found, then from I<icons.svg>.  If
-the icon is not loaded from either of those locations, it falls back to
-the default system location.
-
-The needed icons are loaded from SVG files by searching for the SVG id
-with the matching icon name.  (For example, to load the "fill_none" icon
-from a file, the bounding box seen for SVG id "fill_none" is rendered as
-the icon, whether it comes from I<fill_none.svg> or I<icons.svg>.)
-
 =head1 OTHER INFO
 
 The canonical place to find B<Inkscape> info is at
@@ -774,7 +775,7 @@ ${INKSCAPE_AUTHORS}
 
 =head1 COPYRIGHT AND LICENSE
 
-B<Copyright (C)> 1999-2022 by Authors.
+B<Copyright (C)> 1999-2023 by Authors.
 
 B<Inkscape> is free software; you can redistribute it and/or modify it
 under the terms of the GPL version 2 or later.

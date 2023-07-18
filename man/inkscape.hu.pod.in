@@ -77,8 +77,9 @@ kapcsolók:
         --select=OBJEKTUMAZONOSÍTÓ[,OBJEKTUMAZONOSÍTÓ]*
         --actions=MŰVELET(:ARGUMENTUM)[;MŰVELET(:ARGUMENTUM)]*
         --action-list
-
+        --actions-file=FÁJLNÉV
     -g, --with-gui
+    -q, --active-window
         --display=KIJELZŐ
         --app-id-tag=CÍMKE
         --batch-process
@@ -325,12 +326,11 @@ létre:[bemeneti_fájlnév]_[objektumazonosító].[fájltípus]
 
 =item B<-j>, B<--export-id-only>
 
-PNG és egyszerű SVG exportálása esetén beállítja, hogy csak az az objektum
-legyen exportálva, amelynek az azonosítója meg van adva az L<--export-id>
-kapcsolóval. Minden más egyéb objektum rejtve marad az exportált állományban
-még akkor is, ha egyébként fedné ezt az objektumot. Az L<--export-id> nélkül
-ez a kapcsoló mellőzve lesz. PDF exportálása esetén ez az alapértelmezett
-viselkedés, ezért nincs további hatása a kapcsolónak.
+PNG, PS, EPS, PDF és egyszerű SVG exportálása esetén beállítja, hogy csak az
+az objektum legyen exportálva, amelynek az azonosítója meg van adva az
+L<--export-id> kapcsolóval. Minden más egyéb objektum rejtve marad az
+exportált állományban még akkor is, ha egyébként fedné ezt az objektumot. Az
+L<--export-id> nélkül ez a kapcsoló mellőzve lesz.
 
 =item B<-l>, B<--export-plain-svg>
 
@@ -509,10 +509,21 @@ művelettel. Ez többszörös exportálást tesz lehetővé egyetlen fájlon.
 
 Felsorol minden elérhető műveletet.
 
+=item <--actions-file>B=I<FÁJLNÉV>
+
+Végrehajtja a fájlban felsorolt összes műveletet. A fájl tartalmát az
+L<--actions> szintaxis szerint kell formázni. Ez az opció felülírja az
+L<--actions> argumentumot, ha mindkettő meg van adva.
+
 =item B<-g>, B<--with-gui>
 
 Megkísérli a grafikus felhasználói felület alkalmazását (Unix rendszereken
 az X szervert használja, ha a $DISPLAY nincs beállítva).
+
+=item B<-q>, B<--active-window>
+
+Egy új Inkscape-folyamat indítása helyett ez a parancs a legutóbb fókuszált
+Inkscape-dokumentumban fogja futtatni a parancsot.
 
 =item B<--display>=I<KIJELZŐ>
 
@@ -537,14 +548,17 @@ az Inkscape végrehajt anélkül, hogy minden egye utasítás után új példán
 kellene indítani a programból. Ez a szolgáltatás főleg szkriptelésre és
 szerver üzemmódban való használatra való: nem ad új képességeket, de
 jelentősen gyorsítja a végrehajtást és csökkenti a memóriaszükségletet
-minden olyan parancsfájlnál, amely ismétlődően hívja meg az Inkscape-t, hogy
-parancssori feladatokat hajtson végre (mint például az exportálás vagy a
-konvertálás).
+minden olyan parancsfájlnál, amely ismétlődően hívja meg az Inkscape-et,
+hogy parancssori feladatokat hajtson végre (mint például az exportálás vagy
+a konvertálás).
 
 Parancsértelmező módban az Inkscape egy művelet (vagy funkció) sorozatot vár
 bemenetül. Soronként kerül értelmezésre, tipikusan az Enter
 leütésekor. Lehetséges (de nem szükséges) minden műveletet akár egy sorban
 is megadni.
+
+Ez az opció kombinálható az L<--active-window> paraméterrel, hogy a shell
+parancsokat egy már megnyitott Inkscape dokumentumban hajtsa végre.
 
 A következő példa megnyit egy fájlt és két különböző formátumba exportálja,
 majd megnyit egy másik fájlt és abból egyetlen objektumot exportál:
@@ -693,21 +707,6 @@ Egyéni helyet állít be a fordítási katalógusfájloknak.
 További információk:
 L<http://wiki.inkscape.org/wiki/index.php/Environment_variables>
 
-=head1 TÉMÁK
-
-Az alapértelmezett B<$PREFIX>/share/inkscape/icons/icons.svg fájl helyett
-egy másik ikonkészlet betöltésére a B<$HOME>/.config/inkscape/icons/ mappa
-használható. Az ikonok a nevük szerint fognak betöltődni
-(pl. I<fill_none.svg>), vagy ha nem találhatóak, akkor az I<icons.svg>
-fájlból. Ha egyik helyről sem tölthető be az ikon, akkor a rendszer
-alapértelmezett helyéről a tartalék lép a helyükbe.
-
-Az SVG fájlokból igényelt ikon a nevének az SVG azonosítóra való rákeresés
-alapján töltődik be. (Például: a „fill_none” ikon betöltése egy külső
-fájlból úgy történik, hogy az ezen azonosítóval rendelkező határoló téglalap
-lesz leképezve, legyen az akár a I<fill_none.svg>-ben vagy az
-I<icons.svg>-ben.)
-
 =head1 TOVÁBBI INFORMÁCIÓK
 
 Hiteles információk az B<Inkscape>-ről a L<https://www.inkscape.org/>
@@ -799,7 +798,7 @@ rendszerre való portolással és a meglévő függőségek kiküszöböléséve
 
 Az Inkscape-et 2003-ban négy aktív Sodipodi fejlesztő, Bryce Harrington,
 MenTaLguY, Nathan Hurst és Ted Gould alapította azzal a szándékkal, hogy más
-irányt vegyen a fejlesztés elsősorban az SVG megfelelőséget illetőem, a
+irányt vegyen a fejlesztés elsősorban az SVG megfelelőséget illetően, a
 felhasználói felület kinézete érdekében és hogy a fejlesztésbe többen
 kapcsolódhassanak be. A projekt gyorsan haladt előre és együtt növekedett az
 aktív hozzájárulók száma a funkciókkal együtt.
@@ -837,7 +836,7 @@ ${INKSCAPE_AUTHORS}
 
 =head1 SZERZŐI JOGOK ÉS LICENC
 
-B<Copyright (C)> 1999–2022 a szerzők.
+B<Copyright (C)> 1999–2023 a szerzők.
 
 Az B<Inkscape> szabad szoftver és GPL 2-as verziója szerint lehet
 terjeszteni, ill. módosítani.
