@@ -25,6 +25,8 @@
 #include "desktop.h"        // Hopefully temp.
 #include "desktop-events.h" // Hopefully temp.
 
+#include "selection.h"
+
 #include "display/control/canvas-item-drawing.h" // sticky
 
 #include "page-manager.h"

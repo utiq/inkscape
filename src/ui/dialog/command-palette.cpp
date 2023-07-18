@@ -12,55 +12,23 @@
 
 #include "command-palette.h"
 
-#include <cstddef>
-#include <cstring>
-#include <ctime>
-#include <gdk/gdkkeysyms.h>
-#include <giomm/action.h>
-#include <giomm/application.h>
-#include <giomm/file.h>
-#include <giomm/fileinfo.h>
-#include <glib/gi18n.h>
-#include <glibconfig.h>
-#include <glibmm/convert.h>
-#include <glibmm/date.h>
-#include <glibmm/error.h>
-#include <glibmm/i18n.h>
-#include <glibmm/markup.h>
-#include <glibmm/ustring.h>
-#include <gtkmm/application.h>
-#include <gtkmm/box.h>
-#include <gtkmm/enums.h>
-#include <gtkmm/eventbox.h>
-#include <gtkmm/label.h>
-#include <gtkmm/messagedialog.h>
-#include <gtkmm/recentinfo.h>
-#include <iostream>
-#include <iterator>
-#include <memory>
 #include <optional>
-#include <ostream>
-#include <sigc++/adaptors/bind.h>
-#include <sigc++/functors/mem_fun.h>
-#include <string>
 
-#include "actions/actions-extra-data.h"
+#include <glibmm/i18n.h>
+#include <gtkmm/box.h>
+#include <gtkmm/label.h>
+
 #include "file.h"
-#include "gc-anchored.h"
-#include "include/glibmm_version.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
 #include "inkscape.h"
-#include "io/resource.h"
-#include "message-context.h"
 #include "message-stack.h"
-#include "object/uri.h"
-#include "preferences.h"
-#include "ui/interface.h"
-#include "xml/repr.h"
+#include "selection.h"
+
+#include "include/glibmm_version.h"
+#include "io/resource.h"
 
 namespace Inkscape {
-class MessageStack;
 namespace UI {
 namespace Dialog {
 
@@ -99,9 +67,6 @@ CommandPalette::CommandPalette()
 
     _builder->get_widget("CPSuggestionsScroll", _CPSuggestionsScroll);
     _builder->get_widget("CPHistoryScroll", _CPHistoryScroll);
-
-    _CPBase->add_events(Gdk::POINTER_MOTION_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK |
-                        Gdk::ENTER_NOTIFY_MASK | Gdk::LEAVE_NOTIFY_MASK | Gdk::KEY_PRESS_MASK);
 
     // TODO: Customise on user language RTL, LTR or better user preference
     _CPBase->set_halign(Gtk::ALIGN_CENTER);
@@ -225,8 +190,7 @@ void CommandPalette::append_recent_file_operation(const Glib::ustring &path, boo
     }
 
     // declaring required widgets pointers
-    Gtk::EventBox *CPOperation;
-    Gtk::Box *CPSynapseBox;
+    Gtk::Box *CPOperation;
 
     Gtk::Label  *CPGroup;
     Gtk::Label  *CPName;
@@ -237,7 +201,6 @@ void CommandPalette::append_recent_file_operation(const Glib::ustring &path, boo
 
     // Reading widgets
     operation_builder->get_widget("CPOperation", CPOperation);
-    operation_builder->get_widget("CPSynapseBox", CPSynapseBox);
 
     operation_builder->get_widget("CPGroup", CPGroup);
     operation_builder->get_widget("CPName", CPName);
@@ -306,8 +269,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
     }
 
     // declaring required widgets pointers
-    Gtk::EventBox *CPOperation;
-    Gtk::Box *CPSynapseBox;
+    Gtk::Box *CPOperation;
 
     Gtk::Label *CPGroup;
     Gtk::Label *CPName;
@@ -318,7 +280,6 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
 
     // Reading widgets
     operation_builder->get_widget("CPOperation", CPOperation);
-    operation_builder->get_widget("CPSynapseBox", CPSynapseBox);
 
     operation_builder->get_widget("CPGroup", CPGroup);
     operation_builder->get_widget("CPName", CPName);
@@ -1357,20 +1318,17 @@ TypeOfVariant CommandPalette::get_action_variant_type(const ActionPtr &action_pt
 
 std::pair<Gtk::Label *, Gtk::Label *> CommandPalette::get_name_desc(Gtk::ListBoxRow *child)
 {
-    auto event_box = dynamic_cast<Gtk::EventBox *>(child->get_child());
-    if (event_box) {
+    auto box = dynamic_cast<Gtk::Box *>(child->get_child());
+    if (box && (box->get_name() == "CPOperation")) {
         // NOTE: These variables have same name as in the glade file command-palette-operation.glade
         // FIXME: When structure of Gladefile of CPOperation changes, refactor this
-        auto CPSynapseBox = dynamic_cast<Gtk::Box *>(event_box->get_child());
-        if (CPSynapseBox) {
-            auto synapse_children = CPSynapseBox->get_children();
-            auto CPNameBox = dynamic_cast<Gtk::Box *>(synapse_children[0]);
-            if (CPNameBox) {
-                auto name_children = CPNameBox->get_children();
-                auto CPName = dynamic_cast<Gtk::Label *>(name_children[0]);
-                auto CPDescription = dynamic_cast<Gtk::Label *>(name_children[1]);
-                return std::pair(CPName, CPDescription);
-            }
+        auto box_children = box->get_children();
+        auto CPNameBox = dynamic_cast<Gtk::Box *>(box_children[0]);
+        if (CPNameBox) {
+            auto name_children = CPNameBox->get_children();
+            auto CPName = dynamic_cast<Gtk::Label *>(name_children[0]);
+            auto CPDescription = dynamic_cast<Gtk::Label *>(name_children[1]);
+            return std::pair(CPName, CPDescription);
         }
     }
     return std::pair(nullptr, nullptr);
@@ -1378,19 +1336,16 @@ std::pair<Gtk::Label *, Gtk::Label *> CommandPalette::get_name_desc(Gtk::ListBox
 
 Gtk::Label *CommandPalette::get_full_action_name(Gtk::ListBoxRow *child)
 {
-    auto event_box = dynamic_cast<Gtk::EventBox *>(child->get_child());
-    if (event_box) {
-        auto CPSynapseBox = dynamic_cast<Gtk::Box *>(event_box->get_child());
-        if (CPSynapseBox) {
-            auto synapse_children = CPSynapseBox->get_children();
-            auto CPActionFullButton = dynamic_cast<Gtk::Button *>(synapse_children[1]);
-            if (CPActionFullButton) {
-                auto synapse_button = CPActionFullButton->get_children();
-                auto CPSinapseButtonBox = dynamic_cast<Gtk::Box *>(synapse_button[0]);
-                if (CPSinapseButtonBox) {
-                    auto synapse_button_content = CPSinapseButtonBox->get_children();
-                    return dynamic_cast<Gtk::Label *>(synapse_button_content[1]);
-                }
+    auto box = dynamic_cast<Gtk::Box *>(child->get_child());
+    if (box && (box->get_name() == "CPOperation")) {
+        auto box_children = box->get_children();
+        auto CPActionFullButton = dynamic_cast<Gtk::Button *>(box_children[1]);
+        if (CPActionFullButton) {
+            auto synapse_button = CPActionFullButton->get_children();
+            auto CPSynapseButtonBox = dynamic_cast<Gtk::Box *>(synapse_button[0]);
+            if (CPSynapseButtonBox) {
+                auto synapse_button_content = CPSynapseButtonBox->get_children();
+                return dynamic_cast<Gtk::Label *>(synapse_button_content[1]);
             }
         }
     }
