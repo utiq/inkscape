@@ -11,7 +11,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <glibmm/main.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/stylecontext.h>
 #include "ui/util.h"
@@ -49,12 +48,7 @@ PopoverMenu::PopoverMenu()
     set_position(Gtk::POS_BOTTOM);
     add(_grid);
 
-    // See "UGH!" below. Thanks
-    signal_map().connect([this]{
-        Glib::signal_idle().connect_once([this]{
-            if (_first) _first->grab_focus();
-        });
-    });
+    // FIXME: Initially focused item is sometimes wrong on first popup. GTK bug?
 }
 
 void PopoverMenu::attach(Gtk::Widget &child,
@@ -64,15 +58,6 @@ void PopoverMenu::attach(Gtk::Widget &child,
     auto const width = right_attach - left_attach;
     auto const height = bottom_attach - top_attach;
     _grid.attach(child, left_attach, top_attach, width, height);
-
-    // UGH! On 1st open (only) GTK pre-focuses the LAST item, not the 1st one...
-    // and .get_children()[0] is wrong (reversed) and not reliable for this, so!
-    if (_first != nullptr) return;
-    if (auto const item = dynamic_cast<PopoverMenuItem *>(&child)) {
-        if (item->get_can_focus()) {
-            _first = item;
-        }
-    }
 }
 
 void PopoverMenu::append(Gtk::Widget &child)
@@ -83,8 +68,6 @@ void PopoverMenu::append(Gtk::Widget &child)
 void PopoverMenu::remove(Gtk::Widget &child)
 {
     _grid.remove(child);
-
-    if (_first == &child) _first = nullptr;
 }
 
 void PopoverMenu::popup_at(Gtk::Widget &relative_to)
