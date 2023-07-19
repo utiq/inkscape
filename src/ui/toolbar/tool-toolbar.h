@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_TOOLBAR_TOOL_H
-#define SEEN_TOOLBAR_TOOL_H
-
 /*
  * Authors:
  *   Tavmjong Bah
@@ -11,9 +8,19 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <gtkmm.h>
+#ifndef SEEN_TOOLBAR_TOOL_H
+#define SEEN_TOOLBAR_TOOL_H
+
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
+#include <gtkmm/box.h>
 
 #include "preferences.h"
+
+namespace Gtk {
+class Builder;
+class Menu;
+} // namespace Gtk
 
 class InkscapeWindow;
 class SPDesktop;
@@ -23,13 +30,13 @@ namespace Inkscape::UI::Toolbar {
 class ToolToolbar : public Gtk::Box {
 public:
     ToolToolbar(InkscapeWindow *window);
-    ~ToolToolbar() override = default;
+    ~ToolToolbar() override;
 
     void set_visible_buttons();
     static Glib::ustring get_tool_visible_button_path(const Glib::ustring& button_action_name);
 
 private:
-    Gtk::Menu* getContextMenu(Glib::ustring tool_name, InkscapeWindow *window);
+    Gtk::Menu *getContextMenu(Glib::ustring const &tool_name, InkscapeWindow *window);
     void attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *window);
 
     static constexpr const char* tools_button_path = "/toolbox/tools/buttons";
@@ -38,7 +45,6 @@ private:
 };
 
 } // namespace Inkscape::UI::Toolbar
-
 
 #endif /* SEEN_TOOLBAR_TOOL_H */
 

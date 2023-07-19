@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
 /**
  * @file
  * Toolbar for Tools.
@@ -15,16 +14,22 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "tool-toolbar.h"
-
+#include <utility>
+#include <sigc++/adaptors/bind.h>
 #include <glibmm/i18n.h>
+#include <gtkmm/builder.h>
+#include <gtkmm/button.h>
+#include <gtkmm/flowbox.h>
+#include <gtkmm/menu.h>
+#include <gtkmm/radiobutton.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/separator.h>
 
-#include "inkscape-window.h"
-
+#include "tool-toolbar.h"
 #include "actions/actions-tools.h" // Function to open tool preferences.
-#include "widgets/spw-utilities.h" // Find action target
+#include "inkscape-window.h"
 #include "ui/builder-utils.h"
-
+#include "widgets/spw-utilities.h" // Find action target
 
 namespace Inkscape::UI::Toolbar {
 
@@ -51,8 +56,9 @@ ToolToolbar::ToolToolbar(InkscapeWindow *window)
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     buttons_pref_observer = prefs->createObserver(tools_button_path, [=]() { set_visible_buttons(); });
     set_visible_buttons(); // Must come after pack_start()
-
 }
+
+ToolToolbar::~ToolToolbar() = default;
 
 void ToolToolbar::set_visible_buttons()
 {
@@ -102,21 +108,20 @@ void ToolToolbar::set_visible_buttons()
     }
 }
 
-
 // We should avoid passing in the window in Gtk4 by turning "tool_preferences()" into an action.
 /**
  * @brief Create a context menu for a tool button.
  * @param tool_name The tool name (parameter to the tool-switch action)
  * @param win The Inkscape window which will display the preferences dialog.
  */
-Gtk::Menu* ToolToolbar::getContextMenu(Glib::ustring tool_name, InkscapeWindow *window)
+Gtk::Menu *ToolToolbar::getContextMenu(Glib::ustring const &tool_name, InkscapeWindow *window)
 {
     auto menu = Gtk::make_managed<Gtk::Menu>();
     auto gio_menu = Gio::Menu::create();
     auto action_group = Gio::SimpleActionGroup::create();
     menu->insert_action_group("ctx", action_group);
     action_group->add_action("open-tool-preferences",
-                             sigc::bind(sigc::ptr_fun(&tool_preferences), tool_name, window));
+                             sigc::bind(&tool_preferences, tool_name, window));
 
     auto menu_item = Gio::MenuItem::create(_("Open tool preferences"), "ctx.open-tool-preferences");
 
@@ -132,7 +137,6 @@ Gtk::Menu* ToolToolbar::getContextMenu(Glib::ustring tool_name, InkscapeWindow *
     return menu;
 }
 
-
 /**
  * @brief Attach handlers to all tool buttons, so that double-clicking on a tool
  *        in the toolbar opens up that tool's preferences, and a right click opens a
@@ -143,31 +147,37 @@ Gtk::Menu* ToolToolbar::getContextMenu(Glib::ustring tool_name, InkscapeWindow *
 void ToolToolbar::attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *window)
 {
     for (auto &object : builder->get_objects()) {
-        if (auto radio = dynamic_cast<Gtk::RadioButton *>(object.get())) {
-
-            Glib::VariantBase action_target;
-            radio->get_property("action-target", action_target);
-            if (!action_target.is_of_type(Glib::VARIANT_TYPE_STRING)) {
-                continue;
-            }
-
-            auto tool_name = Glib::ustring((gchar const *)action_target.get_data());
-
-            auto menu = getContextMenu(tool_name, window);
-            menu->attach_to_widget(*radio);
-
-            radio->signal_button_press_event().connect([=](GdkEventButton *ev) -> bool {
-                // Open tool preferences upon double click
-                if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1) {
-                    tool_preferences(tool_name, window);
-                    return true;
-                }
-                if (ev->button == 3) {
-                    menu->popup_at_pointer(reinterpret_cast<GdkEvent *>(ev));
-                }
-                return false;
-            });
+        auto const radio = dynamic_cast<Gtk::RadioButton *>(object.get());
+        if (!radio) {
+            continue;
         }
+
+        Glib::VariantBase action_target;
+        radio->get_property("action-target", action_target);
+        if (!action_target.is_of_type(Glib::VARIANT_TYPE_STRING)) {
+            continue;
+        }
+
+        auto tool_name = Glib::ustring((gchar const *)action_target.get_data());
+
+        auto menu = getContextMenu(tool_name, window);
+        menu->attach_to_widget(*radio);
+
+        auto on_click_pressed = [=, tool_name = std::move(tool_name)]
+                                (GdkEventButton const * const ev)
+        {
+            // Open tool preferences upon double click
+            if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1) {
+                tool_preferences(tool_name, window);
+                return true;
+            }
+            if (ev->button == 3) {
+                menu->popup_at_pointer(reinterpret_cast<GdkEvent const *>(ev));
+                return true;
+            }
+            return false;
+        };
+        radio->signal_button_press_event().connect(std::move(on_click_pressed));
     }
 }
 

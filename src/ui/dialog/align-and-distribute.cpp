@@ -16,12 +16,14 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "align-and-distribute.h" // widget
-
 #include <iostream>
+#include <giomm/application.h>
+#include <gtkmm/button.h>
+#include <gtkmm/combobox.h>
+#include <gtkmm/spinbutton.h>
+#include <gtkmm/togglebutton.h>
 
-#include <giomm.h>
-
+#include "align-and-distribute.h" // widget
 #include "desktop.h"               // Tool switching.
 #include "inkscape-window.h"       // Activate window action.
 #include "actions/actions-tools.h" // Tool switching.

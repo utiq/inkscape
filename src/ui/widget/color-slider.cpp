@@ -142,17 +142,21 @@ void ColorSlider::get_preferred_height_for_width_vfunc(int /*width*/, int &minim
     get_preferred_height(minimum_height, natural_height);
 }
 
+static double get_value_at(Gtk::Widget const &self, double const x, double const y)
+{
+    auto const state = self.get_state_flags();
+    auto const cx = self.get_style_context()->get_padding(state).get_left();
+    auto const cw = self.get_width() - 2 * cx;
+    return CLAMP((x - cx) / cw, 0.0, 1.0);
+}
+
 bool ColorSlider::on_button_press_event(GdkEventButton *event)
 {
     if (event->button == 1) {
-        Gtk::Allocation allocation = get_allocation();
-        gint cx, cw;
-        cx = get_style_context()->get_padding(get_state_flags()).get_left();
-        cw = allocation.get_width() - 2 * cx;
         signal_grabbed.emit();
         _dragging = true;
         _oldvalue = _value;
-        gfloat value = CLAMP((gfloat)(event->x - cx) / cw, 0.0, 1.0);
+        auto const value = get_value_at(*this, event->x, event->y);
         bool constrained = event->state & GDK_CONTROL_MASK;
         ColorScales<>::setScaled(_adjustment, value, constrained);
         signal_dragged.emit();
@@ -177,11 +181,7 @@ bool ColorSlider::on_button_release_event(GdkEventButton *event)
 bool ColorSlider::on_motion_notify_event(GdkEventMotion *event)
 {
     if (_dragging) {
-        gint cx, cw;
-        Gtk::Allocation allocation = get_allocation();
-        cx = get_style_context()->get_padding(get_state_flags()).get_left();
-        cw = allocation.get_width() - 2 * cx;
-        gfloat value = CLAMP((gfloat)(event->x - cx) / cw, 0.0, 1.0);
+        auto const value = get_value_at(*this, event->x, event->y);
         bool constrained = event->state & GDK_CONTROL_MASK;
         ColorScales<>::setScaled(_adjustment, value, constrained);
         signal_dragged.emit();

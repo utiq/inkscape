@@ -12,9 +12,12 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "objects.h"
-
+#include <iomanip>
+#include <string>
+#include <glibmm/i18n.h>
+#include <glibmm/main.h>
 #include <glibmm/ustring.h>
+#include <pango/pango-utils.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/cellrenderer.h>
@@ -28,28 +31,20 @@
 #include <gtkmm/scale.h>
 #include <gtkmm/searchentry.h>
 #include <gtkmm/separatormenuitem.h>
-#include <glibmm/main.h>
-#include <glibmm/i18n.h>
-#include <iomanip>
-#include <pango/pango-utils.h>
-#include <string>
 
-#include "desktop-style.h"
+#include "objects.h"
+#include "actions/actions-tools.h"
 #include "desktop.h"
-#include "document-undo.h"
+#include "desktop-style.h"
+#include "display/drawing-group.h"
 #include "document.h"
+#include "document-undo.h"
 #include "filter-chemistry.h"
+#include "include/gtkmm_version.h"
 #include "inkscape.h"
 #include "inkscape-window.h"
 #include "layer-manager.h"
 #include "message-stack.h"
-
-#include "actions/actions-tools.h"
-
-#include "include/gtkmm_version.h"
-
-#include "display/drawing-group.h"
-
 #include "object/filters/blend.h"
 #include "object/filters/gaussian-blur.h"
 #include "object/sp-clippath.h"
@@ -60,20 +55,19 @@
 #include "style.h"
 #include "svg/css-ostringstream.h"
 #include "ui/builder-utils.h"
+#include "ui/contextmenu.h"
 #include "ui/dialog-events.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
 #include "ui/selected-color.h"
 #include "ui/shortcuts.h"
 #include "ui/tools/node-tool.h"
-
-#include "ui/contextmenu.h"
 #include "ui/util.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/filter-effect-chooser.h"
 #include "ui/widget/imagetoggler.h"
-#include "ui/widget/shapeicon.h"
 #include "ui/widget/objects-dialog-cells.h"
+#include "ui/widget/shapeicon.h"
 #include "util/numeric/converters.h"
 
 // alpha (transparency) multipliers corresponding to item selection state combinations (SelectionState)
@@ -89,11 +83,10 @@ static double const SELECTED_ALPHA[8] = {
     0.90  //7 1, 2 and 4
 };
 
-//#define DUMP_LAYERS 1
+namespace Inkscape::UI::Dialog {
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+using Inkscape::XML::Node;
+using namespace Inkscape::UI::Widget;
 
 class ObjectWatcher : public Inkscape::XML::NodeObserver
 {
@@ -1887,9 +1880,7 @@ void ObjectsPanel::_searchChanged()
     }
 }
 
-} //namespace Dialog
-} //namespace UI
-} //namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

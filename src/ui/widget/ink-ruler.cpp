@@ -62,6 +62,7 @@ Ruler::Ruler(Gtk::Orientation orientation)
     , _position(0)
 {
     set_name("InkRuler");
+    get_style_context()->add_class(_orientation == Gtk::ORIENTATION_HORIZONTAL ? "horz" : "vert");
 
     set_events(Gdk::POINTER_MOTION_MASK |
                Gdk::BUTTON_PRESS_MASK   |  // For guide creation
@@ -559,7 +560,6 @@ Ruler::marker_rect()
 // Draw the ruler using the tick backing store.
 bool
 Ruler::on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) {
-
     if (!_backing_store_valid) {
         draw_scale (cr);
     }
@@ -575,11 +575,9 @@ Ruler::on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) {
 // Update ruler on style change (font-size, etc.)
 void
 Ruler::on_style_updated() {
-
     Gtk::DrawingArea::on_style_updated();
 
     Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-    style_context->add_class(_orientation == Gtk::ORIENTATION_HORIZONTAL ? "horz" : "vert");
 
     // Cache all our colors to speed up rendering.
     _border = style_context->get_border();

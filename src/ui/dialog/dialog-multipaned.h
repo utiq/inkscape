@@ -21,6 +21,14 @@
 #include <gtkmm/orientable.h>
 #include <gtkmm/widget.h>
 
+namespace Cairo {
+class Context;
+}
+
+namespace Gdk {
+class DragContext;
+}
+
 namespace Inkscape {
 namespace UI {
 namespace Dialog {

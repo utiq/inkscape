@@ -20,9 +20,16 @@
 #define INKSCAPE_UI_WIDGET_ALIGN_AND_DISTRIBUTE_H
 
 #include <sigc++/connection.h>
-#include <gtkmm.h>
+#include <gtkmm/box.h>
 
 #include "preferences.h"
+
+namespace Gtk {
+    class Button;
+    class ComboBox;
+    class SpinButton;
+    class ToggleButton;
+}
 
 class SPDesktop;
 
