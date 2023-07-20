@@ -13,19 +13,29 @@
 
 /* Rewrite of the C Ruler. */
 
-#include "preferences.h"
-#include <gtkmm.h>
 #include <unordered_map>
+#include <cairomm/refptr.h>
+#include <cairomm/types.h> // Cairo::RectangleInt
+#include <pangomm/fontdescription.h>
+#include <gdkmm/rgba.h>
+#include <gtkmm/border.h>
+#include <gtkmm/drawingarea.h>
+#include <gtkmm/enums.h> // Gtk::Orientation
+#include "preferences.h"
 
-namespace Inkscape {
-namespace Util {
+namespace Cairo {
+class Context;
+} // namespace Cairo
+
+namespace Gtk {
+class Popover;
+} // namespace Gtk
+
+namespace Inkscape::Util {
 class Unit;
-}
-}
+} // namespace Inkscape::Util
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
   
 class Ruler : public Gtk::DrawingArea
 {
@@ -55,15 +65,12 @@ protected:
     bool on_button_press_event(GdkEventButton *button_event) override;
 
 private:
-    Inkscape::PrefObserver _watch_prefs;
-
     void set_context_menu();
-    Gtk::Popover* _popover = nullptr;
-
     Cairo::RefPtr<Cairo::Surface> draw_label(Cairo::RefPtr<Cairo::Surface> const &surface_in, int label_value);
 
+    Inkscape::PrefObserver _watch_prefs;
+    Gtk::Popover* _popover = nullptr;
     Gtk::Orientation    _orientation;
-
     Inkscape::Util::Unit const* _unit;
     double _lower;
     double _upper;
@@ -80,7 +87,6 @@ private:
     double _sel_visible = true;
 
     bool   _backing_store_valid;
-
     Cairo::RefPtr<::Cairo::Surface> _backing_store;
     Cairo::RectangleInt _rect;
 
@@ -97,9 +103,8 @@ private:
     Gdk::RGBA _select_stroke;
 };
 
-} // Namespace Inkscape
-}
-}
+} // namespace Inkscape::UI::Widget
+
 #endif // INK_RULER_H
 
 /*

@@ -11,13 +11,15 @@
  *
  */
 
-#include "ink-ruler.h"
-
-#include <gdkmm/rgba.h>
-#include <glibmm/ustring.h>
-#include <iostream>
 #include <cmath>
+#include <utility>
+#include <sigc++/functors/mem_fun.h>
+#include <cairomm/context.h>
+#include <glibmm/ustring.h>
+#include <gtkmm/popover.h>
+#include <gtkmm/stylecontext.h>
 
+#include "ink-ruler.h"
 #include "inkscape.h"
 #include "ui/themes.h"
 #include "ui/util.h"
@@ -46,9 +48,7 @@ static SPRulerMetric const ruler_metric_inches = {
 // Half width of pointer triangle.
 static double half_width = 5.0;
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 Ruler::Ruler(Gtk::Orientation orientation)
     : _orientation(orientation)
@@ -623,9 +623,7 @@ void Ruler::set_context_menu()
     _popover->set_modal(true); // set_autohide in Gtk4
 }
 
-} // Namespace Inkscape
-}
-}
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:
