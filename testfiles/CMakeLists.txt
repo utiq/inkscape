@@ -69,7 +69,6 @@ set(TEST_SOURCES
     attributes-test
     color-profile-test
     dir-util-test
-    min-bbox-test
     oklab-color-test
     sp-object-test
     sp-object-tags-test

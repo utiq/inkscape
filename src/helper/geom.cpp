@@ -1010,67 +1010,6 @@ bool approx_dihedral(Geom::Affine const &affine, double eps)
     return arr == std::array {1, 0, 0, 1 } || arr == std::array{ 0, 1, 1, 0 };
 }
 
-/**
- * Computes the rotation which puts a set of points in a position where they can be wrapped in the
- * smallest possible axis-aligned rectangle, and returns it along with the rectangle.
- */
-std::pair<Geom::Affine, Geom::Rect> min_bounding_box(std::vector<Geom::Point> const &pts)
-{
-    // Compute the convex hull.
-    auto const hull = Geom::ConvexHull(pts);
-
-    // Move the point i along until it maximises distance in the direction n.
-    auto advance = [&] (int &i, Geom::Point const &n) {
-        auto ih = Geom::dot(hull[i], n);
-        while (true) {
-            int j = (i + 1) % hull.size();
-            auto jh = Geom::dot(hull[j], n);
-            if (ih >= jh) break;
-            i = j;
-            ih = jh;
-        }
-    };
-
-    double mina = std::numeric_limits<double>::max();
-    std::pair<Geom::Affine, Geom::Rect> result;
-
-    // Run rotating callipers.
-    int j, k, l;
-    for (int i = 0; i < hull.size(); i++) {
-        // Get the current segment.
-        auto &p1 = hull[i];
-        auto &p2 = hull[(i + 1) % hull.size()];
-        auto v = (p2 - p1).normalized();
-        auto n = Geom::Point(-v.y(), v.x());
-
-        if (i == 0) {
-            // Initialise the points.
-            j = 0; advance(j,  v);
-            k = j; advance(k,  n);
-            l = k; advance(l, -v);
-        } else {
-            // Advance the points.
-            advance(j,  v);
-            advance(k,  n);
-            advance(l, -v);
-        }
-
-        // Compute the dimensions of the unconstrained rectangle.
-        auto w = Geom::dot(hull[j] - hull[l], v);
-        auto h = Geom::dot(hull[k] - hull[i], n);
-        auto a = w * h;
-
-        // Track the minimum.
-        if (a < mina) {
-            mina = a;
-            result = std::make_pair(Geom::Affine(v.x(), -v.y(), v.y(), v.x(), 0.0, 0.0),
-                                    Geom::Rect::from_xywh(Geom::dot(hull[l], v), Geom::dot(hull[i], n), w, h));
-        }
-    }
-
-    return result;
-}
-
 /*
   Local Variables:
   mode:c++

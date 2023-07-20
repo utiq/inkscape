@@ -442,7 +442,7 @@ LPETiling::doAfterEffect (SPLPEItem const* lpeitem, SPCurve *curve)
                     auto p = Geom::Point(xset + offset_x - random_x[counter], yset + offset_y - random_y[counter]);
                     auto translate = p * gap.inverse();
                     Geom::Affine finalit = (transformoriginal * Geom::Translate(spcenter_base).inverse() * mirror * Geom::Translate(spcenter_base));
-                    finalit *=  gapp.inverse() *  Geom::Translate(spcenter).inverse() * originatrans.withoutTranslation().inverse() * r * translate * Geom::Translate(spcenter) ;
+                    finalit *= gapp.inverse() * Geom::Translate(spcenter).inverse() * originatrans.withoutTranslation().inverse() * r * Geom::Translate(translate) * Geom::Translate(spcenter);
                     item->doWriteTransform(finalit);
                     item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
                     forcewrite = forcewrite || write;

@@ -45,7 +45,6 @@ void recursive_bezier4(const double x1, const double y1, const double x2, const 
                        std::vector<Geom::Point> &pointlist,
                        int level);
 bool approx_dihedral(Geom::Affine const &affine, double eps = 0.0001);
-std::pair<Geom::Affine, Geom::Rect> min_bounding_box(std::vector<Geom::Point> const &pts);
 
 /// Returns signed area of triangle given by points; may be negative.
 inline Geom::Coord triangle_area(Geom::Point const &p1, Geom::Point const &p2, Geom::Point const &p3)

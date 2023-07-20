@@ -93,7 +93,7 @@ void PotraceTracingEngine::setTurdSize(int turdsize)
  * Recursively descend the potrace_path_t node tree \a paths, writing paths to \a builder.
  * The \a points set is used to prevent redundant paths.
  */
-void PotraceTracingEngine::writePaths(potrace_path_t *paths, Geom::PathBuilder &builder, std::unordered_set<Geom::Point, geom_point_hash> &points, Async::Progress<double> &progress) const
+void PotraceTracingEngine::writePaths(potrace_path_t *paths, Geom::PathBuilder &builder, std::unordered_set<Geom::Point> &points, Async::Progress<double> &progress) const
 {
     auto to_geom = [] (potrace_dpoint_t const &c) {
         return Geom::Point(c.x, c.y);
@@ -280,7 +280,7 @@ Geom::PathVector PotraceTracingEngine::grayMapToPath(GrayMap const &grayMap, Asy
 
     // Extract the paths into a pathvector and return it.
     Geom::PathBuilder builder;
-    std::unordered_set<Geom::Point, geom_point_hash> points;
+    std::unordered_set<Geom::Point> points;
     writePaths(potraceState->plist, builder, points, progress);
     return builder.peek();
 }

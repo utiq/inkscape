@@ -18,7 +18,6 @@
 #include <cassert>
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
-#include <2geom/convex-hull.h>
 
 #include "canvas.h"
 

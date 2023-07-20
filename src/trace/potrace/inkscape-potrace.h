@@ -45,18 +45,6 @@ enum class TraceType
     AUTOTRACE_CENTERLINE
 };
 
-// Todo: Make lib2geom types hashable.
-struct geom_point_hash
-{
-    std::size_t operator()(Geom::Point const &pt) const
-    {
-        std::size_t hash = 0;
-        boost::hash_combine(hash, pt.x());
-        boost::hash_combine(hash, pt.y());
-        return hash;
-    }
-};
-
 class PotraceTracingEngine final
     : public TracingEngine
 {
@@ -119,7 +107,7 @@ private:
 
     Geom::PathVector grayMapToPath(GrayMap const &gm, Async::Progress<double> &progress);
 
-    void writePaths(potrace_path_t *paths, Geom::PathBuilder &builder, std::unordered_set<Geom::Point, geom_point_hash> &points, Async::Progress<double> &progress) const;
+    void writePaths(potrace_path_t *paths, Geom::PathBuilder &builder, std::unordered_set<Geom::Point> &points, Async::Progress<double> &progress) const;
 };
 
 } // namespace Potrace

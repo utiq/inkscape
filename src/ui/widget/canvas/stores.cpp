@@ -4,6 +4,7 @@
 #include <2geom/transforms.h>
 #include <2geom/parallelogram.h>
 #include <2geom/point.h>
+#include <2geom/convex-hull.h>
 #include "helper/geom.h"
 #include "ui/util.h"
 #include "stores.h"
@@ -61,8 +62,7 @@ auto region_affine_approxinwards(Cairo::RefPtr<Cairo::Region> const &reg, Geom::
     double fx = min(absolute(Geom::Point(1.0, 0.0) * affine.withoutTranslation()));
     double fy = min(absolute(Geom::Point(0.0, 1.0) * affine.withoutTranslation()));
 
-    for (int i = 0; i < regsrc->get_num_rectangles(); i++)
-    {
+    for (int i = 0; i < regsrc->get_num_rectangles(); i++) {
         auto rect = cairo_to_geom(regsrc->get_rectangle(i));
         int nx = std::ceil(rect.width()  * fx / d);
         int ny = std::ceil(rect.height() * fy / d);
@@ -147,8 +147,9 @@ void Stores::snapshot_combine(Fragment const &view)
     add_rect(Geom::Parallelogram(_snapshot.rect) * _snapshot.affine.inverse() * view.affine);
 
     // Compute their minimum-area bounding box as a fragment - an (affine, rect) pair.
-    auto [affine, rect] = min_bounding_box(pts);
-    affine = view.affine * affine;
+    auto const [rot, optrect] = Geom::ConvexHull(pts).minAreaRotation();
+    auto rect = *optrect; // non-empty since pts is non-empty
+    auto affine = view.affine * rot;
 
     // Check if the paste transform takes the snapshot store exactly onto the new fragment, possibly with a dihedral transformation.
     auto paste = Geom::Scale(_snapshot.rect.dimensions())

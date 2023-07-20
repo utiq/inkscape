@@ -148,12 +148,6 @@ protected:
 
 } // namespace Inkscape
 
-// Todo: Move to lib2geom.
-inline auto &operator<<(std::ostream &s, Geom::OptRect const &rect)
-{
-    return rect ? (s << *rect) : (s << "(empty)");
-}
-
 #endif // SEEN_CANVAS_ITEM_H
 
 /*
