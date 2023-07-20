@@ -10,21 +10,23 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "selected-style.h"
-
+#include <cmath>
 #include <vector>
-
+#include <sigc++/connection.h>
+#include <sigc++/adaptors/bind.h>
+#include <sigc++/functors/mem_fun.h>
+#include <gtkmm/adjustment.h>
+#include <gtkmm/radiomenuitem.h>
 #include <gtkmm/separatormenuitem.h>
 
+#include "selected-style.h"
 
 #include "desktop-style.h"
 #include "document-undo.h"
 #include "gradient-chemistry.h"
 #include "message-context.h"
 #include "selection.h"
-
 #include "include/gtkmm_version.h"
-
 #include "object/sp-hatch.h"
 #include "object/sp-linear-gradient.h"
 #include "object/sp-mesh-gradient.h"
@@ -32,10 +34,8 @@
 #include "object/sp-pattern.h"
 #include "object/sp-radial-gradient.h"
 #include "style.h"
-
 #include "svg/css-ostringstream.h"
 #include "svg/svg-color.h"
-
 #include "ui/cursor-utils.h"
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-base.h"
@@ -44,11 +44,16 @@
 #include "ui/tools/tool-base.h"
 #include "ui/widget/color-preview.h"
 #include "ui/widget/gradient-image.h"
-
 #include "widgets/paintdef.h"
 #include "widgets/spw-utilities.h"
 
 using Inkscape::Util::unit_table;
+
+static constexpr auto const SELECTED_STYLE_SB_WIDTH     =  48;
+static constexpr auto const SELECTED_STYLE_PLACE_WIDTH  =  50;
+static constexpr auto const SELECTED_STYLE_STROKE_WIDTH =  40;
+static constexpr auto const SELECTED_STYLE_FLAG_WIDTH   =  12;
+static constexpr auto const SELECTED_STYLE_WIDTH        = 250;
 
 static gdouble const _sw_presets[]     = { 32 ,  16 ,  10 ,  8 ,  6 ,  4 ,  3 ,  2 ,  1.5 ,  1 ,  0.75 ,  0.5 ,  0.25 ,  0.1 };
 static gchar const *const _sw_presets_str[] = {"32", "16", "10", "8", "6", "4", "3", "2", "1.5", "1", "0.75", "0.5", "0.25", "0.1"};
@@ -85,12 +90,9 @@ void clearTooltip( Gtk::Widget &widget )
 
 } // namespace
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
-
-struct DropTracker {
+struct SelectedStyleDropTracker final {
     SelectedStyle* parent;
     int item;
 };
@@ -131,7 +133,6 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
     , _opacity_blocked(false)
 {
     set_name("SelectedStyle");
-    _drop[0] = _drop[1] = nullptr;
     _dropEnabled[0] = _dropEnabled[1] = false;
 
     _fill_label.set_halign(Gtk::ALIGN_END);
@@ -221,7 +222,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         _unset[i].show_all();
         __unset[i] = (i == SS_FILL)? (_("Unset fill")) : (_("Unset stroke"));
 
-        _color_preview[i] = new Inkscape::UI::Widget::ColorPreview (0);
+        _color_preview[i] = std::make_unique<Inkscape::UI::Widget::ColorPreview>(0);
         __color[i] = (i == SS_FILL)? (_("Flat color (fill)")) : (_("Flat color (stroke)"));
 
         // TRANSLATORS: A means "Averaged"
@@ -391,23 +392,23 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
 
     set_size_request (SELECTED_STYLE_WIDTH, -1);
 
-    _drop[SS_FILL] = new DropTracker();
-    ((DropTracker*)_drop[SS_FILL])->parent = this;
-    ((DropTracker*)_drop[SS_FILL])->item = SS_FILL;
+    _drop[SS_FILL] = std::make_unique<SelectedStyleDropTracker>();
+    _drop[SS_FILL]->parent = this;
+    _drop[SS_FILL]->item = SS_FILL;
 
-    _drop[SS_STROKE] = new DropTracker();
-    ((DropTracker*)_drop[SS_STROKE])->parent = this;
-    ((DropTracker*)_drop[SS_STROKE])->item = SS_STROKE;
+    _drop[SS_STROKE] = std::make_unique<SelectedStyleDropTracker>();
+    _drop[SS_STROKE]->parent = this;
+    _drop[SS_STROKE]->item = SS_STROKE;
 
     g_signal_connect(_stroke_place.gobj(),
                      "drag_data_received",
                      G_CALLBACK(dragDataReceived),
-                     _drop[SS_STROKE]);
+                     _drop[SS_STROKE].get());
 
     g_signal_connect(_fill_place.gobj(),
                      "drag_data_received",
                      G_CALLBACK(dragDataReceived),
-                     _drop[SS_FILL]);
+                     _drop[SS_FILL].get());
 
     _fill_place.signal_button_release_event().connect(sigc::mem_fun(*this, &SelectedStyle::on_fill_click));
     _stroke_place.signal_button_release_event().connect(sigc::mem_fun(*this, &SelectedStyle::on_stroke_click));
@@ -420,23 +421,8 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
 
 SelectedStyle::~SelectedStyle()
 {
-    selection_changed_connection->disconnect();
-    delete selection_changed_connection;
-    selection_modified_connection->disconnect();
-    delete selection_modified_connection;
-    subselection_changed_connection->disconnect();
-    delete subselection_changed_connection;
-    _unit_mis.clear();
-
     _fill_place.remove();
     _stroke_place.remove();
-
-    for (int i = SS_FILL; i <= SS_STROKE; i++) {
-        delete _color_preview[i];
-    }
-
-    delete (DropTracker*)_drop[SS_FILL];
-    delete (DropTracker*)_drop[SS_STROKE];
 }
 
 void
@@ -446,21 +432,15 @@ SelectedStyle::setDesktop(SPDesktop *desktop)
 
     Inkscape::Selection *selection = desktop->getSelection();
 
-    selection_changed_connection = new sigc::connection (selection->connectChanged(
-        sigc::bind (
-            sigc::ptr_fun(&ss_selection_changed),
-            this )
-    ));
-    selection_modified_connection = new sigc::connection (selection->connectModified(
-        sigc::bind (
-            sigc::ptr_fun(&ss_selection_modified),
-            this )
-    ));
-    subselection_changed_connection = new sigc::connection (desktop->connectToolSubselectionChanged(
-        sigc::bind (
-            sigc::ptr_fun(&ss_subselection_changed),
-            this )
-    ));
+    selection_changed_connection = selection->connectChanged(
+        sigc::bind(&ss_selection_changed, this)
+    );
+    selection_modified_connection = selection->connectModified(
+        sigc::bind(&ss_selection_modified, this)
+    );
+    subselection_changed_connection = desktop->connectToolSubselectionChanged(
+        sigc::bind(&ss_subselection_changed, this)
+    );
 
     _sw_unit = desktop->getNamedView()->display_units;
 
@@ -481,7 +461,7 @@ void SelectedStyle::dragDataReceived( GtkWidget */*widget*/,
                                       guint /*event_time*/,
                                       gpointer user_data )
 {
-    DropTracker* tracker = (DropTracker*)user_data;
+    auto const tracker = static_cast<SelectedStyleDropTracker*>(user_data);
 
     // copied from drag-and-drop.cpp, case APP_OSWB_COLOR
     bool worked = false;
@@ -960,7 +940,7 @@ SelectedStyle::update()
                                      SP_SCALE24_TO_FLOAT ((i == SS_FILL)? query.fill_opacity.value : query.stroke_opacity.value));
                 _lastselected[i] = _thisselected[i];
                 _thisselected[i] = color; // include opacity
-                ((Inkscape::UI::Widget::ColorPreview*)_color_preview[i])->setRgba32 (color);
+                _color_preview[i]->setRgba32(color);
                 _color_preview[i]->show_all();
                 place->add(*_color_preview[i]);
                 gchar c_string[64];
@@ -1400,9 +1380,7 @@ Dialog::FillAndStroke *get_fill_and_stroke_panel(SPDesktop *desktop)
     return dynamic_cast<Dialog::FillAndStroke *>(desktop->getContainer()->get_dialog("FillStroke"));
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:
