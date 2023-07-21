@@ -40,6 +40,7 @@
 #include "object/sp-missing-glyph.h"
 #include "object/sp-path.h"
 #include "svg/svg.h"
+#include "ui/util.h"
 #include "util/units.h"
 #include "xml/repr.h"
 
@@ -76,8 +77,7 @@ bool SvgFontDrawingArea::on_draw(const Cairo::RefPtr<Cairo::Context> &cr) {
     cr->set_font_face( Cairo::RefPtr<Cairo::FontFace>(new Cairo::FontFace(_svgfont->get_font_face(), false /* does not have reference */)) );
     cr->set_font_size (_y-20);
     cr->move_to (10, 10);
-    auto context = get_style_context();
-    Gdk::RGBA fg = context->get_color(get_state_flags());
+    auto const fg = get_foreground_color(get_style_context());
     cr->set_source_rgb(fg.get_red(), fg.get_green(), fg.get_blue());
     // crash on macos: https://gitlab.com/inkscape/inkscape/-/issues/266
     try {
@@ -107,13 +107,12 @@ void SvgGlyphRenderer::render_vfunc(
     Cairo::TextExtents ext;
     cr->get_text_extents(glyph, ext);
     cr->move_to(cell_area.get_x() + (_width - ext.width) / 2, cell_area.get_y() + 1);
-    auto context = _tree->get_style_context();
-    Gtk::StateFlags sflags = _tree->get_state_flags();
-    if (flags & Gtk::CELL_RENDERER_SELECTED) {
-        sflags |= Gtk::STATE_FLAG_SELECTED;
-    }
-    Gdk::RGBA fg = context->get_color(sflags);
+
+    auto const selected = (flags & Gtk::CELL_RENDERER_SELECTED) != Gtk::CellRendererState{};
+    auto const css_class = selected ? "theme_selected_bg_color" : "";
+    auto const fg = get_color_with_class(_tree->get_style_context(), css_class);
     cr->set_source_rgb(fg.get_red(), fg.get_green(), fg.get_blue());
+
     // crash on macos: https://gitlab.com/inkscape/inkscape/-/issues/266
     try {
         cr->show_text(glyph);

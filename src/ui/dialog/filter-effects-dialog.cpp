@@ -1979,15 +1979,11 @@ bool FilterEffectsDialog::PrimitiveList::on_draw_signal(const Cairo::RefPtr<Cair
     convert_bin_window_to_widget_coords(0,0,x_origin,y_origin);
     cr->translate(x_origin, y_origin);
 
-    auto sc = get_style_context();
-
-    // TODO: In Gtk+ 4, the state is not used in get_color
-    auto state = sc->get_state();
-    auto bg_color = get_background_color(sc, state);
-    auto orig_color = sc->get_color(state);
-    Gdk::RGBA fg_color = orig_color;
-    auto bar_color = mix_colors(bg_color, orig_color, 0.06);
-    // color of connector arrow heads and effect separator lines
+    auto const style_context = get_style_context();
+    auto const fg_color = get_foreground_color(style_context);
+    auto const bg_color = get_color_with_class(style_context, "theme_bg_color");
+    auto bar_color = mix_colors(bg_color, fg_color, 0.06);
+     // color of connector arrow heads and effect separator lines
     auto mid_color = mix_colors(bg_color, fg_color, 0.16);
 
     SPFilterPrimitive* prim = get_selected();
@@ -2009,8 +2005,7 @@ bool FilterEffectsDialog::PrimitiveList::on_draw_signal(const Cairo::RefPtr<Cair
         Gdk::Cairo::set_source_rgba(cr, bg_color);
         cr->rectangle(text_start_x + 1, 0, w * _inputs_count, h);
         cr->fill();
-        auto text_color = fg_color;
-        text_color.set_alpha(0.7);
+        auto const text_color = change_alpha(fg_color, 0.7);
 
         // draw vertical bars corresponding to possible filter inputs
         for(unsigned int i = 0; i < _inputs_count; ++i) {
@@ -2120,7 +2115,7 @@ bool FilterEffectsDialog::PrimitiveList::on_draw_signal(const Cairo::RefPtr<Cair
         // Draw drag connection
         if(row_prim == prim && _in_drag) {
             cr->save();
-            Gdk::Cairo::set_source_rgba(cr, orig_color);
+            Gdk::Cairo::set_source_rgba(cr, fg_color);
             cr->move_to(con_drag_x, con_drag_y);
             cr->line_to(mx, con_drag_y);
             cr->line_to(mx, my);

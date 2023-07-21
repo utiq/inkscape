@@ -544,9 +544,9 @@ void SPDesktopWidget::on_realize()
     dtw->desktop->set_display_area (d, 10);
 
     dtw->updateNamedview();
-    Gtk::Container *window = get_toplevel();
+    auto const window = dynamic_cast<Gtk::Window *>(get_toplevel());
     if (window) {
-        bool dark = INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container *>(window));
+        auto const dark = INKSCAPE.themecontext->isCurrentThemeDark(window);
         prefs->setBool("/theme/darkTheme", dark);
         INKSCAPE.themecontext->getChangeThemeSignal().emit();
         INKSCAPE.themecontext->add_gtk_css(true);

@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
 /** \file
  * Gtk <themes> helper code.
  */
-
 /*
  * Authors:
  *   Jabiertxof
@@ -14,36 +12,37 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "themes.h"
-#include "inkscape.h"
-#include "preferences.h"
-#include "io/resource.h"
-#include "svg/svg-color.h"
 #include <cstddef>
 #include <cstring>
-#include <gio/gio.h>
-#include <glibmm.h>
-#include <glibmm/ustring.h>
-#include <gtkmm.h>
-#include <map>
-#include <pangomm/font.h>
-#include <pangomm/fontdescription.h>
 #include <regex>
 #include <string>
 #include <utility>
-#include <vector>
+#include <gio/gio.h>
+#include <glibmm/ustring.h>
+#include <gtk/gtk.h>
+#include <gtkmm/cssprovider.h>
+#include <gtkmm/csssection.h>
+#include <gtkmm/stylecontext.h>
+#include <gtkmm/window.h>
+#include <pangomm/font.h>
+#include <pangomm/fontdescription.h>
+
+#include "config.h"
+#include "inkscape.h"
+#include "io/resource.h"
+#include "preferences.h"
 #include "svg/css-ostringstream.h"
+#include "svg/svg-color.h"
+#include "themes.h"
 #include "ui/dialog/dialog-manager.h"
 #include "ui/dialog/dialog-window.h"
 #include "ui/util.h"
-#include "config.h"
 
 #if WITH_GSOURCEVIEW
 #   include <gtksourceview/gtksource.h>
 #endif
 
-namespace Inkscape {
-namespace UI {
+namespace Inkscape::UI {
 
 /**
  * Inkscape fill gtk, taken from glib/gtk code with our own checks.
@@ -481,33 +480,29 @@ void ThemeContext::add_gtk_css(bool only_providers, bool cached)
  * property other than preferDarkTheme, so theme should be set before calling
  * this function as it may otherwise return outdated result.
  */
-bool ThemeContext::isCurrentThemeDark(Gtk::Container *window)
+bool ThemeContext::isCurrentThemeDark(Gtk::Window * const window)
 {
-    bool dark = false;
+    if (!window) return false;
 
-    if (window) {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        Glib::ustring current_theme =
-            prefs->getString("/theme/gtkTheme", prefs->getString("/theme/defaultGtkTheme", ""));
+    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    Glib::ustring current_theme =
+        prefs->getString("/theme/gtkTheme", prefs->getString("/theme/defaultGtkTheme", ""));
 
-        auto settings = Gtk::Settings::get_default();
-        if (settings) {
-            settings->property_gtk_application_prefer_dark_theme() = prefs->getBool("/theme/preferDarkTheme", false);
-        }
-
-        dark = current_theme.find(":dark") != std::string::npos;
-
-        // if theme is dark or we use contrast slider feature and have set preferDarkTheme we force the theme dark
-        // and avoid color check, this fix a issue with low contrast themes bad switch of dark theme toggle
-        dark = dark || (prefs->getInt("/theme/contrast", 10) != 10 && prefs->getBool("/theme/preferDarkTheme", false));
-
-        // Otherwise, check the foreground color, and if that has luminance >= 50%, we conclude the theme is dark.
-        if (!dark) {
-            auto const rgba = get_foreground_color(window->get_style_context());
-            dark = get_luminance(rgba) >= 0.5;
-        }
+    if (auto const settings = Gtk::Settings::get_default()) {
+        settings->property_gtk_application_prefer_dark_theme() = prefs->getBool("/theme/preferDarkTheme", false);
     }
 
+    auto dark = current_theme.find(":dark") != std::string::npos;
+
+    // if theme is dark or we use contrast slider feature and have set preferDarkTheme we force the theme dark
+    // and avoid color check, this fix a issue with low contrast themes bad switch of dark theme toggle
+    dark = dark || (prefs->getInt("/theme/contrast", 10) != 10 && prefs->getBool("/theme/preferDarkTheme", false));
+    if (dark) return true;
+
+    // Otherwise, check the foreground color, and if that has luminance >= 50%, we conclude the theme is dark.
+    // Note: Use @theme_fg_color, since currentColor might not be set or correct
+    auto const rgba = get_color_with_class(window->get_style_context(), "theme_fg_color");
+    dark = get_luminance(rgba) >= 0.5;
     return dark;
 }
 
@@ -674,8 +669,7 @@ void ThemeContext::saveFontScale(double scale)
     Preferences::get()->setDouble(get_font_scale_pref_path(), scale);
 }
 
-} // UI
-} // Inkscape
+} // namespace Inkscape::UI
 
 /*
   Local Variables:

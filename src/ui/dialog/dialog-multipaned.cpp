@@ -192,8 +192,7 @@ bool MyHandle::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
         auto rect = get_active_click_zone();
 
         if (rect.width > 4 && rect.height > 0) {
-            Glib::RefPtr<Gtk::StyleContext> style_context = get_style_context();
-            Gdk::RGBA fg = style_context->get_color(get_state_flags());
+            auto const fg = get_foreground_color(get_style_context());
             rounded_rectangle(cr, rect.x + 2, rect.y, rect.width - 4, rect.height, 3);
             cr->set_source_rgba(fg.get_red(), fg.get_green(), fg.get_blue(), 0.26);
             cr->fill();

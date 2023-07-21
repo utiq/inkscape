@@ -1012,8 +1012,7 @@ void DocumentResources::refresh_page(const Glib::ustring& id) {
     auto tab = "iconview";
     auto has_count = false;
     auto item_width = 90;
-    auto context = get_style_context();
-    Gdk::RGBA color = context->get_color(get_state_flags());
+    auto const color = get_foreground_color(get_style_context());
     auto label_editable = false;
     auto items_selectable = true;
     auto can_delete = false; // enable where supported
@@ -1030,7 +1029,9 @@ void DocumentResources::refresh_page(const Glib::ustring& id) {
     case Symbols:
         {
             auto opt = object_renderer::options();
-            if (INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container*>(this))) {
+            if (auto const window = dynamic_cast<Gtk::Window *>(get_toplevel());
+	        INKSCAPE.themecontext->isCurrentThemeDark(window))
+	    {
                 // white background for typically black symbols, so they don't disappear in a dark theme
                 opt.solid_background(0xf0f0f0ff, 3, 3);
             }

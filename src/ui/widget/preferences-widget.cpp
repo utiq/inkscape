@@ -446,7 +446,7 @@ ZoomCorrRuler::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
     _drawing_width = w - _border * 2;
 
     auto context = get_style_context();
-    Gdk::RGBA fg = context->get_color(get_state_flags());
+    auto const fg = get_foreground_color(context);
 
     context->render_background(cr, 0, 0, w, _height + _border * 2);
 

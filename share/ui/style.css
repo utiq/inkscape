@@ -323,21 +323,26 @@ iconview *:hover {
 }
 
 .bright #InkRuler.shadow {
-    border-color: rgba(0,0,0,0.3);
+    color: rgba(0,0,0,0.3);
 }
 .dark #InkRuler.shadow {
-    border-color: rgba(0,0,0,0.5);
+    color: rgba(0,0,0,0.5);
 }
 
-.dark #InkRuler.page {
-    background-color: #1d1e1e;
-}
 .bright #InkRuler.page {
-    background-color: #fff;
+    color: @theme_base_color;
 }
-#InkRuler.selection {
-    border-color: rgba(22, 169, 249, 0.8);
-    background-color: transparent;
+.dark #InkRuler.page {
+    color: shade(@theme_base_color, 0.666);
+}
+
+.bright #InkRuler.selection.border,
+.dark   #InkRuler.selection.border {
+    color: @theme_selected_bg_color;
+}
+.bright #InkRuler.selection.background,
+.dark   #InkRuler.selection.background {
+    color: transparent;
 }
 
 /* The actual canvas (Inkscape's drawing area). */
@@ -1061,4 +1066,29 @@ popover.popover-menu menuitem {
 #tool-toolbar button {
     margin-left: 1px;
     margin-right: 1px;
+}
+
+/* used @ ui/themes to get correct foreground color; get_color() can be wrong */
+/* Asterisks & stuff in the selectors are just to ensure sufficient priority. */
+*.theme_fg_color,
+*.theme_fg_color:not(:backdrop),
+*.theme_fg_color:backdrop
+{
+    color: @theme_fg_color;
+}
+
+/* As GTK4 only lets us get the fg color, use these to stash other colors there…
+   by calling util:get_color_with_class(), *BUT* see its note re this technique.
+   Asterisks & stuff in the selectors are just to ensure sufficient priority. */
+*.theme_bg_color,
+*.theme_bg_color:not(:backdrop),
+*.theme_bg_color:backdrop
+{
+    color: @theme_bg_color;
+}
+*.theme_selected_bg_color,
+*.theme_selected_bg_color:not(:backdrop),
+*.theme_selected_bg_color:backdrop
+{
+    color: @theme_selected_bg_color;
 }

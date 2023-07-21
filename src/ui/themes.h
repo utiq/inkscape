@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
 /** \file
  * Gtk <themes> helper code.
  */
-
 /*
  * Authors:
  *   Jabiertxof
@@ -17,19 +15,21 @@
 #ifndef UI_THEMES_H_SEEN
 #define UI_THEMES_H_SEEN
 
-#include <cstring>
-#include <glibmm.h>
-#include <glibmm/ustring.h>
-#include <gtkmm.h>
 #include <map>
-#include <pangomm/fontdescription.h>
-#include <utility>
+#include <memory>
 #include <vector>
 #include <sigc++/signal.h>
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
+#include <pangomm/fontdescription.h>
 #include "preferences.h"
 
-namespace Inkscape {
-namespace UI {
+namespace Gtk {
+class CssProvider;
+class Window;
+} // namespace Gtk
+
+namespace Inkscape::UI {
 
 class ThemeContext
 {
@@ -66,7 +66,7 @@ public:
     static Glib::ustring get_monospaced_font_pref_path() { return "/ui/mono-font/desc"; }
 
     // True if current theme (applied one) is dark
-    bool isCurrentThemeDark(Gtk::Container *window);
+    bool isCurrentThemeDark(Gtk::Window *window);
 
     // Get CSS foreground colors resulting from classes ".highlight-color-[1-8]"
     static std::vector<guint32> getHighlightColors(Gtk::Window *window);
@@ -90,8 +90,7 @@ private:
     Glib::RefPtr<Gtk::CssProvider> _fontsizeprovider = Gtk::CssProvider::create();
 };
 
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI
 
 #endif /* !UI_THEMES_H_SEEN */
 

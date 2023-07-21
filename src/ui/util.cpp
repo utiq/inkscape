@@ -164,19 +164,13 @@ Gdk::RGBA get_foreground_color(Glib::RefPtr<Gtk::StyleContext const> const &cont
     return context->get_color(context->get_state());
 }
 
-Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
-                               Gtk::StateFlags state) {
-    return get_context_color(context, GTK_STYLE_PROPERTY_BACKGROUND_COLOR, state);
-}
-
-Gdk::RGBA get_context_color(const Glib::RefPtr<Gtk::StyleContext> &context,
-                            const gchar *property,
-                            Gtk::StateFlags state) {
-    GdkRGBA *c;
-    gtk_style_context_get(context->gobj(),
-                          static_cast<GtkStateFlags>(state),
-                          property, &c, nullptr);
-    return Glib::wrap(c);
+Gdk::RGBA get_color_with_class(Glib::RefPtr<Gtk::StyleContext> const &context,
+                               Glib::ustring const &css_class)
+{
+    if (!css_class.empty()) context->add_class(css_class);
+    auto result = get_foreground_color(context);
+    if (!css_class.empty()) context->remove_class(css_class);
+    return result;
 }
 
 guint32 to_guint32(Gdk::RGBA const &rgba)

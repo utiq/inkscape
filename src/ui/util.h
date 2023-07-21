@@ -121,12 +121,11 @@ double get_luminance(const Gdk::RGBA &color);
 // Get the foreground / CSS color for a StyleContext based on its current state.
 Gdk::RGBA get_foreground_color(Glib::RefPtr<Gtk::StyleContext const> const &context);
 
-// Get the background-color style property for a given StyleContext
-Gdk::RGBA get_context_color(const Glib::RefPtr<Gtk::StyleContext> &context,
-                            const gchar *property,
-                            Gtk::StateFlags state = static_cast<Gtk::StateFlags>(0));
-Gdk::RGBA get_background_color(const Glib::RefPtr<Gtk::StyleContext> &context,
-                               Gtk::StateFlags state = static_cast<Gtk::StateFlags>(0));
+// Get CSS color for a StyleContext, based on its current state & a given class.
+// N.B.!! Big GTK devs donʼt think changing classes should work ‘within a frame’
+// …but it does… & GTK3 GtkCalendar does that – so keep doing it, till we canʼt!
+Gdk::RGBA get_color_with_class(Glib::RefPtr<Gtk::StyleContext> const &context,
+                               Glib::ustring const &css_class);
 
 guint32 to_guint32(Gdk::RGBA const &rgba);
 

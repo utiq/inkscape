@@ -361,11 +361,7 @@ void ObjectWatcher::updateRowBg(guint32 rgba)
         }
 
         const auto& sel = selection_color;
-        auto gdk_color = Gdk::RGBA();
-        gdk_color.set_red(sel.get_red());
-        gdk_color.set_green(sel.get_green());
-        gdk_color.set_blue(sel.get_blue());
-        gdk_color.set_alpha(sel.get_alpha() * alpha);
+        const auto gdk_color = change_alpha(sel, sel.get_alpha() * alpha);
         row[panel->_model->_colBgColor] = gdk_color;
     }
 }
@@ -959,9 +955,12 @@ ObjectsPanel::ObjectsPanel()
     _page.pack_end(_scroller, Gtk::PACK_EXPAND_WIDGET);
     pack_start(_page, Gtk::PACK_EXPAND_WIDGET);
 
-    selection_color = get_background_color(_tree.get_style_context(), Gtk::STATE_FLAG_SELECTED);
+    auto const set_selection_color = [&]
+        { selection_color = get_color_with_class(_tree.get_style_context(), "theme_selected_bg_color"); };
+    set_selection_color();
+
     _tree_style = _tree.signal_style_updated().connect([=](){
-        selection_color = get_background_color(_tree.get_style_context(), Gtk::STATE_FLAG_SELECTED);
+        set_selection_color();
 
         if (!root_watcher) return;
         for (auto&& kv : root_watcher->child_watchers) {

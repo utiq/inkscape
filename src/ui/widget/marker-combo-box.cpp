@@ -775,7 +775,7 @@ void MarkerComboBox::on_style_updated() {
     auto background = _background_color;
     if (auto wnd = dynamic_cast<Gtk::Window*>(this->get_toplevel())) {
         auto sc = wnd->get_style_context();
-        auto color = get_background_color(sc);
+        auto const color = get_color_with_class(sc, "theme_bg_color");
         background =
             gint32(0xff * color.get_red()) << 24 |
             gint32(0xff * color.get_green()) << 16 |

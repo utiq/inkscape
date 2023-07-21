@@ -14,38 +14,38 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"  // only include where actually required!
+#endif
+
+#include <strings.h>
+#include <algorithm>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <gio/gio.h>
+#include <gtk/gtk.h>
+#include <glibmm/i18n.h>
+#include <glibmm/main.h>
 #include <glibmm/ustring.h>
+#include <gtkmm/accelgroup.h>
 #include <gtkmm/dialog.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/fontbutton.h>
 #include <gtkmm/fontchooserdialog.h>
 #include <gtkmm/widget.h>
-#include "ui/widget/preferences-widget.h"
-#ifdef HAVE_CONFIG_H
-# include "config.h"  // only include where actually required!
-#endif
-
 #include <gtkmm/box.h>
 #include <gtkmm/enums.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/object.h>
 #include <gtkmm/togglebutton.h>
-#include "ui/widget/color-scales.h"
+
+#if WITH_GSOURCEVIEW
+#   include <gtksourceview/gtksource.h>
+#endif
 
 #include "inkscape-preferences.h"
-
-#include <fstream>
-#include <strings.h>
-#include <sstream>
-#include <iomanip>
-#include <algorithm>
-
-#include <gio/gio.h>
-#include <gtk/gtk.h>
-#include <glibmm/i18n.h>
-#include <gtkmm.h>
-
 #include "auto-save.h"
 #include "document.h"
 #include "enums.h"
@@ -58,50 +58,37 @@
 #include "selection-chemistry.h"
 #include "selection.h"
 #include "style.h"
-
 #include "color/cms-system.h"
-
 #include "display/control/canvas-item-grid.h"
 #include "display/nr-filter-gaussian.h"
-
 #include "extension/internal/gdkpixbuf-input.h"
-
 #include "io/resource.h"
-
 #include "object/color-profile.h"
-
 #include "svg/svg-color.h"
-
+#include "ui/builder-utils.h"
 #include "ui/desktop/menubar.h"
 #include "ui/dialog-run.h"
 #include "ui/interface.h"
-#include "ui/shortcuts.h"
 #include "ui/modifiers.h"
+#include "ui/shortcuts.h"
+#include "ui/themes.h"
 #include "ui/toolbar/toolbar-constants.h"
 #include "ui/toolbar/tool-toolbar.h"
 #include "ui/util.h"
-#include "ui/widget/style-swatch.h"
 #include "ui/widget/canvas.h"
-#include "ui/themes.h"
-#include "ui/builder-utils.h"
-
-#include "util/trim.h"
+#include "ui/widget/color-scales.h"
+#include "ui/widget/preferences-widget.h"
+#include "ui/widget/style-swatch.h"
 #include "util/recently-used-fonts.h"
-
+#include "util/trim.h"
 #include "widgets/desktop-widget.h"
 #include "widgets/spw-utilities.h"
-
-#include <gtkmm/accelgroup.h>
 
 #if WITH_GSPELL
 # include "ui/dialog/spellcheck.h" // for get_available_langs
 # ifdef _WIN32
 #  include <windows.h>
 # endif
-#endif
-
-#if WITH_GSOURCEVIEW
-#   include <gtksourceview/gtksource.h>
 #endif
 
 namespace Inkscape {
@@ -1232,14 +1219,13 @@ void InkscapePreferences::resetIconsColors(bool themechange)
         if (INKSCAPE.themecontext->getColorizeProvider()) {
             Gtk::StyleContext::remove_provider_for_screen(screen, INKSCAPE.themecontext->getColorizeProvider());
         }
-        // This colors are set on style.css of inkscape
-        Gdk::RGBA base_color = _symbolic_base_color.get_style_context()->get_color();
         // This is a hack to fix a problematic style which isn't updated fast enough on
         // change from dark to bright themes
-        if (themechange) {
-            auto sc = _symbolic_base_color.get_style_context();
-            base_color = get_background_color(sc);
-        }
+        // or rather, this is an attempt to recreate an old hack. Does it work? Is it still needed?
+        for (auto main_loop = Glib::MainContext::get_default();
+             main_loop && main_loop->iteration(false);) {} // wait till idle but donʼt let us block
+        // This colors are set on style.css of inkscape
+        auto const base_color = get_foreground_color(_symbolic_base_color.get_style_context());
         SPColor base_color_sp(base_color.get_red(), base_color.get_green(), base_color.get_blue());
         //we copy highlight to not use
         guint32 colorsetbase = base_color_sp.toRGBA32(base_color.get_alpha());
@@ -1254,14 +1240,15 @@ void InkscapePreferences::resetIconsColors(bool themechange)
     } else {
         _symbolic_base_color.setSensitive(true);
     }
+
     if (prefs->getBool("/theme/symbolicDefaultHighColors", true)) {
         auto const screen = Gdk::Screen::get_default();
         if (INKSCAPE.themecontext->getColorizeProvider()) {
             Gtk::StyleContext::remove_provider_for_screen(screen, INKSCAPE.themecontext->getColorizeProvider());
         }
-        Gdk::RGBA success_color = _symbolic_success_color.get_style_context()->get_color();
-        Gdk::RGBA warning_color = _symbolic_warning_color.get_style_context()->get_color();
-        Gdk::RGBA error_color = _symbolic_error_color.get_style_context()->get_color();
+        auto const success_color = get_foreground_color(_symbolic_success_color.get_style_context());
+        auto const warning_color = get_foreground_color(_symbolic_warning_color.get_style_context());
+        auto const error_color   = get_foreground_color(_symbolic_error_color.get_style_context());
         SPColor success_color_sp(success_color.get_red(), success_color.get_green(), success_color.get_blue());
         SPColor warning_color_sp(warning_color.get_red(), warning_color.get_green(), warning_color.get_blue());
         SPColor error_color_sp(error_color.get_red(), error_color.get_green(), error_color.get_blue());
@@ -1285,7 +1272,6 @@ void InkscapePreferences::resetIconsColors(bool themechange)
         _symbolic_success_color.setSensitive(true);
         _symbolic_warning_color.setSensitive(true);
         _symbolic_error_color.setSensitive(true);
-        /* _complementary_colors->get_style_context()->remove_class("disabled"); */
     }
 }
 
@@ -1399,7 +1385,7 @@ void InkscapePreferences::themeChange(bool contrastslider)
         }
         auto settings = Gtk::Settings::get_default();
         settings->property_gtk_theme_name() = current_theme;
-        bool dark = INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container *>(window));
+        auto const dark = INKSCAPE.themecontext->isCurrentThemeDark(window);
         bool toggled = prefs->getBool("/theme/darkTheme", false) != dark;
         prefs->setBool("/theme/darkTheme", dark);
         INKSCAPE.themecontext->getChangeThemeSignal().emit();
@@ -1413,7 +1399,7 @@ void InkscapePreferences::preferDarkThemeChange()
     Gtk::Window *window = SP_ACTIVE_DESKTOP->getToplevel();
     if (window) {
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        bool dark = INKSCAPE.themecontext->isCurrentThemeDark(dynamic_cast<Gtk::Container *>(window));
+        auto const dark = INKSCAPE.themecontext->isCurrentThemeDark(window);
         bool toggled = prefs->getBool("/theme/darkTheme", false) != dark;
         prefs->setBool("/theme/darkTheme", dark);
         INKSCAPE.themecontext->getChangeThemeSignal().emit();

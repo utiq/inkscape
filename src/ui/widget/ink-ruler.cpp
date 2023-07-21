@@ -587,20 +587,17 @@ Ruler::on_style_updated() {
     if (!_font.get_size_is_absolute())
         _font_size /= Pango::SCALE;
 
-    style_context->add_class("shadow");
-    _shadow = get_context_color(style_context, "border-color");
-    style_context->remove_class("shadow");
-
-    style_context->add_class("page");
-    _page_fill = get_background_color(style_context);
-    style_context->remove_class("page");
+    _shadow = get_color_with_class(style_context, "shadow");
+    _page_fill = get_color_with_class(style_context, "page");
 
     style_context->add_class("selection");
-    _select_fill = get_background_color(style_context);
-    _select_stroke = get_context_color(style_context, "border-color");
+    _select_fill = get_color_with_class(style_context, "background");
+    _select_stroke = get_color_with_class(style_context, "border");
     style_context->remove_class("selection");
+
     _label_cache.clear();
     _backing_store_valid = false;
+
     queue_resize();
     queue_draw();
 }

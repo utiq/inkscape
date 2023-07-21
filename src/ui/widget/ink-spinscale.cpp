@@ -16,17 +16,16 @@
    "slow dragging" mode triggered by the Alt key.
 */
 
-#include "ink-spinscale.h"
+#include <iostream>
+#include <utility>
+#include <gdk/gdk.h>
 #include <gdkmm/general.h>
 #include <gdkmm/cursor.h>
 #include <gdkmm/event.h>
-
 #include <gtkmm/spinbutton.h>
 
-#include <gdk/gdk.h>
-
-#include <iostream>
-#include <utility>
+#include "ink-spinscale.h"
+#include "ui/util.h"
 
 InkScale::InkScale(Glib::RefPtr<Gtk::Adjustment> adjustment, Gtk::SpinButton* spinbutton)
   : Glib::ObjectBase("InkScale")
@@ -37,7 +36,6 @@ InkScale::InkScale(Glib::RefPtr<Gtk::Adjustment> adjustment, Gtk::SpinButton* sp
   , _drag_offset(0)
 {
   set_name("InkScale");
-  // std::cout << "GType name: " << G_OBJECT_TYPE_NAME(gobj()) << std::endl;
 }
 
 void
@@ -51,9 +49,7 @@ InkScale::on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) {
   Gtk::Range::on_draw(cr);
 
   // Get SpinButton style info...
-  auto style_spin = _spinbutton->get_style_context();
-  auto state_spin = style_spin->get_state();
-  Gdk::RGBA text_color = style_spin->get_color( state_spin );
+  auto const text_color = get_foreground_color(_spinbutton->get_style_context());
 
   // Create Pango layout.
   auto layout_label = create_pango_layout(_label);

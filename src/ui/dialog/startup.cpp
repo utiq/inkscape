@@ -754,8 +754,8 @@ void StartScreen::refresh_dark_switch()
 {
     auto prefs = Inkscape::Preferences::get();
 
-    Gtk::Container *window = dynamic_cast<Gtk::Container *>(get_toplevel());
-    bool dark = INKSCAPE.themecontext->isCurrentThemeDark(window);
+    auto const window = dynamic_cast<Gtk::Window *>(get_toplevel());
+    auto const dark = INKSCAPE.themecontext->isCurrentThemeDark(window);
     prefs->setBool("/theme/preferDarkTheme", dark);
     prefs->setBool("/theme/darkTheme", dark);
 

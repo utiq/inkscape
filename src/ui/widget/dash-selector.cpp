@@ -23,8 +23,8 @@
 #include "preferences.h"
 #include "display/cairo-utils.h"
 #include "style.h"
-
 #include "ui/dialog-events.h"
+#include "ui/util.h"
 
 namespace Inkscape {
 namespace UI {
@@ -186,8 +186,7 @@ Cairo::RefPtr<Cairo::Surface> DashSelector::sp_dash_to_pixbuf(const std::vector<
     cairo_surface_t *s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cairo_t *ct = cairo_create(s);
 
-    auto context = get_style_context();
-    Gdk::RGBA fg = context->get_color(get_state_flags());
+    auto const fg = get_foreground_color(get_style_context());
 
     cairo_set_line_width (ct, _preview_lineheight * device_scale);
     cairo_scale (ct, _preview_lineheight * device_scale, 1);
@@ -215,8 +214,7 @@ Cairo::RefPtr<Cairo::Surface> DashSelector::sp_text_to_pixbuf(const char* text) 
     cairo_select_font_face (ct, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     // todo: how to find default font face and size?
     cairo_set_font_size (ct, 12 * device_scale);
-    auto context = get_style_context();
-    Gdk::RGBA fg = context->get_color(get_state_flags());
+    auto const fg = get_foreground_color(get_style_context());
     cairo_set_source_rgb(ct, fg.get_red(), fg.get_green(), fg.get_blue());
     cairo_move_to (ct, 16.0 * device_scale, 13.0 * device_scale);
     cairo_show_text (ct, text);
