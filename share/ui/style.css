@@ -310,6 +310,8 @@ iconview *:hover {
     border-color:@success_color;
 }
 
+/* ink-ruler */
+
 #InkRuler {
     /* make size relative */
     font-size: smaller;
@@ -321,6 +323,8 @@ iconview *:hover {
     /* increase contrast between background and page area */
     background-color: shade(@theme_bg_color, 0.94);
 }
+
+/* Ensure ui/themes.cpp excludes these classes on applying overridebasecolor: */
 
 .bright #InkRuler.shadow {
     color: rgba(0,0,0,0.3);

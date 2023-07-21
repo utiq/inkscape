@@ -166,7 +166,7 @@ ThemeContext::get_symbolic_colors()
     if we not override the color we use defautt theme colors*/
     bool overridebasecolor = !prefs->getBool("/theme/symbolicDefaultBaseColors", true);
     if (overridebasecolor) {
-        css_str += "#InkRuler,";
+        css_str += "#InkRuler:not(.shadow):not(.page):not(.selection),";
         css_str += ":not(.rawstyle) > image";
         css_str += "{color:";
         css_str += colornamed;
