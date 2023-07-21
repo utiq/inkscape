@@ -139,7 +139,7 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
     });
 
     auto builder = ColumnMenuBuilder<DialogData::Category>{_menu, 2, Gtk::ICON_SIZE_MENU,
-                                                           row, Gtk::ALIGN_START};
+                                                           row};
     for (auto const &data : all_dialogs) {
         auto callback = [key = data.key]{
             // get desktop's container, it may be different than current '_container'!

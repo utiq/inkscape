@@ -23,12 +23,11 @@ class ColumnMenuBuilder {
 public:
     ColumnMenuBuilder(Widget::PopoverMenu& menu, int columns,
                       Gtk::IconSize icon_size = Gtk::ICON_SIZE_MENU,
-                      int const first_row = 0, Gtk::Align const category_halign = Gtk::ALIGN_FILL)
+                      int const first_row = 0)
         : _menu(menu)
         , _row(first_row)
         , _columns(columns)
         , _icon_size(static_cast<int>(icon_size))
-        , _category_halign(category_halign)
     {
         assert(_row >= 0);
         assert(_columns >= 1);
@@ -61,7 +60,7 @@ public:
             auto const sep = Gtk::make_managed<Widget::PopoverMenuItem>();
             sep->get_style_context()->add_class("menu-category");
             sep->set_sensitive(false);
-            sep->set_halign(_category_halign);
+            sep->set_halign(Gtk::ALIGN_START);
             sep->show_all();
             _menu.attach(*sep, 0, _columns, _row, _row + 1);
             _section = sep;
@@ -106,7 +105,6 @@ private:
     std::optional<SectionData> _last_section;
     Widget::PopoverMenuItem *_section = nullptr;
     Gtk::IconSize _icon_size;
-    Gtk::Align _category_halign;
 };
 
 }} // namespace
