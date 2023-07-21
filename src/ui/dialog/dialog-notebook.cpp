@@ -13,8 +13,11 @@
 
 #include "dialog-notebook.h"
 
+#include <algorithm>
+#include <iostream>
 #include <optional>
 #include <tuple>
+#include <utility>
 #include <glibmm/i18n.h>
 #include <gtkmm/button.h>
 #include <gtkmm/eventbox.h>
@@ -189,9 +192,9 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
 DialogNotebook::~DialogNotebook()
 {
     // disconnect signals first, so no handlers are invoked when removing pages
-    for_each(_conn.begin(), _conn.end(), [&](auto c) { c.disconnect(); });
-    for_each(_connmenu.begin(), _connmenu.end(), [&](auto c) { c.disconnect(); });
-    for_each(_tab_connections.begin(), _tab_connections.end(), [&](auto it) { it.second.disconnect(); });
+    _conn.clear();
+    _connmenu.clear();
+    _tab_connections.clear();
 
     // Unlink and remove pages
     for (int i = _notebook.get_n_pages(); i >= 0; --i) {
@@ -199,10 +202,6 @@ DialogNotebook::~DialogNotebook()
         _container->unlink_dialog(dialog);
         _notebook.remove_page(i);
     }
-
-    _conn.clear();
-    _connmenu.clear();
-    _tab_connections.clear();
 
     _instances.remove(this);
 }
@@ -794,7 +793,6 @@ void DialogNotebook::reload_tab_menu()
 {
     if (_reload_context) {
         _reload_context = false;
-        for_each(_connmenu.begin(), _connmenu.end(), [&](auto c) { c.disconnect(); });
         _connmenu.clear();
 
         // In GTK4 we'll need to remove before delete (via unique_ptr). Do so now too.
@@ -995,8 +993,8 @@ void DialogNotebook::add_close_tab_callback(Gtk::Widget *page)
     sigc::connection tab_connection = tab->signal_button_press_event().connect(
         sigc::bind(sigc::mem_fun(*this, &DialogNotebook::on_tab_click_event), page), true);
 
-    _tab_connections.insert(std::pair<Gtk::Widget *, sigc::connection>(page, tab_connection));
-    _tab_connections.insert(std::pair<Gtk::Widget *, sigc::connection>(page, close_connection));
+    _tab_connections.emplace(page, std::move(tab_connection));
+    _tab_connections.emplace(page, std::move(close_connection));
 }
 
 /**
@@ -1004,13 +1002,8 @@ void DialogNotebook::add_close_tab_callback(Gtk::Widget *page)
  */
 void DialogNotebook::remove_close_tab_callback(Gtk::Widget *page)
 {
-    auto tab_connection_it = _tab_connections.find(page);
-
-    while (tab_connection_it != _tab_connections.end()) {
-        (*tab_connection_it).second.disconnect();
-        _tab_connections.erase(tab_connection_it);
-        tab_connection_it = _tab_connections.find(page);
-    }
+    auto const [first, last] = _tab_connections.equal_range(page);
+    _tab_connections.erase(first, last);
 }
 
 void DialogNotebook::get_preferred_height_for_width_vfunc(int width, int& minimum_height, int& natural_height) const {

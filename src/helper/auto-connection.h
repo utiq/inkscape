@@ -3,6 +3,7 @@
 #ifndef SEEN_AUTO_CONNECTION_H
 #define SEEN_AUTO_CONNECTION_H
 
+#include <utility>
 #include <sigc++/connection.h>
 
 namespace Inkscape {
@@ -17,9 +18,9 @@ public:
     {}
 
     auto_connection() = default;
-
     ~auto_connection() { _connection.disconnect(); }
 
+    // Disable copying, otherwise which copy should disconnect()?
     auto_connection(auto_connection const &) = delete;
     auto_connection &operator=(auto_connection const &) = delete;
 
@@ -30,6 +31,15 @@ public:
         _connection = c;
         return *this;
     }
+
+    // Allow moving to support use in containers / transfer ‘ownership’
+    auto_connection &operator=(auto_connection &&that)
+    {
+        _connection = that._connection;
+        that._connection = sigc::connection{}; // Stop it disconnecting
+        return *this;
+    }
+    auto_connection(auto_connection &&that){ *this = std::move(that); }
 
     /** Returns whether the connection is still active
      *  @returns @p true if connection is still ative
@@ -72,4 +82,3 @@ private:
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :
-
