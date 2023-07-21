@@ -27,6 +27,9 @@ case "$MSYSTEM" in
   MINGW64)
     ARCH=mingw-w64-x86_64
     ;;
+  UCRT64)
+    ARCH=mingw-w64-ucrt-x86_64
+    ;;
   CLANGARM64)
     ARCH=mingw-w64-clang-aarch64
     ;;
