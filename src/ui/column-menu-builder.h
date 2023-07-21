@@ -9,7 +9,6 @@
 #include <sigc++/slot.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/enums.h>
-#include <gtkmm/grid.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/separator.h>
@@ -24,7 +23,7 @@ class ColumnMenuBuilder {
 public:
     ColumnMenuBuilder(Widget::PopoverMenu& menu, int columns,
                       Gtk::IconSize icon_size = Gtk::ICON_SIZE_MENU,
-                      int const first_row = 0, Gtk::Align const category_halign = Gtk::ALIGN_START)
+                      int const first_row = 0, Gtk::Align const category_halign = Gtk::ALIGN_FILL)
         : _menu(menu)
         , _row(first_row)
         , _columns(columns)
@@ -70,16 +69,7 @@ public:
             _col = 0;
         }
 
-        auto const item = Gtk::make_managed<Widget::PopoverMenuItem>();
-        auto grid = Gtk::make_managed<Gtk::Grid>();
-        grid->set_column_spacing(8);
-        grid->insert_row(0);
-        grid->insert_column(0);
-        grid->insert_column(1);
-        grid->attach(*Gtk::make_managed<Gtk::Image>(icon_name, _icon_size), 0, 0);
-        grid->attach(*Gtk::make_managed<Gtk::Label>(label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true), 1, 0);
-        grid->set_sensitive(sensitive);
-        item->add(*grid);
+        auto const item = Gtk::make_managed<Widget::PopoverMenuItem>(label, icon_name, _icon_size);
         if (!customtooltip) {
             item->set_tooltip_markup(tooltip);
         }

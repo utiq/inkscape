@@ -16,6 +16,7 @@
 
 #include <glibmm/ustring.h>
 #include <gtkmm/button.h>
+#include <gtkmm/enums.h> // Gtk::IconSize
 #include "ui/widget/css-name-class-init.h"
 
 namespace Inkscape::UI::Widget {
@@ -30,7 +31,9 @@ class PopoverMenuItem final
 {
 public:
     // Construct a flat Button with CSS name `menuitem` and class `.menuitem`.
-    [[nodiscard]] explicit PopoverMenuItem(Glib::ustring const &caption = {},
+    [[nodiscard]] explicit PopoverMenuItem(Glib::ustring const &label_with_mnemonic = {},
+                                           Glib::ustring const &icon_name = {},
+                                           Gtk::IconSize const icon_size = Gtk::ICON_SIZE_MENU,
                                            bool popdown_on_activate = true);
 
     /// A convenience, “drop-in” alias for signal_clicked().

@@ -11,6 +11,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <gtkmm/box.h>
+#include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/stylecontext.h>
 #include "ui/util.h"
@@ -19,7 +21,9 @@
 
 namespace Inkscape::UI::Widget {
 
-PopoverMenuItem::PopoverMenuItem(Glib::ustring const &caption,
+PopoverMenuItem::PopoverMenuItem(Glib::ustring const &label_with_mnemonic,
+                                 Glib::ustring const &icon_name,
+                                 Gtk::IconSize const icon_size,
                                  bool const popdown_on_activate)
     : Glib::ObjectBase{"PopoverMenuItem"}
     , CssNameClassInit{"menuitem"}
@@ -28,10 +32,27 @@ PopoverMenuItem::PopoverMenuItem(Glib::ustring const &caption,
     get_style_context()->add_class("menuitem");
     set_relief(Gtk::RELIEF_NONE);
 
-    if (!caption.empty()) {
-        auto &label = *Gtk::make_managed<Gtk::Label>(caption, false);
-        label.set_xalign(0.0);
-        add(label);
+    Gtk::Label *label = nullptr;
+    Gtk::Image *image = nullptr;
+
+    if (!label_with_mnemonic.empty()) {
+        label = Gtk::make_managed<Gtk::Label>(label_with_mnemonic,
+                                              Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true);
+    }
+
+    if (!icon_name.empty()) {
+        image = Gtk::make_managed<Gtk::Image>(icon_name, icon_size);
+    }
+
+    if (label && image) {
+        auto &hbox = *Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 8);
+        hbox.add(*image);
+        hbox.add(*label);
+        add(hbox);
+    } else if (label) {
+        add(*label);
+    } else if (image) {
+        add(*image);
     }
 
     if (popdown_on_activate) {

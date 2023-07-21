@@ -11,6 +11,7 @@
 #ifndef SEEN_TOOLBAR_TOOL_H
 #define SEEN_TOOLBAR_TOOL_H
 
+#include <memory>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/box.h>
@@ -18,14 +19,20 @@
 #include "preferences.h"
 
 namespace Gtk {
+class Button;
 class Builder;
-class Menu;
 } // namespace Gtk
 
 class InkscapeWindow;
 class SPDesktop;
 
-namespace Inkscape::UI::Toolbar {
+namespace Inkscape::UI {
+
+namespace Widget {
+class PopoverMenu;
+} // namespace Widget
+
+namespace Toolbar {
 
 class ToolToolbar : public Gtk::Box {
 public:
@@ -36,15 +43,22 @@ public:
     static Glib::ustring get_tool_visible_button_path(const Glib::ustring& button_action_name);
 
 private:
-    Gtk::Menu *getContextMenu(Glib::ustring const &tool_name, InkscapeWindow *window);
+    std::unique_ptr<UI::Widget::PopoverMenu> makeContextMenu(InkscapeWindow *window);
+    void showContextMenu(InkscapeWindow *window,
+                         Gtk::Button &button, Glib::ustring const &tool_name);
     void attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWindow *window);
 
     static constexpr const char* tools_button_path = "/toolbox/tools/buttons";
 
+    std::unique_ptr<UI::Widget::PopoverMenu> _context_menu;
+    Glib::ustring _context_menu_tool_name;
+
     Inkscape::PrefObserver buttons_pref_observer;
 };
 
-} // namespace Inkscape::UI::Toolbar
+} // namespace Toolbar
+
+} // namespace Inkscape::UI
 
 #endif /* SEEN_TOOLBAR_TOOL_H */
 

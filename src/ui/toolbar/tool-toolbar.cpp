@@ -14,15 +14,15 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <iostream>
 #include <utility>
-#include <sigc++/adaptors/bind.h>
 #include <glibmm/i18n.h>
 #include <giomm/menu.h>
 #include <giomm/simpleactiongroup.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/flowbox.h>
-#include <gtkmm/menu.h>
+#include <gtkmm/popover.h>
 #include <gtkmm/radiobutton.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/separator.h>
@@ -31,12 +31,15 @@
 #include "actions/actions-tools.h" // Function to open tool preferences.
 #include "inkscape-window.h"
 #include "ui/builder-utils.h"
+#include "ui/widget/popover-menu.h"
+#include "ui/widget/popover-menu-item.h"
 #include "widgets/spw-utilities.h" // Find action target
 
 namespace Inkscape::UI::Toolbar {
 
 ToolToolbar::ToolToolbar(InkscapeWindow *window)
     : Gtk::Box()
+    , _context_menu{makeContextMenu(window)}
 {
     set_name("ToolToolbar");
     set_homogeneous(false);
@@ -111,32 +114,35 @@ void ToolToolbar::set_visible_buttons()
 }
 
 // We should avoid passing in the window in Gtk4 by turning "tool_preferences()" into an action.
-/**
- * @brief Create a context menu for a tool button.
- * @param tool_name The tool name (parameter to the tool-switch action)
- * @param win The Inkscape window which will display the preferences dialog.
- */
-Gtk::Menu *ToolToolbar::getContextMenu(Glib::ustring const &tool_name, InkscapeWindow *window)
+std::unique_ptr<UI::Widget::PopoverMenu> ToolToolbar::makeContextMenu(InkscapeWindow * const window)
 {
-    auto menu = Gtk::make_managed<Gtk::Menu>();
-    auto gio_menu = Gio::Menu::create();
-    auto action_group = Gio::SimpleActionGroup::create();
-    menu->insert_action_group("ctx", action_group);
-    action_group->add_action("open-tool-preferences",
-                             sigc::bind(&tool_preferences, tool_name, window));
-
-    auto menu_item = Gio::MenuItem::create(_("Open tool preferences"), "ctx.open-tool-preferences");
-
+    Glib::ustring icon_name;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     if (prefs->getInt("/theme/menuIcons", true)) {
-        auto _icon = Gio::Icon::create("preferences-system");
-        menu_item->set_icon(_icon);
+        icon_name = "preferences-system";
     }
 
-    gio_menu->append_item(menu_item);
-    menu->bind_model(gio_menu, true);
-    menu->show();
+    auto &item = *Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("Open tool preferences"),
+                                                                 icon_name);
+    item.signal_activate().connect([=, this]
+    {
+        tool_preferences(_context_menu_tool_name, window);
+        _context_menu_tool_name.clear();
+    });
+
+    auto menu = std::make_unique<UI::Widget::PopoverMenu>();
+    menu->append(item);
     return menu;
+}
+
+void ToolToolbar::showContextMenu(InkscapeWindow * const window,
+                                  Gtk::Button &button, Glib::ustring const &tool_name)
+{
+    _context_menu_tool_name = tool_name;
+    // Point to the Image inside Button, not the entire Button including padding
+    _context_menu->popup_at(button,
+                            button.get_width () *  1./4,
+                            button.get_height() * -1./2);
 }
 
 /**
@@ -161,10 +167,6 @@ void ToolToolbar::attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWin
         }
 
         auto tool_name = Glib::ustring((gchar const *)action_target.get_data());
-
-        auto menu = getContextMenu(tool_name, window);
-        menu->attach_to_widget(*radio);
-
         auto on_click_pressed = [=, tool_name = std::move(tool_name)]
                                 (GdkEventButton const * const ev)
         {
@@ -174,7 +176,7 @@ void ToolToolbar::attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWin
                 return true;
             }
             if (ev->button == 3) {
-                menu->popup_at_pointer(reinterpret_cast<GdkEvent const *>(ev));
+                showContextMenu(window, *radio, tool_name);
                 return true;
             }
             return false;

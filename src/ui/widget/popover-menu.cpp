@@ -11,6 +11,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <glibmm/main.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/stylecontext.h>
 #include "ui/util.h"
@@ -49,6 +50,20 @@ PopoverMenu::PopoverMenu()
     add(_grid);
 
     // FIXME: Initially focused item is sometimes wrong on first popup. GTK bug?
+    // Grabbing focus in ::show does not always work & sometimes even crashes :(
+    // For now, just remove possibly wrong, visible selection until hover/keynav
+    // This is also nicer for menus with only 1 item, like the ToolToolbar popup
+    signal_show().connect([this]{ Glib::signal_idle().connect_once(
+            [this]{ unset_items_focus_hover(nullptr); }); });
+
+    // Temporarily hide tooltip of relative-to widget to avoid it covering us up
+    signal_closed().connect([this]
+    {
+        if (auto const relative_to = get_relative_to()) {
+            if (_restore_tooltip) relative_to->set_has_tooltip(true);
+            _restore_tooltip = false;
+        }
+    });
 }
 
 void PopoverMenu::attach(Gtk::Widget &child,
@@ -70,9 +85,26 @@ void PopoverMenu::remove(Gtk::Widget &child)
     _grid.remove(child);
 }
 
-void PopoverMenu::popup_at(Gtk::Widget &relative_to)
+void PopoverMenu::popup_at(Gtk::Widget &relative_to,
+                           int const x_offset, int const y_offset)
 {
+    set_visible(false);
+
     set_relative_to(relative_to);
+
+    if (x_offset != 0 || y_offset != 0) {
+        auto pointing_to = relative_to.get_allocation();
+        pointing_to.set_x(x_offset);
+        pointing_to.set_y(y_offset);
+        set_pointing_to(pointing_to);
+    }
+
+    if (relative_to.get_has_tooltip()) {
+        _restore_tooltip = true;
+        relative_to.set_has_tooltip(false);
+    }
+
+    show_all_children();
     popup();
 }
 

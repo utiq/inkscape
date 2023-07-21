@@ -42,10 +42,12 @@ public:
     void remove(Gtk::Widget &child);
 
     /// Replaces Gtk::Menu::popup_at_pointer
-    void popup_at(Gtk::Widget &relative_to);
+    void popup_at(Gtk::Widget &relative_to,
+                  int x_offset = 0, int y_offset = 0);
 
 private:
     PopoverMenuGrid &_grid;
+    bool _restore_tooltip = false;
 
     // Let PopoverMenuItem call this without making it public API
     friend class PopoverMenuItem;
