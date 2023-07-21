@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
 /** @file
  * @brief A window for floating dialogs.
  *
@@ -41,9 +40,7 @@ const int WINDOW_DROPZONE_SIZE = 10;
 const int WINDOW_DROPZONE_SIZE_LARGE = 16;
 const int NOTEBOOK_TAB_HEIGHT = 36;
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 class DialogNotebook;
 class DialogContainer;
@@ -265,9 +262,7 @@ bool DialogWindow::on_key_press_event(GdkEventKey *key_event)
     return false;
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

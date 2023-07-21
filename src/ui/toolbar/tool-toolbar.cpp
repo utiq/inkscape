@@ -17,6 +17,8 @@
 #include <utility>
 #include <sigc++/adaptors/bind.h>
 #include <glibmm/i18n.h>
+#include <giomm/menu.h>
+#include <giomm/simpleactiongroup.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/flowbox.h>

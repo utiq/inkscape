@@ -14,14 +14,12 @@
  *
  */
 
+#include <iostream>
+#include <vector>
+#include <gtkmm/box.h>
+#include <gtkmm/menubar.h>
 
 #include "inkscape-window.h"
-#include "inkscape.h"   // SP_ACTIVE_DESKTOP
-#include "desktop-events.h" // Handle key events
-#include "enums.h"      // PREFS_WINDOW_GEOMETRY_NONE
-
-#include "inkscape-application.h"
-
 #include "actions/actions-canvas-mode.h"
 #include "actions/actions-canvas-snapping.h"
 #include "actions/actions-canvas-transform.h"
@@ -31,33 +29,30 @@
 #include "actions/actions-help-url.h"
 #include "actions/actions-layer.h"
 #include "actions/actions-node-align.h" // Node alignment.
+#include "actions/actions-pages.h"
 #include "actions/actions-paths.h"  // TEMP
 #include "actions/actions-selection-window.h"
 #include "actions/actions-tools.h"
 #include "actions/actions-view-mode.h"
 #include "actions/actions-view-window.h"
-#include "actions/actions-pages.h"
-
+#include "desktop-events.h" // Handle key events
+#include "enums.h"      // PREFS_WINDOW_GEOMETRY_NONE
+#include "inkscape-application.h"
+#include "inkscape.h"   // SP_ACTIVE_DESKTOP
 #include "object/sp-namedview.h"  // TODO Remove need for this!
-
+#include "ui/desktop/menubar.h"
+#include "ui/desktop/menu-icon-shift.h"
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-manager.h"
 #include "ui/dialog/dialog-window.h"
+#include "ui/drag-and-drop.h"
 #include "ui/drag-and-drop.h"  // Move to canvas?
 #include "ui/interface.h" // main menu, sp_ui_close_view()
-
 #include "ui/monitor.h" // get_monitor_geometry_at_point()
-
-#include "ui/desktop/menubar.h"
-#include "ui/desktop/menu-icon-shift.h"
-
-#include "ui/drag-and-drop.h"
-
 #include "ui/shortcuts.h"
-
-#include "widgets/desktop-widget.h"
 #include "ui/util.h"
 #include "ui/widget/canvas.h"
+#include "widgets/desktop-widget.h"
 
 using Inkscape::UI::Dialog::DialogManager;
 using Inkscape::UI::Dialog::DialogContainer;

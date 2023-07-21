@@ -23,6 +23,7 @@
 #include "inkscape-window.h"
 #include "object/sp-namedview.h"
 #include "ui/dialog-run.h"
+#include "xml/node.h"
 
 #include "file.h"
 #include "extension/system.h" // Inkscape::Extension::FILE...
