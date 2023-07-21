@@ -310,7 +310,7 @@ void SPGuide::showSPGuide(Inkscape::CanvasItemGroup *group)
 void SPGuide::showSPGuide()
 {
     for (auto &view : views) {
-        view->show();
+        view->set_visible(true);
     }
 }
 
@@ -331,7 +331,7 @@ void SPGuide::hideSPGuide(Inkscape::UI::Widget::Canvas *canvas)
 void SPGuide::hideSPGuide()
 {
     for (auto &view : views) {
-        view->hide();
+        view->set_visible(false);
     }
 }
 

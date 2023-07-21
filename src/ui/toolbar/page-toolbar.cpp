@@ -110,7 +110,7 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
             margin_left->set_value(margin.left().toValue(unit));
             text_page_bleeds->set_text(page->getBleedLabel());
         }
-        margin_popover->show();
+        margin_popover->set_visible(true);
     });
     margin_top->signal_value_changed().connect(sigc::mem_fun(*this, &PageToolbar::marginTopEdited));
     margin_right->signal_value_changed().connect(sigc::mem_fun(*this, &PageToolbar::marginRightEdited));

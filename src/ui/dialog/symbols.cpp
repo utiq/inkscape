@@ -233,7 +233,7 @@ SymbolsDialog::SymbolsDialog(const char* prefsPath)
 
     _symbol_sets_view.signal_selection_changed().connect([=](){
         if (select_set({})) {
-            get_widget<Gtk::Popover>(_builder, "set-popover").hide();
+            get_widget<Gtk::Popover>(_builder, "set-popover").set_visible(false);
         }
     });
 
@@ -583,9 +583,9 @@ void SymbolsDialog::showOverlay() {
   /*
   if (current == ALLDOCS && !_l.size())
   {
-    overlay_icon->hide();
+    overlay_icon->set_visible(false);
     if (!all_docs_processed) {
-        overlay_icon->show();
+        overlay_icon->set_visible(true);
         overlay_title->set_markup(
             Glib::ustring("<span size=\"large\">") + _("Search in all symbol sets...") + "</span>");
         overlay_desc->set_markup(
@@ -596,7 +596,7 @@ void SymbolsDialog::showOverlay() {
         overlay_desc->set_markup(
             Glib::ustring("<span size=\"small\">") + _("Try a different search term.") + "</span>");
     } else {
-        overlay_icon->show();
+        overlay_icon->set_visible(true);
         overlay_title->set_markup(Glib::ustring("<span size=\"large\">") +
                                   Glib::ustring(_("Search in all symbol sets...")) + Glib::ustring("</span>"));
         overlay_desc->set_markup(Glib::ustring("<span size=\"small\">") + Glib::ustring("</span>"));
@@ -628,16 +628,16 @@ void SymbolsDialog::showOverlay() {
       previous_height = height;
       previous_width = width;
   }
-  overlay_icon->show();
-  overlay_title->show();
-  overlay_desc->show();
+  overlay_icon->set_visible(true);
+  overlay_title->set_visible(true);
+  overlay_desc->set_visible(true);
 }
 
 void SymbolsDialog::hideOverlay() {
-    // overlay_opacity->hide();
-    overlay_icon->hide();
-    overlay_title->hide();
-    overlay_desc->hide();
+    // overlay_opacity->set_visible(false);
+    overlay_icon->set_visible(false);
+    overlay_title->set_visible(false);
+    overlay_desc->set_visible(false);
 }
 
 void SymbolsDialog::insertSymbol() {

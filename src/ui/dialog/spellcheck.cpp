@@ -513,7 +513,7 @@ SpellCheck::nextWord()
             // Create canvas item rect with red stroke. (TODO: a quad could allow non-axis aligned rects.)
             auto rect = new Inkscape::CanvasItemRect(desktop->getCanvasSketch(), area);
             rect->set_stroke(0xff0000ff);
-            rect->show();
+            rect->set_visible(true);
             _rects.emplace_back(rect);
 
             // scroll to make it all visible

@@ -678,7 +678,7 @@ void Script::showPopupError (const Glib::ustring &data,
     Gtk::TextView * textview = new Gtk::TextView();
     textview->set_editable(false);
     textview->set_wrap_mode(Gtk::WRAP_WORD);
-    textview->show();
+    textview->set_visible(true);
 
     textview->get_buffer()->set_text(data.c_str());
 
@@ -686,7 +686,7 @@ void Script::showPopupError (const Glib::ustring &data,
     scrollwindow->add(*textview);
     scrollwindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
     scrollwindow->set_shadow_type(Gtk::SHADOW_IN);
-    scrollwindow->show();
+    scrollwindow->set_visible(true);
     scrollwindow->set_size_request(0, 60);
 
     vbox->pack_start(*scrollwindow, true, true, 5 /* fix these */);

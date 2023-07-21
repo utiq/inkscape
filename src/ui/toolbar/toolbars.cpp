@@ -187,7 +187,7 @@ void Toolbars::create_toolbars(SPDesktop* desktop) {
     change_toolbar(desktop, desktop->event_context);
 
     // Show this widget (not necessary in Gtk4).
-    show();
+    set_visible(true);
 }
 
 void Toolbars::change_toolbar(SPDesktop* /* desktop */, Inkscape::UI::Tools::ToolBase *eventcontext)
@@ -201,7 +201,7 @@ void Toolbars::change_toolbar(SPDesktop* /* desktop */, Inkscape::UI::Tools::Too
         if (eventcontext->getPrefsPath() == aux_toolboxes[i].type_name) {
             toolbar_map[aux_toolboxes[i].tool_name]->show_now();
         } else {
-            toolbar_map[aux_toolboxes[i].tool_name]->hide();
+            toolbar_map[aux_toolboxes[i].tool_name]->set_visible(false);
         }
     }
 }

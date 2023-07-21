@@ -137,7 +137,7 @@ SvgFontsDialog::AttrEntry::AttrEntry(SvgFontsDialog* d, gchar* lbl, Glib::ustrin
     this->attr = attr;
     entry.set_tooltip_text(tooltip);
     _label = Gtk::make_managed<Gtk::Label>(lbl);
-    _label->show();
+    _label->set_visible(true);
     _label->set_halign(Gtk::ALIGN_START);
     entry.signal_changed().connect(sigc::mem_fun(*this, &SvgFontsDialog::AttrEntry::on_attr_changed));
 }
@@ -182,9 +182,9 @@ SvgFontsDialog::AttrSpin::AttrSpin(SvgFontsDialog* d, gchar* lbl, Glib::ustring 
     this->dialog = d;
     this->attr = attr;
     spin.set_tooltip_text(tooltip);
-    spin.show();
+    spin.set_visible(true);
     _label = Gtk::make_managed<Gtk::Label>(lbl);
-    _label->show();
+    _label->set_visible(true);
     _label->set_halign(Gtk::ALIGN_START);
     spin.set_range(0, 4096);
     spin.set_increments(10, 0);
@@ -777,7 +777,7 @@ Gtk::Box* SvgFontsDialog::global_settings_tab(){
     _fonts_scroller.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
     _fonts_scroller.add(_FontsList);
     _fonts_scroller.set_hexpand();
-    _fonts_scroller.show();
+    _fonts_scroller.set_visible(true);
 
     _header_box.set_column_spacing(MARGIN_SPACE);
     _header_box.set_row_spacing(MARGIN_SPACE);
@@ -1275,12 +1275,12 @@ void SvgFontsDialog::edit_glyph(SPGlyph* glyph) {
 
 void SvgFontsDialog::set_glyphs_view_mode(bool list) {
     if (list) {
-        _glyphs_icon_scroller.hide();
-        _GlyphsListScroller.show();
+        _glyphs_icon_scroller.set_visible(false);
+        _GlyphsListScroller.set_visible(true);
     }
     else {
-        _GlyphsListScroller.hide();
-        _glyphs_icon_scroller.show();
+        _GlyphsListScroller.set_visible(false);
+        _glyphs_icon_scroller.set_visible(true);
     }
 }
 
@@ -1331,7 +1331,7 @@ Gtk::Box* SvgFontsDialog::glyphs_tab() {
     _GlyphsList.append_column_editable(_("Characters"), _GlyphsListColumns.unicode);
     _GlyphsList.append_column(_("Unicode"), _GlyphsListColumns.UplusCode);
     _GlyphsList.append_column_numeric_editable(_("Advance"), _GlyphsListColumns.advance, "%.2f");
-    _GlyphsList.show();
+    _GlyphsList.set_visible(true);
     _GlyphsList.signal_row_activated().connect([=](const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn*) {
         edit_glyph(get_selected_glyph());
     });
@@ -1390,7 +1390,7 @@ Gtk::Box* SvgFontsDialog::glyphs_tab() {
     _glyphs_grid.set_markup_column(_GlyphsListColumns.name_markup);
     _glyphs_grid.pack_start(*_glyph_cell_renderer);
     _glyphs_grid.add_attribute(*_glyph_cell_renderer, "glyph", _GlyphsListColumns.unicode);
-    _glyphs_grid.show();
+    _glyphs_grid.set_visible(true);
     _glyphs_grid.signal_item_activated().connect([=](const Gtk::TreeModel::Path& path) {
         edit_glyph(get_selected_glyph());
     });

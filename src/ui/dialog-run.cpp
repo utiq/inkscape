@@ -20,7 +20,7 @@ int dialog_run(Gtk::Dialog &dialog)
     });
 
     dialog.set_modal();
-    dialog.show();
+    dialog.set_visible(true);
 
     auto main_context = Glib::MainContext::get_default();
     while (!result) {
@@ -30,7 +30,7 @@ int dialog_run(Gtk::Dialog &dialog)
     response_conn.disconnect();
     hide_conn.disconnect();
 
-    dialog.hide();
+    dialog.set_visible(false);
 
     return *result;
 }
@@ -42,7 +42,7 @@ void dialog_show_modal_and_selfdestruct(std::unique_ptr<Gtk::Dialog> dialog, Gtk
     }
     dialog->set_modal();
     dialog->signal_response().connect([d = dialog.get()] (auto) { delete d; });
-    dialog->show();
+    dialog->set_visible(true);
     dialog.release(); // deleted by signal_response handler
 }
 

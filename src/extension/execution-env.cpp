@@ -72,7 +72,7 @@ ExecutionEnv::ExecutionEnv (Effect * effect, SPDesktop * desktop, Implementation
 */
 ExecutionEnv::~ExecutionEnv () {
     if (_visibleDialog != nullptr) {
-        _visibleDialog->hide();
+        _visibleDialog->set_visible(false);
         delete _visibleDialog;
         _visibleDialog = nullptr;
     }
@@ -116,7 +116,7 @@ ExecutionEnv::killDocCache () {
 void
 ExecutionEnv::createWorkingDialog () {
     if (_visibleDialog != nullptr) {
-        _visibleDialog->hide();
+        _visibleDialog->set_visible(false);
         delete _visibleDialog;
         _visibleDialog = nullptr;
     }

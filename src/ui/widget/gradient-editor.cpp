@@ -189,7 +189,7 @@ GradientEditor::GradientEditor(const char* prefs) :
 
     auto& gradBox = get_widget<Gtk::Box>(_builder, "gradientBox");
     const int dot_size = 8;
-    _gradient_image.show();
+    _gradient_image.set_visible(true);
     _gradient_image.set_margin_start(dot_size / 2);
     _gradient_image.set_margin_end(dot_size / 2);
     // gradient stop selected in a gradient widget; sync list selection
@@ -212,7 +212,7 @@ GradientEditor::GradientEditor(const char* prefs) :
     // add color selector
     auto color_selector = Gtk::manage(new ColorNotebook(_selected_color));
     color_selector->set_label(_("Stop color"));
-    color_selector->show();
+    color_selector->set_visible(true);
     _colors_box.pack_start(*color_selector, true, true, 0);
 
     // gradient library in a popup
@@ -223,7 +223,7 @@ GradientEditor::GradientEditor(const char* prefs) :
     _selector->set_margin_end(h);
     _selector->set_margin_top(v);
     _selector->set_margin_bottom(v);
-    _selector->show();
+    _selector->set_visible(true);
     _selector->show_edit_button(false);
     _selector->set_gradient_size(160, 20);
     _selector->set_name_col_size(120);
@@ -442,10 +442,10 @@ void GradientEditor::show_stops(bool visible) {
 
 void GradientEditor::update_stops_layout() {
     if (_stops_list_visible) {
-        _stops_gallery.show();
+        _stops_gallery.set_visible(true);
     }
     else {
-        _stops_gallery.hide();
+        _stops_gallery.set_visible(false);
     }
 }
 

@@ -54,9 +54,9 @@ OriginalPathParam::param_newWidget()
         pIcon->set_from_icon_name("edit-clone", Gtk::ICON_SIZE_BUTTON);
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(sigc::mem_fun(*this, &OriginalPathParam::on_link_button_click));
         _widget->pack_start(*pButton, true, true);
         pButton->set_tooltip_text(_("Link to path in clipboard"));
@@ -67,9 +67,9 @@ OriginalPathParam::param_newWidget()
         pIcon->set_from_icon_name("edit-select-original", Gtk::ICON_SIZE_BUTTON);
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(sigc::mem_fun(*this, &OriginalPathParam::on_select_original_button_click));
         _widget->pack_start(*pButton, true, true);
         pButton->set_tooltip_text(_("Select original"));

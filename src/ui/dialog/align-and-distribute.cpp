@@ -65,14 +65,14 @@ AlignAndDistribute::AlignAndDistribute(Inkscape::UI::Dialog::DialogBase* dlg)
     if (!align_and_distribute_object) {
         std::cerr << "AlignAndDistribute::AlignAndDistribute: failed to load widget (object)!" << std::endl;
     } else {
-        align_and_distribute_object->show();
+        align_and_distribute_object->set_visible(true);
     }
 
     builder->get_widget("align-and-distribute-node", align_and_distribute_node);
     if (!align_and_distribute_node) {
         std::cerr << "AlignAndDistribute::AlignAndDistribute: failed to load widget (node)!" << std::endl;
     } else {
-        align_and_distribute_node->hide();
+        align_and_distribute_node->set_visible(false);
     }
 
     // ------------  Object Align  -------------
@@ -210,11 +210,11 @@ AlignAndDistribute::tool_changed(SPDesktop* desktop)
 {
     bool node = get_active_tool(desktop) == "Node";
     if (node) {
-        align_and_distribute_object->hide();
-        align_and_distribute_node->show();
+        align_and_distribute_object->set_visible(false);
+        align_and_distribute_node->set_visible(true);
     } else {
-        align_and_distribute_object->show();
-        align_and_distribute_node->hide();
+        align_and_distribute_object->set_visible(true);
+        align_and_distribute_node->set_visible(false);
     }
 }
 

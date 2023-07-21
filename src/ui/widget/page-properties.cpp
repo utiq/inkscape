@@ -49,10 +49,10 @@ namespace Widget {
 
 void show_widget(Gtk::Widget& widget, bool show) {
     if (show) {
-        widget.show();
+        widget.set_visible(true);
     }
     else {
-        widget.hide();
+        widget.set_visible(false);
     }
 };
 
@@ -130,7 +130,7 @@ public:
 
         for (auto&& page : PaperSize::getPageSizes()) {
             auto item = Gtk::manage(new Gtk::MenuItem(page.getDescription(false)));
-            item->show();
+            item->set_visible(true);
             _page_templates_menu.append(*item);
             item->signal_activate().connect([=](){ set_page_template(page); });
         }
@@ -198,7 +198,7 @@ public:
         page_resize.signal_clicked().connect([=](){ _signal_resize_to_fit.emit(); });
 
         add(_main_grid);
-        show();
+        set_visible(true);
     }
 
 private:

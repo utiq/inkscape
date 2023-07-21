@@ -65,7 +65,7 @@ namespace Dialog {
 static void docprops_style_button(Gtk::Button& btn, char const* iconName)
 {
     GtkWidget *child = sp_get_icon_image(iconName, GTK_ICON_SIZE_SMALL_TOOLBAR);
-    gtk_widget_show( child );
+    gtk_widget_set_visible(child, true);
     btn.add(*Gtk::manage(Glib::wrap(child)));
     btn.set_relief(Gtk::RELIEF_NONE);
 }
@@ -353,7 +353,7 @@ void DocumentProperties::build_page()
     using UI::Widget::PageProperties;
     _page = Gtk::manage(PageProperties::create());
     _page_page->table().attach(*_page, 0, 0);
-    _page_page->show();
+    _page_page->set_visible(true);
 
     _page->signal_color_changed().connect([=](unsigned int color, PageProperties::Color element){
         if (_wr.isUpdating() || !_wr.desktop()) return;
@@ -455,7 +455,7 @@ void DocumentProperties::build_page()
 
 void DocumentProperties::build_guides()
 {
-    _page_guides->show();
+    _page_guides->set_visible(true);
 
     Gtk::Label *label_gui = Gtk::manage (new Gtk::Label);
     label_gui->set_markup (_("<b>Guides</b>"));
@@ -635,7 +635,7 @@ void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<v
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _EmbProfContextMenu.append(*mi);
     mi->signal_activate().connect(rem);
-    mi->show();
+    mi->set_visible(true);
     _EmbProfContextMenu.accelerate(parent);
 }
 
@@ -645,7 +645,7 @@ void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::s
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _ExternalScriptsContextMenu.append(*mi);
     mi->signal_activate().connect(rem);
-    mi->show();
+    mi->set_visible(true);
     _ExternalScriptsContextMenu.accelerate(parent);
 }
 
@@ -654,7 +654,7 @@ void DocumentProperties::embedded_create_popup_menu(Gtk::Widget& parent, sigc::s
     Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
     _EmbeddedScriptsContextMenu.append(*mi);
     mi->signal_activate().connect(rem);
-    mi->show();
+    mi->set_visible(true);
     _EmbeddedScriptsContextMenu.accelerate(parent);
 }
 
@@ -702,7 +702,7 @@ bool DocumentProperties::_AvailableProfilesList_separator(const Glib::RefPtr<Gtk
 
 void DocumentProperties::build_cms()
 {
-    _page_cms->show();
+    _page_cms->set_visible(true);
     Gtk::Label *label_link= Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
     label_link->set_markup (_("<b>Linked Color Profiles:</b>"));
     Gtk::Label *label_avail = Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
@@ -791,7 +791,7 @@ void DocumentProperties::build_cms()
 
 void DocumentProperties::build_scripting()
 {
-    _page_scripting->show();
+    _page_scripting->set_visible(true);
 
     _page_scripting->table().attach(_scripting_notebook, 0, 0, 1, 1);
 
@@ -799,7 +799,7 @@ void DocumentProperties::build_scripting()
     _scripting_notebook.append_page(*_page_embedded_scripts, _("Embedded scripts"));
 
     //# External scripts tab
-    _page_external_scripts->show();
+    _page_external_scripts->set_visible(true);
     Gtk::Label *label_external= Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
     label_external->set_markup (_("<b>External script files:</b>"));
 
@@ -857,7 +857,7 @@ void DocumentProperties::build_scripting()
 
 
     //# Embedded scripts tab
-    _page_embedded_scripts->show();
+    _page_embedded_scripts->set_visible(true);
     Gtk::Label *label_embedded= Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
     label_embedded->set_markup (_("<b>Embedded script files:</b>"));
 
@@ -975,7 +975,7 @@ void DocumentProperties::build_metadata()
 {
     using Inkscape::UI::Widget::EntityEntry;
 
-    _page_metadata1->show();
+    _page_metadata1->set_visible(true);
 
     Gtk::Label *label = Gtk::manage (new Gtk::Label);
     label->set_markup (_("<b>Dublin Core Entities</b>"));
@@ -1016,7 +1016,7 @@ void DocumentProperties::build_metadata()
     button_save->signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::save_default_metadata));
     button_load->signal_clicked().connect(sigc::mem_fun(*this, &DocumentProperties::load_default_metadata));
 
-    _page_metadata2->show();
+    _page_metadata2->set_visible(true);
 
     row = 0;
     Gtk::Label *llabel = Gtk::manage (new Gtk::Label);
@@ -1500,7 +1500,7 @@ void DocumentProperties::on_response (int id)
     }
 
     if (id == Gtk::RESPONSE_CLOSE)
-        hide();
+        set_visible(false);
 }
 
 void DocumentProperties::load_default_metadata()
@@ -1826,7 +1826,7 @@ void GridWidget::update()
 
     auto show = [](Gtk::Widget* w, bool do_show){
         w->set_no_show_all(false);
-        if (do_show) { w->show_all(); } else { w->hide(); }
+        if (do_show) { w->show_all(); } else { w->set_visible(false); }
         w->set_no_show_all();
     };
 

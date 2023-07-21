@@ -314,10 +314,10 @@ void MyHandle::toggle_multipaned() {
 
             if (multi) {
                 if (multi->is_visible()) {
-                    multi->hide();
+                    multi->set_visible(false);
                 }
                 else {
-                    multi->show();
+                    multi->set_visible(true);
                 }
                 // resize parent
                 panel->children_toggled();
@@ -469,7 +469,7 @@ void DialogMultipaned::prepend(Gtk::Widget *child)
         if (!child->get_parent())
             child->set_parent(*this);
 
-        // Ideally, we would only call child->show() here and assume that the
+        // Ideally, we would only call child->set_visible(true) here and assume that the
         // child has already configured visibility of all its own children.
         child->show_all();
     }
@@ -611,10 +611,10 @@ void DialogMultipaned::toggle_multipaned_children(bool show)
     for (auto child : children) {
         if (auto panel = dynamic_cast<DialogMultipaned*>(child)) {
             if (show) {
-                panel->show();
+                panel->set_visible(true);
             }
             else {
-                panel->hide();
+                panel->set_visible(false);
             }
         }
     }
@@ -1045,10 +1045,10 @@ void DialogMultipaned::on_drag_end(double offset_x, double offset_y)
     _handle = -1;
     _drag_handle = -1;
     if (_hide_widget1) {
-        _hide_widget1->hide();
+        _hide_widget1->set_visible(false);
     }
     if (_hide_widget2) {
-        _hide_widget2->hide();
+        _hide_widget2->set_visible(false);
     }
     _hide_widget1 = nullptr;
     _hide_widget2 = nullptr;
@@ -1104,11 +1104,11 @@ bool can_collapse(Gtk::Widget* widget, Gtk::Widget* handle) {
 // return minimum widget size; this fn works for hidden widgets too
 int get_min_width(Gtk::Widget* widget) {
     bool hidden = !widget->is_visible();
-    if (hidden) widget->show();
+    if (hidden) widget->set_visible(true);
     int minimum_size = 0;
     int natural_size = 0;
     widget->get_preferred_width(minimum_size, natural_size);
-    if (hidden) widget->hide();
+    if (hidden) widget->set_visible(false);
     return minimum_size;
 }
 
@@ -1189,7 +1189,7 @@ void DialogMultipaned::on_drag_update(double offset_x, double offset_y)
             Gtk::Widget* hide = nullptr;
 
             if (!child->is_visible() && can_collapse(child, handle)) {
-                child->show();
+                child->set_visible(true);
                 resizing = true;
             }
 

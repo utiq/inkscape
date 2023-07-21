@@ -75,7 +75,7 @@ void ToolToolbar::set_visible_buttons()
 
     sp_traverse_widget_tree(this, [&](Gtk::Widget* widget) {
         if (auto flowbox = dynamic_cast<Gtk::FlowBox*>(widget)) {
-            flowbox->show();
+            flowbox->set_visible(true);
             flowbox->set_no_show_all();
             flowbox->set_max_children_per_line(1);
             last_box = flowbox;
@@ -85,22 +85,22 @@ void ToolToolbar::set_visible_buttons()
             auto show = prefs->getBool(get_tool_visible_button_path(name), true);
             auto parent = btn->get_parent();
             if (show) {
-                parent->show();
+                parent->set_visible(true);
                 ++buttons_before_separator;
                 // keep the max_children up to date improves display.
                 last_box->set_max_children_per_line(buttons_before_separator);
                 last_sep = nullptr;
             }
             else {
-                parent->hide();
+                parent->set_visible(false);
             }
         }
         else if (auto sep = dynamic_cast<Gtk::Separator*>(widget)) {
             if (buttons_before_separator <= 0) {
-                sep->hide();
+                sep->set_visible(false);
             }
             else {
-                sep->show();
+                sep->set_visible(true);
                 buttons_before_separator = 0;
                 last_sep = sep;
             }
@@ -109,7 +109,7 @@ void ToolToolbar::set_visible_buttons()
     });
     if (last_sep) {
         // hide trailing separator
-        last_sep->hide();
+        last_sep->set_visible(false);
     }
 }
 

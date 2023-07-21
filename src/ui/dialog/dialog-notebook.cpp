@@ -166,7 +166,7 @@ DialogNotebook::DialogNotebook(DialogContainer *container)
     menubtn->set_image_from_icon_name("go-down-symbolic");
     menubtn->set_popover(_menu);
     _notebook.set_action_widget(menubtn, Gtk::PACK_END);
-    menubtn->show();
+    menubtn->set_visible(true);
     menubtn->set_relief(Gtk::RELIEF_NORMAL);
     menubtn->set_valign(Gtk::ALIGN_CENTER);
     menubtn->set_halign(Gtk::ALIGN_CENTER);
@@ -867,18 +867,18 @@ void DialogNotebook::toggle_tab_labels_callback(bool show)
         int n = _notebook.get_current_page();
         if (close && label) {
             if (&page != _notebook.get_nth_page(n)) {
-                show ? close->show() : close->hide();
-                show ? label->show() : label->hide();
+                show ? close->set_visible(true) : close->set_visible(false);
+                show ? label->set_visible(true) : label->set_visible(false);
             } else if (tabstatus == TabsStatus::NONE || _labels_off) {
                 if (&page != _notebook.get_nth_page(n)) {
-                    close->hide();
+                    close->set_visible(false);
                 } else {
-                    close->show();
+                    close->set_visible(true);
                 }
-                label->hide();
+                label->set_visible(false);
             } else {
-                close->show();
-                label->show();
+                close->set_visible(true);
+                label->set_visible(true);
             }
         }
 
@@ -908,7 +908,7 @@ void DialogNotebook::on_page_switch(Gtk::Widget *curr_page, guint)
                 if (curr_page == &page) {
                     widgs[0]->show_now();
                 } else {
-                    widgs[0]->hide();
+                    widgs[0]->set_visible(false);
                 }
             }
             if (_prev_alloc_width) {
@@ -930,25 +930,25 @@ void DialogNotebook::on_page_switch(Gtk::Widget *curr_page, guint)
         if (&page == curr_page) {
             if (label) {
                 if (tabstatus == TabsStatus::NONE) {
-                    label->hide();
+                    label->set_visible(false);
                 } else {
-                    label->show();
+                    label->set_visible(true);
                 }
             }
 
             if (close) {
                 if (tabstatus == TabsStatus::NONE && curr_page != &page) {
-                    close->hide();
+                    close->set_visible(false);
                 } else {
-                    close->show();
+                    close->set_visible(true);
                 }
             }
 
             return ForEachResult::_continue;
         }
 
-        close->hide();
-        label->hide();
+        close->set_visible(false);
+        label->set_visible(false);
 
         return ForEachResult::_continue;
     });

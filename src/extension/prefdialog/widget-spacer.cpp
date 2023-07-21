@@ -53,7 +53,7 @@ Gtk::Widget *WidgetSpacer::get_widget(sigc::signal<void ()> *changeSignal)
         spacer->set_vexpand();
     }
 
-    spacer->show();
+    spacer->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(spacer);
 }

@@ -1381,7 +1381,7 @@ void InkscapePreferences::themeChange(bool contrastslider)
         if (dark_themes[current_theme]) {
             _dark_theme.get_parent()->show_all();
         } else {
-            _dark_theme.get_parent()->hide();
+            _dark_theme.get_parent()->set_visible(false);
         }
         auto settings = Gtk::Settings::get_default();
         settings->property_gtk_theme_name() = current_theme;
@@ -1457,17 +1457,17 @@ void InkscapePreferences::symbolicThemeCheck()
     if (_symbolic_icons.get_parent()) {
         if (!symbolic) {
             _symbolic_icons.set_active(false);
-            _symbolic_icons.get_parent()->hide();
-            _symbolic_base_colors.get_parent()->hide();
-            _symbolic_highlight_colors.get_parent()->hide();
-            _symbolic_base_color.get_parent()->get_parent()->hide();
-            _symbolic_success_color.get_parent()->get_parent()->hide();
+            _symbolic_icons.get_parent()->set_visible(false);
+            _symbolic_base_colors.get_parent()->set_visible(false);
+            _symbolic_highlight_colors.get_parent()->set_visible(false);
+            _symbolic_base_color.get_parent()->get_parent()->set_visible(false);
+            _symbolic_success_color.get_parent()->get_parent()->set_visible(false);
         } else {
-            _symbolic_icons.get_parent()->show();
-            _symbolic_base_colors.get_parent()->show();
-            _symbolic_highlight_colors.get_parent()->show();
-            _symbolic_base_color.get_parent()->get_parent()->show();
-            _symbolic_success_color.get_parent()->get_parent()->show();
+            _symbolic_icons.get_parent()->set_visible(true);
+            _symbolic_base_colors.get_parent()->set_visible(true);
+            _symbolic_highlight_colors.get_parent()->set_visible(true);
+            _symbolic_base_color.get_parent()->get_parent()->set_visible(true);
+            _symbolic_success_color.get_parent()->get_parent()->set_visible(true);
         }
     }
     if (symbolic) {
@@ -1768,7 +1768,7 @@ void InkscapePreferences::initPageUI()
         _dark_theme.get_parent()->show_all();
     } else {
         _dark_theme.get_parent()->set_no_show_all(true);
-        _dark_theme.get_parent()->hide();
+        _dark_theme.get_parent()->set_visible(false);
     }
     _dark_theme.signal_clicked().connect(sigc::mem_fun(*this, &InkscapePreferences::preferDarkThemeChange));
     // Icons
@@ -3182,7 +3182,7 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     // In order to get tooltips on header, we must create our own label.
     auto and_keys_header = Gtk::manage(new Gtk::Label(_("Modifier")));
     and_keys_header->set_tooltip_text(_("All keys specified must be held down to activate this functionality."));
-    and_keys_header->show();
+    and_keys_header->set_visible(true);
     auto and_keys_column = _mod_tree.get_column(1);
     and_keys_column->set_widget(*and_keys_header);
 
@@ -3873,7 +3873,7 @@ void InkscapePreferences::show_not_found()
     _current_page = &_page_notfound;
     _page_title.set_markup(_("<span size='large'><b>No Results</b></span>"));
     _page_frame.add(*_current_page);
-    _current_page->show();
+    _current_page->set_visible(true);
     this->show_all_children();
     if (prefs->getInt("/dialogs/preferences/page", 0) == PREFS_PAGE_UI_THEME) {
         symbolicThemeCheck();
@@ -3904,7 +3904,7 @@ void InkscapePreferences::on_pagelist_selection_changed()
         Glib::ustring col_name_escaped = Glib::Markup::escape_text( row[_page_list_columns._col_name] );
         _page_title.set_markup("<span size='large'><b>" + col_name_escaped + "</b></span>");
         _page_frame.add(*_current_page);
-        _current_page->show();
+        _current_page->set_visible(true);
         this->show_all_children();
         if (prefs->getInt("/dialogs/preferences/page", 0) == PREFS_PAGE_UI_THEME) {
             symbolicThemeCheck();

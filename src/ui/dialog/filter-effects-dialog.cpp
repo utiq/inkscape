@@ -388,7 +388,7 @@ public:
         _model = Gtk::ListStore::create(_columns);
         _tree.set_model(_model);
         _tree.set_headers_visible(false);
-        _tree.show();
+        _tree.set_visible(true);
         add(_tree);
         set_shadow_type(Gtk::SHADOW_IN);
         if (tip_text) {
@@ -531,10 +531,10 @@ public:
         _angle.signal_attr_changed().connect(signal_attr_changed().make_slot());
         signal_attr_changed().connect(sigc::mem_fun(*this, &ColorMatrixValues::update_store));
 
-        _matrix.show();
-        _saturation.show();
-        _angle.show();
-        _label.show();
+        _matrix.set_visible(true);
+        _saturation.set_visible(true);
+        _angle.set_visible(true);
+        _label.set_visible(true);
         _label.set_sensitive(false);
 
         set_shadow_type(Gtk::SHADOW_NONE);
@@ -779,11 +779,11 @@ public:
 
     void show_current_only() {
         for (auto& group : _groups) {
-            group->hide();
+            group->set_visible(false);
         }
         auto t = get_current_type();
         if (t >= 0) {
-            _groups[t]->show();
+            _groups[t]->set_visible(true);
         }
     }
 
@@ -794,12 +794,12 @@ public:
             type(t);
 
             for (auto& group : _groups) {
-                group->hide();
+                group->set_visible(false);
             }
         }
 
         if (t >= 0) {
-            _groups[t]->show(); // Do not use show_all(), it shows children than should be hidden
+            _groups[t]->set_visible(true); // Do not use show_all(), it shows children than should be hidden
         }
 
         _dialog.set_attrs_locked(true);
@@ -1301,7 +1301,7 @@ private:
 
     void update()
     {
-        show();
+        set_visible(true);
 
         SPFilterPrimitive* prim = _dialog._primitive_list.get_selected();
         if (prim && prim->firstChild()) {
@@ -1348,13 +1348,13 @@ static Gtk::Menu * create_popup_menu(Gtk::Widget& parent,
 
     auto mi = Gtk::make_managed<Gtk::MenuItem>(_("_Duplicate"), true);
     mi->signal_activate().connect(dup);
-    mi->show();
+    mi->set_visible(true);
     menu->append(*mi);
 
     mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
     menu->append(*mi);
     mi->signal_activate().connect(rem);
-    mi->show();
+    mi->set_visible(true);
     menu->accelerate(parent);
 
     return menu;
@@ -2898,7 +2898,7 @@ FilterEffectsDialog::FilterEffectsDialog()
 
     _primitive_list.update();
 
-    show();
+    set_visible(true);
 
     // reading minimal width at this point should reflect space needed for fitting effect parameters panel
     int min_width = 0, dummy = 0;
@@ -3237,12 +3237,12 @@ void FilterEffectsDialog::update_filter_general_settings_view()
 
         if(filter) {
             _filter_general_settings->show_and_update(0, filter);
-            _no_filter_selected.hide();
+            _no_filter_selected.set_visible(false);
         }
         else {
             std::vector<Gtk::Widget*> vect = _settings_filter.get_children();
-            vect[0]->hide();
-            _no_filter_selected.show();
+            vect[0]->set_visible(false);
+            _no_filter_selected.set_visible(true);
         }
 
         _attr_lock = false;
@@ -3259,7 +3259,7 @@ void FilterEffectsDialog::update_settings_view()
     // selected effect parameters
 
     for (auto& i : _settings_effect.get_children()) {
-        i->hide();
+        i->set_visible(false);
     }
 
     SPFilterPrimitive* prim = _primitive_list.get_selected();
@@ -3271,9 +3271,9 @@ void FilterEffectsDialog::update_settings_view()
         //XML Tree being used directly here while it shouldn't be.
         auto id = FPConverter.get_id_from_key(prim->getRepr()->name());
         _settings->show_and_update(id, prim);
-        _empty_settings.hide();
+        _empty_settings.set_visible(false);
         _cur_effect_name->set_text(_(FPConverter.get_label(id).c_str()));
-        header.show();
+        header.set_visible(true);
     }
     else {
         if (filter) {
@@ -3285,20 +3285,20 @@ void FilterEffectsDialog::update_settings_view()
         else {
             _empty_settings.set_text(_("No filters in the document"));
         }
-        _empty_settings.show();
+        _empty_settings.set_visible(true);
         _cur_effect_name->set_text(Glib::ustring());
-        header.hide();
+        header.set_visible(false);
     }
 
     // current filter parameters (area size)
 
     std::vector<Gtk::Widget*> vect2 = _settings_filter.get_children();
-    vect2[0]->hide();
-    _no_filter_selected.show();
+    vect2[0]->set_visible(false);
+    _no_filter_selected.set_visible(true);
 
     if (filter) {
         _filter_general_settings->show_and_update(0, filter);
-        _no_filter_selected.hide();
+        _no_filter_selected.set_visible(false);
     }
 
     ensure_size();

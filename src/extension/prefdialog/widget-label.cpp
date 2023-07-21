@@ -108,11 +108,11 @@ Gtk::Widget *WidgetLabel::get_widget(sigc::signal<void ()> * /*changeSignal*/)
     int len = newtext.length();
     label->set_width_chars(len > GUI_MAX_LINE_LENGTH ? GUI_MAX_LINE_LENGTH : len);
 
-    label->show();
+    label->set_visible(true);
 
     Gtk::Box *hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
     hbox->pack_start(*label, true, true);
-    hbox->show();
+    hbox->set_visible(true);
 
     return hbox;
 }

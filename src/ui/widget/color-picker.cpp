@@ -39,7 +39,7 @@ ColorPicker::ColorPicker (const Glib::ustring& title, const Glib::ustring& tip,
     Gtk::Button* button = external_button ? external_button : this;
     _color_selector = nullptr;
     setupDialog(title);
-    _preview->show();
+    _preview->set_visible(true);
     button->add(*Gtk::manage(_preview));
     // set tooltip if given, otherwise leave original tooltip in place (from external button)
     if (!tip.empty()) {
@@ -64,7 +64,7 @@ void ColorPicker::setupDialog(const Glib::ustring &title)
     GtkWidget *dlg = GTK_WIDGET(_colorSelectorDialog.gobj());
     sp_transientize(dlg);
 
-    _colorSelectorDialog.hide();
+    _colorSelectorDialog.set_visible(false);
     _colorSelectorDialog.set_title (title);
     _colorSelectorDialog.set_border_width (4);
 }
@@ -87,7 +87,7 @@ void ColorPicker::setRgba32 (guint32 rgba)
 
 void ColorPicker::closeWindow()
 {
-    _colorSelectorDialog.hide();
+    _colorSelectorDialog.set_visible(false);
 }
 
 void ColorPicker::open() {
@@ -101,14 +101,14 @@ void ColorPicker::on_clicked()
         selector->set_label(_title);
         _color_selector = selector;
         _colorSelectorDialog.get_content_area()->pack_start(*_color_selector, true, true, 0);
-        _color_selector->show();
+        _color_selector->set_visible(true);
     }
 
     _updating = true;
     _selected_color.setValue(_rgba);
     _updating = false;
 
-    _colorSelectorDialog.show();
+    _colorSelectorDialog.set_visible(true);
     Glib::RefPtr<Gdk::Window> window = _colorSelectorDialog.get_parent_window();
     if (window) {
         window->focus(1);

@@ -754,7 +754,7 @@ Gtk::Widget * LPETiling::newWidget()
                 } else if (param->param_key == "seed"){
                     auto widgrand = dynamic_cast<Inkscape::UI::Widget::RegisteredRandom*>(widg);
                     delete widgrand->get_children()[0];
-                    widgrand->get_children()[0]->hide();
+                    widgrand->get_children()[0]->set_visible(false);
                     widgrand->get_children()[0]->set_no_show_all(true);
                     auto button = dynamic_cast<Gtk::Button*>(widgrand->get_children()[1]);
                     button->set_always_show_image(true);

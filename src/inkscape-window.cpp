@@ -83,13 +83,13 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
     // Main box
     _mainbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
     _mainbox->set_name("DesktopMainBox");
-    _mainbox->show();
+    _mainbox->set_visible(true);
     add(*_mainbox);
 
     // Desktop widget (=> MultiPaned)
     _desktop_widget = new SPDesktopWidget(this, _document);
     _desktop_widget->window = this;
-    _desktop_widget->show();
+    _desktop_widget->set_visible(true);
     _desktop = _desktop_widget->desktop;
 
     // =================== Actions ===================
@@ -209,8 +209,8 @@ InkscapeWindow::setup_view()
     // Showing after resizing/moving allows the window manager to correct an invalid size/position of the window
     // TODO: This does *not* work when called from 'change_document()', i.e. when the window is already visible.
     //       This can result in off-screen windows! We previously worked around this by hiding and re-showing
-    //       the window, but a call to hide() causes Inkscape to just exit since the migration to Gtk::Application
-    show();
+    //       the window, but a call to set_visible(false) causes Inkscape to just exit since the migration to Gtk::Application
+    set_visible(true);
     
     _desktop->schedule_zoom_from_document();
     sp_namedview_update_layers_from_document(_desktop);

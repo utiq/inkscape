@@ -198,7 +198,7 @@ Gtk::Widget *ParamString::get_widget(sigc::signal<void ()> *changeSignal)
     Gtk::Box *box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, GUI_PARAM_WIDGETS_SPACING));
 
     Gtk::Label *label = Gtk::manage(new Gtk::Label(_text, Gtk::ALIGN_START));
-    label->show();
+    label->set_visible(true);
     box->pack_start(*label, false, false);
 
     if (_mode == MULTILINE) {
@@ -209,20 +209,20 @@ Gtk::Widget *ParamString::get_widget(sigc::signal<void ()> *changeSignal)
         textarea->set_shadow_type(Gtk::SHADOW_IN);
 
         ParamMultilineStringEntry *entry = Gtk::manage(new ParamMultilineStringEntry(this, changeSignal));
-        entry->show();
+        entry->set_visible(true);
 
         textarea->add(*entry);
-        textarea->show();
+        textarea->set_visible(true);
 
         box->pack_start(*textarea, true, true);
     } else {
         Gtk::Widget *entry = Gtk::manage(new ParamStringEntry(this, changeSignal));
-        entry->show();
+        entry->set_visible(true);
 
         box->pack_start(*entry, true, true);
     }
 
-    box->show();
+    box->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(box);
 }

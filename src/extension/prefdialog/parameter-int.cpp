@@ -149,19 +149,19 @@ ParamInt::get_widget(sigc::signal<void ()> *changeSignal)
             text = _text;
         UI::Widget::SpinScale *scale = Gtk::manage(new UI::Widget::SpinScale(text, fadjust, 0));
         scale->set_size_request(400, -1);
-        scale->show();
+        scale->set_visible(true);
         hbox->pack_start(*scale, true, true);
     } else if (_mode == DEFAULT) {
         Gtk::Label *label = Gtk::manage(new Gtk::Label(_text, Gtk::ALIGN_START));
-        label->show();
+        label->set_visible(true);
         hbox->pack_start(*label, true, true);
 
         auto spin = Gtk::manage(new Inkscape::UI::Widget::SpinButton(fadjust, 1.0, 0));
-        spin->show();
+        spin->set_visible(true);
         hbox->pack_start(*spin, false, false);
     }
 
-    hbox->show();
+    hbox->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(hbox);
 }

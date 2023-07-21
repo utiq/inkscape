@@ -179,21 +179,21 @@ void ExportList::setup()
 
     Gtk::Label *suffix_label = Gtk::manage(new Gtk::Label(_("Suffix")));
     this->attach(*suffix_label, _suffix_col, 0, 1, 1);
-    suffix_label->show();
+    suffix_label->set_visible(true);
 
     Gtk::Label *extension_label = Gtk::manage(new Gtk::Label(_("Format")));
     this->attach(*extension_label, _extension_col, 0, 2, 1);
-    extension_label->show();
+    extension_label->set_visible(true);
 
     Gtk::Label *dpi_label = Gtk::manage(new Gtk::Label(_("DPI")));
     this->attach(*dpi_label, _dpi_col, 0, 1, 1);
-    dpi_label->show();
+    dpi_label->set_visible(true);
 
     append_row();
 
     add_button->signal_clicked().connect(sigc::mem_fun(*this, &ExportList::append_row));
     add_button->set_hexpand(true);
-    add_button->show();
+    add_button->set_visible(true);
 
     this->set_row_spacing(5);
     this->set_column_spacing(2);
@@ -218,13 +218,13 @@ void ExportList::append_row()
     suffix->set_width_chars(2);
     suffix->set_hexpand(true);
     suffix->set_placeholder_text(_("Suffix"));
-    suffix->show();
+    suffix->set_visible(true);
 
     ExtensionList *extension = Gtk::manage(new ExtensionList());
     SpinButton *dpi_sb = Gtk::manage(new SpinButton());
 
     extension->setup();
-    extension->show();
+    extension->set_visible(true);
     this->attach(*extension, _extension_col, current_row, 1, 1);
     this->attach(*extension->getPrefButton(), _prefs_col, current_row, 1, 1);
 
@@ -242,7 +242,7 @@ void ExportList::append_row()
     dpi_sb->set_sensitive(true);
     dpi_sb->set_width_chars(6);
     dpi_sb->set_max_width_chars(6);
-    dpi_sb->show();
+    dpi_sb->set_visible(true);
     this->attach(*dpi_sb, _dpi_col, current_row, 1, 1);
 
     Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("window-close", Gtk::ICON_SIZE_SMALL_TOOLBAR));
@@ -271,7 +271,7 @@ void ExportList::delete_row(Gtk::Widget *widget)
     if (_num_rows <= 1) {
         Gtk::Widget *d_button_0 = dynamic_cast<Gtk::Widget *>(this->get_child_at(_delete_col, 1));
         if (d_button_0) {
-            d_button_0->hide();
+            d_button_0->set_visible(false);
         }
     }
 }

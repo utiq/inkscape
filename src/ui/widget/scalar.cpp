@@ -185,7 +185,7 @@ Glib::SignalProxy<bool, GdkEventButton*> Scalar::signal_button_release_event()
 
 void Scalar::hide_label() {
     if (auto label = const_cast<Gtk::Label*>(getLabel())) {
-        label->hide();
+        label->set_visible(false);
         label->set_no_show_all();
         label->set_hexpand(true);
     }

@@ -40,7 +40,7 @@ namespace Widget {
 void GradientSelector::style_button(Gtk::Button *btn, char const *iconName)
 {
     GtkWidget *child = sp_get_icon_image(iconName, GTK_ICON_SIZE_SMALL_TOOLBAR);
-    gtk_widget_show(child);
+    gtk_widget_set_visible(child, true);
     btn->add(*manage(Glib::wrap(child)));
     btn->set_relief(Gtk::RELIEF_NONE);
 }
@@ -87,7 +87,7 @@ GradientSelector::GradientSelector()
 
     _treeview->signal_key_press_event().connect(sigc::mem_fun(*this, &GradientSelector::onKeyPressEvent), false);
 
-    _treeview->show();
+    _treeview->set_visible(true);
 
     icon_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeColorColClick));
     name_column->signal_clicked().connect(sigc::mem_fun(*this, &GradientSelector::onTreeNameColClick));
@@ -103,7 +103,7 @@ GradientSelector::GradientSelector()
     _scrolled_window->set_shadow_type(Gtk::SHADOW_IN);
     _scrolled_window->set_size_request(0, 180);
     _scrolled_window->set_hexpand();
-    _scrolled_window->show();
+    _scrolled_window->set_visible(true);
 
     pack_start(*_scrolled_window, true, true, 4);
 
@@ -171,7 +171,7 @@ void GradientSelector::setMode(SelectorMode mode)
         _mode = mode;
         if (mode == MODE_SWATCH) {
             for (auto &it : _nonsolid) {
-                it->hide();
+                it->set_visible(false);
             }
             for (auto &swatch_widget : _swatch_widgets) {
                 swatch_widget->show_all();
@@ -186,7 +186,7 @@ void GradientSelector::setMode(SelectorMode mode)
                 it->show_all();
             }
             for (auto &swatch_widget : _swatch_widgets) {
-                swatch_widget->hide();
+                swatch_widget->set_visible(false);
             }
             auto icon_column = _treeview->get_column(0);
             icon_column->set_title(_("Gradient"));
@@ -418,7 +418,7 @@ void GradientSelector::setVector(SPDocument *doc, SPGradient *vector)
         if ((_mode == MODE_SWATCH) && vector->isSwatch()) {
             if (vector->isSolid()) {
                 for (auto &it : _nonsolid) {
-                    it->hide();
+                    it->set_visible(false);
                 }
             } else {
                 for (auto &it : _nonsolid) {
@@ -428,7 +428,7 @@ void GradientSelector::setVector(SPDocument *doc, SPGradient *vector)
         } else if (_mode != MODE_SWATCH) {
 
             for (auto &swatch_widget : _swatch_widgets) {
-                swatch_widget->hide();
+                swatch_widget->set_visible(false);
             }
             for (auto &it : _nonsolid) {
                 it->show_all();
@@ -583,7 +583,7 @@ void GradientSelector::add_vector_clicked()
 }
 
 void GradientSelector::show_edit_button(bool show) {
-    if (show) _edit->show(); else _edit->hide();
+    _edit->set_visible(show);
 }
 
 void GradientSelector::set_name_col_size(int min_width) {

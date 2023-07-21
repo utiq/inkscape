@@ -848,7 +848,7 @@ InkscapeApplication::create_window(SPDocument *document, bool replace)
     } else {
         window = window_open (document);
     }
-    window->show();
+    window->set_visible(true);
 
     return window;
 }

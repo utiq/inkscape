@@ -159,7 +159,7 @@ void CommandPalette::open()
 
 void CommandPalette::close()
 {
-    _CPBase->hide();
+    _CPBase->set_visible(false);
 
     // Reset filtering - show all suggestions
     _CPFilter->set_text("");
@@ -225,7 +225,7 @@ void CommandPalette::append_recent_file_operation(const Glib::ustring &path, boo
 
         // Hide for recent_file, not required
         CPActionFullButton->set_no_show_all();
-        CPActionFullButton->hide();
+        CPActionFullButton->set_visible(false);
 
         CPName->set_text((is_import ? _("Import") : _("Open")) + (": " + file_name));
         CPName->set_tooltip_text((is_import ? ("Import") : ("Open")) + (": " + file_name)); // Tooltip_text are not translatable
@@ -309,7 +309,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
 
         if (not show_full_action_name) {
             CPActionFullButton->set_no_show_all();
-            CPActionFullButton->hide();
+            CPActionFullButton->set_visible(false);
         } else {
             CPActionFullButton->signal_clicked().connect(
                 sigc::bind(sigc::mem_fun(*this, &CommandPalette::on_action_fullname_clicked),
@@ -335,7 +335,7 @@ bool CommandPalette::generate_action_operation(const ActionPtrName &action_ptr_n
             CPShortcut->set_text(accel_label);
         } else {
             CPShortcut->set_no_show_all();
-            CPShortcut->hide();
+            CPShortcut->set_visible(false);
         }
     }
 
@@ -451,7 +451,7 @@ bool CommandPalette::on_key_press_cpfilter_input_mode(GdkEventKey *evt, const Ac
 void CommandPalette::hide_suggestions()
 {
     _CPBase->set_size_request(-1, 10);
-    _CPListBase->hide();
+    _CPListBase->set_visible(false);
 }
 void CommandPalette::show_suggestions()
 {
@@ -1091,7 +1091,7 @@ void CommandPalette::set_mode(CPMode mode)
 
             // Show Suggestions instead of history
             _CPHistoryScroll->set_no_show_all();
-            _CPHistoryScroll->hide();
+            _CPHistoryScroll->set_visible(false);
 
             _CPSuggestionsScroll->set_no_show_all(false);
             _CPSuggestionsScroll->show_all();
@@ -1153,7 +1153,7 @@ void CommandPalette::set_mode(CPMode mode)
             _CPSuggestionsScroll->set_no_show_all();
             _CPHistoryScroll->set_no_show_all(false);
 
-            _CPSuggestionsScroll->hide();
+            _CPSuggestionsScroll->set_visible(false);
             _CPHistoryScroll->show_all();
 
             _CPFilter->set_icon_from_icon_name("format-justify-fill");

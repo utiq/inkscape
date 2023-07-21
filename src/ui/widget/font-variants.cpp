@@ -755,9 +755,9 @@ namespace Widget {
       _feature_entry.set_text( setting );
 
       if( different_features ) {
-          _feature_label.show();
+          _feature_label.set_visible(true);
       } else {
-          _feature_label.hide();
+          _feature_label.set_visible(false);
       }
   }
 

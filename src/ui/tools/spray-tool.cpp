@@ -170,7 +170,7 @@ SprayTool::SprayTool(SPDesktop *desktop)
     dilate_area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
     dilate_area->set_stroke(0xff9900ff);
     dilate_area->set_fill(0x0, SP_WIND_RULE_EVENODD);
-    dilate_area->hide();
+    dilate_area->set_visible(false);
 
     this->is_drawing = false;
 
@@ -1199,7 +1199,7 @@ static void sp_spray_update_area(SprayTool *tc)
     Geom::PathVector path = Geom::Path(Geom::Circle(0,0,1)); // Unit circle centered at origin.
     path *= sm;
     tc->dilate_area->set_bpath(path);
-    tc->dilate_area->show();
+    tc->dilate_area->set_visible(true);
 }
 
 static void sp_spray_switch_mode(SprayTool *tc, gint mode, bool with_shift)
@@ -1225,10 +1225,10 @@ bool SprayTool::root_handler(CanvasEvent const &canvas_event)
 
     switch (event->type) {
         case GDK_ENTER_NOTIFY:
-            dilate_area->show();
+            dilate_area->set_visible(true);
             break;
         case GDK_LEAVE_NOTIFY:
-            dilate_area->hide();
+            dilate_area->set_visible(false);
             break;
         case GDK_BUTTON_PRESS:
             if (event->button.button == 1) {
@@ -1275,7 +1275,7 @@ bool SprayTool::root_handler(CanvasEvent const &canvas_event)
             Geom::PathVector path = Geom::Path(Geom::Circle(0, 0, 1)); // Unit circle centered at origin.
             path *= sm;
             this->dilate_area->set_bpath(path);
-            this->dilate_area->show();
+            this->dilate_area->set_visible(true);
 
             guint num = 0;
             if (!_desktop->getSelection()->isEmpty()) {

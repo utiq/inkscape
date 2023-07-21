@@ -94,7 +94,7 @@ TweakTool::TweakTool(SPDesktop *desktop)
     dilate_area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
     dilate_area->set_stroke(0xff9900ff);
     dilate_area->set_fill(0x0, SP_WIND_RULE_EVENODD);
-    dilate_area->hide();
+    dilate_area->set_visible(false);
 
     this->is_drawing = false;
 
@@ -1075,7 +1075,7 @@ sp_tweak_update_area (TweakTool *tc)
     Geom::PathVector path = Geom::Path(Geom::Circle(0,0,1)); // Unit circle centered at origin.
     path *= sm;
     tc->dilate_area->set_bpath(path);
-    tc->dilate_area->show();
+    tc->dilate_area->set_visible(true);
 }
 
     static void
@@ -1123,10 +1123,10 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
 
     switch (event->type) {
         case GDK_ENTER_NOTIFY:
-            dilate_area->show();
+            dilate_area->set_visible(true);
             break;
         case GDK_LEAVE_NOTIFY:
-            dilate_area->hide();
+            dilate_area->set_visible(false);
             break;
         case GDK_BUTTON_PRESS:
             if (event->button.button == 1) {
@@ -1162,7 +1162,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
             Geom::PathVector path = Geom::Path(Geom::Circle(0,0,1)); // Unit circle centered at origin.
             path *= sm;
             dilate_area->set_bpath(path);
-            dilate_area->show();
+            dilate_area->set_visible(true);
 
             guint num = 0;
             if (!_desktop->getSelection()->isEmpty()) {

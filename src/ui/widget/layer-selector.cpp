@@ -63,11 +63,11 @@ public:
     void setState(bool state) {
         _state = state;
         if (_state) {
-            if (_a) _a->hide();
-            if (_b) _b->show();
+            if (_a) _a->set_visible(false);
+            if (_b) _b->set_visible(true);
         } else {
-            if (_a) _a->show();
-            if (_b) _b->hide();
+            if (_a) _a->set_visible(true);
+            if (_b) _b->set_visible(false);
         }
     }
 private:

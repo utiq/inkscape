@@ -50,7 +50,7 @@ public:
             // add separator
             if (_row > 0) {
                 auto const separator = Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_HORIZONTAL);
-                separator->show();
+                separator->set_visible(true);
                 _menu.attach(*separator, 0, _columns, _row, _row + 1);
                 _row++;
             }

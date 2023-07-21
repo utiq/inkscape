@@ -313,7 +313,7 @@ void SelectorsDialog::_showWidgets()
     _button_box.pack_end(*_horizontal, false, false, 0);
     _button_box.pack_end(*_vertical, false, false, 0);
     _del.signal_clicked().connect(sigc::mem_fun(*this, &SelectorsDialog::_delSelector));
-    _del.hide();
+    _del.set_visible(false);
     _style_dialog = Gtk::make_managed<StyleDialog>();
     _style_dialog->set_name("StyleDialog");
     _paned.pack1(*_style_dialog, Gtk::SHRINK);
@@ -929,7 +929,7 @@ void SelectorsDialog::_selectObjects(int eventX, int eventY)
                 }
                 Gtk::TreeModel::Children children = row.children();
                 if (children.empty() || children.size() == 1) {
-                    _del.show();
+                    _del.set_visible(true);
                 }
                 for (auto child : row.children()) {
                     Gtk::TreeModel::Row child_row = *child;
@@ -991,9 +991,9 @@ void SelectorsDialog::_addSelector()
     minWidth  = (sreq2.width  > minWidth  ? sreq2.width  : minWidth );
     minHeight = (sreq2.height > minHeight ? sreq2.height : minHeight);
     textDialogPtr->set_size_request(minWidth, minHeight);
-    textEditPtr->show();
-    textLabelPtr->hide();
-    textDialogPtr->show();
+    textEditPtr->set_visible(true);
+    textLabelPtr->set_visible(false);
+    textDialogPtr->set_visible(true);
 
 
     // ==== Get response ====
@@ -1015,9 +1015,9 @@ void SelectorsDialog::_addSelector()
          */
         originalValue = Glib::ustring(textEditPtr->get_text());
         selectorValue = _style_dialog->fixCSSSelectors(originalValue);
-        _del.show();
+        _del.set_visible(true);
         if (originalValue.find("@import ") == std::string::npos && selectorValue.empty()) {
-            textLabelPtr->show();
+            textLabelPtr->set_visible(true);
         } else {
             invalid = false;
         }
@@ -1107,7 +1107,7 @@ void SelectorsDialog::_delSelector()
         _store->erase(iter);
         _updating = false;
         _writeStyleElement();
-        _del.hide();
+        _del.set_visible(false);
         _scrollock = false;
         _vadj->set_value(std::min(_scrollpos, _vadj->get_upper()));
     }
@@ -1228,7 +1228,7 @@ void SelectorsDialog::_buttonEventsSelectObjs(GdkEventButton *event)
     g_debug("SelectorsDialog::_buttonEventsSelectObjs");
     if (event->type == GDK_BUTTON_RELEASE && event->button == 1) {
         _updating = true;
-        _del.show();
+        _del.set_visible(true);
         int x = static_cast<int>(event->x);
         int y = static_cast<int>(event->y);
         _selectObjects(x, y);
@@ -1246,18 +1246,18 @@ void SelectorsDialog::_selectRow()
 {
     _scrollock = true;
     g_debug("SelectorsDialog::_selectRow: updating: %s", (_updating ? "true" : "false"));
-    _del.hide();
+    _del.set_visible(false);
     std::vector<Gtk::TreeModel::Path> selectedrows = _treeView.get_selection()->get_selected_rows();
     if (selectedrows.size() == 1) {
         Gtk::TreeModel::Row row = *_store->get_iter(selectedrows[0]);
         if (!row->parent() && row->children().size() < 2) {
-            _del.show();
+            _del.set_visible(true);
         }
         if (row) {
             _style_dialog->setCurrentSelector(row[_mColumns._colSelector]);
         }
     } else if (selectedrows.size() == 0) {
-        _del.show();
+        _del.set_visible(true);
     }
     if (_updating || !getDesktop()) return; // Avoid updating if we have set row via dialog.
 
@@ -1317,7 +1317,7 @@ void SelectorsDialog::_styleButton(Gtk::Button &btn, char const *iconName, char 
     g_debug("SelectorsDialog::_styleButton");
 
     GtkWidget *child = sp_get_icon_image(iconName, GTK_ICON_SIZE_SMALL_TOOLBAR);
-    gtk_widget_show(child);
+    gtk_widget_set_visible(child, true);
     btn.add(*manage(Glib::wrap(child)));
     btn.set_relief(Gtk::RELIEF_NONE);
     btn.set_tooltip_text (tooltip);

@@ -106,7 +106,7 @@ Gtk::Widget *WidgetBox::get_widget(sigc::signal<void ()> *changeSignal)
         }
     }
 
-    box->show();
+    box->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(box);
 }

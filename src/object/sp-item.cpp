@@ -460,14 +460,14 @@ void SPItem::release()
 
     // we do NOT disconnect from the changed signal of those before deletion.
     // The destructor will call *_ref_changed with NULL as the new value,
-    // which will cause the hide() function to be called.
+    // which will cause the set_visible(false) function to be called.
     delete clip_ref;
     clip_ref = nullptr;
     delete mask_ref;
     mask_ref = nullptr;
 
     // the first thing SPObject::release() does is destroy the fill/stroke/filter references.
-    // as above, this calls *_ref_changed() which performs the hide().
+    // as above, this calls *_ref_changed() which performs the set_visible(false).
     // it is important this happens before the views are cleared.
     SPObject::release();
 

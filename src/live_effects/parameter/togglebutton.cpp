@@ -113,19 +113,19 @@ ToggleButtonParam::param_newWidget()
            label->set_text(inactive_label.c_str());
        }
    }
-   label->show();
+   label->set_visible(true);
    if (_icon_active) {
        if (!_icon_inactive) {
            _icon_inactive = _icon_active;
        }
-       box_button->show();
+       box_button->set_visible(true);
        Gtk::Widget *icon_button = nullptr;
        if (!value) {
            icon_button = sp_get_icon_image(_icon_inactive, _icon_size);
        } else {
            icon_button = sp_get_icon_image(_icon_active, _icon_size);
        }
-       icon_button->show();
+       icon_button->set_visible(true);
        box_button->pack_start(*icon_button, false, false, 1);
        if (!param_label.empty()) {
            box_button->pack_start(*label, false, false, 1);

@@ -272,7 +272,7 @@ void DialogContainer::new_dialog(const Glib::ustring& dialog_type, DialogNoteboo
     if (DialogBase* existing_dialog = find_existing_dialog(dialog_type)) {
         // make sure parent window is not hidden/collapsed
         if (auto panel = get_dialog_parent(existing_dialog)) {
-            panel->show();
+            panel->set_visible(true);
         }
         // found existing dialog; blink & exit
         existing_dialog->blink();

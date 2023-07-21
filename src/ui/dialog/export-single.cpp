@@ -939,13 +939,13 @@ void SingleExport::setExporting(bool exporting, Glib::ustring const &text)
     if (exporting) {
         set_sensitive(false);
         set_opacity(0.2);
-        progress_box->show();
+        progress_box->set_visible(true);
         _prog->set_text(text);
         _prog->set_fraction(0.0);
     } else {
         set_sensitive(true);
         set_opacity(1.0);
-        progress_box->hide();
+        progress_box->set_visible(false);
         _prog->set_text("");
         _prog->set_fraction(0.0);
     }

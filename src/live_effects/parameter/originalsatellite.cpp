@@ -47,9 +47,9 @@ Gtk::Widget *OriginalSatelliteParam::param_newWidget()
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("edit-paste", Gtk::ICON_SIZE_BUTTON));
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(sigc::mem_fun(*this, &OriginalSatelliteParam::on_link_button_click));
         _widget->pack_start(*pButton, true, true);
         pButton->set_tooltip_text(_("Link to item"));
@@ -59,9 +59,9 @@ Gtk::Widget *OriginalSatelliteParam::param_newWidget()
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("edit-select-original", Gtk::ICON_SIZE_BUTTON));
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(
             sigc::mem_fun(*this, &OriginalSatelliteParam::on_select_original_button_click));
         _widget->pack_start(*pButton, true, true);

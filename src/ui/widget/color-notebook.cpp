@@ -103,7 +103,7 @@ void ColorNotebook::_initUI(bool no_alpha)
     guint row = 0;
 
     _book = Gtk::make_managed<Gtk::Stack>();
-    _book->show();
+    _book->set_visible(true);
     _book->set_transition_type(Gtk::STACK_TRANSITION_TYPE_CROSSFADE);
     _book->set_transition_duration(130);
 
@@ -113,11 +113,11 @@ void ColorNotebook::_initUI(bool no_alpha)
     // cannot leave it homogeneous - in some themes switcher gets very wide
     _switcher->set_homogeneous(false);
     _switcher->set_halign(Gtk::ALIGN_CENTER);
-    _switcher->show();
+    _switcher->set_visible(true);
     attach(*_switcher, 0, row++, 2);
 
     _buttonbox = Gtk::make_managed<Gtk::Box>();
-    _buttonbox->show();
+    _buttonbox->set_visible(true);
 
     // combo mode selection is compact and only shows one entry (active)
     _combo = Gtk::manage(new IconComboBox());
@@ -213,7 +213,7 @@ void ColorNotebook::_initUI(bool no_alpha)
     gtk_widget_show_all(rgbabox);
 
     // the "too much ink" icon is initially hidden
-    gtk_widget_hide(GTK_WIDGET(_box_toomuchink));
+    gtk_widget_set_visible(GTK_WIDGET(_box_toomuchink), false);
 
     gtk_widget_set_margin_start(rgbabox, XPAD);
     gtk_widget_set_margin_end(rgbabox, XPAD);
@@ -233,7 +233,7 @@ void ColorNotebook::_initUI(bool no_alpha)
 
 #ifdef SPCS_PREVIEW
     _p = sp_color_preview_new(0xffffffff);
-    gtk_widget_show(_p);
+    gtk_widget_set_visible(_p, true);
     attach(*Glib::wrap(_p), 2, 3, row, row + 1, Gtk::FILL, Gtk::FILL, XPAD, YPAD);
 #endif
 }
@@ -292,7 +292,7 @@ void ColorNotebook::_updateICCButtons()
         /* update too-much-ink icon */
         Inkscape::ColorProfile *prof = _document->getProfileManager().find(name.c_str());
         if (prof && prof->isPrintColorSpace()) {
-            gtk_widget_show(GTK_WIDGET(_box_toomuchink));
+            gtk_widget_set_visible(GTK_WIDGET(_box_toomuchink), true);
             double ink_sum = 0;
             for (double i : color.getColors()) {
                 ink_sum += i;
@@ -305,7 +305,7 @@ void ColorNotebook::_updateICCButtons()
                 gtk_widget_set_sensitive(_box_toomuchink, true);
         }
         else {
-            gtk_widget_hide(GTK_WIDGET(_box_toomuchink));
+            gtk_widget_set_visible(GTK_WIDGET(_box_toomuchink), false);
         }
     } else {
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();

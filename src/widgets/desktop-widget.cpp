@@ -774,37 +774,37 @@ void SPDesktopWidget::layoutWidgets()
     }
 
     if (!prefs->getBool(pref_root + "commands/state", true)) {
-        dtw->command_toolbar->hide();
+        dtw->command_toolbar->set_visible(false);
     } else {
         dtw->command_toolbar->show_all();
     }
 
     if (!prefs->getBool(pref_root + "snaptoolbox/state", true)) {
-        dtw->snap_toolbar->hide();
+        dtw->snap_toolbar->set_visible(false);
     } else {
-        dtw->snap_toolbar->show(); // Not show_all()!
+        dtw->snap_toolbar->set_visible(true); // Not show_all()!
     }
 
     if (!prefs->getBool(pref_root + "toppanel/state", true)) {
-        dtw->tool_toolbars->hide();
+        dtw->tool_toolbars->set_visible(false);
     } else {
-        dtw->tool_toolbars->show(); // Not show_all()!
+        dtw->tool_toolbars->set_visible(true); // Not show_all()!
     }
 
     if (!prefs->getBool(pref_root + "toolbox/state", true)) {
-        dtw->tool_toolbox->hide();
+        dtw->tool_toolbox->set_visible(false);
     } else {
         dtw->tool_toolbox->show_all();
     }
 
     if (!prefs->getBool(pref_root + "statusbar/state", true)) {
-        dtw->_statusbar->hide();
+        dtw->_statusbar->set_visible(false);
     } else {
         dtw->_statusbar->show_all();
     }
 
     if (!prefs->getBool(pref_root + "panels/state", true)) {
-        dtw->_panels->hide();
+        dtw->_panels->set_visible(false);
     } else {
         dtw->_panels->show_all();
     }

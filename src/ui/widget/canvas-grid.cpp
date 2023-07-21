@@ -71,14 +71,14 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     _hruler = std::make_unique<Inkscape::UI::Widget::Ruler>(Gtk::ORIENTATION_HORIZONTAL);
     _hruler->add_track_widget(*_canvas);
     _hruler->set_hexpand(true);
-    _hruler->show();
+    _hruler->set_visible(true);
     // Tooltip/Unit set elsewhere
 
     // Vertical Ruler
     _vruler = std::make_unique<Inkscape::UI::Widget::Ruler>(Gtk::ORIENTATION_VERTICAL);
     _vruler->add_track_widget(*_canvas);
     _vruler->set_vexpand(true);
-    _vruler->show();
+    _vruler->set_visible(true);
     // Tooltip/Unit set elsewhere.
 
     // Guide Lock
@@ -286,17 +286,17 @@ CanvasGrid::ShowScrollbars(bool state)
 
     if (_show_scrollbars) {
         // Show scrollbars
-        _hscrollbar.show();
-        _vscrollbar.show();
-        _cms_adjust.show();
+        _hscrollbar.set_visible(true);
+        _vscrollbar.set_visible(true);
+        _cms_adjust.set_visible(true);
         _cms_adjust.show_all_children();
-        _quick_actions.show();
+        _quick_actions.set_visible(true);
     } else {
         // Hide scrollbars
-        _hscrollbar.hide();
-        _vscrollbar.hide();
-        _cms_adjust.hide();
-        _quick_actions.hide();
+        _hscrollbar.set_visible(false);
+        _vscrollbar.set_visible(false);
+        _cms_adjust.set_visible(false);
+        _quick_actions.set_visible(false);
     }
 }
 
@@ -320,15 +320,15 @@ CanvasGrid::ShowRulers(bool state)
 
     if (_show_rulers) {
         // Show rulers
-        _hruler->show();
-        _vruler->show();
-        _guide_lock.show();
+        _hruler->set_visible(true);
+        _vruler->set_visible(true);
+        _guide_lock.set_visible(true);
         _guide_lock.show_all_children();
     } else {
         // Hide rulers
-        _hruler->hide();
-        _vruler->hide();
-        _guide_lock.hide();
+        _hruler->set_visible(false);
+        _vruler->set_visible(false);
+        _guide_lock.set_visible(false);
     }
 }
 

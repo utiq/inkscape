@@ -1196,8 +1196,8 @@ void SPDesktop::setTempHideOverlays(bool hide)
     }
 
     if (hide) {
-        canvas_group_controls->hide();
-        canvas_group_grids->hide();
+        canvas_group_controls->set_visible(false);
+        canvas_group_grids->set_visible(false);
         _saved_guides_visible = namedview->getShowGuides();
         if (_saved_guides_visible) {
             namedview->temporarily_show_guides(false);
@@ -1207,11 +1207,11 @@ void SPDesktop::setTempHideOverlays(bool hide)
         }
         _overlays_visible = false;
     } else {
-        canvas_group_controls->show();
+        canvas_group_controls->set_visible(true);
         if (_saved_guides_visible) {
             namedview->temporarily_show_guides(true);
         }
-        canvas_group_grids->show();
+        canvas_group_grids->set_visible(true);
         _overlays_visible = true;
     }
 }

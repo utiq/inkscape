@@ -119,7 +119,7 @@ CalligraphicTool::CalligraphicTool(SPDesktop *desktop)
     hatch_area->set_fill(0x0, SP_WIND_RULE_EVENODD);
     hatch_area->set_stroke(0x0000007f);
     hatch_area->set_pickable(false);
-    hatch_area->hide();
+    hatch_area->set_visible(false);
 
     sp_event_context_read(this, "mass");
     sp_event_context_read(this, "wiggle");
@@ -654,7 +654,7 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
 
                     hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0x7f7f7fff);
-                    hatch_area->show();
+                    hatch_area->set_visible(true);
 
                 } else if (this->dragging && !this->hatch_escaped && hatch_dist != 0) {
                     // Tracking: green, center snapped, fixed radius
@@ -665,7 +665,7 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
 
                     hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0x00FF00ff);
-                    hatch_area->show();
+                    hatch_area->set_visible(true);
 
                 } else if (this->dragging && this->hatch_escaped && hatch_dist != 0) {
                     // Tracking escaped: red, center free, fixed radius
@@ -676,7 +676,7 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
 
                     hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0xff0000ff);
-                    hatch_area->show();
+                    hatch_area->set_visible(true);
 
                 } else {
                     // Not drawing but spacing set: gray, center snapped, fixed radius
@@ -688,11 +688,11 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
 
                         hatch_area->set_bpath(std::move(path), true);
                         hatch_area->set_stroke(0x7f7f7fff);
-                        hatch_area->show();
+                        hatch_area->set_visible(true);
                     }
                 }
             } else {
-                hatch_area->hide();
+                hatch_area->set_visible(false);
             }
         }
         break;

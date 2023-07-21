@@ -80,7 +80,7 @@ ArrangeDialog::ArrangeDialog()
     button_box->pack_end(*_arrangeButton);
     pack_start(*button_box);
 
-    show();
+    set_visible(true);
     show_all_children();
     update_arrange_btn();
 }
@@ -88,10 +88,10 @@ ArrangeDialog::ArrangeDialog()
 void ArrangeDialog::update_arrange_btn() {
     // "align" page doesn't use "Arrange" button
     if (_notebook->get_current_page() == 0) {
-        _arrangeButton->hide();
+        _arrangeButton->set_visible(false);
     }
     else {
-        _arrangeButton->show();
+        _arrangeButton->set_visible(true);
     }
 }
 

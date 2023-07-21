@@ -119,10 +119,10 @@ Gtk::Widget *ParamBool::get_widget(sigc::signal<void ()> *changeSignal)
     hbox->set_homogeneous(false);
 
     ParamBoolCheckButton * checkbox = Gtk::manage(new ParamBoolCheckButton(this, _text, changeSignal));
-    checkbox->show();
+    checkbox->set_visible(true);
     hbox->pack_start(*checkbox, false, false);
 
-    hbox->show();
+    hbox->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(hbox);
 }

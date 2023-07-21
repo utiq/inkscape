@@ -111,7 +111,7 @@ void KnotPropertiesDialog::showDialog(SPDesktop *desktop, const SPKnot *pt, Glib
     desktop->setWindowTransient (dialog->gobj());
     dialog->property_destroy_with_parent() = true;
 
-    dialog->show();
+    dialog->set_visible(true);
     dialog->present();
 }
 

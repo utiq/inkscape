@@ -255,7 +255,7 @@ StartScreen::StartScreen()
     set_position(Gtk::WIN_POS_CENTER_ALWAYS);
     property_resizable() = false;
     set_default_size(700, 360);
-    show();
+    set_visible(true);
 }
 
 StartScreen::~StartScreen()
@@ -377,9 +377,9 @@ void
 StartScreen::on_kind_changed(Gtk::Widget *tab, guint page_num)
 {
     if (page_num == 0) {
-        load_btn->show();
+        load_btn->set_visible(true);
     } else {
-        load_btn->hide();
+        load_btn->set_visible(false);
     }
 }
 
@@ -736,9 +736,9 @@ StartScreen::keyboard_changed()
         builder->get_widget("keys_warning", keys_warning);
         if (set_to != "inkscape.xml" && set_to != "default.xml") {
             keys_warning->set_message_type(Gtk::MessageType::MESSAGE_WARNING);
-            keys_warning->show();
+            keys_warning->set_visible(true);
         } else {
-            keys_warning->hide();
+            keys_warning->set_visible(false);
         }
     } catch(int e) {
         g_warning("Couldn't find keys value.");

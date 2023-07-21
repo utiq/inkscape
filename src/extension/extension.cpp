@@ -1043,7 +1043,7 @@ Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<voi
         agui->addWidget(widg, tip, indent);
     }
 
-    agui->show();
+    agui->set_visible(true);
     return agui;
 };
 
@@ -1085,8 +1085,8 @@ void Extension::add_val(Glib::ustring labelstr, Glib::ustring valuestr, Gtk::Gri
     table->attach(*label, 0, (*row) - 1, 1, 1);
     table->attach(*value, 1, (*row) - 1, 1, 1);
 
-    label->show();
-    value->show();
+    label->set_visible(true);
+    value->set_visible(true);
 
     return;
 }
@@ -1097,8 +1097,8 @@ Extension::get_params_widget()
     Gtk::Box * retval = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
     Gtk::Widget * content = Gtk::manage(new Gtk::Label("Params"));
     retval->pack_start(*content, true, true, 4);
-    content->show();
-    retval->show();
+    content->set_visible(true);
+    retval->set_visible(true);
     return retval;
 }
 

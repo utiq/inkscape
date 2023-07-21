@@ -89,25 +89,25 @@ void SnapToolbar::mode_update() {
     Inkscape::Preferences* prefs = Inkscape::Preferences::get();
     Mode mode = (Mode)prefs->getInt("/toolbox/simplesnap", 1);
 
-    btn_simple->hide();
-    btn_advanced->hide();
-    scroll_permanent->hide();
+    btn_simple->set_visible(false);
+    btn_advanced->set_visible(false);
+    scroll_permanent->set_visible(false);
 
     // Show/hide
     switch (mode) {
         case SIMPLE:
-            btn_simple->show();
+            btn_simple->set_visible(true);
             set_orientation(Gtk::ORIENTATION_HORIZONTAL);
             snap_toolbar->set_orientation(Gtk::ORIENTATION_HORIZONTAL);
             transition_to_simple_snapping();  // Defined in actions-canvas-snapping.cpp
             break;
         case ADVANCED:
-            btn_advanced->show();
+            btn_advanced->set_visible(true);
             set_orientation(Gtk::ORIENTATION_HORIZONTAL);
             snap_toolbar->set_orientation(Gtk::ORIENTATION_HORIZONTAL);
             break;
         case PERMANENT:
-            scroll_permanent->show();
+            scroll_permanent->set_visible(true);
             box_permanent->set_orientation(Gtk::ORIENTATION_VERTICAL);
             snap_toolbar->set_orientation(Gtk::ORIENTATION_VERTICAL);
             break;
@@ -118,7 +118,7 @@ void SnapToolbar::mode_update() {
 
 int SnapToolbar::show_popover(void* button) {
     auto btn = static_cast<Gtk::MenuButton*>(button);
-    btn->get_popover()->show();
+    btn->get_popover()->set_visible(true);
     return false;
 }
 

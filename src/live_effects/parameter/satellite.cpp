@@ -276,9 +276,9 @@ Gtk::Widget *SatelliteParam::param_newWidget()
     _widget->pack_start(*pLabel, true, true);
     pLabel->set_tooltip_text(param_tooltip);
     pButton->set_relief(Gtk::RELIEF_NONE);
-    pIcon->show();
+    pIcon->set_visible(true);
     pButton->add(*pIcon);
-    pButton->show();
+    pButton->set_visible(true);
     pButton->signal_clicked().connect(sigc::mem_fun(*this, &SatelliteParam::on_link_button_click));
     _widget->pack_start(*pButton, true, true);
     pButton->set_tooltip_text(_("Link to item on clipboard"));

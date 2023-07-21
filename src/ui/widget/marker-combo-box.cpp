@@ -131,7 +131,7 @@ MarkerComboBox::MarkerComboBox(Glib::ustring id, int l) :
     _marker_store = Gio::ListStore<MarkerItem>::create();
     _marker_list.bind_list_store(_marker_store, [=](const Glib::RefPtr<MarkerItem>& item){
         auto image = Gtk::make_managed<Gtk::Image>(item->pix);
-        image->show();
+        image->set_visible(true);
         auto box = Gtk::make_managed<Gtk::FlowBoxChild>();
         box->add(*image);
         if (item->separator) {
@@ -252,7 +252,7 @@ MarkerComboBox::MarkerComboBox(Glib::ustring id, int l) :
 
     update_scale_link();
     _current_img.set(g_image_none);
-    show();
+    set_visible(true);
 }
 
 MarkerComboBox::~MarkerComboBox() {

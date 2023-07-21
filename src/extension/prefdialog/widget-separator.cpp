@@ -34,7 +34,7 @@ Gtk::Widget *WidgetSeparator::get_widget(sigc::signal<void ()> *changeSignal)
     }
 
     Gtk::Separator *separator = Gtk::manage(new Gtk::Separator());
-    separator->show();
+    separator->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(separator);
 }

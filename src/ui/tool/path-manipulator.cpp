@@ -129,7 +129,7 @@ PathManipulator::PathManipulator(MultiPathManipulator &mpm, SPObject *path,
     _getGeometry();
 
     _outline = make_canvasitem<Inkscape::CanvasItemBpath>(_multi_path_manipulator._path_data.outline_group);
-    _outline->hide();
+    _outline->set_visible(false);
     _outline->set_stroke(outline_color);
     _outline->set_fill(0x0, SP_WIND_RULE_NONZERO);
 
@@ -1530,7 +1530,7 @@ std::string PathManipulator::_createTypeString()
 void PathManipulator::_updateOutline()
 {
     if (!_show_outline) {
-        _outline->hide();
+        _outline->set_visible(false);
         return;
     }
 
@@ -1558,7 +1558,7 @@ void PathManipulator::_updateOutline()
     }
     auto tmp = SPCurve(std::move(pv));
     _outline->set_bpath(&tmp);
-    _outline->show();
+    _outline->set_visible(true);
 }
 
 /** Retrieve the geometry of the edited object from the object tree */

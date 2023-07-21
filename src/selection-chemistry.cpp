@@ -3023,7 +3023,7 @@ void ObjectSet::cloneOriginal()
                 auto canvas_item_bpath = new Inkscape::CanvasItemBpath(desktop()->getCanvasTemp(), curve.get_pathvector());
                 canvas_item_bpath->set_stroke(0x0000ddff);
                 canvas_item_bpath->set_dashes({5.0, 3.0});
-                canvas_item_bpath->show();
+                canvas_item_bpath->set_visible(true);
                 desktop()->add_temporary_canvasitem(canvas_item_bpath, 1000);
             }
         }

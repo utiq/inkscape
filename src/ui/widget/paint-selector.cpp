@@ -153,7 +153,7 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     _style = Gtk::manage(new Gtk::Box());
     _style->set_homogeneous(false);
     _style->set_name("PaintSelector");
-    _style->show();
+    _style->set_visible(true);
     _style->set_border_width(0);
     pack_start(*_style, false, false);
 
@@ -210,13 +210,13 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     _label = Gtk::manage(new Gtk::Label(""));
     auto lbbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
     lbbox->set_homogeneous(false);
-    _label->show();
+    _label->set_visible(true);
     lbbox->pack_start(*_label, false, false, 4);
     pack_start(*lbbox, false, false, 4);
 
     _frame = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
     _frame->set_homogeneous(false);
-    _frame->show();
+    _frame->set_visible(true);
     // gtk_container_set_border_width(GTK_CONTAINER(psel->frame), 0);
     pack_start(*_frame, true, true, 0);
 
@@ -236,7 +236,7 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     if (kind == FILL)
         _fillrulebox->show_all();
     else
-        _fillrulebox->hide();
+        _fillrulebox->set_visible(false);
 
     show_all();
 
@@ -258,7 +258,7 @@ StyleToggleButton *PaintSelector::style_button_add(gchar const *pixmap, PaintSel
 
     auto b = Gtk::manage(new StyleToggleButton());
     b->set_tooltip_text(tip);
-    b->show();
+    b->set_visible(true);
     b->set_border_width(0);
     b->set_relief(Gtk::RELIEF_NONE);
     b->set_mode(false);
@@ -296,7 +296,7 @@ void PaintSelector::setMode(Mode mode) {
 void PaintSelector::set_mode_ex(Mode mode, bool switch_style) {
     if (_mode != mode) {
         _update = true;
-        _label->show();
+        _label->set_visible(true);
 #ifdef SP_PS_VERBOSE
         g_print("Mode change %d -> %d   %s -> %s\n", _mode, mode, modeStrings[_mode], modeStrings[mode]);
 #endif
@@ -479,19 +479,19 @@ void PaintSelector::pushAttrsToGradient(SPGradient *gr) const
 void PaintSelector::clear_frame()
 {
     if (_selector_solid_color) {
-        _selector_solid_color->hide();
+        _selector_solid_color->set_visible(false);
     }
     if (_selector_gradient) {
-        _selector_gradient->hide();
+        _selector_gradient->set_visible(false);
     }
     if (_selector_mesh) {
-        _selector_mesh->hide();
+        _selector_mesh->set_visible(false);
     }
     if (_selector_pattern) {
-        _selector_pattern->hide();
+        _selector_pattern->set_visible(false);
     }
     if (_selector_swatch) {
-        _selector_swatch->hide();
+        _selector_swatch->set_visible(false);
     }
 }
 
@@ -590,18 +590,18 @@ void PaintSelector::set_mode_color(PaintSelector::Mode /*mode*/)
 
             /* Color selector */
             auto color_selector = Gtk::manage(new ColorNotebook(*(_selected_color)));
-            color_selector->show();
+            color_selector->set_visible(true);
             _selector_solid_color->pack_start(*color_selector, true, true, 0);
             /* Pack everything to frame */
             _frame->add(*_selector_solid_color);
             color_selector->set_label(_("<b>Flat color</b>"));
         }
 
-        _selector_solid_color->show();
+        _selector_solid_color->set_visible(true);
     }
 
     _label->set_markup(""); //_("<b>Flat color</b>"));
-    _label->hide();
+    _label->set_visible(false);
 
 #ifdef SP_PS_VERBOSE
     g_print("Color req\n");
@@ -635,7 +635,7 @@ void PaintSelector::set_mode_gradient(PaintSelector::Mode mode)
             /* Create new gradient selector */
             try {
                 _selector_gradient = Gtk::manage(new GradientEditor("/gradient-edit"));
-                _selector_gradient->show();
+                _selector_gradient->set_visible(true);
                 _selector_gradient->signal_grabbed().connect(sigc::mem_fun(*this, &PaintSelector::gradient_grabbed));
                 _selector_gradient->signal_dragged().connect(sigc::mem_fun(*this, &PaintSelector::gradient_dragged));
                 _selector_gradient->signal_released().connect(sigc::mem_fun(*this, &PaintSelector::gradient_released));
@@ -652,7 +652,7 @@ void PaintSelector::set_mode_gradient(PaintSelector::Mode mode)
             // Necessary when creating new gradients via the Fill and Stroke dialog
             _selector_gradient->setVector(nullptr, nullptr);
         }
-        _selector_gradient->show();
+        _selector_gradient->set_visible(true);
     }
 
     /* Actually we have to set option menu history here */
@@ -660,11 +660,11 @@ void PaintSelector::set_mode_gradient(PaintSelector::Mode mode)
         _selector_gradient->setMode(GradientSelector::MODE_LINEAR);
         // sp_gradient_selector_set_mode(SP_GRADIENT_SELECTOR(gsel), SP_GRADIENT_SELECTOR_MODE_LINEAR);
       //   _label->set_markup(_("<b>Linear gradient</b>"));
-        _label->hide();
+        _label->set_visible(false);
     } else if (mode == PaintSelector::MODE_GRADIENT_RADIAL) {
         _selector_gradient->setMode(GradientSelector::MODE_RADIAL);
         // _label->set_markup(_("<b>Radial gradient</b>"));
-        _label->hide();
+        _label->set_visible(false);
     }
 
 #ifdef SP_PS_VERBOSE
@@ -918,7 +918,7 @@ void PaintSelector::set_mode_mesh(PaintSelector::Mode mode)
             _frame->add(*_selector_mesh);
         }
 
-        _selector_mesh->show();
+        _selector_mesh->set_visible(true);
         _label->set_markup(_("<b>Mesh fill</b>"));
     }
 #ifdef SP_PS_VERBOSE
@@ -1038,8 +1038,8 @@ void PaintSelector::set_mode_pattern(PaintSelector::Mode mode)
 
         SPDocument* document = SP_ACTIVE_DOCUMENT;
         _selector_pattern->set_document(document);
-        _selector_pattern->show();
-        _label->hide();
+        _selector_pattern->set_visible(true);
+        _label->set_visible(false);
     }
 #ifdef SP_PS_VERBOSE
     g_print("Pattern req\n");
@@ -1167,7 +1167,7 @@ void PaintSelector::set_mode_swatch(PaintSelector::Mode mode)
             // Necessary when creating new swatches via the Fill and Stroke dialog
             _selector_swatch->setVector(nullptr, nullptr);
         }
-        _selector_swatch->show();
+        _selector_swatch->set_visible(true);
         _label->set_markup(_("<b>Swatch fill</b>"));
     }
 

@@ -64,7 +64,7 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
     }
 
     hbox->pack_start(*controls, true, true, 0);
-    hbox->show();
+    hbox->set_visible(true);
 
     this->get_content_area()->pack_start(*hbox, true, true, 0);
 
@@ -84,16 +84,16 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
         }
 
         auto sep = Gtk::manage(new Gtk::Separator());
-        sep->show();
+        sep->set_visible(true);
 
         this->get_content_area()->pack_start(*sep, false, false, InxWidget::GUI_BOX_SPACING);
 
         hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
         hbox->set_border_width(InxWidget::GUI_BOX_MARGIN);
         _button_preview = _param_preview->get_widget(&_signal_preview);
-        _button_preview->show();
+        _button_preview->set_visible(true);
         hbox->pack_start(*_button_preview, true, true, 0);
-        hbox->show();
+        hbox->set_visible(true);
 
         this->get_content_area()->pack_start(*hbox, false, false, 0);
 

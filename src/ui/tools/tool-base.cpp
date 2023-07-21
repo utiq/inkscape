@@ -1357,7 +1357,7 @@ void ToolBase::menu_popup(CanvasEvent const &event, SPObject *obj)
 
     auto menu = new ContextMenu(_desktop, obj);
     menu->attach_to_widget(*_desktop->getCanvas()); // So actions work!
-    menu->show();
+    menu->set_visible(true);
 
     switch (event.type()) {
     case EventType::BUTTON_PRESS:

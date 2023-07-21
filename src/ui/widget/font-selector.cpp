@@ -157,22 +157,22 @@ void FontSelector::on_realize_list() {
 gboolean FontSelector::set_cell_markup(gpointer data)
 {
     FontSelector *self = static_cast<FontSelector *>(data);
-    self->family_treeview.hide();
+    self->family_treeview.set_visible(false);
     self->family_treecolumn.set_cell_data_func (self->family_cell, &font_lister_cell_data_func_markup);
-    self->family_treeview.show();
+    self->family_treeview.set_visible(true);
     return false;
 }
 
 void FontSelector::hide_others()
 {
     style_frame.set_no_show_all();
-    style_frame.hide();
+    style_frame.set_visible(false);
     size_label.set_no_show_all();
-    size_label.hide();
+    size_label.set_visible(false);
     size_combobox.set_no_show_all();
-    size_combobox.hide();
+    size_combobox.set_visible(false);
     font_variations.set_no_show_all();
-    font_variations_scroll.hide();
+    font_variations_scroll.set_visible(false);
     font_variations_scroll.set_vexpand(false);
 }
 

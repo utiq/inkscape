@@ -150,7 +150,7 @@ bool BooleanBuilder::task_select(const Geom::Point &point, bool add_task)
         _work_task->setSelected(true);
         _screen_task = make_canvasitem<Inkscape::CanvasItemBpath>(_group.get(), _work_task->get_pathv(), false);
         redraw_item(*_screen_task, true, add_task ? TaskType::ADD : TaskType::DELETE, _work_task->is_image());
-        si->vis->hide();
+        si->vis->set_visible(false);
         si->visible = false;
         redraw_item(*si->vis, false, TaskType::NONE, _work_task->is_image());
         return true;
@@ -165,7 +165,7 @@ bool BooleanBuilder::task_add(const Geom::Point &point)
     if (auto si = get_item(point)) {
         // Invisible items are already processed.
         if (si->visible) {
-            si->vis->hide();
+            si->vis->set_visible(false);
             si->visible = false;
             *_work_task += *si->work;
             _screen_task->set_bpath(_work_task->get_pathv(), false);
@@ -180,7 +180,7 @@ void BooleanBuilder::task_cancel()
     _work_task.reset();
     _screen_task.reset();
     for (auto &si : _screen_items) {
-        si.vis->show();
+        si.vis->set_visible(true);
         si.visible = true;
     }
 }

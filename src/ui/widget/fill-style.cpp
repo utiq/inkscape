@@ -62,7 +62,7 @@ FillNStroke::FillNStroke(FillOrStroke k)
 {
     // Add and connect up the paint selector widget:
     _psel = Gtk::manage(new UI::Widget::PaintSelector(kind));
-    _psel->show();
+    _psel->set_visible(true);
     add(*_psel);
     _psel->signal_mode_changed().connect(sigc::mem_fun(*this, &FillNStroke::paintModeChangeCB));
     _psel->signal_dragged().connect(sigc::mem_fun(*this, &FillNStroke::dragFromPaint));

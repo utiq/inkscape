@@ -65,9 +65,9 @@ void reveal_widget(Gtk::Widget *widget, bool show)
         revealer->set_reveal_child(show);
     }
     if (show) {
-        widget->show();
+        widget->set_visible(true);
     } else if (!revealer) {
-        widget->hide();
+        widget->set_visible(false);
     }
 }
 

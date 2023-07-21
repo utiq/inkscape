@@ -98,7 +98,7 @@ void CalligraphicProfileRename::_delete()
 
 void CalligraphicProfileRename::_close()
 {
-    this->Gtk::Dialog::hide();
+    this->Gtk::Dialog::set_visible(false);
 }
 
 void CalligraphicProfileRename::show(SPDesktop *desktop, const Glib::ustring profile_name)

@@ -181,7 +181,7 @@ void Transformation::selectionModified(Inkscape::Selection *selection, guint fla
 void Transformation::presentPage(Transformation::PageType page)
 {
     _notebook.set_current_page(page);
-    show();
+    set_visible(true);
 }
 
 

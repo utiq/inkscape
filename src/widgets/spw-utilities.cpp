@@ -36,7 +36,7 @@ Gtk::Label * spw_label(Gtk::Grid *table, const gchar *label_text, int col, int r
   } else {
     label_widget->set_text(label_text);
   }
-  label_widget->show();
+  label_widget->set_visible(true);
 
   label_widget->set_halign(Gtk::ALIGN_START);
   label_widget->set_valign(Gtk::ALIGN_CENTER);
@@ -57,7 +57,7 @@ Gtk::Box * spw_hbox(Gtk::Grid * table, int width, int col, int row)
   /* Create a new hbox with a 4-pixel spacing between children */
   Gtk::Box *hb = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 4));
   g_assert(hb != nullptr);
-  hb->show();
+  hb->set_visible(true);
   hb->set_hexpand();
   hb->set_halign(Gtk::ALIGN_FILL);
   hb->set_valign(Gtk::ALIGN_CENTER);

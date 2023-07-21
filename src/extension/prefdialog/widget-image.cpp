@@ -90,7 +90,7 @@ Gtk::Widget *WidgetImage::get_widget(sigc::signal<void ()> * /*changeSignal*/)
         image = sp_get_icon_image(_icon_name, Gtk::ICON_SIZE_DIALOG);
     }
 
-    image->show();
+    image->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(image);
 }

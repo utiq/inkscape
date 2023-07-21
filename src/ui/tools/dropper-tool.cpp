@@ -60,7 +60,7 @@ DropperTool::DropperTool(SPDesktop *desktop)
     area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
     area->set_stroke(0x0000007f);
     area->set_fill(0x0, SP_WIND_RULE_EVENODD);
-    area->hide();
+    area->set_visible(false);
 
     auto prefs = Preferences::get();
     
@@ -209,7 +209,7 @@ bool DropperTool::root_handler(CanvasEvent const &event)
                 auto path = Geom::Path(Geom::Circle(0, 0, 1)); // Unit circle centered at origin.
                 path *= sm;
                 area->set_bpath(std::move(path));
-                area->show();
+                area->set_visible(true);
 
                 // Get buffer
                 auto r = Geom::Rect(centre, centre);
@@ -272,7 +272,7 @@ bool DropperTool::root_handler(CanvasEvent const &event)
                 return;
             }
 
-            area->hide();
+            area->set_visible(false);
             dragging = false;
 
             ungrabCanvasEvents();

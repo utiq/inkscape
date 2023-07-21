@@ -66,7 +66,7 @@ CompletionPopup::CompletionPopup() :
         clear();
     });
 
-    show();
+    set_visible(true);
 }
 
 void CompletionPopup::clear_completion_list() {

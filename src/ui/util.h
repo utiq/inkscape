@@ -66,11 +66,6 @@ void resize_widget_children(Gtk::Widget *widget);
 
 void gui_warning(const std::string &msg, Gtk::Window * parent_window = nullptr);
 
-inline void widget_show(Gtk::Widget &widget, bool show)
-{
-    show ? widget.show() : widget.hide();
-}
-
 /// Translate cell renderer state to style flags.
 Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state);
 

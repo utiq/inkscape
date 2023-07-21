@@ -359,7 +359,7 @@ void ColorICCSelector::init(bool no_alpha)
                      (gpointer)_impl);
     gtk_widget_set_sensitive(_impl->_fixupBtn, FALSE);
     gtk_widget_set_tooltip_text(_impl->_fixupBtn, _("Fix RGB fallback to match icc-color() value."));
-    gtk_widget_show(_impl->_fixupBtn);
+    gtk_widget_set_visible(_impl->_fixupBtn, true);
 
     attachToGridOrTable(t, _impl->_fixupBtn, 0, row, 1, 1);
 
@@ -375,7 +375,7 @@ void ColorICCSelector::init(bool no_alpha)
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, _("<none>"), 1, "null", -1);
 
-    gtk_widget_show(_impl->_profileSel);
+    gtk_widget_set_visible(_impl->_profileSel, true);
     gtk_combo_box_set_active(GTK_COMBO_BOX(_impl->_profileSel), 0);
 
     attachToGridOrTable(t, _impl->_profileSel, 1, row, 1, 1);
@@ -401,7 +401,7 @@ void ColorICCSelector::init(bool no_alpha)
         _impl->_compUI[i]._label = gtk_label_new_with_mnemonic(labelStr.c_str());
 
         gtk_widget_set_halign(_impl->_compUI[i]._label, GTK_ALIGN_END);
-        gtk_widget_show(_impl->_compUI[i]._label);
+        gtk_widget_set_visible(_impl->_compUI[i]._label, true);
         gtk_widget_set_no_show_all(_impl->_compUI[i]._label, TRUE);
 
         attachToGridOrTable(t, _impl->_compUI[i]._label, 0, row, 1, 1);
@@ -417,7 +417,7 @@ void ColorICCSelector::init(bool no_alpha)
         _impl->_compUI[i]._slider =
             Gtk::manage(new Inkscape::UI::Widget::ColorSlider(_impl->_compUI[i]._adj));
         _impl->_compUI[i]._slider->set_tooltip_text((i < things.size()) ? things[i].tip.c_str() : "");
-        _impl->_compUI[i]._slider->show();
+        _impl->_compUI[i]._slider->set_visible(true);
         _impl->_compUI[i]._slider->set_no_show_all();
 
         attachToGridOrTable(t, _impl->_compUI[i]._slider->gobj(), 1, row, 1, 1, true);
@@ -427,7 +427,7 @@ void ColorICCSelector::init(bool no_alpha)
         gtk_widget_set_tooltip_text(_impl->_compUI[i]._btn, (i < things.size()) ? things[i].tip.c_str() : "");
         sp_dialog_defocus_on_enter(_impl->_compUI[i]._btn);
         gtk_label_set_mnemonic_widget(GTK_LABEL(_impl->_compUI[i]._label), _impl->_compUI[i]._btn);
-        gtk_widget_show(_impl->_compUI[i]._btn);
+        gtk_widget_set_visible(_impl->_compUI[i]._btn, true);
         gtk_widget_set_no_show_all(_impl->_compUI[i]._btn, TRUE);
 
         attachToGridOrTable(t, _impl->_compUI[i]._btn, 2, row, 1, 1, false, true);
@@ -452,7 +452,7 @@ void ColorICCSelector::init(bool no_alpha)
     _impl->_label = gtk_label_new_with_mnemonic(_("_A:"));
 
     gtk_widget_set_halign(_impl->_label, GTK_ALIGN_END);
-    gtk_widget_show(_impl->_label);
+    gtk_widget_set_visible(_impl->_label, true);
 
     attachToGridOrTable(t, _impl->_label, 0, row, 1, 1);
 
@@ -462,7 +462,7 @@ void ColorICCSelector::init(bool no_alpha)
     // Slider
     _impl->_slider = Gtk::manage(new Inkscape::UI::Widget::ColorSlider(_impl->_adj));
     _impl->_slider->set_tooltip_text(_("Alpha (opacity)"));
-    _impl->_slider->show();
+    _impl->_slider->set_visible(true);
 
     attachToGridOrTable(t, _impl->_slider->gobj(), 1, row, 1, 1, true);
 
@@ -476,12 +476,12 @@ void ColorICCSelector::init(bool no_alpha)
     gtk_widget_set_tooltip_text(_impl->_sbtn, _("Alpha (opacity)"));
     sp_dialog_defocus_on_enter(_impl->_sbtn);
     gtk_label_set_mnemonic_widget(GTK_LABEL(_impl->_label), _impl->_sbtn);
-    gtk_widget_show(_impl->_sbtn);
+    gtk_widget_set_visible(_impl->_sbtn, true);
 
     if (no_alpha) {
-        _impl->_slider->hide();
-        gtk_widget_hide(_impl->_label);
-        gtk_widget_hide(_impl->_sbtn);
+        _impl->_slider->set_visible(false);
+        gtk_widget_set_visible(_impl->_label, false);
+        gtk_widget_set_visible(_impl->_sbtn, false);
     }
 
     attachToGridOrTable(t, _impl->_sbtn, 2, row, 1, 1, false, true);
@@ -493,7 +493,7 @@ void ColorICCSelector::init(bool no_alpha)
     _impl->_slider->signal_released.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderReleased));
     _impl->_slider->signal_value_changed.connect(sigc::mem_fun(*_impl, &ColorICCSelectorImpl::_sliderChanged));
 
-    gtk_widget_show(t);
+    gtk_widget_set_visible(t, true);
 }
 
 void ColorICCSelectorImpl::_fixupHit(GtkWidget * /*src*/, gpointer data)
@@ -756,9 +756,9 @@ void ColorICCSelectorImpl::_setProfile(const std::string &profile)
     }
 
     for (auto & i : _compUI) {
-        gtk_widget_hide(i._label);
-        i._slider->hide();
-        gtk_widget_hide(i._btn);
+        gtk_widget_set_visible(i._label, false);
+        i._slider->set_visible(false);
+        gtk_widget_set_visible(i._btn, false);
     }
 
     if (!profile.empty()) {
@@ -783,14 +783,14 @@ void ColorICCSelectorImpl::_setProfile(const std::string &profile)
                     _compUI[i]._slider->setColors(SPColor(0.0, 0.0, 0.0).toRGBA32(0xff),
                                                   SPColor(0.5, 0.5, 0.5).toRGBA32(0xff),
                                                   SPColor(1.0, 1.0, 1.0).toRGBA32(0xff));
-                    gtk_widget_show(_compUI[i]._label);
-                    _compUI[i]._slider->show();
-                    gtk_widget_show(_compUI[i]._btn);
+                    gtk_widget_set_visible(_compUI[i]._label, true);
+                    _compUI[i]._slider->set_visible(true);
+                    gtk_widget_set_visible(_compUI[i]._btn, true);
                 }
                 for (size_t i = _profChannelCount; i < _compUI.size(); i++) {
-                    gtk_widget_hide(_compUI[i]._label);
-                    _compUI[i]._slider->hide();
-                    gtk_widget_hide(_compUI[i]._btn);
+                    gtk_widget_set_visible(_compUI[i]._label, false);
+                    _compUI[i]._slider->set_visible(false);
+                    gtk_widget_set_visible(_compUI[i]._btn, false);
                 }
             }
         }

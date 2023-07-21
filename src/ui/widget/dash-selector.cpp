@@ -48,7 +48,7 @@ DashSelector::DashSelector()
     _dash_combo.pack_start(_image_renderer);
     _dash_combo.set_cell_data_func(_image_renderer, sigc::mem_fun(*this, &DashSelector::prepareImageRenderer));
     _dash_combo.set_tooltip_text(_("Dash pattern"));
-    _dash_combo.show();
+    _dash_combo.set_visible(true);
     _dash_combo.signal_changed().connect( sigc::mem_fun(*this, &DashSelector::on_selection) );
     // show dashes in two columns to eliminate or minimize scrolling
     _dash_combo.set_wrap_width(2);
@@ -61,7 +61,7 @@ DashSelector::DashSelector()
     _sb->set_tooltip_text(_("Pattern offset"));
     sp_dialog_defocus_on_enter_cpp(_sb);
     _sb->set_width_chars(4);
-    _sb->show();
+    _sb->set_visible(true);
 
     this->pack_start(*_sb, false, false, 0);
 

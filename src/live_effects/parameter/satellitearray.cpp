@@ -342,9 +342,9 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("edit-clone", Gtk::ICON_SIZE_BUTTON));
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(sigc::mem_fun(*this, &SatelliteArrayParam::on_link_button_click));
         hbox->pack_start(*pButton, Gtk::PACK_SHRINK);
         pButton->set_tooltip_text(_("Link to item"));
@@ -354,9 +354,9 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("list-remove", Gtk::ICON_SIZE_BUTTON));
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(sigc::mem_fun(*this, &SatelliteArrayParam::on_remove_button_click));
         hbox->pack_start(*pButton, Gtk::PACK_SHRINK);
         pButton->set_tooltip_text(_("Remove Item"));
@@ -366,9 +366,9 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("go-down", Gtk::ICON_SIZE_BUTTON));
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(sigc::mem_fun(*this, &SatelliteArrayParam::on_down_button_click));
         hbox->pack_end(*pButton, Gtk::PACK_SHRINK);
         pButton->set_tooltip_text(_("Move Down"));
@@ -378,9 +378,9 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("go-up", Gtk::ICON_SIZE_BUTTON));
         Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
         pButton->set_relief(Gtk::RELIEF_NONE);
-        pIcon->show();
+        pIcon->set_visible(true);
         pButton->add(*pIcon);
-        pButton->show();
+        pButton->set_visible(true);
         pButton->signal_clicked().connect(sigc::mem_fun(*this, &SatelliteArrayParam::on_up_button_click));
         hbox->pack_end(*pButton, Gtk::PACK_SHRINK);
         pButton->set_tooltip_text(_("Move Up"));

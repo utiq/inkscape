@@ -68,12 +68,12 @@
 #include "pattern-manipulation.h"
 #include "rdf.h"
 #include "selection.h"
-#include "ui/builder-utils.h"
 #include "object/sp-defs.h"
 #include "object/sp-root.h"
 #include "object/sp-symbol.h"
 #include "object/sp-use.h"
 #include "style.h"
+#include "ui/builder-utils.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-names.h"
 #include "ui/themes.h"
@@ -1121,10 +1121,10 @@ void DocumentResources::refresh_page(const Glib::ustring& id) {
 
     _treeview.get_column(1)->set_visible(has_count);
     _label_renderer->property_editable() = label_editable;
-    widget_show(_edit, label_editable);
-    widget_show(_select, items_selectable);
-    widget_show(_delete, can_delete);
-    widget_show(_extract, can_extract);
+    _edit   .set_visible(label_editable);
+    _select .set_visible(items_selectable);
+    _delete .set_visible(can_delete);
+    _extract.set_visible(can_extract);
 
     _iconview.set_item_width(item_width);
     get_widget<Gtk::Stack>(_builder, "stack").set_visible_child(tab);

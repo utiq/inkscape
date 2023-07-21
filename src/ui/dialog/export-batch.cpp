@@ -131,7 +131,7 @@ void BatchItem::init(std::shared_ptr<PreviewDrawing> drawing) {
     set_valign(Gtk::Align::ALIGN_START);
     set_halign(Gtk::Align::ALIGN_START);
     add(_grid);
-    show();
+    set_visible(true);
     this->set_can_focus(false);
 
     _selector.signal_toggled().connect([=]() {
@@ -734,14 +734,14 @@ void BatchExport::setExporting(bool exporting, Glib::ustring const &text, Glib::
     if (exporting) {
         set_sensitive(false);
         set_opacity(0.2);
-        progress_box->show();
+        progress_box->set_visible(true);
         _prog->set_text(text);
         _prog->set_fraction(0.0);
         _prog_batch->set_text(text_batch);
     } else {
         set_sensitive(true);
         set_opacity(1.0);
-        progress_box->hide();
+        progress_box->set_visible(false);
         _prog->set_text("");
         _prog->set_fraction(0.0);
         _prog_batch->set_text("");

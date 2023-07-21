@@ -671,7 +671,7 @@ ObjectsPanel::ObjectsPanel()
     , _setting_track(get_derived_widget<PrefCheckButton, Glib::ustring, bool>(_builder, "setting-track", "/dialogs/objects/expand_to_layer", true))
 {
     _store = Gtk::TreeStore::create(*_model);
-    _color_picker.hide();
+    _color_picker.set_visible(false);
 
     //Set up the tree
     _tree.set_model(_store);
@@ -799,7 +799,7 @@ ObjectsPanel::ObjectsPanel()
                 top = 2;
             } else if (!left) {
                 auto sep = Gtk::make_managed<Gtk::Separator>();
-                sep->show();
+                sep->set_visible(true);
                 modes.attach(*sep, left, top, 2, 1);
             }
         } else {
@@ -824,7 +824,7 @@ ObjectsPanel::ObjectsPanel()
             });
             _blend_items[data.id] = check;
             _blend_mode_names[data.id] = label;
-            check->show();
+            check->set_visible(true);
             modes.attach(*check, left, top, width, 1);
             width = 1; // First element takes whole width
         }
@@ -1183,7 +1183,7 @@ Gtk::Button* ObjectsPanel::_addBarButton(char const* iconName, char const* toolt
 {
     Gtk::Button* btn = Gtk::manage(new Gtk::Button());
     auto child = Glib::wrap(sp_get_icon_image(iconName, GTK_ICON_SIZE_SMALL_TOOLBAR));
-    child->show();
+    child->set_visible(true);
     btn->add(*child);
     btn->set_relief(Gtk::RELIEF_NONE);
     btn->set_tooltip_text(tooltip);
@@ -1589,7 +1589,7 @@ bool ObjectsPanel::_handleButtonEvent(GdkEventButton* event)
             if (context_menu) {
                 ContextMenu *menu = new ContextMenu(getDesktop(), item, true); // true == hide menu item for opening this dialog!
                 menu->attach_to_widget(*this); // So actions work!
-                menu->show();
+                menu->set_visible(true);
                 menu->popup_at_pointer(nullptr);
             }
             return true;

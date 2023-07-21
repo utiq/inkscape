@@ -120,7 +120,7 @@ DebugDialogImpl::~DebugDialogImpl()
 void DebugDialogImpl::show()
 {
     //call super()
-    Gtk::Dialog::show();
+    Gtk::Dialog::set_visible(true);
     //sp_transientize(GTK_WIDGET(gobj()));  //Make transient
     raise();
     Gtk::Dialog::present();
@@ -129,7 +129,7 @@ void DebugDialogImpl::show()
 void DebugDialogImpl::hide()
 {
     // call super
-    Gtk::Dialog::hide();
+    Gtk::Dialog::set_visible(false);
 }
 
 void DebugDialogImpl::message(char const *msg)

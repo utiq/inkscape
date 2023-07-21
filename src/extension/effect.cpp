@@ -207,7 +207,7 @@ Effect::prefs (SPDesktop * desktop)
 
     Glib::ustring name = this->get_name();
     _prefDialog = new PrefDialog(name, nullptr, this);
-    _prefDialog->show();
+    _prefDialog->set_visible(true);
 
     return true;
 }

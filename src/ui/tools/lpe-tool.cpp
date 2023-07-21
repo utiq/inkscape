@@ -395,7 +395,7 @@ lpetool_create_measuring_items(LpeTool *lc, Inkscape::Selection *selection)
             auto canvas_text = make_canvasitem<CanvasItemText>(tmpgrp, Geom::Point(0,0), arc_length);
             set_pos_and_anchor(canvas_text.get(), pwd2, 0.5, 10);
             if (!show) {
-                canvas_text->hide();
+                canvas_text->set_visible(false);
             }
 
             lc->measuring_items[path] = std::move(canvas_text);
@@ -441,9 +441,9 @@ lpetool_show_measuring_info(LpeTool *lc, bool show)
 {
     for (auto& i : lc->measuring_items) {
         if (show) {
-            i.second->show();
+            i.second->set_visible(true);
         } else {
-            i.second->hide();
+            i.second->set_visible(false);
         }
     }
 }

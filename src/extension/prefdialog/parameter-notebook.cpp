@@ -94,7 +94,7 @@ Gtk::Widget *ParamNotebook::ParamNotebookPage::get_widget(sigc::signal<void ()> 
         }
     }
 
-    vbox->show();
+    vbox->set_visible(true);
 
     return dynamic_cast<Gtk::Widget *>(vbox);
 }
@@ -268,7 +268,7 @@ Gtk::Widget *ParamNotebook::get_widget(sigc::signal<void ()> *changeSignal)
         notebook->set_current_page(selected_page);
     }
 
-    notebook->show();
+    notebook->set_visible(true);
 
     return static_cast<Gtk::Widget *>(notebook);
 }

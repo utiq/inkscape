@@ -110,8 +110,8 @@ XmlTree::XmlTree()
     attributes->set_margin_start(0);
     attributes->set_margin_end(0);
     attributes->get_scrolled_window().set_shadow_type(Gtk::SHADOW_IN);
-    attributes->show();
-    attributes->get_status_box().hide();
+    attributes->set_visible(true);
+    attributes->get_status_box().set_visible(false);
     attributes->get_status_box().set_no_show_all();
     _paned.pack2(*attributes, true, false);
 

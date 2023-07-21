@@ -134,7 +134,7 @@ PolarArrangeTab::PolarArrangeTab(ArrangeDialog *parent_)
 
     parametersTable.show_all();
     parametersTable.set_no_show_all();
-    parametersTable.hide();
+    parametersTable.set_visible(false);
 }
 
 /**

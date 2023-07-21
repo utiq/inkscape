@@ -335,7 +335,7 @@ void SPGroup::set(SPAttr key, gchar const* value) {
 }
 
 Inkscape::DrawingItem *SPGroup::show (Inkscape::Drawing &drawing, unsigned int key, unsigned int flags) {
-    // std::cout << "SPGroup::show(): " << (getId()?getId():"null") << std::endl;
+    // std::cout << "SPGroup::set_visible(true): " << (getId()?getId():"null") << std::endl;
     Inkscape::DrawingGroup *ai;
 
     ai = new Inkscape::DrawingGroup(drawing);

@@ -1367,8 +1367,8 @@ void EraserTool::_fitDrawLastPoint()
     segments.emplace_back(cbp);
 
     if (mode == EraserToolMode::DELETE) {
-        cbp->hide();
-        currentshape->hide();
+        cbp->set_visible(false);
+        currentshape->set_visible(false);
     }
 }
 

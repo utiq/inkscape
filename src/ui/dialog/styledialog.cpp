@@ -558,7 +558,7 @@ void StyleDialog::readStyleElement()
         // https://gitlab.freedesktop.org/cairo/cairo/issues/338
         // TODO: check if inkscape min cairo version has applied the patch proposed and remove (3 times)
         if (empty) {
-            css_tree->hide();
+            css_tree->set_visible(false);
         }
         _styleBox.pack_start(*css_selector_container, Gtk::PACK_EXPAND_WIDGET);
     }
@@ -773,7 +773,7 @@ void StyleDialog::readStyleElement()
             }
         }
         if (empty) {
-            css_tree->hide();
+            css_tree->set_visible(false);
         }
         _styleBox.pack_start(*css_selector_container, Gtk::PACK_EXPAND_WIDGET);
         selectorpos++;
@@ -866,7 +866,7 @@ void StyleDialog::readStyleElement()
             }
         }
         if (empty) {
-            css_tree->hide();
+            css_tree->set_visible(false);
         }
         if (!hasattributes) {
             for (auto widg : css_selector_container->get_children()) {
@@ -902,9 +902,9 @@ bool StyleDialog::_selectorStartEdit(GdkEventButton *event, Gtk::Label *selector
 {
     g_debug("StyleDialog::_selectorStartEdit");
     if (event->type == GDK_BUTTON_RELEASE && event->button == 1) {
-        selector->hide();
+        selector->set_visible(false);
         selector_edit->set_text(selector->get_text());
-        selector_edit->show();
+        selector_edit->set_visible(true);
     }
     return false;
 }
@@ -927,8 +927,8 @@ bool StyleDialog::_selectorEditKeyPress(GdkEventKey *event, Glib::RefPtr<Gtk::Tr
     g_debug("StyleDialog::_selectorEditKeyPress");
     switch (event->keyval) {
         case GDK_KEY_Escape:
-            selector->show();
-            selector_edit->hide();
+            selector->set_visible(true);
+            selector_edit->set_visible(false);
             selector_edit->get_style_context()->remove_class("system_error_color");
             break;
     }
@@ -1171,7 +1171,7 @@ bool StyleDialog::_addRow(GdkEventButton *evt, Glib::RefPtr<Gtk::TreeStore> stor
         if (pos < 1) {
             col = 1;
         }
-        css_tree->show();
+        css_tree->set_visible(true);
         css_tree->set_cursor(path, *(css_tree->get_column(col)), true);
         grab_focus();
         return true;
