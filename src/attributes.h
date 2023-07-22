@@ -141,7 +141,7 @@ enum class SPAttr {
     /* SPPage */
     PAGE_MARGIN,
     PAGE_BLEED,
-    PAGE_SIZE,
+    PAGE_SIZE_NAME,
     /* SPGrid */
     ORIGINX,
     ORIGINY,

@@ -142,7 +142,7 @@ static SPStyleProp const props[] = {
     /* SPPage */
     {SPAttr::PAGE_MARGIN, "margin"},
     {SPAttr::PAGE_BLEED, "bleed"},
-    {SPAttr::PAGE_SIZE, "page-size"},
+    {SPAttr::PAGE_SIZE_NAME, "page-size"},
     /* SPGrid */
     {SPAttr::ORIGINX, "originx"},
     {SPAttr::ORIGINY, "originy"},

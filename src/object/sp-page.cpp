@@ -42,7 +42,7 @@ void SPPage::build(SPDocument *document, Inkscape::XML::Node *repr)
     SPObject::build(document, repr);
 
     this->readAttr(SPAttr::INKSCAPE_LABEL);
-    this->readAttr(SPAttr::PAGE_SIZE);
+    this->readAttr(SPAttr::PAGE_SIZE_NAME);
     this->readAttr(SPAttr::X);
     this->readAttr(SPAttr::Y);
     this->readAttr(SPAttr::WIDTH);
@@ -85,7 +85,7 @@ void SPPage::set(SPAttr key, const gchar *value)
         case SPAttr::PAGE_BLEED:
             this->bleed.readOrUnset(value);
             break;
-        case SPAttr::PAGE_SIZE:
+        case SPAttr::PAGE_SIZE_NAME:
             this->_size_label = value ? std::string(value) : "";
             break;
         default:
