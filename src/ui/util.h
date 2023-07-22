@@ -123,6 +123,7 @@ Gdk::RGBA get_color_with_class(Glib::RefPtr<Gtk::StyleContext> const &context,
                                Glib::ustring const &css_class);
 
 guint32 to_guint32(Gdk::RGBA const &rgba);
+Gdk::RGBA to_rgba(guint32 const u32);
 
 Geom::IntRect cairo_to_geom(const Cairo::RectangleInt &rect);
 Cairo::RectangleInt geom_to_cairo(const Geom::IntRect &rect);

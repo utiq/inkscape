@@ -181,6 +181,16 @@ guint32 to_guint32(Gdk::RGBA const &rgba)
                guint32(0xff * rgba.get_alpha());
 }
 
+Gdk::RGBA to_rgba(guint32 const u32)
+{
+    auto rgba = Gdk::RGBA{};
+    rgba.set_red  ((u32 & 0xFF000000 >> 24) / 255.0);
+    rgba.set_green((u32 & 0x00FF0000 >> 16) / 255.0);
+    rgba.set_blue ((u32 & 0x0000FF00 >>  8) / 255.0);
+    rgba.set_alpha((u32 & 0x000000FF      ) / 255.0);
+    return rgba;
+}
+
 // 2Geom <-> Cairo
 
 Cairo::RectangleInt geom_to_cairo(const Geom::IntRect &rect)
