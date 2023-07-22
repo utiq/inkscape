@@ -156,8 +156,10 @@ void ExtensionList::removeExtension(Glib::ustring &filename)
 void ExtensionList::setExtensionFromFilename(Glib::ustring const &filename)
 {
     auto ext = Inkscape::IO::get_file_extension(filename);
-    if (auto omod = ext_to_mod[ext]) {
-        this->set_active_id(omod->get_id());
+    if (ext != getFileExtension()) {
+        if (auto omod = ext_to_mod[ext]) {
+            this->set_active_id(omod->get_id());
+        }
     }
 }
 
