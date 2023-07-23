@@ -36,6 +36,7 @@ parts:
     build-packages:
       - build-essential
       - cmake
+      - cython3
       - g++
       - intltool
       - libart-2.0-dev
@@ -46,6 +47,7 @@ parts:
       - libglib2.0-dev
       - libgsl-dev
       - libgspell-1-dev
+      - libgtest-dev
       - libgtk-3-dev
       - libgtkmm-3.0-dev
       - libgtksourceview-4-dev
@@ -57,6 +59,7 @@ parts:
       - libpoppler-private-dev
       - libpotrace-dev
       - librevenge-dev
+      - libreadline-dev
       - libsigc++-2.0-dev
       - libsoup2.4-dev
       - libtool
@@ -65,6 +68,7 @@ parts:
       - libxml-parser-perl
       - libxml2-dev
       - libxslt1-dev
+      - ragel
       - pkg-config
       - zlib1g-dev
     stage-packages:
@@ -122,23 +126,18 @@ parts:
       snapcraftctl prime
       sed -i "s|_have.*$||" $SNAPCRAFT_PRIME/share/bash-completion/completions/inkscape
     parse-info: [ share/metainfo/org.inkscape.Inkscape.appdata.xml ]
+    after: [python-deps] # Grab the network stuff first
   python-deps:
     plugin: python
     source: .
-    python-packages:
-      - six
-      - lxml
-      - numpy
-      - cssselect
-      - pip
-      - appdirs
-      - requests
-      - pillow
-      - cachecontrol[filecache]
-      - pyserial
-      - packaging
-      - scour
-      - virtualenv
+    build-packages:
+      - python3-pip
+    override-build: |
+      export PYTHONUSERBASE=${SNAPCRAFT_PART_INSTALL}
+      pip3 install poetry
+      ( for dir in `find ${SNAPCRAFT_PROJECT_DIR}/share/extensions -name pyproject.toml -exec dirname {} \;`; do
+      ( cd $dir && poetry lock -n -q --no-update && poetry show -n --only main --no-ansi ) | cut -d " " -f 1
+        done ) | sort -u | xargs pip3 install --user --no-compile --find-links
     stage-packages:
       - optipng
       - pstoedit
@@ -185,12 +184,14 @@ parts:
     override-pull: |
       set -eux
       apt-get download "language-pack-*-base"
+      apt-get download "aspell-*"
     override-build: |
       set -eux
       for deb in *.deb; do dpkg-deb -x $deb .; done
       find usr/share/locale-langpack -type f -not -name "gtk30*.mo" -and -not -name "glib*.mo" -and -not -name "gdk*.mo" -and -not -name "libsoup*.mo" -and -not -name "gspell*.mo" -and -not -name "coreutils*.mo" -delete
       mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share
       cp -r usr/share/locale-langpack $SNAPCRAFT_PART_INSTALL/usr/share/
+      cp -r usr/share/aspell $SNAPCRAFT_PART_INSTALL/usr/share/
 
 apps:
   inkscape:
