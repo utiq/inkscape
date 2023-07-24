@@ -25,6 +25,7 @@
 # include "config.h"  // only include where actually required!
 #endif
 
+#include <glibmm/i18n.h>
 #include <2geom/rect.h>
 
 #include "attributes.h"
