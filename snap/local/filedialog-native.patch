@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Taken from: https://gitlab.com/inkscape/inkscape/-/merge_requests/4237
+# And used only for the snap currently.
 diff --git a/src/ui/dialog/export-single.cpp b/src/ui/dialog/export-single.cpp
 index 27486f42870cfe350a29842c296b3bdca7b30e11..4a1bb7bc098209bffbd0599c519a6d88cad73cb9 100644
 --- a/src/ui/dialog/export-single.cpp
