@@ -133,6 +133,8 @@ public:
 
     // Get the path out of this watcher
     Gtk::TreeModel::Path getTreePath() const {
+        if (!row_ref)
+            return {};
         return row_ref.get_path();
     }
 
@@ -1120,7 +1122,7 @@ bool ObjectsPanel::_selectionChanged()
             if (auto child_watcher = watcher->findChild(item->getRepr())) {
                 // Expand layers themselves, but do not expand groups.
                 auto group = cast<SPGroup>(item);
-                auto focus_watcher = (group && group->isLayer()) ? child_watcher : watcher;
+                auto focus_watcher = watcher;
                 child_watcher->setSelectedBit(SELECTED_OBJECT, true);
 
                 if (prefs->getBool("/dialogs/objects/expand_to_layer", true)) {
@@ -1560,7 +1562,16 @@ bool ObjectsPanel::_handleButtonEvent(GdkEventButton* event)
         SPItem *item = getItem(row);
 
         if (!item) return false;
-        auto group = cast<SPGroup>(item);
+        auto layer = Inkscape::LayerManager::asLayer(item);
+
+        auto const should_set_current_layer = [&] {
+            if (!layer)
+                return false;
+            // modifier keys force selection mode
+            if (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+                return false;
+            return _layer != layer || selection->includes(layer);
+        };
 
         // Load the right click menu
         const bool context_menu = event->type == GDK_BUTTON_PRESS && event->button == 3;
@@ -1568,29 +1579,20 @@ bool ObjectsPanel::_handleButtonEvent(GdkEventButton* event)
         // Select items on button release to not confuse drag (unless it's a right-click)
         // Right-click selects too to set up the stage for context menu which frequently relies on current selection!
         if (!_is_editing && (event->type == GDK_BUTTON_RELEASE || context_menu)) {
-            if (group && group->layerMode() == SPGroup::LAYER) {
-                // if right-clicking on a layer, make it current for context menu actions to work correctly
-                if (context_menu && getDesktop()->layerManager().currentLayer() != item) {
-                    getDesktop()->layerManager().setCurrentLayer(item, true);
-                }
-                // Clicking on layers firstly switches to that layer.
-                else if (selection->includes(item)) {
-                    selection->clear();
-                } else if (_layer != item) {
-                    getDesktop()->layerManager().setCurrentLayer(item, true);
-                } else {
-                    selection->set(item);
-                }
-
-            } else if (!context_menu) {
-                selectCursorItem(event->state);
-            }
-
             if (context_menu) {
+                // if right-clicking on a layer, make it current for context menu actions to work correctly
+                if (layer && !selection->includes(layer)) {
+                    getDesktop()->layerManager().setCurrentLayer(item, true);
+                }
+
                 ContextMenu *menu = new ContextMenu(getDesktop(), item, true); // true == hide menu item for opening this dialog!
                 menu->attach_to_widget(*this); // So actions work!
                 menu->set_visible(true);
                 menu->popup_at_pointer(nullptr);
+            } else if (should_set_current_layer()) {
+                getDesktop()->layerManager().setCurrentLayer(item, true);
+            } else {
+                selectCursorItem(event->state);
             }
             return true;
         } else {
