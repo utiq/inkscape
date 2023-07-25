@@ -2,24 +2,31 @@
 
 #include "extensions-gallery.h"
 
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <list>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <2geom/point.h>
+#include <2geom/rect.h>
 #include <cairo.h>
 #include <glibmm/markup.h>
-#include <glibmm/ustring.h>
 #include <gtkmm/adjustment.h>
 #include <gtkmm/box.h>
 #include <gtkmm/button.h>
 #include <gtkmm/enums.h>
+#include <gtkmm/iconview.h>
 #include <gtkmm/label.h>
-#include <fstream>
 #include <gtkmm/liststore.h>
 #include <gtkmm/paned.h>
+#include <gtkmm/searchentry.h>
 #include <gtkmm/togglebutton.h>
+#include <gtkmm/treemodelfilter.h>
 #include <gtkmm/treeview.h>
-#include <iterator>
 #include <libintl.h>
-#include <list>
-#include <sstream>
-#include <string>
 
 #include "display/cairo-utils.h"
 #include "extension/db.h"
@@ -28,8 +35,6 @@
 #include "io/resource.h"
 #include "io/sys.h"
 #include "object/sp-item.h"
-#include "point.h"
-#include "rect.h"
 #include "ui/builder-utils.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/svg-renderer.h"

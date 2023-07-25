@@ -1,18 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+
 #ifndef SEEN_GRADIENT_EDITOR_H
 #define SEEN_GRADIENT_EDITOR_H
 
-#include <gtkmm/adjustment.h>
+#include <glibmm/refptr.h>
 #include <gtkmm/box.h>
-#include <gtkmm/grid.h>
-#include <gtkmm/button.h>
-#include <gtkmm/spinbutton.h>
-#include <gtkmm/popover.h>
-#include <gtkmm/image.h>
-#include <gtkmm/expander.h>
-#include <gtkmm/liststore.h>
 #include <gtkmm/treemodelcolumn.h>
-#include <gtkmm/builder.h>
 #include <optional>
 
 #include "object/sp-gradient.h"
@@ -23,9 +16,22 @@
 #include "gradient-selector-interface.h"
 #include "ui/operation-blocker.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Gtk {
+class Adjustment;
+class Builder;
+class Button;
+class Expander;
+class Grid;
+class Image;
+class ListStore;
+class Popover;
+class SpinButton;
+class ToggleButton;
+class TreeRow;
+class TreeView;
+} // namespace Gtk
+
+namespace Inkscape::UI::Widget {
 
 class GradientSelector;
 
@@ -110,9 +116,6 @@ private:
     Glib::ustring _prefs;
 };
 
+} // namespace Inkscape::UI::Widget
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
-
-#endif
+#endif // SEEN_GRADIENT_EDITOR_H

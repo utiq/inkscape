@@ -13,15 +13,24 @@
 #ifndef INKSCAPE_UI_DIALOG_EXTENSIONS_H
 #define INKSCAPE_UI_DIALOG_EXTENSIONS_H
 
+#include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
-#include <gtkmm/button.h>
-#include <gtkmm/iconview.h>
-#include <gtkmm/searchentry.h>
-#include <gtkmm/treemodelfilter.h>
-#include <gtkmm/treeview.h>
+#include <gtkmm/cellrendererpixbuf.h>
 #include <boost/compute/detail/lru_cache.hpp>
 #include "helper/auto-connection.h"
 #include "ui/dialog/dialog-base.h"
+
+namespace Gtk {
+class Builder;
+class Button;
+class IconView;
+class ListStore;
+class SearchEntry;
+class TreeModelFilter;
+class TreeRow;
+class TreeSelection;
+class TreeView;
+} // namespace Gtk
 
 namespace Inkscape::UI::Dialog {
 
@@ -51,12 +60,12 @@ private:
     boost::compute::detail::lru_cache<std::string, Cairo::RefPtr<Cairo::Surface>> _image_cache;
     Cairo::RefPtr<Cairo::ImageSurface> _blank_image;
 
-    Gtk::TreeModel::Row selected_item();
+    Gtk::TreeRow selected_item();
     void update_name();
     void show_category(const Glib::ustring& id);
     void refilter();
     void rebuild();
-    void get_cell_data_func(Gtk::CellRenderer* cell_renderer, Gtk::TreeModel::Row row, bool visible);
+    void get_cell_data_func(Gtk::CellRenderer *cell_renderer, Gtk::TreeRow row, bool visible);
 };
 
 } // namespace
