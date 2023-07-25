@@ -374,14 +374,14 @@ if(WIN32)
   set_target_properties(inkscape_com
                         PROPERTIES
                           LINK_FLAGS "-mconsole"
-                          OUTPUT_NAME "inkscapecom"
-                          SUFFIX ".com")
+                          OUTPUT_NAME "inkscape.com"
+                          SUFFIX "")
   add_executable(inkview_com ${view_SRC})
   set_target_properties(inkview_com
                         PROPERTIES
                           LINK_FLAGS "-mconsole"
-                          OUTPUT_NAME "inkviewcom"
-                          SUFFIX ".com")
+                          OUTPUT_NAME "inkview.com"
+                          SUFFIX "")
 endif()
 
 
@@ -442,8 +442,8 @@ endif()
 #Define the installation
 install(TARGETS inkscape inkview RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(WIN32)
-    install(TARGETS inkscape_com RENAME "inkscape.com")
-    install(TARGETS inkview_com RENAME "inkview.com")
+    install(TARGETS inkscape_com)
+    install(TARGETS inkview_com)
 endif()
 if(BUILD_SHARED_LIBS)
     install(TARGETS inkscape_base LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/inkscape")
