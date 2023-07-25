@@ -13,15 +13,14 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <cstring>
 #include <algorithm>
+#include <cstring>
 #include <2geom/angle.h>
 #include <2geom/coord.h>
-#include <2geom/point.h>
-#include <2geom/line.h>
+#include <gdkmm/display.h>
+#include <gtkmm/stylecontext.h>
 
 #include "ui/dialog/color-item.h"
-#include "hsluv.h"
 #include "ui/widget/ink-color-wheel.h"
 
 // Sizes in pixels
@@ -37,13 +36,14 @@ static double const MIN_LIGHTNESS = 0.0;
 static double const OUTER_CIRCLE_DASH_SIZE = 10.0;
 static double const VERTEX_EPSILON = 0.01;
 
-struct ColorPoint
+struct ColorPoint final
 {
     ColorPoint();
     ColorPoint(double x, double y, double r, double g, double b);
     ColorPoint(double x, double y, guint color);
 
-    guint32 get_color();
+    guint32 get_color() const;
+
     void set_color(Hsluv::Triplet const &rgb)
     {
         r = rgb[0];
@@ -59,9 +59,10 @@ struct ColorPoint
 };
 
 /** Represents a vertex of the Luv color polygon (intersection of bounding lines). */
-struct Intersection
+struct Intersection final
 {
     Intersection();
+
     Intersection(int line_1, int line_2, Geom::Point &&intersection_point, Geom::Angle start_angle)
         : line1{line_1}
         , line2{line_2}
@@ -93,10 +94,7 @@ static std::vector<Geom::Point> to_pixel_coordinate(std::vector<Geom::Point> con
 static void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding, bool pad_upwards, guint32 *buffer,
                                   int height, int stride);
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
-
+namespace Inkscape::UI::Widget {
 
 /* Base Color Wheel */
 ColorWheel::ColorWheel()
@@ -864,13 +862,23 @@ void ColorWheelHSLuv::getHsluv(double *h, double *s, double *l) const
     getValues(h, s, l);
 }
 
-Geom::IntPoint ColorWheelHSLuv::_getMargin(Gtk::Allocation const &allocation)
+static Geom::IntPoint _getMargin(Gtk::Allocation const &allocation)
 {
     int const width = allocation.get_width();
     int const height = allocation.get_height();
 
     return {std::max(0, (width - height) / 2),
             std::max(0, (height - width) / 2)};
+}
+
+inline static Geom::IntPoint _getAllocationDimensions(Gtk::Allocation const &allocation)
+{
+    return {allocation.get_width(), allocation.get_height()};
+}
+
+inline static int _getAllocationSize(Gtk::Allocation const &allocation)
+{
+    return std::min(allocation.get_width(), allocation.get_height());
 }
 
 /// Detect whether we're at the top or bottom vertex of the color space.
@@ -1143,9 +1151,7 @@ bool ColorWheelHSLuv::on_key_press_event(GdkEventKey* key_event)
     return consumed;
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /* ColorPoint */
 ColorPoint::ColorPoint()
@@ -1164,7 +1170,7 @@ ColorPoint::ColorPoint(double x, double y, guint color)
     , b(((color & 0x0000ff)      ) / 255.0)
 {}
 
-guint32 ColorPoint::get_color()
+guint32 ColorPoint::get_color() const
 {
     return (static_cast<int>(r * 255) << 16 |
             static_cast<int>(g * 255) <<  8 |

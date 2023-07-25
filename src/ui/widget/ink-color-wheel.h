@@ -16,15 +16,16 @@
 #ifndef INK_COLORWHEEL_H
 #define INK_COLORWHEEL_H
 
-#include <gtkmm.h>
+#include <memory>
+#include <vector>
 #include <2geom/point.h>
 #include <2geom/line.h>
+#include <sigc++/signal.h>
+#include <gtkmm/drawingarea.h>
 
 #include "hsluv.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
  * @class ColorWheel
@@ -43,25 +44,19 @@ public:
     void setSaturation(double s);
     virtual void setLightness(double l);
     void getValues(double *a, double *b, double *c) const;
-
     bool isAdjusting() const { return _adjusting; }
+
+    sigc::signal<void ()> signal_color_changed();
 
 protected:
     virtual void _set_from_xy(double const x, double const y);
 
     double _values[3];
     bool _adjusting;
+    sigc::signal<void ()> _signal_color_changed;
 
 private:
-    // Callbacks
     bool on_key_release_event(GdkEventKey* key_event) override;
-
-    // Signals
-public:
-    sigc::signal<void ()> signal_color_changed();
-
-protected:
-    sigc::signal<void ()> _signal_color_changed;
 };
 
 /**
@@ -74,7 +69,6 @@ public:
     void getRgb(double *r, double *g, double *b) const override;
     void getRgbV(double *rgb) const override;
     guint32 getRgb() const override;
-
     void getHsl(double *h, double *s, double *l) const;
 
 protected:
@@ -134,19 +128,8 @@ private:
     void _set_from_xy(double const x, double const y) override;
     void _setFromPoint(Geom::Point const &pt) { _set_from_xy(pt[Geom::X], pt[Geom::Y]); }
     void _updatePolygon();
-
-    static Geom::IntPoint _getMargin(Gtk::Allocation const &allocation);
-    inline static Geom::IntPoint _getAllocationDimensions(Gtk::Allocation const &allocation)
-    {
-        return {allocation.get_width(), allocation.get_height()};
-    }
-    inline static int _getAllocationSize(Gtk::Allocation const &allocation)
-    {
-        return std::min(allocation.get_width(), allocation.get_height());
-    }
     bool _vertex() const;
 
-    // Callbacks
     bool on_button_press_event(GdkEventButton* event) override;
     bool on_button_release_event(GdkEventButton* event) override;
     bool on_motion_notify_event(GdkEventMotion* event) override;
@@ -160,8 +143,6 @@ private:
     int _square_size = 1;
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INK_COLORWHEEL_HSLUV_H
