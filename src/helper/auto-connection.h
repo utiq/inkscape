@@ -9,6 +9,7 @@
 namespace Inkscape {
 
 // Class to simplify re-subscribing to connections; automates disconnecting
+// TODO: GTK4: Migrate to sigc++ 3.6ʼs scoped_connection, which I wrote! —dboles
 
 class auto_connection
 {
