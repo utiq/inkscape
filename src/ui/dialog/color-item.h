@@ -10,7 +10,7 @@
 #ifndef INKSCAPE_UI_DIALOG_COLOR_ITEM_H
 #define INKSCAPE_UI_DIALOG_COLOR_ITEM_H
 
-#include <boost/variant.hpp> // TODO: Upgrade to boost::variant2 or std::variant when possible.
+#include <variant>
 #include <boost/noncopyable.hpp>
 #include <cairomm/cairomm.h>
 #include <gtkmm/drawingarea.h>
@@ -96,10 +96,9 @@ private:
     bool pinned_default = false;
 
     // The color.
-    struct NoneData {};
     struct RGBData { std::array<unsigned, 3> rgb; };
     struct GradientData { SPGradient *gradient; };
-    boost::variant<NoneData, RGBData, GradientData> data;
+    std::variant<std::monostate, RGBData, GradientData> data;
 
     // The dialog this widget belongs to. Used for determining what desktop to take action on.
     DialogBase *dialog;
