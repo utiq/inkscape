@@ -1121,7 +1121,6 @@ bool ObjectsPanel::_selectionChanged()
         if (auto watcher = unpackToObject(item)) {
             if (auto child_watcher = watcher->findChild(item->getRepr())) {
                 // Expand layers themselves, but do not expand groups.
-                auto group = cast<SPGroup>(item);
                 auto focus_watcher = watcher;
                 child_watcher->setSelectedBit(SELECTED_OBJECT, true);
 
