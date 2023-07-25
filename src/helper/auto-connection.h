@@ -14,11 +14,11 @@ namespace Inkscape {
 class auto_connection
 {
 public:
-    auto_connection(sigc::connection const &c)
+    auto_connection(sigc::connection const &c) noexcept
         : _connection(c)
     {}
 
-    auto_connection() = default;
+    auto_connection() noexcept = default;
     ~auto_connection() { _connection.disconnect(); }
 
     // Disable copying, otherwise which copy should disconnect()?
@@ -34,13 +34,22 @@ public:
     }
 
     // Allow moving to support use in containers / transfer ‘ownership’
+    auto_connection(auto_connection &&that) noexcept
+        : _connection(std::exchange(that._connection, sigc::connection{}))
+    {}
     auto_connection &operator=(auto_connection &&that)
     {
-        _connection = that._connection;
-        that._connection = sigc::connection{}; // Stop it disconnecting
+        _connection.disconnect();
+        _connection = std::exchange(that._connection, sigc::connection{});
         return *this;
     }
-    auto_connection(auto_connection &&that){ *this = std::move(that); }
+
+    // Provide swap() for 2 instances, in which case neither need/can disconnect
+    friend void swap(auto_connection &l, auto_connection &r) noexcept
+    {
+        using std::swap;
+        swap(l._connection, r._connection);
+    }
 
     /** Returns whether the connection is still active
      *  @returns @p true if connection is still ative
