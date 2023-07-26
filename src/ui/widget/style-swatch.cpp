@@ -27,6 +27,7 @@
 #include "object/sp-pattern.h"
 #include "object/sp-radial-gradient.h"
 #include "style.h"
+#include "ui/controller.h"
 #include "ui/widget/color-preview.h"
 #include "util/units.h"
 #include "widgets/spw-utilities.h"
@@ -156,7 +157,7 @@ StyleSwatch::StyleSwatch(SPCSSAttr *css, gchar const *main_tip, Gtk::Orientation
 
     setStyle (css);
 
-    _swatch.signal_button_press_event().connect(sigc::mem_fun(*this, &StyleSwatch::on_click));
+    Controller::add_click(_swatch, sigc::mem_fun(*this, &StyleSwatch::on_click));
 
     if (main_tip)
     {
@@ -172,15 +173,15 @@ void StyleSwatch::setDesktop(SPDesktop *desktop) {
     _desktop = desktop;
 }
 
-bool
-StyleSwatch::on_click(GdkEventButton */*event*/)
+Gtk::EventSequenceState StyleSwatch::on_click(Gtk::GestureMultiPress const &click,
+                                              int const n_press, double const x, double const y)
 {
     if (_desktop && !_tool_name.empty()) {
         auto win = _desktop->getInkscapeWindow();
         open_tool_preferences(win, _tool_name);
-        return true;
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 StyleSwatch::~StyleSwatch()

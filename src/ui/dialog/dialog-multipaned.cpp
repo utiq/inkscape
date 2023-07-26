@@ -11,20 +11,23 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "dialog-multipaned.h"
-
 #include <glibmm/i18n.h>
 #include <glibmm/objectbase.h>
 #include <gtkmm/container.h>
+#include <gtkmm/gesturedrag.h>
+#include <gtkmm/gesturemultipress.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
+#include <sigc++/functors/mem_fun.h>
 #include <iostream>
 #include <numeric>
 
+#include "dialog-multipaned.h"
+#include "dialog-window.h"
+#include "ui/controller.h"
 #include "ui/dialog/dialog-notebook.h"
 #include "ui/util.h"
 #include "ui/widget/canvas-grid.h"
-#include "dialog-window.h"
 
 #define DROPZONE_SIZE 5
 #define DROPZONE_EXPANSION 15
@@ -160,6 +163,16 @@ MyHandle::MyHandle(Gtk::Orientation orientation, int size = get_handle_size())
     // Signal
     signal_size_allocate().connect(sigc::mem_fun(*this, &MyHandle::resize_handler));
 
+    Controller::add_motion<&MyHandle::on_motion_enter ,
+                           &MyHandle::on_motion_motion,
+                           &MyHandle::on_motion_leave >
+                          (*this, *this, Gtk::PHASE_TARGET);
+
+    Controller::add_click(*this,
+                          sigc::mem_fun(*this, &MyHandle::on_click_pressed ),
+                          sigc::mem_fun(*this, &MyHandle::on_click_released),
+                          Controller::Button::any, Gtk::PHASE_TARGET);
+
     show_all();
 }
 
@@ -211,10 +224,15 @@ void MyHandle::set_dragging(bool dragging) {
     }
 }
 
+void MyHandle::set_drag_updated(bool const updated) {
+    _drag_updated = updated;
+}
+
 /**
  * Change the mouse pointer into a resize icon to show you can drag.
  */
-bool MyHandle::on_enter_notify_event(GdkEventCrossing *crossing_event)
+Gtk::EventSequenceState MyHandle::on_motion_enter(GtkEventControllerMotion const * const motion,
+                                                  double const x, double const y)
 {
     auto window = get_window();
     auto display = get_display();
@@ -227,14 +245,15 @@ bool MyHandle::on_enter_notify_event(GdkEventCrossing *crossing_event)
         window->set_cursor(cursor);
     }
 
-    update_click_indicator(crossing_event->x, crossing_event->y);
+    update_click_indicator(x, y);
 
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool MyHandle::on_leave_notify_event(GdkEventCrossing* crossing_event) {
+Gtk::EventSequenceState MyHandle::on_motion_leave(GtkEventControllerMotion const * const motion)
+{
     show_click_indicator(false);
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 void MyHandle::show_click_indicator(bool show) {
@@ -261,26 +280,31 @@ bool MyHandle::is_click_resize_active() const {
     return get_orientation() == Gtk::ORIENTATION_HORIZONTAL;
 }
 
-bool MyHandle::on_button_press_event(GdkEventButton* button_event) {
-    // detect single-clicks
-    _click = button_event->button == 1 && button_event->type == GDK_BUTTON_PRESS;
-    return false;
+Gtk::EventSequenceState MyHandle::on_click_pressed(Gtk::GestureMultiPress const &gesture,
+                                                   int const n_press, double const x, double const y)
+{
+    // Detect single-clicks, except after a (moving/updated) drag
+    _click = !_drag_updated && gesture.get_current_button() == 1;
+    set_drag_updated(false);
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool MyHandle::on_button_release_event(GdkEventButton* event) {
+Gtk::EventSequenceState MyHandle::on_click_released(Gtk::GestureMultiPress &gesture,
+                                                    int const n_press, double const x, double const y)
+{
     // single-click on active zone?
-    if (_click && event->type == GDK_BUTTON_RELEASE && event->button == 1 && _click_indicator) {
+    if (_click && gesture.get_current_button() == 1 && _click_indicator) {
         _click = false;
         _dragging = false;
         // handle clicked
         if (is_click_resize_active()) {
             toggle_multipaned();
-            return true;
+            return Gtk::EVENT_SEQUENCE_CLAIMED;
         }
     }
 
     _click = false;
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 void MyHandle::toggle_multipaned() {
@@ -329,12 +353,13 @@ void MyHandle::toggle_multipaned() {
     }
 }
 
-bool MyHandle::on_motion_notify_event(GdkEventMotion* motion_event) {
+Gtk::EventSequenceState MyHandle::on_motion_motion(GtkEventControllerMotion const * const motion,
+                                                   double const x, double const y)
+{
     // motion invalidates click; it activates resizing
     _click = false;
-    // show_click_indicator(false);
-    update_click_indicator(motion_event->x, motion_event->y);
-    return false;
+    update_click_indicator(x, y);
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 /**
@@ -383,13 +408,11 @@ DialogMultipaned::DialogMultipaned(Gtk::Orientation orientation)
     children.push_back(dropzone_e);
 
     // ============ Connect signals =============
-    gesture = Gtk::GestureDrag::create(*this);
-
-    _connections.emplace_back(
-        gesture->signal_drag_begin().connect(sigc::mem_fun(*this, &DialogMultipaned::on_drag_begin)));
-    _connections.emplace_back(gesture->signal_drag_end().connect(sigc::mem_fun(*this, &DialogMultipaned::on_drag_end)));
-    _connections.emplace_back(
-        gesture->signal_drag_update().connect(sigc::mem_fun(*this, &DialogMultipaned::on_drag_update)));
+    Controller::add_drag(*this,
+        sigc::mem_fun(*this, &DialogMultipaned::on_drag_begin ),
+        sigc::mem_fun(*this, &DialogMultipaned::on_drag_update),
+        sigc::mem_fun(*this, &DialogMultipaned::on_drag_end   ),
+        Gtk::PHASE_CAPTURE);
 
     _connections.emplace_back(
         signal_drag_data_received().connect(sigc::mem_fun(*this, &DialogMultipaned::on_drag_data)));
@@ -979,7 +1002,8 @@ void DialogMultipaned::on_remove(Gtk::Widget *child)
     }
 }
 
-void DialogMultipaned::on_drag_begin(double start_x, double start_y)
+Gtk::EventSequenceState DialogMultipaned::on_drag_begin(Gtk::GestureDrag const &gesture,
+                                                        double const start_x, double const start_y)
 {
     _hide_widget1 = _hide_widget2 = nullptr;
     _resizing_widget1 = _resizing_widget2 = nullptr;
@@ -1006,17 +1030,13 @@ void DialogMultipaned::on_drag_begin(double start_x, double start_y)
     }
 
     if (!found) {
-        gesture->set_state(Gtk::EVENT_SEQUENCE_DENIED);
-        return;
+        return Gtk::EVENT_SEQUENCE_DENIED;
     }
 
     if (child_number < 1 || child_number > (int)(children.size() - 2)) {
         std::cerr << "DialogMultipaned::on_drag_begin: Invalid child (" << child_number << "!!" << std::endl;
-        gesture->set_state(Gtk::EVENT_SEQUENCE_DENIED);
-        return;
+        return Gtk::EVENT_SEQUENCE_DENIED;
     }
-
-    gesture->set_state(Gtk::EVENT_SEQUENCE_CLAIMED);
 
     // Save for use in on_drag_update().
     _handle = child_number;
@@ -1031,9 +1051,12 @@ void DialogMultipaned::on_drag_begin(double start_x, double start_y)
         start_allocation2.set_width(0);
         start_allocation2.set_height(0);
     }
+
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-void DialogMultipaned::on_drag_end(double offset_x, double offset_y)
+Gtk::EventSequenceState DialogMultipaned::on_drag_end(Gtk::GestureDrag const &gesture,
+                                                      double const offset_x, double const offset_y)
 {
     if (_handle >= 0 && _handle < children.size()) {
         if (auto my_handle = dynamic_cast<MyHandle*>(children[_handle])) {
@@ -1041,7 +1064,6 @@ void DialogMultipaned::on_drag_end(double offset_x, double offset_y)
         }
     }
 
-    gesture->set_state(Gtk::EVENT_SEQUENCE_DENIED);
     _handle = -1;
     _drag_handle = -1;
     if (_hide_widget1) {
@@ -1056,6 +1078,8 @@ void DialogMultipaned::on_drag_end(double offset_x, double offset_y)
     _resizing_widget2 = nullptr;
 
     queue_allocate(); // reimpose limits if any were bent during interactive resizing
+
+    return Gtk::EVENT_SEQUENCE_DENIED;
 }
 
 // docking panels in application window can be collapsed (to left or right side) to make more
@@ -1164,9 +1188,12 @@ double collapse_curve(double val, double size) {
     return val;
 }
 
-void DialogMultipaned::on_drag_update(double offset_x, double offset_y)
+Gtk::EventSequenceState DialogMultipaned::on_drag_update(Gtk::GestureDrag const &gesture,
+                                                         double offset_x, double offset_y)
 {
-    if (_handle < 0) return;
+    if (_handle < 0) {
+        return Gtk::EVENT_SEQUENCE_NONE;
+    }
 
     auto child1 = children[_handle - 1];
     auto child2 = children[_handle + 1];
@@ -1177,10 +1204,10 @@ void DialogMultipaned::on_drag_update(double offset_x, double offset_y)
     // HACK: The bias prevents erratic resizing when dragging the handle fast, outside the bounds of the app.
     const int BIAS = 1;
 
+    auto const handle = dynamic_cast<MyHandle *>(children[_handle]);
+    handle->set_drag_updated(true);
+
     if (get_orientation() == Gtk::ORIENTATION_HORIZONTAL) {
-
-        auto handle = children[_handle];
-
         // function to resize panel
         auto resize_fn = [](Gtk::Widget* handle, Gtk::Widget* child, int start_width, double& offset_x) {
             int minimum_size = get_min_width(child);
@@ -1256,6 +1283,8 @@ void DialogMultipaned::on_drag_update(double offset_x, double offset_y)
 
     _drag_handle = _handle;
     queue_allocate(); // Relayout DialogMultipaned content.
+
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 void DialogMultipaned::set_target_entries(const std::vector<Gtk::TargetEntry> &target_entries)

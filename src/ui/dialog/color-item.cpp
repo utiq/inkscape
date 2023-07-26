@@ -1,12 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** @file
+ * @brief Color item used in palettes and swatches UI.
+ */
+/* Authors: PBS <pbs3141@gmail.com>
+ * Copyright (C) 2022 PBS
+ * Released under GNU GPL v2+, read the file 'COPYING' for more information.
+ */
+
 #include "color-item.h"
 
 #include <cassert>
 #include <cstdint>
+#include <sigc++/functors/mem_fun.h>
 #include <cairomm/cairomm.h>
 #include <glibmm/convert.h>
 #include <glibmm/i18n.h>
 #include <gdkmm/general.h>
+#include <gtkmm/gesturemultipress.h>
 
 #include "helper/sigc-track-obj.h"
 #include "inkscape-preferences.h"
@@ -19,6 +29,7 @@
 #include "desktop-style.h"
 #include "actions/actions-tools.h"
 #include "message-context.h"
+#include "ui/controller.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/dialog/dialog-container.h"
 #include "ui/icon-names.h"
@@ -122,10 +133,19 @@ void ColorItem::common_setup()
 {
     set_name("ColorItem");
     set_tooltip_text(description);
+
     add_events(Gdk::ENTER_NOTIFY_MASK |
-               Gdk::LEAVE_NOTIFY_MASK |
-               Gdk::BUTTON_PRESS_MASK |
-               Gdk::BUTTON_RELEASE_MASK);
+               Gdk::LEAVE_NOTIFY_MASK);
+
+    Controller::add_motion<&ColorItem::on_motion_enter,
+                           nullptr,
+                           &ColorItem::on_motion_leave>
+                          (*this, *this, Gtk::PHASE_TARGET);
+
+    Controller::add_click(*this,
+                          sigc::mem_fun(*this, &ColorItem::on_click_pressed),
+                          sigc::mem_fun(*this, &ColorItem::on_click_released));
+
     drag_source_set(Globals::get().mimetargets, Gdk::BUTTON1_MASK, Gdk::ACTION_MOVE | Gdk::ACTION_COPY);
 }
 
@@ -227,43 +247,47 @@ void ColorItem::on_size_allocate(Gtk::Allocation &allocation)
     cache_dirty = true;
 }
 
-bool ColorItem::on_enter_notify_event(GdkEventCrossing*)
+void ColorItem::on_motion_enter(GtkEventControllerMotion const * const motion,
+                                double const x, double const y)
 {
     mouse_inside = true;
     if (auto desktop = dialog->getDesktop()) {
         auto msg = Glib::ustring::compose(_("Color: <b>%1</b>; <b>Click</b> to set fill, <b>Shift+click</b> to set stroke"), description);
         desktop->tipsMessageContext()->set(Inkscape::INFORMATION_MESSAGE, msg.c_str());
     }
-    return false;
 }
 
-bool ColorItem::on_leave_notify_event(GdkEventCrossing*)
+void ColorItem::on_motion_leave(GtkEventControllerMotion const * const motion)
 {
     mouse_inside = false;
     if (auto desktop = dialog->getDesktop()) {
         desktop->tipsMessageContext()->clear();
     }
-    return false;
 }
 
-bool ColorItem::on_button_press_event(GdkEventButton *event)
+Gtk::EventSequenceState ColorItem::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                    int const n_press, double const x, double const y)
 {
-    if (event->button == 3) {
+    if (click.get_current_button() == 3) {
+        auto const event = Controller::get_last_event(click);
         on_rightclick(event);
-        return true;
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
     // Return true necessary to avoid stealing the canvas focus.
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool ColorItem::on_button_release_event(GdkEventButton* event)
+Gtk::EventSequenceState ColorItem::on_click_released(Gtk::GestureMultiPress const &click,
+                                                     int const n_press, double const x, double const y)
 {
-    if (mouse_inside && (event->button == 1 || event->button == 2)) {
-        bool stroke = event->button == 2 || (event->state & GDK_SHIFT_MASK);
+    auto const button = click.get_current_button();
+    if (mouse_inside && (button == 1 || button == 2)) {
+        auto const state = Controller::get_current_event_state(click);
+        auto const stroke = button == 2 || (state & Gdk::SHIFT_MASK) != 0;
         on_click(stroke);
-        return true;
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 void ColorItem::on_click(bool stroke)
@@ -298,7 +322,7 @@ void ColorItem::on_click(bool stroke)
     DocumentUndo::done(desktop->getDocument(), descr.c_str(), INKSCAPE_ICON("swatches"));
 }
 
-void ColorItem::on_rightclick(GdkEventButton *event)
+void ColorItem::on_rightclick(GdkEvent const *event)
 {
     auto menu_gobj = gtk_menu_new(); /* C */
     auto menu = Glib::wrap(GTK_MENU(menu_gobj)); /* C */
@@ -403,7 +427,7 @@ void ColorItem::on_rightclick(GdkEventButton *event)
     }
 
     menu->show_all();
-    menu->popup_at_pointer(reinterpret_cast<GdkEvent*>(event));
+    menu->popup_at_pointer(event);
 
     // Todo: All lines marked /* C */ in this function are required in order for the menu to
     // self-destruct after it has finished. Please replace upon discovery of a better method.
@@ -505,3 +529,14 @@ std::array<double, 3> ColorItem::average_color() const
 } // namespace Dialog
 } // namespace UI
 } // namespace Inkscape
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

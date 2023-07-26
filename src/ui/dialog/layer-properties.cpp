@@ -14,24 +14,24 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "layer-properties.h"
-
 #include <glibmm/i18n.h>
 #include <glibmm/main.h>
+#include <gtkmm/eventcontroller.h>
 
-#include "inkscape.h"
+#include "layer-properties.h"
 #include "desktop.h"
 #include "document.h"
 #include "document-undo.h"
+#include "inkscape.h"
 #include "layer-manager.h"
 #include "message-stack.h"
+#include "object/sp-root.h"
 #include "preferences.h"
 #include "selection-chemistry.h"
-
+#include "ui/controller.h"
 #include "ui/icon-names.h"
-#include "ui/widget/imagetoggler.h"
 #include "ui/tools/tool-base.h"
-#include "object/sp-root.h"
+#include "ui/widget/imagetoggler.h"
 
 namespace Inkscape {
 namespace UI {
@@ -301,8 +301,10 @@ void LayerPropertiesDialog::_setup_layers_controls()
     _name_column->add_attribute(_text_renderer->property_text(), _model->_colLabel);
 
     _tree.set_expander_column(*_tree.get_column(nameColNum));
-    _tree.signal_key_press_event().connect([=](GdkEventKey *ev) {return _handleKeyEvent(ev);}, false);
-    _tree.signal_button_press_event().connect_notify([=](GdkEventButton *b) {_handleButtonEvent(b);});
+
+    Controller::add_key<&LayerPropertiesDialog::on_key_pressed>(_tree, *this);
+    Controller::add_click(_tree, sigc::mem_fun(*this, &LayerPropertiesDialog::on_click_pressed),
+                          {}, Controller::Button::left);
 
     _scroller.add(_tree);
     _scroller.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
@@ -381,9 +383,12 @@ SPObject* LayerPropertiesDialog::_selectedLayer()
     return obj;
 }
 
-bool LayerPropertiesDialog::_handleKeyEvent(GdkEventKey *event)
+bool LayerPropertiesDialog::on_key_pressed(GtkEventControllerKey const * const controller,
+                                           unsigned const keyval, unsigned const keycode,
+                                           GdkModifierType const state)
 {
-    switch (Inkscape::UI::Tools::get_latin_keyval(event)) {
+    auto const latin_keyval = Inkscape::UI::Tools::get_latin_keyval(controller, keyval, keycode, state);
+    switch (latin_keyval) {
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter: {
             _apply();
@@ -393,11 +398,14 @@ bool LayerPropertiesDialog::_handleKeyEvent(GdkEventKey *event)
     return false;
 }
 
-void LayerPropertiesDialog::_handleButtonEvent(GdkEventButton* event)
+Gtk::EventSequenceState LayerPropertiesDialog::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                                int const n_press, double const x, double const y)
 {
-    if ((event->type == GDK_2BUTTON_PRESS) && (event->button == 1)) {
+    if (n_press == 2) {
         _apply();
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 /** Formats the label for a given layer row

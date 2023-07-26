@@ -3,6 +3,7 @@ set(ui_SRC
 	builder-utils.cpp
 	clipboard.cpp
 	contextmenu.cpp
+	controller.cpp
 	cursor-utils.cpp
 	dialog-events.cpp
 	dialog-run.cpp
@@ -10,6 +11,7 @@ set(ui_SRC
 	drag-and-drop.cpp
 	icon-loader.cpp
 	interface.cpp
+	manage.cpp
 	monitor.cpp
 	selected-color.cpp
 	shape-editor.cpp
@@ -276,6 +278,7 @@ set(ui_SRC
 	builder-utils.h
 	clipboard.h
 	contextmenu.h
+	controller.h
 	cursor-utils.h
 	control-types.h
 	dialog-events.h
@@ -286,6 +289,7 @@ set(ui_SRC
 	icon-names.h
 	icon-loader.h
 	interface.h
+	manage.h
 	monitor.h
 	selected-color.h
 	shape-editor.h

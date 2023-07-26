@@ -31,8 +31,10 @@
 #include "object/sp-use.h"
 #include "svg/svg.h"
 #include "ui/builder-utils.h"
+#include "ui/controller.h"
 #include "ui/icon-loader.h"
 #include "ui/icon-names.h"
+#include "ui/manage.h"
 #include "ui/tools/node-tool.h"
 #include "ui/widget/custom-tooltip.h"
 #include "util/optstr.h"
@@ -183,7 +185,12 @@ LivePathEffectEditor::LivePathEffectEditor()
     _showgallery_observer->call(); // Set initial visibility per Preference (widget is :no-show-all)
 
     _LPEContainer.signal_map().connect(sigc::mem_fun(*this, &LivePathEffectEditor::map_handler) );
-    _LPEContainer.signal_button_press_event().connect([=](GdkEventButton* const evt){dnd = false; /*hack to fix dnd freze expander*/ return false; }, false);
+
+    Controller::add_click(_LPEContainer, [this](Gtk::GestureMultiPress const &, int, double, double)
+    {
+        dnd = false; // hack to fix DnD freezing expander
+        return Gtk::EVENT_SEQUENCE_NONE;
+    });
 
     setMenu();
     add(_LPEContainer);
@@ -676,6 +683,15 @@ LivePathEffectEditor::showParams(std::pair<Gtk::Expander *, std::shared_ptr<Inks
     }
 }
 
+static void
+set_cursor(Gtk::Widget &widget, Glib::ustring const &name)
+{
+    auto const window = widget.get_window();
+    auto const display = window->get_display();
+    auto const cursor = Gdk::Cursor::create(display, name);
+    window->set_cursor(cursor);
+}
+
 /*
  * First clears the effectlist_store, then appends all effects from the effectlist.
  */
@@ -968,35 +984,35 @@ LivePathEffectEditor::effect_list_reload(SPLPEItem *lpeitem)
             }
 
             // other
+
             LPEEffect->set_name("LPEEffectItem");
             LPENameLabel->set_label(g_dpgettext2(nullptr, "path effect", (*it)->lpeobject->get_lpe()->getName().c_str()));
+
             LPEExpander->property_expanded().signal_changed().connect(sigc::bind(sigc::mem_fun(*this, &LivePathEffectEditor::expanded_notify),LPEExpander)); 
 
-            LPEOpenExpander->signal_button_press_event().connect([=](GdkEventButton* const evt){
-               LPEExpander->set_expanded(!LPEExpander->property_expanded());
-               return false;
-            }, false);
+            Controller::add_click(*LPEOpenExpander, [=](Gtk::GestureMultiPress &, int, double, double)
+            {
+               LPEExpander->set_expanded(!LPEExpander->get_expanded());
+               return Gtk::EVENT_SEQUENCE_CLAIMED;
+            }, {}, Controller::Button::left);
 
             LPEHide->signal_clicked().connect(sigc::bind(sigc::mem_fun(*this, &LivePathEffectEditor::toggleVisible), lpe, LPEHide));
             LPEErase->signal_clicked().connect([=](){ removeEffect(LPEExpander);});
 
-            LPEDrag->signal_button_press_event().connect([=](GdkEventButton* const evt){dndx = evt->x; dndy = evt->y; return false; }, false);
+            Controller::add_click(*LPEDrag, [this](Gtk::GestureMultiPress const &, int, double const x, double const y)
+            {
+                dndx = x;
+                dndy = y;
+                return Gtk::EVENT_SEQUENCE_NONE;
+            });
 
             if (total > 1) {
-                LPEDrag->signal_enter_notify_event().connect([=](GdkEventCrossing*){
-                    auto window = get_window();
-                    auto display = get_display();
-                    auto cursor = Gdk::Cursor::create(display, "grab");
-                    window->set_cursor(cursor);
-                    return false;
-                }, false);
-                LPEDrag->signal_leave_notify_event().connect([=](GdkEventCrossing*){
-                    auto window = get_window();
-                    auto display = get_display();
-                    auto cursor = Gdk::Cursor::create(display, "default");
-                    window->set_cursor(cursor);
-                    return false;
-                }, false);
+                // TODO: gtkmm4: Gtk::Widget.set_cursor() should suffice.
+                auto const motion = gtk_event_controller_motion_new(LPEDrag->Gtk::Widget::gobj());
+                gtk_event_controller_set_propagation_phase(motion, GTK_PHASE_TARGET);
+                g_signal_connect_swapped(motion, "enter", G_CALLBACK(+[](Gtk::Widget * const widget){ set_cursor(*widget, "grab"   ); }), LPEDrag);
+                g_signal_connect_swapped(motion, "leave", G_CALLBACK(+[](Gtk::Widget * const widget){ set_cursor(*widget, "default"); }), LPEDrag);
+                manage(Glib::wrap(motion), *LPEDrag);
             }
 
             if (lpe->hasDefaultParameters()) {

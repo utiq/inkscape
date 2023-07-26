@@ -21,6 +21,7 @@
 
 #include "ink-ruler.h"
 #include "inkscape.h"
+#include "ui/controller.h"
 #include "ui/themes.h"
 #include "ui/util.h"
 #include "util/units.h"
@@ -64,9 +65,8 @@ Ruler::Ruler(Gtk::Orientation orientation)
     set_name("InkRuler");
     get_style_context()->add_class(_orientation == Gtk::ORIENTATION_HORIZONTAL ? "horz" : "vert");
 
-    set_events(Gdk::POINTER_MOTION_MASK |
-               Gdk::BUTTON_PRESS_MASK   |  // For guide creation
-               Gdk::BUTTON_RELEASE_MASK );
+    Controller::add_motion<nullptr, &Ruler::on_motion, nullptr>(*this, *this);
+    Controller::add_click(*this, sigc::mem_fun(*this, &Ruler::on_click_pressed), {}, Controller::Button::right);
 
     set_no_show_all();
 
@@ -151,25 +151,24 @@ void Ruler::set_selection(double lower, double upper)
 void
 Ruler::add_track_widget(Gtk::Widget& widget)
 {
-    widget.signal_motion_notify_event().connect(sigc::mem_fun(*this, &Ruler::on_motion_notify_event), false); // false => connect first
+    Controller::add_motion<nullptr, &Ruler::on_motion, nullptr>(widget, *this,
+        Gtk::PHASE_TARGET, Controller::When::before); // We connected 1st to event, so continue
 }
-
 
 // Draws marker in response to motion events from canvas.  Position is defined in ruler pixel
 // coordinates. The routine assumes that the ruler is the same width (height) as the canvas. If
 // not, one could use Gtk::Widget::translate_coordinates() to convert the coordinates.
 bool
-Ruler::on_motion_notify_event(GdkEventMotion *motion_event)
+Ruler::on_motion(GtkEventControllerMotion const * const motion, double const x, double const y)
 {
     double position = 0;
     if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
-        position = motion_event->x;
+        position = x;
     } else {
-        position = motion_event->y;
+        position = y;
     }
 
     if (position != _position) {
-
         _position = position;
 
         // Find region to repaint (old and new marker positions).
@@ -186,14 +185,13 @@ Ruler::on_motion_notify_event(GdkEventMotion *motion_event)
     return false;
 }
 
-bool Ruler::on_button_press_event(GdkEventButton *event)
+Gtk::EventSequenceState
+Ruler::on_click_pressed(Gtk::GestureMultiPress const &click,
+                        int const n_press, double const x, double const y)
 {
-    if (event->button == 3) {
-        _popover->set_pointing_to(Gdk::Rectangle(event->x, event->y, 1, 1));
-        _popover->popup();
-        return true;
-    }
-    return false;
+    _popover->set_pointing_to(Gdk::Rectangle(x, y, 1, 1));
+    _popover->popup();
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
 // Find smallest dimension of ruler based on font size.

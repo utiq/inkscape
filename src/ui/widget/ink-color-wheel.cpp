@@ -17,9 +17,11 @@
 #include <cstring>
 #include <2geom/angle.h>
 #include <2geom/coord.h>
+#include <sigc++/functors/mem_fun.h>
 #include <gdkmm/display.h>
 #include <gtkmm/stylecontext.h>
 
+#include "ui/controller.h"
 #include "ui/dialog/color-item.h"
 #include "ui/widget/ink-color-wheel.h"
 
@@ -97,13 +99,14 @@ static void draw_vertical_padding(ColorPoint p0, ColorPoint p1, int padding, boo
 namespace Inkscape::UI::Widget {
 
 /* Base Color Wheel */
+
 ColorWheel::ColorWheel()
     : _adjusting(false)
 {
     set_name("ColorWheel");
-
-    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::BUTTON_MOTION_MASK | Gdk::KEY_PRESS_MASK);
     set_can_focus();
+
+    Controller::add_key<nullptr, &ColorWheel::on_key_released>(*this, *this);
 }
 
 void ColorWheel::setRgb(double /*r*/, double /*g*/, double /*b*/, bool /*overrideHue*/)
@@ -141,12 +144,13 @@ void ColorWheel::getValues(double *a, double *b, double *c) const
 void ColorWheel::_set_from_xy(double const x, double const y)
 {}
 
-bool ColorWheel::on_key_release_event(GdkEventKey* key_event)
+bool ColorWheel::on_key_released(GtkEventControllerKey const * const controller,
+                                 unsigned const keyval, unsigned const keycode,
+                                 GdkModifierType const state)
 {
     unsigned int key = 0;
     gdk_keymap_translate_keyboard_state(Gdk::Display::get_default()->get_keymap(),
-                                        key_event->hardware_keycode,
-                                        (GdkModifierType)key_event->state,
+                                        keycode, state,
                                         0, &key, nullptr, nullptr, nullptr);
 
     switch (key) {
@@ -171,6 +175,15 @@ sigc::signal<void ()> ColorWheel::signal_color_changed()
 }
 
 /* HSL Color Wheel */
+
+ColorWheelHSL::ColorWheelHSL()
+{
+    Controller::add_click(*this, sigc::mem_fun(*this, &ColorWheelHSL::on_click_pressed ),
+                                 sigc::mem_fun(*this, &ColorWheelHSL::on_click_released));
+    Controller::add_motion<nullptr, &ColorWheelHSL::on_motion, nullptr>(*this, *this);
+    Controller::add_key   <&ColorWheelHSL::on_key_pressed, nullptr    >(*this, *this);
+}
+
 void ColorWheelHSL::setRgb(double r, double g, double b, bool overrideHue)
 {
     double min = std::min({r, g, b});
@@ -602,11 +615,10 @@ void ColorWheelHSL::_update_ring_color(double x, double y)
     _signal_color_changed.emit();
 }
 
-bool ColorWheelHSL::on_button_press_event(GdkEventButton* event)
+Gtk::EventSequenceState ColorWheelHSL::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                        int const n_press, double const x, double const y)
 {
     // Seat is automatically grabbed.
-    double x = event->x;
-    double y = event->y;
 
     if (_is_in_ring(x, y) ) {
         _adjusting = true;
@@ -614,33 +626,30 @@ bool ColorWheelHSL::on_button_press_event(GdkEventButton* event)
         grab_focus();
         _focus_on_ring = true;
         _update_ring_color(x, y);
-        return true;
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     } else if (_is_in_triangle(x, y)) {
         _adjusting = true;
         _mode = DragMode::SATURATION_VALUE;
         grab_focus();
         _focus_on_ring = false;
         _update_triangle_color(x, y);
-        return true;
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
 
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool ColorWheelHSL::on_button_release_event(GdkEventButton */*event*/)
+Gtk::EventSequenceState ColorWheelHSL::on_click_released(Gtk::GestureMultiPress const &click,
+                                                         int const n_press, double const x, double const y)
 {
     _mode = DragMode::NONE;
-
     _adjusting = false;
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool ColorWheelHSL::on_motion_notify_event(GdkEventMotion* event)
+bool ColorWheelHSL::on_motion(GtkEventControllerMotion const *motion, double const x, double const y)
 {
     if (!_adjusting) { return false; }
-
-    double x = event->x;
-    double y = event->y;
 
     if (_mode == DragMode::HUE) {
         _update_ring_color(x, y);
@@ -653,14 +662,15 @@ bool ColorWheelHSL::on_motion_notify_event(GdkEventMotion* event)
     }
 }
 
-bool ColorWheelHSL::on_key_press_event(GdkEventKey* key_event)
+bool ColorWheelHSL::on_key_pressed(GtkEventControllerKey const * const controller,
+                                   unsigned const keyval, unsigned const keycode,
+                                   GdkModifierType const state)
 {
     bool consumed = false;
 
     unsigned int key = 0;
     gdk_keymap_translate_keyboard_state(Gdk::Display::get_default()->get_keymap(),
-                                        key_event->hardware_keycode,
-                                        (GdkModifierType)key_event->state,
+                                        keycode, state,
                                         0, &key, nullptr, nullptr, nullptr);
 
     double x0, y0, x1, y1, x2, y2;
@@ -730,10 +740,16 @@ bool ColorWheelHSL::on_key_press_event(GdkEventKey* key_event)
 }
 
 /* HSLuv Color Wheel */
+
 ColorWheelHSLuv::ColorWheelHSLuv()
 {
     _picker_geometry = std::make_unique<Hsluv::PickerGeometry>();
     setHsluv(MIN_HUE, MAX_SATURATION, 0.5 * MAX_LIGHTNESS);
+
+    Controller::add_click(*this, sigc::mem_fun(*this, &ColorWheelHSLuv::on_click_pressed ),
+                                 sigc::mem_fun(*this, &ColorWheelHSLuv::on_click_released));
+    Controller::add_motion<nullptr, &ColorWheelHSLuv::on_motion, nullptr>(*this, *this);
+    Controller::add_key   <&ColorWheelHSLuv::on_key_pressed, nullptr    >(*this, *this);
 }
 
 void ColorWheelHSLuv::setRgb(double r, double g, double b, bool /*overrideHue*/)
@@ -1068,9 +1084,10 @@ void ColorWheelHSLuv::_updatePolygon()
                                                      Cairo::FORMAT_RGB24, _cache_width, _cache_height, stride);
 }
 
-bool ColorWheelHSLuv::on_button_press_event(GdkEventButton* event)
+Gtk::EventSequenceState ColorWheelHSLuv::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                          int const n_press, double const x, double const y)
 {
-    auto event_pt = Geom::Point(event->x, event->y);
+    auto const event_pt = Geom::Point(x, y);
     Gtk::Allocation allocation = get_allocation();
     int const size = _getAllocationSize(allocation);
     auto const region = Geom::IntRect::from_xywh(_getMargin(allocation), {size, size});
@@ -1079,35 +1096,38 @@ bool ColorWheelHSLuv::on_button_press_event(GdkEventButton* event)
         _adjusting = true;
         grab_focus();
         _setFromPoint(event_pt);
-        return true;
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
 
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool ColorWheelHSLuv::on_button_release_event(GdkEventButton */*event*/)
+Gtk::EventSequenceState ColorWheelHSLuv::on_click_released(Gtk::GestureMultiPress const &click,
+                                                           int const n_press, double const x, double const y)
 {
     _adjusting = false;
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool ColorWheelHSLuv::on_motion_notify_event(GdkEventMotion* event)
+bool ColorWheelHSLuv::on_motion(GtkEventControllerMotion const *motion, double const x, double const y)
 {
     if (!_adjusting) {
         return false;
     }
-    _set_from_xy(event->x, event->y);
+
+    _set_from_xy(x, y);
     return true;
 }
 
-bool ColorWheelHSLuv::on_key_press_event(GdkEventKey* key_event)
+bool ColorWheelHSLuv::on_key_pressed(GtkEventControllerKey const * const controller,
+                                     unsigned const keyval, unsigned const keycode,
+                                     GdkModifierType const state)
 {
     bool consumed = false;
 
     unsigned int key = 0;
     gdk_keymap_translate_keyboard_state(Gdk::Display::get_default()->get_keymap(),
-                                        key_event->hardware_keycode,
-                                        (GdkModifierType)key_event->state,
+                                        keycode, state,
                                         0, &key, nullptr, nullptr, nullptr);
 
     // Get current point

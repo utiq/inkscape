@@ -11,7 +11,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include "dialog-notebook.h"
 
 #include <algorithm>
 #include <iostream>
@@ -22,13 +21,17 @@
 #include <gtkmm/button.h>
 #include <gtkmm/eventbox.h>
 #include <gtkmm/menubutton.h>
+#include <gtkmm/gesturemultipress.h>
 #include <gtkmm/scrollbar.h>
 #include <gtkmm/separator.h>
 
+#include "dialog-notebook.h"
 #include "enums.h"
 #include "inkscape.h"
 #include "inkscape-window.h"
+#include "helper/sigc-track-obj.h"
 #include "ui/column-menu-builder.h"
+#include "ui/controller.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/dialog/dialog-data.h"
 #include "ui/dialog/dialog-container.h"
@@ -723,25 +726,27 @@ void DialogNotebook::on_size_allocate_notebook(Gtk::Allocation &a)
 /**
  * Signal handler to close a tab on middle-click or to open menu on right-click.
  */
-bool DialogNotebook::on_tab_click_event(GdkEventButton *event, Gtk::Widget *page)
+Gtk::EventSequenceState DialogNotebook::on_tab_click_event(Gtk::GestureMultiPress const &click,
+                                                           int const n_press, double const x, double const y,
+                                                           Gtk::Widget *page)
 {
-    if (event->type == GDK_BUTTON_PRESS) {
-        if (_menutabs.get_visible()) {
-            _menutabs.popdown();
-            return false;
-        }
-
-        if (event->button == 2) { // Close tab
-            _selected_page = page;
-            close_tab_callback();
-        } else if (event->button == 3) { // Show menu
-            _selected_page = page;
-            reload_tab_menu();
-            _menutabs.popup_at(*_notebook.get_tab_label(*page));
-        }
+    if (_menutabs.get_visible()) {
+        _menutabs.popdown();
+        return Gtk::EVENT_SEQUENCE_NONE;
     }
 
-    return false;
+    auto const button = click.get_current_button();
+    if (button == 2) { // Close tab
+        _selected_page = page;
+        close_tab_callback();
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
+    } else if (button == 3) { // Show menu
+        _selected_page = page;
+        reload_tab_menu();
+        _menutabs.popup_at(*_notebook.get_tab_label(*page));
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
+    }
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 void DialogNotebook::on_close_button_click_event(Gtk::Widget *page)
@@ -990,10 +995,10 @@ void DialogNotebook::add_close_tab_callback(Gtk::Widget *page)
     sigc::connection close_connection = close->signal_clicked().connect(
             sigc::bind(sigc::mem_fun(*this, &DialogNotebook::on_close_button_click_event), page), true);
 
-    sigc::connection tab_connection = tab->signal_button_press_event().connect(
-        sigc::bind(sigc::mem_fun(*this, &DialogNotebook::on_tab_click_event), page), true);
+    Controller::add_click(*tab,
+            // Instead of saving in _tab_connections, disconnect with page; that won't be clicked during destruction
+            SIGC_TRACKING_ADAPTOR(sigc::bind(sigc::mem_fun(*this, &DialogNotebook::on_tab_click_event), page), *page));
 
-    _tab_connections.emplace(page, std::move(tab_connection));
     _tab_connections.emplace(page, std::move(close_connection));
 }
 

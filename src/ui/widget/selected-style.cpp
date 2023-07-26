@@ -36,6 +36,7 @@
 #include "style.h"
 #include "svg/css-ostringstream.h"
 #include "svg/svg-color.h"
+#include "ui/controller.h"
 #include "ui/cursor-utils.h"
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-base.h"
@@ -410,11 +411,16 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
                      G_CALLBACK(dragDataReceived),
                      _drop[SS_FILL].get());
 
-    _fill_place.signal_button_release_event().connect(sigc::mem_fun(*this, &SelectedStyle::on_fill_click));
-    _stroke_place.signal_button_release_event().connect(sigc::mem_fun(*this, &SelectedStyle::on_stroke_click));
-    _opacity_place.signal_button_press_event().connect(sigc::mem_fun(*this, &SelectedStyle::on_opacity_click));
-    _stroke_width_place.signal_button_press_event().connect(sigc::mem_fun(*this, &SelectedStyle::on_sw_click));
-    _stroke_width_place.signal_button_release_event().connect(sigc::mem_fun(*this, &SelectedStyle::on_sw_click));
+    Controller::add_click(_fill_place, {},
+                          sigc::mem_fun(*this, &SelectedStyle::on_fill_click));
+    Controller::add_click(_stroke_place, {},
+                          sigc::mem_fun(*this, &SelectedStyle::on_stroke_click ));
+    Controller::add_click(_opacity_place, {},
+                          sigc::mem_fun(*this, &SelectedStyle::on_opacity_click),
+                          Controller::Button::middle);
+    Controller::add_click(_stroke_width_place, {},
+                          sigc::mem_fun(*this, &SelectedStyle::on_sw_click));
+
     _opacity_sb.signal_populate_popup().connect(sigc::mem_fun(*this, &SelectedStyle::on_opacity_menu));
     _opacity_sb.signal_value_changed().connect(sigc::mem_fun(*this, &SelectedStyle::on_opacity_changed));
 }
@@ -756,72 +762,73 @@ void SelectedStyle::on_stroke_edit() {
         fs->showPageStrokePaint();
 }
 
-bool
-SelectedStyle::on_fill_click(GdkEventButton *event)
+Gtk::EventSequenceState
+SelectedStyle::on_fill_click(Gtk::GestureMultiPress const &click,
+                             int const n_press, double const x, double const y)
 {
-    if (event->button == 1) { // click, open fill&stroke
-
+    auto const button = click.get_current_button();
+    if (button == 1) { // click, open fill&stroke
         if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
             fs->showPageFill();
-
-    } else if (event->button == 3) { // right-click, popup menu
-        _popup[SS_FILL].popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
-    } else if (event->button == 2) { // middle click, toggle none/lastcolor
+    } else if (button == 3) { // right-click, popup menu
+        _popup[SS_FILL].popup_at_pointer(Controller::get_last_event(click));
+    } else if (button == 2) { // middle click, toggle none/lastcolor
         if (_mode[SS_FILL] == SS_NONE) {
             on_fill_lastused();
         } else {
             on_fill_remove();
         }
     }
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool
-SelectedStyle::on_stroke_click(GdkEventButton *event)
+Gtk::EventSequenceState
+SelectedStyle::on_stroke_click(Gtk::GestureMultiPress const &click,
+                               int const n_press, double const x, double const y)
 {
-    if (event->button == 1) { // click, open fill&stroke
+    auto const button = click.get_current_button();
+    if (button == 1) { // click, open fill&stroke
         if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
             fs->showPageStrokePaint();
-    } else if (event->button == 3) { // right-click, popup menu
-        _popup[SS_STROKE].popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
-    } else if (event->button == 2) { // middle click, toggle none/lastcolor
+    } else if (button == 3) { // right-click, popup menu
+        _popup[SS_STROKE].popup_at_pointer(Controller::get_last_event(click));
+    } else if (button == 2) { // middle click, toggle none/lastcolor
         if (_mode[SS_STROKE] == SS_NONE) {
             on_stroke_lastused();
         } else {
             on_stroke_remove();
         }
     }
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool
-SelectedStyle::on_sw_click(GdkEventButton *event)
+Gtk::EventSequenceState
+SelectedStyle::on_sw_click(Gtk::GestureMultiPress const &click,
+                           int const n_press, double const x, double const y)
 {
-    if (event->button == 1) { // click, open fill&stroke
+    auto const button = click.get_current_button();
+    if (button == 1) { // click, open fill&stroke
         if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
             fs->showPageStrokeStyle();
-    } else if (event->button == 3) { // right-click, popup menu
-        _popup_sw.popup_at_pointer(reinterpret_cast<GdkEvent *>(event));
-    } else if (event->button == 2) { // middle click, toggle none/lastwidth?
+    } else if (button == 3) { // right-click, popup menu
+        _popup_sw.popup_at_pointer(Controller::get_last_event(click));
+    } else if (button == 2) { // middle click, toggle none/lastwidth?
         //
     }
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool
-SelectedStyle::on_opacity_click(GdkEventButton *event)
+Gtk::EventSequenceState
+SelectedStyle::on_opacity_click(Gtk::GestureMultiPress const &click,
+                                int const n_press, double const x, double const y)
 {
-    if (event->button == 2) { // middle click
-        const char* opacity = _opacity_sb.get_value() < 50? "0.5" : (_opacity_sb.get_value() == 100? "0" : "1");
-        SPCSSAttr *css = sp_repr_css_attr_new ();
-        sp_repr_css_set_property (css, "opacity", opacity);
-        sp_desktop_set_style (_desktop, css);
-        sp_repr_css_attr_unref (css);
-        DocumentUndo::done(_desktop->getDocument(), _("Change opacity"), INKSCAPE_ICON("dialog-fill-and-stroke"));
-        return true;
-    }
-
-    return false;
+    const char* opacity = _opacity_sb.get_value() < 50? "0.5" : (_opacity_sb.get_value() == 100? "0" : "1");
+    SPCSSAttr *css = sp_repr_css_attr_new ();
+    sp_repr_css_set_property (css, "opacity", opacity);
+    sp_desktop_set_style (_desktop, css);
+    sp_repr_css_attr_unref (css);
+    DocumentUndo::done(_desktop->getDocument(), _("Change opacity"), INKSCAPE_ICON("dialog-fill-and-stroke"));
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
 void SelectedStyle::on_popup_units(Inkscape::Util::Unit const *unit) {

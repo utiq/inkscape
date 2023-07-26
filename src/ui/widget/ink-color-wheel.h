@@ -21,9 +21,15 @@
 #include <2geom/point.h>
 #include <2geom/line.h>
 #include <sigc++/signal.h>
+#include <gtk/gtk.h> // GtkEventControllerKey
 #include <gtkmm/drawingarea.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 
 #include "hsluv.h"
+
+namespace Gtk {
+class GestureMultiPress;
+} // namespace Gtk
 
 namespace Inkscape::UI::Widget {
 
@@ -56,7 +62,9 @@ protected:
     sigc::signal<void ()> _signal_color_changed;
 
 private:
-    bool on_key_release_event(GdkEventKey* key_event) override;
+    bool on_key_released(GtkEventControllerKey const *key_event,
+                         unsigned keyval, unsigned keycode,
+                         GdkModifierType state);
 };
 
 /**
@@ -65,6 +73,8 @@ private:
 class ColorWheelHSL : public ColorWheel
 {
 public:
+    ColorWheelHSL();
+
     void setRgb(double r, double g, double b, bool overrideHue = true) override;
     void getRgb(double *r, double *g, double *b) const override;
     void getRgbV(double *rgb) const override;
@@ -82,7 +92,7 @@ private:
     void _update_triangle_color(double x, double y);
     void _update_ring_color(double x, double y);
     void _triangle_corners(double& x0, double& y0, double& x1, double& y1, double& x2,
-            double& y2);
+                           double& y2);
 
     enum class DragMode {
         NONE,
@@ -94,11 +104,13 @@ private:
     DragMode _mode = DragMode::NONE;
     bool _focus_on_ring = true;
 
-    // Callbacks
-    bool on_button_press_event(GdkEventButton* event) override;
-    bool on_button_release_event(GdkEventButton* event) override;
-    bool on_motion_notify_event(GdkEventMotion* event) override;
-    bool on_key_press_event(GdkEventKey* key_event) override;
+    Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    bool on_motion(GtkEventControllerMotion const *motion, double x, double y);
+    bool on_key_pressed(GtkEventControllerKey const *key_event,
+                        unsigned keyval, unsigned keycode, GdkModifierType state);
 };
 
 /**
@@ -130,10 +142,13 @@ private:
     void _updatePolygon();
     bool _vertex() const;
 
-    bool on_button_press_event(GdkEventButton* event) override;
-    bool on_button_release_event(GdkEventButton* event) override;
-    bool on_motion_notify_event(GdkEventMotion* event) override;
-    bool on_key_press_event(GdkEventKey* key_event) override;
+    Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    bool on_motion(GtkEventControllerMotion const *motion, double x, double y);
+    bool on_key_pressed(GtkEventControllerKey const *key_event,
+                        unsigned keyval, unsigned keycode, GdkModifierType state);
 
     double _scale = 1.0;
     std::unique_ptr<Hsluv::PickerGeometry> _picker_geometry;

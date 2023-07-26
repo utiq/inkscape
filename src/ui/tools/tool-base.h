@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef INKSCAPE_UI_TOOLS_TOOL_BASE_H
-#define INKSCAPE_UI_TOOLS_TOOL_BASE_H
-
 /*
  * Authors:
  *   Lauris Kaplinski <lauris@kaplinski.com>
@@ -13,6 +10,9 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_UI_TOOLS_TOOL_BASE_H
+#define INKSCAPE_UI_TOOLS_TOOL_BASE_H
+
 #include <cstddef>
 #include <string>
 #include <memory>
@@ -22,6 +22,8 @@
 #include <2geom/point.h>
 
 #include <sigc++/trackable.h>
+#include <gdk/gdk.h>
+#include <gtk/gtk.h> // GtkEventControllerKey
 #include <gdkmm/cursor.h>
 
 #include "helper/auto-connection.h"
@@ -201,7 +203,6 @@ public:
 
 protected:
     bool sp_event_context_knot_mouseover() const;
-
     void set_high_motion_precision(bool high_precision = true);
 
     SPDesktop *_desktop = nullptr;
@@ -226,7 +227,14 @@ void sp_event_show_modifier_tip(MessageContext *message_context, GdkEvent *event
                                 char const *ctrl_tip, char const *shift_tip, char const *alt_tip);
 
 void init_latin_keys_group();
+// Prefer one of the non-_impl versions below. This is public for shortcuts.cpp.
+unsigned get_latin_keyval_impl(unsigned event_keyval, unsigned event_keycode,
+                               GdkModifierType event_state, unsigned event_group,
+                               unsigned *consumed_modifiers);
 unsigned get_latin_keyval(GdkEventKey const *event, unsigned *consumed_modifiers = nullptr);
+unsigned get_latin_keyval(GtkEventControllerKey const *controller,
+                          unsigned keyval, unsigned keycode, GdkModifierType state,
+                          unsigned *consumed_modifiers = nullptr);
 
 SPItem *sp_event_context_find_item(SPDesktop *desktop, Geom::Point const &p, bool select_under, bool into_groups);
 SPItem *sp_event_context_over_item(SPDesktop *desktop, SPItem *item, Geom::Point const &p);

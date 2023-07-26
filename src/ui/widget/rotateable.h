@@ -11,7 +11,13 @@
 #ifndef INKSCAPE_UI_ROTATEABLE_H
 #define INKSCAPE_UI_ROTATEABLE_H
 
+#include <gtk/gtk.h> // GtkEventController*
 #include <gtkmm/eventbox.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
+
+namespace Gtk {
+class GestureMultiPress;
+} // namespace Gtk
 
 namespace Inkscape::UI::Widget {
 
@@ -38,10 +44,12 @@ private:
 
     unsigned get_single_modifier(unsigned old, unsigned state);
 
-    bool on_click  (GdkEventButton *event);
-    bool on_motion (GdkEventMotion *event);
-    bool on_release(GdkEventButton *event);
-    bool on_scroll (GdkEventScroll* event);
+    Gtk::EventSequenceState on_click  (Gtk::GestureMultiPress const &click,
+                                       int n_press, double x, double y);
+    Gtk::EventSequenceState on_release(Gtk::GestureMultiPress const &click,
+                                       int n_press, double x, double y);
+    bool on_motion(GtkEventControllerMotion const *motion, double  x, double  y);
+    bool on_scroll(GtkEventControllerScroll const *scroll, double dx, double dy);
 
     virtual void do_motion (double /*by*/, unsigned /*state*/) {}
     virtual void do_release(double /*by*/, unsigned /*state*/) {}

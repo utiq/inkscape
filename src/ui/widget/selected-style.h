@@ -18,6 +18,7 @@
 #include <gtkmm/box.h>
 #include <gtkmm/enums.h>
 #include <gtkmm/eventbox.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
 #include <gtkmm/menu.h>
@@ -29,6 +30,7 @@
 
 namespace Gtk {
 class Adjustment;
+class GestureMultiPress;
 class RadioMenuItem;
 } // namespace Gtk
 
@@ -217,10 +219,14 @@ protected:
                                   guint event_time,
                                   gpointer user_data );
 
-    bool on_fill_click(GdkEventButton *event);
-    bool on_stroke_click(GdkEventButton *event);
-    bool on_opacity_click(GdkEventButton *event);
-    bool on_sw_click(GdkEventButton *event);
+    Gtk::EventSequenceState on_fill_click   (Gtk::GestureMultiPress const &click,
+                                             int n_press, double x, double y);
+    Gtk::EventSequenceState on_stroke_click (Gtk::GestureMultiPress const &click,
+                                             int n_press, double x, double y);
+    Gtk::EventSequenceState on_opacity_click(Gtk::GestureMultiPress const &click,
+                                             int n_press, double x, double y);
+    Gtk::EventSequenceState on_sw_click     (Gtk::GestureMultiPress const &click,
+                                             int n_press, double x, double y);
 
     bool _opacity_blocked;
     void on_opacity_changed();
@@ -279,7 +285,6 @@ protected:
     std::unique_ptr<SelectedStyleDropTracker> _drop[2];
     bool _dropEnabled[2];
 };
-
 
 } // namespace UI::Widget
 

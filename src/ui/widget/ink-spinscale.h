@@ -20,12 +20,15 @@
 
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
+#include <gtk/gtk.h> // GtkEventControllerMotion
 #include <gtkmm/box.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/scale.h>
 #include "scrollprotected.h"
 
 namespace Gtk {
     class Adjustment;
+    class GestureMultiPress;
     class SpinButton;
 } // namespace Gtk
 
@@ -40,9 +43,14 @@ public:
 
 private:
     bool on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) final;
-    bool on_button_press_event  (GdkEventButton* button_event) final;
-    bool on_button_release_event(GdkEventButton* button_event) final;
-    bool on_motion_notify_event (GdkEventMotion* motion_event) final;
+
+    Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    void on_motion_enter (GtkEventControllerMotion const *motion, double x, double y);
+    void on_motion_motion(GtkEventControllerMotion const *motion, double x, double y);
+    void on_motion_leave (GtkEventControllerMotion const *motion);
 
     double get_fraction();
     void set_adjustment_value(double x, bool constrained = false);

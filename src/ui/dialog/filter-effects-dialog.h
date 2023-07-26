@@ -22,9 +22,11 @@
 #include <glibmm/propertyproxy.h>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
+#include <gtk/gtk.h> // GtkEventControllerMotion
 #include <gtkmm/box.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/cellrenderertoggle.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/liststore.h>
 #include <gtkmm/treeiter.h>
 #include <gtkmm/treemodelcolumn.h>
@@ -41,6 +43,7 @@
 namespace Gtk {
 class Button;
 class CheckButton;
+class GestureMultiPress;
 class Grid;
 class Label;
 class ListStore;
@@ -129,7 +132,8 @@ private:
         void selection_toggled(Gtk::TreeIter iter, bool toggle);
 
         void update_counts();
-        void filter_list_button_release(GdkEventButton*);
+        Gtk::EventSequenceState filter_list_click_released(Gtk::GestureMultiPress &click,
+                                                           int n_press, double x, double y);
         void remove_filter();
         void duplicate_filter();
         void rename_filter();
@@ -222,13 +226,16 @@ private:
 
     protected:
         bool on_draw_signal(const Cairo::RefPtr<Cairo::Context> &cr);
-
-
-        bool on_button_press_event(GdkEventButton*) override;
-        bool on_motion_notify_event(GdkEventMotion*) override;
-        bool on_button_release_event(GdkEventButton*) override;
         void on_drag_end(const Glib::RefPtr<Gdk::DragContext>&) override;
+
     private:
+        Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress &click,
+                                                  int n_press, double x, double y);
+        Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress &click,
+                                                  int n_press, double x, double y);
+        void on_motion_motion(GtkEventControllerMotion const *motion,
+                              double x, double y);
+
         void init_text();
 
         bool do_connection_node(const Gtk::TreeIter& row, const int input, std::vector<Gdk::Point>& points,

@@ -33,16 +33,13 @@
 #include "selection.h"
 
 #include "actions/actions-tools.h"
-
 #include "display/control/canvas-item-catchall.h" // Grab/Ungrab
 #include "display/control/snap-indicator.h"
-
 #include "include/macros.h"
-
 #include "object/sp-guide.h"
 #include "object/sp-namedview.h"
-
 #include "ui/contextmenu.h"
+#include "ui/controller.h" // get_group(GtkEventControllerKey const *)
 #include "ui/cursor-utils.h"
 #include "ui/interface.h"
 #include "ui/knot/knot.h"
@@ -51,7 +48,6 @@
 #include "ui/modifiers.h"
 #include "ui/shape-editor.h"
 #include "ui/shortcuts.h"
-
 #include "ui/tool/control-point.h"
 #include "ui/tools/calligraphic-tool.h"
 #include "ui/tools/dropper-tool.h"
@@ -1429,41 +1425,63 @@ void init_latin_keys_group()
     update_latin_keys_group();
 }
 
-/**
- * Return the keyval corresponding to the key event in Latin group.
- *
- * Use this instead of simply event->keyval, so that your keyboard shortcuts
- * work regardless of layouts (e.g., in Cyrillic).
- */
-guint get_latin_keyval(GdkEventKey const *event, guint *consumed_modifiers /*= nullptr*/)
+unsigned get_latin_keyval_impl(unsigned const event_keyval, unsigned const event_keycode,
+                               GdkModifierType const event_state, unsigned const event_group,
+                               unsigned *consumed_modifiers)
 {
-    guint keyval = 0;
+    auto keyval = 0u;
     GdkModifierType modifiers;
-    gint group = latin_keys_group_valid ? latin_keys_group : event->group;
 
-    if (latin_keys_groups.count(event->group)) {
+    auto group = latin_keys_group_valid ? latin_keys_group : event_group;
+    if (latin_keys_groups.count(event_group)) {
         // Keyboard group is a latin layout, so just use it.
-        group = event->group;
+        group = event_group;
     }
 
-    gdk_keymap_translate_keyboard_state(
-            Gdk::Display::get_default()->get_keymap(),
-            event->hardware_keycode, (GdkModifierType) event->state, group,
-            &keyval, nullptr, nullptr, &modifiers);
+    gdk_keymap_translate_keyboard_state(Gdk::Display::get_default()->get_keymap(),
+                                        event_keycode, event_state, group,
+                                        &keyval, nullptr, nullptr, &modifiers);
 
     if (consumed_modifiers) {
         *consumed_modifiers = modifiers;
     }
 #ifndef __APPLE__
     // on macOS <option> key inserts special characters and below condition fires all the time
-    if (keyval != event->keyval) {
+    if (keyval != event_keyval) {
         std::cerr << "get_latin_keyval: OH OH OH keyval did change! "
                   << "  keyval: " << keyval << " (" << (char)keyval << ")"
-                  << "  event->keyval: " << event->keyval << "(" << (char)event->keyval << ")" << std::endl;
+                  << "  event_keyval: " << event_keyval << "(" << (char)event_keyval << ")" << std::endl;
     }
 #endif
 
     return keyval;
+}
+
+/**
+ * Return the keyval corresponding to the key event in Latin group.
+ *
+ * Use this instead of simply event->keyval, so that your keyboard shortcuts
+ * work regardless of layouts (e.g., in Cyrillic).
+ */
+unsigned get_latin_keyval(GdkEventKey const *event, unsigned *consumed_modifiers /*= nullptr*/)
+{
+    return get_latin_keyval_impl(event->keyval, event->hardware_keycode,
+                                 static_cast<GdkModifierType>(event->state), event->group,
+                                 consumed_modifiers);
+}
+
+/**
+ * Return the keyval corresponding to the event controller key in Latin group.
+ *
+ * Use this instead of simply a signal's keyval, so that your keyboard shortcuts
+ * work regardless of layouts (e.g., in Cyrillic).
+ */
+unsigned get_latin_keyval(GtkEventControllerKey const * const controller,
+                          unsigned const keyval, unsigned const keycode, GdkModifierType const state,
+                          unsigned *consumed_modifiers /*= nullptr*/)
+{
+    auto const group = Controller::get_group(controller);
+    return get_latin_keyval_impl(keyval, keycode, state, group, consumed_modifiers);
 }
 
 /**

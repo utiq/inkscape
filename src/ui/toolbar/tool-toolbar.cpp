@@ -22,6 +22,7 @@
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/flowbox.h>
+#include <gtkmm/gesturemultipress.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/radiobutton.h>
 #include <gtkmm/scrolledwindow.h>
@@ -31,6 +32,7 @@
 #include "actions/actions-tools.h" // Function to open tool preferences.
 #include "inkscape-window.h"
 #include "ui/builder-utils.h"
+#include "ui/controller.h"
 #include "ui/widget/popover-menu.h"
 #include "ui/widget/popover-menu-item.h"
 #include "widgets/spw-utilities.h" // Find action target
@@ -168,20 +170,23 @@ void ToolToolbar::attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWin
 
         auto tool_name = Glib::ustring((gchar const *)action_target.get_data());
         auto on_click_pressed = [=, tool_name = std::move(tool_name)]
-                                (GdkEventButton const * const ev)
+                                (Gtk::GestureMultiPress const &click,
+                                 int const n_press, double const x, double const y)
         {
             // Open tool preferences upon double click
-            if (ev->type == GDK_2BUTTON_PRESS && ev->button == 1) {
+            auto const button = click.get_current_button();
+            if (button == 1 && n_press == 2) {
                 tool_preferences(tool_name, window);
-                return true;
+                return Gtk::EVENT_SEQUENCE_CLAIMED;
             }
-            if (ev->button == 3) {
+            if (button == 3) {
                 showContextMenu(window, *radio, tool_name);
-                return true;
+                return Gtk::EVENT_SEQUENCE_CLAIMED;
             }
-            return false;
+            return Gtk::EVENT_SEQUENCE_NONE;
         };
-        radio->signal_button_press_event().connect(std::move(on_click_pressed));
+        Controller::add_click(*radio, std::move(on_click_pressed), {},
+                              Controller::Button::any);
     }
 }
 

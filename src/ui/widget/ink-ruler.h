@@ -18,9 +18,11 @@
 #include <cairomm/types.h> // Cairo::RectangleInt
 #include <pangomm/fontdescription.h>
 #include <gdkmm/rgba.h>
+#include <gtk/gtk.h> // GtkEventControllerMotion
 #include <gtkmm/border.h>
 #include <gtkmm/drawingarea.h>
 #include <gtkmm/enums.h> // Gtk::Orientation
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include "preferences.h"
 
 namespace Cairo {
@@ -28,6 +30,7 @@ class Context;
 } // namespace Cairo
 
 namespace Gtk {
+class GestureMultiPress;
 class Popover;
 } // namespace Gtk
 
@@ -61,10 +64,11 @@ protected:
     void on_style_updated() override;
     void on_prefs_changed();
 
-    bool on_motion_notify_event(GdkEventMotion *motion_event) override;
-    bool on_button_press_event(GdkEventButton *button_event) override;
-
 private:
+    bool on_motion(GtkEventControllerMotion const *motion, double x, double y);
+    Gtk::EventSequenceState on_click_pressed(Gtk::GestureMultiPress const &click,
+                                             int n_press, double x, double y);
+
     void set_context_menu();
     Cairo::RefPtr<Cairo::Surface> draw_label(Cairo::RefPtr<Cairo::Surface> const &surface_in, int label_value);
 

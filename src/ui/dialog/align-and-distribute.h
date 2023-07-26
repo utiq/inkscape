@@ -78,9 +78,9 @@ private:
     void on_align_relative_object_changed();
     void on_align_relative_node_changed();
 
-    bool on_align_button_press_event(GdkEventButton* button_event, const std::string& align_to);
-    bool on_remove_overlap_button_press_event(GdkEventButton* button_event);
-    bool on_align_node_button_press_event(GdkEventButton* button_event, const std::string& align_to);
+    void on_align_clicked         (std::string const &align_to);
+    void on_remove_overlap_clicked();
+    void on_align_node_clicked    (std::string const &align_to);
 
     sigc::connection tool_connection;
     Inkscape::PrefObserver _icon_sizes_changed;

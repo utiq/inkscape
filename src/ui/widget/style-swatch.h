@@ -17,6 +17,7 @@
 #include <memory>
 #include <gtkmm/box.h>
 #include <gtkmm/eventbox.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/label.h>
 
 #include "desktop.h"
@@ -26,6 +27,7 @@ class SPStyle;
 class SPCSSAttr;
 
 namespace Gtk {
+class GestureMultiPress;
 class Grid;
 } // namespace Gtk
 
@@ -54,7 +56,8 @@ public:
     void setDesktop(SPDesktop *desktop);
 
 private:
-    bool on_click(GdkEventButton *event);
+    Gtk::EventSequenceState on_click(Gtk::GestureMultiPress const &click,
+                                     int n_press, double x, double y);
 
     using PrefObs = Preferences::PreferencesObserver;
 

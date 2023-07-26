@@ -17,14 +17,17 @@
 #include <memory>
 #include <vector>
 #include <gdkmm/dragcontext.h>
-#include <gtkmm/box.h>
-#include <gtkmm/grid.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/notebook.h>
 #include <gtkmm/radiomenuitem.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/widget.h>
 #include "helper/auto-connection.h"
 #include "ui/widget/popover-menu.h"
+
+namespace Gtk {
+class GestureMultiPress;
+} // namespace Gtk
 
 namespace Inkscape::UI {
 
@@ -105,7 +108,9 @@ private:
     void on_page_removed(Gtk::Widget *page, int page_num);
     void on_size_allocate_scroll(Gtk::Allocation &allocation);
     void on_size_allocate_notebook(Gtk::Allocation &allocation);
-    bool on_tab_click_event(GdkEventButton *event, Gtk::Widget *page);
+    Gtk::EventSequenceState on_tab_click_event(Gtk::GestureMultiPress const &click,
+                                               int n_press, double x, double y,
+                                               Gtk::Widget *page);
     void on_close_button_click_event(Gtk::Widget *page);
     void on_page_switch(Gtk::Widget *page, guint page_number);
     // Helpers

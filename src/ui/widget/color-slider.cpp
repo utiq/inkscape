@@ -14,11 +14,13 @@
 #include <gdkmm/cursor.h>
 #include <gdkmm/general.h>
 #include <gtkmm/adjustment.h>
+#include <gtkmm/gesturemultipress.h>
 #include <gtkmm/stylecontext.h>
 
-#include "ui/widget/color-scales.h"
 #include "ui/widget/color-slider.h"
 #include "preferences.h"
+#include "ui/controller.h"
+#include "ui/widget/color-scales.h"
 
 static const gint SLIDER_WIDTH = 96;
 static const gint SLIDER_HEIGHT = 8;
@@ -59,6 +61,13 @@ ColorSlider::ColorSlider(Glib::RefPtr<Gtk::Adjustment> adjustment)
     _bmask = 0x08;
 
     setAdjustment(adjustment);
+
+    Controller::add_click(*this,
+                         sigc::mem_fun(*this, &ColorSlider::on_click_pressed ),
+                         sigc::mem_fun(*this, &ColorSlider::on_click_released),
+                         Controller::Button::left);
+    Controller::add_motion<nullptr, &ColorSlider::on_motion, nullptr>
+                          (*this, *this);
 }
 
 ColorSlider::~ColorSlider()
@@ -142,6 +151,11 @@ void ColorSlider::get_preferred_height_for_width_vfunc(int /*width*/, int &minim
     get_preferred_height(minimum_height, natural_height);
 }
 
+static bool get_constrained(Gdk::ModifierType const state)
+{
+    return Controller::has_flag(state, Gdk::CONTROL_MASK);
+}
+
 static double get_value_at(Gtk::Widget const &self, double const x, double const y)
 {
     auto const state = self.get_state_flags();
@@ -150,44 +164,41 @@ static double get_value_at(Gtk::Widget const &self, double const x, double const
     return CLAMP((x - cx) / cw, 0.0, 1.0);
 }
 
-bool ColorSlider::on_button_press_event(GdkEventButton *event)
+Gtk::EventSequenceState ColorSlider::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                      int const n_press, double const x, double const y)
 {
-    if (event->button == 1) {
-        signal_grabbed.emit();
-        _dragging = true;
-        _oldvalue = _value;
-        auto const value = get_value_at(*this, event->x, event->y);
-        bool constrained = event->state & GDK_CONTROL_MASK;
-        ColorScales<>::setScaled(_adjustment, value, constrained);
-        signal_dragged.emit();
-    }
-
-    return false;
+    signal_grabbed.emit();
+    _dragging = true;
+    _oldvalue = _value;
+    auto const value = get_value_at(*this, x, y);
+    auto const state = Controller::get_current_event_state(click);
+    auto const constrained = get_constrained(state);
+    ColorScales<>::setScaled(_adjustment, value, constrained);
+    signal_dragged.emit();
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool ColorSlider::on_button_release_event(GdkEventButton *event)
+Gtk::EventSequenceState ColorSlider::on_click_released(Gtk::GestureMultiPress const &click,
+                                                       int const n_press, double const x, double const y)
 {
-    if (event->button == 1) {
-        _dragging = false;
-        signal_released.emit();
-        if (_value != _oldvalue) {
-            signal_value_changed.emit();
-        }
+    _dragging = false;
+    signal_released.emit();
+    if (_value != _oldvalue) {
+        signal_value_changed.emit();
     }
-
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool ColorSlider::on_motion_notify_event(GdkEventMotion *event)
+void ColorSlider::on_motion(GtkEventControllerMotion const * const motion,
+                            double const x, double const y)
 {
     if (_dragging) {
-        auto const value = get_value_at(*this, event->x, event->y);
-        bool constrained = event->state & GDK_CONTROL_MASK;
+        auto const value = get_value_at(*this, x, y);
+        auto const state = Controller::get_device_state(GTK_EVENT_CONTROLLER(motion));
+        auto const constrained = get_constrained(state);
         ColorScales<>::setScaled(_adjustment, value, constrained);
         signal_dragged.emit();
     }
-
-    return false;
 }
 
 void ColorSlider::setAdjustment(Glib::RefPtr<Gtk::Adjustment> adjustment)

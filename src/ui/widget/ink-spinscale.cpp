@@ -17,12 +17,16 @@
 
 #include <utility>
 #include <gdk/gdk.h>
+#include <sigc++/functors/mem_fun.h>
 #include <gdkmm/general.h>
 #include <gdkmm/cursor.h>
 #include <gtkmm/spinbutton.h>
 
 #include "ink-spinscale.h"
+#include "ui/controller.h"
 #include "ui/util.h"
+
+namespace Controller = Inkscape::UI::Controller;
 
 InkScale::InkScale(Glib::RefPtr<Gtk::Adjustment> adjustment, Gtk::SpinButton* spinbutton)
     : Glib::ObjectBase("InkScale")
@@ -33,6 +37,14 @@ InkScale::InkScale(Glib::RefPtr<Gtk::Adjustment> adjustment, Gtk::SpinButton* sp
     , _drag_offset(0)
 {
     set_name("InkScale");
+
+    Controller::add_click(*this, sigc::mem_fun(*this, &InkScale::on_click_pressed ),
+                                 sigc::mem_fun(*this, &InkScale::on_click_released),
+                          Controller::Button::any, Gtk::PHASE_TARGET);
+    Controller::add_motion<&InkScale::on_motion_enter ,
+                           &InkScale::on_motion_motion,
+                           &InkScale::on_motion_leave >
+                          (*this, *this, Gtk::PHASE_TARGET);
 }
 
 void
@@ -88,61 +100,66 @@ InkScale::on_draw(const::Cairo::RefPtr<::Cairo::Context>& cr) {
     return true;
 }
 
-bool
-InkScale::on_button_press_event(GdkEventButton* button_event) {
-    if (! (button_event->state & GDK_MOD1_MASK) ) {
-        bool constrained = button_event->state & GDK_CONTROL_MASK;
-        set_adjustment_value(button_event->x, constrained);
+static bool get_constrained(Gdk::ModifierType const state)
+{
+    return Controller::has_flag(state, Gdk::CONTROL_MASK);
+}
+
+Gtk::EventSequenceState InkScale::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                   int const n_press, double const x, double const y)
+{
+    auto const state = Controller::get_current_event_state(click);
+    if (!Controller::has_flag(state, Gdk::MOD1_MASK)) {
+        auto const constrained = get_constrained(state);
+        set_adjustment_value(x, constrained);
     }
 
     // Dragging must be initialized after any adjustment due to button press.
     _dragging = true;
-    _drag_start    = button_event->x;
+    _drag_start  = x;
     _drag_offset = get_width() * get_fraction(); 
-
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool
-InkScale::on_button_release_event(GdkEventButton* button_event) {
+Gtk::EventSequenceState InkScale::on_click_released(Gtk::GestureMultiPress const &click,
+                                                    int const n_press, double const x, double const y)
+{
     _dragging = false;
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool
-InkScale::on_motion_notify_event(GdkEventMotion* motion_event) {
-    double x = motion_event->x;
+// TODO: GTK4: Just use Widget.set_cursor().
+void
+InkScale::on_motion_enter(GtkEventControllerMotion const * const motion, double const x, double const y)
+{
+    auto const display = get_display();
+    auto const cursor = Gdk::Cursor::create(display, Gdk::SB_UP_ARROW);
+    get_window()->set_cursor(cursor);
+}
 
-    if (_dragging) {
-        if (! (motion_event->state & GDK_MOD1_MASK) ) {
-            // Absolute change
-            bool constrained = motion_event->state & GDK_CONTROL_MASK;
-            set_adjustment_value(x, constrained);
-        } else {
-            // Relative change
-            double xx = (_drag_offset + (x - _drag_start) * 0.1);
-            set_adjustment_value(xx);
-        }
-        return true;
+void
+InkScale::on_motion_motion(GtkEventControllerMotion const * const motion, double const x, double const y)
+{
+    if (!_dragging) {
+        return;
     }
 
-    if (! (motion_event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))) {
-        auto display = get_display();
-        auto cursor = Gdk::Cursor::create(display, Gdk::SB_UP_ARROW);
-        // Get Gdk::window (not Gtk::window).. set cursor for entire window.
-        // Would need to unset with leave event.
-        // get_window()->set_cursor( cursor );
-
-        // Can't see how to do this the C++ way since GdkEventMotion
-        // is a structure with a C window member. There is a gdkmm
-        // wrapping function for Gdk::EventMotion but only in unstable.
-
-        // If the cursor theme doesn't have the `sb_up_arrow` cursor then the pointer will be NULL
-        if (cursor)
-            gdk_window_set_cursor( motion_event->window, cursor->gobj() );
+    auto const state = Controller::get_device_state(GTK_EVENT_CONTROLLER(motion));
+    if (!Controller::has_flag(state, Gdk::MOD1_MASK)) {
+        // Absolute change
+        auto const constrained = get_constrained(state);
+        set_adjustment_value(x, constrained);
+    } else {
+        // Relative change
+        double xx = (_drag_offset + (x - _drag_start) * 0.1);
+        set_adjustment_value(xx);
     }
+}
 
-    return false;
+void
+InkScale::on_motion_leave(GtkEventControllerMotion const * const motion)
+{
+    get_window()->set_cursor({});
 }
 
 double

@@ -16,7 +16,9 @@
 #define SEEN_OBJECTS_PANEL_H
 
 #include <glibmm/refptr.h>
+#include <gtk/gtk.h> // GtkEventControllerKey
 #include <gtkmm/box.h>
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 
 #include "color-rgba.h"
 #include "helper/auto-connection.h"
@@ -29,6 +31,7 @@
 
 namespace Gtk {
 class Builder;
+class GestureMultiPress;
 class ModelButton;
 class Popover;
 class Scale;
@@ -108,6 +111,7 @@ private:
     bool _show_contextmenu_icons;
     bool _is_editing;
     bool _scroll_lock = false;
+    bool _alt_pressed = false;
 
     std::vector<Gtk::Widget*> _watching;
     std::vector<Gtk::Widget*> _watchingNonTop;
@@ -135,14 +139,21 @@ private:
 
     void _activateAction(const std::string& layerAction, const std::string& selectionAction);
 
-    bool blendModePopup(GdkEventButton* event, Gtk::TreeModel::Row row);
+    bool blendModePopup(int x, int y, Gtk::TreeModel::Row row);
     bool toggleVisible(unsigned int state, Gtk::TreeModel::Row row);
     bool toggleLocked(unsigned int state, Gtk::TreeModel::Row row);
 
-    bool _handleButtonEvent(GdkEventButton *event);
-    bool _handleKeyPress(GdkEventKey *event);
-    bool _handleKeyEvent(GdkEventKey *event);
-    bool _handleMotionEvent(GdkEventMotion* motion_event);
+    enum class ButtonEventType {pressed, released};
+    Gtk::EventSequenceState on_click(Gtk::GestureMultiPress const &gesture,
+                                     int n_press, double x, double y,
+                                     ButtonEventType);
+    bool on_key_pressed  (GtkEventControllerKey const *controller,
+                          unsigned keyval, unsigned keycode, GdkModifierType state);
+    bool on_key_modifiers(GtkEventControllerKey const *controller, GdkModifierType state);
+    void on_motion_enter (GtkEventControllerMotion const *controller, double x, double y);
+    void on_motion_motion(GtkEventControllerMotion const *controller, double x, double y);
+    void on_motion_leave (GtkEventControllerMotion const *controller);
+
     void _searchActivated();
     void _searchChanged();
     

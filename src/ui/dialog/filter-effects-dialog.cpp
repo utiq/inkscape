@@ -37,6 +37,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/enums.h>
+#include <gtkmm/gesturemultipress.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
@@ -77,6 +78,7 @@
 #include "svg/svg-color.h"
 #include "ui/builder-utils.h"
 #include "ui/column-menu-builder.h"
+#include "ui/controller.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/icon-names.h"
 #include "ui/util.h"
@@ -1405,8 +1407,9 @@ FilterEffectsDialog::FilterModifier::FilterModifier(FilterEffectsDialog& d, Glib
     _select.signal_clicked().connect([=]() { select_filter_elements(); });
 
     _cell_toggle.signal_toggled().connect(sigc::mem_fun(*this, &FilterModifier::on_selection_toggled));
-    _list.signal_button_release_event().connect_notify(
-        sigc::mem_fun(*this, &FilterModifier::filter_list_button_release));
+
+    Controller::add_click(_list, {}, // no pressed handler,
+        sigc::mem_fun(*this, &FilterModifier::filter_list_click_released), Controller::Button::right);
 
     // connect handlers to context menu items
     auto&& items = _menu.get_children();
@@ -1630,17 +1633,16 @@ void FilterEffectsDialog::FilterModifier::select_filter(const SPFilter* filter)
     }
 }
 
-void FilterEffectsDialog::FilterModifier::filter_list_button_release(GdkEventButton* event)
+Gtk::EventSequenceState FilterEffectsDialog::FilterModifier::filter_list_click_released(Gtk::GestureMultiPress &click,
+                                                                                        int const n_press, double const x, double const y)
 {
-    if((event->type == GDK_BUTTON_RELEASE) && (event->button == 3)) {
-        const bool sensitive = get_selected_filter() != nullptr;
-        auto items = _menu.get_children();
-        items[0]->set_sensitive(sensitive);
-        items[1]->set_sensitive(sensitive);
-        items[3]->set_sensitive(sensitive);
-
-        _menu.popup_at_pointer(reinterpret_cast<GdkEvent*>(event));
-    }
+    const bool sensitive = get_selected_filter() != nullptr;
+    auto items = _menu.get_children();
+    items[0]->set_sensitive(sensitive);
+    items[1]->set_sensitive(sensitive);
+    items[3]->set_sensitive(sensitive);
+    _menu.popup_at_pointer(Controller::get_last_event(click));
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
 void FilterEffectsDialog::FilterModifier::add_filter()
@@ -1805,6 +1807,17 @@ FilterEffectsDialog::PrimitiveList::PrimitiveList(FilterEffectsDialog& d)
     signal_draw().connect(sigc::mem_fun(*this, &PrimitiveList::on_draw_signal));
 
     add_events(Gdk::POINTER_MOTION_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
+
+    Controller::add_click(*this,
+        sigc::mem_fun(*this, &PrimitiveList::on_click_pressed ),
+        sigc::mem_fun(*this, &PrimitiveList::on_click_released),
+        Controller::Button::any,
+        Gtk::PHASE_TARGET);
+
+    Controller::add_motion<nullptr,
+                           &PrimitiveList::on_motion_motion,
+                           nullptr>
+                          (*this, *this, Gtk::PHASE_TARGET);
 
     _model = Gtk::ListStore::create(_columns);
 
@@ -2306,11 +2319,19 @@ int FilterEffectsDialog::PrimitiveList::find_index(const Gtk::TreeIter& target)
     return i;
 }
 
-bool FilterEffectsDialog::PrimitiveList::on_button_press_event(GdkEventButton* e)
+static std::pair<int, int> widget_to_bin_window(Gtk::TreeView const &tree_view, int const wx, int const wy)
+{
+    int bx, by;
+    tree_view.convert_widget_to_bin_window_coords(wx, wy, bx, by);
+    return {bx, by};
+}
+
+Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_pressed(Gtk::GestureMultiPress &click,
+                                                                             int const n_press, double const wx, double const wy)
 {
     Gtk::TreePath path;
     Gtk::TreeViewColumn* col;
-    const int x = (int)e->x, y = (int)e->y;
+    auto const [x, y] = widget_to_bin_window(*this, wx, wy);
     int cx, cy;
 
     _drag_prim = nullptr;
@@ -2337,42 +2358,44 @@ bool FilterEffectsDialog::PrimitiveList::on_button_press_event(GdkEventButton* e
         _autoscroll_x = 0;
         _autoscroll_y = 0;
         get_selection()->select(path);
-        return true;
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
+        //click.set_sequence_state(click.get_current_sequence(), Gtk::EVENT_SEQUENCE_CLAIMED);
     }
-    else
-        return Gtk::TreeView::on_button_press_event(e);
+
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool FilterEffectsDialog::PrimitiveList::on_motion_notify_event(GdkEventMotion* e)
+void FilterEffectsDialog::PrimitiveList::on_motion_motion(GtkEventControllerMotion const * const motion,
+                                                          double const wx, double const wy)
 {
     const int speed = 10;
     const int limit = 15;
 
+    auto const [x, y] = widget_to_bin_window(*this, wx, wy);
+
     Gdk::Rectangle vis;
     get_visible_rect(vis);
     int vis_x, vis_y;
-
     int vis_x2, vis_y2;
     convert_widget_to_tree_coords(vis.get_x(), vis.get_y(), vis_x2, vis_y2);
-
     convert_tree_to_widget_coords(vis.get_x(), vis.get_y(), vis_x, vis_y);
     const int top = vis_y + vis.get_height();
     const int right_edge = vis_x + vis.get_width();
 
     // When autoscrolling during a connection drag, set the speed based on
     // where the mouse is in relation to the edges.
-    if(e->y < vis_y)
-        _autoscroll_y = -(int)(speed + (vis_y - e->y) / 5);
-    else if(e->y < vis_y + limit)
+    if (y < vis_y)
+        _autoscroll_y = -(int)(speed + (vis_y - y) / 5);
+    else if (y < vis_y + limit)
         _autoscroll_y = -speed;
-    else if(e->y > top)
-        _autoscroll_y = (int)(speed + (e->y - top) / 5);
-    else if(e->y > top - limit)
+    else if (y > top)
+        _autoscroll_y = (int)(speed + (y - top) / 5);
+    else if (y > top - limit)
         _autoscroll_y = speed;
     else
         _autoscroll_y = 0;
 
-    double e2 = ( e->x - vis_x2/2);
+    double const e2 = x - vis_x2 / 2;
     // horizontal scrolling
     if(e2 < vis_x)
         _autoscroll_x = -(int)(speed + (vis_x - e2) / 5);
@@ -2385,15 +2408,13 @@ bool FilterEffectsDialog::PrimitiveList::on_motion_notify_event(GdkEventMotion* 
     else
         _autoscroll_x = 0;
 
-
-
     queue_draw();
-
-    return Gtk::TreeView::on_motion_notify_event(e);
 }
 
-bool FilterEffectsDialog::PrimitiveList::on_button_release_event(GdkEventButton* e)
+Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_released(Gtk::GestureMultiPress &click,
+                                                                              int const n_press, double const wx, double const wy)
 {
+    auto const [x, y] = widget_to_bin_window(*this, wx, wy);
     SPFilterPrimitive *prim = get_selected(), *target;
 
     _scroll_connection.disconnect();
@@ -2403,7 +2424,7 @@ bool FilterEffectsDialog::PrimitiveList::on_button_release_event(GdkEventButton*
         Gtk::TreeViewColumn* col;
         int cx, cy;
 
-        if(get_path_at_pos((int)e->x, (int)e->y, path, col, cx, cy)) {
+        if (get_path_at_pos(x, y, path, col, cx, cy)) {
             const gchar *in_val = nullptr;
             Glib::ustring result;
             Gtk::TreeIter target_iter = _model->get_iter(path);
@@ -2492,18 +2513,16 @@ bool FilterEffectsDialog::PrimitiveList::on_button_release_event(GdkEventButton*
         _dialog.update_settings_view();
     }
 
-    if((e->type == GDK_BUTTON_RELEASE) && (e->button == 3)) {
+    if (click.get_current_button() == 3) {
         const bool sensitive = get_selected() != nullptr;
         auto items = _primitive_menu->get_children();
         items[0]->set_sensitive(sensitive);
         items[1]->set_sensitive(sensitive);
-
-        _primitive_menu->popup_at_pointer(reinterpret_cast<GdkEvent *>(e));
-
-        return true;
+        _primitive_menu->popup_at_pointer(Controller::get_last_event(click));
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
-    else
-        return Gtk::TreeView::on_button_release_event(e);
+
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 // Checks all of prim's inputs, removes any that use result
