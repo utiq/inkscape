@@ -131,7 +131,7 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar * /*ur
 
     _setFonts(getPdfFonts(_pdf_doc));
 
-    auto okbutton = Gtk::manage(new Gtk::Button(_("_OK"), true));
+    auto const okbutton = Gtk::make_managed<Gtk::Button>(_("_OK"), true);
 
     get_content_area()->set_homogeneous(false);
     get_content_area()->set_spacing(0);
@@ -145,7 +145,7 @@ PdfImportDialog::PdfImportDialog(std::shared_ptr<PDFDoc> doc, const gchar * /*ur
     this->set_resizable(true);
     this->property_destroy_with_parent().set_value(false);
 
-    this->add_action_widget(*Gtk::manage(new Gtk::Button(_("_Cancel"), true)), -6);
+    this->add_action_widget(*Gtk::make_managed<Gtk::Button>(_("_Cancel"), true), -6);
     this->add_action_widget(*okbutton, -5);
 
     this->show_all();

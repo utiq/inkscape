@@ -82,7 +82,7 @@ DialogContainer::DialogContainer(InkscapeWindow* inkscape_window)
     get_style_context()->add_class("DialogContainer");
 
     // Setup main column
-    columns = Gtk::manage(new DialogMultipaned(Gtk::ORIENTATION_HORIZONTAL));
+    columns = Gtk::make_managed<DialogMultipaned>(Gtk::ORIENTATION_HORIZONTAL);
 
     connections.emplace_back(columns->signal_prepend_drag_data().connect(
         sigc::bind(sigc::mem_fun(*this, &DialogContainer::prepend_drop), columns)));
@@ -104,7 +104,7 @@ DialogContainer::DialogContainer(InkscapeWindow* inkscape_window)
 
 DialogMultipaned *DialogContainer::create_column()
 {
-    DialogMultipaned *column = Gtk::manage(new DialogMultipaned(Gtk::ORIENTATION_VERTICAL));
+    auto const column = Gtk::make_managed<DialogMultipaned>(Gtk::ORIENTATION_VERTICAL);
 
     connections.emplace_back(column->signal_prepend_drag_data().connect(
         sigc::bind(sigc::mem_fun(*this, &DialogContainer::prepend_drop), column)));
@@ -172,11 +172,11 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
 // Create the notebook tab
 Gtk::Widget *DialogContainer::create_notebook_tab(Glib::ustring label_str, Glib::ustring image_str, const Glib::ustring shortcut)
 {
-    Gtk::Label *label = Gtk::manage(new Gtk::Label(label_str));
-    Gtk::Image *image = Gtk::manage(new Gtk::Image());
-    Gtk::Button *close = Gtk::manage(new Gtk::Button());
+    auto const label = Gtk::make_managed<Gtk::Label>(label_str);
+    auto const image = Gtk::make_managed<Gtk::Image>();
+    auto const close = Gtk::make_managed<Gtk::Button>();
     image->set_from_icon_name(image_str, Gtk::ICON_SIZE_MENU);
-    Gtk::Box *tab = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 2));
+    auto const tab = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 2);
     close->set_image_from_icon_name("window-close");
     close->set_halign(Gtk::ALIGN_END);
     close->set_tooltip_text(_("Close Tab"));
@@ -190,7 +190,7 @@ Gtk::Widget *DialogContainer::create_notebook_tab(Glib::ustring label_str, Glib:
     tab->show_all();
 
     // Workaround to the fact that Gtk::Box doesn't receive on_button_press event
-    Gtk::EventBox *cover = Gtk::manage(new Gtk::EventBox());
+    auto const cover = Gtk::make_managed<Gtk::EventBox>();
     cover->add(*tab);
 
     // Add shortcut tooltip
@@ -323,7 +323,7 @@ void DialogContainer::new_dialog(const Glib::ustring& dialog_type, DialogNoteboo
         // Look to see if first widget in column is notebook, if not add one.
         notebook = dynamic_cast<DialogNotebook *>(last_column->get_first_widget());
         if (!notebook) {
-            notebook = Gtk::manage(new DialogNotebook(this));
+            notebook = Gtk::make_managed<DialogNotebook>(this);
             last_column->prepend(notebook);
         }
     }
@@ -446,7 +446,7 @@ bool DialogContainer::recreate_dialogs_from_state(InkscapeWindow* inkscape_windo
 
                     if (dialog_data.find(type) != dialog_data.end()) {
                         if (!notebook) {
-                            notebook = Gtk::manage(new DialogNotebook(active_container));
+                            notebook = Gtk::make_managed<DialogNotebook>(active_container);
                             column->append(notebook);
                         }
                         active_container->new_dialog(type, notebook);
@@ -532,7 +532,7 @@ DialogWindow *DialogContainer::create_new_floating_dialog(const Glib::ustring& d
         create_notebook_tab(dialog->get_name(), image ? Glib::ustring(image) : INKSCAPE_ICON("inkscape-logo"), label);
 
     // New temporary noteboook
-    DialogNotebook *notebook = Gtk::manage(new DialogNotebook(this));
+    auto const notebook = Gtk::make_managed<DialogNotebook>(this);
     notebook->add_page(*dialog, *tab, dialog->get_name());
 
     return notebook->pop_tab_callback();
@@ -763,7 +763,7 @@ void DialogContainer::load_container_state(Glib::KeyFile *keyfile, bool include_
 
                 DialogNotebook *notebook = nullptr;
                 if (is_dockable) {
-                    notebook = Gtk::manage(new DialogNotebook(active_container));
+                    notebook = Gtk::make_managed<DialogNotebook>(active_container);
                     column->append(notebook);
                 }
 
@@ -1068,7 +1068,7 @@ DialogNotebook *DialogContainer::prepare_drop(const Glib::RefPtr<Gdk::DragContex
     }
 
     // Create new notebook and move page.
-    DialogNotebook *new_notebook = Gtk::manage(new DialogNotebook(this));
+    auto const new_notebook = Gtk::make_managed<DialogNotebook>(this);
 #ifdef __APPLE__
     // moving current page during d&d is a sure way to crash on macos
     new_nb = new_notebook;

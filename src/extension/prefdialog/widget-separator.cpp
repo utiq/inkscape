@@ -33,10 +33,9 @@ Gtk::Widget *WidgetSeparator::get_widget(sigc::signal<void ()> *changeSignal)
         return nullptr;
     }
 
-    Gtk::Separator *separator = Gtk::manage(new Gtk::Separator());
+    auto const separator = Gtk::make_managed<Gtk::Separator>();
     separator->set_visible(true);
-
-    return dynamic_cast<Gtk::Widget *>(separator);
+    return separator;
 }
 
 }  /* namespace Extension */

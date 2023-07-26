@@ -107,7 +107,7 @@ using Inkscape::IO::Resource::get_filename;
 using Inkscape::IO::Resource::UIS;
 
 std::function<Gtk::Image*()> reset_icon = []() {
-    auto image = Gtk::make_managed<Gtk::Image>();
+    auto const image = Gtk::make_managed<Gtk::Image>();
     image->set_from_icon_name("reset", Gtk::ICON_SIZE_BUTTON);
     image->set_opacity(0.6);
     image->set_tooltip_text(_("Requires restart to take effect"));
@@ -257,14 +257,14 @@ InkscapePreferences::InkscapePreferences()
     delete sb;
 
     //Main HBox
-    auto hbox_list_page = Gtk::manage(new Gtk::Box());
+    auto const hbox_list_page = Gtk::make_managed<Gtk::Box>();
     hbox_list_page->set_border_width(12);
     hbox_list_page->set_spacing(12);
     add(*hbox_list_page);
 
     //Pagelist
-    auto list_box = Gtk::manage(new Gtk::Box(Gtk::Orientation::ORIENTATION_VERTICAL, 3));
-    Gtk::ScrolledWindow* scrolled_window = Gtk::manage(new Gtk::ScrolledWindow());
+    auto const list_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 3);
+    auto const scrolled_window = Gtk::make_managed<Gtk::ScrolledWindow>();
     _search.set_valign(Gtk::Align::ALIGN_START);
     list_box->pack_start(_search, false, true, 0);
     list_box->pack_start(*scrolled_window, false, true, 0);
@@ -355,10 +355,10 @@ InkscapePreferences::InkscapePreferences()
     });
 
     //Pages
-    auto vbox_page = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
-    Gtk::Frame* title_frame = Gtk::manage(new Gtk::Frame());
+    auto const vbox_page = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    auto const title_frame = Gtk::make_managed<Gtk::Frame>();
 
-    Gtk::ScrolledWindow* pageScroller = Gtk::manage(new Gtk::ScrolledWindow());
+    auto const pageScroller = Gtk::make_managed<Gtk::ScrolledWindow>();
     pageScroller->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
     pageScroller->set_propagate_natural_width();
     pageScroller->set_propagate_natural_height();
@@ -737,41 +737,41 @@ Gtk::TreeModel::iterator InkscapePreferences::AddPage(DialogPage& p, Glib::ustri
 
 void InkscapePreferences::AddSelcueCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value)
 {
-    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    auto const cb = Gtk::make_managed<PrefCheckButton>();
     cb->init ( _("Show selection cue"), prefs_path + "/selcue", def_value);
     p.add_line( false, "", *cb, "", _("Whether selected objects display a selection cue (the same as in selector)"));
 }
 
 void InkscapePreferences::AddGradientCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value)
 {
-    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    auto const cb = Gtk::make_managed<PrefCheckButton>();
     cb->init ( _("Enable gradient editing"), prefs_path + "/gradientdrag", def_value);
     p.add_line( false, "", *cb, "", _("Whether selected objects display gradient editing controls"));
 }
 
 void InkscapePreferences::AddLayerChangeCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value)
 {
-    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    auto const cb = Gtk::make_managed<PrefCheckButton>();
     cb->init ( _("Change layer on selection"), prefs_path + "/changelayer", def_value);
     p.add_line( false, "", *cb, "", _("Whether changing the selected objects changes the selected layer"));
 }
 
 void InkscapePreferences::AddPageChangeCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value)
 {
-    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    auto const cb = Gtk::make_managed<PrefCheckButton>();
     cb->init ( _("Change page on selection"), prefs_path + "/changepage", def_value);
     p.add_line( false, "", *cb, "", _("Whether changing the selected objects changes the selected page"));
 }
 
 void InkscapePreferences::AddConvertGuidesCheckbox(DialogPage &p, Glib::ustring const &prefs_path, bool def_value) {
-    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    auto const cb = Gtk::make_managed<PrefCheckButton>();
     cb->init ( _("Conversion to guides uses edges instead of bounding box"), prefs_path + "/convertguides", def_value);
     p.add_line( false, "", *cb, "", _("Converting an object to guides places these along the object's true edges (imitating the object's shape), not along the bounding box"));
 }
 
 void InkscapePreferences::AddDotSizeSpinbutton(DialogPage &p, Glib::ustring const &prefs_path, double def_value)
 {
-    PrefSpinButton* sb = Gtk::manage( new PrefSpinButton);
+    auto const sb = Gtk::make_managed<PrefSpinButton>();
     sb->init ( prefs_path + "/dot-size", 0.0, 1000.0, 0.1, 10.0, def_value, false, false);
     p.add_line( false, _("Ctrl+click _dot size:"), *sb, _("times current stroke width"),
                        _("Size of dots created with Ctrl+click (relative to current stroke width)"),
@@ -780,7 +780,7 @@ void InkscapePreferences::AddDotSizeSpinbutton(DialogPage &p, Glib::ustring cons
 
 void InkscapePreferences::AddBaseSimplifySpinbutton(DialogPage &p, Glib::ustring const &prefs_path, double def_value)
 {
-    PrefSpinButton* sb = Gtk::manage( new PrefSpinButton);
+    auto const sb = Gtk::make_managed<PrefSpinButton>();
     sb->init ( prefs_path + "/base-simplify", 0.0, 100.0, 1.0, 10.0, def_value, false, false);
     p.add_line( false, _("Base simplify:"), *sb, _("on dynamic LPE simplify"),
                        _("Base simplify of dynamic LPE based simplify"),
@@ -844,13 +844,13 @@ void InkscapePreferences::AddNewObjectsStyle(DialogPage &p, Glib::ustring const 
         p.add_group_header(banner);
     else
         p.add_group_header( _("Style of new objects"));
-    PrefRadioButton* current = Gtk::manage( new PrefRadioButton);
+    auto const current = Gtk::make_managed<PrefRadioButton>();
     current->init ( _("Last used style"), prefs_path + "/usecurrent", 1, true, nullptr);
     p.add_line( true, "", *current, "",
                 _("Apply the style you last set on an object"));
 
-    PrefRadioButton* own = Gtk::manage( new PrefRadioButton);
-    auto hb = Gtk::manage( new Gtk::Box);
+    auto const own = Gtk::make_managed<PrefRadioButton>();
+    auto const hb = Gtk::make_managed<Gtk::Box>();
     own->init ( _("This tool's own style:"), prefs_path + "/usecurrent", 0, false, current);
     own->set_halign(Gtk::ALIGN_START);
     own->set_valign(Gtk::ALIGN_START);
@@ -859,7 +859,7 @@ void InkscapePreferences::AddNewObjectsStyle(DialogPage &p, Glib::ustring const 
     p.add_line( true, "", *hb, "", "");
 
     // style swatch
-    Gtk::Button* button = Gtk::manage( new Gtk::Button(_("Take from selection"), true));
+    auto const button = Gtk::make_managed<Gtk::Button>(_("Take from selection"), true);
     StyleSwatch *swatch = nullptr;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
@@ -1001,7 +1001,7 @@ void InkscapePreferences::initPageTools()
     AddGradientCheckbox(_page_zoom, "/tools/zoom", false);
 
     //Measure
-    PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+    auto const cb = Gtk::make_managed<PrefCheckButton>();
     cb->init ( _("Ignore first and last points"), "/tools/measure/ignore_1st_and_last", true);
     _page_measure.add_line( false, "", *cb, "", _("The start and end of the measurement tool's control line will not be considered for calculating lengths. Only lengths between actual curve intersections will be displayed."));
 
@@ -1050,7 +1050,7 @@ void InkscapePreferences::initPageTools()
     this->AddSelcueCheckbox(_page_text, "/tools/text", true);
     this->AddGradientCheckbox(_page_text, "/tools/text", true);
     {
-        PrefCheckButton* cb = Gtk::manage( new PrefCheckButton);
+        auto cb = Gtk::make_managed<PrefCheckButton>();
         cb->init ( _("Show font samples in the drop-down list"), "/tools/text/show_sample_in_list", true);
         _page_text.add_line( false, "", *cb, "", _("Show font samples alongside font names in the drop-down list in Text bar"));
 
@@ -1059,7 +1059,7 @@ void InkscapePreferences::initPageTools()
         _font_sample.init("/tools/text/font_sample", true);
         _page_text.add_line( false, _("Font sample"), _font_sample, "", _("Change font preview sample text"), true);
 
-        cb = Gtk::manage(new PrefCheckButton);
+        cb = Gtk::make_managed<PrefCheckButton>();
         cb->init ( _("Use SVG2 auto-flowed text"),  "/tools/text/use_svg2", true);
         _page_text.add_line( false, "", *cb, "", _("Use SVG2 auto-flowed text instead of SVG1.2 auto-flowed text. (Recommended)"));
 
@@ -1593,7 +1593,7 @@ void InkscapePreferences::initPageUI()
 
     _misc_recent.init("/options/maxrecentdocuments/value", 0.0, 1000.0, 1.0, 1.0, 1.0, true, false);
 
-    Gtk::Button* reset_recent = Gtk::manage(new Gtk::Button(_("Clear list")));
+    auto const reset_recent = Gtk::make_managed<Gtk::Button>(_("Clear list"));
     reset_recent->signal_clicked().connect(sigc::mem_fun(*this, &InkscapePreferences::on_reset_open_recent_clicked));
 
     _page_ui.add_line( false, _("Maximum documents in Open _Recent:"), _misc_recent, "",
@@ -1629,16 +1629,16 @@ void InkscapePreferences::initPageUI()
     _page_ui.add_line(false, "", _narrow_spinbutton, "", _("Make number editing boxes smaller by limiting padding"), false);
 
     _page_ui.add_group_header(_("Status bar"));
-    auto sb_style = Gtk::make_managed<UI::Widget::PrefCheckButton>();
+    auto const sb_style = Gtk::make_managed<UI::Widget::PrefCheckButton>();
     sb_style->init(_("Show current style"), "/statusbar/visibility/style", true);
     _page_ui.add_line(false, "", *sb_style, "", _("Control visibility of current fill, stroke and opacity in status bar."), true);
-    auto sb_layer = Gtk::make_managed<UI::Widget::PrefCheckButton>();
+    auto const sb_layer = Gtk::make_managed<UI::Widget::PrefCheckButton>();
     sb_layer->init(_("Show layer selector"), "/statusbar/visibility/layer", true);
     _page_ui.add_line(false, "", *sb_layer, "", _("Control visibility of layer selection menu in status bar."), true);
-    auto sb_coords = Gtk::make_managed<UI::Widget::PrefCheckButton>();
+    auto const sb_coords = Gtk::make_managed<UI::Widget::PrefCheckButton>();
     sb_coords->init(_("Show mouse coordinates"), "/statusbar/visibility/coordinates", true);
     _page_ui.add_line(false, "", *sb_coords, "", _("Control visibility of mouse coordinates X & Y in status bar."), true);
-    auto sb_rotate = Gtk::make_managed<UI::Widget::PrefCheckButton>();
+    auto const sb_rotate = Gtk::make_managed<UI::Widget::PrefCheckButton>();
     sb_rotate->init(_("Show canvas rotation"), "/statusbar/visibility/rotation", true);
     _page_ui.add_line(false, "", *sb_rotate, "", _("Control visibility of canvas rotation in status bar."), true);
 
@@ -1684,13 +1684,12 @@ void InkscapePreferences::initPageUI()
     }
 
     _sys_user_themes_dir_copy.init(g_build_filename(g_get_user_data_dir(), "themes", nullptr), _("Open themes folder"));
-    _page_theme.add_line(true, _("User themes:"), _sys_user_themes_dir_copy, "", _("Location of the user’s themes"), true, Gtk::manage(new Gtk::Box()));
+    _page_theme.add_line(true, _("User themes:"), _sys_user_themes_dir_copy, "", _("Location of the user’s themes"), true, Gtk::make_managed<Gtk::Box>());
     _contrast_theme.init("/theme/contrast", 1, 10, 1, 2, 10, 1);
 
     _page_theme.add_line(true, "", _dark_theme, "", _("Use dark theme"), true);
     {
-        auto font_scale = new Inkscape::UI::Widget::PrefSlider();
-        font_scale = Gtk::manage(font_scale);
+        auto const font_scale = Gtk::make_managed<UI::Widget::PrefSlider>();
         font_scale->init(ThemeContext::get_font_scale_pref_path(), 50, 150, 5, 5, 100, 0); // 50% to 150%
         font_scale->getSlider()->signal_format_value().connect([=](double val) {
             return Glib::ustring::format(std::fixed, std::setprecision(0), val) + "%";
@@ -1699,13 +1698,13 @@ void InkscapePreferences::initPageUI()
         // font_scale->getSlider()->signal_value_changed().connect([=](){
             // INKSCAPE.themecontext->adjust_global_font_scale(font_scale->getSlider()->get_value() / 100.0);
         // });
-        auto space = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
+        auto const space = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
         space->set_valign(Gtk::ALIGN_CENTER);
-        auto reset = Gtk::make_managed<Gtk::Button>();
+        auto const reset = Gtk::make_managed<Gtk::Button>();
         reset->set_tooltip_text(_("Reset font size to 100%"));
         reset->set_image_from_icon_name("reset-settings-symbolic");
         reset->set_size_request(30, -1);
-        auto apply = Gtk::make_managed<Gtk::Button>(_("Apply"));
+        auto const apply = Gtk::make_managed<Gtk::Button>(_("Apply"));
         apply->set_tooltip_text(_("Apply font size changes to the UI"));
         apply->set_valign(Gtk::ALIGN_FILL);
         apply->set_margin_end(5);
@@ -1721,7 +1720,7 @@ void InkscapePreferences::initPageUI()
         });
         _page_theme.add_line(false, _("_Font scale:"), *font_scale, "", _("Adjust size of UI fonts"), true, space);
     }
-    auto space = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
+    auto const space = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     space->set_size_request(_sb_width / 3, -1);
     _page_theme.add_line(false, _("_Contrast:"), _contrast_theme, "",
                          _("Make background brighter or darker to adjust contrast"), true, space);
@@ -1774,7 +1773,7 @@ void InkscapePreferences::initPageUI()
         _icon_theme.signal_changed().connect(sigc::mem_fun(*this, &InkscapePreferences::symbolicThemeCheck));
         _sys_user_icons_dir_copy.init((char const *)IO::Resource::get_path(IO::Resource::USER, IO::Resource::ICONS, ""),
                              _("Open icons folder"));
-        _page_theme.add_line(true, _("User icons: "), _sys_user_icons_dir_copy, "", _("Location of the user’s icons"), true, Gtk::manage(new Gtk::Box()));
+        _page_theme.add_line(true, _("User icons: "), _sys_user_icons_dir_copy, "", _("Location of the user’s icons"), true, Gtk::make_managed<Gtk::Box>());
     }
     Glib::ustring themeiconname = prefs->getString("/theme/iconTheme", prefs->getString("/theme/defaultIconTheme", ""));
     _symbolic_icons.init(_("Use symbolic icons"), "/theme/symbolicIcons", false);
@@ -1807,18 +1806,18 @@ void InkscapePreferences::initPageUI()
     _symbolic_warning_color.connectChanged(changeIconsColor);
     _symbolic_success_color.connectChanged(changeIconsColor);
     _symbolic_error_color.connectChanged  (changeIconsColor);
-    Gtk::Box *icon_buttons = Gtk::manage(new Gtk::Box());
+    auto const icon_buttons = Gtk::make_managed<Gtk::Box>();
     icon_buttons->pack_start(_symbolic_base_color, true, true, 4);
     _page_theme.add_line(false, "", *icon_buttons, _("Icon color base"),
                          _("Base color for icons"), false);
-    Gtk::Box *icon_buttons_hight = Gtk::manage(new Gtk::Box());
+    auto const icon_buttons_hight = Gtk::make_managed<Gtk::Box>();
     icon_buttons_hight->pack_start(_symbolic_success_color, true, true, 4);
     icon_buttons_hight->pack_start(_symbolic_warning_color, true, true, 4);
     icon_buttons_hight->pack_start(_symbolic_error_color, true, true, 4);
     _page_theme.add_line(false, "", *icon_buttons_hight, _("Icon color highlights"),
                          _("Highlight colors supported by some symbolic icon themes"),
                          false);
-    Gtk::Box *icon_buttons_def = Gtk::manage(new Gtk::Box());
+    auto const icon_buttons_def = Gtk::make_managed<Gtk::Box>();
     resetIconsColors();
     changeIconsColors();
     _page_theme.add_line(false, "", *icon_buttons_def, "",
@@ -1839,7 +1838,7 @@ void InkscapePreferences::initPageUI()
         auto manager = gtk_source_style_scheme_manager_get_default();
         auto ids = gtk_source_style_scheme_manager_get_scheme_ids(manager);
 
-        auto syntax = Gtk::make_managed<UI::Widget::PrefCombo>();
+        auto const syntax = Gtk::make_managed<UI::Widget::PrefCombo>();
         std::vector<Glib::ustring> labels;
         std::vector<Glib::ustring> values;
         for (const char* style = *ids; style; style = *++ids) {
@@ -1857,9 +1856,9 @@ void InkscapePreferences::initPageUI()
     }
 #endif
     {
-        auto font_button = Gtk::make_managed<Gtk::Button>("...");
+        auto const font_button = Gtk::make_managed<Gtk::Button>("...");
         font_button->set_halign(Gtk::ALIGN_START);
-        auto font_box = Gtk::make_managed<Gtk::Entry>();
+        auto const font_box = Gtk::make_managed<Gtk::Entry>();
         font_box->set_editable(false);
         font_box->set_sensitive(false);
         auto theme = INKSCAPE.themecontext;
@@ -1884,7 +1883,7 @@ void InkscapePreferences::initPageUI()
         });
         _page_theme.add_line(false, _("Monospaced font:"), *font_box, "", _("Select fixed-width font"), true, font_button);
 
-        auto mono_font = Gtk::make_managed<UI::Widget::PrefCheckButton>();
+        auto const mono_font = Gtk::make_managed<UI::Widget::PrefCheckButton>();
         mono_font->init( _("Use monospaced font"), "/dialogs/xml/mono-font", false);
         _page_theme.add_line(false, _("XML tree:"), *mono_font, "", _("Use fixed-width font in XML Editor"), false);
     }
@@ -1931,7 +1930,7 @@ void InkscapePreferences::initPageUI()
             {_("Control bar icon size:"), Inkscape::UI::Toolbar::ctrlbars_icon_size},
         };
         for (auto&& tbox : toolbars) {
-            auto slider = Gtk::manage(new UI::Widget::PrefSlider(false));
+            auto const slider = Gtk::make_managed<UI::Widget::PrefSlider>(false);
             const int min = Inkscape::UI::Toolbar::min_pixel_size;
             const int max = Inkscape::UI::Toolbar::max_pixel_size;
             slider->init(tbox.prefs, min, max, 1, 4, min, 0);
@@ -2030,7 +2029,7 @@ void InkscapePreferences::initPageUI()
     };
     _page_windows.add_line(true, _("Labels behavior"), *Gtk::make_managed<PrefRadioButtons>(labels, "/options/notebooklabels/value"), "", "", false, reset_icon());
 
-    auto save_dlg = Gtk::make_managed<PrefCheckButton>();
+    auto const save_dlg = Gtk::make_managed<PrefCheckButton>();
     save_dlg->init(_("Save and restore dialogs' status"), "/options/savedialogposition/value", true);
     _page_windows.add_line(true, "", *save_dlg, "", _("Save and restore dialogs' status (the last open windows dialogs are saved when it closes)"));
 
@@ -2056,12 +2055,12 @@ void InkscapePreferences::initPageUI()
 
     _page_color_pickers.add_group_header(_("Visible color pickers"));
     {
-        auto container = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
+        auto const container = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
         auto prefs = Inkscape::Preferences::get();
         for (auto&& picker : Inkscape::UI::Widget::get_color_pickers()) {
-            auto btn = Gtk::make_managed<Gtk::ToggleButton>();
-            auto box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
-            auto label = Gtk::make_managed<Gtk::Label>(picker.label);
+            auto const btn = Gtk::make_managed<Gtk::ToggleButton>();
+            auto const box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
+            auto const label = Gtk::make_managed<Gtk::Label>(picker.label);
             label->set_valign(Gtk::ALIGN_CENTER);
             box->pack_start(*label);
             box->pack_start(*Gtk::make_managed<Gtk::Image>(picker.icon, Gtk::ICON_SIZE_BUTTON));
@@ -2139,18 +2138,18 @@ void InkscapePreferences::initPageUI()
         _grids_axonom_empspacing.init("/options/grids/axonom/empspacing", 1.0, 1000.0, 1.0, 5.0, 5.0, true, false);
         _grids_axonom.add_line( false, _("Major grid line every:"), _grids_axonom_empspacing, "", "", false);
     // Modular grid
-        auto units = Gtk::make_managed<UI::Widget::PrefUnit>();
+        auto const units = Gtk::make_managed<UI::Widget::PrefUnit>();
         units->init("/options/grids/modular/units");
-        auto origin_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto origin_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto block_width = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto block_height = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto gap_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto gap_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto margin_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto margin_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
-        auto color_major = Gtk::make_managed<UI::Widget::PrefColorPicker>();
-        auto color_minor = Gtk::make_managed<UI::Widget::PrefColorPicker>();
+        auto const origin_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const origin_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const block_width = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const block_height = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const gap_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const gap_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const margin_x = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const margin_y = Gtk::make_managed<UI::Widget::PrefSpinButton>();
+        auto const color_major = Gtk::make_managed<UI::Widget::PrefColorPicker>();
+        auto const color_minor = Gtk::make_managed<UI::Widget::PrefColorPicker>();
         color_minor->init(_("Minor grid line color:"), "/options/grids/modular/color", GRID_DEFAULT_MAJOR_COLOR);
         color_major->init(_("Major grid line color:"), "/options/grids/modular/empcolor", GRID_DEFAULT_BLOCK_COLOR);
 
@@ -2551,7 +2550,7 @@ void InkscapePreferences::initPageBehavior()
     _page_select.add_line( true, "", _sel_cycle, "",
                            _("Wrap around at start and end when cycling objects in z-order"));
 
-    auto paste_above_selected = Gtk::manage(new UI::Widget::PrefCheckButton());
+    auto const paste_above_selected = Gtk::make_managed<UI::Widget::PrefCheckButton>();
     paste_above_selected->init(_("Paste above selection instead of layer-top"), "/options/paste/aboveselected", true);
     _page_select.add_line(false, "", *paste_above_selected, "",
                           _("If checked, pasted items and imported documents will be placed immediately above the "
@@ -2888,12 +2887,12 @@ void InkscapePreferences::initPageRendering()
     _page_rendering.add_line(false, "", _cairo_dithering, "",  _("Makes gradients smoother. This can significantly impact the size of generated PNG files."));
 #endif
 
-    auto grid = Gtk::make_managed<Gtk::Grid>();
+    auto const grid = Gtk::make_managed<Gtk::Grid>();
     grid->set_border_width(12);
     grid->set_orientation(Gtk::ORIENTATION_VERTICAL);
     grid->set_column_spacing(12);
     grid->set_row_spacing(6);
-    auto revealer = Gtk::make_managed<Gtk::Revealer>();
+    auto const revealer = Gtk::make_managed<Gtk::Revealer>();
     revealer->add(*grid);
     revealer->set_reveal_child(Inkscape::Preferences::get()->getBool("/options/rendering/devmode"));
     _canvas_developer_mode_enabled.init(_("Enable developer mode"), "/options/rendering/devmode", false);
@@ -2905,13 +2904,13 @@ void InkscapePreferences::initPageRendering()
     auto add_devmode_line = [&] (Glib::ustring const &label, Gtk::Widget &widget, Glib::ustring const &suffix, Glib::ustring const &tip) {
         widget.set_tooltip_text(tip);
 
-        auto hb = Gtk::make_managed<Gtk::Box>();
+        auto const hb = Gtk::make_managed<Gtk::Box>();
         hb->set_spacing(12);
         hb->set_hexpand(true);
         hb->pack_start(widget, false, false);
         hb->set_valign(Gtk::ALIGN_CENTER);
 
-        auto label_widget = Gtk::make_managed<Gtk::Label>(label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true);
+        auto const label_widget = Gtk::make_managed<Gtk::Label>(label, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true);
         label_widget->set_mnemonic_widget(widget);
         label_widget->set_markup(label_widget->get_text());
         label_widget->set_margin_start(12);
@@ -2921,14 +2920,14 @@ void InkscapePreferences::initPageRendering()
         grid->attach_next_to(*hb, *label_widget, Gtk::POS_RIGHT, 1, 1);
 
         if (!suffix.empty()) {
-            auto suffix_widget = Gtk::make_managed<Gtk::Label>(suffix, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true);
+            auto const suffix_widget = Gtk::make_managed<Gtk::Label>(suffix, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true);
             suffix_widget->set_markup(suffix_widget->get_text());
             hb->pack_start(*suffix_widget, false, false);
         }
     };
 
     auto add_devmode_group_header = [&] (Glib::ustring const &name) {
-        auto label_widget = Gtk::make_managed<Gtk::Label>(Glib::ustring(/*"<span size='large'>*/"<b>") + name + Glib::ustring("</b>"/*</span>"*/) , Gtk::ALIGN_START , Gtk::ALIGN_CENTER, true);
+        auto const label_widget = Gtk::make_managed<Gtk::Label>(Glib::ustring(/*"<span size='large'>*/"<b>") + name + Glib::ustring("</b>"/*</span>"*/) , Gtk::ALIGN_START , Gtk::ALIGN_CENTER, true);
         label_widget->set_use_markup(true);
         label_widget->set_valign(Gtk::ALIGN_CENTER);
         grid->add(*label_widget);
@@ -3144,13 +3143,13 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     _mod_tree.set_tooltip_column(2);
 
     // In order to get tooltips on header, we must create our own label.
-    auto and_keys_header = Gtk::manage(new Gtk::Label(_("Modifier")));
+    auto const and_keys_header = Gtk::make_managed<Gtk::Label>(_("Modifier"));
     and_keys_header->set_tooltip_text(_("All keys specified must be held down to activate this functionality."));
     and_keys_header->set_visible(true);
     auto and_keys_column = _mod_tree.get_column(1);
     and_keys_column->set_widget(*and_keys_header);
 
-    auto edit_bar = Gtk::manage(new Gtk::Box());
+    auto const edit_bar = Gtk::make_managed<Gtk::Box>();
     _kb_mod_ctrl.set_label("Ctrl");
     _kb_mod_shift.set_label("Shift");
     _kb_mod_alt.set_label("Alt");
@@ -3185,23 +3184,23 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     row++;
 
     // ------ Reset/Import/Export -------
-    auto box_buttons = Gtk::manage(new Gtk::Box);
+    auto const box_buttons = Gtk::make_managed<Gtk::Box>();
 
     box_buttons->set_spacing(4);
     box_buttons->set_hexpand();
     _page_keyshortcuts.attach(*box_buttons, 0, row, 3, 1);
 
-    auto kb_reset = Gtk::manage(new Gtk::Button(_("Reset")));
+    auto const kb_reset = Gtk::make_managed<Gtk::Button>(_("Reset"));
     kb_reset->set_use_underline();
     kb_reset->set_tooltip_text(_("Remove all your customized keyboard shortcuts, and revert to the shortcuts in the shortcut file listed above"));
     box_buttons->pack_start(*kb_reset, false, true, 6);
 
-    auto kb_export = Gtk::manage(new Gtk::Button(_("Export ...")));
+    auto const kb_export = Gtk::make_managed<Gtk::Button>(_("Export ..."));
     kb_export->set_use_underline();
     kb_export->set_tooltip_text(_("Export custom keyboard shortcuts to a file"));
     box_buttons->pack_end(*kb_export, false, true, 6);
 
-    auto kb_import = Gtk::manage(new Gtk::Button(_("Import ...")));
+    auto const kb_import = Gtk::make_managed<Gtk::Button>(_("Import ..."));
     kb_import->set_use_underline();
     kb_import->set_tooltip_text(_("Import custom keyboard shortcuts from a file"));
     box_buttons->pack_end(*kb_import, false, true, 6);
@@ -3659,7 +3658,7 @@ void InkscapePreferences::initPageSystem()
 
     _sys_user_prefs.set_text(prefs->getPrefsFilename());
     _sys_user_prefs.set_editable(false);
-    Gtk::Button* reset_prefs = Gtk::manage(new Gtk::Button(_("Reset Preferences")));
+    auto const reset_prefs = Gtk::make_managed<Gtk::Button>(_("Reset Preferences"));
     reset_prefs->signal_clicked().connect(sigc::mem_fun(*this, &InkscapePreferences::on_reset_prefs_clicked));
 
     _page_system.add_line(true, _("User preferences:"), _sys_user_prefs, "",

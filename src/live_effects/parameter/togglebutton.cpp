@@ -95,17 +95,17 @@ ToggleButtonParam::param_newWidget()
         _toggled_connection.disconnect();
     }
 
-   checkwdg = Gtk::manage(
-        new Inkscape::UI::Widget::RegisteredToggleButton(param_label,
-                                                         param_tooltip,
-                                                         param_key,
-                                                         *param_wr,
-                                                         false,
-                                                         param_effect->getRepr(),
-                                                         param_effect->getSPDoc()) );
-   auto box_button = new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
+   auto const checkwdg = Gtk::make_managed<UI::Widget::RegisteredToggleButton>( param_label,
+                                                                                param_tooltip,
+                                                                                param_key,
+                                                                               *param_wr,
+                                                                                false,
+                                                                                param_effect->getRepr(),
+                                                                                param_effect->getSPDoc() );
+
+   auto const box_button = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
    box_button->set_homogeneous(false);
-   Gtk::Label *label = new Gtk::Label("");
+   auto const label = Gtk::make_managed<Gtk::Label>();
    if (!param_label.empty()) {
        if (value || inactive_label.empty()) {
            label->set_text(param_label.c_str());
@@ -134,7 +134,7 @@ ToggleButtonParam::param_newWidget()
        box_button->pack_start(*label, false, false, 1);
    }
 
-   checkwdg->add(*Gtk::manage(box_button));
+   checkwdg->add(*box_button);
    checkwdg->setActive(value);
    checkwdg->setProgrammatically = false;
    checkwdg->set_undo_parameters(_("Change togglebutton parameter"), INKSCAPE_ICON("dialog-path-effects"));

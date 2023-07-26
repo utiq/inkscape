@@ -120,7 +120,7 @@ void ColorNotebook::_initUI(bool no_alpha)
     _buttonbox->set_visible(true);
 
     // combo mode selection is compact and only shows one entry (active)
-    _combo = Gtk::manage(new IconComboBox());
+    _combo = Gtk::make_managed<IconComboBox>();
     _combo->set_can_focus(false);
     _combo->set_visible();
     _combo->set_tooltip_text(_("Choose style of color selection"));
@@ -205,7 +205,7 @@ void ColorNotebook::_initUI(bool no_alpha)
     gtk_widget_set_halign(_rgbal, GTK_ALIGN_END);
     gtk_box_pack_start(GTK_BOX(rgbabox), _rgbal, TRUE, TRUE, 2);
 
-    ColorEntry *rgba_entry = Gtk::manage(new ColorEntry(_selected_color));
+    auto const rgba_entry = Gtk::make_managed<ColorEntry>(_selected_color);
     sp_dialog_defocus_on_enter(GTK_WIDGET(rgba_entry->gobj()));
     gtk_box_pack_start(GTK_BOX(rgbabox), GTK_WIDGET(rgba_entry->gobj()), FALSE, FALSE, 0);
     gtk_label_set_mnemonic_widget(GTK_LABEL(_rgbal), GTK_WIDGET(rgba_entry->gobj()));

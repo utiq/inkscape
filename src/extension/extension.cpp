@@ -1026,7 +1026,7 @@ Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<voi
         return nullptr;
     }
 
-    AutoGUI * agui = Gtk::manage(new AutoGUI());
+    auto const agui = Gtk::make_managed<AutoGUI>();
     agui->set_border_width(InxParameter::GUI_BOX_MARGIN);
     agui->set_spacing(InxParameter::GUI_BOX_SPACING);
 
@@ -1052,16 +1052,15 @@ Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<voi
 Gtk::Box *
 Extension::get_info_widget()
 {
-    Gtk::Box * retval = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    auto const retval = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     retval->set_border_width(4);
 
-    Gtk::Frame * info = Gtk::manage(new Gtk::Frame("General Extension Information"));
+    auto const info = Gtk::make_managed<Gtk::Frame>("General Extension Information");
     retval->pack_start(*info, true, true, 4);
 
-    auto table = Gtk::manage(new Gtk::Grid());
+    auto const table = Gtk::make_managed<Gtk::Grid>();
     table->set_border_width(4);
     table->set_column_spacing(4);
-
     info->add(*table);
 
     int row = 0;
@@ -1075,27 +1074,22 @@ Extension::get_info_widget()
 
 void Extension::add_val(Glib::ustring labelstr, Glib::ustring valuestr, Gtk::Grid * table, int * row)
 {
-    Gtk::Label * label;
-    Gtk::Label * value;
+    auto const label = Gtk::make_managed<Gtk::Label>(labelstr, Gtk::ALIGN_START);
+    auto const value = Gtk::make_managed<Gtk::Label>(valuestr, Gtk::ALIGN_START);
 
     (*row)++;
-    label = Gtk::manage(new Gtk::Label(labelstr, Gtk::ALIGN_START));
-    value = Gtk::manage(new Gtk::Label(valuestr, Gtk::ALIGN_START));
-
     table->attach(*label, 0, (*row) - 1, 1, 1);
     table->attach(*value, 1, (*row) - 1, 1, 1);
 
     label->set_visible(true);
     value->set_visible(true);
-
-    return;
 }
 
 Gtk::Box *
 Extension::get_params_widget()
 {
-    Gtk::Box * retval = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
-    Gtk::Widget * content = Gtk::manage(new Gtk::Label("Params"));
+    auto const retval = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    Gtk::Widget * content = Gtk::make_managed<Gtk::Label>("Params");
     retval->pack_start(*content, true, true, 4);
     content->set_visible(true);
     retval->set_visible(true);

@@ -66,7 +66,7 @@ SimpleFilterModifier::SimpleFilterModifier(int flags)
     /* "More options" expander --------
     _extras.set_visible();
     _extras.set_label(_("More options"));
-    auto box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    auto const box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     _extras.add(*box);
     if (flags & (BLEND | BLUR)) {
         add(_extras);

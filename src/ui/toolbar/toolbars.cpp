@@ -141,7 +141,7 @@ void Toolbars::create_toolbars(SPDesktop* desktop) {
             //             ===== End Styling =====
 
             // Use a grid to wrap the toolbar and a possible swatch.
-            auto grid = Gtk::make_managed<Gtk::Grid>();
+            auto const grid = Gtk::make_managed<Gtk::Grid>();
 
             // Store a pointer to the grid so we can show/hide it as the tool changes.
             toolbar_map[aux_toolboxes[i].tool_name] = grid;
@@ -153,7 +153,7 @@ void Toolbars::create_toolbars(SPDesktop* desktop) {
 
             // Add a swatch widget if swatch tooltip is defined.
             if ( aux_toolboxes[i].swatch_tip) {
-                auto swatch = Gtk::make_managed<Inkscape::UI::Widget::StyleSwatch>( nullptr, _(aux_toolboxes[i].swatch_tip) );
+                auto const swatch = Gtk::make_managed<Inkscape::UI::Widget::StyleSwatch>( nullptr, _(aux_toolboxes[i].swatch_tip) );
                 swatch->setDesktop( desktop );
                 swatch->setToolName(aux_toolboxes[i].tool_name);
                 swatch->setWatchedTool( aux_toolboxes[i].type_name, true );

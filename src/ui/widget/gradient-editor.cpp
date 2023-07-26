@@ -153,7 +153,7 @@ Glib::ustring get_repeat_icon(SPGradientSpread mode) {
 
 GradientEditor::GradientEditor(const char* prefs) :
     _builder(Inkscape::UI::create_builder("gradient-edit.glade")),
-    _selector(Gtk::manage(new GradientSelector())),
+    _selector(Gtk::make_managed<GradientSelector>()),
     _repeat_icon(get_widget<Gtk::Image>(_builder, "repeatIco")),
     _popover(get_widget<Gtk::Popover>(_builder, "libraryPopover")),
     _stop_tree(get_widget<Gtk::TreeView>(_builder, "stopList")),
@@ -207,7 +207,7 @@ GradientEditor::GradientEditor(const char* prefs) :
     gradBox.pack_start(_gradient_image, true, true, 0);
 
     // add color selector
-    auto color_selector = Gtk::manage(new ColorNotebook(_selected_color));
+    auto const color_selector = Gtk::make_managed<ColorNotebook>(_selected_color);
     color_selector->set_label(_("Stop color"));
     color_selector->set_visible(true);
     _colors_box.pack_start(*color_selector, true, true, 0);
@@ -281,10 +281,10 @@ GradientEditor::GradientEditor(const char* prefs) :
         item.signal_activate().connect([=](){ set_repeat_mode(mode); });
         // pack icon and text into MenuItem, since MenuImageItem is deprecated
         auto text = item.get_label();
-        auto hbox = Gtk::manage(new Gtk::Box);
+        auto const hbox = Gtk::make_managed<Gtk::Box>();
         Gtk::Image* img = sp_get_icon_image(get_repeat_icon(mode), Gtk::ICON_SIZE_BUTTON);
         hbox->pack_start(*img, false, true, 8);
-        auto label = Gtk::manage(new Gtk::Label);
+        auto const label = Gtk::make_managed<Gtk::Label>();
         label->set_label(text);
         hbox->pack_start(*label, false, true, 8);
         hbox->show_all();

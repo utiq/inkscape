@@ -143,7 +143,7 @@ StrokeStyle::StrokeStyle() :
     _old_unit(nullptr)
 {
     set_name("StrokeSelector");
-    table = Gtk::manage(new Gtk::Grid());
+    table = Gtk::make_managed<Gtk::Grid>();
     table->set_border_width(4);
     table->set_row_spacing(4);
     table->set_hexpand(false);
@@ -171,7 +171,7 @@ StrokeStyle::StrokeStyle() :
     sp_dialog_defocus_on_enter_cpp(widthSpin);
 
     hb->pack_start(*widthSpin, false, false, 0);
-    unitSelector = Gtk::manage(new Inkscape::UI::Widget::UnitMenu());
+    unitSelector = Gtk::make_managed<Inkscape::UI::Widget::UnitMenu>();
     unitSelector->setUnitType(Inkscape::Util::UNIT_TYPE_LINEAR);
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
 
@@ -197,7 +197,7 @@ StrokeStyle::StrokeStyle() :
                                             //   implement a set_mnemonic_source function in the
                                             //   Inkscape::UI::Widget::DashSelector class, so that we do not have to
                                             //   expose any of the underlying widgets?
-    dashSelector = Gtk::manage(new Inkscape::UI::Widget::DashSelector);
+    dashSelector = Gtk::make_managed<Inkscape::UI::Widget::DashSelector>();
     _pattern = Gtk::make_managed<Gtk::Entry>();
 
     dashSelector->set_visible(true);
@@ -238,7 +238,7 @@ StrokeStyle::StrokeStyle() :
     hb = spw_hbox(table, 1, 1, i);
     i++;
 
-    startMarkerCombo = Gtk::manage(new MarkerComboBox("marker-start", SP_MARKER_LOC_START));
+    startMarkerCombo = Gtk::make_managed<MarkerComboBox>("marker-start", SP_MARKER_LOC_START);
     startMarkerCombo->set_tooltip_text(_("Start Markers are drawn on the first node of a path or shape"));
     startMarkerConn = startMarkerCombo->signal_changed().connect([=]() { markerSelectCB(startMarkerCombo, SP_MARKER_LOC_START); });
     startMarkerCombo->edit_signal.connect([=] { enterEditMarkerMode(SP_MARKER_LOC_START); });
@@ -246,7 +246,7 @@ StrokeStyle::StrokeStyle() :
 
     hb->pack_start(*startMarkerCombo, true, true, 0);
 
-    midMarkerCombo = Gtk::manage(new MarkerComboBox("marker-mid", SP_MARKER_LOC_MID));
+    midMarkerCombo = Gtk::make_managed<MarkerComboBox>("marker-mid", SP_MARKER_LOC_MID);
     midMarkerCombo->set_tooltip_text(_("Mid Markers are drawn on every node of a path or shape except the first and last nodes"));
     midMarkerConn = midMarkerCombo->signal_changed().connect([=]() { markerSelectCB(midMarkerCombo, SP_MARKER_LOC_MID); });
     midMarkerCombo->edit_signal.connect([=] { enterEditMarkerMode(SP_MARKER_LOC_MID); });
@@ -254,7 +254,7 @@ StrokeStyle::StrokeStyle() :
 
     hb->pack_start(*midMarkerCombo, true, true, 0);
 
-    endMarkerCombo = Gtk::manage(new MarkerComboBox("marker-end", SP_MARKER_LOC_END));
+    endMarkerCombo = Gtk::make_managed<MarkerComboBox>("marker-end", SP_MARKER_LOC_END);
     endMarkerCombo->set_tooltip_text(_("End Markers are drawn on the last node of a path or shape"));
     endMarkerConn = endMarkerCombo->signal_changed().connect([=]() { markerSelectCB(endMarkerCombo, SP_MARKER_LOC_END); });
     endMarkerCombo->edit_signal.connect([=] { enterEditMarkerMode(SP_MARKER_LOC_END); });

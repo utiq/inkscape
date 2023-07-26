@@ -276,7 +276,7 @@ void DialogNotebook::add_page(Gtk::Widget &page, Gtk::Widget &tab, Glib::ustring
 
     auto container = dynamic_cast<Gtk::Box *>(&page);
     if (container) {
-        auto *wrapper = Gtk::manage(new Gtk::ScrolledWindow());
+        auto const wrapper = Gtk::make_managed<Gtk::ScrolledWindow>();
         wrapper->set_vexpand(true);
         wrapper->set_propagate_natural_height(true);
         wrapper->set_valign(Gtk::ALIGN_FILL);
@@ -284,7 +284,7 @@ void DialogNotebook::add_page(Gtk::Widget &page, Gtk::Widget &tab, Glib::ustring
         wrapper->set_can_focus(false);
         wrapper->get_style_context()->add_class("noborder");
 
-        auto *wrapperbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL,0));
+        auto const wrapperbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL,0);
         wrapperbox->set_valign(Gtk::ALIGN_FILL);
         wrapperbox->set_vexpand(true);
 
@@ -832,7 +832,7 @@ void DialogNotebook::reload_tab_menu()
                 }
             }
 
-            Gtk::Label *labelto = Gtk::manage(new Gtk::Label(label->get_text()));
+            auto const labelto = Gtk::make_managed<Gtk::Label>(label->get_text());
             labelto->set_hexpand(true);
             boxmenu->add(*labelto);
 

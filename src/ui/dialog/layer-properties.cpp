@@ -279,23 +279,23 @@ void LayerPropertiesDialog::_setup_layers_controls()
     _tree.set_model( _store );
     _tree.set_headers_visible(false);
 
-    auto *eyeRenderer = Gtk::manage(new UI::Widget::ImageToggler(INKSCAPE_ICON("object-visible"),
-                                                                 INKSCAPE_ICON("object-hidden")));
+    auto const eyeRenderer = Gtk::make_managed<UI::Widget::ImageToggler>(INKSCAPE_ICON("object-visible"),
+                                                                         INKSCAPE_ICON("object-hidden"));
     int visibleColNum = _tree.append_column("vis", *eyeRenderer) - 1;
     Gtk::TreeViewColumn *col = _tree.get_column(visibleColNum);
     if (col) {
         col->add_attribute(eyeRenderer->property_active(), _model->_colVisible);
     }
 
-    auto *renderer = Gtk::manage(new UI::Widget::ImageToggler(INKSCAPE_ICON("object-locked"),
-                                                              INKSCAPE_ICON("object-unlocked")));
+    auto const renderer = Gtk::make_managed<UI::Widget::ImageToggler>(INKSCAPE_ICON("object-locked"),
+                                                                      INKSCAPE_ICON("object-unlocked"));
     int lockedColNum = _tree.append_column("lock", *renderer) - 1;
     col = _tree.get_column(lockedColNum);
     if (col) {
         col->add_attribute(renderer->property_active(), _model->_colLocked);
     }
 
-    Gtk::CellRendererText *_text_renderer = Gtk::manage(new Gtk::CellRendererText());
+    auto const _text_renderer = Gtk::make_managed<Gtk::CellRendererText>();
     int nameColNum = _tree.append_column("Name", *_text_renderer) - 1;
     Gtk::TreeView::Column *_name_column = _tree.get_column(nameColNum);
     _name_column->add_attribute(_text_renderer->property_text(), _model->_colLabel);

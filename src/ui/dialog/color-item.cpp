@@ -304,7 +304,7 @@ void ColorItem::on_rightclick(GdkEventButton *event)
     auto menu = Glib::wrap(GTK_MENU(menu_gobj)); /* C */
 
     auto additem = [&, this] (Glib::ustring const &name, sigc::slot<void()> slot) {
-        auto item = Gtk::make_managed<Gtk::MenuItem>(name);
+        auto const item = Gtk::make_managed<Gtk::MenuItem>(name);
         menu->append(*item);
         item->signal_activate().connect(SIGC_TRACKING_ADAPTOR(slot, *this));
     };
@@ -367,7 +367,7 @@ void ColorItem::on_rightclick(GdkEventButton *event)
     auto create_convert_submenu = [&] {
         menu->append(*Gtk::make_managed<Gtk::SeparatorMenuItem>());
 
-        auto convert_item = Gtk::make_managed<Gtk::MenuItem>(_("Convert"));
+        auto const convert_item = Gtk::make_managed<Gtk::MenuItem>(_("Convert"));
         menu->append(*convert_item);
 
         convert_submenu = Gtk::make_managed<Gtk::Menu>();
@@ -379,7 +379,7 @@ void ColorItem::on_rightclick(GdkEventButton *event)
             create_convert_submenu();
         }
 
-        auto item = Gtk::make_managed<Gtk::MenuItem>(name);
+        auto const item = Gtk::make_managed<Gtk::MenuItem>(name);
         convert_submenu->append(*item);
         item->signal_activate().connect(slot);
     };

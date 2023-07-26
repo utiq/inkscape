@@ -269,10 +269,10 @@ void SatelliteParam::on_link_button_click()
 
 Gtk::Widget *SatelliteParam::param_newWidget()
 {
-    Gtk::Box *_widget = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+    auto const _widget = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("edit-clone", Gtk::ICON_SIZE_BUTTON));
-    Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
-    Gtk::Label *pLabel = Gtk::manage(new Gtk::Label(param_label));
+    auto const pButton = Gtk::make_managed<Gtk::Button>();
+    auto const pLabel = Gtk::make_managed<Gtk::Label>(param_label);
     _widget->pack_start(*pLabel, true, true);
     pLabel->set_tooltip_text(param_tooltip);
     pButton->set_relief(Gtk::RELIEF_NONE);
@@ -285,7 +285,7 @@ Gtk::Widget *SatelliteParam::param_newWidget()
 
     _widget->show_all_children();
 
-    return dynamic_cast<Gtk::Widget *>(_widget);
+    return _widget;
 }
 
 } /* namespace LivePathEffect */

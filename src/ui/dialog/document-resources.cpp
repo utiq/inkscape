@@ -347,7 +347,7 @@ DocumentResources::DocumentResources()
     _selector.insert_column("", *icon_renderer, 0);
     auto column = _selector.get_column(0);
     column->add_attribute(*icon_renderer, icon_renderer->property_shape_type().get_name(), COL_ICON);
-    auto count_renderer = Gtk::make_managed<Gtk::CellRendererText>();
+    auto const count_renderer = Gtk::make_managed<Gtk::CellRendererText>();
     auto count_column = _selector.get_column(_selector.append_column("", *count_renderer) - 1);
     count_column->add_attribute(*count_renderer, "text", COL_COUNT);
     count_column->set_cell_data_func(*count_renderer, [=](Gtk::CellRenderer* r, const Gtk::TreeModel::iterator& it){

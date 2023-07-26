@@ -109,25 +109,25 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
     /* Main table */
-    dtw->_vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    dtw->_vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     dtw->_vbox->set_name("DesktopMainTable");
     dtw->add(*dtw->_vbox);
 
     /* Status bar */
-    dtw->_statusbar = Gtk::manage(new Gtk::Box());
+    dtw->_statusbar = Gtk::make_managed<Gtk::Box>();
     dtw->_statusbar->set_name("DesktopStatusBar");
     dtw->_vbox->pack_end(*dtw->_statusbar, false, true);
 
     /* Swatch Bar */
-    dtw->_panels = Gtk::manage(new Inkscape::UI::Dialog::SwatchesPanel("/embedded/swatches"));
+    dtw->_panels = Gtk::make_managed<Inkscape::UI::Dialog::SwatchesPanel>("/embedded/swatches");
     dtw->_panels->set_vexpand(false);
     dtw->_vbox->pack_end(*dtw->_panels, false, true);
 
     /* DesktopHBox (Vertical toolboxes, canvas) */
-    dtw->_hbox = Gtk::manage(new Gtk::Box());
+    dtw->_hbox = Gtk::make_managed<Gtk::Box>();
     dtw->_hbox->set_name("DesktopHbox");
 
-    dtw->_tbbox = Gtk::manage(new Gtk::Paned(Gtk::ORIENTATION_HORIZONTAL));
+    dtw->_tbbox = Gtk::make_managed<Gtk::Paned>(Gtk::ORIENTATION_HORIZONTAL);
     dtw->_tbbox->set_name("ToolboxCanvasPaned");
     dtw->_hbox->pack_start(*dtw->_tbbox, true, true);
 
@@ -197,7 +197,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     sticky_zoom_updated();
 
     /* Dialog Container */
-    _container = Gtk::manage(new DialogContainer(inkscape_window));
+    _container = Gtk::make_managed<DialogContainer>(inkscape_window);
     _columns = _container->get_columns();
     _columns->set_dropzone_sizes(2, -1);
     dtw->_tbbox->pack2(*_container, true, true);
@@ -209,15 +209,15 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     // --------------- Status Tool Bar ------------------//
 
     // Selected Style (Fill/Stroke/Opacity)
-    dtw->_selected_style = Gtk::manage(new Inkscape::UI::Widget::SelectedStyle(true));
+    dtw->_selected_style = Gtk::make_managed<Inkscape::UI::Widget::SelectedStyle>(true);
     dtw->_statusbar->pack_start(*dtw->_selected_style, false, false);
     _selected_style->show_all();
     _selected_style->set_no_show_all();
 
     // Layer Selector
-    _layer_selector = Gtk::manage(new Inkscape::UI::Widget::LayerSelector(nullptr));
+    _layer_selector = Gtk::make_managed<Inkscape::UI::Widget::LayerSelector>(nullptr);
     // separate layer selector buttons from status text
-    auto vseparator = Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_VERTICAL);
+    auto const vseparator = Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_VERTICAL);
     vseparator->set_margin_end(6);
     vseparator->set_margin_top(6);
     vseparator->set_margin_bottom(6);
@@ -227,7 +227,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_statusbar->pack_start(*_layer_selector, false, false, 1);
 
     // Select Status
-    dtw->_select_status = Gtk::manage(new Gtk::Label());
+    dtw->_select_status = Gtk::make_managed<Gtk::Label>();
     dtw->_select_status->set_name("SelectStatus");
     dtw->_select_status->set_ellipsize(Pango::ELLIPSIZE_END);
     dtw->_select_status->set_line_wrap(true);
@@ -243,7 +243,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     dtw->_zoom_status_box = Gtk::make_managed<Gtk::Box>();
     // Zoom status spinbutton ---------------
     auto zoom_adj = Gtk::Adjustment::create(100.0, log(SP_DESKTOP_ZOOM_MIN)/log(2), log(SP_DESKTOP_ZOOM_MAX)/log(2), 0.1);
-    dtw->_zoom_status = Gtk::manage(new Inkscape::UI::Widget::SpinButton(zoom_adj));
+    dtw->_zoom_status = Gtk::make_managed<Inkscape::UI::Widget::SpinButton>(zoom_adj);
 
     dtw->_zoom_status->set_defocus_widget(dtw->_canvas);
     dtw->_zoom_status->set_tooltip_text(_("Zoom"));
@@ -271,7 +271,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     // Rotate status spinbutton ---------------
     auto rotation_adj = Gtk::Adjustment::create(0, -360.0, 360.0, 1.0);
 
-    dtw->_rotation_status = Gtk::manage(new Inkscape::UI::Widget::SpinButton(rotation_adj));
+    dtw->_rotation_status = Gtk::make_managed<Inkscape::UI::Widget::SpinButton>(rotation_adj);
 
     // FIXME: This is a bit of a hack, to avoid the ExpressionEvaluator struggling to parse the
     //        degree symbol.  It would be better to improve ExpressionEvaluator so it copes
@@ -297,34 +297,34 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     context_rotation->add_provider(css_provider_spinbutton, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
     // Cursor coordinates
-    dtw->_coord_status = Gtk::manage(new Gtk::Grid());
+    dtw->_coord_status = Gtk::make_managed<Gtk::Grid>();
     dtw->_coord_status->set_name("CoordinateAndZStatus");
     dtw->_coord_status->set_row_spacing(0);
     dtw->_coord_status->set_column_spacing(10);
     dtw->_coord_status->set_margin_end(10);
-    auto sep = Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_VERTICAL));
+    auto const sep = Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_VERTICAL);
     sep->set_name("CoordinateSeparator");
     dtw->_coord_status->attach(*sep, 0, 0, 1, 2);
 
     dtw->_coord_status->set_tooltip_text(_("Cursor coordinates"));
-    auto label_x = Gtk::manage(new Gtk::Label(_("X:")));
-    auto label_y = Gtk::manage(new Gtk::Label(_("Y:")));
+    auto const label_x = Gtk::make_managed<Gtk::Label>(_("X:"));
+    auto const label_y = Gtk::make_managed<Gtk::Label>(_("Y:"));
     label_x->set_halign(Gtk::ALIGN_START);
     label_y->set_halign(Gtk::ALIGN_START);
     dtw->_coord_status->attach(*label_x, 1, 0, 1, 1);
     dtw->_coord_status->attach(*label_y, 1, 1, 1, 1);
-    dtw->_coord_status_x = Gtk::manage(new Gtk::Label());
-    dtw->_coord_status_y = Gtk::manage(new Gtk::Label());
+    dtw->_coord_status_x = Gtk::make_managed<Gtk::Label>();
+    dtw->_coord_status_y = Gtk::make_managed<Gtk::Label>();
     dtw->_coord_status_x->set_name("CoordinateStatusX");
     dtw->_coord_status_y->set_name("CoordinateStatusY");
     dtw->_coord_status_x->set_markup("   0.00 ");
     dtw->_coord_status_y->set_markup("   0.00 ");
 
     // TRANSLATORS: Abbreviation for canvas zoom level
-    auto label_z = Gtk::manage(new Gtk::Label(C_("canvas", "Z:")));
+    auto const label_z = Gtk::make_managed<Gtk::Label>(C_("canvas", "Z:"));
     label_z->set_name("ZLabel");
     // TRANSLATORS: Abbreviation for canvas rotation
-    auto label_r = Gtk::manage(new Gtk::Label(C_("canvas", "R:")));
+    auto const label_r = Gtk::make_managed<Gtk::Label>(C_("canvas", "R:"));
     label_r->set_name("RLabel");
 
     dtw->_coord_status_x->set_halign(Gtk::ALIGN_END);
@@ -954,7 +954,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
     _layer_selector->setDesktop(dtw->desktop);
 
     // We never want a page widget if there's no desktop.
-    _page_selector = Gtk::manage(new Inkscape::UI::Widget::PageSelector(desktop));
+    _page_selector = Gtk::make_managed<Inkscape::UI::Widget::PageSelector>(desktop);
     _statusbar->pack_end(*_page_selector, false, false);
 
     // tool_toolbars is an empty Gtk::Box at this point, fill it.
@@ -1172,13 +1172,13 @@ SPDesktopWidget::zoom_populate_popup(Gtk::Menu *menu)
         menu->remove(*iter);
     }
 
-    auto item_1000 = Gtk::manage(new Gtk::MenuItem("1000%"));
-    auto item_500  = Gtk::manage(new Gtk::MenuItem("500%"));
-    auto item_200  = Gtk::manage(new Gtk::MenuItem("200%"));
-    auto item_100  = Gtk::manage(new Gtk::MenuItem("100%"));
-    auto item_50   = Gtk::manage(new Gtk::MenuItem( "50%"));
-    auto item_25   = Gtk::manage(new Gtk::MenuItem( "25%"));
-    auto item_10   = Gtk::manage(new Gtk::MenuItem( "10%"));
+    auto const item_1000 = Gtk::make_managed<Gtk::MenuItem>("1000%");
+    auto const item_500  = Gtk::make_managed<Gtk::MenuItem>("500%");
+    auto const item_200  = Gtk::make_managed<Gtk::MenuItem>("200%");
+    auto const item_100  = Gtk::make_managed<Gtk::MenuItem>("100%");
+    auto const item_50   = Gtk::make_managed<Gtk::MenuItem>( "50%");
+    auto const item_25   = Gtk::make_managed<Gtk::MenuItem>( "25%");
+    auto const item_10   = Gtk::make_managed<Gtk::MenuItem>( "10%");
 
     item_1000->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler), 10.00));
     item_500->signal_activate().connect( sigc::bind(sigc::mem_fun(*this, &SPDesktopWidget::zoom_menu_handler),  5.00));
@@ -1196,22 +1196,22 @@ SPDesktopWidget::zoom_populate_popup(Gtk::Menu *menu)
     menu->append(*item_25);
     menu->append(*item_10);
 
-    auto sep = Gtk::manage(new Gtk::SeparatorMenuItem());
+    auto const sep = Gtk::make_managed<Gtk::SeparatorMenuItem>();
     menu->append(*sep);
 
-    auto item_page = Gtk::manage(new Gtk::MenuItem(_("Page")));
+    auto const item_page = Gtk::make_managed<Gtk::MenuItem>(_("Page"));
     item_page->signal_activate().connect([=]() { desktop->getDocument()->getPageManager().zoomToSelectedPage(desktop); });
     menu->append(*item_page);
 
-    auto item_drawing = Gtk::manage(new Gtk::MenuItem(_("Drawing")));
+    auto const item_drawing = Gtk::make_managed<Gtk::MenuItem>(_("Drawing"));
     item_drawing->signal_activate().connect(sigc::mem_fun(*desktop, &SPDesktop::zoom_drawing));
     menu->append(*item_drawing);
 
-    auto item_selection = Gtk::manage(new Gtk::MenuItem(_("Selection")));
+    auto const item_selection = Gtk::make_managed<Gtk::MenuItem>(_("Selection"));
     item_selection->signal_activate().connect(sigc::mem_fun(*desktop, &SPDesktop::zoom_selection));
     menu->append(*item_selection);
 
-    auto item_center_page = Gtk::manage(new Gtk::MenuItem(_("Centre Page")));
+    auto const item_center_page = Gtk::make_managed<Gtk::MenuItem>(_("Centre Page"));
     item_center_page->signal_activate().connect([=]() { desktop->getDocument()->getPageManager().centerToSelectedPage(desktop); });
     menu->append(*item_center_page);
 
@@ -1292,14 +1292,14 @@ SPDesktopWidget::rotation_populate_popup(Gtk::Menu *menu)
         menu->remove(*iter);
     }
 
-    auto item_m135 = Gtk::manage(new Gtk::MenuItem("-135°"));
-    auto item_m90  = Gtk::manage(new Gtk::MenuItem( "-90°"));
-    auto item_m45  = Gtk::manage(new Gtk::MenuItem( "-45°"));
-    auto item_0    = Gtk::manage(new Gtk::MenuItem(   "0°"));
-    auto item_p45  = Gtk::manage(new Gtk::MenuItem(  "45°"));
-    auto item_p90  = Gtk::manage(new Gtk::MenuItem(  "90°"));
-    auto item_p135 = Gtk::manage(new Gtk::MenuItem( "135°"));
-    auto item_p180 = Gtk::manage(new Gtk::MenuItem( "180°"));
+    auto const item_m135 = Gtk::make_managed<Gtk::MenuItem>("-135°");
+    auto const item_m90  = Gtk::make_managed<Gtk::MenuItem>( "-90°");
+    auto const item_m45  = Gtk::make_managed<Gtk::MenuItem>( "-45°");
+    auto const item_0    = Gtk::make_managed<Gtk::MenuItem>(   "0°");
+    auto const item_p45  = Gtk::make_managed<Gtk::MenuItem>(  "45°");
+    auto const item_p90  = Gtk::make_managed<Gtk::MenuItem>(  "90°");
+    auto const item_p135 = Gtk::make_managed<Gtk::MenuItem>( "135°");
+    auto const item_p180 = Gtk::make_managed<Gtk::MenuItem>( "180°");
 
     item_m135->signal_activate().connect(sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value), -135));
     item_m90->signal_activate().connect( sigc::bind(sigc::mem_fun(*_rotation_status, &Gtk::SpinButton::set_value), -90));

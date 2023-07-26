@@ -32,7 +32,7 @@ NewFromTemplate::NewFromTemplate()
     set_title(_("New From Template"));
     resize(750, 500);
 
-    templates = Gtk::manage(new Inkscape::UI::Widget::TemplateList());
+    templates = Gtk::make_managed<Inkscape::UI::Widget::TemplateList>();
     get_content_area()->pack_start(*templates);
     templates->init(Inkscape::Extension::TEMPLATE_NEW_FROM);
 

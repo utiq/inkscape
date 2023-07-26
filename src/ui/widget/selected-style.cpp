@@ -186,7 +186,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         _lgradient[i].show_all();
         __lgradient[i] = (i == SS_FILL)? (_("Linear gradient (fill)")) : (_("Linear gradient (stroke)"));
 
-        _gradient_preview_l[i] = Gtk::manage(new GradientImage(nullptr));
+        _gradient_preview_l[i] = Gtk::make_managed<GradientImage>(nullptr);
         _gradient_box_l[i].set_orientation(Gtk::ORIENTATION_HORIZONTAL);
         _gradient_box_l[i].pack_start(_lgradient[i]);
         _gradient_box_l[i].pack_start(*_gradient_preview_l[i]);
@@ -196,7 +196,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         _rgradient[i].show_all();
         __rgradient[i] = (i == SS_FILL)? (_("Radial gradient (fill)")) : (_("Radial gradient (stroke)"));
 
-        _gradient_preview_r[i] = Gtk::manage(new GradientImage(nullptr));
+        _gradient_preview_r[i] = Gtk::make_managed<GradientImage>(nullptr);
         _gradient_box_r[i].set_orientation(Gtk::ORIENTATION_HORIZONTAL);
         _gradient_box_r[i].pack_start(_rgradient[i]);
         _gradient_box_r[i].pack_start(*_gradient_preview_r[i]);
@@ -207,7 +207,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         _mgradient[i].show_all();
         __mgradient[i] = (i == SS_FILL)? (_("Mesh gradient (fill)")) : (_("Mesh gradient (stroke)"));
 
-        _gradient_preview_m[i] = Gtk::manage(new GradientImage(nullptr));
+        _gradient_preview_m[i] = Gtk::make_managed<GradientImage>(nullptr);
         _gradient_box_m[i].set_orientation(Gtk::ORIENTATION_HORIZONTAL);
         _gradient_box_m[i].pack_start(_mgradient[i]);
         _gradient_box_m[i].pack_start(*_gradient_preview_m[i]);
@@ -313,7 +313,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         Inkscape::Util::UnitTable::UnitMap m = unit_table.units(Inkscape::Util::UNIT_TYPE_LINEAR);
         Inkscape::Util::UnitTable::UnitMap::iterator iter = m.begin();
         while(iter != m.end()) {
-            Gtk::RadioMenuItem *mi = Gtk::manage(new Gtk::RadioMenuItem(_sw_group));
+            auto const mi = Gtk::make_managed<Gtk::RadioMenuItem>(_sw_group);
             mi->add(*(new Gtk::Label(iter->first, Gtk::ALIGN_START)));
             _unit_mis.push_back(mi);
             Inkscape::Util::Unit const *u = unit_table.getUnit(iter->first);
@@ -327,7 +327,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         row++;
 
         for (guint i = 0; i < G_N_ELEMENTS(_sw_presets_str); ++i) {
-            Gtk::MenuItem *mi = Gtk::manage(new Gtk::MenuItem());
+            auto const mi = Gtk::make_managed<Gtk::MenuItem>();
             mi->add(*(new Gtk::Label(_sw_presets_str[i], Gtk::ALIGN_START)));
             mi->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &SelectedStyle::on_popup_preset), i));
             _popup_sw.attach(*mi, 0,1, row, row+1);

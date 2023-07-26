@@ -486,7 +486,7 @@ void StyleDialog::readStyleElement()
         addRenderer->signal_activated().connect(
             sigc::bind(sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
     }
-    Gtk::CellRendererText *label = Gtk::manage(new Gtk::CellRendererText());
+    auto const label = Gtk::make_managed<Gtk::CellRendererText>();
     label->property_placeholder_text() = _("property");
     label->property_editable() = true;
     label->signal_edited().connect(sigc::bind(
@@ -498,7 +498,7 @@ void StyleDialog::readStyleElement()
         col->set_resizable(true);
         col->add_attribute(label->property_text(), _mColumns._colName);
     }
-    Gtk::CellRendererText *value = Gtk::manage(new Gtk::CellRendererText());
+    auto const value = Gtk::make_managed<Gtk::CellRendererText>();
     value->property_placeholder_text() = _("value");
     value->property_editable() = true;
     value->signal_edited().connect(
@@ -664,7 +664,7 @@ void StyleDialog::readStyleElement()
             addRenderer->signal_activated().connect(
                 sigc::bind(sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
         }
-        Gtk::CellRendererToggle *isactive = Gtk::manage(new Gtk::CellRendererToggle());
+        auto const isactive = Gtk::make_managed<Gtk::CellRendererToggle>();
         isactive->property_activatable() = true;
         addCol = css_tree->append_column(" ", *isactive) - 1;
         col = css_tree->get_column(addCol);
@@ -673,7 +673,7 @@ void StyleDialog::readStyleElement()
             isactive->signal_toggled().connect(
                 sigc::bind(sigc::mem_fun(*this, &StyleDialog::_activeToggled), store));
         }
-        Gtk::CellRendererText *label = Gtk::manage(new Gtk::CellRendererText());
+        auto const label = Gtk::make_managed<Gtk::CellRendererText>();
         label->property_placeholder_text() = _("property");
         label->property_editable() = true;
         label->signal_edited().connect(sigc::bind(
@@ -685,7 +685,7 @@ void StyleDialog::readStyleElement()
             col->set_resizable(true);
             col->add_attribute(label->property_text(), _mColumns._colName);
         }
-        Gtk::CellRendererText *value = Gtk::manage(new Gtk::CellRendererText());
+        auto const value = Gtk::make_managed<Gtk::CellRendererText>();
         value->property_editable() = true;
         value->property_placeholder_text() = _("value");
         value->signal_edited().connect(
@@ -815,7 +815,7 @@ void StyleDialog::readStyleElement()
                                 addRenderer->signal_activated().connect(sigc::bind(
                                     sigc::mem_fun(*this, &StyleDialog::_onPropDelete), store));
                             }
-                            Gtk::CellRendererText *label = Gtk::manage(new Gtk::CellRendererText());
+                            auto const label = Gtk::make_managed<Gtk::CellRendererText>();
                             label->property_placeholder_text() = _("property");
                             label->property_editable() = true;
                             label->signal_edited().connect(sigc::bind(
@@ -827,7 +827,7 @@ void StyleDialog::readStyleElement()
                                 col->set_resizable(true);
                                 col->add_attribute(label->property_text(), _mColumns._colName);
                             }
-                            Gtk::CellRendererText *value = Gtk::manage(new Gtk::CellRendererText());
+                            auto const value = Gtk::make_managed<Gtk::CellRendererText>();
                             value->property_placeholder_text() = _("value");
                             value->property_editable() = true;
                             value->signal_edited().connect(sigc::bind(

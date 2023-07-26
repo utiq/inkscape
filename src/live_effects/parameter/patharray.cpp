@@ -120,7 +120,7 @@ void PathArrayParam::initui()
 
         _tree->set_expander_column(*_tree->get_column(nameColNum) );
         _tree->set_search_column(_model->_colLabel);
-        _scroller = Gtk::manage(new Gtk::ScrolledWindow());
+        _scroller = Gtk::make_managed<Gtk::ScrolledWindow>();
         //quick little hack -- newer versions of gtk gave the item zero space allotment
         _scroller->set_size_request(-1, 120);
 
@@ -158,8 +158,8 @@ void PathArrayParam::param_set_default() {}
 Gtk::Widget *PathArrayParam::param_newWidget()
 {
     
-    Gtk::Box* vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
-    Gtk::Box* hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+    auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    auto const hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     _tree = nullptr;
     _model = nullptr;
     _scroller = nullptr;
@@ -169,7 +169,7 @@ Gtk::Widget *PathArrayParam::param_newWidget()
     
     { // Paste path to link button
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("edit-clone", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);
@@ -181,7 +181,7 @@ Gtk::Widget *PathArrayParam::param_newWidget()
     
     { // Remove linked path
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("list-remove", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);
@@ -193,7 +193,7 @@ Gtk::Widget *PathArrayParam::param_newWidget()
     
     { // Move Down
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("go-down", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);
@@ -205,7 +205,7 @@ Gtk::Widget *PathArrayParam::param_newWidget()
     
     { // Move Down
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("go-up", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);

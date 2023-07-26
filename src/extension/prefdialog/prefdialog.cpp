@@ -49,7 +49,7 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
 {
     this->set_default_size(0,0);  // we want the window to be as small as possible instead of clobbering up space
 
-    Gtk::Box *hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+    auto hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     if (controls == nullptr) {
         if (_effect == nullptr) {
             std::cerr << "AH!!!  No controls and no effect!!!" << std::endl;
@@ -80,12 +80,11 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
             _param_preview.reset(InxParameter::make(doc->root(), _effect));
         }
 
-        auto sep = Gtk::manage(new Gtk::Separator());
+        auto const sep = Gtk::make_managed<Gtk::Separator>();
         sep->set_visible(true);
-
         this->get_content_area()->pack_start(*sep, false, false, InxWidget::GUI_BOX_SPACING);
 
-        hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+        hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
         hbox->set_border_width(InxWidget::GUI_BOX_MARGIN);
         _button_preview = _param_preview->get_widget(&_signal_preview);
         _button_preview->set_visible(true);
@@ -94,9 +93,8 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
 
         this->get_content_area()->pack_start(*hbox, false, false, 0);
 
-        Gtk::Box *hbox = dynamic_cast<Gtk::Box *>(_button_preview);
-        if (hbox != nullptr) {
-            _checkbox_preview = dynamic_cast<Gtk::CheckButton *>(hbox->get_children().front());
+        if (auto const preview_box =  dynamic_cast<Gtk::Box *>(_button_preview)) {
+            _checkbox_preview = dynamic_cast<Gtk::CheckButton *>(preview_box->get_children().at(0));
         }
 
         preview_toggle();
@@ -107,8 +105,6 @@ PrefDialog::PrefDialog (Glib::ustring name, Gtk::Widget * controls, Effect * eff
     if (_effect != nullptr && _effect->no_live_preview) {
         set_modal(false);
     }
-
-    return;
 }
 
 PrefDialog::~PrefDialog ( )

@@ -129,7 +129,7 @@ public:
         _page_units->signal_changed().connect([=](){ set_page_unit(); });
 
         for (auto&& page : PaperSize::getPageSizes()) {
-            auto item = Gtk::manage(new Gtk::MenuItem(page.getDescription(false)));
+            auto const item = Gtk::make_managed<Gtk::MenuItem>(page.getDescription(false));
             item->set_visible(true);
             _page_templates_menu.append(*item);
             item->signal_activate().connect([=](){ set_page_template(page); });

@@ -200,11 +200,11 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
     {
         /* Create wheel */
         if constexpr (MODE == SPColorScalesMode::HSLUV) {
-            _wheel = Gtk::manage(new Inkscape::UI::Widget::ColorWheelHSLuv());
+            _wheel = Gtk::make_managed<Inkscape::UI::Widget::ColorWheelHSLuv>();
         } else if constexpr (MODE == SPColorScalesMode::OKLAB) {
             _wheel = Gtk::make_managed<OKWheel>();
         } else {
-            _wheel = Gtk::manage(new Inkscape::UI::Widget::ColorWheelHSL());
+            _wheel = Gtk::make_managed<Inkscape::UI::Widget::ColorWheelHSL>();
         }
 
         _wheel->set_visible(true);
@@ -220,23 +220,23 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
 
         /* Expander */
         // Label icon
-        Gtk::Image *expander_icon = Gtk::manage(
+        auto const expander_icon = Gtk::manage(
                 sp_get_icon_image("color-wheel", Gtk::ICON_SIZE_BUTTON)
         );
         expander_icon->set_visible(true);
         expander_icon->set_margin_start(2 * XPAD);
         expander_icon->set_margin_end(3 * XPAD);
         // Label
-        Gtk::Label *expander_label = Gtk::manage(new Gtk::Label(_("Color Wheel")));
+        auto const expander_label = Gtk::make_managed<Gtk::Label>(_("Color Wheel"));
         expander_label->set_visible(true);
         // Content
-        Gtk::Box *expander_box = Gtk::manage(new Gtk::Box());
+        auto const expander_box = Gtk::make_managed<Gtk::Box>();
         expander_box->set_visible(true);
         expander_box->pack_start(*expander_icon);
         expander_box->pack_start(*expander_label);
         expander_box->set_orientation(Gtk::ORIENTATION_HORIZONTAL);
         // Expander
-        wheel_frame = Gtk::manage(new Gtk::Expander());
+        wheel_frame = Gtk::make_managed<Gtk::Expander>();
         wheel_frame->set_visible(true);
         wheel_frame->set_margin_start(2 * XPAD);
         wheel_frame->set_margin_end(XPAD);
@@ -262,13 +262,13 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
     }
 
     /* Create sliders */
-    Gtk::Grid *grid = Gtk::manage(new Gtk::Grid());
+    auto const grid = Gtk::make_managed<Gtk::Grid>();
     grid->set_visible(true);
     add(*grid);
 
     for (gint i = 0; i < 5; i++) {
         /* Label */
-        _l[i] = Gtk::manage(new Gtk::Label("", true));
+        _l[i] = Gtk::make_managed<Gtk::Label>("", true);
 
         _l[i]->set_halign(Gtk::ALIGN_START);
         _l[i]->set_visible(true);
@@ -282,7 +282,7 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
         /* Adjustment */
         _a.push_back(Gtk::Adjustment::create(0.0, 0.0, _range_limit, 1.0, 10.0, 10.0));
         /* Slider */
-        _s[i] = Gtk::manage(new Inkscape::UI::Widget::ColorSlider(_a[i]));
+        _s[i] = Gtk::make_managed<Inkscape::UI::Widget::ColorSlider>(_a[i]);
         _s[i]->set_visible(true);
 
         _s[i]->set_margin_start(XPAD);
@@ -293,7 +293,7 @@ void ColorScales<MODE>::_initUI(bool no_alpha)
         grid->attach(*_s[i], 1, i, 1, 1);
 
         /* Spinbutton */
-        _b[i] = Gtk::manage(new ScrollProtected<Gtk::SpinButton>(_a[i], 1.0));
+        _b[i] = Gtk::make_managed<ScrollProtected<Gtk::SpinButton>>(_a[i], 1.0);
         sp_dialog_defocus_on_enter(_b[i]->gobj());
         _l[i]->set_mnemonic_widget(*_b[i]);
         _b[i]->set_visible(true);
@@ -1190,7 +1190,7 @@ ColorScalesFactory<MODE>::ColorScalesFactory()
 template <SPColorScalesMode MODE>
 Gtk::Widget *ColorScalesFactory<MODE>::createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const
 {
-    Gtk::Widget *w = Gtk::manage(new ColorScales<MODE>(color, no_alpha));
+    Gtk::Widget *w = Gtk::make_managed<ColorScales<MODE>>(color, no_alpha);
     return w;
 }
 

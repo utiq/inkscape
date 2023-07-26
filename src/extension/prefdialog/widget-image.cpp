@@ -76,7 +76,7 @@ Gtk::Widget *WidgetImage::get_widget(sigc::signal<void ()> * /*changeSignal*/)
 
     Gtk::Image *image = nullptr;
     if (!_image_path.empty()) {
-        image = Gtk::manage(new Gtk::Image(_image_path));
+        image = Gtk::make_managed<Gtk::Image>(_image_path);
 
         // resize if requested
         if (_width && _height) {
@@ -91,8 +91,7 @@ Gtk::Widget *WidgetImage::get_widget(sigc::signal<void ()> * /*changeSignal*/)
     }
 
     image->set_visible(true);
-
-    return dynamic_cast<Gtk::Widget *>(image);
+    return image;
 }
 
 }  /* namespace Extension */

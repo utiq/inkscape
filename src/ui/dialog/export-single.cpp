@@ -380,7 +380,7 @@ void SingleExport::onPagesChanged()
     auto &pm = _document->getPageManager();
     if (pm.getPageCount() > 1) {
         for (auto page : pm.getPages()) {
-            auto item = Gtk::manage(new BatchItem(page, _preview_drawing));
+            auto const item = Gtk::make_managed<BatchItem>(page, _preview_drawing);
             pages_list->insert(*item, -1);
         }
     }

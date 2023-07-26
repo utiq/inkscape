@@ -703,8 +703,8 @@ ObjectsPanel::ObjectsPanel()
     });
 
     //Label
-    _name_column = Gtk::manage(new Gtk::TreeViewColumn());
-    _text_renderer = Gtk::manage(new Gtk::CellRendererText());
+    _name_column = Gtk::make_managed<Gtk::TreeViewColumn>();
+    _text_renderer = Gtk::make_managed<Gtk::CellRendererText>();
     _text_renderer->property_editable() = true;
     _text_renderer->property_ellipsize().set_value(Pango::ELLIPSIZE_END);
     _text_renderer->signal_editing_started().connect([=](Gtk::CellEditable*,const Glib::ustring&){
@@ -718,7 +718,7 @@ ObjectsPanel::ObjectsPanel()
     });
 
     const int icon_col_width = 24;
-    auto icon_renderer = Gtk::manage(new Inkscape::UI::Widget::CellRendererItemIcon());
+    auto const icon_renderer = Gtk::make_managed<Inkscape::UI::Widget::CellRendererItemIcon>();
     icon_renderer->property_xpad() = 2;
     icon_renderer->property_width() = icon_col_width;
     _tree.append_column(*_name_column);
@@ -733,8 +733,8 @@ ObjectsPanel::ObjectsPanel()
     _name_column->add_attribute(icon_renderer->property_cell_background_rgba(), _model->_colBgColor);
 
     // blend mode and opacity icon(s)
-    _item_state_toggler = Gtk::manage(new Inkscape::UI::Widget::ImageToggler(
-        INKSCAPE_ICON("object-blend-mode"), INKSCAPE_ICON("object-opaque")));
+    _item_state_toggler = Gtk::make_managed<UI::Widget::ImageToggler>(
+        INKSCAPE_ICON("object-blend-mode"), INKSCAPE_ICON("object-opaque"));
     int modeColNum = _tree.append_column("mode", *_item_state_toggler) - 1;
     if (auto col = _tree.get_column(modeColNum)) {
         col->add_attribute(_item_state_toggler->property_active(), _model->_colItemStateSet);
@@ -800,7 +800,7 @@ ObjectsPanel::ObjectsPanel()
                 ++left;
                 top = 2;
             } else if (!left) {
-                auto sep = Gtk::make_managed<Gtk::Separator>();
+                auto const sep = Gtk::make_managed<Gtk::Separator>();
                 sep->set_visible(true);
                 modes.attach(*sep, left, top, 2, 1);
             }
@@ -809,7 +809,7 @@ ObjectsPanel::ObjectsPanel()
             if (left == 1 && top == 9)
                 top++;
 
-            auto check = Gtk::make_managed<Gtk::ModelButton>();
+            auto const check = Gtk::make_managed<Gtk::ModelButton>();
             check->set_label(label);
             check->property_role().set_value(Gtk::BUTTON_ROLE_RADIO);
             check->property_inverted().set_value(true);
@@ -834,8 +834,8 @@ ObjectsPanel::ObjectsPanel()
     }
 
     // Visible icon
-    auto *eyeRenderer = Gtk::manage( new Inkscape::UI::Widget::ImageToggler(
-            INKSCAPE_ICON("object-hidden"), INKSCAPE_ICON("object-visible")));
+    auto const eyeRenderer = Gtk::make_managed<UI::Widget::ImageToggler>(
+            INKSCAPE_ICON("object-hidden"), INKSCAPE_ICON("object-visible"));
     int visibleColNum = _tree.append_column("vis", *eyeRenderer) - 1;
     if (auto eye = _tree.get_column(visibleColNum)) {
         eye->add_attribute(eyeRenderer->property_active(), _model->_colInvisible);
@@ -847,8 +847,8 @@ ObjectsPanel::ObjectsPanel()
     }
 
     // Unlocked icon
-    Inkscape::UI::Widget::ImageToggler * lockRenderer = Gtk::manage( new Inkscape::UI::Widget::ImageToggler(
-        INKSCAPE_ICON("object-locked"), INKSCAPE_ICON("object-unlocked")));
+    auto const lockRenderer = Gtk::make_managed<UI::Widget::ImageToggler>(
+        INKSCAPE_ICON("object-locked"), INKSCAPE_ICON("object-unlocked"));
     int lockedColNum = _tree.append_column("lock", *lockRenderer) - 1;
     if (auto lock = _tree.get_column(lockedColNum)) {
         lock->add_attribute(lockRenderer->property_active(), _model->_colLocked);
@@ -860,7 +860,7 @@ ObjectsPanel::ObjectsPanel()
     }
 
     // hierarchy indicator - using item's layer highlight color
-    auto tag_renderer = Gtk::manage(new Inkscape::UI::Widget::ColorTagRenderer());
+    auto const tag_renderer = Gtk::make_managed<Inkscape::UI::Widget::ColorTagRenderer>();
     int tag_column = _tree.append_column("tag", *tag_renderer) - 1;
     if (auto tag = _tree.get_column(tag_column)) {
         tag->add_attribute(tag_renderer->property_color(), _model->_colIconColor);
@@ -1182,7 +1182,7 @@ void ObjectsPanel::_activateAction(const std::string& layerAction, const std::st
  */
 Gtk::Button* ObjectsPanel::_addBarButton(char const* iconName, char const* tooltip, char const *action_name)
 {
-    Gtk::Button* btn = Gtk::manage(new Gtk::Button());
+    auto const btn = Gtk::make_managed<Gtk::Button>();
     auto child = Glib::wrap(sp_get_icon_image(iconName, GTK_ICON_SIZE_SMALL_TOOLBAR));
     child->set_visible(true);
     btn->add(*child);

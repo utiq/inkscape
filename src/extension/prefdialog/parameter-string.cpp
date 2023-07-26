@@ -195,20 +195,20 @@ Gtk::Widget *ParamString::get_widget(sigc::signal<void ()> *changeSignal)
         return nullptr;
     }
 
-    Gtk::Box *box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, GUI_PARAM_WIDGETS_SPACING));
+    auto const box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, GUI_PARAM_WIDGETS_SPACING);
 
-    Gtk::Label *label = Gtk::manage(new Gtk::Label(_text, Gtk::ALIGN_START));
+    auto const label = Gtk::make_managed<Gtk::Label>(_text, Gtk::ALIGN_START);
     label->set_visible(true);
     box->pack_start(*label, false, false);
 
     if (_mode == MULTILINE) {
         box->set_orientation(Gtk::ORIENTATION_VERTICAL);
 
-        Gtk::ScrolledWindow *textarea = Gtk::manage(new Gtk::ScrolledWindow());
+        auto const textarea = Gtk::make_managed<Gtk::ScrolledWindow>();
         textarea->set_vexpand();
         textarea->set_shadow_type(Gtk::SHADOW_IN);
 
-        ParamMultilineStringEntry *entry = Gtk::manage(new ParamMultilineStringEntry(this, changeSignal));
+        auto const entry = Gtk::make_managed<ParamMultilineStringEntry>(this, changeSignal);
         entry->set_visible(true);
 
         textarea->add(*entry);
@@ -216,15 +216,14 @@ Gtk::Widget *ParamString::get_widget(sigc::signal<void ()> *changeSignal)
 
         box->pack_start(*textarea, true, true);
     } else {
-        Gtk::Widget *entry = Gtk::manage(new ParamStringEntry(this, changeSignal));
+        Gtk::Widget *entry = Gtk::make_managed<ParamStringEntry>(this, changeSignal);
         entry->set_visible(true);
 
         box->pack_start(*entry, true, true);
     }
 
     box->set_visible(true);
-
-    return dynamic_cast<Gtk::Widget *>(box);
+    return box;
 }
 
 }  /* namespace Extension */

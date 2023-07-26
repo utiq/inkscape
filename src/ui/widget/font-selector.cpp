@@ -190,7 +190,7 @@ void FontSelector::on_drag_start(const Glib::RefPtr<Gdk::DragContext> &context)
     Inkscape::FontLister* font_lister = Inkscape::FontLister::get_instance();
     Glib::ustring family_name = font_lister->get_treeview_drag_selection();
     // std::cout << "FontSelector::on_drag_start()" << std::endl;
-    auto drag_label = Gtk::manage(new Gtk::Label(family_name));
+    auto const drag_label = Gtk::make_managed<Gtk::Label>(family_name);
 
     gtk_drag_set_icon_widget(context, drag_label, 0, 0);
     */

@@ -88,7 +88,7 @@ static gchar const *modeStrings[] = {
 namespace {
 GtkWidget *_scrollprotected_combo_box_new_with_model(GtkTreeModel *model)
 {
-    auto combobox = Gtk::manage(new Inkscape::UI::Widget::ScrollProtected<Gtk::ComboBox>());
+    auto const combobox = Gtk::make_managed<Inkscape::UI::Widget::ScrollProtected<Gtk::ComboBox>>();
     gtk_combo_box_set_model(combobox->gobj(), model);
     return GTK_WIDGET(combobox->gobj());
 }
@@ -150,7 +150,7 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     _mode = static_cast<PaintSelector::Mode>(-1); // huh?  do you mean 0xff?  --  I think this means "not in the enum"
 
     /* Paint style button box */
-    _style = Gtk::manage(new Gtk::Box());
+    _style = Gtk::make_managed<Gtk::Box>();
     _style->set_homogeneous(false);
     _style->set_name("PaintSelector");
     _style->set_visible(true);
@@ -175,11 +175,11 @@ PaintSelector::PaintSelector(FillOrStroke kind)
 
     /* Fillrule */
     {
-        _fillrulebox = Gtk::manage(new Gtk::Box());
+        _fillrulebox = Gtk::make_managed<Gtk::Box>();
         _fillrulebox->set_homogeneous(false);
         _style->pack_end(*_fillrulebox, false, false, 0);
 
-        _evenodd = Gtk::manage(new FillRuleRadioButton());
+        _evenodd = Gtk::make_managed<FillRuleRadioButton>();
         _evenodd->set_relief(Gtk::RELIEF_NONE);
         _evenodd->set_mode(false);
         // TRANSLATORS: for info, see http://www.w3.org/TR/2000/CR-SVG-20000802/painting.html#FillRuleProperty
@@ -193,7 +193,7 @@ PaintSelector::PaintSelector(FillOrStroke kind)
             sigc::bind(sigc::mem_fun(*this, &PaintSelector::fillrule_toggled), _evenodd));
 
         auto grp = _evenodd->get_group();
-        _nonzero = Gtk::manage(new FillRuleRadioButton(grp));
+        _nonzero = Gtk::make_managed<FillRuleRadioButton>(grp);
         _nonzero->set_relief(Gtk::RELIEF_NONE);
         _nonzero->set_mode(false);
         // TRANSLATORS: for info, see http://www.w3.org/TR/2000/CR-SVG-20000802/painting.html#FillRuleProperty
@@ -207,14 +207,14 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     }
 
     /* Frame */
-    _label = Gtk::manage(new Gtk::Label(""));
-    auto lbbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
+    _label = Gtk::make_managed<Gtk::Label>("");
+    auto const lbbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
     lbbox->set_homogeneous(false);
     _label->set_visible(true);
     lbbox->pack_start(*_label, false, false, 4);
     pack_start(*lbbox, false, false, 4);
 
-    _frame = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    _frame = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     _frame->set_homogeneous(false);
     _frame->set_visible(true);
     // gtk_container_set_border_width(GTK_CONTAINER(psel->frame), 0);
@@ -256,7 +256,7 @@ StyleToggleButton *PaintSelector::style_button_add(gchar const *pixmap, PaintSel
 {
     GtkWidget *w;
 
-    auto b = Gtk::manage(new StyleToggleButton());
+    auto const b = Gtk::make_managed<StyleToggleButton>();
     b->set_tooltip_text(tip);
     b->set_visible(true);
     b->set_border_width(0);
@@ -585,11 +585,11 @@ void PaintSelector::set_mode_color(PaintSelector::Mode /*mode*/)
         /* Create new color selector */
         /* Create vbox */
         if (!_selector_solid_color) {
-            _selector_solid_color = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 4));
+            _selector_solid_color = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
             _selector_solid_color->set_homogeneous(false);
 
             /* Color selector */
-            auto color_selector = Gtk::manage(new ColorNotebook(*(_selected_color)));
+            auto const color_selector = Gtk::make_managed<ColorNotebook>(*_selected_color);
             color_selector->set_visible(true);
             _selector_solid_color->pack_start(*color_selector, true, true, 0);
             /* Pack everything to frame */
@@ -634,7 +634,7 @@ void PaintSelector::set_mode_gradient(PaintSelector::Mode mode)
         if (!_selector_gradient) {
             /* Create new gradient selector */
             try {
-                _selector_gradient = Gtk::manage(new GradientEditor("/gradient-edit"));
+                _selector_gradient = Gtk::make_managed<GradientEditor>("/gradient-edit");
                 _selector_gradient->set_visible(true);
                 _selector_gradient->signal_grabbed().connect(sigc::mem_fun(*this, &PaintSelector::gradient_grabbed));
                 _selector_gradient->signal_dragged().connect(sigc::mem_fun(*this, &PaintSelector::gradient_dragged));
@@ -873,10 +873,10 @@ void PaintSelector::set_mode_mesh(PaintSelector::Mode mode)
 
         if (!_selector_mesh) {
             /* Create vbox */
-            _selector_mesh = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 4));
+            _selector_mesh = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
             _selector_mesh->set_homogeneous(false);
 
-            auto hb = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 1));
+            auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 1);
             hb->set_homogeneous(false);
 
             /**
@@ -904,10 +904,10 @@ void PaintSelector::set_mode_mesh(PaintSelector::Mode mode)
 
             g_object_unref(G_OBJECT(store));
 
-            auto hb2 = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
+            auto const hb2 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
             hb2->set_homogeneous(false);
 
-            auto l = Gtk::manage(new Gtk::Label());
+            auto const l = Gtk::make_managed<Gtk::Label>();
             l->set_markup(_("Use the <b>Mesh tool</b> to modify the mesh."));
             l->set_line_wrap(true);
             l->set_size_request(180, -1);
@@ -1028,7 +1028,7 @@ void PaintSelector::set_mode_pattern(PaintSelector::Mode mode)
         clear_frame();
 
         if (!_selector_pattern) {
-            _selector_pattern = Gtk::manage(new PatternEditor("/pattern-edit", PatternManager::get()));
+            _selector_pattern = Gtk::make_managed<PatternEditor>("/pattern-edit", PatternManager::get());
             _selector_pattern->signal_changed().connect([=](){ _signal_changed.emit(); });
             _selector_pattern->signal_color_changed().connect([=](unsigned){ _signal_changed.emit(); });
             _selector_pattern->signal_edit().connect([=](){ _signal_edit_pattern.emit(); });
@@ -1153,7 +1153,7 @@ void PaintSelector::set_mode_swatch(PaintSelector::Mode mode)
 
         if (!_selector_swatch) {
             // Create new gradient selector
-            _selector_swatch = Gtk::manage(new SwatchSelector());
+            _selector_swatch = Gtk::make_managed<SwatchSelector>();
 
             auto gsel = _selector_swatch->getGradientSelector();
             gsel->signal_grabbed().connect(sigc::mem_fun(*this, &PaintSelector::gradient_grabbed));

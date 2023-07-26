@@ -330,8 +330,8 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
     if (!_visible) {
         return nullptr;
     }
-    Gtk::Box *vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
-    Gtk::Box *hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+    auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    auto const hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     _tree = nullptr;
     _scroller = nullptr;
     _model = nullptr;
@@ -340,7 +340,7 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
 
     { // Paste item to link button
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("edit-clone", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);
@@ -352,7 +352,7 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
 
     { // Remove linked item
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("list-remove", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);
@@ -364,7 +364,7 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
 
     { // Move Down
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("go-down", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);
@@ -376,7 +376,7 @@ Gtk::Widget *SatelliteArrayParam::param_newWidget()
 
     { // Move Down
         Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("go-up", Gtk::ICON_SIZE_BUTTON));
-        Gtk::Button *pButton = Gtk::manage(new Gtk::Button());
+        auto const pButton = Gtk::make_managed<Gtk::Button>();
         pButton->set_relief(Gtk::RELIEF_NONE);
         pIcon->set_visible(true);
         pButton->add(*pIcon);

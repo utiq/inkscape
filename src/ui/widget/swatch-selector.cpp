@@ -38,7 +38,7 @@ SwatchSelector::SwatchSelector()
 
     pack_start(*_gsel);
 
-    auto color_selector = Gtk::make_managed<ColorNotebook>(_selected_color);
+    auto const color_selector = Gtk::make_managed<ColorNotebook>(_selected_color);
     color_selector->set_label(_("Swatch color"));
     color_selector->set_visible(true);
     pack_start(*color_selector);

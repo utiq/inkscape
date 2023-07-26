@@ -66,8 +66,8 @@ void Random::setStartSeed(long newseed)
 
 void Random::addReseedButton()
 {
-    Gtk::Image *pIcon = Gtk::manage(sp_get_icon_image("randomize", Gtk::ICON_SIZE_BUTTON));
-    Gtk::Button * pButton = Gtk::manage(new Gtk::Button());
+    auto const pIcon = Gtk::manage(sp_get_icon_image("randomize", Gtk::ICON_SIZE_BUTTON));
+    auto const pButton = Gtk::make_managed<Gtk::Button>();
     pButton->set_relief(Gtk::RELIEF_NONE);
     pIcon->set_visible(true);
     pButton->add(*pIcon);

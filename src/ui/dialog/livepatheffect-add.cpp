@@ -304,10 +304,11 @@ LivePathEffectAdd::LivePathEffectAdd()
             _LPESelectorEffectRadioList->set_active();
             viewChanged(2);
     }
-    Gtk::Widget *widg = dynamic_cast<Gtk::Widget *>(_LPEDialogSelector);
-    INKSCAPE.themecontext->getChangeThemeSignal().connect(sigc::bind(sigc::ptr_fun(sp_add_top_window_classes), widg));
-    sp_add_top_window_classes(widg);
+
+    INKSCAPE.themecontext->getChangeThemeSignal().connect(sigc::bind(sigc::ptr_fun(sp_add_top_window_classes), _LPEDialogSelector));
+    sp_add_top_window_classes(_LPEDialogSelector);
 }
+
 const LivePathEffect::EnumEffectData<LivePathEffect::EffectType> *LivePathEffectAdd::getActiveData()
 {
     return instance()._to_add;

@@ -590,8 +590,8 @@ Gtk::Widget *ColorPalette::_get_widget(Dialog::ColorItem *item) {
     }
     if (_show_labels) {
         item->set_valign(Gtk::ALIGN_CENTER);
-        auto box = Gtk::make_managed<Gtk::Box>();
-        auto label = Gtk::make_managed<Gtk::Label>(item->get_description());
+        auto const box = Gtk::make_managed<Gtk::Box>();
+        auto const label = Gtk::make_managed<Gtk::Label>(item->get_description());
         box->add(*item);
         box->add(*label);
         return box;
@@ -689,7 +689,7 @@ void ColorPalette::set_palettes(const std::vector<ColorPalette::palette_t>& pale
     Gtk::RadioMenuItem::Group group;
     for (auto it = palettes.rbegin(); it != palettes.rend(); ++it) {
         auto& name = it->name;
-        auto item = Gtk::manage(new CustomMenuItem(group, name, it->colors));
+        auto const item = Gtk::make_managed<CustomMenuItem>(group, name, it->colors);
         item->signal_activate().connect([=](){
             if (!_in_update) {
                 _in_update = true;

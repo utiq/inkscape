@@ -499,12 +499,12 @@ LivePathEffectEditor::selection_info()
             _LPESelectionInfo.set_text(_("Text objects do not support Live Path Effects"));
             _LPESelectionInfo.set_visible(true);
             Glib::ustring labeltext = _("Convert text to paths");
-            Gtk::Button *selectbutton = Gtk::manage(new Gtk::Button());
-            Gtk::Box *boxc = Gtk::manage(new Gtk::Box());
-            Gtk::Label *lbl = Gtk::manage(new Gtk::Label(labeltext));
+            auto const selectbutton = Gtk::make_managed<Gtk::Button>();
+            auto const boxc = Gtk::make_managed<Gtk::Box>();
+            auto const lbl = Gtk::make_managed<Gtk::Label>(labeltext);
             std::string shape_type = "group";
             std::string highlight = SPColor(selected->highlight_color()).toString();
-            Gtk::Image *type = Gtk::manage(new Gtk::Image(sp_get_shape_icon(shape_type, Gdk::RGBA(highlight),20, 1)));
+            auto const type = Gtk::make_managed<Gtk::Image>(sp_get_shape_icon(shape_type, Gdk::RGBA(highlight), 20, 1));
             boxc->pack_start(*type, false, false);
             boxc->pack_start(*lbl, false, false);
             type->set_margin_start(4);
@@ -515,12 +515,12 @@ LivePathEffectEditor::selection_info()
             });
             _LPEParentBox.add(*selectbutton);
             Glib::ustring labeltext2 = _("Clone");
-            Gtk::Button *selectbutton2 = Gtk::manage(new Gtk::Button());
-            Gtk::Box *boxc2 = Gtk::manage(new Gtk::Box());
-            Gtk::Label *lbl2 = Gtk::manage(new Gtk::Label(labeltext2));
+            auto const selectbutton2 = Gtk::make_managed<Gtk::Button>();
+            auto const boxc2 = Gtk::make_managed<Gtk::Box>();
+            auto const lbl2 = Gtk::make_managed<Gtk::Label>(labeltext2);
             std::string shape_type2 = "clone";
             std::string highlight2 = SPColor(selected->highlight_color()).toString();
-            Gtk::Image *type2 = Gtk::manage(new Gtk::Image(sp_get_shape_icon(shape_type2, Gdk::RGBA(highlight2),20, 1)));
+            auto const type2 = Gtk::make_managed<Gtk::Image>(sp_get_shape_icon(shape_type2, Gdk::RGBA(highlight2), 20, 1));
             boxc2->pack_start(*type2, false, false);
             boxc2->pack_start(*lbl2, false, false);
             type2->set_margin_start(4);
@@ -537,12 +537,12 @@ LivePathEffectEditor::selection_info()
         } else {
             if (selected->getId()) {
                 Glib::ustring labeltext = selected->label() ? selected->label() : selected->getId();
-                Gtk::Box *boxc = Gtk::manage(new Gtk::Box());
-                Gtk::Label *lbl = Gtk::manage(new Gtk::Label(labeltext));
+                auto const boxc = Gtk::make_managed<Gtk::Box>();
+                auto const lbl = Gtk::make_managed<Gtk::Label>(labeltext);
                 lbl->set_ellipsize(Pango::ELLIPSIZE_END);
                 std::string shape_type = selected->typeName();
                 std::string highlight = SPColor(selected->highlight_color()).toString();
-                Gtk::Image *type = Gtk::manage(new Gtk::Image(sp_get_shape_icon(shape_type, Gdk::RGBA(highlight),20, 1)));
+                auto const type = Gtk::make_managed<Gtk::Image>(sp_get_shape_icon(shape_type, Gdk::RGBA(highlight), 20, 1));
                 boxc->pack_start(*type, false, false);
                 boxc->pack_start(*lbl, false, false);
                 _LPECurrentItem.add(*boxc);
@@ -562,12 +562,12 @@ LivePathEffectEditor::selection_info()
                     auto lpeitem = cast<SPLPEItem>(selected->document->getObjectById(root.first));
                     if (lpeitem && lpeitem->getLPEIndex(lpe) != Glib::ustring::npos) {
                         newrootsatellites.emplace_back(root.first, root.second);
-                        Gtk::Button *selectbutton = Gtk::manage(new Gtk::Button());
-                        Gtk::Box *boxc = Gtk::manage(new Gtk::Box());
-                        Gtk::Label *lbl = Gtk::manage(new Gtk::Label(labeltext));
+                        auto const selectbutton = Gtk::make_managed<Gtk::Button>();
+                        auto const boxc = Gtk::make_managed<Gtk::Box>();
+                        auto const lbl = Gtk::make_managed<Gtk::Label>(labeltext);
                         std::string shape_type = selected->typeName();
                         std::string highlight = SPColor(selected->highlight_color()).toString();
-                        Gtk::Image *type = Gtk::manage(new Gtk::Image(sp_get_shape_icon(shape_type, Gdk::RGBA(highlight),20, 1)));
+                        auto const type = Gtk::make_managed<Gtk::Image>(sp_get_shape_icon(shape_type, Gdk::RGBA(highlight), 20, 1));
                         boxc->pack_start(*type, false, false);
                         boxc->pack_start(*lbl, false, false);
                         type->set_margin_start(4);

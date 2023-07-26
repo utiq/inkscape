@@ -54,17 +54,17 @@ GradientSelector::GradientSelector()
     set_orientation(Gtk::ORIENTATION_VERTICAL);
 
     /* Vectors */
-    _vectors = Gtk::manage(new GradientVectorSelector(nullptr, nullptr));
+    _vectors = Gtk::make_managed<GradientVectorSelector>(nullptr, nullptr);
     _store = _vectors->get_store();
     _columns = _vectors->get_columns();
 
-    _treeview = Gtk::manage(new Gtk::TreeView());
+    _treeview = Gtk::make_managed<Gtk::TreeView>();
     _treeview->set_model(_store);
     _treeview->set_headers_clickable(true);
     _treeview->set_search_column(1);
     _treeview->set_vexpand();
-    _icon_renderer = Gtk::manage(new Gtk::CellRendererPixbuf());
-    _text_renderer = Gtk::manage(new Gtk::CellRendererText());
+    _icon_renderer = Gtk::make_managed<Gtk::CellRendererPixbuf>();
+    _text_renderer = Gtk::make_managed<Gtk::CellRendererText>();
 
     _treeview->append_column(_("Gradient"), *_icon_renderer);
     auto icon_column = _treeview->get_column(0);
@@ -97,7 +97,7 @@ GradientSelector::GradientSelector()
     _vectors->set_tree_select_connection(tree_select_connection);
     _text_renderer->signal_edited().connect(sigc::mem_fun(*this, &GradientSelector::onGradientRename));
 
-    _scrolled_window = Gtk::manage(new Gtk::ScrolledWindow());
+    _scrolled_window = Gtk::make_managed<Gtk::ScrolledWindow>();
     _scrolled_window->add(*_treeview);
     _scrolled_window->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
     _scrolled_window->set_shadow_type(Gtk::SHADOW_IN);
@@ -109,11 +109,11 @@ GradientSelector::GradientSelector()
 
 
     /* Create box for buttons */
-    auto hb = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
+    auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
     hb->set_homogeneous(false);
     pack_start(*hb, false, false, 0);
 
-    _add = Gtk::manage(new Gtk::Button());
+    _add = Gtk::make_managed<Gtk::Button>();
     style_button(_add, INKSCAPE_ICON("list-add"));
 
     _nonsolid.push_back(_add);
@@ -124,7 +124,7 @@ GradientSelector::GradientSelector()
     _add->set_relief(Gtk::RELIEF_NONE);
     _add->set_tooltip_text(_("Create a duplicate gradient"));
 
-    _del2 = Gtk::manage(new Gtk::Button());
+    _del2 = Gtk::make_managed<Gtk::Button>();
     style_button(_del2, INKSCAPE_ICON("list-remove"));
 
     _nonsolid.push_back(_del2);
@@ -135,7 +135,7 @@ GradientSelector::GradientSelector()
     _del2->set_tooltip_text(_("Delete unused gradient"));
 
     // The only use of this button is hidden!
-    _edit = Gtk::manage(new Gtk::Button());
+    _edit = Gtk::make_managed<Gtk::Button>();
     style_button(_edit, INKSCAPE_ICON("edit"));
 
     _nonsolid.push_back(_edit);
@@ -146,7 +146,7 @@ GradientSelector::GradientSelector()
     _edit->set_tooltip_text(_("Edit gradient"));
     _edit->set_no_show_all();
 
-    _del = Gtk::manage(new Gtk::Button());
+    _del = Gtk::make_managed<Gtk::Button>();
     style_button(_del, INKSCAPE_ICON("list-remove"));
 
     _swatch_widgets.push_back(_del);

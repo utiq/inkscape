@@ -287,12 +287,12 @@ void PatternEditor::bind_store(Gtk::FlowBox& list, PatternStore& pat) {
     });
 
     list.bind_list_store(pat.store.get_store(), [=, &pat](const Glib::RefPtr<PatternItem>& item){
-        auto box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-        auto image = Gtk::make_managed<Gtk::Image>(item->pix);
+        auto const box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+        auto const image = Gtk::make_managed<Gtk::Image>(item->pix);
         box->pack_start(*image);
         auto name = Glib::ustring(item->label.c_str());
         if (_show_names.get_active()) {
-            auto label = Gtk::make_managed<Gtk::Label>(name);
+            auto const label = Gtk::make_managed<Gtk::Label>(name);
             label->get_style_context()->add_class("small-font");
             // limit label size to tile size
             label->set_ellipsize(Pango::EllipsizeMode::ELLIPSIZE_END);
@@ -302,7 +302,7 @@ void PatternEditor::bind_store(Gtk::FlowBox& list, PatternStore& pat) {
         }
         image->set_tooltip_text(name);
         box->show_all();
-        auto cbox = Gtk::make_managed<Gtk::FlowBoxChild>();
+        auto const cbox = Gtk::make_managed<Gtk::FlowBoxChild>();
         cbox->add(*box);
         cbox->get_style_context()->add_class("pattern-item-box");
         pat.widgets_to_pattern[cbox] = item;

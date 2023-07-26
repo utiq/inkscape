@@ -107,28 +107,30 @@ ColorPickerParam::param_getDefaultSVGValue() const
 Gtk::Widget *
 ColorPickerParam::param_newWidget()
 {
-    Gtk::Box *hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
-
+    auto const hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     hbox->set_border_width(5);
     hbox->set_homogeneous(false);
     hbox->set_spacing(2);
-    Inkscape::UI::Widget::RegisteredColorPicker * colorpickerwdg =
-        new Inkscape::UI::Widget::RegisteredColorPicker( param_label,
-                                                         param_label,
-                                                         param_tooltip,
-                                                         param_key,
-                                                         param_key + "_opacity_LPE",
-                                                        *param_wr,
-                                                         param_effect->getRepr(),
-                                                         param_effect->getSPDoc() );
-    SPDocument *document = param_effect->getSPDoc();
+
+    auto const colorpickerwdg = Gtk::make_managed<UI::Widget::RegisteredColorPicker>( param_label,
+                                                                                      param_label,
+                                                                                      param_tooltip,
+                                                                                      param_key,
+                                                                                      param_key + "_opacity_LPE",
+                                                                                     *param_wr,
+                                                                                      param_effect->getRepr(),
+                                                                                      param_effect->getSPDoc() );
+
     {
+        SPDocument *document = param_effect->getSPDoc();
         DocumentUndo::ScopedInsensitive _no_undo(document);
         colorpickerwdg->setRgba32(value);
     }
+
     colorpickerwdg->set_undo_parameters(_("Change color button parameter"), INKSCAPE_ICON("dialog-path-effects"));
-    hbox->pack_start(*dynamic_cast<Gtk::Widget *> (colorpickerwdg), true, true);
-    return dynamic_cast<Gtk::Widget *> (hbox);
+
+    hbox->pack_start(*colorpickerwdg, true, true);
+    return hbox;
 }
 
 void

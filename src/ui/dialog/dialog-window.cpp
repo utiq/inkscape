@@ -91,11 +91,11 @@ DialogWindow::DialogWindow(InkscapeWindow *inkscape_window, Gtk::Widget *page)
     int window_height = INITIAL_WINDOW_HEIGHT;
 
     // =============== Outer Box ================
-    Gtk::Box *box_outer = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    auto const box_outer = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     add(*box_outer);
 
     // =============== Container ================
-    _container = Gtk::manage(new DialogContainer(inkscape_window));
+    _container = Gtk::make_managed<DialogContainer>(inkscape_window);
     DialogMultipaned *columns = _container->get_columns();
     auto drop_size = Inkscape::Preferences::get()->getBool("/options/dockingzone/value", true) ? WINDOW_DROPZONE_SIZE / 2 : WINDOW_DROPZONE_SIZE;
     columns->set_dropzone_sizes(drop_size, drop_size);
@@ -108,7 +108,7 @@ DialogWindow::DialogWindow(InkscapeWindow *inkscape_window, Gtk::Widget *page)
         columns->append(column);
 
         // ============== New Notebook ==============
-        DialogNotebook *dialog_notebook = Gtk::manage(new DialogNotebook(_container));
+        auto const dialog_notebook = Gtk::make_managed<DialogNotebook>(_container);
         column->append(dialog_notebook);
         column->set_dropzone_sizes(drop_size, drop_size);
         dialog_notebook->move_page(*page);

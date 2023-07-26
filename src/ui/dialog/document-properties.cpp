@@ -72,14 +72,14 @@ static void docprops_style_button(Gtk::Button& btn, char const* iconName)
 
 DocumentProperties::DocumentProperties()
     : DialogBase("/dialogs/documentoptions", "DocumentProperties")
-    , _page_page(Gtk::manage(new UI::Widget::NotebookPage(1, 1, false, true)))
-    , _page_guides(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
-    , _page_cms(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
-    , _page_scripting(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
-    , _page_external_scripts(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
-    , _page_embedded_scripts(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
-    , _page_metadata1(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
-    , _page_metadata2(Gtk::manage(new UI::Widget::NotebookPage(1, 1)))
+    , _page_page(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1, false, true))
+    , _page_guides(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1))
+    , _page_cms(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1))
+    , _page_scripting(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1))
+    , _page_external_scripts(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1))
+    , _page_embedded_scripts(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1))
+    , _page_metadata1(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1))
+    , _page_metadata2(Gtk::make_managed<UI::Widget::NotebookPage>(1, 1))
     //---------------------------------------------------------------
     // General guide options
     , _rcb_sgui(_("Show _guides"), _("Show or hide guides"), "showguides", _wr)
@@ -178,7 +178,7 @@ void attach_all(Gtk::Grid &table, Gtk::Widget *const arr[], unsigned const n)
                 label.set_valign(Gtk::ALIGN_CENTER);
                 table.attach(label, 0, r, 2, 1);
             } else {
-                auto space = Gtk::manage (new Gtk::Box);
+                auto const space = Gtk::make_managed<Gtk::Box>();
                 space->set_size_request (SPACE_SIZE_X, SPACE_SIZE_Y);
 
                 space->set_halign(Gtk::ALIGN_CENTER);
@@ -457,7 +457,7 @@ void DocumentProperties::build_guides()
 {
     _page_guides->set_visible(true);
 
-    Gtk::Label *label_gui = Gtk::manage (new Gtk::Label);
+    auto const label_gui = Gtk::make_managed<Gtk::Label>();
     label_gui->set_markup (_("<b>Guides</b>"));
 
     _rcp_gui.set_margin_start(0);
@@ -465,12 +465,12 @@ void DocumentProperties::build_guides()
     _rcp_gui.set_hexpand();
     _rcp_hgui.set_hexpand();
     _rcb_sgui.set_hexpand();
-    auto inner = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 4));
+    auto const inner = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
     inner->add(_rcb_sgui);
     inner->add(_rcb_lgui);
     inner->add(_rcp_gui);
     inner->add(_rcp_hgui);
-    auto spacer = Gtk::manage(new Gtk::Label());
+    auto const spacer = Gtk::make_managed<Gtk::Label>();
     Gtk::Widget *const widget_array[] =
     {
         label_gui, nullptr,
@@ -632,7 +632,7 @@ void DocumentProperties::linked_profiles_list_button_release(GdkEventButton* eve
 
 void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
-    Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
+    auto const mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
     _EmbProfContextMenu.append(*mi);
     mi->signal_activate().connect(rem);
     mi->set_visible(true);
@@ -642,7 +642,7 @@ void DocumentProperties::cms_create_popup_menu(Gtk::Widget& parent, sigc::slot<v
 
 void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
-    Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
+    auto const mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
     _ExternalScriptsContextMenu.append(*mi);
     mi->signal_activate().connect(rem);
     mi->set_visible(true);
@@ -651,7 +651,7 @@ void DocumentProperties::external_create_popup_menu(Gtk::Widget& parent, sigc::s
 
 void DocumentProperties::embedded_create_popup_menu(Gtk::Widget& parent, sigc::slot<void ()> rem)
 {
-    Gtk::MenuItem* mi = Gtk::manage(new Gtk::MenuItem(_("_Remove"), true));
+    auto const mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
     _EmbeddedScriptsContextMenu.append(*mi);
     mi->signal_activate().connect(rem);
     mi->set_visible(true);
@@ -703,9 +703,9 @@ bool DocumentProperties::_AvailableProfilesList_separator(const Glib::RefPtr<Gtk
 void DocumentProperties::build_cms()
 {
     _page_cms->set_visible(true);
-    Gtk::Label *label_link= Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
+    Gtk::Label *label_link= Gtk::make_managed<Gtk::Label>("", Gtk::ALIGN_START);
     label_link->set_markup (_("<b>Linked Color Profiles:</b>"));
-    Gtk::Label *label_avail = Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
+    auto const label_avail = Gtk::make_managed<Gtk::Label>("", Gtk::ALIGN_START);
     label_avail->set_markup (_("<b>Available Color Profiles:</b>"));
 
     _unlink_btn.set_tooltip_text(_("Unlink Profile"));
@@ -726,7 +726,7 @@ void DocumentProperties::build_cms()
 
     row++;
 
-    Gtk::Box* spacer = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+    auto const spacer = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     spacer->set_size_request(SPACE_SIZE_X, SPACE_SIZE_Y);
 
     spacer->set_hexpand();
@@ -800,7 +800,7 @@ void DocumentProperties::build_scripting()
 
     //# External scripts tab
     _page_external_scripts->set_visible(true);
-    Gtk::Label *label_external= Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
+    Gtk::Label *label_external= Gtk::make_managed<Gtk::Label>("", Gtk::ALIGN_START);
     label_external->set_markup (_("<b>External script files:</b>"));
 
     _external_add_btn.set_tooltip_text(_("Add the current file name or browse for a file"));
@@ -824,7 +824,7 @@ void DocumentProperties::build_scripting()
 
     row++;
 
-    Gtk::Box* spacer_external = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+    auto const spacer_external = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     spacer_external->set_size_request(SPACE_SIZE_X, SPACE_SIZE_Y);
 
     spacer_external->set_hexpand();
@@ -858,7 +858,7 @@ void DocumentProperties::build_scripting()
 
     //# Embedded scripts tab
     _page_embedded_scripts->set_visible(true);
-    Gtk::Label *label_embedded= Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
+    Gtk::Label *label_embedded= Gtk::make_managed<Gtk::Label>("", Gtk::ALIGN_START);
     label_embedded->set_markup (_("<b>Embedded script files:</b>"));
 
     _embed_new_btn.set_tooltip_text(_("New"));
@@ -892,7 +892,7 @@ void DocumentProperties::build_scripting()
 
     row++;
 
-    Gtk::Box* spacer_embedded = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+    auto const spacer_embedded = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
     spacer_embedded->set_size_request(SPACE_SIZE_X, SPACE_SIZE_Y);
     spacer_embedded->set_hexpand();
     spacer_embedded->set_valign(Gtk::ALIGN_CENTER);
@@ -908,7 +908,7 @@ void DocumentProperties::build_scripting()
 // TODO restore?    _EmbeddedScriptsList.set_fixed_height_mode(true);
 
     //# Set up the Embedded Scripts content box
-    Gtk::Label *label_embedded_content= Gtk::manage (new Gtk::Label("", Gtk::ALIGN_START));
+    Gtk::Label *label_embedded_content= Gtk::make_managed<Gtk::Label>("", Gtk::ALIGN_START);
     label_embedded_content->set_markup (_("<b>Content:</b>"));
 
     label_embedded_content->set_hexpand();
@@ -977,7 +977,7 @@ void DocumentProperties::build_metadata()
 
     _page_metadata1->set_visible(true);
 
-    Gtk::Label *label = Gtk::manage (new Gtk::Label);
+    auto const label = Gtk::make_managed<Gtk::Label>();
     label->set_markup (_("<b>Dublin Core Entities</b>"));
     label->set_halign(Gtk::ALIGN_START);
     label->set_valign(Gtk::ALIGN_CENTER);
@@ -1001,12 +1001,12 @@ void DocumentProperties::build_metadata()
         }
     }
 
-    Gtk::Button *button_save = Gtk::manage (new Gtk::Button(_("_Save as default"),true));
+    auto const button_save = Gtk::make_managed<Gtk::Button>(_("_Save as default"),true);
     button_save->set_tooltip_text(_("Save this metadata as the default metadata"));
-    Gtk::Button *button_load = Gtk::manage (new Gtk::Button(_("Use _default"),true));
+    auto const button_load = Gtk::make_managed<Gtk::Button>(_("Use _default"),true);
     button_load->set_tooltip_text(_("Use the previously saved default metadata here"));
 
-    auto box_buttons = Gtk::manage (new Gtk::Box);
+    auto const box_buttons = Gtk::make_managed<Gtk::Box>();
 
     box_buttons->set_spacing(4);
     box_buttons->pack_end(*button_save, true, true, 6);
@@ -1019,7 +1019,7 @@ void DocumentProperties::build_metadata()
     _page_metadata2->set_visible(true);
 
     row = 0;
-    Gtk::Label *llabel = Gtk::manage (new Gtk::Label);
+    auto const llabel = Gtk::make_managed<Gtk::Label>();
     llabel->set_markup (_("<b>License</b>"));
     llabel->set_halign(Gtk::ALIGN_START);
     llabel->set_valign(Gtk::ALIGN_CENTER);
@@ -1326,7 +1326,7 @@ void DocumentProperties::rebuild_gridspage()
 
 void DocumentProperties::add_grid_widget(SPGrid *grid, bool select)
 {
-    auto widget = Gtk::manage(new Inkscape::UI::Widget::GridWidget(grid));
+    auto const widget = Gtk::make_managed<Inkscape::UI::Widget::GridWidget>(grid);
     _grids_notebook.append_page(*widget, *widget->getTabWidget());
     _grids_notebook.show_all();
 
@@ -1370,7 +1370,7 @@ void DocumentProperties::build_gridspage()
         {C_("Grid", "Axonometric"), GridType::AXONOMETRIC, "grid-axonometric"},
         {C_("Grid", "Modular"), GridType::MODULAR, "grid-modular"}
     }) {
-        auto btn = Gtk::make_managed<Gtk::Button>(label, false);
+        auto const btn = Gtk::make_managed<Gtk::Button>(label, false);
         btn->set_image_from_icon_name(icon, Gtk::ICON_SIZE_MENU);
         btn->set_always_show_image();
         btn_size->add_widget(*btn);
@@ -1641,9 +1641,9 @@ GridWidget::GridWidget(SPGrid *grid)
 
     // Tab label is constructed here and passed back to parent widget for display to
     // reduce the number of watchers that have to keep tabs on the properties
-    _tab = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
-    _tab_img = Gtk::manage(new Gtk::Image());
-    _tab_lbl = Gtk::manage(new Gtk::Label("-", true));
+    _tab = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
+    _tab_img = Gtk::make_managed<Gtk::Image>();
+    _tab_lbl = Gtk::make_managed<Gtk::Label>("-", true);
     _tab->set_spacing(4);
     _tab->pack_start(*_tab_img);
     _tab->pack_start(*_tab_lbl);
@@ -1679,7 +1679,7 @@ GridWidget::GridWidget(SPGrid *grid)
                 grid->setOrigin(dimensions);
     });
 
-    auto left = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
+    auto const left = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
     left->pack_start(*_grid_rcb_enabled, false, false);
     left->pack_start(*_grid_rcb_visible, false, false);
     left->pack_start(*_grid_rcb_snap_visible_only, false, false);
@@ -1748,7 +1748,7 @@ GridWidget::GridWidget(SPGrid *grid)
     _rsu_ox->setProgrammatically = false;
     _rsu_oy->setProgrammatically = false;
 
-    auto column = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
+    auto const column = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
     column->pack_start(*_rumg, true, false);
 
     for (auto rs : {_rsu_ox, _rsu_oy, _rsu_sx, _rsu_sy, _rsu_gx, _rsu_gy, _rsu_mx, _rsu_my}) {
@@ -1772,7 +1772,7 @@ GridWidget::GridWidget(SPGrid *grid)
 
     column->set_hexpand(false);
 
-    auto inner = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
+    auto const inner = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
     inner->pack_start(*left, true, true);
     inner->pack_start(*column, false, false);
     inner->show_all();

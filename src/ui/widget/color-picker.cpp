@@ -30,7 +30,7 @@ namespace Widget {
 
 ColorPicker::ColorPicker (const Glib::ustring& title, const Glib::ustring& tip,
                           guint32 rgba, bool undo, Gtk::Button* external_button)
-    : _preview(new ColorPreview(rgba))
+    : _preview(Gtk::make_managed<ColorPreview>(rgba))
     , _title(title)
     , _rgba(rgba)
     , _undo(undo)
@@ -40,7 +40,7 @@ ColorPicker::ColorPicker (const Glib::ustring& title, const Glib::ustring& tip,
     _color_selector = nullptr;
     setupDialog(title);
     _preview->set_visible(true);
-    button->add(*Gtk::manage(_preview));
+    button->add(*_preview);
     // set tooltip if given, otherwise leave original tooltip in place (from external button)
     if (!tip.empty()) {
         button->set_tooltip_text(tip);
@@ -97,7 +97,7 @@ void ColorPicker::open() {
 void ColorPicker::on_clicked()
 {
     if (!_color_selector) {
-        auto selector = Gtk::manage(new ColorNotebook(_selected_color, _ignore_transparency));
+        auto const selector = Gtk::make_managed<ColorNotebook>(_selected_color, _ignore_transparency);
         selector->set_label(_title);
         _color_selector = selector;
         _colorSelectorDialog.get_content_area()->pack_start(*_color_selector, true, true, 0);

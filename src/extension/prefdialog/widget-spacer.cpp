@@ -45,7 +45,7 @@ Gtk::Widget *WidgetSpacer::get_widget(sigc::signal<void ()> *changeSignal)
         return nullptr;
     }
 
-    Gtk::Box *spacer = Gtk::manage(new Gtk::Box());
+    auto const spacer = Gtk::make_managed<Gtk::Box>();
     spacer->set_border_width(_size/2);
 
     if (_expand) {
@@ -54,8 +54,7 @@ Gtk::Widget *WidgetSpacer::get_widget(sigc::signal<void ()> *changeSignal)
     }
 
     spacer->set_visible(true);
-
-    return dynamic_cast<Gtk::Widget *>(spacer);
+    return spacer;
 }
 
 }  /* namespace Extension */

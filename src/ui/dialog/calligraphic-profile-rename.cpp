@@ -26,7 +26,7 @@ namespace UI {
 namespace Dialog {
 
 CalligraphicProfileRename::CalligraphicProfileRename() :
-    _layout_table(Gtk::manage(new Gtk::Grid())),
+    _layout_table(Gtk::make_managed<Gtk::Grid>()),
     _applied(false)
 {
     set_title(_("Edit profile"));

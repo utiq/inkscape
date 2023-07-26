@@ -64,12 +64,12 @@ StarToolbar::StarToolbar(SPDesktop *desktop)
     {
         Gtk::RadioToolButton::Group flat_item_group;
 
-        auto flat_polygon_button = Gtk::make_managed<Gtk::RadioToolButton>(flat_item_group, _("Polygon"));
+        auto const flat_polygon_button = Gtk::make_managed<Gtk::RadioToolButton>(flat_item_group, _("Polygon"));
         flat_polygon_button->set_tooltip_text(_("Regular polygon (with one handle) instead of a star"));
         flat_polygon_button->set_icon_name(INKSCAPE_ICON("draw-polygon"));
         _flat_item_buttons.push_back(flat_polygon_button);
 
-        auto flat_star_button = Gtk::make_managed<Gtk::RadioToolButton>(flat_item_group, _("Star"));
+        auto const flat_star_button = Gtk::make_managed<Gtk::RadioToolButton>(flat_item_group, _("Star"));
         flat_star_button->set_tooltip_text(_("Star instead of a regular polygon (with one handle)"));
         flat_star_button->set_icon_name(INKSCAPE_ICON("draw-star"));
         _flat_item_buttons.push_back(flat_star_button);

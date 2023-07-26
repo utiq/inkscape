@@ -146,7 +146,7 @@ MyHandle::MyHandle(Gtk::Orientation orientation, int size = get_handle_size())
 
     add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
 
-    Gtk::Image *image = Gtk::manage(new Gtk::Image());
+    auto const image = Gtk::make_managed<Gtk::Image>();
     if (get_orientation() == Gtk::ORIENTATION_HORIZONTAL) {
         image->set_from_icon_name("view-more-symbolic", Gtk::ICON_SIZE_SMALL_TOOLBAR);
         set_size_request(size, -1);
@@ -373,8 +373,8 @@ DialogMultipaned::DialogMultipaned(Gtk::Orientation orientation)
     set_redraw_on_allocate(false);
 
     // ============= Add dropzones ==============
-    MyDropZone *dropzone_s = Gtk::manage(new MyDropZone(orientation));
-    MyDropZone *dropzone_e = Gtk::manage(new MyDropZone(orientation));
+    auto const dropzone_s = Gtk::make_managed<MyDropZone>(orientation);
+    auto const dropzone_e = Gtk::make_managed<MyDropZone>(orientation);
 
     dropzone_s->set_parent(*this);
     dropzone_e->set_parent(*this);
@@ -459,7 +459,7 @@ void DialogMultipaned::prepend(Gtk::Widget *child)
     if (child) {
         // Add handle
         if (children.size() > 2) {
-            MyHandle *my_handle = Gtk::manage(new MyHandle(get_orientation()));
+            auto const my_handle = Gtk::make_managed<MyHandle>(get_orientation());
             my_handle->set_parent(*this);
             children.insert(children.begin() + 1, my_handle); // After start dropzone
         }
@@ -491,7 +491,7 @@ void DialogMultipaned::append(Gtk::Widget *child)
     if (child) {
         // Add handle
         if (children.size() > 2) {
-            MyHandle *my_handle = Gtk::manage(new MyHandle(get_orientation()));
+            auto const my_handle = Gtk::make_managed<MyHandle>(get_orientation());
             my_handle->set_parent(*this);
             children.insert(children.end() - 1, my_handle); // Before end dropzone
         }
@@ -511,7 +511,7 @@ void DialogMultipaned::add_empty_widget()
     const int EMPTY_WIDGET_SIZE = 60; // magic number
 
     // The empty widget is a label
-    auto label = Gtk::manage(new Gtk::Label(_("You can drop dockable dialogs here.")));
+    auto const label = Gtk::make_managed<Gtk::Label>(_("You can drop dockable dialogs here."));
     label->set_line_wrap();
     label->set_justify(Gtk::JUSTIFY_CENTER);
     label->set_valign(Gtk::ALIGN_CENTER);

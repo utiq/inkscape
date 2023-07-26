@@ -71,7 +71,7 @@ namespace {
 
 GtkWidget *_scrollprotected_combo_box_new_with_model(GtkTreeModel *model)
 {
-    auto combobox = Gtk::manage(new Inkscape::UI::Widget::ScrollProtected<Gtk::ComboBox>());
+    auto const combobox = Gtk::make_managed<Inkscape::UI::Widget::ScrollProtected<Gtk::ComboBox>>();
     gtk_combo_box_set_model(combobox->gobj(), model);
     return GTK_WIDGET(combobox->gobj());
 }
@@ -415,14 +415,14 @@ void ColorICCSelector::init(bool no_alpha)
 
         // Slider
         _impl->_compUI[i]._slider =
-            Gtk::manage(new Inkscape::UI::Widget::ColorSlider(_impl->_compUI[i]._adj));
+            Gtk::make_managed<Inkscape::UI::Widget::ColorSlider>(_impl->_compUI[i]._adj);
         _impl->_compUI[i]._slider->set_tooltip_text((i < things.size()) ? things[i].tip.c_str() : "");
         _impl->_compUI[i]._slider->set_visible(true);
         _impl->_compUI[i]._slider->set_no_show_all();
 
         attachToGridOrTable(t, _impl->_compUI[i]._slider->gobj(), 1, row, 1, 1, true);
 
-        auto spinbutton = Gtk::manage(new ScrollProtected<Gtk::SpinButton>(_impl->_compUI[i]._adj, step, digits));
+        auto const spinbutton = Gtk::make_managed<ScrollProtected<Gtk::SpinButton>>(_impl->_compUI[i]._adj, step, digits);
         _impl->_compUI[i]._btn = GTK_WIDGET(spinbutton->gobj());
         gtk_widget_set_tooltip_text(_impl->_compUI[i]._btn, (i < things.size()) ? things[i].tip.c_str() : "");
         sp_dialog_defocus_on_enter(_impl->_compUI[i]._btn);
@@ -460,7 +460,7 @@ void ColorICCSelector::init(bool no_alpha)
     _impl->_adj = Gtk::Adjustment::create(0.0, 0.0, 100.0, 1.0, 10.0, 10.0);
 
     // Slider
-    _impl->_slider = Gtk::manage(new Inkscape::UI::Widget::ColorSlider(_impl->_adj));
+    _impl->_slider = Gtk::make_managed<Inkscape::UI::Widget::ColorSlider>(_impl->_adj);
     _impl->_slider->set_tooltip_text(_("Alpha (opacity)"));
     _impl->_slider->set_visible(true);
 
@@ -471,7 +471,7 @@ void ColorICCSelector::init(bool no_alpha)
 
 
     // Spinbutton
-    auto spinbuttonalpha = Gtk::manage(new ScrollProtected<Gtk::SpinButton>(_impl->_adj, 1.0));
+    auto const spinbuttonalpha = Gtk::make_managed<ScrollProtected<Gtk::SpinButton>>(_impl->_adj, 1.0);
     _impl->_sbtn = GTK_WIDGET(spinbuttonalpha->gobj());
     gtk_widget_set_tooltip_text(_impl->_sbtn, _("Alpha (opacity)"));
     sp_dialog_defocus_on_enter(_impl->_sbtn);
@@ -967,7 +967,7 @@ void ColorICCSelectorImpl::_sliderChanged()
 
 Gtk::Widget *ColorICCSelectorFactory::createWidget(Inkscape::UI::SelectedColor &color, bool no_alpha) const
 {
-    Gtk::Widget *w = Gtk::manage(new ColorICCSelector(color, no_alpha));
+    Gtk::Widget *w = Gtk::make_managed<ColorICCSelector>(color, no_alpha);
     return w;
 }
 

@@ -170,10 +170,10 @@ Memory::Memory()
     signal_show().connect(sigc::mem_fun(*_private, &Private::start_update_task));
     signal_hide().connect(sigc::mem_fun(*_private, &Private::stop_update_task));
 
-    auto button = Gtk::make_managed<Gtk::Button>(_("Recalculate"));
+    auto const button = Gtk::make_managed<Gtk::Button>(_("Recalculate"));
     button->signal_clicked().connect(sigc::mem_fun(*this, &Memory::apply));
 
-    auto button_box = Gtk::make_managed<Gtk::Box>();
+    auto const button_box = Gtk::make_managed<Gtk::Box>();
     button_box->set_halign(Gtk::ALIGN_END);
     button_box->set_spacing(6);
     button_box->set_border_width(4);

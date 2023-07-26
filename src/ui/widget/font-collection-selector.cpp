@@ -25,7 +25,7 @@ namespace Widget {
 FontCollectionSelector::FontCollectionSelector()
 {
     // Step 1: Initialize the treeview.
-    treeview = Gtk::manage(new Gtk::TreeView());
+    treeview = Gtk::make_managed<Gtk::TreeView>();
 
     // Step 2: Setup the treeview.
     setup_tree_view(treeview);

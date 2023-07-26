@@ -200,7 +200,7 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
 {
     // use manage here, because after deletion of Effect object, others might
     // still be pointing to this widget.
-    Gtk::Box *vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
 
     vbox->set_border_width(5);
     vbox->set_homogeneous(false);
@@ -211,7 +211,7 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
             Parameter *param = *it;
             Gtk::Widget *widg = param->param_newWidget();
             if (param->param_key == "radius") {
-                Inkscape::UI::Widget::Scalar *widg_registered =
+                auto const widg_registered =
                     Gtk::manage(dynamic_cast<Inkscape::UI::Widget::Scalar *>(widg));
                 widg_registered->signal_value_changed().connect(
                     sigc::mem_fun(*this, &LPEFilletChamfer::updateAmount));
@@ -223,7 +223,7 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
                     entry_widget->set_width_chars(6);
                 }
             } else if (param->param_key == "chamfer_steps") {
-                Inkscape::UI::Widget::Scalar *widg_registered =
+                auto const widg_registered =
                     Gtk::manage(dynamic_cast<Inkscape::UI::Widget::Scalar *>(widg));
                 widg_registered->signal_value_changed().connect(
                     sigc::mem_fun(*this, &LPEFilletChamfer::updateChamferSteps));
@@ -253,24 +253,24 @@ Gtk::Widget *LPEFilletChamfer::newWidget()
     
  // Fillet and chanffer containers
 
-    Gtk::Box *fillet_container = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
-    Gtk::Button *fillet =  Gtk::manage(new Gtk::Button(Glib::ustring(_("Fillet"))));
+    auto const fillet_container = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
+    Gtk::Button *fillet =  Gtk::make_managed<Gtk::Button>(Glib::ustring(_("Fillet")));
     fillet->signal_clicked().connect(
         sigc::bind(sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), FILLET));
 
     fillet_container->pack_start(*fillet, true, true, 2);
-    Gtk::Button *inverse_fillet = Gtk::manage(new Gtk::Button(Glib::ustring(_("Inverse fillet"))));
+    auto const inverse_fillet = Gtk::make_managed<Gtk::Button>(Glib::ustring(_("Inverse fillet")));
     inverse_fillet->signal_clicked().connect(sigc::bind(
         sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), INVERSE_FILLET));
     fillet_container->pack_start(*inverse_fillet, true, true, 2);
 
-    Gtk::Box *chamfer_container = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 0));
-    Gtk::Button *chamfer = Gtk::manage(new Gtk::Button(Glib::ustring(_("Chamfer"))));
+    auto const chamfer_container = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
+    auto const chamfer = Gtk::make_managed<Gtk::Button>(Glib::ustring(_("Chamfer")));
     chamfer->signal_clicked().connect(
         sigc::bind(sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), CHAMFER));
 
     chamfer_container->pack_start(*chamfer, true, true, 2);
-    Gtk::Button *inverse_chamfer = Gtk::manage(new Gtk::Button(Glib::ustring(_("Inverse chamfer"))));
+    auto const inverse_chamfer = Gtk::make_managed<Gtk::Button>(Glib::ustring(_("Inverse chamfer")));
     inverse_chamfer->signal_clicked().connect(sigc::bind(
         sigc::mem_fun(*this, &LPEFilletChamfer::updateNodeSatelliteType), INVERSE_CHAMFER));
     chamfer_container->pack_start(*inverse_chamfer, true, true, 2);

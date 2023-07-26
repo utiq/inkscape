@@ -155,7 +155,7 @@ InkviewWindow::show_document(SPDocument* document)
     if (_view) {
         _view->setDocument(document);
     } else {
-        _view = Gtk::manage(new Inkscape::UI::View::SVGViewWidget(document));
+        _view = Gtk::make_managed<Inkscape::UI::View::SVGViewWidget>(document);
         add (*_view);
     }
 

@@ -235,7 +235,7 @@ SelectorsDialog::SelectorsDialog()
         col->add_attribute(addRenderer->property_icon(), _mColumns._colType);
     }
 
-    Gtk::CellRendererText *label = Gtk::manage(new Gtk::CellRendererText());
+    auto const label = Gtk::make_managed<Gtk::CellRendererText>();
     addCol = _treeView.append_column("CSS Selector", *label) - 1;
     col = _treeView.get_column(addCol);
     if (col) {
@@ -288,7 +288,7 @@ void SelectorsDialog::_showWidgets()
     _vadj = _scrolled_window_selectors.get_vadjustment();
     _vadj->signal_value_changed().connect(sigc::mem_fun(*this, &SelectorsDialog::_vscroll));
     _selectors_box.pack_start(_scrolled_window_selectors, Gtk::PACK_EXPAND_WIDGET);
-    /* Gtk::Label *dirtogglerlabel = Gtk::manage(new Gtk::Label(_("Paned vertical")));
+    /* auto const dirtogglerlabel = Gtk::make_managed<Gtk::Label>(_("Paned vertical"));
     dirtogglerlabel->get_style_context()->add_class("inksmall");
     _direction.property_active() = dir;
     _direction.property_active().signal_changed().connect(sigc::mem_fun(*this, &SelectorsDialog::_toggleDirection));
@@ -299,8 +299,8 @@ void SelectorsDialog::_showWidgets()
     _button_box.pack_start(_create, Gtk::PACK_SHRINK);
     _button_box.pack_start(_del, Gtk::PACK_SHRINK);
     Gtk::RadioButton::Group group;
-    Gtk::RadioButton *_horizontal = Gtk::manage(new Gtk::RadioButton());
-    Gtk::RadioButton *_vertical = Gtk::manage(new Gtk::RadioButton());
+    auto const _horizontal = Gtk::make_managed<Gtk::RadioButton>();
+    auto const _vertical = Gtk::make_managed<Gtk::RadioButton>();
     _horizontal->set_image_from_icon_name(INKSCAPE_ICON("horizontal"));
     _vertical->set_image_from_icon_name(INKSCAPE_ICON("vertical"));
     _horizontal->set_group(group);
@@ -319,7 +319,7 @@ void SelectorsDialog::_showWidgets()
     _paned.pack1(*_style_dialog, Gtk::SHRINK);
     _paned.pack2(_selectors_box, true, true);
     _paned.set_wide_handle(true);
-    Gtk::Box *contents = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    auto const contents = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     contents->pack_start(_paned, Gtk::PACK_EXPAND_WIDGET);
     contents->pack_start(_button_box, false, false, 0);
     contents->set_valign(Gtk::ALIGN_FILL);

@@ -107,17 +107,17 @@ Gtk::Widget *
 LPESimplify::newWidget()
 {
     // use manage here, because after deletion of Effect object, others might still be pointing to this widget.
-    Gtk::Box *vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     
     vbox->set_border_width(5);
     vbox->set_homogeneous(false);
     vbox->set_spacing(2);
     std::vector<Parameter *>::iterator it = param_vector.begin();
-    Gtk::Box * buttons = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL,0));
+    auto const buttons = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL,0);
     while (it != param_vector.end()) {
         if ((*it)->widget_is_visible) {
             Parameter * param = *it;
-            Gtk::Widget * widg = dynamic_cast<Gtk::Widget *>(param->param_newWidget());
+            auto const widg = param->param_newWidget();
             if (param->param_key == "simplify_just_coalesce") {
                 ++it;
                 continue;
@@ -152,8 +152,9 @@ LPESimplify::newWidget()
 
         ++it;
     }
+
     vbox->pack_start(*buttons,true, true, 2);
-    return dynamic_cast<Gtk::Widget *>(vbox);
+    return vbox;
 }
 
 void

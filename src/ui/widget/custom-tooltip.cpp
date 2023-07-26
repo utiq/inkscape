@@ -38,8 +38,8 @@ sp_query_custom_tooltip(int x, int y, bool keyboard_tooltip, const Glib::RefPtr<
         start = std::chrono::steady_clock::now();
         last = id;
     }
-    Gtk::Box *box = Gtk::make_managed<Gtk::Box>();
-    Gtk::Label *label = Gtk::make_managed<Gtk::Label>();
+    auto const box = Gtk::make_managed<Gtk::Box>();
+    auto const label = Gtk::make_managed<Gtk::Label>();
     label->set_line_wrap(true);
     label->set_markup(tooltip);
     label->set_max_width_chars(40);

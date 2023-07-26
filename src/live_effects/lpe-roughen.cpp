@@ -137,7 +137,7 @@ void LPERoughen::doBeforeEffect(SPLPEItem const *lpeitem)
 
 Gtk::Widget *LPERoughen::newWidget()
 {
-    Gtk::Box *vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     vbox->set_border_width(5);
     vbox->set_homogeneous(false);
     vbox->set_spacing(2);
@@ -145,21 +145,21 @@ Gtk::Widget *LPERoughen::newWidget()
     while (it != param_vector.end()) {
         if ((*it)->widget_is_visible) {
             Parameter *param = *it;
-            Gtk::Widget *widg = dynamic_cast<Gtk::Widget *>(param->param_newWidget());
+            auto widg = param->param_newWidget();
             if (param->param_key == "method") {
-                Gtk::Label *method_label = Gtk::manage(
-                    new Gtk::Label(Glib::ustring(_("<b>Resolution</b>")), Gtk::ALIGN_START));
+                auto const method_label = Gtk::make_managed<Gtk::Label>(
+                    Glib::ustring(_("<b>Resolution</b>")), Gtk::ALIGN_START);
                 method_label->set_use_markup(true);
                 vbox->pack_start(*method_label, false, false, 2);
-                vbox->pack_start(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)),
+                vbox->pack_start(*Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_HORIZONTAL),
                                  Gtk::PACK_EXPAND_WIDGET);
             }
             if (param->param_key == "handles") {
-                Gtk::Label *options = Gtk::manage(
-                    new Gtk::Label(Glib::ustring(_("<b>Options</b>")), Gtk::ALIGN_START));
+                auto const options = Gtk::make_managed<Gtk::Label>(
+                    Glib::ustring(_("<b>Options</b>")), Gtk::ALIGN_START);
                 options->set_use_markup(true);
                 vbox->pack_start(*options, false, false, 2);
-                vbox->pack_start(*Gtk::manage(new Gtk::Separator(Gtk::ORIENTATION_HORIZONTAL)),
+                vbox->pack_start(*Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_HORIZONTAL),
                                  Gtk::PACK_EXPAND_WIDGET);
             }
             Glib::ustring *tip = param->param_getTooltip();
@@ -175,7 +175,8 @@ Gtk::Widget *LPERoughen::newWidget()
         }
         ++it;
     }
-    return dynamic_cast<Gtk::Widget *>(vbox);
+
+    return vbox;
 }
 
 double LPERoughen::sign(double random_number)

@@ -119,7 +119,7 @@ void AboutDialog::show_about() {
             //SVGViewWidget *viewer;
             //builder->get_widget_derived("image-container", viewer, doc);
             //Gtk::manage(viewer);
-            auto viewer = Gtk::manage(new Inkscape::UI::View::SVGViewWidget(doc));
+            auto const viewer = Gtk::make_managed<Inkscape::UI::View::SVGViewWidget>(doc);
             double width = doc->getWidth().value("px");
             double height = doc->getHeight().value("px");
             viewer->setResize(width, height);

@@ -78,9 +78,9 @@ Gtk::Widget *ParamColor::get_widget(sigc::signal<void ()> *changeSignal)
         _changeSignal = std::make_unique<sigc::signal<void ()>>(*changeSignal);
     }
 
-    Gtk::Box *hbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, GUI_PARAM_WIDGETS_SPACING));
+    auto const hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, GUI_PARAM_WIDGETS_SPACING);
     if (_mode == COLOR_BUTTON) {
-        Gtk::Label *label = Gtk::manage(new Gtk::Label(_text, Gtk::ALIGN_START));
+        auto const label = Gtk::make_managed<Gtk::Label>(_text, Gtk::ALIGN_START);
         label->set_visible(true);
         hbox->pack_start(*label, true, true);
 
@@ -92,7 +92,7 @@ Gtk::Widget *ParamColor::get_widget(sigc::signal<void ()> *changeSignal)
 
         // TODO: It would be nicer to have a custom Gtk::ColorButton() implementation here,
         //       that wraps an Inkscape::UI::Widget::ColorNotebook into a new dialog
-        _color_button = Gtk::manage(new Gtk::ColorButton(rgba));
+        _color_button = Gtk::make_managed<Gtk::ColorButton>(rgba);
         _color_button->set_title(_text);
         _color_button->set_use_alpha();
         _color_button->set_visible(true);
@@ -100,7 +100,7 @@ Gtk::Widget *ParamColor::get_widget(sigc::signal<void ()> *changeSignal)
 
         _color_button->signal_color_set().connect(sigc::mem_fun(*this, &ParamColor::_onColorButtonChanged));
     } else {
-        Gtk::Widget *selector = Gtk::manage(new Inkscape::UI::Widget::ColorNotebook(_color));
+        Gtk::Widget *selector = Gtk::make_managed<Inkscape::UI::Widget::ColorNotebook>(_color);
         hbox->pack_start(*selector, true, true, 0);
         selector->set_visible(true);
     }

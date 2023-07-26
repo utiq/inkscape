@@ -81,7 +81,7 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
     // =============== Build interface ===============
 
     // Main box
-    _mainbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL));
+    _mainbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
     _mainbox->set_name("DesktopMainBox");
     _mainbox->set_visible(true);
     add(*_mainbox);
@@ -126,10 +126,6 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
 
     // ========== Drag and Drop of Documents =========
     ink_drag_setup(_desktop_widget);
-
-    // Pallet
-
-    // Status bar
 
     // The main section
     _mainbox->pack_start(*Gtk::manage(_desktop_widget), true, true);
