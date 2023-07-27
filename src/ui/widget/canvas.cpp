@@ -566,7 +566,7 @@ void CanvasPrivate::schedule_redraw()
         if (prefs.debug_logging) std::cout << "Redraw start" << std::endl;
         launch_redraw();
         return false;
-    }, Glib::PRIORITY_HIGH);
+    }); // Default priority; any higher results in competition with other idle callbacks => flickering snap indicators.
 }
 
 // Update state and launch redraw process in background. Requires a current OpenGL context.
@@ -795,7 +795,7 @@ void CanvasPrivate::commit_tiles()
 static Geom::Point cap_length(Geom::Point const &pt, double max)
 {
     auto const r = pt.length();
-    return r <= max ? pt : pt * max / r;
+    return r <= max ? pt : pt * (max / r);
 }
 
 static double profile(double r)
@@ -1879,11 +1879,12 @@ void Canvas::paint_widget(Cairo::RefPtr<Cairo::Context> const &cr)
 
     if constexpr (false) d->canvasitem_ctx->root()->canvas_item_print_tree();
 
-    // Although launch_redraw() is scheduled at a priority higher than draw, and should therefore always be called first if
-    // asked, there are times when GTK simply decides to call on_draw anyway. Since launch_redraw() is required to have been
-    // called at least once to perform vital initalisation, if it has not been called, we have to exit.
-    if (d->stores.mode() == Stores::Mode::None) {
-        return;
+    // If launch_redraw() has been scheduled but not yet called, make sure this call happens
+    // before proceeding in order to perform vital initialisation (needed not to crash).
+    if (d->schedule_redraw_conn.connected()) {
+        if (d->prefs.debug_logging) std::cout << "Redraw start" << std::endl;
+        d->launch_redraw();
+        d->schedule_redraw_conn.disconnect();
     }
 
     // Commit pending tiles in case GTK called on_draw even though after_redraw() is scheduled at higher priority.
