@@ -519,6 +519,37 @@ void DocumentProperties::populate_available_profiles(){
     }
 }
 
+/**
+ * Cleans up name to remove disallowed characters.
+ * Some discussion at http://markmail.org/message/bhfvdfptt25kgtmj
+ * Allowed ASCII first characters:  ':', 'A'-'Z', '_', 'a'-'z'
+ * Allowed ASCII remaining chars add: '-', '.', '0'-'9',
+ *
+ * @param str the string to clean up.
+ */
+void sanitizeName(std::string& str) {
+    if (str.size() > 0) {
+        char val = str.at(0);
+        if (((val < 'A') || (val > 'Z')) && ((val < 'a') || (val > 'z')) && (val != '_') && (val != ':')) {
+            str.insert(0, "_");
+        }
+        for (int i = 1; i < str.size(); i++) {
+            char val = str.at(i);
+            if (((val < 'A') || (val > 'Z')) && ((val < 'a') || (val > 'z')) && ((val < '0') || (val > '9')) &&
+                (val != '_') && (val != ':') && (val != '-') && (val != '.')) {
+                if (str.at(i - 1) == '-') {
+                    str.erase(i, 1);
+                    i--;
+                } else {
+                    str.replace(i, 1, "-");
+                }
+            }
+        }
+        if (str.at(str.size() - 1) == '-') {
+            str.pop_back();
+        }
+    }
+}
 
 /// Links the selected color profile in the combo box to the document
 void DocumentProperties::linkSelectedProfile()
@@ -544,6 +575,7 @@ void DocumentProperties::linkSelectedProfile()
         Inkscape::XML::Node *cprofRepr = xml_doc->createElement("svg:color-profile");
         gchar* tmp = g_strdup(name.c_str());
         std::string nameStr = tmp ? tmp : "profile"; // TODO add some auto-numbering to avoid collisions
+        sanitizeName(nameStr);
         cprofRepr->setAttribute("name", nameStr);
         cprofRepr->setAttribute("xlink:href", Glib::filename_to_uri(Glib::filename_from_utf8(file)));
         cprofRepr->setAttribute("id", file);
