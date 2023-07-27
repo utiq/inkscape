@@ -12,6 +12,7 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <cmath>
 #include <iomanip>
 #include <string>
 #include <glibmm/i18n.h>
@@ -1514,6 +1515,22 @@ void ObjectsPanel::_generateTranslucentItems(SPItem *parent)
     }
 }
 
+[[nodiscard]] static auto get_cell_area(Gtk::TreeView const &tree_view,
+                                        Gtk::TreeModel::Path const &path, Gtk::TreeViewColumn &column)
+{
+    auto area = Gdk::Rectangle{};
+    tree_view.get_cell_area(path, column, area);
+    return area;
+}
+
+[[nodiscard]] static auto get_cell_center(Gtk::TreeView const &tree_view,
+                                          Gtk::TreeModel::Path const &path, Gtk::TreeViewColumn &column)
+{
+    auto const area = get_cell_area(tree_view, path, column);
+    return std::pair{std::lround(area.get_x() + area.get_width () / 2.0),
+                     std::lround(area.get_y() + area.get_height() / 2.0)};
+}
+
 /**
  * Handles mouse button click events
  * @return whether to eat the event (om nom nom)
@@ -1546,9 +1563,9 @@ Gtk::EventSequenceState ObjectsPanel::on_click(Gtk::GestureMultiPress const &ges
                 _drag_flip = toggleVisible(state, row);
             } else if (col == _lock_column) {
                 _drag_flip = toggleLocked(state, row);
-            }
-            else if (col == _blend_mode_column) {
-                return blendModePopup(ex, ey, row) ? Gtk::EVENT_SEQUENCE_CLAIMED
+            } else if (col == _blend_mode_column) {
+                auto const [cx, cy] = get_cell_center(_tree, path, *_blend_mode_column);
+                return blendModePopup(cx, cy, row) ? Gtk::EVENT_SEQUENCE_CLAIMED
                                                    : Gtk::EVENT_SEQUENCE_NONE;
             }
         }
@@ -1556,9 +1573,7 @@ Gtk::EventSequenceState ObjectsPanel::on_click(Gtk::GestureMultiPress const &ges
 
     // Gtk lacks the ability to detect if the user is clicking on the
     // expander icon. So we must detect it using the cell_area check.
-    Gdk::Rectangle r;
-    _tree.get_cell_area(path, *_name_column, r);
-    bool is_expander = x < r.get_x();
+    auto const is_expander = x < get_cell_area(_tree, path, *_name_column).get_x();
 
     if (col != _name_column || is_expander)
         return Gtk::EVENT_SEQUENCE_NONE;
@@ -1569,7 +1584,7 @@ Gtk::EventSequenceState ObjectsPanel::on_click(Gtk::GestureMultiPress const &ges
         return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
 
-    _is_editing = _is_editing && type == ButtonEventType::released;
+    _is_editing &= type == ButtonEventType::released;
 
     auto row = *_store->get_iter(path);
     if (!row) return Gtk::EVENT_SEQUENCE_NONE;
@@ -1583,8 +1598,9 @@ Gtk::EventSequenceState ObjectsPanel::on_click(Gtk::GestureMultiPress const &ges
         if (!layer)
             return false;
         // modifier keys force selection mode
-        if ((state & (Gdk::SHIFT_MASK | Gdk::CONTROL_MASK)) != Gdk::ModifierType{})
+        if (Controller::has_flag(state, Gdk::SHIFT_MASK | Gdk::CONTROL_MASK)) {
             return false;
+        }
         return _layer != layer || selection->includes(layer);
     };
 
