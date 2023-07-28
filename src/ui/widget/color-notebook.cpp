@@ -166,7 +166,8 @@ void ColorNotebook::_initUI(bool no_alpha)
     });
     _observer->call();
 
-    GtkWidget *rgbabox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget *rgbabox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+    GtkContainer *rgbabox_container = GTK_CONTAINER(rgbabox);
 
     /* Create color management icons */
     _box_colormanaged = gtk_event_box_new();
@@ -174,22 +175,21 @@ void ColorNotebook::_initUI(bool no_alpha)
     gtk_container_add(GTK_CONTAINER(_box_colormanaged), colormanaged);
     gtk_widget_set_tooltip_text(_box_colormanaged, _("Color Managed"));
     gtk_widget_set_sensitive(_box_colormanaged, false);
-    gtk_box_pack_start(GTK_BOX(rgbabox), _box_colormanaged, FALSE, FALSE, 2);
+    gtk_container_add(rgbabox_container, _box_colormanaged);
 
     _box_outofgamut = gtk_event_box_new();
     GtkWidget *outofgamut = sp_get_icon_image("out-of-gamut-icon", GTK_ICON_SIZE_SMALL_TOOLBAR);
     gtk_container_add(GTK_CONTAINER(_box_outofgamut), outofgamut);
     gtk_widget_set_tooltip_text(_box_outofgamut, _("Out of gamut!"));
     gtk_widget_set_sensitive(_box_outofgamut, false);
-    gtk_box_pack_start(GTK_BOX(rgbabox), _box_outofgamut, FALSE, FALSE, 2);
+    gtk_container_add(rgbabox_container, _box_outofgamut);
 
     _box_toomuchink = gtk_event_box_new();
     GtkWidget *toomuchink = sp_get_icon_image("too-much-ink-icon", GTK_ICON_SIZE_SMALL_TOOLBAR);
     gtk_container_add(GTK_CONTAINER(_box_toomuchink), toomuchink);
     gtk_widget_set_tooltip_text(_box_toomuchink, _("Too much ink!"));
     gtk_widget_set_sensitive(_box_toomuchink, false);
-    gtk_box_pack_start(GTK_BOX(rgbabox), _box_toomuchink, FALSE, FALSE, 2);
-
+    gtk_container_add(rgbabox_container, _box_toomuchink);
 
     /* Color picker */
     GtkWidget *picker = sp_get_icon_image("color-picker", GTK_ICON_SIZE_SMALL_TOOLBAR);
@@ -197,23 +197,25 @@ void ColorNotebook::_initUI(bool no_alpha)
     gtk_button_set_relief(GTK_BUTTON(_btn_picker), GTK_RELIEF_NONE);
     gtk_container_add(GTK_CONTAINER(_btn_picker), picker);
     gtk_widget_set_tooltip_text(_btn_picker, _("Pick colors from image"));
-    gtk_box_pack_start(GTK_BOX(rgbabox), _btn_picker, FALSE, FALSE, 2);
+    gtk_container_add(rgbabox_container, _btn_picker);
     g_signal_connect(G_OBJECT(_btn_picker), "clicked", G_CALLBACK(ColorNotebook::_onPickerClicked), this);
 
     /* Create RGBA entry and color preview */
     _rgbal = gtk_label_new_with_mnemonic(_("RGBA_:"));
     gtk_widget_set_halign(_rgbal, GTK_ALIGN_END);
-    gtk_box_pack_start(GTK_BOX(rgbabox), _rgbal, TRUE, TRUE, 2);
+    gtk_widget_set_hexpand(_rgbal, TRUE);
+    gtk_container_add(rgbabox_container, _rgbal);
 
     auto const rgba_entry = Gtk::make_managed<ColorEntry>(_selected_color);
-    sp_dialog_defocus_on_enter(GTK_WIDGET(rgba_entry->gobj()));
-    gtk_box_pack_start(GTK_BOX(rgbabox), GTK_WIDGET(rgba_entry->gobj()), FALSE, FALSE, 0);
-    gtk_label_set_mnemonic_widget(GTK_LABEL(_rgbal), GTK_WIDGET(rgba_entry->gobj()));
+    auto const rgba_entry_widget = rgba_entry->Gtk::Widget::gobj();
+    sp_dialog_defocus_on_enter(rgba_entry_widget);
+    gtk_container_add(rgbabox_container, rgba_entry_widget);
+    gtk_label_set_mnemonic_widget(GTK_LABEL(_rgbal), rgba_entry_widget);
 
     gtk_widget_show_all(rgbabox);
 
     // the "too much ink" icon is initially hidden
-    gtk_widget_set_visible(GTK_WIDGET(_box_toomuchink), false);
+    gtk_widget_set_visible(_box_toomuchink, false);
 
     gtk_widget_set_margin_start(rgbabox, XPAD);
     gtk_widget_set_margin_end(rgbabox, XPAD);
@@ -292,7 +294,7 @@ void ColorNotebook::_updateICCButtons()
         /* update too-much-ink icon */
         Inkscape::ColorProfile *prof = _document->getProfileManager().find(name.c_str());
         if (prof && prof->isPrintColorSpace()) {
-            gtk_widget_set_visible(GTK_WIDGET(_box_toomuchink), true);
+            gtk_widget_set_visible(_box_toomuchink, true);
             double ink_sum = 0;
             for (double i : color.getColors()) {
                 ink_sum += i;
@@ -305,7 +307,7 @@ void ColorNotebook::_updateICCButtons()
                 gtk_widget_set_sensitive(_box_toomuchink, true);
         }
         else {
-            gtk_widget_set_visible(GTK_WIDGET(_box_toomuchink), false);
+            gtk_widget_set_visible(_box_toomuchink, false);
         }
     } else {
         Inkscape::Preferences *prefs = Inkscape::Preferences::get();

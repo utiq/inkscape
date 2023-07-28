@@ -3,7 +3,6 @@
 #include <gtkmm/adjustment.h>
 #include <gtkmm/box.h>
 #include <gtkmm/button.h>
-#include <gtkmm/cssprovider.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/menubutton.h>
 #include <gtkmm/popover.h>
@@ -30,8 +29,7 @@ ColorPalette::ColorPalette():
     _scroll_up(get_widget<Gtk::Button>(_builder, "btn-up")),
     _scroll_down(get_widget<Gtk::Button>(_builder, "btn-down")),
     _scroll(get_widget<Gtk::ScrolledWindow>(_builder, "scroll-wnd"))
-    {
-
+{
     auto& box = get_widget<Gtk::Box>(_builder, "palette-box");
     this->add(box);
 
@@ -103,56 +101,10 @@ ColorPalette::ColorPalette():
 
     _scroll.set_min_content_height(1);
 
-    // set style for small buttons; we need them reasonably small, since they impact min height of color palette strip
-    {
-        auto css_provider = Gtk::CssProvider::create();
-        css_provider->load_from_data(
-        ".small {"
-        " padding: 1px;"
-        " margin: 0;"
-        "}"
-        );
-
-        auto& btn_menu = get_widget<Gtk::MenuButton>(_builder, "btn-menu");
-        Gtk::Widget* small_buttons[5] = {&_scroll_up, &_scroll_down, &_scroll_left, &_scroll_right, &btn_menu};
-        for (auto button : small_buttons) {
-            button->get_style_context()->add_provider(css_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        }
-    }
-
     _scroll_down.signal_clicked().connect([=](){ scroll(0, get_palette_height(), get_tile_height() + _border, true); });
     _scroll_up.signal_clicked().connect([=](){ scroll(0, -get_palette_height(), get_tile_height() + _border, true); });
     _scroll_left.signal_clicked().connect([=](){ scroll(-10 * (get_tile_width() + _border), 0, 0.0, false); });
     _scroll_right.signal_clicked().connect([=](){ scroll(10 * (get_tile_width() + _border), 0, 0.0, false); });
-
-    {
-        auto css_provider = Gtk::CssProvider::create();
-        css_provider->load_from_data(
-        "flowbox, scrolledwindow {"
-        " padding: 0;"
-        " border: 0;"
-        " margin: 0;"
-        " min-width: 1px;"
-        " min-height: 1px;"
-        "}");
-        _scroll.get_style_context()->add_provider(css_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        _normal_box.get_style_context()->add_provider(css_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        _pinned_box.get_style_context()->add_provider(css_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
-
-    // remove padding/margins from FlowBoxChild widgets, so previews can be adjacent to each other
-    {
-        auto css_provider = Gtk::CssProvider::create();
-        css_provider->load_from_data(
-        ".color-palette-main-box flowboxchild {"
-        " padding: 0;"
-        " border: 0;"
-        " margin: 0;"
-        " min-width: 1px;"
-        " min-height: 1px;"
-        "}");
-        get_style_context()->add_provider_for_screen(this->get_screen(), css_provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
 
     set_vexpand_set(true);
     set_up_scrolling();

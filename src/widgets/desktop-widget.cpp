@@ -240,7 +240,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
 
     dtw->_statusbar->pack_start(*dtw->_select_status, true, true);
 
-    dtw->_zoom_status_box = Gtk::make_managed<Gtk::Box>();
+    dtw->_zoom_status_box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
     // Zoom status spinbutton ---------------
     auto zoom_adj = Gtk::Adjustment::create(100.0, log(SP_DESKTOP_ZOOM_MIN)/log(2), log(SP_DESKTOP_ZOOM_MAX)/log(2), 0.1);
     dtw->_zoom_status = Gtk::make_managed<Inkscape::UI::Widget::SpinButton>(zoom_adj);
@@ -266,7 +266,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow* inkscape_window)
     auto context_zoom = dtw->_zoom_status->get_style_context();
     context_zoom->add_provider(css_provider_spinbutton, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
-    dtw->_rotation_status_box = Gtk::make_managed<Gtk::Box>();
+    dtw->_rotation_status_box = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
     dtw->_rotation_status_box->set_margin_start(10);
     // Rotate status spinbutton ---------------
     auto rotation_adj = Gtk::Adjustment::create(0, -360.0, 360.0, 1.0);

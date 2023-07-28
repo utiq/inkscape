@@ -839,7 +839,7 @@
         <property name="halign">start</property>
         <property name="valign">start</property>
         <property name="margin-start">8</property>
-        <property name="margin-end">16</property>
+        <property name="margin-end">8</property>
         <property name="margin-top">8</property>
         <property name="margin-bottom">8</property>
         <property name="row-spacing">4</property>

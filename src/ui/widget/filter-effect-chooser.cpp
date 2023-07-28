@@ -59,7 +59,7 @@ SimpleFilterModifier::SimpleFilterModifier(int flags)
     , _blur(_("Blur (%)"), 0, 0, 100, 1, 0.1, 1)
     , _opacity(_("Opacity (%)"), 0, 0, 100, 1, 0.1, 1)
     , _notify(true)
-    , _hb_blend(Gtk::ORIENTATION_HORIZONTAL)
+    , _hb_blend(Gtk::ORIENTATION_HORIZONTAL, 4)
 {
     set_name("SimpleFilterModifier");
 

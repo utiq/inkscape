@@ -249,15 +249,12 @@
         <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
         <property name="halign">end</property>
-        <property name="valign">end</property>
         <property name="margin-start">1</property>
         <property name="margin-end">1</property>
+        <property name="relief">none</property>
         <property name="popup">menu</property>
         <property name="direction">none</property>
         <property name="use-popover">False</property>
-        <child>
-          <placeholder/>
-        </child>
         <style>
           <class name="small"/>
         </style>

@@ -103,7 +103,8 @@ private:
 
     void new_dialog(const Glib::ustring& dialog_type, DialogNotebook* notebook);
     std::unique_ptr<DialogBase> dialog_factory(Glib::ustring const &dialog_type);
-    Gtk::Widget *create_notebook_tab(Glib::ustring label, Glib::ustring image, const Glib::ustring shortcut);
+    Gtk::Widget *create_notebook_tab(Glib::ustring const &label, Glib::ustring const &image,
+                                     Glib::ustring const &shortcut);
     DialogWindow* create_new_floating_dialog(const Glib::ustring& dialog_type, bool blink);
 
     // Signal connections

@@ -158,8 +158,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
     _opacity_label.set_margin_start(0);
     _opacity_label.set_margin_end(0);
 
-    _table.set_column_spacing(2);
-    _table.set_row_spacing(0);
+    _table.set_column_spacing(4);
 
     for (int i = SS_FILL; i <= SS_STROKE; i++) {
 

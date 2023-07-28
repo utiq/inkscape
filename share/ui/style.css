@@ -555,6 +555,30 @@ stackswitcher button {
     min-width: 40px;
 }
 
+/* ColorPalette */
+/* set style for small buttons; we need them reasonably small,
+ * since they impact min height of color palette strip */
+.color-palette-main-box button.small {
+    padding: 1px;
+    margin: 0;
+}
+.color-palette-main-box flowbox,
+.color-palette-main-box scrolledwindow {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    min-width: 1px;
+    min-height: 1px;
+}
+/* remove padding/margins from FlowBoxChild widgets,
+ * so previews can be adjacent to each other */
+.color-palette-main-box flowboxchild {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    min-width: 1px;
+    min-height: 1px;
+}
 /*removes dashed line (scrolling indicator) on color palette for all themes */
 .color-palette-main-box scrolledwindow undershoot.top,
 .color-palette-main-box scrolledwindow undershoot.right,

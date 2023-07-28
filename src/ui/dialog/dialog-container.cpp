@@ -170,13 +170,15 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
 }
 
 // Create the notebook tab
-Gtk::Widget *DialogContainer::create_notebook_tab(Glib::ustring label_str, Glib::ustring image_str, const Glib::ustring shortcut)
+Gtk::Widget *DialogContainer::create_notebook_tab(Glib::ustring const &label_str,
+                                                  Glib::ustring const &image_str,
+                                                  Glib::ustring const &shortcut)
 {
     auto const label = Gtk::make_managed<Gtk::Label>(label_str);
     auto const image = Gtk::make_managed<Gtk::Image>();
     auto const close = Gtk::make_managed<Gtk::Button>();
     image->set_from_icon_name(image_str, Gtk::ICON_SIZE_MENU);
-    auto const tab = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 2);
+    auto const tab = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
     close->set_image_from_icon_name("window-close");
     close->set_halign(Gtk::ALIGN_END);
     close->set_tooltip_text(_("Close Tab"));
