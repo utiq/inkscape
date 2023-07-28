@@ -700,7 +700,7 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
                 <property name="can_focus">False</property>
                 <property name="margin_left">8</property>
                 <property name="margin_right">8</property>
-                <property name="halign">start</property>
+                <property name="halign">end</property>
                 <child>
                   <object class="GtkButton" id="save">
                     <property name="label">gtk-save</property>
@@ -714,11 +714,6 @@ along with Inkscape Extensions Manager.  If not, see <http://www.gnu.org/license
                       <class name="primary"/>
                     </style>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton">
@@ -932,7 +927,7 @@ Fund Inkscape</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">8</property>
                 <property name="margin_right">8</property>
-                <property name="halign">start</property>
+                <property name="halign">end</property>
                 <child>
                   <object class="GtkButton" id="thanks">
                     <property name="label" translatable="yes">Thanks!</property>
@@ -945,11 +940,6 @@ Fund Inkscape</property>
                       <class name="primary"/>
                     </style>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
               </object>
               <packing>
@@ -1057,7 +1047,17 @@ Fund Inkscape</property>
                 <property name="margin_start">8</property>
                 <property name="margin_end">8</property>
                 <property name="spacing">4</property>
-                <property name="halign">start</property>
+                <child>
+                  <object class="GtkCheckButton" id="show_toggle">
+                    <property name="label" translatable="yes">Show this every time</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="focus_on_click">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="active">True</property>
+                    <property name="hexpand">True</property>
+                  </object>
+                </child>
                 <child>
                   <object class="GtkButton" id="load">
                     <property name="label" translatable="yes">Open</property>
@@ -1068,27 +1068,6 @@ Fund Inkscape</property>
                     <property name="focus_on_click">False</property>
                     <property name="receives_default">True</property>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="show_toggle">
-                    <property name="label" translatable="yes">Show this every time</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="focus_on_click">False</property>
-                    <property name="receives_default">False</property>
-                    <property name="active">True</property>
-                    <property name="draw-indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="new">
@@ -1098,11 +1077,6 @@ Fund Inkscape</property>
                     <property name="focus_on_click">False</property>
                     <property name="receives_default">True</property>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
                 </child>
               </object>
               <packing>
