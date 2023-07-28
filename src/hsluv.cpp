@@ -31,6 +31,7 @@
 
 #include "hsluv.h"
 
+#include <iostream>
 #include <limits>
 #include <cmath>
 #include <algorithm>
@@ -39,7 +40,7 @@
 
 namespace Hsluv {
 
-/* for RGB */
+/* for sRGB, reference white D65 */
 static const Triplet m[3] = {
     {  3.24096994190452134377, -1.53738317757009345794, -0.49861076029300328366 },
     { -0.96924363628087982613,  1.87596750150772066772,  0.04155505740717561247 },
@@ -463,6 +464,45 @@ std::pair<double, double> get_contrasting_color(double l)
         auto t = (l_threshold - l) / l_threshold;
         return {1.0, 0.6 + 0.1 * t};
     }
+}
+
+// http://www.brucelindbloom.com/index.html?Eqn_Lab_to_XYZ.html
+Triplet cielab_to_xyz(double L, double a, double b, const Triplet& ref_white_xyz) {
+    auto fy = (L + 16) / 116;
+    auto fx = a / 500 + fy;
+    auto fz = fy - b / 200;
+
+    constexpr auto e = 0.008856;
+    constexpr auto k = 903.3;
+
+    auto fx3 = std::pow(fx, 3);
+    auto fy3 = std::pow(fy, 3);
+    auto fz3 = std::pow(fz, 3);
+
+    auto xr = fx3 > e ? fx3 : (116 * fx - 16) / k;
+    auto yr = L > k * e ? fy3 : L / k;
+    auto zr = fz3 > e ? fz3 : (116 * fz - 16) / k;
+
+    return {xr * ref_white_xyz[0], yr * ref_white_xyz[1], zr * ref_white_xyz[2]};
+}
+
+Triplet lab_to_rgb(double L, double a, double b, const Triplet& ref_white_xyz) {
+    auto result = cielab_to_xyz(L, a, b, ref_white_xyz);
+// std::cout << "xyzs: " << result[0] << ' ' << result[1] << ' ' << result[2] << ' ';
+    xyz2rgb(result);
+    for (size_t i : {0, 1, 2}) {
+        result[i] = std::clamp(result[i], 0.0, 1.0);
+    }
+// std::cout << " rgb: " << result[0] << ' ' << result[1] << ' ' << result[2] << std::endl;
+    return result;
+}
+
+// CIE standard illuminant D65, Observer= 2° [0.9504, 1.0000, 1.0888].
+// Simulates noon daylight with correlated color temperature of 6504 K.
+constexpr Triplet illuminant_d65{ 0.9504, 1.0000, 1.0888 };
+
+Triplet lab_to_rgb(double L, double a, double b) {
+    return lab_to_rgb(L, a, b, illuminant_d65);
 }
 
 } // namespace Hsluv

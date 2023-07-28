@@ -75,6 +75,28 @@ std::array<Geom::Line, 6> get_bounds(double l);
 Triplet luv_to_rgb(double l, double u, double v);
 
 /**
+ * Convert Lab to sRGB.
+ *
+ * @param L Luminance. Between 0.0 and 100.0.
+ * @param a A coordinate.
+ * @param b B coordinate.
+ * @param ref_white_xyz White reference in normalized XYZ color space.
+ * @return An sRGB triplet, with all components between 0.0 and 1.0.
+ */
+Triplet lab_to_rgb(double L, double a, double b, const Triplet& ref_white_xyz);
+/**
+ * Convert Lab to sRGB using D65 illuminant reference point.
+ *
+ * @param L Luminance. Between 0.0 and 100.0.
+ * @param a A coordinate.
+ * @param b B coordinate.
+ * @return An sRGB triplet, with all components between 0.0 and 1.0.
+ */
+Triplet lab_to_rgb(double L, double a, double b);
+
+Triplet cielab_to_xyz(double L, double a, double b, const Triplet& ref_white_xyz);
+
+/**
  * Convert HSLuv to Luv.
  *
  * @param hsl A pointer to a buffer of length 3 containing an HSLuv color:

@@ -3,6 +3,7 @@
 set(color_SRC
 	cms-system.cpp
 	cms-util.cpp
+    cmyk-conv.cpp
 	color-conv.cpp
 
 	# -------
@@ -11,6 +12,7 @@ set(color_SRC
 	cms-color-types.h
 	cms-system.h
 	cms-util.h
+    cmyk-conv.h
 	color-conv.h
 )
 

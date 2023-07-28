@@ -15,7 +15,15 @@
 #include "swatches.h"
 
 #include <algorithm>
+#include <giomm/file.h>
+#include <giomm/inputstream.h>
 #include <glibmm/i18n.h>
+#include <glibmm/ustring.h>
+#include <glibmm/utility.h>
+#include <gtkmm/button.h>
+#include <gtkmm/object.h>
+#include <string>
+#include <vector>
 
 #include "document.h"
 #include "object/sp-defs.h"
@@ -44,6 +52,14 @@ SwatchesPanel::SwatchesPanel(char const *prefsPath)
     pack_start(*_palette);
     update_palettes();
 
+auto b = Gtk::make_managed<Gtk::Button>("Load...");
+b->set_visible();
+b->set_size_request(-1, 26);
+b->signal_clicked().connect([=](){
+    // load
+    // load_acb_palette("/Users/mike/palettes/PANTONE+CMYK-Coated.acb");
+});
+// pack_start(*b);
     bool embedded = _prefs_path != "/dialogs/swatches";
     _palette->set_compact(embedded);
 
