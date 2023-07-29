@@ -88,6 +88,7 @@ public:
     Geom::Point eventPos() const { return { eventX(), eventY() }; }
     unsigned modifiers() const override { return _original->button.state; }
     unsigned button() const { return _original->button.button; }
+    uint32_t time() const { return _original->button.time; }
 };
 
 /**

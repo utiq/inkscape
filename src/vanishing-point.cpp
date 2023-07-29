@@ -300,8 +300,8 @@ VPDragger::~VPDragger()
     this->_grabbed_connection.disconnect();
     this->_ungrabbed_connection.disconnect();
 
-    /* unref should call destroy */
-    knot_unref(this->knot);
+    // unref should call destroy
+    SPKnot::unref(knot);
 }
 
 /**

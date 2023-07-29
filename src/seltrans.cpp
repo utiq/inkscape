@@ -32,8 +32,6 @@
 #include "message-stack.h"
 #include "mod360.h"
 #include "pure-transform.h"
-#include "selection-chemistry.h"
-#include "filter-chemistry.h"
 #include "selection.h"
 #include "seltrans-handles.h"
 
@@ -44,7 +42,6 @@
 #include "display/control/canvas-item-group.h"
 #include "live_effects/effect-enum.h"
 #include "live_effects/effect.h"
-#include "live_effects/lpe-bool.h"
 
 #include "object/sp-item-transform.h"
 #include "object/sp-namedview.h"
@@ -54,6 +51,7 @@
 #include "ui/modifiers.h"
 #include "ui/knot/knot.h"
 #include "ui/tools/select-tool.h"
+#include "ui/widget/events/canvas-event.h"
 
 using Inkscape::DocumentUndo;
 
@@ -63,30 +61,29 @@ static void sp_sel_trans_handle_click(SPKnot *knot, guint state, SPSelTransHandl
 static void sp_sel_trans_handle_new_event(SPKnot *knot, Geom::Point const &position, guint32 state, SPSelTransHandle const* data);
 static gboolean sp_sel_trans_handle_request(SPKnot *knot, Geom::Point *p, guint state, SPSelTransHandle const *data);
 
-static gboolean sp_sel_trans_handle_event(SPKnot *knot, GdkEvent *event, SPSelTransHandle const*)
+static bool sp_sel_trans_handle_event(SPKnot *knot, Inkscape::CanvasEvent const &event, SPSelTransHandle const*)
 {
-    switch (event->type) {
-        case GDK_MOTION_NOTIFY:
-            break;
-        case GDK_KEY_PRESS:
-            if (Inkscape::UI::Tools::get_latin_keyval (&event->key) == GDK_KEY_space) {
-                /* stamping mode: both mode(show content and outline) operation with knot */
+    bool ret = false;
+
+    inspect_event(event,
+        [&] (Inkscape::KeyPressEvent const &event) {
+            if (Inkscape::UI::Tools::get_latin_keyval(event.original()) == GDK_KEY_space) {
+                // Stamping mode: both mode (show content and outline) operation with knot.
                 if (!knot->is_grabbed()) {
-                    return FALSE;
+                    return;
                 }
-                SPDesktop *desktop = knot->desktop;
-                Inkscape::SelTrans *seltrans = SP_SELECT_CONTEXT(desktop->event_context)->_seltrans;
+                auto desktop = knot->desktop;
+                auto seltrans = SP_SELECT_CONTEXT(desktop->event_context)->_seltrans;
                 // This stamp can't produce clones without requiring extra support of "undoing"
                 // the cascaded transform from this knot's changes.
                 seltrans->stamp();
-                return TRUE;
+                ret = true;
             }
-            break;
-        default:
-            break;
-    }
+        },
+        [&] (Inkscape::CanvasEvent const &event) {}
+    );
 
-    return FALSE;
+    return ret;
 }
 
 Inkscape::SelTrans::BoundingBoxPrefsObserver::BoundingBoxPrefsObserver(SelTrans &sel_trans) :
@@ -160,8 +157,8 @@ Inkscape::SelTrans::~SelTrans()
     _sel_changed_connection.disconnect();
     _sel_modified_connection.disconnect();
 
-    for (auto & knot : knots) {
-        knot_unref(knot);
+    for (auto &knot : knots) {
+        SPKnot::unref(knot);
         knot = nullptr;
     }
 

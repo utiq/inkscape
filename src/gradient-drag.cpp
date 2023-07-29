@@ -1669,8 +1669,8 @@ GrDragger::~GrDragger()
     this->_mousedown_connection.disconnect();
     this->_ungrabbed_connection.disconnect();
 
-    /* unref should call destroy */
-    knot_unref(this->knot);
+    // unref should call destroy
+    SPKnot::unref(knot);
 
     // delete all draggables
     for (auto draggable : this->draggables) {
@@ -2323,7 +2323,7 @@ void GrDrag::refreshDraggersMesh(SPMeshGradient *mg, SPItem *item, Inkscape::Pai
 void GrDrag::grabKnot(GrDragger *dragger, gint x, gint y, guint32 etime)
 {
     if (dragger) {
-        dragger->knot->startDragging(dragger->point, x, y, etime);
+        dragger->knot->startDragging(dragger->point, {x, y}, etime);
     }
 }
 
@@ -2335,7 +2335,7 @@ void GrDrag::grabKnot(SPItem *item, GrPointType point_type, gint point_i, Inksca
 {
     GrDragger *dragger = getDraggerFor(item, point_type, point_i, fill_or_stroke);
     if (dragger) {
-        dragger->knot->startDragging(dragger->point, x, y, etime);
+        dragger->knot->startDragging(dragger->point, {x, y}, etime);
     }
 }
 

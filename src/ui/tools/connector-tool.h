@@ -35,16 +35,15 @@ namespace Avoid {
 }
 
 namespace Inkscape {
-    class CanvasItemBpath;
-    class Selection;
-
-    namespace XML {
-        class Node;
-    }
-}
+class CanvasItemBpath;
+class Selection;
+namespace XML { class Node; }
+class ButtonPressEvent;
+class MotionEvent;
+class ButtonReleaseEvent;
+} // namespace Inkscape
 
 #define SP_CONNECTOR_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::ConnectorTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-//#define SP_IS_CONNECTOR_CONTEXT(obj) (dynamic_cast<const ConnectorTool*>((const ToolBase*)obj) != NULL)
 
 enum {
     SP_CONNECTOR_CONTEXT_IDLE,
@@ -145,9 +144,9 @@ public:
 private:
     void _selectionChanged(Inkscape::Selection *selection);
 
-    bool _handleButtonPress(GdkEventButton const &bevent);
-    bool _handleMotionNotify(GdkEventMotion const &mevent);
-    bool _handleButtonRelease(GdkEventButton const &revent);
+    bool _handleButtonPress(ButtonPressEvent const &bevent);
+    bool _handleMotionNotify(MotionEvent const &mevent);
+    bool _handleButtonRelease(ButtonReleaseEvent const &revent);
     bool _handleKeyPress(guint const keyval);
 
     void _setInitialPoint(Geom::Point const p);

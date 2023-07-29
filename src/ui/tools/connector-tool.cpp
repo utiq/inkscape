@@ -81,7 +81,6 @@
 #include "desktop.h"
 #include "document-undo.h"
 #include "document.h"
-#include "inkscape.h"
 #include "message-context.h"
 #include "message-stack.h"
 #include "selection.h"
@@ -99,7 +98,6 @@
 #include "object/sp-path.h"
 #include "object/sp-text.h"
 #include "object/sp-use.h"
-#include "object/sp-symbol.h"
 
 #include "ui/icon-names.h"
 #include "ui/knot/knot.h"
@@ -210,9 +208,9 @@ ConnectorTool::~ConnectorTool()
 
     this->sel_changed_connection.disconnect();
 
-    for (auto &i : this->endpt_handle) {
+    for (auto &i : endpt_handle) {
         if (i) {
-            knot_unref(i);
+            SPKnot::unref(i);
             i = nullptr;
         }
     }
@@ -341,16 +339,13 @@ static void cc_deselect_handle(SPKnot* knot)
     knot->updateCtrl();
 }
 
-bool ConnectorTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+bool ConnectorTool::item_handler(SPItem *item, CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
     bool ret = false;
 
-    Geom::Point p(event->button.x, event->button.y);
-
-    switch (event->type) {
-    case GDK_BUTTON_RELEASE:
-        if (event->button.button == 1) {
+    inspect_event(event,
+    [&] (ButtonReleaseEvent const &event) {
+        if (event.button() == 1) {
             if ((this->state == SP_CONNECTOR_CONTEXT_DRAGGING) && this->within_tolerance) {
                 this->_resetColors();
                 this->state = SP_CONNECTOR_CONTEXT_IDLE;
@@ -358,13 +353,13 @@ bool ConnectorTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
 
             if (this->state != SP_CONNECTOR_CONTEXT_IDLE) {
                 // Doing something else like rerouting.
-                break;
+                return;
             }
 
             // find out clicked item, honoring Alt
-            SPItem *item = sp_event_context_find_item(_desktop, p, event->button.state & GDK_MOD1_MASK, FALSE);
+            auto const item = sp_event_context_find_item(_desktop, event.eventPos(), event.modifiers() & GDK_MOD1_MASK, false);
 
-            if (event->button.state & GDK_SHIFT_MASK) {
+            if (event.modifiers() & GDK_SHIFT_MASK) {
                 this->selection->toggle(item);
             } else {
                 this->selection->set(item);
@@ -379,182 +374,160 @@ bool ConnectorTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
 
             ret = true;
         }
-        break;
-
-    case GDK_MOTION_NOTIFY: {
-        auto last_pos = Geom::Point(event->motion.x, event->motion.y);
-        SPItem *item = _desktop->getItemAtPoint(last_pos, false);
+    },
+    [&] (MotionEvent const &event) {
+        auto const item = _desktop->getItemAtPoint(event.eventPos(), false);
         if (cc_item_is_shape(item)) {
-            this->_setActiveShape(item);
+            _setActiveShape(item);
         }
-        ret = false;
-        break;
-    }
-    default:
-        break;
-    }
+    },
+    [&] (CanvasEvent const &event) {}
+    );
 
     return ret;
 }
 
-bool ConnectorTool::root_handler(CanvasEvent const &canvas_event)
+bool ConnectorTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
     bool ret = false;
 
-    switch (event->type) {
-    case GDK_BUTTON_PRESS:
-        ret = this->_handleButtonPress(event->button);
-        break;
+    inspect_event(event,
+    [&] (ButtonPressEvent const &event) {
+        if (event.numPress() == 1) {
+            ret = _handleButtonPress(event);
+        }
+    },
+    [&] (MotionEvent const &event) {
+        ret = _handleMotionNotify(event);
+    },
+    [&] (ButtonReleaseEvent const &event) {
+        ret = _handleButtonRelease(event);
+    },
+    [&] (KeyPressEvent const &event) {
+        ret = _handleKeyPress(get_latin_keyval(event.original()));
+    },
+    [&] (CanvasEvent const &event) {}
+    );
 
-    case GDK_MOTION_NOTIFY:
-        ret = this->_handleMotionNotify(event->motion);
-        break;
-
-    case GDK_BUTTON_RELEASE:
-        ret = this->_handleButtonRelease(event->button);
-        break;
-
-    case GDK_KEY_PRESS:
-        ret = this->_handleKeyPress(get_latin_keyval (&event->key));
-        break;
-
-    default:
-        break;
-    }
-
-    if (!ret) {
-        ret = ToolBase::root_handler(canvas_event);
-    }
-
-    return ret;
+    return ret || ToolBase::root_handler(event);
 }
 
-bool ConnectorTool::_handleButtonPress(GdkEventButton const &bevent)
+bool ConnectorTool::_handleButtonPress(ButtonPressEvent const &bevent)
 {
-    Geom::Point const event_w(bevent.x, bevent.y);
+    Geom::Point const event_w = bevent.eventPos();
     /* Find desktop coordinates */
     Geom::Point p = _desktop->w2d(event_w);
 
     bool ret = false;
 
-        if ( bevent.button == 1 ) {
-            if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
-                return true;
-            }
-
-            Geom::Point const event_w(bevent.x, bevent.y);
-
-            xyp = { (int)bevent.x, (int)bevent.y };
-            within_tolerance = true;
-
-            Geom::Point const event_dt = _desktop->w2d(event_w);
-
-            SnapManager &m = _desktop->namedview->snap_manager;
-
-            switch (this->state) {
-            case SP_CONNECTOR_CONTEXT_STOP:
-
-                /* This is allowed, if we just canceled curve */
-            case SP_CONNECTOR_CONTEXT_IDLE:
-            {
-                if ( this->npoints == 0 ) {
-                    this->cc_clear_active_conn();
-
-                    _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Creating new connector"));
-
-                    /* Set start anchor */
-                    /* Create green anchor */
-                    Geom::Point p = event_dt;
-
-                    // Test whether we clicked on a connection point
-                    bool found = this->_ptHandleTest(p, &this->shref, &this->sub_shref);
-
-                    if (!found) {
-                        // This is the first point, so just snap it to the grid
-                        // as there's no other points to go off.
-                        m.setup(_desktop);
-                        m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_OTHER_HANDLE);
-                        m.unSetup();
-                    }
-                    this->_setInitialPoint(p);
-
-                }
-                this->state = SP_CONNECTOR_CONTEXT_DRAGGING;
-                ret = true;
-                break;
-            }
-            case SP_CONNECTOR_CONTEXT_DRAGGING:
-            {
-                // This is the second click of a connector creation.
-                m.setup(_desktop);
-                m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_OTHER_HANDLE);
-                m.unSetup();
-
-                this->_setSubsequentPoint(p);
-                this->_finishSegment(p);
-
-                this->_ptHandleTest(p, &this->ehref, &this->sub_ehref);
-                if (this->npoints != 0) {
-                    this->_finish();
-                }
-                this->cc_set_active_conn(this->newconn);
-                this->state = SP_CONNECTOR_CONTEXT_IDLE;
-                ret = true;
-                break;
-            }
-            case SP_CONNECTOR_CONTEXT_CLOSE:
-            {
-                g_warning("Button down in CLOSE state");
-                break;
-            }
-            default:
-                break;
-            }
-        } else if (bevent.button == 3) {
-            if (this->state == SP_CONNECTOR_CONTEXT_REROUTING) {
-                // A context menu is going to be triggered here,
-                // so end the rerouting operation.
-                this->_reroutingFinish(&p);
-
-                this->state = SP_CONNECTOR_CONTEXT_IDLE;
-
-                // Don't set ret to TRUE, so we drop through to the
-                // parent handler which will open the context menu.
-            } else if (this->npoints != 0) {
-                this->_finish();
-                this->state = SP_CONNECTOR_CONTEXT_IDLE;
-                ret = true;
-            }
+    if (bevent.button() == 1) {
+        if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
+            return true;
         }
+
+        auto const event_w = bevent.eventPos();
+
+        saveDragOrigin(event_w);
+
+        Geom::Point const event_dt = _desktop->w2d(event_w);
+
+        SnapManager &m = _desktop->namedview->snap_manager;
+
+        switch (this->state) {
+        case SP_CONNECTOR_CONTEXT_STOP:
+
+            /* This is allowed, if we just canceled curve */
+        case SP_CONNECTOR_CONTEXT_IDLE:
+        {
+            if ( this->npoints == 0 ) {
+                this->cc_clear_active_conn();
+
+                _desktop->messageStack()->flash(Inkscape::NORMAL_MESSAGE, _("Creating new connector"));
+
+                /* Set start anchor */
+                /* Create green anchor */
+                Geom::Point p = event_dt;
+
+                // Test whether we clicked on a connection point
+                bool found = this->_ptHandleTest(p, &this->shref, &this->sub_shref);
+
+                if (!found) {
+                    // This is the first point, so just snap it to the grid
+                    // as there's no other points to go off.
+                    m.setup(_desktop);
+                    m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_OTHER_HANDLE);
+                    m.unSetup();
+                }
+                this->_setInitialPoint(p);
+
+            }
+            this->state = SP_CONNECTOR_CONTEXT_DRAGGING;
+            ret = true;
+            break;
+        }
+        case SP_CONNECTOR_CONTEXT_DRAGGING:
+        {
+            // This is the second click of a connector creation.
+            m.setup(_desktop);
+            m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_OTHER_HANDLE);
+            m.unSetup();
+
+            this->_setSubsequentPoint(p);
+            this->_finishSegment(p);
+
+            this->_ptHandleTest(p, &this->ehref, &this->sub_ehref);
+            if (this->npoints != 0) {
+                this->_finish();
+            }
+            this->cc_set_active_conn(this->newconn);
+            this->state = SP_CONNECTOR_CONTEXT_IDLE;
+            ret = true;
+            break;
+        }
+        case SP_CONNECTOR_CONTEXT_CLOSE:
+        {
+            g_warning("Button down in CLOSE state");
+            break;
+        }
+        default:
+            break;
+        }
+    } else if (bevent.button() == 3) {
+        if (this->state == SP_CONNECTOR_CONTEXT_REROUTING) {
+            // A context menu is going to be triggered here,
+            // so end the rerouting operation.
+            this->_reroutingFinish(&p);
+
+            this->state = SP_CONNECTOR_CONTEXT_IDLE;
+
+            // Don't set ret to TRUE, so we drop through to the
+            // parent handler which will open the context menu.
+        } else if (this->npoints != 0) {
+            this->_finish();
+            this->state = SP_CONNECTOR_CONTEXT_IDLE;
+            ret = true;
+        }
+    }
+
     return ret;
 }
 
-bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
+bool ConnectorTool::_handleMotionNotify(MotionEvent const &mevent)
 {
     bool ret = false;
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
-    if (mevent.state & GDK_BUTTON2_MASK || mevent.state & GDK_BUTTON3_MASK) {
+    if (mevent.modifiers() & (GDK_BUTTON2_MASK | GDK_BUTTON3_MASK)) {
         // allow middle-button scrolling
         return false;
     }
 
-    Geom::Point const event_w(mevent.x, mevent.y);
+    auto const event_w = mevent.eventPos();
 
-    if (within_tolerance) {
-        tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
-        if ( ( abs( (gint) mevent.x - this->xyp.x() ) < this->tolerance ) &&
-             ( abs( (gint) mevent.y - this->xyp.y() ) < this->tolerance ) ) {
-            return false;   // Do not drag if we're within tolerance from origin.
-        }
+    if (!checkDragMoved(event_w)) {
+        return false;
     }
-    // Once the user has moved farther than tolerance from the original location
-    // (indicating they intend to move the object, not click), then always process
-    // the motion notify coordinates as given (no snapping back to origin)
-    this->within_tolerance = false;
 
-    /* Find desktop coordinates */
+    // Find desktop coordinates.
     Geom::Point p = _desktop->w2d(event_w);
 
     SnapManager &m = _desktop->namedview->snap_manager;
@@ -562,7 +535,7 @@ bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
     switch (this->state) {
     case SP_CONNECTOR_CONTEXT_DRAGGING:
     {
-        gobble_motion_events(mevent.state);
+        gobble_motion_events(mevent.modifiers());
         // This is movement during a connector creation.
         if ( this->npoints > 0 ) {
             m.setup(_desktop);
@@ -619,17 +592,17 @@ bool ConnectorTool::_handleMotionNotify(GdkEventMotion const &mevent)
     return ret;
 }
 
-bool ConnectorTool::_handleButtonRelease(GdkEventButton const &revent)
+bool ConnectorTool::_handleButtonRelease(ButtonReleaseEvent const &revent)
 {
     bool ret = false;
 
-    if ( revent.button == 1 ) {
+    if (revent.button() == 1) {
         SPDocument *doc = _desktop->getDocument();
         SnapManager &m = _desktop->namedview->snap_manager;
 
-        Geom::Point const event_w(revent.x, revent.y);
+        auto const event_w = revent.eventPos();
 
-        /* Find desktop coordinates */
+        // Find desktop coordinates.
         Geom::Point p = _desktop->w2d(event_w);
 
         switch (this->state) {
@@ -928,34 +901,27 @@ void ConnectorTool::_finish()
 }
 
 
-static bool cc_generic_knot_handler(CanvasEvent const &canvas_event, SPKnot *knot)
+static bool cc_generic_knot_handler(CanvasEvent const &event, SPKnot *knot)
 {
-    auto event = canvas_event.original();
-    g_assert (knot != nullptr);
+    g_assert(knot);
 
-    //g_object_ref(knot);
-    knot_ref(knot);
+    SPKnot::ref(knot);
 
-    ConnectorTool *cc = SP_CONNECTOR_CONTEXT(
-            knot->desktop->event_context);
+    auto cc = SP_CONNECTOR_CONTEXT(knot->desktop->event_context);
 
     bool consumed = false;
 
-    gchar const *knot_tip = _("Click to join at this point");
-    switch (event->type) {
-    case GDK_ENTER_NOTIFY:
-        knot->setFlag(SP_KNOT_MOUSEOVER, TRUE);
+    inspect_event(event,
+    [&] (EnterEvent const &event) {
+        knot->setFlag(SP_KNOT_MOUSEOVER, true);
 
         cc->active_handle = knot;
-        if (knot_tip) {
-            knot->desktop->event_context->defaultMessageContext()->set(
-                    Inkscape::NORMAL_MESSAGE, knot_tip);
-        }
+        knot->desktop->event_context->defaultMessageContext()->set(Inkscape::NORMAL_MESSAGE, _("Click to join at this point"));
 
         consumed = true;
-        break;
-    case GDK_LEAVE_NOTIFY:
-        knot->setFlag(SP_KNOT_MOUSEOVER, FALSE);
+    },
+    [&] (LeaveEvent const &event) {
+        knot->setFlag(SP_KNOT_MOUSEOVER, false);
 
         /* FIXME: the following test is a workaround for LP Bug #1273510.
          * It seems that a signal is not correctly disconnected, maybe
@@ -964,29 +930,24 @@ static bool cc_generic_knot_handler(CanvasEvent const &canvas_event, SPKnot *kno
             cc->active_handle = nullptr;
         }
 
-        if (knot_tip) {
-            knot->desktop->event_context->defaultMessageContext()->clear();
-        }
+        knot->desktop->event_context->defaultMessageContext()->clear();
 
         consumed = true;
-        break;
-    default:
-        break;
-    }
+    },
+    [&] (CanvasEvent const &event) {}
+    );
 
-    knot_unref(knot);
+    SPKnot::unref(knot);
 
     return consumed;
 }
 
-static bool endpt_handler(CanvasEvent const &canvas_event, ConnectorTool *cc)
+static bool endpt_handler(CanvasEvent const &event, ConnectorTool *cc)
 {
-    auto event = canvas_event.original();
+    bool consumed = false;
 
-    gboolean consumed = FALSE;
-
-    switch (event->type) {
-    case GDK_BUTTON_PRESS:
+    inspect_event(event,
+    [&] (ButtonPressEvent const &event) {
         g_assert( (cc->active_handle == cc->endpt_handle[0]) ||
                   (cc->active_handle == cc->endpt_handle[1]) );
         if (cc->state == SP_CONNECTOR_CONTEXT_IDLE) {
@@ -1015,12 +976,11 @@ static bool endpt_handler(CanvasEvent const &canvas_event, ConnectorTool *cc)
 
             // The rest of the interaction rerouting the connector is
             // handled by the context root handler.
-            consumed = TRUE;
+            consumed = true;
         }
-        break;
-    default:
-        break;
-    }
+    },
+    [&] (CanvasEvent const &event) {}
+    );
 
     return consumed;
 }

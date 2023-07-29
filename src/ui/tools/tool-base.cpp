@@ -1204,8 +1204,7 @@ void ToolBase::saveDragOrigin(Geom::Point const &pos)
 bool ToolBase::checkDragMoved(Geom::Point const &pos)
 {
     if (within_tolerance) {
-        auto const diff = pos.floor() - xyp;
-        if (std::abs(diff.x()) < tolerance && std::abs(diff.y()) < tolerance) {
+        if (Geom::LInfty(pos.floor() - xyp) < tolerance) {
             // Do not drag if within tolerance from origin.
             return false;
         }
@@ -1661,7 +1660,7 @@ void ToolBase::process_delayed_snap_event()
         if (knot) {
             bool was_grabbed = knot->is_grabbed();
             knot->setFlag(SP_KNOT_GRABBED, true); // Must be grabbed for Inkscape::SelTrans::handleRequest() to pass
-            sp_knot_handler_request_position(reinterpret_cast<GdkEvent*>(_dse->getEvent().original()), knot);
+            knot->handler_request_position(_dse->getEvent());
             knot->setFlag(SP_KNOT_GRABBED, was_grabbed);
         }
         break;

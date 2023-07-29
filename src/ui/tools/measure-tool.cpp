@@ -334,9 +334,9 @@ MeasureTool::~MeasureTool()
     this->_knot_end_moved_connection.disconnect();
     this->_knot_end_ungrabbed_connection.disconnect();
 
-    /* unref should call destroy */
-    knot_unref(this->knot_start);
-    knot_unref(this->knot_end);
+    // unref should call destroy
+    SPKnot::unref(knot_start);
+    SPKnot::unref(knot_end);
 
     measure_tmp_items.clear();
     measure_item.clear();
