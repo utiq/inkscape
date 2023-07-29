@@ -15,8 +15,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#define DRAW_VERBOSE
-
 #include "freehand-base.h"
 
 #include "desktop-style.h"
@@ -32,7 +30,6 @@
 
 #include "live_effects/lpe-bendpath.h"
 #include "live_effects/lpe-patternalongpath.h"
-#include "live_effects/lpe-simplify.h"
 #include "live_effects/lpe-powerstroke.h"
 
 #include "object/sp-item-group.h"
@@ -50,15 +47,9 @@
 #include "ui/tools/pencil-tool.h" // TODO: Remove in the future
 #include "ui/widget/events/canvas-event.h"
 
-#define MIN_PRESSURE      0.0
-#define MAX_PRESSURE      1.0
-#define DEFAULT_PRESSURE  1.0
-
 using Inkscape::DocumentUndo;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 /**
  * Flushes white curve(s) and additional curve into object.
@@ -72,107 +63,78 @@ static void spdc_free_colors(FreehandBase *dc);
 
 FreehandBase::FreehandBase(SPDesktop *desktop, std::string &&prefs_path, std::string &&cursor_filename)
     : ToolBase(desktop, std::move(prefs_path), std::move(cursor_filename))
-    , selection(nullptr)
-    , red_color(0xff00007f)
-    , blue_color(0x0000ff7f)
-    , green_color(0x00ff007f)
-    , highlight_color(0x0000007f)
-    , green_closed(false)
-    , white_item(nullptr)
-    , sa(nullptr)
-    , ea(nullptr)
-    , waiting_LPE_type(Inkscape::LivePathEffect::INVALID_LPE)
-    , red_curve_is_valid(false)
-    , anchor_statusbar(false)
-    , tablet_enabled(false)
-    , is_tablet(false)
-    , pressure(DEFAULT_PRESSURE)
 {
-    this->selection = desktop->getSelection();
+    selection = desktop->getSelection();
 
     // Connect signals to track selection changes
     sel_changed_connection = selection->connectChanged([=](Selection *) { _attachSelection(); });
-    sel_modified_connection = selection->connectModified([=](Selection *, guint) { onSelectionModified(); });
+    sel_modified_connection = selection->connectModified([=](Selection *, unsigned) { onSelectionModified(); });
 
     // Create red bpath
-    this->red_bpath = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
-    this->red_bpath->set_stroke(this->red_color);
-    this->red_bpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
+    red_bpath = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
+    red_bpath->set_stroke(red_color);
+    red_bpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
 
     // Create blue bpath
-    this->blue_bpath = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
-    this->blue_bpath->set_stroke(this->blue_color);
-    this->blue_bpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
+    blue_bpath = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
+    blue_bpath->set_stroke(blue_color);
+    blue_bpath->set_fill(0x0, SP_WIND_RULE_NONZERO);
 
     // Create green curve
     green_curve = std::make_shared<SPCurve>();
 
-    // No green anchor by default
-    this->green_anchor = nullptr;
-    this->green_closed = false;
-
     // Create start anchor alternative curve
-    this->sa_overwrited.reset(new SPCurve());
+    sa_overwrited = std::make_shared<SPCurve>();
 
     _attachSelection();
 }
 
 FreehandBase::~FreehandBase()
 {
-    this->sel_changed_connection.disconnect();
-    this->sel_modified_connection.disconnect();
+    sel_changed_connection.disconnect();
+    sel_modified_connection.disconnect();
 
     ungrabCanvasEvents();
 
-    if (this->selection) {
-        this->selection = nullptr;
+    if (selection) {
+        selection = nullptr;
     }
 
     spdc_free_colors(this);
 }
 
-void FreehandBase::set(const Inkscape::Preferences::Entry& /*value*/) {
-}
-
-bool FreehandBase::root_handler(CanvasEvent const &canvas_event)
+bool FreehandBase::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    gint ret = FALSE;
+    bool ret = false;
 
-    switch (event->type) {
-        case GDK_KEY_PRESS:
-            switch (get_latin_keyval (&event->key)) {
+    inspect_event(event,
+        [&] (KeyPressEvent const &event) {
+            switch (get_latin_keyval(event.original())) {
                 case GDK_KEY_Up:
                 case GDK_KEY_Down:
                 case GDK_KEY_KP_Up:
                 case GDK_KEY_KP_Down:
                     // prevent the zoom field from activation
                     if (!MOD__CTRL_ONLY(event)) {
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 default:
-            break;
-        }
-        break;
-    default:
-        break;
-    }
+                    break;
+            }
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-    if (!ret) {
-        ret = ToolBase::root_handler(canvas_event);
-    }
-
-    return ret;
+    return ret || ToolBase::root_handler(event);
 }
 
 std::optional<Geom::Point> FreehandBase::red_curve_get_last_point()
 {
-    std::optional<Geom::Point> p;
     if (!red_curve.is_empty()) {
-        p = red_curve.last_point();
+        return red_curve.last_point();
     }
-    return p;
+    return {};
 }
 
 static void spdc_paste_curve_as_freehand_shape(Geom::PathVector const &newpath, FreehandBase *dc, SPItem *item)
@@ -226,7 +188,8 @@ void spdc_apply_style(SPObject *obj)
     sp_desktop_apply_css_recursive(obj, css, true);
     sp_repr_css_attr_unref(css);
 }
-static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, FreehandBase *dc, SPItem *item)
+
+static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> const &points, FreehandBase *dc, SPItem *item)
 {
     using namespace Inkscape::LivePathEffect;
     SPDesktop *desktop = dc->getDesktop();
@@ -276,8 +239,7 @@ static void spdc_apply_powerstroke_shape(std::vector<Geom::Point> points, Freeha
 static void spdc_apply_bend_shape(gchar const *svgd, FreehandBase *dc, SPItem *item)
 {
     using namespace Inkscape::LivePathEffect;
-    auto use = cast<SPUse>(item);
-    if ( use ) {
+    if (is<SPUse>(item)) {
         return;
     }
     SPDesktop *desktop = dc->getDesktop();
@@ -285,16 +247,17 @@ static void spdc_apply_bend_shape(gchar const *svgd, FreehandBase *dc, SPItem *i
     if (!document || !desktop) {
         return;
     }
-    if (!is<SPLPEItem>(item)) {
+    auto lpeitem = cast<SPLPEItem>(item);
+    if (!lpeitem) {
         return;
     }
-    if(!cast_unsafe<SPLPEItem>(item)->hasPathEffectOfType(BEND_PATH)){
+    if (!lpeitem->hasPathEffectOfType(BEND_PATH)){
         Effect::createAndApply(BEND_PATH, document, item);
     }
-    Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
+    auto lpe = lpeitem->getCurrentLPE();
 
     // write bend parameters:
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto prefs = Preferences::get();
     double scale = prefs->getDouble("/live_effects/bend_path/width", 1);
     if (!scale) {
         scale = 1;
@@ -307,7 +270,7 @@ static void spdc_apply_bend_shape(gchar const *svgd, FreehandBase *dc, SPItem *i
     static_cast<LPEBendPath*>(lpe)->bend_path.paste_param_path(svgd);
 }
 
-static void spdc_apply_simplify(std::string threshold, FreehandBase *dc, SPItem *item)
+static void spdc_apply_simplify(double threshold, FreehandBase *dc, SPItem *item)
 {
     const SPDesktop *desktop = dc->getDesktop();
     SPDocument *document = desktop->getDocument();
@@ -320,30 +283,30 @@ static void spdc_apply_simplify(std::string threshold, FreehandBase *dc, SPItem 
     Effect* lpe = cast<SPLPEItem>(item)->getCurrentLPE();
     // write simplify parameters:
     lpe->getRepr()->setAttribute("steps", "1");
-    lpe->getRepr()->setAttributeOrRemoveIfEmpty("threshold", threshold);
+    lpe->getRepr()->setAttributeOrRemoveIfEmpty("threshold", std::to_string(threshold).c_str());
     lpe->getRepr()->setAttribute("smooth_angles", "360");
     lpe->getRepr()->setAttribute("helper_size", "0");
     lpe->getRepr()->setAttribute("simplify_individual_paths", "false");
     lpe->getRepr()->setAttribute("simplify_just_coalesce", "false");
 }
 
-static shapeType previous_shape_type = NONE;
+static ShapeType previous_shape_type = NONE;
 
 static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item, SPCurve const *curve, bool is_bend)
 {
     using namespace Inkscape::LivePathEffect;
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto prefs = Preferences::get();
 
-    auto *desktop = dc->getDesktop();
+    auto desktop = dc->getDesktop();
 
-    if (item && is<SPLPEItem>(item)) {
-        double defsize = 10 / (0.265 * dc->getDesktop()->getDocument()->getDocumentScale()[0]);
-#define SHAPE_LENGTH defsize
-#define SHAPE_HEIGHT defsize
+    if (is<SPLPEItem>(item)) {
+        double const defsize = 10 / (0.265 * dc->getDesktop()->getDocument()->getDocumentScale()[0]);
+        auto const SHAPE_LENGTH = defsize;
+        auto const SHAPE_HEIGHT = defsize;
         //Store the clipboard path to apply in the future without the use of clipboard
         static Geom::PathVector previous_shape_pathv;
         static SPItem *bend_item = nullptr;
-        shapeType shape = (shapeType)prefs->getInt(dc->getPrefsPath() + "/shape", 0);
+        auto shape = static_cast<ShapeType>(prefs->getInt(dc->getPrefsPath() + "/shape", 0));
         if (previous_shape_type == NONE) {
             previous_shape_type = shape;
         }
@@ -377,9 +340,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
             double tol = prefs->getDoubleLimited("/tools/freehand/pencil/tolerance", 10.0, 1.0, 100.0);
             tol = tol/(100.0*(102.0-tol));
             tol *= 10000;
-            std::ostringstream ss;
-            ss << tol;
-            spdc_apply_simplify(ss.str(), dc, item);
+            spdc_apply_simplify(tol, dc, item);
             sp_lpe_item_update_patheffect(cast<SPLPEItem>(item), true, false);
         }
         if (prefs->getInt(dc->getPrefsPath() + "/freehand-mode", 0) == 1) {
@@ -406,8 +367,7 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
         guint curve_length = curve->get_segment_count();
         if (SP_IS_PENCIL_CONTEXT(dc)) {
             if (dc->tablet_enabled) {
-                std::vector<Geom::Point> points;
-                spdc_apply_powerstroke_shape(points, dc, item);
+                spdc_apply_powerstroke_shape({}, dc, item);
                 shape_applied = true;
                 shape = NONE;
                 previous_shape_type = NONE;
@@ -419,29 +379,15 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
                 // don't apply any shape
                 break;
             case TRIANGLE_IN:
-            {
                 // "triangle in"
-                std::vector<Geom::Point> points(1);
-                
-                points[0] = Geom::Point(0., swidth);
-                //points[0] *= i2anc_affine(static_cast<SPItem *>(item->parent), NULL).inverse();
-                spdc_apply_powerstroke_shape(points, dc, item);
-
+                spdc_apply_powerstroke_shape({{0, swidth}}, dc, item);
                 shape_applied = false;
                 break;
-            }
             case TRIANGLE_OUT:
-            {
                 // "triangle out"
-                std::vector<Geom::Point> points(1);
-                points[0] = Geom::Point(0, swidth);
-                //points[0] *= i2anc_affine(static_cast<SPItem *>(item->parent), NULL).inverse();
-                points[0][Geom::X] = (double)curve_length;
-                spdc_apply_powerstroke_shape(points, dc, item);
-
+                spdc_apply_powerstroke_shape({{(double)curve_length, swidth}}, dc, item);
                 shape_applied = false;
                 break;
-            }
             case ELLIPSE:
             {
                 // "ellipse"
@@ -607,7 +553,7 @@ void FreehandBase::_attachSelection()
 
     SPItem *item = selection ? selection->singleItem() : nullptr;
 
-    if ( item && is<SPPath>(item) ) {
+    if (is<SPPath>(item)) {
         // Create new white data
         // Item
         white_item = item;
@@ -638,13 +584,13 @@ void FreehandBase::_attachSelection()
     }
 }
 
-void spdc_endpoint_snap_rotation(ToolBase* const ec, Geom::Point &p, Geom::Point const &o, guint state)
+void spdc_endpoint_snap_rotation(ToolBase *tool, Geom::Point &p, Geom::Point const &o, unsigned state)
 {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto prefs = Preferences::get();
     unsigned const snaps = abs(prefs->getInt("/options/rotationsnapsperpi/value", 12));
 
-    SnapManager &m = ec->getDesktop()->namedview->snap_manager;
-    m.setup(ec->getDesktop());
+    SnapManager &m = tool->getDesktop()->namedview->snap_manager;
+    m.setup(tool->getDesktop());
 
     bool snap_enabled = m.snapprefs.getSnapEnabledGlobally();
     if (state & GDK_SHIFT_MASK) {
@@ -665,10 +611,9 @@ void spdc_endpoint_snap_rotation(ToolBase* const ec, Geom::Point &p, Geom::Point
     m.unSetup();
 }
 
-
-void spdc_endpoint_snap_free(ToolBase* const ec, Geom::Point& p, std::optional<Geom::Point> &start_of_line, guint const /*state*/)
+void spdc_endpoint_snap_free(ToolBase *tool, Geom::Point &p, std::optional<Geom::Point> &start_of_line)
 {
-    const SPDesktop *dt = ec->getDesktop();
+    const SPDesktop *dt = tool->getDesktop();
     SnapManager &m = dt->namedview->snap_manager;
     Inkscape::Selection *selection = dt->getSelection();
 
@@ -687,7 +632,7 @@ void spdc_endpoint_snap_free(ToolBase* const ec, Geom::Point& p, std::optional<G
     m.unSetup();
 }
 
-void spdc_concat_colors_and_flush(FreehandBase *dc, gboolean forceclosed)
+void spdc_concat_colors_and_flush(FreehandBase *dc, bool forceclosed)
 {
     // Concat RBG
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -792,7 +737,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
 {
     std::shared_ptr<SPCurve> c;
 
-    if (! dc->white_curves.empty()) {
+    if (!dc->white_curves.empty()) {
         g_assert(dc->white_item);
 
         c = std::make_shared<SPCurve>();
@@ -819,7 +764,7 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
                ? (dc->white_item)->dt2i_affine()
                :  desktop->dt2doc() );
 
-    if ( !c->is_empty() ) {
+    if (!c->is_empty()) {
         // We actually have something to write
 
         bool has_lpe = false;
@@ -883,21 +828,22 @@ static void spdc_flush_white(FreehandBase *dc, std::shared_ptr<SPCurve> gc)
     doc->ensureUpToDate();
 }
 
-SPDrawAnchor *spdc_test_inside(FreehandBase *dc, Geom::Point p)
+SPDrawAnchor *spdc_test_inside(FreehandBase *dc, Geom::Point const &p)
 {
     SPDrawAnchor *active = nullptr;
 
     // Test green anchor
     if (dc->green_anchor) {
-        active = dc->green_anchor->anchorTest(p, TRUE);
+        active = dc->green_anchor->anchorTest(p, true);
     }
 
-    for (auto& i:dc->white_anchors) {
-        SPDrawAnchor *na = i->anchorTest(p, !active);
-        if ( !active && na ) {
+    for (auto &i : dc->white_anchors) {
+        auto na = i->anchorTest(p, !active);
+        if (!active && na) {
             active = na;
         }
     }
+
     return active;
 }
 
@@ -926,22 +872,23 @@ static void spdc_free_colors(FreehandBase *dc)
     dc->white_anchors.clear();
 }
 
-void spdc_create_single_dot(ToolBase *ec, Geom::Point const &pt, char const *tool, guint event_state) {
-    g_return_if_fail(!strcmp(tool, "/tools/freehand/pen") || !strcmp(tool, "/tools/freehand/pencil") 
-            || !strcmp(tool, "/tools/calligraphic") );
-    Glib::ustring tool_path = tool;
+void spdc_create_single_dot(ToolBase *tool, Geom::Point const &pt, char const *path, unsigned event_state)
+{
+    g_return_if_fail(!strcmp(path, "/tools/freehand/pen") || !strcmp(path, "/tools/freehand/pencil")
+            || !strcmp(path, "/tools/calligraphic") );
+    Glib::ustring tool_path = path;
 
-    SPDesktop *desktop = ec->getDesktop();
+    SPDesktop *desktop = tool->getDesktop();
     Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
     Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
     repr->setAttribute("sodipodi:type", "arc");
-    auto layer = ec->currentLayer();
+    auto layer = tool->currentLayer();
     auto item = cast<SPItem>(layer->appendChildRepr(repr));
     item->transform = layer->i2doc_affine().inverse();
     Inkscape::GC::release(repr);
 
     // apply the tool's current style
-    sp_desktop_apply_style_tool(desktop, repr, tool, false);
+    sp_desktop_apply_style_tool(desktop, repr, path, false);
 
     // find out stroke width (TODO: is there an easier way??)
     double stroke_width = 3.0;
@@ -953,21 +900,21 @@ void spdc_create_single_dot(ToolBase *ec, Geom::Point const &pt, char const *too
     }
 
     // unset stroke and set fill color to former stroke color
-    gchar * str;
-    str = strcmp(tool, "/tools/calligraphic") ? g_strdup_printf("fill:#%06x;stroke:none;", sp_desktop_get_color_tool(desktop, tool, false) >> 8)
-        : g_strdup_printf("fill:#%06x;stroke:#%06x;", sp_desktop_get_color_tool(desktop, tool, true) >> 8, sp_desktop_get_color_tool(desktop, tool, false) >> 8);
+    auto str = strcmp(path, "/tools/calligraphic")
+             ? g_strdup_printf("fill:#%06x;stroke:none;", sp_desktop_get_color_tool(desktop, path, false) >> 8)
+             : g_strdup_printf("fill:#%06x;stroke:#%06x;", sp_desktop_get_color_tool(desktop, path, true) >> 8, sp_desktop_get_color_tool(desktop, path, false) >> 8);
     repr->setAttribute("style", str);
     g_free(str);
 
     // put the circle where the mouse click occurred and set the diameter to the
     // current stroke width, multiplied by the amount specified in the preferences
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto prefs = Preferences::get();
 
     Geom::Affine const i2d (item->i2dt_affine ());
     Geom::Point pp = pt * i2d.inverse();
 
     double rad = 0.5 * prefs->getDouble(tool_path + "/dot-size", 3.0);
-    if (!strcmp(tool, "/tools/calligraphic"))
+    if (!strcmp(path, "/tools/calligraphic"))
         rad = 0.0333 * prefs->getDouble(tool_path + "/width", 3.0) / desktop->current_zoom() / desktop->getDocument()->getDocumentScale()[Geom::X];
     if (event_state & GDK_MOD1_MASK) {
         // TODO: We vary the dot size between 0.5*rad and 1.5*rad, where rad is the dot size
@@ -994,9 +941,7 @@ void spdc_create_single_dot(ToolBase *ec, Geom::Point const &pt, char const *too
     DocumentUndo::done(desktop->getDocument(), _("Create single dot"), "");
 }
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
 /*
   Local Variables:

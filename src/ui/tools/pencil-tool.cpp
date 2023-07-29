@@ -112,7 +112,7 @@ void PencilTool::_endpointSnap(Geom::Point &p, guint const state) {
                                          //After all, the user explicitly asked for angular snapping by
                                          //pressing CTRL
             std::optional<Geom::Point> origin = this->_npoints > 0 ? this->p[0] : std::optional<Geom::Point>();
-            spdc_endpoint_snap_free(this, p, origin, state);
+            spdc_endpoint_snap_free(this, p, origin);
         } else {
             _desktop->snapindicator->remove_snaptarget();
         }

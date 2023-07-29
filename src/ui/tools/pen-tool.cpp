@@ -202,7 +202,7 @@ void PenTool::_endpointSnap(Geom::Point &p, guint const state) {
             spdc_endpoint_snap_rotation(this, p, this->p[0], state);
         } else {
             std::optional<Geom::Point> origin = std::optional<Geom::Point>();
-            spdc_endpoint_snap_free(this, p, origin, state);
+            spdc_endpoint_snap_free(this, p, origin);
         }
     } else {
         // We cannot use shift here to disable snapping because the shift-key is already used
@@ -214,7 +214,7 @@ void PenTool::_endpointSnap(Geom::Point &p, guint const state) {
         } else {
             // snap freely
             std::optional<Geom::Point> origin = this->npoints > 0 ? this->p[0] : std::optional<Geom::Point>();
-            spdc_endpoint_snap_free(this, p, origin, state); // pass the origin, to allow for perpendicular / tangential snapping
+            spdc_endpoint_snap_free(this, p, origin); // pass the origin, to allow for perpendicular / tangential snapping
         }
     }
 }
@@ -231,7 +231,7 @@ void PenTool::_endpointSnapHandle(Geom::Point &p, guint const state) {
     } else {
         if (!(state & GDK_SHIFT_MASK)) { //SHIFT disables all snapping, except the angular snapping above
             std::optional<Geom::Point> origin = this->p[this->npoints - 2];
-            spdc_endpoint_snap_free(this, p, origin, state);
+            spdc_endpoint_snap_free(this, p, origin);
         }
     }
 }

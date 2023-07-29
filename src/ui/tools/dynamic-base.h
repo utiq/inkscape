@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef COMMON_CONTEXT_H_SEEN
-#define COMMON_CONTEXT_H_SEEN
+#ifndef INKSCAPE_UI_TOOLS_DYNAMIC_BASE_H
+#define INKSCAPE_UI_TOOLS_DYNAMIC_BASE_H
 
 /*
  * Common drawing mode. Base class of Eraser and Calligraphic tools.
@@ -20,25 +20,20 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <optional>
+
 #include "ui/tools/tool-base.h"
 #include "display/curve.h"
 #include "display/control/canvas-item-ptr.h"
 
-#include <optional>
-
 class SPCurve;
 
-namespace Inkscape {
-    namespace XML {
-        class Node;
-    }
-}
-
-#define SAMPLING_SIZE 8        /* fixme: ?? */
+inline constexpr int SAMPLING_SIZE = 8;
 
 namespace Inkscape {
 
 class CanvasItemBpath;
+namespace XML { class Node; }
 
 namespace UI {
 namespace Tools {
@@ -77,52 +72,53 @@ protected:
     Geom::Point point2[SAMPLING_SIZE];
 
     /** number of edge points for this segment */
-    gint npoints;
+    int npoints = 0;
 
     /* repr */
-    Inkscape::XML::Node *repr;
+    XML::Node *repr = nullptr;
 
     /* common */
     Geom::Point cur;
     Geom::Point vel;
-    double vel_max;
+    double vel_max = 0.0;
     Geom::Point acc;
     Geom::Point ang;
     Geom::Point last;
     Geom::Point del;
 
     /* extended input data */
-    gdouble pressure;
-    gdouble xtilt;
-    gdouble ytilt;
+    double pressure = 1.0;
+    double xtilt = 0.0;
+    double ytilt = 0.0;
 
     /* attributes */
-    bool dragging;           /* mouse state: mouse is dragging */
-    bool usepressure;
-    bool usetilt;
-    double mass, drag;
-    double angle;
-    double width;
+    bool dragging = false; ///< mouse state: mouse is dragging
+    bool usepressure = false;
+    bool usetilt = false;
+    double mass = 0.3;
+    double drag = 1.0;
+    double angle = 30.0;
+    double width = 0.2;
 
-    double vel_thin;
-    double flatness;
-    double tremor;
-    double cap_rounding;
+    double vel_thin = 0.1;
+    double flatness = 0.9;
+    double tremor = 0.0;
+    double cap_rounding = 0.0;
 
-    bool is_drawing;
+    bool is_drawing = false;
 
     /** uses absolute width independent of zoom */
-    bool abs_width;
+    bool abs_width = false;
 
-	Geom::Point getViewPoint(Geom::Point n) const;
-	Geom::Point getNormalizedPoint(Geom::Point v) const;
+    Geom::Point getViewPoint(Geom::Point const &n) const;
+    Geom::Point getNormalizedPoint(Geom::Point const &v) const;
 };
 
-}
-}
-}
+} // namespace Tools
+} // namespace UI
+} // namespace Inkscape
 
-#endif // COMMON_CONTEXT_H_SEEN
+#endif // INKSCAPE_UI_TOOLS_DYNAMIC_BASE_H
 
 /*
   Local Variables:
@@ -134,4 +130,3 @@ protected:
   End:
 */
 // vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :
-
