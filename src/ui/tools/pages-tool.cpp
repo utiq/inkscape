@@ -86,7 +86,7 @@ PagesTool::PagesTool(SPDesktop *desktop)
     if (!visual_box) {
         visual_box = make_canvasitem<CanvasItemRect>(desktop->getCanvasControls());
         visual_box->set_stroke(0x0000ff7f);
-        visual_box->hide();
+        visual_box->set_visible(false);
     }
     if (!drag_group) {
         drag_group = make_canvasitem<CanvasItemGroup>(desktop->getCanvasTemp());
@@ -189,7 +189,7 @@ void PagesTool::resizeKnotMoved(SPKnot *knot, Geom::Point const &ppointer, guint
         else
             rect[Geom::Y].setMax(point[Geom::Y]);
 
-        visual_box->show();
+        visual_box->set_visible(true);
         visual_box->set_rect(rect);
         on_screen_rect = rect;
         mouse_is_pressed = true;
@@ -222,7 +222,7 @@ void PagesTool::resizeKnotFinished(SPKnot *knot, guint state)
         Inkscape::DocumentUndo::done(document, "Resize page", INKSCAPE_ICON("tool-pages"));
         on_screen_rect = {};
     }
-    visual_box->hide();
+    visual_box->set_visible(false);
     mouse_is_pressed = false;
 }
 
@@ -401,10 +401,10 @@ bool PagesTool::root_handler(CanvasEvent const &event)
         dragging_item = nullptr;
         on_screen_rect = {};
         clearDragShapes();
-        visual_box->hide();
+        visual_box->set_visible(false);
         ret = true;
     } else if (on_screen_rect) {
-        visual_box->show();
+        visual_box->set_visible(true);
         visual_box->set_rect(*on_screen_rect);
         ret = true;
     }

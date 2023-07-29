@@ -261,7 +261,7 @@ void MeasureTool::createAngleDisplayCurve(Geom::Point const &center, Geom::Point
         curve->set_name("CanvasItemCurve:MeasureToolCurve");
         curve->set_stroke(Inkscape::CANVAS_ITEM_SECONDARY);
         curve->lower_to_bottom();
-        curve->show();
+        curve->set_visible(true);
         if(to_phantom){
             curve->set_stroke(0x8888887f);
             measure_phantom_items.emplace_back(curve);
@@ -989,7 +989,7 @@ void MeasureTool::setMeasureCanvasText(bool is_angle, double precision, double a
         setLabelText(measure, position, fontsize, 0, background, measure_repr);
     }
 
-    canvas_tooltip->show();
+    canvas_tooltip->set_visible(true);
 
 }
 
@@ -1003,7 +1003,7 @@ void MeasureTool::setMeasureCanvasItem(Geom::Point position, bool to_item, bool 
     canvas_item->set_stroke(color);
     canvas_item->lower_to_bottom();
     canvas_item->set_pickable(false);
-    canvas_item->show();
+    canvas_item->set_visible(true);
 
     if (to_phantom){
         measure_phantom_items.emplace_back(canvas_item);
@@ -1027,7 +1027,7 @@ void MeasureTool::setMeasureCanvasControlLine(Geom::Point start, Geom::Point end
     auto control_line = new Inkscape::CanvasItemCurve(_desktop->getCanvasTemp(), start, end);
     control_line->set_stroke(color);
     control_line->lower_to_bottom();
-    control_line->show();
+    control_line->set_visible(true);
 
     if (to_phantom) {
         measure_phantom_items.emplace_back(control_line);
@@ -1049,7 +1049,7 @@ void MeasureTool::showItemInfoText(Geom::Point pos, Glib::ustring const &measure
     canvas_tooltip->set_background(0x00000099);
     canvas_tooltip->set_anchor(Geom::Point(0, 0));
     canvas_tooltip->set_fixed_line(true);
-    canvas_tooltip->show();
+    canvas_tooltip->set_visible(true);
     measure_item.emplace_back(canvas_tooltip);
 }
 

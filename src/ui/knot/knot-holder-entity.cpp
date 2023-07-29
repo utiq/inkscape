@@ -210,7 +210,7 @@ void PatternKnotHolderEntityXY::on_created()
     _quad->set_fill(0x00000000);
     _quad->set_stroke(0x808080ff);
     _quad->set_inverted(true);
-    _quad->hide();
+    _quad->set_visible(false);
 }
 
 void PatternKnotHolderEntityXY::update_knot()
@@ -219,7 +219,7 @@ void PatternKnotHolderEntityXY::update_knot()
     auto tr = item->i2dt_affine();
     _quad->set_coords(_get_pos(0, 0) * tr, _get_pos(0, 1) * tr,
                       _get_pos(1, 1) * tr, _get_pos(1, 0) * tr);
-    _quad->show();
+    _quad->set_visible(true);
 }
 
 Geom::Point PatternKnotHolderEntityXY::knot_get() const
@@ -511,7 +511,7 @@ void BlurKnotHolderEntity::on_created()
     _line = make_canvasitem<Inkscape::CanvasItemCurve>(desktop->getCanvasControls());
     _line->set_z_position(0);
     _line->set_stroke(0x0033cccc);
-    _line->hide();
+    _line->set_visible(false);
 
     // This watcher makes sure that adding or removing a blur results in updated knots.
     _watch_filter = item->style->signal_filter_changed.connect([=] (auto old_obj, auto obj) {
@@ -530,7 +530,7 @@ void BlurKnotHolderEntity::update_knot()
     } else {
         knot->hide();
         _watch_blur.disconnect();
-        _line->hide();
+        _line->set_visible(false);
     }
     KnotHolderEntity::update_knot();
 }
@@ -576,7 +576,7 @@ Geom::Point BlurKnotHolderEntity::knot_get() const
     if (_dir == Geom::Y) {
         p1 = p0 - Geom::Point(0, y * 2.4);
     }
-    _line->show();
+    _line->set_visible(true);
     _line->set_coords(p0 * tr, p1 * tr);
 
     return p1;

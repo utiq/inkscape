@@ -115,7 +115,7 @@ ControlPoint::~ControlPoint()
     }
 
     _event_handler_connection.disconnect();
-    _canvas_item_ctrl->hide();
+    _canvas_item_ctrl->set_visible(false);
 }
 
 void ControlPoint::_commonInit()
@@ -153,9 +153,9 @@ bool ControlPoint::visible() const
 void ControlPoint::setVisible(bool v)
 {
     if (v) {
-        _canvas_item_ctrl->show();
+        _canvas_item_ctrl->set_visible(true);
     } else {
-        _canvas_item_ctrl->hide();
+        _canvas_item_ctrl->set_visible(false);
     }
 }
 

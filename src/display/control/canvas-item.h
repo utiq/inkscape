@@ -82,8 +82,6 @@ public:
     void render(Inkscape::CanvasItemBuffer &buf) const;
     bool is_visible() const { return _visible; }
     virtual void set_visible(bool visible);
-    void show() { set_visible(true); }
-    void hide() { set_visible(false); }
     void request_redraw(); // queue redraw request
 
     // Properties

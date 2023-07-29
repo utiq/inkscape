@@ -677,7 +677,7 @@ TransformHandleSet::TransformHandleSet(SPDesktop *d, Inkscape::CanvasItemGroup *
 {
     _trans_outline = new Inkscape::CanvasItemRect(_desktop->getCanvasControls());
     _trans_outline->set_name("CanvasItemRect:Transform");
-    _trans_outline->hide();
+    _trans_outline->set_visible(false);
     _trans_outline->set_dashed(true);
 
     bool y_inverted = !d->is_yaxisdown();
@@ -765,13 +765,13 @@ void TransformHandleSet::_setActiveHandle(ControlPoint *th)
     _in_transform = true;
     // hide all handles except the active one
     _updateVisibility(false);
-    _trans_outline->show();
+    _trans_outline->set_visible(true);
 }
 
 void TransformHandleSet::_clearActiveHandle()
 {
     // This can only be called from handles, so they had to be visible before _setActiveHandle
-    _trans_outline->hide();
+    _trans_outline->set_visible(false);
     _active = nullptr;
     _in_transform = false;
     _updateVisibility(_visible);

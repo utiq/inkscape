@@ -388,14 +388,8 @@ void SPKnot::setFlag(guint flag, bool set) {
 
     switch (flag) {
     case SP_KNOT_VISIBLE:
-            if (set) {
-                if (ctrl) {
-                    ctrl->show();
-                }
-            } else {
-                if (ctrl) {
-                    ctrl->hide();
-                }
+            if (ctrl) {
+                ctrl->set_visible(set);
             }
             break;
     case SP_KNOT_MOUSEOVER:
