@@ -453,35 +453,20 @@ int Path::AddPoint(Geom::Point const &iPt, int ip, double it, bool mvto)
     return n;
 }
 
-int Path::AddForcedPoint(Geom::Point const &iPt)
+int Path::AddForcedPoint()
 {
+    if (pts.empty() || pts.back().isMoveTo != polyline_lineto) {
+        return -1;
+    }
+
+    int const n = pts.size();
+
     if (back) {
-        return AddForcedPoint (iPt, -1, 0.0);
+        pts.emplace_back(polyline_forced, pts[n - 1].p, pts[n - 1].piece, pts[n - 1].t);
+    } else {
+        pts.emplace_back(polyline_forced, pts[n - 1].p);
     }
-    
-    if ( pts.empty() || pts.back().isMoveTo != polyline_lineto ) {
-        return -1;
-    }
-    
-    int const n = pts.size();
-    pts.emplace_back(polyline_forced, pts[n - 1].p);
-    return n;
-}
 
-
-int Path::AddForcedPoint(Geom::Point const &iPt, int /*ip*/, double /*it*/)
-{
-    /* FIXME: ip & it aren't used.  Is this deliberate? */
-    if (!back) {
-        return AddForcedPoint (iPt);
-    }
-    
-    if ( pts.empty() || pts.back().isMoveTo != polyline_lineto ) {
-        return -1;
-    }
-    
-    int const n = pts.size();
-    pts.emplace_back(polyline_forced, pts[n - 1].p, pts[n - 1].piece, pts[n - 1].t);
     return n;
 }
 

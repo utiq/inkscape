@@ -79,8 +79,8 @@ void Path::ConvertWithBackData(double treshhold)
 
         switch (nType) {
             case descr_forced: {
-                // just add a forced point (at the last point added). These arguments are useless by the way.
-                AddForcedPoint(curX, curP, 1.0);
+                // just add a forced point (at the last point added).
+                AddForcedPoint();
                 curP++;
                 break;
             }
@@ -260,7 +260,7 @@ void Path::Convert(double treshhold)
 
         switch (nType) {
             case descr_forced: {
-                descr_cmd[curP]->associated = AddForcedPoint(curX);
+                descr_cmd[curP]->associated = AddForcedPoint();
                 curP++;
                 break;
             }
@@ -475,7 +475,7 @@ void Path::ConvertEvenLines(double treshhold)
 
         switch (nType) {
             case descr_forced: {
-                descr_cmd[curP]->associated = AddForcedPoint(curX);
+                descr_cmd[curP]->associated = AddForcedPoint();
                 curP++;
                 break;
             }

@@ -411,35 +411,15 @@ public:
   int AddPoint ( Geom::Point const &iPt, int ip, double it, bool mvto = false);
 
   /**
-   * Adds a forced point to the polyline approximation's list of points without specifying any back data.
+   * Adds a forced point to the polyline approximation's list of points.
    *
-   * The argument of this function is useless. The point that gets added as a forced point has the
-   * same coordinates as the last point that was added. If no points exist or the last one isn't a
-   * lineto, nothing gets added.
-   *
-   * Dummy back data will be used if the back variable of the instance is true.
-   *
-   * @param iPt Unused argument.
+   * The point that gets added as a forced point has the same coordinates as the last point that
+   * was added (and the same backdata too, if backdata is enabled). If no points exist or the last
+   * one isn't a lineto, nothing gets added.
    *
    * @return Index of the point added if it was added, -1 otherwise.
    */
-  int AddForcedPoint ( Geom::Point const &iPt);	// add point
-
-  /**
-   * Add a forced point to the polyline approximation's list of points while specifying backdata.
-   *
-   * The argument of this function is useless. The point that gets added as a forced point has the
-   * same coordinates as the last point that was added. If no points exist or the last one isn't a
-   * lineto, nothing gets added. The back data is also picked up from the last point that was
-   * added.
-   *
-   * @param iPt Unused argument.
-   * @param ip Unused argument.
-   * @param it Unused argument.
-   *
-   * @return Index of the point added if it was added, -1 otherwise.
-   */
-  int AddForcedPoint ( Geom::Point const &iPt, int ip, double it);
+  int AddForcedPoint();
 
   /**
    * Replace the last point in the polyline approximation's list of points with the passed one.
