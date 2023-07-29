@@ -94,8 +94,6 @@ class Path
 {
   friend class Shape;
 
-public:
-
   // flags for the path construction
   enum
   {
@@ -107,12 +105,13 @@ public:
   };
 
   // some data for the construction: what's pending, and some flags
-  int         descr_flags;
-  int         pending_bezier_cmd;
+  int         descr_flags = descr_ready;
+  int         pending_bezier_cmd = -1;
   int         pending_bezier_data;
-  int         pending_moveto_cmd;
+  int         pending_moveto_cmd = -1;
   int         pending_moveto_data;
 
+public:
   std::vector<PathDescr*> descr_cmd; /*!< A vector of owned pointers to path commands. */
 
   /**
@@ -123,22 +122,23 @@ public:
    */
   struct path_lineto
   {
-    path_lineto(bool m, Geom::Point pp) : isMoveTo(m), p(pp), piece(-1), t(0), closed(false) {}
-    path_lineto(bool m, Geom::Point pp, int pie, double tt) : isMoveTo(m), p(pp), piece(pie), t(tt), closed(false) {}
+    path_lineto(bool m, Geom::Point const &pp) : isMoveTo(m), p(pp) {}
+    path_lineto(bool m, Geom::Point const &pp, int pie, double tt) : isMoveTo(m), p(pp), piece(pie), t(tt) {}
     
-    int isMoveTo;    /*!< A flag that stores one of polyline_lineto, polyline_moveto, polyline_forced */
-    Geom::Point  p;  /*!< The point itself. */
-    int piece;       /*!< Index of the path command that created the path segment that this point comes from.*/
-    double t;        /*!< The time at which this point exists in the path segment. A value between 0 and 1. */
-    bool closed;     /*!< True indicates that subpath is closed (this point is the last point of a closed subpath) */
+    int isMoveTo;        /*!< A flag that stores one of polyline_lineto, polyline_moveto, polyline_forced */
+    Geom::Point p;       /*!< The point itself. */
+    int piece = -1;      /*!< Index of the path command that created the path segment that this point comes from.*/
+    double t = 0.0;      /*!< The time at which this point exists in the path segment. A value between 0 and 1. */
+    bool closed = false; /*!< True indicates that subpath is closed (this point is the last point of a closed subpath) */
   };
   
   std::vector<path_lineto> pts; /*!< A vector storing the polyline approximation points. */
 
-  bool back; /*!< If true, indicates that the polyline approximation is going to have backdata.
-                  No need to set this manually though. When Path::Convert or any of its variants is called, it's set automatically. */
+private:
+  bool back = false; /*!< If true, indicates that the polyline approximation is going to have backdata.
+                          No need to set this manually though. When Path::Convert or any of its variants is called, it's set automatically. */
 
-  Path();
+public:
   ~Path();
 
   // creation of the path description
@@ -373,6 +373,7 @@ public:
    */
   void ResetPoints(); // resets to the empty polyline
 
+private:
   /**
    * Adds a point to the polyline approximation's list of points.
    *
@@ -421,17 +422,7 @@ public:
    */
   int AddForcedPoint();
 
-  /**
-   * Replace the last point in the polyline approximation's list of points with the passed one.
-   *
-   * Nothing gets added if no points exist already.
-   *
-   * @param iPt The point to replace the last one with.
-   *
-   * @return Index of the last point added if it was added, -1 otherwise.
-   */
-  int ReplacePoint(Geom::Point const &iPt);  // replace point
-
+public:
   // transform in a polygon (in a graph, in fact; a subsequent call to ConvertToShape is needed)
   //  - fills the polyline; justAdd=true doesn't reset the Shape dest, but simply adds the polyline into it
   // closeIfNeeded=false prevent the function from closing the path (resulting in a non-eulerian graph

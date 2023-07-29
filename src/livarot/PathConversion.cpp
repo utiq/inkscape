@@ -63,7 +63,6 @@ void Path::ConvertWithBackData(double treshhold)
             curX = dynamic_cast<PathDescrMoveTo *>(descr_cmd[0])->p;
         } else {
             curP = 0;
-            curX[Geom::X] = curX[Geom::Y] = 0;
         }
         // tiny detail to see here is that piece (the index of the path command this point comes from) is set to 0 which
         // may or may not be true. If there was not a MoveTo, index 0 can have other description types.

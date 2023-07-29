@@ -352,16 +352,6 @@ Geom::PathVector sp_pathvector_boolop(Geom::PathVector const &pathva, Geom::Path
     return result.MakePathVector();
 }
 
-/**
- * Workaround for buggy Path::Transform() which incorrectly transforms arc commands.
- *
- * TODO: Fix PathDescrArcTo::transform() and then remove this workaround.
- */
-static void transformLivarotPath(Path *res, Geom::Affine const &affine)
-{
-    res->LoadPathVector(res->MakePathVector() * affine);
-}
-
 // helper for printing error messages, regardless of whether we have a GUI or not
 // If desktop == NULL, errors will be shown on stderr
 static void boolop_display_error_message(SPDesktop *desktop, Glib::ustring const &msg)
@@ -837,7 +827,8 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         // add all the pieces resulting from cut or slice
         std::vector <Inkscape::XML::Node*> selection;
         for (int i=0;i<nbRP;i++) {
-            transformLivarotPath(resPath[i], source2doc_inverse);
+            resPath[i]->Transform(source2doc_inverse);
+
             Inkscape::XML::Document *xml_doc = doc->getReprDoc();
             Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
 
@@ -878,7 +869,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         if ( resPath ) free(resPath);
 
     } else {
-        transformLivarotPath(res, source2doc_inverse);
+        res->Transform(source2doc_inverse);
 
         Inkscape::XML::Document *xml_doc = doc->getReprDoc();
         Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");

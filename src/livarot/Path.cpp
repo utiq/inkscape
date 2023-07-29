@@ -23,16 +23,6 @@
  * at the end of this file, 2 utilitary functions to get the point and tangent to path associated with a (command no;abcissis)
  */
 
-
-Path::Path()
-{
-	descr_flags = 0;
-	pending_bezier_cmd = -1;
-	pending_moveto_cmd = -1;
-  
-	back = false;
-}
-
 Path::~Path()
 {
     for (auto & i : descr_cmd) {
@@ -424,19 +414,6 @@ int Path::AddPoint(Geom::Point const &iPt, bool mvto)
     pts.emplace_back(mvto ? polyline_moveto : polyline_lineto, iPt);
     return n;
 }
-
-
-int Path::ReplacePoint(Geom::Point const &iPt)
-{
-    if (pts.empty()) {
-        return -1;
-    }
-  
-    int const n = pts.size() - 1;
-    pts[n] = path_lineto(polyline_lineto, iPt);
-    return n;
-}
-
 
 int Path::AddPoint(Geom::Point const &iPt, int ip, double it, bool mvto)
 {
