@@ -724,7 +724,7 @@ bool CalligraphicTool::root_handler(CanvasEvent const &event)
     },
 
     [&] (KeyPressEvent const &event) {
-        switch (get_latin_keyval(event.original())) {
+        switch (get_latin_keyval(event)) {
         case GDK_KEY_Up:
         case GDK_KEY_KP_Up:
             if (!MOD__CTRL_ONLY(event)) {
@@ -799,7 +799,7 @@ bool CalligraphicTool::root_handler(CanvasEvent const &event)
     },
 
     [&] (KeyReleaseEvent const &event) {
-        switch (get_latin_keyval(event.original())) {
+        switch (get_latin_keyval(event)) {
             case GDK_KEY_Control_L:
             case GDK_KEY_Control_R:
                 message_context->clear();

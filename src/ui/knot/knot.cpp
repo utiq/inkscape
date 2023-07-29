@@ -281,7 +281,7 @@ bool SPKnot::eventHandler(Inkscape::CanvasEvent const &event)
 
     [&] (Inkscape::KeyPressEvent const &event) {
         // keybindings for knot
-        switch (Inkscape::UI::Tools::get_latin_keyval(event.original())) {
+        switch (Inkscape::UI::Tools::get_latin_keyval(event)) {
             case GDK_KEY_Escape:
                 setFlag(SP_KNOT_GRABBED, false);
 

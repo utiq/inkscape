@@ -67,7 +67,7 @@ static bool sp_sel_trans_handle_event(SPKnot *knot, Inkscape::CanvasEvent const 
 
     inspect_event(event,
         [&] (Inkscape::KeyPressEvent const &event) {
-            if (Inkscape::UI::Tools::get_latin_keyval(event.original()) == GDK_KEY_space) {
+            if (Inkscape::UI::Tools::get_latin_keyval(event) == GDK_KEY_space) {
                 // Stamping mode: both mode (show content and outline) operation with knot.
                 if (!knot->is_grabbed()) {
                     return;

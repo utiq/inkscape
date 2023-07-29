@@ -329,7 +329,7 @@ bool ControlPoint::_eventHandler(Tools::ToolBase *tool, CanvasEvent const &event
     // update tips on modifier state change
     // TODO add ESC keybinding as drag cancel
     [&] (KeyPressEvent const &event) {
-        switch (Tools::get_latin_keyval(event.original())) {
+        switch (Tools::get_latin_keyval(event)) {
         case GDK_KEY_Escape: {
             // ignore Escape if this is not a drag
             if (!_drag_initiated) break;

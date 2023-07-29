@@ -321,7 +321,7 @@ bool DropperTool::root_handler(CanvasEvent const &event)
         },
 
         [&] (KeyPressEvent const &event) {
-            switch (get_latin_keyval(event.original())) {
+            switch (get_latin_keyval(event)) {
                 case GDK_KEY_Up:
                 case GDK_KEY_Down:
                 case GDK_KEY_KP_Up:

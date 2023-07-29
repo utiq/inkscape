@@ -305,7 +305,7 @@ bool sp_dt_guide_event(Inkscape::CanvasEvent const &event, Inkscape::CanvasItemG
         },
 
         [&] (Inkscape::KeyPressEvent const &event) {
-            switch (Inkscape::UI::Tools::get_latin_keyval(event.original())) {
+            switch (Inkscape::UI::Tools::get_latin_keyval(event)) {
                 case GDK_KEY_Delete:
                 case GDK_KEY_KP_Delete:
                 case GDK_KEY_BackSpace:
@@ -336,7 +336,7 @@ bool sp_dt_guide_event(Inkscape::CanvasEvent const &event, Inkscape::CanvasItemG
         },
 
         [&] (Inkscape::KeyReleaseEvent const &event) {
-            switch (Inkscape::UI::Tools::get_latin_keyval(event.original())) {
+            switch (Inkscape::UI::Tools::get_latin_keyval(event)) {
                 case GDK_KEY_Shift_L:
                 case GDK_KEY_Shift_R: {
                     auto display = Gdk::Display::get_default();

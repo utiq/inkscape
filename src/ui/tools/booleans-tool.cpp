@@ -255,7 +255,7 @@ bool InteractiveBooleansTool::catch_undo(bool redo)
 
 bool InteractiveBooleansTool::event_key_press_handler(KeyPressEvent const &event)
 {
-    switch (get_latin_keyval(event.original())) {
+    switch (get_latin_keyval(event)) {
         case GDK_KEY_Escape:
             if (boolean_builder->has_task()) {
                 boolean_builder->task_cancel();

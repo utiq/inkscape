@@ -642,13 +642,13 @@ bool ToolBase::root_handler(CanvasEvent const &event)
         double const acceleration = prefs->getDoubleLimited("/options/scrollingacceleration/value", 0, 0, 6);
         int const key_scroll = prefs->getIntLimited("/options/keyscroll/value", 10, 0, 1000);
 
-        switch (get_latin_keyval(event.original())) {
+        switch (get_latin_keyval(event)) {
         // GDK insists on stealing these keys (F1 for no idea what, tab for cycling widgets
         // in the editing window). So we resteal them back and run our regular shortcut
         // invoker on them. Tab is hardcoded. When actions are triggered by tab,
         // we end up stealing events from GTK widgets.
         case GDK_KEY_F1:
-            ret = Inkscape::Shortcuts::getInstance().invoke_action(event.original());
+            ret = Inkscape::Shortcuts::getInstance().invoke_action(event);
             break;
         case GDK_KEY_Tab:
             sp_selection_item_next(_desktop);
@@ -695,10 +695,10 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             if (MOD__CTRL_ONLY(event)) {
                 int i = std::floor(key_scroll * accelerate_scroll(event, acceleration));
 
-                gobble_key_events(get_latin_keyval(event.original()), GDK_CONTROL_MASK);
+                gobble_key_events(get_latin_keyval(event), GDK_CONTROL_MASK);
                 _desktop->scroll_relative(Geom::Point(i, 0));
             } else if (!_keyboardMove(event, Geom::Point(-1, 0))) {
-                Inkscape::Shortcuts::getInstance().invoke_action(event.original());
+                Inkscape::Shortcuts::getInstance().invoke_action(event);
             }
             ret = true;
             break;
@@ -709,10 +709,10 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             if (MOD__CTRL_ONLY(event)) {
                 int i = std::floor(key_scroll * accelerate_scroll(event, acceleration));
 
-                gobble_key_events(get_latin_keyval(event.original()), GDK_CONTROL_MASK);
+                gobble_key_events(get_latin_keyval(event), GDK_CONTROL_MASK);
                 _desktop->scroll_relative(Geom::Point(0, i));
             } else if (!_keyboardMove(event, Geom::Point(0, -_desktop->yaxisdir()))) {
-                Inkscape::Shortcuts::getInstance().invoke_action(event.original());
+                Inkscape::Shortcuts::getInstance().invoke_action(event);
             }
             ret = true;
             break;
@@ -723,10 +723,10 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             if (MOD__CTRL_ONLY(event)) {
                 int i = std::floor(key_scroll * accelerate_scroll(event, acceleration));
 
-                gobble_key_events(get_latin_keyval(event.original()), GDK_CONTROL_MASK);
+                gobble_key_events(get_latin_keyval(event), GDK_CONTROL_MASK);
                 _desktop->scroll_relative(Geom::Point(-i, 0));
             } else if (!_keyboardMove(event, Geom::Point(1, 0))) {
-                Inkscape::Shortcuts::getInstance().invoke_action(event.original());
+                Inkscape::Shortcuts::getInstance().invoke_action(event);
             }
             ret = true;
             break;
@@ -737,10 +737,10 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             if (MOD__CTRL_ONLY(event)) {
                 int i = std::floor(key_scroll * accelerate_scroll(event, acceleration));
 
-                gobble_key_events(get_latin_keyval(event.original()), GDK_CONTROL_MASK);
+                gobble_key_events(get_latin_keyval(event), GDK_CONTROL_MASK);
                 _desktop->scroll_relative(Geom::Point(0, -i));
             } else if (!_keyboardMove(event, Geom::Point(0, _desktop->yaxisdir()))) {
-                Inkscape::Shortcuts::getInstance().invoke_action(event.original());
+                Inkscape::Shortcuts::getInstance().invoke_action(event);
             }
             ret = true;
             break;
@@ -798,7 +798,7 @@ bool ToolBase::root_handler(CanvasEvent const &event)
             _desktop->getCanvas()->get_window()->set_cursor(_cursor);
         }
 
-        switch (get_latin_keyval(event.original())) {
+        switch (get_latin_keyval(event)) {
         case GDK_KEY_space:
             if (within_tolerance) {
                 // Space was pressed, but not panned
@@ -1490,6 +1490,13 @@ unsigned get_latin_keyval(GtkEventControllerKey const * const controller,
     return get_latin_keyval_impl(keyval, keycode, state, group, consumed_modifiers);
 }
 
+unsigned get_latin_keyval(KeyEvent const &event, unsigned *consumed_modifiers)
+{
+    return get_latin_keyval_impl(event.keyval(), event.hardwareKeycode(),
+                                 static_cast<GdkModifierType>(event.modifiers()),
+                                 event.group(), consumed_modifiers);
+}
+
 /**
  * Returns item at point p in desktop.
  *
@@ -1575,7 +1582,7 @@ void ToolBase::snap_delay_handler(gpointer item, gpointer item2, MotionEvent con
         getDesktop()->namedview->snap_manager.snapprefs.setSnapPostponedGlobally(true); // put snapping on hold
 
         auto event_pos = event.eventPos();
-        uint32_t event_t = gdk_event_get_time(reinterpret_cast<GdkEvent*>(event.original()));
+        uint32_t event_t = gdk_event_get_time(event.CanvasEvent::original());
 
         if (prev_pos) {
             auto dist = Geom::L2(event_pos - *prev_pos);
@@ -1696,7 +1703,7 @@ void ToolBase::process_delayed_snap_event()
         if (item && widget) {
             g_assert(GTK_IS_WIDGET(item));
             bool horiz = _dse->getOrigin() == DelayedSnapEvent::GUIDE_HRULER;
-            SPDesktopWidget::ruler_event(GTK_WIDGET(item), reinterpret_cast<GdkEvent*>(_dse->getEvent().original()), SP_DESKTOP_WIDGET(widget), horiz);
+            SPDesktopWidget::ruler_event(GTK_WIDGET(item), _dse->getEvent().CanvasEvent::original(), SP_DESKTOP_WIDGET(widget), horiz);
         }
         break;
     }

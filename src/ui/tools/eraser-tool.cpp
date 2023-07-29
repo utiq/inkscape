@@ -471,7 +471,7 @@ bool EraserTool::root_handler(CanvasEvent const &event)
         },
 
         [&] (KeyReleaseEvent const &event) {
-            switch (get_latin_keyval(event.original())) {
+            switch (get_latin_keyval(event)) {
                 case GDK_KEY_Control_L:
                 case GDK_KEY_Control_R:
                     message_context->clear();
@@ -498,7 +498,7 @@ bool EraserTool::_handleKeypress(KeyPressEvent const &key)
     bool just_alt = (key.modifiers() & GDK_MOD1_MASK)                            // Alt is down
                     && !(key.modifiers() & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)); // but not Ctrl or Shift
 
-    switch (get_latin_keyval(key.original())) {
+    switch (get_latin_keyval(key)) {
         case GDK_KEY_Right:
         case GDK_KEY_KP_Right:
             if (!just_ctrl) {

@@ -1465,7 +1465,7 @@ SPDesktop::onDocumentFilenameSet (gchar const* filename)
 static bool _drawing_handler(Inkscape::CanvasEvent const &event, Inkscape::DrawingItem *drawing_item, SPDesktop *desktop)
 {
     if (event.type() == Inkscape::EventType::KEY_PRESS &&
-        Inkscape::UI::Tools::get_latin_keyval(static_cast<Inkscape::KeyPressEvent const &>(event).original()) == GDK_KEY_space &&
+        Inkscape::UI::Tools::get_latin_keyval(static_cast<Inkscape::KeyPressEvent const &>(event)) == GDK_KEY_space &&
         desktop->event_context->is_space_panning())
     {
         return true;

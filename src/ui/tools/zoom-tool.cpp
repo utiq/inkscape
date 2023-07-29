@@ -123,7 +123,7 @@ bool ZoomTool::root_handler(CanvasEvent const &event)
         },
 
         [&] (KeyPressEvent const &event) {
-            switch (get_latin_keyval(event.original())) {
+            switch (get_latin_keyval(event)) {
                 case GDK_KEY_Escape:
                     if (!Rubberband::get(_desktop)->is_started()) {
                         SelectionHelper::selectNone(_desktop);
@@ -162,7 +162,7 @@ bool ZoomTool::root_handler(CanvasEvent const &event)
         },
 
         [&] (KeyReleaseEvent const &event) {
-            switch (get_latin_keyval(event.original())) {
+            switch (get_latin_keyval(event)) {
             	case GDK_KEY_Shift_L:
             	case GDK_KEY_Shift_R:
                     set_cursor("zoom-in.svg");

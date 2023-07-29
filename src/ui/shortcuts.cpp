@@ -38,6 +38,7 @@
 #include "ui/modifiers.h"
 #include "ui/tools/tool-base.h"    // For latin keyval
 #include "ui/dialog/filedialog.h"  // Importing/exporting files.
+#include "ui/widget/events/canvas-event.h"
 
 #include "xml/simple-document.h"
 #include "xml/node.h"
@@ -170,6 +171,12 @@ Shortcuts::invoke_action(Gtk::AccelKey const &shortcut)
 /**  Trigger action from a shortcut. Useful if we want to intercept the event from GTK */
 bool
 Shortcuts::invoke_action(GdkEventKey const * const event)
+{
+    auto const shortcut = get_from_event(event);
+    return invoke_action(shortcut);
+}
+
+bool Shortcuts::invoke_action(KeyEvent const &event)
 {
     auto const shortcut = get_from_event(event);
     return invoke_action(shortcut);
@@ -744,6 +751,12 @@ Shortcuts::get_from(GtkEventControllerKey const * const controller,
 {
     auto const group = UI::Controller::get_group(controller);
     return get_from_event_impl(keyval, keycode, state, group, fix);
+}
+
+Gtk::AccelKey Shortcuts::get_from_event(KeyEvent const &event, bool fix)
+{
+    return get_from_event_impl(event.keyval(), event.hardwareKeycode(),
+                               static_cast<GdkModifierType>(event.modifiers()), event.group(), fix);
 }
 
 // Get a list of filenames to populate menu

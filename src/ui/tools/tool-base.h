@@ -235,6 +235,7 @@ unsigned get_latin_keyval(GdkEventKey const *event, unsigned *consumed_modifiers
 unsigned get_latin_keyval(GtkEventControllerKey const *controller,
                           unsigned keyval, unsigned keycode, GdkModifierType state,
                           unsigned *consumed_modifiers = nullptr);
+unsigned get_latin_keyval(KeyEvent const &event, unsigned *consumed_modifiers = nullptr);
 
 SPItem *sp_event_context_find_item(SPDesktop *desktop, Geom::Point const &p, bool select_under, bool into_groups);
 SPItem *sp_event_context_over_item(SPDesktop *desktop, SPItem *item, Geom::Point const &p);

@@ -510,7 +510,7 @@ bool NodeTool::root_handler(CanvasEvent const &event)
     },
 
     [&] (KeyPressEvent const &event) {
-        switch (get_latin_keyval(event.original())) {
+        switch (get_latin_keyval(event)) {
         case GDK_KEY_Escape: // deselect everything
             if (_selected_nodes->empty()) {
                 Inkscape::SelectionHelper::selectNone(_desktop);

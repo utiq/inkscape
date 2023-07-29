@@ -19,9 +19,8 @@
 
 namespace Inkscape {
 
-namespace UI::View {
-class View;
-} // namespace UI::View
+class KeyEvent;
+namespace UI::View { class View; }
 
 namespace XML {
 class Document;
@@ -89,6 +88,7 @@ public:
     bool invoke_action(GdkEventKey const *event);
     bool invoke_action(GtkEventControllerKey const *controller,
                        unsigned keyval, unsigned keycode, GdkModifierType state);
+    bool invoke_action(KeyEvent const &event);
 
     // Utility
     sigc::connection connect_changed(sigc::slot<void ()> const &slot);
@@ -97,6 +97,7 @@ public:
     static Gtk::AccelKey get_from(GtkEventControllerKey const *controller,
                                   unsigned keyval, unsigned keycode, GdkModifierType state,
                                   bool fix = false);
+    static Gtk::AccelKey get_from_event(KeyEvent const &event, bool fix = false);
     std::vector<Glib::ustring> list_all_detailed_action_names();
     std::vector<Glib::ustring> list_all_actions();
 

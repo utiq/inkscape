@@ -191,7 +191,7 @@ bool ArcTool::root_handler(CanvasEvent const &event)
             ungrabCanvasEvents();
         },
         [&] (KeyPressEvent const &event) {
-            switch (get_latin_keyval(event.original())) {
+            switch (get_latin_keyval(event)) {
                 case GDK_KEY_Alt_L:
                 case GDK_KEY_Alt_R:
                 case GDK_KEY_Control_L:

@@ -404,7 +404,7 @@ bool ConnectorTool::root_handler(CanvasEvent const &event)
         ret = _handleButtonRelease(event);
     },
     [&] (KeyPressEvent const &event) {
-        ret = _handleKeyPress(get_latin_keyval(event.original()));
+        ret = _handleKeyPress(get_latin_keyval(event));
     },
     [&] (CanvasEvent const &event) {}
     );
