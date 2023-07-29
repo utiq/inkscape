@@ -53,6 +53,7 @@
 #include "rubberband.h"
 #include "selection-chemistry.h"
 #include "selection.h"
+#include "style.h"
 
 #include "display/curve.h"
 #include "display/control/canvas-item-bpath.h"
@@ -70,12 +71,9 @@
 
 #include "svg/svg.h"
 
-
 using Inkscape::DocumentUndo;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 EraserTool::EraserTool(SPDesktop *desktop)
     : DynamicBase(desktop, "/tools/eraser", "eraser.svg")
@@ -153,28 +151,29 @@ void EraserTool::_reset(Geom::Point p)
     del = Geom::Point(0, 0);
 }
 
-void EraserTool::_extinput(GdkEvent *event)
+void EraserTool::_extinput(CanvasEvent const &canvas_event)
 {
+    auto event = canvas_event.CanvasEvent::original();
     if (gdk_event_get_axis(event, GDK_AXIS_PRESSURE, &pressure)) {
-        pressure = CLAMP(pressure, min_pressure, max_pressure);
+        pressure = std::clamp(pressure, min_pressure, max_pressure);
     } else {
         pressure = default_pressure;
     }
 
     if (gdk_event_get_axis(event, GDK_AXIS_XTILT, &xtilt)) {
-        xtilt = CLAMP(xtilt, min_tilt, max_tilt);
+        xtilt = std::clamp(xtilt, min_tilt, max_tilt);
     } else {
         xtilt = default_tilt;
     }
 
     if (gdk_event_get_axis(event, GDK_AXIS_YTILT, &ytilt)) {
-        ytilt = CLAMP(ytilt, min_tilt, max_tilt);
+        ytilt = std::clamp(ytilt, min_tilt, max_tilt);
     } else {
         ytilt = default_tilt;
     }
 }
 
-bool EraserTool::_apply(Geom::Point p)
+bool EraserTool::_apply(Geom::Point const &p)
 {
     /* Calculate force and acceleration */
     Geom::Point n = getNormalizedPoint(p);
@@ -352,19 +351,20 @@ void EraserTool::_cancel()
     repr = nullptr;
 }
 
-bool EraserTool::root_handler(CanvasEvent const &canvas_event)
+bool EraserTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
     bool ret = false;
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
-            if (event->button.button == 1) {
-                if (!Inkscape::have_viable_layer(_desktop, defaultMessageContext())) {
-                    return true;
+
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
+                if (!have_viable_layer(_desktop, defaultMessageContext())) {
+                    return;
+                    ret = true;
                 }
 
-                Geom::Point const button_w(event->button.x, event->button.y);
-                Geom::Point const button_dt(_desktop->w2d(button_w));
+                auto const button_w = event.eventPos();
+                auto const button_dt = _desktop->w2d(button_w);
 
                 _reset(button_dt);
                 _extinput(event);
@@ -385,23 +385,23 @@ bool EraserTool::root_handler(CanvasEvent const &canvas_event)
                 is_drawing = true;
                 ret = true;
             }
-            break;
+        },
 
-        case GDK_MOTION_NOTIFY: {
-            Geom::Point const motion_w(event->motion.x, event->motion.y);
-            Geom::Point motion_dt(_desktop->w2d(motion_w));
+        [&] (MotionEvent const &event) {
+            auto const motion_w = event.eventPos();
+            auto const motion_dt = _desktop->w2d(motion_w);
             _extinput(event);
 
             message_context->clear();
 
-            if (is_drawing && (event->motion.state & GDK_BUTTON1_MASK)) {
+            if (is_drawing && (event.modifiers() & GDK_BUTTON1_MASK)) {
                 dragging = true;
 
                 message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Drawing</b> an eraser stroke"));
 
                 if (!_apply(motion_dt)) {
                     ret = true;
-                    break;
+                    return;
                 }
 
                 if (cur != last) {
@@ -416,15 +416,15 @@ bool EraserTool::root_handler(CanvasEvent const &canvas_event)
                 accumulated.reset();
                 Inkscape::Rubberband::get(_desktop)->move(motion_dt);
             }
-            break;
-        }
-        case GDK_BUTTON_RELEASE: {
-            if (event->button.button != 1) {
-                break;
+        },
+
+        [&] (ButtonReleaseEvent const &event) {
+            if (event.button() != 1) {
+                return;
             }
 
-            Geom::Point const motion_w(event->button.x, event->button.y);
-            Geom::Point const motion_dt(_desktop->w2d(motion_w));
+            auto const motion_w = event.eventPos();
+            auto const motion_dt = _desktop->w2d(motion_w);
 
             ungrabCanvasEvents();
 
@@ -441,7 +441,7 @@ bool EraserTool::root_handler(CanvasEvent const &canvas_event)
                 _accumulate();
 
                 // Perform the actual erase operation
-                SPDocument *document = _desktop->getDocument();
+                auto document = _desktop->getDocument();
                 if (_doWork()) {
                     DocumentUndo::done(document, _("Draw eraser stroke"), INKSCAPE_ICON("draw-eraser"));
                 } else {
@@ -464,15 +464,14 @@ bool EraserTool::root_handler(CanvasEvent const &canvas_event)
                     r->stop();
                 }
             }
+        },
 
-            break;
-        }
-        case GDK_KEY_PRESS:
-            ret = _handleKeypress(&event->key);
-            break;
+        [&] (KeyPressEvent const &event) {
+            ret = _handleKeypress(event);
+        },
 
-        case GDK_KEY_RELEASE:
-            switch (get_latin_keyval(&event->key)) {
+        [&] (KeyReleaseEvent const &event) {
+            switch (get_latin_keyval(event.original())) {
                 case GDK_KEY_Control_L:
                 case GDK_KEY_Control_R:
                     message_context->clear();
@@ -481,30 +480,25 @@ bool EraserTool::root_handler(CanvasEvent const &canvas_event)
                 default:
                     break;
             }
-            break;
+        },
 
-        default:
-            break;
-    }
+        [&] (CanvasEvent const &event) {}
+    );
 
-    if (!ret) {
-        ret = DynamicBase::root_handler(canvas_event);
-    }
-
-    return ret;
+    return ret || DynamicBase::root_handler(event);
 }
 
 /** Analyses and handles a key press event, returns true if processed, false if not. */
-bool EraserTool::_handleKeypress(const GdkEventKey *key)
+bool EraserTool::_handleKeypress(KeyPressEvent const &key)
 {
     bool ret = false;
-    bool just_ctrl = (key->state & GDK_CONTROL_MASK)                      // Ctrl key is down
-                     && !(key->state & (GDK_MOD1_MASK | GDK_SHIFT_MASK)); // but not Alt or Shift
+    bool just_ctrl = (key.modifiers() & GDK_CONTROL_MASK)                      // Ctrl key is down
+                     && !(key.modifiers() & (GDK_MOD1_MASK | GDK_SHIFT_MASK)); // but not Alt or Shift
 
-    bool just_alt = (key->state & GDK_MOD1_MASK)                            // Alt is down
-                    && !(key->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)); // but not Ctrl or Shift
+    bool just_alt = (key.modifiers() & GDK_MOD1_MASK)                            // Alt is down
+                    && !(key.modifiers() & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)); // but not Ctrl or Shift
 
-    switch (get_latin_keyval(key)) {
+    switch (get_latin_keyval(key.original())) {
         case GDK_KEY_Right:
         case GDK_KEY_KP_Right:
             if (!just_ctrl) {
@@ -1396,9 +1390,7 @@ void EraserTool::_drawTemporaryBox()
     currentshape->set_bpath(&currentcurve, true);
 }
 
-} // namespace Tools
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Tools
 
 /*
   Local Variables:

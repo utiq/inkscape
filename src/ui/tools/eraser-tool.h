@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef ERASER_TOOL_H_SEEN
-#define ERASER_TOOL_H_SEEN
+#ifndef INKSCAPE_UI_TOOLS_ERASER_TOOL_H
+#define INKSCAPE_UI_TOOLS_ERASER_TOOL_H
 
 /*
  * Handwriting-like drawing mode
@@ -22,14 +22,14 @@
 
 #include <2geom/point.h>
 
-#include "message-stack.h"
-#include "style.h"
+#include "message.h"
+#include "style-enums.h"
 #include "ui/tools/dynamic-base.h"
 #include "object/sp-use.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape { class KeyPressEvent; }
+
+namespace Inkscape::UI::Tools {
 
 enum class EraserToolMode
 {
@@ -102,7 +102,7 @@ public:
 private:
     // private member functions
     void _accumulate();
-    bool _apply(Geom::Point p);
+    bool _apply(Geom::Point const &p);
     bool _booleanErase(EraseTarget target, bool store_survivers);
     void _brush();
     void _cancel();
@@ -113,14 +113,14 @@ private:
     bool _cutErase(EraseTarget target, bool store_survivers);
     bool _doWork();
     void _drawTemporaryBox();
-    void _extinput(GdkEvent *event);
+    void _extinput(CanvasEvent const &event);
     void _failedBezierFallback();
     std::vector<EraseTarget> _filterByCollision(std::vector<EraseTarget> const &items, SPItem *with) const;
     std::vector<EraseTarget> _filterCutEraseables(std::vector<EraseTarget> const &items, bool silent = false);
     std::vector<EraseTarget> _findItemsToErase();
     void _fitAndSplit(bool releasing);
     void _fitDrawLastPoint();
-    bool _handleKeypress(GdkEventKey const *key);
+    bool _handleKeypress(KeyPressEvent const &key);
     void _handleStrokeStyle(SPItem *item) const;
     SPItem *_insertAcidIntoDocument(SPDocument *document);
     bool _performEraseOperation(std::vector<EraseTarget> const &items_to_erase, bool store_survivers);
@@ -137,11 +137,9 @@ private:
                                     bool store_survivers = true);
 };
 
-} // namespace Tools
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Tools
 
-#endif // ERASER_TOOL_H_SEEN
+#endif // INKSCAPE_UI_TOOLS_ERASER_TOOL_H
 
 /*
   Local Variables:
