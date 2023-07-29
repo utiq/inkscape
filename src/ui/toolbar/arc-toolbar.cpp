@@ -413,7 +413,7 @@ ArcToolbar::sensitivize( double v1, double v2 )
 void
 ArcToolbar::check_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
 {
-    if (SP_IS_ARC_CONTEXT(ec)) {
+    if (dynamic_cast<Tools::ArcTool const *>(ec)) {
         _changed = _desktop->getSelection()->connectChanged(sigc::mem_fun(*this, &ArcToolbar::selection_changed));
         selection_changed(desktop->getSelection());
     } else {

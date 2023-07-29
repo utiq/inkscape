@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_ARC_CONTEXT_H
-#define SEEN_ARC_CONTEXT_H
+#ifndef INKSCAPE_UI_TOOLS_ARC_TOOl_H
+#define INKSCAPE_UI_TOOLS_ARC_TOOl_H
 
 /*
  * Ellipse drawing context
@@ -26,17 +26,9 @@
 
 class SPItem;
 class SPGenericEllipse;
+namespace Inkscape { class Selection; }
 
-namespace Inkscape {
-    class Selection;
-}
-
-#define SP_ARC_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::ArcTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_ARC_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::ArcTool*>(obj) != NULL)
-
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class ArcTool : public ToolBase
 {
@@ -51,21 +43,20 @@ private:
     SPWeakPtr<SPGenericEllipse> arc;
 
     Geom::Point center;
+    bool dragging = false;
 
     sigc::connection sel_changed_connection;
 
     void selection_changed(Selection *selection);
 
-    void drag(Geom::Point pt, unsigned state);
+    void drag(Geom::Point const &pt, unsigned state);
 	void finishItem();
 	void cancel();
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif /* !SEEN_ARC_CONTEXT_H */
+#endif // INKSCAPE_UI_TOOLS_ARC_TOOl_H
 
 /*
   Local Variables:

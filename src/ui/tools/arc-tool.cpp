@@ -41,13 +41,9 @@
 #include "ui/tools/tool-base.h"
 #include "ui/widget/events/canvas-event.h"
 
-#include "xml/repr.h"
-
 using Inkscape::DocumentUndo;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 ArcTool::ArcTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/shapes/arc", "arc.svg")
@@ -104,99 +100,84 @@ void ArcTool::selection_changed(Inkscape::Selection* selection) {
     this->shape_editor->set_item(selection->singleItem());
 }
 
-
-bool ArcTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+bool ArcTool::item_handler(SPItem *item, CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
-            if (event->button.button == 1) {
-                this->setup_for_drag_start(event);
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
+                setup_for_drag_start(event.CanvasEvent::original());
             }
-            break;
             // motion and release are always on root (why?)
-        default:
-            break;
-    }
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-    return ToolBase::item_handler(item, canvas_event);
+    return ToolBase::item_handler(item, event);
 }
 
-bool ArcTool::root_handler(CanvasEvent const &canvas_event)
+bool ArcTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    static bool dragging;
+    auto selection = _desktop->getSelection();
+    auto prefs = Preferences::get();
 
-    Inkscape::Selection *selection = _desktop->getSelection();
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
 
-    this->tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
+    bool ret = false;
 
-    bool handled = false;
-
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
-            if (event->button.button == 1) {
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
                 dragging = true;
 
-                this->center = this->setup_for_drag_start(event);
+                center = setup_for_drag_start(event.CanvasEvent::original());
 
-                /* Snap center */
-                SnapManager &m = _desktop->namedview->snap_manager;
+                // Snap center.
+                auto &m = _desktop->namedview->snap_manager;
                 m.setup(_desktop);
-                m.freeSnapReturnByRef(this->center, Inkscape::SNAPSOURCE_NODE_HANDLE);
+                m.freeSnapReturnByRef(center, SNAPSOURCE_NODE_HANDLE);
 
                 grabCanvasEvents();
 
-                handled = true;
+                ret = true;
                 m.unSetup();
             }
-            break;
-        case GDK_MOTION_NOTIFY:
-            if (dragging && (event->motion.state & GDK_BUTTON1_MASK)) {
-                if ( within_tolerance
-                    && ( abs( (gint) event->motion.x - this->xyp.x() ) < this->tolerance )
-                    && ( abs( (gint) event->motion.y - this->xyp.y() ) < this->tolerance ) ) {
-                    break; // do not drag if we're within tolerance from origin
+        },
+        [&] (MotionEvent const &event) {
+            if (dragging && (event.modifiers() & GDK_BUTTON1_MASK)) {
+                if (!checkDragMoved(event.eventPos())) {
+                    return;
                 }
-                // Once the user has moved farther than tolerance from the original location
-                // (indicating they intend to draw, not click), then always process the
-                // motion notify coordinates as given (no snapping back to origin)
-                this->within_tolerance = false;
 
-                Geom::Point const motion_w(event->motion.x, event->motion.y);
-                Geom::Point motion_dt(_desktop->w2d(motion_w));
-
-                this->drag(motion_dt, event->motion.state);
+                auto const motion_dt = _desktop->w2d(event.eventPos());
+                drag(motion_dt, event.modifiers());
 
                 gobble_motion_events(GDK_BUTTON1_MASK);
 
-                handled = true;
-            } else if (!this->sp_event_context_knot_mouseover()){
-                SnapManager &m = _desktop->namedview->snap_manager;
+                ret = true;
+            } else if (!sp_event_context_knot_mouseover()) {
+                auto &m = _desktop->namedview->snap_manager;
                 m.setup(_desktop);
 
-                Geom::Point const motion_w(event->motion.x, event->motion.y);
-                Geom::Point motion_dt(_desktop->w2d(motion_w));
-                m.preSnap(Inkscape::SnapCandidatePoint(motion_dt, Inkscape::SNAPSOURCE_NODE_HANDLE));
+                auto const motion_dt = _desktop->w2d(event.eventPos());
+                m.preSnap(SnapCandidatePoint(motion_dt, SNAPSOURCE_NODE_HANDLE));
                 m.unSetup();
             }
-            break;
-        case GDK_BUTTON_RELEASE:
+        },
+        [&] (ButtonReleaseEvent const &event) {
             xyp = {};
-            if (event->button.button == 1) {
+            if (event.button() == 1) {
                 dragging = false;
-                this->discard_delayed_snap_event();
+                discard_delayed_snap_event();
 
                 if (arc) {
                     // we've been dragging, finish the arc
-                    this->finishItem();
-                } else if (this->item_to_select) {
+                    finishItem();
+                } else if (item_to_select) {
                     // no dragging, select clicked item if any
-                    if (event->button.state & GDK_SHIFT_MASK) {
-                        selection->toggle(this->item_to_select);
-                    } else if (!selection->includes(this->item_to_select)) {
-                        selection->set(this->item_to_select);
+                    if (event.modifiers() & GDK_SHIFT_MASK) {
+                        selection->toggle(item_to_select);
+                    } else if (!selection->includes(item_to_select)) {
+                        selection->set(item_to_select);
                     }
                 } else {
                     // click in an empty space
@@ -205,13 +186,12 @@ bool ArcTool::root_handler(CanvasEvent const &canvas_event)
 
                 xyp = {};
                 item_to_select = nullptr;
-                handled = true;
+                ret = true;
             }
             ungrabCanvasEvents();
-            break;
-
-        case GDK_KEY_PRESS:
-            switch (get_latin_keyval (&event->key)) {
+        },
+        [&] (KeyPressEvent const &event) {
+            switch (get_latin_keyval(event.original())) {
                 case GDK_KEY_Alt_L:
                 case GDK_KEY_Alt_R:
                 case GDK_KEY_Control_L:
@@ -221,7 +201,7 @@ bool ArcTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt (at least on my machine)
                 case GDK_KEY_Meta_R:
                     if (!dragging) {
-                        sp_event_show_modifier_tip(this->defaultMessageContext(), event,
+                        sp_event_show_modifier_tip(defaultMessageContext(), event.CanvasEvent::original(),
                                                    _("<b>Ctrl</b>: make circle or integer-ratio ellipse, snap arc/segment angle"),
                                                    _("<b>Shift</b>: draw around the starting point"),
                                                    nullptr);
@@ -232,17 +212,17 @@ bool ArcTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_X:
                     if (MOD__ALT_ONLY(event)) {
                         _desktop->setToolboxFocusTo("arc-rx");
-                        handled = true;
+                        ret = true;
                     }
                     break;
 
                 case GDK_KEY_Escape:
                     if (dragging) {
                         dragging = false;
-                        this->discard_delayed_snap_event();
+                        discard_delayed_snap_event();
                         // if drawing, cancel, otherwise pass it up for deselecting
-                        this->cancel();
-                        handled = true;
+                        cancel();
+                        ret = true;
                     }
                     break;
 
@@ -250,11 +230,11 @@ bool ArcTool::root_handler(CanvasEvent const &canvas_event)
                     if (dragging) {
                         ungrabCanvasEvents();
                         dragging = false;
-                        this->discard_delayed_snap_event();
+                        discard_delayed_snap_event();
 
-                        if (!this->within_tolerance) {
+                        if (!within_tolerance) {
                             // we've been dragging, finish the arc
-                            this->finishItem();
+                            finishItem();
                         }
                         // do not return true, so that space would work switching to selector
                     }
@@ -263,16 +243,15 @@ bool ArcTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_Delete:
                 case GDK_KEY_KP_Delete:
                 case GDK_KEY_BackSpace:
-                    handled = this->deleteSelectedDrag(MOD__CTRL_ONLY(event));
+                    ret = deleteSelectedDrag(MOD__CTRL_ONLY(event));
                     break;
 
                 default:
                     break;
             }
-            break;
-
-        case GDK_KEY_RELEASE:
-            switch (event->key.keyval) {
+        },
+        [&] (KeyReleaseEvent const &event) {
+            switch (event.keyval()) {
                 case GDK_KEY_Alt_L:
                 case GDK_KEY_Alt_R:
                 case GDK_KEY_Control_L:
@@ -281,26 +260,21 @@ bool ArcTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_Shift_R:
                 case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt
                 case GDK_KEY_Meta_R:
-                    this->defaultMessageContext()->clear();
+                    defaultMessageContext()->clear();
                     break;
 
                 default:
                     break;
             }
-            break;
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-        default:
-            break;
-    }
-
-    if (!handled) {
-        handled = ToolBase::root_handler(canvas_event);
-    }
-
-    return handled;
+    return ret || ToolBase::root_handler(event);
 }
 
-void ArcTool::drag(Geom::Point pt, guint state) {
+void ArcTool::drag(Geom::Point const &pt, unsigned state)
+{
     if (!this->arc) {
         if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
             return;
@@ -403,8 +377,9 @@ void ArcTool::drag(Geom::Point pt, guint state) {
     }
 }
 
-void ArcTool::finishItem() {
-    this->message_context->clear();
+void ArcTool::finishItem()
+{
+    message_context->clear();
 
     if (arc) {
         if (this->arc->rx.computed == 0 || this->arc->ry.computed == 0) {
@@ -439,10 +414,7 @@ void ArcTool::cancel()
     DocumentUndo::cancel(_desktop->getDocument());
 }
 
-}
-}
-}
-
+} // namespace Inkscape::UI::Tools
 
 /*
   Local Variables:
