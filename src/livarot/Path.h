@@ -477,7 +477,7 @@ public:
    *
    * @return The Geom::PathVector created.
    */
-  Geom::PathVector MakePathVector();
+  Geom::PathVector MakePathVector() const;
 
   /**
    * Apply a transformation on all path commands.

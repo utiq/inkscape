@@ -275,62 +275,47 @@ void Path::DashSubPath(int spL, int spP, std::vector<path_lineto> const &orig_pt
  *
  * \return A PathVector copy of the path description
  */
-Geom::PathVector
-Path::MakePathVector()
+Geom::PathVector Path::MakePathVector() const
 {
     Geom::PathVector pv;
-    Geom::Path * currentpath = nullptr;
 
+    Geom::Path *currentpath = nullptr;
     Geom::Point lastP;
-    for (int i=0;i<int(descr_cmd.size());i++) {
-        int const typ = descr_cmd[i]->getType();
-        switch ( typ ) {
-            case descr_close:
-            {
+
+    for (auto c : descr_cmd) {
+        switch (c->getType()) {
+            case descr_close: {
                 currentpath->close(true);
+                break;
             }
-            break;
-
-            case descr_lineto:
-            {
-                PathDescrLineTo *nData = dynamic_cast<PathDescrLineTo *>(descr_cmd[i]);
-                currentpath->appendNew<Geom::LineSegment>(Geom::Point(nData->p[0], nData->p[1]));
-                lastP = nData->p;
+            case descr_lineto: {
+                auto data = static_cast<PathDescrLineTo const *>(c);
+                currentpath->appendNew<Geom::LineSegment>(data->p);
+                lastP = data->p;
+                break;
             }
-            break;
-
-            case descr_moveto:
-            {
-                PathDescrMoveTo *nData = dynamic_cast<PathDescrMoveTo *>(descr_cmd[i]);
+            case descr_moveto: {
+                auto data = static_cast<PathDescrMoveTo const *>(c);
                 pv.push_back(Geom::Path());
                 currentpath = &pv.back();
-                currentpath->start(Geom::Point(nData->p[0], nData->p[1]));
-                lastP = nData->p;
+                currentpath->start(data->p);
+                lastP = data->p;
+                break;
             }
-            break;
-
-            case descr_arcto:
-            {
-                /* TODO: add testcase for this descr_arcto case */
-                PathDescrArcTo *nData = dynamic_cast<PathDescrArcTo *>(descr_cmd[i]);
-                currentpath->appendNew<Geom::EllipticalArc>( nData->rx, nData->ry, nData->angle*M_PI/180.0, nData->large, !nData->clockwise, nData->p );
-                lastP = nData->p;
+            case descr_arcto: {
+                auto data = static_cast<PathDescrArcTo const *>(c);
+                currentpath->appendNew<Geom::EllipticalArc>(data->rx, data->ry, Geom::rad_from_deg(data->angle), data->large, !data->clockwise, data->p);
+                lastP = data->p;
+                break;
             }
-            break;
-
-            case descr_cubicto:
-            {
-                PathDescrCubicTo *nData = dynamic_cast<PathDescrCubicTo *>(descr_cmd[i]);
-                gdouble x1=lastP[0]+0.333333*nData->start[0];
-                gdouble y1=lastP[1]+0.333333*nData->start[1];
-                gdouble x2=nData->p[0]-0.333333*nData->end[0];
-                gdouble y2=nData->p[1]-0.333333*nData->end[1];
-                gdouble x3=nData->p[0];
-                gdouble y3=nData->p[1];
-                currentpath->appendNew<Geom::CubicBezier>( Geom::Point(x1,y1) , Geom::Point(x2,y2) , Geom::Point(x3,y3) );
-                lastP = nData->p;
+            case descr_cubicto: {
+                auto data = static_cast<PathDescrCubicTo const *>(c);
+                currentpath->appendNew<Geom::CubicBezier>(lastP + data->start / 3, data->p - data->end / 3, data->p);
+                lastP = data->p;
+                break;
             }
-            break;
+            default:
+                break;
         }
     }
 
