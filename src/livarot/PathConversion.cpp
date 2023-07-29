@@ -24,12 +24,6 @@
 
 void Path::ConvertWithBackData(double treshhold)
 {
-    // if a quadratic Bezier spline was being added (Path::BezierTo or Path::TempBezierTo
-    // were called and Path::EndBezierTo hasn't been called yet), cancel it
-    if ( descr_flags & descr_adding_bezier ) {
-        CancelBezier();
-    }
-
     // are we doing a sub path? if yes, clear the flags. CloseSubPath just clears the flags
     // it doesn't close a sub path
     if ( descr_flags & descr_doing_subpath ) {
@@ -144,74 +138,6 @@ void Path::ConvertWithBackData(double treshhold)
                 curP++;
                 break;
             }
-
-            case descr_bezierto: {
-                PathDescrBezierTo *nBData = dynamic_cast<PathDescrBezierTo *>(descr_cmd[curP]);
-                int nbInterm = nBData->nb;
-                nextX = nBData->p;
-                // same as RecCubicTo and RecArcTo but for quadratic bezier splines
-
-                int ip = curP + 1;
-                PathDescrIntermBezierTo *nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                if ( nbInterm >= 1 ) {
-                    Geom::Point bx = curX;
-                    Geom::Point dx = nData->p;
-                    Geom::Point cx = 2 * bx - dx;
-
-                    ip++;
-                    nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                    for (int k = 0; k < nbInterm - 1; k++) {
-                        bx = cx;
-                        cx = dx;
-
-                        dx = nData->p;
-                        ip++;
-                        nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                        Geom::Point stx;
-                        stx = (bx + cx) / 2;
-                        if ( k > 0 ) {
-                            AddPoint(stx,curP - 1+k,1.0,false);
-                        }
-
-                        {
-                            Geom::Point mx;
-                            mx = (cx + dx) / 2;
-                            RecBezierTo(cx, stx, mx, treshhold, 8, 0.0, 1.0, curP + k);
-                        }
-                    }
-                    {
-                        bx = cx;
-                        cx = dx;
-
-                        dx = nextX;
-                        dx = 2 * dx - cx;
-
-                        Geom::Point stx;
-                        stx = (bx + cx) / 2;
-
-                        if ( nbInterm > 1 ) {
-                            AddPoint(stx, curP + nbInterm - 2, 1.0, false);
-                        }
-
-                        {
-                            Geom::Point mx;
-                            mx = (cx + dx) / 2;
-                            RecBezierTo(cx, stx, mx, treshhold, 8, 0.0, 1.0, curP + nbInterm - 1);
-                        }
-                    }
-
-                }
-
-
-                AddPoint(nextX, curP - 1 + nbInterm, 1.0, false);
-
-                // et on avance
-                curP += 1 + nbInterm;
-                break;
-            }
         }
         curX = nextX;
     }
@@ -220,10 +146,6 @@ void Path::ConvertWithBackData(double treshhold)
 
 void Path::Convert(double treshhold)
 {
-    if ( descr_flags & descr_adding_bezier ) {
-        CancelBezier();
-    }
-
     if ( descr_flags & descr_doing_subpath ) {
         CloseSubpath();
     }
@@ -341,92 +263,6 @@ void Path::Convert(double treshhold)
                 curP++;
                 break;
             }
-
-            case descr_bezierto: {
-                PathDescrBezierTo *nBData = dynamic_cast<PathDescrBezierTo *>(descr_cmd[curP]);
-                int nbInterm = nBData->nb;
-                nextX = nBData->p;
-                int curBD = curP;
-
-                curP++;
-                int ip = curP;
-                PathDescrIntermBezierTo *nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                if ( nbInterm == 1 ) {
-                    Geom::Point const midX = nData->p;
-                    RecBezierTo(midX, curX, nextX, treshhold, 8);
-                } else if ( nbInterm > 1 ) {
-                    Geom::Point bx = curX;
-                    Geom::Point dx = nData->p;
-                    Geom::Point cx = 2 * bx - dx;
-
-                    ip++;
-                    nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                    for (int k = 0; k < nbInterm - 1; k++) {
-                        bx = cx;
-                        cx = dx;
-
-                        dx = nData->p;
-                        ip++;
-                        nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                        Geom::Point stx = (bx + cx) / 2;
-                        if ( k > 0 ) {
-                            descr_cmd[ip - 2]->associated = AddPoint(stx, false);
-                            if ( descr_cmd[ip - 2]->associated < 0 ) {
-                                if ( curP == 0 ) {
-                                    descr_cmd[ip - 2]->associated = 0;
-                                } else {
-                                    descr_cmd[ip - 2]->associated = descr_cmd[ip - 3]->associated;
-                                }
-                            }
-                        }
-
-                        {
-                            Geom::Point const mx = (cx + dx) / 2;
-                            RecBezierTo(cx, stx, mx, treshhold, 8);
-                        }
-                    }
-
-                    {
-                        bx = cx;
-                        cx = dx;
-
-                        dx = nextX;
-                        dx = 2 * dx - cx;
-
-                        Geom::Point stx = (bx + cx) / 2;
-
-                        descr_cmd[ip - 1]->associated = AddPoint(stx, false);
-                        if ( descr_cmd[ip - 1]->associated < 0 ) {
-                            if ( curP == 0 ) {
-                                descr_cmd[ip - 1]->associated = 0;
-                            } else {
-                                descr_cmd[ip - 1]->associated = descr_cmd[ip - 2]->associated;
-                            }
-                        }
-
-                        {
-                            Geom::Point mx = (cx + dx) / 2;
-                            RecBezierTo(cx, stx, mx, treshhold, 8);
-                        }
-                    }
-                }
-
-                descr_cmd[curBD]->associated = AddPoint(nextX, false);
-                if ( descr_cmd[curBD]->associated < 0 ) {
-                    if ( curP == 0 ) {
-                        descr_cmd[curBD]->associated = 0;
-                    } else {
-                        descr_cmd[curBD]->associated = descr_cmd[curBD - 1]->associated;
-                    }
-                }
-
-                // et on avance
-                curP += nbInterm;
-                break;
-            }
         }
 
         curX = nextX;
@@ -435,10 +271,6 @@ void Path::Convert(double treshhold)
 
 void Path::ConvertEvenLines(double treshhold)
 {
-    if ( descr_flags & descr_adding_bezier ) {
-        CancelBezier();
-    }
-
     if ( descr_flags & descr_doing_subpath ) {
         CloseSubpath();
     }
@@ -580,92 +412,6 @@ void Path::ConvertEvenLines(double treshhold)
                 curP++;
                 break;
             }
-
-            case descr_bezierto: {
-                PathDescrBezierTo *nBData = dynamic_cast<PathDescrBezierTo *>(descr_cmd[curP]);
-                int nbInterm = nBData->nb;
-                nextX = nBData->p;
-                int curBD = curP;
-
-                curP++;
-                int ip = curP;
-                PathDescrIntermBezierTo *nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                if ( nbInterm == 1 ) {
-                    Geom::Point const midX = nData->p;
-                    RecBezierTo(midX, curX, nextX, treshhold, 8, 4 * treshhold);
-                } else if ( nbInterm > 1 ) {
-                    Geom::Point bx = curX;
-                    Geom::Point dx = nData->p;
-                    Geom::Point cx = 2 * bx - dx;
-
-                    ip++;
-                    nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                    for (int k = 0; k < nbInterm - 1; k++) {
-                        bx = cx;
-                        cx = dx;
-                        dx = nData->p;
-
-                        ip++;
-                        nData = dynamic_cast<PathDescrIntermBezierTo *>(descr_cmd[ip]);
-
-                        Geom::Point stx = (bx+cx) / 2;
-                        if ( k > 0 ) {
-                            descr_cmd[ip - 2]->associated = AddPoint(stx, false);
-                            if ( descr_cmd[ip - 2]->associated < 0 ) {
-                                if ( curP == 0 ) {
-                                    descr_cmd[ip- 2]->associated = 0;
-                                } else {
-                                    descr_cmd[ip - 2]->associated = descr_cmd[ip - 3]->associated;
-                                }
-                            }
-                        }
-
-                        {
-                            Geom::Point const mx = (cx + dx) / 2;
-                            RecBezierTo(cx, stx, mx, treshhold, 8, 4 * treshhold);
-                        }
-                    }
-
-                    {
-                        bx = cx;
-                        cx = dx;
-
-                        dx = nextX;
-                        dx = 2 * dx - cx;
-
-                        Geom::Point const stx = (bx + cx) / 2;
-
-                        descr_cmd[ip - 1]->associated = AddPoint(stx, false);
-                        if ( descr_cmd[ip - 1]->associated < 0 ) {
-                            if ( curP == 0 ) {
-                                descr_cmd[ip - 1]->associated = 0;
-                            } else {
-                                descr_cmd[ip - 1]->associated = descr_cmd[ip - 2]->associated;
-                            }
-                        }
-
-                        {
-                            Geom::Point const mx = (cx + dx) / 2;
-                            RecBezierTo(cx, stx, mx, treshhold, 8, 4 * treshhold);
-                        }
-                    }
-                }
-
-                descr_cmd[curBD]->associated = AddPoint(nextX, false);
-                if ( descr_cmd[curBD]->associated < 0 ) {
-                    if ( curP == 0 ) {
-                        descr_cmd[curBD]->associated = 0;
-                    } else {
-                        descr_cmd[curBD]->associated = descr_cmd[curBD - 1]->associated;
-                    }
-                }
-
-                // et on avance
-                curP += nbInterm;
-                break;
-            }
         }
         if ( Geom::LInfty(curX - nextX) > 0.00001 ) {
             curX = nextX;
@@ -695,11 +441,6 @@ const Geom::Point Path::PrevPoint(int i) const
             PathDescrCubicTo *nData = dynamic_cast<PathDescrCubicTo *>(descr_cmd[i]);
             return nData->p;
         }
-        case descr_bezierto: {
-            PathDescrBezierTo *nData = dynamic_cast<PathDescrBezierTo *>(descr_cmd[i]);
-            return nData->p;
-        }
-        case descr_interm_bezier:
         case descr_close:
         case descr_forced:
             return PrevPoint(i - 1);
@@ -955,45 +696,6 @@ void Path::RecCubicTo( Geom::Point const &iS, Geom::Point const &isD,
     }
 }
 
-
-
-void Path::RecBezierTo(const Geom::Point &iP,
-                       const Geom::Point &iS,
-                       const Geom::Point &iE,
-                       double tresh, int lev, double maxL)
-{
-    if ( lev <= 0 ) {
-        return;
-    }
-
-    Geom::Point ps = iS - iP;
-    Geom::Point pe = iE - iP;
-    Geom::Point se = iE - iS;
-    double s = fabs(cross(pe, ps));
-    if ( s < tresh ) {
-        const double l = L2(se);
-        if ( maxL > 0 && l > maxL ) {
-            const Geom::Point m = 0.25 * (iS + iE + 2 * iP);
-            Geom::Point md = 0.5 * (iS + iP);
-            RecBezierTo(md, iS, m, tresh, lev - 1, maxL);
-            AddPoint(m);
-            md = 0.5 * (iP + iE);
-            RecBezierTo(md, m, iE, tresh, lev - 1, maxL);
-        }
-        return;
-    }
-
-    {
-        const Geom::Point m = 0.25 * (iS + iE + 2 * iP);
-        Geom::Point md = 0.5 * (iS + iP);
-        RecBezierTo(md, iS, m, tresh, lev - 1, maxL);
-        AddPoint(m);
-        md = 0.5 * (iP + iE);
-        RecBezierTo(md, m, iE, tresh, lev - 1, maxL);
-    }
-}
-
-
 void Path::DoArc(Geom::Point const &iS, Geom::Point const &iE,
                  double const rx, double const ry, double const angle,
                  bool const large, bool const wise, double const tresh, int const piece)
@@ -1086,243 +788,7 @@ void Path::RecCubicTo(Geom::Point const &iS, Geom::Point const &isD,
     RecCubicTo(iS, hisD, m, md, tresh, lev - 1, st, mt, piece);
     AddPoint(m, piece, mt);
     RecCubicTo(m, md, iE, hieD, tresh, lev - 1, mt, et, piece);
-
 }
-
-
-
-void Path::RecBezierTo(Geom::Point const &iP,
-                       Geom::Point const &iS,
-                       Geom::Point const &iE,
-                       double tresh, int lev, double st, double et, int piece)
-{
-    if ( lev <= 0 ) {
-        return;
-    }
-
-    Geom::Point ps = iS - iP;
-    Geom::Point pe = iE - iP;
-    const double s = fabs(cross(pe, ps));
-    if ( s < tresh ) {
-        return;
-    }
-
-    {
-        const double mt = (st + et) / 2;
-        const Geom::Point m = 0.25 * (iS + iE + 2 * iP);
-        RecBezierTo(0.5 * (iS + iP), iS, m, tresh, lev - 1, st, mt, piece);
-        AddPoint(m, piece, mt);
-        RecBezierTo(0.5 * (iP + iE), m, iE, tresh, lev - 1, mt, et, piece);
-    }
-}
-
-
-
-void Path::DoArc(Geom::Point const &iS, Geom::Point const &iE,
-                 double const rx, double const ry, double const angle,
-                 bool const large, bool const wise, double const /*tresh*/,
-                 int const piece, offset_orig &/*orig*/)
-{
-    // Will never arrive here, as offsets are made of cubics.
-    // [on n'arrivera jamais ici, puisque les offsets sont fait de cubiques]
-    /* TODO: Check that our behaviour is standards-conformant if iS and iE are (much) further
-       apart than the diameter.  Also check that we do the right thing for negative radius.
-       (Same for the other DoArc functions in this file.) */
-    if ( rx <= 0.0001 || ry <= 0.0001 ) {
-        return;
-        // We always add a lineto afterwards, so this is fine.
-        // [on ajoute toujours un lineto apres, donc c bon]
-    }
-
-    double sang;
-    double eang;
-    Geom::Point dr_temp;
-    ArcAnglesAndCenter(iS, iE, rx, ry, angle*M_PI/180.0, large, wise, sang, eang, dr_temp);
-    Geom::Point dr = dr_temp;
-    /* TODO: This isn't as good numerically as treating iS and iE as primary.  E.g. consider
-       the case of low curvature (i.e. very large radius). */
-
-    Geom::Scale const ar(rx, ry);
-    Geom::Rotate cb(sang);
-    Geom::Rotate cbangle(angle*M_PI/180.0);
-    if (wise) {
-
-        double const incr = -0.1/sqrt(ar.vector().length());
-        if ( sang < eang ) {
-            sang += 2*M_PI;
-        }
-        Geom::Rotate const omega(incr);
-        for (double b = sang + incr; b > eang ;b += incr) {
-            cb = omega * cb;
-            AddPoint(cb.vector() * ar * cbangle + dr, piece, (sang - b) / (sang - eang));
-        }
-
-    } else {
-        double const incr = 0.1/sqrt(ar.vector().length());
-        if ( sang > eang ) {
-            sang -= 2*M_PI;
-        }
-        Geom::Rotate const omega(incr);
-        for (double b = sang + incr ; b < eang ; b += incr) {
-            cb = omega * cb;
-            AddPoint(cb.vector() * ar * cbangle + dr, piece, (b - sang) / (eang - sang));
-        }
-    }
-}
-
-
-void Path::RecCubicTo(Geom::Point const &iS, Geom::Point const &isD,
-                      Geom::Point const &iE, Geom::Point const &ieD,
-                      double tresh, int lev, double st, double et,
-                      int piece, offset_orig &orig)
-{
-    const Geom::Point se = iE - iS;
-    const double dC = Geom::L2(se);
-    bool doneSub = false;
-    if ( dC < 0.01 ) {
-        const double sC = dot(isD, isD);
-        const double eC = dot(ieD, ieD);
-        if ( sC < tresh && eC < tresh ) {
-            return;
-        }
-    } else {
-        const double sC = fabs(cross(se, isD)) / dC;
-        const double eC = fabs(cross(se, ieD)) / dC;
-        if ( sC < tresh && eC < tresh ) {
-            doneSub = true;
-        }
-    }
-
-    if ( lev <= 0 ) {
-        doneSub = true;
-    }
-
-    // test des inversions
-    bool stInv = false;
-    bool enInv = false;
-    {
-        Geom::Point os_pos;
-        Geom::Point os_tgt;
-        Geom::Point oe_pos;
-        Geom::Point oe_tgt;
-
-        orig.orig->PointAndTangentAt(orig.piece, orig.tSt * (1 - st) + orig.tEn * st, os_pos, os_tgt);
-        orig.orig->PointAndTangentAt(orig.piece, orig.tSt * (1 - et) + orig.tEn * et, oe_pos, oe_tgt);
-
-
-        Geom::Point n_tgt = isD;
-        double si = dot(n_tgt, os_tgt);
-        if ( si < 0 ) {
-            stInv = true;
-        }
-        n_tgt = ieD;
-        si = dot(n_tgt, oe_tgt);
-        if ( si < 0 ) {
-            enInv = true;
-        }
-        if ( stInv && enInv ) {
-
-            AddPoint(os_pos, -1, 0.0);
-            AddPoint(iE, piece, et);
-            AddPoint(iS, piece, st);
-            AddPoint(oe_pos, -1, 0.0);
-            return;
-
-        } else if ( ( stInv && !enInv ) || ( !stInv && enInv ) ) {
-            return;
-        }
-
-    }
-
-    if ( ( !stInv && !enInv && doneSub ) || lev <= 0 ) {
-        return;
-    }
-
-    {
-        const Geom::Point m = 0.5 * (iS+iE) + 0.125 * (isD - ieD);
-        const Geom::Point md = 0.75 * (iE - iS) - 0.125 * (isD + ieD);
-        const double mt = (st + et) / 2;
-        const Geom::Point hisD = 0.5 * isD;
-        const Geom::Point hieD = 0.5 * ieD;
-
-        RecCubicTo(iS, hisD, m, md, tresh, lev - 1, st, mt, piece, orig);
-        AddPoint(m, piece, mt);
-        RecCubicTo(m, md, iE, hieD, tresh, lev - 1, mt, et, piece, orig);
-    }
-}
-
-
-
-void Path::RecBezierTo(Geom::Point const &iP, Geom::Point const &iS,Geom::Point const &iE,
-                       double tresh, int lev, double st, double et,
-                       int piece, offset_orig& orig)
-{
-    bool doneSub = false;
-    if ( lev <= 0 ) {
-        return;
-    }
-
-    const Geom::Point ps = iS - iP;
-    const Geom::Point pe = iE - iP;
-    const double s = fabs(cross(pe, ps));
-    if ( s < tresh ) {
-        doneSub = true ;
-    }
-
-    // test des inversions
-    bool stInv = false;
-    bool enInv = false;
-    {
-        Geom::Point os_pos;
-        Geom::Point os_tgt;
-        Geom::Point oe_pos;
-        Geom::Point oe_tgt;
-        Geom::Point n_tgt;
-        Geom::Point n_pos;
-
-        double n_len;
-        double n_rad;
-        PathDescrIntermBezierTo mid(iP);
-        PathDescrBezierTo fin(iE, 1);
-
-        TangentOnBezAt(0.0, iS, mid, fin, false, n_pos, n_tgt, n_len, n_rad);
-        orig.orig->PointAndTangentAt(orig.piece, orig.tSt * (1 - st) + orig.tEn * st, os_pos, os_tgt);
-        double si = dot(n_tgt, os_tgt);
-        if ( si < 0 ) {
-            stInv = true;
-        }
-
-        TangentOnBezAt(1.0, iS, mid, fin, false, n_pos, n_tgt, n_len, n_rad);
-        orig.orig->PointAndTangentAt(orig.piece, orig.tSt * (1 - et) + orig.tEn * et, oe_pos, oe_tgt);
-        si = dot(n_tgt, oe_tgt);
-        if ( si < 0 ) {
-            enInv = true;
-        }
-
-        if ( stInv && enInv ) {
-            AddPoint(os_pos, -1, 0.0);
-            AddPoint(iE, piece, et);
-            AddPoint(iS, piece, st);
-            AddPoint(oe_pos, -1, 0.0);
-            return;
-        }
-    }
-
-    if ( !stInv && !enInv && doneSub ) {
-        return;
-    }
-
-    {
-        double mt = (st + et) / 2;
-        Geom::Point m = 0.25 * (iS + iE + 2 * iP);
-        Geom::Point md = 0.5 * (iS + iP);
-        RecBezierTo(md, iS, m, tresh, lev - 1, st, mt, piece, orig);
-        AddPoint(m, piece, mt);
-        md = 0.5 * (iP + iE);
-        RecBezierTo(md, m, iE, tresh, lev - 1, mt, et, piece, orig);
-    }
-}
-
 
 /*
  * put a polyline in a Shape instance, for further fun

@@ -25,9 +25,6 @@
 // the left side has to be reversed to make a contour
 void Path::Outline(Path *dest, double width, JoinType join, ButtType butt, double miter)
 {
-    if ( descr_flags & descr_adding_bezier ) {
-        CancelBezier();
-    }
     if ( descr_flags & descr_doing_subpath ) {
         CloseSubpath();
     }
@@ -45,7 +42,6 @@ void Path::Outline(Path *dest, double width, JoinType join, ButtType butt, doubl
     Geom::Point endButt;
     Geom::Point endPos;
     calls.cubicto = StdCubicTo;
-    calls.bezierto = StdBezierTo;
     calls.arcto = StdArcTo;
 
     Path *rev = new Path;
@@ -114,31 +110,6 @@ void Path::Outline(Path *dest, double width, JoinType join, ButtType butt, doubl
                         rev->ArcTo (nextX, nData->rx,nData->ry,nData->angle,nData->large,!nData->clockwise);
                         curX = nextX;
                         curD--;
-                    } else if (typ == descr_bezierto) {
-                        nextX = PrevPoint (curD - 1);
-                        rev->LineTo (nextX);
-                        curX = nextX;
-                        curD--;
-                    }  else if (typ == descr_interm_bezier) {
-                        int nD = curD - 1;
-                        while (nD > lastM && descr_cmd[nD]->getType() != descr_bezierto) nD--;
-                        if ((descr_cmd[nD]->getType()) !=  descr_bezierto)  {
-                            // pas trouve le debut!?
-                            // Not find the start?!
-                            nextX = PrevPoint (nD);
-                            rev->LineTo (nextX);
-                            curX = nextX;
-                        } else {
-                            nextX = PrevPoint (nD - 1);
-                            rev->BezierTo (nextX);
-                            for (int i = curD; i > nD; i--) {
-                                PathDescrIntermBezierTo* nData = dynamic_cast<PathDescrIntermBezierTo*>(descr_cmd[i]);
-                                rev->IntermBezierTo (nData->p);
-                            }
-                            rev->EndBezierTo ();
-                            curX = nextX;
-                        }
-                        curD = nD - 1;
                     } else {
                         curD--;
                     }
@@ -205,9 +176,6 @@ void
 Path::OutsideOutline (Path * dest, double width, JoinType join, ButtType butt,
                       double miter)
 {
-	if (descr_flags & descr_adding_bezier) {
-		CancelBezier();
-	}
 	if (descr_flags & descr_doing_subpath) {
 		CloseSubpath();
 	}
@@ -219,7 +187,6 @@ Path::OutsideOutline (Path * dest, double width, JoinType join, ButtType butt,
 	outline_callbacks calls;
 	Geom::Point endButt, endPos;
 	calls.cubicto = StdCubicTo;
-	calls.bezierto = StdBezierTo;
 	calls.arcto = StdArcTo;
 	SubContractOutline (0, descr_cmd.size(),
                             dest, calls, 0.0025 * width * width, width, join, butt,
@@ -230,9 +197,6 @@ void
 Path::InsideOutline (Path * dest, double width, JoinType join, ButtType butt,
                      double miter)
 {
-	if ( descr_flags & descr_adding_bezier ) {
-		CancelBezier();
-	}
 	if ( descr_flags & descr_doing_subpath ) {
 		CloseSubpath();
 	}
@@ -244,7 +208,6 @@ Path::InsideOutline (Path * dest, double width, JoinType join, ButtType butt,
 	outline_callbacks calls;
 	Geom::Point endButt, endPos;
 	calls.cubicto = StdCubicTo;
-	calls.bezierto = StdBezierTo;
 	calls.arcto = StdArcTo;
 
 	Path *rev = new Path;
@@ -296,30 +259,6 @@ Path::InsideOutline (Path * dest, double width, JoinType join, ButtType butt,
 						rev->ArcTo (nextX, nData->rx,nData->ry,nData->angle,nData->large,nData->clockwise);
 						curX = nextX;
 						curD--;
-					} else if (typ == descr_bezierto) {
-						nextX = PrevPoint (curD - 1);
-						rev->LineTo (nextX);
-						curX = nextX;
-						curD--;
-					} else if (typ == descr_interm_bezier) {
-						int nD = curD - 1;
-						while (nD > lastM && (descr_cmd[nD]->getType()) != descr_bezierto) nD--;
-						if (descr_cmd[nD]->getType() != descr_bezierto) {
-							// pas trouve le debut!?
-							nextX = PrevPoint (nD);
-							rev->LineTo (nextX);
-							curX = nextX;
-						} else {
-							nextX = PrevPoint (nD - 1);
-							rev->BezierTo (nextX);
-							for (int i = curD; i > nD; i--) {
-                                                            PathDescrIntermBezierTo* nData = dynamic_cast<PathDescrIntermBezierTo*>(descr_cmd[i]);
-								rev->IntermBezierTo (nData->p);
-							}
-							rev->EndBezierTo ();
-							curX = nextX;
-						}
-						curD = nD - 1;
 					} else {
 						curD--;
 					}
@@ -631,184 +570,6 @@ void Path::SubContractOutline(int off, int num_pd,
 
 			curP++;
 		}
-		else if (nType == descr_bezierto)
-		{
-			PathDescrBezierTo* nBData = dynamic_cast<PathDescrBezierTo*>(descr_cmd[curD]);
-			int nbInterm = nBData->nb;
-			nextX = nBData->p;
-
-			if (IsNulCurve (descr_cmd, curD, curX)) {
-				curP += nbInterm + 1;
-				continue;
-			}
-
-			curP++;
-
-			curD = off + curP;
-                        int ip = curD;
-			PathDescrIntermBezierTo* nData = dynamic_cast<PathDescrIntermBezierTo*>(descr_cmd[ip]);
-
-			if (nbInterm <= 0) {
-				// et on avance
-                            PathDescrLineTo temp(nextX);
-				TangentOnSegAt (0.0, curX, temp, stPos, stTgt, stTle);
-				TangentOnSegAt (1.0, curX, temp, enPos, enTgt, enTle);
-				stNor=stTgt.cw();
-				enNor=enTgt.cw();
-
-				lastP = enPos;
-				lastT = enTgt;
-
-				if (doFirst) {
-					doFirst = false;
-					firstP = stPos;
-					firstT = stNor;
-					if (skipMoveto) {
-						skipMoveto = false;
-					} else dest->MoveTo (curX+width*stNor);
-				} else {
-					// jointure
-					Geom::Point pos;
-					pos = curX;
-					if (stTle > 0) OutlineJoin (dest, pos, curT, stNor, width, join, miter, nType);
-				}
-				int n_d = dest->LineTo (nextX+width*enNor);
-				if (n_d >= 0) {
-					dest->descr_cmd[n_d]->associated = curP - 1;
-					dest->descr_cmd[n_d]->tSt = 0.0;
-					dest->descr_cmd[n_d]->tEn = 1.0;
-				}
-			} else if (nbInterm == 1) {
-				Geom::Point  midX;
-				midX = nData->p;
-				// et on avance
-				TangentOnBezAt (0.0, curX, *nData, *nBData, false, stPos, stTgt, stTle, stRad);
-				TangentOnBezAt (1.0, curX, *nData, *nBData, true, enPos, enTgt, enTle, enRad);
-				stNor=stTgt.cw();
-				enNor=enTgt.cw();
-
-				lastP = enPos;
-				lastT = enTgt;
-
-				if (doFirst) {
-					doFirst = false;
-					firstP = stPos;
-					firstT = stNor;
-					if (skipMoveto) {
-						skipMoveto = false;
-					} else dest->MoveTo (curX+width*stNor);
-				}  else {
-					// jointure
-					Geom::Point pos;
-					pos = curX;
-					OutlineJoin (dest, pos, curT, stNor, width, join, miter, nType);
-				}
-
-				callsData.piece = curP;
-				callsData.tSt = 0.0;
-				callsData.tEn = 1.0;
-				callsData.x1 = curX[0];
-				callsData.y1 = curX[1];
-				callsData.x2 = nextX[0];
-				callsData.y2 = nextX[1];
-				callsData.d.b.mx = midX[0];
-				callsData.d.b.my = midX[1];
-				(calls.bezierto) (&callsData, tolerance, width);
-
-			} else if (nbInterm > 1) {
-				Geom::Point  bx=curX;
-				Geom::Point cx=curX;
-				Geom::Point dx=nData->p;
-
-				TangentOnBezAt (0.0, curX, *nData, *nBData, false, stPos, stTgt, stTle, stRad);
-				stNor=stTgt.cw();
-
-				ip++;
-				nData = dynamic_cast<PathDescrIntermBezierTo*>(descr_cmd[ip]);
-				// et on avance
-				if (stTle > 0) {
-					if (doFirst) {
-						doFirst = false;
-						firstP = stPos;
-						firstT = stNor;
-						if (skipMoveto) {
-							skipMoveto = false;
-						} else  dest->MoveTo (curX+width*stNor);
-					} else {
-						// jointure
-						Geom::Point pos=curX;
-						OutlineJoin (dest, pos, stTgt, stNor, width, join,  miter, nType);
-						//                                              dest->LineTo(curX+width*stNor.x,curY+width*stNor.y);
-					}
-				}
-
-				cx = 2 * bx - dx;
-
-				for (int k = 0; k < nbInterm - 1; k++) {
-					bx = cx;
-					cx = dx;
-
-					dx = nData->p;
-                                        ip++;
-					nData = dynamic_cast<PathDescrIntermBezierTo*>(descr_cmd[ip]);
-					Geom::Point stx = (bx + cx) / 2;
-					//                                      double  stw=(bw+cw)/2;
-
-					PathDescrBezierTo tempb((cx + dx) / 2, 1);
-					PathDescrIntermBezierTo tempi(cx);
-					TangentOnBezAt (1.0, stx, tempi, tempb, true, enPos, enTgt, enTle, enRad);
-					enNor=enTgt.cw();
-
-					lastP = enPos;
-					lastT = enTgt;
-
-					callsData.piece = curP + k;
-					callsData.tSt = 0.0;
-					callsData.tEn = 1.0;
-					callsData.x1 = stx[0];
-					callsData.y1 = stx[1];
-					callsData.x2 = (cx[0] + dx[0]) / 2;
-					callsData.y2 = (cx[1] + dx[1]) / 2;
-					callsData.d.b.mx = cx[0];
-					callsData.d.b.my = cx[1];
-					(calls.bezierto) (&callsData, tolerance, width);
-				}
-				{
-					bx = cx;
-					cx = dx;
-
-					dx = nextX;
-					dx = 2 * dx - cx;
-
-					Geom::Point stx = (bx + cx) / 2;
-					//                                      double  stw=(bw+cw)/2;
-
-					PathDescrBezierTo tempb((cx + dx) / 2, 1);
-					PathDescrIntermBezierTo tempi(cx);
-					TangentOnBezAt (1.0, stx, tempi, tempb, true, enPos,
-									enTgt, enTle, enRad);
-					enNor=enTgt.cw();
-
-					lastP = enPos;
-					lastT = enTgt;
-
-					callsData.piece = curP + nbInterm - 1;
-					callsData.tSt = 0.0;
-					callsData.tEn = 1.0;
-					callsData.x1 = stx[0];
-					callsData.y1 = stx[1];
-					callsData.x2 = (cx[0] + dx[0]) / 2;
-					callsData.y2 = (cx[1] + dx[1]) / 2;
-					callsData.d.b.mx = cx[0];
-					callsData.d.b.my = cx[1];
-					(calls.bezierto) (&callsData, tolerance, width);
-
-				}
-			}
-
-			// et on avance
-			curP += nbInterm;
-		}
 		curX = nextX;
 		curT = enNor;		// sera tjs bien definie
 	}
@@ -864,37 +625,6 @@ Path::IsNulCurve (std::vector<PathDescr*> const &cmd, int curD, Geom::Point cons
 			}
 		}
 		return false;
-    }
-    case descr_bezierto:
-    {
-		PathDescrBezierTo* nBData = dynamic_cast<PathDescrBezierTo*>(cmd[curD]);
-		if (nBData->nb <= 0)
-		{
-			if (Geom::LInfty(nBData->p - curX) < 0.00001) {
-				return true;
-			}
-			return false;
-		}
-		else if (nBData->nb == 1)
-		{
-			if (Geom::LInfty(nBData->p - curX) < 0.00001) {
-				int ip = curD + 1;
-				PathDescrIntermBezierTo* nData = dynamic_cast<PathDescrIntermBezierTo*>(cmd[ip]);
-				if (Geom::LInfty(nData->p - curX) < 0.00001) {
-					return true;
-				}
-			}
-			return false;
-		} else if (Geom::LInfty(nBData->p - curX) < 0.00001) {
-			for (int i = 1; i <= nBData->nb; i++) {
-				int ip = curD + i;
-				PathDescrIntermBezierTo* nData = dynamic_cast<PathDescrIntermBezierTo*>(cmd[ip]);
-				if (Geom::LInfty(nData->p - curX) > 0.00001) {
-					return false;
-				}
-			}
-			return true;
-		}
     }
     default:
 		return true;
@@ -1134,45 +864,6 @@ Path::TangentOnCubAt (double at, Geom::Point const &iS, PathDescrCubicTo const &
 }
 
 void
-Path::TangentOnBezAt (double at, Geom::Point const &iS,
-                      PathDescrIntermBezierTo & mid,
-                      PathDescrBezierTo & fin, bool before, Geom::Point & pos,
-                      Geom::Point & tgt, double &len, double &rad)
-{
-	pos = iS;
-	tgt = Geom::Point(0,0);
-	len = rad = 0;
-
-	const Geom::Point A = fin.p + iS - 2*mid.p;
-	const Geom::Point B = 2*mid.p - 2 * iS;
-	const Geom::Point C = iS;
-
-	pos = at * at * A + at * B + C;
-	const Geom::Point der = 2 * at * A + B;
-	const Geom::Point dder = 2 * A;
-	double l = Geom::L2(der);
-
-	if (l <= 0.0001) {
-		l = Geom::L2(dder);
-		if (l <= 0.0001) {
-			// pas de segment....
-			// Not a segment.
-			return;
-		}
-		rad = 100000000; // Why this number?
-		tgt = dder / l;
-		if (before) {
-			tgt = -tgt;
-		}
-		return;
-	}
-	len = l;
-	rad = -l * (dot(der,der)) / (cross(der, dder));
-
-	tgt = der / l;
-}
-
-void
 Path::OutlineJoin (Path * dest, Geom::Point pos, Geom::Point stNor, Geom::Point enNor, double width,
                    JoinType join, double miter, int nType)
 {
@@ -1391,25 +1082,6 @@ void
 Path::StdCubicTo (Path::outline_callback_data * data, double tol, double width)
 {
 //	fflush (stdout);
-	RecStdCubicTo (data, tol, width, 8);
-}
-
-void
-Path::StdBezierTo (Path::outline_callback_data * data, double tol, double width)
-{
-    PathDescrBezierTo tempb(Geom::Point(data->x2, data->y2), 1);
-    PathDescrIntermBezierTo tempi(Geom::Point(data->d.b.mx, data->d.b.my));
-	Geom::Point stPos, enPos, stTgt, enTgt;
-	double stRad, enRad, stTle, enTle;
-	Geom::Point  tmp(data->x1,data->y1);
-	TangentOnBezAt (0.0, tmp, tempi, tempb, false, stPos, stTgt,
-					stTle, stRad);
-	TangentOnBezAt (1.0, tmp, tempi, tempb, true, enPos, enTgt,
-					enTle, enRad);
-	data->d.c.dx1 = stTle * stTgt[0];
-	data->d.c.dy1 = stTle * stTgt[1];
-	data->d.c.dx2 = enTle * enTgt[0];
-	data->d.c.dy2 = enTle * enTgt[1];
 	RecStdCubicTo (data, tol, width, 8);
 }
 

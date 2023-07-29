@@ -42,28 +42,6 @@ void PathDescrLineTo::dump(std::ostream &s) const
     s << "  l " << p[Geom::X] << " " << p[Geom::Y];
 }
 
-PathDescr *PathDescrBezierTo::clone() const
-{
-    return new PathDescrBezierTo(*this);
-}
-
-void PathDescrBezierTo::dump(std::ostream &s) const
-{
-    /* localizing ok */
-    s << "  b " << p[Geom::X] << " " << p[Geom::Y] << " " << nb;
-}
-
-PathDescr *PathDescrIntermBezierTo::clone() const
-{
-    return new PathDescrIntermBezierTo(*this);
-}
-
-void PathDescrIntermBezierTo::dump(std::ostream &s) const
-{
-    /* localizing ok */
-    s << "  i " << p[Geom::X] << " " << p[Geom::Y];
-}
-
 void PathDescrCubicTo::dumpSVG(Inkscape::SVGOStringStream& s, Geom::Point const &last) const
 {
     // To see why these weird factors of 3 exist here, refer to the documentation in the header file.

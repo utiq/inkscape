@@ -1309,10 +1309,6 @@ double Path::RaffineTk (Geom::Point pt, Geom::Point p0, Geom::Point p1, Geom::Po
 // lots of small path elements; ideally you could get rid of very small segments at reduced visual cost.
 void Path::Coalesce(double tresh)
 {
-    if ( descr_flags & descr_adding_bezier ) {
-        CancelBezier();
-    }
-    
     if ( descr_flags & descr_doing_subpath ) {
         CloseSubpath();
     }
@@ -1455,25 +1451,6 @@ void Path::Coalesce(double tresh)
                 containsForced = false;
 	    }
             prevA = nextA;
-            
-        } else if (typ == descr_bezierto) {
-
-            if (lastAddition->flags != descr_moveto) {
-                FlushPendingAddition(tempDest, lastAddition.get(), pending_cubic, lastAP);
-                lastAddition.reset(new PathDescrMoveTo(Geom::Point(0, 0)));
-	    }
-            lastAP = -1;
-            lastA = descr_cmd[curP]->associated;
-            lastP = curP;
-            PathDescrBezierTo *nBData = dynamic_cast<PathDescrBezierTo*>(descr_cmd[curP]);
-            for (int i = 1; i <= nBData->nb; i++) {
-                FlushPendingAddition(tempDest, descr_cmd[curP + i], pending_cubic, curP + i);
-            }
-            curP += nBData->nb;
-            prevA = nextA;
-            
-        } else if (typ == descr_interm_bezier) {
-            continue;
         } else {
             continue;
         }
@@ -1519,20 +1496,6 @@ void Path::FlushPendingAddition(Path *dest, PathDescr *lastAddition,
         if ( lastAP >= 0 ) {
             PathDescrArcTo *nData = dynamic_cast<PathDescrArcTo *>(descr_cmd[lastAP]);
             dest->ArcTo(nData->p, nData->rx, nData->ry, nData->angle, nData->large, nData->clockwise);
-        }
-        break;
-
-    case descr_bezierto:
-        if ( lastAP >= 0 ) {
-            PathDescrBezierTo *nData = dynamic_cast<PathDescrBezierTo *>(descr_cmd[lastAP]);
-            dest->BezierTo(nData->p);
-        }
-        break;
-
-    case descr_interm_bezier:
-        if ( lastAP >= 0 ) {
-            PathDescrIntermBezierTo *nData = dynamic_cast<PathDescrIntermBezierTo*>(descr_cmd[lastAP]);
-            dest->IntermBezierTo(nData->p);
         }
         break;
     }

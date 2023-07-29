@@ -1064,10 +1064,6 @@ private:
     int ReFormeLineTo(int bord, Path *dest, bool never_split);
     int ReFormeArcTo(int bord, Path *dest, Path *orig, bool never_split);
     int ReFormeCubicTo(int bord, Path *dest, Path *orig, bool never_split);
-    int ReFormeBezierTo(int bord, Path *dest, Path *orig);
-    void ReFormeBezierChunk(const Geom::Point px, const Geom::Point nx,
-                            Path *dest, int inBezier, int nbInterm,
-                            Path *from, int p, double ts, double te);
 
     bool _need_points_sorting;  ///< points have been added or removed: we need to sort the points again
     bool _need_edges_sorting;   ///< edges have been added: maybe they are not ordered clockwise

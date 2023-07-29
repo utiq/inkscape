@@ -27,12 +27,8 @@ enum
   descr_moveto = 0,         /*!< A MoveTo path command */
   descr_lineto = 1,         /*!< A LineTo path command */
   descr_cubicto = 2,        /*!< A CubicTo path command. Basically a cubic Bezier */
-  descr_bezierto = 3,       /*!< A BezierTo path command is a quadratic Bezier spline. It can contain as many control points as you want to
-                              add. The BezierTo instruction only stores the final point and the total number of control points. The actual
-                              control points are stored in descr_interm_bezier instructions. One for each control point. */
   descr_arcto = 4,          /*!< An elliptical arc */
   descr_close = 5,          /*!< A close path command */
-  descr_interm_bezier = 6,  /*!< Control point for the last BezierTo instruction */
   descr_forced = 7,         /*!< Not exactly sure what a forced point means. As far as I have seen in the simplify code, a forced
                               point is preferred to be kept. The simplification algorithm would make sure the forced point makes
                               its way to the final result. However, as far as I can see, forced point stuff is not used in Inkscape.
@@ -77,9 +73,7 @@ struct PathDescr
 
     /**
      * A virtual function that derived classes will implement. Similar to dumpSVG however this
-     * prints a simpler path description that's not SVG, only used for debugging purposes. Maybe
-     * the motivation was to support instructions such as BezierTo and IntermBezierTo which do
-     * not have SVG path description equivalents.
+     * prints a simpler path description that's not SVG, only used for debugging purposes.
      *
      * @param s The stream to print to.
      */
@@ -121,48 +115,6 @@ struct PathDescrLineTo : public PathDescr
   void dump(std::ostream &s) const override;
 
   Geom::Point p; /*!< The point to draw a line to. */
-};
-
-// quadratic bezier curves: a set of control points, and an endpoint
-
-/**
- * A quadratic bezier spline
- *
- * Stores the final point as well as the total number of control points. The control
- * points will exist in the path commands following this one which would be of the type
- * PathDescrIntermBezierTo.
- */
-struct PathDescrBezierTo : public PathDescr
-{
-  PathDescrBezierTo(Geom::Point const &pp, int n)
-    : PathDescr(descr_bezierto), p(pp), nb(n) {}
-
-  PathDescr *clone() const override;
-  void dump(std::ostream &s) const override;
-
-  Geom::Point p; /*!< The final point of the quadratic Bezier spline. */
-  int nb;        /*!< The total number of control points. The path commands following this one of the type PathDescrIntermBezierTo
-                   will store these control points, one in each one. */
-};
-
-/* FIXME: I don't think this should be necessary */
-
-/**
- * Intermediate quadratic Bezier spline command.
- *
- * These store the control points needed by the PathDescrBezierTo instruction.
- */
-struct PathDescrIntermBezierTo : public PathDescr
-{
-  PathDescrIntermBezierTo()
-    : PathDescr(descr_interm_bezier) , p(0, 0) {}
-  PathDescrIntermBezierTo(Geom::Point const &pp)
-    : PathDescr(descr_interm_bezier), p(pp) {}
-
-  PathDescr *clone() const override;
-  void dump(std::ostream &s) const override;
-
-  Geom::Point p; /*!< The control point. */
 };
 
 /**
