@@ -643,7 +643,7 @@ public:
   void             ConvertPositionsToForced(int nbPos,cut_position* poss);
 
   void  Affiche();
-  char *svg_dump_path() const;
+  std::string svg_dump_path() const;
   
   bool IsLineSegment(int piece);
 

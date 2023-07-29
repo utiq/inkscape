@@ -90,17 +90,16 @@ path_simplify(SPItem *item, float threshold, bool justCoalesce, double size)
     }
 
     // Path
-    gchar *str = orig->svg_dump_path();
+    auto str = orig->svg_dump_path();
 
     // SPLivarot: End  -------------------
 
     char const *patheffect = item->getRepr()->attribute("inkscape:path-effect");
     if (patheffect) {
-        item->setAttribute("inkscape:original-d", str);
+        item->setAttribute("inkscape:original-d", str.c_str());
     } else {
-        item->setAttribute("d", str);
+        item->setAttribute("d", str.c_str());
     }
-    g_free(str);
 
     // reapply the transform
     item->doWriteTransform(transform);

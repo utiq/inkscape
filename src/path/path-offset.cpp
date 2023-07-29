@@ -210,10 +210,7 @@ void sp_selected_path_create_offset_object(SPDesktop *desktop, int expand, bool 
                                                           ? -o_width
                                                           : 0 ));
 
-        gchar *str = res->svg_dump_path();
-        repr->setAttribute("inkscape:original", str);
-        g_free(str);
-        str = nullptr;
+        repr->setAttribute("inkscape:original", res->svg_dump_path().c_str());
 
         if ( updating ) {
 
@@ -420,15 +417,13 @@ sp_selected_path_do_offset(SPDesktop *desktop, bool expand, double prefOffset)
         item->deleteObject(false);
 
         if (repr) {
-            gchar *str = res->svg_dump_path();
-            repr->setAttribute("d", str);
-            g_free(str);
+            repr->setAttribute("d", res->svg_dump_path().c_str());
 
             // add the new repr to the parent
             // move to the saved position
             parent->addChildAtPos(repr, pos);
 
-            SPItem *newitem = (SPItem *) desktop->getDocument()->getObjectByRepr(repr);
+            auto newitem = cast_unsafe<SPItem>(desktop->getDocument()->getObjectByRepr(repr));
 
             // reapply the transform
             newitem->doWriteTransform(transform);

@@ -566,18 +566,17 @@ sp_tweak_dilate_recursive (Inkscape::Selection *selection, SPItem *item, Geom::P
                 }
 
                 if (res->descr_cmd.size() > 1) {
-                    gchar *str = res->svg_dump_path();
+                    auto str = res->svg_dump_path();
                     if (newrepr) {
-                        newrepr->setAttribute("d", str);
+                        newrepr->setAttribute("d", str.c_str());
                     } else {
                         auto lpeitem = cast<SPLPEItem>(item);
                         if (lpeitem && lpeitem->hasPathEffectRecursive()) {
-                            item->setAttribute("inkscape:original-d", str);
+                            item->setAttribute("inkscape:original-d", str.c_str());
                         } else {
-                            item->setAttribute("d", str);
+                            item->setAttribute("d", str.c_str());
                         }
                     }
-                    g_free(str);
                 } else {
                     // TODO: if there's 0 or 1 node left, delete this path altogether
                 }

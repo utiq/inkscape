@@ -907,16 +907,16 @@ bezier-paths used by True-Type fonts."
     }
 }
 
-char *Path::svg_dump_path() const
+std::string Path::svg_dump_path() const
 {
     Inkscape::SVGOStringStream os;
 
-    for (int i = 0; i < int(descr_cmd.size()); i++) {
-        Geom::Point const p = (i == 0) ? Geom::Point(0, 0) : PrevPoint(i - 1);
+    for (int i = 0; i < descr_cmd.size(); i++) {
+        auto const p = i == 0 ? Geom::Point() : PrevPoint(i - 1);
         descr_cmd[i]->dumpSVG(os, p);
     }
-  
-    return g_strdup (os.str().c_str());
+
+    return os.str();
 }
 
 // Find out if the segment that corresponds to 'piece' is a straight line

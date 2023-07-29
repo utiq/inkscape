@@ -838,8 +838,6 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         std::vector <Inkscape::XML::Node*> selection;
         for (int i=0;i<nbRP;i++) {
             transformLivarotPath(resPath[i], source2doc_inverse);
-            gchar *d = resPath[i]->svg_dump_path();
-
             Inkscape::XML::Document *xml_doc = doc->getReprDoc();
             Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
 
@@ -851,8 +849,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
                 item_source->deleteObject(false);
             }
 
-            repr->setAttribute("d", d);
-            g_free(d);
+            repr->setAttribute("d", resPath[i]->svg_dump_path().c_str());
 
             // for slice, remove fill
             if (bop == bool_op_slice) {
@@ -882,7 +879,6 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
 
     } else {
         transformLivarotPath(res, source2doc_inverse);
-        gchar *d = res->svg_dump_path();
 
         Inkscape::XML::Document *xml_doc = doc->getReprDoc();
         Inkscape::XML::Node *repr = xml_doc->createElement("svg:path");
@@ -892,8 +888,7 @@ BoolOpErrors Inkscape::ObjectSet::pathBoolOp(bool_op bop, const bool skip_undo, 
         // delete it so that its clones don't get alerted; this object will be restored shortly, with the same id
         item_source->deleteObject(false);
 
-        repr->setAttribute("d", d);
-        g_free(d);
+        repr->setAttribute("d", res->svg_dump_path().c_str());
 
         repr->setAttributeOrRemoveIfEmpty("transform", old_transform_attibute);
 

@@ -1140,15 +1140,12 @@ refresh_offset_source(SPOffset* offset)
         delete theShape;
         delete theRes;
 
-        char *res_d = res->svg_dump_path ();
-        delete res;
-        delete orig;
-
         // TODO fix:
         //XML Tree being used directly here while it shouldn't be.
-        offset->setAttribute("inkscape:original", res_d);
+        offset->setAttribute("inkscape:original", res->svg_dump_path().c_str());
 
-        free (res_d);
+        delete res;
+        delete orig;
     }
 }
 

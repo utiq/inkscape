@@ -21,6 +21,7 @@
 #include "flood-tool.h"
 
 #include <cmath>
+#include <cstdint>
 #include <queue>
 
 #include <gdk/gdkkeysyms.h>
@@ -44,7 +45,6 @@
 
 #include "display/cairo-utils.h"
 #include "display/drawing-context.h"
-#include "display/drawing-image.h"
 #include "display/drawing.h"
 
 #include "include/macros.h"
@@ -72,67 +72,59 @@ using Inkscape::Display::ExtractARGB32;
 using Inkscape::Display::ExtractRGB32;
 using Inkscape::Display::AssembleARGB32;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
-// TODO: Replace by C++11 initialization
 // Must match PaintBucketChannels enum
-Glib::ustring ch_init[8] = {
-    _("Visible Colors"),
-    _("Red"),
-    _("Green"),
-    _("Blue"),
-    _("Hue"),
-    _("Saturation"),
-    _("Lightness"),
-    _("Alpha"),
+std::vector<char const *> const FloodTool::channel_list = {
+    N_("Visible Colors"),
+    N_("Red"),
+    N_("Green"),
+    N_("Blue"),
+    N_("Hue"),
+    N_("Saturation"),
+    N_("Lightness"),
+    N_("Alpha")
 };
-const std::vector<Glib::ustring> FloodTool::channel_list( ch_init, ch_init+8 );
 
-Glib::ustring gap_init[4] = {
+std::vector<char const *> const FloodTool::gap_list = {
     NC_("Flood autogap", "None"),
     NC_("Flood autogap", "Small"),
     NC_("Flood autogap", "Medium"),
     NC_("Flood autogap", "Large")
 };
-const std::vector<Glib::ustring> FloodTool::gap_list( gap_init, gap_init+4 );
 
 FloodTool::FloodTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/paintbucket", "flood.svg")
-    , item(nullptr)
 {
     // TODO: Why does the flood tool use a hardcoded tolerance instead of a pref?
-    this->tolerance = 4;
+    tolerance = 4;
 
-    this->shape_editor = new ShapeEditor(desktop);
+    shape_editor = new ShapeEditor(desktop);
 
-    SPItem *item = desktop->getSelection()->singleItem();
-    if (item) {
-        this->shape_editor->set_item(item);
+    if (auto item = desktop->getSelection()->singleItem()) {
+        shape_editor->set_item(item);
     }
 
-    this->sel_changed_connection.disconnect();
-    this->sel_changed_connection = desktop->getSelection()->connectChanged(
+    sel_changed_connection = desktop->getSelection()->connectChanged(
         sigc::mem_fun(*this, &FloodTool::selection_changed)
     );
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-
+    auto prefs = Preferences::get();
     if (prefs->getBool("/tools/paintbucket/selcue")) {
-        this->enableSelectionCue();
+        enableSelectionCue();
     }
 }
 
-FloodTool::~FloodTool() {
-    this->sel_changed_connection.disconnect();
+FloodTool::~FloodTool()
+{
+    sel_changed_connection.disconnect();
 
     delete shape_editor;
     shape_editor = nullptr;
 
-    /* fixme: This is necessary because we do not grab */
-    if (this->item) {
-        this->finishItem();
+    // Fixme: This is necessary because we do not grab.
+    if (item) {
+        finishItem();
     }
 }
 
@@ -140,31 +132,24 @@ FloodTool::~FloodTool() {
  * Callback that processes the "changed" signal on the selection;
  * destroys old and creates new knotholder.
  */
-void FloodTool::selection_changed(Inkscape::Selection* selection) {
-    this->shape_editor->unset_item();
-    this->shape_editor->set_item(selection->singleItem());
+void FloodTool::selection_changed(Selection *selection)
+{
+    shape_editor->unset_item();
+    shape_editor->set_item(selection->singleItem());
 }
 
-// Changes from 0.48 -> 0.49 (Cairo)
-// 0.49: Ignores alpha in background
-// 0.48: RGBA, 0.49 ARGB
-// 0.49: premultiplied alpha
-inline static guint32 compose_onto(guint32 px, guint32 bg)
+inline static uint32_t compose_onto(uint32_t px, uint32_t bg)
 {
-    guint ap = 0, rp = 0, gp = 0, bp = 0;
-    guint rb = 0, gb = 0, bb = 0;
+    uint32_t ap = 0, rp = 0, gp = 0, bp = 0;
+    uint32_t rb = 0, gb = 0, bb = 0;
     ExtractARGB32(px, ap, rp, gp, bp);
     ExtractRGB32(bg, rb, gb, bb);
 
-    // guint ao = 255*255 - (255-ap)*(255-bp);  ao = (ao + 127) / 255;
-    // guint ao = (255-ap)*ab + 255*ap;             ao = (ao + 127) / 255;
-    guint ao = 255; // Cairo version doesn't allow background to have alpha != 1.
-    guint ro = (255-ap)*rb + 255*rp;             ro = (ro + 127) / 255;
-    guint go = (255-ap)*gb + 255*gp;             go = (go + 127) / 255;
-    guint bo = (255-ap)*bb + 255*bp;             bo = (bo + 127) / 255;
+    uint32_t ro = (255 - ap) * rb + 255 * rp; ro = (ro + 127) / 255;
+    uint32_t go = (255 - ap) * gb + 255 * gp; go = (go + 127) / 255;
+    uint32_t bo = (255 - ap) * bb + 255 * bp; bo = (bo + 127) / 255;
 
-    guint pxout = AssembleARGB32(ao, ro, go, bo);
-    return pxout;
+    return AssembleARGB32(255, ro, go, bo);
 }
 
 /**
@@ -174,11 +159,13 @@ inline static guint32 compose_onto(guint32 px, guint32 bg)
  * @param y The Y coordinate.
  * @param stride The rowstride of the pixel buffer.
  */
-inline guint32 get_pixel(guchar *px, int x, int y, int stride) {
-    return *reinterpret_cast<guint32*>(px + y * stride + x * 4);
+inline uint32_t get_pixel(unsigned char *px, int x, int y, int stride)
+{
+    return *reinterpret_cast<uint32_t*>(px + y * stride + x * 4);
 }
 
-inline unsigned char * get_trace_pixel(guchar *trace_px, int x, int y, int width) {
+inline unsigned char *get_trace_pixel(unsigned char *trace_px, int x, int y, int width)
+{
     return trace_px + (x + y * width);
 }
 
@@ -191,10 +178,9 @@ inline unsigned char * get_trace_pixel(guchar *trace_px, int x, int y, int width
  *
  * \return true if |a-b| <= d; false otherwise
  */
-static bool compare_guint32(guint32 const a, guint32 const b, guint32 const d)
+static bool compare_uint32(uint32_t a, uint32_t b, uint32_t d)
 {
-    const int difference = std::abs(static_cast<int>(a) - static_cast<int>(b));
-    return difference <= d;
+    return std::abs(static_cast<int64_t>(a) - static_cast<int64_t>(b)) <= static_cast<int64_t>(d);
 }
 
 /**
@@ -206,20 +192,20 @@ static bool compare_guint32(guint32 const a, guint32 const b, guint32 const d)
  * @param threshold The fill threshold.
  * @param method The fill method to use as defined in PaintBucketChannels.
  */
-static bool compare_pixels(guint32 check, guint32 orig, guint32 merged_orig_pixel, guint32 dtc, int threshold, PaintBucketChannels method)
+static bool compare_pixels(uint32_t check, uint32_t orig, uint32_t merged_orig_pixel, uint32_t dtc, int threshold, PaintBucketChannels method)
 {
     float hsl_check[3] = {0,0,0}, hsl_orig[3] = {0,0,0};
 
-    guint32 ac = 0, rc = 0, gc = 0, bc = 0;
+    uint32_t ac = 0, rc = 0, gc = 0, bc = 0;
     ExtractARGB32(check, ac, rc, gc, bc);
 
-    guint32 ao = 0, ro = 0, go = 0, bo = 0;
+    uint32_t ao = 0, ro = 0, go = 0, bo = 0;
     ExtractARGB32(orig, ao, ro, go, bo);
 
-    guint32 ad = 0, rd = 0, gd = 0, bd = 0;
+    uint32_t ad = 0, rd = 0, gd = 0, bd = 0;
     ExtractARGB32(dtc, ad, rd, gd, bd);
 
-    guint32 amop = 0, rmop = 0, gmop = 0, bmop = 0;
+    uint32_t amop = 0, rmop = 0, gmop = 0, bmop = 0;
     ExtractARGB32(merged_orig_pixel, amop, rmop, gmop, bmop);
 
     if ((method == FLOOD_CHANNELS_H) ||
@@ -233,22 +219,22 @@ static bool compare_pixels(guint32 check, guint32 orig, guint32 merged_orig_pixe
     
     switch (method) {
         case FLOOD_CHANNELS_ALPHA:
-            return compare_guint32(ac, ao, threshold);
+            return compare_uint32(ac, ao, threshold);
         case FLOOD_CHANNELS_R:
-            return compare_guint32(ac ? unpremul_alpha(rc, ac) : 0,
+            return compare_uint32(ac ? unpremul_alpha(rc, ac) : 0,
                                    ao ? unpremul_alpha(ro, ao) : 0,
                                    threshold);
         case FLOOD_CHANNELS_G:
-            return compare_guint32(ac ? unpremul_alpha(gc, ac) : 0,
+            return compare_uint32(ac ? unpremul_alpha(gc, ac) : 0,
                                    ao ? unpremul_alpha(go, ao) : 0,
                                    threshold);
         case FLOOD_CHANNELS_B:
-            return compare_guint32(ac ? unpremul_alpha(bc, ac) : 0,
+            return compare_uint32(ac ? unpremul_alpha(bc, ac) : 0,
                                    ao ? unpremul_alpha(bo, ao) : 0,
                                    threshold);
         case FLOOD_CHANNELS_RGB:
             {
-                guint32 amc, rmc, bmc, gmc;
+                uint32_t amc, rmc, bmc, gmc;
                 //amc = 255*255 - (255-ac)*(255-ad); amc = (amc + 127) / 255;
                 //amc = (255-ac)*ad + 255*ac; amc = (amc + 127) / 255;
                 amc = 255; // Why are we looking at desktop? Cairo version ignores destop alpha
@@ -273,13 +259,11 @@ static bool compare_pixels(guint32 check, guint32 orig, guint32 merged_orig_pixe
     return false;
 }
 
-enum {
-  PIXEL_CHECKED = 1,
-  PIXEL_QUEUED  = 2,
-  PIXEL_PAINTABLE = 4,
-  PIXEL_NOT_PAINTABLE = 8,
-  PIXEL_COLORED = 16
-};
+static constexpr unsigned char PIXEL_CHECKED = 1;
+static constexpr unsigned char PIXEL_QUEUED  = 2;
+static constexpr unsigned char PIXEL_PAINTABLE = 4;
+static constexpr unsigned char PIXEL_NOT_PAINTABLE = 8;
+static constexpr unsigned char PIXEL_COLORED = 16;
 
 static inline bool is_pixel_checked(unsigned char *t) { return (*t & PIXEL_CHECKED) == PIXEL_CHECKED; }
 static inline bool is_pixel_queued(unsigned char *t) { return (*t & PIXEL_QUEUED) == PIXEL_QUEUED; }
@@ -297,7 +281,8 @@ static inline void mark_pixel_colored(unsigned char *t) { *t |= PIXEL_COLORED; }
 
 static inline void clear_pixel_paintability(unsigned char *t) { *t ^= PIXEL_PAINTABLE; *t ^= PIXEL_NOT_PAINTABLE; }
 
-struct bitmap_coords_info {
+struct BitmapCoordsInfo
+{
     bool is_left;
     unsigned int x;
     unsigned int y;
@@ -308,8 +293,8 @@ struct bitmap_coords_info {
     unsigned int threshold;
     unsigned int radius;
     PaintBucketChannels method;
-    guint32 dtc;
-    guint32 merged_orig_pixel;
+    uint32_t dtc;
+    uint32_t merged_orig_pixel;
     Geom::Rect bbox;
     Geom::Rect screen;
     unsigned int max_queue_size;
@@ -325,11 +310,12 @@ struct bitmap_coords_info {
  * @param orig_color The original selected pixel to use as the fill target color.
  * @param bci The bitmap_coords_info structure.
  */
-inline static bool check_if_pixel_is_paintable(guchar *px, unsigned char *trace_t, int x, int y, guint32 orig_color, bitmap_coords_info bci) {
+inline static bool check_if_pixel_is_paintable(unsigned char *px, unsigned char *trace_t, int x, int y, uint32_t orig_color, BitmapCoordsInfo const &bci)
+{
     if (is_pixel_paintability_checked(trace_t)) {
         return is_pixel_paintable(trace_t);
     } else {
-        guint32 pixel = get_pixel(px, x, y, bci.stride);
+        uint32_t pixel = get_pixel(px, x, y, bci.stride);
         if (compare_pixels(pixel, orig_color, bci.merged_orig_pixel, bci.dtc, bci.threshold, bci.method)) {
             mark_pixel_paintable(trace_t);
             return true;
@@ -347,7 +333,7 @@ inline static bool check_if_pixel_is_paintable(guchar *px, unsigned char *trace_
  * @param transform The transform to apply to the final SVG path.
  * @param union_with_selection If true, merge the final SVG path with the current selection.
  */
-static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *desktop, Geom::Affine transform, unsigned int min_x, unsigned int max_x, unsigned int min_y, unsigned int max_y, bool union_with_selection)
+static void do_trace(BitmapCoordsInfo const &bci, unsigned char *trace_px, SPDesktop *desktop, Geom::Affine const &transform, unsigned min_x, unsigned max_x, unsigned min_y, unsigned max_y, bool union_with_selection)
 {
     SPDocument *document = desktop->getDocument();
 
@@ -383,51 +369,34 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
         /* Set style */
         sp_desktop_apply_style_tool (desktop, pathRepr, "/tools/paintbucket", false);
 
-        Path *path = new Path;
-        path->LoadPathVector(result.path);
+        Path path;
+        path.LoadPathVector(result.path);
 
         if (offset != 0) {
-        
-            Shape *path_shape = new Shape();
-        
-            path->ConvertWithBackData(0.03);
-            path->Fill(path_shape, 0);
-            delete path;
-        
-            Shape *expanded_path_shape = new Shape();
-        
-            expanded_path_shape->ConvertToShape(path_shape, fill_nonZero);
-            path_shape->MakeOffset(expanded_path_shape, offset * desktop->current_zoom(), join_round, 4);
-            expanded_path_shape->ConvertToShape(path_shape, fill_positive);
+            Shape path_shape;
+            path.ConvertWithBackData(0.03);
+            path.Fill(&path_shape, 0);
 
-            Path *expanded_path = new Path();
+            Shape expanded_path_shape;
+            expanded_path_shape.ConvertToShape(&path_shape, fill_nonZero);
+            path_shape.MakeOffset(&expanded_path_shape, offset * desktop->current_zoom(), join_round, 4);
+            expanded_path_shape.ConvertToShape(&path_shape, fill_positive);
+
+            Path expanded_path;
+            expanded_path_shape.ConvertToForme(&expanded_path);
+            expanded_path.ConvertEvenLines(1.0);
+            expanded_path.Simplify(1.0);
         
-            expanded_path->Reset();
-            expanded_path_shape->ConvertToForme(expanded_path);
-            expanded_path->ConvertEvenLines(1.0);
-            expanded_path->Simplify(1.0);
-        
-            delete path_shape;
-            delete expanded_path_shape;
-        
-            gchar *str = expanded_path->svg_dump_path();
-            if (str && *str) {
-                pathRepr->setAttribute("d", str);
-                g_free(str);
+            auto str = expanded_path.svg_dump_path();
+            if (!str.empty()) {
+                pathRepr->setAttribute("d", str.c_str());
             } else {
                 desktop->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("<b>Too much inset</b>, the result is empty."));
                 Inkscape::GC::release(pathRepr);
-                g_free(str);
                 return;
             }
-
-            delete expanded_path;
-
         } else {
-            gchar *str = path->svg_dump_path();
-            delete path;
-            pathRepr->setAttribute("d", str);
-            g_free(str);
+            pathRepr->setAttribute("d", path.svg_dump_path().c_str());
         }
 
         auto layer = desktop->layerManager().currentLayer();
@@ -476,10 +445,11 @@ static void do_trace(bitmap_coords_info bci, guchar *trace_px, SPDesktop *deskto
 /**
  * The possible return states of perform_bitmap_scanline_check().
  */
-enum ScanlineCheckResult {
-    SCANLINE_CHECK_OK,
-    SCANLINE_CHECK_ABORTED,
-    SCANLINE_CHECK_BOUNDARY
+enum class ScanlineCheckResult
+{
+    OK,
+    ABORTED,
+    BOUNDARY
 };
 
 /**
@@ -488,16 +458,16 @@ enum ScanlineCheckResult {
  * @param y The Y coordinate.
  * @param bci The bitmap_coords_info structure.
  */
-inline static bool coords_in_range(unsigned int x, unsigned int y, bitmap_coords_info bci) {
-    return (x < bci.width) &&
-           (y < bci.height);
+inline static bool coords_in_range(unsigned x, unsigned y, BitmapCoordsInfo const &bci)
+{
+    return x < bci.width && y < bci.height;
 }
 
-#define PAINT_DIRECTION_LEFT 1
-#define PAINT_DIRECTION_RIGHT 2
-#define PAINT_DIRECTION_UP 4
-#define PAINT_DIRECTION_DOWN 8
-#define PAINT_DIRECTION_ALL 15
+static constexpr int PAINT_DIRECTION_LEFT = 1;
+static constexpr int PAINT_DIRECTION_RIGHT = 2;
+static constexpr int PAINT_DIRECTION_UP = 4;
+static constexpr int PAINT_DIRECTION_DOWN = 8;
+static constexpr int PAINT_DIRECTION_ALL = 15;
 
 /**
  * Paint a pixel or a square (if autogap is enabled) on the trace pixel buffer.
@@ -507,7 +477,8 @@ inline static bool coords_in_range(unsigned int x, unsigned int y, bitmap_coords
  * @param bci The bitmap_coords_info structure.
  * @param original_point_trace_t The original pixel in the trace pixel buffer to check.
  */
-inline static unsigned int paint_pixel(guchar *px, guchar *trace_px, guint32 orig_color, bitmap_coords_info bci, unsigned char *original_point_trace_t) {
+inline static unsigned paint_pixel(unsigned char *px, unsigned char *trace_px, uint32_t orig_color, BitmapCoordsInfo const &bci, unsigned char *original_point_trace_t)
+{
     if (bci.radius == 0) {
         mark_pixel_colored(original_point_trace_t); 
         return PAINT_DIRECTION_ALL;
@@ -555,12 +526,11 @@ inline static unsigned int paint_pixel(guchar *px, guchar *trace_px, guint32 ori
  * @param x The X coordinate.
  * @param y The Y coordinate.
  */
-static void push_point_onto_queue(std::deque<Geom::Point> *fill_queue, unsigned int max_queue_size, unsigned char *trace_t, unsigned int x, unsigned int y) {
-    if (!is_pixel_queued(trace_t)) {
-        if ((fill_queue->size() < max_queue_size)) {
-            fill_queue->push_back(Geom::Point(x, y));
-            mark_pixel_queued(trace_t);
-        }
+static void push_point_onto_queue(std::deque<Geom::Point> &fill_queue, unsigned max_queue_size, unsigned char *trace_t, unsigned x, unsigned y)
+{
+    if (!is_pixel_queued(trace_t) && fill_queue.size() < max_queue_size) {
+        fill_queue.emplace_back(x, y);
+        mark_pixel_queued(trace_t);
     }
 }
 
@@ -572,12 +542,11 @@ static void push_point_onto_queue(std::deque<Geom::Point> *fill_queue, unsigned 
  * @param x The X coordinate.
  * @param y The Y coordinate.
  */
-static void shift_point_onto_queue(std::deque<Geom::Point> *fill_queue, unsigned int max_queue_size, unsigned char *trace_t, unsigned int x, unsigned int y) {
-    if (!is_pixel_queued(trace_t)) {
-        if ((fill_queue->size() < max_queue_size)) {
-            fill_queue->push_front(Geom::Point(x, y));
-            mark_pixel_queued(trace_t);
-        }
+static void shift_point_onto_queue(std::deque<Geom::Point> &fill_queue, unsigned max_queue_size, unsigned char *trace_t, unsigned x, unsigned y)
+{
+    if (!is_pixel_queued(trace_t) && fill_queue.size() < max_queue_size) {
+        fill_queue.emplace_front(x, y);
+        mark_pixel_queued(trace_t);
     }
 }
 
@@ -589,7 +558,8 @@ static void shift_point_onto_queue(std::deque<Geom::Point> *fill_queue, unsigned
  * @param orig_color The original selected pixel to use as the fill target color.
  * @param bci The bitmap_coords_info structure.
  */
-static ScanlineCheckResult perform_bitmap_scanline_check(std::deque<Geom::Point> *fill_queue, guchar *px, guchar *trace_px, guint32 orig_color, bitmap_coords_info bci, unsigned int *min_x, unsigned int *max_x) {
+static ScanlineCheckResult perform_bitmap_scanline_check(std::deque<Geom::Point> &fill_queue, unsigned char *px, unsigned char *trace_px, uint32_t orig_color, BitmapCoordsInfo bci, unsigned *min_x, unsigned *max_x)
+{
     bool aborted = false;
     bool reached_screen_boundary = false;
     bool ok;
@@ -609,29 +579,27 @@ static ScanlineCheckResult perform_bitmap_scanline_check(std::deque<Geom::Point>
     bool can_paint_top = (top_ty > 0);
     bool can_paint_bottom = (bottom_ty < bci.height);
 
-    Geom::Point front_of_queue = fill_queue->empty() ? Geom::Point() : fill_queue->front();
+    Geom::Point front_of_queue = fill_queue.empty() ? Geom::Point() : fill_queue.front();
 
     do {
         ok = false;
         if (bci.is_left) {
-            keep_tracing = (bci.x != 0);
+            keep_tracing = bci.x != 0;
         } else {
-            keep_tracing = (bci.x < bci.width);
+            keep_tracing = bci.x < bci.width;
         }
 
-        *min_x = MIN(*min_x, bci.x);
-        *max_x = MAX(*max_x, bci.x);
+        *min_x = std::min(*min_x, bci.x);
+        *max_x = std::max(*max_x, bci.x);
 
         if (keep_tracing) {
             if (check_if_pixel_is_paintable(px, current_trace_t, bci.x, bci.y, orig_color, bci)) {
                 paint_directions = paint_pixel(px, trace_px, orig_color, bci, current_trace_t);
                 if (bci.radius == 0) {
                     mark_pixel_checked(current_trace_t);
-                    if ((!fill_queue->empty()) &&
-                        (front_of_queue[Geom::X] == bci.x) &&
-                        (front_of_queue[Geom::Y] == bci.y)) {
-                        fill_queue->pop_front();
-                        front_of_queue = fill_queue->empty() ? Geom::Point() : fill_queue->front();
+                    if (!fill_queue.empty() && front_of_queue == Geom::IntPoint(bci.x, bci.y)) {
+                        fill_queue.pop_front();
+                        front_of_queue = fill_queue.empty() ? Geom::Point() : fill_queue.front();
                     }
                 }
 
@@ -696,42 +664,42 @@ static ScanlineCheckResult perform_bitmap_scanline_check(std::deque<Geom::Point>
         }
     } while (ok);
 
-    if (aborted) { return SCANLINE_CHECK_ABORTED; }
-    if (reached_screen_boundary) { return SCANLINE_CHECK_BOUNDARY; }
-    return SCANLINE_CHECK_OK;
+    if (aborted) { return ScanlineCheckResult::ABORTED; }
+    if (reached_screen_boundary) { return ScanlineCheckResult::BOUNDARY; }
+    return ScanlineCheckResult::OK;
 }
 
 /**
  * Sort the rendered pixel buffer check queue vertically.
  */
-static bool sort_fill_queue_vertical(Geom::Point a, Geom::Point b) {
-    return a[Geom::Y] > b[Geom::Y];
+static bool sort_fill_queue_vertical(Geom::Point const &a, Geom::Point const &b)
+{
+    return a.y() > b.y();
 }
 
 /**
  * Sort the rendered pixel buffer check queue horizontally.
  */
-static bool sort_fill_queue_horizontal(Geom::Point a, Geom::Point b) {
-    return a[Geom::X] > b[Geom::X];
+static bool sort_fill_queue_horizontal(Geom::Point const &a, Geom::Point const &b)
+{
+    return a.x() > b.x();
 }
 
 /**
  * Perform a flood fill operation.
  * @param desktop The desktop of this tool's event context.
- * @param event The details of this event.
+ * @param cursor_pos The location of the mouse cursor.
  * @param union_with_selection If true, union the new fill with the current selection.
  * @param is_point_fill If false, use the Rubberband "touch selection" to get the initial points for the fill.
  * @param is_touch_fill If true, use only the initial contact point in the Rubberband "touch selection" as the fill target color.
  */
-static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
-                                   bool union_with_selection, bool is_point_fill, bool is_touch_fill) {
-
-    SPDocument *document = desktop->getDocument();
-
+static void sp_flood_do_flood_fill(SPDesktop *desktop, Geom::Point const &cursor_pos,
+                                   bool union_with_selection, bool is_point_fill, bool is_touch_fill)
+{
+    auto const document = desktop->getDocument();
     document->ensureUpToDate();
     
-    Geom::OptRect bbox = document->getRoot()->visualBounds();
-
+    auto const bbox = document->getRoot()->visualBounds();
     if (!bbox) {
         desktop->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("<b>Area is not bounded</b>, cannot fill."));
         return;
@@ -739,7 +707,7 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
     
     // Render 160% of the physical display to the render pixel buffer, so that available
     // fill areas off the screen can be included in the fill.
-    double padding = 1.6;
+    constexpr double padding = 1.6;
 
     // image space is world space with an offset
     Geom::Rect const screen_world = desktop->getCanvas()->get_area_world();
@@ -751,25 +719,24 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
     auto const width = img_dims.x();
     auto const height = img_dims.y();
 
-    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-    guchar *px = g_new(guchar, stride * height);
-    guint32 bgcolor, dtc;
+    auto const stride = Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_ARGB32, width);
+    auto const px = std::make_unique<unsigned char[]>(stride * height); // C++20: make_unique_for_overwrite
+    uint32_t bgcolor, dtc;
 
     // Draw image into data block px
     { // this block limits the lifetime of Drawing and DrawingContext
-        /* Create DrawingItems and set transform */
+        // Create DrawingItems and set transform.
+        Drawing drawing;
         unsigned dkey = SPItem::display_key_new(1);
-        Inkscape::Drawing drawing;
-        Inkscape::DrawingItem *root = document->getRoot()->invoke_show( drawing, dkey, SP_ITEM_SHOW_DISPLAY);
+        auto root = document->getRoot()->invoke_show(drawing, dkey, SP_ITEM_SHOW_DISPLAY);
         root->setTransform(doc2img);
         drawing.setRoot(root);
 
-        Geom::IntRect final_bbox = Geom::IntRect::from_xywh(0, 0, width, height);
+        auto const final_bbox = Geom::IntRect::from_xywh(0, 0, width, height);
         drawing.update(final_bbox);
 
-        cairo_surface_t *s = cairo_image_surface_create_for_data(
-            px, CAIRO_FORMAT_ARGB32, width, height, stride);
-        Inkscape::DrawingContext dc(s, Geom::Point(0,0));
+        auto surf = Cairo::ImageSurface::create(px.get(), Cairo::FORMAT_ARGB32, width, height, stride);
+        auto dc = DrawingContext(surf->cobj(), Geom::Point());
         // cairo_translate not necessary here - surface origin is at 0,0
 
         bgcolor = document->getPageManager().background_color;
@@ -784,39 +751,34 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
 
         drawing.render(dc, final_bbox);
 
-        //cairo_surface_write_to_png( s, "cairo.png" );
+        if constexpr (false) surf->write_to_png("cairo.png");
 
-        cairo_surface_flush(s);
-        cairo_surface_destroy(s);
+        surf->flush();
         
         // Hide items
         document->getRoot()->invoke_hide(dkey);
     }
 
-    // {
-    //     // Dump data to png
-    //     cairo_surface_t *s = cairo_image_surface_create_for_data(
-    //         px, CAIRO_FORMAT_ARGB32, width, height, stride);
-    //     cairo_surface_write_to_png( s, "cairo2.png" );
-    //     std::cout << "  Wrote cairo2.png" << std::endl;
-    // }
+    if constexpr (false) {
+        // Dump data to png
+        auto surf = Cairo::ImageSurface::create(px.get(), Cairo::FORMAT_ARGB32, width, height, stride);
+        surf->write_to_png("cairo2.png");
+        std::cout << "  Wrote cairo2.png" << std::endl;
+    }
 
-    guchar *trace_px = g_new(guchar, width * height);
-    memset(trace_px, 0x00, width * height);
+    auto const trace_px = std::make_unique<unsigned char[]>(width * height);
     
     std::deque<Geom::Point> fill_queue;
     std::queue<Geom::Point> color_queue;
     
-    std::vector<Geom::Point> fill_points;
-    
     bool aborted = false;
     int y_limit = height - 1;
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    PaintBucketChannels method = (PaintBucketChannels) prefs->getInt("/tools/paintbucket/channels", 0);
+    auto prefs = Preferences::get();
+    auto const method = static_cast<PaintBucketChannels>(prefs->getInt("/tools/paintbucket/channels", 0));
     int threshold = prefs->getIntLimited("/tools/paintbucket/threshold", 1, 0, 100);
 
-    switch(method) {
+    switch (method) {
         case FLOOD_CHANNELS_ALPHA:
         case FLOOD_CHANNELS_RGB:
         case FLOOD_CHANNELS_R:
@@ -824,13 +786,11 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
         case FLOOD_CHANNELS_B:
             threshold = (255 * threshold) / 100;
             break;
-        case FLOOD_CHANNELS_H:
-        case FLOOD_CHANNELS_S:
-        case FLOOD_CHANNELS_L:
+        default:
             break;
     }
 
-    bitmap_coords_info bci;
+    BitmapCoordsInfo bci;
     
     bci.y_limit = y_limit;
     bci.width = width;
@@ -845,29 +805,28 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
     bci.max_queue_size = (width * height) / 4;
     bci.current_step = 0;
 
-    if (is_point_fill) {
-        fill_points.emplace_back(event->button.x, event->button.y);
-    } else {
-        Inkscape::Rubberband *r = Inkscape::Rubberband::get(desktop);
-        fill_points = r->getPoints();
-    }
+    auto const fill_points = [&] () -> std::vector<Geom::Point> {
+        if (is_point_fill) {
+            return { cursor_pos };
+        } else {
+            return Rubberband::get(desktop)->getPoints();
+        }
+    }();
 
     auto const img_max_indices = Geom::Rect::from_xywh(0, 0, width - 1, height - 1);
 
-    for (unsigned int i = 0; i < fill_points.size(); i++) {
-        Geom::Point pw = fill_points[i] * world2img;
-
-        pw = img_max_indices.clamp(pw);
+    for (unsigned i = 0; i < fill_points.size(); i++) {
+        auto const pw = img_max_indices.clamp(fill_points[i] * world2img);
 
         if (is_touch_fill) {
             if (i == 0) {
-                color_queue.push(pw);
+                color_queue.emplace(pw);
             } else {
-                unsigned char *trace_t = get_trace_pixel(trace_px, (int)pw[Geom::X], (int)pw[Geom::Y], width);
-                push_point_onto_queue(&fill_queue, bci.max_queue_size, trace_t, (int)pw[Geom::X], (int)pw[Geom::Y]);
+                auto trace_t = get_trace_pixel(trace_px.get(), (int)pw.x(), (int)pw.y(), width);
+                push_point_onto_queue(fill_queue, bci.max_queue_size, trace_t, (int)pw.x(), (int)pw.y());
             }
         } else {
-            color_queue.push(pw);
+            color_queue.emplace(pw);
         }
     }
 
@@ -875,7 +834,7 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
 
     bool first_run = true;
 
-    unsigned long sort_size_threshold = 5;
+    size_t sort_size_threshold = 5;
 
     unsigned int min_y = height;
     unsigned int max_y = 0;
@@ -889,17 +848,17 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
         int cx = (int)color_point[Geom::X];
         int cy = (int)color_point[Geom::Y];
 
-        guint32 orig_color = get_pixel(px, cx, cy, stride);
+        uint32_t orig_color = get_pixel(px.get(), cx, cy, stride);
         bci.merged_orig_pixel = compose_onto(orig_color, dtc);
 
-        unsigned char *trace_t = get_trace_pixel(trace_px, cx, cy, width);
+        unsigned char *trace_t = get_trace_pixel(trace_px.get(), cx, cy, width);
         if (!is_pixel_checked(trace_t) && !is_pixel_colored(trace_t)) {
-            if (check_if_pixel_is_paintable(px, trace_px, cx, cy, orig_color, bci)) {
-                shift_point_onto_queue(&fill_queue, bci.max_queue_size, trace_t, cx, cy);
+            if (check_if_pixel_is_paintable(px.get(), trace_px.get(), cx, cy, orig_color, bci)) {
+                shift_point_onto_queue(fill_queue, bci.max_queue_size, trace_t, cx, cy);
 
                 if (!first_run) {
                     for (unsigned int y = 0; y < height; y++) {
-                        trace_t = get_trace_pixel(trace_px, 0, y, width);
+                        trace_t = get_trace_pixel(trace_px.get(), 0, y, width);
                         for (unsigned int x = 0; x < width; x++) {
                             clear_pixel_paintability(trace_t);
                             trace_t++;
@@ -916,7 +875,7 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
             Geom::Point cp = fill_queue.front();
 
             if (bci.radius == 0) {
-                unsigned long new_fill_queue_size = fill_queue.size();
+                auto const new_fill_queue_size = fill_queue.size();
 
                 /*
                  * To reduce the number of points in the fill queue, periodically
@@ -930,12 +889,12 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
                     if (new_fill_queue_size > old_fill_queue_size) {
                         std::sort(fill_queue.begin(), fill_queue.end(), sort_fill_queue_vertical);
 
-                        std::deque<Geom::Point>::iterator start_sort = fill_queue.begin();
-                        std::deque<Geom::Point>::iterator end_sort = fill_queue.begin();
+                        auto start_sort = fill_queue.begin();
+                        auto end_sort = fill_queue.begin();
                         unsigned int sort_y = (unsigned int)cp[Geom::Y];
                         unsigned int current_y;
                         
-                        for (std::deque<Geom::Point>::iterator i = fill_queue.begin(); i != fill_queue.end(); ++i) {
+                        for (auto i = fill_queue.begin(); i != fill_queue.end(); ++i) {
                             Geom::Point current = *i;
                             current_y = (unsigned int)current[Geom::Y];
                             if (current_y != sort_y) {
@@ -966,7 +925,7 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
             min_y = MIN((unsigned int)y, min_y);
             max_y = MAX((unsigned int)y, max_y);
 
-            unsigned char *trace_t = get_trace_pixel(trace_px, x, y, width);
+            unsigned char *trace_t = get_trace_pixel(trace_px.get(), x, y, width);
             if (!is_pixel_checked(trace_t)) {
                 mark_pixel_checked(trace_t);
 
@@ -990,13 +949,13 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
                 bci.x = x;
                 bci.y = y;
 
-                ScanlineCheckResult result = perform_bitmap_scanline_check(&fill_queue, px, trace_px, orig_color, bci, &min_x, &max_x);
+                ScanlineCheckResult result = perform_bitmap_scanline_check(fill_queue, px.get(), trace_px.get(), orig_color, bci, &min_x, &max_x);
 
                 switch (result) {
-                    case SCANLINE_CHECK_ABORTED:
+                    case ScanlineCheckResult::ABORTED:
                         aborted = true;
                         break;
-                    case SCANLINE_CHECK_BOUNDARY:
+                    case ScanlineCheckResult::BOUNDARY:
                         reached_screen_boundary = true;
                         break;
                     default:
@@ -1010,13 +969,13 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
                         bci.is_left = false;
                         bci.x = x + 1;
 
-                        result = perform_bitmap_scanline_check(&fill_queue, px, trace_px, orig_color, bci, &min_x, &max_x);
+                        result = perform_bitmap_scanline_check(fill_queue, px.get(), trace_px.get(), orig_color, bci, &min_x, &max_x);
 
                         switch (result) {
-                            case SCANLINE_CHECK_ABORTED:
+                            case ScanlineCheckResult::ABORTED:
                                 aborted = true;
                                 break;
-                            case SCANLINE_CHECK_BOUNDARY:
+                            case ScanlineCheckResult::BOUNDARY:
                                 reached_screen_boundary = true;
                                 break;
                             default:
@@ -1034,10 +993,7 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
         }
     }
     
-    g_free(px);
-    
     if (aborted) {
-        g_free(trace_px);
         desktop->messageStack()->flash(Inkscape::WARNING_MESSAGE, _("<b>Area is not bounded</b>, cannot fill."));
         return;
     }
@@ -1054,104 +1010,87 @@ static void sp_flood_do_flood_fill(SPDesktop *desktop, GdkEvent *event,
 
     Geom::Affine inverted_affine = Geom::Translate(min_x, min_y) * doc2img.inverse();
     
-    do_trace(bci, trace_px, desktop, inverted_affine, min_x, max_x, min_y, max_y, union_with_selection);
-
-    g_free(trace_px);
+    do_trace(bci, trace_px.get(), desktop, inverted_affine, min_x, max_x, min_y, max_y, union_with_selection);
     
     DocumentUndo::done(document, _("Fill bounded area"), INKSCAPE_ICON("color-fill"));
 }
 
-bool FloodTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+bool FloodTool::item_handler(SPItem *item, CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
+    bool ret = false;
 
-    switch (event->type) {
-    case GDK_BUTTON_PRESS:
-        if ((event->button.state & GDK_CONTROL_MASK) && event->button.button == 1) {
-            Geom::Point const button_w(event->button.x, event->button.y);
+    inspect_event(event,
+    [&] (ButtonPressEvent const &event) {
+        if (event.numPress() == 1 && event.button() == 1 && event.modifiers() & GDK_CONTROL_MASK) {
+            auto const button_w = event.eventPos();
 
-            SPItem *item = sp_event_context_find_item(_desktop, button_w, TRUE, TRUE);
+            auto item = sp_event_context_find_item(_desktop, button_w, true, true);
 
             // Set style
             _desktop->applyCurrentOrToolStyle(item, "/tools/paintbucket", false);
 
             DocumentUndo::done(_desktop->getDocument(), _("Set style on object"), INKSCAPE_ICON("color-fill"));
-            // Dead assignment: Value stored to 'ret' is never read
-            //ret = TRUE;
+            ret = true;
         }
-        break;
+    },
+    [&] (CanvasEvent const &event) {}
+    );
 
-    default:
-        break;
-    }
-
-    return ToolBase::item_handler(item, canvas_event);
+    return ret || ToolBase::item_handler(item, event);
 }
 
-bool FloodTool::root_handler(CanvasEvent const &canvas_event)
+bool FloodTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    static bool dragging;
-    
-    gint ret = FALSE;
+    bool ret = false;
 
-    switch (event->type) {
-    case GDK_BUTTON_PRESS:
-        if (event->button.button == 1) {
-            if (!(event->button.state & GDK_CONTROL_MASK)) {
-                Geom::Point const button_w(event->button.x, event->button.y);
+    inspect_event(event,
+    [&] (ButtonPressEvent const &event) {
+        if (event.numPress() == 1 && event.button() == 1 && !(event.modifiers() & GDK_CONTROL_MASK)) {
+            if (have_viable_layer(_desktop, defaultMessageContext())) {
+                // save drag origin
+                saveDragOrigin(event.eventPos());
 
-                if (Inkscape::have_viable_layer(_desktop, this->defaultMessageContext())) {
-                    // save drag origin
-                    xyp = button_w.floor();
-                    within_tolerance = true;
-                      
-                    dragging = true;
+                dragging = true;
 
-                    Geom::Point const p(_desktop->w2d(button_w));
-                    Inkscape::Rubberband::get(_desktop)->setMode(RUBBERBAND_MODE_TOUCHPATH);
-                    Inkscape::Rubberband::get(_desktop)->start(_desktop, p);
-                }
+                auto const p = _desktop->w2d(event.eventPos());
+                Rubberband::get(_desktop)->setMode(RUBBERBAND_MODE_TOUCHPATH);
+                Rubberband::get(_desktop)->start(_desktop, p);
             }
         }
+    },
 
-    case GDK_MOTION_NOTIFY:
-        if ( dragging && ( event->motion.state & GDK_BUTTON1_MASK )) {
-            if ( within_tolerance
-                && ( abs( (gint) event->motion.x - xyp.x() ) < this->tolerance )
-                && ( abs( (gint) event->motion.y - xyp.y() ) < this->tolerance ) ) {
-                break; // do not drag if we're within tolerance from origin
+    [&] (MotionEvent const &event) {
+        if (dragging && event.modifiers() & GDK_BUTTON1_MASK) {
+            if (!checkDragMoved(event.eventPos())) {
+                return;
             }
             
-            this->within_tolerance = false;
-            
-            Geom::Point const motion_pt(event->motion.x, event->motion.y);
-            Geom::Point const p(_desktop->w2d(motion_pt));
+            auto const p = _desktop->w2d(event.eventPos());
 
-            if (Inkscape::Rubberband::get(_desktop)->is_started()) {
-                Inkscape::Rubberband::get(_desktop)->move(p);
-                this->defaultMessageContext()->set(Inkscape::NORMAL_MESSAGE, _("<b>Draw over</b> areas to add to fill, hold <b>Alt</b> for touch fill"));
+            if (Rubberband::get(_desktop)->is_started()) {
+                Rubberband::get(_desktop)->move(p);
+                defaultMessageContext()->set(NORMAL_MESSAGE, _("<b>Draw over</b> areas to add to fill, hold <b>Alt</b> for touch fill"));
                 gobble_motion_events(GDK_BUTTON1_MASK);
             }
         }
-        break;
+    },
 
-    case GDK_BUTTON_RELEASE:
-        if (event->button.button == 1) {
-            Inkscape::Rubberband *r = Inkscape::Rubberband::get(_desktop);
+    [&] (ButtonReleaseEvent const &event) {
+        if (event.button() == 1) {
+            auto r = Rubberband::get(_desktop);
 
             if (r->is_started()) {
                 dragging = false;
-                bool is_point_fill = this->within_tolerance;
-                bool is_touch_fill = event->button.state & GDK_MOD1_MASK;
+                bool is_point_fill = within_tolerance;
+                bool is_touch_fill = event.modifiers() & GDK_MOD1_MASK;
 
                 // It's possible for the user to sneakily change the tool while the
                 // Gtk main loop has control, so we save the current desktop address:
                 SPDesktop* current_desktop = _desktop;
 
                 current_desktop->setWaitingCursor();
-                sp_flood_do_flood_fill(current_desktop, event,
-                                       event->button.state & GDK_SHIFT_MASK,
+                sp_flood_do_flood_fill(current_desktop, event.eventPos(),
+                                       event.modifiers() & GDK_SHIFT_MASK,
                                        is_point_fill, is_touch_fill);
                 current_desktop->clearWaitingCursor();
                 r->stop();
@@ -1166,54 +1105,51 @@ bool FloodTool::root_handler(CanvasEvent const &canvas_event)
                 ret = true;
             }
         }
-        break;
-    case GDK_KEY_PRESS:
-        switch (get_latin_keyval (&event->key)) {
+    },
+
+    [&] (KeyPressEvent const &event) {
+        switch (get_latin_keyval(event.original())) {
         case GDK_KEY_Up:
         case GDK_KEY_Down:
         case GDK_KEY_KP_Up:
         case GDK_KEY_KP_Down:
-            // prevent the zoom field from activation
-            if (!MOD__CTRL_ONLY(event))
-                ret = TRUE;
+            // prevent the zoom field from activating
+            if (!MOD__CTRL_ONLY(event)) {
+                ret = true;
+            }
             break;
         default:
             break;
         }
-        break;
+    },
 
-    default:
-        break;
-    }
+    [&] (CanvasEvent const &event) {}
+    );
 
-    if (!ret) {
-        ret = ToolBase::root_handler(canvas_event);
-    }
-
-    return ret;
+    return ret || ToolBase::root_handler(event);
 }
 
-void FloodTool::finishItem() {
-    this->message_context->clear();
+void FloodTool::finishItem()
+{
+    message_context->clear();
 
-    if (this->item != nullptr) {
-        this->item->updateRepr();
+    if (item) {
+        item->updateRepr();
 
-        _desktop->getSelection()->set(this->item);
+        _desktop->getSelection()->set(item);
         DocumentUndo::done(_desktop->getDocument(), _("Fill bounded area"), INKSCAPE_ICON("color-fill"));
 
-        this->item = nullptr;
+        item = nullptr;
     }
 }
 
-void FloodTool::set_channels(gint channels) {
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+void FloodTool::set_channels(int channels)
+{
+    auto prefs = Preferences::get();
     prefs->setInt("/tools/paintbucket/channels", channels);
 }
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
 /*
   Local Variables:
