@@ -23,9 +23,6 @@
 
 class SPShape;
 
-#define DDC_MIN_PRESSURE      0.0
-#define DDC_MAX_PRESSURE      1.0
-#define DDC_DEFAULT_PRESSURE  1.0
 #define SP_PENCIL_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::PencilTool*>((Inkscape::UI::Tools::ToolBase*)obj))
 #define SP_IS_PENCIL_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::PencilTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
 

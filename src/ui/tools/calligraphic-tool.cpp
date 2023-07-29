@@ -22,13 +22,12 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#define noDYNA_DRAW_VERBOSE
-
 #include "ui/tools/calligraphic-tool.h"
 
 #include <cstring>
 #include <numeric>
 #include <string>
+#include <random>
 
 #include <gdk/gdkkeysyms.h>
 #include <glibmm/i18n.h>
@@ -44,7 +43,6 @@
 #include "desktop.h"
 #include "document-undo.h"
 #include "document.h"
-#include "inkscape.h"
 #include "message-context.h"
 #include "selection.h"
 
@@ -56,7 +54,6 @@
 #include "include/macros.h"
 
 #include "livarot/Path.h"
-#include "livarot/Shape.h"
 
 #include "object/sp-shape.h"
 #include "object/sp-text.h"
@@ -77,42 +74,34 @@ using Inkscape::Util::Quantity;
 using Inkscape::Util::Unit;
 using Inkscape::Util::unit_table;
 
-#define DDC_RED_RGBA 0xff0000ff
+static constexpr double DDC_MIN_PRESSURE     = 0.0;
+static constexpr double DDC_MAX_PRESSURE     = 1.0;
+static constexpr double DDC_DEFAULT_PRESSURE = 1.0;
 
-#define TOLERANCE_CALLIGRAPHIC 0.1
+static constexpr double DDC_MIN_TILT     = -1.0;
+static constexpr double DDC_MAX_TILT     =  1.0;
+static constexpr double DDC_DEFAULT_TILT =  0.0;
 
-#define DYNA_EPSILON 0.5e-6
-#define DYNA_EPSILON_START 0.5e-2
-#define DYNA_VEL_START 1e-5
+static constexpr uint32_t DDC_RED_RGBA = 0xff0000ff;
 
-#define DYNA_MIN_WIDTH 1.0e-6
+static constexpr double TOLERANCE_CALLIGRAPHIC = 0.1;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+static constexpr double DYNA_EPSILON = 0.5e-6;
+static constexpr double DYNA_EPSILON_START = 0.5e-2;
+static constexpr double DYNA_VEL_START = 1e-5;
+
+static constexpr bool DYNA_DRAW_VERBOSE = false;
+
+namespace Inkscape::UI::Tools {
 
 CalligraphicTool::CalligraphicTool(SPDesktop *desktop)
     : DynamicBase(desktop, "/tools/calligraphic", "calligraphy.svg")
-    , keep_selected(true)
-    , hatch_spacing(0)
-    , hatch_spacing_step(0)
-    , hatch_item(nullptr)
-    , hatch_last_nearest(Geom::Point(0, 0))
-    , hatch_last_pointer(Geom::Point(0, 0))
-    , hatch_escaped(false)
-    , just_started_drawing(false)
-    , trace_bg(false)
 {
-    this->vel_thin = 0.1;
-    this->flatness = -0.9;
-    this->cap_rounding = 0.0;
-    this->abs_width = false;
-
     currentshape = make_canvasitem<CanvasItemBpath>(desktop->getCanvasSketch());
     currentshape->set_stroke(0x0);
     currentshape->set_fill(DDC_RED_RGBA, SP_WIND_RULE_EVENODD);
 
-    /* fixme: Cannot we cascade it to root more clearly? */
+    // Fixme: Can't we cascade it to root more clearly?
     currentshape->connect_event(sigc::bind(sigc::ptr_fun(sp_desktop_root_handler), desktop));
 
     hatch_area = make_canvasitem<CanvasItemBpath>(desktop->getCanvasControls());
@@ -135,77 +124,76 @@ CalligraphicTool::CalligraphicTool(SPDesktop *desktop)
     sp_event_context_read(this, "keep_selected");
     sp_event_context_read(this, "cap_rounding");
 
-    this->is_drawing = false;
-
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    auto prefs = Preferences::get();
     if (prefs->getBool("/tools/calligraphic/selcue")) {
-        this->enableSelectionCue();
+        enableSelectionCue();
     }
 }
 
-CalligraphicTool::~CalligraphicTool() = default;
-
-void CalligraphicTool::set(const Inkscape::Preferences::Entry& val) {
-    Glib::ustring path = val.getEntryName();
+void CalligraphicTool::set(Preferences::Entry const &val)
+{
+    auto const path = val.getEntryName();
 
     if (path == "tracebackground") {
-        this->trace_bg = val.getBool();
+        trace_bg = val.getBool();
     } else if (path == "keep_selected") {
-        this->keep_selected = val.getBool();
+        keep_selected = val.getBool();
     } else {
-        //pass on up to parent class to handle common attributes.
+        // Pass on up to parent class to handle common attributes.
     	DynamicBase::set(val);
     }
-
-    //g_print("DDC: %g %g %g %g\n", ddc->mass, ddc->drag, ddc->angle, ddc->width);
 }
 
-static double
-flerp(double f0, double f1, double p)
+void CalligraphicTool::reset(Geom::Point const &p)
 {
-    return f0 + ( f1 - f0 ) * p;
+    last = cur = getNormalizedPoint(p);
+
+    vel = {};
+    vel_max = 0.0;
+    acc = {};
+    ang = {};
+    del = {};
 }
 
-void CalligraphicTool::reset(Geom::Point p) {
-    this->last = this->cur = this->getNormalizedPoint(p);
-
-    this->vel = Geom::Point(0,0);
-    this->vel_max = 0;
-    this->acc = Geom::Point(0,0);
-    this->ang = Geom::Point(0,0);
-    this->del = Geom::Point(0,0);
-}
-
-void CalligraphicTool::extinput(GdkEvent *event) {
-    if (gdk_event_get_axis (event, GDK_AXIS_PRESSURE, &this->pressure)) {
-        this->pressure = CLAMP (this->pressure, DDC_MIN_PRESSURE, DDC_MAX_PRESSURE);
+void CalligraphicTool::extinput(MotionEvent const &canvas_event)
+{
+    auto event = canvas_event.CanvasEvent::original();
+    if (gdk_event_get_axis(event, GDK_AXIS_PRESSURE, &pressure)) {
+        pressure = std::clamp(pressure, DDC_MIN_PRESSURE, DDC_MAX_PRESSURE);
     } else {
-        this->pressure = DDC_DEFAULT_PRESSURE;
+        pressure = DDC_DEFAULT_PRESSURE;
     }
 
-    if (gdk_event_get_axis (event, GDK_AXIS_XTILT, &this->xtilt)) {
-        this->xtilt = CLAMP (this->xtilt, DDC_MIN_TILT, DDC_MAX_TILT);
+    if (gdk_event_get_axis(event, GDK_AXIS_XTILT, &xtilt)) {
+        xtilt = std::clamp(xtilt, DDC_MIN_TILT, DDC_MAX_TILT);
     } else {
-        this->xtilt = DDC_DEFAULT_TILT;
+        xtilt = DDC_DEFAULT_TILT;
     }
 
-    if (gdk_event_get_axis (event, GDK_AXIS_YTILT, &this->ytilt)) {
-        this->ytilt = CLAMP (this->ytilt, DDC_MIN_TILT, DDC_MAX_TILT);
+    if (gdk_event_get_axis(event, GDK_AXIS_YTILT, &ytilt)) {
+        ytilt = std::clamp(ytilt, DDC_MIN_TILT, DDC_MAX_TILT);
     } else {
-        this->ytilt = DDC_DEFAULT_TILT;
+        ytilt = DDC_DEFAULT_TILT;
     }
 }
 
+static Geom::Point unsnapped_polar(double angle)
+{
+    Geom::Point v;
+    Geom::sincos(angle, v.y(), v.x());
+    return v;
+}
 
-bool CalligraphicTool::apply(Geom::Point p) {
-    Geom::Point n = this->getNormalizedPoint(p);
+bool CalligraphicTool::apply(Geom::Point const &p)
+{
+    auto const n = getNormalizedPoint(p);
 
-    /* Calculate mass and drag */
-    double const mass = flerp(1.0, 160.0, this->mass);
-    double const drag = flerp(0.0, 0.5, this->drag * this->drag);
+    // Calculate mass and drag.
+    double const mass_scaled = Geom::lerp(mass, 1.0, 160.0);
+    double const drag_scaled = Geom::lerp(drag * drag, 0.0, 0.5);
 
-    /* Calculate force and acceleration */
-    Geom::Point force = n - this->cur;
+    // Calculate force and acceleration.
+    auto const force = n - cur;
 
     // If force is below the absolute threshold DYNA_EPSILON,
     // or we haven't yet reached DYNA_VEL_START (i.e. at the beginning of stroke)
@@ -214,245 +202,229 @@ bool CalligraphicTool::apply(Geom::Point p) {
     // This prevents flips, blobs, and jerks caused by microscopic tremor of the tablet pen,
     // especially bothersome at the start of the stroke where we don't yet have the inertia to
     // smooth them out.
-    if ( Geom::L2(force) < DYNA_EPSILON || (this->vel_max < DYNA_VEL_START && Geom::L2(force) < DYNA_EPSILON_START)) {
-        return FALSE;
+    if (Geom::L2(force) < DYNA_EPSILON || (vel_max < DYNA_VEL_START && Geom::L2(force) < DYNA_EPSILON_START)) {
+        return false;
     }
 
-    this->acc = force / mass;
+    acc = force / mass_scaled;
 
-    /* Calculate new velocity */
-    this->vel += this->acc;
+    // Calculate new velocity.
+    vel += acc;
 
-    if (Geom::L2(this->vel) > this->vel_max)
-        this->vel_max = Geom::L2(this->vel);
+    vel_max = std::max(vel_max, Geom::L2(vel));
 
-    /* Calculate angle of drawing tool */
+    // Calculate angle of drawing tool.
 
     double a1;
-    if (this->usetilt) {
+    if (usetilt) {
         // 1a. calculate nib angle from input device tilt:
-        if (this->xtilt == 0 && this->ytilt == 0) {
+        if (xtilt == 0 && ytilt == 0) {
             // to be sure that atan2 in the computation below
             // would not crash or return NaN.
             a1 = 0;
         } else {
-            Geom::Point dir(-this->xtilt, this->ytilt);
+            auto dir = Geom::Point(-xtilt, ytilt);
             a1 = atan2(dir);
         }
-    }
-    else {
+    } else {
         // 1b. fixed dc->angle (absolutely flat nib):
-        a1 = ( this->angle / 180.0 ) * M_PI;
+        a1 = Geom::rad_from_deg(angle);
     }
     a1 *= -_desktop->yaxisdir();
-    if (this->flatness < 0.0) {
+    if (flatness < 0.0) {
         // flips direction. Useful when this->usetilt
         // allows simulating both pen and calligraphic brush
         a1 *= -1;
     }
-    a1 = fmod(a1, M_PI);
-    if (a1 > 0.5*M_PI) {
+    a1 = std::fmod(a1, M_PI);
+    if (a1 > 0.5 * M_PI) {
         a1 -= M_PI;
-    } else if (a1 <= -0.5*M_PI) {
+    } else if (a1 <= -0.5 * M_PI) {
         a1 += M_PI;
     }
 
     // 2. perpendicular to dc->vel (absolutely non-flat nib):
-    gdouble const mag_vel = Geom::L2(this->vel);
-    if ( mag_vel < DYNA_EPSILON ) {
-        return FALSE;
+    double const mag_vel = Geom::L2(vel);
+    if (mag_vel < DYNA_EPSILON) {
+        return false;
     }
-    Geom::Point ang2 = Geom::rot90(this->vel) / mag_vel;
+    auto const ang2 = Geom::rot90(vel) / mag_vel;
 
     // 3. Average them using flatness parameter:
     // calculate angles
     double a2 = atan2(ang2);
     // flip a2 to force it to be in the same half-circle as a1
     bool flipped = false;
-    if (fabs (a2-a1) > 0.5*M_PI) {
+    if (std::abs(a2 - a1) > 0.5 * M_PI) {
         a2 += M_PI;
         flipped = true;
     }
     // normalize a2
-    if (a2 > M_PI)
-        a2 -= 2*M_PI;
-    if (a2 < -M_PI)
-        a2 += 2*M_PI;
+    if (a2 > M_PI) {
+        a2 -= 2 * M_PI;
+    } else if (a2 < -M_PI) {
+        a2 += 2 * M_PI;
+    }
     // find the flatness-weighted bisector angle, unflip if a2 was flipped
     // FIXME: when dc->vel is oscillating around the fixed angle, the new_ang flips back and forth. How to avoid this?
-    double new_ang = a1 + (1 - fabs(this->flatness)) * (a2 - a1) - (flipped? M_PI : 0);
-
+    double new_ang = a1 + (1 - std::abs(flatness)) * (a2 - a1) - (flipped ? M_PI : 0);
     // Try to detect a sudden flip when the new angle differs too much from the previous for the
     // current velocity; in that case discard this move
-    double angle_delta = Geom::L2(Geom::Point (cos (new_ang), sin (new_ang)) - this->ang);
-    if ( angle_delta / Geom::L2(this->vel) > 4000 ) {
-        return FALSE;
+    auto const new_ang_vec = unsnapped_polar(new_ang);
+    double angle_delta = Geom::L2(new_ang_vec - ang);
+    if (angle_delta / Geom::L2(vel) > 4000) {
+        return false;
     }
 
     // convert to point
-    this->ang = Geom::Point (cos (new_ang), sin (new_ang));
+    ang = new_ang_vec;
 
-//    g_print ("force %g  acc %g  vel_max %g  vel %g  a1 %g  a2 %g  new_ang %g\n", Geom::L2(force), Geom::L2(dc->acc), dc->vel_max, Geom::L2(dc->vel), a1, a2, new_ang);
+    if constexpr (false) g_print("force %g  acc %g  vel_max %g  vel %g  a1 %g  a2 %g  new_ang %g\n", Geom::L2(force), Geom::L2(acc), vel_max, Geom::L2(vel), a1, a2, new_ang);
 
-    /* Apply drag */
-    this->vel *= 1.0 - drag;
+    // Apply drag
+    vel *= 1.0 - drag_scaled;
 
-    /* Update position */
-    this->last = this->cur;
-    this->cur += this->vel;
+    // Update position
+    last = cur;
+    cur += vel;
 
-    return TRUE;
+    return true;
 }
 
-void CalligraphicTool::brush() {
-    g_assert( this->npoints >= 0 && this->npoints < SAMPLING_SIZE );
+void CalligraphicTool::brush()
+{
+    g_assert(npoints >= 0 && npoints < SAMPLING_SIZE);
 
     // How much velocity thins strokestyle
-    double vel_thin = flerp (0, 160, this->vel_thin);
+    double const vel_thin_scaled = Geom::lerp(vel_thin, 0, 160);
 
     // Influence of pressure on thickness
-    double pressure_thick = (this->usepressure ? this->pressure : 1.0);
+    double const pressure_thick = usepressure ? pressure : 1.0;
 
-    // get the real brush point, not the same as pointer (affected by hatch tracking and/or mass
-    // drag)
-    Geom::Point brush = getViewPoint(this->cur);
-    Geom::Point brush_w = _desktop->d2w(brush);
+    // get the real brush point, not the same as pointer (affected by hatch tracking and/or mass drag)
+    auto const brush = getViewPoint(cur);
+    auto const brush_w = _desktop->d2w(brush);
 
     double trace_thick = 1;
-    if (this->trace_bg) {
+    if (trace_bg) {
         // Trace background, use single pixel under brush.
-        Geom::IntRect area = Geom::IntRect::from_xywh(brush_w.floor(), Geom::IntPoint(1, 1));
+        auto const area = Geom::IntRect::from_xywh(brush_w.floor(), Geom::IntPoint(1, 1));
 
-        Inkscape::CanvasItemDrawing *canvas_item_drawing = _desktop->getCanvasDrawing();
-        Inkscape::Drawing *drawing = canvas_item_drawing->get_drawing();
+        auto const canvas_item_drawing = _desktop->getCanvasDrawing();
+        auto const drawing = canvas_item_drawing->get_drawing();
 
         // Get average color.
         double R, G, B, A;
         drawing->averageColor(area, R, G, B, A);
 
         // Convert to thickness.
-        double max = MAX (MAX (R, G), B);
-        double min = MIN (MIN (R, G), B);
-        double L = A * (max + min)/2 + (1 - A); // blend with white bg
+        double const max = std::max({R, G, B});
+        double const min = std::min({R, G, B});
+        double const L = A * (max + min) / 2 + (1 - A); // blend with white bg
         trace_thick = 1 - L;
-        //g_print ("L %g thick %g\n", L, trace_thick);
+        if constexpr(false) g_print("L %g thick %g\n", L, trace_thick);
     }
 
-    double width = (pressure_thick * trace_thick - vel_thin * Geom::L2(this->vel)) * this->width;
+    double width_adjusted = (pressure_thick * trace_thick - vel_thin_scaled * vel.length()) * width;
 
     double tremble_left = 0, tremble_right = 0;
-    if (this->tremor > 0) {
-        // obtain two normally distributed random variables, using polar Box-Muller transform
-        double x1, x2, w, y1, y2;
-        do {
-            x1 = 2.0 * g_random_double_range(0,1) - 1.0;
-            x2 = 2.0 * g_random_double_range(0,1) - 1.0;
-            w = x1 * x1 + x2 * x2;
-        } while ( w >= 1.0 );
-        w = sqrt( (-2.0 * log( w ) ) / w );
-        y1 = x1 * w;
-        y2 = x2 * w;
+    if (tremor > 0) {
+        auto gen = std::default_random_engine(g_random_int());
+        auto nrm = std::normal_distribution();
 
         // deflect both left and right edges randomly and independently, so that:
         // (1) dc->tremor=1 corresponds to sigma=1, decreasing dc->tremor narrows the bell curve;
         // (2) deflection depends on width, but is upped for small widths for better visual uniformity across widths;
         // (3) deflection somewhat depends on speed, to prevent fast strokes looking
         // comparatively smooth and slow ones excessively jittery
-        tremble_left  = (y1)*this->tremor * (0.15 + 0.8*width) * (0.35 + 14*Geom::L2(this->vel));
-        tremble_right = (y2)*this->tremor * (0.15 + 0.8*width) * (0.35 + 14*Geom::L2(this->vel));
+        auto const sigma = tremor * (0.15 + 0.8 * width_adjusted) * (0.35 + 14 * vel.length());
+        tremble_left  = nrm(gen) * sigma;
+        tremble_right = nrm(gen) * sigma;
     }
 
-    if ( width < 0.02 * this->width ) {
-        width = 0.02 * this->width;
-    }
+    width_adjusted = std::max(width_adjusted, 0.02 * width);
 
     double dezoomify_factor = 0.05 * 1000;
-    if (!this->abs_width) {
+    if (!abs_width) {
         dezoomify_factor /= _desktop->current_zoom();
     }
 
-    Geom::Point del_left = dezoomify_factor * (width + tremble_left) * this->ang;
-    Geom::Point del_right = dezoomify_factor * (width + tremble_right) * this->ang;
+    auto const del_left = dezoomify_factor * (width_adjusted + tremble_left) * ang;
+    auto const del_right = dezoomify_factor * (width_adjusted + tremble_right) * ang;
 
-    this->point1[this->npoints] = brush + del_left;
-    this->point2[this->npoints] = brush - del_right;
+    point1[npoints] = brush + del_left;
+    point2[npoints] = brush - del_right;
 
-    this->del = 0.5*(del_left + del_right);
+    del = 0.5 * (del_left + del_right);
 
-    this->npoints++;
+    npoints++;
 }
 
-static void
-sp_ddc_update_toolbox (SPDesktop *desktop, const gchar *id, double value)
+void CalligraphicTool::cancel()
 {
-    desktop->setToolboxAdjustmentValue (id, value);
-}
-
-void CalligraphicTool::cancel() {
-    this->dragging = false;
-    this->is_drawing = false;
+    dragging = false;
+    is_drawing = false;
 
     ungrabCanvasEvents();
 
-    /* Remove all temporary line segments */
+    // Remove all temporary line segments.
     segments.clear();
 
-    /* reset accumulated curve */
+    // Reset accumulated curve.
     accumulated.reset();
     clear_current();
 
     repr = nullptr;
 }
 
-bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
+bool CalligraphicTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    gint ret = FALSE;
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    Unit const *unit = unit_table.getUnit(prefs->getString("/tools/calligraphic/unit"));
+    bool ret = false;
 
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
-            if (event->button.button == 1) {
-                if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
-                    return TRUE;
+    auto prefs = Preferences::get();
+    auto unit = unit_table.getUnit(prefs->getString("/tools/calligraphic/unit"));
+
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
+                if (!have_viable_layer(_desktop, defaultMessageContext())) {
+                    ret = true;
+                    return;
                 }
 
                 accumulated.reset();
 
                 repr = nullptr;
 
-                /* initialize first point */
+                // initialize first point
                 npoints = 0;
 
                 grabCanvasEvents();
 
-                ret = TRUE;
+                ret = true;
 
                 set_high_motion_precision();
-                this->is_drawing = true;
-                this->just_started_drawing = true;
+                is_drawing = true;
+                just_started_drawing = true;
             }
-            break;
-        case GDK_MOTION_NOTIFY:
-        {
-            Geom::Point const motion_w(event->motion.x,
-                                     event->motion.y);
-            Geom::Point motion_dt(_desktop->w2d(motion_w));
-            this->extinput(event);
+        },
 
-            this->message_context->clear();
+        [&] (MotionEvent const &event) {
+            auto motion_dt = _desktop->w2d(event.eventPos());
+            extinput(event);
+
+            message_context->clear();
 
             // for hatching:
             double hatch_dist = 0;
-            Geom::Point hatch_unit_vector(0,0);
-            Geom::Point nearest(0,0);
-            Geom::Point pointer(0,0);
-            Geom::Affine motion_to_curve(Geom::identity());
+            Geom::Point hatch_unit_vector;
+            Geom::Point nearest;
+            Geom::Point pointer;
+            Geom::Affine motion_to_curve;
 
-            if (event->motion.state & GDK_CONTROL_MASK) { // hatching - sense the item
+            if (event.modifiers() & GDK_CONTROL_MASK) { // hatching - sense the item
 
-                SPItem *selected = _desktop->getSelection()->singleItem();
+                auto const selected = _desktop->getSelection()->singleItem();
                 if (selected && (is<SPShape>(selected) || is<SPText>(selected))) {
                     // One item selected, and it's a path;
                     // let's try to track it as a guide
@@ -479,24 +451,24 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
                         // unit-length vector
                         hatch_unit_vector = (pointer - nearest) / hatch_dist;
 
-                        this->message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Guide path selected</b>; start drawing along the guide with <b>Ctrl</b>"));
+                        message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Guide path selected</b>; start drawing along the guide with <b>Ctrl</b>"));
                     }
                 } else {
-                    this->message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Select a guide path</b> to track with <b>Ctrl</b>"));
+                    message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Select a guide path</b> to track with <b>Ctrl</b>"));
                 }
             }
 
-            if ( this->is_drawing && (event->motion.state & GDK_BUTTON1_MASK)) {
-                this->dragging = TRUE;
+            if (is_drawing && (event.modifiers() & GDK_BUTTON1_MASK)) {
+                dragging = true;
 
-                if (event->motion.state & GDK_CONTROL_MASK && this->hatch_item) { // hatching
+                if (event.modifiers() & GDK_CONTROL_MASK && hatch_item) { // hatching
 
-#define HATCH_VECTOR_ELEMENTS 12
-#define INERTIA_ELEMENTS 24
-#define SPEED_ELEMENTS 12
-#define SPEED_MIN 0.3
-#define SPEED_NORMAL 0.35
-#define INERTIA_FORCE 0.5
+                    constexpr auto HATCH_VECTOR_ELEMENTS = 12;
+                    constexpr auto INERTIA_ELEMENTS = 24;
+                    constexpr auto SPEED_ELEMENTS = 12;
+                    constexpr auto SPEED_MIN = 0.3;
+                    constexpr auto SPEED_NORMAL = 0.35;
+                    constexpr auto INERTIA_FORCE = 0.5;
 
                     // speed is the movement of the nearest point along the guide path, divided by
                     // the movement of the pointer at the same period; it is averaged for the last
@@ -511,168 +483,164 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
                     // mass recommended; with zero mass, jerks are still quite noticeable).
 
                     double speed = 1;
-                    if (Geom::L2(this->hatch_last_nearest) != 0) {
+                    if (Geom::L2(hatch_last_nearest) != 0) {
                         // the distance nearest moved since the last motion event
-                        double nearest_moved = Geom::L2(nearest - this->hatch_last_nearest);
+                        double nearest_moved = Geom::L2(nearest - hatch_last_nearest);
                         // the distance pointer moved since the last motion event
-                        double pointer_moved = Geom::L2(pointer - this->hatch_last_pointer);
+                        double pointer_moved = Geom::L2(pointer - hatch_last_pointer);
+
                         // store them in stacks limited to SPEED_ELEMENTS
-                        this->hatch_nearest_past.push_front(nearest_moved);
-                        if (this->hatch_nearest_past.size() > SPEED_ELEMENTS)
-                            this->hatch_nearest_past.pop_back();
-                        this->hatch_pointer_past.push_front(pointer_moved);
-                        if (this->hatch_pointer_past.size() > SPEED_ELEMENTS)
-                            this->hatch_pointer_past.pop_back();
+                        hatch_nearest_past.push_front(nearest_moved);
+                        if (hatch_nearest_past.size() > SPEED_ELEMENTS) {
+                            hatch_nearest_past.pop_back();
+                        }
+                        hatch_pointer_past.push_front(pointer_moved);
+                        if (hatch_pointer_past.size() > SPEED_ELEMENTS) {
+                            hatch_pointer_past.pop_back();
+                        }
 
                         // If the stacks are full,
-                        if (this->hatch_nearest_past.size() == SPEED_ELEMENTS) {
+                        if (hatch_nearest_past.size() == SPEED_ELEMENTS) {
                             // calculate the sums of all stored movements
-                            double nearest_sum = std::accumulate (this->hatch_nearest_past.begin(), this->hatch_nearest_past.end(), 0.0);
-                            double pointer_sum = std::accumulate (this->hatch_pointer_past.begin(), this->hatch_pointer_past.end(), 0.0);
+                            double nearest_sum = std::accumulate(hatch_nearest_past.begin(), hatch_nearest_past.end(), 0.0);
+                            double pointer_sum = std::accumulate(hatch_pointer_past.begin(), hatch_pointer_past.end(), 0.0);
                             // and divide to get the speed
                             speed = nearest_sum/pointer_sum;
-                            //g_print ("nearest sum %g  pointer_sum %g  speed %g\n", nearest_sum, pointer_sum, speed);
+                            if constexpr (false) g_print("nearest sum %g  pointer_sum %g  speed %g\n", nearest_sum, pointer_sum, speed);
                         }
                     }
 
-                    if (   this->hatch_escaped  // already escaped, do not reattach
-                        || (speed < SPEED_MIN) // stuck; most likely reached end of traced stroke
-                        || (this->hatch_spacing > 0 && hatch_dist > 50 * this->hatch_spacing) // went too far from the guide
-                        ) {
+                    if (   hatch_escaped  // already escaped, do not reattach
+                        || speed < SPEED_MIN // stuck; most likely reached end of traced stroke
+                        || (hatch_spacing > 0 && hatch_dist > 50 * hatch_spacing) // went too far from the guide
+                        )
+                    {
                         // We are NOT attracted to the guide!
-
-                        //g_print ("\nlast_nearest %g %g   nearest %g %g  pointer %g %g  pos %d %g\n", dc->last_nearest[Geom::X], dc->last_nearest[Geom::Y], nearest[Geom::X], nearest[Geom::Y], pointer[Geom::X], pointer[Geom::Y], position->piece, position->t);
 
                         // Remember hatch_escaped so we don't get
                         // attracted again until the end of this stroke
-                        this->hatch_escaped = true;
+                        hatch_escaped = true;
 
-                        if (this->inertia_vectors.size() >= INERTIA_ELEMENTS/2) { // move by inertia
-                            Geom::Point moved_past_escape = motion_dt - this->inertia_vectors.front();
-                            Geom::Point inertia = 
-                                this->inertia_vectors.front() - this->inertia_vectors.back();
+                        if (inertia_vectors.size() >= INERTIA_ELEMENTS / 2) { // move by inertia
+                            auto const moved_past_escape = motion_dt - inertia_vectors.front();
+                            auto const inertia =  inertia_vectors.front() - inertia_vectors.back();
 
-                            double dot = Geom::dot (moved_past_escape, inertia);
-                            dot /= Geom::L2(moved_past_escape) * Geom::L2(inertia);
+                            double dot = Geom::dot(moved_past_escape, inertia);
+                            dot /= moved_past_escape.length() * inertia.length();
 
                             if (dot > 0) { // mouse is still moving in approx the same direction
-                                Geom::Point should_have_moved = 
-                                    (inertia) * (1/Geom::L2(inertia)) * Geom::L2(moved_past_escape);
-                                motion_dt = this->inertia_vectors.front() + 
-                                    (INERTIA_FORCE * should_have_moved + (1 - INERTIA_FORCE) * moved_past_escape);
+                                auto const should_have_moved = inertia.normalized() * moved_past_escape.length();
+                                motion_dt = inertia_vectors.front() + Geom::lerp(INERTIA_FORCE, moved_past_escape, should_have_moved);
                             }
                         }
 
                     } else {
 
                         // Calculate angle cosine of this vector-to-guide and all past vectors
-                        // summed, to detect if we accidentally flipped to the other side of the
-                        // guide
-                        Geom::Point hatch_vector_accumulated = std::accumulate 
-                            (this->hatch_vectors.begin(), this->hatch_vectors.end(), Geom::Point(0,0));
-                        double dot = Geom::dot (pointer - nearest, hatch_vector_accumulated);
+                        // summed, to detect if we accidentally flipped to the other side of the guide
+                        auto const hatch_vector_accumulated = std::accumulate(hatch_vectors.begin(), hatch_vectors.end(), Geom::Point());
+                        double dot = Geom::dot(pointer - nearest, hatch_vector_accumulated);
                         dot /= Geom::L2(pointer - nearest) * Geom::L2(hatch_vector_accumulated);
 
-                        if (this->hatch_spacing != 0) { // spacing was already set
+                        if (hatch_spacing != 0) { // spacing was already set
                             double target;
                             if (speed > SPEED_NORMAL) {
                                 // all ok, strictly obey the spacing
-                                target = this->hatch_spacing;
+                                target = hatch_spacing;
                             } else {
                                 // looks like we're starting to lose speed,
                                 // so _gradually_ let go attraction to prevent jerks
-                                target = (this->hatch_spacing * speed + hatch_dist * (SPEED_NORMAL - speed))/SPEED_NORMAL;
+                                target = (hatch_spacing * speed + hatch_dist * (SPEED_NORMAL - speed)) / SPEED_NORMAL;
                             }
-                            if (!std::isnan(dot) && dot < -0.5) {// flip
+                            if (!std::isnan(dot) && dot < -0.5) { // flip
                                 target = -target;
                             }
 
                             // This is the track pointer that we will use instead of the real one
-                            Geom::Point new_pointer = nearest + target * hatch_unit_vector;
+                            auto const new_pointer = nearest + target * hatch_unit_vector;
 
                             // some limited feedback: allow persistent pulling to slightly change
                             // the spacing
-                            this->hatch_spacing += (hatch_dist - this->hatch_spacing)/3500;
+                            hatch_spacing += (hatch_dist - hatch_spacing) / 3500;
 
                             // return it to the desktop coords
                             motion_dt = new_pointer * motion_to_curve.inverse();
 
                             if (speed >= SPEED_NORMAL) {
-                                this->inertia_vectors.push_front(motion_dt);
-                                if (this->inertia_vectors.size() > INERTIA_ELEMENTS)
-                                    this->inertia_vectors.pop_back();
+                                inertia_vectors.push_front(motion_dt);
+                                if (inertia_vectors.size() > INERTIA_ELEMENTS) {
+                                    inertia_vectors.pop_back();
+                                }
                             }
 
                         } else {
                             // this is the first motion event, set the dist
-                            this->hatch_spacing = hatch_dist;
+                            hatch_spacing = hatch_dist;
                         }
 
                         // remember last points
-                        this->hatch_last_pointer = pointer;
-                        this->hatch_last_nearest = nearest;
+                        hatch_last_pointer = pointer;
+                        hatch_last_nearest = nearest;
 
-                        this->hatch_vectors.push_front(pointer - nearest);
-                        if (this->hatch_vectors.size() > HATCH_VECTOR_ELEMENTS)
-                            this->hatch_vectors.pop_back();
+                        hatch_vectors.push_front(pointer - nearest);
+                        if (hatch_vectors.size() > HATCH_VECTOR_ELEMENTS) {
+                            hatch_vectors.pop_back();
+                        }
                     }
 
-                    this->message_context->set(Inkscape::NORMAL_MESSAGE, this->hatch_escaped? _("Tracking: <b>connection to guide path lost!</b>") : _("<b>Tracking</b> a guide path"));
+                    message_context->set(Inkscape::NORMAL_MESSAGE, hatch_escaped? _("Tracking: <b>connection to guide path lost!</b>") : _("<b>Tracking</b> a guide path"));
 
                 } else {
-                    this->message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Drawing</b> a calligraphic stroke"));
+                    message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Drawing</b> a calligraphic stroke"));
                 }
 
-                if (this->just_started_drawing) {
-                    this->just_started_drawing = false;
-                    this->reset(motion_dt);
+                if (just_started_drawing) {
+                    just_started_drawing = false;
+                    reset(motion_dt);
                 }
 
-                if (!this->apply(motion_dt)) {
-                    ret = TRUE;
-                    break;
+                if (!apply(motion_dt)) {
+                    ret = true;
+                    return;
                 }
 
-                if ( this->cur != this->last ) {
-                    this->brush();
-                    g_assert( this->npoints > 0 );
-                    this->fit_and_split(false);
+                if (cur != last) {
+                    brush();
+                    g_assert(npoints > 0);
+                    fit_and_split(false);
                 }
-                ret = TRUE;
+                ret = true;
             }
 
             Geom::PathVector path = Geom::Path(Geom::Circle(0,0,1)); // Unit circle centered at origin.
 
             // Draw the hatching circle if necessary
-            if (event->motion.state & GDK_CONTROL_MASK) {
-                if (this->hatch_spacing == 0 && hatch_dist != 0) {
+            if (event.modifiers() & GDK_CONTROL_MASK) {
+                if (hatch_spacing == 0 && hatch_dist != 0) {
                     // Haven't set spacing yet: gray, center free, update radius live
 
-                    Geom::Point c = _desktop->w2d(motion_w);
-                    Geom::Affine const sm (Geom::Scale(hatch_dist, hatch_dist) * Geom::Translate(c));
-                    path *= sm;
+                    auto const c = _desktop->w2d(event.eventPos());
+                    path *= Geom::Scale(hatch_dist) * Geom::Translate(c);
 
                     hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0x7f7f7fff);
                     hatch_area->set_visible(true);
 
-                } else if (this->dragging && !this->hatch_escaped && hatch_dist != 0) {
+                } else if (dragging && !hatch_escaped && hatch_dist != 0) {
                     // Tracking: green, center snapped, fixed radius
 
-                    Geom::Point c = motion_dt;
-                    Geom::Affine const sm (Geom::Scale(this->hatch_spacing, this->hatch_spacing) * Geom::Translate(c));
-                    path *= sm;
+                    auto const c = motion_dt;
+                    path *= Geom::Scale(hatch_spacing) * Geom::Translate(c);
 
                     hatch_area->set_bpath(std::move(path), true);
-                    hatch_area->set_stroke(0x00FF00ff);
+                    hatch_area->set_stroke(0x00ff00ff);
                     hatch_area->set_visible(true);
 
-                } else if (this->dragging && this->hatch_escaped && hatch_dist != 0) {
+                } else if (dragging && hatch_escaped && hatch_dist != 0) {
                     // Tracking escaped: red, center free, fixed radius
 
-                    Geom::Point c = motion_dt;
-                    Geom::Affine const sm (Geom::Scale(this->hatch_spacing, this->hatch_spacing) * Geom::Translate(c));
-                    path *= sm;
+                    auto const c = motion_dt;
+                    path *= Geom::Scale(hatch_spacing) * Geom::Translate(c);
 
                     hatch_area->set_bpath(std::move(path), true);
                     hatch_area->set_stroke(0xff0000ff);
@@ -681,10 +649,9 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
                 } else {
                     // Not drawing but spacing set: gray, center snapped, fixed radius
 
-                    Geom::Point c = (nearest + this->hatch_spacing * hatch_unit_vector) * motion_to_curve.inverse();
-                    if (!std::isnan(c[Geom::X]) && !std::isnan(c[Geom::Y]) && this->hatch_spacing!=0) {
-                        Geom::Affine const sm (Geom::Scale(this->hatch_spacing, this->hatch_spacing) * Geom::Translate(c));
-                        path *= sm;
+                    auto const c = (nearest + hatch_spacing * hatch_unit_vector) * motion_to_curve.inverse();
+                    if (!std::isnan(c.x()) && !std::isnan(c.y()) && hatch_spacing != 0) {
+                        path *= Geom::Scale(hatch_spacing) * Geom::Translate(c);
 
                         hatch_area->set_bpath(std::move(path), true);
                         hatch_area->set_stroke(0x7f7f7fff);
@@ -694,187 +661,173 @@ bool CalligraphicTool::root_handler(CanvasEvent const &canvas_event)
             } else {
                 hatch_area->set_visible(false);
             }
-        }
-        break;
+        },
 
-
-    case GDK_BUTTON_RELEASE:
-    {
-        Geom::Point const motion_w(event->button.x, event->button.y);
-        Geom::Point const motion_dt(_desktop->w2d(motion_w));
+    [&] (ButtonReleaseEvent const &event) {
+        auto const motion_dt = _desktop->w2d(event.eventPos());
 
         ungrabCanvasEvents();
 
         set_high_motion_precision(false);
-        this->is_drawing = false;
+        is_drawing = false;
 
-        if (this->dragging && event->button.button == 1) {
-            this->dragging = FALSE;
+        if (dragging && event.button() == 1) {
+            dragging = false;
 
-            this->apply(motion_dt);
+            apply(motion_dt);
 
-            /* Remove all temporary line segments */
+            // Remove all temporary line segments.
             segments.clear();
 
-            /* Create object */
-            this->fit_and_split(true);
-            if (this->accumulate())
-                this->set_to_accumulated(event->button.state & GDK_SHIFT_MASK, event->button.state & GDK_MOD1_MASK); // performs document_done
-            else
-                g_warning ("Failed to create path: invalid data in dc->cal1 or dc->cal2");
+            // Create object
+            fit_and_split(true);
+            if (accumulate()) {
+                set_to_accumulated(event.modifiers() & GDK_SHIFT_MASK, event.modifiers() & GDK_MOD1_MASK); // performs document_done
+            } else {
+                g_warning("Failed to create path: invalid data in dc->cal1 or dc->cal2");
+            }
 
-            /* reset accumulated curve */
+            // Reset accumulated curve.
             accumulated.reset();
 
             clear_current();
             repr = nullptr;
 
-            if (!this->hatch_pointer_past.empty()) this->hatch_pointer_past.clear();
-            if (!this->hatch_nearest_past.empty()) this->hatch_nearest_past.clear();
-            if (!this->inertia_vectors.empty()) this->inertia_vectors.clear();
-            if (!this->hatch_vectors.empty()) this->hatch_vectors.clear();
-            this->hatch_last_nearest = Geom::Point(0,0);
-            this->hatch_last_pointer = Geom::Point(0,0);
-            this->hatch_escaped = false;
-            this->hatch_item = nullptr;
-            this->hatch_livarot_path.reset();
-            this->just_started_drawing = false;
+            hatch_pointer_past.clear();
+            hatch_nearest_past.clear();
+            inertia_vectors.clear();
+            hatch_vectors.clear();
+            hatch_last_nearest = {};
+            hatch_last_pointer = {};
+            hatch_escaped = false;
+            hatch_item = nullptr;
+            hatch_livarot_path.reset();
+            just_started_drawing = false;
 
-            if (this->hatch_spacing != 0 && !this->keep_selected) {
+            if (hatch_spacing != 0 && !keep_selected) {
                 // we do not select the newly drawn path, so increase spacing by step
-                if (this->hatch_spacing_step == 0) {
-                    this->hatch_spacing_step = this->hatch_spacing;
+                if (hatch_spacing_step == 0) {
+                    hatch_spacing_step = hatch_spacing;
                 }
-                this->hatch_spacing += this->hatch_spacing_step;
+                hatch_spacing += hatch_spacing_step;
             }
 
-            this->message_context->clear();
-            ret = TRUE;
-        } else if (!this->dragging
-                   && event->button.button == 1
-                   && Inkscape::have_viable_layer(_desktop, defaultMessageContext()))
+            message_context->clear();
+            ret = true;
+        } else if (!dragging
+                   && event.button() == 1
+                   && have_viable_layer(_desktop, defaultMessageContext()))
         {
-            spdc_create_single_dot(this, _desktop->w2d(motion_w), "/tools/calligraphic", event->button.state);
-            ret = TRUE;
+            spdc_create_single_dot(this, _desktop->w2d(event.eventPos()), "/tools/calligraphic", event.modifiers());
+            ret = true;
         }
-        break;
-    }
+    },
 
-    case GDK_KEY_PRESS:
-        switch (get_latin_keyval (&event->key)) {
+    [&] (KeyPressEvent const &event) {
+        switch (get_latin_keyval(event.original())) {
         case GDK_KEY_Up:
         case GDK_KEY_KP_Up:
             if (!MOD__CTRL_ONLY(event)) {
-                this->angle += 5.0;
-                if (this->angle > 90.0)
-                    this->angle = 90.0;
-                sp_ddc_update_toolbox(_desktop, "calligraphy-angle", this->angle);
-                ret = TRUE;
+                angle = std::min(angle + 5.0, 90.0);
+                _desktop->setToolboxAdjustmentValue("calligraphy-angle", angle);
+                ret = true;
             }
             break;
         case GDK_KEY_Down:
         case GDK_KEY_KP_Down:
             if (!MOD__CTRL_ONLY(event)) {
-                this->angle -= 5.0;
-                if (this->angle < -90.0)
-                    this->angle = -90.0;
-                sp_ddc_update_toolbox(_desktop, "calligraphy-angle", this->angle);
-                ret = TRUE;
+                angle = std::max(angle - 5.0, -90.0);
+                _desktop->setToolboxAdjustmentValue("calligraphy-angle", angle);
+                ret = true;
             }
             break;
         case GDK_KEY_Right:
         case GDK_KEY_KP_Right:
             if (!MOD__CTRL_ONLY(event)) {
-                this->width = Quantity::convert(this->width, "px", unit) + 0.01;
-                if (this->width > 1.0)
-                    this->width = 1.0;
-                sp_ddc_update_toolbox (_desktop, "calligraphy-width", this->width * 100); // the same spinbutton is for alt+x
-                ret = TRUE;
+                width = Quantity::convert(width, "px", unit);
+                width = std::min(width + 0.01, 1.0);
+                _desktop->setToolboxAdjustmentValue("calligraphy-width", width * 100); // the same spinbutton is for alt+x
+                ret = true;
             }
             break;
         case GDK_KEY_Left:
         case GDK_KEY_KP_Left:
             if (!MOD__CTRL_ONLY(event)) {
-                this->width = Quantity::convert(this->width, "px", unit) - 0.01;
-                if (this->width < 0.00001)
-                    this->width = 0.00001;
-                sp_ddc_update_toolbox(_desktop, "calligraphy-width", this->width * 100);
-                ret = TRUE;
+                width = Quantity::convert(width, "px", unit);
+                width = std::max(width - 0.01, 0.00001);
+                _desktop->setToolboxAdjustmentValue("calligraphy-width", width * 100);
+                ret = true;
             }
             break;
         case GDK_KEY_Home:
         case GDK_KEY_KP_Home:
-            this->width = 0.00001;
-            sp_ddc_update_toolbox(_desktop, "calligraphy-width", this->width * 100);
-            ret = TRUE;
+            width = 0.00001;
+            _desktop->setToolboxAdjustmentValue("calligraphy-width", width * 100);
+            ret = true;
             break;
         case GDK_KEY_End:
         case GDK_KEY_KP_End:
-            this->width = 1.0;
-            sp_ddc_update_toolbox(_desktop, "calligraphy-width", this->width * 100);
-            ret = TRUE;
+            width = 1.0;
+            _desktop->setToolboxAdjustmentValue("calligraphy-width", width * 100);
+            ret = true;
             break;
         case GDK_KEY_x:
         case GDK_KEY_X:
             if (MOD__ALT_ONLY(event)) {
                 _desktop->setToolboxFocusTo("calligraphy-width");
-                ret = TRUE;
+                ret = true;
             }
             break;
         case GDK_KEY_Escape:
-            if (this->is_drawing) {
+            if (is_drawing) {
                 // if drawing, cancel, otherwise pass it up for deselecting
-                this->cancel();
-                ret = TRUE;
+                cancel();
+                ret = true;
             }
             break;
         case GDK_KEY_z:
         case GDK_KEY_Z:
-            if (MOD__CTRL_ONLY(event) && this->is_drawing) {
+            if (MOD__CTRL_ONLY(event) && is_drawing) {
                 // if drawing, cancel, otherwise pass it up for undo
-                this->cancel();
-                ret = TRUE;
+                cancel();
+                ret = true;
             }
             break;
         default:
             break;
         }
-        break;
+    },
 
-    case GDK_KEY_RELEASE:
-        switch (get_latin_keyval(&event->key)) {
+    [&] (KeyReleaseEvent const &event) {
+        switch (get_latin_keyval(event.original())) {
             case GDK_KEY_Control_L:
             case GDK_KEY_Control_R:
-                this->message_context->clear();
-                this->hatch_spacing = 0;
-                this->hatch_spacing_step = 0;
+                message_context->clear();
+                hatch_spacing = 0;
+                hatch_spacing_step = 0;
                 break;
             default:
                 break;
         }
-        break;
+    },
 
-    default:
-        break;
-    }
+    [&] (CanvasEvent const &event) {}
+    );
 
-    if (!ret) {
-        ret = DynamicBase::root_handler(canvas_event);
-    }
-
-    return ret;
+    return ret || DynamicBase::root_handler(event);
 }
 
-void CalligraphicTool::clear_current() {
-    /* reset bpath */
+void CalligraphicTool::clear_current()
+{
+    // reset bpath
     currentshape->set_bpath(nullptr);
 
-    /* reset curve */
+    // reset curve
     currentcurve.reset();
     cal1.reset();
     cal2.reset();
 
-    /* reset points */
+    // reset points
     npoints = 0;
 }
 
@@ -997,17 +950,13 @@ bool CalligraphicTool::accumulate() {
 	return true; // success
 }
 
-static double square(double const x)
+void CalligraphicTool::fit_and_split(bool release)
 {
-    return x * x;
-}
+    double const tolerance_sq = Geom::sqr(_desktop->w2d().descrim() * TOLERANCE_CALLIGRAPHIC);
 
-void CalligraphicTool::fit_and_split(bool release) {
-    double const tolerance_sq = square(_desktop->w2d().descrim() * TOLERANCE_CALLIGRAPHIC);
-
-#ifdef DYNA_DRAW_VERBOSE
-    g_print("[F&S:R=%c]", release?'T':'F');
-#endif
+    if constexpr (DYNA_DRAW_VERBOSE) {
+        g_print("[F&S:R=%c]", release?'T':'F');
+    }
 
     if (!( this->npoints > 0 && this->npoints < SAMPLING_SIZE )) {
         return; // just clicked
@@ -1018,10 +967,10 @@ void CalligraphicTool::fit_and_split(bool release) {
 #define BEZIER_MAX_BEZIERS  8
 #define BEZIER_MAX_LENGTH ( BEZIER_SIZE * BEZIER_MAX_BEZIERS )
 
-#ifdef DYNA_DRAW_VERBOSE
-        g_print("[F&S:#] dc->npoints:%d, release:%s\n",
-                this->npoints, release ? "TRUE" : "FALSE");
-#endif
+        if constexpr (DYNA_DRAW_VERBOSE) {
+            g_print("[F&S:#] dc->npoints:%d, release:%s\n",
+                    this->npoints, release ? "TRUE" : "FALSE");
+        }
 
         /* Current calligraphic */
         if ( cal1.is_empty() || cal2.is_empty() ) {
@@ -1046,9 +995,9 @@ void CalligraphicTool::fit_and_split(bool release) {
 
         if ( nb1 != -1 && nb2 != -1 ) {
             /* Fit and draw and reset state */
-#ifdef DYNA_DRAW_VERBOSE
-            g_print("nb1:%d nb2:%d\n", nb1, nb2);
-#endif
+            if constexpr (DYNA_DRAW_VERBOSE) {
+                g_print("nb1:%d nb2:%d\n", nb1, nb2);
+            }
             /* CanvasShape */
             if (! release) {
                 currentcurve.reset();
@@ -1077,9 +1026,9 @@ void CalligraphicTool::fit_and_split(bool release) {
             }
         } else {
             /* fixme: ??? */
-#ifdef DYNA_DRAW_VERBOSE
-            g_print("[fit_and_split] failed to fit-cubic.\n");
-#endif
+            if constexpr (DYNA_DRAW_VERBOSE) {
+                g_print("[fit_and_split] failed to fit-cubic.\n");
+            }
             this->draw_temporary_box();
 
             for (gint i = 1; i < this->npoints; i++) {
@@ -1091,9 +1040,9 @@ void CalligraphicTool::fit_and_split(bool release) {
         }
 
         /* Fit and draw and copy last point */
-#ifdef DYNA_DRAW_VERBOSE
-        g_print("[%d]Yup\n", this->npoints);
-#endif
+        if constexpr (DYNA_DRAW_VERBOSE) {
+            g_print("[%d]Yup\n", this->npoints);
+        }
         if (!release) {
             g_assert(!currentcurve.is_empty());
 
@@ -1141,10 +1090,7 @@ void CalligraphicTool::draw_temporary_box() {
     currentshape->set_bpath(&currentcurve, true);
 }
 
-}
-}
-}
-
+} // namespace Inkscape::UI::Tools
 
 /*
   Local Variables:

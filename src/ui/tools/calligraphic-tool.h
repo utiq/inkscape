@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SP_DYNA_DRAW_CONTEXT_H_SEEN
-#define SP_DYNA_DRAW_CONTEXT_H_SEEN
+#ifndef INKSCAPE_UI_TOOLS_CALLIGRAPHIC_TOOL_H
+#define INKSCAPE_UI_TOOLS_CALLIGRAPHIC_TOOL_H
 
 /*
  * Handwriting-like drawing mode
@@ -31,14 +31,6 @@
 class SPItem;
 class Path;
 
-#define DDC_MIN_PRESSURE      0.0
-#define DDC_MAX_PRESSURE      1.0
-#define DDC_DEFAULT_PRESSURE  1.0
-
-#define DDC_MIN_TILT         -1.0
-#define DDC_MAX_TILT          1.0
-#define DDC_DEFAULT_TILT      0.0
-
 namespace Inkscape {
 
 class CanvasItemBpath;
@@ -50,28 +42,27 @@ class CalligraphicTool : public DynamicBase
 {
 public:
     CalligraphicTool(SPDesktop *desktop);
-    ~CalligraphicTool() override;
 
     void set(Preferences::Entry const &val) override;
     bool root_handler(CanvasEvent const &event) override;
 
 private:
-    /** newly created object remain selected */
-    bool keep_selected;
+    /** newly created objects remain selected */
+    bool keep_selected = true;
 
-    double hatch_spacing;
-    double hatch_spacing_step;
-    SPItem *hatch_item;
+    double hatch_spacing = 0.0;
+    double hatch_spacing_step = 0.0;
+    SPItem *hatch_item = nullptr;
     std::unique_ptr<Path> hatch_livarot_path;
     std::list<double> hatch_nearest_past;
     std::list<double> hatch_pointer_past;
     std::list<Geom::Point> inertia_vectors;
     Geom::Point hatch_last_nearest, hatch_last_pointer;
     std::list<Geom::Point> hatch_vectors;
-    bool hatch_escaped;
+    bool hatch_escaped = false;
     CanvasItemPtr<CanvasItemBpath> hatch_area;
-    bool just_started_drawing;
-    bool trace_bg;
+    bool just_started_drawing = false;
+    bool trace_bg = false;
 
 	void clear_current();
 	void set_to_accumulated(bool unionize, bool subtract);
@@ -80,16 +71,16 @@ private:
 	void draw_temporary_box();
 	void cancel();
 	void brush();
-	bool apply(Geom::Point p);
-	void extinput(GdkEvent *event);
-	void reset(Geom::Point p);
+    bool apply(Geom::Point const &p);
+    void extinput(MotionEvent const &event);
+    void reset(Geom::Point const &p);
 };
 
-}
-}
-}
+} // namespace Tools
+} // namespace UI
+} // namespace Inkscape
 
-#endif // SP_DYNA_DRAW_CONTEXT_H_SEEN
+#endif // INKSCAPE_UI_TOOLS_CALLIGRAPHIC_TOOL_H
 
 /*
   Local Variables:

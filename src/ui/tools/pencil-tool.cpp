@@ -62,6 +62,10 @@
 #include "xml/node.h"
 #include "xml/sp-css-attr.h"
 
+#define DDC_MIN_PRESSURE      0.0
+#define DDC_MAX_PRESSURE      1.0
+#define DDC_DEFAULT_PRESSURE  1.0
+
 namespace Inkscape {
 namespace UI {
 namespace Tools {
