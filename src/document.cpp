@@ -1782,8 +1782,8 @@ std::vector<SPItem*> SPDocument::getItemsAtPoints(unsigned const key, std::vecto
         current_layer = desktop->layerManager().currentLayer();
     }
     size_t item_counter = 0;
-    for(int i = points.size()-1;i>=0; i--) {
-        std::vector<SPItem*> items = find_items_at_point(_node_cache, key, points[i], topmost_only);
+    for(auto point : points) {
+        std::vector<SPItem*> items = find_items_at_point(_node_cache, key, point, topmost_only);
         for (SPItem *item : items) {
             if (item && result.end()==find(result.begin(), result.end(), item))
                 if(all_layers || (desktop && desktop->layerManager().layerForObject(item) == current_layer)){
