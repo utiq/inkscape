@@ -28,6 +28,7 @@ class Dict;
 class FNVHash;
 class GfxFont;
 class GfxState;
+class GooString;
 class Object;
 class PDFDoc;
 class Ref;
@@ -71,6 +72,7 @@ typedef std::shared_ptr<std::map<FontPtr, FontData>> FontList;
 
 FontList getPdfFonts(std::shared_ptr<PDFDoc> pdf_doc);
 std::string getDictString(Dict *dict, const char *key);
+std::string getString(const GooString *value);
 
 // Replacate poppler FontDict
 class InkFontDict

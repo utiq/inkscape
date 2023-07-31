@@ -291,7 +291,7 @@ PdfParser::PdfParser(std::shared_ptr<PDFDoc> pdf_doc, Inkscape::Extension::Inter
         Catalog *catalog = pdf_doc->getCatalog();
         GooString *label = new GooString("");
         catalog->indexToLabel(page->getNum() - 1, label);
-        builder->pushPage(label->getCString(), state);
+        builder->pushPage(getString(label), state);
     }
 
     // Must come after pushPage!

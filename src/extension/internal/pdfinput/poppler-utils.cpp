@@ -577,6 +577,9 @@ FontList getPdfFonts(std::shared_ptr<PDFDoc> pdf_doc)
 }
 
 
+/**
+ * Get a string from a dictionary. If the string doesn't exist, return empty string.
+ */
 std::string getDictString(Dict *dict, const char *key)
 {
     Object obj = dict->lookup(key);
@@ -584,8 +587,15 @@ std::string getDictString(Dict *dict, const char *key)
     if (!obj.isString()) {
         return "";
     }
+    return getString(obj.getString());
+}
 
-    const GooString *value = obj.getString();
+/**
+ * Convert PDF strings, which can be formatted as UTF8, UTF16BE or UTF16LE into
+ * a predictable UTF8 string consistant with svg requirements.
+ */
+std::string getString(const GooString *value)
+{
     if (value->hasUnicodeMarker()) {
         return g_convert(value->getCString () + 2, value->getLength () - 2,
                          "UTF-8", "UTF-16BE", NULL, NULL, NULL);
