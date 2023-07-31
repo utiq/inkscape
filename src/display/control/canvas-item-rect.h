@@ -43,6 +43,7 @@ public:
     void set_dashed(bool dash = true);
     void set_inverted(bool inverted = false);
     void set_shadow(uint32_t color, int width);
+    void set_stroke_width(int width);
  
 protected:
     ~CanvasItemRect() override = default;
@@ -57,6 +58,7 @@ protected:
     bool _is_page = false;
     bool _dashed = false;
     bool _inverted = false;
+    int _stroke_width = 1;
     int _shadow_width = 0;
     uint32_t _shadow_color = 0x0;
 };

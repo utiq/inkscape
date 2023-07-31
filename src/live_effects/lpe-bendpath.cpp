@@ -118,7 +118,7 @@ void LPEBendPath::transform_multiply(Geom::Affine const &postmul, bool /*set*/)
     SPItem *linked = nullptr;
     if (SP_ACTIVE_DESKTOP) {
         selection = SP_ACTIVE_DESKTOP->getSelection();
-        linked = cast<SPItem>(bend_path.getObject());
+        linked = bend_path.getItem();
     }
     if (linked) {
         linked->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);

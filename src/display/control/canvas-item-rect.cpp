@@ -156,7 +156,7 @@ void CanvasItemRect::_render(Inkscape::CanvasItemBuffer &buf) const
     if (_dashed) {
         buf.cr->set_dash(dashes, -0.5);
     }
-    buf.cr->set_line_width(1);
+    buf.cr->set_line_width(_stroke_width);
     // we maybe have painted the background, back to "normal" compositing
     buf.cr->set_source_rgba(SP_RGBA32_R_F(_stroke), SP_RGBA32_G_F(_stroke),
                             SP_RGBA32_B_F(_stroke), SP_RGBA32_A_F(_stroke));
@@ -246,6 +246,15 @@ double CanvasItemRect::get_shadow_size() const
     // here hybrid approach is used: "unscaling" with square root of scale allows shadows to diminish
     // more slowly at small zoom levels (so it's still perceptible) and grow more slowly at high mag (where it doesn't matter, b/c it's typically off-screen)
     return size / (scale > 0 ? sqrt(scale) : 1);
+}
+
+void CanvasItemRect::set_stroke_width(int width)
+{
+    defer([=] {
+        if (_stroke_width == width) return;
+        _stroke_width = width;
+        request_redraw();
+    });
 }
 
 } // namespace Inkscape

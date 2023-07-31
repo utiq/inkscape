@@ -111,10 +111,10 @@ PathParam::~PathParam() {
 
 void PathParam::reload() {
     setUpdating(false);
-    start_listening(getObject());
+    start_listening(getItem());
     connect_selection_changed();
     SPItem *item = nullptr;
-    if (( item = cast<SPItem>(getObject()) )) {
+    if ((item = getItem())) {
         item->requestDisplayUpdate(SP_OBJECT_MODIFIED_FLAG);
     }
 }
@@ -122,8 +122,7 @@ void PathParam::reload() {
 Geom::Affine 
 PathParam::get_relative_affine() {
     Geom::Affine affine = Geom::identity();
-    SPItem *item = nullptr;
-    if (( item = cast<SPItem>(getObject()) )) {
+    if (auto item = getItem()) {
         std::vector<SPLPEItem *> lpeitems = param_effect->getCurrrentLPEItems();
         if (lpeitems.size() == 1) {
             param_effect->sp_lpe_item = lpeitems[0];

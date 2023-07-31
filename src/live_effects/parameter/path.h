@@ -60,7 +60,7 @@ public:
     sigc::signal<void ()> signal_path_changed;
     bool changed; /* this gets set whenever the path is changed (this is set to true, and then the signal_path_changed signal is emitted).
                    * the user must set it back to false if she wants to use it sensibly */
-    SPObject * getObject() const { if (ref.isAttached()) {return ref.getObject();} return nullptr;}
+    SPItem * getItem() const { if (ref.isAttached()) {return ref.getObject();} return nullptr;}
     void paste_param_path(const char *svgd);
     void on_paste_button_click();
     void linkitem(Glib::ustring pathid);
