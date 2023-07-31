@@ -667,17 +667,17 @@ button.square-button image {
     border-left: 3px solid white;
 }
 
-#DialogNotebook #Swatches {
-    padding-left: 10px;
-    padding-top: 10px;
-}
-
-#DialogNotebook #Swatches box {
-    margin-bottom: 5px
-}
-
 #DialogNotebook #Swatches box label {
-    padding-left: 7px;
+    padding-left: 5px;
+    padding-right: 3px;
+}
+
+#DialogNotebook #Swatches #ColorItem.group + label {
+    font-weight: bold;
+}
+
+#DialogNotebook #Swatches #ColorItem.paint-none + label {
+    font-style: italic;
 }
 
 #StyleSwatch label {

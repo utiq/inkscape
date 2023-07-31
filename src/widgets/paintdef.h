@@ -38,6 +38,7 @@
 #ifndef INKSCAPE_WIDGETS_PAINTDEF_H
 #define INKSCAPE_WIDGETS_PAINTDEF_H
 
+#include <glibmm/ustring.h>
 #include <string>
 #include <vector>
 #include <array>
@@ -59,9 +60,10 @@ public:
     PaintDef();
 
     /// Create a color of type RGB
-    PaintDef(std::array<unsigned, 3> const &rgb, std::string description);
+    PaintDef(std::array<unsigned, 3> const &rgb, std::string description, Glib::ustring tooltip);
 
     std::string get_color_id() const;
+    const Glib::ustring& get_tooltip() const;
 
     std::string const &get_description() const { return description; }
     ColorType get_type() const { return type; }
@@ -73,6 +75,7 @@ public:
 
 protected:
     std::string description;
+    Glib::ustring tooltip;
     ColorType type;
     std::array<unsigned, 3> rgb;
 };

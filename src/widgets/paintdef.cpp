@@ -37,6 +37,7 @@
 
 #include "paintdef.h"
 
+#include <glibmm/ustring.h>
 #include <memory>
 #include <algorithm>
 #include <cstdint>
@@ -51,14 +52,14 @@ static char const *mimeX_COLOR = "application/x-color";
 static char const *mimeTEXT = "text/plain";
 
 PaintDef::PaintDef()
-    : description(_("none"))
+    : description(C_("Paint", "None"))
     , type(NONE)
     , rgb({0, 0, 0})
 {
 }
 
-PaintDef::PaintDef(std::array<unsigned, 3> const &rgb, std::string description)
-    : description(std::move(description))
+PaintDef::PaintDef(std::array<unsigned, 3> const &rgb, std::string description, Glib::ustring tooltip)
+    : description(std::move(description)), tooltip(std::move(tooltip))
     , type(RGB)
     , rgb(rgb)
 {
@@ -87,6 +88,10 @@ std::string PaintDef::get_color_id() const
     char buf[12];
     std::snprintf(buf, 12, "rgb%02x%02x%02x", r, g, b);
     return std::string(buf);
+}
+
+const Glib::ustring& PaintDef::get_tooltip() const {
+    return tooltip;
 }
 
 std::vector<std::string> const &PaintDef::getMIMETypes()

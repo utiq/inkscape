@@ -488,12 +488,10 @@ Triplet cielab_to_xyz(double L, double a, double b, const Triplet& ref_white_xyz
 
 Triplet lab_to_rgb(double L, double a, double b, const Triplet& ref_white_xyz) {
     auto result = cielab_to_xyz(L, a, b, ref_white_xyz);
-// std::cout << "xyzs: " << result[0] << ' ' << result[1] << ' ' << result[2] << ' ';
     xyz2rgb(result);
     for (size_t i : {0, 1, 2}) {
         result[i] = std::clamp(result[i], 0.0, 1.0);
     }
-// std::cout << " rgb: " << result[0] << ' ' << result[1] << ' ' << result[2] << std::endl;
     return result;
 }
 

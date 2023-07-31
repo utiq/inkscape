@@ -5,9 +5,11 @@
 #include <giomm/file.h>
 #include <giomm/fileinputstream.h>
 #include <giomm/inputstream.h>
+#include <glib/gi18n.h>
 #include <glibmm/exception.h>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
+#include <gtkmm/window.h>
 #include <iomanip>
 
 // Using Glib::regex because
@@ -25,11 +27,12 @@
 #include <vector>
 
 #include "color/cmyk-conv.h"
+#include "helper/choose-file.h"
 #include "hsluv.h"
 #include "io/resource.h"
 #include "io/sys.h"
 
-namespace Inkscape {
+namespace {
 
 Glib::ustring get_extension(const Glib::ustring name) {
     auto extpos = name.rfind('.');
@@ -95,18 +98,18 @@ void skip(const Glib::RefPtr<Gio::InputStream>& s, size_t bytes) {
     s->skip(bytes);
 }
 
-using namespace UI::Dialog;
+using namespace Inkscape::UI::Dialog;
 
 // Load Adobe ACB color book
-void load_acb_palette(PaletteFileData& palette, const char* fname) {
+void load_acb_palette(PaletteFileData& palette, const Glib::ustring& fname) {
     auto file = Gio::File::create_for_path(fname);
     auto stream = file->read();
     auto magic = read_string(stream, 4);
-    if (magic != "8BCB") throw std::runtime_error(std::string("ACB file header not recognized: ") + fname);
+    if (magic != "8BCB") throw std::runtime_error(_("ACB file header not recognized."));
 
     auto version = read_value<uint16_t>(stream);
     if (version != 1) {
-        g_message("Unknown ACB palette version");
+        g_warning("Unknown ACB palette version in %s", fname.c_str());
     }
 
     /* id */ read_value<uint16_t>(stream);
@@ -127,7 +130,7 @@ void load_acb_palette(PaletteFileData& palette, const char* fname) {
     ttl = extract(ttl);
 
     auto color_count = read_value<uint16_t>(stream);
-    palette.page_size = read_value<uint16_t>(stream);
+    palette.columns = read_value<uint16_t>(stream);
     palette.page_offset = read_value<uint16_t>(stream);
     auto cs = read_value<uint16_t>(stream);
     int components = 0;
@@ -151,13 +154,17 @@ void load_acb_palette(PaletteFileData& palette, const char* fname) {
         color_space = PaletteFileData::Rgb255; // using RGB for grayscale
         break;
     default:
-        throw std::runtime_error("ACB file color space not supported");
+        throw std::runtime_error(_("ACB file color space not supported."));
     }
 
     auto ext = get_extension(ttl);
     if (ext == ".acb") {
         // extension in palette title -> junk name; use file name instead
         palette.name = Glib::path_get_basename(fname);
+        ext = get_extension(palette.name);
+        if (ext == ".acb") {
+            palette.name = palette.name.substr(0, palette.name.size() - ext.size());
+        }
     }
     else {
         auto r = ttl.find("^R");
@@ -165,18 +172,14 @@ void load_acb_palette(PaletteFileData& palette, const char* fname) {
         palette.name = ttl;
     }
 
-    palette.columns = 0;
-    palette.user = true;
-
-// g_message("pal: %s - '%s' col: %d, space: %d, page: %d offs: %d", palette.name.c_str(), ttl.c_str(), color_count, color_space, palette.page_size, palette.page_offset);
-
     palette.colors.reserve(color_count);
     // simple CMYK converter here; original palette colors are kept for later use
-    CmykConverter convert;
+    Inkscape::CmykConverter convert;
 
     for (int index = 0; index < color_count; ++index) {
 
         auto name = read_pstring(stream);
+        if (name.substr(0, 3) == "$$$") name = extract(name);
         auto code = read_string(stream, 6);
         auto channels = read_data(stream, components);
         PaletteFileData::Color color;
@@ -228,7 +231,7 @@ void load_acb_palette(PaletteFileData& palette, const char* fname) {
             break;
 
             default:
-                throw std::runtime_error("Palette color space unexpected");
+                throw std::runtime_error(_("Palette color space unexpected."));
         }
 
         if (name.empty()) {
@@ -242,17 +245,28 @@ void load_acb_palette(PaletteFileData& palette, const char* fname) {
     }
 }
 
-void load_ase_swatches(PaletteFileData& palette, const char* fname) {
+void load_ase_swatches(PaletteFileData& palette, const Glib::ustring& fname) {
     auto file = Gio::File::create_for_path(fname);
     auto stream = file->read();
     auto magic = read_string(stream, 4);
-    if (magic != "ASEF") throw std::runtime_error("ASE file header not recognized");
+    if (magic != "ASEF") throw std::runtime_error(_("ASE file header not recognized."));
 
     auto version_major = read_value<uint16_t>(stream);
     auto version_minor = read_value<uint16_t>(stream);
 
+    if (version_major > 1) {
+        g_warning("Unknown swatches version %d.%d in %s", (int)version_major, (int)version_minor, fname.c_str());
+    }
+
     auto block_count = read_value<uint32_t>(stream);
-    CmykConverter convert;
+    Inkscape::CmykConverter convert;
+    auto to_mode = [](int type){
+        switch (type) {
+            case 0:  return PaletteFileData::Global;
+            case 1:  return PaletteFileData::Spot;
+            default: return PaletteFileData::Normal;
+        }
+    };
 
     for (uint32_t block = 0; block < block_count; ++block) {
         auto block_type = read_value<uint16_t>(stream);
@@ -260,11 +274,8 @@ void load_ase_swatches(PaletteFileData& palette, const char* fname) {
         std::ostringstream ost;
 
         if (block_type == 0xc001) { // group start
-            if (!palette.name.empty()) {
-                g_warning("multigroup in %s", fname);
-            }
             auto name = read_pstring(stream, true);
-            palette.name = name;
+            palette.colors.push_back(PaletteFileData::Color::add_group(name));
         }
         else if (block_type == 0x0001) { // color entry
             auto color_name = read_pstring(stream, true);
@@ -275,10 +286,11 @@ void load_ase_swatches(PaletteFileData& palette, const char* fname) {
                 auto y = read_float(stream) * 100;
                 auto k = read_float(stream) * 100;
                 auto type = read_value<uint16_t>(stream);
+                auto mode = to_mode(type);
                 auto [r, g, b] = convert.cmyk_to_rgb(c, m, y, k);
                 ost << "C: " << c << "% M: " << m << "% Y: " << y << "% K: " << k << '%';
                 palette.colors.push_back(
-                    PaletteFileData::Color {{c, m, y, k}, PaletteFileData::Cmyk100, {r, g, b}, color_name, ost.str()}
+                    PaletteFileData::Color {{c, m, y, k}, PaletteFileData::Cmyk100, {r, g, b}, color_name, ost.str(), mode}
                 );
             }
             else if (mode == "RGB ") {
@@ -286,34 +298,38 @@ void load_ase_swatches(PaletteFileData& palette, const char* fname) {
                 auto g = read_float(stream) * 255;
                 auto b = read_float(stream) * 255;
                 auto type = read_value<uint16_t>(stream);
+                auto mode = to_mode(type);
                 palette.colors.push_back(
-                    PaletteFileData::Color {{r, g, b, 0}, PaletteFileData::Rgb255, {(unsigned)r, (unsigned)g, (unsigned)b}, color_name}
+                    PaletteFileData::Color {{r, g, b, 0}, PaletteFileData::Rgb255, {(unsigned)r, (unsigned)g, (unsigned)b}, color_name, "", mode}
                 );
             }
             else if (mode == "LAB ") {
-                //TODO - verify
+                //TODO - verify scale
                 auto l = read_float(stream) * 100;
                 auto a = read_float(stream) * 100;
                 auto b = read_float(stream) * 100;
+                auto type = read_value<uint16_t>(stream);
+                auto mode = to_mode(type);
                 auto rgb = Hsluv::lab_to_rgb(l, a, b);
                 unsigned ur = rgb[0] * 255;
                 unsigned ug = rgb[1] * 255;
                 unsigned ub = rgb[2] * 255;
                 ost << "L: " << l << " a: " << a << " b: " << b;
                 palette.colors.push_back(
-                    PaletteFileData::Color {{l, a, b, 0}, PaletteFileData::Lab100, {ur, ug, ub}, color_name, ost.str()}
+                    PaletteFileData::Color {{l, a, b, 0}, PaletteFileData::Lab100, {ur, ug, ub}, color_name, ost.str(), mode}
                 );
             }
             else if (mode == "Gray") {
                 auto g = read_float(stream) * 255;
                 auto type = read_value<uint16_t>(stream);
+                auto mode = to_mode(type);
                 palette.colors.push_back(
-                    PaletteFileData::Color {{g, g, g, 0}, PaletteFileData::Rgb255, {(unsigned)g, (unsigned)g, (unsigned)g}, color_name}
+                    PaletteFileData::Color {{g, g, g, 0}, PaletteFileData::Rgb255, {(unsigned)g, (unsigned)g, (unsigned)g}, color_name, "", mode}
                 );
             }
             else {
                 std::ostringstream ost;
-                ost << "ASE color mode not recognized: '" << mode << "'";
+                ost << _("ASE color mode not recognized:") << " '" << mode << "'.";
                 throw std::runtime_error(ost.str());
             }
            
@@ -325,27 +341,23 @@ void load_ase_swatches(PaletteFileData& palette, const char* fname) {
         }
     }
 
-    if (palette.name.empty()) {
-        palette.name = Glib::path_get_basename(fname);
-    }
-// g_message("pal: %s - %s", palette.name.c_str(), fname);
+    // palette name - file name without extension
+    palette.name = Glib::path_get_basename(fname);
+    auto ext = get_extension(palette.name);
+    if (ext == ".ase") palette.name = palette.name.substr(0, palette.name.size() - ext.size());
 }
 
-} // namespace
-
 // Load GIMP color palette
-Inkscape::UI::Dialog::PaletteFileData::PaletteFileData(Glib::ustring const &path)
-{
-    name = Glib::path_get_basename(path);
-    columns = 1;
-    user = Inkscape::IO::file_is_writable(path.c_str());
+void load_gimp_palette(PaletteFileData& palette, const Glib::ustring& path) {
+    palette.name = Glib::path_get_basename(path);
+    palette.columns = 1;
 
     auto f = std::unique_ptr<FILE, void(*)(FILE*)>(Inkscape::IO::fopen_utf8name(path.c_str(), "r"), [] (FILE *f) {if (f) std::fclose(f);});
-    if (!f) throw std::runtime_error("Failed to open file");
+    if (!f) throw std::runtime_error(_("Failed to open file"));
 
     char buf[1024];
-    if (!std::fgets(buf, sizeof(buf), f.get())) throw std::runtime_error("File is empty");
-    if (std::strncmp("GIMP Palette", buf, 12) != 0) throw std::runtime_error("First line is wrong");
+    if (!std::fgets(buf, sizeof(buf), f.get())) throw std::runtime_error(_("File is empty"));
+    if (std::strncmp("GIMP Palette", buf, 12) != 0) throw std::runtime_error(_("First line is wrong"));
 
     static auto const regex_rgb   = Glib::Regex::create("\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s*(?:\\s(.*\\S)\\s*)?$", Glib::REGEX_OPTIMIZE | Glib::REGEX_ANCHORED);
     static auto const regex_name  = Glib::Regex::create("\\s*Name:\\s*(.*\\S)", Glib::REGEX_OPTIMIZE | Glib::REGEX_ANCHORED);
@@ -357,13 +369,13 @@ Inkscape::UI::Dialog::PaletteFileData::PaletteFileData(Glib::ustring const &path
         Glib::MatchInfo match;
         if (regex_rgb->match(line, match)) { // ::regex_match(line, match, boost::regex(), boost::regex_constants::match_continuous)) {
             // RGB color, followed by an optional name.
-            Color color;
+            PaletteFileData::Color color;
             for (int i = 0; i < 3; i++) {
                 color.rgb[i] = std::clamp(std::stoi(match.fetch(i + 1)), 0, 255);
                 color.channels[i] = color.rgb[i];
             }
             color.channels[3] = 0;
-            color.space = Rgb255;
+            color.space = PaletteFileData::Rgb255;
             color.name = match.fetch(4);
 
             if (!color.name.empty()) {
@@ -378,58 +390,96 @@ Inkscape::UI::Dialog::PaletteFileData::PaletteFileData(Glib::ustring const &path
                              ).uppercase();
             }
 
-            colors.emplace_back(std::move(color));
+            palette.colors.emplace_back(std::move(color));
         } else if (regex_name->match(line, match)) {
             // Header entry for name.
-            name = match.fetch(1);
+            palette.name = match.fetch(1);
         } else if (regex_cols->match(line, match)) {
             // Header entry for columns.
-            columns = std::clamp(std::stoi(match.fetch(1)), 1, 1000);
+            palette.columns = std::clamp(std::stoi(match.fetch(1)), 1, 1000);
         } else if (regex_blank->match(line, match)) {
             // Comment or blank line.
         } else {
             // Unrecognised.
-            throw std::runtime_error("Invalid line " + std::string(line));
+            throw std::runtime_error(C_("Palette", "Invalid line ") + std::string(line));
         }
     }
+}
+
+} // namespace
+
+namespace Inkscape::UI::Dialog {
+
+PaletteResult load_palette(Glib::ustring path) {
+    Glib::ustring msg;
+    try {
+        PaletteFileData p;
+        p.id = path;
+        auto ext = get_extension(path);
+
+        if (ext == ".acb") {
+            load_acb_palette(p, path);
+        }
+        else if (ext == ".ase") {
+            load_ase_swatches(p, path);
+        }
+        else {
+            load_gimp_palette(p, path);
+        }
+
+        return {p, msg};
+
+    } catch (std::runtime_error const &e) {
+        msg = Glib::ustring::compose(_("Error loading palette %1: %2"), path, e.what());
+    } catch (std::logic_error const &e) {
+        msg = Glib::ustring::compose(_("Error loading palette %1: %2"), path, e.what());
+    }
+    catch (Glib::Exception& ex) {
+        msg = Glib::ustring::compose(_("Error loading palette %1: %2"), path, ex.what());
+    }
+    catch (...) {
+        msg = Glib::ustring::compose(_("Unknown error loading palette %"), path);
+    }
+    return {std::nullopt, msg};
 }
 
 Inkscape::UI::Dialog::GlobalPalettes::GlobalPalettes()
 {
     // Load the palettes.
     for (auto &path : Inkscape::IO::Resource::get_filenames(Inkscape::IO::Resource::PALETTES, {".gpl", ".acb", ".ase"})) {
-        try {
-            auto ext = get_extension(path);
-            if (ext == ".acb") {
-                PaletteFileData p;
-                load_acb_palette(p, path.c_str());
-                palettes.push_back(std::move(p));
-            }
-            else if (ext == ".ase") {
-                PaletteFileData p;
-                load_ase_swatches(p, path.c_str());
-                palettes.push_back(std::move(p));
-            }
-            else {
-                palettes.emplace_back(path);
-            }
-        } catch (std::runtime_error const &e) {
-            g_warning("Error loading palette %s: %s", path.c_str(), e.what());
-        } catch (std::logic_error const &e) {
-            g_warning("Error loading palette %s: %s", path.c_str(), e.what());
+        auto res = load_palette(path);
+        if (res.palette.has_value()) {
+            _palettes.push_back(std::move(*res.palette));
         }
-        catch (Glib::Exception& ex) {
-            g_warning("Error loading palette %s: %s", path.c_str(), ex.what().c_str());
+        else {
+            g_warning("%s", res.error_message.c_str());
         }
     }
 
-    std::sort(palettes.begin(), palettes.end(), [] (decltype(palettes)::const_reference a, decltype(palettes)::const_reference b) {
-        // Sort by user/system first...
-        if (a.user > b.user) return true;
-        if (b.user > a.user) return false;
-        // ... then by name.
+    std::sort(_palettes.begin(), _palettes.end(), [] (auto& a, auto& b) {
+        // Sort by name.
         return a.name.compare(b.name) < 0;
     });
+
+    for (auto& pal : _palettes) {
+         _access[pal.id.raw()] = &pal;
+    }
+}
+
+const PaletteFileData* GlobalPalettes::find_palette(const Glib::ustring& id) const {
+    auto p = _access.find(id.raw());
+    return p != _access.end() ? p->second : nullptr;
+}
+
+std::string choose_palette_file(Gtk::Window* window) {
+    bool loaded = false;
+    static std::string current_folder;
+    std::vector<std::pair<Glib::ustring, Glib::ustring>> filters = {
+        {_("Gimp Color Palette"), "*.gpl"},
+        {_("Adobe Color Book"), "*.acb"},
+        {_("Adobe Swatch Exchange"), "*.ase"}
+    };
+    return choose_file_open(_("Load color palette"), window, filters, current_folder);
 }
 
 Inkscape::UI::Dialog::GlobalPalettes const &Inkscape::UI::Dialog::GlobalPalettes::get()
@@ -437,3 +487,5 @@ Inkscape::UI::Dialog::GlobalPalettes const &Inkscape::UI::Dialog::GlobalPalettes
     static GlobalPalettes instance;
     return instance;
 }
+
+} // namespace

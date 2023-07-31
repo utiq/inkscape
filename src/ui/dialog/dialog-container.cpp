@@ -149,7 +149,7 @@ std::unique_ptr<DialogBase> DialogContainer::dialog_factory(Glib::ustring const 
     else if (dialog_type == "Preferences")        return std::make_unique<InkscapePreferences>();
     else if (dialog_type == "Selectors")          return std::make_unique<SelectorsDialog>();
     else if (dialog_type == "SVGFonts")           return std::make_unique<SvgFontsDialog>();
-    else if (dialog_type == "Swatches")           return std::make_unique<SwatchesPanel>();
+    else if (dialog_type == "Swatches")           return std::make_unique<SwatchesPanel>(false);
     else if (dialog_type == "Symbols")            return std::make_unique<SymbolsDialog>();
     else if (dialog_type == "Text")               return std::make_unique<TextEdit>();
     else if (dialog_type == "Trace")              return TraceDialog::create();

@@ -40,7 +40,14 @@ std::string choose_file_save(Glib::ustring title, Gtk::Window* parent, Glib::ust
     return fname;
 }
 
-std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vector<Glib::ustring> mime_types, std::string& current_folder) {
+std::string _choose_file_open(
+    Glib::ustring title,
+    Gtk::Window* parent,
+    std::vector<std::pair<Glib::ustring, Glib::ustring>> filters,
+    std::vector<Glib::ustring> mime_types,
+    std::string& current_folder
+) {
+
     if (!parent) return {};
 
     if (current_folder.empty()) {
@@ -52,11 +59,28 @@ std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vect
     dlg.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
     dlg.add_button(_("Open"), open_id);
     dlg.set_default_response(open_id);
-    auto filter = Gtk::FileFilter::create();
-    for (auto&& t : mime_types) {
-        filter->add_mime_type(t);
+
+    if (!filters.empty()) {
+        auto all_supported = Gtk::FileFilter::create();
+        all_supported->set_name(_("All Supported Formats"));
+        if (filters.size() > 1) dlg.add_filter(all_supported);
+
+        for (auto&& f : filters) {
+            auto filter = Gtk::FileFilter::create();
+            filter->set_name(f.first);
+            filter->add_pattern(f.second);
+            all_supported->add_pattern(f.second);
+            dlg.add_filter(filter);
+        }
     }
-    dlg.set_filter(filter);
+    else {
+        auto filter = Gtk::FileFilter::create();
+        for (auto&& t : mime_types) {
+            filter->add_mime_type(t);
+        }
+        dlg.set_filter(filter);
+    }
+
     dlg.set_current_folder(current_folder);
 
     auto id = UI::dialog_run(dlg);
@@ -68,6 +92,14 @@ std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vect
     current_folder = dlg.get_current_folder();
 
     return fname;
+}
+
+std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vector<Glib::ustring> mime_types, std::string& current_folder) {
+    return _choose_file_open(title, parent, {}, mime_types, current_folder);
+}
+
+std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vector<std::pair<Glib::ustring, Glib::ustring>> filters, std::string& current_folder) {
+    return _choose_file_open(title, parent, filters, {}, current_folder);
 }
 
 } // namespace Inkscape

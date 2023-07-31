@@ -30,6 +30,7 @@
 #include "io/resource.h"
 #include "io/sys.h"
 #include "object/sp-gradient.h"
+#include "object/tags.h"
 #include "svg/svg-color.h"
 #include "hsluv.h"
 #include "display/cairo-utils.h"
@@ -41,6 +42,7 @@
 #include "ui/dialog/dialog-container.h"
 #include "ui/icon-names.h"
 #include "ui/menuize.h"
+#include "ui/util.h"
 
 namespace {
 
@@ -99,10 +101,13 @@ ColorItem::ColorItem(PaintDef const &paintdef, DialogBase *dialog)
         data = RGBData{paintdef.get_rgb()};
     } else {
         pinned_default = true;
-        data = std::monostate{};
+        data = PaintNone{};
+        auto ctx = get_style_context();
+        ctx->add_class("paint-none");
     }
     description = paintdef.get_description();
     color_id = paintdef.get_color_id();
+    tooltip = paintdef.get_tooltip();
 
     common_setup();
 }
@@ -135,10 +140,27 @@ ColorItem::ColorItem(SPGradient *gradient, DialogBase *dialog)
     common_setup();
 }
 
+ColorItem::ColorItem(Glib::ustring name) : description(std::move(name)) {
+    bool group = !description.empty();
+    set_name("ColorItem");
+    set_tooltip_text(description);
+    color_id = "-";
+    auto ctx = get_style_context();
+    ctx->add_class(group ? "group" : "filler");
+}
+
+bool ColorItem::is_group() const {
+    return !dialog && color_id == "-" && !description.empty();
+}
+
+bool ColorItem::is_filler() const {
+    return !dialog && color_id == "-" && description.empty();
+}
+
 void ColorItem::common_setup()
 {
     set_name("ColorItem");
-    set_tooltip_text(description);
+    set_tooltip_text(description + (tooltip.empty() ? tooltip : "\n" + tooltip));
 
     Controller::add_motion<&ColorItem::on_motion_enter,
                            nullptr,
@@ -159,7 +181,19 @@ void ColorItem::set_pinned_pref(const std::string &path)
 
 void ColorItem::draw_color(Cairo::RefPtr<Cairo::Context> const &cr, int w, int h) const
 {
-    if (std::holds_alternative<std::monostate>(data)) {
+    if (std::holds_alternative<Undefined>(data)) {
+        // there's no color to paint; indicate clearly that there is nothing to select:
+        auto y = h / 2 + 0.5;
+        auto width = w / 4;
+        auto x = (w - width) / 2 - 0.5;
+        cr->move_to(x, y);
+        cr->line_to(x + width, y);
+        auto fg = get_foreground_color(get_style_context());
+        cr->set_source_rgba(fg.get_red(), fg.get_green(), fg.get_blue(), 0.5);
+        cr->set_line_width(1);
+        cr->stroke();
+    }
+    else if (is_paint_none()) {
         if (auto surface = Globals::get().removecolor) {
             const auto device_scale = get_scale_factor();
             cr->save();
@@ -172,6 +206,13 @@ void ColorItem::draw_color(Cairo::RefPtr<Cairo::Context> const &cr, int w, int h
         auto [r, g, b] = rgbdata->rgb;
         cr->set_source_rgb(r / 255.0, g / 255.0, b / 255.0);
         cr->paint();
+        // there's no way to query background color to check if color item stands out,
+        // so we apply faint outline to let users make out color shapes blending with background
+        auto fg = get_foreground_color(get_style_context());
+        cr->rectangle(0.5, 0.5, w - 1, h - 1);
+        cr->set_source_rgba(fg.get_red(), fg.get_green(), fg.get_blue(), 0.07);
+        cr->set_line_width(1);
+        cr->stroke();
     } else if (auto const graddata = std::get_if<GradientData>(&data)) {
         // Gradient pointer may be null if the gradient was destroyed.
         auto grad = graddata->gradient;
@@ -193,7 +234,7 @@ bool ColorItem::on_draw(Cairo::RefPtr<Cairo::Context> const &cr)
     auto h = get_height();
 
     // Only using caching for none and gradients. None is included because the image is huge.
-    bool const use_cache = std::holds_alternative<std::monostate>(data) || std::holds_alternative<GradientData>(data);
+    bool const use_cache = std::holds_alternative<PaintNone>(data) || std::holds_alternative<GradientData>(data);
 
     if (use_cache) {
         auto scale = get_scale_factor();
@@ -253,6 +294,8 @@ void ColorItem::on_size_allocate(Gtk::Allocation &allocation)
 void ColorItem::on_motion_enter(GtkEventControllerMotion const * /*motion*/,
                                 double /*x*/, double /*y*/)
 {
+    assert(dialog);
+
     mouse_inside = true;
     if (auto desktop = dialog->getDesktop()) {
         auto msg = Glib::ustring::compose(_("Color: <b>%1</b>; <b>Click</b> to set fill, <b>Shift+click</b> to set stroke"), description);
@@ -262,6 +305,8 @@ void ColorItem::on_motion_enter(GtkEventControllerMotion const * /*motion*/,
 
 void ColorItem::on_motion_leave(GtkEventControllerMotion const * /*motion*/)
 {
+    assert(dialog);
+
     mouse_inside = false;
     if (auto desktop = dialog->getDesktop()) {
         desktop->tipsMessageContext()->clear();
@@ -271,6 +316,8 @@ void ColorItem::on_motion_leave(GtkEventControllerMotion const * /*motion*/)
 Gtk::EventSequenceState ColorItem::on_click_pressed(Gtk::GestureMultiPress const &click,
                                                     int /*n_press*/, double /*x*/, double /*y*/)
 {
+    assert(dialog);
+
     if (click.get_current_button() == 3) {
         on_rightclick();
         return Gtk::EVENT_SEQUENCE_CLAIMED;
@@ -282,6 +329,8 @@ Gtk::EventSequenceState ColorItem::on_click_pressed(Gtk::GestureMultiPress const
 Gtk::EventSequenceState ColorItem::on_click_released(Gtk::GestureMultiPress const &click,
                                                      int /*n_press*/, double /*x*/, double /*y*/)
 {
+    assert(dialog);
+
     auto const button = click.get_current_button();
     if (mouse_inside && (button == 1 || button == 2)) {
         auto const state = Controller::get_current_event_state(click);
@@ -294,6 +343,8 @@ Gtk::EventSequenceState ColorItem::on_click_released(Gtk::GestureMultiPress cons
 
 void ColorItem::on_click(bool stroke)
 {
+    assert(dialog);
+
     auto desktop = dialog->getDesktop();
     if (!desktop) return;
 
@@ -301,7 +352,7 @@ void ColorItem::on_click(bool stroke)
     auto css = std::unique_ptr<SPCSSAttr, void(*)(SPCSSAttr*)>(sp_repr_css_attr_new(), [] (auto p) {sp_repr_css_attr_unref(p);});
 
     Glib::ustring descr;
-    if (std::holds_alternative<std::monostate>(data)) {
+    if (is_paint_none()) {
         sp_repr_css_set_property(css.get(), attr_name, "none");
         descr = stroke ? _("Set stroke color to none") : _("Set fill color to none");
     } else if (auto const rgbdata = std::get_if<RGBData>(&data)) {
@@ -461,14 +512,14 @@ void ColorItem::action_convert(Glib::ustring const &name)
 
 PaintDef ColorItem::to_paintdef() const
 {
-    if (std::holds_alternative<std::monostate>(data)) {
+    if (is_paint_none()) {
         return PaintDef();
     } else if (auto const rgbdata = std::get_if<RGBData>(&data)) {
-        return PaintDef(rgbdata->rgb, description);
+        return PaintDef(rgbdata->rgb, description, "");
     } else if (auto const graddata = std::get_if<GradientData>(&data)) {
         auto const grad = graddata->gradient;
         assert(grad != nullptr);
-        return PaintDef({0, 0, 0}, grad->getId());
+        return PaintDef({0, 0, 0}, grad->getId(), "");
     }
 
     // unreachable
@@ -478,6 +529,8 @@ PaintDef ColorItem::to_paintdef() const
 
 void ColorItem::on_drag_data_get(Glib::RefPtr<Gdk::DragContext> const &context, Gtk::SelectionData &selection_data, guint info, guint time)
 {
+    if (!dialog) return;
+
     auto &mimetypes = PaintDef::getMIMETypes();
     if (info < 0 || info >= mimetypes.size()) {
         g_warning("ERROR: unknown value (%d)", info);
@@ -526,7 +579,7 @@ bool ColorItem::is_pinned() const
 
 std::array<double, 3> ColorItem::average_color() const
 {
-    if (std::holds_alternative<std::monostate>(data)) {
+    if (is_paint_none()) {
         return {1.0, 1.0, 1.0};
     } else if (auto const rgbdata = std::get_if<RGBData>(&data)) {
         auto [r, g, b] = rgbdata->rgb;
@@ -549,6 +602,11 @@ std::array<double, 3> ColorItem::average_color() const
     assert(false);
     return {1.0, 1.0, 1.0};
 }
+
+bool ColorItem::is_paint_none() const {
+    return std::holds_alternative<PaintNone>(data);
+}
+
 
 } // namespace Inkscape::UI::Dialog
 

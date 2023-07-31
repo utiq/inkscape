@@ -15,6 +15,7 @@ std::string choose_file_save(Glib::ustring title, Gtk::Window* parent, Glib::ust
 
 // open single file for reading data
 std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vector<Glib::ustring> mime_types, std::string& current_folder);
+std::string choose_file_open(Glib::ustring title, Gtk::Window* parent, std::vector<std::pair<Glib::ustring, Glib::ustring>> filters, std::string& current_folder);
 
 } // namespace Inkscape
 

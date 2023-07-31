@@ -226,6 +226,7 @@
         <property name="focus-on-click">False</property>
         <property name="receives-default">True</property>
         <property name="halign">end</property>
+        <property name="valign">end</property>
         <property name="margin-start">1</property>
         <property name="margin-end">1</property>
         <property name="relief">none</property>

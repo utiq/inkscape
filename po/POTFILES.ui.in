@@ -17,6 +17,7 @@
 ../share/ui/dialog-objects.glade
 ../share/ui/dialog-paint-servers.glade
 ../share/ui/dialog-save-template.glade
+../share/ui/dialog-swatches.glade
 ../share/ui/dialog-symbols.glade
 ../share/ui/dialog-text-edit.glade
 ../share/ui/dialog-trace.glade

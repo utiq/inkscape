@@ -13,12 +13,18 @@
 #define UI_DIALOG_SWATCHES_H
 
 #include <array>
+#include <glibmm/refptr.h>
+#include <gtkmm/button.h>
+#include <gtkmm/comboboxtext.h>
+#include <gtkmm/togglebutton.h>
+#include <optional>
 #include <variant>
 #include <vector>
 #include <boost/unordered_map.hpp>
 #include <glibmm/ustring.h>
 
 #include "ui/dialog/dialog-base.h"
+#include "ui/dialog/global-palettes.h"
 
 namespace Inkscape {
 namespace UI {
@@ -41,7 +47,7 @@ class ColorItem;
 class SwatchesPanel : public DialogBase
 {
 public:
-    SwatchesPanel(char const *prefsPath = "/dialogs/swatches");
+    SwatchesPanel(bool compact, char const *prefsPath = "/dialogs/swatches");
     ~SwatchesPanel() override;
 
 protected:
@@ -53,22 +59,21 @@ protected:
     void on_size_allocate(Gtk::Allocation&) override;
 
 private:
-    void update_palettes();
+    void update_palettes(bool compact);
     void rebuild();
+    bool load_swatches();
+    bool load_swatches(Glib::ustring path);
+    void update_store_entry();
+    void clear_filter();
+    void filter_colors(const Glib::ustring& text);
+    bool filter_callback(const Dialog::ColorItem& color) const;
 
     Inkscape::UI::Widget::ColorPalette *_palette;
 
-    // Mapping between palette names and indexes.
-    enum PaletteIndex
-    {
-        PALETTE_NONE = -2,
-        PALETTE_AUTO = -1,
-        PALETTE_GLOBAL = 0,
-    };
-    PaletteIndex index;
-    static PaletteIndex name_to_index(Glib::ustring const&);
-    static Glib::ustring index_to_name(PaletteIndex);
-    void set_index(PaletteIndex new_index);
+    Glib::ustring _current_palette_id;
+    void set_palette(const Glib::ustring& id);
+    void select_palette(const Glib::ustring& id);
+    const PaletteFileData* get_palette(const Glib::ustring& id);
 
     // Asynchronous update mechanism.
     sigc::connection conn_gradients;
@@ -93,6 +98,16 @@ private:
     void update_fillstroke_indicators();
 
     Inkscape::PrefObserver _pinned_observer;
+    Glib::RefPtr<Gtk::Builder> _builder;
+    Gtk::RadioButton& _list_btn;
+    Gtk::RadioButton& _grid_btn;
+    PaletteFileData _loaded_palette;
+    Gtk::ComboBoxText& _selector;
+    Glib::RefPtr<Gtk::ListStore> _palette_store;
+    Glib::ustring _color_filter_text;
+    Gtk::Button& _new_btn;
+    Gtk::Button& _edit_btn;
+    Gtk::Button& _delete_btn;
 };
 
 } // namespace Dialog

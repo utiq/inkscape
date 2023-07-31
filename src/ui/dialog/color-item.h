@@ -10,6 +10,7 @@
 #ifndef INKSCAPE_UI_DIALOG_COLOR_ITEM_H
 #define INKSCAPE_UI_DIALOG_COLOR_ITEM_H
 
+#include <glibmm/ustring.h>
 #include <variant>
 #include <boost/noncopyable.hpp>
 #include <cairomm/cairomm.h>
@@ -42,6 +43,15 @@ class ColorItem final : public Gtk::DrawingArea, boost::noncopyable
 public:
     /// Create a static color from a paintdef.
     ColorItem(PaintDef const&, DialogBase*);
+    /// Add new group or filler element.
+    ColorItem(Glib::ustring name);
+
+    // Returns true if this is group heading rather than a color
+    bool is_group() const;
+    // Returns true if this is alignmet filler item, not a color
+    bool is_filler() const;
+    // Is paint "None"?
+    bool is_paint_none() const;
 
     /**
      * Create a dynamically-updating color from a gradient, to which it remains linked.
@@ -109,6 +119,7 @@ private:
     // Description of the color, shown in help text.
     Glib::ustring description;
     Glib::ustring color_id;
+    Glib::ustring tooltip;
 
     /// The pinned preference path
     Glib::ustring pinned_pref;
@@ -117,10 +128,12 @@ private:
     // The color.
     struct RGBData { std::array<unsigned, 3> rgb; };
     struct GradientData { SPGradient *gradient; };
-    std::variant<std::monostate, RGBData, GradientData> data;
+    enum Undefined {};
+    enum PaintNone {};
+    std::variant<Undefined, PaintNone, RGBData, GradientData> data;
 
     // The dialog this widget belongs to. Used for determining what desktop to take action on.
-    DialogBase *dialog;
+    DialogBase *dialog = nullptr;
 
     // Whether this color is in use as the fill or stroke of the current selection.
     bool is_fill = false;
