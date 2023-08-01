@@ -125,7 +125,7 @@ std::unique_ptr<UI::Widget::PopoverMenu> ToolToolbar::makeContextMenu(InkscapeWi
 
     auto &item = *Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("Open tool preferences"),
                                                                  icon_name);
-    item.signal_activate().connect([=, this]
+    item.signal_activate().connect([=]
     {
         tool_preferences(_context_menu_tool_name, window);
         _context_menu_tool_name.clear();

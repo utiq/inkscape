@@ -15,6 +15,7 @@
 #define SEEN_UI_WIDGET_POPOVER_MENU_ITEM_H
 
 #include <glibmm/ustring.h>
+#include <gtk/gtk.h> // GtkEventControllerMotion
 #include <gtkmm/button.h>
 #include <gtkmm/enums.h> // Gtk::IconSize
 #include "ui/widget/css-name-class-init.h"
@@ -41,6 +42,9 @@ public:
 
 private:
     [[nodiscard]] PopoverMenu *get_menu();
+
+    void on_motion(GtkEventControllerMotion const *motion, double x, double y);
+    void on_focus();
 };
 
 } // namespace Inkscape::UI::Widget

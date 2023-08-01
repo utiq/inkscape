@@ -15,6 +15,7 @@
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/stylecontext.h>
+#include "ui/controller.h"
 #include "ui/util.h"
 #include "ui/widget/popover-menu.h"
 #include "ui/widget/popover-menu-item.h"
@@ -67,24 +68,9 @@ PopoverMenuItem::PopoverMenuItem(Glib::ustring const &label_with_mnemonic,
     // Make items behave like GtkMenu: focus if hovered & style focus+hover same
     // If hovered naturally or below, key-focus self & clear focus+hover on rest
     add_events(Gdk::POINTER_MOTION_MASK);
-    signal_motion_notify_event().connect([this](GdkEventMotion const *)
-    {
-        if (is_focus()) return false;
-        if (auto const menu = get_menu()) {
-            menu->unset_items_focus_hover(this);
-            grab_focus(); // Weʼll then run the below handler @ notify::is-focus
-        }
-        return false;
-    });
+    Controller::add_motion<nullptr, &PopoverMenuItem::on_motion, nullptr>(*this, *this);
     // If key-focused in/out, ‘fake’ correspondingly appearing as hovered or not
-    property_is_focus().signal_changed().connect([this]
-    {
-        if (is_focus()) {
-            set_state_flags(Gtk::STATE_FLAG_PRELIGHT, false);
-        } else {
-            unset_state_flags(Gtk::STATE_FLAG_PRELIGHT);
-        }
-    });
+    property_is_focus().signal_changed().connect([this]{ on_focus(); });
 }
 
 Glib::SignalProxy<void> PopoverMenuItem::signal_activate()
@@ -104,6 +90,25 @@ PopoverMenu *PopoverMenuItem::get_menu()
         return ForEachResult::_continue;
     });
     return result;
+}
+
+void PopoverMenuItem::on_motion(GtkEventControllerMotion const * const motion,
+                                double const x, double const y)
+{
+    if (is_focus()) return;
+    if (auto const menu = get_menu()) {
+        menu->unset_items_focus_hover(this);
+        grab_focus(); // Weʼll then run the below handler @ notify::is-focus
+    }
+}
+
+void PopoverMenuItem::on_focus()
+{
+    if (is_focus()) {
+        set_state_flags(Gtk::STATE_FLAG_PRELIGHT, false);
+    } else {
+        unset_state_flags(Gtk::STATE_FLAG_PRELIGHT);
+    }
 }
 
 } // namespace Inkscape::UI::Widget

@@ -11,6 +11,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <utility>
 #include <sigc++/functors/mem_fun.h>
 #include <cairomm/cairomm.h>
 #include <glibmm/convert.h>
@@ -330,7 +331,7 @@ void ColorItem::on_rightclick(GdkEvent const *event)
     auto additem = [&, this] (Glib::ustring const &name, sigc::slot<void()> slot) {
         auto const item = Gtk::make_managed<Gtk::MenuItem>(name);
         menu->append(*item);
-        item->signal_activate().connect(SIGC_TRACKING_ADAPTOR(slot, *this));
+        item->signal_activate().connect(SIGC_TRACKING_ADAPTOR(std::move(slot), *this));
     };
 
     // TRANSLATORS: An item in context menu on a colour in the swatches
@@ -340,7 +341,7 @@ void ColorItem::on_rightclick(GdkEvent const *event)
     if (auto const graddata = std::get_if<GradientData>(&data)) {
         menu->append(*Gtk::make_managed<Gtk::SeparatorMenuItem>());
 
-        additem(_("Delete"), [=, this] {
+        additem(_("Delete"), [=] {
             auto const grad = graddata->gradient;
             if (!grad) return;
 
@@ -348,7 +349,7 @@ void ColorItem::on_rightclick(GdkEvent const *event)
             DocumentUndo::done(grad->document, _("Delete swatch"), INKSCAPE_ICON("color-gradient"));
         });
 
-        additem(_("Edit..."), [=, this] {
+        additem(_("Edit..."), [=] {
             auto const grad = graddata->gradient;
             if (!grad) return;
 
@@ -405,7 +406,7 @@ void ColorItem::on_rightclick(GdkEvent const *event)
 
         auto const item = Gtk::make_managed<Gtk::MenuItem>(name);
         convert_submenu->append(*item);
-        item->signal_activate().connect(slot);
+        item->signal_activate().connect(std::move(slot));
     };
 
     auto grads = dialog->getDesktop()->getDocument()->getResourceList("gradient");

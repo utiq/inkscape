@@ -1,7 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef INKSCAPE_HELPER_SIGC_TRACK_OBJ_H
-#define INKSCAPE_HELPER_SIGC_TRACK_OBJ_H
-
 /**
  * @file
  * Macros to handle API transition in libsigc++, replacing the function template
@@ -18,6 +15,9 @@
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
+
+#ifndef INKSCAPE_HELPER_SIGC_TRACK_OBJ_H
+#define INKSCAPE_HELPER_SIGC_TRACK_OBJ_H
 
 #include <sigc++/sigc++.h>
 
