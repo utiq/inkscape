@@ -65,11 +65,11 @@ void SvgFontDrawingArea::set_text(Glib::ustring text){
 void SvgFontDrawingArea::set_size(int x, int y){
     _x = x;
     _y = y;
-    ((Gtk::Widget*) this)->set_size_request(_x, _y);
+    set_size_request(_x, _y);
 }
 
 void SvgFontDrawingArea::redraw(){
-    ((Gtk::Widget*) this)->queue_draw();
+    queue_draw();
 }
 
 bool SvgFontDrawingArea::on_draw(const Cairo::RefPtr<Cairo::Context> &cr) {
@@ -859,7 +859,7 @@ Gtk::Box* SvgFontsDialog::global_settings_tab(){
         );
     });
 
-    global_vbox.set_border_width(2);
+    global_vbox.property_margin().set_value(2);
     global_vbox.pack_start(_grid, false, true);
 
 /*    global_vbox->add(*AttrCombo((gchar*) _("Style:"), SPAttr::FONT_STYLE));
@@ -1287,7 +1287,7 @@ void SvgFontsDialog::set_glyphs_view_mode(bool list) {
 Gtk::Box* SvgFontsDialog::glyphs_tab() {
 
     glyphs_vbox.set_name("SVGFontsGlyphsTab");
-    glyphs_vbox.set_border_width(4);
+    glyphs_vbox.property_margin().set_value(4);
     glyphs_vbox.set_spacing(4);
 
     auto const missing_glyph_button = Gtk::make_managed<Gtk::Button>(_("From selection"));
@@ -1547,11 +1547,11 @@ Gtk::Box* SvgFontsDialog::kerning_tab(){
     _font_da.set_size(-1, 60 + 20);
 
     kerning_vbox.set_name("SVGFontsKerningTab");
-    kerning_vbox.set_border_width(4);
+    kerning_vbox.property_margin().set_value(4);
     kerning_vbox.set_spacing(4);
     kerning_vbox.pack_start(*kerning_selector, false,false);
     kerning_vbox.pack_start(_KerningPairsListScroller, true,true);
-    kerning_vbox.pack_start((Gtk::Widget&) kerning_preview, false,false);
+    kerning_vbox.pack_start(kerning_preview, false,false);
     kerning_vbox.pack_start(*kerning_amount_hbox, false,false);
 
     return &kerning_vbox;
@@ -1687,7 +1687,7 @@ SvgFontsDialog::SvgFontsDialog()
 
     // Text Preview:
     _preview_entry.signal_changed().connect(sigc::mem_fun(*this, &SvgFontsDialog::on_preview_text_changed));
-    pack_start((Gtk::Widget&) _font_da, false, false);
+    pack_start(_font_da, false, false);
     _preview_entry.set_text(_("Sample text"));
     _font_da.set_text(_("Sample text"));
 

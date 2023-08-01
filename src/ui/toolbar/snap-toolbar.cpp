@@ -27,7 +27,6 @@ SnapToolbar::SnapToolbar()
     : Gtk::Box()
 {
     set_name("SnapToolbar");
-    set_homogeneous(false);
 
     bool simple_snap = true;
 

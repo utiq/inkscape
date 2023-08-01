@@ -215,26 +215,20 @@ LPEMeasureSegments::newWidget()
 {
     // use manage here, because after deletion of Effect object, others might still be pointing to this widget.
     auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    vbox->set_border_width(0);
-    vbox->set_homogeneous(false);
-    vbox->set_spacing(0);
-    auto const vbox0 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    vbox0->set_border_width(5);
-    vbox0->set_homogeneous(false);
-    vbox0->set_spacing(2);
-    auto const vbox1 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    vbox1->set_border_width(5);
-    vbox1->set_homogeneous(false);
-    vbox1->set_spacing(2);
-    auto const vbox2 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    vbox2->set_border_width(5);
-    vbox2->set_homogeneous(false);
-    vbox2->set_spacing(2);
+
+    auto const vbox0 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 2);
+    vbox0->property_margin().set_value(5);
+
+    auto const vbox1 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 2);
+    vbox1->property_margin().set_value(5);
+
+    auto const vbox2 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 2);
+    vbox2->property_margin().set_value(5);
+
     //Help page
-    auto const vbox3 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    vbox3->set_border_width(5);
-    vbox3->set_homogeneous(false);
-    vbox3->set_spacing(2);
+    auto const vbox3 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 2);
+    vbox3->property_margin().set_value(5);
+
     std::vector<Parameter *>::iterator it = param_vector.begin();
     while (it != param_vector.end()) {
         if ((*it)->widget_is_visible) {

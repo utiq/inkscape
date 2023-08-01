@@ -34,7 +34,7 @@
 #include "xml/attribute-record.h"
 #include "xml/sp-css-attr.h"
 
-static constexpr auto const STYLE_SWATCH_WIDTH = 135;
+static constexpr int STYLE_SWATCH_WIDTH = 135;
 
 enum {
     SS_FILL,

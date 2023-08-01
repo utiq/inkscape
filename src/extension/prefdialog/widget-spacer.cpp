@@ -46,7 +46,7 @@ Gtk::Widget *WidgetSpacer::get_widget(sigc::signal<void ()> *changeSignal)
     }
 
     auto const spacer = Gtk::make_managed<Gtk::Box>();
-    spacer->set_border_width(_size/2);
+    spacer->property_margin().set_value(_size/2);
 
     if (_expand) {
         spacer->set_hexpand();

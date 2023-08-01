@@ -691,10 +691,8 @@ Gtk::Widget * LPETiling::newWidget()
     // use manage here, because after deletion of Effect object, others might
     // still be pointing to this widget.
     auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    vbox->property_margin().set_value(5);
 
-    vbox->set_border_width(5);
-    vbox->set_homogeneous(false);
-    vbox->set_spacing(0);
     Gtk::Widget *combo = nullptr;
     Gtk::Widget *randbutton = nullptr;
     Gtk::Box *containerstart = nullptr;
@@ -702,10 +700,11 @@ Gtk::Widget * LPETiling::newWidget()
     Gtk::Box *movestart = nullptr;
     Gtk::Box *moveend = nullptr;
     Gtk::Box *rowcols = nullptr;
-    std::vector<Parameter *>::iterator it = param_vector.begin();
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     bool usemirroricons = prefs->getBool("/live_effects/copy/mirroricons",true);
     std::vector<Gtk::Widget*> scalars;
+
+    std::vector<Parameter *>::iterator it = param_vector.begin();
     while (it != param_vector.end()) {
         if ((*it)->widget_is_visible) {
             Parameter *param = *it;

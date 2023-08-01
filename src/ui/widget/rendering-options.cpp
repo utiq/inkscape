@@ -51,7 +51,7 @@ RenderingOptions::RenderingOptions () :
                         "arbitrarily scaled without quality loss, but all "
                         "objects will be rendered exactly as displayed."));
 
-    set_border_width(2);
+    property_margin().set_value(2);
 
     Gtk::RadioButtonGroup group = _radio_vector.get_group ();
     _radio_bitmap.set_group (group);

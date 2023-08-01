@@ -32,19 +32,20 @@
 
 namespace Gtk {
 class Scale;
-}
+} // namespace Gtk
 
 class SPGlyph;
 class SPGlyphKerning;
 class SvgFont;
 
-class SvgFontDrawingArea : Gtk::DrawingArea{
+class SvgFontDrawingArea : public Gtk::DrawingArea {
 public:
     SvgFontDrawingArea();
     void set_text(Glib::ustring);
     void set_svgfont(SvgFont*);
     void set_size(int x, int y);
     void redraw();
+
 private:
     int _x,_y;
     SvgFont* _svgfont;

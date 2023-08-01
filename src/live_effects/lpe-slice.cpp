@@ -99,18 +99,19 @@ LPESlice::newWidget()
 {
     // use manage here, because after deletion of Effect object, others might
     // still be pointing to this widget.
-    auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
+    auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 2);
+    vbox->property_margin().set_value(5);
 
-    vbox->set_border_width(5);
-    vbox->set_homogeneous(false);
-    vbox->set_spacing(2);
     auto const hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
+
     auto const center_vert_button = Gtk::make_managed<Gtk::Button>(Glib::ustring(_("Vertical")));
     center_vert_button->signal_clicked().connect(sigc::mem_fun(*this, &LPESlice::centerVert));
     center_vert_button->set_size_request(110, 20);
+
     auto const center_horiz_button = Gtk::make_managed<Gtk::Button>(Glib::ustring(_("Horizontal")));
     center_horiz_button->signal_clicked().connect(sigc::mem_fun(*this, &LPESlice::centerHoriz));
     center_horiz_button->set_size_request(110, 20);
+
     auto const reset_button = Gtk::make_managed<Gtk::Button>(Glib::ustring(_("Reset styles")));
     reset_button->signal_clicked().connect(sigc::mem_fun(*this, &LPESlice::resetStyles));
     reset_button->set_size_request(110, 20);
@@ -119,6 +120,7 @@ LPESlice::newWidget()
     hbox->pack_start(*reset_button, false, false, 2);
     hbox->pack_start(*center_vert_button, false, false, 2);
     hbox->pack_start(*center_horiz_button, false, false, 2);
+
     std::vector<Parameter *>::iterator it = param_vector.begin();
     while (it != param_vector.end()) {
         if ((*it)->widget_is_visible) {

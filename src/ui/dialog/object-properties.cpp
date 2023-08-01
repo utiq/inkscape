@@ -95,7 +95,7 @@ void ObjectProperties::_init()
     auto const grid_top = Gtk::make_managed<Gtk::Grid>();
     grid_top->set_row_spacing(4);
     grid_top->set_column_spacing(0);
-    grid_top->set_border_width(4);
+    grid_top->property_margin().set_value(4);
 
     pack_start(*grid_top, false, false, 0);
 
@@ -165,7 +165,7 @@ void ObjectProperties::_init()
     pack_start(*frame_desc, true, true, 0);
 
     /* Create the text view box for the object description */
-    _ft_description.set_border_width(4);
+    _ft_description.property_margin().set_value(4);
     _ft_description.set_sensitive(FALSE);
     frame_desc->add(_ft_description);
     _ft_description.set_shadow_type(Gtk::SHADOW_IN);
@@ -237,7 +237,7 @@ void ObjectProperties::_init()
     grid_cb->set_row_homogeneous();
     grid_cb->set_column_homogeneous(true);
 
-    grid_cb->set_border_width(4);
+    grid_cb->property_margin().set_value(4);
     hb_checkboxes->pack_start(*grid_cb, true, true, 0);
 
     /* Hide */

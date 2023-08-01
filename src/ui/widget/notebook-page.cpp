@@ -23,7 +23,7 @@ NotebookPage::NotebookPage(int n_rows, int n_columns, bool expand, bool fill, gu
     , _table(Gtk::make_managed<Gtk::Grid>())
 {
     set_name("NotebookPage");
-    set_border_width(4);
+    property_margin().set_value(4);
     set_spacing(4);
 
     _table->set_row_spacing(4);

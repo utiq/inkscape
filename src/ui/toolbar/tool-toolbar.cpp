@@ -44,7 +44,6 @@ ToolToolbar::ToolToolbar(InkscapeWindow *window)
     , _context_menu{makeContextMenu(window)}
 {
     set_name("ToolToolbar");
-    set_homogeneous(false);
 
     Gtk::ScrolledWindow* tool_toolbar = nullptr;
 

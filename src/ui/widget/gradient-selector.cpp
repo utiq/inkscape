@@ -110,7 +110,6 @@ GradientSelector::GradientSelector()
 
     /* Create box for buttons */
     auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
-    hb->set_homogeneous(false);
     pack_start(*hb, false, false, 0);
 
     _add = Gtk::make_managed<Gtk::Button>();

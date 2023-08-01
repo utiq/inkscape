@@ -10,7 +10,7 @@
   <object class="GtkPopover" id="object-menu">
     <property name="width-request">222</property>
     <property name="can-focus">False</property>
-    <property name="border-width">5</property>
+    <property name="margin">5</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>

@@ -74,7 +74,7 @@ ArrangeDialog::ArrangeDialog()
     auto const button_box = Gtk::make_managed<Gtk::ButtonBox>();
     button_box->set_layout(Gtk::BUTTONBOX_CENTER);
     button_box->set_spacing(6);
-    button_box->set_border_width(4);
+    button_box->property_margin().set_value(4);
     button_box->set_valign(Gtk::ALIGN_FILL);
 
     button_box->pack_end(*_arrangeButton);

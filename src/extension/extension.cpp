@@ -1027,7 +1027,7 @@ Extension::autogui (SPDocument *doc, Inkscape::XML::Node *node, sigc::signal<voi
     }
 
     auto const agui = Gtk::make_managed<AutoGUI>();
-    agui->set_border_width(InxParameter::GUI_BOX_MARGIN);
+    agui->property_margin().set_value(InxParameter::GUI_BOX_MARGIN);
     agui->set_spacing(InxParameter::GUI_BOX_SPACING);
 
     // go through the list of widgets and add the all non-hidden ones
@@ -1053,13 +1053,13 @@ Gtk::Box *
 Extension::get_info_widget()
 {
     auto const retval = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    retval->set_border_width(4);
+    retval->property_margin().set_value(4);
 
     auto const info = Gtk::make_managed<Gtk::Frame>("General Extension Information");
     retval->pack_start(*info, true, true, 4);
 
     auto const table = Gtk::make_managed<Gtk::Grid>();
-    table->set_border_width(4);
+    table->property_margin().set_value(4);
     table->set_column_spacing(4);
     info->add(*table);
 

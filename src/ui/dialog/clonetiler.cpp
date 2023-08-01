@@ -106,14 +106,11 @@ CloneTiler::CloneTiler()
         auto prefs = Inkscape::Preferences::get();
 
         auto const mainbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
-        mainbox->set_homogeneous(false);
-        mainbox->set_border_width(6);
-
+        mainbox->property_margin().set_value(6);
         pack_start(*mainbox, true, true, 0);
 
         nb = Gtk::make_managed<Gtk::Notebook>();
         mainbox->pack_start(*nb, false, false, 0);
-
 
         // Symmetry
         {
@@ -673,7 +670,6 @@ CloneTiler::CloneTiler()
 
             {
                 auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
-                hb->set_homogeneous(false);
 
                 auto const l = Gtk::make_managed<Gtk::Label>(_("Initial color: "));
                 hb->pack_start(*l, false, false, 0);
@@ -799,8 +795,7 @@ CloneTiler::CloneTiler()
             auto vb = new_tab(nb, _("_Trace"));
         {
             auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, VB_MARGIN);
-            hb->set_border_width(4);
-            hb->set_homogeneous(false);
+            hb->property_margin().set_value(4);
             vb->pack_start(*hb, false, false, 0);
 
             _b = Gtk::make_managed<UI::Widget::CheckButtonInternal>(_("Trace the drawing under the clones/sprayed items"));
@@ -814,7 +809,6 @@ CloneTiler::CloneTiler()
 
         {
             auto const vvb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 0);
-            vvb->set_homogeneous(false);
             vb->pack_start(*vvb, false, false, 0);
             _dotrace = vvb;
 
@@ -826,7 +820,7 @@ CloneTiler::CloneTiler()
                 auto const table = Gtk::make_managed<Gtk::Grid>();
                 table->set_row_spacing(4);
                 table->set_column_spacing(6);
-                table->set_border_width(4);
+                table->property_margin().set_value(4);
                 frame->add(*table);
 
                 Gtk::RadioButtonGroup rb_group;
@@ -897,7 +891,7 @@ CloneTiler::CloneTiler()
                 auto const table = Gtk::make_managed<Gtk::Grid>();
                 table->set_row_spacing(4);
                 table->set_column_spacing(6);
-                table->set_border_width(4);
+                table->property_margin().set_value(4);
                 frame->add(*table);
 
                 {
@@ -941,7 +935,7 @@ CloneTiler::CloneTiler()
                 auto const table = Gtk::make_managed<Gtk::Grid>();
                 table->set_row_spacing(4);
                 table->set_column_spacing(6);
-                table->set_border_width(4);
+                table->property_margin().set_value(4);
                 frame->add(*table);
 
                 {
@@ -986,7 +980,6 @@ CloneTiler::CloneTiler()
 
         {
             auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, VB_MARGIN);
-            hb->set_homogeneous(false);
             mainbox->pack_start(*hb, false, false, 0);
             auto const l = Gtk::make_managed<Gtk::Label>("");
             l->set_markup(_("Apply to tiled clones:"));
@@ -998,7 +991,7 @@ CloneTiler::CloneTiler()
             table->set_row_spacing(4);
             table->set_column_spacing(6);
 
-            table->set_border_width(VB_MARGIN);
+            table->property_margin().set_value(VB_MARGIN);
             mainbox->pack_start(*table, false, false, 0);
 
             {
@@ -1137,7 +1130,6 @@ CloneTiler::CloneTiler()
         // Statusbar
         {
             auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, VB_MARGIN);
-            hb->set_homogeneous(false);
             mainbox->pack_end(*hb, false, false, 0);
             auto const l = Gtk::make_managed<Gtk::Label>("");
             _status = l;
@@ -1147,7 +1139,6 @@ CloneTiler::CloneTiler()
         // Buttons
         {
             auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, VB_MARGIN);
-            hb->set_homogeneous(false);
             mainbox->pack_start(*hb, false, false, 0);
 
             {
@@ -1162,7 +1153,6 @@ CloneTiler::CloneTiler()
 
             { // buttons which are enabled only when there are tiled clones
                 auto const sb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
-                sb->set_homogeneous(false);
                 hb->pack_end(*sb, false, false, 0);
                 _buttons_on_tiles = sb;
                 {
@@ -2510,8 +2500,7 @@ Gtk::Box * CloneTiler::new_tab(Gtk::Notebook *nb, const gchar *label)
 {
     auto const l = Gtk::make_managed<Gtk::Label>(label, true);
     auto const vb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, VB_MARGIN);
-    vb->set_homogeneous(false);
-    vb->set_border_width(VB_MARGIN);
+    vb->property_margin().set_value(VB_MARGIN);
     nb->append_page(*vb, *l);
     return vb;
 }
@@ -2680,11 +2669,10 @@ Gtk::Grid * CloneTiler::table_x_y_rand(int values)
     table->set_row_spacing(6);
     table->set_column_spacing(8);
 
-    table->set_border_width(VB_MARGIN);
+    table->property_margin().set_value(VB_MARGIN);
 
     {
 	auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
-	hb->set_homogeneous(false);
 
         auto i = Glib::wrap(sp_get_icon_image("object-rows", GTK_ICON_SIZE_MENU));
         hb->pack_start(*i, false, false, 2);
@@ -2698,7 +2686,6 @@ Gtk::Grid * CloneTiler::table_x_y_rand(int values)
 
     {
 	auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
-	hb->set_homogeneous(false);
 
         auto i = Glib::wrap(sp_get_icon_image("object-columns", GTK_ICON_SIZE_MENU));
         hb->pack_start(*i, false, false, 2);

@@ -130,7 +130,7 @@ PolarArrangeTab::PolarArrangeTab(ArrangeDialog *parent_)
 	radiusX.set_sensitive(false);
 	radiusY.set_sensitive(false);
 
-	set_border_width(4);
+	property_margin().set_value(4);
 
     parametersTable.show_all();
     parametersTable.set_no_show_all();

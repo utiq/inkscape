@@ -13,24 +13,22 @@
 #ifndef SEEN_INK_EXTENSION_WIDGET_H
 #define SEEN_INK_EXTENSION_WIDGET_H
 
-#include <string>
 #include <vector>
-
-#include <sigc++/sigc++.h>
+#include <sigc++/signal.h>
 
 namespace Gtk {
 class Widget;
-}
+} // namespace Gtk
 
 namespace Inkscape {
+
 namespace XML {
 class Node;
-}
+} // namespace XML
 
 namespace Extension {
 
 class Extension;
-
 
 /**
  * Base class to represent all widgets of an extension (including parameters)
@@ -87,13 +85,13 @@ public:
 
 
     /** Recommended margin of boxes containing multiple widgets (in px) */
-    const static int GUI_BOX_MARGIN = 10;
+    static constexpr int GUI_BOX_MARGIN = 10;
     /** Recommended spacing between multiple widgets packed into a box (in px) */
-    const static int GUI_BOX_SPACING = 4;
+    static constexpr int GUI_BOX_SPACING = 4;
     /** Recommended indentation width of widgets(in px) */
-    const static int GUI_INDENTATION = 12;
+    static constexpr int GUI_INDENTATION = 12;
     /** Recommended maximum line length for wrapping textual wdgets (in chars) */
-    const static int GUI_MAX_LINE_LENGTH = 60;
+    static constexpr int GUI_MAX_LINE_LENGTH = 60;
 
 protected:
     enum Translatable {

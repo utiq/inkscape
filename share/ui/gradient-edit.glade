@@ -282,7 +282,7 @@
                     <property name="width-request">65</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="border-width">1</property>
+                    <property name="margin">1</property>
                     <property name="headers-visible">False</property>
                     <property name="enable-search">False</property>
                     <child internal-child="selection">

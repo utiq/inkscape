@@ -6,7 +6,6 @@
     <property name="name">CPOperation</property>
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="border-width">0</property>
     <child>
       <object class="GtkBox" id="CPNameAndDescription">
         <property name="visible">True</property>

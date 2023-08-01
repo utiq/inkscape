@@ -50,11 +50,11 @@
 
 using Inkscape::Util::unit_table;
 
-static constexpr auto const SELECTED_STYLE_SB_WIDTH     =  48;
-static constexpr auto const SELECTED_STYLE_PLACE_WIDTH  =  50;
-static constexpr auto const SELECTED_STYLE_STROKE_WIDTH =  40;
-static constexpr auto const SELECTED_STYLE_FLAG_WIDTH   =  12;
-static constexpr auto const SELECTED_STYLE_WIDTH        = 250;
+static constexpr int SELECTED_STYLE_SB_WIDTH     =  48;
+static constexpr int SELECTED_STYLE_PLACE_WIDTH  =  50;
+static constexpr int SELECTED_STYLE_STROKE_WIDTH =  40;
+static constexpr int SELECTED_STYLE_FLAG_WIDTH   =  12;
+static constexpr int SELECTED_STYLE_WIDTH        = 250;
 
 static gdouble const _sw_presets[]     = { 32 ,  16 ,  10 ,  8 ,  6 ,  4 ,  3 ,  2 ,  1.5 ,  1 ,  0.75 ,  0.5 ,  0.25 ,  0.1 };
 static gchar const *const _sw_presets_str[] = {"32", "16", "10", "8", "6", "4", "3", "2", "1.5", "1", "0.75", "0.5", "0.25", "0.1"};

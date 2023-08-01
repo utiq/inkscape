@@ -116,7 +116,6 @@ Gtk::Widget *ParamBool::get_widget(sigc::signal<void ()> *changeSignal)
     }
 
     auto const hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, GUI_PARAM_WIDGETS_SPACING);
-    hbox->set_homogeneous(false);
 
     auto const checkbox = Gtk::make_managed<ParamBoolCheckButton>(this, _text, changeSignal);
     checkbox->set_visible(true);

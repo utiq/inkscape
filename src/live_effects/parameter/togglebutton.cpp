@@ -104,7 +104,7 @@ ToggleButtonParam::param_newWidget()
                                                                                 param_effect->getSPDoc() );
 
    auto const box_button = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL);
-   box_button->set_homogeneous(false);
+
    auto const label = Gtk::make_managed<Gtk::Label>();
    if (!param_label.empty()) {
        if (value || inactive_label.empty()) {

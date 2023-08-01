@@ -50,7 +50,7 @@ namespace Widget {
 
 DialogPage::DialogPage()
 {
-    set_border_width(12);
+    property_margin().set_value(12);
 
     set_orientation(Gtk::ORIENTATION_VERTICAL);
     set_column_spacing(12);

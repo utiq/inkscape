@@ -258,7 +258,7 @@ InkscapePreferences::InkscapePreferences()
 
     //Main HBox
     auto const hbox_list_page = Gtk::make_managed<Gtk::Box>();
-    hbox_list_page->set_border_width(12);
+    hbox_list_page->property_margin().set_value(12);
     hbox_list_page->set_spacing(12);
     add(*hbox_list_page);
 
@@ -2895,7 +2895,7 @@ void InkscapePreferences::initPageRendering()
 #endif
 
     auto const grid = Gtk::make_managed<Gtk::Grid>();
-    grid->set_border_width(12);
+    grid->property_margin().set_value(12);
     grid->set_orientation(Gtk::ORIENTATION_VERTICAL);
     grid->set_column_spacing(12);
     grid->set_row_spacing(6);

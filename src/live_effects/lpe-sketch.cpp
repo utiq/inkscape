@@ -143,9 +143,7 @@ LPESketch::~LPESketch() = default;
 Gtk::Widget *LPESketch::newWidget()
 {
     auto const vbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    vbox->set_border_width(0);
-    vbox->set_homogeneous(false);
-    vbox->set_spacing(0);
+
     std::vector<Parameter *>::iterator it = param_vector.begin();
     while (it != param_vector.end()) {
         if ((*it)->widget_is_visible) {

@@ -151,10 +151,8 @@ PaintSelector::PaintSelector(FillOrStroke kind)
 
     /* Paint style button box */
     _style = Gtk::make_managed<Gtk::Box>();
-    _style->set_homogeneous(false);
     _style->set_name("PaintSelector");
     _style->set_visible(true);
-    _style->set_border_width(0);
     pack_start(*_style, false, false);
 
     /* Buttons */
@@ -176,7 +174,6 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     /* Fillrule */
     {
         _fillrulebox = Gtk::make_managed<Gtk::Box>();
-        _fillrulebox->set_homogeneous(false);
         _style->pack_end(*_fillrulebox, false, false, 0);
 
         _evenodd = Gtk::make_managed<FillRuleRadioButton>();
@@ -209,17 +206,13 @@ PaintSelector::PaintSelector(FillOrStroke kind)
     /* Frame */
     _label = Gtk::make_managed<Gtk::Label>("");
     auto const lbbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
-    lbbox->set_homogeneous(false);
     _label->set_visible(true);
     lbbox->pack_start(*_label, false, false, 4);
     pack_start(*lbbox, false, false, 4);
 
     _frame = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL);
-    _frame->set_homogeneous(false);
     _frame->set_visible(true);
-    // gtk_container_set_border_width(GTK_CONTAINER(psel->frame), 0);
     pack_start(*_frame, true, true, 0);
-
 
     /* Last used color */
     _selected_color = new SelectedColor;
@@ -259,7 +252,6 @@ StyleToggleButton *PaintSelector::style_button_add(gchar const *pixmap, PaintSel
     auto const b = Gtk::make_managed<StyleToggleButton>();
     b->set_tooltip_text(tip);
     b->set_visible(true);
-    b->set_border_width(0);
     b->set_relief(Gtk::RELIEF_NONE);
     b->set_mode(false);
     b->set_style(mode);
@@ -586,7 +578,6 @@ void PaintSelector::set_mode_color(PaintSelector::Mode /*mode*/)
         /* Create vbox */
         if (!_selector_solid_color) {
             _selector_solid_color = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
-            _selector_solid_color->set_homogeneous(false);
 
             /* Color selector */
             auto const color_selector = Gtk::make_managed<ColorNotebook>(*_selected_color);
@@ -874,10 +865,8 @@ void PaintSelector::set_mode_mesh(PaintSelector::Mode mode)
         if (!_selector_mesh) {
             /* Create vbox */
             _selector_mesh = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_VERTICAL, 4);
-            _selector_mesh->set_homogeneous(false);
 
             auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 1);
-            hb->set_homogeneous(false);
 
             /**
              * Create a combo_box and store with 4 columns,
@@ -905,7 +894,6 @@ void PaintSelector::set_mode_mesh(PaintSelector::Mode mode)
             g_object_unref(G_OBJECT(store));
 
             auto const hb2 = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 0);
-            hb2->set_homogeneous(false);
 
             auto const l = Gtk::make_managed<Gtk::Label>();
             l->set_markup(_("Use the <b>Mesh tool</b> to modify the mesh."));

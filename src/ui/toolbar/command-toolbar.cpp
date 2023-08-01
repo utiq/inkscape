@@ -22,7 +22,6 @@ CommandToolbar::CommandToolbar()
     : Gtk::Box()
 {
     set_name("CommandToolbar");
-    set_homogeneous(false);
 
     Gtk::Toolbar* command_toolbar = nullptr;
 
