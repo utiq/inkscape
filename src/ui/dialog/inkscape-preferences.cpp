@@ -1929,17 +1929,18 @@ void InkscapePreferences::initPageUI()
             {_("Toolbox icon size:"),     Inkscape::UI::Toolbar::tools_icon_size},
             {_("Control bar icon size:"), Inkscape::UI::Toolbar::ctrlbars_icon_size},
         };
+        const int min = Inkscape::UI::Toolbar::min_pixel_size;
+        const int max = Inkscape::UI::Toolbar::max_pixel_size;
+        auto const format_value = [](int const val) -> Glib::ustring
+                                  { return std::to_string(100 * val / min) += '%'; };
         for (auto&& tbox : toolbars) {
             auto const slider = Gtk::make_managed<UI::Widget::PrefSlider>(false);
-            const int min = Inkscape::UI::Toolbar::min_pixel_size;
-            const int max = Inkscape::UI::Toolbar::max_pixel_size;
             slider->init(tbox.prefs, min, max, 1, 4, min, 0);
-            slider->getSlider()->signal_format_value().connect([](double val){
-                return Glib::ustring::format(std::fixed, std::setprecision(0), val * 100.0 / min) + "%";
-            });
+            slider->getSlider()->signal_format_value().connect(format_value);
             slider->getSlider()->get_style_context()->add_class("small-marks");
             for (int i = min; i <= max; i += 8) {
-                slider->getSlider()->add_mark(i, Gtk::POS_BOTTOM, i % min ? "" : (std::to_string(100 * i / min) + "%").c_str());
+                auto const markup = (i % min == 0) ? format_value(i) : Glib::ustring{};
+                slider->getSlider()->add_mark(i, Gtk::POS_BOTTOM, markup);
             }
             _page_toolbars.add_line(false, tbox.label, *slider, "", _("Adjust toolbar icon size"));
         }
