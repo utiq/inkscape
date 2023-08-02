@@ -153,7 +153,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -177,7 +177,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton" id="toolsradio">
                     <property name="group">toolsradio</property>
@@ -201,7 +201,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -255,7 +255,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -279,7 +279,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -303,7 +303,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -327,7 +327,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -351,7 +351,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -405,7 +405,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -429,7 +429,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -453,7 +453,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -477,7 +477,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -531,7 +531,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -555,7 +555,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -579,7 +579,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -603,7 +603,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -657,7 +657,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -681,7 +681,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -705,7 +705,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -729,7 +729,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -753,7 +753,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -807,7 +807,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -831,7 +831,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
@@ -855,7 +855,7 @@
             <child>
               <object class="GtkFlowBoxChild">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton">
                     <property name="group">toolsradio</property>
