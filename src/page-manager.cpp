@@ -532,6 +532,28 @@ void PageManager::resizePage(SPPage *page, double width, double height)
 }
 
 /**
+ * Rotate the selected page by the given number of 90 degree rotations.
+ */
+void PageManager::rotatePage(int turns)
+{
+    Geom::Rect page_size = getSelectedPageRect();
+    Geom::Translate const center(page_size.midpoint());
+    Geom::Rotate const rotate(Geom::Rotate::from_degrees(turns * 90));
+    Geom::Affine const tr(center.inverse() * rotate * center);
+
+    auto contents = ObjectSet();
+    if (_selected_page) {
+        contents.setList(_selected_page->getOverlappingItems());
+    } else {
+        contents.setList(_document->getRoot()->item_list());
+    }
+    contents.applyAffine(tr);
+
+    auto new_box = Geom::Rect(page_size.min() * tr, page_size.max() * tr);
+    fitToRect(new_box, _selected_page);
+}
+
+/**
  * Change page orientation, landscape to portrait and back.
  */
 void PageManager::changeOrientation()
