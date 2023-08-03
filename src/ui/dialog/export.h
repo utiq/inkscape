@@ -79,6 +79,7 @@ public:
     static std::string filePathFromObject(SPDocument *doc, SPObject *obj, const Glib::ustring &file_entry_text);
     static std::string filePathFromId(SPDocument *doc, Glib::ustring id, const Glib::ustring &file_entry_text);
     static Glib::ustring defaultFilename(SPDocument *doc, Glib::ustring &filename_entry_text, Glib::ustring extension);
+    static bool checkOrCreateDirectory(Glib::ustring const &filename);
 
     static bool exportRaster(
         Geom::Rect const &area, unsigned long int const &width, unsigned long int const &height,

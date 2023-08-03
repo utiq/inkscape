@@ -557,18 +557,32 @@ void BatchExport::onExport()
         return;
     }
 
-    setExporting(true);
-
     // Find and remove any extension from filename so that we can add suffix to it.
     Glib::ustring filename = filename_entry->get_text();
     export_list->removeExtension(filename);
+
+    if (!Export::checkOrCreateDirectory(filename)) {
+        return;
+    }
+
+    setExporting(true);
+
+    // create vector of exports
+    int num_rows = export_list->get_rows();
+    std::vector<Glib::ustring> suffixs;
+    std::vector<Inkscape::Extension::Output *> extensions;
+    std::vector<double> dpis;
+    for (int i = 0; i < num_rows; i++) {
+        suffixs.push_back(export_list->get_suffix(i));
+        extensions.push_back(export_list->getExtension(i));
+        dpis.push_back(export_list->get_dpi(i));
+    }
 
     bool hide = hide_all->get_active();
     auto sels = _desktop->getSelection()->items();
     std::vector<SPItem *> selected_items(sels.begin(), sels.end());
 
     // Start Exporting Each Item
-    int num_rows = export_list->get_rows();
     for (int j = 0; j < num_rows && !interrupted; j++) {
 
         auto suffix = export_list->get_suffix(j);

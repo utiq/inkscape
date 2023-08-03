@@ -610,11 +610,15 @@ void SingleExport::onExport()
         return;
     }
 
-    setExporting(true, _("Exporting"));
-
     bool selected_only = si_hide_all->get_active();
     Unit const *unit = units->getUnit();
     Glib::ustring filename = si_filename_entry->get_text();
+
+    if (!Export::checkOrCreateDirectory(filename)) {
+        return;
+    }
+
+    setExporting(true, _("Exporting"));
 
     float x0 = unit->convert(spin_buttons[SPIN_X0]->get_value(), "px");
     float x1 = unit->convert(spin_buttons[SPIN_X1]->get_value(), "px");

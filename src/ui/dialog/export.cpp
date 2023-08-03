@@ -192,6 +192,27 @@ bool Export::unConflictFilename(SPDocument *doc, Glib::ustring &filename, Glib::
     return false;
 }
 
+// Checks if the directory exists and if not, tries to create the directory and if failed, displays an error message.
+bool Export::checkOrCreateDirectory(Glib::ustring const &filename)
+{
+    SPDesktop *desktop = SP_ACTIVE_DESKTOP;
+    if (!desktop)
+        return false;
+    std::string path = absolutizePath(desktop->getDocument(), Glib::filename_from_utf8(filename));
+    std::string dirname = Glib::path_get_dirname(path);
+
+    if (dirname.empty() || !Inkscape::IO::file_test(dirname.c_str(), (GFileTest)(G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR))) {
+        if (g_mkdir_with_parents(dirname.c_str(), S_IRWXU) != 0) {
+            Glib::ustring safeDir = Inkscape::IO::sanitizeString(dirname.c_str());
+            Glib::ustring error = g_strdup_printf(_("Directory <b>%s</b> does not exist and can't be created.\n"), safeDir.c_str());
+            desktop->messageStack()->flash(Inkscape::ERROR_MESSAGE, error.c_str());
+            sp_ui_error_dialog(error.c_str());
+            return false;
+        }
+    }
+    return true;
+}
+
 bool Export::exportRaster(
         Geom::Rect const &area, unsigned long int const &width, unsigned long int const &height,
         float const &dpi, guint32 bg_color, Glib::ustring const &filename, bool overwrite,
@@ -232,18 +253,6 @@ bool Export::exportRaster(
     int color_type = (val & 0xF0) >> 4;
 
     std::string path = absolutizePath(doc, Glib::filename_from_utf8(filename));
-    Glib::ustring dirname = Glib::path_get_dirname(path);
-
-    if (dirname.empty() ||
-        !Inkscape::IO::file_test(dirname.c_str(), (GFileTest)(G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR))) {
-        Glib::ustring safeDir = Inkscape::IO::sanitizeString(dirname.c_str());
-        Glib::ustring error =
-            g_strdup_printf(_("Directory <b>%s</b> does not exist or is not a directory.\n"), safeDir.c_str());
-
-        desktop->messageStack()->flash(Inkscape::ERROR_MESSAGE, error.c_str());
-        sp_ui_error_dialog(error.c_str());
-        return false;
-    }
 
     // Do the over-write protection now, since the png is just a temp file.
     if (!overwrite && !sp_ui_overwrite_file(path.c_str())) {
@@ -332,20 +341,7 @@ bool Export::exportVector(
     }
 
     std::string path = absolutizePath(copy_doc, Glib::filename_from_utf8(filename));
-    Glib::ustring dirname = Glib::path_get_dirname(path);
     Glib::ustring safeFile = Inkscape::IO::sanitizeString(path.c_str());
-    Glib::ustring safeDir = Inkscape::IO::sanitizeString(dirname.c_str());
-
-    if (dirname.empty() ||
-        !Inkscape::IO::file_test(dirname.c_str(), (GFileTest)(G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR))) {
-        Glib::ustring error =
-            g_strdup_printf(_("Directory <b>%s</b> does not exist or is not a directory.\n"), safeDir.c_str());
-
-        desktop->messageStack()->flash(Inkscape::ERROR_MESSAGE, error.c_str());
-        sp_ui_error_dialog(error.c_str());
-
-        return false;
-    }
 
     // Do the over-write protection now
     if (!overwrite && !sp_ui_overwrite_file(path.c_str())) {
