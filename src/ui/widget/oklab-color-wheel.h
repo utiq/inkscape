@@ -16,6 +16,9 @@
 
 #include "ui/widget/ink-color-wheel.h"
 
+#include <gtk/gtk.h> // GtkEventControllerMotion
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
+
 namespace Inkscape::UI::Widget {
 
 /** @brief The color wheel used in the OKHSL picker. */
@@ -55,10 +58,12 @@ private:
     bool _updateDimensions();
 
     // Event handlers
-    bool on_button_press_event(GdkEventButton *event) override;
     bool _onClick(Geom::Point const &unit_pos);
-    bool on_button_release_event(GdkEventButton *event) override;
-    bool on_motion_notify_event(GdkEventMotion *event) override;
+    Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress const &click,
+                                              int n_press, double x, double y);
+    void on_motion(GtkEventControllerMotion const *motion, double x, double y);
 
     double _disc_radius = 1.0;
     Geom::Point _margin;

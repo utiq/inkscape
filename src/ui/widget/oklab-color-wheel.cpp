@@ -14,9 +14,12 @@
 #include "ui/widget/oklab-color-wheel.h"
 
 #include <algorithm>
+#include <cmath>
+#include <gtkmm/gesturemultipress.h>
 
 #include "display/cairo-utils.h"
 #include "oklab.h"
+#include "ui/controller.h"
 
 namespace Inkscape::UI::Widget {
 
@@ -26,6 +29,11 @@ OKWheel::OKWheel()
     _values[H] = 0;
     _values[S] = 0;
     _values[L] = 0;
+
+    Controller::add_click(*this, sigc::mem_fun(*this, &OKWheel::on_click_pressed ),
+                                 sigc::mem_fun(*this, &OKWheel::on_click_released));
+    Controller::add_motion<nullptr, &OKWheel::on_motion, nullptr>
+                          (*this, *this);
 }
 
 void OKWheel::setRgb(double r, double g, double b, bool)
@@ -267,32 +275,34 @@ bool OKWheel::_onClick(Geom::Point const &pt)
 }
 
 /** @brief Handle a button press event. */
-bool OKWheel::on_button_press_event(GdkEventButton *event)
+Gtk::EventSequenceState OKWheel::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                  int const n_press, double const x, double const y)
 {
-    if (event->button == 1) {
+    if (click.get_current_button() == 1) {
         // Convert the click coordinates to the abstract coords in which
         // the picker disc is the unit disc in the xy-plane.
-        return _onClick(_event2abstract({event->x, event->y}));
+        if (_onClick(_event2abstract({x, y}))) {
+            return Gtk::EVENT_SEQUENCE_CLAIMED;
+        }
     }
     // TODO: add a context menu to copy out the CSS4 color values.
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 /** @brief Handle a button release event. */
-bool OKWheel::on_button_release_event(GdkEventButton *event)
+Gtk::EventSequenceState OKWheel::on_click_released(Gtk::GestureMultiPress const &click,
+                                                   int const n_press, double const x, double const y)
 {
     _adjusting = false;
-    return true;
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
 /** @brief Handle a drag (motion notify event). */
-bool OKWheel::on_motion_notify_event(GdkEventMotion *event)
+void OKWheel::on_motion(GtkEventControllerMotion const *motion, double x, double y)
 {
-    if (!_adjusting) {
-        return false;
+    if (_adjusting) {
+        _setColor(_event2abstract({x, y}));
     }
-    _setColor(_event2abstract({event->x, event->y}));
-    return true;
 }
 
 } // namespace Inkscape::UI::Widget
