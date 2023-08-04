@@ -1,20 +1,31 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** @file
+ * Abstraction of the store/snapshot mechanism.
+ */
+/*
+ * Copyright (C) 2022 PBS <pbs3141@gmail.com>
+ * Released under GNU GPL v2+, read the file 'COPYING' for more information.
+ */
+
+#include "stores.h"
+
+#include <algorithm>
 #include <array>
 #include <cmath>
+#include <iostream>
+#include <utility>
+#include <vector>
 #include <2geom/transforms.h>
 #include <2geom/parallelogram.h>
 #include <2geom/point.h>
 #include <2geom/convex-hull.h>
-#include "helper/geom.h"
-#include "ui/util.h"
-#include "stores.h"
-#include "prefs.h"
-#include "fragment.h"
-#include "graphics.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+#include "graphics.h"
+#include "helper/geom.h"
+#include "prefs.h"
+
+namespace Inkscape::UI::Widget {
+
 namespace {
 
 // Determine whether an affine transformation approximately maps the unit square [0, 1]^2 to itself.
@@ -356,9 +367,7 @@ auto Stores::finished_draw(Fragment const &view) -> Action
     return Action::None;
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

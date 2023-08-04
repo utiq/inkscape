@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
-#ifndef INKSCAPE_UI_WIDGET_CANVAS_H
-#define INKSCAPE_UI_WIDGET_CANVAS_H
+/** @file
+ * Inkscape canvas widget.
+ */
 /*
  * Authors:
  *   Tavmjong Bah
@@ -12,15 +12,27 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <memory>
-#include <gtkmm.h>
+#ifndef INKSCAPE_UI_WIDGET_CANVAS_H
+#define INKSCAPE_UI_WIDGET_CANVAS_H
 
+#include <memory>
+#include <optional>
+#include <gtk/gtk.h> // GtkEventController*
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <2geom/rect.h>
 #include <2geom/int-rect.h>
 
 #include "display/rendermode.h"
 #include "events/enums.h"
 #include "optglarea.h"
+
+namespace Gdk {
+class Rectangle;
+} // namespace Gdk
+
+namespace Gtk {
+class GestureMultiPress;
+} // namespace Gtk
 
 class SPDesktop;
 
@@ -31,8 +43,7 @@ class CanvasItemGroup;
 class CMSTransform;
 class Drawing;
 
-namespace UI {
-namespace Widget {
+namespace UI::Widget {
 
 class CanvasPrivate;
 
@@ -132,30 +143,31 @@ protected:
     void get_preferred_width_vfunc (int &minimum_width,  int &natural_width ) const override;
     void get_preferred_height_vfunc(int &minimum_height, int &natural_height) const override;
 
-    // Event controllers
-    Glib::RefPtr<Gtk::EventController> scroll_controller, key_controller, motion_controller;
-    Glib::RefPtr<Gtk::Gesture> click_gesture;
-
     // EventControllerScroll
-    bool on_scroll(GtkEventControllerScroll *controller, double dx, double dy);
+    bool on_scroll(GtkEventControllerScroll const *controller,
+                   double dx, double dy);
 
     // GtkGestureMultiPress
-    bool on_button_pressed (GtkGestureMultiPress *controller, int n_press, double x, double y);
-    bool on_button_released(GtkGestureMultiPress *controller, int n_press, double x, double y);
+    Gtk::EventSequenceState on_button_pressed (Gtk::GestureMultiPress const &controller,
+                                               int n_press, double x, double y);
+    Gtk::EventSequenceState on_button_released(Gtk::GestureMultiPress const &controller,
+                                               int n_press, double x, double y);
 
     // EventControllerMotion
-    bool on_motion(GtkEventControllerMotion *controller, double x, double y);
-    bool on_enter (GtkEventControllerMotion *controller, double x, double y);
-    bool on_leave (GtkEventControllerMotion *controller);
+    void on_motion(GtkEventControllerMotion const *controller, double x, double y);
+    void on_enter (GtkEventControllerMotion const *controller, double x, double y);
+    void on_leave (GtkEventControllerMotion const *controller);
 
     // EventControllerKey
-    bool on_focus_in    (GtkEventControllerKey *controller);
-    bool on_key_pressed (GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state);
-    bool on_key_released(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state);
+    void on_focus_in    (GtkEventControllerKey const *controller);
+    bool on_key_pressed (GtkEventControllerKey const *controller,
+                         unsigned keyval, unsigned keycode, GdkModifierType state);
+    bool on_key_released(GtkEventControllerKey const *controller,
+                         unsigned keyval, unsigned keycode, GdkModifierType state);
 
     void on_realize() override;
     void on_unrealize() override;
-    void on_size_allocate(Gtk::Allocation&) override;
+    void on_size_allocate(Gdk::Rectangle &allocation) override;
 
     Glib::RefPtr<Gdk::GLContext> create_context() override;
     void paint_widget(const Cairo::RefPtr<Cairo::Context>&) override;
@@ -214,8 +226,8 @@ private:
     std::unique_ptr<CanvasPrivate> d;
 };
 
-} // namespace Widget
-} // namespace UI
+} // namespace UI::Widget
+
 } // namespace Inkscape
 
 #endif // INKSCAPE_UI_WIDGET_CANVAS_H

@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/*
+/** @file
  * Abstraction of the store/snapshot mechanism.
+ */
+/*
  * Copyright (C) 2022 PBS <pbs3141@gmail.com>
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
+
 #ifndef INKSCAPE_UI_WIDGET_CANVAS_STORES_H
 #define INKSCAPE_UI_WIDGET_CANVAS_STORES_H
 
 #include "fragment.h"
 #include "util.h"
+#include "ui/util.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
+
 struct Fragment;
 class Prefs;
 class Graphics;
@@ -88,9 +91,7 @@ private:
     void snapshot_combine(Fragment const &view);
 };
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_CANVAS_STORES_H
 

@@ -166,8 +166,14 @@ auto constexpr is_key_handler = Detail::callable_or_null<Function, bool,
 /// Whether Function is suitable to handle EventControllerKey::modifiers.
 /// The arguments are the controller & modifier state.
 template <typename Function, typename Listener>
-auto constexpr is_mod_handler = Detail::callable_or_null<Function, bool,
+auto constexpr is_key_mod_handler = Detail::callable_or_null<Function, bool,
     Listener *, GtkEventControllerKey *, GdkModifierType>;
+
+/// Whether Function is suitable to handle EventControllerKey::focus-(in|out).
+/// The argument is the controller.
+template <typename Function, typename Listener>
+auto constexpr is_key_focus_handler = Detail::callable_or_null<Function, void,
+    Listener *, GtkEventControllerKey *>;
 
 /// Whether Function is suitable to handle EventControllerMotion::enter|motion.
 /// The arguments are the controller, x coordinate & y coord (in widget space).
@@ -198,6 +204,7 @@ auto constexpr is_scroll_xy_handler = Detail::callable_or_null<Function, void,
 // easier I reuse Util::make_g_callback(), which needs methods as template args.
 // Once on gtkmm4, we can do as Click etc, & accept anything convertible to slot
 template <auto on_pressed, auto on_released = nullptr, auto on_modifiers = nullptr,
+          auto on_focus_in = nullptr, auto on_focus_out = nullptr,
           typename Listener>
 Gtk::EventController &add_key(Gtk::Widget &widget  ,
                               Listener    &listener,
@@ -206,15 +213,20 @@ Gtk::EventController &add_key(Gtk::Widget &widget  ,
 {
     // NB make_g_callback<> must type-erase methods, so we must check arg compat
     // TODO: C++20: Use concepts instead.
-    static_assert(is_key_handler<decltype(on_pressed  ), Listener>);
-    static_assert(is_key_handler<decltype(on_released ), Listener>);
-    static_assert(is_mod_handler<decltype(on_modifiers), Listener>);
+    static_assert(is_key_handler      <decltype(on_pressed  ), Listener>);
+    static_assert(is_key_handler      <decltype(on_released ), Listener>);
+    static_assert(is_key_mod_handler  <decltype(on_modifiers), Listener>);
+    static_assert(is_key_focus_handler<decltype(on_focus_in ), Listener>);
+    static_assert(is_key_focus_handler<decltype(on_focus_out), Listener>);
 
     auto const gcontroller = gtk_event_controller_key_new(widget.gobj());
     gtk_event_controller_set_propagation_phase(gcontroller, static_cast<GtkPropagationPhase>(phase));
     Detail::connect<on_pressed  >(gcontroller, "key-pressed" , listener, when);
     Detail::connect<on_released >(gcontroller, "key-released", listener, when);
     Detail::connect<on_modifiers>(gcontroller, "modifiers"   , listener, when);
+    // N.B. Iʼm not convinced that Key::focus-in works in GTK3, but try it… —djb
+    Detail::connect<on_focus_in >(gcontroller, "focus-in"    , listener, when);
+    Detail::connect<on_focus_out>(gcontroller, "focus-out"   , listener, when);
     return Detail::managed(Glib::wrap(gcontroller), widget);
 }
 

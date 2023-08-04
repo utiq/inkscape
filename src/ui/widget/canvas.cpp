@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** @file
+ * Inkscape canvas widget.
+ */
 /*
  * Authors:
  *   Tavmjong Bah
@@ -9,47 +12,47 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <iostream> // Logging
-#include <algorithm> // Sort
-#include <set> // Coarsener
-#include <thread>
-#include <mutex>
-#include <array>
-#include <cassert>
-#include <boost/asio/thread_pool.hpp>
-#include <boost/asio/post.hpp>
-
 #include "canvas.h"
 
+#include <algorithm> // Sort
+#include <array>
+#include <cassert>
+#include <iostream> // Logging
+#include <mutex>
+#include <set> // Coarsener
+#include <stdexcept>
+#include <thread>
+#include <utility>
+#include <vector>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
+#include <sigc++/functors/mem_fun.h>
+
+#include "canvas/fragment.h"
+#include "canvas/graphics.h"
+#include "canvas/prefs.h"
+#include "canvas/stores.h"
+#include "canvas/synchronizer.h"
+#include "canvas/util.h"
+#include "color/cms-system.h"     // Color correction
 #include "color.h"          // Background color
 #include "desktop-events.h"
 #include "desktop.h"
-#include "document.h"
-#include "preferences.h"
-#include "ui/util.h"
-#include "helper/geom.h"
-#include "util/callback-converter.h"
-
-#include "canvas/prefs.h"
-#include "canvas/fragment.h"
-#include "canvas/util.h"
-#include "canvas/stores.h"
-#include "canvas/graphics.h"
-#include "canvas/synchronizer.h"
-#include "color/cms-system.h"     // Color correction
-#include "display/drawing.h"
-#include "display/drawing-item.h"
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-group.h"
 #include "display/control/snap-indicator.h"
+#include "display/drawing.h"
+#include "display/drawing-item.h"
+#include "document.h"
 #include "events/canvas-event.h"
-
-// Hack: Needed for the workaround that closes the command palette.
-#include "ui/dialog/command-palette.h"
+#include "helper/geom.h"
+#include "preferences.h"
+#include "ui/controller.h"
+#include "ui/dialog/command-palette.h" // Hack: Needed for the workaround that closes the command palette.
+#include "ui/tools/tool-base.h"      // Default cursor
+#include "ui/util.h"
 #include "ui/widget/canvas-grid.h"
 #include "widgets/desktop-widget.h"
-
-#include "ui/tools/tool-base.h"      // Default cursor
 
 #include "canvas/updaters.h"         // Update strategies
 #include "canvas/framecheck.h"       // For frame profiling
@@ -96,6 +99,7 @@
  */
 
 namespace Inkscape::UI::Widget {
+
 namespace {
 
 /*
@@ -310,34 +314,15 @@ Canvas::Canvas()
     set_name("InkscapeCanvas");
 
     // Events
-    add_events(Gdk::BUTTON_PRESS_MASK   |
-               Gdk::BUTTON_RELEASE_MASK |
-               Gdk::ENTER_NOTIFY_MASK   |
-               Gdk::LEAVE_NOTIFY_MASK   |
-               Gdk::FOCUS_CHANGE_MASK   |
-               Gdk::KEY_PRESS_MASK      |
-               Gdk::KEY_RELEASE_MASK    |
-               Gdk::POINTER_MOTION_MASK |
-               Gdk::SCROLL_MASK         |
-               Gdk::SMOOTH_SCROLL_MASK  );
-
-    scroll_controller = Glib::wrap(gtk_event_controller_scroll_new(Gtk::Widget::gobj(), GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES));
-    g_signal_connect(scroll_controller->gobj(), "scroll", Util::make_g_callback<&Canvas::on_scroll>, this);
-
-    click_gesture = Glib::wrap(gtk_gesture_multi_press_new(Gtk::Widget::gobj()));
-    gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click_gesture->gobj()), 0); // all buttons
-    g_signal_connect(click_gesture->gobj(), "pressed", Util::make_g_callback<&Canvas::on_button_pressed>, this);
-    g_signal_connect(click_gesture->gobj(), "released", Util::make_g_callback<&Canvas::on_button_released>, this);
-
-    key_controller = Glib::wrap(gtk_event_controller_key_new(Gtk::Widget::gobj()));
-    g_signal_connect(key_controller->gobj(), "focus-in", Util::make_g_callback<&Canvas::on_focus_in>, this);
-    g_signal_connect(key_controller->gobj(), "key-pressed", Util::make_g_callback<&Canvas::on_key_pressed>, this);
-    g_signal_connect(key_controller->gobj(), "key-released", Util::make_g_callback<&Canvas::on_key_released>, this);
-
-    motion_controller = Glib::wrap(gtk_event_controller_motion_new(Gtk::Widget::gobj()));
-    g_signal_connect(motion_controller->gobj(), "motion", Util::make_g_callback<&Canvas::on_motion>, this);
-    g_signal_connect(motion_controller->gobj(), "enter", Util::make_g_callback<&Canvas::on_enter>, this);
-    g_signal_connect(motion_controller->gobj(), "leave", Util::make_g_callback<&Canvas::on_leave>, this);
+    Controller::add_scroll<nullptr, &Canvas::on_scroll, nullptr>
+                          (*this, *this, GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES);
+    Controller::add_click(*this, sigc::mem_fun(*this, &Canvas::on_button_pressed ),
+                                 sigc::mem_fun(*this, &Canvas::on_button_released));
+    // N.B. Iʼm not convinced that Key::focus-in works in GTK3, but try it… —djb
+    Controller::add_key<&Canvas::on_key_pressed, &Canvas::on_key_released, nullptr,
+                        &Canvas::on_focus_in>(*this, *this);
+    Controller::add_motion<&Canvas::on_enter, &Canvas::on_motion, &Canvas::on_leave>
+                          (*this, *this);
 
     // Updater
     d->updater = Updater::create(pref_to_updater(d->prefs.update_strategy));
@@ -891,7 +876,8 @@ void Canvas::enable_autoscroll()
  * Event handling
  */
 
-bool Canvas::on_scroll(GtkEventControllerScroll *controller, double dx, double dy)
+bool Canvas::on_scroll(GtkEventControllerScroll const * const controller,
+                       double /*dx*/, double /*dy*/)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_SCROLL);
@@ -901,7 +887,8 @@ bool Canvas::on_scroll(GtkEventControllerScroll *controller, double dx, double d
     return d->process_event(event);
 }
 
-bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, double x, double y)
+Gtk::EventSequenceState Canvas::on_button_pressed(Gtk::GestureMultiPress const &controller,
+                                                  int const n_press, double const x, double const y)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_BUTTON_PRESS);
@@ -916,7 +903,7 @@ bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, do
         _desktop->getDesktopWidget()->get_canvas_grid()->getCommandPalette()->close();
     }
 
-    if (gdkevent->button.button == 3) {
+    if (controller.get_current_button() == 3) {
         _drawing->getCanvasItemDrawing()->set_sticky(_state & GDK_SHIFT_MASK);
     }
 
@@ -925,12 +912,12 @@ bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, do
         if (n_press == 1) {
             _split_dragging = true;
             _split_drag_start = Geom::IntPoint(x, y);
-            return true;
+            return Gtk::EVENT_SEQUENCE_CLAIMED;
         } else if (n_press == 2) {
             _split_direction = _hover_direction;
             _split_dragging = false;
             queue_draw();
-            return true;
+            return Gtk::EVENT_SEQUENCE_CLAIMED;
         }
     }
 
@@ -944,10 +931,11 @@ bool Canvas::on_button_pressed(GtkGestureMultiPress *controller, int n_press, do
         result = d->process_event(event);
     }
 
-    return result;
+    return result ? Gtk::EVENT_SEQUENCE_CLAIMED : Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool Canvas::on_button_released(GtkGestureMultiPress *controller, int n_press, double x, double y)
+Gtk::EventSequenceState Canvas::on_button_released(Gtk::GestureMultiPress const &controller,
+                                                   int /*n_press*/, double const x, double const y)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_BUTTON_RELEASE);
@@ -973,35 +961,36 @@ bool Canvas::on_button_released(GtkGestureMultiPress *controller, int n_press, d
             auto window = dynamic_cast<Gtk::ApplicationWindow*>(get_toplevel());
             if (!window) {
                 std::cerr << "Canvas::on_motion_notify_event: window missing!" << std::endl;
-                return true;
+                return Gtk::EVENT_SEQUENCE_CLAIMED;
             }
 
             auto action = window->lookup_action("canvas-split-mode");
             if (!action) {
                 std::cerr << "Canvas::on_motion_notify_event: action 'canvas-split-mode' missing!" << std::endl;
-                return true;
+                return Gtk::EVENT_SEQUENCE_CLAIMED;
             }
 
             auto saction = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(action);
             if (!saction) {
                 std::cerr << "Canvas::on_motion_notify_event: action 'canvas-split-mode' not SimpleAction!" << std::endl;
-                return true;
+                return Gtk::EVENT_SEQUENCE_CLAIMED;
             }
 
             saction->change_state(static_cast<int>(Inkscape::SplitMode::NORMAL));
         }
     }
 
-    int button = gtk_gesture_single_get_current_button(GTK_GESTURE_SINGLE(controller));
+    auto const button = controller.get_current_button();
     if (button == 1) {
         d->autoscroll_end();
     }
 
     auto event = ButtonReleaseEvent(std::move(gdkevent));
-    return d->process_event(event);
+    return d->process_event(event) ? Gtk::EVENT_SEQUENCE_CLAIMED : Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool Canvas::on_enter(GtkEventControllerMotion *controller, double x, double y)
+void Canvas::on_enter(GtkEventControllerMotion const * const controller,
+                      double const x, double const y)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_ENTER_NOTIFY);
@@ -1009,10 +998,10 @@ bool Canvas::on_enter(GtkEventControllerMotion *controller, double x, double y)
     d->last_mouse = Geom::IntPoint(x, y);
 
     auto event = EnterEvent(std::move(gdkevent), _state);
-    return d->process_event(event);
+    d->process_event(event);
 }
 
-bool Canvas::on_leave(GtkEventControllerMotion *controller)
+void Canvas::on_leave(GtkEventControllerMotion const * const controller)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_LEAVE_NOTIFY);
@@ -1020,16 +1009,16 @@ bool Canvas::on_leave(GtkEventControllerMotion *controller)
     d->last_mouse = {};
 
     auto event = LeaveEvent(std::move(gdkevent), _state);
-    return d->process_event(event);
+    d->process_event(event);
 }
 
-bool Canvas::on_focus_in(GtkEventControllerKey *controller)
+void Canvas::on_focus_in(GtkEventControllerKey const * /*controller*/)
 {
     grab_focus();
-    return false;
 }
 
-bool Canvas::on_key_pressed(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state)
+bool Canvas::on_key_pressed(GtkEventControllerKey const * /*controller*/,
+                            unsigned /*keyval*/, unsigned /*keycode*/, GdkModifierType const state)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_KEY_PRESS);
@@ -1039,7 +1028,8 @@ bool Canvas::on_key_pressed(GtkEventControllerKey *controller, unsigned keyval, 
     return d->process_event(event);
 }
 
-bool Canvas::on_key_released(GtkEventControllerKey *controller, unsigned keyval, unsigned keycode, GdkModifierType *state)
+bool Canvas::on_key_released(GtkEventControllerKey const * /*controller*/,
+                             unsigned /*keyval*/, unsigned /*keycode*/, GdkModifierType const state)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_KEY_RELEASE);
@@ -1049,7 +1039,8 @@ bool Canvas::on_key_released(GtkEventControllerKey *controller, unsigned keyval,
     return d->process_event(event);
 }
 
-bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
+void Canvas::on_motion(GtkEventControllerMotion const * const controller,
+                       double const x, double const y)
 {
     auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
     assert(gdkevent->type == GDK_MOTION_NOTIFY);
@@ -1073,7 +1064,7 @@ bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
             _split_frac += Geom::Point(delta) / get_dimensions();
             _split_drag_start = cursor_position;
             queue_draw();
-            return true;
+            return;
         }
 
         auto split_position = (_split_frac * get_dimensions()).round();
@@ -1116,7 +1107,7 @@ bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
 
         if (_hover_direction != Inkscape::SplitDirection::NONE) {
             // We're hovering, don't pick or emit event.
-            return true;
+            return;
         }
     }
 
@@ -1126,7 +1117,7 @@ bool Canvas::on_motion(GtkEventControllerMotion *controller, double x, double y)
     }
 
     auto event = MotionEvent(std::move(gdkevent), _state);
-    return d->process_event(event);
+    d->process_event(event);
 }
 
 /**
