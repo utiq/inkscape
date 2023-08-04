@@ -1806,8 +1806,6 @@ FilterEffectsDialog::PrimitiveList::PrimitiveList(FilterEffectsDialog& d)
 
     signal_draw().connect(sigc::mem_fun(*this, &PrimitiveList::on_draw_signal));
 
-    add_events(Gdk::POINTER_MOTION_MASK | Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK);
-
     Controller::add_click(*this,
         sigc::mem_fun(*this, &PrimitiveList::on_click_pressed ),
         sigc::mem_fun(*this, &PrimitiveList::on_click_released),

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/**
+/** \file
  * Gradient image widget with stop handles
- *
+ */
+/*
  * Author:
  *   Michael Kowalski
  *
@@ -10,13 +11,17 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <string>
-
 #include "gradient-with-stops.h"
-#include "object/sp-gradient.h"
-#include "object/sp-stop.h"
+
+#include <string>
+#include <gdkmm/cursor.h>
+#include <gtkmm/requisition.h>
+
 #include "display/cairo-utils.h"
 #include "io/resource.h"
+#include "object/sp-gradient.h"
+#include "object/sp-stop.h"
+#include "ui/controller.h"
 #include "ui/cursor-utils.h"
 #include "ui/util.h"
 
@@ -26,9 +31,7 @@ const int GRADIENT_WIDGET_HEIGHT = 33;
 // gradient's image height (multiple of checkerboard tiles, they are 6x6)
 const int GRADIENT_IMAGE_HEIGHT = 3 * 6;
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 using namespace Inkscape::IO;
 
@@ -40,16 +43,22 @@ std::string get_stop_template_path(const char* filename) {
 GradientWithStops::GradientWithStops() :
     _template(get_stop_template_path("gradient-stop.svg").c_str()),
     _tip_template(get_stop_template_path("gradient-tip.svg").c_str())
-    {
+{
     // default color, it will be updated
     _background_color.set_grey(0.5);
     // for theming, but not used
     set_name("GradientEdit");
-    // we need some events
-    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::BUTTON_MOTION_MASK |
-        Gdk::POINTER_MOTION_MASK | Gdk::KEY_PRESS_MASK);
+
+    Controller::add_click(*this, sigc::mem_fun(*this, &GradientWithStops::on_click_pressed ),
+                                 sigc::mem_fun(*this, &GradientWithStops::on_click_released),
+                          Controller::Button::left);
+    Controller::add_motion<nullptr, &GradientWithStops::on_motion, nullptr>(*this, *this);
+    Controller::add_key<&GradientWithStops::on_key_pressed>(*this, *this);
     set_can_focus();
+    property_is_focus().signal_changed().connect([this]{ update(); } );
 }
+
+GradientWithStops::~GradientWithStops() = default;
 
 void GradientWithStops::set_gradient(SPGradient* gradient) {
     _gradient = gradient;
@@ -84,20 +93,19 @@ void GradientWithStops::modified() {
     update();
 }
 
-void GradientWithStops::size_request(GtkRequisition* requisition) const {
-    requisition->width = 60;
-    requisition->height = GRADIENT_WIDGET_HEIGHT;
+[[nodiscard]] static auto size_request()
+{
+    static auto const requisition = Gtk::Requisition{60, GRADIENT_WIDGET_HEIGHT};
+    return requisition;
 }
 
 void GradientWithStops::get_preferred_width_vfunc(int& minimal_width, int& natural_width) const {
-    GtkRequisition requisition;
-    size_request(&requisition);
+    auto const &requisition = size_request();
     minimal_width = natural_width = requisition.width;
 }
 
 void GradientWithStops::get_preferred_height_vfunc(int& minimal_height, int& natural_height) const {
-    GtkRequisition requisition;
-    size_request(&requisition);
+    auto const &requisition = size_request();
     minimal_height = natural_height = requisition.height;
 }
 
@@ -266,16 +274,6 @@ GradientWithStops::limits_t GradientWithStops::get_stop_limits(int maybe_index) 
     }
 }
 
-bool GradientWithStops::on_focus_out_event(GdkEventFocus* event) {
-    update();
-    return false;
-}
-
-bool GradientWithStops::on_focus_in_event(GdkEventFocus* event) {
-    update();
-    return false;
-}
-
 bool GradientWithStops::on_focus(Gtk::DirectionType direction) {
     if (has_focus()) {
         return false; // let focus go
@@ -286,102 +284,104 @@ bool GradientWithStops::on_focus(Gtk::DirectionType direction) {
     return true;
 }
 
-bool GradientWithStops::on_key_press_event(GdkEventKey* key_event) {
-    bool consumed = false;
+bool GradientWithStops::on_key_pressed(GtkEventControllerKey const * const controller,
+                                       unsigned const keyval, unsigned const keycode,
+                                       GdkModifierType const state)
+{
     // currently all keyboard activity involves acting on focused stop handle; bail if nothing's selected
-    if (_focused_stop < 0) return consumed;
+    if (_focused_stop < 0) return false;
 
     unsigned int key = 0;
-    auto modifier = static_cast<GdkModifierType>(key_event->state);
     gdk_keymap_translate_keyboard_state(Gdk::Display::get_default()->get_keymap(),
-        key_event->hardware_keycode, modifier, 0, &key, nullptr, nullptr, nullptr);
+                                        keycode, state, 0, &key, nullptr, nullptr, nullptr);
 
     auto delta = _stop_move_increment;
-    if (modifier & GDK_SHIFT_MASK) {
+    if (Controller::has_flag(state, GDK_SHIFT_MASK)) {
         delta *= 10;
     }
-
-    consumed = true;
 
     switch (key) {
         case GDK_KEY_Left:
         case GDK_KEY_KP_Left:
             move_stop(_focused_stop, -delta);
-            break;
+            return true;
+
         case GDK_KEY_Right:
         case GDK_KEY_KP_Right:
             move_stop(_focused_stop, delta);
-            break;
+            return true;
+
         case GDK_KEY_BackSpace:
         case GDK_KEY_Delete:
             _signal_delete_stop.emit(_focused_stop);
-            break;
-        default:
-            consumed = false;
-            break;
+            return true;
     }
 
-    return consumed;
+    return false;
 }
 
-bool GradientWithStops::on_button_press_event(GdkEventButton* event) {
-    // single button press selects stop and can start dragging it
-    constexpr auto LEFT_BTN = 1;
-    if (event->button == LEFT_BTN && _gradient && event->type == GDK_BUTTON_PRESS) {
+Gtk::EventSequenceState GradientWithStops::on_click_pressed(Gtk::GestureMultiPress const &click,
+                                                            int const n_press,
+                                                            double const x, double const y)
+{
+    if (!_gradient) return Gtk::EVENT_SEQUENCE_NONE;
+
+    if (n_press == 1) {
+        // single button press selects stop and can start dragging it
         _focused_stop = -1;
 
         if (!has_focus()) {
             // grab focus, so we can show selection indicator and move selected stop with left/right keys
             grab_focus();
         }
+
         update();
 
         // find stop handle
-        auto index = find_stop_at(event->x, event->y);
+        auto const index = find_stop_at(x, y);
+        if (index < 0) return Gtk::EVENT_SEQUENCE_NONE;
 
-        if (index >= 0) {
-            _focused_stop = index;
-            // fire stop selection, whether stop can be moved or not
-            _signal_stop_selected.emit(index);
+        _focused_stop = index;
 
-            auto limits = get_stop_limits(index);
+        // fire stop selection, whether stop can be moved or not
+        _signal_stop_selected.emit(index);
 
-            // check if clicked stop can be moved
-            if (limits.min_offset < limits.max_offset) {
-                // TODO: to facilitate selecting stops without accidentally moving them,
-                // delay dragging mode until mouse cursor moves certain distance...
-                _dragging = true;
-                _pointer_x = event->x;
-                _stop_offset = _stops.at(index).offset;
+        // check if clicked stop can be moved
+        auto limits = get_stop_limits(index);
+        if (limits.min_offset < limits.max_offset) {
+            // TODO: to facilitate selecting stops without accidentally moving them,
+            // delay dragging mode until mouse cursor moves certain distance...
+            _dragging = true;
+            _pointer_x = x;
+            _stop_offset = _stops.at(index).offset;
 
-                if (_cursor_dragging) {
-                    gdk_window_set_cursor(event->window, _cursor_dragging->gobj());
-                }
+            if (_cursor_dragging) {
+                set_cursor(&_cursor_dragging);
             }
         }
-    }
-    else if (event->button == LEFT_BTN && _gradient && event->type == GDK_2BUTTON_PRESS) {
+    } else if (n_press == 2) {
         // double-click may insert a new stop
-        auto index = find_stop_at(event->x, event->y);
-        if (index < 0) {
-            auto layout = get_layout();
-            if (layout.width > 0 && event->x > layout.x && event->x < layout.x + layout.width) {
-                double position = (event->x - layout.x) / layout.width;
-                // request new stop
-                _signal_add_stop_at.emit(position);
-            }
+        auto const index = find_stop_at(x, y);
+        if (index >= 0) return Gtk::EVENT_SEQUENCE_NONE;
+
+        auto layout = get_layout();
+        if (layout.width > 0 && x > layout.x && x < layout.x + layout.width) {
+            auto const position = (x - layout.x) / layout.width;
+            // request new stop
+            _signal_add_stop_at.emit(position);
         }
     }
 
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-bool GradientWithStops::on_button_release_event(GdkEventButton* event) {
-    GdkCursor* cursor = get_cursor(event->x, event->y);
-    gdk_window_set_cursor(event->window, cursor);
-
+Gtk::EventSequenceState GradientWithStops::on_click_released(Gtk::GestureMultiPress const &click,
+                                                             int const n_press,
+                                                             double const x, double const y)
+{
+    set_cursor(get_cursor(x, y));
     _dragging = false;
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 // move stop by a given amount (delta)
@@ -398,10 +398,14 @@ void GradientWithStops::move_stop(int stop_index, double offset_shift) {
     }
 }
 
-bool GradientWithStops::on_motion_notify_event(GdkEventMotion* event) {
-    if (_dragging && _gradient) {
+void GradientWithStops::on_motion(GtkEventControllerMotion const * const motion,
+                                  double const x, double const y)
+{
+    if (!_gradient) return;
+
+    if (_dragging) {
         // move stop to a new position (adjust offset)
-        auto dx = event->x - _pointer_x;
+        auto dx = x - _pointer_x;
         auto layout = get_layout();
         if (layout.width > 0) {
             auto delta = dx / layout.width;
@@ -411,33 +415,41 @@ bool GradientWithStops::on_motion_notify_event(GdkEventMotion* event) {
                 _signal_stop_offset_changed.emit(_focused_stop, new_offset);
             }
         }
+    } else { // !drag but may need to change cursor
+        set_cursor(get_cursor(x, y));
     }
-    else if (!_dragging && _gradient) {
-        GdkCursor* cursor = get_cursor(event->x, event->y);
-        gdk_window_set_cursor(event->window, cursor);
-    }
-
-    return false;
 }
 
-GdkCursor* GradientWithStops::get_cursor(double x, double y) const {
-    GdkCursor* cursor = nullptr;
-    if (_gradient) {
-        // check if mouse if over stop handle that we can adjust
-        auto index = find_stop_at(x, y);
-        if (index >= 0) {
-            auto limits = get_stop_limits(index);
-            if (limits.min_offset < limits.max_offset && _cursor_mouseover) {
-                cursor = _cursor_mouseover->gobj();
-            }
+Glib::RefPtr<Gdk::Cursor> const *
+GradientWithStops::get_cursor(double const x, double const y) const
+{
+    if (!_gradient) return nullptr;
+
+    // check if mouse if over stop handle that we can adjust
+    auto index = find_stop_at(x, y);
+    if (index >= 0) {
+        auto limits = get_stop_limits(index);
+        if (limits.min_offset < limits.max_offset && _cursor_mouseover) {
+            return &_cursor_mouseover;
         }
-        else {
-            if (_cursor_insert) {
-                cursor = _cursor_insert->gobj();
-            }
-        }
+    } else if (_cursor_insert) {
+        return &_cursor_insert;
     }
-    return cursor;
+
+    return nullptr;
+}
+
+void GradientWithStops::set_cursor(Glib::RefPtr<Gdk::Cursor> const * const cursor)
+{
+    if (_cursor_current == cursor) return;
+
+    if (cursor != nullptr) {
+        get_window()->set_cursor(*cursor);
+    } else {
+        get_window()->set_cursor({}); // empty/default
+    }
+
+    _cursor_current = cursor;
 }
 
 bool GradientWithStops::on_draw(const Cairo::RefPtr<Cairo::Context>& cr) {
@@ -535,10 +547,7 @@ void GradientWithStops::set_focused_stop(int index) {
     }
 }
 
-
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

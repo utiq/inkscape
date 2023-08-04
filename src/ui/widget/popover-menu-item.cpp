@@ -67,7 +67,6 @@ PopoverMenuItem::PopoverMenuItem(Glib::ustring const &label_with_mnemonic,
 
     // Make items behave like GtkMenu: focus if hovered & style focus+hover same
     // If hovered naturally or below, key-focus self & clear focus+hover on rest
-    add_events(Gdk::POINTER_MOTION_MASK);
     Controller::add_motion<nullptr, &PopoverMenuItem::on_motion, nullptr>(*this, *this);
     // If key-focused in/out, ‘fake’ correspondingly appearing as hovered or not
     property_is_focus().signal_changed().connect([this]{ on_focus(); });

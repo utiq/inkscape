@@ -135,9 +135,6 @@ void ColorItem::common_setup()
     set_name("ColorItem");
     set_tooltip_text(description);
 
-    add_events(Gdk::ENTER_NOTIFY_MASK |
-               Gdk::LEAVE_NOTIFY_MASK);
-
     Controller::add_motion<&ColorItem::on_motion_enter,
                            nullptr,
                            &ColorItem::on_motion_leave>

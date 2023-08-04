@@ -112,6 +112,14 @@ Controller &managed(Glib::RefPtr<Controller> controller, Widget &widget)
     return ref;
 }
 
+template <auto method>
+void add_events_for(Gtk::Widget &widget, Gdk::EventMask const events)
+{
+    if constexpr (!std::is_same_v<decltype(method), std::nullptr_t>) {
+        widget.add_events(events);
+    }
+}
+
 /// Helper to connect member func of a C++ Listener object to a C GObject signal.
 /// If method is not a nullptr, calls make_g_callback<method>, & connects result
 /// with either g_signal_connect (when=before) or g_signal_connect_after (after)
@@ -223,6 +231,11 @@ Gtk::EventController &add_motion(Gtk::Widget &widget  ,
     static_assert(is_motion_handler<decltype(on_enter ), Listener>);
     static_assert(is_motion_handler<decltype(on_motion), Listener>);
     static_assert( is_leave_handler<decltype(on_leave ), Listener>);
+
+    // GTK3 does not emit these events unless we explicitly request them
+    Detail::add_events_for<on_enter >(widget, Gdk::ENTER_NOTIFY_MASK  );
+    Detail::add_events_for<on_motion>(widget, Gdk::POINTER_MOTION_MASK);
+    Detail::add_events_for<on_leave >(widget, Gdk::LEAVE_NOTIFY_MASK  );
 
     auto const gcontroller = gtk_event_controller_motion_new(widget.gobj());
     gtk_event_controller_set_propagation_phase(gcontroller, static_cast<GtkPropagationPhase>(phase));

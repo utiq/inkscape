@@ -147,8 +147,6 @@ MyHandle::MyHandle(Gtk::Orientation orientation, int size = get_handle_size())
     set_name("MultipanedHandle");
     set_orientation(orientation);
 
-    add_events(Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
-
     auto const image = Gtk::make_managed<Gtk::Image>();
     if (get_orientation() == Gtk::ORIENTATION_HORIZONTAL) {
         image->set_from_icon_name("view-more-symbolic", Gtk::ICON_SIZE_SMALL_TOOLBAR);
