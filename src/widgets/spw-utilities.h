@@ -23,11 +23,11 @@
 #include <functional>
 
 namespace Gtk {
-  class Label;
-  class Grid;
-  class HBox;
-  class Widget;
-}
+class Box;
+class Label;
+class Grid;
+class Widget;
+} // namespace Gtk
 
 Gtk::Label * spw_label(Gtk::Grid *table, gchar const *label_text, int col, int row, Gtk::Widget *target);
 Gtk::Box * spw_hbox(Gtk::Grid *table, int width, int col, int row);

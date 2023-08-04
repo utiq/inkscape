@@ -11,11 +11,14 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include "ui/widget/popover-menu.h"
+
 #include <glibmm/main.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/stylecontext.h>
+
+#include "ui/menuize.h"
 #include "ui/util.h"
-#include "ui/widget/popover-menu.h"
 #include "ui/widget/css-name-class-init.h"
 #include "ui/widget/popover-menu-item.h"
 
@@ -57,13 +60,7 @@ PopoverMenu::PopoverMenu()
             [this]{ unset_items_focus_hover(nullptr); }); });
 
     // Temporarily hide tooltip of relative-to widget to avoid it covering us up
-    signal_closed().connect([this]
-    {
-        if (auto const relative_to = get_relative_to()) {
-            if (_restore_tooltip) relative_to->set_has_tooltip(true);
-            _restore_tooltip = false;
-        }
-    });
+    UI::autohide_tooltip(*this);
 }
 
 void PopoverMenu::attach(Gtk::Widget &child,
@@ -97,11 +94,6 @@ void PopoverMenu::popup_at(Gtk::Widget &relative_to,
         pointing_to.set_x(x_offset);
         pointing_to.set_y(y_offset);
         set_pointing_to(pointing_to);
-    }
-
-    if (relative_to.get_has_tooltip()) {
-        _restore_tooltip = true;
-        relative_to.set_has_tooltip(false);
     }
 
     show_all_children();

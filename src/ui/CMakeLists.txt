@@ -12,6 +12,7 @@ set(ui_SRC
 	icon-loader.cpp
 	interface.cpp
 	manage.cpp
+	menuize.cpp
 	monitor.cpp
 	selected-color.cpp
 	shape-editor.cpp
@@ -290,6 +291,7 @@ set(ui_SRC
 	icon-loader.h
 	interface.h
 	manage.h
+	menuize.h
 	monitor.h
 	selected-color.h
 	shape-editor.h

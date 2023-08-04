@@ -1068,17 +1068,39 @@ padding:3px 3px 10px 3px;
     min-width: 80px;
 }
 
-/* Inkscape::UI::Widget::PopoverMenu */
+/* Gtk::PopoverMenu and Inkscape::UI::Widget::PopoverMenu */
 /* Make it look basically like GtkMenu; see comments @ original merge request */
-popover.popover-menu {
+popover.menu.menuize, /* GTK sets .menu/make_menuized_popover() sets .menuize */
+popover.popover-menu { /* Inkscape::UI::Widget::PopoverMenu */
+    /* Rounded corners can glitch in GTK3 with submenus, and GtkMenu was square anyway = emulate */
+    border-radius: 0;
+    border-color: @borders;
+
     padding: 0;
 }
 popover.popover-menu menu {
     background: none;
     border: none;
 }
+popover.menu.menuize modelbutton,
 popover.popover-menu menuitem {
+    border-radius: 0;
     outline-style: none;
+}
+/* Emulate GtkMenu theming in absence of ability to change CSS node name, unlike our PopoverMenu */
+popover.menu.menuize modelbutton:focus,
+popover.menu.menuize modelbutton:hover {
+    background-color: @theme_selected_bg_color;
+    color: @theme_selected_fg_color;
+}
+/* UGH! GtkMenuSectionBox has Widget:margin = 10px. Counteract to look like popover.popover-menu */
+popover.menu.menuize > stack > box {
+    margin: -2px -6px;
+}
+/* Detect submenu headings & replicate GTK .dim-label, looks nicer than leaving normal fg colour */
+popover.menu.menuize > stack > box > modelbutton:first-child > * /* Affect children not bgcolour */
+{
+    opacity: 0.55;
 }
 
 /* darker background for extensions gallery due to fixed-color thumbnails (white background + drop shadow) */

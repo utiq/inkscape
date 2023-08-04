@@ -14,6 +14,7 @@
 #include <boost/noncopyable.hpp>
 #include <cairomm/cairomm.h>
 #include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
 #include <gtk/gtk.h> // GtkEventControllerMotion
 #include <gtkmm/drawingarea.h>
 #include <gtkmm/gesture.h> // Gtk::EventSequenceState
@@ -23,13 +24,11 @@
 
 namespace Gtk {
 class GestureMultiPress;
-}
+} // namespace Gtk
 
 class SPGradient;
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 class DialogBase;
 
@@ -88,7 +87,15 @@ private:
     void on_click(bool stroke);
 
     // Perform the right-click action of showing the context menu.
-    void on_rightclick(GdkEvent const *event);
+    void on_rightclick();
+
+    // Actions
+    void action_set_fill();
+    void action_set_stroke();
+    void action_delete();
+    void action_edit();
+    void action_toggle_pin();
+    void action_convert(Glib::ustring const &name);
 
     // Draw the color only (i.e. no indicators) to a Cairo context. Used for drawing both the widget and the drag/drop icon.
     void draw_color(Cairo::RefPtr<Cairo::Context> const &cr, int w, int h) const;
@@ -131,9 +138,7 @@ private:
     sigc::signal<void ()> _signal_pinned;
 };
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 #endif // INKSCAPE_UI_DIALOG_COLOR_ITEM_H
 

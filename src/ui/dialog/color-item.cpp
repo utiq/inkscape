@@ -9,13 +9,19 @@
 
 #include "color-item.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <utility>
+#include <vector>
 #include <sigc++/functors/mem_fun.h>
 #include <cairomm/cairomm.h>
 #include <glibmm/convert.h>
 #include <glibmm/i18n.h>
+#include <giomm/menu.h>
+#include <giomm/menuitem.h>
+#include <giomm/simpleaction.h>
+#include <giomm/simpleactiongroup.h>
 #include <gdkmm/general.h>
 #include <gtkmm/gesturemultipress.h>
 
@@ -34,6 +40,7 @@
 #include "ui/dialog/dialog-base.h"
 #include "ui/dialog/dialog-container.h"
 #include "ui/icon-names.h"
+#include "ui/menuize.h"
 
 namespace {
 
@@ -82,9 +89,7 @@ public:
 
 } // namespace
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 ColorItem::ColorItem(PaintDef const &paintdef, DialogBase *dialog)
     : dialog(dialog)
@@ -267,8 +272,7 @@ Gtk::EventSequenceState ColorItem::on_click_pressed(Gtk::GestureMultiPress const
                                                     int /*n_press*/, double /*x*/, double /*y*/)
 {
     if (click.get_current_button() == 3) {
-        auto const event = Controller::get_last_event(click);
-        on_rightclick(event);
+        on_rightclick();
         return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
     // Return true necessary to avoid stealing the canvas focus.
@@ -302,7 +306,7 @@ void ColorItem::on_click(bool stroke)
         descr = stroke ? _("Set stroke color to none") : _("Set fill color to none");
     } else if (auto const rgbdata = std::get_if<RGBData>(&data)) {
         auto [r, g, b] = rgbdata->rgb;
-        uint32_t rgba = (r << 24) | (g << 16) | (b << 8) | 0xff;
+        std::uint32_t rgba = (r << 24) | (g << 16) | (b << 8) | 0xff;
         char buf[64];
         sp_svg_write_color(buf, sizeof(buf), rgba);
         sp_repr_css_set_property(css.get(), attr_name, buf);
@@ -320,117 +324,139 @@ void ColorItem::on_click(bool stroke)
     DocumentUndo::done(desktop->getDocument(), descr.c_str(), INKSCAPE_ICON("swatches"));
 }
 
-void ColorItem::on_rightclick(GdkEvent const *event)
+void ColorItem::on_rightclick()
 {
-    auto menu_gobj = gtk_menu_new(); /* C */
-    auto menu = Glib::wrap(GTK_MENU(menu_gobj)); /* C */
+    // Only re/insert actions on click, not in ctor, to avoid performance hit on rebuilding palette
+    auto const main_actions = Gio::SimpleActionGroup::create();
+    main_actions->add_action("set-fill"  , sigc::mem_fun(*this, &ColorItem::action_set_fill  ));
+    main_actions->add_action("set-stroke", sigc::mem_fun(*this, &ColorItem::action_set_stroke));
+    main_actions->add_action("delete"    , sigc::mem_fun(*this, &ColorItem::action_delete    ));
+    main_actions->add_action("edit"      , sigc::mem_fun(*this, &ColorItem::action_edit      ));
+    main_actions->add_action("toggle-pin", sigc::mem_fun(*this, &ColorItem::action_toggle_pin));
+    insert_action_group("color-item", main_actions);
 
-    auto additem = [&, this] (Glib::ustring const &name, sigc::slot<void()> slot) {
-        auto const item = Gtk::make_managed<Gtk::MenuItem>(name);
-        menu->append(*item);
-        item->signal_activate().connect(SIGC_TRACKING_ADAPTOR(std::move(slot), *this));
-    };
+    auto const menu = Gio::Menu::create();
 
     // TRANSLATORS: An item in context menu on a colour in the swatches
-    additem(_("Set fill"), [this] { on_click(false); });
-    additem(_("Set stroke"), [this] { on_click(true); });
+    menu->append(_("Set Fill"  ), "color-item.set-fill"  );
+    menu->append(_("Set Stroke"), "color-item.set-stroke");
+
+    auto section = menu;
 
     if (auto const graddata = std::get_if<GradientData>(&data)) {
-        menu->append(*Gtk::make_managed<Gtk::SeparatorMenuItem>());
+        section = Gio::Menu::create();
+        menu->append_section(section);
+        section->append(_("Delete" ), "color-item.delete");
+        section->append(_("Edit..."), "color-item.edit"  );
+        section = Gio::Menu::create();
+        menu->append_section(section);
+    }
 
-        additem(_("Delete"), [=] {
-            auto const grad = graddata->gradient;
-            if (!grad) return;
+    section->append(is_pinned() ? _("Unpin Color") : _("Pin Color"), "color-item.toggle-pin");
 
-            grad->setSwatch(false);
-            DocumentUndo::done(grad->document, _("Delete swatch"), INKSCAPE_ICON("color-gradient"));
-        });
+    // If document has gradients, add Convert section w/ actions to convert them to swatches.
+    auto grad_names = std::vector<Glib::ustring>{};
+    for (auto const obj : dialog->getDesktop()->getDocument()->getResourceList("gradient")) {
+        auto const grad = static_cast<SPGradient *>(obj);
+        if (grad->hasStops() && !grad->isSwatch()) {
+            grad_names.emplace_back(grad->getId());
+        }
+    }
+    if (!grad_names.empty()) {
+        auto const convert_actions = Gio::SimpleActionGroup::create();
+        auto const convert_submenu = Gio::Menu::create();
 
-        additem(_("Edit..."), [=] {
-            auto const grad = graddata->gradient;
-            if (!grad) return;
+        std::sort(grad_names.begin(), grad_names.end());
+        for (auto const &name: grad_names) {
+            convert_actions->add_action(name, sigc::bind(sigc::mem_fun(*this, &ColorItem::action_convert), name));
+            convert_submenu->append(name, "color-item-convert." + name);
+        }
 
-            auto desktop = dialog->getDesktop();
-            auto selection = desktop->getSelection();
-            auto items = std::vector<SPItem*>(selection->items().begin(), selection->items().end());
+        insert_action_group("color-item-convert", convert_actions);
 
-            if (!items.empty()) {
-                auto query = SPStyle(desktop->doc());
-                int result = objects_query_fillstroke(items, &query, true);
-                if (result == QUERY_STYLE_MULTIPLE_SAME || result == QUERY_STYLE_SINGLE) {
-                    if (query.fill.isPaintserver()) {
-                        if (cast<SPGradient>(query.getFillPaintServer()) == grad) {
-                            desktop->getContainer()->new_dialog("FillStroke");
-                            return;
-                        }
-                    }
+        section = Gio::Menu::create();
+        section->append_submenu(_("Convert"), convert_submenu);
+        menu->append_section(section);
+    }
+
+    // static to only create/show 1 menu over all items & avoid lifetime hassles
+    static std::unique_ptr<Gtk::Popover> popover;
+    popover = UI::make_menuized_popover(std::move(menu), *this);
+    popover->popup();
+}
+
+void ColorItem::action_set_fill()
+{
+    on_click(false);
+}
+
+void ColorItem::action_set_stroke()
+{
+    on_click(true);
+}
+
+void ColorItem::action_delete()
+{
+    auto const grad = std::get<GradientData>(data).gradient;
+    if (!grad) return;
+
+    grad->setSwatch(false);
+    DocumentUndo::done(grad->document, _("Delete swatch"), INKSCAPE_ICON("color-gradient"));
+}
+
+void ColorItem::action_edit()
+{
+    auto const grad = std::get<GradientData>(data).gradient;
+    if (!grad) return;
+
+    auto desktop = dialog->getDesktop();
+    auto selection = desktop->getSelection();
+    auto items = std::vector<SPItem*>(selection->items().begin(), selection->items().end());
+
+    if (!items.empty()) {
+        auto query = SPStyle(desktop->doc());
+        int result = objects_query_fillstroke(items, &query, true);
+        if (result == QUERY_STYLE_MULTIPLE_SAME || result == QUERY_STYLE_SINGLE) {
+            if (query.fill.isPaintserver()) {
+                if (cast<SPGradient>(query.getFillPaintServer()) == grad) {
+                    desktop->getContainer()->new_dialog("FillStroke");
+                    return;
                 }
             }
-
-            // Otherwise, invoke the gradient tool.
-            set_active_tool(desktop, "Gradient");
-        });
-    }
-
-    additem(is_pinned() ? _("Unpin Color") : _("Pin Color"), [this] {
-        if (auto const graddata = std::get_if<GradientData>(&data)) {
-            auto const grad = graddata->gradient;
-            if (!grad) return;
-
-            grad->setPinned(!is_pinned());
-            DocumentUndo::done(grad->document, is_pinned() ? _("Pin swatch") : _("Unpin swatch"), INKSCAPE_ICON("color-gradient"));
-        } else {
-            Inkscape::Preferences::get()->setBool(pinned_pref, !is_pinned());
-        }
-    });
-
-    Gtk::Menu *convert_submenu = nullptr;
-
-    auto create_convert_submenu = [&] {
-        menu->append(*Gtk::make_managed<Gtk::SeparatorMenuItem>());
-
-        auto const convert_item = Gtk::make_managed<Gtk::MenuItem>(_("Convert"));
-        menu->append(*convert_item);
-
-        convert_submenu = Gtk::make_managed<Gtk::Menu>();
-        convert_item->set_submenu(*convert_submenu);
-    };
-
-    auto add_convert_subitem = [&, this] (Glib::ustring const &name, sigc::slot<void()> slot) {
-        if (!convert_submenu) {
-            create_convert_submenu();
-        }
-
-        auto const item = Gtk::make_managed<Gtk::MenuItem>(name);
-        convert_submenu->append(*item);
-        item->signal_activate().connect(std::move(slot));
-    };
-
-    auto grads = dialog->getDesktop()->getDocument()->getResourceList("gradient");
-    for (auto obj : grads) {
-        auto grad = static_cast<SPGradient*>(obj);
-        if (grad->hasStops() && !grad->isSwatch()) {
-            add_convert_subitem(grad->getId(), [name = grad->getId(), this] {
-                auto doc = dialog->getDesktop()->getDocument();
-                auto grads = doc->getResourceList("gradient");
-                for (auto obj : grads) {
-                    auto grad = static_cast<SPGradient*>(obj);
-                    if (grad->getId() == name) {
-                        grad->setSwatch();
-                        DocumentUndo::done(doc, _("Add gradient stop"), INKSCAPE_ICON("color-gradient"));
-                    }
-                }
-            });
         }
     }
 
-    menu->show_all();
-    menu->popup_at_pointer(event);
+    // Otherwise, invoke the gradient tool.
+    set_active_tool(desktop, "Gradient");
+}
 
-    // Todo: All lines marked /* C */ in this function are required in order for the menu to
-    // self-destruct after it has finished. Please replace upon discovery of a better method.
-    g_object_ref_sink(menu_gobj); /* C */
-    g_object_unref(menu_gobj); /* C */
+void ColorItem::action_toggle_pin()
+{
+    if (auto const graddata = std::get_if<GradientData>(&data)) {
+        auto const grad = graddata->gradient;
+        if (!grad) return;
+
+        grad->setPinned(!is_pinned());
+        DocumentUndo::done(grad->document, is_pinned() ? _("Pin swatch") : _("Unpin swatch"), INKSCAPE_ICON("color-gradient"));
+    } else {
+        Inkscape::Preferences::get()->setBool(pinned_pref, !is_pinned());
+    }
+}
+
+void ColorItem::action_convert(Glib::ustring const &name)
+{
+    // This will not be needed until next menu
+    remove_action_group("color-item-convert");
+
+    auto const doc = dialog->getDesktop()->getDocument();
+    auto const resources = doc->getResourceList("gradient");
+    auto const it = std::find_if(resources.cbegin(), resources.cend(),
+                                 [&](auto &_){ return _->getId() == name; });
+    if (it == resources.cend()) return;
+
+    auto const grad = static_cast<SPGradient *>(*it);
+    grad->setSwatch();
+    DocumentUndo::done(doc, _("Add gradient stop"), INKSCAPE_ICON("color-gradient"));
 }
 
 PaintDef ColorItem::to_paintdef() const
@@ -524,9 +550,7 @@ std::array<double, 3> ColorItem::average_color() const
     return {1.0, 1.0, 1.0};
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

@@ -47,7 +47,6 @@ public:
 
 private:
     PopoverMenuGrid &_grid;
-    bool _restore_tooltip = false;
 
     // Let PopoverMenuItem call this without making it public API
     friend class PopoverMenuItem;
