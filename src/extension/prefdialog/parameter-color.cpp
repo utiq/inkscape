@@ -9,6 +9,7 @@
  */
 
 #include <cstdio>
+#include <cstdlib>
 #include <gtkmm/box.h>
 #include <gtkmm/colorbutton.h>
 #include <gtkmm/label.h>
@@ -138,7 +139,8 @@ std::string ParamColor::value_to_string() const
 
 void ParamColor::string_to_value(const std::string &in)
 {
-    _color.setValue(std::stoul(in, nullptr, 0));
+    // If we canʼt convert this will return 0 or ULONG_MAX
+    _color.setValue(std::strtoul(in.c_str(), nullptr, 0));
 }
 
 } // namespace Inkscape::Extension
