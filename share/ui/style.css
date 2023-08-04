@@ -509,6 +509,13 @@ button.close-button:hover{
 /*
  * Inkscape start dialog styles
  */
+
+#start-screen-window .titlebar stack { /* banner-stack */
+    padding: 0;
+    /* opaque bg at bottom corners, rather than having gap, which in GTK3 glitches in transition */
+    background: linear-gradient(to bottom, transparent 0%, transparent 50%, @theme_bg_color);
+}
+
 button.primary {
     background-image: linear-gradient(to bottom, rgba(22, 169, 249, 1), rgba(2, 135, 204, 1));
     box-shadow: 0 1px rgba(255, 255, 255, 0.3) inset;

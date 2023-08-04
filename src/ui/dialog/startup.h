@@ -20,9 +20,10 @@ namespace Gtk {
 class Builder;
 class Button;
 class ComboBox;
-class Fixed;
 class Notebook;
+class Overlay;
 class TreeView;
+class Widget;
 class Window;
 } // namespace Gtk
 
@@ -74,7 +75,7 @@ private:
     Glib::RefPtr<Gtk::Builder> builder;
     Gtk::Window   *window  = nullptr;
     Gtk::Notebook *tabs    = nullptr;
-    Gtk::Fixed    *banners = nullptr;
+    Gtk::Overlay  *banners = nullptr;
     Gtk::ComboBox *themes  = nullptr;
     Gtk::TreeView *recent_treeview = nullptr;
     Gtk::Button   *load_btn = nullptr;
@@ -83,12 +84,12 @@ private:
     SPDocument* _document = nullptr;
 };
 
-
 } // namespace Dialog
 
 } // namespace Inkscape::UI
 
 #endif // STARTSCREEN_H
+
 /*
   Local Variables:
   mode:c++

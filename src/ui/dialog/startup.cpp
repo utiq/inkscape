@@ -16,17 +16,19 @@
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/combobox.h>
-#include <gtkmm/fixed.h>
 #include <gtkmm/notebook.h>
+#include <gtkmm/overlay.h>
+#include <gtkmm/stack.h>
 #include <gtkmm/treeview.h>
+#include <gtkmm/widget.h>
 #include <gtkmm/window.h>
 
 #include "color-rgba.h"
 #include "file.h"
 #include "inkscape-application.h"
-#include "inkscape-version-info.h"
-#include "inkscape-version.h"
 #include "inkscape.h"
+#include "inkscape-version.h"
+#include "inkscape-version-info.h"
 #include "io/resource.h"
 #include "object/sp-namedview.h"
 #include "preferences.h"
@@ -155,7 +157,7 @@ StartScreen::StartScreen()
     try {
         builder = Gtk::Builder::create_from_file(gladefile);
     } catch (const Glib::Error &ex) {
-        g_error("Glade file loading failed for boot screen");
+        g_error("Glade file loading failed for boot screen: `%s`", ex.what().c_str());
         // cleanup?
     }
 
@@ -318,13 +320,10 @@ StartScreen::set_active_combo(std::string widget_name, std::string unique_id)
 void
 StartScreen::notebook_switch(Gtk::Widget *tab, guint page_num)
 {
-    int page = 0;
-    for (auto banner : banners->get_children()) {
-        if (auto revealer = dynamic_cast<Gtk::Revealer *>(banner)) {
-            revealer->set_reveal_child(page == page_num);
-            page++;
-        }
-    }
+    auto &stack = get_widget<Gtk::Stack>(builder, "banner-stack");
+    auto const pages = stack.get_children();
+    auto &page = *pages.at(page_num);
+    stack.set_visible_child(page);
 }
 
 void
