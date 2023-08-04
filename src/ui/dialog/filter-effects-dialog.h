@@ -229,9 +229,9 @@ private:
         void on_drag_end(const Glib::RefPtr<Gdk::DragContext>&) override;
 
     private:
-        Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress &click,
+        Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &click,
                                                   int n_press, double x, double y);
-        Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress &click,
+        Gtk::EventSequenceState on_click_released(Gtk::GestureMultiPress const &click,
                                                   int n_press, double x, double y);
         void on_motion_motion(GtkEventControllerMotion const *motion,
                               double x, double y);

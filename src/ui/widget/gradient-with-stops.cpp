@@ -284,8 +284,8 @@ bool GradientWithStops::on_focus(Gtk::DirectionType direction) {
     return true;
 }
 
-bool GradientWithStops::on_key_pressed(GtkEventControllerKey const * const controller,
-                                       unsigned const keyval, unsigned const keycode,
+bool GradientWithStops::on_key_pressed(GtkEventControllerKey const * /*controller*/,
+                                       unsigned /*keyval*/, unsigned const keycode,
                                        GdkModifierType const state)
 {
     // currently all keyboard activity involves acting on focused stop handle; bail if nothing's selected
@@ -320,7 +320,7 @@ bool GradientWithStops::on_key_pressed(GtkEventControllerKey const * const contr
     return false;
 }
 
-Gtk::EventSequenceState GradientWithStops::on_click_pressed(Gtk::GestureMultiPress const &click,
+Gtk::EventSequenceState GradientWithStops::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
                                                             int const n_press,
                                                             double const x, double const y)
 {
@@ -375,8 +375,8 @@ Gtk::EventSequenceState GradientWithStops::on_click_pressed(Gtk::GestureMultiPre
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-Gtk::EventSequenceState GradientWithStops::on_click_released(Gtk::GestureMultiPress const &click,
-                                                             int const n_press,
+Gtk::EventSequenceState GradientWithStops::on_click_released(Gtk::GestureMultiPress const & /*click*/,
+                                                             int /*n_press*/,
                                                              double const x, double const y)
 {
     set_cursor(get_cursor(x, y));
@@ -398,7 +398,7 @@ void GradientWithStops::move_stop(int stop_index, double offset_shift) {
     }
 }
 
-void GradientWithStops::on_motion(GtkEventControllerMotion const * const motion,
+void GradientWithStops::on_motion(GtkEventControllerMotion const * /*motion*/,
                                   double const x, double const y)
 {
     if (!_gradient) return;

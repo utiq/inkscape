@@ -1634,7 +1634,7 @@ void FilterEffectsDialog::FilterModifier::select_filter(const SPFilter* filter)
 }
 
 Gtk::EventSequenceState FilterEffectsDialog::FilterModifier::filter_list_click_released(Gtk::GestureMultiPress &click,
-                                                                                        int const n_press, double const x, double const y)
+                                                                                        int /*n_press*/, double /*x*/, double /*y*/)
 {
     const bool sensitive = get_selected_filter() != nullptr;
     auto items = _menu.get_children();
@@ -2324,8 +2324,8 @@ static std::pair<int, int> widget_to_bin_window(Gtk::TreeView const &tree_view, 
     return {bx, by};
 }
 
-Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_pressed(Gtk::GestureMultiPress &click,
-                                                                             int const n_press, double const wx, double const wy)
+Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
+                                                                             int /*n_press*/, double const wx, double const wy)
 {
     Gtk::TreePath path;
     Gtk::TreeViewColumn* col;
@@ -2357,13 +2357,12 @@ Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_pressed(Gtk
         _autoscroll_y = 0;
         get_selection()->select(path);
         return Gtk::EVENT_SEQUENCE_CLAIMED;
-        //click.set_sequence_state(click.get_current_sequence(), Gtk::EVENT_SEQUENCE_CLAIMED);
     }
 
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-void FilterEffectsDialog::PrimitiveList::on_motion_motion(GtkEventControllerMotion const * const motion,
+void FilterEffectsDialog::PrimitiveList::on_motion_motion(GtkEventControllerMotion const * /*motion*/,
                                                           double const wx, double const wy)
 {
     const int speed = 10;
@@ -2409,8 +2408,8 @@ void FilterEffectsDialog::PrimitiveList::on_motion_motion(GtkEventControllerMoti
     queue_draw();
 }
 
-Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_released(Gtk::GestureMultiPress &click,
-                                                                              int const n_press, double const wx, double const wy)
+Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_released(Gtk::GestureMultiPress const &click,
+                                                                              int /*n_press*/, double const wx, double const wy)
 {
     auto const [x, y] = widget_to_bin_window(*this, wx, wy);
     SPFilterPrimitive *prim = get_selected(), *target;

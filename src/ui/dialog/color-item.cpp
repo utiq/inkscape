@@ -245,8 +245,8 @@ void ColorItem::on_size_allocate(Gtk::Allocation &allocation)
     cache_dirty = true;
 }
 
-void ColorItem::on_motion_enter(GtkEventControllerMotion const * const motion,
-                                double const x, double const y)
+void ColorItem::on_motion_enter(GtkEventControllerMotion const * /*motion*/,
+                                double /*x*/, double /*y*/)
 {
     mouse_inside = true;
     if (auto desktop = dialog->getDesktop()) {
@@ -255,7 +255,7 @@ void ColorItem::on_motion_enter(GtkEventControllerMotion const * const motion,
     }
 }
 
-void ColorItem::on_motion_leave(GtkEventControllerMotion const * const motion)
+void ColorItem::on_motion_leave(GtkEventControllerMotion const * /*motion*/)
 {
     mouse_inside = false;
     if (auto desktop = dialog->getDesktop()) {
@@ -264,7 +264,7 @@ void ColorItem::on_motion_leave(GtkEventControllerMotion const * const motion)
 }
 
 Gtk::EventSequenceState ColorItem::on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                    int const n_press, double const x, double const y)
+                                                    int /*n_press*/, double /*x*/, double /*y*/)
 {
     if (click.get_current_button() == 3) {
         auto const event = Controller::get_last_event(click);
@@ -276,7 +276,7 @@ Gtk::EventSequenceState ColorItem::on_click_pressed(Gtk::GestureMultiPress const
 }
 
 Gtk::EventSequenceState ColorItem::on_click_released(Gtk::GestureMultiPress const &click,
-                                                     int const n_press, double const x, double const y)
+                                                     int /*n_press*/, double /*x*/, double /*y*/)
 {
     auto const button = click.get_current_button();
     if (mouse_inside && (button == 1 || button == 2)) {

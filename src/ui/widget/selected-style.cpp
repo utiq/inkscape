@@ -763,7 +763,7 @@ void SelectedStyle::on_stroke_edit() {
 
 Gtk::EventSequenceState
 SelectedStyle::on_fill_click(Gtk::GestureMultiPress const &click,
-                             int const n_press, double const x, double const y)
+                             int /*n_press*/, double /*x*/, double /*y*/)
 {
     auto const button = click.get_current_button();
     if (button == 1) { // click, open fill&stroke
@@ -783,7 +783,7 @@ SelectedStyle::on_fill_click(Gtk::GestureMultiPress const &click,
 
 Gtk::EventSequenceState
 SelectedStyle::on_stroke_click(Gtk::GestureMultiPress const &click,
-                               int const n_press, double const x, double const y)
+                               int /*n_press*/, double /*x*/, double /*y*/)
 {
     auto const button = click.get_current_button();
     if (button == 1) { // click, open fill&stroke
@@ -803,7 +803,7 @@ SelectedStyle::on_stroke_click(Gtk::GestureMultiPress const &click,
 
 Gtk::EventSequenceState
 SelectedStyle::on_sw_click(Gtk::GestureMultiPress const &click,
-                           int const n_press, double const x, double const y)
+                           int /*n_press*/, double /*x*/, double /*y*/)
 {
     auto const button = click.get_current_button();
     if (button == 1) { // click, open fill&stroke
@@ -818,8 +818,8 @@ SelectedStyle::on_sw_click(Gtk::GestureMultiPress const &click,
 }
 
 Gtk::EventSequenceState
-SelectedStyle::on_opacity_click(Gtk::GestureMultiPress const &click,
-                                int const n_press, double const x, double const y)
+SelectedStyle::on_opacity_click(Gtk::GestureMultiPress const & /*click*/,
+                                int /*n_press*/, double /*x*/, double /*y*/)
 {
     const char* opacity = _opacity_sb.get_value() < 50? "0.5" : (_opacity_sb.get_value() == 100? "0" : "1");
     SPCSSAttr *css = sp_repr_css_attr_new ();

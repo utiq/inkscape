@@ -398,8 +398,8 @@ bool LayerPropertiesDialog::on_key_pressed(GtkEventControllerKey const * const c
     return false;
 }
 
-Gtk::EventSequenceState LayerPropertiesDialog::on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                                int const n_press, double const x, double const y)
+Gtk::EventSequenceState LayerPropertiesDialog::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
+                                                                int const n_press, double /*x*/, double /*y*/)
 {
     if (n_press == 2) {
         _apply();

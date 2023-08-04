@@ -91,8 +91,8 @@ PopoverMenu *PopoverMenuItem::get_menu()
     return result;
 }
 
-void PopoverMenuItem::on_motion(GtkEventControllerMotion const * const motion,
-                                double const x, double const y)
+void PopoverMenuItem::on_motion(GtkEventControllerMotion const * /*motion*/,
+                                double /*x*/, double /*y*/)
 {
     if (is_focus()) return;
     if (auto const menu = get_menu()) {

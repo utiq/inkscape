@@ -180,16 +180,16 @@ void VsdImportDialog::_onPageNumberChanged()
 }
 
 Gtk::EventSequenceState
-VsdImportDialog::_onSpinButtonClickPressed(Gtk::GestureMultiPress const &click,
-                                           int const n_press, double const x, double const y)
+VsdImportDialog::_onSpinButtonClickPressed(Gtk::GestureMultiPress const & /*click*/,
+                                           int /*n_press*/, double /*x*/, double /*y*/)
 {
     _spinning = true;
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 Gtk::EventSequenceState
-VsdImportDialog::_onSpinButtonClickReleased(Gtk::GestureMultiPress const &click,
-                                            int const n_press, double const x, double const y)
+VsdImportDialog::_onSpinButtonClickReleased(Gtk::GestureMultiPress const & /*click*/,
+                                            int /*n_press*/, double /*x*/, double /*y*/)
 {
     _spinning = false;
     _setPreviewPage();

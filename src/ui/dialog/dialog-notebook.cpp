@@ -727,7 +727,7 @@ void DialogNotebook::on_size_allocate_notebook(Gtk::Allocation &a)
  * Signal handler to close a tab on middle-click or to open menu on right-click.
  */
 Gtk::EventSequenceState DialogNotebook::on_tab_click_event(Gtk::GestureMultiPress const &click,
-                                                           int const n_press, double const x, double const y,
+                                                           int /*n_press*/, double /*x*/, double /*y*/,
                                                            Gtk::Widget *page)
 {
     if (_menutabs.get_visible()) {

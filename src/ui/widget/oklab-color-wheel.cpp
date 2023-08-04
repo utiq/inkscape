@@ -276,7 +276,7 @@ bool OKWheel::_onClick(Geom::Point const &pt)
 
 /** @brief Handle a button press event. */
 Gtk::EventSequenceState OKWheel::on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                  int const n_press, double const x, double const y)
+                                                  int /*n_press*/, double const x, double const y)
 {
     if (click.get_current_button() == 1) {
         // Convert the click coordinates to the abstract coords in which
@@ -290,15 +290,15 @@ Gtk::EventSequenceState OKWheel::on_click_pressed(Gtk::GestureMultiPress const &
 }
 
 /** @brief Handle a button release event. */
-Gtk::EventSequenceState OKWheel::on_click_released(Gtk::GestureMultiPress const &click,
-                                                   int const n_press, double const x, double const y)
+Gtk::EventSequenceState OKWheel::on_click_released(Gtk::GestureMultiPress const & /*click*/,
+                                                   int /*n_press*/, double /*x*/, double /*y*/)
 {
     _adjusting = false;
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
 /** @brief Handle a drag (motion notify event). */
-void OKWheel::on_motion(GtkEventControllerMotion const *motion, double x, double y)
+void OKWheel::on_motion(GtkEventControllerMotion const * /*motion*/, double x, double y)
 {
     if (_adjusting) {
         _setColor(_event2abstract({x, y}));

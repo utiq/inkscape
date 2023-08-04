@@ -229,7 +229,7 @@ void MyHandle::set_drag_updated(bool const updated) {
 /**
  * Change the mouse pointer into a resize icon to show you can drag.
  */
-Gtk::EventSequenceState MyHandle::on_motion_enter(GtkEventControllerMotion const * const motion,
+Gtk::EventSequenceState MyHandle::on_motion_enter(GtkEventControllerMotion const * /*motion*/,
                                                   double const x, double const y)
 {
     auto window = get_window();
@@ -248,7 +248,7 @@ Gtk::EventSequenceState MyHandle::on_motion_enter(GtkEventControllerMotion const
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-Gtk::EventSequenceState MyHandle::on_motion_leave(GtkEventControllerMotion const * const motion)
+Gtk::EventSequenceState MyHandle::on_motion_leave(GtkEventControllerMotion const * /*motion*/)
 {
     show_click_indicator(false);
     return Gtk::EVENT_SEQUENCE_NONE;
@@ -279,7 +279,7 @@ bool MyHandle::is_click_resize_active() const {
 }
 
 Gtk::EventSequenceState MyHandle::on_click_pressed(Gtk::GestureMultiPress const &gesture,
-                                                   int const n_press, double const x, double const y)
+                                                   int /*n_press*/, double /*x*/, double /*y*/)
 {
     // Detect single-clicks, except after a (moving/updated) drag
     _click = !_drag_updated && gesture.get_current_button() == 1;
@@ -288,7 +288,7 @@ Gtk::EventSequenceState MyHandle::on_click_pressed(Gtk::GestureMultiPress const 
 }
 
 Gtk::EventSequenceState MyHandle::on_click_released(Gtk::GestureMultiPress &gesture,
-                                                    int const n_press, double const x, double const y)
+                                                    int /*n_press*/, double /*x*/, double /*y*/)
 {
     // single-click on active zone?
     if (_click && gesture.get_current_button() == 1 && _click_indicator) {
@@ -351,7 +351,7 @@ void MyHandle::toggle_multipaned() {
     }
 }
 
-Gtk::EventSequenceState MyHandle::on_motion_motion(GtkEventControllerMotion const * const motion,
+Gtk::EventSequenceState MyHandle::on_motion_motion(GtkEventControllerMotion const * /*motion*/,
                                                    double const x, double const y)
 {
     // motion invalidates click; it activates resizing
@@ -1000,7 +1000,7 @@ void DialogMultipaned::on_remove(Gtk::Widget *child)
     }
 }
 
-Gtk::EventSequenceState DialogMultipaned::on_drag_begin(Gtk::GestureDrag const &gesture,
+Gtk::EventSequenceState DialogMultipaned::on_drag_begin(Gtk::GestureDrag const & /*gesture*/,
                                                         double const start_x, double const start_y)
 {
     _hide_widget1 = _hide_widget2 = nullptr;
@@ -1053,7 +1053,7 @@ Gtk::EventSequenceState DialogMultipaned::on_drag_begin(Gtk::GestureDrag const &
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-Gtk::EventSequenceState DialogMultipaned::on_drag_end(Gtk::GestureDrag const &gesture,
+Gtk::EventSequenceState DialogMultipaned::on_drag_end(Gtk::GestureDrag const & /*gesture*/,
                                                       double const offset_x, double const offset_y)
 {
     if (_handle >= 0 && _handle < children.size()) {
@@ -1186,7 +1186,7 @@ double collapse_curve(double val, double size) {
     return val;
 }
 
-Gtk::EventSequenceState DialogMultipaned::on_drag_update(Gtk::GestureDrag const &gesture,
+Gtk::EventSequenceState DialogMultipaned::on_drag_update(Gtk::GestureDrag const & /*gesture*/,
                                                          double offset_x, double offset_y)
 {
     if (_handle < 0) {

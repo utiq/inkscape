@@ -36,7 +36,7 @@ Rotateable::Rotateable():
 }
 
 Gtk::EventSequenceState Rotateable::on_click(Gtk::GestureMultiPress const &click,
-                                             int const n_press, double const x, double const y)
+                                             int /*n_press*/, double const x, double const y)
 {
     drag_started_x = x;
     drag_started_y = y;
@@ -119,8 +119,8 @@ bool Rotateable::on_motion(GtkEventControllerMotion const * const motion,
 }
 
 
-Gtk::EventSequenceState Rotateable::on_release(Gtk::GestureMultiPress const &click,
-                                               int const n_press, double const x, double const y)
+Gtk::EventSequenceState Rotateable::on_release(Gtk::GestureMultiPress const & /*click*/,
+                                               int /*n_press*/, double const x, double const y)
 {
     if (dragging && working) {
         double angle = atan2(y - drag_started_y, x - drag_started_x);
@@ -141,7 +141,7 @@ Gtk::EventSequenceState Rotateable::on_release(Gtk::GestureMultiPress const &cli
 }
 
 bool Rotateable::on_scroll(GtkEventControllerScroll const * const scroll,
-                           double const dx, double const dy)
+                           double /*dx*/, double const dy)
 {
     double change = 0.0;
     double delta_y_clamped = CLAMP(dy, -1.0, 1.0); // values > 1 result in excessive changes

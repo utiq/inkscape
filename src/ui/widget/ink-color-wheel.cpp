@@ -112,7 +112,7 @@ ColorWheel::ColorWheel()
 void ColorWheel::setRgb(double /*r*/, double /*g*/, double /*b*/, bool /*overrideHue*/)
 {}
 
-void ColorWheel::getRgb(double */*r*/, double */*g*/, double */*b*/) const
+void ColorWheel::getRgb(double * /*r*/, double * /*g*/, double * /*b*/) const
 {}
 
 void ColorWheel::getRgbV(double *rgb) const {}
@@ -144,8 +144,8 @@ void ColorWheel::getValues(double *a, double *b, double *c) const
 void ColorWheel::_set_from_xy(double const x, double const y)
 {}
 
-bool ColorWheel::on_key_released(GtkEventControllerKey const * const controller,
-                                 unsigned const keyval, unsigned const keycode,
+bool ColorWheel::on_key_released(GtkEventControllerKey const * /*controller*/,
+                                 unsigned /*keyval*/, unsigned const keycode,
                                  GdkModifierType const state)
 {
     unsigned int key = 0;
@@ -615,8 +615,8 @@ void ColorWheelHSL::_update_ring_color(double x, double y)
     _signal_color_changed.emit();
 }
 
-Gtk::EventSequenceState ColorWheelHSL::on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                        int const n_press, double const x, double const y)
+Gtk::EventSequenceState ColorWheelHSL::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
+                                                        int /*n_press*/, double const x, double const y)
 {
     // Seat is automatically grabbed.
 
@@ -639,15 +639,16 @@ Gtk::EventSequenceState ColorWheelHSL::on_click_pressed(Gtk::GestureMultiPress c
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-Gtk::EventSequenceState ColorWheelHSL::on_click_released(Gtk::GestureMultiPress const &click,
-                                                         int const n_press, double const x, double const y)
+Gtk::EventSequenceState ColorWheelHSL::on_click_released(Gtk::GestureMultiPress const & /*click*/,
+                                                         int /*n_press*/, double /*x*/, double /*y*/)
 {
     _mode = DragMode::NONE;
     _adjusting = false;
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool ColorWheelHSL::on_motion(GtkEventControllerMotion const *motion, double const x, double const y)
+bool ColorWheelHSL::on_motion(GtkEventControllerMotion const * /*motion*/,
+                              double const x, double const y)
 {
     if (!_adjusting) { return false; }
 
@@ -662,8 +663,8 @@ bool ColorWheelHSL::on_motion(GtkEventControllerMotion const *motion, double con
     }
 }
 
-bool ColorWheelHSL::on_key_pressed(GtkEventControllerKey const * const controller,
-                                   unsigned const keyval, unsigned const keycode,
+bool ColorWheelHSL::on_key_pressed(GtkEventControllerKey const * /*controller*/,
+                                   unsigned /*keyval*/, unsigned const keycode,
                                    GdkModifierType const state)
 {
     bool consumed = false;
@@ -1084,8 +1085,8 @@ void ColorWheelHSLuv::_updatePolygon()
                                                      Cairo::FORMAT_RGB24, _cache_width, _cache_height, stride);
 }
 
-Gtk::EventSequenceState ColorWheelHSLuv::on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                          int const n_press, double const x, double const y)
+Gtk::EventSequenceState ColorWheelHSLuv::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
+                                                          int /*n_press*/, double const x, double const y)
 {
     auto const event_pt = Geom::Point(x, y);
     Gtk::Allocation allocation = get_allocation();
@@ -1102,14 +1103,15 @@ Gtk::EventSequenceState ColorWheelHSLuv::on_click_pressed(Gtk::GestureMultiPress
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-Gtk::EventSequenceState ColorWheelHSLuv::on_click_released(Gtk::GestureMultiPress const &click,
-                                                           int const n_press, double const x, double const y)
+Gtk::EventSequenceState ColorWheelHSLuv::on_click_released(Gtk::GestureMultiPress const & /*click*/,
+                                                           int /*n_press*/, double /*x*/, double /*y*/)
 {
     _adjusting = false;
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool ColorWheelHSLuv::on_motion(GtkEventControllerMotion const *motion, double const x, double const y)
+bool ColorWheelHSLuv::on_motion(GtkEventControllerMotion const * /*motion*/,
+                                double const x, double const y)
 {
     if (!_adjusting) {
         return false;
@@ -1119,8 +1121,8 @@ bool ColorWheelHSLuv::on_motion(GtkEventControllerMotion const *motion, double c
     return true;
 }
 
-bool ColorWheelHSLuv::on_key_pressed(GtkEventControllerKey const * const controller,
-                                     unsigned const keyval, unsigned const keycode,
+bool ColorWheelHSLuv::on_key_pressed(GtkEventControllerKey const * /*controller*/,
+                                     unsigned /*keyval*/, unsigned const keycode,
                                      GdkModifierType const state)
 {
     bool consumed = false;

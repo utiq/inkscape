@@ -173,8 +173,8 @@ void StyleSwatch::setDesktop(SPDesktop *desktop) {
     _desktop = desktop;
 }
 
-Gtk::EventSequenceState StyleSwatch::on_click(Gtk::GestureMultiPress const &click,
-                                              int const n_press, double const x, double const y)
+Gtk::EventSequenceState StyleSwatch::on_click(Gtk::GestureMultiPress const & /*click*/,
+                                              int /*n_press*/, double /*x*/, double /*y*/)
 {
     if (_desktop && !_tool_name.empty()) {
         auto win = _desktop->getInkscapeWindow();

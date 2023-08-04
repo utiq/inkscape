@@ -165,7 +165,7 @@ static double get_value_at(Gtk::Widget const &self, double const x, double const
 }
 
 Gtk::EventSequenceState ColorSlider::on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                      int const n_press, double const x, double const y)
+                                                      int /*n_press*/, double const x, double const y)
 {
     signal_grabbed.emit();
     _dragging = true;
@@ -178,8 +178,8 @@ Gtk::EventSequenceState ColorSlider::on_click_pressed(Gtk::GestureMultiPress con
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-Gtk::EventSequenceState ColorSlider::on_click_released(Gtk::GestureMultiPress const &click,
-                                                       int const n_press, double const x, double const y)
+Gtk::EventSequenceState ColorSlider::on_click_released(Gtk::GestureMultiPress const & /*click*/,
+                                                       int /*n_press*/, double /*x*/, double /*y*/)
 {
     _dragging = false;
     signal_released.emit();

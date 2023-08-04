@@ -181,16 +181,16 @@ void CdrImportDialog::_onPageNumberChanged()
 }
 
 Gtk::EventSequenceState
-CdrImportDialog::_onSpinButtonClickPressed(Gtk::GestureMultiPress const &click,
-                                           int const n_press, double const x, double const y)
+CdrImportDialog::_onSpinButtonClickPressed(Gtk::GestureMultiPress const & /*click*/,
+                                           int /*n_press*/, double /*x*/, double /*y*/)
 {
     _spinning = true;
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 Gtk::EventSequenceState
-CdrImportDialog::_onSpinButtonClickReleased(Gtk::GestureMultiPress const &click,
-                                            int const n_press, double const x, double const y)
+CdrImportDialog::_onSpinButtonClickReleased(Gtk::GestureMultiPress const & /*click*/,
+                                            int /*n_press*/, double /*x*/, double /*y*/)
 {
     _spinning = false;
     _setPreviewPage();

@@ -1291,7 +1291,7 @@ bool ObjectsPanel::toggleLocked(unsigned int state, Gtk::TreeModel::Row row)
  * Handles keyboard events
  * @return Whether the event should be eaten (om nom nom)
  */
-bool ObjectsPanel::on_key_pressed(GtkEventControllerKey const *controller,
+bool ObjectsPanel::on_key_pressed(GtkEventControllerKey const * const controller,
                                   unsigned const keyval, unsigned const keycode,
                                   GdkModifierType const state)
 {
@@ -1370,7 +1370,7 @@ bool ObjectsPanel::on_key_pressed(GtkEventControllerKey const *controller,
     return false;
 }
 
-bool ObjectsPanel::on_key_modifiers(GtkEventControllerKey const * const controller,
+bool ObjectsPanel::on_key_modifiers(GtkEventControllerKey const * /*controller*/,
                                     GdkModifierType const state)
 {
     auto desktop = getDesktop();
@@ -1387,15 +1387,15 @@ bool ObjectsPanel::on_key_modifiers(GtkEventControllerKey const * const controll
  */
 
 // Set a status bar text when entering the widget
-void ObjectsPanel::on_motion_enter(GtkEventControllerMotion const * const controller,
-                                   double const ex, double const ey)
+void ObjectsPanel::on_motion_enter(GtkEventControllerMotion const * /*controller*/,
+                                   double /*ex*/, double /*ey*/)
 {
     _msg_id = getDesktop()->messageStack()->push(Inkscape::NORMAL_MESSAGE,
          _("<b>Hold ALT</b> while hovering over item to highlight, "
            "<b>hold SHIFT</b> and click to hide/lock all."));
 }
 // watch mouse leave too to clear any state.
-void ObjectsPanel::on_motion_leave(GtkEventControllerMotion const * const controller)
+void ObjectsPanel::on_motion_leave(GtkEventControllerMotion const * /*controller*/)
 {
     getDesktop()->messageStack()->cancel(_msg_id);
     on_motion_motion(nullptr, 0, 0);

@@ -106,7 +106,7 @@ static bool get_constrained(Gdk::ModifierType const state)
 }
 
 Gtk::EventSequenceState InkScale::on_click_pressed(Gtk::GestureMultiPress const &click,
-                                                   int const n_press, double const x, double const y)
+                                                   int /*n_press*/, double const x, double /*y*/)
 {
     auto const state = Controller::get_current_event_state(click);
     if (!Controller::has_flag(state, Gdk::MOD1_MASK)) {
@@ -121,8 +121,8 @@ Gtk::EventSequenceState InkScale::on_click_pressed(Gtk::GestureMultiPress const 
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-Gtk::EventSequenceState InkScale::on_click_released(Gtk::GestureMultiPress const &click,
-                                                    int const n_press, double const x, double const y)
+Gtk::EventSequenceState InkScale::on_click_released(Gtk::GestureMultiPress const & /*click*/,
+                                                    int /*n_press*/, double /*x*/, double /*y*/)
 {
     _dragging = false;
     return Gtk::EVENT_SEQUENCE_CLAIMED;
@@ -130,7 +130,7 @@ Gtk::EventSequenceState InkScale::on_click_released(Gtk::GestureMultiPress const
 
 // TODO: GTK4: Just use Widget.set_cursor().
 void
-InkScale::on_motion_enter(GtkEventControllerMotion const * const motion, double const x, double const y)
+InkScale::on_motion_enter(GtkEventControllerMotion const * /*motion*/, double /*x*/, double /*y*/)
 {
     auto const display = get_display();
     auto const cursor = Gdk::Cursor::create(display, Gdk::SB_UP_ARROW);
@@ -138,7 +138,7 @@ InkScale::on_motion_enter(GtkEventControllerMotion const * const motion, double 
 }
 
 void
-InkScale::on_motion_motion(GtkEventControllerMotion const * const motion, double const x, double const y)
+InkScale::on_motion_motion(GtkEventControllerMotion const * const motion, double const x, double /*y*/)
 {
     if (!_dragging) {
         return;
@@ -157,7 +157,7 @@ InkScale::on_motion_motion(GtkEventControllerMotion const * const motion, double
 }
 
 void
-InkScale::on_motion_leave(GtkEventControllerMotion const * const motion)
+InkScale::on_motion_leave(GtkEventControllerMotion const * /*motion*/)
 {
     get_window()->set_cursor({});
 }

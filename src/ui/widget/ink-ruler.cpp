@@ -159,7 +159,7 @@ Ruler::add_track_widget(Gtk::Widget& widget)
 // coordinates. The routine assumes that the ruler is the same width (height) as the canvas. If
 // not, one could use Gtk::Widget::translate_coordinates() to convert the coordinates.
 bool
-Ruler::on_motion(GtkEventControllerMotion const * const motion, double const x, double const y)
+Ruler::on_motion(GtkEventControllerMotion const * /*motion*/, double const x, double const y)
 {
     double position = 0;
     if (_orientation == Gtk::ORIENTATION_HORIZONTAL) {
@@ -186,8 +186,8 @@ Ruler::on_motion(GtkEventControllerMotion const * const motion, double const x, 
 }
 
 Gtk::EventSequenceState
-Ruler::on_click_pressed(Gtk::GestureMultiPress const &click,
-                        int const n_press, double const x, double const y)
+Ruler::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
+                        int /*n_press*/, double const x, double const y)
 {
     _popover->set_pointing_to(Gdk::Rectangle(x, y, 1, 1));
     _popover->popup();

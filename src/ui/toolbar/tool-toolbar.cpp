@@ -170,7 +170,7 @@ void ToolToolbar::attachHandlers(Glib::RefPtr<Gtk::Builder> builder, InkscapeWin
         auto tool_name = Glib::ustring((gchar const *)action_target.get_data());
         auto on_click_pressed = [=, tool_name = std::move(tool_name)]
                                 (Gtk::GestureMultiPress const &click,
-                                 int const n_press, double const x, double const y)
+                                 int const n_press, double /*x*/, double /*y*/)
         {
             // Open tool preferences upon double click
             auto const button = click.get_current_button();
