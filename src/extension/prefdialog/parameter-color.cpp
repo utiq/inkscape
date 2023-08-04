@@ -10,6 +10,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include <gtkmm/box.h>
 #include <gtkmm/colorbutton.h>
 #include <gtkmm/label.h>
@@ -132,9 +133,7 @@ void ParamColor::_onColorButtonChanged()
 
 std::string ParamColor::value_to_string() const
 {
-    char value_string[16];
-    std::snprintf(value_string, 16, "%u", _color.value());
-    return value_string;
+    return std::to_string(_color.value());
 }
 
 void ParamColor::string_to_value(const std::string &in)
