@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/*
+/** @file
  * This code abstracts the libwpg interfaces into the Inkscape
  * input extension interface.
  *
+ *  This file came from libwpg as a source, their utility wpg2svg
+ *  specifically.  It has been modified to work as an Inkscape extension.
+ *  The Inkscape extension code is covered by this copyright, but the
+ *  rest is covered by the one below.
+ */
+/*
  * Authors:
  *   Fridrich Strba (fridrich.strba@bluewin.ch)
  *
@@ -11,8 +17,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __EXTENSION_INTERNAL_VSDOUTPUT_H__
-#define __EXTENSION_INTERNAL_VSDOUTPUT_H__
+#ifndef SEEN_EXTENSION_INTERNAL_VSDINPUT_H
+#define SEEN_EXTENSION_INTERNAL_VSDINPUT_H
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"  // only include where actually required!
@@ -20,28 +26,24 @@
 
 #ifdef WITH_LIBVISIO
 
-#include <gtkmm/dialog.h>
-
 #include "../implementation/implementation.h"
 
-namespace Inkscape {
-namespace Extension {
-namespace Internal {
+namespace Inkscape::Extension::Internal {
 
 class VsdInput : public Inkscape::Extension::Implementation::Implementation {
-     VsdInput () = default;;
-public:
-     SPDocument *open( Inkscape::Extension::Input *mod,
-                       const gchar *uri ) override;
-     static void         init( );
+    VsdInput() = default;
 
+public:
+    SPDocument *open(Inkscape::Extension::Input *mod,
+                     const gchar *uri) override;
+    static void init();
 };
 
-} } }  /* namespace Inkscape, Extension, Implementation */
+} // namespace Inkscape::Extension::Internal
 
 #endif /* WITH_LIBVISIO */
-#endif /* __EXTENSION_INTERNAL_VSDOUTPUT_H__ */
 
+#endif /* SEEN_EXTENSION_INTERNAL_VSDINPUT_H */
 
 /*
   Local Variables:

@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/*
+/** @file
  * This code abstracts the libwpg interfaces into the Inkscape
  * input extension interface.
  *
- * Authors:
+ *  This file came from libwpg as a source, their utility wpg2svg
+ *  specifically.  It has been modified to work as an Inkscape extension.
+ *  The Inkscape extension code is covered by this copyright, but the
+ *  rest is covered by the one below.
+ */
+/* Authors:
  *   Fridrich Strba (fridrich.strba@bluewin.ch)
  *
  * Copyright (C) 2012 Authors
@@ -11,8 +16,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __EXTENSION_INTERNAL_CDROUTPUT_H__
-#define __EXTENSION_INTERNAL_CDROUTPUT_H__
+#ifndef SEEN_EXTENSION_INTERNAL_CDRINPUT_H
+#define SEEN_EXTENSION_INTERNAL_CDRINPUT_H
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"  // only include where actually required!
@@ -20,28 +25,24 @@
 
 #ifdef WITH_LIBCDR
 
-#include <gtkmm/dialog.h>
-
 #include "../implementation/implementation.h"
 
-namespace Inkscape {
-namespace Extension {
-namespace Internal {
+namespace Inkscape::Extension::Internal {
 
 class CdrInput : public Inkscape::Extension::Implementation::Implementation {
-     CdrInput () = default;;
-public:
-     SPDocument *open( Inkscape::Extension::Input *mod,
-                       const gchar *uri ) override;
-     static void         init( );
+    CdrInput() = default;
 
+public:
+    SPDocument *open(Inkscape::Extension::Input *mod,
+                     const gchar *uri) override;
+    static void init();
 };
 
-} } }  /* namespace Inkscape, Extension, Implementation */
+} // namespace Inkscape::Extension::Internal
 
 #endif /* WITH_LIBCDR */
-#endif /* __EXTENSION_INTERNAL_CDROUTPUT_H__ */
 
+#endif /* SEEN_EXTENSION_INTERNAL_CDRINPUT_H */
 
 /*
   Local Variables:
