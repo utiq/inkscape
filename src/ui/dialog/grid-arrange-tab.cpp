@@ -519,15 +519,11 @@ GridArrangeTab::GridArrangeTab(ArrangeDialog *parent)
 
     SpinsHBox.pack_start(NoOfRowsBox, false, false, MARGIN);
 
-
     /*#### Label for X ####*/
-    padXByYLabel.set_label(" ");
-    XByYLabelVBox.set_orientation(Gtk::ORIENTATION_VERTICAL);
-    XByYLabelVBox.pack_start(padXByYLabel, false, false, MARGIN);
-    XByYLabel.set_markup(" &#215; ");
-    XByYLabelVBox.pack_start(XByYLabel, false, false, MARGIN);
-    SpinsHBox.pack_start(XByYLabelVBox, false, false, MARGIN);
-    _col2->add_widget(XByYLabelVBox);
+    XByYLabel.set_markup("<span size='larger'> &#215; </span>");
+    XByYLabel.set_valign(Gtk::ALIGN_CENTER);
+    SpinsHBox.pack_start(XByYLabel, false, false, MARGIN);
+    _col2->add_widget(XByYLabel);
 
     /*#### Number of columns ####*/
 
@@ -566,13 +562,16 @@ GridArrangeTab::GridArrangeTab(ArrangeDialog *parent)
     HorizAlign = prefs->getInt("/dialogs/gridtiler/HorizAlign", 1);
 
     // Anchor selection widget
-    AlignLabel.set_label(_("Alignment:"));
+    AlignLabel.set_markup(_("<b>Alignment:</b>"));
+    AlignLabel.set_margin_top(8);
     AlignLabel.set_halign(Gtk::ALIGN_START);
     AlignLabel.set_valign(Gtk::ALIGN_CENTER);
+    AlignmentSelector.set_margin_start(16);
+    AlignmentSelector.set_halign(Gtk::ALIGN_START);
     AlignmentSelector.setAlignment(HorizAlign, VertAlign);
     AlignmentSelector.on_selectionChanged().connect(sigc::mem_fun(*this, &GridArrangeTab::Align_changed));
     TileBox.pack_start(AlignLabel, false, false, MARGIN);
-    TileBox.pack_start(AlignmentSelector, true, false, MARGIN);
+    TileBox.pack_start(AlignmentSelector, false, false);
 
     {
         /*#### Radio buttons to control spacing manually or to fit selection bbox ####*/
@@ -622,7 +621,7 @@ GridArrangeTab::GridArrangeTab(ArrangeDialog *parent)
 
     TileBox.pack_start(*PaddingTable, false, false, MARGIN);
 
-    contents->property_margin().set_value(4);
+    contents->property_margin().set_value(8);
     contents->pack_start(TileBox);
 
     double SpacingType = prefs->getDouble("/dialogs/gridtiler/SpacingType", 15);

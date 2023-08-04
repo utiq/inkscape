@@ -91,8 +91,6 @@ private:
     bool AutoRowSize;
     Gtk::CheckButton      RowHeightButton;
 
-    Gtk::Box              XByYLabelVBox;
-    Gtk::Label            padXByYLabel;
     Gtk::Label            XByYLabel;
 
     // Number per Column

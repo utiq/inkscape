@@ -294,9 +294,9 @@
   <object class="GtkBox" id="align-and-distribute-box">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="margin-start">4</property>
-    <property name="margin-end">4</property>
+    <property name="margin">8</property>
     <property name="orientation">vertical</property>
+    <property name="spacing">4</property>
     <child>
       <object class="GtkBox" id="align-and-distribute-object">
         <property name="visible">True</property>
@@ -312,318 +312,286 @@
             <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
-              <object class="GtkAlignment">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="left-padding">12</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <!-- n-columns=2 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkToggleButton" id="align-on-canvas">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-on-canvas</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Enable on-canvas alignment handles</property>
+                        <property name="action-name">app.object-align-on-canvas</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToggleButton" id="align-move-as-group">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-sel-as-group</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Treat selection as group</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-start">4</property>
+                        <property name="label" translatable="yes">Alignment handles with third click</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-start">4</property>
+                        <property name="label" translatable="yes">Move/align selection as group</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
                     <child>
-                      <!-- n-columns=2 n-rows=2 -->
-                      <object class="GtkGrid">
+                      <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Relative to:</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="align-relative-object">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-start">4</property>
+                        <property name="model">RelativeToObject</property>
+                        <property name="active">0</property>
+                        <property name="id-column">1</property>
                         <child>
-                          <object class="GtkToggleButton" id="align-on-canvas">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-on-canvas</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Enable on-canvas alignment handles</property>
-                            <property name="action-name">app.object-align-on-canvas</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToggleButton" id="align-move-as-group">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-sel-as-group</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Treat selection as group</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">4</property>
-                            <property name="label" translatable="yes">Alignment handles with third click</property>
-                            <property name="xalign">0</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">4</property>
-                            <property name="label" translatable="yes">Move/align selection as group</property>
-                            <property name="xalign">0</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">1</property>
-                          </packing>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
                         </child>
                       </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <!-- n-columns=6 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkButton" id="align-horizontal-right-to-anchor">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-horizontal-right-to-anchor</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align right edges of objects to the left edge of anchor</property>
+                      </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkButton" id="align-horizontal-left">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Relative to:</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkComboBox" id="align-relative-object">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">4</property>
-                            <property name="model">RelativeToObject</property>
-                            <property name="active">0</property>
-                            <property name="id-column">1</property>
-                            <child>
-                              <object class="GtkCellRendererText"/>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-horizontal-left</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align left edges</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                     <child>
-                      <!-- n-columns=6 n-rows=2 -->
-                      <object class="GtkGrid">
+                      <object class="GtkButton" id="align-horizontal-center">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkButton" id="align-horizontal-right-to-anchor">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-horizontal-right-to-anchor</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align right edges of objects to the left edge of anchor</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-horizontal-left">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-horizontal-left</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align left edges</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-horizontal-center">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-horizontal-center</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Center on vertical axis</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">2</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-horizontal-right">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-horizontal-right</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align right edges</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">3</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-horizontal-left-to-anchor">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-horizontal-left-to-anchor</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align left edges of objects to the right edge of anchor</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">4</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-horizontal-baseline">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-horizontal-baseline</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align text anchors horizontally</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">5</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-vertical-bottom-to-anchor">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-vertical-bottom-to-anchor</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align bottom edges of objects to the top edge of anchor</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-vertical-top">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-vertical-top</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align top edges</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-vertical-center">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-vertical-center</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Center on horizontal axis</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">2</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-vertical-bottom">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-vertical-bottom</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align bottom edges</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">3</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-vertical-top-to-anchor">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-vertical-top-to-anchor</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align top edges of objects to bottom edge of anchor</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">4</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-vertical-baseline">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-vertical-baseline</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align text anchors vertically</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">5</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-horizontal-center</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Center on vertical axis</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-horizontal-right">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-horizontal-right</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align right edges</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">3</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-horizontal-left-to-anchor">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-horizontal-left-to-anchor</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align left edges of objects to the right edge of anchor</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">4</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-horizontal-baseline">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-horizontal-baseline</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align text anchors horizontally</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">5</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-vertical-bottom-to-anchor">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-vertical-bottom-to-anchor</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align bottom edges of objects to the top edge of anchor</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-vertical-top">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-vertical-top</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align top edges</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-vertical-center">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-vertical-center</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Center on horizontal axis</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-vertical-bottom">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-vertical-bottom</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align bottom edges</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">3</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-vertical-top-to-anchor">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-vertical-top-to-anchor</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align top edges of objects to bottom edge of anchor</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">4</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="align-vertical-baseline">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-vertical-baseline</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align text anchors vertically</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">5</property>
+                        <property name="top-attach">1</property>
                       </packing>
                     </child>
                   </object>
@@ -642,11 +610,6 @@
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkFrame">
@@ -656,186 +619,179 @@
             <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
-              <object class="GtkAlignment">
+              <!-- n-columns=5 n-rows=2 -->
+              <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="left-padding">12</property>
                 <child>
-                  <!-- n-columns=5 n-rows=2 -->
-                  <object class="GtkGrid">
+                  <object class="GtkButton">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'left'</property>
-                        <property name="image">image-distribute-horizontal-left</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between left edges</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'hcenter'</property>
-                        <property name="image">image-distribute-horizontal-center</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between centers</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'right'</property>
-                        <property name="image">image-distribute-horizontal-right</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between right edges</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'hgap'</property>
-                        <property name="image">image-distribute-horizontal-gaps</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute horizontally with even horizontal gaps</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">3</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute-text</property>
-                        <property name="action-target">'horizontal'</property>
-                        <property name="image">image-distribute-horizontal-baseline</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute text anchors horizontally</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">4</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'top'</property>
-                        <property name="image">image-distribute-vertical-top</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between top edges</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'vcenter'</property>
-                        <property name="image">image-distribute-vertical-center</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between centers</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'bottom'</property>
-                        <property name="image">image-distribute-vertical-bottom</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between bottom edges</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute</property>
-                        <property name="action-target">'vgap'</property>
-                        <property name="image">image-distribute-vertical-gaps</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute vertically with even vertical gaps</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">3</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-distribute-text</property>
-                        <property name="action-target">'vertical'</property>
-                        <property name="image">image-distribute-vertical-baseline</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Distribute text anchors vertically</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">4</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'left'</property>
+                    <property name="image">image-distribute-horizontal-left</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between left edges</property>
                   </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'hcenter'</property>
+                    <property name="image">image-distribute-horizontal-center</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between centers</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'right'</property>
+                    <property name="image">image-distribute-horizontal-right</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute horizontally with even spacing between right edges</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'hgap'</property>
+                    <property name="image">image-distribute-horizontal-gaps</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute horizontally with even horizontal gaps</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">3</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute-text</property>
+                    <property name="action-target">'horizontal'</property>
+                    <property name="image">image-distribute-horizontal-baseline</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute text anchors horizontally</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">4</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'top'</property>
+                    <property name="image">image-distribute-vertical-top</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between top edges</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'vcenter'</property>
+                    <property name="image">image-distribute-vertical-center</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between centers</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'bottom'</property>
+                    <property name="image">image-distribute-vertical-bottom</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute vertically with even spacing between bottom edges</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute</property>
+                    <property name="action-target">'vgap'</property>
+                    <property name="image">image-distribute-vertical-gaps</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute vertically with even vertical gaps</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">3</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-distribute-text</property>
+                    <property name="action-target">'vertical'</property>
+                    <property name="image">image-distribute-vertical-baseline</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Distribute text anchors vertically</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">4</property>
+                    <property name="top-attach">1</property>
+                  </packing>
                 </child>
               </object>
             </child>
@@ -851,11 +807,6 @@
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
         </child>
         <child>
           <object class="GtkFrame">
@@ -865,118 +816,111 @@
             <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
-              <object class="GtkAlignment">
+              <!-- n-columns=6 n-rows=1 -->
+              <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="left-padding">12</property>
                 <child>
-                  <!-- n-columns=6 n-rows=1 -->
-                  <object class="GtkGrid">
+                  <object class="GtkButton">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-rearrange</property>
-                        <property name="action-target">'graph'</property>
-                        <property name="image">image-distribute-graph</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Nicely arrange selected connector network</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-rearrange</property>
-                        <property name="action-target">'exchange'</property>
-                        <property name="image">image-exchange-positions</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - selection order</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-rearrange</property>
-                        <property name="action-target">'exchangez'</property>
-                        <property name="image">image-exchange-positions-zorder</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - stacking order</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-rearrange</property>
-                        <property name="action-target">'rotate'</property>
-                        <property name="image">image-exchange-positions-clockwise</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - rotate around center point</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">3</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-rearrange</property>
-                        <property name="action-target">'randomize'</property>
-                        <property name="image">image-distribute-randomize</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Randomize centers in both dimensions</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">4</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="action-name">app.object-rearrange</property>
-                        <property name="action-target">'unclump'</property>
-                        <property name="image">image-distribute-unclump</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Unclump objects: try to equalize edge-to-edge distances</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">5</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-rearrange</property>
+                    <property name="action-target">'graph'</property>
+                    <property name="image">image-distribute-graph</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Nicely arrange selected connector network</property>
                   </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-rearrange</property>
+                    <property name="action-target">'exchange'</property>
+                    <property name="image">image-exchange-positions</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - selection order</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-rearrange</property>
+                    <property name="action-target">'exchangez'</property>
+                    <property name="image">image-exchange-positions-zorder</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - stacking order</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-rearrange</property>
+                    <property name="action-target">'rotate'</property>
+                    <property name="image">image-exchange-positions-clockwise</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Exchange positions of selected objects - rotate around center point</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">3</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-rearrange</property>
+                    <property name="action-target">'randomize'</property>
+                    <property name="image">image-distribute-randomize</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Randomize centers in both dimensions</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">4</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="action-name">app.object-rearrange</property>
+                    <property name="action-target">'unclump'</property>
+                    <property name="image">image-distribute-unclump</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <property name="tooltip-text" translatable="yes">Unclump objects: try to equalize edge-to-edge distances</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">5</property>
+                    <property name="top-attach">0</property>
+                  </packing>
                 </child>
               </object>
             </child>
@@ -992,127 +936,82 @@
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
         </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkFrame">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label-xalign">0</property>
+        <property name="shadow-type">none</property>
         <child>
-          <object class="GtkFrame">
+          <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label-xalign">0</property>
-            <property name="shadow-type">none</property>
+            <property name="margin">4</property>
+            <property name="spacing">4</property>
             <child>
-              <object class="GtkAlignment">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="left-padding">12</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">H:</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="remove-overlap-hgap">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="input-purpose">number</property>
-                        <property name="adjustment">RemoveOverlap_HGap</property>
-                        <property name="numeric">True</property>
-                        <property name="tooltip-text" translatable="yes">Minimum horizontal gap (in pixel units) between bounding boxes</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="margin-start">4</property>
-                        <property name="label" translatable="yes">V:</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkSpinButton" id="remove-overlap-vgap">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="input-purpose">number</property>
-                        <property name="adjustment">RemoveOverlap_VGap</property>
-                        <property name="numeric">True</property>
-                        <property name="tooltip-text" translatable="yes">Minimum vertical gap (in pixel units) between bounding boxes</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="remove-overlap-button">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="margin-start">4</property>
-                        <property name="image">image-distribute-remove-overlaps</property>
-                        <property name="relief">none</property>
-                        <property name="always-show-image">True</property>
-                        <property name="tooltip-text" translatable="yes">Move objects as little as possible so that their bounding boxes do not overlap</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">4</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="label">
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="ypad">2</property>
-                <property name="label" translatable="yes">Remove overlaps</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
+                <property name="label" translatable="yes">H:</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="remove-overlap-hgap">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="input-purpose">number</property>
+                <property name="adjustment">RemoveOverlap_HGap</property>
+                <property name="numeric">True</property>
+                <property name="tooltip-text" translatable="yes">Minimum horizontal gap (in pixel units) between bounding boxes</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-start">4</property>
+                <property name="label" translatable="yes">V:</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="remove-overlap-vgap">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="input-purpose">number</property>
+                <property name="adjustment">RemoveOverlap_VGap</property>
+                <property name="numeric">True</property>
+                <property name="tooltip-text" translatable="yes">Minimum vertical gap (in pixel units) between bounding boxes</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="remove-overlap-button">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">4</property>
+                <property name="image">image-distribute-remove-overlaps</property>
+                <property name="relief">none</property>
+                <property name="always-show-image">True</property>
+                <property name="tooltip-text" translatable="yes">Move objects as little as possible so that their bounding boxes do not overlap</property>
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
+        </child>
+        <child type="label">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="ypad">2</property>
+            <property name="label" translatable="yes">Remove overlaps</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkBox" id="align-and-distribute-node">
@@ -1129,99 +1028,72 @@
             <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
-              <object class="GtkAlignment">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="left-padding">12</property>
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Relative to:</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="align-relative-node">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-start">4</property>
+                        <property name="model">RelativeToNode</property>
+                        <property name="active">0</property>
+                        <property name="id-column">1</property>
                         <child>
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Relative to:</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkComboBox" id="align-relative-node">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">4</property>
-                            <property name="model">RelativeToNode</property>
-                            <property name="active">0</property>
-                            <property name="id-column">1</property>
-                            <child>
-                              <object class="GtkCellRendererText"/>
-                              <attributes>
-                                <attribute name="text">0</attribute>
-                              </attributes>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
+                          <object class="GtkCellRendererText"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
                         </child>
                       </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <!-- n-columns=2 n-rows=1 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkButton" id="align-node-horizontal">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-vertical-node</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align selected nodes to a common horizontal line</property>
+                      </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                     <child>
-                      <!-- n-columns=2 n-rows=1 -->
-                      <object class="GtkGrid">
+                      <object class="GtkButton" id="align-node-vertical">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkButton" id="align-node-horizontal">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-vertical-node</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align selected nodes to a common horizontal line</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="align-node-vertical">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="image">image-align-horizontal-node</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Align selected nodes to a common vertical line</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">image-align-horizontal-node</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Align selected nodes to a common vertical line</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                   </object>
@@ -1240,11 +1112,6 @@
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkFrame">
@@ -1253,57 +1120,45 @@
             <property name="label-xalign">0</property>
             <property name="shadow-type">none</property>
             <child>
-              <object class="GtkAlignment">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="left-padding">12</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox">
+                  <!-- n-columns=2 n-rows=1 -->
+                  <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
                     <child>
-                      <!-- n-columns=2 n-rows=1 -->
-                      <object class="GtkGrid">
+                      <object class="GtkButton">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="action-name">win.node-distribute-horizontal</property>
-                            <property name="image">image-distribute-horizontal-node</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Distribute selected nodes horizontally</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="receives-default">True</property>
-                            <property name="action-name">win.node-distribute-vertical</property>
-                            <property name="image">image-distribute-vertical-node</property>
-                            <property name="relief">none</property>
-                            <property name="always-show-image">True</property>
-                            <property name="tooltip-text" translatable="yes">Distribute selected nodes vertically</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="action-name">win.node-distribute-horizontal</property>
+                        <property name="image">image-distribute-horizontal-node</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute selected nodes horizontally</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="action-name">win.node-distribute-vertical</property>
+                        <property name="image">image-distribute-vertical-node</property>
+                        <property name="relief">none</property>
+                        <property name="always-show-image">True</property>
+                        <property name="tooltip-text" translatable="yes">Distribute selected nodes vertically</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
                       </packing>
                     </child>
                   </object>
@@ -1322,18 +1177,8 @@
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
     </child>
   </object>
 </interface>

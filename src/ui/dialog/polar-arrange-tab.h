@@ -19,9 +19,7 @@
 #include <gtkmm/radiobuttongroup.h>
 #include <gtkmm/grid.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 class ArrangeDialog;
 
@@ -31,7 +29,7 @@ class ArrangeDialog;
  */
 class PolarArrangeTab : public ArrangeTab {
 public:
-	PolarArrangeTab(ArrangeDialog *parent_);
+    PolarArrangeTab(ArrangeDialog *parent_);
     ~PolarArrangeTab() override = default;;
 
     /**
@@ -82,13 +80,9 @@ private:
     Inkscape::UI::Widget::ScalarUnit angleX;
 
     Gtk::CheckButton       rotateObjectsCheckBox;
-
-
 };
 
-} //namespace Dialog
-} //namespace UI
-} //namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 #endif /* INKSCAPE_UI_DIALOG_POLAR_ARRANGE_TAB_H */
 
