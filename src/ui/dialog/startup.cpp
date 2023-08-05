@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
  * @brief A dialog for the about screen
- *
+ */
+/*
  * Copyright (C) Martin Owens 2019 <doctormo@gmail.com>
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -9,11 +10,16 @@
 
 #include "startup.h"
 
-#include <fstream>
-#include <glibmm/i18n.h>
-#include <streambuf>
-#include <string>
 #include <limits>
+#include <string>
+#include <glibmm/i18n.h>
+#include <gtkmm/builder.h>
+#include <gtkmm/button.h>
+#include <gtkmm/combobox.h>
+#include <gtkmm/fixed.h>
+#include <gtkmm/notebook.h>
+#include <gtkmm/treeview.h>
+#include <gtkmm/window.h>
 
 #include "color-rgba.h"
 #include "file.h"
@@ -24,6 +30,8 @@
 #include "io/resource.h"
 #include "object/sp-namedview.h"
 #include "preferences.h"
+#include "ui/builder-utils.h"
+#include "ui/controller.h"
 #include "ui/dialog/filedialog.h"
 #include "ui/shortcuts.h"
 #include "ui/themes.h"
@@ -35,9 +43,7 @@ using namespace Inkscape::IO;
 using namespace Inkscape::UI::View;
 using Inkscape::Util::unit_table;
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
 class NameIdCols: public Gtk::TreeModel::ColumnRecord {
     public:
@@ -195,6 +201,7 @@ StartScreen::StartScreen()
     // Add signals and setup things.
     auto prefs = Inkscape::Preferences::get();
 
+    Controller::add_key<&StartScreen::on_key_pressed>(*this, *this);
     tabs->signal_switch_page().connect(sigc::mem_fun(*this, &StartScreen::notebook_switch));
 
     // Setup the lists of items
@@ -469,17 +476,19 @@ StartScreen::notebook_next(Gtk::Widget *button)
 /**
  * When a key is pressed in the main window.
  */
-bool
-StartScreen::on_key_press_event(GdkEventKey* event)
+bool StartScreen::on_key_pressed(GtkEventControllerKey const * /*controller*/,
+                                 unsigned const keyval, unsigned /*keycode*/,
+                                 GdkModifierType const state)
 {
 #ifdef GDK_WINDOWING_QUARTZ
     // On macOS only, if user press Cmd+Q => exit
-    if (event->keyval == 'q' && event->state == (GDK_MOD2_MASK | GDK_META_MASK)) {
+    if (keyval == 'q' && state == (GDK_MOD2_MASK | GDK_META_MASK)) {
         close();
         return false;
     }
 #endif
-    switch (event->keyval) {
+
+    switch (keyval) {
         case GDK_KEY_Escape:
             // Prevent loading any selected items
             response(GTK_RESPONSE_CANCEL);
@@ -762,20 +771,12 @@ void StartScreen::refresh_dark_switch()
     auto themes = INKSCAPE.themecontext->get_available_themes();
     Glib::ustring current_theme = prefs->getString("/theme/gtkTheme", prefs->getString("/theme/defaultGtkTheme", ""));
 
-    Gtk::Switch *dark_toggle = nullptr;
-    builder->get_widget("dark_toggle", dark_toggle);
-
-    if (!themes[current_theme]) {
-        dark_toggle->set_sensitive(false);
-    } else {
-        dark_toggle->set_sensitive(true);
-    }
-    dark_toggle->set_active(dark);
+    auto &dark_toggle = get_widget<Gtk::Switch>(builder, "dark_toggle");
+    dark_toggle.set_sensitive(themes[current_theme]);
+    dark_toggle.set_active(dark);
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
  * @brief A dialog for the start screen
- *
+ */
+/*
  * Copyright (C) Martin Owens 2020 <doctormo@gmail.com>
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
@@ -10,20 +11,32 @@
 #ifndef STARTSCREEN_H
 #define STARTSCREEN_H
 
-#include <gtkmm.h>
+#include <glibmm/refptr.h>
+#include <gtk/gtk.h> // GtkEventControllerKEy
+#include <gtkmm/dialog.h>
+#include <gtkmm/treemodel.h>
+
+namespace Gtk {
+class Builder;
+class Button;
+class ComboBox;
+class Fixed;
+class Notebook;
+class TreeView;
+class Window;
+} // namespace Gtk
 
 class SPDocument;
 
-namespace Inkscape {
-namespace UI {
+namespace Inkscape::UI {
+
 namespace Widget {
 class TemplateList;
-}
+} // namespace Widget
 
 namespace Dialog {
 
 class StartScreen : public Gtk::Dialog {
-
 public:
     StartScreen();
     ~StartScreen() override;
@@ -31,11 +44,12 @@ public:
     SPDocument* get_document() { return _document; }
 
 protected:
-    bool on_key_press_event(GdkEventKey* event) override;
     void on_response(int response_id) override;
 
 private:
     void notebook_next(Gtk::Widget *button);
+    bool on_key_pressed(GtkEventControllerKey const *controller,
+                        unsigned keyval, unsigned keycode, GdkModifierType state);
     Gtk::TreeModel::Row active_combo(std::string widget_name);
     void set_active_combo(std::string widget_name, std::string unique_id);
     void show_toggle();
@@ -71,8 +85,8 @@ private:
 
 
 } // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+
+} // namespace Inkscape::UI
 
 #endif // STARTSCREEN_H
 /*
