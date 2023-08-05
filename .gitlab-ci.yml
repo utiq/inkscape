@@ -131,6 +131,7 @@ inkscape:macos:x64:
   variables:
     INK_BUILD: $CI_PIPELINE_IID
     MACOSX_DEPLOYMENT_TARGET: "10.13"
+    WRK_DIR: /Users/Shared/work
   script:
     - packaging/macos/build.sh
   artifacts:

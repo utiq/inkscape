@@ -11,15 +11,15 @@
 #
 
 # toolset release to build Inkscape
-VERSION=v0.76-1-g3ef5190
+VERSION=0.77
 
 # directory convenience handles
 SELF_DIR=$(dirname "${BASH_SOURCE[0]}")
 MIBAP_DIR=$SELF_DIR/mibap
 
-git clone --single-branch https://gitlab.com/inkscape/devel/mibap "$MIBAP_DIR"
+git clone --single-branch https://gitlab.com/inkscape/deps/macos "$MIBAP_DIR"
 
-if git -C "$MIBAP_DIR" checkout "$VERSION"; then
+if git -C "$MIBAP_DIR" checkout v"$VERSION"; then
   git -C "$MIBAP_DIR" submodule update --init --recursive
 
   # make sure the runner is clean (this doesn't hurt if there's nothing to do)
@@ -37,6 +37,8 @@ if git -C "$MIBAP_DIR" checkout "$VERSION"; then
   else
     # install build dependencies
     "$MIBAP_DIR"/install_toolset.sh
+    # FIXME: disable platform support check as it doesn't work correctly
+    sed -i "" "s|\(sys_platform_is_supported\)|: #\1|g" "$WRK_DIR"/mibap-${VERSION%%-*}/usr/bin/jhb
     # build Inkscape
     if "$MIBAP_DIR"/build_inkscape.sh; then
       # uninstall build dependencies and archive build files
