@@ -21,42 +21,24 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"  // only include where actually required!
-#endif
-
 #include <glibmm/i18n.h>
 #include <2geom/rect.h>
 
-#include "attributes.h"
 #include "conn-avoid-ref.h"
-#include "desktop-events.h"
 #include "desktop-widget.h"
 #include "desktop.h"
 #include "document-undo.h"
 #include "enums.h"
-#include "file.h"
-#include "inkscape-application.h"
 #include "inkscape-window.h"
-#include "inkscape-version.h"
-
-#include "color/cms-system.h"
+#include "inkscape.h"
 
 #include "display/control/canvas-item-drawing.h"
-#include "display/control/canvas-item-guideline.h"
-
-#include "extension/db.h"
 
 #include "object/sp-image.h"
 #include "object/sp-namedview.h"
-#include "object/sp-root.h"
-#include "object/sp-grid.h"
 
-#include "ui/shortcuts.h"
 #include "ui/dialog/swatches.h"
 #include "ui/dialog-run.h"
-#include "ui/icon-loader.h"
-#include "ui/icon-names.h"
 #include "ui/monitor.h"   // Monitor aspect ratio
 #include "ui/dialog/dialog-container.h"
 #include "ui/dialog/dialog-multipaned.h"
@@ -66,13 +48,10 @@
 #include "ui/toolbar/snap-toolbar.h"
 #include "ui/toolbar/tool-toolbar.h"
 #include "ui/toolbar/toolbars.h"
-#include "ui/tools/box3d-tool.h"
-#include "ui/tools/text-tool.h"
 #include "ui/util.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/canvas-grid.h"
 #include "ui/widget/combo-tool-item.h"
-#include "ui/widget/events/canvas-event.h"
 #include "ui/widget/ink-ruler.h"
 #include "ui/widget/layer-selector.h"
 #include "ui/widget/page-selector.h"
@@ -87,16 +66,12 @@
 #include "spw-utilities.h"
 #include "widget-sizes.h"
 
-#include "ui/widget/color-palette.h"
-#include "widgets/paintdef.h"
-
 using Inkscape::DocumentUndo;
 using Inkscape::UI::Dialog::DialogContainer;
 using Inkscape::UI::Dialog::DialogMultipaned;
 using Inkscape::UI::Dialog::DialogWindow;
 using Inkscape::UI::Widget::UnitTracker;
 using Inkscape::Util::unit_table;
-
 
 //---------------------------------------------------------------------
 /* SPDesktopWidget */
@@ -946,7 +921,7 @@ SPDesktopWidget::SPDesktopWidget(InkscapeWindow *inkscape_window, SPDocument *do
     dtw->_selected_style->setDesktop(dtw->desktop);
 
     /* Once desktop is set, we can update rulers */
-    dtw->_canvas_grid->UpdateRulers();
+    dtw->_canvas_grid->updateRulers();
 
     /* Listen on namedview modification */
     dtw->modified_connection = namedview->connectModified(sigc::mem_fun(*dtw, &SPDesktopWidget::namedviewModified));
@@ -1009,13 +984,6 @@ void SPDesktopWidget::repack_snaptoolbar()
     }
 }
 
-void
-SPDesktopWidget::update_rulers()
-{
-    _canvas_grid->UpdateRulers();
-}
-
-
 void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
 {
     auto nv = cast<SPNamedView>(obj);
@@ -1027,7 +995,7 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
         _canvas_grid->GetHRuler()->set_unit(nv->getDisplayUnit());
         _canvas_grid->GetVRuler()->set_tooltip_text(gettext(nv->display_units->name_plural.c_str()));
         _canvas_grid->GetHRuler()->set_tooltip_text(gettext(nv->display_units->name_plural.c_str()));
-        _canvas_grid->UpdateRulers();
+        _canvas_grid->updateRulers();
 
         /* This loops through all the grandchildren of tool toolbars,
          * and for each that it finds, it performs an sp_search_by_name_recursive(),
@@ -1063,21 +1031,6 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
             } // if child is a container
         } // children
     }
-}
-
-void
-SPDesktopWidget::on_adjustment_value_changed()
-{
-    if (update)
-        return;
-
-    update = true;
-
-    // Do not call canvas->scrollTo directly... messes up 'offset'.
-    desktop->scroll_absolute(Geom::Point(_canvas_grid->GetHAdj()->get_value(),
-                                         _canvas_grid->GetVAdj()->get_value()));
-
-    update = false;
 }
 
 /* we make the desktop window with focus active, signal is connected in interface.c */
@@ -1333,7 +1286,6 @@ SPDesktopWidget::update_rotation()
 
 }
 
-
 // --------------- Rulers/Scrollbars/Etc. -----------------
 void
 SPDesktopWidget::toggle_command_palette() {
@@ -1353,317 +1305,6 @@ SPDesktopWidget::toggle_scrollbars()
 {
     // TODO: Turn into action and remove this function.
     _canvas_grid->ToggleScrollbars();
-}
-
-static void
-set_adjustment (Gtk::Adjustment *adj, double l, double u, double ps, double si, double pi)
-{
-    if ((l != adj->get_lower()) ||
-        (u != adj->get_upper()) ||
-        (ps != adj->get_page_size()) ||
-        (si != adj->get_step_increment()) ||
-        (pi != adj->get_page_increment())) {
-	    adj->set_lower(l);
-	    adj->set_upper(u);
-	    adj->set_page_size(ps);
-	    adj->set_step_increment(si);
-	    adj->set_page_increment(pi);
-    }
-}
-
-void
-SPDesktopWidget::update_scrollbars(double scale)
-{
-    if (update) return;
-    update = true;
-
-    /* The desktop region we always show unconditionally */
-    SPDocument *doc = desktop->doc();
-
-    auto deskarea = doc->preferredBounds();
-    deskarea->expandBy(doc->getDimensions()); // Double size
-
-    /* The total size of pages should be added unconditionally */
-    deskarea->unionWith(doc->getPageManager().getDesktopRect());
-
-    if (Inkscape::Preferences::get()->getInt("/tools/bounding_box") == 0) {
-        deskarea->unionWith(doc->getRoot()->desktopVisualBounds());
-    } else {
-        deskarea->unionWith(doc->getRoot()->desktopGeometricBounds());
-    }
-
-    /* Canvas region we always show unconditionally */
-    double const y_dir = desktop->yaxisdir();
-    Geom::Rect carea( Geom::Point(deskarea->left()  * scale - 64, (deskarea->top()    * scale + 64) * y_dir),
-                      Geom::Point(deskarea->right() * scale + 64, (deskarea->bottom() * scale - 64) * y_dir) );
-
-    Geom::Rect viewbox = _canvas->get_area_world();
-
-    /* Viewbox is always included into scrollable region */
-    carea = Geom::unify(carea, viewbox);
-
-    auto _hadj = _canvas_grid->GetHAdj();
-    auto _vadj = _canvas_grid->GetVAdj();
-    set_adjustment(_hadj, carea.min()[Geom::X], carea.max()[Geom::X],
-                   viewbox.dimensions()[Geom::X],
-                   0.1 * viewbox.dimensions()[Geom::X],
-                   viewbox.dimensions()[Geom::X]);
-    _hadj->set_value(viewbox.min()[Geom::X]);
-
-    set_adjustment(_vadj, carea.min()[Geom::Y], carea.max()[Geom::Y],
-                   viewbox.dimensions()[Geom::Y],
-                   0.1 * viewbox.dimensions()[Geom::Y],
-                   viewbox.dimensions()[Geom::Y]);
-    _vadj->set_value(viewbox.min()[Geom::Y]);
-
-    update = false;
-}
-
-gint
-SPDesktopWidget::ruler_event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget *dtw, bool horiz)
-{
-    switch (event->type) {
-    case GDK_BUTTON_PRESS:
-        dtw->on_ruler_box_button_press_event(&event->button, Glib::wrap(widget), horiz);
-        break;
-    case GDK_MOTION_NOTIFY:
-        dtw->on_ruler_box_motion_notify_event(&event->motion, Glib::wrap(widget), horiz);
-        break;
-    case GDK_BUTTON_RELEASE:
-        dtw->on_ruler_box_button_release_event(&event->button, Glib::wrap(widget), horiz);
-        break;
-    default:
-            break;
-    }
-
-    return FALSE;
-}
-
-bool
-SPDesktopWidget::on_ruler_box_motion_notify_event(GdkEventMotion *event, Gtk::Widget *widget, bool horiz)
-{
-    auto origin = horiz ? Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_HRULER
-                        : Inkscape::UI::Tools::DelayedSnapEvent::GUIDE_VRULER;
-
-    // Synthesize the CanvasEvent to use as a delayed snap event.
-    auto event_copy = Inkscape::GdkEventUniqPtr(gdk_event_copy(reinterpret_cast<GdkEvent*>(event)));
-    auto canvas_event = Inkscape::MotionEvent(std::move(event_copy), event->state);
-    desktop->event_context->snap_delay_handler(widget->gobj(), this, canvas_event, origin);
-
-    int wx, wy;
-
-    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(_canvas->gobj()));
-
-    gint width, height;
-
-    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
-    gdk_window_get_geometry(window, nullptr /*x*/, nullptr /*y*/, &width, &height);
-
-    Geom::Point const event_win(wx, wy);
-
-    if (_ruler_clicked) {
-        Geom::Point event_w(_canvas->canvas_to_world(event_win));
-        Geom::Point event_dt(desktop->w2d(event_w));
-
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-        gint tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
-        if ( ( abs( (gint) event->x - _xp ) < tolerance )
-                && ( abs( (gint) event->y - _yp ) < tolerance ) ) {
-            return false;
-        }
-
-        _ruler_dragged = true;
-
-        // explicitly show guidelines; if I draw a guide, I want them on
-        if ((horiz ? wy : wx) >= 0) {
-            desktop->namedview->setShowGuides(true);
-        }
-
-        Geom::Point normal = _normal;
-        if (!(event->state & GDK_SHIFT_MASK)) {
-            ruler_snap_new_guide(desktop, event_dt, normal);
-        }
-        _active_guide->set_normal(normal);
-        _active_guide->set_origin(event_dt);
-
-        desktop->set_coordinate_status(event_dt);
-    }
-
-    return false;
-}
-
-// End guide creation or toggle guides on/off.
-bool
-SPDesktopWidget::on_ruler_box_button_release_event(GdkEventButton *event, Gtk::Widget *widget, bool horiz)
-{
-    int wx, wy;
-
-    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(_canvas->gobj()));
-
-    gint width, height;
-
-    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
-    gdk_window_get_geometry(window, nullptr /*x*/, nullptr /*y*/, &width, &height);
-
-    Geom::Point const event_win(wx, wy);
-
-    if (_ruler_clicked && event->button == 1) {
-        desktop->event_context->discard_delayed_snap_event();
-
-        Geom::Point const event_w(_canvas->canvas_to_world(event_win));
-        Geom::Point event_dt(desktop->w2d(event_w));
-
-        Geom::Point normal = _normal;
-        if (!(event->state & GDK_SHIFT_MASK)) {
-            ruler_snap_new_guide(desktop, event_dt, normal);
-        }
-
-        _active_guide.reset();
-        if ((horiz ? wy : wx) >= 0) {
-            Inkscape::XML::Document *xml_doc = desktop->doc()->getReprDoc();
-            Inkscape::XML::Node *repr = xml_doc->createElement("sodipodi:guide");
-
-            // If root viewBox set, interpret guides in terms of viewBox (90/96)
-            double newx = event_dt.x();
-            double newy = event_dt.y();
-
-            // <sodipodi:guide> stores inverted y-axis coordinates
-            if (desktop->is_yaxisdown()) {
-                newy = desktop->doc()->getHeight().value("px") - newy;
-                normal[Geom::Y] *= -1.0;
-            }
-
-            SPRoot *root = desktop->doc()->getRoot();
-            if( root->viewBox_set ) {
-                newx = newx * root->viewBox.width()  / root->width.computed;
-                newy = newy * root->viewBox.height() / root->height.computed;
-            }
-            repr->setAttributePoint("position", Geom::Point( newx, newy ));
-            repr->setAttributePoint("orientation", normal);
-            desktop->namedview->appendChild(repr);
-            Inkscape::GC::release(repr);
-            DocumentUndo::done(desktop->getDocument(), _("Create guide"), "");
-        }
-        desktop->set_coordinate_status(event_dt);
-
-        if (!_ruler_dragged) {
-            // Ruler click (without drag) toggle the guide visibility on and off
-            desktop->namedview->toggleShowGuides();
-        }
-
-        _ruler_clicked = false;
-        _ruler_dragged = false;
-    }
-
-    return false;
-}
-
-// Start guide creation by dragging from ruler.
-bool
-SPDesktopWidget::on_ruler_box_button_press_event(GdkEventButton *event, Gtk::Widget *widget, bool horiz)
-{
-    if (_ruler_clicked) // event triggered on a double click: do no process the click
-        return false;
-
-    int wx, wy;
-
-    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(_canvas->gobj()));
-
-    gint width, height;
-
-    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
-    gdk_window_get_geometry(window, nullptr /*x*/, nullptr /*y*/, &width, &height);
-
-    Geom::Point const event_win(wx, wy);
-
-    if (event->button == 1) {
-        _ruler_clicked = true;
-        _ruler_dragged = false;
-        // save click origin
-        _xp = (gint) event->x;
-        _yp = (gint) event->y;
-
-        Geom::Point const event_w(_canvas->canvas_to_world(event_win));
-        Geom::Point const event_dt(desktop->w2d(event_w));
-
-        // calculate the normal of the guidelines when dragged from the edges of rulers.
-        auto const y_dir = desktop->yaxisdir();
-        Geom::Point normal_bl_to_tr(1., y_dir); //bottomleft to topright
-        Geom::Point normal_tr_to_bl(-1., y_dir); //topright to bottomleft
-        normal_bl_to_tr.normalize();
-        normal_tr_to_bl.normalize();
-        SPGrid * grid = desktop->namedview->getFirstEnabledGrid();
-        if (grid) {
-            if (grid->getType() == GridType::AXONOMETRIC ) {
-                auto angle_x = Geom::rad_from_deg(grid->getAngleX());
-                auto angle_z = Geom::rad_from_deg(grid->getAngleZ());
-                if (event->state & GDK_CONTROL_MASK) {
-                    // guidelines normal to gridlines
-                    normal_bl_to_tr = Geom::Point::polar(-angle_x, 1.0);
-                    normal_tr_to_bl = Geom::Point::polar(angle_z, 1.0);
-                } else {
-                    normal_bl_to_tr = Geom::rot90(Geom::Point::polar(angle_z, 1.0));
-                    normal_tr_to_bl = Geom::rot90(Geom::Point::polar(-angle_x, 1.0));
-                }
-            }
-        }
-        if (horiz) {
-            if (wx < 50) {
-                _normal = normal_bl_to_tr;
-            } else if (wx > width - 50) {
-                _normal = normal_tr_to_bl;
-            } else {
-                _normal = Geom::Point(0.,1.);
-            }
-        } else {
-            if (wy < 50) {
-                _normal = normal_bl_to_tr;
-            } else if (wy > height - 50) {
-                _normal = normal_tr_to_bl;
-            } else {
-                _normal = Geom::Point(1.,0.);
-            }
-        }
-
-        _active_guide = make_canvasitem<Inkscape::CanvasItemGuideLine>(desktop->getCanvasGuides(), Glib::ustring(), event_dt, _normal);
-        _active_guide->set_stroke(desktop->namedview->guidehicolor);
-    }
-
-    return false;
-}
-
-void
-SPDesktopWidget::ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom::Point &normal)
-{
-    desktop->getCanvas()->grab_focus();
-    SnapManager &m = desktop->namedview->snap_manager;
-    m.setup(desktop);
-    // We're dragging a brand new guide, just pulled of the rulers seconds ago. When snapping to a
-    // path this guide will change it slope to become either tangential or perpendicular to that path. It's
-    // therefore not useful to try tangential or perpendicular snapping, so this will be disabled temporarily
-    bool pref_perp = m.snapprefs.isTargetSnappable(Inkscape::SNAPTARGET_PATH_PERPENDICULAR);
-    bool pref_tang = m.snapprefs.isTargetSnappable(Inkscape::SNAPTARGET_PATH_TANGENTIAL);
-    m.snapprefs.setTargetSnappable(Inkscape::SNAPTARGET_PATH_PERPENDICULAR, false);
-    m.snapprefs.setTargetSnappable(Inkscape::SNAPTARGET_PATH_TANGENTIAL, false);
-    // We only have a temporary guide which is not stored in our document yet.
-    // Because the guide snapper only looks in the document for guides to snap to,
-    // we don't have to worry about a guide snapping to itself here
-    Geom::Point normal_orig = normal;
-    m.guideFreeSnap(event_dt, normal, false, false);
-    // After snapping, both event_dt and normal have been modified accordingly; we'll take the normal (of the
-    // curve we snapped to) to set the normal the guide. And rotate it by 90 deg. if needed
-    if (pref_perp) { // Perpendicular snapping to paths is requested by the user, so let's do that
-        if (normal != normal_orig) {
-            normal = Geom::rot90(normal);
-        }
-    }
-    if (!(pref_tang || pref_perp)) { // if we don't want to snap either perpendicularly or tangentially, then
-        normal = normal_orig; // we must restore the normal to it's original state
-    }
-    // Restore the preferences
-    m.snapprefs.setTargetSnappable(Inkscape::SNAPTARGET_PATH_PERPENDICULAR, pref_perp);
-    m.snapprefs.setTargetSnappable(Inkscape::SNAPTARGET_PATH_TANGENTIAL, pref_tang);
-    m.unSetup();
 }
 
 Gio::ActionMap* SPDesktopWidget::get_action_map() {

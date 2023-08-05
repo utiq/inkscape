@@ -49,20 +49,18 @@
 #include "display/control/canvas-item-catchall.h"
 #include "display/control/canvas-item-drawing.h"
 #include "display/control/canvas-item-group.h"
-#include "display/control/canvas-item-rect.h"
 
 #include "io/fix-broken-links.h"
 
 #include "object/sp-namedview.h"
 #include "object/sp-root.h"
 
-#include "ui/desktop/menubar.h"
 #include "ui/dialog/dialog-container.h"
 #include "ui/interface.h" // Only for getLayoutPrefPath
 #include "ui/tool-factory.h"
 #include "ui/tools/tool-base.h"
 #include "ui/tools/box3d-tool.h"
-#include "ui/tools/select-tool.h"
+#include "ui/widget/canvas-grid.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/events/canvas-event.h"
 
@@ -588,14 +586,13 @@ SPDesktop::set_display_area (bool log)
     }
 
     // Update GUI (TODO: should be handled by CanvasGrid).
-    _widget->update_rulers();
-    _widget->update_scrollbars(_current_affine.getZoom());
+    _widget->get_canvas_grid()->updateRulers();
+    _widget->get_canvas_grid()->updateScrollbars(_current_affine.getZoom());
     _widget->update_zoom();
     _widget->update_rotation();
 
     signal_zoom_changed.emit(_current_affine.getZoom());  // Observed by path-manipulator to update arrows.
 }
-
 
 /**
  * Map the drawing to the window so that 'c' lies at 'w' where where 'c'
@@ -992,10 +989,9 @@ SPDesktop::scroll_absolute (Geom::Point const &point)
         boxtool->_vpdrag->updateLines();
     }
 
-    _widget->update_rulers();
-    _widget->update_scrollbars(_current_affine.getZoom());
+    _widget->get_canvas_grid()->updateRulers();
+    _widget->get_canvas_grid()->updateScrollbars(_current_affine.getZoom());
 }
-
 
 /**
  * Scroll canvas by specific coordinate amount (window coordinates).

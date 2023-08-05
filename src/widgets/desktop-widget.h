@@ -15,10 +15,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"  // only include where actually required!
-#endif
-
 #include <cstddef>
 #include <2geom/point.h>
 #include <sigc++/connection.h>
@@ -26,17 +22,13 @@
 
 #include "message.h"
 #include "preferences.h"
-#include "display/control/canvas-item-ptr.h"
 
 class InkscapeWindow;
-struct SPCanvasItem;
 class SPDocument;
 class SPDesktop;
-struct SPDesktopWidget;
 class SPObject;
 
 namespace Inkscape {
-  class CanvasItemGuideLine;
 namespace UI {
 
 namespace Dialog {
@@ -59,25 +51,15 @@ namespace Widget {
   class PageSelector;
   class SelectedStyle;
   class SpinButton;
-  class Ruler;
 } // namespace Widget
 
 } // namespace UI
 } // namespace Inkscape
 
-#define SP_DESKTOP_WIDGET(o) dynamic_cast<SPDesktopWidget*>(o)
-#define SP_IS_DESKTOP_WIDGET(o) bool(dynamic_cast<SPDesktopWidget const *>(o))
-
-void sp_desktop_widget_show_decorations(SPDesktopWidget *dtw, gboolean show);
-void sp_desktop_widget_update_hruler (SPDesktopWidget *dtw);
-void sp_desktop_widget_update_vruler (SPDesktopWidget *dtw);
-
-/* Show/hide rulers & scrollbars */
-void sp_desktop_widget_update_scrollbars (SPDesktopWidget *dtw, double scale);
-
 /// A GtkEventBox on an SPDesktop.
-class SPDesktopWidget : public Gtk::EventBox {
-  using parent_type = Gtk::EventBox;
+class SPDesktopWidget : public Gtk::EventBox
+{
+    using parent_type = Gtk::EventBox;
 
     SPDesktopWidget(InkscapeWindow *inkscape_window);
 
@@ -99,18 +81,8 @@ public:
 
     InkscapeWindow *window = nullptr;
     Gtk::MenuBar *_menubar;
+
 private:
-    // Flags for ruler event handling
-    bool _ruler_clicked = false; ///< True if the ruler has been clicked
-    bool _ruler_dragged = false; ///< True if a drag on the ruler is occurring
-
-    bool update = false;
-
-    CanvasItemPtr<Inkscape::CanvasItemGuideLine> _active_guide; ///< The guide being handled during a ruler event
-    Geom::Point _normal; ///< Normal to the guide currently being handled during ruler event
-    int _xp = 0; ///< x coordinate for start of drag
-    int _yp = 0; ///< y coordinate for start of drag
-
     // The root vbox of the window layout.
     Gtk::Box *_vbox;
 
@@ -147,10 +119,9 @@ private:
     sigc::connection _rotation_status_value_changed_connection;
     sigc::connection _rotation_status_populate_popup_connection;
 
-
     Inkscape::UI::Widget::SelectedStyle *_selected_style;
 
-    /** A grid for display the canvas, rulers, and scrollbars. */
+    /** A grid to display the canvas, rulers, and scrollbars. */
     Inkscape::UI::Widget::CanvasGrid *_canvas_grid;
 
     unsigned int _interaction_disabled_counter = 0;
@@ -196,17 +167,14 @@ public:
     // Canvas Grid Widget
     void update_zoom();
     void update_rotation();
-    void update_rulers();
     void repack_snaptoolbar();
 
     void iconify();
     void maximize();
     void fullscreen();
-    static gint ruler_event(GtkWidget *widget, GdkEvent *event, SPDesktopWidget *dtw, bool horiz);
 
     void layoutWidgets();
     void toggle_scrollbars();
-    void update_scrollbars(double scale);
     void toggle_command_palette();
     void toggle_rulers();
     void sticky_zoom_toggled();
@@ -226,7 +194,7 @@ private:
     Inkscape::PrefObserver _tb_visible_buttons;
     Inkscape::PrefObserver _ds_sticky_zoom;
 
-    void namedviewModified(SPObject *obj, guint flags);
+    void namedviewModified(SPObject *obj, unsigned flags);
     int zoom_input(double *new_val);
     bool zoom_output();
     void zoom_value_changed();
@@ -235,17 +203,8 @@ private:
     bool rotation_output();
     void rotation_value_changed();
     void rotation_populate_popup(Gtk::Menu *menu);
-  //void canvas_tbl_size_allocate(Gtk::Allocation &allocation);
     void update_statusbar_visibility();
     void apply_ctrlbar_settings();
-
-    static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom::Point &normal);
-
-public: // Move to CanvasGrid
-    bool on_ruler_box_button_press_event(GdkEventButton *event, Gtk::Widget *widget, bool horiz);
-    bool on_ruler_box_button_release_event(GdkEventButton *event, Gtk::Widget *widget, bool horiz);
-    bool on_ruler_box_motion_notify_event(GdkEventMotion *event, Gtk::Widget *widget, bool horiz);
-    void on_adjustment_value_changed();
 };
 
 #endif /* !SEEN_SP_DESKTOP_WIDGET_H */

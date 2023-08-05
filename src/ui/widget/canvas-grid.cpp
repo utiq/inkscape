@@ -27,12 +27,14 @@
 
 #include "selection.h"
 
-#include "display/control/canvas-item-drawing.h" // sticky
+#include "display/control/canvas-item-guideline.h"
 
+#include "object/sp-grid.h"
+#include "object/sp-root.h"
 #include "page-manager.h"
 
 #include "ui/dialog/command-palette.h"
-#include "ui/icon-loader.h"
+#include "ui/tools/tool-base.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/events/canvas-event.h"
 #include "ui/widget/canvas-notice.h"
@@ -95,14 +97,14 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
 
     // Horizontal Scrollbar
     _hadj = Gtk::Adjustment::create(0.0, -4000.0, 4000.0, 10.0, 100.0, 4.0);
-    _hadj->signal_value_changed().connect(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_adjustment_value_changed));
+    _hadj->signal_value_changed().connect(sigc::mem_fun(*this, &CanvasGrid::_adjustmentChanged));
     _hscrollbar = Gtk::Scrollbar(_hadj, Gtk::ORIENTATION_HORIZONTAL);
     _hscrollbar.set_name("CanvasScrollbar");
     _hscrollbar.set_hexpand(true);
 
     // Vertical Scrollbar
     _vadj = Gtk::Adjustment::create(0.0, -4000.0, 4000.0, 10.0, 100.0, 4.0);
-    _vadj->signal_value_changed().connect(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_adjustment_value_changed));
+    _vadj->signal_value_changed().connect(sigc::mem_fun(*this, &CanvasGrid::_adjustmentChanged));
     _vscrollbar = Gtk::Scrollbar(_vadj, Gtk::ORIENTATION_VERTICAL);
     _vscrollbar.set_name("CanvasScrollbar");
     _vscrollbar.set_vexpand(true);
@@ -137,20 +139,12 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     attach(_vscrollbar,    1, 1, 1, 1);
 
     // For creating guides, etc.
-    _hruler->signal_button_press_event().connect(
-        sigc::bind(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_ruler_box_button_press_event),   _hruler.get(), true));
-    _hruler->signal_button_release_event().connect(
-        sigc::bind(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_ruler_box_button_release_event), _hruler.get(), true));
-    _hruler->signal_motion_notify_event().connect(
-        sigc::bind(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_ruler_box_motion_notify_event),  _hruler.get(), true));
-
-    // For creating guides, etc.
-    _vruler->signal_button_press_event().connect(
-        sigc::bind(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_ruler_box_button_press_event),   _vruler.get(), false));
-    _vruler->signal_button_release_event().connect(
-        sigc::bind(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_ruler_box_button_release_event), _vruler.get(), false));
-    _vruler->signal_motion_notify_event().connect(
-        sigc::bind(sigc::mem_fun(*_dtw, &SPDesktopWidget::on_ruler_box_motion_notify_event),  _vruler.get(), false));
+    _hruler->signal_button_press_event()  .connect([this] (GdkEventButton *event) { return _rulerButtonPress  (event, true); });
+    _hruler->signal_motion_notify_event() .connect([this] (GdkEventMotion *event) { return _rulerMotionNotify (event, true); });
+    _hruler->signal_button_release_event().connect([this] (GdkEventButton *event) { return _rulerButtonRelease(event, true); });
+    _vruler->signal_button_press_event()  .connect([this] (GdkEventButton *event) { return _rulerButtonPress  (event, false); });
+    _vruler->signal_motion_notify_event() .connect([this] (GdkEventMotion *event) { return _rulerMotionNotify (event, false); });
+    _vruler->signal_button_release_event().connect([this] (GdkEventButton *event) { return _rulerButtonRelease(event, false); });
 
     show_all();
 }
@@ -227,8 +221,7 @@ Gtk::ToggleButton* CanvasGrid::GetStickyZoom() {
 
 // _dt2r should be a member of _canvas.
 // get_display_area should be a member of _canvas.
-void
-CanvasGrid::UpdateRulers()
+void CanvasGrid::updateRulers()
 {
     auto prefs = Inkscape::Preferences::get();
     auto desktop = _dtw->desktop;
@@ -241,10 +234,10 @@ CanvasGrid::UpdateRulers()
     // called in all situations when documents are loaded and replaced.
     if (document != _document) {
         _document = document;
-        _page_selected_connection = pm.connectPageSelected([=](SPPage *) { UpdateRulers(); });
-        _page_modified_connection = pm.connectPageModified([=](SPPage *) { UpdateRulers(); });
-        _sel_modified_connection = sel->connectModified([=](Inkscape::Selection *, int) { UpdateRulers(); });
-        _sel_changed_connection = sel->connectChanged([=](Inkscape::Selection *) { UpdateRulers(); });
+        _page_selected_connection = pm.connectPageSelected([=](SPPage *) { updateRulers(); });
+        _page_modified_connection = pm.connectPageModified([=](SPPage *) { updateRulers(); });
+        _sel_modified_connection = sel->connectModified([=](Inkscape::Selection *, int) { updateRulers(); });
+        _sel_changed_connection = sel->connectChanged([=](Inkscape::Selection *) { updateRulers(); });
     }
 
     Geom::Rect viewbox = desktop->get_display_area().bounds();
@@ -372,15 +365,312 @@ CanvasGrid::on_size_allocate(Gtk::Allocation& allocation)
     Gtk::Grid::on_size_allocate(allocation);
     if (!(_allocation == allocation)) { // No != function defined!
         _allocation = allocation;
-        UpdateRulers();
+        updateRulers();
     }
+}
+
+// Start guide creation by dragging from ruler.
+bool CanvasGrid::_rulerButtonPress(GdkEventButton *event, bool horiz)
+{
+    if (_ruler_clicked) {
+        // Event triggered on a double click: do not process the click.
+        return false;
+    }
+
+    auto const desktop = _dtw->desktop;
+
+    auto const window = _canvas->get_window()->gobj();
+
+    int wx, wy;
+    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
+
+    int width, height;
+    gdk_window_get_geometry(window, nullptr, nullptr, &width, &height);
+
+    auto const event_win = Geom::Point(wx, wy);
+
+    if (event->button == 1) {
+        _ruler_clicked = true;
+        _ruler_dragged = false;
+
+        // Save drag origin.
+        _xyp = Geom::Point(event->x, event->y).floor();
+
+        auto const event_w = _canvas->canvas_to_world(event_win);
+        auto const event_dt = desktop->w2d(event_w);
+
+        // Calculate the normal of the guidelines when dragged from the edges of rulers.
+        auto const y_dir = desktop->yaxisdir();
+        auto normal_bl_to_tr = Geom::Point( 1, y_dir).normalized(); // Bottom-left to top-right
+        auto normal_tr_to_bl = Geom::Point(-1, y_dir).normalized(); // Top-right to bottom-left
+        if (auto grid = desktop->namedview->getFirstEnabledGrid()) {
+            if (grid->getType() == GridType::AXONOMETRIC) {
+                auto const angle_x = Geom::rad_from_deg(grid->getAngleX());
+                auto const angle_z = Geom::rad_from_deg(grid->getAngleZ());
+                if (event->state & GDK_CONTROL_MASK) {
+                    // guidelines normal to gridlines
+                    normal_bl_to_tr = Geom::Point::polar(-angle_x, 1.0);
+                    normal_tr_to_bl = Geom::Point::polar(angle_z, 1.0);
+                } else {
+                    normal_bl_to_tr = Geom::Point::polar(angle_z, 1.0).cw();
+                    normal_tr_to_bl = Geom::Point::polar(-angle_x, 1.0).cw();
+                }
+            }
+        }
+        if (horiz) {
+            if (wx < 50) {
+                _normal = normal_bl_to_tr;
+            } else if (wx > width - 50) {
+                _normal = normal_tr_to_bl;
+            } else {
+                _normal = Geom::Point(0, 1);
+            }
+        } else {
+            if (wy < 50) {
+                _normal = normal_bl_to_tr;
+            } else if (wy > height - 50) {
+                _normal = normal_tr_to_bl;
+            } else {
+                _normal = Geom::Point(1, 0);
+            }
+        }
+
+        _active_guide = make_canvasitem<CanvasItemGuideLine>(desktop->getCanvasGuides(), Glib::ustring(), event_dt, _normal);
+        _active_guide->set_stroke(desktop->namedview->guidehicolor);
+    }
+
+    return false;
+}
+
+static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom::Point &normal)
+{
+    desktop->getCanvas()->grab_focus();
+    auto &m = desktop->namedview->snap_manager;
+    m.setup(desktop);
+    // We're dragging a brand new guide, just pulled of the rulers seconds ago. When snapping to a
+    // path this guide will change it slope to become either tangential or perpendicular to that path. It's
+    // therefore not useful to try tangential or perpendicular snapping, so this will be disabled temporarily
+    bool pref_perp = m.snapprefs.isTargetSnappable(SNAPTARGET_PATH_PERPENDICULAR);
+    bool pref_tang = m.snapprefs.isTargetSnappable(SNAPTARGET_PATH_TANGENTIAL);
+    m.snapprefs.setTargetSnappable(SNAPTARGET_PATH_PERPENDICULAR, false);
+    m.snapprefs.setTargetSnappable(SNAPTARGET_PATH_TANGENTIAL, false);
+    // We only have a temporary guide which is not stored in our document yet.
+    // Because the guide snapper only looks in the document for guides to snap to,
+    // we don't have to worry about a guide snapping to itself here
+    auto const normal_orig = normal;
+    m.guideFreeSnap(event_dt, normal, false, false);
+    // After snapping, both event_dt and normal have been modified accordingly; we'll take the normal (of the
+    // curve we snapped to) to set the normal the guide. And rotate it by 90 deg. if needed
+    if (pref_perp) { // Perpendicular snapping to paths is requested by the user, so let's do that
+        if (normal != normal_orig) {
+            normal = Geom::rot90(normal);
+        }
+    }
+    if (!(pref_tang || pref_perp)) { // if we don't want to snap either perpendicularly or tangentially, then
+        normal = normal_orig; // we must restore the normal to it's original state
+    }
+    // Restore the preferences
+    m.snapprefs.setTargetSnappable(SNAPTARGET_PATH_PERPENDICULAR, pref_perp);
+    m.snapprefs.setTargetSnappable(SNAPTARGET_PATH_TANGENTIAL, pref_tang);
+    m.unSetup();
+}
+
+bool CanvasGrid::_rulerMotionNotify(GdkEventMotion *event, bool horiz)
+{
+    auto const origin = horiz ? Tools::DelayedSnapEvent::GUIDE_HRULER
+                              : Tools::DelayedSnapEvent::GUIDE_VRULER;
+
+    auto const desktop = _dtw->desktop;
+
+    // Synthesize the CanvasEvent to use as a delayed snap event.
+    auto event_copy = GdkEventUniqPtr(gdk_event_copy(reinterpret_cast<GdkEvent*>(event)));
+    auto canvas_event = MotionEvent(std::move(event_copy), event->state);
+    desktop->event_context->snap_delay_handler(this, nullptr, canvas_event, origin);
+
+    auto const window = _canvas->get_window()->gobj();
+
+    int wx, wy;
+    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
+
+    auto const event_win = Geom::Point(wx, wy);
+
+    if (_ruler_clicked) {
+        auto const event_w = _canvas->canvas_to_world(event_win);
+        auto event_dt = _dtw->desktop->w2d(event_w);
+
+        auto prefs = Preferences::get();
+        int tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
+        if (Geom::LInfty(Geom::Point(event->x, event->y).floor() - _xyp) < tolerance) {
+            return false;
+        }
+
+        _ruler_dragged = true;
+
+        // Explicitly show guidelines; if I draw a guide, I want them on.
+        if ((horiz ? wy : wx) >= 0) {
+            desktop->namedview->setShowGuides(true);
+        }
+
+        auto normal = _normal;
+        if (!(event->state & GDK_SHIFT_MASK)) {
+            ruler_snap_new_guide(desktop, event_dt, normal);
+        }
+        _active_guide->set_normal(normal);
+        _active_guide->set_origin(event_dt);
+
+        desktop->set_coordinate_status(event_dt);
+    }
+
+    return false;
+}
+
+// End guide creation or toggle guides on/off.
+bool CanvasGrid::_rulerButtonRelease(GdkEventButton *event, bool horiz)
+{
+    auto const window = _canvas->get_window()->gobj();
+
+    auto const desktop = _dtw->desktop;
+
+    int wx, wy;
+    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
+
+    int width, height;
+    gdk_window_get_geometry(window, nullptr, nullptr, &width, &height);
+
+    auto const event_win = Geom::Point(wx, wy);
+
+    if (_ruler_clicked && event->button == 1) {
+        desktop->event_context->discard_delayed_snap_event();
+
+        auto const event_w = _canvas->canvas_to_world(event_win);
+        auto event_dt = desktop->w2d(event_w);
+
+        auto normal = _normal;
+        if (!(event->state & GDK_SHIFT_MASK)) {
+            ruler_snap_new_guide(desktop, event_dt, normal);
+        }
+
+        _active_guide.reset();
+        if ((horiz ? wy : wx) >= 0) {
+            auto xml_doc = desktop->doc()->getReprDoc();
+            auto repr = xml_doc->createElement("sodipodi:guide");
+
+            // If root viewBox set, interpret guides in terms of viewBox (90/96)
+            double newx = event_dt.x();
+            double newy = event_dt.y();
+
+            // <sodipodi:guide> stores inverted y-axis coordinates
+            if (desktop->is_yaxisdown()) {
+                newy = desktop->doc()->getHeight().value("px") - newy;
+                normal.y() *= -1.0;
+            }
+
+            auto root = desktop->doc()->getRoot();
+            if (root->viewBox_set) {
+                newx = newx * root->viewBox.width()  / root->width.computed;
+                newy = newy * root->viewBox.height() / root->height.computed;
+            }
+            repr->setAttributePoint("position", Geom::Point(newx, newy));
+            repr->setAttributePoint("orientation", normal);
+            desktop->namedview->appendChild(repr);
+            GC::release(repr);
+            DocumentUndo::done(desktop->getDocument(), _("Create guide"), "");
+        }
+        desktop->set_coordinate_status(event_dt);
+
+        if (!_ruler_dragged) {
+            // Ruler click (without drag) toggle the guide visibility on and off
+            desktop->namedview->toggleShowGuides();
+        }
+
+        _ruler_clicked = false;
+        _ruler_dragged = false;
+    }
+
+    return false;
+}
+
+static void set_adjustment(Gtk::Adjustment *adj, double l, double u, double ps, double si, double pi)
+{
+    if (l != adj->get_lower() ||
+        u != adj->get_upper() ||
+        ps != adj->get_page_size() ||
+        si != adj->get_step_increment() ||
+        pi != adj->get_page_increment())
+    {
+        adj->set_lower(l);
+        adj->set_upper(u);
+        adj->set_page_size(ps);
+        adj->set_step_increment(si);
+        adj->set_page_increment(pi);
+    }
+}
+
+void CanvasGrid::updateScrollbars(double scale)
+{
+    if (_updating) {
+        return;
+    }
+    _updating = true;
+
+    // The desktop region we always show unconditionally.
+    auto const desktop = _dtw->desktop;
+    auto const doc = desktop->doc();
+
+    auto deskarea = *doc->preferredBounds();
+    deskarea.expandBy(doc->getDimensions()); // Double size
+
+    // The total size of pages should be added unconditionally.
+    deskarea |= doc->getPageManager().getDesktopRect();
+
+    if (Preferences::get()->getInt("/tools/bounding_box") == 0) {
+        deskarea |= doc->getRoot()->desktopVisualBounds();
+    } else {
+        deskarea |= doc->getRoot()->desktopGeometricBounds();
+    }
+
+    // Canvas region we always show unconditionally.
+    double const y_dir = desktop->yaxisdir();
+    auto carea = deskarea * Geom::Scale(scale, scale * y_dir);
+    carea.expandBy(64);
+
+    auto const viewbox = Geom::Rect(_canvas->get_area_world());
+
+    // Viewbox is always included into scrollable region.
+    carea |= viewbox;
+
+    set_adjustment(_hadj.get(), carea.left(), carea.right(),
+                   viewbox.width(),
+                   0.1 * viewbox.width(),
+                   viewbox.width());
+    _hadj->set_value(viewbox.left());
+
+    set_adjustment(_vadj.get(), carea.top(), carea.bottom(),
+                   viewbox.height(),
+                   0.1 * viewbox.height(),
+                   viewbox.height());
+    _vadj->set_value(viewbox.top());
+
+    _updating = false;
+}
+
+void CanvasGrid::_adjustmentChanged()
+{
+    if (_updating) {
+        return;
+    }
+    _updating = true;
+
+    // Do not call canvas->scrollTo directly... messes up 'offset'.
+    _dtw->desktop->scroll_absolute({_hadj->get_value(), _vadj->get_value()});
+
+    _updating = false;
 }
 
 // TODO Add actions so we can set shortcuts.
 // * Sticky Zoom
 // * CMS Adjust
 // * Guide Lock
-
 
 } // namespace Widget
 } // namespace UI

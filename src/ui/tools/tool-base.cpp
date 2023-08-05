@@ -55,17 +55,16 @@
 #include "ui/tools/select-tool.h"
 #include "ui/tools/tool-base.h"
 #include "ui/widget/canvas.h"
+#include "ui/widget/canvas-grid.h"
 #include "ui/widget/events/canvas-event.h"
 #include "ui/widget/events/debug.h"
 
-#include "widgets/desktop-widget.h"
-
 // globals for temporary switching to selector by space
-static bool selector_toggled = FALSE;
+static bool selector_toggled = false;
 static Glib::ustring switch_selector_to;
 
 // globals for temporary switching to dropper by 'D'
-static bool dropper_toggled = FALSE;
+static bool dropper_toggled = false;
 static Glib::ustring switch_dropper_to;
 
 // globals for keeping track of keyboard scroll events in order to accelerate
@@ -74,7 +73,7 @@ static double scroll_multiply = 1;
 static unsigned scroll_keyval = 0;
 
 // globals for key processing
-static bool latin_keys_group_valid = FALSE;
+static bool latin_keys_group_valid = false;
 static int latin_keys_group;
 static std::set<int> latin_keys_groups;
 
@@ -1698,13 +1697,9 @@ void ToolBase::process_delayed_snap_event()
     }
     case DelayedSnapEvent::GUIDE_HRULER:
     case DelayedSnapEvent::GUIDE_VRULER: {
-        gpointer item = _dse->getItem();
-        auto widget = reinterpret_cast<Gtk::Widget*>(_dse->getItem2());
-        if (item && widget) {
-            g_assert(GTK_IS_WIDGET(item));
-            bool horiz = _dse->getOrigin() == DelayedSnapEvent::GUIDE_HRULER;
-            SPDesktopWidget::ruler_event(GTK_WIDGET(item), _dse->getEvent().CanvasEvent::original(), SP_DESKTOP_WIDGET(widget), horiz);
-        }
+        auto canvas_grid = reinterpret_cast<Widget::CanvasGrid*>(_dse->getItem());
+        bool horiz = _dse->getOrigin() == DelayedSnapEvent::GUIDE_HRULER;
+        canvas_grid->rulerEvent(_dse->getEvent().original(), horiz);
         break;
     }
     default:

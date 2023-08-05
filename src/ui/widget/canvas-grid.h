@@ -16,14 +16,18 @@
 #include <gtkmm/overlay.h>
 #include <gtkmm/menubutton.h>
 #include <gtkmm/builder.h>
+#include <2geom/point.h>
+#include <2geom/int-point.h>
+
+#include "display/control/canvas-item-ptr.h"
 
 class SPPage;
 class SPDocument;
-class SPCanvas;
 class SPDesktopWidget;
 
 namespace Inkscape {
 class CanvasEvent;
+class CanvasItemGuideLine;
 
 namespace UI {
 
@@ -40,7 +44,7 @@ class Ruler;
 /**
  * A Gtk::Grid widget that contains rulers, scrollbars, buttons, and, of course, the canvas.
  * Canvas has an overlay to let us put stuff on the canvas.
- */ 
+ */
 class CanvasGrid : public Gtk::Grid
 {
     using parent_type = Gtk::Grid;
@@ -53,7 +57,7 @@ public:
 
     void ShowRulers(bool state = true);
     void ToggleRulers();
-    void UpdateRulers();
+    void updateRulers();
 
     void ShowCommandPalette(bool state = true);
     void ToggleCommandPalette();
@@ -71,6 +75,12 @@ public:
     Gtk::ToggleButton *GetCmsAdjust()  { return &_cms_adjust; }
     Gtk::ToggleButton *GetStickyZoom();
     Dialog::CommandPalette *getCommandPalette() { return _command_palette.get(); }
+
+    // Delayed snap event callback.
+    void rulerEvent(GdkEventMotion *event, bool horiz) { _rulerMotionNotify(event, horiz); }
+
+    // Scroll handling.
+    void updateScrollbars(double scale);
 
 private:
     // Signal callbacks
@@ -113,6 +123,20 @@ private:
     sigc::connection _page_modified_connection;
     sigc::connection _sel_changed_connection;
     sigc::connection _sel_modified_connection;
+
+    // Ruler event handling.
+    bool _ruler_clicked = false; ///< True if the ruler has been clicked
+    bool _ruler_dragged = false; ///< True if a drag on the ruler is occurring
+    Geom::IntPoint _xyp; ///< Position of start of drag
+    Geom::Point _normal; ///< Normal to the guide currently being handled during ruler event
+    CanvasItemPtr<CanvasItemGuideLine> _active_guide; ///< The guide being handled during a ruler event
+    bool _rulerButtonPress(GdkEventButton *event, bool horiz);
+    bool _rulerButtonRelease(GdkEventButton *event, bool horiz);
+    bool _rulerMotionNotify(GdkEventMotion *event, bool horiz);
+
+    // Scroll handling.
+    bool _updating = false;
+    void _adjustmentChanged();
 };
 
 } // namespace Widget
