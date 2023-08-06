@@ -369,6 +369,13 @@ CanvasGrid::on_size_allocate(Gtk::Allocation& allocation)
     }
 }
 
+Geom::IntPoint CanvasGrid::_rulerToCanvas(bool horiz) const
+{
+    Geom::IntPoint result;
+    (horiz ? _hruler : _vruler)->translate_coordinates(*_canvas, 0, 0, result.x(), result.y());
+    return result;
+}
+
 // Start guide creation by dragging from ruler.
 bool CanvasGrid::_rulerButtonPress(GdkEventButton *event, bool horiz)
 {
@@ -378,16 +385,7 @@ bool CanvasGrid::_rulerButtonPress(GdkEventButton *event, bool horiz)
     }
 
     auto const desktop = _dtw->desktop;
-
-    auto const window = _canvas->get_window()->gobj();
-
-    int wx, wy;
-    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
-
-    int width, height;
-    gdk_window_get_geometry(window, nullptr, nullptr, &width, &height);
-
-    auto const event_win = Geom::Point(wx, wy);
+    auto const pos = Geom::Point(event->x, event->y) + _rulerToCanvas(horiz);
 
     if (event->button == 1) {
         _ruler_clicked = true;
@@ -396,7 +394,7 @@ bool CanvasGrid::_rulerButtonPress(GdkEventButton *event, bool horiz)
         // Save drag origin.
         _xyp = Geom::Point(event->x, event->y).floor();
 
-        auto const event_w = _canvas->canvas_to_world(event_win);
+        auto const event_w = _canvas->canvas_to_world(pos);
         auto const event_dt = desktop->w2d(event_w);
 
         // Calculate the normal of the guidelines when dragged from the edges of rulers.
@@ -418,17 +416,17 @@ bool CanvasGrid::_rulerButtonPress(GdkEventButton *event, bool horiz)
             }
         }
         if (horiz) {
-            if (wx < 50) {
+            if (pos.x() < 50) {
                 _normal = normal_bl_to_tr;
-            } else if (wx > width - 50) {
+            } else if (pos.x() > _canvas->get_width() - 50) {
                 _normal = normal_tr_to_bl;
             } else {
                 _normal = Geom::Point(0, 1);
             }
         } else {
-            if (wy < 50) {
+            if (pos.y() < 50) {
                 _normal = normal_bl_to_tr;
-            } else if (wy > height - 50) {
+            } else if (pos.y() > _canvas->get_height() - 50) {
                 _normal = normal_tr_to_bl;
             } else {
                 _normal = Geom::Point(1, 0);
@@ -467,7 +465,7 @@ static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom
         }
     }
     if (!(pref_tang || pref_perp)) { // if we don't want to snap either perpendicularly or tangentially, then
-        normal = normal_orig; // we must restore the normal to it's original state
+        normal = normal_orig; // we must restore the normal to its original state
     }
     // Restore the preferences
     m.snapprefs.setTargetSnappable(SNAPTARGET_PATH_PERPENDICULAR, pref_perp);
@@ -477,25 +475,18 @@ static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom
 
 bool CanvasGrid::_rulerMotionNotify(GdkEventMotion *event, bool horiz)
 {
-    auto const origin = horiz ? Tools::DelayedSnapEvent::GUIDE_HRULER
-                              : Tools::DelayedSnapEvent::GUIDE_VRULER;
-
     auto const desktop = _dtw->desktop;
+    auto const pos = Geom::Point(event->x, event->y) + _rulerToCanvas(horiz);
 
     // Synthesize the CanvasEvent to use as a delayed snap event.
     auto event_copy = GdkEventUniqPtr(gdk_event_copy(reinterpret_cast<GdkEvent*>(event)));
     auto canvas_event = MotionEvent(std::move(event_copy), event->state);
+    auto const origin = horiz ? Tools::DelayedSnapEvent::GUIDE_HRULER
+                              : Tools::DelayedSnapEvent::GUIDE_VRULER;
     desktop->event_context->snap_delay_handler(this, nullptr, canvas_event, origin);
 
-    auto const window = _canvas->get_window()->gobj();
-
-    int wx, wy;
-    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
-
-    auto const event_win = Geom::Point(wx, wy);
-
     if (_ruler_clicked) {
-        auto const event_w = _canvas->canvas_to_world(event_win);
+        auto const event_w = _canvas->canvas_to_world(pos);
         auto event_dt = _dtw->desktop->w2d(event_w);
 
         auto prefs = Preferences::get();
@@ -507,7 +498,7 @@ bool CanvasGrid::_rulerMotionNotify(GdkEventMotion *event, bool horiz)
         _ruler_dragged = true;
 
         // Explicitly show guidelines; if I draw a guide, I want them on.
-        if ((horiz ? wy : wx) >= 0) {
+        if ((horiz ? pos.y() : pos.x()) >= 0) {
             desktop->namedview->setShowGuides(true);
         }
 
@@ -527,22 +518,13 @@ bool CanvasGrid::_rulerMotionNotify(GdkEventMotion *event, bool horiz)
 // End guide creation or toggle guides on/off.
 bool CanvasGrid::_rulerButtonRelease(GdkEventButton *event, bool horiz)
 {
-    auto const window = _canvas->get_window()->gobj();
-
     auto const desktop = _dtw->desktop;
-
-    int wx, wy;
-    gdk_window_get_device_position(window, event->device, &wx, &wy, nullptr);
-
-    int width, height;
-    gdk_window_get_geometry(window, nullptr, nullptr, &width, &height);
-
-    auto const event_win = Geom::Point(wx, wy);
+    auto const pos = Geom::Point(event->x, event->y) + _rulerToCanvas(horiz);
 
     if (_ruler_clicked && event->button == 1) {
         desktop->event_context->discard_delayed_snap_event();
 
-        auto const event_w = _canvas->canvas_to_world(event_win);
+        auto const event_w = _canvas->canvas_to_world(pos);
         auto event_dt = desktop->w2d(event_w);
 
         auto normal = _normal;
@@ -551,7 +533,7 @@ bool CanvasGrid::_rulerButtonRelease(GdkEventButton *event, bool horiz)
         }
 
         _active_guide.reset();
-        if ((horiz ? wy : wx) >= 0) {
+        if ((horiz ? pos.y() : pos.x()) >= 0) {
             auto xml_doc = desktop->doc()->getReprDoc();
             auto repr = xml_doc->createElement("sodipodi:guide");
 

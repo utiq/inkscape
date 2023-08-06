@@ -130,6 +130,7 @@ private:
     Geom::IntPoint _xyp; ///< Position of start of drag
     Geom::Point _normal; ///< Normal to the guide currently being handled during ruler event
     CanvasItemPtr<CanvasItemGuideLine> _active_guide; ///< The guide being handled during a ruler event
+    Geom::IntPoint _rulerToCanvas(bool horiz) const;
     bool _rulerButtonPress(GdkEventButton *event, bool horiz);
     bool _rulerButtonRelease(GdkEventButton *event, bool horiz);
     bool _rulerMotionNotify(GdkEventMotion *event, bool horiz);
