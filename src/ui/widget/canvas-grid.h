@@ -26,7 +26,7 @@ class SPDocument;
 class SPDesktopWidget;
 
 namespace Inkscape {
-class CanvasEvent;
+class MotionEvent;
 class CanvasItemGuideLine;
 
 namespace UI {
@@ -76,8 +76,8 @@ public:
     Gtk::ToggleButton *GetStickyZoom();
     Dialog::CommandPalette *getCommandPalette() { return _command_palette.get(); }
 
-    // Delayed snap event callback.
-    void rulerEvent(GdkEventMotion *event, bool horiz) { _rulerMotionNotify(event, horiz); }
+    // Motion event handler, and delayed snap event callback.
+    bool rulerMotion(MotionEvent const &event, bool horiz);
 
     // Scroll handling.
     void updateScrollbars(double scale);
@@ -127,13 +127,23 @@ private:
     // Ruler event handling.
     bool _ruler_clicked = false; ///< True if the ruler has been clicked
     bool _ruler_dragged = false; ///< True if a drag on the ruler is occurring
-    Geom::IntPoint _xyp; ///< Position of start of drag
+    bool _ruler_ctrl_clicked = false; ///< Whether ctrl was held when the ruler was clicked.
+    Geom::IntPoint _ruler_drag_origin; ///< Position of start of drag
     Geom::Point _normal; ///< Normal to the guide currently being handled during ruler event
     CanvasItemPtr<CanvasItemGuideLine> _active_guide; ///< The guide being handled during a ruler event
     Geom::IntPoint _rulerToCanvas(bool horiz) const;
-    bool _rulerButtonPress(GdkEventButton *event, bool horiz);
-    bool _rulerButtonRelease(GdkEventButton *event, bool horiz);
-    bool _rulerMotionNotify(GdkEventMotion *event, bool horiz);
+    void _createGuideItem(Geom::Point const &pos, bool horiz);
+    void _createGuide(Geom::Point origin, Geom::Point normal);
+    Gtk::EventSequenceState _rulerButtonPress(Gtk::GestureMultiPress &gesture, int n_press, double x, double y, bool horiz);
+    Gtk::EventSequenceState _rulerButtonRelease(Gtk::GestureMultiPress &gesture, int n_press, double x, double y, bool horiz);
+    Gtk::EventSequenceState _rulerMotion(GtkEventControllerMotion const *controller, double x, double y, bool horiz);
+
+    // Temporarily required due to use of C callbacks.
+    template <bool horiz>
+    Gtk::EventSequenceState _rulerMotion(GtkEventControllerMotion const *controller, double x, double y)
+    {
+        return _rulerMotion(controller, x, y, horiz);
+    }
 
     // Scroll handling.
     bool _updating = false;

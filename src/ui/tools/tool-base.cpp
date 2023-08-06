@@ -1699,7 +1699,7 @@ void ToolBase::process_delayed_snap_event()
     case DelayedSnapEvent::GUIDE_VRULER: {
         auto canvas_grid = reinterpret_cast<Widget::CanvasGrid*>(_dse->getItem());
         bool horiz = _dse->getOrigin() == DelayedSnapEvent::GUIDE_HRULER;
-        canvas_grid->rulerEvent(_dse->getEvent().original(), horiz);
+        canvas_grid->rulerMotion(_dse->getEvent(), horiz);
         break;
     }
     default:

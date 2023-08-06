@@ -33,6 +33,7 @@
 #include "object/sp-root.h"
 #include "page-manager.h"
 
+#include "ui/controller.h"
 #include "ui/dialog/command-palette.h"
 #include "ui/tools/tool-base.h"
 #include "ui/widget/canvas.h"
@@ -139,12 +140,12 @@ CanvasGrid::CanvasGrid(SPDesktopWidget *dtw)
     attach(_vscrollbar,    1, 1, 1, 1);
 
     // For creating guides, etc.
-    _hruler->signal_button_press_event()  .connect([this] (GdkEventButton *event) { return _rulerButtonPress  (event, true); });
-    _hruler->signal_motion_notify_event() .connect([this] (GdkEventMotion *event) { return _rulerMotionNotify (event, true); });
-    _hruler->signal_button_release_event().connect([this] (GdkEventButton *event) { return _rulerButtonRelease(event, true); });
-    _vruler->signal_button_press_event()  .connect([this] (GdkEventButton *event) { return _rulerButtonPress  (event, false); });
-    _vruler->signal_motion_notify_event() .connect([this] (GdkEventMotion *event) { return _rulerMotionNotify (event, false); });
-    _vruler->signal_button_release_event().connect([this] (GdkEventButton *event) { return _rulerButtonRelease(event, false); });
+    Controller::add_click(*_hruler, sigc::bind(sigc::mem_fun(*this, &CanvasGrid::_rulerButtonPress), true),
+                                    sigc::bind(sigc::mem_fun(*this, &CanvasGrid::_rulerButtonRelease), true));
+    Controller::add_motion<nullptr, &CanvasGrid::_rulerMotion<true>, nullptr>(*_hruler, *this);
+    Controller::add_click(*_vruler, sigc::bind(sigc::mem_fun(*this, &CanvasGrid::_rulerButtonPress), false),
+                          sigc::bind(sigc::mem_fun(*this, &CanvasGrid::_rulerButtonRelease), false));
+    Controller::add_motion<nullptr, &CanvasGrid::_rulerMotion<false>, nullptr>(*_vruler, *this);
 
     show_all();
 }
@@ -377,67 +378,97 @@ Geom::IntPoint CanvasGrid::_rulerToCanvas(bool horiz) const
 }
 
 // Start guide creation by dragging from ruler.
-bool CanvasGrid::_rulerButtonPress(GdkEventButton *event, bool horiz)
+Gtk::EventSequenceState CanvasGrid::_rulerButtonPress(Gtk::GestureMultiPress &gesture, int /*n_press*/, double x, double y, bool horiz)
 {
-    if (_ruler_clicked) {
-        // Event triggered on a double click: do not process the click.
-        return false;
+    if (_ruler_clicked || gesture.get_current_button() != 1) {
+        return Gtk::EVENT_SEQUENCE_NONE;
     }
 
+    GdkModifierType state;
+    gtk_get_current_event_state(&state);
+
+    _ruler_clicked = true;
+    _ruler_dragged = false;
+    _ruler_ctrl_clicked = state & GDK_CONTROL_MASK;
+    _ruler_drag_origin = Geom::Point(x, y).floor();
+
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
+}
+
+void CanvasGrid::_createGuideItem(Geom::Point const &pos, bool horiz)
+{
     auto const desktop = _dtw->desktop;
-    auto const pos = Geom::Point(event->x, event->y) + _rulerToCanvas(horiz);
 
-    if (event->button == 1) {
-        _ruler_clicked = true;
-        _ruler_dragged = false;
-
-        // Save drag origin.
-        _xyp = Geom::Point(event->x, event->y).floor();
-
-        auto const event_w = _canvas->canvas_to_world(pos);
-        auto const event_dt = desktop->w2d(event_w);
-
-        // Calculate the normal of the guidelines when dragged from the edges of rulers.
-        auto const y_dir = desktop->yaxisdir();
-        auto normal_bl_to_tr = Geom::Point( 1, y_dir).normalized(); // Bottom-left to top-right
-        auto normal_tr_to_bl = Geom::Point(-1, y_dir).normalized(); // Top-right to bottom-left
-        if (auto grid = desktop->namedview->getFirstEnabledGrid()) {
-            if (grid->getType() == GridType::AXONOMETRIC) {
-                auto const angle_x = Geom::rad_from_deg(grid->getAngleX());
-                auto const angle_z = Geom::rad_from_deg(grid->getAngleZ());
-                if (event->state & GDK_CONTROL_MASK) {
-                    // guidelines normal to gridlines
-                    normal_bl_to_tr = Geom::Point::polar(angle_x * y_dir, 1.0);
-                    normal_tr_to_bl = Geom::Point::polar(-angle_z * y_dir, 1.0);
-                } else {
-                    normal_bl_to_tr = Geom::Point::polar(-angle_z * y_dir, 1.0).cw();
-                    normal_tr_to_bl = Geom::Point::polar(angle_x * y_dir, 1.0).cw();
-                }
+    // Calculate the normal of the guidelines when dragged from the edges of rulers.
+    auto const y_dir = desktop->yaxisdir();
+    auto normal_bl_to_tr = Geom::Point( 1, y_dir).normalized(); // Bottom-left to top-right
+    auto normal_tr_to_bl = Geom::Point(-1, y_dir).normalized(); // Top-right to bottom-left
+    if (auto grid = desktop->namedview->getFirstEnabledGrid()) {
+        if (grid->getType() == GridType::AXONOMETRIC) {
+            auto const angle_x = Geom::rad_from_deg(grid->getAngleX());
+            auto const angle_z = Geom::rad_from_deg(grid->getAngleZ());
+            if (_ruler_ctrl_clicked) {
+                // guidelines normal to gridlines
+                normal_bl_to_tr = Geom::Point::polar(angle_x * y_dir, 1.0);
+                normal_tr_to_bl = Geom::Point::polar(-angle_z * y_dir, 1.0);
+            } else {
+                normal_bl_to_tr = Geom::Point::polar(-angle_z * y_dir, 1.0).cw();
+                normal_tr_to_bl = Geom::Point::polar(angle_x * y_dir, 1.0).cw();
             }
         }
-        if (horiz) {
-            if (pos.x() < 50) {
-                _normal = normal_bl_to_tr;
-            } else if (pos.x() > _canvas->get_width() - 50) {
-                _normal = normal_tr_to_bl;
-            } else {
-                _normal = Geom::Point(0, 1);
-            }
+    }
+    if (horiz) {
+        if (pos.x() < 50) {
+            _normal = normal_bl_to_tr;
+        } else if (pos.x() > _canvas->get_width() - 50) {
+            _normal = normal_tr_to_bl;
         } else {
-            if (pos.y() < 50) {
-                _normal = normal_bl_to_tr;
-            } else if (pos.y() > _canvas->get_height() - 50) {
-                _normal = normal_tr_to_bl;
-            } else {
-                _normal = Geom::Point(1, 0);
-            }
+            _normal = Geom::Point(0, 1);
         }
-
-        _active_guide = make_canvasitem<CanvasItemGuideLine>(desktop->getCanvasGuides(), Glib::ustring(), event_dt, _normal);
-        _active_guide->set_stroke(desktop->namedview->guidehicolor);
+    } else {
+        if (pos.y() < 50) {
+            _normal = normal_bl_to_tr;
+        } else if (pos.y() > _canvas->get_height() - 50) {
+            _normal = normal_tr_to_bl;
+        } else {
+            _normal = Geom::Point(1, 0);
+        }
     }
 
-    return false;
+    _active_guide = make_canvasitem<CanvasItemGuideLine>(desktop->getCanvasGuides(), Glib::ustring(), Geom::Point(), Geom::Point());
+    _active_guide->set_stroke(desktop->namedview->guidehicolor);
+}
+
+Gtk::EventSequenceState CanvasGrid::_rulerMotion(GtkEventControllerMotion const *controller, double x, double y, bool horiz)
+{
+    if (!_ruler_clicked) {
+        return Gtk::EVENT_SEQUENCE_NONE;
+    }
+
+    // Get the position in canvas coordinates.
+    auto const pos = Geom::Point(x, y) + _rulerToCanvas(horiz);
+
+    if (!_ruler_dragged) {
+        // Discard small movements without starting a drag.
+        auto prefs = Preferences::get();
+        int tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
+        if (Geom::LInfty(Geom::Point(x, y).floor() - _ruler_drag_origin) < tolerance) {
+            return Gtk::EVENT_SEQUENCE_NONE;
+        }
+        // Once the drag has started, create a guide.
+        _createGuideItem(pos, horiz);
+        _ruler_dragged = true;
+    }
+
+    // Synthesize the CanvasEvent.
+    auto gdkevent = GdkEventUniqPtr(gtk_get_current_event());
+    assert(gdkevent->type == GDK_MOTION_NOTIFY);
+    gdkevent->motion.x = pos.x();
+    gdkevent->motion.y = pos.y();
+    auto const state = gdkevent->motion.state;
+    auto const event = MotionEvent(std::move(gdkevent), state);
+
+    return rulerMotion(event, horiz) ? Gtk::EVENT_SEQUENCE_CLAIMED : Gtk::EVENT_SEQUENCE_NONE;
 }
 
 static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom::Point &normal)
@@ -445,7 +476,7 @@ static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom
     desktop->getCanvas()->grab_focus();
     auto &m = desktop->namedview->snap_manager;
     m.setup(desktop);
-    // We're dragging a brand new guide, just pulled of the rulers seconds ago. When snapping to a
+    // We're dragging a brand new guide, just pulled out of the rulers seconds ago. When snapping to a
     // path this guide will change it slope to become either tangential or perpendicular to that path. It's
     // therefore not useful to try tangential or perpendicular snapping, so this will be disabled temporarily
     bool pref_perp = m.snapprefs.isTargetSnappable(SNAPTARGET_PATH_PERPENDICULAR);
@@ -473,103 +504,109 @@ static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom
     m.unSetup();
 }
 
-bool CanvasGrid::_rulerMotionNotify(GdkEventMotion *event, bool horiz)
+bool CanvasGrid::rulerMotion(MotionEvent const &event, bool horiz)
 {
     auto const desktop = _dtw->desktop;
-    auto const pos = Geom::Point(event->x, event->y) + _rulerToCanvas(horiz);
 
-    // Synthesize the CanvasEvent to use as a delayed snap event.
-    auto event_copy = GdkEventUniqPtr(gdk_event_copy(reinterpret_cast<GdkEvent*>(event)));
-    auto canvas_event = MotionEvent(std::move(event_copy), event->state);
     auto const origin = horiz ? Tools::DelayedSnapEvent::GUIDE_HRULER
                               : Tools::DelayedSnapEvent::GUIDE_VRULER;
-    desktop->event_context->snap_delay_handler(this, nullptr, canvas_event, origin);
+    desktop->event_context->snap_delay_handler(this, nullptr, event, origin);
 
-    if (_ruler_clicked) {
-        auto const event_w = _canvas->canvas_to_world(pos);
-        auto event_dt = _dtw->desktop->w2d(event_w);
-
-        auto prefs = Preferences::get();
-        int tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
-        if (Geom::LInfty(Geom::Point(event->x, event->y).floor() - _xyp) < tolerance) {
-            return false;
-        }
-
-        _ruler_dragged = true;
-
-        // Explicitly show guidelines; if I draw a guide, I want them on.
-        if ((horiz ? pos.y() : pos.x()) >= 0) {
-            desktop->namedview->setShowGuides(true);
-        }
-
-        auto normal = _normal;
-        if (!(event->state & GDK_SHIFT_MASK)) {
-            ruler_snap_new_guide(desktop, event_dt, normal);
-        }
-        _active_guide->set_normal(normal);
-        _active_guide->set_origin(event_dt);
-
-        desktop->set_coordinate_status(event_dt);
+    // Explicitly show guidelines; if I draw a guide, I want them on.
+    if (event.eventPos()[horiz ? Geom::Y : Geom::X] >= 0) {
+        desktop->namedview->setShowGuides(true);
     }
 
-    return false;
+    // Get the snapped position and normal.
+    auto const event_w = _canvas->canvas_to_world(event.eventPos());
+    auto event_dt = _dtw->desktop->w2d(event_w);
+    auto normal = _normal;
+    if (!(event.modifiers() & GDK_SHIFT_MASK)) {
+        ruler_snap_new_guide(desktop, event_dt, normal);
+    }
+
+    // Apply the position and normal to the guide.
+    _active_guide->set_normal(normal);
+    _active_guide->set_origin(event_dt);
+
+    // Update the displayed coordinates.
+    desktop->set_coordinate_status(event_dt);
+
+    return true;
+}
+
+void CanvasGrid::_createGuide(Geom::Point origin, Geom::Point normal)
+{
+    auto const desktop = _dtw->desktop;
+    auto const xml_doc = desktop->doc()->getReprDoc();
+    auto const repr = xml_doc->createElement("sodipodi:guide");
+
+    // <sodipodi:guide> stores inverted y-axis coordinates
+    if (desktop->is_yaxisdown()) {
+        origin.y() = desktop->doc()->getHeight().value("px") - origin.y();
+        normal.y() *= -1.0;
+    }
+
+    // If root viewBox set, interpret guides in terms of viewBox (90/96)
+    auto root = desktop->doc()->getRoot();
+    if (root->viewBox_set) {
+        origin.x() *= root->viewBox.width() / root->width.computed;
+        origin.y() *= root->viewBox.height() / root->height.computed;
+    }
+
+    repr->setAttributePoint("position", origin);
+    repr->setAttributePoint("orientation", normal);
+    desktop->namedview->appendChild(repr);
+    GC::release(repr);
+    DocumentUndo::done(desktop->getDocument(), _("Create guide"), "");
 }
 
 // End guide creation or toggle guides on/off.
-bool CanvasGrid::_rulerButtonRelease(GdkEventButton *event, bool horiz)
+Gtk::EventSequenceState CanvasGrid::_rulerButtonRelease(Gtk::GestureMultiPress &gesture, int /*n_press*/, double x, double y, bool horiz)
 {
-    auto const desktop = _dtw->desktop;
-    auto const pos = Geom::Point(event->x, event->y) + _rulerToCanvas(horiz);
+    if (!_ruler_clicked || gesture.get_current_button() != 1) {
+        return Gtk::EVENT_SEQUENCE_NONE;
+    }
 
-    if (_ruler_clicked && event->button == 1) {
+    auto const desktop = _dtw->desktop;
+
+    if (_ruler_dragged) {
         desktop->event_context->discard_delayed_snap_event();
 
+        auto const pos = Geom::Point(x, y) + _rulerToCanvas(horiz);
+
+        GdkModifierType state;
+        gtk_get_current_event_state(&state);
+
+        // Get the snapped position and normal.
         auto const event_w = _canvas->canvas_to_world(pos);
         auto event_dt = desktop->w2d(event_w);
-
         auto normal = _normal;
-        if (!(event->state & GDK_SHIFT_MASK)) {
+        if (!(state & GDK_SHIFT_MASK)) {
             ruler_snap_new_guide(desktop, event_dt, normal);
         }
 
+        // Clear the guide on-canvas.
         _active_guide.reset();
-        if ((horiz ? pos.y() : pos.x()) >= 0) {
-            auto xml_doc = desktop->doc()->getReprDoc();
-            auto repr = xml_doc->createElement("sodipodi:guide");
 
-            // If root viewBox set, interpret guides in terms of viewBox (90/96)
-            double newx = event_dt.x();
-            double newy = event_dt.y();
+        // FIXME: If possible, clear the snap indicator here too.
 
-            // <sodipodi:guide> stores inverted y-axis coordinates
-            if (desktop->is_yaxisdown()) {
-                newy = desktop->doc()->getHeight().value("px") - newy;
-                normal.y() *= -1.0;
-            }
-
-            auto root = desktop->doc()->getRoot();
-            if (root->viewBox_set) {
-                newx = newx * root->viewBox.width()  / root->width.computed;
-                newy = newy * root->viewBox.height() / root->height.computed;
-            }
-            repr->setAttributePoint("position", Geom::Point(newx, newy));
-            repr->setAttributePoint("orientation", normal);
-            desktop->namedview->appendChild(repr);
-            GC::release(repr);
-            DocumentUndo::done(desktop->getDocument(), _("Create guide"), "");
+        // If the guide is on-screen, create the actual guide in the document.
+        if (pos[horiz ? Geom::Y : Geom::X] >= 0) {
+            _createGuide(event_dt, normal);
         }
+
+        // Update the coordinate display.
         desktop->set_coordinate_status(event_dt);
-
-        if (!_ruler_dragged) {
-            // Ruler click (without drag) toggle the guide visibility on and off
-            desktop->namedview->toggleShowGuides();
-        }
-
-        _ruler_clicked = false;
-        _ruler_dragged = false;
+    } else {
+        // Ruler click (without drag) toggles the guide visibility on and off.
+        desktop->namedview->toggleShowGuides();
     }
 
-    return false;
+    _ruler_clicked = false;
+    _ruler_dragged = false;
+
+    return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
 static void set_adjustment(Gtk::Adjustment *adj, double l, double u, double ps, double si, double pi)
