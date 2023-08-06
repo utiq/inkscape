@@ -407,11 +407,11 @@ bool CanvasGrid::_rulerButtonPress(GdkEventButton *event, bool horiz)
                 auto const angle_z = Geom::rad_from_deg(grid->getAngleZ());
                 if (event->state & GDK_CONTROL_MASK) {
                     // guidelines normal to gridlines
-                    normal_bl_to_tr = Geom::Point::polar(-angle_x, 1.0);
-                    normal_tr_to_bl = Geom::Point::polar(angle_z, 1.0);
+                    normal_bl_to_tr = Geom::Point::polar(angle_x * y_dir, 1.0);
+                    normal_tr_to_bl = Geom::Point::polar(-angle_z * y_dir, 1.0);
                 } else {
-                    normal_bl_to_tr = Geom::Point::polar(angle_z, 1.0).cw();
-                    normal_tr_to_bl = Geom::Point::polar(-angle_x, 1.0).cw();
+                    normal_bl_to_tr = Geom::Point::polar(-angle_z * y_dir, 1.0).cw();
+                    normal_tr_to_bl = Geom::Point::polar(angle_x * y_dir, 1.0).cw();
                 }
             }
         }
