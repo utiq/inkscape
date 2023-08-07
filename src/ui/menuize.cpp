@@ -28,15 +28,33 @@
 
 namespace Inkscape::UI {
 
-static void on_motion(GtkEventController * const motion)
+static Gtk::Widget &get_widget(GtkEventControllerMotion * const motion)
 {
-    auto const widget = Glib::wrap(gtk_event_controller_get_widget(motion));
-    g_return_if_fail(widget != nullptr);
-    if (widget->is_focus()) return;
+    auto const widget = gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(motion));
+    g_assert(widget != nullptr);
+    return *Glib::wrap(widget);
+}
 
-    auto &parent = dynamic_cast<Gtk::Widget &>(*widget->get_parent());
-    parent.unset_state_flags(Gtk::STATE_FLAG_FOCUSED | Gtk::STATE_FLAG_PRELIGHT);
-    widget->grab_focus(); // Weʼll then run the below handler @ notify::is-focus
+static void on_motion_grab_focus(GtkEventControllerMotion * const motion, double /*x*/, double /*y*/,
+                                 void * /*user_data*/)
+{
+    auto &widget = get_widget(motion);
+    if (widget.is_focus()) return;
+    widget.grab_focus(); // Weʼll then run the below handler @ notify::is-focus
+}
+
+static void unset_state(Gtk::Widget &widget)
+{
+    widget.unset_state_flags(Gtk::STATE_FLAG_FOCUSED | Gtk::STATE_FLAG_PRELIGHT);
+}
+
+static void on_leave_unset_state(GtkEventControllerMotion * const motion, double /*x*/, double /*y*/,
+                                 void * /*user_data*/)
+{
+    auto &widget = get_widget(motion);
+    auto &parent = dynamic_cast<Gtk::Widget &>(*widget.get_parent());
+    unset_state(widget); // This is somehow needed for GtkPopoverMenu, although not our PopoverMenu
+    unset_state(parent); // Try to unset state on all other menu items, in case we left by keyboard
 }
 
 void menuize(Gtk::Widget &widget)
@@ -44,8 +62,9 @@ void menuize(Gtk::Widget &widget)
     // If hovered naturally or below, key-focus self & clear focus+hover on rest
     auto const motion = gtk_event_controller_motion_new(widget.gobj());
     gtk_event_controller_set_propagation_phase(motion, GTK_PHASE_TARGET);
-    g_signal_connect(motion, "enter" , G_CALLBACK(on_motion), nullptr);
-    g_signal_connect(motion, "motion", G_CALLBACK(on_motion), nullptr);
+    g_signal_connect(motion, "enter" , G_CALLBACK(on_motion_grab_focus), NULL);
+    g_signal_connect(motion, "motion", G_CALLBACK(on_motion_grab_focus), NULL);
+    g_signal_connect(motion, "leave" , G_CALLBACK(on_leave_unset_state), NULL);
     manage(Glib::wrap(motion), widget);
 
     // If key-focused in/out, ‘fake’ correspondingly appearing as hovered or not
