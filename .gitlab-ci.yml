@@ -153,7 +153,7 @@ inkscape:macos:arm:
   cache:
     key: "cache-macos"
     paths:
-      - $CI_PROJECT_DIR/ccache
+      - ccache
 
 
 .windows:
