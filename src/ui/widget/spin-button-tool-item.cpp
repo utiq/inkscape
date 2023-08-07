@@ -3,155 +3,118 @@
 #include "spin-button-tool-item.h"
 
 #include <algorithm>
+#include <cmath>
+#include <sstream>
+#include <2geom/math-utils.h>
+#include <sigc++/adaptors/bind.h>
+#include <sigc++/functors/mem_fun.h>
+#include <gtkmm/adjustment.h>
 #include <gtkmm/box.h>
-#include <gtkmm/image.h>
-#include <gtkmm/radiomenuitem.h>
+#include <gtkmm/label.h>
+#include <gtkmm/radiobutton.h>
+#include <gtkmm/spinbutton.h>
 #include <gtkmm/toolbar.h>
 
-#include <cmath>
-#include <utility>
-
 #include "spinbutton.h"
+#include "ui/controller.h"
 #include "ui/icon-loader.h"
+#include "ui/widget/popover-menu.h"
+#include "ui/widget/popover-menu-item.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
- * \brief Handler for the button's "focus-in-event" signal
- *
- * \param focus_event The event that triggered the signal
+ * \brief Handler for when the button's "is-focus" property changes
  *
  * \detail This just logs the current value of the spin-button
- *         and sets the _transfer_focus flag
+ *         and sets the _transfer_focus flag if focused-in, or unsets the
+ *         _transfer_focus flag and removes the text selection if focused-out.
  */
-bool
-SpinButtonToolItem::on_btn_focus_in_event(GdkEventFocus * /* focus_event */)
+void
+SpinButtonToolItem::on_btn_is_focus_changed()
 {
-    _last_val = _btn->get_value();
-    _transfer_focus = true;
-
-    return false; // Event not consumed
+    auto const is_focus = _btn->is_focus();
+    if (is_focus) {
+        _last_val = _btn->get_value();
+    } else {
+        auto const position = _btn->get_position();
+        _btn->select_region(position, position);
+    }
+    _transfer_focus = is_focus;
 }
 
 /**
- * \brief Handler for the button's "focus-out-event" signal
- *
- * \param focus_event The event that triggered the signal
- *
- * \detail This just unsets the _transfer_focus flag
- */
-bool
-SpinButtonToolItem::on_btn_focus_out_event(GdkEventFocus * /* focus_event */)
-{
-    _transfer_focus = false;
-
-    return false; // Event not consumed
-}
-
-/**
- * \brief Handler for the button's "key-press-event" signal
- *
- * \param key_event The event that triggered the signal
+ * \brief Handler for when a key is pressed when the button has focus
  *
  * \detail If the ESC key was pressed, restore the last value and defocus.
  *         If the Enter key was pressed, just defocus.
  */
 bool
-SpinButtonToolItem::on_btn_key_press_event(GdkEventKey *key_event)
+SpinButtonToolItem::on_btn_key_pressed(GtkEventControllerKey const * const controller,
+                                       unsigned const keyval, unsigned const keycode,
+                                       GdkModifierType const state)
 {
-    bool was_consumed = false; // Whether event has been consumed or not
     auto display = Gdk::Display::get_default();
     auto keymap  = display->get_keymap();
     guint key = 0;
-    gdk_keymap_translate_keyboard_state(keymap, key_event->hardware_keycode,
-                                        static_cast<GdkModifierType>(key_event->state),
+    gdk_keymap_translate_keyboard_state(keymap, keycode, state,
                                         0, &key, 0, 0, 0);
-
     auto val = _btn->get_value();
 
     switch(key) {
         case GDK_KEY_Escape:
-        {
             _transfer_focus = true;
             _btn->set_value(_last_val);
             defocus();
-            was_consumed = true;
-        }
-        break;
+            return true;
 
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter:
-        {
             _transfer_focus = true;
             defocus();
-            was_consumed = true;
-        }
-        break;
+            return true;
 
         case GDK_KEY_Tab:
-        {
-            _transfer_focus = false;
-            was_consumed = process_tab(1);
-        }
-        break;
+            return process_tab(1);
 
         case GDK_KEY_ISO_Left_Tab:
-        {
-            _transfer_focus = false;
-            was_consumed = process_tab(-1);
-        }
-        break;
+            return process_tab(-1);
 
         // TODO: Enable variable step-size if this is ever used
         case GDK_KEY_Up:
         case GDK_KEY_KP_Up:
-        {
             _transfer_focus = false;
             _btn->set_value(val+1);
-            was_consumed=true;
-        }
-        break;
+            return true;
 
         case GDK_KEY_Down:
         case GDK_KEY_KP_Down:
-        {
             _transfer_focus = false;
             _btn->set_value(val-1);
-            was_consumed=true;
-        }
-        break;
+            return true;
 
         case GDK_KEY_Page_Up:
         case GDK_KEY_KP_Page_Up:
-        {
             _transfer_focus = false;
             _btn->set_value(val+10);
-            was_consumed=true;
-        }
-        break;
+            return true;
 
         case GDK_KEY_Page_Down:
         case GDK_KEY_KP_Page_Down:
-        {
             _transfer_focus = false;
             _btn->set_value(val-10);
-            was_consumed=true;
-        }
-        break;
+            return true;
 
         case GDK_KEY_z:
         case GDK_KEY_Z:
-        {
-            _transfer_focus = false;
-            _btn->set_value(_last_val);
-            was_consumed = true;
-        }
-        break;
+            if (Controller::has_flag(state, GDK_CONTROL_MASK)) {
+                _transfer_focus = false;
+                _btn->set_value(_last_val);
+                return true;
+            }
     }
 
-    return was_consumed;
+    return false;
 }
 
 /**
@@ -186,22 +149,17 @@ SpinButtonToolItem::process_tab(int increment)
     //
     // Our aim is to find the next/previous spin-button within a toolitem in our toolbar
 
-    bool handled = false;
-
     // We only bother doing this if the current item is actually in a toolbar!
     auto toolbar = dynamic_cast<Gtk::Toolbar *>(get_parent());
-
     if (toolbar) {
         // Get the index of the current item within the toolbar and the total number of items
         auto my_index = toolbar->get_item_index(*this);
         auto n_items  = toolbar->get_n_items();
-
         auto test_index = my_index + increment; // The index of the item we want to check
 
         // Loop through tool items as long as we're within the limits of the toolbar and
         // we haven't yet found our new item to focus on
-        while(test_index > 0 && test_index <= n_items && !handled) {
-
+        while (test_index > 0 && test_index <= n_items) {
             auto tool_item = toolbar->get_nth_item(test_index);
 
             if(tool_item) {
@@ -210,12 +168,15 @@ SpinButtonToolItem::process_tab(int increment)
                     // (1) The tool item is a SpinButtonToolItem, in which case, we just pass
                     //     focus to its spin-button
                     sb_tool_item->grab_button_focus();
-                    handled = true;
+                    return true;
                 }
-                else if(dynamic_cast<Gtk::SpinButton *>(tool_item->get_child())) {
+                else if (auto const spin_button = dynamic_cast<Gtk::SpinButton *>
+                                                              (tool_item->get_child()))
+                {
                     // (2) The tool item contains a plain Gtk::SpinButton, in which case we
                     //     pass focus directly to it
-                    tool_item->get_child()->grab_focus();
+                    spin_button->grab_focus();
+                    return true;
                 }
             }
 
@@ -223,7 +184,7 @@ SpinButtonToolItem::process_tab(int increment)
         }
     }
 
-    return handled;
+    return false;
 }
 
 /**
@@ -232,55 +193,41 @@ SpinButtonToolItem::process_tab(int increment)
  * \details Sets the adjustment to the desired value
  */
 void
-SpinButtonToolItem::on_numeric_menu_item_toggled(double value, Gtk::RadioMenuItem* button)
+SpinButtonToolItem::on_numeric_menu_item_activate(double const value)
 {
-    // Called both when Radio button is deactivated and activated. Only set when activated.
-    if (button->get_active()) {
-        auto adj = _btn->get_adjustment();
-        adj->set_value(value);
-    }
+    auto adj = _btn->get_adjustment();
+    adj->set_value(value);
 }
 
-Gtk::RadioMenuItem *
-SpinButtonToolItem::create_numeric_menu_item(Gtk::RadioButtonGroup *group,
+UI::Widget::PopoverMenuItem *
+SpinButtonToolItem::create_numeric_menu_item(Gtk::RadioButtonGroup &group,
                                              double                 value,
-                                             const Glib::ustring&   label,
+                                             const Glib::ustring   &label,
                                              bool enable)
 {
-    // Represent the value as a string
-    std::ostringstream ss;
-    ss << value;
+    auto const item_label = !label.empty() ? Glib::ustring::compose("%1: %2", value, label)
+                                           : Glib::ustring::format(value);
+    auto const radio_button = Gtk::make_managed<Gtk::RadioButton>(group, item_label);
+    radio_button->set_active(enable);
 
-    Glib::ustring item_label = ss.str();
-
-    // Append the label if specified
-    if (!label.empty()) {
-        item_label += ": " + label;
-    }
-
-    auto const numeric_option = Gtk::make_managed<Gtk::RadioMenuItem>(*group, item_label);
-    if (enable) {
-        numeric_option->set_active(); // Do before connecting toggled_handler.
-    }
-
-    // Set the adjustment value in response to changes in the selected item
-    auto toggled_handler = sigc::bind(sigc::mem_fun(*this, &SpinButtonToolItem::on_numeric_menu_item_toggled), value, numeric_option);
-    numeric_option->signal_toggled().connect(toggled_handler);
-
-    return numeric_option;
+    auto const menu_item = Gtk::make_managed<UI::Widget::PopoverMenuItem>();
+    menu_item->add(*radio_button);
+    menu_item->signal_activate().connect(sigc::bind(
+        sigc::mem_fun(*this, &SpinButtonToolItem::on_numeric_menu_item_activate), value));
+    return menu_item;
 }
+
+// static to only create 1 over items and avoid lifetime hassle
+static std::unique_ptr<UI::Widget::PopoverMenu> numeric_menu{};
 
 /**
  * \brief Create a menu containing fixed numeric options for the adjustment
  *
  * \details Each of these values represents a snap-point for the adjustment's value
  */
-Gtk::Menu *
-SpinButtonToolItem::create_numeric_menu()
+void SpinButtonToolItem::create_numeric_menu()
 {
-    auto const numeric_menu = Gtk::make_managed<Gtk::Menu>();
-
-    Gtk::RadioMenuItem::Group group;
+    numeric_menu = std::make_unique<UI::Widget::PopoverMenu>();
 
     // Get values for the adjustment
     auto adj = _btn->get_adjustment();
@@ -294,7 +241,7 @@ SpinButtonToolItem::create_numeric_menu()
     NumericMenuData values;
 
     // first add all custom items (necessary)
-    for (auto custom_data : _custom_menu_data) {
+    for (auto const &custom_data : _custom_menu_data) {
         if (custom_data.first >= lower && custom_data.first <= upper) {
             values.emplace(custom_data);
         }
@@ -304,8 +251,8 @@ SpinButtonToolItem::create_numeric_menu()
 
     // for quick page changes using mouse, step can changes can be done with +/- buttons on
     // SpinButton
-    values.emplace(::fmin(adj_value + page, upper), "");
-    values.emplace(::fmax(adj_value - page, lower), "");
+    values.emplace(std::fmin(adj_value + page, upper), "");
+    values.emplace(std::fmax(adj_value - page, lower), "");
 
     // add upper/lower limits to options
     if (_show_upper_limit) {
@@ -315,9 +262,10 @@ SpinButtonToolItem::create_numeric_menu()
         values.emplace(lower, "");
     }
 
-    auto add_item = [&numeric_menu, this, &group, adj_value](ValueLabel value){
+    Gtk::RadioButton::Group group;
+    auto const add_item = [=, &group](ValueLabel const &value) {
         bool enable = (adj_value == value.first);
-        auto numeric_menu_item = create_numeric_menu_item(&group, value.first, value.second, enable);
+        auto const numeric_menu_item = create_numeric_menu_item(group, value.first, value.second, enable);
         numeric_menu->append(*numeric_menu_item);
     };
 
@@ -326,30 +274,6 @@ SpinButtonToolItem::create_numeric_menu()
     } else {
         std::for_each(values.cbegin(), values.cend(), add_item);
     }
-
-    return numeric_menu;
-}
-
-/**
- * \brief Create a menu-item in response to the "create-menu-proxy" signal
- *
- * \detail This is an override for the default Gtk::ToolItem handler so
- *         we don't need to explicitly connect this to the signal. It
- *         runs if the toolitem is unable to fit on the toolbar, and
- *         must be represented by a menu item instead.
- */
-bool
-SpinButtonToolItem::on_create_menu_proxy()
-{
-    // The main menu-item.  It just contains the label that normally appears
-    // next to the spin-button, and an indicator for a sub-menu.
-    auto const menu_item = Gtk::make_managed<Gtk::MenuItem>(_label_text);
-    auto numeric_menu = create_numeric_menu();
-    menu_item->set_submenu(*numeric_menu);
-
-    set_proxy_menu_item(_name, *menu_item);
-
-    return true; // Finished handling the event
 }
 
 /**
@@ -375,32 +299,19 @@ SpinButtonToolItem::SpinButtonToolItem(const Glib::ustring            name,
     set_margin_end(3);
     set_name(_name);
 
-    // Handle popup menu
     _btn->signal_popup_menu().connect(sigc::mem_fun(*this, &SpinButtonToolItem::on_popup_menu), false);
 
-    // Handle button events
-    auto btn_focus_in_event_cb = sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_focus_in_event);
-    _btn->signal_focus_in_event().connect(btn_focus_in_event_cb, false);
+    _btn->property_is_focus().signal_changed().connect(
+            sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_is_focus_changed));
+    Controller::add_key<&SpinButtonToolItem::on_btn_key_pressed>(*_btn, *this);
+    Controller::add_click(*_btn, sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_click_pressed),
+                          {}, Controller::Button::any, Gtk::PHASE_TARGET);
 
-    auto btn_focus_out_event_cb = sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_focus_out_event);
-    _btn->signal_focus_out_event().connect(btn_focus_out_event_cb, false);
-
-    auto btn_key_press_event_cb = sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_key_press_event);
-    _btn->signal_key_press_event().connect(btn_key_press_event_cb, false);
-
-    auto btn_button_press_event_cb = sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_button_press_event);
-    _btn->signal_button_press_event().connect(btn_button_press_event_cb, false);
-
-    _btn->add_events(Gdk::KEY_PRESS_MASK);
-
-    // Create a label
     _label = Gtk::make_managed<Gtk::Label>(label_text);
 
-    // Arrange the widgets in a horizontal box
-    _hbox = Gtk::make_managed<Gtk::Box>();
-    _hbox->set_spacing(3);
-    _hbox->pack_start(*_label);
-    _hbox->pack_start(*_btn);
+    _hbox = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 3);
+    _hbox->add(*_label);
+    _hbox->add(*_btn);
     add(*_hbox);
     show_all();
 }
@@ -419,25 +330,25 @@ SpinButtonToolItem::set_icon(const Glib::ustring& icon_name)
     show_all();
 }
 
-bool
-SpinButtonToolItem::on_btn_button_press_event(const GdkEventButton *button_event)
+Gtk::EventSequenceState
+SpinButtonToolItem::on_btn_click_pressed(Gtk::GestureMultiPress const &click,
+                                         int const n_press, double const x, double const y)
 {
-    if (gdk_event_triggers_context_menu(reinterpret_cast<const GdkEvent *>(button_event)) &&
-            button_event->type == GDK_BUTTON_PRESS) {
-        do_popup_menu(button_event);
-        return true;
+    if (auto const event = Controller::get_last_event(click);
+        event && gdk_event_triggers_context_menu(event))
+    {
+        do_popup_menu();
+        return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
 
-    return false;
+    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 void
-SpinButtonToolItem::do_popup_menu(const GdkEventButton *button_event)
+SpinButtonToolItem::do_popup_menu()
 {
-    auto menu = create_numeric_menu();
-    menu->attach_to_widget(*_btn);
-    menu->show_all();
-    menu->popup_at_pointer(reinterpret_cast<const GdkEvent *>(button_event));
+    create_numeric_menu();
+    numeric_menu->popup_at(*_btn);
 }
 
 /**
@@ -446,7 +357,7 @@ SpinButtonToolItem::do_popup_menu(const GdkEventButton *button_event)
 bool
 SpinButtonToolItem::on_popup_menu()
 {
-    do_popup_menu(nullptr);
+    do_popup_menu();
     return true;
 }
 
@@ -550,7 +461,6 @@ SpinButtonToolItem::set_custom_numeric_menu_data(const std::vector<ValueLabel>& 
     }
 }
 
-
 /**
  * \brief     Set numeric data options for Radio menu (sparsely labeled data).
  *
@@ -564,7 +474,7 @@ SpinButtonToolItem::set_custom_numeric_menu_data(const std::vector<ValueLabel>& 
  */
 void
 SpinButtonToolItem::set_custom_numeric_menu_data(const std::vector<double> &values,
-                                                      const std::unordered_map<double, Glib::ustring> &sparse_labels)
+                                                 const std::unordered_map<double, Glib::ustring> &sparse_labels)
 {
     _custom_menu_data.clear();
 
@@ -577,7 +487,6 @@ SpinButtonToolItem::set_custom_numeric_menu_data(const std::vector<double> &valu
     }
 
 }
-
 
 void SpinButtonToolItem::show_upper_limit(bool show) { _show_upper_limit = show; }
 
@@ -592,9 +501,9 @@ SpinButtonToolItem::get_adjustment()
 {
     return _btn->get_adjustment();
 }
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+
+} // namespace Inkscape::UI::Widget
+
 /*
   Local Variables:
   mode:c++

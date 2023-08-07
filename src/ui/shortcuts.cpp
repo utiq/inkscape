@@ -9,13 +9,15 @@
  *
  */
 
-
 /* Much of the complexity of this code is in dealing with both Inkscape verbs and Gio::Actions at
  * the same time. When we remove verbs we can avoid using 'unsigned long long int shortcut' to
  * track keys and rely directly on Glib::ustring as used by
  * Gtk::Application::get_accels_for_action(). This will then automatically handle the '<Primary>'
  * modifier value (which takes care of the differences between Linux and OSX) as well as allowing
  * us to set multiple accelerators for actions in InkscapePreferences. */
+
+// TODO: GTK4: Replace Application.[un]set_accels*() with GtkShortcutController in CAPTURE phase.
+// See: https://gitlab.com/dboles/inkscape/-/issues/1
 
 #include "shortcuts.h"
 

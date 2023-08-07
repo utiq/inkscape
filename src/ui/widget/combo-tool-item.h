@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_COMBO_TOOL_ITEM
-#define SEEN_COMBO_TOOL_ITEM
-
+/** \file
+    A combobox that can be displayed in a toolbar.
+*/
 /*
  * Authors:
  *   Tavmjong Bah <tavmjong@free.fr>
@@ -15,22 +15,27 @@
    A combobox that can be displayed in a toolbar
 */
 
-#include <gtkmm/toolitem.h>
-#include <gtkmm/liststore.h>
-#include <sigc++/sigc++.h>
+#ifndef SEEN_COMBO_TOOL_ITEM
+#define SEEN_COMBO_TOOL_ITEM
+
 #include <vector>
+#include <glibmm/refptr.h>
+#include <gtkmm/enums.h>
+#include <gtkmm/toolitem.h>
+#include <gtkmm/treemodel.h>
+#include <sigc++/signal.h>
 
 namespace Gtk {
 class Box;
 class ComboBox;
 class Label;
+class ListStore;
 class MenuItem;
 class RadioMenuItem;
-}
+} // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
+
 class ComboToolItemColumns : public Gtk::TreeModel::ColumnRecord {
 public:
     ComboToolItemColumns() {
@@ -53,7 +58,6 @@ public:
 
 
 class ComboToolItem : public Gtk::ToolItem {
-
 public:
     static ComboToolItem* create(const Glib::ustring &label,
                                  const Glib::ustring &tooltip,
@@ -79,7 +83,6 @@ public:
     sigc::signal<void (int)> signal_changed_after() { return _changed_after; }
 
 protected:
-    bool on_create_menu_proxy() override;
     void populate_combobox();
 
     /* Signals */
@@ -119,9 +122,9 @@ private:
                   Glib::RefPtr<Gtk::ListStore> store,
                   bool          has_entry = false);
 };
-}
-}
-}
+
+} // namespace Inkscape::UI::Widget
+
 #endif /* SEEN_COMBO_TOOL_ITEM */
 
 /*

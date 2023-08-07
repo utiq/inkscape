@@ -134,7 +134,6 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
     signal_window_state_event().connect(sigc::mem_fun(*_desktop, &SPDesktop::onWindowStateEvent));
     signal_focus_in_event().connect(    sigc::mem_fun(*_desktop_widget, &SPDesktopWidget::onFocusInEvent));
 
-
     // ================ Window Options ===============
     setup_view();
 
@@ -234,7 +233,11 @@ bool InkscapeWindow::on_key_press_event(GdkEventKey *event)
     // events first to the focus widget.
     //
     // See https://developer.gnome.org/gtk3/stable/chap-input-handling.html (Event Propagation)
-
+    //
+    // TODO: GTK4: We wonʼt be able to do this, but shouldnʼt need to, if instead of using
+    // Application.set_accels_for_action(), we use GtkShortcutController in CAPTURE phase.
+    // ::key-press-event handlers will be replaced by GtkEventControllerKey, w/ phase TBC.
+    // See: https://gitlab.com/dboles/inkscape/-/issues/1
     auto focus = get_focus();
     if (focus) {
         if (focus->event(reinterpret_cast<GdkEvent *>(event))) {
@@ -251,11 +254,11 @@ bool InkscapeWindow::on_key_press_event(GdkEventKey *event)
         return true;
     }
 
+    // TODO: GTK4: Ditto above.
     if (Gtk::Window::on_key_press_event(event)) {
         return true;
     }
 
-    // Not handled
     return false;
 }
 

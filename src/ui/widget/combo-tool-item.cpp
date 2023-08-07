@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+/** \file
+    A combobox that can be displayed in a toolbar.
+*/
 /*
  * Authors:
  *   Tavmjong Bah <tavmjong@free.fr>
@@ -8,27 +11,27 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-
-/** \file
-    A combobox that can be displayed in a toolbar.
-*/
-
 #include "combo-tool-item.h"
-#include "preferences.h"
-#include <iostream>
-#include <utility>
-#include <gtkmm/toolitem.h>
-#include <gtkmm/menuitem.h>
-#include <gtkmm/radiomenuitem.h>
-#include <gtkmm/combobox.h>
-#include <gtkmm/menu.h>
-#include <gtkmm/box.h>
-#include <gtkmm/label.h>
-#include <gtkmm/image.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+#include <string>
+#include <utility>
+#include <sigc++/functors/mem_fun.h>
+#include <gtkmm/box.h>
+#include <gtkmm/combobox.h>
+#include <gtkmm/label.h>
+#include <gtkmm/liststore.h>
+#include <gtkmm/radiomenuitem.h>
+
+#include "preferences.h"
+
+namespace Inkscape::UI::Widget {
+
+static void strip_trailing(Glib::ustring &s, char const c)
+{
+    if (!s.empty() && s.raw().back() == c) {
+        s.resize(s.size() - 1);
+    }
+}
 
 ComboToolItem*
 ComboToolItem::create(const Glib::ustring &group_label,
@@ -63,27 +66,10 @@ ComboToolItem::ComboToolItem(Glib::ustring group_label,
     _container->set_spacing(3);
 
     // ": " is added to the group label later
-    if (!_group_label.empty()) {
-        // we don't expect trailing spaces
-        // g_assert(_group_label.raw()[_group_label.raw().size() - 1] != ' ');
+    // If we have them already, we strip them
+    strip_trailing(_group_label, ' ');
+    strip_trailing(_group_label, ':');
 
-        // strip space (note: raw() indexing is much cheaper on Glib::ustring)
-        if (_group_label.raw()[_group_label.raw().size() - 1] == ' ') {
-            _group_label.resize(_group_label.size() - 1);
-        }
-    }
-    if (!_group_label.empty()) {
-        // we don't expect a trailing colon
-        // g_assert(_group_label.raw()[_group_label.raw().size() - 1] != ':');
-
-        // strip colon (note: raw() indexing is much cheaper on Glib::ustring)
-        if (_group_label.raw()[_group_label.raw().size() - 1] == ':') {
-            _group_label.resize(_group_label.size() - 1);
-        }
-    }
-
-
-    // Create combobox
     _combobox = Gtk::make_managed<Gtk::ComboBox>(has_entry);
     _combobox->set_model(_store);
 
@@ -209,50 +195,6 @@ ComboToolItem::get_active_text () {
     return label;
 }
 
-bool
-ComboToolItem::on_create_menu_proxy()
-{
-    if (_menuitem == nullptr) {
-
-        _menuitem = Gtk::make_managed<Gtk::MenuItem>(_group_label);
-        auto const menu = Gtk::make_managed<Gtk::Menu>();
-
-        Gtk::RadioButton::Group group;
-        int index = 0;
-        auto children = _store->children();
-        for (auto row : children) {
-            ComboToolItemColumns columns;
-            Glib::ustring label     = row[columns.col_label     ];
-            Glib::ustring icon      = row[columns.col_icon      ];
-            Glib::ustring tooltip   = row[columns.col_tooltip   ];
-            bool          sensitive = row[columns.col_sensitive ];
-
-            auto const button = Gtk::make_managed<Gtk::RadioMenuItem>(group);
-            button->set_label (label);
-            button->set_tooltip_text( tooltip );
-            button->set_sensitive( sensitive );
-
-            button->signal_toggled().connect( sigc::bind(
-              sigc::mem_fun(*this, &ComboToolItem::on_toggled_radiomenu), index++)
-                );
-
-            menu->add (*button);
-
-            _radiomenuitems.push_back( button );
-        }
-
-        if ( _active < _radiomenuitems.size()) {
-            _radiomenuitems[ _active ]->set_active();
-        }
-   
-        _menuitem->set_submenu (*menu);
-        _menuitem->show_all();
-    }
-
-    set_proxy_menu_item(_group_label, *_menuitem);
-    return true;
-}
-
 void
 ComboToolItem::on_changed_combobox() {
 
@@ -274,9 +216,8 @@ ComboToolItem::on_toggled_radiomenu(int n) {
     }
 }
 
-}
-}
-}
+} // namespace Inkscape::UI::Widget
+
 /*
   Local Variables:
   mode:c++

@@ -1,23 +1,31 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+
 #ifndef SEEN_SPIN_BUTTON_TOOL_ITEM_H
 #define SEEN_SPIN_BUTTON_TOOL_ITEM_H
 
-#include <gtkmm/toolitem.h>
+#include <map>
+#include <memory>
 #include <unordered_map>
 #include <utility>
-
-#include "2geom/math-utils.h"
+#include <vector>
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
+#include <gtk/gtk.h> // GtkEventControllerKey
+#include <gtkmm/gesture.h> // Gtk::EventSequenceState
+#include <gtkmm/toolitem.h>
 
 namespace Gtk {
+class Adjustment;
 class Box;
+class GestureMultiPress;
 class RadioButtonGroup;
-class RadioMenuItem;
-}
+class Widget;
+} // namespace Gtk
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
+class PopoverMenu;
+class PopoverMenuItem;
 class SpinButton;
 
 /**
@@ -59,27 +67,26 @@ private:
     double round_to_precision(double value);
 
     // Event handlers
-    bool on_btn_focus_in_event(GdkEventFocus  *focus_event);
-    bool on_btn_focus_out_event(GdkEventFocus *focus_event);
-    bool on_btn_key_press_event(GdkEventKey   *key_event);
-    bool on_btn_button_press_event(const GdkEventButton *button_event);
+    void on_btn_is_focus_changed();
+    bool on_btn_key_pressed(GtkEventControllerKey const *controller,
+                            unsigned keyval, unsigned keycode, GdkModifierType state);
+    Gtk::EventSequenceState on_btn_click_pressed(Gtk::GestureMultiPress const &click,
+                                                 int n_press, double x, double y);
     bool on_popup_menu();
-    void do_popup_menu(const GdkEventButton *button_event);
+    void do_popup_menu();
 
     void defocus();
     bool process_tab(int direction);
 
-    void on_numeric_menu_item_toggled(double value, Gtk::RadioMenuItem* button);
+    void on_numeric_menu_item_activate(double value);
 
-    Gtk::Menu * create_numeric_menu();
-
-    Gtk::RadioMenuItem * create_numeric_menu_item(Gtk::RadioButtonGroup *group,
-                                                  double                 value,
-                                                  const Glib::ustring&   label = "",
-                                                  bool                   enable = false);
+    void create_numeric_menu();
+    UI::Widget::PopoverMenuItem *create_numeric_menu_item(Gtk::RadioButtonGroup &group,
+                                                          double                 value,
+                                                          const Glib::ustring   &label = {},
+                                                          bool                   enable = false);
 
 protected:
-    bool on_create_menu_proxy() override;
     void on_grab_focus() override;
 
 public:
@@ -114,10 +121,11 @@ public:
 
     SpinButton *get_spin_button() { return _btn; };
 };
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+
+} // namespace Inkscape::UI::Widget
+
 #endif // SEEN_SPIN_BUTTON_TOOL_ITEM_H
+
 /*
   Local Variables:
   mode:c++

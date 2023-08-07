@@ -242,6 +242,10 @@ void DialogWindow::update_window_size_to_fit_children()
 // mimic InkscapeWindow handling of shortcuts to make them work with active floating dialog window
 bool DialogWindow::on_key_press_event(GdkEventKey *key_event)
 {
+    // TODO: GTK4: We wonʼt be able to do this, but shouldnʼt need to, if instead of using
+    // Application.set_accels_for_action(), we use GtkShortcutController in CAPTURE phase.
+    // ::key-press-event handlers will be replaced by GtkEventControllerKey, w/ phase TBC.
+    // See: https://gitlab.com/dboles/inkscape/-/issues/1
     auto focus = get_focus();
     if (focus) {
         if (focus->event(reinterpret_cast<GdkEvent *>(key_event))) {
