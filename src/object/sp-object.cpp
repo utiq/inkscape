@@ -564,7 +564,8 @@ void SPObject::cropToObjects(std::vector<SPObject *> except_objects)
     getObjectsExcept(toDelete, except_objects);
 
     for (auto &i : toDelete) {
-        i->deleteObject(true, true);
+        // Don't propergate the delete signal as we may delete clones later
+        i->deleteObject(false, false);
     }
 }
 
