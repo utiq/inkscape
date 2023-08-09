@@ -18,6 +18,8 @@
 
 namespace Inkscape::UI::Widget {
 
+// TODO: GTK4: Can we use Gtk::GridView, Gio::ListModel, etc.?
+
 /// Gtk::Grid subclass provides CSS name `menu`
 class PopoverMenuGrid;
 

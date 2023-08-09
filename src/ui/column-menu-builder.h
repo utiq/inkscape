@@ -15,8 +15,9 @@
 #include "ui/widget/popover-menu.h"
 #include "ui/widget/popover-menu-item.h"
 
-namespace Inkscape {
-namespace UI {
+namespace Inkscape::UI {
+
+// TODO: GTK4: Can we use Gtk::GridView? 4.12 has section/headings, so if they can span columns, OK
 
 template <typename SectionData>
 class ColumnMenuBuilder {
@@ -107,6 +108,6 @@ private:
     Gtk::IconSize _icon_size;
 };
 
-}} // namespace
+} // namespace Inkscape::UI
 
 #endif // COLUMN_MENU_BUILDER_INCLUDED
