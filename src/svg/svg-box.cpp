@@ -32,9 +32,9 @@ SVGBox::SVGBox()
 /**
  * Read in the value, may be an array of four
  */
-bool SVGBox::read(const std::string &value)
+bool SVGBox::read(const std::string &value, const Geom::Scale &doc_scale)
 {
-    return fromString(value, "");
+    return fromString(value, "", doc_scale);
 }
 
 /**
@@ -53,13 +53,13 @@ void SVGBox::update(double em, double ex, double width, double height)
  */
 std::string SVGBox::write() const
 {
-    return toString("");
+    return toString("", Geom::Scale(1));
 }
 
 /**
  * Write as specific unit for user display
  */
-std::string SVGBox::toString(const std::string &unit, std::optional<unsigned int> precision, bool add_unit) const
+std::string SVGBox::toString(const std::string &unit, const Geom::Scale &doc_scale, std::optional<unsigned int> precision, bool add_unit) const
 {
     std::string ret = "";
     bool write = false;
@@ -68,7 +68,8 @@ std::string SVGBox::toString(const std::string &unit, std::optional<unsigned int
         SVGLength fallback = _value[FALLBACK(i)];
         if (i == BOX_TOP || (val != fallback) || write) {
             if (unit.size()) {
-                ret = std::string(val.toString(unit, precision, add_unit)) + " " + ret;
+                auto axis_scale = doc_scale[get_scale_axis((BoxSide)i)];
+                ret = std::string(val.toString(unit, axis_scale, precision, add_unit)) + " " + ret;
             } else {
                 ret = std::string(val.write()) + " " + ret;
             }
@@ -82,7 +83,7 @@ std::string SVGBox::toString(const std::string &unit, std::optional<unsigned int
 /**
  * Set the svg box from user input, with a default unit
  */
-bool SVGBox::fromString(const std::string &value, const std::string &unit)
+bool SVGBox::fromString(const std::string &value, const std::string &unit, const Geom::Scale &doc_scale)
 {
     if (!value.size()) return false;
 
@@ -92,7 +93,7 @@ bool SVGBox::fromString(const std::string &value, const std::string &unit)
     // Take item zero
     for (int i = 0; i < 4; i++) {
         if ((i == BOX_TOP || (int)elements.size() >= i+1) && elements[i].size() > 0) {
-            if (!fromString((BoxSide)i, elements[i], unit)) {
+            if (!fromString((BoxSide)i, elements[i], unit, doc_scale)) {
                 return false; // One position failed.
             }
         } else {
@@ -110,14 +111,12 @@ bool SVGBox::fromString(const std::string &value, const std::string &unit)
  * @param side - The side of the box to set
  * @param value - The string value entered by the user
  * @param unit - The default units the context is using
- * @param confine - If true, other sides of the same original value will also change.
+ * @param doc_scale - The document scale factor, for when units are being parsed
  */
-bool SVGBox::fromString(BoxSide side, const std::string &value, const std::string &unit)
+bool SVGBox::fromString(BoxSide side, const std::string &value, const std::string &unit, const Geom::Scale &doc_scale)
 {
-    if (unit.size()) {
-        return _value[side].fromString(value, unit);
-    }
-    return _value[side].read(value.c_str());
+    double axis_scale = doc_scale[get_scale_axis(side)];
+    return _value[side].fromString(value, unit, axis_scale);
 }
 
 /**
@@ -161,8 +160,8 @@ void SVGBox::unset() {
     _is_set = false;
 }
 
-void SVGBox::readOrUnset(gchar const *value) {
-    if (!value || !read(value)) {
+void SVGBox::readOrUnset(gchar const *value, const Geom::Scale &doc_scale) {
+    if (!value || !read(value, doc_scale)) {
         unset();
     }
 }

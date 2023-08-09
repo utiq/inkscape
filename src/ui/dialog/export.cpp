@@ -352,12 +352,7 @@ bool Export::exportVector(
     std::vector<SPItem *> objects = items;
     std::set<std::string> obj_ids;
     std::set<std::string> page_ids;
-    Geom::OptRect page_rect;
     for (auto page : pages) {
-        // Save the first page rect, must be done before everything else
-        if (!page_rect)
-            page_rect = page->getDesktopRect();
-
         if (auto _id = page->getId()) {
             page_ids.insert(std::string(_id));
         }

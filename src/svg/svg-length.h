@@ -77,9 +77,9 @@ public:
     bool isAbsolute();
 
     std::string write() const;
-    std::string toString(const std::string &unit, std::optional<unsigned int> precision = {}, bool add_unit = true) const;
+    std::string toString(const std::string &unit, double doc_scale, std::optional<unsigned int> precision = {}, bool add_unit = true) const;
     double toValue(const std::string &out_unit) const;
-    bool fromString(const std::string &input, const std::string &unit);
+    bool fromString(const std::string &input, const std::string &unit, std::optional<double> scale = {});
 
     // To set 'v' use '='
     void set(Unit u, float v); // Sets computed value based on u and v.

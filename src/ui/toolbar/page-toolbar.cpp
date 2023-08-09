@@ -104,10 +104,11 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
         if (auto page = _document->getPageManager().getSelected()) {
             auto margin = page->getMargin();
             auto unit = _document->getDisplayUnit()->abbr;
-            margin_top->set_value(margin.top().toValue(unit));
-            margin_right->set_value(margin.right().toValue(unit));
-            margin_bottom->set_value(margin.bottom().toValue(unit));
-            margin_left->set_value(margin.left().toValue(unit));
+            auto scale = _document->getDocumentScale();
+            margin_top->set_value(margin.top().toValue(unit) * scale[Geom::Y]);
+            margin_right->set_value(margin.right().toValue(unit) * scale[Geom::X]);
+            margin_bottom->set_value(margin.bottom().toValue(unit) * scale[Geom::Y]);
+            margin_left->set_value(margin.left().toValue(unit) * scale[Geom::X]);
             text_page_bleeds->set_text(page->getBleedLabel());
         }
         margin_popover->set_visible(true);

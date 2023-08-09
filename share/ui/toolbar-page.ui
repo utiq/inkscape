@@ -285,10 +285,9 @@
             <property name="margin-end">5</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">5</property>
-            <property name="overwrite-mode">True</property>
             <property name="placeholder-text" translatable="no">0px</property>
             <property name="adjustment">adjust_margin_right</property>
-            <property name="numeric">True</property>
+            <property name="digits">2</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -303,7 +302,7 @@
             <property name="valign">center</property>
             <property name="placeholder-text" translatable="no">0px</property>
             <property name="adjustment">adjust_margin_top</property>
-            <property name="numeric">True</property>
+            <property name="digits">2</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -319,8 +318,9 @@
             <property name="margin-end">5</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">5</property>
+            <property name="placeholder-text" translatable="no">0px</property>
             <property name="adjustment">adjust_margin_left</property>
-            <property name="numeric">True</property>
+            <property name="digits">2</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -339,7 +339,7 @@
             <property name="margin-bottom">5</property>
             <property name="placeholder-text" translatable="no">0px</property>
             <property name="adjustment">adjust_margin_bottom</property>
-            <property name="numeric">True</property>
+            <property name="digits">2</property>
           </object>
           <packing>
             <property name="left-attach">1</property>

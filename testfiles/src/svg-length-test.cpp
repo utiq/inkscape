@@ -122,11 +122,12 @@ TEST(SvgLengthTest, testReadAbsolute)
 TEST(SvgLengthTest, testToFromString)
 {
     SVGLength len;
-    ASSERT_TRUE(len.fromString("10", "mm"));
-    ASSERT_EQ(len.unit, SVGLength::MM);
-    ASSERT_EQ(len.value, 10);
-    ASSERT_EQ(len.toString("mm"), "10mm");
-    ASSERT_EQ(len.toString("in"), "0.3937008in");
+    ASSERT_TRUE(len.fromString("10", "mm", 3.7795277));
+    ASSERT_EQ(len.unit, SVGLength::NONE);
+    ASSERT_EQ(len.write(), "10");
+    ASSERT_EQ(len.toString("mm", 3.7795277), "10mm");
+    ASSERT_EQ(len.toString("in", 3.7795277), "0.3937008in");
+    ASSERT_EQ(len.toString("", 3.7795277), "37.795277");
 }
 
 struct eq_test_t

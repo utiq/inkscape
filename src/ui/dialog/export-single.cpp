@@ -656,8 +656,12 @@ void SingleExport::onExport()
             }
         }
 
-        if (current_key == SELECTION_PAGE && page_manager.getPageCount() > 1) {
+        if (current_key == SELECTION_PAGE && page_manager.hasPages()) {
             auto pages = getSelectedPages();
+            // A single page won't have a selection UI, so emplace it
+            if (page_manager.getPageCount() == 1) {
+                pages.emplace_back(page_manager.getViewportPage());
+            }
             exportSuccessful = Export::exportVector(omod, copy_doc.get(), filename, false, items, pages);
         } else {
             // To get the right kind of export, we're going to make a page

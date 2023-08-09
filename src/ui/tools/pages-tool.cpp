@@ -248,9 +248,10 @@ bool PagesTool::marginKnotMoved(SPKnot *knot, Geom::Point *ppointer, guint state
         auto axis = (side & 1) ? Geom::X : Geom::Y;
         auto delta = (point - page->getDocumentRect().corner(side))[axis];
         auto value = std::max(0.0, (side + 1) & 2 ? -delta : delta);
+        auto scale = document->getDocumentScale()[axis];
 
         // Set to page and back to to knot to inform confinement.
-        page->setMarginSide(side, value, confine);
+        page->setMarginSide(side, value / scale, confine);
         knot->setPosition(middleOfSide(side, page->getDocumentMargin()) * document->doc2dt(), state);
 
         Inkscape::DocumentUndo::maybeDone(document, "page-margin", ("Adjust page margin"), INKSCAPE_ICON("tool-pages"));

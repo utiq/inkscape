@@ -47,9 +47,9 @@ write_test_t write_tests[7] = {
     {"0", "0"},
     {"1", "1"},
     {"1 1 1 1", "1"},
-    {"1cm", "1cm"},
-    {"4cm 2in", "4cm 2in"},
-    {"7 2 4cm", "7 2 4cm"},
+    {"1cm", "37.795277"},
+    {"4cm 2in", "151.18111 192"},
+    {"7 2 4cm", "7 2 151.18111"},
     {"1,2,3", "1 2 3"},
 };
 read_test_t set_tests[3] = {
@@ -63,7 +63,7 @@ TEST(SvgBoxTest, testRead)
 {
     for (size_t i = 0; i < G_N_ELEMENTS(read_tests); i++) {
         SVGBox box;
-        ASSERT_TRUE(box.read(read_tests[i].str)) << read_tests[i].str;
+        ASSERT_TRUE(box.read(read_tests[i].str, Geom::Scale(1))) << read_tests[i].str;
         ASSERT_EQ(round(box.top().computed), read_tests[i].top) << read_tests[i].str;
         ASSERT_EQ(round(box.right().computed), read_tests[i].right) << read_tests[i].str;
         ASSERT_EQ(round(box.bottom().computed), read_tests[i].bottom) << read_tests[i].str;
@@ -83,7 +83,7 @@ TEST(SvgBoxTest, testWrite)
 {
     for (size_t i = 0; i < G_N_ELEMENTS(write_tests); i++) {
         SVGBox box;
-        ASSERT_TRUE(box.read(write_tests[i].in)) << write_tests[i].in;
+        ASSERT_TRUE(box.read(write_tests[i].in, Geom::Scale(1))) << write_tests[i].in;
         ASSERT_EQ(box.write(), write_tests[i].out) << write_tests[i].in;
     }
 }
@@ -100,8 +100,10 @@ TEST(SvgBoxTest, testSet)
 TEST(SvgBoxTest, testToFromString)
 {
     SVGBox box;
-    ASSERT_TRUE(box.fromString("10mm 5", "mm"));
-    ASSERT_EQ(box.toString("mm"), "10mm 5.0000001mm");
+    ASSERT_TRUE(box.fromString("10mm 5", "mm", Geom::Scale(5)));
+    ASSERT_EQ(box.toString("mm", Geom::Scale(5)), "10mm 5.0000001mm");
+    // This result is mm to px (internal conversion) plus scale test.
+    ASSERT_EQ(box.write(), "7.5590553 3.7795277");
 }
 
 TEST(SvgBoxTest, testConfine)

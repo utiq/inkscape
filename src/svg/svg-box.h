@@ -13,6 +13,7 @@
 #include <glib.h>
 #include <optional>
 #include "svg/svg-length.h"
+#include "2geom/transforms.h"
 
 enum BoxSide {
     BOX_TOP,
@@ -25,17 +26,17 @@ class SVGBox {
 public:
     SVGBox();
 
-    bool read(const std::string &value);
+    bool read(const std::string &value, const Geom::Scale &doc_scale);
     void unset();
-    void readOrUnset(gchar const *str);
+    void readOrUnset(gchar const *str, const Geom::Scale &doc_scale);
     void update(double em, double ex, double width, double height);
 
     operator bool() const { return _is_set; }
 
     std::string write() const;
-    std::string toString(const std::string &unit, std::optional<unsigned int> precision = {}, bool add_unit = true) const;
-    bool fromString(const std::string &value, const std::string &unit);
-    bool fromString(BoxSide side, const std::string &value, const std::string &unit);
+    std::string toString(const std::string &unit, const Geom::Scale &doc_scale, std::optional<unsigned int> precision = {}, bool add_unit = true) const;
+    bool fromString(const std::string &value, const std::string &unit, const Geom::Scale &doc_scale);
+    bool fromString(BoxSide side, const std::string &value, const std::string &unit, const Geom::Scale &doc_scale);
     bool isZero() const;
 
     void set(BoxSide side, double value, bool confine = false);
@@ -49,6 +50,8 @@ public:
     SVGLength right() const { return _value[BOX_RIGHT] ? _value[BOX_RIGHT] : top(); }
     SVGLength bottom() const { return _value[BOX_BOTTOM] ? _value[BOX_BOTTOM] : top(); }
     SVGLength left() const { return _value[BOX_LEFT] ? _value[BOX_LEFT] : right(); }
+
+    static Geom::Dim2 get_scale_axis(BoxSide side) { return (side & 1) ? Geom::X : Geom::Y; }
 private:
     bool _is_set = false;
     

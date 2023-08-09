@@ -80,10 +80,10 @@ void SPPage::set(SPAttr key, const gchar *value)
             this->height.readOrUnset(value);
             break;
         case SPAttr::PAGE_MARGIN:
-            this->margin.readOrUnset(value);
+            this->margin.readOrUnset(value, document->getDocumentScale());
             break;
         case SPAttr::PAGE_BLEED:
-            this->bleed.readOrUnset(value);
+            this->bleed.readOrUnset(value, document->getDocumentScale());
             break;
         case SPAttr::PAGE_SIZE_NAME:
             this->_size_label = value ? std::string(value) : "";
@@ -150,14 +150,14 @@ Geom::Translate SPPage::getDesktopAffine() const
  */
 Geom::Rect SPPage::getDocumentMargin() const
 {
-    auto rect = getDocumentRect();
+    auto rect = getRect();
     rect.setTop(rect.top() + margin.top().computed);
     rect.setLeft(rect.left() + margin.left().computed);
     rect.setBottom(rect.bottom() - margin.bottom().computed);
     rect.setRight(rect.right() - margin.right().computed);
     if (rect.hasZeroArea())
         return getDocumentRect(); // Cancel!
-    return rect;
+    return rect * document->getDocumentScale();
 }
 
 Geom::Rect SPPage::getDesktopMargin() const
@@ -170,14 +170,14 @@ Geom::Rect SPPage::getDesktopMargin() const
  */
 Geom::Rect SPPage::getDocumentBleed() const
 {
-    auto rect = getDocumentRect();
+    auto rect = getRect();
     rect.setTop(rect.top() - bleed.top().computed);
     rect.setLeft(rect.left() - bleed.left().computed);
     rect.setBottom(rect.bottom() + bleed.bottom().computed);
     rect.setRight(rect.right() + bleed.right().computed);
     if (rect.hasZeroArea())
         return getDocumentRect(); // Cancel!
-    return rect;
+    return rect * document->getDocumentScale();
 }
 
 Geom::Rect SPPage::getDesktopBleed() const
@@ -229,6 +229,7 @@ void SPPage::setRect(Geom::Rect rect)
  */
 void SPPage::setDocumentRect(Geom::Rect rect, bool add_margins)
 {
+    rect *= document->getDocumentScale().inverse();
     if (add_margins) {
         // Add margins to rectangle.
         rect.setTop(rect.top() - margin.top().computed);
@@ -236,7 +237,7 @@ void SPPage::setDocumentRect(Geom::Rect rect, bool add_margins)
         rect.setBottom(rect.bottom() + margin.bottom().computed);
         rect.setRight(rect.right() + margin.right().computed);
     }
-    setRect(rect * document->getDocumentScale().inverse());
+    setRect(rect);
 }
 
 /**
@@ -267,7 +268,7 @@ void SPPage::setSize(double width, double height)
  */
 void SPPage::setMargin(const std::string &value)
 {
-    this->margin.fromString(value, document->getDisplayUnit()->abbr);
+    this->margin.fromString(value, document->getDisplayUnit()->abbr, document->getDocumentScale());
     this->updateRepr();
 }
 
@@ -276,7 +277,7 @@ void SPPage::setMargin(const std::string &value)
  */
 void SPPage::setBleed(const std::string &value)
 {
-    this->bleed.fromString(value, document->getDisplayUnit()->abbr);
+    this->bleed.fromString(value, document->getDisplayUnit()->abbr, document->getDocumentScale());
     this->updateRepr();
 }
 
@@ -289,7 +290,7 @@ double SPPage::getMarginSide(int side)
 }
 
 /**
- * Set the margin at this side of the box.
+ * Set the margin at this side of the box in user units.
  */
 void SPPage::setMarginSide(int side, double value, bool confine)
 {
@@ -300,13 +301,17 @@ void SPPage::setMarginSide(int side, double value, bool confine)
     }
     this->updateRepr();
 }
+/**
+ * Set the margin at this side in display units.
+ */
 void SPPage::setMarginSide(int side, const std::string &value, bool confine)
 {
+    auto scale = document->getDocumentScale();
     auto unit = document->getDisplayUnit()->abbr;
     if (confine && !margin) {
-        this->margin.fromString(value, unit);
+        this->margin.fromString(value, unit, scale);
     } else {
-        this->margin.fromString((BoxSide)side, value, unit);
+        this->margin.fromString((BoxSide)side, value, unit, scale);
     }
     this->updateRepr();
 }
@@ -315,16 +320,18 @@ std::string SPPage::getMarginLabel() const
 {
     if (!margin || margin.isZero())
         return "";
+    auto scale = document->getDocumentScale();
     auto unit = document->getDisplayUnit()->abbr;
-    return margin.toString(unit, 2);
+    return margin.toString(unit, scale, 2);
 }
 
 std::string SPPage::getBleedLabel() const
 {
     if (!bleed || bleed.isZero())
         return "";
+    auto scale = document->getDocumentScale();
     auto unit = document->getDisplayUnit()->abbr;
-    return bleed.toString(unit, 2);
+    return bleed.toString(unit, scale, 2);
 }
 
 /**
@@ -626,11 +633,12 @@ void SPPage::copyFrom(SPPage *page)
 {
     this->_size_label = page->_size_label;
     if (auto margin = page->getMargin()) {
-        this->margin.read(margin.write());
+        this->margin.read(margin.write(), document->getDocumentScale());
     }
     if (auto bleed = page->getBleed()) {
-        this->bleed.read(bleed.write());
+        this->bleed.read(bleed.write(), document->getDocumentScale());
     }
+    this->updateRepr();
 }
 
 void SPPage::set_guides_visible(bool show) {

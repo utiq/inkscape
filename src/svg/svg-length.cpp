@@ -455,16 +455,17 @@ std::string SVGLength::write() const
  * @param out_unit - The unit to convert the computed px into
  * @returns a string containing the value in the given units
  */
-std::string SVGLength::toString(const std::string &out_unit, std::optional<unsigned int> precision, bool add_unit) const
+std::string SVGLength::toString(const std::string &out_unit, double doc_scale, std::optional<unsigned int> precision, bool add_unit) const
 {
     if (unit == SVGLength::PERCENT) {
         return write();
     }
+    double value = toValue(out_unit) * doc_scale;
     Inkscape::SVGOStringStream os;
     if (precision) {
-        os << Inkscape::Util::format_number(toValue(out_unit), *precision);
+        os << Inkscape::Util::format_number(value, *precision);
     } else {
-        os << toValue(out_unit);
+        os << value;
     }
     if (add_unit)
         os << out_unit;
@@ -484,12 +485,23 @@ double SVGLength::toValue(const std::string &out_unit) const
 
 /**
  * Read from user input, any non-unitised value is converted internally.
+ *
+ * @param input - The string input
+ * @param default_unit - The unit used by the display. Set to empty string for xml reading.
+ * @param doc_scale - The scale values with units should apply to make those units correct for this document.
  */
-bool SVGLength::fromString(const std::string &input, const std::string &default_unit)
+bool SVGLength::fromString(const std::string &input, const std::string &default_unit, std::optional<double> doc_scale)
 {
-    if (read((input + default_unit).c_str()))
-        return true;
-    return read(input.c_str());
+    if (!read((input + default_unit).c_str()))
+        if (!read(input.c_str()))
+            return false;
+    // Rescale real units to document, since user input is not scaled
+    if (doc_scale && unit != SVGLength::PERCENT && unit != SVGLength::NONE) {
+        value = computed;
+        unit = SVGLength::NONE;
+        scale(1 / *doc_scale);
+    }
+    return true;
 }
 
 void SVGLength::set(SVGLength::Unit u, float v)
