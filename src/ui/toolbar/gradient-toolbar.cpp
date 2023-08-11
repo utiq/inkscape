@@ -791,9 +791,8 @@ GradientToolbar::add_stop()
         return;
     }
 
-    auto ev = _desktop->getEventContext();
-    if (auto rc = SP_GRADIENT_CONTEXT(ev)) {
-        rc->add_stops_between_selected_stops();
+    if (auto gt = dynamic_cast<Tools::GradientTool*>(_desktop->getEventContext())) {
+        gt->add_stops_between_selected_stops();
     }
 }
 
@@ -855,9 +854,9 @@ GradientToolbar::linked_changed()
  * Called every time the current tool changes by signal emission.
  */
 void
-GradientToolbar::check_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
+GradientToolbar::check_ec(SPDesktop *desktop, Tools::ToolBase *tool)
 {
-    if (SP_IS_GRADIENT_CONTEXT(ec)) {
+    if (dynamic_cast<Tools::GradientTool const *>(tool)) {
         Inkscape::Selection *selection = desktop->getSelection();
         SPDocument *document = desktop->getDocument();
 

@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_GRADIENT_CONTEXT_H__
-#define __SP_GRADIENT_CONTEXT_H__
-
-/*
+/** @file
  * Gradient drawing and editing tool
- *
+ */
+/*
  * Authors:
  *   bulia byak <buliabyak@users.sf.net>
  *   Johan Engelen <j.b.c.engelen@ewi.utwente.nl>
@@ -16,21 +14,16 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_UI_TOOLS_GRADIENT_TOOL_H
+#define INKSCAPE_UI_TOOLS_GRADIENT_TOOL_H
+
 #include <cstddef>
 #include <sigc++/sigc++.h>
 #include "ui/tools/tool-base.h"
 
-#define SP_GRADIENT_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::GradientTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_GRADIENT_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::GradientTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
+namespace Inkscape { class Selection; }
 
-class GrDrag;
-
-namespace Inkscape {
-
-class Selection;
-
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class GradientTool : public ToolBase
 {
@@ -38,33 +31,33 @@ public:
     GradientTool(SPDesktop *desktop);
     ~GradientTool() override;
 
-    bool root_handler(CanvasEvent const &event) override;
     void add_stops_between_selected_stops();
 
-    void select_next();
-    void select_prev();
+protected:
+    bool root_handler(CanvasEvent const &event) override;
 
 private:
     Geom::Point mousepoint_doc; // stores mousepoint when over_line in doc coords
     Geom::Point origin;
-    bool cursor_addnode;
+    bool cursor_addnode = false;
+    bool dragging = false;
 
-    sigc::connection *selcon;
-    sigc::connection *subselcon;
+    auto_connection selcon;
+    auto_connection subselcon;
 
-    void selection_changed(Inkscape::Selection *);
+    void select_next();
+    void select_prev();
+
+    void selection_changed();
     void simplify(double tolerance);
-    void add_stop_near_point(SPItem *item, Geom::Point mouse_p, guint32 etime);
-    void drag(Geom::Point const pt, guint state, guint32 etime);
-    SPItem *is_over_curve(Geom::Point event_p);
+    void add_stop_near_point(SPItem *item, Geom::Point const &mouse_p);
+    void drag(Geom::Point const &pt, uint32_t etime);
+    SPItem *is_over_curve(Geom::Point const &event_p);
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif
-
+#endif // INKSCAPE_UI_TOOLS_GRADIENT_TOOL_H
 
 /*
   Local Variables:
