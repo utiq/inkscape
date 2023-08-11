@@ -47,17 +47,20 @@ class GestureMultiPress;
 class Grid;
 class Label;
 class ListStore;
-class Menu;
 class Paned;
 class ScrolledWindow;
 class Widget;
-}
+} // namespace Gtk
 
 class SPFilter;
 class SPFilterPrimitive;
 
-namespace Inkscape {
-namespace UI {
+namespace Inkscape::UI {
+
+namespace Widget {
+class PopoverMenu;
+} // namespace Widget
+
 namespace Dialog {
 
 class EntryAttr;
@@ -72,10 +75,11 @@ public:
     ~FilterEffectsDialog() override;
 
     void set_attrs_locked(const bool);
+
 protected:
     void show_all_vfunc() override;
-private:
 
+private:
     void documentReplaced() override;
     void selectionChanged(Inkscape::Selection *selection) override;
     void selectionModified(Inkscape::Selection *selection, guint flags) override;
@@ -125,6 +129,7 @@ private:
             Gtk::TreeModelColumn<int> count;
         };
 
+        std::unique_ptr<UI::Widget::PopoverMenu> create_menu();
         void on_filter_selection_changed();
         void on_name_edited(const Glib::ustring&, const Glib::ustring&);
         bool on_filter_move(const Glib::RefPtr<Gdk::DragContext>& /*context*/, int x, int y, guint /*time*/);
@@ -132,7 +137,7 @@ private:
         void selection_toggled(Gtk::TreeIter iter, bool toggle);
 
         void update_counts();
-        Gtk::EventSequenceState filter_list_click_released(Gtk::GestureMultiPress &click,
+        Gtk::EventSequenceState filter_list_click_released(Gtk::GestureMultiPress const &click,
                                                            int n_press, double x, double y);
         void remove_filter();
         void duplicate_filter();
@@ -149,7 +154,7 @@ private:
         Gtk::Button& _dup;
         Gtk::Button& _del;
         Gtk::Button& _select;
-        Gtk::Menu& _menu;
+        std::unique_ptr<UI::Widget::PopoverMenu> _menu;
         sigc::signal<void ()> _signal_filter_changed;
         std::unique_ptr<Inkscape::XML::SignalObserver> _observer;
         sigc::signal<void ()> _signal_filters_updated;
@@ -212,8 +217,7 @@ private:
         sigc::signal<void ()>& signal_primitive_changed();
 
         void update();
-        void set_menu(Gtk::Widget      &parent,
-                      sigc::slot<void ()>  dup,
+        void set_menu(sigc::slot<void ()>  dup,
                       sigc::slot<void ()>  rem);
 
         SPFilterPrimitive* get_selected();
@@ -255,7 +259,7 @@ private:
         Glib::RefPtr<Gtk::ListStore> _model;
         PrimitiveColumns _columns;
         CellRendererConnection _connection_cell;
-        Gtk::Menu *_primitive_menu;
+        std::unique_ptr<UI::Widget::PopoverMenu> _primitive_menu;
         Glib::RefPtr<Pango::Layout> _vertical_layout;
         int _in_drag;
         SPFilterPrimitive* _drag_prim;
@@ -358,8 +362,8 @@ private:
 };
 
 } // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+
+} // namespace Inkscape::UI
 
 #endif // INKSCAPE_UI_DIALOG_FILTER_EFFECTS_H
 

@@ -123,7 +123,7 @@ std::unique_ptr<UI::Widget::PopoverMenu> ToolToolbar::makeContextMenu(InkscapeWi
         icon_name = "preferences-system";
     }
 
-    auto &item = *Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("Open tool preferences"),
+    auto &item = *Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("Open tool preferences"), false,
                                                                  icon_name);
     item.signal_activate().connect([=]
     {
@@ -131,7 +131,7 @@ std::unique_ptr<UI::Widget::PopoverMenu> ToolToolbar::makeContextMenu(InkscapeWi
         _context_menu_tool_name.clear();
     });
 
-    auto menu = std::make_unique<UI::Widget::PopoverMenu>();
+    auto menu = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_BOTTOM);
     menu->append(item);
     return menu;
 }
@@ -142,8 +142,8 @@ void ToolToolbar::showContextMenu(InkscapeWindow * const window,
     _context_menu_tool_name = tool_name;
     // Point to the Image inside Button, not the entire Button including padding
     _context_menu->popup_at(button,
-                            button.get_width () *  1./4,
-                            button.get_height() * -1./2);
+                            button.get_width () * 1./2,
+                            button.get_height() * 1./2);
 }
 
 /**

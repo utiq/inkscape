@@ -24,7 +24,8 @@
 
 namespace Inkscape::UI::Widget {
 
-PopoverMenuItem::PopoverMenuItem(Glib::ustring const &label_with_mnemonic,
+PopoverMenuItem::PopoverMenuItem(Glib::ustring const &text,
+                                 bool const mnemonic,
                                  Glib::ustring const &icon_name,
                                  Gtk::IconSize const icon_size,
                                  bool const popdown_on_activate)
@@ -38,9 +39,8 @@ PopoverMenuItem::PopoverMenuItem(Glib::ustring const &label_with_mnemonic,
     Gtk::Label *label = nullptr;
     Gtk::Image *image = nullptr;
 
-    if (!label_with_mnemonic.empty()) {
-        label = Gtk::make_managed<Gtk::Label>(label_with_mnemonic,
-                                              Gtk::ALIGN_START, Gtk::ALIGN_CENTER, true);
+    if (!text.empty()) {
+        label = Gtk::make_managed<Gtk::Label>(text, Gtk::ALIGN_START, Gtk::ALIGN_CENTER, mnemonic);
     }
 
     if (!icon_name.empty()) {

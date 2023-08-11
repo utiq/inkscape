@@ -767,6 +767,12 @@ combobox.flat-combobox button {
     min-height: 50px;
 }
 
+/* Defeat standard darker background color on views: use popoverʼs background */
+popover.background.filter-effects-info textview,
+popover.background.filter-effects-info textview > text {
+    background: none;
+}
+
 .dark .symbolsoverlay iconview:not(:selected) {
     background-color: #f0f0f0; /* bright background color for typically black symbols */
     /* background-color: @theme_fg_color; - this doesn't work for some themes (like MonoThemeDark) */

@@ -69,7 +69,8 @@ public:
             _col = 0;
         }
 
-        auto const item = Gtk::make_managed<Widget::PopoverMenuItem>(label, icon_name, _icon_size);
+        auto const item = Gtk::make_managed<Widget::PopoverMenuItem>(label, true,
+                                                                     icon_name, _icon_size);
         if (!customtooltip) {
             item->set_tooltip_markup(tooltip);
         }

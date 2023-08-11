@@ -14,6 +14,7 @@
 #ifndef SEEN_UI_WIDGET_POPOVER_MENU_H
 #define SEEN_UI_WIDGET_POPOVER_MENU_H
 
+#include <vector>
 #include <gtkmm/popover.h>
 
 namespace Inkscape::UI::Widget {
@@ -30,9 +31,9 @@ class PopoverMenuItem;
 /// for Menus, including grid and activation functionality.
 class PopoverMenu final : public Gtk::Popover {
 public:
-    /// Construct popover with `.menu` CSS class, set to be
-    /// positioned below the :relative-to/popup_at() widget
-    [[nodiscard]] PopoverMenu();
+    /// Create popover with CSS classes `.menu` & `.popover-menu`,
+    /// positioned as requested vs. relative-to/popup_at() widget.
+    [[nodiscard]] PopoverMenu(Gtk::PositionType const position);
 
     /// Add child at pos as per Gtk::Menu::attach()
     void attach(Gtk::Widget &child,
@@ -43,9 +44,13 @@ public:
     /// Remove/unparent added child.
     void remove(Gtk::Widget &child);
 
-    /// Replaces Gtk::Menu::popup_at_pointer
+    /// Replace Gtk::Menu::popup_at_pointer. If x or y
+    /// offsets != 0, :pointing-to is set to {x,y,1,1}
     void popup_at(Gtk::Widget &relative_to,
                   int x_offset = 0, int y_offset = 0);
+
+    /// Get the list of menu items (children of our grid)
+    [[nodiscard]] std::vector<Gtk::Widget *> get_items();
 
 private:
     PopoverMenuGrid &_grid;

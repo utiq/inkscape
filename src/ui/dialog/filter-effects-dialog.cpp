@@ -23,6 +23,7 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+#include <sigc++/functors/mem_fun.h>
 #include <glibmm/convert.h>
 #include <glibmm/i18n.h>
 #include <glibmm/main.h>
@@ -31,7 +32,6 @@
 #include <glibmm/ustring.h>
 #include <gdkmm/display.h>
 #include <gdkmm/general.h>
-// #include <gdkmm/pixbufanimation.h>
 #include <gdkmm/rgba.h>
 #include <gdkmm/seat.h>
 #include <gtkmm/button.h>
@@ -41,7 +41,6 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
-#include <gtkmm/menuitem.h>
 #include <gtkmm/paned.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/scrolledwindow.h>
@@ -86,6 +85,8 @@
 #include "ui/widget/completion-popup.h"
 #include "ui/widget/custom-tooltip.h"
 #include "ui/widget/filter-effect-chooser.h"
+#include "ui/widget/popover-menu.h"
+#include "ui/widget/popover-menu-item.h"
 #include "ui/widget/spinbutton.h"
 #include "ui/widget/spin-scale.h"
 
@@ -1342,22 +1343,18 @@ FilterEffectsDialog::LightSourceControl* FilterEffectsDialog::Settings::add_ligh
     return ls;
 }
 
-static Gtk::Menu * create_popup_menu(Gtk::Widget& parent,
-                                     sigc::slot<void ()> dup,
-                                     sigc::slot<void ()> rem)
+static std::unique_ptr<UI::Widget::PopoverMenu> create_popup_menu(sigc::slot<void ()> dup,
+                                                                  sigc::slot<void ()> rem)
 {
-    auto const menu = Gtk::make_managed<Gtk::Menu>();
+    auto menu = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_RIGHT);
 
-    auto mi = Gtk::make_managed<Gtk::MenuItem>(_("_Duplicate"), true);
-    mi->signal_activate().connect(dup);
-    mi->set_visible(true);
+    auto mi = Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("_Duplicate"), true);
+    mi->signal_activate().connect(std::move(dup));
     menu->append(*mi);
 
-    mi = Gtk::make_managed<Gtk::MenuItem>(_("_Remove"), true);
+    mi = Gtk::make_managed<UI::Widget::PopoverMenuItem>(_("_Remove"), true);
+    mi->signal_activate().connect(std::move(rem));
     menu->append(*mi);
-    mi->signal_activate().connect(rem);
-    mi->set_visible(true);
-    menu->accelerate(parent);
 
     return menu;
 }
@@ -1372,7 +1369,7 @@ FilterEffectsDialog::FilterModifier::FilterModifier(FilterEffectsDialog& d, Glib
          _dup(get_widget<Gtk::Button>(_builder, "btn-dup")),
          _del(get_widget<Gtk::Button>(_builder, "btn-del")),
          _select(get_widget<Gtk::Button>(_builder, "btn-select")),
-         _menu(get_widget<Gtk::Menu>(_builder, "filters-ctx-menu")),
+         _menu(create_menu()),
          _observer(std::make_unique<Inkscape::XML::SignalObserver>())
 {
     _filters_model = Gtk::ListStore::create(_columns);
@@ -1410,16 +1407,6 @@ FilterEffectsDialog::FilterModifier::FilterModifier(FilterEffectsDialog& d, Glib
 
     Controller::add_click(_list, {}, // no pressed handler,
         sigc::mem_fun(*this, &FilterModifier::filter_list_click_released), Controller::Button::right);
-
-    // connect handlers to context menu items
-    auto&& items = _menu.get_children();
-    auto funcs = { &FilterModifier::duplicate_filter, &FilterModifier::remove_filter, &FilterModifier::rename_filter, &FilterModifier::select_filter_elements };
-    int index = 0;
-    for (auto fn : funcs) {
-        static_cast<Gtk::MenuItem*>(items.at(index++))->signal_activate().connect([=](){
-            (this->*fn)();
-        });
-    }
 
     _list.get_selection()->signal_changed().connect(sigc::mem_fun(*this, &FilterModifier::on_filter_selection_changed));
     _observer->signal_changed().connect(signal_filter_changed().make_slot());
@@ -1465,6 +1452,22 @@ void FilterEffectsDialog::FilterModifier::update_selection(Selection *sel)
     }
     update_counts();
     _signal_filters_updated.emit();
+}
+
+std::unique_ptr<UI::Widget::PopoverMenu> FilterEffectsDialog::FilterModifier::create_menu()
+{
+    auto menu = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_BOTTOM);
+    auto append = [&](Glib::ustring const &text, auto const mem_fun)
+    {
+        auto &item = *Gtk::make_managed<UI::Widget::PopoverMenuItem>(text, true);
+        item.signal_activate().connect(sigc::mem_fun(*this, mem_fun));
+        menu->append(item);
+    };
+    append(_("_Duplicate"            ), &FilterModifier::duplicate_filter      );
+    append(_("_Remove"               ), &FilterModifier::remove_filter         );
+    append(_("R_ename"               ), &FilterModifier::rename_filter         );
+    append(_("Select Filter Elements"), &FilterModifier::select_filter_elements);
+    return menu;
 }
 
 void FilterEffectsDialog::FilterModifier::on_filter_selection_changed()
@@ -1633,15 +1636,17 @@ void FilterEffectsDialog::FilterModifier::select_filter(const SPFilter* filter)
     }
 }
 
-Gtk::EventSequenceState FilterEffectsDialog::FilterModifier::filter_list_click_released(Gtk::GestureMultiPress &click,
-                                                                                        int /*n_press*/, double /*x*/, double /*y*/)
+Gtk::EventSequenceState
+FilterEffectsDialog::FilterModifier::filter_list_click_released(Gtk::GestureMultiPress const & /*click*/,
+                                                                int /*n_press*/,
+                                                                double const x, double const y)
 {
     const bool sensitive = get_selected_filter() != nullptr;
-    auto items = _menu.get_children();
-    items[0]->set_sensitive(sensitive);
-    items[1]->set_sensitive(sensitive);
-    items[3]->set_sensitive(sensitive);
-    _menu.popup_at_pointer(Controller::get_last_event(click));
+    auto const items = _menu->get_items();
+    items.at(0)->set_sensitive(sensitive);
+    items.at(1)->set_sensitive(sensitive);
+    items.at(3)->set_sensitive(sensitive);
+    _menu->popup_at(_list, x, y);
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
@@ -1920,24 +1925,22 @@ void FilterEffectsDialog::PrimitiveList::update()
                // column headers.  Input type text height determined in init_text() by measuring longest
                // string. Column header height determined by mapping y coordinate of visible
                // rectangle to widget coordinates.
-                       Gdk::Rectangle vis;
-                       int vis_x, vis_y;
+               Gdk::Rectangle vis;
+               int vis_x, vis_y;
                get_visible_rect(vis);
                convert_tree_to_widget_coords(vis.get_x(), vis.get_y(), vis_x, vis_y);
-                       set_size_request(width, _input_type_height + 2 + vis_y);
+               set_size_request(width, _input_type_height + 2 + vis_y);
         }
-    }
-    else {
+    } else {
         _dialog._primitive_box->set_sensitive(false);
         set_size_request(-1, -1);
     }
 }
 
-void FilterEffectsDialog::PrimitiveList::set_menu(Gtk::Widget& parent,
-                                                  sigc::slot<void ()> dup,
+void FilterEffectsDialog::PrimitiveList::set_menu(sigc::slot<void ()> dup,
                                                   sigc::slot<void ()> rem)
 {
-    _primitive_menu = create_popup_menu(parent, dup, rem);
+    _primitive_menu = create_popup_menu(std::move(dup), std::move(rem));
 }
 
 SPFilterPrimitive* FilterEffectsDialog::PrimitiveList::get_selected()
@@ -2324,8 +2327,10 @@ static std::pair<int, int> widget_to_bin_window(Gtk::TreeView const &tree_view, 
     return {bx, by};
 }
 
-Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
-                                                                             int /*n_press*/, double const wx, double const wy)
+Gtk::EventSequenceState
+FilterEffectsDialog::PrimitiveList::on_click_pressed(Gtk::GestureMultiPress const & /*click*/,
+                                                     int /*n_press*/,
+                                                     double const wx, double const wy)
 {
     Gtk::TreePath path;
     Gtk::TreeViewColumn* col;
@@ -2408,8 +2413,10 @@ void FilterEffectsDialog::PrimitiveList::on_motion_motion(GtkEventControllerMoti
     queue_draw();
 }
 
-Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_released(Gtk::GestureMultiPress const &click,
-                                                                              int /*n_press*/, double const wx, double const wy)
+Gtk::EventSequenceState
+FilterEffectsDialog::PrimitiveList::on_click_released(Gtk::GestureMultiPress const &click,
+                                                      int /*n_press*/,
+                                                      double const wx, double const wy)
 {
     auto const [x, y] = widget_to_bin_window(*this, wx, wy);
     SPFilterPrimitive *prim = get_selected(), *target;
@@ -2512,10 +2519,8 @@ Gtk::EventSequenceState FilterEffectsDialog::PrimitiveList::on_click_released(Gt
 
     if (click.get_current_button() == 3) {
         const bool sensitive = get_selected() != nullptr;
-        auto items = _primitive_menu->get_children();
-        items[0]->set_sensitive(sensitive);
-        items[1]->set_sensitive(sensitive);
-        _primitive_menu->popup_at_pointer(Controller::get_last_event(click));
+        _primitive_menu->set_sensitive(sensitive);
+        _primitive_menu->popup_at(*this, wx + 4, wy);
         return Gtk::EVENT_SEQUENCE_CLAIMED;
     }
 
@@ -2881,8 +2886,8 @@ FilterEffectsDialog::FilterEffectsDialog()
     });
 
     _add_primitive.signal_clicked().connect(sigc::mem_fun(*this, &FilterEffectsDialog::add_primitive));
-    _primitive_list.set_menu(*this, sigc::mem_fun(*this, &FilterEffectsDialog::duplicate_primitive),
-                                    sigc::mem_fun(_primitive_list, &PrimitiveList::remove_selected));
+    _primitive_list.set_menu(sigc::mem_fun(*this, &FilterEffectsDialog::duplicate_primitive),
+                             sigc::mem_fun(_primitive_list, &PrimitiveList::remove_selected));
 
     get_widget<Gtk::Button>(_builder, "new-filter").signal_clicked().connect([=](){ _filter_modifier.add_filter(); });
     pack_start(_main_grid);

@@ -41,7 +41,7 @@ public:
     }
 };
 
-PopoverMenu::PopoverMenu()
+PopoverMenu::PopoverMenu(Gtk::PositionType const position)
     : Glib::ObjectBase{"PopoverMenu"}
     , Gtk::Popover{}
     , _grid{*Gtk::make_managed<PopoverMenuGrid>()}
@@ -49,7 +49,7 @@ PopoverMenu::PopoverMenu()
     auto const style_context = get_style_context();
     style_context->add_class("popover-menu");
     style_context->add_class("menu");
-    set_position(Gtk::POS_BOTTOM);
+    set_position(position);
     add(_grid);
 
     // FIXME: Initially focused item is sometimes wrong on first popup. GTK bug?
@@ -90,14 +90,16 @@ void PopoverMenu::popup_at(Gtk::Widget &relative_to,
     set_relative_to(relative_to);
 
     if (x_offset != 0 || y_offset != 0) {
-        auto pointing_to = relative_to.get_allocation();
-        pointing_to.set_x(x_offset);
-        pointing_to.set_y(y_offset);
-        set_pointing_to(pointing_to);
+        set_pointing_to({x_offset, y_offset, 1, 1});
     }
 
     show_all_children();
     popup();
+}
+
+std::vector<Gtk::Widget *> PopoverMenu::get_items()
+{
+    return _grid.get_children();
 }
 
 void PopoverMenu::unset_items_focus_hover(Gtk::Widget * const except_active)

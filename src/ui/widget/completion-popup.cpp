@@ -20,6 +20,7 @@ CompletionPopup::CompletionPopup() :
     _builder(create_builder("completion-box.glade")),
     _search(get_widget<Gtk::SearchEntry>(_builder, "search")),
     _button(get_widget<Gtk::MenuButton>(_builder, "menu-btn")),
+    _popover_menu{Gtk::POS_BOTTOM},
     _completion(get_object<Gtk::EntryCompletion>(_builder, "completion"))
 {
     _popover_menu.show_all_children();

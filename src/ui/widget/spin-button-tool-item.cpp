@@ -227,7 +227,7 @@ static std::unique_ptr<UI::Widget::PopoverMenu> numeric_menu{};
  */
 void SpinButtonToolItem::create_numeric_menu()
 {
-    numeric_menu = std::make_unique<UI::Widget::PopoverMenu>();
+    numeric_menu = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_BOTTOM);
 
     // Get values for the adjustment
     auto adj = _btn->get_adjustment();

@@ -2,43 +2,6 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkMenu" id="filters-ctx-menu">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="reserve-toggle-size">False</property>
-    <child>
-      <object class="GtkMenuItem" id="item-duplicate">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">_Duplicate</property>
-        <property name="use-underline">True</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="item-remove">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">_Remove</property>
-        <property name="use-underline">True</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="item-rename">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">R_ename</property>
-        <property name="use-underline">True</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="item-select">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Select filter elements</property>
-        <property name="use-underline">True</property>
-      </object>
-    </child>
-  </object>
   <object class="GtkPopover" id="gen-settings">
     <property name="width-request">300</property>
     <property name="can-focus">False</property>
@@ -91,12 +54,12 @@
     <property name="width-request">300</property>
     <property name="height-request">350</property>
     <property name="can-focus">False</property>
-    <property name="margin">5</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
+        <property name="margin">5</property>
         <property name="spacing">3</property>
         <child>
           <object class="GtkScrolledWindow" id="filter-wnd">
@@ -235,12 +198,12 @@
   <object class="GtkPopover" id="info-popover">
     <property name="width-request">300</property>
     <property name="can-focus">False</property>
-    <property name="margin">5</property>
     <child>
       <!-- n-columns=2 n-rows=4 -->
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin">5</property>
         <property name="column-spacing">5</property>
         <child>
           <object class="GtkImage" id="effect-icon">
@@ -298,14 +261,11 @@
             <property name="width">2</property>
           </packing>
         </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
       </object>
     </child>
+    <style>
+      <class name="filter-effects-info" />
+    </style>
   </object>
   <!-- n-columns=3 n-rows=4 -->
   <object class="GtkGrid" id="main">
