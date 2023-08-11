@@ -38,10 +38,9 @@ LPELineSegment::LPELineSegment(LivePathEffectObject *lpeobject) :
 
 LPELineSegment::~LPELineSegment() = default;
 
-void
-LPELineSegment::doBeforeEffect (SPLPEItem const* lpeitem)
+void LPELineSegment::doBeforeEffect(SPLPEItem const *lpeitem)
 {
-    Inkscape::UI::Tools::lpetool_get_limiting_bbox_corners(lpeitem->document, bboxA, bboxB);
+    std::tie(bboxA, bboxB) = UI::Tools::lpetool_get_limiting_bbox_corners(lpeitem->document);
 }
 
 Geom::PathVector

@@ -521,9 +521,9 @@ static void spdc_check_for_and_apply_waiting_LPE(FreehandBase *dc, SPItem *item,
             Effect::createAndApply(dc->waiting_LPE_type, dc->getDesktop()->getDocument(), item);
             dc->waiting_LPE_type = INVALID_LPE;
 
-            if (SP_IS_LPETOOL_CONTEXT(dc)) {
+            if (auto lc = SP_LPETOOL_CONTEXT(dc)) {
                 // since a geometric LPE was applied, we switch back to "inactive" mode
-                lpetool_context_switch_mode(SP_LPETOOL_CONTEXT(dc), INVALID_LPE);
+                lc->switch_mode(INVALID_LPE);
             }
         }
         if (SP_IS_PEN_CONTEXT(dc)) {

@@ -202,7 +202,7 @@ LPEToolbar::mode_changed(int mode)
     using namespace Inkscape::LivePathEffect;
 
     ToolBase *ec = _desktop->event_context;
-    if (!SP_IS_LPETOOL_CONTEXT(ec)) {
+    if (!SP_LPETOOL_CONTEXT(ec)) {
         return;
     }
 
@@ -214,7 +214,7 @@ LPEToolbar::mode_changed(int mode)
         EffectType type = lpesubtools[mode].type;
 
         LpeTool *lc = SP_LPETOOL_CONTEXT(_desktop->event_context);
-        bool success = lpetool_try_construction(lc, type);
+        bool success = UI::Tools::lpetool_try_construction(lc->getDesktop(), type);
         if (success) {
             // since the construction was already performed, we set the state back to inactive
             _mode_buttons[0]->set_active();
@@ -240,9 +240,8 @@ LPEToolbar::toggle_show_bbox() {
     bool show = _show_bbox_item->get_active();
     prefs->setBool("/tools/lpetool/show_bbox",  show);
 
-    LpeTool *lc = dynamic_cast<LpeTool *>(_desktop->event_context);
-    if (lc) {
-        lpetool_context_reset_limiting_bbox(lc);
+    if (auto lc = dynamic_cast<LpeTool *>(_desktop->event_context)) {
+        lc->reset_limiting_bbox();
     }
 }
 
@@ -267,7 +266,7 @@ LPEToolbar::toggle_set_bbox()
         prefs->setDouble("/tools/lpetool/bbox_lowerrightx", B[Geom::X]);
         prefs->setDouble("/tools/lpetool/bbox_lowerrighty", B[Geom::Y]);
 
-        lpetool_context_reset_limiting_bbox(SP_LPETOOL_CONTEXT(_desktop->event_context));
+        SP_LPETOOL_CONTEXT(_desktop->event_context)->reset_limiting_bbox();
     }
 
     _bbox_from_selection_item->set_active(false);
@@ -308,7 +307,7 @@ LPEToolbar::toggle_show_measuring_info()
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     prefs->setBool("/tools/lpetool/show_measuring_info",  show);
 
-    lpetool_show_measuring_info(lc, show);
+    lc->show_measuring_info(show);
 
     _units_item->set_sensitive( show );
 }
@@ -321,10 +320,9 @@ LPEToolbar::unit_changed(int /* NotUsed */)
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     prefs->setString("/tools/lpetool/unit", unit->abbr);
 
-    if (SP_IS_LPETOOL_CONTEXT(_desktop->event_context)) {
-        LpeTool *lc = SP_LPETOOL_CONTEXT(_desktop->event_context);
-        lpetool_delete_measuring_items(lc);
-        lpetool_create_measuring_items(lc);
+    if (auto lc = SP_LPETOOL_CONTEXT(_desktop->event_context)) {
+        lc->delete_measuring_items();
+        lc->create_measuring_items();
     }
 }
 
@@ -342,7 +340,7 @@ LPEToolbar::open_lpe_dialog()
 void
 LPEToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
 {
-    if (SP_IS_LPETOOL_CONTEXT(ec)) {
+    if (SP_LPETOOL_CONTEXT(ec)) {
         // Watch selection
         c_selection_modified = desktop->getSelection()->connectModified(sigc::mem_fun(*this, &LPEToolbar::sel_modified));
         c_selection_changed = desktop->getSelection()->connectChanged(sigc::mem_fun(*this, &LPEToolbar::sel_changed));
@@ -359,8 +357,8 @@ void
 LPEToolbar::sel_modified(Inkscape::Selection *selection, guint /*flags*/)
 {
     ToolBase *ec = selection->desktop()->event_context;
-    if (SP_IS_LPETOOL_CONTEXT(ec)) {
-        lpetool_update_measuring_items(SP_LPETOOL_CONTEXT(ec));
+    if (auto lc = SP_LPETOOL_CONTEXT(ec)) {
+        lc->update_measuring_items();
     }
 }
 
@@ -369,17 +367,17 @@ LPEToolbar::sel_changed(Inkscape::Selection *selection)
 {
     using namespace Inkscape::LivePathEffect;
     ToolBase *ec = selection->desktop()->event_context;
-    if (!SP_IS_LPETOOL_CONTEXT(ec)) {
+    LpeTool *lc = SP_LPETOOL_CONTEXT(ec);
+    if (!lc) {
         return;
     }
-    LpeTool *lc = SP_LPETOOL_CONTEXT(ec);
 
-    lpetool_delete_measuring_items(lc);
-    lpetool_create_measuring_items(lc, selection);
+    lc->delete_measuring_items();
+    lc->create_measuring_items(selection);
 
     // activate line segment combo box if a single item with LPELineSegment is selected
     SPItem *item = selection->singleItem();
-    if (item && is<SPLPEItem>(item) && lpetool_item_has_construction(lc, item)) {
+    if (item && is<SPLPEItem>(item) && UI::Tools::lpetool_item_has_construction(item)) {
 
         auto lpeitem = cast<SPLPEItem>(item);
         Effect* lpe = lpeitem->getCurrentLPE();
