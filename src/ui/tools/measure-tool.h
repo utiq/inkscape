@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_SP_MEASURING_CONTEXT_H
-#define SEEN_SP_MEASURING_CONTEXT_H
+#ifndef INKSCAPE_UI_TOOLS_MEASURE_TOOL_H
+#define INKSCAPE_UI_TOOLS_MEASURE_TOOL_H
 
 /*
  * Our fine measuring tool
@@ -14,7 +14,6 @@
  */
 
 #include <cstddef>
-#include <boost/optional.hpp>
 #include <optional>
 
 #include <sigc++/sigc++.h>
@@ -28,13 +27,9 @@
 #include "display/control/canvas-item-ptr.h"
 
 class SPKnot;
+namespace Inkscape { class CanvasItemCurve; }
 
-namespace Inkscape {
-
-class CanvasItemCurve;
-
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class MeasureTool : public ToolBase
 {
@@ -43,20 +38,20 @@ public:
     ~MeasureTool() override;
 
     bool root_handler(CanvasEvent const &event) override;
-    virtual void showCanvasItems(bool to_guides = false, bool to_item = false, bool to_phantom = false, Inkscape::XML::Node *measure_repr = nullptr);
-    virtual void reverseKnots();
-    virtual void toGuides();
-    virtual void toPhantom();
-    virtual void toMarkDimension();
-    virtual void toItem();
-    virtual void reset();
-    virtual void setMarkers();
-    virtual void setMarker(bool isStart);
-    Geom::Point readMeasurePoint(bool is_start);
+    void showCanvasItems(bool to_guides = false, bool to_item = false, bool to_phantom = false, Inkscape::XML::Node *measure_repr = nullptr);
+    void reverseKnots();
+    void toGuides();
+    void toPhantom();
+    void toMarkDimension();
+    void toItem();
+    void reset();
+    void setMarkers();
+    void setMarker(bool isStart);
+    Geom::Point readMeasurePoint(bool is_start) const;
+    void writeMeasurePoint(Geom::Point point, bool is_start) const;
 
     void showInfoBox(Geom::Point cursor, bool into_groups);
     void showItemInfoText(Geom::Point pos, Glib::ustring const &measure_str, double fontsize);
-    void writeMeasurePoint(Geom::Point point, bool is_start);
     void setGuide(Geom::Point origin, double angle, const char *label);
     void setPoint(Geom::Point origin, Inkscape::XML::Node *measure_repr);
     void setLine(Geom::Point start_point,Geom::Point end_point, bool markers, guint32 color,
@@ -110,11 +105,9 @@ private:
     sigc::connection _knot_end_ungrabbed_connection;
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif // SEEN_SP_MEASURING_CONTEXT_H
+#endif // INKSCAPE_UI_TOOLS_MEASURE_TOOL_H
 
 /*
   Local Variables:
