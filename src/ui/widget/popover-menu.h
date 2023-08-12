@@ -17,6 +17,10 @@
 #include <vector>
 #include <gtkmm/popover.h>
 
+namespace Glib {
+class ustring;
+} // namespace Glib
+
 namespace Inkscape::UI::Widget {
 
 // TODO: GTK4: Can we use Gtk::GridView, Gio::ListModel, etc.?
@@ -44,10 +48,17 @@ public:
     /// Remove/unparent added child.
     void remove(Gtk::Widget &child);
 
+    /// Append label, w/ markup & the .dim-label style class.
+    void append_section_label(Glib::ustring const &markup);
+    /// Append a horizontal separator.
+    void append_separator();
+
     /// Replace Gtk::Menu::popup_at_pointer. If x or y
     /// offsets != 0, :pointing-to is set to {x,y,1,1}
     void popup_at(Gtk::Widget &relative_to,
                   int x_offset = 0, int y_offset = 0);
+    /// As popup_at() but point to center of widget
+    void popup_at_center(Gtk::Widget &relative_to);
 
     /// Get the list of menu items (children of our grid)
     [[nodiscard]] std::vector<Gtk::Widget *> get_items();

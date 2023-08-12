@@ -15,6 +15,8 @@
 
 #include <glibmm/main.h>
 #include <gtkmm/grid.h>
+#include <gtkmm/label.h>
+#include <gtkmm/separator.h>
 #include <gtkmm/stylecontext.h>
 
 #include "ui/menuize.h"
@@ -82,6 +84,19 @@ void PopoverMenu::remove(Gtk::Widget &child)
     _grid.remove(child);
 }
 
+void PopoverMenu::append_section_label(Glib::ustring const &markup)
+{
+    auto const label = Gtk::make_managed<Gtk::Label>();
+    label->set_markup(markup);
+    label->get_style_context()->add_class("dim-label");
+    append(*label);
+}
+
+void PopoverMenu::append_separator()
+{
+    append(*Gtk::make_managed<Gtk::Separator>(Gtk::ORIENTATION_HORIZONTAL));
+}
+
 void PopoverMenu::popup_at(Gtk::Widget &relative_to,
                            int const x_offset, int const y_offset)
 {
@@ -95,6 +110,13 @@ void PopoverMenu::popup_at(Gtk::Widget &relative_to,
 
     show_all_children();
     popup();
+}
+
+void PopoverMenu::popup_at_center(Gtk::Widget &relative_to)
+{
+    auto const x_offset = relative_to.get_width () / 2;
+    auto const y_offset = relative_to.get_height() / 2;
+    popup_at(relative_to, x_offset, y_offset);
 }
 
 std::vector<Gtk::Widget *> PopoverMenu::get_items()

@@ -13,13 +13,22 @@
 #ifndef SEEN_UI_MANAGE_HPP
 #define SEEN_UI_MANAGE_HPP
 
-#include <glibmm/refptr.h>
+// TEST
+// #define INKSCAPE_UI_MANAGE_DEBUG
 
-namespace Glib {
-class ObjectBase;
-}
+#include <cassert>
+#include <stdexcept>
+#include <unordered_map>
+#include <utility>
+#ifdef INKSCAPE_UI_MANAGE_DEBUG
+#include <typeinfo>
+#endif // INKSCAPE_UI_MANAGE_DEBUG
+#include <glibmm/refptr.h>
+#include <glibmm/objectbase.h>
 
 namespace Inkscape::UI {
+
+namespace Manage::Detail {
 
 /* Glib::Binding overrides GBindingʼs reference-counting. GBinding will be
    freed when either of the bound objects is or when unbind() is called on it.
@@ -31,12 +40,73 @@ namespace Inkscape::UI {
    This will not be needed in gtkmm 4; Bindings and Gestures are managed there.
    See https://gitlab.gnome.org/GNOME/glibmm/issues/62 for discussion on this
    and controller.h for a practical example of how it is used. */
+/* In addition, as we still need to use C API for some signal handlers in GTK3,
+   this can also be useful as a place to stash slots, thereby ensuring they live
+   as long as C handlers will need to call to them, _but_ are destroyed with the
+   Widget or other related object, rather than leaking or needing manual code */
 
-/// Ensure that a managed object will remain referenced as long as a manager is.
+template <typename Secondary>
+inline auto s_map = std::unordered_multimap<Glib::ObjectBase const *, Secondary>{};
+
+template <typename Secondary>
+[[nodiscard]] static auto erase(void * const data)
+{
+    auto const primary = const_cast<Glib::ObjectBase const *>(
+                        static_cast<Glib::ObjectBase       *>(data) );
+    [[maybe_unused]] auto const count = s_map<Secondary>.erase(primary);
+    assert(count > 0);
+#ifdef INKSCAPE_UI_MANAGE_DEBUG
+    g_warning(Glib::ustring::compose("Manage::Detail::erase()d %1 secondary %2 object(s)",
+                                     count, typeid(Secondary).name()).c_str());
+#endif // INKSCAPE_UI_MANAGE_DEBUG
+    return data;
+}
+
+template <typename Secondary>
+static void add_callback(Glib::ObjectBase const &primary)
+{
+    auto const data = static_cast<void             *>(
+                       const_cast<Glib::ObjectBase *>(&primary) );
+    primary.add_destroy_notify_callback(data, &erase<Secondary>);
+}
+
+template <typename Secondary>
+Secondary &manage(Secondary secondary, Glib::ObjectBase const &primary)
+{
+    auto &map = s_map<Secondary>;
+    auto const [lower, upper] = map.equal_range(&primary);
+    bool const existed = lower != map.end() && lower->first == &primary;
+    auto const it = map.insert(upper, {&primary, std::move(secondary)});
+
+    if (!existed) {
+        add_callback<Secondary>(primary);
+    }
+
+    return it->second;
+}
+
+} // namespace Manage::Detail
+
+/// Ensure that a slot will stay alive while another object, e.g. a Widget does.
+/// The manage()d slot is moved to a new address & we return a reference to that
+template <typename Function>
+[[nodiscard]] sigc::slot<Function> &manage(sigc::slot<Function> &&secondary,
+                                           Glib::ObjectBase const &primary)
+{
+    assert(static_cast<bool>(secondary)); // Check slot is !empty
+    return Manage::Detail::manage(std::move(secondary), primary);
+}
+
+/// Ensure a secondary GObject will stay referenced as long as a primary one is.
 /// This can be used to tie lifetime of Gtk::Gestures or Glib::Bindings to their
 /// widget/object(s), instead of having to keep a RefPtr as is otherwise needed.
-void manage(Glib::RefPtr<Glib::ObjectBase const> managed,
-            Glib::ObjectBase const &manager);
+/// Overloading ObjectBase avoids instantiating a map for each GObject subclass.
+inline void manage(Glib::RefPtr<Glib::ObjectBase const> secondary,
+                   Glib::ObjectBase const &primary)
+{
+    assert(static_cast<bool>(secondary)); // object !=null
+    Manage::Detail::manage(std::move(secondary), primary);
+}
 
 } // namespace Inkscape::UI
 

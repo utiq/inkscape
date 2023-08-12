@@ -10,13 +10,16 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 #include <sigc++/connection.h>
 #include <sigc++/adaptors/bind.h>
 #include <sigc++/functors/mem_fun.h>
+#include <glibmm/ustring.h>
 #include <gtkmm/adjustment.h>
-#include <gtkmm/radiomenuitem.h>
+#include <gtkmm/radiobutton.h>
+#include <gtkmm/radiobuttongroup.h>
 #include <gtkmm/separatormenuitem.h>
 
 #include "selected-style.h"
@@ -42,9 +45,12 @@
 #include "ui/dialog/dialog-base.h"
 #include "ui/dialog/fill-and-stroke.h"
 #include "ui/icon-names.h"
+#include "ui/popup-menu.h"
 #include "ui/tools/tool-base.h"
 #include "ui/widget/color-preview.h"
 #include "ui/widget/gradient-image.h"
+#include "ui/widget/popover-menu.h"
+#include "ui/widget/popover-menu-item.h"
 #include "widgets/paintdef.h"
 #include "widgets/spw-utilities.h"
 
@@ -56,8 +62,8 @@ static constexpr int SELECTED_STYLE_STROKE_WIDTH =  40;
 static constexpr int SELECTED_STYLE_FLAG_WIDTH   =  12;
 static constexpr int SELECTED_STYLE_WIDTH        = 250;
 
-static gdouble const _sw_presets[]     = { 32 ,  16 ,  10 ,  8 ,  6 ,  4 ,  3 ,  2 ,  1.5 ,  1 ,  0.75 ,  0.5 ,  0.25 ,  0.1 };
-static gchar const *const _sw_presets_str[] = {"32", "16", "10", "8", "6", "4", "3", "2", "1.5", "1", "0.75", "0.5", "0.25", "0.1"};
+static constexpr std::array<double, 15> _sw_presets{
+    32, 16, 10, 8, 6, 4, 3, 2, 1.5, 1, 0.75, 0.5, 0.25, 0.1};
 
 static void
 ss_selection_changed (Inkscape::Selection *, gpointer data)
@@ -158,10 +164,11 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
     _opacity_label.set_margin_start(0);
     _opacity_label.set_margin_end(0);
 
+    make_popup_opacity();
+
     _table.set_column_spacing(4);
 
     for (int i = SS_FILL; i <= SS_STROKE; i++) {
-
         _na[i].set_markup (_("N/A"));
         _na[i].show_all();
         __na[i] = (_("Nothing selected"));
@@ -235,115 +242,13 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
         _multiple[i].show_all();
         __multiple[i] = (i == SS_FILL)? (_("Multiple selected objects have the same fill")) : (_("Multiple selected objects have the same stroke"));
 
-        _popup_edit[i].add(*(new Gtk::Label((i == SS_FILL)? _("Edit fill...") : _("Edit stroke..."), Gtk::ALIGN_START)));
-        _popup_edit[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_edit : &SelectedStyle::on_stroke_edit ));
-
-        _popup_lastused[i].add(*(new Gtk::Label(_("Last set color"), Gtk::ALIGN_START)));
-        _popup_lastused[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_lastused : &SelectedStyle::on_stroke_lastused ));
-
-        _popup_lastselected[i].add(*(new Gtk::Label(_("Last selected color"), Gtk::ALIGN_START)));
-        _popup_lastselected[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_lastselected : &SelectedStyle::on_stroke_lastselected ));
-
-        _popup_invert[i].add(*(new Gtk::Label(_("Invert"), Gtk::ALIGN_START)));
-        _popup_invert[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_invert : &SelectedStyle::on_stroke_invert ));
-
-        _popup_white[i].add(*(new Gtk::Label(_("White"), Gtk::ALIGN_START)));
-        _popup_white[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_white : &SelectedStyle::on_stroke_white ));
-
-        _popup_black[i].add(*(new Gtk::Label(_("Black"), Gtk::ALIGN_START)));
-        _popup_black[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_black : &SelectedStyle::on_stroke_black ));
-
-        _popup_copy[i].add(*(new Gtk::Label(_("Copy color"), Gtk::ALIGN_START)));
-        _popup_copy[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_copy : &SelectedStyle::on_stroke_copy ));
-
-        _popup_paste[i].add(*(new Gtk::Label(_("Paste color"), Gtk::ALIGN_START)));
-        _popup_paste[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_paste : &SelectedStyle::on_stroke_paste ));
-
-        _popup_swap[i].add(*(new Gtk::Label(_("Swap fill and stroke"), Gtk::ALIGN_START)));
-        _popup_swap[i].signal_activate().connect(sigc::mem_fun(*this,
-                               &SelectedStyle::on_fillstroke_swap));
-
-        _popup_opaque[i].add(*(new Gtk::Label((i == SS_FILL)? _("Make fill opaque") : _("Make stroke opaque"), Gtk::ALIGN_START)));
-        _popup_opaque[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_opaque : &SelectedStyle::on_stroke_opaque ));
-
-        //TRANSLATORS COMMENT: unset is a verb here
-        _popup_unset[i].add(*(new Gtk::Label((i == SS_FILL)? _("Unset fill") : _("Unset stroke"), Gtk::ALIGN_START)));
-        _popup_unset[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_unset : &SelectedStyle::on_stroke_unset ));
-
-        _popup_remove[i].add(*(new Gtk::Label((i == SS_FILL)? _("Remove fill") : _("Remove stroke"), Gtk::ALIGN_START)));
-        _popup_remove[i].signal_activate().connect(sigc::mem_fun(*this,
-                               (i == SS_FILL)? &SelectedStyle::on_fill_remove : &SelectedStyle::on_stroke_remove ));
-
-        _popup[i].attach(_popup_edit[i], 0,1, 0,1);
-          _popup[i].attach(*(new Gtk::SeparatorMenuItem()), 0,1, 1,2);
-        _popup[i].attach(_popup_lastused[i], 0,1, 2,3);
-        _popup[i].attach(_popup_lastselected[i], 0,1, 3,4);
-          _popup[i].attach(*(new Gtk::SeparatorMenuItem()), 0,1, 4,5);
-        _popup[i].attach(_popup_invert[i], 0,1, 5,6);
-          _popup[i].attach(*(new Gtk::SeparatorMenuItem()), 0,1, 6,7);
-        _popup[i].attach(_popup_white[i], 0,1, 7,8);
-        _popup[i].attach(_popup_black[i], 0,1, 8,9);
-          _popup[i].attach(*(new Gtk::SeparatorMenuItem()), 0,1, 9,10);
-        _popup[i].attach(_popup_copy[i], 0,1, 10,11);
-        _popup_copy[i].set_sensitive(false);
-        _popup[i].attach(_popup_paste[i], 0,1, 11,12);
-        _popup[i].attach(_popup_swap[i], 0,1, 12,13);
-          _popup[i].attach(*(new Gtk::SeparatorMenuItem()), 0,1, 13,14);
-        _popup[i].attach(_popup_opaque[i], 0,1, 14,15);
-        _popup[i].attach(_popup_unset[i], 0,1, 15,16);
-        _popup[i].attach(_popup_remove[i], 0,1, 16,17);
-        _popup[i].show_all();
+        make_popup(static_cast<FillOrStroke>(i));
 
         _mode[i] = SS_NA;
     }
 
-    {
-        int row = 0;
+    make_popup_units();
 
-        Inkscape::Util::UnitTable::UnitMap m = unit_table.units(Inkscape::Util::UNIT_TYPE_LINEAR);
-        Inkscape::Util::UnitTable::UnitMap::iterator iter = m.begin();
-        while(iter != m.end()) {
-            auto const mi = Gtk::make_managed<Gtk::RadioMenuItem>(_sw_group);
-            mi->add(*(new Gtk::Label(iter->first, Gtk::ALIGN_START)));
-            _unit_mis.push_back(mi);
-            Inkscape::Util::Unit const *u = unit_table.getUnit(iter->first);
-            mi->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &SelectedStyle::on_popup_units), u));
-            _popup_sw.attach(*mi, 0,1, row, row+1);
-            row++;
-            ++iter;
-        }
-
-        _popup_sw.attach(*(new Gtk::SeparatorMenuItem()), 0,1, row, row+1);
-        row++;
-
-        for (guint i = 0; i < G_N_ELEMENTS(_sw_presets_str); ++i) {
-            auto const mi = Gtk::make_managed<Gtk::MenuItem>();
-            mi->add(*(new Gtk::Label(_sw_presets_str[i], Gtk::ALIGN_START)));
-            mi->signal_activate().connect(sigc::bind(sigc::mem_fun(*this, &SelectedStyle::on_popup_preset), i));
-            _popup_sw.attach(*mi, 0,1, row, row+1);
-            row++;
-        }
-
-        _popup_sw.attach(*(new Gtk::SeparatorMenuItem()), 0,1, row, row+1);
-        row++;
-
-        _popup_sw_remove.add(*(new Gtk::Label(_("Remove"), Gtk::ALIGN_START)));
-        _popup_sw_remove.signal_activate().connect(sigc::mem_fun(*this, &SelectedStyle::on_stroke_remove));
-        _popup_sw.attach(_popup_sw_remove, 0,1, row, row+1);
-        row++;
-
-        _popup_sw.show_all();
-    }
     // fill row
     _fill_flag_place.set_size_request(SELECTED_STYLE_FLAG_WIDTH , -1);
 
@@ -420,7 +325,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
     Controller::add_click(_stroke_width_place, {},
                           sigc::mem_fun(*this, &SelectedStyle::on_sw_click));
 
-    _opacity_sb.signal_populate_popup().connect(sigc::mem_fun(*this, &SelectedStyle::on_opacity_menu));
+    on_popup_menu(_opacity_sb, sigc::mem_fun(*this, &SelectedStyle::on_opacity_popup));
     _opacity_sb.signal_value_changed().connect(sigc::mem_fun(*this, &SelectedStyle::on_opacity_changed));
 }
 
@@ -448,14 +353,6 @@ SelectedStyle::setDesktop(SPDesktop *desktop)
     );
 
     _sw_unit = desktop->getNamedView()->display_units;
-
-    // Set the doc default unit active in the units list
-    for ( auto mi:_unit_mis ) {
-        if (mi && mi->get_label() == _sw_unit->abbr) {
-            mi->set_active();
-            break;
-        }
-    }
 }
 
 void SelectedStyle::dragDataReceived( GtkWidget */*widget*/,
@@ -770,7 +667,7 @@ SelectedStyle::on_fill_click(Gtk::GestureMultiPress const &click,
         if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
             fs->showPageFill();
     } else if (button == 3) { // right-click, popup menu
-        _popup[SS_FILL].popup_at_pointer(Controller::get_last_event(click));
+        _popup[SS_FILL]->popup_at_center(_fill_place);
     } else if (button == 2) { // middle click, toggle none/lastcolor
         if (_mode[SS_FILL] == SS_NONE) {
             on_fill_lastused();
@@ -790,7 +687,7 @@ SelectedStyle::on_stroke_click(Gtk::GestureMultiPress const &click,
         if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
             fs->showPageStrokePaint();
     } else if (button == 3) { // right-click, popup menu
-        _popup[SS_STROKE].popup_at_pointer(Controller::get_last_event(click));
+        _popup[SS_STROKE]->popup_at_center(_stroke_place);
     } else if (button == 2) { // middle click, toggle none/lastcolor
         if (_mode[SS_STROKE] == SS_NONE) {
             on_stroke_lastused();
@@ -810,7 +707,11 @@ SelectedStyle::on_sw_click(Gtk::GestureMultiPress const &click,
         if (Dialog::FillAndStroke *fs = get_fill_and_stroke_panel(_desktop))
             fs->showPageStrokeStyle();
     } else if (button == 3) { // right-click, popup menu
-        _popup_sw.popup_at_pointer(Controller::get_last_event(click));
+        auto const it = std::find_if(_unit_mis.cbegin(), _unit_mis.cend(),
+                                     [=](auto const mi){ return mi->get_label() == _sw_unit->abbr; });
+        if (it != _unit_mis.cend()) (*it)->set_active(true);
+
+        _popup_sw->popup_at_center(_stroke_width_place);
     } else if (button == 2) { // middle click, toggle none/lastwidth?
         //
     }
@@ -828,6 +729,116 @@ SelectedStyle::on_opacity_click(Gtk::GestureMultiPress const & /*click*/,
     sp_repr_css_attr_unref (css);
     DocumentUndo::done(_desktop->getDocument(), _("Change opacity"), INKSCAPE_ICON("dialog-fill-and-stroke"));
     return Gtk::EVENT_SEQUENCE_CLAIMED;
+}
+
+template <typename Slot, typename ...Args>
+static UI::Widget::PopoverMenuItem *make_menu_item(Glib::ustring const &label, Slot slot,
+                                            Args &&...args)
+{
+    auto const item = Gtk::make_managed<UI::Widget::PopoverMenuItem>(std::forward<Args>(args)...);
+    item->add(*Gtk::make_managed<Gtk::Label>(label, Gtk::ALIGN_START, Gtk::ALIGN_START));
+    item->signal_activate().connect(std::move(slot));
+    return item;
+};
+
+void SelectedStyle::make_popup(FillOrStroke const i)
+{
+    _popup[i] = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_TOP);
+
+
+    auto const add_item = [&](Glib::ustring const &  fill_label, auto const   fill_method,
+                              Glib::ustring const &stroke_label, auto const stroke_method)
+    {
+        auto const &label = i == SS_FILL || stroke_label.empty()     ? fill_label  : stroke_label ;
+        auto const method = i == SS_FILL || stroke_method == nullptr ? fill_method : stroke_method;
+        auto const item = make_menu_item(label, sigc::mem_fun(*this, method));
+        _popup[i]->append(*item);
+        return item;
+    };
+
+    add_item(_("Edit Fill..."  )      , &SelectedStyle::  on_fill_edit        ,
+             _("Edit Stroke...")      , &SelectedStyle::on_stroke_edit        );
+
+    _popup[i]->append_separator();
+
+
+    add_item(_("Last Set Color")      , &SelectedStyle::  on_fill_lastused    ,
+             {}                       , &SelectedStyle::on_stroke_lastused    );
+    add_item(_("Last Selected Color") , &SelectedStyle::  on_fill_lastselected,
+             {}                       , &SelectedStyle::on_stroke_lastselected);
+
+    _popup[i]->append_separator();
+
+    add_item(_("Invert")              , &SelectedStyle::  on_fill_invert      ,
+             {}                       , &SelectedStyle::on_stroke_invert      );
+
+    _popup[i]->append_separator();
+
+    add_item(_("White")               , &SelectedStyle::  on_fill_white       ,
+             {}                       , &SelectedStyle::on_stroke_white       );
+    add_item(_("Black")               , &SelectedStyle::  on_fill_black       ,
+             {}                       , &SelectedStyle::on_stroke_black       );
+
+    _popup[i]->append_separator();
+
+    _popup_copy[i] = add_item(
+             _("Copy Color")          , &SelectedStyle::  on_fill_copy        ,
+             {}                       , &SelectedStyle::on_stroke_copy        );
+    _popup_copy[i]->set_sensitive(false);
+
+    add_item(_("Paste Color")         , &SelectedStyle::  on_fill_paste       ,
+             {}                       , &SelectedStyle::on_stroke_paste       );
+    add_item(_("Swap Fill and Stroke"), &SelectedStyle::on_fillstroke_swap    ,
+             {}                       , nullptr                               );
+
+    _popup[i]->append_separator();
+
+    add_item(_("Make Fill Opaque"  )  , &SelectedStyle::  on_fill_opaque      ,
+             _("Make Stroke Opaque")  , &SelectedStyle::on_stroke_opaque      );
+    //TRANSLATORS COMMENT: unset is a verb here
+    add_item(_("Unset Fill"  )        , &SelectedStyle::  on_fill_unset       ,
+             _("Unset Stroke")        , &SelectedStyle::on_stroke_unset       );
+    add_item(_("Remove Fill"  )       , &SelectedStyle::  on_fill_remove      ,
+             _("Remove Stroke")       , &SelectedStyle::on_stroke_remove      );
+
+    _popup[i]->show_all_children();
+}
+
+void SelectedStyle::make_popup_units()
+{
+    _popup_sw = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_TOP);
+
+    _popup_sw->append_section_label(_("<b>Stroke Width</b>"));
+
+    _popup_sw->append_separator();
+
+    _popup_sw->append_section_label(_("Unit"));
+    auto group = Gtk::RadioButtonGroup{};
+    for (auto const &[key, value] : unit_table.units(Inkscape::Util::UNIT_TYPE_LINEAR)) {
+        auto const item = Gtk::make_managed<UI::Widget::PopoverMenuItem>();
+        auto const radio = Gtk::make_managed<Gtk::RadioButton>(group, key);
+        item->add(*radio);
+        _unit_mis.push_back(radio);
+        auto const u = unit_table.getUnit(key);
+        item->signal_activate().connect(
+            sigc::bind(sigc::mem_fun(*this, &SelectedStyle::on_popup_units), u));
+        _popup_sw->append(*item);
+    }
+
+    _popup_sw->append_separator();
+
+    _popup_sw->append_section_label(_("Width"));
+    for (std::size_t i = 0; i < _sw_presets.size(); ++i) {
+        _popup_sw->append(*make_menu_item(Glib::ustring::format(_sw_presets[i]),
+            sigc::bind(sigc::mem_fun(*this, &SelectedStyle::on_popup_preset), i)));
+    }
+
+    _popup_sw->append_separator();
+
+    _popup_sw->append(*make_menu_item(_("Remove Stroke"),
+          sigc::mem_fun(*this, &SelectedStyle::on_stroke_remove)));
+
+    _popup_sw->show_all_children();
 }
 
 void SelectedStyle::on_popup_units(Inkscape::Util::Unit const *unit) {
@@ -874,7 +885,7 @@ SelectedStyle::update()
         _mode[i] = SS_NA;
         _paintserver_id[i].clear();
 
-        _popup_copy[i].set_sensitive(false);
+        _popup_copy[i]->set_sensitive(false);
 
         // query style from desktop. This returns a result flag and fills query with the style of subselection, if any, or selection
         int result = sp_desktop_query_style (_desktop, &query,
@@ -953,8 +964,7 @@ SelectedStyle::update()
                 g_snprintf (c_string, 64, "%06x/%.3g", color >> 8, SP_RGBA32_A_F(color));
                 place->set_tooltip_text(__color[i] + ": " + c_string + _(", drag to adjust, middle-click to remove"));
                 _mode[i] = SS_COLOR;
-                _popup_copy[i].set_sensitive(true);
-
+                _popup_copy[i]->set_sensitive(true);
             } else if (paint->set && paint->isNone()) {
                 place->add(_none[i]);
                 place->set_tooltip_text(__none[i]);
@@ -1063,45 +1073,22 @@ void SelectedStyle::opacity_05() {_opacity_sb.set_value(50);}
 void SelectedStyle::opacity_075() {_opacity_sb.set_value(75);}
 void SelectedStyle::opacity_1() {_opacity_sb.set_value(100);}
 
-void SelectedStyle::on_opacity_menu (Gtk::Menu *menu) {
+void SelectedStyle::make_popup_opacity()
+{
+    _popup_opacity = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_TOP);
+    auto const add_item = [&](Glib::ustring const &label, auto const method)
+                          { _popup_opacity->append(*make_menu_item(label, sigc::mem_fun(*this, method))); };
+    add_item(_("0 (Transparent)"), &SelectedStyle::opacity_0  );
+    add_item(_("25%"            ), &SelectedStyle::opacity_025);
+    add_item(_("50%"            ), &SelectedStyle::opacity_05 );
+    add_item(_("75%"            ), &SelectedStyle::opacity_075);
+    add_item(_("100% (Opaque)"  ), &SelectedStyle::opacity_1  );
+}
 
-    std::vector<Gtk::Widget *> children = menu->get_children();
-    for (auto iter : children) {
-        menu->remove(*iter);
-    }
-
-    {
-        Gtk::MenuItem *item = new Gtk::MenuItem;
-        item->add(*(new Gtk::Label(_("0 (transparent)"), Gtk::ALIGN_START, Gtk::ALIGN_START)));
-        item->signal_activate().connect(sigc::mem_fun(*this, &SelectedStyle::opacity_0 ));
-        menu->add(*item);
-    }
-    {
-        Gtk::MenuItem *item = new Gtk::MenuItem;
-        item->add(*(new Gtk::Label("25%", Gtk::ALIGN_START, Gtk::ALIGN_START)));
-        item->signal_activate().connect(sigc::mem_fun(*this, &SelectedStyle::opacity_025 ));
-        menu->add(*item);
-    }
-    {
-        Gtk::MenuItem *item = new Gtk::MenuItem;
-        item->add(*(new Gtk::Label("50%", Gtk::ALIGN_START, Gtk::ALIGN_START)));
-        item->signal_activate().connect(sigc::mem_fun(*this, &SelectedStyle::opacity_05 ));
-        menu->add(*item);
-    }
-    {
-        Gtk::MenuItem *item = new Gtk::MenuItem;
-        item->add(*(new Gtk::Label("75%", Gtk::ALIGN_START, Gtk::ALIGN_START)));
-        item->signal_activate().connect(sigc::mem_fun(*this, &SelectedStyle::opacity_075 ));
-        menu->add(*item);
-    }
-    {
-        Gtk::MenuItem *item = new Gtk::MenuItem;
-        item->add(*(new Gtk::Label(_("100% (opaque)"), Gtk::ALIGN_START, Gtk::ALIGN_START)));
-        item->signal_activate().connect(sigc::mem_fun(*this, &SelectedStyle::opacity_1 ));
-        menu->add(*item);
-    }
-
-    menu->show_all();
+bool SelectedStyle::on_opacity_popup()
+{
+    _popup_opacity->popup_at_center(_opacity_sb);
+    return true;
 }
 
 void SelectedStyle::on_opacity_changed ()

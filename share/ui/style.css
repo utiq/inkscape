@@ -1100,6 +1100,10 @@ popover.popover-menu menuitem {
     border-radius: 0;
     outline-style: none;
 }
+/* Defeat defaulting to having more spacing between RadioButtons than GtkMenu */
+popover.popover-menu radiobutton {
+    padding: 0;
+}
 /* Emulate GtkMenu theming in absence of ability to change CSS node name, unlike our PopoverMenu */
 popover.menu.menuize modelbutton:focus,
 popover.menu.menuize modelbutton:hover {

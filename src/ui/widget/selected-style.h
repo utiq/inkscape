@@ -9,8 +9,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef INKSCAPE_UI_CURRENT_STYLE_H
-#define INKSCAPE_UI_CURRENT_STYLE_H
+#ifndef SEEN_INKSCAPE_UI_SELECTED_STYLE_H
+#define SEEN_INKSCAPE_UI_SELECTED_STYLE_H
 
 #include <memory>
 #include <vector>
@@ -21,9 +21,6 @@
 #include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/grid.h>
 #include <gtkmm/label.h>
-#include <gtkmm/menu.h>
-#include <gtkmm/menuitem.h>
-#include <gtkmm/radiobuttongroup.h>
 #include "helper/auto-connection.h"
 #include "rotateable.h"
 #include "ui/widget/spinbutton.h"
@@ -31,7 +28,7 @@
 namespace Gtk {
 class Adjustment;
 class GestureMultiPress;
-class RadioMenuItem;
+class RadioButton;
 } // namespace Gtk
 
 class SPDesktop;
@@ -43,6 +40,9 @@ class Unit;
 } // namespace Util
 
 namespace UI::Widget {
+
+class PopoverMenu;
+class PopoverMenuItem;
 
 enum {
     SS_NA,
@@ -59,7 +59,7 @@ enum {
     SS_HATCH
 };
 
-enum {
+enum FillOrStroke {
     SS_FILL,
     SS_STROKE
 };
@@ -229,8 +229,10 @@ protected:
                                              int n_press, double x, double y);
 
     bool _opacity_blocked;
+    std::unique_ptr<UI::Widget::PopoverMenu> _popup_opacity;
+    void make_popup_opacity();
     void on_opacity_changed();
-    void on_opacity_menu(Gtk::Menu *menu);
+    bool on_opacity_popup();
     void opacity_0();
     void opacity_025();
     void opacity_05();
@@ -261,26 +263,15 @@ protected:
     void on_fill_opaque();
     void on_stroke_opaque();
 
-    Gtk::Menu _popup[2];
-    Gtk::MenuItem _popup_edit[2];
-    Gtk::MenuItem _popup_lastused[2];
-    Gtk::MenuItem _popup_lastselected[2];
-    Gtk::MenuItem _popup_invert[2];
-    Gtk::MenuItem _popup_white[2];
-    Gtk::MenuItem _popup_black[2];
-    Gtk::MenuItem _popup_copy[2];
-    Gtk::MenuItem _popup_paste[2];
-    Gtk::MenuItem _popup_swap[2];
-    Gtk::MenuItem _popup_opaque[2];
-    Gtk::MenuItem _popup_unset[2];
-    Gtk::MenuItem _popup_remove[2];
+    std::unique_ptr<UI::Widget::PopoverMenu> _popup[2];
+    UI::Widget::PopoverMenuItem *_popup_copy[2]{};
+    void make_popup(FillOrStroke i);
 
-    Gtk::Menu _popup_sw;
-    Gtk::RadioButtonGroup _sw_group;
-    std::vector<Gtk::RadioMenuItem*> _unit_mis;
+    std::unique_ptr<UI::Widget::PopoverMenu> _popup_sw;
+    std::vector<Gtk::RadioButton *> _unit_mis;
+    void make_popup_units();
     void on_popup_units(Inkscape::Util::Unit const *u);
     void on_popup_preset(int i);
-    Gtk::MenuItem _popup_sw_remove;
 
     std::unique_ptr<SelectedStyleDropTracker> _drop[2];
     bool _dropEnabled[2];
@@ -290,7 +281,7 @@ protected:
 
 } // namespace Inkscape
 
-#endif // INKSCAPE_UI_WIDGET_BUTTON_H
+#endif // SEEN_INKSCAPE_UI_SELECTED_STYLE_H
 
 /*
   Local Variables:

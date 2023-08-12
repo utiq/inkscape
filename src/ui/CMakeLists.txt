@@ -11,9 +11,9 @@ set(ui_SRC
 	drag-and-drop.cpp
 	icon-loader.cpp
 	interface.cpp
-	manage.cpp
 	menuize.cpp
 	monitor.cpp
+	popup-menu.cpp
 	selected-color.cpp
 	shape-editor.cpp
 	shape-editor-knotholders.cpp
@@ -293,6 +293,7 @@ set(ui_SRC
 	manage.h
 	menuize.h
 	monitor.h
+	popup-menu.h
 	selected-color.h
 	shape-editor.h
 	simple-pref-pusher.h
