@@ -48,6 +48,7 @@ public:
     sigc::connection sel_modified_connection;
     sigc::connection style_set_connection;
     sigc::connection style_query_connection;
+    sigc::connection timeout;
 
     GtkIMContext *imc = nullptr;
 
@@ -70,13 +71,14 @@ public:
     CanvasItemPtr<CanvasItemBpath> padding_frame; // Highlighting flowtext padding
     std::vector<CanvasItemPtr<CanvasItemQuad>> text_selection_quads;
 
-    int timeout = 0;
     bool show = false;
     bool phase = false;
     bool nascent_object = false; // true if we're clicked on canvas to put cursor,
                                  // but no text typed yet so ->text is still NULL
 
     bool over_text = false; // true if cursor is over a text object
+
+    int blink_time = 0;
 
     unsigned dragging = 0;     // dragging selection over text
     bool creating = false;  // dragging rubberband to create flowtext

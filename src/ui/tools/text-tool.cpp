@@ -84,13 +84,12 @@ TextTool::TextTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/text", "text.svg")
 {
     GtkSettings* settings = gtk_settings_get_default();
-    gint timeout = 0;
-    g_object_get( settings, "gtk-cursor-blink-time", &timeout, nullptr );
+    g_object_get( settings, "gtk-cursor-blink-time", &blink_time, nullptr );
 
-    if (timeout < 0) {
-        timeout = 200;
+    if (blink_time < 0) {
+        blink_time = 200;
     } else {
-        timeout /= 2;
+        blink_time /= 2;
     }
 
     cursor = make_canvasitem<CanvasItemCurve>(desktop->getCanvasControls());
@@ -115,7 +114,7 @@ TextTool::TextTool(SPDesktop *desktop)
     padding_frame->set_stroke(0xccccccdf);
     padding_frame->set_visible(false);
 
-    this->timeout = g_timeout_add(timeout, (GSourceFunc) sp_text_context_timeout, this);
+    this->timeout = Glib::signal_timeout().connect(sigc::bind(sigc::ptr_fun(&sp_text_context_timeout), this), blink_time);
 
     this->imc = gtk_im_multicontext_new();
     if (this->imc) {
@@ -184,17 +183,13 @@ TextTool::~TextTool()
     this->style_query_connection.disconnect();
     this->sel_changed_connection.disconnect();
     this->sel_modified_connection.disconnect();
+    this->timeout.disconnect();
 
     sp_text_context_forget_text(SP_TEXT_CONTEXT(this));
 
     if (this->imc) {
         g_object_unref(G_OBJECT(this->imc));
         this->imc = nullptr;
-    }
-
-    if (this->timeout) {
-        g_source_remove(this->timeout);
-        this->timeout = 0;
     }
 
     cursor.reset();
@@ -1623,6 +1618,7 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
 
         tc->cursor->set_coords(d0, d1);
         tc->cursor->set_visible(true);
+        tc->cursor->set_stroke(0x000000ff);
 
         /* fixme: ... need another transformation to get canvas widget coordinate space? */
         if (tc->imc) {
@@ -1639,7 +1635,9 @@ static void sp_text_context_update_cursor(TextTool *tc,  bool scroll_to_see)
         }
 
         tc->show = TRUE;
-        tc->phase = true;
+        tc->phase = false;
+        tc->timeout.disconnect();
+        tc->timeout = Glib::signal_timeout().connect(sigc::bind(sigc::ptr_fun(&sp_text_context_timeout), tc), tc->blink_time);
 
         Inkscape::Text::Layout const *layout = te_get_layout(tc->text);
         int const nChars = layout->iteratorToCharIndex(layout->end());
