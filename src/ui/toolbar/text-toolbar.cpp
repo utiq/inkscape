@@ -1271,7 +1271,7 @@ void
 TextToolbar::lineheight_value_changed()
 {
     // quit if run by the _changed callbacks or is not text tool
-    if (_freeze || !SP_IS_TEXT_CONTEXT(_desktop->event_context)) {
+    if (_freeze || !SP_TEXT_CONTEXT(_desktop->event_context)) {
         return;
     }
         
@@ -1394,7 +1394,7 @@ void
 TextToolbar::lineheight_unit_changed(int /* Not Used */)
 {
     // quit if run by the _changed callbacks or is not text tool
-    if (_freeze || !SP_IS_TEXT_CONTEXT(_desktop->event_context)) {
+    if (_freeze || !SP_TEXT_CONTEXT(_desktop->event_context)) {
         return;
     }
     _freeze = true;
@@ -1680,18 +1680,13 @@ TextToolbar::dx_value_changed()
     gdouble new_dx = _dx_adj->get_value();
     bool modmade = false;
 
-    if( SP_IS_TEXT_CONTEXT(_desktop->event_context) ) {
-        Inkscape::UI::Tools::TextTool *const tc = SP_TEXT_CONTEXT(_desktop->event_context);
-        if( tc ) {
-            unsigned char_index = -1;
-            TextTagAttributes *attributes =
-                text_tag_attributes_at_position( tc->text, std::min(tc->text_sel_start, tc->text_sel_end), &char_index );
-            if( attributes ) {
-                double old_dx = attributes->getDx( char_index );
-                double delta_dx = new_dx - old_dx;
-                sp_te_adjust_dx( tc->text, tc->text_sel_start, tc->text_sel_end, _desktop, delta_dx );
-                modmade = true;
-            }
+    if (auto tc = SP_TEXT_CONTEXT(_desktop->event_context)) {
+        unsigned char_index = -1;
+        if (auto attributes = text_tag_attributes_at_position(tc->textItem(), std::min(tc->text_sel_start, tc->text_sel_end), &char_index)) {
+            double old_dx = attributes->getDx(char_index);
+            double delta_dx = new_dx - old_dx;
+            sp_te_adjust_dx(tc->textItem(), tc->text_sel_start, tc->text_sel_end, _desktop, delta_dx);
+            modmade = true;
         }
     }
 
@@ -1714,18 +1709,13 @@ TextToolbar::dy_value_changed()
     gdouble new_dy = _dy_adj->get_value();
     bool modmade = false;
 
-    if( SP_IS_TEXT_CONTEXT(_desktop->event_context) ) {
-        Inkscape::UI::Tools::TextTool *const tc = SP_TEXT_CONTEXT(_desktop->event_context);
-        if( tc ) {
-            unsigned char_index = -1;
-            TextTagAttributes *attributes =
-                text_tag_attributes_at_position( tc->text, std::min(tc->text_sel_start, tc->text_sel_end), &char_index );
-            if( attributes ) {
-                double old_dy = attributes->getDy( char_index );
-                double delta_dy = new_dy - old_dy;
-                sp_te_adjust_dy( tc->text, tc->text_sel_start, tc->text_sel_end, _desktop, delta_dy );
-                modmade = true;
-            }
+    if (auto tc = SP_TEXT_CONTEXT(_desktop->event_context)) {
+        unsigned char_index = -1;
+        if (auto attributes = text_tag_attributes_at_position(tc->textItem(), std::min(tc->text_sel_start, tc->text_sel_end), &char_index)) {
+            double old_dy = attributes->getDy(char_index);
+            double delta_dy = new_dy - old_dy;
+            sp_te_adjust_dy(tc->textItem(), tc->text_sel_start, tc->text_sel_end, _desktop, delta_dy);
+            modmade = true;
         }
     }
 
@@ -1749,18 +1739,13 @@ TextToolbar::rotation_value_changed()
     gdouble new_degrees = _rotation_adj->get_value();
 
     bool modmade = false;
-    if( SP_IS_TEXT_CONTEXT(_desktop->event_context) ) {
-        Inkscape::UI::Tools::TextTool *const tc = SP_TEXT_CONTEXT(_desktop->event_context);
-        if( tc ) {
-            unsigned char_index = -1;
-            TextTagAttributes *attributes =
-                text_tag_attributes_at_position( tc->text, std::min(tc->text_sel_start, tc->text_sel_end), &char_index );
-            if( attributes ) {
-                double old_degrees = attributes->getRotate( char_index );
-                double delta_deg = new_degrees - old_degrees;
-                sp_te_adjust_rotation( tc->text, tc->text_sel_start, tc->text_sel_end, _desktop, delta_deg );
-                modmade = true;
-            }
+    if (auto tc = SP_TEXT_CONTEXT(_desktop->event_context)) {
+        unsigned char_index = -1;
+        if (auto attributes = text_tag_attributes_at_position(tc->textItem(), std::min(tc->text_sel_start, tc->text_sel_end), &char_index)) {
+            double old_degrees = attributes->getRotate(char_index);
+            double delta_deg = new_degrees - old_degrees;
+            sp_te_adjust_rotation(tc->textItem(), tc->text_sel_start, tc->text_sel_end, _desktop, delta_deg);
+            modmade = true;
         }
     }
 
@@ -2147,34 +2132,28 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
 #endif
 
     // Kerning (xshift), yshift, rotation.  NB: These are not CSS attributes.
-    if( SP_IS_TEXT_CONTEXT(_desktop->event_context) ) {
-        Inkscape::UI::Tools::TextTool *const tc = SP_TEXT_CONTEXT(_desktop->event_context);
-        if( tc ) {
-            unsigned char_index = -1;
-            TextTagAttributes *attributes =
-                text_tag_attributes_at_position( tc->text, std::min(tc->text_sel_start, tc->text_sel_end), &char_index );
-            if( attributes ) {
+    if (auto tc = SP_TEXT_CONTEXT(_desktop->event_context)) {
+        unsigned char_index = -1;
+        if (auto attributes = text_tag_attributes_at_position(tc->textItem(), std::min(tc->text_sel_start, tc->text_sel_end), &char_index)) {
+            // Dx
+            double dx = attributes->getDx(char_index);
+            _dx_adj->set_value(dx);
 
-                // Dx
-                double dx = attributes->getDx( char_index );
-                _dx_adj->set_value(dx);
+            // Dy
+            double dy = attributes->getDy(char_index);
+            _dy_adj->set_value(dy);
 
-                // Dy
-                double dy = attributes->getDy( char_index );
-                _dy_adj->set_value(dy);
-
-                // Rotation
-                double rotation = attributes->getRotate( char_index );
-                /* SVG value is between 0 and 360 but we're using -180 to 180 in widget */
-                if( rotation > 180.0 ) rotation -= 360.0;
-                _rotation_adj->set_value(rotation);
+            // Rotation
+            double rotation = attributes->getRotate(char_index);
+            /* SVG value is between 0 and 360 but we're using -180 to 180 in widget */
+            if (rotation > 180.0) rotation -= 360.0;
+            _rotation_adj->set_value(rotation);
 
 #ifdef DEBUG_TEXT
-                std::cout << "    GUI: Dx: " << dx << std::endl;
-                std::cout << "    GUI: Dy: " << dy << std::endl;
-                std::cout << "    GUI: Rotation: " << rotation << std::endl;
+            std::cout << "    GUI: Dx: " << dx << std::endl;
+            std::cout << "    GUI: Dy: " << dy << std::endl;
+            std::cout << "    GUI: Rotation: " << rotation << std::endl;
 #endif
-            }
         }
     }
 
@@ -2237,21 +2216,13 @@ TextToolbar::selection_modified(Inkscape::Selection *selection, guint /*flags*/)
 
 void TextToolbar::subselection_wrap_toggle(bool start)
 {
-    if (SP_IS_TEXT_CONTEXT(_desktop->event_context)) {
-        Inkscape::UI::Tools::TextTool *const tc = SP_TEXT_CONTEXT(_desktop->event_context);
-        if (tc) {
-            _updating = true;
-            Inkscape::Text::Layout const *layout = te_get_layout(tc->text);
-            if (layout) {
-                Inkscape::Text::Layout::iterator start_selection = tc->text_sel_start;
-                Inkscape::Text::Layout::iterator end_selection = tc->text_sel_end;
-                tc->text_sel_start = wrap_start;
-                tc->text_sel_end = wrap_end;
-                wrap_start = start_selection;
-                wrap_end = end_selection;
-            }
-            _updating = start;
+    if (auto tc = SP_TEXT_CONTEXT(_desktop->event_context)) {
+        _updating = true;
+        if (te_get_layout(tc->textItem())) {
+            std::swap(tc->text_sel_start, wrap_start);
+            std::swap(tc->text_sel_end, wrap_end);
         }
+        _updating = start;
     }
 }
 
@@ -2275,15 +2246,15 @@ void TextToolbar::prepare_inner()
     if (!tc) {
         return;
     }
-    Inkscape::Text::Layout *layout = const_cast<Inkscape::Text::Layout *>(te_get_layout(tc->text));
+    Inkscape::Text::Layout *layout = const_cast<Inkscape::Text::Layout *>(te_get_layout(tc->textItem()));
     if (!layout) {
       return;
     }
     auto doc = _desktop->getDocument();
-    auto spobject = tc->text;
-    auto spitem = tc->text;
-    auto text = cast<SPText>(tc->text);
-    auto flowtext = cast<SPFlowtext>(tc->text);
+    auto spobject = tc->textItem();
+    auto spitem = tc->textItem();
+    auto text = cast<SPText>(tc->textItem());
+    auto flowtext = cast<SPFlowtext>(tc->textItem());
     Inkscape::XML::Document *xml_doc = doc->getReprDoc();
     if (!spobject) {
         return;
@@ -2437,7 +2408,7 @@ void TextToolbar::prepare_inner()
                 container->getRepr()->removeChild(spstring->getRepr());
             }
         }
-        tc->text->getRepr()->removeChild(container->getRepr());
+        tc->textItem()->getRepr()->removeChild(container->getRepr());
     }
 }
 
@@ -2558,7 +2529,7 @@ void TextToolbar::subselection_changed(Inkscape::UI::Tools::TextTool* tc)
         return;
     }
     if (tc) {
-        Inkscape::Text::Layout const *layout = te_get_layout(tc->text);
+        Inkscape::Text::Layout const *layout = te_get_layout(tc->textItem());
         if (layout) {
             Inkscape::Text::Layout::iterator start           = layout->begin();
             Inkscape::Text::Layout::iterator end             = layout->end();
@@ -2576,7 +2547,7 @@ void TextToolbar::subselection_changed(Inkscape::UI::Tools::TextTool* tc)
             if (start_selection == end_selection) {
                 this->_outer = true;
                 gint counter = 0;
-                for (auto child : tc->text->childList(false)) {
+                for (auto child : tc->textItem()->childList(false)) {
                     auto item = cast<SPItem>(child);
                     if (item && counter == startline) {
                         this->_sub_active_item = item;

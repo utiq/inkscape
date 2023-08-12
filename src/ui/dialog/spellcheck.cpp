@@ -536,13 +536,13 @@ SpellCheck::nextWord()
             desktop->getSelection()->set (_text);
         }
 
-        if (dynamic_cast<Inkscape::UI::Tools::TextTool *>(desktop->event_context)) {
-            Inkscape::Text::Layout::iterator *cursor =
-                sp_text_context_get_cursor_position(SP_TEXT_CONTEXT(desktop->event_context), _text);
-            if (!cursor) // some other text is selected there
-                desktop->getSelection()->set (_text);
-            else if (*cursor <= _begin_w || *cursor >= _end_w)
-                sp_text_context_place_cursor (SP_TEXT_CONTEXT(desktop->event_context), _text, _begin_w);
+        if (auto text_tool = dynamic_cast<Tools::TextTool*>(desktop->event_context)) {
+            auto cursor = get_cursor_position(*text_tool, _text);
+            if (!cursor) { // some other text is selected there
+                desktop->getSelection()->set(_text);
+            } else if (*cursor <= _begin_w || *cursor >= _end_w) {
+                text_tool->placeCursor(_text, _begin_w);
+            }
         }
 
 #if WITH_GSPELL

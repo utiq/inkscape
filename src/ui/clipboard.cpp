@@ -264,16 +264,14 @@ void ClipboardManagerImpl::copy(ObjectSet *set)
 
         // Special case for when the text tool is active - if some text is selected, copy plain text,
         // not the object that holds it; also copy the style at cursor into
-        auto tt = dynamic_cast<Inkscape::UI::Tools::TextTool *>(desktop->event_context);
-        if (tt) {
+        if (auto text_tool = dynamic_cast<Tools::TextTool*>(desktop->event_context)) {
             _discardInternalClipboard();
-            Glib::ustring selected_text = Inkscape::UI::Tools::sp_text_get_selected_text(desktop->event_context);
-            _clipboard->set_text(selected_text);
+            _clipboard->set_text(get_selected_text(*text_tool));
             if (_text_style) {
                 sp_repr_css_attr_unref(_text_style);
                 _text_style = nullptr;
             }
-            _text_style = Inkscape::UI::Tools::sp_text_get_style_at_cursor(desktop->event_context);
+            _text_style = get_style_at_cursor(*text_tool);
             return;
         }
 
@@ -294,7 +292,6 @@ void ClipboardManagerImpl::copy(ObjectSet *set)
 
     _setClipboardTargets();
 }
-
 
 /**
  * Copy a Live Path Effect path parameter to the clipboard.
@@ -1459,13 +1456,13 @@ bool ClipboardManagerImpl::_pasteImage(SPDocument *doc)
  */
 bool ClipboardManagerImpl::_pasteText(SPDesktop *desktop)
 {
-    if ( desktop == nullptr ) {
+    if (!desktop) {
         return false;
     }
 
     // if the text editing tool is active, paste the text into the active text object
-    if (dynamic_cast<Inkscape::UI::Tools::TextTool *>(desktop->event_context)) {
-        return Inkscape::UI::Tools::sp_text_paste_inline(desktop->event_context);
+    if (auto text_tool = dynamic_cast<Tools::TextTool*>(desktop->event_context)) {
+        return text_tool->pasteInline();
     }
 
     // Parse the clipboard text as if it was a color string.

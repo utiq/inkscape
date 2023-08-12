@@ -1251,8 +1251,8 @@ void ObjectSet::cut()
     copy();
 
     // Text and Node tools have their own CUT responses instead of deleteItems
-    if(dynamic_cast<TextTool*>(desktop()->event_context)) {
-        if (Inkscape::UI::Tools::sp_text_delete_selection(desktop()->event_context)) {
+    if (auto text_tool = dynamic_cast<TextTool*>(_desktop->event_context)) {
+        if (text_tool->deleteSelection()) {
             DocumentUndo::done(desktop()->getDocument(), _("Cut text"), INKSCAPE_ICON("draw-text"));
             return;
         }
@@ -1260,7 +1260,7 @@ void ObjectSet::cut()
 
     auto node_tool = dynamic_cast<Inkscape::UI::Tools::NodeTool *>(desktop()->event_context);
     if (node_tool && node_tool->_selected_nodes) {
-        Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+        auto prefs = Preferences::get();
         // This takes care of undo internally
         node_tool->_multipath->deleteNodes(prefs->getBool("/tools/nodes/delete_preserves_shape", true));
         return;

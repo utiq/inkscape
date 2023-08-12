@@ -19,7 +19,6 @@
 
 #include "inkscape-application.h"
 #include "inkscape-window.h"
-#include "inkscape.h"
 #include "message-context.h"
 
 #include "object/box3d.h"
@@ -198,7 +197,7 @@ set_active_tool(InkscapeWindow *win, SPItem *item, Geom::Point const p)
             show_output("set_active_tool: no desktop!");
             return;
         }
-        sp_text_context_place_cursor_at (SP_TEXT_CONTEXT(dt->event_context), item, p);
+        SP_TEXT_CONTEXT(dt->event_context)->placeCursorAt(item, p);
     } else if (is<SPOffset>(item))  {
         tool_switch("Node", win);
     }

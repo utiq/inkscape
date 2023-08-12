@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_INKSCAPE_TEXT_TOOL_H
-#define SEEN_INKSCAPE_TEXT_TOOL_H
-
-/*
+/** @file
  * TextTool
- *
+ */
+/*
  * Authors:
  *   Lauris Kaplinski <lauris@kaplinski.com>
  *   bulia byak <buliabyak@users.sf.net>
@@ -15,28 +13,28 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#ifndef INKSCAPE_UI_TOOLS_TEXT_TOOL_H
+#define INKSCAPE_UI_TOOLS_TEXT_TOOL_H
+
+#include <string>
 #include <sigc++/connection.h>
+#include <2geom/point.h>
 
 #include "ui/tools/tool-base.h"
-#include <2geom/point.h>
 #include "libnrtype/Layout-TNG.h"
 #include "display/control/canvas-item-ptr.h"
 
-#define SP_TEXT_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::TextTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_TEXT_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::TextTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
-
-typedef struct _GtkIMContext GtkIMContext;
+using GtkIMContext = struct _GtkIMContext;
 
 namespace Inkscape {
-
 class CanvasItemCurve; // Cursor
 class CanvasItemQuad;  // Highlighted text
 class CanvasItemRect;  // Indicator, Frame
 class CanvasItemBpath;
 class Selection;
+} // namespace Inkscape
 
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class TextTool : public ToolBase
 {
@@ -44,75 +42,93 @@ public:
     TextTool(SPDesktop *desktop);
     ~TextTool() override;
 
-    sigc::connection sel_changed_connection;
-    sigc::connection sel_modified_connection;
-    sigc::connection style_set_connection;
-    sigc::connection style_query_connection;
-    sigc::connection timeout;
+    bool pasteInline();
+    void placeCursorAt(SPObject *text, Geom::Point const &p);
+    void placeCursor(SPObject *text, Text::Layout::iterator where);
+    bool deleteSelection();
+    void deleteSelected();
 
-    GtkIMContext *imc = nullptr;
+    SPItem *textItem() const { return text; }
 
-    SPItem *text = nullptr; // the text we're editing, or NULL if none selected
-
-    /* Text item position in root coordinates */
-    Geom::Point pdoc;
-    /* Insertion point position */
+    // Insertion point position
+    // Fixme: Public due to hack used by text toolbar.
     Text::Layout::iterator text_sel_start;
     Text::Layout::iterator text_sel_end;
 
-    char uni[9];
-    bool unimode = false;
-    unsigned unipos = 0;
+protected:
+    bool root_handler(CanvasEvent const &event) override;
+    bool item_handler(SPItem *item, CanvasEvent const &event) override;
 
-    // ---- On canvas editing ---
+private:
+    // The text we're editing, or null if none selected
+    SPItem *text = nullptr;
+
+    // Text item position in root coordinates
+    Geom::Point pdoc;
+
+    // Input method
+    GtkIMContext *imc = nullptr;
+
+    // Unicode input
+    std::string uni;
+    bool unimode = false;
+
+    // On-canvas editing
     CanvasItemPtr<CanvasItemCurve> cursor;
     CanvasItemPtr<CanvasItemRect> indicator;
     CanvasItemPtr<CanvasItemBpath> frame; // Highlighting flowtext shapes or textpath path
     CanvasItemPtr<CanvasItemBpath> padding_frame; // Highlighting flowtext padding
     std::vector<CanvasItemPtr<CanvasItemQuad>> text_selection_quads;
 
+    // Cursor blinking
     bool show = false;
     bool phase = false;
-    bool nascent_object = false; // true if we're clicked on canvas to put cursor,
-                                 // but no text typed yet so ->text is still NULL
-
-    bool over_text = false; // true if cursor is over a text object
-
     int blink_time = 0;
 
-    unsigned dragging_state = 0; // dragging selection over text
+    bool nascent_object = false; // clicked on canvas to place cursor, but no text typed yet so ->text still null
+    bool over_text = false; // true if cursor is over a text object
+    unsigned dragging_state = 0;  // dragging selection over text
     bool creating = false;  // dragging rubberband to create flowtext
     Geom::Point p0;         // initial point if the flowtext rect
 
-    /* Preedit String */
-    char* preedit_string = nullptr;
+    auto_connection sel_changed_connection;
+    auto_connection sel_modified_connection;
+    auto_connection style_set_connection;
+    auto_connection style_query_connection;
+    auto_connection focus_in_conn;
+    auto_connection focus_out_conn;
+    auto_connection blink_conn;
 
-    bool root_handler(CanvasEvent const &event) override;
-    bool item_handler(SPItem *item, CanvasEvent const &event) override;
-    void deleteSelected();
+    void _updateCursor(bool scroll_to_see = true);
+    void _updateTextSelection();
+    void _setupText();
 
-private:
+    void _commit(GtkIMContext *imc, char *string);
+
+    void _validateCursorIterators();
+    void _blinkCursor();
+    void _resetBlinkTimer();
+    void _showCursor();
+    void _forgetText();
+    void _insertUnichar();
+    void _showCurrUnichar();
+
     void _selectionChanged(Selection *selection);
     void _selectionModified(Selection *selection, unsigned flags);
     bool _styleSet(SPCSSAttr const *css);
     int _styleQueried(SPStyle *style, int property);
 };
 
-bool sp_text_paste_inline(ToolBase *ec);
-Glib::ustring sp_text_get_selected_text(ToolBase const *ec);
-SPCSSAttr *sp_text_get_style_at_cursor(ToolBase const *ec);
-// std::vector<SPCSSAttr*> sp_text_get_selected_style(ToolBase const *ec, unsigned *k, int *b, std::vector<unsigned>
-// *positions);
-bool sp_text_delete_selection(ToolBase *ec);
-void sp_text_context_place_cursor (TextTool *tc, SPObject *text, Inkscape::Text::Layout::iterator where);
-void sp_text_context_place_cursor_at (TextTool *tc, SPObject *text, Geom::Point const p);
-Inkscape::Text::Layout::iterator *sp_text_context_get_cursor_position(TextTool *tc, SPObject *text);
+Glib::ustring get_selected_text(TextTool const &tool);
+SPCSSAttr *get_style_at_cursor(TextTool const &tool);
+Text::Layout::iterator const *get_cursor_position(TextTool const &tool, SPObject const *text);
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif
+inline auto SP_TEXT_CONTEXT(Inkscape::UI::Tools::ToolBase *tool) { return dynamic_cast<Inkscape::UI::Tools::TextTool*>(tool); }
+inline auto SP_TEXT_CONTEXT(Inkscape::UI::Tools::ToolBase const *tool) { return dynamic_cast<Inkscape::UI::Tools::TextTool const *>(tool); }
+
+#endif // INKSCAPE_UI_TOOLS_TEXT_TOOL_H
 
 /*
   Local Variables:
