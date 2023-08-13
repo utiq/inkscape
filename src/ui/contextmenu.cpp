@@ -108,7 +108,13 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
         // in the menu thus it makes the most sense that it is either selected or part of the current
         // selection.
         auto selection = desktop->getSelection();
-        if (object && !selection->includes(object)) {
+        bool selection_under_cursor = false;
+        for (auto item : items_under_cursor) {
+            if (selection->includes(item)) {
+                selection_under_cursor = true;
+            }
+        }
+        if (object && !selection_under_cursor) {
             selection->set(object);
         }
 
