@@ -8,8 +8,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef INKSCAPE_UI_WIDGET_ENTRY__H
-#define INKSCAPE_UI_WIDGET_ENTRY__H
+#ifndef SEEN_INKSCAPE_UI_WIDGET_ENTRY_H
+#define SEEN_INKSCAPE_UI_WIDGET_ENTRY_H
 
 #include "labelled.h"
 
@@ -42,4 +42,4 @@ public:
 } // namespace UI
 } // namespace Inkscape
 
-#endif // INKSCAPE_UI_WIDGET_ENTRY__H
+#endif // SEEN_INKSCAPE_UI_WIDGET_ENTRY_H

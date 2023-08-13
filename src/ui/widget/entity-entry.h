@@ -8,8 +8,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef INKSCAPE_UI_WIDGET_ENTITY_ENTRY__H
-#define INKSCAPE_UI_WIDGET_ENTITY_ENTRY__H
+#ifndef SEEN_INKSCAPE_UI_WIDGET_ENTITY_ENTRY_H
+#define SEEN_INKSCAPE_UI_WIDGET_ENTITY_ENTRY_H
 
 #include <glibmm/ustring.h>
 #include <gtkmm/textview.h>
@@ -75,7 +75,7 @@ protected:
 } // namespace UI
 } // namespace Inkscape
 
-#endif // INKSCAPE_UI_WIDGET_ENTITY_ENTRY__H
+#endif // SEEN_INKSCAPE_UI_WIDGET_ENTITY_ENTRY_H
 
 /*
   Local Variables:

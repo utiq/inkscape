@@ -7,8 +7,8 @@
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef __SP_ATTRIBUTE_REL_CSS_H__
-#define __SP_ATTRIBUTE_REL_CSS_H__
+#ifndef SEEN_ATTRIBUTE_REL_CSS_H
+#define SEEN_ATTRIBUTE_REL_CSS_H
 
 /*
  * attribute-rel-css.h
@@ -65,7 +65,7 @@ private:
     bool readDataFromFileIn(Glib::ustring const &fileName, storageType type);
 };
 
-#endif /* __SP_ATTRIBUTE_REL_CSS_H__ */
+#endif // SEEN_ATTRIBUTE_REL_CSS_H
 
 /*
   Local Variables:

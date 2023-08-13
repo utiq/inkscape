@@ -171,7 +171,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
     for (int i = SS_FILL; i <= SS_STROKE; i++) {
         _na[i].set_markup (_("N/A"));
         _na[i].show_all();
-        __na[i] = (_("Nothing selected"));
+        _na_tooltip[i] = (_("Nothing selected"));
 
         if (i == SS_FILL) {
             _none[i].set_markup (C_("Fill", "<i>None</i>"));
@@ -179,19 +179,19 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
             _none[i].set_markup (C_("Stroke", "<i>None</i>"));
         }
         _none[i].show_all();
-        __none[i] = (i == SS_FILL)? (C_("Fill and stroke", "No fill, middle-click for black fill")) : (C_("Fill and stroke", "No stroke, middle-click for black stroke"));
+        _none_tooltip[i] = (i == SS_FILL)? (C_("Fill and stroke", "No fill, middle-click for black fill")) : (C_("Fill and stroke", "No stroke, middle-click for black stroke"));
 
         _pattern[i].set_markup (_("Pattern"));
         _pattern[i].show_all();
-        __pattern[i] = (i == SS_FILL)? (_("Pattern (fill)")) : (_("Pattern (stroke)"));
+        _pattern_tooltip[i] = (i == SS_FILL)? (_("Pattern (fill)")) : (_("Pattern (stroke)"));
 
         _hatch[i].set_markup(_("Hatch"));
         _hatch[i].show_all();
-        __hatch[i] = (i == SS_FILL) ? (_("Hatch (fill)")) : (_("Hatch (stroke)"));
+        _hatch_tooltip[i] = (i == SS_FILL) ? (_("Hatch (fill)")) : (_("Hatch (stroke)"));
 
         _lgradient[i].set_markup (_("<b>L</b>"));
         _lgradient[i].show_all();
-        __lgradient[i] = (i == SS_FILL)? (_("Linear gradient (fill)")) : (_("Linear gradient (stroke)"));
+        _lgradient_tooltip[i] = (i == SS_FILL)? (_("Linear gradient (fill)")) : (_("Linear gradient (stroke)"));
 
         _gradient_preview_l[i] = Gtk::make_managed<GradientImage>(nullptr);
         _gradient_box_l[i].set_orientation(Gtk::ORIENTATION_HORIZONTAL);
@@ -201,7 +201,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
 
         _rgradient[i].set_markup (_("<b>R</b>"));
         _rgradient[i].show_all();
-        __rgradient[i] = (i == SS_FILL)? (_("Radial gradient (fill)")) : (_("Radial gradient (stroke)"));
+        _rgradient_tooltip[i] = (i == SS_FILL)? (_("Radial gradient (fill)")) : (_("Radial gradient (stroke)"));
 
         _gradient_preview_r[i] = Gtk::make_managed<GradientImage>(nullptr);
         _gradient_box_r[i].set_orientation(Gtk::ORIENTATION_HORIZONTAL);
@@ -212,7 +212,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
 #ifdef WITH_MESH
         _mgradient[i].set_markup (_("<b>M</b>"));
         _mgradient[i].show_all();
-        __mgradient[i] = (i == SS_FILL)? (_("Mesh gradient (fill)")) : (_("Mesh gradient (stroke)"));
+        _mgradient_tooltip[i] = (i == SS_FILL)? (_("Mesh gradient (fill)")) : (_("Mesh gradient (stroke)"));
 
         _gradient_preview_m[i] = Gtk::make_managed<GradientImage>(nullptr);
         _gradient_box_m[i].set_orientation(Gtk::ORIENTATION_HORIZONTAL);
@@ -223,24 +223,24 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
 
         _many[i].set_markup (_("≠"));
         _many[i].show_all();
-        __many[i] = (i == SS_FILL)? (_("Different fills")) : (_("Different strokes"));
+        _many_tooltip[i] = (i == SS_FILL)? (_("Different fills")) : (_("Different strokes"));
 
         _unset[i].set_markup (_("<b>Unset</b>"));
         _unset[i].show_all();
-        __unset[i] = (i == SS_FILL)? (_("Unset fill")) : (_("Unset stroke"));
+        _unset_tooltip[i] = (i == SS_FILL)? (_("Unset fill")) : (_("Unset stroke"));
 
         _color_preview[i] = std::make_unique<Inkscape::UI::Widget::ColorPreview>(0);
-        __color[i] = (i == SS_FILL)? (_("Flat color (fill)")) : (_("Flat color (stroke)"));
+        _color_tooltip[i] = (i == SS_FILL)? (_("Flat color (fill)")) : (_("Flat color (stroke)"));
 
         // TRANSLATORS: A means "Averaged"
         _averaged[i].set_markup (_("<b>a</b>"));
         _averaged[i].show_all();
-        __averaged[i] = (i == SS_FILL)? (_("Fill is averaged over selected objects")) : (_("Stroke is averaged over selected objects"));
+        _averaged_tooltip[i] = (i == SS_FILL)? (_("Fill is averaged over selected objects")) : (_("Stroke is averaged over selected objects"));
 
         // TRANSLATORS: M means "Multiple"
         _multiple[i].set_markup (_("<b>m</b>"));
         _multiple[i].show_all();
-        __multiple[i] = (i == SS_FILL)? (_("Multiple selected objects have the same fill")) : (_("Multiple selected objects have the same stroke"));
+        _multiple_tooltip[i] = (i == SS_FILL)? (_("Multiple selected objects have the same fill")) : (_("Multiple selected objects have the same stroke"));
 
         make_popup(static_cast<FillOrStroke>(i));
 
@@ -253,7 +253,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
     _fill_flag_place.set_size_request(SELECTED_STYLE_FLAG_WIDTH , -1);
 
     _fill_place.add(_na[SS_FILL]);
-    _fill_place.set_tooltip_text(__na[SS_FILL]);
+    _fill_place.set_tooltip_text(_na_tooltip[SS_FILL]);
     _fill.set_size_request(SELECTED_STYLE_PLACE_WIDTH, -1);
     _fill.pack_start(_fill_place, Gtk::PACK_EXPAND_WIDGET);
 
@@ -263,7 +263,7 @@ SelectedStyle::SelectedStyle(bool /*layout*/)
     _stroke_flag_place.set_size_request(SELECTED_STYLE_FLAG_WIDTH, -1);
 
     _stroke_place.add(_na[SS_STROKE]);
-    _stroke_place.set_tooltip_text(__na[SS_STROKE]);
+    _stroke_place.set_tooltip_text(_na_tooltip[SS_STROKE]);
     _stroke.set_size_request(SELECTED_STYLE_PLACE_WIDTH, -1);
     _stroke.pack_start(_stroke_place, Gtk::PACK_EXPAND_WIDGET);
 
@@ -893,7 +893,7 @@ SelectedStyle::update()
         switch (result) {
         case QUERY_STYLE_NOTHING:
             place->add(_na[i]);
-            place->set_tooltip_text(__na[i]);
+            place->set_tooltip_text(_na_tooltip[i]);
             _mode[i] = SS_NA;
             if (_dropEnabled[i]) {
                 auto widget = i == SS_FILL ? &_fill_place : &_stroke_place;
@@ -924,29 +924,29 @@ SelectedStyle::update()
                         auto vector = cast<SPGradient>(server)->getVector();
                         _gradient_preview_l[i]->set_gradient(vector);
                         place->add(_gradient_box_l[i]);
-                        place->set_tooltip_text(__lgradient[i]);
+                        place->set_tooltip_text(_lgradient_tooltip[i]);
                         _mode[i] = SS_LGRADIENT;
                     } else if (is<SPRadialGradient>(server)) {
                         auto vector = cast<SPGradient>(server)->getVector();
                         _gradient_preview_r[i]->set_gradient(vector);
                         place->add(_gradient_box_r[i]);
-                        place->set_tooltip_text(__rgradient[i]);
+                        place->set_tooltip_text(_rgradient_tooltip[i]);
                         _mode[i] = SS_RGRADIENT;
 #ifdef WITH_MESH
                     } else if (is<SPMeshGradient>(server)) {
                         auto array = cast<SPGradient>(server)->getArray();
                         _gradient_preview_m[i]->set_gradient(array);
                         place->add(_gradient_box_m[i]);
-                        place->set_tooltip_text(__mgradient[i]);
+                        place->set_tooltip_text(_mgradient_tooltip[i]);
                         _mode[i] = SS_MGRADIENT;
 #endif
                     } else if (is<SPPattern>(server)) {
                         place->add(_pattern[i]);
-                        place->set_tooltip_text(__pattern[i]);
+                        place->set_tooltip_text(_pattern_tooltip[i]);
                         _mode[i] = SS_PATTERN;
                     } else if (is<SPHatch>(server)) {
                         place->add(_hatch[i]);
-                        place->set_tooltip_text(__hatch[i]);
+                        place->set_tooltip_text(_hatch_tooltip[i]);
                         _mode[i] = SS_HATCH;
                     }
                 } else {
@@ -962,30 +962,30 @@ SelectedStyle::update()
                 place->add(*_color_preview[i]);
                 gchar c_string[64];
                 g_snprintf (c_string, 64, "%06x/%.3g", color >> 8, SP_RGBA32_A_F(color));
-                place->set_tooltip_text(__color[i] + ": " + c_string + _(", drag to adjust, middle-click to remove"));
+                place->set_tooltip_text(_color_tooltip[i] + ": " + c_string + _(", drag to adjust, middle-click to remove"));
                 _mode[i] = SS_COLOR;
                 _popup_copy[i]->set_sensitive(true);
             } else if (paint->set && paint->isNone()) {
                 place->add(_none[i]);
-                place->set_tooltip_text(__none[i]);
+                place->set_tooltip_text(_none_tooltip[i]);
                 _mode[i] = SS_NONE;
             } else if (!paint->set) {
                 place->add(_unset[i]);
-                place->set_tooltip_text(__unset[i]);
+                place->set_tooltip_text(_unset_tooltip[i]);
                 _mode[i] = SS_UNSET;
             }
             if (result == QUERY_STYLE_MULTIPLE_AVERAGED) {
                 flag_place->add(_averaged[i]);
-                flag_place->set_tooltip_text(__averaged[i]);
+                flag_place->set_tooltip_text(_averaged_tooltip[i]);
             } else if (result == QUERY_STYLE_MULTIPLE_SAME) {
                 flag_place->add(_multiple[i]);
-                flag_place->set_tooltip_text(__multiple[i]);
+                flag_place->set_tooltip_text(_multiple_tooltip[i]);
             }
             break;
         }
         case QUERY_STYLE_MULTIPLE_DIFFERENT:
             place->add(_many[i]);
-            place->set_tooltip_text(__many[i]);
+            place->set_tooltip_text(_many_tooltip[i]);
             _mode[i] = SS_MANY;
             break;
         default:

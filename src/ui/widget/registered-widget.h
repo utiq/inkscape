@@ -14,8 +14,8 @@
  *
  */
 
-#ifndef INKSCAPE_UI_WIDGET_REGISTERED_WIDGET__H_
-#define INKSCAPE_UI_WIDGET_REGISTERED_WIDGET__H_
+#ifndef SEEN_INKSCAPE_UI_WIDGET_REGISTERED_WIDGET_H
+#define SEEN_INKSCAPE_UI_WIDGET_REGISTERED_WIDGET_H
 
 #include <2geom/affine.h>
 #include "xml/node.h"
@@ -438,7 +438,7 @@ protected:
 } // namespace UI
 } // namespace Inkscape
 
-#endif // INKSCAPE_UI_WIDGET_REGISTERED_WIDGET__H_
+#endif // SEEN_INKSCAPE_UI_WIDGET_REGISTERED_WIDGET_H
 
 /*
   Local Variables:

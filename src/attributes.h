@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_ATTRIBUTES_H__
-#define __SP_ATTRIBUTES_H__
+#ifndef SEEN_ATTRIBUTES_H
+#define SEEN_ATTRIBUTES_H
 
 /** \file
  * Lookup dictionary for attributes/properties.

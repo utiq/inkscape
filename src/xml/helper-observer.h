@@ -46,7 +46,7 @@ private:
 }
 }
 
-#endif //#ifndef __XML_HELPER_OBSERVER__
+#endif // SEEN_XML_HELPER_OBSERVER
 
 /*
   Local Variables:

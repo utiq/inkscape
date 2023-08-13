@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_FILTER_ENUMS_H__
-#define __SP_FILTER_ENUMS_H__
+#ifndef SEEN_INKSCAPE_FILTER_ENUMS_H
+#define SEEN_INKSCAPE_FILTER_ENUMS_H
 
 /*
  * Conversion data for filter and filter primitive enumerations

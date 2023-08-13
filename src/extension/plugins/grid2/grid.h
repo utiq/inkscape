@@ -8,7 +8,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __GRID_H
+#ifndef SEEN_PLUGINS_GRID_H
+#define SEEN_PLUGINS_GRID_H
 
 #include "extension/implementation/implementation.h"
 

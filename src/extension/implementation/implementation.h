@@ -198,7 +198,7 @@ public:
 }  // namespace Extension
 }  // namespace Inkscape
 
-#endif // __INKSCAPE_EXTENSION_IMPLEMENTATION_H__
+#endif // SEEN_INKSCAPE_EXTENSION_IMPLEMENTATION_H
 
 /*
   Local Variables:

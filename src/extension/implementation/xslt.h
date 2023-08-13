@@ -10,8 +10,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __INKSCAPE_EXTENSION_IMPEMENTATION_XSLT_H__
-#define __INKSCAPE_EXTENSION_IMPEMENTATION_XSLT_H__
+#ifndef SEEN_INKSCAPE_EXTENSION_IMPEMENTATION_XSLT_H
+#define SEEN_INKSCAPE_EXTENSION_IMPEMENTATION_XSLT_H
 
 #include "implementation.h"
 
@@ -52,7 +52,7 @@ public:
 }  /* Inkscape  */
 }  /* Extension  */
 }  /* Implementation  */
-#endif /* __INKSCAPE_EXTENSION_IMPEMENTATION_XSLT_H__ */
+#endif // SEEN_INKSCAPE_EXTENSION_IMPEMENTATION_XSLT_H
 
 /*
   Local Variables:

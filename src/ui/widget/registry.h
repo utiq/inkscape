@@ -7,8 +7,8 @@
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef INKSCAPE_UI_WIDGET_REGISTRY__H
-#define INKSCAPE_UI_WIDGET_REGISTRY__H
+#ifndef SEEN_INKSCAPE_UI_WIDGET_REGISTRY_H
+#define SEEN_INKSCAPE_UI_WIDGET_REGISTRY_H
 
 class SPDesktop;
 
@@ -37,7 +37,7 @@ protected:
 } // namespace UI
 } // namespace Widget
 
-#endif // INKSCAPE_UI_WIDGET_REGISTRY__H
+#endif // SEEN_INKSCAPE_UI_WIDGET_REGISTRY_H
 
 /*
   Local Variables:

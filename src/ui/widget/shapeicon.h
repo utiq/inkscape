@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __UI_DIALOG_SHAPEICON_H__
-#define __UI_DIALOG_SHAPEICON_H__
+#ifndef SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
+#define SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
 /*
  * Authors:
  *   Martin Owens
@@ -101,7 +101,7 @@ private:
 } // namespace Inkscape
 
 
-#endif /* __UI_DIALOG_SHAPEICON_H__ */
+#endif // SEEN_INKSCAPE_UI_DIALOG_SHAPEICON_H
 
 /*
   Local Variables:

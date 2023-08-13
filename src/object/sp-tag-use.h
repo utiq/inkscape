@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_TAG_USE_H__
-#define __SP_TAG_USE_H__
+#ifndef SEEN_SP_TAG_USE_H
+#define SEEN_SP_TAG_USE_H
 
 /*
  * SVG <inkscape:tagref> implementation

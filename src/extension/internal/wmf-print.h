@@ -72,7 +72,7 @@ protected:
 }  /* namespace Inkscape */
 
 
-#endif /* __INKSCAPE_EXTENSION_INTERNAL_PRINT_WMF_H__ */
+#endif // SEEN_INKSCAPE_EXTENSION_INTERNAL_WMF_PRINT_H
 
 /*
   Local Variables:

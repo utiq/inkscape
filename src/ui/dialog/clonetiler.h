@@ -8,8 +8,8 @@
  * Copyright (C) 2004 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef __SP_CLONE_TILER_H__
-#define __SP_CLONE_TILER_H__
+#ifndef SEEN_INKSCAPE_CLONE_TILER_H
+#define SEEN_INKSCAPE_CLONE_TILER_H
 
 #include "ui/dialog/dialog-base.h"
 #include "ui/widget/color-picker.h"

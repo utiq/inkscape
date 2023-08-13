@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __FILTER_EFFECT_CHOOSER_H__
-#define __FILTER_EFFECT_CHOOSER_H__
+#ifndef SEEN_FILTER_EFFECT_CHOOSER_H
+#define SEEN_FILTER_EFFECT_CHOOSER_H
 
 /*
  * Filter effect selection selection widget

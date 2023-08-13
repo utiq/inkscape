@@ -10,8 +10,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __SP_MARKER_CONTEXT_H__
-#define __SP_MARKER_CONTEXT_H__
+#ifndef SEEN_INKSCAPE_MARKER_TOOL_H
+#define SEEN_INKSCAPE_MARKER_TOOL_H
 
 #include <cstddef>
 #include <sigc++/sigc++.h>

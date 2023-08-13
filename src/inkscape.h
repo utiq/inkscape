@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __INKSCAPE_H__
-#define __INKSCAPE_H__
+#ifndef SEEN_INKSCAPE_H
+#define SEEN_INKSCAPE_H
 
 /*
  * Interface to main application

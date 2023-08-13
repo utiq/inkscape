@@ -15,8 +15,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __FILE_DIALOGIMPL_H__
-#define __FILE_DIALOGIMPL_H__
+#ifndef SEEN_FILE_DIALOG_IMPL_GTKMM_H
+#define SEEN_FILE_DIALOG_IMPL_GTKMM_H
 
 //Gtk includes
 #include <gtkmm/filechooserdialog.h>
@@ -260,7 +260,7 @@ private:
 } // namespace UI
 } // namespace Inkscape
 
-#endif /*__FILE_DIALOGIMPL_H__*/
+#endif // SEEN_FILE_DIALOG_IMPL_GTKMM_H
 
 /*
   Local Variables:

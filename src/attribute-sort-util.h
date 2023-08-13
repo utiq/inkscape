@@ -9,8 +9,8 @@
  * Copyright (C) 2016 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef __SP_ATTRIBUTE_SORT_UTIL_H__
-#define __SP_ATTRIBUTE_SORT_UTIL_H__
+#ifndef SEEN_ATTRIBUTE_SORT_UTIL_H
+#define SEEN_ATTRIBUTE_SORT_UTIL_H
 
 #include "xml/node.h"
 
@@ -25,7 +25,7 @@ using Inkscape::XML::Node;
  */
 void sp_attribute_sort_tree(Node& repr);
 
-#endif /* __SP_ATTRIBUTE_SORT_UTIL_H__ */
+#endif // SEEN_ATTRIBUTE_SORT_UTIL_H
 
 /*
   Local Variables:

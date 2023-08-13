@@ -117,7 +117,7 @@ private:
     Persp3DNodeObserver &nodeObserver() { return *this; }
 };
 
-#endif /* __PERSP3D_H__ */
+#endif // SEEN_PERSP3D_H
 
 /*
   Local Variables:

@@ -7,8 +7,8 @@
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef __SP_ATTRIBUTE_REL_SVG_H__
-#define __SP_ATTRIBUTE_REL_SVG_H__
+#ifndef SEEN_ATTRIBUTE_REL_SVG_H
+#define SEEN_ATTRIBUTE_REL_SVG_H
 
 /*
  * attribute-rel-svg.h
@@ -47,7 +47,7 @@ private:
     hashList attributesOfElements;
 };
 
-#endif /* __SP_ATTRIBUTE_REL_SVG_H__ */
+#endif // SEEN_ATTRIBUTE_REL_SVG_H
 
 /*
   Local Variables:

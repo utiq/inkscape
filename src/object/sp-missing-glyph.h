@@ -36,4 +36,4 @@ private:
     double vert_adv_y;
 };
 
-#endif //#ifndef __SP_MISSING_GLYPH_H__
+#endif // SEEN_SP_MISSING_GLYPH_H

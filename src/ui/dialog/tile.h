@@ -67,7 +67,7 @@ private:
 } //namespace Inkscape
 
 
-#endif /* __TILEDIALOG_H__ */
+#endif // SEEN_UI_DIALOG_TILE_H
 
 /*
   Local Variables:

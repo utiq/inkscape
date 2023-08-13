@@ -68,7 +68,7 @@ private:
 
 } // namespace Proj
 
-#endif /* __TRANSF_MAT_3x4_H__ */
+#endif // SEEN_TRANSF_MAT_3x4_H
 
 /*
   Local Variables:

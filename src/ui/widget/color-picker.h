@@ -11,8 +11,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __COLOR_PICKER_H__
-#define __COLOR_PICKER_H__
+#ifndef SEEN_INKSCAPE_COLOR_PICKER_H
+#define SEEN_INKSCAPE_COLOR_PICKER_H
 
 #include "labelled.h"
 
@@ -105,7 +105,7 @@ public:
 }//namespace UI
 }//namespace Inkscape
 
-#endif /* !__COLOR_PICKER_H__ */
+#endif // SEEN_INKSCAPE_COLOR_PICKER_H
 
 /*
   Local Variables:

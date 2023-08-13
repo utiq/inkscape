@@ -13,8 +13,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __SVG_H__
-#define __SVG_H__
+#ifndef SEEN_EXTENSION_INTERNAL_SVG_H
+#define SEEN_EXTENSION_INTERNAL_SVG_H
 
 #include "../implementation/implementation.h"
 
@@ -57,7 +57,7 @@ public:
 };
 
 } } }  /* namespace Inkscape, Extension, Implementation */
-#endif /* __SVG_H__ */
+#endif // SEEN_EXTENSION_INTERNAL_SVG_H
 
 /*
   Local Variables:

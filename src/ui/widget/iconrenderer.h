@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __UI_WIDGET_ICONRENDERER_H__
-#define __UI_WIDGET_ICONRENDERER_H__
+#ifndef SEEN_UI_WIDGET_ICONRENDERER_H
+#define SEEN_UI_WIDGET_ICONRENDERER_H
 /*
  * Authors:
  *   Theodore Janeczko
@@ -70,7 +70,7 @@ private:
 } // namespace Inkscape
 
 
-#endif /* __UI_WIDGET_ICONRENDERER_H__ */
+#endif // SEEN_UI_WIDGET_ICONRENDERER_H
 
 /*
   Local Variables:

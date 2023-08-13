@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __UI_DIALOG_IMAGETOGGLER_H__
-#define __UI_DIALOG_IMAGETOGGLER_H__
+#ifndef SEEN_UI_DIALOG_IMAGETOGGLER_H
+#define SEEN_UI_DIALOG_IMAGETOGGLER_H
 /*
  * Authors:
  *   Jon A. Cruz
@@ -83,7 +83,7 @@ private:
 } // namespace Inkscape
 
 
-#endif /* __UI_DIALOG_IMAGETOGGLER_H__ */
+#endif // SEEN_UI_DIALOG_IMAGETOGGLER_H
 
 /*
   Local Variables:

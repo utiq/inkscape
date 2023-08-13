@@ -76,7 +76,7 @@ private:
     Gtk::Label _value[2];
     Gtk::Label _opacity_value;
     std::unique_ptr<ColorPreview> _color_preview[2];
-    Glib::ustring __color[2];
+    Glib::ustring _color[2];
     Gtk::Box _stroke;
     Gtk::EventBox _stroke_width_place;
     Gtk::Label _stroke_width;

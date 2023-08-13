@@ -119,4 +119,4 @@ protected:
 	Inkscape::XML::Node* write(Inkscape::XML::Document* doc, Inkscape::XML::Node* repr, unsigned int flags) override;
 };
 
-#endif //#ifndef __SP_FONTFACE_H__
+#endif // SEEN_SP_FONTFACE_H

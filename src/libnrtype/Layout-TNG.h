@@ -9,8 +9,8 @@
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef __LAYOUT_TNG_H__
-#define __LAYOUT_TNG_H__
+#ifndef SEEN_LAYOUT_TNG_H
+#define SEEN_LAYOUT_TNG_H
 
 //#define DEBUG_TEXTLAYOUT_DUMPASTEXT
 

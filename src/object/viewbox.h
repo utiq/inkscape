@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_VIEWBOX_H__
-#define __SP_VIEWBOX_H__
+#ifndef SEEN_INKSCAPE_VIEWBOX_H
+#define SEEN_INKSCAPE_VIEWBOX_H
 
 /*
  * viewBox helper class, common code used by root, symbol, marker, pattern, image, view

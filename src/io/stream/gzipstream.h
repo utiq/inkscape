@@ -117,4 +117,4 @@ private:
 } // namespace Inkscape
 
 
-#endif /* __INKSCAPE_IO_GZIPSTREAM_H__ */
+#endif // SEEN_INKSCAPE_IO_GZIPSTREAM_H

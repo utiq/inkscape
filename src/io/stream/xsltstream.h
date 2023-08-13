@@ -137,4 +137,4 @@ private:
 } // namespace Inkscape
 
 
-#endif /* __INKSCAPE_IO_XSLTSTREAM_H__ */
+#endif // SEEN_INKSCAPE_IO_XSLTSTREAM_H

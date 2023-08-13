@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef __SP_STAR_CONTEXT_H__
-#define __SP_STAR_CONTEXT_H__
+#ifndef SEEN_INKSCAPE_STAR_TOOL_H
+#define SEEN_INKSCAPE_STAR_TOOL_H
 
 /*
  * Star drawing context

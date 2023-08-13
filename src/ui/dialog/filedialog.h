@@ -14,9 +14,10 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __FILE_DIALOG_H__
-#define __FILE_DIALOG_H__
+#ifndef SEEN_FILE_DIALOG_H
+#define SEEN_FILE_DIALOG_H
 
+#include <map>
 #include <vector>
 #include <set>
 
@@ -186,7 +187,7 @@ protected:
 } // namespace UI
 } // namespace Inkscape
 
-#endif /* __FILE_DIALOG_H__ */
+#endif // SEEN_FILE_DIALOG_H
 
 /*
   Local Variables:

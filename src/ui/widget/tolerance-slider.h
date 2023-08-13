@@ -8,8 +8,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef INKSCAPE_UI_WIDGET_TOLERANCE_SLIDER__H_
-#define INKSCAPE_UI_WIDGET_TOLERANCE_SLIDER__H_
+#ifndef SEEN_INKSCAPE_UI_WIDGET_TOLERANCE_SLIDER_H
+#define SEEN_INKSCAPE_UI_WIDGET_TOLERANCE_SLIDER_H
 
 #include <gtkmm/radiobuttongroup.h>
 
@@ -74,7 +74,7 @@ protected:
 } // namespace UI
 } // namespace Inkscape
 
-#endif // INKSCAPE_UI_WIDGET_TOLERANCE_SLIDER__H_
+#endif // SEEN_INKSCAPE_UI_WIDGET_TOLERANCE_SLIDER_H
 
 /*
   Local Variables:

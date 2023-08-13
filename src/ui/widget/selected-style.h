@@ -154,50 +154,50 @@ protected:
     Inkscape::UI::Widget::SpinButton _opacity_sb;
 
     Gtk::Label _na[2];
-    Glib::ustring __na[2];
+    Glib::ustring _na_tooltip[2];
 
     Gtk::Label _none[2];
-    Glib::ustring __none[2];
+    Glib::ustring _none_tooltip[2];
 
     Gtk::Label _pattern[2];
-    Glib::ustring __pattern[2];
+    Glib::ustring _pattern_tooltip[2];
 
     Gtk::Label _hatch[2];
-    Glib::ustring __hatch[2];
+    Glib::ustring _hatch_tooltip[2];
 
     Gtk::Label _lgradient[2];
-    Glib::ustring __lgradient[2];
+    Glib::ustring _lgradient_tooltip[2];
 
     GradientImage *_gradient_preview_l[2];
     Gtk::Box _gradient_box_l[2];
 
     Gtk::Label _rgradient[2];
-    Glib::ustring __rgradient[2];
+    Glib::ustring _rgradient_tooltip[2];
 
     GradientImage *_gradient_preview_r[2];
     Gtk::Box _gradient_box_r[2];
 
 #ifdef WITH_MESH
     Gtk::Label _mgradient[2];
-    Glib::ustring __mgradient[2];
+    Glib::ustring _mgradient_tooltip[2];
 
     GradientImage *_gradient_preview_m[2];
     Gtk::Box _gradient_box_m[2];
 #endif
 
     Gtk::Label _many[2];
-    Glib::ustring __many[2];
+    Glib::ustring _many_tooltip[2];
 
     Gtk::Label _unset[2];
-    Glib::ustring __unset[2];
+    Glib::ustring _unset_tooltip[2];
 
     std::unique_ptr<ColorPreview> _color_preview[2];
-    Glib::ustring __color[2];
+    Glib::ustring _color_tooltip[2];
 
     Gtk::Label _averaged[2];
-    Glib::ustring __averaged[2];
+    Glib::ustring _averaged_tooltip[2];
     Gtk::Label _multiple[2];
-    Glib::ustring __multiple[2];
+    Glib::ustring _multiple_tooltip[2];
 
     Gtk::Box _fill;
     Gtk::Box _stroke;

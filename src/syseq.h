@@ -303,7 +303,7 @@ template <int S, int T> SolutionKind gaussjord_solve (double A[S][T], double x[T
 
 } // namespace SysEq
 
-#endif /* __SYSEQ_H__ */
+#endif // SEEN_SYSEQ_H
 
 /*
   Local Variables:

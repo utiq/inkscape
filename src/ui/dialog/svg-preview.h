@@ -15,8 +15,8 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef __SVG_PREVIEW_H__
-#define __SVG_PREVIEW_H__
+#ifndef SEEN_SVG_PREVIEW_H
+#define SEEN_SVG_PREVIEW_H
 
 //Gtk includes
 #include <gtkmm.h>
@@ -109,7 +109,7 @@ private:
 } // namespace UI
 } // namespace Inkscape
 
-#endif /*__SVG_PREVIEW_H__*/
+#endif // SEEN_SVG_PREVIEW_H
 
 /*
   Local Variables:

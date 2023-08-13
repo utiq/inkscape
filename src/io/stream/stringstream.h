@@ -7,8 +7,8 @@
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef __INKSCAPE_IO_STRINGSTREAM_H__
-#define __INKSCAPE_IO_STRINGSTREAM_H__
+#ifndef SEEN_INKSCAPE_IO_STRINGSTREAM_H
+#define SEEN_INKSCAPE_IO_STRINGSTREAM_H
 
 #include <glibmm/ustring.h>
 
@@ -102,4 +102,4 @@ private:
 
 
 
-#endif /* __INKSCAPE_IO_STRINGSTREAM_H__ */
+#endif // SEEN_INKSCAPE_IO_STRINGSTREAM_H
