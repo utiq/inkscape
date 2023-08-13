@@ -355,8 +355,9 @@ CanvasGrid::ShowCommandPalette(bool state)
 {
     if (state) {
         _command_palette->open();
+    } else {
+        _command_palette->close();
     }
-    _command_palette->close();
 }
 
 // Update rulers on change of widget size, but only if allocation really changed.

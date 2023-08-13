@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/**
- * @file
- * Dialog for adding a live path effect.
- *
- * Author:
+/** \file
+ * CommandPalette: Class providing Command Palette feature
+ */
+/* Author:
  * Abhay Raj Singh <abhayonlyone@gmail.com>
  *
  * Copyright (C) 2020 Authors
@@ -12,35 +11,38 @@
 
 #include "command-palette.h"
 
-#include <optional>
-
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <stdexcept>
+#include <sigc++/adaptors/bind.h>
+#include <sigc++/functors/mem_fun.h>
 #include <glibmm/i18n.h>
+#include <glibmm/main.h>
+#include <glibmm/variant.h>
+#include <giomm/action.h>
 #include <gtkmm/box.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/label.h>
+#include <gtkmm/listbox.h>
+#include <gtkmm/listboxrow.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/searchbar.h>
+#include <gtkmm/searchentry.h>
+#include <gtkmm/window.h>
 
 #include "file.h"
+#include "include/glibmm_version.h"
+#include "inkscape.h"
 #include "inkscape-application.h"
 #include "inkscape-window.h"
-#include "inkscape.h"
+#include "io/resource.h"
 #include "message-stack.h"
 #include "selection.h"
+#include "util/callback-converter.h"
 
-#include "include/glibmm_version.h"
-#include "io/resource.h"
+namespace Inkscape::UI::Dialog {
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
-
-namespace {
-template <typename T>
-void debug_print(T variable)
-{
-    std::cerr << variable << std::endl;
-}
-} // namespace
-
-// constructor
 CommandPalette::CommandPalette()
 {
     // setup _builder
@@ -56,15 +58,10 @@ CommandPalette::CommandPalette()
 
     // Setup Base UI Components
     _builder->get_widget("CPBase", _CPBase);
-    _builder->get_widget("CPHeader", _CPHeader);
     _builder->get_widget("CPListBase", _CPListBase);
-
-    _builder->get_widget("CPSearchBar", _CPSearchBar);
     _builder->get_widget("CPFilter", _CPFilter);
-
     _builder->get_widget("CPSuggestions", _CPSuggestions);
     _builder->get_widget("CPHistory", _CPHistory);
-
     _builder->get_widget("CPSuggestionsScroll", _CPSuggestionsScroll);
     _builder->get_widget("CPHistoryScroll", _CPHistoryScroll);
 
@@ -72,10 +69,11 @@ CommandPalette::CommandPalette()
     _CPBase->set_halign(Gtk::ALIGN_CENTER);
     _CPBase->set_valign(Gtk::ALIGN_START);
 
-    auto esc_func = sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_escape);
-    _CPFilter->signal_key_press_event().connect(esc_func, false);
-    _CPSuggestions->signal_key_release_event().connect(esc_func, false);
-    _CPHistory->signal_key_press_event().connect(esc_func, false);
+    _CPBase  ->signal_map     ().connect(sigc::mem_fun(*this, &CommandPalette::on_map              ));
+    _CPBase  ->signal_unmap   ().connect(sigc::mem_fun(*this, &CommandPalette::on_unmap            ));
+    _CPFilter->signal_activate().connect(sigc::mem_fun(*this, &CommandPalette::on_activate_cpfilter));
+    _CPFilter->signal_focus   ().connect(sigc::mem_fun(*this, &CommandPalette::on_focus_cpfilter   ));
+
     set_mode(CPMode::SEARCH);
 
     _CPSuggestions->set_activate_on_single_click();
@@ -152,9 +150,11 @@ void CommandPalette::open()
         load_win_doc_actions();
         _win_doc_actions_loaded = true;
     }
+
     _CPBase->show_all();
     _CPFilter->grab_focus();
     _is_open = true;
+
 }
 
 void CommandPalette::close()
@@ -394,57 +394,68 @@ bool CommandPalette::on_filter_recent_file(Gtk::ListBoxRow *child, bool const is
     return false;
 }
 
-bool CommandPalette::on_key_press_cpfilter_escape(GdkEventKey *evt)
+/* Iʼve done it like so because changing ::key-*-events to GtkEventControllerKey
+ * resulted in a LOT of weird stuff happening, and essential presses being lost.
+ * and even before changing to a controller, itʼs nice to have 1 handler, not 3!
+ * Itʼd probably make sense to move this to the main window when thereʼs time */
+void CommandPalette::on_map()
 {
-    if (evt->keyval == GDK_KEY_Escape || evt->keyval == GDK_KEY_question) {
+    auto &window = dynamic_cast<Gtk::Window &>(*_CPBase->get_toplevel());
+    _window_key_controller = gtk_event_controller_key_new(window.Gtk::Widget::gobj());
+    gtk_event_controller_set_propagation_phase(_window_key_controller, GTK_PHASE_CAPTURE);
+    g_signal_connect_after(_window_key_controller, "key-pressed",
+                           Inkscape::Util::make_g_callback<&CommandPalette::on_window_key_pressed>,
+                           this);
+}
+
+void CommandPalette::on_unmap()
+{
+    if (_window_key_controller != nullptr) {
+        g_clear_object(&_window_key_controller);
+    }
+}
+
+bool CommandPalette::on_window_key_pressed(GtkEventControllerKey const * /*controller*/,
+                                           unsigned const keyval, unsigned /*keycode*/,
+                                           GdkModifierType /*state*/)
+{
+    g_return_val_if_fail(_is_open, false);
+
+    if (keyval == GDK_KEY_Escape || keyval == GDK_KEY_question) {
         close();
         return true; // stop propagation of key press, not needed anymore
     }
+
     return false; // Pass the key event which are not used
 }
 
-bool CommandPalette::on_key_press_cpfilter_search_mode(GdkEventKey *evt)
+void CommandPalette::on_activate_cpfilter()
 {
-    auto key = evt->keyval;
-    if (key == GDK_KEY_Return or key == GDK_KEY_Linefeed) {
+    if (_mode == CPMode::SEARCH) {
         if (auto selected_row = _CPSuggestions->get_selected_row(); selected_row) {
             selected_row->activate();
         }
-        return true;
-    } else if (key == GDK_KEY_Up) {
-        if (!_CPHistory->get_children().empty()) {
-            set_mode(CPMode::HISTORY);
-            return true;
-        }
-    } else if (key == GDK_KEY_Down) {
-        if (!_CPSuggestions->get_children().empty()) {
-             _CPSuggestions->unselect_all();
-        }
+    } else if (_mode == CPMode::INPUT) {
+        execute_action(_ask_action_ptr_name.value(), _CPFilter->get_text());
+        _ask_action_ptr_name.reset();
+        close();
     }
-    return false;
 }
 
-bool CommandPalette::on_key_press_cpfilter_history_mode(GdkEventKey *evt)
+bool CommandPalette::on_focus_cpfilter(Gtk::DirectionType const direction)
 {
-    if (evt->keyval == GDK_KEY_BackSpace) {
+    if (_mode != CPMode::SEARCH) return false;
+
+    if (direction == Gtk::DIR_UP) {
+        set_mode(CPMode::HISTORY);
         return true;
     }
-    return false;
-}
 
-/**
- * Executes action when enter pressed
- */
-bool CommandPalette::on_key_press_cpfilter_input_mode(GdkEventKey *evt, const ActionPtrName &action_ptr_name)
-{
-    switch (evt->keyval) {
-        case GDK_KEY_Return:
-            [[fallthrough]];
-        case GDK_KEY_Linefeed:
-            execute_action(action_ptr_name, _CPFilter->get_text());
-            close();
-            return true;
+    if (direction == Gtk::DIR_DOWN) {
+        // Unselect so we go to 1st row
+        _CPSuggestions->unselect_all();
     }
+
     return false;
 }
 
@@ -453,6 +464,7 @@ void CommandPalette::hide_suggestions()
     _CPBase->set_size_request(-1, 10);
     _CPListBase->set_visible(false);
 }
+
 void CommandPalette::show_suggestions()
 {
     _CPBase->set_size_request(-1, _max_height_requestable);
@@ -534,7 +546,13 @@ bool CommandPalette::operate_recent_file(Glib::ustring const &uri, bool const im
 
     close();
     return true;
-} // namespace Dialog
+}
+
+static void set_hint_texts(Gtk::Entry &entry, Glib::ustring const &text)
+{
+    entry.set_placeholder_text(text);
+    entry.set_tooltip_text    (text);
+}
 
 /**
  * Maybe replaced by: Temporary arrangement may be replaced by snippets
@@ -543,6 +561,8 @@ bool CommandPalette::operate_recent_file(Glib::ustring const &uri, bool const im
  */
 bool CommandPalette::ask_action_parameter(const ActionPtrName &action_ptr_name)
 {
+    _ask_action_ptr_name.emplace(action_ptr_name);
+
     // Avoid writing same last action again
     // TODO: Merge the if else parts
     if (const auto last_of_history = _history_xml.get_last_operation(); last_of_history.has_value()) {
@@ -570,28 +590,23 @@ bool CommandPalette::ask_action_parameter(const ActionPtrName &action_ptr_name)
     if (action_param_type != TypeOfVariant::NONE) {
         set_mode(CPMode::INPUT);
 
-        _cpfilter_key_press_connection = _CPFilter->signal_key_press_event().connect(
-            sigc::bind(sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_input_mode),
-                                      action_ptr_name),
-            false);
-
         // get type string NOTE: Temporary should be replaced by adding some data to InkActionExtraDataj
         Glib::ustring type_string;
         switch (action_param_type) {
             case TypeOfVariant::BOOL:
-                type_string = "bool";
+                type_string = _("boolean");
                 break;
             case TypeOfVariant::INT:
-                type_string = "integer";
+                type_string = _("whole number");
                 break;
             case TypeOfVariant::DOUBLE:
-                type_string = "double";
+                type_string = _("decimal number");
                 break;
             case TypeOfVariant::STRING:
-                type_string = "string";
+                type_string = _("text string");
                 break;
             case TypeOfVariant::TUPLE_DD:
-                type_string = "pair of doubles";
+                type_string = _("pair of decimal numbers");
                 break;
             default:
                 break;
@@ -601,16 +616,13 @@ bool CommandPalette::ask_action_parameter(const ActionPtrName &action_ptr_name)
         InkActionHintData &action_hint_data = app->get_action_hint_data();
         auto action_hint = action_hint_data.get_tooltip_hint_for_action(action_ptr_name.second, false);
 
-
         // Indicate user about what to enter FIXME Dialog generation
-        if (action_hint.length()) {
-            _CPFilter->set_placeholder_text(action_hint);
-            _CPFilter->set_tooltip_text(action_hint);
-        } else {
-            _CPFilter->set_placeholder_text("Enter a " + type_string + "...");
-            _CPFilter->set_tooltip_text("Enter a " + type_string + "...");
+        if (action_hint.empty()) {
+            /* Translators: %1 will be replaced with the type of parameter
+             *              expected by the action, e.g., “whole number”. */
+            action_hint = Glib::ustring::compose(_("Enter a %1..."), type_string);
         }
-
+        set_hint_texts(*_CPFilter, action_hint);
 
         return true;
     }
@@ -1075,18 +1087,27 @@ int CommandPalette::on_sort(Gtk::ListBoxRow *row1, Gtk::ListBoxRow *row2)
     return 0;
 }
 
+// Widget.set_sensitive() made the cursor vanish, so… TODO: GTK4: Check if fixed
+static void set_sensitive(Gtk::Entry &entry, bool const sensitive)
+{
+    entry.set_editable(sensitive);
+    entry.set_icon_activatable(sensitive, Gtk::ENTRY_ICON_PRIMARY  );
+    entry.set_icon_activatable(sensitive, Gtk::ENTRY_ICON_SECONDARY);
+}
+
 void CommandPalette::set_mode(CPMode mode)
 {
+    if (_mode == mode) {
+        return;
+    }
+
     switch (mode) {
         case CPMode::SEARCH:
-            if (_mode == CPMode::SEARCH) {
-                return;
-            }
-
+            set_sensitive(*_CPFilter, true);
             _CPFilter->set_text("");
             _CPFilter->set_icon_from_icon_name("edit-find-symbolic");
-            _CPFilter->set_placeholder_text("Search operation...");
-            _CPFilter->set_tooltip_text("Search operation...");
+            set_hint_texts(*_CPFilter, _("Search operation..."));
+
             show_suggestions();
 
             // Show Suggestions instead of history
@@ -1100,51 +1121,39 @@ void CommandPalette::set_mode(CPMode mode)
             _CPSuggestions->set_filter_func(sigc::mem_fun(*this, &CommandPalette::on_filter_general));
 
             _cpfilter_search_connection.disconnect(); // to be sure
-            _cpfilter_key_press_connection.disconnect();
 
             _cpfilter_search_connection =
                 _CPFilter->signal_search_changed().connect(sigc::mem_fun(*this, &CommandPalette::on_search));
-            _cpfilter_key_press_connection = _CPFilter->signal_key_press_event().connect(
-                sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_search_mode), false);
 
             _search_text = "";
             _CPSuggestions->invalidate_filter();
+
             break;
 
         case CPMode::INPUT:
-            if (_mode == CPMode::INPUT) {
-                return;
-            }
             _cpfilter_search_connection.disconnect();
-            _cpfilter_key_press_connection.disconnect();
 
             hide_suggestions();
+
+            set_sensitive(*_CPFilter, true);
             _CPFilter->set_text("");
             _CPFilter->grab_focus();
-
             _CPFilter->set_icon_from_icon_name("input-keyboard");
-            _CPFilter->set_placeholder_text("Enter action argument");
-            _CPFilter->set_tooltip_text("Enter action argument");
+            set_hint_texts(*_CPFilter, _("Enter action argument"));
 
             break;
 
         case CPMode::SHELL:
-            if (_mode == CPMode::SHELL) {
-                return;
-            }
-
             hide_suggestions();
+
+            set_sensitive(*_CPFilter, true);
             _CPFilter->set_icon_from_icon_name("gtk-search");
+
             _cpfilter_search_connection.disconnect();
-            _cpfilter_key_press_connection.disconnect();
 
             break;
 
         case CPMode::HISTORY:
-            if (_mode == CPMode::HISTORY) {
-                return;
-            }
-
             if (_CPHistory->get_children().empty()) {
                 return;
             }
@@ -1152,17 +1161,14 @@ void CommandPalette::set_mode(CPMode mode)
             // Show history instead of suggestions
             _CPSuggestionsScroll->set_no_show_all();
             _CPHistoryScroll->set_no_show_all(false);
-
             _CPSuggestionsScroll->set_visible(false);
             _CPHistoryScroll->show_all();
 
+            set_sensitive(*_CPFilter, false);
             _CPFilter->set_icon_from_icon_name("format-justify-fill");
-            _CPFilter->set_icon_tooltip_text(N_("History mode"));
-            _cpfilter_search_connection.disconnect();
-            _cpfilter_key_press_connection.disconnect();
+            set_hint_texts(*_CPFilter, _("History mode"));
 
-            _cpfilter_key_press_connection = _CPFilter->signal_key_press_event().connect(
-                sigc::mem_fun(*this, &CommandPalette::on_key_press_cpfilter_history_mode), false);
+            _cpfilter_search_connection.disconnect();
 
             _CPHistory->signal_row_selected().connect(
                 sigc::mem_fun(*this, &CommandPalette::on_history_selection_changed));
@@ -1175,14 +1181,14 @@ void CommandPalette::set_mode(CPMode mode)
                 last_row->grab_focus();
             }
 
+            Glib::signal_idle().connect_once([this]
             {
                 // FIXME: scroll to bottom
                 const auto adjustment = _CPHistoryScroll->get_vadjustment();
                 adjustment->set_value(adjustment->get_upper());
-            }
-
-            break;
+            });
     }
+
     _mode = mode;
 }
 
@@ -1582,6 +1588,7 @@ void CPHistoryXML::add_operation(const HistoryType history_type, const std::stri
 
     save();
 }
+
 std::optional<HistoryType> CPHistoryXML::_get_operation_type(Inkscape::XML::Node *operation)
 {
     const std::string operation_type_name = operation->name();
@@ -1598,9 +1605,7 @@ std::optional<HistoryType> CPHistoryXML::_get_operation_type(Inkscape::XML::Node
     }
 }
 
-} // namespace Dialog
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:
