@@ -1757,9 +1757,10 @@ bool ObjectsPanel::on_drag_motion(const Glib::RefPtr<Gdk::DragContext> &context,
             goto finally;
         }
 
-        context->drag_status(Gdk::ACTION_MOVE, time);
-        return false;
     }
+    // need to cater scenarios where we got no selection/empty bottom space
+    context->drag_status(Gdk::ACTION_MOVE, time);
+    return false;
 
 finally:
     // remove drop highlight
@@ -1780,9 +1781,18 @@ bool ObjectsPanel::on_drag_drop(const Glib::RefPtr<Gdk::DragContext> &context, i
     _tree.get_dest_row_at_pos(x, y, path, pos);
 
     if (!path) {
-        return true;
+        
+        if (_tree.is_blank_at_pos(x, y)){
+            // We are in background/bottom empty space. Hence, need to 
+            // drop the layer at end.
+            // We will move to the last node/path and set drop position accordingly 
+            path = --_store->children().end();
+            pos = Gtk::TREE_VIEW_DROP_AFTER;    
+        } else {
+            return true;
+        }
     }
-
+    
     auto drop_repr = getRepr(*_store->get_iter(path));
     bool const drop_into = pos != Gtk::TREE_VIEW_DROP_BEFORE && //
                            pos != Gtk::TREE_VIEW_DROP_AFTER;
