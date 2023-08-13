@@ -15,15 +15,15 @@
 #ifndef ACTION_ACCEL_H_SEEN
 #define ACTION_ACCEL_H_SEEN
 
-#include <gdk/gdk.h>
-#include <glibmm/ustring.h>
-#include <gtkmm.h>
 #include <set>
-#include <sigc++/sigc++.h>
 #include <vector>
+#include <gdk/gdk.h> // GdkEventKey
+#include <gtk/gtk.h> // GtkEventControllerKey
+#include <glibmm/ustring.h>
+#include <gtkmm/accelkey.h>
+#include <sigc++/signal.h>
 
-namespace Inkscape {
-namespace Util {
+namespace Inkscape::Util {
 
 /** Gtk::AccelKey but with equality and less-than operators */
 class AcceleratorKey : public Gtk::AccelKey
@@ -113,13 +113,25 @@ public:
      * @return true if one of the keyboard shortcuts for the action is triggered by the passed event,
      *         false otherwise.
      */
-    bool isTriggeredBy(GdkEventKey *key) const;
+    bool isTriggeredBy(GdkEventKey const *key) const;
+
+    /**
+     * @brief Checks whether a key controller and its signal handler arguments trigger this action.
+     * @param controller - pointer to GtkEventController emitting ::key-pressed or released signal
+     * @param keyval - the keyval received by the signal handler
+     * @param keycode - the hardware key code received by the signal handler
+     * @param state - the keyboard modifier state received by the signal handler
+     * @return true if one of the keyboard shortcuts for the action is triggered by the arguments,
+     *         false otherwise.
+     */
+    bool isTriggeredBy(GtkEventControllerKey const *controller,
+                       unsigned keyval, unsigned keycode, GdkModifierType state) const;
 };
 
-} // namespace Util
-} // namespace Inkscape
+} // namespace Inkscape::Util
 
 #endif // ACTION_ACCEL_H_SEEN
+
 /*
   Local Variables:
   mode:c++

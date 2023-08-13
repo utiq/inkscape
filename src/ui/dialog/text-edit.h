@@ -22,34 +22,37 @@
 #include <glibmm/refptr.h>
 
 #include "helper/auto-connection.h"
-
 #include "ui/dialog/dialog-base.h"
-#include "ui/widget/frame.h"
-
 #include "ui/widget/font-selector.h"
 #include "ui/widget/font-variants.h"
-
+#include "ui/widget/frame.h"
 #include "util/action-accel.h"
 #include "util/font-collections.h"
+
+namespace Glib {
+class ustring;
+} // namespace Glib
 
 namespace Gtk {
 class Box;
 class Button;
+class Frame;
 class Label;
-class Notebook;
+class ListBox;
+class MenuButton;
+class Popover;
+class SearchEntry;
 class TextBuffer;
 class TextView;
-}
+class Widget;
+} // namespace Gtk
 
 class SPItem;
 class FontInstance;
 class SPCSSAttr;
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
 
-#define VB_MARGIN 4
 /**
  * The TextEdit class defines the Text and font dialog.
  *
@@ -97,7 +100,8 @@ protected:
      * This function would disable undo and redo if the text_view widget is in focus
      * It is to fix the issue: https://gitlab.com/inkscape/inkscape/-/issues/744
      */
-    bool captureUndo(GdkEventKey *event);
+    bool captureUndo(GtkEventControllerKey const *controller,
+                     unsigned keyval, unsigned keycode, GdkModifierType state);
 
     /**
      * Callback invoked when the user modifies the text of the selected text object.
@@ -122,9 +126,9 @@ protected:
      *
      * onFontChange updates the dialog UI. The subfunction setPreviewText updates the preview label.
      *
-     * @param fontspec for the text to be previewed.
+     * @param fontspec for the text to be previewed. (Parameter currently not used)
      */
-    void onFontChange (Glib::ustring fontspec);
+    void onFontChange (Glib::ustring const &fontspec);
 
     /**
      * Get the selected text off the main canvas.
@@ -145,17 +149,13 @@ protected:
      * @param font_features for text to be previewed (in CSS format).
      * @param phrase text to be shown.
      */
-    void setPreviewText (Glib::ustring font_spec, Glib::ustring font_features, Glib::ustring phrase);
+    void setPreviewText (Glib::ustring const &font_spec, Glib::ustring const &font_features,
+                         Glib::ustring const &phrase);
 
     void updateObjectText ( SPItem *text );
     SPCSSAttr *fillTextStyle ();
 
 private:
-
-    /*
-     * All the dialogs widgets
-     */
-
     // Tab 1: Font ---------------------- //
     Gtk::Box *settings_and_filters_box;
     Gtk::MenuButton *filter_menu_button;
@@ -186,26 +186,23 @@ private:
     Gtk::Button *apply_button;
 
     // Signals
-    sigc::connection selectChangedConn;
-    sigc::connection subselChangedConn;
-    sigc::connection selectModifiedConn;
-    sigc::connection fontChangedConn;
-    sigc::connection fontFeaturesChangedConn;
+    auto_connection selectChangedConn;
+    auto_connection subselChangedConn;
+    auto_connection selectModifiedConn;
+    auto_connection fontChangedConn;
+    auto_connection fontFeaturesChangedConn;
     auto_connection fontCollectionsChangedSelection;
     auto_connection fontCollectionsUpdate;
 
     // Other
     double selected_fontsize;
     bool blocked;
-    const Glib::ustring samplephrase;
 
     // Track undo and redo keyboard shortcuts
     Util::ActionAccel _undo, _redo;
 };
 
-} //namespace Dialog
-} //namespace UI
-} //namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 #endif // INKSCAPE_UI_DIALOG_TEXT_EDIT_H
 

@@ -10,18 +10,14 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <gdk/gdk.h>
-#include <glibmm/ustring.h>
-#include <gtkmm.h>
-#include <set>
-#include <sigc++/sigc++.h>
+#include "util/action-accel.h"
+
+#include <utility>
 
 #include "inkscape-application.h"
 #include "ui/shortcuts.h"
-#include "util/action-accel.h"
 
-namespace Inkscape {
-namespace Util {
+namespace Inkscape::Util {
 
 ActionAccel::ActionAccel(Glib::ustring action_name)
     : _action{std::move(action_name)}
@@ -71,15 +67,21 @@ bool ActionAccel::_query()
     return false;
 }
 
-bool ActionAccel::isTriggeredBy(GdkEventKey *key) const
+bool ActionAccel::isTriggeredBy(GdkEventKey const * const key) const
 {
-    auto &shortcuts = Shortcuts::getInstance();
-    AcceleratorKey accelerator = shortcuts.get_from_event(key);
+    auto const accelerator = Shortcuts::getInstance().get_from_event(key);
     return _accels.find(accelerator) != _accels.end();
 }
 
-} // namespace Util
-} // namespace Inkscape
+bool ActionAccel::isTriggeredBy(GtkEventControllerKey const * const controller,
+                                unsigned const keyval, unsigned const keycode,
+                                GdkModifierType const state) const
+{
+    auto const accelerator = Shortcuts::getInstance().get_from(controller, keyval, keycode, state);
+    return _accels.find(accelerator) != _accels.end();
+}
+
+} // namespace Inkscape::Util
 
 /*
   Local Variables:

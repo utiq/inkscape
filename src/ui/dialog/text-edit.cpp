@@ -23,9 +23,12 @@
 
 #include "text-edit.h"
 
+#include <algorithm>
+#include <initializer_list>
+#include <string>
 #include <glibmm/i18n.h>
 #include <glibmm/markup.h>
-
+#include <glibmm/ustring.h>
 #include <gtkmm/box.h>
 #include <gtkmm/builder.h>
 #include <gtkmm/button.h>
@@ -33,48 +36,46 @@
 #include <gtkmm/notebook.h>
 #include <gtkmm/textbuffer.h>
 #include <gtkmm/textview.h>
-
 #ifdef WITH_GSPELL
 # include <gspell/gspell.h>
 #endif
-
-#include "desktop-style.h"
-#include "desktop.h"
-#include "dialog-notebook.h"
-#include "dialog-container.h"
-#include "document-undo.h"
-#include "document.h"
-#include "inkscape.h"
-#include "style.h"
-#include "text-editing.h"
-
 #include <libnrtype/font-factory.h>
 #include <libnrtype/font-instance.h>
 #include <libnrtype/font-lister.h>
+#include <sigc++/functors/mem_fun.h>
 
+#include "desktop.h"
+#include "desktop-style.h"
+#include "dialog-container.h"
+#include "dialog-notebook.h"
+#include "document.h"
+#include "document-undo.h"
+#include "inkscape.h"
+#include "io/resource.h"
 #include "object/sp-flowtext.h"
 #include "object/sp-text.h"
-
-#include "io/resource.h"
+#include "style.h"
 #include "svg/css-ostringstream.h"
+#include "text-editing.h"
+#include "ui/controller.h"
 #include "ui/icon-names.h"
-#include "ui/widget/font-selector.h"
-
 #include "util/units.h"
 
-namespace Inkscape {
-namespace UI {
-namespace Dialog {
+namespace Inkscape::UI::Dialog {
+
+static Glib::ustring const &getSamplePhrase()
+{
+    /* TRANSLATORS: Test string used in text and font dialog (when no
+     * text has been entered) to get a preview of the font. Choose
+     * some representative characters that users of your locale will be
+     * interested in. */
+    static auto const samplephrase = Glib::ustring{_("AaBbCcIiPpQq12369$\342\202\254\302\242?.;/()")};
+    return samplephrase;
+}
 
 TextEdit::TextEdit()
     : DialogBase("/dialogs/textandfont", "Text")
     , blocked(false)
-      /*
-           TRANSLATORS: Test string used in text and font dialog (when no
-           * text has been entered) to get a preview of the font.  Choose
-           * some representative characters that users of your locale will be
-           * interested in.*/
-    , samplephrase(_("AaBbCcIiPpQq12369$\342\202\254\302\242?.;/()"))
     , _undo{"doc.undo"}
     , _redo{"doc.redo"}
 {
@@ -147,7 +148,7 @@ TextEdit::TextEdit()
     add(*contents);
 
     /* Signal handlers */
-    text_view->signal_key_press_event().connect(sigc::mem_fun(*this, &TextEdit::captureUndo));
+    Controller::add_key<&TextEdit::captureUndo, nullptr>(*text_view, *this);
     text_buffer->signal_changed().connect([=](){ onChange(); });
     setasdefault_button->signal_clicked().connect([=](){ onSetDefault(); });
     apply_button->signal_clicked().connect([=](){ onApply(); });
@@ -167,23 +168,21 @@ TextEdit::TextEdit()
     show_all_children();
 }
 
-TextEdit::~TextEdit()
-{
-    selectModifiedConn.disconnect();
-    subselChangedConn.disconnect();
-    selectChangedConn.disconnect();
-    fontChangedConn.disconnect();
-    fontFeaturesChangedConn.disconnect();
-}
+TextEdit::~TextEdit() = default;
 
-bool TextEdit::captureUndo(GdkEventKey *key)
+bool TextEdit::captureUndo(GtkEventControllerKey const * const controller,
+                           unsigned const keyval, unsigned const keycode,
+                           GdkModifierType const state)
 {
-    if (_undo.isTriggeredBy(key) || _redo.isTriggeredBy(key)) {
-        /*
-         * TODO: Handle these events separately after switching to GTKMM4
-         * Fixes: https://gitlab.com/inkscape/inkscape/-/issues/744
-         */
-        return true;
+    for (auto const accel: {&_undo, &_redo}) {
+        if (accel->isTriggeredBy(controller, keyval, keycode, state)) {
+            /*
+             * TODO: Handle these events separately after switching to GTKMM4
+             *       e.g. try to use the built-in undo/redo of GtkEditable, etc.
+             * Fixes: https://gitlab.com/inkscape/inkscape/-/issues/744
+             */
+            return true;
+        }
     }
 
     return false;
@@ -198,7 +197,7 @@ void TextEdit::onReadSelection ( gboolean dostyle, gboolean /*docontent*/ )
 
     SPItem *text = getSelectedTextItem ();
 
-    Glib::ustring phrase = samplephrase;
+    auto phrase = getSamplePhrase();
 
     if (text)
     {
@@ -274,7 +273,8 @@ void TextEdit::onReadSelection ( gboolean dostyle, gboolean /*docontent*/ )
 }
 
 
-void TextEdit::setPreviewText (Glib::ustring font_spec, Glib::ustring font_features, Glib::ustring phrase)
+void TextEdit::setPreviewText (Glib::ustring const &font_spec, Glib::ustring const &font_features,
+                               Glib::ustring const &phrase)
 {
     if (font_spec.empty()) {
         preview_label->set_markup("");
@@ -309,20 +309,20 @@ void TextEdit::setPreviewText (Glib::ustring font_spec, Glib::ustring font_featu
         Inkscape::Util::Quantity::convert(
             sp_style_css_size_units_to_px(font_selector.get_fontsize(), unit), "px", "pt");
     pt_size = std::min(pt_size, 100.0);
-
     // Pango font size is in 1024ths of a point
-    Glib::ustring size = std::to_string( int(pt_size * PANGO_SCALE) );
-    Glib::ustring markup = "<span font=\'" + font_spec_escaped +
-        "\' size=\'" + size + "\'";
-    if (!font_features.empty()) {
-        markup += " font_features=\'" + font_features + "\'";
-    }
-    markup += ">" + phrase_escaped + "</span>";
+    auto const size = static_cast<int>(pt_size * PANGO_SCALE);
 
+    auto font_features_attr = Glib::ustring{};
+    if (!font_features.empty()) {
+        font_features_attr = Glib::ustring::compose("font_features='%1'", font_features);
+    }
+
+    auto const markup = Glib::ustring::compose("<span font='%1' size='%2' %3>%4</span>",
+                                               font_spec_escaped, size, font_features_attr,
+                                               phrase_escaped);
     preview_label->set_markup (markup);
     preview_label2->set_markup (markup);
 }
-
 
 SPItem *TextEdit::getSelectedTextItem ()
 {
@@ -613,7 +613,7 @@ void TextEdit::onChange()
 
     Glib::ustring fontspec = font_selector.get_fontspec();
     Glib::ustring features = font_features.get_markup();
-    const Glib::ustring& phrase = str.empty() ? samplephrase : str;
+    auto const &phrase = str.empty() ? getSamplePhrase() : str;
     setPreviewText(fontspec, features, phrase);
 
     SPItem *text = getSelectedTextItem();
@@ -624,15 +624,13 @@ void TextEdit::onChange()
     setasdefault_button->set_sensitive ( true);
 }
 
-void TextEdit::onFontChange(Glib::ustring fontspec)
+void TextEdit::onFontChange(Glib::ustring const & /*fontspec*/)
 {
     // Is not necessary update open type features this done when user click on font features tab
     onChange();
 }
 
-} //namespace Dialog
-} //namespace UI
-} //namespace Inkscape
+} // namespace Inkscape::UI::Dialog
 
 /*
   Local Variables:
