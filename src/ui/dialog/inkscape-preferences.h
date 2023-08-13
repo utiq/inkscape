@@ -29,6 +29,7 @@
 #include <cstddef>
 
 #include <glibmm/regex.h>
+#include <gtk/gtk.h> // GtkEventControllerKey
 #include <gtkmm/colorbutton.h>
 #include <gtkmm/comboboxtext.h>
 #include <gtkmm/frame.h>
@@ -668,7 +669,8 @@ protected:
     void add_highlight(Gtk::Label *label, Glib::ustring const &key);
 
     bool recursive_filter(Glib::ustring &key, Gtk::TreeModel::const_iterator const &row);
-    bool on_navigate_key_press(GdkEventKey *evt);
+    bool on_navigate_key_pressed(GtkEventControllerKey const *controller,
+                                 unsigned keyval, unsigned keycode, GdkModifierType state);
 
     void initPageTools();
     void initPageUI();
@@ -693,7 +695,8 @@ protected:
     void onKBListKeyboardShortcuts();
     void onKBTreeEdited (const Glib::ustring& path, guint accel_key, Gdk::ModifierType accel_mods, guint hardware_keycode);
     void onKBTreeCleared(const Glib::ustring& path_string);
-    bool onKBSearchKeyEvent(GdkEventKey *event);
+    bool onKBSearchKeyReleased(GtkEventControllerKey const *controller,
+                               unsigned keyval, unsigned keycode, GdkModifierType state);
     bool onKBSearchFilter(const Gtk::TreeModel::const_iterator& iter);
     static void onKBShortcutRenderer(Gtk::CellRenderer *rndr, Gtk::TreeIter const &iter);
     void on_modifier_selection_changed();
@@ -706,7 +709,6 @@ private:
   void comboThemeChange();
   void contrastThemeChange();
   void preferDarkThemeChange();
-  bool contrastChange(GdkEventButton* button_event);
   void symbolicThemeCheck();
   void toggleSymbolic();
   void changeIconsColors();

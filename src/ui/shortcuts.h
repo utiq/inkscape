@@ -94,6 +94,7 @@ public:
     sigc::connection connect_changed(sigc::slot<void ()> const &slot);
     static Glib::ustring get_label(const Gtk::AccelKey& shortcut);
     static Gtk::AccelKey get_from_event(GdkEventKey const *event, bool fix = false);
+    /// Controller provides the group. It can be nullptr; if so, we use group 0.
     static Gtk::AccelKey get_from(GtkEventControllerKey const *controller,
                                   unsigned keyval, unsigned keycode, GdkModifierType state,
                                   bool fix = false);

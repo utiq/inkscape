@@ -751,7 +751,7 @@ Shortcuts::get_from(GtkEventControllerKey const * const controller,
                     unsigned const keyval, unsigned const keycode, GdkModifierType const state,
                     bool const fix)
 {
-    auto const group = UI::Controller::get_group(controller);
+    auto const group = controller ? UI::Controller::get_group(controller) : 0u;
     return get_from_event_impl(keyval, keycode, state, group, fix);
 }
 

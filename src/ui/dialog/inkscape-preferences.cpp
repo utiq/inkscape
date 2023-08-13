@@ -66,6 +66,7 @@
 #include "object/color-profile.h"
 #include "svg/svg-color.h"
 #include "ui/builder-utils.h"
+#include "ui/controller.h"
 #include "ui/desktop/menubar.h"
 #include "ui/dialog-run.h"
 #include "ui/interface.h"
@@ -347,7 +348,7 @@ InkscapePreferences::InkscapePreferences()
         }
     });
 
-    _search.signal_key_press_event().connect(sigc::mem_fun(*this, &InkscapePreferences::on_navigate_key_press));
+    Controller::add_key<&InkscapePreferences::on_navigate_key_pressed>(_search, *this);
 
     _page_list_model_filter->set_visible_func([=](Gtk::TreeModel::const_iterator const &row) -> bool {
         auto key_lower = _search.get_text().lowercase();
@@ -623,28 +624,30 @@ Gtk::TreePath InkscapePreferences::get_prev_result(Gtk::TreeIter &iter, bool ite
  * @return Always returns False to label the key press event as handled, this
  * prevents the search bar from retaining focus for other keyboard event.
  */
-bool InkscapePreferences::on_navigate_key_press(GdkEventKey *evt)
+bool InkscapePreferences::on_navigate_key_pressed(GtkEventControllerKey const * /*controller*/,
+                                                  unsigned keyval, unsigned /*keycode*/,
+                                                  GdkModifierType state)
 {
-    if (evt->keyval == GDK_KEY_F3) {
-        if (_search_results.size() > 0) {
-            GdkModifierType modmask = gtk_accelerator_get_default_mod_mask();
-            if ((evt->state & modmask) == Gdk::SHIFT_MASK) {
-                Gtk::TreeIter curr = _page_list.get_selection()->get_selected();
-                auto _page_list_selection = _page_list.get_selection();
-                auto prev = get_prev_result(curr);
-                if (prev) {
-                    _page_list.scroll_to_cell(prev, *_page_list.get_column(0));
-                    _page_list.set_cursor(prev);
-                }
-            } else {
-                Gtk::TreeIter curr = _page_list.get_selection()->get_selected();
-                auto _page_list_selection = _page_list.get_selection();
-                auto next = get_next_result(curr);
-                if (next) {
-                    _page_list.scroll_to_cell(next, *_page_list.get_column(0));
-                    _page_list.set_cursor(next);
-                }
-            }
+    if (keyval != GDK_KEY_F3 || _search_results.size() == 0) {
+        return false;
+    }
+
+    GdkModifierType modmask = gtk_accelerator_get_default_mod_mask();
+    if ((state & modmask) == Gdk::SHIFT_MASK) {
+        Gtk::TreeIter curr = _page_list.get_selection()->get_selected();
+        auto _page_list_selection = _page_list.get_selection();
+        auto prev = get_prev_result(curr);
+        if (prev) {
+            _page_list.scroll_to_cell(prev, *_page_list.get_column(0));
+            _page_list.set_cursor(prev);
+        }
+    } else {
+        Gtk::TreeIter curr = _page_list.get_selection()->get_selected();
+        auto _page_list_selection = _page_list.get_selection();
+        auto next = get_next_result(curr);
+        if (next) {
+            _page_list.scroll_to_cell(next, *_page_list.get_column(0));
+            _page_list.set_cursor(next);
         }
     }
     return false;
@@ -1348,12 +1351,6 @@ void InkscapePreferences::toggleSymbolic()
     }
     INKSCAPE.themecontext->getChangeThemeSignal().emit();
     INKSCAPE.themecontext->add_gtk_css(true);
-}
-
-bool InkscapePreferences::contrastChange(GdkEventButton *button_event)
-{
-    themeChange();
-    return true;
 }
 
 void InkscapePreferences::comboThemeChange()
@@ -3216,7 +3213,7 @@ void InkscapePreferences::initKeyboardShortcuts(Gtk::TreeModel::iterator iter_ui
     kb_reset->signal_clicked().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBReset) );
     kb_import->signal_clicked().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBImport) );
     kb_export->signal_clicked().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBExport) );
-    _kb_search.signal_key_release_event().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBSearchKeyEvent) );
+    Controller::add_key<nullptr, &InkscapePreferences::onKBSearchKeyReleased>(_kb_search, *this);
     _kb_filelist.signal_changed().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBList) );
     _page_keyshortcuts.signal_realize().connect( sigc::mem_fun(*this, &InkscapePreferences::onKBRealize) );
 
@@ -3268,14 +3265,15 @@ void InkscapePreferences::onKBExport()
     Inkscape::Shortcuts::getInstance().export_shortcuts();
 }
 
-bool InkscapePreferences::onKBSearchKeyEvent(GdkEventKey * /*event*/)
+bool InkscapePreferences::onKBSearchKeyReleased(GtkEventControllerKey const * /*controller*/,
+                                                unsigned /*keyval*/, unsigned /*keycode*/,
+                                                GdkModifierType /*state*/)
 {
     _kb_filter->refilter();
     auto search = _kb_search.get_text();
     if (search.length() > 2) {
         _kb_tree.expand_all();
-    }
-    else {
+    } else {
         _kb_tree.collapse_all();
     }
     return FALSE;
@@ -3296,53 +3294,47 @@ void InkscapePreferences::onKBTreeCleared(const Glib::ustring& path)
 
 void InkscapePreferences::onKBTreeEdited (const Glib::ustring& path, guint accel_key, Gdk::ModifierType accel_mods, guint hardware_keycode)
 {
-    Inkscape::Shortcuts& shortcuts = Inkscape::Shortcuts::getInstance();
+    Inkscape::Shortcuts &shortcuts = Inkscape::Shortcuts::getInstance();
+    auto const state = static_cast<GdkModifierType>(accel_mods);
+    auto const new_shortcut_key = shortcuts.get_from(nullptr, accel_key, hardware_keycode,
+                                                     state, true);
+    if (new_shortcut_key.is_null()) return;
 
     Gtk::TreeModel::iterator iter = _kb_filter->get_iter(path);
-
     Glib::ustring id = (*iter)[_kb_columns.id];
-    Glib::ustring current_shortcut = (*iter)[_kb_columns.shortcut];
     Gtk::AccelKey const current_shortcut_key = (*iter)[_kb_columns.shortcutkey];
 
-    GdkEventKey event;
-    event.keyval = accel_key;
-    event.state = accel_mods;
-    event.hardware_keycode = hardware_keycode;
-    Gtk::AccelKey const new_shortcut_key = shortcuts.get_from_event(&event, true);
-
-    if (!new_shortcut_key.is_null() &&
-        (new_shortcut_key.get_key() != current_shortcut_key.get_key() ||
-         new_shortcut_key.get_mod() != current_shortcut_key.get_mod())
-        ) {
-        // Check if there is currently an actions assigned to this shortcut; if yes ask if the shortcut should be reassigned
-        Glib::ustring action_name;
-        Glib::ustring accel = Gtk::AccelGroup::name(accel_key, accel_mods);
-        auto *app = InkscapeApplication::instance()->gtk_app();
-        std::vector<Glib::ustring> actions = app->get_actions_for_accel(accel);
-        if (!actions.empty()) {
-            action_name = actions[0];
-        }
-
-        if (!action_name.empty()) {
-            // Warn user about duplicated shortcuts.
-            Glib::ustring message =
-                Glib::ustring::compose(_("Keyboard shortcut \"%1\"\nis already assigned to \"%2\""),
-                                       shortcuts.get_label(new_shortcut_key), action_name);
-            Gtk::MessageDialog dialog(message, false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
-            dialog.set_title(_("Reassign shortcut?"));
-            dialog.set_secondary_text(_("Are you sure you want to reassign this shortcut?"));
-            dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
-            int response = Inkscape::UI::dialog_run(dialog);
-            if (response != Gtk::RESPONSE_YES) {
-                return;
-            }
-        }
-
-        // Add the new shortcut.
-        shortcuts.add_user_shortcut(id, new_shortcut_key);
-
-        onKBListKeyboardShortcuts();
+    if (new_shortcut_key.get_key() == current_shortcut_key.get_key() &&
+        new_shortcut_key.get_mod() == current_shortcut_key.get_mod())
+    {
+        return;
     }
+
+    // Check if there is currently an actions assigned to this shortcut; if yes ask if the shortcut should be reassigned
+    Glib::ustring action_name;
+    Glib::ustring accel = Gtk::AccelGroup::name(accel_key, accel_mods);
+    auto *app = InkscapeApplication::instance()->gtk_app();
+    std::vector<Glib::ustring> actions = app->get_actions_for_accel(accel);
+    if (!actions.empty()) {
+        action_name = actions[0];
+    }
+    if (!action_name.empty()) {
+        Glib::ustring message =
+            Glib::ustring::compose(_("Keyboard shortcut \"%1\"\nis already assigned to \"%2\""),
+                                   shortcuts.get_label(new_shortcut_key), action_name);
+        Gtk::MessageDialog dialog(message, false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
+        dialog.set_title(_("Reassign shortcut?"));
+        dialog.set_secondary_text(_("Are you sure you want to reassign this shortcut?"));
+        dialog.set_transient_for(*dynamic_cast<Gtk::Window *>(get_toplevel()));
+        int response = Inkscape::UI::dialog_run(dialog);
+        if (response != Gtk::RESPONSE_YES) {
+            return;
+        }
+    }
+
+    shortcuts.add_user_shortcut(id, new_shortcut_key);
+
+    onKBListKeyboardShortcuts();
 }
 
 static bool is_leaf_visible(const Gtk::TreeModel::const_iterator& iter, const Glib::ustring& search) {
@@ -3388,6 +3380,7 @@ void InkscapePreferences::onKBRealize()
 void InkscapePreferences::onKBShortcutRenderer(Gtk::CellRenderer *renderer, Gtk::TreeIter const &iter) {
 
     Glib::ustring shortcut = (*iter)[onKBGetCols().shortcut];
+    shortcut = Glib::Markup::escape_text(shortcut);
     unsigned int user_set = (*iter)[onKBGetCols().user_set];
     Gtk::CellRendererAccel *accel = dynamic_cast<Gtk::CellRendererAccel *>(renderer);
     if (user_set) {
