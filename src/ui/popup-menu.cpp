@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
  * Helpers to connect signals to events that popup a menu in both GTK3 and GTK4.
+ * Plus miscellaneous helpers primarily useful with widgets used as popop menus.
  */
 /*
  * Authors:
@@ -56,6 +57,11 @@ PopupMenuSlot &on_popup_menu(Gtk::Widget &widget, PopupMenuSlot &&slot)
     Controller::add_click(widget, sigc::bind(&on_click_pressed, &managed_slot), {},
                           Controller::Button::any, Gtk::PHASE_TARGET); // ←beat Entry popup handler
     return managed_slot;
+}
+
+sigc::connection on_hide_reset(std::shared_ptr<Gtk::Widget> const &widget)
+{
+    return widget->signal_hide().connect( [widget = widget]() mutable { widget.reset(); });
 }
 
 } // namespace Inkscape::UI

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /** @file
  * Helpers to connect signals to events that popup a menu in both GTK3 and GTK4.
+ * Plus miscellaneous helpers primarily useful with widgets used as popop menus.
  */
 /*
  * Authors:
@@ -14,6 +15,8 @@
 #ifndef SEEN_UI_POPUP_MENU_H
 #define SEEN_UI_POPUP_MENU_H
 
+#include <memory>
+#include <sigc++/connection.h>
 #include <sigc++/slot.h>
 
 namespace Gtk {
@@ -27,9 +30,13 @@ using PopupMenuSlot = sigc::slot<bool()>;
 
 /// Connect slot to a widgetʼs key and button events that traditionally trigger a popup menu, i.e.:
 /// * The keys used by GTK3ʼs signal Widget::popup-menu: the Menu key, or the Shift+F10 combination
-/// * The right mouse button or other platform convention, as per gtk_event_triggets_context_menu()
+/// * The right mouse button or other platform convention, as per gtk_event_triggers_context_menu()
 /// The slot is passed to manage() which moves it to a new address & we return a reference to that.
 PopupMenuSlot &on_popup_menu(Gtk::Widget &widget, PopupMenuSlot &&slot);
+
+/// Connects ::hide of widget to reset() the shared_ptr i.e. to ‘self-destruct’.
+/// @returns A connection that can be used to disconnect & prevent self-destruct
+sigc::connection on_hide_reset(std::shared_ptr<Gtk::Widget> const &widget);
 
 } // namespace Inkscape::UI
 

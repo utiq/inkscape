@@ -218,17 +218,15 @@ SpinButtonToolItem::create_numeric_menu_item(Gtk::RadioButtonGroup &group,
     return menu_item;
 }
 
-// static to only create 1 over items and avoid lifetime hassle
-static std::unique_ptr<UI::Widget::PopoverMenu> numeric_menu{};
-
 /**
  * \brief Create a menu containing fixed numeric options for the adjustment
  *
  * \details Each of these values represents a snap-point for the adjustment's value
+ *          The menu will shared_ptr.reset() on close so if it had the last reference we destroy it
  */
-void SpinButtonToolItem::create_numeric_menu()
+std::shared_ptr<UI::Widget::PopoverMenu> SpinButtonToolItem::create_numeric_menu()
 {
-    numeric_menu = std::make_unique<UI::Widget::PopoverMenu>(Gtk::POS_BOTTOM);
+    auto numeric_menu = std::make_shared<UI::Widget::PopoverMenu>(Gtk::POS_BOTTOM);
 
     // Get values for the adjustment
     auto adj = _btn->get_adjustment();
@@ -275,6 +273,8 @@ void SpinButtonToolItem::create_numeric_menu()
     } else {
         std::for_each(values.cbegin(), values.cend(), add_item);
     }
+
+    return numeric_menu;
 }
 
 /**
@@ -336,8 +336,9 @@ SpinButtonToolItem::set_icon(const Glib::ustring& icon_name)
 bool
 SpinButtonToolItem::on_popup_menu()
 {
-    create_numeric_menu();
+    auto const numeric_menu = create_numeric_menu();
     numeric_menu->popup_at_center(*_hbox);
+    UI::on_hide_reset(numeric_menu);
     return true;
 }
 

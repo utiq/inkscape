@@ -73,13 +73,12 @@ private:
     void defocus();
     bool process_tab(int direction);
 
-    void on_numeric_menu_item_activate(double value);
-
-    void create_numeric_menu();
+    std::shared_ptr<UI::Widget::PopoverMenu> create_numeric_menu();
     UI::Widget::PopoverMenuItem *create_numeric_menu_item(Gtk::RadioButtonGroup &group,
                                                           double                 value,
                                                           const Glib::ustring   &label = {},
                                                           bool                   enable = false);
+    void on_numeric_menu_item_activate(double value);
 
 protected:
     void on_grab_focus() override;
