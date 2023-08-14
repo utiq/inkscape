@@ -92,7 +92,7 @@ void convert_coord(double &x, double &y, double &z, Geom::Affine const &trans);
 
 } /* namespace NR */
 
-#endif /* __NR_3DUTILS_H__ */
+#endif /* SEEN_INKSCAPE_NR_3DUTILS_H */
 /*
   Local Variables:
   mode:c++

@@ -70,7 +70,7 @@ inline int clamp_alpha(int const val, int const alpha) {
 } /* namespace Filters */
 } /* namespace Inkscape */
 
-#endif /* __NR_FILTER_UTILS_H__ */
+#endif /* SEEN_INKSCAPE_NR_FILTER_UTILS_H */
 /*
   Local Variables:
   mode:c++

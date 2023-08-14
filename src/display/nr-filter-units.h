@@ -153,7 +153,7 @@ private:
 } // namespace Filters
 } // namespace Inkscape
 
-#endif /* __NR_FILTER_UNITS_H__ */
+#endif /* SEEN_INKSCAPE_NR_FILTER_UNITS_H */
 /*
   Local Variables:
   mode:c++

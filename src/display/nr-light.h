@@ -161,7 +161,7 @@ class SpotLight {
 } /* namespace Filters */
 } /* namespace Inkscape */
 
-#endif // __NR_LIGHT_H__
+#endif // SEEN_INKSCAPE_NR_LIGHT_H
 /*
   Local Variables:
   mode:c++
