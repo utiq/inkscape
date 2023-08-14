@@ -140,10 +140,7 @@ void ToolToolbar::showContextMenu(InkscapeWindow * const window,
                                   Gtk::Button &button, Glib::ustring const &tool_name)
 {
     _context_menu_tool_name = tool_name;
-    // Point to the Image inside Button, not the entire Button including padding
-    _context_menu->popup_at(button,
-                            button.get_width () * 1./2,
-                            button.get_height() * 1./2);
+    _context_menu->popup_at_center(button);
 }
 
 /**
