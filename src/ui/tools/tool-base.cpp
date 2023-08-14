@@ -844,7 +844,11 @@ bool ToolBase::root_handler(CanvasEvent const &event)
         using Modifiers::Triggers;
         Type action = Modifiers::Modifier::which(Triggers::CANVAS | Triggers::SCROLL, event.modifiers());
 
-        if (action == Type::CANVAS_ROTATE && !_desktop->get_rotation_lock()) {
+        if (action == Type::CANVAS_ROTATE) {
+            if (_desktop->get_rotation_lock()) {
+                return; // Do nothing, Donʼt warn to console, as it is expected that we do nothing!
+            }
+
             double rotate_inc = prefs->getDoubleLimited("/options/rotateincrement/value", 15, 1, 90, "°");
             rotate_inc *= M_PI / 180.0;
 
@@ -871,7 +875,6 @@ bool ToolBase::root_handler(CanvasEvent const &event)
 
             default:
                 rotate_inc = 0.0;
-                break;
             }
 
             if (rotate_inc != 0.0) {
