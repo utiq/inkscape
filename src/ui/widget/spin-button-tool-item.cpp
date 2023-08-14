@@ -18,6 +18,7 @@
 #include "spinbutton.h"
 #include "ui/controller.h"
 #include "ui/icon-loader.h"
+#include "ui/popup-menu.h"
 #include "ui/widget/popover-menu.h"
 #include "ui/widget/popover-menu-item.h"
 
@@ -299,13 +300,12 @@ SpinButtonToolItem::SpinButtonToolItem(const Glib::ustring            name,
     set_margin_end(3);
     set_name(_name);
 
-    _btn->signal_popup_menu().connect(sigc::mem_fun(*this, &SpinButtonToolItem::on_popup_menu), false);
+    UI::on_popup_menu(*_btn, sigc::mem_fun(*this, &SpinButtonToolItem::on_popup_menu));
 
     _btn->property_is_focus().signal_changed().connect(
             sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_is_focus_changed));
+
     Controller::add_key<&SpinButtonToolItem::on_btn_key_pressed>(*_btn, *this);
-    Controller::add_click(*_btn, sigc::mem_fun(*this, &SpinButtonToolItem::on_btn_click_pressed),
-                          {}, Controller::Button::any, Gtk::PHASE_TARGET);
 
     _label = Gtk::make_managed<Gtk::Label>(label_text);
 
@@ -330,34 +330,14 @@ SpinButtonToolItem::set_icon(const Glib::ustring& icon_name)
     show_all();
 }
 
-Gtk::EventSequenceState
-SpinButtonToolItem::on_btn_click_pressed(Gtk::GestureMultiPress const &click,
-                                         int const n_press, double const x, double const y)
-{
-    if (auto const event = Controller::get_last_event(click);
-        event && gdk_event_triggers_context_menu(event))
-    {
-        do_popup_menu();
-        return Gtk::EVENT_SEQUENCE_CLAIMED;
-    }
-
-    return Gtk::EVENT_SEQUENCE_NONE;
-}
-
-void
-SpinButtonToolItem::do_popup_menu()
-{
-    create_numeric_menu();
-    numeric_menu->popup_at(*_btn);
-}
-
 /**
  * \brief Create a popup menu
  */
 bool
 SpinButtonToolItem::on_popup_menu()
 {
-    do_popup_menu();
+    create_numeric_menu();
+    numeric_menu->popup_at_center(*_hbox);
     return true;
 }
 
@@ -378,8 +358,7 @@ SpinButtonToolItem::on_grab_focus()
 void
 SpinButtonToolItem::set_all_tooltip_text(const Glib::ustring& text)
 {
-    set_tooltip_text(text);
-    _btn->set_tooltip_text(text);
+    _hbox->set_tooltip_text(text);
 }
 
 /**

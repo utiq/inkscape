@@ -11,13 +11,11 @@
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
 #include <gtk/gtk.h> // GtkEventControllerKey
-#include <gtkmm/gesture.h> // Gtk::EventSequenceState
 #include <gtkmm/toolitem.h>
 
 namespace Gtk {
 class Adjustment;
 class Box;
-class GestureMultiPress;
 class RadioButtonGroup;
 class Widget;
 } // namespace Gtk
@@ -70,10 +68,7 @@ private:
     void on_btn_is_focus_changed();
     bool on_btn_key_pressed(GtkEventControllerKey const *controller,
                             unsigned keyval, unsigned keycode, GdkModifierType state);
-    Gtk::EventSequenceState on_btn_click_pressed(Gtk::GestureMultiPress const &click,
-                                                 int n_press, double x, double y);
     bool on_popup_menu();
-    void do_popup_menu();
 
     void defocus();
     bool process_tab(int direction);
