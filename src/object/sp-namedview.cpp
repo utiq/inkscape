@@ -967,8 +967,9 @@ void SPNamedView::translateGuides(Geom::Translate const &tr) {
 }
 
 void SPNamedView::translateGrids(Geom::Translate const &tr) {
+    auto scale = document->getDocumentScale();
     for (auto grid : grids) {
-        grid->setOrigin( grid->getOrigin() * tr );
+        grid->setOrigin( grid->getOrigin() * scale * tr * scale.inverse());
     }
 }
 
