@@ -199,7 +199,7 @@ void PenTool::_endpointSnap(Geom::Point &p, guint const state) {
 
     if ((state & GDK_CONTROL_MASK) && !poly) { //CTRL enables angular snapping
         if (this->npoints > 0) {
-            spdc_endpoint_snap_rotation(this, p, this->p[0], state);
+            spdc_endpoint_snap_rotation(this, p, p_array[0], state);
         } else {
             std::optional<Geom::Point> origin = std::optional<Geom::Point>();
             spdc_endpoint_snap_free(this, p, origin);
@@ -213,7 +213,7 @@ void PenTool::_endpointSnap(Geom::Point &p, guint const state) {
             this->_setToNearestHorizVert(p, state);
         } else {
             // snap freely
-            std::optional<Geom::Point> origin = this->npoints > 0 ? this->p[0] : std::optional<Geom::Point>();
+            std::optional<Geom::Point> origin = this->npoints > 0 ? p_array[0] : std::optional<Geom::Point>();
             spdc_endpoint_snap_free(this, p, origin); // pass the origin, to allow for perpendicular / tangential snapping
         }
     }
@@ -227,97 +227,82 @@ void PenTool::_endpointSnapHandle(Geom::Point &p, guint const state) {
             this->npoints == 5   ));
 
     if ((state & GDK_CONTROL_MASK)) { //CTRL enables angular snapping
-        spdc_endpoint_snap_rotation(this, p, this->p[this->npoints - 2], state);
+        spdc_endpoint_snap_rotation(this, p, p_array[this->npoints - 2], state);
     } else {
         if (!(state & GDK_SHIFT_MASK)) { //SHIFT disables all snapping, except the angular snapping above
-            std::optional<Geom::Point> origin = this->p[this->npoints - 2];
+            std::optional<Geom::Point> origin = p_array[this->npoints - 2];
             spdc_endpoint_snap_free(this, p, origin);
         }
     }
 }
 
-bool PenTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+bool PenTool::item_handler(SPItem *item, CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
     bool ret = false;
 
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
-            ret = this->_handleButtonPress(event->button);
-            break;
-        case GDK_BUTTON_RELEASE:
-            ret = this->_handleButtonRelease(event->button);
-            break;
-        default:
-            break;
-    }
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            ret = _handleButtonPress(event);
+        },
+        [&] (ButtonReleaseEvent const &event) {
+            ret = _handleButtonRelease(event);
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-    if (!ret) {
-        ret = FreehandBase::item_handler(item, canvas_event);
-    }
-
-    return ret;
+    return ret || FreehandBase::item_handler(item, event);
 }
 
 /**
  * Callback to handle all pen events.
  */
-bool PenTool::root_handler(CanvasEvent const &canvas_event)
+bool PenTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
     bool ret = false;
 
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
-            ret = this->_handleButtonPress(event->button);
-            break;
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1) {
+                ret = _handleButtonPress(event);
+            } else if (event.numPress() == 2) {
+                ret = _handle2ButtonPress(event);
+            }
+        },
+        [&] (MotionEvent const &event) {
+            ret = _handleMotionNotify(event);
+        },
+        [&] (ButtonReleaseEvent const &event) {
+            ret = _handleButtonRelease(event);
+        },
+        [&] (KeyPressEvent const &event) {
+            ret = _handleKeyPress(event);
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-        case GDK_MOTION_NOTIFY:
-            ret = this->_handleMotionNotify(event->motion);
-            break;
-
-        case GDK_BUTTON_RELEASE:
-            ret = this->_handleButtonRelease(event->button);
-            break;
-
-        case GDK_2BUTTON_PRESS:
-            ret = this->_handle2ButtonPress(event->button);
-            break;
-
-        case GDK_KEY_PRESS:
-            ret = this->_handleKeyPress(event);
-            break;
-
-        default:
-            break;
-    }
-
-    if (!ret) {
-        ret = FreehandBase::root_handler(canvas_event);
-    }
-
-    return ret;
+    return ret || FreehandBase::root_handler(event);
 }
 
 /**
- * Handle mouse button press event.
+ * Handle mouse single button press event.
  */
-bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
-    if (this->events_disabled) {
+bool PenTool::_handleButtonPress(ButtonPressEvent const &event) {
+
+    if (events_disabled) {
         // skip event processing if events are disabled
         return false;
     }
 
-    Geom::Point const event_w(bevent.x, bevent.y);
+    Geom::Point const event_w(event.eventPos());
     Geom::Point event_dt(_desktop->w2d(event_w));
     //Test whether we hit any anchor.
     SPDrawAnchor * const anchor = spdc_test_inside(this, event_w);
 
     //with this we avoid creating a new point over the existing one
-    if(bevent.button != 3 && (this->spiro || this->bspline) && this->npoints > 0 && this->p[0] == this->p[3]){
-        if( anchor && anchor == this->sa && this->green_curve->is_unset()){
+    if(event.button() != 3 && (spiro || bspline) && npoints > 0 && p_array[0] == p_array[3]){
+        if( anchor && anchor == sa && green_curve->is_unset()){
             //remove the following line to avoid having one node on top of another
-            _finishSegment(event_dt, bevent.state);
+            _finishSegment(event_dt, event.modifiers());
             _finish(true);
             return true;
         }
@@ -325,9 +310,10 @@ bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
     }
 
     bool ret = false;
-    if (bevent.button == 1
-        // make sure this is not the last click for a waiting LPE (otherwise we want to finish the path)
-        && this->expecting_clicks_for_LPE != 1) {
+
+    if (event.button()   == 1 &&
+        expecting_clicks_for_LPE != 1) { // Make sure this is not the last click for a waiting LPE (otherwise we want to finish the path)
+
         if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
             return true;
         }
@@ -337,40 +323,40 @@ bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
         pen_drag_origin_w = event_w;
         pen_within_tolerance = true;
 
-        switch (this->mode) {
+        switch (mode) {
 
             case PenTool::MODE_CLICK:
                 // In click mode we add point on release
-                switch (this->state) {
+                switch (state) {
                     case PenTool::POINT:
                     case PenTool::CONTROL:
                     case PenTool::CLOSE:
                         break;
                     case PenTool::STOP:
                         // This is allowed, if we just canceled curve
-                        this->state = PenTool::POINT;
+                        state = PenTool::POINT;
                         break;
                     default:
                         break;
                 }
                 break;
             case PenTool::MODE_DRAG:
-                switch (this->state) {
+                switch (state) {
                     case PenTool::STOP:
                         // This is allowed, if we just canceled curve
                     case PenTool::POINT:
-                        if (this->npoints == 0) {
-                            this->_bsplineSpiroColor();
+                        if (npoints == 0) {
+                            _bsplineSpiroColor();
                             Geom::Point p;
-                            if ((bevent.state & GDK_CONTROL_MASK) && (this->polylines_only || this->polylines_paraxial)) {
+                            if ((event.modifiers() & GDK_CONTROL_MASK) && (polylines_only || polylines_paraxial)) {
                                 p = event_dt;
-                                if (!(bevent.state & GDK_SHIFT_MASK)) {
+                                if (!(event.modifiers() & GDK_SHIFT_MASK)) {
                                     SnapManager &m = _desktop->namedview->snap_manager;
                                     m.setup(_desktop);
                                     m.freeSnapReturnByRef(p, Inkscape::SNAPSOURCE_NODE_HANDLE);
                                     m.unSetup();
                                 }
-                              spdc_create_single_dot(this, p, "/tools/freehand/pen", bevent.state);
+                              spdc_create_single_dot(this, p, "/tools/freehand/pen", event.modifiers());
                               ret = true;
                               break;
                             }
@@ -388,9 +374,9 @@ bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
                                 } else {
                                     sa_overwrited = std::make_shared<SPCurve>(*sa->curve);
                                 }
-                                _bsplineSpiroStartAnchor(bevent.state & GDK_SHIFT_MASK);
+                                _bsplineSpiroStartAnchor(event.modifiers() & GDK_SHIFT_MASK);
                             }
-                            if (anchor && (!this->hasWaitingLPE()|| this->bspline || this->spiro)) {
+                            if (anchor && (!hasWaitingLPE()|| bspline || spiro)) {
                                 // Adjust point to anchor if needed; if we have a waiting LPE, we need
                                 // a fresh path to be created so don't continue an existing one
                                 p = anchor->dp;
@@ -400,7 +386,7 @@ bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
                                 // this curve is not combined with it (unless it is drawn from its
                                 // anchor, which is handled by the sibling branch above)
                                 Inkscape::Selection * const selection = _desktop->getSelection();
-                                if (!(bevent.state & GDK_SHIFT_MASK) || this->hasWaitingLPE()) {
+                                if (!(event.modifiers() & GDK_SHIFT_MASK) || hasWaitingLPE()) {
                                     // if we have a waiting LPE, we need a fresh path to be created
                                     // so don't append to an existing one
                                     selection->clear();
@@ -411,36 +397,36 @@ bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
 
                                 // Create green anchor
                                 p = event_dt;
-                                _endpointSnap(p, bevent.state);
+                                _endpointSnap(p, event.modifiers());
                                 green_anchor = std::make_unique<SPDrawAnchor>(this, green_curve, true, p);
                             }
-                            this->_setInitialPoint(p);
+                            _setInitialPoint(p);
                         } else {
                             // Set end anchor
-                            this->ea = anchor;
+                            ea = anchor;
                             Geom::Point p;
                             if (anchor) {
                                 p = anchor->dp;
                                 // we hit an anchor, will finish the curve (either with or without closing)
                                 // in release handler
-                                this->state = PenTool::CLOSE;
+                                state = PenTool::CLOSE;
 
-                                if (this->green_anchor && this->green_anchor->active) {
+                                if (green_anchor && green_anchor->active) {
                                     // we clicked on the current curve start, so close it even if
                                     // we drag a handle away from it
-                                    this->green_closed = true;
+                                    green_closed = true;
                                 }
                                 ret = true;
                                 break;
 
                             } else {
                                 p = event_dt;
-                                this->_endpointSnap(p, bevent.state); // Snap node only if not hitting anchor.
-                                this->_setSubsequentPoint(p, true);
+                                _endpointSnap(p, event.modifiers()); // Snap node only if not hitting anchor.
+                                _setSubsequentPoint(p, true);
                             }
                         }
                         // avoid the creation of a control point so a node is created in the release event
-                        this->state = (this->spiro || this->bspline || this->polylines_only) ? PenTool::POINT : PenTool::CONTROL;
+                        state = (spiro || bspline || polylines_only) ? PenTool::POINT : PenTool::CONTROL;
                         ret = true;
                         break;
                     case PenTool::CONTROL:
@@ -456,49 +442,62 @@ bool PenTool::_handleButtonPress(GdkEventButton const &bevent) {
             default:
                 break;
         }
-    } else if (this->expecting_clicks_for_LPE == 1 && this->npoints != 0) {
+    } else if (expecting_clicks_for_LPE == 1 && npoints != 0) {
         // when the last click for a waiting LPE occurs we want to finish the path
-        this->_finishSegment(event_dt, bevent.state);
-        if (this->green_closed) {
+        _finishSegment(event_dt, event.modifiers());
+        if (green_closed) {
             // finishing at the start anchor, close curve
-            this->_finish(true);
+            _finish(true);
         } else {
             // finishing at some other anchor, finish curve but not close
-            this->_finish(false);
+            _finish(false);
         }
 
         ret = true;
-    } else if (bevent.button == 3 && this->npoints != 0 && !_button1on) {
+    } else if (event.button() == 3 && npoints != 0 && !_button1on) {
         // right click - finish path, but only if the left click isn't pressed.
-        this->ea = nullptr; // unset end anchor if set (otherwise crashes)
-        this->_finish(false);
+        ea = nullptr; // unset end anchor if set (otherwise crashes)
+        _finish(false);
         ret = true;
     }
 
-    if (this->expecting_clicks_for_LPE > 0) {
-        --this->expecting_clicks_for_LPE;
+    if (expecting_clicks_for_LPE > 0) {
+        --expecting_clicks_for_LPE;
     }
 
     return ret;
 }
 
 /**
+ * Handle mouse double button press event.
+ */
+bool PenTool::_handle2ButtonPress(ButtonPressEvent const &event) {
+    bool ret = false;
+    // Only end on LMB double click. Otherwise horizontal scrolling causes ending of the path
+    if (npoints != 0 && event.button() == 1 && state != PenTool::CLOSE) {
+        _finish(false);
+        ret = true;
+    }
+    return ret;
+}
+
+/**
  * Handle motion_notify event.
  */
-bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
+bool PenTool::_handleMotionNotify(MotionEvent const &event) {
     bool ret = false;
 
-    if (mevent.state & GDK_BUTTON2_MASK) {
+    if (event.modifiers() & GDK_BUTTON2_MASK) {
         // allow scrolling
         return false;
     }
 
-    if (this->events_disabled) {
+    if (events_disabled) {
         // skip motion events if pen events are disabled
         return false;
     }
 
-    Geom::Point const event_w(mevent.x, mevent.y);
+    Geom::Point const event_w(event.eventPos());
 
     //we take out the function the const "tolerance" because we need it later
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
@@ -520,16 +519,16 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
     // Test, whether we hit any anchor
     SPDrawAnchor *anchor = spdc_test_inside(this, event_w);
 
-    switch (this->mode) {
+    switch (mode) {
         case PenTool::MODE_CLICK:
-            switch (this->state) {
+            switch (state) {
                 case PenTool::POINT:
-                    if ( this->npoints != 0 ) {
+                    if ( npoints != 0 ) {
                         // Only set point, if we are already appending
-                        this->_endpointSnap(p, mevent.state);
-                        this->_setSubsequentPoint(p, true);
+                        _endpointSnap(p, event.modifiers());
+                        _setSubsequentPoint(p, true);
                         ret = true;
-                    } else if (!this->sp_event_context_knot_mouseover()) {
+                    } else if (!sp_event_context_knot_mouseover()) {
                         SnapManager &m = _desktop->namedview->snap_manager;
                         m.setup(_desktop);
                         m.preSnap(Inkscape::SnapCandidatePoint(p, Inkscape::SNAPSOURCE_NODE_HANDLE));
@@ -539,12 +538,12 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
                 case PenTool::CONTROL:
                 case PenTool::CLOSE:
                     // Placing controls is last operation in CLOSE state
-                    this->_endpointSnap(p, mevent.state);
-                    this->_setCtrl(p, mevent.state);
+                    _endpointSnap(p, event.modifiers());
+                    _setCtrl(p, event.modifiers());
                     ret = true;
                     break;
                 case PenTool::STOP:
-                    if (!this->sp_event_context_knot_mouseover()) {
+                    if (!sp_event_context_knot_mouseover()) {
                         SnapManager &m = _desktop->namedview->snap_manager;
                         m.setup(_desktop);
                         m.preSnap(Inkscape::SnapCandidatePoint(p, Inkscape::SNAPSOURCE_NODE_HANDLE));
@@ -556,45 +555,45 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
             }
             break;
         case PenTool::MODE_DRAG:
-            switch (this->state) {
+            switch (state) {
                 case PenTool::POINT:
-                    if ( this->npoints > 0 ) {
+                    if ( npoints > 0 ) {
                         // Only set point, if we are already appending
 
                         if (!anchor) {   // Snap node only if not hitting anchor
-                            this->_endpointSnap(p, mevent.state);
-                            this->_setSubsequentPoint(p, true, mevent.state);
+                            _endpointSnap(p, event.modifiers());
+                            _setSubsequentPoint(p, true, event.modifiers());
                         } else {
-                            this->_setSubsequentPoint(anchor->dp, false, mevent.state);
+                            _setSubsequentPoint(anchor->dp, false, event.modifiers());
                         }
 
-                        if (anchor && !this->anchor_statusbar) {
-                            if(!this->spiro && !this->bspline){
-                                this->message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to close and finish the path."));
+                        if (anchor && !anchor_statusbar) {
+                            if(!spiro && !bspline){
+                                message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to close and finish the path."));
                             }else{
-                                this->message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to close and finish the path. Shift+Click make a cusp node"));
+                                message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to close and finish the path. Shift+Click make a cusp node"));
                             }
-                            this->anchor_statusbar = true;
-                        } else if (!anchor && this->anchor_statusbar) {
-                            this->message_context->clear();
-                            this->anchor_statusbar = false;
+                            anchor_statusbar = true;
+                        } else if (!anchor && anchor_statusbar) {
+                            message_context->clear();
+                            anchor_statusbar = false;
                         }
 
                         ret = true;
                     } else {
-                        if (anchor && !this->anchor_statusbar) {
-                            if(!this->spiro && !this->bspline){
-                                this->message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to continue the path from this point."));
+                        if (anchor && !anchor_statusbar) {
+                            if(!spiro && !bspline){
+                                message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to continue the path from this point."));
                             }else{
-                                this->message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to continue the path from this point. Shift+Click make a cusp node"));
+                                message_context->set(Inkscape::NORMAL_MESSAGE, _("<b>Click</b> or <b>click and drag</b> to continue the path from this point. Shift+Click make a cusp node"));
                             }
-                            this->anchor_statusbar = true;
-                        } else if (!anchor && this->anchor_statusbar) {
-                            this->message_context->clear();
-                            this->anchor_statusbar = false;
+                            anchor_statusbar = true;
+                        } else if (!anchor && anchor_statusbar) {
+                            message_context->clear();
+                            anchor_statusbar = false;
 
                         }
-                        if (!this->sp_event_context_knot_mouseover()) {
+                        if (!sp_event_context_knot_mouseover()) {
                             SnapManager &m = _desktop->namedview->snap_manager;
                             m.setup(_desktop);
                             m.preSnap(Inkscape::SnapCandidatePoint(p, Inkscape::SNAPSOURCE_NODE_HANDLE));
@@ -608,12 +607,12 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
 
                     // snap the handle
 
-                    this->_endpointSnapHandle(p, mevent.state);
+                    _endpointSnapHandle(p, event.modifiers());
 
-                    if (!this->polylines_only) {
-                        this->_setCtrl(p, mevent.state);
+                    if (!polylines_only) {
+                        _setCtrl(p, event.modifiers());
                     } else {
-                        this->_setCtrl(this->p[1], mevent.state);
+                        _setCtrl(p_array[1], event.modifiers());
                     }
 
                     gobble_motion_events(GDK_BUTTON1_MASK);
@@ -622,7 +621,7 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
                 case PenTool::STOP:
                     // Don't break; fall through to default to do preSnapping
                 default:
-                    if (!this->sp_event_context_knot_mouseover()) {
+                    if (!sp_event_context_knot_mouseover()) {
                         SnapManager &m = _desktop->namedview->snap_manager;
                         m.setup(_desktop);
                         m.preSnap(Inkscape::SnapCandidatePoint(p, Inkscape::SNAPSOURCE_NODE_HANDLE));
@@ -635,11 +634,11 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
             break;
     }
     // calls the function "bspline_spiro_motion" when the mouse starts or stops moving
-    if (this->bspline) {
-        this->_bsplineSpiroMotion(mevent.state);
+    if (bspline) {
+        _bsplineSpiroMotion(event.modifiers());
     } else {
-        if ( Geom::LInfty( event_w - pen_drag_origin_w ) > (tolerance/2) || mevent.time == 0) {
-            this->_bsplineSpiroMotion(mevent.state);
+        if ( Geom::LInfty( event_w - pen_drag_origin_w ) > (tolerance/2)) {
+            _bsplineSpiroMotion(event.modifiers());
             pen_drag_origin_w = event_w;
         }
     }
@@ -650,16 +649,17 @@ bool PenTool::_handleMotionNotify(GdkEventMotion const &mevent) {
 /**
  * Handle mouse button release event.
  */
-bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
-    if (this->events_disabled) {
+bool PenTool::_handleButtonRelease(ButtonReleaseEvent const &event) {
+
+    if (events_disabled) {
         // skip event processing if events are disabled
         return false;
     }
 
     bool ret = false;
 
-    if (revent.button == 1) {
-        Geom::Point const event_w(revent.x, revent.y);
+    if (event.button() == 1) {
+        Geom::Point const event_w(event.eventPos());
 
         // Find desktop coordinates
         Geom::Point p = _desktop->w2d(event_w);
@@ -668,67 +668,67 @@ bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
 
         SPDrawAnchor *anchor = spdc_test_inside(this, event_w);
         // if we try to create a node in the same place as another node, we skip
-        if((!anchor || anchor == this->sa) && (this->spiro || this->bspline) && this->npoints > 0 && this->p[0] == this->p[3]){
+        if((!anchor || anchor == sa) && (spiro || bspline) && npoints > 0 && p_array[0] == p_array[3]){
             return true;
         }
 
-        switch (this->mode) {
+        switch (mode) {
             case PenTool::MODE_CLICK:
-                switch (this->state) {
+                switch (state) {
                     case PenTool::POINT:
-                        this->ea = anchor;
+                        ea = anchor;
                         if (anchor) {
                             p = anchor->dp;
                         }
-                        this->state = PenTool::CONTROL;
+                        state = PenTool::CONTROL;
                         break;
                     case PenTool::CONTROL:
                         // End current segment
-                        this->_endpointSnap(p, revent.state);
-                        this->_finishSegment(p, revent.state);
-                        this->state = PenTool::POINT;
+                        _endpointSnap(p, event.modifiers());
+                        _finishSegment(p, event.modifiers());
+                        state = PenTool::POINT;
                         break;
                     case PenTool::CLOSE:
                         // End current segment
                         if (!anchor) {   // Snap node only if not hitting anchor
-                            this->_endpointSnap(p, revent.state);
+                            _endpointSnap(p, event.modifiers());
                         }
-                        this->_finishSegment(p, revent.state);
+                        _finishSegment(p, event.modifiers());
                         // hude the guide of the penultimate node when closing the curve
-                        if(this->spiro){
+                        if(spiro){
                             ctrl[1]->set_visible(false);
                         }
-                        this->_finish(true);
-                        this->state = PenTool::POINT;
+                        _finish(true);
+                        state = PenTool::POINT;
                         break;
                     case PenTool::STOP:
                         // This is allowed, if we just canceled curve
-                        this->state = PenTool::POINT;
+                        state = PenTool::POINT;
                         break;
                     default:
                         break;
                 }
                 break;
             case PenTool::MODE_DRAG:
-                switch (this->state) {
+                switch (state) {
                     case PenTool::POINT:
                     case PenTool::CONTROL:
-                        this->_endpointSnap(p, revent.state);
-                        this->_finishSegment(p, revent.state);
+                        _endpointSnap(p, event.modifiers());
+                        _finishSegment(p, event.modifiers());
                         break;
                     case PenTool::CLOSE:
-                        this->_endpointSnap(p, revent.state);
-                        this->_finishSegment(p, revent.state);
+                        _endpointSnap(p, event.modifiers());
+                        _finishSegment(p, event.modifiers());
                         // hide the penultimate node guide when closing the curve
-                        if(this->spiro){
+                        if(spiro){
                             ctrl[1]->set_visible(false);
                         }
-                        if (this->green_closed) {
+                        if (green_closed) {
                             // finishing at the start anchor, close curve
-                            this->_finish(true);
+                            _finish(true);
                         } else {
                             // finishing at some other anchor, finish curve but not close
-                            this->_finish(false);
+                            _finish(false);
                         }
                         break;
                     case PenTool::STOP:
@@ -737,7 +737,7 @@ bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
                     default:
                         break;
                 }
-                this->state = PenTool::POINT;
+                state = PenTool::POINT;
                 break;
             default:
                 break;
@@ -747,21 +747,21 @@ bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
 
         ret = true;
 
-        this->green_closed = false;
+        green_closed = false;
     }
 
     // TODO: can we be sure that the path was created correctly?
     // TODO: should we offer an option to collect the clicks in a list?
-    if (this->expecting_clicks_for_LPE == 0 && this->hasWaitingLPE()) {
-        this->setPolylineMode();
+    if (expecting_clicks_for_LPE == 0 && hasWaitingLPE()) {
+        setPolylineMode();
 
         Inkscape::Selection *selection = _desktop->getSelection();
 
-        if (this->waiting_LPE) {
+        if (waiting_LPE) {
             // we have an already created LPE waiting for a path
-            this->waiting_LPE->acceptParamPath(cast<SPPath>(selection->singleItem()));
-            selection->add(this->waiting_item);
-            this->waiting_LPE = nullptr;
+            waiting_LPE->acceptParamPath(cast<SPPath>(selection->singleItem()));
+            selection->add(waiting_item);
+            waiting_LPE = nullptr;
         } else {
             // the case that we need to create a new LPE and apply it to the just-drawn path is
             // handled in spdc_check_for_and_apply_waiting_LPE() in draw-context.cpp
@@ -771,35 +771,25 @@ bool PenTool::_handleButtonRelease(GdkEventButton const &revent) {
     return ret;
 }
 
-bool PenTool::_handle2ButtonPress(GdkEventButton const &bevent) {
-    bool ret = false;
-    // only end on LMB double click. Otherwise horizontal scrolling causes ending of the path
-    if (this->npoints != 0 && bevent.button == 1 && this->state != PenTool::CLOSE) {
-        this->_finish(false);
-        ret = true;
-    }
-    return ret;
-}
-
 void PenTool::_redrawAll() {
     // green
-    if (! this->green_bpaths.empty()) {
+    if (! green_bpaths.empty()) {
         // remove old piecewise green canvasitems
-        this->green_bpaths.clear();
+        green_bpaths.clear();
 
         // one canvas bpath for all of green_curve
         auto canvas_shape = new Inkscape::CanvasItemBpath(_desktop->getCanvasSketch(), copy_pathvector_optional(green_curve), true);
         canvas_shape->set_stroke(green_color);
         canvas_shape->set_fill(0x0, SP_WIND_RULE_NONZERO);
-        this->green_bpaths.emplace_back(canvas_shape);
+        green_bpaths.emplace_back(canvas_shape);
     }
-    if (this->green_anchor) {
-        this->green_anchor->ctrl->set_position(this->green_anchor->dp);
+    if (green_anchor) {
+        green_anchor->ctrl->set_position(green_anchor->dp);
     }
 
     red_curve.reset();
-    red_curve.moveto(p[0]);
-    red_curve.curveto(p[1], p[2], p[3]);
+    red_curve.moveto(p_array[0]);
+    red_curve.curveto(p_array[1], p_array[2], p_array[3]);
     red_bpath->set_bpath(&red_curve, true);
 
     for (auto &c : ctrl) {
@@ -807,33 +797,33 @@ void PenTool::_redrawAll() {
     }
     // handles
     // hide the handlers in bspline and spiro modes
-    if (this->npoints == 5) {
-        ctrl[0]->set_position(p[0]);
+    if (npoints == 5) {
+        ctrl[0]->set_position(p_array[0]);
         ctrl[0]->set_visible(true);
-        ctrl[3]->set_position(p[3]);
+        ctrl[3]->set_position(p_array[3]);
         ctrl[3]->set_visible(true);
     }
 
-    if (this->p[0] != this->p[1] && !this->spiro && !this->bspline) {
-        ctrl[1]->set_position(p[1]);
+    if (p_array[0] != p_array[1] && !spiro && !bspline) {
+        ctrl[1]->set_position(p_array[1]);
         ctrl[1]->set_visible(true);
-        cl1->set_coords(p[0], p[1]);
+        cl1->set_coords(p_array[0], p_array[1]);
         cl1->set_visible(true);
     } else {
         cl1->set_visible(false);
     }
 
-    Geom::Curve const * last_seg = this->green_curve->last_segment();
+    Geom::Curve const * last_seg = green_curve->last_segment();
     if (last_seg) {
         Geom::CubicBezier const * cubic = dynamic_cast<Geom::CubicBezier const *>( last_seg );
         // hide the handlers in bspline and spiro modes
         if ( cubic &&
-             (*cubic)[2] != this->p[0] && !this->spiro && !this->bspline )
+             (*cubic)[2] != p_array[0] && !spiro && !bspline )
         {
             Geom::Point p2 = (*cubic)[2];
             ctrl[2]->set_position(p2);
             ctrl[2]->set_visible(true);
-            cl0->set_coords(p2, p[0]);
+            cl0->set_coords(p2, p_array[0]);
             cl0->set_visible(true);
         } else {
             cl0->set_visible(false);
@@ -842,11 +832,11 @@ void PenTool::_redrawAll() {
 
     // simply redraw the spiro. because its a redrawing, we don't call the global function,
     // but we call the redrawing at the ending.
-    this->_bsplineSpiroBuild();
+    _bsplineSpiroBuild();
 }
 
 void PenTool::_lastpointMove(gdouble x, gdouble y) {
-    if (this->npoints != 5)
+    if (npoints != 5)
         return;
 
     y *= -_desktop->yaxisdir();
@@ -859,19 +849,19 @@ void PenTool::_lastpointMove(gdouble x, gdouble y) {
     }
 
     // green
-    if (!this->green_curve->is_unset()) {
-        this->green_curve->last_point_additive_move(delta);
+    if (!green_curve->is_unset()) {
+        green_curve->last_point_additive_move(delta);
     } else {
         // start anchor too
-        if (this->green_anchor) {
-            this->green_anchor->dp += delta;
+        if (green_anchor) {
+            green_anchor->dp += delta;
         }
     }
 
     // red
-    this->p[0] += delta;
-    this->p[1] += delta;
-    this->_redrawAll();
+    p_array[0] += delta;
+    p_array[1] += delta;
+    _redrawAll();
 }
 
 void PenTool::_lastpointMoveScreen(gdouble x, gdouble y) {
@@ -883,7 +873,7 @@ void PenTool::_lastpointToCurve() {
     if (this->npoints != 5 && !this->spiro && !this->bspline)
         return;
 
-    this->p[1] = this->red_curve.last_segment()->initialPoint() + (1./3.)*(*this->red_curve.last_point() - this->red_curve.last_segment()->initialPoint());
+    p_array[1] = this->red_curve.last_segment()->initialPoint() + (1./3.)*(*this->red_curve.last_point() - this->red_curve.last_segment()->initialPoint());
     //modificate the last segment of the green curve so it creates the type of node we need
     if (this->spiro||this->bspline) {
         if (!this->green_curve->is_unset()) {
@@ -897,7 +887,7 @@ void PenTool::_lastpointToCurve() {
                 A = (*cubic)[0];
                 B = (*cubic)[1];
                 if (this->spiro) {
-                    C = this->p[0] + (this->p[0] - this->p[1]);
+                    C = p_array[0] + (p_array[0] - p_array[1]);
                 } else {
                     C = *this->green_curve->last_point() + (1./3.)*(this->green_curve->last_segment()->initialPoint() - *this->green_curve->last_point());
                 }
@@ -906,7 +896,7 @@ void PenTool::_lastpointToCurve() {
                 A = this->green_curve->last_segment()->initialPoint();
                 B = this->green_curve->last_segment()->initialPoint();
                 if (this->spiro) {
-                    C = this->p[0] + (this->p[0] - this->p[1]);
+                    C = p_array[0] + (p_array[0] - p_array[1]);
                 } else {
                     C = *this->green_curve->last_point() + (1./3.)*(this->green_curve->last_segment()->initialPoint() - *this->green_curve->last_point());
                 }
@@ -976,24 +966,24 @@ void PenTool::_lastpointToLine() {
         }
     }
 
-    this->p[1] = this->p[0];
+    p_array[1] = p_array[0];
     this->_redrawAll();
 }
 
 
-bool PenTool::_handleKeyPress(GdkEvent *event) {
+bool PenTool::_handleKeyPress(KeyPressEvent const &event) {
     bool ret = false;
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     gdouble const nudge = prefs->getDoubleLimited("/options/nudgedistance/value", 2, 0, 1000, "px"); // in px
 
     // Check for undo/redo.
-    if (npoints > 0 && _undo.isTriggeredBy(&event->key)) {
+    if (npoints > 0 && _undo.isTriggeredBy(&event.CanvasEvent::original()->key)) {
         return _undoLastPoint(true);
-    } else if (_redo.isTriggeredBy(&event->key)) {
+    } else if (_redo.isTriggeredBy(&event.CanvasEvent::original()->key)) {
         return _redoLastPoint();
     }
 
-    switch (get_latin_keyval (&event->key)) {
+    switch (get_latin_keyval (event)) {
         case GDK_KEY_Left: // move last point left
         case GDK_KEY_KP_Left:
             if (!MOD__CTRL(event)) { // not ctrl
@@ -1205,8 +1195,8 @@ void PenTool::_resetColors() {
 void PenTool::_setInitialPoint(Geom::Point const p) {
     g_assert( this->npoints == 0 );
 
-    this->p[0] = p;
-    this->p[1] = p;
+    p_array[0] = p;
+    p_array[1] = p;
     this->npoints = 2;
     this->red_bpath->set_bpath(nullptr);
 }
@@ -1220,7 +1210,7 @@ void PenTool::_setAngleDistanceStatusMessage(Geom::Point const p, int pc_point_t
     g_assert((pc_point_to_compare == 0) || (pc_point_to_compare == 3)); // exclude control handles
     g_assert(message != nullptr);
 
-    Geom::Point rel = p - this->p[pc_point_to_compare];
+    Geom::Point rel = p - p_array[pc_point_to_compare];
     Inkscape::Util::Quantity q = Inkscape::Util::Quantity(Geom::L2(rel), "px");
     Glib::ustring dist = q.string(_desktop->namedview->display_units);
     double angle = atan2(rel[Geom::Y], rel[Geom::X]) * 180 / M_PI;
@@ -1298,9 +1288,9 @@ void PenTool::_bsplineSpiroOn()
 {
     if(!this->red_curve.is_unset()){
         this->npoints = 5;
-        this->p[0] = *this->red_curve.first_point();
-        this->p[3] = this->red_curve.first_segment()->finalPoint();
-        this->p[2] = this->p[3] + (1./3)*(this->p[0] - this->p[3]);
+        p_array[0] = *this->red_curve.first_point();
+        p_array[3] = this->red_curve.first_segment()->finalPoint();
+        p_array[2] = p_array[3] + (1./3)*(p_array[0] - p_array[3]);
     }
 }
 
@@ -1308,9 +1298,9 @@ void PenTool::_bsplineSpiroOff()
 {
     if(!this->red_curve.is_unset()){
         this->npoints = 5;
-        this->p[0] = *this->red_curve.first_point();
-        this->p[3] = this->red_curve.first_segment()->finalPoint();
-        this->p[2] = this->p[3];
+        p_array[0] = *this->red_curve.first_point();
+        p_array[3] = this->red_curve.first_segment()->finalPoint();
+        p_array[2] = p_array[3];
     }
 }
 
@@ -1413,11 +1403,11 @@ void PenTool::_bsplineSpiroMotion(guint const state){
     if(this->red_curve.is_unset()) return;
     this->npoints = 5;
     SPCurve tmp_curve;
-    this->p[2] = this->p[3] + (1./3)*(this->p[0] - this->p[3]);
+    p_array[2] = p_array[3] + (1./3)*(p_array[0] - p_array[3]);
     if (this->green_curve->is_unset() && !this->sa) {
-        this->p[1] = this->p[0] + (1./3)*(this->p[3] - this->p[0]);
+        p_array[1] = p_array[0] + (1./3)*(p_array[3] - p_array[0]);
         if (shift) {
-            this->p[2] = this->p[3];
+            p_array[2] = p_array[3];
         }
     } else if (!this->green_curve->is_unset()){
         tmp_curve = *green_curve;
@@ -1425,15 +1415,15 @@ void PenTool::_bsplineSpiroMotion(guint const state){
         tmp_curve = *sa_overwrited;
     }
     if ((state & GDK_MOD1_MASK ) && previous != Geom::Point(0,0)) { //ALT drag
-        this->p[0] = this->p[0] + (this->p[3] - previous);
+        p_array[0] = p_array[0] + (p_array[3] - previous);
     }
     if(!tmp_curve.is_unset()){
         Geom::CubicBezier const * cubic = dynamic_cast<Geom::CubicBezier const*>(tmp_curve.last_segment());
-        if ((state & GDK_MOD1_MASK ) && !Geom::are_near(*tmp_curve.last_point(), this->p[0], 0.1))
+        if ((state & GDK_MOD1_MASK ) && !Geom::are_near(*tmp_curve.last_point(), p_array[0], 0.1))
         {
             SPCurve previous_weight_power;
             previous_weight_power.moveto(tmp_curve.last_segment()->initialPoint());
-            previous_weight_power.lineto(this->p[0]);
+            previous_weight_power.lineto(p_array[0]);
             auto SBasisweight_power = previous_weight_power.first_segment()->toSBasis();
             if (tmp_curve.get_segment_count() == 1) {
                 Geom::Point initial = tmp_curve.last_segment()->initialPoint();
@@ -1443,15 +1433,15 @@ void PenTool::_bsplineSpiroMotion(guint const state){
                 tmp_curve.backspace();
             }
             if(this->bspline && cubic && !Geom::are_near((*cubic)[2],(*cubic)[3])){
-                tmp_curve.curveto(SBasisweight_power.valueAt(0.33334), SBasisweight_power.valueAt(0.66667), this->p[0]);
+                tmp_curve.curveto(SBasisweight_power.valueAt(0.33334), SBasisweight_power.valueAt(0.66667), p_array[0]);
             } else if(this->bspline && cubic) {
-                tmp_curve.curveto(SBasisweight_power.valueAt(0.33334), this->p[0], this->p[0]);
+                tmp_curve.curveto(SBasisweight_power.valueAt(0.33334), p_array[0], p_array[0]);
             } else if (cubic && !Geom::are_near((*cubic)[2],(*cubic)[3])) {
-                tmp_curve.curveto((*cubic)[1], (*cubic)[2] + (this->p[3] - previous), this->p[0]);
+                tmp_curve.curveto((*cubic)[1], (*cubic)[2] + (p_array[3] - previous), p_array[0]);
             } else if (cubic){
-                tmp_curve.curveto((*cubic)[1], this->p[0], this->p[0]);
+                tmp_curve.curveto((*cubic)[1], p_array[0], p_array[0]);
             } else {
-                tmp_curve.lineto(this->p[0]);
+                tmp_curve.lineto(p_array[0]);
             }
             cubic = dynamic_cast<Geom::CubicBezier const*>(tmp_curve.last_segment());
             if (sa && green_curve->is_unset()) {
@@ -1465,29 +1455,29 @@ void PenTool::_bsplineSpiroMotion(guint const state){
                 weight_power.moveto(red_curve.last_segment()->initialPoint());
                 weight_power.lineto(*red_curve.last_point());
                 auto SBasisweight_power = weight_power.first_segment()->toSBasis();
-                this->p[1] = SBasisweight_power.valueAt(0.33334);
-                if (Geom::are_near(this->p[1],this->p[0])) {
-                    this->p[1] = this->p[0];
+                p_array[1] = SBasisweight_power.valueAt(0.33334);
+                if (Geom::are_near(p_array[1],p_array[0])) {
+                    p_array[1] = p_array[0];
                 }
                 if (shift) {
-                    this->p[2] = this->p[3];
+                    p_array[2] = p_array[3];
                 }
                 if(Geom::are_near((*cubic)[3], (*cubic)[2])) {
-                    this->p[1] = this->p[0];
+                    p_array[1] = p_array[0];
                 }
             } else {
-                this->p[1] =  (*cubic)[3] + ((*cubic)[3] - (*cubic)[2] );
+                p_array[1] =  (*cubic)[3] + ((*cubic)[3] - (*cubic)[2] );
             }
         } else {
-            this->p[1] = this->p[0];
+            p_array[1] = p_array[0];
             if (shift) {
-                this->p[2] = this->p[3];
+                p_array[2] = p_array[3];
             }
         }
         previous = *red_curve.last_point();
         SPCurve red;
-        red.moveto(this->p[0]);
-        red.curveto(this->p[1],this->p[2],this->p[3]);
+        red.moveto(p_array[0]);
+        red.curveto(p_array[1],p_array[2],p_array[3]);
         red_bpath->set_bpath(&red, true);
     }
 
@@ -1516,7 +1506,7 @@ void PenTool::_bsplineSpiroEndAnchorOn()
 
     using Geom::X;
     using Geom::Y;
-    this->p[2] = this->p[3] + (1./3)*(this->p[0] - this->p[3]);
+    p_array[2] = p_array[3] + (1./3)*(p_array[0] - p_array[3]);
     SPCurve tmp_curve;
     SPCurve last_segment;
     Geom::Point point_c(0,0);
@@ -1534,7 +1524,7 @@ void PenTool::_bsplineSpiroEndAnchorOn()
     if(this->bspline){
         point_c = *tmp_curve.last_point() + (1./3)*(tmp_curve.last_segment()->initialPoint() - *tmp_curve.last_point());
     } else {
-        point_c = this->p[3] + this->p[3] - this->p[2];
+        point_c = p_array[3] + p_array[3] - p_array[2];
     }
     if (cubic) {
         last_segment.moveto((*cubic)[0]);
@@ -1565,7 +1555,7 @@ void PenTool::_bsplineSpiroEndAnchorOff()
 {
     SPCurve tmp_curve;
     SPCurve last_segment;
-    this->p[2] = this->p[3];
+    p_array[2] = p_array[3];
     if (green_anchor && green_anchor->active) {
         tmp_curve = green_curve->reversed();
         if (green_curve->get_segment_count() == 0) {
@@ -1624,11 +1614,11 @@ void PenTool::_bsplineSpiroBuild()
     //and the red one
     if (!this->red_curve.is_unset()){
         this->red_curve.reset();
-        this->red_curve.moveto(this->p[0]);
+        this->red_curve.moveto(p_array[0]);
         if(this->anchor_statusbar && !this->sa && !(this->green_anchor && this->green_anchor->active)){
-            this->red_curve.curveto(this->p[1],this->p[3],this->p[3]);
+            this->red_curve.curveto(p_array[1],p_array[3],p_array[3]);
         }else{
-            this->red_curve.curveto(this->p[1],this->p[2],this->p[3]);
+            this->red_curve.curveto(p_array[1],p_array[2],p_array[3]);
         }
         red_bpath->set_bpath(&red_curve, true);
         curve.append_continuous(red_curve);
@@ -1668,7 +1658,7 @@ void PenTool::_bsplineSpiroBuild()
             c->set_visible(false);
         }
         if (spiro){
-            ctrl[1]->set_position(p[0]);
+            ctrl[1]->set_position(p_array[0]);
             ctrl[1]->set_visible(true);
         }
         cl0->set_visible(false);
@@ -1684,16 +1674,16 @@ void PenTool::_setSubsequentPoint(Geom::Point const p, bool statusbar, guint sta
 
     // todo: Check callers to see whether 2 <= npoints is guaranteed.
 
-    this->p[2] = p;
-    this->p[3] = p;
-    this->p[4] = p;
+    p_array[2] = p;
+    p_array[3] = p;
+    p_array[4] = p;
     this->npoints = 5;
     this->red_curve.reset();
     bool is_curve;
-    this->red_curve.moveto(this->p[0]);
+    this->red_curve.moveto(p_array[0]);
     if (this->polylines_paraxial && !statusbar) {
         // we are drawing horizontal/vertical lines and hit an anchor;
-        Geom::Point const origin = this->p[0];
+        Geom::Point const origin = p_array[0];
         // if the previous point and the anchor are not aligned either horizontally or vertically...
         if ((std::abs(p[Geom::X] - origin[Geom::X]) > 1e-9) && (std::abs(p[Geom::Y] - origin[Geom::Y]) > 1e-9)) {
             // ...then we should draw an L-shaped path, consisting of two paraxial segments
@@ -1705,8 +1695,8 @@ void PenTool::_setSubsequentPoint(Geom::Point const p, bool statusbar, guint sta
         is_curve = false;
     } else {
         // one of the 'regular' modes
-        if (this->p[1] != this->p[0] || this->spiro) {
-            this->red_curve.curveto(this->p[1], p, p);
+        if (p_array[1] != p_array[0] || this->spiro) {
+            this->red_curve.curveto(p_array[1], p, p);
             is_curve = true;
         } else {
             this->red_curve.lineto(p);
@@ -1735,7 +1725,7 @@ void PenTool::_setSubsequentPoint(Geom::Point const p, bool statusbar, guint sta
 
 void PenTool::_setCtrl(Geom::Point const q, guint const state)
 {
-    // use 'q' as 'p' shadows member variable.
+    // use 'q' as 'p' use to shadow member variable.
     for (auto &c : ctrl) {
         c->set_visible(false);
     }
@@ -1744,40 +1734,40 @@ void PenTool::_setCtrl(Geom::Point const q, guint const state)
     cl1->set_visible(true);
 
     if ( this->npoints == 2 ) {
-        this->p[1] = q;
+        p_array[1] = q;
         cl0->set_visible(false);
-        ctrl[1]->set_position(p[1]);
+        ctrl[1]->set_position(p_array[1]);
         ctrl[1]->set_visible(true);
-        cl1->set_coords(p[0], p[1]);
+        cl1->set_coords(p_array[0], p_array[1]);
         this->_setAngleDistanceStatusMessage(q, 0, _("<b>Curve handle</b>: angle %3.2f&#176;, length %s; with <b>Ctrl</b> to snap angle"));
     } else if ( this->npoints == 5 ) {
-        this->p[4] = q;
+        p_array[4] = q;
         cl0->set_visible(true);
         bool is_symm = false;
         if ( ( ( this->mode == PenTool::MODE_CLICK ) && ( state & GDK_CONTROL_MASK ) ) ||
              ( ( this->mode == PenTool::MODE_DRAG ) &&  !( state & GDK_SHIFT_MASK  ) ) ) {
-            Geom::Point delta = q - this->p[3];
-            this->p[2] = this->p[3] - delta;
+            Geom::Point delta = q - p_array[3];
+            p_array[2] = p_array[3] - delta;
             is_symm = true;
             this->red_curve.reset();
-            this->red_curve.moveto(this->p[0]);
-            this->red_curve.curveto(this->p[1], this->p[2], this->p[3]);
+            this->red_curve.moveto(p_array[0]);
+            this->red_curve.curveto(p_array[1], p_array[2], p_array[3]);
             red_bpath->set_bpath(&red_curve, true);
         }
         // Avoid conflicting with initial point ctrl
         if (green_curve->get_segment_count() > 0) {
-            ctrl[0]->set_position(this->p[0]);
+            ctrl[0]->set_position(p_array[0]);
             ctrl[0]->set_visible(true);
         }
-        ctrl[3]->set_position(this->p[3]);
+        ctrl[3]->set_position(p_array[3]);
         ctrl[3]->set_visible(true);
-        ctrl[2]->set_position(this->p[2]);
+        ctrl[2]->set_position(p_array[2]);
         ctrl[2]->set_visible(true);
-        ctrl[1]->set_position(this->p[4]);
+        ctrl[1]->set_position(p_array[4]);
         ctrl[1]->set_visible(true);
 
-        cl0->set_coords(this->p[3], this->p[2]);
-        cl1->set_coords(this->p[3], this->p[4]);
+        cl0->set_coords(p_array[3], p_array[2]);
+        cl1->set_coords(p_array[3], p_array[4]);
 
         gchar *message = is_symm ?
             _("<b>Curve handle, symmetric</b>: angle %3.2f&#176;, length %s; with <b>Ctrl</b> to snap angle, with <b>Shift</b> to move this handle only") :
@@ -1790,19 +1780,19 @@ void PenTool::_setCtrl(Geom::Point const q, guint const state)
 
 void PenTool::_finishSegment(Geom::Point const q, guint const state) { // use 'q' as 'p' shadows member variable.
     if (this->polylines_paraxial) {
-        this->nextParaxialDirection(q, this->p[0], state);
+        this->nextParaxialDirection(q, p_array[0], state);
     }
 
     if (!this->red_curve.is_unset()) {
         this->_bsplineSpiro(state & GDK_SHIFT_MASK);
         if(!this->green_curve->is_unset() &&
-           !Geom::are_near(*this->green_curve->last_point(),this->p[0]))
+           !Geom::are_near(*this->green_curve->last_point(),p_array[0]))
         {
           SPCurve lsegment;
             Geom::CubicBezier const * cubic = dynamic_cast<Geom::CubicBezier const*>(&*this->green_curve->last_segment());
             if (cubic) {
                 lsegment.moveto((*cubic)[0]);
-                lsegment.curveto((*cubic)[1], this->p[0] - ((*cubic)[2] - (*cubic)[3]), *this->red_curve.first_point());
+                lsegment.curveto((*cubic)[1], p_array[0] - ((*cubic)[2] - (*cubic)[3]), *this->red_curve.first_point());
                 green_curve->backspace();
                 green_curve->append_continuous(std::move(lsegment));
             }
@@ -1816,8 +1806,8 @@ void PenTool::_finishSegment(Geom::Point const q, guint const state) { // use 'q
         canvas_shape->set_fill(0x0, SP_WIND_RULE_NONZERO);
         green_bpaths.emplace_back(canvas_shape);
 
-        this->p[0] = this->p[3];
-        this->p[1] = this->p[4];
+        p_array[0] = p_array[3];
+        p_array[1] = p_array[4];
         this->npoints = 2;
 
         red_curve.reset();
@@ -1845,20 +1835,20 @@ bool PenTool::_undoLastPoint(bool user_undo) {
         }
         // The code below assumes that this->green_curve has only ONE path !
         Geom::Curve const * crv = this->green_curve->last_segment();
-        this->p[0] = crv->initialPoint();
+        p_array[0] = crv->initialPoint();
         if ( Geom::CubicBezier const * cubic = dynamic_cast<Geom::CubicBezier const *>(crv)) {
-            this->p[1] = (*cubic)[1];
+            p_array[1] = (*cubic)[1];
 
         } else {
-            this->p[1] = this->p[0];
+            p_array[1] = p_array[0];
         }
 
         // assign the value in a third of the distance of the last segment.
         if (this->bspline){
-            this->p[1] = this->p[0] + (1./3)*(this->p[3] - this->p[0]);
+            p_array[1] = p_array[0] + (1./3)*(p_array[3] - p_array[0]);
         }
 
-        Geom::Point const pt( (this->npoints < 4) ? crv->finalPoint() : this->p[3] );
+        Geom::Point const pt( (this->npoints < 4) ? crv->finalPoint() : p_array[3] );
 
         this->npoints = 2;
         // delete the last segment of the green curve and green bpath
@@ -1877,14 +1867,14 @@ bool PenTool::_undoLastPoint(bool user_undo) {
             }
         }
 
-        // assign the value of this->p[1] to the opposite of the green line last segment
+        // assign the value of p_array[1] to the opposite of the green line last segment
         if (this->spiro){
             Geom::CubicBezier const *cubic = dynamic_cast<Geom::CubicBezier const *>(this->green_curve->last_segment());
             if ( cubic ) {
-                this->p[1] = (*cubic)[3] + (*cubic)[3] - (*cubic)[2];
-                ctrl[1]->set_position(this->p[0]);
+                p_array[1] = (*cubic)[3] + (*cubic)[3] - (*cubic)[2];
+                ctrl[1]->set_position(p_array[0]);
             } else {
-                this->p[1] = this->p[0];
+                p_array[1] = p_array[0];
             }
         }
 
@@ -1936,9 +1926,9 @@ bool PenTool::_redoLastPoint()
 
     auto const last_point = green_curve->last_point();
     if (last_point) {
-        p[0] = p[1] = *last_point;
+        p_array[0] = p_array[1] = *last_point;
     }
-    _setSubsequentPoint(p[3], true);
+    _setSubsequentPoint(p_array[3], true);
     _bsplineSpiroBuild();
 
     _did_redo = true;
@@ -2020,7 +2010,7 @@ void PenTool::nextParaxialDirection(Geom::Point const &pt, Geom::Point const &or
 }
 
 void PenTool::_setToNearestHorizVert(Geom::Point &pt, guint const state) const {
-    Geom::Point const origin = this->p[0];
+    Geom::Point const origin = p_array[0];
     Geom::Point const target = (state & GDK_SHIFT_MASK) ? this->paraxial_angle : this->paraxial_angle.ccw();
 
     // Create a horizontal or vertical constraint line

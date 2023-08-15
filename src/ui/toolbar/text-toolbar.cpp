@@ -202,9 +202,7 @@ static void sp_text_toolbox_select_cb( GtkEntry* entry, GtkEntryIconPosition /*p
   selection->setList(selectList);
 }
 
-namespace Inkscape {
-namespace UI {
-namespace Toolbar {
+namespace Inkscape::UI::Toolbar {
 
 TextToolbar::TextToolbar(SPDesktop *desktop)
     : Toolbar(desktop)
@@ -2198,8 +2196,8 @@ void TextToolbar::selection_changed(Inkscape::Selection *selection) // don't bot
 
 void
 TextToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec) {
-    bool is_text_toolbar = SP_IS_TEXT_CONTEXT(ec);
-    bool is_select_toolbar = !is_text_toolbar && SP_IS_SELECT_CONTEXT(ec);
+    bool is_text_toolbar = dynamic_cast<const Inkscape::UI::Tools::TextTool*>(ec);
+    bool is_select_toolbar = !is_text_toolbar && dynamic_cast<const Inkscape::UI::Tools::SelectTool*>(ec);
     if (is_text_toolbar) {
         // Watch selection
         // Ensure FontLister is updated here first..................
@@ -2637,9 +2635,8 @@ void TextToolbar::subselection_changed(Inkscape::UI::Tools::TextTool* tc)
 #endif
 
 }
-}
-}
-}
+
+} // namespace Inkscape::UI::Toolbar
 
 /*
   Local Variables:

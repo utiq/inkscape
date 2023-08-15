@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_INKSCAPE_STAR_TOOL_H
-#define SEEN_INKSCAPE_STAR_TOOL_H
+#ifndef INKSCAPE_UI_TOOLS_STAR_TOOL_H
+#define INKSCAPE_UI_TOOLS_STAR_TOOL_H
 
 /*
  * Star drawing context
@@ -23,12 +23,9 @@
 
 class SPStar;
 
-namespace Inkscape {
+namespace Inkscape { class Selection; }
 
-class Selection;
-
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class StarTool : public ToolBase
 {
@@ -45,30 +42,39 @@ private:
     Geom::Point center;
 
     /* Number of corners */
-    int magnitude;
+    int magnitude = 5;
 
     /* Outer/inner radius ratio */
-    double proportion;
+    double proportion = 0.5;
 
     /* flat sides or not? */
-    bool isflatsided;
+    bool isflatsided = false;
 
     /* rounded corners ratio */
-    double rounded;
+    double rounded = 0.0;
 
     // randomization
-    double randomized;
+    double randomized = 0.0;
 
     sigc::connection sel_changed_connection;
 
     void drag(Geom::Point p, unsigned state);
-	void finishItem();
-	void cancel();
+    void finishItem();
+    void cancel();
     void selection_changed(Selection *selection);
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif
+#endif // INKSCAPE_UI_TOOLS_STAR_TOOL_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :

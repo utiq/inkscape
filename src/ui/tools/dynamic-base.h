@@ -92,7 +92,6 @@ protected:
     double ytilt = 0.0;
 
     /* attributes */
-    bool dragging = false; ///< mouse state: mouse is dragging
     bool usepressure = false;
     bool usetilt = false;
     double mass = 0.3;

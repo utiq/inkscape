@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_INKSCAPE_TWEAK_TOOL_H
-#define SEEN_INKSCAPE_TWEAK_TOOL_H
+#ifndef INKSCAPE_UI_TOOLS_TWEAK_TOOl_H
+#define INKSCAPE_UI_TOOLS_TWEAK_TOOl_H
 
 /*
  * tweaking paths without node editing
@@ -22,12 +22,9 @@
 #define TC_MAX_PRESSURE      1.0
 #define TC_DEFAULT_PRESSURE  0.35
 
-namespace Inkscape {
+namespace Inkscape { class CanvasItemBpath; }
 
-class CanvasItemBpath;
-
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 enum {
     TWEAK_MODE_MOVE,
@@ -55,7 +52,6 @@ public:
     double pressure;
 
     /* attributes */
-    bool dragging;           /* mouse state: mouse is dragging */
     bool usepressure;
     bool usetilt;
 
@@ -87,11 +83,9 @@ private:
     bool set_style(SPCSSAttr const *css);
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tool
 
-#endif
+#endif // INKSCAPE_UI_TOOLS_TWEAK_TOOl_H
 
 /*
   Local Variables:

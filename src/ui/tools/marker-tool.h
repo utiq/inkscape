@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+#ifndef INKSCAPE_UI_TOOLS_MARKER_TOOl_H
+#define INKSCAPE_UI_TOOLS_MARKER_TOOl_H
+
 /** @file
  * Marker edit mode - onCanvas marker editing of marker orientation, position, scale
  *//*
@@ -10,9 +13,6 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#ifndef SEEN_INKSCAPE_MARKER_TOOL_H
-#define SEEN_INKSCAPE_MARKER_TOOL_H
-
 #include <cstddef>
 #include <sigc++/sigc++.h>
 #include <2geom/point.h>
@@ -23,10 +23,9 @@
 #include "ui/tools/tool-base.h"
 #include "ui/tool/shape-record.h"
 
-namespace Inkscape {
-class Selection;
-namespace UI {
-namespace Tools {
+namespace Inkscape { class Selection; }
+
+namespace Inkscape::UI::Tools {
 
 class MarkerTool : public ToolBase
 {
@@ -46,6 +45,7 @@ private:
     ShapeRecord get_marker_transform(SPShape *shape, SPItem *parent_item, SPMarker *sp_marker, SPMarkerLoc marker_type);
 };
 
-}}}
+} // namespace Inkscape::UI::Tools
 
-#endif
+#endif // INKSCAPE_UI_TOOLS_MARKER_TOOl_H
+

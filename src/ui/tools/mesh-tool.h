@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_SP_MESH_CONTEXT_H
-#define SEEN_SP_MESH_CONTEXT_H
+#ifndef INKSCAPE_UI_TOOLS_MESH_TOOl_H
+#define INKSCAPE_UI_TOOLS_MESH_TOOl_H
 
 /*
  * Mesh drawing and editing tool
@@ -25,16 +25,12 @@
 
 #include "object/sp-mesh-array.h"
 
-#define SP_MESH_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::MeshTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_MESH_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::MeshTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
-
 namespace Inkscape {
-
 class Selection;
 class CanvasItemCurve;
+} // namespace Inkscape
 
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class MeshTool : public ToolBase
 {
@@ -64,15 +60,13 @@ private:
     void select_next();
     void select_prev();
     void new_default();
-    void split_near_point(SPItem *item, Geom::Point mouse_p, guint32 /*etime*/);
+    void split_near_point(SPItem *item, Geom::Point mouse_p);
     std::vector<GrDrag::ItemCurve*> over_curve(Geom::Point event_p, bool first = true);
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif // SEEN_SP_MESH_CONTEXT_H
+#endif // INKSCAPE_UI_TOOLS_MESH_TOOl_H
 
 /*
   Local Variables:

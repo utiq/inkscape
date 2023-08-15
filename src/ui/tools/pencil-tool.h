@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+#ifndef INKSCAPE_UI_TOOLS_PENCIL_TOOl_H
+#define INKSCAPE_UI_TOOLS_PENCIL_TOOl_H
+
 /** \file
  * PencilTool: a context for pencil tool events
  *//*
@@ -7,28 +10,29 @@
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef SEEN_PENCIL_CONTEXT_H
-#define SEEN_PENCIL_CONTEXT_H
 
-
-#include "ui/tools/freehand-base.h"
+#include <memory>
 
 #include <2geom/piecewise.h>
 #include <2geom/d2.h>
 #include <2geom/sbasis.h>
 #include <2geom/pathvector.h>
-// #include <future>
 
-#include <memory>
+#include "freehand-base.h"
 
 class SPShape;
 
-#define SP_PENCIL_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::PencilTool*>((Inkscape::UI::Tools::ToolBase*)obj))
 #define SP_IS_PENCIL_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::PencilTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
 
 namespace Inkscape {
-namespace UI {
-namespace Tools {
+class ButtonPressEvent;
+class MotionEvent;
+class ButtonReleaseEvent;
+class KeyPressEvent;
+class KeyReleaseEvent;
+} // namespace Inkscape
+
+namespace Inkscape::UI::Tools {
 
 enum PencilState {
     SP_PENCIL_CONTEXT_IDLE,
@@ -46,23 +50,23 @@ public:
     PencilTool(SPDesktop *desktop);
     ~PencilTool() override;
 
-    Geom::Point p[16];
+    Geom::Point p_array[16];
     std::vector<Geom::Point> ps;
     std::vector<Geom::Point> points;
     void addPowerStrokePencil();
     void powerStrokeInterpolate(Geom::Path const path);
     Geom::Piecewise<Geom::D2<Geom::SBasis> > sketch_interpolation; // the current proposal from the sketched paths
-    unsigned sketch_n; // number of sketches done
+    unsigned sketch_n = 0; // number of sketches done
 
 protected:
     bool root_handler(CanvasEvent const &event) override;
 
 private:
-    bool _handleButtonPress(GdkEventButton const &bevent);
-    bool _handleMotionNotify(GdkEventMotion const &mevent);
-    bool _handleButtonRelease(GdkEventButton const &revent);
-    bool _handleKeyPress(GdkEventKey const &event);
-    bool _handleKeyRelease(GdkEventKey const &event);
+    bool _handleButtonPress(ButtonPressEvent const &event);
+    bool _handleMotionNotify(MotionEvent const &event);
+    bool _handleButtonRelease(ButtonReleaseEvent const &event);
+    bool _handleKeyPress(KeyPressEvent const &event);
+    bool _handleKeyRelease(KeyReleaseEvent const &event);
     void _setStartpoint(Geom::Point const &p);
     void _setEndpoint(Geom::Point const &p);
     void _finishEndpoint();
@@ -70,22 +74,20 @@ private:
     void _fitAndSplit();
     void _interpolate();
     void _sketchInterpolate();
-    void _extinput(GdkEvent *event);
+    void _extinput(CanvasEvent const &event);
     void _cancel();
     void _endpointSnap(Geom::Point &p, guint const state);
     std::vector<Geom::Point> _wps;
     SPCurve _pressure_curve;
     Geom::Point _req_tangent;
-    bool _is_drawing;
-    PencilState _state;
-    int _npoints;
+    bool _is_drawing = false;
+    PencilState _state = SP_PENCIL_CONTEXT_IDLE;
+    int _npoints = 0;
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif /* !SEEN_PENCIL_CONTEXT_H */
+#endif // INKSCAPE_UI_TOOLS_PENCIL_TOOl_H
 
 /*
   Local Variables:

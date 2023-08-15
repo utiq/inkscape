@@ -69,14 +69,11 @@ using Inkscape::DocumentUndo;
 
 #define DYNA_MIN_WIDTH 1.0e-6
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 TweakTool::TweakTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/tweak", "tweak-push.svg")
     , pressure(TC_DEFAULT_PRESSURE)
-    , dragging(false)
     , usepressure(false)
     , usetilt(false)
     , width(0.2)
@@ -96,8 +93,6 @@ TweakTool::TweakTool(SPDesktop *desktop)
     dilate_area->set_fill(0x0, SP_WIND_RULE_EVENODD);
     dilate_area->set_visible(false);
 
-    this->is_drawing = false;
-
     sp_event_context_read(this, "width");
     sp_event_context_read(this, "mode");
     sp_event_context_read(this, "fidelity");
@@ -115,10 +110,10 @@ TweakTool::TweakTool(SPDesktop *desktop)
     
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     if (prefs->getBool("/tools/tweak/selcue")) {
-        this->enableSelectionCue();
+        enableSelectionCue();
     }
     if (prefs->getBool("/tools/tweak/gradientdrag")) {
-        this->enableGrDrag();
+        enableGrDrag();
     }
 }
 
@@ -272,9 +267,9 @@ void TweakTool::set(const Inkscape::Preferences::Entry& val) {
 }
 
 static void
-sp_tweak_extinput(TweakTool *tc, GdkEvent *event)
+sp_tweak_extinput(TweakTool *tc, CanvasEvent const &event)
 {
-    if (gdk_event_get_axis (event, GDK_AXIS_PRESSURE, &tc->pressure)) {
+    if (gdk_event_get_axis (event.original(), GDK_AXIS_PRESSURE, &tc->pressure)) {
         tc->pressure = CLAMP (tc->pressure, TC_MIN_PRESSURE, TC_MAX_PRESSURE);
     } else {
         tc->pressure = TC_DEFAULT_PRESSURE;
@@ -978,7 +973,7 @@ return did;
 }
 
 
-    static bool
+static bool
 sp_tweak_dilate (TweakTool *tc, Geom::Point event_p, Geom::Point p, Geom::Point vector, bool reverse)
 {
     SPDesktop *desktop = tc->getDesktop();
@@ -991,7 +986,7 @@ sp_tweak_dilate (TweakTool *tc, Geom::Point event_p, Geom::Point p, Geom::Point 
     bool did = false;
     double radius = get_dilate_radius(tc);
 
-    SPItem *item_at_point = tc->getDesktop()->getItemAtPoint(event_p, TRUE);
+    SPItem *item_at_point = tc->getDesktop()->getItemAtPoint(event_p, true);
 
     bool do_fill = false, do_stroke = false, do_opacity = false;
     guint32 fill_goal = sp_desktop_get_color_tool(desktop, "/tools/tweak", true, &do_fill);
@@ -1115,91 +1110,84 @@ sp_tweak_switch_mode_temporarily (TweakTool *tc, gint mode, bool with_shift)
     tc->update_cursor(with_shift);
 }
 
-bool TweakTool::root_handler(CanvasEvent const &canvas_event)
+bool TweakTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    gint ret = FALSE;
+    bool ret = false;
 
-    switch (event->type) {
-        case GDK_ENTER_NOTIFY:
+    inspect_event(event,
+        [&] (EnterEvent const &event) {
             dilate_area->set_visible(true);
-            break;
-        case GDK_LEAVE_NOTIFY:
+        },
+        [&] (LeaveEvent const &event) {
             dilate_area->set_visible(false);
-            break;
-        case GDK_BUTTON_PRESS:
-            if (event->button.button == 1) {
+        },
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
                 if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
-                    return TRUE;
+                    ret = true;
+                } else {
+
+                    Geom::Point const button_dt(_desktop->w2d(event.eventPos()));
+                    last_push = _desktop->dt2doc(button_dt);
+
+                    sp_tweak_extinput(this, event);
+
+                    is_drawing = true;
+                    is_dilating = true;
+                    has_dilated = false;
+
+                    ret = true;
                 }
-
-                Geom::Point const button_w(event->button.x,
-                                         event->button.y);
-                Geom::Point const button_dt(_desktop->w2d(button_w));
-                this->last_push = _desktop->dt2doc(button_dt);
-
-                sp_tweak_extinput(this, event);
-
-                this->is_drawing = true;
-                this->is_dilating = true;
-                this->has_dilated = false;
-
-                ret = TRUE;
             }
-            break;
-        case GDK_MOTION_NOTIFY:
-        {
-            Geom::Point const motion_w(event->motion.x,
-                                     event->motion.y);
-            Geom::Point motion_dt(_desktop->w2d(motion_w));
+        },
+        [&] (MotionEvent const &event) {
+
+            Geom::Point motion_dt(_desktop->w2d(event.eventPos()));
             Geom::Point motion_doc(_desktop->dt2doc(motion_dt));
             sp_tweak_extinput(this, event);
 
-            // draw the dilating cursor
+            // Draw the dilating cursor.
             double radius = get_dilate_radius(this);
-            Geom::Affine const sm(Geom::Scale(radius, radius) * Geom::Translate(_desktop->w2d(motion_w)));
+            Geom::Affine const sm(Geom::Scale(radius, radius) * Geom::Translate(motion_dt));
             Geom::PathVector path = Geom::Path(Geom::Circle(0,0,1)); // Unit circle centered at origin.
             path *= sm;
             dilate_area->set_bpath(path);
             dilate_area->set_visible(true);
 
-            guint num = 0;
+            unsigned num = 0;
             if (!_desktop->getSelection()->isEmpty()) {
-                num = (guint)boost::distance(_desktop->getSelection()->items());
+                num = (unsigned)boost::distance(_desktop->getSelection()->items());
             }
             if (num == 0) {
-                this->message_context->flash(Inkscape::ERROR_MESSAGE, _("<b>Nothing selected!</b> Select objects to tweak."));
+                message_context->flash(Inkscape::ERROR_MESSAGE, _("<b>Nothing selected!</b> Select objects to tweak."));
             }
 
             // dilating:
-            if (this->is_drawing && ( event->motion.state & GDK_BUTTON1_MASK )) {
-                sp_tweak_dilate (this, motion_w, motion_doc, motion_doc - this->last_push, event->button.state & GDK_SHIFT_MASK? true : false);
+            if (is_drawing && ( event.modifiers() & GDK_BUTTON1_MASK )) {
+                sp_tweak_dilate (this, event.eventPos(), motion_doc, motion_doc - last_push, event.modifiers() & GDK_SHIFT_MASK? true : false);
                 //this->last_push = motion_doc;
-                this->has_dilated = true;
-                // it's slow, so prevent clogging up with events
+                has_dilated = true;
+                // It's slow, so prevent clogging up with events.
                 gobble_motion_events(GDK_BUTTON1_MASK);
-                return TRUE;
+                ret = true;
             }
+        },
+        [&] (ButtonReleaseEvent const &event) {
 
-        }
-        break;
-        case GDK_BUTTON_RELEASE:
-        {
-            Geom::Point const motion_w(event->button.x, event->button.y);
-            Geom::Point const motion_dt(_desktop->w2d(motion_w));
+            Geom::Point const motion_dt(_desktop->w2d(event.eventPos()));
 
-            this->is_drawing = false;
+            is_drawing = false;
 
-            if (this->is_dilating && event->button.button == 1) {
-                if (!this->has_dilated) {
-                    // if we did not rub, do a light tap
-                    this->pressure = 0.03;
-                    sp_tweak_dilate(this, motion_w, _desktop->dt2doc(motion_dt), Geom::Point(0, 0), MOD__SHIFT(event));
+            if (is_dilating && event.button() == 1) {
+                if (has_dilated) {
+                    // If we did not rub, do a light tap.
+                    pressure = 0.03;
+                    sp_tweak_dilate(this, event.eventPos(), _desktop->dt2doc(motion_dt), Geom::Point(0, 0), event.modifiers() & GDK_SHIFT_MASK);
                 }
-                this->is_dilating = false;
-                this->has_dilated = false;
+                is_dilating = false;
+                has_dilated = false;
                 Glib::ustring text;
-                switch (this->mode) {
+                switch (mode) {
                     case TWEAK_MODE_MOVE:
                         text = _("Move tweak");
                         break;
@@ -1242,17 +1230,15 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 }
                 DocumentUndo::done(_desktop->getDocument(), text.c_str(), INKSCAPE_ICON("tool-tweak"));
             }
-            break;
-        }
-        case GDK_KEY_PRESS:
-        {
-            switch (get_latin_keyval (&event->key)) {
+        },
+        [&] (KeyPressEvent const &event) {
+            switch (get_latin_keyval (event)) {
                 case GDK_KEY_m:
                 case GDK_KEY_M:
                 case GDK_KEY_0:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_MOVE, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_i:
@@ -1260,7 +1246,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_1:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_MOVE_IN_OUT, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_z:
@@ -1268,7 +1254,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_2:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_MOVE_JITTER, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_less:
@@ -1278,7 +1264,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_3:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_SCALE, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_bracketright:
@@ -1286,7 +1272,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_4:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_ROTATE, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_d:
@@ -1294,7 +1280,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_5:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_MORELESS, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_p:
@@ -1302,7 +1288,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_6:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_PUSH, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_s:
@@ -1310,7 +1296,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_7:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_SHRINK_GROW, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_a:
@@ -1318,7 +1304,7 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_8:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_ATTRACT_REPEL, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_r:
@@ -1326,102 +1312,102 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_9:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_ROUGHEN, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_c:
                 case GDK_KEY_C:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_COLORPAINT, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_j:
                 case GDK_KEY_J:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_COLORJITTER, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_b:
                 case GDK_KEY_B:
                     if (MOD__SHIFT_ONLY(event)) {
                         sp_tweak_switch_mode(this, TWEAK_MODE_BLUR, MOD__SHIFT(event));
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
 
                 case GDK_KEY_Up:
                 case GDK_KEY_KP_Up:
                     if (!MOD__CTRL_ONLY(event)) {
-                        this->force += 0.05;
-                        if (this->force > 1.0) {
-                            this->force = 1.0;
+                        force += 0.05;
+                        if (force > 1.0) {
+                            force = 1.0;
                         }
-                        _desktop->setToolboxAdjustmentValue("tweak-force", this->force * 100);
-                        ret = TRUE;
+                        _desktop->setToolboxAdjustmentValue("tweak-force", force * 100);
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_Down:
                 case GDK_KEY_KP_Down:
                     if (!MOD__CTRL_ONLY(event)) {
-                        this->force -= 0.05;
-                        if (this->force < 0.0) {
-                            this->force = 0.0;
+                        force -= 0.05;
+                        if (force < 0.0) {
+                            force = 0.0;
                         }
-                        _desktop->setToolboxAdjustmentValue("tweak-force", this->force * 100);
-                        ret = TRUE;
+                        _desktop->setToolboxAdjustmentValue("tweak-force", force * 100);
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_Right:
                 case GDK_KEY_KP_Right:
                     if (!MOD__CTRL_ONLY(event)) {
-                        this->width += 0.01;
-                        if (this->width > 1.0) {
-                            this->width = 1.0;
+                        width += 0.01;
+                        if (width > 1.0) {
+                            width = 1.0;
                         }
-                        _desktop->setToolboxAdjustmentValue ("tweak-width", this->width * 100); // the same spinbutton is for alt+x
+                        _desktop->setToolboxAdjustmentValue ("tweak-width", width * 100); // the same spinbutton is for alt+x
                         sp_tweak_update_area(this);
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_Left:
                 case GDK_KEY_KP_Left:
                     if (!MOD__CTRL_ONLY(event)) {
-                        this->width -= 0.01;
-                        if (this->width < 0.01) {
-                            this->width = 0.01;
+                        width -= 0.01;
+                        if (width < 0.01) {
+                            width = 0.01;
                         }
-                        _desktop->setToolboxAdjustmentValue("tweak-width", this->width * 100);
+                        _desktop->setToolboxAdjustmentValue("tweak-width", width * 100);
                         sp_tweak_update_area(this);
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
                 case GDK_KEY_Home:
                 case GDK_KEY_KP_Home:
-                    this->width = 0.01;
-                    _desktop->setToolboxAdjustmentValue("tweak-width", this->width * 100);
+                    width = 0.01;
+                    _desktop->setToolboxAdjustmentValue("tweak-width", width * 100);
                     sp_tweak_update_area(this);
-                    ret = TRUE;
+                    ret = true;
                     break;
                 case GDK_KEY_End:
                 case GDK_KEY_KP_End:
-                    this->width = 1.0;
-                    _desktop->setToolboxAdjustmentValue("tweak-width", this->width * 100);
+                    width = 1.0;
+                    _desktop->setToolboxAdjustmentValue("tweak-width", width * 100);
                     sp_tweak_update_area(this);
-                    ret = TRUE;
+                    ret = true;
                     break;
                 case GDK_KEY_x:
                 case GDK_KEY_X:
                     if (MOD__ALT_ONLY(event)) {
                         _desktop->setToolboxFocusTo("tweak-width");
-                        ret = TRUE;
+                        ret = true;
                     }
                     break;
 
                 case GDK_KEY_Shift_L:
                 case GDK_KEY_Shift_R:
-                    this->update_cursor(true);
+                    update_cursor(true);
                     break;
 
                 case GDK_KEY_Control_L:
@@ -1431,45 +1417,37 @@ bool TweakTool::root_handler(CanvasEvent const &canvas_event)
                 case GDK_KEY_Delete:
                 case GDK_KEY_KP_Delete:
                 case GDK_KEY_BackSpace:
-                    ret = this->deleteSelectedDrag(MOD__CTRL_ONLY(event));
+                    ret = deleteSelectedDrag(MOD__CTRL_ONLY(event));
                     break;
 
                 default:
                     break;
             }
-            break;
-        }
-        case GDK_KEY_RELEASE: {
+        },
+        [&] (KeyReleaseEvent const &event) {
             Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-            switch (get_latin_keyval(&event->key)) {
+            switch (get_latin_keyval(event)) {
                 case GDK_KEY_Shift_L:
                 case GDK_KEY_Shift_R:
-                    this->update_cursor(false);
+                    update_cursor(false);
                     break;
                 case GDK_KEY_Control_L:
                 case GDK_KEY_Control_R:
                     sp_tweak_switch_mode (this, prefs->getInt("/tools/tweak/mode"), MOD__SHIFT(event));
-                    this->message_context->clear();
+                    message_context->clear();
                     break;
                 default:
                     sp_tweak_switch_mode (this, prefs->getInt("/tools/tweak/mode"), MOD__SHIFT(event));
                     break;
             }
-        }
-        default:
-            break;
-    }
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-    if (!ret) {
-        ret = ToolBase::root_handler(canvas_event);
-    }
-
-    return ret;
+    return ret || ToolBase::root_handler(event);
 }
 
-}
-}
-}
+} // namespace Inkscape::UI::Tool
 
 /*
   Local Variables:

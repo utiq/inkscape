@@ -231,7 +231,7 @@ std::vector<GrDrag::ItemCurve*> MeshTool::over_curve(Geom::Point event_p, bool f
 /**
 Split row/column near the mouse point.
 */
-void MeshTool::split_near_point(SPItem *item, Geom::Point mouse_p, guint32 /*etime*/)
+void MeshTool::split_near_point(SPItem *item, Geom::Point mouse_p)
 {
 #ifdef DEBUG_MESH
     std::cout << "split_near_point: entrance: " << mouse_p << std::endl;
@@ -423,246 +423,104 @@ void MeshTool::fit_mesh_in_bbox()
 Handles all keyboard and mouse input for meshs.
 Note: node/handle events are take care of elsewhere.
 */
-bool MeshTool::root_handler(CanvasEvent const &canvas_event)
+bool MeshTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    static bool dragging;
+    auto selection = _desktop->getSelection();
+    auto prefs = Inkscape::Preferences::get();
 
-    Inkscape::Selection *selection = _desktop->getSelection();
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
 
-    this->tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
+    bool ret = false;
 
     // Get value of fill or stroke preference
     Inkscape::PaintTarget fill_or_stroke_pref =
         static_cast<Inkscape::PaintTarget>(prefs->getInt("/tools/mesh/newfillorstroke"));
 
     g_assert(_grdrag);
-    gint ret = FALSE;
 
-    switch (event->type) {
-    case GDK_2BUTTON_PRESS:
-
-#ifdef DEBUG_MESH
-        std::cout << "root_handler: GDK_2BUTTON_PRESS" << std::endl;
-#endif
-
-        // Double click:
-        //  If over a mesh line, divide mesh row/column
-        //  If not over a line and no mesh, create new mesh for top selected object.
-
-        if ( event->button.button == 1 ) {
-
-            // Are we over a mesh line? (Should replace by CanvasItem event.)
-            auto over_curve = this->over_curve(Geom::Point(event->motion.x, event->motion.y));
-
-            if (!over_curve.empty()) {
-                // We take the first item in selection, because with doubleclick, the first click
-                // always resets selection to the single object under cursor
-                split_near_point(selection->items().front(), this->mousepoint_doc, event->button.time);
-            } else {
-                // Create a new gradient with default coordinates.
-
-                // Check if object already has mesh... if it does,
-                // don't create new mesh with click-drag.
-                bool has_mesh = false;
-                if (!selection->isEmpty()) {
-                    SPStyle *style = selection->items().front()->style;
-                    if (style) {
-                        SPPaintServer *server =
-                            (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
-                            style->getFillPaintServer():
-                            style->getStrokePaintServer();
-                        if (server && is<SPMeshGradient>(server)) 
-                            has_mesh = true;
-                    }
-                }
-
-                if (!has_mesh) {
-                    new_default();
-                }
-            }
-
-            ret = TRUE;
-        }
-        break;
-
-    case GDK_BUTTON_PRESS:
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 2 && event.button() == 1) {
 
 #ifdef DEBUG_MESH
-        std::cout << "root_handler: GDK_BUTTON_PRESS" << std::endl;
+                std::cout << "root_handler: GDK_2BUTTON_PRESS" << std::endl;
 #endif
 
-        // Button down
-        //  If mesh already exists, do rubber band selection.
-        //  Else set origin for drag which will create a new gradient.
-         if ( event->button.button == 1 ) {
+                // Double click:
+                //  If over a mesh line, divide mesh row/column
+                //  If not over a line and no mesh, create new mesh for top selected object.
 
-            // Are we over a mesh curve?
-            auto over_curve = this->over_curve(Geom::Point(event->motion.x, event->motion.y), false);
+                // Are we over a mesh line? (Should replace by CanvasItem event.)
+                auto over_curve = this->over_curve(event.eventPos());
 
-            if (!over_curve.empty()) {
-                for (auto it : over_curve) {
-                    Inkscape::PaintTarget fill_or_stroke = it->is_fill ? Inkscape::FOR_FILL : Inkscape::FOR_STROKE;
-                    GrDragger *dragger0 = _grdrag->getDraggerFor(it->item, POINT_MG_CORNER, it->corner0, fill_or_stroke);
-                    GrDragger *dragger1 = _grdrag->getDraggerFor(it->item, POINT_MG_CORNER, it->corner1, fill_or_stroke);
-                    bool add    = (event->button.state & GDK_SHIFT_MASK);
-                    bool toggle = (event->button.state & GDK_CONTROL_MASK);
-                    if ( !add && !toggle ) {
-                        _grdrag->deselectAll();
-                    }
-                    _grdrag->setSelected( dragger0, true, !toggle );
-                    _grdrag->setSelected( dragger1, true, !toggle );
-                }
-                ret = true;
-                break; // To avoid putting the following code in an else block.
-            }
-
-            Geom::Point button_w(event->button.x, event->button.y);
-
-            // save drag origin
-            xyp = button_w.floor();
-            within_tolerance = true;
-
-            dragging = true;
-
-            Geom::Point button_dt = _desktop->w2d(button_w);
-            // Check if object already has mesh... if it does,
-            // don't create new mesh with click-drag.
-            bool has_mesh = false;
-            if (!selection->isEmpty()) {
-                SPStyle *style = selection->items().front()->style;
-                if (style) {
-                    SPPaintServer *server =
-                        (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
-                        style->getFillPaintServer():
-                        style->getStrokePaintServer();
-                    if (server && is<SPMeshGradient>(server)) 
-                        has_mesh = true;
-                }
-            }
-
-            if (has_mesh && !(event->button.state & GDK_CONTROL_MASK)) {
-                Inkscape::Rubberband::get(_desktop)->start(_desktop, button_dt);
-            }
-
-            // remember clicked item, disregarding groups, honoring Alt; do nothing with Crtl to
-            // enable Ctrl+doubleclick of exactly the selected item(s)
-            if (!(event->button.state & GDK_CONTROL_MASK)) {
-                this->item_to_select = sp_event_context_find_item (_desktop, button_w, event->button.state & GDK_MOD1_MASK, TRUE);
-            }
-
-            if (!selection->isEmpty()) {
-                SnapManager &m = _desktop->namedview->snap_manager;
-                m.setup(_desktop);
-                m.freeSnapReturnByRef(button_dt, Inkscape::SNAPSOURCE_NODE_HANDLE);
-                m.unSetup();
-            }
-
-            this->origin = button_dt;
-
-            ret = TRUE;
-        }
-        break;
-
-    case GDK_MOTION_NOTIFY:
-        // Mouse move
-        if ( dragging && ( event->motion.state & GDK_BUTTON1_MASK ) ) {
- 
-#ifdef DEBUG_MESH
-            std::cout << "root_handler: GDK_MOTION_NOTIFY: Dragging" << std::endl;
-#endif
-            if ( within_tolerance
-                && ( abs( (gint) event->motion.x - this->xyp.x() ) < this->tolerance )
-                && ( abs( (gint) event->motion.y - this->xyp.y() ) < this->tolerance ) ) {
-                break; // do not drag if we're within tolerance from origin
-            }
-            // Once the user has moved farther than tolerance from the original location
-            // (indicating they intend to draw, not click), then always process the
-            // motion notify coordinates as given (no snapping back to origin)
-            this->within_tolerance = false;
-
-            Geom::Point const motion_w(event->motion.x,
-                                     event->motion.y);
-            Geom::Point const motion_dt = _desktop->w2d(motion_w);
-
-            if (Inkscape::Rubberband::get(_desktop)->is_started()) {
-                Inkscape::Rubberband::get(_desktop)->move(motion_dt);
-                this->defaultMessageContext()->set(Inkscape::NORMAL_MESSAGE, _("<b>Draw around</b> handles to select them"));
-            } else {
-                // Do nothing. For a linear/radial gradient we follow the drag, updating the
-                // gradient as the end node is dragged. For a mesh gradient, the gradient is always
-                // created to fill the object when the drag ends.
-            }
-
-            gobble_motion_events(GDK_BUTTON1_MASK);
-
-            ret = TRUE;
-        } else {
-            // Not dragging
-
-            // Do snapping
-            if (!_grdrag->mouseOver() && !selection->isEmpty()) {
-                SnapManager &m = _desktop->namedview->snap_manager;
-                m.setup(_desktop);
-
-                Geom::Point const motion_w(event->motion.x, event->motion.y);
-                Geom::Point const motion_dt = _desktop->w2d(motion_w);
-
-                m.preSnap(Inkscape::SnapCandidatePoint(motion_dt, Inkscape::SNAPSOURCE_OTHER_HANDLE));
-                m.unSetup();
-            }
-
-            // Highlight corner node corresponding to side or tensor node
-            if (_grdrag->mouseOver()) {
-                // MESH FIXME: Light up corresponding corner node corresponding to node we are over.
-                // See "pathflash" in ui/tools/node-tool.cpp for ideas.
-                // Use _desktop->add_temporary_canvasitem( SPCanvasItem, milliseconds );
-            }
-
-            // Change cursor shape if over line
-            auto over_curve = this->over_curve(Geom::Point(event->motion.x, event->motion.y));
-
-            if (this->cursor_addnode && over_curve.empty()) {
-                this->set_cursor("mesh.svg");
-                this->cursor_addnode = false;
-            } else if (!this->cursor_addnode && !over_curve.empty()) {
-                this->set_cursor("mesh-add.svg");
-                this->cursor_addnode = true;
-            }
-        }
-        break;
-
-    case GDK_BUTTON_RELEASE:
-
-#ifdef DEBUG_MESH
-        std::cout << "root_handler: GDK_BUTTON_RELEASE" << std::endl;
-#endif
-
-        xyp = {};
-
-        if ( event->button.button == 1 ) {
-
-            // Check if over line
-            auto over_curve = this->over_curve(Geom::Point(event->motion.x, event->motion.y));
-
-            if ( (event->button.state & GDK_CONTROL_MASK) && (event->button.state & GDK_MOD1_MASK ) ) {
                 if (!over_curve.empty()) {
-                    split_near_point(over_curve[0]->item, mousepoint_doc, 0);
-                    ret = TRUE;
+                    // We take the first item in selection, because with doubleclick, the first click
+                    // always resets selection to the single object under cursor
+                    split_near_point(selection->items().front(), mousepoint_doc);
+                } else {
+                    // Create a new gradient with default coordinates.
+
+                    // Check if object already has mesh... if it does,
+                    // don't create new mesh with click-drag.
+                    bool has_mesh = false;
+                    if (!selection->isEmpty()) {
+                        SPStyle *style = selection->items().front()->style;
+                        if (style) {
+                            SPPaintServer *server =
+                                (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
+                                style->getFillPaintServer():
+                                style->getStrokePaintServer();
+                            if (server && is<SPMeshGradient>(server))
+                                has_mesh = true;
+                        }
+                    }
+
+                    if (!has_mesh) {
+                        new_default();
+                    }
                 }
-            } else {
-                dragging = false;
 
-                // unless clicked with Ctrl (to enable Ctrl+doubleclick).
-                if (event->button.state & GDK_CONTROL_MASK && !(event->button.state & GDK_SHIFT_MASK)) {
-                    ret = TRUE;
-                    Inkscape::Rubberband::get(_desktop)->stop();
-                    break;
-                }
+                ret = true;
+            }
 
-                if (!this->within_tolerance) {
+            if (event.numPress() == 1 && event.button() == 1) {
 
+#ifdef DEBUG_MESH
+                std::cout << "root_handler: GDK_BUTTON_PRESS" << std::endl;
+#endif
+
+                // Button down
+                //  If mesh already exists, do rubber band selection.
+                //  Else set origin for drag which will create a new gradient.
+
+                // Are we over a mesh curve?
+                auto over_curve = this->over_curve(event.eventPos(), false);
+
+                if (!over_curve.empty()) {
+                    for (auto it : over_curve) {
+                        Inkscape::PaintTarget fill_or_stroke = it->is_fill ? Inkscape::FOR_FILL : Inkscape::FOR_STROKE;
+                        GrDragger *dragger0 = _grdrag->getDraggerFor(it->item, POINT_MG_CORNER, it->corner0, fill_or_stroke);
+                        GrDragger *dragger1 = _grdrag->getDraggerFor(it->item, POINT_MG_CORNER, it->corner1, fill_or_stroke);
+                        bool add    = (event.modifiers() & GDK_SHIFT_MASK);
+                        bool toggle = (event.modifiers() & GDK_CONTROL_MASK);
+                        if ( !add && !toggle ) {
+                            _grdrag->deselectAll();
+                        }
+                        _grdrag->setSelected( dragger0, true, !toggle );
+                        _grdrag->setSelected( dragger1, true, !toggle );
+                    }
+                    ret = true;
+
+                } else {
+
+                    Geom::Point button_w(event.eventPos());
+
+                    // Save drag origin
+                    saveDragOrigin(button_w);
+
+                    dragging = true;
+
+                    Geom::Point button_dt = _desktop->w2d(button_w);
                     // Check if object already has mesh... if it does,
                     // don't create new mesh with click-drag.
                     bool has_mesh = false;
@@ -678,205 +536,315 @@ bool MeshTool::root_handler(CanvasEvent const &canvas_event)
                         }
                     }
 
-                    if (!has_mesh) {
-                        new_default();
-                    } else {
-
-                        // we've been dragging, either create a new gradient
-                        // or rubberband-select if we have rubberband
-                        Inkscape::Rubberband *r = Inkscape::Rubberband::get(_desktop);
-
-                        if (r->is_started() && !this->within_tolerance) {
-                            // this was a rubberband drag
-                            if (r->getMode() == RUBBERBAND_MODE_RECT) {
-                                Geom::OptRect const b = r->getRectangle();
-                                if (!(event->button.state & GDK_SHIFT_MASK)) {
-                                    _grdrag->deselectAll();
-                                }
-                                _grdrag->selectRect(*b);
-                            }
-                        }
+                    if (has_mesh && !(event.modifiers() & GDK_CONTROL_MASK)) {
+                        Inkscape::Rubberband::get(_desktop)->start(_desktop, button_dt);
                     }
 
-                } else if (this->item_to_select) {
-                    if (!over_curve.empty()) {
-                        // Clicked on an existing mesh line, don't change selection. This stops
-                        // possible change in selection during a double click with overlapping objects
-                    } else {
-                        // no dragging, select clicked item if any
-                        if (event->button.state & GDK_SHIFT_MASK) {
-                            selection->toggle(this->item_to_select);
-                        } else {
-                            _grdrag->deselectAll();
-                            selection->set(this->item_to_select);
-                        }
+                    // remember clicked item, disregarding groups, honoring Alt; do nothing with Crtl to
+                    // enable Ctrl+doubleclick of exactly the selected item(s)
+                    if (!(event.modifiers() & GDK_CONTROL_MASK)) {
+                        item_to_select = sp_event_context_find_item (_desktop, button_w, event.modifiers() & GDK_MOD1_MASK, TRUE);
                     }
+
+                    if (!selection->isEmpty()) {
+                        SnapManager &m = _desktop->namedview->snap_manager;
+                        m.setup(_desktop);
+                        m.freeSnapReturnByRef(button_dt, Inkscape::SNAPSOURCE_NODE_HANDLE);
+                        m.unSetup();
+                    }
+
+                    origin = button_dt;
+
+                    ret = true;
+                }
+            }
+        },
+        [&] (MotionEvent const &event) {
+            // Mouse move
+            if (dragging && (event.modifiers() & GDK_BUTTON1_MASK)) {
+                if (!checkDragMoved(event.eventPos())) {
+                    return;
+                }
+ 
+#ifdef DEBUG_MESH
+                std::cout << "root_handler: GDK_MOTION_NOTIFY: Dragging" << std::endl;
+#endif
+
+                Geom::Point const motion_dt = _desktop->w2d(event.eventPos());
+
+                if (Inkscape::Rubberband::get(_desktop)->is_started()) {
+                    Inkscape::Rubberband::get(_desktop)->move(motion_dt);
+                    this->defaultMessageContext()->set(Inkscape::NORMAL_MESSAGE, _("<b>Draw around</b> handles to select them"));
                 } else {
-                    if (!over_curve.empty()) {
-                        // Clicked on an existing mesh line, don't change selection. This stops
-                        // possible change in selection during a double click with overlapping objects
-                    } else {
-                        // click in an empty space; do the same as Esc
-                        if (!_grdrag->selected.empty()) {
-                            _grdrag->deselectAll();
-                        } else {
-                            selection->clear();
-                        }
-                    }
+                    // Do nothing. For a linear/radial gradient we follow the drag, updating the
+                    // gradient as the end node is dragged. For a mesh gradient, the gradient is always
+                    // created to fill the object when the drag ends.
                 }
 
-                this->item_to_select = nullptr;
-                ret = TRUE;
-            }
-            Inkscape::Rubberband::get(_desktop)->stop();
-        }
-        break;
+                gobble_motion_events(GDK_BUTTON1_MASK);
 
-    case GDK_KEY_PRESS:
-
-#ifdef DEBUG_MESH
-        std::cout << "root_handler: GDK_KEY_PRESS" << std::endl;
-#endif
-
-        // FIXME: tip
-        switch (get_latin_keyval (&event->key)) {
-        case GDK_KEY_Alt_L:
-        case GDK_KEY_Alt_R:
-        case GDK_KEY_Control_L:
-        case GDK_KEY_Control_R:
-        case GDK_KEY_Shift_L:
-        case GDK_KEY_Shift_R:
-        case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt (at least on my machine)
-        case GDK_KEY_Meta_R:
-
-            // sp_event_show_modifier_tip (this->defaultMessageContext(), event,
-            //                             _("FIXME<b>Ctrl</b>: snap mesh angle"),
-            //                             _("FIXME<b>Shift</b>: draw mesh around the starting point"),
-            //                             NULL);
-            break;
-
-        case GDK_KEY_A:
-        case GDK_KEY_a:
-            if (MOD__CTRL_ONLY(event) && _grdrag->isNonEmpty()) {
-                _grdrag->selectAll();
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_Escape:
-            if (!_grdrag->selected.empty()) {
-                _grdrag->deselectAll();
+                ret = true;
             } else {
-                selection->clear();
+                // Not dragging
+
+                // Do snapping
+                if (!_grdrag->mouseOver() && !selection->isEmpty()) {
+                    auto &m = _desktop->namedview->snap_manager;
+                    m.setup(_desktop);
+
+                    auto const motion_dt = _desktop->w2d(event.eventPos());
+                    m.preSnap(SnapCandidatePoint(motion_dt, SNAPSOURCE_OTHER_HANDLE));
+                    m.unSetup();
+                }
+
+                // Highlight corner node corresponding to side or tensor node
+                if (_grdrag->mouseOver()) {
+                    // MESH FIXME: Light up corresponding corner node corresponding to node we are over.
+                    // See "pathflash" in ui/tools/node-tool.cpp for ideas.
+                    // Use _desktop->add_temporary_canvasitem( SPCanvasItem, milliseconds );
+                }
+
+                // Change cursor shape if over line
+                auto over_curve = this->over_curve(event.eventPos());
+
+                if (cursor_addnode && over_curve.empty()) {
+                    set_cursor("mesh.svg");
+                    cursor_addnode = false;
+                } else if (!cursor_addnode && !over_curve.empty()) {
+                    set_cursor("mesh-add.svg");
+                    cursor_addnode = true;
+                }
             }
-
-            ret = TRUE;
-            //TODO: make dragging escapable by Esc
-            break;
-
-        // Mesh Operations --------------------------------------------
-
-        case GDK_KEY_Insert:
-        case GDK_KEY_KP_Insert:
-            // with any modifiers:
-            this->corner_operation(MG_CORNER_INSERT);
-            ret = TRUE;
-            break;
-
-        case GDK_KEY_i:
-        case GDK_KEY_I:
-            if (MOD__SHIFT_ONLY(event)) {
-                // Shift+I - insert corners (alternate keybinding for keyboards
-                //           that don't have the Insert key)
-                this->corner_operation(MG_CORNER_INSERT);
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_Delete:
-        case GDK_KEY_KP_Delete:
-        case GDK_KEY_BackSpace:
-            if (!_grdrag->selected.empty()) {
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_b:  // Toggle mesh side between lineto and curveto.
-        case GDK_KEY_B:
-            if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
-                this->corner_operation(MG_CORNER_SIDE_TOGGLE);
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_c:  // Convert mesh side from generic Bezier to Bezier approximating arc,
-        case GDK_KEY_C:  // preserving handle direction.
-            if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
-                this->corner_operation(MG_CORNER_SIDE_ARC);
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_g:  // Toggle mesh tensor points on/off
-        case GDK_KEY_G:
-            if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
-                this->corner_operation(MG_CORNER_TENSOR_TOGGLE);
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_j:  // Smooth corner color
-        case GDK_KEY_J:
-            if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
-                this->corner_operation(MG_CORNER_COLOR_SMOOTH);
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_k:  // Pick corner color
-        case GDK_KEY_K:
-            if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
-                this->corner_operation(MG_CORNER_COLOR_PICK);
-                ret = TRUE;
-            }
-            break;
-
-        default:
-            ret = _grdrag->key_press_handler(event);
-            break;
-        }
-
-        break;
-
-    case GDK_KEY_RELEASE:
+        },
+        [&] (ButtonReleaseEvent const &event) {
+            xyp = {};
+            if (event.button() == 1) {
 
 #ifdef DEBUG_MESH
-        std::cout << "root_handler: GDK_KEY_RELEASE" << std::endl;
+                std::cout << "root_handler: GDK_BUTTON_RELEASE" << std::endl;
 #endif
-        switch (get_latin_keyval (&event->key)) {
-        case GDK_KEY_Alt_L:
-        case GDK_KEY_Alt_R:
-        case GDK_KEY_Control_L:
-        case GDK_KEY_Control_R:
-        case GDK_KEY_Shift_L:
-        case GDK_KEY_Shift_R:
-        case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt
-        case GDK_KEY_Meta_R:
-            this->defaultMessageContext()->clear();
-            break;
-        default:
-            break;
-        }
-        break;
-    default:
-        break;
-    }
 
-    if (!ret) {
-        ret = ToolBase::root_handler(canvas_event);
-    }
+                // Check if over line
+                auto over_curve = this->over_curve(event.eventPos());
 
-    return ret;
+                if ( (event.modifiers() & GDK_CONTROL_MASK) && (event.modifiers() & GDK_MOD1_MASK ) ) {
+                    if (!over_curve.empty()) {
+                        split_near_point(over_curve[0]->item, mousepoint_doc);
+                        ret = true;
+                    }
+                } else {
+                    dragging = false;
+
+                    // Unless clicked with Ctrl (to enable Ctrl+doubleclick).
+                    if (event.modifiers() & GDK_CONTROL_MASK && !(event.modifiers() & GDK_SHIFT_MASK)) {
+                        Inkscape::Rubberband::get(_desktop)->stop();
+                        ret = true;
+                    } else {
+
+                        if (!within_tolerance) {
+
+                            // Check if object already has mesh... if it does,
+                            // don't create new mesh with click-drag.
+                            bool has_mesh = false;
+                            if (!selection->isEmpty()) {
+                                SPStyle *style = selection->items().front()->style;
+                                if (style) {
+                                    SPPaintServer *server =
+                                        (fill_or_stroke_pref == Inkscape::FOR_FILL) ?
+                                        style->getFillPaintServer():
+                                        style->getStrokePaintServer();
+                                    if (server && is<SPMeshGradient>(server)) 
+                                        has_mesh = true;
+                                }
+                            }
+
+                            if (!has_mesh) {
+                                new_default();
+                            } else {
+
+                                // we've been dragging, either create a new gradient
+                                // or rubberband-select if we have rubberband
+                                Inkscape::Rubberband *r = Inkscape::Rubberband::get(_desktop);
+
+                                if (r->is_started() && !this->within_tolerance) {
+                                    // this was a rubberband drag
+                                    if (r->getMode() == RUBBERBAND_MODE_RECT) {
+                                        Geom::OptRect const b = r->getRectangle();
+                                        if (!(event.modifiers() & GDK_SHIFT_MASK)) {
+                                            _grdrag->deselectAll();
+                                        }
+                                        _grdrag->selectRect(*b);
+                                    }
+                                }
+                            }
+
+                        } else if (this->item_to_select) {
+                            if (!over_curve.empty()) {
+                                // Clicked on an existing mesh line, don't change selection. This stops
+                                // possible change in selection during a double click with overlapping objects.
+                            } else {
+                                // No dragging, select clicked item if any.
+                                if (event.modifiers() & GDK_SHIFT_MASK) {
+                                    selection->toggle(item_to_select);
+                                } else {
+                                    _grdrag->deselectAll();
+                                    selection->set(item_to_select);
+                                }
+                            }
+                        } else {
+                            if (!over_curve.empty()) {
+                                // Clicked on an existing mesh line, don't change selection. This stops
+                                // possible change in selection during a double click with overlapping objects.
+                            } else {
+                                // Click in an empty space; do the same as Esc.
+                                if (!_grdrag->selected.empty()) {
+                                    _grdrag->deselectAll();
+                                } else {
+                                    selection->clear();
+                                }
+                            }
+                        }
+
+                        item_to_select = nullptr;
+                        ret = true;
+                    }
+                }
+                Inkscape::Rubberband::get(_desktop)->stop();
+            }
+        },
+        [&] (KeyPressEvent const &event) {
+
+#ifdef DEBUG_MESH
+            std::cout << "root_handler: GDK_KEY_PRESS" << std::endl;
+#endif
+
+            // FIXME: tip
+            switch (get_latin_keyval (event)) {
+                case GDK_KEY_Alt_L:
+                case GDK_KEY_Alt_R:
+                case GDK_KEY_Control_L:
+                case GDK_KEY_Control_R:
+                case GDK_KEY_Shift_L:
+                case GDK_KEY_Shift_R:
+                case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt (at least on my machine)
+                case GDK_KEY_Meta_R:
+                    // sp_event_show_modifier_tip (this->defaultMessageContext(), event,
+                    //                             _("FIXME<b>Ctrl</b>: snap mesh angle"),
+                    //                             _("FIXME<b>Shift</b>: draw mesh around the starting point"),
+                    //                             NULL);
+                    break;
+
+                case GDK_KEY_A:
+                case GDK_KEY_a:
+                    if (MOD__CTRL_ONLY(event) && _grdrag->isNonEmpty()) {
+                        _grdrag->selectAll();
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_Escape:
+                    if (!_grdrag->selected.empty()) {
+                        _grdrag->deselectAll();
+                    } else {
+                        selection->clear();
+                    }
+
+                    ret = true;
+                    //TODO: make dragging escapable by Esc
+                    break;
+
+                    // Mesh Operations --------------------------------------------
+
+                case GDK_KEY_Insert:
+                case GDK_KEY_KP_Insert:
+                    // with any modifiers:
+                    corner_operation(MG_CORNER_INSERT);
+                    ret = true;
+                    break;
+
+                case GDK_KEY_i:
+                case GDK_KEY_I:
+                    if (MOD__SHIFT_ONLY(event)) {
+                        // Shift+I - insert corners (alternate keybinding for keyboards
+                        //           that don't have the Insert key)
+                        this->corner_operation(MG_CORNER_INSERT);
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_Delete:
+                case GDK_KEY_KP_Delete:
+                case GDK_KEY_BackSpace:
+                    if (!_grdrag->selected.empty()) {
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_b:  // Toggle mesh side between lineto and curveto.
+                case GDK_KEY_B:
+                    if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
+                        corner_operation(MG_CORNER_SIDE_TOGGLE);
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_c:  // Convert mesh side from generic Bezier to Bezier approximating arc,
+                case GDK_KEY_C:  // preserving handle direction.
+                    if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
+                        corner_operation(MG_CORNER_SIDE_ARC);
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_g:  // Toggle mesh tensor points on/off
+                case GDK_KEY_G:
+                    if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
+                        corner_operation(MG_CORNER_TENSOR_TOGGLE);
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_j:  // Smooth corner color
+                case GDK_KEY_J:
+                    if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
+                        corner_operation(MG_CORNER_COLOR_SMOOTH);
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_k:  // Pick corner color
+                case GDK_KEY_K:
+                    if (MOD__ALT(event) && _grdrag->isNonEmpty() && _grdrag->hasSelection()) {
+                        corner_operation(MG_CORNER_COLOR_PICK);
+                        ret = true;
+                    }
+                    break;
+
+                default:
+                    ret = _grdrag->key_press_handler(event.CanvasEvent::original());
+                    break;
+            }
+        },
+        [&] (KeyReleaseEvent const &event) {
+            switch (get_latin_keyval(event)) {
+                case GDK_KEY_Alt_L:
+                case GDK_KEY_Alt_R:
+                case GDK_KEY_Control_L:
+                case GDK_KEY_Control_R:
+                case GDK_KEY_Shift_L:
+                case GDK_KEY_Shift_R:
+                case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt
+                case GDK_KEY_Meta_R:
+                    defaultMessageContext()->clear();
+                    break;
+                default:
+                    break;
+            }
+        },
+        [&] (CanvasEvent const &event) {}
+    );
+
+    return ret || ToolBase::root_handler(event);
 }
 
 // Creates a new mesh gradient.

@@ -243,14 +243,14 @@ bool TextTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
                         // update display
                         sp_text_context_update_cursor(this);
                         sp_text_context_update_text_selection(this);
-                        this->dragging = 1;
+                        this->dragging_state = 1;
                     }
                     ret = TRUE;
                 }
             }
             break;
         case GDK_2BUTTON_PRESS:
-            if (event->button.button == 1 && this->text && this->dragging) {
+            if (event->button.button == 1 && this->text && this->dragging_state) {
                 Inkscape::Text::Layout const *layout = te_get_layout(this->text);
                 if (layout) {
                     if (!layout->isStartOfWord(this->text_sel_start))
@@ -259,24 +259,24 @@ bool TextTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
                         this->text_sel_end.nextEndOfWord();
                     sp_text_context_update_cursor(this);
                     sp_text_context_update_text_selection(this);
-                    this->dragging = 2;
+                    this->dragging_state = 2;
                     ret = TRUE;
                 }
             }
             break;
         case GDK_3BUTTON_PRESS:
-            if (event->button.button == 1 && this->text && this->dragging) {
+            if (event->button.button == 1 && this->text && this->dragging_state) {
                 this->text_sel_start.thisStartOfLine();
                 this->text_sel_end.thisEndOfLine();
                 sp_text_context_update_cursor(this);
                 sp_text_context_update_text_selection(this);
-                this->dragging = 3;
+                this->dragging_state = 3;
                 ret = TRUE;
             }
             break;
         case GDK_BUTTON_RELEASE:
-            if (event->button.button == 1 && this->dragging) {
-                this->dragging = 0;
+            if (event->button.button == 1 && this->dragging_state) {
+                this->dragging_state = 0;
                 this->discard_delayed_snap_event();
                 ret = TRUE;
                 _desktop->emit_text_cursor_moved(this, this);
@@ -491,7 +491,7 @@ bool TextTool::root_handler(CanvasEvent const &canvas_event)
                 m.preSnap(Inkscape::SnapCandidatePoint(motion_dt, Inkscape::SNAPSOURCE_OTHER_HANDLE));
                 m.unSetup();
             }
-            if ((event->motion.state & GDK_BUTTON1_MASK) && this->dragging) {
+            if ((event->motion.state & GDK_BUTTON1_MASK) && this->dragging_state) {
                 Inkscape::Text::Layout const *layout = te_get_layout(this->text);
                 if (!layout)
                     break;
@@ -499,14 +499,14 @@ bool TextTool::root_handler(CanvasEvent const &canvas_event)
                 Geom::Point p = _desktop->w2d(Geom::Point(event->button.x, event->button.y));
                 // set the cursor closest to that point
                 Inkscape::Text::Layout::iterator new_end = sp_te_get_position_by_coords(this->text, p);
-                if (this->dragging == 2) {
+                if (this->dragging_state == 2) {
                     // double-click dragging: go by word
                     if (new_end < this->text_sel_start) {
                         if (!layout->isStartOfWord(new_end))
                             new_end.prevStartOfWord();
                     } else if (!layout->isEndOfWord(new_end))
                         new_end.nextEndOfWord();
-                } else if (this->dragging == 3) {
+                } else if (this->dragging_state == 3) {
                     // triple-click dragging: go by line
                     if (new_end < this->text_sel_start)
                         new_end.thisStartOfLine();

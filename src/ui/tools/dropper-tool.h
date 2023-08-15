@@ -52,7 +52,7 @@ private:
     bool invert = false;   ///< Set color to inverse rgb value
     bool stroke = false;   ///< Set to stroke color. In dropping mode, set from stroke color
     bool dropping = false; ///< When true, get color from selected objects instead of canvas
-    bool dragging = false; ///< When true, get average color for region on canvas, instead of a single point
+    // bool dragging = false; ///< When true, get average color for region on canvas, instead of a single point
 
     double radius = 0.0;                       ///< Size of region under dragging mode
     CanvasItemPtr<CanvasItemBpath> area;       ///< Circle depicting region's borders in dragging mode

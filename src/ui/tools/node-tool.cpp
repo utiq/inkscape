@@ -157,13 +157,6 @@ NodeTool::NodeTool(SPDesktop *desktop)
 
     _selected_nodes->signal_selection_changed.connect([this] (auto, auto) { update_tip(); });
 
-    this->cursor_drag = false;
-    this->show_transform_handles = true;
-    this->single_node_transform_handles = false;
-    this->flash_tempitem = nullptr;
-    this->flashed_item = nullptr;
-    this->_last_over = nullptr;
-
     // read prefs before adding items to selection to prevent momentarily showing the outline
     sp_event_context_read(this, "show_handles");
     sp_event_context_read(this, "show_outline");

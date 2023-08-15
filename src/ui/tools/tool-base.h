@@ -132,7 +132,8 @@ protected:
     std::string _cursor_filename = "select.svg";
     std::string _cursor_default = "select.svg";
 
-    Geom::IntPoint xyp;           ///< where drag started
+    Geom::IntPoint xyp;             ///< where drag started
+    bool dragging = false;          ///< are we dragging?
     int tolerance = 0;
     bool within_tolerance = false;  ///< are we still within tolerance of origin
     bool _button1on = false;

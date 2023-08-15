@@ -40,7 +40,6 @@ private:
     Geom::Point mousepoint_doc; // stores mousepoint when over_line in doc coords
     Geom::Point origin;
     bool cursor_addnode = false;
-    bool dragging = false;
 
     auto_connection selcon;
     auto_connection subselcon;

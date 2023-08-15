@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
+#ifndef INKSCAPE_UI_TOOLS_PEN_TOOl_H
+#define INKSCAPE_UI_TOOLS_PEN_TOOl_H
+
 /** \file
  * PenTool: a context for pen tool events.
  *//*
@@ -7,8 +10,6 @@
  * Copyright (C) 2018 Authors
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
-#ifndef SEEN_PEN_CONTEXT_H
-#define SEEN_PEN_CONTEXT_H
 
 #include <array>
 #include <sigc++/sigc++.h>
@@ -22,12 +23,17 @@
 #define SP_IS_PEN_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::PenTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
 
 namespace Inkscape {
-
 class CanvasItemCtrl;
 class CanvasItemCurve;
 
-namespace UI {
-namespace Tools {
+class ButtonPressEvent;
+class MotionEvent;
+class ButtonReleaseEvent;
+class KeyPressEvent;
+class KeyReleaseEvent;
+} // namespace Inkscape
+
+namespace Inkscape::UI::Tools {
 
 /**
  * PenTool: a context for pen tool events.
@@ -53,7 +59,7 @@ public:
         DEAD
     };
 
-    Geom::Point p[5];
+    Geom::Point p_array[5];
     Geom::Point previous;
     /** \invar npoints in {0, 2, 5}. */
     // npoints somehow determines the type of the node (what does it mean, exactly? the number of Bezier handles?)
@@ -93,11 +99,12 @@ protected:
     bool item_handler(SPItem* item, CanvasEvent const &event) override;
 
 private:
-    bool _handleButtonPress(GdkEventButton const &bevent);
-    bool _handleMotionNotify(GdkEventMotion const &mevent);
-    bool _handleButtonRelease(GdkEventButton const &revent);
-    bool _handle2ButtonPress(GdkEventButton const &bevent);
-    bool _handleKeyPress(GdkEvent *event);
+    bool _handleButtonPress(ButtonPressEvent const &event);
+    bool _handle2ButtonPress(ButtonPressEvent const &event);
+    bool _handleMotionNotify(MotionEvent const &event);
+    bool _handleButtonRelease(ButtonReleaseEvent const &event);
+    bool _handleKeyPress(KeyPressEvent const &event);
+
     //this function changes the colors red, green and blue making them transparent or not depending on if the function uses spiro
     void _bsplineSpiroColor();
     //creates a node in bspline or spiro modes
@@ -158,11 +165,9 @@ private:
     bool _did_redo = false;
 };
 
-}
-}
-}
+} // namespace Inkscape:UI::Tools
 
-#endif /* !SEEN_PEN_CONTEXT_H */
+#endif // INKSCAPE_UI_TOOLS_PEN_TOOl_H
 
 /*
   Local Variables:

@@ -32,9 +32,9 @@ class SnapCandidatePoint;
 class CanvasItemGroup;
 class CanvasItemRect;
 class CanvasItemBpath;
+} // namespace Inkscape
 
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class PagesTool : public ToolBase
 {
@@ -93,8 +93,6 @@ private:
     static Geom::Point middleOfSide(int side, const Geom::Rect &rect);
 };
 
-} // namespace Tools
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Tools
 
 #endif // INKSCAPE_UI_TOOLS_PAGES_TOOL_H

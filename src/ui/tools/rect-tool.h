@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_INKSCAPE_RECT_TOOL_H
-#define SEEN_INKSCAPE_RECT_TOOL_H
+#ifndef INKSCAPE_UI_TOOLS_RECT_TOOL_H
+#define INKSCAPE_UI_TOOLS_RECT_TOOL_H
 
 /*
  * Rectangle drawing context
@@ -24,12 +24,9 @@
 
 class SPRect;
 
-namespace Inkscape {
+namespace Inkscape { class Selection; }
 
-class Selection;
-
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class RectTool : public ToolBase
 {
@@ -43,21 +40,30 @@ public:
 
 private:
     SPWeakPtr<SPRect> rect;
-	Geom::Point center;
+    Geom::Point center;
 
     double rx;	/* roundness radius (x direction) */
     double ry;	/* roundness radius (y direction) */
 
-	sigc::connection sel_changed_connection;
+    sigc::connection sel_changed_connection;
 
     void drag(Geom::Point const pt, unsigned state);
-	void finishItem();
-	void cancel();
+    void finishItem();
+    void cancel();
     void selection_changed(Selection *selection);
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif
+#endif // INKSCAPE_UI_TOOLS_RECT_TOOL_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :

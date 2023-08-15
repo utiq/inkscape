@@ -29,35 +29,33 @@
 #include "ui/widget/events/canvas-event.h"
 
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 MarkerTool::MarkerTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/marker", "select.svg")
 {
     Inkscape::Selection *selection = desktop->getSelection();
 
-    this->sel_changed_connection.disconnect();
-    this->sel_changed_connection = selection->connectChanged(
+    sel_changed_connection.disconnect();
+    sel_changed_connection = selection->connectChanged(
         sigc::mem_fun(*this, &MarkerTool::selection_changed)
     );
-    this->selection_changed(selection);
+    selection_changed(selection);
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
-    if (prefs->getBool("/tools/marker/selcue")) this->enableSelectionCue();
-    if (prefs->getBool("/tools/marker/gradientdrag")) this->enableGrDrag();
+    if (prefs->getBool("/tools/marker/selcue")) enableSelectionCue();
+    if (prefs->getBool("/tools/marker/gradientdrag")) enableGrDrag();
 }
 
 MarkerTool::~MarkerTool()
 {
     ungrabCanvasEvents();
 
-    this->message_context->clear();
-    this->_shape_editors.clear();
+    message_context->clear();
+    _shape_editors.clear();
 
-    this->enableGrDrag(false);
-    this->sel_changed_connection.disconnect();
+    enableGrDrag(false);
+    sel_changed_connection.disconnect();
 }
 
 /*
@@ -74,7 +72,7 @@ void MarkerTool::selection_changed(Inkscape::Selection *selection) {
     g_assert(doc != nullptr);
 
     auto selected_items = selection->items();
-    this->_shape_editors.clear();
+    _shape_editors.clear();
 
     for(auto i = selected_items.begin(); i != selected_items.end(); ++i){
         SPItem *item = *i;
@@ -113,7 +111,7 @@ void MarkerTool::selection_changed(Inkscape::Selection *selection) {
                     auto si = std::make_unique<ShapeEditor>(_desktop, sr.edit_transform, sr.edit_rotation, editMarkerMode);
                     si->set_item(cast<SPItem>(sr.object));
 
-                    this->_shape_editors.insert({item, std::move(si)});
+                    _shape_editors.insert({item, std::move(si)});
                     break;                     
                 }
             }
@@ -122,46 +120,40 @@ void MarkerTool::selection_changed(Inkscape::Selection *selection) {
 }
 
 // handles selection of new items
-bool MarkerTool::root_handler(CanvasEvent const &canvas_event)
+bool MarkerTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    g_assert(_desktop != nullptr);
-
-    Inkscape::Selection *selection = _desktop->getSelection();
-    gint ret = false;
+    auto selection = _desktop->getSelection();
+    bool ret = false;
     
-    switch (event->type) {
-        case GDK_BUTTON_PRESS:
-            if (event->button.button == 1) {
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
 
-                Geom::Point const button_w(event->button.x, event->button.y);  
-                this->item_to_select = sp_event_context_find_item (_desktop, button_w, event->button.state & GDK_MOD1_MASK, TRUE);
+                item_to_select = sp_event_context_find_item (_desktop, event.eventPos(), event.modifiers() & GDK_MOD1_MASK, true);
 
                 grabCanvasEvents();
                 ret = true;
             }
-            break;
-        case GDK_BUTTON_RELEASE:
-            if (event->button.button == 1) {
-
-                if (this->item_to_select) {
+        },
+        [&] (ButtonReleaseEvent const &event) {
+            if (event.button() == 1) {
+                if (item_to_select) {
                     // unselect all items, except for newly selected item
-                    selection->set(this->item_to_select);
+                    selection->set(item_to_select);
                 } else {
                     // clicked into empty space, deselect any selected items
                     selection->clear();
                 }
 
-                this->item_to_select = nullptr;
+                item_to_select = nullptr;
                 ungrabCanvasEvents();
                 ret = true;
             }
-            break;
-        default:
-            break;
-    }
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-    return ret || ToolBase::root_handler(canvas_event);
+    return ret || ToolBase::root_handler(event);
 }
 
 /*
@@ -301,4 +293,15 @@ ShapeRecord MarkerTool::get_marker_transform(SPShape* shape, SPItem *parent_item
     return sr;
 }
 
-}}}
+} // namespace Inkscape::UI::Tools
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

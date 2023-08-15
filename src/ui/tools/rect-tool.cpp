@@ -41,9 +41,7 @@
 
 using Inkscape::DocumentUndo;
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 RectTool::RectTool(SPDesktop *desktop)
     : ToolBase(desktop, "/tools/shapes/rect", "rect.svg")
@@ -113,218 +111,193 @@ void RectTool::set(const Inkscape::Preferences::Entry& val) {
     }
 }
 
-bool RectTool::item_handler(SPItem *item, CanvasEvent const &canvas_event)
+bool RectTool::item_handler(SPItem *item, CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
+                this->setup_for_drag_start(event.CanvasEvent::original());
+            }
+        },
+        [&] (CanvasEvent const &event) {}
+    );
 
-    switch (event->type) {
-    case GDK_BUTTON_PRESS:
-        if ( event->button.button == 1) {
-            this->setup_for_drag_start(event);
-        }
-        break;
-        // motion and release are always on root (why?)
-    default:
-        break;
-    }
-
-    return ToolBase::item_handler(item, canvas_event);
+    return ToolBase::item_handler(item, event);
 }
 
-bool RectTool::root_handler(CanvasEvent const &canvas_event)
+bool RectTool::root_handler(CanvasEvent const &event)
 {
-    auto event = canvas_event.original();
-    static bool dragging;
+    auto selection = _desktop->getSelection();
+    auto prefs = Inkscape::Preferences::get();
 
-    Inkscape::Selection *selection = _desktop->getSelection();
+    tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
 
-    Inkscape::Preferences *prefs = Inkscape::Preferences::get();
+    bool ret = false;
 
-    this->tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            if (event.numPress() == 1 && event.button() == 1) {
 
-    gint ret = FALSE;
-    
-    switch (event->type) {
-    case GDK_BUTTON_PRESS:
-        if (event->button.button == 1) {
-            Geom::Point const button_w(event->button.x, event->button.y);
+                auto const button_w = event.eventPos();
 
-            // save drag origin
-            xyp = button_w.floor();
-            within_tolerance = true;
+                // Save drag origin
+                saveDragOrigin(button_w);
+                dragging = true;
 
-            // remember clicked item, disregarding groups, honoring Alt
-            this->item_to_select = sp_event_context_find_item (_desktop, button_w, event->button.state & GDK_MOD1_MASK, TRUE);
+                // Remember clicked item, disregarding groups, honoring Alt.
+                item_to_select = sp_event_context_find_item (_desktop, button_w, event.modifiers() & GDK_MOD1_MASK, true);
+                // Postion center
+                auto button_dt = _desktop->w2d(button_w);
+                center = button_dt;
 
-            dragging = true;
+                // Snap center
+                auto &m = _desktop->namedview->snap_manager;
+                m.setup(_desktop);
+                m.freeSnapReturnByRef(button_dt, SNAPSOURCE_NODE_HANDLE);
+                m.unSetup();
+                center = button_dt;
 
-            /* Position center */
-            Geom::Point button_dt(_desktop->w2d(button_w));
-            this->center = button_dt;
-
-            /* Snap center */
-            SnapManager &m = _desktop->namedview->snap_manager;
-            m.setup(_desktop);
-            m.freeSnapReturnByRef(button_dt, Inkscape::SNAPSOURCE_NODE_HANDLE);
-            m.unSetup();
-            this->center = button_dt;
-
-            grabCanvasEvents();
-            ret = TRUE;
-        }
-        break;
-    case GDK_MOTION_NOTIFY:
-        if ( dragging
-             && (event->motion.state & GDK_BUTTON1_MASK))
-        {
-            if ( within_tolerance
-                && ( abs( (gint) event->motion.x - xyp.x() ) < this->tolerance )
-                && ( abs( (gint) event->motion.y - xyp.y() ) < this->tolerance ) ) {
-                break; // do not drag if we're within tolerance from origin
-            }
-            // Once the user has moved farther than tolerance from the original location
-            // (indicating they intend to draw, not click), then always process the
-            // motion notify coordinates as given (no snapping back to origin)
-            this->within_tolerance = false;
-
-            Geom::Point const motion_w(event->motion.x, event->motion.y);
-            Geom::Point motion_dt(_desktop->w2d(motion_w));
-
-            this->drag(motion_dt, event->motion.state); // this will also handle the snapping
-            gobble_motion_events(GDK_BUTTON1_MASK);
-            ret = TRUE;
-        } else if (!this->sp_event_context_knot_mouseover()) {
-            SnapManager &m = _desktop->namedview->snap_manager;
-            m.setup(_desktop);
-
-            Geom::Point const motion_w(event->motion.x, event->motion.y);
-            Geom::Point motion_dt(_desktop->w2d(motion_w));
-
-            m.preSnap(Inkscape::SnapCandidatePoint(motion_dt, Inkscape::SNAPSOURCE_NODE_HANDLE));
-            m.unSetup();
-        }
-        break;
-    case GDK_BUTTON_RELEASE:
-        xyp = {};
-        if (event->button.button == 1) {
-            dragging = false;
-            this->discard_delayed_snap_event();
-
-            if (rect) {
-                // we've been dragging, finish the rect
-                this->finishItem();
-            } else if (this->item_to_select) {
-                // no dragging, select clicked item if any
-                if (event->button.state & GDK_SHIFT_MASK) {
-                    selection->toggle(this->item_to_select);
-                } else if (!selection->includes(this->item_to_select)) {
-                    selection->set(this->item_to_select);
-                }
-            } else {
-                // click in an empty space
-                selection->clear();
-            }
-
-            this->item_to_select = nullptr;
-            ret = TRUE;
-            ungrabCanvasEvents();
-        }
-        break;
-    case GDK_KEY_PRESS:
-        switch (get_latin_keyval (&event->key)) {
-        case GDK_KEY_Alt_L:
-        case GDK_KEY_Alt_R:
-        case GDK_KEY_Control_L:
-        case GDK_KEY_Control_R:
-        case GDK_KEY_Shift_L:
-        case GDK_KEY_Shift_R:
-        case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt (at least on my machine)
-        case GDK_KEY_Meta_R:
-            if (!dragging){
-                sp_event_show_modifier_tip (this->defaultMessageContext(), event,
-                                            _("<b>Ctrl</b>: make square or integer-ratio rect, lock a rounded corner circular"),
-                                            _("<b>Shift</b>: draw around the starting point"),
-                                            nullptr);
-            }
-            break;
-        case GDK_KEY_x:
-        case GDK_KEY_X:
-            if (MOD__ALT_ONLY(event)) {
-                _desktop->setToolboxFocusTo("rect-width");
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_g:
-        case GDK_KEY_G:
-            if (MOD__SHIFT_ONLY(event)) {
-                _desktop->getSelection()->toGuides();
+                grabCanvasEvents();
                 ret = true;
             }
-            break;
-
-        case GDK_KEY_Escape:
-            if (dragging) {
-                dragging = false;
-                this->discard_delayed_snap_event();
-                // if drawing, cancel, otherwise pass it up for deselecting
-                this->cancel();
-                ret = TRUE;
-            }
-            break;
-
-        case GDK_KEY_space:
-            if (dragging) {
-                ungrabCanvasEvents();
-                dragging = false;
-                this->discard_delayed_snap_event();
-
-                if (!this->within_tolerance) {
-                    // we've been dragging, finish the rect
-                    this->finishItem();
+        },
+        [&] (MotionEvent const &event) {
+            if (dragging && (event.modifiers() & GDK_BUTTON1_MASK)) {
+                if (!checkDragMoved(event.eventPos())) {
+                    return;
                 }
-                // do not return true, so that space would work switching to selector
+
+                auto const motion_dt = _desktop->w2d(event.eventPos());
+                drag(motion_dt, event.modifiers()); // This will also handle the snapping.
+
+                gobble_motion_events(GDK_BUTTON1_MASK);
+
+                ret = true;
+            } else if (!sp_event_context_knot_mouseover()) {
+                auto &m = _desktop->namedview->snap_manager;
+                m.setup(_desktop);
+
+                auto const motion_dt = _desktop->w2d(event.eventPos());
+                m.preSnap(SnapCandidatePoint(motion_dt, SNAPSOURCE_NODE_HANDLE));
+                m.unSetup();
             }
-            break;
+        },
+        [&] (ButtonReleaseEvent const &event) {
+            xyp = {};
+            if (event.button() == 1) {
+                dragging = false;
+                discard_delayed_snap_event();
 
-        case GDK_KEY_Delete:
-        case GDK_KEY_KP_Delete:
-        case GDK_KEY_BackSpace:
-            ret = this->deleteSelectedDrag(MOD__CTRL_ONLY(event));
-            break;
+                if (rect) {
+                    // We've been dragging, finish the rect.
+                    finishItem();
+                } else if (item_to_select) {
+                    // No dragging, select clicked item if any.
+                    if (event.modifiers() & GDK_SHIFT_MASK) {
+                        selection->toggle(item_to_select);
+                    } else if (!selection->includes(item_to_select)) {
+                        selection->set(item_to_select);
+                    }
+                } else {
+                    // Click in an empty space.
+                    selection->clear();
+                }
 
-        default:
-            break;
-        }
-        break;
-    case GDK_KEY_RELEASE:
-        switch (get_latin_keyval (&event->key)) {
-        case GDK_KEY_Alt_L:
-        case GDK_KEY_Alt_R:
-        case GDK_KEY_Control_L:
-        case GDK_KEY_Control_R:
-        case GDK_KEY_Shift_L:
-        case GDK_KEY_Shift_R:
-        case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt
-        case GDK_KEY_Meta_R:
-            this->defaultMessageContext()->clear();
-            break;
-        default:
-            break;
-        }
-        break;
-    default:
-        break;
-    }
+                item_to_select = nullptr;
+                ret = true;
+            }
+            ungrabCanvasEvents();
+        },
+        [&] (KeyPressEvent const &event) {
+            switch (get_latin_keyval (event)) {
+                case GDK_KEY_Alt_L:
+                case GDK_KEY_Alt_R:
+                case GDK_KEY_Control_L:
+                case GDK_KEY_Control_R:
+                case GDK_KEY_Shift_L:
+                case GDK_KEY_Shift_R:
+                case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt (at least on my machine)
+                case GDK_KEY_Meta_R:
+                    if (!dragging){
+                        sp_event_show_modifier_tip (this->defaultMessageContext(), event.CanvasEvent::original(),
+                                                    _("<b>Ctrl</b>: make square or integer-ratio rect, lock a rounded corner circular"),
+                                                    _("<b>Shift</b>: draw around the starting point"),
+                                                    nullptr);
+                    }
+                    break;
+                case GDK_KEY_x:
+                case GDK_KEY_X:
+                    if (MOD__ALT_ONLY(event)) {
+                        _desktop->setToolboxFocusTo("rect-width");
+                        ret = true;
+                    }
+                    break;
 
-    if (!ret) {
-        ret = ToolBase::root_handler(canvas_event);
-    }
+                case GDK_KEY_g:
+                case GDK_KEY_G:
+                    if (MOD__SHIFT_ONLY(event)) {
+                        _desktop->getSelection()->toGuides();
+                        ret = true;
+                    }
+                    break;
 
-    return ret;
+                case GDK_KEY_Escape:
+                    if (dragging) {
+                        dragging = false;
+                        discard_delayed_snap_event();
+                        // if drawing, cancel, otherwise pass it up for deselecting
+                        cancel();
+                        ret = true;
+                    }
+                    break;
+
+                case GDK_KEY_space:
+                    if (dragging) {
+                        ungrabCanvasEvents();
+                        dragging = false;
+                        this->discard_delayed_snap_event();
+
+                        if (!within_tolerance) {
+                            // we've been dragging, finish the rect
+                            finishItem();
+                        }
+                        // do not return true, so that space would work switching to selector
+                    }
+                    break;
+
+                case GDK_KEY_Delete:
+                case GDK_KEY_KP_Delete:
+                case GDK_KEY_BackSpace:
+                    ret = deleteSelectedDrag(MOD__CTRL_ONLY(event));
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        [&] (KeyReleaseEvent const &event) {
+            switch (get_latin_keyval(event)) {
+                case GDK_KEY_Alt_L:
+                case GDK_KEY_Alt_R:
+                case GDK_KEY_Control_L:
+                case GDK_KEY_Control_R:
+                case GDK_KEY_Shift_L:
+                case GDK_KEY_Shift_R:
+                case GDK_KEY_Meta_L:  // Meta is when you press Shift+Alt
+                case GDK_KEY_Meta_R:
+                    defaultMessageContext()->clear();
+                    break;
+                default:
+                    break;
+            }
+        },
+        [&] (CanvasEvent const &event) {}
+    );
+
+    return ret || ToolBase::root_handler(event);
 }
 
-void RectTool::drag(Geom::Point const pt, guint state) {
+void RectTool::drag(Geom::Point const pt, unsigned state) {
     if (!this->rect) {
         if (Inkscape::have_viable_layer(_desktop, defaultMessageContext()) == false) {
             return;
@@ -446,9 +419,7 @@ void RectTool::cancel(){
     DocumentUndo::cancel(_desktop->getDocument());
 }
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
 /*
   Local Variables:

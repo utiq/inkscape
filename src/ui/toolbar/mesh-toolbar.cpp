@@ -140,9 +140,7 @@ static MeshTool *get_mesh_tool()
     MeshTool *tool = nullptr;
     if (SP_ACTIVE_DESKTOP ) {
         Inkscape::UI::Tools::ToolBase *ec = SP_ACTIVE_DESKTOP->event_context;
-        if (SP_IS_MESH_CONTEXT(ec)) {
-            tool = static_cast<MeshTool*>(ec);
-        }
+        tool = dynamic_cast<MeshTool*>(ec);
     }
     return tool;
 }
@@ -437,7 +435,7 @@ MeshToolbar::toggle_handles()
 void
 MeshToolbar::watch_ec(SPDesktop* desktop, Inkscape::UI::Tools::ToolBase* ec)
 {
-    if (SP_IS_MESH_CONTEXT(ec)) {
+    if (dynamic_cast<MeshTool*>(ec)) {
         // connect to selection modified and changed signals
         Inkscape::Selection *selection = desktop->getSelection();
         SPDocument *document = desktop->getDocument();

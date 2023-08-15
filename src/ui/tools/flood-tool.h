@@ -41,10 +41,8 @@ public:
     static std::vector<char const *> const gap_list;
 
 private:
-    bool dragging = false;
-
     void selection_changed(Selection *selection);
-	void finishItem();
+  void finishItem();
 };
 
 enum PaintBucketChannels
@@ -62,3 +60,14 @@ enum PaintBucketChannels
 } // namespace Inkscape::UI::Tools
 
 #endif // INKSCAPE_UI_TOOLS_FLOOD_TOOL_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99 :

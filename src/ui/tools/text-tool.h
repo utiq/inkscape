@@ -80,7 +80,7 @@ public:
 
     int blink_time = 0;
 
-    unsigned dragging = 0;     // dragging selection over text
+    unsigned dragging_state = 0; // dragging selection over text
     bool creating = false;  // dragging rubberband to create flowtext
     Geom::Point p0;         // initial point if the flowtext rect
 

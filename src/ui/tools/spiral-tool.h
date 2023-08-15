@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_INKSCAPE_SPIRAL_TOOL_H
-#define SEEN_INKSCAPE_SPIRAL_TOOL_H
+#ifndef INKSCAPE_UI_TOOLS_SPIRAL_TOOl_H
+#define INKSCAPE_UI_TOOLS_SPIRAL_TOOl_H
 
 /** \file
  * Spiral drawing context
@@ -21,17 +21,11 @@
 #include "ui/tools/tool-base.h"
 #include "object/weakptr.h"
 
-#define SP_SPIRAL_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::SpiralTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_SPIRAL_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::SpiralTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
-
 class SPSpiral;
 
-namespace Inkscape {
+namespace Inkscape { class Selection; }
 
-class Selection;
-
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 class SpiralTool : public ToolBase
 {
@@ -45,20 +39,29 @@ public:
 private:
     SPWeakPtr<SPSpiral> spiral;
     Geom::Point center;
-    double revo;
-    double exp;
-    double t0;
+    double revo = 3.0;
+    double exp = 1.0;
+    double t0 = 0.0;
 
     sigc::connection sel_changed_connection;
 
     void drag(Geom::Point const &p, unsigned state);
-	void finishItem();
-	void cancel();
+    void finishItem();
+    void cancel();
     void selection_changed(Selection *selection);
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif
+#endif // INKSCAPE_UI_TOOLS_ARC_TOOl_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim: filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4 :

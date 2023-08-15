@@ -43,7 +43,6 @@ private:
     SPWeakPtr<SPGenericEllipse> arc;
 
     Geom::Point center;
-    bool dragging = false;
 
     sigc::connection sel_changed_connection;
 

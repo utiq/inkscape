@@ -16,17 +16,18 @@
 #include <glibmm/i18n.h>
 
 #include "desktop.h"
-#include "display/control/canvas-item-bpath.h"
-#include "display/control/canvas-item-group.h"
-#include "display/control/canvas-item-rect.h"
-#include "display/control/snap-indicator.h"
 #include "document-undo.h"
-#include "object/sp-page.h"
-#include "path/path-outline.h"
 #include "pure-transform.h"
 #include "selection.h"
 #include "snap-preferences.h"
 #include "snap.h"
+
+#include "display/control/canvas-item-bpath.h"
+#include "display/control/canvas-item-group.h"
+#include "display/control/canvas-item-rect.h"
+#include "display/control/snap-indicator.h"
+#include "object/sp-page.h"
+#include "path/path-outline.h"
 #include "ui/icon-names.h"
 #include "ui/knot/knot.h"
 #include "ui/modifiers.h"
@@ -421,18 +422,20 @@ bool PagesTool::root_handler(CanvasEvent const &event)
     return ret || ToolBase::root_handler(event);
 }
 
-void PagesTool::menu_popup(CanvasEvent const &canvas_event, SPObject *obj)
+void PagesTool::menu_popup(CanvasEvent const &event, SPObject *obj)
 {
-    auto event = canvas_event.original();
     auto &page_manager = _desktop->getDocument()->getPageManager();
     SPPage *page = page_manager.getSelected();
-    if (event->type != GDK_KEY_PRESS) {
-        drag_origin_w = Geom::Point(event->button.x, event->button.y);
-        drag_origin_dt = _desktop->w2d(drag_origin_w);
-        page = pageUnder(drag_origin_dt);
-    }
+    inspect_event(event,
+        [&] (ButtonPressEvent const &event) {
+            drag_origin_dt = _desktop->w2d(event.eventPos());
+            page = pageUnder(drag_origin_dt);
+        },
+        [&] (CanvasEvent const &event) {}
+    );
+
     if (page) {
-        ToolBase::menu_popup(canvas_event, page);
+        ToolBase::menu_popup(event, page);
     }
 }
 

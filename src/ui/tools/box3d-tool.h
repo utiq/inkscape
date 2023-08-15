@@ -68,7 +68,6 @@ private:
 
     bool ctrl_dragged = false; ///< whether we are ctrl-dragging
     bool extruded = false; ///< whether shift-dragging already occurred (i.e. the box is already extruded)
-    bool dragging = false;
 
     auto_connection sel_changed_connection;
 

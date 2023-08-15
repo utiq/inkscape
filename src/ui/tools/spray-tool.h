@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_INKSCAPE_SPRAY_TOOL_H
-#define SEEN_INKSCAPE_SPRAY_TOOL_H
+#ifndef INKSCAPE_UI_TOOLS_SPRAY_TOOl_H
+#define INKSCAPE_UI_TOOLS_SPRAY_TOOl_H
 
 /*
  * Spray Tool
@@ -26,25 +26,13 @@
 #include "object/object-set.h"
 #include "display/control/canvas-item-ptr.h"
 
-#define SP_SPRAY_CONTEXT(obj) (dynamic_cast<Inkscape::UI::Tools::SprayTool*>((Inkscape::UI::Tools::ToolBase*)obj))
-#define SP_IS_SPRAY_CONTEXT(obj) (dynamic_cast<const Inkscape::UI::Tools::SprayTool*>((const Inkscape::UI::Tools::ToolBase*)obj) != NULL)
-
-namespace Inkscape {
-  class CanvasItemBpath;
-  namespace UI {
-      namespace Dialog {
-          class Dialog;
-      }
-  }
-}
+namespace Inkscape { class CanvasItemBpath; }
 
 #define TC_MIN_PRESSURE      0.0
 #define TC_MAX_PRESSURE      1.0
 #define TC_DEFAULT_PRESSURE  0.35
 
-namespace Inkscape {
-namespace UI {
-namespace Tools {
+namespace Inkscape::UI::Tools {
 
 enum
 {
@@ -65,52 +53,52 @@ public:
     double pressure;
 
     /* attributes */
-    bool dragging;           /* mouse state: mouse is dragging */
-    bool usepressurewidth;
-    bool usepressurepopulation;
-    bool usepressurescale;
-    bool usetilt;
-    bool usetext;
+    bool usepressurewidth = false;
+    bool usepressurepopulation = false;;
+    bool usepressurescale = false;
+    bool usetilt = false;
+    bool usetext = false;
 
-    double width;
-    double ratio;
-    double tilt;
-    double rotation_variation;
-    double population;
-    double scale_variation;
-    double scale;
-    double mean;
-    double standard_deviation;
+    double width = 0.2;
+    double ratio = 0.0;
+    double tilt = 0.0;
+    double rotation_variation = 0.0;
+    double population = 0.0;
+    double scale_variation = 1.0;
+    double scale = 1.0;
+    double mean = 0.2;
+    double standard_deviation = 0.2;
 
-    int distrib;
+    int distrib = 1;
 
-    int mode;
+    int mode = 0;
 
-    bool is_drawing;
+    bool is_drawing = false;
 
-    bool is_dilating;
-    bool has_dilated;
+    bool is_dilating = false;
+    bool has_dilated = false;
     Geom::Point last_push;
     CanvasItemPtr<CanvasItemBpath> dilate_area;
-    bool no_overlap;
-    bool picker;
-    bool pick_center;
-    bool pick_inverse_value;
-    bool pick_fill;
-    bool pick_stroke;
-    bool pick_no_overlap;
-    bool over_transparent;
-    bool over_no_transparent;
-    double offset;
-    int pick;
-    bool do_trace;
-    bool pick_to_size;
-    bool pick_to_presence;
-    bool pick_to_color;
-    bool pick_to_opacity;
-    bool invert_picked;
-    double gamma_picked;
-    double rand_picked;
+    bool no_overlap = false;
+    bool picker = false;
+    bool pick_center = false;
+    bool pick_inverse_value = false;
+    bool pick_fill = false;
+    bool pick_stroke = false;
+    bool pick_no_overlap = false;
+    bool over_transparent = true;
+    bool over_no_transparent = true;
+    double offset = 0.0;
+    int pick = 0;
+    bool do_trace = false;
+    bool pick_to_size = false;
+    bool pick_to_presence = false;
+    bool pick_to_color = false;
+    bool pick_to_opacity = false;
+    bool invert_picked = false;
+    double gamma_picked = 0.0;
+    double rand_picked = 0.0;
+
     sigc::connection style_set_connection;
 
     void set(Preferences::Entry const &val) override;
@@ -125,11 +113,9 @@ private:
     ObjectSet object_set;
 };
 
-}
-}
-}
+} // namespace Inkscape::UI::Tools
 
-#endif
+#endif // INKSCAPE_UI_TOOLS_SPRAY_TOOl_H
 
 /*
   Local Variables:
