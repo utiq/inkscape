@@ -97,6 +97,7 @@ public:
         g_free(str);
     }
     ParamType paramType() const override { return ParamType::ARRAY; };
+    bool valid_index(int index) const { return _vector.size() > index; }
 protected:
     friend class TpS::KnotHolderEntityAttachBegin;
     friend class TpS::KnotHolderEntityAttachEnd;

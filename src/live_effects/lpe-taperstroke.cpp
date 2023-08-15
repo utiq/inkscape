@@ -389,6 +389,8 @@ LPETaperStroke::doBeforeEffect (SPLPEItem const* lpeitem)
         end_smoothing.param_set_and_write_new_value(end_smoothingv);
         attach_start.param_set_and_write_new_value(attach_startv);
         attach_end.param_set_and_write_new_value(attach_endv);
+        start_shape.param_set_and_write_new_value(start_shape._vector);
+        end_shape.param_set_and_write_new_value(end_shape._vector);
     }
     pathv_out.clear();
     if (pathvector_before_effect.empty()) {
@@ -474,7 +476,7 @@ LPETaperStroke::doBeforeEffect (SPLPEItem const* lpeitem)
         Piecewise<D2<SBasis> > pwd2;
         Geom::Path throwaway_path;
 
-        if (!zeroStart) {
+        if (!zeroStart && start_shape.valid_index(index)) {
             // Construct the pattern
             std::stringstream pat_str;
             pat_str.imbue(std::locale::classic());
@@ -512,7 +514,7 @@ LPETaperStroke::doBeforeEffect (SPLPEItem const* lpeitem)
             real_path.append(throwaway_path);
         }
 
-        if (!zeroEnd) {
+        if (!zeroEnd && end_shape.valid_index(index)) {
             // append the ending taper
             std::stringstream pat_str_1;
             pat_str_1.imbue(std::locale::classic());
