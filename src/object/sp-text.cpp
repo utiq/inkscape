@@ -1289,13 +1289,14 @@ SPItem *create_text_with_rectangle (SPDesktop *desktop, Geom::Point p0, Geom::Po
     // Invert coordinate system?
     p0 *= desktop->dt2doc();
     p1 *= desktop->dt2doc();
+    auto const rect = Geom::Rect(p0, p1);
 
     // Create rectangle
     Inkscape::XML::Node *rect_repr = xml_doc->createElement("svg:rect");
-    rect_repr->setAttributeSvgDouble("x", p0[Geom::X]);
-    rect_repr->setAttributeSvgDouble("y", p0[Geom::Y]);
-    rect_repr->setAttributeSvgDouble("width", abs(p1[Geom::X]-p0[Geom::X]));
-    rect_repr->setAttributeSvgDouble("height", abs(p1[Geom::Y]-p0[Geom::Y]));
+    rect_repr->setAttributeSvgDouble("x", rect.left());
+    rect_repr->setAttributeSvgDouble("y", rect.top());
+    rect_repr->setAttributeSvgDouble("width", rect.width());
+    rect_repr->setAttributeSvgDouble("height", rect.height());
 
     // Find defs, if does not exist, create.
     Inkscape::XML::Node *defs_repr = sp_repr_lookup_name (xml_doc->root(), "svg:defs");
