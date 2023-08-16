@@ -1,13 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-/*
- * Author:
- *   Tavmjong Bah <tavmjong@free.fr>
- *
- * Copyright (C) 2018 Tavmong Bah
- *
- * Released under GNU GPL v2+, read the file 'COPYING' for more information.
- *
- *
+/** @file
  * The routines here create and manage a font selector widget with two parts,
  * one each for font-family and font-style.
  *
@@ -22,17 +14,26 @@
  *   Update the on-screen text.
  *   Provide the currently selected values.
  */
+/*
+ * Author:
+ *   Tavmjong Bah <tavmjong@free.fr>
+ *
+ * Copyright (C) 2018 Tavmong Bah
+ *
+ * Released under GNU GPL v2+, read the file 'COPYING' for more information.
+ */
 
 #ifndef INKSCAPE_UI_WIDGET_FONT_SELECTOR_TOOLBAR_H
 #define INKSCAPE_UI_WIDGET_FONT_SELECTOR_TOOLBAR_H
 
-#include <gtkmm/grid.h>
-#include <gtkmm/treeview.h>
+#include <sigc++/signal.h>
+#include <gtk/gtk.h> // GtkEventControllerKey
+#include <gtkmm/cellrenderertext.h>
 #include <gtkmm/comboboxtext.h>
+#include <gtkmm/entry.h> // Gtk::EntryIconPosition
+#include <gtkmm/grid.h>
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
 
 /**
  * A container of widgets for selecting font faces.
@@ -51,16 +52,10 @@ namespace Widget {
  */
 class FontSelectorToolbar : public Gtk::Grid
 {
-
 public:
-
-    /**
-     * Constructor
-     */
     FontSelectorToolbar ();
 
 protected:
-
     // Font family
     Gtk::ComboBox         family_combo;
     Gtk::CellRendererText family_cell;
@@ -70,7 +65,6 @@ protected:
     Gtk::CellRendererText style_cell;
 
 private:
-
     // Make a list of missing fonts for tooltip and for warning icon.
     Glib::ustring get_missing_fonts ();
 
@@ -78,8 +72,8 @@ private:
     void on_family_changed();
     void on_style_changed();
     void on_icon_pressed (Gtk::EntryIconPosition icon_position, const GdkEventButton* event);
-    // bool on_match_selected (const Gtk::TreeModel::iterator& iter);
-    bool on_key_press_event (GdkEventKey* key_event) override;
+    bool on_key_pressed(GtkEventControllerKey const * controller,
+                        unsigned keyval, unsigned keycode, GdkModifierType state);
 
     // Signals
     sigc::signal<void ()> changed_signal;
@@ -87,7 +81,6 @@ private:
     bool signal_block;
 
 public:
-
     /**
      * Update GUI based on font-selector values.
      */
@@ -101,10 +94,7 @@ public:
     }
 };
 
- 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI::Widget
 
 #endif // INKSCAPE_UI_WIDGET_FONT_SETTINGS_TOOLBAR_H
 
