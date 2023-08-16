@@ -11,17 +11,13 @@
  */
 
 #include "util.h"
-#include "inkscape.h"
-#include "ui/dialog-run.h"
 
 #include <cairomm/pattern.h>
 #include <cstdint>
-#include <gdkmm/rgba.h>
-#include <gtkmm.h>
-#include <gtkmm/cellrenderer.h>
-#include <gtkmm/enums.h>
+#include <gtkmm/revealer.h>
 #include <stdexcept>
 #include <tuple>
+
 #if (defined (_WIN32) || defined (_WIN64))
 #include <gdk/gdkwin32.h>
 #include <dwmapi.h>
@@ -35,9 +31,12 @@
 #endif
 #endif
 
+#include "inkscape.h"
+#include "ui/dialog-run.h"
+#include "ui/util.h" // for_each_child()
+
 // TODO due to internal breakage in glibmm headers, this must be last:
 #include <glibmm/i18n.h>
-#include "widgets/spw-utilities.h" // sp_traverse_widget_tree()
 
 /*
  * Ellipse text if longer than maxlen, "50% start text + ... + ~50% end text"
@@ -88,16 +87,20 @@ namespace Inkscape::UI {
  * @param parent - The parent widget to traverse
  * @param pixel_size - The new pixel size of the images it contains
  */
-void set_icon_sizes(Gtk::Widget* parent, int pixel_size) {
-    sp_traverse_widget_tree(parent, [=](Gtk::Widget* widget) {
-        if (auto ico = dynamic_cast<Gtk::Image*>(widget)) {
+void set_icon_sizes(Gtk::Widget *parent, int pixel_size)
+{
+    if (!parent) return;
+    for_each_descendant(*parent, [=](Gtk::Widget &widget) {
+        if (auto const ico = dynamic_cast<Gtk::Image *>(&widget)) {
             ico->set_from_icon_name(ico->get_icon_name(), static_cast<Gtk::IconSize>(Gtk::ICON_SIZE_BUTTON));
             ico->set_pixel_size(pixel_size);
         }
-        return false;
+        return ForEachResult::_continue;
     });
 }
-void set_icon_sizes(GtkWidget* parent, int pixel_size) {
+
+void set_icon_sizes(GtkWidget* parent, int pixel_size)
+{
     set_icon_sizes(Glib::wrap(parent), pixel_size);
 }
 
@@ -136,6 +139,43 @@ Gtk::StateFlags cell_flags_to_state_flags(Gtk::CellRendererState state)
     }
 
     return flags;
+}
+
+/**
+ * Returns a named descendent of parent, which has the given name, or nullptr if there's none.
+ *
+ * \param[in] parent The widget to search
+ * \param[in] name   The name of the desired child widget
+ *
+ * \return The specified child widget, or nullptr if it cannot be found
+ */
+Gtk::Widget *find_widget_by_name(Gtk::Widget &parent, Glib::ustring const &name)
+{
+    return for_each_descendant(parent, [&](auto const &widget)
+          { return widget.get_name() == name ? ForEachResult::_break : ForEachResult::_continue; });
+}
+
+/**
+ * This function traverses a tree of widgets searching for first focusable widget.
+ *
+ * \param[in] parent The widget to start traversal from - top of the tree
+ *
+ * \return The first focusable widget or nullptr if none are focusable.
+ */
+Gtk::Widget *find_focusable_widget(Gtk::Widget &parent)
+{
+    return for_each_descendant(parent, [](auto const &widget)
+          { return widget.get_can_focus() ? ForEachResult::_break : ForEachResult::_continue; });
+}
+
+/// Returns if widget is a descendant of given ancestor, i.e.: itself, a child, or a childʼs child.
+/// @param descendant The widget of interest
+/// @param ancestor   The potential ancestor
+/// @return Whether the widget of interest is a descendant of the given ancestor.
+bool is_descendant_of(Gtk::Widget const &descendant, Gtk::Widget const &ancestor)
+{
+    return nullptr != for_each_descendant(const_cast<Gtk::Widget &>(ancestor), [&](auto const &widget)
+          { return &widget == &descendant ? ForEachResult::_break : ForEachResult::_continue; });
 }
 
 } // namespace Inkscape::UI
@@ -288,6 +328,7 @@ void set_dark_tittlebar(Glib::RefPtr<Gdk::Window> win, bool is_dark){
     }
 #endif
 }
+
 /*
   Local Variables:
   mode:c++

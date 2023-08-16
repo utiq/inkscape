@@ -21,6 +21,7 @@
 #include <2geom/point.h>
 #include <2geom/rect.h>
 #include <gdkmm/rgba.h>
+#include <gtkmm/bin.h>
 #include <gtkmm/cellrenderer.h>
 #include <gtkmm/container.h>
 #include <gtkmm/enums.h>
@@ -38,17 +39,11 @@ class WidgetUnavailable : public UIBuilderError {};
 namespace Cairo {
 class Matrix;
 class ImageSurface;
-}
+} // namespace Cairo
 
 namespace Glib {
 class ustring;
-}
-
-namespace Gtk {
-class Revealer;
-class Container;
-class Widget;
-}
+} // namespace Glib
 
 Glib::ustring ink_ellipsize_text (Glib::ustring const &src, size_t maxlen);
 void reveal_widget(Gtk::Widget *widget, bool show);
@@ -58,8 +53,8 @@ bool is_widget_effectively_visible(Gtk::Widget const *widget);
 
 namespace Inkscape::UI {
 
-void set_icon_sizes(Gtk::Widget* parent, int pixel_size);
-void set_icon_sizes(GtkWidget* parent, int pixel_size);
+void set_icon_sizes(Gtk::Widget *parent, int pixel_size);
+void set_icon_sizes(GtkWidget *parent, int pixel_size);
 
 /// Utility function to ensure correct sizing after adding child widgets.
 void resize_widget_children(Gtk::Widget *widget);
@@ -74,32 +69,64 @@ enum class ForEachResult {_continue, _break};
 
 /// Call Func with a reference to each child of parent, until it returns _break.
 /// Accessing children changes between GTK3 & GTK4, so best consolidate it here.
-/// See also src/widgets/spw-utilities: sp_traverse_widget_tree().
+/// @param widget    The initial widget at the top of the hierarchy, to start at
+/// @param func      The widget-testing predicate, returning whether to continue
+/// @param test_self Whether to call the predicate @a func on the initial widget
+/// @param recurse   Whether to recurse also calling @a func for nested children
+/// @return The first widget for which @a func returns _break or nullptr if none
 template <typename Func>
-void for_each_child(Gtk::Container &parent, Func &&func)
+Gtk::Widget *for_each_child(Gtk::Widget &widget, Func &&func,
+                            bool const test_self = false, bool const recurse = false)
 {
     static_assert(std::is_invocable_r_v<ForEachResult, Func, Gtk::Widget &>);
-    for (auto const child: parent.get_children()) {
-        auto const result = func(*child);
-        if (result == ForEachResult::_break) {
-            return;
+
+    if (test_self && func(widget) == ForEachResult::_break) return &widget;
+    if (!recurse) return nullptr;
+
+    if (auto const bin = dynamic_cast<Gtk::Bin *>(&widget)) {
+        if (auto const child = bin->get_child()) {
+            auto const descendant = for_each_child(*child, func, true, recurse);
+            if (descendant) return descendant;
         }
     }
+
+    if (auto const container = dynamic_cast<Gtk::Container *>(&widget)) {
+        for (auto const child: container->get_children()) {
+            auto const descendant = for_each_child(*child, func, true, recurse);
+            if (descendant) return descendant;
+        }
+    }
+
+    return nullptr;
+}
+
+/// Like for_each_child() but also tests the initial widget & recurses through childrenʼs children.
+/// @param widget    The initial widget at the top of the hierarchy, to start at
+/// @param func      The widget-testing predicate, returning whether to continue
+/// @return The first widget for which @a func returns _break or nullptr if none
+template <typename Func>
+Gtk::Widget *for_each_descendant(Gtk::Widget &widget, Func &&func)
+{
+    return for_each_child(widget, std::forward<Func>(func), true, true);
 }
 
 /// Call Func with a reference to successive parents, until Func returns _break.
 template <typename Func>
-void for_each_parent(Gtk::Widget &widget, Func &&func)
+Gtk::Widget *for_each_parent(Gtk::Widget &widget, Func &&func)
 {
     static_assert(std::is_invocable_r_v<ForEachResult, Func, Gtk::Widget &>);
     auto parent = widget.get_parent();
     for (; parent != nullptr; parent = parent->get_parent()) {
-        auto const result = func(*parent);
-        if (result == ForEachResult::_break) {
-            return;
+        if (func(*parent) == ForEachResult::_break) {
+            return parent;
         }
     }
+    return nullptr;
 }
+
+[[nodiscard]] Gtk::Widget *find_widget_by_name(Gtk::Widget &parent, Glib::ustring const &name);
+[[nodiscard]] Gtk::Widget *find_focusable_widget(Gtk::Widget &parent);
+[[nodiscard]] bool is_descendant_of(Gtk::Widget const &descendant, Gtk::Widget const &ancestor);
 
 } // namespace Inkscape::UI
 

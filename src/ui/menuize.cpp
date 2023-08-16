@@ -24,7 +24,7 @@
 #include <gtkmm/widget.h>
 
 #include "ui/manage.h"
-#include "widgets/spw-utilities.h"
+#include "ui/util.h"
 
 namespace Inkscape::UI {
 
@@ -81,12 +81,12 @@ void menuize(Gtk::Widget &widget)
 template <typename Type>
 static void menuize_all(Gtk::Container &container)
 {
-    sp_traverse_widget_tree(&container, [=](Gtk::Widget * const child)
+    for_each_descendant(container, [=](Gtk::Widget &child)
     {
-        if (auto const typed = dynamic_cast<Type *>(child)) {
+        if (auto const typed = dynamic_cast<Type *>(&child)) {
             menuize(*typed);
         }
-        return false;
+        return ForEachResult::_continue;
     });
 }
 

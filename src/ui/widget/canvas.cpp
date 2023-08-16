@@ -48,10 +48,8 @@
 #include "helper/geom.h"
 #include "preferences.h"
 #include "ui/controller.h"
-#include "ui/dialog/command-palette.h" // Hack: Needed for the workaround that closes the command palette.
 #include "ui/tools/tool-base.h"      // Default cursor
 #include "ui/util.h"
-#include "ui/widget/canvas-grid.h"
 #include "widgets/desktop-widget.h"
 
 #include "canvas/updaters.h"         // Update strategies
@@ -896,12 +894,6 @@ Gtk::EventSequenceState Canvas::on_button_pressed(Gtk::GestureMultiPress const &
     d->last_mouse = Geom::IntPoint(x, y);
 
     grab_focus();
-
-    if (_desktop) {
-        // Close the command palette if it loses focus; it can't do it itself since signal_focus() appears to be broken.
-        // Todo: (GTK4) Try to get rid of this using GtkEventControllerFocus.
-        _desktop->getDesktopWidget()->get_canvas_grid()->getCommandPalette()->close();
-    }
 
     if (controller.get_current_button() == 3) {
         _drawing->getCanvasItemDrawing()->set_sticky(_state & GDK_SHIFT_MASK);

@@ -142,10 +142,9 @@ void DialogBase::focus_dialog() {
     // widget that had focus, if any
     if (auto child = get_focus_child()) {
         child->grab_focus();
-    }
-    else {
+    } else {
         // find first focusable widget
-        if (auto child = sp_find_focusable_widget(this)) {
+        if (auto const child = find_focusable_widget(*this)) {
             child->grab_focus();
         }
     }

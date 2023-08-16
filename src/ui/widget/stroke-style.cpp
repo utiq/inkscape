@@ -18,24 +18,32 @@
 
 #include "stroke-style.h"
 
+#include <gtkmm/adjustment.h>
+#include <gtkmm/entry.h>
+#include <gtkmm/grid.h>
+#include <gtkmm/label.h>
+#include <gtkmm/togglebutton.h>
+
+#include "actions/actions-tools.h"
+#include "fill-or-stroke.h"
 #include "object/sp-marker.h"
 #include "object/sp-namedview.h"
 #include "object/sp-rect.h"
 #include "object/sp-stop.h"
 #include "object/sp-text.h"
-
+#include "svg/css-ostringstream.h"
 #include "svg/svg-color.h"
-
 #include "ui/icon-loader.h"
+#include "ui/icon-names.h"
 #include "ui/widget/dash-selector.h"
 #include "ui/widget/marker-combo-box.h"
 #include "ui/widget/unit-menu.h"
 #include "ui/tools/marker-tool.h"
+#include "ui/dialog-events.h"
 #include "ui/dialog/dialog-base.h"
-
-#include "actions/actions-tools.h"
-
 #include "widgets/style-utils.h"
+
+#include <glibmm/i18n.h>
 
 using Inkscape::DocumentUndo;
 using Inkscape::Util::unit_table;
@@ -77,9 +85,51 @@ SPObject* getMarkerObj(gchar const *n, SPDocument *doc)
     return marker;
 }
 
-namespace Inkscape {
-namespace UI {
-namespace Widget {
+namespace Inkscape::UI::Widget {
+
+/**
+ * Creates a label widget with the given text, at the given col, row
+ * position in the table.
+ */
+static Gtk::Label *spw_label(Gtk::Grid *table, const gchar *label_text, int col, int row,
+                             Gtk::Widget* target)
+{
+  auto const label_widget = Gtk::make_managed<Gtk::Label>();
+  g_assert(label_widget != nullptr);
+  if (target != nullptr) {
+    label_widget->set_text_with_mnemonic(label_text);
+    label_widget->set_mnemonic_widget(*target);
+  } else {
+    label_widget->set_text(label_text);
+  }
+  label_widget->set_visible(true);
+
+  label_widget->set_halign(Gtk::ALIGN_START);
+  label_widget->set_valign(Gtk::ALIGN_CENTER);
+  label_widget->set_margin_start(4);
+  label_widget->set_margin_end(4);
+
+  table->attach(*label_widget, col, row, 1, 1);
+
+  return label_widget;
+}
+
+/**
+ * Creates a horizontal layout manager with 4-pixel spacing between children
+ * and space for 'width' columns.
+ */
+static Gtk::Box *spw_hbox(Gtk::Grid *table, int width, int col, int row)
+{
+  /* Create a new hbox with a 4-pixel spacing between children */
+  auto const hb = Gtk::make_managed<Gtk::Box>(Gtk::ORIENTATION_HORIZONTAL, 4);
+  g_assert(hb != nullptr);
+  hb->set_visible(true);
+  hb->set_hexpand();
+  hb->set_halign(Gtk::ALIGN_FILL);
+  hb->set_valign(Gtk::ALIGN_CENTER);
+  table->attach(*hb, col, row, width, 1);
+  return hb;
+}
 
 /**
  * Construct a stroke-style radio button with a given icon
@@ -158,12 +208,12 @@ StrokeStyle::StrokeStyle() :
 
     hb = spw_hbox(table, 3, 1, i);
 
-// TODO: when this is gtkmmified, use an Inkscape::UI::Widget::ScalarUnit instead of the separate
+// TODO: when this is gtkmmified, use a ScalarUnit instead of the separate
 // spinbutton and unit selector for stroke width. In sp_stroke_style_line_update, use
 // setHundredPercent to remember the averaged width corresponding to 100%. Then the
 // stroke_width_set_unit will be removed (because ScalarUnit takes care of conversions itself)
-    widthAdj = new Glib::RefPtr<Gtk::Adjustment>(Gtk::Adjustment::create(1.0, 0.0, 1000.0, 0.1, 10.0, 0.0));
-    widthSpin = new Inkscape::UI::Widget::SpinButton(*widthAdj, 0.1, 3);
+    widthAdj = Gtk::Adjustment::create(1.0, 0.0, 1000.0, 0.1, 10.0, 0.0);
+    widthSpin = Gtk::make_managed<SpinButton>(widthAdj, 0.1, 3);
     widthSpin->set_tooltip_text(_("Stroke width"));
     widthSpin->set_visible(true);
     spw_label(table, C_("Stroke width", "_Width:"), 0, i, widthSpin);
@@ -171,7 +221,7 @@ StrokeStyle::StrokeStyle() :
     sp_dialog_defocus_on_enter_cpp(widthSpin);
 
     hb->pack_start(*widthSpin, false, false, 0);
-    unitSelector = Gtk::make_managed<Inkscape::UI::Widget::UnitMenu>();
+    unitSelector = Gtk::make_managed<UnitMenu>();
     unitSelector->setUnitType(Inkscape::Util::UNIT_TYPE_LINEAR);
     SPDesktop *desktop = SP_ACTIVE_DESKTOP;
 
@@ -187,7 +237,7 @@ StrokeStyle::StrokeStyle() :
     unitSelector->set_visible(true);
 
     hb->pack_start(*unitSelector, FALSE, FALSE, 0);
-    (*widthAdj)->signal_value_changed().connect(sigc::mem_fun(*this, &StrokeStyle::setStrokeWidth));
+    widthAdj->signal_value_changed().connect(sigc::mem_fun(*this, &StrokeStyle::setStrokeWidth));
 
     i++;
 
@@ -195,9 +245,9 @@ StrokeStyle::StrokeStyle() :
     spw_label(table, _("Dashes:"), 0, i, nullptr); //no mnemonic for now
                                             //decide what to do:
                                             //   implement a set_mnemonic_source function in the
-                                            //   Inkscape::UI::Widget::DashSelector class, so that we do not have to
+                                            //   DashSelector class, so that we do not have to
                                             //   expose any of the underlying widgets?
-    dashSelector = Gtk::make_managed<Inkscape::UI::Widget::DashSelector>();
+    dashSelector = Gtk::make_managed<DashSelector>();
     _pattern = Gtk::make_managed<Gtk::Entry>();
 
     dashSelector->set_visible(true);
@@ -304,15 +354,15 @@ StrokeStyle::StrokeStyle() :
     //  miter limit is to cut off such spikes (i.e. convert them into bevels)
     //  when they become too long.
     //spw_label(t, _("Miter _limit:"), 0, i);
-    miterLimitAdj = new Glib::RefPtr<Gtk::Adjustment>(Gtk::Adjustment::create(4.0, 0.0, 100000.0, 0.1, 10.0, 0.0));
-    miterLimitSpin = new Inkscape::UI::Widget::SpinButton(*miterLimitAdj, 0.1, 2);
+    miterLimitAdj = Gtk::Adjustment::create(4.0, 0.0, 100000.0, 0.1, 10.0, 0.0);
+    miterLimitSpin = Gtk::make_managed<SpinButton>(miterLimitAdj, 0.1, 2);
     miterLimitSpin->set_tooltip_text(_("Maximum length of the miter (in units of stroke width)"));
     miterLimitSpin->set_width_chars(6);
     miterLimitSpin->set_visible(true);
     sp_dialog_defocus_on_enter_cpp(miterLimitSpin);
 
     hb->pack_start(*miterLimitSpin, false, false, 0);
-    (*miterLimitAdj)->signal_value_changed().connect(sigc::mem_fun(*this, &StrokeStyle::setStrokeMiter));
+    miterLimitAdj->signal_value_changed().connect(sigc::mem_fun(*this, &StrokeStyle::setStrokeMiter));
     i++;
 
     /* Cap type */
@@ -442,13 +492,10 @@ StrokeStyle::makeRadioButton(Gtk::RadioButtonGroup &grp,
     g_assert(icon != nullptr);
     g_assert(hb  != nullptr);
 
-    StrokeStyleButton *tb = new StrokeStyleButton(grp, icon, button_type, stroke_style);
-
+    auto const tb = Gtk::make_managed<StrokeStyleButton>(grp, icon, button_type, stroke_style);
     hb->pack_start(*tb, false, false, 0);
-
     tb->signal_toggled().connect(sigc::bind(
                                      sigc::ptr_fun(&StrokeStyle::buttonToggledCB), tb, this));
-
     return tb;
 }
 
@@ -629,7 +676,7 @@ StrokeStyle::getDashFromStyle(SPStyle *style, double &offset)
  * Sets selector widgets' dash style from an SPStyle object.
  */
 void
-StrokeStyle::setDashSelectorFromStyle(Inkscape::UI::Widget::DashSelector *dsel, SPStyle *style)
+StrokeStyle::setDashSelectorFromStyle(DashSelector *dsel, SPStyle *style)
 {
     double offset = 0;
     auto d = getDashFromStyle(style, offset);
@@ -812,12 +859,12 @@ StrokeStyle::updateLine()
 
         if (query.stroke_extensions.hairline) {
             widthSpin->set_sensitive(false);
-            (*widthAdj)->set_value(1);
+            widthAdj->set_value(1);
         } else if (unit->type == Inkscape::Util::UNIT_TYPE_LINEAR) {
             double avgwidth = Inkscape::Util::Quantity::convert(query.stroke_width.computed, "px", unit);
-            (*widthAdj)->set_value(avgwidth);
+            widthAdj->set_value(avgwidth);
         } else {
-            (*widthAdj)->set_value(100);
+            widthAdj->set_value(100);
         }
 
         // if none of the selected objects has a stroke, than quite some controls should be disabled
@@ -841,7 +888,7 @@ StrokeStyle::updateLine()
     }
 
     if (result_ml != QUERY_STYLE_NOTHING)
-        (*miterLimitAdj)->set_value(query.stroke_miterlimit.value); // TODO: reflect averagedness?
+        miterLimitAdj->set_value(query.stroke_miterlimit.value); // TODO: reflect averagedness?
 
     using Inkscape::is_query_style_updateable;
     if (! is_query_style_updateable(result_join)) {
@@ -921,7 +968,7 @@ static inline double calcScaleLineWidth(const double width_typed, SPItem *const 
  */
 void StrokeStyle::setStrokeWidth()
 {
-    double width_typed = (*widthAdj)->get_value();
+    double width_typed = widthAdj->get_value();
 
     // Don't change the selection if an update is happening,
     // but also store the value for later comparison.
@@ -966,7 +1013,7 @@ void StrokeStyle::setStrokeWidth()
     if (unit->abbr == "%") {
         // reset to 100 percent
         _last_width = 100.0;
-        (*widthAdj)->set_value(100.0);
+        widthAdj->set_value(100.0);
     } else {
         _last_width = width_typed;
     }
@@ -1015,7 +1062,7 @@ void StrokeStyle::setStrokeMiter()
     update = true;
 
     SPCSSAttr *css = sp_repr_css_attr_new();
-    auto value = (*miterLimitAdj)->get_value();
+    auto const value = miterLimitAdj->get_value();
     sp_repr_css_set_property_double(css, "stroke-miterlimit", value);
 
     for (auto item : desktop->getSelection()->items()) {
@@ -1203,13 +1250,9 @@ StrokeStyle::updateAllMarkers(std::vector<SPItem*> const &objects, bool skip_und
         // Scroll the combobox to that marker
         combo->set_current(marker);
     }
-
 }
 
-} // namespace Widget
-} // namespace UI
-} // namespace Inkscape
-
+} // namespace Inkscape::UI::Widget
 
 /*
   Local Variables:

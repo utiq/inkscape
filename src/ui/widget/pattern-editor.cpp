@@ -32,8 +32,8 @@
 #include "pattern-manager.h"
 #include "pattern-manipulation.h"
 #include "preferences.h"
+#include "ui/util.h"
 #include "util/units.h"
-#include "widgets/spw-utilities.h"
 
 namespace Inkscape {
 namespace UI {
@@ -561,12 +561,12 @@ void PatternEditor::set_active(Gtk::FlowBox& gallery, PatternStore& pat, Glib::R
                         gallery.select_child(*box);
                         if (item->pix) {
                             // update preview, it might be stale
-                            sp_traverse_widget_tree(box->get_child(), [&](Gtk::Widget* widget){
-                                if (auto image = dynamic_cast<Gtk::Image*>(widget)) {
+                            for_each_descendant(*box, [&](Gtk::Widget &widget){
+                                if (auto const image = dynamic_cast<Gtk::Image *>(&widget)) {
                                     image->set(item->pix);
-                                    return true; // stop
+                                    return ForEachResult::_break;
                                 }
-                                return false; // continue
+                                return ForEachResult::_continue;
                             });
                         }
                         selected = true;

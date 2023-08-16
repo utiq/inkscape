@@ -33,6 +33,7 @@
 #include "inkscape-window.h"
 #include "ui/builder-utils.h"
 #include "ui/controller.h"
+#include "ui/util.h"
 #include "ui/widget/popover-menu.h"
 #include "ui/widget/popover-menu-item.h"
 #include "widgets/spw-utilities.h" // Find action target
@@ -74,40 +75,37 @@ void ToolToolbar::set_visible_buttons()
 
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
 
-    sp_traverse_widget_tree(this, [&](Gtk::Widget* widget) {
-        if (auto flowbox = dynamic_cast<Gtk::FlowBox*>(widget)) {
+    for_each_descendant(*this, [&](Gtk::Widget &widget) {
+        if (auto const flowbox = dynamic_cast<Gtk::FlowBox *>(&widget)) {
             flowbox->set_visible(true);
             flowbox->set_no_show_all();
             flowbox->set_max_children_per_line(1);
             last_box = flowbox;
-        }
-        else if (auto btn = dynamic_cast<Gtk::Button*>(widget)) {
-            auto name = sp_get_action_target(widget);
+        } else if (auto const btn = dynamic_cast<Gtk::Button *>(&widget)) {
+            auto const name = sp_get_action_target(btn);
             auto show = prefs->getBool(get_tool_visible_button_path(name), true);
-            auto parent = btn->get_parent();
+            auto const parent = btn->get_parent();
             if (show) {
                 parent->set_visible(true);
                 ++buttons_before_separator;
                 // keep the max_children up to date improves display.
                 last_box->set_max_children_per_line(buttons_before_separator);
                 last_sep = nullptr;
-            }
-            else {
+            } else {
                 parent->set_visible(false);
             }
-        }
-        else if (auto sep = dynamic_cast<Gtk::Separator*>(widget)) {
+        } else if (auto const sep = dynamic_cast<Gtk::Separator *>(&widget)) {
             if (buttons_before_separator <= 0) {
                 sep->set_visible(false);
-            }
-            else {
+            } else {
                 sep->set_visible(true);
                 buttons_before_separator = 0;
                 last_sep = sep;
             }
         }
-        return false;
+        return ForEachResult::_continue;
     });
+
     if (last_sep) {
         // hide trailing separator
         last_sep->set_visible(false);

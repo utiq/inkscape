@@ -13,76 +13,41 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-// WHOA! talk about header bloat!
-
 #ifndef SEEN_DIALOGS_STROKE_STYLE_H
 #define SEEN_DIALOGS_STROKE_STYLE_H
 
-#include <glibmm/i18n.h>
-#include <gtkmm/grid.h>
+#include <vector>
+#include <glibmm/refptr.h>
+#include <gtkmm/box.h>
 #include <gtkmm/radiobutton.h>
 
-
-#include "desktop-style.h"
-#include "desktop.h"
-#include "document-undo.h"
-#include "fill-style.h" // to get sp_fill_style_widget_set_desktop
-#include "gradient-chemistry.h"
-#include "inkscape.h"
-#include "path-prefix.h"
-#include "preferences.h"
-#include "selection.h"
 #include "style.h"
-
-#include "display/drawing.h"
-
-#include "helper/stock-items.h"
-
-#include "io/sys.h"
-
-#include "svg/css-ostringstream.h"
-
-#include "ui/cache/svg_preview_cache.h"
-#include "ui/dialog-events.h"
-#include "ui/icon-names.h"
 #include "ui/widget/spinbutton.h"
 
-#include "widgets/spw-utilities.h"
-
-
 namespace Gtk {
-class Widget;
-class Container;
-}
+class Adjustment;
+class Entry;
+class Grid;
+class Label;
+class ToggleButton;
+} // namespace Gtk
 
-namespace Inkscape {
-    namespace Util {
-        class Unit;
-    }
-    namespace UI {
-        namespace Widget {
-            class DashSelector;
-            class MarkerComboBox;
-            class UnitMenu;
-        }
-    }
-}
-
-struct { gchar const *key; gint value; } const SPMarkerNames[] = {
-    {"marker-all", SP_MARKER_LOC},
-    {"marker-start", SP_MARKER_LOC_START},
-    {"marker-mid", SP_MARKER_LOC_MID},
-    {"marker-end", SP_MARKER_LOC_END},
-    {"", SP_MARKER_LOC_QTY},
-    {nullptr, -1}
-};
-
-
+class SPDocument;
+class SPObject;
 SPObject *getMarkerObj(gchar const *n, SPDocument *doc);
 
 namespace Inkscape {
-namespace UI {
-namespace Widget {
+
+namespace Util {
+class Unit;
+} // namespace Util
+
+namespace UI::Widget {
+
+class DashSelector;
+class MarkerComboBox;
+class UnitMenu;
+
 class StrokeStyleButton;
 
 class StrokeStyle : public Gtk::Box
@@ -127,7 +92,7 @@ private:
     std::vector<double> getDashFromStyle(SPStyle *style, double &offset);
 
     void updateAllMarkers(std::vector<SPItem*> const &objects, bool skip_undo = false);
-    void setDashSelectorFromStyle(Inkscape::UI::Widget::DashSelector *dsel, SPStyle *style);
+    void setDashSelectorFromStyle(DashSelector *dsel, SPStyle *style);
     void setJoinType (unsigned const jointype);
     void setCapType (unsigned const captype);
     void setPaintOrder (gchar const *paint_order);
@@ -157,11 +122,11 @@ private:
     MarkerComboBox *midMarkerCombo;
     MarkerComboBox *endMarkerCombo;
     Gtk::Grid *table;
-    Glib::RefPtr<Gtk::Adjustment> *widthAdj;
-    Glib::RefPtr<Gtk::Adjustment> *miterLimitAdj;
-    Inkscape::UI::Widget::SpinButton *miterLimitSpin;
-    Inkscape::UI::Widget::SpinButton *widthSpin;
-    Inkscape::UI::Widget::UnitMenu *unitSelector;
+    Glib::RefPtr<Gtk::Adjustment> widthAdj;
+    Glib::RefPtr<Gtk::Adjustment> miterLimitAdj;
+    SpinButton *miterLimitSpin;
+    SpinButton *widthSpin;
+    UnitMenu *unitSelector;
     //Gtk::ToggleButton *hairline;
     StrokeStyleButton *joinMiter;
     StrokeStyleButton *joinRound;
@@ -175,7 +140,7 @@ private:
     StrokeStyleButton *paintOrderMFS;
     StrokeStyleButton *paintOrderSMF;
     StrokeStyleButton *paintOrderMSF;
-    Inkscape::UI::Widget::DashSelector *dashSelector;
+    DashSelector *dashSelector;
     Gtk::Entry* _pattern = nullptr;
     Gtk::Label* _pattern_label = nullptr;
     void update_pattern(int ndash, const double* pattern);
@@ -195,8 +160,8 @@ private:
     sigc::connection _document_replaced_connection;
 };
 
-} // namespace Widget
-} // namespace UI
+} // namespace UI::Widget
+
 } // namespace Inkscape
 
 #endif // SEEN_DIALOGS_STROKE_STYLE_H

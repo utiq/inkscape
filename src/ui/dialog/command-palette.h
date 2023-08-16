@@ -186,7 +186,7 @@ private:
 
     // Executes Action
     bool ask_action_parameter(const ActionPtrName &action);
-    static ActionPtrName get_action_ptr_name(const Glib::ustring &full_action_name);
+    static ActionPtrName get_action_ptr_name(Glib::ustring full_action_name);
     bool execute_action(const ActionPtrName &action, const Glib::ustring &value);
 
     static TypeOfVariant get_action_variant_type(const ActionPtr &action_ptr);
@@ -230,6 +230,8 @@ private:
     sigc::connection _cpfilter_search_connection;
     // Stores key-press connection on Gtk::Window to deactivate when not needed
     GtkEventController *_window_key_controller = nullptr;
+    // Stores ::set-focus connection on Gtk::Window to deactivate when not needed
+    sigc::connection _window_focus_connection;
 
     /// Stores the most recent ask_action_name for when Entry::activate fires & we are in INPUT mode
     std::optional<ActionPtrName> _ask_action_ptr_name;

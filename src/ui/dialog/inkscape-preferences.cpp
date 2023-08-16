@@ -1894,14 +1894,12 @@ void InkscapePreferences::initPageUI()
     _page_toolbars.add_group_header(_("Toolbars"));
     try {
         auto builder = Inkscape::UI::create_builder("toolbar-tool-prefs.ui");
-        Gtk::Widget* toolbox = nullptr;
-        builder->get_widget("tool-toolbar-prefs", toolbox);
+        auto &toolbox = get_widget<Gtk::Box>(builder, "tool-toolbar-prefs");
 
-        sp_traverse_widget_tree(toolbox, [=](Gtk::Widget* widget){
-            if (auto button = dynamic_cast<Gtk::ToggleButton*>(widget)) {
-                assert(GTK_IS_ACTIONABLE(widget->gobj()));
+        for_each_descendant(toolbox, [=](Gtk::Widget &widget) {
+            if (auto const button = dynamic_cast<Gtk::ToggleButton *>(&widget)) {
                 // do not execute any action:
-                gtk_actionable_set_action_name(GTK_ACTIONABLE(widget->gobj()), "");
+                gtk_actionable_set_action_name(GTK_ACTIONABLE(button->gobj()), "");
 
                 button->set_sensitive();
                 auto action_name = sp_get_action_target(button);
@@ -1918,9 +1916,10 @@ void InkscapePreferences::initPageUI()
                     button->set_tooltip_markup(tooltip);
                 }
             }
-            return false;
+            return ForEachResult::_continue;
         });
-        _page_toolbars.add_line(false, "", *toolbox, "", _("Select visible tool buttons"), true);
+
+        _page_toolbars.add_line(false, "", toolbox, "", _("Select visible tool buttons"), true);
 
         struct tbar_info {const char* label; const char* prefs;} toolbars[] = {
             {_("Toolbox icon size:"),     Inkscape::UI::Toolbar::tools_icon_size},
@@ -1949,7 +1948,7 @@ void InkscapePreferences::initPageUI()
         };
         _page_toolbars.add_line(false, _("Snap controls bar:"), *Gtk::make_managed<PrefRadioButtons>(snap, "/toolbox/simplesnap"), "", "");
     } catch (const Glib::Error &ex) {
-        g_error("Couldn't load toolbar-tool-prefs user interface file.");
+        g_error("Couldn't load toolbar-tool-prefs user interface file: `%s`", ex.what().c_str());
     }
 
     this->AddPage(_page_toolbars, _("Toolbars"), iter_ui, PREFS_PAGE_UI_TOOLBARS);

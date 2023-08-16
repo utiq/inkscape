@@ -61,11 +61,7 @@
 #include "ui/widget/status-bar.h"
 #include "ui/widget/unit-tracker.h"
 #include "ui/themes.h"
-
 #include "util/units.h"
-
-// We're in the "widgets" directory, so no need to explicitly prefix these:
-#include "spw-utilities.h"
 #include "widget-sizes.h"
 
 using Inkscape::DocumentUndo;
@@ -688,7 +684,7 @@ SPDesktopWidget::get_toolbar_by_name(const Glib::ustring& name)
 {
     // The name is actually attached to the GtkGrid that contains
     // the toolbar, so we need to get the grid first
-    auto widget = sp_search_by_name_recursive(tool_toolbars, name);
+    auto widget = Inkscape::UI::find_widget_by_name(*tool_toolbars, name);
     auto grid = dynamic_cast<Gtk::Grid*>(widget);
 
     if (!grid) return nullptr;
@@ -703,7 +699,7 @@ void
 SPDesktopWidget::setToolboxFocusTo (const gchar* label)
 {
     // Look for a named widget
-    auto hb = sp_search_by_name_recursive(tool_toolbars, label);
+    auto hb = Inkscape::UI::find_widget_by_name(*tool_toolbars, label);
     if (hb) {
         hb->grab_focus();
     }
@@ -713,7 +709,7 @@ void
 SPDesktopWidget::setToolboxAdjustmentValue (gchar const *id, double value)
 {
     // Look for a named widget
-    auto hb = sp_search_by_name_recursive(tool_toolbars, id);
+    auto hb = Inkscape::UI::find_widget_by_name(*tool_toolbars, id);
     if (hb) {
         auto sb = dynamic_cast<Inkscape::UI::Widget::SpinButtonToolItem *>(hb);
         auto a = sb->get_adjustment();
@@ -729,7 +725,7 @@ bool
 SPDesktopWidget::isToolboxButtonActive (const gchar* id)
 {
     bool isActive = false;
-    auto thing = sp_search_by_name_recursive(tool_toolbars, id);
+    auto thing = Inkscape::UI::find_widget_by_name(*tool_toolbars, id);
 
     // The toolbutton could be a few different types so try casting to
     // each of them.
@@ -808,7 +804,7 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
         _canvas_grid->updateRulers();
 
         /* This loops through all the grandchildren of tool toolbars,
-         * and for each that it finds, it performs an sp_search_by_name_recursive(),
+         * and for each that it finds, it performs an Inkscape::UI::find_widget_by_name(*),
          * looking for widgets named "unit-tracker" (this is used by
          * all toolboxes to refer to the unit selector). The default document units
          * is then selected within these unit selectors.
@@ -820,18 +816,14 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
             if (auto container = dynamic_cast<Gtk::Container *>(i)) {
                 std::vector<Gtk::Widget*> grch = container->get_children();
                 for (auto j:grch) {
-
-                    if (!GTK_IS_WIDGET(j->gobj())) // wasn't a widget
-                        continue;
-
                     // Don't apply to text toolbar. We want to be able to
                     // use different units for text. (Bug 1562217)
                     const Glib::ustring name = j->get_name();
                     if ( name == "TextToolbar" || name == "MeasureToolbar" || name == "CalligraphicToolbar" )
                         continue;
 
-                    auto tracker = dynamic_cast<Inkscape::UI::Widget::ComboToolItem*>(sp_search_by_name_recursive(j, "unit-tracker"));
-
+                    auto const tracker = dynamic_cast<Inkscape::UI::Widget::ComboToolItem*>
+                                                     (Inkscape::UI::find_widget_by_name(*j, "unit-tracker"));
                     if (tracker) { // it's null when inkscape is first opened
                         if (auto ptr = static_cast<UnitTracker*>(tracker->get_data(Glib::Quark("unit-tracker")))) {
                             ptr->setActiveUnit(nv->display_units);

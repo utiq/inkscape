@@ -39,6 +39,7 @@
 #include "preferences.h"
 #include "ui/dialog-events.h"
 #include "ui/dialog-run.h"
+#include "ui/util.h"
 #include "ui/view/svg-view-widget.h"
 #include "widgets/spw-utilities.h"
 
@@ -78,7 +79,7 @@ namespace Dialog {
 
 void FileDialogBaseGtk::internalSetup()
 {
-    filterComboBox = dynamic_cast<Gtk::ComboBoxText *>(sp_search_by_name_recursive(this, "GtkComboBoxText"));
+    filterComboBox = dynamic_cast<Gtk::ComboBoxText *>(find_widget_by_name(*this, "GtkComboBoxText"));
     g_assert(filterComboBox);
 
     filterStore = Gtk::ListStore::create(FilterList);
@@ -426,14 +427,14 @@ FileSaveDialogImplGtk::FileSaveDialogImplGtk(Gtk::Window &parentWindow, const Gl
     set_extra_widget(childBox);
 
     // Let's do some customization
-    fileNameEntry = dynamic_cast<Gtk::Entry *>(sp_search_by_name_recursive(this, "GtkEntry"));
+    fileNameEntry = dynamic_cast<Gtk::Entry *>(find_widget_by_name(*this, "GtkEntry"));
     if (fileNameEntry) {
         // Catch when user hits [return] on the text field
         fileNameEntry->signal_activate().connect(
             sigc::mem_fun(*this, &FileSaveDialogImplGtk::fileNameEntryChangedCallback));
     }
 
-    if (auto const expander = dynamic_cast<Gtk::Expander *>(sp_search_by_name_recursive(this, "GtkExpander"))) {
+    if (auto const expander = dynamic_cast<Gtk::Expander *>(find_widget_by_name(*this, "GtkExpander"))) {
         // Always show the file list
         expander->set_expanded(true);
     }
