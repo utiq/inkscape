@@ -63,9 +63,8 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
     auto root = desktop->layerManager().currentRoot();
 
     // Get a list of items under the cursor, used for unhiding and unlocking.
-    auto point_document = desktop->point() * desktop->dt2doc();
-    Geom::Rect b(point_document, point_document + Geom::Point(1, 1)); // Seems strange to use a rect!
-    items_under_cursor = document->getItemsPartiallyInBox(desktop->dkey, b, true, true, true, true);
+    auto point_win = desktop->point() * desktop->d2w();
+    items_under_cursor = document->getItemsAtPoints(desktop->dkey, {point_win}, true, false);
     bool has_hidden_below_cursor = false;
     bool has_locked_below_cursor = false;
     for (auto item : items_under_cursor) {
@@ -108,12 +107,8 @@ ContextMenu::ContextMenu(SPDesktop *desktop, SPObject *object, bool hide_layers_
         // in the menu thus it makes the most sense that it is either selected or part of the current
         // selection.
         auto selection = desktop->getSelection();
-        bool selection_under_cursor = false;
-        for (auto item : items_under_cursor) {
-            if (selection->includes(item)) {
-                selection_under_cursor = true;
-            }
-        }
+        bool selection_under_cursor = std::any_of(items_under_cursor.begin(), items_under_cursor.end(),
+                [selection](auto item) { return selection->includes(item); });
         if (object && !selection_under_cursor) {
             selection->set(object);
         }
