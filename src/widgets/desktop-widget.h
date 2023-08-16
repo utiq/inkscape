@@ -1,35 +1,62 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef SEEN_SP_DESKTOP_WIDGET_H
-#define SEEN_SP_DESKTOP_WIDGET_H
-
 /** \file
- * SPDesktopWidget: handling Gtk events on a desktop.
+ * Desktop widget implementation
+ */
+/* Authors:
+ *   Lauris Kaplinski <lauris@kaplinski.com>
+ *   MenTaLguY <mental@rydia.net>
+ *   bulia byak <buliabyak@users.sf.net>
+ *   Ralf Stephan <ralf@ark.in-berlin.de>
+ *   John Bintz <jcoswell@coswellproductions.org>
+ *   Johan Engelen <j.b.c.engelen@ewi.utwente.nl>
+ *   Jon A. Cruz <jon@joncruz.org>
+ *   Abhishek Sharma
  *
- * Authors:
- *      Jon A. Cruz <jon@joncruz.org> (c) 2010
- *      John Bintz <jcoswell@coswellproductions.org> (c) 2006
- *      Ralf Stephan <ralf@ark.in-berlin.de> (c) 2005
- *      Abhishek Sharma
- *      ? -2004
+ * Copyright (C) 2007 Johan Engelen
+ * Copyright (C) 2006 John Bintz
+ * Copyright (C) 2004 MenTaLguY
+ * Copyright (C) 1999-2002 Lauris Kaplinski
+ * Copyright (C) 2000-2001 Ximian, Inc.
  *
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
-#include <cstddef>
+#ifndef SEEN_SP_DESKTOP_WIDGET_H
+#define SEEN_SP_DESKTOP_WIDGET_H
+
+#include <vector>
 #include <2geom/point.h>
 #include <sigc++/connection.h>
-#include <gtkmm.h>
+#include <glibmm/refptr.h>
+#include <gtkmm/box.h>
+#include <gtkmm/eventbox.h>
 
 #include "message.h"
 #include "preferences.h"
+
+namespace Glib {
+class ustring;
+} // namespace Glib
+
+namespace Gio {
+class ActionMap;
+} // namespace Gio
+
+namespace Gtk {
+class Adjustment;
+class Grid;
+class Label;
+class Paned;
+class Toolbar;
+class Widget;
+} // namespace Gtk;
 
 class InkscapeWindow;
 class SPDocument;
 class SPDesktop;
 class SPObject;
 
-namespace Inkscape {
-namespace UI {
+namespace Inkscape::UI {
 
 namespace Dialog {
 class DialogContainer;
@@ -38,24 +65,23 @@ class SwatchesPanel;
 } // namespace Dialog
 
 namespace Toolbar {
-  class  Toolbars;
-  class  CommandToolbar;
-  class  SnapToolbar;
+class Toolbars;
+class CommandToolbar;
+class SnapToolbar;
 } // namespace Toolbars
 
 namespace Widget {
-  class Button;
-  class Canvas;
-  class CanvasGrid;
-  class LayerSelector;
-  class PageSelector;
-  class SelectedStyle;
-  class SpinButton;
-  class StatusBar;
+class Button;
+class Canvas;
+class CanvasGrid;
+class LayerSelector;
+class PageSelector;
+class SelectedStyle;
+class SpinButton;
+class StatusBar;
 } // namespace Widget
 
-} // namespace UI
-} // namespace Inkscape
+} // namespace Inkscape::UI
 
 /// A GtkEventBox on an SPDesktop.
 class SPDesktopWidget : public Gtk::EventBox
@@ -77,9 +103,7 @@ public:
     sigc::connection modified_connection;
 
     SPDesktop *desktop = nullptr;
-
     InkscapeWindow *window = nullptr;
-    Gtk::MenuBar *_menubar;
 
 private:
     // The root vbox of the window layout.
@@ -136,8 +160,6 @@ public:
     void onFocus(bool has_toplevel_focus);
     Inkscape::UI::Dialog::DialogContainer *getDialogContainer();
     void showNotice(Glib::ustring const &msg, unsigned timeout = 0);
-
-    Gtk::MenuBar *menubar() { return _menubar; }
 
     void updateNamedview();
     void update_guides_lock();

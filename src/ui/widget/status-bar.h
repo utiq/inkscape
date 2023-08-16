@@ -13,17 +13,18 @@
 #define INKSCAPE_UI_WIDGET_STATUSBAR_H
 
 #include <gtkmm/box.h>
+
 #include "message.h"
 #include "preferences.h" // observer
 
 namespace Gtk {
-  class Grid;
-  class Label;
-  class Popover;
+class Grid;
+class Label;
+class Popover;
 } // namespace Gtk
 
 namespace Geom {
-  class Point;
+class Point;
 } // namespace Geom
 
 class SPDesktop;
@@ -57,12 +58,12 @@ private:
     bool zoom_output();
     void zoom_value_changed();
     void zoom_menu_handler();
-    bool zoom_popup(GdkEventButton* event);
+    bool zoom_popup();
 
     bool rotate_output();
     void rotate_value_changed();
     void rotate_menu_handler();
-    bool rotate_popup(GdkEventButton* event);
+    bool rotate_popup();
 
     // From left to right
     SelectedStyle* selected_style = nullptr;
@@ -77,8 +78,8 @@ private:
     UI::Widget::SpinButton* rotate_value = nullptr;
 
     SPDesktopWidget* desktop_widget = nullptr;
-    Gtk::Popover*  zoom_popover = nullptr;
-    Gtk::Popover*  rotate_popover = nullptr;
+    std::unique_ptr<Gtk::Popover> zoom_popover;
+    std::unique_ptr<Gtk::Popover> rotate_popover;
 
     SPDesktop* desktop = nullptr;
 

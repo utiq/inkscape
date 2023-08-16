@@ -32,10 +32,13 @@ class PopoverMenuItem final
 {
 public:
     // Construct a flat Button with CSS name `menuitem` and class `.menuitem`.
+    // If text & icon_name are present, we add a Box containing a Image & Label.
+    // If only 1 of text or icon_name are present, we add only a Label or Image.
+    // If neither text or icon_name are present, we add no child: you can do so
     [[nodiscard]] explicit PopoverMenuItem(Glib::ustring const &text = {},
                                            bool mnemonic = false,
                                            Glib::ustring const &icon_name = {},
-                                           Gtk::IconSize const icon_size = Gtk::ICON_SIZE_MENU,
+                                           Gtk::IconSize icon_size = Gtk::ICON_SIZE_MENU,
                                            bool popdown_on_activate = true);
 
     /// A convenience, “drop-in” alias for signal_clicked().

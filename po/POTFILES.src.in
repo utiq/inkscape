@@ -423,6 +423,7 @@ ${_build_dir}/share/templates/templates.h
 ../src/ui/widget/registered-widget.cpp
 ../src/ui/widget/rendering-options.cpp
 ../src/ui/widget/selected-style.cpp
+../src/ui/widget/status-bar.cpp
 ../src/ui/widget/stroke-style.cpp
 ../src/ui/widget/style-swatch.cpp
 ../src/ui/widget/swatch-selector.cpp

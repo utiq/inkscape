@@ -16,6 +16,7 @@
 
 #include <utility>
 #include <gtkmm/gesturemultipress.h>
+#include <gtkmm/popover.h>
 #include <gtkmm/widget.h>
 
 #include "controller.h"
@@ -49,19 +50,41 @@ static Gtk::EventSequenceState on_click_pressed(Gtk::GestureMultiPress const &cl
     return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-PopupMenuSlot &on_popup_menu(Gtk::Widget &widget, PopupMenuSlot &&slot)
+sigc::connection on_popup_menu(Gtk::Widget &widget, PopupMenuSlot slot)
 {
     auto &managed_slot = manage(std::move(slot), widget);
     auto const key = gtk_event_controller_key_new(widget.Gtk::Widget::gobj());
     g_signal_connect(key, "key-pressed", G_CALLBACK(on_key_pressed), &managed_slot);
     Controller::add_click(widget, sigc::bind(&on_click_pressed, &managed_slot), {},
                           Controller::Button::any, Gtk::PHASE_TARGET); // ←beat Entry popup handler
-    return managed_slot;
+    return sigc::connection{managed_slot};
 }
 
 sigc::connection on_hide_reset(std::shared_ptr<Gtk::Widget> const &widget)
 {
     return widget->signal_hide().connect( [widget = widget]() mutable { widget.reset(); });
+}
+
+void popup_at(Gtk::Popover &popover, Gtk::Widget &relative_to,
+              int const x_offset, int const y_offset)
+{
+    popover.set_visible(false);
+
+    popover.set_relative_to(relative_to);
+
+    if (x_offset != 0 || y_offset != 0) {
+        popover.set_pointing_to({x_offset, y_offset, 1, 1});
+    }
+
+    popover.show_all_children();
+    popover.popup();
+}
+
+void popup_at_center(Gtk::Popover &popover, Gtk::Widget &relative_to)
+{
+    auto const x_offset = relative_to.get_width () / 2;
+    auto const y_offset = relative_to.get_height() / 2;
+    popup_at(popover, relative_to, x_offset, y_offset);
 }
 
 } // namespace Inkscape::UI

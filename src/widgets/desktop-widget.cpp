@@ -21,23 +21,28 @@
  * Released under GNU GPL v2+, read the file 'COPYING' for more information.
  */
 
+#include "desktop-widget.h"
+
+#include <algorithm>
+#include <string>
 #include <glibmm/i18n.h>
+#include <glibmm/ustring.h>
+#include <gtkmm/adjustment.h>
+#include <gtkmm/grid.h>
+#include <gtkmm/label.h>
+#include <gtkmm/paned.h>
+#include <gtkmm/toolbar.h>
 #include <2geom/rect.h>
 
 #include "conn-avoid-ref.h"
-#include "desktop-widget.h"
 #include "desktop.h"
 #include "document-undo.h"
 #include "enums.h"
 #include "inkscape-window.h"
 #include "inkscape.h"
-
 #include "display/control/canvas-item-drawing.h"
-
 #include "object/sp-image.h"
 #include "object/sp-namedview.h"
-
-#include "ui/builder-utils.h"
 #include "ui/dialog/swatches.h"
 #include "ui/dialog-run.h"
 #include "ui/monitor.h"   // Monitor aspect ratio
@@ -62,6 +67,7 @@
 #include "ui/widget/unit-tracker.h"
 #include "ui/themes.h"
 #include "util/units.h"
+// We're in the "widgets" directory, so no need to explicitly prefix these:
 #include "widget-sizes.h"
 
 using Inkscape::DocumentUndo;
@@ -248,7 +254,6 @@ SPDesktopWidget::on_unrealize()
     }
 
     if (dtw->desktop) {
-
         for (auto &conn : dtw->_connections) {
             conn.disconnect();
         }
@@ -720,7 +725,6 @@ SPDesktopWidget::setToolboxAdjustmentValue (gchar const *id, double value)
     }
 }
 
-
 bool
 SPDesktopWidget::isToolboxButtonActive (const gchar* id)
 {
@@ -853,6 +857,7 @@ void SPDesktopWidget::onFocus(bool const has_toplevel_focus)
 }
 
 // ------------------------ Zoom ------------------------
+
 void
 SPDesktopWidget::sticky_zoom_toggled()
 {
@@ -873,7 +878,6 @@ SPDesktopWidget::update_zoom()
     _statusbar->update_zoom();
 }
 
-
 // ---------------------- Rotation ------------------------
 
 void
@@ -883,6 +887,7 @@ SPDesktopWidget::update_rotation()
 }
 
 // --------------- Rulers/Scrollbars/Etc. -----------------
+
 void
 SPDesktopWidget::toggle_command_palette() {
     // TODO: Turn into action and remove this function.

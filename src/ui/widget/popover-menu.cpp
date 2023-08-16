@@ -20,6 +20,7 @@
 #include <gtkmm/stylecontext.h>
 
 #include "ui/menuize.h"
+#include "ui/popup-menu.h"
 #include "ui/util.h"
 #include "ui/widget/css-name-class-init.h"
 #include "ui/widget/popover-menu-item.h"
@@ -88,8 +89,10 @@ void PopoverMenu::append_section_label(Glib::ustring const &markup)
 {
     auto const label = Gtk::make_managed<Gtk::Label>();
     label->set_markup(markup);
-    label->get_style_context()->add_class("dim-label");
-    append(*label);
+    auto const item = Gtk::make_managed<PopoverMenuItem>();
+    item->add(*label);
+    item->set_sensitive(false);
+    append(*item);
 }
 
 void PopoverMenu::append_separator()
@@ -100,23 +103,12 @@ void PopoverMenu::append_separator()
 void PopoverMenu::popup_at(Gtk::Widget &relative_to,
                            int const x_offset, int const y_offset)
 {
-    set_visible(false);
-
-    set_relative_to(relative_to);
-
-    if (x_offset != 0 || y_offset != 0) {
-        set_pointing_to({x_offset, y_offset, 1, 1});
-    }
-
-    show_all_children();
-    popup();
+    ::Inkscape::UI::popup_at(*this, relative_to, x_offset, y_offset);
 }
 
 void PopoverMenu::popup_at_center(Gtk::Widget &relative_to)
 {
-    auto const x_offset = relative_to.get_width () / 2;
-    auto const y_offset = relative_to.get_height() / 2;
-    popup_at(relative_to, x_offset, y_offset);
+    ::Inkscape::UI::popup_at_center(*this, relative_to);
 }
 
 std::vector<Gtk::Widget *> PopoverMenu::get_items()

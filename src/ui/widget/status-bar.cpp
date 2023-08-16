@@ -12,14 +12,21 @@
 #include "status-bar.h"
 
 #include <iostream>
-
-#include <gtkmm.h>
-
+#include <string>
+#include <utility>
+#include <vector>
+#include <glibmm/i18n.h>
+#include <gtkmm/applicationwindow.h>
+#include <gtkmm/grid.h>
+#include <gtkmm/label.h>
+#include <gtkmm/popover.h>
 #include <2geom/point.h>
 #include <2geom/angle.h>  // deg_from_rad
 
 #include "desktop.h"
 #include "ui/builder-utils.h"
+#include "ui/menuize.h"
+#include "ui/popup-menu.h"
 #include "ui/widget/canvas.h"
 #include "ui/widget/layer-selector.h"
 #include "ui/widget/page-selector.h"
@@ -53,13 +60,13 @@ StatusBar::StatusBar()
     // Can't seem to add actions with double parameters to .ui file, add here.
     const std::vector<std::pair<std::string, std::string>> zoom_entries =
     {
-        {   "10%", "win.canvas-zoom-absolute(0.1)" },
-        {   "20%", "win.canvas-zoom-absolute(0.2)" },
-        {   "50%", "win.canvas-zoom-absolute(0.5)" },
-        {  "100%", "win.canvas-zoom-absolute(1.0)" }, // Must include decimal point!
-        {  "200%", "win.canvas-zoom-absolute(2.0)" },
-        {  "500%", "win.canvas-zoom-absolute(5.0)" },
-        { "1000%", "win.canvas-zoom-absolute(10.0)"},
+        { _(  "10%"), "win.canvas-zoom-absolute(0.1)" },
+        { _(  "20%"), "win.canvas-zoom-absolute(0.2)" },
+        { _(  "50%"), "win.canvas-zoom-absolute(0.5)" },
+        { _( "100%"), "win.canvas-zoom-absolute(1.0)" }, // Must include decimal point!
+        { _( "200%"), "win.canvas-zoom-absolute(2.0)" },
+        { _( "500%"), "win.canvas-zoom-absolute(5.0)" },
+        { _("1000%"), "win.canvas-zoom-absolute(10.0)"},
     };
 
     auto zoom_menu = UI::get_object<Gio::Menu>(builder, "statusbar-zoom-menu");
@@ -68,12 +75,12 @@ StatusBar::StatusBar()
         zoom_menu->prepend_item(menu_item); // In reverse order.
     }
 
-    zoom_popover = Gtk::make_managed<Gtk::Popover>(*zoom_value, zoom_menu);
+    zoom_popover = make_menuized_popover(zoom_menu, *zoom);
 
     zoom_value->signal_input().connect(sigc::mem_fun(*this, &StatusBar::zoom_input));
     zoom_value->signal_output().connect(sigc::mem_fun(*this, &StatusBar::zoom_output));
     zoom_value->signal_value_changed().connect(sigc::mem_fun(*this, &StatusBar::zoom_value_changed));
-    zoom_value->signal_button_press_event().connect(sigc::mem_fun(*this, &StatusBar::zoom_popup), false);
+    on_popup_menu(*zoom_value, sigc::mem_fun(*this, &StatusBar::zoom_popup));
 
     auto zoom_adjustment = zoom_value->get_adjustment();
     zoom_adjustment->set_lower(log(SP_DESKTOP_ZOOM_MIN)/log(2));
@@ -88,14 +95,14 @@ StatusBar::StatusBar()
     // Can't seem to add actions with double parameters to .ui file, add here.
     const std::vector<std::pair<std::string, std::string>> rotate_entries =
     {
-        {    "180", "win.canvas-rotate-absolute-degrees( 180.0)" }, // Must include decimal point!
-        {    "135", "win.canvas-rotate-absolute-degrees( 135.0)" },
-        {     "90", "win.canvas-rotate-absolute-degrees(  90.0)" },
-        {     "45", "win.canvas-rotate-absolute-degrees(  45.0)" },
-        {      "0", "win.canvas-rotate-absolute-degrees(   0.0)" },
-        {    "-45", "win.canvas-rotate-absolute-degrees( -45.0)" },
-        {    "-90", "win.canvas-rotate-absolute-degrees( -90.0)" },
-        {   "-135", "win.canvas-rotate-absolute-degrees(-135.0)" },
+        {  _( "180°"), "win.canvas-rotate-absolute-degrees( 180.0)" }, // Must include decimal point!
+        {  _( "135°"), "win.canvas-rotate-absolute-degrees( 135.0)" },
+        {  _(  "90°"), "win.canvas-rotate-absolute-degrees(  90.0)" },
+        {  _(  "45°"), "win.canvas-rotate-absolute-degrees(  45.0)" },
+        {  _(   "0°"), "win.canvas-rotate-absolute-degrees(   0.0)" },
+        {  _( "-45°"), "win.canvas-rotate-absolute-degrees( -45.0)" },
+        {  _( "-90°"), "win.canvas-rotate-absolute-degrees( -90.0)" },
+        {  _("-135°"), "win.canvas-rotate-absolute-degrees(-135.0)" },
     };
 
     auto rotate_menu = UI::get_object<Gio::Menu>(builder, "statusbar-rotate-menu");
@@ -104,11 +111,11 @@ StatusBar::StatusBar()
         rotate_menu->prepend_item(menu_item); // In reverse order.
     }
 
-    rotate_popover = Gtk::make_managed<Gtk::Popover>(*rotate_value, rotate_menu);
+    rotate_popover = make_menuized_popover(rotate_menu, *rotate);
 
     rotate_value->signal_output().connect(sigc::mem_fun(*this, &StatusBar::rotate_output));
     rotate_value->signal_value_changed().connect(sigc::mem_fun(*this, &StatusBar::rotate_value_changed));
-    rotate_value->signal_button_press_event().connect(sigc::mem_fun(*this, &StatusBar::rotate_popup), false);
+    on_popup_menu(*rotate_value, sigc::mem_fun(*this, &StatusBar::rotate_popup));
 
     // Add rest by hand for now.
 
@@ -238,18 +245,10 @@ StatusBar::zoom_value_changed()
 }
 
 bool
-StatusBar::zoom_popup(GdkEventButton *event)
+StatusBar::zoom_popup()
 {
-    switch (event->button) {
-        case 3:
-        {
-            zoom_popover->set_pointing_to(Gdk::Rectangle(event->x, event->y, 1, 1));
-            zoom_popover->popup();
-            return true;
-        }
-    }
-
-    return false;
+    popup_at_center(*zoom_popover, *zoom);
+    return true;
 }
 
 void
@@ -296,18 +295,10 @@ StatusBar::rotate_value_changed()
 }
 
 bool
-StatusBar::rotate_popup(GdkEventButton *event)
+StatusBar::rotate_popup()
 {
-    switch (event->button) {
-        case 3:
-        {
-            rotate_popover->set_pointing_to(Gdk::Rectangle(event->x, event->y, 1, 1));
-            rotate_popover->popup();
-            return true;
-        }
-    }
-
-    return false;
+    popup_at_center(*rotate_popover, *rotate);
+    return true;
 }
 
 void

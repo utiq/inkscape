@@ -20,6 +20,7 @@
 #include <sigc++/slot.h>
 
 namespace Gtk {
+class Popover;
 class Widget;
 } // namespace Gtk
 
@@ -31,12 +32,20 @@ using PopupMenuSlot = sigc::slot<bool()>;
 /// Connect slot to a widgetʼs key and button events that traditionally trigger a popup menu, i.e.:
 /// * The keys used by GTK3ʼs signal Widget::popup-menu: the Menu key, or the Shift+F10 combination
 /// * The right mouse button or other platform convention, as per gtk_event_triggers_context_menu()
-/// The slot is passed to manage() which moves it to a new address & we return a reference to that.
-PopupMenuSlot &on_popup_menu(Gtk::Widget &widget, PopupMenuSlot &&slot);
+/// @returns A connection that can be used to disconnect & disable menu.
+sigc::connection on_popup_menu(Gtk::Widget &widget, PopupMenuSlot slot);
 
 /// Connects ::hide of widget to reset() the shared_ptr i.e. to ‘self-destruct’.
 /// @returns A connection that can be used to disconnect & prevent self-destruct
 sigc::connection on_hide_reset(std::shared_ptr<Gtk::Widget> const &widget);
+
+/// Replace Gtk::Menu::popup_at_pointer. If x or y
+/// offsets != 0, :pointing-to is set to {x,y,1,1}
+void popup_at(Gtk::Popover &popover, Gtk::Widget &relative_to,
+              int x_offset = 0, int y_offset = 0);
+
+/// As popup_at() but point to center of widget
+void popup_at_center(Gtk::Popover &popover, Gtk::Widget &relative_to);
 
 } // namespace Inkscape::UI
 

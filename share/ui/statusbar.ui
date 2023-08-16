@@ -68,7 +68,6 @@
   <!-- Statusbar -->
   <object class="GtkBox" id ="statusbar">
     <property name="visible">True</property>
-    <property name="can-focus">False</property>
     <property name="name">Statusbar</property>
     <property name="margin-end">10</property>
 
@@ -85,7 +84,6 @@
     <!-- Layer Selector -->
     <child>
       <object class="GtkSeparator">
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <property name="margin-top">6</property>
         <property name="margin-bottom">6</property>
@@ -102,7 +100,6 @@
       <object class="GtkLabel" id="statusbar-selection">
         <property name="name">StatusbarSelection</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="halign">start</property>
         <property name="label" translatable="yes">&lt;b&gt;Welcome to Inkscape!&lt;/b&gt; Use shape or freehand tools to create objects; use selector (arrow) to move or transform them.</property>
         <property name="use-markup">True</property>
@@ -119,7 +116,6 @@
     <!-- Page Selector -->
     <child>
       <object class="GtkSeparator">
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <property name="margin-top">6</property>
         <property name="margin-bottom">6</property>
@@ -137,7 +133,6 @@
       <object class="GtkGrid" id="statusbar-coordinates">
         <property name="name">StatusbarCoordinates</property>
         <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="row-spacing">0</property>
         <property name="column-spacing">10</property>
         <property name="margin-end">10</property>
@@ -145,7 +140,6 @@
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">X:</property>
           </object>
@@ -157,7 +151,6 @@
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Y:</property>
           </object>
@@ -170,7 +163,6 @@
           <object class="GtkLabel" id="statusbar-coordinate-x">
             <property name="name">StatusbarCoordinateX</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">end</property>
             <property name="label" translatable="no">   0.00 </property>
             <property name="use-markup">True</property>
@@ -184,7 +176,6 @@
           <object class="GtkLabel" id="statusbar-coordinate-y">
             <property name="name">StatusbarCoordinateY</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">end</property>
             <property name="label" translatable="no">   0.00 </property>
             <property name="use-markup">True</property>
@@ -204,15 +195,17 @@
     <!-- Zoom -->
     <child>
       <object class="GtkBox" id="statusbar-zoom">
+        <property name="visible">True</property>
+        <property name="tooltip-text" translatable="yes">Zoom (also Ctrl+scroll)</property>
+
         <child>
-          <object class="GtkLabel" id="stausbar-label-z">
+          <object class="GtkLabel" id="statusbar-label-z">
             <property name="name">StatusbarZoomLabel</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">Z:</property>
             <property name="margin-start">2</property>
-            <property name="margin-end">2</property>
+            <property name="margin-end">4</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -226,7 +219,6 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="adjustment">statusbar-zoom-adjustment</property>
-            <property name="tooltip-text" translatable="yes">Zoom</property>
             <property name="numeric">False</property>
             <property name="width-chars">6</property>
             <property name="width-request">57</property>
@@ -244,15 +236,16 @@
     <!-- Rotation -->
     <child>
       <object class="GtkBox" id="statusbar-rotate">
+        <property name="visible">True</property>
+        <property name="tooltip-text" translatable="yes">Rotation (also Ctrl+Shift+scroll)</property>
         <child>
-          <object class="GtkLabel" id="stausbar-label-R">
+          <object class="GtkLabel" id="statusbar-label-R">
             <property name="name">StatusbarRotateLabel</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="label" translatable="yes">R:</property>
             <property name="margin-start">10</property>
-            <property name="margin-end">2</property>
+            <property name="margin-end">4</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -266,7 +259,6 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="adjustment">statusbar-rotate-adjustment</property>
-            <property name="tooltip-text" translatable="yes">Rotation. (Also Ctrl+Shift+Scroll)</property>
             <property name="numeric">False</property>
             <property name="width-chars">7</property>
             <property name="width-request">57</property>
