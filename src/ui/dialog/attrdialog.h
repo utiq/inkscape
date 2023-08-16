@@ -13,27 +13,31 @@
 #ifndef SEEN_UI_DIALOGS_ATTRDIALOG_H
 #define SEEN_UI_DIALOGS_ATTRDIALOG_H
 
-#include <gtkmm/builder.h>
-#include <gtkmm/dialog.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/popover.h>
-#include <gtkmm/scrolledwindow.h>
-#include <gtkmm/textview.h>
-#include <gtkmm/treeview.h>
 #include <memory>
+#include <gtk/gtk.h> // GtkEventControllerKey
+#include <gtkmm/treemodel.h>
 
 #include "helper/auto-connection.h"
-#include "inkscape-application.h"
-#include "message.h"
 #include "ui/dialog/dialog-base.h"
 #include "ui/syntax.h"
 #include "xml/node-observer.h"
 
+namespace Gtk {
+class Builder;
+class ListStore;
+class Popover;
+class ScrolledWindow;
+class TextView;
+class TreeView;
+class TreeViewColumn;
+} // namespace Gtk
+
 namespace Inkscape {
+
 class MessageStack;
 class MessageContext;
-namespace UI {
-namespace Dialog {
+
+namespace UI::Dialog {
 
 /**
  * @brief The AttrDialog class
@@ -41,8 +45,8 @@ namespace Dialog {
  * xml editor.
  */
 class AttrDialog
-	: public DialogBase
-	, private XML::NodeObserver
+    : public DialogBase
+    , private XML::NodeObserver
 {
 public:
     AttrDialog();
@@ -98,6 +102,9 @@ private:
 
     // Helper functions
     void setUndo(Glib::ustring const &event_description);
+    void createAttribute();
+    void deleteAttribute(Gtk::TreeRow &row);
+
     /**
      * Sets the XML status bar, depending on which attr is selected.
      */
@@ -107,11 +114,12 @@ private:
      * Signal handlers
      */
     auto_connection _message_changed_connection;
-    bool onNameKeyPressed(GdkEventKey *event, Gtk::Entry *entry);
-    bool onValueKeyPressed(GdkEventKey *event, Gtk::Entry *entry);
-    void onAttrDelete(Glib::ustring path);
-    bool onAttrCreate(GdkEventButton *event);
-    bool onKeyPressed(GdkEventKey *event);
+    void onCreateClicked();
+    void onAttrDelete(Glib::ustring const &path);
+    bool onTreeViewKeyPressed (GtkEventControllerKey const *controller,
+                               unsigned keyval, unsigned keycode, GdkModifierType state);
+    bool onTreeViewKeyReleased(GtkEventControllerKey const *controller,
+                               unsigned keyval, unsigned keycode, GdkModifierType state);
     void truncateDigits() const;
     void popClosed();
     void startNameEdit(Gtk::CellEditable *cell, const Glib::ustring &path);
@@ -120,6 +128,11 @@ private:
     void valueEdited(const Glib::ustring &path, const Glib::ustring &value);
     void valueEditedPop();
     void storeMoveToNext(Gtk::TreeModel::Path modelpath);
+
+    // Track current CellEditable Entry:
+    Gtk::Entry *_editingEntry = nullptr;
+    bool _embedNewline = false;
+    void setEditingEntry(Gtk::Entry *entry, bool embedNewline);
 
 private:
     // Text/comment nodes
@@ -137,17 +150,30 @@ private:
     auto_connection _close_popup;
     int _rounding_precision = 0;
 
-    bool key_callback(GdkEventKey* event);
+    bool onPopoverKeyPressed(GtkEventControllerKey const *controller,
+                             unsigned keyval, unsigned keycode, GdkModifierType state);
+
     void notifyAttributeChanged(XML::Node &repr, GQuark name, Util::ptr_shared old_value, Util::ptr_shared new_value) final;
-	void notifyContentChanged(XML::Node &node, Util::ptr_shared old_content, Util::ptr_shared new_content) final;
+    void notifyContentChanged(XML::Node &node, Util::ptr_shared old_content, Util::ptr_shared new_content) final;
     static Glib::ustring round_numbers(const Glib::ustring& text, int precision);
     Gtk::TextView &_activeTextView() const;
     void set_current_textedit(Syntax::TextEditView* edit);
     static std::unique_ptr<Syntax::TextEditView> init_text_view(AttrDialog* owner, Syntax::SyntaxMode coloring, bool map);
 };
 
-} // namespace Dialog
-} // namespace UI
+} // namespace UI::Dialog
+
 } // namespace Inkscape
 
 #endif // SEEN_UI_DIALOGS_ATTRDIALOG_H
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace .0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:

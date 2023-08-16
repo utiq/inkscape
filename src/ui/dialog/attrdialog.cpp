@@ -12,26 +12,9 @@
 
 #include "attrdialog.h"
 
-#include "preferences.h"
-#include "selection.h"
-#include "document-undo.h"
-#include "message-context.h"
-#include "message-stack.h"
-#include "style.h"
-
-#include "io/resource.h"
-
-#include "ui/builder-utils.h"
-#include "ui/dialog/inkscape-preferences.h"
-#include "ui/icon-loader.h"
-#include "ui/icon-names.h"
-#include "ui/syntax.h"
-#include "ui/widget/shapeicon.h"
-#include "util/numeric/converters.h"
-#include "util/trim.h"
-#include "xml/attribute-record.h"
-
+#include <algorithm>
 #include <cstddef>
+#include <string>
 #include <gdk/gdkkeysyms.h>
 #include <glibmm/i18n.h>
 #include <glibmm/main.h>
@@ -39,6 +22,7 @@
 #include <glibmm/timer.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/box.h>
+#include <gtkmm/builder.h>
 #include <gtkmm/button.h>
 #include <gtkmm/enums.h>
 #include <gtkmm/label.h>
@@ -50,14 +34,31 @@
 #include <gtkmm/targetlist.h>
 #include <gtkmm/textview.h>
 #include <gtkmm/treeview.h>
-#include <gtkmm/widget.h>
-#include <memory>
-#include <string>
+#include <sigc++/adaptors/bind.h>
+#include <sigc++/functors/mem_fun.h>
 
 #include "config.h"
 #if WITH_GSOURCEVIEW
 #   include <gtksourceview/gtksource.h>
 #endif
+
+#include "document-undo.h"
+#include "io/resource.h"
+#include "message-context.h"
+#include "message-stack.h"
+#include "preferences.h"
+#include "selection.h"
+#include "style.h"
+#include "ui/builder-utils.h"
+#include "ui/controller.h"
+#include "ui/dialog/inkscape-preferences.h"
+#include "ui/icon-loader.h"
+#include "ui/icon-names.h"
+#include "ui/syntax.h"
+#include "ui/widget/shapeicon.h"
+#include "util/numeric/converters.h"
+#include "util/trim.h"
+#include "xml/attribute-record.h"
 
 /**
  * Return true if `node` is a text or comment node
@@ -155,21 +156,20 @@ AttrDialog::AttrDialog()
     // high-res aware icon renderer for a trash can
     auto delete_renderer = manage(new Inkscape::UI::Widget::CellRendererItemIcon());
     delete_renderer->property_shape_type().set_value("edit-delete");
+    delete_renderer->signal_activated().connect(sigc::mem_fun(*this, &AttrDialog::onAttrDelete));
     _treeView.append_column("", *delete_renderer);
-    Gtk::TreeViewColumn *col = _treeView.get_column(0);
-    if (col) {
+
+    if (auto const col = _treeView.get_column(0)) {
         auto add_icon = Gtk::manage(sp_get_icon_image("list-add", Gtk::ICON_SIZE_SMALL_TOOLBAR));
         col->set_clickable(true);
         col->set_widget(*add_icon);
         add_icon->set_tooltip_text(_("Add a new attribute"));
         add_icon->set_visible(true);
-        auto button = add_icon->get_parent()->get_parent()->get_parent();
-        // Assign the button event so that create happens BEFORE delete. If this code
-        // isn't in this exact way, the onAttrDelete is called when the header lines are pressed.
-        button->signal_button_release_event().connect(sigc::mem_fun(*this, &AttrDialog::onAttrCreate), false);
+        col->signal_clicked().connect(sigc::mem_fun(*this, &AttrDialog::onCreateClicked), false);
     }
-    delete_renderer->signal_activated().connect(sigc::mem_fun(*this, &AttrDialog::onAttrDelete));
-    _treeView.signal_key_press_event().connect(sigc::mem_fun(*this, &AttrDialog::onKeyPressed));
+
+    Controller::add_key<&AttrDialog::onTreeViewKeyPressed, &AttrDialog::onTreeViewKeyReleased>
+                       (_treeView, *this);
 
     _nameRenderer = Gtk::make_managed<Gtk::CellRendererText>();
     _nameRenderer->property_editable() = true;
@@ -216,7 +216,7 @@ AttrDialog::AttrDialog()
     });
 
     _popover->signal_closed().connect([=]() { popClosed(); });
-    _popover->signal_key_press_event().connect([=](GdkEventKey* ev) { return key_callback(ev); }, false);
+    Controller::add_key<&AttrDialog::onPopoverKeyPressed>(*_popover, *this, Gtk::PHASE_CAPTURE);
     _popover->set_visible(false);
 
     get_widget<Gtk::Button>(_builder, "btn-truncate").signal_clicked().connect([=](){ truncateDigits(); });
@@ -337,22 +337,24 @@ void AttrDialog::adjust_popup_edit_size()
     }
 }
 
-bool AttrDialog::key_callback(GdkEventKey* event) {
-    switch (event->keyval) {
+bool AttrDialog::onPopoverKeyPressed(GtkEventControllerKey const * /*controller*/,
+                                     unsigned keyval, unsigned /*keycode*/,
+                                     GdkModifierType state)
+{
+    if (!_popover->is_visible()) return false;
+
+    switch (keyval) {
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter:
-            if (_popover->is_visible()) {
-                if (event->state & GDK_SHIFT_MASK) {
-                    valueEditedPop();
-                    return true;
-                }
-                else {
-                    // as we type and content grows, resize the popup to accommodate it
-                    _adjust_size = Glib::signal_timeout().connect([=](){ adjust_popup_edit_size(); return false; }, 50);
-                }
+            if (Controller::has_flag(state, GDK_SHIFT_MASK)) {
+                valueEditedPop();
+                return true;
+            } else {
+                // as we type and content grows, resize the popup to accommodate it
+                _adjust_size = Glib::signal_timeout().connect([=](){ adjust_popup_edit_size(); return false; }, 50);
             }
-        break;
     }
+
     return false;
 }
 
@@ -411,7 +413,7 @@ void AttrDialog::set_mono_font(bool mono)
 void AttrDialog::startNameEdit(Gtk::CellEditable *cell, const Glib::ustring &path)
 {
     Gtk::Entry *entry = dynamic_cast<Gtk::Entry *>(cell);
-    entry->signal_key_press_event().connect(sigc::bind(sigc::mem_fun(*this, &AttrDialog::onNameKeyPressed), entry));
+    setEditingEntry(entry, false);
 }
 
 Gtk::TextView &AttrDialog::_activeTextView() const
@@ -495,8 +497,7 @@ void AttrDialog::startValueEdit(Gtk::CellEditable *cell, const Glib::ustring &pa
         // and show popup edit instead
         Glib::signal_timeout().connect_once([=](){ _popover->popup(); }, 10);
     } else {
-        entry->signal_key_press_event().connect(
-            sigc::bind(sigc::mem_fun(*this, &AttrDialog::onValueKeyPressed), entry));
+        setEditingEntry(entry, true);
     }
 }
 
@@ -556,6 +557,34 @@ void AttrDialog::setUndo(Glib::ustring const &event_description)
     DocumentUndo::done(getDocument(), event_description, INKSCAPE_ICON("dialog-xml-editor"));
 }
 
+void AttrDialog::createAttribute()
+{
+    auto const iter = _store->prepend();
+    auto const path = static_cast<Gtk::TreeModel::Path>(iter);
+    _treeView.set_cursor(path, *_nameCol, true);
+    grab_focus();
+}
+
+void AttrDialog::deleteAttribute(Gtk::TreeRow &row)
+{
+    auto const name = row.get_value(_attrColumns._attributeName);
+    _store->erase(row);
+    _repr->removeAttribute(name);
+    setUndo(_("Delete attribute"));
+}
+
+void AttrDialog::setEditingEntry(Gtk::Entry * const entry, bool const embedNewline)
+{
+    g_assert(!(entry == nullptr && embedNewline));
+
+    _editingEntry = entry;
+    _embedNewline = embedNewline;
+
+    if (_editingEntry == nullptr) return;
+
+    _editingEntry->signal_editing_done().connect([this]{ setEditingEntry(nullptr, false); });
+}
+
 /**
  * Sets the AttrDialog status bar, depending on which attr is selected.
  */
@@ -575,13 +604,14 @@ void AttrDialog::attr_reset_context(gint attr)
  * @brief AttrDialog::notifyAttributeChanged
  * This is called when the XML has an updated attribute
  */
-void AttrDialog::notifyAttributeChanged(XML::Node&, GQuark name_, Util::ptr_shared, Util::ptr_shared new_value)
+void AttrDialog::notifyAttributeChanged(XML::Node & /*node*/, GQuark name_,
+                                        Util::ptr_shared /*old_value*/, Util::ptr_shared new_value)
 {
     if (_updating) {
         return;
     }
 
-	auto const name = g_quark_to_string(name_);
+    auto const name = g_quark_to_string(name_);
 
     Glib::ustring renderval;
     if (new_value) {
@@ -610,19 +640,14 @@ void AttrDialog::notifyAttributeChanged(XML::Node&, GQuark name_, Util::ptr_shar
 }
 
 /**
- * @brief AttrDialog::onAttrCreate
+ * @brief AttrDialog::onCreateClicked
  * This function is a slot to signal_clicked for '+' button panel.
  */
-bool AttrDialog::onAttrCreate(GdkEventButton *event)
+void AttrDialog::onCreateClicked()
 {
-    if(event->type == GDK_BUTTON_RELEASE && event->button == 1 && this->_repr) {
-        Gtk::TreeIter iter = _store->prepend();
-        Gtk::TreeModel::Path path = (Gtk::TreeModel::Path)iter;
-        _treeView.set_cursor(path, *_nameCol, true);
-        grab_focus();
-        return true;
+    if (_repr) {
+        createAttribute();
     }
-    return false;
 }
 
 /**
@@ -631,22 +656,16 @@ bool AttrDialog::onAttrCreate(GdkEventButton *event)
  * @return true
  * Delete the attribute from the xml
  */
-void AttrDialog::onAttrDelete(Glib::ustring path)
+void AttrDialog::onAttrDelete(Glib::ustring const &path)
 {
     Gtk::TreeModel::Row row = *_store->get_iter(path);
     if (row) {
-        Glib::ustring name = row[_attrColumns._attributeName];
-        {
-            this->_store->erase(row);
-            this->_repr->removeAttribute(name);
-            this->setUndo(_("Delete attribute"));
-        }
+        deleteAttribute(row);
     }
 }
 
-void AttrDialog::notifyContentChanged(XML::Node &,
-									  Util::ptr_shared,
-									  Util::ptr_shared new_content)
+void AttrDialog::notifyContentChanged(XML::Node & /*repr*/, Util::ptr_shared /*old_content*/,
+                                      Util::ptr_shared new_content)
 {
     auto textview = dynamic_cast<Gtk::TextView *>(_content_sw.get_child());
     if (!textview) {
@@ -660,89 +679,64 @@ void AttrDialog::notifyContentChanged(XML::Node &,
     buffer->set_modified(false);
 }
 
-
 /**
- * @brief AttrDialog::onKeyPressed
- * @param event
- * @return true
+ * @brief AttrDialog::onTreeViewKeyPressed
  * Delete or create elements based on key presses
  */
-bool AttrDialog::onKeyPressed(GdkEventKey *event)
+bool AttrDialog::onTreeViewKeyPressed(GtkEventControllerKey const * /*controller*/,
+                                      unsigned keyval, unsigned /*keycode*/, GdkModifierType state)
 {
-    bool ret = false;
-    if (!_repr) {
-        return ret;
-    }
-    auto selection = _treeView.get_selection();
-    auto row = *selection->get_selected();
+    g_debug("StyleDialog::_onTreeViewKeyPressed");
 
-    switch (event->keyval) {
+    if (!_repr) {
+        return false;
+    }
+
+    switch (keyval) {
         case GDK_KEY_Delete:
         case GDK_KEY_KP_Delete: {
-            // Create new attribute (repeat code, fold into above event!)
-            Glib::ustring name = row[_attrColumns._attributeName];
-            _store->erase(row);
-            _repr->removeAttribute(name);
-            setUndo(_("Delete attribute"));
-            ret = true;
-            } break;
+            if (auto const selection = _treeView.get_selection()) {
+                auto row = *selection->get_selected();
+                deleteAttribute(row);
+            }
+            return true;
+        }
 
         case GDK_KEY_plus:
-        case GDK_KEY_Insert: {
-            // Create new attribute (repeat code, fold into above event!)
-            Gtk::TreeIter iter = _store->prepend();
-            Gtk::TreeModel::Path path = (Gtk::TreeModel::Path)iter;
-            _treeView.set_cursor(path, *_nameCol, true);
-            grab_focus();
-            ret = true;
-            } break;
+        case GDK_KEY_Insert:
+            createAttribute();
+            return true;
 
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter:
-            if (_popover->is_visible() && (event->state & GDK_SHIFT_MASK)) {
+            if (_popover->is_visible() && Controller::has_flag(state, GDK_SHIFT_MASK)) {
                 valueEditedPop();
-                ret = true;
-            } break;
+                return true;
+            }
     }
 
-    return ret;
+    return false;
 }
 
-bool AttrDialog::onNameKeyPressed(GdkEventKey *event, Gtk::Entry *entry)
+bool AttrDialog::onTreeViewKeyReleased(GtkEventControllerKey const * /*controller*/,
+                                       unsigned keyval, unsigned /*keycode*/, GdkModifierType state)
 {
-    g_debug("StyleDialog::_onNameKeyPressed");
-    bool ret = false;
-    switch (event->keyval) {
-        case GDK_KEY_Tab:
-        case GDK_KEY_KP_Tab:
-            entry->editing_done();
-            ret = true;
-            break;
-    }
-    return ret;
-}
+    g_debug("StyleDialog::_onTreeViewKeyReleased");
 
-bool AttrDialog::onValueKeyPressed(GdkEventKey *event, Gtk::Entry *entry)
-{
-    g_debug("StyleDialog::_onValueKeyPressed");
-    bool ret = false;
-    switch (event->keyval) {
+    if (_editingEntry == nullptr) return false;
+
+    switch (keyval) {
         case GDK_KEY_Return:
         case GDK_KEY_KP_Enter:
-            if (event->state & GDK_SHIFT_MASK) {
-                int pos = entry->get_position();
-                entry->insert_text("\n", 1, pos);
-                entry->set_position(pos + 1);
-                ret = true;
+            if (_embedNewline && Controller::has_flag(state, GDK_SHIFT_MASK)) {
+                auto pos = _editingEntry->get_position();
+                _editingEntry->insert_text("\n", 1, pos);
+                _editingEntry->set_position(pos + 1);
+                return true;
             }
-            break;
-        case GDK_KEY_Tab:
-        case GDK_KEY_KP_Tab:
-            entry->editing_done();
-            ret = true;
-            break;
     }
-    return ret;
+
+    return false;
 }
 
 void AttrDialog::storeMoveToNext(Gtk::TreeModel::Path modelpath)
@@ -845,3 +839,14 @@ void AttrDialog::valueEdited (const Glib::ustring& path, const Glib::ustring& va
 }
 
 } // namespace Inkscape::UI::Dialog
+
+/*
+  Local Variables:
+  mode:c++
+  c-file-style:"stroustrup"
+  c-file-offsets:((innamespace .0)(inline-open . 0)(case-label . +))
+  indent-tabs-mode:nil
+  fill-column:99
+  End:
+*/
+// vim:filetype=cpp:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:fileencoding=utf-8:textwidth=99:
