@@ -131,20 +131,20 @@ PageToolbar::PageToolbar(BaseObjectType *cobject, const Glib::RefPtr<Gtk::Builde
                                                  "or choose preset from dropdown."));
             entry_page_sizes->get_style_context()->add_class("symbolic");
             entry_page_sizes->signal_activate().connect(sigc::mem_fun(*this, &PageToolbar::sizeChanged));
+
             entry_page_sizes->signal_icon_press().connect([=](Gtk::EntryIconPosition, const GdkEventButton*){
                 _document->getPageManager().changeOrientation();
                 DocumentUndo::maybeDone(_document, "page-resize", _("Resize Page"), INKSCAPE_ICON("tool-pages"));
                 setSizeText();
             });
-            entry_page_sizes->signal_focus_in_event().connect([=](GdkEventFocus *) {
-                setSizeText(nullptr, false); // Show just raw dimensions when user starts editing
-                return false;
+
+            entry_page_sizes->property_is_focus().signal_changed().connect([=] {
+                if (_document) {
+                    auto const display_only = !is_focus();
+                    setSizeText(nullptr, display_only);
+                }
             });
-            entry_page_sizes->signal_focus_out_event().connect([=](GdkEventFocus *) {
-               if (_document)
-                   setSizeText(nullptr, true);
-               return false;
-            });
+
             populate_sizes();
         }
     }
@@ -406,7 +406,6 @@ void PageToolbar::setSizeText(SPPage *page, bool display_only)
         }
     }
     entry_page_sizes->set_text(label);
-
 
     // Orientation button
     auto box = page ? page->getDesktopRect() : *_document->preferredBounds();

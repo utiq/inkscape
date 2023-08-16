@@ -132,7 +132,7 @@ InkscapeWindow::InkscapeWindow(SPDocument* document)
 
     // ================== Callbacks ==================
     signal_window_state_event().connect(sigc::mem_fun(*_desktop, &SPDesktop::onWindowStateEvent));
-    signal_focus_in_event().connect(    sigc::mem_fun(*_desktop_widget, &SPDesktopWidget::onFocusInEvent));
+    property_has_toplevel_focus().signal_changed().connect([=]{ _desktop_widget->onFocus(has_toplevel_focus()); });
 
     // ================ Window Options ===============
     setup_view();

@@ -133,7 +133,7 @@ public:
     void enableInteraction();
     void disableInteraction();
     void updateTitle(gchar const *uri);
-    bool onFocusInEvent(GdkEventFocus *);
+    void onFocus(bool has_toplevel_focus);
     Inkscape::UI::Dialog::DialogContainer *getDialogContainer();
     void showNotice(Glib::ustring const &msg, unsigned timeout = 0);
 

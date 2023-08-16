@@ -835,9 +835,11 @@ void SPDesktopWidget::namedviewModified(SPObject *obj, guint flags)
     }
 }
 
-/* we make the desktop window with focus active, signal is connected in interface.c */
-bool SPDesktopWidget::onFocusInEvent(GdkEventFocus*)
+// We make the desktop window with focus active. Signal is connected in inkscape-window.cpp
+void SPDesktopWidget::onFocus(bool const has_toplevel_focus)
 {
+    if (!has_toplevel_focus) return;
+
     Inkscape::Preferences *prefs = Inkscape::Preferences::get();
     if (prefs->getBool("/options/bitmapautoreload/value", true)) {
         std::vector<SPObject *> imageList = (desktop->doc())->getResourceList("image");
@@ -848,8 +850,6 @@ bool SPDesktopWidget::onFocusInEvent(GdkEventFocus*)
     }
 
     INKSCAPE.activate_desktop (desktop);
-
-    return false;
 }
 
 // ------------------------ Zoom ------------------------
