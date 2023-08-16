@@ -65,7 +65,7 @@ protected:
     void on_prefs_changed();
 
 private:
-    bool on_motion(GtkEventControllerMotion const *motion, double x, double y);
+    void on_motion(GtkEventControllerMotion const *motion, double x, double y);
     Gtk::EventSequenceState on_click_pressed(Gtk::GestureMultiPress const &click,
                                              int n_press, double x, double y);
 

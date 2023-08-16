@@ -87,11 +87,11 @@ public:
     void set_drag_updated(bool updated );
 
 private:
-    Gtk::EventSequenceState on_motion_enter (GtkEventControllerMotion const *motion,
-                                             double x, double y);
-    Gtk::EventSequenceState on_motion_motion(GtkEventControllerMotion const *motion,
-                                             double x, double y);
-    Gtk::EventSequenceState on_motion_leave (GtkEventControllerMotion const *motion);
+    void on_motion_enter (GtkEventControllerMotion const *motion,
+                          double x, double y);
+    void on_motion_motion(GtkEventControllerMotion const *motion,
+                          double x, double y);
+    void on_motion_leave (GtkEventControllerMotion const *motion);
 
     Gtk::EventSequenceState on_click_pressed (Gtk::GestureMultiPress const &gesture,
                                               int n_press, double x, double y);

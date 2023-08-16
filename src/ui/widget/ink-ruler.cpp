@@ -158,7 +158,7 @@ Ruler::add_track_widget(Gtk::Widget& widget)
 // Draws marker in response to motion events from canvas.  Position is defined in ruler pixel
 // coordinates. The routine assumes that the ruler is the same width (height) as the canvas. If
 // not, one could use Gtk::Widget::translate_coordinates() to convert the coordinates.
-bool
+void
 Ruler::on_motion(GtkEventControllerMotion const * /*motion*/, double const x, double const y)
 {
     double position = 0;
@@ -181,8 +181,6 @@ Ruler::on_motion(GtkEventControllerMotion const * /*motion*/, double const x, do
 
         _rect = new_rect;
     }
-
-    return false;
 }
 
 Gtk::EventSequenceState

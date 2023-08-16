@@ -77,7 +77,7 @@ public:
     Dialog::CommandPalette *getCommandPalette() { return _command_palette.get(); }
 
     // Motion event handler, and delayed snap event callback.
-    bool rulerMotion(MotionEvent const &event, bool horiz);
+    void rulerMotion(MotionEvent const &event, bool horiz);
 
     // Scroll handling.
     void updateScrollbars(double scale);
@@ -136,13 +136,13 @@ private:
     void _createGuide(Geom::Point origin, Geom::Point normal);
     Gtk::EventSequenceState _rulerButtonPress(Gtk::GestureMultiPress &gesture, int n_press, double x, double y, bool horiz);
     Gtk::EventSequenceState _rulerButtonRelease(Gtk::GestureMultiPress &gesture, int n_press, double x, double y, bool horiz);
-    Gtk::EventSequenceState _rulerMotion(GtkEventControllerMotion const *controller, double x, double y, bool horiz);
+    void _rulerMotion(GtkEventControllerMotion const *controller, double x, double y, bool horiz);
 
     // Temporarily required due to use of C callbacks.
     template <bool horiz>
-    Gtk::EventSequenceState _rulerMotion(GtkEventControllerMotion const *controller, double x, double y)
+    void _rulerMotion(GtkEventControllerMotion const *controller, double x, double y)
     {
-        return _rulerMotion(controller, x, y, horiz);
+        _rulerMotion(controller, x, y, horiz);
     }
 
     // Scroll handling.

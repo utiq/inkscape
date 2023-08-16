@@ -86,11 +86,11 @@ unsigned Rotateable::get_single_modifier(unsigned const old, unsigned const stat
     return old;
 }
 
-bool Rotateable::on_motion(GtkEventControllerMotion const * const motion,
+void Rotateable::on_motion(GtkEventControllerMotion const * const motion,
                            double const x, double const y)
 {
     if (!dragging) {
-        return false;
+        return;
     }
 
     double dist = Geom::L2(Geom::Point(x, y) - Geom::Point(drag_started_x, drag_started_y));
@@ -114,8 +114,8 @@ bool Rotateable::on_motion(GtkEventControllerMotion const * const motion,
             do_motion(force, modifier);
         }
     }
+
     Inkscape::UI::Tools::gobble_motion_events(GDK_BUTTON1_MASK);
-    return true;
 }
 
 

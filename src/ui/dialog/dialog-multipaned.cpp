@@ -229,8 +229,8 @@ void MyHandle::set_drag_updated(bool const updated) {
 /**
  * Change the mouse pointer into a resize icon to show you can drag.
  */
-Gtk::EventSequenceState MyHandle::on_motion_enter(GtkEventControllerMotion const * /*motion*/,
-                                                  double const x, double const y)
+void MyHandle::on_motion_enter(GtkEventControllerMotion const * /*motion*/,
+                               double const x, double const y)
 {
     auto window = get_window();
     auto display = get_display();
@@ -244,14 +244,11 @@ Gtk::EventSequenceState MyHandle::on_motion_enter(GtkEventControllerMotion const
     }
 
     update_click_indicator(x, y);
-
-    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
-Gtk::EventSequenceState MyHandle::on_motion_leave(GtkEventControllerMotion const * /*motion*/)
+void MyHandle::on_motion_leave(GtkEventControllerMotion const * /*motion*/)
 {
     show_click_indicator(false);
-    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 void MyHandle::show_click_indicator(bool show) {
@@ -351,13 +348,12 @@ void MyHandle::toggle_multipaned() {
     }
 }
 
-Gtk::EventSequenceState MyHandle::on_motion_motion(GtkEventControllerMotion const * /*motion*/,
-                                                   double const x, double const y)
+void MyHandle::on_motion_motion(GtkEventControllerMotion const * /*motion*/,
+                                double const x, double const y)
 {
     // motion invalidates click; it activates resizing
     _click = false;
     update_click_indicator(x, y);
-    return Gtk::EVENT_SEQUENCE_NONE;
 }
 
 /**

@@ -647,19 +647,15 @@ Gtk::EventSequenceState ColorWheelHSL::on_click_released(Gtk::GestureMultiPress 
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool ColorWheelHSL::on_motion(GtkEventControllerMotion const * /*motion*/,
+void ColorWheelHSL::on_motion(GtkEventControllerMotion const * /*motion*/,
                               double const x, double const y)
 {
-    if (!_adjusting) { return false; }
+    if (!_adjusting) return;
 
     if (_mode == DragMode::HUE) {
         _update_ring_color(x, y);
-        return true;
     } else if (_mode == DragMode::SATURATION_VALUE) {
         _update_triangle_color(x, y);
-        return true;
-    } else {
-        return false;
     }
 }
 
@@ -1110,15 +1106,12 @@ Gtk::EventSequenceState ColorWheelHSLuv::on_click_released(Gtk::GestureMultiPres
     return Gtk::EVENT_SEQUENCE_CLAIMED;
 }
 
-bool ColorWheelHSLuv::on_motion(GtkEventControllerMotion const * /*motion*/,
+void ColorWheelHSLuv::on_motion(GtkEventControllerMotion const * /*motion*/,
                                 double const x, double const y)
 {
-    if (!_adjusting) {
-        return false;
+    if (_adjusting) {
+        _set_from_xy(x, y);
     }
-
-    _set_from_xy(x, y);
-    return true;
 }
 
 bool ColorWheelHSLuv::on_key_pressed(GtkEventControllerKey const * /*controller*/,

@@ -440,10 +440,10 @@ void CanvasGrid::_createGuideItem(Geom::Point const &pos, bool horiz)
     _active_guide->set_stroke(desktop->namedview->guidehicolor);
 }
 
-Gtk::EventSequenceState CanvasGrid::_rulerMotion(GtkEventControllerMotion const *controller, double x, double y, bool horiz)
+void CanvasGrid::_rulerMotion(GtkEventControllerMotion const *controller, double x, double y, bool horiz)
 {
     if (!_ruler_clicked) {
-        return Gtk::EVENT_SEQUENCE_NONE;
+        return;
     }
 
     // Get the position in canvas coordinates.
@@ -454,7 +454,7 @@ Gtk::EventSequenceState CanvasGrid::_rulerMotion(GtkEventControllerMotion const 
         auto prefs = Preferences::get();
         int tolerance = prefs->getIntLimited("/options/dragtolerance/value", 0, 0, 100);
         if (Geom::LInfty(Geom::Point(x, y).floor() - _ruler_drag_origin) < tolerance) {
-            return Gtk::EVENT_SEQUENCE_NONE;
+            return;
         }
         // Once the drag has started, create a guide.
         _createGuideItem(pos, horiz);
@@ -468,8 +468,7 @@ Gtk::EventSequenceState CanvasGrid::_rulerMotion(GtkEventControllerMotion const 
     gdkevent->motion.y = pos.y();
     auto const state = gdkevent->motion.state;
     auto const event = MotionEvent(std::move(gdkevent), state);
-
-    return rulerMotion(event, horiz) ? Gtk::EVENT_SEQUENCE_CLAIMED : Gtk::EVENT_SEQUENCE_NONE;
+    rulerMotion(event, horiz);
 }
 
 static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom::Point &normal)
@@ -505,7 +504,7 @@ static void ruler_snap_new_guide(SPDesktop *desktop, Geom::Point &event_dt, Geom
     m.unSetup();
 }
 
-bool CanvasGrid::rulerMotion(MotionEvent const &event, bool horiz)
+void CanvasGrid::rulerMotion(MotionEvent const &event, bool horiz)
 {
     auto const desktop = _dtw->desktop;
 
@@ -532,8 +531,6 @@ bool CanvasGrid::rulerMotion(MotionEvent const &event, bool horiz)
 
     // Update the displayed coordinates.
     desktop->set_coordinate_status(event_dt);
-
-    return true;
 }
 
 void CanvasGrid::_createGuide(Geom::Point origin, Geom::Point normal)
